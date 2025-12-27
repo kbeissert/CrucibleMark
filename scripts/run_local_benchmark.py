@@ -247,6 +247,11 @@ class LocalBenchmarkRunner:
             'golden_similarity': round(comparison.get('similarity', 0) * 100, 1)
         }
         
+        if response.startswith("ERROR:"):
+            result['error_message'] = response
+        elif not response:
+            result['error_message'] = "Empty Response"
+        
         # Add category scores
         for cat_name, cat_data in score['category_scores'].items():
             result[f'{cat_name}'] = f"{cat_data['achieved']}/{cat_data['max']}"
@@ -315,8 +320,9 @@ class LocalBenchmarkRunner:
                 # Clear line and print result
                 print(" " * 80, end="\r")
                 if result.get('status') == 'error':
+                    error_msg = result.get('error_message', 'Incompatible Model')
                     print(
-                        f"   ✗ [{i}/{len(assets)}] {asset_name}: FAILED (Incompatible Model) | "
+                        f"   ✗ [{i}/{len(assets)}] {asset_name}: FAILED ({error_msg}) | "
                         f"Zeit: {result['execution_time']}s"
                     )
                 # Zeige Vergleich zu Referenz
