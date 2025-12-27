@@ -1,8 +1,8 @@
 # CrucibleMark - Projekt-Status & Architektur
 
-**Version:** 0.2.0-beta
+**Version:** 0.3.0-beta
 **Datum:** 27. Dezember 2025
-**Status:** Beta - Tiered Difficulty implementiert, System Cleanup abgeschlossen
+**Status:** Beta - Expert Level (Tier 4) implementiert, Qwen3 Support gefixt
 
 ---
 
@@ -13,7 +13,7 @@ Framework zum systematischen Benchmarking von **lokalen** (Ollama) und **kommerz
 
 ### Kernkonzepte
 1.  **Modular Architecture**: Plugin-basiertes System - neue Test-Module einfach hinzufügbar
-2.  **Tiered Difficulty**: Assets enthalten Fehler in 3 Schwierigkeitsstufen (Labeled, Standard, Advanced)
+2.  **Tiered Difficulty (1-4)**: Assets enthalten Fehler in 4 Schwierigkeitsstufen (Labeled, Standard, Advanced, Expert)
 3.  **Hybrid Scoring**: Kombination aus quantitativer Bewertung (Keyword/Regex) und qualitativer Analyse (Semantische Ähnlichkeit zu Golden Standards)
 4.  **Golden Standard**: Ein kommerzielles Referenz-Modell als Vergleichsmaßstab für lokale Modelle
 5.  **Multi-Provider**: Unterstützt Ollama, Mistral AI, Anthropic, OpenAI
@@ -43,7 +43,7 @@ crucible-mark/
 │       ├── test.py                # CodeQualityTest Klasse (erbt von BaseTest)
 │       ├── config.yaml            # Modul-Metadaten
 │       ├── README.md              # Modul-Dokumentation
-│       └── assets/                # 5 YAML Test-Assets (Tiered Difficulty)
+│       └── assets/                # 5 YAML Test-Assets (Tiered Difficulty 1-4)
 │           ├── 001_wcag_audit.yaml
 │           ├── 002_security_audit.yaml
 │           ├── 003_performance_audit.yaml
