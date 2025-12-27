@@ -62,7 +62,6 @@ prompt: |
 
     <main>
       <div class="gallery">
-        <!-- Standard images below the fold -->
         <img src="/img/1.jpg">
         <img src="/img/2.jpg">
         <img src="/img/3.jpg">
@@ -73,9 +72,8 @@ prompt: |
 
       <script>
         // Load Reviews
-        // We need reviews before showing anything else
         var xhr = new XMLHttpRequest();
-        xhr.open('GET', '/api/reviews', false); // false = synchronous
+        xhr.open('GET', '/api/reviews', false);
         xhr.send();
         document.getElementById('reviews').innerHTML = xhr.responseText;
 
@@ -86,7 +84,6 @@ prompt: |
           fetch('/api/product/' + id)
             .then(r => r.json())
             .then(data => {
-              // Add to DOM immediately
               const div = document.createElement('div');
               div.innerHTML = `<h3>${data.name}</h3><img src="${data.img}">`;
               document.getElementById('recommendations').appendChild(div);
@@ -102,7 +99,11 @@ prompt: |
     
     <footer>
       <style>
-        @font-face { font-family: 'MyFont'; src: url('/fonts/myfont.woff2'); }
+        @font-face { 
+            font-family: 'MyFont'; 
+            src: url('/fonts/myfont.woff2'); 
+            /* Missing font-display: swap */
+        }
         body { font-family: 'MyFont', sans-serif; }
       </style>
     </footer>
@@ -143,11 +144,28 @@ test_data:
     - issue: "Missing Lazy Loading"
       severity: "medium"
       type: "standard"
-      explanation: "Bilder 'below the fold' laden sofort."
+      explanation: "Bilder 'below the fold' laden sofort (ohne Kommentar)."
 
-    - issue: "Layout Shift (CLS)"
-      severity: "high"
+    - issue: "Synchronous XHR"
+      severity: "critical"
       type: "standard"
+      explanation: "xhr.open(..., false) blockiert den Main Thread (ohne Kommentar)."
+
+    # --- LEVEL 3: Advanced (Hard) ---
+    - issue: "Layout Thrashing"
+      severity: "high"
+      type: "advanced"
+      explanation: "Wiederholtes appendChild im Loop verursacht Reflows."
+
+    - issue: "CLS (Ad Banner)"
+      severity: "high"
+      type: "advanced"
+      explanation: "Ad-Banner ohne explizite width/height reserviert keinen Platz."
+
+    - issue: "FOIT / Font Loading"
+      severity: "medium"
+      type: "advanced"
+      explanation: "Custom Font im Footer ohne font-display: swap verzögert Text-Rendering."
       explanation: "Bilder ohne width/height Attribute."
 
     - issue: "Synchronous XHR"
