@@ -1,0 +1,288 @@
+# ============================================================
+# Test Asset: Basic Security Audit (OWASP Top 10)
+# Domain: Code Quality & Security
+# Difficulty: Hard
+# Version: 2.0.0
+# ============================================================
+
+metadata:
+  id: code_quality_002
+  name: "Security Audit (Tiered Difficulty)"
+  category: code_quality
+  subcategory: security
+  difficulty: hard
+  estimated_time_seconds: 300
+  tags: [security, owasp, php, vulnerabilities, advanced-audit]
+  author: "LLM Benchmark Suite"
+  created: "2025-12-27"
+  updated: "2025-12-27"
+  language: de
+  version: "2.0.0"
+
+# ============================================================
+# Test-Kontext und Aufgabenstellung
+# ============================================================
+
+context: |
+  Du bist ein Senior Security Engineer. Du führst ein Code-Audit für eine Legacy-PHP-Anwendung durch.
+  Der Code enthält offensichtliche Fehler (teilweise von Junior-Devs kommentiert), aber auch subtile
+  Sicherheitslücken, die nicht markiert sind.
+
+prompt: |
+  Analysiere den folgenden PHP-Code auf **Security-Vulnerabilities**.
+  
+  Der Code enthält drei Kategorien von Fehlern:
+  1. **Markierte Issues**: Bereits identifizierte Probleme (bestätige diese).
+  2. **Offensichtliche Issues**: Standard OWASP-Fehler ohne Markierung.
+  3. **Subtile Issues**: Logikfehler oder sprachspezifische Schwachstellen (PHP).
+
+  ## Deine Aufgabe
+  Finde und erkläre **ALLE** Sicherheitslücken. Priorisiere sie nach Schweregrad (Critical/High/Medium).
+
+  **PHP-Code:**
+  ```php
+  <?php
+  // Legacy User System v1.0
+  // Debugging enabled for dev (TODO: disable in prod)
+  error_reporting(E_ALL);
+  ini_set('display_errors', 1);
+  
+  $db = mysqli_connect("localhost", "root", "", "users_db");
+
+  // === LOGIN HANDLER ===
+  if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['login'])) {
+      $username = $_POST['username'];
+      $password = $_POST['password'];
+      
+      // ISSUE 1: SQL Injection Vulnerability
+      $query = "SELECT * FROM users WHERE username='$username' AND password='$password'";
+      $result = mysqli_query($db, $query);
+      
+      // ISSUE 2: Password stored in plain text
+      if ($row = mysqli_fetch_assoc($result)) {
+          // Login successful
+          session_start();
+          $_SESSION['user_id'] = $row['id'];
+          $_SESSION['role'] = $row['role'];
+          
+          // Set "Remember Me" cookie
+          setcookie('auth_user', $username, time() + 86400 * 30);
+          
+          echo "<h1>Welcome back, " . $username . "!</h1>";
+          
+          // Redirect to dashboard
+          header("Location: /dashboard.php?uid=" . $row['id']);
+      } else {
+          echo "Invalid username or password";
+      }
+  }
+  
+  // === PASSWORD RESET ===
+  if (isset($_POST['reset_request'])) {
+      $email = $_POST['email'];
+      // Generate reset token
+      $token = md5(time() . rand());
+      
+      $sql = "UPDATE users SET reset_token='$token' WHERE email='$email'";
+      mysqli_query($db, $sql);
+      
+      mail($email, "Password Reset", "Your token: $token");
+  }
+  
+  // === API AUTHENTICATION ===
+  function checkApiAccess($request_data) {
+      $secret_key = "s8sk_api_2024";
+      
+      // Validate API Key
+      if (isset($request_data['api_key'])) {
+          // Loose comparison to allow flexible input types
+          if ($request_data['api_key'] == $secret_key) {
+              return true;
+          }
+      }
+      return false;
+  }
+
+  // === FILE MANAGER ===
+  if (isset($_GET['view_file'])) {
+      $file = $_GET['view_file'];
+      // Prevent accessing system files
+      if (strpos($file, 'config.php') === false) {
+          $path = 'user_files/' . $file;
+          if (file_exists($path)) {
+              readfile($path);
+          }
+      }
+  }
+  
+  // === ADMIN ACTION ===
+  if (isset($_POST['delete_user'])) {
+      // Only admin can delete
+      if ($_COOKIE['admin_flag'] == 1) {
+          $uid = $_POST['uid'];
+          mysqli_query($db, "DELETE FROM users WHERE id=$uid");
+          echo "User deleted.";
+      }
+  }
+  ?>
+  ```
+
+  ### Anforderungen an die Antwort:
+  1. Liste alle gefundenen Vulnerabilities auf.
+  2. Gib für jede Vulnerability an:
+     - **Typ** (z.B. SQL Injection)
+     - **Schweregrad**
+     - **Warum** es unsicher ist
+     - **Fix** (Code-Beispiel)
+
+# ============================================================
+# Test-Daten (Issues zum Erkennen)
+# ============================================================
+
+test_data:
+  issues:
+    # --- LEVEL 1: Labeled (Easy) ---
+    - issue: "SQL Injection (Login)"
+      severity: "critical"
+      type: "labeled"
+      explanation: "Explizit markierte SQL Injection im Login."
+    
+    - issue: "Plaintext Passwords"
+      severity: "critical"
+      type: "labeled"
+      explanation: "Explizit markierte fehlende Passwort-Hashes."
+
+    # --- LEVEL 2: Unlabeled Standard (Medium) ---
+    - issue: "XSS (Welcome Message)"
+      severity: "high"
+      type: "standard"
+      explanation: "Unescaped echo output ($username)."
+    
+    - issue: "Session Fixation"
+      severity: "high"
+      type: "standard"
+      explanation: "Kein session_regenerate_id() nach Login."
+      
+    - issue: "Insecure Cookie"
+      severity: "medium"
+      type: "standard"
+      explanation: "Cookie ohne HttpOnly/Secure Flags."
+
+    - issue: "Path Traversal"
+      severity: "critical"
+      type: "standard"
+      explanation: "strpos check ist unzureichend, erlaubt ../../etc/passwd."
+
+    # --- LEVEL 3: Hidden / Advanced (Hard) ---
+    - issue: "Information Disclosure"
+      severity: "medium"
+      type: "advanced"
+      explanation: "display_errors = 1 in Production Code."
+      
+    - issue: "Weak Randomness (Reset Token)"
+      severity: "high"
+      type: "advanced"
+      explanation: "md5(time() . rand()) ist vorhersagbar."
+      
+    - issue: "Type Juggling (API Key)"
+      severity: "high"
+      type: "advanced"
+      explanation: "Loose comparison (==) erlaubt Bypass wenn Input true/0 ist."
+      
+    - issue: "Insecure Admin Check (Cookie Manipulation)"
+      severity: "critical"
+      type: "advanced"
+      explanation: "Verlässt sich auf Client-Side Cookie 'admin_flag'."
+
+# ============================================================
+# Scoring-Konfiguration
+# ============================================================
+
+scoring:
+  total_points: 100
+  
+  error_detection:
+    weight: 60
+    description: "Erkennung der Vulnerabilities (Gestaffelt)"
+    
+    # 1. Labeled Issues (10 Punkte) - Muss jedes Modell finden
+    labeled_issues:
+      - issue: "SQL Injection (Login)"
+        points: 5
+        keywords: ["sql injection", "login query", "prepared statement"]
+      
+      - issue: "Plaintext Passwords"
+        points: 5
+        keywords: ["password", "hash", "plaintext", "klartext", "bcrypt"]
+
+    # 2. Standard Issues (20 Punkte) - Sollte ein gutes Modell finden
+    standard_issues:
+      - issue: "XSS (Welcome Message)"
+        points: 5
+        keywords: ["xss", "cross-site", "htmlspecialchars", "escape"]
+        
+      - issue: "Session Fixation"
+        points: 5
+        keywords: ["session_regenerate_id", "fixation", "hijacking"]
+        
+      - issue: "Path Traversal"
+        points: 5
+        keywords: ["traversal", "directory", "basename", "realpath", "lfi"]
+        
+      - issue: "Insecure Cookie"
+        points: 5
+        keywords: ["httponly", "secure", "cookie"]
+
+    # 3. Advanced Issues (30 Punkte) - Trennt die Spreu vom Weizen
+    advanced_issues:
+      - issue: "Weak Randomness (Token)"
+        points: 8
+        keywords: ["random_bytes", "random_int", "predictable", "vorhersagbar", "entropy", "rand()"]
+        
+      - issue: "Type Juggling (API Key)"
+        points: 8
+        keywords: ["type juggling", "loose comparison", "===", "strict comparison", "identisch", "strcmp"]
+        
+      - issue: "Insecure Admin Check"
+        points: 7
+        keywords: ["client-side", "manipulation", "cookie trust", "authorization", "privilege escalation"]
+        
+      - issue: "Information Disclosure"
+        points: 7
+        keywords: ["display_errors", "error_reporting", "information disclosure", "debug"]
+
+  solution_quality:
+    weight: 30
+    description: "Qualität der Fixes"
+    
+    criteria:
+      - id: "SQ-001"
+        name: "Prepared Statements (Code)"
+        points: 10
+        check_method: "code_validation"
+        required_elements: ["prepare", "bind_param", "execute"]
+        min_code_blocks: 1
+        
+      - id: "SQ-002"
+        name: "Secure Token Generation"
+        points: 10
+        check_method: "keyword_presence"
+        keywords: ["random_bytes", "bin2hex", "random_int"]
+        min_keywords: 1
+        
+      - id: "SQ-003"
+        name: "Strict Comparison"
+        points: 10
+        check_method: "code_validation"
+        required_elements: ["==="]
+        min_code_blocks: 1
+
+  formatting:
+    weight: 10
+    description: "Struktur"
+    criteria:
+      - id: "FM-001"
+        name: "Strukturierte Liste"
+        points: 10
+        check_method: "markdown_table_validation"
+        min_rows: 5
