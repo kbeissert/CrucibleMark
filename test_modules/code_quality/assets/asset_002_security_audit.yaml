@@ -124,6 +124,20 @@ prompt: |
           echo "User deleted.";
       }
   }
+  
+  // === PROFILE UPDATE ===
+  // Allow users to update their email
+  if (isset($_POST['update_profile'])) {
+      $new_email = $_POST['email'];
+      $user_id = $_POST['user_id']; // Hidden field from form
+      
+      // Update email
+      $stmt = mysqli_prepare($db, "UPDATE users SET email=? WHERE id=?");
+      mysqli_stmt_bind_param($stmt, "si", $new_email, $user_id);
+      mysqli_stmt_execute($stmt);
+      
+      echo "Profile updated!";
+  }
   ?>
   ```
 
@@ -194,6 +208,17 @@ test_data:
       type: "advanced"
       explanation: "Verlässt sich auf Client-Side Cookie 'admin_flag'."
 
+    # --- LEVEL 4: Expert (Very Hard) ---
+    - issue: "IDOR (Profile Update)"
+      severity: "critical"
+      type: "expert"
+      explanation: "Nutzer kann user_id im POST-Request manipulieren und fremde Profile ändern."
+
+    - issue: "CSRF (Profile Update/Delete)"
+      severity: "high"
+      type: "expert"
+      explanation: "Keine CSRF-Tokens in POST-Forms (Delete User, Profile Update)."
+
 # ============================================================
 # Scoring-Konfiguration
 # ============================================================
@@ -215,41 +240,51 @@ scoring:
         points: 5
         keywords: ["password", "hash", "plaintext", "klartext", "bcrypt"]
 
-    # 2. Standard Issues (20 Punkte) - Sollte ein gutes Modell finden
+    # 2. Standard Issues (15 Punkte) - Sollte ein gutes Modell finden
     standard_issues:
       - issue: "XSS (Welcome Message)"
-        points: 5
+        points: 4
         keywords: ["xss", "cross-site", "htmlspecialchars", "escape"]
         
       - issue: "Session Fixation"
-        points: 5
+        points: 4
         keywords: ["session_regenerate_id", "fixation", "hijacking"]
         
       - issue: "Path Traversal"
-        points: 5
+        points: 4
         keywords: ["traversal", "directory", "basename", "realpath", "lfi"]
         
       - issue: "Insecure Cookie"
-        points: 5
+        points: 3
         keywords: ["httponly", "secure", "cookie"]
 
-    # 3. Advanced Issues (30 Punkte) - Trennt die Spreu vom Weizen
+    # 3. Advanced Issues (20 Punkte) - Trennt die Spreu vom Weizen
     advanced_issues:
       - issue: "Weak Randomness (Token)"
-        points: 8
+        points: 5
         keywords: ["random_bytes", "random_int", "predictable", "vorhersagbar", "entropy", "rand()"]
         
       - issue: "Type Juggling (API Key)"
-        points: 8
+        points: 5
         keywords: ["type juggling", "loose comparison", "===", "strict comparison", "identisch", "strcmp"]
         
       - issue: "Insecure Admin Check"
-        points: 7
+        points: 5
         keywords: ["client-side", "manipulation", "cookie trust", "authorization", "privilege escalation"]
         
       - issue: "Information Disclosure"
-        points: 7
+        points: 5
         keywords: ["display_errors", "error_reporting", "information disclosure", "debug"]
+
+    # 4. Expert Issues (15 Punkte) - Top-Tier Modelle
+    expert_issues:
+      - issue: "IDOR (Profile Update)"
+        points: 8
+        keywords: ["idor", "insecure direct object reference", "authorization", "session id", "fremde daten", "berechtigung"]
+        
+      - issue: "CSRF (Missing Tokens)"
+        points: 7
+        keywords: ["csrf", "cross-site request forgery", "token", "anti-csrf", "nonce"]
 
   solution_quality:
     weight: 30
