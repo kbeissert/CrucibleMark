@@ -1,0 +1,12 @@
+# LLM Clients
+ollama>=0.1.0
+anthropic>=0.21.0
+mistralai>=1.0.0
+
+# Data Handling
+pyyaml>=6.0
+pandas>=2.0.0
+
+# Utilities
+python-dateutil>=2.8.0
+tqdm>=4.66.0

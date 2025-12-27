@@ -1,0 +1,226 @@
+# ============================================================
+# Test Asset: REST API Design Review
+# Domain: Code Quality & API Design
+# Difficulty: Tiered (1-3)
+# Version: 2.0.0
+# ============================================================
+
+metadata:
+  id: code_quality_004
+  name: "REST API Design Review (Tiered Difficulty)"
+  category: code_quality
+  subcategory: api_design
+  difficulty: tiered
+  estimated_time_seconds: 180
+  tags: [rest, api, http, rest-api, api-design, http-methods, status-codes]
+  author: "LLM Benchmark Suite"
+  created: "2025-12-27"
+  updated: "2025-12-27"
+  language: de
+  version: "2.0.0"
+
+context: |
+  Du bist ein Senior Backend Engineer. Du reviewst eine API-Spezifikation für ein Blog-System.
+  Die API wird von mobilen Apps und Web-Frontends genutzt.
+  Der Entwurf stammt von einem Junior-Entwickler und enthält Kommentare mit Fragen.
+
+prompt: |
+  Analysiere die folgende API-Spezifikation auf **Design-Probleme** und **REST-Verstöße**.
+
+  Die Spezifikation enthält drei Kategorien von Problemen:
+  1. **Markierte Issues**: Fragen oder TODOs im Code (bestätige diese).
+  2. **Offensichtliche Issues**: Standard REST-Fehler (Verben in URLs, falsche Methoden).
+  3. **Subtile Issues**: Inkonsistenzen, fehlende Standards oder Security-Lücken.
+
+  ## Deine Aufgabe
+  Identifiziere **ALLE** Design-Probleme. Priorisiere sie nach Schweregrad.
+
+  **API-Spezifikation:**
+  ```
+  # Blog API v0.1 (Draft)
+  
+  ## Endpoints
+  
+  ### 1. Posts abrufen
+  # TODO: Is it okay to return all 50,000 posts at once?
+  GET /getAllPosts
+  Response: 200 OK
+  { "data": [ ... ] }
+  
+  ### 2. Neuen Post erstellen
+  # Note: Using GET is easier for testing in browser
+  GET /createPost?title=...&content=...
+  Response: 200 OK
+  { "status": "created" }
+  
+  ### 3. Post löschen
+  POST /deletePost
+  Body: { "post_id": 123 }
+  Response: 200 OK
+  { "msg": "deleted" }
+  
+  ### 4. Post Details
+  GET /post/123
+  Response: 200 OK
+  { 
+    "PostId": 123,      // PascalCase
+    "post_title": "...", // snake_case
+    "authorName": "..."  // camelCase
+  }
+  
+  ### 5. Fehlerbehandlung
+  # Example: Post not found
+  GET /post/99999
+  Response: 200 OK
+  { "error": true, "message": "Not Found" }
+  
+  ### 6. Suche
+  POST /search
+  Body: { "query": "tech" }
+  Response: 200 OK
+  
+  ### 7. User Posts
+  GET /users/123/posts
+  Response: 200 OK
+  ```
+
+  ### Anforderungen an die Antwort:
+  1. Liste alle gefundenen Issues auf.
+  2. Gib für jedes Issue an:
+     - **Kategorie** (z.B. REST, Naming, Performance)
+     - **Schweregrad**
+     - **Lösung** (Korrekter Endpoint/Method/Status)
+
+# ============================================================
+# Test-Daten (Issues zum Erkennen)
+# ============================================================
+
+test_data:
+  issues:
+    # --- LEVEL 1: Labeled (Easy) ---
+    - issue: "Fehlende Pagination"
+      severity: "critical"
+      type: "labeled"
+      explanation: "Durch TODO markiert (50,000 posts)."
+    
+    - issue: "GET für State Change (Create)"
+      severity: "critical"
+      type: "labeled"
+      explanation: "Durch Note markiert (GET statt POST)."
+
+    # --- LEVEL 2: Standard (Medium) ---
+    - issue: "Verben in URLs"
+      severity: "high"
+      type: "standard"
+      explanation: "/getAllPosts, /createPost, /deletePost sind RPC-Style, nicht REST."
+
+    - issue: "Status 200 bei Fehler"
+      severity: "critical"
+      type: "standard"
+      explanation: "Fehler sollten 4xx Codes nutzen (z.B. 404 Not Found)."
+
+    - issue: "Inkonsistentes Naming"
+      severity: "medium"
+      type: "standard"
+      explanation: "Mix aus PascalCase, snake_case und camelCase in Response."
+
+    # --- LEVEL 3: Advanced (Hard) ---
+    - issue: "POST für Delete"
+      severity: "medium"
+      type: "advanced"
+      explanation: "Sollte HTTP DELETE Methode nutzen."
+
+    - issue: "POST für Suche (Caching)"
+      severity: "medium"
+      type: "advanced"
+      explanation: "Suche ist idempotent und safe, sollte GET nutzen (Caching möglich)."
+
+    - issue: "Fehlende Versionierung"
+      severity: "high"
+      type: "advanced"
+      explanation: "Kein /v1/ Prefix oder Header-Versionierung."
+
+# ============================================================
+# Scoring-Konfiguration
+# ============================================================
+
+scoring:
+  total_points: 100
+  
+  error_detection:
+    weight: 60
+    description: "Erkennung der API-Design-Issues (Gestaffelt)"
+    
+    # 1. Labeled Issues (15 Punkte)
+    labeled_issues:
+      - issue: "Fehlende Pagination"
+        points: 8
+        keywords: ["pagination", "limit", "offset", "cursor", "page", "50000"]
+      
+      - issue: "GET für Create"
+        points: 7
+        keywords: ["get", "post", "method", "state change", "idempotent"]
+
+    # 2. Standard Issues (25 Punkte)
+    standard_issues:
+      - issue: "Verben in URLs (RPC-Style)"
+        points: 9
+        keywords: ["verb", "nomen", "resource", "noun", "rpc", "/posts"]
+        
+      - issue: "Status 200 bei Fehler"
+        points: 8
+        keywords: ["status code", "404", "400", "500", "http status", "200 ok"]
+        
+      - issue: "Inkonsistentes Naming"
+        points: 8
+        keywords: ["camelcase", "snake_case", "pascalcase", "naming convention", "konsistent"]
+
+    # 3. Advanced Issues (20 Punkte)
+    advanced_issues:
+      - issue: "DELETE Methode nutzen"
+        points: 7
+        keywords: ["delete method", "http delete", "post vs delete"]
+        
+      - issue: "GET für Suche (Caching)"
+        points: 6
+        keywords: ["search", "get", "query param", "caching", "cacheable"]
+        
+      - issue: "Versionierung"
+        points: 7
+        keywords: ["versioning", "v1", "api version", "breaking change"]
+
+  solution_quality:
+    weight: 30
+    description: "Qualität der Fixes"
+    
+    criteria:
+      - id: "SQ-001"
+        name: "RESTful URL Design (/posts)"
+        points: 10
+        check_method: "regex"
+        check_pattern: '(?i)(GET|POST)\s+/v1/posts'
+        min_occurrences: 1
+        
+      - id: "SQ-002"
+        name: "Korrekte Status Codes (201, 404)"
+        points: 10
+        check_method: "keyword_presence"
+        keywords: ["201 created", "404 not found", "204 no content"]
+        min_keywords: 2
+        
+      - id: "SQ-003"
+        name: "Pagination Parameter"
+        points: 10
+        check_method: "keyword_presence"
+        keywords: ["?page=", "?limit=", "?offset=", "?cursor="]
+        min_keywords: 1
+
+  formatting:
+    weight: 10
+    description: "Struktur"
+    criteria:
+      - id: "FM-001"
+        name: "Strukturierte Liste/Tabelle"
+        points: 10
+        check_method: "markdown_table_validation"
+        min_rows: 5

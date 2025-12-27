@@ -1,0 +1,117 @@
+# ============================================================
+# CrucibleMark - Benchmark Configuration
+# ============================================================
+# Diese Datei definiert alle verfügbaren Test-Module und Provider.
+# Neue Module können hier einfach hinzugefügt werden.
+
+# Test-Module Registry
+# --------------------
+# Jedes Modul muss folgende Struktur haben:
+#   - test.py mit TestClass (erbt von BaseTest)
+#   - assets/ Verzeichnis mit Test-Assets
+#   - config.yaml mit Modul-Metadaten
+#   - README.md mit Dokumentation
+
+modules:
+  code_quality:
+    name: "Code Quality Audit"
+    description: "Umfassende Code-Qualitätsanalyse: WCAG, Security, Performance, API Design, Code Smells"
+    path: "test_modules/code_quality"
+    test_class: "CodeQualityTest"
+    version: "0.1.0-alpha"
+    enabled: true
+    assets_count: 5
+    tags:
+      - quality
+      - security
+      - performance
+      - accessibility
+    
+  # Beispiel für zukünftige Module:
+  # documentation_quality:
+  #   name: "Documentation Quality"
+  #   description: "Prüft Qualität von Code-Dokumentation und README-Dateien"
+  #   path: "test_modules/documentation_quality"
+  #   test_class: "DocumentationTest"
+  #   enabled: false
+  
+  # prompt_engineering:
+  #   name: "Prompt Engineering Tests"
+  #   description: "Testet Prompt-Following und Instruction-Adherence"
+  #   path: "test_modules/prompt_engineering"
+  #   test_class: "PromptTest"
+  #   enabled: false
+
+# Golden Standard Configuration
+# -----------------------------
+# Definiert DEN einen Golden Standard für alle Benchmarks.
+# Alle lokalen Modelle werden mit diesem Referenz-Modell verglichen.
+# Der Provider muss in 'providers.commercial' existieren und enabled sein.
+
+golden_standard:
+  provider: "mistral"  # Referenz zu providers.commercial.mistral
+  model: "mistral-large-latest"  # Welches Modell für Referenz-Benchmark
+  description: "Mistral Large als stabile, hochwertige Referenz für Code Quality Tests"
+
+# Provider Configuration
+# ----------------------
+# Definiert verfügbare LLM-Provider und deren Modelle.
+# Alle aktivierten Provider können für Tests verwendet werden.
+# Der Golden Standard (oben definiert) wird als Referenz für Vergleiche genutzt.
+
+providers:
+  commercial:
+    mistral:
+      name: "Mistral AI"
+      api_type: "mistral"
+      enabled: true
+      env_var: "MISTRAL_API_KEY"
+      models:
+        - id: "mistral-large-latest"
+          name: "Mistral Large (123B)"
+          description: "Beste Reasoning-Performance"
+        - id: "mistral-medium-latest"
+          name: "Mistral Medium"
+          description: "Ausgeglichenes Preis/Leistung"
+    
+    anthropic:
+      name: "Anthropic"
+      api_type: "anthropic"
+      enabled: true
+      env_var: "ANTHROPIC_API_KEY"
+      models:
+        - id: "claude-3-5-sonnet-20241022"
+          name: "Claude 3.5 Sonnet"
+          description: "State of the Art"
+        - id: "claude-3-opus-20240229"
+          name: "Claude 3 Opus"
+          description: "Höchste Qualität"
+    
+    openai:
+      name: "OpenAI"
+      api_type: "openai"
+      enabled: true
+      env_var: "OPENAI_API_KEY"
+      models:
+        - id: "gpt-4-turbo"
+          name: "GPT-4 Turbo"
+          description: "Schnell & Leistungsstark"
+        - id: "gpt-4o"
+          name: "GPT-4o"
+          description: "Multimodal"
+  
+  local:
+    ollama:
+      name: "Ollama (Local)"
+      api_type: "ollama"
+      # Modelle werden dynamisch von Ollama abgefragt
+      auto_discover: true
+
+# Output-Konfiguration
+# --------------------
+output:
+  golden_standard_csv: "golden_standard_benchmark.csv"  # Golden Standard Referenz-Scores
+  commercial_csv: "commercial_models_benchmark.csv"     # Alle kommerziellen Modelle
+  local_csv: "local_models_benchmark.csv"               # Lokale Modelle
+  results_dir: "benchmark_results"                      # Detaillierte Ergebnisse
+  reference_dir: "golden_standards"                     # Referenz-Antworten für Similarity

@@ -1,0 +1,90 @@
+temperature: 0.3
+maxTokens: 4000
+---
+name: Code Smells
+description: Analyze code for 11 common code smells
+---
+
+Analyze the following code for code smells and suggest concrete refactorings.
+
+**Focus on these 11 code smells:**
+
+1. **Long Method** (>50 lines)
+   - Extract method, split responsibilities
+
+2. **Long Parameter List** (>5 parameters)
+   - Introduce Parameter Object
+
+3. **Magic Numbers** (hardcoded values)
+   - Extract to named constants
+
+4. **Deep Nesting** (>3 levels)
+   - Early returns, guard clauses
+
+5. **Duplicated Code**
+   - Extract method/class
+
+6. **God Object** (class >200 lines, >5 responsibilities)
+   - Split into focused classes
+
+7. **Dead Code** (unreachable, commented code)
+   - Remove completely
+
+8. **Feature Envy** (method accesses too many fields of another class)
+   - Move method to appropriate class
+
+9. **Data Clumps** (same parameters appearing together)
+   - Create class to group related data
+
+10. **Primitive Obsession** (using primitives instead of value objects)
+    - Create Value Objects
+
+11. **Switch Statements** (should be polymorphism)
+    - Replace with Strategy/State pattern
+
+**Output Format:**
+
+### Critical Issues (High Priority)
+1. **[Line 45-120] God Object**
+   - **Class:** `BenchmarkRunner`
+   - **Explanation:** Class has 8 responsibilities (scoring, DB access, reporting, validation, etc.)
+   - **Impact:** Hard to test, maintain, extend
+   - **Refactoring:**
+     ```
+     # Extract responsibilities into focused classes
+     class ScoreCalculator:
+         def calculate(self, results: List[Result]) -> Score:
+             ...
+     
+     class ReportGenerator:
+         def generate(self, scores: List[Score]) -> Report:
+             ...
+     
+     class BenchmarkRunner:
+         def __init__(self):
+             self.calculator = ScoreCalculator()
+             self.reporter = ReportGenerator()
+         
+         def run(self):
+             results = self._execute_tests()
+             scores = self.calculator.calculate(results)
+             return self.reporter.generate(scores)
+     ```
+
+### High Issues
+[...]
+
+### Medium Issues
+[...]
+
+### Summary
+- **Total issues:** 7
+- **Critical:** 2
+- **High:** 3
+- **Medium:** 2
+- **Recommendation:** Start with God Object refactoring first
+
+If no critical smells found: "✅ No critical code smells identified."
+
+**Code to analyze:**
+{{{ input }}}

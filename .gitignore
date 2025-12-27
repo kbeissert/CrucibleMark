@@ -1,0 +1,28 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+venv/
+env/
+
+# Outputs & Reports
+outputs/runs/*
+!outputs/runs/.gitkeep
+commercial_models_benchmark.csv
+local_models_benchmark.csv
+_backup_old/
+
+# Secrets
+.env
+config_local.yaml
+golden_standard_models.yaml  # Persönliche API-Provider Konfiguration
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db

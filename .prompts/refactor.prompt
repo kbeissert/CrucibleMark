@@ -1,0 +1,20 @@
+temperature: 0.4
+maxTokens: 3000
+---
+name: Refactor
+description: Suggest concrete refactorings
+---
+
+Suggest concrete refactorings for this code.
+
+**Focus on:**
+1. Extracting methods/classes
+2. Improving naming (clarity over brevity)
+3. Reducing complexity (cyclomatic, cognitive)
+4. Applying design patterns where appropriate
+5. Improving testability
+
+**Provide before/after code examples with explanations.**
+
+**Code to refactor:**
+{{{ input }}}

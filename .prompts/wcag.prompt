@@ -1,0 +1,64 @@
+temperature: 0.3
+maxTokens: 4000
+---
+name: WCAG Audit
+description: WCAG 2.2 accessibility audit
+---
+
+Analyze this code for WCAG 2.2 Level A/AA violations.
+
+**Check for:**
+
+### Perceivable
+- **1.1.1 (A)** Non-text Content: Missing alt text
+- **1.3.1 (A)** Info and Relationships: Missing semantic HTML
+- **1.4.3 (AA)** Contrast (Minimum): Color contrast
+- **1.4.11 (AA)** Non-text Contrast: UI components
+- **1.4.13 (AA)** Content on Hover/Focus: Focus indicators
+
+### Operable
+- **2.1.1 (A)** Keyboard: Keyboard accessibility
+- **2.4.7 (AA)** Focus Visible: Focus indicators
+- **2.5.5 (AAA)** Target Size: <44x44px
+- **2.5.8 (AA)** Target Size (Minimum): <24x24px (NEW in WCAG 2.2!)
+
+### Understandable
+- **3.1.1 (A)** Language: Missing lang attribute
+- **3.2.2 (A)** On Input: Unexpected changes
+
+### Robust
+- **4.1.2 (A)** Name, Role, Value: ARIA attributes
+
+**Output format:**
+
+### Critical Issues (WCAG Level A)
+1. **[Line 23] Missing alt text** (WCAG 1.1.1 Level A)
+   - **Current:** `<img src="product.jpg">`
+   - **Issue:** Screenreaders cannot describe image
+   - **Fix:**
+     ```
+     <img 
+       src="product.jpg" 
+       alt="Blue running shoe, Nike Air Max, size 42"
+     >
+     ```
+
+### High Issues (WCAG Level AA)
+2. **[Line 67] Insufficient color contrast** (WCAG 1.4.3 Level AA)
+   - **Current:** `color: #87CEEB` on white
+   - **Contrast ratio:** 2.1:1 (requires 4.5:1)
+   - **Fix:**
+     ```
+     .button {
+       color: #0056b3; /* 4.6:1 contrast ✓ */
+     }
+     ```
+
+### Summary
+- **Total issues:** X
+- **Critical (Level A):** X
+- **High (Level AA):** X
+- **Estimated fix time:** X hours
+
+**Code to analyze:**
+{{{ input }}}

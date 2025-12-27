@@ -1,0 +1,66 @@
+temperature: 0.3
+maxTokens: 8000
+---
+name: Codebase Smells
+description: Analyze entire codebase for code smells
+---
+
+Analyze the entire codebase for the TOP 10 most critical code smells.
+
+**Context:**
+{{{ codebase }}}
+
+**Analysis Requirements:**
+
+### 1. File-Level Issues
+For each file, check:
+- Long Method (>50 lines)
+- God Object (class >200 lines, >5 responsibilities)
+- Magic Numbers (hardcoded values)
+- Dead Code (commented code, unreachable branches)
+
+### 2. Cross-File Issues
+Across files, identify:
+- **Duplicated Code** (same logic in multiple files)
+- **Inconsistent Naming** (camelCase vs snake_case)
+- **Architectural Smells** (circular dependencies, tight coupling)
+- **Missing Abstractions** (repeated patterns not extracted)
+
+**Output Format:**
+
+### Critical Issues (Priority: High)
+1. **[File: benchmark_runner.py, Line 45-120]**
+   - **Smell:** God Object
+   - **Explanation:** BenchmarkRunner has 8 responsibilities
+   - **Impact:** Hard to test, maintain, extend
+   - **Refactoring:**
+     ```
+     # Extract responsibilities:
+     class ScoreCalculator:
+         def calculate(self, results): ...
+     
+     class ReportGenerator:
+         def generate(self, scores): ...
+     ```
+
+### Cross-File Issues
+- **Duplicated Validation Logic** (3 files)
+  - **Files:** `asset_loader.py:45`, `benchmark_runner.py:88`, `scoring.py:120`
+  - **Solution:** Extract to `validators.py`
+
+### Summary Statistics
+- **Total files analyzed:** 12
+- **Total code smells:** 15
+- **Critical issues:** 3
+- **High issues:** 5
+- **Medium issues:** 7
+
+### Recommendation
+**Priority 1:** Refactor `BenchmarkRunner` God Object
+**Priority 2:** Extract duplicated validation logic
+**Priority 3:** Address Magic Numbers
+
+**Estimated Effort:**
+- Priority 1: 4-6 hours
+- Priority 2: 1-2 hours
+- Priority 3: 30 minutes
