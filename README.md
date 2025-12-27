@@ -69,15 +69,25 @@ Dieses Modul prüft die Fähigkeit eines LLMs, Code-Reviews durchzuführen. Es n
 | Asset | Fokus | Schwierigkeit |
 | :--- | :--- | :--- |
 | **001 WCAG Audit** | Barrierefreiheit (HTML/CSS) | Tiered (1-3) |
-| **002 Security Audit** | OWASP Top 10 (PHP) | Tiered (1-3) |
+| **002 Security Audit** | OWASP Top 10 (PHP) | Tiered (1-4) |
 | **003 Performance** | Core Web Vitals (JS/HTML) | Tiered (1-3) |
-| **004 API Design** | REST Principles | Tiered (1-3) |
+| **004 API Design** | REST Principles | Tiered (1-4) |
 | **005 Code Smells** | Refactoring Patterns | Tiered (1-3) |
 
 **Schwierigkeits-Level:**
 1.  **Labeled (Easy)**: Fehler sind durch TODOs/Kommentare markiert.
 2.  **Standard (Medium)**: Offensichtliche Fehler (z.B. SQL Injection, Blocking CSS).
 3.  **Advanced (Hard)**: Subtile Logikfehler, Architektur-Probleme oder Edge Cases.
+4.  **Expert (Very Hard)**: Komplexe Business-Logik-Fehler (IDOR, Race Conditions) für Top-Tier Modelle.
+
+## 📊 Bewertungsskala (v3.0)
+
+Aufgrund der gehärteten Assets (Level 4) gelten neue Maßstäbe für die Alltagstauglichkeit:
+
+*   **🏆 > 85% (Weltklasse / Expert)**: Für Modelle wie Gemini 3, Claude 3.5 Opus. Versteht komplexe Zusammenhänge.
+*   **⭐ > 70% (Production Ready)**: Der "Sweet Spot" für starke lokale Modelle (z.B. Mistral Large). Alltagsfähig und verlässlich.
+*   **✓ > 55% (Competent)**: Brauchbar für Standard-Aufgaben und als Assistenz.
+*   **⚠️ < 55% (Limited)**: Nicht für kritische Audits empfohlen.
 
 ## 🏆 Golden Standards
 
