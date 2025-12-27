@@ -82,17 +82,23 @@ prompt: |
       return { status: "created" };
     }
     
-    // Data Clumps (always passing same 3 args)
     async validateUser(username, email, age) { /*...*/ }
     async sendNotification(username, email, age) { /*...*/ }
     
-    // Switch Statement (should be Polymorphism)
     getPermissions(role) {
       switch(role) {
         case 'admin': return ['all'];
         case 'editor': return ['write'];
         case 'viewer': return ['read'];
       }
+    }
+
+    calculateUserScore(user) {
+        let score = 0;
+        if (user.posts.length > 10) score += 5;
+        if (user.comments.length > 50) score += 10;
+        if (user.accountAge > 365) score += 20;
+        return score;
     }
   }
   ```
@@ -141,12 +147,17 @@ test_data:
     - issue: "Data Clumps"
       severity: "medium"
       type: "advanced"
-      explanation: "Gleiche Parameter-Gruppe (username, email, age) in mehreren Methoden."
+      explanation: "Gleiche Parameter-Gruppe (username, email, age) in mehreren Methoden (ohne Kommentar)."
 
     - issue: "Switch Statements (Polymorphism)"
       severity: "medium"
       type: "advanced"
-      explanation: "Switch über Role sollte durch Klassen-Hierarchie ersetzt werden."
+      explanation: "Switch über Role sollte durch Klassen-Hierarchie ersetzt werden (ohne Kommentar)."
+
+    - issue: "Feature Envy"
+      severity: "high"
+      type: "advanced"
+      explanation: "calculateUserScore nutzt nur Daten von 'user', nicht von 'this'. Sollte in User-Klasse."
 
     - issue: "Dead Code"
       severity: "low"
