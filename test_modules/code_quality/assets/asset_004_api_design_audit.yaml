@@ -82,6 +82,12 @@ prompt: |
   ### 7. User Posts
   GET /users/123/posts
   Response: 200 OK
+  
+  ### 8. Batch Update (Experimental)
+  # Note: Updates multiple posts at once
+  POST /posts/batchUpdate
+  Body: [ { "id": 1, "title": "New Title" }, ... ]
+  Response: 200 OK
   ```
 
   ### Anforderungen an die Antwort:
@@ -140,6 +146,17 @@ test_data:
       type: "advanced"
       explanation: "Kein /v1/ Prefix oder Header-Versionierung."
 
+    # --- LEVEL 4: Expert (Very Hard) ---
+    - issue: "Idempotency Violation (Batch)"
+      severity: "high"
+      type: "expert"
+      explanation: "Batch Update via POST ist nicht idempotent. Sollte PUT/PATCH sein oder Idempotency-Key nutzen."
+
+    - issue: "Missing Security Headers"
+      severity: "high"
+      type: "expert"
+      explanation: "Keine Rate-Limiting (429) oder Auth-Header spezifiziert."
+
 # ============================================================
 # Scoring-Konfiguration
 # ============================================================
@@ -151,28 +168,28 @@ scoring:
     weight: 60
     description: "Erkennung der API-Design-Issues (Gestaffelt)"
     
-    # 1. Labeled Issues (15 Punkte)
+    # 1. Labeled Issues (10 Punkte)
     labeled_issues:
       - issue: "Fehlende Pagination"
-        points: 8
+        points: 5
         keywords: ["pagination", "limit", "offset", "cursor", "page", "50000"]
       
       - issue: "GET für Create"
-        points: 7
+        points: 5
         keywords: ["get", "post", "method", "state change", "idempotent"]
 
-    # 2. Standard Issues (25 Punkte)
+    # 2. Standard Issues (15 Punkte)
     standard_issues:
       - issue: "Verben in URLs (RPC-Style)"
-        points: 9
+        points: 5
         keywords: ["verb", "nomen", "resource", "noun", "rpc", "/posts"]
         
       - issue: "Status 200 bei Fehler"
-        points: 8
+        points: 5
         keywords: ["status code", "404", "400", "500", "http status", "200 ok"]
         
       - issue: "Inkonsistentes Naming"
-        points: 8
+        points: 5
         keywords: ["camelcase", "snake_case", "pascalcase", "naming convention", "konsistent"]
 
     # 3. Advanced Issues (20 Punkte)
@@ -188,6 +205,16 @@ scoring:
       - issue: "Versionierung"
         points: 7
         keywords: ["versioning", "v1", "api version", "breaking change"]
+
+    # 4. Expert Issues (15 Punkte)
+    expert_issues:
+      - issue: "Idempotency / Batch"
+        points: 8
+        keywords: ["idempotency", "idempotent", "batch", "atomic", "partial failure", "put", "patch"]
+        
+      - issue: "Security Headers"
+        points: 7
+        keywords: ["rate limit", "authentication", "authorization", "header", "security", "429"]
 
   solution_quality:
     weight: 30
