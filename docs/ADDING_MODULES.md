@@ -36,15 +36,15 @@ touch README.md
 
 ### 2. Test-Klasse implementieren (`test.py`)
 
-Deine Test-Klasse muss von `BaseTest` erben und die `run`-Methode implementieren.
+Deine Test-Klasse muss von `BaseTest` erben und die `execute`-Methode implementieren. Zusätzlich solltest du eine `score_response`-Methode für die Bewertung hinzufügen.
 
 ```python
 """Your Module Test Implementation."""
 
 import sys
+import time
 from pathlib import Path
 from typing import Dict, Any
-import yaml
 
 # Import BaseTest
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
@@ -53,45 +53,81 @@ from test_modules.base_test import BaseTest
 class YourModuleTest(BaseTest):
     """Test-Klasse für dein Modul."""
     
-    def __init__(self, asset_path: str):
+    def execute(self, model: str, llm_client, provider: str = 'ollama') -> Dict:
         """
-        Initialisiert Test mit Asset-Pfad.
+        Führt den Test aus (LLM Query).
         
         Args:
-            asset_path: Pfad zum Test-Asset (YAML-Datei)
+            model: Modell-Name
+            llm_client: Client Wrapper
+            provider: 'ollama' oder 'mistral'/'anthropic'
+            
+        Returns:
+            Dict mit raw_response und Metadaten
         """
-        super().__init__(asset_path)
-        # Asset wird automatisch in self.asset geladen
+        prompt = self.asset['prompt']
+        
+        # Optional: Context hinzufügen
+        if 'context' in self.asset:
+            full_prompt = f"{self.asset['context']}\n\n{prompt}"
+        else:
+            full_prompt = prompt
+            
+        start = time.time()
+        try:
+            # LLM Aufruf
+            response = llm_client.query(model, full_prompt, provider=provider)
+            elapsed = time.time() - start
+            
+            return {
+                'raw_response': response,
+                'execution_time': elapsed,
+                'metadata': {
+                    'model': model,
+                    'asset_id': self.asset['metadata']['id']
+                }
+            }
+        except Exception as e:
+            return {
+                'raw_response': f"ERROR: {str(e)}",
+                'execution_time': 0.0,
+                'metadata': {'error': str(e)}
+            }
     
-    def run(self, llm_response: str) -> Dict[str, Any]:
+    def score_response(self, response: str) -> Dict[str, Any]:
         """
-        Führt die Bewertung der LLM-Antwort durch.
+        Bewertet die LLM-Antwort.
         
         Args:
-            llm_response: Die Antwort des LLMs
+            response: Die Antwort des LLMs
         
         Returns:
-            Dict mit Scores und Details
+            Dict mit Scores, Details und Status
         """
+        if not response or response.startswith("ERROR:"):
+            return {'status': 'error', 'total_score': 0}
+
         # 1. Scoring Logik implementieren
-        # Tipp: Nutze self.asset['test_data'] für Expected Findings
+        # Tipp: Nutze self.asset['scoring'] für Konfiguration
         
-        error_score = self._score_error_detection(llm_response)
-        solution_score = self._score_solution_quality(llm_response)
+        error_score = self._score_error_detection(response)
+        solution_score = self._score_solution_quality(response)
         
         total_score = error_score + solution_score
         
         return {
+            'status': 'success',
             'total_score': total_score,
             'max_score': 100,
             'category_scores': {
-                'error_detection': {'achieved': error_score, 'max': 50},
-                'solution_quality': {'achieved': solution_score, 'max': 50}
-            }
+                'error_detection': {'achieved': error_score, 'max': 60},
+                'solution_quality': {'achieved': solution_score, 'max': 40}
+            },
+            'details': ["Detail 1", "Detail 2"]
         }
 
     def _score_error_detection(self, response: str) -> int:
-        # Implementiere deine Logik hier
+        # Implementiere deine Logik hier (z.B. Keyword Matching)
         return 0
         
     def _score_solution_quality(self, response: str) -> int:
