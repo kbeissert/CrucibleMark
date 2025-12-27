@@ -350,10 +350,15 @@ class LocalBenchmarkRunner:
         
         return results
     
-    # Quality thresholds
-    QUALITY_EXCELLENT = 90  # Trophy badge
-    QUALITY_GOOD = 80      # Star badge
-    QUALITY_OK = 70        # Checkmark badge
+    # Quality thresholds (Adjusted for Hardened Assets v3.0)
+    # > 90%: Expert Level (Gemini 3, Opus 4.5)
+    # > 75%: Production Ready (GPT-4o, Claude 3.5)
+    # > 60%: Usable / Competent (Strong Local Models)
+    # < 60%: Weak / Limited
+    
+    QUALITY_EXCELLENT = 85  # Trophy badge (Weltklasse)
+    QUALITY_GOOD = 70       # Star badge (Sehr gut / Brauchbar)
+    QUALITY_OK = 55         # Checkmark badge (OK für einfache Tasks)
     
     @staticmethod
     def _get_quality_badge(percentage: float) -> str:
