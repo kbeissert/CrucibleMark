@@ -7,7 +7,7 @@ Verwendet deterministische Settings für reproduzierbare Ergebnisse.
 # Benchmark-Options für stabiles Scoring (temperature=0.1)
 BENCHMARK_OPTIONS = {
     'temperature': 0.1,      # Deterministisch für Benchmarks (default: 0.8)
-    'num_predict': 2000,     # Fixierte Max-Tokens für Konsistenz
+    'num_predict': 4000,     # Fixierte Max-Tokens für Konsistenz (erhöht für Qwen3)
     'top_k': 10,             # Reduzierte Sampling-Varianz (default: 40)
     'repeat_penalty': 1.0,   # Keine Wiederholungs-Penalty (default: 1.1)
     'seed': 42               # Reproduzierbarer Seed (optional)
