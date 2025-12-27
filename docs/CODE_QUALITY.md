@@ -31,14 +31,14 @@ notes:              # Hinweise und Besonderheiten
 
 ### Verfügbare Assets
 
-Alle Assets nutzen nun das **Tiered Difficulty System** (Level 1-3).
+Alle Assets nutzen nun das **Tiered Difficulty System** (Level 1-4).
 
 | Asset | Issues | Schwierigkeit | Golden Standard |
 |-------|--------|---------------|-----------------|
 | **001 - WCAG Accessibility** | 11 | Tiered (1-3) | ✅ Mistral Large |
-| **002 - Security (OWASP)** | 9 | Tiered (1-3) | ✅ Mistral Large |
+| **002 - Security (OWASP)** | 11 | Tiered (1-4) | ✅ Mistral Large |
 | **003 - Performance** | 11 | Tiered (1-3) | ✅ Mistral Large |
-| **004 - API Design** | 10 | Tiered (1-3) | ✅ Mistral Large |
+| **004 - API Design** | 12 | Tiered (1-4) | ✅ Mistral Large |
 | **005 - Code Smells** | 11 | Tiered (1-3) | ✅ Mistral Large |
 
 ---
@@ -47,12 +47,13 @@ Alle Assets nutzen nun das **Tiered Difficulty System** (Level 1-3).
 
 Das Scoring basiert auf einem **hybriden Ansatz** (Keyword/Regex + Semantic Similarity) in 4 Kategorien:
 
-### 1. Error Detection (45 Punkte)
+### 1. Error Detection (60 Punkte)
 - **Methode**: Keyword & Regex Matching
 - **Tiered Scoring**:
     - **Labeled (Easy)**: Geringe Punktzahl
     - **Standard (Medium)**: Mittlere Punktzahl
     - **Advanced (Hard)**: Hohe Punktzahl
+    - **Expert (Very Hard)**: Sehr hohe Punktzahl (nur für Top-Modelle)
 
 ### 2. Solution Quality (30 Punkte)
 - **Methode**: Semantic Similarity (Vergleich mit Golden Standard)
