@@ -6,7 +6,7 @@ Unified Interface für Ollama und Anthropic Claude API
 import logging
 import yaml
 from pathlib import Path
-from typing import Optional, List, Dict, Any, Union
+from typing import Optional, List, Dict, Any
 
 from utils.provider_clients import OllamaClient, AnthropicClient, MistralClient
 from utils.retry_handler import RetryHandler

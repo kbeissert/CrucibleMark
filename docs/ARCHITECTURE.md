@@ -43,7 +43,9 @@ Bewertet die Antworten der Modelle.
 5.  **Scoring**:
     *   Die Antwort wird gegen definierte Kriterien (Keywords) geprüft.
     *   Falls vorhanden, wird sie mit dem Golden Standard verglichen.
-6.  **Reporting**: Ergebnisse werden als CSV in `benchmark_results/` gespeichert.
+6.  **Reporting**:
+    *   Ergebnisse werden als CSV (`*_models_benchmark.csv`) im Ordner `benchmark_scores/` gespeichert.
+    *   Das **Leaderboard** (`benchmark_leaderboard.csv`) wird automatisch aktualisiert und liegt ebenfalls dort.
 
 ---
 
@@ -64,9 +66,13 @@ crucible-mark/
 │   ├── code_quality/       # Modul 1
 │   └── ux_writing/         # Modul 2
 │
+├── benchmark_scores/       # Output: CSV Ergebnisse & Leaderboard
+│
+├── scoring/                # Scoring Logic
+│
 ├── utils/                  # Hilfsfunktionen
-│   ├── llm_client.py       # Veraltet (Refactored)
-│   ├── provider_clients.py # Neue Client-Struktur
+│   ├── llm_client.py       # Unified LLM Client
+│   ├── provider_clients.py # Provider Implementierungen
 │   └── model_utils.py      # Filter-Logik
 │
 └── scripts/                # Helper Scripts

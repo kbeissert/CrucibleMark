@@ -1,0 +1,12 @@
+asset_id,asset_name,error_detection,execution_time,expertise,formatting,max_score,model,percentage,provider,response_length,solution_quality,status,timestamp,total_score
+code_quality_001,WCAG 2.2 Audit (Tiered Difficulty),60/60,52.8,0/0,10/10,100,mistral-large-latest,100.0,mistral,8702,30/30,success,2025-12-28 15:51:27,100
+code_quality_001,WCAG 2.2 Audit (Tiered Difficulty),56/60,63.2,0/0,10/10,100,mistral-large-latest,96.0,mistral,11515,30/30,success,2025-12-28 16:00:40,96
+code_quality_002,Security Audit (Tiered Difficulty),56/60,53.1,0/0,10/10,100,mistral-large-latest,96.0,mistral,9913,30/30,success,2025-12-28 16:01:34,96
+code_quality_003,Web Performance Audit (Tiered Difficulty),45/60,47.4,0/0,10/10,100,mistral-large-latest,85.0,mistral,8852,30/30,success,2025-12-28 16:02:21,85
+code_quality_004,REST API Design Audit (Tiered Difficulty),50/60,70.5,0/0,10/10,100,mistral-large-latest,80.0,mistral,14341,20/30,success,2025-12-28 16:03:32,80
+code_quality_005,Code Smells Audit (Tiered Difficulty),46/60,31.8,0/0,10/10,100,mistral-large-latest,76.0,mistral,6541,20/30,success,2025-12-28 16:04:04,76
+ux_writing_001,Error Messages - User-Friendly Rewriting,53/60,20.4,0/0,10/10,100,mistral-large-latest,83.0,mistral,4216,20/30,success,2025-12-28 16:04:25,83
+ux_writing_002,Button Labels - Context-Aware CTAs,53/60,21.9,0/0,10/10,100,mistral-large-latest,83.0,mistral,4513,20/30,success,2025-12-28 16:04:47,83
+ux_writing_003,Onboarding Flow - 3-Step Tutorial,60/60,29.6,0/0,10/10,100,mistral-large-latest,90.0,mistral,5309,20/30,success,2025-12-28 16:05:17,90
+ux_writing_004,Accessibility Labels - ARIA for Screen Readers,60/60,21.4,0/0,10/10,100,mistral-large-latest,90.0,mistral,4708,20/30,success,2025-12-28 16:05:38,90
+ux_writing_005,Microcopy Audit - Health App Context,50/60,26.0,0/0,10/10,100,mistral-large-latest,80.0,mistral,5365,20/30,success,2025-12-28 16:06:04,80

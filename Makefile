@@ -13,6 +13,7 @@ help:
 	@echo "=== Benchmarking (Neue modulare Struktur) ==="
 	@echo "  make benchmark            Interaktiver Benchmark (Wizard)"
 	@echo "  make benchmark-auto       Automatisierter Run (MODEL=name [MODULE=name])"
+	@echo "  make leaderboard          Generiere Leaderboard-CSV aus Ergebnissen"
 	@echo ""
 	@echo "=== Golden Standards ==="
 	@echo "  make generate-golden      Generate golden standard (ASSET=path)"
@@ -23,7 +24,9 @@ help:
 	@echo "  make test                 Run validation & unit tests"
 	@echo ""
 	@echo "=== Utilities ==="
-	@echo "  make clean                Clean output directories"
+	@echo "  make clean                Clean caches and temporary outputs"
+	@echo "  make clean-csv            Delete all benchmark CSV files"
+	@echo "  make clean-all            Delete EVERYTHING (caches + CSVs)"
 	@echo "  make list-models          List models (Local & Commercial Status)"
 	@echo ""
 
@@ -48,7 +51,11 @@ benchmark-auto:
 		exit 1; \
 	fi
 	@echo "🤖 Starte automatisierten Benchmark mit Modell: $(MODEL)..."
-	$(PYTHON) run_benchmark.py --model $(MODEL) $(if $(MODULE),--module $(MODULE),--all)
+	$(PYTHON) run_benchmark.py --model $(MODEL) $(if $(MODULE),--module $(MODULE))
+
+leaderboard:
+	@echo "📊 Generiere Leaderboard..."
+	$(PYTHON) scripts/generate_leaderboard.py
 
 test-stability:
 	@if [ -z "$(MODELS)" ] || [ -z "$(CATEGORY)" ]; then \
@@ -83,7 +90,7 @@ generate-golden-new:
 	$(PYTHON) scripts/run_commercial_benchmark.py --mode golden_standard --auto --force
 
 run-benchmark:
-	$(PYTHON) scripts/interactive_benchmark.py
+	$(PYTHON) run_benchmark.py
 
 quick-test:
 	$(PYTHON) run_benchmark.py \
@@ -103,11 +110,21 @@ test-stability:
 # === UTILITIES ===
 
 clean:
-	rm -rf benchmark_results/*
+	@echo "🧹 Cleaning caches and temporary files..."
 	rm -rf outputs/runs/*
 	rm -rf outputs/comparisons/*
 	find . -type d -name __pycache__ -exec rm -rf {} +
 	find . -type f -name "*.pyc" -delete
+
+clean-csv:
+	@echo "🗑️  Deleting benchmark CSV files..."
+	rm -f benchmark_scores/commercial_models_benchmark.csv
+	rm -f benchmark_scores/local_models_benchmark.csv
+	rm -f benchmark_scores/golden_standard_benchmark.csv
+	rm -f benchmark_scores/benchmark_leaderboard.csv
+
+clean-all: clean clean-csv
+	@echo "✨ All clean! (Caches and CSVs deleted)"
 
 clean-runs:
 	@if [ -f "scripts/cleanup_runs.py" ]; then \

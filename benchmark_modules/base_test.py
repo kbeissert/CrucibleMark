@@ -5,7 +5,7 @@ Abstract Base Class für alle Test-Module
 
 from abc import ABC, abstractmethod
 from pathlib import Path
-from typing import Dict, List, Any, Optional, NamedTuple
+from typing import Dict, Any, Optional, NamedTuple
 import yaml
 import json
 from datetime import datetime

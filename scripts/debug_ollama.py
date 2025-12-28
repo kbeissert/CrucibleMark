@@ -7,7 +7,7 @@ import time
 root_dir = Path(__file__).parent.parent
 sys.path.insert(0, str(root_dir))
 
-from utils.llm_client import LLMClient
+from utils.llm_client import LLMClient  # noqa: E402
 
 def test_ollama_query():
     client = LLMClient()

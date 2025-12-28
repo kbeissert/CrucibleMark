@@ -52,20 +52,22 @@ crucible-mark/
 │           ├── 004_api_design_audit.yaml
 │           └── 005_code_smells_audit.yaml
 │
+├── scoring/                       # ⭐ SCORING ENGINE
+│   └── __init__.py                # Scoring Logic
+│
 ├── utils/
 │   ├── llm_client.py              # Unified LLM Provider Wrapper
 │   ├── config_validator.py        # Golden Standard Validierung
 │   ├── module_loader.py           # Dynamic Module Loading
-│   └── scoring/                   # Scoring Logic (Hybrid)
+│   └── provider_clients.py        # Provider Implementations
 │
 ├── docs/
 │   ├── ADDING_MODULES.md          # Anleitung: Neue Module erstellen
 │   └── GOLDEN_STANDARDS.md        # Golden Standard Konzept
 │
 ├── golden_standards/              # Referenz-Antworten (JSON)
-├── outputs/                       # Ergebnisse (CSV, Logs)
-│
-└── outputs/                       # Ergebnisse (CSV, Logs)
+├── benchmark_scores/              # Ergebnisse (CSV, Leaderboard)
+└── outputs/                       # Logs & Details
 ```
 
 ---

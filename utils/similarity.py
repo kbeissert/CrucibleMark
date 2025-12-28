@@ -5,8 +5,7 @@ Provides functions to calculate semantic similarity between texts using embeddin
 
 import logging
 import os
-import sys
-from typing import List, Union
+from typing import List
 import numpy as np
 
 try:

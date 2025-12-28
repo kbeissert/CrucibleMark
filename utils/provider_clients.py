@@ -5,9 +5,9 @@ Getrennte Implementierungen für Ollama, Anthropic, Mistral
 
 import os
 import logging
-from typing import Dict, Any, List, Optional
+from typing import Dict, Any, List
 
-from utils.ollama_config import BENCHMARK_OPTIONS
+from utils.ollama_config import CODING_BENCHMARK_OPTIONS, CREATIVE_BENCHMARK_OPTIONS
 
 # Configure logging
 logger = logging.getLogger(__name__)
@@ -59,12 +59,28 @@ class OllamaClient(BaseProviderClient):
     def query(self, model: str, prompt: str, temperature: float) -> str:
         """Query Ollama API"""
         try:
+            # Select options based on temperature
+            # If temp >= 0.3, use creative options (better for UX/Writing)
+            # If temp < 0.3, use coding options (better for Logic/Code)
+            if temperature >= 0.3:
+                options = CREATIVE_BENCHMARK_OPTIONS.copy()
+            else:
+                options = CODING_BENCHMARK_OPTIONS.copy()
+            
+            # Ensure the requested temperature is actually used
+            options['temperature'] = temperature
+
             response = self.client.chat(
                 model=model,
                 messages=[{'role': 'user', 'content': prompt}],
-                options=BENCHMARK_OPTIONS  # Zentrale Config mit temperature=0.1
+                options=options
             )
-            return response['message']['content']
+            
+            content = response['message']['content']
+            if not content:
+                raise ValueError("Received empty response from Ollama")
+                
+            return content
         except Exception as e:
             logger.error(f"Ollama query failed: {e}")
             raise

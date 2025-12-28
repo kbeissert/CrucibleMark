@@ -6,7 +6,7 @@ Erweiterte Version mit vollständigem Scoring für 11 Issues
 
 import sys
 from pathlib import Path
-from typing import Dict, Any, List, Tuple, Optional
+from typing import Dict, List, Tuple, Optional
 import re
 import time
 
@@ -15,8 +15,8 @@ root_dir = Path(__file__).parent.parent.parent
 if str(root_dir) not in sys.path:
     sys.path.insert(0, str(root_dir))
 
-from benchmark_modules.base_test import BaseTest
-from utils.similarity import SemanticSimilarity
+from benchmark_modules.base_test import BaseTest  # noqa: E402
+from utils.similarity import SemanticSimilarity  # noqa: E402
 
 # Constants for scoring thresholds
 MIN_TABLE_COLUMNS = 2  # Minimum pipes for table detection
@@ -60,7 +60,8 @@ class CodeQualityTest(BaseTest):
         start = time.time()
 
         try:
-            response = llm_client.query(model, full_prompt, provider=provider)
+            # Use low temperature (0.1) for Code Quality to ensure deterministic and precise results
+            response = llm_client.query(model, full_prompt, provider=provider, temperature=0.1)
             elapsed = time.time() - start
 
             # Token-Approximation (Wörter * 1.3)

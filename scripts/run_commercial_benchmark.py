@@ -8,20 +8,19 @@ Zwei Modi:
 
 import json
 import sys
-import csv
 import argparse
 from pathlib import Path
 from datetime import datetime
 from typing import List, Dict, Any, Optional, Tuple
 
 import yaml
-from tqdm import tqdm
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from utils.llm_client import LLMClient
 from utils.config_validator import ConfigValidator
 from utils.module_loader import load_test_class
+from utils.result_manager import ResultManager
 
 
 class CommercialBenchmarkRunner:
@@ -38,6 +37,7 @@ class CommercialBenchmarkRunner:
         """
         self.client = LLMClient()
         self.validator = ConfigValidator()
+        self.result_manager = ResultManager(self.validator)
         self.mode = mode
         self.force = force
         
@@ -52,15 +52,6 @@ class CommercialBenchmarkRunner:
                         'path': f"{mod['path']}/assets",
                         'test_class': mod.get('test_class', 'CodeQualityTest')
                     }
-        
-        # CSV-Datei je nach Modus
-        if mode == 'golden_standard':
-            self.results_csv = self.validator.get_golden_standard_csv()
-        else:
-            # Aus Config laden
-            config = self.validator.config
-            csv_file = config.get('output', {}).get('commercial_csv', 'commercial_models_benchmark.csv')
-            self.results_csv = Path(csv_file)
     
     def get_available_providers(self) -> Dict[str, Dict]:
         """Holt aktivierte kommerzielle Provider aus Config.
@@ -81,7 +72,7 @@ class CommercialBenchmarkRunner:
         print()
         print("  2. Kommerzielle Modelle testen")
         print("     → Testet beliebige kommerzielle LLMs")
-        print(f"     → Speichert in: commercial_models_benchmark.csv")
+        print("     → Speichert in: commercial_models_benchmark.csv")
         print(f"{'='*60}")
         
         while True:
@@ -233,10 +224,14 @@ class CommercialBenchmarkRunner:
 
     def _get_quality_badge(self, percentage: float) -> str:
         """Gibt Qualitäts-Badge zurück."""
-        if percentage >= 90: return "🌟 EXCELLENT"
-        if percentage >= 80: return "✅ GOOD"
-        if percentage >= 70: return "⚠️  OK"
-        if percentage >= 50: return "📉 WEAK"
+        if percentage >= 90:
+            return "🌟 EXCELLENT"
+        if percentage >= 80:
+            return "✅ GOOD"
+        if percentage >= 70:
+            return "⚠️  OK"
+        if percentage >= 50:
+            return "📉 WEAK"
         return "❌ FAIL"
 
     def run_benchmark(
@@ -271,7 +266,7 @@ class CommercialBenchmarkRunner:
         print(f"Modell: {model}")
         print(f"Modus: {self.mode}")
         if is_golden_model:
-            print(f"ℹ️  Dies ist das Golden Standard Modell. Ergebnisse werden synchronisiert.")
+            print("ℹ️  Dies ist das Golden Standard Modell. Ergebnisse werden synchronisiert.")
         print(f"{'='*60}\n")
         
         # Discover assets
@@ -294,11 +289,9 @@ class CommercialBenchmarkRunner:
                 # In test mode, we might want to re-run to verify consistency, but user asked to reuse.
                 # Let's reuse if JSON exists AND we are the golden model.
                 
-                json_exists = False
                 if is_golden_model:
                     json_path = Path(f"golden_standards/{provider}/{asset_id}.json")
                     if json_path.exists():
-                        json_exists = True
                         # Skip ONLY if we are in golden_standard mode AND force is False
                         if self.mode == 'golden_standard' and not self.force:
                             print(f"⏭️  Überspringe {asset_name} (Golden Standard existiert bereits)")
@@ -371,19 +364,8 @@ class CommercialBenchmarkRunner:
 
     def _append_to_golden_csv(self, result: Dict[str, Any]) -> None:
         """Fügt ein Ergebnis zur Golden Standard CSV hinzu."""
-        golden_csv = self.validator.get_golden_standard_csv()
-        file_exists = golden_csv.exists()
-        fieldnames = list(result.keys())
-        
-        try:
-            with open(golden_csv, 'a', newline='', encoding='utf-8') as f:
-                writer = csv.DictWriter(f, fieldnames=fieldnames)
-                if not file_exists:
-                    writer.writeheader()
-                writer.writerow(result)
-            print(f"   💾 Auch in Golden Standard CSV gespeichert.")
-        except Exception as e:
-            print(f"   ⚠️  Fehler beim Speichern in Golden Standard CSV: {e}")
+        self.result_manager.save_results([result], result_type='golden')
+        print("   💾 Auch in Golden Standard CSV gespeichert.")
 
     def _save_golden_json(self, provider: str, asset_id: str, response: str) -> None:
         """Speichert die volle Antwort als JSON für Similarity-Checks."""
@@ -411,18 +393,11 @@ class CommercialBenchmarkRunner:
         if not results:
             return
             
-        file_exists = self.results_csv.exists()
-        fieldnames = list(results[0].keys())
-        
-        try:
-            with open(self.results_csv, 'a', newline='', encoding='utf-8') as f:
-                writer = csv.DictWriter(f, fieldnames=fieldnames)
-                if not file_exists:
-                    writer.writeheader()
-                writer.writerows(results)
-            print(f"\n💾 Ergebnisse gespeichert in: {self.results_csv}")
-        except Exception as e:
-            print(f"❌ Fehler beim Speichern: {e}")
+        # Determine result type based on mode
+        if self.mode == 'golden_standard':
+            self.result_manager.save_results(results, result_type='golden')
+        else:
+            self.result_manager.save_results(results, result_type='commercial')
 
     def print_summary(self, results: List[Dict[str, Any]]) -> None:
         """Druckt Zusammenfassung."""
@@ -490,7 +465,7 @@ def main():
     
     # 3. Benchmark wählen
     if args.auto and mode == 'golden_standard':
-        print(f"\n🚀 Starte automatischen Golden Standard Run für alle Module...")
+        print("\n🚀 Starte automatischen Golden Standard Run für alle Module...")
         for cat_id, cat_info in runner.BENCHMARK_CATEGORIES.items():
             print(f"\n📦 Modul: {cat_info['name']}")
             results = runner.run_benchmark(provider, model_id, cat_info)
@@ -503,13 +478,12 @@ def main():
         return
     
     print(f"\n{'='*60}")
-    print(f"📊 STARTE BENCHMARK")
+    print("📊 STARTE BENCHMARK")
     print(f"{'='*60}")
     print(f"Modus: {'🏆 Golden Standard' if mode == 'golden_standard' else '🧪 Test'}")
     print(f"Provider: {provider}")
     print(f"Modell: {model_id}")
     print(f"Benchmark: {benchmark_info['name']}")
-    print(f"Ergebnis: {runner.results_csv}")
     print(f"{'='*60}\n")
     
     results = runner.run_benchmark(provider, model_id, benchmark_info)

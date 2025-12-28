@@ -78,7 +78,9 @@ class UXWritingTest(BaseTest):
         # LLM Query
         start = time.time()
         try:
-            response = llm_client.query(model, full_prompt, provider=provider)
+            # Use higher temperature (0.3) for UX Writing to allow for more natural language
+            # and prevent repetition loops in larger models
+            response = llm_client.query(model, full_prompt, provider=provider, temperature=0.3)
             elapsed = time.time() - start
 
             # Token-Approximation (Wörter * 1.3)
