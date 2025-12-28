@@ -1,8 +1,8 @@
 # ============================================================
 # Test Asset: Code Smells & Refactoring Opportunities
 # Domain: Code Quality & Maintainability
-# Difficulty: Tiered (1-3)
-# Version: 2.0.0
+# Difficulty: Tiered (1-4)
+# Version: 2.1.1
 # ============================================================
 
 metadata:
@@ -15,9 +15,9 @@ metadata:
   tags: [code-smells, refactoring, clean-code, maintainability, complexity]
   author: "LLM Benchmark Suite"
   created: "2025-12-27"
-  updated: "2025-12-27"
+  updated: "2025-12-28"
   language: de
-  version: "2.0.0"
+  version: "2.1.1"
 
 context: |
   Du bist ein Senior Developer und führst ein Code-Review für eine Legacy-Komponente durch.
@@ -27,10 +27,11 @@ context: |
 prompt: |
   Analysiere den folgenden JavaScript-Code auf **Code Smells** und schlage **Refactoring-Maßnahmen** vor.
 
-  Der Code enthält drei Kategorien von Problemen:
+  Der Code enthält vier Kategorien von Problemen:
   1. **Markierte Issues**: TODOs oder Kommentare (bestätige diese).
   2. **Offensichtliche Issues**: Klassische Smells (Long Method, Magic Numbers).
   3. **Subtile Issues**: Design-Probleme (Coupling, Cohesion).
+  4. **Experten Issues**: Architektonische Schwächen (Feature Envy, Primitive Obsession).
 
   ## Deine Aufgabe
   Identifiziere **ALLE** Code Smells. Priorisiere sie nach Schweregrad.
@@ -111,60 +112,6 @@ prompt: |
      - **Refactoring** (z.B. Extract Class)
 
 # ============================================================
-# Test-Daten (Issues zum Erkennen)
-# ============================================================
-
-test_data:
-  issues:
-    # --- LEVEL 1: Labeled (Easy) ---
-    - issue: "God Object / Large Class"
-      severity: "critical"
-      type: "labeled"
-      explanation: "Durch TODO markiert (Too many responsibilities)."
-    
-    - issue: "Magic Numbers"
-      severity: "medium"
-      type: "labeled"
-      explanation: "Durch Kommentar markiert (18, 3)."
-
-    # --- LEVEL 2: Standard (Medium) ---
-    - issue: "Nested Conditionals (Arrow Code)"
-      severity: "high"
-      type: "standard"
-      explanation: "Tief verschachtelte If-Statements."
-
-    - issue: "Duplicated Code"
-      severity: "high"
-      type: "standard"
-      explanation: "Regex-Check wiederholt sich."
-
-    - issue: "Long Parameter List"
-      severity: "medium"
-      type: "standard"
-      explanation: "validateUser nimmt 8 Parameter."
-
-    # --- LEVEL 3: Advanced (Hard) ---
-    - issue: "Data Clumps"
-      severity: "medium"
-      type: "advanced"
-      explanation: "Gleiche Parameter-Gruppe (username, email, age) in mehreren Methoden (ohne Kommentar)."
-
-    - issue: "Switch Statements (Polymorphism)"
-      severity: "medium"
-      type: "advanced"
-      explanation: "Switch über Role sollte durch Klassen-Hierarchie ersetzt werden (ohne Kommentar)."
-
-    - issue: "Feature Envy"
-      severity: "high"
-      type: "advanced"
-      explanation: "calculateUserScore nutzt nur Daten von 'user', nicht von 'this'. Sollte in User-Klasse."
-
-    - issue: "Dead Code"
-      severity: "low"
-      type: "advanced"
-      explanation: "if (false) Block."
-
-# ============================================================
 # Scoring-Konfiguration
 # ============================================================
 
@@ -175,43 +122,53 @@ scoring:
     weight: 60
     description: "Erkennung der Code Smells (Gestaffelt)"
     
-    # 1. Labeled Issues (15 Punkte)
+    # 1. Labeled Issues (10 Punkte)
     labeled_issues:
       - issue: "God Object"
-        points: 8
+        points: 5
         keywords: ["god object", "large class", "single responsibility", "srp", "zu viele aufgaben"]
       
       - issue: "Magic Numbers"
-        points: 7
+        points: 5
         keywords: ["magic number", "konstante", "hardcoded", "18", "3"]
 
-    # 2. Standard Issues (25 Punkte)
+    # 2. Standard Issues (20 Punkte)
     standard_issues:
       - issue: "Nested Conditionals"
-        points: 9
+        points: 7
         keywords: ["nested", "verschachtelt", "arrow code", "guard clause", "early return"]
         
       - issue: "Duplicated Code"
-        points: 8
+        points: 7
         keywords: ["duplicated", "doppelter code", "dry", "wiederholung", "regex"]
         
       - issue: "Long Parameter List"
-        points: 8
+        points: 6
         keywords: ["parameter list", "zu viele parameter", "parameter object", "destructuring"]
 
-    # 3. Advanced Issues (20 Punkte)
+    # 3. Advanced Issues (15 Punkte)
     advanced_issues:
       - issue: "Data Clumps"
-        points: 8
+        points: 5
         keywords: ["data clump", "datenklumpen", "zusammengehörige daten", "objekt"]
         
       - issue: "Switch Statement"
-        points: 7
+        points: 5
         keywords: ["switch", "polymorphismus", "polymorphie", "strategy pattern", "factory"]
         
       - issue: "Dead Code"
         points: 5
         keywords: ["dead code", "toter code", "unreachable", "if (false)"]
+
+    # 4. Expert Issues (15 Punkte) - Top-Tier Modelle
+    expert_issues:
+      - issue: "Feature Envy"
+        points: 8
+        keywords: ["feature envy", "neid", "fremde daten", "gehört in user", "move method"]
+        
+      - issue: "Primitive Obsession"
+        points: 7
+        keywords: ["primitive obsession", "value object", "email klasse", "username klasse", "typisierung"]
 
   solution_quality:
     weight: 30

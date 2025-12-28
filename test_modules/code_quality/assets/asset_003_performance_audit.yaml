@@ -1,8 +1,8 @@
 # ============================================================
 # Test Asset: Web Performance Audit (Core Web Vitals)
 # Domain: Code Quality & Performance  
-# Difficulty: Tiered (1-3)
-# Version: 2.0.0
+# Difficulty: Hard
+# Version: 2.1.0
 # ============================================================
 
 metadata:
@@ -10,14 +10,14 @@ metadata:
   name: "Web Performance Audit (Tiered Difficulty)"
   category: code_quality
   subcategory: performance
-  difficulty: tiered
-  estimated_time_seconds: 180
+  difficulty: hard
+  estimated_time_seconds: 300
   tags: [performance, core-web-vitals, lighthouse, optimization, lcp, cls, fid]
   author: "LLM Benchmark Suite"
   created: "2025-12-27"
-  updated: "2025-12-27"
+  updated: "2025-12-28"
   language: de
-  version: "2.0.0"
+  version: "2.1.0"
 
 context: |
   Du bist ein Performance-Engineer. Du analysierst eine E-Commerce-Produktseite, 
@@ -162,32 +162,21 @@ test_data:
       type: "advanced"
       explanation: "Ad-Banner ohne explizite width/height reserviert keinen Platz."
 
-    - issue: "FOIT / Font Loading"
-      severity: "medium"
-      type: "advanced"
-      explanation: "Custom Font im Footer ohne font-display: swap verzögert Text-Rendering."
-      explanation: "Bilder ohne width/height Attribute."
-
-    - issue: "Synchronous XHR"
-      severity: "critical"
-      type: "standard"
-      explanation: "Blockiert den Main Thread komplett."
-
-    # --- LEVEL 3: Advanced (Hard) ---
     - issue: "N+1 Fetch Problem"
       severity: "high"
       type: "advanced"
       explanation: "5 einzelne Requests statt einem Batch-Request."
 
-    - issue: "Layout Thrashing (DOM Loop)"
+    # --- LEVEL 4: Expert (Very Hard) ---
+    - issue: "Unused Library (jQuery)"
       severity: "medium"
-      type: "advanced"
-      explanation: "appendChild im Loop verursacht mehrfache Reflows."
+      type: "expert"
+      explanation: "jQuery wird geladen (Blocking), aber im Code wird nur Vanilla JS genutzt."
 
-    - issue: "FOUC / Late Font Loading"
-      severity: "medium"
-      type: "advanced"
-      explanation: "@font-face im Footer verursacht Flash of Unstyled Content."
+    - issue: "Preload Scanner Bypass (Font)"
+      severity: "high"
+      type: "expert"
+      explanation: "Font-Definition im Footer versteckt die URL vor dem Preload-Scanner."
 
 # ============================================================
 # Scoring-Konfiguration
@@ -200,47 +189,53 @@ scoring:
     weight: 60
     description: "Erkennung der Performance-Issues (Gestaffelt)"
     
-    # 1. Labeled Issues (15 Punkte)
+    # 1. Labeled Issues (10 Punkte)
     labeled_issues:
       - issue: "Blocking CSS"
-        points: 5
+        points: 4
         keywords: ["css", "render blocking", "bootstrap", "media query", "preload"]
       
       - issue: "Unoptimiertes Hero-Image"
-        points: 5
+        points: 3
         keywords: ["5mb", "komprimieren", "webp", "avif", "image size", "lcp"]
 
       - issue: "Blocking JS (Analytics)"
-        points: 5
+        points: 3
         keywords: ["defer", "async", "head", "script", "blocking"]
 
-    # 2. Standard Issues (25 Punkte)
+    # 2. Standard Issues (15 Punkte)
     standard_issues:
       - issue: "Missing Lazy Loading"
-        points: 8
+        points: 5
         keywords: ["lazy", "loading", "below the fold", "eager"]
         
-      - issue: "Layout Shift (CLS)"
-        points: 9
-        keywords: ["cls", "layout shift", "width", "height", "dimensionen", "aspect ratio"]
-        
       - issue: "Synchronous XHR"
-        points: 8
+        points: 10
         keywords: ["synchron", "xhr", "xmlhttprequest", "blockiert", "main thread", "deprecated"]
 
-    # 3. Advanced Issues (20 Punkte)
+    # 3. Advanced Issues (15 Punkte)
     advanced_issues:
       - issue: "N+1 Fetch / Waterfall"
-        points: 8
+        points: 5
         keywords: ["n+1", "waterfall", "batch", "einzelne requests", "promise.all"]
         
       - issue: "Layout Thrashing"
-        points: 6
+        points: 5
         keywords: ["reflow", "repaint", "layout thrashing", "dom manipulation", "fragment", "documentfragment"]
         
-      - issue: "Font Loading (FOUC)"
-        points: 6
-        keywords: ["font-display", "fouc", "foit", "swap", "footer", "head"]
+      - issue: "CLS (Ad Banner)"
+        points: 5
+        keywords: ["cls", "layout shift", "width", "height", "dimensionen", "aspect ratio"]
+
+    # 4. Expert Issues (20 Punkte)
+    expert_issues:
+      - issue: "Unused Library (jQuery)"
+        points: 10
+        keywords: ["jquery", "unused", "bloat", "remove", "vanilla js", "unnötig"]
+
+      - issue: "Preload Scanner Bypass"
+        points: 10
+        keywords: ["preload scanner", "footer style", "late discovery", "head", "critical request chain"]
 
   solution_quality:
     weight: 30

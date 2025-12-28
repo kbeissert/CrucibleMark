@@ -78,16 +78,12 @@ validate-single:
 	$(PYTHON) scripts/validate_assets.py $(ASSET)
 
 generate-golden:
-	@if [ -z "$(ASSET)" ]; then \
-		echo "Error: ASSET variable not set"; \
-		echo "Usage: make generate-golden ASSET=test_modules/test_assets/code_quality/asset_001_wcag_audit.yaml"; \
-		exit 1; \
-	fi
-	@if [ -z "$$ANTHROPIC_API_KEY" ] && [ -z "$$MISTRAL_API_KEY" ] && [ -z "$$CODESTRAL_API_KEY" ]; then \
-		echo "Error: No API key found. Set one of: ANTHROPIC_API_KEY, MISTRAL_API_KEY, or CODESTRAL_API_KEY"; \
-		exit 1; \
-	fi
-	$(PYTHON) scripts/generate_golden_standard.py $(ASSET)
+	@echo "🏆 Generiere Golden Standard für alle Module (nur fehlende)..."
+	$(PYTHON) scripts/run_commercial_benchmark.py --mode golden_standard --auto
+
+generate-golden-new:
+	@echo "🏆 Generiere Golden Standard für alle Module (FORCE UPDATE)..."
+	$(PYTHON) scripts/run_commercial_benchmark.py --mode golden_standard --auto --force
 
 run-benchmark:
 	$(PYTHON) scripts/interactive_benchmark.py

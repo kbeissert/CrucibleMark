@@ -35,9 +35,9 @@ Alle Assets nutzen nun das **Tiered Difficulty System** (Level 1-4).
 
 | Asset | Issues | Schwierigkeit | Golden Standard |
 |-------|--------|---------------|-----------------|
-| **001 - WCAG Accessibility** | 11 | Tiered (1-3) | ✅ Mistral Large |
+| **001 - WCAG Accessibility** | 11 | Tiered (1-4) | ✅ Mistral Large |
 | **002 - Security (OWASP)** | 11 | Tiered (1-4) | ✅ Mistral Large |
-| **003 - Performance** | 11 | Tiered (1-3) | ✅ Mistral Large |
+| **003 - Performance** | 11 | Tiered (1-4) | ✅ Mistral Large |
 | **004 - API Design** | 12 | Tiered (1-4) | ✅ Mistral Large |
 | **005 - Code Smells** | 11 | Tiered (1-3) | ✅ Mistral Large |
 

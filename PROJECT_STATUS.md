@@ -1,8 +1,8 @@
 # CrucibleMark - Projekt-Status & Architektur
 
 **Version:** 0.3.0-beta
-**Datum:** 27. Dezember 2025
-**Status:** Beta - Expert Level (Tier 4) implementiert, Qwen3 Support gefixt
+**Datum:** 28. Dezember 2025
+**Status:** Beta - Expert Level (Tier 4) implementiert, UX Writing Module integriert
 
 ---
 
@@ -160,11 +160,12 @@ test_modules/code_quality/
 
 ### 4.2 Tiered Difficulty System
 
-Jedes Asset enthält Fehler in 3 Schwierigkeitsstufen:
+Jedes Asset enthält Fehler in 4 Schwierigkeitsstufen:
 
 1.  **Labeled (Easy)**: Fehler sind durch TODOs oder Kommentare markiert.
 2.  **Standard (Medium)**: Offensichtliche Fehler (z.B. SQL Injection, Blocking CSS).
 3.  **Advanced (Hard)**: Subtile Logikfehler, Architektur-Probleme oder Edge Cases.
+4.  **Expert (Very Hard)**: Komplexe Business-Logik-Fehler (IDOR, Race Conditions) für Top-Tier Modelle.
 
 ### 4.3 Bewertungssystem (Hybrid Scoring)
 
@@ -441,7 +442,7 @@ pip install -r requirements.txt
 **Für Fragen:** Siehe `docs/` oder README.md
 
 ---
-
-**Letzte Aktualisierung:** 27.12.2025
-**Version:** 0.2.0-beta
+8.12.2025
+**Version:** 0.3.0-beta
+**Status:** Produktionsbereit für Code Quality Tests (Tier 4 Implemented)
 **Status:** Produktionsbereit für Code Quality Tests

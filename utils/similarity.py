@@ -26,12 +26,15 @@ class SemanticSimilarity:
     """
     
     _model = None
+    _warning_logged = False
     
     @classmethod
     def get_model(cls):
         """Lazy loading of the model."""
         if not HAS_TRANSFORMERS:
-            logger.warning("sentence-transformers not installed. Semantic similarity will be disabled.")
+            if not cls._warning_logged:
+                logger.warning("sentence-transformers not installed. Semantic similarity will be disabled.")
+                cls._warning_logged = True
             return None
             
         if cls._model is None:

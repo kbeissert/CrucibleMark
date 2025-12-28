@@ -2,7 +2,7 @@
 # Test Asset: Basic Security Audit (OWASP Top 10)
 # Domain: Code Quality & Security
 # Difficulty: Hard
-# Version: 2.0.0
+# Version: 2.1.0
 # ============================================================
 
 metadata:
@@ -15,9 +15,9 @@ metadata:
   tags: [security, owasp, php, vulnerabilities, advanced-audit]
   author: "LLM Benchmark Suite"
   created: "2025-12-27"
-  updated: "2025-12-27"
+  updated: "2025-12-28"
   language: de
-  version: "2.0.0"
+  version: "2.1.0"
 
 # ============================================================
 # Test-Kontext und Aufgabenstellung
@@ -230,7 +230,7 @@ scoring:
     weight: 60
     description: "Erkennung der Vulnerabilities (Gestaffelt)"
     
-    # 1. Labeled Issues (10 Punkte) - Muss jedes Modell finden
+    # 1. Labeled Issues (10 Punkte)
     labeled_issues:
       - issue: "SQL Injection (Login)"
         points: 5
@@ -240,7 +240,7 @@ scoring:
         points: 5
         keywords: ["password", "hash", "plaintext", "klartext", "bcrypt"]
 
-    # 2. Standard Issues (15 Punkte) - Sollte ein gutes Modell finden
+    # 2. Standard Issues (15 Punkte)
     standard_issues:
       - issue: "XSS (Welcome Message)"
         points: 4
@@ -258,32 +258,32 @@ scoring:
         points: 3
         keywords: ["httponly", "secure", "cookie"]
 
-    # 3. Advanced Issues (20 Punkte) - Trennt die Spreu vom Weizen
+    # 3. Advanced Issues (15 Punkte)
     advanced_issues:
       - issue: "Weak Randomness (Token)"
-        points: 5
+        points: 4
         keywords: ["random_bytes", "random_int", "predictable", "vorhersagbar", "entropy", "rand()"]
         
       - issue: "Type Juggling (API Key)"
-        points: 5
+        points: 4
         keywords: ["type juggling", "loose comparison", "===", "strict comparison", "identisch", "strcmp"]
         
       - issue: "Insecure Admin Check"
-        points: 5
+        points: 4
         keywords: ["client-side", "manipulation", "cookie trust", "authorization", "privilege escalation"]
         
       - issue: "Information Disclosure"
-        points: 5
+        points: 3
         keywords: ["display_errors", "error_reporting", "information disclosure", "debug"]
 
-    # 4. Expert Issues (15 Punkte) - Top-Tier Modelle
+    # 4. Expert Issues (20 Punkte)
     expert_issues:
       - issue: "IDOR (Profile Update)"
-        points: 8
+        points: 10
         keywords: ["idor", "insecure direct object reference", "authorization", "session id", "fremde daten", "berechtigung"]
         
       - issue: "CSRF (Missing Tokens)"
-        points: 7
+        points: 10
         keywords: ["csrf", "cross-site request forgery", "token", "anti-csrf", "nonce"]
 
   solution_quality:
@@ -299,17 +299,17 @@ scoring:
         min_code_blocks: 1
         
       - id: "SQ-002"
-        name: "Secure Token Generation"
+        name: "CSRF Token Implementation"
         points: 10
         check_method: "keyword_presence"
-        keywords: ["random_bytes", "bin2hex", "random_int"]
-        min_keywords: 1
+        keywords: ["csrf_token", "session", "token", "input type=\"hidden\""]
+        min_keywords: 2
         
       - id: "SQ-003"
-        name: "Strict Comparison"
+        name: "Authorization Check (IDOR Fix)"
         points: 10
         check_method: "code_validation"
-        required_elements: ["==="]
+        required_elements: ["$_SESSION['user_id']"]
         min_code_blocks: 1
 
   formatting:

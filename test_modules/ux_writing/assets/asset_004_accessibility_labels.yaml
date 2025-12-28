@@ -1,0 +1,169 @@
+# asset_004_accessibility_labels.yaml
+metadata:
+  id: ux_writing_004
+  name: "Accessibility Labels - ARIA for Screen Readers"
+  category: ux_writing
+  subcategory: accessibility_labels
+  difficulty: tiered
+  estimated_time_seconds: 200
+  tags: [aria, screen-reader, a11y, semantic-labels, wcag]
+
+context: |
+  Du bist ein UX Writer mit Accessibility-Expertise.
+  Deine Aufgabe ist es, Texte für Screen Reader (ARIA-Labels) zu schreiben, die blinden Nutzern eine gleichwertige Experience bieten.
+  
+  Zielgruppe: Screen-Reader-Nutzer (NVDA, JAWS, VoiceOver).
+  Kontext: Ein komplexes Enterprise-Dashboard mit vielen Icons und interaktiven Elementen.
+
+prompt: |
+  Optimiere die ARIA-Labels für die folgenden UI-Elemente.
+  
+  Eingabe-Elemente:
+  {input_text}
+  
+  Erfülle dabei strikt die folgenden Anforderungen:
+  {requirements}
+
+requirements:
+  - "Erstelle eine Markdown-Tabelle mit den Spalten: `Element` | `Original` | `Optimiertes ARIA-Label` | `Begründung`."
+  - "Beschreibe die FUNKTION, nicht das Aussehen (z.B. 'Löschen' statt 'Mülleimer')."
+  - "Vermeide Redundanz (z.B. nicht 'Button' im Label wiederholen, das macht der Screen Reader selbst)."
+  - "Füge Zustandsinformationen hinzu, wo nötig (z.B. 'ausgeklappt', 'aktiviert')."
+  - "Level 4 (Expert): Nutze fortgeschrittene ARIA-Attribute (aria-pressed, aria-expanded, aria-live) korrekt."
+
+input_text: |
+  1. Element: Icon-Button (Mülleimer-Icon). Code: <button class="icon-btn"><svg>...</svg></button>
+  2. Element: Dropdown-Filter (Status). Code: <select aria-label="filter-dropdown-status-col">
+  3. Element: Suchfeld (Global). Code: <input type="search" placeholder="Suchen..." aria-label="Suchen">
+  4. Element: Dark Mode Toggle. Code: <button onclick="toggle()" aria-label="Dark Mode">
+  5. Element: Pagination (Pfeil rechts). Code: <button>›</button>
+  6. Element: Live-Ticker (Aktienkurse). Code: <div id="ticker">...</div>
+
+testdata:
+  issues:
+    # LEVEL 1: Basic Functionality
+    - issue: "Icon-Button hat Label"
+      severity: critical
+      type: labeled
+      explanation: "Ein Icon-Button ohne Text braucht zwingend ein aria-label."
+      keywords: ["löschen", "entfernen", "delete", "trash"]
+
+    - issue: "Keine Redundanz"
+      severity: critical
+      type: labeled
+      explanation: "Das Wort 'Button' darf nicht im Label stehen (Screen Reader sagt 'Button Löschen Button')."
+      keywords: ["button", "schaltfläche", "knopf"]
+      inverse_match: true
+
+    # LEVEL 2: Context & Clarity
+    - issue: "Filter ist sprechend"
+      severity: high
+      type: standard
+      explanation: "Statt technischer ID muss der Zweck klar sein."
+      keywords: ["status filtern", "nach status", "filter status"]
+
+    - issue: "Suche ist spezifisch"
+      severity: high
+      type: standard
+      explanation: "'Suchen' ist zu wenig. 'Globale Suche' oder 'Kunden suchen' ist besser."
+      keywords: ["global", "gesamte", "portal", "dashboard"]
+
+    # LEVEL 3: State Management (Advanced)
+    - issue: "Pagination erklärt"
+      severity: medium
+      type: advanced
+      explanation: "Nicht nur 'Pfeil rechts', sondern 'Nächste Seite'."
+      keywords: ["nächste seite", "seite vor", "weiter"]
+
+    # LEVEL 4: ARIA Expertise (Expert)
+    - issue: "Toggle State (aria-pressed)"
+      severity: low
+      type: expert
+      explanation: "Ein Toggle braucht aria-pressed, um den Zustand (An/Aus) zu kommunizieren."
+      keywords: ["aria-pressed", "zustand", "aktiviert", "umschalten"]
+
+    - issue: "Live Region (aria-live)"
+      severity: low
+      type: expert
+      explanation: "Sich ändernde Inhalte (Ticker) brauchen aria-live='polite' oder 'off'."
+      keywords: ["aria-live", "polite", "atomic", "updates"]
+
+scoring:
+  total_points: 100
+  
+  error_detection:
+    weight: 60
+    description: "Erkennung und Optimierung der ARIA-Labels"
+    
+    # 1. Labeled Issues (10 Punkte)
+    labeled_issues:
+      - issue: "Icon-Button hat Label"
+        points: 5
+        keywords: ["löschen", "entfernen", "delete", "trash"]
+        
+      - issue: "Keine Redundanz"
+        points: 5
+        keywords: ["button", "schaltfläche", "knopf"]
+        inverse_match: true
+
+    # 2. Standard Issues (20 Punkte)
+    standard_issues:
+      - issue: "Filter ist sprechend"
+        points: 10
+        keywords: ["status filtern", "nach status", "filter status"]
+        
+      - issue: "Suche ist spezifisch"
+        points: 10
+        keywords: ["global", "gesamte", "portal", "dashboard"]
+
+    # 3. Advanced Issues (15 Punkte)
+    advanced_issues:
+      - issue: "Pagination erklärt"
+        points: 15
+        keywords: ["nächste seite", "seite vor", "weiter"]
+
+    # 4. Expert Issues (15 Punkte)
+    expert_issues:
+      - issue: "Toggle State (aria-pressed)"
+        points: 8
+        keywords: ["aria-pressed", "zustand", "aktiviert", "umschalten"]
+        
+      - issue: "Live Region (aria-live)"
+        points: 7
+        keywords: ["aria-live", "polite", "atomic", "updates"]
+
+  solution_quality:
+    weight: 30
+    description: "Qualität der Labels"
+    
+    criteria:
+      - id: "SQ-001"
+        name: "Markdown Tabelle vorhanden"
+        points: 10
+        check_method: "markdown_table_validation"
+        min_rows: 6
+        
+      - id: "SQ-002"
+        name: "Funktionale Beschreibung"
+        points: 10
+        check_method: "keyword_presence"
+        keywords: ["löschen", "filtern", "suchen", "umschalten", "nächste"]
+        min_keywords: 3
+        
+      - id: "SQ-003"
+        name: "ARIA-Attribute korrekt"
+        points: 10
+        check_method: "keyword_presence"
+        keywords: ["aria-label", "aria-pressed", "aria-live"]
+        min_keywords: 1
+
+  formatting:
+    weight: 10
+    description: "Einhaltung der Formatvorgaben"
+    criteria:
+      - id: "FM-001"
+        name: "Spaltenstruktur korrekt"
+        points: 10
+        check_method: "keyword_presence"
+        keywords: ["Element", "Original", "Optimiertes ARIA-Label", "Begründung"]
+        min_keywords: 4

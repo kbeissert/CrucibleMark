@@ -10,7 +10,7 @@
 ## 🎯 Features
 
 *   **Modulare Architektur**: Tests sind in unabhängige Module gekapselt (z.B. `code_quality`).
-*   **Tiered Difficulty System**: Assets enthalten Fehler in 3 Schwierigkeitsstufen (Labeled, Standard, Advanced), um Junior- von Senior-Modellen zu unterscheiden.
+*   **Tiered Difficulty System**: Assets enthalten Fehler in 4 Schwierigkeitsstufen (Labeled, Standard, Advanced, Expert), um Junior- von Senior-Modellen zu unterscheiden.
 *   **Hybrid Scoring**: Kombination aus quantitativer Bewertung (Keyword/Regex) und qualitativer Analyse (Semantische Ähnlichkeit zu Golden Standards).
 *   **Dual Runner**:
     *   **Local Runner**: Testet lokale Modelle via Ollama.
@@ -68,11 +68,23 @@ Dieses Modul prüft die Fähigkeit eines LLMs, Code-Reviews durchzuführen. Es n
 
 | Asset | Fokus | Schwierigkeit |
 | :--- | :--- | :--- |
-| **001 WCAG Audit** | Barrierefreiheit (HTML/CSS) | Tiered (1-3) |
+| **001 WCAG Audit** | Barrierefreiheit (HTML/CSS) | Tiered (1-4) |
 | **002 Security Audit** | OWASP Top 10 (PHP) | Tiered (1-4) |
-| **003 Performance** | Core Web Vitals (JS/HTML) | Tiered (1-3) |
+| **003 Performance** | Core Web Vitals (JS/HTML) | Tiered (1-4) |
 | **004 API Design** | REST Principles | Tiered (1-4) |
 | **005 Code Smells** | Refactoring Patterns | Tiered (1-3) |
+
+### UX Writing Module (`test_modules/ux_writing`)
+
+Dieses Modul bewertet die Fähigkeiten im Bereich UX Writing, Microcopy und Tonalität.
+
+| Asset | Fokus | Schwierigkeit |
+| :--- | :--- | :--- |
+| **001 Error Messages** | User-Friendly Rewriting | Tiered (1-3) |
+| **002 Button Labels** | Context-Aware CTAs | Tiered (1-3) |
+| **003 Onboarding Flow** | Step-by-Step Guidance | Tiered (1-3) |
+| **004 Accessibility Labels** | ARIA & Screen Reader | Tiered (1-3) |
+| **005 Microcopy Audit** | Real-World UX Writing | Tiered (1-3) |
 
 **Schwierigkeits-Level:**
 1.  **Labeled (Easy)**: Fehler sind durch TODOs/Kommentare markiert.

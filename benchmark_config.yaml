@@ -26,6 +26,20 @@ modules:
       - security
       - performance
       - accessibility
+
+  ux_writing:
+    name: "UX Writing & Microcopy"
+    description: "Bewertet UX-Writing für Error Messages, Buttons, Onboarding, ARIA"
+    path: "test_modules/ux_writing"
+    test_class: "UXWritingTest"
+    version: "1.0.0"
+    enabled: true
+    assets_count: 5
+    tags:
+      - ux-writing
+      - microcopy
+      - accessibility
+      - tonality
     
   # Beispiel für zukünftige Module:
   # documentation_quality:
