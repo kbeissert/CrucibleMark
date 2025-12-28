@@ -7,6 +7,11 @@
 
 > **Modulares Benchmarking-Framework** zum Testen und Vergleichen von lokalen und kommerziellen LLMs mit gestaffelter Schwierigkeit.
 
+## 📖 Was wird getestet?
+
+Einen verständlichen Überblick über die Testszenarien (ohne technischen Jargon) findest du hier:
+👉 **[Benchmark Szenarien & Erklärungen](docs/BENCHMARK_SCENARIOS.md)**
+
 ## 🎯 Features
 
 *   **Modulare Architektur**: Tests sind in unabhängige Module gekapselt (z.B. `code_quality`).
@@ -84,7 +89,10 @@ make test           # Führt Validierung UND Unit-Tests (pytest) aus
 
 **Utilities:**
 ```bash
-make clean          # Löscht Ergebnisse & Caches (behält Golden Standards)
+make leaderboard    # Generiert Leaderboard-CSV aus Ergebnissen
+make clean          # Löscht Caches & temporäre Outputs (behält CSVs)
+make clean-csv      # Löscht ALLE Benchmark-CSVs (Daten-Reset)
+make clean-all      # Löscht ALLES (Caches + CSVs)
 make list-models    # Listet Modelle & prüft API-Keys (Local + Commercial)
 ```
 
@@ -152,7 +160,8 @@ crucible-mark/
 │   ├── run_local_benchmark.py
 │   └── run_commercial_benchmark.py
 ├── golden_standards/           # Referenz-Antworten (JSON)
-└── outputs/                    # Ergebnisse (CSV, Logs)
+├── benchmark_scores/           # Ergebnisse (CSV-Tabellen & Leaderboard)
+└── outputs/                    # Temporäre Logs & Run-Details
 ```
 
 ## 🤝 Contributing

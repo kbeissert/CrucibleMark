@@ -10,7 +10,7 @@ Prüft:
 import os
 import logging
 from pathlib import Path
-from typing import Dict, Optional, Tuple, Any, List
+from typing import Dict, Optional, Tuple, Any
 import yaml
 
 # Configure logging
@@ -253,7 +253,7 @@ class ConfigValidator:
         Returns:
             Path zur CSV-Datei (dediziert für Golden Standard)
         """
-        csv_file = self.config.get('output', {}).get('golden_standard_csv', 'golden_standard_benchmark.csv')
+        csv_file = self.config.get('output', {}).get('golden_standard_csv', 'benchmark_scores/golden_standard_benchmark.csv')
         return Path(csv_file)
     
     def get_golden_standard_info(self) -> Optional[Tuple[str, str, Dict[str, Any]]]:

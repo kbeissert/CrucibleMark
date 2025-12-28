@@ -15,6 +15,7 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from utils.llm_client import LLMClient
 from utils.config_validator import ConfigValidator
+from utils.result_manager import ResultManager
 
 
 class LocalBenchmarkRunner:
@@ -32,10 +33,10 @@ class LocalBenchmarkRunner:
         """Initialisiert Runner."""
         self.client = LLMClient()
         self.validator = ConfigValidator()
+        self.result_manager = ResultManager(self.validator)
         
         # Golden Standard CSV aus Config holen
         self.commercial_csv = self.validator.get_golden_standard_csv()
-        self.results_csv = Path('local_models_benchmark.csv')
     
     @staticmethod
     def get_ollama_models() -> List[str]:
@@ -53,8 +54,9 @@ class LocalBenchmarkRunner:
             for line in result.stdout.strip().split('\n')[1:]:
                 if line.strip():
                     model_name = line.split()[0]
-                    # Filtere Embedding-Modelle aus
-                    if 'embed' not in model_name.lower():
+                    # Filtere Embedding- und Vision-Modelle aus
+                    name_lower = model_name.lower()
+                    if 'embed' not in name_lower and '-vl' not in name_lower and 'vision' not in name_lower:
                         models.append(model_name)
             
             return sorted(models)
@@ -280,14 +282,14 @@ class LocalBenchmarkRunner:
             # Zeige Beispiel-Scores
             first_asset = list(commercial_refs.values())[0]
             print(f"   Referenz-Modell: {first_asset['model']} ({first_asset['provider']})")
-            print(f"   Beispiel-Scores: ", end="")
+            print("   Beispiel-Scores: ", end="")
             scores_preview = [str(int(v['score'])) for v in list(commercial_refs.values())[:3]]
             print(", ".join(scores_preview) + " Punkte...")
         elif is_valid:
             print(f"\n⚠️  Golden Standard CSV noch nicht vorhanden: {self.commercial_csv}")
-            print(f"   Generiere mit: python scripts/run_commercial_benchmark.py")
+            print("   Generiere mit: python scripts/run_commercial_benchmark.py")
         else:
-            print(f"\n⚠️  Golden Standard nicht verfügbar (siehe Validierung oben)")
+            print("\n⚠️  Golden Standard nicht verfügbar (siehe Validierung oben)")
         
         # Discover assets
         assets = self.discover_assets(benchmark_info['path'])
@@ -373,34 +375,12 @@ class LocalBenchmarkRunner:
             return "⚠️"
     
     def save_results(self, results: List[Dict[str, Any]]) -> None:
-        """Speichert Ergebnisse in CSV."""
-        if not results:
-            return
-        
-        # Prüfe ob Datei existiert
-        file_exists = self.results_csv.exists()
-        
-        # Alle Keys sammeln
-        all_keys = set()
-        for result in results:
-            all_keys.update(result.keys())
-        
-        fieldnames = sorted(all_keys)
-        
-        # Append mode wenn Datei existiert
-        mode = 'a' if file_exists else 'w'
-        
-        with open(self.results_csv, mode, newline='', encoding='utf-8') as f:
-            writer = csv.DictWriter(f, fieldnames=fieldnames)
-            
-            # Header nur schreiben wenn neue Datei
-            if not file_exists:
-                writer.writeheader()
-            
-            writer.writerows(results)
+        """Speichert Ergebnisse in CSV via ResultManager."""
+        path = self.result_manager.save_results(results, 'local')
         
         print(f"\n{'='*60}")
-        print(f"✅ Ergebnisse gespeichert: {self.results_csv}")
+        if path:
+            print(f"✅ Ergebnisse gespeichert: {path}")
         print(f"{'='*60}")
 
     def print_summary(self, results: List[Dict[str, Any]], model: str) -> None:
@@ -418,7 +398,7 @@ class LocalBenchmarkRunner:
             print(f"{'='*60}")
             print(f"Modell: {model}")
             print(f"Tests durchgeführt: {len(results)}")
-            print(f"❌ Alle Tests fehlgeschlagen!")
+            print("❌ Alle Tests fehlgeschlagen!")
             return
 
         avg_score = sum(r['total_score'] for r in successful_results) / len(successful_results)
@@ -434,7 +414,7 @@ class LocalBenchmarkRunner:
         print(f"{'='*60}")
         print(f"Modell: {model}")
         print(f"Tests durchgeführt: {len(results)} ({len(successful_results)} erfolgreich, {len(failed_results)} fehlgeschlagen)")
-        print(f"\n📊 Durchschnittliche Scores (nur erfolgreiche Tests):")
+        print("\n📊 Durchschnittliche Scores (nur erfolgreiche Tests):")
         print(f"   Dein Modell: {avg_score:.1f}/{avg_max:.0f} ({avg_percentage:.1f}%) {quality}")
         
         # Referenz-Vergleich
@@ -450,7 +430,7 @@ class LocalBenchmarkRunner:
             elif avg_diff < 0:
                 print(f"   📉 Differenz: {avg_diff:.1f} Punkte (Gap zur Referenz)")
             else:
-                print(f"   ⚖️  Differenz: ±0 Punkte (auf Augenhöhe mit Referenz)")
+                print("   ⚖️  Differenz: ±0 Punkte (auf Augenhöhe mit Referenz)")
         
         print(f"   Ausführungszeit: {avg_time:.1f}s")
         print(f"   Golden Standard Ähnlichkeit: {avg_similarity:.1f}%")
@@ -458,14 +438,14 @@ class LocalBenchmarkRunner:
         # Beste und schlechteste Tests
         sorted_results = sorted(successful_results, key=lambda x: x['percentage'], reverse=True)
         
-        print(f"\n🏆 Beste Tests:")
+        print("\n🏆 Beste Tests:")
         for r in sorted_results[:3]:
             quality = self._get_quality_badge(r['percentage'])
             diff = r.get('score_difference', 0)
             diff_str = f" ({diff:+.1f})" if diff != 0 else ""
             print(f"   {r['asset_name'][:40]}: {r['percentage']}% {quality}{diff_str}")
         
-        print(f"\n⚠️  Schwächste Tests:")
+        print("\n⚠️  Schwächste Tests:")
         for r in sorted_results[-3:]:
             quality = self._get_quality_badge(r['percentage'])
             diff = r.get('score_difference', 0)
@@ -473,7 +453,7 @@ class LocalBenchmarkRunner:
             print(f"   {r['asset_name'][:40]}: {r['percentage']}% {quality}{diff_str}")
             
         if failed_results:
-            print(f"\n❌ Fehlgeschlagene Tests:")
+            print("\n❌ Fehlgeschlagene Tests:")
             for r in failed_results:
                 print(f"   {r['asset_name'][:40]}: FAILED (Incompatible Model)")
         

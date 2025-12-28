@@ -40,6 +40,15 @@ modules:
       - microcopy
       - accessibility
       - tonality
+
+# Output Configuration
+# --------------------
+output:
+  directory: "benchmark_scores"
+  commercial_csv: "benchmark_scores/commercial_models_benchmark.csv"
+  local_models_csv: "benchmark_scores/local_models_benchmark.csv"
+  golden_standard_csv: "benchmark_scores/golden_standard_benchmark.csv"
+  leaderboard_csv: "benchmark_scores/benchmark_leaderboard.csv"
     
   # Beispiel für zukünftige Module:
   # documentation_quality:
@@ -65,7 +74,7 @@ modules:
 golden_standard:
   provider: "mistral"  # Referenz zu providers.commercial.mistral
   model: "mistral-large-latest"  # Welches Modell für Referenz-Benchmark
-  description: "Mistral Large als stabile, hochwertige Referenz für Code Quality Tests"
+  description: "Mistral Large als stabile, hochwertige Referenz für Benchmark Tests"
 
 # Provider Configuration
 # ----------------------
@@ -120,12 +129,3 @@ providers:
       api_type: "ollama"
       # Modelle werden dynamisch von Ollama abgefragt
       auto_discover: true
-
-# Output-Konfiguration
-# --------------------
-output:
-  golden_standard_csv: "golden_standard_benchmark.csv"  # Golden Standard Referenz-Scores
-  commercial_csv: "commercial_models_benchmark.csv"     # Alle kommerziellen Modelle
-  local_csv: "local_models_benchmark.csv"               # Lokale Modelle
-  results_dir: "benchmark_results"                      # Detaillierte Ergebnisse
-  reference_dir: "golden_standards"                     # Referenz-Antworten für Similarity

@@ -4,14 +4,27 @@ Zentrale Ollama-Konfiguration für alle Benchmark-Systeme.
 Verwendet deterministische Settings für reproduzierbare Ergebnisse.
 """
 
-# Benchmark-Options für stabiles Scoring (temperature=0.1)
-BENCHMARK_OPTIONS = {
-    'temperature': 0.1,      # Deterministisch für Benchmarks (default: 0.8)
-    'num_predict': 4000,     # Fixierte Max-Tokens für Konsistenz (erhöht für Qwen3)
-    'top_k': 10,             # Reduzierte Sampling-Varianz (default: 40)
-    'repeat_penalty': 1.0,   # Keine Wiederholungs-Penalty (default: 1.1)
-    'seed': 42               # Reproduzierbarer Seed (optional)
+# Benchmark-Options für Coding & Logik (temperature=0.1)
+CODING_BENCHMARK_OPTIONS = {
+    'temperature': 0.1,      # Deterministisch für Code
+    'num_predict': 4000,     # Fixierte Max-Tokens für Konsistenz
+    'top_k': 10,             # Reduzierte Sampling-Varianz
+    'repeat_penalty': 1.0,   # Keine Wiederholungs-Penalty
+    'seed': 42               # Reproduzierbarer Seed
 }
+
+# Benchmark-Options für UX Writing & Kreatives (temperature=0.3)
+# Etwas mehr Spielraum als Coding, aber immer noch stabil genug für Vergleiche
+CREATIVE_BENCHMARK_OPTIONS = {
+    'temperature': 0.3,      # Leichte Varianz erlaubt
+    'num_predict': 4000,
+    'top_k': 20,             # Etwas mehr Auswahl bei Tokens
+    'repeat_penalty': 1.1,   # Leichte Penalty gegen Loops (wichtig für UX!)
+    'seed': 42
+}
+
+# Legacy Alias für Rückwärtskompatibilität
+BENCHMARK_OPTIONS = CODING_BENCHMARK_OPTIONS
 
 # Kreative Options für Content-Generierung (NICHT für Benchmarks!)
 CREATIVE_OPTIONS = {

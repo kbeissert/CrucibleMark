@@ -1,0 +1,8 @@
+Recommendation,model,type,Overall Score,Code Quality,UX Writing,Avg Time (s),Tests Run
+🏆 Best Commercial,mistral-large-latest,Commercial,85.9,86.6,85.2,38.5,10/10
+⚡ Efficient,mistral-medium-latest,Commercial,84.9,85.6,84.2,36.8,10/10
+🥇 Best Local,ministral-3:14b,Local,83.9,82.2,85.6,80.9,10/10
+,ministral-3:8b,Local,79.6,82.0,77.2,47.2,10/10
+,qwen3:8b,Local,65.8,57.6,74.0,56.1,10/10
+,qwen2.5:14b-instruct,Local,62.4,43.8,81.0,46.0,10/10
+,qwen2.5-coder:7b-instruct,Local,50.0,42.0,58.0,22.3,10/10

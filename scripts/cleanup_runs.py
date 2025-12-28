@@ -99,7 +99,7 @@ def cleanup_runs(
     
     # Zeige Zusammenfassung
     print(f"\n{'='*60}")
-    print(f"🗑️  CLEANUP: BENCHMARK-RUNS")
+    print("🗑️  CLEANUP: BENCHMARK-RUNS")
     print(f"{'='*60}")
     print(f"Gesamt: {len(runs)} Runs")
     print(f"Behalten: {keep} neueste Runs")
@@ -113,7 +113,7 @@ def cleanup_runs(
         print(f"  - {run.name} ({size})")
     
     # Zeige zu löschende Runs
-    print(f"\n✗ Löschen:")
+    print("\n✗ Löschen:")
     total_size = 0
     for run in delete_runs:
         size_bytes = sum(f.stat().st_size for f in run.rglob('*') if f.is_file())

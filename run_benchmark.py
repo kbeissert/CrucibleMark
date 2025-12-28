@@ -13,10 +13,9 @@ Usage:
 """
 
 import argparse
-import importlib.util
 import sys
 from pathlib import Path
-from typing import Dict, Any, List, Optional
+from typing import Dict, Any, Optional
 import yaml
 from utils.model_utils import is_model_suitable_for_benchmark
 import ollama
@@ -45,7 +44,7 @@ class BenchmarkRunner:
             if config.get('enabled', True)
         }
     
-    def select_module(self, module_name: Optional[str] = None) -> tuple[str, Dict[str, Any]]:
+    def select_module(self, module_name: Optional[str] = None) -> tuple[Optional[str], Optional[Dict[str, Any]]]:
         """Interaktive Modul-Auswahl oder direkter Zugriff."""
         modules = self.get_enabled_modules()
         
@@ -54,6 +53,8 @@ class BenchmarkRunner:
         
         # Direkter Zugriff wenn angegeben
         if module_name:
+            if module_name == 'all':
+                return None, None  # Signal für "Alle Module"
             if module_name not in modules:
                 raise ValueError(f"Modul nicht gefunden: {module_name}")
             return module_name, modules[module_name]
@@ -62,6 +63,11 @@ class BenchmarkRunner:
         print(f"\n{'='*60}")
         print("📦  TEST-MODULE")
         print(f"{'='*60}")
+        
+        print("  0. ALLE MODULE AUSFÜHREN")
+        print("     Achtung: Führt einen vollständigen Benchmark durch.")
+        print("     Dies kann je nach Modell und Hardware längere Zeit dauern.")
+        print()
         
         module_list = list(modules.items())
         for idx, (name, config) in enumerate(module_list, 1):
@@ -74,15 +80,21 @@ class BenchmarkRunner:
         
         while True:
             try:
-                choice = input(f"\n👉 Wähle ein Modul (1-{len(module_list)}): ").strip()
-                idx = int(choice) - 1
+                choice = input(f"\n👉 Wähle ein Modul (0-{len(module_list)}): ").strip()
+                idx = int(choice)
+                
+                if idx == 0:
+                    print("✓  Alle Module ausgewählt")
+                    return None, None
+                
+                idx = idx - 1 # Adjust for 0-based index
                 
                 if 0 <= idx < len(module_list):
                     selected_name, selected_config = module_list[idx]
                     print(f"✓  {selected_config['name']}")
                     return selected_name, selected_config
                 else:
-                    print(f"⚠️  Bitte eine Zahl zwischen 1 und {len(module_list)} eingeben")
+                    print(f"⚠️  Bitte eine Zahl zwischen 0 und {len(module_list)} eingeben")
             except (ValueError, KeyboardInterrupt):
                 print("\n❌ Abbruch")
                 sys.exit(1)
@@ -253,7 +265,10 @@ class BenchmarkRunner:
             modules_to_run = list(self.get_enabled_modules().items())
         else:
             selected_module, module_config = self.select_module(module_name)
-            modules_to_run = [(selected_module, module_config)]
+            if selected_module is None: # User selected "0. ALL MODULES"
+                modules_to_run = list(self.get_enabled_modules().items())
+            else:
+                modules_to_run = [(selected_module, module_config)]
             
         # Determine provider and model (once for all modules if possible)
         provider = None
@@ -289,7 +304,7 @@ class BenchmarkRunner:
         print(f"{'='*60}")
         print(f"Modul: {module_config['name']}")
         print(f"Modell: {model}")
-        print(f"Provider: Ollama (Local)")
+        print("Provider: Ollama (Local)")
         print(f"{'='*60}\n")
         
         # Importiere und nutze run_local_benchmark.py Logik

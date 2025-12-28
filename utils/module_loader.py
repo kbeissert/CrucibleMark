@@ -6,7 +6,7 @@ Handles dynamic loading of test modules.
 import importlib.util
 import sys
 from pathlib import Path
-from typing import Any, Type, Optional
+from typing import Type
 
 def load_test_class(module_path: Path, class_name: str) -> Type:
     """

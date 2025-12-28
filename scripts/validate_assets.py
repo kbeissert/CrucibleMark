@@ -2,7 +2,6 @@
 """Asset Validator für LLM Benchmark Suite."""
 
 import sys
-import os
 from pathlib import Path
 from typing import List, Dict, Any, Tuple
 

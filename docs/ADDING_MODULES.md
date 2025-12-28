@@ -6,7 +6,7 @@ Dieses Framework ist modular aufgebaut und ermöglicht das einfache Hinzufügen 
 
 Ein Test-Modul besteht aus:
 ```
-test_modules/
+benchmark_modules/
   └─ your_module/
      ├─ __init__.py           # Python Package
      ├─ test.py               # Test-Klasse (erbt von BaseTest)
@@ -24,8 +24,8 @@ test_modules/
 
 ```bash
 # Erstelle Verzeichnisse
-mkdir -p test_modules/your_module/assets
-cd test_modules/your_module
+mkdir -p benchmark_modules/your_module/assets
+cd benchmark_modules/your_module
 
 # Erstelle Dateien
 touch __init__.py
@@ -47,8 +47,12 @@ from pathlib import Path
 from typing import Dict, Any
 
 # Import BaseTest
-sys.path.insert(0, str(Path(__file__).parent.parent.parent))
-from test_modules.base_test import BaseTest
+# Ensure root directory is in sys.path for imports
+root_dir = Path(__file__).parent.parent.parent
+if str(root_dir) not in sys.path:
+    sys.path.insert(0, str(root_dir))
+
+from benchmark_modules.base_test import BaseTest
 
 class YourModuleTest(BaseTest):
     """Test-Klasse für dein Modul."""
