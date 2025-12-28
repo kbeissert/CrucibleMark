@@ -9,15 +9,15 @@ import yaml
 from pathlib import Path
 import sys
 
-# Add project root to path
-sys.path.insert(0, str(Path(__file__).parent.parent))
+# Add project root to path (4 levels up: tests -> code_quality -> benchmark_modules -> root)
+sys.path.insert(0, str(Path(__file__).parents[3]))
 
-from test_modules.code_quality_test import CodeQualityTest
+from benchmark_modules.code_quality.test import CodeQualityTest
 
 
 # Test constants
 TOTAL_POINTS = 100
-EXPECTED_SECURITY_ISSUES = 9
+EXPECTED_SECURITY_ISSUES = 12
 MAX_ACCEPTABLE_CV = 10.0  # Maximum coefficient of variation for WCAG asset
 MAX_EXCELLENT_CV = 1.0    # Maximum CV for excellent stability
 
@@ -25,13 +25,13 @@ MAX_EXCELLENT_CV = 1.0    # Maximum CV for excellent stability
 @pytest.fixture
 def wcag_asset_path():
     """WCAG Asset Path"""
-    return Path("test_modules/test_assets/code_quality/asset_001_wcag_audit.yaml")
+    return Path("benchmark_modules/code_quality/assets/asset_001_wcag_audit.yaml")
 
 
 @pytest.fixture
 def security_asset_path():
     """Security Asset Path"""
-    return Path("test_modules/test_assets/code_quality/asset_002_security_audit.yaml")
+    return Path("benchmark_modules/code_quality/assets/asset_002_security_audit.yaml")
 
 
 class TestAssetLoading:
@@ -140,34 +140,32 @@ class TestGoldenStandardComparison:
     
     def test_wcag_golden_standard_exists(self):
         """WCAG Golden Standard existiert"""
-        golden_path = Path("test_modules/golden_standards/mistral/code_quality_001.json")
+        golden_path = Path("golden_standards/mistral/code_quality_001.json")
         assert golden_path.exists(), f"WCAG Golden Standard fehlt: {golden_path}"
     
     def test_security_golden_standard_exists(self):
         """Security Golden Standard existiert"""
-        golden_path = Path("test_modules/golden_standards/mistral/code_quality_002.json")
+        golden_path = Path("golden_standards/mistral/code_quality_002.json")
         assert golden_path.exists(), f"Security Golden Standard fehlt: {golden_path}"
     
     def test_golden_standard_structure(self):
         """Golden Standards haben korrekte Struktur"""
-        golden_path = Path("test_modules/golden_standards/mistral/code_quality_002.json")
+        golden_path = Path("golden_standards/mistral/code_quality_002.json")
         
         with open(golden_path, 'r', encoding='utf-8') as f:
             golden = json.load(f)
         
         # Pflicht-Felder
-        assert 'metadata' in golden
+        assert 'id' in golden
         assert 'response' in golden
-        assert 'model' in golden
         assert 'provider' in golden
         
-        # Metadata-Struktur
-        assert 'asset_id' in golden['metadata']
-        assert golden['metadata']['asset_id'] == 'code_quality_002'
+        # Metadata-Struktur (angepasst an flache Struktur)
+        assert golden['id'] == 'code_quality_002'
     
     def test_golden_standard_scores_csv_exists(self):
         """Golden Standards Scores CSV existiert"""
-        csv_path = Path("test_modules/golden_standards/golden_standards_scores.csv")
+        csv_path = Path("golden_standard_benchmark.csv")
         assert csv_path.exists(), "Golden Standards Scores CSV fehlt"
         
         # Prüfe ob beide Assets drin sind

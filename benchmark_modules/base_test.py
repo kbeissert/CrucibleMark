@@ -15,7 +15,7 @@ from datetime import datetime
 TOTAL_SCORING_WEIGHT = 100
 
 
-class TestResultData(NamedTuple):
+class BenchmarkResultData(NamedTuple):
     """Container für Test-Ergebnisdaten."""
     model: str
     response: str
@@ -158,13 +158,13 @@ class BaseTest(ABC):
     
     def save_result(
         self, 
-        result_data: TestResultData
+        result_data: BenchmarkResultData
     ) -> None:
         """
         Speichert Ergebnisse als Markdown + JSON
         
         Args:
-            result_data: TestResultData container mit allen benötigten Daten
+            result_data: BenchmarkResultData container mit allen benötigten Daten
         """
         output_dir = Path(result_data.output_dir)
         output_dir.mkdir(parents=True, exist_ok=True)

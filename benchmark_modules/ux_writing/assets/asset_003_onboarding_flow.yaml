@@ -2,6 +2,7 @@
 metadata:
   id: ux_writing_003
   name: "Onboarding Flow - 3-Step Tutorial"
+  version: "1.0.0"
   category: ux_writing
   subcategory: onboarding
   difficulty: tiered

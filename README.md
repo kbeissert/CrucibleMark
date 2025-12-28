@@ -18,7 +18,13 @@
 
 ## ⚡ Quick Start
 
-### 1. Installation
+### 1. Voraussetzungen
+
+*   **Python 3.10+**
+*   **Ollama** (für lokale Benchmarks) - [Download](https://ollama.ai)
+*   **Make** (optional, aber empfohlen)
+
+### 2. Installation
 
 ```bash
 # Repository klonen
@@ -27,13 +33,13 @@ cd crucible-mark
 
 # Virtual Environment erstellen
 python3 -m venv .venv
-source .venv/bin/activate
 
-# Abhängigkeiten installieren
-pip install -r requirements.txt
+# Abhängigkeiten installieren (via Makefile)
+make install
+# Alternativ für Entwickler: make install-dev
 ```
 
-### 2. Konfiguration
+### 3. Konfiguration
 
 ```bash
 # Environment-Variablen einrichten (für API-Keys)
@@ -44,25 +50,47 @@ cp .env.example .env
 cp config_local.yaml.example config_local.yaml
 ```
 
-### 3. Benchmark ausführen
+### 4. Benchmark ausführen
 
 **Interaktiver Modus (Empfohlen):**
+Startet einen Wizard, der durch die Auswahl von Providern, Modellen und Modulen führt.
 ```bash
 make benchmark
 ```
 
-**Spezifische Runner:**
+**Automatisierter Modus (für Skripte/CI):**
+Führt einen Benchmark direkt mit den angegebenen Parametern aus.
 ```bash
-# Nur lokale Modelle (Ollama)
-make benchmark-local
+# Alle Module mit einem bestimmten Modell testen
+make benchmark-auto MODEL=qwen2.5:14b
 
-# Nur kommerzielle Modelle (oder Golden Standard Generierung)
-make benchmark-commercial
+# Nur ein spezifisches Modul testen
+make benchmark-auto MODEL=gpt-4o MODULE=code_quality
+```
+
+### 5. Weitere Befehle
+
+**Installation & Setup:**
+```bash
+make install        # Installiert Runtime-Abhängigkeiten (für User)
+make install-dev    # Installiert zusätzlich Dev-Tools (ruff, pytest)
+```
+
+**Validierung & Tests:**
+```bash
+make validate       # Prüft alle YAML-Assets auf Schema-Konformität
+make test           # Führt Validierung UND Unit-Tests (pytest) aus
+```
+
+**Utilities:**
+```bash
+make clean          # Löscht Ergebnisse & Caches (behält Golden Standards)
+make list-models    # Listet Modelle & prüft API-Keys (Local + Commercial)
 ```
 
 ## 📦 Test-Module
 
-### Code Quality Module (`test_modules/code_quality`)
+### Code Quality Module (`benchmark_modules/code_quality`)
 
 Dieses Modul prüft die Fähigkeit eines LLMs, Code-Reviews durchzuführen. Es nutzt 5 Assets mit gestaffelter Schwierigkeit:
 
@@ -74,7 +102,7 @@ Dieses Modul prüft die Fähigkeit eines LLMs, Code-Reviews durchzuführen. Es n
 | **004 API Design** | REST Principles | Tiered (1-4) |
 | **005 Code Smells** | Refactoring Patterns | Tiered (1-3) |
 
-### UX Writing Module (`test_modules/ux_writing`)
+### UX Writing Module (`benchmark_modules/ux_writing`)
 
 Dieses Modul bewertet die Fähigkeiten im Bereich UX Writing, Microcopy und Tonalität.
 
@@ -116,7 +144,7 @@ crucible-mark/
 ├── benchmark_config.yaml       # Zentrale Konfiguration (Module, Provider)
 ├── run_benchmark.py            # Haupt-Einstiegspunkt
 ├── .env                        # API Keys (nicht im Git)
-├── test_modules/               # Die eigentlichen Tests
+├── benchmark_modules/          # Die eigentlichen Tests
 │   └── code_quality/
 │       ├── test.py             # Test-Logik
 │       └── assets/             # YAML-Test-Definitionen
@@ -130,7 +158,7 @@ crucible-mark/
 ## 🤝 Contributing
 
 Neue Test-Module können einfach hinzugefügt werden:
-1.  Ordner in `test_modules/` erstellen.
+1.  Ordner in `benchmark_modules/` erstellen.
 2.  `test.py` (erbt von `BaseTest`) implementieren.
 3.  `assets/` mit YAML-Dateien füllen.
 4.  Modul in `benchmark_config.yaml` registrieren.

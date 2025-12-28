@@ -2,6 +2,7 @@
 metadata:
   id: ux_writing_005
   name: "Microcopy Audit - Health App Context"
+  version: "1.0.0"
   category: ux_writing
   subcategory: microcopy_audit
   difficulty: tiered

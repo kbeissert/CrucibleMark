@@ -60,7 +60,7 @@ def get_asset_category(asset_path: Path) -> str:
     Returns:
         Kategorie-Name
     """
-    # Annahme: test_modules/test_assets/category/asset_xxx.yaml
+    # Annahme: benchmark_modules/test_assets/category/asset_xxx.yaml
     return asset_path.parent.name
 
 

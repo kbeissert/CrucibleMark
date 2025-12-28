@@ -1,8 +1,8 @@
 # CrucibleMark - Projekt-Status & Architektur
 
-**Version:** 0.3.0-beta
+**Version:** 0.3.1-beta
 **Datum:** 28. Dezember 2025
-**Status:** Beta - Expert Level (Tier 4) implementiert, UX Writing Module integriert
+**Status:** Beta - UX Writing Module integriert, Validation Tools restored
 
 ---
 
@@ -35,10 +35,12 @@ crucible-mark/
 │
 ├── scripts/
 │   ├── run_local_benchmark.py           # Benchmark-Runner für Ollama-Modelle
-│   └── run_commercial_benchmark.py      # Benchmark-Runner für kommerzielle LLMs
-│                                        # (Zwei Modi: Golden Standard / Test)
+│   ├── run_commercial_benchmark.py      # Benchmark-Runner für kommerzielle LLMs
+│   ├── validate_assets.py               # ✅ Asset-Validierung (Schema & Version)
+│   └── debug_ollama.py                  # Debugging Script
 │
-├── test_modules/                  # ⭐ TEST-MODULE (Plugin-System)
+│
+├── benchmark_modules/             # ⭐ TEST-MODULE (Plugin-System)
 │   └── code_quality/              # ✅ Erstes vollständiges Modul
 │       ├── test.py                # CodeQualityTest Klasse (erbt von BaseTest)
 │       ├── config.yaml            # Modul-Metadaten
@@ -63,7 +65,7 @@ crucible-mark/
 ├── golden_standards/              # Referenz-Antworten (JSON)
 ├── outputs/                       # Ergebnisse (CSV, Logs)
 │
-└── _backup_old/                   # Alte Files vor Refactoring
+└── outputs/                       # Ergebnisse (CSV, Logs)
 ```
 
 ---
@@ -91,7 +93,7 @@ modules:
   code_quality:
     name: "Code Quality Audit"
     description: "Umfassende Code-Qualitätsanalyse"
-    path: "test_modules/code_quality"
+    path: "benchmark_modules/code_quality"
     test_class: "CodeQualityTest"
     version: "0.2.0"
     enabled: true
@@ -136,7 +138,7 @@ providers:
 ### 4.1 Modul-Struktur (Code Quality Beispiel)
 
 ```
-test_modules/code_quality/
+benchmark_modules/code_quality/
 │
 ├── test.py                  # Test-Klasse (Hauptlogik)
 ├── config.yaml              # Metadaten
@@ -434,15 +436,16 @@ pip install -r requirements.txt
 - ✅ Code Quality Module vollständig (Tiered Difficulty)
 - ✅ Golden Standard System implementiert
 - ✅ Lokale + Kommerzielle Benchmarks funktionieren
+- ✅ Validation Tools & Dev-Dependencies (ruff, pytest) integriert
 
 **Next Steps:**
 1. Unit Tests schreiben
-2. Weitere Module entwickeln (UX Writing, Tech Docs)
+2. Weitere Module entwickeln (Tech Docs)
 
 **Für Fragen:** Siehe `docs/` oder README.md
 
 ---
-8.12.2025
-**Version:** 0.3.0-beta
-**Status:** Produktionsbereit für Code Quality Tests (Tier 4 Implemented)
-**Status:** Produktionsbereit für Code Quality Tests
+28.12.2025
+**Version:** 0.3.1-beta
+**Status:** Validation Tools restored, Dev-Dependencies added.
+

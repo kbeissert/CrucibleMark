@@ -11,12 +11,12 @@ import re
 import time
 
 # Ensure root directory is in sys.path for imports
-# Path: test_modules/ux_writing/test.py -> .../llm-test
+# Path: benchmark_modules/ux_writing/test.py -> .../llm-test
 root_dir = Path(__file__).parent.parent.parent
 if str(root_dir) not in sys.path:
     sys.path.insert(0, str(root_dir))
 
-from test_modules.base_test import BaseTest  # noqa: E402
+from benchmark_modules.base_test import BaseTest  # noqa: E402
 from utils.similarity import SemanticSimilarity  # noqa: E402
 
 # ============================================================

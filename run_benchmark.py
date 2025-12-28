@@ -18,6 +18,7 @@ import sys
 from pathlib import Path
 from typing import Dict, Any, List, Optional
 import yaml
+from utils.model_utils import is_model_suitable_for_benchmark
 import ollama
 
 
@@ -180,8 +181,11 @@ class BenchmarkRunner:
             # Ollama gibt ListResponse mit .models zurück
             model_list = models_response.models if hasattr(models_response, 'models') else models_response.get('models', [])
             
-            # Filter out embedding models
-            model_list = [m for m in model_list if 'embed' not in (m.model if hasattr(m, 'model') else m.get('name', '')).lower()]
+            # Filter out unsuitable models (e.g. embeddings) using centralized logic
+            model_list = [
+                m for m in model_list 
+                if is_model_suitable_for_benchmark(m.model if hasattr(m, 'model') else m.get('name', ''))
+            ]
             
             if not model_list:
                 print("\n⚠️  Keine Ollama-Modelle gefunden!")
@@ -234,24 +238,49 @@ class BenchmarkRunner:
     def run(
         self,
         module_name: Optional[str] = None,
-        provider_type: Optional[str] = None
+        provider_type: Optional[str] = None,
+        model_name: Optional[str] = None,
+        run_all: bool = False
     ):
         """Führt Benchmark aus."""
         print(f"\n{'='*60}")
         print("🚀 CRUCIBLE MARK - BENCHMARK RUNNER")
         print(f"{'='*60}")
         
-        # Schritt 1: Modul auswählen
-        selected_module, module_config = self.select_module(module_name)
-        
-        # Schritt 2: Provider & Modell auswählen
-        provider, model_id = self.select_provider(provider_type)
-        
-        # Schritt 3: Passenden Runner laden
-        if provider == 'ollama':
-            self._run_local_benchmark(selected_module, module_config, model_id)
+        # Determine modules to run
+        modules_to_run = []
+        if run_all:
+            modules_to_run = list(self.get_enabled_modules().items())
         else:
-            self._run_commercial_benchmark(selected_module, module_config, provider, model_id)
+            selected_module, module_config = self.select_module(module_name)
+            modules_to_run = [(selected_module, module_config)]
+            
+        # Determine provider and model (once for all modules if possible)
+        provider = None
+        model_id = None
+        
+        if model_name:
+            # Try to auto-detect provider from model name
+            if model_name.startswith(('gpt', 'claude', 'mistral-')):
+                provider = 'commercial'
+                model_id = model_name
+            else:
+                # Assume local/ollama if not obviously commercial
+                # Verify with ollama list if possible, or just assume
+                provider = 'ollama'
+                model_id = model_name
+        else:
+            # Interactive selection
+            provider, model_id = self.select_provider(provider_type)
+            
+        # Run benchmark for each module
+        for module_key, module_config in modules_to_run:
+            print(f"\n>>> Running Module: {module_config['name']}")
+            if provider == 'ollama':
+                self._run_local_benchmark(module_key, module_config, model_id)
+            else:
+                self._run_commercial_benchmark(module_key, module_config, provider, model_id)
+
     
     def _run_local_benchmark(self, module_name: str, module_config: Dict, model: str):
         """Führt lokalen Benchmark aus."""
@@ -346,13 +375,27 @@ Beispiele:
         help='Pfad zur Config-Datei (Standard: benchmark_config.yaml)'
     )
     
+    parser.add_argument(
+        '--model',
+        type=str,
+        help='Modell-Name (überspringt Auswahl, z.B. qwen2.5:14b)'
+    )
+    
+    parser.add_argument(
+        '--all',
+        action='store_true',
+        help='Führt Benchmark für alle aktivierten Module aus'
+    )
+    
     args = parser.parse_args()
     
     try:
         runner = BenchmarkRunner(args.config)
         runner.run(
             module_name=args.module,
-            provider_type=args.provider
+            provider_type=args.provider,
+            model_name=args.model,
+            run_all=args.all
         )
     except KeyboardInterrupt:
         print("\n\n❌ Benchmark abgebrochen")

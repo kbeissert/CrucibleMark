@@ -2,6 +2,7 @@
 metadata:
   id: ux_writing_004
   name: "Accessibility Labels - ARIA for Screen Readers"
+  version: "1.0.0"
   category: ux_writing
   subcategory: accessibility_labels
   difficulty: tiered

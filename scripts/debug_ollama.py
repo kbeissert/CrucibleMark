@@ -4,7 +4,7 @@ from pathlib import Path
 import time
 
 # Add root to path
-root_dir = Path(__file__).parent
+root_dir = Path(__file__).parent.parent
 sys.path.insert(0, str(root_dir))
 
 from utils.llm_client import LLMClient
@@ -14,7 +14,7 @@ def test_ollama_query():
     model = "qwen3:8b"
     
     # Load prompt from asset 002
-    with open("test_modules/ux_writing/assets/asset_002_button_labels.yaml", "r") as f:
+    with open("benchmark_modules/ux_writing/assets/asset_002_button_labels.yaml", "r") as f:
         import yaml
         data = yaml.safe_load(f)
         prompt = data["prompt"]
