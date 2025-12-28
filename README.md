@@ -1,7 +1,7 @@
 # CrucibleMark
 
 [![Python](https://img.shields.io/badge/Python-3.10+-blue.svg)](https://python.org)
-[![Version](https://img.shields.io/badge/Version-0.2.0--beta-orange.svg)](CHANGELOG.md)
+[![Version](https://img.shields.io/badge/Version-0.3.0--beta-orange.svg)](CHANGELOG.md)
 [![Ollama](https://img.shields.io/badge/Ollama-Compatible-green.svg)](https://ollama.ai)
 [![License](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
@@ -80,11 +80,11 @@ Dieses Modul bewertet die Fähigkeiten im Bereich UX Writing, Microcopy und Tona
 
 | Asset | Fokus | Schwierigkeit |
 | :--- | :--- | :--- |
-| **001 Error Messages** | User-Friendly Rewriting | Tiered (1-3) |
-| **002 Button Labels** | Context-Aware CTAs | Tiered (1-3) |
-| **003 Onboarding Flow** | Step-by-Step Guidance | Tiered (1-3) |
-| **004 Accessibility Labels** | ARIA & Screen Reader | Tiered (1-3) |
-| **005 Microcopy Audit** | Real-World UX Writing | Tiered (1-3) |
+| **001 Error Messages** | User-Friendly Rewriting | Tiered (1-4) |
+| **002 Button Labels** | Context-Aware CTAs | Tiered (1-4) |
+| **003 Onboarding Flow** | Step-by-Step Guidance | Tiered (1-4) |
+| **004 Accessibility Labels** | ARIA & Screen Reader | Tiered (1-4) |
+| **005 Microcopy Audit** | Real-World UX Writing | Tiered (1-4) |
 
 **Schwierigkeits-Level:**
 1.  **Labeled (Easy)**: Fehler sind durch TODOs/Kommentare markiert.
