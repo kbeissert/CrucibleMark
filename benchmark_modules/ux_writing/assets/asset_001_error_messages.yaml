@@ -2,6 +2,7 @@
 metadata:
   id: ux_writing_001
   name: "Error Messages - User-Friendly Rewriting"
+  version: "1.0.0"
   category: ux_writing
   subcategory: error_messages
   difficulty: tiered

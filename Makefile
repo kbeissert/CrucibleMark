@@ -7,29 +7,33 @@ help:
 	@echo "CrucibleMark - Makefile Commands"
 	@echo ""
 	@echo "=== Installation ==="
-	@echo "  make install              Install Python dependencies"
+	@echo "  make install              Install runtime dependencies (User)"
+	@echo "  make install-dev          Install dev dependencies (Developer)"
 	@echo ""
 	@echo "=== Benchmarking (Neue modulare Struktur) ==="
-	@echo "  make benchmark            Interaktiver Benchmark (Modul + Provider wählen)"
-	@echo "  make benchmark-local      Lokale Modelle (Ollama)"
-	@echo "  make benchmark-commercial Kommerzielle Modelle (Mistral/Claude/GPT)"
-	@echo "  make benchmark-module     Spezifisches Modul (MODULE=code_quality)"
+	@echo "  make benchmark            Interaktiver Benchmark (Wizard)"
+	@echo "  make benchmark-auto       Automatisierter Run (MODEL=name [MODULE=name])"
 	@echo ""
 	@echo "=== Golden Standards ==="
 	@echo "  make generate-golden      Generate golden standard (ASSET=path)"
 	@echo ""
-	@echo "=== Validation ==="
+	@echo "=== Validation & Testing ==="
 	@echo "  make validate             Validate all test assets"
 	@echo "  make validate-single      Validate single asset (ASSET=path)"
+	@echo "  make test                 Run validation & unit tests"
 	@echo ""
 	@echo "=== Utilities ==="
 	@echo "  make clean                Clean output directories"
-	@echo "  make list-models          List available Ollama models"
-	@echo "  make test                 Run validation tests"
+	@echo "  make list-models          List models (Local & Commercial Status)"
 	@echo ""
 
 install:
+	@echo "📦 Installing runtime dependencies..."
 	$(PYTHON) -m pip install -r requirements.txt
+
+install-dev: install
+	@echo "🛠️ Installing development dependencies..."
+	$(PYTHON) -m pip install -r requirements-dev.txt
 
 # === NEUE MODULARE BENCHMARK-COMMANDS ===
 
@@ -37,22 +41,14 @@ benchmark:
 	@echo "🚀 Starte interaktiven Benchmark..."
 	$(PYTHON) run_benchmark.py
 
-benchmark-local:
-	@echo "🖥️  Starte lokalen Benchmark (Ollama)..."
-	$(PYTHON) run_benchmark.py --provider local
-
-benchmark-commercial:
-	@echo "🌐 Starte kommerziellen Benchmark..."
-	$(PYTHON) run_benchmark.py --provider commercial
-
-benchmark-module:
-	@if [ -z "$(MODULE)" ]; then \
-		echo "❌ Error: MODULE variable not set"; \
-		echo "Usage: make benchmark-module MODULE=code_quality"; \
+benchmark-auto:
+	@if [ -z "$(MODEL)" ]; then \
+		echo "❌ Error: MODEL variable not set"; \
+		echo "Usage: make benchmark-auto MODEL=qwen2.5:14b [MODULE=code_quality]"; \
 		exit 1; \
 	fi
-	@echo "📦 Starte Benchmark für Modul: $(MODULE)..."
-	$(PYTHON) run_benchmark.py --module $(MODULE)
+	@echo "🤖 Starte automatisierten Benchmark mit Modell: $(MODEL)..."
+	$(PYTHON) run_benchmark.py --model $(MODEL) $(if $(MODULE),--module $(MODULE),--all)
 
 test-stability:
 	@if [ -z "$(MODELS)" ] || [ -z "$(CATEGORY)" ]; then \
@@ -67,12 +63,13 @@ test-stability:
 # === VALIDATION ===
 
 validate:
-	$(PYTHON) scripts/validate_assets.py test_modules/test_assets/
+	@echo "🔍 Validiere alle Module aus benchmark_config.yaml..."
+	$(PYTHON) scripts/validate_assets.py --all
 
 validate-single:
 	@if [ -z "$(ASSET)" ]; then \
 		echo "Error: ASSET variable not set"; \
-		echo "Usage: make validate-single ASSET=test_modules/test_assets/code_quality/asset_001_wcag_audit.yaml"; \
+		echo "Usage: make validate-single ASSET=benchmark_modules/code_quality/assets/asset_001_wcag_audit.yaml"; \
 		exit 1; \
 	fi
 	$(PYTHON) scripts/validate_assets.py $(ASSET)
@@ -89,9 +86,9 @@ run-benchmark:
 	$(PYTHON) scripts/interactive_benchmark.py
 
 quick-test:
-	$(PYTHON) scripts/run_benchmark.py \
+	$(PYTHON) run_benchmark.py \
 		--models qwen2.5:14b \
-		--assets test_modules/test_assets/code_quality/asset_001_wcag_audit.yaml
+		--assets benchmark_modules/code_quality/assets/asset_001_wcag_audit.yaml
 
 test-stability:
 	@if [ -z "$(MODELS)" ] || [ -z "$(CATEGORY)" ]; then \
@@ -127,8 +124,8 @@ clean-runs-force:
 	fi
 
 list-models:
-	@echo "Available Ollama models:"
-	@ollama list
+	$(PYTHON) scripts/list_models.py
 
 test: validate
-	@echo "✓ All tests passed"
+	@echo "🧪 Running Unit Tests..."
+	$(PYTHON) -m pytest benchmark_modules/

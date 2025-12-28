@@ -2,6 +2,7 @@
 metadata:
   id: ux_writing_002
   name: "Button Labels - Context-Aware CTAs"
+  version: "1.0.0"
   category: ux_writing
   subcategory: button_labels
   difficulty: tiered

@@ -16,7 +16,7 @@ modules:
   code_quality:
     name: "Code Quality Audit"
     description: "Umfassende Code-Qualitätsanalyse: WCAG, Security, Performance, API Design, Code Smells"
-    path: "test_modules/code_quality"
+    path: "benchmark_modules/code_quality"
     test_class: "CodeQualityTest"
     version: "0.1.0-alpha"
     enabled: true
@@ -30,7 +30,7 @@ modules:
   ux_writing:
     name: "UX Writing & Microcopy"
     description: "Bewertet UX-Writing für Error Messages, Buttons, Onboarding, ARIA"
-    path: "test_modules/ux_writing"
+    path: "benchmark_modules/ux_writing"
     test_class: "UXWritingTest"
     version: "1.0.0"
     enabled: true
@@ -45,14 +45,14 @@ modules:
   # documentation_quality:
   #   name: "Documentation Quality"
   #   description: "Prüft Qualität von Code-Dokumentation und README-Dateien"
-  #   path: "test_modules/documentation_quality"
+  #   path: "benchmark_modules/documentation_quality"
   #   test_class: "DocumentationTest"
   #   enabled: false
   
   # prompt_engineering:
   #   name: "Prompt Engineering Tests"
   #   description: "Testet Prompt-Following und Instruction-Adherence"
-  #   path: "test_modules/prompt_engineering"
+  #   path: "benchmark_modules/prompt_engineering"
   #   test_class: "PromptTest"
   #   enabled: false
 

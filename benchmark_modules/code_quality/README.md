@@ -106,11 +106,11 @@ python scripts/run_local_benchmark.py
 ### Manuelle Ausführung (Development)
 
 ```python
-from test_modules.code_quality.test import CodeQualityTest
+from benchmark_modules.code_quality.test import CodeQualityTest
 from pathlib import Path
 
 # Test laden
-test = CodeQualityTest(Path("test_modules/code_quality/assets/asset_001_wcag_audit.yaml"))
+test = CodeQualityTest(Path("benchmark_modules/code_quality/assets/asset_001_wcag_audit.yaml"))
 
 # Ausführen (benötigt LLM Client)
 # result = test.execute("model_name", llm_client)

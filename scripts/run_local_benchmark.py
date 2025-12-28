@@ -24,7 +24,7 @@ class LocalBenchmarkRunner:
         'code_quality': {
             'name': 'Code Quality',
             'description': 'WCAG, Security, Performance, API Design, Code Smells',
-            'path': 'test_modules/code_quality/assets'
+            'path': 'benchmark_modules/code_quality/assets'
         }
     }
     
@@ -192,7 +192,7 @@ class LocalBenchmarkRunner:
             asset_data = yaml.safe_load(f)
         
         # Dynamisches Laden der Test-Klasse
-        module_path = Path(benchmark_info.get('module_path', 'test_modules/code_quality')) / 'test.py'
+        module_path = Path(benchmark_info.get('module_path', 'benchmark_modules/code_quality')) / 'test.py'
         test_class_name = benchmark_info.get('test_class', 'CodeQualityTest')
         
         from utils.module_loader import load_test_class
