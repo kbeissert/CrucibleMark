@@ -9,6 +9,7 @@ Zwei Modi:
 import json
 import sys
 import csv
+import argparse
 from pathlib import Path
 from datetime import datetime
 from typing import List, Dict, Any, Optional, Tuple
@@ -26,25 +27,31 @@ from utils.module_loader import load_test_class
 class CommercialBenchmarkRunner:
     """Benchmark Runner für kommerzielle API-basierte Modelle."""
     
-    BENCHMARK_CATEGORIES = {
-        'code_quality': {
-            'name': 'Code Quality',
-            'description': 'WCAG, Security, Performance, API Design, Code Smells',
-            'path': 'test_modules/code_quality/assets'
-        }
-    }
+    BENCHMARK_CATEGORIES = {}
     
-    def __init__(self, mode: str = 'test'):
+    def __init__(self, mode: str = 'test', force: bool = False):
         """Initialisiert Runner.
         
         Args:
             mode: 'golden_standard' oder 'test'
-                  - golden_standard: Nur das Golden Standard Modell
-                  - test: Beliebige kommerzielle Modelle
+            force: Wenn True, werden existierende Golden Standards überschrieben
         """
         self.client = LLMClient()
         self.validator = ConfigValidator()
         self.mode = mode
+        self.force = force
+        
+        # Load categories from config
+        self.BENCHMARK_CATEGORIES = {}
+        if 'modules' in self.validator.config:
+            for key, mod in self.validator.config['modules'].items():
+                if mod.get('enabled', False):
+                    self.BENCHMARK_CATEGORIES[key] = {
+                        'name': mod['name'],
+                        'description': mod['description'],
+                        'path': f"{mod['path']}/assets",
+                        'test_class': mod.get('test_class', 'CodeQualityTest')
+                    }
         
         # CSV-Datei je nach Modus
         if mode == 'golden_standard':
@@ -249,12 +256,22 @@ class CommercialBenchmarkRunner:
         Returns:
             Liste mit Testergebnissen
         """
+        # Check if current model is Golden Standard
+        golden_info = self.validator.get_golden_standard_info()
+        is_golden_model = False
+        if golden_info:
+            g_provider, g_model, _ = golden_info
+            if provider == g_provider and model == g_model:
+                is_golden_model = True
+
         print(f"\n{'='*60}")
         print(f"📊 STARTE BENCHMARK: {benchmark_info['name']}")
         print(f"{'='*60}")
         print(f"Provider: {provider}")
         print(f"Modell: {model}")
         print(f"Modus: {self.mode}")
+        if is_golden_model:
+            print(f"ℹ️  Dies ist das Golden Standard Modell. Ergebnisse werden synchronisiert.")
         print(f"{'='*60}\n")
         
         # Discover assets
@@ -269,7 +286,27 @@ class CommercialBenchmarkRunner:
                 with open(asset_path, 'r', encoding='utf-8') as f:
                     asset_data = yaml.safe_load(f)
                 
-                print(f"▶️  Teste: {asset_data['metadata']['name']}...")
+                asset_id = asset_data['metadata']['id']
+                asset_name = asset_data['metadata']['name']
+                
+                # Check if Golden Standard JSON already exists
+                # Only skip if we are explicitly in golden_standard mode (to avoid re-generation)
+                # In test mode, we might want to re-run to verify consistency, but user asked to reuse.
+                # Let's reuse if JSON exists AND we are the golden model.
+                
+                json_exists = False
+                if is_golden_model:
+                    json_path = Path(f"golden_standards/{provider}/{asset_id}.json")
+                    if json_path.exists():
+                        json_exists = True
+                        # Skip ONLY if we are in golden_standard mode AND force is False
+                        if self.mode == 'golden_standard' and not self.force:
+                            print(f"⏭️  Überspringe {asset_name} (Golden Standard existiert bereits)")
+                            continue
+                        elif self.mode == 'golden_standard' and self.force:
+                            print(f"🔄 Aktualisiere {asset_name} (Force Update)")
+
+                print(f"▶️  Teste: {asset_name}...")
                 
                 # Load Test Class
                 module_path = Path(benchmark_info['path']).parent / 'test.py'
@@ -298,8 +335,8 @@ class CommercialBenchmarkRunner:
                     'status': score.get('status', 'success'),
                     'provider': provider,
                     'model': model,
-                    'asset_id': asset_data['metadata']['id'],
-                    'asset_name': asset_data['metadata']['name'],
+                    'asset_id': asset_id,
+                    'asset_name': asset_name,
                     'total_score': score['total_score'],
                     'max_score': score['max_score'],
                     'percentage': round((score['total_score'] / score['max_score'] * 100), 1),
@@ -317,9 +354,13 @@ class CommercialBenchmarkRunner:
                 badge = self._get_quality_badge(result['percentage'])
                 print(f"   Ergebnis: {result['percentage']}% {badge} ({result['total_score']}/{result['max_score']} Pkt)")
                 
-                # Save Golden Standard JSON if in correct mode
-                if self.mode == 'golden_standard':
-                    self._save_golden_json(provider, asset_data['metadata']['id'], response)
+                # Save Golden Standard JSON if in correct mode OR if it is the golden model
+                if self.mode == 'golden_standard' or is_golden_model:
+                    self._save_golden_json(provider, asset_id, response)
+                    
+                    # If we are in test mode but it IS the golden model, we should also append to golden CSV
+                    if self.mode == 'test' and is_golden_model:
+                        self._append_to_golden_csv(result)
                 
             except Exception as e:
                 print(f"❌ Fehler bei {asset_path.name}: {e}")
@@ -327,6 +368,22 @@ class CommercialBenchmarkRunner:
                 traceback.print_exc()
         
         return results
+
+    def _append_to_golden_csv(self, result: Dict[str, Any]) -> None:
+        """Fügt ein Ergebnis zur Golden Standard CSV hinzu."""
+        golden_csv = self.validator.get_golden_standard_csv()
+        file_exists = golden_csv.exists()
+        fieldnames = list(result.keys())
+        
+        try:
+            with open(golden_csv, 'a', newline='', encoding='utf-8') as f:
+                writer = csv.DictWriter(f, fieldnames=fieldnames)
+                if not file_exists:
+                    writer.writeheader()
+                writer.writerow(result)
+            print(f"   💾 Auch in Golden Standard CSV gespeichert.")
+        except Exception as e:
+            print(f"   ⚠️  Fehler beim Speichern in Golden Standard CSV: {e}")
 
     def _save_golden_json(self, provider: str, asset_id: str, response: str) -> None:
         """Speichert die volle Antwort als JSON für Similarity-Checks."""
@@ -394,6 +451,12 @@ class CommercialBenchmarkRunner:
 
 def main():
     """Hauptfunktion."""
+    parser = argparse.ArgumentParser(description="Commercial Benchmark Runner")
+    parser.add_argument('--mode', choices=['golden_standard', 'test'], help="Benchmark mode")
+    parser.add_argument('--auto', action='store_true', help="Run automatically without interaction")
+    parser.add_argument('--force', action='store_true', help="Force overwrite existing Golden Standards")
+    args = parser.parse_args()
+
     print("\n" + "="*60)
     print("🚀 KOMMERZIELLE MODELLE BENCHMARK")
     print("="*60)
@@ -402,12 +465,15 @@ def main():
     runner = CommercialBenchmarkRunner()
     
     # 1. Modus wählen
-    mode = runner.select_mode()
-    if not mode:
-        return
+    if args.mode:
+        mode = args.mode
+    else:
+        mode = runner.select_mode()
+        if not mode:
+            return
     
     # Runner mit gewähltem Modus neu initialisieren
-    runner = CommercialBenchmarkRunner(mode=mode)
+    runner = CommercialBenchmarkRunner(mode=mode, force=args.force)
     
     # 2. Modell wählen (je nach Modus)
     if mode == 'golden_standard':
@@ -423,6 +489,15 @@ def main():
     provider, model_id = result
     
     # 3. Benchmark wählen
+    if args.auto and mode == 'golden_standard':
+        print(f"\n🚀 Starte automatischen Golden Standard Run für alle Module...")
+        for cat_id, cat_info in runner.BENCHMARK_CATEGORIES.items():
+            print(f"\n📦 Modul: {cat_info['name']}")
+            results = runner.run_benchmark(provider, model_id, cat_info)
+            runner.save_results(results)
+            runner.print_summary(results)
+        return
+
     benchmark_info = runner.select_benchmark()
     if not benchmark_info:
         return
@@ -437,7 +512,9 @@ def main():
     print(f"Ergebnis: {runner.results_csv}")
     print(f"{'='*60}\n")
     
-    print("⚠️  Implementierung noch ausstehend - Struktur steht!")
+    results = runner.run_benchmark(provider, model_id, benchmark_info)
+    runner.save_results(results)
+    runner.print_summary(results)
 
 
 if __name__ == '__main__':

@@ -55,16 +55,27 @@ providers:
 
 ### Golden Standard generieren
 
+Es gibt zwei Methoden, um den Golden Standard zu generieren:
+
+#### 1. Smart Update (Empfohlen)
+
+Generiert nur fehlende Golden Standards. Bereits existierende Ergebnisse werden beibehalten. Ideal für den täglichen Gebrauch oder wenn neue Module hinzugefügt wurden.
+
 ```bash
-# 1. API Key setzen
-export MISTRAL_API_KEY="your-api-key"
-
-# 2. Benchmark Script starten
-python scripts/run_commercial_benchmark.py
-
-# 3. Option "1. Golden Standard generieren" wählen
-# → Ergebnis wird in golden_standard_benchmark.csv gespeichert
+make generate-golden
 ```
+
+#### 2. Force Update (Neu generieren)
+
+Erzwingt eine komplette Neugenerierung aller Golden Standards. Überschreibt existierende Ergebnisse. Nutzen Sie dies, wenn sich Prompts geändert haben oder das Referenz-Modell aktualisiert wurde.
+
+```bash
+make generate-golden-new
+```
+
+### Automatische Synchronisierung
+
+Wenn Sie einen normalen kommerziellen Benchmark ausführen (`make benchmark-commercial`) und dabei das Modell wählen, das als Golden Standard definiert ist (z.B. `mistral-large`), werden die Ergebnisse **automatisch** in den Golden Standard übernommen.
 
 ### Validierung
 

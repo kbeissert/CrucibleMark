@@ -1,0 +1,189 @@
+# asset_002_button_labels.yaml
+metadata:
+  id: ux_writing_002
+  name: "Button Labels - Context-Aware CTAs"
+  category: ux_writing
+  subcategory: button_labels
+  difficulty: tiered
+  estimated_time_seconds: 180
+  tags: [cta, button-labels, context, microcopy, conversion]
+
+context: |
+  Du bist ein Senior UX Writer, spezialisiert auf Conversion-Optimierung und Microcopy.
+  Deine Aufgabe ist es, Button-Labels (Call-to-Actions) zu optimieren, damit sie klar, handlungsorientiert und kontextgerecht sind.
+  
+  Kontexte:
+  - E-Commerce (B2C): Klar, vertrauenswürdig, rechtssicher.
+  - Newsletter (Marketing): Einladend, aber kurz.
+  - Enterprise SaaS (B2B): Professionell, präzise.
+  - Banking: Sicher, seriös, keine unnötige Dringlichkeit.
+  - Health App: Empathisch, beruhigend.
+  - Mobile Game: Motivierend, auch bei Verlust.
+
+prompt: |
+  Optimiere die folgenden Button-Labels für die angegebenen Szenarien.
+  
+  Eingabe-Szenarien:
+  {input_text}
+  
+  Erfülle dabei strikt die folgenden Anforderungen:
+  {requirements}
+
+requirements:
+  - "Erstelle eine Markdown-Tabelle mit den Spalten: `Szenario` | `Original` | `Optimierung` | `Begründung`."
+  - "Die Optimierung muss MAXIMAL 25 Zeichen lang sein (Mobile First)."
+  - "Beginne jedes Label mit einem starken, aktiven Verb (z.B. 'Speichern', 'Kaufen')."
+  - "Passe die Tonalität exakt an den beschriebenen Kontext an."
+  - "Vermeide generische Begriffe wie 'OK', 'Weiter' oder 'Ja'."
+  - "Bei Level 4 (Expert): Gib eine Hypothese an, warum deine Wahl besser konvertiert."
+
+input_text: |
+  1. Szenario: E-Commerce Checkout (Warenkorb: 234,50 €). Button: "OK"
+  2. Szenario: Newsletter-Popup. Button: "Ja, ich möchte den Newsletter abonnieren und über Angebote informiert werden"
+  3. Szenario: Enterprise SaaS (Vertrag hochladen). Button: "Upload"
+  4. Szenario: Account löschen (unwiderruflich). Button: "Löschen"
+  5. Szenario: Gesundheits-App (nach Schmerz-Eingabe). Button: "Weiter"
+  6. Szenario: Banking (5.000 € überweisen). Button: "Jetzt abschicken!"
+  7. Szenario: SaaS Trial (A/B Test Entscheidung). Original A: "Kostenlos testen", Original B: "Jetzt starten". Welches gewinnt?
+  8. Szenario: Mobile Game (Level verloren, Kaufangebot). Button: "Kaufen"
+
+testdata:
+  issues:
+    # LEVEL 1: Length & Clarity (Mobile First)
+    - issue: "Newsletter-Button gekürzt"
+      severity: critical
+      type: labeled
+      explanation: "Das Original ist viel zu lang. Muss unter 25 Zeichen sein."
+      keywords: ["anmelden", "abonnieren", "jetzt"]
+      inverse_match: true # Darf NICHT die langen Wörter enthalten
+      inverse_keywords: ["möchte", "informiert", "werden", "newsletter"]
+
+    - issue: "Checkout ist rechtssicher/klar"
+      severity: critical
+      type: labeled
+      explanation: "'OK' reicht nicht für Kaufvertrag. Braucht 'Kaufen' oder 'Zahlen'."
+      keywords: ["kaufen", "zahlen", "bestellen", "pflichtig"]
+
+    # LEVEL 2: Action & Precision (Active Verbs)
+    - issue: "SaaS Upload ist präzise"
+      severity: high
+      type: standard
+      explanation: "'Upload' ist Substantiv/Denglisch. Besser: Verb."
+      keywords: ["hochladen", "signieren", "übertragen"]
+
+    - issue: "Löschen warnt/ist präzise"
+      severity: high
+      type: standard
+      explanation: "Bei unwiderruflicher Löschung muss das Label klar sein."
+      keywords: ["endgültig", "unwiderruflich", "konto", "schließen"]
+
+    # LEVEL 3: Tone & Context (Trust & Empathy)
+    - issue: "Banking ohne Ausrufezeichen"
+      severity: medium
+      type: advanced
+      explanation: "Ausrufezeichen wirken im Banking unseriös/phishing-artig."
+      keywords: ["!"]
+      inverse_match: true
+
+    - issue: "Health App ist empathisch"
+      severity: medium
+      type: advanced
+      explanation: "'Weiter' ist zu kalt. Besser: Bestätigung der Eingabe."
+      keywords: ["speichern", "erfassen", "notieren", "sichern"]
+
+    # LEVEL 4: Expert (Strategy & Psychology)
+    - issue: "SaaS Trial Hypothese"
+      severity: low
+      type: expert
+      explanation: "Erkennt, dass 'Kostenlos' oft besser konvertiert als 'Starten' (Commitment)."
+      keywords: ["kostenlos", "gratis", "hürde", "commitment", "risk"]
+
+    - issue: "Mobile Game Motivation"
+      severity: low
+      type: expert
+      explanation: "Erkennt, dass 'Kaufen' zu transaktional ist. Besser: 'Weiterspielen' oder 'Retten'."
+      keywords: ["weiterspielen", "retten", "chance", "revive"]
+
+scoring:
+  total_points: 100
+  
+  error_detection:
+    weight: 60
+    description: "Erkennung und Optimierung der Button-Labels"
+    
+    # 1. Labeled Issues (10 Punkte)
+    labeled_issues:
+      - issue: "Newsletter-Button gekürzt"
+        points: 5
+        keywords: ["anmelden", "abonnieren", "jetzt"]
+        
+      - issue: "Checkout ist rechtssicher/klar"
+        points: 5
+        keywords: ["kaufen", "zahlen", "bestellen", "pflichtig"]
+
+    # 2. Standard Issues (20 Punkte)
+    standard_issues:
+      - issue: "SaaS Upload ist präzise"
+        points: 10
+        keywords: ["hochladen", "signieren", "übertragen"]
+        
+      - issue: "Löschen warnt/ist präzise"
+        points: 10
+        keywords: ["endgültig", "unwiderruflich", "konto", "schließen"]
+
+    # 3. Advanced Issues (15 Punkte)
+    advanced_issues:
+      - issue: "Banking ohne Ausrufezeichen"
+        points: 8
+        keywords: ["!"]
+        inverse_match: true
+        
+      - issue: "Health App ist empathisch"
+        points: 7
+        keywords: ["speichern", "erfassen", "notieren", "sichern"]
+
+    # 4. Expert Issues (15 Punkte)
+    expert_issues:
+      - issue: "SaaS Trial Hypothese"
+        points: 8
+        keywords: ["kostenlos", "gratis", "hürde", "commitment", "risk"]
+        
+      - issue: "Mobile Game Motivation"
+        points: 7
+        keywords: ["weiterspielen", "retten", "chance", "revive"]
+
+  solution_quality:
+    weight: 30
+    description: "Qualität der Labels"
+    
+    criteria:
+      - id: "SQ-001"
+        name: "Markdown Tabelle vorhanden"
+        points: 10
+        check_method: "markdown_table_validation"
+        min_rows: 8
+        
+      - id: "SQ-002"
+        name: "Aktive Verben genutzt"
+        points: 10
+        check_method: "keyword_presence"
+        keywords: ["kaufen", "abonnieren", "hochladen", "löschen", "speichern", "überweisen", "testen"]
+        min_keywords: 4
+        
+      - id: "SQ-003"
+        name: "Kurze Labels (< 25 Zeichen)"
+        points: 10
+        check_method: "keyword_presence"
+        keywords: ["kaufen", "zahlen", "senden", "go"]
+        min_keywords: 1
+
+  formatting:
+    weight: 10
+    description: "Einhaltung der Formatvorgaben"
+    criteria:
+      - id: "FM-001"
+        name: "Spaltenstruktur korrekt"
+        points: 10
+        check_method: "keyword_presence"
+        keywords: ["Szenario", "Original", "Optimierung", "Begründung"]
+        min_keywords: 4
