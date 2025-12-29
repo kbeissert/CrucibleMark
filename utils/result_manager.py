@@ -57,25 +57,63 @@ class ResultManager:
         
         file_exists = csv_path.exists()
         
-        # Alle Keys sammeln für Header (um sicherzugehen, dass alle Spalten da sind)
-        all_keys = set()
+        # Determine fieldnames
+        fieldnames = []
+        if file_exists:
+            # Read existing header to preserve order and ensure alignment
+            try:
+                with open(csv_path, 'r', encoding='utf-8') as f:
+                    reader = csv.reader(f)
+                    try:
+                        fieldnames = next(reader)
+                    except StopIteration:
+                        file_exists = False # Empty file
+            except Exception as e:
+                logger.warning(f"Could not read header from {csv_path}: {e}")
+                file_exists = False
+
+        # Collect keys from current results
+        current_keys = set()
         for result in results:
-            all_keys.update(result.keys())
-        fieldnames = sorted(list(all_keys))
+            current_keys.update(result.keys())
         
+        if not file_exists:
+            # New file: use sorted keys
+            fieldnames = sorted(list(current_keys))
+        else:
+            # Existing file: append new keys to the end
+            existing_keys = set(fieldnames)
+            new_keys = sorted(list(current_keys - existing_keys))
+            if new_keys:
+                # Note: Adding columns to an existing CSV is tricky without rewriting.
+                # DictWriter will ignore extra keys if extrasaction='ignore', or raise error.
+                # If we want to support schema evolution, we should probably rewrite the file or warn.
+                # For now, we append them to fieldnames, but this only affects NEW rows.
+                # Old rows won't have these columns, which is fine for CSV readers usually.
+                # BUT: DictWriter needs to know about ALL keys to write them.
+                fieldnames.extend(new_keys)
+                
+                # Warning: This creates a "ragged" CSV where new rows have more columns.
+                # Ideally, we should rewrite the header.
+                # Let's try to rewrite the header if we detect new keys.
+                pass # Logic below handles writing
+
         try:
+            # If we have new keys and file exists, we might want to rewrite the header?
+            # That's complex. Let's stick to: Use existing header + new keys.
+            # DictWriter will write values in order of fieldnames.
+            # Missing keys in results (relative to fieldnames) will be empty.
+            # Extra keys in results (relative to fieldnames) will be written if in fieldnames.
+            
             mode = 'a' if file_exists else 'w'
             with open(csv_path, mode, newline='', encoding='utf-8') as f:
-                writer = csv.DictWriter(f, fieldnames=fieldnames)
+                # extrasaction='ignore' prevents error if result has keys not in fieldnames
+                # But we added all current_keys to fieldnames, so this shouldn't happen unless
+                # we failed to update fieldnames correctly.
+                writer = csv.DictWriter(f, fieldnames=fieldnames, extrasaction='ignore')
                 
                 if not file_exists:
                     writer.writeheader()
-                
-                # Hinweis: Wenn neue Felder hinzukommen, die im existierenden Header fehlen,
-                # könnte DictWriter meckern oder sie ignorieren (extrasaction='raise' ist default).
-                # Für Robustheit könnten wir extrasaction='ignore' setzen, aber dann fehlen Daten.
-                # Besser: Wir nehmen an, das Schema ist stabil oder erweitert sich nur am Ende.
-                # Wenn sich das Schema ändert, ist es oft besser, die CSV neu anzulegen (make clean-csv).
                 
                 writer.writerows(results)
             

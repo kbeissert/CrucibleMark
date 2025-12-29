@@ -44,8 +44,12 @@ Bewertet die Antworten der Modelle.
     *   Die Antwort wird gegen definierte Kriterien (Keywords) geprüft.
     *   Falls vorhanden, wird sie mit dem Golden Standard verglichen.
 6.  **Reporting**:
-    *   Ergebnisse werden als CSV (`*_models_benchmark.csv`) im Ordner `benchmark_scores/` gespeichert.
-    *   Das **Leaderboard** (`benchmark_leaderboard.csv`) wird automatisch aktualisiert und liegt ebenfalls dort.
+    *   **Commercial Runs**: Ergebnisse landen in `benchmark_scores/commercial_models_benchmark.csv`.
+    *   **Local Runs**: Ergebnisse landen in `benchmark_scores/local_models_benchmark.csv`.
+    *   **Golden Standard Runs**: Ergebnisse werden **doppelt** gespeichert:
+        *   In `benchmark_scores/golden_standard_benchmark.csv` (als Referenz).
+        *   In `benchmark_scores/commercial_models_benchmark.csv` (für das Leaderboard).
+    *   **Leaderboard**: Das Skript `generate_leaderboard.py` aggregiert die neuesten Ergebnisse aus Commercial und Local CSVs und generiert `benchmark_scores/benchmark_leaderboard.csv`.
 
 ---
 

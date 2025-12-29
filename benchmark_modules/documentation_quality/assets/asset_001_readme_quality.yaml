@@ -1,0 +1,383 @@
+metadata:
+  id: documentation_quality_001
+  name: README Quality Assessment (Tiered)
+  category: documentation_quality
+  subcategory: readme_quality
+  difficulty: tiered
+  estimated_time_seconds: 120
+  tags:
+  - readme
+  - markdown
+  - documentation
+  - open-source
+  - best-practices
+  author: CrucibleMark
+  created: '2025-12-28'
+  updated: '2025-12-28'
+  language: de
+  version: 2.0.0
+context: "Du bist ein Technical Writer für ein Open-Source Python-Projekt. \nEin Junior\
+  \ Developer hat die erste Version einer README.md Datei erstellt, \naber es fehlen\
+  \ wichtige Elemente und die Struktur ist verbesserungswürdig.\n\nDas Projekt ist\
+  \ eine CLI-Anwendung zum Analysieren von Log-Dateien.\nZielgruppe: DevOps Engineers\
+  \ und Backend Developers.\n"
+prompt: "Analysiere die folgende README.md Datei und bewerte sie nach **Documentation\
+  \ Quality Best Practices**.\n\n**Wichtig:** Identifiziere ALLE Probleme in den 4\
+  \ Kategorien und priorisiere nach Schweregrad.\n\n## Kategorien:\n1. **Struktur\
+  \ & Klarheit** - Sections, TOC, visuelle Hierarchie\n2. **Vollständigkeit** - Installation,\
+  \ Usage, Examples, Configuration, Troubleshooting\n3. **Technische Korrektheit**\
+  \ - Syntax Highlighting, Links, Versions-Info\n4. **Usability** - Zielgruppe, Keywords,\
+  \ Contributing, Visual Elements\n\n## README.md (aktueller Stand):\n\n```markdown\n\
+  # LogAnalyzer\n\nA Python tool for analyzing log files.\n\n## What it does\n\nLogAnalyzer\
+  \ can parse log files from various formats (Apache, Nginx, custom) and \ngenerate\
+  \ reports about errors, warnings, and performance metrics.\n\n## Installation\n\n\
+  pip install loganalyzer\n\n## Usage\n\nRun it with:\nloganalyzer analyze /path/to/logfile.log\n\
+  \nYou can also use it in Python:\nfrom loganalyzer import LogParser\nparser = LogParser()\n\
+  results = parser.analyze('mylog.log')\n\n## Features\n\n- Supports Apache, Nginx,\
+  \ and custom log formats\n- Generates HTML and JSON reports\n- Can filter by severity\
+  \ level\n- Email notifications for critical errors\n\n## Config\n\nCreate a config.yaml\
+  \ file with your settings.\n\n## License\n\nMIT\n```\n\n## Deine Aufgabe\n\n1. **Identifiziere\
+  \ alle Probleme** in den 4 Kategorien\n2. **Priorisiere** nach Schweregrad (Critical,\
+  \ High, Medium, Low)\n3. **Empfehle konkrete Verbesserungen** mit Beispielen\n4.\
+  \ **Format**: Strukturierte Tabelle oder Liste mit Problem → Lösung\n"
+test_data:
+  example_readme_content: 'Das LogAnalyzer README enthält grundlegende Informationen,
+
+    aber es fehlen wichtige Best Practices und vollständige Dokumentation.
+
+    Die Issues sind in der scoring-Sektion definiert.
+
+    '
+expected_output: 'Eine strukturierte Analyse die folgende Issues identifiziert:
+
+
+  **LEVEL 1 (Easy - 25 Punkte):**
+
+  - Fehlende Code Syntax Highlighting (8P)
+
+  - Installation zu kurz (7P)
+
+  - Kein Troubleshooting/FAQ (5P)
+
+  - Code-Beispiele ohne Kontext (5P)
+
+
+  **LEVEL 2 (Medium - 30 Punkte):**
+
+  - Fehlendes TOC (8P)
+
+  - Keine Links (6P)
+
+  - Konfiguration nicht dokumentiert (6P)
+
+  - Keine Versions-Info (5P)
+
+  - Fehlende Badges (5P)
+
+
+  **LEVEL 3 (Hard - 25 Punkte):**
+
+  - Fehlender Quick Start (7P)
+
+  - Zielgruppe nicht genannt (6P)
+
+  - Kein Contributing Guide (7P)
+
+  - Schwache visuelle Hierarchie (5P)
+
+
+  **LEVEL 4 (Expert - 20 Punkte):**
+
+  - API-Dokumentation zu kurz (7P)
+
+  - Keine Keywords/Tags (5P)
+
+  - Kein Production Readiness Status (4P)
+
+  - Fehlende Migration Guidelines (4P)
+
+
+  Format: Tabelle oder Liste mit Issue → Kategorie → Lösung
+
+  '
+scoring:
+  total_points: 100
+  error_detection:
+    weight: 70
+    description: Identifikation von README-Qualitätsproblemen (Tiered)
+    labeled_issues:
+    - issue: Fehlende Code Syntax Highlighting
+      category: technical_accuracy
+      severity: high
+      points: 5.6
+      explanation: Code-Blöcke ohne ```bash oder ```python
+      keywords:
+      - syntax
+      - highlighting
+      - '```bash'
+      - '```python'
+      - code block
+      - sprache
+    - issue: Installation zu kurz
+      category: completeness
+      severity: high
+      points: 4.9
+      explanation: Nur 'pip install', keine Prerequisites, keine venv-Empfehlung
+      keywords:
+      - prerequisites
+      - voraussetzungen
+      - python version
+      - venv
+      - virtual environment
+      - virtualenv
+    - issue: Kein Troubleshooting/FAQ
+      category: completeness
+      severity: medium
+      points: 3.5
+      explanation: Keine FAQ oder Troubleshooting Section
+      keywords:
+      - troubleshooting
+      - faq
+      - häufige fragen
+      - probleme
+      - common issues
+      - fehlersuche
+    - issue: Code-Beispiele ohne Kontext
+      category: completeness
+      severity: medium
+      points: 3.5
+      explanation: Nur Code-Snippets, keine Erklärung oder Output
+      keywords:
+      - output
+      - ergebnis
+      - beispiel erklärt
+      - kontext
+      - erklärung
+    standard_issues:
+    - issue: Fehlendes Inhaltsverzeichnis (TOC)
+      category: structure_clarity
+      severity: high
+      points: 5.6
+      explanation: Kein TOC für Navigation
+      keywords:
+      - toc
+      - table of contents
+      - inhaltsverzeichnis
+      - inhalt
+      - navigation
+    - issue: Keine Links zu Dokumentation/Repository
+      category: technical_accuracy
+      severity: medium
+      points: 4.2
+      explanation: Keine Links zu Docs, GitHub, Issues
+      keywords:
+      - dokumentation link
+      - repository
+      - github
+      - issues
+      - docs
+      - weitere informationen
+    - issue: Konfiguration nicht dokumentiert
+      category: completeness
+      severity: medium
+      points: 4.2
+      explanation: '''Create config.yaml'' ohne Beispiel'
+      keywords:
+      - config beispiel
+      - konfiguration beispiel
+      - config.yaml
+      - einstellungen
+      - parameter
+    - issue: Keine Versions-/Compatibility-Informationen
+      category: technical_accuracy
+      severity: medium
+      points: 3.5
+      explanation: Keine Python-Version oder Package-Version
+      keywords:
+      - python version
+      - python 3
+      - kompatibilität
+      - version
+      - requires
+    - issue: Fehlende Badges
+      category: usability
+      severity: low
+      points: 3.5
+      explanation: Keine Badges für Build Status, Version, License
+      keywords:
+      - badge
+      - shields
+      - build status
+      - pypi
+      - license badge
+    advanced_issues:
+    - issue: Fehlender Quick Start
+      category: structure_clarity
+      severity: medium
+      points: 4.9
+      explanation: Keine dedizierte Quick Start Section
+      keywords:
+      - quick start
+      - getting started
+      - schnellstart
+      - erste schritte
+      - tldr
+    - issue: Zielgruppe nicht explizit genannt
+      category: usability
+      severity: low
+      points: 4.2
+      explanation: DevOps/Backend Developer nicht erwähnt
+      keywords:
+      - zielgruppe
+      - für wen
+      - devops
+      - backend
+      - sysadmin
+      - engineers
+    - issue: Kein Contributing Guide
+      category: usability
+      severity: medium
+      points: 4.9
+      explanation: Keine Contribution Guidelines für Open Source
+      keywords:
+      - contributing
+      - contribution
+      - beitragen
+      - pull request
+      - contributing.md
+    - issue: Schwache visuelle Hierarchie
+      category: structure_clarity
+      severity: low
+      points: 3.5
+      explanation: Wenig Formatierung (Bold, Italic, Quotes)
+      keywords:
+      - bold
+      - fett
+      - kursiv
+      - formatierung
+      - hervorhebung
+      - zitat
+      - quote
+    expert_issues:
+    - issue: Fehlende API-Dokumentation für Python Usage
+      category: technical_accuracy
+      severity: medium
+      points: 4.9
+      explanation: LogParser-Beispiel zu kurz - keine Parameter erklärt
+      keywords:
+      - parameter
+      - optionen
+      - methoden
+      - api
+      - klassen
+      - attribute
+      - rückgabewert
+    - issue: Keine Keywords/Tags für SEO
+      category: usability
+      severity: low
+      points: 3.5
+      explanation: Fehlen für GitHub Search und Package Discovery
+      keywords:
+      - keywords
+      - topics
+      - tags
+      - seo
+      - github topics
+      - themen
+    - issue: Kein Hinweis auf Production Readiness
+      category: completeness
+      severity: low
+      points: 2.8
+      explanation: Keine Info ob stable, beta, experimental
+      keywords:
+      - stable
+      - beta
+      - experimental
+      - production ready
+      - status
+      - reif
+    - issue: Fehlende Migration/Upgrade Guidelines
+      category: completeness
+      severity: low
+      points: 2.8
+      explanation: Bei neuen Versionen wichtig
+      keywords:
+      - migration
+      - upgrade
+      - breaking changes
+      - changelog link
+      - versionshinweis
+  solution_quality:
+    weight: 30
+    description: Qualität der vorgeschlagenen Verbesserungen
+    criteria:
+    - id: SQ-001
+      name: Konkrete Code-Beispiele
+      points: 10
+      check_method: keyword_presence
+      keywords:
+      - '```bash'
+      - '```python'
+      - '```yaml'
+      - '```markdown'
+      min_keywords: 2
+      description: Lösungen mit funktionierenden Code-Beispielen
+    - id: SQ-002
+      name: Best Practices erwähnt
+      points: 10
+      check_method: keyword_presence
+      keywords:
+      - best practice
+      - standard
+      - konvention
+      - empfehlung
+      - github
+      - markdown
+      min_keywords: 2
+      description: Bezug zu Dokumentations-Standards
+    - id: SQ-003
+      name: Priorisierung vorhanden
+      points: 10
+      check_method: keyword_presence
+      keywords:
+      - critical
+      - high
+      - medium
+      - low
+      - schweregrad
+      - wichtig
+      - priorität
+      min_keywords: 2
+      description: Issues nach Schweregrad sortiert
+evaluation_notes: 'Dieses Asset testet README-Qualitätsbewertung mit Tiered Difficulty:
+
+
+  **Tiered Difficulty Breakdown:**
+
+  - LEVEL 1 (Easy - 25P): Offensichtliche Probleme (fehlende Syntax Highlighting,
+  kurze Installation)
+
+  - LEVEL 2 (Medium - 30P): Standard-Probleme (fehlendes TOC, keine Links, keine Versions-Info)
+
+  - LEVEL 3 (Hard - 25P): Subtile Issues (fehlender Quick Start, Zielgruppe, Contributing)
+
+  - LEVEL 4 (Expert - 20P): Best Practices (API-Docs, Keywords, Production Status)
+
+
+  **Scoring:**
+
+  - 70 Punkte: Issue Detection (alle 4 Levels)
+
+  - 30 Punkte: Solution Quality (Code-Beispiele, Best Practices, Priorisierung)
+
+  '
+difficulty_breakdown:
+  labeled_issues: 25
+  standard_issues: 30
+  advanced_issues: 25
+  expert_issues: 20
+success_thresholds:
+  excellent: 90
+  good: 75
+  acceptable: 60
+  needs_improvement: 40

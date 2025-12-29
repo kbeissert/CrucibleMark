@@ -1,0 +1,108 @@
+# Documentation Quality Test Module Configuration
+# ================================================
+
+metadata:
+  name: "Documentation Quality"
+  version: "1.0.0"
+  description: "Bewertet die Qualität von Code-Dokumentation, README-Dateien und API-Dokumentation"
+  author: "CrucibleMark"
+  created: "2025-12-28"
+  updated: "2025-12-28"
+
+# Modul-spezifische Einstellungen
+module:
+  test_class: "DocumentationTest"
+  base_class: "BaseTest"
+  
+# Test-Assets
+assets:
+  path: "assets"
+  count: 5
+  types:
+    - readme_quality          # README.md Bewertung
+    - api_docs                # API Dokumentation
+    - component_documentation # React Component Props Documentation
+    - setup_guide             # Setup & Troubleshooting
+    - changelog               # Release Notes & Changelog
+
+# Kategorien und Gewichtung
+categories:
+  structure_clarity:
+    name: "Struktur & Klarheit"
+    weight: 1.0
+    max_score: 25
+    description: "Navigation, Gliederung, logischer Aufbau"
+  
+  completeness:
+    name: "Vollständigkeit"
+    weight: 1.0
+    max_score: 25
+    description: "Alle relevanten Informationen vorhanden"
+  
+  technical_accuracy:
+    name: "Technische Korrektheit"
+    weight: 1.0
+    max_score: 25
+    description: "Code-Beispiele funktionieren, Links sind valide"
+  
+  usability:
+    name: "Nutzbarkeit & Wartbarkeit"
+    weight: 1.0
+    max_score: 25
+    description: "Für Zielgruppe verständlich, einfach zu aktualisieren"
+
+# Scoring-Konfiguration
+scoring:
+  structure_clarity:
+    weight: 25
+    description: "Bewertung von Navigation, Headlines, logischem Aufbau"
+    criteria:
+      - clear_sections: "Klare Abschnitte mit aussagekräftigen Überschriften"
+      - toc_navigation: "Inhaltsverzeichnis für Navigation"
+      - logical_flow: "Logischer Informationsfluss (Installation → Usage → Advanced)"
+      - formatting: "Konsistente Formatierung (Markdown Best Practices)"
+  
+  completeness:
+    weight: 25
+    description: "Alle wichtigen Informationen sind vorhanden"
+    criteria:
+      - quick_start: "Quick Start / Getting Started"
+      - installation: "Installations-Anleitung"
+      - usage_examples: "Nutzungsbeispiele mit Code"
+      - configuration: "Konfigurationsmöglichkeiten"
+      - troubleshooting: "FAQ / Troubleshooting"
+  
+  technical_accuracy:
+    weight: 25
+    description: "Technische Korrektheit und Funktionalität"
+    criteria:
+      - working_examples: "Code-Beispiele sind lauffähig"
+      - correct_syntax: "Korrekte Syntax Highlighting"
+      - valid_links: "Links funktionieren (keine 404s)"
+      - version_info: "Versions-Informationen sind aktuell"
+      - api_consistency: "API-Dokumentation stimmt mit Code überein"
+  
+  usability:
+    weight: 25
+    description: "Für Entwickler nutzbar und wartbar"
+    criteria:
+      - target_audience: "Auf Zielgruppe zugeschnitten"
+      - search_friendly: "Suchbegriffe & Keywords vorhanden"
+      - contribution_guide: "Contribution Guidelines (für OSS)"
+      - maintainability: "Einfach zu aktualisieren (keine Duplikate)"
+      - visual_hierarchy: "Visuelle Hierarchie (Bold, Code, Quotes)"
+
+# Default Scoring-Schwellwerte
+thresholds:
+  excellent: 90
+  good: 75
+  acceptable: 60
+  needs_improvement: 40
+
+# Beispielhafte Erfolgskriterien
+success_criteria:
+  - "README enthält alle 5 Kern-Sektionen"
+  - "Mindestens 3 funktionierende Code-Beispiele"
+  - "Logische Struktur mit TOC"
+  - "Alle Links sind valide"
+  - "Markdown Best Practices eingehalten"

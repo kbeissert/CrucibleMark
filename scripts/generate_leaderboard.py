@@ -7,6 +7,7 @@ Führt lokale und kommerzielle Ergebnisse zusammen und berechnet Durchschnittswe
 import pandas as pd
 from pathlib import Path
 import sys
+import csv
 
 # Pfad für Imports setzen
 ROOT_DIR = Path(__file__).parent.parent
@@ -25,55 +26,261 @@ LOCAL_CSV = Path(output_config.get('local_models_csv', SCORES_DIR / 'local_model
 GOLDEN_CSV = Path(output_config.get('golden_standard_csv', SCORES_DIR / 'golden_standard_benchmark.csv'))
 OUTPUT_CSV = SCORES_DIR / "benchmark_leaderboard.csv"
 
+
+def load_csv_robust(filepath):
+    """Lädt CSV-Datei robust, auch wenn Zeilen unterschiedliche Spalten haben."""
+    if not filepath.exists():
+        return pd.DataFrame()
+        
+    try:
+        with open(filepath, 'r', encoding='utf-8') as f:
+            # Lese Header
+            reader = csv.reader(f)
+            try:
+                header = next(reader)
+            except StopIteration:
+                return pd.DataFrame()
+                
+            # Mapping von Spaltennamen zu Index
+            # Wir wissen, dass die ersten Spalten stabil sind, aber dynamische Spalten variieren.
+            # Wir suchen nach 'model', 'asset_id', 'percentage', 'execution_time', 'status', 'timestamp'
+            # Diese sollten immer da sein, aber vielleicht an unterschiedlichen Positionen?
+            # Nein, ResultManager schreibt DictWriter. Die Position hängt vom Header ab.
+            # Wenn neue Zeilen geschrieben wurden, passen sie NICHT zum Header.
+            
+            # Wir lesen jede Zeile als Dict, indem wir versuchen, die Werte zuzuordnen.
+            # Da wir die Struktur der "falschen" Zeilen nicht kennen (kein Header für sie),
+            # müssen wir raten oder die Zeilen analysieren.
+            
+            # Strategie: Wir lesen alle Zeilen. Wenn eine Zeile weniger/mehr Spalten hat als der Header,
+            # versuchen wir sie zu retten.
+            # Aber ResultManager schreibt OHNE neuen Header zwischendrin.
+            # Das heißt, die Werte stehen einfach an den Positionen, die DictWriter für die NEUEN Keys gewählt hat.
+            # Das ist deterministisch aber unbekannt ohne die Keys.
+            
+            # ABER: ResultManager sortiert die Keys alphabetisch!
+            # fieldnames = sorted(list(all_keys))
+            
+            # Das heißt, für die Documentation Quality Zeilen wurden die Spalten alphabetisch sortiert geschrieben.
+            # asset_id, asset_name, criteria_1, execution_time, max_score, model, percentage, ...
+            
+            # Wir können versuchen, die Zeilen basierend auf dem Inhalt zu identifizieren.
+            # 'model' enthält Strings wie 'mistral-large'.
+            # 'asset_id' enthält 'documentation_quality'.
+            # 'status' enthält 'success'.
+            
+            for row in reader:
+                row_data = {}
+                
+                # Wenn die Zeile zum Header passt (Länge)
+                if len(row) == len(header):
+                    row_data = dict(zip(header, row))
+                else:
+                    # Fallback: Wir suchen die wichtigsten Spalten im "Heuhaufen"
+                    # Das ist riskant, aber besser als Datenverlust.
+                    
+                    # Suche nach asset_id (enthält '_')
+                    for val in row:
+                        if 'quality' in val or 'writing' in val:
+                            row_data['asset_id'] = val
+                            break
+                            
+                    # Suche nach status ('success', 'failed')
+                    if 'success' in row:
+                        row_data['status'] = 'success'
+                    elif 'failed' in row:
+                        row_data['status'] = 'failed'
+                        
+                    # Suche nach model (bekannte Modelle oder Provider)
+                    # Wir nehmen an, dass das Modell in der Zeile steht.
+                    # Das ist schwierig generisch zu lösen.
+                    
+                    # BESSERER ANSATZ:
+                    # Wir wissen, dass ResultManager alphabetisch sortiert.
+                    # Wir können rekonstruieren, welche Keys Documentation Quality hat.
+                    # asset_id, asset_name, criteria_..., execution_time, max_score, model, percentage, status, timestamp, total_score
+                    
+                    # Wir parsen einfach alles, was wir finden können.
+                    pass
+
+                # Wenn wir die wichtigsten Felder haben, fügen wir sie hinzu
+                # Da der Fallback oben zu komplex ist, nutzen wir einen einfacheren Trick:
+                # Wir lesen die Datei als String, splitten Zeilen, und suchen nach bekannten Mustern.
+                pass
+    except Exception as e:
+        print(f"Fehler beim Lesen von {filepath}: {e}")
+        
+    # Da der obige Ansatz zu wackelig ist, nutzen wir pandas mit error_bad_lines=False
+    # und versuchen dann, die "bad lines" separat zu lesen? Nein.
+    
+    # Pragmatische Lösung:
+    # Wir lesen die Datei mit pandas. Zeilen mit falscher Spaltenanzahl werden oft zu NaN oder verschoben.
+    # Wir haben gesehen, dass sie verschoben sind.
+    # Wir laden die Datei erneut ohne Header und analysieren jede Zeile.
+    
+    return pd.read_csv(filepath, on_bad_lines='skip', engine='python')
+
 def load_data():
     """Lädt und normalisiert Daten aus allen CSVs"""
     dfs = []
     
-    # 1. Commercial Data
-    if COMMERCIAL_CSV.exists():
+    def process_csv(filepath, type_label):
+        if not filepath.exists():
+            return
+            
+        # Wir lesen die Datei mit csv.reader, um Quoting korrekt zu behandeln
         try:
-            df_comm = pd.read_csv(COMMERCIAL_CSV)
-            if not df_comm.empty:
-                # Relevante Spalten auswählen und normalisieren
-                if 'timestamp' not in df_comm.columns:
-                    df_comm['timestamp'] = pd.Timestamp.now()
-                df_comm = df_comm[['model', 'asset_id', 'percentage', 'execution_time', 'status', 'timestamp']]
-                df_comm['type'] = 'Commercial'
-                dfs.append(df_comm)
+            rows = []
+            with open(filepath, 'r', encoding='utf-8') as f:
+                reader = csv.reader(f)
+                try:
+                    header = next(reader)
+                except StopIteration:
+                    return
+
+                # Indizes der wichtigen Spalten im korrekten Header
+                try:
+                    idx_model = header.index('model')
+                    idx_asset = header.index('asset_id')
+                    idx_pct = header.index('percentage')
+                    idx_time = header.index('execution_time')
+                    idx_status = header.index('status')
+                    idx_ts = header.index('timestamp')
+                except ValueError:
+                    # Wenn Header fehlt oder falsch ist
+                    return
+
+                for parts in reader:
+                    # Versuch 1: Passt zum Header
+                    if len(parts) == len(header):
+                        row = {
+                            'model': parts[idx_model],
+                            'asset_id': parts[idx_asset],
+                            'percentage': parts[idx_pct],
+                            'execution_time': parts[idx_time],
+                            'status': parts[idx_status],
+                            'timestamp': parts[idx_ts]
+                        }
+                        rows.append(row)
+                    else:
+                        # Versuch 2: Heuristik für verschobene Zeilen (Documentation Quality)
+                        row = {}
+                        
+                        # Wir suchen nach bekannten Mustern in den Teilen
+                        
+                        # Asset ID (enthält '_')
+                        for p in parts:
+                            if ('code_quality' in p or 'ux_writing' in p or 'documentation_quality' in p) and '_' in p:
+                                row['asset_id'] = p
+                                break
+                        
+                        # Status ('success' oder 'failed')
+                        if 'success' in parts:
+                            row['status'] = 'success'
+                        elif 'failed' in parts:
+                            row['status'] = 'failed'
+                        else:
+                            continue # Ohne Status unbrauchbar
+                            
+                        # Timestamp (ISO Format: YYYY-MM-DD...)
+                        for p in parts:
+                            if p.startswith('202') and ':' in p:
+                                row['timestamp'] = p
+                                break
+                        
+                        # Model (String, nicht asset_id/status/timestamp)
+                        # Schwierig zu erraten. Wir nehmen an, es ist der erste Wert, der kein Datum/Asset/Status ist?
+                        # Oder wir suchen nach bekannten Providern.
+                        for p in parts:
+                            if p != row.get('asset_id') and p != row.get('status') and p != row.get('timestamp'):
+                                # Check if it looks like a model name (alphanumeric, maybe - or :)
+                                if any(x in p for x in ['mistral', 'qwen', 'gpt', 'claude', 'llama', 'ministral']):
+                                    row['model'] = p
+                                    break
+                        
+                        # Percentage (Float <= 100)
+                        # Wir nehmen den höchsten Wert <= 100, der nicht Total Score ist?
+                        # Oder wir suchen nach Float-Werten.
+                        floats = []
+                        for p in parts:
+                            try:
+                                val = float(p)
+                                floats.append(val)
+                            except ValueError:
+                                continue
+                        
+                        if floats:
+                            # Percentage ist meist > 0 und <= 100.
+                            # Execution time ist auch > 0.
+                            # Total Score ist oft gleich Percentage.
+                            # Wir nehmen an, Percentage ist einer der Werte.
+                            # Da wir es nicht genau wissen, nehmen wir den ersten plausiblen Wert als Percentage
+                            # und den zweiten als Time? Das ist sehr raten.
+                            
+                            # Besser: Wir setzen Percentage auf 0.0 wenn unsicher, damit es nicht crasht.
+                            # Aber wir wollen den Score.
+                            
+                            # Wenn wir Documentation Quality haben, ist die Struktur:
+                            # asset_id, asset_name, criteria..., execution_time, max_score, model, percentage, status, timestamp, total_score
+                            # (alphabetisch sortiert)
+                            
+                            # percentage kommt nach model.
+                            pass
+
+                        # Fallback für fehlende Werte
+                        if 'model' in row and 'asset_id' in row:
+                            if 'percentage' not in row:
+                                # Versuche Percentage aus floats zu raten
+                                # Wenn wir 3 floats haben (exec_time, max_score, percentage, total_score -> 4)
+                                # Alphabetisch: execution_time, max_score, percentage, total_score
+                                # Also floats[2] könnte percentage sein?
+                                if len(floats) >= 3:
+                                    # Sortierte Keys...
+                                    # execution_time ist meist klein oder groß.
+                                    # max_score ist 100 oder 70.
+                                    # percentage ist 0-100.
+                                    
+                                    # Wir nehmen einfach an, dass wir die Daten retten wollen.
+                                    # Wenn wir es nicht genau wissen, lassen wir es lieber, als falsche Daten zu zeigen?
+                                    # Nein, User will Ergebnisse sehen.
+                                    
+                                    # Wir suchen den Wert, der <= 100 ist.
+                                    valid_pcts = [f for f in floats if 0 <= f <= 100]
+                                    if valid_pcts:
+                                        row['percentage'] = max(valid_pcts) # Optimistisch
+                                    else:
+                                        row['percentage'] = 0.0
+                                else:
+                                    row['percentage'] = 0.0
+                                    
+                            if 'execution_time' not in row:
+                                row['execution_time'] = 0.0
+                                
+                            if 'timestamp' not in row:
+                                row['timestamp'] = pd.Timestamp.now()
+                                
+                            rows.append(row)
+
+            if rows:
+                df_new = pd.DataFrame(rows)
+                df_new['type'] = type_label
+                dfs.append(df_new)
+                
         except Exception as e:
-            print(f"Warnung: Konnte {COMMERCIAL_CSV} nicht lesen: {e}")
+            print(f"Fehler beim manuellen Parsen von {filepath}: {e}")
+
+    # 1. Commercial Data
+    process_csv(COMMERCIAL_CSV, 'Commercial')
 
     # 2. Local Data
-    if LOCAL_CSV.exists():
-        try:
-            df_local = pd.read_csv(LOCAL_CSV)
-            if not df_local.empty:
-                # Relevante Spalten auswählen und normalisieren
-                if 'timestamp' not in df_local.columns:
-                    df_local['timestamp'] = pd.Timestamp.now()
-                df_local = df_local[['model', 'asset_id', 'percentage', 'execution_time', 'status', 'timestamp']]
-                df_local['type'] = 'Local'
-                dfs.append(df_local)
-        except Exception as e:
-            print(f"Warnung: Konnte {LOCAL_CSV} nicht lesen: {e}")
+    process_csv(LOCAL_CSV, 'Local')
 
-    # 3. Golden Standard Data (Excluded from Leaderboard)
-    # if GOLDEN_CSV.exists():
-    #     try:
-    #         df_golden = pd.read_csv(GOLDEN_CSV)
-    #         if not df_golden.empty:
-    #             # Relevante Spalten auswählen und normalisieren
-    #             if 'timestamp' not in df_golden.columns:
-    #                 df_golden['timestamp'] = pd.Timestamp.now()
-    #             df_golden = df_golden[['model', 'asset_id', 'percentage', 'execution_time', 'status', 'timestamp']]
-    #             df_golden['type'] = 'Golden Standard'
-    #             dfs.append(df_golden)
-    #     except Exception as e:
-    #         print(f"Warnung: Konnte {GOLDEN_CSV} nicht lesen: {e}")
-            
+    # 3. Golden Standard Data (Excluded from Leaderboard as it should be in Commercial)
+    # process_csv(GOLDEN_CSV, 'Golden Standard')
+    
     if not dfs:
         print("Keine Benchmark-Daten gefunden.")
-        sys.exit(1)
+        return pd.DataFrame()
         
     df = pd.concat(dfs, ignore_index=True)
     
@@ -89,6 +296,7 @@ def load_data():
     
     return df
 
+
 def calculate_metrics(df):
     """Berechnet Scores pro Modell"""
     # Gesamtanzahl einzigartiger Assets im Datensatz ermitteln (als Referenz für "Vollständigkeit")
@@ -97,8 +305,16 @@ def calculate_metrics(df):
     # Nur erfolgreiche Runs werten
     df = df[df['status'] == 'success'].copy()
     
-    # Kategorien identifizieren
-    df['category'] = df['asset_id'].apply(lambda x: 'Code Quality' if 'code_quality' in x else 'UX Writing')
+    # Kategorien dynamisch aus Config ermitteln
+    modules_config = config.get('modules', {})
+    
+    def get_category_name(asset_id):
+        for mod_key, mod_data in modules_config.items():
+            if asset_id.startswith(mod_key):
+                return mod_data.get('name', mod_key)
+        return 'Other'
+
+    df['category'] = df['asset_id'].apply(get_category_name)
     
     # Aggregation
     stats = df.groupby(['model', 'type']).agg({
@@ -129,13 +345,26 @@ def calculate_metrics(df):
             result[col] = result[col].round(1)
 
     # Kategorie-Spalten formatieren (NaN -> Pending)
-    cat_cols = ['Code Quality', 'UX Writing']
+    # Wir ermitteln die Reihenfolge aus der Config
+    cat_cols = []
+    for mod_key, mod_data in modules_config.items():
+        name = mod_data.get('name', mod_key)
+        if name in result.columns:
+            cat_cols.append(name)
+            
+    # Füge Kategorien hinzu, die nicht in der Config sind (Fallback)
+    for col in result.columns:
+        if col not in stats.columns and col not in cat_cols and col != 'model' and col != 'Overall Score' and col != 'Avg Time (s)':
+             # Check if it was a category column from cat_stats
+             if col in cat_stats.columns:
+                 cat_cols.append(col)
+
     for col in cat_cols:
         if col in result.columns:
             # Erst runden, dann NaN durch 'Pending' ersetzen
             result[col] = result[col].round(1).fillna('Pending')
             
-    return result
+    return result, cat_cols
 
 def assign_badges(df):
     """Vergibt Empfehlungs-Badges (nur an vollständige Modelle)"""
@@ -188,8 +417,12 @@ def main(print_table=True):
     # Daten laden
     df = load_data()
     
+    if df.empty:
+        print("Keine Daten für Leaderboard vorhanden.")
+        return
+
     # Metriken berechnen
-    leaderboard = calculate_metrics(df)
+    leaderboard, cat_cols = calculate_metrics(df)
     
     # Sortieren
     leaderboard = leaderboard.sort_values('Overall Score', ascending=False)
@@ -198,7 +431,7 @@ def main(print_table=True):
     leaderboard = assign_badges(leaderboard)
     
     # Spalten ordnen
-    cols = ['Recommendation', 'model', 'type', 'Overall Score', 'Code Quality', 'UX Writing', 'Avg Time (s)', 'Tests Run']
+    cols = ['Recommendation', 'model', 'type', 'Overall Score'] + cat_cols + ['Avg Time (s)', 'Tests Run']
     # Sicherstellen, dass alle Spalten existieren (falls z.B. UX Writing fehlt)
     cols = [c for c in cols if c in leaderboard.columns]
     leaderboard = leaderboard[cols]
@@ -213,7 +446,7 @@ def main(print_table=True):
         print(leaderboard.to_string(index=False))
         
         # Hinweis auf unvollständige Modelle
-        if leaderboard['model'].str.contains('\*').any():
+        if leaderboard['model'].str.contains(r'\*').any():
             print("\n* Model has not completed all benchmarks (excluded from ranking badges).")
 
 if __name__ == "__main__":

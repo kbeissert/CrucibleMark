@@ -1,0 +1,327 @@
+# ============================================================
+# Test Asset: Setup Guide - Local Dev Environment
+# Domain: Technical Documentation
+# Difficulty: Tiered (Easy → Expert)
+# Version: 1.0.0
+# ============================================================
+
+metadata:
+  id: documentation_quality_004
+  name: "Setup Guide - Local Dev Environment (Docker + Vite)"
+  category: documentation_quality
+  subcategory: setup_guide
+  difficulty: tiered
+  estimated_time_seconds: 240
+  tags: [setup, docker, vite, troubleshooting, onboarding, dev-environment]
+  author: "CrucibleMark"
+  created: "2025-12-28"
+  updated: "2025-12-28"
+  language: de
+  version: "1.0.0"
+
+# ============================================================
+# Test-Kontext und Aufgabenstellung
+# ============================================================
+
+context: |
+  Du bist ein Technical Writer für ein Web-Development-Team. Das Team hat eine
+  neue Microservices-Architektur mit Docker Compose aufgesetzt, aber die
+  Setup-Anleitung für neue Developer ist unvollständig und führt zu Support-Anfragen.
+  
+  **Projekt:** E-Commerce-Platform (React Frontend + Node.js Backend + PostgreSQL)
+  **Tech Stack:** 
+    - Frontend: Vite 5 + React 18 + TypeScript
+    - Backend: Node.js 20 + Express + Prisma ORM
+    - Database: PostgreSQL 16
+    - Infrastruktur: Docker Compose
+  
+  **Zielgruppe:** Junior bis Mid-Level Frontend/Backend Developers
+  **Problem:** Setup-Anleitung ist zu kurz, fehlt Troubleshooting, keine Prerequisites
+  
+  Häufige Support-Tickets:
+  - "Port 5432 already in use" (lokales Postgres läuft)
+  - "Vite Hot Reload funktioniert nicht in Docker"
+  - "Database migrations failed"
+  - "CORS errors beim API-Call"
+  - "npm install schlägt fehl (M1/M2 Macs)"
+
+prompt: |
+  Analysiere die folgende Setup-Anleitung und bewerte sie nach **Developer Onboarding Best Practices**.
+  
+  **Wichtig:** Identifiziere ALLE Probleme und priorisiere nach Schweregrad.
+  
+  ## Kategorien:
+  1. **Struktur & Vollständigkeit** - Prerequisites, nummerierte Schritte, Erfolgs-Checks
+  2. **Technische Korrektheit** - Copy-pastable Commands, ENV-Vars, Ports, Versionen
+  3. **Troubleshooting** - Häufige Fehler, Lösungen, Error Messages
+  4. **Developer Experience** - Quick Start, OS-Hinweise, nächste Schritte
+  
+  ---
+  
+  ## Aktuelle Setup-Anleitung (SETUP.md):
+  
+  ```
+  # Setup
+  
+  ## Installation
+  
+  Clone the repo:
+  ```
+  git clone https://github.com/company/ecommerce-platform.git
+  cd ecommerce-platform
+  ```
+  
+  Install dependencies:
+  ```
+  npm install
+  ```
+  
+  Start the app:
+  ```
+  docker-compose up
+  ```
+  
+  Open http://localhost:3000
+  
+  ## Configuration
+  
+  Create a .env file with:
+  ```
+  DATABASE_URL=postgresql://user:password@localhost:5432/ecommerce
+  ```
+  
+  Run migrations:
+  ```
+  npm run migrate
+  ```
+  
+  Done!
+  ```
+  
+  ---
+  
+  ## Deine Aufgabe
+  
+  1. **Identifiziere alle Probleme** in den 4 Kategorien
+  2. **Priorisiere** nach Schweregrad:
+     - **Critical**: Fehlende Prerequisites, Commands funktionieren nicht
+     - **High**: Keine Troubleshooting-Infos, .env-Beispiel fehlt
+     - **Medium**: Keine Erfolgs-Checks, unklare Reihenfolge
+     - **Low**: Fehlende OS-Hinweise, kein Quick Start
+  3. **Erstelle eine vollständige Setup-Anleitung** mit:
+     - Prerequisites-Check mit Versionen
+     - Nummerierte Schritte mit Erfolgs-Validierung
+     - Troubleshooting-Section mit 5+ häufigen Fehlern
+     - OS-spezifische Hinweise (Mac M1/M2, Linux, Windows WSL)
+  4. **Begründe** deine Änderungen mit Onboarding-Prinzipien
+
+# ============================================================
+# Scoring Configuration
+# ============================================================
+
+scoring:
+  total_points: 100
+  
+  # ------------------------------------------------------------
+  # 1. Error Detection (70 Points)
+  # ------------------------------------------------------------
+  error_detection:
+    weight: 70
+    description: "Erkennung fehlender/falscher Setup-Anleitung (Tiered)"
+    
+    # LEVEL 1: Labeled Issues (Easy - 17.5 Points)
+    labeled_issues:
+      - issue: "Fehlende Prerequisites"
+        category: "structure"
+        severity: "critical"
+        points: 9.0
+        explanation: "Node, Docker, Git nicht genannt - Developer weiß nicht, was installiert sein muss"
+        check_method: "keyword_presence"
+        min_keywords: 2
+        keywords: ["prerequisites", "voraussetzungen", "requirements", "benötigt", "node", "docker", "git"]
+        setup_principle: "Prerequisites First"
+      
+      - issue: "Keine Versions-Anforderungen"
+        category: "technical_accuracy"
+        severity: "high"
+        points: 8.5
+        explanation: "Node 20+, Docker 24+, npm 10+ fehlt - führt zu Inkompatibilitäten"
+        check_method: "keyword_presence"
+        min_keywords: 2
+        keywords: ["version", "node version", "docker version", "mindestversion", "required version", "20", "24"]
+        setup_principle: "Clear Requirements"
+
+    # LEVEL 2: Standard Issues (Medium - 21.0 Points)
+    standard_issues:
+      - issue: "Reihenfolge der Schritte falsch"
+        category: "structure"
+        severity: "critical"
+        points: 5.0
+        explanation: "docker-compose up BEVOR .env erstellt wurde = Database Connection Error"
+        check_method: "keyword_presence"
+        min_keywords: 2
+        keywords: ["reihenfolge", "order", "sequence", "erst", "vorher", "nachher", "bevor"]
+        setup_principle: "Logical Flow"
+      
+      - issue: "Keine .env.example Datei"
+        category: "configuration"
+        severity: "high"
+        points: 5.0
+        explanation: "Developer muss raten, welche ENV-Vars benötigt werden"
+        check_method: "keyword_presence"
+        min_keywords: 2
+        keywords: [".env.example", "env example", "template", "umgebungsvariablen", "environment"]
+        setup_principle: "Configuration Templates"
+      
+      - issue: "Keine Erfolgs-Validierung"
+        category: "structure"
+        severity: "medium"
+        points: 4.0
+        explanation: "Woher weiß ich, dass Setup erfolgreich war? Keine 'Expected Output'"
+        check_method: "keyword_presence"
+        min_keywords: 2
+        keywords: ["validierung", "check", "success", "expected output", "sollte", "funktioniert"]
+        setup_principle: "Feedback Loops"
+      
+      - issue: "Port-Conflicts nicht erwähnt"
+        category: "troubleshooting"
+        severity: "high"
+        points: 4.0
+        explanation: "Was wenn Port 5432/3000 bereits belegt? Keine Troubleshooting-Info"
+        check_method: "keyword_presence"
+        min_keywords: 2
+        keywords: ["port conflict", "port already in use", "address already in use", "5432", "3000", "eaddrinuse"]
+        setup_principle: "Common Errors"
+      
+      - issue: "Migrations ohne Seed-Daten"
+        category: "usability"
+        severity: "medium"
+        points: 3.0
+        explanation: "Database ist leer nach Migration = App zeigt nichts an"
+        check_method: "keyword_presence"
+        min_keywords: 2
+        keywords: ["seed", "seeding", "test data", "dummy data", "beispieldaten", "testdaten"]
+        setup_principle: "Usable State"
+
+    # LEVEL 3: Advanced Issues (Hard - 17.5 Points)
+    advanced_issues:
+      - issue: "Vite HMR funktioniert nicht in Docker"
+        category: "developer_experience"
+        severity: "high"
+        points: 4.5
+        explanation: "Docker-Volumes + Vite = Hot Reload Problem. Watchpack/polling config fehlt"
+        check_method: "keyword_presence"
+        min_keywords: 2
+        keywords: ["hmr", "hot reload", "vite", "docker", "volumes", "watchpack", "polling", "usepolling"]
+        setup_principle: "Dev Experience"
+      
+      - issue: "M1/M2 Mac-spezifische Probleme"
+        category: "platform_compatibility"
+        severity: "medium"
+        points: 4.0
+        explanation: "Node-gyp fails auf ARM Macs, keine Rosetta/platform Hinweise"
+        check_method: "keyword_presence"
+        min_keywords: 2
+        keywords: ["m1", "m2", "arm", "silicon", "rosetta", "platform", "architecture", "mac"]
+        setup_principle: "Cross-Platform"
+      
+      - issue: "Keine Health-Check-Endpoints"
+        category: "technical_accuracy"
+        severity: "medium"
+        points: 3.5
+        explanation: "Wie teste ich, ob Backend/Database ready sind? /health fehlt"
+        check_method: "keyword_presence"
+        min_keywords: 2
+        keywords: ["health check", "readiness", "liveness", "/health", "status endpoint", "healthcheck"]
+        setup_principle: "Observability"
+      
+      - issue: "CORS-Probleme nicht dokumentiert"
+        category: "troubleshooting"
+        severity: "medium"
+        points: 3.5
+        explanation: "Frontend localhost:3000 → Backend localhost:4000 = CORS Error"
+        check_method: "keyword_presence"
+        min_keywords: 2
+        keywords: ["cors", "cross-origin", "allowed origins", "cors error", "preflight"]
+        setup_principle: "Integration Testing"
+      
+      - issue: "Keine Cleanup-Anleitung"
+        category: "usability"
+        severity: "low"
+        points: 2.0
+        explanation: "Wie stoppe ich alles? docker-compose down -v für Volumes fehlt"
+        check_method: "keyword_presence"
+        min_keywords: 2
+        keywords: ["cleanup", "stop", "down", "remove", "volumes", "prune", "docker-compose down"]
+        setup_principle: "Reversibility"
+
+    # LEVEL 4: Expert Issues (Very Hard - 14.0 Points)
+    expert_issues:
+      - issue: "Keine Alternative zu Docker (Bare Metal)"
+        category: "flexibility"
+        severity: "medium"
+        points: 5.0
+        explanation: "Manche Developer wollen lokales Node + Postgres statt Docker"
+        check_method: "keyword_presence"
+        min_keywords: 2
+        keywords: ["bare metal", "native", "local setup", "without docker", "alternative", "ohne docker"]
+        setup_principle: "Flexibility"
+      
+      - issue: "Keine Performance-Optimierung für Docker"
+        category: "performance"
+        severity: "low"
+        points: 3.0
+        explanation: "Docker auf Mac ist langsam - Mutagen/NFS-Volumes nicht erwähnt"
+        check_method: "keyword_presence"
+        min_keywords: 2
+        keywords: ["performance", "mutagen", "nfs", "volumes", "docker slow", "optimize", "langsam"]
+        setup_principle: "Performance"
+      
+      - issue: "Keine IDE-Integration (Debugger)"
+        category: "developer_experience"
+        severity: "low"
+        points: 3.0
+        explanation: "Wie debugge ich Node.js im Docker-Container? VSCode launch.json fehlt"
+        check_method: "keyword_presence"
+        min_keywords: 2
+        keywords: ["debugger", "vscode", "ide", "breakpoint", "launch.json", "debug"]
+        setup_principle: "Tooling"
+      
+      - issue: "Keine CI/CD-Erwähnung"
+        category: "consistency"
+        severity: "low"
+        points: 3.0
+        explanation: "Setup-Anleitung sollte erwähnen, dass CI gleich funktioniert"
+        check_method: "keyword_presence"
+        min_keywords: 2
+        keywords: ["ci", "github actions", "gitlab ci", "pipeline", "automated", "ci/cd"]
+        setup_principle: "Consistency"
+
+  # ------------------------------------------------------------
+  # 2. Solution Quality (30 Points)
+  # ------------------------------------------------------------
+  solution_quality:
+    weight: 30
+    description: "Qualität der verbesserten Setup-Anleitung"
+    
+    criteria:
+      - name: "Prerequisites & Structure"
+        points: 10
+        check_method: "keyword_presence"
+        keywords: ["prerequisites", "structure", "numbered", "steps"]
+        min_keywords: 2
+        description: "Are prerequisites clear and steps numbered logically?"
+      
+      - name: "Troubleshooting Section"
+        points: 10
+        check_method: "keyword_presence"
+        keywords: ["troubleshooting", "errors", "solutions", "faq"]
+        min_keywords: 2
+        description: "Is there a comprehensive troubleshooting section?"
+      
+      - name: "Cross-Platform Support"
+        points: 10
+        check_method: "keyword_presence"
+        keywords: ["windows", "mac", "linux", "os", "platform"]
+        min_keywords: 2
+        description: "Are there instructions for different OS (Mac, Windows, Linux)?"
