@@ -10,7 +10,7 @@ Prüft:
 import os
 import logging
 from pathlib import Path
-from typing import Dict, Optional, Tuple, Any
+from typing import Any
 import yaml
 
 # Configure logging
@@ -28,20 +28,20 @@ class ConfigValidator:
         self.config_path = Path(config_path)
         self.config = self._load_config()
     
-    def _load_config(self) -> Dict[str, Any]:
+    def _load_config(self) -> dict[str, Any]:
         """Lädt Config-Datei."""
         if not self.config_path.exists():
             logger.error(f"Config file not found: {self.config_path}")
             raise FileNotFoundError(f"Config nicht gefunden: {self.config_path}")
         
         try:
-            with open(self.config_path, 'r', encoding='utf-8') as f:
+            with open(self.config_path, encoding='utf-8') as f:
                 return yaml.safe_load(f) or {}
         except Exception as e:
             logger.error(f"Failed to load config: {e}")
             raise
     
-    def get_golden_standard_config(self) -> Optional[Dict[str, Any]]:
+    def get_golden_standard_config(self) -> dict[str, Any] | None:
         """Holt Golden Standard Konfiguration.
         
         Returns:
@@ -49,7 +49,7 @@ class ConfigValidator:
         """
         return self.config.get('golden_standard')
     
-    def get_provider_config(self, provider_key: str) -> Optional[Dict[str, Any]]:
+    def get_provider_config(self, provider_key: str) -> dict[str, Any] | None:
         """Holt Provider-Konfiguration.
         
         Args:
@@ -60,7 +60,7 @@ class ConfigValidator:
         """
         return self.config.get('providers', {}).get('commercial', {}).get(provider_key)
     
-    def validate_golden_standard(self) -> Tuple[bool, str]:
+    def validate_golden_standard(self) -> tuple[bool, str]:
         """Validiert Golden Standard Konfiguration.
         
         Returns:
@@ -111,7 +111,7 @@ class ConfigValidator:
             f"   Info: {description}"
         )
     
-    def _validate_gs_section_exists(self) -> Tuple[bool, str]:
+    def _validate_gs_section_exists(self) -> tuple[bool, str]:
         """Prüft ob golden_standard Sektion existiert."""
         gs_config = self.get_golden_standard_config()
         if not gs_config:
@@ -128,7 +128,7 @@ class ConfigValidator:
         
         return True, ""
     
-    def _validate_gs_provider_exists(self) -> Tuple[bool, str]:
+    def _validate_gs_provider_exists(self) -> tuple[bool, str]:
         """Prüft ob der konfigurierte Provider existiert."""
         gs_config = self.get_golden_standard_config()
         if not gs_config:
@@ -150,7 +150,7 @@ class ConfigValidator:
         
         return True, ""
     
-    def _validate_gs_provider_enabled(self) -> Tuple[bool, str]:
+    def _validate_gs_provider_enabled(self) -> tuple[bool, str]:
         """Prüft ob der Provider aktiviert ist."""
         gs_config = self.get_golden_standard_config()
         if not gs_config:
@@ -174,7 +174,7 @@ class ConfigValidator:
         
         return True, ""
     
-    def _validate_gs_api_key(self) -> Tuple[bool, str]:
+    def _validate_gs_api_key(self) -> tuple[bool, str]:
         """Prüft ob API Key gesetzt ist."""
         gs_config = self.get_golden_standard_config()
         if not gs_config:
@@ -204,7 +204,7 @@ class ConfigValidator:
         
         return True, ""
     
-    def _validate_gs_model_exists(self) -> Tuple[bool, str]:
+    def _validate_gs_model_exists(self) -> tuple[bool, str]:
         """Prüft ob das konfigurierte Modell existiert."""
         gs_config = self.get_golden_standard_config()
         if not gs_config:
@@ -234,7 +234,7 @@ class ConfigValidator:
         
         return True, ""
     
-    def get_enabled_commercial_providers(self) -> Dict[str, Dict[str, Any]]:
+    def get_enabled_commercial_providers(self) -> dict[str, dict[str, Any]]:
         """Holt alle aktivierten kommerziellen Provider.
         
         Returns:
@@ -256,7 +256,7 @@ class ConfigValidator:
         csv_file = self.config.get('output', {}).get('golden_standard_csv', 'benchmark_scores/golden_standard_benchmark.csv')
         return Path(csv_file)
     
-    def get_golden_standard_info(self) -> Optional[Tuple[str, str, Dict[str, Any]]]:
+    def get_golden_standard_info(self) -> tuple[str, str, dict[str, Any]] | None:
         """Holt Golden Standard Provider, Modell und Provider-Config.
         
         Returns:

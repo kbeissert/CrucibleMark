@@ -20,6 +20,14 @@ Analyze this code for security vulnerabilities based on OWASP Top 10 2021.
 9. **A09:2021 – Logging Failures**
 10. **A10:2021 – SSRF**
 
+**Python-Specific Vulnerabilities:**
+- **Dangerous Functions:** pickle.load(), eval(), exec(), compile()
+- **Hardcoded Secrets:** API keys, passwords, tokens in code
+- **Insecure Deserialization:** YAML unsafe loading, pickle from untrusted sources
+- **Path Traversal:** os.path.join() without validation
+- **Unsafe File Operations:** open() without context manager, race conditions
+- **subprocess Injection:** shell=True without input sanitization
+
 **Output Format:**
 
 ### Critical Vulnerabilities

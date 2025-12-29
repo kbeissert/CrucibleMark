@@ -1,0 +1,27 @@
+temperature: 0.3
+maxTokens: 4000
+---
+name: Web Security
+description: Frontend security vulnerabilities
+---
+
+Analyze for web security issues:
+
+**Client-Side Security:**
+- **XSS vulnerabilities** (innerHTML, dangerouslySetInnerHTML)
+- **CSRF protection** (missing tokens)
+- **Exposed API keys/secrets** (hardcoded in JS)
+- **Insecure dependencies** (outdated Bootstrap, jQuery)
+- **Missing Content Security Policy**
+- **Clickjacking** (missing X-Frame-Options)
+
+**Bootstrap-Specific:**
+- **XSS via data-* attributes** (CVE-2018-14040, CVE-2019-8331)
+- **Tooltip/Popover XSS** (data-template, data-viewport)
+- **Outdated Bootstrap version** (check for known CVEs)
+
+**11ty-Specific:**
+- **Template injection** (unsafe Nunjucks/Liquid rendering)
+- **Path traversal** (file includes without validation)
+
+[Same output format as Python security prompt]

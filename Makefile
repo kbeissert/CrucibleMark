@@ -31,8 +31,8 @@ help:
 	@echo ""
 
 install:
-	@echo "📦 Installing runtime dependencies..."
-	$(PYTHON) -m pip install -r requirements.txt
+	@echo "📦 Installing dependencies (Smart Setup)..."
+	$(PYTHON) scripts/setup_env.py
 
 install-dev: install
 	@echo "🛠️ Installing development dependencies..."
@@ -56,16 +56,6 @@ benchmark-auto:
 leaderboard:
 	@echo "📊 Generiere Leaderboard..."
 	$(PYTHON) scripts/generate_leaderboard.py
-
-test-stability:
-	@if [ -z "$(MODELS)" ] || [ -z "$(CATEGORY)" ]; then \
-		echo "Usage: make test-stability MODELS='ministral-3:8b qwen2.5:14b' CATEGORY=code_quality"; \
-		exit 1; \
-	fi
-	$(PYTHON) scripts/test_stability.py \
-		--models $(MODELS) \
-		--category $(CATEGORY) \
-		--runs 5
 
 # === VALIDATION ===
 
@@ -91,21 +81,6 @@ generate-golden-new:
 
 run-benchmark:
 	$(PYTHON) run_benchmark.py
-
-quick-test:
-	$(PYTHON) run_benchmark.py \
-		--models qwen2.5:14b \
-		--assets benchmark_modules/code_quality/assets/asset_001_wcag_audit.yaml
-
-test-stability:
-	@if [ -z "$(MODELS)" ] || [ -z "$(CATEGORY)" ]; then \
-		echo "Usage: make test-stability MODELS='ministral-3:8b qwen2.5:14b' CATEGORY=code_quality"; \
-		exit 1; \
-	fi
-	$(PYTHON) scripts/test_stability.py \
-		--models $(MODELS) \
-		--category $(CATEGORY) \
-		--runs 5
 
 # === UTILITIES ===
 

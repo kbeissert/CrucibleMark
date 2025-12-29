@@ -1,0 +1,21 @@
+temperature: 0.3
+maxTokens: 4000
+---
+name: Web A11y (Extended)
+description: WCAG 2.2 + Bootstrap-specific checks
+---
+
+[Verwende deinen bestehenden wcag.prompt als Base]
+
+**Bootstrap-Specific A11y Issues:**
+- **Modal keyboard traps** (focus management)
+- **Carousel accessibility** (pause controls, screen reader announcements)
+- **Dropdown keyboard navigation** (arrow keys, Esc)
+- **Form validation** (aria-invalid, error announcements)
+- **Button vs link usage** (semantic correctness)
+- **Missing aria-label on icon-only buttons**
+
+**11ty Build-Time Checks:**
+- **Missing alt text** (can be checked at build time)
+- **Invalid HTML** (W3C validation)
+- **Missing lang attributes**

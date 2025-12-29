@@ -11,24 +11,21 @@ Das Modul trennt strikt zwischen Test-Logik (`test.py`) und Test-Daten (`assets/
 
 ## 📊 Scoring-System
 
-Jeder Test ist in 4 Gewichtungskategorien unterteilt (Total: 100 Punkte):
+Jeder Test ist in 3 Gewichtungskategorien unterteilt (Total: 100 Punkte):
 
-1.  **Error Detection (45-60%)**:
+1.  **Error Detection (60 Punkte)**:
     *   Erkennt das Modell die versteckten Fehler/Issues im Code?
-    *   **Dynamische Kategorien**: Unterstützt gestaffelte Schwierigkeitsgrade (z.B. *Labeled*, *Standard*, *Advanced*).
+    *   **Dynamische Kategorien**: Unterstützt gestaffelte Schwierigkeitsgrade (z.B. *Labeled*, *Standard*, *Advanced*, *Expert*).
     *   Bewertung durch Keyword-Matching und Schwellenwerte.
 
-2.  **Solution Quality (30%)**:
+2.  **Solution Quality (30 Punkte)**:
     *   Sind die Lösungsvorschläge korrekt und hilfreich?
     *   Werden Best Practices (z.B. `defer/async`, `Prepared Statements`) genannt?
     *   Sind Code-Beispiele syntaktisch korrekt?
 
-3.  **Formatting (10-15%)**:
+3.  **Formatting (10 Punkte)**:
     *   Ist die Ausgabe gut strukturiert (Markdown)?
     *   Werden Tabellen, Header und Code-Blöcke korrekt verwendet?
-
-4.  **Expertise (Optional, ca. 10%)**:
-    *   Zeigt das Modell tiefes Fachwissen (z.B. Nennung spezifischer WCAG-Kriterien oder OWASP-Begriffe)?
 
 ## 🧠 Schwierigkeits-Level (Tiered Difficulty)
 

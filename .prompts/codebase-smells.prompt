@@ -1,5 +1,5 @@
 temperature: 0.3
-maxTokens: 8000
+maxTokens: 12000
 ---
 name: Codebase Smells
 description: Analyze entire codebase for code smells
@@ -12,7 +12,7 @@ Analyze the entire codebase for the TOP 10 most critical code smells.
 
 **Analysis Requirements:**
 
-### 1. File-Level Issues
+### 1. File-Level Issues^
 For each file, check:
 - Long Method (>50 lines)
 - God Object (class >200 lines, >5 responsibilities)

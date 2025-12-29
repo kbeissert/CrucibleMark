@@ -1,8 +1,8 @@
 # CrucibleMark - Projekt-Status & Architektur
 
-**Version:** 0.3.2-beta
-**Datum:** 28. Dezember 2025
-**Status:** Beta - Documentation Quality Module integriert
+**Version:** 0.3.4-beta
+**Datum:** 29. Dezember 2025
+**Status:** Beta - Hardened Assets & Reproducibility Fixes
 
 ---
 
@@ -16,7 +16,7 @@ Framework zum systematischen Benchmarking von **lokalen** (Ollama) und **kommerz
 2.  **Tiered Difficulty (1-4)**: Assets enthalten Fehler in 4 Schwierigkeitsstufen (Labeled, Standard, Advanced, Expert)
 3.  **Hybrid Scoring**: Kombination aus quantitativer Bewertung (Keyword/Regex) und qualitativer Analyse (Semantische Ähnlichkeit zu Golden Standards)
 4.  **Golden Standard**: Ein kommerzielles Referenz-Modell als Vergleichsmaßstab für lokale Modelle
-5.  **Multi-Provider**: Unterstützt Ollama, Mistral AI, Anthropic, OpenAI
+5.  **Reproducibility**: Deterministische Outputs durch Seed-Steuerung (Random Seed 42)
 
 ---
 
@@ -59,14 +59,12 @@ crucible-mark/
 │       ├── README.md
 │       └── assets/ (5 Assets)
 │
-├── scoring/                       # ⭐ SCORING ENGINE
-│   └── __init__.py                # Scoring Logic
-│
 ├── utils/
 │   ├── llm_client.py              # Unified LLM Provider Wrapper
 │   ├── config_validator.py        # Golden Standard Validierung
 │   ├── module_loader.py           # Dynamic Module Loading
-│   └── provider_clients.py        # Provider Implementations
+│   ├── provider_clients.py        # Provider Implementations
+│   └── similarity.py              # ⭐ SEMANTIC SCORING (Sentence Transformers)
 │
 ├── docs/
 │   ├── ADDING_MODULES.md          # Anleitung: Neue Module erstellen
@@ -127,15 +125,17 @@ modules:
 
 ### ✅ Completed
 - [x] Core Framework (Runner, Config, Utils)
-- [x] Code Quality Module (5 Assets, Tiered Difficulty)
+- [x] Code Quality Module (5 Assets, Tiered Difficulty, Hardened)
 - [x] UX Writing Module (5 Assets, Tiered Difficulty)
-- [x] Documentation Quality Module (5 Assets, Tiered Difficulty)
+- [x] Documentation Quality Module (5 Assets, Tiered Difficulty, Hardened)
+- [x] Content Transformation Module (5 Assets, Tiered Difficulty)
 - [x] Golden Standard Integration (Mistral) & Leaderboard Sync
 - [x] Commercial Provider Support (Anthropic, OpenAI)
 - [x] Interactive CLI Menu (`make benchmark`)
-- [x] Automated Testing (`pytest`) & Robust CSV Parsing
+- [x] Reproducibility (Random Seed 42)
 
 ### 🚧 In Progress
+- [ ] **Semantic Similarity**: Fix dependency conflict (torch vs sentence-transformers)
 - [ ] **Reporting Dashboard**: Visualisierung der Ergebnisse (Streamlit/Dash)
 - [ ] **More Modules**:
     - [ ] Security Auditing (Advanced)

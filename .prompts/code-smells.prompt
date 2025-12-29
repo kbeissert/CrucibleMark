@@ -88,3 +88,7 @@ If no critical smells found: "✅ No critical code smells identified."
 
 **Code to analyze:**
 {{{ input }}}
+
+**Tool Integration:**
+- Use Ruff linter results if available (F841, F401, C901)
+- Cross-reference with Pylint/Mypy findings

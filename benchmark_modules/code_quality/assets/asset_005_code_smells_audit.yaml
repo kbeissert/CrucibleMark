@@ -132,18 +132,18 @@ scoring:
         points: 5
         keywords: ["magic number", "konstante", "hardcoded", "18", "3"]
 
-    # 2. Standard Issues (20 Punkte)
+    # 2. Standard Issues (15 Punkte)
     standard_issues:
       - issue: "Nested Conditionals"
-        points: 7
+        points: 5
         keywords: ["nested", "verschachtelt", "arrow code", "guard clause", "early return"]
         
       - issue: "Duplicated Code"
-        points: 7
+        points: 5
         keywords: ["duplicated", "doppelter code", "dry", "wiederholung", "regex"]
         
       - issue: "Long Parameter List"
-        points: 6
+        points: 5
         keywords: ["parameter list", "zu viele parameter", "parameter object", "destructuring"]
 
     # 3. Advanced Issues (15 Punkte)
@@ -160,14 +160,14 @@ scoring:
         points: 5
         keywords: ["dead code", "toter code", "unreachable", "if (false)"]
 
-    # 4. Expert Issues (15 Punkte) - Top-Tier Modelle
+    # 4. Expert Issues (20 Punkte) - Top-Tier Modelle
     expert_issues:
       - issue: "Feature Envy"
-        points: 8
+        points: 10
         keywords: ["feature envy", "neid", "fremde daten", "gehört in user", "move method"]
         
       - issue: "Primitive Obsession"
-        points: 7
+        points: 10
         keywords: ["primitive obsession", "value object", "email klasse", "username klasse", "typisierung"]
 
   solution_quality:

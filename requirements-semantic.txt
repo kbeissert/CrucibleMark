@@ -1,0 +1,7 @@
+# Base requirements
+-r requirements.txt
+
+# Semantic Similarity (Optional - Heavy)
+sentence-transformers>=2.2.0
+torch>=2.0.0
+numpy>=1.26.0

@@ -98,3 +98,34 @@ In diesem Modul übernimmt das KI-Modell die Rolle eines **Technical Writers**. 
 **Die Situation:** Ein neues Software-Update wird veröffentlicht, aber die "Release Notes" sind nur eine Liste von technischen Git-Commit-Nachrichten ("fix: bug in regex"), die kein normaler Nutzer versteht.
 **Die Aufgabe:** Das Modell muss diese technischen Details in verständliche "User Benefits" übersetzen und klar zwischen neuen Features, Fehlerbehebungen und kritischen Änderungen (Breaking Changes) unterscheiden.
 **Was wird geprüft:** Übersetzung von Tech zu Business, Priorisierung von Informationen, Semantic Versioning.
+
+---
+
+## 🎨 Modul: Content Transformation
+
+Hier agiert das KI-Modell als **Content Strategist**. Es muss Inhalte von einem Format in ein anderes transformieren (z.B. Blogpost zu Twitter-Thread) und dabei Stil, Tonalität und Struktur anpassen.
+
+### Szenario 1: Die langweilige Landing Page (Hero Section)
+**Die Situation:** Eine Feature-Liste ("Wir haben 50GB Speicher") soll in eine verkaufsstarke Hero-Section verwandelt werden.
+**Die Aufgabe:** Das Modell muss die Features in "Benefits" übersetzen ("Nie wieder Speicherplatz-Sorgen") und eine emotionale Headline sowie einen klaren Call-to-Action (CTA) generieren.
+**Was wird geprüft:** Copywriting, Conversion-Optimierung, "Feature vs. Benefit".
+
+### Szenario 2: Der virale Thread (Social Media)
+**Die Situation:** Ein langer, trockener Blogartikel soll auf Twitter/X geteilt werden.
+**Die Aufgabe:** Das Modell muss den Inhalt in einen spannenden Thread mit Hooks, Emojis und Cliffhangern verwandeln, ohne den Kerninhalt zu verfälschen.
+**Was wird geprüft:** Plattform-Verständnis, Kürzung, Engagement-Faktoren.
+
+### Szenario 3: Fachchinesisch für alle (Glossar)
+**Die Situation:** Ein technischer Text voller Jargon ("Asynchrone I/O-Operationen im Non-Blocking Thread") soll für Laien verständlich gemacht werden.
+**Die Aufgabe:** Das Modell muss die Begriffe in einfache Sprache übersetzen und mit Metaphern arbeiten.
+**Was wird geprüft:** Didaktik, Vereinfachung komplexer Sachverhalte.
+
+### Szenario 4: Vom Text zum Video (Script)
+**Die Situation:** Eine schriftliche Anleitung soll als YouTube-Tutorial verfilmt werden.
+**Die Aufgabe:** Das Modell muss ein Skript schreiben, das gesprochene Sprache (Spoken Word) nutzt, Regieanweisungen enthält und Pausen für visuelle Elemente einplant.
+**Was wird geprüft:** Medienkompetenz, Rhythmus, Regie.
+
+### Szenario 5: Die Case Study als E-Mail (Newsletter)
+**Die Situation:** Eine erfolgreiche Kunden-Story soll als Newsletter verschickt werden, um Leads zu generieren.
+**Die Aufgabe:** Das Modell muss eine persönliche E-Mail schreiben, die Neugier weckt, Social Proof nutzt und zum Klicken anregt.
+**Was wird geprüft:** E-Mail-Marketing Best Practices, Storytelling.

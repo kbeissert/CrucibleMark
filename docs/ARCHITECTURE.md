@@ -24,9 +24,11 @@ Abstrahiert die Kommunikation mit verschiedenen LLM-Backends:
 *   **OllamaClient**: Für lokale Modelle (via `ollama` Python-Lib).
 *   **CommercialClients**: Für APIs (Mistral, Anthropic, OpenAI).
 
-### 4. Scoring Engine (`scoring/`)
+### 4. Scoring Engine
 Bewertet die Antworten der Modelle.
 *   **Hybrid-Ansatz**: Kombiniert Regex/Keyword-Matching mit semantischer Ähnlichkeit (Embedding-Vergleich).
+*   **Semantic Similarity**: Implementiert in `utils/similarity.py` (nutzt `sentence-transformers`).
+    *   *Fallback*: Falls `sentence-transformers` nicht installiert ist (z.B. Dependency-Konflikte), fällt das System automatisch auf reines Keyword-Matching zurück.
 *   **Golden Standard**: Vergleicht lokale Antworten mit Referenz-Antworten von High-End-Modellen.
 
 ---
@@ -42,7 +44,7 @@ Bewertet die Antworten der Modelle.
     *   Die Antwort wird empfangen und gespeichert.
 5.  **Scoring**:
     *   Die Antwort wird gegen definierte Kriterien (Keywords) geprüft.
-    *   Falls vorhanden, wird sie mit dem Golden Standard verglichen.
+    *   Falls vorhanden, wird sie mit dem Golden Standard verglichen (via `utils/similarity.py`).
 6.  **Reporting**:
     *   **Commercial Runs**: Ergebnisse landen in `benchmark_scores/commercial_models_benchmark.csv`.
     *   **Local Runs**: Ergebnisse landen in `benchmark_scores/local_models_benchmark.csv`.
@@ -68,16 +70,17 @@ crucible-mark/
 │
 ├── benchmark_modules/      # Plugin-Container
 │   ├── code_quality/       # Modul 1
-│   └── ux_writing/         # Modul 2
+│   ├── ux_writing/         # Modul 2
+│   ├── documentation_quality/ # Modul 3
+│   └── content_transformation/ # Modul 4
 │
 ├── benchmark_scores/       # Output: CSV Ergebnisse & Leaderboard
-│
-├── scoring/                # Scoring Logic
 │
 ├── utils/                  # Hilfsfunktionen
 │   ├── llm_client.py       # Unified LLM Client
 │   ├── provider_clients.py # Provider Implementierungen
-│   └── model_utils.py      # Filter-Logik
+│   ├── model_utils.py      # Filter-Logik
+│   └── similarity.py       # Semantic Scoring
 │
 └── scripts/                # Helper Scripts
     ├── validate_assets.py  # CI/CD Check

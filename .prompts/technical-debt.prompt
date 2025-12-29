@@ -1,0 +1,86 @@
+temperature: 0.3
+maxTokens: 8000
+---
+name: Technical Debt
+description: Comprehensive technical debt analysis and prioritization
+---
+
+Analyze this codebase for technical debt and create a prioritized action plan.
+
+**Technical Debt Categories:**
+
+### 1. Code Debt
+- **Code Smells** (duplications, god objects, long methods)
+- **Missing Tests** (untested code, low coverage)
+- **Commented Code** (dead code, TODOs older than 6 months)
+- **Complex Code** (cyclomatic complexity >10, cognitive complexity >15)
+- **Outdated Patterns** (anti-patterns, deprecated APIs)
+
+### 2. Architectural Debt
+- **Tight Coupling** (circular dependencies, high coupling metrics)
+- **Missing Abstractions** (repeated patterns not extracted)
+- **Monolithic Components** (classes/modules >500 lines)
+- **Inconsistent Patterns** (mixed architectural styles)
+- **Technical Stack Outdated** (EOL dependencies)
+
+### 3. Documentation Debt
+- **Missing Documentation** (no docstrings, README incomplete)
+- **Outdated Documentation** (code changed, docs didn't)
+- **Missing API Documentation** (public interfaces undocumented)
+- **No Architecture Decision Records** (ADRs)
+
+### 4. Dependency Debt
+- **Outdated Dependencies** (security vulnerabilities, breaking changes pending)
+- **Unused Dependencies** (bloat in package.json/requirements.txt)
+- **Conflicting Versions** (dependency hell)
+- **Missing Lock Files** (non-reproducible builds)
+
+### 5. Infrastructure Debt
+- **Missing CI/CD** (manual deployment processes)
+- **No Automated Testing** (manual QA only)
+- **Hard-coded Configuration** (no environment variables)
+- **Missing Monitoring** (no error tracking, logging)
+
+### 6. Security Debt
+- **Known Vulnerabilities** (CVEs in dependencies)
+- **Missing Security Headers** (CSP, HSTS, etc.)
+- **Hardcoded Secrets** (API keys in code)
+- **No Security Audits** (OWASP checks never performed)
+
+**Analysis Instructions:**
+
+1. **Scan codebase** for all debt categories
+2. **Quantify impact** (hours to fix, risk level, business impact)
+3. **Calculate debt ratio** (debt hours / total development hours)
+4. **Prioritize** using weighted scoring:
+   - **Risk to Production:** 40% (security, stability)
+   - **Developer Velocity Impact:** 30% (how much it slows development)
+   - **Maintenance Cost:** 20% (ongoing burden)
+   - **Business Value:** 10% (customer-facing impact)
+
+**Output Format:**
+
+## Executive Summary
+- **Total Technical Debt:** ~X hours (Y% of codebase)
+- **Critical Issues:** X (fix within 1 sprint)
+- **High Priority:** X (fix within 1 month)
+- **Medium Priority:** X (fix within 1 quarter)
+- **Debt Trend:** ⬆️ Increasing / ⬇️ Decreasing / ➡️ Stable
+
+## Critical Debt Items (Priority 1)
+
+### 1. [Category] Issue Title
+- **Location:** `file.py:45-120`, `another.py:88-95`
+- **Type:** Security Debt / Code Debt / Architectural Debt
+- **Impact:** Production risk / 5h developer time wasted per week
+- **Effort:** 8 hours
+- **Risk Score:** 9.2/10
+- **Description:** 
+  Detailed explanation of the technical debt issue and why it's critical.
+  
+- **Consequences if not fixed:**
+  - Security vulnerability exploitable
+  - Team velocity reduced by 20%
+  - Customer-facing bug risk
+  
+- **Recommended Action:**

@@ -124,21 +124,21 @@ prompt: |
 # ============================================================
 
 scoring:
-  total_points: 100
+  total_points: 130
   
   # ------------------------------------------------------------
-  # 1. Error Detection (70 Points)
+  # 1. Error Detection (100 Points)
   # ------------------------------------------------------------
   error_detection:
-    weight: 70
+    weight: 100
     description: "Erkennung fehlender/falscher Component-Dokumentation (Tiered)"
     
-    # LEVEL 1: Labeled Issues (Easy - 17.5 Points)
+    # LEVEL 1: Labeled Issues (Easy - 25.0 Points)
     labeled_issues:
       - issue: "Fehlende Required-Kennzeichnung"
         category: "structure"
         severity: "critical"
-        points: 8.75
+        points: 12.5
         explanation: "data und columns sind required, aber nicht als solche gekennzeichnet"
         check_method: "keyword_presence"
         min_keywords: 2
@@ -148,19 +148,19 @@ scoring:
       - issue: "Fehlende Default Values"
         category: "structure"
         severity: "high"
-        points: 8.75
+        points: 12.5
         explanation: "pageSize, sortable, pagination haben Defaults, aber nicht dokumentiert"
         check_method: "keyword_presence"
         min_keywords: 2
         keywords: ["default", "default value", "standardwert", "initial value", "pagesize: 10", "sortable: false"]
         component_principle: "Developer Expectations"
 
-    # LEVEL 2: Standard Issues (Medium - 21.0 Points)
+    # LEVEL 2: Standard Issues (Medium - 30.0 Points)
     standard_issues:
       - issue: "Props-Beschreibungen zu kurz"
         category: "documentation"
         severity: "high"
-        points: 5.0
+        points: 6.0
         explanation: "'Array of data' ist nicht hilfreich - was für Daten? Format? Structure?"
         check_method: "keyword_presence"
         min_keywords: 2
@@ -170,7 +170,7 @@ scoring:
       - issue: "Event-Handler-Signatur fehlt"
         category: "technical_accuracy"
         severity: "high"
-        points: 5.0
+        points: 6.0
         explanation: "onRowClick Parameter und Return-Type nicht dokumentiert"
         check_method: "keyword_presence"
         min_keywords: 2
@@ -180,7 +180,7 @@ scoring:
       - issue: "Keine Props-Tabelle"
         category: "structure"
         severity: "high"
-        points: 5.0
+        points: 6.0
         explanation: "Markdown-Liste statt strukturierte Tabelle mit Name|Type|Required|Default|Description"
         check_method: "keyword_presence"
         min_keywords: 2
@@ -190,101 +190,81 @@ scoring:
       - issue: "Generic Type <T> nicht erklärt"
         category: "technical_accuracy"
         severity: "medium"
-        points: 2.0
+        points: 6.0
         explanation: "Was ist T? Wie nutze ich DataTable<User>?"
         check_method: "keyword_presence"
         min_keywords: 2
         keywords: ["generic", "type parameter", "<t>", "typescript", "datatable<user>", "<user>"]
         component_principle: "TypeScript Clarity"
       
-      - issue: "Column.render nicht dokumentiert"
-        category: "documentation"
-        severity: "high"
-        points: 4.0
-        explanation: "Wichtige Prop für Custom Rendering fehlt komplett in Docs"
-        check_method: "keyword_presence"
-        min_keywords: 2
-        keywords: ["render", "custom render", "cell renderer", "formatierung", "render function"]
-        component_principle: "Completeness"
-
-    # LEVEL 3: Advanced Issues (Hard - 17.5 Points)
-    advanced_issues:
-      - issue: "Keine Accessibility-Dokumentation"
-        category: "developer_experience"
-        severity: "medium"
-        points: 4.5
-        explanation: "Screen-Reader Support? Keyboard Navigation? ARIA-Labels?"
-        check_method: "keyword_presence"
-        min_keywords: 2
-        keywords: ["accessibility", "a11y", "screen reader", "aria", "keyboard", "wcag"]
-        component_principle: "Inclusive Design"
-      
-      - issue: "emptyState Prop-Type unklar"
-        category: "technical_accuracy"
-        severity: "medium"
-        points: 4.0
-        explanation: "React.ReactNode - was ist erlaubt? String, Component, null?"
-        check_method: "keyword_presence"
-        min_keywords: 2
-        keywords: ["react.reactnode", "reactnode", "component", "jsx", "element", "string"]
-        component_principle: "Type Precision"
-      
-      - issue: "Keine Performance-Hinweise"
-        category: "developer_experience"
-        severity: "medium"
-        points: 3.5
-        explanation: "Was passiert bei 10.000 Rows? Virtualization? Memoization?"
-        check_method: "keyword_presence"
-        min_keywords: 2
-        keywords: ["performance", "virtualization", "memo", "usememo", "große daten", "optimization"]
-        component_principle: "Production Readiness"
-      
       - issue: "width Prop Union Type nicht erklärt"
         category: "technical_accuracy"
         severity: "medium"
-        points: 3.5
+        points: 6.0
         explanation: "number | string - was ist erlaubt? '100px', '20%', 200?"
         check_method: "keyword_presence"
         min_keywords: 2
         keywords: ["union type", "number | string", "entweder oder", "type union", "100px", "20%"]
         component_principle: "Type Documentation"
-      
+
+    # LEVEL 3: Advanced Issues (Hard - 25.0 Points)
+    advanced_issues:
       - issue: "Keine Use Case Beispiele"
         category: "examples"
         severity: "high"
-        points: 2.0
+        points: 7.0
         explanation: "Nur Basic Example, aber keine: Sortierung, Custom Renderer, Empty State"
         check_method: "keyword_presence"
         min_keywords: 2
         keywords: ["use case", "beispiel", "example", "scenario", "anwendungsfall", "sortierung"]
         component_principle: "Learning Curve"
 
-    # LEVEL 4: Expert Issues (Very Hard - 14.0 Points)
+      - issue: "Keine Accessibility-Dokumentation"
+        category: "developer_experience"
+        severity: "medium"
+        points: 6.0
+        explanation: "Screen-Reader Support? Keyboard Navigation? ARIA-Labels?"
+        check_method: "keyword_presence"
+        min_keywords: 2
+        keywords: ["accessibility", "a11y", "screen reader", "aria", "keyboard", "wcag"]
+        component_principle: "Inclusive Design"
+      
+      - issue: "Keine Performance-Hinweise"
+        category: "developer_experience"
+        severity: "medium"
+        points: 6.0
+        explanation: "Was passiert bei 10.000 Rows? Virtualization? Memoization?"
+        check_method: "keyword_presence"
+        min_keywords: 2
+        keywords: ["performance", "virtualization", "memo", "usememo", "große daten", "optimization"]
+        component_principle: "Production Readiness"
+
+      - issue: "Fehlende Storybook-Integration"
+        category: "developer_experience"
+        severity: "low"
+        points: 6.0
+        explanation: "Kein Link zu Live-Previews für verschiedene Prop-Kombinationen"
+        check_method: "keyword_presence"
+        min_keywords: 2
+        keywords: ["storybook", "live preview", "playground", "interactive", "demo"]
+        component_principle: "Developer Experience"
+
+    # LEVEL 4: Expert Issues (Very Hard - 20.0 Points)
     expert_issues:
       - issue: "Keine Controlled vs Uncontrolled Dokumentation"
         category: "api_design"
         severity: "medium"
-        points: 4.5
+        points: 7.0
         explanation: "Kann ich Sortierung extern steuern? currentSort Prop fehlt"
         check_method: "keyword_presence"
         min_keywords: 2
         keywords: ["controlled", "uncontrolled", "state management", "external state", "control"]
         component_principle: "Flexibility"
       
-      - issue: "Fehlende Storybook-Integration"
-        category: "developer_experience"
-        severity: "low"
-        points: 3.5
-        explanation: "Kein Link zu Live-Previews für verschiedene Prop-Kombinationen"
-        check_method: "keyword_presence"
-        min_keywords: 2
-        keywords: ["storybook", "live preview", "playground", "interactive", "demo"]
-        component_principle: "Developer Experience"
-      
       - issue: "Breaking Changes nicht dokumentiert"
         category: "api_evolution"
         severity: "medium"
-        points: 3.0
+        points: 6.5
         explanation: "Kein Migration Guide von v1 → v2 (falls applicable)"
         check_method: "keyword_presence"
         min_keywords: 2
@@ -294,7 +274,7 @@ scoring:
       - issue: "Keine Composition Patterns"
         category: "api_design"
         severity: "low"
-        points: 3.0
+        points: 6.5
         explanation: "Kann ich DataTable mit Filter/Toolbar Components kombinieren?"
         check_method: "keyword_presence"
         min_keywords: 2

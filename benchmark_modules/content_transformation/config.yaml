@@ -1,0 +1,56 @@
+# Content Transformation & Adaption Module Configuration
+# ======================================================
+
+metadata:
+  name: "Content Transformation & Adaption"
+  version: "1.0.0"
+  description: "Bewertet die Fähigkeit von LLMs, Content in verschiedene Formate und Stile zu transformieren (z.B. Blog zu Twitter, Feature zu Benefit)"
+  author: "CrucibleMark"
+  created: "2025-12-29"
+  updated: "2025-12-29"
+
+# Modul-spezifische Einstellungen
+module:
+  test_class: "ContentTransformationTest"
+  base_class: "BaseTest"
+  
+# Test-Assets
+assets:
+  path: "assets"
+  count: 5
+  types:
+    - landing_page_copy       # Feature-Liste -> Hero Section
+    - social_media_thread     # Blogpost -> Twitter Thread
+    - glossary_simplification # Fachbegriff -> Einfache Erklärung
+    - video_script            # Outline -> Video Script
+    - newsletter_adaptation   # Case Study -> Email Newsletter
+
+# Kategorien und Gewichtung
+categories:
+  structure_format:
+    name: "Structure & Format"
+    weight: 0.25
+    description: "Einhaltung des Zielformats (z.B. Thread-Struktur, Script-Timing, Email-Layout)"
+  
+  content_quality:
+    name: "Content Quality & Clarity"
+    weight: 0.25
+    description: "Informationsdichte, Verständlichkeit, Fokus auf Kernbotschaften"
+    
+  engagement_emotion:
+    name: "Engagement & Emotion"
+    weight: 0.25
+    description: "Emotionaler Hook, Storytelling, Tonalität, Ansprache der Zielgruppe"
+    
+  conversion_action:
+    name: "Conversion & Actionability"
+    weight: 0.25
+    description: "Call-to-Action, Umsetzbarkeit, Dringlichkeit, Nutzenargumentation"
+
+# Scoring Configuration
+scoring:
+  max_points: 100
+  passing_score: 70
+  weights:
+    error_detection: 0.7  # 70% für das Erkennen von Problemen/Fehlern im Input oder fehlenden Elementen
+    solution_quality: 0.3 # 30% für die Qualität der generierten Lösung

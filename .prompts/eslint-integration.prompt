@@ -1,0 +1,21 @@
+temperature: 0.3
+maxTokens: 3000
+---
+name: ESLint Analysis
+description: Integrate ESLint findings
+---
+
+Analyze ESLint output and suggest fixes:
+
+**Common ESLint Issues:**
+- no-unused-vars
+- no-undef
+- eqeqeq (use === instead of ==)
+- no-console (production code)
+- prefer-const
+- no-var
+
+Provide concrete refactoring for each issue.
+
+**Code to analyze:**
+{{{ input }}}

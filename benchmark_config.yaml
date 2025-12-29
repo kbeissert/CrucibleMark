@@ -56,6 +56,21 @@ modules:
       - api-docs
       - best-practices
 
+  content_transformation:
+    name: "Content Transformation & Adaption"
+    description: "Bewertet die Fähigkeit, Content in verschiedene Formate und Stile zu transformieren"
+    path: "benchmark_modules/content_transformation"
+    test_class: "ContentTransformationTest"
+    version: "1.0.0"
+    enabled: true
+    assets_count: 5
+    tags:
+      - content-creation
+      - copywriting
+      - transformation
+      - marketing
+      - social-media
+
 # Output Configuration
 # --------------------
 output:

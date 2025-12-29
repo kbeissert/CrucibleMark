@@ -12,15 +12,15 @@ from utils.llm_client import LLMClient  # noqa: E402
 def test_ollama_query():
     client = LLMClient()
     model = "qwen3:8b"
-    
+
     # Load prompt from asset 002
-    with open("benchmark_modules/ux_writing/assets/asset_002_button_labels.yaml", "r") as f:
+    with open("benchmark_modules/ux_writing/assets/asset_002_button_labels.yaml") as f:
         import yaml
         data = yaml.safe_load(f)
         prompt = data["prompt"]
         context = data.get("context", "")
         full_prompt = f"{context}\n\n{prompt}"
-    
+
     print(f"Querying {model} with prompt length {len(full_prompt)}...")
     start = time.time()
     try:
@@ -29,10 +29,10 @@ def test_ollama_query():
         print(f"Response received in {elapsed:.2f}s")
         print(f"Response length: {len(response)}")
         print(f"Response preview: {response[:100]}")
-        
+
         if not response:
             print("WARNING: Empty response received!")
-            
+
     except Exception as e:
         print(f"ERROR: {e}")
 

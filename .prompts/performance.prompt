@@ -14,6 +14,10 @@ Analyze this code for performance issues.
 - Missing caching
 - Blocking I/O
 - Memory leaks
+- Inefficient list comprehensions vs generator expressions
+- Missing @lru_cache decorators
+- Inefficient string concatenation (use join())
+
 
 **Context:** M4 Mac with 24GB RAM
 

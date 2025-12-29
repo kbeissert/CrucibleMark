@@ -7,7 +7,7 @@ Bewertet Qualität von Code-Dokumentation und README-Dateien mit Tiered Difficul
 import sys
 import time
 from pathlib import Path
-from typing import Any, Dict, List, Tuple
+from typing import Any
 
 # Ensure root directory is in sys.path for imports
 root_dir = Path(__file__).parent.parent.parent
@@ -18,6 +18,7 @@ from benchmark_modules.base_test import BaseTest  # noqa: E402
 
 # Constants
 TOKEN_MULTIPLIER = 1.3
+DEFAULT_TEMPERATURE = 0.3
 TIER_THRESHOLDS = {
     'labeled': 0.40,
     'standard': 0.40,
@@ -35,7 +36,7 @@ class DocumentationTest(BaseTest):
     - 30 Punkte: Solution Quality (Code-Beispiele, Best Practices)
     """
 
-    def execute(self, model: str, llm_client: Any, provider: str = 'ollama') -> Dict:
+    def execute(self, model: str, llm_client: Any, provider: str = 'ollama') -> dict:
         """
         Führt Documentation Quality Test aus
 
@@ -60,7 +61,12 @@ class DocumentationTest(BaseTest):
 
         try:
             # Use temperature 0.3 for Documentation Quality - balance between consistency and creativity
-            response = llm_client.query(model, full_prompt, provider=provider, temperature=0.3)
+            response = llm_client.query(
+                model,
+                full_prompt,
+                provider=provider,
+                temperature=DEFAULT_TEMPERATURE
+            )
             elapsed = time.time() - start
 
             # Token-Approximation
@@ -87,7 +93,7 @@ class DocumentationTest(BaseTest):
                 }
             }
 
-    def score_response(self, response: str) -> Dict:
+    def score_response(self, response: str) -> dict:
         """
         Bewertet Documentation Quality Antwort nach Tiered Difficulty System
 
@@ -154,8 +160,8 @@ class DocumentationTest(BaseTest):
     def _score_error_detection(
         self,
         response_lower: str,
-        config: Dict
-    ) -> Tuple[float, List[str], List[str]]:
+        config: dict
+    ) -> tuple[float, list[str], list[str]]:
         """
         Bewertet Issue Detection mit Tiered Difficulty (70 Punkte)
 
@@ -163,7 +169,7 @@ class DocumentationTest(BaseTest):
         - Labeled Issues (17.5P): Offensichtlich
         - Standard Issues (21.0P): Erkennbar
         - Advanced Issues (17.5P): Subtil
-        - Expert Issues (14.0P): Best Practices
+        - Expert Issues (14.0P): Sehr schwer
 
         Returns:
             (score, details_list, violations_list)
@@ -183,11 +189,6 @@ class DocumentationTest(BaseTest):
         # Score jede Tier-Kategorie
         for tier_name, (tier_key, default_threshold) in tier_configs.items():
             tier_issues = config.get(tier_key, [])
-
-            if not tier_issues:
-                continue
-
-            # Berechne max_points für diese Tier (Summe aller Issue-Points)
             max_points = sum(issue.get('points', 0) for issue in tier_issues)
 
             tier_score, tier_details, tier_violations = self._score_tier_issues(
@@ -207,34 +208,36 @@ class DocumentationTest(BaseTest):
     def _score_tier_issues(
         self,
         response_lower: str,
-        issues: List[Dict],
+        issues: list[dict],
         max_points: float,
         min_threshold: float,
         tier_name: str
-    ) -> Tuple[float, List[str], List[str]]:
+    ) -> tuple[float, list[str], list[str]]:
         """
         Bewertet eine Tier-Kategorie (z.B. Labeled, Standard, Advanced, Expert)
 
         Args:
             response_lower: Response in lowercase
             issues: Liste der Issues in dieser Tier
-            max_points: Maximale Punkte für diese Tier (Summe aller Issue-Points)
             min_threshold: Mindest-Keyword-Match-Rate (z.B. 0.40 = 40%)
             tier_name: Name der Tier (für Details)
 
         Returns:
             (score, details, violations)
         """
-        tier_score = 0
-        details = []
-        violations = []
+        tier_score: float = 0.0
+        details: list[str] = []
+        violations: list[str] = []
 
         if not issues:
-            return 0, details, violations
+            return 0.0, details, violations
+
+        # Berechne max_points für diese Tier (Summe aller Issue-Points)
+        max_points = sum(issue.get('points', 0) for issue in issues)
 
         for issue in issues:
-            keywords = issue.get('keywords', [])
             points = issue.get('points', 0)
+            keywords = issue.get('keywords', [])
             issue_name = issue.get('issue', 'Unknown Issue')
             severity = issue.get('severity', 'medium')
 
@@ -244,12 +247,11 @@ class DocumentationTest(BaseTest):
             if found:
                 tier_score += points
                 details.append(f"✓ [{tier_name}] {issue_name}: +{points}p")
+            # Für Critical/High = Violation, sonst nur Details
+            elif severity in ['critical', 'high']:
+                violations.append(f"✗ [{tier_name}] {issue_name}: -{points}p")
             else:
-                # Für Critical/High = Violation, sonst nur Details
-                if severity in ['critical', 'high']:
-                    violations.append(f"✗ [{tier_name}] {issue_name}: -{points}p")
-                else:
-                    details.append(f"○ [{tier_name}] {issue_name}: 0p")
+                details.append(f"○ [{tier_name}] {issue_name}: 0p")
 
         # Direkter Score ohne Normalisierung (Issue-Points sind bereits korrekt)
         details.append(f"  → {tier_name} Total: {tier_score:.1f}/{max_points}p")
@@ -259,7 +261,7 @@ class DocumentationTest(BaseTest):
     def _check_issue_mentioned(
         self,
         response_lower: str,
-        keywords: List[str],
+        keywords: list[str],
         min_threshold: float = 0.40
     ) -> bool:
         """
@@ -284,8 +286,8 @@ class DocumentationTest(BaseTest):
     def _score_solution_quality(
         self,
         response_lower: str,
-        config: Dict
-    ) -> Tuple[float, List[str]]:
+        config: dict
+    ) -> tuple[float, list[str]]:
         """
         Bewertet Lösungsqualität (30 Punkte)
 
@@ -300,7 +302,9 @@ class DocumentationTest(BaseTest):
         score = 0
         details = []
 
-        for criterion in config.get('criteria', []):
+        criteria = config.get('criteria', [])
+
+        for criterion in criteria:
             name = criterion.get('name', 'Unknown')
             points = criterion.get('points', 0)
             keywords = criterion.get('keywords', [])
@@ -330,7 +334,7 @@ class DocumentationTest(BaseTest):
 
         return round(score, 2), details
 
-    def _create_error_score(self, error_msg: str) -> Dict:
+    def _create_error_score(self, error_msg: str) -> dict:
         """Erstellt einen Error-Score bei ungültiger Response."""
         return {
             'status': 'error',

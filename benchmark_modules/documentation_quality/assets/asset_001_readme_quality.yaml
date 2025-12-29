@@ -101,15 +101,15 @@ expected_output: 'Eine strukturierte Analyse die folgende Issues identifiziert:
 
   '
 scoring:
-  total_points: 100
+  total_points: 130
   error_detection:
-    weight: 70
+    weight: 100
     description: Identifikation von README-Qualitätsproblemen (Tiered)
     labeled_issues:
     - issue: Fehlende Code Syntax Highlighting
       category: technical_accuracy
       severity: high
-      points: 5.6
+      points: 6.25
       explanation: Code-Blöcke ohne ```bash oder ```python
       keywords:
       - syntax
@@ -121,7 +121,7 @@ scoring:
     - issue: Installation zu kurz
       category: completeness
       severity: high
-      points: 4.9
+      points: 6.25
       explanation: Nur 'pip install', keine Prerequisites, keine venv-Empfehlung
       keywords:
       - prerequisites
@@ -133,7 +133,7 @@ scoring:
     - issue: Kein Troubleshooting/FAQ
       category: completeness
       severity: medium
-      points: 3.5
+      points: 6.25
       explanation: Keine FAQ oder Troubleshooting Section
       keywords:
       - troubleshooting
@@ -145,7 +145,7 @@ scoring:
     - issue: Code-Beispiele ohne Kontext
       category: completeness
       severity: medium
-      points: 3.5
+      points: 6.25
       explanation: Nur Code-Snippets, keine Erklärung oder Output
       keywords:
       - output
@@ -157,7 +157,7 @@ scoring:
     - issue: Fehlendes Inhaltsverzeichnis (TOC)
       category: structure_clarity
       severity: high
-      points: 5.6
+      points: 6.0
       explanation: Kein TOC für Navigation
       keywords:
       - toc
@@ -168,7 +168,7 @@ scoring:
     - issue: Keine Links zu Dokumentation/Repository
       category: technical_accuracy
       severity: medium
-      points: 4.2
+      points: 6.0
       explanation: Keine Links zu Docs, GitHub, Issues
       keywords:
       - dokumentation link
@@ -180,7 +180,7 @@ scoring:
     - issue: Konfiguration nicht dokumentiert
       category: completeness
       severity: medium
-      points: 4.2
+      points: 6.0
       explanation: '''Create config.yaml'' ohne Beispiel'
       keywords:
       - config beispiel
@@ -191,7 +191,7 @@ scoring:
     - issue: Keine Versions-/Compatibility-Informationen
       category: technical_accuracy
       severity: medium
-      points: 3.5
+      points: 6.0
       explanation: Keine Python-Version oder Package-Version
       keywords:
       - python version
@@ -202,7 +202,7 @@ scoring:
     - issue: Fehlende Badges
       category: usability
       severity: low
-      points: 3.5
+      points: 6.0
       explanation: Keine Badges für Build Status, Version, License
       keywords:
       - badge
@@ -214,7 +214,7 @@ scoring:
     - issue: Fehlender Quick Start
       category: structure_clarity
       severity: medium
-      points: 4.9
+      points: 7.0
       explanation: Keine dedizierte Quick Start Section
       keywords:
       - quick start
@@ -225,7 +225,7 @@ scoring:
     - issue: Zielgruppe nicht explizit genannt
       category: usability
       severity: low
-      points: 4.2
+      points: 6.0
       explanation: DevOps/Backend Developer nicht erwähnt
       keywords:
       - zielgruppe
@@ -237,7 +237,7 @@ scoring:
     - issue: Kein Contributing Guide
       category: usability
       severity: medium
-      points: 4.9
+      points: 7.0
       explanation: Keine Contribution Guidelines für Open Source
       keywords:
       - contributing
@@ -248,7 +248,7 @@ scoring:
     - issue: Schwache visuelle Hierarchie
       category: structure_clarity
       severity: low
-      points: 3.5
+      points: 5.0
       explanation: Wenig Formatierung (Bold, Italic, Quotes)
       keywords:
       - bold
@@ -262,7 +262,7 @@ scoring:
     - issue: Fehlende API-Dokumentation für Python Usage
       category: technical_accuracy
       severity: medium
-      points: 4.9
+      points: 6.0
       explanation: LogParser-Beispiel zu kurz - keine Parameter erklärt
       keywords:
       - parameter
@@ -275,7 +275,7 @@ scoring:
     - issue: Keine Keywords/Tags für SEO
       category: usability
       severity: low
-      points: 3.5
+      points: 5.0
       explanation: Fehlen für GitHub Search und Package Discovery
       keywords:
       - keywords
@@ -287,7 +287,7 @@ scoring:
     - issue: Kein Hinweis auf Production Readiness
       category: completeness
       severity: low
-      points: 2.8
+      points: 4.5
       explanation: Keine Info ob stable, beta, experimental
       keywords:
       - stable
@@ -299,7 +299,7 @@ scoring:
     - issue: Fehlende Migration/Upgrade Guidelines
       category: completeness
       severity: low
-      points: 2.8
+      points: 4.5
       explanation: Bei neuen Versionen wichtig
       keywords:
       - migration
@@ -366,7 +366,7 @@ evaluation_notes: 'Dieses Asset testet README-Qualitätsbewertung mit Tiered Dif
 
   **Scoring:**
 
-  - 70 Punkte: Issue Detection (alle 4 Levels)
+  - 100 Punkte: Issue Detection (alle 4 Levels)
 
   - 30 Punkte: Solution Quality (Code-Beispiele, Best Practices, Priorisierung)
 

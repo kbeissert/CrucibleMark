@@ -1,7 +1,7 @@
 # CrucibleMark
 
 [![Python](https://img.shields.io/badge/Python-3.10+-blue.svg)](https://python.org)
-[![Version](https://img.shields.io/badge/Version-0.3.2--beta-orange.svg)](CHANGELOG.md)
+[![Version](https://img.shields.io/badge/Version-0.3.3--beta-orange.svg)](CHANGELOG.md)
 [![Ollama](https://img.shields.io/badge/Ollama-Compatible-green.svg)](https://ollama.ai)
 [![License](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
@@ -39,9 +39,8 @@ cd crucible-mark
 # Virtual Environment erstellen
 python3 -m venv .venv
 
-# Abhängigkeiten installieren (via Makefile)
-make install
-# Alternativ für Entwickler: make install-dev
+# Smart Installation (Versucht Semantic Mode, Fallback auf Light)
+.venv/bin/python3 scripts/setup_env.py
 ```
 
 ### 3. Konfiguration
@@ -97,6 +96,15 @@ make list-models    # Listet Modelle & prüft API-Keys (Local + Commercial)
 ```
 
 ## 📦 Test-Module
+
+| Modul | Fokus | Scoring (ED/SQ/FM) | Status |
+| :--- | :--- | :--- | :--- |
+| **Code Quality** | Code Reviews, Security, Performance | 60/30/10 | ✅ Stable |
+| **UX Writing** | Microcopy, A11y, Tonalität | 60/30/10 | ✅ Stable |
+| **Documentation** | READMEs, API-Docs, Guides | 100/30/0 | ✅ Hardened |
+| **Content Trans.** | Format-Adaption, Stil-Transfer | 40/60/0 | ✅ Stable |
+
+*Legende: ED = Error Detection, SQ = Solution Quality, FM = Formatting*
 
 ### Code Quality Module (`benchmark_modules/code_quality`)
 

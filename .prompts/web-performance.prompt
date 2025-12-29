@@ -1,0 +1,27 @@
+temperature: 0.3
+maxTokens: 3000
+---
+name: Web Performance
+description: Frontend performance optimization
+---
+
+**JavaScript Performance:**
+- **Blocking scripts** (missing async/defer)
+- **Large bundle size** (unused Bootstrap components)
+- **Memory leaks** (event listeners, closures)
+- **Expensive reflows/repaints** (forced synchronous layout)
+- **Missing lazy loading** (images, iframes)
+
+**11ty Build Performance:**
+- **Slow filters/shortcodes** (check DEBUG output)
+- **Inefficient data cascading**
+- **Missing image optimization** (eleventy-img)
+- **Repeated file reads** (not cached)
+
+**Bootstrap Optimization:**
+- **Unused CSS** (import only needed components)
+- **Missing tree-shaking** (use modular imports)
+
+**Context:** M4 Mac with 24GB RAM
+
+[Same output format as Python performance prompt]

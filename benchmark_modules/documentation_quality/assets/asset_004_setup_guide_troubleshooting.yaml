@@ -120,21 +120,21 @@ prompt: |
 # ============================================================
 
 scoring:
-  total_points: 100
+  total_points: 130
   
   # ------------------------------------------------------------
-  # 1. Error Detection (70 Points)
+  # 1. Error Detection (100 Points)
   # ------------------------------------------------------------
   error_detection:
-    weight: 70
+    weight: 100
     description: "Erkennung fehlender/falscher Setup-Anleitung (Tiered)"
     
-    # LEVEL 1: Labeled Issues (Easy - 17.5 Points)
+    # LEVEL 1: Labeled Issues (Easy - 25.0 Points)
     labeled_issues:
       - issue: "Fehlende Prerequisites"
         category: "structure"
         severity: "critical"
-        points: 9.0
+        points: 12.5
         explanation: "Node, Docker, Git nicht genannt - Developer weiß nicht, was installiert sein muss"
         check_method: "keyword_presence"
         min_keywords: 2
@@ -144,19 +144,19 @@ scoring:
       - issue: "Keine Versions-Anforderungen"
         category: "technical_accuracy"
         severity: "high"
-        points: 8.5
+        points: 12.5
         explanation: "Node 20+, Docker 24+, npm 10+ fehlt - führt zu Inkompatibilitäten"
         check_method: "keyword_presence"
         min_keywords: 2
         keywords: ["version", "node version", "docker version", "mindestversion", "required version", "20", "24"]
         setup_principle: "Clear Requirements"
 
-    # LEVEL 2: Standard Issues (Medium - 21.0 Points)
+    # LEVEL 2: Standard Issues (Medium - 30.0 Points)
     standard_issues:
       - issue: "Reihenfolge der Schritte falsch"
         category: "structure"
         severity: "critical"
-        points: 5.0
+        points: 6.0
         explanation: "docker-compose up BEVOR .env erstellt wurde = Database Connection Error"
         check_method: "keyword_presence"
         min_keywords: 2
@@ -166,7 +166,7 @@ scoring:
       - issue: "Keine .env.example Datei"
         category: "configuration"
         severity: "high"
-        points: 5.0
+        points: 6.0
         explanation: "Developer muss raten, welche ENV-Vars benötigt werden"
         check_method: "keyword_presence"
         min_keywords: 2
@@ -176,7 +176,7 @@ scoring:
       - issue: "Keine Erfolgs-Validierung"
         category: "structure"
         severity: "medium"
-        points: 4.0
+        points: 6.0
         explanation: "Woher weiß ich, dass Setup erfolgreich war? Keine 'Expected Output'"
         check_method: "keyword_presence"
         min_keywords: 2
@@ -186,7 +186,7 @@ scoring:
       - issue: "Port-Conflicts nicht erwähnt"
         category: "troubleshooting"
         severity: "high"
-        points: 4.0
+        points: 6.0
         explanation: "Was wenn Port 5432/3000 bereits belegt? Keine Troubleshooting-Info"
         check_method: "keyword_presence"
         min_keywords: 2
@@ -196,19 +196,19 @@ scoring:
       - issue: "Migrations ohne Seed-Daten"
         category: "usability"
         severity: "medium"
-        points: 3.0
+        points: 6.0
         explanation: "Database ist leer nach Migration = App zeigt nichts an"
         check_method: "keyword_presence"
         min_keywords: 2
         keywords: ["seed", "seeding", "test data", "dummy data", "beispieldaten", "testdaten"]
         setup_principle: "Usable State"
 
-    # LEVEL 3: Advanced Issues (Hard - 17.5 Points)
+    # LEVEL 3: Advanced Issues (Hard - 25.0 Points)
     advanced_issues:
       - issue: "Vite HMR funktioniert nicht in Docker"
         category: "developer_experience"
         severity: "high"
-        points: 4.5
+        points: 6.0
         explanation: "Docker-Volumes + Vite = Hot Reload Problem. Watchpack/polling config fehlt"
         check_method: "keyword_presence"
         min_keywords: 2
@@ -218,7 +218,7 @@ scoring:
       - issue: "M1/M2 Mac-spezifische Probleme"
         category: "platform_compatibility"
         severity: "medium"
-        points: 4.0
+        points: 6.0
         explanation: "Node-gyp fails auf ARM Macs, keine Rosetta/platform Hinweise"
         check_method: "keyword_presence"
         min_keywords: 2
@@ -228,7 +228,7 @@ scoring:
       - issue: "Keine Health-Check-Endpoints"
         category: "technical_accuracy"
         severity: "medium"
-        points: 3.5
+        points: 5.0
         explanation: "Wie teste ich, ob Backend/Database ready sind? /health fehlt"
         check_method: "keyword_presence"
         min_keywords: 2
@@ -238,7 +238,7 @@ scoring:
       - issue: "CORS-Probleme nicht dokumentiert"
         category: "troubleshooting"
         severity: "medium"
-        points: 3.5
+        points: 4.0
         explanation: "Frontend localhost:3000 → Backend localhost:4000 = CORS Error"
         check_method: "keyword_presence"
         min_keywords: 2
@@ -248,14 +248,14 @@ scoring:
       - issue: "Keine Cleanup-Anleitung"
         category: "usability"
         severity: "low"
-        points: 2.0
+        points: 4.0
         explanation: "Wie stoppe ich alles? docker-compose down -v für Volumes fehlt"
         check_method: "keyword_presence"
         min_keywords: 2
         keywords: ["cleanup", "stop", "down", "remove", "volumes", "prune", "docker-compose down"]
         setup_principle: "Reversibility"
 
-    # LEVEL 4: Expert Issues (Very Hard - 14.0 Points)
+    # LEVEL 4: Expert Issues (Very Hard - 20.0 Points)
     expert_issues:
       - issue: "Keine Alternative zu Docker (Bare Metal)"
         category: "flexibility"
@@ -270,7 +270,7 @@ scoring:
       - issue: "Keine Performance-Optimierung für Docker"
         category: "performance"
         severity: "low"
-        points: 3.0
+        points: 5.5
         explanation: "Docker auf Mac ist langsam - Mutagen/NFS-Volumes nicht erwähnt"
         check_method: "keyword_presence"
         min_keywords: 2
@@ -280,7 +280,7 @@ scoring:
       - issue: "Keine IDE-Integration (Debugger)"
         category: "developer_experience"
         severity: "low"
-        points: 3.0
+        points: 4.75
         explanation: "Wie debugge ich Node.js im Docker-Container? VSCode launch.json fehlt"
         check_method: "keyword_presence"
         min_keywords: 2
@@ -290,7 +290,7 @@ scoring:
       - issue: "Keine CI/CD-Erwähnung"
         category: "consistency"
         severity: "low"
-        points: 3.0
+        points: 4.75
         explanation: "Setup-Anleitung sollte erwähnen, dass CI gleich funktioniert"
         check_method: "keyword_presence"
         min_keywords: 2

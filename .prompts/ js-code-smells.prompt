@@ -1,0 +1,28 @@
+temperature: 0.3
+maxTokens: 4000
+---
+name: JS Code Smells
+description: JavaScript-specific code smell analysis
+---
+
+Analyze JavaScript code for common smells:
+
+**JavaScript-Specific Smells:**
+- **Callback Hell** (deeply nested callbacks)
+- **Promise Anti-patterns** (missing error handling, not returning promises)
+- **var usage** (should use const/let)
+- **== instead of ===** (loose equality)
+- **Missing async/await** (promise chains could be simplified)
+- **Global variables** (pollution of global scope)
+- **Unhandled Promise rejections**
+- **console.log in production code**
+- **Large DOM manipulations** (not batched)
+- **Event listener leaks** (not removed)
+
+**11ty-Specific:**
+- **Expensive filters/shortcodes** (>8% build time)
+- **Unmemoized computations** (repeated processing)
+- **Missing caching** (data files re-fetched)
+
+**Output Format:**
+[Same structure as Python code-smells]
