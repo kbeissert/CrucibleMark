@@ -14,3 +14,53 @@ documentation_quality_002,REST API Endpoint Documentation,54.0/70,69.7,,,100,mis
 documentation_quality_003,Component Library Props Documentation,45.0/70,59.9,,,100,mistral-large-latest,65.0,mistral,12066,20/30,success,2025-12-28 23:28:16,65.0
 documentation_quality_004,Setup Guide - Local Dev Environment (Docker + Vite),48.5/70,64.5,,,100,mistral-large-latest,78.5,mistral,11923,30/30,success,2025-12-28 23:29:21,78.5
 documentation_quality_005,Changelog - Git Commits to User-Facing Release Notes,23.5/70,37.7,,,100,mistral-large-latest,53.5,mistral,6770,30/30,success,2025-12-28 23:29:59,53.5
+content_transformation_001,Landing Page Copy Transformation,20.65/70,12.7,,,100,mistral-large-latest,50.6,mistral,2029,30.0/30,success,2025-12-29 17:25:50,50.65
+content_transformation_002,Twitter Thread Transformation,44.1/70,23.3,,,100,mistral-large-latest,74.1,mistral,3172,30.0/30,success,2025-12-29 17:26:13,74.1
+content_transformation_003,Glossar-Eintrag Simplification,17.15/70,9.2,,,100,mistral-large-latest,37.1,mistral,1324,20.0/30,success,2025-12-29 17:26:22,37.15
+content_transformation_004,Video-Script Transformation,31.85/70,43.1,,,100,mistral-large-latest,61.9,mistral,6756,30.0/30,success,2025-12-29 17:27:06,61.85
+content_transformation_005,Email-Newsletter Adaptation,14.0/70,15.0,,,100,mistral-large-latest,44.0,mistral,2271,30.0/30,success,2025-12-29 17:27:21,44.0
+content_transformation_001,Landing Page Copy Transformation,29.05/70,20.5,,,100,mistral-large-latest,59.1,mistral,3368,30.0/30,success,2025-12-29 17:34:04,59.05
+content_transformation_002,Twitter Thread Transformation,41.3/70,29.8,,,100,mistral-large-latest,71.3,mistral,4743,30.0/30,success,2025-12-29 17:34:34,71.3
+content_transformation_003,Glossar-Eintrag Simplification,37.1/70,17.1,,,100,mistral-large-latest,57.1,mistral,2515,20.0/30,success,2025-12-29 17:34:51,57.1
+content_transformation_004,Video-Script Transformation,56.0/70,55.2,,,100,mistral-large-latest,86.0,mistral,7736,30.0/30,success,2025-12-29 17:35:46,86.0
+content_transformation_005,Email-Newsletter Adaptation,34.65/70,25.9,,,100,mistral-large-latest,64.7,mistral,4206,30.0/30,success,2025-12-29 17:36:12,64.65
+content_transformation_001,Landing Page Copy Transformation,37.8/40,29.4,,,100,mistral-large-latest,97.8,mistral,4913,60.0/60,success,2025-12-29 17:40:51,97.8
+content_transformation_002,Twitter Thread Transformation,37.1/40,27.0,,,100,mistral-large-latest,97.1,mistral,4089,60.0/60,success,2025-12-29 17:41:18,97.1
+content_transformation_003,Glossar-Eintrag Simplification,34.3/40,16.0,,,100,mistral-large-latest,94.3,mistral,2213,60.0/60,success,2025-12-29 17:41:34,94.3
+content_transformation_004,Video-Script Transformation,47.25/40,53.4,,,100,mistral-large-latest,107.2,mistral,7594,60.0/60,success,2025-12-29 17:42:28,107.25
+content_transformation_005,Email-Newsletter Adaptation,34.65/40,27.7,,,100,mistral-large-latest,94.7,mistral,3892,60.0/60,success,2025-12-29 17:42:55,94.65
+content_transformation_001,Landing Page Copy Transformation,43.05/40,46.6,,,100,mistral-large-latest,103.0,mistral,6708,60.0/60,success,2025-12-29 17:51:01,103.05
+content_transformation_002,Twitter Thread Transformation,47.6/40,34.6,,,100,mistral-large-latest,107.6,mistral,5118,60.0/60,success,2025-12-29 17:51:36,107.6
+content_transformation_003,Glossar-Eintrag Simplification,33.6/40,23.8,,,100,mistral-large-latest,93.6,mistral,3619,60.0/60,success,2025-12-29 17:52:00,93.6
+content_transformation_004,Video-Script Transformation,54.25/40,59.4,,,100,mistral-large-latest,114.2,mistral,8506,60.0/60,success,2025-12-29 17:52:59,114.25
+content_transformation_005,Email-Newsletter Adaptation,25.9/40,30.0,,,100,mistral-large-latest,85.9,mistral,4249,60.0/60,success,2025-12-29 17:53:29,85.9
+content_transformation_001,Landing Page Copy Transformation,25.0/40,32.7,,,100,mistral-large-latest,85.0,mistral,5044,60.0/60,success,2025-12-29 17:57:44,85.0
+content_transformation_002,Twitter Thread Transformation,22.5/40,32.0,,,100,mistral-large-latest,82.5,mistral,4834,60.0/60,success,2025-12-29 17:58:16,82.5
+content_transformation_003,Glossar-Eintrag Simplification,25.0/40,18.8,,,100,mistral-large-latest,85.0,mistral,2821,60.0/60,success,2025-12-29 17:58:35,85.0
+content_transformation_004,Video-Script Transformation,37.5/40,62.2,,,100,mistral-large-latest,97.5,mistral,8520,60.0/60,success,2025-12-29 17:59:37,97.5
+content_transformation_005,Email-Newsletter Adaptation,17.5/40,29.5,,,100,mistral-large-latest,77.5,mistral,4620,60.0/60,success,2025-12-29 18:00:07,77.5
+documentation_quality_001,README Quality Assessment (Tiered),48.5/100,44.5,,,130,mistral-large-latest,60.4,mistral,7735,30/30,success,2025-12-29 18:38:47,78.5
+documentation_quality_002,REST API Endpoint Documentation,81.5/100,88.4,,,130,mistral-large-latest,85.8,mistral,17511,30/30,success,2025-12-29 18:40:16,111.5
+documentation_quality_003,Component Library Props Documentation,62.0/100,49.9,,,130,mistral-large-latest,63.1,mistral,9841,20/30,success,2025-12-29 18:41:06,82.0
+documentation_quality_004,Setup Guide - Local Dev Environment (Docker + Vite),69.75/100,66.3,,,130,mistral-large-latest,76.7,mistral,12828,30/30,success,2025-12-29 18:42:12,99.75
+documentation_quality_005,Changelog - Git Commits to User-Facing Release Notes,49.5/100,43.5,,,130,mistral-large-latest,61.2,mistral,8573,30/30,success,2025-12-29 18:42:55,79.5
+code_quality_001,WCAG 2.2 Audit (Tiered Difficulty),55.0/60,55.5,0/0,10.0/10,100,mistral-large-latest,85.0,mistral,9174,20.0/30,success,2025-12-29 18:51:33,85.0
+code_quality_002,Security Audit (Tiered Difficulty),56.0/60,57.8,0/0,10.0/10,100,mistral-large-latest,96.0,mistral,11046,30.0/30,success,2025-12-29 18:52:51,96.0
+code_quality_003,Web Performance Audit (Tiered Difficulty),40.0/60,43.0,0/0,10.0/10,100,mistral-large-latest,70.0,mistral,8272,20.0/30,success,2025-12-29 18:53:34,70.0
+code_quality_004,REST API Design Audit (Tiered Difficulty),55.0/60,60.3,0/0,10.0/10,100,mistral-large-latest,85.0,mistral,13133,20.0/30,success,2025-12-29 18:54:35,85.0
+code_quality_005,Code Smells Audit (Tiered Difficulty),41.0/60,24.5,0/0,10.0/10,100,mistral-large-latest,71.0,mistral,5051,20.0/30,success,2025-12-29 18:54:59,71.0
+ux_writing_001,Error Messages - User-Friendly Rewriting,53.0/60,24.0,0/0,10.0/10,100,mistral-large-latest,73.0,mistral,4865,10.0/30,success,2025-12-29 18:55:23,73.0
+ux_writing_002,Button Labels - Context-Aware CTAs,45.0/60,24.9,0/0,10.0/10,100,mistral-large-latest,75.0,mistral,4851,20.0/30,success,2025-12-29 18:55:48,75.0
+ux_writing_003,Onboarding Flow - 3-Step Tutorial,60.0/60,32.9,0/0,10.0/10,100,mistral-large-latest,90.0,mistral,5661,20.0/30,success,2025-12-29 18:56:21,90.0
+ux_writing_004,Accessibility Labels - ARIA for Screen Readers,45.0/60,20.3,0/0,10.0/10,100,mistral-large-latest,75.0,mistral,4569,20.0/30,success,2025-12-29 18:56:42,75.0
+ux_writing_005,Microcopy Audit - Health App Context,43.0/60,25.2,0/0,10.0/10,100,mistral-large-latest,73.0,mistral,5304,20.0/30,success,2025-12-29 18:57:07,73.0
+documentation_quality_001,README Quality Assessment (Tiered),50.5/100,34.9,,,130,mistral-large-latest,61.9,mistral,6256,30/30,success,2025-12-29 18:57:42,80.5
+documentation_quality_002,REST API Endpoint Documentation,80.5/100,74.3,,,130,mistral-large-latest,85.0,mistral,16013,30/30,success,2025-12-29 18:58:56,110.5
+documentation_quality_003,Component Library Props Documentation,56.0/100,49.4,,,130,mistral-large-latest,58.5,mistral,10477,20/30,success,2025-12-29 18:59:46,76.0
+documentation_quality_004,Setup Guide - Local Dev Environment (Docker + Vite),73.75/100,91.7,,,130,mistral-large-latest,79.8,mistral,14342,30/30,success,2025-12-29 19:01:17,103.75
+documentation_quality_005,Changelog - Git Commits to User-Facing Release Notes,30.0/100,40.4,,,130,mistral-large-latest,46.2,mistral,6431,30/30,success,2025-12-29 19:01:58,60.0
+content_transformation_001,Landing Page Copy Transformation,20.2/40,32.6,,,100,mistral-large-latest,80.2,mistral,5292,60.0/60,success,2025-12-29 19:02:31,80.2
+content_transformation_002,Twitter Thread Transformation,25.2/40,43.4,,,100,mistral-large-latest,85.2,mistral,5945,60.0/60,success,2025-12-29 19:03:14,85.2
+content_transformation_003,Glossar-Eintrag Simplification,17.2/40,17.3,,,100,mistral-large-latest,77.2,mistral,2740,60.0/60,success,2025-12-29 19:03:31,77.2
+content_transformation_004,Video-Script Transformation,27.0/40,65.8,,,100,mistral-large-latest,87.0,mistral,8927,60.0/60,success,2025-12-29 19:04:37,87.0
+content_transformation_005,Email-Newsletter Adaptation,16.8/40,31.9,,,100,mistral-large-latest,76.8,mistral,5406,60.0/60,success,2025-12-29 19:05:09,76.8

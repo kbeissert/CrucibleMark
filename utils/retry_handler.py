@@ -5,7 +5,8 @@ Handles exponential backoff and retry logic for LLM queries.
 
 import time
 import logging
-from typing import Callable, TypeVar, Any
+from typing import TypeVar, Any
+from collections.abc import Callable
 
 # Configure logging
 logger = logging.getLogger(__name__)
@@ -49,13 +50,13 @@ class RetryHandler:
             except Exception as e:
                 last_exception = e
                 if attempt == self.max_retries - 1:
-                    logger.error(f"All {self.max_retries} retries failed. Last error: {e}")
+                    logger.error("All %d retries failed. Last error: %s", self.max_retries, e)
                     raise
-                
+
                 wait_time = 2 ** attempt  # Exponential backoff
-                logger.warning(f"Retry {attempt + 1}/{self.max_retries} after {wait_time}s: {e}")
+                logger.warning("Retry %d/%d after %ds: %s", attempt + 1, self.max_retries, wait_time, e)
                 time.sleep(wait_time)
-                
+
         if last_exception:
             raise last_exception
-        raise Exception("All retries failed.")
+        raise RuntimeError("All retries failed.")

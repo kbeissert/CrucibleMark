@@ -1,0 +1,429 @@
+metadata:
+  id: content_transformation_003
+  name: "Glossar-Eintrag Simplification"
+  category: content_transformation
+  subcategory: technical_writing
+  difficulty: tiered
+  estimated_time_seconds: 120
+  tags:
+    - glossar
+    - simplification
+    - plain-language
+    - ux-patterns
+    - metaphors
+  author: "CrucibleMark"
+  created: "2025-12-29"
+  updated: "2025-12-29"
+  language: de
+  version: "1.0.0"
+
+context: |
+  Du bist ein Technical Writer für ein Design System Team, das ein internes
+  UX-Glossar für nicht-Designer pflegt (Produktmanager, Junior Devs, Stakeholder).
+  
+  Das Problem: Die aktuellen Glossar-Einträge sind zu akademisch und verwenden
+  Fachjargon, den nur UX-Designer verstehen. Neue Teammitglieder sind verwirrt,
+  wenn in Meetings über "Progressive Disclosure" oder "Information Architecture"
+  gesprochen wird.
+  
+  Deine Aufgabe: Transformiere einen Wikipedia-Style Glossar-Eintrag in eine
+  kinderleichte Erklärung mit einer Alltagsmetapher, die jeder sofort versteht.
+  
+  **Zielgruppe:** Nicht-Designer (PMs, Junior Devs, Marketing, Business)
+  **Ziel:** Verständnis in unter 30 Sekunden, ohne UX-Vorkenntnisse
+  **Ton:** Freundlich, einladend, nicht herablassend
+
+prompt: |
+  Du bist ein Technical Writer. Deine Aufgabe besteht aus zwei Teilen:
+  
+  1. ANALYSE: Analysiere kurz, warum der akademische Text schwer verständlich ist. Benenne Probleme (nutze Begriffe wie "Jargon", "Komplexität", "Metapher", "Beispiel").
+  2. TRANSFORMATION: Erstelle basierend auf deiner Analyse die vereinfachte Erklärung.
+  3. EXPERT-LEVEL: Nutze eine Analogie aus der physischen Welt (Kochen/Verkehr) und vermeide abstrakte Konzepte komplett.
+  
+  ## INPUT: AKADEMISCHER GLOSSAR-EINTRAG
+  
+  **Begriff:** Progressive Disclosure
+  
+  **Definition (Wikipedia-Style):**
+  
+  > Progressive disclosure is an interaction design pattern that sequences
+  > information and actions across multiple screens or sections to reduce
+  > cognitive load. The technique is rooted in cognitive load theory and
+  > information architecture principles. By hiding secondary or advanced
+  > features initially, the interface presents only essential information
+  > to the user, thereby preventing information overload and decision paralysis.
+  > Progressive disclosure is particularly effective in onboarding flows,
+  > complex forms, and settings menus where feature depth might overwhelm
+  > novice users.
+  
+  **Fachbegriffe im Text:**
+  - "Cognitive Load" (Kognitive Belastung)
+  - "Information Architecture" (Informationsarchitektur)
+  - "Decision Paralysis" (Entscheidungslähmung)
+  - "Onboarding Flows" (Nutzer-Einführung)
+  
+  ---
+  
+  ## ANFORDERUNGEN AN DIE VEREINFACHTE ERKLÄRUNG:
+  
+  1. **Verständlichkeit:**
+     - KEIN Fachjargon (keine "Cognitive Load", "IA", etc.)
+     - Einfache, kurze Sätze (max 15 Wörter)
+     - Aktive Sprache ("Du zeigst" statt "Es wird gezeigt")
+  
+  2. **Metapher:**
+     - Alltagsmetapher MUSS vorhanden sein (z.B. Schubladen, Menü, Spiel)
+     - Metapher muss visuell vorstellbar sein
+     - Metapher muss zum Konzept passen
+  
+  3. **Beispiele:**
+     - Mindestens 1 konkretes UX-Beispiel (App/Website)
+     - 1 Anti-Beispiel ("Schlecht wäre...")
+     - Beispiele müssen bekannt sein (keine Nischen-Apps)
+  
+  4. **Actionable:**
+     - Wann sollte ich es nutzen? (Use-Case)
+     - Wann NICHT nutzen? (Grenzen)
+     - Wie setze ich es um? (Quick-Tipp)
+  
+  5. **Format:**
+     - Max 150 Wörter
+     - Überschrift + Kurz-Definition (1 Satz)
+     - Metapher-Abschnitt
+     - Beispiel-Abschnitt
+     - Wann-nutzen-Abschnitt
+  
+  Erstelle die vollständige vereinfachte Glossar-Erklärung.
+
+scoring:
+  total_points: 100
+  
+  error_detection:
+    weight: 40
+    description: "Erkennung fehlender/falscher Simplification (Tiered)"
+    
+    labeled_issues:
+      - issue: "Fachjargon nicht entfernt"
+        category: "Verständlichkeit"
+        severity: critical
+        points: 5.0
+        explanation: "Begriffe wie 'Cognitive Load', 'Information Architecture' sind noch im Text"
+        check_method: keyword_presence
+        min_keywords: 2
+        keywords:
+          - "jargon"
+          - "fachbegriff"
+          - "vereinfacht"
+          - "verständlich"
+          - "einfache sprache"
+          - "cognitive load"
+          - "laienverständlich"
+        transformation_principle: "Jargon → Plain Language"
+      
+      - issue: "Keine Metapher"
+        category: "Metapher-Qualität"
+        severity: critical
+        points: 5.0
+        explanation: "Keine Alltagsmetapher vorhanden (z.B. Schubladen, Menü, Kapitel)"
+        check_method: keyword_presence
+        min_keywords: 2
+        keywords:
+          - "metapher"
+          - "vergleich"
+          - "wie"
+          - "stell dir vor"
+          - "ähnlich wie"
+          - "beispiel"
+          - "vorstellung"
+        transformation_principle: "Abstract → Concrete"
+    
+    standard_issues:
+      - issue: "Keine konkreten Beispiele"
+        category: "Beispiele"
+        severity: high
+        points: 2.4
+        explanation: "Nur abstrakte Erklärung, kein konkretes UX-Beispiel (z.B. 'Wie bei Instagram...')"
+        check_method: keyword_presence
+        min_keywords: 2
+        keywords:
+          - "beispiel"
+          - "z.b."
+          - "etwa"
+          - "wie bei"
+          - "stell dir vor"
+          - "app"
+          - "website"
+        transformation_principle: "Abstract → Example-Based"
+      
+      - issue: "Sätze zu lang"
+        category: "Verständlichkeit"
+        severity: medium
+        points: 2.4
+        explanation: "Sätze über 15 Wörter (schwer verständlich für Laien)"
+        check_method: keyword_presence
+        min_keywords: 2
+        keywords:
+          - "kurz"
+          - "prägnant"
+          - "satz"
+          - "verständlich"
+          - "einfach"
+          - "lesbar"
+          - "klar"
+        transformation_principle: "Complex → Simple Sentences"
+      
+      - issue: "Keine Visualisierungs-Hinweise"
+        category: "Metapher-Qualität"
+        severity: medium
+        points: 2.4
+        explanation: "Keine 'Stell dir vor...'-Formulierung, kein visuelles Denken angeregt"
+        check_method: keyword_presence
+        min_keywords: 2
+        keywords:
+          - "stell dir vor"
+          - "vorstellen"
+          - "imagine"
+          - "visualisier"
+          - "siehst du"
+          - "bild"
+          - "denke an"
+        transformation_principle: "Text → Visual Thinking"
+      
+      - issue: "Anti-Beispiel fehlt"
+        category: "Beispiele"
+        severity: medium
+        points: 2.4
+        explanation: "Nur gutes Beispiel, kein schlechtes ('Schlecht wäre, wenn...')"
+        check_method: keyword_presence
+        min_keywords: 2
+        keywords:
+          - "schlecht"
+          - "falsch"
+          - "nicht"
+          - "anti"
+          - "negativ"
+          - "vermeide"
+          - "don't"
+        transformation_principle: "Single-Sided → Contrasted"
+      
+      - issue: "Zielgruppe nicht adressiert"
+        category: "Actionable"
+        severity: medium
+        points: 2.4
+        explanation: "Nicht klar, wer das braucht ('Für wen ist das?')"
+        check_method: keyword_presence
+        min_keywords: 2
+        keywords:
+          - "du"
+          - "designer"
+          - "entwickler"
+          - "pm"
+          - "zielgruppe"
+          - "nutzer"
+          - "wer"
+        transformation_principle: "Generic → Targeted"
+    
+    advanced_issues:
+      - issue: "Metapher nicht konsistent"
+        category: "Metapher-Qualität"
+        severity: medium
+        points: 2.0
+        explanation: "Metapher wechselt mitten im Text (erst Schubladen, dann Menü)"
+        check_method: keyword_presence
+        min_keywords: 2
+        keywords:
+          - "konsistent"
+          - "durchgängig"
+          - "metapher"
+          - "vergleich"
+          - "bild"
+          - "einheitlich"
+          - "roten faden"
+        transformation_principle: "Mixed → Consistent Metaphor"
+      
+      - issue: "Keine 'Before/After' Struktur"
+        category: "Beispiele"
+        severity: medium
+        points: 2.0
+        explanation: "Kein Kontrast zwischen 'mit' und 'ohne' Progressive Disclosure"
+        check_method: keyword_presence
+        min_keywords: 2
+        keywords:
+          - "vorher"
+          - "nachher"
+          - "before"
+          - "after"
+          - "mit"
+          - "ohne"
+          - "vergleich"
+        transformation_principle: "Static → Before/After"
+      
+      - issue: "Use-Case unklar"
+        category: "Actionable"
+        severity: high
+        points: 2.0
+        explanation: "Nicht erklärt, WANN man Progressive Disclosure nutzt"
+        check_method: keyword_presence
+        min_keywords: 2
+        keywords:
+          - "wann"
+          - "use case"
+          - "anwendungsfall"
+          - "situation"
+          - "nutze"
+          - "einsetzen"
+          - "szenario"
+        transformation_principle: "What → When"
+      
+      - issue: "Keine visuellen Anchor-Punkte"
+        category: "Format"
+        severity: medium
+        points: 2.0
+        explanation: "Keine Bullets, Emojis oder Struktur (reine Textwüste)"
+        check_method: keyword_presence
+        min_keywords: 2
+        keywords:
+          - "bullet"
+          - "liste"
+          - "emoji"
+          - "struktur"
+          - "absatz"
+          - "formatierung"
+          - "übersicht"
+        transformation_principle: "Wall-of-Text → Structured"
+      
+      - issue: "Zu lang"
+        category: "Verständlichkeit"
+        severity: medium
+        points: 2.0
+        explanation: "Text über 150 Wörter (Aufmerksamkeitsspanne überschritten)"
+        check_method: keyword_presence
+        min_keywords: 2
+        keywords:
+          - "kurz"
+          - "prägnant"
+          - "kompakt"
+          - "150"
+          - "wörter"
+          - "kürzer"
+          - "knapp"
+        transformation_principle: "Verbose → Concise"
+    
+    expert_issues:
+      - issue: "Zu abstrakte Erklärung"
+        category: "Verständlichkeit"
+        severity: medium
+        points: 2.0
+        explanation: "Erklärung bleibt zu theoretisch, keine physische Analogie."
+        check_method: keyword_presence
+        min_keywords: 2
+        keywords:
+          - "abstrakt"
+          - "theoretisch"
+          - "physisch"
+          - "greifbar"
+          - "welt"
+          - "realität"
+          - "analogie"
+        transformation_principle: "Abstract → Concrete"
+      
+      - issue: "Analogie-Bruch"
+        category: "Verständlichkeit"
+        severity: low
+        points: 2.0
+        explanation: "Analogie passt nicht perfekt oder ist zu kompliziert."
+        check_method: keyword_presence
+        min_keywords: 2
+        keywords:
+          - "passt nicht"
+          - "kompliziert"
+          - "bruch"
+          - "schief"
+          - "verwirrend"
+          - "unpassend"
+          - "komplex"
+        transformation_principle: "Complex → Simple"
+      
+      - issue: "Keine Anekdote/Story"
+        category: "Engagement"
+        severity: low
+        points: 2.0
+        explanation: "Reine Definition, keine kurze Story zur Verankerung im Gedächtnis"
+        check_method: keyword_presence
+        min_keywords: 2
+        keywords:
+          - "story"
+          - "geschichte"
+          - "anekdote"
+          - "erlebnis"
+          - "einmal"
+          - "beispiel aus"
+          - "erfahrung"
+        transformation_principle: "Definition → Story-Based"
+      
+      - issue: "SEO-Keywords fehlen"
+        category: "Discoverability"
+        severity: low
+        points: 2.0
+        explanation: "Keine Synonyme/Suchbegriffe erwähnt (z.B. 'auch bekannt als...')"
+        check_method: keyword_presence
+        min_keywords: 2
+        keywords:
+          - "synonym"
+          - "auch bekannt als"
+          - "aka"
+          - "suchbegriff"
+          - "keyword"
+          - "alternativ"
+          - "genannt"
+        transformation_principle: "Single-Term → Discoverable"
+  
+  solution_quality:
+    weight: 60
+    description: "Qualität der Glossar-Simplification"
+    
+    criteria:
+      - name: "Simplicity"
+        points: 20
+        check_method: keyword_presence
+        min_keywords: 2
+        keywords:
+          - "einfach"
+          - "verständlich"
+          - "klar"
+          - "kurz"
+          - "plain language"
+          - "laienverständlich"
+          - "ohne jargon"
+          - "zugänglich"
+        description: "Ist die Sprache einfach und ohne Fachjargon?"
+      
+      - name: "Metaphor-Quality"
+        points: 20
+        check_method: keyword_presence
+        min_keywords: 2
+        keywords:
+          - "metapher"
+          - "vergleich"
+          - "wie"
+          - "schubladen"
+          - "menü"
+          - "kapitel"
+          - "stell dir vor"
+          - "ähnlich"
+        description: "Ist die Metapher nachvollziehbar, visuell und treffend?"
+      
+      - name: "Actionable"
+        points: 20
+        check_method: keyword_presence
+        min_keywords: 2
+        keywords:
+          - "beispiel"
+          - "wann"
+          - "nutzen"
+          - "anwenden"
+          - "use case"
+          - "umsetzen"
+          - "praxis"
+          - "konkret"
+        description: "Sind Beispiele, Use-Cases und Umsetzungs-Tipps vorhanden?"

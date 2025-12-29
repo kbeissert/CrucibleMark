@@ -152,17 +152,17 @@ expected_output: |
 # ============================================================
 
 scoring:
-  total_points: 100
+  total_points: 130
   
   error_detection:
-    weight: 70
+    weight: 100
     
-    # LEVEL 1: Labeled (17.5 Punkte)
+    # LEVEL 1: Labeled (25.0 Punkte)
     labeled_issues:
       - issue: "Fehlende Authentifizierung"
         category: "security"
         severity: "critical"
-        points: 9.0
+        points: 12.5
         explanation: "Kein Authentication-Header - kritisches Security-Problem"
         check_method: "keyword_presence"
         min_keywords: 2
@@ -171,18 +171,18 @@ scoring:
       - issue: "Falscher Status Code für Created"
         category: "technical_accuracy"
         severity: "high"
-        points: 8.5
+        points: 12.5
         explanation: "200 OK ist falsch - sollte 201 Created sein"
         check_method: "keyword_presence"
         min_keywords: 2
         keywords: ["201", "created", "status code", "http", "201 created", "resource created"]
     
-    # LEVEL 2: Standard (21.0 Punkte)
+    # LEVEL 2: Standard (30.0 Punkte)
     standard_issues:
       - issue: "Fehlende Required/Optional Flags"
         category: "structure"
         severity: "high"
-        points: 5.0
+        points: 6.0
         explanation: "Welche Parameter sind required?"
         check_method: "keyword_presence"
         min_keywords: 2
@@ -191,7 +191,7 @@ scoring:
       - issue: "Keine Error Response Struktur"
         category: "error_handling"
         severity: "high"
-        points: 5.0
+        points: 6.0
         explanation: "Was kommt bei 400 Bad Request zurück?"
         check_method: "keyword_presence"
         min_keywords: 2
@@ -200,7 +200,7 @@ scoring:
       - issue: "Content-Type Header fehlt"
         category: "technical_accuracy"
         severity: "medium"
-        points: 3.5
+        points: 6.0
         explanation: "cURL-Beispiel ohne Content-Type Header"
         check_method: "keyword_presence"
         min_keywords: 2
@@ -209,7 +209,7 @@ scoring:
       - issue: "Fehlende Status Codes"
         category: "structure"
         severity: "high"
-        points: 4.5
+        points: 6.0
         explanation: "Was ist mit 401, 403, 422, 500?"
         check_method: "keyword_presence"
         min_keywords: 2
@@ -218,18 +218,18 @@ scoring:
       - issue: "Keine Parameter-Beschreibungen"
         category: "structure"
         severity: "medium"
-        points: 3.0
+        points: 6.0
         explanation: "product_id ohne Beschreibung (Typ, Format)"
         check_method: "keyword_presence"
         min_keywords: 2
         keywords: ["description", "parameter description", "type", "format", "beschreibung", "details"]
     
-    # LEVEL 3: Advanced (17.5 Punkte)
+    # LEVEL 3: Advanced (25.0 Punkte)
     advanced_issues:
       - issue: "Keine Idempotency-Schlüssel"
         category: "resilience"
         severity: "medium"
-        points: 5.5
+        points: 6.0
         explanation: "POST ohne Idempotency Key = Duplikat-Gefahr"
         check_method: "keyword_presence"
         min_keywords: 2
@@ -238,7 +238,7 @@ scoring:
       - issue: "Rate Limiting nicht dokumentiert"
         category: "governance"
         severity: "medium"
-        points: 5.0
+        points: 6.5
         explanation: "Wie viele Requests/Minute erlaubt?"
         check_method: "keyword_presence"
         min_keywords: 2
@@ -247,7 +247,7 @@ scoring:
       - issue: "Keine Pagination/Limits erwähnt"
         category: "scalability"
         severity: "medium"
-        points: 4.0
+        points: 6.5
         explanation: "Was wenn items[] > 100?"
         check_method: "keyword_presence"
         min_keywords: 2
@@ -256,18 +256,18 @@ scoring:
       - issue: "Fehlende Versioning-Info"
         category: "evolution"
         severity: "low"
-        points: 3.0
+        points: 6.0
         explanation: "/api/v1/ nicht erklärt"
         check_method: "keyword_presence"
         min_keywords: 2
         keywords: ["versioning", "api version", "deprecated", "v2", "migration", "version"]
     
-    # LEVEL 4: Expert (14.0 Punkte)
+    # LEVEL 4: Expert (20.0 Punkte)
     expert_issues:
       - issue: "Keine Webhook-Notification dokumentiert"
         category: "async_patterns"
         severity: "medium"
-        points: 5.5
+        points: 7.0
         explanation: "Wie erfährt Client Status-Änderungen?"
         check_method: "keyword_presence"
         min_keywords: 2
@@ -276,7 +276,7 @@ scoring:
       - issue: "Fehlende HATEOAS Links"
         category: "rest_maturity"
         severity: "low"
-        points: 3.5
+        points: 6.0
         explanation: "Response sollte Links enthalten"
         check_method: "keyword_presence"
         min_keywords: 2
@@ -285,7 +285,7 @@ scoring:
       - issue: "Keine OpenAPI/Swagger Spec erwähnt"
         category: "developer_experience"
         severity: "medium"
-        points: 5.0
+        points: 7.0
         explanation: "Keine maschinell lesbare Spec"
         check_method: "keyword_presence"
         min_keywords: 2

@@ -16,10 +16,9 @@ Dieses Modul bewertet die Fähigkeit von LLMs, nutzerfreundliche, barrierefreie 
 
 | Kategorie | Gewichtung | Beschreibung |
 |-----------|------------|--------------|
-| **Problem-Erkennung** | 30-35% | Erkennung von UX-Writing-Problemen (Tiered) |
-| **Lösungs-Qualität** | 30-40% | Verständlichkeit, Tonalität, Handlungsanweisungen |
-| **Formatierung** | 10-20% | A11y-Konformität, Struktur |
-| **Fachkompetenz** | 15-20% | UX-Writing-Prinzipien, Best Practices |
+| **Problem-Erkennung** | 60 Punkte | Erkennung von UX-Writing-Problemen (Tiered) |
+| **Lösungs-Qualität** | 30 Punkte | Verständlichkeit, Tonalität, Handlungsanweisungen |
+| **Formatierung** | 10 Punkte | A11y-Konformität, Struktur |
 
 ## Erwartete Ergebnisse
 

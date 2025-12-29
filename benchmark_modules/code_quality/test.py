@@ -6,7 +6,6 @@ Erweiterte Version mit vollständigem Scoring für 11 Issues
 
 import sys
 from pathlib import Path
-from typing import Dict, List, Tuple, Optional
 import re
 import time
 
@@ -22,6 +21,8 @@ from utils.similarity import SemanticSimilarity  # noqa: E402
 MIN_TABLE_COLUMNS = 2  # Minimum pipes for table detection
 DEFAULT_MIN_TABLE_ROWS = 8  # Default minimum rows for complete table
 DEFAULT_MIN_KEYWORDS = 3  # Default minimum keywords to match
+MIN_SENTENCE_LENGTH = 20  # Minimum length for sentence splitting
+SIMILARITY_THRESHOLD = 0.65  # Threshold for semantic similarity matching
 
 
 class CodeQualityTest(BaseTest):
@@ -36,7 +37,7 @@ class CodeQualityTest(BaseTest):
     - Fachkompetenz-Bewertung (WCAG 2.2, AT, Tools)
     """
 
-    def execute(self, model: str, llm_client, provider: str = 'ollama') -> Dict:
+    def execute(self, model: str, llm_client, provider: str = 'ollama') -> dict:
         """
         Führt WCAG-Audit-Test aus
 
@@ -88,7 +89,7 @@ class CodeQualityTest(BaseTest):
                 }
             }
 
-    def score_response(self, response: str) -> Dict:
+    def score_response(self, response: str) -> dict:
         """
         Bewertet WCAG-Audit-Antwort nach Asset-Scoring-Kriterien
 
@@ -117,7 +118,7 @@ class CodeQualityTest(BaseTest):
         category_scores = {}
         details = []
         violations = []
-        total_achieved = 0
+        total_achieved: float = 0.0
 
         response_lower = response.lower()
 
@@ -179,11 +180,11 @@ class CodeQualityTest(BaseTest):
         }
 
     def _check_and_score_issue(
-        self, 
-        response_lower: str, 
-        issue: Dict, 
+        self,
+        response_lower: str,
+        issue: dict,
         severity: str
-    ) -> Tuple[float, Optional[str], Optional[str]]:
+    ) -> tuple[float, str | None, str | None]:
         """
         Hilfsfunktion: Prüft ein einzelnes Issue und gibt Score/Details zurück.
         
@@ -192,7 +193,7 @@ class CodeQualityTest(BaseTest):
         """
         found = self._check_issue_mentioned(response_lower, issue['keywords'])
         extra_info = f" (WCAG {issue['wcag']})" if 'wcag' in issue else ""
-        
+
         if found:
             detail = f"✓ {severity} erkannt: {issue['issue']}{extra_info}, +{issue['points']}p"
             return issue['points'], detail, None
@@ -207,14 +208,14 @@ class CodeQualityTest(BaseTest):
     def _calculate_bonus_score(
         self,
         response_lower: str,
-        config: Dict,
-        details: List[str]
+        config: dict,
+        details: list[str]
     ) -> int:
         """Berechnet Bonus-Punkte für zusätzlich gefundene Issues."""
         bonus_count = 0
         bonus_max = config.get('max_bonus', 5)
         bonus_issues = config.get('bonus_issues', [])
-        
+
         for bonus_issue in bonus_issues:
             keywords = bonus_issue.lower().split()[:3]
             if any(kw in response_lower for kw in keywords):
@@ -224,27 +225,27 @@ class CodeQualityTest(BaseTest):
                         f"✓ Bonus: {bonus_issue} "
                         f"(+{config['bonus_points_each']}p)"
                     )
-        
+
         if bonus_count > 0:
             details.append(
                 f"  → Bonus Total: {min(bonus_count, bonus_max)} Issues gefunden"
             )
-        
+
         return min(bonus_count, bonus_max) * config.get('bonus_points_each', 1)
 
     def _score_error_detection(
-        self, 
-        response: str, 
-        response_lower: str, 
-        config: Dict
-    ) -> Tuple[int, List[str], List[str]]:
+        self,
+        response: str,
+        response_lower: str,
+        config: dict
+    ) -> tuple[int, list[str], list[str]]:
         """
         Bewertet Fehlererkennung (45 Punkte)
 
         Returns:
             (score, details_list, violations_list)
         """
-        score = 0
+        score: float = 0.0
         details = []
         violations = []
         max_score = config['weight']
@@ -255,7 +256,7 @@ class CodeQualityTest(BaseTest):
             if key.endswith('_issues') and key != 'bonus_issues' and isinstance(issues_list, list):
                 # Derive category name (e.g. "critical_issues" -> "Critical")
                 category_name = key.replace('_issues', '').replace('_', ' ').title()
-                
+
                 for issue in issues_list:
                     delta, detail, violation = self._check_and_score_issue(
                         response_lower, issue, category_name
@@ -276,10 +277,10 @@ class CodeQualityTest(BaseTest):
         return score, details, violations
 
     def _score_pattern_match(
-        self, 
-        response: str, 
-        criterion: Dict
-    ) -> Tuple[float, str]:
+        self,
+        response: str,
+        criterion: dict
+    ) -> tuple[float, str]:
         """
         Hilfsfunktion: Bewertet Pattern-basierte Kriterien (SQ-001, SQ-002).
         
@@ -290,7 +291,7 @@ class CodeQualityTest(BaseTest):
         matches = len(re.findall(pattern, response))
         min_required = criterion.get('min_occurrences', 6)
         points = criterion['points']
-        
+
         if matches >= min_required:
             return points, f"✓ {criterion['name']}: {matches}/{min_required} (+{points}p)"
         else:
@@ -298,11 +299,11 @@ class CodeQualityTest(BaseTest):
             return partial, f"~ {criterion['name']}: {matches}/{min_required} ({partial:.1f}/{points}p)"
 
     def _score_solution_quality(
-        self, 
-        response: str, 
-        response_lower: str, 
-        config: Dict
-    ) -> Tuple[float, List[str]]:
+        self,
+        response: str,
+        response_lower: str,
+        config: dict
+    ) -> tuple[float, list[str]]:
         """
         Bewertet Lösungsqualität (30 Punkte)
 
@@ -315,7 +316,7 @@ class CodeQualityTest(BaseTest):
         Returns:
             (score, details_list)
         """
-        score = 0
+        score: float = 0.0
         details = []
 
         for criterion in config['criteria']:
@@ -365,7 +366,7 @@ class CodeQualityTest(BaseTest):
             elif check_method == "keyword_presence":  # Moderne Web-Standards
                 keywords = criterion.get('keywords', [])
                 found_keywords = [
-                    kw for kw in keywords 
+                    kw for kw in keywords
                     if kw.lower() in response_lower
                 ]
                 min_required = criterion.get('min_keywords', 4)
@@ -385,15 +386,15 @@ class CodeQualityTest(BaseTest):
         return round(score, 2), details
 
     def _score_table_criterion(
-        self, 
-        response: str, 
-        criterion: Dict
-    ) -> Tuple[float, str]:
+        self,
+        response: str,
+        criterion: dict
+    ) -> tuple[float, str]:
         """Bewertet Tabellen-Formatierung."""
         points = criterion['points']
         has_table = '|' in response and '-|' in response
         table_rows = len([
-            line for line in response.split('\n') 
+            line for line in response.split('\n')
             if line.count('|') >= MIN_TABLE_COLUMNS
         ])
         min_rows = criterion.get('min_rows', DEFAULT_MIN_TABLE_ROWS)
@@ -407,10 +408,10 @@ class CodeQualityTest(BaseTest):
             return 0, f"✗ {criterion['name']}: Keine Tabelle gefunden"
 
     def _score_severity_criterion(
-        self, 
-        response_lower: str, 
-        criterion: Dict
-    ) -> Tuple[float, str]:
+        self,
+        response_lower: str,
+        criterion: dict
+    ) -> tuple[float, str]:
         """Bewertet Severity-Level Keywords."""
         points = criterion['points']
         keywords = criterion.get('keywords', [])
@@ -423,18 +424,18 @@ class CodeQualityTest(BaseTest):
             return 0, f"~ {criterion['name']}: {found}/{min_required} Severity-Level"
 
     def _score_wcag_references(
-        self, 
-        response: str, 
-        criterion: Dict
-    ) -> Tuple[float, str]:
+        self,
+        response: str,
+        criterion: dict
+    ) -> tuple[float, str]:
         """Bewertet Regex-Matches (z.B. WCAG-Referenzen)."""
         points = criterion['points']
         pattern = criterion.get('check_pattern', r'\b[1-4]\.\d{1,2}\.\d{1,2}\b')
         matches = re.findall(pattern, response)
-        
+
         count_unique = criterion.get('count_unique', True)
         count = len(set(matches)) if count_unique else len(matches)
-        
+
         min_required = criterion.get('min_occurrences', 8)
         if 'min_items' in criterion:
             min_required = criterion['min_items']
@@ -446,16 +447,16 @@ class CodeQualityTest(BaseTest):
             return partial, f"~ {criterion['name']}: {count}/{min_required} Treffer ({partial:.1f}/{points}p)"
 
     def _score_testing_checklist(
-        self, 
+        self,
         response: str,
-        response_lower: str, 
-        criterion: Dict
-    ) -> Tuple[float, str]:
+        response_lower: str,
+        criterion: dict
+    ) -> tuple[float, str]:
         """Bewertet Testing-Checkliste."""
         points = criterion['points']
         section_keywords = criterion.get('section_keywords', [])
         has_test_section = any(kw in response_lower for kw in section_keywords)
-        
+
         list_items = len(re.findall(r'^[-*]\s+|^\d+\.\s+', response, re.MULTILINE))
         min_items = criterion.get('min_items', 5)
 
@@ -467,11 +468,11 @@ class CodeQualityTest(BaseTest):
             return 0, f"✗ {criterion['name']}: Nicht gefunden"
 
     def _score_formatting(
-        self, 
-        response: str, 
-        response_lower: str, 
-        config: Dict
-    ) -> Tuple[float, List[str]]:
+        self,
+        response: str,
+        response_lower: str,
+        config: dict
+    ) -> tuple[float, list[str]]:
         """
         Bewertet Formatierung (10 Punkte)
 
@@ -484,7 +485,7 @@ class CodeQualityTest(BaseTest):
         Returns:
             (score, details_list)
         """
-        score = 0
+        score: float = 0.0
         details = []
 
         for criterion in config['criteria']:
@@ -500,18 +501,18 @@ class CodeQualityTest(BaseTest):
                 delta, detail = self._score_testing_checklist(response, response_lower, criterion)
             else:
                 continue
-            
+
             score += delta
             details.append(detail)
 
         return round(score, 2), details
 
     def _score_expertise(
-        self, 
-        response: str, 
-        response_lower: str, 
-        config: Dict
-    ) -> Tuple[float, List[str]]:
+        self,
+        response: str,
+        response_lower: str,
+        config: dict
+    ) -> tuple[float, list[str]]:
         """
         Bewertet Fachkompetenz (10 Punkte)
 
@@ -524,7 +525,7 @@ class CodeQualityTest(BaseTest):
         Returns:
             (score, details_list)
         """
-        score = 0
+        score: float = 0.0
         details = []
 
         for criterion in config['criteria']:
@@ -534,7 +535,7 @@ class CodeQualityTest(BaseTest):
             if check_method == "keyword_presence":  # Keyword-basiert
                 keywords = criterion.get('keywords', [])
                 found_keywords = [
-                    kw for kw in keywords 
+                    kw for kw in keywords
                     if kw.lower() in response_lower
                 ]
                 min_required = criterion.get('min_keywords', 2)
@@ -571,9 +572,9 @@ class CodeQualityTest(BaseTest):
         return round(score, 2), details
 
     def _check_issue_mentioned(
-        self, 
-        response_lower: str, 
-        keywords: List[str]
+        self,
+        response_lower: str,
+        keywords: list[str]
     ) -> bool:
         """
         Prüft ob ein Issue in der Response erwähnt wurde.
@@ -606,7 +607,7 @@ class CodeQualityTest(BaseTest):
         matches = sum(1 for kw in keywords if kw.lower() in response_lower)
         required_ratio = 0.4
         required_matches = max(1, int(len(keywords) * required_ratio))
-        
+
         if matches >= required_matches:
             return True
 
@@ -615,19 +616,19 @@ class CodeQualityTest(BaseTest):
         # Da wir nicht den ganzen Text embedden wollen (zu langsam/groß),
         # suchen wir nach Sätzen, die relevant sein könnten.
         # Vereinfachung: Wir vergleichen die Keywords als "Satz" mit dem Text.
-        
+
         # Konstruiere eine "Query" aus den Keywords
         query = " ".join(keywords)
-        
+
         # Splitte Response in Sätze (grob)
-        sentences = [s.strip() for s in response_lower.split('.') if len(s.strip()) > 20]
-        
+        sentences = [s.strip() for s in response_lower.split('.') if len(s.strip()) > MIN_SENTENCE_LENGTH]
+
         # Wenn keine Sätze gefunden, nutze Chunks
         if not sentences:
             sentences = [response_lower[i:i+200] for i in range(0, len(response_lower), 200)]
-            
+
         # Suche besten Match
         best_score = SemanticSimilarity.find_best_match(query, sentences)
-        
+
         # Threshold: 0.65 (experimentell ermittelt für MiniLM)
-        return best_score >= 0.65
+        return best_score >= SIMILARITY_THRESHOLD

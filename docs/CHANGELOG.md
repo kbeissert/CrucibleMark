@@ -5,6 +5,28 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.3.4-beta] - 2025-12-29
+
+### Added
+- **Content Transformation Module:** Neues Modul für Format-Adaption und Stil-Transfer (5 Assets).
+- **Reproducibility:** `random_seed=42` für deterministische LLM-Outputs (Mistral/Ollama).
+- **Hardened Assets:**
+  - `documentation_quality`: Assets 003 (Props) und 005 (Changelog) deutlich verschärft.
+  - `code_quality`: Asset 005 (Code Smells) Punkteverteilung optimiert (Fokus auf Expert Issues).
+
+### Changed
+- **Scoring System:**
+  - `documentation_quality`: Error Detection Gewichtung auf 100 Punkte erhöht.
+  - `code_quality` & `ux_writing`: Standardisiert auf 60/30/10 (ED/SQ/FM).
+- **Documentation:**
+  - `BENCHMARK_SCENARIOS.md` um Content Transformation erweitert.
+  - `ARCHITECTURE.md` aktualisiert (Fallback-Logik für Semantic Similarity).
+  - `README.md` Status-Tabellen aktualisiert.
+
+### Fixed
+- **Scoring Logic:** Bug in `base_test.py` behoben, der Scores >100 Punkte verhinderte (jetzt dynamisch basierend auf YAML).
+- **Indentation:** Syntax-Fehler in `documentation_quality/test.py` behoben.
+
 ## [0.2.0-beta] - 2025-12-27
 
 ### Added

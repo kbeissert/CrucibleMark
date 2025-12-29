@@ -6,7 +6,6 @@ Erweiterte Version mit vollständigem Scoring für UX Writing Dimensionen
 
 import sys
 from pathlib import Path
-from typing import Dict, List, Tuple, Optional
 import re
 import time
 
@@ -16,6 +15,7 @@ root_dir = Path(__file__).parent.parent.parent
 if str(root_dir) not in sys.path:
     sys.path.insert(0, str(root_dir))
 
+# pylint: disable=wrong-import-position
 from benchmark_modules.base_test import BaseTest  # noqa: E402
 from utils.similarity import SemanticSimilarity  # noqa: E402
 
@@ -29,6 +29,8 @@ DEFAULT_MIN_KEYWORDS = 2  # Default minimum keywords to match
 MAX_BUTTON_LENGTH = 50  # Max characters for button labels
 MAX_STEP_WORDS = 80  # Max words per onboarding step
 FLESCH_TARGET_MIN = 60  # Minimum Flesch Reading Ease score
+MIN_SENTENCE_LENGTH = 20  # Minimum length for sentence splitting
+SIMILARITY_THRESHOLD = 0.65  # Threshold for semantic similarity match
 
 
 class UXWritingTest(BaseTest):
@@ -42,7 +44,7 @@ class UXWritingTest(BaseTest):
     - A11y-Konformität (ARIA-Labels, Screen-Reader)
     """
 
-    def execute(self, model: str, llm_client, provider: str = "ollama") -> Dict:
+    def execute(self, model: str, llm_client, provider: str = "ollama") -> dict:
         """
         Führt UX-Writing-Test aus
 
@@ -83,7 +85,7 @@ class UXWritingTest(BaseTest):
             response = llm_client.query(model, full_prompt, provider=provider, temperature=0.3)
             elapsed = time.time() - start
 
-            # Token-Approximation (Wörter * 1.3)
+            # Calculate approximate token count (words * 1.3)
             approx_tokens = len(response.split()) * 1.3
 
             return {
@@ -104,7 +106,7 @@ class UXWritingTest(BaseTest):
                 "metadata": {"model": model, "error": str(e)},
             }
 
-    def score_response(self, response: str) -> Dict:
+    def score_response(self, response: str) -> dict:
         """
         Bewertet UX-Writing-Antwort nach Asset-Scoring-Kriterien
 
@@ -133,7 +135,7 @@ class UXWritingTest(BaseTest):
         category_scores = {}
         details = []
         violations = []
-        total_achieved = 0
+        total_achieved = 0.0
 
         response_lower = response.lower()
 
@@ -142,7 +144,7 @@ class UXWritingTest(BaseTest):
         # ============================================================
 
         ed_score, ed_details, ed_violations = self.score_error_detection(
-            response, response_lower, scoring_config["error_detection"]
+            response_lower, scoring_config["error_detection"]
         )
         category_scores["error_detection"] = {
             "achieved": ed_score,
@@ -157,7 +159,7 @@ class UXWritingTest(BaseTest):
         # ============================================================
 
         sq_score, sq_details = self.score_solution_quality(
-            response, response_lower, scoring_config["solution_quality"]
+            response, scoring_config["solution_quality"]
         )
         category_scores["solution_quality"] = {
             "achieved": sq_score,
@@ -171,7 +173,7 @@ class UXWritingTest(BaseTest):
         # ============================================================
 
         fmt_score, fmt_details = self.score_formatting(
-            response, response_lower, scoring_config["formatting"]
+            response, scoring_config["formatting"]
         )
         category_scores["formatting"] = {
             "achieved": fmt_score,
@@ -211,8 +213,8 @@ class UXWritingTest(BaseTest):
     # ============================================================
 
     def check_and_score_issue(
-        self, response_lower: str, issue: Dict, severity: str
-    ) -> Tuple[float, Optional[str], Optional[str]]:
+        self, response_lower: str, issue: dict, severity: str
+    ) -> tuple[float, str | None, str | None]:
         """
         Hilfsfunktion: Prüft ein einzelnes Issue und gibt Score/Details zurück.
 
@@ -230,16 +232,16 @@ class UXWritingTest(BaseTest):
         if found:
             detail = f"✓ {severity} erkannt: {issue['issue']}{extra_info} ({issue['points']}p)"
             return issue["points"], detail, None
-        elif severity == "Medium":
+        if severity == "Medium":
             detail = f"⚠ {severity} fehlt: {issue['issue']}{extra_info}"
             return 0, detail, None
-        else:
-            violation_prefix = "🔴 CRITICAL" if severity == "Critical" else "⚠️ HIGH"
-            violation = f"{violation_prefix}: {severity} fehlt: {issue['issue']}{extra_info} (-{issue['points']}p)"
-            return 0, None, violation
+
+        violation_prefix = "🔴 CRITICAL" if severity == "Critical" else "⚠️ HIGH"
+        violation = f"{violation_prefix}: {severity} fehlt: {issue['issue']}{extra_info} (-{issue['points']}p)"
+        return 0, None, violation
 
     def calculate_bonus_score(
-        self, response_lower: str, config: Dict, details: List[str]
+        self, response_lower: str, config: dict, details: list[str]
     ) -> int:
         """Berechnet Bonus-Punkte für zusätzlich gefundene Issues."""
         bonus_count = 0
@@ -263,8 +265,8 @@ class UXWritingTest(BaseTest):
         return min(bonus_count, bonus_max) * config.get("bonus_points_each", 1)
 
     def score_error_detection(
-        self, response: str, response_lower: str, config: Dict
-    ) -> Tuple[int, List[str], List[str]]:
+        self, response_lower: str, config: dict
+    ) -> tuple[int, list[str], list[str]]:
         """
         Bewertet Problem-Erkennung (30-35 Punkte)
         Tiered: Labeled → Standard → Advanced → Expert
@@ -272,7 +274,7 @@ class UXWritingTest(BaseTest):
         Returns:
             (score, details_list, violations_list)
         """
-        score = 0
+        score = 0.0
         details = []
         violations = []
         max_score = config["weight"]
@@ -310,67 +312,73 @@ class UXWritingTest(BaseTest):
     # HELPER METHODS: Solution Quality
     # ============================================================
 
-    def score_pattern_match(self, response: str, criterion: Dict) -> Tuple[float, str]:
+    def _score_keyword_presence(self, response: str, criterion: dict) -> tuple[float, str]:
+        points = criterion["points"]
+        keywords = criterion.get("keywords", [])
+        found_keywords = [kw for kw in keywords if kw.lower() in response.lower()]
+        min_required = criterion.get("min_keywords", DEFAULT_MIN_KEYWORDS)
+
+        if len(found_keywords) >= min_required:
+            return (
+                points,
+                f"✓ {criterion['name']}: {len(found_keywords)}/{min_required} ({', '.join(found_keywords[:3])}) ({points}p)",
+            )
+        return (
+            0,
+            f"✗ {criterion['name']}: {len(found_keywords)}/{min_required} ({', '.join(found_keywords) if found_keywords else 'keine'})",
+        )
+
+    def _score_keyword_absence(self, response: str, criterion: dict) -> tuple[float, str]:
+        points = criterion["points"]
+        forbidden = criterion.get("forbidden_keywords", [])
+        found_forbidden = [kw for kw in forbidden if kw.lower() in response.lower()]
+        max_violations = criterion.get("max_violations", 0)
+
+        if len(found_forbidden) <= max_violations:
+            return (
+                points,
+                f"✓ {criterion['name']}: Keine verbotenen Begriffe ({points}p)",
+            )
+        return (
+            0,
+            f"✗ {criterion['name']}: Verbotene Begriffe gefunden: {', '.join(found_forbidden)}",
+        )
+
+    def _score_readability(self, response: str, criterion: dict) -> tuple[float, str]:
+        points = criterion["points"]
+        # Check if readability is mentioned
+        readability_keywords = criterion.get(
+            "keywords", ["flesch", "lesbarkeit", "verständlich", "einfach"]
+        )
+        found = any(kw in response.lower() for kw in readability_keywords)
+
+        if found:
+            return points, f"✓ {criterion['name']}: Lesbarkeit erwähnt ({points}p)"
+        return 0, f"✗ {criterion['name']}: Keine Lesbarkeits-Analyse"
+
+    def score_pattern_match(self, response: str, criterion: dict) -> tuple[float, str]:
         """
         Hilfsfunktion: Bewertet Pattern-basierte Kriterien (Keyword-Präsenz).
 
         Returns:
             (score_delta, detail_msg)
         """
-        points = criterion["points"]
         check_method = criterion.get("check_method")
 
         if check_method == "keyword_presence":
-            keywords = criterion.get("keywords", [])
-            found_keywords = [kw for kw in keywords if kw.lower() in response.lower()]
-            min_required = criterion.get("min_keywords", DEFAULT_MIN_KEYWORDS)
+            return self._score_keyword_presence(response, criterion)
 
-            if len(found_keywords) >= min_required:
-                return (
-                    points,
-                    f"✓ {criterion['name']}: {len(found_keywords)}/{min_required} ({', '.join(found_keywords[:3])}) ({points}p)",
-                )
-            else:
-                return (
-                    0,
-                    f"✗ {criterion['name']}: {len(found_keywords)}/{min_required} ({', '.join(found_keywords) if found_keywords else 'keine'})",
-                )
+        if check_method == "keyword_absence":
+            return self._score_keyword_absence(response, criterion)
 
-        elif check_method == "keyword_absence":
-            forbidden = criterion.get("forbidden_keywords", [])
-            found_forbidden = [kw for kw in forbidden if kw.lower() in response.lower()]
-            max_violations = criterion.get("max_violations", 0)
-
-            if len(found_forbidden) <= max_violations:
-                return (
-                    points,
-                    f"✓ {criterion['name']}: Keine verbotenen Begriffe ({points}p)",
-                )
-            else:
-                return (
-                    0,
-                    f"✗ {criterion['name']}: Verbotene Begriffe gefunden: {', '.join(found_forbidden)}",
-                )
-
-        elif (
-            check_method == "readability_score" or check_method == "readability_mention"
-        ):
-            # Check if readability is mentioned
-            readability_keywords = criterion.get(
-                "keywords", ["flesch", "lesbarkeit", "verständlich", "einfach"]
-            )
-            found = any(kw in response.lower() for kw in readability_keywords)
-
-            if found:
-                return points, f"✓ {criterion['name']}: Lesbarkeit erwähnt ({points}p)"
-            else:
-                return 0, f"✗ {criterion['name']}: Keine Lesbarkeits-Analyse"
+        if check_method in ("readability_score", "readability_mention"):
+            return self._score_readability(response, criterion)
 
         return 0, f"⚠ {criterion['name']}: Check-Methode nicht implementiert"
 
     def score_length_validation(
-        self, response: str, criterion: Dict
-    ) -> Tuple[float, str]:
+        self, response: str, criterion: dict
+    ) -> tuple[float, str]:
         """Prüft Zeichenlimits für Button-Labels."""
         points = criterion["points"]
         max_length = criterion.get("max_length", MAX_BUTTON_LENGTH)
@@ -389,15 +397,15 @@ class UXWritingTest(BaseTest):
                 points,
                 f"✓ {criterion['name']}: Alle Buttons <{max_length} Zeichen ({points}p)",
             )
-        else:
-            return (
-                points * 0.5,
-                f"⚠ {criterion['name']}: {len(too_long)} Buttons zu lang (z.B. '{too_long[0][:30]}...')",
-            )
+
+        return (
+            points * 0.5,
+            f"⚠ {criterion['name']}: {len(too_long)} Buttons zu lang (z.B. '{too_long[0][:30]}...')",
+        )
 
     def score_word_count_validation(
-        self, response: str, criterion: Dict
-    ) -> Tuple[float, str]:
+        self, response: str, criterion: dict
+    ) -> tuple[float, str]:
         """Prüft Wortlimits für Onboarding-Steps."""
         points = criterion["points"]
         max_words = criterion.get("max_words_per_step", MAX_STEP_WORDS)
@@ -420,15 +428,15 @@ class UXWritingTest(BaseTest):
                 points,
                 f"✓ {criterion['name']}: Alle Steps <{max_words} Wörter ({points}p)",
             )
-        else:
-            return (
-                points * 0.5,
-                f"⚠ {criterion['name']}: {len(too_long)} Steps zu lang ({', '.join(too_long)})",
-            )
+
+        return (
+            points * 0.5,
+            f"⚠ {criterion['name']}: {len(too_long)} Steps zu lang ({', '.join(too_long)})",
+        )
 
     def score_code_validation(
-        self, response: str, criterion: Dict
-    ) -> Tuple[float, str]:
+        self, response: str, criterion: dict
+    ) -> tuple[float, str]:
         """Prüft Code-Blöcke auf erforderliche Elemente (z.B. ARIA-Attribute)."""
         points = criterion["points"]
         required = criterion.get("required_elements", [])
@@ -449,15 +457,15 @@ class UXWritingTest(BaseTest):
                 points,
                 f"✓ {criterion['name']}: {total_found} Code-Beispiele ({', '.join(found_elements[:3])}) ({points}p)",
             )
-        else:
-            return (
-                0,
-                f"✗ {criterion['name']}: {total_found}/{min_blocks} Code-Beispiele",
-            )
+
+        return (
+            0,
+            f"✗ {criterion['name']}: {total_found}/{min_blocks} Code-Beispiele",
+        )
 
     def score_solution_quality(
-        self, response: str, response_lower: str, config: Dict
-    ) -> Tuple[float, List[str]]:
+        self, response: str, config: dict
+    ) -> tuple[float, list[str]]:
         """
         Bewertet Lösungs-Qualität (30-40 Punkte)
         Prüft Verständlichkeit, Tonalität, Handlungsanweisungen
@@ -465,13 +473,13 @@ class UXWritingTest(BaseTest):
         Returns:
             (score, details_list)
         """
-        score = 0
+        score = 0.0
         details = []
 
         for criterion in config["criteria"]:
             check_method = criterion.get("check_method")
 
-            if check_method == "keyword_presence" or check_method == "keyword_absence":
+            if check_method in ("keyword_presence", "keyword_absence"):
                 delta, detail = self.score_pattern_match(response, criterion)
             elif check_method == "length_validation":
                 delta, detail = self.score_length_validation(response, criterion)
@@ -479,7 +487,7 @@ class UXWritingTest(BaseTest):
                 delta, detail = self.score_word_count_validation(response, criterion)
             elif check_method == "code_validation":
                 delta, detail = self.score_code_validation(response, criterion)
-            elif check_method in ["readability_score", "readability_mention"]:
+            elif check_method in ("readability_score", "readability_mention"):
                 delta, detail = self.score_pattern_match(response, criterion)
             else:
                 delta, detail = (
@@ -497,8 +505,8 @@ class UXWritingTest(BaseTest):
     # ============================================================
 
     def score_table_criterion(
-        self, response: str, criterion: Dict
-    ) -> Tuple[float, str]:
+        self, response: str, criterion: dict
+    ) -> tuple[float, str]:
         """Bewertet Tabellen-Formatierung."""
         points = criterion["points"]
 
@@ -514,18 +522,18 @@ class UXWritingTest(BaseTest):
 
         if has_table and table_rows >= min_rows:
             return points, f"✓ {criterion['name']}: {table_rows} Zeilen ({points}p)"
-        elif has_table:
+        if has_table:
             partial = (table_rows / min_rows) * points
             return (
                 partial,
                 f"⚠ {criterion['name']}: {table_rows}/{min_rows} Zeilen ({partial:.1f}p)",
             )
-        else:
-            return 0, f"✗ {criterion['name']}: Keine Tabelle gefunden"
+
+        return 0, f"✗ {criterion['name']}: Keine Tabelle gefunden"
 
     def score_structure_validation(
-        self, response: str, criterion: Dict
-    ) -> Tuple[float, str]:
+        self, response: str, criterion: dict
+    ) -> tuple[float, str]:
         """Prüft ob erforderliche Strukturelemente vorhanden sind."""
         points = criterion["points"]
         required_structure = criterion.get("required_structure", [])
@@ -539,13 +547,13 @@ class UXWritingTest(BaseTest):
                 points,
                 f"✓ {criterion['name']}: Alle Strukturelemente vorhanden ({points}p)",
             )
-        else:
-            missing = set(required_structure) - set(found)
-            return 0, f"✗ {criterion['name']}: Fehlende Elemente: {', '.join(missing)}"
+
+        missing = set(required_structure) - set(found)
+        return 0, f"✗ {criterion['name']}: Fehlende Elemente: {', '.join(missing)}"
 
     def score_regex_criterion(
-        self, response: str, criterion: Dict
-    ) -> Tuple[float, str]:
+        self, response: str, criterion: dict
+    ) -> tuple[float, str]:
         """Bewertet Regex-Matches (z.B. WCAG-Referenzen)."""
         points = criterion["points"]
         pattern = criterion.get("check_pattern", r"\d\.\d\.\d")
@@ -557,16 +565,16 @@ class UXWritingTest(BaseTest):
 
         if count >= min_required:
             return points, f"✓ {criterion['name']}: {count} Treffer ({points}p)"
-        else:
-            partial = (count / min_required) * points
-            return (
-                partial,
-                f"⚠ {criterion['name']}: {count}/{min_required} Treffer ({partial:.1f}p)",
-            )
+
+        partial = (count / min_required) * points
+        return (
+            partial,
+            f"⚠ {criterion['name']}: {count}/{min_required} Treffer ({partial:.1f}p)",
+        )
 
     def score_formatting(
-        self, response: str, response_lower: str, config: Dict
-    ) -> Tuple[float, List[str]]:
+        self, response: str, config: dict
+    ) -> tuple[float, list[str]]:
         """
         Bewertet Formatierung (10-20 Punkte)
         Prüft Tabellen, Strukturierung, Code-Beispiele
@@ -574,7 +582,7 @@ class UXWritingTest(BaseTest):
         Returns:
             (score, details_list)
         """
-        score = 0
+        score = 0.0
         details = []
 
         for criterion in config["criteria"]:
@@ -606,8 +614,8 @@ class UXWritingTest(BaseTest):
     # ============================================================
 
     def score_expertise(
-        self, response: str, response_lower: str, config: Dict
-    ) -> Tuple[float, List[str]]:
+        self, response: str, response_lower: str, config: dict
+    ) -> tuple[float, list[str]]:
         """
         Bewertet Fachkompetenz (15-20 Punkte)
         Prüft UX-Writing-Prinzipien, Best Practices, Kontext-Bewusstsein
@@ -615,7 +623,7 @@ class UXWritingTest(BaseTest):
         Returns:
             (score, details_list)
         """
-        score = 0
+        score = 0.0
         details = []
 
         for criterion in config["criteria"]:
@@ -634,11 +642,11 @@ class UXWritingTest(BaseTest):
                     delta = points
                     detail = f"✓ {criterion['name']}: {found}/{len(indicators)} Context-Indikatoren ({points}p)"
                 else:
-                    delta = 0
+                    delta = 0.0
                     detail = f"✗ {criterion['name']}: {found}/{min_required} Context-Indikatoren"
             else:
                 delta, detail = (
-                    0,
+                    0.0,
                     f"⚠ {criterion.get('name', 'Unknown')}: Check-Methode '{check_method}' nicht implementiert",
                 )
 
@@ -651,7 +659,7 @@ class UXWritingTest(BaseTest):
     # HELPER METHODS: Issue Checking
     # ============================================================
 
-    def check_issue_mentioned(self, response_lower: str, keywords: List[str]) -> bool:
+    def check_issue_mentioned(self, response_lower: str, keywords: list[str]) -> bool:
         """
         Prüft ob ein Issue in der Response erwähnt wurde.
         Nutzt Hybrid-Ansatz: String-Matching + Semantic Similarity
@@ -691,7 +699,9 @@ class UXWritingTest(BaseTest):
 
         # Splitte Response in Sätze (grob)
         sentences = [
-            s.strip() for s in response_lower.split(".") if len(s.strip()) > 20
+            s.strip()
+            for s in response_lower.split(".")
+            if len(s.strip()) > MIN_SENTENCE_LENGTH
         ]
 
         # Wenn keine Sätze gefunden, nutze Chunks
@@ -704,4 +714,4 @@ class UXWritingTest(BaseTest):
         best_score = SemanticSimilarity.find_best_match(query, sentences)
 
         # Threshold 0.65 (experimentell ermittelt für MiniLM)
-        return best_score > 0.65
+        return best_score > SIMILARITY_THRESHOLD

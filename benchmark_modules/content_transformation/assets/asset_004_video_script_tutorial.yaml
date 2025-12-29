@@ -1,0 +1,455 @@
+metadata:
+  id: content_transformation_004
+  name: "Video-Script Transformation"
+  category: content_transformation
+  subcategory: video_production
+  difficulty: tiered
+  estimated_time_seconds: 180
+  tags:
+    - video-script
+    - tutorial
+    - spoken-word
+    - youtube
+    - screencast
+  author: "CrucibleMark"
+  created: "2025-12-29"
+  updated: "2025-12-29"
+  language: de
+  version: "1.0.0"
+
+context: |
+  Du bist ein Video-Script-Writer für Tech-YouTube-Kanäle und Online-Tutorials.
+  
+  Dein Kunde hat eine Bullet-Point-Outline für ein Tutorial-Video erstellt:
+  "How to Set Up Two-Factor Authentication in 5 Minutes"
+  
+  Das Problem: Die Outline ist viel zu technisch geschrieben, hat keine Spoken-Word-Sprache
+  (klingt wie Dokumentation), und es fehlen alle Production-Hinweise (Timing, Screen-Annotations,
+  Pausen, B-Roll, Musik-Cues).
+  
+  Deine Aufgabe: Transformiere die trockene Outline in ein vollständiges, production-ready
+  Video-Script mit Timestamps, Spoken-Word-Style und allen Technical-Cues für den Editor.
+  
+  **Zielgruppe:** YouTube/TikTok Tutorial (Nicht-Tech-Savvy User, 18-45 Jahre)
+  **Video-Länge:** 3-5 Minuten (optimal für Retention)
+  **Ton:** Freundlich, energetisch, hilfreich (nicht roboterhaft)
+  **Platform:** YouTube (Landscape, Desktop + Mobile)
+
+prompt: |
+  Du bist ein Video-Script-Writer. Deine Aufgabe besteht aus zwei Teilen:
+  
+  1. ANALYSE: Analysiere kurz, was der Outline fehlt, um ein gutes Video zu sein. Benenne fehlende Elemente (nutze Begriffe wie "Hook", "Timing", "Visuals", "Spoken Word").
+  2. TRANSFORMATION: Erstelle basierend auf deiner Analyse das vollständige Video-Script.
+  3. EXPERT-LEVEL: Füge einen "Easter Egg" Hinweis für aufmerksame Zuschauer ein (z.B. im Hintergrund oder als kurzer Text-Flash), um die Community-Bindung zu stärken.
+
+  ## INPUT: TUTORIAL-OUTLINE (Bullet-Point-Format)
+  
+  **Title:** How to Set Up Two-Factor Authentication in 5 Minutes
+  
+  **Outline:**
+  
+  1. **Introduction**
+     - Explain what 2FA is
+     - Why it's important (security)
+  
+  2. **Prerequisites**
+     - Email address
+     - Phone number
+     - Authenticator app (optional)
+  
+  3. **Step 1: Go to Settings**
+     - Navigate to account settings
+     - Find security section
+  
+  4. **Step 2: Enable 2FA**
+     - Click "Enable Two-Factor Authentication"
+     - Choose method (SMS or App)
+  
+  5. **Step 3: Scan QR Code**
+     - Open authenticator app
+     - Scan QR code shown on screen
+  
+  6. **Step 4: Enter Verification Code**
+     - App generates 6-digit code
+     - Enter code to confirm
+  
+  7. **Troubleshooting**
+     - Code not working? Check time sync
+     - Lost phone? Use backup codes
+  
+  8. **Conclusion**
+     - Recap benefits
+     - Call to action (like, subscribe)
+  
+  ---
+  
+  ## ANFORDERUNGEN AN DAS VIDEO-SCRIPT:
+  
+  1. **Timing-Markers:**
+     - Jeder Abschnitt MUSS Timestamp haben [00:00] - [05:00]
+     - [PAUSE] Marker für natürliche Sprechpausen (1-2 Sekunden)
+     - Realistische Timing-Erwartungen (nicht 5 Schritte in 30 Sekunden)
+  
+  2. **Spoken-Word-Style:**
+     - Konversationell ("Hey, let's..." statt "In this video we will...")
+     - Kurze Sätze (max 12 Wörter pro Satz)
+     - Füllwörter erlaubt ("also", "okay", "jetzt", "gut")
+     - Direkte Ansprache ("Du klickst..." statt "Man navigiert zu...")
+  
+  3. **Screen-Annotations:**
+     - [SHOW: Settings Icon] für Zoom/Highlight
+     - [CLICK: Enable Button] für Mouse-Click-Animation
+     - [CIRCLE: QR Code] für visuellen Focus
+     - [ARROW: Security Tab] für Richtungshinweise
+  
+  4. **Engagement-Elements:**
+     - Hook in ersten 5 Sekunden (Problem + Lösung)
+     - Pattern-Interrupt bei 1:30 ("But wait...")
+     - Retention-Hooks ("Coming up next...")
+     - CTA am Ende (Like, Subscribe, Comment)
+  
+  5. **Production-Cues:**
+     - [B-ROLL: Hacker News Headlines] für Stock-Footage
+     - [MUSIC: Upbeat Intro] für Audio-Layers
+     - [TEXT ON SCREEN: "2FA = Safer"] für Grafik-Overlays
+     - [JUMP CUT] für Edit-Points
+  
+  6. **Format:**
+     - 400-600 Wörter (3-5 Min bei 150 WPM Speak-Rate)
+     - Klar getrennte Sections mit Timestamps
+     - "Why"-Erklärungen (nicht nur "How")
+  
+  Erstelle das vollständige Video-Script mit allen Elementen.
+
+scoring:
+  total_points: 100
+  
+  error_detection:
+    weight: 40
+    description: "Erkennung fehlender/falscher Video-Script-Transformation (Tiered)"
+    
+    labeled_issues:
+      - issue: "Keine Timing-Markers"
+        category: "Timing-Markers"
+        severity: critical
+        points: 5.0
+        explanation: "Script hat keine Timestamps wie [00:00], [01:15], [03:45]"
+        check_method: keyword_presence
+        min_keywords: 2
+        keywords:
+          - "[00:"
+          - "[01:"
+          - "timestamp"
+          - "timing"
+          - "zeit"
+          - "marker"
+          - "minute"
+        transformation_principle: "Outline → Timed Script"
+      
+      - issue: "Kein Hook"
+        category: "Engagement"
+        severity: critical
+        points: 5.0
+        explanation: "Video beginnt langweilig ('In this video...') statt mit Problem/Hook"
+        check_method: keyword_presence
+        min_keywords: 2
+        keywords:
+          - "hook"
+          - "einstieg"
+          - "problem"
+          - "attention"
+          - "erste sekunden"
+          - "aufmerksamkeit"
+          - "frage"
+        transformation_principle: "Introduction → Hook"
+    
+    standard_issues:
+      - issue: "Schriftsprache statt Spoken-Word"
+        category: "Spoken-Word-Style"
+        severity: critical
+        points: 2.4
+        explanation: "Text klingt wie Dokumentation ('Navigate to...') statt Gespräch ('Go to...')"
+        check_method: keyword_presence
+        min_keywords: 2
+        keywords:
+          - "konversationell"
+          - "gesprächig"
+          - "natürlich"
+          - "du"
+          - "spoken"
+          - "sprache"
+          - "reden"
+        transformation_principle: "Written → Spoken"
+      
+      - issue: "Keine Pausen-Marker"
+        category: "Timing-Markers"
+        severity: high
+        points: 2.4
+        explanation: "[PAUSE] Marker fehlen (wichtig für natürlichen Sprach-Flow)"
+        check_method: keyword_presence
+        min_keywords: 2
+        keywords:
+          - "[PAUSE]"
+          - "pause"
+          - "atmen"
+          - "kurz"
+          - "moment"
+          - "luft holen"
+          - "break"
+        transformation_principle: "Continuous → Paced"
+      
+      - issue: "Screen-Annotations fehlen"
+        category: "Screen-Annotations"
+        severity: critical
+        points: 2.4
+        explanation: "Keine [SHOW:], [CLICK:], [CIRCLE:] Hinweise für Editor"
+        check_method: keyword_presence
+        min_keywords: 2
+        keywords:
+          - "[SHOW"
+          - "[CLICK"
+          - "[CIRCLE"
+          - "[ARROW"
+          - "annotation"
+          - "highlight"
+          - "zoom"
+        transformation_principle: "Audio-Only → Multimodal"
+      
+      - issue: "Troubleshooting zu kurz"
+        category: "Content-Quality"
+        severity: medium
+        points: 2.4
+        explanation: "Troubleshooting-Section nur 1 Satz (sollte ausführlicher sein)"
+        check_method: keyword_presence
+        min_keywords: 2
+        keywords:
+          - "troubleshoot"
+          - "problem"
+          - "fehler"
+          - "funktioniert nicht"
+          - "hilfe"
+          - "lösung"
+          - "backup"
+        transformation_principle: "Brief → Comprehensive"
+      
+      - issue: "Kein CTA am Ende"
+        category: "Engagement"
+        severity: high
+        points: 2.4
+        explanation: "Kein Call-to-Action (Like, Subscribe, Comment) am Ende"
+        check_method: keyword_presence
+        min_keywords: 2
+        keywords:
+          - "subscribe"
+          - "like"
+          - "comment"
+          - "bell"
+          - "cta"
+          - "glocke"
+          - "abonnieren"
+        transformation_principle: "Conclusion → CTA"
+    
+    advanced_issues:
+      - issue: "Keine Pattern-Interrupts"
+        category: "Engagement"
+        severity: medium
+        points: 2.0
+        explanation: "Zu monoton, kein 'But wait...', 'Here's the thing...'"
+        check_method: keyword_presence
+        min_keywords: 2
+        keywords:
+          - "aber"
+          - "wait"
+          - "übrigens"
+          - "hier kommt"
+          - "wichtig"
+          - "achtung"
+          - "pro tip"
+        transformation_principle: "Linear → Dynamic"
+      
+      - issue: "Timing unrealistisch"
+        category: "Timing-Markers"
+        severity: high
+        points: 2.0
+        explanation: "5 Steps in 2 Minuten ist zu schnell (unrealistisch)"
+        check_method: keyword_presence
+        min_keywords: 2
+        keywords:
+          - "realistisch"
+          - "timing"
+          - "tempo"
+          - "zeit"
+          - "minuten"
+          - "dauer"
+          - "länge"
+        transformation_principle: "Rushed → Realistic Pacing"
+      
+      - issue: "Keine 'Why'-Erklärung"
+        category: "Content-Quality"
+        severity: medium
+        points: 2.0
+        explanation: "Nur 'How', kein 'Why' (Warum ist 2FA wichtig?)"
+        check_method: keyword_presence
+        min_keywords: 2
+        keywords:
+          - "warum"
+          - "grund"
+          - "wichtig"
+          - "deshalb"
+          - "weil"
+          - "benefit"
+          - "nutzen"
+        transformation_principle: "How → How + Why"
+      
+      - issue: "Keine Viewer-Retention-Hooks"
+        category: "Engagement"
+        severity: medium
+        points: 2.0
+        explanation: "Kein 'Coming up next...', 'Stay tuned...'"
+        check_method: keyword_presence
+        min_keywords: 2
+        keywords:
+          - "gleich"
+          - "coming up"
+          - "stay tuned"
+          - "später"
+          - "dranbleiben"
+          - "am ende"
+          - "bonus"
+        transformation_principle: "Static → Retention-Optimized"
+      
+      - issue: "B-Roll-Hinweise fehlen"
+        category: "Production-Cues"
+        severity: medium
+        points: 2.0
+        explanation: "Keine [B-ROLL:] Cues für Stock-Footage/Cutaways"
+        check_method: keyword_presence
+        min_keywords: 2
+        keywords:
+          - "[B-ROLL"
+          - "b-roll"
+          - "footage"
+          - "cutaway"
+          - "stock"
+          - "video"
+          - "clip"
+        transformation_principle: "Single-Layer → Multi-Layer"
+    
+    expert_issues:
+      - issue: "Kein Easter Egg"
+        category: "Community-Building"
+        severity: medium
+        points: 2.0
+        explanation: "Kein verstecktes Detail/Easter Egg für treue Zuschauer."
+        check_method: keyword_presence
+        min_keywords: 2
+        keywords:
+          - "easter egg"
+          - "versteckt"
+          - "geheim"
+          - "detail"
+          - "background"
+          - "text flash"
+          - "frame"
+        transformation_principle: "Standard → Community-Insider"
+      
+      - issue: "Kein Fourth-Wall-Break"
+        category: "Engagement"
+        severity: low
+        points: 2.0
+        explanation: "Kein direkter Bruch der vierten Wand (Meta-Kommentar)."
+        check_method: keyword_presence
+        min_keywords: 2
+        keywords:
+          - "editor"
+          - "schnitt"
+          - "kamera"
+          - "meta"
+          - "kommentar"
+          - "regie"
+          - "zuschauer"
+        transformation_principle: "Scripted → Meta-Aware"
+      
+      - issue: "Musik-Cues fehlen"
+        category: "Production-Cues"
+        severity: low
+        points: 2.0
+        explanation: "Keine [MUSIC:] Hinweise (Intro, Outro, Background)"
+        check_method: keyword_presence
+        min_keywords: 2
+        keywords:
+          - "[MUSIC"
+          - "musik"
+          - "audio"
+          - "sound"
+          - "intro"
+          - "outro"
+          - "background"
+        transformation_principle: "Silent → Scored"
+      
+      - issue: "Keine Retention-Grafik"
+        category: "Engagement"
+        severity: low
+        points: 2.0
+        explanation: "Keine Progress-Bar, Checkmarks, Step-Counter für visuelle Orientierung"
+        check_method: keyword_presence
+        min_keywords: 2
+        keywords:
+          - "progress"
+          - "fortschritt"
+          - "checkmark"
+          - "haken"
+          - "step counter"
+          - "grafik"
+          - "visual"
+        transformation_principle: "Linear → Progress-Tracked"
+  
+  solution_quality:
+    weight: 60
+    description: "Qualität der Video-Script-Transformation"
+    
+    criteria:
+      - name: "Spoken-Word-Quality"
+        points: 20
+        check_method: keyword_presence
+        min_keywords: 2
+        keywords:
+          - "konversationell"
+          - "natürlich"
+          - "du"
+          - "hey"
+          - "okay"
+          - "gesprächig"
+          - "locker"
+          - "freundlich"
+        description: "Ist das Script konversationell und natürlich (nicht roboterhaft)?"
+      
+      - name: "Timing-Accuracy"
+        points: 20
+        check_method: keyword_presence
+        min_keywords: 2
+        keywords:
+          - "[00:"
+          - "[01:"
+          - "[02:"
+          - "[PAUSE]"
+          - "timestamp"
+          - "timing"
+          - "realistisch"
+          - "tempo"
+        description: "Sind Timestamps und Pausen realistisch und präzise?"
+      
+      - name: "Video-Production-Ready"
+        points: 20
+        check_method: keyword_presence
+        min_keywords: 2
+        keywords:
+          - "[SHOW"
+          - "[CLICK"
+          - "[B-ROLL"
+          - "[MUSIC"
+          - "annotation"
+          - "production"
+          - "editor"
+          - "cue"
+        description: "Sind alle Production-Cues für Editor vorhanden (Annotations, B-Roll, Musik)?"

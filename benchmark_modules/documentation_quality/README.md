@@ -13,15 +13,15 @@ Das **Documentation Quality** Modul bewertet die Qualität von Code-Dokumentatio
 
 ## Bewertungskategorien
 
-Das Modul bewertet nach einem **zweistufigen System** (Total: 100 Punkte):
+Das Modul bewertet nach einem **zweistufigen System** (Total: 130 Punkte):
 
-### 1. Error Detection (70 Punkte)
+### 1. Error Detection (100 Punkte)
 Hierbei wird geprüft, ob das Modell die versteckten Fehler im Dokumentations-Asset findet. Die Fehler sind in 4 Schwierigkeitsstufen unterteilt:
 
-- **Labeled Issues (Easy)**: Explizit markierte Fehler (z.B. `<!-- TODO: Add installation steps -->`).
-- **Standard Issues (Medium)**: Offensichtliche Lücken (z.B. fehlende Prerequisites).
-- **Advanced Issues (Hard)**: Subtile Fehler (z.B. falsche Syntax in Code-Beispielen, tote Links).
-- **Expert Issues (Very Hard)**: Komplexe Probleme (z.B. inkonsistente API-Versionierung, fehlende Security-Hinweise).
+- **Labeled Issues (Easy - 25 Punkte)**: Explizit markierte Fehler (z.B. `<!-- TODO: Add installation steps -->`).
+- **Standard Issues (Medium - 30 Punkte)**: Offensichtliche Lücken (z.B. fehlende Prerequisites).
+- **Advanced Issues (Hard - 25 Punkte)**: Subtile Fehler (z.B. falsche Syntax in Code-Beispielen, tote Links).
+- **Expert Issues (Very Hard - 20 Punkte)**: Komplexe Probleme (z.B. inkonsistente API-Versionierung, fehlende Security-Hinweise).
 
 ### 2. Solution Quality (30 Punkte)
 Hierbei wird die Qualität der generierten Verbesserungsvorschläge bewertet:
@@ -49,7 +49,7 @@ Hierbei wird die Qualität der generierten Verbesserungsvorschläge bewertet:
 ### Asset 002: REST API Endpoint Documentation
 - **Kategorie**: API-Dokumentation
 - **Schwierigkeit**: Tiered (Easy → Expert)
-- **Issues**: 14 (10P Labeled, 19P Standard, 14P Advanced, 9P Expert)
+- **Issues**: 14 (25P Labeled, 30P Standard, 25P Advanced, 20P Expert)
 - **Kontext**: E-Commerce POST /api/v1/orders Endpoint
 - **Zielgruppe**: Backend Developers, API Consumers
 - **Test**: Bewerte unvollständige REST API Dokumentation
@@ -63,7 +63,7 @@ Hierbei wird die Qualität der generierten Verbesserungsvorschläge bewertet:
 ### Asset 003: Component Library Props Documentation
 - **Kategorie**: Component Documentation
 - **Schwierigkeit**: Tiered (Easy → Expert)
-- **Issues**: 16 (10P Labeled, 19P Standard, 19P Advanced, 11P Expert)
+- **Issues**: 16 (25P Labeled, 30P Standard, 25P Advanced, 20P Expert)
 - **Kontext**: React DataTable Component mit TypeScript
 - **Zielgruppe**: Frontend Developers, Design System Engineers
 - **Test**: Analysiere unvollständige React Component Props Dokumentation
@@ -77,7 +77,7 @@ Hierbei wird die Qualität der generierten Verbesserungsvorschläge bewertet:
 ### Asset 004: Setup Guide - Local Dev Environment
 - **Kategorie**: Setup Guide & Troubleshooting
 - **Schwierigkeit**: Tiered (Easy → Expert)
-- **Issues**: 16 (10P Labeled, 19P Standard, 17P Advanced, 10P Expert)
+- **Issues**: 16 (25P Labeled, 30P Standard, 25P Advanced, 20P Expert)
 - **Kontext**: E-Commerce-Platform (Docker + Vite + Node.js + PostgreSQL)
 - **Zielgruppe**: Junior bis Mid-Level Frontend/Backend Developers
 - **Test**: Bewerte unvollständige Setup-Anleitung für lokales Dev-Environment
@@ -91,7 +91,7 @@ Hierbei wird die Qualität der generierten Verbesserungsvorschläge bewertet:
 ### Asset 005: Changelog - Git Commits to Release Notes
 - **Kategorie**: Changelog & Release Notes
 - **Schwierigkeit**: Tiered (Easy → Expert)
-- **Issues**: 17 (10P Labeled, 20P Standard, 17P Advanced, 12P Expert)
+- **Issues**: 17 (25P Labeled, 30P Standard, 25P Advanced, 20P Expert)
 - **Kontext**: TaskFlow SaaS (15 Git-Commits → User-Facing Release Notes)
 - **Zielgruppe**: End-User, Admins, Developers (3 Segmente)
 - **Test**: Transformiere technische Git-Commits in nutzerfreundliche Release Notes

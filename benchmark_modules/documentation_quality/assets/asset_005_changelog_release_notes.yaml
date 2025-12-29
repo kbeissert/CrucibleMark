@@ -86,21 +86,21 @@ prompt: |
 # ============================================================
 
 scoring:
-  total_points: 100
+  total_points: 130
   
   # ------------------------------------------------------------
-  # 1. Error Detection (70 Points)
+  # 1. Error Detection (100 Points)
   # ------------------------------------------------------------
   error_detection:
-    weight: 70
+    weight: 100
     description: "Erkennung fehlender/falscher Setup-Anleitung (Tiered)"
     
-    # LEVEL 1: Labeled Issues (Easy - 17.5 Points)
+    # LEVEL 1: Labeled Issues (Easy - 25.0 Points)
     labeled_issues:
       - issue: "Keine Kategorisierung der Commits"
         category: "structure"
         severity: "critical"
-        points: 8.75
+        points: 12.5
         explanation: "Commits sind einfach chronologisch gelistet - nicht nach Added/Changed/Fixed gruppiert"
         check_method: "keyword_presence"
         min_keywords: 2
@@ -110,19 +110,19 @@ scoring:
       - issue: "Technische Sprache statt User-Benefits"
         category: "user_centricity"
         severity: "high"
-        points: 8.75
+        points: 12.5
         explanation: "'extract auth middleware' bedeutet nichts für Endnutzer - User-Benefits fehlen"
         check_method: "keyword_presence"
         min_keywords: 2
         keywords: ["user-facing", "user benefits", "verständlich", "endnutzer", "nicht-technisch", "you can now"]
         changelog_principle: "User-Centric Language"
 
-    # LEVEL 2: Standard Issues (Medium - 21.0 Points)
+    # LEVEL 2: Standard Issues (Medium - 30.0 Points)
     standard_issues:
       - issue: "Breaking Change nicht hervorgehoben"
         category: "prioritization"
         severity: "critical"
-        points: 5.0
+        points: 6.0
         explanation: "BREAKING im Commit, aber nicht prominent in Release Notes platziert"
         check_method: "keyword_presence"
         min_keywords: 2
@@ -132,7 +132,7 @@ scoring:
       - issue: "Security Fix nicht priorisiert"
         category: "prioritization"
         severity: "critical"
-        points: 5.0
+        points: 6.0
         explanation: "XSS-Vulnerability (CVE) versteckt zwischen Features - muss oben stehen"
         check_method: "keyword_presence"
         min_keywords: 2
@@ -142,7 +142,7 @@ scoring:
       - issue: "Refactoring-Commits für Endnutzer irrelevant"
         category: "user_centricity"
         severity: "medium"
-        points: 4.5
+        points: 6.0
         explanation: "'extract auth middleware' und 'setup CI/CD' interessieren Nutzer nicht - filtern"
         check_method: "keyword_presence"
         min_keywords: 2
@@ -152,7 +152,7 @@ scoring:
       - issue: "Keine Semantic Versioning Begründung"
         category: "structure"
         severity: "high"
-        points: 4.5
+        points: 6.0
         explanation: "Warum v2.3.0? Breaking Change vorhanden → sollte v3.0.0 sein"
         check_method: "keyword_presence"
         min_keywords: 2
@@ -162,19 +162,19 @@ scoring:
       - issue: "Fehlende Release-Zusammenfassung"
         category: "structure"
         severity: "medium"
-        points: 2.0
+        points: 6.0
         explanation: "Keine Summary am Anfang - was ist das Highlight dieser Release?"
         check_method: "keyword_presence"
         min_keywords: 2
         keywords: ["summary", "zusammenfassung", "highlights", "overview", "tldr"]
         changelog_principle: "Executive Summary"
 
-    # LEVEL 3: Advanced Issues (Hard - 17.5 Points)
+    # LEVEL 3: Advanced Issues (Hard - 25.0 Points)
     advanced_issues:
       - issue: "Keine Migration Guides für Breaking Changes"
         category: "completeness"
         severity: "high"
-        points: 5.0
+        points: 6.0
         explanation: "v1 API entfernt - aber nicht erklärt, wie man zu v2 migriert"
         check_method: "keyword_presence"
         min_keywords: 2
@@ -184,7 +184,7 @@ scoring:
       - issue: "Performance-Verbesserungen ohne Kontext"
         category: "user_centricity"
         severity: "medium"
-        points: 4.0
+        points: 5.0
         explanation: "'40% faster' - aber für wen? Alle User oder nur große Projekte?"
         check_method: "keyword_presence"
         min_keywords: 2
@@ -194,7 +194,7 @@ scoring:
       - issue: "Keine Links zu Issues/PRs"
         category: "traceability"
         severity: "medium"
-        points: 4.0
+        points: 5.0
         explanation: "'Closes #234' im Commit, aber nicht in Release Notes verlinkt"
         check_method: "keyword_presence"
         min_keywords: 2
@@ -204,7 +204,7 @@ scoring:
       - issue: "Enterprise-Feature nicht als solches gekennzeichnet"
         category: "segmentation"
         severity: "medium"
-        points: 4.0
+        points: 5.0
         explanation: "SAML SSO ist Enterprise-only - sollte erwähnt werden (💼)"
         check_method: "keyword_presence"
         min_keywords: 2
@@ -214,19 +214,19 @@ scoring:
       - issue: "Deprecation ohne Timeline"
         category: "completeness"
         severity: "low"
-        points: 0.5
+        points: 4.0
         explanation: "v1 API removed - aber wann wurde es deprecated? Keine Warning vorher?"
         check_method: "keyword_presence"
         min_keywords: 2
         keywords: ["deprecated", "deprecation", "warning", "timeline", "sunset"]
         changelog_principle: "Predictable Deprecation"
 
-    # LEVEL 4: Expert Issues (Very Hard - 14.0 Points)
+    # LEVEL 4: Expert Issues (Very Hard - 20.0 Points)
     expert_issues:
       - issue: "Keine Zielgruppen-Segmentierung"
         category: "segmentation"
         severity: "medium"
-        points: 4.0
+        points: 5.0
         explanation: "API-Changes interessieren nur Developers - sollte separate Section haben"
         check_method: "keyword_presence"
         min_keywords: 2
@@ -236,7 +236,7 @@ scoring:
       - issue: "Keine Contributors-Credits"
         category: "community"
         severity: "low"
-        points: 2.5
+        points: 4.0
         explanation: "Open Source Convention: Contributors erwähnen (Community-Building)"
         check_method: "keyword_presence"
         min_keywords: 2
@@ -246,7 +246,7 @@ scoring:
       - issue: "Keine Rollback-Informationen"
         category: "completeness"
         severity: "medium"
-        points: 3.0
+        points: 5.0
         explanation: "Wie mache ich Rollback, falls Breaking Change Probleme macht?"
         check_method: "keyword_presence"
         min_keywords: 2
@@ -256,7 +256,7 @@ scoring:
       - issue: "Fehlende Known Issues Section"
         category: "transparency"
         severity: "low"
-        points: 2.0
+        points: 3.0
         explanation: "Gibt es bekannte Probleme in dieser Version? (Edge Cases)"
         check_method: "keyword_presence"
         min_keywords: 2
@@ -266,7 +266,7 @@ scoring:
       - issue: "Nicht maschinenlesbar (kein strukturiertes Format)"
         category: "maintainability"
         severity: "low"
-        points: 2.5
+        points: 3.0
         explanation: "Kein JSON/YAML für automatische Changelog-Aggregation-Tools"
         check_method: "keyword_presence"
         min_keywords: 2

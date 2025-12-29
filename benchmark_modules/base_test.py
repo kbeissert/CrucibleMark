@@ -73,13 +73,16 @@ class BaseTest(ABC):
         
         # Validiere Scoring-Gewichte
         if 'scoring' in self.asset:
+            # Use total_points from asset if available, else default to constant
+            expected_total = self.asset['scoring'].get('total_points', TOTAL_SCORING_WEIGHT)
+            
             total_weight = sum(
                 cat.get('weight', 0) 
                 for cat in self.asset['scoring'].values()
                 if isinstance(cat, dict)
             )
-            if total_weight != TOTAL_SCORING_WEIGHT:
-                raise ValueError(f"Scoring weights must sum to {TOTAL_SCORING_WEIGHT}, got {total_weight}")
+            if total_weight != expected_total:
+                raise ValueError(f"Scoring weights must sum to {expected_total}, got {total_weight}")
     
     @abstractmethod
     def execute(self, model: str, llm_client) -> Dict[str, Any]:

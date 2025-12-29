@@ -6,7 +6,7 @@ Unified Interface für Ollama und Anthropic Claude API
 import logging
 import yaml
 from pathlib import Path
-from typing import Optional, List, Dict, Any
+from typing import Any
 
 from utils.provider_clients import OllamaClient, AnthropicClient, MistralClient
 from utils.retry_handler import RetryHandler
@@ -31,20 +31,20 @@ class LLMClient:
     - Delegation an provider-spezifische Clients
     """
     
-    def __init__(self, config_path: Optional[str] = None):
+    def __init__(self, config_path: str | None = None):
         """
         Initialisiert LLM Client
         
         Args:
             config_path: Pfad zur Config-Datei (optional, für Legacy-Support)
         """
-        self.config: Dict[str, Any] = {}
+        self.config: dict[str, Any] = {}
         if config_path and Path(config_path).exists():
             try:
-                with open(config_path, 'r', encoding='utf-8') as f:
+                with open(config_path, encoding='utf-8') as f:
                     self.config = yaml.safe_load(f) or {}
             except Exception as e:
-                logger.error(f"Failed to load config from {config_path}: {e}")
+                logger.error("Failed to load config from %s: %s", config_path, e)
         
         # Initialize provider clients
         self.clients = {
@@ -61,7 +61,7 @@ class LLMClient:
         model: str, 
         prompt: str, 
         provider: str = 'ollama',
-        temperature: Optional[float] = None,
+        temperature: float | None = None,
         max_retries: int = DEFAULT_MAX_RETRIES
     ) -> str:
         """
@@ -83,7 +83,7 @@ class LLMClient:
         """
         if provider not in self.clients:
             valid_providers = list(self.clients.keys())
-            logger.error(f"Unknown provider: {provider}. Available: {valid_providers}")
+            logger.error("Unknown provider: %s. Available: %s", provider, valid_providers)
             raise ValueError(f"Unknown provider: {provider}. Available: {valid_providers}")
         
         if temperature is None:
@@ -92,7 +92,7 @@ class LLMClient:
         # Update retry handler with custom max_retries
         self.retry_handler.max_retries = max_retries
         
-        logger.info(f"Querying {provider} model '{model}' (temp={temperature})")
+        logger.info("Querying %s model '%s' (temp=%s)", provider, model, temperature)
         
         # Delegate to provider-specific client with retry logic
         return self.retry_handler.execute_with_retry(
@@ -113,7 +113,7 @@ class LLMClient:
             return 0
         return len(text) // TOKEN_ESTIMATE_RATIO
     
-    def get_available_models(self, provider: str = 'ollama') -> List[str]:
+    def get_available_models(self, provider: str = 'ollama') -> list[str]:
         """
         Listet verfügbare Modelle
         
@@ -127,7 +127,7 @@ class LLMClient:
             try:
                 return self.clients[provider].get_available_models()
             except Exception as e:
-                logger.error(f"Failed to get models for {provider}: {e}")
+                logger.error("Failed to get models for %s: %s", provider, e)
                 return []
         return []
 

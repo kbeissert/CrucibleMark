@@ -5,7 +5,7 @@ Provides functions to calculate semantic similarity between texts using embeddin
 
 import logging
 import os
-from typing import List
+from pathlib import Path
 import numpy as np
 
 try:
@@ -18,43 +18,58 @@ except ImportError:
 # Configure logging
 logger = logging.getLogger(__name__)
 
+
 class SemanticSimilarity:
     """
     Calculates semantic similarity between texts.
     Uses 'all-MiniLM-L6-v2' model which is fast and effective.
     """
-    
+
     _model = None
     _warning_logged = False
-    
+
+    @classmethod
+    def check_availability(cls):
+        """
+        Checks if sentence-transformers is installed and logs a warning if not.
+        Should be called once at application startup.
+        """
+        if not HAS_TRANSFORMERS and not cls._warning_logged:
+            logger.warning(
+                "⚠️  sentence-transformers not installed. Semantic similarity disabled.\n"
+                "   This may slightly reduce scores as fuzzy matching fallback is unavailable.\n"
+                "   Install with: pip install sentence-transformers"
+            )
+            cls._warning_logged = True
+
     @classmethod
     def get_model(cls):
         """Lazy loading of the model."""
         if not HAS_TRANSFORMERS:
             if not cls._warning_logged:
-                logger.warning("sentence-transformers not installed. Semantic similarity will be disabled.")
-                cls._warning_logged = True
+                cls.check_availability()
             return None
-            
+
         if cls._model is None:
             try:
                 logger.info("Loading sentence-transformer model 'all-MiniLM-L6-v2'...")
                 # Suppress verbose output from huggingface/transformers
                 logging.getLogger("sentence_transformers").setLevel(logging.WARNING)
-                
+
                 # Suppress stdout/stderr during loading to avoid progress bars
                 # This is a bit hacky but necessary to keep the CLI clean
                 import contextlib
-                with contextlib.redirect_stdout(open(os.devnull, 'w')), \
-                     contextlib.redirect_stderr(open(os.devnull, 'w')):
+                with contextlib.redirect_stdout(Path(os.devnull).open('w')), \
+                     contextlib.redirect_stderr(Path(os.devnull).open('w')):
                     cls._model = SentenceTransformer('all-MiniLM-L6-v2')
             except Exception as e:
-                logger.error(f"Failed to load sentence-transformer model: {e}")
+                logger.error("Failed to load sentence-transformer model: %s", e)
                 return None
         return cls._model
 
     @classmethod
     def calculate_similarity(cls, text1: str, text2: str) -> float:
+
         """
         Calculates cosine similarity between two texts.
         
@@ -74,7 +89,7 @@ class SemanticSimilarity:
             similarity = cosine_similarity([embeddings[0]], [embeddings[1]])[0][0]
             return float(similarity)
         except Exception as e:
-            logger.error(f"Error calculating similarity: {e}")
+            logger.error("Error calculating similarity: %s", e)
             return 0.0
 
     @classmethod
@@ -94,7 +109,7 @@ class SemanticSimilarity:
         return score >= threshold
 
     @classmethod
-    def find_best_match(cls, query: str, candidates: List[str]) -> float:
+    def find_best_match(cls, query: str, candidates: list[str]) -> float:
         """
         Finds the highest similarity score between query and a list of candidates.
         
@@ -116,5 +131,5 @@ class SemanticSimilarity:
             similarities = cosine_similarity(query_embedding, candidate_embeddings)[0]
             return float(np.max(similarities))
         except Exception as e:
-            logger.error(f"Error finding best match: {e}")
+            logger.error("Error finding best match: %s", e)
             return 0.0

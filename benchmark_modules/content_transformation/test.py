@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
-Documentation Quality Test Module
-Bewertet Qualität von Code-Dokumentation und README-Dateien mit Tiered Difficulty System
+Content Transformation & Adaption Test Module
+Bewertet die Fähigkeit von LLMs, Content in verschiedene Formate und Stile zu transformieren.
 """
 
 import sys
@@ -18,7 +18,7 @@ from benchmark_modules.base_test import BaseTest  # noqa: E402
 
 # Constants
 TOKEN_MULTIPLIER = 1.3
-DEFAULT_TEMPERATURE = 0.3
+DEFAULT_TEMPERATURE = 0.7
 TIER_THRESHOLDS = {
     'labeled': 0.40,
     'standard': 0.40,
@@ -27,18 +27,20 @@ TIER_THRESHOLDS = {
 }
 
 
-class DocumentationTest(BaseTest):
+class ContentTransformationTest(BaseTest):
     """
-    Test-Modul für Documentation Quality mit Tiered Difficulty
+    Test-Modul für Content Transformation & Adaption
 
     Scoring-System:
     - 70 Punkte: Error Detection (Labeled → Expert Issues)
-    - 30 Punkte: Solution Quality (Code-Beispiele, Best Practices)
+      (Hier: Erkennen von fehlenden Elementen oder Stil-Verstößen im generierten Output
+       bzw. Einhaltung der Transformations-Regeln)
+    - 30 Punkte: Solution Quality (Struktur, Engagement, Format-Treue)
     """
 
     def execute(self, model: str, llm_client: Any, provider: str = 'ollama') -> dict:
         """
-        Führt Documentation Quality Test aus
+        Führt Content Transformation Test aus
 
         Args:
             model: LLM-Modell (z.B. "qwen2.5:14b")
@@ -60,7 +62,7 @@ class DocumentationTest(BaseTest):
         start = time.time()
 
         try:
-            # Use temperature 0.3 for Documentation Quality - balance between consistency and creativity
+            # Use specific temperature for Content Transformation - needs creativity
             response = llm_client.query(
                 model,
                 full_prompt,
@@ -95,11 +97,12 @@ class DocumentationTest(BaseTest):
 
     def score_response(self, response: str) -> dict:
         """
-        Bewertet Documentation Quality Antwort nach Tiered Difficulty System
+        Bewertet Content Transformation Antwort nach Tiered Difficulty System
 
         Scoring-Kategorien:
         1. Error Detection (70 Punkte) - Tiered (Labeled → Expert)
-        2. Solution Quality (30 Punkte) - Code-Beispiele, Best Practices
+           (Prüft ob geforderte Elemente vorhanden sind / Fehler vermieden wurden)
+        2. Solution Quality (30 Punkte) - Kreativität, Flow, Format
 
         Args:
             response: LLM-Response als String
@@ -114,9 +117,9 @@ class DocumentationTest(BaseTest):
         total_possible = scoring_config['total_points']
 
         category_scores = {}
-        details = []
-        violations = []
-        total_achieved = 0
+        details: list[str] = []
+        violations: list[str] = []
+        total_achieved: float = 0.0
 
         response_lower = response.lower()
 
@@ -169,14 +172,14 @@ class DocumentationTest(BaseTest):
         - Labeled Issues (17.5P): Offensichtlich
         - Standard Issues (21.0P): Erkennbar
         - Advanced Issues (17.5P): Subtil
-        - Expert Issues (14.0P): Sehr schwer
+        - Expert Issues (14.0P): Best Practices
 
         Returns:
             (score, details_list, violations_list)
         """
-        score = 0
-        details = []
-        violations = []
+        score: float = 0.0
+        details: list[str] = []
+        violations: list[str] = []
 
         # Issues sind direkt in config als labeled_issues, standard_issues, etc.
         tier_configs = {
@@ -189,12 +192,13 @@ class DocumentationTest(BaseTest):
         # Score jede Tier-Kategorie
         for tier_name, (tier_key, default_threshold) in tier_configs.items():
             tier_issues = config.get(tier_key, [])
-            max_points = sum(issue.get('points', 0) for issue in tier_issues)
+
+            if not tier_issues:
+                continue
 
             tier_score, tier_details, tier_violations = self._score_tier_issues(
                 response_lower,
                 tier_issues,
-                max_points,
                 default_threshold,
                 tier_name.title()
             )
@@ -209,7 +213,6 @@ class DocumentationTest(BaseTest):
         self,
         response_lower: str,
         issues: list[dict],
-        max_points: float,
         min_threshold: float,
         tier_name: str
     ) -> tuple[float, list[str], list[str]]:
@@ -233,7 +236,7 @@ class DocumentationTest(BaseTest):
             return 0.0, details, violations
 
         # Berechne max_points für diese Tier (Summe aller Issue-Points)
-        max_points = sum(issue.get('points', 0) for issue in issues)
+        tier_max_points = sum(issue.get('points', 0) for issue in issues)
 
         for issue in issues:
             points = issue.get('points', 0)
@@ -254,7 +257,7 @@ class DocumentationTest(BaseTest):
                 details.append(f"○ [{tier_name}] {issue_name}: 0p")
 
         # Direkter Score ohne Normalisierung (Issue-Points sind bereits korrekt)
-        details.append(f"  → {tier_name} Total: {tier_score:.1f}/{max_points}p")
+        details.append(f"  → {tier_name} Total: {tier_score:.1f}/{tier_max_points}p")
 
         return round(tier_score, 2), details, violations
 
@@ -299,7 +302,7 @@ class DocumentationTest(BaseTest):
         Returns:
             (score, details_list)
         """
-        score = 0
+        score = 0.0
         details = []
 
         criteria = config.get('criteria', [])
@@ -357,5 +360,5 @@ class DocumentationTest(BaseTest):
 
 # Example Usage
 if __name__ == "__main__":
-    print("Documentation Quality Test Module")
+    print("Content Transformation Test Module")
     print("Verwende run_benchmark.py zum Ausführen der Tests")
