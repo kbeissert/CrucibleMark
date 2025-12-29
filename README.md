@@ -1,7 +1,7 @@
 # CrucibleMark
 
 [![Python](https://img.shields.io/badge/Python-3.10+-blue.svg)](https://python.org)
-[![Version](https://img.shields.io/badge/Version-0.3.0--beta-orange.svg)](CHANGELOG.md)
+[![Version](https://img.shields.io/badge/Version-0.3.2--beta-orange.svg)](CHANGELOG.md)
 [![Ollama](https://img.shields.io/badge/Ollama-Compatible-green.svg)](https://ollama.ai)
 [![License](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
@@ -121,6 +121,18 @@ Dieses Modul bewertet die Fähigkeiten im Bereich UX Writing, Microcopy und Tona
 | **003 Onboarding Flow** | Step-by-Step Guidance | Tiered (1-4) |
 | **004 Accessibility Labels** | ARIA & Screen Reader | Tiered (1-4) |
 | **005 Microcopy Audit** | Real-World UX Writing | Tiered (1-4) |
+
+### Documentation Quality Module (`benchmark_modules/documentation_quality`)
+
+Dieses Modul analysiert die Qualität von technischer Dokumentation, READMEs und API-Docs.
+
+| Asset | Fokus | Schwierigkeit |
+| :--- | :--- | :--- |
+| **001 README Quality** | Structure & Best Practices | Tiered (1-4) |
+| **002 REST API Docs** | Completeness & Security | Tiered (1-4) |
+| **003 Component Props** | TypeScript & Usage | Tiered (1-4) |
+| **004 Setup Guide** | Troubleshooting & DX | Tiered (1-4) |
+| **005 Changelog** | User-Centric Release Notes | Tiered (1-4) |
 
 **Schwierigkeits-Level:**
 1.  **Labeled (Easy)**: Fehler sind durch TODOs/Kommentare markiert.

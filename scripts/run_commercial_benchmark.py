@@ -396,6 +396,8 @@ class CommercialBenchmarkRunner:
         # Determine result type based on mode
         if self.mode == 'golden_standard':
             self.result_manager.save_results(results, result_type='golden')
+            # Auch in Commercial speichern, da Golden Standard auch ein valider Benchmark ist
+            self.result_manager.save_results(results, result_type='commercial')
         else:
             self.result_manager.save_results(results, result_type='commercial')
 

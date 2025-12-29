@@ -67,3 +67,34 @@ Hier agiert das KI-Modell als **UX Writer**. Es geht darum, technische oder unkl
 **Die Situation:** Eine Gesundheits-App, die eigentlich vertrauenswürdig wirken soll, nutzt eine viel zu lockere oder aggressive Sprache ("Hey Kumpel, hast du heute schon Sport gemacht?!").
 **Die Aufgabe:** Das Modell muss erkennen, dass dieser Tonfall im Kontext "Gesundheit" unpassend ist und die Texte seriöser und einfühlsamer umschreiben.
 **Was wird geprüft:** Tonalität (Tone of Voice), Kontextverständnis.
+
+---
+
+## 📚 Modul: Documentation Quality
+
+In diesem Modul übernimmt das KI-Modell die Rolle eines **Technical Writers**. Es muss unvollständige, veraltete oder schlecht strukturierte Dokumentation analysieren und in hilfreiche, präzise und nutzerfreundliche Anleitungen verwandeln.
+
+### Szenario 1: Die unbrauchbare README (README Quality)
+**Die Situation:** Ein Open-Source-Projekt hat eine README-Datei, die nur aus einem Satz und einem Installationsbefehl besteht. Nutzer wissen nicht, was das Tool macht, welche Voraussetzungen nötig sind oder wie man es konfiguriert.
+**Die Aufgabe:** Das Modell muss die fehlenden Sektionen (Installation, Usage, Configuration, Contributing) identifizieren und eine vollständige, professionelle README schreiben.
+**Was wird geprüft:** Strukturierung, Vollständigkeit, Best Practices für Open Source.
+
+### Szenario 2: Die lückenhafte API-Doku (REST API Documentation)
+**Die Situation:** Ein Backend-Entwickler hat einen API-Endpunkt dokumentiert, aber wichtige Details vergessen: Welche Authentifizierung wird benötigt? Welche Fehlercodes können auftreten? Wie sieht ein Beispiel-Request aus?
+**Die Aufgabe:** Das Modell muss die Dokumentation vervollständigen, Sicherheitslücken in der Beschreibung finden und klare Beispiele für Request und Response liefern.
+**Was wird geprüft:** Technisches Verständnis von REST-APIs, Genauigkeit, Developer Experience (DX).
+
+### Szenario 3: Die Komponente ohne Anleitung (Component Props)
+**Die Situation:** Eine React-Komponente in einer Design-System-Bibliothek hat viele Einstellungsmöglichkeiten (Props), aber niemand weiß, was sie tun oder welche Datentypen erwartet werden.
+**Die Aufgabe:** Das Modell muss eine klare Tabelle aller Props erstellen, Typen (TypeScript) definieren und erklären, wann man welche Einstellung verwendet.
+**Was wird geprüft:** Verständnis von Frontend-Code, Präzision, Dokumentation von Schnittstellen.
+
+### Szenario 4: Das frustrierende Setup (Setup Guide & Troubleshooting)
+**Die Situation:** Neue Entwickler brauchen Stunden, um das Projekt lokal zum Laufen zu bringen, weil die Anleitung Schritte überspringt oder bekannte Fehler verschweigt ("Works on my machine").
+**Die Aufgabe:** Das Modell muss eine schrittweise Anleitung erstellen, die auch Voraussetzungen prüft und Lösungen für häufige Probleme (Troubleshooting) direkt mitliefert.
+**Was wird geprüft:** Empathie für Einsteiger, Antizipation von Fehlern, Didaktik.
+
+### Szenario 5: Der kryptische Changelog (Release Notes)
+**Die Situation:** Ein neues Software-Update wird veröffentlicht, aber die "Release Notes" sind nur eine Liste von technischen Git-Commit-Nachrichten ("fix: bug in regex"), die kein normaler Nutzer versteht.
+**Die Aufgabe:** Das Modell muss diese technischen Details in verständliche "User Benefits" übersetzen und klar zwischen neuen Features, Fehlerbehebungen und kritischen Änderungen (Breaking Changes) unterscheiden.
+**Was wird geprüft:** Übersetzung von Tech zu Business, Priorisierung von Informationen, Semantic Versioning.

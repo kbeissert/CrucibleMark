@@ -41,6 +41,21 @@ modules:
       - accessibility
       - tonality
 
+  documentation_quality:
+    name: "Documentation Quality"
+    description: "Prüft Qualität von Code-Dokumentation und README-Dateien"
+    path: "benchmark_modules/documentation_quality"
+    test_class: "DocumentationTest"
+    version: "1.0.0"
+    enabled: true
+    assets_count: 5
+    tags:
+      - documentation
+      - readme
+      - markdown
+      - api-docs
+      - best-practices
+
 # Output Configuration
 # --------------------
 output:
@@ -49,21 +64,6 @@ output:
   local_models_csv: "benchmark_scores/local_models_benchmark.csv"
   golden_standard_csv: "benchmark_scores/golden_standard_benchmark.csv"
   leaderboard_csv: "benchmark_scores/benchmark_leaderboard.csv"
-    
-  # Beispiel für zukünftige Module:
-  # documentation_quality:
-  #   name: "Documentation Quality"
-  #   description: "Prüft Qualität von Code-Dokumentation und README-Dateien"
-  #   path: "benchmark_modules/documentation_quality"
-  #   test_class: "DocumentationTest"
-  #   enabled: false
-  
-  # prompt_engineering:
-  #   name: "Prompt Engineering Tests"
-  #   description: "Testet Prompt-Following und Instruction-Adherence"
-  #   path: "benchmark_modules/prompt_engineering"
-  #   test_class: "PromptTest"
-  #   enabled: false
 
 # Golden Standard Configuration
 # -----------------------------
