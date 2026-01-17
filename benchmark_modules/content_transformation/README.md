@@ -1,21 +1,28 @@
 # Content Transformation & Adaption Module
 
-Dieses Modul bewertet die Fähigkeit von LLMs, Inhalte von einem Format in ein anderes zu transformieren und dabei Stil, Tonalität und Struktur anzupassen.
+> **Technical Metadata**
+> - **ID:** `content_transformation`
+> - **Namespace:** `benchmark_modules.content_transformation`
+> - **Class:** `ContentTransformationTest` (inherits `BaseTest`)
+> - **Version:** 0.9.0-beta
+> - **Type:** Creative Writing & Adaptation
 
-## Übersicht
+## 🔍 Module Overview
+
+Dieses Modul bewertet die Fähigkeit von LLMs, Inhalte von einem Format in ein anderes zu transformieren und dabei Stil, Tonalität und Struktur anzupassen.
 
 - **Ziel:** Testen von Kreativität, Anpassungsfähigkeit und Einhaltung von Formatvorgaben.
 - **Methodik:** Tiered Difficulty Scoring (Labeled -> Expert Issues) + Solution Quality.
 - **Assets:** 5 Szenarien (Landing Page, Twitter Thread, Glossar, Video Script, Newsletter).
 
-## Kategorien
+## 📊 Kategorien
 
 1. **Structure & Format (25%)**: Einhaltung des Zielformats (z.B. Thread-Struktur, Script-Timing).
 2. **Content Quality & Clarity (25%)**: Informationsdichte, Verständlichkeit.
 3. **Engagement & Emotion (25%)**: Emotionaler Hook, Storytelling.
 4. **Conversion & Actionability (25%)**: Call-to-Action, Nutzenargumentation.
 
-## Scoring
+## 📈 Scoring
 
 Das Scoring basiert auf zwei Hauptkomponenten (Total: 100 Punkte):
 
@@ -27,7 +34,7 @@ Das Scoring basiert auf zwei Hauptkomponenten (Total: 100 Punkte):
    - Bewertet die Qualität des generierten Outputs anhand von Keywords und Best Practices.
    - Fokus auf Benefit-Clarity, Structure und Engagement.
 
-## Assets
+## 📂 Assets
 
 | ID | Name | Transformation | Difficulty |
 |----|------|----------------|------------|

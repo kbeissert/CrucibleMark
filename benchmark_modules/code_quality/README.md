@@ -1,8 +1,17 @@
-# Code Quality Test Module
+# Code Quality Module
+
+> **Technical Metadata**
+> - **ID:** `code_quality`
+> - **Namespace:** `benchmark_modules.code_quality`
+> - **Class:** `CodeQualityTest` (inherits `BaseTest`)
+> - **Version:** 0.9.0-rc
+> - **Type:** Engineering & Static Analysis
+
+## 🔍 Module Overview
 
 Dieses Modul bewertet die Fähigkeit von LLMs, Code-Reviews durchzuführen, Fehler zu finden und qualitativ hochwertige Verbesserungsvorschläge zu liefern. Es verwendet ein flexibles, Asset-basiertes System, das verschiedene Domänen der Softwareentwicklung abdeckt.
 
-## 🏗 Architektur
+### 🏗 Architektur
 
 Das Modul trennt strikt zwischen Test-Logik (`test.py`) und Test-Daten (`assets/*.yaml`).
 
@@ -46,69 +55,13 @@ Um die Spreu vom Weizen zu trennen, nutzen fortgeschrittene Assets (wie `asset_0
     *   Testet tiefes Code-Verständnis und Expertenwissen.
     *   *Nur Spitzen-Modelle finden diese Fehler.*
 
-## 🛠 Konfiguration neuer Assets
+## 📂 Verfügbare Test-Assets
 
-Neue Tests können einfach durch Erstellen einer YAML-Datei in `assets/` hinzugefügt werden. Die Scoring-Logik wird über das Feld `check_method` gesteuert.
+| ID | Name | Focus Area | Difficulty |
+|----|------|------------|------------|
+| 001 | **WCAG Accessibility** | HTML Structure, ARIA, Semantics | Tiered (1-4) |
+| 002 | **Security Audit** | OWASP Top 10, Injection, Auth | Tiered (1-4) |
+| 003 | **Performance Audit** | Big O, Loops, Memory Leaks | Tiered (1-4) |
+| 004 | **API Design** | RESTful Principles, Status Codes | Tiered (1-4) |
+| 005 | **Code Smells** | Clean Code, DRY, SOLID | Tiered (1-4) |
 
-### Verfügbare `check_method` Typen
-
-| Methode | Beschreibung | Parameter |
-| :--- | :--- | :--- |
-| **`keyword_presence`** | Prüft, ob bestimmte Wörter im Text vorkommen. | `keywords` (Liste), `min_keywords` (Int) |
-| **`regex`** | Prüft auf RegEx-Muster (z.B. für spezifische Formate). | `check_pattern` (Regex-String), `min_occurrences` (Int), `count_unique` (Bool) |
-| **`code_validation`** | Zählt und validiert Code-Blöcke. | `required_elements` (Liste, z.B. `["\`\`\`php"]`), `min_code_blocks` (Int) |
-| **`markdown_table_validation`** | Prüft auf Markdown-Tabellen. | `min_rows` (Int) |
-| **`list_detection`** | Prüft auf Listen (Aufzählungszeichen). | `min_items` (Int), `section_keywords` (Liste) |
-| **`context_awareness`** | Prüft auf Kontext-Verständnis (ähnlich Keyword). | `indicators` (Liste), `min_indicators` (Int) |
-
-### Beispiel-Konfiguration (Auszug)
-
-```yaml
-solution_quality:
-  criteria:
-    - id: "SQ-001"
-      name: "Prepared Statements genutzt"
-      points: 8
-      check_method: "regex"
-      check_pattern: '(?i)(prepared.?statement|bind_param)'
-      min_occurrences: 1
-
-    - id: "SQ-002"
-      name: "Code-Beispiele vorhanden"
-      points: 5
-      check_method: "code_validation"
-      required_elements: ["```php"]
-      min_code_blocks: 3
-```
-
-## 📂 Verfügbare Assets
-
-| ID | Name | Fokus | Schwierigkeit |
-| :--- | :--- | :--- | :--- |
-| **001** | WCAG Accessibility Audit | Barrierefreiheit (HTML/CSS), WCAG 2.1/2.2 | Mittel |
-| **002** | Security Audit | OWASP Top 10, PHP Vulnerabilities | **Tiered (1-3)** |
-| **003** | Performance Audit | Core Web Vitals, Frontend-Optimierung | Mittel |
-| **004** | API Design Audit | RESTful Principles, HTTP-Standards | Mittel-Hoch |
-| **005** | Code Smells Audit | Clean Code, Refactoring, JS Legacy Code | Mittel |
-
-## 🚀 Verwendung
-
-### Über das Haupt-Skript (Empfohlen)
-
-```bash
-# Interaktiver Modus
-python scripts/run_local_benchmark.py
-```
-
-### Manuelle Ausführung (Development)
-
-```python
-from benchmark_modules.code_quality.test import CodeQualityTest
-from pathlib import Path
-
-# Test laden
-test = CodeQualityTest(Path("benchmark_modules/code_quality/assets/asset_001_wcag_audit.yaml"))
-
-# Ausführen (benötigt LLM Client)
-# result = test.execute("model_name", llm_client)
-```

@@ -18,7 +18,7 @@ modules:
     description: "Umfassende Code-Qualitätsanalyse: WCAG, Security, Performance, API Design, Code Smells"
     path: "benchmark_modules/code_quality"
     test_class: "CodeQualityTest"
-    version: "0.1.0-alpha"
+    version: "0.9.0-rc"
     enabled: true
     assets_count: 5
     tags:
@@ -32,7 +32,7 @@ modules:
     description: "Bewertet UX-Writing für Error Messages, Buttons, Onboarding, ARIA"
     path: "benchmark_modules/ux_writing"
     test_class: "UXWritingTest"
-    version: "1.0.0"
+    version: "0.9.5-beta"
     enabled: true
     assets_count: 5
     tags:
@@ -46,7 +46,7 @@ modules:
     description: "Prüft Qualität von Code-Dokumentation und README-Dateien"
     path: "benchmark_modules/documentation_quality"
     test_class: "DocumentationTest"
-    version: "1.0.0"
+    version: "0.9.5-beta"
     enabled: true
     assets_count: 5
     tags:
@@ -61,7 +61,7 @@ modules:
     description: "Bewertet die Fähigkeit, Content in verschiedene Formate und Stile zu transformieren"
     path: "benchmark_modules/content_transformation"
     test_class: "ContentTransformationTest"
-    version: "1.0.0"
+    version: "0.9.0-beta"
     enabled: true
     assets_count: 5
     tags:
@@ -70,6 +70,19 @@ modules:
       - transformation
       - marketing
       - social-media
+
+  reasoning:
+    name: "Logical Reasoning"
+    description: "Testet komplexe logische Schlussfolgerungen, Mathe und Rätsel (Reasoning)"
+    path: "benchmark_modules/reasoning_logic"
+    test_class: "ReasoningLogicTest"
+    version: "0.5.0-beta"
+    enabled: true
+    assets_count: 5
+    tags:
+      - logic
+      - reasoning
+      - chain-of-thought
 
 # Output Configuration
 # --------------------

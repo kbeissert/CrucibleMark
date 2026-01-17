@@ -6,6 +6,7 @@ Zwei Modi:
 2. Test Mode: Testet beliebige Modelle → commercial_models_benchmark.csv
 """
 
+import logging
 import json
 import sys
 import argparse
@@ -14,6 +15,10 @@ from datetime import datetime
 from typing import Any
 
 import yaml
+
+# Suppress verbose HTTP logging from libraries
+logging.getLogger("httpx").setLevel(logging.WARNING)
+logging.getLogger("httpcore").setLevel(logging.WARNING)
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
 

@@ -146,6 +146,10 @@ def load_data():
                     idx_time = header.index('execution_time')
                     idx_status = header.index('status')
                     idx_ts = header.index('timestamp')
+                    
+                    # Optional: Tier (für Reasoning Profile)
+                    idx_tier = header.index('tier') if 'tier' in header else -1
+                    
                 except ValueError:
                     # Wenn Header fehlt oder falsch ist
                     return
@@ -161,6 +165,11 @@ def load_data():
                             'status': parts[idx_status],
                             'timestamp': parts[idx_ts]
                         }
+                        
+                        # Add Tier if available
+                        if idx_tier != -1:
+                            row['tier'] = parts[idx_tier]
+                            
                         rows.append(row)
                     else:
                         # Versuch 2: Heuristik für verschobene Zeilen (Documentation Quality)
@@ -330,8 +339,52 @@ def calculate_metrics(df):
     # Kategorie-Scores berechnen (ohne fill_value=0, um fehlende Tests zu erkennen)
     cat_stats = df.groupby(['model', 'category'])['percentage'].mean().unstack().reset_index()
 
+    # Special Handling: Reasoning Tiers & Profile
+    reasoning_stats = pd.DataFrame()
+    if 'tier' in df.columns:
+        # Filter for reasoning module to avoid noise
+        reasoning_df = df[df['asset_id'].str.startswith('reasoning', na=False)].copy()
+        
+        if not reasoning_df.empty:
+            # Clean tier names (take only "Tier 1" or "Tier 2" part)
+            reasoning_df['simple_tier'] = reasoning_df['tier'].astype(str).apply(lambda x: 'Tier 1' if 'Tier 1' in x else ('Tier 2' if 'Tier 2' in x else 'Unknown'))
+            
+            # Pivot to get Tier 1 and Tier 2 scores per model
+            tier_scores = reasoning_df.groupby(['model', 'simple_tier'])['percentage'].mean().unstack().reset_index()
+            
+            # Rename columns
+            rename_map = {}
+            if 'Tier 1' in tier_scores.columns:
+                rename_map['Tier 1'] = 'Logic (T1)'
+            if 'Tier 2' in tier_scores.columns:
+                rename_map['Tier 2'] = 'Reasoning (T2)'
+                
+            tier_scores = tier_scores.rename(columns=rename_map)
+            reasoning_stats = tier_scores
+
     # Zusammenführen
     result = pd.merge(stats, cat_stats, on='model', how='left')
+    
+    if not reasoning_stats.empty:
+        result = pd.merge(result, reasoning_stats, on='model', how='left')
+
+    # Analyse Profile (Deep Thinker vs Daily Driver) based on T2 score
+    if 'Reasoning (T2)' in result.columns and 'Logic (T1)' in result.columns:
+        def get_profile(row):
+            t1 = row.get('Logic (T1)', 0)
+            t2 = row.get('Reasoning (T2)', 0)
+            if pd.isna(t2) or pd.isna(t1): return "Unknown"
+            
+            if t2 > 80 and t2 >= t1:
+                return "🧠 Deep Thinker"
+            elif t1 > 80 and t2 < 50:
+                return "🏎️ Daily Driver"
+            elif t1 > 80 and t2 > 60:
+                return "⚖️ Balanced"
+            else:
+                return "🌱 Learner"
+        
+        result['Profile'] = result.apply(get_profile, axis=1)
 
     # Spalten umbenennen und formatieren
     result = result.rename(columns={
@@ -431,7 +484,35 @@ def main(print_table=True):
     leaderboard = assign_badges(leaderboard)
 
     # Spalten ordnen
-    cols = ['Recommendation', 'model', 'type', 'Overall Score'] + cat_cols + ['Avg Time (s)', 'Tests Run']
+    
+    # 3.5 Reasoning Type Classification
+    def classify_reasoning(model_name):
+        name_lower = str(model_name).lower().strip().replace('*', '') # Handle badges/markers
+        
+        # 1. Check for Reasoning (System 2 thinking)
+        if any(kw in name_lower for kw in ["deepseek-r1", " r1", ":r1", "-r1", "qwq", "o1", "o3", "reasoning"]):
+            return "🧠 Reasoning"
+            
+        # 2. Check for Code Specialization
+        if "coder" in name_lower:
+            return "💻 Coder"
+            
+        # 3. Default: General Purpose (Instruct/Chat)
+        return "🤖 Standard"
+
+    leaderboard['reasoning_type'] = leaderboard['model'].apply(classify_reasoning)
+
+    # Define Column Order
+    cols = ['Recommendation', 'model', 'reasoning_type', 'type', 'Overall Score', 'Profile']
+    
+    # Add Reasoning Split Columns if present
+    if 'Logic (T1)' in leaderboard.columns:
+        cols.append('Logic (T1)')
+    if 'Reasoning (T2)' in leaderboard.columns:
+        cols.append('Reasoning (T2)')
+        
+    cols += cat_cols + ['Avg Time (s)', 'Tests Run']
+    
     # Sicherstellen, dass alle Spalten existieren (falls z.B. UX Writing fehlt)
     cols = [c for c in cols if c in leaderboard.columns]
     leaderboard = leaderboard[cols]

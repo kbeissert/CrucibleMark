@@ -79,7 +79,32 @@ class OllamaClient(BaseProviderClient):
             )
 
             content = response['message']['content']
+            
+            # Special handling for reasoning models (e.g. DeepSeek-R1)
+            # that separate 'thinking' from content
+            thinking = ""
+            if 'message' in response and hasattr(response['message'], 'get'):
+                 # Dictionary access if it's a dict
+                 thinking = response['message'].get('thinking', '')
+            elif hasattr(response['message'], 'thinking'):
+                 # Attribute access if it's an object (ollama-python 0.6+ might return objects)
+                 thinking = response['message'].thinking
+
             if not content:
+                done_reason = response.get('done_reason')
+                
+                if done_reason == 'length':
+                    logger.warning(f"Ollama generation stopped due to token limit. (num_predict={options.get('num_predict')})")
+                    if thinking:
+                         logger.warning("Returning partial 'thinking' content as fallback.")
+                         return thinking
+                    raise ValueError("Empty response from Ollama (Token limit reached)")
+                
+                if thinking:
+                    logger.warning("Received 'thinking' but no 'content'. Using thinking as fallback.")
+                    return thinking
+                    
+                logger.error(f"Empty content received. Full response: {response}")
                 raise ValueError("Received empty response from Ollama")
 
             return content

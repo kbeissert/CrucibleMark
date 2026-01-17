@@ -129,3 +129,30 @@ Hier agiert das KI-Modell als **Content Strategist**. Es muss Inhalte von einem 
 **Die Situation:** Eine erfolgreiche Kunden-Story soll als Newsletter verschickt werden, um Leads zu generieren.
 **Die Aufgabe:** Das Modell muss eine persönliche E-Mail schreiben, die Neugier weckt, Social Proof nutzt und zum Klicken anregt.
 **Was wird geprüft:** E-Mail-Marketing Best Practices, Storytelling.
+
+---
+
+## 🧠 Modul: Logical Reasoning
+
+Hier trennt sich die Spreu vom Weizen. Während viele Modelle gut schreiben können, prüft dieses Modul, ob sie auch wirklich **denken** können. Es konfrontiert die KI mit logischen Fallen, Paradoxien und unlösbaren Aufgaben.
+
+### Szenario 1: Das Fluss-Rätsel (River Crossing)
+**Die Situation:** Ein Bauer muss einen Wolf, eine Ziege und einen Kohlkopf über einen Fluss bringen, darf aber immer nur eines mitnehmen. Wenn er Wolf und Ziege allein lässt, frisst der Wolf die Ziege.
+**Die Aufgabe:** Das Modell muss einen Schritt-für-Schritt-Plan entwickeln, der alle Sicherheitsregeln einhält.
+**Was wird geprüft:** Sequentielles Planen, Einhalten von Randbedingungen (Constraints).
+
+### Szenario 2: Die Detektiv-Kette (Multi-Hop Reasoning)
+**Die Situation:** Ein Diebstahl ist passiert. Es gibt fünf Zeugenaussagen, die sich teilweise widersprechen oder nur Fragmente enthalten ("A war nicht im Raum", "B war immer dort, wo C war").
+**Die Aufgabe:** Das Modell muss wie Sherlock Holmes die Hinweise kombinieren, um den einzigen möglichen Täter logisch zu deduzieren.
+**Was wird geprüft:** Deduktion, Verknüpfung von Informationen über mehrere Ecken ("Multi-Hop").
+
+### Szenario 3: Das unmögliche Projekt (The Scheduling Paradox)
+**Die Situation:** Ein Manager verlangt einen Projektplan: "Die Wände müssen am Dienstag gestrichen werden, aber die Maurer, die die Wände bauen, werden erst am Mittwoch fertig."
+**Die Aufgabe:** Ein "Ja-Sager"-Modell wird versuchen, einen Plan zu basteln ("Dienstag: Streichen"). Ein intelligentes Modell muss erkennen: "Das ist physikalisch unmöglich" und die Aufgabe verweigern.
+**Was wird geprüft:** Realitäts-Check, Widerstand gegen unsinnige Anweisungen (Adversarial Robustness).
+
+### Szenario 4: Der versteckte Teufelskreis (Hidden Deadlock)
+**Die Situation:** Drei Abteilungen blockieren sich gegenseitig: Marketing kann nicht starten ohne Produkt, Produkt nicht ohne Legal, und Legal will erst das Marketing-Material sehen.
+**Die Aufgabe:** Das Modell wird gefragt: "Erstelle einen Zeitplan."
+**Der Test:** Es gibt keinen Zeitplan. Das ist ein "Deadlock" (Zirkelschluss). Das Modell muss erkennen, dass die Aufgabe unlösbar ist, statt einen fiktiven Plan zu halluzinieren (Feasibility: 0).
+**Was wird geprüft:** Erkennen von zirkulären Abhängigkeiten, System 2 Thinking (tiefes Nachdenken).

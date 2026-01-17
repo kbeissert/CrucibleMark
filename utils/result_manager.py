@@ -84,17 +84,47 @@ class ResultManager:
         fieldnames = self._get_updated_fieldnames(csv_path, current_keys)
         file_exists = csv_path.exists() and csv_path.stat().st_size > 0
 
+        # Wenn wir neue Spalten haben, müssen wir die Datei neu schreiben,
+        # damit der Header aktualisiert wird. Append funktioniert nur bei gleichen Spalten.
+        # Prüfen, ob geänderte Fieldnames mehr sind als existierende Spalten (falls Datei existiert)
+        needs_rewrite = False
+        existing_rows = []
+        
+        if file_exists:
+            try:
+                with csv_path.open('r', encoding='utf-8') as f:
+                    reader = csv.DictReader(f)
+                    if reader.fieldnames:
+                        existing_header_set = set(reader.fieldnames)
+                        new_fields = set(fieldnames) - existing_header_set
+                        if new_fields:
+                            needs_rewrite = True
+                            existing_rows = list(reader)
+            except Exception:
+                # Bei Lesefehlern lieber append versuchen oder überschreiben?
+                # Wir gehen auf Nummer sicher und machen Append, falls Rewrite scheitert.
+                needs_rewrite = False
+
         try:
-            mode = 'a' if file_exists else 'w'
-            with csv_path.open(mode, newline='', encoding='utf-8') as f:
-                writer = csv.DictWriter(f, fieldnames=fieldnames, extrasaction='ignore')
-
-                if not file_exists:
+            if needs_rewrite:
+                # Komplettes Neuschreiben mit erweitertem Header
+                with csv_path.open('w', newline='', encoding='utf-8') as f:
+                    writer = csv.DictWriter(f, fieldnames=fieldnames, extrasaction='ignore')
                     writer.writeheader()
+                    if existing_rows:
+                        writer.writerows(existing_rows)
+                    writer.writerows(results)
+                print(f"\n💾 Ergebnisse (inkl. neuer Spalten) aktualisiert in: {csv_path}")
 
-                writer.writerows(results)
-
-            print(f"\n💾 Ergebnisse gespeichert in: {csv_path}")
+            else:
+                # Normales Append (entweder neue Datei oder keine neuen Spalten)
+                mode = 'a' if file_exists else 'w'
+                with csv_path.open(mode, newline='', encoding='utf-8') as f:
+                    writer = csv.DictWriter(f, fieldnames=fieldnames, extrasaction='ignore')
+                    if not file_exists:
+                        writer.writeheader()
+                    writer.writerows(results)
+                print(f"\n💾 Ergebnisse gespeichert in: {csv_path}")
 
             # Leaderboard automatisch aktualisieren
             self.update_leaderboard()

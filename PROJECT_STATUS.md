@@ -1,8 +1,8 @@
 # CrucibleMark - Projekt-Status & Architektur
 
-**Version:** 0.3.4-beta
-**Datum:** 29. Dezember 2025
-**Status:** Beta - Hardened Assets & Reproducibility Fixes
+**Version:** 0.5.0-beta
+**Datum:** 17. Januar 2026
+**Status:** Beta - Standardized Documentation & Module Hardening
 
 ---
 
