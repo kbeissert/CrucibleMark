@@ -11,6 +11,9 @@ from typing import Any, Dict, List, Optional, Tuple
 
 import pandas as pd
 
+# Suppress FutureWarning about downcasting
+pd.set_option('future.no_silent_downcasting', True)
+
 # Pfad für Imports setzen
 ROOT_DIR = Path(__file__).parent.parent
 sys.path.insert(0, str(ROOT_DIR))
@@ -98,8 +101,8 @@ def load_data() -> pd.DataFrame:
 
 def _get_badge(row: pd.Series) -> str:
     """Ermittelt das Badge basierend auf den Scores."""
-    routine = row.get('Routine_Score', 0)
-    reasoning = row.get('Reasoning_Score', 0)
+    routine = row.get('Routine Score', 0)
+    reasoning = row.get('Reasoning Score', 0)
 
     if pd.isna(routine):
         routine = 0
@@ -117,7 +120,7 @@ def _get_badge(row: pd.Series) -> str:
         return "🧠 Deep Thinker"
     if routine > THRESHOLD_DAILY_DRIVER:
         return "🏎️ Daily Driver"
-    return "⚠️ Needs Tuning"
+    return "⚖️ Standard"
 
 
 def _aggregate_stats(df: pd.DataFrame) -> pd.DataFrame:
@@ -154,8 +157,8 @@ def _calculate_tier_stats(df: pd.DataFrame) -> pd.DataFrame:
         .mean().unstack().reset_index()
 
     rename_map = {
-        'Tier 1': 'Routine_Score',
-        'Tier 2': 'Reasoning_Score'
+        'Tier 1': 'Routine Score',
+        'Tier 2': 'Reasoning Score'
     }
     return tier_means.rename(columns=rename_map)
 
@@ -174,8 +177,8 @@ def _finalize_result_df(
     result = result.sort_values('Overall Score', ascending=False)
 
     cols_to_round = [
-        'Overall Score', 'Avg Time (s)', 'Routine_Score',
-        'Reasoning_Score', 'Efficiency_Index'
+        'Overall Score', 'Avg Time (s)', 'Routine Score',
+        'Reasoning Score', 'Efficiency_Index'
     ]
     for col in cols_to_round:
         if col in result.columns:
@@ -212,7 +215,11 @@ def calculate_metrics(df: pd.DataFrame) -> Tuple[pd.DataFrame, List[str]]:
         return 'Other'
 
     df_success['category'] = df_success['asset_id'].apply(get_category_name)
-
+    
+    # DEBUG
+    print(f"DEBUG: Unique categories found: {df_success['category'].unique()}")
+    print(f"DEBUG: Sample asset_ids: {df_success['asset_id'].head().tolist()}")
+    
     # 1. Basis-Statistiken
     result = _aggregate_stats(df_success)
 
@@ -221,18 +228,24 @@ def calculate_metrics(df: pd.DataFrame) -> Tuple[pd.DataFrame, List[str]]:
         .mean().unstack().reset_index()
     result = pd.merge(result, cat_stats, on='model', how='left')
 
+    # Fehlende Modul-Spalten auffüllen (damit alle in der CSV erscheinen)
+    for mod_key, mod_data in modules_config.items():
+        name = mod_data.get('name', mod_key)
+        if name not in result.columns:
+            result[name] = float('nan')
+
     # 3. Tier-Statistiken (Routine/Reasoning)
     tier_stats = _calculate_tier_stats(df_success)
     if not tier_stats.empty:
         result = pd.merge(result, tier_stats, on='model', how='left')
 
     # Defaults und abgeleitete Metriken
-    for col in ['Routine_Score', 'Reasoning_Score']:
+    for col in ['Routine Score', 'Reasoning Score']:
         if col not in result.columns:
             result[col] = 0.0
 
     result['Efficiency_Index'] = result.apply(
-        lambda row: row['Routine_Score'] / row['execution_time']
+        lambda row: row['Routine Score'] / row['execution_time']
         if row['execution_time'] > 0 else 0,
         axis=1
     )
@@ -286,11 +299,11 @@ def print_leaderboard_table(leaderboard: pd.DataFrame) -> None:
         "👑 God Mode",
         "🏎️ Daily Driver",
         "🧠 Deep Thinker",
-        "⚠️ Needs Tuning"
+        "⚖️ Standard"
     ]
     display_fields = [
-        'Rank', 'Model Name', 'Total Score',
-        'Routine_Score', 'Reasoning_Score', 'Avg Time (s)'
+        'Rank', 'Model Name', 'Total Score', 'Avg Time (s)',
+        'Routine Score', 'Reasoning Score'
     ]
 
     for badge in badges_order:
@@ -335,8 +348,8 @@ def main(print_table: bool = True) -> None:
     # Rename model to Model Name for display
     leaderboard = leaderboard.rename(columns={'model': 'Model Name'})
 
-    cols = ['Rank', 'Model Name', 'Badge', 'Routine_Score', 'Reasoning_Score',
-            'Total Score', 'Avg Time (s)', 'Type']
+    cols = ['Rank', 'Model Name', 'Total Score', 'Avg Time (s)',
+            'Badge', 'Routine Score', 'Reasoning Score', 'Type']
     leaderboard = leaderboard.rename(columns={'Overall Score': 'Total Score'})
 
     # Spalten zusammenbauen

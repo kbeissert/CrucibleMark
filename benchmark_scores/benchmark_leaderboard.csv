@@ -1,5 +1,4 @@
-Rank,Model Name,Badge,Routine_Score,Reasoning_Score,Total Score,Avg Time (s),Type,Code Quality Audit,UX Writing & Microcopy,Documentation Quality,Other,Tests Run,Recommendation
-1,deepseek-r1:14b *,🏎️ Daily Driver,100.0,0.0,100.0,0.0,Local,Pending,Pending,Pending,100.0,5/30,(Pending)
-2,deepseek-r1:8b *,🏎️ Daily Driver,93.09,0.0,93.09,0.0,Local,Pending,Pending,Pending,93.1,15/30,(Pending)
-3,mistral-large-latest *,⚠️ Needs Tuning,,0.0,93.09,0.0,Commercial,100.0,100.0,79.3,Pending,15/30,(Pending)
-4,mistral-medium-latest *,⚠️ Needs Tuning,,0.0,91.93,0.0,Commercial,100.0,100.0,75.8,Pending,15/30,(Pending)
+Rank,Model Name,Total Score,Avg Time (s),Badge,Routine Score,Reasoning Score,Type,Code Quality Audit,UX Writing & Microcopy,Documentation Quality,Content Transformation & Adaption,Logical Reasoning,Tests Run,Recommendation
+1,mistral-medium-latest,80.2,38.6,🏎️ Daily Driver,80.73,76.1,Commercial,85.2,85.6,64.7,83.6,81.3,26/26,🏆 Best Commercial
+2,mistral-large-latest,74.34,36.95,⚖️ Standard,78.89,39.47,Commercial,80.0,82.6,64.9,83.1,59.3,26/26,
+3,deepseek-r1:8b,64.03,76.36,⚖️ Standard,63.78,65.42,Local,62.6,72.2,38.3,76.6,67.9,26/26,🥇 Best Local

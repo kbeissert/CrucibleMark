@@ -24,13 +24,8 @@ def load_csv_robust(filepath: Path) -> pd.DataFrame:
 
 def get_csv_header_idx(header: List[str]) -> Dict[str, int]:
     """Generates a mapping of column names to indices."""
-    header_idx = {}
-    potential_cols = ['model', 'asset_id', 'percentage',
-                      'execution_time', 'status', 'timestamp', 'tier']
-    for col in potential_cols:
-        if col in header:
-            header_idx[col] = header.index(col)
-    return header_idx
+    # Map all columns found in header to their index
+    return {col: i for i, col in enumerate(header)}
 
 
 def parse_row_robust(
