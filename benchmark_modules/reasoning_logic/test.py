@@ -86,7 +86,12 @@ class ReasoningLogicTest(BaseTest):
 
         # --- Tier Classification & Metadata Tagging ---
         tier_type = "Tier 1 (Operational Logic)"
-        tier_2_assets = ['reasoning_5d_001']  # Deep Reasoning
+        tier_2_assets = [
+            'reasoning_5a_001',
+            'reasoning_5b_001',
+            'reasoning_5c_001',
+            'reasoning_5d_001'
+        ]  # Deep Reasoning
         if asset_id in tier_2_assets:
             tier_type = "Tier 2 (Deep Reasoning)"
 

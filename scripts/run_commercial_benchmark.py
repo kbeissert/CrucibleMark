@@ -255,7 +255,57 @@ class CommercialBenchmarkRunner:
                         # Skip ONLY if we are in golden_standard mode AND force is False
                         if self.mode == 'golden_standard' and not self.force:
                             print(f"⏭️  Überspringe {asset_name} (Golden Standard existiert bereits)")
+                            
+                            # ✨ RECOVERY: Ergebnis aus JSON wiederherstellen und zu results hinzufügen
+                            try:
+                                with open(json_path, encoding='utf-8') as f:
+                                    existing_data = json.load(f)
+                                
+                                # Wir müssen den Score neu berechnen, da nur die Response gespeichert ist
+                                # Dazu laden wir kurz die Test-Klasse und das Asset
+                                module_path = Path(benchmark_info['path']).parent / 'test.py'
+                                test_class_name = benchmark_info.get('test_class', 'CodeQualityTest')
+                                TestClass = load_test_class(module_path, test_class_name)
+                                test_instance = TestClass(asset_path)
+                                
+                                # Score berechnen
+                                response_text = existing_data.get('response', '')
+                                score = test_instance.score_response(response_text)
+                                
+                                # Execution time aus JSON laden (0.0 als Fallback für alte Files)
+                                execution_time = existing_data.get('execution_time', 0.0)
+                                
+                                # Result Dict rekonstruieren
+                                recovered_result = {
+                                    'timestamp': existing_data.get('timestamp', datetime.now().strftime('%Y-%m-%d %H:%M:%S')),
+                                    'status': score.get('status', 'success'),
+                                    'provider': provider,
+                                    'model': model,
+                                    'asset_id': asset_id,
+                                    'asset_name': asset_name,
+                                    'total_score': score['total_score'],
+                                    'max_score': score['max_score'],
+                                    'percentage': round((score['total_score'] / score['max_score'] * 100), 1),
+                                    'execution_time': execution_time,
+                                    'response_length': len(response_text)
+                                }
+                                # Add category scores
+                                for cat_name, cat_data in score['category_scores'].items():
+                                    recovered_result[f'{cat_name}'] = f"{cat_data['achieved']}/{cat_data['max']}"
+                                
+                                results.append(recovered_result)
+                                # Visuellen Hinweis geben
+                                print(f"   ✓ Ergebnis aus Cache wiederhergestellt: {recovered_result['percentage']}%")
+                                
+                            except Exception as e:
+                                print(f"   ⚠️ Fehler beim Wiederherstellen aus JSON: {e}")
+                                import traceback
+                                traceback.print_exc()
+
                             continue
+
+                            continue
+
                         if self.mode == 'golden_standard' and self.force:
                             print(f"🔄 Aktualisiere {asset_name} (Force Update)")
 
@@ -290,8 +340,10 @@ class CommercialBenchmarkRunner:
                     'model': model,
                     'asset_id': asset_id,
                     'asset_name': asset_name,
+                    'tier': score.get('tier', 'Tier 1 (Undefined)'),
                     'total_score': score['total_score'],
                     'max_score': score['max_score'],
+
                     'percentage': round((score['total_score'] / score['max_score'] * 100), 1),
                     'execution_time': round(execution_time, 1),
                     'response_length': len(response)
@@ -309,7 +361,7 @@ class CommercialBenchmarkRunner:
 
                 # Save Golden Standard JSON if in correct mode OR if it is the golden model
                 if self.mode == 'golden_standard' or is_golden_model:
-                    self._save_golden_json(provider, asset_id, response)
+                    self._save_golden_json(provider, asset_id, response, execution_time)
 
                     # If we are in test mode but it IS the golden model, we should also append to golden CSV
                     if self.mode == 'test' and is_golden_model:
@@ -327,7 +379,7 @@ class CommercialBenchmarkRunner:
         self.result_manager.save_results([result], result_type='golden')
         print("   💾 Auch in Golden Standard CSV gespeichert.")
 
-    def _save_golden_json(self, provider: str, asset_id: str, response: str) -> None:
+    def _save_golden_json(self, provider: str, asset_id: str, response: str, execution_time: float = 0.0) -> None:
         """Speichert die volle Antwort als JSON für Similarity-Checks."""
         output_dir = Path(f"golden_standards/{provider}")
         output_dir.mkdir(parents=True, exist_ok=True)
@@ -338,6 +390,7 @@ class CommercialBenchmarkRunner:
             "id": asset_id,
             "provider": provider,
             "timestamp": datetime.now().isoformat(),
+            "execution_time": execution_time,
             "response": response
         }
 
