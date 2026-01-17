@@ -5,6 +5,27 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.5.0-beta] - 2026-01-17
+
+### Added
+- **Gamified Badges:** Automatische Kategorisierung von Modellen im Leaderboard:
+  - 👑 **God Mode:** Hohe Routine & Reasoning Scores (>85/80).
+  - 🏎️ **Daily Driver:** Stark im Alltag (Routine >80).
+  - 🧠 **Deep Thinker:** Stark in Logik (Reasoning >80).
+  - ⚠️ **Needs Tuning:** Modelle unterhalb der Schwellenwerte.
+- **Meta-Metrics:**
+  - **Routine Score:** Basierend auf Tier 1 Aufgaben (Standard).
+  - **Reasoning Score:** Basierend auf Tier 2 Aufgaben (Advanced Logic).
+  - **Efficiency Index:** Score pro Sekunde Ausführungszeit.
+- **Utils:** Neues Modul `utils/csv_recovery.py` für robuste Reparatur von defekten LLM-Output-CSVs.
+
+### Changed
+- **Refactoring:**
+  - `scripts/generate_leaderboard.py` komplett modularisiert und DRY-konform umgebaut.
+  - CSV-Parsing-Logik (Heuristiken) in eigenes Utility-Modul ausgelagert.
+  - Pylint Score des Leaderboard-Skripts auf 9.6 verbessert.
+- **Reporting:** Leaderboard zeigt nun gruppierte Tabellen basierend auf Badges statt einer flachen Liste.
+
 ## [0.3.4-beta] - 2025-12-29
 
 ### Added

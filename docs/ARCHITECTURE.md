@@ -51,7 +51,7 @@ Bewertet die Antworten der Modelle.
     *   **Golden Standard Runs**: Ergebnisse werden **doppelt** gespeichert:
         *   In `benchmark_scores/golden_standard_benchmark.csv` (als Referenz).
         *   In `benchmark_scores/commercial_models_benchmark.csv` (für das Leaderboard).
-    *   **Leaderboard**: Das Skript `generate_leaderboard.py` aggregiert die neuesten Ergebnisse aus Commercial und Local CSVs und generiert `benchmark_scores/benchmark_leaderboard.csv`.
+    *   **Leaderboard**: Das Skript `generate_leaderboard.py` nutzt `utils/csv_recovery.py` zur robusten Datenaufbereitung und aggregiert die Ergebnisse in `benchmark_scores/benchmark_leaderboard.csv`. Es berechnet dabei Meta-Metriken (Routine vs. Reasoning) und verleiht Badges.
 
 ---
 
@@ -64,25 +64,19 @@ crucible-mark/
 ├── Makefile                # Shortcuts (install, benchmark, validate)
 │
 ├── docs/                   # Dokumentation
-│   ├── ARCHITECTURE.md     # Diese Datei
-│   ├── ADDING_MODULES.md   # Developer Guide
-│   └── ...
 │
 ├── benchmark_modules/      # Plugin-Container
-│   ├── code_quality/       # Modul 1
-│   ├── ux_writing/         # Modul 2
-│   ├── documentation_quality/ # Modul 3
-│   └── content_transformation/ # Modul 4
 │
 ├── benchmark_scores/       # Output: CSV Ergebnisse & Leaderboard
 │
 ├── utils/                  # Hilfsfunktionen
 │   ├── llm_client.py       # Unified LLM Client
+│   ├── csv_recovery.py     # Robust CSV Parsing & Repair
 │   ├── provider_clients.py # Provider Implementierungen
 │   ├── model_utils.py      # Filter-Logik
 │   └── similarity.py       # Semantic Scoring
 │
 └── scripts/                # Helper Scripts
-    ├── validate_assets.py  # CI/CD Check
-    └── list_models.py      # Status Check
+    ├── generate_leaderboard.py # Badge & Rank Generation
+    └── ...
 ```
