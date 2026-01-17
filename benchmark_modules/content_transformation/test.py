@@ -110,7 +110,10 @@ class ContentTransformationTest(BaseTest):
         Returns:
             Dict mit Score-Details
         """
-        if not response or response.startswith("ERROR:"):
+        # Clean reasoning tags (e.g. DeepSeek <think>) before scoring
+        clean_response = self._clean_reasoning_tags(response)
+
+        if not clean_response or clean_response.startswith("ERROR:"):
             return self._create_error_score("Invalid or error response")
 
         scoring_config = self.asset['scoring']
@@ -121,7 +124,7 @@ class ContentTransformationTest(BaseTest):
         violations: list[str] = []
         total_achieved: float = 0.0
 
-        response_lower = response.lower()
+        response_lower = clean_response.lower()
 
         # ===== KATEGORIE 1: Error Detection (70 Punkte) =====
         ed_score, ed_details, ed_violations = self._score_error_detection(
@@ -331,6 +334,23 @@ class ContentTransformationTest(BaseTest):
                         f"○ {name}: {len(found_keywords)}/{len(keywords)} keywords "
                         f"(min {min_keywords} required)"
                     )
+            elif check_method == "negative_keyword_presence":
+                 # Check for ABSENCE of keywords (Sarcasm detection)
+                 # Wait, actually "negative_keyword_presence" logic in the Asset provided
+                 # was used for "Sarcasm Absence". So we need to ensure these words are NOT found.
+                 # BUT the asset used "professional, objective" as keywords there.
+                 # Let's support a true 'absence' check.
+                 
+                 bad_keywords = config.get('forbidden_keywords', [])
+                 # Checking for forbidden words in response
+                 found_bad = [kw for kw in bad_keywords if kw.lower() in response_lower]
+                 
+                 if not found_bad:
+                     score += points
+                     details.append(f"✓ {name}: No forbidden keywords found +{points}p")
+                 else:
+                     details.append(f"✗ {name}: Forbidden keywords found: {', '.join(found_bad)}")
+
             else:
                 # Fallback für andere check_methods
                 details.append(f"○ {name}: unsupported check_method '{check_method}'")

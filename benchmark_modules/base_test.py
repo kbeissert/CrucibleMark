@@ -84,6 +84,22 @@ class BaseTest(ABC):
             if total_weight != expected_total:
                 raise ValueError(f"Scoring weights must sum to {expected_total}, got {total_weight}")
     
+    def _clean_reasoning_tags(self, response: str) -> str:
+        """
+        Removes <think>...</think> blocks from response to avoid scoring internal reasoning.
+        
+        Args:
+            response: The raw response string
+            
+        Returns:
+            Cleaned response string
+        """
+        import re
+        # Remove <think> content non-greedily including newlines
+        cleaned = re.sub(r'<think>.*?</think>', '', response, flags=re.DOTALL)
+        # Also clean empty lines that might remain
+        return cleaned.strip()
+
     @abstractmethod
     def execute(self, model: str, llm_client) -> Dict[str, Any]:
         """
