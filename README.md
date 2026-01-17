@@ -36,6 +36,20 @@ Jedes Modul deckt spezifische Fähigkeiten ab und verfügt über eine eigene, de
 | `content_transformation` | **Content Adaption** | Format-Transformation & Stil-Anpassung | [README](benchmark_modules/content_transformation/README.md) |
 | `reasoning` | **Reasoning Logic** | Logik, Deduktion & Deadlock-Erkennung | [README](benchmark_modules/reasoning_logic/README.md) |
 
+## 🏆 Leaderboard & Metrics
+
+Das Leaderboard klassifiziert Modelle nicht nur nach Punkten, sondern nach Profil:
+
+### 🏅 Gamified Badges
+*   👑 **God Mode**: Exzellent in beiden Bereichen (Routine >85% & Reasoning >80%).
+*   🏎️ **Daily Driver**: Perfekt für schnelle Standard-Aufgaben (Routine >80%).
+*   🧠 **Deep Thinker**: Spezialist für komplexe Logik (Reasoning >80%).
+*   ⚠️ **Needs Tuning**: Modelle, die noch Optimierung benötigen.
+
+### 📊 Meta-Metrics
+*   **Routine Score (Tier 1)**: Misst die Zuverlässigkeit bei Standard-Aufgaben (Linting, Typos).
+*   **Reasoning Score (Tier 2)**: Misst logische Deduktion und Architektur-Verständnis (Deadlocks).
+
 ## ⚡ Quick Start
 
 ### 1. Installation
