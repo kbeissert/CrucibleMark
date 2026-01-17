@@ -32,6 +32,10 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
+# Suppress verbose HTTP logging from libraries
+logging.getLogger("httpx").setLevel(logging.WARNING)
+logging.getLogger("httpcore").setLevel(logging.WARNING)
+
 # Constants
 BYTES_TO_GB = 1024**3
 DEFAULT_CONFIG_PATH = "benchmark_config.yaml"

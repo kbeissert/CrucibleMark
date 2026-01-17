@@ -1,0 +1,13 @@
+name: "Logical Reasoning"
+version: "0.1.0"
+description: "Tests complex logical reasoning, math problems, and puzzle solving capabilities."
+author: "CrucibleMark"
+tags:
+  - logic
+  - math
+  - reasoning
+  - puzzle
+assets_path: "assets"
+test_class: "ReasoningLogicTest"
+enabled: true
+order: 50

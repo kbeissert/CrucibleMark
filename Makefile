@@ -28,6 +28,7 @@ help:
 	@echo "  make clean-csv            Delete all benchmark CSV files"
 	@echo "  make clean-all            Delete EVERYTHING (caches + CSVs)"
 	@echo "  make list-models          List models (Local & Commercial Status)"
+	@echo "  make list-modules         List available benchmark modules"
 	@echo ""
 
 install:
@@ -117,6 +118,14 @@ clean-runs-force:
 
 list-models:
 	$(PYTHON) scripts/list_models.py
+
+list-modules:
+	@echo "📋 Available Modules (Ordered by Config):"
+	@if [ -f "scripts/list_modules.py" ]; then \
+		$(PYTHON) scripts/list_modules.py; \
+	else \
+		$(PYTHON) -c "import yaml; config=yaml.safe_load(open('benchmark_config.yaml')); [print(f'  {i+1}. {k}: {v[\"name\"]}') for i, (k,v) in enumerate(config.get('modules', {}).items()) if v.get('enabled', True)]"; \
+	fi
 
 test: validate
 	@echo "🧪 Running Unit Tests..."

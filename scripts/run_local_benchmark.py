@@ -212,7 +212,14 @@ class LocalBenchmarkRunner:
             'score_difference': round(score_diff, 1),
             'execution_time': round(execution_time, 1),
             'response_length': len(response),
-            'golden_similarity': round(comparison.get('similarity', 0) * 100, 1)
+            'golden_similarity': round(comparison.get('similarity', 0) * 100, 1),
+            # NEW: Propagate classification data (Top Level for CSV)
+            'tier': score.get('tier', 'Tier 1 (Undefined)'),
+            # Keep details for legacy/structure reasons if needed, but tier is now redundant
+            'details': {
+                'asset_id': asset_id,
+                'tier': score.get('tier', 'Tier 1 (Undefined)')
+            }
         }
 
         if response.startswith("ERROR:"):
@@ -416,6 +423,38 @@ class LocalBenchmarkRunner:
             diff = r.get('score_difference', 0)
             diff_str = f" ({diff:+.1f})" if diff != 0 else ""
             print(f"   {r['asset_name'][:40]}: {r['percentage']}% {quality}{diff_str}")
+
+        # --- NEW: Tiered Reasoning Report (Module 5 Specific) ---
+        # Check if we have reasoning module results by inspecting asset Ids
+        reasoning_results = [r for r in successful_results if r.get('details', {}).get('asset_id', '').startswith('reasoning_')]
+        
+        if reasoning_results:
+             print(f"\n🧠 REASONING ANALYSIS (Tiered)")
+             print(f"{'-'*60}")
+             
+             tier1_scores = [r['total_score'] for r in reasoning_results if 'Tier 1' in r.get('details', {}).get('tier', 'Tier 1')]
+             tier2_scores = [r['total_score'] for r in reasoning_results if 'Tier 2' in r.get('details', {}).get('tier', '')]
+             
+             t1_avg = sum(tier1_scores) / len(tier1_scores) if tier1_scores else 0
+             t2_avg = sum(tier2_scores) / len(tier2_scores) if tier2_scores else 0
+             
+             # Check if it is a "Daily Driver" or "Expert"
+             profile = "Unknown"
+             # If Tier 2 (Deep Reasoning) is high, it's an expert
+             if t2_avg >= 80: 
+                 profile = "🧠  Deep Thinker (Complex Logic Expert)"
+             # If Tier 1 is high but Tier 2 is low
+             elif t1_avg >= 80: 
+                 profile = "🏎️  Daily Driver (Fast & Reliable, but not Deep)"
+             elif t1_avg < 50: 
+                 profile = "⚠️  Needs Improvement"
+             else: 
+                 profile = "⚖️  Balanced / Standard"
+             
+             print(f"   Tier 1 (Operational Logic): {t1_avg:.1f}%  (Daily Tasks)")
+             print(f"   Tier 2 (Deep Reasoning):    {t2_avg:.1f}%  (Complex Deadlocks)")
+             print(f"   Profile: {profile}")
+             print(f"{'-'*60}")
 
         if failed_results:
             print("\n❌ Fehlgeschlagene Tests:")
