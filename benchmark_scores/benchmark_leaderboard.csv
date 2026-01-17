@@ -1,3 +1,6 @@
-Recommendation,model,reasoning_type,type,Overall Score,Code Quality Audit,UX Writing & Microcopy,Documentation Quality,Content Transformation & Adaption,Logical Reasoning,Avg Time (s),Tests Run
-🏆 Best Commercial ⚡ Efficient,mistral-large-latest,🤖 Standard,Commercial,80.3,87.2,82.2,68.9,84.6,78.6,37.1,25/25
-,mistral-medium-latest,🤖 Standard,Commercial,80.0,87.2,84.4,65.7,85.0,77.9,38.1,25/25
+Recommendation,model,reasoning_type,type,Overall Score,Profile,Logic (T1),Reasoning (T2),Code Quality Audit,UX Writing & Microcopy,Documentation Quality,Content Transformation & Adaption,Logical Reasoning,Avg Time (s),Tests Run
+(Incomplete),mistral-large-latest *,🤖 Standard,Commercial,80.3,Unknown,,,87.2,82.2,68.9,84.6,78.6,37.1,25/26
+(Incomplete),mistral-nemo:latest *,🤖 Standard,Commercial,80.3,Unknown,,,Pending,Pending,Pending,80.3,Pending,69.2,6/26
+(Incomplete),mistral-medium-latest *,🤖 Standard,Commercial,80.0,Unknown,,,87.2,84.4,65.7,85.0,77.9,38.1,25/26
+(Incomplete),deepseek-r1:8b *,🧠 Reasoning,Local,63.6,🧠 Deep Thinker,59.925,100.0,62.6,72.2,38.3,76.9,67.9,76.5,25/26
+(Incomplete),deepseek-r1:14b *,🧠 Reasoning,Local,62.8,Unknown,,,56.2,Pending,Pending,68.4,Pending,83.3,11/26

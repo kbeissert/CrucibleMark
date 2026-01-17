@@ -63,7 +63,7 @@ modules:
     test_class: "ContentTransformationTest"
     version: "0.9.0-beta"
     enabled: true
-    assets_count: 5
+    assets_count: 6
     tags:
       - content-creation
       - copywriting

@@ -1,72 +1,66 @@
 #!/usr/bin/env python3
 """
-Code Quality Test Module - WCAG 2.2 Accessibility Audit
-Erweiterte Version mit vollständigem Scoring für 11 Issues
+Code Quality Test Module
+Refactored using Facade Pattern and specialized private scoring methods.
+Uses benchmark_modules.code_quality.constants for configuration.
 """
 
 import sys
-from pathlib import Path
-import re
 import time
+import re
+from pathlib import Path
+from typing import Any, Dict, List, Tuple
 
-# Ensure root directory is in sys.path for imports
+# Ensure root directory is in sys.path
 root_dir = Path(__file__).parent.parent.parent
 if str(root_dir) not in sys.path:
     sys.path.insert(0, str(root_dir))
 
-from benchmark_modules.base_test import BaseTest  # noqa: E402
-from utils.similarity import SemanticSimilarity  # noqa: E402
-
-# Constants for scoring thresholds
-MIN_TABLE_COLUMNS = 2  # Minimum pipes for table detection
-DEFAULT_MIN_TABLE_ROWS = 8  # Default minimum rows for complete table
-DEFAULT_MIN_KEYWORDS = 3  # Default minimum keywords to match
-MIN_SENTENCE_LENGTH = 20  # Minimum length for sentence splitting
-SIMILARITY_THRESHOLD = 0.65  # Threshold for semantic similarity matching
+from benchmark_modules.base_test import BaseTest
+from benchmark_modules.code_quality.constants import (
+    DEFAULT_TEMPERATURE,
+    TOKEN_MULTIPLIER,
+    MIN_TABLE_COLUMNS,
+    DEFAULT_MIN_TABLE_ROWS,
+    DEFAULT_MIN_KEYWORDS,
+    MIN_SENTENCE_LENGTH,
+    SIMILARITY_THRESHOLD,
+    PATTERN_CODE_BLOCK,
+    ERROR_INVALID_RESPONSE,
+    ERROR_TEST_FAILED
+)
+from utils.similarity import SemanticSimilarity
 
 
 class CodeQualityTest(BaseTest):
     """
     Test-Modul für Code-Qualität und Accessibility
-
-    Features:
-    - Erkennung von 11 WCAG-Issues (5 Critical, 3 High, 4 Medium)
-    - Bonus-Punkte für Edge-Cases
-    - Lösungsqualitäts-Bewertung (Quick Fix + Best Practice)
-    - Formatierungs-Checks (Tabellen, Code-Blöcke)
-    - Fachkompetenz-Bewertung (WCAG 2.2, AT, Tools)
+    
+    Architecture:
+    - Facade Pattern via score_response() delegating to specific private scorers.
+    - Configuration driven via assets/yaml and constants.py.
     """
 
-    def execute(self, model: str, llm_client, provider: str = 'ollama') -> dict:
+    def execute(self, model: str, llm_client: Any, provider: str = 'ollama') -> Dict[str, Any]:
         """
-        Führt WCAG-Audit-Test aus
-
-        Args:
-            model: LLM-Modell (z.B. "qwen2.5:14b")
-            llm_client: LLMClient-Instanz
-            provider: Provider (ollama, mistral, anthropic, openai)
-
-        Returns:
-            Dict mit raw_response, execution_time, tokens_used, metadata
+        Führt den Code Quality Test aus.
         """
         prompt = self.asset['prompt']
+        full_prompt = f"{self.asset.get('context', '')}\n\n{prompt}".strip()
 
-        # Context hinzufügen falls vorhanden
-        if 'context' in self.asset:
-            full_prompt = f"{self.asset['context']}\n\n{prompt}"
-        else:
-            full_prompt = prompt
-
-        # LLM Query
         start = time.time()
 
         try:
-            # Use low temperature (0.1) for Code Quality to ensure deterministic and precise results
-            response = llm_client.query(model, full_prompt, provider=provider, temperature=0.1)
+            # Deterministic output via low temperature
+            response = llm_client.query(
+                model, 
+                full_prompt, 
+                provider=provider, 
+                temperature=DEFAULT_TEMPERATURE
+            )
             elapsed = time.time() - start
 
-            # Token-Approximation (Wörter * 1.3)
-            approx_tokens = len(response.split()) * 1.3
+            approx_tokens = int(len(response.split()) * TOKEN_MULTIPLIER)
 
             return {
                 'raw_response': response,
@@ -89,86 +83,88 @@ class CodeQualityTest(BaseTest):
                 }
             }
 
-    def score_response(self, response: str) -> dict:
+    def score_response(self, response: str) -> Dict[str, Any]:
         """
-        Bewertet WCAG-Audit-Antwort nach Asset-Scoring-Kriterien
-
-        Scoring-Kategorien:
-        1. Fehlererkennung (45 Punkte)
-        2. Lösungsqualität (30 Punkte)
-        3. Formatierung (15 Punkte)
-        4. Fachkompetenz (10 Punkte)
-
-        Returns:
-            Dict mit total_score, category_scores, details, violations
+        Facade Method: Main Scoring Logic
+        
+        Delegates to:
+        - _score_error_detection (45-60 pts)
+        - _score_solution_quality (30 pts)
+        - _score_formatting (10-15 pts)
+        - _score_expertise (Optional 10 pts)
         """
-        if not response or response.startswith("ERROR:"):
+        # Clean reasoning tags (e.g. DeepSeek <think>) before scoring
+        clean_response = self._clean_reasoning_tags(response)
+        
+        if not clean_response or clean_response.startswith("ERROR:"):
             return {
                 'status': 'error',
                 'total_score': 0,
                 'max_score': 100,
                 'category_scores': {},
-                'details': ["Keine gültige Response erhalten"],
-                'violations': ["Test konnte nicht ausgeführt werden"]
+                'details': [ERROR_INVALID_RESPONSE],
+                'violations': [ERROR_TEST_FAILED]
             }
 
         scoring_config = self.asset['scoring']
-        total_possible = scoring_config['total_points']
-
+        total_possible = scoring_config.get('total_points', 100)
+        
         category_scores = {}
         details = []
         violations = []
         total_achieved: float = 0.0
 
-        response_lower = response.lower()
+        response_lower = clean_response.lower()
 
-        # ===== KATEGORIE 1: Fehlererkennung (45 Punkte) =====
+        # 1. Error Detection
+        ed_conf = scoring_config.get('error_detection', {})
         ed_score, ed_details, ed_violations = self._score_error_detection(
-            response, response_lower, scoring_config['error_detection']
+            clean_response, response_lower, ed_conf
         )
         category_scores['error_detection'] = {
             'achieved': ed_score,
-            'max': scoring_config['error_detection']['weight']
+            'max': ed_conf.get('weight', 0)
         }
         details.extend(ed_details)
         violations.extend(ed_violations)
         total_achieved += ed_score
 
-        # ===== KATEGORIE 2: Lösungsqualität (30 Punkte) =====
+        # 2. Solution Quality
+        sq_conf = scoring_config.get('solution_quality', {})
         sq_score, sq_details = self._score_solution_quality(
-            response, response_lower, scoring_config['solution_quality']
+            clean_response, response_lower, sq_conf
         )
         category_scores['solution_quality'] = {
             'achieved': sq_score,
-            'max': scoring_config['solution_quality']['weight']
+            'max': sq_conf.get('weight', 0)
         }
         details.extend(sq_details)
         total_achieved += sq_score
 
-        # ===== KATEGORIE 3: Formatierung (15 Punkte) =====
+        # 3. Formatting
+        fmt_conf = scoring_config.get('formatting', {})
         fmt_score, fmt_details = self._score_formatting(
-            response, response_lower, scoring_config['formatting']
+            clean_response, response_lower, fmt_conf
         )
         category_scores['formatting'] = {
             'achieved': fmt_score,
-            'max': scoring_config['formatting']['weight']
+            'max': fmt_conf.get('weight', 0)
         }
         details.extend(fmt_details)
         total_achieved += fmt_score
 
-        # ===== KATEGORIE 4: Fachkompetenz (Optional) =====
+        # 4. Expertise (Optional)
         if 'expertise' in scoring_config:
-            exp_score, exp_details = self._score_expertise(
-                response, response_lower, scoring_config['expertise']
-            )
+            exp_conf = scoring_config['expertise']
+            exp_score, exp_details = self._score_expertise(clean_response, response_lower, exp_conf)
             category_scores['expertise'] = {
                 'achieved': exp_score,
-                'max': scoring_config['expertise']['weight']
+                'max': exp_conf.get('weight', 0)
             }
             details.extend(exp_details)
             total_achieved += exp_score
         else:
-            category_scores['expertise'] = {'achieved': 0, 'max': 0}
+             category_scores['expertise'] = {'achieved': 0, 'max': 0}
 
         return {
             'status': 'success',
@@ -179,456 +175,323 @@ class CodeQualityTest(BaseTest):
             'violations': violations
         }
 
-    def _check_and_score_issue(
-        self,
-        response_lower: str,
-        issue: dict,
-        severity: str
-    ) -> tuple[float, str | None, str | None]:
-        """
-        Hilfsfunktion: Prüft ein einzelnes Issue und gibt Score/Details zurück.
-        
-        Returns:
-            (score_delta, detail_msg, violation_msg)
-        """
-        found = self._check_issue_mentioned(response_lower, issue['keywords'])
-        extra_info = f" (WCAG {issue['wcag']})" if 'wcag' in issue else ""
-
-        if found:
-            detail = f"✓ {severity} erkannt: {issue['issue']}{extra_info}, +{issue['points']}p"
-            return issue['points'], detail, None
-        elif severity == "Medium":
-            detail = f"○ Medium fehlt: {issue['issue']}{extra_info}"
-            return 0, detail, None
-        else:
-            violation_prefix = "✗" if severity == "Critical" else "~"
-            violation = f"{violation_prefix} {severity} fehlt: {issue['issue']}{extra_info}, -{issue['points']}p"
-            return 0, None, violation
-
-    def _calculate_bonus_score(
-        self,
-        response_lower: str,
-        config: dict,
-        details: list[str]
-    ) -> int:
-        """Berechnet Bonus-Punkte für zusätzlich gefundene Issues."""
-        bonus_count = 0
-        bonus_max = config.get('max_bonus', 5)
-        bonus_issues = config.get('bonus_issues', [])
-
-        for bonus_issue in bonus_issues:
-            keywords = bonus_issue.lower().split()[:3]
-            if any(kw in response_lower for kw in keywords):
-                bonus_count += 1
-                if bonus_count <= bonus_max:
-                    details.append(
-                        f"✓ Bonus: {bonus_issue} "
-                        f"(+{config['bonus_points_each']}p)"
-                    )
-
-        if bonus_count > 0:
-            details.append(
-                f"  → Bonus Total: {min(bonus_count, bonus_max)} Issues gefunden"
-            )
-
-        return min(bonus_count, bonus_max) * config.get('bonus_points_each', 1)
+    # =========================================================================
+    # Private Scoring Methods (Specialized Strategies)
+    # =========================================================================
 
     def _score_error_detection(
-        self,
-        response: str,
-        response_lower: str,
-        config: dict
-    ) -> tuple[int, list[str], list[str]]:
-        """
-        Bewertet Fehlererkennung (45 Punkte)
-
-        Returns:
-            (score, details_list, violations_list)
-        """
-        score: float = 0.0
+        self, 
+        response: str, 
+        response_lower: str, 
+        config: Dict[str, Any]
+    ) -> Tuple[float, List[str], List[str]]:
+        """Scoring strategy for Error Detection."""
+        score = 0.0
         details = []
         violations = []
-        max_score = config['weight']
+        max_score = config.get('weight', 0)
 
-        # Dynamic Issue Scoring: Iterate over all keys ending in '_issues'
-        # This supports both old (critical_issues) and new (labeled_issues) formats
+        # Dynamic Issue Iteration (supports tiered issues: labeled, standard, etc.)
         for key, issues_list in config.items():
             if key.endswith('_issues') and key != 'bonus_issues' and isinstance(issues_list, list):
-                # Derive category name (e.g. "critical_issues" -> "Critical")
                 category_name = key.replace('_issues', '').replace('_', ' ').title()
-
+                
                 for issue in issues_list:
-                    delta, detail, violation = self._check_and_score_issue(
-                        response_lower, issue, category_name
-                    )
-                    score += delta
-                    if detail:
-                        details.append(detail)
-                    if violation:
-                        violations.append(violation)
+                    severity = category_name # e.g. "Critical", "Labeled"
+                    found = self._check_issue_mentioned(response_lower, issue.get('keywords', []))
+                    
+                    points = issue.get('points', 0)
+                    extra_info = f" (WCAG {issue['wcag']})" if 'wcag' in issue else ""
+                    issue_name = issue.get('issue', 'Unknown Issue')
 
-        # === BONUS Issues (1 Punkt pro Issue, max 5 Punkte) ===
+                    if found:
+                        score += points
+                        details.append(f"✓ {severity} erkannt: {issue_name}{extra_info}, +{points}p")
+                    elif severity in ["Critical", "Labeled", "Standard"]: 
+                        prefix = "✗" if severity in ["Critical", "Labeled"] else "~"
+                        err_msg = f"{prefix} {severity} fehlt: {issue_name}{extra_info}, -{points}p"
+                        if severity == "Critical":
+                             violations.append(err_msg)
+                        else:
+                             # For non-critical missing issues we used to show generic warning
+                             if severity == "Medium":
+                                 details.append(f"○ Medium fehlt: {issue_name}{extra_info}")
+                             else: 
+                                  violations.append(f"~ {severity} fehlt: {issue_name}{extra_info}, -{points}p")
+                    elif severity == "Medium":
+                         details.append(f"○ Medium fehlt: {issue_name}{extra_info}")
+                    else:
+                         violations.append(f"~ {severity} fehlt: {issue_name}{extra_info}, -{points}p")
+
+        # Bonus Scoring
         bonus_score = self._calculate_bonus_score(response_lower, config, details)
         score += bonus_score
 
-        # Cap bei max_score
-        score = min(score, max_score)
-
-        return score, details, violations
-
-    def _score_pattern_match(
-        self,
-        response: str,
-        criterion: dict
-    ) -> tuple[float, str]:
-        """
-        Hilfsfunktion: Bewertet Pattern-basierte Kriterien (SQ-001, SQ-002).
-        
-        Returns:
-            (score_delta, detail_msg)
-        """
-        pattern = criterion.get('check_pattern', r'')
-        matches = len(re.findall(pattern, response))
-        min_required = criterion.get('min_occurrences', 6)
-        points = criterion['points']
-
-        if matches >= min_required:
-            return points, f"✓ {criterion['name']}: {matches}/{min_required} (+{points}p)"
-        else:
-            partial = (matches / min_required) * points
-            return partial, f"~ {criterion['name']}: {matches}/{min_required} ({partial:.1f}/{points}p)"
+        return min(score, max_score), details, violations
 
     def _score_solution_quality(
-        self,
-        response: str,
-        response_lower: str,
-        config: dict
-    ) -> tuple[float, list[str]]:
-        """
-        Bewertet Lösungsqualität (30 Punkte)
-
-        Prüft:
-        - Quick Fixes vorhanden
-        - Best Practices vorhanden
-        - Code-Beispiele syntaktisch korrekt
-        - Moderne Web-Standards genutzt
-
-        Returns:
-            (score, details_list)
-        """
-        score: float = 0.0
+        self, 
+        response: str, 
+        response_lower: str, 
+        config: Dict[str, Any]
+    ) -> Tuple[float, List[str]]:
+        """Scoring strategy for Solution Quality."""
+        score = 0.0
         details = []
-
-        for criterion in config['criteria']:
+        
+        criteria = config.get('criteria', [])
+        for criterion in criteria:
             check_method = criterion.get('check_method')
-            points = criterion['points']
-
-            if check_method == "regex":  # Quick Fixes / Best Practices
+            points = criterion.get('points', 0)
+            
+            if check_method == "regex":
                 delta, detail = self._score_pattern_match(response, criterion)
                 score += delta
                 details.append(detail)
-
-            elif check_method == "code_validation":  # Code-Beispiele
-                required_elements = criterion.get('required_elements', [])
-                total_blocks = 0
-                details_parts = []
-
-                if required_elements:
-                    for elem in required_elements:
-                        # Remove comments if present in YAML list item (though YAML parser handles that usually)
-                        # But here elem is just the string like "```html"
-                        count = response.count(elem)
-                        total_blocks += count
-                        details_parts.append(f"{count} {elem.replace('```', '').strip()}")
-                else:
-                    # Fallback: Check pattern if no required_elements
-                    pattern = criterion.get('check_pattern')
-                    if pattern:
-                        total_blocks = response.count(pattern)
-                        details_parts.append(f"{total_blocks} {pattern.replace('```', '').strip()}")
-
-                min_required = criterion.get('min_code_blocks', 10)
-
-                if total_blocks >= min_required:
-                    score += points
-                    details.append(
-                        f"✓ {criterion['name']}: {total_blocks} Code-Blöcke "
-                        f"({', '.join(details_parts)}) (+{points}p)"
-                    )
-                else:
-                    partial = (total_blocks / min_required) * points
-                    score += partial
-                    details.append(
-                        f"~ {criterion['name']}: {total_blocks}/{min_required} "
-                        f"({partial:.1f}/{points}p)"
-                    )
-
-            elif check_method == "keyword_presence":  # Moderne Web-Standards
-                keywords = criterion.get('keywords', [])
-                found_keywords = [
-                    kw for kw in keywords
-                    if kw.lower() in response_lower
-                ]
-                min_required = criterion.get('min_keywords', 4)
-
-                if len(found_keywords) >= min_required:
-                    score += points
-                    details.append(
-                        f"✓ {criterion['name']}: {len(found_keywords)}/{min_required} "
-                        f"({', '.join(found_keywords[:3])}) (+{points}p)"
-                    )
-                else:
-                    details.append(
-                        f"~ {criterion['name']}: {len(found_keywords)}/{min_required} "
-                        f"({', '.join(found_keywords) if found_keywords else 'keine'})"
-                    )
+            
+            elif check_method == "code_validation":
+                delta, detail = self._score_code_validation(response, criterion)
+                score += delta
+                details.append(detail)
+                
+            elif check_method == "keyword_presence":
+                delta, detail = self._score_keyword_presence(response_lower, criterion)
+                score += delta
+                details.append(detail)
 
         return round(score, 2), details
 
-    def _score_table_criterion(
-        self,
-        response: str,
-        criterion: dict
-    ) -> tuple[float, str]:
-        """Bewertet Tabellen-Formatierung."""
-        points = criterion['points']
-        has_table = '|' in response and '-|' in response
-        table_rows = len([
-            line for line in response.split('\n')
-            if line.count('|') >= MIN_TABLE_COLUMNS
-        ])
-        min_rows = criterion.get('min_rows', DEFAULT_MIN_TABLE_ROWS)
-
-        if has_table and table_rows >= min_rows:
-            return points, f"✓ {criterion['name']}: {table_rows} Zeilen (+{points}p)"
-        elif has_table:
-            partial = (table_rows / min_rows) * points
-            return partial, f"~ {criterion['name']}: {table_rows}/{min_rows} Zeilen ({partial:.1f}/{points}p)"
-        else:
-            return 0, f"✗ {criterion['name']}: Keine Tabelle gefunden"
-
-    def _score_severity_criterion(
-        self,
-        response_lower: str,
-        criterion: dict
-    ) -> tuple[float, str]:
-        """Bewertet Severity-Level Keywords."""
-        points = criterion['points']
-        keywords = criterion.get('keywords', [])
-        found = sum(1 for kw in keywords if kw in response_lower)
-        min_required = criterion.get('min_keywords', DEFAULT_MIN_KEYWORDS)
-
-        if found >= min_required:
-            return points, f"✓ {criterion['name']}: {found}/{len(keywords)} Severity-Level (+{points}p)"
-        else:
-            return 0, f"~ {criterion['name']}: {found}/{min_required} Severity-Level"
-
-    def _score_wcag_references(
-        self,
-        response: str,
-        criterion: dict
-    ) -> tuple[float, str]:
-        """Bewertet Regex-Matches (z.B. WCAG-Referenzen)."""
-        points = criterion['points']
-        pattern = criterion.get('check_pattern', r'\b[1-4]\.\d{1,2}\.\d{1,2}\b')
-        matches = re.findall(pattern, response)
-
-        count_unique = criterion.get('count_unique', True)
-        count = len(set(matches)) if count_unique else len(matches)
-
-        min_required = criterion.get('min_occurrences', 8)
-        if 'min_items' in criterion:
-            min_required = criterion['min_items']
-
-        if count >= min_required:
-            return points, f"✓ {criterion['name']}: {count} Treffer (+{points}p)"
-        else:
-            partial = (count / min_required) * points
-            return partial, f"~ {criterion['name']}: {count}/{min_required} Treffer ({partial:.1f}/{points}p)"
-
-    def _score_testing_checklist(
-        self,
-        response: str,
-        response_lower: str,
-        criterion: dict
-    ) -> tuple[float, str]:
-        """Bewertet Testing-Checkliste."""
-        points = criterion['points']
-        section_keywords = criterion.get('section_keywords', [])
-        has_test_section = any(kw in response_lower for kw in section_keywords)
-
-        list_items = len(re.findall(r'^[-*]\s+|^\d+\.\s+', response, re.MULTILINE))
-        min_items = criterion.get('min_items', 5)
-
-        if has_test_section and list_items >= min_items:
-            return points, f"✓ {criterion['name']}: {list_items} Punkte (+{points}p)"
-        elif list_items > 0:
-            return 0, f"~ {criterion['name']}: {list_items} Listenelemente (Test-Section: {has_test_section})"
-        else:
-            return 0, f"✗ {criterion['name']}: Nicht gefunden"
-
     def _score_formatting(
-        self,
-        response: str,
-        response_lower: str,
-        config: dict
-    ) -> tuple[float, list[str]]:
-        """
-        Bewertet Formatierung (10 Punkte)
-
-        Prüft:
-        - Strukturierte Tabelle
-        - Severity-Level Markierungen
-        - WCAG-Referenzen
-        - Testing-Checkliste
-
-        Returns:
-            (score, details_list)
-        """
-        score: float = 0.0
+        self, 
+        response: str, 
+        response_lower: str, 
+        config: Dict[str, Any]
+    ) -> Tuple[float, List[str]]:
+        """Scoring strategy for Formatting."""
+        score = 0.0
         details = []
-
-        for criterion in config['criteria']:
+        
+        criteria = config.get('criteria', [])
+        for criterion in criteria:
             check_method = criterion.get('check_method')
-
-            if check_method == "markdown_table_validation":  # Tabelle
+            
+            if check_method == "markdown_table_validation":
                 delta, detail = self._score_table_criterion(response, criterion)
-            elif check_method == "keyword_presence":  # Severity
+            elif check_method == "keyword_presence": 
                 delta, detail = self._score_severity_criterion(response_lower, criterion)
-            elif check_method == "regex":  # WCAG-Referenzen
+            elif check_method == "regex": 
                 delta, detail = self._score_wcag_references(response, criterion)
-            elif check_method == "list_detection":  # Testing-Checkliste
+            elif check_method == "list_detection":
                 delta, detail = self._score_testing_checklist(response, response_lower, criterion)
             else:
                 continue
-
+                
             score += delta
             details.append(detail)
-
+            
         return round(score, 2), details
 
     def _score_expertise(
-        self,
-        response: str,
-        response_lower: str,
-        config: dict
-    ) -> tuple[float, list[str]]:
-        """
-        Bewertet Fachkompetenz (10 Punkte)
-
-        Prüft:
-        - WCAG 2.2 neue Kriterien
-        - Assistive Technology Kenntnisse
-        - Testing-Tools Empfehlungen
-        - Business-Kontext Verständnis
-
-        Returns:
-            (score, details_list)
-        """
-        score: float = 0.0
+        self, 
+        response: str, 
+        response_lower: str, 
+        config: Dict[str, Any]
+    ) -> Tuple[float, List[str]]:
+        """Scoring strategy for Expertise."""
+        score = 0.0
         details = []
-
-        for criterion in config['criteria']:
+        
+        criteria = config.get('criteria', [])
+        for criterion in criteria:
             check_method = criterion.get('check_method')
-            points = criterion['points']
-
-            if check_method == "keyword_presence":  # Keyword-basiert
-                keywords = criterion.get('keywords', [])
-                found_keywords = [
-                    kw for kw in keywords
-                    if kw.lower() in response_lower
-                ]
-                min_required = criterion.get('min_keywords', 2)
-
-                if len(found_keywords) >= min_required:
-                    score += points
-                    details.append(
-                        f"✓ {criterion['name']}: "
-                        f"{', '.join(found_keywords[:3])} (+{points}p)"
-                    )
-                else:
-                    details.append(
-                        f"~ {criterion['name']}: {len(found_keywords)}/{min_required} "
-                        f"({', '.join(found_keywords) if found_keywords else 'keine'})"
-                    )
-
-            elif check_method == "context_awareness":  # Business-Kontext
+            points = criterion.get('points', 0)
+            
+            if check_method == "keyword_presence":
+                delta, detail = self._score_keyword_presence(response_lower, criterion)
+                score += delta
+                details.append(detail)
+            elif check_method == "context_awareness":
                 indicators = criterion.get('indicators', [])
                 found = sum(1 for ind in indicators if ind in response_lower)
-                min_required = criterion.get('min_indicators', 2)
-
-                if found >= min_required:
+                min_req = criterion.get('min_indicators', 2)
+                
+                if found >= min_req:
                     score += points
-                    details.append(
-                        f"✓ {criterion['name']}: {found}/{len(indicators)} "
-                        f"Context-Indikatoren (+{points}p)"
-                    )
+                    details.append(f"✓ {criterion['name']}: {found}/{len(indicators)} Context-Indikatoren (+{points}p)")
                 else:
-                    details.append(
-                        f"~ {criterion['name']}: {found}/{min_required} "
-                        f"Context-Indikatoren"
-                    )
-
+                    details.append(f"~ {criterion['name']}: {found}/{min_req} Context-Indikatoren")
+                    
         return round(score, 2), details
 
-    def _check_issue_mentioned(
-        self,
-        response_lower: str,
-        keywords: list[str]
-    ) -> bool:
-        """
-        Prüft ob ein Issue in der Response erwähnt wurde.
-        Nutzt Hybrid-Ansatz: String-Matching + Semantic Similarity.
+    # =========================================================================
+    # Helper Methods (Low-Level Logic)
+    # =========================================================================
 
-        Logik:
-        1. Exakter Match von WCAG-Nummern (sehr spezifisch)
-        2. String-Matching (mind. 40% der Keywords)
-        3. Semantic Similarity (Fallback, wenn String-Match fehlschlägt)
-
-        Args:
-            response_lower: Response in Kleinbuchstaben
-            keywords: Liste von Suchbegriffen
-
-        Returns:
-            True wenn Issue wahrscheinlich erkannt wurde
-        """
-        if not keywords:
+    def _check_issue_mentioned(self, response_lower: str, keywords: List[str]) -> bool:
+        """Prüft ob ein Issue erkannt wurde (Regex -> Keyword -> Semantic)."""
+        if not keywords: 
             return False
 
-        # 1. WCAG Nummer Check (Regex)
-        has_wcag_number = any(re.match(r'\d\.\d\.\d', kw) for kw in keywords)
-        if has_wcag_number:
-            # Wenn WCAG Nummer im Text vorkommt -> Treffer
+        # 1. Regex Match (e.g. WCAG Numbers)
+        has_wcag = any(re.match(r'\d\.\d\.\d', kw) for kw in keywords)
+        if has_wcag:
             for kw in keywords:
                 if re.match(r'\d\.\d\.\d', kw) and kw in response_lower:
                     return True
 
-        # 2. String Matching (Keyword Count)
+        # 2. Strict Keyword Matching
         matches = sum(1 for kw in keywords if kw.lower() in response_lower)
-        required_ratio = 0.4
-        required_matches = max(1, int(len(keywords) * required_ratio))
-
-        if matches >= required_matches:
+        req_ratio = 0.4
+        req_matches = max(1, int(len(keywords) * req_ratio))
+        
+        if matches >= req_matches:
             return True
 
-        # 3. Semantic Similarity (Fallback)
-        # Wir prüfen, ob der Kern des Issues (aus den Keywords gebildet) im Text vorkommt.
-        # Da wir nicht den ganzen Text embedden wollen (zu langsam/groß),
-        # suchen wir nach Sätzen, die relevant sein könnten.
-        # Vereinfachung: Wir vergleichen die Keywords als "Satz" mit dem Text.
-
-        # Konstruiere eine "Query" aus den Keywords
+        # 3. Semantic Similarity Fallback
         query = " ".join(keywords)
-
-        # Splitte Response in Sätze (grob)
         sentences = [s.strip() for s in response_lower.split('.') if len(s.strip()) > MIN_SENTENCE_LENGTH]
-
-        # Wenn keine Sätze gefunden, nutze Chunks
         if not sentences:
             sentences = [response_lower[i:i+200] for i in range(0, len(response_lower), 200)]
-
-        # Suche besten Match
+            
         best_score = SemanticSimilarity.find_best_match(query, sentences)
-
-        # Threshold: 0.65 (experimentell ermittelt für MiniLM)
         return best_score >= SIMILARITY_THRESHOLD
+
+    def _calculate_bonus_score(self, response_lower: str, config: Dict[str, Any], details: List[str]) -> int:
+        """Scores optional bonus issues."""
+        bonus_count = 0
+        bonus_max = config.get('max_bonus', 5)
+        bonus_points_each = config.get('bonus_points_each', 1)
+        
+        for issue_txt in config.get('bonus_issues', []):
+            kws = issue_txt.lower().split()[:3]
+            if any(kw in response_lower for kw in kws):
+                bonus_count += 1
+                if bonus_count <= bonus_max:
+                    details.append(f"✓ Bonus: {issue_txt} (+{bonus_points_each}p)")
+        
+        if bonus_count > 0:
+            details.append(f"  → Bonus Total: {min(bonus_count, bonus_max)} Issues gefunden")
+            
+        return min(bonus_count, bonus_max) * bonus_points_each
+
+    def _score_pattern_match(self, response: str, criterion: Dict[str, Any]) -> Tuple[float, str]:
+        """Generic Regex Pattern Matcher."""
+        pattern = criterion.get('check_pattern', r'')
+        matches = len(re.findall(pattern, response))
+        min_req = criterion.get('min_occurrences', 6)
+        points = criterion.get('points', 0)
+        name = criterion.get('name', 'Unknown')
+
+        if matches >= min_req:
+            return points, f"✓ {name}: {matches}/{min_req} (+{points}p)"
+        else:
+            partial = (matches / min_req) * points
+            return partial, f"~ {name}: {matches}/{min_req} ({partial:.1f}/{points}p)"
+
+    def _score_code_validation(self, response: str, criterion: Dict[str, Any]) -> Tuple[float, str]:
+        """Validates code blocks presence."""
+        required = criterion.get('required_elements', [])
+        total = 0
+        parts = []
+        name = criterion.get('name', 'Code Validation')
+        points = criterion.get('points', 0)
+
+        if required:
+            for elem in required:
+                # Assuming elem is simple string, no complex regex here for now
+                count = response.count(elem)
+                total += count
+                parts.append(f"{count} {elem.replace('```', '').strip()}")
+        else:
+            pattern = criterion.get('check_pattern')
+            if pattern:
+                total = response.count(pattern)
+                parts.append(f"{total} {pattern.replace('```', '').strip()}")
+        
+        min_req = criterion.get('min_code_blocks', 10)
+        
+        if total >= min_req:
+            return points, f"✓ {name}: {total} Code-Blöcke ({', '.join(parts)}) (+{points}p)"
+        else:
+            partial = (total / min_req) * points
+            return partial, f"~ {name}: {total}/{min_req} ({partial:.1f}/{points}p)"
+
+    def _score_keyword_presence(self, response_lower: str, criterion: Dict[str, Any]) -> Tuple[float, str]:
+        """Generic Keyword Counter."""
+        keywords = criterion.get('keywords', [])
+        found = [kw for kw in keywords if kw.lower() in response_lower]
+        min_req = criterion.get('min_keywords', 4)
+        points = criterion.get('points', 0)
+        name = criterion.get('name', 'Keyword Check')
+
+        if len(found) >= min_req:
+            return points, f"✓ {name}: {len(found)}/{min_req} ({', '.join(found[:3])}) (+{points}p)"
+        else:
+            return 0, f"~ {name}: {len(found)}/{min_req} ({', '.join(found) if found else 'keine'})"
+
+    def _score_table_criterion(self, response: str, criterion: Dict[str, Any]) -> Tuple[float, str]:
+        """Validates Markdown Table structure."""
+        points = criterion.get('points', 0)
+        name = criterion.get('name', 'Tabelle')
+        has_table = '|' in response and '-|' in response
+        
+        rows = [line for line in response.split('\n') if line.count('|') >= MIN_TABLE_COLUMNS]
+        row_count = len(rows)
+        min_rows = criterion.get('min_rows', DEFAULT_MIN_TABLE_ROWS)
+
+        if has_table and row_count >= min_rows:
+            return points, f"✓ {name}: {row_count} Zeilen (+{points}p)"
+        elif has_table:
+            partial = (row_count / min_rows) * points
+            return partial, f"~ {name}: {row_count}/{min_rows} Zeilen ({partial:.1f}/{points}p)"
+        else:
+            return 0, f"✗ {name}: Keine Tabelle gefunden"
+
+    def _score_severity_criterion(self, response_lower: str, criterion: Dict[str, Any]) -> Tuple[float, str]:
+        """Specialized Keyword Scoring for Severity Levels."""
+        points = criterion.get('points', 0)
+        keywords = criterion.get('keywords', [])
+        name = criterion.get('name', 'Severity')
+        
+        found = sum(1 for kw in keywords if kw in response_lower)
+        min_req = criterion.get('min_keywords', DEFAULT_MIN_KEYWORDS)
+
+        if found >= min_req:
+            return points, f"✓ {name}: {found}/{len(keywords)} Severity-Level (+{points}p)"
+        else:
+            return 0, f"~ {name}: {found}/{min_req} Severity-Level"
+
+    def _score_wcag_references(self, response: str, criterion: Dict[str, Any]) -> Tuple[float, str]:
+        """Regex matcher for specific patterns/occurrences."""
+        points = criterion.get('points', 0)
+        name = criterion.get('name', 'WCAG Refs')
+        pattern = criterion.get('check_pattern', r'\b[1-4]\.\d{1,2}\.\d{1,2}\b')
+        
+        matches = re.findall(pattern, response)
+        count_unique = criterion.get('count_unique', True)
+        count = len(set(matches)) if count_unique else len(matches)
+        
+        min_req = criterion.get('min_items', criterion.get('min_occurrences', 8))
+
+        if count >= min_req:
+            return points, f"✓ {name}: {count} Treffer (+{points}p)"
+        else:
+            partial = (count / min_req) * points
+            return partial, f"~ {name}: {count}/{min_req} Treffer ({partial:.1f}/{points}p)"
+
+    def _score_testing_checklist(self, response: str, response_lower: str, criterion: Dict[str, Any]) -> Tuple[float, str]:
+        """Validates Testing Checklist Section."""
+        points = criterion.get('points', 0)
+        name = criterion.get('name', 'Checklist')
+        section_kws = criterion.get('section_keywords', [])
+        
+        has_section = any(kw in response_lower for kw in section_kws)
+        list_items = len(re.findall(r'^[-*]\s+|^\d+\.\s+', response, re.MULTILINE))
+        min_items = criterion.get('min_items', 5)
+
+        if has_section and list_items >= min_items:
+            return points, f"✓ {name}: {list_items} Punkte (+{points}p)"
+        elif list_items > 0:
+            return 0, f"~ {name}: {list_items} Listenelemente (Test-Section: {has_section})"
+        else:
+            return 0, f"✗ {name}: Nicht gefunden"
