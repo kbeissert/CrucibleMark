@@ -1,0 +1,22 @@
+id: "cultural_intel_002"
+name: "Inclusive Job Ad"
+description: "Tests the ability to rewrite a job ad to be gender-neutral and inclusive"
+tier: 2
+tags: 
+  - "inclusivity"
+  - "hr"
+  - "german"
+input_text: |
+  Rewrite the following short job ad snippet into inclusive, gender-neutral German.
+  Target Audience: Diverse applicants.
+  
+  Snippet:
+  "We are looking for a skilled Software Craftsman to join our team. He should be master of Python and brave enough to tackle legacy code."
+  
+  Requirements:
+  1. Use gender-neutral formulations (e.g. *in, gender-free nouns).
+  2. Remove gendered terms like "Craftsman" or "He".
+  3. Add (m/w/d).
+expected_output: |
+  Example structure:
+  "Wir suchen eine/n erfahrene/n Software-Entwickler*in / Software Engineer (m/w/d)..."
