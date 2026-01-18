@@ -1,0 +1,26 @@
+id: "cultural_intel_001"
+name: "German Tech Localization"
+description: "Tests the models ability to localize technical UI terms correctly (keeping industry standards English, translating standard UI verbs)"
+tier: 1
+tags: 
+  - "translation"
+  - "tech"
+  - "german"
+input_text: |
+  Please localize the following UI terms for a developer tool into German.
+  Context: A git-based collaboration tool.
+  
+  Terms to translate:
+  1. Pull Request
+  2. Merge Request
+  3. Cancel
+  4. Submit
+  5. Repository
+  
+  Output format: A simple list "English: German".
+expected_output: |
+  Pull Request: Pull Request
+  Merge Request: Merge Request (or Merge-Request)
+  Cancel: Abbrechen
+  Submit: Absenden / Bestätigen
+  Repository: Repository

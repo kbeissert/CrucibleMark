@@ -1,0 +1,18 @@
+id: "cultural_intel_003"
+name: "Berlin Agency Vibe"
+description: "Tests the ability to adapt tone to a specific cultural persona (Berlin Agency, Hipster, 'Du'-Culture)"
+tier: 2
+tags: 
+  - "tone"
+  - "creative"
+  - "german"
+input_text: |
+  Rewrite the following formal corporate text for a hip Berlin digital design agency.
+  Tone: Relaxed, "Du"-form, creative, english loanwords allowed ("Denglisch").
+  
+  Original Text:
+  "We are pleased to announce the maximization of our synergy potentials. Innovative solutions are central to our corporate philosophy. We cordially invite esteemed clients to inspect our portfolio."
+  
+  Task: Make it sound like a cool creative agency introduction.
+expected_output: |
+  Target vibe: "Wir freuen uns, euch unsere neuen Vibes zu zeigen. Innovation ist unser Ding..."
