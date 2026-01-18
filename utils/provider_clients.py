@@ -229,3 +229,46 @@ class MistralClient(BaseProviderClient):
 
             'open-mistral-7b'
         ]
+
+
+class OpenAIClient(BaseProviderClient):
+    """OpenAI Provider Client"""
+
+    def __init__(self, config: dict[str, Any]):
+        super().__init__(config)
+        self._client = None
+
+    @property
+    def client(self):
+        """Lazy-loaded OpenAI Client"""
+        if self._client is None:
+            from openai import OpenAI
+            api_key = os.environ.get('OPENAI_API_KEY')
+            if not api_key:
+                raise ValueError("OPENAI_API_KEY environment variable not set")
+            self._client = OpenAI(api_key=api_key)
+        return self._client
+
+    def query(self, model: str, prompt: str, temperature: float) -> str:
+        """Query OpenAI API"""
+        try:
+            response = self.client.chat.completions.create(
+                model=model,
+                messages=[{"role": "user", "content": prompt}],
+                temperature=temperature
+            )
+            return response.choices[0].message.content
+        except Exception as e:
+            logger.error("OpenAI query failed: %s", e)
+            raise
+
+    def get_available_models(self) -> list[str]:
+        """Listet verfügbare OpenAI-Modelle"""
+        return [
+            'gpt-4o',
+            'gpt-4o-mini',
+            'gpt-4-turbo',
+            'gpt-3.5-turbo',
+            'o1-mini',
+            'o1-preview'
+        ]

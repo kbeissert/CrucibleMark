@@ -12,6 +12,10 @@ import logging
 from pathlib import Path
 from typing import Any
 import yaml
+from dotenv import load_dotenv
+
+# Load environment variables from .env file if present
+load_dotenv()
 
 # Configure logging
 logger = logging.getLogger(__name__)

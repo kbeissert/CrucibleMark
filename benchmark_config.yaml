@@ -101,8 +101,8 @@ output:
 
 golden_standard:
   provider: "mistral"  # Referenz zu providers.commercial.mistral
-  model: "mistral-large-latest"  # Welches Modell für Referenz-Benchmark
-  description: "Mistral Large als stabile, hochwertige Referenz für Benchmark Tests"
+  model: "mistral-medium-latest"  # Welches Modell für Referenz-Benchmark
+  description: "Mistral Medium als schnelle, leistungsstarke Referenz für Benchmark Tests"
 
 # Provider Configuration
 # ----------------------
@@ -144,12 +144,16 @@ providers:
       enabled: true
       env_var: "OPENAI_API_KEY"
       models:
-        - id: "gpt-4-turbo"
-          name: "GPT-4 Turbo"
-          description: "Schnell & Leistungsstark"
         - id: "gpt-4o"
           name: "GPT-4o"
-          description: "Multimodal"
+          description: "Aktuelles Flaggschiff (Omni)"
+        - id: "gpt-4o-mini"
+          name: "GPT-4o Mini"
+          description: "Sehr schnell & kosteneffizient"
+        # Hinweis: o1-Modelle erfordern OpenAI Tier 1 (mind. $5 Guthaben), sonst Fehler 404 (Not Found)
+        - id: "o1-mini"
+          name: "o1 Mini"
+          description: "Neues Reasoning-Modell (Deep Thinking)"
   
   local:
     ollama:
