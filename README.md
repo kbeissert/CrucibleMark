@@ -81,6 +81,8 @@ make benchmark
 ```
 
 Weitere Befehle:
+*   `make benchmark-auto` - **Overnight Mode**: Führt alle Module auf allen lokalen und kommerziellen Modellen vollautomatisch aus.
+*   `make list-models` - Listet alle verfügbaren Modelle (Lokal & API) und prüft die Verbindung ("Ping Test") sowie die API-Keys.
 *   `make leaderboard` - Generiert eine Bestenliste aus den Ergebnissen.
 *   `make validate` - Prüft die Integrität aller Test-Assets.
 

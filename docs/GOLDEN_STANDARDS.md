@@ -14,8 +14,8 @@ In [`benchmark_config.yaml`](../benchmark_config.yaml) wird der Golden Standard 
 # 1. Golden Standard Definition
 golden_standard:
   provider: "mistral"              # Referenz auf providers.commercial.mistral
-  model: "mistral-large-latest"    # Spezifisches Modell
-  description: "Mistral Large als stabile Referenz"
+  model: "mistral-medium-latest"   # Spezifisches Modell
+  description: "Mistral Medium als schnelle, leistungsstarke Referenz"
 
 # 2. Provider Konfiguration
 providers:
@@ -28,7 +28,22 @@ providers:
       models:
         - id: "mistral-large-latest"
           name: "Mistral Large (123B)"
+        - id: "mistral-medium-latest"
+          name: "Mistral Medium"
     
+    openai:
+      name: "OpenAI"
+      api_type: "openai"
+      enabled: true
+      env_var: "OPENAI_API_KEY"
+      models:
+        - id: "gpt-4o"
+          name: "GPT-4o"
+        - id: "gpt-4o-mini"
+          name: "GPT-4o Mini"
+        - id: "o1-mini"
+          name: "o1 Mini (Reasoning)"
+
     anthropic:
       name: "Anthropic"
       api_type: "anthropic"
