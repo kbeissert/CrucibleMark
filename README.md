@@ -5,7 +5,15 @@
 [![Ollama](https://img.shields.io/badge/Ollama-Compatible-green.svg)](https://ollama.ai)
 [![License](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-> **Modulares Benchmarking-Framework** zum Testen und Vergleichen von lokalen und kommerziellen LLMs mit gestaffelter Schwierigkeit.
+> **"The Product Engineer's Compass"** – Ein spezielles Benchmarking-Framework für alle, die digitale Produkte nicht nur coden, sondern *erschaffen*.
+
+CrucibleMark ist kein generischer Benchmark wie MMLU oder HumanEval. Er ist ein **Spezialwerkzeug für "Technical Creators"**:  
+Die Schnittmenge aus **Product Engineers**, **UX Writern** und **System Architects**, die sicherstellen müssen, dass KI nicht nur "funktioniert", sondern den richtigen Ton trifft, sauberen Code liefert und logisch stabil bleibt.
+
+Von **Code Quality & Accessibility** über **UX Writing & Tone of Voice** bis zu **Complex Reasoning**:  
+Dieses Framework ist der "TÜV für digitale Produktentwicklung" – flexibel, modular und erweiterbar wie ein Lego-System für KI-Tests. Jeder Use-Case kann durch eigene Module adaptiert werden.
+
+---
 
 ## 📖 Einstieg & Überblick
 

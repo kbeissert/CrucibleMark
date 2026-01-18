@@ -302,7 +302,7 @@ def print_leaderboard_table(leaderboard: pd.DataFrame) -> None:
         "⚖️ Standard"
     ]
     display_fields = [
-        'Rank', 'Model Name', 'Total Score', 'Avg Time (s)',
+        'Rank', 'Recommendation', 'Model Name', 'Total Score', 'Avg Time (s)',
         'Routine Score', 'Reasoning Score'
     ]
 
@@ -348,7 +348,7 @@ def main(print_table: bool = True) -> None:
     # Rename model to Model Name for display
     leaderboard = leaderboard.rename(columns={'model': 'Model Name'})
 
-    cols = ['Rank', 'Model Name', 'Total Score', 'Avg Time (s)',
+    cols = ['Rank', 'Recommendation', 'Model Name', 'Total Score', 'Avg Time (s)',
             'Badge', 'Routine Score', 'Reasoning Score', 'Type']
     leaderboard = leaderboard.rename(columns={'Overall Score': 'Total Score'})
 
@@ -363,7 +363,7 @@ def main(print_table: bool = True) -> None:
         if c in leaderboard.columns:
             final_cols.append(c)
     # Extra Columns
-    for c in ['Tests Run', 'Recommendation']:
+    for c in ['Tests Run']:
         if c in leaderboard.columns:
             final_cols.append(c)
 

@@ -12,7 +12,9 @@ help:
 	@echo ""
 	@echo "=== Benchmarking (Neue modulare Struktur) ==="
 	@echo "  make benchmark            Interaktiver Benchmark (Wizard)"
-	@echo "  make benchmark-auto       Automatisierter Run (MODEL=name [MODULE=name])"
+	@echo "  make list-models          List available Local & Commercial models (with Connectivity Check)"
+	@echo "  make benchmark-auto       🌙 Overnight Mode: ALLE Module, ALLE Modelle"
+	@echo "  make benchmark-single     Einzelnes Modell (MODEL=name [MODULE=name])"
 	@echo "  make leaderboard          Generiere Leaderboard-CSV aus Ergebnissen"
 	@echo ""
 	@echo "=== Golden Standards ==="
@@ -45,14 +47,19 @@ benchmark:
 	@echo "🚀 Starte interaktiven Benchmark..."
 	$(PYTHON) run_benchmark.py
 
-benchmark-auto:
+benchmark-single:
 	@if [ -z "$(MODEL)" ]; then \
 		echo "❌ Error: MODEL variable not set"; \
-		echo "Usage: make benchmark-auto MODEL=qwen2.5:14b [MODULE=code_quality]"; \
+		echo "Usage: make benchmark-single MODEL=qwen2.5:14b [MODULE=code_quality]"; \
 		exit 1; \
 	fi
 	@echo "🤖 Starte automatisierten Benchmark mit Modell: $(MODEL)..."
 	$(PYTHON) run_benchmark.py --model $(MODEL) $(if $(MODULE),--module $(MODULE))
+
+benchmark-auto:
+	@echo "🌙 Starte Full Auto Benchmark (Overnight Mode)..."
+	@echo "   Führt ALLE Module auf ALLEN Modellen aus."
+	$(PYTHON) scripts/benchmark_auto.py
 
 leaderboard:
 	@echo "📊 Generiere Leaderboard..."
@@ -116,9 +123,6 @@ clean-runs-force:
 		echo "⚠️  cleanup_runs.py nicht gefunden"; \
 	fi
 
-list-models:
-	$(PYTHON) scripts/list_models.py
-
 list-modules:
 	@echo "📋 Available Modules (Ordered by Config):"
 	@if [ -f "scripts/list_modules.py" ]; then \
@@ -130,3 +134,6 @@ list-modules:
 test: validate
 	@echo "🧪 Running Unit Tests..."
 	$(PYTHON) -m pytest benchmark_modules/
+
+list-models:
+	@$(PYTHON) scripts/list_models.py

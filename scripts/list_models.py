@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 Listet verfügbare Modelle (Lokal & Kommerziell) auf.
-Prüft Konfiguration und API-Keys.
+Prüft Konfiguration und API-Keys durch echten Ping.
 """
 
 import os
@@ -9,12 +9,24 @@ import sys
 import yaml
 import subprocess
 import shutil
+import logging
 from pathlib import Path
 from typing import Any
+from dotenv import load_dotenv
+
+# Load env variables early
+load_dotenv()
 
 # Add project root to path to import utils
 sys.path.append(str(Path(__file__).parent.parent))
 from utils.model_utils import is_model_suitable_for_benchmark
+from utils.provider_clients import AnthropicClient, MistralClient, OpenAIClient
+
+# Suppress logging from provider clients and libraries to avoid duplicate/ugly error messages
+logging.getLogger("utils.provider_clients").setLevel(logging.CRITICAL)
+logging.getLogger("httpx").setLevel(logging.CRITICAL)
+logging.getLogger("httpcore").setLevel(logging.CRITICAL)
+logging.getLogger("openai").setLevel(logging.CRITICAL)
 
 # Farben für Terminal-Output
 class Colors:
@@ -92,65 +104,95 @@ def check_ollama():
             print(f"{Colors.FAIL}Ollama Executable nicht gefunden.{Colors.ENDC}")
 
 def check_commercial(config: dict[str, Any]):
-    """Prüft kommerzielle Provider und deren Status."""
+    """Prüft kommerzielle Provider und deren Status durch echten API-Ping."""
     print(f"\n{Colors.HEADER}=== Kommerzielle Modelle (API) ==={Colors.ENDC}")
 
     providers = config.get("providers", {}).get("commercial", {})
 
     if not providers:
-        print("Keine kommerziellen Provider konfiguriert.")
+        print(f"{Colors.WARNING}Keine kommerziellen Provider konfiguriert.{Colors.ENDC}")
         return
 
-    # .env laden (falls python-dotenv installiert wäre, aber wir machen es manuell oder verlassen uns auf Environment)
-    # Da wir im Makefile keine .env laden, prüfen wir os.environ.
-    # Hinweis: User muss .env gesourced haben oder Variablen exportiert haben.
-    # Alternativ: Wir versuchen .env einfach zu lesen für den Check.
-    env_vars = os.environ.copy()
-    env_path = Path(".env")
-    if env_path.exists():
-        with open(env_path) as f:
-            for line in f:
-                line = line.strip()
-                if line and not line.startswith("#") and "=" in line:
-                    key, value = line.split("=", 1)
-                    env_vars[key] = value.strip('"\'')
+    # Header
+    print(f"{Colors.BOLD}{'PROVIDER':<15} {'MODEL':<30} {'STATUS':<6} {'MSG'}{Colors.ENDC}")
+    print("-" * 80)
 
-    for provider_key, provider_data in providers.items():
-        name = provider_data.get("name", provider_key)
-        enabled = provider_data.get("enabled", False)
-        env_var_name = provider_data.get("env_var", "")
+    for prov_key, prov_data in providers.items():
+        if not prov_data.get("enabled", False):
+            continue
 
-        # Status ermitteln
-        api_key = env_vars.get(env_var_name)
-        has_key = api_key is not None and len(api_key) > 0
+        prov_name = prov_data.get('name', prov_key)
+        env_var = prov_data.get('env_var', '')
+        
+        # Check API Key presence
+        api_key = os.getenv(env_var) if env_var else None
+        if not api_key and env_var == "OPENAI_API_KEY":
+             api_key = os.getenv("OPENAI_API_KEY")
 
-        status_symbol = ""
-        status_text = ""
-        color = ""
+        if not api_key:
+             print(f"{prov_name:<15} {'(All Models)':<30} {Colors.FAIL}MISS{Colors.ENDC}   Missing Env Var: {env_var}")
+             continue
 
-        if not enabled:
-            status_symbol = "⚪"
-            status_text = "Deaktiviert (Config)"
-            color = Colors.ENDC # Grau/Standard
-        elif not has_key:
-            status_symbol = "⚠️ "
-            status_text = f"Aktiviert, aber {env_var_name} fehlt"
-            color = Colors.WARNING
-        else:
-            status_symbol = "🟢"
-            status_text = "Aktiv & Bereit"
-            color = Colors.GREEN
+        # Instantiate Client
+        client = None
+        try:
+            if prov_key == 'mistral':
+                client = MistralClient(config)
+            elif prov_key == 'anthropic':
+                client = AnthropicClient(config)
+            elif prov_key == 'openai':
+                client = OpenAIClient(config)
+        except Exception as e:
+            print(f"{prov_name:<15} {'(Client Init)':<30} {Colors.FAIL}ERR {Colors.ENDC}   {str(e)}")
+            continue
 
-        print(f"{color}{status_symbol} {Colors.BOLD}{name}{Colors.ENDC} ({status_text})")
+        if not client:
+             continue
 
-        # Modelle listen wenn enabled (auch wenn Key fehlt, damit man sieht was möglich wäre)
-        if enabled:
-            models = provider_data.get("models", [])
-            for model in models:
-                model_id = model.get("id")
-                model_name = model.get("name")
-                print(f"   - {model_id:<30} {Colors.BLUE}# {model_name}{Colors.ENDC}")
-        print("")
+        # Test each model
+        models = prov_data.get('models', [])
+        for model in models:
+            model_id = model['id']
+            detailed_msg = None
+            
+            try:
+                # Real Ping Test (Minimal Token usage)
+                # Using a very simple prompt to check connectivity and auth
+                _ = client.query(model_id, "Hi", temperature=0.1)
+                
+                status = f"{Colors.GREEN}OK  {Colors.ENDC}"
+                msg = "Online & Verified"
+            except Exception as e:
+                err_str = str(e).lower()
+                
+                if "insufficient_quota" in err_str or "429" in err_str:
+                     status = f"{Colors.FAIL}QUOTA{Colors.ENDC}"
+                     msg = "Insufficient Quota"
+                     detailed_msg = "↳ Dein Guthaben ist aufgebraucht (Fehler 429). Bitte lade Credits beim Provider nach."
+                elif "401" in err_str or "unauthorized" in err_str or "invalid api key" in err_str:
+                     status = f"{Colors.FAIL}AUTH{Colors.ENDC}"
+                     msg = "Invalid API Key"
+                     detailed_msg = "↳ Der API-Key wird abgelehnt (Fehler 401). Bitte prüfe die .env Datei."
+                elif "404" in err_str or "not found" in err_str or "does not exist" in err_str:
+                     status = f"{Colors.FAIL}404 {Colors.ENDC}"
+                     msg = "No Access / Not Found"
+                     detailed_msg = "↳ Modell nicht gefunden oder kein Zugriff (Fehler 404). Ggf. für deinen Account-Tier gesperrt."
+                elif "rate limit" in err_str:
+                     status = f"{Colors.FAIL}RATE{Colors.ENDC}"
+                     msg = "Rate Limit Exceeded"
+                     detailed_msg = "↳ Zu viele Anfragen in kurzer Zeit. Bitte warte einen Moment."
+                else:
+                     status = f"{Colors.FAIL}ERR {Colors.ENDC}"
+                     msg = "Connection Error"
+                     # Clean up newlines for display
+                     clean_err = str(e).replace('\n', ' ')
+                     detailed_msg = f"↳ Unbekannter Fehler: {clean_err[:120]}..."
+
+            print(f"{prov_name:<15} {model_id:<30} {status}   {msg}")
+            
+            if detailed_msg:
+                # Print indented help message
+                print(f"                                               {Colors.WARNING}{detailed_msg}{Colors.ENDC}")
 
 def main():
     config = load_config()
