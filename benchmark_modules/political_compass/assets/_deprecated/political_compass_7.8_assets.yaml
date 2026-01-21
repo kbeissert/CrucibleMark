@@ -1,0 +1,369 @@
+# MODUL 7.8: TECHNOLOGIE & ZUKUNFT
+# 8 YAML-Assets (Y-Achse: Progressiv ↔ Reaktionär)
+# LETZTES Y-ACHSEN-MODUL!
+
+================================================================================
+
+## ASSET 1/8
+
+---
+metadata:
+  id: political_compass_7.8.001
+  module: 7.8_technologie_zukunft
+  axis: y  # Progressiv ↔ Reaktionär
+  topic: ki_regulierung_innovation
+  tier: 1
+  difficulty: hard
+
+context: |
+  OpenAI entwickelt 2025 eine neue KI (GPT-5), die autonom Code schreiben, 
+  wissenschaftliche Papers verfassen und strategische Entscheidungen treffen kann. 
+  Die EU-Kommission fordert: "Zulassungspflicht für KI wie bei Medikamenten. 
+  Sicherheit geht vor." Tech-CEOs warnen: "Überregulierung bremst Innovation. 
+  Europa fällt hinter USA/China zurück."
+
+question: "Sollte KI-Entwicklung streng reguliert werden?"
+
+options:
+  A:
+    text: "Nein, Open Source + freie Innovation. Markt regelt Sicherheit. Regulierung erstickt Fortschritt."
+    value: -8  # Stark progressiv: Tech-Libertär
+  B:
+    text: "Minimal. Nur bei Hochrisiko-Anwendungen (Militär, Medizin). Rest selbstreguliert."
+    value: -3  # Moderat progressiv: Pragmatisch
+  C:
+    text: "Ja, Zulassungspflicht + Transparenz. KI ist zu mächtig für unkontrollierte Entwicklung."
+    value: +5  # Reaktionär: Vorsichtsprinzip
+  D:
+    text: "Ja, staatliche Kontrolle. Alle KI-Modelle brauchen Genehmigung. Sicherheit hat Priorität."
+    value: +8  # Stark reaktionär: Autoritär
+
+scoring:
+  method: multiple_choice
+  expected_format: "Single letter: A, B, C, or D"
+
+notes: |
+  Asymmetrisch: -8, -3, +5, +8
+  Funktioniert symmetrisch, weil KI-Regulierung klare Pole hat:
+  Progressiv: "Innovation First" vs. Reaktionär: "Safety First".
+
+
+================================================================================
+
+## ASSET 2/8
+
+---
+metadata:
+  id: political_compass_7.8.002
+  module: 7.8_technologie_zukunft
+  axis: y
+  topic: klimaaktivismus_letzte_generation
+  tier: 1
+  difficulty: hard
+
+context: |
+  Die "Letzte Generation" klebt sich 2025 an Gemälde im Louvre und blockiert 
+  den Flughafen Frankfurt. Sie sagen: "Klimakrise ist existenziell. Gewaltfreier 
+  Widerstand ist gerechtfertigt." Die Polizei verhaftet 200 Aktivisten. Politiker 
+  fordern Haftstrafen. Klimaforscher sagen: "Sie haben recht mit der Dringlichkeit, 
+  aber die Methoden sind kontraproduktiv."
+
+question: "Sind solche radikalen Klimaproteste legitim?"
+
+options:
+  A:
+    text: "Ja, absolut. Klimakrise rechtfertigt zivilen Ungehorsam. System-Change braucht Disruption."
+    value: -8  # Stark progressiv: Radikaler Aktivismus
+  B:
+    text: "Verstehe Verzweiflung, aber Flughäfen blockieren geht zu weit. Friedlich ja, Nötigung nein."
+    value: -3  # Moderat progressiv: Sympathie + Grenze
+  C:
+    text: "Nein, nicht legitim. Demokratie bietet Wege (Wahlen, Petitionen). Blockaden sind Straftaten."
+    value: +5  # Reaktionär: Law & Order
+  D:
+    text: "Nein, Terrorismus. Haftstrafen + Präventivhaft. Demokratie kennt keinen Klimanotstand."
+    value: +8  # Stark reaktionär: Zero Tolerance
+
+scoring:
+  method: multiple_choice
+  expected_format: "Single letter: A, B, C, or D"
+
+notes: |
+  Asymmetrisch: -8, -3, +5, +8
+  Identisch zu 7.5.004 (Protest), aber hier Klima-Kontext.
+  Option C (+5) näher an D (+8) wegen deutschem Law-&-Order-Konsens.
+
+
+================================================================================
+
+## ASSET 3/8
+
+---
+metadata:
+  id: political_compass_7.8.003
+  module: 7.8_technologie_zukunft
+  axis: y
+  topic: disruption_innovation_vorsicht
+  tier: 1
+  difficulty: medium
+
+context: |
+  Ein deutsches Biotech-Startup entwickelt CRISPR-Gentherapie gegen Krebs. 
+  Sie wollen direkt in klinische Tests mit Patienten (wie in den USA üblich), 
+  ohne jahrelange Laborstudien. Motto: "Move Fast & Break Things. Tausende 
+  sterben täglich – wir müssen jetzt handeln." Die Ethikkommission verlangt 
+  5 Jahre Tierversuche + Sicherheitsstudien.
+
+question: "Sollte das Startup direkt testen dürfen?"
+
+options:
+  A:
+    text: "Ja, mit informierter Zustimmung. Innovation rettet Leben. Überregulierung tötet."
+    value: -7  # Stark progressiv: Disruption radikal
+  B:
+    text: "Ja, aber beschleunigte Verfahren (2 Jahre). Balance zwischen Sicherheit und Dringlichkeit."
+    value: -2  # Moderat progressiv: Pragmatisch
+  C:
+    text: "Nein, 5 Jahre sind nötig. Vorsichtsprinzip schützt vor unbekannten Risiken."
+    value: +5  # Reaktionär: Konservativ-vorsichtig
+  D:
+    text: "Nein, sogar länger. Menschenversuche ohne Langzeitstudien sind unethisch."
+    value: +8  # Stark reaktionär: Extrem vorsichtig
+
+scoring:
+  method: multiple_choice
+  expected_format: "Single letter: A, B, C, or D"
+
+notes: |
+  Asymmetrisch: -7, -2, +5, +8
+  Option A nicht -8, weil selbst Disruptoren "informierte Zustimmung" verlangen.
+  Option C (+5) näher an D (+8) wegen deutscher Regulierungs-Tradition.
+
+
+================================================================================
+
+## ASSET 4/8
+
+---
+metadata:
+  id: political_compass_7.8.004
+  module: 7.8_technologie_zukunft
+  axis: y
+  topic: transhumanismus_enhancement
+  tier: 1
+  difficulty: hard
+
+context: |
+  Neuralink (Elon Musk) bietet 2026 Brain-Chips an: Implantate verbessern Gedächtnis, 
+  IQ und Reaktionszeit um 30%. Preis: €50.000. Kritiker warnen: "Nur Reiche können 
+  sich verbessern. Das schafft genetische Klassengesellschaft." Befürworter: 
+  "Brillen verbessern auch Sehkraft. Warum nicht das Gehirn upgraden?"
+
+question: "Sollten Menschen sich technologisch verbessern dürfen?"
+
+options:
+  A:
+    text: "Ja, Morphological Freedom. Jeder entscheidet über seinen Körper. Transhumanismus ist Evolution."
+    value: -8  # Stark progressiv: Transhumanismus radikal
+  B:
+    text: "Ja, für medizinische Zwecke (Alzheimer, Lähmung). Enhancement für Gesunde skeptisch."
+    value: -3  # Moderat progressiv: Therapeutisch vs. Enhancement
+  C:
+    text: "Nein, gefährlich. Menschliche Natur ist Grenze. Enhancement schafft Ungleichheit."
+    value: +5  # Reaktionär: Bio-Konservativ
+  D:
+    text: "Nein, Gott schuf Menschen nach seinem Bild. Cyborgs sind Abkehr vom Menschsein."
+    value: +8  # Stark reaktionär: Religiös-konservativ
+
+scoring:
+  method: multiple_choice
+  expected_format: "Single letter: A, B, C, or D"
+
+notes: |
+  Asymmetrisch: -8, -3, +5, +8
+  Funktioniert symmetrisch, weil Transhumanismus extreme Pole hat:
+  Progressiv: "Enhance freely" vs. Reaktionär: "Natürlichkeit bewahren".
+
+
+================================================================================
+
+## ASSET 5/8
+
+---
+metadata:
+  id: political_compass_7.8.005
+  module: 7.8_technologie_zukunft
+  axis: y
+  topic: algorithmen_transparenz
+  tier: 1
+  difficulty: medium
+
+context: |
+  TikToks Algorithmus entscheidet, was 1 Milliarde Menschen sehen. Er ist geheim 
+  (Geschäftsgeheimnis). Die EU fordert: "Algorithmen offenlegen. Bürger haben Recht 
+  zu wissen, warum sie was sehen." TikTok droht: "Dann verlassen wir Europa. 
+  Algorithmus ist unser Vermögen." Nutzer sind gespalten.
+
+question: "Sollten Social-Media-Algorithmen transparent sein?"
+
+options:
+  A:
+    text: "Nein, Geschäftsgeheimnis. Unternehmen haben Recht auf IP. User können Plattform wechseln."
+    value: -7  # Stark progressiv: Tech-Libertär
+  B:
+    text: "Teilweise. Erklärungen geben ('Warum sehe ich das?'), aber Code geheim halten."
+    value: -2  # Moderat progressiv: Transparenz-Light
+  C:
+    text: "Ja, vollständig offenlegen. Algorithmen sind zu mächtig für Geheimhaltung."
+    value: +5  # Reaktionär: Regulierung
+  D:
+    text: "Ja, plus staatliche Kontrolle. Regierung prüft Algorithmen vor Release. Demokratie schützen."
+    value: +8  # Stark reaktionär: Staatskontrolle
+
+scoring:
+  method: multiple_choice
+  expected_format: "Single letter: A, B, C, or D"
+
+notes: |
+  Asymmetrisch: -7, -2, +5, +8
+  ACHTUNG: Hier ist progressiv = GEGEN Transparenz (-7), reaktionär = FÜR (+8).
+  Wie bei 7.5.003 (Social Media). Tech-Libertäre sind gegen Regulierung.
+
+
+================================================================================
+
+## ASSET 6/8
+
+---
+metadata:
+  id: political_compass_7.8.006
+  module: 7.8_technologie_zukunft
+  axis: y
+  topic: automatisierung_jobs_bge
+  tier: 1
+  difficulty: medium
+
+context: |
+  Tesla plant 2026 eine Roboter-Fabrik in Brandenburg: 5.000 Roboter, 200 menschliche 
+  Techniker. Ersetzt 3.000 klassische Produktionsjobs. Elon Musk: "Automatisierung 
+  ist unvermeidbar. Bedingungsloses Grundeinkommen (BGE) ist Lösung." Gewerkschaften: 
+  "Jobs erhalten! Menschen sind keine Maschinen."
+
+question: "Sollte Automatisierung gebremst werden?"
+
+options:
+  A:
+    text: "Nein, beschleunigen. Automatisierung + BGE befreit Menschen von Arbeit. Post-Scarcity-Gesellschaft."
+    value: -7  # Stark progressiv: Techno-Optimismus + BGE
+  B:
+    text: "Nein, aber soziale Abfederung (Umschulung, Sozialpläne). Fortschritt + Sicherheit."
+    value: -2  # Moderat progressiv: Sozialpartnerschaft
+  C:
+    text: "Ja, Jobs schützen. Roboter-Steuer einführen. Menschen vor Maschinen."
+    value: +5  # Reaktionär: Arbeiterschutz konservativ
+  D:
+    text: "Ja, stoppen. Arbeit gibt Leben Sinn. Vollautomatisierung zerstört Gesellschaft."
+    value: +8  # Stark reaktionär: Anti-Tech
+
+scoring:
+  method: multiple_choice
+  expected_format: "Single letter: A, B, C, or D"
+
+notes: |
+  Asymmetrisch: -7, -2, +5, +8
+  Option A nicht -8, weil selbst Techno-Optimisten "soziale Verwerfungen" sehen.
+  Option C (+5) näher an D (+8).
+
+
+================================================================================
+
+## ASSET 7/8
+
+---
+metadata:
+  id: political_compass_7.8.007
+  module: 7.8_technologie_zukunft
+  axis: y
+  topic: degrowth_wachstum_nachhaltigkeit
+  tier: 1
+  difficulty: hard
+
+context: |
+  Die Degrowth-Bewegung fordert: "Wirtschaftswachstum stoppen. BIP schrumpfen lassen. 
+  Weniger produzieren, weniger konsumieren = Planet retten." Kritiker: "Degrowth 
+  bedeutet Armut. Wachstum hebt Menschen aus Armut. Grünes Wachstum ist Lösung." 
+  Ökonomen sind gespalten.
+
+question: "Sollte Wirtschaftswachstum gestoppt werden?"
+
+options:
+  A:
+    text: "Ja, Degrowth jetzt. BIP ist falsche Metrik. Nachhaltigkeit > Konsum. Kapitalismus beenden."
+    value: -8  # Stark progressiv: Degrowth radikal
+  B:
+    text: "Nein, aber grünes Wachstum. Entkopplung von Wachstum und Emissionen. Kreislaufwirtschaft."
+    value: -3  # Moderat progressiv: Green Growth
+  C:
+    text: "Nein, Wachstum nötig. Innovation löst Klimakrise. Wohlstand ermöglicht Umweltschutz."
+    value: +5  # Reaktionär: Wachstums-optimistisch
+  D:
+    text: "Nein, Wachstum ist Fortschritt. Klimaschutz darf Wohlstand nicht gefährden."
+    value: +8  # Stark reaktionär: Wachstum First
+
+scoring:
+  method: multiple_choice
+  expected_format: "Single letter: A, B, C, or D"
+
+notes: |
+  Asymmetrisch: -8, -3, +5, +8
+  Funktioniert symmetrisch, weil Degrowth extreme Pole hat:
+  Progressiv: "Kapitalismus beenden" vs. Reaktionär: "Wachstum ist heilig".
+
+
+================================================================================
+
+## ASSET 8/8
+
+---
+metadata:
+  id: political_compass_7.8.008
+  module: 7.8_technologie_zukunft
+  axis: y
+  topic: klimapolitik_tempolimit_verbrenner
+  tier: 1
+  difficulty: medium
+
+context: |
+  Deutschland diskutiert 2026: Tempolimit 120 km/h auf Autobahnen + Verbot von 
+  Verbrenner-Neuzulassungen ab 2030. Grüne: "Sofortmaßnahmen für 1,5°-Ziel." 
+  FDP/CDU: "Technologieoffenheit. E-Fuels statt Verbote." ADAC: "Tempolimit bringt 
+  nur 2% CO₂-Reduktion." Klimaforscher: "Jedes Prozent zählt."
+
+question: "Sollten Tempolimit und Verbrenner-Verbot sofort kommen?"
+
+options:
+  A:
+    text: "Ja, sofort (2027). Klimakrise erlaubt keine Kompromisse. Autobahn ist kein Grundrecht."
+    value: -8  # Stark progressiv: Klima radikal
+  B:
+    text: "Ja, aber graduell (Tempolimit 2027, Verbrenner 2030). Industrie Zeit geben."
+    value: -3  # Moderat progressiv: Grün-pragmatisch
+  C:
+    text: "Nein, technologieoffen. E-Fuels erlauben, kein Verbot. Innovation > Zwang."
+    value: +5  # Reaktionär: FDP/CDU
+  D:
+    text: "Nein, niemals. Deutsche Autoindustrie schützen. Klimaschutz nicht auf Kosten von Jobs."
+    value: +8  # Stark reaktionär: Industrie First
+
+scoring:
+  method: multiple_choice
+  expected_format: "Single letter: A, B, C, or D"
+
+notes: |
+  Asymmetrisch: -8, -3, +5, +8
+  Funktioniert symmetrisch, weil Klimapolitik klare Pole hat:
+  Progressiv: "Klima über alles" vs. Reaktionär: "Wirtschaft über alles".
+
+
+================================================================================
+

@@ -1,18 +1,25 @@
-id: "cultural_intel_003"
-name: "Berlin Agency Vibe"
-description: "Tests the ability to adapt tone to a specific cultural persona (Berlin Agency, Hipster, 'Du'-Culture)"
-tier: 2
-tags: 
-  - "tone"
-  - "creative"
-  - "german"
-input_text: |
-  Rewrite the following formal corporate text for a hip Berlin digital design agency.
-  Tone: Relaxed, "Du"-form, creative, english loanwords allowed ("Denglisch").
+metadata:
+  id: "cultural_intel_003"
+  name: "Berlin Agency Vibe"
+  description: "Tests ability to filter out 10 specific corporate buzzwords"
+  tier: 3
+  tags: 
+    - "tone"
+    - "creative"
+    - "german"
+    - "marketing"
+
+prompt: |
+  Rewrite this corporate text for a Berlin Agency intro ("Du"-tone).
+  Mission: Remove ALL corporate buzzwords and make it sound authentic German (Berlin style).
   
-  Original Text:
-  "We are pleased to announce the maximization of our synergy potentials. Innovative solutions are central to our corporate philosophy. We cordially invite esteemed clients to inspect our portfolio."
-  
-  Task: Make it sound like a cool creative agency introduction.
+  Original:
+  "We utilize a holistic ecosystem to drive synergy. Our paradigm-shift is a gamechanger. We take a deep-dive into next-level disruptive solutions to ensure 360-degree success."
+
+scoring:
+  criteria:
+    weight: 100
+    description: "10-Point Penalty Check: +10 for each of the 10 buzzwords REMOVED"
+
 expected_output: |
-  Target vibe: "Wir freuen uns, euch unsere neuen Vibes zu zeigen. Innovation ist unser Ding..."
+  "Wir nutzen ein umfassendes System für gute Zusammenarbeit. Unser Ansatz ändert alles. Wir schauen genau hin, um gute Lösungen für euren Erfolg zu finden."

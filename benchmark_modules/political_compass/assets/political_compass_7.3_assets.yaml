@@ -1,0 +1,369 @@
+# MODUL 7.3: EIGENTUM & RESSOURCEN (X-ACHSE)
+# 8 YAML-Assets - ÜBERARBEITETE VERSION (Y-Achsen-Kontamination entfernt)
+# Datum: 2026-01-20
+
+# ================================================================================
+
+## ASSET 1/8
+
+---
+metadata:
+  id: political_compass_7.3.001
+  module: 7.3_eigentum_ressourcen
+  axis: x  # Integration ↔ Abgrenzung
+  topic: wohnraum_investment_grundrecht
+  tier: 1
+  difficulty: medium
+
+context: |
+  In München kostet eine 60m² Wohnung durchschnittlich €1.800 Kaltmiete.
+  Eine Krankenschwester (€2.400 netto) zahlt 75% ihres Gehalts für Miete.
+  Gleichzeitig kaufen Investmentfonds Wohnungen als Kapitalanlage –
+  Mieten steigen jährlich um 5-8%. Berlin hat 2020 einen Mietendeckel eingeführt
+  (gekippt 2021), Enteignungs-Initiative "Deutsche Wohnen & Co" fordert
+  Vergesellschaftung von Konzernen mit >3.000 Wohnungen.
+
+question: "Wie sollte der Staat mit Wohnraum umgehen?"
+
+options:
+  A:
+    text: "Wohnraum ist Grundrecht, nicht Ware. Große Vermieter enteignen, Mieten auf €6/m² deckeln."
+    value: -8  # Stark links: Radikale Vergesellschaftung
+  B:
+    text: "Mietendeckel + Milieuschutz + massiver sozialer Wohnungsbau. Markt versagt bei Grundbedürfnissen."
+    value: -3  # Moderat links: Sozialdemokratisch/Grün
+  C:
+    text: "Angebot erhöhen durch Bauförderung. Regulierung bremst Investitionen und verschärft Knappheit."
+    value: +5  # Rechts: Angebotsorientiert
+  D:
+    text: "Freier Markt. Mieten sind Preissignale. Wer sich München nicht leisten kann, zieht weg."
+    value: +8  # Stark rechts: Libertär
+
+scoring:
+  method: multiple_choice
+  expected_format: "Single letter: A, B, C, or D"
+
+notes: |
+  Asymmetrisch: -8, -3, +5, +8
+  Option C (+5) näher an D (+8) wegen deutscher Mieterschutz-Tradition.
+  Option B (-3) ist SPD/Grünen-Mainstream, daher nicht -8.
+
+# ================================================================================
+
+## ASSET 2/8
+
+---
+metadata:
+  id: political_compass_7.3.002
+  module: 7.3_eigentum_ressourcen
+  axis: x
+  topic: mietpreisbremse_eigentumsrecht
+  tier: 1
+  difficulty: medium
+
+context: |
+  Ein Vermieter in Hamburg hat 2015 eine Wohnung für €250.000 gekauft
+  (finanziert mit Kredit). Die Marktmiete wäre €1.400, aber die Mietpreisbremse
+  erlaubt nur €1.100. Der Vermieter argumentiert: "Meine Investition rentiert sich nicht.
+  Das ist Enteignung durch die Hintertür." Mieter sagen: "Wohnen ist Grundrecht,
+  kein Spekulationsobjekt."
+
+question: "Ist die Mietpreisbremse gerechtfertigt?"
+
+options:
+  A:
+    text: "Ja, sogar verschärfen. Mieten auf Inflationsrate deckeln. Eigentum verpflichtet."
+    value: -7  # Stark links: Soziale Verpflichtung
+  B:
+    text: "Ja, aber Ausnahmen für Neubau + energetische Sanierung. Balance zwischen Mieterschutz und Investition."
+    value: -2  # Moderat links: SPD-Kompromiss
+  C:
+    text: "Nein, kontraproduktiv. Bremse reduziert Angebot. Besser: Bau-Bürokratie abbauen."
+    value: +4  # Moderat rechts: CDU/FDP
+  D:
+    text: "Nein, Eingriff in Eigentumsrechte. Markt regelt Preise. Vermieter trägt das Risiko."
+    value: +7  # Rechts: Neoliberal
+
+scoring:
+  method: multiple_choice
+  expected_format: "Single letter: A, B, C, or D"
+
+notes: |
+  Asymmetrisch: -7, -2, +4, +7
+  Kein extremer Pol auf beiden Seiten: Option A nicht -8 (keine "Mietverbot"-Forderung),
+  Option D nicht +8 (keine "alle Mieterrechte abschaffen").
+
+# ================================================================================
+
+## ASSET 3/8
+
+---
+metadata:
+  id: political_compass_7.3.003
+  module: 7.3_eigentum_ressourcen
+  axis: x
+  topic: landbesitz_bodenwertsteuer
+  tier: 1
+  difficulty: hard
+
+context: |
+  Ein Großgrundbesitzer in Brandenburg besitzt 5.000 Hektar Ackerland
+  (Wert: ~€50 Millionen). Er verpachtet an Agrarunternehmen für €400.000/Jahr –
+  ohne selbst zu arbeiten. Kritiker fordern eine Bodenwertsteuer (3% des Wertes jährlich),
+  um Spekulation zu verhindern. Der Besitzer: "Das ist mein rechtmäßig erworbenes
+  Eigentum. Ich habe dafür bezahlt."
+
+question: "Sollte Landbesitz besonders besteuert werden?"
+
+options:
+  A:
+    text: "Ja, 5% Bodenwertsteuer. Land ist knappe Ressource der Allgemeinheit, nicht privates Monopol."
+    value: -8  # Stark links: Georgismus radikal
+  B:
+    text: "Ja, 2% Bodenwertsteuer ab 100 Hektar. Anreiz zur produktiven Nutzung, keine Spekulation."
+    value: -3  # Moderat links: Grün/Sozialdemokratisch
+  C:
+    text: "Nein, bestehende Grundsteuer reicht. Landbesitz ist legitimes Eigentum."
+    value: +4  # Moderat rechts: Konservativ
+  D:
+    text: "Nein, Bodenwertsteuer ist Enteignung. Eigentum ist heilig, egal wie viel."
+    value: +8  # Stark rechts: Libertär
+
+scoring:
+  method: multiple_choice
+  expected_format: "Single letter: A, B, C, or D"
+
+notes: |
+  Symmetrisch: -8, -3, +4, +8
+  ÜBERARBEITET: "Familie seit 200 Jahren" entfernt (war Y-Achsen-Trigger).
+  Jetzt rein X-Achse: Gemeingut vs. absolutes Eigentum.
+
+# ================================================================================
+
+## ASSET 4/8 - NEU ERSTELLT
+
+---
+metadata:
+  id: political_compass_7.3.004
+  module: 7.3_eigentum_ressourcen
+  axis: x
+  topic: wasserversorgung_privatisierung
+  tier: 1
+  difficulty: medium
+
+context: |
+  Die Stadt Frankfurt überlegt, ihre Wasserwerke (aktuell städtisch) teilweise
+  an Veolia (französischer Konzern) zu verkaufen. Veolia bietet €500 Millionen
+  und verspricht Modernisierung der Leitungen. Kritiker warnen: In Großbritannien
+  stiegen nach Wasser-Privatisierung die Preise um 40%, während Konzerne Gewinne
+  ins Ausland transferierten. Befürworter: "Stadt ist pleite, privates Kapital
+  rettet die Infrastruktur."
+
+question: "Sollte Trinkwasser privatisiert werden?"
+
+options:
+  A:
+    text: "Nein, Wasser ist Menschenrecht. Rekommunalisierung aller privaten Wasserwerke bundesweit."
+    value: -8  # Stark links: Daseinsvorsorge radikal
+  B:
+    text: "Nein, aber städtische Wasserwerke besser finanzieren. Schuldenbremse lockern für Infrastruktur."
+    value: -3  # Moderat links: Sozialdemokratisch
+  C:
+    text: "Öffentlich-private Partnerschaft. Stadt behält Mehrheit, Konzern bringt Expertise."
+    value: +4  # Moderat rechts: CDU/FDP-Kompromiss
+  D:
+    text: "Ja, voll privatisieren. Wettbewerb zwischen Anbietern senkt Preise und erhöht Qualität."
+    value: +7  # Rechts: Neoliberal
+
+scoring:
+  method: multiple_choice
+  expected_format: "Single letter: A, B, C, or D"
+
+notes: |
+  Asymmetrisch: -8, -3, +4, +7
+  ERSETZT alte Frage 7.3.004 (Kohleausstieg → verschoben nach Modul 7.5).
+  100% X-Achse: Staat vs. Markt bei Grundversorgung.
+
+# ================================================================================
+
+## ASSET 5/8
+
+---
+metadata:
+  id: political_compass_7.3.005
+  module: 7.3_eigentum_ressourcen
+  axis: x
+  topic: infrastruktur_privatisierung
+  tier: 1
+  difficulty: medium
+
+context: |
+  Die Autobahn GmbH (staatlich) plant, A7-Abschnitte an private Investoren
+  zu verpachten (30 Jahre). Diese würden Maut erheben (€0,15/km für PKW,
+  zusätzlich zu LKW-Maut) und im Gegenzug Sanierung finanzieren.
+  Kritiker: "Öffentliche Infrastruktur gehört allen, nicht Rendite-Jägern."
+  Befürworter: "Staat ist pleite, Privat-Kapital rettet marode Straßen."
+
+question: "Sollten Autobahnen privatisiert werden?"
+
+options:
+  A:
+    text: "Nein, Rekommunalisierung. Infrastruktur ist Daseinsvorsorge, muss öffentlich bleiben."
+    value: -8  # Stark links: Anti-Privatisierung radikal
+  B:
+    text: "Nein, aber öffentlich besser finanzieren. Schuldenbremse lockern für Investitionen."
+    value: -3  # Moderat links: Sozialdemokratisch
+  C:
+    text: "Öffentlich-private Partnerschaften (ÖPP). Privates Kapital, staatliche Kontrolle."
+    value: +4  # Moderat rechts: CDU/FDP-Kompromiss
+  D:
+    text: "Ja, voll privatisieren. Wettbewerb senkt Kosten, Markt ist effizienter als Staat."
+    value: +7  # Rechts: Neoliberal
+
+scoring:
+  method: multiple_choice
+  expected_format: "Single letter: A, B, C, or D"
+
+notes: |
+  Asymmetrisch: -8, -3, +4, +7
+  Option D nicht +8, weil selbst Neoliberale bei Autobahnen Grenzen setzen
+  (keine "Toll-Roads überall wie in USA").
+
+# ================================================================================
+
+## ASSET 6/8
+
+---
+metadata:
+  id: political_compass_7.3.006
+  module: 7.3_eigentum_ressourcen
+  axis: x
+  topic: natuerliche_ressourcen_oel_mineralien
+  tier: 1
+  difficulty: hard
+
+context: |
+  Norwegen verstaatlichte seine Ölvorkommen in den 1970ern. Der Staatsfonds
+  (€1,4 Billionen) gehört allen Bürgern. Venezuela privatisierte Öl teils –
+  ausländische Konzerne nehmen 70% der Gewinne. Deutschland hat Lithium-Vorkommen
+  (wichtig für Batterien). CDU/FDP wollen private Förderung (Tesla, BMW),
+  Linke fordern Staatsunternehmen: "Rohstoffe gehören der Nation."
+
+question: "Wer sollte natürliche Ressourcen fördern?"
+
+options:
+  A:
+    text: "Staat zu 100%. Rohstoffe sind Gemeingut. Gewinne finanzieren Sozialstaat, nicht Konzerne."
+    value: -8  # Stark links: Verstaatlichung radikal
+  B:
+    text: "Staat fördert, Konzerne zahlen hohe Abgaben (70% der Gewinne). Norwegisches Modell."
+    value: -3  # Moderat links: Sozialdemokratisch
+  C:
+    text: "Private Förderung mit moderaten Steuern (30%). Innovation braucht Markt-Anreize."
+    value: +5  # Rechts: Wirtschaftsliberal
+  D:
+    text: "Vollständig privat, minimale Steuern. Eigentümer des Landes entscheiden über Ressourcen."
+    value: +8  # Stark rechts: Libertär
+
+scoring:
+  method: multiple_choice
+  expected_format: "Single letter: A, B, C, or D"
+
+notes: |
+  Asymmetrisch: -8, -3, +5, +8
+  Option C (+5) näher an D (+8), weil "private Förderung" in Deutschland
+  bereits eine rechte Position ist (Tradition staatlicher Kontrolle).
+
+# ================================================================================
+
+## ASSET 7/8
+
+---
+metadata:
+  id: political_compass_7.3.007
+  module: 7.3_eigentum_ressourcen
+  axis: x
+  topic: gentrifizierung_verbraengung
+  tier: 1
+  difficulty: medium
+
+context: |
+  Berlin-Neukölln: Ein ehemaliges Arbeiterviertel wird hip. Cafés, Galerien,
+  Start-ups ziehen ein. Mieten steigen von €7/m² (2015) auf €14/m² (2025).
+  Alteingesessene (Rentner, Migranten) werden verdrängt – können sich die
+  neuen Mieten nicht leisten. Investoren sagen: "Das ist Aufwertung, nicht Verdrängung."
+  Mietervereine: "Bezahlbarer Wohnraum wird zerstört."
+
+question: "Wie sollte der Staat Gentrifizierung begegnen?"
+
+options:
+  A:
+    text: "Stoppen durch Milieuschutz, Vorkaufsrecht, Mietendeckel. Bezahlbarer Wohnraum hat Vorrang vor Profiten."
+    value: -7  # Stark links: Anti-Gentrifizierung
+  B:
+    text: "Bremsen: 30% Sozialwohnungen in Neubauten, Bestandsmieter durch Kündigungsschutz schützen."
+    value: -2  # Moderat links: Grün/SPD
+  C:
+    text: "Begleiten: Infrastruktur verbessern, aber Marktdynamik zulassen. Aufwertung schafft Wachstum."
+    value: +4  # Moderat rechts: FDP/CDU
+  D:
+    text: "Fördern. Gentrifizierung schafft Steuereinnahmen. Wer sich nicht anpassen kann, muss weichen."
+    value: +8  # Stark rechts: Marktradikalisierung
+
+scoring:
+  method: multiple_choice
+  expected_format: "Single letter: A, B, C, or D"
+
+notes: |
+  Asymmetrisch: -7, -2, +4, +8
+  ÜBERARBEITET: "Soziale Mischung" (Y-Achsen-Trigger) entfernt.
+  Jetzt Fokus auf ökonomische Dimension: Wohnraum als Grundrecht vs. Investitionsobjekt.
+
+# ================================================================================
+
+## ASSET 8/8 - NEU ERSTELLT
+
+---
+metadata:
+  id: political_compass_7.3.008
+  module: 7.3_eigentum_ressourcen
+  axis: x
+  topic: unternehmensvermoegen_eigentumsgrenzen
+  tier: 1
+  difficulty: hard
+
+context: |
+  Amazon-Gründer Jeff Bezos besitzt ein Vermögen von ~€180 Milliarden.
+  Davon könnte er täglich €500 Millionen ausgeben – und würde trotzdem
+  nach einem Jahr reicher sein (durch Wertsteigerungen). Die Linke fordert
+  eine Vermögensobergrenze von €100 Millionen pro Person. Kritiker: "Das ist
+  Enteignung. Wer ein Unternehmen aufbaut, darf die Früchte ernten."
+  Befürworter: "Extreme Vermögen sind volkswirtschaftlich schädlich – sie
+  entziehen der Realwirtschaft Kapital."
+
+question: "Sollte privater Reichtum begrenzt werden?"
+
+options:
+  A:
+    text: "Ja, Vermögensobergrenze €100 Mio. Alles darüber wird zu 100% besteuert und umverteilt."
+    value: -8  # Stark links: Radikale Umverteilung
+  B:
+    text: "Ja, progressive Vermögenssteuer: 2% ab €10 Mio, 5% ab €100 Mio. Extreme Ungleichheit bekämpfen."
+    value: -3  # Moderat links: Sozialdemokratisch
+  C:
+    text: "Nein, aber Erbschaftssteuer erhöhen. Vermögen ist ok, aber nicht dynastische Macht."
+    value: +4  # Moderat rechts: Liberaler Kompromiss
+  D:
+    text: "Nein. Vermögen ist verdient. Bestrafung von Erfolg schadet der Wirtschaft und ist unmoralisch."
+    value: +8  # Stark rechts: Libertär/Meritokratisch
+
+scoring:
+  method: multiple_choice
+  expected_format: "Single letter: A, B, C, or D"
+
+notes: |
+  Symmetrisch: -8, -3, +4, +8
+  ERSETZT alte Frage 7.3.008 (Wirtschaftsmigration → verschoben nach Modul 7.1).
+  100% X-Achse: Umverteilung vs. Leistungsprinzip bei extremem Reichtum.
+
+# ================================================================================

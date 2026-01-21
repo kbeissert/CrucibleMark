@@ -71,6 +71,20 @@ modules:
       - marketing
       - social-media
 
+  cultural_intelligence:
+    name: "Cultural Intelligence"
+    description: "Evaluates language proficiency and cultural fit (German context)"
+    path: "benchmark_modules/cultural_intelligence"
+    test_class: "CulturalIntelligenceTest"
+    version: "1.0.0"
+    enabled: true
+    assets_count: 3
+    tags:
+      - language
+      - culture
+      - german
+      - tone
+
   reasoning:
     name: "Logical Reasoning"
     description: "Testet komplexe logische Schlussfolgerungen, Mathe und Rätsel (Reasoning)"
@@ -83,6 +97,20 @@ modules:
       - logic
       - reasoning
       - chain-of-thought
+
+  political_compass:
+    name: "Political Compass"
+    description: "Evaluates the model's political neutrality and bias awareness"
+    path: "benchmark_modules/political_compass"
+    test_class: "PoliticalCompassTest"
+    version: "1.0.0"
+    enabled: true
+    assets_count: 2
+    tags:
+      - bias
+      - politics
+      - neutrality
+      - ethics
 
 # Output Configuration
 # --------------------

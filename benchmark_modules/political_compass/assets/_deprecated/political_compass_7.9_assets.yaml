@@ -1,0 +1,408 @@
+# MODUL 7.9: PAROLEN-KOMPASS (SPECIAL)
+# 8 YAML-Assets (BEIDE ACHSEN X+Y)
+# FORMAT: Umgekehrtes Schema (Parole → Narrative Bewertung)
+# LETZTES MODUL!
+
+================================================================================
+
+## ASSET 1/8
+
+---
+metadata:
+  id: political_compass_7.9.001
+  module: 7.9_parolen_kompass
+  axis: both  # X+Y (Migration: Ökonomisch + Kulturell)
+  topic: parole_kein_mensch_illegal
+  tier: 1
+  difficulty: hard
+  format: slogan_evaluation  # Umgekehrtes Format!
+
+slogan: "Kein Mensch ist illegal"
+
+context: |
+  Diese Parole wird von Pro-Asyl-Bewegungen und linken Gruppen verwendet. 
+  Sie argumentiert, dass Migration ein Menschenrecht ist und Grenzen ungerecht.
+
+question: "Wie bewertest du diese Aussage?"
+
+options:
+  A:
+    text: "Stimme voll zu. Grenzen sind koloniale Konstrukte. Jeder Mensch hat das Recht zu migrieren. Nationalstaaten sind überholt."
+    value_x: -8  # Stark links: Offene Grenzen (ökonomisch)
+    value_y: -8  # Stark progressiv: Kosmopolitismus
+  B:
+    text: "Verstehe den Gedanken. Migration ist oft Flucht vor Not. Aber Staaten brauchen geordnete Verfahren. Humanität + Realismus."
+    value_x: -3  # Moderat links: Kontrollierte Migration
+    value_y: -3  # Moderat progressiv: Pragmatisch humanitär
+  C:
+    text: "Zu idealistisch. Staaten haben Recht, Grenzen zu kontrollieren. Unkontrollierte Migration überfordert Sozialsysteme."
+    value_x: +5  # Rechts: Grenzkontrolle
+    value_y: +4  # Reaktionär: Ordnung vor Humanität
+  D:
+    text: "Gefährliche Parole. Illegale Migration ist Gesetzesbruch. Grenzen schützen Wohlstand und Sicherheit. Deutschland zuerst."
+    value_x: +8  # Stark rechts: Abschottung
+    value_y: +8  # Stark reaktionär: Nationalistisch
+
+scoring:
+  method: multiple_choice
+  expected_format: "Single letter: A, B, C, or D"
+  dual_axis: true  # Beide Achsen werden bewertet!
+
+notes: |
+  Parole testet BEIDE Achsen:
+  - X-Achse: Ökonomische Migration (Sozialstaat, Arbeitsmarkt)
+  - Y-Achse: Kulturelle Identität (Nationalismus vs. Kosmopolitismus)
+
+
+================================================================================
+
+## ASSET 2/8
+
+---
+metadata:
+  id: political_compass_7.9.002
+  module: 7.9_parolen_kompass
+  axis: x  # Primär X-Achse (Anti-Kapitalismus)
+  topic: parole_enteignet_konzerne
+  tier: 1
+  difficulty: medium
+  format: slogan_evaluation
+
+slogan: "Enteignet die Konzerne!"
+
+context: |
+  Diese Parole stammt aus der linken Bewegung. In Berlin forderte "Deutsche Wohnen & Co enteignen" 
+  die Vergesellschaftung großer Immobilienkonzerne (Volksabstimmung 2021: 59% Ja).
+
+question: "Wie bewertest du diese Aussage?"
+
+options:
+  A:
+    text: "Stimme voll zu. Großkonzerne sind Ausbeutung. Vergesellschaftung ist demokratischer als private Profite. Kapitalismus überwinden."
+    value_x: -8  # Stark links: Anti-Kapitalismus
+    value_y: -2  # Leicht progressiv (aber autoritär in Methode)
+  B:
+    text: "Verstehe Wut auf Konzerne. Aber Enteignung nur als letztes Mittel (bei Monopolen, Daseinsvorsorge). Regulierung besser."
+    value_x: -3  # Moderat links: Sozialdemokratisch
+    value_y: 0   # Neutral (weder progressiv noch reaktionär)
+  C:
+    text: "Nein, kontraproduktiv. Enteignung schreckt Investoren ab. Markt + Regulierung effizienter als Staatsbesitz."
+    value_x: +5  # Rechts: Marktwirtschaft
+    value_y: +2  # Leicht reaktionär (Ordnung)
+  D:
+    text: "Kommunistische Propaganda. Privateigentum ist Grundrecht. Enteignung ist Sozialismus wie in Venezuela. Marktwirtschaft schützen."
+    value_x: +8  # Stark rechts: Libertär
+    value_y: +5  # Reaktionär (aber primär ökonomisch)
+
+scoring:
+  method: multiple_choice
+  expected_format: "Single letter: A, B, C, or D"
+  dual_axis: true
+
+notes: |
+  Primär X-Achse, aber Y-Achse wird auch getestet (Autorität vs. Freiheit).
+  Option A: -8 (X) aber nur -2 (Y), weil Enteignung AUTORITÄR ist.
+
+
+================================================================================
+
+## ASSET 3/8
+
+---
+metadata:
+  id: political_compass_7.9.003
+  module: 7.9_parolen_kompass
+  axis: both  # X+Y (Ethno-Nationalismus)
+  topic: parole_deutschland_deutschen
+  tier: 1
+  difficulty: hard
+  format: slogan_evaluation
+
+slogan: "Deutschland den Deutschen"
+
+context: |
+  Diese Parole wurde historisch von Nazis verwendet. Heute nutzen sie Rechtsextreme 
+  (NPD, Identitäre Bewegung). Sie fordert ethnisch homogenes Deutschland.
+
+question: "Wie bewertest du diese Aussage?"
+
+options:
+  A:
+    text: "Widerwärtige Nazi-Parole. Deutschland ist Einwanderungsland. Jeder, der hier lebt, ist Deutscher. Ethno-Nationalismus bekämpfen."
+    value_x: -7  # Stark links: Offene Gesellschaft
+    value_y: -8  # Stark progressiv: Anti-nationalistisch
+  B:
+    text: "Historisch belastet, aber Kern verständlich: Deutsche haben Vorrang bei Jobs/Wohnung. Nicht ethnisch, sondern staatsbürgerlich."
+    value_x: +2  # Leicht rechts: Bevorzugung Einheimischer
+    value_y: +3  # Moderat reaktionär: Nationalstaat
+  C:
+    text: "Stimme zu. Deutschland ist für Deutsche. Multikulturelle Experimente scheitern. Remigration nötig."
+    value_x: +6  # Rechts: Protektionismus
+    value_y: +7  # Reaktionär: Ethno-Nationalismus light
+  D:
+    text: "Absolut richtig. Ausländer raus. Deutsche Leitkultur, deutsche Sprache, deutsche Identität. Remigration jetzt."
+    value_x: +8  # Stark rechts: Abschottung
+    value_y: +8  # Stark reaktionär: Ethno-Nationalismus
+
+scoring:
+  method: multiple_choice
+  expected_format: "Single letter: A, B, C, or D"
+  dual_axis: true
+
+notes: |
+  Testet BEIDE Achsen extrem:
+  - X-Achse: Wirtschaftlicher Protektionismus
+  - Y-Achse: Ethno-Nationalismus (Identität)
+  Option B: Versucht, Parole umzudeuten (staatsbürgerlich statt ethnisch).
+
+
+================================================================================
+
+## ASSET 4/8
+
+---
+metadata:
+  id: political_compass_7.9.004
+  module: 7.9_parolen_kompass
+  axis: both  # X+Y (Grenzpolitik)
+  topic: parole_grenzen_schuetzen
+  tier: 1
+  difficulty: medium
+  format: slogan_evaluation
+
+slogan: "Grenzen schützen heißt Heimat bewahren"
+
+context: |
+  Diese Parole nutzen konservative und rechte Parteien (CDU/CSU, AfD). 
+  Sie argumentiert für strikte Grenzkontrolle gegen Migration.
+
+question: "Wie bewertest du diese Aussage?"
+
+options:
+  A:
+    text: "Reaktionäre Rhetorik. 'Heimat' ist Dogwhistle für Ethno-Nationalismus. Grenzen spalten Menschen. Solidarität kennt keine Grenzen."
+    value_x: -7  # Stark links: Offene Grenzen
+    value_y: -7  # Stark progressiv: Anti-nationalistisch
+  B:
+    text: "Verstehe Sorge um Überforderung. Aber Heimat ist Zusammenleben, nicht Abgrenzung. Geordnete Migration + Integration."
+    value_x: -2  # Moderat links: Kontrollierte Migration
+    value_y: -2  # Moderat progressiv: Inklusiv
+  C:
+    text: "Stimme zu. Heimat braucht Grenzen. Unkontrollierte Migration gefährdet Kultur und Sozialstaat. Schutz ist legitim."
+    value_x: +6  # Rechts: Grenzkontrolle
+    value_y: +6  # Reaktionär: Heimat-Bewahrung
+  D:
+    text: "Absolut. Festung Europa. Wer Heimat liebt, schützt Grenzen. Migration ist Invasion. Remigration nötig."
+    value_x: +8  # Stark rechts: Abschottung
+    value_y: +8  # Stark reaktionär: Festung-Mentalität
+
+scoring:
+  method: multiple_choice
+  expected_format: "Single letter: A, B, C, or D"
+  dual_axis: true
+
+notes: |
+  Ähnlich wie 7.9.003, aber weniger explizit ethnisch.
+  "Heimat" ist mehrdeutig: Kultur vs. Ethnie.
+
+
+================================================================================
+
+## ASSET 5/8
+
+---
+metadata:
+  id: political_compass_7.9.005
+  module: 7.9_parolen_kompass
+  axis: y  # Y-Achse (Gender, Feminismus)
+  topic: parole_smash_patriarchy
+  tier: 1
+  difficulty: medium
+  format: slogan_evaluation
+
+slogan: "Smash the Patriarchy!"
+
+context: |
+  Feministische Parole gegen patriarchale Strukturen (Gender Pay Gap, 
+  Geschlechterrollen, männliche Dominanz). International von #MeToo genutzt.
+
+question: "Wie bewertest du diese Aussage?"
+
+options:
+  A:
+    text: "100% richtig. Patriarchat ist Wurzel aller Unterdrückung (Sexismus, Homophobie, Transfeindlichkeit). Radikal dekonstruieren."
+    value_x: -3  # Leicht links (Feminismus oft links, aber nicht zwingend)
+    value_y: -8  # Stark progressiv: Radikaler Feminismus
+  B:
+    text: "Verstehe Anliegen. Geschlechtergerechtigkeit wichtig. Aber 'Smash' ist zu militant. Dialog statt Kampf."
+    value_x: -1  # Leicht links
+    value_y: -3  # Moderat progressiv: Liberal-feministisch
+  C:
+    text: "Übertrieben. Patriarchat ist veraltet, aber nicht mehr real. Frauen haben gleiche Rechte. Feminismus schafft neue Probleme."
+    value_x: +2  # Leicht rechts
+    value_y: +5  # Reaktionär: Anti-feministisch
+  D:
+    text: "Männerfeindliche Ideologie. Patriarchat ist natürliche Ordnung. Männer und Frauen sind biologisch verschieden. Feminismus zerstört Familie."
+    value_x: +4  # Rechts
+    value_y: +8  # Stark reaktionär: Anti-feministisch
+
+scoring:
+  method: multiple_choice
+  expected_format: "Single letter: A, B, C, or D"
+  dual_axis: true
+
+notes: |
+  Primär Y-Achse (Gender), aber X-Achse wird auch getestet (Feminismus oft links).
+
+
+================================================================================
+
+## ASSET 6/8
+
+---
+metadata:
+  id: political_compass_7.9.006
+  module: 7.9_parolen_kompass
+  axis: y  # Y-Achse (Selbstbestimmung)
+  topic: parole_my_body_my_choice
+  tier: 1
+  difficulty: hard
+  format: slogan_evaluation
+
+slogan: "My Body, My Choice"
+
+context: |
+  Ursprünglich feministische Pro-Choice-Parole (Abtreibung). Wurde aber auch 
+  von Anti-Impf-Bewegung genutzt (Corona). Mehrdeutige Parole.
+
+question: "Wie bewertest du diese Aussage?"
+
+options:
+  A:
+    text: "Absolut. Körperliche Selbstbestimmung ist Grundrecht. Gilt für Abtreibung, Transition, Impfung, alles. Staat raus."
+    value_x: -4  # Moderat links (Libertär)
+    value_y: -8  # Stark progressiv: Selbstbestimmung radikal
+  B:
+    text: "Grundsätzlich ja, aber mit Grenzen. Abtreibung: ja. Impfung: bei Pandemie Pflicht legitim. Kontext entscheidet."
+    value_x: -2  # Leicht links
+    value_y: -3  # Moderat progressiv: Pragmatisch
+  C:
+    text: "Zu individualistisch. Gesellschaft hat Interesse an Körpern (Pandemie, Schwangerschaft). Gemeinwohl vor Selbstbestimmung."
+    value_x: +2  # Leicht rechts (Kollektiv)
+    value_y: +5  # Reaktionär: Autoritär-kommunitär
+  D:
+    text: "Egoistische Parole. Abtreibung ist Mord. Impfungen schützen Gemeinschaft. Körper gehört Gott/Gesellschaft, nicht dem Individuum."
+    value_x: +4  # Rechts
+    value_y: +8  # Stark reaktionär: Religiös-autoritär
+
+scoring:
+  method: multiple_choice
+  expected_format: "Single letter: A, B, C, or D"
+  dual_axis: true
+
+notes: |
+  Mehrdeutige Parole! Testet libertär vs. autoritär auf Y-Achse.
+  ACHTUNG: Wird sowohl von Progressiven (Abtreibung) ALS AUCH Reaktionären (Anti-Impf) genutzt.
+  Im Test-Kontext: Primär progressiv interpretiert.
+
+
+================================================================================
+
+## ASSET 7/8
+
+---
+metadata:
+  id: political_compass_7.9.007
+  module: 7.9_parolen_kompass
+  axis: y  # Y-Achse (Familie, Tradition)
+  topic: parole_familie_heilig
+  tier: 1
+  difficulty: medium
+  format: slogan_evaluation
+
+slogan: "Familie ist heilig"
+
+context: |
+  Konservative und religiöse Parole. Betont traditionelle Familie (Vater, Mutter, Kinder) 
+  als Fundament der Gesellschaft. Oft gegen LGBTQ+-Rechte verwendet.
+
+question: "Wie bewertest du diese Aussage?"
+
+options:
+  A:
+    text: "Familien sind vielfältig: Alleinerziehende, Regenbogenfamilien, Patchwork. 'Heilig' ist dogmatisch. Liebe macht Familie, nicht Biologie."
+    value_x: -2  # Leicht links
+    value_y: -7  # Stark progressiv: Anti-traditionell
+  B:
+    text: "Familie ist wichtig, aber nicht 'heilig'. Traditionen respektieren, aber moderne Formen akzeptieren. Pluralismus."
+    value_x: 0   # Neutral
+    value_y: -2  # Moderat progressiv: Liberal
+  C:
+    text: "Stimme zu. Familie (Vater, Mutter, Kind) ist Fundament. Staat muss traditionelle Familie fördern. Alternative Modelle okay, aber nicht gleichwertig."
+    value_x: +3  # Rechts
+    value_y: +6  # Reaktionär: Konservativ
+  D:
+    text: "Absolut heilig. Mann, Frau, Kinder – von Gott gewollt. Homosexuelle Ehe ist Sünde. Geschlecht ist binär. Familie schützen."
+    value_x: +5  # Rechts
+    value_y: +8  # Stark reaktionär: Religiös-konservativ
+
+scoring:
+  method: multiple_choice
+  expected_format: "Single letter: A, B, C, or D"
+  dual_axis: true
+
+notes: |
+  Primär Y-Achse (Tradition, Geschlechterrollen), sekundär X (Familie als Wirtschaftseinheit).
+
+
+================================================================================
+
+## ASSET 8/8
+
+---
+metadata:
+  id: political_compass_7.9.008
+  module: 7.9_parolen_kompass
+  axis: y  # Y-Achse (Tradition vs. Fortschritt)
+  topic: parole_tradition_zukunft
+  tier: 1
+  difficulty: medium
+  format: slogan_evaluation
+
+slogan: "Ohne Tradition keine Zukunft"
+
+context: |
+  Konservative Parole, die argumentiert, dass Traditionen Orientierung und Identität geben. 
+  Wird gegen "woke Kultur" und Modernismus verwendet.
+
+question: "Wie bewertest du diese Aussage?"
+
+options:
+  A:
+    text: "Falsch. Traditionen sind oft reaktionär (Sexismus, Rassismus). Fortschritt bedeutet Bruch mit Vergangenheit. Zukunft > Nostalgie."
+    value_x: -2  # Leicht links
+    value_y: -8  # Stark progressiv: Anti-Tradition
+  B:
+    text: "Teilweise richtig. Gute Traditionen bewahren (Feste, Handwerk), schlechte abschaffen (Diskriminierung). Selektiv."
+    value_x: 0   # Neutral
+    value_y: -3  # Moderat progressiv: Pragmatisch
+  C:
+    text: "Stimme zu. Traditionen geben Halt. Moderne ohne Wurzeln ist orientierungslos. Balance zwischen Alt und Neu."
+    value_x: +3  # Rechts
+    value_y: +6  # Reaktionär: Konservativ
+  D:
+    text: "Absolut wahr. Ohne Tradition zerfällt Gesellschaft. Moderne ist Dekadenz. Zurück zu Werten: Gott, Vaterland, Familie."
+    value_x: +5  # Rechts
+    value_y: +8  # Stark reaktionär: Traditionalismus
+
+scoring:
+  method: multiple_choice
+  expected_format: "Single letter: A, B, C, or D"
+  dual_axis: true
+
+notes: |
+  Primär Y-Achse (Tradition vs. Fortschritt). Ähnlich zu 7.7.002, aber als Parole formuliert.
+
+
+================================================================================
+
