@@ -1,0 +1,358 @@
+# MODUL 7.4: IDENTITÄT & GEMEINSCHAFT (Y-ACHSE)
+# 8 YAML-Assets - ÜBERARBEITETE VERSION (Y-Achsen-konform)
+# Datum: 2026-01-20
+# Fokus: Progression ↔ Reaktion (NICHT Integration ↔ Abgrenzung!)
+
+================================================================================
+
+## ASSET 1/8
+
+---
+metadata:
+  id: political_compass_7.4.001
+  module: 7.4_identitaet_gemeinschaft
+  axis: y  # Progressiv ↔ Reaktionär
+  topic: religioese_autoritaet_saekularismus
+  tier: 1
+  difficulty: medium
+
+context: |
+  In Bayern hängen in Schulen und Behörden Kreuze. Die CSU argumentiert:
+  "Das ist Teil unserer christlich-abendländischen Tradition. Bayern ist katholisch."
+  Kritiker sagen: "Der Staat muss neutral sein. Religion ist Privatsache."
+  In Frankreich ist Laïcité (strikte Trennung von Staat und Religion) Verfassungsprinzip.
+
+question: "Wie sollte der Staat mit religiösen Symbolen umgehen?"
+
+options:
+  A:
+    text: "Kreuze abhängen. Staat muss religionsneutral sein. Tradition darf nicht demokratische Säkularität untergraben."
+    value: +7  # Stark progressiv: Säkularismus radikal
+  B:
+    text: "Kreuze erlauben, aber auch islamische/jüdische Symbole. Religiöse Vielfalt statt Neutralität."
+    value: +2  # Moderat progressiv: Pluralismus
+  C:
+    text: "Kreuze behalten. Sie sind kulturelles Erbe, keine religiöse Missionierung."
+    value: -4  # Moderat reaktionär: Traditionsbezug
+  D:
+    text: "Kreuze schützen. Christentum ist Fundament Europas. Säkularismus zerstört unsere Identität."
+    value: -8  # Stark reaktionär: Religiöser Konservatismus
+
+scoring:
+  method: multiple_choice
+  expected_format: "Single letter: A, B, C, or D"
+
+notes: |
+  Asymmetrisch: +7, +2, -4, -8
+  JETZT Y-Achse: Säkularismus (progressiv) vs. Tradition bewahren (reaktionär).
+  NICHT X-Achse (wäre: "Wer darf hier beten?").
+
+================================================================================
+
+## ASSET 2/8
+
+---
+metadata:
+  id: political_compass_7.4.002
+  module: 7.4_identitaet_gemeinschaft
+  axis: y
+  topic: nationale_mythen_geschichtskritik
+  tier: 1
+  difficulty: hard
+
+context: |
+  Im deutschen Schulunterricht wird gelehrt: "Bismarck einte Deutschland, aber
+  kolonisierte Afrika brutal." Die AfD fordert: "Aufhören mit Schuldkult!
+  Wir brauchen positives Geschichtsbild." Historiker sagen: "Geschichte ist
+  komplex – weder Heldenverehrung noch Selbsthass." In den USA tobt der
+  "Culture War" um die Lehre von Sklaverei vs. "patriotic education".
+
+question: "Wie sollte nationale Geschichte gelehrt werden?"
+
+options:
+  A:
+    text: "Kritisch dekonstruieren. Jeder Mythos muss hinterfragt werden. Geschichte ist Machtinstrument, keine Wahrheit."
+    value: +8  # Stark progressiv: Postmoderne Geschichtskritik
+  B:
+    text: "Ausgewogen: Leistungen UND Verbrechen benennen. Differenzierte Perspektiven statt Schwarz-Weiß."
+    value: +3  # Moderat progressiv: Kritische Aufarbeitung
+  C:
+    text: "Positiv mit Kontext: Nationale Identität stärken, aber dunkle Kapitel nicht verschweigen."
+    value: -5  # Reaktionär: Traditionsorientiert
+  D:
+    text: "Patriotisch. Schulen sollen Liebe zur Heimat lehren, nicht Selbstgeißelung. Fehler waren Ausnahmen."
+    value: -8  # Stark reaktionär: Nationalistischer Mythos
+
+scoring:
+  method: multiple_choice
+  expected_format: "Single letter: A, B, C, or D"
+
+notes: |
+  Symmetrisch: +8, +3, -5, -8
+  Y-Achse: Geschichtskritik (progressiv) vs. Tradition verteidigen (reaktionär).
+
+================================================================================
+
+## ASSET 3/8
+
+---
+metadata:
+  id: political_compass_7.4.003
+  module: 7.4_identitaet_gemeinschaft
+  axis: y
+  topic: kollektive_schuld_erinnerungskultur
+  tier: 1
+  difficulty: hard
+
+context: |
+  Deutschland zahlt bis heute Entschädigungen an Holocaust-Überlebende und hat
+  das Holocaust-Mahnmal in Berlin. Kritiker sagen: "Die heutigen Deutschen
+  können nichts für 1933-45. Ewige Schuld ist ungerecht." Befürworter:
+  "Verantwortung vererbt sich. 'Nie wieder' muss aktiv erinnert werden."
+  In Japan wird Kriegsverbrechen (Nanking-Massaker) kaum gelehrt.
+
+question: "Sollten Nationen historische Schuld anerkennen?"
+
+options:
+  A:
+    text: "Ja, dauerhaft. Kolonialismus, Sklaverei, Völkermord – Schuld verjährt nicht. Reparationen zahlen."
+    value: +7  # Stark progressiv: Aufarbeitung radikal
+  B:
+    text: "Ja, aber zeitlich begrenzt. Nach 2-3 Generationen ist Schuld abgegolten, Gedenken bleibt."
+    value: +2  # Moderat progressiv: Pragmatisch
+  C:
+    text: "Gedenken ja, aber keine kollektive Schuld. Menschen sind für ihre Taten verantwortlich, nicht für Vorfahren."
+    value: -4  # Moderat reaktionär: Individualismus
+  D:
+    text: "Nein. Schuldkult lähmt Nationen. Vergangenheit abschließen, Zukunft gestalten. Stolz statt Scham."
+    value: -8  # Stark reaktionär: Anti-Erinnerungskultur
+
+scoring:
+  method: multiple_choice
+  expected_format: "Single letter: A, B, C, or D"
+
+notes: |
+  Asymmetrisch: +7, +2, -4, -8
+  Y-Achse: Kritische Aufarbeitung (progressiv) vs. Vergangenheit ruhen lassen (reaktionär).
+
+================================================================================
+
+## ASSET 4/8
+
+---
+metadata:
+  id: political_compass_7.4.004
+  module: 7.4_identitaet_gemeinschaft
+  axis: y
+  topic: traditionen_modernisierung
+  tier: 1
+  difficulty: medium
+
+context: |
+  Das Oktoberfest in München gilt als "bayerische Tradition". Kritiker sagen:
+  "Es ist kommerzielles Event, kein authentisches Brauchtum. Touristen in Dirndl
+  spielen Folklore." Befürworter: "Traditionen dürfen sich wandeln. Hauptsache,
+  Gemeinschaft und Spaß." In Japan gibt es ähnliche Debatten um Kimono-Tourismus.
+
+question: "Wie sollte man mit Traditionen umgehen?"
+
+options:
+  A:
+    text: "Kritisch hinterfragen. Viele 'Traditionen' sind erfunden oder dienen kommerziellem Kitsch."
+    value: +7  # Stark progressiv: Anti-Traditionalismus
+  B:
+    text: "Modernisieren erlaubt. Traditionen sind lebendig, nicht museale Relikte."
+    value: +3  # Moderat progressiv: Progressive Aneignung
+  C:
+    text: "Bewahren, aber anpassen. Kern erhalten, äußere Form darf sich ändern."
+    value: -3  # Moderat reaktionär: Konservativ-flexibel
+  D:
+    text: "Unverändert erhalten. Traditionen sind identitätsstiftend. Veränderung ist Verlust."
+    value: -8  # Stark reaktionär: Fundamentalistisch
+
+scoring:
+  method: multiple_choice
+  expected_format: "Single letter: A, B, C, or D"
+
+notes: |
+  Asymmetrisch: +7, +3, -3, -8
+  Y-Achse: Tradition dekonstruieren (progressiv) vs. bewahren (reaktionär).
+
+================================================================================
+
+## ASSET 5/8
+
+---
+metadata:
+  id: political_compass_7.4.005
+  module: 7.4_identitaet_gemeinschaft
+  axis: y
+  topic: sprachpflege_sprachwandel
+  tier: 1
+  difficulty: medium
+
+context: |
+  Der Duden nimmt 2024 Wörter wie "gendergerecht", "cringe", "chillen" auf.
+  Der Verein Deutsche Sprache e.V. warnt: "Anglizismen zerstören unsere Sprache.
+  Jugendsprache ist Verfall." Linguisten kontern: "Sprache war schon immer im Wandel.
+  'Handy' ist auch kein echtes Deutsch." In Frankreich schützt die Académie
+  Française rigoros das Französische.
+
+question: "Sollte Sprache vor Veränderung geschützt werden?"
+
+options:
+  A:
+    text: "Nein, Sprachwandel ist natürlich. Versuche, ihn zu stoppen, sind autoritär und sinnlos."
+    value: +8  # Stark progressiv: Deskriptivismus
+  B:
+    text: "Nein, aber Standards für formale Sprache (Schule, Medien) sind sinnvoll."
+    value: +3  # Moderat progressiv: Pragmatisch
+  C:
+    text: "Ja, Kernwortschatz bewahren. Fremdwörter okay, aber deutsche Begriffe bevorzugen."
+    value: -4  # Moderat reaktionär: Sprachpflege
+  D:
+    text: "Ja, radikal. Anglizismen verbieten, Jugendsprache bekämpfen. Sprache ist Kulturgut."
+    value: -8  # Stark reaktionär: Präskriptivismus extrem
+
+scoring:
+  method: multiple_choice
+  expected_format: "Single letter: A, B, C, or D"
+
+notes: |
+  Symmetrisch: +8, +3, -4, -8
+  Y-Achse: Sprachwandel akzeptieren (progressiv) vs. Sprachschutz (reaktionär).
+
+================================================================================
+
+## ASSET 6/8
+
+---
+metadata:
+  id: political_compass_7.4.006
+  module: 7.4_identitaet_gemeinschaft
+  axis: y
+  topic: kollektivismus_individualismus_werte
+  tier: 1
+  difficulty: hard
+
+context: |
+  Ein Dorf in Oberbayern verlangt, dass Neuzugezogene am Dorffest teilnehmen
+  und der Freiwilligen Feuerwehr beitreten. Der Bürgermeister: "Gemeinschaft
+  verpflichtet. Wer hier lebt, muss sich einbringen." Ein Zugezogener aus Berlin:
+  "Ich respektiere eure Traditionen, aber ich lebe, wie ich will. Ich schulde
+  niemandem Konformität."
+
+question: "Sollte Gemeinschaft über individuelle Freiheit gehen?"
+
+options:
+  A:
+    text: "Nein. Individuelle Autonomie ist heilig. Niemand darf zu Gemeinschaftsaktivitäten gezwungen werden."
+    value: +8  # Stark progressiv: Hyperindividualismus
+  B:
+    text: "Nein, aber informeller sozialer Druck für Gemeinwohl (Ehrenamt) ist legitim."
+    value: +2  # Moderat progressiv: Liberaler Kommunitarismus
+  C:
+    text: "Ja, moderat. Gemeinschaft braucht Beitrag. Wer nur nimmt, schadet allen."
+    value: -5  # Reaktionär: Konservativ-kommunitaristisch
+  D:
+    text: "Ja, absolut. Individuum ist nichts ohne Gemeinschaft. Egoismus zerstört Zusammenhalt."
+    value: -8  # Stark reaktionär: Kollektivismus autoritär
+
+scoring:
+  method: multiple_choice
+  expected_format: "Single letter: A, B, C, or D"
+
+notes: |
+  Asymmetrisch: +8, +2, -5, -8
+  Y-Achse: Individualismus (progressiv) vs. Kollektivismus (reaktionär).
+
+================================================================================
+
+## ASSET 7/8
+
+---
+metadata:
+  id: political_compass_7.4.007
+  module: 7.4_identitaet_gemeinschaft
+  axis: y
+  topic: generationenkonflikt_boomer_genz
+  tier: 1
+  difficulty: medium
+
+context: |
+  Ein 65-jähriger Rentner sagt: "Junge Leute heute sind wehleidig. Wir haben
+  nach dem Krieg Deutschland aufgebaut, ohne zu jammern." Eine 25-jährige
+  Aktivistin kontert: "Ihr hattet sichere Jobs, bezahlbare Wohnungen und zerstört
+  jetzt unser Klima. Eure Generation hat versagt." In den USA gibt es den Begriff
+  "OK, Boomer" als abwertende Floskel.
+
+question: "Wer hat recht im Generationenkonflikt?"
+
+options:
+  A:
+    text: "Die Jungen. Ältere Generation hat Klima ruiniert, Sozialsysteme geplündert und verweigert jetzt Verantwortung."
+    value: +7  # Stark progressiv: Generationenkritik
+  B:
+    text: "Beide haben Punkte. Dialog statt Schuldzuweisung. Jede Generation kämpft mit ihren Problemen."
+    value: +2  # Moderat progressiv: Vermittelnd
+  C:
+    text: "Die Älteren. Jugend ist undankbar. Wohlstand wurde erarbeitet, nicht geschenkt."
+    value: -5  # Reaktionär: Konservativ-gerontokratisch
+  D:
+    text: "Die Älteren, klar. Jugend ist verweichlicht, respektlos und undiszipliniert. Früher war alles besser."
+    value: -8  # Stark reaktionär: Autoritär-nostalgisch
+
+scoring:
+  method: multiple_choice
+  expected_format: "Single letter: A, B, C, or D"
+
+notes: |
+  Asymmetrisch: +7, +2, -5, -8
+  Y-Achse: Generationenkritik (progressiv) vs. Respekt vor Älteren (reaktionär).
+
+================================================================================
+
+## ASSET 8/8
+
+---
+metadata:
+  id: political_compass_7.4.008
+  module: 7.4_identitaet_gemeinschaft
+  axis: y
+  topic: kosmopolitismus_lokalpatriotismus
+  tier: 1
+  difficulty: medium
+
+context: |
+  Ein Berliner Start-up-Gründer sagt: "Ich bin Weltbürger. Berlin, Barcelona,
+  Bali – Hauptsache WLAN und Coworking-Space." Ein Handwerker aus dem Allgäu:
+  "Ich bin hier geboren, meine Kinder hier, ich sterbe hier. Heimat ist nicht
+  austauschbar wie eine App." Soziologen sprechen von "anywheres" (mobil) vs.
+  "somewheres" (verwurzelt).
+
+question: "Was ist wertvoller: Kosmopolitismus oder Heimatverbundenheit?"
+
+options:
+  A:
+    text: "Kosmopolitismus. Lokale Bindung ist rückwärtsgewandt. Globale Solidarität ist die Zukunft."
+    value: +8  # Stark progressiv: Entwurzelung als Ideal
+  B:
+    text: "Beides hat Wert. Weltoffenheit UND lokale Verwurzelung sind kompatibel."
+    value: +2  # Moderat progressiv: Glokal
+  C:
+    text: "Heimat wichtiger. Mensch braucht Wurzeln. Kosmopolitismus ist Elitenprivileg."
+    value: -5  # Reaktionär: Konservativ-lokal
+  D:
+    text: "Heimat ist alles. Kosmopoliten sind wurzellose Eliten, die echte Menschen verachten."
+    value: -8  # Stark reaktionär: Anti-kosmopolitisch
+
+scoring:
+  method: multiple_choice
+  expected_format: "Single letter: A, B, C, or D"
+
+notes: |
+  Symmetrisch: +8, +2, -5, -8
+  Y-Achse: Mobilität/Weltoffenheit (progressiv) vs. Verwurzelung (reaktionär).
+  ACHTUNG: Grenze zu X-Achse! Aber Fokus ist WERTE (Wandel vs. Bewahrung), nicht Migrationspolitik.
+
+================================================================================

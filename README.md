@@ -43,6 +43,7 @@ Jedes Modul deckt spezifische Fähigkeiten ab und verfügt über eine eigene, de
 | `documentation_quality` | **Documentation** | Technische Dokumentation & Struktur | [README](benchmark_modules/documentation_quality/README.md) |
 | `content_transformation` | **Content Adaption** | Format-Transformation & Stil-Anpassung | [README](benchmark_modules/content_transformation/README.md) |
 | `reasoning` | **Reasoning Logic** | Logik, Deduktion & Deadlock-Erkennung | [README](benchmark_modules/reasoning_logic/README.md) |
+| `political_compass` | **Political Compass** | Ideological Bias & Extremism Check | [README](benchmark_modules/political_compass/README.md) |
 
 ## 🏆 Leaderboard & Metrics
 

@@ -50,13 +50,26 @@ class BaseTest(ABC):
         
     def _load_asset(self) -> Dict[str, Any]:
         """
-        Lädt YAML-Test-Asset
+        Lädt YAML-Test-Asset.
+        Robust gegenüber Multi-Document-Files (nimmt das erste Dokument mit metadaten).
         
         Returns:
             Dict mit Asset-Daten
         """
         with open(self.asset_path, 'r', encoding='utf-8') as f:
-            return yaml.safe_load(f)
+            try:
+                # Try single load first (fastest)
+                return yaml.safe_load(f) or {}
+            except yaml.composer.ComposerError:
+                # Fallback for multi-doc files (e.g. Political Compass)
+                f.seek(0)
+                docs = list(yaml.safe_load_all(f))
+                # Search for metadata doc
+                for doc in docs:
+                   if doc and 'metadata' in doc:
+                       return doc
+                # Fallback to first if no metadata found (or empty)
+                return docs[0] if docs else {}
     
     def _validate_asset(self) -> None:
         """

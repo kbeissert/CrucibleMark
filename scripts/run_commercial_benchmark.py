@@ -198,7 +198,8 @@ class CommercialBenchmarkRunner:
         self,
         provider: str,
         model: str,
-        benchmark_info: dict[str, Any]
+        benchmark_info: dict[str, Any],
+        num_runs: int = 1
     ) -> list[dict[str, Any]]:
         """
         Führt Benchmark für gewähltes Modell durch.
@@ -207,10 +208,17 @@ class CommercialBenchmarkRunner:
             provider: Provider Name (mistral, anthropic, openai)
             model: Modell ID
             benchmark_info: Benchmark Konfiguration
+            num_runs: Anzahl der Durchläufe (relevant für Political Compass)
             
         Returns:
             Liste mit Testergebnissen
         """
+        # Dispatch Political Compass to dedicated runner
+        if benchmark_info.get('name') == 'Political Compass':
+            from scripts.run_political_compass_benchmark import run_political_compass_benchmark
+            run_political_compass_benchmark(model, provider, benchmark_info, num_runs=num_runs)
+            return []
+
         # Check if current model is Golden Standard
         golden_info = self.validator.get_golden_standard_info()
         is_golden_model = False
@@ -237,12 +245,21 @@ class CommercialBenchmarkRunner:
 
         for asset_path in assets:
             try:
-                # Load asset
+                # Load asset (Robust for multi-doc)
                 with open(asset_path, encoding='utf-8') as f:
-                    asset_data = yaml.safe_load(f)
+                    try:
+                        asset_data = yaml.safe_load(f)
+                    except yaml.composer.ComposerError:
+                        f.seek(0)
+                        docs = list(yaml.safe_load_all(f))
+                        asset_data = next((d for d in docs if d and 'metadata' in d), docs[0] if docs else {})
+
+                if not asset_data:
+                    print(f"⚠️  Skipping empty asset: {asset_path}")
+                    continue
 
                 asset_id = asset_data['metadata']['id']
-                asset_name = asset_data['metadata']['name']
+                asset_name = asset_data['metadata'].get('name', asset_data['metadata'].get('topic', asset_id))
 
                 # Check if Golden Standard JSON already exists
                 # Only skip if we are explicitly in golden_standard mode (to avoid re-generation)

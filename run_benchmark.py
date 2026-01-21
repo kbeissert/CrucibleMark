@@ -287,7 +287,8 @@ class BenchmarkRunner:
         module_name: Optional[str] = None,
         provider_type: Optional[str] = None,
         model_name: Optional[str] = None,
-        run_all: bool = False
+        run_all: bool = False,
+        num_runs: int = 1
     ):
         """Führt Benchmark aus."""
         self._print_header("CRUCIBLE MARK - BENCHMARK RUNNER")
@@ -304,6 +305,11 @@ class BenchmarkRunner:
                 # selected_module is Optional[str], but here we know it's str because of check
                 if selected_module and module_config:
                     modules_to_run = [(selected_module, module_config)]
+                    
+                    # POLITICAL COMPASS: Inform about multi-run policy (Runs will be enforced by runner)
+                    if selected_module == "political_compass":
+                         print(f"\nℹ️  Hinweis: Das Modul 'Political Compass' führt automatisch 3 Durchläufe aus.")
+                         num_runs = 3
 
         # Determine provider and model (once for all modules if possible)
         provider = None
@@ -331,9 +337,9 @@ class BenchmarkRunner:
         # Run benchmark for each module
         for _, module_config in modules_to_run:
             print(f"\n>>> Running Module: {module_config['name']}")
-            self._run_benchmark(module_config, model_id, provider)
+            self._run_benchmark(module_config, model_id, provider, num_runs)
 
-    def _run_benchmark(self, module_config: dict[str, Any], model: str, provider: str):
+    def _run_benchmark(self, module_config: dict[str, Any], model: str, provider: str, num_runs: int = 1):
         """Führt Benchmark aus (Lokal oder Kommerziell)."""
         is_local = provider == 'ollama'
 
@@ -341,6 +347,7 @@ class BenchmarkRunner:
         print(f"Modul: {module_config['name']}")
         print(f"Modell: {model}")
         print(f"Provider: {provider.upper() if not is_local else 'Ollama (Local)'}")
+        print(f"Runs: {num_runs}")
         print(f"{'='*60}\n")
 
         benchmark_info = {
@@ -352,13 +359,13 @@ class BenchmarkRunner:
 
         if is_local:
             local_runner = LocalBenchmarkRunner()
-            results = local_runner.run_benchmark(model, benchmark_info)
+            results = local_runner.run_benchmark(model, benchmark_info, num_runs=num_runs)
             if results:
                 local_runner.save_results(results)
                 local_runner.print_summary(results, model)
         else:
             comm_runner = CommercialBenchmarkRunner()
-            results = comm_runner.run_benchmark(provider, model, benchmark_info)
+            results = comm_runner.run_benchmark(provider, model, benchmark_info, num_runs=num_runs)
             if results:
                 comm_runner.save_results(results)
                 comm_runner.print_summary(results)
@@ -420,6 +427,13 @@ Beispiele:
         action='store_true',
         help='Führt Benchmark für alle aktivierten Module aus'
     )
+    
+    parser.add_argument(
+        '--multi-run',
+        type=int,
+        default=1,
+        help='Anzahl der Runs (default: 1, empfohlen für Political Compass: 3)'
+    )
 
     args = parser.parse_args()
 
@@ -429,7 +443,8 @@ Beispiele:
             module_name=args.module,
             provider_type=args.provider,
             model_name=args.model,
-            run_all=args.all
+            run_all=args.all,
+            num_runs=args.multi_run
         )
     except KeyboardInterrupt:
         print("\n\n❌ Benchmark abgebrochen")

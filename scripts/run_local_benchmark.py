@@ -156,8 +156,37 @@ class LocalBenchmarkRunner:
         benchmark_info: dict[str, Any]
     ) -> dict[str, Any]:
         """Führt einzelnen Test aus."""
+        # Handle multi-document YAMLs (like Political Compass)
         with open(asset_path, encoding='utf-8') as f:
-            asset_data = yaml.safe_load(f)
+            content = f.read()
+            
+        try:
+            # Try single load first to avoid overhead if not needed, 
+            # but catch the specific error for multi-doc streams
+            asset_data = yaml.safe_load(content)
+        except yaml.YAMLError:
+             # Fallback for multi-document files
+             try:
+                docs = list(yaml.safe_load_all(content))
+                # Find the first document with metadata, or default to the first one
+                asset_data = next((d for d in docs if d and isinstance(d, dict) and 'metadata' in d), docs[0] if docs else {})
+             except Exception as e:
+                return {
+                    'status': 'error',
+                    'error_message': f"YAML Load Error: {str(e)}",
+                    'asset_id': asset_path.stem,
+                    'percentage': 0,
+                    'tier': 'Tier 1 (Undefined)'
+                }
+
+        if not asset_data:
+             return {
+                'status': 'error',
+                'error_message': "Empty Asset File",
+                'asset_id': asset_path.stem,
+                'percentage': 0,
+                'tier': 'Tier 1 (Undefined)'
+            }
 
         # Dynamisches Laden der Test-Klasse
         module_path = Path(benchmark_info.get('module_path', 'benchmark_modules/code_quality')) / 'test.py'
@@ -195,6 +224,11 @@ class LocalBenchmarkRunner:
 
         # Calculate difference
         score_diff = score['total_score'] - ref_score if ref_score > 0 else 0
+        
+        # Safe name retrieval
+        asset_name = asset_data.get('metadata', {}).get('name')
+        if not asset_name:
+            asset_name = asset_data.get('metadata', {}).get('topic', asset_id)
 
         # Return result
         result = {
@@ -202,7 +236,7 @@ class LocalBenchmarkRunner:
             'status': score.get('status', 'success'),
             'model': model,
             'asset_id': asset_id,
-            'asset_name': asset_data['metadata']['name'],
+            'asset_name': asset_name,
             'total_score': score['total_score'],
             'max_score': score['max_score'],
             'percentage': round((score['total_score'] / score['max_score'] * 100), 1),
@@ -236,9 +270,17 @@ class LocalBenchmarkRunner:
     def run_benchmark(
         self,
         model: str,
-        benchmark_info: dict[str, Any]
+        benchmark_info: dict[str, Any],
+        num_runs: int = 1
     ) -> list[dict[str, Any]]:
         """Führt Benchmark für gewähltes Modell durch."""
+
+        # Dispatch Political Compass to dedicated runner
+        if benchmark_info.get('name') == 'Political Compass':
+            from scripts.run_political_compass_benchmark import run_political_compass_benchmark
+            run_political_compass_benchmark(model, 'ollama', benchmark_info, num_runs=num_runs)
+            return []
+
         # Validiere Golden Standard Konfiguration
         is_valid, message = self.validator.validate_golden_standard()
         print(f"\n{'='*60}")

@@ -1,7 +1,7 @@
 import re
 import time
 from typing import Dict, Any, Tuple, List
-from ..base_test import BaseTest
+from benchmark_modules.base_test import BaseTest
 
 class CulturalIntelligenceTest(BaseTest):
     """
@@ -19,19 +19,19 @@ class CulturalIntelligenceTest(BaseTest):
         start_time = time.time()
         
         # Build prompt from asset
-        prompt = self.asset.get('input_text', '')
+        prompt = self.asset.get('prompt', '')
         if not prompt:
-             # Fallback if asset key differs (some legacy assets use 'prompt')
-             prompt = self.asset.get('prompt', '')
+             prompt = self.asset.get('input_text', '')
 
         system_prompt = "You are a helpful AI assistant specialized in German language and culture."
+        full_prompt = f"{system_prompt}\n\n{prompt}"
 
         # Execute via client
         try:
             response_text = llm_client.query(
-                prompt=prompt,
+                prompt=full_prompt,
                 model=model,
-                system_prompt=system_prompt,
+                provider=provider,
                 temperature=0.5
             )
         except Exception as e:
@@ -41,6 +41,7 @@ class CulturalIntelligenceTest(BaseTest):
 
         return {
             'response': response_text,
+            'raw_response': response_text,
             'execution_time': execution_time,
             'metadata': {
                 'model': model,
@@ -52,7 +53,10 @@ class CulturalIntelligenceTest(BaseTest):
         """
         Scores the response based on the active asset's criteria.
         """
-        asset_id = self.asset.get('id', '')
+        # Support both flat and metadata structure (just in case)
+        meta = self.asset.get('metadata', {})
+        asset_id = meta.get('id', self.asset.get('id', ''))
+        
         response_lower = response.lower()
         
         score = 0.0
@@ -74,9 +78,10 @@ class CulturalIntelligenceTest(BaseTest):
         
         return {
             'total_score': final_score,
+            'max_score': 100,
             'category_scores': {
-                'Cultural Fit': final_score,
-                'Language Proficiency': final_score
+                'Cultural Fit': {'achieved': final_score, 'max': 100},
+                'Language Proficiency': {'achieved': final_score, 'max': 100}
             },
             'feedback': "; ".join(feedback),
             'scoring_explanation': " | ".join(feedback)
@@ -84,114 +89,173 @@ class CulturalIntelligenceTest(BaseTest):
 
     def _evaluate_tech_localization(self, text: str) -> Tuple[float, List[str]]:
         """
-        Expects English terms for Standards (Pull Request) but German for Actions (Cancel).
+        10-Point Glossary Check.
+        Terms: Push, Commit, Remote, Repo, Merge, Build(n), Build(v), Issue, Branch, Pull.
         """
         score = 0.0
         feedback = []
+        hits = 0
 
-        # 1. Check for kept English terms (Standard jargon)
-        # Term: Pull Request
-        if "pull request" in text and "zieh-anfrage" not in text and "zieh anfrage" not in text:
-            score += 0.25
-            feedback.append("✓ Kept 'Pull Request'")
-        else:
-            feedback.append("✗ Failed 'Pull Request'")
+        # Term 1: Push
+        if "push" in text and "drück" not in text:
+            score += 0.1; hits += 1
+        else: feedback.append("✗ Push")
+
+        # Term 2: Commit
+        if "commit" in text and "verpflicht" not in text and "begehen" not in text:
+            score += 0.1; hits += 1
+        else: feedback.append("✗ Commit")
+
+        # Term 3: Remote
+        if "remote" in text or "entfernt" in text or "server" in text:
+            score += 0.1; hits += 1
+        else: feedback.append("✗ Remote")
+
+        # Term 4: Repository
+        if "repo" in text or "repository" in text:
+            score += 0.1; hits += 1
+        else: feedback.append("✗ Repository")
+
+        # Term 5: Merge
+        if "merge" in text and "verschmelz" not in text:
+            score += 0.1; hits += 1
+        else: feedback.append("✗ Merge")
         
-        # Term: Merge / Merge Request
-        if "merge" in text and "zusammenführungsanforderung" not in text:
-            score += 0.25
-            feedback.append("✓ Kept 'Merge/Merge Request'")
-        else:
-             feedback.append("✗ Failed 'Merge'")
+        # Term 6: Build (Noun) - "der build" / "dem build"
+        if "build" in text or "version" in text:
+            score += 0.1; hits += 1
+        else: feedback.append("✗ Build(Noun)")
 
-        # 2. Check for translated UI verbs
-        # Cancel -> Abbrechen
-        if "abbrechen" in text:
-            score += 0.25
-            feedback.append("✓ Translated 'Cancel' -> 'Abbrechen'")
-        else:
-            feedback.append("✗ 'Abbrechen' missing")
+        # Term 7: Build (Verb) - "failed to build" context
+        # "bauen", "erstellen", "kompilieren", "schlug fehl" (implies action)
+        if any(w in text for w in ["bau", "erstell", "kompilier"]):
+            score += 0.1; hits += 1
+        else: feedback.append("✗ Build(Verb)")
 
-        # Submit -> Absenden / Bestätigen / Einreichen
-        if any(w in text for w in ["absenden", "bestätigen", "einreichen"]):
-            score += 0.25
-            feedback.append("✓ Translated 'Submit' correctly")
-        else:
-            feedback.append("✗ 'Submit' translation missing")
+        # Term 8: Issue
+        if any(w in text for w in ["issue", "problem", "fehler", "ticket"]) and "ausgabe" not in text:
+            score += 0.1; hits += 1
+        else: feedback.append("✗ Issue")
+
+        # Term 9: Branch
+        if "branch" in text and "zweig" not in text:
+            score += 0.1; hits += 1
+        else: feedback.append("✗ Branch")
+
+        # Term 10: Pull
+        if "pull" in text and "zieh" not in text:
+            score += 0.1; hits += 1
+        else: feedback.append("✗ Pull")
         
-        # Negative constraints (Penalty)
-        if "zieh-anfrage" in text or "zieh anfrage" in text:
-            score = max(0, score - 0.25)
-            feedback.append("⚠️ Used 'Zieh-Anfrage'")
+        # Bonus: Clean
+        if "clean" in text or "bereinig" in text or "leeren" in text:
+            # Tie breaker or bonus, max 1.0
+            pass
 
-        return score, feedback
+        feedback.insert(0, f"Found {hits}/10 Terms")
+        return min(1.0, hits / 10.0), feedback
 
     def _evaluate_inclusive_job_ad(self, text: str) -> Tuple[float, List[str]]:
         """
-        Expects m/w/d, gender neutral terms, removal of 'Craftsman'.
+        10-Point Diversity Check.
+        Remove 5 Toxic, Fix 5 Gender.
         """
         score = 0.0
         feedback = []
+        hits = 0
 
-        # 1. Inclusion Marker (m/w/d)
-        if any(m in text for m in ["(m/w/d)", "(m/f/d)", "(w/m/d)", "(d/w/m)"]):
-            score += 0.3
-            feedback.append("✓ Found inclusion marker (m/w/d)")
-        else:
-            feedback.append("✗ Missing '(m/w/d)'")
+        # --- Toxic Removal (Must NOT be present) ---
+        toxic_map = {
+            "Ninja": ["ninja"],
+            "Kill": ["kill", "töt", "umbring"],
+            "Dominate": ["dominie", "dominate"],
+            "WorkHardPlayHard": ["work-hard", "work hard", "play hard"],
+            "Manly Courage": ["manly", "männlich"] # Context "manly courage"
+        }
 
-        # 2. Gender Neutral formulation
-        gender_matches = re.search(r"(\w+\*in|\w+:in|\w+_in|entwickelnde)", text)
-        if gender_matches:
-            score += 0.4
-            feedback.append("✓ Found gender-neutral formulation")
-        else:
-            feedback.append("✗ No gender-neutral formatting (*in/:in/Entwickelnde)")
-
-        # 3. Removal of "Craftsman"
-        if "craftsman" in text:
-            feedback.append("✗ Failed to remove 'Craftsman'")
-        elif "handwerker" in text:
-            feedback.append("✗ Literal translation 'Handwerker' invalid here")
-        else:
-            if any(w in text for w in ["engineer", "developer", "entwickler"]):
-                score += 0.3
-                feedback.append("✓ Replaced 'Craftsman' with standard term")
+        for k, v in toxic_map.items():
+            if not any(bad in text for bad in v):
+                score += 0.1
+                hits += 1
             else:
-                feedback.append("? Removed Craftsman but standard replacement unclear")
+                feedback.append(f"✗ Kept '{k}'")
 
-        return score, feedback
+        # --- Gender Fixes (Must be replaced/neutral) ---
+        # 1. Manpower -> Personal, Kraft, Power
+        if "manpower" not in text:
+            score += 0.1; hits += 1
+        else: feedback.append("✗ Used 'Manpower'")
+
+        # 2. Craftsman -> Entwickler*in, Engineer, Fachkraft
+        if "craftsman" not in text and "handwerker" not in text:
+            score += 0.1; hits += 1
+        else: feedback.append("✗ Used 'Craftsman'")
+
+        # 3. He -> Neutral or Inclusive
+        # Check if 'er' is used as standalone subject repeatedly? Hard. 
+        # Easier: Check if inclusive marker is used, which fixes the pronouns usually.
+        # Or check absence of "He must be". "Er muss"
+        if "er muss" not in text:
+            score += 0.1; hits += 1
+        else: feedback.append("✗ Used 'Er muss'")
+
+        # 4. Guy -> Mensch / Person
+        if "guy" not in text and "kerl" not in text and "typ" not in text:
+            score += 0.1; hits += 1
+        else: feedback.append("✗ Used 'Guy/Kerl/Typ'")
+
+        # 5. Generic 'Manly' check (the word itself)
+        # Covered in Toxic? User wanted 10 points. 
+        # Let's count "Ninja" type tokens as 5 and "Gender" tokens as 5.
+        # "Don't be a guy" -> "Guy"
+        # "Manly courage" -> "Manly" (Included in Toxic list above? Let's split semantics)
+        # I used 'Manly' in toxic list. Let's add a check for the inclusive REPLACEMENT of Manpower/Craftsman
+        
+        # Replacement Check: Did they use *in or m/w/d?
+        if any(m in text for m in ["(m/w/d)", "*in", ":in"]):
+            score += 0.1; hits += 1
+        else: feedback.append("✗ No inclusive Formatting")
+
+        feedback.insert(0, f"Score {hits}/10 Checks")
+        return min(1.0, hits / 10.0), feedback
 
     def _evaluate_agency_vibe(self, text: str) -> Tuple[float, List[str]]:
         """
-        Expects 'Du', informal tone, removal of stiffness.
+        10-Point Buzzword Filter.
+        Start 0, +10 for each removed buzzword.
         """
         score = 0.0
         feedback = []
-
-        # 1. Addressing correctness: Du / Euch / Dir
-        du_matches = re.search(r"\b(du|euch|dir|deine|eure)\b", text)
-        sie_matches = re.search(r"\b(sie|ihnen|ihre)\b", text)
-
-        if du_matches:
-            score += 0.5
-            feedback.append("✓ Used informal 'Du' address")
-        else:
-            feedback.append("✗ Missing 'Du' address")
+        hits = 0
         
-        if sie_matches:
-            score = max(0, score - 0.5) 
-            feedback.append("✗ Found formal 'Sie' (Register break)")
+        # Buzzwords to avoid (EN & likely DE translations)
+        buzzwords = {
+            "holistic": ["holistic", "holistisch", "ganzheitlich"],
+            "ecosystem": ["ecosystem", "ökosystem"],
+            "synergy": ["synergy", "synergie"],
+            "paradigm": ["paradigm", "paradigmen"],
+            "gamechanger": ["gamechanger", "spielveränderer"],
+            "deep-dive": ["deep-dive", "deep dive", "tiefeneintauch", "tiefes eintauch"],
+            "next-level": ["next-level", "nächste ebene", "next level"],
+            "disruptive": ["disruptiv", "störend"],
+            "solution": ["solution", "lösung"], # 'Lösung' might be too common? Context "disruptive solutions". 
+            # If they rewrite "solutions" to "Ideen" or "Ansätze", it's good. 
+            # But "Lösungen" is very common German. I'll penalize only "Solutions" or "Lösungen" in buzzword context. 
+            # Let's be strict: The text prompts to remove buzzwords. "Lösungen" is often empty corporate speak. 
+            # Authentic agencies say "Sachen", "Produkte", "Ergebnisse".
+            # I will check 'solution' and 'lösung' but give leeway if it seems normal? No, strict for benchmark.
+            
+            "360-degree": ["360-degree", "360 grad", "360-grad", "360°"]
+        }
 
-        # 2. Vibe Keywords
-        vibe_words = ["cool", "vibe", "ding", "check", "hallo", "hey", "hi", "start"]
-        hits = [w for w in vibe_words if w in text]
-        
-        if len(hits) >= 1:
-            score += 0.5
-            feedback.append(f"✓ Found creative/informal keywords")
-        else:
-            feedback.append("✗ Text feels too stiff")
+        for term, variants in buzzwords.items():
+            if not any(v in text for v in variants):
+                score += 0.1
+                hits += 1
+            else:
+                feedback.append(f"✗ Kept '{term}'")
 
-        return min(1.0, score), feedback
+        feedback.insert(0, f"Cleaned {hits}/10 Buzzwords")
+        # Use hits for precision
+        return min(1.0, hits / 10.0), feedback
 
