@@ -5,7 +5,7 @@ Getrennte Implementierungen für Ollama, Anthropic, Mistral
 
 import os
 import logging
-from typing import Any
+from typing import Any, List, Optional, Callable, Dict
 
 from utils.ollama_config import CODING_BENCHMARK_OPTIONS, CREATIVE_BENCHMARK_OPTIONS
 
@@ -24,7 +24,13 @@ class BaseProviderClient:
     def __init__(self, config: dict[str, Any]):
         self.config = config
 
-    def query(self, model: str, prompt: str, temperature: float, stream_handler=None) -> str:
+    def query(
+        self,
+        model: str,
+        prompt: str,
+        temperature: float,
+        stream_handler: Optional[Callable[[str], None]] = None
+    ) -> str:
         """
         Query API
 
@@ -39,7 +45,7 @@ class BaseProviderClient:
         """
         raise NotImplementedError
 
-    def get_available_models(self) -> list[str]:
+    def get_available_models(self) -> List[str]:
         """Listet verfügbare Modelle"""
         raise NotImplementedError
 
@@ -47,7 +53,7 @@ class BaseProviderClient:
 class OllamaClient(BaseProviderClient):
     """Ollama Provider Client"""
 
-    def __init__(self, config: dict[str, Any]):
+    def __init__(self, config: Dict[str, Any]):
         super().__init__(config)
         self._client = None
 
@@ -55,65 +61,91 @@ class OllamaClient(BaseProviderClient):
     def client(self):
         """Lazy-loaded Ollama Client"""
         if self._client is None:
+            # pylint: disable=import-outside-toplevel, import-error
             import ollama
             self._client = ollama
         return self._client
 
-    def query(self, model: str, prompt: str, temperature: float, stream_handler=None) -> str:
+    def _get_options(self, model: str, temperature: float) -> Dict[str, Any]:
+        """Konfiguriert Optionen basierend auf Temperatur und Modell-Typ."""
+        # Select options based on temperature
+        if temperature >= 0.3:
+            options = CREATIVE_BENCHMARK_OPTIONS.copy()
+        else:
+            options = CODING_BENCHMARK_OPTIONS.copy()
+
+        # Ensure the requested temperature is actually used
+        options['temperature'] = temperature
+
+        # SPECIAL HANDLING for Reasoning Models (e.g. DeepSeek-R1)
+        is_reasoning = (
+            'deepseek-r1' in model or
+            'reasoning' in model or
+            'qwen3' in model
+        )
+        if is_reasoning:
+            options['num_predict'] = 32768
+            logger.debug(
+                "Boosting token limit for reasoning model '%s' to 32768", model
+            )
+
+        return options
+
+    def _handle_streaming(
+        self,
+        model: str,
+        prompt: str,
+        options: Dict[str, Any],
+        stream_handler: Callable[[str], None]
+    ) -> str:
+        """Behandelt Streaming-Response von Ollama."""
+        response = self.client.chat(
+            model=model,
+            messages=[{'role': 'user', 'content': prompt}],
+            options=options,
+            stream=True
+        )
+        full_content = ""
+        full_thinking = ""
+
+        for chunk in response:
+            msg = chunk.get('message', {})
+            # Handle diff response formats (dict vs object)
+            if isinstance(msg, dict):
+                val_content = msg.get('content', '')
+            else:
+                val_content = getattr(msg, 'content', '')
+
+            # Try to extract thinking
+            val_thinking = ""
+            if hasattr(msg, 'thinking'):
+                val_thinking = msg.thinking
+            elif isinstance(msg, dict):
+                val_thinking = msg.get('thinking', '')
+
+            if val_thinking:
+                stream_handler(val_thinking)
+                full_thinking += val_thinking
+
+            if val_content:
+                stream_handler(val_content)
+                full_content += val_content
+
+        return full_content
+
+    def query(
+        self,
+        model: str,
+        prompt: str,
+        temperature: float,
+        stream_handler: Optional[Callable[[str], None]] = None
+    ) -> str:
         """Query Ollama API"""
         try:
-            # Select options based on temperature
-            # If temp >= 0.3, use creative options (better for UX/Writing)
-            # If temp < 0.3, use coding options (better for Logic/Code)
-            if temperature >= 0.3:
-                options = CREATIVE_BENCHMARK_OPTIONS.copy()
-            else:
-                options = CODING_BENCHMARK_OPTIONS.copy()
+            options = self._get_options(model, temperature)
 
-            # Ensure the requested temperature is actually used
-            options['temperature'] = temperature
-
-            # SPECIAL HANDLING for Reasoning Models (e.g. DeepSeek-R1)
-            # These models generate thousands of "thinking" tokens before the actual answer.
-            # We explicitly boost the token limit prevents premature cutoff.
-            is_reasoning = 'deepseek-r1' in model or 'reasoning' in model or 'qwen3' in model
-            if is_reasoning:
-                options['num_predict'] = 32768  # 32k tokens allow for extensive reasoning chains
-                logger.debug(f"Boosting token limit for reasoning model '{model}' to 32768")
-
-            # Handle Streaming
             if stream_handler:
-                response = self.client.chat(
-                    model=model,
-                    messages=[{'role': 'user', 'content': prompt}],
-                    options=options,
-                    stream=True
-                )
-                full_content = ""
-                full_thinking = ""
-                
-                for chunk in response:
-                    val_content = chunk['message'].get('content', '')
-                    val_thinking = ""
-                    
-                    # Try to extract thinking if provided separately (Ollama experimental)
-                    if hasattr(chunk['message'], 'thinking'):
-                         val_thinking = chunk['message'].thinking
-                    elif isinstance(chunk['message'], dict):
-                         val_thinking = chunk['message'].get('thinking', '')
-
-                    if val_thinking:
-                        # Visualize thinking if stream handler supports it (or just dump it)
-                        stream_handler(val_thinking) # Just treat as text for now
-                        full_thinking += val_thinking
-                    
-                    if val_content:
-                        stream_handler(val_content)
-                        full_content += val_content
-                
-                # Reconstruct return value (ignoring distinct thinking for return, just content)
-                # Unless we want to return thinking? The caller expects content.
-                return full_content
+                return self._handle_streaming(model, prompt, options, stream_handler)
 
             # Standard Blocking Call
             response = self.client.chat(
@@ -122,34 +154,36 @@ class OllamaClient(BaseProviderClient):
                 options=options
             )
 
-            content = response['message']['content']
-            
-            # Special handling for reasoning models (e.g. DeepSeek-R1)
-            # that separate 'thinking' from content
+            msg = response.get('message', {})
+            # Handle diff response formats (dict vs object)
+            if isinstance(msg, dict):
+                content = msg.get('content', '')
+            else:
+                content = getattr(msg, 'content', '')
+
             thinking = ""
-            if 'message' in response and hasattr(response['message'], 'get'):
-                 # Dictionary access if it's a dict
-                 thinking = response['message'].get('thinking', '')
-            elif hasattr(response['message'], 'thinking'):
-                 # Attribute access if it's an object (ollama-python 0.6+ might return objects)
-                 thinking = response['message'].thinking
+            if hasattr(msg, 'thinking'):
+                thinking = msg.thinking
+            elif isinstance(msg, dict):
+                thinking = msg.get('thinking', '')
 
             if not content:
                 done_reason = response.get('done_reason')
-                
                 if done_reason == 'length':
-                    # Log as debug to avoid cluttering the terminal progress bars
-                    logger.debug(f"Ollama generation stopped due to token limit. (num_predict={options.get('num_predict')})")
+                    logger.debug(
+                        "Ollama generation stopped due to token limit. (num_predict=%s)",
+                        options.get('num_predict')
+                    )
                     if thinking:
-                         logger.debug("Returning partial 'thinking' content as fallback.")
-                         return thinking
+                        logger.debug("Returning partial 'thinking' content as fallback.")
+                        return thinking
                     raise ValueError("Empty response from Ollama (Token limit reached)")
-                
+
                 if thinking:
-                    logger.debug("Received 'thinking' but no 'content'. Using thinking as fallback.")
+                    logger.debug("Received 'thinking' but no 'content'. Fallback.")
                     return thinking
-                    
-                logger.error(f"Empty content received. Full response: {response}")
+
+                logger.error("Empty content received. Full response: %s", response)
                 raise ValueError("Received empty response from Ollama")
 
             return content
@@ -157,17 +191,21 @@ class OllamaClient(BaseProviderClient):
             logger.error("Ollama query failed: %s", e)
             raise
 
-    def get_available_models(self) -> list[str]:
+    def get_available_models(self) -> List[str]:
         """Listet verfügbare Ollama-Modelle"""
         try:
             response = self.client.list()
             # Handle both object and dict response formats
-            models = response.models if hasattr(response, 'models') else response.get('models', [])
+            models = (
+                response.models if hasattr(response, 'models')
+                else response.get('models', [])
+            )
             return [
-                model.model if hasattr(model, 'model') else model.get('name', 'unknown')
+                model.model if hasattr(model, 'model')
+                else model.get('name', 'unknown')
                 for model in models
             ]
-        except Exception as e:
+        except Exception as e:  # pylint: disable=broad-exception-caught
             logger.error("Error listing Ollama models: %s", e)
             return []
 
@@ -183,6 +221,7 @@ class AnthropicClient(BaseProviderClient):
     def client(self):
         """Lazy-loaded Anthropic Client"""
         if self._client is None:
+            # pylint: disable=import-outside-toplevel, import-error
             import anthropic
             api_key = os.environ.get('ANTHROPIC_API_KEY')
             if not api_key:
@@ -193,15 +232,26 @@ class AnthropicClient(BaseProviderClient):
     def _resolve_model(self, model: str) -> str:
         """Löst Modell-Name auf (Config-Fallback)"""
         if not model or model.startswith('claude'):
-            return self.config.get('anthropic', {}).get('model', 'claude-3-5-sonnet-20241022')
+            return self.config.get('anthropic', {}).get(
+                'model', 'claude-3-5-sonnet-20241022'
+            )
         return model
 
-    def query(self, model: str, prompt: str, temperature: float) -> str:
+    def query(
+        self,
+        model: str,
+        prompt: str,
+        temperature: float,
+        stream_handler: Optional[Callable[[str], None]] = None
+    ) -> str:
         """Query Anthropic API"""
         try:
             model = self._resolve_model(model)
-            max_tokens = self.config.get('anthropic', {}).get('max_tokens', MAX_TOKENS_ANTHROPIC)
+            max_tokens = self.config.get('anthropic', {}).get(
+                'max_tokens', MAX_TOKENS_ANTHROPIC
+            )
 
+            # Note: Streaming not implemented yet for Anthropic in this wrapper
             response = self.client.messages.create(
                 model=model,
                 max_tokens=max_tokens,
@@ -209,12 +259,15 @@ class AnthropicClient(BaseProviderClient):
                 messages=[{"role": "user", "content": prompt}]
             )
 
+            if stream_handler and response.content and hasattr(response.content[0], 'text'):
+                stream_handler(response.content[0].text)
+
             return response.content[0].text
         except Exception as e:
             logger.error("Anthropic query failed: %s", e)
             raise
 
-    def get_available_models(self) -> list[str]:
+    def get_available_models(self) -> List[str]:
         """Listet verfügbare Claude-Modelle"""
         return [
             'claude-3-5-sonnet-20241022',
@@ -234,25 +287,40 @@ class MistralClient(BaseProviderClient):
     def client(self):
         """Lazy-loaded Mistral Client"""
         if self._client is None:
+            # pylint: disable=import-outside-toplevel, import-error
             from mistralai import Mistral
             # Support both MISTRAL_API_KEY and CODESTRAL_API_KEY
-            api_key = os.environ.get('MISTRAL_API_KEY') or os.environ.get('CODESTRAL_API_KEY')
+            api_key = (
+                os.environ.get('MISTRAL_API_KEY') or
+                os.environ.get('CODESTRAL_API_KEY')
+            )
             if not api_key:
-                raise ValueError("MISTRAL_API_KEY or CODESTRAL_API_KEY environment variable not set")
+                raise ValueError(
+                    "MISTRAL_API_KEY or CODESTRAL_API_KEY environment variable not set"
+                )
             self._client = Mistral(api_key=api_key)
         return self._client
 
     def _resolve_model(self, model: str) -> str:
         """Löst Modell-Name auf (Config-Fallback)"""
         if not model or model.startswith('mistral'):
-            return self.config.get('mistral', {}).get('model', DEFAULT_MISTRAL_MODEL)
+            return self.config.get('mistral', {}).get(
+                'model', DEFAULT_MISTRAL_MODEL
+            )
         return model
 
-    def query(self, model: str, prompt: str, temperature: float) -> str:
+    def query(
+        self,
+        model: str,
+        prompt: str,
+        temperature: float,
+        stream_handler: Optional[Callable[[str], None]] = None
+    ) -> str:
         """Query Mistral API"""
         try:
             model = self._resolve_model(model)
 
+            # Note: Streaming not implemented yet for Mistral in this wrapper
             response = self.client.chat.complete(
                 model=model,
                 messages=[{"role": "user", "content": prompt}],
@@ -260,18 +328,21 @@ class MistralClient(BaseProviderClient):
                 random_seed=42  # Ensure deterministic output
             )
 
-            return response.choices[0].message.content
+            content = response.choices[0].message.content
+            if stream_handler and content:
+                stream_handler(content)
+
+            return content
         except Exception as e:
             logger.error("Mistral query failed: %s", e)
             raise
 
-    def get_available_models(self) -> list[str]:
+    def get_available_models(self) -> List[str]:
         """Listet verfügbare Mistral-Modelle"""
         return [
             'mistral-large-latest',
             'mistral-medium-latest',
             'mistral-small-latest',
-
             'open-mistral-7b'
         ]
 
@@ -287,6 +358,7 @@ class OpenAIClient(BaseProviderClient):
     def client(self):
         """Lazy-loaded OpenAI Client"""
         if self._client is None:
+            # pylint: disable=import-outside-toplevel, import-error
             from openai import OpenAI
             api_key = os.environ.get('OPENAI_API_KEY')
             if not api_key:
@@ -294,26 +366,31 @@ class OpenAIClient(BaseProviderClient):
             self._client = OpenAI(api_key=api_key)
         return self._client
 
-    def query(self, model: str, prompt: str, temperature: float) -> str:
+    def query(
+        self,
+        model: str,
+        prompt: str,
+        temperature: float,
+        stream_handler: Optional[Callable[[str], None]] = None
+    ) -> str:
         """Query OpenAI API"""
         try:
+            # Note: Streaming not implemented yet for OpenAI in this wrapper
             response = self.client.chat.completions.create(
                 model=model,
                 messages=[{"role": "user", "content": prompt}],
                 temperature=temperature
             )
-            return response.choices[0].message.content
+            content = response.choices[0].message.content or ""
+
+            if stream_handler and content:
+                stream_handler(content)
+
+            return content
         except Exception as e:
             logger.error("OpenAI query failed: %s", e)
             raise
 
-    def get_available_models(self) -> list[str]:
-        """Listet verfügbare OpenAI-Modelle"""
-        return [
-            'gpt-4o',
-            'gpt-4o-mini',
-            'gpt-4-turbo',
-            'gpt-3.5-turbo',
-            'o1-mini',
-            'o1-preview'
-        ]
+    def get_available_models(self) -> List[str]:
+        """List available OpenAI models"""
+        return ['gpt-4o', 'gpt-4-turbo', 'gpt-3.5-turbo']

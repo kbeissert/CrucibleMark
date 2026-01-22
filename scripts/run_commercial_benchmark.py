@@ -1,42 +1,42 @@
 #!/usr/bin/env python3
-"""Benchmark Runner für kommerzielle API-basierte Modelle.
+"""Benchmark Runner für kommerzielle API-basierte Modelle."""
 
-Zwei Modi:
-1. Golden Standard Mode: Generiert golden_standard_benchmark.csv
-2. Test Mode: Testet beliebige Modelle → commercial_models_benchmark.csv
-"""
-
+import sys
 import logging
 import json
-import sys
 import argparse
+import traceback
 from pathlib import Path
 from datetime import datetime
-from typing import Any
+from typing import Any, Dict, List, Optional, Tuple
 
-import yaml
-
-# Suppress verbose HTTP logging from libraries
+# Suppress verbose HTTP logging
 logging.getLogger("httpx").setLevel(logging.WARNING)
 logging.getLogger("httpcore").setLevel(logging.WARNING)
 
+# Add project root to path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
+# pylint: disable=wrong-import-position, import-error
 from utils.llm_client import LLMClient
 from utils.config_validator import ConfigValidator
 from utils.module_loader import load_test_class
 from utils.result_manager import ResultManager
-from utils.benchmark_utils import select_from_list, discover_assets
+from utils.benchmark_utils import select_from_list, discover_assets, load_asset_yaml
+from scripts.run_political_compass_benchmark import run_political_compass_benchmark
+# pylint: enable=wrong-import-position, import-error
+
+logger = logging.getLogger(__name__)
 
 
 class CommercialBenchmarkRunner:
     """Benchmark Runner für kommerzielle API-basierte Modelle."""
 
-    BENCHMARK_CATEGORIES = {}
+    benchmark_categories: Dict[str, Any] = {}
 
     def __init__(self, mode: str = 'test', force: bool = False):
         """Initialisiert Runner.
-        
+
         Args:
             mode: 'golden_standard' oder 'test'
             force: Wenn True, werden existierende Golden Standards überschrieben
@@ -46,45 +46,39 @@ class CommercialBenchmarkRunner:
         self.result_manager = ResultManager(self.validator)
         self.mode = mode
         self.force = force
+        self._load_categories()
 
-        # Load categories from config
-        self.BENCHMARK_CATEGORIES = {}
+    def _load_categories(self):
+        """Loads benchmark categories from config."""
+        self.benchmark_categories = {}
         if 'modules' in self.validator.config:
             for key, mod in self.validator.config['modules'].items():
                 if mod.get('enabled', False):
-                    self.BENCHMARK_CATEGORIES[key] = {
+                    self.benchmark_categories[key] = {
                         'name': mod['name'],
                         'description': mod['description'],
                         'path': f"{mod['path']}/assets",
                         'test_class': mod.get('test_class', 'CodeQualityTest')
                     }
 
-    def get_available_providers(self) -> dict[str, dict]:
-        """Holt aktivierte kommerzielle Provider aus Config.
-        
-        Returns:
-            Dict mit provider_key -> provider_config (nur enabled=true)
-        """
+    def get_available_providers(self) -> Dict[str, dict]:
+        """Holt aktivierte kommerzielle Provider aus Config."""
         return self.validator.get_enabled_commercial_providers()
 
-    def select_mode(self) -> str | None:
+    def select_mode(self) -> Optional[str]:
         """Wähle Benchmark-Modus."""
-        print(f"\n{'='*60}")
+        print(f"\n{'=' * 60}")
         print("🎯 BENCHMARK-MODUS")
-        print(f"{'='*60}")
-        print("  1. Golden Standard generieren")
-        print("     → Erstellt Referenz-Benchmark für lokale Vergleiche")
+        print(f"{'=' * 60}")
+        print("  1. Golden Standard generieren (Referenz-Benchmark)")
         print(f"     → Speichert in: {self.validator.get_golden_standard_csv()}")
-        print()
-        print("  2. Kommerzielle Modelle testen")
-        print("     → Testet beliebige kommerzielle LLMs")
+        print("\n  2. Kommerzielle Modelle testen")
         print("     → Speichert in: commercial_models_benchmark.csv")
-        print(f"{'='*60}")
+        print(f"{'=' * 60}")
 
         while True:
             try:
                 choice = input("\nWähle Modus (1-2): ").strip()
-
                 if choice == '1':
                     print("✓ Golden Standard Mode\n")
                     return 'golden_standard'
@@ -92,97 +86,69 @@ class CommercialBenchmarkRunner:
                     print("✓ Test Mode\n")
                     return 'test'
                 print("❌ Bitte 1 oder 2 eingeben")
-
             except KeyboardInterrupt:
                 print("\n\n❌ Abgebrochen")
                 return None
 
-    def select_golden_standard_model(self) -> tuple[str, str] | None:
-        """Holt das Golden Standard Modell aus Config.
-        
-        Returns:
-            (provider, model_id) oder None
-        """
+    def select_golden_standard_model(self) -> Optional[Tuple[str, str]]:
+        """Holt das Golden Standard Modell aus Config."""
         info = self.validator.get_golden_standard_info()
         if not info:
             print("❌ Kein Golden Standard in Config definiert")
             return None
 
         provider_key, model_id, provider_config = info
-        provider_name = provider_config.get('name', provider_key)
-
-        # Modell-Details
-        models = provider_config.get('models', [])
-        model_config = next((m for m in models if m.get('id') == model_id), {})
-        model_name = model_config.get('name', model_id)
-
-        print(f"\n{'='*60}")
-        print("🏆 GOLDEN STANDARD MODELL")
-        print(f"{'='*60}")
-        print(f"Provider: {provider_name}")
-        print(f"Modell: {model_name}")
-        print(f"ID: {model_id}")
-        print(f"{'='*60}\n")
+        print(f"\n{'=' * 60}\n🏆 GOLDEN STANDARD MODELL\n{'=' * 60}")
+        print(f"Provider: {provider_config.get('name', provider_key)}")
+        print(f"Modell:   {model_id}\n{'=' * 60}\n")
 
         return (provider_key, model_id)
 
-    def select_test_model(self) -> tuple[str, str] | None:
-        """Interaktive Modell-Auswahl für Test Mode.
-        
-        Returns:
-            (provider, model_id) oder None
-        """
+    def select_test_model(self) -> Optional[Tuple[str, str]]:
+        """Interaktive Modell-Auswahl für Test Mode."""
         providers = self.get_available_providers()
-
-        # Flatten models
         model_list = []
-        for provider_key, provider_config in providers.items():
-            provider_name = provider_config.get('name', provider_key)
-            models = provider_config.get('models', [])
 
-            for model in models:
-                model_id = model.get('id')
-                model_name = model.get('name', model_id)
-                description = model.get('description', '')
-                model_list.append((provider_key, model_id, provider_name, model_name, description))
+        for p_key, p_conf in providers.items():
+            p_name = p_conf.get('name', p_key)
+            for model in p_conf.get('models', []):
+                m_id = model.get('id')
+                m_name = model.get('name', m_id)
+                desc = model.get('description', '')
+                model_list.append((p_key, m_id, p_name, m_name, desc))
 
         selected = select_from_list(
             model_list,
-            lambda item: (f"[{item[2]}] {item[3]}", item[4]) if item[4] else f"[{item[2]}] {item[3]}",
+            lambda item: f"[{item[2]}] {item[3]}" + (f" - {item[4]}" if item[4] else ""),
             prompt="Wähle Modell",
             title="🌐 VERFÜGBARE MODELLE"
         )
 
         if selected:
-            provider_key, model_id, provider_name, model_name, _ = selected
-            print(f"✓ Ausgewählt: {provider_name} - {model_name}\n")
-            return (provider_key, model_id)
-            
+            # pylint: disable=unbalanced-tuple-unpacking
+            p_key, m_id, p_name, m_name, _ = selected
+            print(f"✓ Ausgewählt: {p_name} - {m_name}\n")
+            return (p_key, m_id)
+
         return None
 
-    def select_benchmark(self) -> dict[str, Any] | None:
+    def select_benchmark(self) -> Optional[Dict[str, Any]]:
         """Interaktive Benchmark-Auswahl."""
-        categories = list(self.BENCHMARK_CATEGORIES.items())
-        
-        selected_item = select_from_list(
+        categories = list(self.benchmark_categories.items())
+        selected = select_from_list(
             categories,
             lambda item: (item[1]['name'], item[1]['description']),
             prompt="Wähle Benchmark",
             title="📊 VERFÜGBARE BENCHMARKS"
         )
-
-        if selected_item:
-            key, info = selected_item
+        if selected:
+            key, info = selected
             print(f"✓ Ausgewählt: {info['name']}\n")
-            return info
-            
+            return {'key': key, **info}
         return None
 
-    def discover_assets(self, assets_path: str) -> list[Path]:
-        """Findet alle YAML-Assets im Verzeichnis."""
-        return discover_assets(assets_path)
-
-    def _get_quality_badge(self, percentage: float) -> str:
+    @staticmethod
+    def _get_quality_badge(percentage: float) -> str:
         """Gibt Qualitäts-Badge zurück."""
         if percentage >= 90:
             return "🌟 EXCELLENT"
@@ -194,213 +160,142 @@ class CommercialBenchmarkRunner:
             return "📉 WEAK"
         return "❌ FAIL"
 
-    def run_benchmark(
+    # pylint: disable=too-many-arguments, too-many-locals, too-many-positional-arguments
+    def _recover_from_json(
         self,
+        json_path: Path,
+        asset_path: Path,
+        benchmark_info: Dict[str, Any],
+        provider: str,
+        model: str
+    ) -> Optional[Dict[str, Any]]:
+        """Recovers a result from a cached JSON file."""
+        try:
+            with open(json_path, encoding='utf-8') as f:
+                data = json.load(f)
+
+            # Re-calculate score
+            module_path = Path(benchmark_info['path']).parent / 'test.py'
+            test_cls_name = benchmark_info.get('test_class', 'CodeQualityTest')
+            test_cls = load_test_class(module_path, test_cls_name)
+            test_inst = test_cls(asset_path)
+
+            score = test_inst.score_response(data.get('response', ''))
+            asset_id = data.get('id', asset_path.stem)
+
+            result = {
+                'timestamp': data.get('timestamp', datetime.now().strftime('%Y-%m-%d %H:%M:%S')),
+                'status': score.get('status', 'success'),
+                'provider': provider,
+                'model': model,
+                'asset_id': asset_id,
+                'asset_name': asset_path.stem,
+                'total_score': score['total_score'],
+                'max_score': score['max_score'],
+                'percentage': round((score['total_score'] / score['max_score'] * 100), 1),
+                'execution_time': data.get('execution_time', 0.0),
+                'response_length': len(data.get('response', '')),
+                'tier': score.get('tier', 'Tier 1')
+            }
+
+            for cat, val in score.get('category_scores', {}).items():
+                result[cat] = f"{val['achieved']}/{val['max']}"
+
+            return result
+
+        except Exception as e:  # pylint: disable=broad-exception-caught
+            print(f"   ⚠️ Fehler beim Wiederherstellen aus JSON: {e}")
+            return None
+
+    # pylint: disable=too-many-arguments, too-many-locals, too-many-positional-arguments
+    def _process_single_asset(
+        self,
+        asset_path: Path,
         provider: str,
         model: str,
-        benchmark_info: dict[str, Any],
-        num_runs: int = 1
-    ) -> list[dict[str, Any]]:
-        """
-        Führt Benchmark für gewähltes Modell durch.
-        
-        Args:
-            provider: Provider Name (mistral, anthropic, openai)
-            model: Modell ID
-            benchmark_info: Benchmark Konfiguration
-            num_runs: Anzahl der Durchläufe (relevant für Political Compass)
-            
-        Returns:
-            Liste mit Testergebnissen
-        """
-        # Dispatch Political Compass to dedicated runner
-        if benchmark_info.get('name') == 'Political Compass':
-            from scripts.run_political_compass_benchmark import run_political_compass_benchmark
-            run_political_compass_benchmark(model, provider, benchmark_info, num_runs=num_runs)
-            return []
+        benchmark_info: Dict[str, Any],
+        is_golden_model: bool
+    ) -> Optional[Dict[str, Any]]:
+        """Processes a single asset."""
+        asset_data = load_asset_yaml(asset_path)
+        if not asset_data:
+            print(f"⚠️  Skipping empty asset: {asset_path.name}")
+            return None
 
-        # Check if current model is Golden Standard
-        golden_info = self.validator.get_golden_standard_info()
-        is_golden_model = False
-        if golden_info:
-            g_provider, g_model, _ = golden_info
-            if provider == g_provider and model == g_model:
-                is_golden_model = True
+        asset_id = asset_data.get('metadata', {}).get('id', asset_path.stem)
+        asset_name = asset_data.get('metadata', {}).get('name') or \
+                     asset_data.get('metadata', {}).get('topic', asset_id)
 
-        print(f"\n{'='*60}")
-        print(f"📊 STARTE BENCHMARK: {benchmark_info['name']}")
-        print(f"{'='*60}")
-        print(f"Provider: {provider}")
-        print(f"Modell: {model}")
-        print(f"Modus: {self.mode}")
-        if is_golden_model:
-            print("ℹ️  Dies ist das Golden Standard Modell. Ergebnisse werden synchronisiert.")
-        print(f"{'='*60}\n")
+        json_path = Path(f"golden_standards/{provider}/{asset_id}.json")
 
-        # Discover assets
-        assets = self.discover_assets(benchmark_info['path'])
-        print(f"Gefundene Tests: {len(assets)}\n")
+        # Check for cached Golden Standard
+        if is_golden_model and json_path.exists():
+            if self.mode == 'golden_standard' and not self.force:
+                print(f"⏭️  Überspringe {asset_name} (Golden Standard existiert)")
+                res = self._recover_from_json(
+                    json_path, asset_path, benchmark_info, provider, model
+                )
+                if res:
+                    res['asset_name'] = asset_name  # Ensure name is correct
+                    print(f"   ✓ Cached: {res['percentage']}%")
+                    return res
 
-        results = []
+        print(f"▶️  Teste: {asset_name}...")
 
-        for asset_path in assets:
-            try:
-                # Load asset (Robust for multi-doc)
-                with open(asset_path, encoding='utf-8') as f:
-                    try:
-                        asset_data = yaml.safe_load(f)
-                    except yaml.composer.ComposerError:
-                        f.seek(0)
-                        docs = list(yaml.safe_load_all(f))
-                        asset_data = next((d for d in docs if d and 'metadata' in d), docs[0] if docs else {})
+        # Execute Test
+        module_path = Path(benchmark_info['path']).parent / 'test.py'
+        test_cls_name = benchmark_info.get('test_class', 'CodeQualityTest')
 
-                if not asset_data:
-                    print(f"⚠️  Skipping empty asset: {asset_path}")
-                    continue
+        try:
+            test_cls = load_test_class(module_path, test_cls_name)
+            test_inst = test_cls(asset_path)
+            exec_result = test_inst.execute(model, self.client, provider=provider)
+        except Exception as e:  # pylint: disable=broad-exception-caught
+            print(f"❌ Fehler bei Ausführung: {e}")
+            return None
 
-                asset_id = asset_data['metadata']['id']
-                asset_name = asset_data['metadata'].get('name', asset_data['metadata'].get('topic', asset_id))
+        response = exec_result['raw_response']
+        score = test_inst.score_response(response)
 
-                # Check if Golden Standard JSON already exists
-                # Only skip if we are explicitly in golden_standard mode (to avoid re-generation)
-                # In test mode, we might want to re-run to verify consistency, but user asked to reuse.
-                # Let's reuse if JSON exists AND we are the golden model.
+        result = {
+            'timestamp': datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
+            'status': score.get('status', 'success'),
+            'provider': provider,
+            'model': model,
+            'asset_id': asset_id,
+            'asset_name': asset_name,
+            'tier': score.get('tier', 'Tier 1'),
+            'total_score': score['total_score'],
+            'max_score': score['max_score'],
+            'percentage': round((score['total_score'] / score['max_score'] * 100), 1),
+            'execution_time': round(exec_result['execution_time'], 1),
+            'response_length': len(response)
+        }
 
-                if is_golden_model:
-                    json_path = Path(f"golden_standards/{provider}/{asset_id}.json")
-                    if json_path.exists():
-                        # Skip ONLY if we are in golden_standard mode AND force is False
-                        if self.mode == 'golden_standard' and not self.force:
-                            print(f"⏭️  Überspringe {asset_name} (Golden Standard existiert bereits)")
-                            
-                            # ✨ RECOVERY: Ergebnis aus JSON wiederherstellen und zu results hinzufügen
-                            try:
-                                with open(json_path, encoding='utf-8') as f:
-                                    existing_data = json.load(f)
-                                
-                                # Wir müssen den Score neu berechnen, da nur die Response gespeichert ist
-                                # Dazu laden wir kurz die Test-Klasse und das Asset
-                                module_path = Path(benchmark_info['path']).parent / 'test.py'
-                                test_class_name = benchmark_info.get('test_class', 'CodeQualityTest')
-                                TestClass = load_test_class(module_path, test_class_name)
-                                test_instance = TestClass(asset_path)
-                                
-                                # Score berechnen
-                                response_text = existing_data.get('response', '')
-                                score = test_instance.score_response(response_text)
-                                
-                                # Execution time aus JSON laden (0.0 als Fallback für alte Files)
-                                execution_time = existing_data.get('execution_time', 0.0)
-                                
-                                # Result Dict rekonstruieren
-                                recovered_result = {
-                                    'timestamp': existing_data.get('timestamp', datetime.now().strftime('%Y-%m-%d %H:%M:%S')),
-                                    'status': score.get('status', 'success'),
-                                    'provider': provider,
-                                    'model': model,
-                                    'asset_id': asset_id,
-                                    'asset_name': asset_name,
-                                    'total_score': score['total_score'],
-                                    'max_score': score['max_score'],
-                                    'percentage': round((score['total_score'] / score['max_score'] * 100), 1),
-                                    'execution_time': execution_time,
-                                    'response_length': len(response_text)
-                                }
-                                # Add category scores
-                                for cat_name, cat_data in score['category_scores'].items():
-                                    recovered_result[f'{cat_name}'] = f"{cat_data['achieved']}/{cat_data['max']}"
-                                
-                                results.append(recovered_result)
-                                # Visuellen Hinweis geben
-                                print(f"   ✓ Ergebnis aus Cache wiederhergestellt: {recovered_result['percentage']}%")
-                                
-                            except Exception as e:
-                                print(f"   ⚠️ Fehler beim Wiederherstellen aus JSON: {e}")
-                                import traceback
-                                traceback.print_exc()
+        # Add Details
+        for cat, val in score.get('category_scores', {}).items():
+            result[cat] = f"{val['achieved']}/{val['max']}"
 
-                            continue
+        # Print Output
+        badge = self._get_quality_badge(result['percentage'])
+        print(f"   Ergebnis: {result['percentage']}% {badge} "
+              f"({result['total_score']}/{result['max_score']} Pkt)")
 
-                            continue
+        # Save Golden Standard JSON if needed
+        if self.mode == 'golden_standard' or is_golden_model:
+            self._save_golden_json(provider, asset_id, response, exec_result['execution_time'])
+            if self.mode == 'test' and is_golden_model:
+                self._append_to_golden_csv(result)
 
-                        if self.mode == 'golden_standard' and self.force:
-                            print(f"🔄 Aktualisiere {asset_name} (Force Update)")
+        return result
 
-                print(f"▶️  Teste: {asset_name}...")
-
-                # Load Test Class
-                module_path = Path(benchmark_info['path']).parent / 'test.py'
-                test_class_name = benchmark_info.get('test_class', 'CodeQualityTest')
-
-                try:
-                    TestClass = load_test_class(module_path, test_class_name)
-                except (FileNotFoundError, ImportError, AttributeError) as e:
-                     print(f"❌ Fehler beim Laden des Test-Moduls: {e}")
-                     continue
-
-                test = TestClass(asset_path)
-
-                # Execute
-                # Pass provider to execute method
-                exec_result = test.execute(model, self.client, provider=provider)
-                response = exec_result['raw_response']
-                execution_time = exec_result['execution_time']
-
-                # Score
-                score = test.score_response(response)
-
-                # Result Object
-                result = {
-                    'timestamp': datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
-                    'status': score.get('status', 'success'),
-                    'provider': provider,
-                    'model': model,
-                    'asset_id': asset_id,
-                    'asset_name': asset_name,
-                    'tier': score.get('tier', 'Tier 1 (Undefined)'),
-                    'total_score': score['total_score'],
-                    'max_score': score['max_score'],
-
-                    'percentage': round((score['total_score'] / score['max_score'] * 100), 1),
-                    'execution_time': round(execution_time, 1),
-                    'response_length': len(response)
-                }
-
-                # Add category scores
-                for cat_name, cat_data in score['category_scores'].items():
-                    result[f'{cat_name}'] = f"{cat_data['achieved']}/{cat_data['max']}"
-
-                results.append(result)
-
-                # Print immediate result
-                badge = self._get_quality_badge(result['percentage'])
-                print(f"   Ergebnis: {result['percentage']}% {badge} ({result['total_score']}/{result['max_score']} Pkt)")
-
-                # Save Golden Standard JSON if in correct mode OR if it is the golden model
-                if self.mode == 'golden_standard' or is_golden_model:
-                    self._save_golden_json(provider, asset_id, response, execution_time)
-
-                    # If we are in test mode but it IS the golden model, we should also append to golden CSV
-                    if self.mode == 'test' and is_golden_model:
-                        self._append_to_golden_csv(result)
-
-            except Exception as e:
-                print(f"❌ Fehler bei {asset_path.name}: {e}")
-                import traceback
-                traceback.print_exc()
-
-        return results
-
-    def _append_to_golden_csv(self, result: dict[str, Any]) -> None:
-        """Fügt ein Ergebnis zur Golden Standard CSV hinzu."""
-        self.result_manager.save_results([result], result_type='golden')
-        print("   💾 Auch in Golden Standard CSV gespeichert.")
-
-    def _save_golden_json(self, provider: str, asset_id: str, response: str, execution_time: float = 0.0) -> None:
-        """Speichert die volle Antwort als JSON für Similarity-Checks."""
+    @staticmethod
+    def _save_golden_json(
+        provider: str, asset_id: str, response: str, execution_time: float
+    ):
+        """Saves the full response as JSON."""
         output_dir = Path(f"golden_standards/{provider}")
         output_dir.mkdir(parents=True, exist_ok=True)
-
         output_file = output_dir / f"{asset_id}.json"
 
         data = {
@@ -410,84 +305,119 @@ class CommercialBenchmarkRunner:
             "execution_time": execution_time,
             "response": response
         }
-
         try:
             with open(output_file, 'w', encoding='utf-8') as f:
                 json.dump(data, f, indent=2, ensure_ascii=False)
-            print(f"   💾 Golden Standard JSON gespeichert: {output_file}")
-        except Exception as e:
-            print(f"   ⚠️  Fehler beim Speichern des Golden Standard JSON: {e}")
+            print("   💾 JSON gespeichert.")
+        except Exception as e:  # pylint: disable=broad-exception-caught
+            print(f"   ⚠️  JSON Fehler: {e}")
 
-    def save_results(self, results: list[dict[str, Any]]) -> None:
-        """Speichert Ergebnisse in CSV."""
+    def _append_to_golden_csv(self, result: Dict[str, Any]):
+        """Appends result to golden CSV."""
+        self.result_manager.save_results([result], result_type='golden')
+        print("   💾 Auch in Golden Standard CSV gespeichert.")
+
+    def run_benchmark(
+        self,
+        provider: str,
+        model: str,
+        benchmark_info: Dict[str, Any],
+        num_runs: int = 1
+    ) -> List[Dict[str, Any]]:
+        """Main benchmark execution loop."""
+
+        # Political Compass Dispatch
+        if benchmark_info.get('name') == 'Political Compass':
+             # pylint: disable=import-outside-toplevel
+            # from scripts.run_political_compass_benchmark import run_political_compass_benchmark
+            run_political_compass_benchmark(model, provider, benchmark_info, num_runs=num_runs)
+            return []
+
+        # Check Golden Standard Status
+        golden_info = self.validator.get_golden_standard_info()
+        is_golden_model = False
+        if golden_info:
+            g_provider, g_model, _ = golden_info
+            if provider == g_provider and model == g_model:
+                is_golden_model = True
+
+        print(f"\n{'=' * 60}\n📊 STARTE BENCHMARK: {benchmark_info['name']}\n{'=' * 60}")
+        print(f"Provider: {provider}\nModell:   {model}\nModus:    {self.mode}")
+        if is_golden_model:
+            print("ℹ️  Dies ist das Golden Standard Modell.")
+
+        assets = discover_assets(benchmark_info['path'])
+        print(f"Tests:    {len(assets)}\n{'=' * 60}\n")
+
+        results = []
+        for asset_path in assets:
+            res = self._process_single_asset(
+                asset_path, provider, model, benchmark_info, is_golden_model
+            )
+            if res:
+                results.append(res)
+
+        return results
+
+    def save_results(self, results: List[Dict[str, Any]]):
+        """Saves results to CSV."""
         if not results:
             return
 
-        # Determine result type based on mode
+        target = 'commercial'
         if self.mode == 'golden_standard':
-            self.result_manager.save_results(results, result_type='golden')
-            # Auch in Commercial speichern, da Golden Standard auch ein valider Benchmark ist
-            self.result_manager.save_results(results, result_type='commercial')
-        else:
+            target = 'golden'
+            # Also save to commercial for record keeping
             self.result_manager.save_results(results, result_type='commercial')
 
-    def print_summary(self, results: list[dict[str, Any]]) -> None:
-        """Druckt Zusammenfassung."""
+        path = self.result_manager.save_results(results, result_type=target)
+        if path:
+            print(f"\n💾 Ergebnisse gespeichert: {path}")
+
+    def print_summary(self, results: List[Dict[str, Any]]):
+        """Prints benchmark summary."""
         if not results:
             return
 
-        print(f"\n{'='*60}")
-        print("📊 ZUSAMMENFASSUNG")
-        print(f"{'='*60}")
+        print(f"\n{'=' * 60}\n📊 ZUSAMMENFASSUNG\n{'=' * 60}")
 
         total_score = sum(r['total_score'] for r in results)
         max_possible = sum(r['max_score'] for r in results)
-        avg_percentage = (total_score / max_possible * 100) if max_possible > 0 else 0
+        avg_pct = (total_score / max_possible * 100) if max_possible > 0 else 0
 
-        print(f"Gesamt-Score: {total_score:.1f}/{max_possible} ({avg_percentage:.1f}%)")
-        print(f"Qualität: {self._get_quality_badge(avg_percentage)}")
-        print(f"{'-'*60}")
+        print(f"Gesamt:   {total_score:.1f}/{max_possible} ({avg_pct:.1f}%)")
+        print(f"Qualität: {self._get_quality_badge(avg_pct)}\n{'-' * 60}")
 
         for r in results:
             badge = self._get_quality_badge(r['percentage'])
             print(f"{r['asset_name'][:40]:<40} | {r['percentage']:>5.1f}% | {badge}")
-
-        print(f"{'='*60}\n")
-
+        print(f"{'=' * 60}\n")
 
 
 def main():
-    """Hauptfunktion."""
+    """CLI Entry Point."""
     parser = argparse.ArgumentParser(description="Commercial Benchmark Runner")
     parser.add_argument('--mode', choices=['golden_standard', 'test'], help="Benchmark mode")
     parser.add_argument('--auto', action='store_true', help="Run automatically without interaction")
-    parser.add_argument('--force', action='store_true', help="Force overwrite existing Golden Standards")
+    parser.add_argument(
+        '--force', action='store_true', help="Force overwrite existing Golden Standards"
+    )
     args = parser.parse_args()
 
-    print("\n" + "="*60)
-    print("🚀 KOMMERZIELLE MODELLE BENCHMARK")
-    print("="*60)
+    print(f"\n{'=' * 60}\n🚀 KOMMERZIELLE MODELLE BENCHMARK\n{'=' * 60}")
 
-    # Runner ohne Modus initialisieren
     runner = CommercialBenchmarkRunner()
 
-    # 1. Modus wählen
-    if args.mode:
-        mode = args.mode
-    else:
-        mode = runner.select_mode()
-        if not mode:
-            return
-
-    # Runner mit gewähltem Modus neu initialisieren
+    # 1. Select Mode
+    mode = args.mode or runner.select_mode()
+    if not mode:
+        return
     runner = CommercialBenchmarkRunner(mode=mode, force=args.force)
 
-    # 2. Modell wählen (je nach Modus)
+    # 2. Select Model
     if mode == 'golden_standard':
-        # Golden Standard aus Config
         result = runner.select_golden_standard_model()
     else:
-        # Beliebiges Modell
         result = runner.select_test_model()
 
     if not result:
@@ -495,11 +425,12 @@ def main():
 
     provider, model_id = result
 
-    # 3. Benchmark wählen
-    if args.auto and mode == 'golden_standard':
-        print("\n🚀 Starte automatischen Golden Standard Run für alle Module...")
-        for cat_id, cat_info in runner.BENCHMARK_CATEGORIES.items():
-            print(f"\n📦 Modul: {cat_info['name']}")
+    # 3. Select Benchmark (or Auto)
+    if args.auto:
+        print(
+            "\n🚀 Starte automatischen Golden Standard Run für alle Module..."
+        )
+        for _, cat_info in runner.benchmark_categories.items():
             results = runner.run_benchmark(provider, model_id, cat_info)
             runner.save_results(results)
             runner.print_summary(results)
@@ -509,23 +440,15 @@ def main():
     if not benchmark_info:
         return
 
-    print(f"\n{'='*60}")
-    print("📊 STARTE BENCHMARK")
-    print(f"{'='*60}")
-    print(f"Modus: {'🏆 Golden Standard' if mode == 'golden_standard' else '🧪 Test'}")
-    print(f"Provider: {provider}")
-    print(f"Modell: {model_id}")
-    print(f"Benchmark: {benchmark_info['name']}")
-    print(f"{'='*60}\n")
-
-    results = runner.run_benchmark(provider, model_id, benchmark_info)
-    runner.save_results(results)
-    runner.print_summary(results)
+    try:
+        results = runner.run_benchmark(provider, model_id, benchmark_info)
+        runner.save_results(results)
+        runner.print_summary(results)
+    except Exception as e:  # pylint: disable=broad-exception-caught
+        print(f"\n❌ Fatal Error: {e}")
+        traceback.print_exc()
+        sys.exit(1)
 
 
 if __name__ == '__main__':
-    try:
-        main()
-    except KeyboardInterrupt:
-        print("\n\n❌ Abgebrochen durch Benutzer")
-        sys.exit(1)
+    main()

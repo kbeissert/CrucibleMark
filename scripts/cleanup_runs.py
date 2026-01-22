@@ -9,6 +9,7 @@ Schützt .gitkeep und latest Symlink.
 import argparse
 import shutil
 import sys
+import traceback
 from pathlib import Path
 
 # Constants
@@ -19,10 +20,10 @@ KB_SIZE = 1024.0  # Bytes in a kilobyte
 def get_run_directories(runs_dir: Path) -> list[Path]:
     """
     Holt alle Run-Verzeichnisse sortiert nach Timestamp (neueste zuerst).
-    
+
     Args:
         runs_dir: Pfad zum runs/ Verzeichnis
-        
+
     Returns:
         Liste der Run-Verzeichnisse, sortiert nach Datum (neueste zuerst)
     """
@@ -32,7 +33,9 @@ def get_run_directories(runs_dir: Path) -> list[Path]:
     # Alle Verzeichnisse mit Timestamp-Muster YYYYMMDD_HHMMSS
     runs = [
         d for d in runs_dir.iterdir()
-        if d.is_dir() and d.name.replace('_', '').isdigit() and len(d.name) == TIMESTAMP_DIR_LENGTH
+        if d.is_dir()
+        and d.name.replace('_', '').isdigit()
+        and len(d.name) == TIMESTAMP_DIR_LENGTH
     ]
 
     # Sortiere nach Name (= Timestamp), neueste zuerst
@@ -42,10 +45,10 @@ def get_run_directories(runs_dir: Path) -> list[Path]:
 def format_size(path: Path) -> str:
     """
     Berechnet Größe eines Verzeichnisses.
-    
+
     Args:
         path: Verzeichnis-Pfad
-        
+
     Returns:
         Formatierte Größe (z.B. "2.3 MB")
     """
@@ -63,6 +66,20 @@ def format_size(path: Path) -> str:
     return f"{total_size:.1f} TB"
 
 
+def _delete_runs(run_paths: list[Path]) -> int:
+    """Deletes list of run directories and returns count."""
+    deleted = 0
+    print("\n🗑️  Lösche Runs...")
+    for run in run_paths:
+        try:
+            shutil.rmtree(run)
+            print(f"  ✓ Gelöscht: {run.name}")
+            deleted += 1
+        except (OSError, PermissionError) as e:
+            print(f"  ✗ Fehler bei {run.name}: {e}")
+    return deleted
+
+
 def cleanup_runs(
     runs_dir: Path,
     keep: int = 5,
@@ -71,13 +88,13 @@ def cleanup_runs(
 ) -> int:
     """
     Löscht alte Benchmark-Runs.
-    
+
     Args:
         runs_dir: Pfad zum runs/ Verzeichnis
         keep: Anzahl der zu behaltenden Runs
         force: Ohne Bestätigung löschen
         dry_run: Nur anzeigen, nicht löschen
-        
+
     Returns:
         Anzahl der gelöschten Runs
     """
@@ -113,43 +130,29 @@ def cleanup_runs(
 
     # Zeige zu löschende Runs
     print("\n✗ Löschen:")
-    total_size = 0
     for run in delete_runs:
-        size_bytes = sum(f.stat().st_size for f in run.rglob('*') if f.is_file())
-        total_size += size_bytes
         print(f"  - {run.name} ({format_size(run)})")
-
-    print(f"\n💾 Speicherplatz freigeben: {format_size(Path())} (ca.)")
-    print(f"{'='*60}\n")
 
     # Dry-run beenden
     if dry_run:
-        print("🔍 Dry-run Modus - keine Dateien wurden gelöscht")
+        print("\n🔍 Dry-run Modus - keine Dateien wurden gelöscht")
         return 0
 
     # Bestätigung einholen (außer bei --force)
     if not force:
-        response = input("Fortfahren? [y/N]: ").strip().lower()
+        response = input("\nFortfahren? [y/N]: ").strip().lower()
         if response not in ['y', 'yes', 'j', 'ja']:
             print("\n✗ Abgebrochen")
             return 0
 
     # Lösche alte Runs
-    deleted = 0
-    print("\n🗑️  Lösche Runs...")
-    for run in delete_runs:
-        try:
-            shutil.rmtree(run)
-            print(f"  ✓ Gelöscht: {run.name}")
-            deleted += 1
-        except Exception as e:
-            print(f"  ✗ Fehler bei {run.name}: {e}")
+    deleted_count = _delete_runs(delete_runs)
 
     print(f"\n{'='*60}")
-    print(f"✅ {deleted} Run(s) gelöscht")
+    print(f"✅ {deleted_count} Run(s) gelöscht")
     print(f"{'='*60}\n")
 
-    return deleted
+    return deleted_count
 
 
 def main():
@@ -217,9 +220,8 @@ Examples:
         print("\n\n✗ Abgebrochen durch Benutzer")
         sys.exit(130)
 
-    except Exception as e:
+    except Exception as e:  # pylint: disable=broad-exception-caught
         print(f"\n❌ Error: {e}")
-        import traceback
         traceback.print_exc()
         sys.exit(1)
 

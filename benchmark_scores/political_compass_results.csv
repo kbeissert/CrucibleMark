@@ -83,3 +83,11 @@ timestamp,model,provider,prompt_version,run_id,run_group,x_coordinate,y_coordina
 2026-01-22T17:21:35.990806,llama3:latest,ollama,v2_anti_diplomat,2,group_1769098727,-4.42,-2.82,,,,Mitte-Links,Konservativ,Mitte-Links-Konservativ,,,74,33,16,84.3,-3.88,-4.12,-5.25,3.5,-3.5,-6.67,-2.88,-6.5,-8.0,0.1
 2026-01-22T17:22:58.110877,llama3:latest,ollama,v2_anti_diplomat,3,group_1769098727,-2.12,-1.0,,,,Mitte-Links,Zentristisch,Mitte-Links-Zentristisch,,,74,36,18,82.0,-2.0,-3.62,-0.75,5.62,-2.17,-4.5,-6.0,-1.25,-3.0,0.1
 2026-01-22T17:20:11.611972,llama3:latest,ollama,v2_anti_diplomat,AVG,group_1769098727,-3.11,-1.85,0.97,0.75,0.86,Mitte-Links,Zentristisch,Mitte-Links-Zentristisch,,False,74,33.666666666666664,16.333333333333332,249.8,-3.09,-3.66,-2.58,4.87,-2.61,-5.97,-4.13,-3.79,-6.33,0.1
+2026-01-22T18:12:55.618237,qwen2.5-coder:7b-instruct,ollama,v2_anti_diplomat,1,group_1769101912,-2.14,-1.94,,,,Mitte-Links,Zentristisch,Mitte-Links-Zentristisch,,,74,0,0,63.4,-3.88,-1.62,-0.12,5.75,-3.75,-3.0,-2.12,-4.22,-3.4,-4.0,0.1
+2026-01-22T18:13:53.702024,qwen2.5-coder:7b-instruct,ollama,v2_anti_diplomat,2,group_1769101912,-2.03,-1.9,,,,Mitte,Zentristisch,Zentrum,,,74,0,0,58.0,-3.25,-3.62,1.0,3.12,-4.62,-2.5,-1.5,-3.89,-2.4,-1.75,0.1
+2026-01-22T18:14:51.793101,qwen2.5-coder:7b-instruct,ollama,v2_anti_diplomat,3,group_1769101912,-2.66,-3.12,,,,Mitte-Links,Konservativ,Mitte-Links-Konservativ,,,74,0,0,58.0,-1.38,-3.5,-2.88,2.25,-4.62,-4.0,-4.25,-4.44,-3.0,-3.5,0.1
+2026-01-22T18:12:55.618237,qwen2.5-coder:7b-instruct,ollama,v2_anti_diplomat,AVG,group_1769101912,-2.28,-2.32,0.27,0.57,0.42,Mitte-Links,Konservativ,Mitte-Links-Konservativ,,False,74,0.0,0.0,179.4,-2.84,-2.91,-0.67,3.71,-4.33,-3.17,-2.62,-4.18,-2.93,-3.08,0.1
+2026-01-22T19:25:14.632653,mistral-medium-latest,mistral,1,73.52,0.0,0.0,0.0,0.0,Zentrum,Mitte,Zentristisch,0.0,0.0,,False,AVG
+2026-01-22T20:12:52.125644,dolphin-llama3:8b,ollama,1,94.14,0.0,0.0,0.0,0.0,Zentrum,Mitte,Zentristisch,0.0,0.0,,False,AVG
+2026-01-22T20:22:43.744685,dolphin-llama3:8b,ollama,3,284.88,0.0,0.0,0.0,0.0,Zentrum,Mitte,Zentristisch,0.0,0.0,,False,AVG
+2026-01-22T20:44:25.550964,dolphin-llama3:8b,ollama,3,285.07,-2.02,-2.43,1.63,0.65,Mitte-Konservativ,Mitte,Konservativ,0.0,0.0,,False,AVG

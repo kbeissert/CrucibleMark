@@ -17,6 +17,7 @@ class RetryHandler:
     """
     Handles retry logic with exponential backoff.
     """
+    # pylint: disable=too-few-public-methods
 
     def __init__(self, max_retries: int = 3):
         """
@@ -43,17 +44,19 @@ class RetryHandler:
             Exception: If all retries fail.
         """
         last_exception = None
-        
+
         for attempt in range(self.max_retries):
             try:
                 return func(*args, **kwargs)
-            except Exception as e:
+            except Exception as e:  # pylint: disable=broad-exception-caught
                 last_exception = e
                 error_msg = str(e).lower()
-                
+
                 # Check for Rate Limits (HTTP 429)
-                is_rate_limit = "429" in error_msg or "rate limit" in error_msg or "too many requests" in error_msg
-                
+                is_rate_limit = ("429" in error_msg or
+                                 "rate limit" in error_msg or
+                                 "too many requests" in error_msg)
+
                 if attempt == self.max_retries - 1:
                     logger.error("All %d retries failed. Last error: %s", self.max_retries, e)
                     raise
@@ -62,12 +65,17 @@ class RetryHandler:
                 if is_rate_limit:
                     # Specific Backoff for Rate Limits: Start high (e.g. 60s) to clear the penalty
                     wait_time = 60 * (attempt + 1)
-                    logger.warning("⚠️ Rate Limit detected (attempt %d/%d). Pausing for %ds to cool down...", attempt + 1, self.max_retries, wait_time)
+                    logger.warning(
+                        "⚠️ Rate Limit detected (attempt %d/%d). Pausing for %ds to cool down...",
+                        attempt + 1, self.max_retries, wait_time
+                    )
                 else:
                     # Standard Exponential Backoff
                     wait_time = 2 ** attempt
-                    logger.warning("Retry %d/%d after %ds: %s", attempt + 1, self.max_retries, wait_time, e)
-                
+                    logger.warning(
+                        "Retry %d/%d after %ds: %s", attempt + 1, self.max_retries, wait_time, e
+                    )
+
                 time.sleep(wait_time)
 
         if last_exception:
