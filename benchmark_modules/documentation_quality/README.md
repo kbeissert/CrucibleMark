@@ -30,6 +30,12 @@ Hierbei wird geprüft, ob das Modell die versteckten Fehler im Dokumentations-As
 - **Advanced Issues (Hard - 25 Punkte)**: Subtile Fehler (z.B. falsche Syntax in Code-Beispielen, tote Links).
 - **Expert Issues (Very Hard - 20 Punkte)**: Komplexe Probleme (z.B. inkonsistente API-Versionierung, fehlende Security-Hinweise).
 
+**Hinweis zum Prompt-Design:**
+Um eine faire Bewertung zwischen sehr knappen ("Chatty") und sehr effizienten Modellen zu gewährleisten, erzwingen die Prompts eine strikte Trennung:
+1.  **Analyse-Phase**: Auflistung aller gefundenen Probleme (entspricht der *Error Detection* Score).
+2.  **Lösungs-Phase**: Generierung der verbesserten Dokumentation.
+Dies verhindert, dass Modelle Fehler "stillschweigend" korrigieren und dafür keine Punkte erhalten.
+
 ### 2. Solution Quality (30 Punkte)
 Hierbei wird die Qualität der generierten Verbesserungsvorschläge bewertet:
 

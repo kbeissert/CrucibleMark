@@ -75,6 +75,7 @@ modules:
     name: "Cultural Intelligence"
     description: "Evaluates language proficiency and cultural fit (German context)"
     path: "benchmark_modules/cultural_intelligence"
+    prefix: "cultural_intel"
     test_class: "CulturalIntelligenceTest"
     version: "1.0.0"
     enabled: true

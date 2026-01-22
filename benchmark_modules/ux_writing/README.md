@@ -39,3 +39,6 @@ Dieses Modul bewertet die Fähigkeit von LLMs, nutzerfreundliche, barrierefreie 
 
 1. **Labeled (Easy)**: Probleme sind explizit markiert (z.B. "TODO: Zu technisch").
 2. **Standard (Medium)**: Offensichtliche Verstöße gegen UX-Writing-Regeln (z.B. Passiv, Jargon).
+
+**Hinweis zum Prompt-Design:**
+Um eine faire Bewertung zu gewährleisten, erzwingen alle UX-Writing-Prompts eine strikte Trennung in **Schritt 1: Analyse** (Problem-Identifikation) und **Schritt 2: Optimierung**. Modelle, die diesen Schritt überspringen, verlieren signifikant Punkte in der *Problem-Erkennung*.

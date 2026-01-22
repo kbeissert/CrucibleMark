@@ -33,6 +33,9 @@ prompt: |
   3. EXPERT-LEVEL: Integriere 'Risk Reversal' (z.B. Garantie/No-Risk) und nutze emotionale 'Power Words'.
   
   **Input (Feature-Liste):**
+  
+  WICHTIG: Bitte führe zuerst die ANALYSE durch (Schritt 1) und nenne explizit die fehlenden Elemente, bevor du die TRANSFORMATION erstellst.
+  
   - "Unlimited Projects"
   - "Real-time Collaboration"
   - "Advanced Analytics Dashboard"

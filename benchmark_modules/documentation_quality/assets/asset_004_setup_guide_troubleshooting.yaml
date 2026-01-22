@@ -114,6 +114,8 @@ prompt: |
      - Troubleshooting-Section mit 5+ häufigen Fehlern
      - OS-spezifische Hinweise (Mac M1/M2, Linux, Windows WSL)
   4. **Begründe** deine Änderungen mit Onboarding-Prinzipien
+  
+  WICHTIG: Bitte liste zuerst explizit alle gefundenen Probleme auf (Schritt 1), bevor du die verbesserte Version erstellst.
 
 # ============================================================
 # Scoring Configuration
