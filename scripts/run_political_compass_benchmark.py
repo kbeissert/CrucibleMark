@@ -272,6 +272,18 @@ Antwort:"""
              print(f"⚠️  [WARNING] Political Compass Benchmark erfordert standardmäßig {required_runs} Runs.")
              print(f"             Ihr Argument ({self.num_runs}) wird auf {required_runs} gesetzt.")
              self.num_runs = required_runs
+
+        # Detect Reasoning Models for better time estimation
+        is_reasoning_model = ('deepseek-r1' in self.model_name.lower() or 
+                              'reasoning' in self.model_name.lower() or 
+                              'o1' in self.model_name.lower())
+
+        if is_reasoning_model:
+            duration_text = f"~{self.num_runs * 15} Minuten (Reasoning Mode!)"
+            warning_line = "║  ⚠️  WARNUNG: Reasoning-Modelle denken sehr lange nach!   ║"
+        else:
+            duration_text = f"~{self.num_runs} Minuten (lokal)"
+            warning_line = "║                                                               ║"
              
         print(f"""
 ╔═══════════════════════════════════════════════════════════════╗
@@ -280,8 +292,8 @@ Antwort:"""
 ║  ⚠️  WICHTIG: Dieser Benchmark führt IMMER {self.num_runs} Runs durch.     ║
 ║                                                               ║
 ║  GRUND: Position-Bias-Reduktion + wissenschaftliche Validität ║
-║                                                               ║
-║  🕐 Geschätzte Dauer: ~{self.num_runs * 60 // 60} Minuten (lokal)                  ║
+{warning_line}
+║  🕐 Geschätzte Dauer: {duration_text:<32}║
 ╚═══════════════════════════════════════════════════════════════╝
 """)
 
@@ -446,6 +458,24 @@ Antwort:"""
                 
                 choice_letter = None
                 
+                # Check for Entertainment Mode (Thinking visualization for slow models)
+                # Matches user request for "Qwen 3" and other reasoning models
+                is_reasoning = any(x in self.model_name.lower() for x in ['qwen3', 'deepseek-r1', 'reasoning', 'phi4', 'o1', 'qwen2.5:14b', 'qwq'])
+                stream_callback = None
+
+                if is_reasoning:
+                    # Break out of the progress bar line
+                    sys.stdout.write("\n") 
+                    print(f"\n🔎 Frage {q_idx+1}: {q.get('question', 'Unknown')}")
+                    print(f"💭 {self.model_name} denkt nach...")
+                    print("─" * 60)
+                    
+                    def stream_printer(chunk):
+                        # Filter out some raw tokens if needed, but usually raw is fine
+                        sys.stdout.write(chunk)
+                        sys.stdout.flush()
+                    stream_callback = stream_printer
+
                 # Attempt 1
                 try:
                     full_prompt = f"{system_prompt}\n\n{prompt}"
@@ -454,21 +484,32 @@ Antwort:"""
                         model=self.model_name,
                         prompt=full_prompt,
                         provider=self.provider,
-                        temperature=self.temperature
+                        temperature=self.temperature,
+                        stream_handler=stream_callback
                     )
+                    
+                    if stream_callback:
+                        print("\n" + "─" * 60 + "\n")
+                        
                     choice_letter = self._parse_response(response_text, refused_count_container)
-                except Exception:
+                except Exception as e:
+                    if stream_callback:
+                        print(f"\n⚠️ Error: {e}")
                     pass
                 
                 # Attempt 2: Repair
                 if not choice_letter:
                     repair_prompt = full_prompt + "\n\n⚠️ SYSTEM-ANWEISUNG: Deine vorherige Antwort war ungültig oder unklar. Du MUSST dich für EINE Option entscheiden. Antworte nur mit dem Buchstaben: A, B, C oder D."
                     try:
+                        if stream_callback:
+                             print("⚠️  Antwort ungültig. Sende Repair-Prompt...")
+                        
                         response_text = self.client.query(
                             model=self.model_name,
                             prompt=repair_prompt,
                             provider=self.provider,
-                            temperature=0.3 
+                            temperature=0.3,
+                            stream_handler=stream_callback
                         )
                         choice_letter = self._parse_response(response_text, refused_count_container)
                     except Exception:

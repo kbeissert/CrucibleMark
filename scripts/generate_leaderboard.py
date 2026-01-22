@@ -6,6 +6,7 @@ Führt lokale und kommerzielle Ergebnisse zusammen und berechnet Durchschnittswe
 
 import csv
 import sys
+import yaml # NEW
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
 
@@ -95,8 +96,91 @@ def load_data() -> pd.DataFrame:
     df['timestamp'] = pd.to_datetime(df['timestamp'], errors='coerce')
 
     df = df.sort_values('timestamp')
+    
+    # Sync Registry (Legacy - Disabled for Hybrid Approach)
+    # unique_models = df['model'].unique().tolist()
+    # sync_registry_with_models(unique_models)
+    
     df = df.drop_duplicates(subset=['model', 'type', 'asset_id'], keep='last')
     return df
+
+
+
+import yaml # Ensure yaml is imported
+
+# REGISTRY HANDLING
+REGISTRY_FILE = ROOT_DIR / "model_registry.yaml"
+
+def load_model_registry() -> Dict[str, Any]:
+    """Lädt die Modell-Registry aus YAML."""
+    if not REGISTRY_FILE.exists():
+        return {"models": {}}
+    try:
+        with open(REGISTRY_FILE, 'r', encoding='utf-8') as f:
+            data = yaml.safe_load(f)
+            return data if data else {"models": {}}
+    except Exception as e:
+        print(f"⚠️ Fehler beim Laden der Registry {REGISTRY_FILE}: {e}")
+        return {"models": {}}
+
+def save_model_registry(registry_data: Dict[str, Any]):
+    """Speichert die Registry zurück in YAML."""
+    try:
+        with open(REGISTRY_FILE, 'w', encoding='utf-8') as f:
+            yaml.dump(registry_data, f, sort_keys=False, indent=2, allow_unicode=True)
+        print(f"✅ Registry aktualisiert: {REGISTRY_FILE}")
+    except Exception as e:
+        print(f"⚠️ Fehler beim Speichern der Registry: {e}")
+
+def _suggest_generation(model_name: str) -> str:
+    """Heuristik für Generation-Erkennung (Fallback)."""
+    name = str(model_name).lower()
+    
+    # GEN 3: Pure Reasoners
+    gen3_triggers = ["o1", "o3", "deepseek-r1:671b", "deepseek-r1-671b"]
+    if any(t in name for t in gen3_triggers):
+        return "Gen 3 (Pure Reasoner)"
+        
+    # GEN 2: Distilled / Hybrid
+    # Updated: Qwen 2.5 is Gen 1 unless specifically reasoning variant
+    gen2_triggers = ["deepseek-r1", "phi4", "phi-4", "qwq", "reasoning"]
+    if any(t in name for t in gen2_triggers):
+        return "Gen 2 (Distilled Reasoner)"
+        
+    return "Gen 1 (Pattern Matcher)"
+
+def sync_registry_with_models(models: List[str]):
+    """Synchronisiert gefundene Modelle mit der Registry."""
+    registry = load_model_registry()
+    if 'models' not in registry:
+        registry['models'] = {}
+    
+    updated = False
+    for model in models:
+        if model not in registry['models']:
+            print(f"✨ Neues Modell entdeckt: {model}")
+            guessed_gen = _suggest_generation(model)
+            registry['models'][model] = {
+                "generation": guessed_gen,
+                "release_date": "Pending",
+                "notes": "Auto-detected"
+            }
+            updated = True
+            
+    if updated:
+        save_model_registry(registry)
+
+def _get_model_generation(model_name: str) -> str:
+    """Holt Generation aus Registry (Cached load)."""
+    # Simple reload strategy (in prod use caching)
+    registry = load_model_registry()
+    models = registry.get('models', {})
+    
+    if model_name in models:
+        return models[model_name].get('generation', 'Unknown')
+    
+    # Fallback if synchronization failed/was skipped
+    return _suggest_generation(model_name)
 
 
 def _get_badge(row: pd.Series) -> str:
@@ -136,8 +220,8 @@ def _aggregate_stats(df: pd.DataFrame) -> pd.DataFrame:
     stats['Tests Run'] = (stats['asset_id'].astype(str) + '/' +
                           str(total_unique_assets))
     return stats
-
-
+    
+    
 def _calculate_tier_stats(df: pd.DataFrame) -> pd.DataFrame:
     """Berechnet separate Statistik für Tier 1 und Tier 2."""
     if 'tier' not in df.columns:
@@ -163,6 +247,11 @@ def _calculate_tier_stats(df: pd.DataFrame) -> pd.DataFrame:
     return tier_means.rename(columns=rename_map)
 
 
+try:
+    from classify_generation import GenerationClassifier
+except ImportError:
+    GenerationClassifier = None
+
 def _finalize_result_df(
     result: pd.DataFrame,
     cat_stats: pd.DataFrame,
@@ -174,6 +263,38 @@ def _finalize_result_df(
         'execution_time': 'Avg Time (s)',
         'type': 'Type',
     })
+
+    # Insert Generation Column (Hybrid Approach)
+    if 'model' in result.columns:
+        classifier = GenerationClassifier() if GenerationClassifier else None
+        
+        if classifier:
+             # Add Generation using Hybrid Approach
+            def get_gen(row):
+                stats = {
+                    "avg_time": row.get('Avg Time (s)', 0),
+                    "reasoning_score": row.get('Reasoning Score', 0),
+                    "code_quality": row.get('Code Quality Audit', 0)
+                }
+                res = classifier.classify(row['model'], stats)
+                if res.get("flag_for_review"):
+                     print(f"⚠️  REVIEW NEEDED: {row['model']} -> {res['reason']}")
+                return res['generation']
+            
+            result['Generation'] = result.apply(get_gen, axis=1)
+        else:
+             print("⚠️  Hybrid Classifier not available, using fallback.")
+             result['Generation'] = result['model'].apply(_get_model_generation)
+        
+    # Re-order to place generation next to model
+
+    cols_order = result.columns.tolist()
+    if 'Generation' in cols_order and 'model' in cols_order:
+        cols_order.remove('Generation')
+        model_index = cols_order.index('model')
+        cols_order.insert(model_index + 1, 'Generation')
+        result = result[cols_order]
+
     result = result.sort_values('Overall Score', ascending=False)
 
     cols_to_round = [
@@ -194,10 +315,63 @@ def _finalize_result_df(
         if col in cat_stats.columns and col not in cat_cols and col != 'model':
             cat_cols.append(col)
 
+    # Round all category columns to 2 decimal places (as requested by user)
+    # Exclude Political Compass labels which are strings
+    pc_labels = ['Political Compass Ideologie', 'Political Compass Haltung', 'Political Compass']
+    
     for col in cat_cols:
-        if col in result.columns:
+        if col in result.columns and col not in pc_labels:
             result[col] = pd.to_numeric(result[col], errors='coerce')
-            result[col] = result[col].round(1).astype(object).fillna('Pending')
+            result[col] = result[col].round(2).astype(object).fillna('Pending')
+
+    # Merge PC Data
+    pc_csv = SCORES_DIR / 'political_compass_results.csv'
+    
+    # 1. Prepare Columns (Always Ensure Schema Consistency)
+    # Remove generic "Political Compass" column if present
+    if 'Political Compass' in result.columns:
+        result = result.drop(columns=['Political Compass'])
+    if 'Political Compass' in cat_cols:
+        cat_cols.remove('Political Compass')
+
+    # Add specific columns (initially empty)
+    for col_name in ['Political Compass Ideologie', 'Political Compass Haltung']:
+        if col_name not in result.columns:
+            result[col_name] = '' # Initialize as empty string
+        if col_name not in cat_cols:
+            cat_cols.append(col_name)
+
+    # 2. Populate Data if CSV exists
+    if pc_csv.exists():
+        try:
+            pc_df = pd.read_csv(pc_csv)
+            # Filter for AVG rows if possible, or just take the last run per model
+            if 'run_id' in pc_df.columns:
+                 pc_df = pc_df[pc_df['run_id'] == 'AVG']
+            
+            # Format Ideology/Attitude
+            if 'x_coordinate' in pc_df.columns and 'x_label' in pc_df.columns:
+                pc_df['Political Compass Ideologie'] = pc_df['x_label'] + ' (' + pc_df['x_coordinate'].astype(str) + ')'
+            
+            if 'y_coordinate' in pc_df.columns and 'y_label' in pc_df.columns:
+                pc_df['Political Compass Haltung'] = pc_df['y_label'] + ' (' + pc_df['y_coordinate'].astype(str) + ')'
+            
+            # Update result dataframe based on model match
+            # We use set_index for easier updating
+            result.set_index('model', inplace=True)
+            pc_df.set_index('model', inplace=True)
+            
+            # Update columns where index matches
+            if 'Political Compass Ideologie' in pc_df.columns:
+                result.update(pc_df[['Political Compass Ideologie']])
+            
+            if 'Political Compass Haltung' in pc_df.columns:
+                result.update(pc_df[['Political Compass Haltung']])
+                
+            result.reset_index(inplace=True)
+
+        except Exception as e:
+            print(f"Warning: Failed to merge Political Compass details: {e}")
 
     return result, cat_cols
 
@@ -210,6 +384,10 @@ def calculate_metrics(df: pd.DataFrame) -> Tuple[pd.DataFrame, List[str]]:
     # Kategorien zuweisen
     def get_category_name(asset_id: str) -> str:
         for mod_key, mod_data in modules_config.items():
+            # Check for explicit prefix in config
+            if 'prefix' in mod_data and asset_id.startswith(str(mod_data['prefix'])):
+                return str(mod_data.get('name', mod_key))
+            # Fallback to key
             if asset_id.startswith(mod_key):
                 return str(mod_data.get('name', mod_key))
         return 'Other'
@@ -221,7 +399,14 @@ def calculate_metrics(df: pd.DataFrame) -> Tuple[pd.DataFrame, List[str]]:
     print(f"DEBUG: Sample asset_ids: {df_success['asset_id'].head().tolist()}")
     
     # 1. Basis-Statistiken
-    result = _aggregate_stats(df_success)
+    # Filter out Political Compass from Overall Score calculation
+    # User requested that Political Compass serves only as context, not performance metric.
+    df_for_score = df_success[df_success['category'] != 'Political Compass']
+    result = _aggregate_stats(df_for_score)
+
+    # Ensure models that only have Political Compass data are still included (with NaN score)
+    all_models = df_success[['model', 'type']].drop_duplicates()
+    result = pd.merge(all_models, result, on=['model', 'type'], how='left')
 
     # 2. Kategorie-Statistiken
     cat_stats = df_success.groupby(['model', 'category'])['percentage'] \
@@ -302,7 +487,7 @@ def print_leaderboard_table(leaderboard: pd.DataFrame) -> None:
         "⚖️ Standard"
     ]
     display_fields = [
-        'Rank', 'Recommendation', 'Model Name', 'Total Score', 'Avg Time (s)',
+        'Rank', 'Recommendation', 'Model Name', 'Generation', 'Total Score', 'Avg Time (s)',
         'Routine Score', 'Reasoning Score'
     ]
 
@@ -348,7 +533,7 @@ def main(print_table: bool = True) -> None:
     # Rename model to Model Name for display
     leaderboard = leaderboard.rename(columns={'model': 'Model Name'})
 
-    cols = ['Rank', 'Recommendation', 'Model Name', 'Total Score', 'Avg Time (s)',
+    cols = ['Rank', 'Recommendation', 'Model Name', 'Generation', 'Total Score', 'Avg Time (s)',
             'Badge', 'Routine Score', 'Reasoning Score', 'Type']
     leaderboard = leaderboard.rename(columns={'Overall Score': 'Total Score'})
 

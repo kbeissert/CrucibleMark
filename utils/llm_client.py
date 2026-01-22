@@ -62,7 +62,8 @@ class LLMClient:
         prompt: str, 
         provider: str = 'ollama',
         temperature: float | None = None,
-        max_retries: int = DEFAULT_MAX_RETRIES
+        max_retries: int = DEFAULT_MAX_RETRIES,
+        stream_handler: Any = None
     ) -> str:
         """
         Universelle Query-Methode mit Delegation an Provider-Clients
@@ -73,6 +74,7 @@ class LLMClient:
             provider: 'ollama', 'anthropic' oder 'mistral'
             temperature: Temperature (optional, nutzt Config-Default)
             max_retries: Maximum Anzahl Retry-Versuche
+            stream_handler: Optionaler Callback (str -> None) für Streaming Output
             
         Returns:
             Response-Text
@@ -95,8 +97,13 @@ class LLMClient:
         logger.info("Querying %s model '%s' (temp=%s)", provider, model, temperature)
         
         # Delegate to provider-specific client with retry logic
+        # Note: Streaming might complicate retries (partial output already sent). 
+        # Ideally, stream_handler checks are inside the client, but here we just pass it.
+        # If streaming fails midway, retry logic repeats the whole query -> user sees duplicate stream?
+        # For this entertainment feature, duplicates on error are acceptable.
+        
         return self.retry_handler.execute_with_retry(
-            lambda: self.clients[provider].query(model, prompt, temperature)
+            lambda: self.clients[provider].query(model, prompt, temperature, stream_handler=stream_handler)
         )
     
     def estimate_tokens(self, text: str) -> int:

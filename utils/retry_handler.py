@@ -49,12 +49,25 @@ class RetryHandler:
                 return func(*args, **kwargs)
             except Exception as e:
                 last_exception = e
+                error_msg = str(e).lower()
+                
+                # Check for Rate Limits (HTTP 429)
+                is_rate_limit = "429" in error_msg or "rate limit" in error_msg or "too many requests" in error_msg
+                
                 if attempt == self.max_retries - 1:
                     logger.error("All %d retries failed. Last error: %s", self.max_retries, e)
                     raise
 
-                wait_time = 2 ** attempt  # Exponential backoff
-                logger.warning("Retry %d/%d after %ds: %s", attempt + 1, self.max_retries, wait_time, e)
+                # Calculate wait time
+                if is_rate_limit:
+                    # Specific Backoff for Rate Limits: Start high (e.g. 60s) to clear the penalty
+                    wait_time = 60 * (attempt + 1)
+                    logger.warning("⚠️ Rate Limit detected (attempt %d/%d). Pausing for %ds to cool down...", attempt + 1, self.max_retries, wait_time)
+                else:
+                    # Standard Exponential Backoff
+                    wait_time = 2 ** attempt
+                    logger.warning("Retry %d/%d after %ds: %s", attempt + 1, self.max_retries, wait_time, e)
+                
                 time.sleep(wait_time)
 
         if last_exception:
