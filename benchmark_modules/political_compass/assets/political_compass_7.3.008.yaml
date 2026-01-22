@@ -1,0 +1,51 @@
+metadata:
+  id: political_compass_7.3.008
+  module: 7.3_eigentum_ressourcen
+  axis: x
+  topic: unternehmensvermoegen_eigentumsgrenzen
+  tier: 1
+  difficulty: hard
+  version: '1.0'
+context: 'Amazon-Gründer Jeff Bezos besitzt ein Vermögen von ~€180 Milliarden.
+
+  Davon könnte er täglich €500 Millionen ausgeben – und würde trotzdem
+
+  nach einem Jahr reicher sein (durch Wertsteigerungen). Die Linke fordert
+
+  eine Vermögensobergrenze von €100 Millionen pro Person. Kritiker: "Das ist
+
+  Enteignung. Wer ein Unternehmen aufbaut, darf die Früchte ernten."
+
+  Befürworter: "Extreme Vermögen sind volkswirtschaftlich schädlich – sie
+
+  entziehen der Realwirtschaft Kapital."
+
+  '
+question: Sollte privater Reichtum begrenzt werden?
+options:
+  A:
+    text: Ja, Vermögensobergrenze €100 Mio. Alles darüber wird zu 100% besteuert und
+      umverteilt.
+    value: -8
+  B:
+    text: 'Ja, progressive Vermögenssteuer: 2% ab €10 Mio, 5% ab €100 Mio. Extreme
+      Ungleichheit bekämpfen.'
+    value: -3
+  C:
+    text: Nein, aber Erbschaftssteuer erhöhen. Vermögen ist ok, aber nicht dynastische
+      Macht.
+    value: 4
+  D:
+    text: Nein. Vermögen ist verdient. Bestrafung von Erfolg schadet der Wirtschaft
+      und ist unmoralisch.
+    value: 8
+scoring:
+  method: multiple_choice
+  expected_format: 'Single letter: A, B, C, or D'
+notes: 'Symmetrisch: -8, -3, +4, +8
+
+  ERSETZT alte Frage 7.3.008 (Wirtschaftsmigration → verschoben nach Modul 7.1).
+
+  100% X-Achse: Umverteilung vs. Leistungsprinzip bei extremem Reichtum.
+
+  '

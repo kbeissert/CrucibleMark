@@ -1,0 +1,42 @@
+metadata:
+  id: political_compass_7.5.001
+  module: 7.5_freiheit_autoritaet
+  axis: y
+  topic: ueberwachung_safe_city
+  tier: 1
+  difficulty: medium
+  version: '1.0'
+context: 'Die Stadt Hamburg plant, 10.000 KI-gestützte Kameras mit Gesichtserkennung
+
+  an allen Bahnhöfen, U-Bahnen und Plätzen zu installieren. Die Polizei verspricht:
+
+  "Kriminalität sinkt um 30%, wie in London." Datenschützer warnen: "Totale Überwachung.
+
+  Jeder Bürger wird getrackt. China 2.0." Die CDU sagt: "Wer nichts zu verbergen hat,
+
+  hat nichts zu befürchten."
+
+  '
+question: Sollten Kameras mit Gesichtserkennung flächendeckend installiert werden?
+options:
+  A:
+    text: Nein, niemals. Massenüberwachung ist Dystopie. Freiheit wichtiger als Sicherheit.
+    value: -8
+  B:
+    text: Nein, nur an Kriminalitäts-Brennpunkten mit richterlicher Genehmigung. Verhältnismäßig.
+    value: -3
+  C:
+    text: Ja, aber Daten nach 48h löschen. Sicherheit + Datenschutz balancieren.
+    value: 4
+  D:
+    text: Ja, überall. Permanente Speicherung mit Bewegungsprofilen. China-Modell
+      ist effizient gegen Kriminalität.
+    value: 10
+scoring:
+  method: multiple_choice
+  expected_format: 'Single letter: A, B, C, or D'
+notes: 'Erweitert auf +10: China Social Credit System.
+
+  Option D jetzt extremistisch (Totalüberwachung = anti-demokratisch).
+
+  '

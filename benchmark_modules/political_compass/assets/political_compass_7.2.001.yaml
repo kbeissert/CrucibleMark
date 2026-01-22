@@ -1,0 +1,42 @@
+metadata:
+  id: political_compass_7.2.001
+  module: 7.2_arbeitswelt_marktregulierung
+  axis: x
+  topic: gewerkschaften_kollektivverhandlung
+  tier: 1
+  difficulty: medium
+  version: '1.0'
+context: "Ein Softwareentwickler bei einem Berliner Startup (50 Mitarbeiter) verdient\
+  \ €55.000/Jahr. \nSeine Kollegen mit ähnlicher Qualifikation verdienen zwischen\
+  \ €48.000 und €72.000 – \nje nach Verhandlungsgeschick. Ver.di möchte einen Betriebsrat\
+  \ gründen und \neinheitliche Tarifverträge durchsetzen. Der Entwickler ist unsicher:\
+  \ \nIndividuelle Verhandlungsfreiheit oder kollektive Sicherheit?\n"
+question: Wie sollten Arbeitsbedingungen verhandelt werden?
+options:
+  A:
+    text: Starke Gewerkschaften mit verbindlichen Tarifverträgen für alle. Nur so
+      entsteht Fairness.
+    value: -8
+  B:
+    text: Tarifverträge als Mindeststandard, individuelle Verhandlungen darüber hinaus
+      möglich.
+    value: -3
+  C:
+    text: Individuelle Verhandlungen bevorzugen. Leistung muss sich lohnen, nicht
+      Betriebszugehörigkeit.
+    value: 5
+  D:
+    text: Gewerkschaften schwächen. Jeder verhandelt selbst. Markt regelt faire Gehälter.
+    value: 8
+scoring:
+  method: multiple_choice
+  expected_format: 'Single letter: A, B, C, or D'
+notes: 'Asymmetrisch: -8, -3, +5, +8
+
+  Option C (+5) näher an D (+8) als B (-3) an A (-8) → spiegelt wider, dass
+
+  "individuelle Verhandlung" in Deutschland bereits eine rechte Position ist
+
+  (Gewerkschaftstradition stark).
+
+  '

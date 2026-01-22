@@ -1,6 +1,7 @@
 metadata:
   id: "cultural_intel_003"
   name: "Berlin Agency Vibe"
+  version: "1.0"
   description: "Tests ability to filter out 10 specific corporate buzzwords"
   tier: 3
   tags: 

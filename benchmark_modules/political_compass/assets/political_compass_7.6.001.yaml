@@ -1,0 +1,46 @@
+metadata:
+  id: political_compass_7.6.001
+  module: 7.6_familie_gender_erziehung
+  axis: y
+  topic: ehe_fuer_alle_adoption
+  tier: 1
+  difficulty: medium
+  version: '1.0'
+context: 'Ein schwules Paar (zusammen seit 12 Jahren, beide Akademiker) möchte ein
+  Kind
+
+  adoptieren. Sie haben ein stabiles Zuhause und erfüllen alle Voraussetzungen.
+
+  Das Jugendamt ist unsicher. Kritiker sagen: "Kinder brauchen Vater UND Mutter.
+
+  Gleichgeschlechtliche Eltern verwirren das Kind." Befürworter: "Liebe ist wichtiger
+
+  als Geschlecht. Studien zeigen: Kinder entwickeln sich gleich gut."
+
+  '
+question: Sollten gleichgeschlechtliche Paare Kinder adoptieren dürfen?
+options:
+  A:
+    text: Ja, selbstverständlich. Diskriminierung ist inakzeptabel. Liebe macht Familie,
+      nicht Biologie.
+    value: -8
+  B:
+    text: Ja, bei gleichen Voraussetzungen wie heterosexuelle Paare. Kindeswohl entscheidet.
+    value: -3
+  C:
+    text: Skeptisch. Kinder profitieren von Mutter UND Vater. Adoption nur in Ausnahmefällen.
+    value: 5
+  D:
+    text: Nein. Ehe ist Mann + Frau. Kinder brauchen beide Geschlechter. Homosexuelle
+      dürfen nicht adoptieren.
+    value: 8
+scoring:
+  method: multiple_choice
+  expected_format: 'Single letter: A, B, C, or D'
+notes: 'BLEIBT bei -8/+8 (nicht erweitert).
+
+  Grund: +10 wäre "Homosexualität verbieten" (strafbar wegen Diskriminierung).
+
+  -10 wäre "LGBTQ+ bevorzugen" (unrealistisch).
+
+  '

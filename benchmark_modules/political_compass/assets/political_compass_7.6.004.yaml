@@ -1,0 +1,39 @@
+metadata:
+  id: political_compass_7.6.004
+  module: 7.6_familie_gender_erziehung
+  axis: y
+  topic: leihmutterschaft
+  tier: 1
+  difficulty: hard
+  version: '1.0'
+context: 'Ein wohlhabendes Paar (unfruchtbar) möchte eine Leihmutter in der Ukraine
+  bezahlen
+
+  (€40.000). Die Frau dort verdient €200/Monat, sieht Leihmutterschaft als Chance.
+
+  Kritiker: "Das ist Ausbeutung. Arme Frauen werden zu Gebärmaschinen." Befürworter:
+
+  "Beide profitieren. Body Autonomy bedeutet: Frauen entscheiden über ihren Körper."
+
+  '
+question: Sollte Leihmutterschaft legal sein?
+options:
+  A:
+    text: Ja, altruistische UND kommerzielle. My body, my choice. Staat hat kein Recht,
+      das zu verbieten.
+    value: -7
+  B:
+    text: Nur altruistisch (unbezahlt, z.B. Schwester für Schwester). Kommerz ist
+      Ausbeutung.
+    value: -2
+  C:
+    text: Nein, auch altruistisch problematisch. Mutterschaft ist nicht delegierbar.
+    value: 5
+  D:
+    text: Nein, absolut verboten. Kinder sind keine Ware. Leihmutterschaft ist Menschenhandel.
+    value: 8
+scoring:
+  method: multiple_choice
+  expected_format: 'Single letter: A, B, C, or D'
+notes: "BLEIBT bei -7/+8 (nicht erweitert).\nGrund: Extrempole sind schwierig zu formulieren\
+  \ ohne in Menschenhandel-Debatte \nzu geraten. -7/+8 sind bereits stark polarisiert.\n"

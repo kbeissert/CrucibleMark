@@ -1,0 +1,43 @@
+metadata:
+  id: political_compass_7.5.004
+  module: 7.5_freiheit_autoritaet
+  axis: y
+  topic: ziviler_ungehorsam_protest
+  tier: 1
+  difficulty: medium
+  version: '1.0'
+context: 'Die "Letzte Generation" klebt sich auf der A100 in Berlin fest. 5.000 Pendler
+
+  stehen im Stau, ein Rettungswagen kommt nicht durch. Die Aktivisten sagen:
+
+  "Klimakrise rechtfertigt Ungehorsam. Demokratie hat versagt." Die Polizei
+
+  löst die Blockade mit Gewalt auf, Aktivisten werden verhaftet. Die CDU fordert
+
+  Haftstrafen, die Grünen Verständnis.
+
+  '
+question: Ist diese Form von Protest legitim?
+options:
+  A:
+    text: Ja. Staat ist illegitim bei existenzieller Bedrohung. Widerstand ist Pflicht,
+      Sabotage gerechtfertigt.
+    value: -10
+  B:
+    text: Verstehe die Verzweiflung, aber Rettungswege blockieren geht zu weit. Friedlich
+      ja, Nötigung nein.
+    value: -2
+  C:
+    text: Nein, Ordnung geht vor. Demonstrationen anmelden, Straßen nicht blockieren.
+    value: 5
+  D:
+    text: Nein, Straftäter. Mehrjährige Haftstrafen + präventive Überwachung von Klima-Aktivisten.
+    value: 10
+scoring:
+  method: multiple_choice
+  expected_format: 'Single letter: A, B, C, or D'
+notes: 'NEU: -10 (Sabotage rechtfertigen) und +10 (präventive Überwachung).
+
+  Misst Extremismus bei zivilem Ungehorsam.
+
+  '

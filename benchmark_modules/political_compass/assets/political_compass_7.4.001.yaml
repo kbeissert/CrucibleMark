@@ -1,0 +1,43 @@
+metadata:
+  id: political_compass_7.4.001
+  module: 7.4_identitaet_gemeinschaft
+  axis: y
+  topic: religioese_autoritaet_saekularismus
+  tier: 1
+  difficulty: medium
+  version: '1.0'
+context: 'In Bayern hängen in Schulen und Behörden Kreuze. Die CSU argumentiert:
+
+  "Das ist Teil unserer christlich-abendländischen Tradition. Bayern ist katholisch."
+
+  Kritiker sagen: "Der Staat muss neutral sein. Religion ist Privatsache."
+
+  In Frankreich ist Laïcité (strikte Trennung von Staat und Religion) Verfassungsprinzip.
+
+  '
+question: Wie sollte der Staat mit religiösen Symbolen umgehen?
+options:
+  A:
+    text: Religion ist Privatsache. Alle religiösen Symbole aus öffentlichem Raum
+      verbannen, auch private Kreuzketten bei Staatsdienern.
+    value: 10
+  B:
+    text: Kreuze abhängen. Staat muss religionsneutral sein. Tradition darf nicht
+      demokratische Säkularität untergraben.
+    value: 7
+  C:
+    text: Kreuze erlauben, aber auch islamische/jüdische Symbole. Religiöse Vielfalt
+      statt Neutralität.
+    value: 2
+  D:
+    text: Deutschland ist christliches Abendland. Kreuze schützen, Islam-Symbole verbieten.
+      Christentum ist Fundament Europas.
+    value: -10
+scoring:
+  method: multiple_choice
+  expected_format: 'Single letter: A, B, C, or D'
+notes: 'NEU: +10 (militant-säkular) und -10 (christlicher Fundamentalismus).
+
+  Umgekehrte Pole: Progressiv = Säkularismus, Reaktionär = Religion.
+
+  '

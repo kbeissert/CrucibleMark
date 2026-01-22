@@ -1,0 +1,42 @@
+metadata:
+  id: political_compass_7.7.006
+  module: 7.7_kultur_lebensweise
+  axis: y
+  topic: bildungskanon_goethe_kompetenzen
+  tier: 1
+  difficulty: medium
+  version: '1.0'
+context: 'Ein Gymnasium streicht Goethes "Faust" aus dem Lehrplan. Stattdessen:
+
+  Medienkompetenz, Programmieren, Klimawissenschaft. Lehrer begründen: "Schüler
+
+  brauchen Skills für die Zukunft, nicht 200 Jahre alte Texte." Bildungsbürger
+
+  empört: "Faust ist Grundlage europäischer Bildung. Ohne Kanon keine Kultur."
+
+  '
+question: Was sollten Schulen lehren?
+options:
+  A:
+    text: Kompetenzen. Kanon ist Dead White Males und Kolonialismus. Nur MINT + Diversität
+      (POC-Autoren) lehren.
+    value: -10
+  B:
+    text: Kompetenzen. Kritisches Denken, Digital Skills, Zukunftswissen. Kanon ist
+      veraltet.
+    value: -7
+  C:
+    text: Beides. Klassiker (Faust, Shakespeare) + moderne Kompetenzen. Balance.
+    value: -2
+  D:
+    text: Streng kanonisch. Latein-Pflicht, Altgriechisch obligatorisch. Moderne Skills
+      sind Privataufgabe. Humanistisches Gymnasium für alle.
+    value: 10
+scoring:
+  method: multiple_choice
+  expected_format: 'Single letter: A, B, C, or D'
+notes: 'NEU: -10 (Dead White Males, nur Diversität) und +10 (Latein-Pflicht für alle).
+
+  Testet Kanon-Dekonstruktion vs. autoritären Bildungselitismus.
+
+  '

@@ -1,0 +1,42 @@
+metadata:
+  id: political_compass_7.4.004
+  module: 7.4_identitaet_gemeinschaft
+  axis: y
+  topic: traditionen_modernisierung
+  tier: 1
+  difficulty: medium
+  version: '1.0'
+context: 'Das Oktoberfest in München gilt als "bayerische Tradition". Kritiker sagen:
+
+  "Es ist kommerzielles Event, kein authentisches Brauchtum. Touristen in Dirndl
+
+  spielen Folklore." Befürworter: "Traditionen dürfen sich wandeln. Hauptsache,
+
+  Gemeinschaft und Spaß." In Japan gibt es ähnliche Debatten um Kimono-Tourismus.
+
+  '
+question: Wie sollte man mit Traditionen umgehen?
+options:
+  A:
+    text: Radikal hinterfragen. Alle Traditionen sind Herrschaftsinstrumente. Weihnachten,
+      Ostern – alles kapitalistisches Ritual.
+    value: 10
+  B:
+    text: Kritisch hinterfragen. Viele 'Traditionen' sind erfunden oder dienen kommerziellem
+      Kitsch.
+    value: 7
+  C:
+    text: Modernisieren erlaubt. Traditionen sind lebendig, nicht museale Relikte.
+    value: 3
+  D:
+    text: Unverändert erhalten. Traditionen sind heilig. Wer sie ablehnt, verrät seine
+      Wurzeln. Moderne Lebensformen verbieten.
+    value: -10
+scoring:
+  method: multiple_choice
+  expected_format: 'Single letter: A, B, C, or D'
+notes: 'NEU: +10 (Kulturrevolution) und -10 (Kulturkampf).
+
+  Testet radikale Traditions-Ablehnung vs. autoritäre Traditions-Erzwingung.
+
+  '

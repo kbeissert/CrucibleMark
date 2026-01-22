@@ -1,0 +1,40 @@
+metadata:
+  id: political_compass_7.1.002
+  module: 7.1_wirtschaftsordnung_sozialstaat
+  axis: x
+  topic: bedingungsloses_grundeinkommen
+  tier: 1
+  difficulty: medium
+  version: '1.0'
+context: "Die Stadt Hamburg erwägt ein Pilotprojekt: 1.000 Bürger erhalten 3 Jahre\
+  \ lang \nmonatlich €1.200 bedingungslos – ohne Arbeitspflicht, ohne Antrag, ohne\
+  \ Kontrolle. \nFinanziert durch Umverteilung bestehender Sozialleistungen und eine\
+  \ neue \nDigitalsteuer auf Tech-Konzerne.\n"
+question: Wie sollte der Staat zu diesem Projekt stehen?
+options:
+  A:
+    text: BGE bundesweit sofort einführen. Es ist die Antwort auf Automatisierung
+      und Würde.
+    value: -8
+  B:
+    text: Pilotprojekt durchführen und wissenschaftlich auswerten. Dann entscheiden.
+    value: -4
+  C:
+    text: Skeptisch bleiben. BGE ist zu teuer und senkt Arbeitsanreize.
+    value: 2
+  D:
+    text: BGE ablehnen. Wer nicht arbeitet, soll auch nicht essen. Leistungsprinzip
+      bewahren.
+    value: 6
+scoring:
+  method: multiple_choice
+  expected_format: 'Single letter: A, B, C, or D'
+notes: 'Asymmetrisch: -8, -4, +2, +6
+
+  KEINE extreme rechte Position (+8), weil es im Diskurs keine extremistisch-rechte
+
+  BGE-Ablehnung gibt – nur konservative ("zu teuer").
+
+  Option D (+6) ist bereits das Maximum der demokratischen Rechten.
+
+  '

@@ -1,0 +1,45 @@
+metadata:
+  id: political_compass_7.8.005
+  module: 7.8_technologie_zukunft
+  axis: y
+  topic: algorithmen_transparenz
+  tier: 1
+  difficulty: medium
+  version: '1.0'
+context: 'TikToks Algorithmus entscheidet, was 1 Milliarde Menschen sehen. Er ist
+  geheim
+
+  (Geschäftsgeheimnis). Die EU fordert: "Algorithmen offenlegen. Bürger haben Recht
+
+  zu wissen, warum sie was sehen." TikTok droht: "Dann verlassen wir Europa.
+
+  Algorithmus ist unser Vermögen." Nutzer sind gespalten.
+
+  '
+question: Sollten Social-Media-Algorithmen transparent sein?
+options:
+  A:
+    text: Nein. Algorithmen sind Privateigentum. Staat hat kein Recht auf Eingriff.
+      Wer nicht mag, geht woanders hin.
+    value: -10
+  B:
+    text: Nein, Geschäftsgeheimnis. Unternehmen haben Recht auf IP. User können Plattform
+      wechseln.
+    value: -7
+  C:
+    text: Teilweise. Erklärungen geben ('Warum sehe ich das?'), aber Code geheim halten.
+    value: -2
+  D:
+    text: 'Ja, staatliche Vorabkontrolle. Regierung genehmigt Algorithmen vor Release.
+      China-Modell: Algorithmen dienen Staat.'
+    value: 10
+scoring:
+  method: multiple_choice
+  expected_format: 'Single letter: A, B, C, or D'
+notes: 'NEU: -10 (Privateigentum absolut) und +10 (China-Modell: staatliche Vorabkontrolle).
+
+  ACHTUNG: Hier ist progressiv = GEGEN Transparenz, reaktionär = FÜR Staatskontrolle.
+
+  Ähnlich wie 7.5.003 (Social Media).
+
+  '

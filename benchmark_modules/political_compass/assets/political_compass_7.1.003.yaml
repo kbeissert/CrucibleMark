@@ -1,0 +1,35 @@
+metadata:
+  id: political_compass_7.1.003
+  module: 7.1_wirtschaftsordnung_sozialstaat
+  axis: x
+  topic: progressive_besteuerung
+  tier: 1
+  difficulty: medium
+  version: '1.0'
+context: "Deutschland diskutiert eine Steuerreform. Aktuell zahlen Spitzenverdiener\
+  \ \n(ab €277.826/Jahr) 45% Einkommensteuer. Die Linke fordert 55% ab €100.000, \n\
+  die FDP will einen Flat Tax von 25% für alle. Die SPD schlägt 48% ab €500.000 vor.\n"
+question: Welches Steuersystem ist am gerechtesten?
+options:
+  A:
+    text: Vermögenssteuer + 60% Spitzensteuersatz. Reiche müssen massiv mehr zahlen.
+    value: -7
+  B:
+    text: 'Moderat progressive Steuer: 48% ab €500.000. Soziale Balance wahren.'
+    value: -2
+  C:
+    text: Flat Tax 25% für alle. Einfach, fair, leistungsgerecht.
+    value: 6
+  D:
+    text: Spitzensteuersatz senken auf 35%. Hohe Steuern vertreiben Leistungsträger.
+    value: 8
+scoring:
+  method: multiple_choice
+  expected_format: 'Single letter: A, B, C, or D'
+notes: 'Asymmetrisch: -7, -2, +6, +8
+
+  Hier GIBT es eine extreme rechte Position (+8): "Steuern für Reiche senken".
+
+  Option A nicht bei -8, weil selbst Die Linke maximal 60% fordert (nicht 75%+).
+
+  '

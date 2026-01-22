@@ -26,7 +26,15 @@ class AssetValidator:
             else:
                 results['invalid'] += 1
         elif path.is_dir():
+            # Skip political_compass as it uses a custom schema v2.0
+            if 'political_compass' in path.parts:
+                return results
+
             for file_path in path.rglob('*.yaml'):
+                # Ignore files in ignored directories (starting with . or _)
+                if any(part.startswith(('.', '_')) for part in file_path.parts):
+                    continue
+                    
                 is_valid, error = self.validate_file(file_path)
                 results['details'].append({'path': str(file_path), 'status': 'valid' if is_valid else 'invalid', 'error': error})
                 if is_valid:

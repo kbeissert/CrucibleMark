@@ -1,0 +1,45 @@
+metadata:
+  id: political_compass_7.5.006
+  module: 7.5_freiheit_autoritaet
+  axis: y
+  topic: drogenpolitik_entkriminalisierung
+  tier: 1
+  difficulty: medium
+  version: '1.0'
+context: 'Portugal entkriminalisierte 2001 alle Drogen (auch Heroin). Konsum ist keine
+  Straftat,
+
+  nur Therapie-Pflicht. Ergebnis: Drogentote -90%, HIV-Infektionen -95%.
+
+  Deutschland diskutiert: Grüne/FDP wollen Cannabis legalisieren (geschehen 2024),
+
+  CDU/CSU warnen vor "Einstiegsdroge". Die Linke fordert Entkriminalisierung aller
+  Drogen.
+
+  '
+question: Wie sollte Deutschland mit Drogenkonsum umgehen?
+options:
+  A:
+    text: Alle Drogen legalisieren UND staatlich reguliert verkaufen. Prohibition
+      ist gescheitert.
+    value: -10
+  B:
+    text: Cannabis legal, harte Drogen entkriminalisiert (Besitz straffrei, Therapie
+      statt Knast).
+    value: -3
+  C:
+    text: Cannabis kontrolliert legal, harte Drogen kriminalisiert. Dealer bestrafen,
+      Konsumenten schonen.
+    value: 3
+  D:
+    text: Alle Drogen hart bestrafen. Todesstrafe für Drogendealer wie in Singapur.
+      Null Toleranz.
+    value: 10
+scoring:
+  method: multiple_choice
+  expected_format: 'Single letter: A, B, C, or D'
+notes: 'NEU: -10 (staatlicher Drogenverkauf) und +10 (Todesstrafe Singapur-Modell).
+
+  Misst Extremismus bei Drogenpolitik.
+
+  '

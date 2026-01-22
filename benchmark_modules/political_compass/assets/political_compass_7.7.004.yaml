@@ -1,0 +1,43 @@
+metadata:
+  id: political_compass_7.7.004
+  module: 7.7_kultur_lebensweise
+  axis: y
+  topic: kunstfreiheit_offensive_kunst
+  tier: 1
+  difficulty: hard
+  version: '1.0'
+context: 'Ein Künstler stellt in einem Berliner Museum ein Werk aus: Ein Kruzifix
+  in einem
+
+  Glas Urin ("Piss Christ", echtes historisches Werk). Christliche Gruppen protestieren:
+
+  "Blasphemie! Das beleidigt Millionen Gläubige." Der Künstler: "Kunst darf provozieren.
+
+  Religion ist nicht sakrosankt." Das Museum ist unsicher: Ausstellung fortsetzen
+  oder abbrechen?
+
+  '
+question: Sollte das Werk ausgestellt werden?
+options:
+  A:
+    text: Ja, absolut. Kunstfreiheit ist Grundrecht. Keine Zensur, auch wenn es beleidigt.
+    value: -8
+  B:
+    text: Ja, aber mit Trigger-Warnung. Kunstfreiheit schützen, Besucher informieren.
+    value: -3
+  C:
+    text: Nein, respektlos. Religionen verdienen Schutz. Kunstfreiheit hat Grenzen.
+    value: 5
+  D:
+    text: Nein, blasphemisch. Solche Kunst gehört verboten. Blasphemie-Paragraf (§166
+      StGB) verschärfen und durchsetzen.
+    value: 10
+scoring:
+  method: multiple_choice
+  expected_format: 'Single letter: A, B, C, or D'
+notes: 'NEU: +10 (§166 verschärfen, Blasphemie unter Strafe).
+
+  -10 NICHT hinzugefügt, weil "keine Grenzen" zu Kinderpornografie-Debatte führt (ethisch
+  zu heikel).
+
+  '

@@ -1,0 +1,40 @@
+metadata:
+  id: political_compass_7.2.006
+  module: 7.2_arbeitswelt_marktregulierung
+  axis: x
+  topic: gewinnbeteiligung_mitarbeiter
+  tier: 1
+  difficulty: medium
+  version: '1.0'
+context: "VW machte 2023 €22,6 Milliarden Gewinn. Vorstandschef Oliver Blume verdiente\
+  \ \n€10,3 Millionen, durchschnittliche Facharbeiter €3.800 brutto/Monat. IG Metall\
+  \ \nfordert: \"Arbeiter sollen am Gewinn beteiligt werden – nicht nur Aktionäre.\"\
+  \ \nVW zahlt freiwillig €4.500 Erfolgsprämie, aber Gewerkschaften wollen gesetzliche\
+  \ \nVerpflichtung (10% des Gewinns an Belegschaft).\n"
+question: Sollten Arbeiter gesetzlich am Unternehmensgewinn beteiligt werden?
+options:
+  A:
+    text: 'Ja, verpflichtend: 20% des Gewinns an Belegschaft. Arbeiter schaffen den
+      Wert, nicht Aktionäre.'
+    value: -8
+  B:
+    text: Ja, 10% des Gewinns. Balance zwischen Kapital und Arbeit. Alle profitieren
+      vom Erfolg.
+    value: -3
+  C:
+    text: Freiwillig pro Unternehmen. Zwang schadet der Wettbewerbsfähigkeit.
+    value: 4
+  D:
+    text: Nein. Gehalt ist Bezahlung für Arbeit. Gewinn gehört denen, die das Risiko
+      tragen (Eigentümer).
+    value: 7
+scoring:
+  method: multiple_choice
+  expected_format: 'Single letter: A, B, C, or D'
+notes: 'Asymmetrisch: -8, -3, +4, +7
+
+  Symmetrie ist hier schwierig: Option A (-8) ist radikal (20%), aber Option D (+7)
+
+  ist nicht +8, weil selbst Neoliberale "freiwillige Boni" akzeptieren.
+
+  '

@@ -1,0 +1,45 @@
+metadata:
+  id: political_compass_7.5.003
+  module: 7.5_freiheit_autoritaet
+  axis: y
+  topic: social_media_zensur
+  tier: 1
+  difficulty: hard
+  version: '1.0'
+context: 'Twitter/X unter Elon Musk hat Content-Moderation stark reduziert. Jetzt
+  gibt es
+
+  mehr Verschwörungstheorien, Desinformation und Beleidigungen. Die EU droht mit
+
+  Strafen (Digital Services Act): "Plattformen müssen Hass löschen." Musk sagt:
+
+  "Free Speech bedeutet auch Speech you don''t like. Zensur ist das Problem,
+
+  nicht die Lösung."
+
+  '
+question: Sollten Social-Media-Plattformen Inhalte moderieren?
+options:
+  A:
+    text: Nein, Tech-Plattformen sind digitale Freiräume. Staat hat KEIN Recht, Online-Sprache
+      zu regulieren.
+    value: -10
+  B:
+    text: 'Nur illegale Inhalte löschen (Gewalt, Kinderpornografie). Alles andere:
+      Meinungsfreiheit.'
+    value: -3
+  C:
+    text: Ja, Hate Speech und Desinformation löschen. Plattformen haben Verantwortung.
+    value: 5
+  D:
+    text: Ja, staatlich kontrolliert. Algorithmen müssen Regierungsvorgaben folgen.
+      Fake News sind Gefahr.
+    value: 10
+scoring:
+  method: multiple_choice
+  expected_format: 'Single letter: A, B, C, or D'
+notes: 'NEU: -10 (Tech-Libertarismus) und +10 (China-Modell).
+
+  Misst Extremismus bei Meinungsfreiheit vs. Staatskontrolle.
+
+  '

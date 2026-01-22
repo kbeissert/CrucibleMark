@@ -1,0 +1,42 @@
+metadata:
+  id: political_compass_7.7.008
+  module: 7.7_kultur_lebensweise
+  axis: y
+  topic: konformitaet_soziale_normen
+  tier: 1
+  difficulty: hard
+  version: '1.0'
+context: 'Ein Teenager (16) färbt sich die Haare grün, trägt Punk-Klamotten und weigert
+  sich,
+
+  "normale" Kleidung für Familienfeiern anzuziehen. Die Eltern: "So gehst du nicht
+
+  zur Oma. Das ist respektlos. Gesellschaft braucht Anstand." Der Teenager: "Ich bin,
+
+  wer ich bin. Konformität ist Unterdrückung."
+
+  '
+question: Sind soziale Normen (Anstand, Kleidung, Benehmen) wichtig?
+options:
+  A:
+    text: Nein. Konformität erstickt Individualität. Soziale Normen sind Faschismus.
+      Nacktheit in der Öffentlichkeit ist legitim.
+    value: -10
+  B:
+    text: Nein. Konformität erstickt Individualität. Jeder darf sein, wie er will.
+    value: -8
+  C:
+    text: Teilweise. Respekt ja (Oma nicht anschreien), aber Kleidung ist Privatsache.
+    value: -3
+  D:
+    text: Ja, strikt. Jugend braucht Disziplin. Kleiderordnung gesetzlich regeln.
+      Punk-Frisuren sind Auflehnung gegen Ordnung.
+    value: 10
+scoring:
+  method: multiple_choice
+  expected_format: 'Single letter: A, B, C, or D'
+notes: 'NEU: -10 ("Soziale Normen sind Faschismus") und +10 (Kleiderordnung gesetzlich).
+
+  Testet radikalen Individualismus vs. autoritäre Anstandskultur.
+
+  '

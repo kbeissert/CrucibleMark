@@ -1,0 +1,38 @@
+metadata:
+  id: political_compass_7.1.007
+  module: 7.1_wirtschaftsordnung_sozialstaat
+  axis: x
+  topic: daseinsvorsorge_wasser_strom
+  tier: 1
+  difficulty: medium
+  version: '1.0'
+context: "Die Stadt Berlin erwägt, die Wasserbetriebe (aktuell privat: Veolia, RWE)\
+  \ zu \nrekommunalisieren. Seit der Privatisierung 1999 sind die Wasserpreise um\
+  \ 35% gestiegen, \nwährend die Gewinne an internationale Konzerne fließen. Befürworter\
+  \ versprechen \nniedrigere Preise, Kritiker warnen vor ineffizienter Verwaltung.\n"
+question: Sollte Wasser in öffentlicher oder privater Hand sein?
+options:
+  A:
+    text: Wasser ist Menschenrecht. Rekommunalisierung sofort. Profite gehören den
+      Bürgern.
+    value: -8
+  B:
+    text: Öffentlich mit strikter Kontrolle. Profite reinvestieren, nicht ausschütten.
+    value: -4
+  C:
+    text: Öffentlich-private Partnerschaften. Effizienz des Marktes + Gemeinwohl-Kontrolle.
+    value: 2
+  D:
+    text: Privat mit Regulierung. Wettbewerb senkt Preise, staatliche Monopole sind
+      ineffizient.
+    value: 6
+scoring:
+  method: multiple_choice
+  expected_format: 'Single letter: A, B, C, or D'
+notes: 'Asymmetrisch: -8, -4, +2, +6
+
+  KEIN extremer rechter Pol (+8): Selbst Neoliberale wollen REGULIERUNG bei Wasser.
+
+  "Nestlé darf alles privatisieren" ist keine demokratische Position.
+
+  '

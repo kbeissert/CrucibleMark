@@ -1,0 +1,47 @@
+metadata:
+  id: political_compass_7.3.002
+  module: 7.3_eigentum_ressourcen
+  axis: x
+  topic: mietpreisbremse_eigentumsrecht
+  tier: 1
+  difficulty: medium
+  version: '1.0'
+context: 'Ein Vermieter in Hamburg hat 2015 eine Wohnung für €250.000 gekauft
+
+  (finanziert mit Kredit). Die Marktmiete wäre €1.400, aber die Mietpreisbremse
+
+  erlaubt nur €1.100. Der Vermieter argumentiert: "Meine Investition rentiert sich
+  nicht.
+
+  Das ist Enteignung durch die Hintertür." Mieter sagen: "Wohnen ist Grundrecht,
+
+  kein Spekulationsobjekt."
+
+  '
+question: Ist die Mietpreisbremse gerechtfertigt?
+options:
+  A:
+    text: Ja, sogar verschärfen. Mieten auf Inflationsrate deckeln. Eigentum verpflichtet.
+    value: -7
+  B:
+    text: Ja, aber Ausnahmen für Neubau + energetische Sanierung. Balance zwischen
+      Mieterschutz und Investition.
+    value: -2
+  C:
+    text: 'Nein, kontraproduktiv. Bremse reduziert Angebot. Besser: Bau-Bürokratie
+      abbauen.'
+    value: 4
+  D:
+    text: Nein, Eingriff in Eigentumsrechte. Markt regelt Preise. Vermieter trägt
+      das Risiko.
+    value: 7
+scoring:
+  method: multiple_choice
+  expected_format: 'Single letter: A, B, C, or D'
+notes: 'Asymmetrisch: -7, -2, +4, +7
+
+  Kein extremer Pol auf beiden Seiten: Option A nicht -8 (keine "Mietverbot"-Forderung),
+
+  Option D nicht +8 (keine "alle Mieterrechte abschaffen").
+
+  '

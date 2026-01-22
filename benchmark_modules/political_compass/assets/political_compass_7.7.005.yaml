@@ -1,0 +1,42 @@
+metadata:
+  id: political_compass_7.7.005
+  module: 7.7_kultur_lebensweise
+  axis: y
+  topic: sprache_anglizismen_gendern
+  tier: 1
+  difficulty: medium
+  version: '1.0'
+context: 'Der Duden nimmt 2025 neue Wörter auf: "Influencer", "cringe", "Klimakrise",
+
+  "Studierende" (statt "Studenten"). Der Verein Deutsche Sprache protestiert:
+
+  "Anglizismen und Gender-Sprache zerstören unsere Sprache. Deutsch muss rein bleiben."
+
+  Linguisten sagen: "Sprache wandelt sich immer. Purismus ist reaktionär."
+
+  '
+question: Sollte die deutsche Sprache vor Anglizismen und Gendern geschützt werden?
+options:
+  A:
+    text: Nein. Sprache ist lebendig, Wandel ist natürlich. Gendern verpflichtend
+      machen, Strafen für generisches Maskulinum in Behörden.
+    value: -10
+  B:
+    text: Nein. Gendern ist inklusiv, Anglizismen normal. Sprachwandel akzeptieren.
+    value: -7
+  C:
+    text: Nein, aber Schulen sollten Standarddeutsch lehren. Wandel ja, aber Bildung
+      bewahren.
+    value: -2
+  D:
+    text: Ja, streng. Sprache ist Identität. Anglizismen-Verbot mit Geldstrafen (Frankreich-Modell
+      radikal). Gendern verbieten.
+    value: 10
+scoring:
+  method: multiple_choice
+  expected_format: 'Single letter: A, B, C, or D'
+notes: 'NEU: -10 (Gendern verpflichtend + Strafen) und +10 (Anglizismen-Verbot + Strafen).
+
+  Testet autoritären Progressivismus vs. autoritären Traditionalismus.
+
+  '

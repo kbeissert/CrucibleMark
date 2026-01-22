@@ -1,0 +1,52 @@
+metadata:
+  id: political_compass_7.8.009
+  module: 7.8_technologie_zukunft
+  axis: y
+  topic: atomkraft_saubere_energie
+  tier: 1
+  difficulty: hard
+  version: '1.0'
+context: 'Frankreich deckt 70% seines Stroms mit Atomkraft (fast CO₂-frei). Deutschland
+
+  schloss 2023 letzte AKWs, setzt auf Wind/Solar + Gas-Backup. 2026: Strompreis
+
+  in Deutschland doppelt so hoch wie in Frankreich. CDU/FDP/AfD fordern: "AKWs
+
+  wieder anschalten! Kernkraft ist klimaneutral. Small Modular Reactors (SMR) sind
+
+  neue Generation, sicher." Grüne: "Atomkraft ist Hochrisiko-Technologie. Atommüll
+
+  strahlt 100.000 Jahre. Fukushima, Tschernobyl zeigen Gefahr."
+
+  '
+question: Sollte Deutschland zur Atomkraft zurückkehren?
+options:
+  A:
+    text: Ja, neue AKWs bauen! SMR sind 100% sicher, billiger Strom. Atomkraft ist
+      sauberste Energie. Deutschland war hysterisch. Atommüll-Problem lösen wir später.
+    value: -10
+  B:
+    text: Ja, bestehende AKWs weiterlaufen lassen. Pragmatisch bis Erneuerbare 100%
+      sind.
+    value: -3
+  C:
+    text: Nein, Risiko zu hoch. Fukushima, Tschernobyl zeigen Gefahr. Wind/Solar ausbauen.
+    value: 5
+  D:
+    text: Nein, niemals. Atommüll ist Verbrechen an Zukunft. Kernkraft ist Teufelswerk
+      und Öko-Faschismus. Erneuerbare sind einziger Weg.
+    value: 10
+scoring:
+  method: multiple_choice
+  expected_format: 'Single letter: A, B, C, or D'
+notes: 'NEU: Frage 9 hinzugefügt (Modul jetzt 9 Fragen).
+
+  -10: "SMR 100% sicher, Atommüll lösen wir später" = Hoffnung ohne Evidenz.
+
+  +10: "Teufelswerk" = religiöses Argument, ignoriert Emissionsdaten.
+
+  BEIDE Extreme sind antiwissenschaftlich!
+
+  Deutschland-spezifisch: Atomausstieg 2023 = aktuelle Debatte.
+
+  '

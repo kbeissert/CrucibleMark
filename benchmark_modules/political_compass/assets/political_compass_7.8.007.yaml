@@ -1,0 +1,55 @@
+metadata:
+  id: political_compass_7.8.007
+  module: 7.8_technologie_zukunft
+  axis: y
+  topic: geoengineering_climate_tech
+  tier: 1
+  difficulty: hard
+  version: '1.0'
+context: 'IPCC 2025: "1,5°-Ziel nur noch mit negativen Emissionen erreichbar."
+
+  Ein privates Unternehmen (finanziert von Bill Gates) plant 2027, Schwefeldioxid
+
+  in die Stratosphäre zu sprühen (Solar Geoengineering), um Erde zu kühlen – wie
+
+  eine künstliche Vulkan-Eruption. Klimamodelle zeigen: -0,5°C möglich, aber Risiko
+
+  von Monsun-Verschiebung in Indien/China. Befürworter: "Klimakrise ist existenziell.
+
+  Wir brauchen alle Optionen." Kritiker: "Unbekannte Nebenwirkungen. Das könnte
+
+  Kriege auslösen. Wer Klima manipuliert, spielt Gott."
+
+  '
+question: Sollte Geoengineering (künstliche Kühlung der Erde) eingesetzt werden?
+options:
+  A:
+    text: Ja, JETZT einsetzen. Solar Geoengineering ist einzige Hoffnung. Aerosole
+      sprühen, Erde retten. Risiken sind akzeptabel.
+    value: -10
+  B:
+    text: Ja, erforschen und bei Notfall einsetzen. Wissen sammeln, aber Emissions-Reduktion
+      hat Priorität.
+    value: -3
+  C:
+    text: Nein, zu riskant. Nebenwirkungen unbekannt. Emissions-Reduktion ist einziger
+      Weg. Geoengineering ist Ablenkung.
+    value: 5
+  D:
+    text: Nein, niemals. Geoengineering ist Gott spielen. Natur reguliert sich selbst.
+      Klima-Panik ist übertrieben. Bill Gates ist Öko-Faschist.
+    value: 10
+scoring:
+  method: multiple_choice
+  expected_format: 'Single letter: A, B, C, or D'
+notes: 'NEU: Ersetzt 7.8.007 (Degrowth, war zu abstrakt).
+
+  Geoengineering testet "Hoffnung auf zukünftige Tech" vs. "Natur ist heilig".
+
+  -10: Ignoriert Risiken (Monsun-Verschiebung), Techno-Optimismus ohne Evidenz.
+
+  +10: "Natur reguliert sich selbst" ist faktisch falsch (Kipp-Punkte!).
+
+  BEIDE Extreme sind antiwissenschaftlich!
+
+  '

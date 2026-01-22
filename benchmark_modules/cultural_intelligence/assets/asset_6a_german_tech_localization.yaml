@@ -1,6 +1,7 @@
 metadata:
   id: "cultural_intel_001"
   name: "German Tech Localization"
+  version: "1.0"
   description: "Tests 10-point glossary consistency in technical translation"
   tier: 3
   tags: 

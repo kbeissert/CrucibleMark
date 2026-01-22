@@ -1,0 +1,41 @@
+metadata:
+  id: political_compass_7.2.003
+  module: 7.2_arbeitswelt_marktregulierung
+  axis: x
+  topic: gig_economy_prekariat
+  tier: 1
+  difficulty: hard
+  version: '1.0'
+context: "Ein 28-jähriger Deliveroo-Fahrer in Hamburg arbeitet 50h/Woche auf Abruf.\
+  \ \nEr ist \"selbstständig\" (kein Arbeitsvertrag), hat kein Krankengeld, keinen\
+  \ \nUrlaubsanspruch, keine Altersvorsorge. Pro Lieferung verdient er €4-6, \nim\
+  \ Monat ca. €1.800. Die Plattform argumentiert: \"Er ist sein eigener Chef, \nflexible\
+  \ Arbeitszeiten.\" Gewerkschaften nennen es \"Scheinselbstständigkeit\".\n"
+question: Wie sollte Gig-Work reguliert werden?
+options:
+  A:
+    text: Gig-Worker sind Angestellte. Plattformen müssen Sozialversicherung zahlen.
+      Scheinselbstständigkeit verbieten.
+    value: -8
+  B:
+    text: 'Hybrid-Modell: Mindestlohn + Sozialabgaben von Plattformen, aber flexible
+      Arbeitszeiten erhalten.'
+    value: -3
+  C:
+    text: Freiwillige Selbstregulierung der Plattformen. Gesetzliche Eingriffe bremsen
+      Innovation.
+    value: 4
+  D:
+    text: Keine Regulierung. Wer flexibel arbeiten will, akzeptiert das Risiko. Markt
+      entscheidet.
+    value: 7
+scoring:
+  method: multiple_choice
+  expected_format: 'Single letter: A, B, C, or D'
+notes: 'Asymmetrisch: -8, -3, +4, +7
+
+  KEIN extremer rechter Pol (+8): Selbst Neoliberale wollen KEINE totale
+
+  Anarchie (Kinderarbeit etc.). Option D (+7) ist Maximum.
+
+  '

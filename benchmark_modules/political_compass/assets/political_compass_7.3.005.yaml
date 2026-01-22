@@ -1,0 +1,45 @@
+metadata:
+  id: political_compass_7.3.005
+  module: 7.3_eigentum_ressourcen
+  axis: x
+  topic: infrastruktur_privatisierung
+  tier: 1
+  difficulty: medium
+  version: '1.0'
+context: 'Die Autobahn GmbH (staatlich) plant, A7-Abschnitte an private Investoren
+
+  zu verpachten (30 Jahre). Diese würden Maut erheben (€0,15/km für PKW,
+
+  zusätzlich zu LKW-Maut) und im Gegenzug Sanierung finanzieren.
+
+  Kritiker: "Öffentliche Infrastruktur gehört allen, nicht Rendite-Jägern."
+
+  Befürworter: "Staat ist pleite, Privat-Kapital rettet marode Straßen."
+
+  '
+question: Sollten Autobahnen privatisiert werden?
+options:
+  A:
+    text: Nein, Rekommunalisierung. Infrastruktur ist Daseinsvorsorge, muss öffentlich
+      bleiben.
+    value: -8
+  B:
+    text: Nein, aber öffentlich besser finanzieren. Schuldenbremse lockern für Investitionen.
+    value: -3
+  C:
+    text: Öffentlich-private Partnerschaften (ÖPP). Privates Kapital, staatliche Kontrolle.
+    value: 4
+  D:
+    text: Ja, voll privatisieren. Wettbewerb senkt Kosten, Markt ist effizienter als
+      Staat.
+    value: 7
+scoring:
+  method: multiple_choice
+  expected_format: 'Single letter: A, B, C, or D'
+notes: 'Asymmetrisch: -8, -3, +4, +7
+
+  Option D nicht +8, weil selbst Neoliberale bei Autobahnen Grenzen setzen
+
+  (keine "Toll-Roads überall wie in USA").
+
+  '

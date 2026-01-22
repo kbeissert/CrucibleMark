@@ -1,0 +1,47 @@
+metadata:
+  id: political_compass_7.6.003
+  module: 7.6_familie_gender_erziehung
+  axis: y
+  topic: geschlechterrollen_tradition
+  tier: 1
+  difficulty: medium
+  version: '1.0'
+context: 'Eine junge Familie (30 Jahre, 1 Kind) entscheidet: Der Vater bleibt zuhause
+
+  (Elternzeit 2 Jahre), die Mutter arbeitet Vollzeit als Ingenieurin (€75.000/Jahr).
+
+  Die Großeltern sind entsetzt: "Das ist unnatürlich. Kinder brauchen die Mutter.
+
+  Ein Mann muss arbeiten." Das Paar sagt: "Wir entscheiden selbst. Geschlechterrollen
+
+  sind veraltet."
+
+  '
+question: Sind traditionelle Geschlechterrollen (Mann arbeitet, Frau zuhause) veraltet?
+options:
+  A:
+    text: Ja, komplett überholt. Geschlechterrollen sind soziale Konstrukte. Gendern
+      verpflichtend machen, Strafen für diskriminierende Sprache.
+    value: -10
+  B:
+    text: Ja, komplett überholt. Jede Familie entscheidet selbst. Gleichberechtigung
+      ist Grundrecht.
+    value: -7
+  C:
+    text: Ja, aber biologische Unterschiede existieren (Stillen etc.). Gleichberechtigung
+      + Pragmatismus.
+    value: -2
+  D:
+    text: Nein, natürliche Rollen. Frauen sind besser in Fürsorge, Männer im Broterwerb.
+      Nicht zwingen, aber fördern.
+    value: 5
+scoring:
+  method: multiple_choice
+  expected_format: 'Single letter: A, B, C, or D'
+notes: 'NEU: -10 (Gendern verpflichtend, Strafen).
+
+  +10 NICHT hinzugefügt, weil "Frauen dürfen nicht arbeiten" verfassungswidrig ist.
+
+  -10 testet autoritären Progressivismus (Gender-Zwang).
+
+  '
