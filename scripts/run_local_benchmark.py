@@ -96,6 +96,11 @@ class LocalBenchmarkRunner:
 
         return references
 
+    def is_reasoning_model(self, model_name: str) -> bool:
+        """Prüft auf Reasoning-Modelle (langsam)."""
+        triggers = ['deepseek-r1', 'o1', 'reasoning', 'phi4', 'qwq']
+        return any(t in model_name.lower() for t in triggers)
+
     def select_model(self) -> str | None:
         """Interaktive Modell-Auswahl."""
         models = self.get_ollama_models()
@@ -113,7 +118,12 @@ class LocalBenchmarkRunner:
         )
         
         if selected:
-            print(f"✓ Ausgewählt: {selected}\n")
+            print(f"✓ Ausgewählt: {selected}")
+            if self.is_reasoning_model(selected):
+                print("\n⚠️  ACHTUNG: Reasoning-Modell erkannt!")
+                print("   Diese Modelle nutzen Chain-of-Thought (Denkprozess).")
+                print("   Die Ausführung wird signifikant länger dauern!")
+            print("")
             
         return selected
 

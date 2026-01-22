@@ -24,7 +24,7 @@ class BaseProviderClient:
     def __init__(self, config: dict[str, Any]):
         self.config = config
 
-    def query(self, model: str, prompt: str, temperature: float) -> str:
+    def query(self, model: str, prompt: str, temperature: float, stream_handler=None) -> str:
         """
         Query API
 
@@ -32,6 +32,7 @@ class BaseProviderClient:
             model: Modell-Name
             prompt: Prompt-Text
             temperature: Temperature
+            stream_handler: Optional callback for streaming output chunks
 
         Returns:
             Response-Text
@@ -58,7 +59,7 @@ class OllamaClient(BaseProviderClient):
             self._client = ollama
         return self._client
 
-    def query(self, model: str, prompt: str, temperature: float) -> str:
+    def query(self, model: str, prompt: str, temperature: float, stream_handler=None) -> str:
         """Query Ollama API"""
         try:
             # Select options based on temperature
@@ -72,6 +73,49 @@ class OllamaClient(BaseProviderClient):
             # Ensure the requested temperature is actually used
             options['temperature'] = temperature
 
+            # SPECIAL HANDLING for Reasoning Models (e.g. DeepSeek-R1)
+            # These models generate thousands of "thinking" tokens before the actual answer.
+            # We explicitly boost the token limit prevents premature cutoff.
+            is_reasoning = 'deepseek-r1' in model or 'reasoning' in model or 'qwen3' in model
+            if is_reasoning:
+                options['num_predict'] = 32768  # 32k tokens allow for extensive reasoning chains
+                logger.debug(f"Boosting token limit for reasoning model '{model}' to 32768")
+
+            # Handle Streaming
+            if stream_handler:
+                response = self.client.chat(
+                    model=model,
+                    messages=[{'role': 'user', 'content': prompt}],
+                    options=options,
+                    stream=True
+                )
+                full_content = ""
+                full_thinking = ""
+                
+                for chunk in response:
+                    val_content = chunk['message'].get('content', '')
+                    val_thinking = ""
+                    
+                    # Try to extract thinking if provided separately (Ollama experimental)
+                    if hasattr(chunk['message'], 'thinking'):
+                         val_thinking = chunk['message'].thinking
+                    elif isinstance(chunk['message'], dict):
+                         val_thinking = chunk['message'].get('thinking', '')
+
+                    if val_thinking:
+                        # Visualize thinking if stream handler supports it (or just dump it)
+                        stream_handler(val_thinking) # Just treat as text for now
+                        full_thinking += val_thinking
+                    
+                    if val_content:
+                        stream_handler(val_content)
+                        full_content += val_content
+                
+                # Reconstruct return value (ignoring distinct thinking for return, just content)
+                # Unless we want to return thinking? The caller expects content.
+                return full_content
+
+            # Standard Blocking Call
             response = self.client.chat(
                 model=model,
                 messages=[{'role': 'user', 'content': prompt}],
@@ -94,14 +138,15 @@ class OllamaClient(BaseProviderClient):
                 done_reason = response.get('done_reason')
                 
                 if done_reason == 'length':
-                    logger.warning(f"Ollama generation stopped due to token limit. (num_predict={options.get('num_predict')})")
+                    # Log as debug to avoid cluttering the terminal progress bars
+                    logger.debug(f"Ollama generation stopped due to token limit. (num_predict={options.get('num_predict')})")
                     if thinking:
-                         logger.warning("Returning partial 'thinking' content as fallback.")
+                         logger.debug("Returning partial 'thinking' content as fallback.")
                          return thinking
                     raise ValueError("Empty response from Ollama (Token limit reached)")
                 
                 if thinking:
-                    logger.warning("Received 'thinking' but no 'content'. Using thinking as fallback.")
+                    logger.debug("Received 'thinking' but no 'content'. Using thinking as fallback.")
                     return thinking
                     
                 logger.error(f"Empty content received. Full response: {response}")
