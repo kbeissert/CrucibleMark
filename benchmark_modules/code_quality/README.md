@@ -4,7 +4,7 @@
 > - **ID:** `code_quality`
 > - **Namespace:** `benchmark_modules.code_quality`
 > - **Class:** `CodeQualityTest` (inherits `BaseTest`)
-> - **Version:** 0.9.0-rc
+> - **Version:** 0.9.0-beta
 > - **Type:** Engineering & Static Analysis
 
 ## 🔍 Module Overview

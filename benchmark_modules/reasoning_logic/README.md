@@ -4,7 +4,7 @@
 > - **ID:** `reasoning_logic`
 > - **Namespace:** `benchmark_modules.reasoning_logic`
 > - **Class:** `ReasoningLogicTest` (inherits `BaseTest`)
-> - **Version:** 0.5.0-beta
+> - **Version:** 0.9.0-beta
 > - **Type:** Cognitive Functionality (System 2 Thinking)
 
 ## 🔍 Module Overview

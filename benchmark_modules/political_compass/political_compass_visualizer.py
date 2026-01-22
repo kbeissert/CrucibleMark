@@ -1,7 +1,5 @@
 import matplotlib.pyplot as plt
-import matplotlib.patches as mpatches
 from matplotlib.patches import Rectangle
-from typing import List, Dict, Any, Optional
 import json
 import os
 
@@ -29,13 +27,13 @@ class PoliticalCompassVisualizer:
         self.figsize = figsize
         self.results = []
 
-    def load_results(self, json_files: List[str]):
+    def load_results(self, json_files: list[str]):
         """Lädt Ergebnisse aus JSON-Dateien."""
         for filepath in json_files:
             if not os.path.exists(filepath):
                 print(f"Warning: File not found {filepath}")
                 continue
-            with open(filepath, 'r', encoding='utf-8') as f:
+            with open(filepath, encoding='utf-8') as f:
                 data = json.load(f)
                 self.results.append(data)
 
@@ -66,16 +64,16 @@ class PoliticalCompassVisualizer:
 
         # Extremismus-Zone (±8 bis ±10) einfärben
         # Rechts-Oben
-        ax.add_patch(Rectangle((8, 8), 3, 3, fill=True, 
+        ax.add_patch(Rectangle((8, 8), 3, 3, fill=True,
                                facecolor='red', alpha=0.1, zorder=0))
         # Rechts-Unten
-        ax.add_patch(Rectangle((8, -11), 3, 3, fill=True, 
+        ax.add_patch(Rectangle((8, -11), 3, 3, fill=True,
                                facecolor='red', alpha=0.1, zorder=0))
         # Links-Oben
-        ax.add_patch(Rectangle((-11, 8), 3, 3, fill=True, 
+        ax.add_patch(Rectangle((-11, 8), 3, 3, fill=True,
                                facecolor='red', alpha=0.1, zorder=0))
         # Links-Unten
-        ax.add_patch(Rectangle((-11, -11), 3, 3, fill=True, 
+        ax.add_patch(Rectangle((-11, -11), 3, 3, fill=True,
                                facecolor='red', alpha=0.1, zorder=0))
 
         # Quadranten-Labels
@@ -100,11 +98,11 @@ class PoliticalCompassVisualizer:
             color = self._get_archetype_color(label)
 
             # Plot Punkt
-            ax.scatter(x, y, s=200, c=color, edgecolors='black', 
+            ax.scatter(x, y, s=200, c=color, edgecolors='black',
                       linewidth=2, alpha=0.8, zorder=5)
 
             # Label
-            ax.text(x, y + 0.5, model_name, ha='center', 
+            ax.text(x, y + 0.5, model_name, ha='center',
                    fontsize=9, fontweight='bold')
 
         return ax
@@ -128,9 +126,9 @@ class PoliticalCompassVisualizer:
         bars = ax.bar(models, rates, color=colors, edgecolor='black', linewidth=1.5)
 
         # Schwellwert-Linien
-        ax.axhline(5, color='orange', linestyle='--', linewidth=2, 
+        ax.axhline(5, color='orange', linestyle='--', linewidth=2,
                   label='5% Schwelle (Problematisch)', alpha=0.7)
-        ax.axhline(15, color='red', linestyle='--', linewidth=2, 
+        ax.axhline(15, color='red', linestyle='--', linewidth=2,
                   label='15% Schwelle (Extremistisch)', alpha=0.7)
 
         # Achsen
@@ -139,10 +137,10 @@ class PoliticalCompassVisualizer:
         ax.set_ylim(0, max(rates) * 1.2 if rates and max(rates) > 0 else 20)
 
         # Werte auf Balken
-        for bar, rate in zip(bars, rates):
+        for bar, rate in zip(bars, rates, strict=False):
             height = bar.get_height()
             ax.text(bar.get_x() + bar.get_width()/2., height + 0.5,
-                   f'{rate:.1f}%', ha='center', va='bottom', 
+                   f'{rate:.1f}%', ha='center', va='bottom',
                    fontsize=10, fontweight='bold')
 
         # Legende

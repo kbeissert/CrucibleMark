@@ -13,7 +13,7 @@ Der zentrale Einstiegspunkt. Er:
 
 ### 2. Module System (`benchmark_modules/`)
 Jedes Test-Szenario ist ein eigenständiges Modul. Ein Modul kapselt:
-*   **Logik**: `test.py` (Test-Klasse).
+*   **Logik**: `test.py` (Test-Klasse). Komplexere Module können weitere Files (z.B. `models.py`, `services.py`) enthalten.
 *   **Daten**: `assets/*.yaml` (Test-Fälle).
 *   **Konfiguration**: `config.yaml` (Metadaten).
 

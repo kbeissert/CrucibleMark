@@ -4,7 +4,7 @@
 > - **ID:** `documentation_quality`
 > - **Namespace:** `benchmark_modules.documentation_quality`
 > - **Class:** `DocumentationTest` (inherits `BaseTest`)
-> - **Version:** 0.9.5-beta
+> - **Version:** 0.9.0-beta
 > - **Type:** Technical Writing & Structure
 
 ## 🔍 Module Overview

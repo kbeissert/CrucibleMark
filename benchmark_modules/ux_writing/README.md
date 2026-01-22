@@ -4,7 +4,7 @@
 > - **ID:** `ux_writing`
 > - **Namespace:** `benchmark_modules.ux_writing`
 > - **Class:** `UXWritingTest` (inherits `BaseTest`)
-> - **Version:** 0.9.5-beta
+> - **Version:** 0.9.0-beta
 > - **Type:** User Experience & Microcopy
 
 ## 🔍 Module Overview

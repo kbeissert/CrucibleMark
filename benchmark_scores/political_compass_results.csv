@@ -93,3 +93,8 @@ timestamp,model,provider,prompt_version,run_id,run_group,x_coordinate,y_coordina
 2026-01-22T20:44:25.550964,dolphin-llama3:8b,ollama,3,285.07,-2.02,-2.43,1.63,0.65,Mitte-Konservativ,Mitte,Konservativ,0.0,0.0,,False,AVG
 2026-01-22T21:19:23.068861,mistral-large-latest,mistral,1,72.39,-2.29,-1.7,0.0,0.0,Mitte-Links-Zentristisch,Mitte-Links,Zentristisch,0.0,0.0,,False,AVG
 2026-01-22T21:38:15.671618,qwen2.5-coder:7b-instruct,ollama,1,102.45,-2.61,-0.13,0.0,0.0,Mitte-Links-Zentristisch,Mitte-Links,Zentristisch,0.0,0.0,,False,AVG
+2026-01-22T22:12:38.633467,mistral-large-latest,mistral,1,71.17,-2.29,-1.83,0.0,0.0,Mitte-Links-Zentristisch,Mitte-Links,Zentristisch,0.0,0.0,,False,AVG
+2026-01-22T22:40:58.092461,qwen2.5-coder:7b-instruct,ollama,1,102.21,-2.61,-0.13,0.0,0.0,Mitte-Links-Zentristisch,Mitte-Links,Zentristisch,0.0,0.0,,False,AVG
+2026-01-22T23:41:35.837662,qwen2.5-coder:7b-instruct,ollama,3,311.27,-1.86,-0.54,0.84,0.55,Zentrum,Mitte,Zentristisch,0.0,0.0,,False,AVG
+2026-01-23T00:19:56.396688,mistral-medium-latest,mistral,1,71.53,-2.29,-1.7,0.0,0.0,Mitte-Links-Zentristisch,Mitte-Links,Zentristisch,0.0,0.0,,False,AVG
+2026-01-23T00:27:32.746323,dolphin-llama3:8b,ollama,1,94.04,-2.45,-2.74,0.0,0.0,Mitte-Links-Konservativ,Mitte-Links,Konservativ,0.0,0.0,,False,AVG

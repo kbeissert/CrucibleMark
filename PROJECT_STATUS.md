@@ -1,8 +1,8 @@
 # CrucibleMark - Projekt-Status & Architektur
 
-**Version:** 0.6.0-beta
-**Datum:** 22. Januar 2026
-**Status:** Beta - Hybrid Classification & Data Safety
+**Version:** 0.9.0-beta
+**Datum:** 23. Januar 2026
+**Status:** Pre-Commercial Beta - Local Models Validated
 
 ---
 
@@ -48,16 +48,24 @@ crucible-mark/
 │   │   └── assets/ (5 Assets)
 │   │
 │   ├── ux_writing/                # ✅ UX Writing & Microcopy
-│   │   ├── test.py
-│   │   ├── config.yaml
-│   │   ├── README.md
-│   │   └── assets/ (5 Assets)
+│   │   ├── ...
 │   │
-│   └── documentation_quality/     # ✅ Documentation Quality (NEU)
+│   ├── documentation_quality/     # ✅ Documentation Quality
+│   │   ├── ...
+│   │
+│   ├── content_transformation/    # ✅ Content Adaption
+│   │   ├── ...
+│   │
+│   ├── reasoning_logic/           # ✅ Reasoning & Logic
+│   │   ├── ...
+│   │
+│   └── political_compass/         # ✅ Political Compass (Bias Check)
 │       ├── test.py
 │       ├── config.yaml
 │       ├── README.md
-│       └── assets/ (5 Assets)
+│       ├── models.py              # Extended Module Architecture
+│       ├── services.py
+│       └── assets/ (YAML)
 │
 ├── utils/
 │   ├── llm_client.py              # Unified LLM Provider Wrapper
@@ -90,33 +98,22 @@ golden_standard:
 
 **Wichtig:**
 - Nur **ein** Golden Standard möglich (strukturell durch Design)
-- Wird als Referenz für alle lokalen Benchmark-Vergleiche genutzt
-- Generiert separate CSV: `golden_standard_benchmark.csv` (und synchronisiert mit `commercial_models_benchmark.csv` für Leaderboard)
-
-### 3.2 Module Registry
-
-```yaml
-modules:
-  code_quality:
-    name: "Code Quality Audit"
-    description: "Umfassende Code-Qualitätsanalyse"
-    path: "benchmark_modules/code_quality"
-    test_class: "CodeQualityTest"
-    version: "0.2.0"
+- Wiversion: "0.9.0-rc"
   
   ux_writing:
-    name: "UX Writing & Microcopy"
-    description: "Bewertung von UX-Texten und Microcopy"
-    path: "benchmark_modules/ux_writing"
-    test_class: "UXWritingTest"
-    version: "0.1.0"
+    version: "0.9.5-beta"
 
   documentation_quality:
-    name: "Documentation Quality"
-    description: "Analyse von technischer Dokumentation"
-    path: "benchmark_modules/documentation_quality"
-    test_class: "DocumentationTest"
-    version: "1.0.0"
+    version: "0.9.5-beta"
+    
+  content_transformation:
+    version: "0.9.0-beta"
+    
+  reasoning:
+    version: "0.5.0-beta"
+    
+  political_compass:
+    version: "2.0.0"
 ```
 
 ---
@@ -124,6 +121,17 @@ modules:
 ## 4. Roadmap & Next Steps
 
 ### ✅ Completed
+- [x] Core Framework (Runner, Config, Utils)
+- [x] **Hybrid Model Classification**: Gen 1-3 Categorization (Heuristics & Overrides)
+- [x] **Entertainment Mode**: Streaming "Thinking" Output for Reasoning Models
+- [x] **Data Safety**: Automated Backups & Git Versioning for Benchmark Scores
+- [x] **Completed Modules** (All Tiered & Production Ready):
+    - [x] Code Quality (5 Assets)
+    - [x] UX Writing (5 Assets)
+    - [x] Documentation Quality (5 Assets)
+    - [x] Content Transformation (6 Assets)
+    - [x] Reasoning Logic (River Crossing, Deadlocks)
+    - [x] Political Compass (Anti-Diplomat Prompting
 - [x] Core Framework (Runner, Config, Utils)
 - [x] **Hybrid Model Classification**: Gen 1-3 Categorization (Heuristics & Overrides)
 - [x] **Entertainment Mode**: Streaming "Thinking" Output for Reasoning Models
