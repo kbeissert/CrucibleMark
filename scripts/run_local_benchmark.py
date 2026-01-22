@@ -7,7 +7,6 @@ import shutil
 import csv
 import logging
 from pathlib import Path
-from datetime import datetime
 from typing import Any, Dict, List, Optional
 import traceback
 
@@ -15,20 +14,16 @@ import traceback
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 # pylint: disable=wrong-import-position, import-error
-from utils.llm_client import LLMClient
-from utils.config_validator import ConfigValidator
-from utils.result_manager import ResultManager
+from utils.base_runner import BaseBenchmarkRunner
 from utils.benchmark_utils import select_from_list, discover_assets, load_asset_yaml
-from utils.module_loader import load_test_class
-from utils.constants import QUALITY_EXCELLENT, QUALITY_GOOD, QUALITY_OK
 from utils.model_utils import is_reasoning_model
 # pylint: enable=wrong-import-position, import-error
 
 logger = logging.getLogger(__name__)
 
 
-class LocalBenchmarkRunner:
-    """Benchmark Runner für lokale Ollama-Modelle mit Referenz zu kommerziellen Modellen."""
+class LocalBenchmarkRunner(BaseBenchmarkRunner):
+    """Benchmark Runner für lokale Ollama-Modelle."""
 
     BENCHMARK_CATEGORIES = {
         'code_quality': {
@@ -40,9 +35,7 @@ class LocalBenchmarkRunner:
 
     def __init__(self):
         """Initialisiert Runner."""
-        self.validator = ConfigValidator()
-        self.client = LLMClient(config=self.validator.config)
-        self.result_manager = ResultManager(self.validator)
+        super().__init__()
         self.commercial_csv = self.validator.get_golden_standard_csv()
 
     @staticmethod
@@ -153,18 +146,7 @@ class LocalBenchmarkRunner:
 
     def _execute_test(self, model: str, asset_path: Path, benchmark_info: Dict[str, Any]):
         """Executes the test using the dynamically loaded test class."""
-        module_path = Path(
-            benchmark_info.get('module_path', 'benchmark_modules/code_quality')
-        ) / 'test.py'
-        test_class_name = benchmark_info.get('test_class', 'CodeQualityTest')
-
-        try:
-            test_cls = load_test_class(module_path, test_class_name)
-        except (FileNotFoundError, ImportError, AttributeError) as e:
-            raise FileNotFoundError(f"Test-Modul fehlerhaft: {module_path} ({e})") from e
-
-        test_instance = test_cls(asset_path)
-        return test_instance, test_instance.execute(model, self.client)
+        return self.execute_test_module(model, asset_path, benchmark_info, provider='ollama')
 
     def _create_error_result(self, asset_path: Path, error_message: str) -> Dict[str, Any]:
         """Creates an error result dictionary."""
@@ -241,50 +223,37 @@ class LocalBenchmarkRunner:
         response_preview: str
     ) -> Dict[str, Any]:
         """Helper to construct the result dictionary."""
-        asset_id = asset_data.get('metadata', {}).get('id', 'unknown')
-        asset_name = asset_data.get('metadata', {}).get('name') or \
-                     asset_data.get('metadata', {}).get('topic', asset_id)
+        # Use base runner implementation
+        result = self.build_base_result(model, asset_data, score, exec_result, "ollama")
 
+        # Add local benchmark specifics
         ref_score = ref.get('score', 0)
-        score_diff = score['total_score'] - ref_score if ref_score > 0 else 0
+        score_diff = result['total_score'] - ref_score if ref_score > 0 else 0
 
-        result = {
-            'timestamp': datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
-            'status': score.get('status', 'success'),
-            'model': model,
-            'asset_id': asset_id,
-            'asset_name': asset_name,
-            'total_score': score['total_score'],
-            'max_score': score['max_score'],
-            'percentage': round((score['total_score'] / score['max_score'] * 100), 1),
+        result.update({
             'reference_model': ref.get('model', 'N/A'),
             'reference_score': ref_score,
             'reference_percentage': ref.get('percentage', 0),
             'score_difference': round(score_diff, 1),
-            'execution_time': round(exec_result['execution_time'], 1),
-            'response_length': len(response_preview),
             'golden_similarity': round(comparison.get('similarity', 0) * 100, 1),
-            'tier': score.get('tier', 'Tier 1 (Undefined)'),
             'details': {
-                'asset_id': asset_id,
-                'tier': score.get('tier', 'Tier 1 (Undefined)')
+                'asset_id': result['asset_id'],
+                'tier': result['tier']
             }
-        }
+        })
 
         if response_preview.startswith("ERROR:"):
             result['error_message'] = response_preview
         elif not response_preview:
             result['error_message'] = "Empty Response"
 
-        # Add category scores
-        for cat_name, cat_data in score.get('category_scores', {}).items():
-            result[f'{cat_name}'] = f"{cat_data['achieved']}/{cat_data['max']}"
+        # Ensure tier is set if missing (legacy field support)
+        if 'tier' not in result:
+            result['tier'] = 'Tier 1 (Undefined)'
 
         return result
 
-    def _setup_benchmark_resources(
-        self
-    ) -> tuple[Dict[str, Dict[str, Any]], bool]:
+    def _setup_benchmark_resources(self) -> tuple[Dict[str, Dict[str, Any]], bool]:
         """Loads and validates validation/reference resources."""
         is_valid, message = self.validator.validate_golden_standard()
         print(f"\n{'=' * 60}\n🔍 GOLDEN STANDARD VALIDIERUNG\n{'=' * 60}\n{message}\n{'=' * 60}")
@@ -352,7 +321,7 @@ class LocalBenchmarkRunner:
             print(f"   ✗ [{idx}/{total}] {name}: {msg_str}")
             return
 
-        quality = self._get_quality_badge(result['percentage'])
+        quality = self.get_quality_badge(result['percentage'])
         base_msg = (
             f"   ✓ [{idx}/{total}] {name}: {result['total_score']}/{result['max_score']} "
             f"({result['percentage']}%) {quality}"
@@ -365,27 +334,9 @@ class LocalBenchmarkRunner:
         else:
             print(f"{base_msg} | Zeit: {result['execution_time']}s")
 
-    @staticmethod
-    def _get_quality_badge(percentage: float) -> str:
-        """Gibt Quality-Badge zurück."""
-        if percentage >= QUALITY_EXCELLENT:
-            return "🏆"
-        if percentage >= QUALITY_GOOD:
-            return "⭐"
-        if percentage >= QUALITY_OK:
-            return "✓"
-        return "⚠️"
-
     def save_results(self, results: List[Dict[str, Any]]) -> None:
         """Speichert Ergebnisse in CSV via ResultManager."""
-        if not results:
-            return
-        path = self.result_manager.save_results(results, 'local')
-        print(f"\n{'=' * 60}")
-        if path:
-            print(f"✅ Ergebnisse gespeichert: {path}")
-        print(f"{'=' * 60}")
-
+        self.result_manager.save_results(results, result_type='local')
     def print_summary(self, results: List[Dict[str, Any]], model: str) -> None:
         """Druckt Zusammenfassung."""
         if not results:
@@ -405,7 +356,7 @@ class LocalBenchmarkRunner:
         avg_pct = sum(r['percentage'] for r in successful) / len(successful)
         avg_time = sum(r['execution_time'] for r in successful) / len(successful)
 
-        quality = self._get_quality_badge(avg_pct)
+        quality = self.get_quality_badge(avg_pct)
 
         print(f"\n{'=' * 60}\n📈 BENCHMARK ZUSAMMENFASSUNG\n{'=' * 60}")
         print(f"Modell: {model}")
@@ -446,14 +397,14 @@ class LocalBenchmarkRunner:
 
         print("\n🏆 Beste Tests:")
         for r in sorted_res[:3]:
-            q = self._get_quality_badge(r['percentage'])
+            q = self.get_quality_badge(r['percentage'])
             d = r.get('score_difference', 0)
             diff_str = f" ({d:+.1f})" if d != 0 else ""
             print(f"   {r['asset_name'][:35]:<35}: {r['percentage']}% {q}{diff_str}")
 
         print("\n⚠️  Schwächste Tests:")
         for r in sorted_res[-3:]:
-            q = self._get_quality_badge(r['percentage'])
+            q = self.get_quality_badge(r['percentage'])
             d = r.get('score_difference', 0)
             diff_str = f" ({d:+.1f})" if d != 0 else ""
             print(f"   {r['asset_name'][:35]:<35}: {r['percentage']}% {q}{diff_str}")

@@ -18,19 +18,16 @@ logging.getLogger("httpcore").setLevel(logging.WARNING)
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 # pylint: disable=wrong-import-position, import-error
-from utils.llm_client import LLMClient
-from utils.config_validator import ConfigValidator
+from utils.base_runner import BaseBenchmarkRunner
 from utils.module_loader import load_test_class
-from utils.result_manager import ResultManager
 from utils.benchmark_utils import select_from_list, discover_assets, load_asset_yaml
-from utils.constants import QUALITY_EXCELLENT, QUALITY_GOOD, QUALITY_OK
 from scripts.run_political_compass_benchmark import run_political_compass_benchmark
 # pylint: enable=wrong-import-position, import-error
 
 logger = logging.getLogger(__name__)
 
 
-class CommercialBenchmarkRunner:
+class CommercialBenchmarkRunner(BaseBenchmarkRunner):
     """Benchmark Runner für kommerzielle API-basierte Modelle."""
 
     benchmark_categories: Dict[str, Any] = {}
@@ -42,9 +39,7 @@ class CommercialBenchmarkRunner:
             mode: 'golden_standard' oder 'test'
             force: Wenn True, werden existierende Golden Standards überschrieben
         """
-        self.validator = ConfigValidator()
-        self.client = LLMClient(config=self.validator.config)
-        self.result_manager = ResultManager(self.validator)
+        super().__init__()
         self.mode = mode
         self.force = force
         self._load_categories()
@@ -150,16 +145,8 @@ class CommercialBenchmarkRunner:
 
     @staticmethod
     def _get_quality_badge(percentage: float) -> str:
-        """Gibt Qualitäts-Badge zurück."""
-        if percentage >= QUALITY_EXCELLENT:
-            return "🌟 EXCELLENT"
-        if percentage >= QUALITY_GOOD:
-            return "✅ GOOD"
-        if percentage >= QUALITY_OK:
-            return "⚠️  OK"
-        if percentage >= 1.0:
-            return "📉 WEAK"
-        return "❌ FAIL"
+        """Deprecated: Use self.get_quality_badge instead."""
+        return BaseBenchmarkRunner.get_quality_badge(percentage)
 
     # pylint: disable=too-many-arguments, too-many-locals, too-many-positional-arguments
     def _recover_from_json(
@@ -243,14 +230,14 @@ class CommercialBenchmarkRunner:
 
         print(f"▶️  Teste: {asset_name}...")
 
-        # Execute Test
-        module_path = Path(benchmark_info['path']).parent / 'test.py'
-        test_cls_name = benchmark_info.get('test_class', 'CodeQualityTest')
-
+        # Execute Test using BaseRunner logic
         try:
-            test_cls = load_test_class(module_path, test_cls_name)
-            test_inst = test_cls(asset_path)
-            exec_result = test_inst.execute(model, self.client, provider=provider)
+            test_inst, exec_result = self.execute_test_module(
+                model=model,
+                asset_path=asset_path,
+                benchmark_info=benchmark_info,
+                provider=provider
+            )
         except Exception as e:  # pylint: disable=broad-exception-caught
             print(f"❌ Fehler bei Ausführung: {e}")
             return None
@@ -258,27 +245,11 @@ class CommercialBenchmarkRunner:
         response = exec_result['raw_response']
         score = test_inst.score_response(response)
 
-        result = {
-            'timestamp': datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
-            'status': score.get('status', 'success'),
-            'provider': provider,
-            'model': model,
-            'asset_id': asset_id,
-            'asset_name': asset_name,
-            'tier': score.get('tier', 'Tier 1'),
-            'total_score': score['total_score'],
-            'max_score': score['max_score'],
-            'percentage': round((score['total_score'] / score['max_score'] * 100), 1),
-            'execution_time': round(exec_result['execution_time'], 1),
-            'response_length': len(response)
-        }
-
-        # Add Details
-        for cat, val in score.get('category_scores', {}).items():
-            result[cat] = f"{val['achieved']}/{val['max']}"
+        # Build Standardized Result
+        result = self.build_base_result(model, asset_data, score, exec_result, provider)
 
         # Print Output
-        badge = self._get_quality_badge(result['percentage'])
+        badge = self.get_quality_badge(result['percentage'])
         print(f"   Ergebnis: {result['percentage']}% {badge} "
               f"({result['total_score']}/{result['max_score']} Pkt)")
 
