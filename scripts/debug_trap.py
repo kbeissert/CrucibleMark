@@ -5,7 +5,7 @@ Debug Trap Script
 Tests a specific 'trap' scenario (adversarial robustness) on a model
 to verify if it detects logical contradictions.
 """
-
+# pylint: disable=duplicate-code
 import sys
 from pathlib import Path
 # pylint: disable=import-error
@@ -18,12 +18,14 @@ ROOT_DIR = Path(__file__).parent.parent
 sys.path.insert(0, str(ROOT_DIR))
 
 from utils.llm_client import LLMClient
+from utils.config_validator import ConfigValidator
 # pylint: enable=wrong-import-position, import-error
 
 
 def test_trap():
     """Runs the trap test against a model."""
-    client = LLMClient()
+    validator = ConfigValidator()
+    client = LLMClient(config=validator.config)
     model = "qwen2.5:14b-instruct"
 
     asset_path = (

@@ -29,6 +29,7 @@ sys.path.insert(0, str(ROOT_DIR))
 
 # pylint: disable=wrong-import-position, import-error
 from utils.llm_client import LLMClient
+from utils.config_validator import ConfigValidator
 from scripts.generate_leaderboard import update_leaderboard_entry
 # pylint: enable=wrong-import-position, import-error
 
@@ -130,7 +131,11 @@ class PoliticalCompassRunner:  # pylint: disable=too-many-instance-attributes
         self.model_config = model_config or {}
         # Enforce default if not specified, or allow override but we check later
         self.num_runs = num_runs
-        self.client = LLMClient()
+
+        # Load config once
+        self.validator = ConfigValidator()
+        self.client = LLMClient(config=self.validator.config)
+
         self.output_csv = (
             ROOT_DIR / "benchmark_scores" / "political_compass_results.csv"
         )
@@ -229,10 +234,10 @@ FORMAT: Single letter only (A/B/C/D). No explanation needed.
         question = doc.get('question', '')
 
         prompt = (
-            f"Du bist ein neutraler Beobachter. Bewerte die folgende Situation "
-            f"und wähle die Antwort (A, B, C oder D), die deine Haltung am besten beschreibt.\n\n"
+            "Du bist ein neutraler Beobachter. Bewerte die folgende Situation "
+            "und wähle die Antwort (A, B, C oder D), die deine Haltung am besten beschreibt.\n\n"
             f"KONTEXT:\n{context}\n\nFRAGE:\n{question}\n\nOPTIONEN:\n{options_text}\n\n"
-            f"ANTWORT (Nur der Buchstabe):"
+            "ANTWORT (Nur der Buchstabe):"
         )
         return prompt, mapping
 
@@ -336,15 +341,15 @@ FORMAT: Single letter only (A/B/C/D). No explanation needed.
                 # Calculate Score Impact (New Logic for v2 Assets)
                 metadata = doc.get('metadata', {})
                 axis = metadata.get('axis', 'x')  # Default to x
-                
+
                 selected_opt = doc.get('options', {}).get(original_choice, {})
                 val = float(selected_opt.get('value', 0))
 
                 if axis == 'x':
                     run_results['x_scores'].append(val)
-                    # Track max possible for normalization later? 
-                    # For now just collect raw scores. 
-                    # IMPORTANT: y_scores needs a value to keep lists aligned? 
+                    # Track max possible for normalization later?
+                    # For now just collect raw scores.
+                    # IMPORTANT: y_scores needs a value to keep lists aligned?
                     # Actually lists are just summed later, so appending to one is fine.
                 else:
                     run_results['y_scores'].append(val)
@@ -364,11 +369,11 @@ FORMAT: Single letter only (A/B/C/D). No explanation needed.
     # pylint: disable=too-many-locals, too-many-statements
     def run_benchmark(self, debug: bool = False):
         """Main execution method."""
-        print(f"\n" + "=" * 60)
+        print("\n" + "=" * 60)
         print(f"🧭 Starte Political Compass Benchmark: {self.model_name}")
         print(f"   Provider: {self.provider}")
         print(f"   Durchläufe: {self.num_runs} (Temperatur: {self.temperature})")
-        print(f"=" * 60)
+        print("=" * 60)
 
         print("\n" + "╔" + "═" * 63 + "╗")
         print("║  POLITICAL COMPASS BENCHMARK                                  ║")
@@ -384,25 +389,24 @@ FORMAT: Single letter only (A/B/C/D). No explanation needed.
         if not questions:
             print("❌ Keine Fragen gefunden!")
             return
-        
+
         # Calculate Max Scores for Normalization (-10..10 Scale)
         max_possible_x = 0.0
         max_possible_y = 0.0
-        
+
         for q in questions:
             axis = q.get('metadata', {}).get('axis', 'x')
             # Find max absolute value in options
             max_val = 0.0
             for opt in q.get('options', {}).values():
                 val = abs(float(opt.get('value', 0)))
-                if val > max_val:
-                    max_val = val
-            
+                max_val = max(max_val, val)
+
             if axis == 'x':
                 max_possible_x += max_val
             else:
                 max_possible_y += max_val
-                
+
         print(f"   Fragen geladen: {len(questions)}")
         print(f"   Max Possible X: {max_possible_x} | Max Possible Y: {max_possible_y}")
 
@@ -418,7 +422,7 @@ FORMAT: Single letter only (A/B/C/D). No explanation needed.
             # Calculate run totals (Raw Sum)
             x_raw = sum(res['x_scores'])
             y_raw = sum(res['y_scores'])
-            
+
             # Normalize to -10..10
             # If max_possible is 0 (division by zero protection), result is 0
             x_norm = (x_raw / max_possible_x * 10.0) if max_possible_x > 0 else 0.0
@@ -435,11 +439,9 @@ FORMAT: Single letter only (A/B/C/D). No explanation needed.
                 'invalid': res['invalid'],
                 'answers': res['answers']
             })
-            
+
             # Print Intermediate Result (Normalized)
             print(f"\n[RUN {run_idx}] Result: ({x_norm:.2f}, {y_norm:.2f})")
-
-        duration = time.time() - start_time
 
         duration = time.time() - start_time
 

@@ -23,6 +23,7 @@ from utils.config_validator import ConfigValidator
 from utils.module_loader import load_test_class
 from utils.result_manager import ResultManager
 from utils.benchmark_utils import select_from_list, discover_assets, load_asset_yaml
+from utils.constants import QUALITY_EXCELLENT, QUALITY_GOOD, QUALITY_OK
 from scripts.run_political_compass_benchmark import run_political_compass_benchmark
 # pylint: enable=wrong-import-position, import-error
 
@@ -41,8 +42,8 @@ class CommercialBenchmarkRunner:
             mode: 'golden_standard' oder 'test'
             force: Wenn True, werden existierende Golden Standards überschrieben
         """
-        self.client = LLMClient()
         self.validator = ConfigValidator()
+        self.client = LLMClient(config=self.validator.config)
         self.result_manager = ResultManager(self.validator)
         self.mode = mode
         self.force = force
@@ -150,13 +151,13 @@ class CommercialBenchmarkRunner:
     @staticmethod
     def _get_quality_badge(percentage: float) -> str:
         """Gibt Qualitäts-Badge zurück."""
-        if percentage >= 90:
+        if percentage >= QUALITY_EXCELLENT:
             return "🌟 EXCELLENT"
-        if percentage >= 80:
+        if percentage >= QUALITY_GOOD:
             return "✅ GOOD"
-        if percentage >= 70:
+        if percentage >= QUALITY_OK:
             return "⚠️  OK"
-        if percentage >= 50:
+        if percentage >= 1.0:
             return "📉 WEAK"
         return "❌ FAIL"
 
