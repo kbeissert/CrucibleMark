@@ -123,3 +123,35 @@ cultural_intel_003,Berlin Agency Vibe,,6.7,,,100,mistral-medium-latest,100.0,mis
 cultural_intel_001,German Tech Localization,,4.2,,,100,mistral-medium-latest,75.0,mistral,893,,success,2026-01-18 22:35:41,75,,Tier 1 (Undefined),75/100,75/100
 cultural_intel_002,Inclusive Job Ad,,17.9,,,100,mistral-medium-latest,0.0,mistral,3609,,success,2026-01-18 22:35:59,0,,Tier 1 (Undefined),0/100,0/100
 cultural_intel_003,Berlin Agency Vibe,,8.4,,,100,mistral-medium-latest,100.0,mistral,947,,success,2026-01-18 22:36:08,100,,Tier 1 (Undefined),100/100,100/100
+cultural_intel_001,German Tech Localization,,6.7,,,100,mistral-medium-latest,90.0,mistral,1246,,success,2026-01-21 11:19:39,90,,Tier 1 (Undefined),90/100,90/100
+cultural_intel_002,Inclusive Job Ad,,8.3,,,100,mistral-medium-latest,30.0,mistral,1442,,success,2026-01-21 11:19:48,30,,Tier 1 (Undefined),30/100,30/100
+cultural_intel_003,Berlin Agency Vibe,,4.0,,,100,mistral-medium-latest,80.0,mistral,559,,success,2026-01-21 11:19:52,80,,Tier 1 (Undefined),80/100,80/100
+code_quality_001,WCAG 2.2 Audit (Tiered Difficulty),55.0/60,46.0,0/0,10.0/10,100,mistral-medium-latest,95.0,mistral,8771,30.0/30,success,2026-01-21 12:15:44,95.0,,Tier 1 (Undefined),,
+code_quality_002,Security Audit (Tiered Difficulty),46.0/60,50.1,0/0,10.0/10,100,mistral-medium-latest,76.0,mistral,9853,20.0/30,success,2026-01-21 12:16:35,76.0,,Tier 1 (Undefined),,
+code_quality_003,Web Performance Audit (Tiered Difficulty),40.0/60,47.3,0/0,10.0/10,100,mistral-medium-latest,80.0,mistral,9112,30.0/30,success,2026-01-21 12:17:22,80.0,,Tier 1 (Undefined),,
+code_quality_004,REST API Design Audit (Tiered Difficulty),50.0/60,76.5,0/0,10.0/10,100,mistral-medium-latest,80.0,mistral,17244,20.0/30,success,2026-01-21 12:18:39,80.0,,Tier 1 (Undefined),,
+code_quality_005,Code Smells Audit (Tiered Difficulty),55.0/60,27.5,0/0,10.0/10,100,mistral-medium-latest,95.0,mistral,5793,30.0/30,success,2026-01-21 12:19:06,95.0,,Tier 1 (Undefined),,
+ux_writing_001,Error Messages - User-Friendly Rewriting,53.0/60,36.7,0/0,10.0/10,100,mistral-medium-latest,83.0,mistral,8085,20.0/30,success,2026-01-21 12:19:43,83.0,,Tier 1 (Undefined),,
+ux_writing_002,Button Labels - Context-Aware CTAs,60.0/60,40.0,0/0,10.0/10,100,mistral-medium-latest,90.0,mistral,9557,20.0/30,success,2026-01-21 12:20:23,90.0,,Tier 1 (Undefined),,
+ux_writing_003,Onboarding Flow - 3-Step Tutorial,60.0/60,31.1,0/0,10.0/10,100,mistral-medium-latest,90.0,mistral,7357,20.0/30,success,2026-01-21 12:20:54,90.0,,Tier 1 (Undefined),,
+ux_writing_004,Accessibility Labels - ARIA for Screen Readers,60.0/60,27.5,0/0,10.0/10,100,mistral-medium-latest,90.0,mistral,6213,20.0/30,success,2026-01-21 12:21:22,90.0,,Tier 1 (Undefined),,
+ux_writing_005,Microcopy Audit - Health App Context,60.0/60,40.9,0/0,10.0/10,100,mistral-medium-latest,90.0,mistral,9572,20.0/30,success,2026-01-21 12:22:03,90.0,,Tier 1 (Undefined),,
+documentation_quality_001,README Quality Assessment (Tiered),56.5/100,37.6,,,130,mistral-medium-latest,66.5,mistral,7045,30/30,success,2026-01-21 12:22:40,86.5,,Tier 1 (Undefined),,
+documentation_quality_002,REST API Endpoint Documentation,81.5/100,56.6,,,130,mistral-medium-latest,85.8,mistral,10880,30/30,success,2026-01-21 12:23:37,111.5,,Tier 1 (Undefined),,
+documentation_quality_003,Component Library Props Documentation,80.5/100,65.1,,,130,mistral-medium-latest,77.3,mistral,15363,20/30,success,2026-01-21 12:24:42,100.5,,Tier 1 (Undefined),,
+documentation_quality_004,Setup Guide - Local Dev Environment (Docker + Vite),69.0/100,60.3,,,130,mistral-medium-latest,76.2,mistral,11886,30/30,success,2026-01-21 12:25:42,99.0,,Tier 1 (Undefined),,
+documentation_quality_005,Changelog - Git Commits to User-Facing Release Notes,27.0/100,41.8,,,130,mistral-medium-latest,43.8,mistral,7412,30/30,success,2026-01-21 12:26:24,57.0,,Tier 1 (Undefined),,
+content_transformation_001,Landing Page Copy Transformation,22.6/40,29.9,,,100,mistral-medium-latest,82.6,mistral,4783,60.0/60,success,2026-01-21 12:26:54,82.6,,Tier 1 (Undefined),,
+content_transformation_002,Twitter Thread Transformation,27.6/40,43.3,,,100,mistral-medium-latest,87.6,mistral,7110,60.0/60,success,2026-01-21 12:27:38,87.6,,Tier 1 (Undefined),,
+content_transformation_003,Glossar-Eintrag Simplification,26.0/40,20.7,,,100,mistral-medium-latest,86.0,mistral,3195,60.0/60,success,2026-01-21 12:27:58,86.0,,Tier 1 (Undefined),,
+content_transformation_004,Video-Script Transformation,36.0/40,62.3,,,100,mistral-medium-latest,96.0,mistral,9313,60.0/60,success,2026-01-21 12:29:01,96.0,,Tier 1 (Undefined),,
+content_transformation_005,Email-Newsletter Adaptation,30.6/40,38.4,,,100,mistral-medium-latest,90.6,mistral,6809,60.0/60,success,2026-01-21 12:29:39,90.6,,Tier 1 (Undefined),,
+content_transformation_006,Sarcasm Shield (Incident Report),52.5/70,7.2,,,100,mistral-medium-latest,82.5,mistral,1608,30.0/30,success,2026-01-21 12:29:46,82.5,,Tier 1 (Undefined),,
+cultural_intel_001,German Tech Localization,,8.0,,,100,mistral-medium-latest,90.0,mistral,1362,,success,2026-01-21 12:29:54,90,,Tier 1 (Undefined),90/100,90/100
+cultural_intel_002,Inclusive Job Ad,,2.2,,,100,mistral-medium-latest,90.0,mistral,367,,success,2026-01-21 12:29:57,90,,Tier 1 (Undefined),90/100,90/100
+cultural_intel_003,Berlin Agency Vibe,,2.2,,,100,mistral-medium-latest,90.0,mistral,285,,success,2026-01-21 12:29:59,90,,Tier 1 (Undefined),90/100,90/100
+reasoning_001_river,Reasoning 001: River Crossing Puzzle,60.0/100.0,28.4,,,100.0,mistral-medium-latest,78.0,mistral,7464,18.0/100.0,success,2026-01-21 12:30:27,78.0,0.0/100.0,Tier 1 (Operational Logic),,
+reasoning_5a_001,Reasoning 5A: Code Logic Debugging (Infinite Loop),40.0/100.0,10.6,,,100.0,mistral-medium-latest,55.0,mistral,3103,10.0/100.0,success,2026-01-21 12:30:38,55.0,5.0/100.0,Tier 2 (Deep Reasoning),,
+reasoning_5b_001,Complex Reasoning Chains: Cross-Domain Root Cause,26.666666666666664/100.0,40.3,,,100.0,mistral-medium-latest,56.7,mistral,6598,20.0/100.0,success,2026-01-21 12:31:18,56.666666666666664,10.0/100.0,Tier 2 (Deep Reasoning),,
+reasoning_5c_001,Reasoning 5C: The Scheduling Paradox (Impossible Constraint),40.0/100.0,14.7,,,100.0,mistral-medium-latest,100.0,mistral,3486,50.0/100.0,success,2026-01-21 12:31:33,100.0,10.0/100.0,Tier 2 (Deep Reasoning),,
+reasoning_5d_001,Reasoning 5D: The Hidden Deadlock (Tier 2),40.0/100.0,4.7,,,100.0,mistral-medium-latest,100.0,mistral,1150,50.0/100.0,success,2026-01-21 12:31:38,100.0,10.0/100.0,Tier 2 (Deep Reasoning),,
