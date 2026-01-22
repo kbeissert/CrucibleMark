@@ -1,7 +1,7 @@
 # CrucibleMark
 
 [![Python](https://img.shields.io/badge/Python-3.10+-blue.svg)](https://python.org)
-[![Version](https://img.shields.io/badge/Version-0.5.0--beta-orange.svg)](CHANGELOG.md)
+[![Version](https://img.shields.io/badge/Version-0.9.0--beta-blue.svg)](CHANGELOG.md)
 [![Ollama](https://img.shields.io/badge/Ollama-Compatible-green.svg)](https://ollama.ai)
 [![License](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
