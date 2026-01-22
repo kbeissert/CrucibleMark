@@ -20,6 +20,8 @@ from utils.config_validator import ConfigValidator
 from utils.result_manager import ResultManager
 from utils.benchmark_utils import select_from_list, discover_assets, load_asset_yaml
 from utils.module_loader import load_test_class
+from utils.constants import QUALITY_EXCELLENT, QUALITY_GOOD, QUALITY_OK
+from utils.model_utils import is_reasoning_model
 # pylint: enable=wrong-import-position, import-error
 
 logger = logging.getLogger(__name__)
@@ -36,15 +38,10 @@ class LocalBenchmarkRunner:
         }
     }
 
-    # Quality thresholds (Adjusted for Hardened Assets v3.0)
-    QUALITY_EXCELLENT = 85  # Trophy badge (Weltklasse)
-    QUALITY_GOOD = 70       # Star badge (Sehr gut / Brauchbar)
-    QUALITY_OK = 55         # Checkmark badge (OK für einfache Tasks)
-
     def __init__(self):
         """Initialisiert Runner."""
-        self.client = LLMClient()
         self.validator = ConfigValidator()
+        self.client = LLMClient(config=self.validator.config)
         self.result_manager = ResultManager(self.validator)
         self.commercial_csv = self.validator.get_golden_standard_csv()
 
@@ -105,11 +102,6 @@ class LocalBenchmarkRunner:
 
         return references
 
-    def is_reasoning_model(self, model_name: str) -> bool:
-        """Prüft auf Reasoning-Modelle (langsam)."""
-        triggers = ['deepseek-r1', 'o1', 'reasoning', 'phi4', 'qwq']
-        return any(t in model_name.lower() for t in triggers)
-
     def select_model(self) -> Optional[str]:
         """Interaktive Modell-Auswahl."""
         models = self.get_ollama_models()
@@ -127,7 +119,7 @@ class LocalBenchmarkRunner:
 
         if selected:
             print(f"✓ Ausgewählt: {selected}")
-            if self.is_reasoning_model(selected):
+            if is_reasoning_model(selected):
                 print("\n⚠️  ACHTUNG: Reasoning-Modell erkannt!")
                 print("   Diese Modelle nutzen Chain-of-Thought (Denkprozess).")
                 print("   Die Ausführung wird signifikant länger dauern!")
@@ -376,11 +368,11 @@ class LocalBenchmarkRunner:
     @staticmethod
     def _get_quality_badge(percentage: float) -> str:
         """Gibt Quality-Badge zurück."""
-        if percentage >= LocalBenchmarkRunner.QUALITY_EXCELLENT:
+        if percentage >= QUALITY_EXCELLENT:
             return "🏆"
-        if percentage >= LocalBenchmarkRunner.QUALITY_GOOD:
+        if percentage >= QUALITY_GOOD:
             return "⭐"
-        if percentage >= LocalBenchmarkRunner.QUALITY_OK:
+        if percentage >= QUALITY_OK:
             return "✓"
         return "⚠️"
 

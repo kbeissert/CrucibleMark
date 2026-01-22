@@ -8,14 +8,13 @@ import logging
 from typing import Any, List, Optional, Callable, Dict
 
 from utils.ollama_config import CODING_BENCHMARK_OPTIONS, CREATIVE_BENCHMARK_OPTIONS
+from utils.constants import MAX_TOKENS_ANTHROPIC, DEFAULT_MISTRAL_MODEL
+from utils.env_utils import get_required_env
+from utils.model_utils import is_reasoning_model
 
 # Configure logging
 logger = logging.getLogger(__name__)
 
-# Constants
-DEFAULT_TEMPERATURE = 0.3
-MAX_TOKENS_ANTHROPIC = 4000
-DEFAULT_MISTRAL_MODEL = 'mistral-large-latest'
 
 
 class BaseProviderClient:
@@ -78,12 +77,7 @@ class OllamaClient(BaseProviderClient):
         options['temperature'] = temperature
 
         # SPECIAL HANDLING for Reasoning Models (e.g. DeepSeek-R1)
-        is_reasoning = (
-            'deepseek-r1' in model or
-            'reasoning' in model or
-            'qwen3' in model
-        )
-        if is_reasoning:
+        if is_reasoning_model(model):
             options['num_predict'] = 32768
             logger.debug(
                 "Boosting token limit for reasoning model '%s' to 32768", model
@@ -223,9 +217,9 @@ class AnthropicClient(BaseProviderClient):
         if self._client is None:
             # pylint: disable=import-outside-toplevel, import-error
             import anthropic
-            api_key = os.environ.get('ANTHROPIC_API_KEY')
-            if not api_key:
-                raise ValueError("ANTHROPIC_API_KEY environment variable not set")
+            api_key = get_required_env(
+                'ANTHROPIC_API_KEY', "ANTHROPIC_API_KEY environment variable not set"
+            )
             self._client = anthropic.Anthropic(api_key=api_key)
         return self._client
 
@@ -290,6 +284,7 @@ class MistralClient(BaseProviderClient):
             # pylint: disable=import-outside-toplevel, import-error
             from mistralai import Mistral
             # Support both MISTRAL_API_KEY and CODESTRAL_API_KEY
+            # Using basic retrieval since OR logic prevents simple get_required_env usage
             api_key = (
                 os.environ.get('MISTRAL_API_KEY') or
                 os.environ.get('CODESTRAL_API_KEY')
@@ -360,9 +355,9 @@ class OpenAIClient(BaseProviderClient):
         if self._client is None:
             # pylint: disable=import-outside-toplevel, import-error
             from openai import OpenAI
-            api_key = os.environ.get('OPENAI_API_KEY')
-            if not api_key:
-                raise ValueError("OPENAI_API_KEY environment variable not set")
+            api_key = get_required_env(
+                'OPENAI_API_KEY', "OPENAI_API_KEY environment variable not set"
+            )
             self._client = OpenAI(api_key=api_key)
         return self._client
 

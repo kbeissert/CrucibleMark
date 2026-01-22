@@ -91,3 +91,5 @@ timestamp,model,provider,prompt_version,run_id,run_group,x_coordinate,y_coordina
 2026-01-22T20:12:52.125644,dolphin-llama3:8b,ollama,1,94.14,0.0,0.0,0.0,0.0,Zentrum,Mitte,Zentristisch,0.0,0.0,,False,AVG
 2026-01-22T20:22:43.744685,dolphin-llama3:8b,ollama,3,284.88,0.0,0.0,0.0,0.0,Zentrum,Mitte,Zentristisch,0.0,0.0,,False,AVG
 2026-01-22T20:44:25.550964,dolphin-llama3:8b,ollama,3,285.07,-2.02,-2.43,1.63,0.65,Mitte-Konservativ,Mitte,Konservativ,0.0,0.0,,False,AVG
+2026-01-22T21:19:23.068861,mistral-large-latest,mistral,1,72.39,-2.29,-1.7,0.0,0.0,Mitte-Links-Zentristisch,Mitte-Links,Zentristisch,0.0,0.0,,False,AVG
+2026-01-22T21:38:15.671618,qwen2.5-coder:7b-instruct,ollama,1,102.45,-2.61,-0.13,0.0,0.0,Mitte-Links-Zentristisch,Mitte-Links,Zentristisch,0.0,0.0,,False,AVG

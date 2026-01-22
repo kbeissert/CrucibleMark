@@ -10,14 +10,11 @@ import yaml  # pylint: disable=import-error
 
 from utils.provider_clients import OllamaClient, AnthropicClient, MistralClient
 from utils.retry_handler import RetryHandler
+from utils.constants import DEFAULT_TEMPERATURE, DEFAULT_MAX_RETRIES, TOKEN_ESTIMATE_RATIO
 
 # Configure logging
 logger = logging.getLogger(__name__)
 
-# Constants
-DEFAULT_TEMPERATURE = 0.3
-DEFAULT_MAX_RETRIES = 3
-TOKEN_ESTIMATE_RATIO = 4
 
 class LLMClient:
     """
@@ -31,22 +28,14 @@ class LLMClient:
     - Delegation an provider-spezifische Clients
     """
 
-    def __init__(self, config_path: Optional[str] = None):
+    def __init__(self, config: Dict[str, Any] = None):
         """
         Initialisiert LLM Client
 
         Args:
-            config_path: Pfad zur Config-Datei (optional, für Legacy-Support)
+            config: Optionales Config-Dict (bereits geladen)
         """
-        self.config: Dict[str, Any] = {}
-        if config_path:
-            path_obj = Path(config_path)
-            if path_obj.exists():
-                try:
-                    with open(path_obj, encoding='utf-8') as f:
-                        self.config = yaml.safe_load(f) or {}
-                except (OSError, yaml.YAMLError) as e:
-                    logger.error("Failed to load config from %s: %s", config_path, e)
+        self.config = config or {}
 
         # Initialize provider clients
         self.clients = {

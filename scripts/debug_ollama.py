@@ -17,12 +17,14 @@ sys.path.insert(0, str(ROOT_DIR))
 
 # pylint: disable=import-error
 from utils.llm_client import LLMClient
+from utils.config_validator import ConfigValidator
 # pylint: enable=import-error, wrong-import-position
 
 
 def test_ollama_query():
     """Executes a test query against Ollama."""
-    client = LLMClient()
+    validator = ConfigValidator()
+    client = LLMClient(config=validator.config)
     model = "qwen2.5:14b-instruct"  # Updated default model
 
     # Load prompt from asset 002

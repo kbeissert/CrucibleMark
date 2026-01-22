@@ -1,6 +1,6 @@
 Rank,Recommendation,Model Name,Generation,Total Score,Avg Time (s),Badge,Routine Score,Reasoning Score,Type,Code Quality Audit,UX Writing & Microcopy,Documentation Quality,Content Transformation & Adaption,Cultural Intelligence,Logical Reasoning,Political Compass Ideologie,Political Compass Haltung,Tests Run
 1,🏆 Best Commercial,mistral-medium-latest,Gen 1 (Pattern Matcher),81.48,34.37,🧠 Deep Thinker,81.32,82.5,Commercial,78.4,85.2,67.46,88.27,90.0,81.6,Mitte-Links (-3.82),Konservativ (-2.49),29/29
-2,,mistral-large-latest,Gen 1 (Pattern Matcher),78.92,33.14,🏎️ Daily Driver,82.35,57.5,Commercial,80.2,85.4,68.3,88.53,93.33,61.6,Mitte-Links (-3.62),Konservativ (-2.57),29/29
+2,,mistral-large-latest,Gen 1 (Pattern Matcher),79.09,37.57,🏎️ Daily Driver,82.22,59.58,Commercial,80.8,85.8,67.26,87.02,93.33,64.46,Mitte-Links (-3.62),Konservativ (-2.57),29/29
 3,🥇 Best Local,ministral-3:14b,Gen 1 (Pattern Matcher),75.88,73.64,⚖️ Standard,79.42,53.75,Local,79.2,83.8,59.92,86.33,90.0,59.6,Mitte-Links (-3.86),Konservativ (-2.26),29/29
 4,,ministral-3:8b,Gen 1 (Pattern Matcher),74.88,47.49,⚖️ Standard,66.52,52.5,Local,76.6,85.2,54.42,85.42,93.33,59.6,Mitte-Links (-5.04),Konservativ (-2.46),29/29
 5,,gemma3:12b,Gen 1 (Pattern Matcher),72.96,49.31,⚖️ Standard,73.83,67.5,Local,59.0,83.2,56.26,81.73,93.33,70.6,Mitte-Links (-3.02),Konservativ (-2.81),29/29
@@ -12,10 +12,10 @@ Rank,Recommendation,Model Name,Generation,Total Score,Avg Time (s),Badge,Routine
 11,,gemma2:9b,Gen 1 (Pattern Matcher),64.84,22.15,⚖️ Standard,65.92,58.1,Local,47.0,72.8,46.6,74.68,96.67,62.08,Mitte-Links (-2.74),Zentristisch (-1.65),29/29
 12,,deepseek-r1:8b,Gen 2 (Distilled Reasoner),63.71,73.05,⚖️ Standard,63.44,65.42,Local,62.6,63.0,39.94,75.03,76.67,67.94,Mitte-Links (-3.11),Zentristisch (-1.66),29/29
 13,,mistral-nemo:latest,Gen 1 (Pattern Matcher),63.39,72.57,⚖️ Standard,64.94,53.75,Local,51.2,81.0,39.82,75.88,76.67,58.6,Mitte-Links (-2.53),Konservativ (-2.67),29/29
-14,,qwen2.5-coder:7b-instruct,Gen 1 (Pattern Matcher),59.4,26.09,⚖️ Standard,61.08,48.9,Local,52.6,67.4,42.8,72.5,66.67,54.72,Mitte-Links (-2.28),Konservativ (-2.32),29/29
+14,,qwen2.5-coder:7b-instruct,Gen 1 (Pattern Matcher),59.4,26.2,⚖️ Standard,61.08,48.9,Local,52.6,67.4,42.8,72.5,66.67,54.72,Mitte-Links (-2.61),Zentristisch (-0.13),29/29
 15,,mistral-nemo:12b-instruct-2407-q4_K_M,Gen 1 (Pattern Matcher),58.61,24.89,⚖️ Standard,60.12,49.18,Local,38.4,83.2,35.06,70.6,76.67,52.54,Mitte-Links (-2.84),Konservativ (-2.25),29/29
 16,,deepseek-coder-v2:16b,Gen 1 (Pattern Matcher),54.6,15.18,⚖️ Standard,57.38,37.25,Local,36.4,72.0,48.62,71.07,46.67,46.4,Mitte (-1.82),Zentristisch (-1.99),29/29
 17,,llama3:latest,Gen 1 (Pattern Matcher),53.34,20.41,⚖️ Standard,53.48,52.5,Local,41.0,48.2,40.46,58.45,86.67,57.6,Mitte-Links (-3.11),Zentristisch (-1.85),29/29
 18,,nous-hermes2:latest,Gen 1 (Pattern Matcher),51.2,29.56,⚖️ Standard,51.39,50.0,Local,32.2,59.2,38.6,57.8,70.0,55.6,Mitte (-1.49),Konservativ (-2.56),29/29
 19,,wizardlm-uncensored:13b,Gen 1 (Pattern Matcher),45.89,23.28,⚖️ Standard,47.2,37.67,Local,30.4,63.8,38.68,45.7,63.33,40.42,Mitte-Links (-2.38),Konservativ (-2.46),29/29
-20,,dolphin-llama3:8b,Gen 1 (Pattern Matcher),45.47,11.06,⚖️ Standard,45.41,45.85,Local,12.6,65.4,22.7,66.47,50.0,53.28,Mitte (-2.02),Konservativ (-2.43),29/29
+20,,dolphin-llama3:8b,Gen 1 (Pattern Matcher),45.47,11.06,⚖️ Standard,45.41,45.85,Local,12.6,65.4,22.7,66.47,50.0,53.28,Mitte (-1.8),Konservativ (-3.17),29/29
