@@ -1,4 +1,4 @@
-.PHONY: help install validate generate-golden run-benchmark clean test
+.PHONY: help install validate generate-golden run-benchmark clean test backup
 
 # Python-Interpreter aus .venv verwenden
 PYTHON := .venv/bin/python
@@ -31,6 +31,7 @@ help:
 	@echo "  make clean-all            Delete EVERYTHING (caches + CSVs)"
 	@echo "  make list-models          List models (Local & Commercial Status)"
 	@echo "  make list-modules         List available benchmark modules"
+	@echo "  make backup               Backup benchmark scores to backups/"
 	@echo ""
 
 install:
@@ -137,3 +138,11 @@ test: validate
 
 list-models:
 	@$(PYTHON) scripts/list_models.py
+
+# === BACKUP ===
+
+backup:
+	@echo "💾 Creating backup of benchmark scores..."
+	@mkdir -p backups
+	@tar -czf backups/benchmark_scores_$20260122_165802.tar.gz benchmark_scores/
+	@echo "✅ Backup created in backups/"

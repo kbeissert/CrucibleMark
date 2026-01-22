@@ -10,8 +10,10 @@ env/
 # Outputs & Reports
 outputs/runs/*
 !outputs/runs/.gitkeep
-commercial_models_benchmark.csv
-local_models_benchmark.csv
+# Ensure critical benchmark scores are tracked!
+# (Previous ignore rules removed or commented out)
+# commercial_models_benchmark.csv
+# local_models_benchmark.csv
 _backup_old/
 
 # Secrets
