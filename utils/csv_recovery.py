@@ -3,9 +3,8 @@ Utility module for recovering and parsing robust benchmark CSV data.
 Handles heuristic extraction of data from malformed LLM outputs.
 """
 from typing import Any, Dict, List, Optional
-import csv
 from pathlib import Path
-import pandas as pd
+import pandas as pd  # pylint: disable=import-error
 
 # Fallback models used for heuristic extraction
 KNOWN_MODELS = [

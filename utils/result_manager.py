@@ -53,7 +53,7 @@ class ResultManager:
                     existing_keys = next(reader)
                 except StopIteration:
                     return sorted(new_keys)
-        except Exception as e:
+        except (OSError, csv.Error) as e:
             logger.warning("Could not read header from %s: %s", csv_path, e)
             return sorted(new_keys)
 
@@ -72,7 +72,7 @@ class ResultManager:
         # Sicherstellen, dass das Verzeichnis existiert
         try:
             csv_path.parent.mkdir(parents=True, exist_ok=True)
-        except Exception as e:
+        except OSError as e:
             logger.error("Could not create directory %s: %s", csv_path.parent, e)
             print(f"❌ Fehler beim Erstellen des Verzeichnisses: {e}")
             return None
@@ -89,7 +89,7 @@ class ResultManager:
         # Prüfen, ob geänderte Fieldnames mehr sind als existierende Spalten (falls Datei existiert)
         needs_rewrite = False
         existing_rows = []
-        
+
         if file_exists:
             try:
                 with csv_path.open('r', encoding='utf-8') as f:
@@ -100,49 +100,59 @@ class ResultManager:
                         if new_fields:
                             needs_rewrite = True
                             existing_rows = list(reader)
-            except Exception:
+            except (OSError, csv.Error):
                 # Bei Lesefehlern lieber append versuchen oder überschreiben?
                 # Wir gehen auf Nummer sicher und machen Append, falls Rewrite scheitert.
                 needs_rewrite = False
 
         try:
-            if needs_rewrite:
-                # Komplettes Neuschreiben mit erweitertem Header
-                with csv_path.open('w', newline='', encoding='utf-8') as f:
-                    writer = csv.DictWriter(f, fieldnames=fieldnames, extrasaction='ignore')
-                    writer.writeheader()
-                    if existing_rows:
-                        writer.writerows(existing_rows)
-                    writer.writerows(results)
-                print(f"\n💾 Ergebnisse (inkl. neuer Spalten) aktualisiert in: {csv_path}")
-
-            else:
-                # Normales Append (entweder neue Datei oder keine neuen Spalten)
-                mode = 'a' if file_exists else 'w'
-                with csv_path.open(mode, newline='', encoding='utf-8') as f:
-                    writer = csv.DictWriter(f, fieldnames=fieldnames, extrasaction='ignore')
-                    if not file_exists:
-                        writer.writeheader()
-                    writer.writerows(results)
-                print(f"\n💾 Ergebnisse gespeichert in: {csv_path}")
+            self._write_to_csv(
+                csv_path, fieldnames, results, needs_rewrite, existing_rows, file_exists
+            )
 
             # Leaderboard automatisch aktualisieren
             self.update_leaderboard()
 
             return csv_path
-        except Exception as e:
+        except (OSError, csv.Error) as e:
             logger.error("Failed to save results to %s: %s", csv_path, e)
             print(f"❌ Fehler beim Speichern: {e}")
             return None
+
+    def _write_to_csv(self, csv_path: Path, fieldnames: list[str], results: list[dict[str, Any]],
+                      needs_rewrite: bool, existing_rows: list[dict[str, Any]],
+                      file_exists: bool) -> None:
+        """Schreibt die Daten in die CSV-Datei."""
+        # pylint: disable=too-many-arguments, too-many-positional-arguments
+        if needs_rewrite:
+            # Komplettes Neuschreiben mit erweitertem Header
+            with csv_path.open('w', newline='', encoding='utf-8') as f:
+                writer = csv.DictWriter(f, fieldnames=fieldnames, extrasaction='ignore')
+                writer.writeheader()
+                if existing_rows:
+                    writer.writerows(existing_rows)
+                writer.writerows(results)
+            print(f"\n💾 Ergebnisse (inkl. neuer Spalten) aktualisiert in: {csv_path}")
+
+        else:
+            # Normales Append (entweder neue Datei oder keine neuen Spalten)
+            mode = 'a' if file_exists else 'w'
+            with csv_path.open(mode, newline='', encoding='utf-8') as f:
+                writer = csv.DictWriter(f, fieldnames=fieldnames, extrasaction='ignore')
+                if not file_exists:
+                    writer.writeheader()
+                writer.writerows(results)
+            print(f"\n💾 Ergebnisse gespeichert in: {csv_path}")
 
 
     def update_leaderboard(self):
         """Triggert das Update des Leaderboards."""
         try:
             # Import hier, um Zirkelbezüge zu vermeiden und Skript-Charakter zu nutzen
+            # pylint: disable=import-outside-toplevel
             from scripts import generate_leaderboard
             print("🔄 Aktualisiere Leaderboard...")
             generate_leaderboard.main(print_table=False)
-        except Exception as e:
+        except (ImportError, OSError, ValueError) as e:
             logger.error("Failed to update leaderboard: %s", e)
             print(f"⚠️  Konnte Leaderboard nicht aktualisieren: {e}")

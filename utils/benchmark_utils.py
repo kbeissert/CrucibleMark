@@ -3,11 +3,47 @@ Shared utilities for benchmark runners.
 Contains common logic for interactive selection and asset discovery.
 """
 
+import logging
 from pathlib import Path
-from typing import TypeVar
+from typing import TypeVar, Dict, Any, Optional
 from collections.abc import Callable
 
+# pylint: disable=import-error
+import yaml
+
 T = TypeVar('T')
+
+logger = logging.getLogger(__name__)
+
+
+def load_asset_yaml(asset_path: Path) -> Dict[str, Any]:
+    """
+    Safely loads a YAML asset file.
+    Handles single document and multi-document files (returns the metadata one).
+    Returns empty dict on failure.
+    """
+    try:
+        with open(asset_path, encoding='utf-8') as f:
+            content = f.read()
+
+        # Try single load first
+        return yaml.safe_load(content) or {}
+    except yaml.YAMLError:
+        # Fallback for multi-document files
+        try:
+            with open(asset_path, encoding='utf-8') as f:
+                docs = list(yaml.safe_load_all(f))
+            # Find doc with metadata
+            return next(
+                (d for d in docs if d and isinstance(d, dict) and 'metadata' in d),
+                docs[0] if docs else {}
+            )
+        except (OSError, yaml.YAMLError) as e:
+            logger.error("Failed to load asset %s: %s", asset_path, e)
+            return {}
+    except OSError as e:
+        logger.error("Failed to read file %s: %s", asset_path, e)
+        return {}
 
 
 def print_header(title: str, width: int = 60) -> None:
@@ -21,14 +57,15 @@ def select_from_list(
     items: list[T],
     display_func: Callable[[T], str | tuple[str, str]],
     prompt: str = "Wähle einen Eintrag",
-    title: str | None = None
-) -> T | None:
+    title: Optional[str] = None
+) -> Optional[T]:
     """
     Generic interactive selection from a list.
 
     Args:
         items: List of items to select from
-        display_func: Function that takes an item and returns a string representation (or tuple of strings)
+        display_func: Function that takes an item and returns a string representation
+                      (or tuple of strings)
         prompt: Prompt text for input
         title: Optional title to print before list
 
@@ -49,30 +86,20 @@ def select_from_list(
                 print(f"  {i}. {line}" if line == display[0] else f"     {line}")
         else:
             print(f"  {i}. {display}")
-        print()
 
-    print(f"{'='*60}")
+    print("  0. Abbrechen")
 
     while True:
         try:
-            choice = input(f"\n{prompt} (1-{len(items)}): ").strip()
-
-            if not choice:
-                print("❌ Keine Eingabe - Abbruch")
+            choice = input(f"\n{prompt} (0-{len(items)}): ").strip()
+            if choice == '0':
                 return None
-
-            idx = int(choice) - 1
-
-            if 0 <= idx < len(items):
-                return items[idx]
-
-            print(f"❌ Bitte Zahl zwischen 1 und {len(items)} eingeben")
-
+            idx = int(choice)
+            if 1 <= idx <= len(items):
+                return items[idx - 1]
+            print("⚠️  Ungültige Auswahl.")
         except ValueError:
-            print("❌ Ungültige Eingabe - bitte Zahl eingeben")
-        except KeyboardInterrupt:
-            print("\n\n❌ Abgebrochen")
-            return None
+            print("⚠️  Bitte eine Zahl eingeben.")
 
 
 def discover_assets(directory: str | Path, pattern: str = "*.yaml") -> list[Path]:
@@ -85,18 +112,10 @@ def discover_assets(directory: str | Path, pattern: str = "*.yaml") -> list[Path
 
     Returns:
         Sorted list of paths
-
-    Raises:
-        ValueError: If directory does not exist or no assets found
     """
     path = Path(directory)
 
     if not path.exists():
-        # Return empty list instead of raising to be compatible with commercial runner logic
-        # or raise if strict. Let's stick to returning list for flexibility,
-        # but local runner raised ValueError. Let's standardize on returning list
-        # and letting caller decide if empty is error.
         return []
 
-    assets = sorted(path.glob(pattern))
-    return assets
+    return sorted(list(path.glob(pattern)))
