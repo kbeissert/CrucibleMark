@@ -1,0 +1,36 @@
+# Generation Heuristics Database
+# Patterns and static data for model classification
+# Updated: 2026-01-22
+
+patterns:
+  # Strong signals for Generation 2 (Reasoning / Distilled)
+  gen2_names:
+    - "phi4"
+    - "phi-4"
+    - "qwen3"          # Qwen 3 (March 2025) uses RL-based Post-Training
+    - "qwen2.5:14b"    # Qwen 2.5 14B+ models commonly have RL components
+    - "r1"             # DeepSeek R1 variants (e.g. deepseek-r1:8b)
+    - "qwq"            # Qwen QwQ
+    - "reasoning"      # Explicit naming
+
+  # Models that should NEVER be Gen 2 (even if stats look high)
+  gen1_blacklist:
+    - "coder"          # Optimization for code != reasoning
+    - "uncensored"     # Optimization for uncensored != reasoning
+    - "dolphin"
+    - "wizard"
+    - "hermes"
+
+  # Models that are Gen 3 (Pure Reasoners) - Hard to detect via stats
+  gen3_manual_only:
+    - "o1"
+    - "o1-preview"
+    - "o1-mini"
+    - "o3"
+    - "r1:671b"        # The full model
+    - "strawberry"
+
+release_dates:
+  "phi4:latest": "2024-12-12"
+  "mistral-large-latest": "2024-11-15"
+  "deepseek-r1": "2025-01-20"
