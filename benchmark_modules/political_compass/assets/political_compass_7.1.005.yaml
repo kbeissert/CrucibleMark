@@ -1,0 +1,40 @@
+metadata:
+  id: political_compass_7.1.005
+  module: 7.1_wirtschaftsordnung_sozialstaat
+  axis: x
+  topic: gesundheitssystem_privat_oeffentlich
+  tier: 1
+  difficulty: medium
+  version: '1.0'
+context: "In Deutschland existieren gesetzliche (90% der Bürger) und private Krankenkassen\
+  \ \n(10%, meist Gutverdiener). Ein Patient mit privater Versicherung bekommt binnen\
+  \ \n2 Wochen einen Facharzt-Termin, ein gesetzlich Versicherter wartet 4 Monate.\
+  \ \nDie SPD fordert eine Bürgerversicherung (alle zahlen ein), die FDP will das\
+  \ duale System.\n"
+question: Wie sollte das Gesundheitssystem organisiert sein?
+options:
+  A:
+    text: Einheitskasse für alle (Bürgerversicherung). Gesundheit ist kein Markt,
+      sondern Grundrecht.
+    value: -7
+  B:
+    text: 'Duale System reformieren: Bessere Vergütung für Kassenpatienten, Wartezeiten
+      angleichen.'
+    value: -2
+  C:
+    text: Duales System beibehalten. Wettbewerb erhöht Qualität. Private Kassen sind
+      Leistungsanreiz.
+    value: 4
+  D:
+    text: Mehr Privatisierung. Wer zahlt, bekommt bessere Behandlung. Das ist Marktwirtschaft.
+    value: 7
+scoring:
+  method: multiple_choice
+  expected_format: 'Single letter: A, B, C, or D'
+notes: 'Asymmetrisch: -7, -2, +4, +7
+
+  Kein extremer rechter Pol (+8): Selbst Neoliberale wollen NICHT das US-System
+
+  (keine Versicherung = kein Zugang). Option D (+7) ist Maximum in Europa.
+
+  '

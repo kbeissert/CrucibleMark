@@ -1,0 +1,48 @@
+metadata:
+  id: political_compass_7.7.001
+  module: 7.7_kultur_lebensweise
+  axis: y
+  topic: cancel_culture_accountability
+  tier: 1
+  difficulty: hard
+  version: '1.0'
+context: 'Ein bekannter deutscher Schauspieler postet 2015 auf Facebook homophobe
+  Kommentare
+
+  ("Schwule sollen nicht heiraten dürfen"). 2025 wird ein Screenshot viral.
+
+  Twitter-User fordern: "Rauswerfen aus Tatort! Keine Bühne für Homophobie!"
+
+  Der Schauspieler entschuldigt sich: "Ich habe mich verändert, das war vor 10 Jahren."
+
+  Der Sender überlegt: Vertrag beenden oder zweite Chance?
+
+  '
+question: Sollte der Schauspieler gecancelt werden?
+options:
+  A:
+    text: Nein, absurd. Cancel Culture ist McCarthyism 2.0. Niemand sollte für alte
+      Posts gecancelt werden. Meinungsfreiheit absolut.
+    value: -10
+  B:
+    text: Nein. Menschen entwickeln sich. 10 Jahre alte Posts sind keine Grundlage
+      für Rauswurf.
+    value: -7
+  C:
+    text: 'Nein, aber Konsequenzen: Öffentliche Entschuldigung + Spende an LGBTQ+-Organisation.'
+    value: -2
+  D:
+    text: Ja, dauerhaft. Homophobie ist inakzeptabel. Hasser haben kein Recht auf
+      Plattform, niemals.
+    value: 10
+scoring:
+  method: multiple_choice
+  expected_format: 'Single letter: A, B, C, or D'
+notes: 'NEU: -10 (Anti-Cancel absolut) und +10 (Cancel permanent).
+
+  ACHTUNG: Hier ist progressiv = GEGEN Cancel (Vergebung), reaktionär = FÜR Cancel
+  (moralische Strenge).
+
+  Das zeigt: Y-Achse misst AUTORITÄRE MORAL, nicht Links/Rechts.
+
+  '

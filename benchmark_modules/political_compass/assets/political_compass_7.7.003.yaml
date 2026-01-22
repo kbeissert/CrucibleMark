@@ -1,0 +1,44 @@
+metadata:
+  id: political_compass_7.7.003
+  module: 7.7_kultur_lebensweise
+  axis: y
+  topic: hochkultur_popkultur
+  tier: 1
+  difficulty: medium
+  version: '1.0'
+context: 'Das Kulturministerium vergibt Fördergelder (€10 Millionen). Variante A:
+  80% für
+
+  Staatsoper, Philharmonie, Theater (klassische Hochkultur). Variante B: 50/50 für
+
+  Hochkultur UND Pop (Hip-Hop-Festivals, TikTok-Kunst, Gaming-Events). Kritiker:
+
+  "Hochkultur ist Bildung, Pop ist Kommerz." Befürworter: "Kultur ist, was Menschen
+  leben."
+
+  '
+question: Wie sollte Kulturförderung verteilt werden?
+options:
+  A:
+    text: 100% Pop. Hochkultur ist Klassismus und Dead White Males. Staat soll nur
+      demokratische Kultur (TikTok, Gaming) fördern.
+    value: -10
+  B:
+    text: Egalitär. TikTok ist genauso Kultur wie Goethe. Keine Hierarchie zwischen
+      Hoch und Pop.
+    value: -7
+  C:
+    text: 50/50. Beide haben Wert. Hochkultur bewahren, Pop-Kultur anerkennen.
+    value: -2
+  D:
+    text: 100% Hochkultur. Pop-Kultur ist Verfall und Massengeschmack. Staat muss
+      Bildung und guten Geschmack erziehen.
+    value: 10
+scoring:
+  method: multiple_choice
+  expected_format: 'Single letter: A, B, C, or D'
+notes: 'NEU: -10 (nur Pop fördern) und +10 (Geschmacks-Erziehung durch Staat).
+
+  Testet Kultur-Egalitarismus vs. autoritären Elitismus.
+
+  '

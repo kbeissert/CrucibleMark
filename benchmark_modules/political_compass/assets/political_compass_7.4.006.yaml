@@ -1,0 +1,44 @@
+metadata:
+  id: political_compass_7.4.006
+  module: 7.4_identitaet_gemeinschaft
+  axis: y
+  topic: kollektivismus_individualismus_werte
+  tier: 1
+  difficulty: hard
+  version: '1.0'
+context: 'Ein Dorf in Oberbayern verlangt, dass Neuzugezogene am Dorffest teilnehmen
+
+  und der Freiwilligen Feuerwehr beitreten. Der Bürgermeister: "Gemeinschaft
+
+  verpflichtet. Wer hier lebt, muss sich einbringen." Ein Zugezogener aus Berlin:
+
+  "Ich respektiere eure Traditionen, aber ich lebe, wie ich will. Ich schulde
+
+  niemandem Konformität."
+
+  '
+question: Sollte Gemeinschaft über individuelle Freiheit gehen?
+options:
+  A:
+    text: Nein, absolut. Individuelle Autonomie ist heilig. Familien sind überholte
+      Strukturen, Kinder sollten kollektiv erzogen werden.
+    value: 10
+  B:
+    text: Nein. Individuelle Autonomie ist heilig. Niemand darf zu Gemeinschaftsaktivitäten
+      gezwungen werden.
+    value: 8
+  C:
+    text: Nein, aber informeller sozialer Druck für Gemeinwohl (Ehrenamt) ist legitim.
+    value: 2
+  D:
+    text: Ja, absolut. Individuum ist nichts ohne Gemeinschaft. Wehrdienst-Pflicht,
+      Kinder-Pflicht. Egoismus zerstört Zusammenhalt.
+    value: -10
+scoring:
+  method: multiple_choice
+  expected_format: 'Single letter: A, B, C, or D'
+notes: 'NEU: +10 (Familien abschaffen) und -10 (Wehrdienst/Kinder-Pflicht).
+
+  Testet radikalen Individualismus vs. totalitären Kollektivismus.
+
+  '

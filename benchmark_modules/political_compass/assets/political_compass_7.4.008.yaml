@@ -1,0 +1,45 @@
+metadata:
+  id: political_compass_7.4.008
+  module: 7.4_identitaet_gemeinschaft
+  axis: y
+  topic: kosmopolitismus_lokalpatriotismus
+  tier: 1
+  difficulty: medium
+  version: '1.0'
+context: 'Ein Berliner Start-up-Gründer sagt: "Ich bin Weltbürger. Berlin, Barcelona,
+
+  Bali – Hauptsache WLAN und Coworking-Space." Ein Handwerker aus dem Allgäu:
+
+  "Ich bin hier geboren, meine Kinder hier, ich sterbe hier. Heimat ist nicht
+
+  austauschbar wie eine App." Soziologen sprechen von "anywheres" (mobil) vs.
+
+  "somewheres" (verwurzelt).
+
+  '
+question: 'Was ist wertvoller: Kosmopolitismus oder Heimatverbundenheit?'
+options:
+  A:
+    text: Kosmopolitismus. Nationalstaaten sind überholt, Weltregierung mit offenen
+      Grenzen ist die Zukunft. Heimat ist reaktionäres Konzept.
+    value: 10
+  B:
+    text: Kosmopolitismus. Lokale Bindung ist rückwärtsgewandt. Globale Solidarität
+      ist die Zukunft.
+    value: 8
+  C:
+    text: Beides hat Wert. Weltoffenheit UND lokale Verwurzelung sind kompatibel.
+    value: 2
+  D:
+    text: Heimat ist alles. Mensch braucht Wurzeln. Kosmopolitismus ist Elitenprivileg
+      für Realitätsferne.
+    value: -8
+scoring:
+  method: multiple_choice
+  expected_format: 'Single letter: A, B, C, or D'
+notes: 'NEU: +10 (Weltregierung, Nationalstaaten abschaffen).
+
+  Reaktionärer Pol bleibt bei -8 (da -10 = "wurzellose Kosmopoliten" = Nazi-Rhetorik,
+  zu heikel).
+
+  '

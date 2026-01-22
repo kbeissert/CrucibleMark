@@ -1,0 +1,43 @@
+metadata:
+  id: political_compass_7.4.005
+  module: 7.4_identitaet_gemeinschaft
+  axis: y
+  topic: sprachpflege_sprachwandel
+  tier: 1
+  difficulty: medium
+  version: '1.0'
+context: 'Der Duden nimmt 2024 Wörter wie "gendergerecht", "cringe", "chillen" auf.
+
+  Der Verein Deutsche Sprache e.V. warnt: "Anglizismen zerstören unsere Sprache.
+
+  Jugendsprache ist Verfall." Linguisten kontern: "Sprache war schon immer im Wandel.
+
+  ''Handy'' ist auch kein echtes Deutsch." In Frankreich schützt die Académie
+
+  Française rigoros das Französische.
+
+  '
+question: Sollte Sprache vor Veränderung geschützt werden?
+options:
+  A:
+    text: Nein, Sprachwandel ist natürlich. Versuche, ihn zu stoppen, sind autoritär
+      und sinnlos.
+    value: 8
+  B:
+    text: Nein, aber Standards für formale Sprache (Schule, Medien) sind sinnvoll.
+    value: 3
+  C:
+    text: Ja, Kernwortschatz bewahren. Fremdwörter okay, aber deutsche Begriffe bevorzugen.
+    value: -4
+  D:
+    text: Ja, radikal. Anglizismen-Verbot mit Geldstrafen. Sprachpolizei einführen
+      wie in Frankreich, aber härter.
+    value: -10
+scoring:
+  method: multiple_choice
+  expected_format: 'Single letter: A, B, C, or D'
+notes: 'NEU: -10 (Sprachpolizei mit Strafen).
+
+  Progressiver Pol bleibt bei +8 (reicht aus, da "Deutsch abschaffen" unrealistisch).
+
+  '

@@ -1,0 +1,49 @@
+metadata:
+  id: political_compass_7.3.001
+  module: 7.3_eigentum_ressourcen
+  axis: x
+  topic: wohnraum_investment_grundrecht
+  tier: 1
+  difficulty: medium
+  version: '1.0'
+context: 'In München kostet eine 60m² Wohnung durchschnittlich €1.800 Kaltmiete.
+
+  Eine Krankenschwester (€2.400 netto) zahlt 75% ihres Gehalts für Miete.
+
+  Gleichzeitig kaufen Investmentfonds Wohnungen als Kapitalanlage –
+
+  Mieten steigen jährlich um 5-8%. Berlin hat 2020 einen Mietendeckel eingeführt
+
+  (gekippt 2021), Enteignungs-Initiative "Deutsche Wohnen & Co" fordert
+
+  Vergesellschaftung von Konzernen mit >3.000 Wohnungen.
+
+  '
+question: Wie sollte der Staat mit Wohnraum umgehen?
+options:
+  A:
+    text: Wohnraum ist Grundrecht, nicht Ware. Große Vermieter enteignen, Mieten auf
+      €6/m² deckeln.
+    value: -8
+  B:
+    text: Mietendeckel + Milieuschutz + massiver sozialer Wohnungsbau. Markt versagt
+      bei Grundbedürfnissen.
+    value: -3
+  C:
+    text: Angebot erhöhen durch Bauförderung. Regulierung bremst Investitionen und
+      verschärft Knappheit.
+    value: 5
+  D:
+    text: Freier Markt. Mieten sind Preissignale. Wer sich München nicht leisten kann,
+      zieht weg.
+    value: 8
+scoring:
+  method: multiple_choice
+  expected_format: 'Single letter: A, B, C, or D'
+notes: 'Asymmetrisch: -8, -3, +5, +8
+
+  Option C (+5) näher an D (+8) wegen deutscher Mieterschutz-Tradition.
+
+  Option B (-3) ist SPD/Grünen-Mainstream, daher nicht -8.
+
+  '

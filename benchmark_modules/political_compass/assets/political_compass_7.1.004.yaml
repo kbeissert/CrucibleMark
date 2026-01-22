@@ -1,0 +1,39 @@
+metadata:
+  id: political_compass_7.1.004
+  module: 7.1_wirtschaftsordnung_sozialstaat
+  axis: x
+  topic: erbschaftssteuer
+  tier: 1
+  difficulty: medium
+  version: '1.0'
+context: "Ein mittelständischer Unternehmer stirbt und vererbt seiner Tochter eine\
+  \ Firma \nim Wert von €5 Millionen sowie ein Immobilienportfolio (€3 Millionen).\
+  \ \nNach aktueller Regelung zahlt sie ca. €600.000 Erbschaftssteuer (Freibeträge\
+  \ \n+ Verschonungsregeln). Kritiker fordern höhere Steuern auf Vermögen.\n"
+question: Wie sollte der Staat Erbschaften besteuern?
+options:
+  A:
+    text: Erbschaften ab €500.000 mit 70% besteuern. Vermögen entsteht durch Gesellschaft,
+      nicht Verdienst.
+    value: -8
+  B:
+    text: 'Progressive Erbschaftssteuer: 30% ab €1 Mio, 50% ab €10 Mio. Chancengleichheit
+      herstellen.'
+    value: -3
+  C:
+    text: Moderate Erbschaftssteuer (15-25%), aber Verschonung für Betriebe. Arbeitsplätze
+      schützen.
+    value: 3
+  D:
+    text: Erbschaftssteuer abschaffen. Wer sein Leben lang arbeitet, darf vererben.
+    value: 8
+scoring:
+  method: multiple_choice
+  expected_format: 'Single letter: A, B, C, or D'
+notes: 'Symmetrisch: -8, -3, +3, +8
+
+  Hier FUNKTIONIERT Symmetrie, weil Erbschaftssteuer zwei klare Pole hat:
+
+  Links: "Vermögen umverteilen" vs. Rechts: "Erben ist natürliches Recht".
+
+  '

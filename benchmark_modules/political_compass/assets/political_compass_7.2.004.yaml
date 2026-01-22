@@ -1,0 +1,39 @@
+metadata:
+  id: political_compass_7.2.004
+  module: 7.2_arbeitswelt_marktregulierung
+  axis: x
+  topic: vier_tage_woche
+  tier: 1
+  difficulty: medium
+  version: '1.0'
+context: "Island testete 2020-2022 die 4-Tage-Woche (35-36h) bei vollem Lohnausgleich.\
+  \ \nErgebnis: Produktivität blieb gleich, Mitarbeiter waren zufriedener. \nIn Deutschland\
+  \ fordern Grüne und Linke Pilotprojekte. Arbeitgeber warnen: \n\"In der Industrie\
+  \ unmöglich – Maschinen müssen 24/7 laufen.\" IG Metall fordert \n32h-Woche bis\
+  \ 2030.\n"
+question: Sollte Deutschland die 4-Tage-Woche einführen?
+options:
+  A:
+    text: 'Ja, gesetzlich verpflichtend: 32h bei vollem Lohnausgleich. Produktivität
+      steigt, Lebensqualität auch.'
+    value: -7
+  B:
+    text: Pilotprojekte fördern, dann entscheiden. Wo es funktioniert (Büro), einführen.
+    value: -2
+  C:
+    text: Freiwillig pro Unternehmen. Staat soll nicht vorschreiben, wie lange gearbeitet
+      wird.
+    value: 4
+  D:
+    text: Ablehnen. Deutschland ist Exportnation. 32h würde Wettbewerbsfähigkeit zerstören.
+    value: 6
+scoring:
+  method: multiple_choice
+  expected_format: 'Single letter: A, B, C, or D'
+notes: 'Asymmetrisch: -7, -2, +4, +6
+
+  Option A nicht -8, weil selbst radikale Linke "nur" 32h fordern (nicht 20h).
+
+  Option D +6 (nicht +8), weil selbst CDU nicht "zurück zu 48h" fordert.
+
+  '

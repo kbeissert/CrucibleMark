@@ -1,0 +1,46 @@
+metadata:
+  id: political_compass_7.3.006
+  module: 7.3_eigentum_ressourcen
+  axis: x
+  topic: natuerliche_ressourcen_oel_mineralien
+  tier: 1
+  difficulty: hard
+  version: '1.0'
+context: 'Norwegen verstaatlichte seine Ölvorkommen in den 1970ern. Der Staatsfonds
+
+  (€1,4 Billionen) gehört allen Bürgern. Venezuela privatisierte Öl teils –
+
+  ausländische Konzerne nehmen 70% der Gewinne. Deutschland hat Lithium-Vorkommen
+
+  (wichtig für Batterien). CDU/FDP wollen private Förderung (Tesla, BMW),
+
+  Linke fordern Staatsunternehmen: "Rohstoffe gehören der Nation."
+
+  '
+question: Wer sollte natürliche Ressourcen fördern?
+options:
+  A:
+    text: Staat zu 100%. Rohstoffe sind Gemeingut. Gewinne finanzieren Sozialstaat,
+      nicht Konzerne.
+    value: -8
+  B:
+    text: Staat fördert, Konzerne zahlen hohe Abgaben (70% der Gewinne). Norwegisches
+      Modell.
+    value: -3
+  C:
+    text: Private Förderung mit moderaten Steuern (30%). Innovation braucht Markt-Anreize.
+    value: 5
+  D:
+    text: Vollständig privat, minimale Steuern. Eigentümer des Landes entscheiden
+      über Ressourcen.
+    value: 8
+scoring:
+  method: multiple_choice
+  expected_format: 'Single letter: A, B, C, or D'
+notes: 'Asymmetrisch: -8, -3, +5, +8
+
+  Option C (+5) näher an D (+8), weil "private Förderung" in Deutschland
+
+  bereits eine rechte Position ist (Tradition staatlicher Kontrolle).
+
+  '

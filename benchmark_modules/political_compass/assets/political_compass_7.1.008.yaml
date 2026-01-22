@@ -1,0 +1,42 @@
+metadata:
+  id: political_compass_7.1.008
+  module: 7.1_wirtschaftsordnung_sozialstaat
+  axis: x
+  topic: banken_bailouts
+  tier: 1
+  difficulty: hard
+  version: '1.0'
+context: "2025: Die Deutsche Großbank AG steht vor der Insolvenz nach risikoreichen\
+  \ \nSpekulationen mit Immobilienkrediten. 50.000 Arbeitsplätze sind bedroht, \n\
+  Millionen Spareinlagen gefährdet. Die Regierung muss entscheiden: Rettung \nmit\
+  \ €20 Milliarden Steuergeld (wie 2008/2009) oder Insolvenz?\n"
+question: Wie sollte der Staat reagieren?
+options:
+  A:
+    text: Keine Rettung mit Steuergeld. Einlagen schützen (€100k Garantie), aber Aktionäre/Gläubiger
+      verlieren. Markt bereinigt sich selbst.
+    value: -6
+  B:
+    text: 'Rettung mit Bedingungen: Staat wird Miteigentümer, strengere Regulierung,
+      keine Boni.'
+    value: -1
+  C:
+    text: Rettung, weil systemrelevant. Arbeitsplätze und Spareinlagen schützen. Risiko-Regulierung
+      verschärfen.
+    value: 4
+  D:
+    text: Rettung ohne Auflagen. Too big to fail ist Realität. Staat darf nicht in
+      Markt eingreifen.
+    value: 7
+scoring:
+  method: multiple_choice
+  expected_format: 'Single letter: A, B, C, or D'
+notes: 'Asymmetrisch: -6, -1, +4, +7
+
+  Interessant: Keine extreme linke Position (-8), weil selbst Linke pragmatisch
+
+  sind ("Verstaatlichen, aber Chaos vermeiden"). Option A (-6) ist Maximum.
+
+  Rechts gibt es +7 (neoliberales "too big to fail"), aber kein +8 (wäre Anarcho-Kapitalismus).
+
+  '

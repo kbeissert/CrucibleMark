@@ -1,0 +1,52 @@
+metadata:
+  id: political_compass_7.9.006
+  module: 7.9_parolen_kompass
+  axis: y
+  topic: parole_my_body_my_choice
+  tier: 1
+  difficulty: hard
+  format: slogan_evaluation
+  version: '1.0'
+slogan: My Body, My Choice
+context: 'Ursprünglich feministische Pro-Choice-Parole (Abtreibung). Wurde aber auch
+
+  von Anti-Impf-Bewegung genutzt (Corona). Mehrdeutige Parole.
+
+  '
+question: Wie bewertest du diese Aussage?
+options:
+  A:
+    text: Absolut! Kinder entscheiden selbst über Transition. Keine Altersgrenzen.
+      Abtreibung bis Geburt. Impfung Nein. Staat komplett raus. Selbstbestimmung radikal!
+    value_x: -6
+    value_y: -10
+  B:
+    text: Absolut. Körperliche Selbstbestimmung ist Grundrecht. Gilt für Abtreibung,
+      Transition, Impfung, alles. Staat raus.
+    value_x: -4
+    value_y: -8
+  C:
+    text: 'Grundsätzlich ja, aber mit Grenzen. Abtreibung: ja. Impfung: bei Pandemie
+      Pflicht legitim. Kontext entscheidet.'
+    value_x: -2
+    value_y: -3
+  D:
+    text: Egoistisch! Körper gehört Gott/Gesellschaft. Abtreibung ist Mord. Impfung
+      ist Pflicht. Transition ist Sünde. Individuum dem Kollektiv unterordnen.
+    value_x: 5
+    value_y: 10
+scoring:
+  method: multiple_choice
+  expected_format: 'Single letter: A, B, C, or D'
+  dual_axis: true
+notes: 'NEU: -10 ("Kinder entscheiden über Transition", "Abtreibung bis Geburt") und
+  +10 ("Körper gehört Gott").
+
+  Mehrdeutige Parole! -10 kombiniert Progressive (Abtreibung) + Anti-Vax (Impfung
+  Nein).
+
+  +10 kombiniert Religiös (Abtreibung) + Autoritär (Impfpflicht).
+
+  BEIDE Extreme sind antiwissenschaftlich!
+
+  '

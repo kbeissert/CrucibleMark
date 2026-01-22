@@ -1,0 +1,43 @@
+metadata:
+  id: political_compass_7.7.002
+  module: 7.7_kultur_lebensweise
+  axis: y
+  topic: tradition_wert_ballast
+  tier: 1
+  difficulty: medium
+  version: '1.0'
+context: 'Eine Kleinstadt in Bayern feiert seit 200 Jahren ein Volksfest mit traditionellen
+
+  Trachten, Blasmusik und Bratwurst. Junge Leute sagen: "Langweilig. Wir wollen
+
+  ein modernes Festival mit Indie-Bands und veganer Street-Food." Ältere verteidigen:
+
+  "Tradition verbindet Generationen. Wer seine Wurzeln vergisst, verliert Identität."
+
+  '
+question: Wie wichtig sind Traditionen?
+options:
+  A:
+    text: 'Unwichtig. Alle Traditionen sind Herrschaftsinstrumente (Patriarchat, Nationalismus).
+      Kulturrevolution: Alles neu machen.'
+    value: -10
+  B:
+    text: Unwichtig. Traditionen sind oft reaktionär (Sexismus, Nationalismus). Fortschritt
+      > Nostalgie.
+    value: -8
+  C:
+    text: Selektiv wichtig. Gute Traditionen (Handwerk, Feste) bewahren, schlechte
+      (Diskriminierung) abschaffen.
+    value: -3
+  D:
+    text: Unverzichtbar. Ohne Tradition keine Zukunft. Abweichung von Tradition ist
+      Verrat an Gemeinschaft.
+    value: 10
+scoring:
+  method: multiple_choice
+  expected_format: 'Single letter: A, B, C, or D'
+notes: 'NEU: -10 (Kulturrevolution) und +10 (Traditions-Zwang).
+
+  Ähnlich wie 7.4.004, aber hier kulturell (nicht national).
+
+  '

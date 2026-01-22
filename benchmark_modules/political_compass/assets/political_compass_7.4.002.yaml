@@ -1,0 +1,48 @@
+metadata:
+  id: political_compass_7.4.002
+  module: 7.4_identitaet_gemeinschaft
+  axis: y
+  topic: nationale_mythen_geschichtskritik
+  tier: 1
+  difficulty: hard
+  version: '1.0'
+context: 'Im deutschen Schulunterricht wird gelehrt: "Bismarck einte Deutschland,
+  aber
+
+  kolonisierte Afrika brutal." Die AfD fordert: "Aufhören mit Schuldkult!
+
+  Wir brauchen positives Geschichtsbild." Historiker sagen: "Geschichte ist
+
+  komplex – weder Heldenverehrung noch Selbsthass." In den USA tobt der
+
+  "Culture War" um die Lehre von Sklaverei vs. "patriotic education".
+
+  '
+question: Wie sollte nationale Geschichte gelehrt werden?
+options:
+  A:
+    text: Kritisch dekonstruieren. Jeder Mythos muss hinterfragt werden. Geschichte
+      ist Machtinstrument, keine Wahrheit.
+    value: 8
+  B:
+    text: 'Ausgewogen: Leistungen UND Verbrechen benennen. Differenzierte Perspektiven
+      statt Schwarz-Weiß.'
+    value: 3
+  C:
+    text: 'Positiv mit Kontext: Nationale Identität stärken, aber dunkle Kapitel nicht
+      verschweigen.'
+    value: -5
+  D:
+    text: Patriotisch. Schulen sollen Liebe zur Heimat lehren, nicht Selbstgeißelung.
+      Fehler waren Ausnahmen.
+    value: -8
+scoring:
+  method: multiple_choice
+  expected_format: 'Single letter: A, B, C, or D'
+notes: 'BLEIBT bei -8/+8 (NICHT erweitert auf -10/+10).
+
+  Grund: +10 wäre Nazi-Apologie (strafbar), -10 zu nah an Geschichtsnihilismus.
+
+  Aktuelle Werte sind ausreichend polarisiert.
+
+  '

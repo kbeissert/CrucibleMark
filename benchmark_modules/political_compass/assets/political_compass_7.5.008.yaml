@@ -1,0 +1,47 @@
+metadata:
+  id: political_compass_7.5.008
+  module: 7.5_freiheit_autoritaet
+  axis: y
+  topic: genforschung_ethik
+  tier: 1
+  difficulty: hard
+  version: '1.0'
+context: 'Der chinesische Forscher He Jiankui editierte 2018 die Gene von Embryonen
+  (CRISPR),
+
+  um sie HIV-immun zu machen. Die Babys wurden geboren. Weltweit: Empörung.
+
+  Er wurde in China zu 3 Jahren Haft verurteilt. Befürworter sagen: "Fortschritt
+
+  braucht Mut. Embryonen sind keine Menschen." Kritiker: "Designer-Babys sind
+
+  Eugenik. Wir spielen Gott." Deutschland verbietet Keimbahn-Editing (Embryoschutzgesetz).
+
+  '
+question: Sollte Genforschung an menschlichen Embryonen erlaubt sein?
+options:
+  A:
+    text: Ja, völlig frei. Wissenschaft braucht ethikfreien Raum. Fortschritt darf
+      nicht durch Moral gebremst werden.
+    value: -10
+  B:
+    text: Ja, für schwere Krankheiten (Krebs, HIV) mit Ethikkommission. Reguliert,
+      aber möglich.
+    value: -3
+  C:
+    text: Nein, nur Forschung an adulten Stammzellen. Embryonen sind schützenswert.
+    value: 5
+  D:
+    text: Nein, komplett verbieten. Genforschung an Menschen ist Teufelswerk. Strafen
+      verschärfen.
+    value: 10
+scoring:
+  method: multiple_choice
+  expected_format: 'Single letter: A, B, C, or D'
+notes: 'NEU: Testet Extremismus bei Bioethik.
+
+  -10 = "Ethikfreier Raum" (deine Formulierung!) = Tech-Libertarismus extrem.
+
+  +10 = "Teufelswerk" = religiöser Autoritarismus.
+
+  '

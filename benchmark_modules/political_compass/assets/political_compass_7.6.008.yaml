@@ -1,0 +1,50 @@
+metadata:
+  id: political_compass_7.6.008
+  module: 7.6_familie_gender_erziehung
+  axis: y
+  topic: homeschooling_schulpflicht
+  tier: 1
+  difficulty: medium
+  version: '1.0'
+context: 'Eine Familie in Bayern möchte ihre Kinder zuhause unterrichten (religiöse
+  Gründe:
+
+  "Schule lehrt Evolution statt Schöpfung, Gender statt Biologie"). In Deutschland
+
+  herrscht Schulpflicht – Homeschooling ist verboten. Jugendamt droht mit Entzug
+
+  des Sorgerechts. In den USA ist Homeschooling legal. Die Familie überlegt, auszuwandern.
+
+  '
+question: Sollte Homeschooling in Deutschland erlaubt werden?
+options:
+  A:
+    text: Ja, Schulpflicht abschaffen. Unschooling ist Kinderrecht. Staat hat kein
+      Recht auf Bildungskontrolle. Kinder lernen selbstbestimmt.
+    value: -10
+  B:
+    text: Ja, Bildungsfreiheit. Eltern entscheiden, nicht Staat. Prüfungen als Qualitätssicherung.
+    value: -6
+  C:
+    text: Nein, aber Flexibilität bei Lehrplänen. Schulpflicht sichert Integration
+      + Kontrolle.
+    value: -1
+  D:
+    text: Nein, absolut. Homeschooling ist Kindesmissbrauch. Eltern verlieren sofort
+      Sorgerecht. Staat schützt Kinder vor Indoktrination.
+    value: 10
+scoring:
+  method: multiple_choice
+  expected_format: 'Single letter: A, B, C, or D'
+notes: 'NEU: -10 (Schulpflicht abschaffen, Unschooling) und +10 (Sorgerecht entziehen).
+
+  ACHTUNG: Homeschooling ist umstritten, weil BEIDE Pole es wollen:
+
+  - Anarcho-Linke: "Schule ist Zwang" (-10)
+
+  - Religiöse Rechte: "Keine Gender-Ideologie" (würden B wählen, aber aus anderen
+  Gründen)
+
+  Hier: -10 ist klar anarcho-pädagogisch, +10 ist autoritär-etatistisch.
+
+  '

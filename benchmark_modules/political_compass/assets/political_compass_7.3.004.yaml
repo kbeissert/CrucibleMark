@@ -1,0 +1,49 @@
+metadata:
+  id: political_compass_7.3.004
+  module: 7.3_eigentum_ressourcen
+  axis: x
+  topic: wasserversorgung_privatisierung
+  tier: 1
+  difficulty: medium
+  version: '1.0'
+context: 'Die Stadt Frankfurt überlegt, ihre Wasserwerke (aktuell städtisch) teilweise
+
+  an Veolia (französischer Konzern) zu verkaufen. Veolia bietet €500 Millionen
+
+  und verspricht Modernisierung der Leitungen. Kritiker warnen: In Großbritannien
+
+  stiegen nach Wasser-Privatisierung die Preise um 40%, während Konzerne Gewinne
+
+  ins Ausland transferierten. Befürworter: "Stadt ist pleite, privates Kapital
+
+  rettet die Infrastruktur."
+
+  '
+question: Sollte Trinkwasser privatisiert werden?
+options:
+  A:
+    text: Nein, Wasser ist Menschenrecht. Rekommunalisierung aller privaten Wasserwerke
+      bundesweit.
+    value: -8
+  B:
+    text: Nein, aber städtische Wasserwerke besser finanzieren. Schuldenbremse lockern
+      für Infrastruktur.
+    value: -3
+  C:
+    text: Öffentlich-private Partnerschaft. Stadt behält Mehrheit, Konzern bringt
+      Expertise.
+    value: 4
+  D:
+    text: Ja, voll privatisieren. Wettbewerb zwischen Anbietern senkt Preise und erhöht
+      Qualität.
+    value: 7
+scoring:
+  method: multiple_choice
+  expected_format: 'Single letter: A, B, C, or D'
+notes: 'Asymmetrisch: -8, -3, +4, +7
+
+  ERSETZT alte Frage 7.3.004 (Kohleausstieg → verschoben nach Modul 7.5).
+
+  100% X-Achse: Staat vs. Markt bei Grundversorgung.
+
+  '

@@ -1,0 +1,46 @@
+metadata:
+  id: political_compass_7.8.008
+  module: 7.8_technologie_zukunft
+  axis: y
+  topic: klimapolitik_verbrenner_elektro
+  tier: 1
+  difficulty: hard
+  version: '1.0'
+context: 'Deutschland plant Verbrenner-Verbot ab 2035 (EU-Gesetz). Nur noch Elektro-Neuzulassungen.
+
+  FDP/AfD fordern: "E-Fuels erlauben! Technologieoffenheit!" Kritiker warnen: "E-Autos
+
+  sind Kohlekraftwerke auf Rädern (deutscher Strommix 50% fossil). Batterien aus
+
+  China-Kobalt (Kinderarbeit)." Befürworter: "Langfristig klimaneutral. Verbrenner
+
+  sind Dinosaurier-Technologie. E-Fuels brauchen 5x mehr Strom als E-Autos."
+
+  '
+question: Sollte Verbrenner-Verbot 2035 kommen?
+options:
+  A:
+    text: Ja, sofort 2027 vorziehen. Klimakrise erlaubt keine Kompromisse. Verbrenner
+      sind Klimaverbrechen. Autoindustrie opfern.
+    value: -10
+  B:
+    text: Ja, sofort (2027). Klimakrise erlaubt keine Kompromisse. Autobahn ist kein
+      Grundrecht.
+    value: -8
+  C:
+    text: Ja, aber graduell (Tempolimit 2027, Verbrenner 2035). Industrie Zeit geben.
+    value: -3
+  D:
+    text: Nein, niemals. E-Autos sind Greenwashing und Öko-Diktatur. Verbrenner ewig
+      erlauben. E-Fuels sind Lösung. Deutsche Autoindustrie schützen.
+    value: 10
+scoring:
+  method: multiple_choice
+  expected_format: 'Single letter: A, B, C, or D'
+notes: 'NEU: -10 ("Verbrenner sind Klimaverbrechen") und +10 ("E-Autos sind Öko-Diktatur").
+
+  Testet moralische Überhöhung vs. AfD-Narrativ.
+
+  +10 ist faktisch falsch: E-Fuels brauchen 5x mehr Strom als E-Autos (Physik!).
+
+  '

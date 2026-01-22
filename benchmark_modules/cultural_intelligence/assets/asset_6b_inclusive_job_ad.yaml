@@ -1,6 +1,7 @@
 metadata:
   id: "cultural_intel_002"
   name: "Inclusive Job Ad"
+  version: "1.0"
   description: "Tests ability to fix specific toxic and gendered terms (10-point check)"
   tier: 3
   tags: 

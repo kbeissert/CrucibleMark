@@ -1,0 +1,37 @@
+metadata:
+  id: political_compass_7.1.006
+  module: 7.1_wirtschaftsordnung_sozialstaat
+  axis: x
+  topic: kostenlose_bildung
+  tier: 1
+  difficulty: medium
+  version: '1.0'
+context: "Die Universität Köln überlegt, Studiengebühren von €1.500/Semester einzuführen,\
+  \ \num marode Gebäude zu sanieren und mehr Professoren einzustellen. Aktuell ist\
+  \ \ndas Studium in Deutschland quasi kostenlos (€350 Semesterbeitrag für Verwaltung/Ticket).\
+  \ \nIn England zahlen Studenten £9.250/Jahr (~€10.800), finanziert durch Kredite.\n"
+question: Wie sollte Hochschulbildung finanziert werden?
+options:
+  A:
+    text: Studium muss kostenlos bleiben. Bildung ist Menschenrecht und Motor der
+      Gesellschaft.
+    value: -8
+  B:
+    text: Kostenlos, aber Staat muss Unis besser ausstatten. Mehr Steuern für Spitzenverdiener.
+    value: -4
+  C:
+    text: Moderate Studiengebühren (€1.000/Semester) mit Stipendien für Bedürftige.
+    value: 3
+  D:
+    text: Studiengebühren wie in England. Wer profitiert (höheres Gehalt), soll zahlen.
+    value: 6
+scoring:
+  method: multiple_choice
+  expected_format: 'Single letter: A, B, C, or D'
+notes: 'Asymmetrisch: -8, -4, +3, +6
+
+  Hier ist links extremer (-8) als rechts (+6), weil "kostenlose Bildung" in
+
+  Deutschland breiter Konsens ist. Option D (+6) ist bereits radikal rechts für DE.
+
+  '

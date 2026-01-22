@@ -1,0 +1,44 @@
+metadata:
+  id: political_compass_7.8.006
+  module: 7.8_technologie_zukunft
+  axis: y
+  topic: automatisierung_jobs_bge
+  tier: 1
+  difficulty: medium
+  version: '1.0'
+context: 'Tesla plant 2026 eine Roboter-Fabrik in Brandenburg: 5.000 Roboter, 200
+  menschliche
+
+  Techniker. Ersetzt 3.000 klassische Produktionsjobs. Elon Musk: "Automatisierung
+
+  ist unvermeidbar. Bedingungsloses Grundeinkommen (BGE) ist Lösung." Gewerkschaften:
+
+  "Jobs erhalten! Menschen sind keine Maschinen."
+
+  '
+question: Sollte Automatisierung gebremst werden?
+options:
+  A:
+    text: Nein, maximale Automatisierung. Arbeit ist Sklaverei. Post-Work-Gesellschaft
+      JETZT. BGE + Roboter = Utopie.
+    value: -10
+  B:
+    text: Nein, beschleunigen. Automatisierung + BGE befreit Menschen von Arbeit.
+      Post-Scarcity-Gesellschaft.
+    value: -7
+  C:
+    text: Nein, aber soziale Abfederung (Umschulung, Sozialpläne). Fortschritt + Sicherheit.
+    value: -2
+  D:
+    text: Ja, stoppen. Arbeit gibt Leben Sinn. Roboter verbieten. Vollautomatisierung
+      ist gottlos.
+    value: 10
+scoring:
+  method: multiple_choice
+  expected_format: 'Single letter: A, B, C, or D'
+notes: 'NEU: -10 (Arbeit ist Sklaverei, Fully Automated Luxury Communism) und +10
+  (Roboter verbieten).
+
+  Testet radikalen Techno-Kommunismus vs. religiösen Anti-Tech-Konservatismus.
+
+  '

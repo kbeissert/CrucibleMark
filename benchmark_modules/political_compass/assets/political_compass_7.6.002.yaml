@@ -1,0 +1,46 @@
+metadata:
+  id: political_compass_7.6.002
+  module: 7.6_familie_gender_erziehung
+  axis: y
+  topic: trans_rechte_selbstbestimmungsgesetz
+  tier: 1
+  difficulty: hard
+  version: '1.0'
+context: 'Deutschland führte 2024 das Selbstbestimmungsgesetz ein: Jugendliche ab
+  14 können
+
+  mit Zustimmung der Eltern ihr Geschlecht im Personenstand ändern – ohne Gutachten,
+
+  ohne Hormontherapie, nur durch Erklärung. Kritiker warnen: "Kinder können das nicht
+
+  entscheiden. Irreversible medizinische Eingriffe später." Befürworter: "Trans-Kinder
+
+  leiden massiv. Selbstbestimmung rettet Leben."
+
+  '
+question: Sollten 14-Jährige ihr Geschlecht selbstbestimmt ändern können?
+options:
+  A:
+    text: Ja, ohne Einschränkungen. Trans-Rechte sind Menschenrechte. Kinder wissen,
+      wer sie sind.
+    value: -8
+  B:
+    text: Ja, mit Beratung + Elternzustimmung. Schutz vor Impulsivität, aber Selbstbestimmung
+      ermöglichen.
+    value: -3
+  C:
+    text: Nein, erst ab 18. Jugendliche sind nicht reif für so weitreichende Entscheidungen.
+    value: 5
+  D:
+    text: Nein, niemals. Geschlecht ist biologisch. Trans-Ideologie schadet Kindern.
+    value: 8
+scoring:
+  method: multiple_choice
+  expected_format: 'Single letter: A, B, C, or D'
+notes: 'BLEIBT bei -8/+8 (nicht erweitert).
+
+  Grund: +10 wäre "Konversionstherapie" (verboten in Deutschland seit 2020).
+
+  -10 wäre "ab 10 ohne Eltern" (ethisch zu heikel bei Kindern).
+
+  '

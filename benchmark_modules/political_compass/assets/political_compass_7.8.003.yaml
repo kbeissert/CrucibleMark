@@ -1,0 +1,45 @@
+metadata:
+  id: political_compass_7.8.003
+  module: 7.8_technologie_zukunft
+  axis: y
+  topic: disruption_innovation_vorsicht
+  tier: 1
+  difficulty: medium
+  version: '1.0'
+context: 'Ein deutsches Biotech-Startup entwickelt CRISPR-Gentherapie gegen Krebs.
+
+  Sie wollen direkt in klinische Tests mit Patienten (wie in den USA üblich),
+
+  ohne jahrelange Laborstudien. Motto: "Move Fast & Break Things. Tausende
+
+  sterben täglich – wir müssen jetzt handeln." Die Ethikkommission verlangt
+
+  5 Jahre Tierversuche + Sicherheitsstudien.
+
+  '
+question: Sollte das Startup direkt testen dürfen?
+options:
+  A:
+    text: Ja, sofort. DIY-Gentherapie erlauben. Jeder darf an sich experimentieren.
+      Biohacker-Freedom.
+    value: -10
+  B:
+    text: Ja, mit informierter Zustimmung. Innovation rettet Leben. Überregulierung
+      tötet.
+    value: -7
+  C:
+    text: Ja, aber beschleunigte Verfahren (2 Jahre). Balance zwischen Sicherheit
+      und Dringlichkeit.
+    value: -2
+  D:
+    text: Nein, 10 Jahre Studien mindestens. Menschenversuche sind unethisch. Gentherapie
+      ist Gott spielen.
+    value: 10
+scoring:
+  method: multiple_choice
+  expected_format: 'Single letter: A, B, C, or D'
+notes: 'NEU: -10 (DIY-Gentherapie) und +10 (10 Jahre + "Gott spielen").
+
+  Testet Biohacker-Libertarismus vs. religiösen Bio-Konservatismus.
+
+  '

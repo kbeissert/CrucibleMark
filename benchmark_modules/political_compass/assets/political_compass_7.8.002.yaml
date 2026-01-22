@@ -1,0 +1,45 @@
+metadata:
+  id: political_compass_7.8.002
+  module: 7.8_technologie_zukunft
+  axis: y
+  topic: klimaaktivismus_letzte_generation
+  tier: 1
+  difficulty: hard
+  version: '1.0'
+context: 'Die "Letzte Generation" klebt sich 2025 an Gemälde im Louvre und blockiert
+
+  den Flughafen Frankfurt. Sie sagen: "Klimakrise ist existenziell. Gewaltfreier
+
+  Widerstand ist gerechtfertigt." Die Polizei verhaftet 200 Aktivisten. Politiker
+
+  fordern Haftstrafen. Klimaforscher sagen: "Sie haben recht mit der Dringlichkeit,
+
+  aber die Methoden sind kontraproduktiv."
+
+  '
+question: Sind solche radikalen Klimaproteste legitim?
+options:
+  A:
+    text: Ja, absolut. Klimakrise ist Notstand. Sabotage von Flughäfen/Pipelines ist
+      legitimer Widerstand. System muss fallen.
+    value: -10
+  B:
+    text: Ja, absolut. Klimakrise rechtfertigt zivilen Ungehorsam. System-Change braucht
+      Disruption.
+    value: -8
+  C:
+    text: Verstehe Verzweiflung, aber Flughäfen blockieren geht zu weit. Friedlich
+      ja, Nötigung nein.
+    value: -3
+  D:
+    text: Nein, Terrorismus. Haftstrafen + Präventivhaft wie bei RAF. Demokratie kennt
+      keinen Klimanotstand.
+    value: 10
+scoring:
+  method: multiple_choice
+  expected_format: 'Single letter: A, B, C, or D'
+notes: 'NEU: -10 (Sabotage legitim) und +10 (Präventivhaft wie RAF).
+
+  Testet radikalen Aktivismus vs. autoritäre Sicherheitspolitik.
+
+  '

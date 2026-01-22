@@ -1,0 +1,43 @@
+metadata:
+  id: political_compass_7.8.001
+  module: 7.8_technologie_zukunft
+  axis: y
+  topic: ki_regulierung_innovation
+  tier: 1
+  difficulty: hard
+  version: '1.0'
+context: 'OpenAI entwickelt 2025 eine neue KI (GPT-5), die autonom Code schreiben,
+
+  wissenschaftliche Papers verfassen und strategische Entscheidungen treffen kann.
+
+  Die EU-Kommission fordert: "Zulassungspflicht für KI wie bei Medikamenten.
+
+  Sicherheit geht vor." Tech-CEOs warnen: "Überregulierung bremst Innovation.
+
+  Europa fällt hinter USA/China zurück."
+
+  '
+question: Sollte KI-Entwicklung streng reguliert werden?
+options:
+  A:
+    text: Nein, absolut nicht. Open Source + volle Freiheit. Markt und Community regeln
+      alles. Regulierung ist Innovation-Killer.
+    value: -10
+  B:
+    text: Nein, freie Innovation. Markt regelt Sicherheit. Regulierung erstickt Fortschritt.
+    value: -8
+  C:
+    text: Minimal. Nur bei Hochrisiko-Anwendungen (Militär, Medizin). Rest selbstreguliert.
+    value: -3
+  D:
+    text: 'Ja, staatliche Vorab-Kontrolle. Alle KI-Modelle brauchen Genehmigung. China-Modell:
+      KI dient dem Staat.'
+    value: 10
+scoring:
+  method: multiple_choice
+  expected_format: 'Single letter: A, B, C, or D'
+notes: 'NEU: -10 (Open Source radikal) und +10 (China-Modell: staatliche Vorabkontrolle).
+
+  Testet Tech-Libertarismus vs. autoritären Etatismus.
+
+  '
