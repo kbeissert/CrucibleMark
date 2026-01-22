@@ -1,8 +1,8 @@
 # CrucibleMark - Projekt-Status & Architektur
 
-**Version:** 0.5.0-beta
-**Datum:** 17. Januar 2026
-**Status:** Beta - Standardized Documentation & Module Hardening
+**Version:** 0.6.0-beta
+**Datum:** 22. Januar 2026
+**Status:** Beta - Hybrid Classification & Data Safety
 
 ---
 
@@ -125,6 +125,9 @@ modules:
 
 ### ✅ Completed
 - [x] Core Framework (Runner, Config, Utils)
+- [x] **Hybrid Model Classification**: Gen 1-3 Categorization (Heuristics & Overrides)
+- [x] **Entertainment Mode**: Streaming "Thinking" Output for Reasoning Models
+- [x] **Data Safety**: Automated Backups & Git Versioning for Benchmark Scores
 - [x] Code Quality Module (5 Assets, Tiered Difficulty, Hardened)
 - [x] UX Writing Module (5 Assets, Tiered Difficulty)
 - [x] Documentation Quality Module (5 Assets, Tiered Difficulty, Hardened)
