@@ -107,6 +107,8 @@ prompt: |
      - **Low**: Fehlende Language-Bindings, keine OpenAPI-Spec
   3. **Erstelle eine verbesserte API-Dokumentation** mit allen fehlenden Elementen
   4. **Begründe** deine Änderungen mit API-Design-Prinzipien
+  
+  WICHTIG: Bitte liste zuerst explizit alle gefundenen Probleme auf (Schritt 1), bevor du die verbesserte Version erstellst.
 
 # ============================================================
 # Test-Daten: Kontext für Evaluierung

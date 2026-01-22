@@ -118,6 +118,8 @@ prompt: |
   3. **Erstelle eine vollständige Props-Tabelle** mit Name, Type, Required, Default, Description
   4. **Füge 2-3 realistische Code-Beispiele hinzu**
   5. **Begründe** deine Änderungen mit Component Library Prinzipien
+  
+  WICHTIG: Bitte liste zuerst explizit alle gefundenen Probleme auf (Schritt 1), bevor du die verbesserte Version erstellst.
 
 # ============================================================
 # Scoring Configuration

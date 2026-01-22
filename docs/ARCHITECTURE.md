@@ -45,7 +45,9 @@ Bewertet die Antworten der Modelle.
 5.  **Scoring**:
     *   Die Antwort wird gegen definierte Kriterien (Keywords) geprüft.
     *   Falls vorhanden, wird sie mit dem Golden Standard verglichen (via `utils/similarity.py`).
-6.  **Reporting**:
+7.  **Fehlerbehandlung**:
+    *   Der `utils/retry_handler.py` fängt Netzwerkfehler und spezifische API-Rate-Limits (HTTP 429) ab. Bei Rate Limits pausiert das System intelligent (Start: 60s) mit exponentiellem Backoff, um den Benchmark-Lauf nicht zu gefährden.
+8.  **Reporting**:
     *   **Commercial Runs**: Ergebnisse landen in `benchmark_scores/commercial_models_benchmark.csv`.
     *   **Local Runs**: Ergebnisse landen in `benchmark_scores/local_models_benchmark.csv`.
     *   **Golden Standard Runs**: Ergebnisse werden **doppelt** gespeichert:

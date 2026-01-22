@@ -80,6 +80,8 @@ prompt: |
      - "feat(api): add webhook support" → "You can now receive real-time notifications via webhooks"
      - "fix: resolve XSS vulnerability" → "Fixed a security issue in comments"
   5. **Erstelle vollständige Release Notes** mit Migration Guides, Links, Segmentierung
+  
+  WICHTIG: Bitte liste zuerst explizit alle gefundenen Probleme auf (Schritt 1), bevor du die Release Notes erstellst.
 
 # ============================================================
 # Scoring Configuration

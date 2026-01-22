@@ -29,8 +29,9 @@ Detaillierte Architektur-Informationen und den aktuellen Projektstatus findest d
 
 *   **Modulare Architektur**: Tests sind in unabhängige Module gekapselt.
 *   **Tiered Difficulty System**: Assets enthalten Fehler in 4 Schwierigkeitsstufen (Labeled, Standard, Advanced, Expert), um Junior- von Senior-Modellen zu unterscheiden.
+*   **Structured Prompting**: Alle kreativen Module (`Code Quality`, `Documentation`, `UX Writing`) erzwingen einen strengen "Analyse-vor-Lösung"-Ablauf, um flüchtige oder fehleranfällige Modelle objektiv vergleichbar zu machen.
 *   **Hybrid Scoring**: Kombination aus quantitativer Bewertung (Keyword/Regex) und qualitativer Analyse (Semantische Ähnlichkeit).
-*   **Reproduzierbarkeit**: Fixierte Seeds und deterministische Prompts für vergleichbare Ergebnisse.
+*   **Reproduzierbarkeit**: Fixierte Seeds, Rate-Limit-Handling und deterministische Prompts für vergleichbare Ergebnisse.
 
 ## 📦 Benchmark Module
 
@@ -91,4 +92,5 @@ Weitere Befehle:
 
 *   [Hinzufügen neuer Module](docs/ADDING_MODULES.md)
 *   [Architektur-Details](docs/ARCHITECTURE.md)
+*   [Modell-Management & Klassifizierung](docs/MODEL_CLASSIFICATION.md) - **Neu:** Wie das Hybrid-System Modelle klassifiziert.
 *   [Golden Standards Guide](docs/GOLDEN_STANDARDS.md)

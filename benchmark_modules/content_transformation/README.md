@@ -30,6 +30,9 @@ Das Scoring basiert auf zwei Hauptkomponenten (Total: 100 Punkte):
    - Prüft, ob das Modell die Transformations-Regeln einhält und typische Fehler vermeidet.
    - Unterteilt in 4 Schwierigkeitsstufen (Labeled, Standard, Advanced, Expert).
 
+**Hinweis zum Prompt-Design:**
+Um eine faire Bewertung zu gewährleisten, erzwingen alle Transformation-Prompts eine strikte Trennung in **Schritt 1: Analyse** (Problem-Identifikation im Quelltext) und **Schritt 2: Transformation**. Modelle müssen explizit auflisten, welche Elemente (z.B. Headlines, CTAs) fehlen, bevor sie diese ergänzen.
+
 2. **Solution Quality (60 Punkte)**
    - Bewertet die Qualität des generierten Outputs anhand von Keywords und Best Practices.
    - Fokus auf Benefit-Clarity, Structure und Engagement.
