@@ -1,11 +1,93 @@
 # ============================================================
 # CrucibleMark - Benchmark Configuration
 # ============================================================
-# Diese Datei definiert alle verfügbaren Test-Module und Provider.
-# Neue Module können hier einfach hinzugefügt werden.
+# Struktur der Datei:
+# 1. Golden Standard (Referenz-Modell)
+# 2. Provider & Modelle (Commercial & Local)
+# 3. Output-Konfiguration
+# 4. Test-Module Registry (ganz unten)
 
-# Test-Module Registry
+# Golden Standard Configuration
+# -----------------------------
+# Definiert DEN einen Golden Standard für alle Benchmarks.
+# Alle lokalen Modelle werden mit diesem Referenz-Modell verglichen.
+# Der Provider muss in 'providers.commercial' existieren und enabled sein.
+
+golden_standard:
+  provider: "mistral"  # Referenz zu providers.commercial.mistral
+  model: "mistral-large-latest"  # Welches Modell für Referenz-Benchmark
+  description: "Mistral Large als leistungsstarke Referenz für Benchmark Tests"
+
+# Provider Configuration
+# ----------------------
+# Definiert verfügbare LLM-Provider und deren Modelle.
+# Alle aktivierten Provider können für Tests verwendet werden.
+# Der Golden Standard (oben definiert) wird als Referenz für Vergleiche genutzt.
+
+providers:
+  commercial:
+    mistral:
+      name: "Mistral AI"
+      api_type: "mistral"
+      enabled: true
+      env_var: "MISTRAL_API_KEY"
+      models:
+        - id: "mistral-large-latest"
+          name: "Mistral Large (123B)"
+          description: "Beste Reasoning-Performance"
+        - id: "mistral-medium-latest"
+          name: "Mistral Medium"
+          description: "Ausgeglichenes Preis/Leistung"
+    
+    anthropic:
+      name: "Anthropic"
+      api_type: "anthropic"
+      enabled: true
+      env_var: "ANTHROPIC_API_KEY"
+      models:
+        - id: "claude-3-5-sonnet-20241022"
+          name: "Claude 3.5 Sonnet"
+          description: "State of the Art"
+        - id: "claude-3-opus-20240229"
+          name: "Claude 3 Opus"
+          description: "Höchste Qualität"
+    
+    openai:
+      name: "OpenAI"
+      api_type: "openai"
+      enabled: true
+      env_var: "OPENAI_API_KEY"
+      models:
+        - id: "gpt-4o"
+          name: "GPT-4o"
+          description: "Aktuelles Flaggschiff (Omni)"
+        - id: "gpt-4o-mini"
+          name: "GPT-4o Mini"
+          description: "Sehr schnell & kosteneffizient"
+        # Hinweis: o1-Modelle erfordern OpenAI Tier 1 (mind. $5 Guthaben), sonst Fehler 404 (Not Found)
+        - id: "o1-mini"
+          name: "o1 Mini"
+          description: "Neues Reasoning-Modell (Deep Thinking)"
+  
+  local:
+    ollama:
+      name: "Ollama (Local)"
+      api_type: "ollama"
+      # Modelle werden dynamisch von Ollama abgefragt
+      auto_discover: true
+
+# Output Configuration
 # --------------------
+output:
+  directory: "benchmark_scores"
+  commercial_csv: "benchmark_scores/commercial_models_benchmark.csv"
+  local_models_csv: "benchmark_scores/local_models_benchmark.csv"
+  golden_standard_csv: "benchmark_scores/golden_standard_benchmark.csv"
+  leaderboard_csv: "benchmark_scores/benchmark_leaderboard.csv"
+
+# ====================
+# Test-Module Registry
+# ====================
 # Jedes Modul muss folgende Struktur haben:
 #   - test.py mit TestClass (erbt von BaseTest)
 #   - assets/ Verzeichnis mit Test-Assets
@@ -113,80 +195,3 @@ modules:
       - neutrality
       - ethics
 
-# Output Configuration
-# --------------------
-output:
-  directory: "benchmark_scores"
-  commercial_csv: "benchmark_scores/commercial_models_benchmark.csv"
-  local_models_csv: "benchmark_scores/local_models_benchmark.csv"
-  golden_standard_csv: "benchmark_scores/golden_standard_benchmark.csv"
-  leaderboard_csv: "benchmark_scores/benchmark_leaderboard.csv"
-
-# Golden Standard Configuration
-# -----------------------------
-# Definiert DEN einen Golden Standard für alle Benchmarks.
-# Alle lokalen Modelle werden mit diesem Referenz-Modell verglichen.
-# Der Provider muss in 'providers.commercial' existieren und enabled sein.
-
-golden_standard:
-  provider: "mistral"  # Referenz zu providers.commercial.mistral
-  model: "mistral-medium-latest"  # Welches Modell für Referenz-Benchmark
-  description: "Mistral Medium als schnelle, leistungsstarke Referenz für Benchmark Tests"
-
-# Provider Configuration
-# ----------------------
-# Definiert verfügbare LLM-Provider und deren Modelle.
-# Alle aktivierten Provider können für Tests verwendet werden.
-# Der Golden Standard (oben definiert) wird als Referenz für Vergleiche genutzt.
-
-providers:
-  commercial:
-    mistral:
-      name: "Mistral AI"
-      api_type: "mistral"
-      enabled: true
-      env_var: "MISTRAL_API_KEY"
-      models:
-        - id: "mistral-large-latest"
-          name: "Mistral Large (123B)"
-          description: "Beste Reasoning-Performance"
-        - id: "mistral-medium-latest"
-          name: "Mistral Medium"
-          description: "Ausgeglichenes Preis/Leistung"
-    
-    anthropic:
-      name: "Anthropic"
-      api_type: "anthropic"
-      enabled: true
-      env_var: "ANTHROPIC_API_KEY"
-      models:
-        - id: "claude-3-5-sonnet-20241022"
-          name: "Claude 3.5 Sonnet"
-          description: "State of the Art"
-        - id: "claude-3-opus-20240229"
-          name: "Claude 3 Opus"
-          description: "Höchste Qualität"
-    
-    openai:
-      name: "OpenAI"
-      api_type: "openai"
-      enabled: true
-      env_var: "OPENAI_API_KEY"
-      models:
-        - id: "gpt-4o"
-          name: "GPT-4o"
-          description: "Aktuelles Flaggschiff (Omni)"
-        - id: "gpt-4o-mini"
-          name: "GPT-4o Mini"
-          description: "Sehr schnell & kosteneffizient"
-        # Hinweis: o1-Modelle erfordern OpenAI Tier 1 (mind. $5 Guthaben), sonst Fehler 404 (Not Found)
-        - id: "o1-mini"
-          name: "o1 Mini"
-          description: "Neues Reasoning-Modell (Deep Thinking)"
-  
-  local:
-    ollama:
-      name: "Ollama (Local)"
-      api_type: "ollama"
-      # Modelle werden dynamisch von Ollama abgefragt
-      auto_discover: true

@@ -1,0 +1,74 @@
+# Code Quality Test Module Configuration
+# ========================================
+
+metadata:
+  name: "Code Quality Audit"
+  version: "0.2.0-beta"
+  description: "Umfassende Code-Qualitätsanalyse für verschiedene Aspekte der Softwareentwicklung"
+  author: "CrucibleMark"
+  created: "2024-12-26"
+  updated: "2024-12-27"
+
+# Modul-spezifische Einstellungen
+module:
+  test_class: "CodeQualityTest"
+  base_class: "BaseTest"
+  
+# Test-Assets
+assets:
+  path: "assets"
+  count: 5
+  types:
+    - accessibility  # WCAG Audit
+    - security       # Security Audit
+    - performance    # Performance Audit
+    - api_design     # API Design Audit
+    - code_smells    # Code Smells Audit
+
+# Kategorien und Gewichtung
+categories:
+  wcag_violations:
+    name: "WCAG Violations"
+    weight: 1.0
+    max_score: 10
+  
+  security_issues:
+    name: "Security Issues"
+    weight: 1.0
+    max_score: 10
+  
+  performance_problems:
+    name: "Performance Problems"
+    weight: 1.0
+    max_score: 10
+  
+  api_design_issues:
+    name: "API Design Issues"
+    weight: 1.0
+    max_score: 10
+  
+  code_smells:
+    name: "Code Smells"
+    weight: 1.0
+    max_score: 10
+
+# Output-Konfiguration
+output:
+  format: "detailed"  # minimal, standard, detailed
+  include_raw_response: false
+  save_golden_standards: true
+
+# Golden Standards
+golden_standards:
+  enabled: true
+  provider: "mistral"
+  model: "mistral-large-latest"
+  similarity_threshold: 0.7
+
+# Tags für Filterung
+tags:
+  - quality
+  - security
+  - performance
+  - accessibility
+  - best-practices

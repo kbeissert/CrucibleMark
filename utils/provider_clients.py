@@ -16,7 +16,6 @@ from utils.model_utils import is_reasoning_model
 logger = logging.getLogger(__name__)
 
 
-
 class BaseProviderClient:
     """Basis-Klasse für Provider-spezifische Clients"""
 
@@ -28,7 +27,7 @@ class BaseProviderClient:
         model: str,
         prompt: str,
         temperature: float,
-        stream_handler: Optional[Callable[[str], None]] = None
+        stream_handler: Optional[Callable[[str], None]] = None,
     ) -> str:
         """
         Query API
@@ -62,6 +61,7 @@ class OllamaClient(BaseProviderClient):
         if self._client is None:
             # pylint: disable=import-outside-toplevel, import-error
             import ollama
+
             self._client = ollama
         return self._client
 
@@ -74,11 +74,11 @@ class OllamaClient(BaseProviderClient):
             options = CODING_BENCHMARK_OPTIONS.copy()
 
         # Ensure the requested temperature is actually used
-        options['temperature'] = temperature
+        options["temperature"] = temperature
 
         # SPECIAL HANDLING for Reasoning Models (e.g. DeepSeek-R1)
         if is_reasoning_model(model):
-            options['num_predict'] = 32768
+            options["num_predict"] = 32768
             logger.debug(
                 "Boosting token limit for reasoning model '%s' to 32768", model
             )
@@ -90,32 +90,32 @@ class OllamaClient(BaseProviderClient):
         model: str,
         prompt: str,
         options: Dict[str, Any],
-        stream_handler: Callable[[str], None]
+        stream_handler: Callable[[str], None],
     ) -> str:
         """Behandelt Streaming-Response von Ollama."""
         response = self.client.chat(
             model=model,
-            messages=[{'role': 'user', 'content': prompt}],
+            messages=[{"role": "user", "content": prompt}],
             options=options,
-            stream=True
+            stream=True,
         )
         full_content = ""
         full_thinking = ""
 
         for chunk in response:
-            msg = chunk.get('message', {})
+            msg = chunk.get("message", {})
             # Handle diff response formats (dict vs object)
             if isinstance(msg, dict):
-                val_content = msg.get('content', '')
+                val_content = msg.get("content", "")
             else:
-                val_content = getattr(msg, 'content', '')
+                val_content = getattr(msg, "content", "")
 
             # Try to extract thinking
             val_thinking = ""
-            if hasattr(msg, 'thinking'):
+            if hasattr(msg, "thinking"):
                 val_thinking = msg.thinking
             elif isinstance(msg, dict):
-                val_thinking = msg.get('thinking', '')
+                val_thinking = msg.get("thinking", "")
 
             if val_thinking:
                 stream_handler(val_thinking)
@@ -132,7 +132,7 @@ class OllamaClient(BaseProviderClient):
         model: str,
         prompt: str,
         temperature: float,
-        stream_handler: Optional[Callable[[str], None]] = None
+        stream_handler: Optional[Callable[[str], None]] = None,
     ) -> str:
         """Query Ollama API"""
         try:
@@ -144,32 +144,34 @@ class OllamaClient(BaseProviderClient):
             # Standard Blocking Call
             response = self.client.chat(
                 model=model,
-                messages=[{'role': 'user', 'content': prompt}],
-                options=options
+                messages=[{"role": "user", "content": prompt}],
+                options=options,
             )
 
-            msg = response.get('message', {})
+            msg = response.get("message", {})
             # Handle diff response formats (dict vs object)
             if isinstance(msg, dict):
-                content = msg.get('content', '')
+                content = msg.get("content", "")
             else:
-                content = getattr(msg, 'content', '')
+                content = getattr(msg, "content", "")
 
             thinking = ""
-            if hasattr(msg, 'thinking'):
+            if hasattr(msg, "thinking"):
                 thinking = msg.thinking
             elif isinstance(msg, dict):
-                thinking = msg.get('thinking', '')
+                thinking = msg.get("thinking", "")
 
             if not content:
-                done_reason = response.get('done_reason')
-                if done_reason == 'length':
+                done_reason = response.get("done_reason")
+                if done_reason == "length":
                     logger.debug(
                         "Ollama generation stopped due to token limit. (num_predict=%s)",
-                        options.get('num_predict')
+                        options.get("num_predict"),
                     )
                     if thinking:
-                        logger.debug("Returning partial 'thinking' content as fallback.")
+                        logger.debug(
+                            "Returning partial 'thinking' content as fallback."
+                        )
                         return thinking
                     raise ValueError("Empty response from Ollama (Token limit reached)")
 
@@ -191,12 +193,12 @@ class OllamaClient(BaseProviderClient):
             response = self.client.list()
             # Handle both object and dict response formats
             models = (
-                response.models if hasattr(response, 'models')
-                else response.get('models', [])
+                response.models
+                if hasattr(response, "models")
+                else response.get("models", [])
             )
             return [
-                model.model if hasattr(model, 'model')
-                else model.get('name', 'unknown')
+                model.model if hasattr(model, "model") else model.get("name", "unknown")
                 for model in models
             ]
         except Exception as e:  # pylint: disable=broad-exception-caught
@@ -217,17 +219,18 @@ class AnthropicClient(BaseProviderClient):
         if self._client is None:
             # pylint: disable=import-outside-toplevel, import-error
             import anthropic
+
             api_key = get_required_env(
-                'ANTHROPIC_API_KEY', "ANTHROPIC_API_KEY environment variable not set"
+                "ANTHROPIC_API_KEY", "ANTHROPIC_API_KEY environment variable not set"
             )
             self._client = anthropic.Anthropic(api_key=api_key)
         return self._client
 
     def _resolve_model(self, model: str) -> str:
         """Löst Modell-Name auf (Config-Fallback)"""
-        if not model or model.startswith('claude'):
-            return self.config.get('anthropic', {}).get(
-                'model', 'claude-3-5-sonnet-20241022'
+        if not model or model.startswith("claude"):
+            return self.config.get("anthropic", {}).get(
+                "model", "claude-3-5-sonnet-20241022"
             )
         return model
 
@@ -236,13 +239,13 @@ class AnthropicClient(BaseProviderClient):
         model: str,
         prompt: str,
         temperature: float,
-        stream_handler: Optional[Callable[[str], None]] = None
+        stream_handler: Optional[Callable[[str], None]] = None,
     ) -> str:
         """Query Anthropic API"""
         try:
             model = self._resolve_model(model)
-            max_tokens = self.config.get('anthropic', {}).get(
-                'max_tokens', MAX_TOKENS_ANTHROPIC
+            max_tokens = self.config.get("anthropic", {}).get(
+                "max_tokens", MAX_TOKENS_ANTHROPIC
             )
 
             # Note: Streaming not implemented yet for Anthropic in this wrapper
@@ -250,23 +253,27 @@ class AnthropicClient(BaseProviderClient):
                 model=model,
                 max_tokens=max_tokens,
                 temperature=temperature,
-                messages=[{"role": "user", "content": prompt}]
+                messages=[{"role": "user", "content": prompt}],
             )
 
-            if stream_handler and response.content and hasattr(response.content[0], 'text'):
+            if (
+                stream_handler
+                and response.content
+                and hasattr(response.content[0], "text")
+            ):
                 stream_handler(response.content[0].text)
 
             return response.content[0].text
         except Exception as e:
-            logger.error("Anthropic query failed: %s", e)
+            # Let RetryHandler handle logging
             raise
 
     def get_available_models(self) -> List[str]:
         """Listet verfügbare Claude-Modelle"""
         return [
-            'claude-3-5-sonnet-20241022',
-            'claude-3-opus-20240229',
-            'claude-3-sonnet-20240229'
+            "claude-3-5-sonnet-20241022",
+            "claude-3-opus-20240229",
+            "claude-3-sonnet-20240229",
         ]
 
 
@@ -283,11 +290,11 @@ class MistralClient(BaseProviderClient):
         if self._client is None:
             # pylint: disable=import-outside-toplevel, import-error
             from mistralai import Mistral
+
             # Support both MISTRAL_API_KEY and CODESTRAL_API_KEY
             # Using basic retrieval since OR logic prevents simple get_required_env usage
-            api_key = (
-                os.environ.get('MISTRAL_API_KEY') or
-                os.environ.get('CODESTRAL_API_KEY')
+            api_key = os.environ.get("MISTRAL_API_KEY") or os.environ.get(
+                "CODESTRAL_API_KEY"
             )
             if not api_key:
                 raise ValueError(
@@ -298,10 +305,8 @@ class MistralClient(BaseProviderClient):
 
     def _resolve_model(self, model: str) -> str:
         """Löst Modell-Name auf (Config-Fallback)"""
-        if not model or model.startswith('mistral'):
-            return self.config.get('mistral', {}).get(
-                'model', DEFAULT_MISTRAL_MODEL
-            )
+        if not model or model.startswith("mistral"):
+            return self.config.get("mistral", {}).get("model", DEFAULT_MISTRAL_MODEL)
         return model
 
     def query(
@@ -309,7 +314,7 @@ class MistralClient(BaseProviderClient):
         model: str,
         prompt: str,
         temperature: float,
-        stream_handler: Optional[Callable[[str], None]] = None
+        stream_handler: Optional[Callable[[str], None]] = None,
     ) -> str:
         """Query Mistral API"""
         try:
@@ -320,7 +325,7 @@ class MistralClient(BaseProviderClient):
                 model=model,
                 messages=[{"role": "user", "content": prompt}],
                 temperature=temperature,
-                random_seed=42  # Ensure deterministic output
+                random_seed=42,  # Ensure deterministic output
             )
 
             content = response.choices[0].message.content
@@ -329,16 +334,16 @@ class MistralClient(BaseProviderClient):
 
             return content
         except Exception as e:
-            logger.error("Mistral query failed: %s", e)
+            # Let RetryHandler handle logging
             raise
 
     def get_available_models(self) -> List[str]:
         """Listet verfügbare Mistral-Modelle"""
         return [
-            'mistral-large-latest',
-            'mistral-medium-latest',
-            'mistral-small-latest',
-            'open-mistral-7b'
+            "mistral-large-latest",
+            "mistral-medium-latest",
+            "mistral-small-latest",
+            "open-mistral-7b",
         ]
 
 
@@ -355,8 +360,9 @@ class OpenAIClient(BaseProviderClient):
         if self._client is None:
             # pylint: disable=import-outside-toplevel, import-error
             from openai import OpenAI
+
             api_key = get_required_env(
-                'OPENAI_API_KEY', "OPENAI_API_KEY environment variable not set"
+                "OPENAI_API_KEY", "OPENAI_API_KEY environment variable not set"
             )
             self._client = OpenAI(api_key=api_key)
         return self._client
@@ -366,7 +372,7 @@ class OpenAIClient(BaseProviderClient):
         model: str,
         prompt: str,
         temperature: float,
-        stream_handler: Optional[Callable[[str], None]] = None
+        stream_handler: Optional[Callable[[str], None]] = None,
     ) -> str:
         """Query OpenAI API"""
         try:
@@ -374,7 +380,7 @@ class OpenAIClient(BaseProviderClient):
             response = self.client.chat.completions.create(
                 model=model,
                 messages=[{"role": "user", "content": prompt}],
-                temperature=temperature
+                temperature=temperature,
             )
             content = response.choices[0].message.content or ""
 
@@ -388,4 +394,4 @@ class OpenAIClient(BaseProviderClient):
 
     def get_available_models(self) -> List[str]:
         """List available OpenAI models"""
-        return ['gpt-4o', 'gpt-4-turbo', 'gpt-3.5-turbo']
+        return ["gpt-4o", "gpt-4-turbo", "gpt-3.5-turbo"]

@@ -1,0 +1,28 @@
+{
+  "model": "mock",
+  "timestamp": "2026-01-26 10:18:25",
+  "scenario_id": "ux_writing_002",
+  "scenario_name": "Button Labels - Context-Aware CTAs",
+  "scores": {
+    "error_detection": 18.0,
+    "solution_quality": 10.0,
+    "formatting": 0.0,
+    "bonus": 0.0,
+    "total": 28.0
+  },
+  "details": [
+    "✓ Newsletter-Button gekürzt: Erkannt (5.0p)",
+    "✓ Checkout ist rechtssicher/klar: Erkannt (5.0p)",
+    "✗ SaaS Upload ist präzise: Nicht erkannt",
+    "✗ Löschen warnt/ist präzise: Nicht erkannt",
+    "✓ Banking ohne Ausrufezeichen: Erfolgreich vermieden (8.0p)",
+    "✗ Health App ist empathisch: Nicht erkannt",
+    "✗ SaaS Trial Hypothese: Nicht erkannt",
+    "✗ Mobile Game Motivation: Nicht erkannt",
+    "✗ Markdown Tabelle vorhanden: Keine Tabelle gefunden",
+    "✗ Aktive Verben genutzt: 1/4 (kaufen)",
+    "✓ Kurze Labels (< 25 Zeichen): 1/1 (kaufen) (10.0p)",
+    "✗ Spaltenstruktur korrekt: 0/4 (keine)"
+  ],
+  "response_preview": "Button: 'Jetzt kaufen' (12 Zeichen)..."
+}

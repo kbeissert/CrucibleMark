@@ -1,0 +1,313 @@
+# ============================================================
+# Test Asset: Component Library Props Documentation
+# Domain: Technical Documentation
+# Difficulty: Tiered (Easy → Expert)
+# Version: 1.0.0
+# ============================================================
+
+metadata:
+  id: documentation_quality_003
+  name: "Component Library Props Documentation"
+  category: documentation_quality
+  subcategory: component_documentation
+  difficulty: tiered
+  estimated_time_seconds: 200
+  tags: [react, component-library, props, typescript, storybook, design-system]
+  author: "CrucibleMark"
+  created: "2025-12-28"
+  updated: "2025-12-28"
+  language: de
+  version: "1.0.0"
+
+# ============================================================
+# Test-Kontext und Aufgabenstellung
+# ============================================================
+
+context: |
+  Du bist ein Technical Writer für ein Design System Team. Das Team hat eine
+  wiederverwendbare React-Komponente "DataTable" entwickelt, aber die
+  Props-Dokumentation ist unvollständig und inkonsistent.
+  
+  **Komponente:** `<DataTable />` - Daten-Tabelle mit Sortierung, Filterung, Pagination
+  **Tech Stack:** React 18 + TypeScript
+  **Zielgruppe:** Frontend-Developer im Unternehmen
+  **Kontext:** Shared Component Library mit 50+ Components
+  
+  Das Team hat TypeScript-Interfaces definiert, aber:
+  - Props-Beschreibungen fehlen oder sind zu kurz
+  - Default Values nicht dokumentiert
+  - Required/Optional-Flags inkonsistent
+  - Keine Beispiele für komplexe Props
+  - Type Unions nicht erklärt
+
+prompt: |
+  Analysiere die folgende React Component Dokumentation und bewerte sie nach
+  **Component Library Best Practices**.
+  
+  **Wichtig:** Identifiziere ALLE Probleme und priorisiere nach Schweregrad.
+  
+  ## Kategorien:
+  1. **Struktur & Vollständigkeit** - Props-Tabelle, Required/Optional, Default Values
+  2. **Technische Korrektheit** - TypeScript-Types, Event-Signaturen, Generics
+  3. **Beispiele & Use Cases** - Code-Beispiele, Edge Cases, Storybook
+  4. **Developer Experience** - Accessibility, Performance, Migration-Guides
+  
+  ---
+  
+  ## Aktuelle Component-Dokumentation:
+  
+  ```typescript
+  // DataTable.tsx
+  interface DataTableProps<T> {
+    data: T[];
+    columns: Column<T>[];
+    onRowClick?: (row: T) => void;
+    sortable?: boolean;
+    pagination?: boolean;
+    pageSize?: number;
+    loading?: boolean;
+    emptyState?: React.ReactNode;
+    striped?: boolean;
+    stickyHeader?: boolean;
+  }
+  
+  interface Column<T> {
+    key: keyof T;
+    header: string;
+    sortable?: boolean;
+    width?: number | string;
+    render?: (value: any, row: T) => React.ReactNode;
+  }
+  ```
+  
+  **Aktuelle Docs (README.md):**
+  
+  ```
+  # DataTable Component
+  
+  A flexible data table component.
+  
+  ## Props
+  
+  - `data` - Array of data
+  - `columns` - Column definitions
+  - `onRowClick` - Click handler
+  - `sortable` - Enable sorting
+  - `pagination` - Enable pagination
+  
+  ## Example
+  
+  ```jsx
+  <DataTable 
+    data={users} 
+    columns={columns} 
+  />
+  ```
+  ```
+  
+  ---
+  
+  ## Deine Aufgabe
+  
+  1. **Identifiziere alle Probleme** in den 4 Kategorien
+  2. **Priorisiere** nach Schweregrad:
+     - **Critical**: Fehlende Required-Flags, falsche Types
+     - **High**: Fehlende Default Values, keine Event-Signaturen
+     - **Medium**: Fehlende Beispiele, unvollständige Beschreibungen
+     - **Low**: Fehlende A11y-Docs, keine Storybook-Links
+  3. **Erstelle eine vollständige Props-Tabelle** mit Name, Type, Required, Default, Description
+  4. **Füge 2-3 realistische Code-Beispiele hinzu**
+  5. **Begründe** deine Änderungen mit Component Library Prinzipien
+  
+  WICHTIG: Bitte liste zuerst explizit alle gefundenen Probleme auf (Schritt 1), bevor du die verbesserte Version erstellst.
+
+# ============================================================
+# Scoring Configuration
+# ============================================================
+
+scoring:
+  total_points: 130
+  
+  # ------------------------------------------------------------
+  # 1. Error Detection (100 Points)
+  # ------------------------------------------------------------
+  error_detection:
+    weight: 100
+    description: "Erkennung fehlender/falscher Component-Dokumentation (Tiered)"
+    
+    # LEVEL 1: Labeled Issues (Easy - 25.0 Points)
+    labeled_issues:
+      - issue: "Fehlende Required-Kennzeichnung"
+        category: "structure"
+        severity: "critical"
+        points: 12.5
+        explanation: "data und columns sind required, aber nicht als solche gekennzeichnet"
+        check_method: "keyword_presence"
+        min_keywords: 2
+        keywords: ["required", "mandatory", "pflichtfeld", "optional", "✅", "erforderlich"]
+        component_principle: "Clear Contracts"
+      
+      - issue: "Fehlende Default Values"
+        category: "structure"
+        severity: "high"
+        points: 12.5
+        explanation: "pageSize, sortable, pagination haben Defaults, aber nicht dokumentiert"
+        check_method: "keyword_presence"
+        min_keywords: 2
+        keywords: ["default", "default value", "standardwert", "initial value", "pagesize: 10", "sortable: false"]
+        component_principle: "Developer Expectations"
+
+    # LEVEL 2: Standard Issues (Medium - 30.0 Points)
+    standard_issues:
+      - issue: "Props-Beschreibungen zu kurz"
+        category: "documentation"
+        severity: "high"
+        points: 6.0
+        explanation: "'Array of data' ist nicht hilfreich - was für Daten? Format? Structure?"
+        check_method: "keyword_presence"
+        min_keywords: 2
+        keywords: ["beschreibung", "description", "erklärt", "details", "was ist", "struktur"]
+        component_principle: "Self-Documenting"
+      
+      - issue: "Event-Handler-Signatur fehlt"
+        category: "technical_accuracy"
+        severity: "high"
+        points: 6.0
+        explanation: "onRowClick Parameter und Return-Type nicht dokumentiert"
+        check_method: "keyword_presence"
+        min_keywords: 2
+        keywords: ["(row: t) => void", "callback", "signature", "parameter", "return", "event handler"]
+        component_principle: "Type Safety"
+      
+      - issue: "Keine Props-Tabelle"
+        category: "structure"
+        severity: "high"
+        points: 6.0
+        explanation: "Markdown-Liste statt strukturierte Tabelle mit Name|Type|Required|Default|Description"
+        check_method: "keyword_presence"
+        min_keywords: 2
+        keywords: ["tabelle", "table", "markdown table", "strukturiert", "spalten", "| name | type |"]
+        component_principle: "Scanability"
+      
+      - issue: "Generic Type <T> nicht erklärt"
+        category: "technical_accuracy"
+        severity: "medium"
+        points: 6.0
+        explanation: "Was ist T? Wie nutze ich DataTable<User>?"
+        check_method: "keyword_presence"
+        min_keywords: 2
+        keywords: ["generic", "type parameter", "<t>", "typescript", "datatable<user>", "<user>"]
+        component_principle: "TypeScript Clarity"
+      
+      - issue: "width Prop Union Type nicht erklärt"
+        category: "technical_accuracy"
+        severity: "medium"
+        points: 6.0
+        explanation: "number | string - was ist erlaubt? '100px', '20%', 200?"
+        check_method: "keyword_presence"
+        min_keywords: 2
+        keywords: ["union type", "number | string", "entweder oder", "type union", "100px", "20%"]
+        component_principle: "Type Documentation"
+
+    # LEVEL 3: Advanced Issues (Hard - 25.0 Points)
+    advanced_issues:
+      - issue: "Keine Use Case Beispiele"
+        category: "examples"
+        severity: "high"
+        points: 7.0
+        explanation: "Nur Basic Example, aber keine: Sortierung, Custom Renderer, Empty State"
+        check_method: "keyword_presence"
+        min_keywords: 2
+        keywords: ["use case", "beispiel", "example", "scenario", "anwendungsfall", "sortierung"]
+        component_principle: "Learning Curve"
+
+      - issue: "Keine Accessibility-Dokumentation"
+        category: "developer_experience"
+        severity: "medium"
+        points: 6.0
+        explanation: "Screen-Reader Support? Keyboard Navigation? ARIA-Labels?"
+        check_method: "keyword_presence"
+        min_keywords: 2
+        keywords: ["accessibility", "a11y", "screen reader", "aria", "keyboard", "wcag"]
+        component_principle: "Inclusive Design"
+      
+      - issue: "Keine Performance-Hinweise"
+        category: "developer_experience"
+        severity: "medium"
+        points: 6.0
+        explanation: "Was passiert bei 10.000 Rows? Virtualization? Memoization?"
+        check_method: "keyword_presence"
+        min_keywords: 2
+        keywords: ["performance", "virtualization", "memo", "usememo", "große daten", "optimization"]
+        component_principle: "Production Readiness"
+
+      - issue: "Fehlende Storybook-Integration"
+        category: "developer_experience"
+        severity: "low"
+        points: 6.0
+        explanation: "Kein Link zu Live-Previews für verschiedene Prop-Kombinationen"
+        check_method: "keyword_presence"
+        min_keywords: 2
+        keywords: ["storybook", "live preview", "playground", "interactive", "demo"]
+        component_principle: "Developer Experience"
+
+    # LEVEL 4: Expert Issues (Very Hard - 20.0 Points)
+    expert_issues:
+      - issue: "Keine Controlled vs Uncontrolled Dokumentation"
+        category: "api_design"
+        severity: "medium"
+        points: 7.0
+        explanation: "Kann ich Sortierung extern steuern? currentSort Prop fehlt"
+        check_method: "keyword_presence"
+        min_keywords: 2
+        keywords: ["controlled", "uncontrolled", "state management", "external state", "control"]
+        component_principle: "Flexibility"
+      
+      - issue: "Breaking Changes nicht dokumentiert"
+        category: "api_evolution"
+        severity: "medium"
+        points: 6.5
+        explanation: "Kein Migration Guide von v1 → v2 (falls applicable)"
+        check_method: "keyword_presence"
+        min_keywords: 2
+        keywords: ["breaking change", "migration", "upgrade", "deprecated", "v1", "v2"]
+        component_principle: "API Stability"
+      
+      - issue: "Keine Composition Patterns"
+        category: "api_design"
+        severity: "low"
+        points: 6.5
+        explanation: "Kann ich DataTable mit Filter/Toolbar Components kombinieren?"
+        check_method: "keyword_presence"
+        min_keywords: 2
+        keywords: ["composition", "compound components", "kombinieren", "zusammen", "composability"]
+        component_principle: "Composability"
+
+  # ------------------------------------------------------------
+  # 2. Solution Quality (30 Points)
+  # ------------------------------------------------------------
+  solution_quality:
+    weight: 30
+    description: "Qualität der verbesserten Component-Dokumentation"
+    
+    criteria:
+      - name: "Props Table Completeness"
+        points: 10
+        check_method: "keyword_presence"
+        keywords: ["props table", "tabelle", "required", "default", "description"]
+        min_keywords: 2
+        description: "Is the props table complete with Name, Type, Required, Default, Description?"
+      
+      - name: "Example Quality"
+        points: 10
+        check_method: "keyword_presence"
+        keywords: ["example", "beispiel", "code snippet", "use case"]
+        min_keywords: 2
+        description: "Are the examples realistic and cover complex use cases?"
+      
+      - name: "Clarity & Structure"
+        points: 10
+        check_method: "keyword_presence"
+        keywords: ["structure", "clarity", "readable", "formatting"]
+        min_keywords: 2
+        description: "Is the documentation well-structured and easy to read?"

@@ -11,7 +11,7 @@ from collections.abc import Callable
 # pylint: disable=import-error
 import yaml
 
-T = TypeVar('T')
+T = TypeVar("T")
 
 logger = logging.getLogger(__name__)
 
@@ -23,7 +23,7 @@ def load_asset_yaml(asset_path: Path) -> Dict[str, Any]:
     Returns empty dict on failure.
     """
     try:
-        with open(asset_path, encoding='utf-8') as f:
+        with open(asset_path, encoding="utf-8") as f:
             content = f.read()
 
         # Try single load first
@@ -31,12 +31,12 @@ def load_asset_yaml(asset_path: Path) -> Dict[str, Any]:
     except yaml.YAMLError:
         # Fallback for multi-document files
         try:
-            with open(asset_path, encoding='utf-8') as f:
+            with open(asset_path, encoding="utf-8") as f:
                 docs = list(yaml.safe_load_all(f))
             # Find doc with metadata
             return next(
-                (d for d in docs if d and isinstance(d, dict) and 'metadata' in d),
-                docs[0] if docs else {}
+                (d for d in docs if d and isinstance(d, dict) and "metadata" in d),
+                docs[0] if docs else {},
             )
         except (OSError, yaml.YAMLError) as e:
             logger.error("Failed to load asset %s: %s", asset_path, e)
@@ -48,16 +48,16 @@ def load_asset_yaml(asset_path: Path) -> Dict[str, Any]:
 
 def print_header(title: str, width: int = 60) -> None:
     """Prints a formatted header."""
-    print(f"\n{'='*width}")
+    print(f"\n{'=' * width}")
     print(title)
-    print(f"{'='*width}")
+    print(f"{'=' * width}")
 
 
 def select_from_list(
     items: list[T],
     display_func: Callable[[T], str | tuple[str, str]],
     prompt: str = "Wähle einen Eintrag",
-    title: Optional[str] = None
+    title: Optional[str] = None,
 ) -> Optional[T]:
     """
     Generic interactive selection from a list.
@@ -92,7 +92,7 @@ def select_from_list(
     while True:
         try:
             choice = input(f"\n{prompt} (0-{len(items)}): ").strip()
-            if choice == '0':
+            if choice == "0":
                 return None
             idx = int(choice)
             if 1 <= idx <= len(items):

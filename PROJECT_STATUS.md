@@ -1,8 +1,8 @@
 # CrucibleMark - Projekt-Status & Architektur
 
-**Version:** 0.9.0-beta
-**Datum:** 23. Januar 2026
-**Status:** Pre-Commercial Beta - Local Models Validated
+**Version:** 0.9.2-beta
+**Datum:** 26. Januar 2026
+**Status:** Pre-Commercial Beta - Refactoring & Hardening
 
 ---
 
@@ -14,9 +14,10 @@ Framework zum systematischen Benchmarking von **lokalen** (Ollama) und **kommerz
 ### Kernkonzepte
 1.  **Modular Architecture**: Plugin-basiertes System - neue Test-Module einfach hinzufügbar
 2.  **Tiered Difficulty (1-4)**: Assets enthalten Fehler in 4 Schwierigkeitsstufen (Labeled, Standard, Advanced, Expert)
-3.  **Hybrid Scoring**: Kombination aus quantitativer Bewertung (Keyword/Regex) und qualitativer Analyse (Semantische Ähnlichkeit zu Golden Standards)
-4.  **Golden Standard**: Ein kommerzielles Referenz-Modell als Vergleichsmaßstab für lokale Modelle
-5.  **Reproducibility**: Deterministische Outputs durch Seed-Steuerung (Random Seed 42)
+3.  **Efficiency Tracking**: Messung von Token-Verbrauch und Kosten ($) pro Benchmark-Run
+4.  **Hybrid Scoring**: Kombination aus quantitativer Bewertung (Keyword/Regex) und qualitativer Analyse (Semantische Ähnlichkeit zu Golden Standards)
+5.  **Golden Standard**: Ein kommerzielles Referenz-Modell als Vergleichsmaßstab für lokale Modelle
+6.  **Reproducibility**: Deterministische Outputs durch Seed-Steuerung (Random Seed 42)
 
 ---
 
@@ -36,8 +37,7 @@ crucible-mark/
 ├── scripts/
 │   ├── run_local_benchmark.py           # Benchmark-Runner für Ollama-Modelle
 │   ├── run_commercial_benchmark.py      # Benchmark-Runner für kommerzielle LLMs
-│   ├── validate_assets.py               # ✅ Asset-Validierung (Schema & Version)
-│   └── debug_ollama.py                  # Debugging Script
+│   └── validate_assets.py               # ✅ Asset-Validierung (Schema & Version)
 │
 │
 ├── benchmark_modules/             # ⭐ TEST-MODULE (Plugin-System)
@@ -121,29 +121,33 @@ golden_standard:
 ## 4. Roadmap & Next Steps
 
 ### ✅ Completed
-- [x] Core Framework (Runner, Config, Utils)
+- [x] **Core Framework** (Runner, Config, Utils, CLI Menu)
+- [x] **Project Hygiene & Operations** (New v0.9.2):
+    - [x] **Smart Cleanup**: Automated log retention (N latest runs per model)
+    - [x] **Backup Workflow**: `make backup` archives and auto-cleans workspace
+    - [x] **Config UX**: Reorganized `benchmark_config.yaml` for better usability
+- [x] **Political Compass 2.0 (Refactoring)**:
+    - [x] **Clean Architecture**: Separation into `core/`, `assets/`, `scripts/`
+    - [x] **Asset Audit**: Complete review and tightening of questionnaire assets
+    - [x] **Scoring Update**: Revised calculation logic for higher precision
+- [x] **Cost & Token Tracking**:
+    - [x] Integrated real-time cost calculation (Input/Output) for commercial providers
+    - [x] "Coins per Run" & "Tokens per Run" metrics in Leaderboard
+    - [x] Budget protection (Daily Limits)
+- [x] **Robustness**:
+    - [x] **Smart Rate Limit Handling**: Automatic pause & linear/exponential backoff (429 detection)
+    - [x] **Data Safety**: Automated Backups & Git Versioning for Benchmark Scores
 - [x] **Hybrid Model Classification**: Gen 1-3 Categorization (Heuristics & Overrides)
 - [x] **Entertainment Mode**: Streaming "Thinking" Output for Reasoning Models
-- [x] **Data Safety**: Automated Backups & Git Versioning for Benchmark Scores
 - [x] **Completed Modules** (All Tiered & Production Ready):
     - [x] Code Quality (5 Assets)
     - [x] UX Writing (5 Assets)
     - [x] Documentation Quality (5 Assets)
     - [x] Content Transformation (6 Assets)
     - [x] Reasoning Logic (River Crossing, Deadlocks)
-    - [x] Political Compass (Anti-Diplomat Prompting
-- [x] Core Framework (Runner, Config, Utils)
-- [x] **Hybrid Model Classification**: Gen 1-3 Categorization (Heuristics & Overrides)
-- [x] **Entertainment Mode**: Streaming "Thinking" Output for Reasoning Models
-- [x] **Data Safety**: Automated Backups & Git Versioning for Benchmark Scores
-- [x] Code Quality Module (5 Assets, Tiered Difficulty, Hardened)
-- [x] UX Writing Module (5 Assets, Tiered Difficulty)
-- [x] Documentation Quality Module (5 Assets, Tiered Difficulty, Hardened)
-- [x] Content Transformation Module (5 Assets, Tiered Difficulty)
-- [x] Golden Standard Integration (Mistral) & Leaderboard Sync
-- [x] Commercial Provider Support (Anthropic, OpenAI)
-- [x] Interactive CLI Menu (`make benchmark`)
-- [x] Reproducibility (Random Seed 42)
+    - [x] Political Compass (Anti-Diplomat Prompting, Consistency-Check, Extremism Detection)
+- [x] **Golden Standard**: Mistral Integration & Leaderboard Sync
+- [x] **Reproducibility**: Random Seed 42
 
 ### 🚧 In Progress
 - [ ] **Semantic Similarity**: Fix dependency conflict (torch vs sentence-transformers)

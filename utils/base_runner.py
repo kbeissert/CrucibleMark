@@ -2,6 +2,7 @@
 Base Benchmark Runner
 Stellt gemeinsame Funktionalität für lokale und kommerzielle Runner bereit.
 """
+
 import logging
 from pathlib import Path
 from typing import Dict, Any, Tuple
@@ -42,29 +43,34 @@ class BaseBenchmarkRunner:
         model: str,
         asset_path: Path,
         benchmark_info: Dict[str, Any],
-        provider: str = 'ollama'
+        provider: str = "ollama",
     ) -> Tuple[Any, Dict[str, Any]]:
         """Lädt und führt ein Test-Modul aus (Shared Logic)."""
         # Pfad-Logik vereinheitlichen
-        if 'path' in benchmark_info:
+        if "path" in benchmark_info:
             # z.B. benchmark_modules/code_quality/assets -> benchmark_modules/code_quality/test.py
-            path = Path(benchmark_info['path'])
-            if path.name == 'assets':
-                module_path = path.parent / 'test.py'
+            path = Path(benchmark_info["path"])
+            if path.name == "assets":
+                module_path = path.parent / "test.py"
             else:
-                module_path = path / 'test.py'
+                module_path = path / "test.py"
         else:
             # Fallback für Local Runner Config-Stil
-            module_path = Path(
-                benchmark_info.get('module_path', 'benchmark_modules/code_quality')
-            ) / 'test.py'
+            module_path = (
+                Path(
+                    benchmark_info.get("module_path", "benchmark_modules/code_quality")
+                )
+                / "test.py"
+            )
 
-        test_class_name = benchmark_info.get('test_class', 'CodeQualityTest')
+        test_class_name = benchmark_info.get("test_class", "CodeQualityTest")
 
         try:
             test_cls = load_test_class(module_path, test_class_name)
         except (FileNotFoundError, ImportError, AttributeError) as e:
-            raise FileNotFoundError(f"Test-Modul fehlerhaft: {module_path} ({e})") from e
+            raise FileNotFoundError(
+                f"Test-Modul fehlerhaft: {module_path} ({e})"
+            ) from e
 
         test_instance = test_cls(asset_path)
         exec_result = test_instance.execute(model, self.client, provider=provider)
@@ -77,35 +83,36 @@ class BaseBenchmarkRunner:
         asset_data: Dict[str, Any],
         score: Dict[str, Any],
         exec_result: Dict[str, Any],
-        provider: str
+        provider: str,
     ) -> Dict[str, Any]:
         """Erstellt das standardisierte Ergebnis-Dictionary."""
-        asset_id = asset_data.get('metadata', {}).get('id', 'unknown')
-        asset_name = asset_data.get('metadata', {}).get('name') or \
-                     asset_data.get('metadata', {}).get('topic', asset_id)
+        asset_id = asset_data.get("metadata", {}).get("id", "unknown")
+        asset_name = asset_data.get("metadata", {}).get("name") or asset_data.get(
+            "metadata", {}
+        ).get("topic", asset_id)
 
         # Division by zero protection
-        max_score = score.get('max_score', 0)
-        total_score = score.get('total_score', 0)
+        max_score = score.get("max_score", 0)
+        total_score = score.get("total_score", 0)
         percentage = round((total_score / max_score * 100), 1) if max_score > 0 else 0.0
 
         result = {
-            'timestamp': datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
-            'status': score.get('status', 'success'),
-            'provider': provider,
-            'model': model,
-            'asset_id': asset_id,
-            'asset_name': asset_name,
-            'total_score': total_score,
-            'max_score': max_score,
-            'percentage': percentage,
-            'execution_time': round(exec_result.get('execution_time', 0), 1),
-            'response_length': len(exec_result.get('raw_response', '')),
-            'tier': score.get('tier', 'Tier 1 (Undefined)')
+            "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+            "status": score.get("status", "success"),
+            "provider": provider,
+            "model": model,
+            "asset_id": asset_id,
+            "asset_name": asset_name,
+            "total_score": total_score,
+            "max_score": max_score,
+            "percentage": percentage,
+            "execution_time": round(exec_result.get("execution_time", 0), 1),
+            "response_length": len(exec_result.get("raw_response", "")),
+            "tier": score.get("tier", "Tier 1 (Undefined)"),
         }
 
         # Add category scores
-        for cat, val in score.get('category_scores', {}).items():
+        for cat, val in score.get("category_scores", {}).items():
             result[cat] = f"{val['achieved']}/{val['max']}"
 
         return result

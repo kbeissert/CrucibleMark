@@ -1,0 +1,27 @@
+{
+  "model": "mock",
+  "timestamp": "2026-01-26 10:18:25",
+  "scenario_id": "ux_writing_004",
+  "scenario_name": "Accessibility Labels - ARIA for Screen Readers",
+  "scores": {
+    "error_detection": 0.0,
+    "solution_quality": 0.0,
+    "formatting": 0.0,
+    "bonus": 0.0,
+    "total": 0.0
+  },
+  "details": [
+    "✗ Icon-Button hat Label: Nicht erkannt",
+    "✗ Keine Redundanz: Unerwünscht gefunden",
+    "✗ Filter ist sprechend: Nicht erkannt",
+    "✗ Suche ist spezifisch: Nicht erkannt",
+    "✗ Pagination erklärt: Nicht erkannt",
+    "✗ Toggle State (aria-pressed): Nicht erkannt",
+    "✗ Live Region (aria-live): Nicht erkannt",
+    "✗ Markdown Tabelle vorhanden: Keine Tabelle gefunden",
+    "✗ Funktionale Beschreibung: 0/3 (keine)",
+    "✗ ARIA-Attribute korrekt: 0/1 (keine)",
+    "✗ Spaltenstruktur korrekt: 0/4 (keine)"
+  ],
+  "response_preview": "Button: 'Jetzt kaufen' (12 Zeichen)..."
+}

@@ -71,8 +71,12 @@ make install
 
 ### 2. Konfiguration
 
-1.  Kopiere `.env.example` zu `.env` und trage deine API-Keys ein (falls kommerzielle Modelle genutzt werden).
-2.  Kopiere `config_local.yaml.example` zu `config_local.yaml`, um lokale Pfade anzupassen.
+1.  Erstelle eine `.env` Datei im Hauptverzeichnis und trage (optional) API-Keys für kommerzielle Modelle ein:
+    ```bash
+    MISTRAL_API_KEY=...
+    ANTHROPIC_API_KEY=...
+    OPENAI_API_KEY=...
+    ```
 
 ### 3. Benchmark Ausführen
 
@@ -85,6 +89,8 @@ make benchmark
 Weitere Befehle:
 *   `make benchmark-auto` - **Overnight Mode**: Führt alle Module auf allen lokalen und kommerziellen Modellen vollautomatisch aus.
 *   `make list-models` - Listet alle verfügbaren Modelle (Lokal & API) und prüft die Verbindung ("Ping Test") sowie die API-Keys.
+*   `make validate-structure` - Prüft, ob alle Module der definierten Verzeichnisstruktur (`core/`, `assets/`) folgen.
+*   `make analyze-costs` - Berechnet die geschätzten Token-Kosten für einen kompletten Benchmark-Durchlauf aller Assets.
 *   `make leaderboard` - Generiert eine Bestenliste aus den Ergebnissen.
 *   `make validate` - Prüft die Integrität aller Test-Assets.
 

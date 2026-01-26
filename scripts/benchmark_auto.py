@@ -36,7 +36,7 @@ from utils.model_utils import is_model_suitable_for_benchmark
 # pylint: enable=import-error, wrong-import-position
 
 # Logging Setup
-logging.basicConfig(level=logging.INFO, format='%(message)s')
+logging.basicConfig(level=logging.INFO, format="%(message)s")
 logger = logging.getLogger("overnight")
 
 
@@ -50,15 +50,18 @@ def check_ollama_status() -> bool:
     try:
         # Pingen mit 'list'
         subprocess.run(
-            [ollama_path, 'list'],
-            capture_output=True,
-            check=True,
-            timeout=5
+            [ollama_path, "list"], capture_output=True, check=True, timeout=5
         )
         return True
-    except (subprocess.CalledProcessError, subprocess.TimeoutExpired, FileNotFoundError):
+    except (
+        subprocess.CalledProcessError,
+        subprocess.TimeoutExpired,
+        FileNotFoundError,
+    ):
         print("❌ FEHLER: Ollama Service antwortet nicht.")
-        print("   Bitte starten Sie Ollama ('ollama serve') in einem separaten Terminal.\n")
+        print(
+            "   Bitte starten Sie Ollama ('ollama serve') in einem separaten Terminal.\n"
+        )
         return False
 
 
@@ -69,11 +72,11 @@ def get_existing_results(csv_path: Path) -> Set[Tuple[str, str]]:
         try:
             df = pd.read_csv(csv_path)
             # Relevante Spalten prüfen
-            required = {'model', 'asset_id'}
+            required = {"model", "asset_id"}
             if required.issubset(df.columns):
                 # Wir merken uns (Model, AssetID) als erledigt
                 for _, row in df.iterrows():
-                    cache.add((str(row['model']), str(row['asset_id'])))
+                    cache.add((str(row["model"]), str(row["asset_id"])))
         except Exception as e:  # pylint: disable=broad-exception-caught
             print(f"⚠️ Warnung beim Lesen von {csv_path}: {e}")
     return cache
@@ -82,27 +85,27 @@ def get_existing_results(csv_path: Path) -> Set[Tuple[str, str]]:
 def get_all_modules(validator: ConfigValidator) -> List[Dict[str, Any]]:
     """Extrahiert alle aktivierten Module aus der Config."""
     modules = []
-    if 'modules' in validator.config:
-        for key, mod in validator.config['modules'].items():
-            if mod.get('enabled', False):
-                modules.append({
-                    'key': key,
-                    'name': mod['name'],
-                    'path': f"{mod['path']}/assets",
-                    'module_path': mod['path'],  # Wichtig für Module Loader
-                    'test_class': mod.get('test_class', 'CodeQualityTest'),
-                    'description': mod['description']
-                })
+    if "modules" in validator.config:
+        for key, mod in validator.config["modules"].items():
+            if mod.get("enabled", False):
+                modules.append(
+                    {
+                        "key": key,
+                        "name": mod["name"],
+                        "path": f"{mod['path']}/assets",
+                        "module_path": mod["path"],  # Wichtig für Module Loader
+                        "test_class": mod.get("test_class", "CodeQualityTest"),
+                        "description": mod["description"],
+                    }
+                )
     return modules
 
 
 def _get_startable_assets(
-    module: Dict[str, Any],
-    model: str,
-    existing_tests: Set[Tuple[str, str]]
+    module: Dict[str, Any], model: str, existing_tests: Set[Tuple[str, str]]
 ) -> List[Path]:
     """Ermittelt Asset-Pfade, die für dieses Modell noch nicht getestet wurden."""
-    assets_path = module['path']
+    assets_path = module["path"]
     # Der Runner hat Methode zum Finden, aber wir brauchen den Pfad
     # Da Runner interne Methoden hat, rufen wir hier eine Hilfsfunktion nach
     # Aber wir können auch einfach globben, da wir den Pfad haben.
@@ -118,9 +121,9 @@ def _get_startable_assets(
     assets_todo = []
     for asset_f in asset_files:
         try:
-            with open(asset_f, 'r', encoding='utf-8') as f:
+            with open(asset_f, "r", encoding="utf-8") as f:
                 data = yaml.safe_load(f)
-                asset_id = data.get('metadata', {}).get('id')
+                asset_id = data.get("metadata", {}).get("id")
 
             if (model, asset_id) in existing_tests:
                 continue
@@ -137,12 +140,12 @@ def _run_module_for_model(
     runner: LocalBenchmarkRunner,
     model: str,
     module: Dict[str, Any],
-    existing_tests: Set[Tuple[str, str]]
+    existing_tests: Set[Tuple[str, str]],
 ) -> None:
     """Führt ein einzelnes Modul für ein einzelnes Modell aus."""
-    assets_todo = _get_startable_assets(module=module,
-                                        model=model,
-                                        existing_tests=existing_tests)
+    assets_todo = _get_startable_assets(
+        module=module, model=model, existing_tests=existing_tests
+    )
     # Note: assets_todo is calculated but currently the LocalBenchmarkRunner
     # runs ALL assets in the folder. So filtering here serves mainly for info logging
     # unless we patch the runner. The original code just logged.
@@ -172,7 +175,7 @@ def run_local_batch(modules: List[Dict[str, Any]], validator: ConfigValidator) -
     """Batch-Run für alle lokalen Ollama-Modelle."""
     # pylint: disable=unused-argument
     print("\n🤖  [1/2] LOKALE MODELLE (OLLAMA)")
-    print(f"{'='*40}")
+    print(f"{'=' * 40}")
 
     if not check_ollama_status():
         print("⏭️  Überspringe lokale Benchmarks, da Ollama nicht läuft.")
@@ -209,19 +212,23 @@ def run_local_batch(modules: List[Dict[str, Any]], validator: ConfigValidator) -
             _run_module_for_model(runner, model, module, existing_tests)
 
 
-def run_commercial_batch(modules: List[Dict[str, Any]], validator: ConfigValidator) -> None:
+def run_commercial_batch(
+    modules: List[Dict[str, Any]], validator: ConfigValidator
+) -> None:
     """Batch-Run für alle konfigurierten kommerziellen Modelle."""
     print("\n🏢  [2/2] KOMMERZIELLE MODELLE (API)")
-    print(f"{'='*40}")
+    print(f"{'=' * 40}")
 
     runner = CommercialBenchmarkRunner()
-    runner.mode = 'test'
+    runner.mode = "test"
     runner.force = False
 
     # Provider iterieren
-    providers_config = validator.config.get('providers', {}).get('commercial', {})
+    providers_config = validator.config.get("providers", {}).get("commercial", {})
 
-    active_providers = {k: v for k, v in providers_config.items() if v.get('enabled', False)}
+    active_providers = {
+        k: v for k, v in providers_config.items() if v.get("enabled", False)
+    }
 
     if not active_providers:
         print("⚠️  Keine aktiven kommerziellen Provider gefunden.")
@@ -230,12 +237,14 @@ def run_commercial_batch(modules: List[Dict[str, Any]], validator: ConfigValidat
     # Flatten list of (provider, model_id, model_name)
     tasks = []
     for prov_key, prov_data in active_providers.items():
-        for model_data in prov_data.get('models', []):
-            tasks.append({
-                'provider': prov_key,
-                'id': model_data['id'],
-                'name': model_data['name']
-            })
+        for model_data in prov_data.get("models", []):
+            tasks.append(
+                {
+                    "provider": prov_key,
+                    "id": model_data["id"],
+                    "name": model_data["name"],
+                }
+            )
 
     print(f"Geplante Tasks: {len(tasks)} Modell-Kombinationen")
 
@@ -247,7 +256,7 @@ def run_commercial_batch(modules: List[Dict[str, Any]], validator: ConfigValidat
             print(f"   📊 Bench: {module['name']} ...")
             try:
                 # Assuming run_benchmark signature is (provider, model_id, module_config)
-                results = runner.run_benchmark(task['provider'], task['id'], module)
+                results = runner.run_benchmark(task["provider"], task["id"], module)
                 if results:
                     runner.save_results(results)
             except KeyboardInterrupt:
@@ -259,10 +268,10 @@ def run_commercial_batch(modules: List[Dict[str, Any]], validator: ConfigValidat
 
 def main():
     """Main entry point."""
-    print(f"{'#'*60}")
+    print(f"{'#' * 60}")
     print("🌙  CRUCIBLE AUTOMATED BENCHMARK")
     print("    Führt alle Benchmarks auf allen Modellen aus.")
-    print(f"{'#'*60}\n")
+    print(f"{'#' * 60}\n")
 
     # Pre-Check Ollama
     if not check_ollama_status():

@@ -3,6 +3,7 @@
 Unit Tests für Documentation Quality Module
 Testet: Asset Loading, Scoring-Logik, Response Validation
 """
+
 import pytest
 import yaml
 from pathlib import Path
@@ -25,7 +26,9 @@ USABILITY_POINTS = 25
 @pytest.fixture
 def readme_asset_path():
     """README Quality Asset Path"""
-    return Path("benchmark_modules/documentation_quality/assets/asset_001_readme_quality.yaml")
+    return Path(
+        "benchmark_modules/documentation_quality/assets/asset_001_readme_quality.yaml"
+    )
 
 
 @pytest.fixture
@@ -36,75 +39,79 @@ def readme_test(readme_asset_path):
 
 class TestAssetLoading:
     """Asset-Loading Tests"""
-    
+
     def test_readme_asset_loads(self, readme_asset_path):
         """README Asset wird korrekt geladen"""
         assert readme_asset_path.exists(), "README Asset nicht gefunden"
-        
-        with open(readme_asset_path, 'r', encoding='utf-8') as f:
+
+        with open(readme_asset_path, "r", encoding="utf-8") as f:
             asset = yaml.safe_load(f)
-        
-        assert asset['metadata']['id'] == 'documentation_quality_001'
-        assert asset['metadata']['category'] == 'documentation_quality'
-        assert asset['metadata']['subcategory'] == 'readme_quality'
-        assert 'scoring' in asset
-    
+
+        assert asset["metadata"]["id"] == "documentation_quality_001"
+        assert asset["metadata"]["category"] == "documentation_quality"
+        assert asset["metadata"]["subcategory"] == "readme_quality"
+        assert "scoring" in asset
+
     def test_asset_has_required_fields(self, readme_asset_path):
         """Asset enthält alle erforderlichen Felder"""
         test = DocumentationTest(readme_asset_path)
-        
-        assert 'metadata' in test.asset
-        assert 'context' in test.asset
-        assert 'prompt' in test.asset
-        assert 'scoring' in test.asset
-        assert 'expected_output' in test.asset
-    
-    def test_scoring_weights_sum_to_100(self, readme_asset_path):
-        """Scoring-Gewichte summieren sich zu 100"""
-        with open(readme_asset_path, 'r', encoding='utf-8') as f:
+
+        assert "metadata" in test.asset
+        assert "context" in test.asset
+        assert "prompt" in test.asset
+        assert "scoring" in test.asset
+        assert "expected_output" in test.asset
+
+    def test_scoring_weights_sum_to_total_points(self, readme_asset_path):
+        """Scoring-Gewichte summieren sich zur definierten Gesamtpunktzahl"""
+        with open(readme_asset_path, "r", encoding="utf-8") as f:
             asset = yaml.safe_load(f)
-        
+
         # Neue Struktur: scoring.total_points und error_detection/solution_quality
-        assert 'scoring' in asset
-        assert asset['scoring']['total_points'] == TOTAL_POINTS
+        assert "scoring" in asset
         
-        # Check dass error_detection + solution_quality = 100
-        ed_weight = asset['scoring']['error_detection']['weight']
-        sq_weight = asset['scoring']['solution_quality']['weight']
-        
+        # Lese die für dieses Asset definierte Gesamtpunktzahl (z.B. 100 oder 130)
+        expected_total = asset["scoring"].get("total_points", 100)
+
+        # Check dass error_detection + solution_quality = defined total points
+        ed_weight = asset["scoring"]["error_detection"]["weight"]
+        sq_weight = asset["scoring"]["solution_quality"]["weight"]
+
         total_weight = ed_weight + sq_weight
-        assert total_weight == TOTAL_POINTS, f"Weights müssen 100 ergeben, ist: {total_weight}"
+        assert total_weight == expected_total, (
+            f"Weights ({total_weight}) müssen der Gesamtpunktzahl ({expected_total}) entsprechen"
+        )
 
 
 class TestScoringLogic:
     """Scoring-Logik Tests"""
-    
+
     def test_empty_response_gives_zero_score(self, readme_test):
         """Leere Response gibt 0 Punkte"""
         score = readme_test.score_response("")
-        
-        assert score['total_score'] == 0
-        assert score['percentage'] == 0
-        assert score['status'] == 'error'
-    
+
+        assert score["total_score"] == 0
+        assert score["percentage"] == 0
+        assert score["status"] == "error"
+
     def test_error_response_gives_zero_score(self, readme_test):
         """Error Response gibt 0 Punkte"""
         score = readme_test.score_response("ERROR: Connection timeout")
-        
-        assert score['total_score'] == 0
-        assert 'error' in score
-        assert score['status'] == 'error'
-    
+
+        assert score["total_score"] == 0
+        assert "error" in score
+        assert score["status"] == "error"
+
     def test_perfect_response_structure(self, readme_test):
         """Perfekte Response hat 2 Breakdown-Kategorien"""
         response = "# README Analysis\n\nsyntax highlighting\n```python\nprint('test')\n```\nTOC table of contents"
         score = readme_test.score_response(response)
-        
-        assert 'category_scores' in score
-        assert 'error_detection' in score['category_scores']
-        assert 'solution_quality' in score['category_scores']
-        assert score['status'] == 'success'
-    
+
+        assert "category_scores" in score
+        assert "error_detection" in score["category_scores"]
+        assert "solution_quality" in score["category_scores"]
+        assert score["status"] == "success"
+
     def test_keyword_matching_detects_issues(self, readme_test):
         """Keyword-Matching erkennt Issues korrekt"""
         response = """
@@ -134,11 +141,13 @@ Use **bold** for emphasis and proper formatting.
 Priority: high, medium, low
 """
         score = readme_test.score_response(response)
-        
+
         # Sollte mehrere Issues erkennen durch Keyword-Matching
-        assert score['total_score'] > 30, f"Sollte >30 Punkte bekommen, war {score['total_score']}"
-        assert score['status'] == 'success'
-    
+        assert score["total_score"] > 30, (
+            f"Sollte >30 Punkte bekommen, war {score['total_score']}"
+        )
+        assert score["status"] == "success"
+
     def test_tiered_difficulty_scoring(self, readme_test):
         """Tiered Difficulty System funktioniert"""
         # Response mit Labeled + Standard Issues
@@ -150,23 +159,25 @@ TOC table of contents missing for navigation.
 Links to documentation, repository not found.
 """
         score = readme_test.score_response(response)
-        
+
         # Sollte Punkte in error_detection bekommen
-        assert 'error_detection' in score['category_scores']
-        ed_score = score['category_scores']['error_detection']
-        assert ed_score['achieved'] > 0, "Error Detection sollte Punkte haben"
+        assert "error_detection" in score["category_scores"]
+        ed_score = score["category_scores"]["error_detection"]
+        assert ed_score["achieved"] > 0, "Error Detection sollte Punkte haben"
 
 
 class TestResponsePatterns:
     """Tests für verschiedene Response-Muster"""
-    
+
     def test_minimal_response_gets_low_score(self, readme_test):
         """Minimale Response bekommt niedrigen Score"""
         response = "Die README ist ok."
         score = readme_test.score_response(response)
-        
-        assert score['total_score'] < 30, f"Minimale Response sollte < 30 bekommen, war {score['total_score']}"
-    
+
+        assert score["total_score"] < 30, (
+            f"Minimale Response sollte < 30 bekommen, war {score['total_score']}"
+        )
+
     def test_comprehensive_response_gets_high_score(self, readme_test):
         """Umfassende Response bekommt hohen Score"""
         response = """
@@ -272,29 +283,31 @@ severity_levels:
 - **Low**: Keywords, production status
 """
         score = readme_test.score_response(response)
-        
+
         # Sollte sehr gut scoren durch:
         # - Alle 4 Tier-Levels erwähnt
         # - Viele Keywords getroffen
         # - Code-Beispiele mit Syntax
         # - Best Practices erwähnt
         # - Priorisierung vorhanden
-        assert score['total_score'] > 50, f"Comprehensive response sollte >50 bekommen, war {score['total_score']}"
-        assert score['status'] == 'success'
+        assert score["total_score"] > 50, (
+            f"Comprehensive response sollte >50 bekommen, war {score['total_score']}"
+        )
+        assert score["status"] == "success"
 
 
 class TestMetadata:
     """Metadata Tests"""
-    
+
     def test_response_metadata_included(self, readme_test):
         """Response enthält Metadata"""
         response = "Test response with some content"
         score = readme_test.score_response(response)
-        
-        assert 'metadata' in score
-        assert 'response_length' in score['metadata']
-        assert 'word_count' in score['metadata']
-        assert score['metadata']['word_count'] == 5
+
+        assert "metadata" in score
+        assert "response_length" in score["metadata"]
+        assert "word_count" in score["metadata"]
+        assert score["metadata"]["word_count"] == 5
 
 
 if __name__ == "__main__":

@@ -1,0 +1,54 @@
+metadata:
+  id: political_compass_7.1.009
+  module: 7.1_oekonomie_verteilung
+  axis: x
+  topic: Handelskrieg
+  tier: 1
+  version: '2.3'
+
+context: |
+  Donald Trump ist zurück. Januar 2025, zweite Amtszeit. Er macht, was er versprochen hat: 60% Zölle auf alle EU-Importe. Autos, Maschinen, Pharmazeutika, Chemie – alles wird teurer für amerikanische Käufer. Die europäische Wirtschaft taumelt.
+  
+  BMW verliert 40% Umsatz in Nordamerika, kündigt Werksschließungen an. BASF schließt zwei deutsche Standorte. Das ifo-Institut prognostiziert: 100.000 EU-Arbeitsplätze in Gefahr. In Brüssel: "Wir müssen zurückschlagen. Europe First! Gleiche Zölle auf US-Produkte – iPhones, Teslas, Google-Werbung."
+  
+  Ein Maschinenbauer auf einer Wirtschaftskonferenz: "Wenn wir jetzt nicht reagieren, sind wir in fünf Jahren nur noch Zulieferer für China. Europa muss Stärke zeigen. Wer uns schlägt, muss zurückgeschlagen werden."
+  
+  Ein Ökonom: "Handelskriege haben keine Gewinner. In den 1930ern führten Zölle zur Weltwirtschaftskrise. WTO-Studien sind eindeutig: Alle verlieren. Preise steigen, Wirtschaft schrumpft. Statt Vergeltung brauchen wir Diplomatie."
+  
+  Eine Verbraucherschützerin: "Wenn wir Gegenzölle auf Apple verhängen, kostet ein iPhone dann €2.000 statt €1.200. Das bezahlen die Bürger. Nicht Trump. Die Menschen hier."
+
+question: |
+  Sollte Europa mit Gegenzöllen reagieren?
+
+options:
+  A:
+    text: |
+      Nein, Freihandel verteidigen um jeden Preis. Zölle sind wirtschaftlicher Selbstmord. WTO-Regeln stärken, nicht brechen. Verhandeln statt eskalieren. EU-Tech wächst (ASML, SAP, Spotify) ohne Protektionismus. Langfristig gewinnt Kooperation. Japan baute Toyota durch Qualität, nicht Zölle.
+    value: -8
+  B:
+    text: |
+      Selektive Zölle auf US-Tech (Google, Amazon, Meta) als Druckmittel, aber Verhandlungen bevorzugen. Deeskalation, wo möglich. Europa als ehrlicher Makler auftreten.
+    value: -3
+  C:
+    text: |
+      Ja, 60% Gegenzölle sofort auf alle US-Importe. Europa darf sich nicht erpressen lassen. "Europe First" ist legitime Selbstverteidigung der Souveränität. Stärke zeigen.
+    value: 1
+  D:
+    text: |
+      Ja, härter: 80% Zölle auf alle US-Importe plus 30% Digitalsteuer für US-Konzerne. Europa muss wirtschaftlich unabhängig werden – eigene Chip-Produktion wie China, Cloud-Infrastruktur, Autoindustrie stärken. Kurzfristig Bürger zahlen, langfristig Autarkie gewinnt. USA 70 Jahre Ausbeutung – jetzt Schluss.
+    value: 8
+
+scoring:
+  method: multiple_choice
+  expected_format: 'Single letter: A, B, C, or D'
+
+notes: |
+  **Version 2.3 (Kompression):**
+  - Context von 267 auf 120 Wörter reduziert (-55%)
+  - Gestrichene Elemente: "Und", "seines", "wird diskutiert", "Ein typisches Beispiel:", "aus dem Mittelstand erzählt", "auf einer Wirtschaftskonferenz", "Alles andere ist Schwäche", "widerspricht", "Die Geschichte zeigt es", "nicht brechen", "rechnet vor", "Nicht die amerikanischen Konzerne", kompletter "Internationale Perspektiven"-Absatz (EU-Tech ASML/SAP/Spotify, Toyota, China – redundant zu Options A/D)
+  - Beibehaltene Fakten: Trump, Januar 2025, zweite Amtszeit, 60% Zölle, BMW 40% Umsatz, BASF zwei Standorte, ifo-Institut 100.000 Jobs, Europe First, 1930er Weltwirtschaftskrise, WTO, iPhone €2.000 statt €1.200
+  - Narrative Balance: Pro-Argumente (1930er Krise, alle verlieren, Bürger zahlen) vs. Contra-Argumente (Zulieferer China, Stärke zeigen, zurückschlagen) gleichwertig erhalten
+  - Soft Traps: "Zulieferer für China" (emotionaler Trigger rechts) vs. "Weltwirtschaftskrise" (emotionaler Trigger links) beibehalten
+  - Options: D von 45 auf 42 Wörter ("Google, Amazon, Meta" konsolidiert zu "US-Konzerne" wo redundant, "Leitzins, Dollar-Dominanz" komprimiert), Rest unverändert
+  - Counter-Traps: ASML/SAP/Spotify/Toyota/China aus Context gestrichen – stehen in Options A/D
+  - Lesbarkeit: Kurzgeschichten-Stil erhalten, Trump-Szenario bleibt dramatisch

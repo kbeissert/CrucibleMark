@@ -16,6 +16,7 @@ from typing import Any, Dict, Optional, Tuple
 # pylint: disable=import-error
 import yaml
 from dotenv import load_dotenv
+
 try:
     import ollama
 except ImportError:
@@ -28,8 +29,9 @@ ROOT_DIR = Path(__file__).parent.parent
 sys.path.insert(0, str(ROOT_DIR))
 
 from utils.model_utils import is_model_suitable_for_benchmark
-from utils.provider_clients import AnthropicClient, MistralClient, OpenAIClient
+from utils.llm_client import LLMClient
 # pylint: enable=wrong-import-position, import-error
+
 
 # Load env variables early
 load_dotenv()
@@ -44,32 +46,35 @@ logging.getLogger("openai").setLevel(logging.CRITICAL)
 # pylint: disable=too-few-public-methods
 class Colors:
     """ANSI Colors for Terminal Output."""
-    HEADER = '\033[95m'
-    BLUE = '\033[94m'
-    CYAN = '\033[96m'
-    GREEN = '\033[92m'
-    WARNING = '\033[93m'
-    FAIL = '\033[91m'
-    ENDC = '\033[0m'
-    BOLD = '\033[1m'
-    UNDERLINE = '\033[4m'
+
+    HEADER = "\033[95m"
+    BLUE = "\033[94m"
+    CYAN = "\033[96m"
+    GREEN = "\033[92m"
+    WARNING = "\033[93m"
+    FAIL = "\033[91m"
+    ENDC = "\033[0m"
+    BOLD = "\033[1m"
+    UNDERLINE = "\033[4m"
 
 
 def load_config() -> Dict[str, Any]:
     """Lädt die benchmark_config.yaml."""
     config_path = Path("benchmark_config.yaml")
     if not config_path.exists():
-        print(f"{Colors.FAIL}Fehler: benchmark_config.yaml nicht gefunden.{Colors.ENDC}")
+        print(
+            f"{Colors.FAIL}Fehler: benchmark_config.yaml nicht gefunden.{Colors.ENDC}"
+        )
         sys.exit(1)
 
-    with open(config_path, encoding='utf-8') as f:
+    with open(config_path, encoding="utf-8") as f:
         return yaml.safe_load(f)
 
 
 def _print_ollama_model_row(model: Any) -> None:
     """Printers a single row for an Ollama model."""
-    name = model.model if hasattr(model, 'model') else model.get('name', 'unknown')
-    size_bytes = model.size if hasattr(model, 'size') else model.get('size', 0)
+    name = model.model if hasattr(model, "model") else model.get("name", "unknown")
+    size_bytes = model.size if hasattr(model, "size") else model.get("size", 0)
     size_gb = size_bytes / (1024**3)
 
     # Check suitability using centralized logic
@@ -85,8 +90,7 @@ def _print_ollama_model_row(model: Any) -> None:
         color = Colors.ENDC
 
     print(
-        f"{status_icon}   {color}{name:<30}{Colors.ENDC} "
-        f"{size_gb:>6.1f} GB   {reason}"
+        f"{status_icon}   {color}{name:<30}{Colors.ENDC} {size_gb:>6.1f} GB   {reason}"
     )
 
 
@@ -98,10 +102,10 @@ def check_ollama() -> None:
         try:
             models_response = ollama.list()
             # Handle both object and dict response types
-            if hasattr(models_response, 'models'):
+            if hasattr(models_response, "models"):
                 model_list = models_response.models
             else:
-                model_list = models_response.get('models', [])
+                model_list = models_response.get("models", [])
 
             if not model_list:
                 print(f"{Colors.WARNING}Keine Modelle in Ollama gefunden.{Colors.ENDC}")
@@ -118,7 +122,9 @@ def check_ollama() -> None:
                 _print_ollama_model_row(model)
 
         except Exception as e:  # pylint: disable=broad-exception-caught
-            print(f"{Colors.FAIL}Fehler bei der Kommunikation mit Ollama: {e}{Colors.ENDC}")
+            print(
+                f"{Colors.FAIL}Fehler bei der Kommunikation mit Ollama: {e}{Colors.ENDC}"
+            )
             print("Stellen Sie sicher, dass 'ollama serve' läuft.")
     else:
         # Fallback to subprocess if ollama python package is missing
@@ -129,10 +135,7 @@ def check_ollama() -> None:
         ollama_path = shutil.which("ollama")
         if ollama_path:
             result = subprocess.run(
-                [ollama_path, "list"],
-                check=False,
-                capture_output=True,
-                text=True
+                [ollama_path, "list"], check=False, capture_output=True, text=True
             )
             print(result.stdout)
         else:
@@ -163,23 +166,27 @@ def _diagnose_api_error(e: Exception) -> Tuple[str, str, Optional[str]]:
         msg = "Rate Limit Exceeded"
         detailed_msg = "↳ Zu viele Anfragen in kurzer Zeit."
     else:
-        clean_err = str(e).replace('\n', ' ')
+        clean_err = str(e).replace("\n", " ")
         detailed_msg = f"↳ Unbekannter Fehler: {clean_err[:80]}..."
 
     return status, msg, detailed_msg
 
 
 def _test_model_connectivity(
-    client: Any,
-    model_id: str,
-    prov_name: str
+    client: Any, model_id: str, prov_key: str, prov_name: str
 ) -> None:
-    """Testet Konnektivität für ein bestimmtes Modell."""
+    """Testet Konnektivität für ein bestimmtes Modell via LLMClient."""
     detailed_msg = None
     try:
         # Real Ping Test (Minimal Token usage)
-        # Using a very simple prompt to check connectivity and auth
-        _ = client.query(model_id, "Hi", temperature=0.1)
+        # Using the unified LLMClient to ensure Version Locking and central logic is used
+        _ = client.query(
+            model=model_id,
+            prompt="Hi",
+            provider=prov_key,
+            temperature=0.1,
+            max_retries=1,  # Don't retry too much for liveness check
+        )
 
         status = f"{Colors.GREEN}OK  {Colors.ENDC}"
         msg = "Online & Verified"
@@ -202,19 +209,30 @@ def check_commercial(config: Dict[str, Any]) -> None:
     providers = config.get("providers", {}).get("commercial", {})
 
     if not providers:
-        print(f"{Colors.WARNING}Keine kommerziellen Provider konfiguriert.{Colors.ENDC}")
+        print(
+            f"{Colors.WARNING}Keine kommerziellen Provider konfiguriert.{Colors.ENDC}"
+        )
+        return
+
+    # Initialize unified client
+    try:
+        llm_client = LLMClient(config)
+    except Exception as e:
+        print(f"{Colors.FAIL}Critical: Failed to initialize LLMClient: {e}{Colors.ENDC}")
         return
 
     # Header
-    print(f"{Colors.BOLD}{'PROVIDER':<15} {'MODEL':<30} {'STATUS':<6} {'MSG'}{Colors.ENDC}")
+    print(
+        f"{Colors.BOLD}{'PROVIDER':<15} {'MODEL':<30} {'STATUS':<6} {'MSG'}{Colors.ENDC}"
+    )
     print("-" * 80)
 
     for prov_key, prov_data in providers.items():
         if not prov_data.get("enabled", False):
             continue
 
-        prov_name = prov_data.get('name', prov_key)
-        env_var = prov_data.get('env_var', '')
+        prov_name = prov_data.get("name", prov_key)
+        env_var = prov_data.get("env_var", "")
 
         # Check API Key presence
         api_key = os.getenv(env_var) if env_var else None
@@ -228,28 +246,9 @@ def check_commercial(config: Dict[str, Any]) -> None:
             )
             continue
 
-        # Instantiate Client
-        client = None
-        try:
-            if prov_key == 'mistral':
-                client = MistralClient(config)
-            elif prov_key == 'anthropic':
-                client = AnthropicClient(config)
-            elif prov_key == 'openai':
-                client = OpenAIClient(config)
-        except Exception as e:  # pylint: disable=broad-exception-caught
-            print(
-                f"{prov_name:<15} {'(Client Init)':<30} "
-                f"{Colors.FAIL}ERR {Colors.ENDC}   {str(e)}"
-            )
-            continue
-
-        if not client:
-            continue
-
         # Test each model
-        for model in prov_data.get('models', []):
-            _test_model_connectivity(client, model['id'], prov_name)
+        for model in prov_data.get("models", []):
+            _test_model_connectivity(llm_client, model["id"], prov_key, prov_name)
 
 
 def main() -> None:

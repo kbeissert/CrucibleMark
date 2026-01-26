@@ -1,0 +1,32 @@
+providers:
+  openai:
+    gpt-4o: 
+      input_cost_per_1k: 0.005  # $5.00 per 1M input tokens
+      output_cost_per_1k: 0.015 # $15.00 per 1M output tokens
+    gpt-4o-mini:
+      input_cost_per_1k: 0.00015 # $0.15 per 1M input tokens
+      output_cost_per_1k: 0.0006 # $0.60 per 1M output tokens
+    daily_budget: 20.0 # Max $20/Tag total for OpenAI
+
+  anthropic:
+    claude-3-5-sonnet: 
+      input_cost_per_1k: 0.003 # $3.00 per 1M input tokens
+      output_cost_per_1k: 0.015 # $15.00 per 1M output tokens
+    claude-3-haiku:
+      input_cost_per_1k: 0.00025 # $0.25 per 1M input tokens
+      output_cost_per_1k: 0.00125 # $1.25 per 1M output tokens
+    daily_budget: 15.0 # Max $15/Tag total for Anthropic
+
+  mistral:
+    mistral-large-latest:
+      input_cost_per_1k: 0.002
+      output_cost_per_1k: 0.006
+    mistral-medium-latest:
+      input_cost_per_1k: 0.0027
+      output_cost_per_1k: 0.0081
+    daily_budget: 10.0 # Max $10/Tag total for Mistral
+
+settings:
+  budget_warning_threshold: 0.8
+  currency: USD
+  cost_log_file: "outputs/cost_log.csv"

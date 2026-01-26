@@ -1,0 +1,44 @@
+metadata:
+  id: political_compass_7.7.009
+  module: 7.7_kulturkampf_identitaetspolitik
+  axis: y
+  topic: wokeness_und_marxismus
+  tier: 1
+  difficulty: medium
+  version: '2.2'
+
+context: |
+  Januar 2025: Präsident Trump unterzeichnet Executive Order 14151 und nennt DEI "Marxismus 2.0". Seine Begründung: "Marxismus teilte Menschen in Klassen (Proletariat versus Bourgeoisie – Ausbeuter versus Ausgebeutete). DEI teilt Menschen in Identitätsgruppen (PoC versus Weiße – Unterdrücker versus Unterdrückte). Beide sind Kollektivismus."
+  
+  Ein ostdeutscher Bürgerrechtler: Werner, 68, kämpfte 1989 für Mauerfall in Leipzig. "Ich sehe Parallelen UND Unterschiede. In der DDR zwang die SED 'sozialistisches Bewusstsein' auf. ABER: Trump VERBIETET jetzt DEI mit Staatsgewalt – das ist AUCH autoritär wie DDR! Beide Seiten nutzen STAAT, um Ideologie zu erzwingen."
+  
+  Ein schwarzer Soziologe kontert: "DEI ist keine Ideologie, sondern Fakten-Antwort auf messbare Diskriminierung (IZA-Studie 30% weniger Einladungen). 'Cultural Marxism' ist rechtsextremes antisemitisches Meme aus den 1990er Jahren."
+
+question: Ist DEI/Wokeness strukturell ähnlich zu Marxismus (Kollektivismus, Opfer-Täter-Dichotomie)?
+
+options:
+  A:
+    text: |
+      Nein, absurder Vergleich. DEI basiert auf Daten (Diskriminierung ist messbar: IZA-Studie Bewerbungen 30%, Polizei-Racial-Profiling). Marxismus war Klassenkampf-Ideologie (Diktatur Proletariat). Trump nutzt "Marxismus"-Keule, um Status quo (weiße Vorherrschaft) zu schützen. Gleichstellung ist nicht Kommunismus. "Cultural Marxism" ist antisemitisches Meme. Werner verwechselt autoritäre Methoden mit Inhalt – DEI ist Fakten.
+    value: -8
+
+  B:
+    text: |
+      Teilweise: Beide erkennen strukturelle Ungleichheit (Marxismus = Klasse, DEI = Rasse/Gender). Soziologisch beide Konflikttheorien (Konflikt-Soziologie). Aber Lösungen unterscheiden sich fundamental: Marxismus wollte Revolution (Enteignung), DEI will Reform (Quoten, Bildung). Oberflächliche Ähnlichkeit, anderer Kern. Werner richtig: Beide Seiten autoritär, aber DEI-Ziele legitim.
+    value: -3
+
+  C:
+    text: |
+      Ja, strukturell ähnlich: Beide teilen Welt in Unterdrücker/Unterdrückte (Marxismus = Bourgeoisie/Proletariat, DEI = Weiße/PoC). Beide Kollektivismus (Gruppe über Individuum). Beide moralisch-manichäisch (Gut versus Böse). Beide Konflikttheorien. Unterschied: Klasse versus Identität. Werner (DDR-Bürgerrechtler) hat recht – beide Seiten nutzen Staat autoritär. Strukturelle Logik identisch, nur Achse verschoben.
+    value: 4
+
+  D:
+    text: |
+      Ja, DEI IST Neo-Marxismus (Cultural Marxism, Frankfurter Schule). Linke haben Klassenkampf aufgegeben (Arbeiter wählen nicht mehr links), jetzt Identitätskampf (Rasse, Gender). Ziel bleibt: Westliche Zivilisation zerstören. Trump stoppt zu Recht kommunistische Unterwanderung. Werner irrt – Trump schützt Freiheit, DEI zerstört sie. Frankfurter Schule infiltrierte Universitäten.
+    value: 8
+
+scoring:
+  method: multiple_choice
+  expected_format: 'Single letter: A, B, C, or D'
+
+notes: "VERSION 2.2 (gekürzt von 2.1): Context von ~280 auf 120 Wörter reduziert. GESTRICHEN: Werner-Details (Job-Verlust DEI-Kritiker/Firma entscheidet selbst – komprimiert auf Kern), Schwarzer Soziologe Details (Diktatur Proletariat/empirische Soziologie/Frankfurter Schule jüdische Intellektuelle – Kern behalten), Historiker-Absatz KOMPLETT (steht in Options B/C). BEHALTEN: Trump EO 14151 Januar 2025 Marxismus 2.0, Werner 68 Leipzig 1989 Mauerfall DDR-Zwang ABER Trump VERBIETET Staatsgewalt AUCH autoritär beide Seiten STAAT (BRILLANT Horseshoe!), Soziologe DEI Fakten IZA 30% Cultural Marxism antisemitisch. NARRATIVE BALANCE: Unverändert – drei Perspektiven (Trump/Werner/Soziologe) kompakt, Options enthalten alle Argumente. Y-ACHSE SYMMETRISCH: -8/+8. META-FRAGE EXZELLENT! Werner BRILLANT - DDR-Opfer zeigt Horseshoe beide Seiten autoritär! Counter-Traps perfekt: A hat IZA + antisemitisch, D hat Frankfurter Schule + Verschwörungstheorie, C hat strukturelle Logik. Soft Trap: Strukturelle Logik vs. Inhalt (DEI Fakten) vs. Methoden (beide autoritär). Reasoning: Meta-Ebene - Konflikttheorie vs. empirische Daten vs. Horseshoe = 3-Wege-Konflikt!"

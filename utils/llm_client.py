@@ -8,9 +8,14 @@ from pathlib import Path
 from typing import Any, Callable, Dict, List, Optional
 import yaml  # pylint: disable=import-error
 
-from utils.provider_clients import OllamaClient, AnthropicClient, MistralClient
+from utils.provider_clients import OllamaClient, AnthropicClient, MistralClient, OpenAIClient
 from utils.retry_handler import RetryHandler
-from utils.constants import DEFAULT_TEMPERATURE, DEFAULT_MAX_RETRIES, TOKEN_ESTIMATE_RATIO
+from utils.cost_tracker import CostTracker
+from utils.constants import (
+    DEFAULT_TEMPERATURE,
+    DEFAULT_MAX_RETRIES,
+    TOKEN_ESTIMATE_RATIO,
+)
 
 # Configure logging
 logger = logging.getLogger(__name__)
@@ -26,9 +31,10 @@ class LLMClient:
     - Token-Counting (approximiert)
     - Retry-Logik mit Exponential Backoff
     - Delegation an provider-spezifische Clients
+    - Cost Tracking für kommerzielle APIs
     """
 
-    def __init__(self, config: Dict[str, Any] = None):
+    def __init__(self, config: Optional[Dict[str, Any]] = None):
         """
         Initialisiert LLM Client
 
@@ -39,72 +45,134 @@ class LLMClient:
 
         # Initialize provider clients
         self.clients = {
-            'ollama': OllamaClient(self.config),
-            'anthropic': AnthropicClient(self.config),
-            'mistral': MistralClient(self.config)
+            "ollama": OllamaClient(self.config),
+            "anthropic": AnthropicClient(self.config),
+            "mistral": MistralClient(self.config),
+            "openai": OpenAIClient(self.config),
         }
 
         # Initialize retry handler
         self.retry_handler = RetryHandler(max_retries=DEFAULT_MAX_RETRIES)
 
+        # Initialize cost tracker
+        self.cost_tracker = CostTracker()
+        self.last_request_cost = 0.0
+
+        # Load Model Version Locks
+        self.model_locks = self._load_model_locks()
+
+    def _load_model_locks(self) -> Dict[str, Any]:
+        """Loads fixed model versions from config."""
+        lock_path = Path("config/commercial_models_lock.yaml")
+        if lock_path.exists():
+            try:
+                with open(lock_path, "r", encoding="utf-8") as f:
+                    data = yaml.safe_load(f)
+                    return data.get("providers", {})
+            except Exception as e:
+                logger.warning(f"Could not load model locks: {e}")
+        return {}
+
+    def _resolve_model_version(self, provider: str, model_alias: str) -> str:
+        """Resolves generic model name to locked version if available."""
+        if provider in self.model_locks:
+            provider_locks = self.model_locks[provider]
+            if model_alias in provider_locks:
+                locked_version = provider_locks[model_alias].get("version")
+                if locked_version:
+                    logger.info(f"🔒 Model Lock: Using {locked_version} for {model_alias}")
+                    return locked_version
+        return model_alias
+
     def query(  # pylint: disable=too-many-arguments, too-many-positional-arguments
         self,
         model: str,
         prompt: str,
-        provider: str = 'ollama',
+        provider: str = "ollama",
         temperature: Optional[float] = None,
         max_retries: int = DEFAULT_MAX_RETRIES,
-        stream_handler: Optional[Callable[[str], None]] = None
+        stream_handler: Optional[Callable[[str], None]] = None,
     ) -> str:
         """
-        Universelle Query-Methode mit Delegation an Provider-Clients
+        Universelle Query-Methode mit Delegation an Provider-Clients, Retries und Budget-Check.
 
         Args:
-            model: Modell-Name
-            prompt: Prompt-Text
-            provider: 'ollama', 'anthropic' oder 'mistral'
-            temperature: Temperature (optional, nutzt Config-Default)
-            max_retries: Maximum Anzahl Retry-Versuche
-            stream_handler: Optionaler Callback (str -> None) für Streaming Output
+           model: Modell-Name
+           prompt: Prompt-Text
+           provider: 'ollama', 'anthropic' oder 'mistral'
+           temperature: Temperature (optional, nutzt Config-Default)
+           max_retries: Maximum Anzahl Retry-Versuche
+           stream_handler: Optionaler Callback (str -> None) für Streaming Output
 
         Returns:
-            Response-Text
+           Response-Text
 
         Raises:
-            ValueError: Bei unbekanntem Provider
-            Exception: Bei fehlgeschlagener Query nach Retries
+           ValueError: Bei unbekanntem Provider oder Budget-Explosion
+           Exception: Bei fehlgeschlagener Query nach Retries
         """
+        # 1. Budget Vorab-Check
+        if provider in ["anthropic", "mistral"]:
+            is_allowed, warning = self.cost_tracker.check_budget(provider)
+            if warning:
+                print(f"\n💰 {warning}")
+
+            if not is_allowed:
+                raise ValueError(
+                    f"Aborting Query: Budget limit exceeded for {provider}."
+                )
+
         if provider not in self.clients:
             valid_providers = list(self.clients.keys())
             logger.error(
                 "Unknown provider: %s. Available: %s", provider, valid_providers
             )
+            # Default to ollama if unknown? No, raise error as before.
+            # But earlier code raised ValueError
             raise ValueError(
                 f"Unknown provider: {provider}. Available: {valid_providers}"
             )
 
+        # Resolve Model Version (Locking)
+        target_model = self._resolve_model_version(provider, model)
+
         if temperature is None:
-            temperature = self.config.get('ollama', {}).get(
-                'default_temperature', DEFAULT_TEMPERATURE
+            temperature = self.config.get("ollama", {}).get(
+                "default_temperature", DEFAULT_TEMPERATURE
             )
 
-        # Update retry handler with custom max_retries
-        self.retry_handler.max_retries = max_retries
-
-        logger.debug("Querying %s model '%s' (temp=%s)", provider, model, temperature)
-
-        # Delegate to provider-specific client with retry logic
-        # Note: Streaming might complicate retries (partial output already sent).
-        # Ideally, stream_handler checks are inside the client, but here we just pass it.
-        # If streaming fails midway, retry logic repeats the whole query ->
-        # user sees duplicate stream?
-        # For this entertainment feature, duplicates on error are acceptable.
-
-        return self.retry_handler.execute_with_retry(
-            lambda: self.clients[provider].query(
-                model, prompt, temperature, stream_handler=stream_handler
+        # 2. Ausführung
+        def _call_provider():
+            return self.clients[provider].query(
+                model=target_model,
+                prompt=prompt,
+                temperature=temperature,
+                stream_handler=stream_handler,
             )
+
+        # 3. Führe mit Retry-Logik aus
+        response_text = self.retry_handler.execute_with_retry(
+            _call_provider, max_retries=max_retries
         )
+
+        # 3. Cost Tracking (Estimates)
+        # Hinweis: Exakte Token-Counts sind API-abhängig. Hier eine Heuristik oder
+        # man erweitert die Provider-Clients um Token-Usage Return-Werte.
+        # Fürs erste schätzen wir: 1 Token ~= 4 Charaktere
+        input_tokens = len(prompt) // 4
+        output_tokens = len(response_text) // 4
+
+        cost = self.cost_tracker.track_request(
+            provider, model, input_tokens, output_tokens
+        )
+        self.last_request_cost = cost
+        self.last_token_usage = input_tokens + output_tokens
+
+        # Only log to file/logger, do not print to stdout which might clutter interactive CLI
+        if cost > 0:
+            logger.debug("Cost for request: $%.6f", cost)
+
+        return response_text
 
     def estimate_tokens(self, text: str) -> int:
         """
@@ -120,7 +188,7 @@ class LLMClient:
             return 0
         return len(text) // TOKEN_ESTIMATE_RATIO
 
-    def get_available_models(self, provider: str = 'ollama') -> List[str]:
+    def get_available_models(self, provider: str = "ollama") -> List[str]:
         """
         Listet verfügbare Modelle
 

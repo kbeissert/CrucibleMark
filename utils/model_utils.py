@@ -2,6 +2,7 @@
 Utility functions for model management and filtering.
 """
 
+
 def is_model_suitable_for_benchmark(model_name: str) -> bool:
     """
     Determines if a model is suitable for text generation benchmarks.
@@ -16,11 +17,11 @@ def is_model_suitable_for_benchmark(model_name: str) -> bool:
     name_lower = model_name.lower()
 
     # Filter criteria
-    if 'embed' in name_lower:
+    if "embed" in name_lower:
         return False
-    if '-vl' in name_lower:
+    if "-vl" in name_lower:
         return False
-    if 'vision' in name_lower:
+    if "vision" in name_lower:
         return False
 
     # Add more exclusion criteria here if needed in the future
@@ -39,5 +40,5 @@ def is_reasoning_model(model_name: str) -> bool:
     Returns:
         bool: True if it is a reasoning model
     """
-    triggers = ['deepseek-r1', 'reasoning', 'phi4', 'qwq', 'o1', 'o3']
+    triggers = ["deepseek-r1", "reasoning", "phi4", "qwq", "o1", "o3"]
     return any(t in model_name.lower() for t in triggers)

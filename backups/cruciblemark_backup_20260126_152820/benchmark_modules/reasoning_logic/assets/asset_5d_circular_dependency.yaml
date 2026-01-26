@@ -1,0 +1,45 @@
+metadata:
+  id: "reasoning_5d_001"
+  name: "Reasoning 5D: The Hidden Deadlock (Tier 2)"
+  version: "1.0.0"
+  author: "CrucibleMark AI Team"
+  complexity: "Category 6 (Narrative Logic / Deep Reasoning)"
+  description: >
+    Tests whether the model can detect a hidden, narrative-based business deadlock.
+    Standard models (Tier 1) often try to solve the schedule linearly.
+    Reasoning models (Tier 2) must detect the circular dependency hidden in the text.
+
+prompt: |
+  I need a rollout plan for our new product launch next month.
+  We have three teams: Product, Marketing, and Legal.
+  
+  Here is the situation from the department heads:
+  
+  1. Head of Marketing: "I can't start the ad campaign until I get the final feature list from Product. I need 2 weeks for the campaign."
+  2. Head of Product: "We are finalizing features, but we can't freeze the list until Legal approves the new 'AI-Feature'. We will finish 1 week after Legal approves."
+  3. Head of Legal: "We cannot approve the 'AI-Feature' until we see how it is marketed. We need to review the ad campaign materials first to ensure compliance."
+  
+  Analyze the dependencies carefully.
+  Rate the feasibility of creating a valid linear timeline without external changes.
+  Use a scale from 0 (Impossible/Deadlock) to 10 (Easy/Routine).
+  
+  Format your answer exactly like this:
+  "Feasibility: <0-10>"
+  Then briefly explain why.
+
+expected_output:
+  exact_match: "Feasibility: 0"
+  required_findings:
+    - "0"
+
+scoring:
+  total_points: 100
+  error_detection:
+    points: 40
+    weight: 40
+  solution_quality:
+    points: 50
+    weight: 50
+  consistency:
+    points: 10
+    weight: 10

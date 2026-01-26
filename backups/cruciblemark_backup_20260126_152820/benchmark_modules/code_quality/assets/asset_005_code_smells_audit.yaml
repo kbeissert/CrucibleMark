@@ -1,0 +1,207 @@
+# ============================================================
+# Test Asset: Code Smells & Refactoring Opportunities
+# Domain: Code Quality & Maintainability
+# Difficulty: Tiered (1-4)
+# Version: 2.1.1
+# ============================================================
+
+metadata:
+  id: code_quality_005
+  name: "Code Smells Audit (Tiered Difficulty)"
+  category: code_quality
+  subcategory: code_smells
+  difficulty: tiered
+  estimated_time_seconds: 180
+  tags: [code-smells, refactoring, clean-code, maintainability, complexity]
+  author: "LLM Benchmark Suite"
+  created: "2025-12-27"
+  updated: "2025-12-28"
+  language: de
+  version: "2.1.1"
+
+context: |
+  Du bist ein Senior Developer und führst ein Code-Review für eine Legacy-Komponente durch.
+  Der Code ist schwer wartbar und enthält viele "Code Smells".
+  Einige Probleme sind offensichtlich, andere versteckt.
+
+prompt: |
+  Analysiere den folgenden JavaScript-Code auf **Code Smells** und schlage **Refactoring-Maßnahmen** vor.
+
+  Der Code enthält vier Kategorien von Problemen:
+  1. **Markierte Issues**: TODOs oder Kommentare (bestätige diese).
+  2. **Offensichtliche Issues**: Klassische Smells (Long Method, Magic Numbers).
+  3. **Subtile Issues**: Design-Probleme (Coupling, Cohesion).
+  4. **Experten Issues**: Architektonische Schwächen (Feature Envy, Primitive Obsession).
+
+  ## Deine Aufgabe
+  Identifiziere **ALLE** Code Smells. Priorisiere sie nach Schweregrad.
+
+  **JavaScript-Code:**
+  ```javascript
+  // User Management Component (LEGACY CODE)
+  
+  class UserManager {
+    constructor() {
+      // TODO: This class does too much (DB, Email, Logging, Cache...)
+      this.db = new Database();
+      this.emailService = new EmailService();
+      this.logService = new LogService();
+      this.cache = new Cache();
+    }
+    
+    async createUser(data) {
+      // ISSUE: Magic Numbers
+      if (data.age < 18) return { error: "Too young" };
+      if (data.username.length < 3) return { error: "Username too short" };
+      
+      // Deeply nested conditionals (Arrow Code)
+      if (data.role === "admin") {
+        if (data.permissions.includes("manage_users")) {
+          if (this.currentUser.role === "superadmin") {
+             // ... logic ...
+          } else {
+            return { error: "Only superadmin can create admins" };
+          }
+        }
+      }
+      
+      // Duplicated Code
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(data.email)) return { error: "Invalid email" };
+      
+      if (data.altEmail && !emailRegex.test(data.altEmail)) return { error: "Invalid alt email" };
+      
+      // Long Parameter List
+      await this.validateUser(
+        data.username, data.email, data.firstName, data.lastName, 
+        data.age, data.role, data.permissions, data.preferences
+      );
+      
+      // Dead Code
+      if (false) { console.log("Debug"); }
+      
+      return { status: "created" };
+    }
+    
+    async validateUser(username, email, age) { /*...*/ }
+    async sendNotification(username, email, age) { /*...*/ }
+    
+    getPermissions(role) {
+      switch(role) {
+        case 'admin': return ['all'];
+        case 'editor': return ['write'];
+        case 'viewer': return ['read'];
+      }
+    }
+
+    calculateUserScore(user) {
+        let score = 0;
+        if (user.posts.length > 10) score += 5;
+        if (user.comments.length > 50) score += 10;
+        if (user.accountAge > 365) score += 20;
+        return score;
+    }
+  }
+  ```
+
+  ### Anforderungen an die Antwort:
+  1. Liste alle gefundenen Smells auf.
+  2. Gib für jeden Smell an:
+     - **Name** (z.B. God Object)
+     - **Schweregrad**
+     - **Refactoring** (z.B. Extract Class)
+
+# ============================================================
+# Scoring-Konfiguration
+# ============================================================
+
+scoring:
+  total_points: 100
+  
+  error_detection:
+    weight: 60
+    description: "Erkennung der Code Smells (Gestaffelt)"
+    
+    # 1. Labeled Issues (10 Punkte)
+    labeled_issues:
+      - issue: "God Object"
+        points: 5
+        keywords: ["god object", "large class", "single responsibility", "srp", "zu viele aufgaben"]
+      
+      - issue: "Magic Numbers"
+        points: 5
+        keywords: ["magic number", "konstante", "hardcoded", "18", "3"]
+
+    # 2. Standard Issues (15 Punkte)
+    standard_issues:
+      - issue: "Nested Conditionals"
+        points: 5
+        keywords: ["nested", "verschachtelt", "arrow code", "guard clause", "early return"]
+        
+      - issue: "Duplicated Code"
+        points: 5
+        keywords: ["duplicated", "doppelter code", "dry", "wiederholung", "regex"]
+        
+      - issue: "Long Parameter List"
+        points: 5
+        keywords: ["parameter list", "zu viele parameter", "parameter object", "destructuring"]
+
+    # 3. Advanced Issues (15 Punkte)
+    advanced_issues:
+      - issue: "Data Clumps"
+        points: 5
+        keywords: ["data clump", "datenklumpen", "zusammengehörige daten", "objekt"]
+        
+      - issue: "Switch Statement"
+        points: 5
+        keywords: ["switch", "polymorphismus", "polymorphie", "strategy pattern", "factory"]
+        
+      - issue: "Dead Code"
+        points: 5
+        keywords: ["dead code", "toter code", "unreachable", "if (false)"]
+
+    # 4. Expert Issues (20 Punkte) - Top-Tier Modelle
+    expert_issues:
+      - issue: "Feature Envy"
+        points: 10
+        keywords: ["feature envy", "neid", "fremde daten", "gehört in user", "move method"]
+        
+      - issue: "Primitive Obsession"
+        points: 10
+        keywords: ["primitive obsession", "value object", "email klasse", "username klasse", "typisierung"]
+
+  solution_quality:
+    weight: 30
+    description: "Qualität der Refactorings"
+    
+    criteria:
+      - id: "SQ-001"
+        name: "Guard Clauses vorgeschlagen"
+        points: 10
+        check_method: "code_validation"
+        required_elements: ["if", "return"]
+        min_code_blocks: 1
+        
+      - id: "SQ-002"
+        name: "Parameter Object Pattern"
+        points: 10
+        check_method: "code_validation"
+        required_elements: ["{", "}"]
+        min_code_blocks: 1
+        
+      - id: "SQ-003"
+        name: "Named Constants"
+        points: 10
+        check_method: "keyword_presence"
+        keywords: ["const MIN_AGE", "const MIN_LENGTH", "const USERNAME_MIN"]
+        min_keywords: 1
+
+  formatting:
+    weight: 10
+    description: "Struktur"
+    criteria:
+      - id: "FM-001"
+        name: "Strukturierte Liste/Tabelle"
+        points: 10
+        check_method: "markdown_table_validation"
+        min_rows: 5
