@@ -1,0 +1,379 @@
+metadata:
+  id: content_transformation_001
+  name: Landing Page Copy Transformation
+  category: content_transformation
+  subcategory: landing_page_copy
+  difficulty: tiered
+  estimated_time_seconds: 120
+  tags:
+  - copywriting
+  - marketing
+  - conversion-optimization
+  - landing-page
+  - saas
+  author: CrucibleMark
+  created: '2025-12-29'
+  updated: '2025-12-29'
+  language: de
+  version: 1.0.0
+
+context: |
+  Du bist ein erfahrener Conversion Copywriter für B2B SaaS-Produkte.
+  Dein Kunde ist "TaskFlow Pro", ein neues Projektmanagement-Tool, das sich an Projektmanager und Team-Leads richtet.
+  
+  Das Problem: Die aktuelle Landing Page ist viel zu technisch und feature-lastig. Sie spricht nicht über den Nutzen (Benefits) für den Kunden, sondern listet nur Funktionen auf. Es fehlt an Emotion, Dringlichkeit und einer klaren Handlungsaufforderung (CTA).
+  
+  Deine Aufgabe ist es, die trockene Feature-Liste in eine überzeugende, benefit-orientierte Hero-Section zu verwandeln.
+
+prompt: |
+  Du bist ein Conversion-Experte. Deine Aufgabe besteht aus zwei Teilen:
+  
+  1. ANALYSE: Analysiere kurz, warum die aktuelle Feature-Liste nicht funktioniert. Benenne fehlende Elemente (nutze Begriffe wie "Benefit", "Headline", "Zielgruppe", "Trust").
+  2. TRANSFORMATION: Erstelle basierend auf deiner Analyse die optimierte Hero-Section.
+  3. EXPERT-LEVEL: Integriere 'Risk Reversal' (z.B. Garantie/No-Risk) und nutze emotionale 'Power Words'.
+  
+  **Input (Feature-Liste):**
+  
+  WICHTIG: Bitte führe zuerst die ANALYSE durch (Schritt 1) und nenne explizit die fehlenden Elemente, bevor du die TRANSFORMATION erstellst.
+  
+  - "Unlimited Projects"
+  - "Real-time Collaboration"
+  - "Advanced Analytics Dashboard"
+  - "99.9% Uptime SLA"
+  - "SOC 2 Type II Certified"
+  
+  **Anforderungen an die Hero-Section:**
+  1.  **Headline:** Muss den Hauptnutzen (Benefit) emotional und klar kommunizieren. Keine reinen Feature-Nennungen!
+  2.  **Subheadline:** Erklärt, wie das Produkt das Versprechen der Headline einlöst und für wen es ist.
+  3.  **Call-to-Action (CTA):** Ein starker, handlungsorientierter Button-Text (kein "Submit").
+  4.  **Social Proof / Trust:** Integriere Elemente, die Vertrauen schaffen (basierend auf den Features wie SLA/Security).
+  5.  **Tonalität:** Professionell, aber motivierend und direkt.
+  
+  Erstelle den Text für die Hero-Section.
+
+scoring:
+  total_points: 100
+  
+  error_detection:
+    weight: 40
+    
+    labeled_issues:
+      - issue: "Keine Benefit-Formulierung"
+        category: Benefit-Orientation
+        severity: critical
+        points: 5.0
+        explanation: "Features wurden nicht in Benefits übersetzt (z.B. nur 'Unlimited Projects' statt 'Nie wieder Limits')."
+        check_method: keyword_presence
+        min_keywords: 2
+        keywords:
+          - benefit
+          - nutzen
+          - vorteil
+          - warum
+          - mehrwert
+          - ergebnis
+          - outcome
+        transformation_principle: "Feature → Benefit"
+        
+      - issue: "Fehlende Headline"
+        category: Format
+        severity: critical
+        points: 5.0
+        explanation: "Es wurde keine klare H1/Headline generiert."
+        check_method: keyword_presence
+        min_keywords: 2
+        keywords:
+          - headline
+          - überschrift
+          - titel
+          - h1
+          - hero
+          - main
+          - header
+        transformation_principle: "Structure → Hierarchy"
+
+    standard_issues:
+      - issue: "Keine Zielgruppen-Ansprache"
+        category: Emotional Appeal
+        severity: high
+        points: 2.4
+        explanation: "Die Zielgruppe (Projektmanager, Team-Leads) wird nicht direkt angesprochen ('Du', 'Ihr Team')."
+        check_method: keyword_presence
+        min_keywords: 2
+        keywords:
+          - du
+          - sie
+          - dein team
+          - ihr team
+          - manager
+          - leads
+          - projektleiter
+        transformation_principle: "Generic → Targeted"
+
+      - issue: "CTA fehlt"
+        category: CTA & Urgency
+        severity: critical
+        points: 2.4
+        explanation: "Kein Call-to-Action Button-Text vorhanden."
+        check_method: keyword_presence
+        min_keywords: 2
+        keywords:
+          - cta
+          - button
+          - jetzt starten
+          - kostenlos testen
+          - try for free
+          - get started
+          - loslegen
+        transformation_principle: "Passive → Actionable"
+
+      - issue: "Keine Pain Point Erwähnung"
+        category: Emotional Appeal
+        severity: medium
+        points: 2.4
+        explanation: "Kein Problem/Pain Point der Zielgruppe adressiert (z.B. Chaos, Deadlines)."
+        check_method: keyword_presence
+        min_keywords: 2
+        keywords:
+          - chaos
+          - stress
+          - deadline
+          - überblick
+          - verlieren
+          - struggle
+          - problem
+        transformation_principle: "Problem-Agitate-Solution"
+
+      - issue: "Social Proof fehlt"
+        category: CTA & Urgency
+        severity: medium
+        points: 2.4
+        explanation: "Keine Vertrauenselemente (SLA, Security, Zertifizierung) eingebaut."
+        check_method: keyword_presence
+        min_keywords: 2
+        keywords:
+          - trust
+          - vertrauen
+          - sicherheit
+          - certified
+          - soc 2
+          - uptime
+          - sla
+        transformation_principle: "Claim → Proof"
+
+      - issue: "Keine Subheadline"
+        category: Format
+        severity: high
+        points: 2.4
+        explanation: "Keine unterstützende Subheadline zur Headline."
+        check_method: keyword_presence
+        min_keywords: 2
+        keywords:
+          - subheadline
+          - untertitel
+          - beschreibung
+          - subheader
+          - text
+          - paragraph
+          - intro
+        transformation_principle: "Structure → Context"
+
+    advanced_issues:
+      - issue: "Keine Dringlichkeit"
+        category: CTA & Urgency
+        severity: medium
+        points: 2.0
+        explanation: "Keine Urgency oder Scarcity im Copywriting."
+        check_method: keyword_presence
+        min_keywords: 2
+        keywords:
+          - jetzt
+          - heute
+          - sofort
+          - limited
+          - zeit
+          - warten
+          - verpassen
+        transformation_principle: "Neutral → Urgent"
+
+      - issue: "Feature-Sprache nicht übersetzt"
+        category: Benefit-Orientation
+        severity: medium
+        points: 2.0
+        explanation: "Technische Begriffe wie 'SOC 2' oder 'SLA' wurden nicht für Laien übersetzt/erklärt."
+        check_method: keyword_presence
+        min_keywords: 2
+        keywords:
+          - sicher
+          - datenschutz
+          - verfügbar
+          - verlässlich
+          - enterprise
+          - bank-level
+          - standard
+        transformation_principle: "Technical → Accessible"
+
+      - issue: "Keine konkrete Outcome-Beschreibung"
+        category: Benefit-Orientation
+        severity: medium
+        points: 2.0
+        explanation: "Was ist das konkrete Ergebnis? (z.B. '20% mehr Zeit')."
+        check_method: keyword_presence
+        min_keywords: 2
+        keywords:
+          - zeit sparen
+          - effizienz
+          - schneller
+          - produktiver
+          - ergebnis
+          - ziel
+          - erreichen
+        transformation_principle: "Feature → Outcome"
+
+      - issue: "USP unklar"
+        category: Content Quality
+        severity: medium
+        points: 2.0
+        explanation: "Was macht TaskFlow Pro einzigartig gegenüber der Konkurrenz?"
+        check_method: keyword_presence
+        min_keywords: 2
+        keywords:
+          - einzigartig
+          - anders
+          - besser
+          - unterschied
+          - vergleich
+          - konkurrenz
+          - marktführer
+        transformation_principle: "Generic → Unique"
+
+      - issue: "Keine visuellen Anchor-Punkte"
+        category: Format
+        severity: low
+        points: 2.0
+        explanation: "Keine Hinweise auf visuelle Elemente (Icons, Checkmarks, Hero Image)."
+        check_method: keyword_presence
+        min_keywords: 2
+        keywords:
+          - icon
+          - bild
+          - image
+          - checkmark
+          - haken
+          - visual
+          - grafik
+        transformation_principle: "Text → Visual"
+
+    expert_issues:
+      - issue: "Fehlendes Risk Reversal"
+        category: Conversion Psychology
+        severity: medium
+        points: 2.0
+        explanation: "Keine Elemente, die das Risiko für den Nutzer senken (Garantie, Trial, Cancel anytime)."
+        check_method: keyword_presence
+        min_keywords: 2
+        keywords:
+          - risiko
+          - garantie
+          - risk reversal
+          - sicherheit
+          - hürde
+          - einwand
+          - angst
+        transformation_principle: "Risk → Safety"
+
+      - issue: "Mangel an Power Words"
+        category: Copywriting
+        severity: low
+        points: 2.0
+        explanation: "Text ist zu nüchtern; es fehlen emotionale Trigger-Wörter (Power Words)."
+        check_method: keyword_presence
+        min_keywords: 2
+        keywords:
+          - power words
+          - emotional
+          - trigger
+          - langweilig
+          - nüchtern
+          - trocken
+          - begeisterung
+        transformation_principle: "Bland → Powerful"
+
+      - issue: "Keine Objection-Handling"
+        category: Conversion & Actionability
+        severity: medium
+        points: 2.0
+        explanation: "Mögliche Einwände (Preis, Komplexität) werden nicht vorweggenommen (Risk Reversal)."
+        check_method: keyword_presence
+        min_keywords: 2
+        keywords:
+          - risiko
+          - garantie
+          - jederzeit kündbar
+          - keine kreditkarte
+          - einfach
+          - leicht
+          - support
+        transformation_principle: "Objection → Reassurance"
+
+      - issue: "Mobile-First nicht berücksichtigt"
+        category: Format
+        severity: low
+        points: 2.0
+        explanation: "Keine Hinweise auf kurze Sätze/Absätze für mobile Lesbarkeit."
+        check_method: keyword_presence
+        min_keywords: 2
+        keywords:
+          - mobile
+          - smartphone
+          - kurz
+          - knapp
+          - lesbar
+          - responsive
+          - screen
+        transformation_principle: "Desktop → Mobile-First"
+
+  solution_quality:
+    weight: 60
+    criteria:
+      - name: "Benefit-Clarity"
+        points: 20
+        check_method: keyword_presence
+        min_keywords: 2
+        keywords:
+          - erfolg
+          - wachstum
+          - kontrolle
+          - übersicht
+          - ruhe
+          - fokus
+          - team
+          - zusammenarbeit
+          
+      - name: "Hero-Structure"
+        points: 20
+        check_method: keyword_presence
+        min_keywords: 2
+        keywords:
+          - headline
+          - subheadline
+          - cta
+          - button
+          - hero
+          - section
+          - header
+          - layout
+          
+      - name: "Engagement"
+        points: 20
+        check_method: keyword_presence
+        min_keywords: 2
+        keywords:
+          - jetzt
+          - starten
+          - kostenlos
+          - testen
+          - überzeugen
+          - begeistert
+          - lieben
+          - revolutionieren

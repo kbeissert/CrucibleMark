@@ -4,18 +4,24 @@ Dieses Framework ist modular aufgebaut und ermöglicht das einfache Hinzufügen 
 
 ## Übersicht
 
-Ein Test-Modul besteht aus:
+Ein Test-Modul folgt einer klaren Trennung zwischen Interface und Implementierung ("Clean Architecture"):
+
 ```
 benchmark_modules/
   └─ your_module/
-     ├─ __init__.py           # Python Package
-     ├─ test.py               # Test-Klasse (erbt von BaseTest)
+     ├─ test.py               # Entry-Point (Test-Klasse, erbt von BaseTest)
      ├─ config.yaml           # Modul-Konfiguration
      ├─ README.md             # Dokumentation
-     └─ assets/               # Test-Assets (YAML-Dateien)
-        ├─ asset_001_*.yaml
-        ├─ asset_002_*.yaml
-        └─ ...
+     ├─ assets/               # Test-Assets (Testfälle als YAML)
+     │  ├─ asset_001_*.yaml
+     │  └─ ...
+     ├─ core/                 # [NEU] Interne Business Logic & Helfer
+     │  ├─ __init__.py
+     │  ├─ models.py          # Datenstrukturen / Pydantic Models
+     │  ├─ services.py        # Logik, Berechnungen
+     │  └─ io.py              # File Helper
+     └─ scripts/              # [NEU] Wartungs- & Export-Skripte (Standalone)
+        └─ export_debug.py
 ```
 
 ## Schritt-für-Schritt Guide
@@ -24,14 +30,12 @@ benchmark_modules/
 
 ```bash
 # Erstelle Verzeichnisse
-mkdir -p benchmark_modules/your_module/assets
+mkdir -p benchmark_modules/your_module/{assets,core,scripts}
 cd benchmark_modules/your_module
 
 # Erstelle Dateien
-touch __init__.py
-touch test.py
-touch config.yaml
-touch README.md
+touch __init__.py test.py config.yaml README.md
+touch core/__init__.py core/models.py
 ```
 
 ### 2. Test-Klasse implementieren (`test.py`)

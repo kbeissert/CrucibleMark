@@ -4,8 +4,7 @@ __pycache__/
 *$py.class
 *.so
 .Python
-venv/
-env/
+.venv/
 
 # Outputs & Reports
 outputs/runs/*

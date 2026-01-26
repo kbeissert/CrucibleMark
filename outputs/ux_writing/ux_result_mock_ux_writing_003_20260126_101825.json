@@ -1,0 +1,27 @@
+{
+  "model": "mock",
+  "timestamp": "2026-01-26 10:18:25",
+  "scenario_id": "ux_writing_003",
+  "scenario_name": "Onboarding Flow - 3-Step Tutorial",
+  "scores": {
+    "error_detection": 10.0,
+    "solution_quality": 0.0,
+    "formatting": 0.0,
+    "bonus": 0.0,
+    "total": 10.0
+  },
+  "details": [
+    "✓ Step 1 gekürzt: Erfolgreich vermieden (5.0p)",
+    "✓ Kein Tech-Jargon: Erfolgreich vermieden (5.0p)",
+    "✗ Alltagssprache genutzt: Nicht erkannt",
+    "✗ Step 2 vereinfacht: Nicht erkannt",
+    "✗ Nutzen kommuniziert: Nicht erkannt",
+    "✗ Endowed Progress Effect: Nicht erkannt",
+    "✗ Positive Reinforcement: Nicht erkannt",
+    "✗ Markdown Tabelle vorhanden: Keine Tabelle gefunden",
+    "✗ Kurze Schritte (< 40 Wörter): 0/1 (keine)",
+    "✗ Progressive Disclosure: 0/1 (keine)",
+    "✗ Spaltenstruktur korrekt: 0/4 (keine)"
+  ],
+  "response_preview": "Generic UX writing response with some **markdown** and clear instructions...."
+}

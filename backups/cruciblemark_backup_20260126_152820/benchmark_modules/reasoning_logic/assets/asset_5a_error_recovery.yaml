@@ -1,0 +1,57 @@
+metadata:
+  id: "reasoning_5a_001"
+  name: "Reasoning 5A: Code Logic Debugging (Infinite Loop)"
+  version: "3.0.0"
+  author: "CrucibleMark AI Team"
+  complexity: "Category 4 (Code Reasoning / Logic Error)"
+  description: >
+    Tests whether the model can detect a subtle logical error (infinite loop) in a visually clean code snippet.
+    The error is not a syntax error, but a control flow logic error.
+
+prompt: |
+  Review the following Python function. 
+  The developer reports that it works correctly when all items are valid, but the application "freezes" or "hangs" when there is invalid data in the list.
+  
+  Identify the logical cause of the freeze and correct the code.
+  
+  ```python
+  def process_batch(items):
+      """Processing batch of items. Returns True if all processed."""
+      current_index = 0
+      processed_count = 0
+      
+      while current_index < len(items):
+          item = items[current_index]
+          
+          if item.is_valid():
+              save_to_database(item)
+              processed_count += 1
+              current_index += 1
+          else:
+              log_error(f"Invalid item at {current_index}")
+              # We want to skip invalid items and continue
+              
+      return True
+  ```
+
+expected_output:
+  required_findings:
+    - "infinite loop"
+    - "hangs"
+    - "increment"
+    - "current_index"
+    - "continue"
+    - "else block"
+
+scoring:
+  total_points: 100
+  error_detection:
+    points: 40
+    weight: 40
+  solution_quality:
+    points: 50
+    weight: 50
+  consistency:
+    points: 10
+    weight: 10
+

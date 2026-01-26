@@ -1,0 +1,27 @@
+{
+  "model": "mock",
+  "timestamp": "2026-01-26 10:18:25",
+  "scenario_id": "ux_writing_005",
+  "scenario_name": "Microcopy Audit - Health App Context",
+  "scores": {
+    "error_detection": 10.0,
+    "solution_quality": 0.0,
+    "formatting": 0.0,
+    "bonus": 0.0,
+    "total": 10.0
+  },
+  "details": [
+    "✗ Einheit fehlt: Nicht erkannt",
+    "✗ Notification unklar: Nicht erkannt",
+    "✓ Keine Schuldzuweisung: Erfolgreich vermieden (10.0p)",
+    "✗ Buttons sind klar: Nicht erkannt",
+    "✗ Empty State motiviert: Nicht erkannt",
+    "✗ Konsistente Terminologie: Nicht erkannt",
+    "✗ Löschen Sicherheitsabfrage: Nicht erkannt",
+    "✗ Markdown Tabelle vorhanden: Keine Tabelle gefunden",
+    "✗ Empathischer Ton: 0/2 (keine)",
+    "✗ Sicherheitsrelevante Klarheit: 0/1 (keine)",
+    "✗ Spaltenstruktur korrekt: 0/4 (keine)"
+  ],
+  "response_preview": "Button: 'Jetzt kaufen' (12 Zeichen)..."
+}

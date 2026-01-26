@@ -1,0 +1,337 @@
+# ============================================================
+# Test Asset: REST API Endpoint Documentation
+# Domain: Technical Documentation
+# Difficulty: Tiered (Easy → Expert)
+# Version: 1.2.0
+# ============================================================
+
+metadata:
+  id: documentation_quality_002
+  name: "REST API Endpoint Documentation"
+  category: documentation_quality
+  subcategory: api_documentation
+  difficulty: tiered
+  estimated_time_seconds: 180
+  tags: [rest-api, openapi, swagger, http, json, status-codes]
+  author: "CrucibleMark"
+  created: "2025-12-28"
+  updated: "2025-12-28"
+  language: de
+  version: "1.2.0"
+
+# ============================================================
+# Test-Kontext und Aufgabenstellung
+# ============================================================
+
+context: |
+  Du bist ein Technical Writer für ein E-Commerce-Startup. Das Backend-Team
+  hat einen neuen REST API Endpoint für das Bestellsystem entwickelt, aber
+  die Dokumentation ist unvollständig und teilweise fehlerhaft.
+  
+  **API Endpoint:** `POST /api/v1/orders`
+  **Funktion:** Neue Bestellung erstellen
+  
+  **Zielgruppe:** Frontend-Developer, externe Partner-APIs
+  **Kontext:** Production-API mit 10.000+ Requests/Tag
+  
+  Das Team hat eine erste Dokumentation geschrieben, aber:
+  - Wichtige Parameter fehlen (z.B. Authentication)
+  - Status Codes sind unvollständig
+  - Error Responses nicht dokumentiert
+  - Keine Beispiele für Edge Cases
+
+prompt: |
+  Analysiere die folgende API-Dokumentation und bewerte sie nach **API Documentation Best Practices**.
+  
+  **Wichtig:** Identifiziere ALLE Probleme und priorisiere nach Schweregrad.
+  
+  ## Kategorien:
+  1. **Struktur & Vollständigkeit** - Request-Parameter, Status Codes, Beispiele
+  2. **Technische Korrektheit** - HTTP-Methoden, JSON-Schemas, Content-Types
+  3. **Error Handling** - Error Responses, Retry-Strategien, Rate Limiting
+  4. **Beispiele & Usability** - cURL-Beispiele, Edge Cases, Authentication
+  
+  ---
+  
+  ## API-Dokumentation (aktueller Stand):
+  
+  ```
+  # POST /api/v1/orders
+  
+  Creates a new order.
+  
+  ## Request Body
+  
+  ```json
+  {
+    "items": [
+      {
+        "product_id": "string",
+        "quantity": 1
+      }
+    ],
+    "customer_email": "string"
+  }
+  ```
+  
+  ## Response
+  
+  ```json
+  {
+    "order_id": "string",
+    "status": "pending"
+  }
+  ```
+  
+  ## Status Codes
+  
+  - `200 OK` - Order created successfully
+  - `400 Bad Request` - Invalid input
+  
+  ## Example
+  
+  ```bash
+  curl -X POST https://api.example.com/api/v1/orders     -d '{"items": [{"product_id": "ABC123", "quantity": 2}]}'
+  ```
+  ```
+  
+  ---
+  
+  ## Deine Aufgabe
+  
+  1. **Identifiziere alle Probleme** in den 4 Kategorien
+  2. **Priorisiere** nach Schweregrad:
+     - **Critical**: Fehlende Security (Auth), falsche Status Codes
+     - **High**: Fehlende Parameter, keine Error Responses
+     - **Medium**: Fehlende Beispiele, unvollständige Descriptions
+     - **Low**: Fehlende Language-Bindings, keine OpenAPI-Spec
+  3. **Erstelle eine verbesserte API-Dokumentation** mit allen fehlenden Elementen
+  4. **Begründe** deine Änderungen mit API-Design-Prinzipien
+  
+  WICHTIG: Bitte liste zuerst explizit alle gefundenen Probleme auf (Schritt 1), bevor du die verbesserte Version erstellst.
+
+# ============================================================
+# Test-Daten: Kontext für Evaluierung
+# ============================================================
+
+test_data:
+  example_api_doc: |
+    Die API-Dokumentation enthält grundlegende Fehler wie fehlende Auth,
+    falsche Status Codes und unvollständige Parameter-Beschreibungen.
+    Die Issues sind in der scoring-Sektion definiert.
+
+# ============================================================
+# Expected Output
+# ============================================================
+
+expected_output: |
+  Eine strukturierte Analyse die folgende Issues identifiziert:
+  
+  **LEVEL 1 (Easy):**
+  - Fehlende Authentifizierung (CRITICAL)
+  - Falscher Status Code 200 statt 201
+  
+  **LEVEL 2 (Medium):**
+  - Fehlende Required/Optional Flags
+  - Keine Error Response Struktur
+  - Content-Type Header fehlt
+  - Fehlende Status Codes 401, 403, 422, 500
+  - Keine Parameter-Beschreibungen
+  
+  **LEVEL 3 (Hard):**
+  - Keine Idempotency-Schlüssel
+  - Rate Limiting nicht dokumentiert
+  - Keine Pagination/Limits
+  - Fehlende Versioning-Info
+  
+  **LEVEL 4 (Expert):**
+  - Keine Webhook-Notification
+  - Fehlende HATEOAS Links
+  - Keine OpenAPI/Swagger Spec
+
+# ============================================================
+# Scoring Configuration
+# ============================================================
+
+scoring:
+  total_points: 130
+  
+  error_detection:
+    weight: 100
+    
+    # LEVEL 1: Labeled (25.0 Punkte)
+    labeled_issues:
+      - issue: "Fehlende Authentifizierung"
+        category: "security"
+        severity: "critical"
+        points: 12.5
+        explanation: "Kein Authentication-Header - kritisches Security-Problem"
+        check_method: "keyword_presence"
+        min_keywords: 2
+        keywords: ["authentication", "auth", "bearer token", "api key", "authorization", "bearer"]
+      
+      - issue: "Falscher Status Code für Created"
+        category: "technical_accuracy"
+        severity: "high"
+        points: 12.5
+        explanation: "200 OK ist falsch - sollte 201 Created sein"
+        check_method: "keyword_presence"
+        min_keywords: 2
+        keywords: ["201", "created", "status code", "http", "201 created", "resource created"]
+    
+    # LEVEL 2: Standard (30.0 Punkte)
+    standard_issues:
+      - issue: "Fehlende Required/Optional Flags"
+        category: "structure"
+        severity: "high"
+        points: 6.0
+        explanation: "Welche Parameter sind required?"
+        check_method: "keyword_presence"
+        min_keywords: 2
+        keywords: ["required", "optional", "pflichtfeld", "mandatory", "nullable", "erforderlich"]
+      
+      - issue: "Keine Error Response Struktur"
+        category: "error_handling"
+        severity: "high"
+        points: 6.0
+        explanation: "Was kommt bei 400 Bad Request zurück?"
+        check_method: "keyword_presence"
+        min_keywords: 2
+        keywords: ["error response", "error structure", "error message", "error code", "error object"]
+      
+      - issue: "Content-Type Header fehlt"
+        category: "technical_accuracy"
+        severity: "medium"
+        points: 6.0
+        explanation: "cURL-Beispiel ohne Content-Type Header"
+        check_method: "keyword_presence"
+        min_keywords: 2
+        keywords: ["content-type", "application/json", "header", "mime type", "content type"]
+      
+      - issue: "Fehlende Status Codes"
+        category: "structure"
+        severity: "high"
+        points: 6.0
+        explanation: "Was ist mit 401, 403, 422, 500?"
+        check_method: "keyword_presence"
+        min_keywords: 2
+        keywords: ["401", "403", "422", "500", "unauthorized", "forbidden", "unprocessable", "server error"]
+      
+      - issue: "Keine Parameter-Beschreibungen"
+        category: "structure"
+        severity: "medium"
+        points: 6.0
+        explanation: "product_id ohne Beschreibung (Typ, Format)"
+        check_method: "keyword_presence"
+        min_keywords: 2
+        keywords: ["description", "parameter description", "type", "format", "beschreibung", "details"]
+    
+    # LEVEL 3: Advanced (25.0 Punkte)
+    advanced_issues:
+      - issue: "Keine Idempotency-Schlüssel"
+        category: "resilience"
+        severity: "medium"
+        points: 6.0
+        explanation: "POST ohne Idempotency Key = Duplikat-Gefahr"
+        check_method: "keyword_presence"
+        min_keywords: 2
+        keywords: ["idempotency", "idempotent", "retry", "duplicate", "idempotency-key", "idempotency key"]
+      
+      - issue: "Rate Limiting nicht dokumentiert"
+        category: "governance"
+        severity: "medium"
+        points: 6.5
+        explanation: "Wie viele Requests/Minute erlaubt?"
+        check_method: "keyword_presence"
+        min_keywords: 2
+        keywords: ["rate limit", "throttling", "x-ratelimit", "429", "too many requests", "rate limiting"]
+      
+      - issue: "Keine Pagination/Limits erwähnt"
+        category: "scalability"
+        severity: "medium"
+        points: 6.5
+        explanation: "Was wenn items[] > 100?"
+        check_method: "keyword_presence"
+        min_keywords: 2
+        keywords: ["pagination", "limit", "max items", "array limit", "request size", "maximum"]
+      
+      - issue: "Fehlende Versioning-Info"
+        category: "evolution"
+        severity: "low"
+        points: 6.0
+        explanation: "/api/v1/ nicht erklärt"
+        check_method: "keyword_presence"
+        min_keywords: 2
+        keywords: ["versioning", "api version", "deprecated", "v2", "migration", "version"]
+    
+    # LEVEL 4: Expert (20.0 Punkte)
+    expert_issues:
+      - issue: "Keine Webhook-Notification dokumentiert"
+        category: "async_patterns"
+        severity: "medium"
+        points: 7.0
+        explanation: "Wie erfährt Client Status-Änderungen?"
+        check_method: "keyword_presence"
+        min_keywords: 2
+        keywords: ["webhook", "callback", "notification", "polling", "server-sent events", "sse"]
+      
+      - issue: "Fehlende HATEOAS Links"
+        category: "rest_maturity"
+        severity: "low"
+        points: 6.0
+        explanation: "Response sollte Links enthalten"
+        check_method: "keyword_presence"
+        min_keywords: 2
+        keywords: ["hateoas", "hypermedia", "hal", "self link", "_links", "links"]
+      
+      - issue: "Keine OpenAPI/Swagger Spec erwähnt"
+        category: "developer_experience"
+        severity: "medium"
+        points: 7.0
+        explanation: "Keine maschinell lesbare Spec"
+        check_method: "keyword_presence"
+        min_keywords: 2
+        keywords: ["openapi", "swagger", "api spec", "yaml", "swagger ui", "openapi spec"]
+  
+  # ============================================================
+  # Solution Quality: Keywords robuster machen
+  # ============================================================
+  
+  solution_quality:
+    weight: 30
+    criteria:
+      - name: "Alle Request-Parameter dokumentiert"
+        points: 5
+        check_method: "keyword_presence"
+        keywords: ["required", "optional", "type", "description", "example", "parameter"]
+        min_keywords: 4
+      
+      - name: "Error Responses mit Struktur"
+        points: 5
+        check_method: "keyword_presence"
+        keywords: ["error", "message", "code", "error response", "error structure", "error object"]
+        min_keywords: 3
+      
+      - name: "Vollständige Status Codes"
+        points: 4
+        check_method: "keyword_presence"
+        keywords: ["201", "400", "401", "422", "500", "status code"]
+        min_keywords: 4
+      
+      - name: "Authentifizierung erklärt"
+        points: 6
+        check_method: "keyword_presence"
+        keywords: ["auth", "bearer", "token", "header", "authorization"]
+        min_keywords: 3
+      
+      - name: "Realistisches cURL-Beispiel"
+        points: 5
+        check_method: "keyword_presence"
+        keywords: ["curl", "-H", "content-type", "authorization", "https://"]
+        min_keywords: 3
+      
+      - name: "OpenAPI/Swagger Referenz"
+        points: 5
+        check_method: "keyword_presence"
+        keywords: ["openapi", "swagger", "spec", "yaml", "json"]
+        min_keywords: 1

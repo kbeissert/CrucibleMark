@@ -1,0 +1,435 @@
+metadata:
+  id: content_transformation_002
+  name: "Twitter Thread Transformation"
+  category: content_transformation
+  subcategory: social_media_adaption
+  difficulty: tiered
+  estimated_time_seconds: 150
+  tags:
+    - twitter
+    - social-media
+    - thread
+    - microblogging
+    - content-adaption
+  author: "CrucibleMark"
+  created: "2025-12-29"
+  updated: "2025-12-29"
+  language: de
+  version: "1.0.0"
+
+context: |
+  Du bist ein Social Media Strategist für Tech-Startups und Remote-Work-Unternehmen.
+  
+  Dein Kunde hat einen erfolgreichen Blogpost geschrieben: 
+  "Why Async Communication Beats Meetings" (1200 Wörter).
+  
+  Der Post hat auf dem Blog gute Performance, aber erreicht kaum Social Media Traffic.
+  Deine Aufgabe ist es, den Blogpost in einen viralen Twitter-Thread (1/x Format) 
+  zu transformieren, der auf Tech Twitter und bei Startup-Foundern viral gehen kann.
+  
+  **Zielgruppe:** Tech Twitter, Remote-Work-Advocates, Startup-Founder
+  **Ziel:** Engagement (Retweets, Replies, Bookmarks), nicht nur Clicks
+  **Ton:** Kontrovers aber faktenbasiert, direkt, meinungsstark
+
+prompt: |
+  Du bist ein Social Media Experte. Deine Aufgabe besteht aus zwei Teilen:
+  
+  1. ANALYSE: Analysiere kurz, warum der Blogpost nicht direkt als Tweet funktioniert. Benenne fehlende Elemente (nutze Begriffe wie "Hook", "Formatierung", "Engagement", "Thread").
+  2. TRANSFORMATION: Erstelle basierend auf deiner Analyse den viralen Twitter-Thread.
+  3. EXPERT-LEVEL: Nutze 'Open Loops' (Cliffhanger) um Leser zu halten und beende mit einer 'Engagement Question'.
+  
+  ## INPUT: BLOGPOST-AUSZUG (300 Wörter)
+  
+  WICHTIG: Bitte führe zuerst die ANALYSE durch (Schritt 1) und nenne explizit die fehlenden Elemente, bevor du die TRANSFORMATION erstellst.
+  
+  **Title:** Why Async Communication Beats Meetings
+  
+  **Body:**
+  Der durchschnittliche Wissensarbeiter verbringt 23 Stunden pro Woche in Meetings. 
+  Das sind fast 3 volle Arbeitstage! Und die Produktivität? Die leidet massiv.
+  
+  Async Communication – also asynchrone Kommunikation über Tools wie Slack, 
+  Notion oder Loom – ist die Lösung. Hier sind drei Gründe, warum async die 
+  Zukunft der Arbeit ist:
+  
+  **1. Deep Work statt Kontext-Switching**
+  Meetings zerstören deinen Flow. Cal Newport zeigt in "Deep Work", dass es 
+  bis zu 23 Minuten dauert, bis man nach einer Unterbrechung wieder im Flow ist. 
+  Mit async arbeitest du in deinem Rhythmus.
+  
+  **2. Time Zones sind kein Problem mehr**
+  Unser Team bei RemoteCo arbeitet über 12 Zeitzonen verteilt. Synchrone Meetings? 
+  Unmöglich, ohne dass jemand mitten in der Nacht aufstehen muss. Mit async 
+  kommunizieren wir über Loom-Videos und Notion-Docs – jeder zu seiner besten Zeit.
+  
+  **3. Bessere Dokumentation**
+  Meetings enden oft mit "Das besprechen wir nächste Woche nochmal". Async erzwingt 
+  schriftliche Kommunikation. Das bedeutet: Alles ist dokumentiert, durchsuchbar 
+  und nachvollziehbar. Neue Teammitglieder können alles nachlesen.
+  
+  **Case Study:**
+  Bei Company X haben wir Meeting-Zeit um 60% reduziert und die Developer-Produktivität 
+  um 34% gesteigert (gemessen in Shipped Features). Das Team ist glücklicher, 
+  weil jeder selbst entscheidet, wann er arbeitet.
+  
+  **Statistik:** Laut GitLab's Remote Work Report bevorzugen 86% der Remote-Mitarbeiter 
+  async über Meetings.
+  
+  ---
+  
+  ## ANFORDERUNGEN AN DEN TWITTER-THREAD:
+  
+  1. **Thread-Struktur:**
+     - MUSS mit 1/x nummeriert sein (z.B. "1/8", "2/8", etc.)
+     - Tweet 1 MUSS ein Hook sein (kontrovers, neugierig machend, nicht langweilig)
+     - Letzter Tweet MUSS CTA enthalten (Retweet, Follow, Link)
+  
+  2. **Format:**
+     - Jeder Tweet MAX 280 Zeichen (inkl. Leerzeichen)
+     - Line Breaks nutzen (für Lesbarkeit)
+     - Emojis als visuelle Anchors (max 2 pro Tweet)
+  
+  3. **Inhalt:**
+     - Hauptargumente in separate Tweets (1 Argument = 1-2 Tweets)
+     - Statistiken einbauen ("23h/Woche", "86%")
+     - Case Study verkürzen (nur Key-Insight)
+  
+  4. **Engagement:**
+     - Kontroverse These im Hook ("Meetings sind Zeitverschwendung")
+     - Quote-fähige One-Liner ("Deep Work > Zoom Fatigue")
+     - Pattern-Interrupt (z.B. "But wait..." zwischen Tweets)
+  
+  Erstelle den vollständigen Twitter-Thread (8-12 Tweets).
+
+scoring:
+  total_points: 100
+  
+  error_detection:
+    weight: 40
+    description: "Erkennung fehlender/falscher Twitter-Thread-Transformation (Tiered)"
+    
+    labeled_issues:
+      - issue: "Keine 1/x Nummerierung"
+        category: "Thread-Struktur"
+        severity: critical
+        points: 5.0
+        explanation: "Thread hat keine Nummerierung wie '1/8', '2/8' – nicht als Thread erkennbar"
+        check_method: keyword_presence
+        min_keywords: 2
+        keywords:
+          - "1/"
+          - "2/"
+          - "thread"
+          - "nummerierung"
+          - "/8"
+          - "/10"
+          - "tweet 1"
+        transformation_principle: "Blog → Thread Structure"
+      
+      - issue: "Tweet 1 ist kein Hook"
+        category: "Engagement"
+        severity: critical
+        points: 5.0
+        explanation: "Erster Tweet beginnt langweilig (z.B. 'In diesem Thread...') statt mit kontroverser These"
+        check_method: keyword_presence
+        min_keywords: 2
+        keywords:
+          - "hook"
+          - "kontrovers"
+          - "these"
+          - "shocking"
+          - "unpopular opinion"
+          - "hot take"
+          - "frage"
+        transformation_principle: "Introduction → Hook"
+    
+    standard_issues:
+      - issue: "Tweets über 280 Zeichen"
+        category: "Format"
+        severity: critical
+        points: 2.4
+        explanation: "Ein oder mehrere Tweets sind länger als Twitter-Limit (280 Zeichen)"
+        check_method: keyword_presence
+        min_keywords: 2
+        keywords:
+          - "280"
+          - "zeichenlimit"
+          - "zu lang"
+          - "kürzen"
+          - "limit"
+          - "characters"
+          - "zeichen"
+        transformation_principle: "Long-Form → Micro-Content"
+      
+      - issue: "Keine Line Breaks"
+        category: "Format"
+        severity: high
+        points: 2.4
+        explanation: "Tweets sind Textwüsten ohne Absätze/Zeilenumbrüche (schlecht lesbar)"
+        check_method: keyword_presence
+        min_keywords: 2
+        keywords:
+          - "line break"
+          - "absatz"
+          - "zeilenumbruch"
+          - "leerzeile"
+          - "lesbarkeit"
+          - "whitespace"
+          - "formatierung"
+        transformation_principle: "Paragraph → Scannable"
+      
+      - issue: "Hauptargumente nicht in separaten Tweets"
+        category: "Information-Density"
+        severity: high
+        points: 2.4
+        explanation: "Alle 3 Argumente in 1 Tweet gequetscht statt 3 separate Tweets"
+        check_method: keyword_presence
+        min_keywords: 2
+        keywords:
+          - "deep work"
+          - "time zones"
+          - "dokumentation"
+          - "argument"
+          - "punkt"
+          - "grund"
+          - "separat"
+        transformation_principle: "Bulk → Atomic Content"
+      
+      - issue: "Statistiken fehlen"
+        category: "Information-Retention"
+        severity: medium
+        points: 2.4
+        explanation: "Key-Zahlen aus Blogpost nicht übernommen (23h, 86%, 60%, 34%)"
+        check_method: keyword_presence
+        min_keywords: 2
+        keywords:
+          - "23"
+          - "86%"
+          - "60%"
+          - "34%"
+          - "statistik"
+          - "zahlen"
+          - "prozent"
+        transformation_principle: "Text → Data-Points"
+      
+      - issue: "Kein Final-CTA"
+        category: "Engagement"
+        severity: high
+        points: 2.4
+        explanation: "Letzter Tweet endet ohne Call-to-Action (Retweet, Follow, Link)"
+        check_method: keyword_presence
+        min_keywords: 2
+        keywords:
+          - "retweet"
+          - "follow"
+          - "link"
+          - "cta"
+          - "mehr erfahren"
+          - "blogpost"
+          - "teilen"
+        transformation_principle: "Conclusion → CTA"
+    
+    advanced_issues:
+      - issue: "Keine Emojis"
+        category: "Format"
+        severity: medium
+        points: 2.0
+        explanation: "Kein visueller Anchor durch Emojis (z.B. 📊, 🚀, ⏰)"
+        check_method: keyword_presence
+        min_keywords: 2
+        keywords:
+          - "emoji"
+          - "icon"
+          - "visual"
+          - "📊"
+          - "🚀"
+          - "⏰"
+          - "symbol"
+        transformation_principle: "Text → Visual Anchors"
+      
+      - issue: "Keine Kontroverse These"
+        category: "Engagement"
+        severity: high
+        points: 2.0
+        explanation: "Thread ist zu safe formuliert – keine polarisierende Aussage"
+        check_method: keyword_presence
+        min_keywords: 2
+        keywords:
+          - "zeitverschwendung"
+          - "überflüssig"
+          - "abschaffen"
+          - "radikal"
+          - "unpopular"
+          - "hot take"
+          - "provokant"
+        transformation_principle: "Neutral → Polarizing"
+      
+      - issue: "Case Study nicht adaptiert"
+        category: "Information-Density"
+        severity: medium
+        points: 2.0
+        explanation: "Case Study zu detailliert (200 Wörter) – sollte 1 Tweet sein (Key-Insight only)"
+        check_method: keyword_presence
+        min_keywords: 2
+        keywords:
+          - "company x"
+          - "60%"
+          - "34%"
+          - "case study"
+          - "beispiel"
+          - "praxisfall"
+          - "erfolgsgeschichte"
+        transformation_principle: "Case Study → Proof-Point"
+      
+      - issue: "Keine Quote-Extracts"
+        category: "Engagement"
+        severity: medium
+        points: 2.0
+        explanation: "Keine zitierfähigen One-Liner (z.B. 'Deep Work > Zoom Fatigue')"
+        check_method: keyword_presence
+        min_keywords: 2
+        keywords:
+          - "deep work"
+          - "zoom fatigue"
+          - "quote"
+          - "zitat"
+          - "one-liner"
+          - "merksatz"
+          - "slogan"
+        transformation_principle: "Paragraph → Quotable"
+      
+      - issue: "Thread-Flow holprig"
+        category: "Thread-Struktur"
+        severity: medium
+        points: 2.0
+        explanation: "Keine Cliffhanger zwischen Tweets ('But here's the thing...', 'Wait until you hear this...')"
+        check_method: keyword_presence
+        min_keywords: 2
+        keywords:
+          - "aber"
+          - "doch"
+          - "hier kommt"
+          - "wait"
+          - "but"
+          - "überraschung"
+          - "plot twist"
+        transformation_principle: "Linear → Cliffhanger-Flow"
+    
+    expert_issues:
+      - issue: "Fehlende Open Loops"
+        category: "Engagement"
+        severity: medium
+        points: 2.0
+        explanation: "Keine Cliffhanger/Open Loops, die den Leser durch den Thread ziehen."
+        check_method: keyword_presence
+        min_keywords: 2
+        keywords:
+          - "open loop"
+          - "cliffhanger"
+          - "spannung"
+          - "neugier"
+          - "wait"
+          - "aber"
+          - "plot twist"
+        transformation_principle: "Linear → Hooked"
+      
+      - issue: "Kein Engagement-Bait"
+        category: "Engagement"
+        severity: medium
+        points: 2.0
+        explanation: "Keine Frage am Ende, die Replies provoziert."
+        check_method: keyword_presence
+        min_keywords: 2
+        keywords:
+          - "frage"
+          - "diskussion"
+          - "reply"
+          - "antwort"
+          - "meinung"
+          - "erfahrung"
+          - "kommentar"
+        transformation_principle: "Broadcast → Conversation"
+      
+      - issue: "Keine Hashtag-Strategie"
+        category: "Discoverability"
+        severity: low
+        points: 2.0
+        explanation: "Keine relevanten Hashtags (#RemoteWork, #AsyncFirst, #DeepWork)"
+        check_method: keyword_presence
+        min_keywords: 2
+        keywords:
+          - "#"
+          - "hashtag"
+          - "remotework"
+          - "asyncfirst"
+          - "deepwork"
+          - "tag"
+          - "discovery"
+        transformation_principle: "Content → Discoverable"
+      
+      - issue: "Alt-Text für Screenshots fehlt"
+        category: "Accessibility"
+        severity: low
+        points: 2.0
+        explanation: "Falls Screenshots erwähnt, kein Alt-Text für Accessibility"
+        check_method: keyword_presence
+        min_keywords: 2
+        keywords:
+          - "alt text"
+          - "screenshot"
+          - "bild"
+          - "grafik"
+          - "accessibility"
+          - "barrierefreiheit"
+          - "beschreibung"
+        transformation_principle: "Visual → Accessible"
+  
+  solution_quality:
+    weight: 60
+    description: "Qualität der Twitter-Thread-Transformation"
+    
+    criteria:
+      - name: "Thread-Structure"
+        points: 20
+        check_method: keyword_presence
+        min_keywords: 2
+        keywords:
+          - "1/"
+          - "thread"
+          - "hook"
+          - "cta"
+          - "flow"
+          - "aufbau"
+          - "struktur"
+          - "nummerierung"
+        description: "Ist der Thread korrekt strukturiert (1/x, Hook, Flow, CTA)?"
+      
+      - name: "Information-Retention"
+        points: 20
+        check_method: keyword_presence
+        min_keywords: 2
+        keywords:
+          - "deep work"
+          - "time zones"
+          - "dokumentation"
+          - "23"
+          - "86%"
+          - "kernpunkte"
+          - "argumente"
+          - "statistik"
+        description: "Sind die Kernpunkte des Blogposts erhalten (3 Argumente + Zahlen)?"
+      
+      - name: "Twitter-Native"
+        points: 20
+        check_method: keyword_presence
+        min_keywords: 2
+        keywords:
+          - "emoji"
+          - "280"
+          - "line break"
+          - "kontrovers"
+          - "retweet"
+          - "engagement"
+          - "twitter"
+          - "viral"
+        description: "Ist der Content für Twitter optimiert (Format, Emojis, Engagement-Hooks)?"

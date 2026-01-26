@@ -20,7 +20,7 @@ def install_pip_requirements(req_file):
         subprocess.check_call(
             [sys.executable, "-m", "pip", "install", "-r", req_file],
             stdout=sys.stdout,
-            stderr=sys.stderr
+            stderr=sys.stderr,
         )
         return True
     except subprocess.CalledProcessError:
@@ -31,10 +31,7 @@ def main():
     """Main setup routine."""
     print("🔧 CrucibleMark Environment Setup")
     print("================================")
-    print(
-        f"System: {platform.system()} {platform.release()} "
-        f"({platform.machine()})"
-    )
+    print(f"System: {platform.system()} {platform.release()} ({platform.machine()})")
     print(f"Python: {sys.version.split()[0]}")
     print("--------------------------------")
 

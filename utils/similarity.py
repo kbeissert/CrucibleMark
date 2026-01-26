@@ -7,12 +7,13 @@ import logging
 import os
 import contextlib
 from pathlib import Path
-from typing import List, Optional
+from typing import Any, List, Optional
 import numpy as np  # pylint: disable=import-error
 
 try:
     from sentence_transformers import SentenceTransformer
     from sklearn.metrics.pairwise import cosine_similarity
+
     HAS_TRANSFORMERS = True
 except ImportError:
     HAS_TRANSFORMERS = False
@@ -45,7 +46,7 @@ class SemanticSimilarity:
             cls._warning_logged = True
 
     @classmethod
-    def get_model(cls) -> Optional[object]:
+    def get_model(cls) -> Optional[Any]:
         """Lazy loading of the model."""
         if not HAS_TRANSFORMERS:
             if not cls._warning_logged:
@@ -60,9 +61,15 @@ class SemanticSimilarity:
 
                 # Suppress stdout/stderr during loading to avoid progress bars
                 # This is a bit hacky but necessary to keep the CLI clean
-                with contextlib.redirect_stdout(Path(os.devnull).open('w', encoding='utf-8')), \
-                     contextlib.redirect_stderr(Path(os.devnull).open('w', encoding='utf-8')):
-                    cls._model = SentenceTransformer('all-MiniLM-L6-v2')
+                with (
+                    contextlib.redirect_stdout(
+                        Path(os.devnull).open("w", encoding="utf-8")
+                    ),
+                    contextlib.redirect_stderr(
+                        Path(os.devnull).open("w", encoding="utf-8")
+                    ),
+                ):
+                    cls._model = SentenceTransformer("all-MiniLM-L6-v2")
             except Exception as e:  # pylint: disable=broad-exception-caught
                 logger.error("Failed to load sentence-transformer model: %s", e)
                 return None
@@ -84,6 +91,13 @@ class SemanticSimilarity:
         if model is None:
             return 0.0
 
+        # Type safety check
+        if not isinstance(text1, str) or not isinstance(text2, str):
+            logger.warning(
+                "Invalid input types for similarity: %s, %s", type(text1), type(text2)
+            )
+            return 0.0
+
         try:
             embeddings = model.encode([text1, text2])
             similarity = cosine_similarity([embeddings[0]], [embeddings[1]])[0][0]
@@ -93,7 +107,9 @@ class SemanticSimilarity:
             return 0.0
 
     @classmethod
-    def check_similarity_threshold(cls, text: str, reference: str, threshold: float = 0.7) -> bool:
+    def check_similarity_threshold(
+        cls, text: str, reference: str, threshold: float = 0.7
+    ) -> bool:
         """
         Checks if similarity is above a threshold.
 
@@ -122,6 +138,15 @@ class SemanticSimilarity:
         """
         model = cls.get_model()
         if model is None or not candidates:
+            return 0.0
+
+        # Type safety check
+        if not isinstance(query, str):
+            logger.warning("Invalid query type: %s", type(query))
+            return 0.0
+
+        cleaned_candidates = [c for c in candidates if isinstance(c, str)]
+        if not cleaned_candidates:
             return 0.0
 
         try:

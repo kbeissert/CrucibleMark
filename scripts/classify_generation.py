@@ -19,7 +19,17 @@ OVERRIDES_FILE = ROOT_DIR / "model_overrides.yaml"
 
 class GenerationClassifier:
     """Hybrid Classifier for LLM Generations."""
+
     # pylint: disable=too-few-public-methods
+
+    THRESHOLDS = {
+        "GEN2_MIN_TIME": 40,
+        "GEN2_MAX_TIME": 150,
+        "GEN2_MIN_R_SCORE": 70,
+        "GEN2_SCORE_GAP": 5,
+        "GEN1_CUTOFF_TIME": 50,
+        "GEN1_CUTOFF_R_SCORE": 65,
+    }
 
     def __init__(self):
         self.heuristics = self._load_yaml(HEURISTICS_FILE)
@@ -29,16 +39,14 @@ class GenerationClassifier:
         if not path.exists():
             return {}
         try:
-            with open(path, 'r', encoding='utf-8') as f:
+            with open(path, "r", encoding="utf-8") as f:
                 return yaml.safe_load(f) or {}
         except (OSError, yaml.YAMLError) as e:
             print(f"⚠️ Error loading {path.name}: {e}")
             return {}
 
     def classify(
-        self,
-        model_name: str,
-        stats: Optional[Dict[str, float]] = None
+        self, model_name: str, stats: Optional[Dict[str, float]] = None
     ) -> Dict[str, Any]:
         """
         Main classification entry point.
@@ -56,7 +64,7 @@ class GenerationClassifier:
                 "confidence": "OVERRIDE",
                 "reason": (
                     f"Manual Override: {ov_data.get('reason', 'No reason provided')}"
-                )
+                ),
             }
 
         # 2. Auto-Classification (if stats available)
@@ -76,7 +84,7 @@ class GenerationClassifier:
                 "reason": (
                     f"Heuristic Pattern Match ({heuristic_gen}) + "
                     f"{auto_result.get('reason', '')}"
-                )
+                ),
             }
 
         # 4. Return Auto Result (Medium/Low) or Default
@@ -86,7 +94,7 @@ class GenerationClassifier:
         return {
             "generation": "Gen 1 (Pattern Matcher)",
             "confidence": "LOW",
-            "reason": "Default fallback (no stats, no patterns)"
+            "reason": "Default fallback (no stats, no patterns)",
         }
 
     def _check_heuristic_patterns(self, model_name: str) -> Optional[str]:
@@ -115,9 +123,7 @@ class GenerationClassifier:
         return None
 
     def _auto_classify_metrics(
-        self,
-        model_name: str,
-        stats: Dict[str, float]
+        self, model_name: str, stats: Dict[str, float]
     ) -> Dict[str, Any]:
         """Classifies based on benchmark metrics."""
         avg_time = stats.get("avg_time", 0)
@@ -132,15 +138,21 @@ class GenerationClassifier:
                 return {
                     "generation": "Gen 1 (Pattern Matcher)",
                     "confidence": "HIGH",
-                    "reason": "Blacklisted keyword (coder/uncensored)"
+                    "reason": "Blacklisted keyword (coder/uncensored)",
                 }
 
         # Gen 2 Detection
-        # Criteria: Slower than standard (>40s), High Reasoning (>70),
-        # Reasoning significantly better than code
         score_gap = r_score - c_score
 
-        if (40 <= avg_time <= 150) and (r_score >= 70) and (score_gap > 5):
+        is_gen2_time = (
+            self.THRESHOLDS["GEN2_MIN_TIME"]
+            <= avg_time
+            <= self.THRESHOLDS["GEN2_MAX_TIME"]
+        )
+        is_gen2_score = r_score >= self.THRESHOLDS["GEN2_MIN_R_SCORE"]
+        is_gen2_gap = score_gap > self.THRESHOLDS["GEN2_SCORE_GAP"]
+
+        if is_gen2_time and is_gen2_score and is_gen2_gap:
             # If name supports it, HIGH confidence
             patterns = self.heuristics.get("patterns", {}).get("gen2_names", [])
             if any(p in name for p in patterns):
@@ -150,22 +162,25 @@ class GenerationClassifier:
                     "reason": (
                         f"Metrics + Name match (Time={avg_time:.1f}s, "
                         f"R-Score={r_score})"
-                    )
+                    ),
                 }
 
             return {
                 "generation": "Gen 2 (Distilled Reasoner)",
                 "confidence": "MEDIUM",
                 "reason": "Metrics indicate Reasoning model but name unknown",
-                "flag_for_review": True
+                "flag_for_review": True,
             }
 
         # Gen 1 Detection (Fast & Reliable)
-        if avg_time < 50 or r_score < 65:
+        is_gen1_time = avg_time < self.THRESHOLDS["GEN1_CUTOFF_TIME"]
+        is_gen1_score = r_score < self.THRESHOLDS["GEN1_CUTOFF_R_SCORE"]
+
+        if is_gen1_time or is_gen1_score:
             return {
                 "generation": "Gen 1 (Pattern Matcher)",
                 "confidence": "HIGH",
-                "reason": f"Standard metrics (Time={avg_time:.1f}s, R-Score={r_score})"
+                "reason": f"Standard metrics (Time={avg_time:.1f}s, R-Score={r_score})",
             }
 
         # Suspicious / Ambiguous
@@ -173,7 +188,7 @@ class GenerationClassifier:
             "generation": "Gen 1 (Pattern Matcher)",
             "confidence": "LOW",
             "reason": f"Ambiguous metrics (Time={avg_time:.1f}s, R-Score={r_score})",
-            "flag_for_review": True
+            "flag_for_review": True,
         }
 
 
@@ -183,23 +198,23 @@ if __name__ == "__main__":
     print("Testing Classifier...")
 
     TEST_CASES = [
-        ("deepseek-r1:8b", {
-            "avg_time": 73.05, "reasoning_score": 65.42, "code_quality": 30
-        }),
-        ("phi4:latest", {
-            "avg_time": 40.1, "reasoning_score": 79.2, "code_quality": 52
-        }),
-        ("cogito:14b", {
-            "avg_time": 30.1, "reasoning_score": 76.25, "code_quality": 0
-        }),
-        ("unknown-slow-model", {
-            "avg_time": 90.0, "reasoning_score": 75.0, "code_quality": 60
-        })
+        (
+            "deepseek-r1:8b",
+            {"avg_time": 73.05, "reasoning_score": 65.42, "code_quality": 30},
+        ),
+        (
+            "phi4:latest",
+            {"avg_time": 40.1, "reasoning_score": 79.2, "code_quality": 52},
+        ),
+        ("cogito:14b", {"avg_time": 30.1, "reasoning_score": 76.25, "code_quality": 0}),
+        (
+            "unknown-slow-model",
+            {"avg_time": 90.0, "reasoning_score": 75.0, "code_quality": 60},
+        ),
     ]
 
     for test_name, test_stats in TEST_CASES:
         res = CLASSIFIER.classify(test_name, test_stats)
         print(
-            f"[{res['confidence']}] {test_name}: "
-            f"{res['generation']} ({res['reason']})"
+            f"[{res['confidence']}] {test_name}: {res['generation']} ({res['reason']})"
         )

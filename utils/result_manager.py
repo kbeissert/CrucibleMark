@@ -20,25 +20,27 @@ class ResultManager:
         self.config = self.validator.config
 
         # Output Directory aus Config oder Default
-        self.output_dir = Path(self.config.get('output', {}).get('directory', 'benchmark_scores'))
+        self.output_dir = Path(
+            self.config.get("output", {}).get("directory", "benchmark_scores")
+        )
 
     def _get_csv_path(self, result_type: str) -> Path:
         """Ermittelt den Pfad zur CSV-Datei basierend auf dem Typ."""
         # result_type: 'local', 'commercial', 'golden'
 
-        if result_type == 'local':
-            key = 'local_models_csv'
-            default = 'benchmark_scores/local_models_benchmark.csv'
-        elif result_type == 'commercial':
-            key = 'commercial_csv'
-            default = 'benchmark_scores/commercial_models_benchmark.csv'
-        elif result_type == 'golden':
-            key = 'golden_standard_csv'
-            default = 'benchmark_scores/golden_standard_benchmark.csv'
+        if result_type == "local":
+            key = "local_models_csv"
+            default = "benchmark_scores/local_models_benchmark.csv"
+        elif result_type == "commercial":
+            key = "commercial_csv"
+            default = "benchmark_scores/commercial_models_benchmark.csv"
+        elif result_type == "golden":
+            key = "golden_standard_csv"
+            default = "benchmark_scores/golden_standard_benchmark.csv"
         else:
             raise ValueError(f"Unknown result type: {result_type}")
 
-        filename = self.config.get('output', {}).get(key, default)
+        filename = self.config.get("output", {}).get(key, default)
         return Path(filename)
 
     def _get_updated_fieldnames(self, csv_path: Path, new_keys: set[str]) -> list[str]:
@@ -47,7 +49,7 @@ class ResultManager:
             return sorted(new_keys)
 
         try:
-            with csv_path.open('r', encoding='utf-8') as f:
+            with csv_path.open("r", encoding="utf-8") as f:
                 reader = csv.reader(f)
                 try:
                     existing_keys = next(reader)
@@ -62,7 +64,9 @@ class ResultManager:
         added_keys = sorted([k for k in new_keys if k not in existing_set])
         return existing_keys + added_keys
 
-    def save_results(self, results: list[dict[str, Any]], result_type: str) -> Path | None:
+    def save_results(
+        self, results: list[dict[str, Any]], result_type: str
+    ) -> Path | None:
         """Speichert Ergebnisse in die entsprechende CSV-Datei."""
         if not results:
             return None
@@ -92,7 +96,7 @@ class ResultManager:
 
         if file_exists:
             try:
-                with csv_path.open('r', encoding='utf-8') as f:
+                with csv_path.open("r", encoding="utf-8") as f:
                     reader = csv.DictReader(f)
                     if reader.fieldnames:
                         existing_header_set = set(reader.fieldnames)
@@ -119,15 +123,21 @@ class ResultManager:
             print(f"❌ Fehler beim Speichern: {e}")
             return None
 
-    def _write_to_csv(self, csv_path: Path, fieldnames: list[str], results: list[dict[str, Any]],
-                      needs_rewrite: bool, existing_rows: list[dict[str, Any]],
-                      file_exists: bool) -> None:
+    def _write_to_csv(
+        self,
+        csv_path: Path,
+        fieldnames: list[str],
+        results: list[dict[str, Any]],
+        needs_rewrite: bool,
+        existing_rows: list[dict[str, Any]],
+        file_exists: bool,
+    ) -> None:
         """Schreibt die Daten in die CSV-Datei."""
         # pylint: disable=too-many-arguments, too-many-positional-arguments
         if needs_rewrite:
             # Komplettes Neuschreiben mit erweitertem Header
-            with csv_path.open('w', newline='', encoding='utf-8') as f:
-                writer = csv.DictWriter(f, fieldnames=fieldnames, extrasaction='ignore')
+            with csv_path.open("w", newline="", encoding="utf-8") as f:
+                writer = csv.DictWriter(f, fieldnames=fieldnames, extrasaction="ignore")
                 writer.writeheader()
                 if existing_rows:
                     writer.writerows(existing_rows)
@@ -136,14 +146,13 @@ class ResultManager:
 
         else:
             # Normales Append (entweder neue Datei oder keine neuen Spalten)
-            mode = 'a' if file_exists else 'w'
-            with csv_path.open(mode, newline='', encoding='utf-8') as f:
-                writer = csv.DictWriter(f, fieldnames=fieldnames, extrasaction='ignore')
+            mode = "a" if file_exists else "w"
+            with csv_path.open(mode, newline="", encoding="utf-8") as f:
+                writer = csv.DictWriter(f, fieldnames=fieldnames, extrasaction="ignore")
                 if not file_exists:
                     writer.writeheader()
                 writer.writerows(results)
             print(f"\n💾 Ergebnisse gespeichert in: {csv_path}")
-
 
     def update_leaderboard(self):
         """Triggert das Update des Leaderboards."""
@@ -151,6 +160,7 @@ class ResultManager:
             # Import hier, um Zirkelbezüge zu vermeiden und Skript-Charakter zu nutzen
             # pylint: disable=import-outside-toplevel
             from scripts import generate_leaderboard
+
             print("🔄 Aktualisiere Leaderboard...")
             generate_leaderboard.main(print_table=False)
         except (ImportError, OSError, ValueError) as e:

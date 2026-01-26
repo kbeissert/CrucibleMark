@@ -23,7 +23,10 @@ help:
 	@echo "=== Validation & Testing ==="
 	@echo "  make validate             Validate all test assets"
 	@echo "  make validate-single      Validate single asset (ASSET=path)"
+	@echo "  make validate-structure   Check module directory structure compliance (Clean Architecture)"
 	@echo "  make test                 Run validation & unit tests"
+	@echo "  make analyze-costs        Calculate estimated token costs for all assets"
+	@echo "  make diff-results         Compare two benchmark JSONs (Regression Testing)"
 	@echo ""
 	@echo "=== Utilities ==="
 	@echo "  make clean                Clean caches and temporary outputs"
@@ -101,11 +104,8 @@ clean:
 	find . -type f -name "*.pyc" -delete
 
 clean-csv:
-	@echo "🗑️  Deleting benchmark CSV files..."
-	rm -f benchmark_scores/commercial_models_benchmark.csv
-	rm -f benchmark_scores/local_models_benchmark.csv
-	rm -f benchmark_scores/golden_standard_benchmark.csv
-	rm -f benchmark_scores/benchmark_leaderboard.csv
+	@echo "🗑️  Deleting ALL benchmark CSV files..."
+	rm -f benchmark_scores/*.csv
 
 clean-all: clean clean-csv
 	@echo "✨ All clean! (Caches and CSVs deleted)"
@@ -139,10 +139,32 @@ test: validate
 list-models:
 	@$(PYTHON) scripts/list_models.py
 
+# === UTILITIES & VALIDATION ===
+
+validate-structure:
+	@echo "🏗️ Checking Module Structure..."
+	$(PYTHON) scripts/validate_structure.py
+
+analyze-costs:
+	@echo "💰 Analyzing Prompt Token Costs..."
+	$(PYTHON) scripts/analyze_prompts.py
+
+diff-results:
+	@echo "⚖️ Comparing Benchmark Results..."
+	@echo "Usage: $(PYTHON) scripts/compare_baselines.py --ref REF.json --test TEST.json"
+	@$(PYTHON) scripts/compare_baselines.py --help
+
 # === BACKUP ===
 
 backup:
-	@echo "💾 Creating backup of benchmark scores..."
+	@echo "💾 Creating full backup (scores, outputs, modules, standards)..."
 	@mkdir -p backups
-	@tar -czf backups/benchmark_scores_$20260122_165802.tar.gz benchmark_scores/
+	@tar --exclude='__pycache__' --exclude='.DS_Store' -czf backups/cruciblemark_backup_$(shell date +%Y%m%d_%H%M%S).tar.gz \
+		benchmark_scores/ \
+		outputs/ \
+		benchmark_modules/ \
+		golden_standards/
 	@echo "✅ Backup created in backups/"
+	@echo "🧹 Post-Backup Cleanup: Auto-cleaning old runs from workspace..."
+	@$(MAKE) clean-runs-force
+	@echo "✨ Backup chain complete (Archived + Cleaned)."

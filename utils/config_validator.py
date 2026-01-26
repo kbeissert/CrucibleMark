@@ -20,6 +20,7 @@ load_dotenv()
 # Configure logging
 logger = logging.getLogger(__name__)
 
+
 class ConfigValidator:
     """Validiert benchmark_config.yaml."""
 
@@ -39,7 +40,7 @@ class ConfigValidator:
             raise FileNotFoundError(f"Config nicht gefunden: {self.config_path}")
 
         try:
-            with open(self.config_path, encoding='utf-8') as f:
+            with open(self.config_path, encoding="utf-8") as f:
                 return yaml.safe_load(f) or {}
         except (OSError, yaml.YAMLError) as e:
             logger.error("Failed to load config: %s", e)
@@ -51,7 +52,7 @@ class ConfigValidator:
         Returns:
             Golden Standard Config oder None
         """
-        return self.config.get('golden_standard')
+        return self.config.get("golden_standard")
 
     def get_provider_config(self, provider_key: str) -> Optional[Dict[str, Any]]:
         """Holt Provider-Konfiguration.
@@ -62,7 +63,7 @@ class ConfigValidator:
         Returns:
             Provider Config oder None
         """
-        return self.config.get('providers', {}).get('commercial', {}).get(provider_key)
+        return self.config.get("providers", {}).get("commercial", {}).get(provider_key)
 
     def validate_golden_standard(self) -> Tuple[bool, str]:
         """Validiert Golden Standard Konfiguration.
@@ -76,7 +77,7 @@ class ConfigValidator:
             self._validate_gs_provider_exists,
             self._validate_gs_provider_enabled,
             self._validate_gs_api_key,
-            self._validate_gs_model_exists
+            self._validate_gs_model_exists,
         ]
 
         for validation_func in validations:
@@ -89,8 +90,8 @@ class ConfigValidator:
         if not gs_config:
             return False, "Golden Standard Config missing"
 
-        provider_key = gs_config.get('provider')
-        model_id = gs_config.get('model')
+        provider_key = gs_config.get("provider")
+        model_id = gs_config.get("model")
 
         if not provider_key or not model_id:
             return False, "Provider or Model missing in Golden Standard Config"
@@ -100,13 +101,13 @@ class ConfigValidator:
             return False, f"Provider Config for {provider_key} missing"
 
         model_config = next(
-            (m for m in provider_config.get('models', []) if m.get('id') == model_id),
-            {}
+            (m for m in provider_config.get("models", []) if m.get("id") == model_id),
+            {},
         )
 
-        provider_name = provider_config.get('name', provider_key)
-        model_name = model_config.get('name', model_id)
-        description = gs_config.get('description', 'Keine Beschreibung')
+        provider_name = provider_config.get("name", provider_key)
+        model_name = model_config.get("name", model_id)
+        description = gs_config.get("description", "Keine Beschreibung")
 
         return True, (
             f"✅ Golden Standard konfiguriert:\n"
@@ -121,8 +122,8 @@ class ConfigValidator:
         if not gs_config:
             return False, "❌ Keine 'golden_standard' Sektion in Config gefunden"
 
-        provider_key = gs_config.get('provider')
-        model_id = gs_config.get('model')
+        provider_key = gs_config.get("provider")
+        model_id = gs_config.get("model")
 
         if not provider_key:
             return False, "❌ Golden Standard: 'provider' fehlt"
@@ -138,14 +139,16 @@ class ConfigValidator:
         if not gs_config:
             return False, "Golden Standard Config missing"
 
-        provider_key = gs_config.get('provider')
+        provider_key = gs_config.get("provider")
         if not provider_key:
             return False, "Provider key missing"
 
         provider_config = self.get_provider_config(provider_key)
 
         if not provider_config:
-            available = list(self.config.get('providers', {}).get('commercial', {}).keys())
+            available = list(
+                self.config.get("providers", {}).get("commercial", {}).keys()
+            )
             return False, (
                 f"❌ Golden Standard Provider '{provider_key}' existiert nicht\n"
                 f"   Verfügbare Provider: {', '.join(available)}\n"
@@ -160,7 +163,7 @@ class ConfigValidator:
         if not gs_config:
             return False, "Golden Standard Config missing"
 
-        provider_key = gs_config.get('provider')
+        provider_key = gs_config.get("provider")
         if not provider_key:
             return False, "Provider key missing"
 
@@ -168,9 +171,9 @@ class ConfigValidator:
         if not provider_config:
             return False, "Provider config missing"
 
-        provider_name = provider_config.get('name', provider_key)
+        provider_name = provider_config.get("name", provider_key)
 
-        if not provider_config.get('enabled', False):
+        if not provider_config.get("enabled", False):
             return False, (
                 f"❌ Golden Standard Provider '{provider_name}' ist deaktiviert\n"
                 f"   Setze 'providers.commercial.{provider_key}.enabled: true'"
@@ -184,7 +187,7 @@ class ConfigValidator:
         if not gs_config:
             return False, "Golden Standard Config missing"
 
-        provider_key = gs_config.get('provider')
+        provider_key = gs_config.get("provider")
         if not provider_key:
             return False, "Provider key missing"
 
@@ -192,11 +195,14 @@ class ConfigValidator:
         if not provider_config:
             return False, "Provider config missing"
 
-        provider_name = provider_config.get('name', provider_key)
+        provider_name = provider_config.get("name", provider_key)
 
-        env_var = provider_config.get('env_var')
+        env_var = provider_config.get("env_var")
         if not env_var:
-            return False, f"❌ Provider '{provider_name}' hat keine 'env_var' konfiguriert"
+            return (
+                False,
+                f"❌ Provider '{provider_name}' hat keine 'env_var' konfiguriert",
+            )
 
         api_key = os.getenv(env_var)
         if not api_key:
@@ -214,8 +220,8 @@ class ConfigValidator:
         if not gs_config:
             return False, "Golden Standard Config missing"
 
-        provider_key = gs_config.get('provider')
-        model_id = gs_config.get('model')
+        provider_key = gs_config.get("provider")
+        model_id = gs_config.get("model")
 
         if not provider_key or not model_id:
             return False, "Provider or Model missing"
@@ -224,10 +230,10 @@ class ConfigValidator:
         if not provider_config:
             return False, "Provider config missing"
 
-        provider_name = provider_config.get('name', provider_key)
+        provider_name = provider_config.get("name", provider_key)
 
-        models = provider_config.get('models', [])
-        model_ids = [m.get('id') for m in models]
+        models = provider_config.get("models", [])
+        model_ids = [m.get("id") for m in models]
 
         if model_id not in model_ids:
             return False, (
@@ -244,11 +250,11 @@ class ConfigValidator:
         Returns:
             Dict mit provider_key -> provider_config
         """
-        commercial = self.config.get('providers', {}).get('commercial', {})
+        commercial = self.config.get("providers", {}).get("commercial", {})
         return {
             key: provider
             for key, provider in commercial.items()
-            if provider.get('enabled', False)
+            if provider.get("enabled", False)
         }
 
     def get_golden_standard_csv(self) -> Path:
@@ -257,8 +263,8 @@ class ConfigValidator:
         Returns:
             Path zur CSV-Datei (dediziert für Golden Standard)
         """
-        csv_file = self.config.get('output', {}).get(
-            'golden_standard_csv', 'benchmark_scores/golden_standard_benchmark.csv'
+        csv_file = self.config.get("output", {}).get(
+            "golden_standard_csv", "benchmark_scores/golden_standard_benchmark.csv"
         )
         return Path(csv_file)
 
@@ -272,8 +278,8 @@ class ConfigValidator:
         if not gs_config:
             return None
 
-        provider_key = gs_config.get('provider')
-        model_id = gs_config.get('model')
+        provider_key = gs_config.get("provider")
+        model_id = gs_config.get("model")
 
         if not provider_key or not model_id:
             return None

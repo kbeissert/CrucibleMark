@@ -21,7 +21,6 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 from utils.base_runner import BaseBenchmarkRunner
 from utils.module_loader import load_test_class
 from utils.benchmark_utils import select_from_list, discover_assets, load_asset_yaml
-from scripts.run_political_compass_benchmark import run_political_compass_benchmark
 # pylint: enable=wrong-import-position, import-error
 
 logger = logging.getLogger(__name__)
@@ -32,7 +31,7 @@ class CommercialBenchmarkRunner(BaseBenchmarkRunner):
 
     benchmark_categories: Dict[str, Any] = {}
 
-    def __init__(self, mode: str = 'test', force: bool = False):
+    def __init__(self, mode: str = "test", force: bool = False):
         """Initialisiert Runner.
 
         Args:
@@ -47,14 +46,14 @@ class CommercialBenchmarkRunner(BaseBenchmarkRunner):
     def _load_categories(self):
         """Loads benchmark categories from config."""
         self.benchmark_categories = {}
-        if 'modules' in self.validator.config:
-            for key, mod in self.validator.config['modules'].items():
-                if mod.get('enabled', False):
+        if "modules" in self.validator.config:
+            for key, mod in self.validator.config["modules"].items():
+                if mod.get("enabled", False):
                     self.benchmark_categories[key] = {
-                        'name': mod['name'],
-                        'description': mod['description'],
-                        'path': f"{mod['path']}/assets",
-                        'test_class': mod.get('test_class', 'CodeQualityTest')
+                        "name": mod["name"],
+                        "description": mod["description"],
+                        "path": f"{mod['path']}/assets",
+                        "test_class": mod.get("test_class", "CodeQualityTest"),
                     }
 
     def get_available_providers(self) -> Dict[str, dict]:
@@ -75,12 +74,12 @@ class CommercialBenchmarkRunner(BaseBenchmarkRunner):
         while True:
             try:
                 choice = input("\nWähle Modus (1-2): ").strip()
-                if choice == '1':
+                if choice == "1":
                     print("✓ Golden Standard Mode\n")
-                    return 'golden_standard'
-                if choice == '2':
+                    return "golden_standard"
+                if choice == "2":
                     print("✓ Test Mode\n")
-                    return 'test'
+                    return "test"
                 print("❌ Bitte 1 oder 2 eingeben")
             except KeyboardInterrupt:
                 print("\n\n❌ Abgebrochen")
@@ -106,18 +105,19 @@ class CommercialBenchmarkRunner(BaseBenchmarkRunner):
         model_list = []
 
         for p_key, p_conf in providers.items():
-            p_name = p_conf.get('name', p_key)
-            for model in p_conf.get('models', []):
-                m_id = model.get('id')
-                m_name = model.get('name', m_id)
-                desc = model.get('description', '')
+            p_name = p_conf.get("name", p_key)
+            for model in p_conf.get("models", []):
+                m_id = model.get("id")
+                m_name = model.get("name", m_id)
+                desc = model.get("description", "")
                 model_list.append((p_key, m_id, p_name, m_name, desc))
 
         selected = select_from_list(
             model_list,
-            lambda item: f"[{item[2]}] {item[3]}" + (f" - {item[4]}" if item[4] else ""),
+            lambda item: f"[{item[2]}] {item[3]}"
+            + (f" - {item[4]}" if item[4] else ""),
             prompt="Wähle Modell",
-            title="🌐 VERFÜGBARE MODELLE"
+            title="🌐 VERFÜGBARE MODELLE",
         )
 
         if selected:
@@ -133,14 +133,14 @@ class CommercialBenchmarkRunner(BaseBenchmarkRunner):
         categories = list(self.benchmark_categories.items())
         selected = select_from_list(
             categories,
-            lambda item: (item[1]['name'], item[1]['description']),
+            lambda item: (item[1]["name"], item[1]["description"]),
             prompt="Wähle Benchmark",
-            title="📊 VERFÜGBARE BENCHMARKS"
+            title="📊 VERFÜGBARE BENCHMARKS",
         )
         if selected:
             key, info = selected
             print(f"✓ Ausgewählt: {info['name']}\n")
-            return {'key': key, **info}
+            return {"key": key, **info}
         return None
 
     @staticmethod
@@ -155,38 +155,42 @@ class CommercialBenchmarkRunner(BaseBenchmarkRunner):
         asset_path: Path,
         benchmark_info: Dict[str, Any],
         provider: str,
-        model: str
+        model: str,
     ) -> Optional[Dict[str, Any]]:
         """Recovers a result from a cached JSON file."""
         try:
-            with open(json_path, encoding='utf-8') as f:
+            with open(json_path, encoding="utf-8") as f:
                 data = json.load(f)
 
             # Re-calculate score
-            module_path = Path(benchmark_info['path']).parent / 'test.py'
-            test_cls_name = benchmark_info.get('test_class', 'CodeQualityTest')
+            module_path = Path(benchmark_info["path"]).parent / "test.py"
+            test_cls_name = benchmark_info.get("test_class", "CodeQualityTest")
             test_cls = load_test_class(module_path, test_cls_name)
             test_inst = test_cls(asset_path)
 
-            score = test_inst.score_response(data.get('response', ''))
-            asset_id = data.get('id', asset_path.stem)
+            score = test_inst.score_response(data.get("response", ""))
+            asset_id = data.get("id", asset_path.stem)
 
             result = {
-                'timestamp': data.get('timestamp', datetime.now().strftime('%Y-%m-%d %H:%M:%S')),
-                'status': score.get('status', 'success'),
-                'provider': provider,
-                'model': model,
-                'asset_id': asset_id,
-                'asset_name': asset_path.stem,
-                'total_score': score['total_score'],
-                'max_score': score['max_score'],
-                'percentage': round((score['total_score'] / score['max_score'] * 100), 1),
-                'execution_time': data.get('execution_time', 0.0),
-                'response_length': len(data.get('response', '')),
-                'tier': score.get('tier', 'Tier 1')
+                "timestamp": data.get(
+                    "timestamp", datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+                ),
+                "status": score.get("status", "success"),
+                "provider": provider,
+                "model": model,
+                "asset_id": asset_id,
+                "asset_name": asset_path.stem,
+                "total_score": score["total_score"],
+                "max_score": score["max_score"],
+                "percentage": round(
+                    (score["total_score"] / score["max_score"] * 100), 1
+                ),
+                "execution_time": data.get("execution_time", 0.0),
+                "response_length": len(data.get("response", "")),
+                "tier": score.get("tier", "Tier 1"),
             }
 
-            for cat, val in score.get('category_scores', {}).items():
+            for cat, val in score.get("category_scores", {}).items():
                 result[cat] = f"{val['achieved']}/{val['max']}"
 
             return result
@@ -202,7 +206,9 @@ class CommercialBenchmarkRunner(BaseBenchmarkRunner):
         provider: str,
         model: str,
         benchmark_info: Dict[str, Any],
-        is_golden_model: bool
+        is_golden_model: bool,
+        index: int = 1,
+        total_count: int = 1,
     ) -> Optional[Dict[str, Any]]:
         """Processes a single asset."""
         asset_data = load_asset_yaml(asset_path)
@@ -210,25 +216,36 @@ class CommercialBenchmarkRunner(BaseBenchmarkRunner):
             print(f"⚠️  Skipping empty asset: {asset_path.name}")
             return None
 
-        asset_id = asset_data.get('metadata', {}).get('id', asset_path.stem)
-        asset_name = asset_data.get('metadata', {}).get('name') or \
-                     asset_data.get('metadata', {}).get('topic', asset_id)
+        asset_id = asset_data.get("metadata", {}).get("id", asset_path.stem)
+        asset_name = asset_data.get("metadata", {}).get("name") or asset_data.get(
+            "metadata", {}
+        ).get("topic", asset_id)
 
         json_path = Path(f"golden_standards/{provider}/{asset_id}.json")
 
         # Check for cached Golden Standard
         if is_golden_model and json_path.exists():
-            if self.mode == 'golden_standard' and not self.force:
-                print(f"⏭️  Überspringe {asset_name} (Golden Standard existiert)")
+            if self.mode == "golden_standard" and not self.force:
+                # print(f"⏭️  Überspringe {asset_name} (Golden Standard existiert)")
                 res = self._recover_from_json(
                     json_path, asset_path, benchmark_info, provider, model
                 )
                 if res:
-                    res['asset_name'] = asset_name  # Ensure name is correct
-                    print(f"   ✓ Cached: {res['percentage']}%")
+                    res["asset_name"] = asset_name
+                    # print(f"   ✓ Cached: {res['percentage']}%")
+
+                    # Formatted output for cached
+                    badge = self.get_quality_badge(res["percentage"])
+                    cost_str = "Cached"
+                    time_str = f"{res['execution_time']:.1f}s"
+                    print(
+                        f"[{index}/{total_count}] {asset_id:<15} | {asset_name[:20]:<20} {badge} Score: {res['percentage']:>5.1f} | Cost: {cost_str:>8} | Time: {time_str}"
+                    )
                     return res
 
-        print(f"▶️  Teste: {asset_name}...")
+        # print(f"▶️  Teste: {asset_name}...")
+        # Optional: Print simple status if long running
+        print(f"[{index}/{total_count}] Running: {asset_name}...", end="\r", flush=True)
 
         # Execute Test using BaseRunner logic
         try:
@@ -236,27 +253,51 @@ class CommercialBenchmarkRunner(BaseBenchmarkRunner):
                 model=model,
                 asset_path=asset_path,
                 benchmark_info=benchmark_info,
-                provider=provider
+                provider=provider,
             )
         except Exception as e:  # pylint: disable=broad-exception-caught
-            print(f"❌ Fehler bei Ausführung: {e}")
+            print(f"\n❌ Fehler bei Ausführung ({asset_name}): {e}")
             return None
 
-        response = exec_result['raw_response']
+        response = exec_result["raw_response"]
         score = test_inst.score_response(response)
 
         # Build Standardized Result
         result = self.build_base_result(model, asset_data, score, exec_result, provider)
 
+        # Add Cost Tracking
+        cost_val = 0.0
+        token_str = "0 T"
+        if hasattr(self.client, "last_request_cost"):
+            cost_val = self.client.last_request_cost
+            result["cost_usd"] = f"{cost_val:.6f}"
+        else:
+            result["cost_usd"] = "0.000000"
+
+        if hasattr(self.client, "last_token_usage"):
+            t_count = self.client.last_token_usage
+            result["tokens_used"] = t_count  # Save to CSV
+            if t_count > 1000:
+                token_str = f"{t_count / 1000:.1f}k T"
+            else:
+                token_str = f"{t_count} T"
+
         # Print Output
-        badge = self.get_quality_badge(result['percentage'])
-        print(f"   Ergebnis: {result['percentage']}% {badge} "
-              f"({result['total_score']}/{result['max_score']} Pkt)")
+        badge = self.get_quality_badge(result["percentage"])
+
+        # Clear the "Running..." line by overwriting with full line
+        # [1/5] codequality001 | WCAG Audit ✓ Score: 88 | Cost: $0.0047 | Time: 12.3s
+        time_val = exec_result.get("execution_time", 0.0)
+        print(
+            f"[{index}/{total_count}] {asset_id:<15} | {asset_name[:20]:<20} {badge} Score: {result['percentage']:>5.1f} | Cost: ${cost_val:.4f} | {token_str:>7} | Time: {time_val:.1f}s"
+        )
 
         # Save Golden Standard JSON if needed
-        if self.mode == 'golden_standard' or is_golden_model:
-            self._save_golden_json(provider, asset_id, response, exec_result['execution_time'])
-            if self.mode == 'test' and is_golden_model:
+        if self.mode == "golden_standard" or is_golden_model:
+            self._save_golden_json(
+                provider, asset_id, response, exec_result["execution_time"]
+            )
+            if self.mode == "test" and is_golden_model:
                 self._append_to_golden_csv(result)
 
         return result
@@ -275,10 +316,10 @@ class CommercialBenchmarkRunner(BaseBenchmarkRunner):
             "provider": provider,
             "timestamp": datetime.now().isoformat(),
             "execution_time": execution_time,
-            "response": response
+            "response": response,
         }
         try:
-            with open(output_file, 'w', encoding='utf-8') as f:
+            with open(output_file, "w", encoding="utf-8") as f:
                 json.dump(data, f, indent=2, ensure_ascii=False)
             print("   💾 JSON gespeichert.")
         except Exception as e:  # pylint: disable=broad-exception-caught
@@ -286,7 +327,7 @@ class CommercialBenchmarkRunner(BaseBenchmarkRunner):
 
     def _append_to_golden_csv(self, result: Dict[str, Any]):
         """Appends result to golden CSV."""
-        self.result_manager.save_results([result], result_type='golden')
+        self.result_manager.save_results([result], result_type="golden")
         print("   💾 Auch in Golden Standard CSV gespeichert.")
 
     def run_benchmark(
@@ -294,15 +335,44 @@ class CommercialBenchmarkRunner(BaseBenchmarkRunner):
         provider: str,
         model: str,
         benchmark_info: Dict[str, Any],
-        num_runs: int = 1
+        num_runs: int = 1,
     ) -> List[Dict[str, Any]]:
         """Main benchmark execution loop."""
 
         # Political Compass Dispatch
-        if benchmark_info.get('name') == 'Political Compass':
-             # pylint: disable=import-outside-toplevel
-            # from scripts.run_political_compass_benchmark import run_political_compass_benchmark
-            run_political_compass_benchmark(model, provider, benchmark_info, num_runs=num_runs)
+        if benchmark_info.get("name") == "Political Compass":
+            # pylint: disable=import-outside-toplevel
+            from benchmark_modules.political_compass.test import PoliticalCompassTest
+            from benchmark_modules.political_compass.core.io_manager import ResultManager
+            from utils.llm_client import LLMClient
+            import json
+            
+            print(f"🛠️  Initialisiere Political Compass Test ({provider}:{model})")
+            test = PoliticalCompassTest()
+            
+            assets_dir = Path("assets")
+            if not (Path("benchmark_modules/political_compass") / assets_dir).exists():
+                print(f"❌ Assets directory not found: {assets_dir}")
+                return []
+                
+            test.load_questions(str(assets_dir))
+            
+            if not test.questions:
+                print("❌ Keine Fragen geladen!")
+                return []
+            
+            test.num_runs = num_runs
+            
+            client = LLMClient(config=self.validator.config)
+
+            # Execution
+            result_wrapper = test.execute(model=model, llm_client=client, provider=provider)
+            
+            # Reporting
+            report = json.loads(result_wrapper["raw_response"])
+            ResultManager.print_summary(report)
+            ResultManager.save_json(report, Path("outputs/runs"))
+            
             return []
 
         # Check Golden Standard Status
@@ -313,18 +383,27 @@ class CommercialBenchmarkRunner(BaseBenchmarkRunner):
             if provider == g_provider and model == g_model:
                 is_golden_model = True
 
-        print(f"\n{'=' * 60}\n📊 STARTE BENCHMARK: {benchmark_info['name']}\n{'=' * 60}")
+        print(
+            f"\n{'=' * 60}\n📊 STARTE BENCHMARK: {benchmark_info['name']}\n{'=' * 60}"
+        )
         print(f"Provider: {provider}\nModell:   {model}\nModus:    {self.mode}")
         if is_golden_model:
             print("ℹ️  Dies ist das Golden Standard Modell.")
 
-        assets = discover_assets(benchmark_info['path'])
+        assets = discover_assets(benchmark_info["path"])
         print(f"Tests:    {len(assets)}\n{'=' * 60}\n")
 
         results = []
-        for asset_path in assets:
+        total_assets = len(assets)
+        for i, asset_path in enumerate(assets, 1):
             res = self._process_single_asset(
-                asset_path, provider, model, benchmark_info, is_golden_model
+                asset_path,
+                provider,
+                model,
+                benchmark_info,
+                is_golden_model,
+                index=i,
+                total_count=total_assets,
             )
             if res:
                 results.append(res)
@@ -336,11 +415,11 @@ class CommercialBenchmarkRunner(BaseBenchmarkRunner):
         if not results:
             return
 
-        target = 'commercial'
-        if self.mode == 'golden_standard':
-            target = 'golden'
+        target = "commercial"
+        if self.mode == "golden_standard":
+            target = "golden"
             # Also save to commercial for record keeping
-            self.result_manager.save_results(results, result_type='commercial')
+            self.result_manager.save_results(results, result_type="commercial")
 
         path = self.result_manager.save_results(results, result_type=target)
         if path:
@@ -351,28 +430,48 @@ class CommercialBenchmarkRunner(BaseBenchmarkRunner):
         if not results:
             return
 
-        print(f"\n{'=' * 60}\n📊 ZUSAMMENFASSUNG\n{'=' * 60}")
-
-        total_score = sum(r['total_score'] for r in results)
-        max_possible = sum(r['max_score'] for r in results)
+        total_score = sum(r["total_score"] for r in results)
+        max_possible = sum(r["max_score"] for r in results)
         avg_pct = (total_score / max_possible * 100) if max_possible > 0 else 0
 
-        print(f"Gesamt:   {total_score:.1f}/{max_possible} ({avg_pct:.1f}%)")
-        print(f"Qualität: {self._get_quality_badge(avg_pct)}\n{'-' * 60}")
+        # Calculate Costs & Time
+        total_cost = sum(float(r.get("cost_usd", 0)) for r in results)
+        avg_time = (
+            sum(float(r.get("execution_time", 0)) for r in results) / len(results)
+            if results
+            else 0
+        )
 
-        for r in results:
-            badge = self._get_quality_badge(r['percentage'])
-            print(f"{r['asset_name'][:40]:<40} | {r['percentage']:>5.1f}% | {badge}")
-        print(f"{'=' * 60}\n")
+        # Get Remaining Budget
+        provider = results[0]["provider"] if results else "mistral"
+        remaining = self.client.cost_tracker.get_remaining_budget(provider)
+        rem_str = f"${remaining:.2f}" if remaining is not None else "N/A"
+
+        print(f"{'─' * 66}")
+        # Module Total: $0.0471 | Avg Time: 13.2s | Remaining Budget: $19.95
+        print(
+            f"Module Total: ${total_cost:.4f} | Avg Time: {avg_time:.1f}s | Remaining Budget: {rem_str}"
+        )
+
+        # Keep Score Summary
+        badge = self._get_quality_badge(avg_pct)
+        print(
+            f"Overall Quality: {avg_pct:.1f}% {badge} ({total_score}/{max_possible} Pts)"
+        )
+        print(f"{'=' * 66}\n")
 
 
 def main():
     """CLI Entry Point."""
     parser = argparse.ArgumentParser(description="Commercial Benchmark Runner")
-    parser.add_argument('--mode', choices=['golden_standard', 'test'], help="Benchmark mode")
-    parser.add_argument('--auto', action='store_true', help="Run automatically without interaction")
     parser.add_argument(
-        '--force', action='store_true', help="Force overwrite existing Golden Standards"
+        "--mode", choices=["golden_standard", "test"], help="Benchmark mode"
+    )
+    parser.add_argument(
+        "--auto", action="store_true", help="Run automatically without interaction"
+    )
+    parser.add_argument(
+        "--force", action="store_true", help="Force overwrite existing Golden Standards"
     )
     args = parser.parse_args()
 
@@ -387,7 +486,7 @@ def main():
     runner = CommercialBenchmarkRunner(mode=mode, force=args.force)
 
     # 2. Select Model
-    if mode == 'golden_standard':
+    if mode == "golden_standard":
         result = runner.select_golden_standard_model()
     else:
         result = runner.select_test_model()
@@ -399,9 +498,7 @@ def main():
 
     # 3. Select Benchmark (or Auto)
     if args.auto:
-        print(
-            "\n🚀 Starte automatischen Golden Standard Run für alle Module..."
-        )
+        print("\n🚀 Starte automatischen Golden Standard Run für alle Module...")
         for _, cat_info in runner.benchmark_categories.items():
             results = runner.run_benchmark(provider, model_id, cat_info)
             runner.save_results(results)
@@ -422,5 +519,5 @@ def main():
         sys.exit(1)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

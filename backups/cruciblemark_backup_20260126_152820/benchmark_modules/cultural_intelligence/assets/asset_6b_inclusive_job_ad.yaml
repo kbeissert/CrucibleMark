@@ -1,0 +1,27 @@
+metadata:
+  id: "cultural_intel_002"
+  name: "Inclusive Job Ad"
+  version: "1.0"
+  description: "Tests ability to fix specific toxic and gendered terms (10-point check)"
+  tier: 3
+  tags: 
+    - "inclusivity"
+    - "hr"
+    - "german"
+    - "rewriting"
+
+prompt: |
+  Rewrite this toxic job ad snippet to be inclusive and professional in German.
+  Task: Remove toxic terms and correct gender bias.
+  IMPORTANT: Output ONLY the rewritten German text. Do NOT repeat the original text or explain your changes.
+  
+  Original Text:
+  "We need a Ninja with Manpower! If you are a Craftsman who wants to kill the competition and dominate the market, join us. He must be a Work-hard-play-hard type. Don't be a guy who complains. We need manly courage."
+
+scoring:
+  criteria:
+    weight: 100
+    description: "10-Point Check: 5 Toxic terms removed, 5 Gender terms fixed"
+
+expected_output: |
+  "Wir suchen eine engagierte Kraft (Staff). Wenn Sie ein Entwickler (Craftsman) sind, der den Markt anführen (dominate) will... Wir suchen Mut (manly courage)."

@@ -6,21 +6,21 @@ Verwendet deterministische Settings für reproduzierbare Ergebnisse.
 
 # Benchmark-Options für Coding & Logik (temperature=0.1)
 CODING_BENCHMARK_OPTIONS = {
-    'temperature': 0.1,      # Deterministisch für Code
-    'num_predict': 8192,     # Fixierte Max-Tokens für Konsistenz
-    'top_k': 10,             # Reduzierte Sampling-Varianz
-    'repeat_penalty': 1.0,   # Keine Wiederholungs-Penalty
-    'seed': 42               # Reproduzierbarer Seed
+    "temperature": 0.1,  # Deterministisch für Code
+    "num_predict": 8192,  # Fixierte Max-Tokens für Konsistenz
+    "top_k": 10,  # Reduzierte Sampling-Varianz
+    "repeat_penalty": 1.0,  # Keine Wiederholungs-Penalty
+    "seed": 42,  # Reproduzierbarer Seed
 }
 
 # Benchmark-Options für UX Writing & Kreatives (temperature=0.3)
 # Etwas mehr Spielraum als Coding, aber immer noch stabil genug für Vergleiche
 CREATIVE_BENCHMARK_OPTIONS = {
-    'temperature': 0.3,      # Leichte Varianz erlaubt
-    'num_predict': 8192,
-    'top_k': 20,             # Etwas mehr Auswahl bei Tokens
-    'repeat_penalty': 1.1,   # Leichte Penalty gegen Loops (wichtig für UX!)
-    'seed': 42
+    "temperature": 0.3,  # Leichte Varianz erlaubt
+    "num_predict": 8192,
+    "top_k": 20,  # Etwas mehr Auswahl bei Tokens
+    "repeat_penalty": 1.1,  # Leichte Penalty gegen Loops (wichtig für UX!)
+    "seed": 42,
 }
 
 # Legacy Alias für Rückwärtskompatibilität
@@ -28,11 +28,11 @@ BENCHMARK_OPTIONS = CODING_BENCHMARK_OPTIONS
 
 # Kreative Options für Content-Generierung (NICHT für Benchmarks!)
 CREATIVE_OPTIONS = {
-    'temperature': 0.7,
-    'num_predict': 4000,
-    'top_k': 40,
-    'top_p': 0.9,
-    'repeat_penalty': 1.1
+    "temperature": 0.7,
+    "num_predict": 4000,
+    "top_k": 40,
+    "top_p": 0.9,
+    "repeat_penalty": 1.1,
 }
 
 # Erklärung der Parameter

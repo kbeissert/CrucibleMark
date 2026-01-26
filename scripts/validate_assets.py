@@ -18,46 +18,50 @@ class AssetValidator:
 
     def validate_path(self, path: Path) -> dict[str, Any]:
         """Validiert Datei oder Verzeichnis."""
-        results = {'valid': 0, 'invalid': 0, 'details': []}
+        results = {"valid": 0, "invalid": 0, "details": []}
 
         if path.is_file():
             is_valid, error = self.validate_file(path)
-            results['details'].append({
-                'path': str(path),
-                'status': 'valid' if is_valid else 'invalid',
-                'error': error
-            })
+            results["details"].append(
+                {
+                    "path": str(path),
+                    "status": "valid" if is_valid else "invalid",
+                    "error": error,
+                }
+            )
             if is_valid:
-                results['valid'] += 1
+                results["valid"] += 1
             else:
-                results['invalid'] += 1
+                results["invalid"] += 1
         elif path.is_dir():
             # Skip political_compass as it uses a custom schema v2.0
-            if 'political_compass' in path.parts:
+            if "political_compass" in path.parts:
                 return results
 
-            for file_path in path.rglob('*.yaml'):
+            for file_path in path.rglob("*.yaml"):
                 # Ignore files in ignored directories (starting with . or _)
-                if any(part.startswith(('.', '_')) for part in file_path.parts):
+                if any(part.startswith((".", "_")) for part in file_path.parts):
                     continue
 
                 is_valid, error = self.validate_file(file_path)
-                results['details'].append({
-                    'path': str(file_path),
-                    'status': 'valid' if is_valid else 'invalid',
-                    'error': error
-                })
+                results["details"].append(
+                    {
+                        "path": str(file_path),
+                        "status": "valid" if is_valid else "invalid",
+                        "error": error,
+                    }
+                )
                 if is_valid:
-                    results['valid'] += 1
+                    results["valid"] += 1
                 else:
-                    results['invalid'] += 1
+                    results["invalid"] += 1
 
         return results
 
     def validate_file(self, file_path: Path) -> Tuple[bool, str]:
         """Validiert eine einzelne Asset-Datei."""
         try:
-            with open(file_path, encoding='utf-8') as f:
+            with open(file_path, encoding="utf-8") as f:
                 data = yaml.safe_load(f)
 
             if not data:
@@ -77,25 +81,25 @@ class AssetValidator:
         errors = []
 
         # Check metadata
-        if 'metadata' not in data:
+        if "metadata" not in data:
             errors.append("Fehlendes Feld: metadata")
         else:
-            meta = data['metadata']
+            meta = data["metadata"]
             if not isinstance(meta, dict):
                 errors.append("metadata muss Dictionary sein")
             else:
-                if 'name' not in meta:
+                if "name" not in meta:
                     errors.append("Fehlendes Feld: metadata.name")
-                if 'version' not in meta:
+                if "version" not in meta:
                     errors.append("Fehlendes Feld: metadata.version")
 
         # Check prompt(s)
-        if 'prompt' not in data and 'prompts' not in data:
+        if "prompt" not in data and "prompts" not in data:
             errors.append("Fehlendes Feld: prompt oder prompts")
 
         # Check scoring
-        if 'scoring' in data:
-            errors.extend(self._validate_scoring(data['scoring']))
+        if "scoring" in data:
+            errors.extend(self._validate_scoring(data["scoring"]))
         else:
             errors.append("Fehlendes Feld: scoring")
 
@@ -108,21 +112,21 @@ class AssetValidator:
         total_weight = 0
 
         for category_name, category_data in scoring.items():
-            if category_name == 'total_points':
+            if category_name == "total_points":
                 continue
 
             if not isinstance(category_data, dict):
                 errors.append(f"scoring.{category_name} muss Dictionary sein")
                 continue
 
-            if 'weight' in category_data:
-                weight = category_data['weight']
+            if "weight" in category_data:
+                weight = category_data["weight"]
                 if not isinstance(weight, (int, float)):
                     errors.append(f"scoring.{category_name}.weight muss Zahl sein")
                 else:
                     total_weight += weight
 
-        if total_weight != scoring['total_points'] and total_weight > 0:
+        if total_weight != scoring["total_points"] and total_weight > 0:
             errors.append(
                 f"scoring weights ({total_weight}) müssen "
                 f"total_points ({scoring['total_points']}) entsprechen"
@@ -141,17 +145,17 @@ class AssetValidator:
                 errors.append(f"scoring.{category_name} muss Dictionary sein")
                 continue
 
-            if 'weight' not in category_data:
+            if "weight" not in category_data:
                 errors.append(f"scoring.{category_name}.weight fehlt")
             else:
-                weight = category_data['weight']
+                weight = category_data["weight"]
                 if not isinstance(weight, (int, float)):
                     errors.append(f"scoring.{category_name}.weight muss Zahl sein")
                 else:
                     total_weight += weight
 
-            if 'criteria' in category_data:
-                if not isinstance(category_data['criteria'], list):
+            if "criteria" in category_data:
+                if not isinstance(category_data["criteria"], list):
                     errors.append(f"scoring.{category_name}.criteria muss Liste sein")
 
         if total_weight != TOTAL_SCORING_WEIGHT:
@@ -171,7 +175,7 @@ class AssetValidator:
             return ["scoring muss Dictionary sein"]
 
         # Check if new format (v2.0) with total_points as integer
-        if 'total_points' in scoring and isinstance(scoring['total_points'], int):
+        if "total_points" in scoring and isinstance(scoring["total_points"], int):
             return AssetValidator._validate_v2_scoring(scoring)
 
         return AssetValidator._validate_legacy_scoring(scoring)
@@ -183,18 +187,18 @@ class AssetValidator:
             print("❌ benchmark_config.yaml nicht gefunden.")
             sys.exit(1)
 
-        with open(config_path, encoding='utf-8') as f:
+        with open(config_path, encoding="utf-8") as f:
             config = yaml.safe_load(f)
 
-        aggregated_results: Dict[str, Any] = {'valid': 0, 'invalid': 0, 'details': []}
+        aggregated_results: Dict[str, Any] = {"valid": 0, "invalid": 0, "details": []}
 
         print(f"Lese Konfiguration: {config_path}")
 
-        for module_key, module_data in config.get('modules', {}).items():
-            if not module_data.get('enabled', False):
+        for module_key, module_data in config.get("modules", {}).items():
+            if not module_data.get("enabled", False):
                 continue
 
-            module_path = Path(module_data['path']) / 'assets'
+            module_path = Path(module_data["path"]) / "assets"
             print(f"\nPrüfe Modul: {module_data['name']} ({module_key})")
 
             if not module_path.exists():
@@ -202,9 +206,9 @@ class AssetValidator:
                 continue
 
             module_results = self.validate_path(module_path)
-            aggregated_results['valid'] += module_results['valid']
-            aggregated_results['invalid'] += module_results['invalid']
-            aggregated_results['details'].extend(module_results['details'])
+            aggregated_results["valid"] += module_results["valid"]
+            aggregated_results["invalid"] += module_results["invalid"]
+            aggregated_results["details"].extend(module_results["details"])
 
         return aggregated_results
 
@@ -218,17 +222,17 @@ def _print_report(results: Dict[str, Any]) -> None:
     print(f"✓ Valid: {results['valid']}")
     print(f"✗ Invalid: {results['invalid']}")
 
-    if results['invalid'] > 0:
+    if results["invalid"] > 0:
         print("\nFehlerhafte Assets:")
-        for detail in results['details']:
-            if detail['status'] == 'invalid':
+        for detail in results["details"]:
+            if detail["status"] == "invalid":
                 print(f"✗ {detail['path']}")
                 print(f"  - {detail['error']}")
 
-    if results['valid'] > 0:
+    if results["valid"] > 0:
         print("\nValide Assets:")
-        for detail in results['details']:
-            if detail['status'] == 'valid':
+        for detail in results["details"]:
+            if detail["status"] == "valid":
                 print(f"✓ {detail['path']}")
 
 
@@ -254,9 +258,9 @@ def main():
 
     _print_report(results)
 
-    if results['invalid'] > 0:
+    if results["invalid"] > 0:
         sys.exit(1)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()
