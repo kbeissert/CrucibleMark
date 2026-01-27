@@ -38,7 +38,25 @@ touch __init__.py test.py config.yaml README.md
 touch core/__init__.py core/models.py
 ```
 
-### 2. Test-Klasse implementieren (`test.py`)
+### 2. Modul-Registrierung (Wichtig!)
+
+Früher mussten Module hardcodiert in den Python-Skripten importiert werden. Das ist nicht mehr nötig.
+Das Framework lädt Module nun **dynamisch** basierend auf der Konfiguration.
+
+1.  Öffne die Datei `benchmark_config.yaml` im Hauptverzeichnis.
+2.  Füge dein neues Modul unter `modules` hinzu:
+
+```yaml
+modules:
+  # ... andere Module ...
+  your_module:
+    enabled: true
+    weight: 1.0  # Optional: Gewichtung für den Gesamt-Score
+```
+
+Das Framework sucht nun automatisch im Ordner `benchmark_modules/your_module` nach der `test.py` und lädt die Klasse `YourModuleTest` (CamelCase von "your_module" + "Test").
+
+### 3. Test-Klasse implementieren (`test.py`)
 
 Deine Test-Klasse muss von `BaseTest` erben und die `execute`-Methode implementieren. Zusätzlich solltest du eine `score_response`-Methode für die Bewertung hinzufügen.
 
@@ -143,7 +161,7 @@ class YourModuleTest(BaseTest):
         return 0
 ```
 
-### 3. Asset-Struktur (Tiered Difficulty)
+### 4. Asset-Struktur (Tiered Difficulty)
 
 Wir nutzen ein **Tiered Difficulty System**. Dein Asset sollte so aussehen:
 
@@ -224,7 +242,7 @@ test_data:
 - `score_response(response)` - Bewertet Antwort, gibt Scores zurück
 - `compare_to_golden_standard(response, golden_path)` - Optional, für Similarity (geerbt von BaseTest)
 
-### 3. Modul-Config erstellen (`config.yaml`)
+### 5. Modul-Config erstellen (`config.yaml`)
 
 ```yaml
 # Metadaten
@@ -278,7 +296,7 @@ tags:
   - your_tag2
 ```
 
-### 4. Assets erstellen (`assets/*.yaml`)
+### 6. Assets erstellen (`assets/*.yaml`)
 
 Jedes Asset ist eine YAML-Datei mit folgendem Format:
 
@@ -334,7 +352,7 @@ golden_standard:
       model: "mistral-large-latest"
 ```
 
-### 5. README erstellen (`README.md`)
+### 7. README erstellen (`README.md`)
 
 ```markdown
 # Your Module Name
@@ -373,28 +391,10 @@ Wie werden Ergebnisse interpretiert?
 Wie können weitere Assets hinzugefügt werden?
 ```
 
-### 6. Modul in Config registrieren
 
-Bearbeite `benchmark_config.yaml` im Root:
 
-```yaml
-modules:
-  # Bestehende Module...
-  
-  your_module:
-    name: "Your Module Name"
-    description: "Kurze Beschreibung"
-    path: "test_modules/your_module"
-    test_class: "YourModuleTest"
-    version: "0.1.0-alpha"
-    enabled: true  # true = verfügbar im Benchmark
-    assets_count: 3
-    tags:
-      - your_tag1
-      - your_tag2
-```
 
-### 7. Testen
+### 8. Testen
 
 ```bash
 # Modul-Struktur prüfen

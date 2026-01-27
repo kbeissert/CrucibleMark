@@ -112,11 +112,11 @@ prompt: |
   ```
 
   ### Anforderungen an die Antwort:
-  1. Liste alle gefundenen Issues auf.
-  2. Gib für jedes Issue an:
+  1. Erstelle eine **Markdown-Tabelle** mit allen gefundenen Issues (Spalten: Kategorie, Issue, Schweregrad, Lösung/Code-Snippet).
+  2. Gib für jedes Issue folgende Details in der Tabelle an:
      - **Kategorie** (z.B. LCP, CLS, Blocking)
      - **Schweregrad**
-     - **Lösung** (Code-Snippet)
+     - **Lösung** (Code-Snippet direkt in der Zelle oder als Referenz)
 
 # ============================================================
 # Test-Daten (Issues zum Erkennen)
@@ -193,49 +193,49 @@ scoring:
     labeled_issues:
       - issue: "Blocking CSS"
         points: 4
-        keywords: ["css", "render blocking", "bootstrap", "media query", "preload"]
+        keywords: ["css", "render blocking", "bootstrap", "media query", "preload", "blockiert", "rendering", "stylesheet"]
       
       - issue: "Unoptimiertes Hero-Image"
         points: 3
-        keywords: ["5mb", "komprimieren", "webp", "avif", "image size", "lcp"]
+        keywords: ["5mb", "komprimieren", "webp", "avif", "image size", "lcp", "bild", "größe", "optimierung"]
 
       - issue: "Blocking JS (Analytics)"
         points: 3
-        keywords: ["defer", "async", "head", "script", "blocking"]
+        keywords: ["defer", "async", "head", "script", "blocking", "blockiert", "js"]
 
     # 2. Standard Issues (15 Punkte)
     standard_issues:
       - issue: "Missing Lazy Loading"
         points: 5
-        keywords: ["lazy", "loading", "below the fold", "eager"]
+        keywords: ["lazy", "loading", "below the fold", "eager", "bilder", "laden", "später"]
         
       - issue: "Synchronous XHR"
         points: 10
-        keywords: ["synchron", "xhr", "xmlhttprequest", "blockiert", "main thread", "deprecated"]
+        keywords: ["synchron", "xhr", "xmlhttprequest", "blockiert", "main thread", "deprecated", "veraltet"]
 
     # 3. Advanced Issues (15 Punkte)
     advanced_issues:
       - issue: "N+1 Fetch / Waterfall"
         points: 5
-        keywords: ["n+1", "waterfall", "batch", "einzelne requests", "promise.all"]
+        keywords: ["n+1", "waterfall", "batch", "einzelne requests", "promise.all", "schleife", "fetch"]
         
       - issue: "Layout Thrashing"
         points: 5
-        keywords: ["reflow", "repaint", "layout thrashing", "dom manipulation", "fragment", "documentfragment"]
+        keywords: ["reflow", "repaint", "layout thrashing", "dom manipulation", "fragment", "documentfragment", "dom", "manipulation", "render"]
         
       - issue: "CLS (Ad Banner)"
         points: 5
-        keywords: ["cls", "layout shift", "width", "height", "dimensionen", "aspect ratio"]
+        keywords: ["cls", "layout shift", "width", "height", "dimensionen", "aspect ratio", "verschiebung", "layout"]
 
     # 4. Expert Issues (20 Punkte)
     expert_issues:
       - issue: "Unused Library (jQuery)"
         points: 10
-        keywords: ["jquery", "unused", "bloat", "remove", "vanilla js", "unnötig"]
+        keywords: ["jquery", "unused", "bloat", "remove", "vanilla js", "unnötig", "nicht genutzt", "bibliothek"]
 
       - issue: "Preload Scanner Bypass"
         points: 10
-        keywords: ["preload scanner", "footer style", "late discovery", "head", "critical request chain"]
+        keywords: ["preload scanner", "footer style", "late discovery", "head", "critical request chain", "footer", "spät"]
 
   solution_quality:
     weight: 30
@@ -271,4 +271,4 @@ scoring:
         name: "Strukturierte Liste/Tabelle"
         points: 10
         check_method: "markdown_table_validation"
-        min_rows: 5
+        min_rows: 8

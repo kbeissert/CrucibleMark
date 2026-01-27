@@ -348,6 +348,9 @@ class CodeQualityTest(BaseTest):
 
         # 2. Strict Keyword Matching
         matches = sum(1 for kw in keywords if kw.lower() in response_lower)
+        
+        # HARDENED: Restore Require Ratio logic (Audit recommendation)
+        # Prevents "lucky hits" on single weak synonyms.
         req_ratio = 0.4
         req_matches = max(1, int(len(keywords) * req_ratio))
 
@@ -467,7 +470,11 @@ class CodeQualityTest(BaseTest):
         """Validates Markdown Table structure."""
         points = criterion.get("points", 0)
         name = criterion.get("name", "Tabelle")
-        has_table = "|" in response and "-|" in response
+        
+        # FIX: More robust table detection (allow spaces in separator line)
+        # Matches |---| or | --- | or |:---| etc.
+        table_separator_pattern = r"\|[\t ]*[-:]+[\t ]*\|"
+        has_table = "|" in response and bool(re.search(table_separator_pattern, response))
 
         rows = [
             line

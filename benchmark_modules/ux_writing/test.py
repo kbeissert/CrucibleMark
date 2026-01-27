@@ -130,7 +130,20 @@ class UXWritingTest(BaseTest):
                 config.error_detection.expert_issues
             )
             
+            # Determine Ratio Baseline based on Asset ID (User Tuning)
+            asset_id = self.asset.get("metadata", {}).get("id", "")
+            ASSET_RATIOS = {
+                "ux_writing_004": 1.0,  # A11y (Harder)
+                "ux_writing_003": 0.5,  # Onboarding (Softer)
+                "ux_writing_005": 0.4,  # Microcopy (Reset to Original)
+            }
+            default_ratio = ASSET_RATIOS.get(asset_id, 0.6)
+
             for issue in all_issues:
+                 # Apply dynamic ratio if not explicitly set in YAML
+                 if issue.required_ratio is None:
+                     issue.required_ratio = default_ratio
+
                  # points, explanation, matched_boolean
                  points, msg, _ = IssueEvaluator.evaluate(response.lower(), issue)
                  ed_score += points

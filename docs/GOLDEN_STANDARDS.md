@@ -335,3 +335,20 @@ if not is_valid:
 - Multi-Golden-Standard (z.B. verschiedene Standards für verschiedene Module)
 - Historische Golden Standard Versionen
 - Automatisches Update-Tracking
+
+## Scoring Methodik & Performance Ratio
+
+### Performance Ratio (Normalisierung)
+Um faire Vergleiche zwischen Modellen mit unterschiedlicher Anzahl absolvierter Tests (Runs) zu ermöglichen, nutzt das Leaderboard die **Performance Ratio**.
+
+*   **Formel**: `((Modell Score - Baseline) / (Referenz Score - Baseline)) * 100` (Baseline = 0)
+*   **Interpretation**:
+    *   **100%**: Leistung identisch mit kommerziellem Referenz-Modell.
+    *   **>100%**: Übertrifft die Referenz in den getesteten Disziplinen.
+    *   **<100%**: Unterhalb der Referenz.
+*   **Vorteil**: Verhindert, dass spezialisierte Modelle bestraft werden, nur weil sie (noch) nicht alle Module absolviert haben. Ein Modell mit 5/29 Tests kann eine Ratio von 99% haben, während ein anderes Modell mit 29/29 Tests vielleicht nur 96% im Durchschnitt erreicht.
+
+### Gap Calculation & Fairness
+*   **Percentage Gap**: Abweichungen werden als prozentuale Differenz berechnet (`(Score - Ref) / Ref`), nicht als absolute Punktwerte.
+*   **Hybrid Scoring**: Eine Kombination aus striktem Keyword-Matching und semantischem Fallback (Threshold 0.35) stellt sicher, dass auch kleinere Modelle nicht unfair abgestraft werden, wenn sie richtige Konzepte mit synonymen Begriffen ausdrücken.
+

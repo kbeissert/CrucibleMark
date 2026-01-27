@@ -100,9 +100,10 @@ prompt: |
   ```
 
   ### Anforderungen an die Antwort:
-  1. Liste alle gefundenen Design-Fehler auf.
-  2. Gib für jeden Fehler an:
+  1. Erstelle eine **Markdown-Tabelle** mit allen gefundenen Design-Fehlern.
+  2. Gib für jeden Fehler folgende Spalten an:
      - **Kategorie** (z.B. REST Violation, Error Handling)
+     - **Fehlerbeschreibung**
      - **Warum** es problematisch ist
      - **Verbesserungsvorschlag** (Code-Snippet oder Konzept)
 
@@ -181,49 +182,49 @@ scoring:
     labeled_issues:
       - issue: "Wrong Verb (GET/POST)"
         points: 5
-        keywords: ["verb", "method", "get", "post", "http method"]
+        keywords: ["wrong verb", "falsche methode", "get instead of post", "post request", "http verb", "richtiges verb", "get vs post"]
       
       - issue: "URL Naming"
         points: 5
-        keywords: ["resource", "noun", "verb", "url structure", "naming convention"]
+        keywords: ["resource based", "url structure", "naming convention", "restful url", "nomen statt verben", "ressourcen-orientiert", "keine verben in url"]
 
     # 2. Standard Issues (15 Punkte)
     standard_issues:
       - issue: "Status Code 200 Error"
         points: 5
-        keywords: ["status code", "200 ok", "400", "4xx", "http status"]
+        keywords: ["status code", "200 ok", "400", "4xx", "http status", "fehlercode", "return code"]
         
       - issue: "GET for Delete"
         points: 5
-        keywords: ["delete", "get request", "unsafe", "method"]
+        keywords: ["delete via get", "unsafe delete", "delete method", "method for deleting", "löschen via get"]
         
       - issue: "Inconsistent Response"
         points: 5
-        keywords: ["envelope", "wrapper", "consistent", "json structure"]
+        keywords: ["envelope", "wrapper", "consistent response", "structure mismatch", "inkonsistent", "format mismatch", "rückgabestruktur"]
 
     # 3. Advanced Issues (15 Punkte)
     advanced_issues:
       - issue: "Missing Versioning"
         points: 5
-        keywords: ["versioning", "v1", "api version", "breaking change"]
+        keywords: ["versioning", "api version", "breaking change", "versionierung", "prefix /v1", "url versioning"]
         
       - issue: "No Pagination"
         points: 5
-        keywords: ["pagination", "limit", "offset", "performance", "large dataset"]
+        keywords: ["pagination", "limit/offset", "large dataset", "paginierung", "paging support", "große datenmengen"]
         
       - issue: "Query vs Path Params"
         points: 5
-        keywords: ["path param", "query param", "restful", "identifier"]
+        keywords: ["path param", "query param", "restful identifier", "identifier in path", "pfadparameter", "id im pfad"]
 
     # 4. Expert Issues (20 Punkte)
     expert_issues:
       - issue: "Idempotency Violation"
         points: 10
-        keywords: ["idempotency", "idempotent", "side effect", "retry", "email", "notification"]
+        keywords: ["idempotency", "idempotent", "side effect", "retry", "email", "notification", "idempotenz", "wiederholung", "nebenwirkung"]
         
       - issue: "Security Headers"
         points: 10
-        keywords: ["content-type", "header", "security", "cors", "accept"]
+        keywords: ["content-type", "header", "security", "cors", "accept", "sicherheit", "mime"]
 
   solution_quality:
     weight: 30
@@ -233,22 +234,21 @@ scoring:
       - id: "SQ-001"
         name: "Correct Status Codes"
         points: 10
-        check_method: "code_validation"
-        required_elements: ["400", "201", "204"]
-        min_code_blocks: 1
+        check_method: "keyword_presence"
+        keywords: ["400", "201", "204", "status code", "http status", "4xx", "2xx"]
         
       - id: "SQ-002"
         name: "Resource Oriented URLs"
         points: 10
         check_method: "keyword_presence"
-        keywords: ["/users", "/users/<id>", "methods=['GET']", "methods=['DELETE']"]
-        min_keywords: 2
+        keywords: ["/users", "/users/<id>", "methods=['GET']", "methods=['DELETE']", "resource", "rest-konform"]
+        min_keywords: 1
         
       - id: "SQ-003"
         name: "Idempotency Fix"
         points: 10
         check_method: "keyword_presence"
-        keywords: ["idempotency key", "check if sent", "state check", "put vs patch"]
+        keywords: ["idempotency key", "check if sent", "state check", "put vs patch", "idempotent", "wiederholung", "seiteneffekte"]
         min_keywords: 1
 
   formatting:
@@ -259,4 +259,4 @@ scoring:
         name: "Strukturierte Liste"
         points: 10
         check_method: "markdown_table_validation"
-        min_rows: 5
+        min_rows: 6

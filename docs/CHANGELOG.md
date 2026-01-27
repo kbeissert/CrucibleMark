@@ -5,6 +5,20 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.9.4-rc] - 2026-01-27
+
+### Security & Hardening (Critical Update)
+- **Scoring-Härtung:** Umfassende Überarbeitung der Code-Quality-Bewertung, um "Optimierungs-Bias" und "Lucky Hits" zu eliminieren.
+  - **Keyword-Matching:** Schwellenwert auf **40%** wiederhergestellt (statt 1 Match). Verhindert, dass unscharfe Synonyme zu vollen Punkten führen.
+  - **Semantic Similarity:** Threshold von `0.65` auf **0.78** erhöht, um semantische Matches strikter zu validieren.
+  - **Keyword-Bereinigung:** Reduktion von Keyword-Listen (z.B. "God Object" von 11 auf 5 primäre Fachbegriffe), um Spamming zu verhindern.
+  - **Asset-Specific Validation:** Strengere Anforderungen an Tabellen-Struktur für WCAG (min 10 Zeilen) und Security Audits (min 8 Zeilen).
+
+### Features
+- **Local Model Optimization:** Spezielle Anpassungen für Modelle wie `dolphin-llama3`, die deutsche Antworten mit englischen Fachbegriffen mischen.
+  - Assets unterstützen nun hybride (DE/EN) Keyword-Erkennung ohne Aufweichung der Kriterien.
+- **Framework:** `run_benchmark.py` unterstützt vollständig entkoppelte Modul-Architektur via `benchmark_config.yaml`.
+
 ## [0.5.0-beta] - 2026-01-17
 
 ### Added

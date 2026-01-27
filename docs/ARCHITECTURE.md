@@ -26,10 +26,10 @@ Abstrahiert die Kommunikation mit verschiedenen LLM-Backends:
 
 ### 4. Scoring Engine
 Bewertet die Antworten der Modelle.
-*   **Hybrid-Ansatz**: Kombiniert Regex/Keyword-Matching mit semantischer Ähnlichkeit (Embedding-Vergleich).
-*   **Semantic Similarity**: Implementiert in `utils/similarity.py` (nutzt `sentence-transformers`).
-    *   *Fallback*: Falls `sentence-transformers` nicht installiert ist (z.B. Dependency-Konflikte), fällt das System automatisch auf reines Keyword-Matching zurück.
-*   **Golden Standard**: Vergleicht lokale Antworten mit Referenz-Antworten von High-End-Modellen.
+*   **Standard-Module**: Hybrid-Ansatz. Kombiniert Regex/Keyword-Matching mit semantischer Ähnlichkeit (Embedding-Vergleich).
+    *   **Semantic Similarity**: Implementiert in `utils/similarity.py` (nutzt `sentence-transformers`).
+    *   **Golden Standard**: Vergleich mit High-End-Referenzen.
+*   **Political Compass**: Verwendet ein spezialisiertes Scoring (v3.0). Statt "Richtig/Falsch" wird die ideologische Position (Economic/Social Axis) ermittelt und ein Archetyp (z.B. "Links-Liberal") zugewiesen. Die Ergebnisse werden gemittelt aus 3 Durchläufen pro Modell.
 
 ---
 
