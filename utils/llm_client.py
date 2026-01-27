@@ -4,6 +4,7 @@ Unified Interface für Ollama und Anthropic Claude API
 """
 
 import logging
+import re
 from pathlib import Path
 from typing import Any, Callable, Dict, List, Optional
 import yaml  # pylint: disable=import-error
@@ -171,6 +172,14 @@ class LLMClient:
         # Only log to file/logger, do not print to stdout which might clutter interactive CLI
         if cost > 0:
             logger.debug("Cost for request: $%.6f", cost)
+
+        # 4. Sanitation: Remove Reasoning Artifacts (DeepSeek <think>)
+        # Centralized cleanup to prevent false positives in ALL modules
+        # This regex removes <think>...</think> blocks if present
+        if "<think>" in response_text:
+            response_text = re.sub(r'<think>.*?</think>', '', response_text, flags=re.DOTALL).strip()
+            # Also cleanup potential empty lines left behind
+            response_text = re.sub(r'\n{3,}', '\n\n', response_text)
 
         return response_text
 

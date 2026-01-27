@@ -4,6 +4,7 @@
 import sys
 import logging
 import json
+import csv
 import argparse
 import traceback
 from pathlib import Path
@@ -53,7 +54,10 @@ class CommercialBenchmarkRunner(BaseBenchmarkRunner):
                         "name": mod["name"],
                         "description": mod["description"],
                         "path": f"{mod['path']}/assets",
+                        "module_path": mod["path"],
                         "test_class": mod.get("test_class", "CodeQualityTest"),
+                        "execution_mode": mod.get("execution_mode", "standard"),
+                        "min_runs": mod.get("min_runs", 1),
                     }
 
     def get_available_providers(self) -> Dict[str, dict]:
@@ -339,29 +343,45 @@ class CommercialBenchmarkRunner(BaseBenchmarkRunner):
     ) -> List[Dict[str, Any]]:
         """Main benchmark execution loop."""
 
-        # Political Compass Dispatch
-        if benchmark_info.get("name") == "Political Compass":
-            # pylint: disable=import-outside-toplevel
-            from benchmark_modules.political_compass.test import PoliticalCompassTest
+        # Dispatch Batch Mode (e.g. Political Compass) via Config
+        if benchmark_info.get("execution_mode") == "batch":
+            # Dynamic Loading
+            module_path = Path(benchmark_info.get("module_path", ""))
+            test_file = module_path / "test.py"
+            test_class_name = benchmark_info.get("test_class")
+            
+            try:
+                TestClass = load_test_class(test_file, test_class_name)
+            except Exception as e:
+                logger.error("Failed to load batch module %s: %s", benchmark_info['name'], e)
+                return []
+            
+            # TODO: Generic ResultManager for batch modules
+            # For now, we assume Political Compass structure for batch mode
+            # Ideally, the TestClass should handle IO or return a standard object
             from benchmark_modules.political_compass.core.io_manager import ResultManager
             from utils.llm_client import LLMClient
             import json
             
-            print(f"🛠️  Initialisiere Political Compass Test ({provider}:{model})")
-            test = PoliticalCompassTest()
+            print(f"🛠️  Initialisiere Batch-Test: {benchmark_info['name']} ({provider}:{model})")
+            test = TestClass()
             
-            assets_dir = Path("assets")
-            if not (Path("benchmark_modules/political_compass") / assets_dir).exists():
+            # Load assets dynamically from module path
+            assets_dir = module_path / "assets"
+            if not assets_dir.exists():
                 print(f"❌ Assets directory not found: {assets_dir}")
                 return []
                 
-            test.load_questions(str(assets_dir))
+            if hasattr(test, "load_questions"):
+                test.load_questions(str(assets_dir))
             
-            if not test.questions:
+            if hasattr(test, "questions") and not test.questions:
                 print("❌ Keine Fragen geladen!")
                 return []
             
-            test.num_runs = num_runs
+            # Apply runs config
+            min_runs = benchmark_info.get("min_runs", 1)
+            test.num_runs = max(num_runs, min_runs)
             
             client = LLMClient(config=self.validator.config)
 
@@ -372,8 +392,55 @@ class CommercialBenchmarkRunner(BaseBenchmarkRunner):
             report = json.loads(result_wrapper["raw_response"])
             ResultManager.print_summary(report)
             ResultManager.save_json(report, Path("outputs/runs"))
+
+            # Save to shared CSV for Leaderboard
+            pc_csv = Path("benchmark_scores/political_compass_results.csv")
+            pc_csv.parent.mkdir(exist_ok=True, parents=True)
             
-            return []
+            # Read logic for existing file to append/update
+            pc_rows = []
+            if pc_csv.exists():
+                with open(pc_csv, "r", encoding="utf-8") as f:
+                    pc_rows = list(csv.DictReader(f))
+            
+            # Remove old entry for this model if exists
+            pc_rows = [r for r in pc_rows if r.get("model") != model]
+            
+            new_row = {
+                "model": model,
+                "run_id": "AVG",
+                "x_coordinate": report["coordinates"]["x"],
+                "y_coordinate": report["coordinates"]["y"],
+                "x_label": report["archetype"]["x_label"],
+                "y_label": report["archetype"]["y_label"],
+                "timestamp": datetime.now().isoformat()
+            }
+            pc_rows.append(new_row)
+            
+            with open(pc_csv, "w", encoding="utf-8", newline="") as f:
+                writer = csv.DictWriter(f, fieldnames=new_row.keys())
+                writer.writeheader()
+                writer.writerows(pc_rows)
+            
+
+            # Create Standard Result for CSV
+            std_result = {
+                "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                "status": report.get("status", "success"),
+                "provider": provider,
+                "model": model,
+                "asset_id": "political_compass_v3",
+                "asset_name": "Political Compass",
+                "total_score": report["total_score"],
+                "max_score": 100,
+                "percentage": report["total_score"],
+                "execution_time": round(result_wrapper.get("execution_time", 0), 1),
+                "response_length": 0,
+                "tier": report.get("tier", "N/A"),
+                "cost_usd": report.get("statistics", {}).get("total_cost", 0.0),
+                "tokens": report.get("statistics", {}).get("total_tokens", 0)
+            }
+            return [std_result]
 
         # Check Golden Standard Status
         golden_info = self.validator.get_golden_standard_info()

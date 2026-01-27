@@ -58,11 +58,7 @@ testdata:
       severity: critical
       type: labeled
       explanation: "Begriffe wie Trigger, Condition, Action, IF/THEN müssen weg."
-      keywords: ["trigger", "condition", "action", "if", "then", "operator"]
-      inverse_match: true
-
-    # LEVEL 2: Clarity & Structure (Standard)
-    - issue: "Alltagssprache genutzt"
+      keywords: ["trigger", "condition"]
       severity: high
       type: standard
       explanation: "Statt 'Trigger' z.B. 'Auslöser' oder 'Wenn etwas passiert'."
@@ -110,7 +106,7 @@ scoring:
         
       - issue: "Kein Tech-Jargon"
         points: 5
-        keywords: ["trigger", "condition", "action", "if", "then", "operator"]
+        keywords: ["trigger", "condition"]
         inverse_match: true
 
     # 2. Standard Issues (20 Punkte)

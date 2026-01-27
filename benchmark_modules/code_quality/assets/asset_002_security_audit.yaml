@@ -142,12 +142,19 @@ prompt: |
   ```
 
   ### Anforderungen an die Antwort:
-  1. Liste alle gefundenen Vulnerabilities auf.
-  2. Gib für jede Vulnerability an:
-     - **Typ** (z.B. SQL Injection)
-     - **Schweregrad**
-     - **Warum** es unsicher ist
-     - **Fix** (Code-Beispiel)
+  1. Identifiziere ALLE Vulnerabilities.
+  2. Erstelle eine **Markdown-Tabelle** mit den folgenden Spalten:
+     - **Vulnerability**: Name des Problems.
+     - **Typ**: Categoria (Labeled, Standard, Advanced, Expert).
+     - **Schweregrad**: (Critical, High, Medium, Low).
+     - **Warum unsicher**: Kurze Erklärung.
+     - **Fix**: Kurzer Code-Schnipsel oder Konzept.
+
+  **WICHTIG**: Formatiere deine Antwort als korrekte Markdown-Tabelle (mit `|`).
+  Beispiel:
+  | Vulnerability | Typ | Schweregrad | Warum unsicher | Fix |
+  |---|---|---|---|---|
+  | SQL Injection | Labeled | Critical | Direkte Einfügung | Prepared Statements |
 
 # ============================================================
 # Test-Daten (Issues zum Erkennen)
@@ -234,57 +241,57 @@ scoring:
     labeled_issues:
       - issue: "SQL Injection (Login)"
         points: 5
-        keywords: ["sql injection", "login query", "prepared statement"]
+        keywords: ["sql injection", "login query", "prepared statement", "sql-einschleusung", "datenbank query"]
       
       - issue: "Plaintext Passwords"
         points: 5
-        keywords: ["password", "hash", "plaintext", "klartext", "bcrypt"]
+        keywords: ["password hash", "plaintext password", "passwort im klartext", "bcrypt", "unverschlüsseltes passwort"]
 
     # 2. Standard Issues (15 Punkte)
     standard_issues:
       - issue: "XSS (Welcome Message)"
         points: 4
-        keywords: ["xss", "cross-site", "htmlspecialchars", "escape"]
+        keywords: ["xss", "cross-site scripting", "htmlspecialchars", "output escaping", "skriptausführung"]
         
       - issue: "Session Fixation"
         points: 4
-        keywords: ["session_regenerate_id", "fixation", "hijacking"]
+        keywords: ["session_regenerate_id", "session fixation", "session hijacking", "sitzungsübernahme"]
         
       - issue: "Path Traversal"
         points: 4
-        keywords: ["traversal", "directory", "basename", "realpath", "lfi"]
+        keywords: ["path traversal", "directory traversal", "lfi", "local file inclusion", "pfadmanipulation", "unbefugter dateizugriff"]
         
       - issue: "Insecure Cookie"
         points: 3
-        keywords: ["httponly", "secure", "cookie"]
+        keywords: ["httponly flag", "secure flag", "insecure cookie", "cookie sicherheit"]
 
     # 3. Advanced Issues (15 Punkte)
     advanced_issues:
       - issue: "Weak Randomness (Token)"
         points: 4
-        keywords: ["random_bytes", "random_int", "predictable", "vorhersagbar", "entropy", "rand()"]
+        keywords: ["random_bytes", "random_int", "predictable randomness", "entropy", "kryptographisch sicher"]
         
       - issue: "Type Juggling (API Key)"
         points: 4
-        keywords: ["type juggling", "loose comparison", "===", "strict comparison", "identisch", "strcmp"]
+        keywords: ["type juggling", "loose comparison", "strict comparison", "typunsicherer vergleich"]
         
       - issue: "Insecure Admin Check"
         points: 4
-        keywords: ["client-side", "manipulation", "cookie trust", "authorization", "privilege escalation"]
+        keywords: ["client-side trust", "cookie manipulation", "insecure authorization", "privilege escalation"]
         
       - issue: "Information Disclosure"
         points: 3
-        keywords: ["display_errors", "error_reporting", "information disclosure", "debug"]
+        keywords: ["display_errors", "error_reporting", "information leakage", "debug info"]
 
     # 4. Expert Issues (20 Punkte)
     expert_issues:
       - issue: "IDOR (Profile Update)"
         points: 10
-        keywords: ["idor", "insecure direct object reference", "authorization", "session id", "fremde daten", "berechtigung"]
+        keywords: ["idor", "insecure direct object reference", "authorization check", "fremder zugriff"]
         
       - issue: "CSRF (Missing Tokens)"
         points: 10
-        keywords: ["csrf", "cross-site request forgery", "token", "anti-csrf", "nonce"]
+        keywords: ["csrf", "cross-site request forgery", "csrf token", "anti-csrf"]
 
   solution_quality:
     weight: 30
@@ -320,4 +327,4 @@ scoring:
         name: "Strukturierte Liste"
         points: 10
         check_method: "markdown_table_validation"
-        min_rows: 5
+        min_rows: 8

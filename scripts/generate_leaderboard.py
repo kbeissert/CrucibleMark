@@ -193,9 +193,15 @@ def _get_badge(row: pd.Series) -> str:
 def _aggregate_stats(df: pd.DataFrame) -> pd.DataFrame:
     """Aggregiert Basis-Statistiken pro Modell."""
     total_unique_assets = df["asset_id"].nunique()
+    
+    # Check if normalized column exists
+    aggs = {"percentage": "mean", "execution_time": "mean", "asset_id": "count"}
+    if "performance_ratio" in df.columns:
+        aggs["performance_ratio"] = "mean"
+        
     stats = (
         df.groupby(["model", "type"])
-        .agg({"percentage": "mean", "execution_time": "mean", "asset_id": "count"})
+        .agg(aggs)
         .reset_index()
     )
 
@@ -279,6 +285,7 @@ def _format_metrics(
     # Rounding
     for col in [
         "Overall Score",
+        "Performance Ratio",
         "Avg Time (s)",
         "Routine Score",
         "Reasoning Score",
@@ -377,13 +384,17 @@ def _finalize_result_df(
     result = result.rename(
         columns={
             "percentage": "Overall Score",
+            "performance_ratio": "Performance Ratio",
             "execution_time": "Avg Time (s)",
             "type": "Type",
         }
     )
 
     result = _apply_classification(result)
-    result = result.sort_values("Overall Score", ascending=False)
+    
+    # Sort by Performance Ratio if available (fairer ranking), otherwise Overall
+    sort_col = "Performance Ratio" if "Performance Ratio" in result.columns else "Overall Score"
+    result = result.sort_values(sort_col, ascending=False)
 
     result, cat_cols = _format_metrics(result, cat_stats, modules_config)
     result, cat_cols = _merge_political_compass(result, cat_cols)
@@ -391,11 +402,76 @@ def _finalize_result_df(
     return result, cat_cols
 
 
+# ==============================================================================
+# METRIC CALCULATION
+# ==============================================================================
+
+def load_golden_references() -> Dict[str, float]:
+    """Lädt die Referenz-Scores pro Asset aus dem Golden Standard CSV."""
+    refs = {}
+    if not GOLDEN_CSV.exists():
+        return refs
+    
+    try:
+        # Check if file is empty or readable
+        with open(GOLDEN_CSV, "r", encoding="utf-8") as f:
+             first_line = f.readline()
+             if not first_line:
+                 return refs
+
+        df = pd.read_csv(GOLDEN_CSV, on_bad_lines='skip')
+        
+        # Filter for success
+        if "status" in df.columns:
+            df = df[df["status"] == "success"]
+        
+        # Ensure timestamp
+        if "timestamp" in df.columns:
+            df["timestamp"] = pd.to_datetime(df["timestamp"], errors="coerce")
+            df = df.sort_values("timestamp")
+        
+        # Keep latest per asset_id
+        if "asset_id" in df.columns and "percentage" in df.columns:
+            latest = df.drop_duplicates(subset=["asset_id"], keep="last")
+            for _, row in latest.iterrows():
+                if pd.notna(row["percentage"]):
+                    refs[row["asset_id"]] = float(row["percentage"])
+                    
+    except Exception as e:
+        print(f"⚠️ Warnung: Konnte Golden Standards nicht laden: {e}")
+    
+    return refs
+
+
 # pylint: disable=too-many-locals
 def calculate_metrics(df: pd.DataFrame) -> Tuple[pd.DataFrame, List[str]]:
     """Berechnet Scores pro Modell inkl. Meta-Metriken"""
     modules_config = config.get("modules", {})
     df_success = df[df["status"] == "success"].copy()
+
+    # --- NORMALIZATION LOGIC ---
+    refs = load_golden_references()
+    BASELINE = 0  # 0% Baseline (Assumption: No model gets < 0%)
+    
+    def get_performance_ratio(row):
+        asset_id = row.get("asset_id")
+        raw = row.get("percentage")
+        if pd.isna(raw):
+            return 0.0
+            
+        ref = refs.get(asset_id)
+        if ref and ref > BASELINE:
+            # Performance Ratio = ((Raw - Baseline) / (Ref - Baseline)) * 100
+            # 100% = Matches Reference, >100% = Exceeds Reference
+            # Using max(0, ...) to ensure no negative scores if raw < baseline
+            numerator = max(0, raw - BASELINE)
+            denominator = ref - BASELINE
+            return (numerator / denominator) * 100.0
+            
+        return raw # Fallback to absolute if no ref found
+
+    df_success["performance_ratio"] = df_success.apply(get_performance_ratio, axis=1)
+    # ---------------------------
 
     def get_category_name(asset_id: str) -> str:
         for mod_key, mod_data in modules_config.items():
@@ -407,6 +483,13 @@ def calculate_metrics(df: pd.DataFrame) -> Tuple[pd.DataFrame, List[str]]:
 
     df_success["category"] = df_success["asset_id"].apply(get_category_name)
     df_for_score = df_success[df_success["category"] != "Political Compass"]
+    
+    # DEBUG: Ensure performance_ratio is in df_for_score
+    if "performance_ratio" in df_success.columns:
+        # Explicitly copy it over if it got lost in filtering (it shouldn't, but safe)
+        df_for_score = df_for_score.copy()
+        df_for_score["performance_ratio"] = df_success.loc[df_for_score.index, "performance_ratio"]
+        
     result = _aggregate_stats(df_for_score)
 
     all_models = df_success[["model", "type"]].drop_duplicates()
@@ -419,6 +502,16 @@ def calculate_metrics(df: pd.DataFrame) -> Tuple[pd.DataFrame, List[str]]:
         .reset_index()
     )
     result = pd.merge(result, cat_stats, on="model", how="left")
+    
+    # Merge normalized stats if available
+    if "performance_ratio" in df_success.columns:
+        norm_stats = (
+            df_success.groupby(["model"])["performance_ratio"]
+            .mean()
+            .reset_index()
+        )
+        if "performance_ratio" not in result.columns:
+            result = pd.merge(result, norm_stats, on="model", how="left")
 
     for mod_key, mod_data in modules_config.items():
         name = mod_data.get("name", mod_key)
@@ -546,6 +639,7 @@ def main(print_table: bool = True) -> None:
         "Model Name",
         "Generation",
         "Total Score",
+        "Performance Ratio",
         "Avg Time (s)",
         "Badge",
         "Routine Score",

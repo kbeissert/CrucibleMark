@@ -1,7 +1,7 @@
 # CrucibleMark
 
 [![Python](https://img.shields.io/badge/Python-3.10+-blue.svg)](https://python.org)
-[![Version](https://img.shields.io/badge/Version-0.9.0--beta-blue.svg)](CHANGELOG.md)
+[![Version](https://img.shields.io/badge/Version-0.9.3--beta-blue.svg)](CHANGELOG.md)
 [![Ollama](https://img.shields.io/badge/Ollama-Compatible-green.svg)](https://ollama.ai)
 [![License](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
@@ -35,7 +35,10 @@ Detaillierte Architektur-Informationen und den aktuellen Projektstatus findest d
 
 ## 📦 Benchmark Module
 
-Jedes Modul deckt spezifische Fähigkeiten ab und verfügt über eine eigene, detaillierte Dokumentation.
+Jedes Modul deckt spezifische Fähigkeiten ab.
+**NEU:** Welche Module aktiv sind, wird zentral in der `benchmark_config.yaml` gesteuert. Du kannst Module an- oder abschalten, ohne den Code zu ändern.
+
+Die Standard-Module:
 
 | ID | Modul Name | Beschreibung | Details |
 | :--- | :--- | :--- | :--- |
@@ -44,7 +47,8 @@ Jedes Modul deckt spezifische Fähigkeiten ab und verfügt über eine eigene, de
 | `documentation_quality` | **Documentation** | Technische Dokumentation & Struktur | [README](benchmark_modules/documentation_quality/README.md) |
 | `content_transformation` | **Content Adaption** | Format-Transformation & Stil-Anpassung | [README](benchmark_modules/content_transformation/README.md) |
 | `reasoning` | **Reasoning Logic** | Logik, Deduktion & Deadlock-Erkennung | [README](benchmark_modules/reasoning_logic/README.md) |
-| `political_compass` | **Political Compass** | Ideological Bias & Extremism Check | [README](benchmark_modules/political_compass/README.md) |
+| `political_compass` | **Political Compass** | Ideological Bias & Extremism Check (v3.0 Logic) | [README](benchmark_modules/political_compass/README.md) |
+| `cultural_intelligence` | **Cultural Intelligence** | Kulturelles Verständnis & Sprachnuancen | [README](benchmark_modules/cultural_intelligence/README.md) |
 
 ## 🏆 Leaderboard & Metrics
 
@@ -71,11 +75,16 @@ make install
 
 ### 2. Konfiguration
 
-1.  Erstelle eine `.env` Datei im Hauptverzeichnis und trage (optional) API-Keys für kommerzielle Modelle ein:
-    ```bash
-    MISTRAL_API_KEY=...
-    ANTHROPIC_API_KEY=...
-    OPENAI_API_KEY=...
+Die zentrale Steuerung erfolgt über **`benchmark_config.yaml`**:
+
+1.  **API Keys & Provider:** Trage Keys in eine `.env` Datei ein und aktiviere Provider in der YAML.
+2.  **Module Verwalten:** Unter dem Key `modules:` kannst du Test-Suiten aktivieren/deaktivieren:
+    ```yaml
+    modules:
+      code_quality:
+        enabled: true
+      political_compass:
+        enabled: false  # Modul überspringen
     ```
 
 ### 3. Benchmark Ausführen

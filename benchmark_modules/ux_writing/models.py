@@ -12,6 +12,7 @@ class UXIssue:
     explanation: str = ""
     # For specific checks
     check_method: Optional[str] = None 
+    required_ratio: Optional[float] = None
 
     @classmethod
     def from_dict(cls, data: Dict[str, Any]) -> 'UXIssue':
@@ -23,7 +24,8 @@ class UXIssue:
             inverse_match=data.get("inverse_match", False),
             severity=data.get("severity", "medium"),
             explanation=data.get("explanation", ""),
-            check_method=data.get("check_method")
+            check_method=data.get("check_method"),
+            required_ratio=data.get("required_ratio")
         )
 
 @dataclass

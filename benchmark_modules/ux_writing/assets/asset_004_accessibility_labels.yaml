@@ -49,7 +49,7 @@ testdata:
       severity: critical
       type: labeled
       explanation: "Ein Icon-Button ohne Text braucht zwingend ein aria-label."
-      keywords: ["löschen", "entfernen", "delete", "trash"]
+      keywords: ["aria-label", "löschen"]
 
     - issue: "Keine Redundanz"
       severity: critical
@@ -102,7 +102,7 @@ scoring:
     labeled_issues:
       - issue: "Icon-Button hat Label"
         points: 5
-        keywords: ["löschen", "entfernen", "delete", "trash"]
+        keywords: ["aria-label", "löschen"]
         
       - issue: "Keine Redundanz"
         points: 5

@@ -6,7 +6,7 @@ from .models import UXCriterion, UXIssue
 
 # Constants
 MIN_SENTENCE_LENGTH = 15
-SIMILARITY_THRESHOLD = 0.65
+SIMILARITY_THRESHOLD = 0.78
 MIN_TABLE_COLUMNS = 2
 MAX_BUTTON_LENGTH = 50
 MAX_STEP_WORDS = 80
@@ -182,11 +182,14 @@ class IssueEvaluator:
     """Evaluates error detection issues using hybrid matching."""
     
     @staticmethod
-    def check_issue_mentioned(response_lower: str, keywords: List[str]) -> bool:
+    def check_issue_mentioned(response_lower: str, keywords: List[str], required_ratio: float = 0.6) -> bool:
         """
         Prüft ob ein Issue in der Response erwähnt wurde.
         Nutzt Hybrid-Ansatz: String-Matching + Semantic Similarity
         """
+        # Strip reasoning tags before processing (DeepSeek <think> tags)
+        response_lower = re.sub(r'<think>.*?</think>', '', response_lower, flags=re.DOTALL)
+
         if not keywords:
             return False
 
@@ -199,7 +202,7 @@ class IssueEvaluator:
 
         # 2. String Matching (Keyword Count)
         matches = sum(1 for kw in keywords if kw.lower() in response_lower)
-        required_ratio = 0.4
+        # required_ratio defaults to 0.6 but can be overridden
         required_matches = max(1, int(len(keywords) * required_ratio))
 
         if matches >= required_matches:
@@ -235,7 +238,9 @@ class IssueEvaluator:
         """
         Returns (points_awarded, explanation, is_match).
         """
-        matched = cls.check_issue_mentioned(response_lower, issue.keywords)
+        # Use issue-specific ratio if present, else default to 0.6
+        ratio = issue.required_ratio if issue.required_ratio is not None else 0.6
+        matched = cls.check_issue_mentioned(response_lower, issue.keywords, required_ratio=ratio)
         
         # If inverse_match is True, we want matched to be False for points
         if issue.inverse_match:

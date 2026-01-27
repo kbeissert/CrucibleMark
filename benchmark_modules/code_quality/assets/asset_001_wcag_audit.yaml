@@ -90,11 +90,12 @@ prompt: |
   ```
 
   ### Anforderungen an die Antwort:
-  1. Liste alle gefundenen Issues auf.
-  2. Gib für jedes Issue an:
+  1. Erstelle eine **Markdown-Tabelle** mit allen gefundenen Issues.
+  2. Gib für jedes Issue folgende Spalten an: 
      - **WCAG-Kriterium** (z.B. 1.1.1)
+     - **Beschreibung**
      - **Schweregrad**
-     - **Lösung** (Code-Snippet)
+     - **Lösung/Code-Snippet**
 
 # ============================================================
 # Test-Daten (Issues zum Erkennen)
@@ -176,29 +177,29 @@ scoring:
     labeled_issues:
       - issue: "Fehlender alt-Text"
         points: 4
-        keywords: ["alt text", "alt-attribut", "bildbeschreibung", "alternative text"]
+        keywords: ["alt", "alt-attribut", "bildbeschreibung", "alternative text", "bild", "image", "beschriftung"]
       
       - issue: "Farbkontrast (Text)"
         points: 3
-        keywords: ["kontrast", "contrast", "farbe", "grau", "lesbarkeit", "1.4.3"]
+        keywords: ["kontrast", "contrast", "farbe", "grau", "lesbarkeit", "1.4.3", "hintergrund", "schrift"]
 
       - issue: "Fehlender Fokus-Indikator"
         points: 3
-        keywords: ["focus", "fokus", "outline", "tastatur", "visible"]
+        keywords: ["focus", "fokus", "outline", "tastatur", "visible", "rahmen", "selektion", "aktiv"]
 
     # 2. Standard Issues (20 Punkte)
     standard_issues:
       - issue: "Keyboard Trap (div onclick)"
         points: 7
-        keywords: ["onclick", "div", "button", "tastatur", "keyboard", "interaktiv"]
+        keywords: ["onclick", "div", "button", "tastatur", "keyboard", "interaktiv", "maus", "klickbar", "element", "semantisch"]
         
       - issue: "Link-Text 'Mehr'"
         points: 7
-        keywords: ["link text", "aussagekräftig", "kontext", "mehr", "screen reader"]
+        keywords: ["link", "text", "aussagekräftig", "kontext", "mehr", "screen reader", "beschriftung", "ziel"]
         
       - issue: "Farbkontrast (Button)"
         points: 6
-        keywords: ["button", "lightblue", "hellblau", "weiß", "kontrast"]
+        keywords: ["button", "lightblue", "hellblau", "weiß", "kontrast", "lesbarkeit", "hintergrund"]
 
     # 3. Advanced Issues (15 Punkte)
     advanced_issues:
@@ -258,4 +259,4 @@ scoring:
         name: "Strukturierte Liste/Tabelle"
         points: 10
         check_method: "markdown_table_validation"
-        min_rows: 5
+        min_rows: 10

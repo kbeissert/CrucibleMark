@@ -6,6 +6,7 @@ import subprocess
 import shutil
 import csv
 import logging
+from datetime import datetime
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 import traceback
@@ -16,6 +17,7 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 # pylint: disable=wrong-import-position, import-error
 from utils.base_runner import BaseBenchmarkRunner
 from utils.benchmark_utils import select_from_list, discover_assets, load_asset_yaml
+from utils.module_loader import load_test_class
 from utils.model_utils import is_reasoning_model
 # pylint: enable=wrong-import-position, import-error
 
@@ -25,18 +27,27 @@ logger = logging.getLogger(__name__)
 class LocalBenchmarkRunner(BaseBenchmarkRunner):
     """Benchmark Runner für lokale Ollama-Modelle."""
 
-    BENCHMARK_CATEGORIES = {
-        "code_quality": {
-            "name": "Code Quality",
-            "description": "WCAG, Security, Performance, API Design, Code Smells",
-            "path": "benchmark_modules/code_quality/assets",
-        }
-    }
-
     def __init__(self):
         """Initialisiert Runner."""
         super().__init__()
         self.commercial_csv = self.validator.get_golden_standard_csv()
+        
+        # Load modules from config
+        self.BENCHMARK_CATEGORIES = {}
+        modules_config = self.validator.config.get("modules", {})
+        
+        for key, mod in modules_config.items():
+            if mod.get("enabled", False):
+                self.BENCHMARK_CATEGORIES[key] = {
+                    "name": mod["name"],
+                    "description": mod["description"],
+                    "path": f"{mod['path']}/assets",
+                    "module_path": mod["path"],
+                    "test_class": mod.get("test_class", "CodeQualityTest"),
+                    "execution_mode": mod.get("execution_mode", "standard"),
+                    "min_runs": mod.get("min_runs", 1),
+                }
+
 
     @staticmethod
     def get_ollama_models() -> List[str]:
@@ -244,8 +255,10 @@ class LocalBenchmarkRunner(BaseBenchmarkRunner):
             result["tokens_used"] = exec_result.get("tokens_used", 0)
 
         # Add local benchmark specifics
-        ref_score = ref.get("score", 0)
-        score_diff = result["total_score"] - ref_score if ref_score > 0 else 0
+        # FIX: Use percentage for Gap calculation to ensure consistency (0-100 scale)
+        # Old: ref_score = ref.get("score", 0) -> used total points which varied
+        ref_score = ref.get("percentage", 0)
+        score_diff = result["percentage"] - ref_score if ref_score > 0 else 0
 
         result.update(
             {
@@ -293,30 +306,45 @@ class LocalBenchmarkRunner(BaseBenchmarkRunner):
     ) -> List[Dict[str, Any]]:
         """Führt Benchmark für gewähltes Modell durch."""
 
-        # Dispatch Political Compass
-        if benchmark_info.get("name") == "Political Compass":
-            # pylint: disable=import-outside-toplevel
-            from benchmark_modules.political_compass.test import PoliticalCompassTest
+        # Dispatch Batch Mode (e.g. Political Compass) via Config
+        if benchmark_info.get("execution_mode") == "batch":
+            # Dynamic Loading
+            module_path = Path(benchmark_info.get("module_path", ""))
+            test_file = module_path / "test.py"
+            test_class_name = benchmark_info.get("test_class")
+            
+            try:
+                TestClass = load_test_class(test_file, test_class_name)
+            except Exception as e:
+                logger.error("Failed to load batch module %s: %s", benchmark_info['name'], e)
+                return []
+
+            # TODO: Generic ResultManager for batch modules
+            # For now, we assume Political Compass structure for batch mode
+            # Ideally, the TestClass should handle IO or return a standard object
             from benchmark_modules.political_compass.core.io_manager import ResultManager
             from utils.llm_client import LLMClient
             import json
 
-            print(f"🛠️  Initialisiere Political Compass Test (ollama:{model})")
-            test = PoliticalCompassTest()
+            print(f"🛠️  Initialisiere Batch-Test: {benchmark_info['name']} ({model})")
+            test = TestClass()
             
-            # Load assets
-            assets_dir = Path("assets")
-            if not (Path("benchmark_modules/political_compass") / assets_dir).exists():
+            # Load assets dynamically from module path
+            assets_dir = module_path / "assets"
+            if not assets_dir.exists():
                 print(f"❌ Assets directory not found: {assets_dir}")
                 return []
                 
-            test.load_questions(str(assets_dir))
+            if hasattr(test, "load_questions"):
+                test.load_questions(str(assets_dir))
             
-            if not test.questions:
+            if hasattr(test, "questions") and not test.questions:
                 print("❌ Keine Fragen geladen!")
                 return []
                 
-            test.num_runs = num_runs
+            # Apply runs config
+            min_runs = benchmark_info.get("min_runs", 1)
+            test.num_runs = max(num_runs, min_runs)
             
             # Use LLMClient from utils
             client = LLMClient(config=self.validator.config)
@@ -331,8 +359,54 @@ class LocalBenchmarkRunner(BaseBenchmarkRunner):
             # Save results to outputs/runs/
             output_dir = Path("outputs/runs")
             ResultManager.save_json(report, output_dir)
+
+            # Save to shared CSV for Leaderboard
+            pc_csv = Path("benchmark_scores/political_compass_results.csv")
+            pc_csv.parent.mkdir(exist_ok=True, parents=True)
             
-            return []
+            # Read logic for existing file to append/update
+            pc_rows = []
+            if pc_csv.exists():
+                with open(pc_csv, "r", encoding="utf-8") as f:
+                    pc_rows = list(csv.DictReader(f))
+            
+            # Remove old entry for this model if exists
+            pc_rows = [r for r in pc_rows if r.get("model") != model]
+            
+            new_row = {
+                "model": model,
+                "run_id": "AVG",
+                "x_coordinate": report["coordinates"]["x"],
+                "y_coordinate": report["coordinates"]["y"],
+                "x_label": report["archetype"]["x_label"],
+                "y_label": report["archetype"]["y_label"],
+                "timestamp": datetime.now().isoformat()
+            }
+            pc_rows.append(new_row)
+            
+            with open(pc_csv, "w", encoding="utf-8", newline="") as f:
+                writer = csv.DictWriter(f, fieldnames=new_row.keys())
+                writer.writeheader()
+                writer.writerows(pc_rows)
+            
+            # Create Standard Result for CSV
+            std_result = {
+                "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                "status": report.get("status", "success"),
+                "provider": "ollama",
+                "model": model,
+                "asset_id": "political_compass_v3",
+                "asset_name": "Political Compass",
+                "total_score": report["total_score"],
+                "max_score": 100,
+                "percentage": report["total_score"],
+                "execution_time": round(result_wrapper.get("execution_time", 0), 1),
+                "response_length": 0,
+                "tier": report.get("tier", "N/A"),
+                "cost_usd": report.get("statistics", {}).get("total_cost", 0.0),
+                "tokens": report.get("statistics", {}).get("total_tokens", 0)
+            }
+            return [std_result]
 
         commercial_refs, _ = self._setup_benchmark_resources()
 
@@ -418,18 +492,38 @@ class LocalBenchmarkRunner(BaseBenchmarkRunner):
             print(f"Modell: {model}\n❌ Alle {len(results)} Tests fehlgeschlagen!")
             return
 
-        # Calculate averages
-        avg_score = sum(r["total_score"] for r in successful) / len(successful)
-        avg_max = sum(r["max_score"] for r in successful) / len(successful)
-        avg_pct = sum(r["percentage"] for r in successful) / len(successful)
+        # Calculate averages (excluding Political Compass if it's the only test)
+        # Filter out political compass for average score calculation because it's qualitative
+        scored_results = [
+            r for r in successful 
+            if not str(r.get("asset_id", "")).startswith("political_compass")
+        ]
+        
+        if not scored_results:
+             # If only Political Compass ran
+             avg_time = sum(r["execution_time"] for r in successful) / len(successful)
+             print(f"\n✅ Benchmark abgeschlossen für Modul: Political Compass")
+             print(f"   Modell: {model}")
+             print(f"   Dauer:  {avg_time:.1f}s")
+             
+             # Print specific PC info instead of score
+             for r in successful:
+                  if "tier" in r:
+                       print(f"   Resultat: {r['tier']}")
+             
+             return
+
+        avg_score = sum(r["total_score"] for r in scored_results) / len(scored_results)
+        avg_max = sum(r["max_score"] for r in scored_results) / len(scored_results)
+        avg_pct = sum(r["percentage"] for r in scored_results) / len(scored_results)
         avg_time = sum(r["execution_time"] for r in successful) / len(successful)
+
 
         quality = self.get_quality_badge(avg_pct)
 
-        print(f"\n{'=' * 60}\n📈 BENCHMARK ZUSAMMENFASSUNG\n{'=' * 60}")
-        print(f"Modell: {model}")
+        print(f"\n✅ Modul abgeschlossen: {model}")
         print(f"Tests: {len(results)} ({len(successful)} ✅, {len(failed)} ❌)")
-        print("\n📊 Durchschnitt (erfolgreiche Tests):")
+        print("\n📊 Durchschnitt (erfolgreiche Tests des Moduls):")
         print(
             f"   Dein Modell: {avg_score:.1f}/{avg_max:.0f} ({avg_pct:.1f}%) {quality}"
         )
@@ -463,6 +557,9 @@ class LocalBenchmarkRunner(BaseBenchmarkRunner):
 
     def _print_best_worst(self, results: List[Dict[str, Any]]):
         """Prints best and worst performing tests."""
+        if not results:
+            return
+
         sorted_res = sorted(results, key=lambda x: x["percentage"], reverse=True)
 
         print("\n🏆 Beste Tests:")
@@ -543,3 +640,8 @@ def main():
 
 if __name__ == "__main__":
     main()
+    print(f"\n{'=' * 60}")
+    print("🏁 BENCHMARK ABGESCHLOSSEN")
+    print("Alle Ergebnisse wurden in den Benchmark Scores erfasst.")
+    print(f"{'=' * 60}\n")
+

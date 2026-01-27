@@ -189,6 +189,8 @@ modules:
     version: "1.0.0"
     enabled: true
     assets_count: 2
+    execution_mode: "batch"
+    min_runs: 3
     tags:
       - bias
       - politics

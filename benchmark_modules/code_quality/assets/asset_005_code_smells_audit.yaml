@@ -105,10 +105,11 @@ prompt: |
   ```
 
   ### Anforderungen an die Antwort:
-  1. Liste alle gefundenen Smells auf.
-  2. Gib für jeden Smell an:
+  1. Erstelle eine **Markdown-Tabelle** mit allen gefundenen Smells.
+  2. Gib für jeden Smell folgende Spalten an:
      - **Name** (z.B. God Object)
      - **Schweregrad**
+     - **Beschreibung**
      - **Refactoring** (z.B. Extract Class)
 
 # ============================================================
@@ -126,49 +127,49 @@ scoring:
     labeled_issues:
       - issue: "God Object"
         points: 5
-        keywords: ["god object", "large class", "single responsibility", "srp", "zu viele aufgaben"]
+        keywords: ["god object", "large class", "single responsibility", "gott-objekt", "zu viele aufgaben"]
       
       - issue: "Magic Numbers"
         points: 5
-        keywords: ["magic number", "konstante", "hardcoded", "18", "3"]
+        keywords: ["magic number", "hardcoded value", "magische zahl", "fest codiert"]
 
     # 2. Standard Issues (15 Punkte)
     standard_issues:
       - issue: "Nested Conditionals"
         points: 5
-        keywords: ["nested", "verschachtelt", "arrow code", "guard clause", "early return"]
+        keywords: ["nested conditionals", "verschachtelte if", "arrow code", "deeply nested", "guard clause"]
         
       - issue: "Duplicated Code"
         points: 5
-        keywords: ["duplicated", "doppelter code", "dry", "wiederholung", "regex"]
+        keywords: ["duplicated code", "doppelter code", "code duplication", "wiederholung", "redundant code"]
         
       - issue: "Long Parameter List"
         points: 5
-        keywords: ["parameter list", "zu viele parameter", "parameter object", "destructuring"]
+        keywords: ["long parameter list", "zu viele parameter", "many arguments", "parameter object", "zu viele argumente"]
 
     # 3. Advanced Issues (15 Punkte)
     advanced_issues:
       - issue: "Data Clumps"
         points: 5
-        keywords: ["data clump", "datenklumpen", "zusammengehörige daten", "objekt"]
+        keywords: ["data clump", "datenklumpen", "group of variables", "zusammengehörige daten"]
         
       - issue: "Switch Statement"
         points: 5
-        keywords: ["switch", "polymorphismus", "polymorphie", "strategy pattern", "factory"]
+        keywords: ["switch statement", "polymorphism", "polymorphie", "replace switch", "fallunterscheidung"]
         
       - issue: "Dead Code"
         points: 5
-        keywords: ["dead code", "toter code", "unreachable", "if (false)"]
+        keywords: ["dead code", "toter code", "unreachable code", "unused code", "unerreichbar"]
 
     # 4. Expert Issues (20 Punkte) - Top-Tier Modelle
     expert_issues:
       - issue: "Feature Envy"
         points: 10
-        keywords: ["feature envy", "neid", "fremde daten", "gehört in user", "move method"]
+        keywords: ["feature envy", "funktionsneid", "move method", "belongs to another class", "fremde daten nutzen"]
         
       - issue: "Primitive Obsession"
         points: 10
-        keywords: ["primitive obsession", "value object", "email klasse", "username klasse", "typisierung"]
+        keywords: ["primitive obsession", "value object", "primitive types", "eigene klasse", "typisierung"]
 
   solution_quality:
     weight: 30
@@ -178,22 +179,22 @@ scoring:
       - id: "SQ-001"
         name: "Guard Clauses vorgeschlagen"
         points: 10
-        check_method: "code_validation"
-        required_elements: ["if", "return"]
-        min_code_blocks: 1
+        check_method: "keyword_presence"
+        keywords: ["guard clause", "early return", "invert if", "return early", "vorzeitig beenden"]
+        min_keywords: 1
         
       - id: "SQ-002"
         name: "Parameter Object Pattern"
         points: 10
-        check_method: "code_validation"
-        required_elements: ["{", "}"]
-        min_code_blocks: 1
+        check_method: "keyword_presence"
+        keywords: ["parameter object", "objekt für parameter", "struct", "dto", "transfer object", "zusammenfassen"]
+        min_keywords: 1
         
       - id: "SQ-003"
         name: "Named Constants"
         points: 10
         check_method: "keyword_presence"
-        keywords: ["const MIN_AGE", "const MIN_LENGTH", "const USERNAME_MIN"]
+        keywords: ["constant", "konstante", "define", "const", "enum", "benannte konstante"]
         min_keywords: 1
 
   formatting:
@@ -204,4 +205,4 @@ scoring:
         name: "Strukturierte Liste/Tabelle"
         points: 10
         check_method: "markdown_table_validation"
-        min_rows: 5
+        min_rows: 8

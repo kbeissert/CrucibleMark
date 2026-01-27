@@ -326,12 +326,13 @@ class BenchmarkRunner:
                 if selected_module and module_config:
                     modules_to_run = [(selected_module, module_config)]
 
-                    # POLITICAL COMPASS: Inform about multi-run policy (Runs will be enforced by runner)
-                    if selected_module == "political_compass":
+                    # Enforce multi-run policy from Config
+                    min_runs = module_config.get("min_runs", 1)
+                    if min_runs > 1:
                         print(
-                            f"\nℹ️  Hinweis: Das Modul 'Political Compass' führt automatisch 3 Durchläufe aus."
+                            f"\nℹ️  Hinweis: Das Modul '{module_config['name']}' erfordert automatisch {min_runs} Durchläufe."
                         )
-                        num_runs = 3
+                        num_runs = max(num_runs, min_runs)
 
         # Determine provider and model (once for all modules if possible)
         provider = None
@@ -385,6 +386,8 @@ class BenchmarkRunner:
             "path": f"{module_config['path']}/assets",
             "module_path": module_config["path"],
             "test_class": module_config.get("test_class", "CodeQualityTest"),
+            "execution_mode": module_config.get("execution_mode", "standard"),
+            "min_runs": module_config.get("min_runs", 1),
         }
 
         if is_local:

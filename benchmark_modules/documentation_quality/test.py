@@ -6,6 +6,7 @@ Bewertet Qualität von Code-Dokumentation und README-Dateien mit Tiered Difficul
 
 import sys
 import time
+import re
 from pathlib import Path
 from typing import Any, Dict, List
 
@@ -15,11 +16,24 @@ if str(root_dir) not in sys.path:
     sys.path.insert(0, str(root_dir))
 
 from benchmark_modules.base_test import BaseTest  # noqa: E402
+from utils.similarity import SemanticSimilarity
 
 # Constants
 TOKEN_MULTIPLIER = 1.3
 DEFAULT_TEMPERATURE = 0.3
 TIER_THRESHOLDS = {"labeled": 0.40, "standard": 0.40, "advanced": 0.35, "expert": 0.30}
+SIMILARITY_THRESHOLD = 0.70  # Lowered from 0.78 for better recall on small models
+MIN_SENTENCE_LENGTH = 15
+
+# Asset-specific configuration for fine-tuning thresholds
+# Keys match the asset file stems (e.g. asset_001_readme_quality)
+ASSET_SPECIFIC_CONFIG = {
+    "asset_001_readme_quality": {"semantic_threshold": 0.35},
+    "asset_002_rest_api_documentation": {"semantic_threshold": 0.35},
+    "asset_003_component_props_documentation": {"semantic_threshold": 0.35},
+    "asset_004_setup_guide_troubleshooting": {"semantic_threshold": 0.35},
+    "asset_005_changelog_release_notes": {"semantic_threshold": 0.30},
+}
 
 
 class DocumentationTest(BaseTest):
@@ -202,15 +216,6 @@ class DocumentationTest(BaseTest):
     ) -> tuple[float, list[str], list[str]]:
         """
         Bewertet eine Tier-Kategorie (z.B. Labeled, Standard, Advanced, Expert)
-
-        Args:
-            response_lower: Response in lowercase
-            issues: Liste der Issues in dieser Tier
-            min_threshold: Mindest-Keyword-Match-Rate (z.B. 0.40 = 40%)
-            tier_name: Name der Tier (für Details)
-
-        Returns:
-            (score, details, violations)
         """
         tier_score: float = 0.0
         details: list[str] = []
@@ -220,25 +225,45 @@ class DocumentationTest(BaseTest):
             return 0.0, details, violations
 
         # Berechne max_points für diese Tier (Summe aller Issue-Points)
-        max_points = sum(issue.get("points", 0) for issue in issues)
+        current_max_points = sum(issue.get("points", 0) for issue in issues)
 
         for issue in issues:
             points = issue.get("points", 0)
             keywords = issue.get("keywords", [])
             issue_name = issue.get("issue", "Unknown Issue")
             severity = issue.get("severity", "medium")
+            inverse_match = issue.get("inverse_match", False)
 
-            # Check ob Issue erwähnt wird (Keyword-Matching)
-            found = self._check_issue_mentioned(response_lower, keywords, min_threshold)
-
-            if found:
-                tier_score += points
-                details.append(f"✓ [{tier_name}] {issue_name}: +{points}p")
-            # Für Critical/High = Violation, sonst nur Details
-            elif severity in ["critical", "high"]:
-                violations.append(f"✗ [{tier_name}] {issue_name}: -{points}p")
+            # Determine required match parameters
+            # Priority: min_keywords (int) > required_ratio (float) > min_threshold (default)
+            explicit_min_keywords = issue.get("min_keywords")
+            explicit_ratio = issue.get("required_ratio")
+            
+            target_matches = None
+            if explicit_min_keywords is not None:
+                target_matches = int(explicit_min_keywords)
             else:
-                details.append(f"○ [{tier_name}] {issue_name}: 0p")
+                ratio = explicit_ratio if explicit_ratio is not None else min_threshold
+                target_matches = max(1, int(len(keywords) * ratio))
+
+            # Check ob Issue erwähnt wird (Hybrid Matching)
+            found = self._check_issue_mentioned(response_lower, keywords, target_matches)
+
+            if inverse_match:
+                if not found:
+                    tier_score += points
+                    details.append(f"✓ [{tier_name}] {issue_name} (Nicht gefunden): +{points}p")
+                else:
+                    violations.append(f"✗ [{tier_name}] {issue_name} (Unerwünscht gefunden): -{points}p")
+            else:
+                if found:
+                    tier_score += points
+                    details.append(f"✓ [{tier_name}] {issue_name}: +{points}p")
+                # Für Critical/High = Violation, sonst nur Details
+                elif severity in ["critical", "high"]:
+                    violations.append(f"✗ [{tier_name}] {issue_name}: -{points}p")
+                else:
+                    details.append(f"○ [{tier_name}] {issue_name}: 0p")
 
         # Direkter Score ohne Normalisierung (Issue-Points sind bereits korrekt)
         details.append(f"  → {tier_name} Total: {tier_score:.1f}/{max_points}p")
@@ -246,26 +271,66 @@ class DocumentationTest(BaseTest):
         return round(tier_score, 2), details, violations
 
     def _check_issue_mentioned(
-        self, response_lower: str, keywords: list[str], min_threshold: float = 0.40
+        self, response_lower: str, keywords: list[str], target_matches: int
     ) -> bool:
         """
-        Prüft ob ein Issue im Response erwähnt wird (Keyword-Matching)
-
+        Prüft ob ein Issue im Response erwähnt wird (Hybrid: Keyword + Semantic).
+        
         Args:
-            response_lower: Response in lowercase
-            keywords: Liste von Keywords
-            min_threshold: Mindest-Match-Rate (z.B. 0.40 = 40%)
-
+            response_lower: Response text (lowercase)
+            keywords: List of keywords to match
+            target_matches: Absolute number of keywords required
+            
         Returns:
-            True wenn genug Keywords gefunden
+            True if matched via keywords OR semantic similarity
         """
+        # 1. Clean Response (DeepSeek Reasoning Tags)
+        response_cleaned = re.sub(r'<think>.*?</think>', '', response_lower, flags=re.DOTALL)
+        
         if not keywords:
             return False
 
-        matches = sum(1 for kw in keywords if kw.lower() in response_lower)
-        match_rate = matches / len(keywords)
+        # 2. String Matching (Keyword Count)
+        matches = sum(1 for kw in keywords if kw.lower() in response_cleaned)
+        
+        asset_id = self.asset_path.stem
+        # DEBUG: print(f"DEBUG [{asset_id}]: Keywords={keywords[:3]}... Matches={matches}/{target_matches}")
 
-        return match_rate >= min_threshold
+        if matches >= target_matches:
+            return True
+
+        # 3. Semantic Similarity (Fallback)
+        # Only if string match failed. Handles synonyms.
+        # Note: Semantic check essentially acts as "Match Found" (aka >= 1 concept matches)
+        # It's hard to quantify "how many matches" via Semantics, so we treat high similarity as a Pass.
+        # This acts as a Safety Net for the "Synonym Trap".
+        query = " ".join(keywords)
+
+        # Split response into sentences/chunks
+        sentences = [
+            s.strip() 
+            for s in response_cleaned.split('.') 
+            if len(s.strip()) > MIN_SENTENCE_LENGTH
+        ]
+        
+        # Fallback chunks if no sentences
+        if not sentences:
+            sentences = [response_cleaned[i:i+200] for i in range(0, len(response_cleaned), 200)]
+            
+        try:
+            # Determine threshold (Global default + Asset specific override)
+            threshold = SIMILARITY_THRESHOLD
+            
+            if asset_id in ASSET_SPECIFIC_CONFIG:
+                threshold = ASSET_SPECIFIC_CONFIG[asset_id].get("semantic_threshold", threshold)
+
+            best_score = SemanticSimilarity.find_best_match(query, sentences)
+            # DEBUG: print(f"DEBUG [{asset_id}]: Semantic Best={best_score:.3f} Threshold={threshold}")
+            return best_score > threshold
+        except Exception as e:
+            # Fallback if similarity fails
+            # DEBUG: print(f"DEBUG [{asset_id}]: Semantic Error={e}")
+            return False
 
     def _score_solution_quality(
         self, response_lower: str, config: dict

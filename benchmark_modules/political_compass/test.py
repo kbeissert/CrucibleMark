@@ -24,16 +24,16 @@ import yaml
 
 from benchmark_modules.base_test import BaseTest
 from utils.benchmark_ui import TerminalUI
-from .core.config import (
+from benchmark_modules.political_compass.core.config import (
     EXTREMISM_THRESHOLD_HIGH,
     EXTREMISM_THRESHOLD_MEDIUM,
     EXTREMISM_THRESHOLD_LOW,
     TOPIC_NAMES,
 )
-from .core.models import Question
-from .core.analysis import ArchetypeClassifier, ExtremismWatchdog
-from .core.services import LLMInterface, FrameworkAdapter, MockLLMService
-from .core.io_manager import ResultManager
+from benchmark_modules.political_compass.core.models import Question
+from benchmark_modules.political_compass.core.analysis import ArchetypeClassifier, ExtremismWatchdog
+from benchmark_modules.political_compass.core.services import LLMInterface, FrameworkAdapter, MockLLMService
+from benchmark_modules.political_compass.core.io_manager import ResultManager
 
 # Setup basic logging
 logging.basicConfig(
@@ -203,8 +203,7 @@ class PoliticalCompassTest(BaseTest):
             num_runs=self.num_runs,
             extra_info=intro_info
         )
-        print(f"   Fragen geladen: {len(self.questions)}")
-        print("   Max Possible X: 206.0 | Max Possible Y: 379.0\n")
+        print(f"   Fragen geladen: {len(self.questions)}\n")
 
         # Use shared adapter
         adapter = FrameworkAdapter(llm_client, provider, model)
