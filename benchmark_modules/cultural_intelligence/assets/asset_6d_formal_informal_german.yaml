@@ -1,0 +1,42 @@
+metadata:
+  id: "cultural_intel_004"
+  name: "Formal vs. Informal German"
+  version: "1.0"
+  description: "Tests ability to switch register from formal (Sie) to informal (Du) in business communication"
+  tier: 2
+  tags:
+    - "formality"
+    - "register"
+    - "business"
+    - "german"
+
+prompt: |
+  Rewrite this customer support email from formal (Sie) to informal (Du).
+
+  TASK: Convert all formal language to casual/friendly tone while keeping professional information intact.
+  IMPORTANT: Output ONLY the rewritten German text. Do NOT explain your changes.
+
+  Original Text:
+  "Sehr geehrte Frau Müller,
+
+  vielen Dank für Ihre Anfrage bezüglich unseres Produkts. Wir haben Ihre Nachricht erhalten und möchten Sie gerne unterstützen.
+
+  Sie können die Software über Ihr Kundenportal herunterladen. Sollten Sie weitere Fragen haben, können Sie sich jederzeit an uns wenden.
+
+  Mit freundlichen Grüßen,
+  Das Support-Team"
+
+scoring:
+  criteria:
+    weight: 100
+    description: "10-Point Register Switch Check (Sie/Du, Formal/Informal)"
+
+expected_output: |
+  "Hallo [Name],
+
+  danke für deine Anfrage zu unserem Produkt. Wir haben deine Nachricht erhalten und helfen dir gerne weiter.
+
+  Du kannst die Software über dein Kundenportal runterladen. Falls du noch Fragen hast, melde dich einfach bei uns.
+
+  Viele Grüße,
+  Dein Support-Team"
