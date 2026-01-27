@@ -5,6 +5,27 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.9.5] - 2026-01-28
+
+### Cultural Intelligence Module (Complete)
+
+#### Added
+- **Asset 6D (Formal vs. Informal)**: New test for register switching (Sie -> Du)
+- **Asset 6E (German Idioms)**: New test for cultural translation of idioms (e.g. "went south")
+
+#### Improved
+- **Asset 6C (Berlin Agency Vibe)**: 
+  - Fixed false positives by removing 'lösung' (solution) and 'ganzheitlich' (holistic)
+  - Scoring optimized to 9 buzzwords
+- **Scoring Logic**:
+  - Hardened checks for Asset 6D (requires frequent 'Du' usage)
+  - Expanded accepted variants for Asset 6E (idioms)
+
+#### Impact
+- **DeepSeek**: 100% on Cultural Vibe (Matches Reference)
+- **Dolphin**: 90% on Formal/Informal (Impressive register switch)
+- **Robustness**: Improved discrimination between pure translation and cultural adaptation
+
 ## [0.9.4-rc2] - 2026-01-27
 
 ### Fixed

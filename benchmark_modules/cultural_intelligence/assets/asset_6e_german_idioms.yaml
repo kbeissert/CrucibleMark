@@ -1,0 +1,32 @@
+metadata:
+  id: "cultural_intel_005"
+  name: "German Idioms & Expressions"
+  version: "1.0"
+  description: "Tests ability to replace English idioms with authentic German equivalents (not literal translations)"
+  tier: 3
+  tags:
+    - "idioms"
+    - "cultural-fit"
+    - "translation"
+    - "german"
+
+prompt: |
+  Replace these English idioms with natural German equivalents.
+
+  RULES:
+  - DO NOT translate word-for-word (e.g., "went south" ≠ "ging nach Süden")
+  - Use authentic German expressions that convey the same meaning
+  - Keep the business context intact
+
+  IMPORTANT: Output ONLY the rewritten German text. Do NOT explain your changes.
+
+  Original Text:
+  "The project went south last week. We need to think outside the box and come up with a game plan. Let's touch base on Monday to get the ball rolling. We can't afford to drop the ball on this one."
+
+scoring:
+  criteria:
+    weight: 100
+    description: "10-Point Idiom Translation Check (5 idioms, 2 points each)"
+
+expected_output: |
+  "Das Projekt ging letzte Woche schief. Wir müssen kreativ denken und einen Plan entwickeln. Lass uns am Montag kurz sprechen, um die Sache ins Rollen zu bringen. Wir können uns hier keinen Fehler erlauben."
