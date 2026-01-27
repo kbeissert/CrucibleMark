@@ -5,6 +5,18 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.9.4-rc2] - 2026-01-27
+
+### Fixed
+- **Expert Tier Enforcement**: Expert issues now require 100% keyword coverage (exact OR semantic)
+- **Semantic Threshold**: 0.55 threshold now applied to each missing keyword individually
+- **Impact**: Qwen Sarcasm Shield score corrected from unrealistic 100% → realistic 86%
+
+### Technical Details
+- Missing keywords in Expert tier must pass semantic similarity check (threshold: 0.55)
+- Other tiers (Labeled/Standard/Advanced) remain at 0.45 threshold
+- Prevents false positives from paraphrasing (e.g., "exceeded SLA thresholds" vs "SLA breach")
+
 ## [0.9.4-rc] - 2026-01-27
 
 ### Security & Hardening (Critical Update)
