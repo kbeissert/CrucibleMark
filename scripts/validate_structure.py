@@ -43,46 +43,60 @@ def get_modules(root: Path) -> List[Path]:
         return []
 
     for item in root.iterdir():
-        if item.is_dir() and item.name not in IGNORED_DIRS:
-            # Check if it looks like a module (has __init__.py or test.py)
-            if (item / "__init__.py").exists() or (item / "test.py").exists():
-                modules.append(item)
+        is_generic_module = (item / "__init__.py").exists() or (item / "test.py").exists()
+        if item.is_dir() and item.name not in IGNORED_DIRS and is_generic_module:
+            modules.append(item)
     return sorted(modules)
+
+
+def _check_mandatory_dirs(module_path: Path) -> List[str]:
+    """Checks for presence of mandatory directories."""
+    errors = []
+    for directory in MANDATORY_DIRS:
+        if not (module_path / directory).is_dir():
+            errors.append(f"❌ Missing mandatory directory: '{directory}/'")
+    return errors
+
+
+def _check_root_files(module_path: Path) -> List[str]:
+    """Checks for unexpected files in module root."""
+    errors = []
+    for item in module_path.iterdir():
+        if not item.is_file() or item.name in IGNORED_FILES:
+            continue
+
+        if item.name not in ALLOWED_ROOT_FILES:
+            if item.suffix == ".py":
+                # pylint: disable=line-too-long
+                msg = f"⚠️  File '{item.name}' should likely be moved to 'core/' or 'scripts/'."
+                errors.append(msg)
+    return errors
+
+
+def _check_mvc_architecture(module_path: Path) -> List[str]:
+    """Checks for MVC compliance (Core directory and Evaluators)."""
+    errors = []
+    core_path = module_path / "core"
+
+    if not core_path.is_dir():
+        errors.append(
+            "❌ CRITICAL: Missing 'core/' directory. Module violates MVC Architecture."
+        )
+        return errors  # Cannot check content if core missing
+
+    if not (core_path / "evaluators.py").exists():
+        errors.append(
+            "❌ CRITICAL: Missing 'core/evaluators.py'. Logic must be decoupled."
+        )
+    return errors
 
 
 def validate_module(module_path: Path) -> List[str]:
     """Validates a single module against the rules."""
     errors = []
-    
-    # 1. Check Mandatory Directories
-    for d in MANDATORY_DIRS:
-        if not (module_path / d).is_dir():
-            errors.append(f"❌ Missing mandatory directory: '{d}/'")
-
-    # 2. Check for Clean Root (Files)
-    # We check if unnecessary python files are cluttering the root
-    for item in module_path.iterdir():
-        if item.is_file():
-            if item.name in IGNORED_FILES:
-                continue
-                
-            if item.name not in ALLOWED_ROOT_FILES:
-                # If it's a python file not in allowed list, it's likely a violation
-                if item.suffix == ".py":
-                    errors.append(f"⚠️  File '{item.name}' should likely be moved to 'core/' or 'scripts/'.")
-                else:
-                    # Non-python files might be acceptable, but warn just in case
-                    pass
-
-    # 3. Check for Core directory (The "MVC Standard")
-    if not (module_path / "core").is_dir():
-        errors.append("❌ CRITICAL: Missing 'core/' directory. Module violates MVC Architecture.")
-        
-    # 4. Check for Evaluator in Core
-    if (module_path / "core").is_dir():
-        if not (module_path / "core" / "evaluators.py").exists():
-             errors.append("❌ CRITICAL: Missing 'core/evaluators.py'. Logic must be decoupled.")
-    
+    errors.extend(_check_mandatory_dirs(module_path))
+    errors.extend(_check_root_files(module_path))
+    errors.extend(_check_mvc_architecture(module_path))
     return errors
 
 
@@ -92,13 +106,13 @@ def main():
     print("-" * 60)
 
     modules = get_modules(MODULES_ROOT)
-    
+
     all_clean = True
-    
+
     for module in modules:
         print(f"📦 Checking {module.name}...")
         errors = validate_module(module)
-        
+
         if not errors:
             print("   ✅ Structure OK")
         else:
@@ -110,7 +124,7 @@ def main():
                 else:
                     print(f"   {err}")
                     final_errors.append(err)
-            
+
             if final_errors:
                 all_clean = False
         print("")

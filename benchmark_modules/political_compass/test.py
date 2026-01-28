@@ -53,7 +53,7 @@ class PoliticalCompassTest(BaseTest):
         self.responses: List[dict] = []
         self.questions: List[Question] = []
         self.last_score_result: Dict[str, Any] = {}
-        
+
         # Configuration
         self.num_runs = 3  # Default v3.0 requirement
 
@@ -168,7 +168,7 @@ class PoliticalCompassTest(BaseTest):
         for i, displayed_key in enumerate(available_keys):
             original_key = shuffled_keys[i]
             mapping[displayed_key] = original_key
-            
+
             text = question.options[original_key]["text"]
             options_text += f"{displayed_key}) {text}\n"
 
@@ -187,10 +187,10 @@ class PoliticalCompassTest(BaseTest):
         Ausführungsmethode für BenchmarkRunner.
         """
         start_time = time.time()
-        
+
         # Init specific UI for this module
         ui = TerminalUI()
-        
+
         intro_info = [
             "⚠️  WICHTIG: Dieser Benchmark führt 3 Runs durch.",
             "",
@@ -209,15 +209,15 @@ class PoliticalCompassTest(BaseTest):
 
         # Use shared adapter
         adapter = FrameworkAdapter(llm_client, provider, model)
-        
+
         self.responses = []
-        
+
         # Sort questions by ID just in case
         self.questions.sort(key=lambda q: q.id)
-        
+
         total_tokens_all_runs = 0
         total_cost_all_runs = 0.0
-        
+
         # Track detailed stats per module across all runs
         # Format: "7.1": {"tokens": 0, "count": 0}
         self.final_module_stats = {}
@@ -227,11 +227,11 @@ class PoliticalCompassTest(BaseTest):
 
             # Seed based on run index for reproducible shuffling
             run_seed = int(time.time()) + i
-            
+
             run_start_idx = len(self.responses)
             current_block_id = None
             block_stats = {"count": 0, "total": 0, "cost": 0.0, "tokens": 0, "start_time": time.time()}
-            
+
             # Pre-calc totals per block for this run
             block_totals = {}
             for q in self.questions:
@@ -247,7 +247,7 @@ class PoliticalCompassTest(BaseTest):
                     block_id = f"{code_parts[0]}.{code_parts[1]}"
                 else:
                     block_id = "7.0"
-                
+
                 # Check Block Change
                 if block_id != current_block_id:
                     # Previous block finished?
@@ -255,7 +255,7 @@ class PoliticalCompassTest(BaseTest):
                         elapsed_block = time.time() - block_stats["start_time"]
                         full_name = f"{current_block_id}_{TOPIC_NAMES.get(current_block_id, '').replace(' ', '_').lower()}"
                         ui.finish_block(full_name, elapsed_block, block_stats["tokens"], block_stats["cost"])
-                        
+
                         # Aggregation for Final Report
                         if current_block_id not in self.final_module_stats:
                             self.final_module_stats[current_block_id] = {"tokens": 0, "count": 0}
@@ -272,7 +272,7 @@ class PoliticalCompassTest(BaseTest):
                 # Shuffling Logic per Question
                 seed = run_seed + hash(question.id)
                 prompt_text, mapping = self._construct_shuffled_prompt(question, seed)
-                
+
                 # Query Adapter
                 try:
                     raw_resp = adapter.client.query(
@@ -281,7 +281,7 @@ class PoliticalCompassTest(BaseTest):
                         provider=provider,
                         temperature=0.1
                     )
-                    
+
                     # Track Stats
                     if hasattr(adapter.client, 'last_request_cost'):
                          cost = adapter.client.last_request_cost or 0.0
@@ -296,7 +296,7 @@ class PoliticalCompassTest(BaseTest):
                     raw_resp = None
 
                 block_stats["count"] += 1
-                
+
                 # Progress Line
                 ui.update_progress(block_stats["count"], block_stats["total"], block_stats["tokens"], block_stats["cost"], finished=False)
 
@@ -304,14 +304,14 @@ class PoliticalCompassTest(BaseTest):
                     # Evaluate with mapping
                     result = self.evaluate_response(question, raw_resp, mapping)
                     self.responses.append(result)
-                
+
             # End of Run Loop - Close Last Block
             if current_block_id is not None:
                  ui.update_progress(block_stats["count"], block_stats["total"], block_stats["tokens"], block_stats["cost"], finished=True)
                  elapsed_block = time.time() - block_stats["start_time"]
                  full_name = f"{current_block_id}_{TOPIC_NAMES.get(current_block_id, '').replace(' ', '_').lower()}"
                  ui.finish_block(full_name, elapsed_block, block_stats["tokens"], block_stats["cost"])
-                 
+
                  # Aggregation for Final Report (Last Block)
                  if current_block_id not in self.final_module_stats:
                      self.final_module_stats[current_block_id] = {"tokens": 0, "count": 0}
@@ -327,9 +327,9 @@ class PoliticalCompassTest(BaseTest):
                 y_mean = round(debug_data.get("y_mean", 0), 2)
                 x_bonus = round(run_coords["x"] - x_mean, 2)
                 y_bonus = round(run_coords["y"] - y_mean, 2)
-                
+
                 ui.print_run_result(
-                    i + 1, 
+                    i + 1,
                     (run_coords['x'], run_coords['y']),
                     (x_mean, y_mean),
                     (x_bonus, y_bonus)
@@ -337,7 +337,7 @@ class PoliticalCompassTest(BaseTest):
 
         # Calculate Asset Score (Using new v3 Logic)
         score_data = self._calculate_scores(len(self.responses))
-        
+
         # Sigma Calculation
         sigma_x, sigma_y = 0.0, 0.0
         if self.num_runs > 1 and len(self.questions) > 0:
@@ -354,7 +354,7 @@ class PoliticalCompassTest(BaseTest):
                 sigma_y = round(statistics.stdev(y_vals), 2)
 
         self.last_score_result = {
-            "model": model, 
+            "model": model,
             "test_date": datetime.now().isoformat(),
             "total_score": score_data["score_val"],
             "max_score": 100,
@@ -362,7 +362,7 @@ class PoliticalCompassTest(BaseTest):
             "tier": score_data["archetype"]["label"],
             "feedback": score_data["feedback"],
             "coordinates": score_data["coordinates"],
-            "archetype": score_data["archetype"], 
+            "archetype": score_data["archetype"],
             "sigma": {"x": sigma_x, "y": sigma_y},
             "statistics": {
                  "total_tokens": total_tokens_all_runs,
@@ -383,12 +383,12 @@ class PoliticalCompassTest(BaseTest):
         # 1. Coordinates & Archetype
         coords = ArchetypeClassifier.calculate_scores_v2(self.responses)
         archetype = ArchetypeClassifier.get_archetype(coords["x"], coords["y"])
-        
+
         # 2. Extremism
         extremism_metrics = self.watchdog.get_metrics(responses_count)
-        
+
         # Score Value logic (0 = Extremist, 100 = Moderate Center as placeholder)
-        # Actually in PolCompass, "score" is not "good/bad". 
+        # Actually in PolCompass, "score" is not "good/bad".
         # But for Benchmark framework compatibility, we need a 0-100 number.
         score_val = 100.0 if not extremism_metrics["status"].startswith("❌") else 0.0
 
@@ -398,8 +398,8 @@ class PoliticalCompassTest(BaseTest):
             feedback.append(f"⚠️ {extremism_metrics['count']} Extremism Flags detected.")
 
         return {
-            "score_val": score_val, 
-            "feedback": feedback, 
+            "score_val": score_val,
+            "feedback": feedback,
             "extremism": extremism_metrics,
             "coordinates": coords,
             "archetype": archetype
@@ -479,7 +479,7 @@ class PoliticalCompassTest(BaseTest):
         """Generiert vollständigen Report (CLI usage)."""
         # Calculate standard stats
         metrics = self._calculate_scores(len(self.responses))
-        
+
         return {
             "model": model_name,
             "test_date": datetime.now().isoformat(),
@@ -493,34 +493,34 @@ class PoliticalCompassTest(BaseTest):
                 "extremist_responses": metrics["extremism"]["count"],
             },
         }
-        
+
     def run_test_standalone(self, llm_interface: Any, max_questions: int | None = None):
         """
         Standalone Runner Loop (Ersatz für CLI Skript).
         """
         questions = self.questions[:max_questions] if max_questions else self.questions
         self.responses = []
-        
+
         print(f"🚀 Starte Political Compass v3.0 ({self.num_runs} Runs, Shuffling aktiv)")
-        
+
         for run_idx in range(self.num_runs):
             print(f"\n--- RUN {run_idx+1}/{self.num_runs} ---")
             run_seed = int(time.time()) + (run_idx * 1337)
-            
+
             for i, question in enumerate(questions, 1):
                 msg = f"[{i}/{len(questions)}] {question.id}"
                 print(f"\r{msg:<60}", end="")
-                
+
                 seed = run_seed + hash(question.id)
                 prompt, mapping = self._construct_shuffled_prompt(question, seed)
-                
+
                 # Query
                 resp = llm_interface.query_raw(prompt, request_id=f"run{run_idx}_{question.id}")
-                
+
                 if resp:
                     result = self.evaluate_response(question, resp, mapping)
                     self.responses.append(result)
-        
+
         print("\n✅ Test abgeschlossen.")
 
 
@@ -556,11 +556,11 @@ def handle_test(args):
     model = args.model if hasattr(args, "model") else "mock-model"
 
     print(f"🛠️  Initialisiere Political Compass Test ({provider}:{model})")
-    
+
     test = PoliticalCompassTest()
     # Explicitly load all known assets if directory is provided
     yaml_dir = args.yaml_dir if hasattr(args, "yaml_dir") else "assets"
-    
+
     # Check if absolute path or relative
     if not Path(yaml_dir).is_absolute():
         # Assume module/assets directory

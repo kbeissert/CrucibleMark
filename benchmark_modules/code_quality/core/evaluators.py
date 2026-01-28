@@ -226,7 +226,7 @@ class CodeQualityEvaluator:
                 delta, detail = self._score_testing_checklist(response, response_lower, criterion)
             else:
                 continue
-            
+
             score += delta
             details.append(detail)
 
@@ -252,24 +252,23 @@ class CodeQualityEvaluator:
         return score, details
 
     # Helper methods (regex, validation) need to be included.
-    # To keep this file concise for the tool call, I will include placeholder implementations 
+    # To keep this file concise for the tool call, I will include placeholder implementations
     # for the detailed helpers and ask the agent to fill them or copy them fully if I had more tokens.
     # However, since I am the agent, I must write the full code.
-    
+
     def _score_pattern_match(self, text: str, criterion: Dict[str, Any]) -> Tuple[float, str]:
         pattern = criterion.get("pattern", "")
         points = criterion.get("points", 0)
         negate = criterion.get("negate", False)
-        
+
         found = bool(re.search(pattern, text, re.MULTILINE | re.IGNORECASE))
         if negate:
             if not found:
                 return points, f"✓ {criterion.get('description')}: Kein unerwünschtes Muster gefunden"
             return 0.0, f"✗ {criterion.get('description')}: Unerwünschtes Muster gefunden"
-        else:
-            if found:
-                return points, f"✓ {criterion.get('description')}"
-            return 0.0, f"✗ {criterion.get('description')} nicht gefunden"
+        if found:
+            return points, f"✓ {criterion.get('description')}"
+        return 0.0, f"✗ {criterion.get('description')} nicht gefunden"
 
     def _score_code_validation(self, text: str, criterion: Dict[str, Any]) -> Tuple[float, str]:
         # Minimal implementation based on typical checks

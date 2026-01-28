@@ -50,7 +50,7 @@ class ResultManager:
         # Ensure directory exists
         if not filepath.parent.exists():
             filepath.parent.mkdir(parents=True, exist_ok=True)
-            
+
         # Prepare Data
         row_data = {
             "model": report["model"],
@@ -63,7 +63,7 @@ class ResultManager:
             "status": report["extremism"]["status"],
             "final_verdict": report["final_verdict"],
         }
-        
+
         # Add Token Efficiency Data
         module_stats = report.get("statistics", {}).get("module_stats", {})
         token_fields = []
@@ -71,13 +71,13 @@ class ResultManager:
             tokens = module_stats[mod_id]["tokens"]
             count = module_stats[mod_id]["count"]
             tpg = round(tokens / count, 2) if count > 0 else 0.0
-            
+
             row_data[f"module_{mod_id}_tokens"] = tokens
             row_data[f"module_{mod_id}_tpg"] = tpg
-            
+
             token_fields.append(f"module_{mod_id}_tokens")
             token_fields.append(f"module_{mod_id}_tpg")
-            
+
         fieldnames = [
             "model",
             "test_date",
@@ -95,17 +95,17 @@ class ResultManager:
             with open(filepath, "r", encoding="utf-8") as f:
                 reader = csv.DictReader(f)
                 existing_headers = reader.fieldnames or []
-            
+
             # Check if we have new columns
             new_columns = [col for col in fieldnames if col not in existing_headers]
-            
+
             if new_columns:
                 print(f"⚠️  CSV-Schema-Update: Füge Spalten hinzu: {new_columns}")
                 # Read all data
                 with open(filepath, "r", encoding="utf-8") as f:
                     reader = csv.DictReader(f)
                     data = list(reader)
-                
+
                 # Rewrite file with new header
                 with open(filepath, "w", newline="", encoding="utf-8") as f:
                     writer = csv.DictWriter(f, fieldnames=fieldnames)
@@ -115,7 +115,7 @@ class ResultManager:
                         # but row doesn't have new keys. DictWriter handles missing keys by putting empty string (default)
                         # We just write the row as is, DictWriter fills rest with restval (default "")
                         writer.writerow(row)
-                        
+
                 # Continue execution (file is now migrated)
 
         with open(filepath, "a", newline="", encoding="utf-8") as f:
@@ -133,15 +133,15 @@ class ResultManager:
     def print_summary(report: Dict[str, Any]):
         """Prints a CLI summary of the report using TerminalUI."""
         ui = TerminalUI()
-        
+
         coords = report['coordinates']
         sigma = report.get('sigma', {'x': 0.0, 'y': 0.0})
-        
+
         # Generate Chart String
         chart_str = None
         try:
             chart_str = PoliticalCompassVisualizer.generate_ascii_chart(
-                coords['x'], 
+                coords['x'],
                 coords['y']
             )
         except Exception:

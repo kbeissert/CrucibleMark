@@ -47,9 +47,9 @@ class ContentTransformationTest(BaseTest):
         try:
             # Use specific temperature for Content Transformation - needs creativity
             response = llm_client.query(
-                model, 
-                full_prompt, 
-                provider=provider, 
+                model,
+                full_prompt,
+                provider=provider,
                 temperature=DEFAULT_TEMPERATURE,
                 max_tokens=2048
             )

@@ -22,6 +22,12 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 from utils.base_runner import BaseBenchmarkRunner  # noqa: E402
 from utils.module_loader import load_test_class  # noqa: E402
 from utils.benchmark_utils import select_from_list, discover_assets, load_asset_yaml  # noqa: E402
+from utils.llm_client import LLMClient
+
+try:
+    from benchmark_modules.political_compass.core.io_manager import ResultManager
+except ImportError:
+    ResultManager = None
 # pylint: enable=wrong-import-position, import-error
 
 logger = logging.getLogger(__name__)
@@ -349,45 +355,43 @@ class CommercialBenchmarkRunner(BaseBenchmarkRunner):
             module_path = Path(benchmark_info.get("module_path", ""))
             test_file = module_path / "test.py"
             test_class_name = benchmark_info.get("test_class")
-            
+
             try:
                 TestClass = load_test_class(test_file, test_class_name)
             except Exception as e:
                 logger.error("Failed to load batch module %s: %s", benchmark_info['name'], e)
                 return []
-            
+
             # TODO: Generic ResultManager for batch modules
             # For now, we assume Political Compass structure for batch mode
             # Ideally, the TestClass should handle IO or return a standard object
-            from benchmark_modules.political_compass.core.io_manager import ResultManager
-            from utils.llm_client import LLMClient
-            import json
-            
+            # Imports moved to top-level
+
             print(f"🛠️  Initialisiere Batch-Test: {benchmark_info['name']} ({provider}:{model})")
             test = TestClass()
-            
+
             # Load assets dynamically from module path
             assets_dir = module_path / "assets"
             if not assets_dir.exists():
                 print(f"❌ Assets directory not found: {assets_dir}")
                 return []
-                
+
             if hasattr(test, "load_questions"):
                 test.load_questions(str(assets_dir))
-            
+
             if hasattr(test, "questions") and not test.questions:
                 print("❌ Keine Fragen geladen!")
                 return []
-            
+
             # Apply runs config
             min_runs = benchmark_info.get("min_runs", 1)
             test.num_runs = max(num_runs, min_runs)
-            
+
             client = LLMClient(config=self.validator.config)
 
             # Execution
             result_wrapper = test.execute(model=model, llm_client=client, provider=provider)
-            
+
             # Reporting
             report = json.loads(result_wrapper["raw_response"])
             ResultManager.print_summary(report)
@@ -396,16 +400,16 @@ class CommercialBenchmarkRunner(BaseBenchmarkRunner):
             # Save to shared CSV for Leaderboard
             pc_csv = Path("benchmark_scores/political_compass_results.csv")
             pc_csv.parent.mkdir(exist_ok=True, parents=True)
-            
+
             # Read logic for existing file to append/update
             pc_rows = []
             if pc_csv.exists():
                 with open(pc_csv, "r", encoding="utf-8") as f:
                     pc_rows = list(csv.DictReader(f))
-            
+
             # Remove old entry for this model if exists
             pc_rows = [r for r in pc_rows if r.get("model") != model]
-            
+
             new_row = {
                 "model": model,
                 "run_id": "AVG",
@@ -416,12 +420,12 @@ class CommercialBenchmarkRunner(BaseBenchmarkRunner):
                 "timestamp": datetime.now().isoformat()
             }
             pc_rows.append(new_row)
-            
+
             with open(pc_csv, "w", encoding="utf-8", newline="") as f:
                 writer = csv.DictWriter(f, fieldnames=new_row.keys())
                 writer.writeheader()
                 writer.writerows(pc_rows)
-            
+
 
             # Create Standard Result for CSV
             std_result = {

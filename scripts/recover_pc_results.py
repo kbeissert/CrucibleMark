@@ -31,11 +31,11 @@ def parse_log(filepath: Path) -> Dict[str, Any] | None:
     try:
         with open(filepath, "r", encoding="utf-8") as f:
             data = json.load(f)
-            
+
         # Check if it is a PC result
         if "coordinates" not in data or "archetype" not in data:
             return None
-            
+
         # Validate internal structure
         if "x" not in data["coordinates"] or "label" not in data["archetype"]:
             return None
@@ -58,16 +58,16 @@ def parse_log(filepath: Path) -> Dict[str, Any] | None:
 
 def main():
     print(f"🔍 Scanning {LOGS_DIR} for Political Compass logs...")
-    
+
     logs = get_pc_logs()
     results = []
-    
+
     for log_file in logs:
         entry = parse_log(log_file)
         if entry:
             results.append(entry)
             print(f"✅ Found: {entry['model']} (File: {entry['source_file']})")
-            
+
     if not results:
         print("❌ No valid Political Compass logs found.")
         return
@@ -88,17 +88,17 @@ def main():
 
     # Write CSV
     fieldnames = ["model", "run_id", "x_coordinate", "y_coordinate", "x_label", "y_label", "timestamp"]
-    
+
     try:
         with open(TARGET_CSV, "w", encoding="utf-8", newline="") as f:
             writer = csv.DictWriter(f, fieldnames=fieldnames)
             writer.writeheader()
             writer.writerows(csv_rows)
-            
+
         print(f"\n💾 Successfully recovered {len(results)} entries to:")
         print(f"   {TARGET_CSV}")
         print("\n👉 You can now run 'make leaderboard' to update the table.")
-        
+
     except Exception as e:
         print(f"❌ Error writing CSV: {e}")
 

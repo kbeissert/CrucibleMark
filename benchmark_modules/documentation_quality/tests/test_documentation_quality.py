@@ -69,7 +69,7 @@ class TestAssetLoading:
 
         # Neue Struktur: scoring.total_points und error_detection/solution_quality
         assert "scoring" in asset
-        
+
         # Lese die für dieses Asset definierte Gesamtpunktzahl (z.B. 100 oder 130)
         expected_total = asset["scoring"].get("total_points", 100)
 

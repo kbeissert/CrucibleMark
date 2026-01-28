@@ -48,7 +48,7 @@ class ContentTransformationEvaluator:
         ed_raw_score, ed_details, ed_violations, ed_max_possible = self._score_error_detection(
             response_lower, scoring_config["error_detection"]
         )
-        
+
         # Normalize Score to Weight (Scaling)
         if ed_max_possible > 0:
             ed_final_score = (ed_raw_score / ed_max_possible) * ed_weight
@@ -70,7 +70,7 @@ class ContentTransformationEvaluator:
         sq_raw_score, sq_details, sq_max_possible = self._score_solution_quality(
             response_lower, scoring_config["solution_quality"]
         )
-        
+
         # Normalize Score to Weight (Scaling)
         if sq_max_possible > 0:
             sq_final_score = (sq_raw_score / sq_max_possible) * sq_weight
@@ -112,11 +112,11 @@ class ContentTransformationEvaluator:
             (r'<reflection>.*?</reflection>', ''),
             (r'\[Reasoning\].*?\[/Reasoning\]', ''),
         ]
-        
+
         cleaned = response
         for pattern, replacement in tags:
             cleaned = re.sub(pattern, replacement, cleaned, flags=re.DOTALL|re.IGNORECASE)
-        
+
         return cleaned.strip()
 
     def _score_error_detection(
@@ -216,63 +216,61 @@ class ContentTransformationEvaluator:
             'advanced': 0.50,  # Mittel
             'expert': 0.55     # STRENG (verhindert Qwen @ 100%)
         }
-        
+
         base_threshold = 0.55
         asset_config_threshold = self.asset.get("scoring", {}).get("semantic_threshold", base_threshold)
         tier_threshold = semantic_thresholds.get(tier_name.lower(), asset_config_threshold)
-        
+
         # Determine final Threshold: Expert enforces 0.55
         if tier_name.lower() == 'expert' and asset_config_threshold < 0.55:
             final_threshold = 0.55
         else:
             final_threshold = tier_threshold
-            
+
         # 1. Exact Keyword Matching
         matches = sum(1 for kw in keywords if kw.lower() in response_lower)
         match_rate = matches / len(keywords)
 
         # 2. Threshold Check (with Expert Override for 100% Coverage)
-        
+
         if tier_name.lower() == 'expert':
             # Expert Tier: Only PASS immediately if 100% exact match
             if match_rate == 1.0:
                  return True
             # If < 100%, we force Semantic Check for missing keywords below
-        else:
-            # Standard/Labeled: Use loose min_threshold (e.g. 40%)
-            if match_rate >= min_threshold:
-                return True
+        # Standard/Labeled: Use loose min_threshold (e.g. 40%)
+        elif match_rate >= min_threshold:
+            return True
 
         # 3. Hybrid Semantic Check (Fallback or Enforcement)
         try:
             # Create chunks for comparison
             chunks = [
-                s.strip() 
-                for s in re.split(r'[.!?\n]+', response_lower) 
+                s.strip()
+                for s in re.split(r'[.!?\n]+', response_lower)
                 if len(s.strip()) > 15
             ]
             if not chunks:
                 chunks = [response_lower]
-                
+
             # Expert Mode: Validate MISSING keywords individually
             if tier_name.lower() == 'expert':
                 missing_keywords = [kw for kw in keywords if kw.lower() not in response_lower]
-                
+
                 # Check each missing keyword against the text chunks
                 for kw in missing_keywords:
                     kw_score = SemanticSimilarity.find_best_match(kw, chunks)
                     # If ANY missing keyword fails the strict threshold, the whole issue fails
                     if kw_score < final_threshold:
-                        return False 
-                
+                        return False
+
                 # If we get here, all missing keywors were semantically present
                 return True
 
-            else:
-                 # Standard Mode: Check if the general "Concept" (joined keywords) is present
-                 query = " ".join(keywords)
-                 best_score = SemanticSimilarity.find_best_match(query, chunks)
-                 return best_score > final_threshold
+            # Standard Mode: Check if the general "Concept" (joined keywords) is present
+            query = " ".join(keywords)
+            best_score = SemanticSimilarity.find_best_match(query, chunks)
+            return best_score > final_threshold
 
         except Exception:
             # Fallback if semantic check fails
@@ -317,7 +315,7 @@ class ContentTransformationEvaluator:
             elif check_method == "negative_keyword_presence":
                 # Check for ABSENCE of keywords (Sarcasm detection)
                 bad_keywords = criterion.get("forbidden_keywords", [])
-                
+
                 # Checking for forbidden words in response
                 found_bad = [kw for kw in bad_keywords if kw.lower() in response_lower]
 
