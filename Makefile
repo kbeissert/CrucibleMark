@@ -112,14 +112,14 @@ clean-all: clean clean-csv
 
 clean-runs:
 	@if [ -f "scripts/cleanup_runs.py" ]; then \
-		$(PYTHON) scripts/cleanup_runs.py --keep 5; \
+		$(PYTHON) scripts/cleanup_runs.py --keep 1; \
 	else \
 		echo "⚠️  cleanup_runs.py nicht gefunden"; \
 	fi
 
 clean-runs-force:
 	@if [ -f "scripts/cleanup_runs.py" ]; then \
-		$(PYTHON) scripts/cleanup_runs.py --keep 5 --force; \
+		$(PYTHON) scripts/cleanup_runs.py --keep 1 --force; \
 	else \
 		echo "⚠️  cleanup_runs.py nicht gefunden"; \
 	fi
