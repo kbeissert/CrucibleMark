@@ -21,11 +21,26 @@ golden_standard_models.yaml
 backups/
 _backup_old/
 
-# Ignore all contents in outputs but keep the directory structure
+# Benchmark Results (Ignore volatile/generated files)
+benchmark_scores/*.csv
+benchmark_scores/*.json
+# Exception: Allow manually created snapshots or golden references in strict subfolders if needed
+!benchmark_scores/snapshots/
+!benchmark_scores/references/
+
+# Golden Standards (Must be committed as they are the source of truth)
+# Ensure we don't accidentally ignore json files inside specific validated folders
+!golden_standards/**/*.json
+
+# Ignore all contents in outputs (Runtime logs)
 outputs/*
+# We want to keep the folder structure, so we un-ignore the folders...
 !outputs/runs/
 !outputs/comparisons/
-# Allow gitkeep files to preserve folder structure
+# ...but ignore the actual content inside them
+outputs/runs/*
+outputs/comparisons/*
+# Finally allow .gitkeep to preserve folder structure
 !outputs/**/.gitkeep
 
 # IDE & OS

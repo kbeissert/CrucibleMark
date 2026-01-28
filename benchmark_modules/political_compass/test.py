@@ -101,7 +101,13 @@ class PoliticalCompassTest(BaseTest):
 
     def load_questions(self, directory: str = "assets") -> int:
         """Lädt alle Fragen aus dem assets-Verzeichnis (für Batch-Modus)."""
+        # Pfad-Auflösung: Zuerst relativ zum Modul, Fallback auf direkten Pfad (CWD/Absolut)
         base_path = Path(__file__).parent / directory
+        if not base_path.exists():
+            direct_path = Path(directory)
+            if direct_path.exists():
+                base_path = direct_path
+
         files = sorted(base_path.glob("*.yaml"))
 
         if not files:
