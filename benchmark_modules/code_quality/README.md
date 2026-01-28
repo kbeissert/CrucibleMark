@@ -4,7 +4,8 @@
 > - **ID:** `code_quality`
 > - **Namespace:** `benchmark_modules.code_quality`
 > - **Class:** `CodeQualityTest` (inherits `BaseTest`)
-> - **Version:** v0.9.5 (Deep Reasoning Optimized)
+> - **Evaluator:** `CodeQualityEvaluator`
+> - **Version:** v1.0.0 (Clean Architecture)
 > - **Type:** Engineering & Static Analysis
 
 ## 🔍 Module Overview
@@ -13,102 +14,61 @@ Dieses Modul bewertet die Fähigkeit von LLMs, Code-Reviews durchzuführen, Fehl
 
 ---
 
-## 🏗 Architektur & Härtung (Why it breaks models)
+## 🏗 Architecture (Core/MVC)
 
-In der Optimierungsphase haben wir das Modul speziell gegen "Lazy Thinking" gehärtet. Frühere Iterationen ließen Modelle durchkommen, die generische "Best Practices" nannten. Die aktuelle Version (v0.9.5) erfordert **Kontext-Verständnis**.
+This module follows the **Core/MVC** standard pattern enforced across the framework:
 
-### 1. Facade Pattern Implementation
-Die Test-Logik (`test.py`) wurde in private Sub-Scorer refactored (Facade Pattern), um komplexe Bewertungen modular zusammenzusetzen:
-- `_score_error_detection`: Sucht kritische Fehler.
-- `_score_solution_quality`: Bewertet den Code-Fix.
-- `_score_expertise`: Bonus-Punkte für Experten-Wissen (z.B. ARIA-Labels bei Accessibility).
-
-### 2. <think> Tag Cleaning (DeepSeek Support)
-Wir haben festgestellt, dass moderne "Reasoning Models" (wie DeepSeek R1) ihren Denkprozess in `<think>`-Tags ausgeben.
-- **Problem**: Keywords im Denkprozess führten früher zu False Positives (Modell denkt über Fehler nach, behebt ihn aber im Output nicht).
-- **Lösung**: Das Modul entfernt nun aktiv alle `<think>...</think>`-Blöcke *bevor* das Scoring beginnt. Nur der finale Output zählt.
-
-### 3. Tiered Difficulty Scoring
-Ähnlich wie bei *Documentation Quality* nutzen wir härtere Thresholds für Experten-Aufgaben:
-- Asset 001 (WCAG Audit) bestraft generische Antworten ("Man sollte Alt-Tags nutzen") hart, wenn nicht konkret auf den Code eingegangen wird (`mandatory: true`).
-- Die Unterscheidung zwischen **Minor Issues** (Nice to have) und **Critical Security Flaws** (Must catch) wird strikter geprüft.
+- **`test.py` (The Runner)**:
+    - Acts as the entry point and "Controller".
+    - Handles the LLM execution (API query, timing, token counting).
+    - Delegates the complex scoring logic to `core/evaluators.py`.
+- **`core/evaluators.py` (The Logic)**:
+    - Contains `CodeQualityEvaluator` class.
+    - Implements the Facade Pattern to orchestrate sub-scorers (`_score_error_detection`, `_score_solution_quality`, `_score_expertise`).
+    - Handles `<think>` tag stripping for reasoning models.
+- **`core/constants.py` (Configuration)**:
+    - Defines thresholds, weights, and error messages.
+    - Single source of truth for tuning sensitivity.
+- **`assets/*.yaml` (Data)**:
+    - Test cases defined in YAML. Contains prompt, context, and expected scoring rules.
 
 ---
 
-## 🧪 Benchmark-Ablauf (Wie wird verglichen?)
+## 🧪 Scoring Logic
 
-Der Benchmark läuft strikt deterministisch ab:
+The module uses a strictly deterministic scoring engine powered by the `CodeQualityEvaluator`.
 
-1.  **Input**: Das Modell erhält einen fehlerhaften Code-Schnipsel (z.B. eine React-Komponente mit Maus-Events ohne Keyboard-Support).
-2.  **Generierung mit Low Temp**: Temperature wird auf 0.1-0.3 gezwungen, um reproduzierbare, faktische Antworten zu erhalten.
-3.  **Parsing & Scoring**:
-    *   **Reasoning Strip**: Denk-Tags werden entfernt.
-    *   **Keyword Scan**: Findet das Modell Begriffe wie `onKeyDown`, `aria-label`, `tabIndex`?
-    *   **Negative Lookbehind**: Prüft, ob das Modell Fehler *behält* oder *falsch korrigiert*.
-4.  **Resultat**: Ein Score von 0-100, wobei >90 nur erreicht wird, wenn Security AND Accessibility perfekt gelöst sind.
+### 1. Pre-Processing (Think-Tag Cleaning)
+For reasoning models (e.g., DeepSeek R1), the evaluator strips out `<think>...</think>` blocks. This prevents the system from grading the model's internal monologue (which often contains "hallucinated faults" during brainstorming) and focuses purely on the final output.
+
+### 2. Tiered Difficulty Scoring
+The evaluation logic supports dynamic difficulty levels defined in `assets/*.yaml`:
+
+*   **Level 1: Labeled Issues** (Easy): Explicitly marked errors (e.g., `// TODO`).
+*   **Level 2: Standard Issues** (Medium): Common OWASP/WCAG violations.
+*   **Level 3: Advanced Issues** (Hard): Subtile logical flaws or edge cases.
+*   **Level 4: Expert Issues** (Deep Reasoning): Complex architectural flaws requiring context.
+
+### 3. Scoring Dimensions (Total: 100)
+1.  **Error Detection (Startwert 60p)**: Finds specific anti-patterns or bugs via keyword/regex matching.
+2.  **Solution Quality (30p)**: Evaluates the proposed fix (Code validation, Syntax correctness).
+3.  **Formatting/Expertise (10p)**: Checks for professional structure (Markdown, ARIA references).
 
 ---
 
-## 📂 Assets & Domänen (Beispiele)
+## ⚙️ Configuration & Tuning
 
-*   **Asset 001: WCAG Audit (Accessibility)**
-    *   Testet Button-Accessibility. Erfordert `onKeyDown` für Keyboard-Nutzer.
-*   **Asset 002: Security Review**
-    *   Testet auf SQL Injection, XSS oder unsichere Deps.
-*   **Asset 003: Performance Optimization**
-    *   Testet auf N+1 Queries oder unnötige Re-Renders.
+To adjust the module's sensitivity without changing code logic, edit `benchmark_modules/code_quality/core/constants.py`:
 
-### 🏗 Architektur (Legacy)
+*   **`DEFAULT_TEMPERATURE`**: Controls generation determinism (default: `0.1`).
+*   **`SIMILARITY_THRESHOLD`**: Adjusts how close a text must be to count as a match in semantic checks.
+*   **Weights**: Adjust scoring ratios in `assets/*.yaml` directly.
 
-Das Modul trennt strikt zwischen Test-Logik (`test.py`) und Test-Daten (`assets/*.yaml`).
+---
 
-*   **`test.py`**: Die generische Test-Engine. Sie lädt ein YAML-Asset, führt den Prompt gegen das LLM aus und bewertet die Antwort basierend auf den im Asset definierten Regeln.
-*   **`assets/*.yaml`**: Definieren den Kontext, den Prompt, den zu analysierenden Code und die spezifischen Scoring-Regeln.
+## 📂 Available Assets
 
-## 📊 Scoring-System
-
-Jeder Test ist in 3 Gewichtungskategorien unterteilt (Total: 100 Punkte):
-
-1.  **Error Detection (60 Punkte)**:
-    *   Erkennt das Modell die versteckten Fehler/Issues im Code?
-    *   **Dynamische Kategorien**: Unterstützt gestaffelte Schwierigkeitsgrade (z.B. *Labeled*, *Standard*, *Advanced*, *Expert*).
-    *   Bewertung durch Keyword-Matching und Schwellenwerte.
-
-2.  **Solution Quality (30 Punkte)**:
-    *   Sind die Lösungsvorschläge korrekt und hilfreich?
-    *   Werden Best Practices (z.B. `defer/async`, `Prepared Statements`) genannt?
-    *   Sind Code-Beispiele syntaktisch korrekt?
-
-3.  **Formatting (10 Punkte)**:
-    *   Ist die Ausgabe gut strukturiert (Markdown)?
-    *   Werden Tabellen, Header und Code-Blöcke korrekt verwendet?
-
-## 🧠 Schwierigkeits-Level (Tiered Difficulty)
-
-Um die Spreu vom Weizen zu trennen, nutzen fortgeschrittene Assets (wie `asset_002_security_audit`) ein gestaffeltes System:
-
-*   **Level 1: Labeled Issues (Einfach)**
-    *   Fehler sind im Code explizit markiert (z.B. `// ISSUE: SQL Injection`).
-    *   Testet die Fähigkeit, Anweisungen zu folgen und einfache Fixes zu generieren.
-    *   *Jedes Modell sollte hier punkten.*
-
-*   **Level 2: Standard Issues (Mittel)**
-    *   Klassische Fehler (z.B. OWASP Top 10), die nicht markiert sind.
-    *   Testet solides Basiswissen und Mustererkennung.
-    *   *Gute Modelle finden diese zuverlässig.*
-
-*   **Level 3: Advanced / Hidden Issues (Schwer)**
-    *   Subtile Logikfehler, sprachspezifische Eigenheiten (z.B. PHP Type Juggling, Weak Randomness) oder Konfigurationsfehler.
-    *   Testet tiefes Code-Verständnis und Expertenwissen.
-    *   *Nur Spitzen-Modelle finden diese Fehler.*
-
-## 📂 Verfügbare Test-Assets
-
-| ID | Name | Focus Area | Difficulty |
-|----|------|------------|------------|
-| 001 | **WCAG Accessibility** | HTML Structure, ARIA, Semantics | Tiered (1-4) |
-| 002 | **Security Audit** | OWASP Top 10, Injection, Auth | Tiered (1-4) |
-| 003 | **Performance Audit** | Big O, Loops, Memory Leaks | Tiered (1-4) |
-| 004 | **API Design** | RESTful Principles, Status Codes | Tiered (1-4) |
-| 005 | **Code Smells** | Clean Code, DRY, SOLID | Tiered (1-4) |
+*   **Asset 001: WCAG Audit** (Accessibility Button implementation)
+*   **Asset 002: Security Review** (SQL Injection & XSS)
+*   **Asset 003: Performance** (React Renders & Queries)
 

@@ -31,7 +31,7 @@ from benchmark_modules.political_compass.core.config import (
     TOPIC_NAMES,
 )
 from benchmark_modules.political_compass.core.models import Question
-from benchmark_modules.political_compass.core.analysis import ArchetypeClassifier, ExtremismWatchdog
+from benchmark_modules.political_compass.core.evaluators import ArchetypeClassifier, ExtremismWatchdog
 from benchmark_modules.political_compass.core.services import LLMInterface, FrameworkAdapter, MockLLMService
 from benchmark_modules.political_compass.core.io_manager import ResultManager
 

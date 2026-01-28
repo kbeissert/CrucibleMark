@@ -1,31 +1,35 @@
-# Python
+# Python & Virtual Env
 __pycache__/
 *.py[cod]
 *$py.class
 *.so
 .Python
 .venv/
+.mypy_cache/
+mypy_report.txt
 
-# Outputs & Reports
-outputs/runs/*
-!outputs/runs/.gitkeep
-outputs/cost_log.csv
+# Local Environment & Logs
+.env
+llm_requests.log
+.continue/
+
+# Configuration (Local overrides)
+config_local.yaml
+golden_standard_models.yaml
+
+# Outputs & Artifacts
 backups/
-# Ensure critical benchmark scores are tracked!
-# (Previous ignore rules removed or commented out)
-# commercial_models_benchmark.csv
-# local_models_benchmark.csv
 _backup_old/
 
-# Secrets
-.env
-config_local.yaml
-golden_standard_models.yaml  # Persönliche API-Provider Konfiguration
+# Ignore all contents in outputs but keep the directory structure
+outputs/*
+!outputs/runs/
+!outputs/comparisons/
+# Allow gitkeep files to preserve folder structure
+!outputs/**/.gitkeep
 
-# IDE
+# IDE & OS
 .vscode/
 .idea/
-
-# OS
 .DS_Store
 Thumbs.db

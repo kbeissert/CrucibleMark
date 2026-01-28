@@ -1,7 +1,0 @@
-{
-  "id": "cultural_intel_001",
-  "provider": "mistral",
-  "timestamp": "2026-01-23T00:11:09.877947",
-  "execution_time": 5.727895259857178,
-  "response": "Hier ist die Übersetzung des Changelogs ins Deutsche mit branchenspezifischem Jargon und korrekter Grammatik:\n\n---\n\n**„Wir haben den Commit ins Remote-Repository gepusht. Nach dem Merge ist der Build fehlgeschlagen, da es ein Problem in dem Branch gab. Wir müssen die neuesten Änderungen pullen und den Cache bereinigen.“**\n\n---\n\n### Anmerkungen zur Übersetzung:\n- **„Pushen“ / „Pullen“**: Im Deutschen werden diese Begriffe meist als Anglizismen übernommen (wie auch „Commit“, „Merge“, „Build“).\n- **„Remote-Repository“**: Wird oft als „Remote“ abgekürzt, aber hier bewusst ausgeschrieben, um Klarheit zu schaffen.\n- **„Fehlgeschlagen“**: Alternativ könnte man auch „ist gecrasht“ oder „hat einen Fehler geworfen“ sagen, aber „fehlgeschlagen“ ist neutraler und standardkonform.\n- **„Cache bereinigen“**: Alternativ „Cache leeren“ oder „Cache löschen“, aber „bereinigen“ ist präziser (da es sich oft um eine gezielte Säuberung handelt).\n\nFalls du eine noch technischere oder informellere Variante möchtest, lass es mich wissen!"
-}

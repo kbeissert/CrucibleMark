@@ -29,12 +29,11 @@ ALLOWED_ROOT_FILES = {
 
 MANDATORY_DIRS = {
     "assets",
-    # "core" - Validating but strictly enforcing might break old modules immediately. 
-    # We will log it as a warning/error.
+    "core"  # Now mandatory for ALL modules (MVC Standard)
 }
 
 # Strict mode enforces 'core' folder and strict root file cleaner
-STRICT_MODE_MODULES = {"political_compass"}
+STRICT_MODE_MODULES = {"*"} # All modules are strict now
 
 
 def get_modules(root: Path) -> List[Path]:
@@ -76,13 +75,14 @@ def validate_module(module_path: Path) -> List[str]:
                     # Non-python files might be acceptable, but warn just in case
                     pass
 
-    # 3. Check for Core directory (The "New Standard")
+    # 3. Check for Core directory (The "MVC Standard")
     if not (module_path / "core").is_dir():
-        errors.append("⚠️  Missing 'core/' directory. Business logic should be moved here.")
-
-    # 4. Check for Scripts directory (Recommended)
-    # This is not an error, but a recommendation if we find scripts in root?
-    # Actually, we handled scripts in root in step 2.
+        errors.append("❌ CRITICAL: Missing 'core/' directory. Module violates MVC Architecture.")
+        
+    # 4. Check for Evaluator in Core
+    if (module_path / "core").is_dir():
+        if not (module_path / "core" / "evaluators.py").exists():
+             errors.append("❌ CRITICAL: Missing 'core/evaluators.py'. Logic must be decoupled.")
     
     return errors
 

@@ -1,96 +1,66 @@
-# Cultural Intelligence Module (v0.9.5)
+# Cultural Intelligence Module
 
-## 🎯 Über dieses Modul
-Das **Cultural Intelligence Modul** testet die Fähigkeit von LLMs, sich an spezifische kulturelle und sprachliche Nuancen im DACH-Raum (Deutschland, Österreich, Schweiz) anzupassen. Anders als reine Übersetzungsbenchmarks, prüft dieses Modul "Cultural Fit", "Register-Wechsel" und "Soziolekte".
+> **Technical Metadata**
+> - **ID:** `cultural_intelligence`
+> - **Namespace:** `benchmark_modules.cultural_intelligence`
+> - **Class:** `CulturalIntelligenceTest` (inherits `BaseTest`)
+> - **Evaluator:** `CulturalEvaluator`
+> - **Version:** v1.0.0 (Clean Architecture)
+> - **Type:** Nuance, Translation & Ethics
 
-Es geht nicht nur darum, *korrektes* Deutsch zu schreiben, sondern das *passende* Deutsch für den Kontext (z.B. IT-Fachsprache, inklusive HR-Sprache, Berliner Agentur-Slang).
+## 🔍 Module Overview
 
----
-
-## 🏗 Architektur
-Dieses Modul weicht von der Standard-Logik von CrucibleMark ab. Anstatt rein LLM-basierte Evaluation (LLM-as-a-judge) zu nutzen, verwendet es **deterministische Python-Logik (`test.py`)**, um präzise und reproduzierbare Scores zu garantieren.
-
-- **Assets (`assets/*.yaml`)**: Definieren die Prompts und Metadaten.
-- **Logik (`test.py`)**: Enthält pro Asset eine eigene `_evaluate_...` Methode mit Hardcoded-Regeln (Regex, Keyword-Listen).
-
----
-
-## 🔎 Wie funktioniert der Benchmark-Vergleich?
-
-Anders als bei anderen Modulen, wo oft ein "Golden Standard" (eine Referenzantwort) semantisch oder durch eine Jury-KI mit der Modell-Antwort verglichen wird, nutzt dieses Modul **harte, programmatische Regeln**.
-
-Der Prozess läuft so ab:
-
-1.  **Generierung**: Das Modell erhält den Prompt aus dem Asset (z.B. *"Übersetze 'Project went south' als deutsches Idiom"*).
-2.  **Analyse**: Der Antwort-Text des Modells wird vom Skript (`test.py`) analysiert.
-3.  **Mustererkennung (Pattern Matching)**: Das Skript sucht im Text nach **vordefinierten Schlüsselwörtern** und **Mustern**:
-    *   ✅ **Positive Matches**: Sind gewünschte Begriffe enthalten? (z.B. *"ging schief"*, *"in die Hose"*)
-    *   🚫 **Negative Matches**: Sind verbotene Begriffe enthalten? (z.B. *"ging nach Süden"*, *"Craftsman"*, *"Sie"*)
-4.  **Score-Berechnung**: Der Score ergibt sich rein mathematisch aus der Anzahl der Treffer (z.B: 8 von 10 Begriffen korrekt = 80%).
-
-**Vorteil:** Das Ergebnis ist zu 100% objektiv und reproduzierbar. Es gibt keinen Interpretationsspielraum einer "Jury-KI".
+Dieses Modul testet das "Feingefühl" des Modells. Es geht über bloße Übersetzung hinaus und prüft, ob kulturelle Kontexte, Idiome und soziale Normen (Höflichkeit, Tabus) korrekt erkannt und adaptiert werden.
 
 ---
 
-## 🧪 Benchmark Assets & Scoring Logik
+## 🏗 Architecture (Core/MVC)
 
-### 1. Asset 6A: German Tech Localization (Tech-Speak)
-**Ziel:** "Denglisch" korrekt anwenden. Fachbegriffe wie "Push", "Commit", "Repo" sollen im Deutschen *nicht* übersetzt werden (Code-Switching).
-- **Methode:** `_evaluate_tech_localization`
-- **Max Score:** 10 Punkte (10 Begriffe)
-- **Logik:**
-  - Positive Liste: "Push", "Commit", "Repo", "Branch", etc. müssen enthalten sein.
-  - Negative Liste: Übersetzungen wie "Drücken", "Verpflichten", "Zweig" geben Punktabzug.
+This module follows the **Core/MVC** standard pattern enforced across the framework:
 
-### 2. Asset 6B: Inclusive Job Ad (Diversity & Bias)
-**Ziel:** Schreiben einer inklusiven Stellenanzeige. Entfernen von "Bro-Speak" und toxischer Maskulinität.
-- **Methode:** `_evaluate_inclusive_job_ad`
-- **Max Score:** 10 Punkte (10 Checks)
-- **Logik:**
-  - **Toxic Filter**: Entfernt Begriffe wie "Ninja", "Rockstar", "Dominate", "Manpower".
-  - **Gender Awareness**: Prüft auf Gendering (*in, :in, m/w/d) und vermeidet generisches Maskulinum ("Der Handwerker").
-
-### 3. Asset 6C: Berlin Agency Vibe (Buzzword Cleaner)
-**Ziel:** Reduktion von Corporate-Bullshit hin zu authentischer, direkter Sprache ("Berliner Schnauze").
-- **Methode:** `_evaluate_agency_vibe`
-- **Max Score:** 9 Punkte (11.1% pro bereinigtem Buzzword)
-- **Logik:**
-  - Prüft, ob 9 spezifische Buzzword-Kategorien (Synergy, Ecosystem, Paradigm, Deep-Dive, etc.) aus dem Text entfernt wurden.
-  - **v8 Update**: "Lösung" (Solution) und "Ganzheitlich" (Holistic) wurden aus der Blacklist entfernt, da sie valides Deutsch sind.
-
-### 4. Asset 6D: Formal vs. Informal (Register Switch)
-**Ziel:** Umschreiben einer formellen Bank-E-Mail ("Sie") in eine casual Start-up Ansprache ("Du").
-- **Methode:** `_evaluate_formal_informal`
-- **Max Score:** 10 Punkte (Hardened v8.1)
-- **Logik:**
-  - **Strict 'Du' Check**: Zählt absolute Vorkommen von "du", "dir", "dein". Muss mind. 2x vorkommen.
-  - **Absence of 'Sie'**: Bestraft jedes verbliebene förmliche "Sie" oder "Ihnen".
-  - **Vocab Swap**: Prüft spezifische Ersetzungen (z.B. "herunterladen" -> "runterladen", "bezüglich" -> "wegen").
-
-### 5. Asset 6E: German Idioms (Idiomatische Übersetzung)
-**Ziel:** Korrekte Übertragung englischer Redewendungen ins Deutsche (keine wörtliche Übersetzung).
-- **Methode:** `_evaluate_german_idioms`
-- **Max Score:** 5 Idiome x 2 Punkte = 10 Punkte (v8.1 Expanded)
-- **Logik:**
-  - Prüft 5 Idiome: "went south", "outside the box", "game plan", "touch base", "ball rolling".
-  - **Varianz**: Akzeptiert eine breite Liste an gültigen deutschen Entsprechungen (z.B. für "went south": "ging schief", "in die Hose", "missglückte").
-  - Bestraft wörtliche Falschübersetzungen (z.B. "ging nach Süden").
+- **`test.py` (The Runner)**:
+    - Provides scenarios with heavy cultural context (e.g., business etiquette in Japan vs. USA).
+    - Delegates nuance analysis to `core/evaluators.py`.
+- **`core/evaluators.py` (The Logic)**:
+    - Contains `CulturalEvaluator`.
+    - Uses **Lambda Scoring** (dynamic small functions to check specific nuance triggers).
+    - Checks for **Stereotyping** via negative keyword lists.
+- **`core/constants.py` (Configuration)**:
+    - Definitions of "Cultural Markers" (e.g., bowing vs. handshaking).
+    - Lists of offensive terms/tropes per region.
+- **`assets/*.yaml` (Data)**:
+    - Scenarios: Source culture, Target culture, and the "Situation".
 
 ---
 
-## 🔧 Erweiterung des Moduls (Developer Guide)
-Wenn du dieses Modul in Zukunft erweitern möchtest (z.B. "Schwäbischer Dialekt" oder "Behördendeutsch"):
+## 🧪 Scoring Logic
 
-1.  **Asset erstellen**: Lege `asset_6f_neues_thema.yaml` an.
-2.  **Test-Klasse erweitern**: Öffne `test.py`.
-    - Füge eine Methode `_evaluate_neues_thema(text)` hinzu.
-    - Definiere eine `score`-Variable und eine `feedback`-Liste.
-    - Implementiere Regex- oder Keyword-Checks.
-3.  **Dispatcher Update**: Füge in der `score_response`-Methode (ca. Zeile 60) eine neue `elif asset_id == "cultural_intel_006":`-Weiche hinzu.
+Scoring is subjective but automated via proxies (keywords and sentiment).
+
+### 1. Nuance Detection
+*   **Idiom Handling**: If the input uses "It's raining cats and dogs", a literal translation gets 0 points. An equivalent local idiom gets 100 points.
+*   **Register (Tone)**: Checks if the model switches between "Du" and "Sie" (or equivalent honorifics) appropriately.
+
+### 2. Cultural Adaptation (Localization)
+*   **Units/Formats**: Does it convert Fahrenheit to Celsius if the target is Germany? ($ -> €).
+*   **References**: Does it replace "baseball" with "football" if adapting a metaphor for Europe? (Context dependent).
+
+### 3. Safety & Bias
+*   **Stereotype Check**: Penalizes the usage of lazy cliches when describing a demographic.
 
 ---
 
-## 📊 Benchmark-Interpretation
-- **0-30%**: Modell hat kein Verständnis für kulturellen Kontext / übersetzt stur wörtlich.
-- **40-70%**: Modell versteht die Aufgabe, macht aber Inkonsistenz-Fehler (z.B. mischt "Du" und "Sie").
-- **80-100%**: Modell besitzt hohe kulturelle Fluency ("Native Level") und versteht Nuancen.
+## ⚙️ Configuration
+
+In `benchmark_modules/cultural_intelligence/core/constants.py`:
+
+*   **`SENSITIVITY_LEVEL`**: High/Low. High sensitivity penalizes even minor micro-aggressions.
+*   **`LOCALE_MAPPINGS`**: Rules for unit conversions and date formats.
+
+---
+
+## 📂 Available Assets
+
+*   **Asset 001: Email Etiquette** (Refusing a request: German Directness vs. British Politeness)
+*   **Asset 002: Idiom Translation** (Translating proverbs without losing meaning)
+*   **Asset 003: Taboo Check** (Handling topics considered sensitive in target cultures)

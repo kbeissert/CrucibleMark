@@ -1,7 +1,7 @@
 # CrucibleMark
 
 [![Python](https://img.shields.io/badge/Python-3.10+-blue.svg)](https://python.org)
-[![Version](https://img.shields.io/badge/Version-0.9.3--beta-blue.svg)](CHANGELOG.md)
+[![Version](https://img.shields.io/badge/Version-0.9.6--beta-blue.svg)](CHANGELOG.md)
 [![Ollama](https://img.shields.io/badge/Ollama-Compatible-green.svg)](https://ollama.ai)
 [![License](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
@@ -27,7 +27,7 @@ Detaillierte Architektur-Informationen und den aktuellen Projektstatus findest d
 
 ## 🎯 Features
 
-*   **Modulare Architektur**: Tests sind in unabhängige Module gekapselt.
+*   **Modulare Architektur (Core/MVC)**: Alle Module folgen einem strengen Controller-Evaluator-Pattern. Die Business-Logik (`core/evaluators.py`) ist strikt von der LLM-Ausführung (`test.py`) getrennt.
 *   **Tiered Difficulty System**: Assets enthalten Fehler in 4 Schwierigkeitsstufen (Labeled, Standard, Advanced, Expert), um Junior- von Senior-Modellen zu unterscheiden.
 *   **Structured Prompting**: Alle kreativen Module (`Code Quality`, `Documentation`, `UX Writing`) erzwingen einen strengen "Analyse-vor-Lösung"-Ablauf, um flüchtige oder fehleranfällige Modelle objektiv vergleichbar zu machen.
 *   **Hybrid Scoring**: Kombination aus quantitativer Bewertung (Keyword/Regex) und qualitativer Analyse (Semantische Ähnlichkeit).
