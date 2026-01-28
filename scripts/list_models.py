@@ -38,6 +38,7 @@ load_dotenv()
 
 # Suppress logging from provider clients and libraries
 logging.getLogger("utils.provider_clients").setLevel(logging.CRITICAL)
+logging.getLogger("utils.retry_handler").setLevel(logging.CRITICAL)
 logging.getLogger("httpx").setLevel(logging.CRITICAL)
 logging.getLogger("httpcore").setLevel(logging.CRITICAL)
 logging.getLogger("openai").setLevel(logging.CRITICAL)
