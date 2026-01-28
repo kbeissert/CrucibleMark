@@ -1,4 +1,4 @@
-from typing import Any, Dict, List, Tuple
+from typing import Any, Dict, List
 import re
 from pathlib import Path
 from utils.similarity import SemanticSimilarity
@@ -224,7 +224,7 @@ class DocumentationEvaluator:
 
             best_score = SemanticSimilarity.find_best_match(query, sentences)
             return best_score > threshold
-        except Exception as e:
+        except Exception:
             return False
 
     def _score_solution_quality(

@@ -19,9 +19,9 @@ logging.getLogger("httpcore").setLevel(logging.WARNING)
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 # pylint: disable=wrong-import-position, import-error
-from utils.base_runner import BaseBenchmarkRunner
-from utils.module_loader import load_test_class
-from utils.benchmark_utils import select_from_list, discover_assets, load_asset_yaml
+from utils.base_runner import BaseBenchmarkRunner  # noqa: E402
+from utils.module_loader import load_test_class  # noqa: E402
+from utils.benchmark_utils import select_from_list, discover_assets, load_asset_yaml  # noqa: E402
 # pylint: enable=wrong-import-position, import-error
 
 logger = logging.getLogger(__name__)

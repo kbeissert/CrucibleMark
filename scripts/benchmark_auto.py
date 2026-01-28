@@ -28,11 +28,11 @@ sys.path.insert(0, str(ROOT_DIR))
 
 # Local imports
 # pylint: disable=import-error, wrong-import-position
-from scripts.run_local_benchmark import LocalBenchmarkRunner
-from scripts.run_commercial_benchmark import CommercialBenchmarkRunner
-from scripts.generate_leaderboard import main as gen_leaderboard
-from utils.config_validator import ConfigValidator
-from utils.model_utils import is_model_suitable_for_benchmark
+from scripts.run_local_benchmark import LocalBenchmarkRunner  # noqa: E402
+from scripts.run_commercial_benchmark import CommercialBenchmarkRunner  # noqa: E402
+from scripts.generate_leaderboard import main as gen_leaderboard  # noqa: E402
+from utils.config_validator import ConfigValidator  # noqa: E402
+from utils.model_utils import is_model_suitable_for_benchmark  # noqa: E402
 # pylint: enable=import-error, wrong-import-position
 
 # Logging Setup

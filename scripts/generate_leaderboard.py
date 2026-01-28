@@ -22,8 +22,8 @@ ROOT_DIR = Path(__file__).parent.parent
 sys.path.insert(0, str(ROOT_DIR))
 
 # pylint: disable=wrong-import-position, import-error
-from utils.config_validator import ConfigValidator
-from utils.csv_recovery import parse_row_robust, get_csv_header_idx
+from utils.config_validator import ConfigValidator  # noqa: E402
+from utils.csv_recovery import parse_row_robust, get_csv_header_idx  # noqa: E402
 # pylint: enable=wrong-import-position, import-error
 
 # Konstanten

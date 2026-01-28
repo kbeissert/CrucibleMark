@@ -1,6 +1,4 @@
-import time
 import logging
-from typing import Optional
 from utils.llm_client import LLMClient
 
 class UXMockLLMService:

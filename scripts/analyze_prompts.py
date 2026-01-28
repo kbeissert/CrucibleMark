@@ -8,9 +8,8 @@ Detailed breakdown of System Prompt vs User Prompt vs Content.
 """
 
 import sys
-import logging
 from pathlib import Path
-from typing import Dict, Any, List, Tuple
+from typing import Dict, Any, List
 
 # Third-party imports
 try:
@@ -23,7 +22,7 @@ except ImportError:
 ROOT_DIR = Path(__file__).parent.parent
 sys.path.insert(0, str(ROOT_DIR))
 
-from utils.benchmark_utils import load_asset_yaml
+from utils.benchmark_utils import load_asset_yaml  # noqa: E402
 
 # Configuration
 MODULES_DIR = ROOT_DIR / "benchmark_modules"

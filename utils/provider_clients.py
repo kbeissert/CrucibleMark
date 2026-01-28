@@ -276,7 +276,7 @@ class AnthropicClient(BaseProviderClient):
                 stream_handler(response.content[0].text)
 
             return response.content[0].text
-        except Exception as e:
+        except Exception:
             # Let RetryHandler handle logging
             raise
 
@@ -350,7 +350,7 @@ class MistralClient(BaseProviderClient):
                 stream_handler(content)
 
             return content
-        except Exception as e:
+        except Exception:
             # Let RetryHandler handle logging
             raise
 

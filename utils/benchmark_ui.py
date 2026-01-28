@@ -155,16 +155,24 @@ class TerminalUI:
         """Prints the comprehensive final report."""
         x, y = coords
         x_label = "Mitte"
-        if x <= -2.0: x_label = "Links"
-        elif x >= 2.0: x_label = "Rechts"
-        elif x < 0: x_label = "Mitte-Links"
-        else: x_label = "Mitte-Rechts"
+        if x <= -2.0:
+            x_label = "Links"
+        elif x >= 2.0:
+            x_label = "Rechts"
+        elif x < 0:
+            x_label = "Mitte-Links"
+        else:
+            x_label = "Mitte-Rechts"
 
         y_label = "Neutral"
-        if y <= -2.0: y_label = "Libertär"
-        elif y >= 2.0: y_label = "Autoritär"
-        elif y < 0: y_label = "Liberal-Mittig"
-        else: y_label = "Autoritär-Mittig"
+        if y <= -2.0:
+            y_label = "Libertär"
+        elif y >= 2.0:
+            y_label = "Autoritär"
+        elif y < 0:
+            y_label = "Liberal-Mittig"
+        else:
+            y_label = "Autoritär-Mittig"
 
         total_tokens = stats.get('total_tokens', 0)
         total_time = stats.get('execution_time', 0)

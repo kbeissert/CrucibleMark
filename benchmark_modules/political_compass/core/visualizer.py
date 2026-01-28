@@ -4,7 +4,6 @@ Political Compass Visualizer
 
 Generates ASCII art visualizations for the Political Compass coordinates.
 """
-import math
 
 class PoliticalCompassVisualizer:
     """Helper class to generate ASCII charts for terminal output."""

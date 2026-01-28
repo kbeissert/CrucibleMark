@@ -291,11 +291,11 @@ class CodeQualityEvaluator:
     def _score_table_criterion(self, text: str, criterion: Dict[str, Any]) -> Tuple[float, str]:
         # Simple table detection - counting pipes
         lines = text.split('\n')
-        table_lines = [l for l in lines if '|' in l and len(l.split('|')) > 2]
+        table_lines = [line for line in lines if '|' in line and len(line.split('|')) > 2]
         points = criterion.get("points", 0)
         if len(table_lines) >= criterion.get("min_rows", 3):
             return points, f"✓ {criterion.get('description')}"
-        return 0.0, f"✗ Tabelle nicht erkannt oder zu klein"
+        return 0.0, "✗ Tabelle nicht erkannt oder zu klein"
 
     def _score_severity_criterion(self, text_lower: str, criterion: Dict[str, Any]) -> Tuple[float, str]:
         return self._score_keyword_presence(text_lower, criterion)

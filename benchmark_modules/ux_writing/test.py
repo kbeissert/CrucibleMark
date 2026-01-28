@@ -16,9 +16,9 @@ root_dir = Path(__file__).parent.parent.parent
 if str(root_dir) not in sys.path:
     sys.path.insert(0, str(root_dir))
 
-from benchmark_modules.base_test import BaseTest
-from benchmark_modules.ux_writing.core.models import UXScenario, UXScoringConfig
-from benchmark_modules.ux_writing.core.evaluators import IssueEvaluator, EvaluatorFactory
+from benchmark_modules.base_test import BaseTest  # noqa: E402
+from benchmark_modules.ux_writing.core.models import UXScenario, UXScoringConfig  # noqa: E402
+from benchmark_modules.ux_writing.core.evaluators import IssueEvaluator, EvaluatorFactory  # noqa: E402
 
 # Constants for Tier Calculation
 TIER_S_THRESHOLD = 95.0
