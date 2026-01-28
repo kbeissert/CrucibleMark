@@ -1,4 +1,4 @@
-from typing import Any, Dict, List, Tuple, cast
+from typing import Any, cast
 import re
 from difflib import SequenceMatcher
 from .constants import (
@@ -6,13 +6,36 @@ from .constants import (
     WEIGHT_ERROR_DETECTION,
     WEIGHT_SOLUTION_QUALITY,
     WEIGHT_CONSISTENCY,
+    SCORE_THRESHOLD_HIGH,
+    SCORE_THRESHOLD_MED,
+    BONUS_CONSISTENCY,
+    FEASIBILITY_IMPOSSIBLE,
+    FEASIBILITY_LOW_MAX,
+    FEASIBILITY_HIGH_MIN,
+    FEASIBILITY_HIGH_MAX,
+    MIN_WORD_LENGTH,
+    ASSET_5B_CORE_KEYWORDS,
+    ASSET_5B_QUALIFIER_KEYWORDS,
+    ASSET_5B_DOMAIN_KEYWORDS,
+    ASSET_5B_CONCEPT_KEYWORDS,
+    ASSET_5B_SOLUTION_KEYWORDS,
+    ASSET_5B_PRIO_KEYWORDS,
     ASSET_5C_ILLEGAL_MOVES,
     ASSET_5C_AWARENESS_KEYWORDS,
     ASSET_5C_REFUSAL_KEYWORDS,
+    ASSET_5D_DEADLOCK_KEYWORDS,
+    ASSET_5D_CIRCULAR_KEYWORDS,
+    ASSET_5D_WARNING_KEYWORDS,
     STRUCTURE_KEYWORDS,
     REASONING_INDICATORS,
     CORRECTION_INDICATORS,
     MATCH_THRESHOLD_WEAK,
+    TIER_MAPPING,
+    SOLUTION_WEIGHT_STRUCTURE,
+    SOLUTION_WEIGHT_OPTIONS,
+    SOLUTION_WEIGHT_STEPS,
+    SOLUTION_KEYWORDS_OPTIONS,
+    SOLUTION_KEYWORDS_STEPS,
 )
 
 class ReasoningEvaluator:
@@ -21,10 +44,16 @@ class ReasoningEvaluator:
     Encapsulates all scoring logic (Chain of Thought, Paradoxes, Deadlocks, etc.).
     """
 
-    def __init__(self, asset: Dict[str, Any]):
+    def __init__(self, asset: dict[str, Any]):
         self.asset = asset
+        # Dispatcher Mapping
+        self._scorers = {
+            "reasoning_5c_001": self._score_5c_paradox,
+            "reasoning_5d_001": self._score_5d_deadlock,
+            "reasoning_5b_001": self._score_5b_complex,
+        }
 
-    def score_response(self, response: str) -> Dict[str, Any]:
+    def score_response(self, response: str) -> dict[str, Any]:
         """
         Custom scoring for reasoning.
         Refactored to reduce complexity (Facade Pattern).
@@ -36,17 +65,13 @@ class ReasoningEvaluator:
         expected_output = self.asset.get("expected_output", {})
 
         # Strategy Pattern for Scoring
-        if asset_id == "reasoning_5c_001":
-            total_score, score_breakdown, details = self._score_5c_paradox(clean_response)
-        elif asset_id == "reasoning_5d_001":
-            total_score, score_breakdown, details = self._score_5d_deadlock(clean_response)
-        elif asset_id == "reasoning_5b_001":
-            # PHASE 4: Specialized handling for Complex Chains to support narrative variance
-            total_score, score_breakdown, details = self._score_5b_complex(clean_response)
+        if handler := self._scorers.get(asset_id):
+            total_score, score_breakdown, details = handler(clean_response)
         elif (
-            isinstance(expected_output, dict) and "required_findings" in expected_output
+            isinstance(expected_output, dict)
+            and "required_findings" in expected_output
         ):
-            findings = cast(List[str], expected_output["required_findings"])
+            findings = cast(list[str], expected_output["required_findings"])
             total_score, score_breakdown, details = self._score_standard_asset(
                 clean_response, findings
             )
@@ -59,20 +84,7 @@ class ReasoningEvaluator:
         total_score = min(total_score, MAX_SCORE)
 
         # --- Tier Classification & Metadata Tagging ---
-        tier_type = "Tier 1 (Operational Logic)"
-
-        # PHASE 2: Asset 001 is Tier 0 (Sanity Check)
-        if asset_id == "reasoning_001_river":
-            tier_type = "Tier 0 (Sanity Check)"
-
-        tier_2_assets = [
-            "reasoning_5a_001",
-            "reasoning_5b_001",
-            "reasoning_5c_001",
-            "reasoning_5d_001",
-        ]  # Deep Reasoning
-        if asset_id in tier_2_assets:
-            tier_type = "Tier 2 (Deep Reasoning)"
+        tier_type = self._determine_tier(asset_id)
 
         # Assemble Result
         def get_score_val(value: Any) -> float:
@@ -93,6 +105,13 @@ class ReasoningEvaluator:
             "violations": [],
         }
 
+    def _determine_tier(self, asset_id: str) -> str:
+        """Determines the reasoning tier based on asset ID from configuration."""
+        for tier_name, assets in TIER_MAPPING.items():
+            if asset_id in assets:
+                return tier_name
+        return "Tier 1 (Operational Logic)"
+
     def _strip_thinking_tags(self, text: str) -> str:
         """
         Removes <think>...</think> blocks from DeepSeek R1 responses.
@@ -105,33 +124,37 @@ class ReasoningEvaluator:
 
     def _score_5b_complex(
         self, response: str
-    ) -> Tuple[float, Dict[str, Any], List[str]]:
+    ) -> tuple[float, dict[str, Any], list[str]]:
         """
         Tier 2: Asset 5B - Complex Reasoning Chains (System Thinking).
         Uses 3-Tier Scoring: Concepts (40) -> Solution (70) -> Prioritization (100).
         """
         resp_lower = response.lower()
         details = []
-        score_breakdown: Dict[str, Any] = {}
+        score_breakdown: dict[str, Any] = {}
 
         # 1. Concept Detection (Tier 1 Check)
-        c1_core = any(x in resp_lower for x in ["versioning", "deprecation", "lifecycle", "veraltet", "versionierung", "api version"])
-        c1_qualifier = any(x in resp_lower for x in ["inconsistent", "strategy", "mismatch", "conflict", "inkonsistent", "widersprüchlich", "confusion", "ambiguity"])
+        c1_core = self._contains_any(resp_lower, ASSET_5B_CORE_KEYWORDS)
+        c1_qualifier = self._contains_any(resp_lower, ASSET_5B_QUALIFIER_KEYWORDS)
         has_root_cause = c1_core and c1_qualifier
 
-        c2_domain = any(x in resp_lower for x in ["code", "docs", "documentation", "ux", "frontend", "backend"])
-        c2_concept = any(x in resp_lower for x in ["alignment", "consistency", "reflect", "mirror", "dependency", "abhängigkeit", "spiegeln", "synchronize", "match"])
+        c2_domain = self._contains_any(resp_lower, ASSET_5B_DOMAIN_KEYWORDS)
+        c2_concept = self._contains_any(resp_lower, ASSET_5B_CONCEPT_KEYWORDS)
         has_cross_domain = c2_domain and c2_concept
 
-        c3_sol = any(x in resp_lower for x in ["unified", "policy", "standard", "communication", "central", "einheitlich", "kommunikation", "governance", "single source"])
-        has_integrated_solution = c3_sol
+        has_integrated_solution = self._contains_any(
+            resp_lower, ASSET_5B_SOLUTION_KEYWORDS
+        )
 
         # 2. Prioritization Check (Tier 3 Check)
         # Look for numbered lists or explicit prioritization language
         # Regex looks for patterns like "1. ", "2. ", "Step 1:", "First:", etc.
-        # AND keywords like "priority", "prioritize", "start with", "immediate".
-        has_numbering = bool(re.search(r"(?:^|\n)\s*(?:\d+\.|step \d|phase \d)", response, re.IGNORECASE))
-        has_prio_kw = any(x in resp_lower for x in ["priorit", "immediate", "short-term", "first step", "sofort", "schritt 1"])
+        has_numbering = bool(
+            re.search(
+                r"(?:^|\n)\s*(?:\d+\.|step \d|phase \d)", response, re.IGNORECASE
+            )
+        )
+        has_prio_kw = self._contains_any(resp_lower, ASSET_5B_PRIO_KEYWORDS)
         has_prioritization = has_numbering and has_prio_kw
 
         # --- SCORING LOGIC ---
@@ -140,15 +163,25 @@ class ReasoningEvaluator:
         error_pts = 0.0
         if has_root_cause:
             error_pts += 20.0
-            details.append("✅ Root Cause: Identified Versioning/Deprecation inconsistency.")
+            details.append(
+                "✅ Root Cause: Identified Versioning/Deprecation inconsistency."
+            )
         else:
-            details.append("❌ Root Cause: Missed the core versioning/deprecation strategy issue.")
+            details.append(
+                "❌ Root Cause: "
+                "Missed the core versioning/deprecation strategy issue."
+            )
 
         if has_cross_domain:
             error_pts += 20.0
-            details.append("✅ Cross-Domain: Identified need for alignment between Code/Docs/UX.")
+            details.append(
+                "✅ Cross-Domain: "
+                "Identified need for alignment between Code/Docs/UX."
+            )
         else:
-            details.append("❌ Cross-Domain: Missed the systemic link between domains.")
+            details.append(
+                "❌ Cross-Domain: Missed the systemic link between domains."
+            )
 
         # Solution Quality (Max 50)
         # Tier 2: Integrated Solution (Base 30)
@@ -156,25 +189,43 @@ class ReasoningEvaluator:
         solution_pts = 0.0
 
         if has_integrated_solution:
-            solution_pts += 30.0
-            details.append("✅ Solution: Proposed a unified policy/governance approach.")
+            solution_pts += SCORE_THRESHOLD_MED
+            details.append(
+                "✅ Solution: Proposed a unified policy/governance approach."
+            )
 
             # Check for Tier 3 (Prioritization) ONLY if solution is valid
             if has_prioritization:
                 solution_pts += 20.0
-                details.append("✅ Prioritization: Structured plan with clear steps/priorities.")
+                details.append(
+                    "✅ Prioritization: "
+                    "Structured plan with clear steps/priorities."
+                )
             else:
-                details.append("⚠️ Prioritization: Solution is good, but lacks clear prioritization steps (Tier 3 missed).")
+                details.append(
+                    "⚠️ Prioritization: Solution is good, "
+                    "but lacks clear prioritization steps (Tier 3 missed)."
+                )
         # Partial credit for "fixing" things without policy
         elif "fix" in resp_lower or "korrigieren" in resp_lower:
             solution_pts = 10.0
-            details.append("⚠️ Solution: Proposed fixes but missed the 'Unified Policy' aspect.")
+            details.append(
+                "⚠️ Solution: "
+                "Proposed fixes but missed the 'Unified Policy' aspect."
+            )
         else:
             details.append("❌ Solution: No clear integrated solution found.")
 
         # Consistency (Max 10)
         # Bonus for full Tier 2 achievement
-        consistency_pts = 10.0 if (error_pts >= 40.0 and solution_pts >= 30.0) else 0.0
+        consistency_pts = (
+            BONUS_CONSISTENCY
+            if (
+                error_pts >= SCORE_THRESHOLD_HIGH
+                and solution_pts >= SCORE_THRESHOLD_MED
+            )
+            else 0.0
+        )
 
         total_score = error_pts + solution_pts + consistency_pts
 
@@ -188,11 +239,11 @@ class ReasoningEvaluator:
 
     def _score_5c_paradox(
         self, response: str
-    ) -> Tuple[float, Dict[str, Any], List[str]]:
+    ) -> tuple[float, dict[str, Any], list[str]]:
         """Tier 1: Asset 5C - The Scheduling Paradox (Physics Trap)."""
         resp_lower = response.lower()
         details = []
-        score_breakdown: Dict[str, Any] = {}
+        score_breakdown: dict[str, Any] = {}
         total_score = 0.0
 
         # Check conditions using helper
@@ -231,7 +282,8 @@ class ReasoningEvaluator:
             score_breakdown["solution_quality"] = WEIGHT_SOLUTION_QUALITY * 0.5
             total_score = 49.0
             details.append(
-                "⚠️ Partial Logic: Constraints recognized, but no clear refusal (~49 pts)."
+                "⚠️ Partial Logic: "
+                "Constraints recognized, but no clear refusal (~49 pts)."
             )
             score_breakdown["consistency"] = 0
 
@@ -248,10 +300,10 @@ class ReasoningEvaluator:
 
     def _score_5d_deadlock(
         self, response: str
-    ) -> Tuple[float, Dict[str, Any], List[str]]:
+    ) -> tuple[float, dict[str, Any], list[str]]:
         """Tier 2: Asset 5D - Circular Dependency (Deadlock)."""
         resp_lower = response.lower()
-        breakdown: Dict[str, float] = {
+        breakdown: dict[str, float] = {
             "error_detection": 0.0,
             "solution_quality": 0.0,
             "consistency": 0.0,
@@ -259,16 +311,22 @@ class ReasoningEvaluator:
 
         # 1. Check for explicit Feasibility Score
         feasibility_match = re.search(r"feasibility:\s*(\d+)", resp_lower)
-        feasibility_score = int(feasibility_match.group(1)) if feasibility_match else None
+        feasibility_score = (
+            int(feasibility_match.group(1)) if feasibility_match else None
+        )
 
         # 2. Check for Keywords
-        has_deadlock_kws = any(x in resp_lower for x in ["impossible", "deadlock", "unsolvable", "cannot be implemented"])
-        has_circular_kws = any(x in resp_lower for x in ["circular dependency", "circular reference", "mutual exclusion", "cycle detected"])
-        has_warning_kws = any(x in resp_lower for x in ["high risk", "complex", "race condition", "challenging", "careful synchronization"])
+        has_deadlock = self._contains_any(resp_lower, ASSET_5D_DEADLOCK_KEYWORDS)
+        has_circular = self._contains_any(resp_lower, ASSET_5D_CIRCULAR_KEYWORDS)
+        has_warning = self._contains_any(resp_lower, ASSET_5D_WARNING_KEYWORDS)
 
         # LEVEL 1: PERFECT (100)
         # Criteria: Feasibility 0 OR Strong Deadlock confirmation
-        if (feasibility_score is not None and feasibility_score == 0) or has_deadlock_kws:
+        is_impossible_score = (
+            feasibility_score is not None
+            and feasibility_score == FEASIBILITY_IMPOSSIBLE
+        )
+        if is_impossible_score or has_deadlock:
             breakdown = {
                 "error_detection": float(WEIGHT_ERROR_DETECTION),
                 "solution_quality": float(WEIGHT_SOLUTION_QUALITY),
@@ -282,21 +340,32 @@ class ReasoningEvaluator:
 
         # LEVEL 2: GOOD CATCH (70)
         # Criteria: Feasibility 1-3 OR Specific Circular Dependency identification
-        if (feasibility_score is not None and 1 <= feasibility_score <= 3) or has_circular_kws:
+        is_low_feasibility = (
+            feasibility_score is not None
+            and 1 <= feasibility_score <= FEASIBILITY_LOW_MAX
+        )
+        if is_low_feasibility or has_circular:
             breakdown = {
                 "error_detection": float(WEIGHT_ERROR_DETECTION),
                 "solution_quality": float(WEIGHT_SOLUTION_QUALITY * 0.5),
                 "consistency": float(WEIGHT_CONSISTENCY * 0.5),
             }
             return (
-                70.0,
+                SCORE_THRESHOLD_HIGH,
                 breakdown,
-                ["⚠️ Logic Partial (High): Identified circular dependency but was slightly optimistic."],
+                [
+                    "⚠️ Logic Partial (High): "
+                    "Identified circular dependency but was slightly optimistic."
+                ],
             )
 
         # LEVEL 3: WEAK WARNING (40)
         # Criteria: Feasibility 4-5 OR General warnings
-        if (feasibility_score is not None and 4 <= feasibility_score <= 5) or has_warning_kws:
+        is_med_feasibility = (
+            feasibility_score is not None
+            and FEASIBILITY_HIGH_MIN <= feasibility_score <= FEASIBILITY_HIGH_MAX
+        )
+        if is_med_feasibility or has_warning:
             breakdown = {
                 "error_detection": float(WEIGHT_ERROR_DETECTION * 0.5),
                 "solution_quality": 0.0,
@@ -305,7 +374,10 @@ class ReasoningEvaluator:
             return (
                 40.0,
                 breakdown,
-                ["⚠️ Logic Partial (Low): Recognized complexity/risk but missed the deadlock."],
+                [
+                    "⚠️ Logic Partial (Low): "
+                    "Recognized complexity/risk but missed the deadlock."
+                ],
             )
 
         # LEVEL 4: FAIL (0)
@@ -316,12 +388,12 @@ class ReasoningEvaluator:
         )
 
     def _score_standard_asset(
-        self, response: str, required_findings: List[str]
-    ) -> Tuple[float, Dict[str, Any], List[str]]:
+        self, response: str, required_findings: list[str]
+    ) -> tuple[float, dict[str, Any], list[str]]:
         """Standard scoring for 5A, 5B using finding keywords."""
         resp_lower = response.lower()
         details = []
-        score_breakdown: Dict[str, Any] = {}
+        score_breakdown: dict[str, Any] = {}
         total_score = 0.0
 
         # 1. Error Detection (Match Keywords)
@@ -349,12 +421,12 @@ class ReasoningEvaluator:
         )
 
     def _measure_error_detection(
-        self, resp_lower: str, required_findings: List[str], asset: Dict[str, Any]
+        self, resp_lower: str, required_findings: list[str], asset: dict[str, Any]
     ) -> float:
         """Calculates error detection score based on keyword matches."""
         matches = 0
         for finding in required_findings:
-            keywords = [w.lower() for w in finding.split() if len(w) >= 3]
+            keywords = [w.lower() for w in finding.split() if len(w) >= MIN_WORD_LENGTH]
             if not keywords:
                 continue
 
@@ -363,7 +435,7 @@ class ReasoningEvaluator:
                 matches += 1
 
         error_cfg = cast(
-            Dict[str, Any], asset.get("scoring", {}).get("error_detection", {})
+            dict[str, Any], asset.get("scoring", {}).get("error_detection", {})
         )
         error_max = float(error_cfg.get("points", WEIGHT_ERROR_DETECTION))
 
@@ -372,34 +444,36 @@ class ReasoningEvaluator:
         return (matches / len(required_findings)) * error_max
 
     def _measure_solution_quality(
-        self, resp_lower: str, asset: Dict[str, Any]
+        self, resp_lower: str, asset: dict[str, Any]
     ) -> float:
         """Calculates solution quality score based on structure patterns."""
         qual_cfg = cast(
-            Dict[str, Any], asset.get("scoring", {}).get("solution_quality", {})
+            dict[str, Any], asset.get("scoring", {}).get("solution_quality", {})
         )
         quality_max = float(qual_cfg.get("points", WEIGHT_SOLUTION_QUALITY))
         quality_score = 0.0
 
         if self._contains_any(resp_lower, STRUCTURE_KEYWORDS):
-            quality_score += quality_max * 0.4
-        if "option a" in resp_lower and "option b" in resp_lower:
-            quality_score += quality_max * 0.2
-        if "step" in resp_lower or "schritt" in resp_lower:
-            quality_score += quality_max * 0.2
+            quality_score += quality_max * SOLUTION_WEIGHT_STRUCTURE
+        if self._contains_any(resp_lower, SOLUTION_KEYWORDS_OPTIONS):
+            quality_score += quality_max * SOLUTION_WEIGHT_OPTIONS
+        if self._contains_any(resp_lower, SOLUTION_KEYWORDS_STEPS):
+            quality_score += quality_max * SOLUTION_WEIGHT_STEPS
 
         return min(quality_score, quality_max)
 
     def _measure_consistency_and_return_full(
         self,
         total_score: float,
-        score_breakdown: Dict[str, Any],
-        details: List[str],
+        score_breakdown: dict[str, Any],
+        details: list[str],
         response: str,
-    ) -> Tuple[float, Dict[str, Any], List[str]]:
-        """Measures consistency, adds it to totals, and returns final standard result."""
+    ) -> tuple[float, dict[str, Any], list[str]]:
+        """
+        Measures consistency, adds it to totals, and returns final standard result.
+        """
         const_cfg = cast(
-            Dict[str, Any], self.asset.get("scoring", {}).get("consistency", {})
+            dict[str, Any], self.asset.get("scoring", {}).get("consistency", {})
         )
         const_max = float(const_cfg.get("points", WEIGHT_CONSISTENCY))
         sc, _ = self._score_consistency(response, {"points": const_max})
@@ -412,7 +486,7 @@ class ReasoningEvaluator:
 
     def _score_similarity_fallback(
         self, response: str
-    ) -> Tuple[float, Dict[str, Any], List[str]]:
+    ) -> tuple[float, dict[str, Any], list[str]]:
         """Fallback for puzzles like River Crossing using sequence matcher."""
         expected = self.asset.get("expected_output", "")
         if isinstance(expected, dict):
@@ -427,13 +501,13 @@ class ReasoningEvaluator:
         return total_score, score_breakdown, details
 
     def _score_consistency(
-        self, response: str, config: Dict[str, Any]
-    ) -> Tuple[float, List[str]]:
+        self, response: str, config: dict[str, Any]
+    ) -> tuple[float, list[str]]:
         """
         Bewertet Consistency für Reasoning-Tests.
         """
         score = 0.0
-        details: List[str] = []
+        details: list[str] = []
         max_points = float(config.get("points", WEIGHT_CONSISTENCY))
 
         resp_lower = response.lower()
@@ -456,6 +530,6 @@ class ReasoningEvaluator:
 
         return score, details
 
-    def _contains_any(self, text: str, keywords: List[str]) -> bool:
+    def _contains_any(self, text: str, keywords: list[str]) -> bool:
         """Helper to check if any keyword exists in text."""
         return any(k in text for k in keywords)
