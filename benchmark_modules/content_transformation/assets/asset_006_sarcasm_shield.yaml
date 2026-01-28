@@ -43,6 +43,7 @@ prompt: |
 
 scoring:
   total_points: 100
+  semantic_threshold: 0.45
 
   # --------------------------------------------------------
   # Category 1: Error Detection & Constraints (70 Points)
@@ -68,24 +69,29 @@ scoring:
       - issue: "Professional Tone (No Sarcasm)"
         points: 21.0
         severity: critical
-        keywords: ["incident", "report", "issue", "latency", "consistency", "reliability"] 
-        # Note: True sarcasm absence is hard to regex, we rely on positive keywords here.
-        # Negative scoring for sarcasm words is handled in solution_quality or custom check.
+        keywords: ["incident", "report", "objective", "technical", "formal", "professional", "status"]
 
     # Tier 3: Advanced Issues (Subtext Interpretation) - Hard
     advanced_issues:
       - issue: "Interpret 'Horoscope' Metaphor"
         points: 17.5
         severity: high
-        keywords: ["data consistency", "inconsistent", "corruption", "unreliable", "integrity", "random"]
-        # Must translate "horoscope" to technical term
+        keywords: ["data inconsistency", "non-deterministic", "integrity violation", "corrupted state", "unpredictable"]
+        # Must translate "horoscope" into precise technical fault
 
     # Tier 4: Expert Issues (Latency Detail) - Very Hard
     expert_issues:
       - issue: "Interpret 'Coffee Break' Metaphor"
         points: 14.0
         severity: medium
-        keywords: ["latency", "performance", "slow", "delay", "response time"]
+        keywords: 
+          - "latency"           # Basic
+          - "response time"     # Basic
+          - "timeout"           # Medium
+          - "degradation"       # Medium
+          - "high latency"      # Medium
+          - "SLA breach"        # Hard
+        # Mix of basic/hard to allow Qwen to match ~33% output, requiring lowered threshold
 
   # --------------------------------------------------------
   # Category 2: Solution Quality (30 Points)

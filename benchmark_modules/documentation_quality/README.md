@@ -4,12 +4,73 @@
 > - **ID:** `documentation_quality`
 > - **Namespace:** `benchmark_modules.documentation_quality`
 > - **Class:** `DocumentationTest` (inherits `BaseTest`)
-> - **Version:** 0.9.0-beta
+> - **Version:** v0.9.5 (Hardened)
 > - **Type:** Technical Writing & Structure
 
 ## 🔍 Module Overview
 
-Das **Documentation Quality** Modul bewertet die Qualität von Code-Dokumentation, README-Dateien und API-Dokumentation. Es prüft Struktur, Vollständigkeit, technische Korrektheit und Usability.
+Das **Documentation Quality** Modul bewertet die Fähigkeit von LLMs, hochwertige technische Dokumentation zu generieren, zu korrigieren und zu strukturieren. Es prüft, ob Modelle in der Lage sind, komplexe Sachverhalte verständlich, vollständig und strukturell korrekt (Markdown) aufzubereiten.
+
+Es deckt den gesamten Zyklus ab: von READMEs über API-Docs bis hin zu Setup-Guides und Changelogs.
+
+---
+
+## 🏗 Architektur & Scoring-Logik
+
+Das Scoring in diesem Modul verwendet ein **hybrides System (Hybrid Content Scoring)**, das rigide Keyword-Checks mit flexibler semantischer Analyse kombiniert.
+
+### 1. Hybrid Content Scoring
+Anders als bei reinen "Exact Match" Tests, erlaubt dieses Modul Synonyme durch **Semantic Similarity Check**:
+- **Stufe 1 (Exact Match)**: Prüft, ob ein erwartetes Keyword (z.B. "Installation") exakt vorkommt. -> **100% Score**
+- **Stufe 2 (Semantic Fallback)**: Falls nicht, wird der Embedding-Vektor des Keywords mit Sätzen im Text verglichen (Cosine Similarity).
+  - *Beispiel*: Erwartet wird "Installation". Gefunden wird "Wie man das Projekt einrichtet".
+  - Wenn Similarity > Threshold (0.35 - 0.70 je nach Asset), gilt es als **Bestanden**.
+
+### 2. Gewichtung: Error Detection vs. Solution Quality
+Die Gesamtbewertung setzt sich oft (je nach Asset-Typ) zusammen aus:
+- **70% Error Detection / Content Completeness**: Hat das Modell alle notwendigen Sektionen (Installation, Usage, Config) abgedeckt? Hat es fehlende Informationen erkannt?
+- **30% Solution Quality**: Wie gut ist die Qualität? Sind Code-Beispiele vorhanden? Ist die Formatierung (Markdown) sauber? Sind Best Practices (z.B. Syntax Highlighting) eingehalten?
+
+### 3. Tiered Difficulty (Schwierigkeitsgrade)
+Das Modul unterscheidet verschiedene Härtegrade ("Tiers") für die semantische Prüfung. Je komplexer das Asset, desto strenger oder toleranter kann der Threshold sein:
+- **Labeled Tier (Threshold 0.40)**: Einfache, klare Begriffe.
+- **Standard Tier (Threshold 0.40)**: Standard Dokumentationsaufgaben.
+- **Advanced Tier (Threshold 0.35)**: Komplexere Konzepte (Verzeiht mehr Wortvarianz).
+- **Expert Tier (Threshold 0.30)**: Sehr spezifische, abstrakte Anforderungen (höhere Toleranz für Umschreibungen, da Fachsprache variiert).
+
+*Warum sinkt der Threshold bei Expert?* Weil Experten-Themen oft sehr unterschiedlich formuliert werden können ("Dependency Injection Container" vs "Service Locator Pattern"), solange der Sinn stimmt.
+
+---
+
+## 🧪 Benchmark-Ablauf (Wie wird verglichen?)
+
+1. **Input**: Das Modell erhält z.B. eine unvollständige README oder eine rohe Python-Funktion.
+2. **Generierung**: Das Modell generiert die Dokumentation.
+3. **Analyse (`test.py`)**:
+   - Der Text wird in Sektionen zerlegt.
+   - **Checkliste**: Das Skript geht eine Liste von `expected_content` (definiert im YAML-Asset) durch.
+   - **Scoring**:
+     - Wird ein Punkt `mandatory: true` vermisst -> Harter Abzug.
+     - Wird ein Punkt `mandatory: false` vermisst -> Leichter Abzug.
+     - Code-Qualität (Syntax Highlighting ```python) wird gesondert geprüft.
+4. **Ergebnis**: Ein Score von 0-100%, der angibt, wie "publikationsreif" die Dokumentation ist.
+
+---
+
+## 📂 Enthaltene Benchmark-Szenarien (Assets)
+
+1. **Asset 001: README Quality** (Tier 1)
+   - Prüft Grundstruktur: Title, Description, Installation, Usage, License.
+2. **Asset 002: REST API Docs** (Tier 2)
+   - Prüft Endpunkt-Beschreibungen, Request/Response Beispiele, Status Codes.
+3. **Asset 003: Component Props** (Tier 2)
+   - React/Frontend Fokus: Prop-Tabellen, Type-Definitionen, Default-Values.
+4. **Asset 004: Setup & Troubleshooting** (Tier 3)
+   - Docker/Environment Setup: Prüft auf klare Schritte, Prerequisites und "Common Issues".
+5. **Asset 005: Changelog & Release Notes** (Tier 3)
+   - SemVer Compliance, Gruppierung (Added/Fixed/Changed), Datumsformate.
+
+---
 
 ### Features
 

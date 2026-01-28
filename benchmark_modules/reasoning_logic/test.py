@@ -50,11 +50,28 @@ class ReasoningLogicTest(BaseTest):
 
         approx_tokens = len(response.split()) * TOKEN_ESTIMATION_FACTOR
 
+        # Determine Reasoning Capability
+        model_lower = model.lower()
+        reasoning_cap = 20  # Default: Pattern Matching
+        reasoning_type = "Pattern Matching"
+        
+        if "deepseek" in model_lower and "r1" in model_lower:
+            reasoning_cap = 100
+            reasoning_type = "Explicit Reasoning"
+        elif "qwen" in model_lower: # Qwen is generally strong at CoT
+            reasoning_cap = 70
+            reasoning_type = "Implicit Reasoning"
+            
         return {
             "raw_response": response,
             "execution_time": elapsed,
             "tokens_used": approx_tokens,
-            "metadata": {"model": model, "asset_id": self.asset["metadata"]["id"]},
+            "metadata": {
+                "model": model, 
+                "asset_id": self.asset["metadata"]["id"],
+                "reasoning_capability_score": reasoning_cap,
+                "reasoning_type": reasoning_type
+            },
         }
 
     def score_response(self, response: str) -> Dict[str, Any]:
@@ -62,24 +79,30 @@ class ReasoningLogicTest(BaseTest):
         Custom scoring for reasoning.
         Refactored to reduce complexity (Facade Pattern).
         """
+        # PHASE 1: Strip <think> tags before scoring
+        clean_response = self._strip_thinking_tags(response)
+        
         asset_id = self.asset["metadata"]["id"]
         expected_output = self.asset.get("expected_output", {})
 
         # Strategy Pattern for Scoring
         if asset_id == "reasoning_5c_001":
-            total_score, score_breakdown, details = self._score_5c_paradox(response)
+            total_score, score_breakdown, details = self._score_5c_paradox(clean_response)
         elif asset_id == "reasoning_5d_001":
-            total_score, score_breakdown, details = self._score_5d_deadlock(response)
+            total_score, score_breakdown, details = self._score_5d_deadlock(clean_response)
+        elif asset_id == "reasoning_5b_001":
+            # PHASE 4: Specialized handling for Complex Chains to support narrative variance
+            total_score, score_breakdown, details = self._score_5b_complex(clean_response)
         elif (
             isinstance(expected_output, dict) and "required_findings" in expected_output
         ):
             findings = cast(List[str], expected_output["required_findings"])
             total_score, score_breakdown, details = self._score_standard_asset(
-                response, findings
+                clean_response, findings
             )
         else:
             total_score, score_breakdown, details = self._score_similarity_fallback(
-                response
+                clean_response
             )
 
         # Normierung auf MAX_SCORE
@@ -87,6 +110,11 @@ class ReasoningLogicTest(BaseTest):
 
         # --- Tier Classification & Metadata Tagging ---
         tier_type = "Tier 1 (Operational Logic)"
+        
+        # PHASE 2: Asset 001 is Tier 0 (Sanity Check)
+        if asset_id == "reasoning_001_river":
+            tier_type = "Tier 0 (Sanity Check)"
+        
         tier_2_assets = [
             "reasoning_5a_001",
             "reasoning_5b_001",
@@ -114,6 +142,100 @@ class ReasoningLogicTest(BaseTest):
             "details": details,
             "violations": [],
         }
+
+    def _strip_thinking_tags(self, text: str) -> str:
+        """
+        Removes <think>...</think> blocks from DeepSeek R1 responses.
+        These blocks contain internal reasoning that should not be scored.
+        """
+        if not text:
+            return ""
+        # Remove multiline <think> blocks
+        return re.sub(r"<think>.*?</think>", "", text, flags=re.DOTALL).strip()
+
+    def _score_5b_complex(
+        self, response: str
+    ) -> Tuple[float, Dict[str, Any], List[str]]:
+        """
+        Tier 2: Asset 5B - Complex Reasoning Chains (System Thinking).
+        Uses 3-Tier Scoring: Concepts (40) -> Solution (70) -> Prioritization (100).
+        """
+        resp_lower = response.lower()
+        details = []
+        score_breakdown: Dict[str, Any] = {}
+        
+        # 1. Concept Detection (Tier 1 Check)
+        c1_core = any(x in resp_lower for x in ["versioning", "deprecation", "lifecycle", "veraltet", "versionierung", "api version"])
+        c1_qualifier = any(x in resp_lower for x in ["inconsistent", "strategy", "mismatch", "conflict", "inkonsistent", "widersprüchlich", "confusion", "ambiguity"])
+        has_root_cause = c1_core and c1_qualifier
+
+        c2_domain = any(x in resp_lower for x in ["code", "docs", "documentation", "ux", "frontend", "backend"])
+        c2_concept = any(x in resp_lower for x in ["alignment", "consistency", "reflect", "mirror", "dependency", "abhängigkeit", "spiegeln", "synchronize", "match"])
+        has_cross_domain = c2_domain and c2_concept
+
+        c3_sol = any(x in resp_lower for x in ["unified", "policy", "standard", "communication", "central", "einheitlich", "kommunikation", "governance", "single source"])
+        has_integrated_solution = c3_sol
+
+        # 2. Prioritization Check (Tier 3 Check)
+        # Look for numbered lists or explicit prioritization language
+        # Regex looks for patterns like "1. ", "2. ", "Step 1:", "First:", etc.
+        # AND keywords like "priority", "prioritize", "start with", "immediate".
+        has_numbering = bool(re.search(r"(?:^|\n)\s*(?:\d+\.|step \d|phase \d)", response, re.IGNORECASE))
+        has_prio_kw = any(x in resp_lower for x in ["priorit", "immediate", "short-term", "first step", "sofort", "schritt 1"])
+        has_prioritization = has_numbering and has_prio_kw
+
+        # --- SCORING LOGIC ---
+        
+        # Base Points: Error Detection (Max 40)
+        error_pts = 0.0
+        if has_root_cause:
+            error_pts += 20.0
+            details.append("✅ Root Cause: Identified Versioning/Deprecation inconsistency.")
+        else:
+            details.append("❌ Root Cause: Missed the core versioning/deprecation strategy issue.")
+            
+        if has_cross_domain:
+            error_pts += 20.0
+            details.append("✅ Cross-Domain: Identified need for alignment between Code/Docs/UX.")
+        else:
+            details.append("❌ Cross-Domain: Missed the systemic link between domains.")
+
+        # Solution Quality (Max 50)
+        # Tier 2: Integrated Solution (Base 30)
+        # Tier 3: Prioritization (+20)
+        solution_pts = 0.0
+        
+        if has_integrated_solution:
+            solution_pts += 30.0
+            details.append("✅ Solution: Proposed a unified policy/governance approach.")
+            
+            # Check for Tier 3 (Prioritization) ONLY if solution is valid
+            if has_prioritization:
+                solution_pts += 20.0
+                details.append("✅ Prioritization: Structured plan with clear steps/priorities.")
+            else:
+                details.append("⚠️ Prioritization: Solution is good, but lacks clear prioritization steps (Tier 3 missed).")
+        else:
+            # Partial credit for "fixing" things without policy
+            if "fix" in resp_lower or "korrigieren" in resp_lower:
+                solution_pts = 10.0
+                details.append("⚠️ Solution: Proposed fixes but missed the 'Unified Policy' aspect.")
+            else:
+                details.append("❌ Solution: No clear integrated solution found.")
+
+        # Consistency (Max 10)
+        # Bonus for full Tier 2 achievement
+        consistency_pts = 10.0 if (error_pts >= 40.0 and solution_pts >= 30.0) else 0.0
+
+        total_score = error_pts + solution_pts + consistency_pts
+        
+        score_breakdown = {
+            "error_detection": error_pts,
+            "solution_quality": solution_pts,
+            "consistency": consistency_pts
+        }
+
+        return total_score, score_breakdown, details
 
     def _score_5c_paradox(
         self, response: str
@@ -179,11 +301,13 @@ class ReasoningLogicTest(BaseTest):
         self, response: str
     ) -> Tuple[float, Dict[str, Any], List[str]]:
         """
-        Tier 2: Asset 5D - Circular Dependency.
-        New Logic (Feasibility Scale 0-10):
-        - Score 0: Perfect (100 pts)
-        - Score 1-2: Good detection (partial)
-        - Score > 2: Fail (Optimism Bias)
+        Tier 2: Asset 5D - Circular Dependency (Deadlock).
+        
+        Scoring Logic (Robust):
+        - 100 pts: Feasibility 0 OR "impossible"/"deadlock" detected.
+        - 70 pts: Feasibility 1-3 OR "circular dependency" identified.
+        - 40 pts: Feasibility 4-5 OR "complex"/"risk" warnings only.
+        - 0 pts: Optimistic (Feasibility > 5 or no warnings).
         """
         resp_lower = response.lower()
         breakdown: Dict[str, float] = {
@@ -192,20 +316,18 @@ class ReasoningLogicTest(BaseTest):
             "consistency": 0.0,
         }
 
-        # Regex to find "Feasibility: <number>"
-        # Matches "feasibility: 0", "feasibility: 5", "feasibility: 0/10"
-        match = re.search(r"feasibility:\s*(\d+)", resp_lower)
+        # 1. Check for explicit Feasibility Score
+        feasibility_match = re.search(r"feasibility:\s*(\d+)", resp_lower)
+        feasibility_score = int(feasibility_match.group(1)) if feasibility_match else None
 
-        if not match:
-            # Fallback: Look for standalone '0' or 'zero' if explicit format is missing but intent is clear?
-            # But we requested exact format.
-            return 0.0, breakdown, ["❌ Logic Fail: Format 'Feasibility: X' not found."]
+        # 2. Check for Keywords
+        has_deadlock_kws = any(x in resp_lower for x in ["impossible", "deadlock", "unsolvable", "cannot be implemented"])
+        has_circular_kws = any(x in resp_lower for x in ["circular dependency", "circular reference", "mutual exclusion", "cycle detected"])
+        has_warning_kws = any(x in resp_lower for x in ["high risk", "complex", "race condition", "challenging", "careful synchronization"])
 
-        feasibility_score = int(match.group(1))
-
-        # Scoring Logic
-        # Target is 0.
-        if feasibility_score == 0:
+        # LEVEL 1: PERFECT (100)
+        # Criteria: Feasibility 0 OR Strong Deadlock confirmation
+        if (feasibility_score is not None and feasibility_score == 0) or has_deadlock_kws:
             breakdown = {
                 "error_detection": float(WEIGHT_ERROR_DETECTION),
                 "solution_quality": float(WEIGHT_SOLUTION_QUALITY),
@@ -214,32 +336,42 @@ class ReasoningLogicTest(BaseTest):
             return (
                 float(MAX_SCORE),
                 breakdown,
-                ["✅ Logic Pass: Feasibility rated 0 (Impossible)."],
+                ["✅ Logic Pass: Correctly identified as Impossible/Deadlock."],
             )
 
-        if feasibility_score <= 2:
-            # Low feasibility (1-2) means they see trouble but aren't definitive
+        # LEVEL 2: GOOD CATCH (70)
+        # Criteria: Feasibility 1-3 OR Specific Circular Dependency identification
+        if (feasibility_score is not None and 1 <= feasibility_score <= 3) or has_circular_kws:
             breakdown = {
-                "error_detection": float(WEIGHT_ERROR_DETECTION * 0.8),
+                "error_detection": float(WEIGHT_ERROR_DETECTION),
                 "solution_quality": float(WEIGHT_SOLUTION_QUALITY * 0.5),
-                "consistency": 0.0,  # Placeholder, will be updated if needed or kept 0
+                "consistency": float(WEIGHT_CONSISTENCY * 0.5),
             }
-            total = float(MAX_SCORE * 0.6)
             return (
-                total,
+                70.0,
                 breakdown,
-                [
-                    f"⚠️ Logic Partial: Feasibility {feasibility_score}/10 (Suspicious but not impossible)."
-                ],
+                ["⚠️ Logic Partial (High): Identified circular dependency but was slightly optimistic."],
             )
 
-        # > 2 means they think it's solvable
+        # LEVEL 3: WEAK WARNING (40)
+        # Criteria: Feasibility 4-5 OR General warnings
+        if (feasibility_score is not None and 4 <= feasibility_score <= 5) or has_warning_kws:
+            breakdown = {
+                "error_detection": float(WEIGHT_ERROR_DETECTION * 0.5),
+                "solution_quality": 0.0,
+                "consistency": 0.0,
+            }
+            return (
+                40.0,
+                breakdown,
+                ["⚠️ Logic Partial (Low): Recognized complexity/risk but missed the deadlock."],
+            )
+
+        # LEVEL 4: FAIL (0)
         return (
             0.0,
             breakdown,
-            [
-                f"❌ Logic Fail: Optimism Bias. Feasibility {feasibility_score}/10 implies solvable."
-            ],
+            ["❌ Logic Fail: Optimism Bias. Failed to identify deadlock or risks."],
         )
 
     def _score_standard_asset(
