@@ -15,12 +15,12 @@ root_dir = Path(__file__).parent.parent.parent
 if str(root_dir) not in sys.path:
     sys.path.insert(0, str(root_dir))
 
-from benchmark_modules.base_test import BaseTest
-from benchmark_modules.code_quality.core.constants import (
+from benchmark_modules.base_test import BaseTest  # noqa: E402
+from benchmark_modules.code_quality.core.constants import (  # noqa: E402
     DEFAULT_TEMPERATURE,
     TOKEN_MULTIPLIER,
 )
-from benchmark_modules.code_quality.core.evaluators import CodeQualityEvaluator
+from benchmark_modules.code_quality.core.evaluators import CodeQualityEvaluator  # noqa: E402
 
 
 class CodeQualityTest(BaseTest):

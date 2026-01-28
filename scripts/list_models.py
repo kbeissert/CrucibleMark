@@ -28,8 +28,8 @@ except ImportError:
 ROOT_DIR = Path(__file__).parent.parent
 sys.path.insert(0, str(ROOT_DIR))
 
-from utils.model_utils import is_model_suitable_for_benchmark
-from utils.llm_client import LLMClient
+from utils.model_utils import is_model_suitable_for_benchmark  # noqa: E402
+from utils.llm_client import LLMClient  # noqa: E402
 # pylint: enable=wrong-import-position, import-error
 
 

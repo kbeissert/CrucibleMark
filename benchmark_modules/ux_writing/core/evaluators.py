@@ -1,6 +1,6 @@
 import re
 from abc import ABC, abstractmethod
-from typing import Tuple, List, Optional, Union
+from typing import Tuple, List
 from utils.similarity import SemanticSimilarity
 from .models import UXCriterion, UXIssue
 

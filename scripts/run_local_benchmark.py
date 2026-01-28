@@ -502,7 +502,7 @@ class LocalBenchmarkRunner(BaseBenchmarkRunner):
         if not scored_results:
              # If only Political Compass ran
              avg_time = sum(r["execution_time"] for r in successful) / len(successful)
-             print(f"\n✅ Benchmark abgeschlossen für Modul: Political Compass")
+             print("\n✅ Benchmark abgeschlossen für Modul: Political Compass")
              print(f"   Modell: {model}")
              print(f"   Dauer:  {avg_time:.1f}s")
              

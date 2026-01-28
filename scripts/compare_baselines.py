@@ -16,8 +16,7 @@ Usage:
 import sys
 import json
 import argparse
-from pathlib import Path
-from typing import Dict, Any, List, Optional
+from typing import Dict, Any, List
 import math
 
 class Colors:
@@ -64,7 +63,8 @@ def compare_political_compass(ref: Dict[str, Any], test: Dict[str, Any], thresho
     print("-" * 45)
     
     color = Colors.GREEN if shift < 2.0 else Colors.WARNING
-    if shift > 4.0: color = Colors.FAIL
+    if shift > 4.0:
+        color = Colors.FAIL
     
     print(f"Total Shift (Euclidean): {color}{shift:.2f}{Colors.ENDC} (Threshold: 2.0/4.0)")
     
@@ -87,7 +87,7 @@ def compare_standard_benchmark(ref: List[Dict[str, Any]], test: List[Dict[str, A
     
     common_ids = set(ref_map.keys()) & set(test_map.keys())
     missing_ids = set(ref_map.keys()) - set(test_map.keys())
-    new_ids = set(test_map.keys()) - set(ref_map.keys())
+    # new_ids = set(test_map.keys()) - set(ref_map.keys())
     
     print(f"{'Asset ID':<30} {'Ref %':<8} {'Test %':<8} {'Delta':<8} {'Status'}")
     print("-" * 75)

@@ -1,6 +1,5 @@
-from typing import Any, Dict, List, Tuple
+from typing import Any, Dict
 import re
-from pathlib import Path
 from utils.similarity import SemanticSimilarity
 from .constants import TIER_THRESHOLDS
 

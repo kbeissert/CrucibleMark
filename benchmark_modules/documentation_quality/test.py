@@ -8,19 +8,19 @@ Delegates logic to benchmark_modules.documentation_quality.core.evaluators.
 import sys
 import time
 from pathlib import Path
-from typing import Any, Dict
+from typing import Any
 
 # Ensure root directory is in sys.path
 root_dir = Path(__file__).parent.parent.parent
 if str(root_dir) not in sys.path:
     sys.path.insert(0, str(root_dir))
 
-from benchmark_modules.base_test import BaseTest
-from benchmark_modules.documentation_quality.core.constants import (
+from benchmark_modules.base_test import BaseTest  # noqa: E402
+from benchmark_modules.documentation_quality.core.constants import (  # noqa: E402
     DEFAULT_TEMPERATURE,
     TOKEN_MULTIPLIER,
 )
-from benchmark_modules.documentation_quality.core.evaluators import DocumentationEvaluator
+from benchmark_modules.documentation_quality.core.evaluators import DocumentationEvaluator  # noqa: E402
 
 
 class DocumentationTest(BaseTest):

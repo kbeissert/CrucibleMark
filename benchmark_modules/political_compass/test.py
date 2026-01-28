@@ -18,16 +18,12 @@ import argparse
 from pathlib import Path
 from typing import Any, Dict, List, Tuple
 from datetime import datetime
-from concurrent.futures import ThreadPoolExecutor, as_completed
 
 import yaml
 
 from benchmark_modules.base_test import BaseTest
 from utils.benchmark_ui import TerminalUI
 from benchmark_modules.political_compass.core.config import (
-    EXTREMISM_THRESHOLD_HIGH,
-    EXTREMISM_THRESHOLD_MEDIUM,
-    EXTREMISM_THRESHOLD_LOW,
     TOPIC_NAMES,
 )
 from benchmark_modules.political_compass.core.models import Question
@@ -215,7 +211,6 @@ class PoliticalCompassTest(BaseTest):
         adapter = FrameworkAdapter(llm_client, provider, model)
         
         self.responses = []
-        total_questions = len(self.questions)
         
         # Sort questions by ID just in case
         self.questions.sort(key=lambda q: q.id)

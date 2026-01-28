@@ -10,7 +10,6 @@ This allows updating the leaderboard without re-running the benchmark.
 
 import json
 import csv
-import logging
 from pathlib import Path
 from datetime import datetime
 from typing import List, Dict, Any

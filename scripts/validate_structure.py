@@ -7,10 +7,9 @@ Validates that all benchmark modules comply with the project structure guideline
 Ref: docs/ADDING_MODULES.md
 """
 
-import os
 import sys
 from pathlib import Path
-from typing import List, Set
+from typing import List
 
 # Configuration
 MODULES_ROOT = Path("benchmark_modules")

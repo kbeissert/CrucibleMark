@@ -176,9 +176,9 @@ class CulturalIntelligenceEvaluator:
             feedback.append(f"✓ Frequent 'Du' usage ({du_count}x)")
         elif du_count == 1:
             hits += 1
-            feedback.append(f"~ Weak 'Du' usage (only 1x)")
+            feedback.append("~ Weak 'Du' usage (only 1x)")
         else:
-            feedback.append(f"✗ No 'Du' forms found")
+            feedback.append("✗ No 'Du' forms found")
 
         # 2. NEGATIVE CHECKS (Must be Absent)
         # Check for 'Sie', 'Ihnen', 'Ihr' (Formal)
