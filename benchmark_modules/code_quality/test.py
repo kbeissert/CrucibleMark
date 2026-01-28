@@ -30,7 +30,7 @@ class CodeQualityTest(BaseTest):
     """
 
     def execute(
-        self, model: str, llm_client: Any, provider: str = "ollama"
+        self, model: str, llm_client: Any, provider: str = "ollama", **kwargs
     ) -> Dict[str, Any]:
         """
         Führt den Code Quality Test aus.
@@ -43,7 +43,11 @@ class CodeQualityTest(BaseTest):
         try:
             # Deterministic output via low temperature
             response = llm_client.query(
-                model, full_prompt, provider=provider, temperature=DEFAULT_TEMPERATURE
+                model, 
+                full_prompt, 
+                provider=provider, 
+                temperature=DEFAULT_TEMPERATURE,
+                **kwargs,
             )
             elapsed = time.time() - start
 

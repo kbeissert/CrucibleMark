@@ -120,13 +120,14 @@ class BaseTest(ABC):
         return cleaned.strip()
 
     @abstractmethod
-    def execute(self, model: str, llm_client) -> Dict[str, Any]:
+    def execute(self, model: str, llm_client, **kwargs) -> Dict[str, Any]:
         """
         Führt Test aus und gibt Response zurück
 
         Args:
             model: Name des zu testenden Modells
             llm_client: LLM Client Instanz
+            **kwargs: Optionale Zusatz-Argumente (z.B. stream_handler)
 
         Returns:
             Dict mit Response-Daten:

@@ -9,7 +9,7 @@ CODING_BENCHMARK_OPTIONS = {
     "temperature": 0.1,  # Deterministisch für Code
     "num_predict": 8192,  # Fixierte Max-Tokens für Konsistenz
     "top_k": 10,  # Reduzierte Sampling-Varianz
-    "repeat_penalty": 1.0,  # Keine Wiederholungs-Penalty
+    "repeat_penalty": 1.1,  # Leichte Penalty gegen Loops (erforderlich für Cogito/Qwen)
     "seed": 42,  # Reproduzierbarer Seed
 }
 
