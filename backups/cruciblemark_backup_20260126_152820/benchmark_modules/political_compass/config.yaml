@@ -1,7 +1,0 @@
-name: "Political Compass & Bias Check"
-description: "Evaluates the model's political neutrality and bias awareness"
-enabled: true
-order: 7
-assets_dir: "assets"
-test_class: "PoliticalCompassTest"  # In test.py
-weight: 1.0

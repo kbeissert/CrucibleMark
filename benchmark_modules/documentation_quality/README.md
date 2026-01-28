@@ -3,148 +3,68 @@
 > **Technical Metadata**
 > - **ID:** `documentation_quality`
 > - **Namespace:** `benchmark_modules.documentation_quality`
-> - **Class:** `DocumentationTest` (inherits `BaseTest`)
-> - **Version:** v0.9.5 (Hardened)
-> - **Type:** Technical Writing & Structure
+> - **Class:** `DocumentationQualityTest` (inherits `BaseTest`)
+> - **Evaluator:** `DocumentationEvaluator`
+> - **Version:** v1.0.0 (Clean Architecture)
+> - **Type:** Technical Writing & Education
 
 ## 🔍 Module Overview
 
-Das **Documentation Quality** Modul bewertet die Fähigkeit von LLMs, hochwertige technische Dokumentation zu generieren, zu korrigieren und zu strukturieren. Es prüft, ob Modelle in der Lage sind, komplexe Sachverhalte verständlich, vollständig und strukturell korrekt (Markdown) aufzubereiten.
-
-Es deckt den gesamten Zyklus ab: von READMEs über API-Docs bis hin zu Setup-Guides und Changelogs.
+Dieses Modul prüft die Fähigkeit von LLMs, technische Konzepte zu erklären, API-Dokumentationen zu erstellen oder komplexe Prozesse in verständliche Anleitungen zu überführen. Es unterscheidet strikt zwischen Marketing-Blabla und nutzbarem technischem Content.
 
 ---
 
-## 🏗 Architektur & Scoring-Logik
+## 🏗 Architecture (Core/MVC)
 
-Das Scoring in diesem Modul verwendet ein **hybrides System (Hybrid Content Scoring)**, das rigide Keyword-Checks mit flexibler semantischer Analyse kombiniert.
+This module follows the **Core/MVC** standard pattern enforced across the framework:
 
-### 1. Hybrid Content Scoring
-Anders als bei reinen "Exact Match" Tests, erlaubt dieses Modul Synonyme durch **Semantic Similarity Check**:
-- **Stufe 1 (Exact Match)**: Prüft, ob ein erwartetes Keyword (z.B. "Installation") exakt vorkommt. -> **100% Score**
-- **Stufe 2 (Semantic Fallback)**: Falls nicht, wird der Embedding-Vektor des Keywords mit Sätzen im Text verglichen (Cosine Similarity).
-  - *Beispiel*: Erwartet wird "Installation". Gefunden wird "Wie man das Projekt einrichtet".
-  - Wenn Similarity > Threshold (0.35 - 0.70 je nach Asset), gilt es als **Bestanden**.
-
-### 2. Gewichtung: Error Detection vs. Solution Quality
-Die Gesamtbewertung setzt sich oft (je nach Asset-Typ) zusammen aus:
-- **70% Error Detection / Content Completeness**: Hat das Modell alle notwendigen Sektionen (Installation, Usage, Config) abgedeckt? Hat es fehlende Informationen erkannt?
-- **30% Solution Quality**: Wie gut ist die Qualität? Sind Code-Beispiele vorhanden? Ist die Formatierung (Markdown) sauber? Sind Best Practices (z.B. Syntax Highlighting) eingehalten?
-
-### 3. Tiered Difficulty (Schwierigkeitsgrade)
-Das Modul unterscheidet verschiedene Härtegrade ("Tiers") für die semantische Prüfung. Je komplexer das Asset, desto strenger oder toleranter kann der Threshold sein:
-- **Labeled Tier (Threshold 0.40)**: Einfache, klare Begriffe.
-- **Standard Tier (Threshold 0.40)**: Standard Dokumentationsaufgaben.
-- **Advanced Tier (Threshold 0.35)**: Komplexere Konzepte (Verzeiht mehr Wortvarianz).
-- **Expert Tier (Threshold 0.30)**: Sehr spezifische, abstrakte Anforderungen (höhere Toleranz für Umschreibungen, da Fachsprache variiert).
-
-*Warum sinkt der Threshold bei Expert?* Weil Experten-Themen oft sehr unterschiedlich formuliert werden können ("Dependency Injection Container" vs "Service Locator Pattern"), solange der Sinn stimmt.
+- **`test.py` (The Runner)**:
+    - Provides code snippets or architecture diagrams as context.
+    - Delegates content analysis to `core/evaluators.py`.
+- **`core/evaluators.py` (The Logic)**:
+    - Contains `DocumentationEvaluator`.
+    - Implements **Structure Matching** (does it have Prerequisites, Steps, Troubleshooting?).
+    - Uses **Hybrid Semantic Search** to verify coverage of key concepts.
+- **`core/constants.py` (Configuration)**:
+    - Defines required sections for different doc types (e.g., "API Reference" must have "Parameters" and "Returns").
+- **`assets/*.yaml` (Data)**:
+    - Raw code inputs and expected documentation outputs.
 
 ---
 
-## 🧪 Benchmark-Ablauf (Wie wird verglichen?)
+## 🧪 Scoring Logic
 
-1. **Input**: Das Modell erhält z.B. eine unvollständige README oder eine rohe Python-Funktion.
-2. **Generierung**: Das Modell generiert die Dokumentation.
-3. **Analyse (`test.py`)**:
-   - Der Text wird in Sektionen zerlegt.
-   - **Checkliste**: Das Skript geht eine Liste von `expected_content` (definiert im YAML-Asset) durch.
-   - **Scoring**:
-     - Wird ein Punkt `mandatory: true` vermisst -> Harter Abzug.
-     - Wird ein Punkt `mandatory: false` vermisst -> Leichter Abzug.
-     - Code-Qualität (Syntax Highlighting ```python) wird gesondert geprüft.
-4. **Ergebnis**: Ein Score von 0-100%, der angibt, wie "publikationsreif" die Dokumentation ist.
+The scoring is based on the "Information Architecture" principles.
 
----
+### 1. Structural Completeness (The Skeleton)
+Does the generated markdown follow the standard template?
+*   Checks for headers (`#`, `##`).
+*   Checks for code blocks where expected three backticks.
+*   Checks for list items (steps).
 
-## 📂 Enthaltene Benchmark-Szenarien (Assets)
+### 2. Concept Coverage (Hybrid Semantic)
+Using simple keyword matching *and* embedding similarity (via `utils.similarity`):
+*   **Essential Concepts**: If the doc explains "OAuth" but misses "Tokens", it loses points.
+*   **Hallucination Check**: Does it document parameters that don't exist in the input code?
 
-1. **Asset 001: README Quality** (Tier 1)
-   - Prüft Grundstruktur: Title, Description, Installation, Usage, License.
-2. **Asset 002: REST API Docs** (Tier 2)
-   - Prüft Endpunkt-Beschreibungen, Request/Response Beispiele, Status Codes.
-3. **Asset 003: Component Props** (Tier 2)
-   - React/Frontend Fokus: Prop-Tabellen, Type-Definitionen, Default-Values.
-4. **Asset 004: Setup & Troubleshooting** (Tier 3)
-   - Docker/Environment Setup: Prüft auf klare Schritte, Prerequisites und "Common Issues".
-5. **Asset 005: Changelog & Release Notes** (Tier 3)
-   - SemVer Compliance, Gruppierung (Added/Fixed/Changed), Datumsformate.
+### 3. Clarity & Examples
+*   **Example Density**: High score requires providing concrete code examples, not just abstract descriptions.
+*   **Formatting**: Proper use of bolding, italics, and warning blocks (`> Warning`).
 
 ---
 
-### Features
+## ⚙️ Configuration
 
-- ✅ **Strukturanalyse**: Sections, TOC, logischer Flow, Formatierung
-- ✅ **Vollständigkeits-Check**: Installation, Usage, Examples, Configuration, Troubleshooting
-- ✅ **Technische Korrektheit**: Syntax Highlighting, valide Links, Versions-Info
-- ✅ **Usability-Bewertung**: Zielgruppe, Keywords, Contribution Guide, Visual Hierarchy
-- ✅ **Hybrid Content Scoring**: Keyword-Matching + Semantic Similarity Fallback (verzeiht Synonyme)
+In `benchmark_modules/documentation_quality/core/constants.py`:
 
-## ⚙️ Scoring System
+*   **`REQUIRED_SECTIONS`**: Map of doc-types to mandatory headers.
+*   **`MIN_EXAMPLE_COUNT`**: Minimum number of code blocks required for a full score.
 
-Das Modul verwendet ein komplexes Scoring-Modell:
+---
 
-1. **Keyword Scoring**: Primäre Erkennung relevanter Konzepte via exakter Keywords.
-2. **Semantic Fallback**: Wenn Keywords fehlen, prüft eine Semantic Engine (Threshold 0.35 für die meisten Assets), ob das Konzept sinngemäß vorhanden ist. Dies ermöglicht faire Bewertungen auch für kleinere Modelle (z.B. Dolphin 8B).
-3. **Reference Comparison**: Scores werden gegen einen 'Mistral Large' Golden Standard verglichen. Gaps werden als Prozent-Differenz berechnet.
+## 📂 Available Assets
 
-## 📊 Bewertungskategorien
-
-Das Modul bewertet nach einem **zweistufigen System** (Total: 130 Punkte):
-
-### 1. Error Detection (100 Punkte)
-Hierbei wird geprüft, ob das Modell die versteckten Fehler im Dokumentations-Asset findet. Die Fehler sind in 4 Schwierigkeitsstufen unterteilt:
-
-- **Labeled Issues (Easy - 25 Punkte)**: Explizit markierte Fehler (z.B. `<!-- TODO: Add installation steps -->`).
-- **Standard Issues (Medium - 30 Punkte)**: Offensichtliche Lücken (z.B. fehlende Prerequisites).
-- **Advanced Issues (Hard - 25 Punkte)**: Subtile Fehler (z.B. falsche Syntax in Code-Beispielen, tote Links).
-- **Expert Issues (Very Hard - 20 Punkte)**: Komplexe Probleme (z.B. inkonsistente API-Versionierung, fehlende Security-Hinweise).
-
-**Hinweis zum Prompt-Design:**
-Um eine faire Bewertung zwischen sehr knappen ("Chatty") und sehr effizienten Modellen zu gewährleisten, erzwingen die Prompts eine strikte Trennung:
-1.  **Analyse-Phase**: Auflistung aller gefundenen Probleme (entspricht der *Error Detection* Score).
-2.  **Lösungs-Phase**: Generierung der verbesserten Dokumentation.
-Dies verhindert, dass Modelle Fehler "stillschweigend" korrigieren und dafür keine Punkte erhalten.
-
-### 2. Solution Quality (30 Punkte)
-Hierbei wird die Qualität der generierten Verbesserungsvorschläge bewertet:
-
-- **Code-Beispiele**: Sind die Beispiele syntaktisch korrekt und hilfreich?
-- **Best Practices**: Werden gängige Standards (z.B. Semantic Versioning, Conventional Commits) eingehalten?
-- **Struktur & Klarheit**: Ist die Dokumentation logisch aufgebaut und verständlich?
-
-## 📂 Verfügbare Test-Assets
-
-| ID | Name | Category | Difficulty |
-|----|------|----------|------------|
-| 001 | **README Quality** | Structure & Best Practices | Tiered (1-4) |
-| 002 | **REST API Docs** | Reference Documentation | Tiered (1-4) |
-| 003 | **Component Props** | Frontend/React Specs | Tiered (1-4) |
-| 004 | **Setup & Troubleshooting** | User Guides | Tiered (1-4) |
-| 005 | **Changelog & Releases** | Maintenance Docs | Tiered (1-4) |
-
-### Asset Details
-
-### Asset 001: README Quality Assessment
-- **Kategorie**: README.md Bewertung
-- **Schwierigkeit**: Tiered (Easy → Expert)
-- **Issues**: 17 (25P Labeled, 30P Standard, 25P Advanced, 20P Expert)
-- **Kontext**: CLI-Tool für Log-Analyse (Python)
-- **Zielgruppe**: DevOps Engineers, Backend Developers
-- **Test**: Analysiere unvollständige README und identifiziere Verbesserungspotential
-
-**Was wird getestet:**
-- Erkennung fehlender Best Practices (TOC, Badges, Contributing)
-- Identifikation unvollständiger Sections (Installation, Configuration)
-- Code-Beispiel-Qualität (Syntax Highlighting fehlt)
-- Open Source Conventions
-
-## 🏆 Validierung & Success Stories (Jan 2026)
-
-Das Modul hat sich in umfangreichen Audits als robust erwiesen.
-
-### Key Findings
-1.  **Kleinere Modelle können mithalten**: Durch die "Semantic Fallback"-Engine konnte z.B. **Dolphin-Llama3:8b** seine Bewertung von 12.5% auf **72.5%** verbessern, da korrekte Inhalte auch ohne exakte Keyword-Treffer erkannt wurden.
-2.  **Lokale Spitzenreiter**: **Qwen2.5:14b** erreichte eine Performance Ratio von **104.6%** und übertraf damit punktuell den kommerziellen Standard (Mistral Large) in der Dokumentationsqualität.
-3.  **Konsistenz**: Die Referenzwerte (Golden Standard) haben sich bei stabilen ~76% eingependelt, was realistische Erwartungen setzt (keine künstlichen 100% Hürden).
+*   **Asset 001: API Endpoint** (Documenting a Python Flask route)
+*   **Asset 002: Installation Guide** (Docker setup instructions)
+*   **Asset 003: Architecture Explain** (System Design textual description)
 

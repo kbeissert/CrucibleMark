@@ -1,66 +1,67 @@
-# UX Writing & Microcopy Module
+# UX Writing Module
 
 > **Technical Metadata**
 > - **ID:** `ux_writing`
 > - **Namespace:** `benchmark_modules.ux_writing`
 > - **Class:** `UXWritingTest` (inherits `BaseTest`)
-> - **Version:** v0.9.5 (Hardened)
-> - **Type:** User Experience & Microcopy
+> - **Evaluator:** `UXWritingEvaluator`
+> - **Version:** v1.0.0 (Clean Architecture)
+> - **Type:** Content Strategy & Microcopy
 
 ## 🔍 Module Overview
 
-Dieses Modul bewertet die Fähigkeit von LLMs, nutzerfreundliche, barrierefreie und kontextgerechte UX-Texte zu erstellen. Ein besonderer Fokus liegt auf der **Gratwanderung zwischen technischer Präzision und menschlicher Nähe** (Tone of Voice).
+Dieses Modul prüft die Kompetenz von LLMs im Bereich **User Experience Writing**. Es geht nicht um lange Texte, sondern um präzise, handlungsleitende und empathische Microcopy (Buttons, Fehlermeldungen, Onboarding-Screens).
 
 ---
 
-## 🏗 Architektur & High-Performance Calibration
+## 🏗 Architecture (Core/MVC)
 
-Bei der Entwicklung dieses Moduls zeigte sich, dass moderne High-End-Modelle (Qwen 2.5, DeepSeek V3) einfache UX-Aufgaben oft zu leicht lösen und an die "100%-Decke" stoßen (Ceiling Effect).
+This module follows the **Core/MVC** standard pattern enforced across the framework:
 
-Um die Leistungsfähigkeit der Modelle wirklich differenzieren zu können, wurde insbesondere beim Expert-Level (Asset 005) eine spezielle Bewertungslogik implementiert.
-
-### Das "Microux"-Dilemma (Asset 005)
-Hier müssen Modelle komplexe, verschachtelte Fehlermeldungen in **menschenlesbare, extrem kurze Microcopy** übersetzen, ohne relevante Details zu verlieren.
-
-**Die Bewertungslogik beinhaltet:**
-1.  **Inverse Härtung**: Das Modell bekommt *Abzug*, wenn es bestimmte, eigentlich korrekte aber "faule" Standardfloskeln verwendet (z.B. "Ein Fehler ist aufgetreten" -> zu generisch).
-2.  **Length Constraints**: Harte Zeichen-Limits für Buttons (max 20-30 Zeichen) und Headlines. Modelle, die schwafeln, verlieren massiv Punkte.
-3.  **Semantic Density**: Es wird geprüft, ob trotz der Kürze *alle* kritischen Infos (Was ist passiert? Wie geht es weiter?) enthalten sind.
-4.  **Tone-Check**: Unterscheidung zwischen "Roboter-Deutsch" und empathischer Ansprache.
-
-> **Warum ist Qwen hier nicht bei 100%?**
-> Selbst Top-Modelle neigen dazu, UX-Texte zu "über-erklären". Unser Benchmark bestraft *Verbosity* (Geschwätzigkeit) in Microcopy-Kontexten rigoros. Nur wer **kurz AND präzise** ist, erreicht den Top-Score.
+- **`test.py` (The Runner)**:
+    - Handles prompt injection for specific Personas (e.g., "Voice: Helpful but concise").
+    - Delegates analysis to `core/evaluators.py`.
+- **`core/evaluators.py` (The Logic)**:
+    - Contains `UXWritingEvaluator`.
+    - Features specialized **Text Stat Analyzers** (Flesch-Reading-Ease, Character Count).
+    - Checks for **Tone Consistency**.
+- **`core/constants.py` (Configuration)**:
+    - Defines character limits for specific UI elements (e.g., "Button Label" < 20 chars).
+    - Stores "Banned Words" lists (e.g., technical jargon like "Fatal Error").
+- **`assets/*.yaml` (Data)**:
+    - Scenarios defining the User Journey and the required UI component.
 
 ---
 
-## 📂 Verfügbare Test-Assets
+## 🧪 Scoring Logic
 
-| ID | Name | Focus |
-|----|------|-------|
-| 001 | **Error Messages** | Technische Fehler → Nutzerfreundlich |
-| 002 | **Button Labels** | Kontextbasierte CTAs |
-| 003 | **Onboarding Flow** | 3-Step Tutorials |
-| 004 | **Accessibility Labels** | ARIA-Labels für Screen-Reader |
-| 005 | **Microcopy Audit** | Compliance & Safety (Medical) |
+The `UXWritingEvaluator` combines hard metrics (Length) with soft metrics (Sentiment).
 
-## 📊 Scoring-Dimensionen
+### 1. Brevity & Constraints (The "Mobile First" Check)
+UX Writing often has hard limits.
+*   **Characters**: If the output exceeds the limit defined in `constants.py` for the component type, the score drops drastically.
+*   **Structure**: Does it use bullet points where requested?
 
-| Kategorie | Gewichtung | Beschreibung |
-|-----------|------------|--------------|
-| **Problem-Erkennung** | 60 Punkte | Erkennung von UX-Writing-Problemen (Tiered) |
-| **Lösungs-Qualität** | 30 Punkte | Verständlichkeit, Tonalität, Handlungsanweisungen |
-| **Formatierung** | 10 Punkte | A11y-Konformität, Struktur |
+### 2. Tone & Voice Analysis
+*   **Sentiment Analysis**: Verifies if the error message is "blameless" (User-Centric) or "accusatory" (System-Centric).
+*   **Clarity**: Measures reading level. Lower grade level = Better UX Score.
 
-## 🧠 Besonderheiten
+### 3. Jargon Detection
+*   Scans for technical terms ("Database Exception", "Null Pointer") that should never appear in user-facing copy.
 
-- **Compliance-Awareness**: Asset 005 testet medizinischen Kontext (Fehldosierung = Critical)
-- **A11y-Fokus**: ARIA-Labels, Screen-Reader-Kompatibilität
-- **Mobile-First**: Button-Limits (50 Zeichen), Step-Limits (80 Wörter)
+---
 
-### Schwierigkeits-Level
+## ⚙️ Configuration
 
-1. **Labeled (Easy)**: Probleme sind explizit markiert (z.B. "TODO: Zu technisch").
-2. **Standard (Medium)**: Offensichtliche Verstöße gegen UX-Writing-Regeln (z.B. Passiv, Jargon).
+In `benchmark_modules/ux_writing/core/constants.py`:
 
-**Hinweis zum Prompt-Design:**
-Um eine faire Bewertung zu gewährleisten, erzwingen alle UX-Writing-Prompts eine strikte Trennung in **Schritt 1: Analyse** (Problem-Identifikation) und **Schritt 2: Optimierung**. Modelle, die diesen Schritt überspringen, verlieren signifikant Punkte in der *Problem-Erkennung*.
+*   **`COMPONENT_LIMITS`**: Dictionary mapping UI types to max lengths (e.g., `{'button': 25, 'toast': 60}`).
+*   **`TONE_GUIDELINES`**: Defines positive/negative word lists for sentiment scoring.
+
+---
+
+## 📂 Available Assets
+
+*   **Asset 001: 404 Page** (Creative yet helpful dead-end handling)
+*   **Asset 002: Success Toast** (Confirmation message logic)
+*   **Asset 003: Critical Error** (Payment failure handling - empathy check)

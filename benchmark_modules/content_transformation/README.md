@@ -1,73 +1,68 @@
-# Content Transformation & Adaption Module
+# Content Transformation Module
 
 > **Technical Metadata**
 > - **ID:** `content_transformation`
 > - **Namespace:** `benchmark_modules.content_transformation`
 > - **Class:** `ContentTransformationTest` (inherits `BaseTest`)
-> - **Version:** v0.9.5 (Optimized)
-> - **Type:** Creative Writing & Adaptation
+> - **Evaluator:** `ContentForEvaluator` (Legacy Naming) -> `TransformationEvaluator`
+> - **Version:** v1.0.0 (Clean Architecture)
+> - **Type:** Data Processing & ETL
 
 ## 🔍 Module Overview
 
-Dieses Modul bewertet die Fähigkeit von LLMs, Inhalte von einem Format in ein anderes zu transformieren und dabei Stil, Tonalität und Struktur anzupassen. Es prüft, ob Modelle den Kern einer Botschaft verstehen und ihn zielgruppengerecht (z.B. als Landing Page oder Video Script) neu verpacken können, ohne zu halluzinieren oder den Ton zu verfehlen.
+Dieses Modul testet die **Zuverlässigkeit** von LLMs bei der Umwandlung von Datenformaten. Es ist entscheidend für RAG-Pipelines und Agenten, die unstrukturierten Text (PDFs, Mails) in strukturierte Daten (JSON, XML, YAML) wandeln müssen, **ohne** Informationen zu verlieren oder zu erfinden.
 
 ---
 
-## 🏗 Architektur & Scoring-Logik (v0.9.x Update)
+## 🏗 Architecture (Core/MVC)
 
-Nach intensiven Tests mit Qwen 2.5, DeepSeek V3 und lokalen Modellen (Dolphin) zeigte sich, dass "semantische Nähe" allein oft zu False Positives führt. Modelle mogelten sich durch, indem sie Keywords nannten, aber den **Tone** nicht trafen (z.B. blieb Sarkasmus erhalten, obwohl er entfernt werden sollte).
+This module follows the **Core/MVC** standard pattern enforced across the framework:
 
-Daher wurde für Expert-Assets (wie Asset 006 "Sarcasm Shield") eine **gehärtete Hybrid-Logik** eingeführt:
-
-### 1. Hybrid Scoring (Logic Branching)
-Das System entscheidet dynamisch, wie streng es bewertet, basierend auf dem Tier:
-
-- **Standard/Advanced Tier**: 
-  - **Logik**: `Exact Match OR Semantic Match`.
-  - Wenn das Keyword exakt fehlt, reicht eine semantische Ähnlichkeit (Threshold 0.45). Das verzeiht kreatives Umformulieren.
-
-- **Expert Tier (The "Qwen Fix")**:
-  - **Logik**: `Strict Coverage + High-Threshold Semantics`.
-  - **Full Coverage**: Es wird erwartet, dass *alle* kritischen Aspekte adressiert werden (100% Keyword Coverage Ziel).
-  - **Härterer Threshold**: Wenn ein Keyword fehlt, muss der Ersatz semantisch extrem nah an der erwarteten Lösung sein (**Threshold 0.55** statt 0.45).
-  - **Grund**: Dies verhindert, dass Modelle punkten, die nur "ungefähr" vom Thema sprechen, aber die spezifische Nuance (z.B. "Deeskalation") verfehlen.
-
-### 2. Das "Audit & Transform" Pattern
-Alle Assets zwingen das Modell in einen zweistufigen Prozess:
-1.  **Analysieren**: Das Modell muss explizit auflisten, was am Quelltext schlecht ist (z.B. "Zu passiv", "Sarkastisch").
-2.  **Transformieren**: Erst dann folgt der Rewrite.
--> Der Benchmark scannt primär den "Rewrite"-Teil, nutzt aber die Analyse, um das "Verständnis" zu prüfen (Error Detection Score).
+- **`test.py` (The Runner)**:
+    - Feeds raw unstructured text to the model.
+    - Delegates validation to `core/evaluators.py`.
+- **`core/evaluators.py` (The Logic)**:
+    - Contains `TransformationEvaluator`.
+    - Implements **Schema Validation** (using `jsonschema` or equivalent).
+    - Checks **Key-Value Integrity**.
+- **`core/constants.py` (Configuration)**:
+    - Stores expected Schemas (JSON Schemas).
+    - Defines "Critical Fields" that must not be hallucinated/missing.
+- **`assets/*.yaml` (Data)**:
+    - Input text and the target schema definition.
 
 ---
 
-## 📊 Scoring Komponenten
+## 🧪 Scoring Logic
 
-Das Scoring (Total: 100 Punkte) setzt sich zusammen aus:
+Scoring is binary-weighted: A syntax error usually results in a 0 score for that section.
 
-1. **Error Detection / Constraint Adherence (40 Punkte)**
-   - Hat das Modell die Probleme im Source-Text erkannt?
-   - Wurde der Sarkasmus identifiziert? Wurde das fehlende CTA bemerkt?
+### 1. Syntax Compliance (The Gatekeeper)
+*   **Validity**: The output must be parseable by standard libraries (`json.loads`, `ET.fromstring`).
+*   **Format Check**: If JSON was requested, Markdown code blocks are stripped, but the content must be pure JSON.
 
-2. **Solution Quality (60 Punkte)**
-   - Wie gut ist der Rewrite?
-   - Werden die "Expected Keywords" (oder deren semantische Zwillinge) genutzt?
-   - Stimmt die Struktur (z.B. Markdown-Tabelle, Tweet-Länge)?
+### 2. Schema Fidelity
+*   **Keys**: Do all keys from the requirement exist?
+*   **Types**: Is `age` a number or a string? (Strict typing check).
 
----
-
-## 📂 Assets
-
-| ID | Name | Transformation | Difficulty | Highlight |
-|----|------|----------------|------------|-----------|
-| 001 | Landing Page Copy | Feature List -> Hero Section | Tiered | Prüft Conversion-Fokus |
-| 002 | Social Media Thread | Blogpost -> Twitter Thread | Tiered | Prüft Thread-Struktur (1/x) |
-| 003 | Glossary Simplification | Jargon -> Plain Language | Tiered | Prüft "Oma-Test" (Einfachheit) |
-| 004 | Video Script | Outline -> Spoken Word Script | Tiered | Prüft Sprachrhythmus |
-| 005 | Newsletter Adaptation | Case Study -> Email | Tiered | Prüft Betreffzeilen & Hooks |
-| **006**| **Sarcasm Shield** | **Passive-Aggressive -> Neutral** | **Expert** | **Hardened Semantics Test** |
+### 3. Data Integrity (Source of Truth)
+*   **Hallucination Check**: If the source text says "John returns on Friday", and the JSON says `{"return_day": "Monday"}`, this is a critical failure.
+*   **Omission Check**: Did it drop an item from a list?
 
 ---
 
-> **Wartungshinweis für LLMs:**
-> Sollte in Zukunft ein Modell bei Asset 006 wieder 100% erreichen, obwohl der Output sarkastisch ist: Erhöhe den `semantic_threshold` in `test.py` für `expert` Issues auf 0.60 oder 0.65. Dies zwingt das Modell zu präziseren Formulierungen.
+## ⚙️ Configuration
+
+In `benchmark_modules/content_transformation/core/constants.py`:
+
+*   **`STRICT_MODE`**: If `True`, any extra key not in schema reduces score.
+*   **`ALLOW_COMMENTS`**: For JSONC support (usually False for standard JSON).
+
+---
+
+## 📂 Available Assets
+
+*   **Asset 001: Unstructured to JSON** (Extracting order details from an email)
+*   **Asset 002: CSV to YAML** (Reformatting a product catalog)
+*   **Asset 003: Summary Extraction** (Condensing a report into 5 key bullets)
 

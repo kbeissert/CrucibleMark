@@ -1,6 +1,0 @@
-model,test_date,scenario_id,scenario_name,total_score,error_detection_score,solution_quality_score,formatting_score,bonus_score
-mock,2026-01-26 10:18:25,ux_writing_001,Error Messages - User-Friendly Rewriting,64.67,28.0,26.666666666666664,10.0,0.0
-mock,2026-01-26 10:18:25,ux_writing_002,Button Labels - Context-Aware CTAs,28.0,18.0,10.0,0.0,0.0
-mock,2026-01-26 10:18:25,ux_writing_003,Onboarding Flow - 3-Step Tutorial,10.0,10.0,0.0,0.0,0.0
-mock,2026-01-26 10:18:25,ux_writing_004,Accessibility Labels - ARIA for Screen Readers,0.0,0.0,0.0,0.0,0.0
-mock,2026-01-26 10:18:25,ux_writing_005,Microcopy Audit - Health App Context,10.0,10.0,0.0,0.0,0.0

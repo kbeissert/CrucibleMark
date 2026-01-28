@@ -1,20 +1,22 @@
 # CrucibleMark - Projekt-Status & Architektur
 
-**Version:** 0.9.5-beta
-**Datum:** 27. Januar 2026
-**Status:** Calibration & Refactoring Phase
+**Version:** 0.9.6-beta
+**Datum:** 28. Januar 2026
+**Status:** Standardization Complete / Final Pre-Release Setup
 
 ---
 
 ## 🚧 Status Update (Jan 2026)
-Das Framework befindet sich in der finalen Beta-Phase ("Calibration & Refactoring"). 
-Das Ziel der Version 1.0.0 steht noch aus und erfordert folgende Schritte:
+Das Framework erreicht Version 0.9.6. Die massive Refactoring-Phase ("One Standard to rule them all") ist abgeschlossen. Alle Module folgen nun strikt dem Core/MVC-Architekturpattern.
 
-1.  **Modul-Standardisierung**: Refactoring aller Module (1-6) auf die neue Ordnerstruktur und Standards.
-2.  **Kalibrierung**: Feinjustierung der Scoring-Logiken und Prompts für vergleichbare Ergebnisse.
-3.  **Commercial Validation Loop**: Großer Testlauf mit kommerziellen Modellen *nach* dem Refactoring.
+Der Weg zu Version 1.0.0 umfasst nun folgende finale Schritte:
 
-Erst wenn diese Schritte abgeschlossen sind und die Module "eingepegelt" sind, wird Version 1.0.0 veröffentlicht.
+1.  **✅ Modul-Standardisierung**: Alle Module (Code, Content, UX, Documentation, Reasoning, Political, Cultural) sind auf die Core/MVC-Architektur migriert.
+2.  **Code Integrity Check**: Finaler Review auf logische Codefehler und Aufräumarbeiten (Linting, Typing).
+3.  **Module Extension**: Geplante Erweiterung eines bestehenden Moduls um neue Fähigkeiten vor dem Launch.
+4.  **Full Benchmark Test**: Kompletter Durchlauf ("Dry Run") aller Module, um die Stabilität der neuen Architektur zu beweisen.
+
+Erst nach dem erfolgreichen "Dry Run" und der Erweiterung wird Version 1.0.0 released.
 
 ---
 
@@ -54,29 +56,37 @@ crucible-mark/
 │
 ├── benchmark_modules/             # ⭐ TEST-MODULE (Plugin-System)
 │   ├── code_quality/              # ✅ Code Quality Audit
-│   │   ├── test.py
-│   │   ├── config.yaml
+│   │   ├── test.py                # Controller (Runner)
 │   │   ├── README.md
-│   │   └── assets/ (5 Assets)
+│   │   ├── core/                  # Business Logic
+│   │   │   ├── evaluators.py      # Scoring Logic
+│   │   │   └── constants.py       # Config & Thresholds
+│   │   └── assets/ (YAML)
 │   │
 │   ├── ux_writing/                # ✅ UX Writing & Microcopy
-│   │   ├── ...
+│   │   ├── test.py
+│   │   ├── core/
+│   │   └── assets/
 │   │
 │   ├── documentation_quality/     # ✅ Documentation Quality
-│   │   ├── ...
+│   │   ├── test.py
+│   │   ├── core/
+│   │   └── assets/
 │   │
 │   ├── content_transformation/    # ✅ Content Adaption
-│   │   ├── ...
+│   │   ├── test.py
+│   │   ├── core/
+│   │   └── assets/
 │   │
 │   ├── reasoning_logic/           # ✅ Reasoning & Logic
-│   │   ├── ...
+│   │   ├── test.py
+│   │   ├── core/
+│   │   └── assets/
 │   │
 │   └── political_compass/         # ✅ Political Compass (Bias Check)
 │       ├── test.py
-│       ├── config.yaml
 │       ├── README.md
-│       ├── models.py              # Extended Module Architecture
-│       ├── services.py
+│       ├── core/                  # Extended Architecture
 │       └── assets/ (YAML)
 │
 ├── utils/

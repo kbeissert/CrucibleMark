@@ -1,522 +1,181 @@
 # Neue Test-Module hinzufügen
 
-Dieses Framework ist modular aufgebaut und ermöglicht das einfache Hinzufügen neuer Test-Module.
+Dieses Framework folgt einer strikten **Core/MVC-Architektur**. Ein Modul besteht aus einem Runner (`test.py`) und einer Business-Logik (`core/evaluators.py`).
 
-## Übersicht
-
-Ein Test-Modul folgt einer klaren Trennung zwischen Interface und Implementierung ("Clean Architecture"):
+## Übersicht der Struktur
 
 ```
 benchmark_modules/
   └─ your_module/
-     ├─ test.py               # Entry-Point (Test-Klasse, erbt von BaseTest)
-     ├─ config.yaml           # Modul-Konfiguration
-     ├─ README.md             # Dokumentation
-     ├─ assets/               # Test-Assets (Testfälle als YAML)
+     ├─ test.py               # CONTROLLER: Führt LLM aus, misst Zeit
+     ├─ config.yaml           # Metadaten (ID, Name, Version)
+     ├─ README.md             # Doku nach Standard-Template
+     ├─ assets/               # DATA: YAML-Dateien mit Testfällen
      │  ├─ asset_001_*.yaml
      │  └─ ...
-     ├─ core/                 # [NEU] Interne Business Logic & Helfer
-     │  ├─ __init__.py
-     │  ├─ models.py          # Datenstrukturen / Pydantic Models
-     │  ├─ services.py        # Logik, Berechnungen
-     │  └─ io.py              # File Helper
-     └─ scripts/              # [NEU] Wartungs- & Export-Skripte (Standalone)
-        └─ export_debug.py
+     └─ core/                 # MODEL & LOGIC
+        ├─ __init__.py
+        ├─ evaluators.py      # Die eigentliche Scoring-Logik
+        └─ constants.py       # Schwellenwerte, Regex-Pattern, Config
 ```
+
+---
 
 ## Schritt-für-Schritt Guide
 
-### 1. Modul-Struktur erstellen
+### 1. Verzeichnisse erstellen
 
 ```bash
-# Erstelle Verzeichnisse
-mkdir -p benchmark_modules/your_module/{assets,core,scripts}
-cd benchmark_modules/your_module
-
-# Erstelle Dateien
-touch __init__.py test.py config.yaml README.md
-touch core/__init__.py core/models.py
+mkdir -p benchmark_modules/your_module/{assets,core}
+touch benchmark_modules/your_module/{__init__.py,test.py,config.yaml,README.md}
+touch benchmark_modules/your_module/core/{__init__.py,evaluators.py,constants.py}
 ```
 
-### 2. Modul-Registrierung (Wichtig!)
+### 2. Die Logic (`core/evaluators.py`)
 
-Früher mussten Module hardcodiert in den Python-Skripten importiert werden. Das ist nicht mehr nötig.
-Das Framework lädt Module nun **dynamisch** basierend auf der Konfiguration.
-
-1.  Öffne die Datei `benchmark_config.yaml` im Hauptverzeichnis.
-2.  Füge dein neues Modul unter `modules` hinzu:
-
-```yaml
-modules:
-  # ... andere Module ...
-  your_module:
-    enabled: true
-    weight: 1.0  # Optional: Gewichtung für den Gesamt-Score
-```
-
-Das Framework sucht nun automatisch im Ordner `benchmark_modules/your_module` nach der `test.py` und lädt die Klasse `YourModuleTest` (CamelCase von "your_module" + "Test").
-
-### 3. Test-Klasse implementieren (`test.py`)
-
-Deine Test-Klasse muss von `BaseTest` erben und die `execute`-Methode implementieren. Zusätzlich solltest du eine `score_response`-Methode für die Bewertung hinzufügen.
+Zuerst implementieren wir **nur** die Bewertunglogik. Sie sollte nichts von LLMs oder API-Calls wissen.
 
 ```python
-"""Your Module Test Implementation."""
+"""
+Scoring Logic for Your Module.
+"""
+from typing import Dict, Any
 
+class YourEvaluator:
+    """Evaluates the model response against criteria."""
+    
+    def evaluate(self, response_text: str, asset: Dict) -> Dict[str, Any]:
+        """
+        Main entry point for scoring.
+        
+        Args:
+            response_text: The LLM output
+            asset: The asset definition (metadata, expected answers)
+            
+        Returns:
+            Dict containing scores and details.
+        """
+        # 1. Cleaning (e.g. strip <think> tags)
+        clean_text = self._clean_response(response_text)
+        
+        # 2. Score Components
+        score_a = self._check_keywords(clean_text, asset.get('keywords', []))
+        score_b = self._check_length(clean_text)
+        
+        # 3. Aggregate
+        total_score = (score_a * 0.7) + (score_b * 0.3)
+        
+        return {
+            "score": total_score,
+            "details": {
+                "keyword_match": score_a,
+                "length_check": score_b
+            }
+        }
+
+    def _clean_response(self, text: str) -> str:
+        return text.strip()
+        
+    def _check_keywords(self, text: str, keywords: list) -> float:
+        # Implementation...
+        return 100.0
+```
+
+### 3. Der Runner (`test.py`)
+
+Der Runner verbindet das Framework mit deiner Logik. Er erbt von `BaseTest`.
+
+```python
+"""
+Benchmark Runner for Your Module.
+"""
 import sys
-import time
 from pathlib import Path
 from typing import Dict, Any
 
-# Import BaseTest
-# Ensure root directory is in sys.path for imports
+# Ensure correct path for imports
 root_dir = Path(__file__).parent.parent.parent
 if str(root_dir) not in sys.path:
     sys.path.insert(0, str(root_dir))
 
 from benchmark_modules.base_test import BaseTest
+from benchmark_modules.your_module.core.evaluators import YourEvaluator
 
 class YourModuleTest(BaseTest):
-    """Test-Klasse für dein Modul."""
+    """Controller class for Your Module."""
+    
+    def __init__(self):
+        super().__init__()
+        self.evaluator = YourEvaluator() # Inject Logic
     
     def execute(self, model: str, llm_client, provider: str = 'ollama') -> Dict:
         """
-        Führt den Test aus (LLM Query).
-        
-        Args:
-            model: Modell-Name
-            llm_client: Client Wrapper
-            provider: 'ollama' oder 'mistral'/'anthropic'
-            
-        Returns:
-            Dict mit raw_response und Metadaten
+        Orchestrates the test execution.
         """
+        # 1. Prepare Prompt
         prompt = self.asset['prompt']
         
-        # Optional: Context hinzufügen
-        if 'context' in self.asset:
-            full_prompt = f"{self.asset['context']}\n\n{prompt}"
-        else:
-            full_prompt = prompt
-            
-        start = time.time()
-        try:
-            # LLM Aufruf
-            response = llm_client.query(model, full_prompt, provider=provider)
-            elapsed = time.time() - start
-            
-            return {
-                'raw_response': response,
-                'execution_time': elapsed,
-                'metadata': {
-                    'model': model,
-                    'asset_id': self.asset['metadata']['id']
-                }
-            }
-        except Exception as e:
-            return {
-                'raw_response': f"ERROR: {str(e)}",
-                'execution_time': 0.0,
-                'metadata': {'error': str(e)}
-            }
-    
-    def score_response(self, response: str) -> Dict[str, Any]:
-        """
-        Bewertet die LLM-Antwort.
+        # 2. Run LLM
+        start_time = time.time()
+        response = llm_client.generate(model=model, prompt=prompt)
+        duration = time.time() - start_time
         
-        Args:
-            response: Die Antwort des LLMs
-        
-        Returns:
-            Dict mit Scores, Details und Status
-        """
-        if not response or response.startswith("ERROR:"):
-            return {'status': 'error', 'total_score': 0}
-
-        # 1. Scoring Logik implementieren
-        # Tipp: Nutze self.asset['scoring'] für Konfiguration
-        
-        error_score = self._score_error_detection(response)
-        solution_score = self._score_solution_quality(response)
-        
-        total_score = error_score + solution_score
-        
+        # 3. Build Result
         return {
-            'status': 'success',
-            'total_score': total_score,
-            'max_score': 100,
-            'category_scores': {
-                'error_detection': {'achieved': error_score, 'max': 60},
-                'solution_quality': {'achieved': solution_score, 'max': 40}
-            },
-            'details': ["Detail 1", "Detail 2"]
+            "raw_response": response,
+            "execution_time": duration,
+            # ... other standard fields ...
         }
 
-    def _score_error_detection(self, response: str) -> int:
-        # Implementiere deine Logik hier (z.B. Keyword Matching)
-        return 0
+    def score_response(self, response: Dict) -> float:
+        """
+        Delegates scoring to the core evaluator.
+        """
+        result = self.evaluator.evaluate(
+            response_text=response['raw_response'],
+            asset=self.asset
+        )
         
-    def _score_solution_quality(self, response: str) -> int:
-        # Implementiere deine Logik hier
-        return 0
+        # Store detailed breakdown for CSV output
+        self.latest_score_details = result['details']
+        
+        # Return main float score
+        return result['score']
 ```
 
-### 4. Asset-Struktur (Tiered Difficulty)
+### 4. Registrierung (`benchmark_config.yaml`)
 
-Wir nutzen ein **Tiered Difficulty System**. Dein Asset sollte so aussehen:
+Damit das Framework dein Modul findet, trage es in die Haupt-Config ein:
 
 ```yaml
-metadata:
-  id: "001"
-  name: "My Test Asset"
-  difficulty: "Tiered (1-3)"
-
-test_data:
-  labeled_issues:    # Level 1 (Easy)
-    - id: "L1"
-      pattern: "TODO: Fix this"
-      
-  standard_issues:   # Level 2 (Medium)
-    - id: "S1"
-      pattern: "obvious_error()"
-      
-  advanced_issues:   # Level 3 (Hard)
-    - id: "A1"
-      pattern: "subtle_logic_bug"
-```
-        
-        Returns:
-            Dict mit:
-            - total_score: Gesamtpunktzahl
-            - max_score: Maximale Punktzahl
-            - category_scores: Dict mit Kategorie-Scores
-        """
-        # Lade Scoring-Config aus Asset
-        asset = self.load_asset()
-        scoring_config = asset.get('scoring', {})
-        categories = scoring_config.get('categories', {})
-        
-        # Implementiere deine Scoring-Logik
-        category_scores = {}
-        total_score = 0
-        max_score = 0
-        
-        for cat_name, cat_config in categories.items():
-            cat_max = cat_config.get('max_score', 10)
-            
-            # TODO: Implementiere Kategorie-spezifisches Scoring
-            # Beispiel: Suche nach Keywords in Response
-            cat_achieved = self._score_category(response, cat_name, cat_config)
-            
-            category_scores[cat_name] = {
-                'achieved': cat_achieved,
-                'max': cat_max
-            }
-            
-            total_score += cat_achieved
-            max_score += cat_max
-        
-        return {
-            'total_score': total_score,
-            'max_score': max_score,
-            'category_scores': category_scores
-        }
-    
-    def _score_category(self, response: str, category: str, config: dict) -> float:
-        """
-        Hilfsmethode: Bewertet einzelne Kategorie.
-        
-        Implementiere hier deine spezifische Logik.
-        """
-        # Beispiel: Zähle gefundene Items
-        keywords = config.get('keywords', [])
-        found_count = sum(1 for kw in keywords if kw.lower() in response.lower())
-        
-        return min(found_count, config.get('max_score', 10))
+modules:
+  your_module:
+    enabled: true
+    # module_path wird automatisch anhand des Keys ermittelt: benchmark_modules/your_module
 ```
 
-**Wichtige Methoden:**
+### 5. Assets (`assets/*.yaml`)
 
-- `__init__(asset_path)` - Konstruktor, ruft `super().__init__()` auf
-- `execute(model, llm_client, provider)` - Führt Test aus, gibt Response + Zeit zurück
-- `score_response(response)` - Bewertet Antwort, gibt Scores zurück
-- `compare_to_golden_standard(response, golden_path)` - Optional, für Similarity (geerbt von BaseTest)
-
-### 5. Modul-Config erstellen (`config.yaml`)
+Erstelle Testfälle im YAML-Format:
 
 ```yaml
-# Metadaten
-metadata:
-  name: "Your Module Name"
-  version: "0.1.0-alpha"
-  description: "Beschreibung deines Moduls"
-  author: "Dein Name"
-  created: "2024-12-27"
-
-# Modul-spezifische Einstellungen
-module:
-  test_class: "YourModuleTest"  # Name deiner Test-Klasse
-  base_class: "BaseTest"
-
-# Test-Assets
-assets:
-  path: "assets"
-  count: 3  # Anzahl deiner Assets
-  types:
-    - type1
-    - type2
-    - type3
-
-# Scoring-Kategorien
-categories:
-  category1:
-    name: "Category 1 Name"
-    weight: 1.0
-    max_score: 10
-  
-  category2:
-    name: "Category 2 Name"
-    weight: 1.0
-    max_score: 10
-
-# Output-Konfiguration
-output:
-  format: "detailed"
-  include_raw_response: false
-
-# Golden Standards (optional)
-golden_standards:
-  enabled: true
-  provider: "mistral"
-  model: "mistral-large-latest"
-
-# Tags für Filterung
-tags:
-  - your_tag1
-  - your_tag2
-```
-
-### 6. Assets erstellen (`assets/*.yaml`)
-
-Jedes Asset ist eine YAML-Datei mit folgendem Format:
-
-```yaml
-metadata:
+meta:
   id: "your_module_001"
-  name: "Test Name"
-  version: "0.1.0-alpha"
-  category: "your_module"
-  description: "Was dieser Test prüft"
+  difficulty: 2
+  name: "Basic Test"
 
-prompt:
-  system: "Du bist ein Experte für..."
-  user: |
-    Analysiere folgenden Code:
-    
-    ```python
-    # Dein Test-Code hier
-    ```
-    
-    Finde alle Probleme in diesen Kategorien:
-    1. Category 1
-    2. Category 2
-    
-    Format: JSON mit Array 'issues'
+input:
+  prompt: "Write a poem about rust."
 
-expected_output:
-  type: "json"
-  schema:
-    type: "object"
-    properties:
-      issues:
-        type: "array"
-
-scoring:
-  categories:
-    category1:
-      name: "Category 1"
-      weight: 1.0
-      max_score: 10
-      keywords: ["keyword1", "keyword2"]
-    
-    category2:
-      name: "Category 2"
-      weight: 1.0
-      max_score: 10
-      keywords: ["keyword3", "keyword4"]
-
-# Golden Standard Config (optional)
-golden_standard:
-  generate_with:
-    - provider: "mistral"
-      model: "mistral-large-latest"
+evaluation:
+  keywords: ["iron", "oxidize"]
+  min_lines: 4
 ```
 
-### 7. README erstellen (`README.md`)
+---
 
-```markdown
-# Your Module Name
+## Checkliste vor dem Commit
 
-## Übersicht
-Beschreibung was dein Modul testet.
-
-## Test-Kategorien
-
-### 1. Test Name (asset_001)
-**Ziel:** Was wird getestet
-
-**Testet:**
-- Item 1
-- Item 2
-- Item 3
-
-**Score:** 10 Items = 100%
-
-## Verwendung
-
-\```bash
-# Mit globalem Benchmark
-python run_benchmark.py
-
-# Mit Make
-make benchmark-module MODULE=your_module
-\```
-
-## Ergebnisse
-
-Wie werden Ergebnisse interpretiert?
-
-## Modul erweitern
-
-Wie können weitere Assets hinzugefügt werden?
-```
-
-
-
-
-### 8. Testen
-
-```bash
-# Modul-Struktur prüfen
-ls -la test_modules/your_module/
-
-# Assets validieren (falls validator vorhanden)
-make validate
-
-# Benchmark ausführen
-make benchmark-module MODULE=your_module
-
-# Oder interaktiv
-python run_benchmark.py
-# Dann Modul auswählen
-```
-
-## Best Practices
-
-### Code-Qualität
-
-✅ **DO:**
-- Erbe von `BaseTest`
-- Implementiere alle erforderlichen Methoden
-- Nutze Type Hints
-- Schreibe Docstrings
-- Handle Exceptions gracefully
-- Teste mit mehreren Modellen
-
-❌ **DON'T:**
-- Hardcode keine Pfade
-- Verlasse dich nicht auf externe APIs ohne Fallback
-- Ignoriere keine Fehler
-- Mische keine Test-Logik mit Scoring-Logik
-
-### Asset-Design
-
-✅ **DO:**
-- Klare, präzise Prompts
-- Strukturierte Output-Formate (JSON/YAML)
-- Realistische Test-Daten
-- Konsistente Kategorien
-- Dokumentiere erwartete Ergebnisse
-
-❌ **DON'T:**
-- Zu triviale Tests
-- Zu komplexe Tests (split in mehrere Assets)
-- Ambigue Anweisungen
-- Inkonsistente Scoring-Logik
-
-### Dokumentation
-
-✅ **DO:**
-- README mit Übersicht und Beispielen
-- Config mit klaren Kommentaren
-- Inline-Dokumentation in Code
-- Beispiele für Verwendung
-
-❌ **DON'T:**
-- Annahmen über Vorwissen
-- Technischer Jargon ohne Erklärung
-- Veraltete Dokumentation
-
-## Beispiel-Modul
-
-Schaue dir das `code_quality` Modul an:
-
-```
-test_modules/code_quality/
-  ├─ __init__.py
-  ├─ test.py              # ~600 Zeilen, vollständige Implementierung
-  ├─ config.yaml          # Kategorie-Definitionen
-  ├─ README.md            # Umfassende Doku
-  └─ assets/
-     ├─ asset_001_wcag_audit.yaml
-     ├─ asset_002_security_audit.yaml
-     ├─ asset_003_performance_audit.yaml
-     ├─ asset_004_api_design_audit.yaml
-     └─ asset_005_code_smells_audit.yaml
-```
-
-## Troubleshooting
-
-### Modul wird nicht erkannt
-
-**Problem:** `python run_benchmark.py` zeigt Modul nicht an
-
-**Lösung:**
-1. Prüfe `benchmark_config.yaml` - ist `enabled: true`?
-2. Existiert `test_modules/your_module/test.py`?
-3. Ist Test-Klasse korrekt benannt in config?
-
-### Import-Fehler
-
-**Problem:** `ModuleNotFoundError: No module named 'test_modules'`
-
-**Lösung:**
-```python
-# In test.py ganz oben:
-import sys
-from pathlib import Path
-sys.path.insert(0, str(Path(__file__).parent.parent.parent))
-```
-
-### Scoring funktioniert nicht
-
-**Problem:** `total_score` ist immer 0
-
-**Lösung:**
-- Debugge `score_response()` Methode
-- Prüfe ob Response das erwartete Format hat
-- Logge Kategorie-Scores einzeln
-
-## Support
-
-Bei Fragen oder Problemen:
-- Schaue in `test_modules/code_quality/` für vollständiges Beispiel
-- Lese `docs/CODE_QUALITY.md` für Details
-- Erstelle GitHub Issue mit:
-  - Modul-Name
-  - Fehlermeldung
-  - Asset-Beispiel (wenn relevant)
-
-## Lizenz
-
-Alle neuen Module unterliegen der MIT License des Frameworks.
+1.  ✅ **Clean Architecture**: Importiert `test.py` Logik aus `core/`?
+2.  ✅ **Determinismus**: Sind die Scores bei gleichem Input immer gleich?
+3.  ✅ **Namespace**: Haben die Klassen eindeutige Namen (`YourModuleTest`)?

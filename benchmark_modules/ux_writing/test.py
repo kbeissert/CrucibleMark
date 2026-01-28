@@ -17,8 +17,8 @@ if str(root_dir) not in sys.path:
     sys.path.insert(0, str(root_dir))
 
 from benchmark_modules.base_test import BaseTest
-from benchmark_modules.ux_writing.models import UXScenario, UXScoringConfig
-from benchmark_modules.ux_writing.evaluators import IssueEvaluator, EvaluatorFactory
+from benchmark_modules.ux_writing.core.models import UXScenario, UXScoringConfig
+from benchmark_modules.ux_writing.core.evaluators import IssueEvaluator, EvaluatorFactory
 
 # Constants for Tier Calculation
 TIER_S_THRESHOLD = 95.0
