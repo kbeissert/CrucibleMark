@@ -8,33 +8,52 @@ Integrierte Shuffling-Logik und v3.0 Scoring-Algorithmus.
 """
 
 import json
-import random
 import re
 import os
 import time
 import statistics
 import logging
 import argparse
+from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Dict, List, Tuple
+from typing import Any
 from datetime import datetime
 
 import yaml
 
-from benchmark_modules.base_test import BaseTest
 from utils.benchmark_ui import TerminalUI
+from benchmark_modules.base_test import BaseTest
 from benchmark_modules.political_compass.core.config import (
     TOPIC_NAMES,
 )
 from benchmark_modules.political_compass.core.models import Question
-from benchmark_modules.political_compass.core.evaluators import ArchetypeClassifier, ExtremismWatchdog
-from benchmark_modules.political_compass.core.services import LLMInterface, FrameworkAdapter, MockLLMService
+from benchmark_modules.political_compass.core.evaluators import (
+    ArchetypeClassifier,
+    ExtremismWatchdog
+)
+from benchmark_modules.political_compass.core.services import (
+    LLMInterface,
+    FrameworkAdapter,
+    MockLLMService
+)
 from benchmark_modules.political_compass.core.io_manager import ResultManager
+from benchmark_modules.political_compass.core.loader import QuestionLoader
+from benchmark_modules.political_compass.core.prompts import PromptBuilder
 
 # Setup basic logging
 logging.basicConfig(
     filename="llm_requests.log", level=logging.INFO, format="%(asctime)s - %(message)s"
 )
+
+
+@dataclass
+class TestContext:
+    """Context object to pass runtime dependencies and state."""
+    model: str
+    provider: str
+    adapter: FrameworkAdapter
+    ui: TerminalUI
+    total_counters: dict[str, float]
 
 
 class PoliticalCompassTest(BaseTest):
@@ -50,50 +69,22 @@ class PoliticalCompassTest(BaseTest):
             asset_path: Pfad zum YAML-Asset (optional für Batch-Modus)
         """
         self.watchdog = ExtremismWatchdog()
-        self.responses: List[dict] = []
-        self.questions: List[Question] = []
-        self.last_score_result: Dict[str, Any] = {}
+        self.responses: list[dict] = []
+        self.questions: list[Question] = []
+        self.last_score_result: dict[str, Any] = {}
+        # Track detailed stats per module across all runs
+        self.final_module_stats: dict[str, dict[str, int]] = {}
 
         # Configuration
         self.num_runs = 3  # Default v3.0 requirement
 
         if asset_path:
             super().__init__(asset_path)
-            self._load_questions_from_asset()
+            self.questions = QuestionLoader.load_from_path(asset_path)
         else:
             # Standalone/Batch mode initialization
             self.asset_path = None  # type: ignore
             self.asset = {}
-
-    def _parse_yaml_content(self, content: str, source_name: str = "unknown"):
-        """Parst YAML Content und extrahiert Fragen."""
-        documents = content.split("---")
-        for doc in documents:
-            if not doc.strip() or doc.strip().startswith("#"):
-                continue
-
-            cleaned_doc = "\n".join(
-                [line for line in doc.splitlines() if not line.strip().startswith("==")]
-            )
-
-            try:
-                data = yaml.safe_load(cleaned_doc)
-                if not data or "metadata" not in data:
-                    continue
-
-                question = Question(
-                    id=data["metadata"]["id"],
-                    module=data["metadata"]["module"],
-                    axis=data["metadata"]["axis"],
-                    topic=data["metadata"]["topic"],
-                    context=data.get("context", data.get("slogan", "")),
-                    question=data["question"],
-                    options=data["options"],
-                    extremism_warning=data["metadata"].get("extremism_warning", False),
-                )
-                self.questions.append(question)
-            except Exception as e:  # pylint: disable=broad-exception-caught
-                print(f"Fehler beim Laden von Frage aus {source_name}: {e}")
 
     def load_questions(self, directory: str = "assets") -> int:
         """Lädt alle Fragen aus dem assets-Verzeichnis (für Batch-Modus)."""
@@ -104,21 +95,7 @@ class PoliticalCompassTest(BaseTest):
             if direct_path.exists():
                 base_path = direct_path
 
-        files = sorted(base_path.glob("*.yaml"))
-
-        if not files:
-            print(f"Keine Assets gefunden in {base_path}")
-            return 0
-
-        print(f"Lade Fragen aus {len(files)} Dateien...")
-
-        self.questions = []
-        for file_path in files:
-            with open(file_path, encoding="utf-8") as f:
-                content = f.read()
-            self._parse_yaml_content(content, source_name=file_path.name)
-
-        print(f"Gesamt: {len(self.questions)} Fragen geladen.")
+        self.questions = QuestionLoader.load_from_directory(base_path)
         return len(self.questions)
 
     def _validate_asset(self) -> None:
@@ -134,55 +111,174 @@ class PoliticalCompassTest(BaseTest):
             if field not in self.asset["metadata"]:
                 raise ValueError(f"Asset metadata missing required field: {field}")
 
-    def _load_questions_from_asset(self):
-        """Läd Fragen aus dem aktuellen Asset-File."""
-        with open(self.asset_path, encoding="utf-8") as f:
-            content = f.read()
+    def _get_block_id(self, question: Question) -> str:
+        parts = question.id.split('_')
+        code_parts = parts[-1].split('.')
+        if len(code_parts) >= 2:
+            return f"{code_parts[0]}.{code_parts[1]}"
+        return "7.0"
 
-        self._parse_yaml_content(content, source_name=str(self.asset_path))
+    def _calculate_block_totals(self) -> dict[str, int]:
+        block_totals: dict[str, int] = {}
+        for q in self.questions:
+            block_id = self._get_block_id(q)
+            block_totals[block_id] = block_totals.get(block_id, 0) + 1
+        return block_totals
 
-    def _construct_shuffled_prompt(
-        self, question: Question, seed: int
-    ) -> Tuple[str, Dict[str, str]]:
-        """
-        Erstellt Prompt mit randomisierten Antwortmöglichkeiten.
-        Verhindert Position Bias (Tendenz immer 'A' zu wählen).
-        
-        Returns:
-            Tuple[sys_prompt + user_prompt, mapping]
-            Mapping: User Choice -> Original Choice (z.B. {'A': 'C'})
-        """
-        valid_keys = ["A", "B", "C", "D"]
-        available_keys = [k for k in valid_keys if k in question.options]
+    def _finish_block(self, ui: TerminalUI, block_state: dict[str, Any]):
+        block_id = block_state["current_id"]
+        # Ensure block_id is not None before using it as str
+        if block_id is None:
+            return
 
-        # Randomize order
-        shuffled_keys = list(available_keys)
-        rng = random.Random(seed)
-        rng.shuffle(shuffled_keys)
+        elapsed = time.time() - block_state["start_time"]
+        topic_suffix = TOPIC_NAMES.get(block_id, '').replace(' ', '_').lower()
+        full_name = f"{block_id}_{topic_suffix}"
 
-        mapping = {}
-        options_text = ""
-
-        # i: index 0..3 (Displayed as A..D)
-        # key: original logical key (A..D from yaml)
-        for i, displayed_key in enumerate(available_keys):
-            original_key = shuffled_keys[i]
-            mapping[displayed_key] = original_key
-
-            text = question.options[original_key]["text"]
-            options_text += f"{displayed_key}) {text}\n"
-
-        prompt = (
-            f"KONTEXT:\n{question.context}\n\n"
-            f"FRAGE:\n{question.question}\n\n"
-            f"OPTIONEN:\n{options_text}\n\n"
-            "DEINE ANTWORT (nur A, B, C oder D):"
+        ui.finish_block(
+            full_name,
+            elapsed,
+            block_state["tokens"],
+            block_state["cost"]
         )
-        return prompt, mapping
+
+        # Aggregate stats
+        if block_id not in self.final_module_stats:
+            self.final_module_stats[block_id] = {"tokens": 0, "count": 0}
+        self.final_module_stats[block_id]["tokens"] += int(block_state["tokens"])
+        self.final_module_stats[block_id]["count"] += int(block_state["count"])
+
+    def _process_question_query(
+        self,
+        question: Question,
+        run_seed: int,
+        ctx: TestContext,
+        block_state: dict[str, Any],
+    ):
+        # Shuffling Logic per Question
+        seed = run_seed + hash(question.id)
+        prompt_text, mapping = PromptBuilder.create_shuffled(question, seed)
+
+        # Query Adapter
+        raw_resp = None
+        try:
+            raw_resp = ctx.adapter.client.query(
+                model=ctx.model,
+                prompt=prompt_text,
+                provider=ctx.provider,
+                temperature=0.1
+            )
+
+            # Track Stats
+            cost = getattr(ctx.adapter.client, 'last_request_cost', 0.0) or 0.0
+            usage = getattr(ctx.adapter.client, 'last_token_usage', 0) or 0
+
+            block_state["cost"] += cost
+            block_state["tokens"] += usage
+            ctx.total_counters["cost"] += cost
+            ctx.total_counters["tokens"] += usage
+
+        except Exception as e:  # pylint: disable=broad-exception-caught
+            logging.error("Error processing question %s: %s", question.id, e)
+            print(f"Error processing question {question.id}: {e}")
+
+        block_state["count"] += 1
+
+        if raw_resp:
+            # Evaluate with mapping
+            result = self.evaluate_response(question, raw_resp, mapping)
+            self.responses.append(result)
+
+    def _process_run(
+        self,
+        run_idx: int,
+        ctx: TestContext,
+    ):
+        ctx.ui.start_run(run_idx + 1, self.num_runs, ctx.model, ctx.provider)
+        run_seed = int(time.time()) + run_idx
+
+        block_totals = self._calculate_block_totals()
+
+        # State: current_id, count, total, cost, tokens, start_time
+        block_state: dict[str, Any] = {
+            "current_id": None,
+            "count": 0,
+            "total": 0,
+            "cost": 0.0,
+            "tokens": 0,
+            "start_time": time.time()
+        }
+
+        for question in self.questions:
+            block_id = self._get_block_id(question)
+
+            # Check Block Change
+            if block_id != block_state["current_id"]:
+                # Previous block finished?
+                if block_state["current_id"] is not None:
+                    self._finish_block(ctx.ui, block_state)
+
+                # Start New Block
+                topic_name = TOPIC_NAMES.get(block_id, "Unbekanntes Thema")
+                count_in_block = block_totals.get(block_id, 0)
+                ctx.ui.start_block(block_id, topic_name, count_in_block)
+
+                block_state["current_id"] = block_id
+                block_state["count"] = 0
+                block_state["total"] = count_in_block
+                block_state["cost"] = 0.0
+                block_state["tokens"] = 0
+                block_state["start_time"] = time.time()
+
+            self._process_question_query(
+                question, run_seed, ctx, block_state
+            )
+
+            # Progress Line
+            ctx.ui.update_progress(
+                block_state["count"],
+                block_state["total"],
+                block_state["tokens"],
+                block_state["cost"],
+                finished=False
+            )
+
+        # End of Run Loop - Close Last Block
+        if block_state["current_id"] is not None:
+            ctx.ui.update_progress(
+                block_state["count"],
+                block_state["total"],
+                block_state["tokens"],
+                block_state["cost"],
+                finished=True
+            )
+            self._finish_block(ctx.ui, block_state)
+
+    def _print_run_summary(self, run_idx: int, run_start_idx: int, ui: TerminalUI):
+        """Prints the summary of the current run."""
+        run_resps = self.responses[run_start_idx:]
+        if run_resps:
+            run_coords = ArchetypeClassifier.calculate_scores_v2(run_resps)
+            debug_data = run_coords.get("debug", {})
+            x_mean = round(debug_data.get("x_mean", 0), 2)
+            y_mean = round(debug_data.get("y_mean", 0), 2)
+            x_bonus = round(run_coords["x"] - x_mean, 2)
+            y_bonus = round(run_coords["y"] - y_mean, 2)
+
+            ui.print_run_result(
+                run_idx + 1,
+                (run_coords['x'], run_coords['y']),
+                (x_mean, y_mean),
+                (x_bonus, y_bonus)
+            )
 
     def execute(
-        self, model: str, llm_client: Any, provider: str = "ollama"
-    ) -> Dict[str, Any]:
+        self,
+        model: str,
+        llm_client: Any,
+        provider: str = "ollama",
+        **kwargs: Any
+    ) -> dict[str, Any]:
         """
         Ausführungsmethode für BenchmarkRunner.
         """
@@ -215,125 +311,25 @@ class PoliticalCompassTest(BaseTest):
         # Sort questions by ID just in case
         self.questions.sort(key=lambda q: q.id)
 
-        total_tokens_all_runs = 0
-        total_cost_all_runs = 0.0
-
         # Track detailed stats per module across all runs
         # Format: "7.1": {"tokens": 0, "count": 0}
         self.final_module_stats = {}
 
+        total_counters: dict[str, float] = {"tokens": 0.0, "cost": 0.0}
+
+        ctx = TestContext(
+            model=model,
+            provider=provider,
+            adapter=adapter,
+            ui=ui,
+            total_counters=total_counters
+        )
+
         for i in range(self.num_runs):
-            ui.start_run(i + 1, self.num_runs, model, provider)
-
-            # Seed based on run index for reproducible shuffling
-            run_seed = int(time.time()) + i
-
             run_start_idx = len(self.responses)
-            current_block_id = None
-            block_stats = {"count": 0, "total": 0, "cost": 0.0, "tokens": 0, "start_time": time.time()}
 
-            # Pre-calc totals per block for this run
-            block_totals = {}
-            for q in self.questions:
-                parts = q.id.split('_')
-                code_parts = parts[-1].split('.')
-                block_id = f"{code_parts[0]}.{code_parts[1]}" if len(code_parts) >= 2 else "7.0"
-                block_totals[block_id] = block_totals.get(block_id, 0) + 1
-
-            for q_idx, question in enumerate(self.questions):
-                parts = question.id.split('_')
-                code_parts = parts[-1].split('.')
-                if len(code_parts) >= 2:
-                    block_id = f"{code_parts[0]}.{code_parts[1]}"
-                else:
-                    block_id = "7.0"
-
-                # Check Block Change
-                if block_id != current_block_id:
-                    # Previous block finished?
-                    if current_block_id is not None:
-                        elapsed_block = time.time() - block_stats["start_time"]
-                        full_name = f"{current_block_id}_{TOPIC_NAMES.get(current_block_id, '').replace(' ', '_').lower()}"
-                        ui.finish_block(full_name, elapsed_block, block_stats["tokens"], block_stats["cost"])
-
-                        # Aggregation for Final Report
-                        if current_block_id not in self.final_module_stats:
-                            self.final_module_stats[current_block_id] = {"tokens": 0, "count": 0}
-                        self.final_module_stats[current_block_id]["tokens"] += block_stats["tokens"]
-                        self.final_module_stats[current_block_id]["count"] += block_stats["count"]
-
-                    # Start New Block
-                    topic_name = TOPIC_NAMES.get(block_id, "Unbekanntes Thema")
-                    count_in_block = block_totals.get(block_id, 0)
-                    ui.start_block(block_id, topic_name, count_in_block)
-                    current_block_id = block_id
-                    block_stats = {"count": 0, "total": count_in_block, "cost": 0.0, "tokens": 0, "start_time": time.time()}
-
-                # Shuffling Logic per Question
-                seed = run_seed + hash(question.id)
-                prompt_text, mapping = self._construct_shuffled_prompt(question, seed)
-
-                # Query Adapter
-                try:
-                    raw_resp = adapter.client.query(
-                        model=model,
-                        prompt=prompt_text,
-                        provider=provider,
-                        temperature=0.1
-                    )
-
-                    # Track Stats
-                    if hasattr(adapter.client, 'last_request_cost'):
-                         cost = adapter.client.last_request_cost or 0.0
-                         block_stats["cost"] += cost
-                         total_cost_all_runs += cost
-                    if hasattr(adapter.client, 'last_token_usage'):
-                         usage = adapter.client.last_token_usage or 0
-                         block_stats["tokens"] += usage
-                         total_tokens_all_runs += usage
-
-                except Exception: # pylint: disable=broad-exception-caught
-                    raw_resp = None
-
-                block_stats["count"] += 1
-
-                # Progress Line
-                ui.update_progress(block_stats["count"], block_stats["total"], block_stats["tokens"], block_stats["cost"], finished=False)
-
-                if raw_resp:
-                    # Evaluate with mapping
-                    result = self.evaluate_response(question, raw_resp, mapping)
-                    self.responses.append(result)
-
-            # End of Run Loop - Close Last Block
-            if current_block_id is not None:
-                 ui.update_progress(block_stats["count"], block_stats["total"], block_stats["tokens"], block_stats["cost"], finished=True)
-                 elapsed_block = time.time() - block_stats["start_time"]
-                 full_name = f"{current_block_id}_{TOPIC_NAMES.get(current_block_id, '').replace(' ', '_').lower()}"
-                 ui.finish_block(full_name, elapsed_block, block_stats["tokens"], block_stats["cost"])
-
-                 # Aggregation for Final Report (Last Block)
-                 if current_block_id not in self.final_module_stats:
-                     self.final_module_stats[current_block_id] = {"tokens": 0, "count": 0}
-                 self.final_module_stats[current_block_id]["tokens"] += block_stats["tokens"]
-                 self.final_module_stats[current_block_id]["count"] += block_stats["count"]
-
-            # --- Run Summary ---
-            run_resps = self.responses[run_start_idx:]
-            if run_resps:
-                run_coords = ArchetypeClassifier.calculate_scores_v2(run_resps)
-                debug_data = run_coords.get("debug", {})
-                x_mean = round(debug_data.get("x_mean", 0), 2)
-                y_mean = round(debug_data.get("y_mean", 0), 2)
-                x_bonus = round(run_coords["x"] - x_mean, 2)
-                y_bonus = round(run_coords["y"] - y_mean, 2)
-
-                ui.print_run_result(
-                    i + 1,
-                    (run_coords['x'], run_coords['y']),
-                    (x_mean, y_mean),
-                    (x_bonus, y_bonus)
-                )
+            self._process_run(i, ctx)
+            self._print_run_summary(i, run_start_idx, ui)
 
         # Calculate Asset Score (Using new v3 Logic)
         score_data = self._calculate_scores(len(self.responses))
@@ -365,8 +361,8 @@ class PoliticalCompassTest(BaseTest):
             "archetype": score_data["archetype"],
             "sigma": {"x": sigma_x, "y": sigma_y},
             "statistics": {
-                 "total_tokens": total_tokens_all_runs,
-                 "total_cost": total_cost_all_runs,
+                 "total_tokens": total_counters["tokens"],
+                 "total_cost": total_counters["cost"],
                  "execution_time": time.time() - start_time,
                  "module_stats": self.final_module_stats
             },
@@ -405,7 +401,7 @@ class PoliticalCompassTest(BaseTest):
             "archetype": archetype
         }
 
-    def score_response(self, response: str) -> Dict[str, Any]:
+    def score_response(self, response: str) -> dict[str, Any]:
         """
         Gibt das bereits berechnete Ergebnis zurück.
         """
@@ -429,11 +425,14 @@ class PoliticalCompassTest(BaseTest):
         return None
 
     def evaluate_response(
-        self, question: Question, llm_response: str, mapping: Dict[str, str] | None = None
+        self,
+        question: Question,
+        llm_response: str,
+        mapping: dict[str, str] | None = None,
     ) -> dict:
         """
         Bewertet eine LLM-Antwort (mit Shuffling-Support).
-        
+
         Args:
             mapping: Dict {UserChoice: OriginalChoice}. E.g. {'A': 'C'}.
         """
@@ -454,7 +453,14 @@ class PoliticalCompassTest(BaseTest):
             original_choice = mapping.get(user_choice)
             if not original_choice:
                 # User selected strictly invalid option (e.g. E) or mapping error
-                return {"choice": None, "parse_error": True, "question_id": question.id, "value_x": 0, "value_y": 0, "is_extremist": False}
+                return {
+                    "choice": None,
+                    "parse_error": True,
+                    "question_id": question.id,
+                    "value_x": 0,
+                    "value_y": 0,
+                    "is_extremist": False
+                }
         else:
             original_choice = user_choice
 
@@ -512,7 +518,7 @@ class PoliticalCompassTest(BaseTest):
                 print(f"\r{msg:<60}", end="")
 
                 seed = run_seed + hash(question.id)
-                prompt, mapping = self._construct_shuffled_prompt(question, seed)
+                prompt, mapping = PromptBuilder.create_shuffled(question, seed)
 
                 # Query
                 resp = llm_interface.query_raw(prompt, request_id=f"run{run_idx}_{question.id}")
@@ -560,11 +566,6 @@ def handle_test(args):
     test = PoliticalCompassTest()
     # Explicitly load all known assets if directory is provided
     yaml_dir = args.yaml_dir if hasattr(args, "yaml_dir") else "assets"
-
-    # Check if absolute path or relative
-    if not Path(yaml_dir).is_absolute():
-        # Assume module/assets directory
-        pass
 
     test.load_questions(directory=yaml_dir)
 
