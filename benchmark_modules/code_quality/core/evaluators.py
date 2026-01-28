@@ -1,10 +1,11 @@
 from typing import Any, Dict, List, Tuple
 import re
+
+from utils.similarity import SemanticSimilarity
 from .constants import (
     ERROR_INVALID_RESPONSE,
     ERROR_TEST_FAILED,
 )
-from utils.similarity import SemanticSimilarity
 
 class CodeQualityEvaluator:
     """
@@ -15,6 +16,69 @@ class CodeQualityEvaluator:
     def __init__(self, asset: Dict[str, Any]):
         self.asset = asset
         self.similarity_engine = SemanticSimilarity()
+
+    def _evaluate_criterion_dispatch(
+        self, criterion: Dict[str, Any], response: str, response_lower: str
+    ) -> Tuple[float, str]:
+        """Zentraler Dispatcher für alle Check-Methoden."""
+        method = criterion.get("check_method")
+
+        if not isinstance(method, str):
+            return 0.0, ""
+
+        dispatch_map = {
+            "regex": lambda: self._score_pattern_match(response, criterion),
+            "keyword_presence": lambda: self._score_keyword_presence(
+                response_lower, criterion
+            ),
+            "code_validation": lambda: self._score_code_validation(response, criterion),
+            "markdown_table_validation": lambda: self._score_table_criterion(
+                response, criterion
+            ),
+            "list_detection": lambda: self._score_keyword_presence(
+                response_lower, criterion
+            ),
+            "semantic_similarity": lambda: self._score_semantic_similarity(
+                response, criterion
+            ),
+        }
+
+        handler = dispatch_map.get(method)
+        if handler:
+            return handler()
+
+        return 0.0, ""
+
+    def _score_generic_category(
+        self, response: str, response_lower: str, config: Dict[str, Any]
+    ) -> Tuple[float, List[str]]:
+        """Generische Iteration über Kriterien."""
+        score = 0.0
+        details = []
+        for criterion in config.get("criteria", []):
+            delta, detail = self._evaluate_criterion_dispatch(
+                criterion, response, response_lower
+            )
+            score += delta
+            if detail:
+                details.append(detail)
+        return round(score, 2), details
+
+    def _process_category_result(
+        self,
+        category_key: str,
+        score: float,
+        cat_details: List[str],
+        weight: int,
+        results: Dict[str, Any],
+    ) -> None:
+        """Updates the results dictionary with the score and details for a specific category."""
+        results["category_scores"][category_key] = {
+            "achieved": score,
+            "max": weight,
+        }
+        results["details"].extend(cat_details)
+        results["total_achieved"] += score
 
     def score_response(self, response: str) -> Dict[str, Any]:
         """
@@ -36,72 +100,48 @@ class CodeQualityEvaluator:
         scoring_config = self.asset["scoring"]
         total_possible = scoring_config.get("total_points", 100)
 
-        category_scores = {}
-        details = []
-        violations = []
-        total_achieved: float = 0.0
+        results = {
+            "category_scores": {},
+            "details": [],
+            "violations": [],
+            "total_achieved": 0.0,
+        }
 
         response_lower = clean_response.lower()
 
-        # 1. Error Detection
+        # 1. Error Detection (Handled specifically due to violations logic)
         ed_conf = scoring_config.get("error_detection", {})
         ed_score, ed_details, ed_violations = self._score_error_detection(
             clean_response, response_lower, ed_conf
         )
-        category_scores["error_detection"] = {
-            "achieved": ed_score,
-            "max": ed_conf.get("weight", 0),
-        }
-        details.extend(ed_details)
-        violations.extend(ed_violations)
-        total_achieved += ed_score
-
-        # 2. Solution Quality
-        sq_conf = scoring_config.get("solution_quality", {})
-        sq_score, sq_details = self._score_solution_quality(
-            clean_response, response_lower, sq_conf
+        self._process_category_result(
+            "error_detection", ed_score, ed_details, ed_conf.get("weight", 0), results
         )
-        category_scores["solution_quality"] = {
-            "achieved": sq_score,
-            "max": sq_conf.get("weight", 0),
-        }
-        details.extend(sq_details)
-        total_achieved += sq_score
+        results["violations"].extend(ed_violations)
 
-        # 3. Formatting
-        fmt_conf = scoring_config.get("formatting", {})
-        fmt_score, fmt_details = self._score_formatting(
-            clean_response, response_lower, fmt_conf
-        )
-        category_scores["formatting"] = {
-            "achieved": fmt_score,
-            "max": fmt_conf.get("weight", 0),
-        }
-        details.extend(fmt_details)
-        total_achieved += fmt_score
+        # 2. Generic Categories (Solution Quality, Formatting, Expertise)
+        generic_categories = ["solution_quality", "formatting", "expertise"]
+        for cat in generic_categories:
+            if cat not in scoring_config:
+                if cat == "expertise":  # Explicitly handle optional expertise
+                    results["category_scores"][cat] = {"achieved": 0, "max": 0}
+                continue
 
-        # 4. Expertise (Optional)
-        if "expertise" in scoring_config:
-            exp_conf = scoring_config["expertise"]
-            exp_score, exp_details = self._score_expertise(
-                clean_response, response_lower, exp_conf
+            cat_conf = scoring_config.get(cat, {})
+            score, cat_details = self._score_generic_category(
+                clean_response, response_lower, cat_conf
             )
-            category_scores["expertise"] = {
-                "achieved": exp_score,
-                "max": exp_conf.get("weight", 0),
-            }
-            details.extend(exp_details)
-            total_achieved += exp_score
-        else:
-            category_scores["expertise"] = {"achieved": 0, "max": 0}
+            self._process_category_result(
+                cat, score, cat_details, cat_conf.get("weight", 0), results
+            )
 
         return {
             "status": "success",
-            "total_score": round(total_achieved, 2),
+            "total_score": round(results["total_achieved"], 2),
             "max_score": total_possible,
-            "category_scores": category_scores,
-            "details": details,
-            "violations": violations,
+            "category_scores": results["category_scores"],
+            "details": results["details"],
+            "violations": results["violations"],
         }
 
     def _clean_reasoning_tags(self, response: str) -> str:
@@ -181,80 +221,7 @@ class CodeQualityEvaluator:
                 details.append(f"★ Bonus gefunden: {issue.get('issue')}, +{points}p")
         return bonus
 
-    def _score_solution_quality(
-        self, response: str, response_lower: str, config: Dict[str, Any]
-    ) -> Tuple[float, List[str]]:
-        """Scoring strategy for Solution Quality."""
-        score = 0.0
-        details = []
-
-        criteria = config.get("criteria", [])
-        for criterion in criteria:
-            check_method = criterion.get("check_method")
-            if check_method == "regex":
-                delta, detail = self._score_pattern_match(response, criterion)
-                score += delta
-                details.append(detail)
-            elif check_method == "code_validation":
-                delta, detail = self._score_code_validation(response, criterion)
-                score += delta
-                details.append(detail)
-            elif check_method == "keyword_presence":
-                delta, detail = self._score_keyword_presence(response_lower, criterion)
-                score += delta
-                details.append(detail)
-
-        return round(score, 2), details
-
-    def _score_formatting(
-        self, response: str, response_lower: str, config: Dict[str, Any]
-    ) -> Tuple[float, List[str]]:
-        """Scoring strategy for Formatting."""
-        score = 0.0
-        details = []
-
-        criteria = config.get("criteria", [])
-        for criterion in criteria:
-            check_method = criterion.get("check_method")
-            if check_method == "markdown_table_validation":
-                delta, detail = self._score_table_criterion(response, criterion)
-            elif check_method == "keyword_presence":
-                delta, detail = self._score_severity_criterion(response_lower, criterion)
-            elif check_method == "regex":
-                delta, detail = self._score_wcag_references(response, criterion)
-            elif check_method == "list_detection":
-                delta, detail = self._score_testing_checklist(response, response_lower, criterion)
-            else:
-                continue
-
-            score += delta
-            details.append(detail)
-
-        return round(score, 2), details
-
-    def _score_expertise(self, response: str, response_lower: str, config: Dict[str, Any]) -> Tuple[float, List[str]]:
-        """Scoring strategy for Expertise."""
-        score = 0.0
-        details = []
-        criteria = config.get("criteria", [])
-        for criterion in criteria:
-             # Basic implementation of expertise checks if transferred from original code
-             # Assuming mostly keyword/pattern based in original
-            check_method = criterion.get("check_method")
-            if check_method == "semantic_similarity":
-                delta, detail = self._score_semantic_similarity(response, criterion)
-                score += delta
-                details.append(detail)
-            elif check_method == "keyword_presence":
-                delta, detail = self._score_keyword_presence(response_lower, criterion)
-                score += delta
-                details.append(detail)
-        return score, details
-
-    # Helper methods (regex, validation) need to be included.
-    # To keep this file concise for the tool call, I will include placeholder implementations
-    # for the detailed helpers and ask the agent to fill them or copy them fully if I had more tokens.
-    # However, since I am the agent, I must write the full code.
+    # -- Helper Methods --
 
     def _score_pattern_match(self, text: str, criterion: Dict[str, Any]) -> Tuple[float, str]:
         pattern = criterion.get("pattern", "")
@@ -296,20 +263,11 @@ class CodeQualityEvaluator:
             return points, f"✓ {criterion.get('description')}"
         return 0.0, "✗ Tabelle nicht erkannt oder zu klein"
 
-    def _score_severity_criterion(self, text_lower: str, criterion: Dict[str, Any]) -> Tuple[float, str]:
-        return self._score_keyword_presence(text_lower, criterion)
-
-    def _score_wcag_references(self, text: str, criterion: Dict[str, Any]) -> Tuple[float, str]:
-        return self._score_pattern_match(text, criterion)
-
-    def _score_testing_checklist(self, text: str, text_lower: str, criterion: Dict[str, Any]) -> Tuple[float, str]:
-        return self._score_keyword_presence(text_lower, criterion)
-
     def _score_semantic_similarity(self, text: str, criterion: Dict[str, Any]) -> Tuple[float, str]:
         reference = criterion.get("reference_text", "")
         threshold = criterion.get("threshold", 0.7)
         points = criterion.get("points", 0)
-        score = self.similarity_engine.compute_similarity(text, reference)
+        score = self.similarity_engine.calculate_similarity(text, reference)
         if score >= threshold:
             return points, f"✓ Inhaltliche Übereinstimmung ({score:.2f})"
         return 0.0, f"✗ Inhalt weicht ab ({score:.2f} < {threshold})"

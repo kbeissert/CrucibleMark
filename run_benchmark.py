@@ -13,16 +13,21 @@ Usage:
 """
 
 import argparse
+import importlib.util
 import logging
 import sys
+from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Optional
 
-import ollama
 import yaml
 
-from utils.model_utils import is_model_suitable_for_benchmark
+from utils.model_utils import (
+    get_ollama_models_info,
+    resolve_provider,
+)
 from utils.module_loader import load_test_class
+from utils.benchmark_utils import select_from_list
 from utils.similarity import SemanticSimilarity
 
 # Configure logging
@@ -37,7 +42,6 @@ logging.getLogger("httpx").setLevel(logging.WARNING)
 logging.getLogger("httpcore").setLevel(logging.WARNING)
 
 # Constants
-BYTES_TO_GB = 1024**3
 DEFAULT_CONFIG_PATH = "benchmark_config.yaml"
 
 # Pre-import runners to fail fast on import errors
@@ -47,6 +51,17 @@ try:
 except ImportError as e:
     logger.error("Error importing benchmark runners: %s", e)
     sys.exit(1)
+
+
+@dataclass
+class BenchmarkRunConfig:
+    """Konfiguration für einen Benchmark-Lauf."""
+
+    module_name: Optional[str] = None
+    provider_type: Optional[str] = None
+    model_name: Optional[str] = None
+    run_all: bool = False
+    num_runs: int = 1
 
 
 class BenchmarkRunner:
@@ -84,7 +99,7 @@ class BenchmarkRunner:
         if not modules:
             raise ValueError("Keine aktivierten Module gefunden!")
 
-        # Direkter Zugriff wenn angegeben
+        # 1. Direkter Zugriff wenn angegeben
         if module_name:
             if module_name == "all":
                 return None, None  # Signal für "Alle Module"
@@ -92,72 +107,62 @@ class BenchmarkRunner:
                 raise ValueError(f"Modul nicht gefunden: {module_name}")
             return module_name, modules[module_name]
 
-        # Interaktive Auswahl
-        self._print_header("TEST-MODULE")
-        print("  0. ALLE MODULE AUSFÜHREN")
-        print("     Achtung: Führt einen vollständigen Benchmark durch.")
-        print("     Dies kann je nach Modell und Hardware längere Zeit dauern.")
-        print()
+        # 2. Interaktive Auswahl (DRY via select_from_list)
+        # Wir fügen "ALLE MODULE" als eine spezielle Option am Anfang hinzu
+        items = [
+            (
+                "all",
+                {
+                    "name": "ALLE MODULE AUSFÜHREN",
+                    "description": "Führt einen vollständigen Benchmark durch.",
+                },
+            )
+        ]
+        items.extend(list(modules.items()))
 
-        module_list = list(modules.items())
-        for idx, (_, config) in enumerate(module_list, 1):
-            print(f"  {idx}. {config['name']}")
-            print(f"     {config['description']}")
-            if idx < len(module_list):
-                print()
+        def display_mod(item):
+            key, config = item
+            return config["name"], config.get("description", "")
 
-        print(f"{'=' * 60}")
+        selected = select_from_list(
+            items,
+            display_func=display_mod,
+            prompt="Wähle ein Modul",
+            title="TEST-MODULE"
+        )
 
-        while True:
-            try:
-                choice = input(f"\n👉 Wähle ein Modul (0-{len(module_list)}): ").strip()
-                idx = int(choice)
-
-                if idx == 0:
-                    print("✓  Alle Module ausgewählt")
-                    return None, None
-
-                idx = idx - 1  # Adjust for 0-based index
-
-                if 0 <= idx < len(module_list):
-                    selected_name, selected_config = module_list[idx]
-                    print(f"✓  {selected_config['name']}")
-                    return selected_name, selected_config
-
-                print(f"⚠️  Bitte eine Zahl zwischen 0 und {len(module_list)} eingeben")
-            except (ValueError, KeyboardInterrupt):
-                print("\n❌ Abbruch")
-                sys.exit(1)
+        if selected:
+            key, config = selected
+            if key == "all":
+                print("✓  Alle Module ausgewählt")
+                return None, None
+            print(f"✓  {config['name']}")
+            return key, config
+            
+        sys.exit(0)
 
     def select_provider(self, provider_type: Optional[str] = None) -> tuple[str, str]:
         """Interaktive Provider-Auswahl (commercial/local)."""
         if provider_type and provider_type in ["commercial", "local"]:
             return self._select_provider_models(provider_type)
 
-        # Interaktive Auswahl
-        self._print_header("PROVIDER")
-        print("  1. Kommerzielle Modelle (API)")
-        print("     Mistral, Claude, GPT")
-        print()
-        print("  2. Lokale Modelle (Ollama)")
-        print("     Lokal gehostet, Datenschutz")
-        print(f"{'=' * 60}")
+        options = [
+            ("commercial", "Kommerzielle Modelle (API) - Mistral, Claude, GPT"),
+            ("local", "Lokale Modelle (Ollama) - Datenschutz, lokal gehostet"),
+        ]
 
-        while True:
-            try:
-                choice = input("\n👉 Wähle Provider-Typ (1-2): ").strip()
+        selected = select_from_list(
+            options,
+            display_func=lambda x: x[1],
+            prompt="Wähle Provider-Typ",
+            title="PROVIDER"
+        )
 
-                if choice == "1":
-                    print("✓  Kommerzielle Modelle")
-                    return self._select_provider_models("commercial")
-                if choice == "2":
-                    print("✓  Lokale Modelle")
-                    return self._select_provider_models("local")
-
-                print("⚠️  Bitte 1 oder 2 eingeben")
-            except KeyboardInterrupt:
-                print("\n❌ Abbruch")
-                sys.exit(1)
+        if selected:
+            print(f"✓  {selected[1].split(' - ')[0]}")
+            return self._select_provider_models(selected[0])
+            
+        sys.exit(0)
 
     def _select_provider_models(self, provider_type: str) -> tuple[str, str]:
         """Wählt Provider und Modell basierend auf Typ."""
@@ -167,8 +172,6 @@ class BenchmarkRunner:
 
     def _select_commercial_model(self) -> tuple[str, str]:
         """Wählt kommerzielles Modell (Mistral/Claude/GPT)."""
-        self._print_header("KOMMERZIELLE MODELLE")
-
         commercial_config = self.config.get("providers", {}).get("commercial", {})
         models_flat = []
 
@@ -184,116 +187,63 @@ class BenchmarkRunner:
                     }
                 )
 
-        for idx, model in enumerate(models_flat, 1):
-            print(f"  {idx}. [{model['provider_name']}] {model['name']}")
-            print(f"     {model['description']}")
-            print(f"     Model: {model['id']}")
-            if idx < len(models_flat):
-                print()
+        def display_model(m):
+            return (
+                f"[{m['provider_name']}] {m['name']}",
+                f"{m['description']} (Model: {m['id']})"
+            )
 
-        print(f"{'=' * 60}")
-
-        while True:
-            try:
-                choice = input(f"\nWähle ein Modell (1-{len(models_flat)}): ").strip()
-                idx = int(choice) - 1
-
-                if 0 <= idx < len(models_flat):
-                    selected = models_flat[idx]
-                    print(f"✓ Ausgewählt: {selected['name']}")
-                    return str(selected["provider"]), str(selected["id"])
-
-                print(f"⚠️  Bitte eine Zahl zwischen 1 und {len(models_flat)} eingeben")
-            except (ValueError, KeyboardInterrupt):
-                print("\n❌ Abbruch")
-                sys.exit(1)
+        selected = select_from_list(
+            models_flat,
+            display_func=display_model,
+            prompt="Wähle ein Modell",
+            title="KOMMERZIELLE MODELLE"
+        )
+        
+        if selected:
+            print(f"✓ Ausgewählt: {selected['name']}")
+            return str(selected["provider"]), str(selected["id"])
+            
+        sys.exit(0)
 
     def _select_local_model(self) -> tuple[str, str]:
         """Wählt lokales Ollama-Modell."""
-        self._print_header("LOKALE OLLAMA-MODELLE")
-        print("Lade verfügbare Modelle...")
-
-        try:
-            models_response = ollama.list()
-            # Ollama gibt ListResponse mit .models zurück
-            model_list = (
-                models_response.models
-                if hasattr(models_response, "models")
-                else models_response.get("models", [])
-            )
-
-            # Filter out unsuitable models (e.g. embeddings) using centralized logic
-            model_list = [
-                m
-                for m in model_list
-                if is_model_suitable_for_benchmark(
-                    str(m.model if hasattr(m, "model") else m.get("name", ""))
-                )
-            ]
-
-            if not model_list:
-                print("\n⚠️  Keine Ollama-Modelle gefunden!")
-                print("Installiere Modelle mit: ollama pull qwen2.5-coder:7b")
+        print("\nLade verfügbare Modelle...")
+        
+        models = get_ollama_models_info()
+        
+        if not models:
+            # Check if we should warn about installation
+            if importlib.util.find_spec("ollama") is None:
+                print("\n❌ Ollama Python-Bibliothek nicht installiert.")
+                print("Bitte installieren: pip install ollama")
                 sys.exit(1)
 
-            print()
-            for idx, model in enumerate(model_list, 1):
-                # Model ist ein Pydantic-Objekt, nicht ein Dict
-                name = (
-                    model.model
-                    if hasattr(model, "model")
-                    else model.get("name", "unknown")
-                )
-                raw_size = (
-                    model.size if hasattr(model, "size") else model.get("size", 0)
-                )
-                size_gb = (raw_size or 0) / BYTES_TO_GB
-                modified = (
-                    model.modified_at
-                    if hasattr(model, "modified_at")
-                    else model.get("modified_at", "N/A")
-                )
-                modified_str = str(modified)[:10] if modified != "N/A" else "N/A"
-
-                print(f"  {idx}. {name}")
-                print(f"     Größe: {size_gb:.1f} GB | Aktualisiert: {modified_str}")
-                if idx < len(model_list):
-                    print()
-
-            print(f"{'=' * 60}")
-
-            while True:
-                try:
-                    choice = input(
-                        f"\nWähle ein Modell (1-{len(model_list)}): "
-                    ).strip()
-                    idx = int(choice) - 1
-
-                    if 0 <= idx < len(model_list):
-                        selected_model = model_list[idx]
-                        selected = str(
-                            selected_model.model
-                            if hasattr(selected_model, "model")
-                            else selected_model.get("name", "unknown")
-                        )
-                        print(f"✓ Ausgewählt: {selected}")
-                        return "ollama", selected
-
-                    print(
-                        f"⚠️  Bitte eine Zahl zwischen 1 und {len(model_list)} eingeben"
-                    )
-                except ValueError:
-                    print("⚠️  Ungültige Eingabe")
-
-        except (ollama.ResponseError, ConnectionError) as e:
-            logger.error("\n❌ Fehler bei Ollama-Verbindung: %s", e)
-            print("Ist Ollama installiert und läuft? (ollama serve)")
-            sys.exit(1)
-        except Exception as e:
-            logger.error(
-                "\n❌ Unerwarteter Fehler beim Laden der Ollama-Modelle: %s", e
+            print(
+                "\n⚠️  Keine geeigneten Ollama-Modelle gefunden (oder Ollama läuft nicht)!"
             )
+            print("Installiere Modelle mit: ollama pull qwen2.5-coder:7b")
+            print("Befehl zum Starten: ollama serve")
             sys.exit(1)
+
+        def display_model(m):
+            return (
+                m["name"],
+                f"Größe: {m['size_gb']:.1f} GB | Aktualisiert: {m['modified']}"
+            )
+
+        selected = select_from_list(
+            models,
+            display_func=display_model,
+            prompt="Wähle ein Modell",
+            title="LOKALE OLLAMA-MODELLE"
+        )
+        
+        if selected:
+            print(f"✓ Ausgewählt: {selected['name']}")
+            return "ollama", selected["name"]
+            
+        sys.exit(0)
 
     def load_module(self, _: str, module_config: dict[str, Any]):
         """Lädt Test-Modul dynamisch."""
@@ -302,26 +252,19 @@ class BenchmarkRunner:
 
         return load_test_class(test_file, module_config["test_class"])
 
-    def run(
-        self,
-        module_name: Optional[str] = None,
-        provider_type: Optional[str] = None,
-        model_name: Optional[str] = None,
-        run_all: bool = False,
-        num_runs: int = 1,
-    ):
+    def run(self, run_config: BenchmarkRunConfig):
         """Führt Benchmark aus."""
         self._print_header("CRUCIBLE MARK - BENCHMARK RUNNER")
 
         # Determine modules to run
         modules_to_run = []
-        if run_all:
+        if run_config.run_all:
             modules_to_run = list(self.get_enabled_modules().items())
         else:
-            selected_module, module_config = self.select_module(module_name)
+            selected_module, module_config = self.select_module(run_config.module_name)
             if selected_module is None:  # User selected "0. ALL MODULES"
                 modules_to_run = list(self.get_enabled_modules().items())
-            # selected_module is Optional[str], but here we know it's str because of check
+            # selected_module is known to be str here
             elif selected_module and module_config:
                 modules_to_run = [(selected_module, module_config)]
 
@@ -329,37 +272,26 @@ class BenchmarkRunner:
                 min_runs = module_config.get("min_runs", 1)
                 if min_runs > 1:
                     print(
-                        f"\nℹ️  Hinweis: Das Modul '{module_config['name']}' erfordert automatisch {min_runs} Durchläufe."
+                        f"\nℹ️  Hinweis: Das Modul '{module_config['name']}' "
+                        f"erfordert automatisch {min_runs} Durchläufe."
                     )
-                    num_runs = max(num_runs, min_runs)
+                    run_config.num_runs = max(run_config.num_runs, min_runs)
 
         # Determine provider and model (once for all modules if possible)
         provider = None
         model_id = None
 
-        if model_name:
-            # Try to auto-detect provider from model name
-            if model_name.startswith("mistral-"):
-                provider = "mistral"
-                model_id = model_name
-            elif model_name.startswith("gpt"):
-                provider = "openai"
-                model_id = model_name
-            elif model_name.startswith("claude"):
-                provider = "anthropic"
-                model_id = model_name
-            else:
-                # Assume local/ollama if not obviously commercial
-                provider = "ollama"
-                model_id = model_name
+        if run_config.model_name:
+            # Auto-detect provider from model name using utils
+            provider, model_id = resolve_provider(run_config.model_name)
         else:
             # Interactive selection
-            provider, model_id = self.select_provider(provider_type)
+            provider, model_id = self.select_provider(run_config.provider_type)
 
         # Run benchmark for each module
         for _, module_config in modules_to_run:
             print(f"\n>>> Running Module: {module_config['name']}")
-            self._run_benchmark(module_config, model_id, provider, num_runs)
+            self._run_benchmark(module_config, model_id, provider, run_config.num_runs)
 
     def _run_benchmark(
         self,
@@ -469,13 +401,14 @@ Beispiele:
 
     try:
         runner = BenchmarkRunner(args.config)
-        runner.run(
+        config = BenchmarkRunConfig(
             module_name=args.module,
             provider_type=args.provider,
             model_name=args.model,
             run_all=args.all,
             num_runs=args.multi_run,
         )
+        runner.run(config)
     except KeyboardInterrupt:
         print("\n\n❌ Benchmark abgebrochen")
         sys.exit(1)

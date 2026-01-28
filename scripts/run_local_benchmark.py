@@ -6,10 +6,11 @@ import subprocess
 import shutil
 import csv
 import logging
+import json
+import traceback
 from datetime import datetime
 from pathlib import Path
 from typing import Any, Dict, List, Optional
-import traceback
 
 # Add project root to path
 sys.path.insert(0, str(Path(__file__).parent.parent))
@@ -22,12 +23,13 @@ from utils.model_utils import is_reasoning_model
 from utils.llm_client import LLMClient
 
 # Optional: Tightly coupled for now, should be decoupled later
+RESULT_MANAGER = None
 try:
-    from benchmark_modules.political_compass.core.io_manager import ResultManager
+    from benchmark_modules.political_compass.core.io_manager import ResultManager as RM
+    RESULT_MANAGER = RM
 except ImportError:
-    ResultManager = None
+    pass
 
-import json
 # pylint: enable=wrong-import-position, import-error
 
 logger = logging.getLogger(__name__)
@@ -36,18 +38,23 @@ logger = logging.getLogger(__name__)
 class LocalBenchmarkRunner(BaseBenchmarkRunner):
     """Benchmark Runner für lokale Ollama-Modelle."""
 
+    # Benchmark Constants
+    TIER_SCORE_HIGH = 80
+    TIER_SCORE_LOW = 50
+    TOKEN_K_FACTOR = 1000
+
     def __init__(self):
         """Initialisiert Runner."""
         super().__init__()
         self.commercial_csv = self.validator.get_golden_standard_csv()
 
         # Load modules from config
-        self.BENCHMARK_CATEGORIES = {}
+        self.benchmark_categories = {}
         modules_config = self.validator.config.get("modules", {})
 
         for key, mod in modules_config.items():
             if mod.get("enabled", False):
-                self.BENCHMARK_CATEGORIES[key] = {
+                self.benchmark_categories[key] = {
                     "name": mod["name"],
                     "description": mod["description"],
                     "path": f"{mod['path']}/assets",
@@ -145,7 +152,7 @@ class LocalBenchmarkRunner(BaseBenchmarkRunner):
 
     def select_benchmark(self) -> Optional[Dict[str, Any]]:
         """Interaktive Benchmark-Auswahl."""
-        categories = list(self.BENCHMARK_CATEGORIES.items())
+        categories = list(self.benchmark_categories.items())
         selected_item = select_from_list(
             categories,
             lambda item: (item[1]["name"], item[1]["description"]),
@@ -310,114 +317,118 @@ class LocalBenchmarkRunner(BaseBenchmarkRunner):
 
         return commercial_refs, is_valid
 
-    def run_benchmark(
-        self, model: str, benchmark_info: Dict[str, Any], num_runs: int = 1
+    def _update_political_compass_csv(self, model: str, report: Dict[str, Any]) -> None:
+        """Aktualisiert die Leaderboard-CSV für Batch-Tests."""
+        pc_csv = Path("benchmark_scores/political_compass_results.csv")
+        pc_csv.parent.mkdir(exist_ok=True, parents=True)
+
+        pc_rows = []
+        if pc_csv.exists():
+            with open(pc_csv, "r", encoding="utf-8") as f:
+                pc_rows = list(csv.DictReader(f))
+
+        # Remove old entry for this model if exists
+        pc_rows = [r for r in pc_rows if r.get("model") != model]
+
+        new_row = {
+            "model": model,
+            "run_id": "AVG",
+            "x_coordinate": report["coordinates"]["x"],
+            "y_coordinate": report["coordinates"]["y"],
+            "x_label": report["archetype"]["x_label"],
+            "y_label": report["archetype"]["y_label"],
+            "timestamp": datetime.now().isoformat(),
+        }
+        pc_rows.append(new_row)
+
+        with open(pc_csv, "w", encoding="utf-8", newline="") as f:
+            writer = csv.DictWriter(f, fieldnames=new_row.keys())
+            writer.writeheader()
+            writer.writerows(pc_rows)
+
+    def _create_standard_result_from_batch(
+        self, model: str, report: Dict[str, Any], result_wrapper: Dict[str, Any]
+    ) -> Dict[str, Any]:
+        """Erstellt ein Standard-Resultat aus einem Batch-Report."""
+        return {
+            "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+            "status": report.get("status", "success"),
+            "provider": "ollama",
+            "model": model,
+            "asset_id": "political_compass_v3",
+            "asset_name": "Political Compass",
+            "total_score": report["total_score"],
+            "max_score": 100,
+            "percentage": report["total_score"],
+            "execution_time": round(result_wrapper.get("execution_time", 0), 1),
+            "response_length": 0,
+            "tier": report.get("tier", "N/A"),
+            "cost_usd": report.get("statistics", {}).get("total_cost", 0.0),
+            "tokens": report.get("statistics", {}).get("total_tokens", 0),
+        }
+
+    def _run_batch_benchmark(
+        self, model: str, benchmark_info: Dict[str, Any], num_runs: int
     ) -> List[Dict[str, Any]]:
-        """Führt Benchmark für gewähltes Modell durch."""
+        """Führt Batch-Module (z.B. Political Compass) aus."""
+        module_path = Path(benchmark_info.get("module_path", ""))
+        test_file = module_path / "test.py"
+        test_class_name = benchmark_info.get("test_class")
 
-        # Dispatch Batch Mode (e.g. Political Compass) via Config
-        if benchmark_info.get("execution_mode") == "batch":
-            # Dynamic Loading
-            module_path = Path(benchmark_info.get("module_path", ""))
-            test_file = module_path / "test.py"
-            test_class_name = benchmark_info.get("test_class")
+        if not test_class_name or not isinstance(test_class_name, str):
+            logger.error("Keine gültige Test-Klasse für %s definiert.", benchmark_info["name"])
+            return []
 
-            try:
-                TestClass = load_test_class(test_file, test_class_name)
-            except Exception as e:
-                logger.error("Failed to load batch module %s: %s", benchmark_info['name'], e)
-                return []
+        try:
+            test_class_type = load_test_class(test_file, test_class_name)
+        except Exception as e:
+            logger.error(
+                "Failed to load batch module %s: %s", benchmark_info["name"], e
+            )
+            return []
 
-            # TODO: Generic ResultManager for batch modules
-            # For now, we assume Political Compass structure for batch mode
-            # Ideally, the TestClass should handle IO or return a standard object
-            # Imports moved to top-level
+        # TODO: Generic ResultManager for batch modules
+        print(f"🛠️  Initialisiere Batch-Test: {benchmark_info['name']} ({model})")
+        test = test_class_type()
 
-            print(f"🛠️  Initialisiere Batch-Test: {benchmark_info['name']} ({model})")
-            test = TestClass()
+        assets_dir = module_path / "assets"
+        if not assets_dir.exists():
+            print(f"❌ Assets directory not found: {assets_dir}")
+            return []
 
-            # Load assets dynamically from module path
-            assets_dir = module_path / "assets"
-            if not assets_dir.exists():
-                print(f"❌ Assets directory not found: {assets_dir}")
-                return []
+        if hasattr(test, "load_questions"):
+            test.load_questions(str(assets_dir))
 
-            if hasattr(test, "load_questions"):
-                test.load_questions(str(assets_dir))
+        if hasattr(test, "questions") and not test.questions:
+            print("❌ Keine Fragen geladen!")
+            return []
 
-            if hasattr(test, "questions") and not test.questions:
-                print("❌ Keine Fragen geladen!")
-                return []
+        min_runs = benchmark_info.get("min_runs", 1)
+        test.num_runs = max(num_runs, min_runs)
 
-            # Apply runs config
-            min_runs = benchmark_info.get("min_runs", 1)
-            test.num_runs = max(num_runs, min_runs)
+        client = LLMClient(config=self.validator.config)
 
-            # Use LLMClient from utils
-            client = LLMClient(config=self.validator.config)
+        # Execution
+        result_wrapper = test.execute(model=model, llm_client=client, provider="ollama")
 
-            # Execution
-            result_wrapper = test.execute(model=model, llm_client=client, provider="ollama")
+        # Reporting
+        report = json.loads(result_wrapper["raw_response"])
 
-            # Reporting
-            report = json.loads(result_wrapper["raw_response"])
-            ResultManager.print_summary(report)
-
-            # Save results to outputs/runs/
+        if RESULT_MANAGER:
+            RESULT_MANAGER.print_summary(report)
             output_dir = Path("outputs/runs")
-            ResultManager.save_json(report, output_dir)
+            RESULT_MANAGER.save_json(report, output_dir)
 
-            # Save to shared CSV for Leaderboard
-            pc_csv = Path("benchmark_scores/political_compass_results.csv")
-            pc_csv.parent.mkdir(exist_ok=True, parents=True)
+        self._update_political_compass_csv(model, report)
 
-            # Read logic for existing file to append/update
-            pc_rows = []
-            if pc_csv.exists():
-                with open(pc_csv, "r", encoding="utf-8") as f:
-                    pc_rows = list(csv.DictReader(f))
+        return [self._create_standard_result_from_batch(model, report, result_wrapper)]
 
-            # Remove old entry for this model if exists
-            pc_rows = [r for r in pc_rows if r.get("model") != model]
-
-            new_row = {
-                "model": model,
-                "run_id": "AVG",
-                "x_coordinate": report["coordinates"]["x"],
-                "y_coordinate": report["coordinates"]["y"],
-                "x_label": report["archetype"]["x_label"],
-                "y_label": report["archetype"]["y_label"],
-                "timestamp": datetime.now().isoformat()
-            }
-            pc_rows.append(new_row)
-
-            with open(pc_csv, "w", encoding="utf-8", newline="") as f:
-                writer = csv.DictWriter(f, fieldnames=new_row.keys())
-                writer.writeheader()
-                writer.writerows(pc_rows)
-
-            # Create Standard Result for CSV
-            std_result = {
-                "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-                "status": report.get("status", "success"),
-                "provider": "ollama",
-                "model": model,
-                "asset_id": "political_compass_v3",
-                "asset_name": "Political Compass",
-                "total_score": report["total_score"],
-                "max_score": 100,
-                "percentage": report["total_score"],
-                "execution_time": round(result_wrapper.get("execution_time", 0), 1),
-                "response_length": 0,
-                "tier": report.get("tier", "N/A"),
-                "cost_usd": report.get("statistics", {}).get("total_cost", 0.0),
-                "tokens": report.get("statistics", {}).get("total_tokens", 0)
-            }
-            return [std_result]
-
+    def _run_standard_benchmark(
+        self, model: str, benchmark_info: Dict[str, Any]
+    ) -> List[Dict[str, Any]]:
+        """Führt Standard-Benchmarks (Asset-basiert) aus."""
         commercial_refs, _ = self._setup_benchmark_resources()
 
-        # Discover
         assets = self.discover_assets(benchmark_info["path"])
         print(
             f"\n{'=' * 60}\n📊 Starte Benchmark: {benchmark_info['name']}\n{'=' * 60}"
@@ -449,6 +460,17 @@ class LocalBenchmarkRunner(BaseBenchmarkRunner):
 
         return results
 
+    def run_benchmark(
+        self, model: str, benchmark_info: Dict[str, Any], num_runs: int = 1
+    ) -> List[Dict[str, Any]]:
+        """Führt Benchmark für gewähltes Modell durch."""
+
+        # Dispatch Batch Mode (e.g. Political Compass) via Config
+        if benchmark_info.get("execution_mode") == "batch":
+            return self._run_batch_benchmark(model, benchmark_info, num_runs)
+
+        return self._run_standard_benchmark(model, benchmark_info)
+
     def _print_result_status(
         self, idx: int, total: int, name: str, result: Dict[str, Any]
     ):
@@ -465,7 +487,11 @@ class LocalBenchmarkRunner(BaseBenchmarkRunner):
 
         # Format tokens
         t_count = result.get("tokens_used", 0)
-        token_str = f"{t_count / 1000:.1f}k T" if t_count > 1000 else f"{t_count} T"
+        token_str = (
+            f"{t_count / self.TOKEN_K_FACTOR:.1f}k T"
+            if t_count > self.TOKEN_K_FACTOR
+            else f"{t_count} T"
+        )
 
         base_msg = (
             f"   ✓ [{idx}/{total}] {name:<25}: {result['percentage']:>5.1f}% {quality} "
@@ -507,18 +533,18 @@ class LocalBenchmarkRunner(BaseBenchmarkRunner):
         ]
 
         if not scored_results:
-             # If only Political Compass ran
-             avg_time = sum(r["execution_time"] for r in successful) / len(successful)
-             print("\n✅ Benchmark abgeschlossen für Modul: Political Compass")
-             print(f"   Modell: {model}")
-             print(f"   Dauer:  {avg_time:.1f}s")
+            # If only Political Compass ran
+            avg_time = sum(r["execution_time"] for r in successful) / len(successful)
+            print("\n✅ Benchmark abgeschlossen für Modul: Political Compass")
+            print(f"   Modell: {model}")
+            print(f"   Dauer:  {avg_time:.1f}s")
 
-             # Print specific PC info instead of score
-             for r in successful:
-                  if "tier" in r:
-                       print(f"   Resultat: {r['tier']}")
+            # Print specific PC info instead of score
+            for r in successful:
+                if "tier" in r:
+                    print(f"   Resultat: {r['tier']}")
 
-             return
+            return
 
         avg_score = sum(r["total_score"] for r in scored_results) / len(scored_results)
         avg_max = sum(r["max_score"] for r in scored_results) / len(scored_results)
@@ -608,12 +634,12 @@ class LocalBenchmarkRunner(BaseBenchmarkRunner):
         t1_avg = sum(t1_scores) / len(t1_scores) if t1_scores else 0
         t2_avg = sum(t2_scores) / len(t2_scores) if t2_scores else 0
 
-        profile = "⚖️  Balanced / Standard"
-        if t2_avg >= 80:
+        profile = "🤖  Balanced"
+        if t2_avg > self.TIER_SCORE_HIGH:
             profile = "🧠  Deep Thinker (Complex Logic Expert)"
-        elif t1_avg >= 80:
+        elif t1_avg >= self.TIER_SCORE_HIGH:
             profile = "🏎️  Daily Driver (Fast & Reliable)"
-        elif t1_avg < 50:
+        elif t1_avg < self.TIER_SCORE_LOW:
             profile = "⚠️  Needs Improvement"
 
         print(f"   Tier 1 (Operational): {t1_avg:.1f}%")
