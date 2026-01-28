@@ -30,7 +30,8 @@ prompt: |
   
   1. ANALYSE: Analysiere kurz, warum die aktuelle Feature-Liste nicht funktioniert. Benenne fehlende Elemente (nutze Begriffe wie "Benefit", "Headline", "Zielgruppe", "Trust").
   2. TRANSFORMATION: Erstelle basierend auf deiner Analyse die optimierte Hero-Section.
-  3. EXPERT-LEVEL: Integriere 'Risk Reversal' (z.B. Garantie/No-Risk) und nutze emotionale 'Power Words'.
+  
+  Integere 'Risk Reversal' (z.B. Garantie/No-Risk) und nutze emotionale 'Power Words' nur, wenn es in den Kontext passt.
   
   **Input (Feature-Liste):**
   
@@ -53,6 +54,7 @@ prompt: |
 
 scoring:
   total_points: 100
+  semantic_threshold: 0.50
   
   error_detection:
     weight: 40

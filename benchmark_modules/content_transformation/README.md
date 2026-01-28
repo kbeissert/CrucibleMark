@@ -4,45 +4,70 @@
 > - **ID:** `content_transformation`
 > - **Namespace:** `benchmark_modules.content_transformation`
 > - **Class:** `ContentTransformationTest` (inherits `BaseTest`)
-> - **Version:** 0.9.0-beta
+> - **Version:** v0.9.5 (Optimized)
 > - **Type:** Creative Writing & Adaptation
 
 ## 🔍 Module Overview
 
-Dieses Modul bewertet die Fähigkeit von LLMs, Inhalte von einem Format in ein anderes zu transformieren und dabei Stil, Tonalität und Struktur anzupassen.
+Dieses Modul bewertet die Fähigkeit von LLMs, Inhalte von einem Format in ein anderes zu transformieren und dabei Stil, Tonalität und Struktur anzupassen. Es prüft, ob Modelle den Kern einer Botschaft verstehen und ihn zielgruppengerecht (z.B. als Landing Page oder Video Script) neu verpacken können, ohne zu halluzinieren oder den Ton zu verfehlen.
 
-- **Ziel:** Testen von Kreativität, Anpassungsfähigkeit und Einhaltung von Formatvorgaben.
-- **Methodik:** Tiered Difficulty Scoring (Labeled -> Expert Issues) + Solution Quality.
-- **Assets:** 5 Szenarien (Landing Page, Twitter Thread, Glossar, Video Script, Newsletter).
+---
 
-## 📊 Kategorien
+## 🏗 Architektur & Scoring-Logik (v0.9.x Update)
 
-1. **Structure & Format (25%)**: Einhaltung des Zielformats (z.B. Thread-Struktur, Script-Timing).
-2. **Content Quality & Clarity (25%)**: Informationsdichte, Verständlichkeit.
-3. **Engagement & Emotion (25%)**: Emotionaler Hook, Storytelling.
-4. **Conversion & Actionability (25%)**: Call-to-Action, Nutzenargumentation.
+Nach intensiven Tests mit Qwen 2.5, DeepSeek V3 und lokalen Modellen (Dolphin) zeigte sich, dass "semantische Nähe" allein oft zu False Positives führt. Modelle mogelten sich durch, indem sie Keywords nannten, aber den **Tone** nicht trafen (z.B. blieb Sarkasmus erhalten, obwohl er entfernt werden sollte).
 
-## 📈 Scoring
+Daher wurde für Expert-Assets (wie Asset 006 "Sarcasm Shield") eine **gehärtete Hybrid-Logik** eingeführt:
 
-Das Scoring basiert auf zwei Hauptkomponenten (Total: 100 Punkte):
+### 1. Hybrid Scoring (Logic Branching)
+Das System entscheidet dynamisch, wie streng es bewertet, basierend auf dem Tier:
+
+- **Standard/Advanced Tier**: 
+  - **Logik**: `Exact Match OR Semantic Match`.
+  - Wenn das Keyword exakt fehlt, reicht eine semantische Ähnlichkeit (Threshold 0.45). Das verzeiht kreatives Umformulieren.
+
+- **Expert Tier (The "Qwen Fix")**:
+  - **Logik**: `Strict Coverage + High-Threshold Semantics`.
+  - **Full Coverage**: Es wird erwartet, dass *alle* kritischen Aspekte adressiert werden (100% Keyword Coverage Ziel).
+  - **Härterer Threshold**: Wenn ein Keyword fehlt, muss der Ersatz semantisch extrem nah an der erwarteten Lösung sein (**Threshold 0.55** statt 0.45).
+  - **Grund**: Dies verhindert, dass Modelle punkten, die nur "ungefähr" vom Thema sprechen, aber die spezifische Nuance (z.B. "Deeskalation") verfehlen.
+
+### 2. Das "Audit & Transform" Pattern
+Alle Assets zwingen das Modell in einen zweistufigen Prozess:
+1.  **Analysieren**: Das Modell muss explizit auflisten, was am Quelltext schlecht ist (z.B. "Zu passiv", "Sarkastisch").
+2.  **Transformieren**: Erst dann folgt der Rewrite.
+-> Der Benchmark scannt primär den "Rewrite"-Teil, nutzt aber die Analyse, um das "Verständnis" zu prüfen (Error Detection Score).
+
+---
+
+## 📊 Scoring Komponenten
+
+Das Scoring (Total: 100 Punkte) setzt sich zusammen aus:
 
 1. **Error Detection / Constraint Adherence (40 Punkte)**
-   - Prüft, ob das Modell die Transformations-Regeln einhält und typische Fehler vermeidet.
-   - Unterteilt in 4 Schwierigkeitsstufen (Labeled, Standard, Advanced, Expert).
-
-**Hinweis zum Prompt-Design:**
-Um eine faire Bewertung zu gewährleisten, erzwingen alle Transformation-Prompts eine strikte Trennung in **Schritt 1: Analyse** (Problem-Identifikation im Quelltext) und **Schritt 2: Transformation**. Modelle müssen explizit auflisten, welche Elemente (z.B. Headlines, CTAs) fehlen, bevor sie diese ergänzen.
+   - Hat das Modell die Probleme im Source-Text erkannt?
+   - Wurde der Sarkasmus identifiziert? Wurde das fehlende CTA bemerkt?
 
 2. **Solution Quality (60 Punkte)**
-   - Bewertet die Qualität des generierten Outputs anhand von Keywords und Best Practices.
-   - Fokus auf Benefit-Clarity, Structure und Engagement.
+   - Wie gut ist der Rewrite?
+   - Werden die "Expected Keywords" (oder deren semantische Zwillinge) genutzt?
+   - Stimmt die Struktur (z.B. Markdown-Tabelle, Tweet-Länge)?
+
+---
 
 ## 📂 Assets
 
-| ID | Name | Transformation | Difficulty |
-|----|------|----------------|------------|
-| 001 | Landing Page Copy | Feature List -> Hero Section | Tiered |
-| 002 | Social Media Thread | Blogpost -> Twitter Thread | Tiered |
-| 003 | Glossary Simplification | Jargon -> Plain Language | Tiered |
-| 004 | Video Script | Outline -> Spoken Word Script | Tiered |
-| 005 | Newsletter Adaptation | Case Study -> Email | Tiered |
+| ID | Name | Transformation | Difficulty | Highlight |
+|----|------|----------------|------------|-----------|
+| 001 | Landing Page Copy | Feature List -> Hero Section | Tiered | Prüft Conversion-Fokus |
+| 002 | Social Media Thread | Blogpost -> Twitter Thread | Tiered | Prüft Thread-Struktur (1/x) |
+| 003 | Glossary Simplification | Jargon -> Plain Language | Tiered | Prüft "Oma-Test" (Einfachheit) |
+| 004 | Video Script | Outline -> Spoken Word Script | Tiered | Prüft Sprachrhythmus |
+| 005 | Newsletter Adaptation | Case Study -> Email | Tiered | Prüft Betreffzeilen & Hooks |
+| **006**| **Sarcasm Shield** | **Passive-Aggressive -> Neutral** | **Expert** | **Hardened Semantics Test** |
+
+---
+
+> **Wartungshinweis für LLMs:**
+> Sollte in Zukunft ein Modell bei Asset 006 wieder 100% erreichen, obwohl der Output sarkastisch ist: Erhöhe den `semantic_threshold` in `test.py` für `expert` Issues auf 0.60 oder 0.65. Dies zwingt das Modell zu präziseren Formulierungen.
+

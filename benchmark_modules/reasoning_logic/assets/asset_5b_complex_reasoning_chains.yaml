@@ -44,11 +44,14 @@ prompt: |
 
 expected_output:
   required_findings:
-    - "Root cause ist eine inkonsistente Versioning-/Deprecation-Strategie"
-    - "Code-Entscheidungen (Backward compat, Idempotenz) müssen in Docs + UX gespiegelt werden"
-    - "Integrierte Lösung: Unified Versioning + Deprecation Policy + Kommunikation"
+    # Finding 1: Root Cause (Versioning/Deprecation)
+    - "Root cause inkonsistent Versioning Deprecation Strategie inconsistent versioning strategy lifecycle management API mismatch veraltet"
+    # Finding 2: Cross-Domain Alignment (Code <-> Docs <-> UX)
+    - "Code Docs UX alignment cross-domain idempotenz idempotency konsequenzen spiegeln reflect dependencies abhängigkeiten"
+    # Finding 3: Solution (Unified Policy)
+    - "Integrierte Lösung Unified Versioning Policy Deprecation Governance Kommunikation Communication Standardisierung"
   scoring_hints:
-    - "Keine 3 separaten Fixes, sondern EIN policy-getriebener Fix."
+    - "Keine 3 separate Fixes, sondern EIN policy-getriebener Fix."
     - "Sollte konkrete Schritte enthalten (z.B. Deprecation Timeline, Migration Guide, Error Message Mapping)."
 
 scoring:
