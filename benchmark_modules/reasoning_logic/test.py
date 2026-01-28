@@ -5,9 +5,14 @@ Delegates logic to benchmark_modules.reasoning_logic.core.evaluators.
 """
 
 import time
-from typing import Any, Dict
+from typing import Any, cast
 from benchmark_modules.base_test import BaseTest
-from benchmark_modules.reasoning_logic.core.constants import TOKEN_ESTIMATION_FACTOR
+from benchmark_modules.reasoning_logic.core.constants import (
+    TOKEN_ESTIMATION_FACTOR,
+    DEFAULT_TEMPERATURE,
+    SYSTEM_PROMPT_REASONING,
+    MODEL_REASONING_CAPABILITIES,
+)
 from benchmark_modules.reasoning_logic.core.evaluators import ReasoningEvaluator
 
 
@@ -18,8 +23,12 @@ class ReasoningLogicTest(BaseTest):
     """
 
     def execute(
-        self, model: str, llm_client: Any, provider: str = "ollama"
-    ) -> Dict[str, Any]:
+        self,
+        model: str,
+        llm_client: Any,
+        provider: str = "ollama",
+        **kwargs: Any,
+    ) -> dict[str, Any]:
         """
         Executes the reasoning test.
         """
@@ -31,23 +40,14 @@ class ReasoningLogicTest(BaseTest):
         start = time.time()
         # Note: We rely on llm_client.query to handle the actual API call
         response = llm_client.query(
-            model, full_prompt, provider=provider, temperature=0.6
+            model, full_prompt, provider=provider, temperature=DEFAULT_TEMPERATURE
         )
         elapsed = time.time() - start
 
-        approx_tokens = len(response.split()) * TOKEN_ESTIMATION_FACTOR
+        approx_tokens = self._estimate_tokens(response)
 
         # Determine Reasoning Capability
-        model_lower = model.lower()
-        reasoning_cap = 20  # Default: Pattern Matching
-        reasoning_type = "Pattern Matching"
-
-        if "deepseek" in model_lower and "r1" in model_lower:
-            reasoning_cap = 100
-            reasoning_type = "Explicit Reasoning"
-        elif "qwen" in model_lower: # Qwen is generally strong at CoT
-            reasoning_cap = 70
-            reasoning_type = "Implicit Reasoning"
+        reasoning_cap, reasoning_type = self._get_reasoning_capability(model)
 
         return {
             "raw_response": response,
@@ -57,11 +57,11 @@ class ReasoningLogicTest(BaseTest):
                 "model": model,
                 "asset_id": self.asset["metadata"]["id"],
                 "reasoning_capability_score": reasoning_cap,
-                "reasoning_type": reasoning_type
+                "reasoning_type": reasoning_type,
             },
         }
 
-    def score_response(self, response: str) -> Dict[str, Any]:
+    def score_response(self, response: str) -> dict[str, Any]:
         """
         Delegates scoring to ReasoningEvaluator.
         """
@@ -72,8 +72,27 @@ class ReasoningLogicTest(BaseTest):
         """
         Spezifischer System-Prompt, der Reasoning explizit anfordert.
         """
-        return (
-            "You are a logic expert. Solve the given problem step-by-step. "
-            "Show your reasoning process clearly ('Chain of Thought'). "
-            "Finally, provide the clear Answer."
-        )
+        return SYSTEM_PROMPT_REASONING
+
+    def _estimate_tokens(self, text: str) -> int:
+        """Estimates token count for stats."""
+        return int(len(text.split()) * TOKEN_ESTIMATION_FACTOR)
+
+    def _get_reasoning_capability(self, model: str) -> tuple[int, str]:
+        """Determines reasoning capability based on model name."""
+        model_lower = model.lower()
+
+        # Check specific models
+        for key, cap in MODEL_REASONING_CAPABILITIES.items():
+            if key == "default":
+                continue
+
+            if key in model_lower:
+                match_val = str(cap.get("match")) if cap.get("match") else None
+                if match_val and match_val not in model_lower:
+                    continue
+                return cast(int, cap["score"]), str(cap["type"])
+
+        # Default fallback
+        default = MODEL_REASONING_CAPABILITIES["default"]
+        return cast(int, default["score"]), str(default["type"])
