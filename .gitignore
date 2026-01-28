@@ -9,6 +9,8 @@ __pycache__/
 # Outputs & Reports
 outputs/runs/*
 !outputs/runs/.gitkeep
+outputs/cost_log.csv
+backups/
 # Ensure critical benchmark scores are tracked!
 # (Previous ignore rules removed or commented out)
 # commercial_models_benchmark.csv

@@ -28,6 +28,7 @@ class BaseProviderClient:
         prompt: str,
         temperature: float,
         stream_handler: Optional[Callable[[str], None]] = None,
+        **kwargs,
     ) -> str:
         """
         Query API
@@ -37,6 +38,7 @@ class BaseProviderClient:
             prompt: Prompt-Text
             temperature: Temperature
             stream_handler: Optional callback for streaming output chunks
+            **kwargs: Extra arguments (e.g. max_tokens)
 
         Returns:
             Response-Text
@@ -133,10 +135,15 @@ class OllamaClient(BaseProviderClient):
         prompt: str,
         temperature: float,
         stream_handler: Optional[Callable[[str], None]] = None,
+        **kwargs,
     ) -> str:
         """Query Ollama API"""
         try:
             options = self._get_options(model, temperature)
+
+            # Handle max_tokens override (Ollama uses num_predict)
+            if "max_tokens" in kwargs:
+                options["num_predict"] = kwargs["max_tokens"]
 
             if stream_handler:
                 return self._handle_streaming(model, prompt, options, stream_handler)
@@ -240,13 +247,18 @@ class AnthropicClient(BaseProviderClient):
         prompt: str,
         temperature: float,
         stream_handler: Optional[Callable[[str], None]] = None,
+        **kwargs,
     ) -> str:
         """Query Anthropic API"""
         try:
             model = self._resolve_model(model)
-            max_tokens = self.config.get("anthropic", {}).get(
-                "max_tokens", MAX_TOKENS_ANTHROPIC
-            )
+            
+            # Default to config, but override with kwargs if present
+            max_tokens = kwargs.get("max_tokens")
+            if not max_tokens:
+                max_tokens = self.config.get("anthropic", {}).get(
+                    "max_tokens", MAX_TOKENS_ANTHROPIC
+                )
 
             # Note: Streaming not implemented yet for Anthropic in this wrapper
             response = self.client.messages.create(
@@ -315,10 +327,14 @@ class MistralClient(BaseProviderClient):
         prompt: str,
         temperature: float,
         stream_handler: Optional[Callable[[str], None]] = None,
+        **kwargs,
     ) -> str:
         """Query Mistral API"""
         try:
             model = self._resolve_model(model)
+            
+            # Mistral supports max_tokens
+            max_tokens = kwargs.get("max_tokens")
 
             # Note: Streaming not implemented yet for Mistral in this wrapper
             response = self.client.chat.complete(
@@ -326,6 +342,7 @@ class MistralClient(BaseProviderClient):
                 messages=[{"role": "user", "content": prompt}],
                 temperature=temperature,
                 random_seed=42,  # Ensure deterministic output
+                max_tokens=max_tokens, # Pass None if not provided (SDK default)
             )
 
             content = response.choices[0].message.content
@@ -373,15 +390,20 @@ class OpenAIClient(BaseProviderClient):
         prompt: str,
         temperature: float,
         stream_handler: Optional[Callable[[str], None]] = None,
+        **kwargs,
     ) -> str:
         """Query OpenAI API"""
         try:
+            params = {
+                "model": model,
+                "messages": [{"role": "user", "content": prompt}],
+                "temperature": temperature,
+            }
+            if "max_tokens" in kwargs:
+                params["max_tokens"] = kwargs["max_tokens"]
+
             # Note: Streaming not implemented yet for OpenAI in this wrapper
-            response = self.client.chat.completions.create(
-                model=model,
-                messages=[{"role": "user", "content": prompt}],
-                temperature=temperature,
-            )
+            response = self.client.chat.completions.create(**params)
             content = response.choices[0].message.content or ""
 
             if stream_handler and content:

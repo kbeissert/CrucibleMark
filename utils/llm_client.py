@@ -93,6 +93,7 @@ class LLMClient:
         temperature: Optional[float] = None,
         max_retries: int = DEFAULT_MAX_RETRIES,
         stream_handler: Optional[Callable[[str], None]] = None,
+        **kwargs,
     ) -> str:
         """
         Universelle Query-Methode mit Delegation an Provider-Clients, Retries und Budget-Check.
@@ -104,6 +105,7 @@ class LLMClient:
            temperature: Temperature (optional, nutzt Config-Default)
            max_retries: Maximum Anzahl Retry-Versuche
            stream_handler: Optionaler Callback (str -> None) für Streaming Output
+           **kwargs: Weitere Provider-spezifische Parameter (z.B. max_tokens)
 
         Returns:
            Response-Text
@@ -149,6 +151,7 @@ class LLMClient:
                 prompt=prompt,
                 temperature=temperature,
                 stream_handler=stream_handler,
+                **kwargs,
             )
 
         # 3. Führe mit Retry-Logik aus
