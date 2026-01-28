@@ -1,22 +1,22 @@
 # CrucibleMark - Projekt-Status & Architektur
 
-**Version:** 0.9.6-beta
+**Version:** 0.9.7-release-candidate
 **Datum:** 28. Januar 2026
-**Status:** Standardization Complete / Final Pre-Release Setup
+**Status:** Refactoring Complete / Golden Standards Baseline Set
 
 ---
 
 ## 🚧 Status Update (Jan 2026)
-Das Framework erreicht Version 0.9.6. Die massive Refactoring-Phase ("One Standard to rule them all") ist abgeschlossen. Alle Module folgen nun strikt dem Core/MVC-Architekturpattern.
+Das Framework erreicht Version 0.9.7 (Release Candidate für Pre-Extension Baseline).
+Das Reasoning-Modul wurde vollständig refactored (Modularität, Type-Safety, DRY).
+Die aktuellen Benchmarks wurden als "Golden Standards" (v0.9 Baseline) eingefroren.
 
-Der Weg zu Version 1.0.0 umfasst nun folgende finale Schritte:
+Nächster Fokus: Erweiterung der Reasoning-Logik vor v1.0.
 
 1.  **✅ Modul-Standardisierung**: Alle Module (Code, Content, UX, Documentation, Reasoning, Political, Cultural) sind auf die Core/MVC-Architektur migriert.
-2.  **Code Integrity Check**: Finaler Review auf logische Codefehler und Aufräumarbeiten (Linting, Typing).
-3.  **Module Extension**: Geplante Erweiterung eines bestehenden Moduls um neue Fähigkeiten vor dem Launch.
-4.  **Full Benchmark Test**: Kompletter Durchlauf ("Dry Run") aller Module, um die Stabilität der neuen Architektur zu beweisen.
-
-Erst nach dem erfolgreichen "Dry Run" und der Erweiterung wird Version 1.0.0 released.
+2.  **✅ Code Integrity Check**: Reasoning-Modul ist fully linted (Ruff/Mypy/Pylint clean).
+3.  **⏳ Module Extension**: Geplante Erweiterung des Reasoning-Moduls.
+4.  **⏳ Full Benchmark Test**: Kompletter Durchlauf v1.0.
 
 ---
 
