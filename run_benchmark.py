@@ -321,18 +321,17 @@ class BenchmarkRunner:
             selected_module, module_config = self.select_module(module_name)
             if selected_module is None:  # User selected "0. ALL MODULES"
                 modules_to_run = list(self.get_enabled_modules().items())
-            else:
-                # selected_module is Optional[str], but here we know it's str because of check
-                if selected_module and module_config:
-                    modules_to_run = [(selected_module, module_config)]
+            # selected_module is Optional[str], but here we know it's str because of check
+            elif selected_module and module_config:
+                modules_to_run = [(selected_module, module_config)]
 
-                    # Enforce multi-run policy from Config
-                    min_runs = module_config.get("min_runs", 1)
-                    if min_runs > 1:
-                        print(
-                            f"\nℹ️  Hinweis: Das Modul '{module_config['name']}' erfordert automatisch {min_runs} Durchläufe."
-                        )
-                        num_runs = max(num_runs, min_runs)
+                # Enforce multi-run policy from Config
+                min_runs = module_config.get("min_runs", 1)
+                if min_runs > 1:
+                    print(
+                        f"\nℹ️  Hinweis: Das Modul '{module_config['name']}' erfordert automatisch {min_runs} Durchläufe."
+                    )
+                    num_runs = max(num_runs, min_runs)
 
         # Determine provider and model (once for all modules if possible)
         provider = None

@@ -26,10 +26,10 @@ def get_benchmark_files(runs_dir: Path) -> dict[str, list[Path]]:
     """
     if not runs_dir.exists():
         return {}
-        
+
     pattern = re.compile(r"results_(.+)_(\d{8}_\d{6})\.json")
     grouped_files = defaultdict(list)
-    
+
     for item in runs_dir.iterdir():
         if item.is_file() and item.suffix == ".json":
             match = pattern.match(item.name)
@@ -38,14 +38,14 @@ def get_benchmark_files(runs_dir: Path) -> dict[str, list[Path]]:
                 timestamp_str = match.group(2)
                 # Store tuple (timestamp, path) for sorting
                 grouped_files[model_name].append((timestamp_str, item))
-    
+
     # Sort each list by timestamp descending (newest first)
     result = {}
     for model, files in grouped_files.items():
         sorted_files = sorted(files, key=lambda x: x[0], reverse=True)
         # Keep only paths
         result[model] = [f[1] for f in sorted_files]
-        
+
     return result
 
 
@@ -60,22 +60,22 @@ def cleanup_runs(
     if not grouped_runs:
         print(f"📂 No benchmark runs found in {runs_dir}")
         return 0
-        
+
     total_files = sum(len(f) for f in grouped_runs.values())
     print(f"🔍 Found {total_files} benchmark files for {len(grouped_runs)} models.")
-    
+
     files_to_delete = []
-    
+
     for model, files in grouped_runs.items():
         if len(files) > keep:
             to_remove = files[keep:]
             print(f"   Model '{model}': Found {len(files)} runs. Marking {len(to_remove)} for deletion (older than top {keep}).")
             files_to_delete.extend(to_remove)
-    
+
     if not files_to_delete:
         print(f"✅ No cleanup needed. All models have {keep} or fewer runs.")
         return 0
-        
+
     print(f"\nExample deletion targets ({len(files_to_delete)} total):")
     for f in files_to_delete[:5]:
         print(f"  - {f.name}")
@@ -101,7 +101,7 @@ def cleanup_runs(
             deleted_count += 1
         except OSError as e:
             print(f"  ✗ Error deleting {f.name}: {e}")
-            
+
     return deleted_count
 
 

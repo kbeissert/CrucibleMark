@@ -27,7 +27,7 @@ class UXResultManager:
                 report.get("model", "unknown"),
                 report.get("scenario_id", "unknown")
             ) + ".json"
-        
+
         if not directory.exists():
             directory.mkdir(parents=True, exist_ok=True)
 
@@ -41,7 +41,7 @@ class UXResultManager:
     def save_csv(report: Dict[str, Any], filepath: Path) -> Path:
         """Appends the result to a CSV leaderboard file."""
         file_exists = filepath.exists()
-        
+
         # Ensure directory exists
         if not filepath.parent.exists():
             filepath.parent.mkdir(parents=True, exist_ok=True)
@@ -62,7 +62,7 @@ class UXResultManager:
 
             if not file_exists:
                 writer.writeheader()
-            
+
             # Extract scores safely
             scores = report.get("scores", {})
             writer.writerow(

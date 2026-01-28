@@ -41,20 +41,20 @@ class ReasoningLogicTest(BaseTest):
         model_lower = model.lower()
         reasoning_cap = 20  # Default: Pattern Matching
         reasoning_type = "Pattern Matching"
-        
+
         if "deepseek" in model_lower and "r1" in model_lower:
             reasoning_cap = 100
             reasoning_type = "Explicit Reasoning"
         elif "qwen" in model_lower: # Qwen is generally strong at CoT
             reasoning_cap = 70
             reasoning_type = "Implicit Reasoning"
-            
+
         return {
             "raw_response": response,
             "execution_time": elapsed,
             "tokens_used": approx_tokens,
             "metadata": {
-                "model": model, 
+                "model": model,
                 "asset_id": self.asset["metadata"]["id"],
                 "reasoning_capability_score": reasoning_cap,
                 "reasoning_type": reasoning_type

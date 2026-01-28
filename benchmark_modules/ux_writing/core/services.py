@@ -3,7 +3,7 @@ from utils.llm_client import LLMClient
 
 class UXMockLLMService:
     """Mock service providing realistic UX Writing responses."""
-    
+
     def query(self, prompt: str) -> str:
         # Check prompts to return relevant mock data
         if "Fehlermeldungen" in prompt:
@@ -16,9 +16,9 @@ class UXMockLLMService:
 Step 1: Klicken Sie auf Reset.
 Step 2: Versuchen Sie es erneut.
 """
-        elif "Button" in prompt:
+        if "Button" in prompt:
             return "Button: 'Jetzt kaufen' (12 Zeichen)"
-        
+
         return "Generic UX writing response with some **markdown** and clear instructions."
 
 class UXLLMService:
@@ -35,10 +35,10 @@ class UXLLMService:
         """Sends the prompt to the configured LLM."""
         if self.model_name == "mock":
             return UXMockLLMService().query(prompt)
-            
+
         try:
             # Reusing the generic client from utils
-            # Note: Adapting to whatever interface LLMClient has. 
+            # Note: Adapting to whatever interface LLMClient has.
             # Assuming query(prompt, model, provider, ...)
             response = self.client.query(
                 prompt=prompt,

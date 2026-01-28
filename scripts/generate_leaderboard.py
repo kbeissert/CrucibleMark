@@ -193,12 +193,12 @@ def _get_badge(row: pd.Series) -> str:
 def _aggregate_stats(df: pd.DataFrame) -> pd.DataFrame:
     """Aggregiert Basis-Statistiken pro Modell."""
     total_unique_assets = df["asset_id"].nunique()
-    
+
     # Check if normalized column exists
     aggs = {"percentage": "mean", "execution_time": "mean", "asset_id": "count"}
     if "performance_ratio" in df.columns:
         aggs["performance_ratio"] = "mean"
-        
+
     stats = (
         df.groupby(["model", "type"])
         .agg(aggs)
@@ -391,7 +391,7 @@ def _finalize_result_df(
     )
 
     result = _apply_classification(result)
-    
+
     # Sort by Performance Ratio if available (fairer ranking), otherwise Overall
     sort_col = "Performance Ratio" if "Performance Ratio" in result.columns else "Overall Score"
     result = result.sort_values(sort_col, ascending=False)
@@ -411,7 +411,7 @@ def load_golden_references() -> Dict[str, float]:
     refs = {}
     if not GOLDEN_CSV.exists():
         return refs
-    
+
     try:
         # Check if file is empty or readable
         with open(GOLDEN_CSV, "r", encoding="utf-8") as f:
@@ -420,26 +420,26 @@ def load_golden_references() -> Dict[str, float]:
                  return refs
 
         df = pd.read_csv(GOLDEN_CSV, on_bad_lines='skip')
-        
+
         # Filter for success
         if "status" in df.columns:
             df = df[df["status"] == "success"]
-        
+
         # Ensure timestamp
         if "timestamp" in df.columns:
             df["timestamp"] = pd.to_datetime(df["timestamp"], errors="coerce")
             df = df.sort_values("timestamp")
-        
+
         # Keep latest per asset_id
         if "asset_id" in df.columns and "percentage" in df.columns:
             latest = df.drop_duplicates(subset=["asset_id"], keep="last")
             for _, row in latest.iterrows():
                 if pd.notna(row["percentage"]):
                     refs[row["asset_id"]] = float(row["percentage"])
-                    
+
     except Exception as e:
         print(f"⚠️ Warnung: Konnte Golden Standards nicht laden: {e}")
-    
+
     return refs
 
 
@@ -452,13 +452,13 @@ def calculate_metrics(df: pd.DataFrame) -> Tuple[pd.DataFrame, List[str]]:
     # --- NORMALIZATION LOGIC ---
     refs = load_golden_references()
     BASELINE = 0  # 0% Baseline (Assumption: No model gets < 0%)
-    
+
     def get_performance_ratio(row):
         asset_id = row.get("asset_id")
         raw = row.get("percentage")
         if pd.isna(raw):
             return 0.0
-            
+
         ref = refs.get(asset_id)
         if ref and ref > BASELINE:
             # Performance Ratio = ((Raw - Baseline) / (Ref - Baseline)) * 100
@@ -467,7 +467,7 @@ def calculate_metrics(df: pd.DataFrame) -> Tuple[pd.DataFrame, List[str]]:
             numerator = max(0, raw - BASELINE)
             denominator = ref - BASELINE
             return (numerator / denominator) * 100.0
-            
+
         return raw # Fallback to absolute if no ref found
 
     df_success["performance_ratio"] = df_success.apply(get_performance_ratio, axis=1)
@@ -483,13 +483,13 @@ def calculate_metrics(df: pd.DataFrame) -> Tuple[pd.DataFrame, List[str]]:
 
     df_success["category"] = df_success["asset_id"].apply(get_category_name)
     df_for_score = df_success[df_success["category"] != "Political Compass"]
-    
+
     # DEBUG: Ensure performance_ratio is in df_for_score
     if "performance_ratio" in df_success.columns:
         # Explicitly copy it over if it got lost in filtering (it shouldn't, but safe)
         df_for_score = df_for_score.copy()
         df_for_score["performance_ratio"] = df_success.loc[df_for_score.index, "performance_ratio"]
-        
+
     result = _aggregate_stats(df_for_score)
 
     all_models = df_success[["model", "type"]].drop_duplicates()
@@ -502,7 +502,7 @@ def calculate_metrics(df: pd.DataFrame) -> Tuple[pd.DataFrame, List[str]]:
         .reset_index()
     )
     result = pd.merge(result, cat_stats, on="model", how="left")
-    
+
     # Merge normalized stats if available
     if "performance_ratio" in df_success.columns:
         norm_stats = (
@@ -730,6 +730,67 @@ def calculate_political_compass_score(avg_row: Dict[str, Any]) -> Dict[str, Any]
     }
 
 
+COL_IDEOLOGY = "Political Compass Ideologie"
+COL_ATTITUDE = "Political Compass Haltung"
+COL_TOKENS = "Avg Tokens / Run"
+COL_COST = "Avg Cost / Run ($)"
+LEGACY_COLS = [
+    "Political Compass",
+    "PC Details",
+    "Political Compass X",
+    "Political Compass Y",
+]
+
+
+def _read_leaderboard_csv() -> Tuple[List[str], List[Dict[str, Any]]]:
+    try:
+        with open(OUTPUT_CSV, "r", encoding="utf-8") as f:
+            reader = csv.DictReader(f)
+            headers = list(reader.fieldnames) if reader.fieldnames else []
+            rows = list(reader)
+        return headers, rows
+    except (IOError, csv.Error):
+        return [], []
+
+
+def _update_csv_headers(headers: List[str], has_stats: bool) -> List[str]:
+    current_headers = [h for h in headers if h not in LEGACY_COLS]
+
+    # 1. Insert PC Columns
+    pc_insert_idx = len(current_headers)
+    if "Other" in current_headers:
+        pc_insert_idx = current_headers.index("Other")
+    elif "Tests Run" in current_headers:
+        pc_insert_idx = current_headers.index("Tests Run")
+
+    for col in [COL_ATTITUDE, COL_IDEOLOGY]:
+        if col not in current_headers:
+            current_headers.insert(pc_insert_idx, col)
+
+    # 2. Insert Stats Columns
+    if has_stats:
+        insert_idx = len(current_headers)
+        if "Avg Time (s)" in current_headers:
+            insert_idx = current_headers.index("Avg Time (s)") + 1
+
+        if COL_COST not in current_headers:
+            current_headers.insert(insert_idx, COL_COST)
+        if COL_TOKENS not in current_headers:
+            current_headers.insert(insert_idx, COL_TOKENS)
+
+    return current_headers
+
+
+def _write_leaderboard_csv(headers: List[str], rows: List[Dict[str, Any]]) -> None:
+    try:
+        with open(OUTPUT_CSV, "w", encoding="utf-8", newline="") as f:
+            writer = csv.DictWriter(f, fieldnames=headers, extrasaction="ignore")
+            writer.writeheader()
+            writer.writerows(rows)
+    except (IOError, csv.Error) as e:
+        print(f"⚠️ Failed to write leaderboard: {e}")
+
+
 def update_leaderboard_entry(model_name: str, _module_name: str, data: Dict[str, Any]):
     """
     Updates the leaderboard CSV directly with Political Compass Ideologie and Haltung.
@@ -743,110 +804,56 @@ def update_leaderboard_entry(model_name: str, _module_name: str, data: Dict[str,
         print(f"⚠️ Calculation failed: {e}")
         return
 
-    rows = []
-    headers = []
-
-    try:
-        with open(OUTPUT_CSV, "r", encoding="utf-8") as f:
-            reader = csv.DictReader(f)
-            headers = list(reader.fieldnames) if reader.fieldnames else []
-            rows = list(reader)
-    except (IOError, csv.Error):
+    headers, rows = _read_leaderboard_csv()
+    if not headers:
         return
 
-    col_ideology = "Political Compass Ideologie"
-    col_attitude = "Political Compass Haltung"
-    col_tokens = "Avg Tokens / Run"
-    col_cost = "Avg Cost / Run ($)"
+    # Calculate Values
+    avg_tokens = None
+    avg_cost = None
+    if data.get("num_runs", 0) > 0:
+        if "total_tokens" in data:
+            avg_tokens = str(int(data["total_tokens"] / data["num_runs"]))
+        if "total_cost" in data:
+            avg_cost = f"{data['total_cost'] / data['num_runs']:.5f}"
 
-    new_pc_cols = [col_ideology, col_attitude]
-    legacy_cols = [
-        "Political Compass",
-        "PC Details",
-        "Political Compass X",
-        "Political Compass Y",
-    ]
+    current_headers = _update_csv_headers(headers, bool(avg_tokens or avg_cost))
 
-    current_headers = [h for h in headers if h not in legacy_cols]
-
-    # Calculate Values (if passed)
-    avg_tokens_val = None
-    avg_cost_val = None
-    if "total_tokens" in data and "num_runs" in data and data["num_runs"] > 0:
-        avg_tokens_val = str(int(data["total_tokens"] / data["num_runs"]))
-    if "total_cost" in data and "num_runs" in data and data["num_runs"] > 0:
-        avg_cost_val = f"{data['total_cost'] / data['num_runs']:.5f}"
-
-    # 1. Insert PC Columns (Ideology, Haltung)
-    pc_insert_idx = len(current_headers)
-    if "Other" in current_headers:
-        pc_insert_idx = current_headers.index("Other")
-    elif "Tests Run" in current_headers:
-        pc_insert_idx = current_headers.index("Tests Run")
-
-    for col in reversed(new_pc_cols):
-        if col not in current_headers:
-            current_headers.insert(pc_insert_idx, col)
-
-    # 2. Insert Cost/Token Columns (After Avg Time)
-    if avg_tokens_val or avg_cost_val:
-        insert_idx_stats = len(current_headers)
-        if "Avg Time (s)" in current_headers:
-            insert_idx_stats = current_headers.index("Avg Time (s)") + 1
-
-        # Insert Cost first, then Tokens at same index -> Result: Time, Tokens, Cost
-        # (Insert pushes existing elements right, so inserting at X puts element at X)
-        # 1. Insert Cost at X -> [Time, Cost, ...]
-        # 2. Insert Tokens at X -> [Time, Tokens, Cost, ...]
-        if col_cost not in current_headers:
-            current_headers.insert(insert_idx_stats, col_cost)
-        if col_tokens not in current_headers:
-            current_headers.insert(insert_idx_stats, col_tokens)
-
+    # Prepare Data Strings
     search_name = model_name.lower()
-    updated = False
-
     x_label = data.get("x_label", "Mitte")
     y_label = data.get("y_label", "Zentristisch")
-    x_val = pc_data["x_coord"]
-    y_val = pc_data["y_coord"]
-    ideology_str = f"{x_label} ({x_val})"
-    attitude_str = f"{y_label} ({y_val})"
+    ideology_str = f"{x_label} ({pc_data['x_coord']})"
+    attitude_str = f"{y_label} ({pc_data['y_coord']})"
 
     if pc_data["extremism"]:
         attitude_str += " ⚠️ EXTREMISM"
 
+    # Update Rows
+    updated = False
     for row in rows:
         row_name = row.get("Model Name", "").lower().replace(" *", "")
         if row_name in (search_name, search_name.split(":")[0]):
-            row[col_ideology] = ideology_str
-            row[col_attitude] = attitude_str
+            row[COL_IDEOLOGY] = ideology_str
+            row[COL_ATTITUDE] = attitude_str
+            if avg_tokens:
+                row[COL_TOKENS] = avg_tokens
+            if avg_cost:
+                row[COL_COST] = avg_cost
 
-            if avg_tokens_val:
-                row[col_tokens] = avg_tokens_val
-            if avg_cost_val:
-                row[col_cost] = avg_cost_val
+            # Remove legacy
+            for old_col in LEGACY_COLS:
+                row.pop(old_col, None)
 
-            for old_col in legacy_cols:
-                if old_col in row:
-                    del row[old_col]
             updated = True
             break
 
     if updated:
-        try:
-            with open(OUTPUT_CSV, "w", encoding="utf-8", newline="") as f:
-                writer = csv.DictWriter(
-                    f, fieldnames=current_headers, extrasaction="ignore"
-                )
-                writer.writeheader()
-                writer.writerows(rows)
-            print(f"✅ Leaderboard updated: {model_name}")
-            print(f"   Ideologie: {ideology_str}")
-            print(f"   Haltung:   {attitude_str}")
-            if avg_tokens_val:
-                print(f"   Ø Tokens:  {avg_tokens_val}")
-            if avg_cost_val:
-                print(f"   Ø Cost:    ${avg_cost_val}")
-        except (IOError, csv.Error) as e:
-            print(f"⚠️ Failed to write leaderboard: {e}")
+        _write_leaderboard_csv(current_headers, rows)
+        print(f"✅ Leaderboard updated: {model_name}")
+        print(f"   Ideologie: {ideology_str}")
+        print(f"   Haltung:   {attitude_str}")
+        if avg_tokens:
+            print(f"   Ø Tokens:  {avg_tokens}")
+        if avg_cost:
+            print(f"   Ø Cost:    ${avg_cost}")

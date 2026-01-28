@@ -217,14 +217,14 @@ class LLMInterface:
         }
         if system_prompt:
             payload["system"] = system_prompt
-            
+
         resp = requests.post(url, json=payload, timeout=self.config["timeout"])
         resp.raise_for_status()
         return resp.json()["response"]
 
     def _call_openai(self, prompt: str, system_prompt: str | None = None) -> str:
         sys_msg = system_prompt if system_prompt else "Du bist ein neutraler Beobachter."
-        
+
         response = self.client.chat.completions.create(
             model=self.model,
             messages=[
@@ -249,6 +249,6 @@ class LLMInterface:
         }
         if system_prompt:
             kwargs["system"] = system_prompt
-            
+
         response = self.client.messages.create(**kwargs)
         return response.content[0].text

@@ -11,7 +11,7 @@ class UXIssue:
     severity: str = "medium"
     explanation: str = ""
     # For specific checks
-    check_method: Optional[str] = None 
+    check_method: Optional[str] = None
     required_ratio: Optional[float] = None
 
     @classmethod
@@ -47,7 +47,7 @@ class UXCriterion:
     min_code_blocks: int = 0
     indicators: List[str] = field(default_factory=list)
     min_indicators: int = 0
-    
+
     @classmethod
     def from_dict(cls, data: Dict[str, Any]) -> 'UXCriterion':
         return cls(
@@ -176,6 +176,6 @@ class UXScenario:
         # The template has {input_text} and {requirements} placeholders
         prompt = self.prompt_template.replace("{input_text}", self.input_text)
         prompt = prompt.replace("{requirements}", req_str)
-        
+
         full_system_prompt = f"{self.context}\n\n{prompt}"
         return full_system_prompt

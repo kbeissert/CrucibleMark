@@ -56,37 +56,37 @@ def analyze_module(module_path: Path) -> List[Dict[str, Any]]:
         return []
 
     results = []
-    
+
     # Recursively find yaml files
     for asset_file in assets_dir.rglob("*.yaml"):
         if asset_file.name.startswith("config"):
             continue
-            
+
         data = load_asset_yaml(asset_file)
         if not data:
             continue
-            
+
         metadata = data.get("metadata", {})
         asset_id = metadata.get("id", asset_file.stem)
-        
+
         # Extract Prompt Components
         prompt_data = data.get("prompt", {})
         context = data.get("context", "")
-        
+
         if isinstance(prompt_data, str):
             system_prompt = ""
             user_prompt = prompt_data
         else:
             system_prompt = prompt_data.get("system", "")
             user_prompt = prompt_data.get("user", "")
-            
+
         # Combine content (Context is often appended to user prompt)
         full_content = f"{context}\n{user_prompt}"
-        
+
         sys_tokens = count_tokens(system_prompt)
         user_tokens = count_tokens(full_content)
         total_tokens = sys_tokens + user_tokens
-        
+
         results.append({
             "id": asset_id,
             "file": asset_file.name,
@@ -94,7 +94,7 @@ def analyze_module(module_path: Path) -> List[Dict[str, Any]]:
             "user_tokens": user_tokens,
             "total_tokens": total_tokens
         })
-        
+
     return sorted(results, key=lambda x: x["total_tokens"], reverse=True)
 
 
@@ -102,14 +102,14 @@ def print_report(module_name: str, assets: List[Dict[str, Any]]):
     """Prints a formatted report for a module."""
     if not assets:
         return
-        
+
     print(f"\n{Colors.HEADER}📦 Module: {module_name}{Colors.ENDC}")
     print(f"{'ASSET ID':<30} {'SYS':>6} {'USER':>6} {'TOTAL':>8}   {'STATUS'}")
     print("-" * 70)
-    
+
     for a in assets:
         total = a["total_tokens"]
-        
+
         if total > CRITICAL_THRESHOLD:
             color = Colors.FAIL
             status = "CRITICAL 🔴"
@@ -119,7 +119,7 @@ def print_report(module_name: str, assets: List[Dict[str, Any]]):
         else:
             color = Colors.GREEN
             status = "OK ✅"
-            
+
         print(
             f"{a['id']:<30} {a['sys_tokens']:>6} {a['user_tokens']:>6} "
             f"{color}{total:>8}{Colors.ENDC}   {status}"
@@ -132,7 +132,7 @@ def main():
         print(f"   Parser: {Colors.CYAN}tiktoken (cl100k_base){Colors.ENDC} - Accurate for GPT-4")
     else:
         print(f"   Parser: {Colors.WARNING}Heuristic (Char/4){Colors.ENDC} - Install 'tiktoken' for accuracy")
-    
+
     print("-" * 70)
 
     total_project_tokens = 0
@@ -144,15 +144,15 @@ def main():
             print_report(module_dir.name, assets)
             module_total = sum(a["total_tokens"] for a in assets)
             total_project_tokens += module_total
-            
+
     print("\n" + "=" * 70)
     print(f"💰 Total Tokens (One Full Run): {Colors.BOLD}{total_project_tokens:,}{Colors.ENDC}")
-    
+
     # Cost Estimate (avg price mix)
     # Assume $5/1M input tokens (GPT-4o)
     est_cost = (total_project_tokens / 1_000_000) * 5.00
     print(f"   Est. Cost (GPT-4o):      ${est_cost:.4f}")
-    
+
     # Assume $3/1M input tokens (Claude 3.5 Sonnet)
     est_cost_claude = (total_project_tokens / 1_000_000) * 3.00
     print(f"   Est. Cost (Claude 3.5):  ${est_cost_claude:.4f}")

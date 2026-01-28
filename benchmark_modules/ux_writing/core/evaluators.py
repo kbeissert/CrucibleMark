@@ -13,7 +13,7 @@ MAX_STEP_WORDS = 80
 
 class CriterionEvaluator(ABC):
     """Abstract base class for criterion evaluators."""
-    
+
     @abstractmethod
     def evaluate(self, response: str, criterion: UXCriterion) -> Tuple[float, str]:
         """Returns (score, explanation_string)."""
@@ -60,7 +60,7 @@ class MarkdownTableEvaluator(CriterionEvaluator):
     def evaluate(self, response: str, criterion: UXCriterion) -> Tuple[float, str]:
         points = criterion.points
         has_table = "|" in response and "-" in response
-        
+
         # Count rows that look like table rows (have enough pipes)
         # Note: Original code used global MIN_TABLE_COLUMNS
         table_rows = len(
@@ -74,7 +74,7 @@ class MarkdownTableEvaluator(CriterionEvaluator):
 
         if has_table and table_rows >= min_rows:
             return points, f"✓ {criterion.name}: {table_rows} Zeilen ({points}p)"
-        
+
         if has_table:
             # Partial credit logic from original code
             partial = (float(table_rows) / min_rows) * points
@@ -106,12 +106,12 @@ class StructureValidationEvaluator(CriterionEvaluator):
 class RegexEvaluator(CriterionEvaluator):
     def evaluate(self, response: str, criterion: UXCriterion) -> Tuple[float, str]:
         points = criterion.points
-        
+
         # Fallback to WCAG pattern if not provided, just like original code
         pattern = criterion.check_pattern or r"\d\.\d\.\d"
 
         matches = re.findall(pattern, response)
-        # Assuming count_unique is True based on original code defaults, 
+        # Assuming count_unique is True based on original code defaults,
         # though original code checked a dict key.
         count = len(set(matches))
         min_required = 4 # Default from original code
@@ -157,7 +157,7 @@ class LengthValidationEvaluator(CriterionEvaluator):
         # Assuming generic param parsing or usage of additional_params if needed
         # but models.py has specific fields for now or we rely on defaults.
         # Original code used hardcoded MAX_BUTTON_LENGTH default
-        max_length = MAX_BUTTON_LENGTH 
+        max_length = MAX_BUTTON_LENGTH
 
         button_pattern = r'["\']([^"\']{1,100})["\']'
         buttons = re.findall(button_pattern, response)
@@ -180,7 +180,7 @@ class LengthValidationEvaluator(CriterionEvaluator):
 
 class IssueEvaluator:
     """Evaluates error detection issues using hybrid matching."""
-    
+
     @staticmethod
     def check_issue_mentioned(response_lower: str, keywords: List[str], required_ratio: float = 0.6) -> bool:
         """
@@ -241,18 +241,15 @@ class IssueEvaluator:
         # Use issue-specific ratio if present, else default to 0.6
         ratio = issue.required_ratio if issue.required_ratio is not None else 0.6
         matched = cls.check_issue_mentioned(response_lower, issue.keywords, required_ratio=ratio)
-        
+
         # If inverse_match is True, we want matched to be False for points
         if issue.inverse_match:
             if not matched:
                 return issue.points, f"✓ {issue.issue}: Erfolgreich vermieden ({issue.points}p)", False
-            else:
-                 return 0.0, f"✗ {issue.issue}: Unerwünscht gefunden", True
-        else:
-            if matched:
-                return issue.points, f"✓ {issue.issue}: Erkannt ({issue.points}p)", True
-            else:
-                return 0.0, f"✗ {issue.issue}: Nicht erkannt", False
+            return 0.0, f"✗ {issue.issue}: Unerwünscht gefunden", True
+        if matched:
+            return issue.points, f"✓ {issue.issue}: Erkannt ({issue.points}p)", True
+        return 0.0, f"✗ {issue.issue}: Nicht erkannt", False
 
 class EvaluatorFactory:
     _evaluators = {
@@ -264,9 +261,9 @@ class EvaluatorFactory:
         "code_validation": CodeValidationEvaluator(),
         "length_validation": LengthValidationEvaluator(),
         # Map readability to keyword presence for now as per original code logic usually
-        # but let's see if we need a specific one. 
+        # but let's see if we need a specific one.
         # Original code mapped "readability_score" -> score_readability which used kw search
-        "readability_score": KeywordPresenceEvaluator(), 
+        "readability_score": KeywordPresenceEvaluator(),
         "readability_mention": KeywordPresenceEvaluator(),
     }
 

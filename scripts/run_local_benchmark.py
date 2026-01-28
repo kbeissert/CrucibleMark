@@ -19,6 +19,15 @@ from utils.base_runner import BaseBenchmarkRunner
 from utils.benchmark_utils import select_from_list, discover_assets, load_asset_yaml
 from utils.module_loader import load_test_class
 from utils.model_utils import is_reasoning_model
+from utils.llm_client import LLMClient
+
+# Optional: Tightly coupled for now, should be decoupled later
+try:
+    from benchmark_modules.political_compass.core.io_manager import ResultManager
+except ImportError:
+    ResultManager = None
+
+import json
 # pylint: enable=wrong-import-position, import-error
 
 logger = logging.getLogger(__name__)
@@ -31,11 +40,11 @@ class LocalBenchmarkRunner(BaseBenchmarkRunner):
         """Initialisiert Runner."""
         super().__init__()
         self.commercial_csv = self.validator.get_golden_standard_csv()
-        
+
         # Load modules from config
         self.BENCHMARK_CATEGORIES = {}
         modules_config = self.validator.config.get("modules", {})
-        
+
         for key, mod in modules_config.items():
             if mod.get("enabled", False):
                 self.BENCHMARK_CATEGORIES[key] = {
@@ -312,7 +321,7 @@ class LocalBenchmarkRunner(BaseBenchmarkRunner):
             module_path = Path(benchmark_info.get("module_path", ""))
             test_file = module_path / "test.py"
             test_class_name = benchmark_info.get("test_class")
-            
+
             try:
                 TestClass = load_test_class(test_file, test_class_name)
             except Exception as e:
@@ -322,40 +331,38 @@ class LocalBenchmarkRunner(BaseBenchmarkRunner):
             # TODO: Generic ResultManager for batch modules
             # For now, we assume Political Compass structure for batch mode
             # Ideally, the TestClass should handle IO or return a standard object
-            from benchmark_modules.political_compass.core.io_manager import ResultManager
-            from utils.llm_client import LLMClient
-            import json
+            # Imports moved to top-level
 
             print(f"🛠️  Initialisiere Batch-Test: {benchmark_info['name']} ({model})")
             test = TestClass()
-            
+
             # Load assets dynamically from module path
             assets_dir = module_path / "assets"
             if not assets_dir.exists():
                 print(f"❌ Assets directory not found: {assets_dir}")
                 return []
-                
+
             if hasattr(test, "load_questions"):
                 test.load_questions(str(assets_dir))
-            
+
             if hasattr(test, "questions") and not test.questions:
                 print("❌ Keine Fragen geladen!")
                 return []
-                
+
             # Apply runs config
             min_runs = benchmark_info.get("min_runs", 1)
             test.num_runs = max(num_runs, min_runs)
-            
+
             # Use LLMClient from utils
             client = LLMClient(config=self.validator.config)
 
             # Execution
             result_wrapper = test.execute(model=model, llm_client=client, provider="ollama")
-            
+
             # Reporting
             report = json.loads(result_wrapper["raw_response"])
             ResultManager.print_summary(report)
-            
+
             # Save results to outputs/runs/
             output_dir = Path("outputs/runs")
             ResultManager.save_json(report, output_dir)
@@ -363,16 +370,16 @@ class LocalBenchmarkRunner(BaseBenchmarkRunner):
             # Save to shared CSV for Leaderboard
             pc_csv = Path("benchmark_scores/political_compass_results.csv")
             pc_csv.parent.mkdir(exist_ok=True, parents=True)
-            
+
             # Read logic for existing file to append/update
             pc_rows = []
             if pc_csv.exists():
                 with open(pc_csv, "r", encoding="utf-8") as f:
                     pc_rows = list(csv.DictReader(f))
-            
+
             # Remove old entry for this model if exists
             pc_rows = [r for r in pc_rows if r.get("model") != model]
-            
+
             new_row = {
                 "model": model,
                 "run_id": "AVG",
@@ -383,12 +390,12 @@ class LocalBenchmarkRunner(BaseBenchmarkRunner):
                 "timestamp": datetime.now().isoformat()
             }
             pc_rows.append(new_row)
-            
+
             with open(pc_csv, "w", encoding="utf-8", newline="") as f:
                 writer = csv.DictWriter(f, fieldnames=new_row.keys())
                 writer.writeheader()
                 writer.writerows(pc_rows)
-            
+
             # Create Standard Result for CSV
             std_result = {
                 "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
@@ -495,22 +502,22 @@ class LocalBenchmarkRunner(BaseBenchmarkRunner):
         # Calculate averages (excluding Political Compass if it's the only test)
         # Filter out political compass for average score calculation because it's qualitative
         scored_results = [
-            r for r in successful 
+            r for r in successful
             if not str(r.get("asset_id", "")).startswith("political_compass")
         ]
-        
+
         if not scored_results:
              # If only Political Compass ran
              avg_time = sum(r["execution_time"] for r in successful) / len(successful)
              print("\n✅ Benchmark abgeschlossen für Modul: Political Compass")
              print(f"   Modell: {model}")
              print(f"   Dauer:  {avg_time:.1f}s")
-             
+
              # Print specific PC info instead of score
              for r in successful:
                   if "tier" in r:
                        print(f"   Resultat: {r['tier']}")
-             
+
              return
 
         avg_score = sum(r["total_score"] for r in scored_results) / len(scored_results)

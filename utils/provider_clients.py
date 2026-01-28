@@ -12,6 +12,27 @@ from utils.constants import MAX_TOKENS_ANTHROPIC, DEFAULT_MISTRAL_MODEL
 from utils.env_utils import get_required_env
 from utils.model_utils import is_reasoning_model
 
+# Optional Provider Imports
+try:
+    import ollama
+except ImportError:
+    ollama = None
+
+try:
+    import anthropic
+except ImportError:
+    anthropic = None
+
+try:
+    from mistralai import Mistral
+except ImportError:
+    Mistral = None
+
+try:
+    from openai import OpenAI
+except ImportError:
+    OpenAI = None
+
 # Configure logging
 logger = logging.getLogger(__name__)
 
@@ -61,9 +82,8 @@ class OllamaClient(BaseProviderClient):
     def client(self):
         """Lazy-loaded Ollama Client"""
         if self._client is None:
-            # pylint: disable=import-outside-toplevel, import-error
-            import ollama
-
+            if ollama is None:
+                raise ImportError("Library 'ollama' not installed. Please install it.")
             self._client = ollama
         return self._client
 
@@ -224,8 +244,8 @@ class AnthropicClient(BaseProviderClient):
     def client(self):
         """Lazy-loaded Anthropic Client"""
         if self._client is None:
-            # pylint: disable=import-outside-toplevel, import-error
-            import anthropic
+            if anthropic is None:
+                raise ImportError("Library 'anthropic' not installed.")
 
             api_key = get_required_env(
                 "ANTHROPIC_API_KEY", "ANTHROPIC_API_KEY environment variable not set"
@@ -252,7 +272,7 @@ class AnthropicClient(BaseProviderClient):
         """Query Anthropic API"""
         try:
             model = self._resolve_model(model)
-            
+
             # Default to config, but override with kwargs if present
             max_tokens = kwargs.get("max_tokens")
             if not max_tokens:
@@ -300,8 +320,8 @@ class MistralClient(BaseProviderClient):
     def client(self):
         """Lazy-loaded Mistral Client"""
         if self._client is None:
-            # pylint: disable=import-outside-toplevel, import-error
-            from mistralai import Mistral
+            if Mistral is None:
+                raise ImportError("Library 'mistralai' not installed.")
 
             # Support both MISTRAL_API_KEY and CODESTRAL_API_KEY
             # Using basic retrieval since OR logic prevents simple get_required_env usage
@@ -332,7 +352,7 @@ class MistralClient(BaseProviderClient):
         """Query Mistral API"""
         try:
             model = self._resolve_model(model)
-            
+
             # Mistral supports max_tokens
             max_tokens = kwargs.get("max_tokens")
 
@@ -375,8 +395,8 @@ class OpenAIClient(BaseProviderClient):
     def client(self):
         """Lazy-loaded OpenAI Client"""
         if self._client is None:
-            # pylint: disable=import-outside-toplevel, import-error
-            from openai import OpenAI
+            if OpenAI is None:
+                raise ImportError("Library 'openai' not installed.")
 
             api_key = get_required_env(
                 "OPENAI_API_KEY", "OPENAI_API_KEY environment variable not set"

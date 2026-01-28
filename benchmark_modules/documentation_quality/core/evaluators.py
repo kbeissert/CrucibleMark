@@ -153,7 +153,7 @@ class DocumentationEvaluator:
             # Determine required match parameters
             explicit_min_keywords = issue.get("min_keywords")
             explicit_ratio = issue.get("required_ratio")
-            
+
             target_matches = None
             if explicit_min_keywords is not None:
                 target_matches = int(explicit_min_keywords)
@@ -170,15 +170,14 @@ class DocumentationEvaluator:
                     details.append(f"✓ [{tier_name}] {issue_name} (Nicht gefunden): +{points}p")
                 else:
                     violations.append(f"✗ [{tier_name}] {issue_name} (Unerwünscht gefunden): -{points}p")
+            elif found:
+                tier_score += points
+                details.append(f"✓ [{tier_name}] {issue_name}: +{points}p")
+            # Für Critical/High = Violation, sonst nur Details
+            elif severity in ["critical", "high"]:
+                violations.append(f"✗ [{tier_name}] {issue_name}: -{points}p")
             else:
-                if found:
-                    tier_score += points
-                    details.append(f"✓ [{tier_name}] {issue_name}: +{points}p")
-                # Für Critical/High = Violation, sonst nur Details
-                elif severity in ["critical", "high"]:
-                    violations.append(f"✗ [{tier_name}] {issue_name}: -{points}p")
-                else:
-                    details.append(f"○ [{tier_name}] {issue_name}: 0p")
+                details.append(f"○ [{tier_name}] {issue_name}: 0p")
 
         details.append(f"  → {tier_name} Total: {tier_score:.1f}/{max_points}p")
         return round(tier_score, 2), details, violations
@@ -191,13 +190,13 @@ class DocumentationEvaluator:
         """
         # 1. Clean Response (DeepSeek Reasoning Tags)
         response_cleaned = re.sub(r'<think>.*?</think>', '', response_lower, flags=re.DOTALL)
-        
+
         if not keywords:
             return False
 
         # 2. String Matching (Keyword Count)
         matches = sum(1 for kw in keywords if kw.lower() in response_cleaned)
-        
+
         if matches >= target_matches:
             return True
 
@@ -206,18 +205,18 @@ class DocumentationEvaluator:
 
         # Split response into sentences/chunks
         sentences = [
-            s.strip() 
-            for s in response_cleaned.split('.') 
+            s.strip()
+            for s in response_cleaned.split('.')
             if len(s.strip()) > MIN_SENTENCE_LENGTH
         ]
-        
+
         if not sentences:
             sentences = [response_cleaned[i:i+200] for i in range(0, len(response_cleaned), 200)]
-            
+
         try:
             # Determine threshold
             threshold = SIMILARITY_THRESHOLD
-            
+
             # Using self.asset_id determined in __init__
             if self.asset_id in ASSET_SPECIFIC_CONFIG:
                 threshold = ASSET_SPECIFIC_CONFIG[self.asset_id].get("semantic_threshold", threshold)

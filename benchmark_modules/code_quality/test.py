@@ -43,9 +43,9 @@ class CodeQualityTest(BaseTest):
         try:
             # Deterministic output via low temperature
             response = llm_client.query(
-                model, 
-                full_prompt, 
-                provider=provider, 
+                model,
+                full_prompt,
+                provider=provider,
                 temperature=DEFAULT_TEMPERATURE,
                 **kwargs,
             )

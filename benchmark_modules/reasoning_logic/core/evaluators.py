@@ -31,7 +31,7 @@ class ReasoningEvaluator:
         """
         # PHASE 1: Strip <think> tags before scoring
         clean_response = self._strip_thinking_tags(response)
-        
+
         asset_id = self.asset["metadata"]["id"]
         expected_output = self.asset.get("expected_output", {})
 
@@ -60,11 +60,11 @@ class ReasoningEvaluator:
 
         # --- Tier Classification & Metadata Tagging ---
         tier_type = "Tier 1 (Operational Logic)"
-        
+
         # PHASE 2: Asset 001 is Tier 0 (Sanity Check)
         if asset_id == "reasoning_001_river":
             tier_type = "Tier 0 (Sanity Check)"
-        
+
         tier_2_assets = [
             "reasoning_5a_001",
             "reasoning_5b_001",
@@ -113,7 +113,7 @@ class ReasoningEvaluator:
         resp_lower = response.lower()
         details = []
         score_breakdown: Dict[str, Any] = {}
-        
+
         # 1. Concept Detection (Tier 1 Check)
         c1_core = any(x in resp_lower for x in ["versioning", "deprecation", "lifecycle", "veraltet", "versionierung", "api version"])
         c1_qualifier = any(x in resp_lower for x in ["inconsistent", "strategy", "mismatch", "conflict", "inkonsistent", "widersprüchlich", "confusion", "ambiguity"])
@@ -135,7 +135,7 @@ class ReasoningEvaluator:
         has_prioritization = has_numbering and has_prio_kw
 
         # --- SCORING LOGIC ---
-        
+
         # Base Points: Error Detection (Max 40)
         error_pts = 0.0
         if has_root_cause:
@@ -143,7 +143,7 @@ class ReasoningEvaluator:
             details.append("✅ Root Cause: Identified Versioning/Deprecation inconsistency.")
         else:
             details.append("❌ Root Cause: Missed the core versioning/deprecation strategy issue.")
-            
+
         if has_cross_domain:
             error_pts += 20.0
             details.append("✅ Cross-Domain: Identified need for alignment between Code/Docs/UX.")
@@ -154,31 +154,30 @@ class ReasoningEvaluator:
         # Tier 2: Integrated Solution (Base 30)
         # Tier 3: Prioritization (+20)
         solution_pts = 0.0
-        
+
         if has_integrated_solution:
             solution_pts += 30.0
             details.append("✅ Solution: Proposed a unified policy/governance approach.")
-            
+
             # Check for Tier 3 (Prioritization) ONLY if solution is valid
             if has_prioritization:
                 solution_pts += 20.0
                 details.append("✅ Prioritization: Structured plan with clear steps/priorities.")
             else:
                 details.append("⚠️ Prioritization: Solution is good, but lacks clear prioritization steps (Tier 3 missed).")
+        # Partial credit for "fixing" things without policy
+        elif "fix" in resp_lower or "korrigieren" in resp_lower:
+            solution_pts = 10.0
+            details.append("⚠️ Solution: Proposed fixes but missed the 'Unified Policy' aspect.")
         else:
-            # Partial credit for "fixing" things without policy
-            if "fix" in resp_lower or "korrigieren" in resp_lower:
-                solution_pts = 10.0
-                details.append("⚠️ Solution: Proposed fixes but missed the 'Unified Policy' aspect.")
-            else:
-                details.append("❌ Solution: No clear integrated solution found.")
+            details.append("❌ Solution: No clear integrated solution found.")
 
         # Consistency (Max 10)
         # Bonus for full Tier 2 achievement
         consistency_pts = 10.0 if (error_pts >= 40.0 and solution_pts >= 30.0) else 0.0
 
         total_score = error_pts + solution_pts + consistency_pts
-        
+
         score_breakdown = {
             "error_detection": error_pts,
             "solution_quality": solution_pts,

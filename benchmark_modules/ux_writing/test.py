@@ -70,9 +70,9 @@ class UXWritingTest(BaseTest):
         Bewertet die Antwort basierend auf den Kriterien im Asset.
         """
         scores, details = self._evaluate_response(response, self.scenario.scoring)
-        
+
         total_score = scores.get("total", 0.0)
-        
+
         # Format category scores for display
         category_scores = {}
         for key, value in scores.items():
@@ -122,14 +122,14 @@ class UXWritingTest(BaseTest):
         # 1. Error Detection (Issues)
         if config.error_detection:
             ed_score = 0.0
-            
+
             all_issues = (
                 config.error_detection.labeled_issues +
                 config.error_detection.standard_issues +
                 config.error_detection.advanced_issues +
                 config.error_detection.expert_issues
             )
-            
+
             # Determine Ratio Baseline based on Asset ID (User Tuning)
             asset_id = self.asset.get("metadata", {}).get("id", "")
             ASSET_RATIOS = {
@@ -150,7 +150,7 @@ class UXWritingTest(BaseTest):
                  if points > 0 or "✗" in msg:
                      # details.append(msg)
                      pass
-            
+
             breakdown["error_detection"] = ed_score
             total_score += breakdown["error_detection"]
 
@@ -162,7 +162,7 @@ class UXWritingTest(BaseTest):
                 points, msg = evaluator.evaluate(response, criterion)
                 sq_score += points
                 details.append(msg)
-            
+
             breakdown["solution_quality"] = sq_score
             total_score += sq_score
 
@@ -174,7 +174,7 @@ class UXWritingTest(BaseTest):
                 points, msg = evaluator.evaluate(response, criterion)
                 fmt_score += points
                 details.append(msg)
-            
+
             breakdown["formatting"] = fmt_score
             total_score += fmt_score
 

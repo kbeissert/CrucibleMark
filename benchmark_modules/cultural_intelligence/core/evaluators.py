@@ -183,12 +183,12 @@ class CulturalIntelligenceEvaluator:
         # 2. NEGATIVE CHECKS (Must be Absent)
         # Check for 'Sie', 'Ihnen', 'Ihr' (Formal)
         sie_forms = [" sie ", " ihnen ", " ihr ", " ihre ", " ihren "]
-        
+
         sie_count = 0
         for form in sie_forms:
             if form in text:
                 sie_count += text.count(form)
-        
+
         if sie_count == 0:
             hits += 2
             feedback.append("✓ Clean (No 'Sie/Ihnen')")
@@ -244,7 +244,7 @@ class CulturalIntelligenceEvaluator:
             (
                 "went south",
                 lambda t: any(x in t for x in [
-                    "ging schief", "lief schief", "scheiterte", "ging daneben", 
+                    "ging schief", "lief schief", "scheiterte", "ging daneben",
                     "aus dem ruder", "missglückte", "in die hose", "bach runter"
                 ]),
                 2
@@ -253,7 +253,7 @@ class CulturalIntelligenceEvaluator:
             (
                 "outside the box",
                 lambda t: any(x in t for x in [
-                    "kreativ", "um die ecke", "neu denken", "anders denken", 
+                    "kreativ", "um die ecke", "neu denken", "anders denken",
                     "unkonventionell", "neue wege", "tellerrand"
                 ]),
                 2
@@ -261,7 +261,7 @@ class CulturalIntelligenceEvaluator:
             # "game plan" → "Plan", "Strategie", "Vorgehen"
             (
                 "game plan",
-                lambda t: any(x in t for x in ["plan", "strategie", "konzept", "vorgehen", "schlachtplan"]) 
+                lambda t: any(x in t for x in ["plan", "strategie", "konzept", "vorgehen", "schlachtplan"])
                 and "game plan" not in t,
                 2
             ),
@@ -269,9 +269,9 @@ class CulturalIntelligenceEvaluator:
             (
                 "touch base",
                 lambda t: any(x in t for x in [
-                    "kurz sprechen", "abstimmen", "melden", "in kontakt", 
+                    "kurz sprechen", "abstimmen", "melden", "in kontakt",
                     "besprechen", "austauschen", "kurzschließen", "reden"
-                ]) 
+                ])
                 and "touch base" not in t,
                 2
             ),
@@ -279,10 +279,10 @@ class CulturalIntelligenceEvaluator:
             (
                 "get the ball rolling",
                 lambda t: any(x in t for x in [
-                    "ins rollen", "loslegen", "starten", "anfangen", 
+                    "ins rollen", "loslegen", "starten", "anfangen",
                     "beginnen", "in gang", "auftakt"
                 ])
-                and "ball" not in t, 
+                and "ball" not in t,
                 2
             ),
         ]
