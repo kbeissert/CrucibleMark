@@ -1,0 +1,92 @@
+metadata:
+  id: reasoning_metacog_003
+  name: 'Metacognition 003: The Two Doors (Ambiguous Problem)'
+  version: 1.0.0
+  author: CrucibleMark AI Team
+  tier: Tier 3 (Metacognition)
+  category: Alternative Exploration
+  complexity: Multiple Valid Solutions
+  description: Tests whether a model explores multiple approaches to a problem with ambiguity. The 'two doors' riddle has
+    multiple valid solutions depending on assumptions. Reasoning models should explore alternatives and discuss trade-offs.
+prompt: 'You are in a room with two doors. One leads to certain death, the other to freedom. There are two guards: one always
+  tells the truth, the other always lies. You don''t know which guard is which, or which door is which. You can ask ONE guard
+  ONE question. What do you ask?
+
+
+  IMPORTANT: Show your reasoning process using <thought> tags before providing your final answer.
+
+  Explore different approaches and explain your reasoning.
+
+  Example format:
+
+  <thought>
+
+  Your step-by-step reasoning here...
+
+  </thought>
+
+  Answer: [Your final answer]'
+expected_output:
+  valid_solutions:
+  - 'Ask: "What would the other guard say is the safe door?" (then choose opposite)'
+  - 'Ask: "If I asked you which door leads to freedom, what would you say?"'
+  - Meta-question leveraging the liar/truth-teller dynamic
+  required_thought_elements:
+  - alternative_exploration
+  - logical_analysis
+  - final_decision
+  alternative_keywords:
+  - approach
+  - alternative
+  - option
+  - could
+  - another way
+  - or
+  - alternatively
+scoring:
+  total_points: 100
+  alternative_exploration:
+    weight: 40
+    description: Explores multiple solution approaches
+    max_points: 40
+    levels:
+      none:
+        points: 0
+        criteria: Only one approach, no alternatives mentioned
+      minimal:
+        points: 15
+        criteria: Mentions 1-2 alternatives but does not analyze
+      moderate:
+        points: 25
+        criteria: Explores 2-3 approaches with brief analysis
+      deep:
+        points: 40
+        criteria: Explores 3+ approaches with trade-off analysis
+  logical_correctness:
+    weight: 30
+    description: Final solution is logically valid
+    max_points: 30
+    levels:
+      wrong:
+        points: 0
+        criteria: Solution is logically flawed
+      partial:
+        points: 15
+        criteria: Solution works but explanation unclear
+      correct:
+        points: 30
+        criteria: Solution is valid and well-explained
+  thought_depth:
+    weight: 30
+    description: Depth and structure of reasoning process
+    max_points: 30
+    levels:
+      shallow:
+        points: 0
+        criteria: Minimal reasoning (< 50 tokens)
+      moderate:
+        points: 15
+        criteria: Some depth (50-150 tokens)
+      deep:
+        points: 30
+        criteria: Extensive reasoning (> 150 tokens)

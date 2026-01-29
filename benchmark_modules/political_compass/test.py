@@ -3,7 +3,7 @@
 Political Compass Test - Core Module v3.0
 ==========================================
 
-Testet LLMs auf politischen Bias anhand von 74 Fragen über 9 Themenmodule.
+Testet LLMs auf politischen Bias anhand eines Fragekatalogs über 9 Themenmodule.
 Integrierte Shuffling-Logik und v3.0 Scoring-Algorithmus.
 """
 
@@ -26,6 +26,7 @@ from benchmark_modules.base_test import BaseTest
 from benchmark_modules.political_compass.core.config import (
     TOPIC_NAMES,
 )
+from benchmark_modules.political_compass.core.io_manager import CheckpointManager
 from benchmark_modules.political_compass.core.models import Question
 from benchmark_modules.political_compass.core.evaluators import (
     ArchetypeClassifier,
@@ -36,7 +37,7 @@ from benchmark_modules.political_compass.core.services import (
     FrameworkAdapter,
     MockLLMService
 )
-from benchmark_modules.political_compass.core.io_manager import ResultManager
+from benchmark_modules.political_compass.core.io_manager import ResultManager, CheckpointManager
 from benchmark_modules.political_compass.core.loader import QuestionLoader
 from benchmark_modules.political_compass.core.prompts import PromptBuilder
 
@@ -77,6 +78,30 @@ class PoliticalCompassTest(BaseTest):
 
         # Configuration
         self.num_runs = 3  # Default v3.0 requirement
+
+        # Load config override if available
+        try:
+            config_path = Path(__file__).parent / "config.yaml"
+            if config_path.exists():
+                with open(config_path, "r") as f:
+                    config = yaml.safe_load(f)
+                    if "runs" in config:
+                        self.num_runs = int(config["runs"])
+        except Exception as e:
+            logging.warning(f"Could not load political compass config: {e}")
+
+        # Ensure logs directory exists
+        log_dir = Path("logs")
+        log_dir.mkdir(exist_ok=True)
+        # Setup specific error logger
+        self.error_logger = logging.getLogger("political_compass_errors")
+        self.error_logger.setLevel(logging.ERROR)
+        if not self.error_logger.handlers:
+            fh = logging.FileHandler(log_dir / "benchmark_errors.log")
+            fh.setFormatter(logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s'))
+            self.error_logger.addHandler(fh)
+
+
 
         if asset_path:
             super().__init__(asset_path)
@@ -193,6 +218,7 @@ class PoliticalCompassTest(BaseTest):
         self,
         run_idx: int,
         ctx: TestContext,
+        global_start_offset: int,
     ):
         ctx.ui.start_run(run_idx + 1, self.num_runs, ctx.model, ctx.provider)
         run_seed = int(time.time()) + run_idx
@@ -209,7 +235,13 @@ class PoliticalCompassTest(BaseTest):
             "start_time": time.time()
         }
 
-        for question in self.questions:
+        for q_idx, question in enumerate(self.questions):
+        
+            # Check Resume Skip
+            global_current_idx = global_start_offset + q_idx
+            if global_current_idx < len(self.responses):
+                continue
+                
             block_id = self._get_block_id(question)
 
             # Check Block Change
@@ -233,6 +265,14 @@ class PoliticalCompassTest(BaseTest):
             self._process_question_query(
                 question, run_seed, ctx, block_state
             )
+
+            # Save Checkpoint
+            CheckpointManager.save_checkpoint(ctx.model, {
+                "responses": self.responses,
+                "total_counters": ctx.total_counters,
+                "final_module_stats": self.final_module_stats,
+                "timestamp": time.time()
+            })
 
             # Progress Line
             ctx.ui.update_progress(
@@ -286,25 +326,43 @@ class PoliticalCompassTest(BaseTest):
 
         # Init specific UI for this module
         ui = TerminalUI()
-
-        intro_info = [
-            "⚠️  WICHTIG: Dieser Benchmark führt 3 Runs durch.",
-            "",
-            "GRUND: Reduktion von Ausreißern & Bias (Mittelwert)",
-            "",
-            "🕐 Geschätzte Dauer: flexibel (abhängig vom Modell)"
-        ]
-        ui.print_intro(
-            module_name="Political Compass",
-            model_name=model,
-            provider=provider,
-            num_runs=self.num_runs,
-            extra_info=intro_info
-        )
-        print(f"   Fragen geladen: {len(self.questions)}\n")
+        
+        # Only print intro for the first sub-question of a block to reduce noise
+        # Since we don't have global state here easily, we rely on the implementation
+        # of TerminalUI or just silence it if it's too frequent.
+        # But user reported "re-start" feel. 
+        # We will keep it but make it less aggressive or check logging.
+        # The user wants "runs: 3". The intro says "Runs: 3".
+        
+        # To avoid spamming the big header for every single question (since one question = one asset),
+        # we check if this looks like the start of a section (e.g. *.001)
+        is_start_node = False
+        if self.asset and "metadata" in self.asset:
+             aid = self.asset["metadata"].get("id", "")
+             if aid.endswith(".001"):
+                 is_start_node = True
+        
+        # Always print if no asset (batch mode) or if it is the first question of a section
+        if not self.asset or is_start_node:
+            intro_info = [
+                f"⚠️  WICHTIG: Dieser Benchmark führt {self.num_runs} Runs durch.",
+                "",
+                "GRUND: Reduktion von Ausreißern & Bias (Mittelwert)",
+                "",
+                "🕐 Geschätzte Dauer: flexibel (abhängig vom Modell)"
+            ]
+            ui.print_intro(
+                module_name="Political Compass",
+                model_name=model,
+                provider=provider,
+                num_runs=self.num_runs,
+                extra_info=intro_info
+            )
+            print(f"   Fragen geladen: {len(self.questions)}\n")
 
         # Use shared adapter
         adapter = FrameworkAdapter(llm_client, provider, model)
+
 
         self.responses = []
 
@@ -317,6 +375,24 @@ class PoliticalCompassTest(BaseTest):
 
         total_counters: dict[str, float] = {"tokens": 0.0, "cost": 0.0}
 
+        # Check for force_clean via kwargs
+        force_clean = kwargs.get("force_new", False) or kwargs.get("force_clean", False)
+
+        # RESUME CHECK
+        active_checkpoint = CheckpointManager.load_checkpoint(
+            model, 
+            force_new=force_clean,
+            max_age_hours=48
+        )
+        if active_checkpoint:
+            print(f"🔄 Resuming session for {model}...")
+            self.responses = active_checkpoint.get("responses", [])
+            saved_counters = active_checkpoint.get("total_counters", {})
+            total_counters["tokens"] = saved_counters.get("tokens", 0.0)
+            total_counters["cost"] = saved_counters.get("cost", 0.0)
+            self.final_module_stats = active_checkpoint.get("final_module_stats", {})
+            print(f"   ✓ Loaded {len(self.responses)} previous responses.")
+        
         ctx = TestContext(
             model=model,
             provider=provider,
@@ -327,15 +403,20 @@ class PoliticalCompassTest(BaseTest):
 
         for i in range(self.num_runs):
             run_start_idx = len(self.responses)
+            global_start_offset = i * len(self.questions)
 
-            self._process_run(i, ctx)
+            self._process_run(i, ctx, global_start_offset)
             self._print_run_summary(i, run_start_idx, ui)
+        
+        # Cleanup Checkpoint
+        CheckpointManager.clear_checkpoint(model)
 
         # Calculate Asset Score (Using new v3 Logic)
         score_data = self._calculate_scores(len(self.responses))
 
         # Sigma Calculation
         sigma_x, sigma_y = 0.0, 0.0
+        individual_runs = []
         if self.num_runs > 1 and len(self.questions) > 0:
             x_vals, y_vals = [], []
             for i in range(self.num_runs):
@@ -345,6 +426,17 @@ class PoliticalCompassTest(BaseTest):
                     c = ArchetypeClassifier.calculate_scores_v2(self.responses[s:e])
                     x_vals.append(c["x"])
                     y_vals.append(c["y"])
+                    
+                    # Capture Run Data
+                    arch = ArchetypeClassifier.get_archetype(c["x"], c["y"])
+                    individual_runs.append({
+                        "id": i + 1,
+                        "x": c["x"],
+                        "y": c["y"],
+                        "x_label": arch["x_label"],
+                        "y_label": arch["y_label"]
+                    })
+                    
             if len(x_vals) > 1:
                 sigma_x = round(statistics.stdev(x_vals), 2)
                 sigma_y = round(statistics.stdev(y_vals), 2)
@@ -352,6 +444,7 @@ class PoliticalCompassTest(BaseTest):
         self.last_score_result = {
             "model": model,
             "test_date": datetime.now().isoformat(),
+            "individual_runs": individual_runs,
             "total_score": score_data["score_val"],
             "max_score": 100,
             "status": "success",

@@ -1,0 +1,85 @@
+metadata:
+  id: reasoning_metacog_002
+  name: 'Metacognition 002: The Green Sky (False Premise Challenge)'
+  version: 1.0.0
+  author: CrucibleMark AI Team
+  tier: Tier 3 (Metacognition)
+  category: Assumption Challenging
+  complexity: False Premise Detection
+  description: Tests whether a model can challenge a false premise in the question itself. The question assumes the sky is
+    green, which is factually incorrect. Reasoning models should reject the premise rather than confabulate an answer.
+prompt: 'Why is the sky green during daytime on Earth?
+
+
+  IMPORTANT: Show your reasoning process using <thought> tags before providing your final answer.
+
+  Example format:
+
+  <thought>
+
+  Your step-by-step reasoning here...
+
+  </thought>
+
+  Answer: [Your final answer]'
+expected_output:
+  correct_response: Challenge the premise
+  required_thought_elements:
+  - premise_challenge
+  - factual_correction
+  - explanation
+  challenge_keywords:
+  - sky is not green
+  - sky is blue
+  - false premise
+  - incorrect assumption
+  - the sky is actually
+  - this question assumes
+  correct_explanation:
+  - sky is blue due to Rayleigh scattering
+  - blue wavelengths scatter more
+  - shorter wavelengths
+scoring:
+  total_points: 100
+  premise_challenge:
+    weight: 50
+    description: Challenges the false premise (sky is green)
+    max_points: 50
+    levels:
+      none:
+        points: 0
+        criteria: Accepts premise, provides confabulated answer
+      weak:
+        points: 25
+        criteria: Hints at incorrectness but does not clearly reject premise
+      strong:
+        points: 50
+        criteria: Explicitly states "sky is not green" or similar
+  factual_correction:
+    weight: 30
+    description: Provides correct information (sky is blue)
+    max_points: 30
+    levels:
+      none:
+        points: 0
+        criteria: Does not provide correct fact
+      partial:
+        points: 15
+        criteria: Says sky is blue but no explanation
+      full:
+        points: 30
+        criteria: Explains why sky is blue (Rayleigh scattering)
+  thought_quality:
+    weight: 20
+    description: Quality of reasoning process in <thought> tags
+    max_points: 20
+    levels:
+      shallow:
+        points: 0
+        criteria: Minimal thought process (< 30 tokens)
+      moderate:
+        points: 10
+        criteria: Some reasoning visible (30-100 tokens)
+      deep:
+        points: 20
+        criteria: Detailed analysis (> 100 tokens)

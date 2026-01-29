@@ -5,6 +5,27 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.9.6] - 2026-01-29
+
+### Metacognition & RCI Update
+
+#### Added
+- **Tier 3 (Metacognition)**: Neues Test-Level im `reasoning_logic` Modul.
+  - Prüft die Fähigkeit zur **Selbstkorrektur** ("The Sheep Trap").
+  - Prüft das **Infragestellen falscher Prämissen** ("The Green Sky").
+  - 5 neue Assets (`METACOG_001` bis `METACOG_005`).
+- **RCI (Reasoning Complexity Index)**: Neue Metrik (0-100%).
+  - Berechnet sich aus: `(Avg_Tier1_2 * 0.6) + (Avg_Tier3 * 0.4)`.
+  - Unterscheidet zwischen "Non-Thinking" (<50%), "Basic Thinking" (50-70%) und "Deep Thinking" (>85%).
+- **<think> Tag Parsing**: Unterstützung für Reasoning-Traces in `<think>` oder `<thought>` Tags (kompatibel mit DeepSeek R1).
+
+#### Changed
+- **Reasoning Logic Module**: Upgrade auf v2.0.0.
+- **Scoring Engine**: Hybrid-Ansatz für robuste Bewertung (Keywords + Struktur-Analyse + Trajectory Detection).
+
+#### Fixed
+- **YAML Schema**: Fehlerhafte `dimensions` Struktur in den Metacognition-Assets behoben.
+
 ## [0.9.5] - 2026-01-28
 
 ### Cultural Intelligence Module (Complete)

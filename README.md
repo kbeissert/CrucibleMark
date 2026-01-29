@@ -15,9 +15,25 @@ Dieses Framework ist der "TÜV für digitale Produktentwicklung" – flexibel, m
 
 ---
 
-## 📖 Einstieg & Überblick
+## 📖 Dokumentation
 
-CrucibleMark ist ein Framework, um die Fähigkeiten von Large Language Models (LLMs) systematisch zu testen. Anders als reine "Vibe-Checks" nutzt dieses Projekt strukturierte Test-Assets mit definierten Scoring-Kriterien.
+*   **[USER_GUIDE.md](docs/USER_GUIDE.md):** Wie man Benchmarks startet, steuert und auswertet (inkl. Checkpoint-System).
+*   **[DATA_FORMAT.md](docs/DATA_FORMAT.md):** Erklärung der CSV-Outputs und Metriken.
+*   **[ADDING_MODULES.md](docs/ADDING_MODULES.md):** Anleitung zum Erstellen eigener Test-Module.
+*   **[ARCHITECTURE.md](docs/ARCHITECTURE.md):** Technische Architektur und Design-Entscheidungen.
+
+## 🚀 Quick Start
+
+```bash
+# 1. Installation
+make install
+
+# 2. Interaktiver Benchmark-Wizard
+make benchmark
+
+# 3. Leaderboard generieren
+make leaderboard
+```
 
 Einen verständlichen Überblick über die Testszenarien für Nicht-Techniker findest du hier:
 👉 **[Benchmark Szenarien & Erklärungen](docs/BENCHMARK_SCENARIOS.md)**
@@ -61,8 +77,9 @@ Das Leaderboard klassifiziert Modelle nicht nur nach Punkten, sondern nach Profi
 *   ⚠️ **Needs Tuning**: Modelle, die noch Optimierung benötigen.
 
 ### 📊 Meta-Metrics
-*   **Routine Score (Tier 1)**: Misst die Zuverlässigkeit bei Standard-Aufgaben (Linting, Typos).
-*   **Reasoning Score (Tier 2)**: Misst logische Deduktion und Architektur-Verständnis (Deadlocks).
+*   **Routine Score**: Aggregierter Score aus Modulen der Gruppe `routine` (z.B. UX Writing, Documentation). Misst Zuverlässigkeit im Alltag.
+*   **Reasoning Score**: Aggregierter Score aus Modulen der Gruppe `reasoning` (z.B. Code Quality, Logic). Misst tiefes Verständnis.
+*   **Performance Ratio**: Prozentualer Vergleich zum definierten "Golden Standard" Modell.
 
 ## ⚡ Quick Start
 

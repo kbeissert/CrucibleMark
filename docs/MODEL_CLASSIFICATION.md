@@ -1,6 +1,27 @@
-# Modell-Klassifizierung & Management
+# Modell-Klassifizierung & RCI (Reasoning Complexity Index)
 
-Dieses Dokument beschreibt das **Hybride Klassifizierungs-System** von CrucibleMark, mit dem Modelle automatisch in Generationen eingeteilt werden (Gen 1 vs. Gen 2 vs. Gen 3).
+Dieses Dokument beschreibt das **Hybride Klassifizierungs-System** von CrucibleMark, inklusive des neuen **RCI (Reasoning Complexity Index)**.
+
+## 📊 Der Reasoning Complexity Index (RCI)
+
+Der RCI ist die zentrale Metrik zur Bewertung der kognitiven Tiefe eines Modells. Er reicht von **0% bis 100%**.
+
+### Berechnung
+Der Score setzt sich aus zwei Faktoren zusammen:
+1.  **Operationale Logik (60%)**: Kann das Modell komplexe Rätsel lösen? (Tier 1 & 2)
+2.  **Metakognition (40%)**: Reflektiert das Modell über seinen eigenen Denkprozess? (Tier 3)
+
+`RCI = (Avg_Tier1_2_Score * 0.6) + (Avg_Tier3_Score * 0.4)`
+
+### Klassifizierung basierend auf RCI
+
+| Kategorie | RCI Bereich | Beschreibung | Beispiel |
+| :--- | :--- | :--- | :--- |
+| **Non-Thinking Model** | < 50% | Löst Standard-Tasks, scheitert an Selbstreflexion. | Dolphin 8B (~42%) |
+| **Basic Thinking Model** | 50% - 85% | Gute Logik, aber schwache Metakognition. | Qwen 2.5 (~65%) |
+| **Deep Thinking Model** | > 85% | Exzellente Logik + aktive Selbstkorrektur. | DeepSeek R1 (~87%) |
+
+---
 
 ## 🚀 Schnelleinstieg: Wie pflege ich neue Modelle?
 

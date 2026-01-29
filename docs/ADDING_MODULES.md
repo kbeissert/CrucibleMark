@@ -21,7 +21,25 @@ benchmark_modules/
 
 ---
 
-## Schritt-für-Schritt Guide
+## 🚀 Quick Start (Empfohlen)
+
+Statt alles manuell anzulegen, nutze den Generator:
+
+```bash
+make create-module
+```
+
+Das Skript führt dich interaktiv durch die Einrichtung:
+1.  **Modul-Name** (z.B. `context_awareness`)
+2.  **Score Group** (Wichtig für Leaderboard: `routine`, `reasoning` oder `info`)
+3.  Erstellt automatisch alle Ordner, `config.yaml`, `test.py` und Dummy-Evaluatoren.
+4.  Gibt dir den Block für die `benchmark_config.yaml` aus.
+
+Danach kannst du direkt bei **Schritt 2** (Logic implementieren) weitermachen.
+
+---
+
+## Manuelle Einrichtung (Reference)
 
 ### 1. Verzeichnisse erstellen
 
@@ -145,14 +163,31 @@ class YourModuleTest(BaseTest):
 
 ### 4. Registrierung (`benchmark_config.yaml`)
 
-Damit das Framework dein Modul findet, trage es in die Haupt-Config ein:
+Damit das Framework dein Modul findet und korrekt im Leaderboard anzeigt, trage es in die Haupt-Config ein.
+**Wichtig:** Seit v0.9.6 (Config-First Leaderboard) sind `score_group` und `assets_count` Pflichtfelder für die korrekte Berechnung der Scores und des "Pending"-Status.
 
 ```yaml
 modules:
   your_module:
+    name: "Your Module Name"  # Anzeigename im Leaderboard
+    description: "Kurze Beschreibung was getestet wird"
+    test_class: "YourModuleTest"  # Name der Klasse in test.py
     enabled: true
-    # module_path wird automatisch anhand des Keys ermittelt: benchmark_modules/your_module
+    
+    # Leaderboard Konfiguration (Wichtig!)
+    assets_count: 5          # Anzahl der erwarteten Assets (für Progress-Bar/Status)
+    score_group: "routine"   # Zählt zu: "routine" | "reasoning" | "info"
+    
+    tags:
+      - tag1
+      - tag2
 ```
+
+*   **`score_group`**:
+    *   `routine`: Alltagsaufgaben (Writing, Doku, Transformation). Beeinflusst den "Routine Score".
+    *   `reasoning`: Logik, Code, Mathe. Beeinflusst den "Reasoning Score".
+    *   `info`: Rein informativ (z.B. Political Compass). Beeinflusst keinen Score und blockiert nicht den Abschluss-Status.
+
 
 ### 5. Assets (`assets/*.yaml`)
 

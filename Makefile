@@ -13,9 +13,10 @@ help:
 	@echo "=== Benchmarking (Neue modulare Struktur) ==="
 	@echo "  make benchmark            Interaktiver Benchmark (Wizard)"
 	@echo "  make list-models          List available Local & Commercial models (with Connectivity Check)"
-	@echo "  make benchmark-auto       🌙 Overnight Mode: ALLE Module, ALLE Modelle"
+	@echo "  make benchmark-auto       🤖 Auto-Fill Mode: Ergänzt fehlende Benchmarks"
 	@echo "  make benchmark-single     Einzelnes Modell (MODEL=name [MODULE=name])"
 	@echo "  make leaderboard          Generiere Leaderboard-CSV aus Ergebnissen"
+	@echo "  make clean-sessions       🗑️  Lösche temporäre Checkpoints (Political Compass)"
 	@echo ""
 	@echo "=== Golden Standards ==="
 	@echo "  make generate-golden      Generate golden standard (ASSET=path)"
@@ -34,6 +35,7 @@ help:
 	@echo "  make clean-all            Delete EVERYTHING (caches + CSVs)"
 	@echo "  make list-models          List models (Local & Commercial Status)"
 	@echo "  make list-modules         List available benchmark modules"
+	@echo "  make create-module        🚀 Scaffold a new benchmark module (Interactive)"
 	@echo "  make backup               Backup benchmark scores to backups/"
 	@echo ""
 
@@ -103,6 +105,11 @@ clean:
 	find . -type d -name __pycache__ -exec rm -rf {} +
 	find . -type f -name "*.pyc" -delete
 
+clean-sessions:
+	@echo "🧹 Cleaning temporary benchmark sessions (Checkpoints)..."
+	@rm -rf outputs/temp/session_*.json
+	@echo "Done."
+
 clean-csv:
 	@echo "🗑️  Deleting ALL benchmark CSV files..."
 	rm -f benchmark_scores/*.csv
@@ -144,6 +151,11 @@ list-models:
 validate-structure:
 	@echo "🏗️ Checking Module Structure..."
 	$(PYTHON) scripts/validate_structure.py
+
+# === DEVELOPMENT ===
+
+create-module:
+	@$(PYTHON) scripts/scaffold_module.py
 
 analyze-costs:
 	@echo "💰 Analyzing Prompt Token Costs..."

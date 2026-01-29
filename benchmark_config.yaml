@@ -18,6 +18,22 @@ golden_standard:
   model: "mistral-large-latest"  # Welches Modell für Referenz-Benchmark
   description: "Mistral Large als leistungsstarke Referenz für Benchmark Tests"
 
+# Leaderboard & Badging Logic
+# ---------------------------
+# Schwellenwerte für die Vergabe der automatischen Badges im Leaderboard.
+# Werte sind Prozentpunkte (0-100).
+leaderboard:
+  thresholds:
+    # "👑 God Mode": Muss BEIDE Bedingung erfüllen (Routine + Reasoning)
+    god_mode_routine: 85
+    god_mode_reasoning: 80
+    
+    # "🧠 Deep Thinker": Stark im Reasoning, Routine weniger wichtig
+    deep_thinker_reasoning: 80
+    
+    # "🏎️ Daily Driver": Stark in Routine (Code, Chat), Reasoning weniger wichtig
+    daily_driver_routine: 80
+
 # Provider Configuration
 # ----------------------
 # Definiert verfügbare LLM-Provider und deren Modelle.
@@ -103,6 +119,7 @@ modules:
     version: "0.9.0-rc"
     enabled: true
     assets_count: 5
+    score_group: "reasoning"
     tags:
       - quality
       - security
@@ -117,6 +134,7 @@ modules:
     version: "0.9.5-beta"
     enabled: true
     assets_count: 5
+    score_group: "routine"
     tags:
       - ux-writing
       - microcopy
@@ -130,6 +148,7 @@ modules:
     test_class: "DocumentationTest"
     version: "0.9.5-beta"
     enabled: true
+    score_group: "routine"
     assets_count: 5
     tags:
       - documentation
@@ -146,6 +165,7 @@ modules:
     version: "0.9.0-beta"
     enabled: true
     assets_count: 6
+    score_group: "routine"
     tags:
       - content-creation
       - copywriting
@@ -162,6 +182,7 @@ modules:
     version: "1.0.0"
     enabled: true
     assets_count: 3
+    score_group: "routine"
     tags:
       - language
       - culture
@@ -176,6 +197,7 @@ modules:
     version: "0.5.0-beta"
     enabled: true
     assets_count: 5
+    score_group: "reasoning"
     tags:
       - logic
       - reasoning
@@ -189,6 +211,7 @@ modules:
     version: "1.0.0"
     enabled: true
     assets_count: 2
+    score_group: "info"
     execution_mode: "batch"
     min_runs: 3
     tags:

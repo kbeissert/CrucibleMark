@@ -7,12 +7,95 @@ Handles file I/O operations for reports and results.
 import json
 import csv
 import re
+import time
 from pathlib import Path
 from datetime import datetime
 from typing import Dict, Any
 
 from .visualizer import PoliticalCompassVisualizer
 from utils.benchmark_ui import TerminalUI
+
+class CheckpointManager:
+    """
+    Manages temporary checkpoint files for session resume.
+    """
+    TEMP_DIR = Path("outputs/temp")
+
+    @classmethod
+    def get_checkpoint_path(cls, model: str) -> Path:
+        safe_model = re.sub(r"[^a-zA-Z0-9]", "_", model)
+        return cls.TEMP_DIR / f"session_{safe_model}.json"
+
+    @classmethod
+    def save_checkpoint(cls, model: str, state: Dict[str, Any]):
+        """Serializes current benchmark state to disk."""
+        if not cls.TEMP_DIR.exists():
+            cls.TEMP_DIR.mkdir(parents=True, exist_ok=True)
+            
+        filepath = cls.get_checkpoint_path(model)
+        try:
+            with open(filepath, "w", encoding="utf-8") as f:
+                json.dump(state, f, indent=2, ensure_ascii=False)
+        except Exception as e:
+            print(f"⚠️ Failed to save checkpoint: {e}")
+
+    @classmethod
+    def load_checkpoint(cls, model: str, force_new: bool = False, max_age_hours: int = 48) -> Dict[str, Any] | None:
+        """
+        Loads state if exists and is valid.
+        
+        Args:
+            model: Model identifier
+            force_new: If True, deletes existing checkpoint regardless of age
+            max_age_hours: Max age in hours before checkpoint is considered undefined/expired
+        """
+        filepath = cls.get_checkpoint_path(model)
+        
+        if not filepath.exists():
+            return None
+
+        # Clean forced
+        if force_new:
+            try:
+                filepath.unlink()
+                print(f"🧹 Force-cleaned previous session for {model}")
+            except OSError as e:
+                print(f"⚠️ Could not delete checkpoint: {e}")
+            return None
+
+        try:
+            with open(filepath, "r", encoding="utf-8") as f:
+                data = json.load(f)
+            
+            # Check Expiry
+            timestamp = data.get("timestamp", 0)
+            age_seconds = time.time() - timestamp
+            age_hours = age_seconds / 3600
+            
+            if age_hours > max_age_hours:
+                print(f"🧹 Expired session found ({age_hours:.1f}h old). Starting fresh.")
+                try:
+                    filepath.unlink()
+                except OSError:
+                    pass
+                return None
+            
+            return data
+
+        except Exception as e:
+            print(f"⚠️ Corrupt checkpoint found (ignoring): {e}")
+            return None
+
+    @classmethod
+    def clear_checkpoint(cls, model: str):
+        """Removes checkpoint file after successful run."""
+        filepath = cls.get_checkpoint_path(model)
+        if filepath.exists():
+            try:
+                filepath.unlink()
+            except Exception as e:
+                print(f"⚠️ Failed to clear checkpoint: {e}")
+
 
 class ResultManager:
     """
