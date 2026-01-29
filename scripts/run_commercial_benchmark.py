@@ -7,6 +7,7 @@ import json
 import csv
 import argparse
 import traceback
+import time
 from pathlib import Path
 from datetime import datetime
 from typing import Any, Dict, List, Optional, Tuple
@@ -259,12 +260,14 @@ class CommercialBenchmarkRunner(BaseBenchmarkRunner):
 
         # Execute Test using BaseRunner logic
         try:
+            start_time = time.time()
             test_inst, exec_result = self.execute_test_module(
                 model=model,
                 asset_path=asset_path,
                 benchmark_info=benchmark_info,
                 provider=provider,
             )
+            exec_result["execution_time"] = time.time() - start_time
         except Exception as e:  # pylint: disable=broad-exception-caught
             print(f"\n❌ Fehler bei Ausführung ({asset_name}): {e}")
             return None
@@ -274,6 +277,9 @@ class CommercialBenchmarkRunner(BaseBenchmarkRunner):
 
         # Build Standardized Result
         result = self.build_base_result(model, asset_data, score, exec_result, provider)
+
+        # Add Version/Fingerprint if available from API
+        result["model_version"] = exec_result.get("metadata", {}).get("system_fingerprint", "unknown")
 
         # Add Cost Tracking
         cost_val = 0.0

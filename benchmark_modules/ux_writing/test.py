@@ -86,7 +86,7 @@ class UXWritingTest(BaseTest):
 
         return {
             "total_score": total_score,
-            "max_score": 100.0, # Normalized to 100 in logic
+            "max_score": 100, # Normalized to 100 in logic
             "category_scores": category_scores,
             "status": "success",
             "tier": self._calculate_tier(total_score),
@@ -114,7 +114,6 @@ class UXWritingTest(BaseTest):
             "error_detection": 0.0,
             "solution_quality": 0.0,
             "formatting": 0.0,
-            "bonus": 0.0,
             "total": 0.0
         }
         details = []

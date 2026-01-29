@@ -5,3 +5,4 @@ order: 7
 assets_dir: "assets"
 test_class: "PoliticalCompassTest"  # In test.py
 weight: 1.0
+runs: 3  # Set to 3 for maximum precision (outlier reduction).

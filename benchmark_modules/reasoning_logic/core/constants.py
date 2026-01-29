@@ -4,7 +4,7 @@ Separates data from logic for better maintainability.
 """
 
 # Scoring Configuration
-MAX_SCORE = 100.0
+MAX_SCORE = 100
 WEIGHT_ERROR_DETECTION = 40.0
 WEIGHT_SOLUTION_QUALITY = 50.0
 WEIGHT_CONSISTENCY = 10.0
@@ -278,4 +278,146 @@ TIER_MAPPING = {
         "reasoning_5c_001",
         "reasoning_5d_001",
     ],
+    "Tier 3 (Metacognition)": [
+        "reasoning_metacog_001",
+        "reasoning_metacog_002",
+        "reasoning_metacog_003",
+        "reasoning_metacog_004",
+        "reasoning_metacog_005",
+    ],
 }
+
+# ============================================================================
+# METACOGNITION KEYWORDS (Tier 3)
+# ============================================================================
+
+# Self-Correction Keywords (Metacog 001)
+METACOG_SELF_CORRECTION_KEYWORDS: list[str] = [
+    "wait",
+    "actually",
+    "correction",
+    "mistake",
+    "initially thought",
+    "but i was wrong",
+    "but that's not",
+    "but actually",
+    "but let me reconsider",
+    "however, i was wrong",
+    "realized my error",
+    "reconsider",
+    "reconsidering",
+    "let me reconsider",
+    "on second thought",
+    "corrected myself",
+    "revidiert",
+    "ich habe mich geirrt",
+    "entschuldigung",
+]
+
+# False Premise Challenge Keywords (Metacog 002)
+METACOG_PREMISE_CHALLENGE_KEYWORDS: list[str] = [
+    "not",
+    "is not",
+    "not green",
+    "false premise",
+    "incorrect assumption",
+    "question assumes",
+    "this question",
+    "actually",
+    "sky is blue",
+    "the sky is",
+    "premise is",
+    "assumption is",
+    "disagree",
+    "reject",
+    "falsch",
+    "prämisse",
+]
+
+# Alternative Exploration Keywords (Metacog 003)
+METACOG_ALTERNATIVES_KEYWORDS: list[str] = [
+    "approach",
+    "alternative",
+    "option",
+    "could",
+    "could also",
+    "another way",
+    "or",
+    "alternatively",
+    "also consider",
+    "another approach",
+    "different approach",
+    "multiple approaches",
+    "trade-off",
+    "tradeoff",
+    "pros and cons",
+    "ansatz",
+]
+
+# Iterative Refinement Keywords (Metacog 004)
+METACOG_ITERATION_KEYWORDS: list[str] = [
+    "initially",
+    "at first",
+    "wait",
+    "reconsidering",
+    "but",
+    "however",
+    "on second thought",
+    "actually",
+    "let me reconsider",
+    "thinking more carefully",
+    "more careful",
+    "recalculate",
+    "let me think again",
+    "step back",
+    "zuerst",
+    "aber",
+]
+
+# Confidence Expression Keywords (Metacog 005)
+METACOG_CONFIDENCE_KEYWORDS: list[str] = [
+    "confident",
+    "confident that",
+    "certainly",
+    "certain",
+    "sure",
+    "likely",
+    "probability",
+    "%",
+    "percent",
+    "I believe",
+    "I think",
+    "I am sure",
+    "confident enough",
+    "confident in",
+    "sicher",
+    "wahrscheinlich",
+]
+
+# Counter-Intuitive Acknowledgment Keywords (Metacog 005)
+METACOG_UNCERTAINTY_KEYWORDS: list[str] = [
+    "counter-intuitive",
+    "counter intuitive",
+    "surprising",
+    "unexpected",
+    "seems wrong",
+    "seems counterintuitive",
+    "difficult to believe",
+    "hard to believe",
+    "not obvious",
+    "not what I'd expect",
+    "initially think",
+    "at first glance",
+    "kontraintuitiv",
+    "überraschend",
+]
+
+# RCI Classification Thresholds
+RCI_THRESHOLD_NON_THINKING = 50.0
+RCI_THRESHOLD_BASIC_THINKING = 70.0
+RCI_THRESHOLD_THINKING = 85.0
+RCI_THRESHOLD_DEEP_THINKING = 100.0
+
+# Thought Quality Weights
+THOUGHT_QUALITY_WEIGHT = 0.4
+OUTPUT_QUALITY_WEIGHT = 0.6

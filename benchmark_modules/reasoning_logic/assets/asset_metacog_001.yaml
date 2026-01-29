@@ -1,0 +1,85 @@
+metadata:
+  id: reasoning_metacog_001
+  name: 'Metacognition 001: The Sheep Trap (Self-Correction)'
+  version: 1.0.0
+  author: CrucibleMark AI Team
+  tier: Tier 3 (Metacognition)
+  category: Self-Correction
+  complexity: Simple Logic with Linguistic Trap
+  description: Tests whether a model can recognize and correct its own initial mistake. The phrasing 'all but 9 die' is designed
+    to trigger the wrong instinct (17-9=8), but careful reading reveals that 9 sheep SURVIVE. Reasoning models should catch
+    this error via self-correction.
+prompt: 'A farmer has 17 sheep. All but 9 die. How many sheep are left?
+
+
+  IMPORTANT: Show your reasoning process using <thought> tags before providing your final answer.
+
+  Example format:
+
+  <thought>
+
+  Your step-by-step reasoning here...
+
+  </thought>
+
+  Answer: [Your final answer]'
+expected_output:
+  correct_answer: 9 sheep
+  required_thought_elements:
+  - self_correction
+  - linguistic_analysis
+  - final_verification
+  self_correction_keywords:
+  - wait
+  - actually
+  - correction
+  - mistake
+  - initially thought
+  - but
+  - however
+  - realized
+  correct_reasoning:
+  - '"all but 9" means 9 survive'
+  - 9 sheep are left
+  - 9 remain
+scoring:
+  total_points: 100
+  self_correction:
+    weight: 40
+    description: Detects and corrects initial wrong assumption (17-9=8)
+    max_points: 40
+    levels:
+      none:
+        points: 0
+        criteria: No self-correction, wrong answer (8 sheep)
+      partial:
+        points: 20
+        criteria: Shows confusion but does not clearly correct
+      full:
+        points: 40
+        criteria: Explicit self-correction visible in <thought> tags
+  linguistic_analysis:
+    weight: 30
+    description: Analyzes the phrase "all but 9" correctly
+    max_points: 30
+    levels:
+      none:
+        points: 0
+        criteria: Does not analyze the phrase
+      shallow:
+        points: 15
+        criteria: Mentions "all but 9" but unclear reasoning
+      deep:
+        points: 30
+        criteria: Explicitly explains "all but 9 means 9 survive"
+  output_correctness:
+    weight: 30
+    description: Final answer is correct (9 sheep)
+    max_points: 30
+    levels:
+      wrong:
+        points: 0
+        criteria: Answer is 8 or other wrong number
+      correct:
+        points: 30
+        criteria: Answer is 9 sheep

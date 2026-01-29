@@ -26,17 +26,20 @@ from utils.config_validator import ConfigValidator  # noqa: E402
 from utils.csv_recovery import parse_row_robust, get_csv_header_idx  # noqa: E402
 # pylint: enable=wrong-import-position, import-error
 
-# Konstanten
-THRESHOLD_GOD_MODE_ROUTINE = 85
-THRESHOLD_GOD_MODE_REASONING = 80
-THRESHOLD_DAILY_DRIVER = 80
-THRESHOLD_DEEP_THINKER = 80
+# Konstanten - Defaults (Falls Module Config fehlt)
+DEFAULT_THRESHOLDS = {
+    "god_mode_routine": 85,
+    "god_mode_reasoning": 80,
+    "daily_driver_routine": 80,
+    "deep_thinker_reasoning": 80,
+}
 REGISTRY_FILE = ROOT_DIR / "model_registry.yaml"
 
 # Konfiguration laden
 validator = ConfigValidator()
 config = validator.config
 output_config = config.get("output", {})
+lb_config = config.get("leaderboard", {}).get("thresholds", DEFAULT_THRESHOLDS)
 
 SCORES_DIR = Path(output_config.get("directory", "benchmark_scores"))
 COMMERCIAL_CSV = Path(
@@ -109,8 +112,19 @@ def load_data() -> pd.DataFrame:
     df["execution_time"] = pd.to_numeric(df["execution_time"], errors="coerce")
     df["timestamp"] = pd.to_datetime(df["timestamp"], errors="coerce")
 
+    # If model_version is missing (e.g. newly loaded CSV didn't have it yet), fill with "unknown"
+    if "model_version" not in df.columns:
+        df["model_version"] = "unknown"
+    else:
+        df["model_version"] = df["model_version"].fillna("unknown")
+
+    # Sort by timestamp to ensure 'last' is actually the most recent
     df = df.sort_values("timestamp")
-    df = df.drop_duplicates(subset=["model", "type", "asset_id"], keep="last")
+    
+    # DEDUPLICATION LOGIC with VERSIONING:
+    # We now group by model AND model_version.
+    # This means 'mistral:latest' (v1) and 'mistral:latest' (v2) are treated as DIFFERENT entities.
+    df = df.drop_duplicates(subset=["model", "model_version", "type", "asset_id"], keep="last")
     return df
 
 
@@ -171,70 +185,126 @@ def _get_badge(row: pd.Series) -> str:
     routine = row.get("Routine Score", 0)
     reasoning = row.get("Reasoning Score", 0)
 
-    if pd.isna(routine):
-        routine = 0
-    if pd.isna(reasoning):
-        reasoning = 0
+    # Handle NaNs
+    routine = 0 if pd.isna(routine) else routine
+    reasoning = 0 if pd.isna(reasoning) else reasoning
 
-    is_god_mode = (
-        reasoning > THRESHOLD_GOD_MODE_REASONING
-        and routine > THRESHOLD_GOD_MODE_ROUTINE
-    )
+    # Get Thresholds from Config
+    t_god_r = lb_config.get("god_mode_routine", 85)
+    t_god_l = lb_config.get("god_mode_reasoning", 80)
+    t_deep = lb_config.get("deep_thinker_reasoning", 80)
+    t_daily = lb_config.get("daily_driver_routine", 80)
+
+    is_god_mode = (reasoning > t_god_l and routine > t_god_r)
 
     if is_god_mode:
         return "👑 God Mode"
-    if reasoning > THRESHOLD_DEEP_THINKER:
+    if reasoning > t_deep:
         return "🧠 Deep Thinker"
-    if routine > THRESHOLD_DAILY_DRIVER:
+    if routine > t_daily:
         return "🏎️ Daily Driver"
     return "⚖️ Standard"
 
 
-def _aggregate_stats(df: pd.DataFrame) -> pd.DataFrame:
-    """Aggregiert Basis-Statistiken pro Modell."""
-    total_unique_assets = df["asset_id"].nunique()
+def _aggregate_stats(df: pd.DataFrame, modules_config: Dict[str, Any]) -> pd.DataFrame:
+    """Aggregates basic stats and checks completion against config."""
+    
+    # Calculate Expected Assets Count from Config (excluding info/batch if needed?)
+    expected_assets = 0
+    optional_assets_ids = []
+    
+    for _, mod_data in modules_config.items():
+        if not mod_data.get("enabled", True):
+            continue
+            
+        # Assets count
+        count = mod_data.get("assets_count", 0)
+        group = mod_data.get("score_group", "")
+        
+        # If group is 'info', we don't require it for 'Completion' status
+        if group == "info":
+            pass
+        else:
+            expected_assets += count
 
+    # Filter out 'info' group assets from the SCORING aggregation
+    cat_to_group = {}
+    for mod_key, mod_data in modules_config.items():
+        name = mod_data.get("name", mod_key)
+        cat_to_group[name] = mod_data.get("score_group", "")
+        
+    def is_scoring_asset(row):
+        cat = row.get("category", "")
+        group = cat_to_group.get(cat, "")
+        return group != "info"
+
+    scoring_df = df[df.apply(is_scoring_asset, axis=1)]
+    
     # Check if normalized column exists
     aggs = {"percentage": "mean", "execution_time": "mean", "asset_id": "count"}
     if "performance_ratio" in df.columns:
         aggs["performance_ratio"] = "mean"
+    
+    # NEW: Capture latest timestamp for "Last Seen" Date
+    if "timestamp" in df.columns:
+        aggs["timestamp"] = "max"
 
+    # Aggregate stats -> This creates the "Total Score" (percentage)
+    # UPDATED: Group also by 'model_version'
     stats = (
-        df.groupby(["model", "type"])
+        scoring_df.groupby(["model", "model_version", "type"])
         .agg(aggs)
         .reset_index()
     )
-
-    stats["is_complete"] = stats["asset_id"] >= total_unique_assets
-    stats["Tests Run"] = stats["asset_id"].astype(str) + "/" + str(total_unique_assets)
+    
+    # Calculate completion status
+    stats["is_complete"] = stats["asset_id"] >= expected_assets
+    stats["Tests Run"] = stats["asset_id"].astype(str) + "/" + str(expected_assets)
+    
     return stats
 
 
-def _calculate_tier_stats(df: pd.DataFrame) -> pd.DataFrame:
-    """Berechnet separate Statistik für Tier 1 und Tier 2."""
-    if "tier" not in df.columns:
-        return pd.DataFrame()
-
-    def get_tier_simple(t: Any) -> Optional[str]:
-        s = str(t)
-        if "Tier 1" in s:
-            return "Tier 1"
-        if "Tier 2" in s:
-            return "Tier 2"
-        return None
-
+def _calculate_group_scores(df: pd.DataFrame, modules_config: Dict[str, Any]) -> pd.DataFrame:
+    """Calculates Routine vs Reasoning scores based on Config Score Groups."""
+    
+    # Map category names to score groups
+    cat_to_group = {}
+    for mod_key, mod_data in modules_config.items():
+        name = mod_data.get("name", mod_key)
+        cat_to_group[name] = mod_data.get("score_group", "")
+    
+    # Helper to get group for a row
+    def get_group(row):
+        return cat_to_group.get(row.get("category"), None)
+        
     df_copy = df.copy()
-    df_copy["simple_tier"] = df_copy["tier"].apply(get_tier_simple)
-    tier_means = (
-        df_copy.groupby(["model", "simple_tier"])["percentage"]
+    df_copy["score_group"] = df_copy.apply(get_group, axis=1)
+    
+    # Group by Model + Version + Score Group
+    group_means = (
+        df_copy.groupby(["model", "model_version", "score_group"])["percentage"]
         .mean()
-        .unstack()
+        .unstack(fill_value=0.0)
         .reset_index()
     )
-
-    return tier_means.rename(
-        columns={"Tier 1": "Routine Score", "Tier 2": "Reasoning Score"}
-    )
+    
+    # Rename matching columns
+    # We expect 'routine' and 'reasoning'
+    rename_map = {
+        "routine": "Routine Score",
+        "reasoning": "Reasoning Score"
+    }
+    
+    final_cols = ["model", "model_version"]
+    for key, label in rename_map.items():
+        if key in group_means.columns:
+            group_means.rename(columns={key: label}, inplace=True)
+            final_cols.append(label)
+        else:
+            group_means[label] = 0.0
+            final_cols.append(label)
+            
+    return group_means[final_cols]
 
 
 try:
@@ -301,9 +371,9 @@ def _format_metrics(
         if name in result.columns:
             cat_cols.append(name)
 
-    for col in result.columns:
-        if col in cat_stats.columns and col not in cat_cols and col != "model":
-            cat_cols.append(col)
+    # STRICT MODE: We do NOT add columns that are not in config.
+    # This ensures that removed modules disappear from the leaderboard immediately.
+    # The 'Other' category or legacy columns in CSV are ignored.
 
     # Round category columns (Handle Pending)
     pc_labels = [
@@ -325,17 +395,21 @@ def _merge_political_compass(
     """Merges Political Compass results into the leaderboard."""
     pc_csv = SCORES_DIR / "political_compass_results.csv"
 
+    # Cleanup old columns if present
     if "Political Compass" in result.columns:
         result = result.drop(columns=["Political Compass"])
     if "Political Compass" in cat_cols:
         cat_cols.remove("Political Compass")
 
+    # Initialize columns with status "Ausstehend" (default)
+    # Using 'Ausstehend' as requested for pending PC run.
     for col_name in ["Political Compass Ideologie", "Political Compass Haltung"]:
         if col_name not in result.columns:
-            result[col_name] = ""
+            result[col_name] = "Ausstehend"
         if col_name not in cat_cols:
             cat_cols.append(col_name)
 
+    # Only merge if data exists
     if pc_csv.exists():
         try:
             pc_df = pd.read_csv(pc_csv)
@@ -354,15 +428,37 @@ def _merge_political_compass(
             if "model" in pc_df.columns:
                 pc_df = pc_df.drop_duplicates(subset=["model"], keep="last")
 
+            # Merge Logic using update
+            # Now we must match on 'model' AND 'model_version' (or fall back to model-only match if PC lacks version)
+            
+            # Since pc_df is a snapshot CSV (Political Compass Results), it doesn't currently store version.
+            # It just stores 'model'. 
+            # Strategy: We assume the PC result applies to ALL versions of that model currently in the leaderboard,
+            # OR we accept that PC results are model-bound, not version-bound for now.
+            # Given user requirements, PC is a special case. Let's merge on model name.
+            
             result.set_index("model", inplace=True)
             try:
                 pc_df.set_index("model", inplace=True)
-                for col_name in [
-                    "Political Compass Ideologie",
-                    "Political Compass Haltung",
-                ]:
-                    if col_name in pc_df.columns:
-                        result.update(pc_df[[col_name]])
+                
+                # Check which models in result are present in PC
+                # Note: 'result' may have duplicate index (same model name, different versions)
+                # But set_index("model") handles duplicate keys fine for joining?
+                # Actually, duplicate index in left df works for join.
+                
+                common_models = result.index.intersection(pc_df.index)
+                
+                # Update only those rows
+                if not common_models.empty:
+                    for col_name in [
+                        "Political Compass Ideologie",
+                        "Political Compass Haltung",
+                    ]:
+                        if col_name in pc_df.columns:
+                            # If result has duplicates (versions), this assignment will broadcast the value
+                            # to all rows with that model name. This is acceptable for now.
+                            result.loc[common_models, col_name] = pc_df.loc[common_models, col_name]
+
             except Exception as update_err:  # pylint: disable=broad-exception-caught
                 print(f"Pt. Failure PC update: {update_err}")
             finally:
@@ -448,6 +544,12 @@ def calculate_metrics(df: pd.DataFrame) -> Tuple[pd.DataFrame, List[str]]:
     """Berechnet Scores pro Modell inkl. Meta-Metriken"""
     modules_config = config.get("modules", {})
     df_success = df[df["status"] == "success"].copy()
+    
+    # Ensure model_version is filled (avoid NaN issues in logic)
+    if "model_version" not in df_success.columns:
+        df_success["model_version"] = "unknown"
+    else:
+        df_success["model_version"] = df_success["model_version"].fillna("unknown")
 
     # --- NORMALIZATION LOGIC ---
     refs = load_golden_references()
@@ -482,45 +584,66 @@ def calculate_metrics(df: pd.DataFrame) -> Tuple[pd.DataFrame, List[str]]:
         return "Other"
 
     df_success["category"] = df_success["asset_id"].apply(get_category_name)
-    df_for_score = df_success[df_success["category"] != "Political Compass"]
+    
+    # We do NOT filter out Political Compass here manually anymore
+    # The _aggregate_stats function handles filtering based on 'score_group' == 'info'
+    
+    # DEBUG: Ensure performance_ratio is in df_success
+    # (It is calculated above)
 
-    # DEBUG: Ensure performance_ratio is in df_for_score
-    if "performance_ratio" in df_success.columns:
-        # Explicitly copy it over if it got lost in filtering (it shouldn't, but safe)
-        df_for_score = df_for_score.copy()
-        df_for_score["performance_ratio"] = df_success.loc[df_for_score.index, "performance_ratio"]
+    result = _aggregate_stats(df_success, modules_config) # returns grouped by model, model_version, type
 
-    result = _aggregate_stats(df_for_score)
+    # Fix: Ensure all_models includes version for correct merge
+    all_models = df_success[["model", "model_version", "type"]].drop_duplicates()
+    result = pd.merge(all_models, result, on=["model", "model_version", "type"], how="left")
 
-    all_models = df_success[["model", "type"]].drop_duplicates()
-    result = pd.merge(all_models, result, on=["model", "type"], how="left")
-
+    # Category Stats (Per Module Score)
+    # UPDATED: Group also by version
     cat_stats = (
-        df_success.groupby(["model", "category"])["percentage"]
+        df_success.groupby(["model", "model_version", "category"])["percentage"]
         .mean()
         .unstack()
         .reset_index()
     )
-    result = pd.merge(result, cat_stats, on="model", how="left")
+    result = pd.merge(result, cat_stats, on=["model", "model_version"], how="left")
 
     # Merge normalized stats if available
     if "performance_ratio" in df_success.columns:
+        # Calculate AVG Performance Ratio (excluding info/optional)
+        # We need to filter again for correct AVG
+        
+        # Re-use logic for scoring assets
+        cat_to_group = {}
+        for mod_key, mod_data in modules_config.items():
+            name = mod_data.get("name", mod_key)
+            cat_to_group[name] = mod_data.get("score_group", "")
+        
+        def is_scoring_asset(row):
+            cat = row.get("category", "")
+            group = cat_to_group.get(cat, "")
+            return group != "info"
+            
+        scoring_idx = df_success.apply(is_scoring_asset, axis=1)
+        
         norm_stats = (
-            df_success.groupby(["model"])["performance_ratio"]
+            df_success[scoring_idx].groupby(["model", "model_version"])["performance_ratio"]
             .mean()
             .reset_index()
         )
         if "performance_ratio" not in result.columns:
-            result = pd.merge(result, norm_stats, on="model", how="left")
+            result = pd.merge(result, norm_stats, on=["model", "model_version"], how="left")
 
     for mod_key, mod_data in modules_config.items():
+        if not mod_data.get("enabled", True):
+            continue
         name = mod_data.get("name", mod_key)
         if name not in result.columns:
             result[name] = float("nan")
 
-    tier_stats = _calculate_tier_stats(df_success)
-    if not tier_stats.empty:
-        result = pd.merge(result, tier_stats, on="model", how="left")
+    # Calculate Group Scores (Routine vs Reasoning)
+    group_stats = _calculate_group_scores(df_success, modules_config)
+    if not group_stats.empty:
+        result = pd.merge(result, group_stats, on=["model", "model_version"], how="left")
 
     for col in ["Routine Score", "Reasoning Score"]:
         if col not in result.columns:
@@ -630,13 +753,43 @@ def main(print_table: bool = True) -> None:
     leaderboard["Rank"] = leaderboard.index
 
     leaderboard = assign_rank_and_badges(leaderboard)
-    leaderboard = leaderboard.rename(columns={"model": "Model Name"})
+    
+    # 1. Cleaner Model Name
+    leaderboard["Model Name"] = leaderboard["model"]
+
+    # 2. Separate Version Column with Date
+    def format_version_display(row):
+        version = row.get("model_version", "unknown")
+        
+        # Extract Date (Month/Year)
+        date_suffix = ""
+        raw_ts = row.get("timestamp")
+        if pd.notna(raw_ts):
+            try:
+                # If timestamp is aggregated (e.g. max), handle it
+                ts = pd.to_datetime(raw_ts)
+                date_suffix = ts.strftime("%b %Y") # e.g. "Jan 2026"
+            except (ValueError, TypeError):
+                pass
+        
+        # Short hash
+        display_ver = str(version)
+        if version and version != "unknown":
+            display_ver = version[:7] if len(version) > 10 else version
+        
+        if date_suffix:
+            return f"{display_ver} ({date_suffix})"
+        return display_ver
+
+    leaderboard["Version"] = leaderboard.apply(format_version_display, axis=1)
+    
     leaderboard = leaderboard.rename(columns={"Overall Score": "Total Score"})
 
     cols = [
         "Rank",
         "Recommendation",
         "Model Name",
+        "Version",        # Moved here, right after name
         "Generation",
         "Total Score",
         "Performance Ratio",
@@ -645,6 +798,7 @@ def main(print_table: bool = True) -> None:
         "Routine Score",
         "Reasoning Score",
         "Type",
+        # "model_version", # Removed raw column from view as we have "Version"
     ]
 
     final_cols = []

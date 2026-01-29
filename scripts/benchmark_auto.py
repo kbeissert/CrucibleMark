@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 """
-🌙 CRUCIBLE AUTOMATED BENCHMARK 🌙
+🤖 CRUCIBLE AUTOMATIC BENCHMARK 🤖
 ===================================
 Führt ALLE aktivierten Benchmarks für ALLE verfügbaren Modelle (Lokal & Kommerziell) aus.
-Gedacht für langlaufende Batch-Jobs (z.B. über Nacht).
+Füllt automatisch fehlende Benchmarks auf (Auto-Fill).
 
 Usage:
     python scripts/benchmark_auto.py
@@ -37,7 +37,8 @@ from utils.model_utils import is_model_suitable_for_benchmark  # noqa: E402
 
 # Logging Setup
 logging.basicConfig(level=logging.INFO, format="%(message)s")
-logger = logging.getLogger("overnight")
+logger = logging.getLogger("auto_benchmark")
+
 
 
 def check_ollama_status() -> bool:
@@ -96,6 +97,8 @@ def get_all_modules(validator: ConfigValidator) -> List[Dict[str, Any]]:
                         "module_path": mod["path"],  # Wichtig für Module Loader
                         "test_class": mod.get("test_class", "CodeQualityTest"),
                         "description": mod["description"],
+                        "execution_mode": mod.get("execution_mode", "standard"),
+                        "min_runs": mod.get("min_runs", 1),
                     }
                 )
     return modules
@@ -160,11 +163,12 @@ def _run_module_for_model(
     print(f"   📊 Bench: {module['name']} ({len(assets_todo)} neue Tests) ...")
 
     try:
-        # Der Runner führt intern alle aus. Das ist aktuell limitation, aber ok.
-        results = runner.run_benchmark(model, module)
+        # Pass filtered assets (assets_todo) to evita re-running existing tests
+        results = runner.run_benchmark(model, module, assets=assets_todo)
         if results:
             runner.save_results(results)
     except KeyboardInterrupt:
+
         print("\n⛔  Abbruch durch Benutzer.")
         sys.exit(1)
     except Exception as e:  # pylint: disable=broad-exception-caught
@@ -269,8 +273,8 @@ def run_commercial_batch(
 def main():
     """Main entry point."""
     print(f"{'#' * 60}")
-    print("🌙  CRUCIBLE AUTOMATED BENCHMARK")
-    print("    Führt alle Benchmarks auf allen Modellen aus.")
+    print("🤖  CRUCIBLE AUTOMATIC BENCHMARK")
+    print("    Füllt automatisch fehlende Benchmarks auf.")
     print(f"{'#' * 60}\n")
 
     # Pre-Check Ollama
@@ -295,9 +299,10 @@ def main():
     # 2. Kommerzielle Modelle
     run_commercial_batch(modules, validator)
 
-    print("\n\n✅  OVERNIGHT RUN COMPLETED.")
+    print("\n\n✅  AUTOMATIC RUN COMPLETED.")
     print("    Ergebnisse wurden in die CSV-Dateien gespeichert.")
     print("    Generiere Leaderboard...")
+
 
     # Am Ende das Leaderboard aktualisieren
     try:

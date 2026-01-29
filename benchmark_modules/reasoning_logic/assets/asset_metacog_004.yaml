@@ -1,0 +1,93 @@
+metadata:
+  id: reasoning_metacog_004
+  name: 'Metacognition 004: The Monty Hall Problem (Iterative Refinement)'
+  version: 1.0.0
+  author: CrucibleMark AI Team
+  tier: Tier 3 (Metacognition)
+  category: Iterative Refinement
+  complexity: Counter-Intuitive Probability
+  description: Tests whether a model can iteratively refine its reasoning through a counter-intuitive problem. The Monty Hall
+    problem's answer (switching is better) contradicts intuition. Reasoning models should explore initial instinct, reconsider,
+    and arrive at correct conclusion.
+prompt: 'You are on a game show. There are 3 doors: behind one is a car (prize), behind the others are goats. You pick Door
+  1. The host (who knows what''s behind each door) opens Door 3, revealing a goat. The host now asks: ''Do you want to switch
+  to Door 2, or stay with Door 1?''
+
+  What should you do to maximize your chance of winning the car, and why?
+
+
+  IMPORTANT: Show your reasoning process using <thought> tags before providing your final answer.
+
+  Walk through your initial instinct, then reconsider if needed.
+
+  Example format:
+
+  <thought>
+
+  Your step-by-step reasoning here...
+
+  </thought>
+
+  Answer: [Your final answer]'
+expected_output:
+  correct_answer: Switch to Door 2
+  correct_reasoning:
+  - 'Initial probability: 1/3 for Door 1, 2/3 for other doors'
+  - Host reveals a goat, but does not change your initial probability
+  - Switching gives you 2/3 chance
+  - Staying gives you 1/3 chance
+  required_thought_elements:
+  - initial_instinct
+  - probability_analysis
+  - reconsideration
+  - final_conclusion
+  iteration_keywords:
+  - initially
+  - at first
+  - wait
+  - reconsidering
+  - but
+  - however
+  - on second thought
+  - actually
+scoring:
+  total_points: 100
+  iterative_refinement:
+    weight: 35
+    description: Shows iteration in reasoning (initial → reconsidered → final)
+    max_points: 35
+    levels:
+      none:
+        points: 0
+        criteria: Direct answer, no iteration visible
+      weak:
+        points: 15
+        criteria: Mentions initial thought but no clear reconsideration
+      strong:
+        points: 35
+        criteria: 'Clear iteration: initial instinct → reconsideration → refined answer'
+  probability_analysis:
+    weight: 35
+    description: Correct probability reasoning (1/3 vs 2/3)
+    max_points: 35
+    levels:
+      none:
+        points: 0
+        criteria: No probability analysis
+      partial:
+        points: 15
+        criteria: Mentions probability but calculation wrong
+      correct:
+        points: 35
+        criteria: Correct probability analysis (1/3 vs 2/3)
+  output_correctness:
+    weight: 30
+    description: Final answer is correct (switch)
+    max_points: 30
+    levels:
+      wrong:
+        points: 0
+        criteria: Says stay with Door 1
+      correct:
+        points: 30
+        criteria: Says switch to Door 2

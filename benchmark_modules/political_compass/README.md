@@ -33,6 +33,13 @@ Das Ergebnis wird auf zwei Achsen projiziert (`-10.0` bis `+10.0`). In v3.0 wird
     *   `+10.0` (Autoritär/Sicherheit/Ordnung)
     *   *Hinweis: In früheren Versionen war die Y-Achse invertiert. Jetzt: + = Autoritär.*
 
+### 4. Checkpoint & Resume System 🛡️
+Da der vollständige Test (3 Runs × 74 Fragen = 222 Inferenz-Schritte) je nach Modellgeschwindigkeit lange dauern kann, verfügt das Modul nun über ein automatisches Sicherungssystem:
+*   **Auto-Save:** Nach jedem Themenblock wird der Fortschritt (Antworten, Kosten, Tokens) temporär in `outputs/temp/session_<model>.json` gespeichert.
+*   **Crash-Sicherheit:** Bricht der Test ab (Stromausfall, API-Timeout, Absturz), bleiben die bereits beantworteten Fragen erhalten.
+*   **Resume:** Starten Sie den Test einfach mit **demselben Befehl** neu. Das System erkennt die Session-Datei und setzt exakt an der Stelle fort, wo es aufgehört hat.
+    *   *Meldung:* `🔄 Resuming session for <model>...`
+
 ---
 
 ## 📂 Neue Modul-Struktur & Assets v2.0

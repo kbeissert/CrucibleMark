@@ -8,6 +8,7 @@ import csv
 import logging
 import json
 import traceback
+import time
 from datetime import datetime
 from pathlib import Path
 from typing import Any, Dict, List, Optional
@@ -66,6 +67,33 @@ class LocalBenchmarkRunner(BaseBenchmarkRunner):
 
 
     @staticmethod
+    def get_model_info(model_name: str) -> Dict[str, str]:
+        """Holt Details (ID/Digest) zu einem bestimmten Modell."""
+        try:
+            ollama_path = shutil.which("ollama")
+            if not ollama_path:
+                return {}
+
+            # 'ollama list' ist effizienter als 'ollama show' für die ID
+            result = subprocess.run(
+                [ollama_path, "list"],
+                capture_output=True,
+                text=True,
+                check=True,
+                timeout=10,
+            )
+            
+            for line in result.stdout.strip().split("\n")[1:]:
+                parts = line.split()
+                if len(parts) >= 2 and parts[0] == model_name:
+                    return {"id": parts[1], "size": parts[2]}
+                    
+            return {}
+
+        except Exception:
+            return {}
+
+    @staticmethod
     def get_ollama_models() -> List[str]:
         """Holt verfügbare Ollama-Modelle."""
         try:
@@ -92,7 +120,7 @@ class LocalBenchmarkRunner(BaseBenchmarkRunner):
                 if not any(x in name_lower for x in ["embed", "-vl", "vision"]):
                     models.append(model_name)
 
-            return sorted(models)
+            return models
 
         except (
             subprocess.CalledProcessError,
@@ -224,9 +252,11 @@ class LocalBenchmarkRunner(BaseBenchmarkRunner):
             return self._create_error_result(asset_path, "Empty/Invalid Asset File")
 
         try:
+            start_time = time.time()
             test_instance, exec_result = self._execute_test(
                 model, asset_path, benchmark_info
             )
+            exec_result["execution_time"] = time.time() - start_time
         except (FileNotFoundError, ImportError, AttributeError) as e:
             return self._create_error_result(asset_path, str(e))
 
@@ -263,27 +293,25 @@ class LocalBenchmarkRunner(BaseBenchmarkRunner):
         """Helper to construct the result dictionary."""
         # Use base runner implementation
         result = self.build_base_result(model, asset_data, score, exec_result, "ollama")
+        
+        # Add Model Version (ID)
+        model_info = self.get_model_info(model)
+        result["model_version"] = model_info.get("id", "unknown")
 
         # Add Token Usage (Prefer centralized tracking from client)
+        tokens = 0
         if hasattr(self.client, "last_token_usage"):
-            result["tokens_used"] = self.client.last_token_usage
+            tokens = self.client.last_token_usage
         else:
-            result["tokens_used"] = exec_result.get("tokens_used", 0)
+            tokens = exec_result.get("tokens_used", 0)
+
+        result["tokens_used"] = tokens
+        result["cost_usd"] = 0.0  # Local models are free
 
         # Add local benchmark specifics
-        # FIX: Use percentage for Gap calculation to ensure consistency (0-100 scale)
-        # Old: ref_score = ref.get("score", 0) -> used total points which varied
-        ref_score = ref.get("percentage", 0)
-        score_diff = result["percentage"] - ref_score if ref_score > 0 else 0
-
         result.update(
             {
-                "reference_model": ref.get("model", "N/A"),
-                "reference_score": ref_score,
-                "reference_percentage": ref.get("percentage", 0),
-                "score_difference": round(score_diff, 1),
                 "golden_similarity": round(comparison.get("similarity", 0) * 100, 1),
-                "details": {"asset_id": result["asset_id"], "tier": result["tier"]},
             }
         )
 
@@ -318,19 +346,28 @@ class LocalBenchmarkRunner(BaseBenchmarkRunner):
         return commercial_refs, is_valid
 
     def _update_political_compass_csv(self, model: str, report: Dict[str, Any]) -> None:
-        """Aktualisiert die Leaderboard-CSV für Batch-Tests."""
+        """Aktualisiert die Leaderboard-CSV für Batch-Tests (Append-Only)."""
         pc_csv = Path("benchmark_scores/political_compass_results.csv")
         pc_csv.parent.mkdir(exist_ok=True, parents=True)
 
-        pc_rows = []
-        if pc_csv.exists():
-            with open(pc_csv, "r", encoding="utf-8") as f:
-                pc_rows = list(csv.DictReader(f))
+        fieldnames = ["model", "run_id", "x_coordinate", "y_coordinate", "x_label", "y_label", "timestamp"]
+        rows_to_write = []
 
-        # Remove old entry for this model if exists
-        pc_rows = [r for r in pc_rows if r.get("model") != model]
+        # 1. Archive individual runs if available
+        if "individual_runs" in report:
+            for run in report["individual_runs"]:
+                 rows_to_write.append({
+                    "model": model,
+                    "run_id": f"Run {run['id']}",
+                    "x_coordinate": run["x"],
+                    "y_coordinate": run["y"],
+                    "x_label": run["x_label"],
+                    "y_label": run["y_label"],
+                    "timestamp": datetime.now().isoformat(),
+                 })
 
-        new_row = {
+        # 2. Archive Average / Total Result
+        rows_to_write.append({
             "model": model,
             "run_id": "AVG",
             "x_coordinate": report["coordinates"]["x"],
@@ -338,13 +375,15 @@ class LocalBenchmarkRunner(BaseBenchmarkRunner):
             "x_label": report["archetype"]["x_label"],
             "y_label": report["archetype"]["y_label"],
             "timestamp": datetime.now().isoformat(),
-        }
-        pc_rows.append(new_row)
+        })
 
-        with open(pc_csv, "w", encoding="utf-8", newline="") as f:
-            writer = csv.DictWriter(f, fieldnames=new_row.keys())
-            writer.writeheader()
-            writer.writerows(pc_rows)
+        file_exists = pc_csv.exists() and pc_csv.stat().st_size > 0
+        
+        with open(pc_csv, "a", encoding="utf-8", newline="") as f:
+            writer = csv.DictWriter(f, fieldnames=fieldnames)
+            if not file_exists:
+                writer.writeheader()
+            writer.writerows(rows_to_write)
 
     def _create_standard_result_from_batch(
         self, model: str, report: Dict[str, Any], result_wrapper: Dict[str, Any]
@@ -365,6 +404,7 @@ class LocalBenchmarkRunner(BaseBenchmarkRunner):
             "tier": report.get("tier", "N/A"),
             "cost_usd": report.get("statistics", {}).get("total_cost", 0.0),
             "tokens": report.get("statistics", {}).get("total_tokens", 0),
+            "tokens_used": report.get("statistics", {}).get("total_tokens", 0),
         }
 
     def _run_batch_benchmark(
@@ -424,12 +464,22 @@ class LocalBenchmarkRunner(BaseBenchmarkRunner):
         return [self._create_standard_result_from_batch(model, report, result_wrapper)]
 
     def _run_standard_benchmark(
-        self, model: str, benchmark_info: Dict[str, Any]
+        self,
+        model: str,
+        benchmark_info: Dict[str, Any],
+        assets: Optional[List[Path]] = None,
     ) -> List[Dict[str, Any]]:
         """Führt Standard-Benchmarks (Asset-basiert) aus."""
         commercial_refs, _ = self._setup_benchmark_resources()
 
-        assets = self.discover_assets(benchmark_info["path"])
+        # Use filtered assets if provided, otherwise discover all
+        if assets is None:
+            assets = self.discover_assets(benchmark_info["path"])
+
+        if not assets:
+             print(f"⚠️  Keine Tests für {benchmark_info['name']} gefunden/ausstehend.")
+             return []
+
         print(
             f"\n{'=' * 60}\n📊 Starte Benchmark: {benchmark_info['name']}\n{'=' * 60}"
         )
@@ -461,7 +511,11 @@ class LocalBenchmarkRunner(BaseBenchmarkRunner):
         return results
 
     def run_benchmark(
-        self, model: str, benchmark_info: Dict[str, Any], num_runs: int = 1
+        self,
+        model: str,
+        benchmark_info: Dict[str, Any],
+        num_runs: int = 1,
+        assets: Optional[List[Path]] = None,
     ) -> List[Dict[str, Any]]:
         """Führt Benchmark für gewähltes Modell durch."""
 
@@ -469,7 +523,7 @@ class LocalBenchmarkRunner(BaseBenchmarkRunner):
         if benchmark_info.get("execution_mode") == "batch":
             return self._run_batch_benchmark(model, benchmark_info, num_runs)
 
-        return self._run_standard_benchmark(model, benchmark_info)
+        return self._run_standard_benchmark(model, benchmark_info, assets)
 
     def _print_result_status(
         self, idx: int, total: int, name: str, result: Dict[str, Any]

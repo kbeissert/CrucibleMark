@@ -1,22 +1,23 @@
 # CrucibleMark - Projekt-Status & Architektur
 
-**Version:** 0.9.7-release-candidate
-**Datum:** 28. Januar 2026
-**Status:** Refactoring Complete / Golden Standards Baseline Set
+**Version:** 0.9.8-beta
+**Datum:** 29. Januar 2026
+**Status:** Feature Complete (Versioning, Checkpoint System, Documentation)
 
 ---
 
 ## 🚧 Status Update (Jan 2026)
-Das Framework erreicht Version 0.9.7 (Release Candidate für Pre-Extension Baseline).
-Das Reasoning-Modul wurde vollständig refactored (Modularität, Type-Safety, DRY).
-Die aktuellen Benchmarks wurden als "Golden Standards" (v0.9 Baseline) eingefroren.
-
-Nächster Fokus: Erweiterung der Reasoning-Logik vor v1.0.
+Das Framework erreicht Version 0.9.8.
+Wichtige Resilienz-Features (Drift Detection, Session Resume) wurden implementiert.
+Die Dokumentation wurde für den Endanwender optimiert.
 
 1.  **✅ Modul-Standardisierung**: Alle Module (Code, Content, UX, Documentation, Reasoning, Political, Cultural) sind auf die Core/MVC-Architektur migriert.
-2.  **✅ Code Integrity Check**: Reasoning-Modul ist fully linted (Ruff/Mypy/Pylint clean).
-3.  **⏳ Module Extension**: Geplante Erweiterung des Reasoning-Moduls.
-4.  **⏳ Full Benchmark Test**: Kompletter Durchlauf v1.0.
+2.  **✅ Model Drift Detection**: Leaderboard und CSVs unterstützen Modell-Versionierung (Hashes/Fingerprints).
+3.  **✅ Checkpoint System**: Political Compass Modul besitzt Auto-Save/Resume + Expiry Logik.
+4.  **✅ Dokumentation**: User Guide, Data Format & Config Guide überarbeitet.
+5.  **⏳ Härte-Test**: Überprüfung der Difficulty für Top-Tier Modelle (Claude 3.5 Sonnet / GPT-4o) offen.
+
+---
 
 ---
 

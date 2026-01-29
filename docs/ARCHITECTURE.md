@@ -32,6 +32,12 @@ CrucibleMark nutzt eine strikt modulare Architektur, um LLM-Benchmarks reproduzi
       +----------------------+
 ```
 
+### 3. Modul-Spezifika
+
+#### reasoning_logic (v2.0.0)
+*   **Architektur**: 3-Tier System (Tier 0: Sanity, Tier 1-2: Logic/Systems, Tier 3: Metacognition).
+*   **Besonderheit**: Implementiert Parser für `<think>` Tags und berechnet den **RCI**.
+
 ---
 
 ## 🧩 Komponenten-Detail
@@ -97,3 +103,18 @@ benchmark_modules/
             evaluators.py    # Logic
             constants.py     # Config
 ```
+
+---
+
+## 📊 Leaderboard Logic (Dynamic & Config-Driven)
+
+Das Leaderboard () ab Version v0.9.6 arbeitet nach dem **Config-First Prinzip**:
+
+1.  **Single Source of Truth**: Die  bestimmt, welche Module existieren und wie sie gewertet werden.
+2.  **Score Groups**:
+    *   Module mit `score_group: routine` fließen in den **Routine Score** ein (Durchschnitt aller Routine-Module).
+    *   Module mit `score_group: reasoning` fließen in den **Reasoning Score** ein.
+    *   Module mit `score_group: info` (z.B. Political Compass) werden als Zusatzspalten angezeigt, beeinflussen aber nicht das Ranking.
+3.  **Completion Logic**:
+    *   Ein Modell gilt als "Pending" (*), wenn es weniger Assets absolviert hat, als die Summe aller `assets_count` der aktiven *Routine* und *Reasoning* Module.
+    *   Info-Module blockieren den "Completed"-Status nicht.
