@@ -1,67 +1,85 @@
-# Reasoning Logic Module
+# CrucibleMark Module: Logical Reasoning (v2.2)
 
 > **Technical Metadata**
 > - **ID:** `reasoning_logic`
 > - **Namespace:** `benchmark_modules.reasoning_logic`
 > - **Class:** `ReasoningLogicTest`
 > - **Evaluator:** `ReasoningEvaluator` (Facade + Strategy Pattern)
-> - **Version:** v2.0.0 (Tiered Architecture + Metacognition)
+> - **Version:** v2.2.0 (Anti-Ceiling Measures)
 > - **Type:** Cognitive, Logic Processing, Metacognition
 
 ## 🔍 Module Overview
 
-Dieses Modul testet die kognitive Leistungsfähigkeit von LLMs in verschiedenen Tiefen (Tiers). Es reicht von einfachen Logik-Checks bis hin zur **Metakognition** (das Überdenken des eigenen Denkprozesses).
+Das **Logical Reasoning** Modul ist eines der anspruchsvollsten Testfelder in CrucibleMark. Es evaluiert die Fähigkeit von LLMs, logische Schlüsse zu ziehen, Fehlschlüsse zu erkennen und komplexe Denkmuster (Reasoning Chains) aufzubauen.
 
-Besonders für Reasoning-Modelle (wie DeepSeek R1) analysiert das Modul nicht nur das Ergebnis, sondern auch den Inhalt der `<thought>` Tags, um echte Denkprozesse von "Lucky Guesses" zu unterscheiden.
-
----
-
-## 🏗 Architecture & Tiers
-
-Das Modul ist in **Tiers (Stufen)** unterteilt, um verschiedene kognitive Fähigkeiten zu prüfen.
-
-### **Tier 0: Sanity Check**
-*   **Fokus:** Grundlegende Logik und Instruktionsbefolgung.
-*   **Beispiel:** River Crossing Puzzle.
-*   **Ziel:** Filtern von Modellen, die bereits an einfachsten Aufgaben scheitern.
-
-### **Tier 1: Operational Logic (Physics)**
-*   **Fokus:** Kausale Zusammenhänge und physikalische Paradoxien.
-*   **Beispiel:** Paradoxien Auflösung.
-
-### **Tier 2: Deep Reasoning (Systems)**
-*   **Fokus:** Komplexe Systeme, Deadlocks und Multi-Step Logic.
-*   **Assets:** 5A-5D (z.B. Deadlock-Erkennung, System-Invarianz).
-
-### **Tier 3: Metacognition (Self-Reflection) ⭐ NEU**
-*   **Fokus:** Die Fähigkeit des Modells, eigene Fehler zu erkennen und Prämissen zu hinterfragen.
-*   **Assets:** `METACOG_001` bis `METACOG_005`.
-*   **Besonderheit:** Berechnet den **RCI (Reasoning Complexity Index)**.
+In Version 2.2 liegt der Fokus auf **Anti-Ceiling Measures**: Durch gehärtete Physics-Traps, Deadlock-Erkennung und mehrdimensionale Paradoxien wird die Unterscheidbarkeit der Top-Tier Modelle drastisch erhöht.
 
 ---
 
-## 🧪 Scoring Logic & Metacognition Methodology (v2.0)
+## 🎯 Fokus & Ziele (v2.2)
 
-Für Tier 3 (Metacognition) nutzt das Modul nun **Hybride Robuste Metriken**, um "echtes" Denken von Simulation zu unterscheiden.
+1.  **Eliminierung des Ceiling Effects**:
+    *   Verhinderung von 100% Scores für Modelle, die nur "Ja-Sager" spielen oder Heuristiken folgen, ohne das Problem tief zu durchdringen.
+2.  **Feasibility Awareness**:
+    *   KI muss erkennen, wenn eine Aufgabe **unmöglich** oder **widersprüchlich** ist.
+    *   Optimistische Antworten ("I can do this...") werden bei Paradoxien rigoros bestraft (0-15%).
+3.  **Tiered Evaluation**:
+    *   Von einfacher Deduktion (Tier 1) bis hin zu abstrakten Metakognitions-Tests (Tier 3).
 
-### 1. Robust Self-Correction ("The Sheep Trap")
-Wir prüfen, ob das Modell einen anfänglichen Fehler *im Denkprozess* korrigiert. Die Erkennung erfolgt auf 3 Ebenen:
-1.  **Keywords:** Suche nach Signalen wie _"wait, let me reconsider"_, _"initially I thought"_.
-2.  **Struktur:** Analyse des Argumentationsflusses (These -> Antithese -> Synthese).
-3.  **Trajektorie:** Das Modell muss von einer falschen Annahme zu einer richtigen Schlussfolgerung wechseln.
+---
 
-### 2. Premise Challenge ("The Green Sky")
-Wir erzwingen eine explizite Ablehnung falscher Prämissen.
-*   **Anforderung:** Das Modell muss erkennen, dass die Frage ("Warum ist der Himmel grün?") auf einer Lüge basiert.
-*   **Erkennung:** Flexible Suche nach Konzepten wie "false premise", "incorrect assumption" oder "wrong setup".
+## 🏗 Struktur & Assets
 
-### 3. RCI (Reasoning Complexity Index)
-Der RCI ist eine Kennzahl (0-100%), die angibt, wie "tief" das Modell denkt.
-*   Formel: `RCI = (Avg_Tier1_2_Score * 0.6) + (Avg_Tier3_Score * 0.4)`
-*   **Klassifizierung:**
-    *   `< 50%`: Non-Thinking Model (z.B. Dolphin 8B Baseline ~42%)
-    *   `50-70%`: Basic Thinking Model (z.B. Qwen 2.5 ~65%)
-    *   `> 85%`: Deep Thinking Model (z.B. DeepSeek R1 ~87%)
+Das Modul besteht aus 11 Assets, unterteilt in drei Tiers:
+
+### 🔹 Tier 1: Operational Logic (Deduktion)
+*Prüft grundlegende logische Operationen und Faktenprüfung.*
+
+*   **Logic 001 - River Crossing**: Klassisches Logik-Rätsel mit Variation.
+*   **Logic 5C - Physics Trap (Härter in v2.2)**:
+    *   *Szenario*: "Transportiere Mount Everest in eine Standard-Box."
+    *   *Erwartung*: **Refusal** ("Impossible").
+    *   *Technik*: **Bidirektionale Negations-Erkennung**. Unterscheidet zuverlässig zwischen echten Workarounds (prohibited) und dem Zitieren von Regeln ("no machinery allowed" penalty-free).
+    *   *Hardening*: Keine Teilpunkte mehr für "kreative Workarounds" (Schrumpfstrahl, Metaphern). Nur klare Ablehnung zählt.
+
+### 🔹 Tier 2: Systems Thinking (Analyse)
+*Prüft das Verständnis komplexer Zusammenhänge und Abhängigkeiten in Systemen.*
+
+*   **Logic 5A - Error Recovery**: Debugging von Code-Logik.
+*   **Logic 5B - Complex Chains**: Multi-Step Reasoning.
+*   **Logic 5D - Deadlock Detection (Härter in v2.2)**:
+    *   *Szenario*: Zirkuläre Abhängigkeiten in Projektplänen (A braucht B braucht C braucht A).
+    *   *Erwartung*: Erkenntnis: "Deadlock" / "Unsolvable". Feasibility Assessment: 0/10.
+    *   *Hardening*: Regex-gestützte Feasibility-Extraction. Wer 0 sagt, gewinnt. Wer Lösungen vorschlägt, verliert.
+*   **Logic 5E - Expert Paradox (Neu in v2.2)**:
+    *   *Szenario*: Distributed Transaction Manager mit 3 widersprüchlichen Constraints (CAP-Theorem Style).
+    *   *Erwartung*: Erkenntnis des Trade-Offs.
+    *   *Scoring*: 3-Dimension-Score (Analysis, Solution Quality, Depth). Bestraft Optimismus.
+
+### 🔹 Tier 3: Metacognition (Selbstreflexion)
+*Prüft die Fähigkeit des Modells, eigene Annahmen zu hinterfragen.*
+
+*   **Metacog 001-005**:
+    *   Erkennen von Fangfragen ("The Green Sky").
+    *   Selbstkorrektur bei falschen Prämissen.
+    *   Vermeidung von Halluzinationen bei Fake-Facts.
+
+---
+
+## 📊 Scoring & Metriken
+
+### Reasoning Complexity Index (RCI)
+Der **RCI** misst die Tiefe des Denkprozesses.
+*   **Formel**: `(Avg_Tier1_2 * 0.6) + (Avg_Tier3 * 0.4)`
+*   **Klassen**:
+    *   `< 50%`: Non-Thinking Model
+    *   `50-85%`: Thinking Model
+    *   `> 85%`: Deep Thinking Model
+
+### Feasibility Extraction (Neu in v2.2)
+Das System extrahiert automatisch die Selbsteinschätzung des Modells ("Feasibility: 2/10").
+*   Wenn `Feasibility > Threshold` bei Fallen → **Massiver Punktabzug**.
+*   Verhindert, dass halluzinierte "Lösungen" für unlösbare Probleme Punkte erhalten.
 
 ---
 
@@ -76,19 +94,7 @@ python run_benchmark.py
 ### Option 2: CLI (Schnell)
 ```bash
 # Alles testen
-python run_benchmark.py --module reasoning --provider local --model qwen2.5-coder:14b
-
-# Nur Metacognition Tier 3 testen (Quick Mode)
-python scripts/test_reasoning_metacog.py --model dolphin:latest --quick
-```
-
-### Option 3: Developer Tests
-```bash
-# Reproduzierbarkeit & Ground Truth prüfen
-python benchmark_modules/reasoning_logic/tests/test_reproducibility.py
-
-# Scoring-Regeln und Tags testen
-python benchmark_modules/reasoning_logic/tests/test_tags.py
+python run_benchmark.py --benchmark "Logical Reasoning" --model gemma2:9b
 ```
 
 ---

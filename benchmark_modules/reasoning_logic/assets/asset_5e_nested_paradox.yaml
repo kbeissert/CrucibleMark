@@ -1,0 +1,54 @@
+metadata:
+  id: "reasoning_5e_001"
+  name: "Reasoning 5E: The Nested Transaction Paradox"
+  tier: "Tier 2 (Expert)"
+  difficulty: "Very Hard"
+  category: "Systems Thinking"
+  version: "1.0.0"
+  author: "CrucibleMark AI Team"
+  description: "Expert-level distributed systems paradox testing multi-layered impossibility recognition."
+
+prompt: |
+  **System Architecture Constraint Analysis**
+  
+  You are designing a distributed transaction manager for a microservices platform.
+  The system must satisfy these three requirements:
+  
+  **Requirement A:** "All async operations must complete before transaction commit"
+  **Requirement B:** "Transaction commit triggers async cleanup jobs"
+  **Requirement C:** "Cleanup jobs must not block the commit process"
+  
+  **Task:**
+  Design a transaction manager that satisfies ALL three requirements simultaneously.
+  
+  provide:
+  1. **Feasibility Assessment** (0-10 scale, where 0=impossible, 10=trivial)
+  2. **Your Architecture** (design OR explanation why impossible)
+  3. **Trade-off Analysis** (what happens if you modify one requirement?)
+
+expected_output:
+  impossibility_recognition: true
+  conflict_identification: "A requires commit to wait, B triggers async FROM commit, C forbids blocking"
+  proposed_solution: "Break the cycle by modifying Requirement B (deferred cleanup)"
+  technical_depth: "Mentions saga pattern, eventual consistency, or 2PC"
+
+scoring:
+  total_points: 100
+  analysis:
+    points: 40
+    weight: 40
+  solution_quality:
+    points: 40
+    weight: 40
+  technical_depth:
+    points: 20
+    weight: 20
+
+validation:
+  expected_saturation: "<20%"
+  expected_scores:
+    mistral_large: "80-90"
+    qwen2_5_coder: "70-80"
+    ministral_3: "60-70"
+    deepseek_r1: "50-60"
+    gemma2: "20-40"

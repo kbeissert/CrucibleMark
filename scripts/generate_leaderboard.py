@@ -310,45 +310,72 @@ def _calculate_group_scores(df: pd.DataFrame, modules_config: Dict[str, Any]) ->
     else:
         routine_scores = pd.DataFrame(columns=["model", "model_version", "Routine Score"])
 
-    # --- 2. REASONING SCORES (Weighted: 60% Tier 2, 40% Tier 3) ---
+    # --- 2. REASONING SCORES (Tier-Weighted: v2.2 Alignment) ---
     reasoning_df = df_copy[df_copy["score_group"] == "reasoning"].copy()
     reasoning_scores_list = []
 
     if not reasoning_df.empty:
-        # Identify Tier 3 (Metacognition) Assets
-        # Tier 3 assets contain "metacog" in their ID
-        def is_tier_3(asset_id):
-            return "metacog" in str(asset_id).lower()
-
-        reasoning_df["is_tier_3"] = reasoning_df["asset_id"].apply(is_tier_3)
+        # v2.2 Tier Classification
+        # Tier 1 (Basic): river, 5a, metacog_001-005 (Weight: 1.0)
+        # Tier 2 (Advanced): 5b, 5c, 5d (Weight: 1.5)
+        # Tier 3 (Expert): 5e (Weight: 2.0)
         
-        # Group by model/version AND tier status
-        # Unstack to get columns: False (Tier 2), True (Tier 3)
-        r_stats = reasoning_df.groupby(["model", "model_version", "is_tier_3"])["percentage"].mean().unstack()
-        
-        for (model, version), row in r_stats.iterrows():
-            t2_score = row.get(False) # Tier 2 (Standard)
-            t3_score = row.get(True)  # Tier 3 (Metacog)
+        def get_tier(asset_id):
+            aid = str(asset_id).lower()
             
-            # Weighted logic: (Tier 2 * 0.6) + (Tier 3 * 0.4)
-            # Handle cases where one tier might be missing (partial runs)
-            if pd.notna(t2_score) and pd.notna(t3_score):
-                weighted = (t2_score * 0.6) + (t3_score * 0.4)
-            elif pd.notna(t3_score):
-                weighted = t3_score
-            elif pd.notna(t2_score):
-                weighted = t2_score
+            # Tier 3 (Expert - Highest Weight)
+            if "5e" in aid:
+                return 3
+            
+            # Tier 2 (Advanced)
+            if any(x in aid for x in ["5b", "5c", "5d"]):
+                return 2
+            
+            # Tier 1 (Basic - includes metacog!)
+            # Default for: reasoning_001, 5a, metacog_*
+            return 1
+        
+        reasoning_df["tier"] = reasoning_df["asset_id"].apply(get_tier)
+        
+        # Group by model, version, tier
+        tier_stats = reasoning_df.groupby(["model", "model_version", "tier"])["percentage"].mean().unstack()
+        
+        # Tier weights
+        TIER_WEIGHTS = {1: 1.0, 2: 1.5, 3: 2.0}
+        
+        # Tier asset counts (for proper averaging)
+        tier_counts = reasoning_df.groupby("tier")["asset_id"].nunique().to_dict()
+        
+        for (model, version), row in tier_stats.iterrows():
+            t1_score = row.get(1)  # Tier 1 (Basic)
+            t2_score = row.get(2)  # Tier 2 (Advanced)
+            t3_score = row.get(3)  # Tier 3 (Expert)
+            
+            # Calculate weighted average
+            weighted_sum = 0.0
+            total_weight = 0.0
+            
+            for tier, score in [(1, t1_score), (2, t2_score), (3, t3_score)]:
+                if pd.notna(score):
+                    weight = TIER_WEIGHTS[tier]
+                    count = tier_counts.get(tier, 1)
+                    weighted_sum += score * count * weight
+                    total_weight += count * weight
+            
+            # Final R-Score
+            if total_weight > 0:
+                r_score = weighted_sum / total_weight
             else:
-                weighted = 0.0
-                
+                r_score = 0.0
+            
             reasoning_scores_list.append({
                 "model": model,
                 "model_version": version,
-                "Reasoning Score": weighted
+                "Reasoning Score": round(r_score, 2)
             })
-    
-    reasoning_scores_df = pd.DataFrame(reasoning_scores_list)
-    if reasoning_scores_df.empty:
+        
+        reasoning_scores_df = pd.DataFrame(reasoning_scores_list)
+    else:
         reasoning_scores_df = pd.DataFrame(columns=["model", "model_version", "Reasoning Score"])
 
     # --- 3. MERGE & FINALIZE ---
