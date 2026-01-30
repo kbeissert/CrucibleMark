@@ -10,11 +10,16 @@ Usage:
 """
 
 import sys
+import os
 import logging
 import shutil
 import subprocess
 from pathlib import Path
 from typing import Any, List, Dict, Set, Tuple
+from dotenv import load_dotenv
+
+# Load environment variables
+load_dotenv()
 
 # Third-party imports
 # pylint: disable=import-error
@@ -33,6 +38,7 @@ from scripts.run_commercial_benchmark import CommercialBenchmarkRunner  # noqa: 
 from scripts.generate_leaderboard import main as gen_leaderboard  # noqa: E402
 from utils.config_validator import ConfigValidator  # noqa: E402
 from utils.model_utils import is_model_suitable_for_benchmark  # noqa: E402
+from utils.llm_client import LLMClient  # noqa: E402
 # pylint: enable=import-error, wrong-import-position
 
 # Logging Setup
@@ -109,6 +115,20 @@ def _get_startable_assets(
 ) -> List[Path]:
     """Ermittelt Asset-Pfade, die für dieses Modell noch nicht getestet wurden."""
     assets_path = module["path"]
+    
+    # -------------------------------------------------------
+    # SPECIAL HANDLING FOR BATCH MODULES (e.g. Political Compass)
+    # -------------------------------------------------------
+    # Batch-Module (wie Political Compass) erzeugen oft nur EINEN Eintrag (Aggregiert)
+    # und keine 1:1 Einträge pro Asset-Datei.
+    # Wir müssen prüfen, ob das Aggregat bereits existiert.
+    if module.get("execution_mode") == "batch" or module.get("key") == "political_compass":
+        # Known Batch IDs (TODO: Should be in config)
+        batch_id = "political_compass_v3"
+        if (model, batch_id) in existing_tests:
+            return []
+    # -------------------------------------------------------
+
     # Der Runner hat Methode zum Finden, aber wir brauchen den Pfad
     # Da Runner interne Methoden hat, rufen wir hier eine Hilfsfunktion nach
     # Aber wir können auch einfach globben, da wir den Pfad haben.
@@ -234,9 +254,61 @@ def run_commercial_batch(
         k: v for k, v in providers_config.items() if v.get("enabled", False)
     }
 
+    # Filter out providers without API Key in environment
+    valid_providers = {}
+    for k, v in active_providers.items():
+        # Some providers might not define env_var (e.g. if they are fake ones), but standard ones do
+        env_key = v.get("env_var")
+        if env_key:
+            if not os.getenv(env_key):
+                print(f"⚠️  Überspringe Provider '{k}': API Key ({env_key}) fehlt in Umgebung.")
+                continue
+        valid_providers[k] = v
+        
+    active_providers = valid_providers
+
     if not active_providers:
-        print("⚠️  Keine aktiven kommerziellen Provider gefunden.")
+        print("⚠️  Keine validen kommerziellen Provider gefunden (Check API Keys).")
         return
+
+    # -----------------------------------------------------
+    # Check Provider Accessibility (Budget / Quota / Connectivity)
+    # -----------------------------------------------------
+    print("\n🔍 Prüfe API-Zugang für Provider...")
+    llm_client = LLMClient(validator.config)
+    accessible_providers = {}
+
+    for k, v in active_providers.items():
+        client = llm_client.clients.get(k)
+        if client:
+            print(f"   • {k}: Prüfe Zugang...", end=" ", flush=True)
+            if client.is_accessible():
+                print("✅ OK")
+                accessible_providers[k] = v
+            else:
+                print("❌ Fehlgeschlagen (Kein Zugriff/Budget). Überspringe.")
+        else:
+            print(f"   ⚠️  Provider '{k}' hat keinen dedizierten Client. Überspringe Check.")
+            accessible_providers[k] = v
+
+    active_providers = accessible_providers
+
+    if not active_providers:
+        print("⚠️  Keine zugänglichen kommerziellen Provider nach Prüfung gefunden.")
+        return
+
+    # Cache laden (bereits erledigte Tests)
+    # Check BOTH commercial CSV and golden standard CSV
+    comm_csv = Path("benchmark_scores/commercial_models_benchmark.csv")
+    gold_csv = Path("benchmark_scores/golden_standard_benchmark.csv")
+    
+    existing_tests = get_existing_results(comm_csv)
+    # Merge with golden standards if they exist (since they are also valid test runs)
+    if gold_csv.exists():
+        existing_gold = get_existing_results(gold_csv)
+        existing_tests.update(existing_gold)
+        
+    print(f"Ignoriere bereits vorhandene Ergebnisse ({len(existing_tests)} Einträge)\n")
 
     # Flatten list of (provider, model_id, model_name)
     tasks = []
@@ -254,13 +326,26 @@ def run_commercial_batch(
 
     for i, task in enumerate(tasks, 1):
         full_name = f"{task['provider']}/{task['name']}"
+        model_id = task["id"]
+        
         print(f"\n➡️  MOD [Comm {i}/{len(tasks)}]: {full_name}")
 
         for module in modules:
-            print(f"   📊 Bench: {module['name']} ...")
+            # Filter assets
+            assets_todo = _get_startable_assets(module, model_id, existing_tests)
+            
+            if not assets_todo:
+                print(f"   ✓ Bench: {module['name']} (Bereits erledigt)")
+                continue
+
+            print(f"   📊 Bench: {module['name']} ({len(assets_todo)} neue Tests) ...")
             try:
-                # Assuming run_benchmark signature is (provider, model_id, module_config)
-                results = runner.run_benchmark(task["provider"], task["id"], module)
+                results = runner.run_benchmark(
+                    task["provider"], 
+                    model_id, 
+                    module, 
+                    assets=assets_todo
+                )
                 if results:
                     runner.save_results(results)
             except KeyboardInterrupt:

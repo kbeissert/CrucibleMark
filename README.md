@@ -1,7 +1,7 @@
 # CrucibleMark
 
 [![Python](https://img.shields.io/badge/Python-3.10+-blue.svg)](https://python.org)
-[![Version](https://img.shields.io/badge/Version-0.9.6--beta-blue.svg)](CHANGELOG.md)
+[![Version](https://img.shields.io/badge/Version-2.1.0-green.svg)](CHANGELOG.md)
 [![Ollama](https://img.shields.io/badge/Ollama-Compatible-green.svg)](https://ollama.ai)
 [![License](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
@@ -12,6 +12,46 @@ Die Schnittmenge aus **Product Engineers**, **UX Writern** und **System Architec
 
 Von **Code Quality & Accessibility** über **UX Writing & Tone of Voice** bis zu **Complex Reasoning**:  
 Dieses Framework ist der "TÜV für digitale Produktentwicklung" – flexibel, modular und erweiterbar wie ein Lego-System für KI-Tests. Jeder Use-Case kann durch eigene Module adaptiert werden.
+
+---
+
+## 🚀 Neu in v2.1: Advanced Reasoning & RCI
+
+Die Version 2.1 führt signifikante Verbesserungen im "Logical Reasoning" Modul ein, um zwischen echten "Deep Thinkern" und einfachen Pattern-Matchern zu unterscheiden:
+
+*   **Differezierte Gewichtung (RCI Update):** Das Scoring unterscheidet nun zwischen Tier 2 (Operational Logic, 60%) und Tier 3 (Metacognition, 40%).
+*   **Neue "Hard-Mode" Assets:**
+    *   **The Monitoring Paradox (5c_002):** Multi-Layer Adversarial Test, bei dem Modelle echte Lösungskompetenz statt nur Verweigerung zeigen müssen.
+    *   **The Subtle Deadlock (5d_002):** Versteckte zirkuläre Abhängigkeiten in narrativen Texten, die tiefes Verständnis erfordern.
+*   **Difficulty Ladder:** Paralleler Betrieb von Basis- und Hard-Mode-Tests ermöglicht präzise Messung der "Reasoning Ceiling" eines Modells.
+
+---
+
+## ⚖️ Golden Standard Methodology
+
+CrucibleMark uses **Mistral Large (123B)** as the Golden Standard reference.
+
+### Versioning
+- Golden Standard is **manually updated** via `make generate-golden`.
+- Updates occur when:
+  - New assets are added (e.g., v2.1: +5c_002, +5d_002).
+  - Scoring logic changes significantly.
+  - Mistral Large receives major updates.
+
+### Current Version: v2.1.0
+- **Model:** `mistral-large-latest`
+- **Reasoning Score:** 87.40
+- **Updates:** RCI Weighting (60/40), Fix for 5C-001 Scoring.
+- **Date:** 2026-01-30
+
+Refer to [GOLDEN_STANDARD_CHANGELOG.md](GOLDEN_STANDARD_CHANGELOG.md) for full history.
+
+### Interpreting Scores
+- **100%:** Matches Golden Standard performance.
+- **>100%:** Exceeds Golden Standard (rare, indicates major capability leap or outdated Golden Standard).
+- **<100%:** Below Golden Standard (typical for local models).
+
+**Note:** If you see consistent >100% ratios, the Golden Standard may be outdated. Run `make generate-golden` after benchmarking Mistral Large.
 
 ---
 

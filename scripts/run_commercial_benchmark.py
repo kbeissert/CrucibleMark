@@ -309,12 +309,14 @@ class CommercialBenchmarkRunner(BaseBenchmarkRunner):
         )
 
         # Save Golden Standard JSON if needed
-        if self.mode == "golden_standard" or is_golden_model:
+        # MODIFIED v2.1: Only save if explicitly in golden_standard mode!
+        # This prevents auto-updating the reference when just testing the reference model.
+        if self.mode == "golden_standard":
             self._save_golden_json(
                 provider, asset_id, response, exec_result["execution_time"]
             )
-            if self.mode == "test" and is_golden_model:
-                self._append_to_golden_csv(result)
+            # Logik entfernt, die bei mode="test" automatisch speichert.
+            # Rationale: "100%" should be static until manual update.
 
         return result
 
@@ -352,8 +354,17 @@ class CommercialBenchmarkRunner(BaseBenchmarkRunner):
         model: str,
         benchmark_info: Dict[str, Any],
         num_runs: int = 1,
+        assets: Optional[List[Path]] = None,
     ) -> List[Dict[str, Any]]:
-        """Main benchmark execution loop."""
+        """Main benchmark execution loop.
+        
+        Args:
+            provider: Provider Key
+            model: Model ID
+            benchmark_info: Modul Info
+            num_runs: Number of runs (for average, if applicable)
+            assets: Optional list of assets to run (overrides discovery)
+        """
 
         # Dispatch Batch Mode (e.g. Political Compass) via Config
         if benchmark_info.get("execution_mode") == "batch":
@@ -407,6 +418,8 @@ class CommercialBenchmarkRunner(BaseBenchmarkRunner):
             pc_csv = Path("benchmark_scores/political_compass_results.csv")
             pc_csv.parent.mkdir(exist_ok=True, parents=True)
 
+            fieldnames = ["model", "model_version", "run_id", "x_coordinate", "y_coordinate", "x_label", "y_label", "timestamp"]
+            
             # Read logic for existing file to append/update
             pc_rows = []
             if pc_csv.exists():
@@ -418,6 +431,7 @@ class CommercialBenchmarkRunner(BaseBenchmarkRunner):
 
             new_row = {
                 "model": model,
+                "model_version": "unknown",
                 "run_id": "AVG",
                 "x_coordinate": report["coordinates"]["x"],
                 "y_coordinate": report["coordinates"]["y"],
@@ -428,7 +442,7 @@ class CommercialBenchmarkRunner(BaseBenchmarkRunner):
             pc_rows.append(new_row)
 
             with open(pc_csv, "w", encoding="utf-8", newline="") as f:
-                writer = csv.DictWriter(f, fieldnames=new_row.keys())
+                writer = csv.DictWriter(f, fieldnames=fieldnames)
                 writer.writeheader()
                 writer.writerows(pc_rows)
 
@@ -439,6 +453,7 @@ class CommercialBenchmarkRunner(BaseBenchmarkRunner):
                 "status": report.get("status", "success"),
                 "provider": provider,
                 "model": model,
+                "model_version": "unknown",
                 "asset_id": "political_compass_v3",
                 "asset_name": "Political Compass",
                 "total_score": report["total_score"],
@@ -467,7 +482,9 @@ class CommercialBenchmarkRunner(BaseBenchmarkRunner):
         if is_golden_model:
             print("ℹ️  Dies ist das Golden Standard Modell.")
 
-        assets = discover_assets(benchmark_info["path"])
+        if not assets:
+            assets = discover_assets(benchmark_info["path"])
+            
         print(f"Tests:    {len(assets)}\n{'=' * 60}\n")
 
         results = []
@@ -535,6 +552,32 @@ class CommercialBenchmarkRunner(BaseBenchmarkRunner):
         print(
             f"Overall Quality: {avg_pct:.1f}% {badge} ({total_score}/{max_possible} Pts)"
         )
+
+        # Check for Golden Standard Breach
+        try:
+            csv_path = Path("benchmark_scores/golden_standard_benchmark.csv")
+            if csv_path.exists():
+                with open(csv_path, encoding="utf-8") as f:
+                    reader = csv.DictReader(f)
+                    # Map asset_id to percentage
+                    golden_map = {row.get("asset_id"): float(row.get("percentage", 0.0)) for row in reader}
+
+                current_assets = [r["asset_id"] for r in results]
+                matching_golden_scores = [golden_map[aid] for aid in current_assets if aid in golden_map]
+
+                if matching_golden_scores:
+                    golden_avg = sum(matching_golden_scores) / len(matching_golden_scores)
+                    if avg_pct > golden_avg:
+                        diff = avg_pct - golden_avg
+                        print(f"\n{'=' * 66}")
+                        print(f"⚠️  ACHTUNG: GOLDEN STANDARD ÜBERTROFFEN! (+{diff:.1f}%)")
+                        print(f"{'=' * 66}")
+                        print("Dieses Modell schneidet BESSER ab als die aktuelle Referenz.")
+                        print("Bitte prüfen: Ist der Golden Standard veraltet?")
+                        print("Handlungsempfehlung: `make generate-golden` (falls das Ergebnis validiert ist).")
+        except Exception:  # pylint: disable=broad-exception-caught
+            pass
+
         print(f"{'=' * 66}\n")
 
 

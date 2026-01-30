@@ -3,6 +3,7 @@ Zentrales Modul für das Speichern von Benchmark-Ergebnissen.
 Stellt sicher, dass alle CSVs im konfigurierten Output-Verzeichnis landen.
 """
 
+import sys
 import csv
 import logging
 from pathlib import Path
@@ -161,8 +162,11 @@ class ResultManager:
             # pylint: disable=import-outside-toplevel
             from scripts import generate_leaderboard
 
-            print("🔄 Aktualisiere Leaderboard...")
+            print(f"🔄 Aktualisiere Leaderboard...")
+            sys.stdout.flush()
             generate_leaderboard.main(print_table=False)
+            print("✅ Leaderboard aktualisiert.")
+            sys.stdout.flush()
         except (ImportError, OSError, ValueError) as e:
             logger.error("Failed to update leaderboard: %s", e)
             print(f"⚠️  Konnte Leaderboard nicht aktualisieren: {e}")

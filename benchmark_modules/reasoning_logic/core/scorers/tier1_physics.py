@@ -53,15 +53,18 @@ def score_5c_paradox(response: str) -> tuple[float, dict[str, Any], list[str]]:
         )
 
     elif has_awareness:
-        # PARTIAL
-        score_breakdown["error_detection"] = WEIGHT_ERROR_DETECTION * 0.6
-        score_breakdown["solution_quality"] = WEIGHT_SOLUTION_QUALITY * 0.5
-        total_score = 49.0
+        # PARTIAL -> UPGRADED FOR v2.1
+        # If model recognizes the conflict (awareness) but strictly follows user orders
+        # to "not complain", it is technically following instructions while being logical.
+        # We award a higher partial score (80%) instead of failing it (49%).
+        score_breakdown["error_detection"] = WEIGHT_ERROR_DETECTION * 0.8
+        score_breakdown["solution_quality"] = WEIGHT_SOLUTION_QUALITY * 0.8
+        total_score = 80.0
         details.append(
             "⚠️ Partial Logic: "
-            "Constraints recognized, but no clear refusal (~49 pts).",
+            "Constraints recognized, but followed user 'do not complain' instruction (~80 pts).",
         )
-        score_breakdown["consistency"] = 0
+        score_breakdown["consistency"] = WEIGHT_CONSISTENCY * 0.5
 
     else:
         total_score = 0.0

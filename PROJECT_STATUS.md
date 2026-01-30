@@ -1,21 +1,25 @@
 # CrucibleMark - Projekt-Status & Architektur
 
-**Version:** 0.9.8-beta
-**Datum:** 29. Januar 2026
-**Status:** Feature Complete (Versioning, Checkpoint System, Documentation)
+**System Version:** 0.9.9-beta
+**Module Version:** Reasoning v2.1, Core v1.0
+**Datum:** 30. Januar 2026
+**Status:** Beta Testing / Stability Hardening
 
 ---
 
 ## 🚧 Status Update (Jan 2026)
-Das Framework erreicht Version 0.9.8.
-Wichtige Resilienz-Features (Drift Detection, Session Resume) wurden implementiert.
-Die Dokumentation wurde für den Endanwender optimiert.
+Wir befinden uns in der **Beta-Phase (0.9.9)**.
+Der Fokus liegt auf Systemstabilität, Architekturbereinigung und dem Testen der neuen Reasoning-Module (v2.1).
 
-1.  **✅ Modul-Standardisierung**: Alle Module (Code, Content, UX, Documentation, Reasoning, Political, Cultural) sind auf die Core/MVC-Architektur migriert.
-2.  **✅ Model Drift Detection**: Leaderboard und CSVs unterstützen Modell-Versionierung (Hashes/Fingerprints).
-3.  **✅ Checkpoint System**: Political Compass Modul besitzt Auto-Save/Resume + Expiry Logik.
-4.  **✅ Dokumentation**: User Guide, Data Format & Config Guide überarbeitet.
-5.  **⏳ Härte-Test**: Überprüfung der Difficulty für Top-Tier Modelle (Claude 3.5 Sonnet / GPT-4o) offen.
+1.  **✅ Reasoning v2.1**: Einführung von "Hard Mode" Assets (Adversarial Logic) und differenzierter 60/40 Gewichtung.
+2.  **✅ Golden Standard Hygiene**: Implementierung der strikten **Trial-and-Commit Strategie**.
+    *   Keine automatischen Updates während Benchmarks.
+    *   Explizites Update via `make generate-golden`.
+    *   Dokumentation in `GOLDEN_STANDARD_CHANGELOG.md`.
+3.  **✅ Data Sanitization**: Bereinigung von Legacy-Hashes und Deduplizierung.
+4.  **✅ Observability**: Implementierung der "Silent Console / Noisy Log" Strategie (`utils/logging_config.py`).
+5.  **✅ Code Hygiene**: Zentralisierung der Modell-Versionierung in `utils/model_utils.py` (DRY-Prinzip).
+6.  **✅ Modul-Standardisierung**: Alle Module (Code, Content, UX, Documentation, Reasoning, Political, Cultural) sind auf die Core/MVC-Architektur migriert.
 
 ---
 
@@ -166,7 +170,8 @@ golden_standard:
     - [x] Integrated real-time cost calculation (Input/Output) for commercial providers
     - [x] "Coins per Run" & "Tokens per Run" metrics in Leaderboard
     - [x] Budget protection (Daily Limits)
-- [x] **Robustness**:
+- [x] **Robustness & Observability**:
+    - [x] **Logging System**: "Silent Console" (User Friendly) vs. "Noisy Logfile" (Debugger Friendly)
     - [x] **Smart Rate Limit Handling**: Automatic pause & linear/exponential backoff (429 detection)
     - [x] **Data Safety**: Automated Backups & Git Versioning for Benchmark Scores
 - [x] **Hybrid Model Classification**: Gen 1-3 Categorization (Heuristics & Overrides)
