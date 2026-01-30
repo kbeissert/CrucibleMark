@@ -2,6 +2,58 @@
 Utility functions for model management and filtering.
 """
 
+import shutil
+import subprocess
+from typing import Dict
+
+
+def get_model_version(model_name: str, provider: str = "ollama") -> str:
+    """
+    Retrieves the unique version/digest of a model.
+    
+    Args:
+        model_name: Name of the model (e.g., 'gemma2:9b')
+        provider: Provider name (e.g., 'ollama', 'openai', 'anthropic')
+
+    Returns:
+        str: Model version hash (shortened) or 'unknown'.
+    """
+    if provider == "ollama":
+        info = get_ollama_model_info(model_name)
+        # Extract ID and return short hash if available
+        full_id = info.get("id", "unknown")
+        return full_id if full_id == "unknown" else full_id
+    
+    # Placeholder for commercial APIs (could implement version fetching if API supports it)
+    return "unknown"
+
+
+def get_ollama_model_info(model_name: str) -> Dict[str, str]:
+    """Holt Details (ID/Digest) zu einem bestimmten Ollama-Modell via CLI."""
+    try:
+        ollama_path = shutil.which("ollama")
+        if not ollama_path:
+            return {}
+
+        # 'ollama list' ist effizienter als 'ollama show' für die ID
+        result = subprocess.run(
+            [ollama_path, "list"],
+            capture_output=True,
+            text=True,
+            check=True,
+            timeout=10,
+        )
+        
+        for line in result.stdout.strip().split("\n")[1:]:
+            parts = line.split()
+            if len(parts) >= 2 and parts[0] == model_name:
+                return {"id": parts[1], "size": parts[2]}
+                
+        return {}
+
+    except Exception:
+        return {}
+
 
 def is_model_suitable_for_benchmark(model_name: str) -> bool:
     """

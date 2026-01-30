@@ -5,6 +5,19 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.9.7] - 2026-01-30
+
+### Robustness & Automation Hardening
+
+#### Added
+- **Pre-flight Checks**: `benchmark_auto.py` führt nun vor dem Start von kommerziellen Tests einen Zugriffstest durch.
+- **Provider Accessibility**: Neue `is_accessible()` Methode in `LLMClient` und Provider-Klassen.
+  - Erkennt "Insufficient Quota" / "Credit Limit" Fehler bei OpenAI/Anthropic vorab.
+  - Verhindert Endlosschleifen und unnötige API-Calls bei leeren Accounts.
+
+#### Changed
+- **Error Handling**: Automatisches Überspringen von konfigurierten, aber nicht nutzbaren Providern (statt Abbruch).
+
 ## [0.9.6] - 2026-01-29
 
 ### Metacognition & RCI Update

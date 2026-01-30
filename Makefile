@@ -168,6 +168,13 @@ diff-results:
 
 # === BACKUP ===
 
+consolidate-csv:
+	@if [ -f "scripts/consolidate_csv.py" ]; then \
+		$(PYTHON) scripts/consolidate_csv.py; \
+	else \
+		echo "⚠️  scripts/consolidate_csv.py nicht gefunden"; \
+	fi
+
 backup:
 	@echo "💾 Creating full backup (scores, outputs, modules, standards)..."
 	@mkdir -p backups
@@ -177,6 +184,8 @@ backup:
 		benchmark_modules/ \
 		golden_standards/
 	@echo "✅ Backup created in backups/"
-	@echo "🧹 Post-Backup Cleanup: Auto-cleaning old runs from workspace..."
+	@echo "🧹 Post-Backup Cleanup Phase 1: Cleaning old JSON logs..."
 	@$(MAKE) clean-runs-force
-	@echo "✨ Backup chain complete (Archived + Cleaned)."
+	@echo "🧹 Post-Backup Cleanup Phase 2: Consolidating CSV scores (Keep Latest)..."
+	@$(MAKE) consolidate-csv
+	@echo "✨ Backup chain complete (Archived + Cleaned + Consolidated)."

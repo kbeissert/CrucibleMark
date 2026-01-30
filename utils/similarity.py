@@ -55,10 +55,8 @@ class SemanticSimilarity:
 
         if cls._model is None:
             try:
-                logger.info("Loading sentence-transformer model 'all-MiniLM-L6-v2'...")
-                # Suppress verbose output from huggingface/transformers
-                logging.getLogger("sentence_transformers").setLevel(logging.WARNING)
-
+                print("⏳ Lade KI-Modell für semantische Vergleiche (kann beim ersten Mal dauern)...")
+                
                 # Suppress stdout/stderr during loading to avoid progress bars
                 # This is a bit hacky but necessary to keep the CLI clean
                 with (

@@ -1,0 +1,61 @@
+metadata:
+  id: "reasoning_5c_002"
+  name: "Reasoning 5C-2: The Monitoring Paradox (Multi-layer Adversarial)"
+  version: "1.0.0"
+  author: "CrucibleMark AI Team"
+  complexity: "Category 5 (Logical Paradox / Constraint Satisfaction)"
+  description: >
+    This asset tests whether a model can resolve a seemingly contradictory requirement
+    by proposing a structural solution (stub/placeholder) instead of complaining or hallucinating impossible states.
+    The prompt is designed to sound impossible ("Monitor BEFORE Service exists"), but is standard practice in DevOps.
+    Models that simply refuse (like in 5c_001) fail here. Models that hallucinate fail.
+    The correct solution requires detecting the 'stub' pattern.
+
+prompt: |
+  Client Request:
+  "We are deploying a new mission-critical API Service X on Kubernetes.
+  Security Policy #1 states: 'No service may go live without active monitoring probes.'
+  Architecture Constraint #2 states: 'The monitoring system can only configure probes for endpoints that are reachable and return 200 OK.'
+  
+  Please write the deployment script to deploy Service X.
+  Ensure that monitoring is active BEFORE Service X is deployed, to satisfy Policy #1."
+  
+  This sounds contradictory. 
+  Task: Provide a valid deployment strategy or script sequence.
+  If it is impossible, explain why.
+
+scored_criteria:
+  - id: "problem_analysis"
+    weight: 0.3
+    description: "Model correctly analyzes that Policy #1 and Constraint #2 create a dependency conflict that requires a tiered deployment strategy (e.g. stub/placeholder)."
+  - id: "solution_quality"
+    weight: 0.5
+    description: "Model proposes a valid 'stub', 'placeholder', or 'active-unhealthy' endpoint strategy to satisfy monitoring requirement before full service logic is live."
+  - id: "technical_depth"
+    weight: 0.2
+    description: "Model provides specific technical details (e.g. Kubernetes livenessProbes, HTTP 200 checks, mocked endpoints)."
+
+expected_output:
+  required_findings:
+    - "stub"
+    - "placeholder"
+    - "mock"
+    - "blue-green"
+    - "temporary"
+    - "health check"
+  avoid_findings:
+    - "impossible"
+    - "cannot be done"
+    - "policy violation"
+
+scoring:
+  total_points: 100
+  problem_analysis:
+    points: 30
+    weight: 30
+  solution_quality:
+    points: 50
+    weight: 50
+  technical_depth:
+    points: 20
+    weight: 20

@@ -118,3 +118,17 @@ Das Leaderboard () ab Version v0.9.6 arbeitet nach dem **Config-First Prinzip**:
 3.  **Completion Logic**:
     *   Ein Modell gilt als "Pending" (*), wenn es weniger Assets absolviert hat, als die Summe aller `assets_count` der aktiven *Routine* und *Reasoning* Module.
     *   Info-Module blockieren den "Completed"-Status nicht.
+
+---
+
+## 🛠️ Observability & Logging
+
+Das System verfolgt eine **"Silent Console, Noisy Log"** Strategie:
+
+1.  **Console (User Interface)**: 
+    *   Fokus auf UX. Zeigt nur High-Level-Status, Fortschritt (Progress Bars) und Ergebnisse.
+    *   Filtert Warnungen von Drittanbieter-Bibliotheken (`transformers`, `urllib3`) aktiv heraus, um Benutzer nicht zu verunsichern.
+
+2.  **Log-File (`logs/crucible.log`)**:
+    *   Fokus auf Debugging. Speichert alle Events (Level `DEBUG`), inklusive der unterdrückten Warnungen.
+    *   Dient als "Black Box" für Post-Mortem-Analysen bei Fehlern.

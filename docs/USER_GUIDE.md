@@ -89,3 +89,22 @@ Dies generiert die Datei `benchmark_scores/benchmark_leaderboard.csv` mit:
 *   Vergabe von Badges (z.B. "Context King")
 
 Mehr Details zum Datenformat finden Sie in [DATA_FORMAT.md](DATA_FORMAT.md).
+
+---
+
+## 5. Troubleshooting & Logging 🔍
+
+CrucibleMark trennt Benutzerinformationen strikt von technischen Details, um die Übersichtlichkeit zu wahren.
+
+### Konsole (Terminal)
+Im Terminal sehen Sie nur das Wichtigste:
+*   Fortschritt der Tests
+*   Ergebnisse und Scores
+*   Verständliche Statusmeldungen (z.B. "Lade Modell...")
+*   Kein technisches "Rauschen" von Bibliotheken
+
+### Log-Datei (Debugger)
+Wenn etwas schiefgeht oder Sie technische Fehler (Tracebacks, HTTP-Timeouts, Warnungen) im Detail sehen wollen, prüfen Sie:
+👉 **`logs/crucible.log`**
+
+Diese Datei speichert **alles** (Debug-Level), inklusive der Warnmeldungen externer Bibliotheken (HuggingFace, Ollama, etc.), die im Terminal unterdrückt werden.

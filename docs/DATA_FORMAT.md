@@ -106,9 +106,10 @@ Diese Datei aggregiert die Rohdaten pro Modell. Hier findet die **Berechnung der
 | `Model Name` | String | Modellname. |
 | `Generation` | String | Generation des Modells (z.B. "Gen 2 (Reasoner)"). Definiert in `model_registry.yaml`. |
 | `Total Score` | Float | Gesamtdurchschnitt aller bewerteten Tests ("Routine" + "Reasoning"). |
+| `Avg Time (s)` | Float | Durchschnittliche Antwortzeit über alle Tests. |
 | `Routine Score` | Float | Durchschnitt aller Module mit `score_group: routine`. Misst Zuverlässigkeit bei Standardaufgaben. |
 | `Reasoning Score`| Float | Durchschnitt aller Module mit `score_group: reasoning`. Misst Problemlösungskompetenz. |
-| `Avg Time (s)` | Float | Durchschnittliche Antwortzeit über alle Tests. |
+| `Ratio` | Percent | **Leistungsverhältnis zum Golden Standard.** <br> • 100% = Identisch mit Referenz (Mistral Large). <br> • >100% = Besser als Referenz. <br> • <100% = Schlechter als Referenz. <br> *Lesen Sie [docs/GOLDEN_STANDARDS.md](GOLDEN_STANDARDS.md) für die komplette Methodik.* |
 
 ### Modul-Spalten (Dynamisch)
 Für jedes in `benchmark_config.yaml` aktive Modul wird eine Spalte angelegt. Der Spaltenname entspricht dem `name`-Feld in der Config.

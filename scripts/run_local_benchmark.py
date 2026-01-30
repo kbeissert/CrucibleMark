@@ -20,8 +20,12 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 from utils.base_runner import BaseBenchmarkRunner
 from utils.benchmark_utils import select_from_list, discover_assets, load_asset_yaml
 from utils.module_loader import load_test_class
-from utils.model_utils import is_reasoning_model
+from utils.model_utils import is_reasoning_model, get_model_version
 from utils.llm_client import LLMClient
+from utils.logging_config import setup_logging
+
+# Setup Logging centrally
+setup_logging()
 
 # Optional: Tightly coupled for now, should be decoupled later
 RESULT_MANAGER = None
@@ -66,32 +70,6 @@ class LocalBenchmarkRunner(BaseBenchmarkRunner):
                 }
 
 
-    @staticmethod
-    def get_model_info(model_name: str) -> Dict[str, str]:
-        """Holt Details (ID/Digest) zu einem bestimmten Modell."""
-        try:
-            ollama_path = shutil.which("ollama")
-            if not ollama_path:
-                return {}
-
-            # 'ollama list' ist effizienter als 'ollama show' für die ID
-            result = subprocess.run(
-                [ollama_path, "list"],
-                capture_output=True,
-                text=True,
-                check=True,
-                timeout=10,
-            )
-            
-            for line in result.stdout.strip().split("\n")[1:]:
-                parts = line.split()
-                if len(parts) >= 2 and parts[0] == model_name:
-                    return {"id": parts[1], "size": parts[2]}
-                    
-            return {}
-
-        except Exception:
-            return {}
 
     @staticmethod
     def get_ollama_models() -> List[str]:
@@ -295,8 +273,7 @@ class LocalBenchmarkRunner(BaseBenchmarkRunner):
         result = self.build_base_result(model, asset_data, score, exec_result, "ollama")
         
         # Add Model Version (ID)
-        model_info = self.get_model_info(model)
-        result["model_version"] = model_info.get("id", "unknown")
+        result["model_version"] = get_model_version(model, provider="ollama")
 
         # Add Token Usage (Prefer centralized tracking from client)
         tokens = 0
@@ -345,12 +322,12 @@ class LocalBenchmarkRunner(BaseBenchmarkRunner):
 
         return commercial_refs, is_valid
 
-    def _update_political_compass_csv(self, model: str, report: Dict[str, Any]) -> None:
+    def _update_political_compass_csv(self, model: str, report: Dict[str, Any], model_version: str = "unknown") -> None:
         """Aktualisiert die Leaderboard-CSV für Batch-Tests (Append-Only)."""
         pc_csv = Path("benchmark_scores/political_compass_results.csv")
         pc_csv.parent.mkdir(exist_ok=True, parents=True)
 
-        fieldnames = ["model", "run_id", "x_coordinate", "y_coordinate", "x_label", "y_label", "timestamp"]
+        fieldnames = ["model", "model_version", "run_id", "x_coordinate", "y_coordinate", "x_label", "y_label", "timestamp"]
         rows_to_write = []
 
         # 1. Archive individual runs if available
@@ -358,6 +335,7 @@ class LocalBenchmarkRunner(BaseBenchmarkRunner):
             for run in report["individual_runs"]:
                  rows_to_write.append({
                     "model": model,
+                    "model_version": model_version,
                     "run_id": f"Run {run['id']}",
                     "x_coordinate": run["x"],
                     "y_coordinate": run["y"],
@@ -369,6 +347,7 @@ class LocalBenchmarkRunner(BaseBenchmarkRunner):
         # 2. Archive Average / Total Result
         rows_to_write.append({
             "model": model,
+            "model_version": model_version,
             "run_id": "AVG",
             "x_coordinate": report["coordinates"]["x"],
             "y_coordinate": report["coordinates"]["y"],
@@ -386,7 +365,7 @@ class LocalBenchmarkRunner(BaseBenchmarkRunner):
             writer.writerows(rows_to_write)
 
     def _create_standard_result_from_batch(
-        self, model: str, report: Dict[str, Any], result_wrapper: Dict[str, Any]
+        self, model: str, report: Dict[str, Any], result_wrapper: Dict[str, Any], model_version: str = "unknown"
     ) -> Dict[str, Any]:
         """Erstellt ein Standard-Resultat aus einem Batch-Report."""
         return {
@@ -394,6 +373,7 @@ class LocalBenchmarkRunner(BaseBenchmarkRunner):
             "status": report.get("status", "success"),
             "provider": "ollama",
             "model": model,
+            "model_version": model_version,
             "asset_id": "political_compass_v3",
             "asset_name": "Political Compass",
             "total_score": report["total_score"],
@@ -454,14 +434,17 @@ class LocalBenchmarkRunner(BaseBenchmarkRunner):
         # Reporting
         report = json.loads(result_wrapper["raw_response"])
 
+        # Get Model Version
+        model_version = get_model_version(model, provider="ollama")
+
         if RESULT_MANAGER:
             RESULT_MANAGER.print_summary(report)
             output_dir = Path("outputs/runs")
             RESULT_MANAGER.save_json(report, output_dir)
 
-        self._update_political_compass_csv(model, report)
+        self._update_political_compass_csv(model, report, model_version=model_version)
 
-        return [self._create_standard_result_from_batch(model, report, result_wrapper)]
+        return [self._create_standard_result_from_batch(model, report, result_wrapper, model_version=model_version)]
 
     def _run_standard_benchmark(
         self,
@@ -637,6 +620,11 @@ class LocalBenchmarkRunner(BaseBenchmarkRunner):
         print(f"   Referenz:    {avg_ref:.1f}/100")
         if avg_diff > 0:
             print(f"   🎯 Differenz: +{avg_diff:.1f} (besser!)")
+            print(f"\n   {'=' * 60}")
+            print(f"   ⚠️  ACHTUNG: GOLDEN STANDARD ÜBERTROFFEN! (Ratio: {100 + avg_diff:.1f}%)")
+            print(f"   {'=' * 60}")
+            print("   Dieses Modell übertrifft die kommerzielle Referenz.")
+            print("   Bitte Ergebnisse prüfen (und ggf. Golden Standard aktualisieren).")
         elif avg_diff < 0:
             print(f"   📉 Differenz: {avg_diff:.1f} (Gap)")
         else:

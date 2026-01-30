@@ -67,25 +67,30 @@ class GenerationClassifier:
                 ),
             }
 
-        # 2. Auto-Classification (if stats available)
+        # 2. Heuristic Patterns (Name based) - PRIORITY
+        # Check patterns BEFORE Auto-Metrics.
+        # If user defined "phi4" as Gen2 in yaml, we trust that config over dubious metrics.
+        heuristic_gen = self._check_heuristic_patterns(model_name)
+        
+        # 3. Auto-Classification (if stats available)
         auto_result = {"confidence": "NONE"}
         if stats:
-            auto_result = self._auto_classify_metrics(model_name, stats)
-            if auto_result["confidence"] == "HIGH":
-                return auto_result
+             auto_result = self._auto_classify_metrics(model_name, stats)
 
-        # 3. Heuristic Patterns (Name based) - fallback for Medium/Low confidence
-        heuristic_gen = self._check_heuristic_patterns(model_name)
+        # Merge Logic:
+        # If Heuristic says Gen 2 and Auto says Gen 1 (High Confidence), we have a conflict.
+        # But generally, explicit heuristics from 'generation_heuristics.yaml' should win 
+        # because the user manually added them there.
+        
         if heuristic_gen:
-            # Upgrade confidence if heuristic matches
-            return {
+             return {
                 "generation": heuristic_gen,
                 "confidence": "HIGH",
-                "reason": (
-                    f"Heuristic Pattern Match ({heuristic_gen}) + "
-                    f"{auto_result.get('reason', '')}"
-                ),
+                "reason": f"Heuristic Pattern Match ({heuristic_gen})",
             }
+        
+        if auto_result["confidence"] == "HIGH":
+             return auto_result
 
         # 4. Return Auto Result (Medium/Low) or Default
         if auto_result["confidence"] != "NONE":

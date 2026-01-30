@@ -17,6 +17,7 @@ from .constants import (
 from .scorers.standard import score_similarity_fallback, score_standard_asset
 from .scorers.tier1_physics import score_5c_paradox
 from .scorers.tier2_systems import score_5b_complex, score_5d_deadlock
+from .scorers.tier2_systems_v2 import score_5c_multilayer, score_5d_subtle
 from .scorers.tier3_metacog import (
     score_metacog_001,
     score_metacog_002,
@@ -39,7 +40,9 @@ class ReasoningEvaluator:
         # Dispatcher Mapping
         self._scorers = {
             "reasoning_5c_001": score_5c_paradox,
+            "reasoning_5c_002": score_5c_multilayer,
             "reasoning_5d_001": score_5d_deadlock,
+            "reasoning_5d_002": score_5d_subtle,
             "reasoning_5b_001": score_5b_complex,
             "reasoning_metacog_001": score_metacog_001,
             "reasoning_metacog_002": score_metacog_002,

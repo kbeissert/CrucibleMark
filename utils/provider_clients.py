@@ -70,6 +70,13 @@ class BaseProviderClient:
         """Listet verfügbare Modelle"""
         raise NotImplementedError
 
+    def is_accessible(self) -> bool:
+        """
+        Prüft, ob der Provider zugänglich ist (API Key, Budget/Quota).
+        Standardmäßig True, sollte von Subklassen überschrieben werden.
+        """
+        return True
+
 
 class OllamaClient(BaseProviderClient):
     """Ollama Provider Client"""
@@ -253,6 +260,20 @@ class AnthropicClient(BaseProviderClient):
             self._client = anthropic.Anthropic(api_key=api_key)
         return self._client
 
+    def is_accessible(self) -> bool:
+        """Prüft Zugang zu Anthropic API durch Test-Request."""
+        try:
+            # Versuche minimale Generierung (Cheap & Fast)
+            self.client.messages.create(
+                model="claude-3-haiku-20240307",  # Günstigstes Modell für Test
+                max_tokens=1,
+                messages=[{"role": "user", "content": "Hi"}]
+            )
+            return True
+        except Exception as e:
+            logger.warning("Anthropic Access Check Failed: %s", e)
+            return False
+
     def _resolve_model(self, model: str) -> str:
         """Löst Modell-Name auf (Config-Fallback)"""
         if not model or model.startswith("claude"):
@@ -335,6 +356,16 @@ class MistralClient(BaseProviderClient):
             self._client = Mistral(api_key=api_key)
         return self._client
 
+    def is_accessible(self) -> bool:
+        """Prüft Zugang zu Mistral API."""
+        try:
+            # Mistral client usually supports listing models as a cheap check
+            self.client.models.list()
+            return True
+        except Exception as e:
+            logger.warning("Mistral Access Check Failed: %s", e)
+            return False
+
     def _resolve_model(self, model: str) -> str:
         """Löst Modell-Name auf (Config-Fallback)"""
         if not model or model.startswith("mistral"):
@@ -403,6 +434,22 @@ class OpenAIClient(BaseProviderClient):
             )
             self._client = OpenAI(api_key=api_key)
         return self._client
+
+    def is_accessible(self) -> bool:
+        """Prüft Zugang zu OpenAI API (inkl. Quota Check)."""
+        try:
+            # list() reicht nicht für Quota Check (gibt oft success bei leerem Quota).
+            # Daher führen wir eine minimale Generierung durch, um Billing-Status zu prüfen.
+            self.client.chat.completions.create(
+                model="gpt-3.5-turbo",
+                messages=[{"role": "user", "content": "Hi"}],
+                max_tokens=1
+            )
+            return True
+        except Exception as e:
+            # Fängt InsufficientQuotaError, AuthenticationError, etc.
+            logger.warning("OpenAI Access Check Failed: %s", e)
+            return False
 
     def query(
         self,
