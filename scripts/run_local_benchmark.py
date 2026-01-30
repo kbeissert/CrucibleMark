@@ -9,6 +9,8 @@ import logging
 import json
 import traceback
 import time
+import os
+import argparse
 from datetime import datetime
 from pathlib import Path
 from typing import Any, Dict, List, Optional
@@ -48,10 +50,11 @@ class LocalBenchmarkRunner(BaseBenchmarkRunner):
     TIER_SCORE_LOW = 50
     TOKEN_K_FACTOR = 1000
 
-    def __init__(self):
+    def __init__(self, debug_responses: bool = False):
         """Initialisiert Runner."""
         super().__init__()
         self.commercial_csv = self.validator.get_golden_standard_csv()
+        self.debug_responses = debug_responses or os.getenv("CRUCIBLE_DEBUG", "false").lower() == "true"
 
         # Load modules from config
         self.benchmark_categories = {}
@@ -300,6 +303,16 @@ class LocalBenchmarkRunner(BaseBenchmarkRunner):
         # Ensure tier is set if missing (legacy field support)
         if "tier" not in result:
             result["tier"] = "Tier 1 (Undefined)"
+
+        # Debug Auto-Save Logic
+        if result["percentage"] < 30 or getattr(self, "debug_responses", False):
+             self._save_debug_response(
+                 result["model"], 
+                 result["asset_id"], 
+                 response_preview,
+                 f"{result['total_score']}/{result['max_score']} ({result['percentage']}%)",
+                 score.get("reasoning", "No explanation provided")
+             )
 
         return result
 
@@ -687,11 +700,39 @@ class LocalBenchmarkRunner(BaseBenchmarkRunner):
         print(f"   Tier 1 (Operational): {t1_avg:.1f}%")
         print(f"   Tier 2 (Deep Logic):  {t2_avg:.1f}%")
         print(f"   Profile: {profile}\n{'-' * 60}")
+    def _save_debug_response(self, model: str, asset_id: str, response: str, score_str: str, explanation: str):
+        """Saves response to debug file."""
+        debug_dir = Path("benchmark_scores/debug_responses")
+        debug_dir.mkdir(exist_ok=True, parents=True)
+        
+        # Sanitize filename
+        safe_model = str(model).replace(":", "_").replace("/", "_")
+        filename = f"{safe_model}_{asset_id}.txt"
+        filepath = debug_dir / filename
+        
+        try:
+            with open(filepath, "w", encoding="utf-8") as f:
+                f.write(f"Model: {model}\n")
+                f.write(f"Asset: {asset_id}\n")
+                f.write(f"Score: {score_str}\n")
+                f.write(f"Explanation: {explanation}\n")
+                f.write("=" * 80 + "\n")
+                f.write("RESPONSE:\n")
+                f.write("=" * 80 + "\n")
+                f.write(str(response))
+            
+            print(f"   💾 Debug response saved: {filepath}")
+        except Exception as e:
+            print(f"   ⚠️ Failed to save debug response: {e}")
 
 
 def main():
     """CLI Entry Point."""
-    runner = LocalBenchmarkRunner()
+    parser = argparse.ArgumentParser(description="CrucibleMark Local Benchmark Runner")
+    parser.add_argument("--debug-responses", action="store_true", help="Save all responses to debug files")
+    args, _ = parser.parse_known_args()
+
+    runner = LocalBenchmarkRunner(debug_responses=args.debug_responses)
     print(f"\n{'=' * 60}\n🚀 LOKALE MODELLE BENCHMARK\n{'=' * 60}")
 
     model = runner.select_model()

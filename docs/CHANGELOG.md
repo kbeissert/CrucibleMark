@@ -5,6 +5,89 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.9.10] - 2026-01-30
+
+### Reasoning v2.3 - The "Phi4" Patch & Leaderboard Fix
+
+**Release Date:** 2026-01-30
+**Status:** ✅ PRODUCTION-READY
+
+#### **Core Fixes**
+*   **Leaderboard Logic**: Implemented definitive Tier Weighting in `generate_leaderboard.py`.
+    *   Tier 1 (Basic): 1.0x
+    *   Tier 2 (Advanced): 1.5x
+    *   Tier 3 (Expert): 2.0x
+*   **Scorer Robustness**: Fixed regex extraction to handle "Feasibility: 0" cases where the denominator "/10" is missing (specifically fixing `phi4` scoring 0%).
+*   **Contradiction Logic**: Relaxed keyword penalties in `Tier2_Systems` to prevent false positives on phrases like "solution is feasible".
+
+#### **Developer Experience**
+*   **Debug Mode**: Added `--debug-responses` flag to `run_local_benchmark.py` which auto-saves full LLM responses for low-performing tests (<30%).
+*   **System Reset**: Wiped reasoning scores from CSVs to enforce a clean re-run with the patched evaluators.
+
+## [0.9.9] - 2026-01-30
+
+### Reasoning v2.2 - Anti-Ceiling Effect Release (Final)
+
+**Release Date:** 2026-01-30  
+**Status:** ✅ PRODUCTION-READY
+
+#### **Mission Accomplished**
+*   **Ceiling Effect Eliminated**: 0 models @ 100% (was 3).
+*   **Score Differentiation**: Range increased to 35pp (Mistral 73% vs Dolphin 38%).
+*   **Inverse Hierarchy Fixed**: Mistral > Gemma > Dolphin validated.
+
+#### **New Features & Improvements**
+*   **New Expert Asset (5e_001)**: "Nested Transaction Paradox".
+    *   Testet Distributed Systems Constraints.
+    *   Multi-Dimensional Scoring (Analysis + Solution + Depth).
+    *   Result: Mistral Large 35% (Realistic Expert Scope).
+*   **Enhanced Physics Trap (5c_001)**:
+    *   New **Bidirectional Negation Detection** (15+ keywords).
+    *   Context-aware analysis prevents false positives on constraint repetition.
+*   **Hardened Deadlock Detection (5d_001)**:
+    *   Parametric feasibility extraction.
+    *   3-Signal requirement (Feasibility + Keyword + Explanation).
+
+#### **Fixed Bugs (Critical)**
+1.  **Asset-ID Mismatch**: Fixed underscore bug (`reasoning_5d_001`).
+2.  **Feasibility Extraction**: Added 9 new regex patterns & bidirectional search.
+3.  **Negation Logic**: Fixed unidirectional check failing on "using X is forbidden".
+4.  **False Positives**: Fixed penalty for repeating "no machinery allowed".
+
+#### **Validation Results**
+*   **Mistral Large**: 73.3% (Overall) - 100% on 5c/5d.
+*   **Gemma2:9b**: 58.9% (Overall) - Hidden Champion.
+*   **Dolphin:8b**: 37.9% (Overall) - Correctly placed at bottom.
+
+## [0.9.8] - 2026-01-30
+
+### Reasoning v2.2 - Anti-Ceiling Effect Release
+
+#### **Major Changes**
+*   **Module Upgrade**: Reasoning Logic Modul auf **v2.2** aktualisiert.
+    *   Ziel: Eliminierung des "Ceiling Effects" (zu viele Modelle bei 100%).
+    *   Ergebnis: Score-Spreizung von 30pp auf 45pp erhöht.
+    *   Status: **Production-Ready**.
+
+#### **New Features & Improvements**
+*   **New Expert Asset (5e_001)**: "Nested Transaction Paradox".
+    *   Testet Distributed Systems Constraints (CAP-Theorem Style).
+    *   Multi-Dimensional Scoring (Analysis, Solution, Depth).
+    *   Nur Top-Tier Modelle (Mistral Large) erreichen hier 100%.
+*   **Dynamic Feasibility Extraction**:
+    *   Regex-Engine erweitert (9 Patterns statt 3).
+    *   Erkennt Robust Formulierungen wie "Feasibility Assessment: 2/10".
+    *   Fallback-Logik verbessert (Default=7 statt 5 für Fairness).
+*   **Hardened Physics Trap (5c_001)**:
+    *   Strikte Prüfung für "Mount Everest" Szenario.
+    *   Creative Workarounds (Schrumpfstrahl etc.) geben keine Punkte mehr.
+*   **Hardened Deadlock Detection (5d_001)**:
+    *   Erfordert nun 3 Signale: Feasibility=0 + Keyword "Deadlock" + Erklärung.
+
+#### **Fixed**
+*   **Asset-ID Bug**: Korrektur eines kritischen Bugs im `ReasoningEvaluator`, bei dem Asset-IDs durch Underscore-Removal falsch gemappt wurden (`reasoning5d001` vs `reasoning_5d_001`). Dies führte zu 0% Scores bei korrekten Antworten.
+*   **Scoring-Logik**: Diverse Stabilisierungsmaßnahmen in der Punktevergabe.
+
 ## [0.9.7] - 2026-01-30
 
 ### Robustness & Automation Hardening

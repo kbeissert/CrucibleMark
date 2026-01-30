@@ -140,89 +140,97 @@ def score_5b_complex(response: str) -> tuple[float, dict[str, Any], list[str]]:
     return total_score, score_breakdown, details
 
 
-def score_5d_deadlock(response: str) -> tuple[float, dict[str, Any], list[str]]:
-    """Tier 2: Asset 5D - Circular Dependency (Deadlock)."""
-    resp_lower = response.lower()
-    breakdown: dict[str, float] = {
-        "error_detection": 0.0,
-        "solution_quality": 0.0,
-        "consistency": 0.0,
-    }
-
-    # 1. Check for explicit Feasibility Score
-    feasibility_match = re.search(r"feasibility:\s*(\d+)", resp_lower)
-    feasibility_score = (
-        int(feasibility_match.group(1)) if feasibility_match else None
-    )
-
-    # 2. Check for Keywords
-    has_deadlock = contains_any(resp_lower, ASSET_5D_DEADLOCK_KEYWORDS)
-    has_circular = contains_any(resp_lower, ASSET_5D_CIRCULAR_KEYWORDS)
-    has_warning = contains_any(resp_lower, ASSET_5D_WARNING_KEYWORDS)
-
-    # LEVEL 1: PERFECT (100)
-    # Criteria: Feasibility 0 OR Strong Deadlock confirmation
-    is_impossible_score = (
-        feasibility_score is not None
-        and feasibility_score == FEASIBILITY_IMPOSSIBLE
-    )
-    if is_impossible_score or has_deadlock:
-        breakdown = {
-            "error_detection": float(WEIGHT_ERROR_DETECTION),
-            "solution_quality": float(WEIGHT_SOLUTION_QUALITY),
-            "consistency": float(WEIGHT_CONSISTENCY),
-        }
-        return (
-            float(MAX_SCORE),
-            breakdown,
-            ["✅ Logic Pass: Correctly identified as Impossible/Deadlock."],
-        )
-
-    # LEVEL 2: GOOD CATCH (70)
-    # Criteria: Feasibility 1-3 OR Specific Circular Dependency identification
-    is_low_feasibility = (
-        feasibility_score is not None
-        and 1 <= feasibility_score <= FEASIBILITY_LOW_MAX
-    )
-    if is_low_feasibility or has_circular:
-        breakdown = {
-            "error_detection": float(WEIGHT_ERROR_DETECTION),
-            "solution_quality": float(WEIGHT_SOLUTION_QUALITY * 0.5),
-            "consistency": float(WEIGHT_CONSISTENCY * 0.5),
-        }
-        return (
-            SCORE_THRESHOLD_HIGH,
-            breakdown,
-            [
-                "⚠️ Logic Partial (High): "
-                "Identified circular dependency but was slightly optimistic.",
-            ],
-        )
-
-    # LEVEL 3: WEAK WARNING (40)
-    # Criteria: Feasibility 4-5 OR General warnings
-    is_med_feasibility = (
-        feasibility_score is not None
-        and FEASIBILITY_HIGH_MIN <= feasibility_score <= FEASIBILITY_HIGH_MAX
-    )
-    if is_med_feasibility or has_warning:
-        breakdown = {
-            "error_detection": float(WEIGHT_ERROR_DETECTION * 0.5),
-            "solution_quality": 0.0,
-            "consistency": 0.0,
-        }
-        return (
-            40.0,
-            breakdown,
-            [
-                "⚠️ Logic Partial (Low): "
-                "Recognized complexity/risk but missed the deadlock.",
-            ],
-        )
-
-    # LEVEL 4: FAIL (0)
-    return (
-        0.0,
-        breakdown,
-        ["❌ Logic Fail: Optimism Bias. Failed to identify deadlock or risks."],
-    )
+def score_5d_deadlock(response: str, feasibility: int) -> tuple[int, str]:
+    """
+    Deadlock Detection - v2.2 HARDENED
+    
+    Asset: reasoning_5d_001 (Circular dependency in workflow)
+    Tests: Multi-signal deadlock recognition (Feasibility + Keywords + Explanation)
+    
+    v2.2 Changes:
+    - Strikte AND-Verknüpfung: Alle 3 Signals für 100pts erforderlich
+    - Tiered Keyword Detection (Basic/Advanced/Expert)
+    - Contradiction Check (invalidiert Score)
+    
+    Args:
+        response: LLM response to deadlock scenario
+        feasibility: Feasibility rating (0-10 scale) from model
+    
+    Returns:
+        (score, explanation)
+        - score: 0-100 points
+        - explanation: Why this score was assigned
+    """
+    
+    response_lower = response.lower()
+    
+    # --- SIGNAL A: Feasibility Assessment ---
+    # Model must rate task as impossible/very hard (0-2)
+    feasibility_correct = feasibility <= 2
+    
+    # --- SIGNAL B: Keyword Detection (Tiered) ---
+    deadlock_keywords_tier1 = ["impossible", "conflict", "cannot", "won't work"]
+    deadlock_keywords_tier2 = ["deadlock", "circular", "paradox", "cyclic"]
+    deadlock_keywords_tier3 = ["a->b->c->a", "cycle", "mutual dependency", "circular dependency"]
+    
+    has_tier1 = any(kw in response_lower for kw in deadlock_keywords_tier1)
+    has_tier2 = any(kw in response_lower for kw in deadlock_keywords_tier2)
+    has_tier3 = any(kw in response_lower for kw in deadlock_keywords_tier3)
+    
+    # --- SIGNAL C: Explanation Detection ---
+    # Must explain WHY it's a deadlock (not just label it)
+    explanation_indicators = [
+        "because", "since", "therefore", "thus", "reason",
+        "step 1 waits", "step 2 waits", "blocks", "dependency",
+        "requires", "depends on"
+    ]
+    # Require at least 2 explanation indicators for quality reasoning
+    explanation_count = sum(1 for ind in explanation_indicators if ind in response_lower)
+    has_explanation = explanation_count >= 2
+    
+    # --- CONTRADICTION CHECK ---
+    # Model claims it's feasible despite identifying deadlock
+    contradiction_keywords = [
+        "is feasible", "totally feasible", "highly feasible",
+        "is possible to implement", "it can work",
+        "plan works", "timeline works",
+        "just need to", "simply"
+    ]
+    # Removed: "feasible" (too ambiguous), "solution:" (often used in explanation), "workaround" (valid advice)
+    has_contradiction = any(kw in response_lower for kw in contradiction_keywords)
+    
+    # --- SCORING LADDER ---
+    
+    # Level 1: PERFECT (100pts)
+    # Requires: Feasibility 0-1 AND Tier2/3 keyword AND Explanation AND No Contradiction
+    if (feasibility <= 1 and 
+        (has_tier2 or has_tier3) and 
+        has_explanation and 
+        not has_contradiction):
+        return 100, "Perfect: Identified deadlock with clear explanation and correct feasibility"
+    
+    # Level 2: STRONG PARTIAL (70pts)
+    # Feasibility 0-1 AND (Keyword OR Explanation) - but NOT both
+    if feasibility <= 1:
+        if (has_tier2 or has_tier3) and not has_explanation:
+            return 70, "Partial: Detected deadlock terminology but missing causal explanation"
+        if has_explanation and not (has_tier2 or has_tier3):
+            return 70, "Partial: Explained dependency issue but missed 'deadlock' concept"
+    
+    # Level 3: WEAK AWARENESS (50pts)
+    # Feasibility 1-2 AND Tier1 keywords (generic awareness of problem)
+    if 1 <= feasibility <= 2 and has_tier1:
+        return 50, "Weak: Sensed conflict but unclear on deadlock mechanism"
+    
+    # Level 4: MINIMAL WARNING (30pts)
+    # Feasibility 3-4 (cautious but not convinced of impossibility)
+    if 3 <= feasibility <= 4:
+        return 30, "Minimal: Expressed doubt but no clear conflict identification"
+    
+    # Level 5: FAILURE (0pts)
+    # Feasibility >4 (optimism bias) OR Contradiction present
+    if feasibility > 4 or has_contradiction:
+        return 0, "Failure: Optimism bias or contradicted deadlock with feasibility claim"
+    
+    # Fallback (edge cases)
+    return 20, "Edge case: Unclear response pattern"

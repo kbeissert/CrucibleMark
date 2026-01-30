@@ -1,5 +1,5 @@
 name: "Logical Reasoning"
-version: "2.0.0"
+version: "2.2.0"
 description: "Tests complex logical reasoning, math problems, puzzle solving, and metacognitive thought quality. Tier 1-3 assessment with RCI classification."
 author: "CrucibleMark"
 tags:
@@ -18,7 +18,7 @@ tiers:
     assets: ["reasoning_001_river"]
     description: "Baseline reasoning checkpoint"
   - name: "Tier 2 (Deep Reasoning)"
-    assets: ["reasoning_5a_001", "reasoning_5b_001", "reasoning_5c_001", "reasoning_5c_002", "reasoning_5d_001", "reasoning_5d_002"]
+    assets: ["reasoning_5c_001", "reasoning_5d_001", "reasoning_5e_001"]
     description: "Complex operational logic testing"
   - name: "Tier 3 (Metacognition)"
     assets: ["reasoning_metacog_001", "reasoning_metacog_002", "reasoning_metacog_003", "reasoning_metacog_004", "reasoning_metacog_005"]

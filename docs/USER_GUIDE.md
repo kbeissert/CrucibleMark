@@ -108,3 +108,35 @@ Wenn etwas schiefgeht oder Sie technische Fehler (Tracebacks, HTTP-Timeouts, War
 👉 **`logs/crucible.log`**
 
 Diese Datei speichert **alles** (Debug-Level), inklusive der Warnmeldungen externer Bibliotheken (HuggingFace, Ollama, etc.), die im Terminal unterdrückt werden.
+
+---
+
+## 6. Developer & Debug Mode 🛠️
+
+Für tiefere Analysen von Modell-Antworten (z.B. bei unerwarteten 0%-Scores) gibt es einen speziellen Debug-Modus.
+
+### Automatische Debug-Logs
+Standardmäßig speichert das System die **vollständigen Antworten** eines Modells automatisch ab, wenn ein Test mit weniger als **30%** bewertet wird. Dies hilft sofort zu erkennen, ob das Modell den Task verweigert hat ("I cannot do this") oder halluziniert hat.
+
+### Manueller Debug-Modus (`--debug-responses`)
+Um **alle** Antworten (auch erfolgreiche) zu inspizieren, starten Sie den Benchmark mit dem Debug-Flag oder der Umgebungsvariable:
+
+**Via CLI (Skript):**
+```bash
+python scripts/run_local_benchmark.py --debug-responses
+```
+
+**Via Umgebungsvariable:**
+```bash
+CRUCIBLE_DEBUG=true make benchmark
+```
+
+**Wo finde ich die Ausgaben?**
+Die Antworten werden als Textdateien gespeichert unter:
+`benchmark_scores/debug_responses/<model>_<asset_id>.txt`
+
+Beispiel: `benchmark_scores/debug_responses/phi4_latest_reasoning_5d_001.txt`
+Inhalt:
+*   Score & Erklärung des Judges
+*   **Vollständige Modell-Antwort** (ungekürzt)
+

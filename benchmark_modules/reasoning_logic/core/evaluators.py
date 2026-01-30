@@ -16,8 +16,8 @@ from .constants import (
 )
 from .scorers.standard import score_similarity_fallback, score_standard_asset
 from .scorers.tier1_physics import score_5c_paradox
+from .scorers.tier2_expert import score_5e_nested_paradox
 from .scorers.tier2_systems import score_5b_complex, score_5d_deadlock
-from .scorers.tier2_systems_v2 import score_5c_multilayer, score_5d_subtle
 from .scorers.tier3_metacog import (
     score_metacog_001,
     score_metacog_002,
@@ -40,9 +40,8 @@ class ReasoningEvaluator:
         # Dispatcher Mapping
         self._scorers = {
             "reasoning_5c_001": score_5c_paradox,
-            "reasoning_5c_002": score_5c_multilayer,
             "reasoning_5d_001": score_5d_deadlock,
-            "reasoning_5d_002": score_5d_subtle,
+            "reasoning_5e_001": score_5e_nested_paradox,
             "reasoning_5b_001": score_5b_complex,
             "reasoning_metacog_001": score_metacog_001,
             "reasoning_metacog_002": score_metacog_002,
@@ -68,7 +67,49 @@ class ReasoningEvaluator:
             else:
                 input_text = self._strip_thinking_tags(response)
 
-            total_score, score_breakdown, details = handler(input_text)
+            # --- Feasibility Extraction for Hardened Scorers ---
+            # Assets 5d and 5e now require feasibility parameter
+            if asset_id in ["reasoning_5d_001", "reasoning_5e_001"]:
+                feasibility = self._extract_feasibility(input_text)
+                
+                # Call handle with feasibility
+                if asset_id == "reasoning_5e_001":
+                     # Expert Asset returns only (score, explanation) (int, str)
+                     # We need to adapt it to expected tuple(float, dict, list) format for consistency
+                     # OR update the call signature handling here.
+                     
+                     # Adapter for new signature (int, str) -> (float, dict, list)
+                     raw_score, expl = handler(input_text, feasibility)
+                     
+                     total_score = float(raw_score)
+                     details = [expl]
+                     # Mock breakdown since simple return doesn't have it
+                     score_breakdown = {
+                         "error_detection": total_score * 0.4,
+                         "solution_quality": total_score * 0.4,
+                         "consistency": total_score * 0.2
+                     }
+                elif asset_id == "reasoning_5d_001":
+                     # Deadlock Asset also updated to (int, str) signature in Step 2
+                     raw_score, expl = handler(input_text, feasibility)
+
+                     total_score = float(raw_score)
+                     details = [expl]
+                     score_breakdown = {
+                         "analysis": total_score
+                     }
+            else:
+                # Standard signature
+                if asset_id == "reasoning_5c_001":
+                    # Step 1 updated signature to (int, str)
+                    raw_score, expl = handler(input_text)
+                    total_score = float(raw_score)
+                    details = [expl]
+                    score_breakdown = {"logic": total_score}
+                else:
+                    # Legacy signature (float, dict, list)
+                    total_score, score_breakdown, details = handler(input_text)
+            
         elif (
             isinstance(expected_output, dict) and "required_findings" in expected_output
         ):
@@ -141,6 +182,51 @@ class ReasoningEvaluator:
     def parse_thought_tags(self, response: str) -> dict[str, Any]:
         """Expose parser for testing/external use."""
         return parse_thought_tags(response)
+
+    def _extract_feasibility(self, response: str) -> int:
+        """Extract feasibility rating from model response."""
+        import re
+        
+        # Try to find feasibility rating in response
+        patterns = [
+            # PRIORITY 1: Explicit formats (X/10)
+            r"(\d+)\s*/\s*10",                    # "0/10", "0 / 10"
+            r"(\d+)\s*out of 10",                 # "0 out of 10"
+            r"Feasibility:\s*(\d+)\s*/\s*10",     # "Feasibility: 0/10"
+            
+            # PRIORITY 2: Markdown & Labels (X without /10)
+            r"(?:^|\n)\*\*Feasibility:\s*(\d+)\*\*",  # "**Feasibility: 0**" (Markdown bold)
+            r"Feasibility:\s*(\d+)(?!\d)",        # "Feasibility: 0"
+            r"feasibility.*?:\s*(\d+)(?!\d)",     # "feasibility: 0" (case-insensitive)
+            
+            # PRIORITY 3: Loose/Contextual patterns (Fallback)
+            r'feasibility[:\s]+(\d+)',
+            r'feasibility assessment[:\s]+(\d+)',
+            
+            r'feasibility.*?(\d+)\s*/\s*10',  # "Feasibility... 3/10"
+            r'rate.*?(\d+)\s*/\s*10',         # "I rate this 2/10"
+            r'assess.*?(\d+)\s*/\s*10',       # "I assess: 1/10"
+            r'impossib.*feasibility[:\s]*(\d+)', # "impossible... feasibility: 0"
+        ]
+        
+        for pattern in patterns:
+            match = re.search(pattern, response, re.IGNORECASE | re.DOTALL)
+            if match:
+                try:
+                    rating = int(match.group(1))
+                    # Clamp to 0-10 range
+                    clamped = max(0, min(10, rating))
+                    
+                    return clamped
+                except (ValueError, IndexError):
+                    continue
+        
+        # ⚠️ BETTER DEFAULT: 7 instead of 5
+        # Rationale: If no explicit rating given, assume "optimistic but cautious"
+        # This prevents auto-fail on missing extraction
+        
+        return 7  # Changed from 5 to 7
+
 
 
 # ============================================================================

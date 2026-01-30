@@ -1,18 +1,27 @@
 # CrucibleMark - Projekt-Status & Architektur
 
-**System Version:** 0.9.9-beta
-**Module Version:** Reasoning v2.1, Core v1.0
+**System Version:** 0.9.10-beta
+**Module Version:** Reasoning v2.3, Core v1.0
 **Datum:** 30. Januar 2026
-**Status:** Beta Testing / Stability Hardening
+**Status:** Pre-Release Validation
 
 ---
 
 ## 🚧 Status Update (Jan 2026)
-Wir befinden uns in der **Beta-Phase (0.9.9)**.
-Der Fokus liegt auf Systemstabilität, Architekturbereinigung und dem Testen der neuen Reasoning-Module (v2.1).
+Wir befinden uns in der **Beta-Phase (0.9.10)**.
+Die Scorer-Logik wurde finalisiert und für den Produktionseinsatz gehärtet ("Phi4 Patch").
 
-1.  **✅ Reasoning v2.1**: Einführung von "Hard Mode" Assets (Adversarial Logic) und differenzierter 60/40 Gewichtung.
-2.  **✅ Golden Standard Hygiene**: Implementierung der strikten **Trial-and-Commit Strategie**.
+1.  **✅ Reasoning v2.3 (PATCHED)**: Scorer Robustheit & Leaderboard Logik.
+    *   **Tier Weighting**: Leaderboard berechnet nun korrekt (Expert=2.0x, Basic=1.0x).
+    *   **Regex Hardening**: Scorer erkennen nun "0/10" auch als "Feasibility: 0" (Phi4 Fix).
+    *   **Debug Mode**: Automatische Speicherung von Responses bei <30% Score.
+2.  **✅ Data Reset**: Reasoning-Ergebnisse wurden vollständig zurückgesetzt für sauberen v2.3 Lauf.
+3.  **✅ Reasoning v2.2 (FINAL)**: Anti-Ceiling Maßnahmen erfolgreich validiert.
+    *   **Ceiling Effect eliminiert**: Keine 100% Gesamtschnitt mehr (Mistral Large ~73%).
+    *   **Fixes**: Bidirektionale Negationserkennung (Asset 5c) & ID-Mapping korrigiert.
+    *   **Differenzierung**: Klare Hierarchie etabliert (Mistral > Gemma > Dolphin).
+4.  **✅ Golden Standard Hygiene**: Implementierung der strikten **Trial-and-Commit Strategie**.
+
     *   Keine automatischen Updates während Benchmarks.
     *   Explizites Update via `make generate-golden`.
     *   Dokumentation in `GOLDEN_STANDARD_CHANGELOG.md`.
