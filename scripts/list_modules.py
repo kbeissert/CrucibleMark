@@ -6,6 +6,12 @@ Lists all enabled modules from the configuration file.
 """
 
 from pathlib import Path
+import sys
+
+# Add root to sys.path
+sys.path.insert(0, str(Path(__file__).parent.parent))
+
+from utils.module_registry import get_active_modules # noqa: E402
 
 # pylint: disable=import-error
 import yaml
@@ -15,7 +21,7 @@ CONFIG_PATH = Path("benchmark_config.yaml")
 
 
 def main():
-    """Reads config and prints enabled modules."""
+    """Reads config and prints enabled modules (via Registry)."""
     if not CONFIG_PATH.exists():
         print("❌ benchmark_config.yaml not found at root.")
         return
@@ -24,16 +30,19 @@ def main():
         with open(CONFIG_PATH, "r", encoding="utf-8") as f:
             config = yaml.safe_load(f)
 
-        modules = config.get("modules", {})
-        enabled_modules = [(k, v) for k, v in modules.items() if v.get("enabled", True)]
+        print("\n📋 Checking Active Modules:")
+        active = get_active_modules(config)
+        
+        for i, (mod_id, meta, internal) in enumerate(active, 1):
+             metadata = internal.get("metadata", {})
+             name = metadata.get("name", meta.get("name", mod_id))
+             desc = metadata.get("description", meta.get("description", ""))
+             
+             print(f"  {i}. {mod_id}: {name}")
+             if desc:
+                 print(f"     -> {desc}")
 
-        # Sort by 'order' if available, else key
-        enabled_modules.sort(key=lambda x: x[1].get("order", 999))
-
-        for i, (key, data) in enumerate(enabled_modules, 1):
-            print(f"  {i}. {key}: {data.get('name', key)}")
-
-    except (OSError, yaml.YAMLError) as e:
+    except Exception as e:
         print(f"❌ Error reading config: {e}")
 
 

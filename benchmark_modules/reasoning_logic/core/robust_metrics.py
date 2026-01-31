@@ -3,7 +3,7 @@ Multi-layer metacognition evaluation framework.
 Provides robust, hybrid detection of cognitive skills.
 """
 
-from typing import Any, TypedDict
+from typing import TypedDict
 
 
 class CorrectionDetectionResult(TypedDict):

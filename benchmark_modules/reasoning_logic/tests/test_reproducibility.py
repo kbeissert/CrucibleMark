@@ -15,8 +15,8 @@ from pathlib import Path
 PROJECT_ROOT = Path(__file__).parents[3]
 sys.path.insert(0, str(PROJECT_ROOT))
 
-from benchmark_modules.reasoning_logic.core.evaluators import ReasoningEvaluator
-from benchmark_modules.reasoning_logic.core.validation_dataset import (
+from benchmark_modules.reasoning_logic.core.evaluators import ReasoningEvaluator  # noqa: E402
+from benchmark_modules.reasoning_logic.core.validation_dataset import (  # noqa: E402
     GROUND_TRUTH_DATASETS,
     validate_response_against_ground_truth,
 )
@@ -171,7 +171,7 @@ def test_non_gameable_scoring():
         keyword_stuffed, answer="8", expected_answer="9"
     )
     
-    print(f"\nResult:")
+    print("\nResult:")
     print(f"  Score: {result['score']:.0f}/40")
     print(f"  Layers matched: {result['layers_matched']}")
     
@@ -228,7 +228,7 @@ def test_consistency_across_runs():
         print(f"\n✅ PASS: Consistent scoring ({scores[0]:.1f} every time)")
         return True
     else:
-        print(f"\n❌ FAIL: Inconsistent scoring across runs!")
+        print("\n❌ FAIL: Inconsistent scoring across runs!")
         return False
 
 
@@ -248,7 +248,7 @@ if __name__ == "__main__":
         print("SUMMARY")
         print("="*70)
         print(f"✅ Ground Truth Reproducibility: {'PASS' if test1 else 'FAIL'}")
-        print(f"✅ Hybrid Metrics Evidence: PASS")
+        print("✅ Hybrid Metrics Evidence: PASS")
         print(f"✅ Non-Gameable Scoring: {'PASS' if test3 else 'FAIL'}")
         print(f"✅ Consistency: {'PASS' if test4 else 'FAIL'}")
         

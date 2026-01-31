@@ -23,7 +23,8 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 from utils.base_runner import BaseBenchmarkRunner  # noqa: E402
 from utils.module_loader import load_test_class  # noqa: E402
 from utils.benchmark_utils import select_from_list, discover_assets, load_asset_yaml  # noqa: E402
-from utils.llm_client import LLMClient
+from utils.llm_client import LLMClient  # noqa: E402
+from utils.module_registry import get_active_modules # noqa: E402
 
 try:
     from benchmark_modules.political_compass.core.io_manager import ResultManager
@@ -52,20 +53,22 @@ class CommercialBenchmarkRunner(BaseBenchmarkRunner):
         self._load_categories()
 
     def _load_categories(self):
-        """Loads benchmark categories from config."""
+        """Loads benchmark categories from config (Hydrated)."""
         self.benchmark_categories = {}
-        if "modules" in self.validator.config:
-            for key, mod in self.validator.config["modules"].items():
-                if mod.get("enabled", False):
-                    self.benchmark_categories[key] = {
-                        "name": mod["name"],
-                        "description": mod["description"],
-                        "path": f"{mod['path']}/assets",
-                        "module_path": mod["path"],
-                        "test_class": mod.get("test_class", "CodeQualityTest"),
-                        "execution_mode": mod.get("execution_mode", "standard"),
-                        "min_runs": mod.get("min_runs", 1),
-                    }
+        active_modules = get_active_modules(self.validator.config)
+        
+        for key, mod, internal in active_modules:
+            metadata = internal.get("metadata", {})
+            execution = internal.get("execution", {})
+            self.benchmark_categories[key] = {
+                "name": metadata.get("name", mod.get("name", key)),
+                "description": metadata.get("description", mod.get("description", "")),
+                "path": f"{mod['path']}/assets",
+                "module_path": mod["path"],
+                "test_class": execution.get("test_class", mod.get("test_class", "CodeQualityTest")),
+                "execution_mode": execution.get("execution_mode", mod.get("execution_mode", "standard")),
+                "min_runs": execution.get("min_runs", mod.get("min_runs", 1)),
+            }
 
     def get_available_providers(self) -> Dict[str, dict]:
         """Holt aktivierte kommerzielle Provider aus Config."""
@@ -277,6 +280,16 @@ class CommercialBenchmarkRunner(BaseBenchmarkRunner):
 
         # Build Standardized Result
         result = self.build_base_result(model, asset_data, score, exec_result, provider)
+
+        # ADDED: Granular Score Contribution
+        benchmarks_list = benchmark_info.get("benchmarks", [])
+        asset_cfg = next((b for b in benchmarks_list if b["id"] == result["asset_id"]), None)
+        
+        if asset_cfg and "score_contribution" in asset_cfg:
+            contrib = asset_cfg["score_contribution"]
+            score_base = result.get("percentage", 0.0)
+            result["routine_contribution"] = round(score_base * contrib.get("routine", 0.0), 2)
+            result["reasoning_contribution"] = round(score_base * contrib.get("reasoning", 0.0), 2)
 
         # Add Version/Fingerprint if available from API
         result["model_version"] = exec_result.get("metadata", {}).get("system_fingerprint", "unknown")

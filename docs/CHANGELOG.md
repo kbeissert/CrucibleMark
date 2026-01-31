@@ -5,6 +5,32 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.9.11] - 2026-01-31
+
+### Granular Scoring System (Architecture v3.0)
+
+**Release Date:** 2026-01-31
+**Status:** ✅ PRODUCTION-READY
+
+#### **Core Architecture Change**
+*   **Granular Score Contribution**: Introduced a new way to calculate "Routine" vs. "Reasoning" scores.
+    *   Previously: Entire modules were categorized (e.g., Code Quality = Routine).
+    *   Now: Each individual Benchmark Asset defines its contribution factor (0.0 - 1.0) for both scores.
+    *   Example: A complex security audit in `code_quality` validates 60% reasoning, while a linter check validates 100% routine.
+*   **Leaderboard Logic**: Updated `generate_leaderboard.py` to aggregate these granular contributions dynamically.
+*   **Documentation**: Added formal definitions for **Benchmark Complexity Tiers (1-3)** to `ARCHITECTURE.md` to standardize asset creation and RCI calculation.
+*   **Backward Compatibility**: Implemented fallback logic for legacy benchmark runs (uses module-level default).
+
+#### **Module Updates**
+*   **Code Quality**: Classified assets (WCAG=Routine, API Design=Reasoning/Mixed).
+*   **UX Writing**: Differentiated between simple Error Messages (Routine) and complex Onboarding Flows (Reasoning).
+*   **Reasoning Logic**: Confirmed 100% Reasoning contribution for puzzle assets.
+*   **Schema**: Updated `MODULE_SCHEMA_TEMPLATE.yaml` with `score_contribution` block.
+
+#### **Fixes**
+*   **Leaderboard**: Fixed a crash (`ValueError`) caused by empty strings in new contribution columns when processing mixed legacy/new data.
+*   **Workflow**: `make benchmark` now automatically triggers a leaderboard update.
+
 ## [0.9.10] - 2026-01-30
 
 ### Reasoning v2.3 - The "Phi4" Patch & Leaderboard Fix

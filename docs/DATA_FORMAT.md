@@ -41,6 +41,8 @@ Diese Dateien enthalten eine Zeile pro ausgeführtem Test-Asset. Die Spalten set
 | `max_score` | Integer | Maximal erreichbare Punktzahl für diesen Test (Standardisiert auf Integer, meist 100). |
 | `total_score` | Float | Tatsächlich erreichte Punktzahl (Raw Score). |
 | `percentage` | Float | Normalisierter Score auf 0-100 Skala. **Hauptmetrik für Vergleiche.** |
+| `routine_contribution` | Float | Beitrag dieses Ergebnisses zum globalen "Routine Score". (Neu in v3.0) |
+| `reasoning_contribution` | Float | Beitrag dieses Ergebnisses zum globalen "Reasoning Score". (Neu in v3.0) |
 
 ### Vergleichs-Metriken (Referenz)
 
@@ -52,20 +54,36 @@ Diese Dateien enthalten eine Zeile pro ausgeführtem Test-Asset. Die Spalten set
 ### Modul-Spezifische Spalten (Beispiele)
 Die CSV-Datei ist "dünn besetzt" (Sparse Table): Modul-spezifische Spalten sind nur in den Zeilen befüllt, die zum jeweiligen Modul gehören.
 
-*   **Code Quality:**
-    *   `error_detection`: Punktzahl für gefundene Fehler.
-    *   `formatting`: Einhaltung von Formatvorgaben.
-    *   `solution_quality`: Qualität der Lösung.
-*   **Cultural Intelligence:**
-    *   `Cultural Fit`: Bewertung der kulturellen Angemessenheit (DACH-Region).
-    *   `Language Proficiency`: Bewertung der Sprachbeherrschung.
-*   **Reasoning Logic:**
-    *   `consistency`: Prüft Konsistenz zwischen Reasoning-Schritten und Endergebnis.
-    *   `self_correction`: Hat das Modell Fehler selbst erkannt?
-    *   `thought_depth`: Tiefe der Argumentationskette.
-*   **Political Compass:**
-    *   `economic_score`: X-Achse (Ökonomisch).
-    *   `social_score`: Y-Achse (Sozial).
+### 🆕 Strukturierte Daten (Structured Metrics) – [Neu in v3.1]
+
+Ab Version 3.1 verwendet CrucibleMark das **BenchmarkResult Object Pattern**. Statt nur flache Zahlen zu speichern, wird ein komplexes Datenobjekt als JSON serialisiert in der Spalte `metrics_json` abgelegt.
+
+| Spalte | Typ | Beschreibung |
+| :--- | :--- | :--- |
+| `metrics_json` | JSON (String) | Enthält das vollständige strukturierte Ergebnis des Benchmarks. Module können hier beliebige komplexe Daten (Nested Objects, Arrays) ablegen. |
+
+**Warum?** 
+Dies ermöglicht "Schemaless Data Storage" innerhalb der CSV. Module wie der *Political Compass* speichern hier ihre Koordinaten, Labels und Extremismus-Flags, ohne dass das CSV-Schema ständig neue Spalten benötigt.
+
+**Beispiel Inhalt (metrics_json):**
+```json
+{
+  "coordinates": {"x": -4.05, "y": 1.20},
+  "labels": {"x": "Links", "y": "Libertär"},
+  "display": {
+    "ideology": "Links (-4.05)",
+    "stance": "Libertär (1.20)"
+  },
+  "extremism": {"is_extremist": false, "count": 0}
+}
+```
+
+Das Leaderboard (siehe Abschnitt 3) kann via **Dot-Notation** (`display.ideology`) direkt auf diese Werte zugreifen.
+
+### Veraltete Spalten (Legacy)
+In älteren Versionen wurden diese Werte plattgedrückt (Flat Columns). Dies wird weiterhin unterstützt, aber neue Module sollten `metrics_json` nutzen.
+*   `error_detection`, `formatting`, `solution_quality` (Code Quality)
+*   `economic_score`, `social_score` (Political Compass Legacy)
 
 ### ⚠️ Datenhaltung & Bereinigung
 Diese CSV-Dateien fungieren als **historische Datenbank** ("Append-Only Log").
@@ -96,6 +114,22 @@ Diese Datei aggregiert die Rohdaten pro Modell. Hier findet die **Berechnung der
 
 **Wichtig:** Das Leaderboard aggregiert nun nach **Modellname + Version**.
 *   `Mistral (v: a1b2)` und `Mistral (v: c3d4)` erscheinen als separate Zeilen.
+
+### Konfigurierbare Spalten (Data Binding)
+
+Neben den fixen Spalten (`Total Score`, `Avg Time`) können Module eigene Spalten definieren. Dank des neuen **Data Object Patterns** ist dies hochflexibel.
+
+Die Konfiguration erfolgt in `benchmark_modules/<module>/config.yaml`:
+
+```yaml
+columns:
+  - id: "my_custom_value"
+    label: "Meine Metrik"
+    # Zugriff via Dot-Notation auf metrics_json
+    key: "subcategory.detail_value" 
+```
+
+Dies erlaubt es dem Leaderboard, komplexe Daten (Strings, formatierte Werte) anzuzeigen, ohne dass das Leaderboard-Skript (`generate_leaderboard.py`) angepasst werden muss. Es agiert rein als **Data Viewer** für das strukturierte JSON-Objekt.
 
 ### Meta-Metriken
 
@@ -129,9 +163,9 @@ Die Schwellenwerte für diese Kategorien sind in `benchmark_config.yaml` unter `
 | 🏎️ | **Daily Driver** | Routine > 80% | **Das Arbeitstier.**<br>Zuverlässig bei Code, Text und Dokumentation. Schnell und solide. Ideal für Chat-Interaktion und Standard-Coding-Tasks. |
 | ⚖️ | **Standard** | (Rest) | **Der Durchschnitt.**<br>Solide Leistung, aber keine herausragenden Spitzenwerte in den definierten Kategorien. |
 
-> **Score-Gruppen:**
-> *   **Routine Score:** Durchschnitt aus Code Qual, UX Writing, Docs, Content, Cultural (Standard-Tasks).
-> *   **Reasoning Score:** Durchschnitt aus Logical Reasoning (Problemlösung).
+> **Score-Gruppen (ab v0.9.11 / v3.0 logic):**
+> *   **Routine Score:** Summe der granularen Routine-Contributions aller Assets / Anzahl Tests.
+> *   **Reasoning Score:** Summe der granularen Reasoning-Contributions aller Assets / Anzahl Tests.
 
 **Konfiguration anpassen:**
 Sie können die Grenzwerte an Ihre Bedürfnisse anpassen. Editieren Sie dazu `benchmark_config.yaml`:

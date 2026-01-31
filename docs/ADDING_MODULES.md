@@ -49,7 +49,122 @@ touch benchmark_modules/your_module/{__init__.py,test.py,config.yaml,README.md}
 touch benchmark_modules/your_module/core/{__init__.py,evaluators.py,constants.py}
 ```
 
-### 2. Die Logic (`core/evaluators.py`)
+### 2. Konfiguration (`config.yaml`) - SSOT v3.1
+
+Definiere Metadaten und Leaderboard-Verhalten nach dem neuen **Kaskadierenden Scoring-Modell**.
+
+> **⚠️ WICHTIG: Globale vs. Lokale Konfiguration**
+> Die `config.yaml` ist in zwei Bereiche unterteilt:
+> 1.  **GLOBAL (Mandatory):** Die Blöcke `metadata`, `integration` und `execution`. Diese werden vom zentralen Runner benötigt und **müssen** vorhanden sein.
+> 2.  **LOKAL (Optional):** Modulentwickler können beliebige eigene Blöcke (z.B. `config`, `parameters`, `interpretation`) hinzufügen. Diese werden vom Framework ignoriert und stehen nur der lokalen `test.py` zur Verfügung.
+
+```yaml
+metadata:
+  id: "your_module"
+  name: "Your Module Name"
+  version: "1.0.0"
+  description: "..."
+  
+integration:
+  leaderboard:
+    enable_scoring: true   # Setze 'false' für reine Info-Module (z.B. Political Compass)
+
+execution:
+  test_class: "CodeQualityTest"     # Name der Klasse in test.py
+  execution_mode: "standard"        # "standard" (pro Asset) oder "batch" (alle Assets auf einmal)
+  assets_dir: "assets"
+
+    # Fallback-Strategie: Gilt für alle Assets, die keine direkte Definition haben
+    default_contribution:
+      routine: 1.0        # Standard für dieses Modul (z.B. 100% Routine)
+      reasoning: 0.0      
+
+    columns:
+      - id: "your_score"
+        label: "Your Score"
+```
+
+### ⚙️ Execution Modes
+
+*   **`standard` (Default):** Der Runner lädt Assets einzeln und instanziiert den Test für jedes Asset neu. Ideal für isolierte Unit-Tests (z.B. Code Quality, Reasoning).
+*   **`batch`:** Der Runner lädt *alle* Assets auf einmal und übergibt das Verzeichnis an die Test-Klasse. Die Test-Klasse kontrolliert den Loop über die Assets. Ideal für Module, die Zustände über mehrere Fragen hinweg halten müssen oder eigene Looping-Strategien (z.B. 3x Wiederholung aller Fragen beim Political Compass) verfolgen.
+
+# 🆕 Kaskadierendes Scoring (Management by Exception)
+benchmarks:
+  # Fall A: Standard (Erbt default_contribution: Routine 1.0)
+  - id: "your_module_001"
+    name: "Standard Task"
+    tier: 1
+
+  # Fall B: Ausnahme (Überschreibt Default)
+  - id: "your_module_002"
+    name: "Complex Puzzle"
+    tier: 3
+    score_contribution:
+      routine: 0.2    # Ein bisschen Routine (Formatting)
+      reasoning: 0.8  # Hauptsächlich Logik
+```
+
+### 🧠 Das Konzept der Kaskadierung
+
+Um Redundanz und Fehler zu vermeiden, folgt die Config einer strikten Hierarchie:
+
+1.  **Granulares Asset-Level (Höchste Priorität):**
+    Wenn ein Benchmark (unter `benchmarks:`) ein `score_contribution` Feld hat, gelten exakt diese Werte. Nutze dies für Ausnahmen (z.B. ein Logik-Rätsel in einem sonstigen Routine-Modul).
+
+2.  **Modul-Level Default (Fallback):**
+    Wenn ein Benchmark *keine* Werte definiert, greift `integration.leaderboard.default_contribution`.
+    Das spart Tipparbeit: Definiere oben einmal den Standard (z.B. 100% Reasoning) und lasse die Felder in den Assets leer.
+
+3.  **Globales Scoring (An/Aus):**
+    Mit `enable_scoring: false` schaltest du das Modul komplett aus der *Total Score* Berechnung aus (ideal für rein informative Module oder Anomalie-Erkennung). Die Ergebnis-Spalte bleibt im Leaderboard aber sichtbar. 
+
+### ℹ️ Spezialfall: Info-Module (Anomalie-Module)
+
+Es gibt Module, die **keine Leistung bewerten** (gut/schlecht), sondern **Eigenschaften messen** (z.B. politische Ausrichtung, Antwort-Latenz, Halluzinations-Rate). Diese werden als **"Anomalie-Module"** behandelt.
+
+Setze hierfür einfach:
+```yaml
+integration:
+  leaderboard:
+    enable_scoring: false
+```
+
+**Wann ist ein Modul "Info"?**
+*   Es gibt kein "Richtig" oder "Falsch" (nur Koordinaten, Zeit, Anzahl).
+*   Das Modul soll **NICHT** in den Routine- oder Reasoning-Score einfließen.
+
+**Konfiguration (Unterschiede zum Standard):**
+```yaml
+integration:
+  leaderboard:
+    enable_scoring: false  # Modul zählt nicht zum Gesamt-Score
+    
+    columns:
+      # Option 1: Standard (Manuell oder via Score)
+      - id: "measure_a"
+        label: "Einfacher Wert"
+        weight: 0.0      
+
+      # Option 2: Data Object Access (Structured Data)
+      # Greift auf das interne JSON-Datenobjekt zu (Best Practice!)
+      - id: "measure_b"
+        label: "Komplexe Daten"
+        type: "label"
+        source:
+          file: "your_module_results.csv"        # Dateiname in benchmark_scores/
+          filter: { "run_id": "AVG" }            # Filter: Zeile wählen
+          key: "display.ideology"                # Pfad im JSON-Datenobjekt (dot.notation)
+          missing_value: "Ausstehend"            # Fallback
+```
+
+**Erklärung Data Object Access:**
+Anstatt Werte mühsam im Framework zusammenzubauen (String Interpolation), speichert das Modul ein **strukturiertes Datenobjekt** in der Spalte `metrics_json`.
+Das Leaderboard greift via `key` direkt auf die vorbereiteten Werte zu (z.B. `display.ideology` oder `raw.count`).
+Das verlagert die Formatierungs-Logik sauber zurück ins Modul (Transformer).
+
+
+### 3. Die Logic (`core/evaluators.py`)
 
 Zuerst implementieren wir **nur** die Bewertunglogik. Sie sollte nichts von LLMs oder API-Calls wissen.
 

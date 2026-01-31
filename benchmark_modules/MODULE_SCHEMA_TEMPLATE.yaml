@@ -1,0 +1,75 @@
+# CrucibleMark Module Configuration Schema
+# ==========================================
+# This file defines the standard structure for all benchmark modules.
+# Use this structure when creating or refactoring modules.
+
+metadata:
+  # Unique identifier for the module (should match directory name)
+  id: "example_module"
+  # Human-readable name for UI and logs
+  name: "Example Module Name"
+  # Semantic Versioning
+  version: "1.0.0"
+  # Brief description of what this module tests
+  description: "Description of the module capabilities."
+  # Author/Maintainer
+  author: "CrucibleMark"
+  # Tags for filtering and searching
+  tags:
+    - tag1
+    - tag2
+
+integration:
+  # Leaderboard Generation Configuration
+  leaderboard:
+    # Which group does this contribute to? (routine, reasoning, info, none)
+    score_group: "routine"
+    # Column definitions for the generated CSV
+    columns:
+      - id: "example_score"       # Key in the result dictionary (output of test.py)
+        label: "Example Score"    # Header name in the CSV
+        weight: 1.0               # Weight for aggregation (default: 1.0)
+        format: "{:.1f}"          # Optional: Python format string
+      
+      - id: "sub_metric"
+        label: "Sub Metric"
+        weight: 0.5
+        hidden: true              # If true, calculated but maybe not shown in main summary
+
+  # Thresholds for Badges (optional, if module specific)
+  thresholds:
+    min_passing: 60.0
+
+execution:
+  # Python class name to instantiate (must inherit from BaseTest)
+  test_class: "ExampleTest"
+  # Directory containing asset files (relative to module root)
+  assets_dir: "assets"
+  # Expected number of assets (for progress bars / completion checks)
+  assets_count: 5
+  # Timeout per asset in seconds
+  timeout: 120
+
+benchmarks:
+  # List of all benchmark assets in this module and their contribution to meta-scores
+  - id: "benchmark_asset_id"          # e.g. "wcag_audit" (matches metadata.id in YAML asset)
+    name: "Human-readable name"
+    tier: 1                            # Difficulty tier (1-4)
+    score_contribution:
+      routine: 1.0      # 0.0 - 1.0 (0% - 100%) -> How much of the score counts as Routine
+      reasoning: 0.0    # 0.0 - 1.0 -> How much of the score counts as Reasoning
+
+
+# Module-Specific Internal Configuration
+# ---------------------------------------
+# Everything below is read only by the module's own code (test.py / evaluators.py)
+config:
+  categories:
+    cat1:
+      weight: 0.5
+    cat2:
+      weight: 1.5
+  
+  prompts:
+    system_prompt_template: "You are..."
+

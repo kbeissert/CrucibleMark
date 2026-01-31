@@ -4,15 +4,13 @@ Test script to validate the stricter METACOG scoring with realistic Dolphin resp
 """
 
 import sys
-import yaml
 from pathlib import Path
 
 # Add project root to path (3 levels up)
 PROJECT_ROOT = Path(__file__).parents[3]
 sys.path.insert(0, str(PROJECT_ROOT))
 
-from benchmark_modules.reasoning_logic.test import ReasoningLogicTest
-from benchmark_modules.reasoning_logic.core.evaluators import ReasoningEvaluator
+from benchmark_modules.reasoning_logic.test import ReasoningLogicTest  # noqa: E402
 
 print("=" * 70)
 print("🧪 STRICTER METACOG SCORING TEST")
@@ -46,12 +44,12 @@ if isinstance(result1, tuple):
     score, breakdown, details = result1
     print(f"✅ Score: {score}/100")
     print(f"   Breakdown: {breakdown}")
-    print(f"   Expected: ~30 (only output correctness)")
+    print("   Expected: ~30 (only output correctness)")
     print(f"   Details: {details}")
 else:
     print(f"✅ Score: {result1.get('total_score', 0)}/100")
     print(f"   Breakdown: {result1.get('breakdown', {})}")
-    print(f"   Expected: ~30 (only output correctness)")
+    print("   Expected: ~30 (only output correctness)")
 
 print("\n" + "=" * 70)
 print("TEST 2: METACOG_001 with minimal thought tags (< 20 words)")
@@ -65,18 +63,18 @@ response2 = """<thought>
 Answer: 9 sheep"""
 
 result2 = test.score_response(response2)
-print(f"\nResponse with minimal thought (9 words)")
+print("\nResponse with minimal thought (9 words)")
 
 if isinstance(result2, tuple):
     score, breakdown, details = result2
     print(f"✅ Score: {score}/100")
     print(f"   Breakdown: {breakdown}")
-    print(f"   Expected: ~30-35 (output + minimal linguistic)")
+    print("   Expected: ~30-35 (output + minimal linguistic)")
     print(f"   Details: {details}")
 else:
     print(f"✅ Score: {result2.get('total_score', 0)}/100")
     print(f"   Breakdown: {result2.get('breakdown', {})}")
-    print(f"   Expected: ~30-35 (output + minimal linguistic)")
+    print("   Expected: ~30-35 (output + minimal linguistic)")
 
 print("\n" + "=" * 70)
 print("TEST 3: METACOG_001 with detailed thought but no self-correction")
@@ -90,18 +88,18 @@ Let me work through this step by step. The farmer has 17 sheep. The phrase "all 
 Answer: 9 sheep"""
 
 result3 = test.score_response(response3)
-print(f"\nResponse with 50+ word thought (no self-correction keywords)")
+print("\nResponse with 50+ word thought (no self-correction keywords)")
 
 if isinstance(result3, tuple):
     score, breakdown, details = result3
     print(f"✅ Score: {score}/100")
     print(f"   Breakdown: {breakdown}")
-    print(f"   Expected: ~70-75 (30 output + 30 linguistic + 20 partial)")
+    print("   Expected: ~70-75 (30 output + 30 linguistic + 20 partial)")
     print(f"   Details: {details}")
 else:
     print(f"✅ Score: {result3.get('total_score', 0)}/100")
     print(f"   Breakdown: {result3.get('breakdown', {})}")
-    print(f"   Expected: ~70-75 (30 output + 30 linguistic + 20 partial)")
+    print("   Expected: ~70-75 (30 output + 30 linguistic + 20 partial)")
 
 print("\n" + "=" * 70)
 print("TEST 4: METACOG_002 with NO thought tags (Dolphin typical)")
@@ -124,12 +122,12 @@ if isinstance(result4, tuple):
     score, breakdown, details = result4
     print(f"✅ Score: {score}/100")
     print(f"   Breakdown: {breakdown}")
-    print(f"   Expected: ~0 (Dolphin accepted the false premise!)")
+    print("   Expected: ~0 (Dolphin accepted the false premise!)")
     print(f"   Details: {details}")
 else:
     print(f"✅ Score: {result4.get('total_score', 0)}/100")
     print(f"   Breakdown: {result4.get('breakdown', {})}")
-    print(f"   Expected: ~0 (Dolphin accepted the false premise!)")
+    print("   Expected: ~0 (Dolphin accepted the false premise!)")
 
 print("\n" + "=" * 70)
 print("TEST 5: METACOG_002 with proper premise rejection")
@@ -143,18 +141,18 @@ This question assumes the sky is green, which is incorrect. The sky is not green
 Answer: The sky is not green. It is blue due to Rayleigh scattering of shorter wavelengths."""
 
 result5 = test2.score_response(response5)
-print(f"\nResponse with proper premise rejection")
+print("\nResponse with proper premise rejection")
 
 if isinstance(result5, tuple):
     score, breakdown, details = result5
     print(f"✅ Score: {score}/100")
     print(f"   Breakdown: {breakdown}")
-    print(f"   Expected: ~95-100 (all dimensions)")
+    print("   Expected: ~95-100 (all dimensions)")
     print(f"   Details: {details}")
 else:
     print(f"✅ Score: {result5.get('total_score', 0)}/100")
     print(f"   Breakdown: {result5.get('breakdown', {})}")
-    print(f"   Expected: ~95-100 (all dimensions)")
+    print("   Expected: ~95-100 (all dimensions)")
 
 print("\n" + "=" * 70)
 print("✅ ALL TESTS COMPLETED - Check console output for debug info")

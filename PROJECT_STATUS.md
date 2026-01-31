@@ -8,8 +8,20 @@
 ---
 
 ## 🚧 Status Update (Jan 2026)
-Wir befinden uns in der **Beta-Phase (0.9.10)**.
-Die Scorer-Logik wurde finalisiert und für den Produktionseinsatz gehärtet ("Phi4 Patch").
+Wir befinden uns in der **Beta-Phase (0.9.11)**.
+
+### ✅ Framework Hardening (Phase 1, 2 & 3 completed)
+Das modulare Fundament wurde vollständig umgebaut und stabilisiert.
+
+1.  **Granular Scoring (v3.0 Architecture)**:
+    *   Einführung von **Asset-Level Contributions** für Routine/Reasoning Scores.
+    *   Ermöglicht "gemischte" Module (z.B. Security Audits mit hohem Reasoning-Anteil im Code-Modul).
+    *   Volle Rückwärtskompatibilität für alte Benchmark-Runs.
+2.  **Inversion of Control**: Leaderboard generiert Spalten nun dynamisch basierend auf aktivierten Modulen.
+3.  **Automation**: `make benchmark` aktualisiert nun automatisch Reports.
+
+### Vorherige Updates
+Der Scorer-Logik wurde finalisiert und für den Produktionseinsatz gehärtet ("Phi4 Patch").
 
 1.  **✅ Reasoning v2.3 (PATCHED)**: Scorer Robustheit & Leaderboard Logik.
     *   **Tier Weighting**: Leaderboard berechnet nun korrekt (Expert=2.0x, Basic=1.0x).

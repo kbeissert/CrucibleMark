@@ -1,7 +1,5 @@
 
 import pandas as pd
-import json
-import glob
 from pathlib import Path
 
 LEADERBOARD_CSV = "benchmark_scores/benchmark_leaderboard.csv"
@@ -42,8 +40,10 @@ def check_asset_saturation():
     print(f"\n--- {colors('Checking Asset Saturation (100% Scores)', 'yellow')} ---")
     
     dfs = []
-    if Path(LOCAL_CSV).exists(): dfs.append(pd.read_csv(LOCAL_CSV))
-    if Path(COMMERCIAL_CSV).exists(): dfs.append(pd.read_csv(COMMERCIAL_CSV))
+    if Path(LOCAL_CSV).exists():
+        dfs.append(pd.read_csv(LOCAL_CSV))
+    if Path(COMMERCIAL_CSV).exists():
+        dfs.append(pd.read_csv(COMMERCIAL_CSV))
     
     if not dfs:
         print("No benchmark CSVs found.")

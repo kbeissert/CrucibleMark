@@ -7,7 +7,7 @@ Dieses Dokument beschreibt das **Hybride Klassifizierungs-System** von CrucibleM
 Der RCI ist die zentrale Metrik zur Bewertung der kognitiven Tiefe eines Modells. Er reicht von **0% bis 100%**.
 
 ### Berechnung
-Der Score setzt sich aus zwei Faktoren zusammen:
+Der Score setzt sich aus zwei Faktoren zusammen (siehe [Benchmark Complexity Tiers](ARCHITECTURE.md#benchmark-complexity-tiers) für Details):
 1.  **Operationale Logik (60%)**: Kann das Modell komplexe Rätsel lösen? (Tier 1 & 2)
 2.  **Metakognition (40%)**: Reflektiert das Modell über seinen eigenen Denkprozess? (Tier 3)
 

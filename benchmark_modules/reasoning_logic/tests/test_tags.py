@@ -9,7 +9,7 @@ from pathlib import Path
 PROJECT_ROOT = Path(__file__).parents[3]
 sys.path.insert(0, str(PROJECT_ROOT))
 
-from benchmark_modules.reasoning_logic.core.evaluators import ReasoningEvaluator
+from benchmark_modules.reasoning_logic.core.evaluators import ReasoningEvaluator  # noqa: E402
 
 # Load asset (using dynamic path)
 asset_path = PROJECT_ROOT / 'benchmark_modules/reasoning_logic/assets/reasoning_metacog_001.yaml'

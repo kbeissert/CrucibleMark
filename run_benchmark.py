@@ -20,8 +20,6 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Optional
 
-import yaml
-
 from utils.model_utils import (
     get_ollama_models_info,
     resolve_provider,
@@ -29,6 +27,8 @@ from utils.model_utils import (
 from utils.module_loader import load_test_class
 from utils.benchmark_utils import select_from_list
 from utils.similarity import SemanticSimilarity
+from utils.config_validator import ConfigValidator
+from utils.module_registry import load_module_config, get_active_modules
 
 # Configure logging
 logging.basicConfig(
@@ -64,31 +64,38 @@ class BenchmarkRunConfig:
     num_runs: int = 1
 
 
+import subprocess
+
 class BenchmarkRunner:
     """Globaler Benchmark-Runner mit dynamischem Modul-Loading."""
 
     def __init__(self, config_path: str = DEFAULT_CONFIG_PATH):
         self.config_path = Path(config_path)
-        self.config = self._load_config()
+        # Use centralized config validation
+        self.validator = ConfigValidator(config_path)
+        self.config = self.validator.config
 
         # Check for optional dependencies at startup
         SemanticSimilarity.check_availability()
 
-    def _load_config(self) -> dict[str, Any]:
-        """Lädt zentrale Benchmark-Konfiguration."""
-        if not self.config_path.exists():
-            raise FileNotFoundError(f"Config nicht gefunden: {self.config_path}")
-
-        with open(self.config_path, "r", encoding="utf-8") as f:
-            return yaml.safe_load(f) or {}
-
     def get_enabled_modules(self) -> dict[str, Any]:
-        """Gibt alle aktivierten Module zurück."""
-        return {
-            name: config
-            for name, config in self.config.get("modules", {}).items()
-            if config.get("enabled", True)
-        }
+        """Gibt alle aktivierten Module zurück, angereichert mit Metadaten (SSOT)."""
+        active_list = get_active_modules(self.config)
+        result = {}
+        for mod_id, meta, internal_config in active_list:
+            # Merge: Registry config (path) + Internal metadata (Name, Desc)
+            merged = meta.copy()
+            # Module config's 'metadata' block overrides/supplements
+            merged.update(internal_config.get("metadata", {}))
+            # Module config's 'execution' block overrides/supplements (test_class, etc)
+            merged.update(internal_config.get("execution", {}))
+            
+            # Ensure name defaults to ID if missing
+            if "name" not in merged:
+                merged["name"] = mod_id.replace("_", " ").title()
+
+            result[mod_id] = merged
+        return result
 
     def select_module(
         self, module_name: Optional[str] = None
@@ -293,6 +300,16 @@ class BenchmarkRunner:
             print(f"\n>>> Running Module: {module_config['name']}")
             self._run_benchmark(module_config, model_id, provider, run_config.num_runs)
 
+        # Leaderboard Update
+        if modules_to_run:
+            print("\n📊 Aktualisiere Leaderboard...")
+            try:
+                subprocess.run([sys.executable, "scripts/generate_leaderboard.py"], check=True)
+            except subprocess.CalledProcessError:
+                print("⚠️ Fehler beim Aktualisieren des Leaderboards.")
+            except Exception as e:
+                print(f"⚠️ Unerwarteter Fehler: {e}")
+
     def _run_benchmark(
         self,
         module_config: dict[str, Any],
@@ -312,6 +329,9 @@ class BenchmarkRunner:
         print(f"Runs: {num_runs}")
         print(f"{'=' * 60}\n")
 
+        # Load internal module config to get benchmarks/contributions
+        internal_config = load_module_config(Path(module_config['path']))
+
         benchmark_info = {
             "name": module_config["name"],
             "path": f"{module_config['path']}/assets",
@@ -319,6 +339,7 @@ class BenchmarkRunner:
             "test_class": module_config.get("test_class", "CodeQualityTest"),
             "execution_mode": module_config.get("execution_mode", "standard"),
             "min_runs": module_config.get("min_runs", 1),
+            "benchmarks": internal_config.get("benchmarks", []),
         }
 
         if is_local:

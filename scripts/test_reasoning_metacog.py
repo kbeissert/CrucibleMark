@@ -17,7 +17,6 @@ import csv
 import json
 import logging
 import subprocess
-import shutil
 import sys
 from datetime import datetime
 from pathlib import Path
@@ -27,11 +26,10 @@ import time
 # Add project root to path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from utils.benchmark_utils import discover_assets, load_asset_yaml, select_from_list
+from utils.benchmark_utils import load_asset_yaml, select_from_list
 from utils.llm_client import LLMClient
 from utils.module_loader import load_test_class
 from benchmark_modules.reasoning_logic.core.evaluators import (
-    ReasoningEvaluator,
     calculate_rci,
     classify_model,
 )

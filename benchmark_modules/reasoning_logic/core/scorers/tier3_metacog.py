@@ -19,6 +19,23 @@ from ..structure_analysis import (
 )
 
 
+# Define constants for Magic Numbers
+SELF_CORRECTION_SCORE = 40.0
+LINGUISTIC_ANALYSIS_SCORE = 30.0
+OUTPUT_CORRECTNESS_SCORE = 30.0
+PREMISE_CHALLENGE_SCORE = 50.0
+FACTUAL_CORRECTION_SCORE = 30.0
+THOUGHT_QUALITY_SCORE = 20.0
+ALTERNATIVE_EXPLORATION_SCORE = 40.0
+THOUGHT_QUALITY_THRESHOLD = 30
+ALTERNATIVE_EXPLORATION_THRESHOLD = 2
+THOUGHT_DEPTH_HIGH_THRESHOLD = 50
+THOUGHT_DEPTH_MEDIUM_THRESHOLD = 25
+CALCULATION_CORRECTNESS_LOWER = 48
+CALCULATION_CORRECTNESS_UPPER = 51
+LOGICAL_CORRECTNESS_SCORE = 30.0
+THOUGHT_DEPTH_SCORE = 30.0
+
 def score_metacog_001(response: str) -> tuple[float, dict[str, Any], list[str]]:
     """Tier 3: Asset METACOG_001 - The Sheep Trap (Self-Correction).
 
@@ -42,7 +59,7 @@ def score_metacog_001(response: str) -> tuple[float, dict[str, Any], list[str]]:
         answer=parsed["answer_content"],
         expected_answer="9",
     )
-    breakdown["self_correction"] = correction_result["score"]
+    breakdown["self_correction"] = SELF_CORRECTION_SCORE if correction_result["score"] else 0.0
     details.extend(correction_result["evidence"])
 
     # 2. Linguistic Analysis (30 pts) - OBJECTIVE CRITERIA
@@ -51,7 +68,9 @@ def score_metacog_001(response: str) -> tuple[float, dict[str, Any], list[str]]:
         answer=parsed["answer_content"],
         phrase="all but 9",
     )
-    breakdown["linguistic_analysis"] = linguistic_result["score"]
+    breakdown["linguistic_analysis"] = (
+        LINGUISTIC_ANALYSIS_SCORE if linguistic_result["score"] else 0.0
+    )
     details.extend(linguistic_result["evidence"])
 
     # 3. Output Correctness (30 pts) - FIX: Check last numeric token
@@ -61,7 +80,7 @@ def score_metacog_001(response: str) -> tuple[float, dict[str, Any], list[str]]:
     final_number = numbers[-1] if numbers else None
 
     if final_number == "9":
-        breakdown["output_correctness"] = 30.0
+        breakdown["output_correctness"] = OUTPUT_CORRECTNESS_SCORE
         details.append("✅ Output: Correct answer (9).")
     else:
         breakdown["output_correctness"] = 0.0
@@ -73,6 +92,99 @@ def score_metacog_001(response: str) -> tuple[float, dict[str, Any], list[str]]:
     total_score = sum(breakdown.values())
 
     return total_score, breakdown, details
+
+
+def _detect_premise_challenge(combined: str) -> bool:
+    """Helper: Checks if the model challenges the false premise."""
+    strong_phrases = [
+        "the question asks about a green sky",
+        "the premise is that the sky is green",
+        "the question assumes a green sky",
+        "the question assumes the sky is green",
+        "question is based on a false premise",
+        "based on a false assumption",
+        "the premise is false",
+        "this premise is wrong",
+        "false premise",
+        "incorrect premise",
+        "wrong assumption",
+        "the assumption is false",
+        "the setup is wrong",
+        "question assumes",
+        "assumption that",
+        "sky is not green",
+        "there is no such thing",
+    ]
+
+    has_strong_phrase = any(p in combined for p in strong_phrases)
+
+    has_concept_premise = contains_any(
+        combined, ["premise", "assumption", "hypothesis"]
+    )
+    has_concept_negation = contains_any(
+        combined, ["false", "incorrect", "wrong", "not true", "flawed"]
+    )
+    has_split_logic = has_concept_premise and has_concept_negation
+
+    return has_strong_phrase or has_split_logic
+
+
+def _check_physics_presence(combined: str) -> bool:
+    """Helper: Checks for physics keywords."""
+    has_rayleigh = "rayleigh" in combined
+    has_wavelength = "wavelength" in combined
+    has_shorter = contains_any(
+        combined, ["shorter", "short", "blue light"]
+    )
+    return has_rayleigh or (has_wavelength and has_shorter)
+
+
+def _evaluate_factual_correction(
+    answer: str, combined: str, has_physics_explanation: bool
+) -> tuple[float, str]:
+    """Helper: Evaluates physics explanation for blue sky."""
+    has_blue = "blue" in answer
+    has_scatter_generic = contains_any(
+        combined, ["scatter", "scattering"]
+    )
+
+    if has_blue and has_physics_explanation:
+        return (
+            FACTUAL_CORRECTION_SCORE,
+            "✅ Factual Correction: Sky is blue with physics explanation.",
+        )
+    if has_blue and has_scatter_generic:
+        return (
+            20.0,
+            "⚠️ Partial: States sky is blue with generic scatter mention.",
+        )
+    if has_blue:
+        return 15.0, "⚠️ Minimal: States sky is blue but no explanation."
+
+    return 0.0, "❌ Factual Correction: Missing or incorrect fact."
+
+
+def _evaluate_thought_quality(
+    parsed: dict[str, Any], has_physics_explanation: bool
+) -> tuple[float, str]:
+    """Helper: Evaluates reasoning depth."""
+    has_substantial_thought = (
+        parsed["has_thought_tags"] and parsed["thought_length"] > 30
+    )
+
+    if has_substantial_thought and has_physics_explanation:
+        return (
+            THOUGHT_QUALITY_SCORE,
+            f"✅ Thought Quality: Substantial reasoning with physics "
+            f"({parsed['thought_length']} words).",
+        )
+    if has_substantial_thought:
+        return (
+            10.0,
+            f"⚠️ Thought Quality: Some reasoning but shallow physics "
+            f"({parsed['thought_length']} words).",
+        )
+    return 0.0, "❌ Thought Quality: Insufficient reasoning shown."
 
 
 def score_metacog_002(response: str) -> tuple[float, dict[str, Any], list[str]]:
@@ -97,57 +209,14 @@ def score_metacog_002(response: str) -> tuple[float, dict[str, Any], list[str]]:
     thought = parsed["thought_content"].lower()
     combined = (answer + " " + thought).lower()
 
-    # 1. Premise Challenge (50 pts) - EXPANDED PATTERNS FOR ROBUSTNESS
-    # Must EXPLICITLY identify that the question's premise is wrong 
-    # (using flexible matching for various phrasing styles)
-    
-    # A. Contiguous phrases (Strong indicators)
-    strong_phrases = [
-        "the question asks about a green sky",
-        "the premise is that the sky is green",
-        "the question assumes a green sky",
-        "the question assumes the sky is green",
-        "question is based on a false premise",
-        "based on a false assumption",
-        "the premise is false",
-        "this premise is wrong",
-        "false premise",
-        "incorrect premise",
-        "wrong assumption",
-        "the assumption is false",
-        "the setup is wrong",
-        "question assumes",
-        "assumption that",
-        "sky is not green",
-        "there is no such thing",
-    ]
-    
-    has_strong_phrase = any(p in combined for p in strong_phrases)
-
-    # B. Split concepts (Logic: "premise/assumption" + "false/wrong/incorrect")
-    # Allows for: "The assumption made in the question is clearly incorrect"
-    has_concept_premise = (
-        "premise" in combined 
-        or "assumption" in combined 
-        or "hypothesis" in combined
-    )
-    has_concept_negation = (
-        "false" in combined 
-        or "incorrect" in combined 
-        or "wrong" in combined 
-        or "not true" in combined 
-        or "flawed" in combined
-    )
-    has_split_logic = has_concept_premise and has_concept_negation
-
-    # Combine signals
-    has_premise_challenge = has_strong_phrase or has_split_logic
+    # 1. Premise Challenge (50 pts)
+    has_premise_challenge = _detect_premise_challenge(combined)
 
     if has_premise_challenge and "blue" in answer:
-        breakdown["premise_challenge"] = 50.0
+        breakdown["premise_challenge"] = PREMISE_CHALLENGE_SCORE
         details.append(
             "✅ Premise Challenge: Explicitly identified false premise "
-            "about green sky.",
+            "about green sky."
         )
     else:
         breakdown["premise_challenge"] = 0.0
@@ -155,59 +224,22 @@ def score_metacog_002(response: str) -> tuple[float, dict[str, Any], list[str]]:
             "❌ Premise Challenge: Did not explicitly identify false premise.",
         )
 
-    # 2. Factual Correction (30 pts) - REQUIRE REAL PHYSICS EXPLANATION
-    has_blue = "blue" in answer
-    has_rayleigh = "rayleigh" in combined
-    has_wavelength = "wavelength" in combined
-    has_shorter = (
-        "shorter" in combined
-        or "short" in combined
-        or "blue light" in combined
+    # 2. Factual Correction (30 pts)
+    # Calculate physics explanation once to reuse in Step 2 and Step 3
+    has_physics_explanation = _check_physics_presence(combined)
+
+    fc_score, fc_detail = _evaluate_factual_correction(
+        answer, combined, has_physics_explanation
     )
-    has_scatter_generic = "scatter" in combined or "scattering" in combined
-
-    # Require EITHER Rayleigh OR (Wavelength + Context)
-    has_physics_explanation = has_rayleigh or (has_wavelength and has_shorter)
-
-    if has_blue and has_physics_explanation:
-        breakdown["factual_correction"] = 30.0
-        details.append(
-            "✅ Factual Correction: Sky is blue with physics explanation.",
-        )
-    elif has_blue and has_scatter_generic:
-        # Partial credit: Generic scatter mention is better than nothing
-        # but not real physics
-        breakdown["factual_correction"] = 20.0
-        details.append(
-            "⚠️ Partial: States sky is blue with generic scatter mention.",
-        )
-    elif has_blue:
-        breakdown["factual_correction"] = 15.0
-        details.append("⚠️ Minimal: States sky is blue but no explanation.")
-    else:
-        breakdown["factual_correction"] = 0.0
-        details.append("❌ Factual Correction: Missing or incorrect fact.")
+    breakdown["factual_correction"] = fc_score
+    details.append(fc_detail)
 
     # 3. Thought Quality (20 pts) - REQUIRE SUBSTANTIVE REASONING
-    has_substantial_thought = (
-        parsed["has_thought_tags"] and parsed["thought_length"] > 30
+    tq_score, tq_detail = _evaluate_thought_quality(
+        parsed, has_physics_explanation
     )
-
-    if has_substantial_thought and has_physics_explanation:
-        breakdown["thought_quality"] = 20.0
-        details.append(
-            f"✅ Thought Quality: Substantial reasoning with physics "
-            f"({parsed['thought_length']} words).",
-        )
-    elif has_substantial_thought:
-        breakdown["thought_quality"] = 10.0
-        details.append(
-            f"⚠️ Thought Quality: Some reasoning but shallow physics "
-            f"({parsed['thought_length']} words).",
-        )
-    else:
-        breakdown["thought_quality"] = 0.0
-        details.append("❌ Thought Quality: Insufficient reasoning shown.")
+    breakdown["thought_quality"] = tq_score
+    details.append(tq_detail)
 
     total_score = sum(breakdown.values())
 
@@ -235,8 +267,8 @@ def score_metacog_003(response: str) -> tuple[float, dict[str, Any], list[str]]:
     # 1. Alternative Exploration (40 pts)
     alt_count = detect_alternatives(parsed["thought_content"])
 
-    if alt_count >= 2:
-        breakdown["alternative_exploration"] = 40.0
+    if alt_count >= ALTERNATIVE_EXPLORATION_THRESHOLD:
+        breakdown["alternative_exploration"] = ALTERNATIVE_EXPLORATION_SCORE
         details.append(
             f"✅ Alternatives: Explored {alt_count} distinct approaches.",
         )
@@ -252,19 +284,19 @@ def score_metacog_003(response: str) -> tuple[float, dict[str, Any], list[str]]:
         answer, ["logic", "logically", "reason", "because"],
     )
     if has_logic_keywords:
-        breakdown["logical_correctness"] = 30.0
+        breakdown["logical_correctness"] = LOGICAL_CORRECTNESS_SCORE
         details.append("✅ Logic: Sound reasoning demonstrated.")
     else:
         breakdown["logical_correctness"] = 15.0
         details.append("⚠️ Logic: Limited explicit logical reasoning.")
 
     # 3. Thought Depth (30 pts)
-    if parsed["thought_length"] > 50:
-        breakdown["thought_depth"] = 30.0
+    if parsed["thought_length"] > THOUGHT_DEPTH_HIGH_THRESHOLD:
+        breakdown["thought_depth"] = THOUGHT_DEPTH_SCORE
         details.append(
             f"✅ Depth: Thorough analysis ({parsed['thought_length']} words).",
         )
-    elif parsed["thought_length"] > 25:
+    elif parsed["thought_length"] > THOUGHT_DEPTH_MEDIUM_THRESHOLD:
         breakdown["thought_depth"] = 15.0
         details.append(
             f"⚠️ Depth: Moderate analysis ({parsed['thought_length']} words).",
@@ -326,7 +358,7 @@ def score_metacog_004(response: str) -> tuple[float, dict[str, Any], list[str]]:
 
     # 3. Output Correctness (30 pts)
     if "switch" in answer and ("2/3" in answer or "67" in answer):
-        breakdown["output_correctness"] = 30.0
+        breakdown["output_correctness"] = OUTPUT_CORRECTNESS_SCORE
         details.append(
             "✅ Output: Correct answer (switch) with correct probability.",
         )
@@ -382,7 +414,7 @@ def score_metacog_005(response: str) -> tuple[float, dict[str, Any], list[str]]:
     percent_match = re.search(r"(\d+(?:\.\d+)?)\s*%", answer)
     if percent_match:
         percentage = float(percent_match.group(1))
-        if 48 <= percentage <= 51:
+        if CALCULATION_CORRECTNESS_LOWER <= percentage <= CALCULATION_CORRECTNESS_UPPER:
             breakdown["calculation_correctness"] = 30.0
             details.append(f"✅ Calculation: Correct probability (~{percentage}%).")
         else:

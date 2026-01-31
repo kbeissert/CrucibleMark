@@ -13,7 +13,7 @@ help:
 	@echo "=== Benchmarking (Neue modulare Struktur) ==="
 	@echo "  make benchmark            Interaktiver Benchmark (Wizard)"
 	@echo "  make list-models          List available Local & Commercial models (with Connectivity Check)"
-	@echo "  make benchmark-auto       🤖 Auto-Fill Mode: Ergänzt fehlende Benchmarks"
+	@echo "  make benchmark-auto       🤖 Auto-Fill Mode: Ergänzt fehlende Benchmarks (Smart Skip)"
 	@echo "  make benchmark-single     Einzelnes Modell (MODEL=name [MODULE=name])"
 	@echo "  make leaderboard          Generiere Leaderboard-CSV aus Ergebnissen"
 	@echo "  make clean-sessions       🗑️  Lösche temporäre Checkpoints (Political Compass)"
@@ -31,6 +31,8 @@ help:
 	@echo ""
 	@echo "=== Utilities ==="
 	@echo "  make clean                Clean caches and temporary outputs"
+	@echo "  make clean-model          Delete results for specific MODEL"
+	@echo "  make clean-module         Delete results for specific MODULE"
 	@echo "  make clean-csv            Delete all benchmark CSV files"
 	@echo "  make clean-all            Delete EVERYTHING (caches + CSVs)"
 	@echo "  make list-models          List models (Local & Commercial Status)"
@@ -52,6 +54,7 @@ install-dev: install
 benchmark:
 	@echo "🚀 Starte interaktiven Benchmark..."
 	$(PYTHON) run_benchmark.py
+	@$(MAKE) leaderboard
 
 benchmark-single:
 	@if [ -z "$(MODEL)" ]; then \
@@ -61,6 +64,7 @@ benchmark-single:
 	fi
 	@echo "🤖 Starte automatisierten Benchmark mit Modell: $(MODEL)..."
 	$(PYTHON) run_benchmark.py --model $(MODEL) $(if $(MODULE),--module $(MODULE))
+	@$(MAKE) leaderboard
 
 benchmark-auto:
 	@echo "🌙 Starte Full Auto Benchmark (Overnight Mode)..."
@@ -113,6 +117,22 @@ clean-sessions:
 clean-csv:
 	@echo "🗑️  Deleting ALL benchmark CSV files..."
 	rm -f benchmark_scores/*.csv
+
+clean-model:
+	@if [ -z "$(MODEL)" ]; then \
+		echo "❌ Fehler: MODEL Variable fehlt. Nutzung: make clean-model MODEL=name"; \
+		exit 1; \
+	fi
+	@echo "🧹 Lösche Ergebnisse für Modell: $(MODEL)"
+	$(PYTHON) scripts/clean_results.py --model "$(MODEL)"
+
+clean-module:
+	@if [ -z "$(MODULE)" ]; then \
+		echo "❌ Fehler: MODULE Variable fehlt. Nutzung: make clean-module MODULE=key"; \
+		exit 1; \
+	fi
+	@echo "🧹 Lösche Ergebnisse für Modul: $(MODULE)"
+	$(PYTHON) scripts/clean_results.py --module "$(MODULE)"
 
 clean-all: clean clean-csv
 	@echo "✨ All clean! (Caches and CSVs deleted)"

@@ -3663,3 +3663,1648 @@ For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/St
 2026-01-30 10:52:01,658 - openai._base_client - DEBUG - Re-raising status error
 2026-01-30 10:52:01,660 - utils.provider_clients - WARNING - OpenAI Access Check Failed: Error code: 429 - {'error': {'message': 'You exceeded your current quota, please check your plan and billing details. For more information on this error, read the docs: https://platform.openai.com/docs/guides/error-codes/api-errors.', 'type': 'insufficient_quota', 'param': None, 'code': 'insufficient_quota'}}
 2026-01-30 10:52:01,996 - asyncio - DEBUG - Using selector: KqueueSelector
+2026-01-30 15:33:33,859 - utils.llm_client - DEBUG - Cost for request: $0.011544
+2026-01-30 15:33:44,296 - utils.llm_client - DEBUG - Cost for request: $0.005288
+2026-01-30 15:34:16,148 - utils.llm_client - DEBUG - Cost for request: $0.009730
+2026-01-30 15:34:45,139 - utils.llm_client - DEBUG - Cost for request: $0.010144
+2026-01-30 15:34:49,358 - utils.llm_client - DEBUG - Cost for request: $0.002104
+2026-01-30 15:34:51,534 - utils.llm_client - DEBUG - Cost for request: $0.000922
+2026-01-30 15:35:00,669 - utils.llm_client - DEBUG - Cost for request: $0.004088
+2026-01-30 15:35:11,894 - utils.llm_client - DEBUG - Cost for request: $0.004768
+2026-01-30 15:35:33,802 - utils.llm_client - DEBUG - Cost for request: $0.008216
+2026-01-30 15:35:45,988 - utils.llm_client - DEBUG - Cost for request: $0.004714
+2026-01-30 15:35:46,093 - asyncio - DEBUG - Using selector: KqueueSelector
+2026-01-30 15:39:15,911 - utils.llm_client - DEBUG - Cost for request: $0.008928
+2026-01-30 15:39:28,498 - utils.llm_client - DEBUG - Cost for request: $0.006482
+2026-01-30 15:40:02,612 - utils.llm_client - DEBUG - Cost for request: $0.010348
+2026-01-30 15:40:37,115 - utils.llm_client - DEBUG - Cost for request: $0.010624
+2026-01-30 15:40:41,149 - utils.llm_client - DEBUG - Cost for request: $0.002110
+2026-01-30 15:40:43,771 - utils.llm_client - DEBUG - Cost for request: $0.001120
+2026-01-30 15:40:53,909 - utils.llm_client - DEBUG - Cost for request: $0.004568
+2026-01-30 15:41:10,195 - utils.llm_client - DEBUG - Cost for request: $0.007150
+2026-01-30 15:41:26,788 - utils.llm_client - DEBUG - Cost for request: $0.006536
+2026-01-30 15:41:39,788 - utils.llm_client - DEBUG - Cost for request: $0.005128
+2026-01-30 15:41:39,893 - asyncio - DEBUG - Using selector: KqueueSelector
+2026-01-30 15:43:40,106 - utils.llm_client - DEBUG - Cost for request: $0.009078
+2026-01-30 15:43:50,039 - utils.llm_client - DEBUG - Cost for request: $0.005132
+2026-01-30 15:44:22,498 - utils.llm_client - DEBUG - Cost for request: $0.010102
+2026-01-30 15:44:42,779 - utils.llm_client - DEBUG - Cost for request: $0.007612
+2026-01-30 15:44:46,078 - utils.llm_client - DEBUG - Cost for request: $0.001828
+2026-01-30 15:45:22,899 - utils.llm_client - DEBUG - Cost for request: $0.015074
+2026-01-30 15:45:25,079 - utils.llm_client - DEBUG - Cost for request: $0.000922
+2026-01-30 15:45:34,759 - utils.llm_client - DEBUG - Cost for request: $0.004460
+2026-01-30 15:45:50,125 - utils.llm_client - DEBUG - Cost for request: $0.006646
+2026-01-30 15:46:06,028 - utils.llm_client - DEBUG - Cost for request: $0.006374
+2026-01-30 15:46:16,472 - utils.llm_client - DEBUG - Cost for request: $0.004456
+2026-01-30 15:46:16,592 - asyncio - DEBUG - Using selector: KqueueSelector
+2026-01-30 16:05:32,596 - utils.llm_client - DEBUG - Cost for request: $0.022890
+2026-01-30 16:05:44,154 - utils.llm_client - DEBUG - Cost for request: $0.006188
+2026-01-30 16:06:19,334 - utils.llm_client - DEBUG - Cost for request: $0.010564
+2026-01-30 16:06:44,162 - utils.llm_client - DEBUG - Cost for request: $0.008002
+2026-01-30 16:06:48,460 - utils.llm_client - DEBUG - Cost for request: $0.002164
+2026-01-30 16:07:21,028 - utils.llm_client - DEBUG - Cost for request: $0.014900
+2026-01-30 16:07:23,807 - utils.llm_client - DEBUG - Cost for request: $0.001090
+2026-01-30 16:07:36,079 - utils.llm_client - DEBUG - Cost for request: $0.005258
+2026-01-30 16:07:49,034 - utils.llm_client - DEBUG - Cost for request: $0.005488
+2026-01-30 16:08:03,327 - utils.llm_client - DEBUG - Cost for request: $0.005582
+2026-01-30 16:08:14,177 - utils.llm_client - DEBUG - Cost for request: $0.004720
+2026-01-30 16:08:14,279 - asyncio - DEBUG - Using selector: KqueueSelector
+2026-01-30 16:19:31,071 - httpcore.connection - DEBUG - connect_tcp.started host='127.0.0.1' port=11434 local_address=None timeout=None socket_options=None
+2026-01-30 16:19:31,073 - httpcore.connection - DEBUG - connect_tcp.complete return_value=<httpcore._backends.sync.SyncStream object at 0x1140b4ad0>
+2026-01-30 16:19:31,073 - httpcore.http11 - DEBUG - send_request_headers.started request=<Request [b'POST']>
+2026-01-30 16:19:31,073 - httpcore.http11 - DEBUG - send_request_headers.complete
+2026-01-30 16:19:31,073 - httpcore.http11 - DEBUG - send_request_body.started request=<Request [b'POST']>
+2026-01-30 16:19:31,073 - httpcore.http11 - DEBUG - send_request_body.complete
+2026-01-30 16:19:31,073 - httpcore.http11 - DEBUG - receive_response_headers.started request=<Request [b'POST']>
+2026-01-30 16:19:40,547 - httpcore.http11 - DEBUG - receive_response_headers.complete return_value=(b'HTTP/1.1', 200, b'OK', [(b'Content-Type', b'application/json; charset=utf-8'), (b'Date', b'Fri, 30 Jan 2026 15:19:40 GMT'), (b'Content-Length', b'1718')])
+2026-01-30 16:19:40,548 - httpcore.http11 - DEBUG - receive_response_body.started request=<Request [b'POST']>
+2026-01-30 16:19:40,549 - httpcore.http11 - DEBUG - receive_response_body.complete
+2026-01-30 16:19:40,549 - httpcore.http11 - DEBUG - response_closed.started
+2026-01-30 16:19:40,549 - httpcore.http11 - DEBUG - response_closed.complete
+2026-01-30 16:19:40,595 - httpcore.http11 - DEBUG - send_request_headers.started request=<Request [b'POST']>
+2026-01-30 16:19:40,595 - httpcore.http11 - DEBUG - send_request_headers.complete
+2026-01-30 16:19:40,595 - httpcore.http11 - DEBUG - send_request_body.started request=<Request [b'POST']>
+2026-01-30 16:19:40,595 - httpcore.http11 - DEBUG - send_request_body.complete
+2026-01-30 16:19:40,595 - httpcore.http11 - DEBUG - receive_response_headers.started request=<Request [b'POST']>
+2026-01-30 16:19:55,299 - httpcore.http11 - DEBUG - receive_response_headers.complete return_value=(b'HTTP/1.1', 200, b'OK', [(b'Content-Type', b'application/json; charset=utf-8'), (b'Date', b'Fri, 30 Jan 2026 15:19:55 GMT'), (b'Transfer-Encoding', b'chunked')])
+2026-01-30 16:19:55,301 - httpcore.http11 - DEBUG - receive_response_body.started request=<Request [b'POST']>
+2026-01-30 16:19:55,301 - httpcore.http11 - DEBUG - receive_response_body.complete
+2026-01-30 16:19:55,301 - httpcore.http11 - DEBUG - response_closed.started
+2026-01-30 16:19:55,301 - httpcore.http11 - DEBUG - response_closed.complete
+2026-01-30 16:19:55,354 - httpcore.http11 - DEBUG - send_request_headers.started request=<Request [b'POST']>
+2026-01-30 16:19:55,355 - httpcore.http11 - DEBUG - send_request_headers.complete
+2026-01-30 16:19:55,355 - httpcore.http11 - DEBUG - send_request_body.started request=<Request [b'POST']>
+2026-01-30 16:19:55,355 - httpcore.http11 - DEBUG - send_request_body.complete
+2026-01-30 16:19:55,355 - httpcore.http11 - DEBUG - receive_response_headers.started request=<Request [b'POST']>
+2026-01-30 16:20:08,205 - httpcore.http11 - DEBUG - receive_response_headers.complete return_value=(b'HTTP/1.1', 200, b'OK', [(b'Content-Type', b'application/json; charset=utf-8'), (b'Date', b'Fri, 30 Jan 2026 15:20:08 GMT'), (b'Transfer-Encoding', b'chunked')])
+2026-01-30 16:20:08,206 - httpcore.http11 - DEBUG - receive_response_body.started request=<Request [b'POST']>
+2026-01-30 16:20:08,206 - httpcore.http11 - DEBUG - receive_response_body.complete
+2026-01-30 16:20:08,206 - httpcore.http11 - DEBUG - response_closed.started
+2026-01-30 16:20:08,206 - httpcore.http11 - DEBUG - response_closed.complete
+2026-01-30 16:20:08,252 - httpcore.http11 - DEBUG - send_request_headers.started request=<Request [b'POST']>
+2026-01-30 16:20:08,252 - httpcore.http11 - DEBUG - send_request_headers.complete
+2026-01-30 16:20:08,252 - httpcore.http11 - DEBUG - send_request_body.started request=<Request [b'POST']>
+2026-01-30 16:20:08,252 - httpcore.http11 - DEBUG - send_request_body.complete
+2026-01-30 16:20:08,252 - httpcore.http11 - DEBUG - receive_response_headers.started request=<Request [b'POST']>
+2026-01-30 16:20:16,747 - httpcore.http11 - DEBUG - receive_response_headers.complete return_value=(b'HTTP/1.1', 200, b'OK', [(b'Content-Type', b'application/json; charset=utf-8'), (b'Date', b'Fri, 30 Jan 2026 15:20:16 GMT'), (b'Content-Length', b'1849')])
+2026-01-30 16:20:16,748 - httpcore.http11 - DEBUG - receive_response_body.started request=<Request [b'POST']>
+2026-01-30 16:20:16,748 - httpcore.http11 - DEBUG - receive_response_body.complete
+2026-01-30 16:20:16,749 - httpcore.http11 - DEBUG - response_closed.started
+2026-01-30 16:20:16,749 - httpcore.http11 - DEBUG - response_closed.complete
+2026-01-30 16:20:16,795 - httpcore.http11 - DEBUG - send_request_headers.started request=<Request [b'POST']>
+2026-01-30 16:20:16,795 - httpcore.http11 - DEBUG - send_request_headers.complete
+2026-01-30 16:20:16,795 - httpcore.http11 - DEBUG - send_request_body.started request=<Request [b'POST']>
+2026-01-30 16:20:16,795 - httpcore.http11 - DEBUG - send_request_body.complete
+2026-01-30 16:20:16,795 - httpcore.http11 - DEBUG - receive_response_headers.started request=<Request [b'POST']>
+2026-01-30 16:20:21,293 - httpcore.http11 - DEBUG - receive_response_headers.complete return_value=(b'HTTP/1.1', 200, b'OK', [(b'Content-Type', b'application/json; charset=utf-8'), (b'Date', b'Fri, 30 Jan 2026 15:20:21 GMT'), (b'Content-Length', b'1016')])
+2026-01-30 16:20:21,294 - httpcore.http11 - DEBUG - receive_response_body.started request=<Request [b'POST']>
+2026-01-30 16:20:21,294 - httpcore.http11 - DEBUG - receive_response_body.complete
+2026-01-30 16:20:21,294 - httpcore.http11 - DEBUG - response_closed.started
+2026-01-30 16:20:21,294 - httpcore.http11 - DEBUG - response_closed.complete
+2026-01-30 16:20:21,330 - httpcore.http11 - DEBUG - send_request_headers.started request=<Request [b'POST']>
+2026-01-30 16:20:21,330 - httpcore.http11 - DEBUG - send_request_headers.complete
+2026-01-30 16:20:21,330 - httpcore.http11 - DEBUG - send_request_body.started request=<Request [b'POST']>
+2026-01-30 16:20:21,330 - httpcore.http11 - DEBUG - send_request_body.complete
+2026-01-30 16:20:21,330 - httpcore.http11 - DEBUG - receive_response_headers.started request=<Request [b'POST']>
+2026-01-30 16:20:33,913 - httpcore.http11 - DEBUG - receive_response_headers.complete return_value=(b'HTTP/1.1', 200, b'OK', [(b'Content-Type', b'application/json; charset=utf-8'), (b'Date', b'Fri, 30 Jan 2026 15:20:33 GMT'), (b'Transfer-Encoding', b'chunked')])
+2026-01-30 16:20:33,914 - httpcore.http11 - DEBUG - receive_response_body.started request=<Request [b'POST']>
+2026-01-30 16:20:33,915 - httpcore.http11 - DEBUG - receive_response_body.complete
+2026-01-30 16:20:33,915 - httpcore.http11 - DEBUG - response_closed.started
+2026-01-30 16:20:33,915 - httpcore.http11 - DEBUG - response_closed.complete
+2026-01-30 16:20:33,960 - httpcore.http11 - DEBUG - send_request_headers.started request=<Request [b'POST']>
+2026-01-30 16:20:33,961 - httpcore.http11 - DEBUG - send_request_headers.complete
+2026-01-30 16:20:33,961 - httpcore.http11 - DEBUG - send_request_body.started request=<Request [b'POST']>
+2026-01-30 16:20:33,961 - httpcore.http11 - DEBUG - send_request_body.complete
+2026-01-30 16:20:33,961 - httpcore.http11 - DEBUG - receive_response_headers.started request=<Request [b'POST']>
+2026-01-30 16:20:35,185 - httpcore.http11 - DEBUG - receive_response_headers.complete return_value=(b'HTTP/1.1', 200, b'OK', [(b'Content-Type', b'application/json; charset=utf-8'), (b'Date', b'Fri, 30 Jan 2026 15:20:35 GMT'), (b'Content-Length', b'423')])
+2026-01-30 16:20:35,186 - httpcore.http11 - DEBUG - receive_response_body.started request=<Request [b'POST']>
+2026-01-30 16:20:35,186 - httpcore.http11 - DEBUG - receive_response_body.complete
+2026-01-30 16:20:35,186 - httpcore.http11 - DEBUG - response_closed.started
+2026-01-30 16:20:35,186 - httpcore.http11 - DEBUG - response_closed.complete
+2026-01-30 16:20:35,214 - httpcore.http11 - DEBUG - send_request_headers.started request=<Request [b'POST']>
+2026-01-30 16:20:35,214 - httpcore.http11 - DEBUG - send_request_headers.complete
+2026-01-30 16:20:35,214 - httpcore.http11 - DEBUG - send_request_body.started request=<Request [b'POST']>
+2026-01-30 16:20:35,215 - httpcore.http11 - DEBUG - send_request_body.complete
+2026-01-30 16:20:35,215 - httpcore.http11 - DEBUG - receive_response_headers.started request=<Request [b'POST']>
+2026-01-30 16:20:40,434 - httpcore.http11 - DEBUG - receive_response_headers.complete return_value=(b'HTTP/1.1', 200, b'OK', [(b'Content-Type', b'application/json; charset=utf-8'), (b'Date', b'Fri, 30 Jan 2026 15:20:40 GMT'), (b'Content-Length', b'1239')])
+2026-01-30 16:20:40,434 - httpcore.http11 - DEBUG - receive_response_body.started request=<Request [b'POST']>
+2026-01-30 16:20:40,434 - httpcore.http11 - DEBUG - receive_response_body.complete
+2026-01-30 16:20:40,434 - httpcore.http11 - DEBUG - response_closed.started
+2026-01-30 16:20:40,434 - httpcore.http11 - DEBUG - response_closed.complete
+2026-01-30 16:20:40,468 - httpcore.http11 - DEBUG - send_request_headers.started request=<Request [b'POST']>
+2026-01-30 16:20:40,469 - httpcore.http11 - DEBUG - send_request_headers.complete
+2026-01-30 16:20:40,469 - httpcore.http11 - DEBUG - send_request_body.started request=<Request [b'POST']>
+2026-01-30 16:20:40,469 - httpcore.http11 - DEBUG - send_request_body.complete
+2026-01-30 16:20:40,469 - httpcore.http11 - DEBUG - receive_response_headers.started request=<Request [b'POST']>
+2026-01-30 16:20:49,018 - httpcore.http11 - DEBUG - receive_response_headers.complete return_value=(b'HTTP/1.1', 200, b'OK', [(b'Content-Type', b'application/json; charset=utf-8'), (b'Date', b'Fri, 30 Jan 2026 15:20:49 GMT'), (b'Content-Length', b'1637')])
+2026-01-30 16:20:49,019 - httpcore.http11 - DEBUG - receive_response_body.started request=<Request [b'POST']>
+2026-01-30 16:20:49,019 - httpcore.http11 - DEBUG - receive_response_body.complete
+2026-01-30 16:20:49,019 - httpcore.http11 - DEBUG - response_closed.started
+2026-01-30 16:20:49,019 - httpcore.http11 - DEBUG - response_closed.complete
+2026-01-30 16:20:49,065 - httpcore.http11 - DEBUG - send_request_headers.started request=<Request [b'POST']>
+2026-01-30 16:20:49,065 - httpcore.http11 - DEBUG - send_request_headers.complete
+2026-01-30 16:20:49,065 - httpcore.http11 - DEBUG - send_request_body.started request=<Request [b'POST']>
+2026-01-30 16:20:49,065 - httpcore.http11 - DEBUG - send_request_body.complete
+2026-01-30 16:20:49,065 - httpcore.http11 - DEBUG - receive_response_headers.started request=<Request [b'POST']>
+2026-01-30 16:20:54,182 - httpcore.http11 - DEBUG - receive_response_headers.complete return_value=(b'HTTP/1.1', 200, b'OK', [(b'Content-Type', b'application/json; charset=utf-8'), (b'Date', b'Fri, 30 Jan 2026 15:20:54 GMT'), (b'Content-Length', b'1014')])
+2026-01-30 16:20:54,182 - httpcore.http11 - DEBUG - receive_response_body.started request=<Request [b'POST']>
+2026-01-30 16:20:54,182 - httpcore.http11 - DEBUG - receive_response_body.complete
+2026-01-30 16:20:54,182 - httpcore.http11 - DEBUG - response_closed.started
+2026-01-30 16:20:54,183 - httpcore.http11 - DEBUG - response_closed.complete
+2026-01-30 16:20:54,227 - httpcore.http11 - DEBUG - send_request_headers.started request=<Request [b'POST']>
+2026-01-30 16:20:54,227 - httpcore.http11 - DEBUG - send_request_headers.complete
+2026-01-30 16:20:54,227 - httpcore.http11 - DEBUG - send_request_body.started request=<Request [b'POST']>
+2026-01-30 16:20:54,227 - httpcore.http11 - DEBUG - send_request_body.complete
+2026-01-30 16:20:54,227 - httpcore.http11 - DEBUG - receive_response_headers.started request=<Request [b'POST']>
+2026-01-30 16:21:02,345 - httpcore.http11 - DEBUG - receive_response_headers.complete return_value=(b'HTTP/1.1', 200, b'OK', [(b'Content-Type', b'application/json; charset=utf-8'), (b'Date', b'Fri, 30 Jan 2026 15:21:02 GMT'), (b'Content-Length', b'1431')])
+2026-01-30 16:21:02,345 - httpcore.http11 - DEBUG - receive_response_body.started request=<Request [b'POST']>
+2026-01-30 16:21:02,345 - httpcore.http11 - DEBUG - receive_response_body.complete
+2026-01-30 16:21:02,345 - httpcore.http11 - DEBUG - response_closed.started
+2026-01-30 16:21:02,345 - httpcore.http11 - DEBUG - response_closed.complete
+2026-01-30 16:28:44,112 - httpcore.connection - DEBUG - connect_tcp.started host='127.0.0.1' port=11434 local_address=None timeout=None socket_options=None
+2026-01-30 16:28:44,114 - httpcore.connection - DEBUG - connect_tcp.complete return_value=<httpcore._backends.sync.SyncStream object at 0x1149b0ad0>
+2026-01-30 16:28:44,115 - httpcore.http11 - DEBUG - send_request_headers.started request=<Request [b'POST']>
+2026-01-30 16:28:44,115 - httpcore.http11 - DEBUG - send_request_headers.complete
+2026-01-30 16:28:44,115 - httpcore.http11 - DEBUG - send_request_body.started request=<Request [b'POST']>
+2026-01-30 16:28:44,115 - httpcore.http11 - DEBUG - send_request_body.complete
+2026-01-30 16:28:44,115 - httpcore.http11 - DEBUG - receive_response_headers.started request=<Request [b'POST']>
+2026-01-30 16:28:54,880 - httpcore.http11 - DEBUG - receive_response_headers.complete return_value=(b'HTTP/1.1', 200, b'OK', [(b'Content-Type', b'application/json; charset=utf-8'), (b'Date', b'Fri, 30 Jan 2026 15:28:54 GMT'), (b'Content-Length', b'1721')])
+2026-01-30 16:28:54,881 - httpcore.http11 - DEBUG - receive_response_body.started request=<Request [b'POST']>
+2026-01-30 16:28:54,882 - httpcore.http11 - DEBUG - receive_response_body.complete
+2026-01-30 16:28:54,882 - httpcore.http11 - DEBUG - response_closed.started
+2026-01-30 16:28:54,882 - httpcore.http11 - DEBUG - response_closed.complete
+2026-01-30 16:28:54,925 - httpcore.http11 - DEBUG - send_request_headers.started request=<Request [b'POST']>
+2026-01-30 16:28:54,926 - httpcore.http11 - DEBUG - send_request_headers.complete
+2026-01-30 16:28:54,926 - httpcore.http11 - DEBUG - send_request_body.started request=<Request [b'POST']>
+2026-01-30 16:28:54,926 - httpcore.http11 - DEBUG - send_request_body.complete
+2026-01-30 16:28:54,926 - httpcore.http11 - DEBUG - receive_response_headers.started request=<Request [b'POST']>
+2026-01-30 16:29:09,535 - httpcore.http11 - DEBUG - receive_response_headers.complete return_value=(b'HTTP/1.1', 200, b'OK', [(b'Content-Type', b'application/json; charset=utf-8'), (b'Date', b'Fri, 30 Jan 2026 15:29:09 GMT'), (b'Transfer-Encoding', b'chunked')])
+2026-01-30 16:29:09,536 - httpcore.http11 - DEBUG - receive_response_body.started request=<Request [b'POST']>
+2026-01-30 16:29:09,536 - httpcore.http11 - DEBUG - receive_response_body.complete
+2026-01-30 16:29:09,536 - httpcore.http11 - DEBUG - response_closed.started
+2026-01-30 16:29:09,536 - httpcore.http11 - DEBUG - response_closed.complete
+2026-01-30 16:29:09,578 - httpcore.http11 - DEBUG - send_request_headers.started request=<Request [b'POST']>
+2026-01-30 16:29:09,578 - httpcore.http11 - DEBUG - send_request_headers.complete
+2026-01-30 16:29:09,578 - httpcore.http11 - DEBUG - send_request_body.started request=<Request [b'POST']>
+2026-01-30 16:29:09,578 - httpcore.http11 - DEBUG - send_request_body.complete
+2026-01-30 16:29:09,578 - httpcore.http11 - DEBUG - receive_response_headers.started request=<Request [b'POST']>
+2026-01-30 16:29:22,349 - httpcore.http11 - DEBUG - receive_response_headers.complete return_value=(b'HTTP/1.1', 200, b'OK', [(b'Content-Type', b'application/json; charset=utf-8'), (b'Date', b'Fri, 30 Jan 2026 15:29:22 GMT'), (b'Transfer-Encoding', b'chunked')])
+2026-01-30 16:29:22,350 - httpcore.http11 - DEBUG - receive_response_body.started request=<Request [b'POST']>
+2026-01-30 16:29:22,350 - httpcore.http11 - DEBUG - receive_response_body.complete
+2026-01-30 16:29:22,350 - httpcore.http11 - DEBUG - response_closed.started
+2026-01-30 16:29:22,350 - httpcore.http11 - DEBUG - response_closed.complete
+2026-01-30 16:29:22,384 - httpcore.http11 - DEBUG - send_request_headers.started request=<Request [b'POST']>
+2026-01-30 16:29:22,384 - httpcore.http11 - DEBUG - send_request_headers.complete
+2026-01-30 16:29:22,384 - httpcore.http11 - DEBUG - send_request_body.started request=<Request [b'POST']>
+2026-01-30 16:29:22,384 - httpcore.http11 - DEBUG - send_request_body.complete
+2026-01-30 16:29:22,385 - httpcore.http11 - DEBUG - receive_response_headers.started request=<Request [b'POST']>
+2026-01-30 16:29:30,768 - httpcore.http11 - DEBUG - receive_response_headers.complete return_value=(b'HTTP/1.1', 200, b'OK', [(b'Content-Type', b'application/json; charset=utf-8'), (b'Date', b'Fri, 30 Jan 2026 15:29:30 GMT'), (b'Content-Length', b'1849')])
+2026-01-30 16:29:30,769 - httpcore.http11 - DEBUG - receive_response_body.started request=<Request [b'POST']>
+2026-01-30 16:29:30,769 - httpcore.http11 - DEBUG - receive_response_body.complete
+2026-01-30 16:29:30,769 - httpcore.http11 - DEBUG - response_closed.started
+2026-01-30 16:29:30,769 - httpcore.http11 - DEBUG - response_closed.complete
+2026-01-30 16:29:30,809 - httpcore.http11 - DEBUG - send_request_headers.started request=<Request [b'POST']>
+2026-01-30 16:29:30,809 - httpcore.http11 - DEBUG - send_request_headers.complete
+2026-01-30 16:29:30,809 - httpcore.http11 - DEBUG - send_request_body.started request=<Request [b'POST']>
+2026-01-30 16:29:30,809 - httpcore.http11 - DEBUG - send_request_body.complete
+2026-01-30 16:29:30,809 - httpcore.http11 - DEBUG - receive_response_headers.started request=<Request [b'POST']>
+2026-01-30 16:29:35,288 - httpcore.http11 - DEBUG - receive_response_headers.complete return_value=(b'HTTP/1.1', 200, b'OK', [(b'Content-Type', b'application/json; charset=utf-8'), (b'Date', b'Fri, 30 Jan 2026 15:29:35 GMT'), (b'Content-Length', b'1016')])
+2026-01-30 16:29:35,289 - httpcore.http11 - DEBUG - receive_response_body.started request=<Request [b'POST']>
+2026-01-30 16:29:35,290 - httpcore.http11 - DEBUG - receive_response_body.complete
+2026-01-30 16:29:35,290 - httpcore.http11 - DEBUG - response_closed.started
+2026-01-30 16:29:35,290 - httpcore.http11 - DEBUG - response_closed.complete
+2026-01-30 16:29:35,328 - httpcore.http11 - DEBUG - send_request_headers.started request=<Request [b'POST']>
+2026-01-30 16:29:35,328 - httpcore.http11 - DEBUG - send_request_headers.complete
+2026-01-30 16:29:35,328 - httpcore.http11 - DEBUG - send_request_body.started request=<Request [b'POST']>
+2026-01-30 16:29:35,328 - httpcore.http11 - DEBUG - send_request_body.complete
+2026-01-30 16:29:35,328 - httpcore.http11 - DEBUG - receive_response_headers.started request=<Request [b'POST']>
+2026-01-30 16:29:48,006 - httpcore.http11 - DEBUG - receive_response_headers.complete return_value=(b'HTTP/1.1', 200, b'OK', [(b'Content-Type', b'application/json; charset=utf-8'), (b'Date', b'Fri, 30 Jan 2026 15:29:48 GMT'), (b'Transfer-Encoding', b'chunked')])
+2026-01-30 16:29:48,010 - httpcore.http11 - DEBUG - receive_response_body.started request=<Request [b'POST']>
+2026-01-30 16:29:48,010 - httpcore.http11 - DEBUG - receive_response_body.complete
+2026-01-30 16:29:48,010 - httpcore.http11 - DEBUG - response_closed.started
+2026-01-30 16:29:48,010 - httpcore.http11 - DEBUG - response_closed.complete
+2026-01-30 16:29:48,054 - httpcore.http11 - DEBUG - send_request_headers.started request=<Request [b'POST']>
+2026-01-30 16:29:48,054 - httpcore.http11 - DEBUG - send_request_headers.complete
+2026-01-30 16:29:48,054 - httpcore.http11 - DEBUG - send_request_body.started request=<Request [b'POST']>
+2026-01-30 16:29:48,054 - httpcore.http11 - DEBUG - send_request_body.complete
+2026-01-30 16:29:48,054 - httpcore.http11 - DEBUG - receive_response_headers.started request=<Request [b'POST']>
+2026-01-30 16:29:49,270 - httpcore.http11 - DEBUG - receive_response_headers.complete return_value=(b'HTTP/1.1', 200, b'OK', [(b'Content-Type', b'application/json; charset=utf-8'), (b'Date', b'Fri, 30 Jan 2026 15:29:49 GMT'), (b'Content-Length', b'423')])
+2026-01-30 16:29:49,270 - httpcore.http11 - DEBUG - receive_response_body.started request=<Request [b'POST']>
+2026-01-30 16:29:49,270 - httpcore.http11 - DEBUG - receive_response_body.complete
+2026-01-30 16:29:49,270 - httpcore.http11 - DEBUG - response_closed.started
+2026-01-30 16:29:49,270 - httpcore.http11 - DEBUG - response_closed.complete
+2026-01-30 16:29:49,301 - httpcore.http11 - DEBUG - send_request_headers.started request=<Request [b'POST']>
+2026-01-30 16:29:49,301 - httpcore.http11 - DEBUG - send_request_headers.complete
+2026-01-30 16:29:49,301 - httpcore.http11 - DEBUG - send_request_body.started request=<Request [b'POST']>
+2026-01-30 16:29:49,301 - httpcore.http11 - DEBUG - send_request_body.complete
+2026-01-30 16:29:49,301 - httpcore.http11 - DEBUG - receive_response_headers.started request=<Request [b'POST']>
+2026-01-30 16:29:54,503 - httpcore.http11 - DEBUG - receive_response_headers.complete return_value=(b'HTTP/1.1', 200, b'OK', [(b'Content-Type', b'application/json; charset=utf-8'), (b'Date', b'Fri, 30 Jan 2026 15:29:54 GMT'), (b'Content-Length', b'1239')])
+2026-01-30 16:29:54,504 - httpcore.http11 - DEBUG - receive_response_body.started request=<Request [b'POST']>
+2026-01-30 16:29:54,504 - httpcore.http11 - DEBUG - receive_response_body.complete
+2026-01-30 16:29:54,504 - httpcore.http11 - DEBUG - response_closed.started
+2026-01-30 16:29:54,504 - httpcore.http11 - DEBUG - response_closed.complete
+2026-01-30 16:29:54,532 - httpcore.http11 - DEBUG - send_request_headers.started request=<Request [b'POST']>
+2026-01-30 16:29:54,532 - httpcore.http11 - DEBUG - send_request_headers.complete
+2026-01-30 16:29:54,532 - httpcore.http11 - DEBUG - send_request_body.started request=<Request [b'POST']>
+2026-01-30 16:29:54,532 - httpcore.http11 - DEBUG - send_request_body.complete
+2026-01-30 16:29:54,532 - httpcore.http11 - DEBUG - receive_response_headers.started request=<Request [b'POST']>
+2026-01-30 16:30:03,073 - httpcore.http11 - DEBUG - receive_response_headers.complete return_value=(b'HTTP/1.1', 200, b'OK', [(b'Content-Type', b'application/json; charset=utf-8'), (b'Date', b'Fri, 30 Jan 2026 15:30:03 GMT'), (b'Content-Length', b'1636')])
+2026-01-30 16:30:03,074 - httpcore.http11 - DEBUG - receive_response_body.started request=<Request [b'POST']>
+2026-01-30 16:30:03,075 - httpcore.http11 - DEBUG - receive_response_body.complete
+2026-01-30 16:30:03,075 - httpcore.http11 - DEBUG - response_closed.started
+2026-01-30 16:30:03,075 - httpcore.http11 - DEBUG - response_closed.complete
+2026-01-30 16:30:03,123 - httpcore.http11 - DEBUG - send_request_headers.started request=<Request [b'POST']>
+2026-01-30 16:30:03,123 - httpcore.http11 - DEBUG - send_request_headers.complete
+2026-01-30 16:30:03,123 - httpcore.http11 - DEBUG - send_request_body.started request=<Request [b'POST']>
+2026-01-30 16:30:03,123 - httpcore.http11 - DEBUG - send_request_body.complete
+2026-01-30 16:30:03,123 - httpcore.http11 - DEBUG - receive_response_headers.started request=<Request [b'POST']>
+2026-01-30 16:30:08,237 - httpcore.http11 - DEBUG - receive_response_headers.complete return_value=(b'HTTP/1.1', 200, b'OK', [(b'Content-Type', b'application/json; charset=utf-8'), (b'Date', b'Fri, 30 Jan 2026 15:30:08 GMT'), (b'Content-Length', b'1014')])
+2026-01-30 16:30:08,237 - httpcore.http11 - DEBUG - receive_response_body.started request=<Request [b'POST']>
+2026-01-30 16:30:08,237 - httpcore.http11 - DEBUG - receive_response_body.complete
+2026-01-30 16:30:08,237 - httpcore.http11 - DEBUG - response_closed.started
+2026-01-30 16:30:08,237 - httpcore.http11 - DEBUG - response_closed.complete
+2026-01-30 16:30:08,282 - httpcore.http11 - DEBUG - send_request_headers.started request=<Request [b'POST']>
+2026-01-30 16:30:08,282 - httpcore.http11 - DEBUG - send_request_headers.complete
+2026-01-30 16:30:08,282 - httpcore.http11 - DEBUG - send_request_body.started request=<Request [b'POST']>
+2026-01-30 16:30:08,282 - httpcore.http11 - DEBUG - send_request_body.complete
+2026-01-30 16:30:08,282 - httpcore.http11 - DEBUG - receive_response_headers.started request=<Request [b'POST']>
+2026-01-30 16:30:16,381 - httpcore.http11 - DEBUG - receive_response_headers.complete return_value=(b'HTTP/1.1', 200, b'OK', [(b'Content-Type', b'application/json; charset=utf-8'), (b'Date', b'Fri, 30 Jan 2026 15:30:16 GMT'), (b'Content-Length', b'1431')])
+2026-01-30 16:30:16,382 - httpcore.http11 - DEBUG - receive_response_body.started request=<Request [b'POST']>
+2026-01-30 16:30:16,382 - httpcore.http11 - DEBUG - receive_response_body.complete
+2026-01-30 16:30:16,382 - httpcore.http11 - DEBUG - response_closed.started
+2026-01-30 16:30:16,382 - httpcore.http11 - DEBUG - response_closed.complete
+2026-01-30 16:34:04,495 - utils.llm_client - DEBUG - Cost for request: $0.012810
+2026-01-30 16:34:16,877 - utils.llm_client - DEBUG - Cost for request: $0.006596
+2026-01-30 16:34:52,520 - utils.llm_client - DEBUG - Cost for request: $0.011128
+2026-01-30 16:35:19,342 - utils.llm_client - DEBUG - Cost for request: $0.009286
+2026-01-30 16:35:23,849 - utils.llm_client - DEBUG - Cost for request: $0.002284
+2026-01-30 16:35:55,694 - utils.llm_client - DEBUG - Cost for request: $0.013814
+2026-01-30 16:35:58,677 - utils.llm_client - DEBUG - Cost for request: $0.001024
+2026-01-30 16:36:09,519 - utils.llm_client - DEBUG - Cost for request: $0.004712
+2026-01-30 16:36:23,177 - utils.llm_client - DEBUG - Cost for request: $0.005884
+2026-01-30 16:36:42,082 - utils.llm_client - DEBUG - Cost for request: $0.006026
+2026-01-30 16:36:52,323 - utils.llm_client - DEBUG - Cost for request: $0.004684
+2026-01-30 16:36:52,431 - asyncio - DEBUG - Using selector: KqueueSelector
+2026-01-30 17:05:18,287 - utils.llm_client - DEBUG - Cost for request: $0.010422
+2026-01-30 17:05:30,053 - utils.llm_client - DEBUG - Cost for request: $0.006368
+2026-01-30 17:06:09,145 - utils.llm_client - DEBUG - Cost for request: $0.008644
+2026-01-30 17:06:40,688 - utils.llm_client - DEBUG - Cost for request: $0.009496
+2026-01-30 17:06:46,240 - utils.llm_client - DEBUG - Cost for request: $0.002626
+2026-01-30 17:07:24,667 - utils.llm_client - DEBUG - Cost for request: $0.017792
+2026-01-30 17:07:27,123 - utils.llm_client - DEBUG - Cost for request: $0.001024
+2026-01-30 17:07:38,379 - utils.llm_client - DEBUG - Cost for request: $0.005084
+2026-01-30 17:07:49,534 - utils.llm_client - DEBUG - Cost for request: $0.005206
+2026-01-30 17:08:10,203 - utils.llm_client - DEBUG - Cost for request: $0.007280
+2026-01-30 17:08:20,845 - utils.llm_client - DEBUG - Cost for request: $0.004846
+2026-01-30 17:08:20,949 - asyncio - DEBUG - Using selector: KqueueSelector
+2026-01-30 17:45:32,447 - httpcore.connection - DEBUG - connect_tcp.started host='127.0.0.1' port=11434 local_address=None timeout=None socket_options=None
+2026-01-30 17:45:32,449 - httpcore.connection - DEBUG - connect_tcp.complete return_value=<httpcore._backends.sync.SyncStream object at 0x114034980>
+2026-01-30 17:45:32,449 - httpcore.http11 - DEBUG - send_request_headers.started request=<Request [b'POST']>
+2026-01-30 17:45:32,449 - httpcore.http11 - DEBUG - send_request_headers.complete
+2026-01-30 17:45:32,449 - httpcore.http11 - DEBUG - send_request_body.started request=<Request [b'POST']>
+2026-01-30 17:45:32,449 - httpcore.http11 - DEBUG - send_request_body.complete
+2026-01-30 17:45:32,449 - httpcore.http11 - DEBUG - receive_response_headers.started request=<Request [b'POST']>
+2026-01-30 17:45:41,293 - httpcore.http11 - DEBUG - receive_response_headers.complete return_value=(b'HTTP/1.1', 200, b'OK', [(b'Content-Type', b'application/json; charset=utf-8'), (b'Date', b'Fri, 30 Jan 2026 16:45:41 GMT'), (b'Content-Length', b'1527')])
+2026-01-30 17:45:41,296 - httpcore.http11 - DEBUG - receive_response_body.started request=<Request [b'POST']>
+2026-01-30 17:45:41,297 - httpcore.http11 - DEBUG - receive_response_body.complete
+2026-01-30 17:45:41,297 - httpcore.http11 - DEBUG - response_closed.started
+2026-01-30 17:45:41,297 - httpcore.http11 - DEBUG - response_closed.complete
+2026-01-30 17:45:41,344 - httpcore.http11 - DEBUG - send_request_headers.started request=<Request [b'POST']>
+2026-01-30 17:45:41,344 - httpcore.http11 - DEBUG - send_request_headers.complete
+2026-01-30 17:45:41,344 - httpcore.http11 - DEBUG - send_request_body.started request=<Request [b'POST']>
+2026-01-30 17:45:41,344 - httpcore.http11 - DEBUG - send_request_body.complete
+2026-01-30 17:45:41,344 - httpcore.http11 - DEBUG - receive_response_headers.started request=<Request [b'POST']>
+2026-01-30 17:45:46,507 - httpcore.http11 - DEBUG - receive_response_headers.complete return_value=(b'HTTP/1.1', 200, b'OK', [(b'Content-Type', b'application/json; charset=utf-8'), (b'Date', b'Fri, 30 Jan 2026 16:45:46 GMT'), (b'Content-Length', b'1391')])
+2026-01-30 17:45:46,508 - httpcore.http11 - DEBUG - receive_response_body.started request=<Request [b'POST']>
+2026-01-30 17:45:46,508 - httpcore.http11 - DEBUG - receive_response_body.complete
+2026-01-30 17:45:46,508 - httpcore.http11 - DEBUG - response_closed.started
+2026-01-30 17:45:46,509 - httpcore.http11 - DEBUG - response_closed.complete
+2026-01-30 17:45:46,554 - httpcore.http11 - DEBUG - send_request_headers.started request=<Request [b'POST']>
+2026-01-30 17:45:46,554 - httpcore.http11 - DEBUG - send_request_headers.complete
+2026-01-30 17:45:46,554 - httpcore.http11 - DEBUG - send_request_body.started request=<Request [b'POST']>
+2026-01-30 17:45:46,555 - httpcore.http11 - DEBUG - send_request_body.complete
+2026-01-30 17:45:46,555 - httpcore.http11 - DEBUG - receive_response_headers.started request=<Request [b'POST']>
+2026-01-30 17:45:54,037 - httpcore.http11 - DEBUG - receive_response_headers.complete return_value=(b'HTTP/1.1', 200, b'OK', [(b'Content-Type', b'application/json; charset=utf-8'), (b'Date', b'Fri, 30 Jan 2026 16:45:54 GMT'), (b'Content-Length', b'1984')])
+2026-01-30 17:45:54,038 - httpcore.http11 - DEBUG - receive_response_body.started request=<Request [b'POST']>
+2026-01-30 17:45:54,039 - httpcore.http11 - DEBUG - receive_response_body.complete
+2026-01-30 17:45:54,039 - httpcore.http11 - DEBUG - response_closed.started
+2026-01-30 17:45:54,039 - httpcore.http11 - DEBUG - response_closed.complete
+2026-01-30 17:45:54,089 - httpcore.http11 - DEBUG - send_request_headers.started request=<Request [b'POST']>
+2026-01-30 17:45:54,089 - httpcore.http11 - DEBUG - send_request_headers.complete
+2026-01-30 17:45:54,089 - httpcore.http11 - DEBUG - send_request_body.started request=<Request [b'POST']>
+2026-01-30 17:45:54,089 - httpcore.http11 - DEBUG - send_request_body.complete
+2026-01-30 17:45:54,089 - httpcore.http11 - DEBUG - receive_response_headers.started request=<Request [b'POST']>
+2026-01-30 17:45:57,403 - httpcore.http11 - DEBUG - receive_response_headers.complete return_value=(b'HTTP/1.1', 200, b'OK', [(b'Content-Type', b'application/json; charset=utf-8'), (b'Date', b'Fri, 30 Jan 2026 16:45:57 GMT'), (b'Content-Length', b'1014')])
+2026-01-30 17:45:57,403 - httpcore.http11 - DEBUG - receive_response_body.started request=<Request [b'POST']>
+2026-01-30 17:45:57,404 - httpcore.http11 - DEBUG - receive_response_body.complete
+2026-01-30 17:45:57,404 - httpcore.http11 - DEBUG - response_closed.started
+2026-01-30 17:45:57,404 - httpcore.http11 - DEBUG - response_closed.complete
+2026-01-30 17:45:57,446 - httpcore.http11 - DEBUG - send_request_headers.started request=<Request [b'POST']>
+2026-01-30 17:45:57,447 - httpcore.http11 - DEBUG - send_request_headers.complete
+2026-01-30 17:45:57,447 - httpcore.http11 - DEBUG - send_request_body.started request=<Request [b'POST']>
+2026-01-30 17:45:57,447 - httpcore.http11 - DEBUG - send_request_body.complete
+2026-01-30 17:45:57,447 - httpcore.http11 - DEBUG - receive_response_headers.started request=<Request [b'POST']>
+2026-01-30 17:46:00,772 - httpcore.http11 - DEBUG - receive_response_headers.complete return_value=(b'HTTP/1.1', 200, b'OK', [(b'Content-Type', b'application/json; charset=utf-8'), (b'Date', b'Fri, 30 Jan 2026 16:46:00 GMT'), (b'Content-Length', b'1048')])
+2026-01-30 17:46:00,773 - httpcore.http11 - DEBUG - receive_response_body.started request=<Request [b'POST']>
+2026-01-30 17:46:00,773 - httpcore.http11 - DEBUG - receive_response_body.complete
+2026-01-30 17:46:00,773 - httpcore.http11 - DEBUG - response_closed.started
+2026-01-30 17:46:00,773 - httpcore.http11 - DEBUG - response_closed.complete
+2026-01-30 17:46:00,825 - httpcore.http11 - DEBUG - send_request_headers.started request=<Request [b'POST']>
+2026-01-30 17:46:00,825 - httpcore.http11 - DEBUG - send_request_headers.complete
+2026-01-30 17:46:00,825 - httpcore.http11 - DEBUG - send_request_body.started request=<Request [b'POST']>
+2026-01-30 17:46:00,825 - httpcore.http11 - DEBUG - send_request_body.complete
+2026-01-30 17:46:00,825 - httpcore.http11 - DEBUG - receive_response_headers.started request=<Request [b'POST']>
+2026-01-30 17:46:07,776 - httpcore.http11 - DEBUG - receive_response_headers.complete return_value=(b'HTTP/1.1', 200, b'OK', [(b'Content-Type', b'application/json; charset=utf-8'), (b'Date', b'Fri, 30 Jan 2026 16:46:07 GMT'), (b'Transfer-Encoding', b'chunked')])
+2026-01-30 17:46:07,776 - httpcore.http11 - DEBUG - receive_response_body.started request=<Request [b'POST']>
+2026-01-30 17:46:07,776 - httpcore.http11 - DEBUG - receive_response_body.complete
+2026-01-30 17:46:07,776 - httpcore.http11 - DEBUG - response_closed.started
+2026-01-30 17:46:07,776 - httpcore.http11 - DEBUG - response_closed.complete
+2026-01-30 17:46:07,812 - httpcore.http11 - DEBUG - send_request_headers.started request=<Request [b'POST']>
+2026-01-30 17:46:07,812 - httpcore.http11 - DEBUG - send_request_headers.complete
+2026-01-30 17:46:07,812 - httpcore.http11 - DEBUG - send_request_body.started request=<Request [b'POST']>
+2026-01-30 17:46:07,812 - httpcore.http11 - DEBUG - send_request_body.complete
+2026-01-30 17:46:07,812 - httpcore.http11 - DEBUG - receive_response_headers.started request=<Request [b'POST']>
+2026-01-30 17:46:09,519 - httpcore.http11 - DEBUG - receive_response_headers.complete return_value=(b'HTTP/1.1', 200, b'OK', [(b'Content-Type', b'application/json; charset=utf-8'), (b'Date', b'Fri, 30 Jan 2026 16:46:09 GMT'), (b'Content-Length', b'620')])
+2026-01-30 17:46:09,520 - httpcore.http11 - DEBUG - receive_response_body.started request=<Request [b'POST']>
+2026-01-30 17:46:09,520 - httpcore.http11 - DEBUG - receive_response_body.complete
+2026-01-30 17:46:09,520 - httpcore.http11 - DEBUG - response_closed.started
+2026-01-30 17:46:09,520 - httpcore.http11 - DEBUG - response_closed.complete
+2026-01-30 17:46:09,558 - httpcore.http11 - DEBUG - send_request_headers.started request=<Request [b'POST']>
+2026-01-30 17:46:09,558 - httpcore.http11 - DEBUG - send_request_headers.complete
+2026-01-30 17:46:09,558 - httpcore.http11 - DEBUG - send_request_body.started request=<Request [b'POST']>
+2026-01-30 17:46:09,558 - httpcore.http11 - DEBUG - send_request_body.complete
+2026-01-30 17:46:09,559 - httpcore.http11 - DEBUG - receive_response_headers.started request=<Request [b'POST']>
+2026-01-30 17:46:15,481 - httpcore.http11 - DEBUG - receive_response_headers.complete return_value=(b'HTTP/1.1', 200, b'OK', [(b'Content-Type', b'application/json; charset=utf-8'), (b'Date', b'Fri, 30 Jan 2026 16:46:15 GMT'), (b'Content-Length', b'1832')])
+2026-01-30 17:46:15,481 - httpcore.http11 - DEBUG - receive_response_body.started request=<Request [b'POST']>
+2026-01-30 17:46:15,482 - httpcore.http11 - DEBUG - receive_response_body.complete
+2026-01-30 17:46:15,482 - httpcore.http11 - DEBUG - response_closed.started
+2026-01-30 17:46:15,482 - httpcore.http11 - DEBUG - response_closed.complete
+2026-01-30 17:46:15,532 - httpcore.http11 - DEBUG - send_request_headers.started request=<Request [b'POST']>
+2026-01-30 17:46:15,532 - httpcore.http11 - DEBUG - send_request_headers.complete
+2026-01-30 17:46:15,532 - httpcore.http11 - DEBUG - send_request_body.started request=<Request [b'POST']>
+2026-01-30 17:46:15,532 - httpcore.http11 - DEBUG - send_request_body.complete
+2026-01-30 17:46:15,532 - httpcore.http11 - DEBUG - receive_response_headers.started request=<Request [b'POST']>
+2026-01-30 17:46:20,662 - httpcore.http11 - DEBUG - receive_response_headers.complete return_value=(b'HTTP/1.1', 200, b'OK', [(b'Content-Type', b'application/json; charset=utf-8'), (b'Date', b'Fri, 30 Jan 2026 16:46:20 GMT'), (b'Content-Length', b'1511')])
+2026-01-30 17:46:20,663 - httpcore.http11 - DEBUG - receive_response_body.started request=<Request [b'POST']>
+2026-01-30 17:46:20,663 - httpcore.http11 - DEBUG - receive_response_body.complete
+2026-01-30 17:46:20,663 - httpcore.http11 - DEBUG - response_closed.started
+2026-01-30 17:46:20,663 - httpcore.http11 - DEBUG - response_closed.complete
+2026-01-30 17:46:20,699 - httpcore.http11 - DEBUG - send_request_headers.started request=<Request [b'POST']>
+2026-01-30 17:46:20,699 - httpcore.http11 - DEBUG - send_request_headers.complete
+2026-01-30 17:46:20,699 - httpcore.http11 - DEBUG - send_request_body.started request=<Request [b'POST']>
+2026-01-30 17:46:20,699 - httpcore.http11 - DEBUG - send_request_body.complete
+2026-01-30 17:46:20,699 - httpcore.http11 - DEBUG - receive_response_headers.started request=<Request [b'POST']>
+2026-01-30 17:46:24,627 - httpcore.http11 - DEBUG - receive_response_headers.complete return_value=(b'HTTP/1.1', 200, b'OK', [(b'Content-Type', b'application/json; charset=utf-8'), (b'Date', b'Fri, 30 Jan 2026 16:46:24 GMT'), (b'Content-Length', b'1143')])
+2026-01-30 17:46:24,628 - httpcore.http11 - DEBUG - receive_response_body.started request=<Request [b'POST']>
+2026-01-30 17:46:24,628 - httpcore.http11 - DEBUG - receive_response_body.complete
+2026-01-30 17:46:24,628 - httpcore.http11 - DEBUG - response_closed.started
+2026-01-30 17:46:24,628 - httpcore.http11 - DEBUG - response_closed.complete
+2026-01-30 17:46:24,664 - httpcore.http11 - DEBUG - send_request_headers.started request=<Request [b'POST']>
+2026-01-30 17:46:24,664 - httpcore.http11 - DEBUG - send_request_headers.complete
+2026-01-30 17:46:24,664 - httpcore.http11 - DEBUG - send_request_body.started request=<Request [b'POST']>
+2026-01-30 17:46:24,664 - httpcore.http11 - DEBUG - send_request_body.complete
+2026-01-30 17:46:24,664 - httpcore.http11 - DEBUG - receive_response_headers.started request=<Request [b'POST']>
+2026-01-30 17:46:32,493 - httpcore.http11 - DEBUG - receive_response_headers.complete return_value=(b'HTTP/1.1', 200, b'OK', [(b'Content-Type', b'application/json; charset=utf-8'), (b'Date', b'Fri, 30 Jan 2026 16:46:32 GMT'), (b'Transfer-Encoding', b'chunked')])
+2026-01-30 17:46:32,494 - httpcore.http11 - DEBUG - receive_response_body.started request=<Request [b'POST']>
+2026-01-30 17:46:32,495 - httpcore.http11 - DEBUG - receive_response_body.complete
+2026-01-30 17:46:32,495 - httpcore.http11 - DEBUG - response_closed.started
+2026-01-30 17:46:32,495 - httpcore.http11 - DEBUG - response_closed.complete
+2026-01-30 17:49:49,121 - utils.llm_client - DEBUG - Cost for request: $0.010896
+2026-01-30 17:49:57,604 - utils.llm_client - DEBUG - Cost for request: $0.004754
+2026-01-30 17:50:27,359 - utils.llm_client - DEBUG - Cost for request: $0.009160
+2026-01-30 17:50:47,497 - utils.llm_client - DEBUG - Cost for request: $0.006532
+2026-01-30 17:50:51,894 - utils.llm_client - DEBUG - Cost for request: $0.002284
+2026-01-30 17:51:20,673 - utils.llm_client - DEBUG - Cost for request: $0.011378
+2026-01-30 17:51:23,336 - utils.llm_client - DEBUG - Cost for request: $0.001030
+2026-01-30 17:51:35,102 - utils.llm_client - DEBUG - Cost for request: $0.005036
+2026-01-30 17:51:52,833 - utils.llm_client - DEBUG - Cost for request: $0.005272
+2026-01-30 17:52:08,188 - utils.llm_client - DEBUG - Cost for request: $0.006530
+2026-01-30 17:52:23,406 - utils.llm_client - DEBUG - Cost for request: $0.005878
+2026-01-30 17:52:23,495 - asyncio - DEBUG - Using selector: KqueueSelector
+2026-01-30 17:56:21,227 - httpcore.connection - DEBUG - connect_tcp.started host='127.0.0.1' port=11434 local_address=None timeout=None socket_options=None
+2026-01-30 17:56:21,229 - httpcore.connection - DEBUG - connect_tcp.complete return_value=<httpcore._backends.sync.SyncStream object at 0x1146f4980>
+2026-01-30 17:56:21,229 - httpcore.http11 - DEBUG - send_request_headers.started request=<Request [b'POST']>
+2026-01-30 17:56:21,229 - httpcore.http11 - DEBUG - send_request_headers.complete
+2026-01-30 17:56:21,229 - httpcore.http11 - DEBUG - send_request_body.started request=<Request [b'POST']>
+2026-01-30 17:56:21,229 - httpcore.http11 - DEBUG - send_request_body.complete
+2026-01-30 17:56:21,229 - httpcore.http11 - DEBUG - receive_response_headers.started request=<Request [b'POST']>
+2026-01-30 17:56:29,807 - httpcore.http11 - DEBUG - receive_response_headers.complete return_value=(b'HTTP/1.1', 200, b'OK', [(b'Content-Type', b'application/json; charset=utf-8'), (b'Date', b'Fri, 30 Jan 2026 16:56:29 GMT'), (b'Content-Length', b'1527')])
+2026-01-30 17:56:29,811 - httpcore.http11 - DEBUG - receive_response_body.started request=<Request [b'POST']>
+2026-01-30 17:56:29,811 - httpcore.http11 - DEBUG - receive_response_body.complete
+2026-01-30 17:56:29,811 - httpcore.http11 - DEBUG - response_closed.started
+2026-01-30 17:56:29,811 - httpcore.http11 - DEBUG - response_closed.complete
+2026-01-30 17:56:29,857 - httpcore.http11 - DEBUG - send_request_headers.started request=<Request [b'POST']>
+2026-01-30 17:56:29,858 - httpcore.http11 - DEBUG - send_request_headers.complete
+2026-01-30 17:56:29,858 - httpcore.http11 - DEBUG - send_request_body.started request=<Request [b'POST']>
+2026-01-30 17:56:29,858 - httpcore.http11 - DEBUG - send_request_body.complete
+2026-01-30 17:56:29,858 - httpcore.http11 - DEBUG - receive_response_headers.started request=<Request [b'POST']>
+2026-01-30 17:56:35,010 - httpcore.http11 - DEBUG - receive_response_headers.complete return_value=(b'HTTP/1.1', 200, b'OK', [(b'Content-Type', b'application/json; charset=utf-8'), (b'Date', b'Fri, 30 Jan 2026 16:56:35 GMT'), (b'Content-Length', b'1391')])
+2026-01-30 17:56:35,010 - httpcore.http11 - DEBUG - receive_response_body.started request=<Request [b'POST']>
+2026-01-30 17:56:35,011 - httpcore.http11 - DEBUG - receive_response_body.complete
+2026-01-30 17:56:35,011 - httpcore.http11 - DEBUG - response_closed.started
+2026-01-30 17:56:35,011 - httpcore.http11 - DEBUG - response_closed.complete
+2026-01-30 17:56:35,061 - httpcore.http11 - DEBUG - send_request_headers.started request=<Request [b'POST']>
+2026-01-30 17:56:35,061 - httpcore.http11 - DEBUG - send_request_headers.complete
+2026-01-30 17:56:35,061 - httpcore.http11 - DEBUG - send_request_body.started request=<Request [b'POST']>
+2026-01-30 17:56:35,061 - httpcore.http11 - DEBUG - send_request_body.complete
+2026-01-30 17:56:35,061 - httpcore.http11 - DEBUG - receive_response_headers.started request=<Request [b'POST']>
+2026-01-30 17:56:42,558 - httpcore.http11 - DEBUG - receive_response_headers.complete return_value=(b'HTTP/1.1', 200, b'OK', [(b'Content-Type', b'application/json; charset=utf-8'), (b'Date', b'Fri, 30 Jan 2026 16:56:42 GMT'), (b'Content-Length', b'1984')])
+2026-01-30 17:56:42,559 - httpcore.http11 - DEBUG - receive_response_body.started request=<Request [b'POST']>
+2026-01-30 17:56:42,559 - httpcore.http11 - DEBUG - receive_response_body.complete
+2026-01-30 17:56:42,559 - httpcore.http11 - DEBUG - response_closed.started
+2026-01-30 17:56:42,559 - httpcore.http11 - DEBUG - response_closed.complete
+2026-01-30 17:56:42,611 - httpcore.http11 - DEBUG - send_request_headers.started request=<Request [b'POST']>
+2026-01-30 17:56:42,611 - httpcore.http11 - DEBUG - send_request_headers.complete
+2026-01-30 17:56:42,611 - httpcore.http11 - DEBUG - send_request_body.started request=<Request [b'POST']>
+2026-01-30 17:56:42,611 - httpcore.http11 - DEBUG - send_request_body.complete
+2026-01-30 17:56:42,611 - httpcore.http11 - DEBUG - receive_response_headers.started request=<Request [b'POST']>
+2026-01-30 17:56:45,906 - httpcore.http11 - DEBUG - receive_response_headers.complete return_value=(b'HTTP/1.1', 200, b'OK', [(b'Content-Type', b'application/json; charset=utf-8'), (b'Date', b'Fri, 30 Jan 2026 16:56:45 GMT'), (b'Content-Length', b'1014')])
+2026-01-30 17:56:45,906 - httpcore.http11 - DEBUG - receive_response_body.started request=<Request [b'POST']>
+2026-01-30 17:56:45,906 - httpcore.http11 - DEBUG - receive_response_body.complete
+2026-01-30 17:56:45,906 - httpcore.http11 - DEBUG - response_closed.started
+2026-01-30 17:56:45,906 - httpcore.http11 - DEBUG - response_closed.complete
+2026-01-30 17:56:45,953 - httpcore.http11 - DEBUG - send_request_headers.started request=<Request [b'POST']>
+2026-01-30 17:56:45,953 - httpcore.http11 - DEBUG - send_request_headers.complete
+2026-01-30 17:56:45,953 - httpcore.http11 - DEBUG - send_request_body.started request=<Request [b'POST']>
+2026-01-30 17:56:45,953 - httpcore.http11 - DEBUG - send_request_body.complete
+2026-01-30 17:56:45,953 - httpcore.http11 - DEBUG - receive_response_headers.started request=<Request [b'POST']>
+2026-01-30 17:56:49,250 - httpcore.http11 - DEBUG - receive_response_headers.complete return_value=(b'HTTP/1.1', 200, b'OK', [(b'Content-Type', b'application/json; charset=utf-8'), (b'Date', b'Fri, 30 Jan 2026 16:56:49 GMT'), (b'Content-Length', b'1048')])
+2026-01-30 17:56:49,251 - httpcore.http11 - DEBUG - receive_response_body.started request=<Request [b'POST']>
+2026-01-30 17:56:49,251 - httpcore.http11 - DEBUG - receive_response_body.complete
+2026-01-30 17:56:49,251 - httpcore.http11 - DEBUG - response_closed.started
+2026-01-30 17:56:49,251 - httpcore.http11 - DEBUG - response_closed.complete
+2026-01-30 17:56:49,283 - httpcore.http11 - DEBUG - send_request_headers.started request=<Request [b'POST']>
+2026-01-30 17:56:49,283 - httpcore.http11 - DEBUG - send_request_headers.complete
+2026-01-30 17:56:49,283 - httpcore.http11 - DEBUG - send_request_body.started request=<Request [b'POST']>
+2026-01-30 17:56:49,283 - httpcore.http11 - DEBUG - send_request_body.complete
+2026-01-30 17:56:49,284 - httpcore.http11 - DEBUG - receive_response_headers.started request=<Request [b'POST']>
+2026-01-30 17:56:56,200 - httpcore.http11 - DEBUG - receive_response_headers.complete return_value=(b'HTTP/1.1', 200, b'OK', [(b'Content-Type', b'application/json; charset=utf-8'), (b'Date', b'Fri, 30 Jan 2026 16:56:56 GMT'), (b'Transfer-Encoding', b'chunked')])
+2026-01-30 17:56:56,201 - httpcore.http11 - DEBUG - receive_response_body.started request=<Request [b'POST']>
+2026-01-30 17:56:56,201 - httpcore.http11 - DEBUG - receive_response_body.complete
+2026-01-30 17:56:56,201 - httpcore.http11 - DEBUG - response_closed.started
+2026-01-30 17:56:56,201 - httpcore.http11 - DEBUG - response_closed.complete
+2026-01-30 17:56:56,245 - httpcore.http11 - DEBUG - send_request_headers.started request=<Request [b'POST']>
+2026-01-30 17:56:56,245 - httpcore.http11 - DEBUG - send_request_headers.complete
+2026-01-30 17:56:56,245 - httpcore.http11 - DEBUG - send_request_body.started request=<Request [b'POST']>
+2026-01-30 17:56:56,246 - httpcore.http11 - DEBUG - send_request_body.complete
+2026-01-30 17:56:56,246 - httpcore.http11 - DEBUG - receive_response_headers.started request=<Request [b'POST']>
+2026-01-30 17:56:57,952 - httpcore.http11 - DEBUG - receive_response_headers.complete return_value=(b'HTTP/1.1', 200, b'OK', [(b'Content-Type', b'application/json; charset=utf-8'), (b'Date', b'Fri, 30 Jan 2026 16:56:57 GMT'), (b'Content-Length', b'620')])
+2026-01-30 17:56:57,953 - httpcore.http11 - DEBUG - receive_response_body.started request=<Request [b'POST']>
+2026-01-30 17:56:57,953 - httpcore.http11 - DEBUG - receive_response_body.complete
+2026-01-30 17:56:57,953 - httpcore.http11 - DEBUG - response_closed.started
+2026-01-30 17:56:57,953 - httpcore.http11 - DEBUG - response_closed.complete
+2026-01-30 17:56:57,987 - httpcore.http11 - DEBUG - send_request_headers.started request=<Request [b'POST']>
+2026-01-30 17:56:57,987 - httpcore.http11 - DEBUG - send_request_headers.complete
+2026-01-30 17:56:57,987 - httpcore.http11 - DEBUG - send_request_body.started request=<Request [b'POST']>
+2026-01-30 17:56:57,987 - httpcore.http11 - DEBUG - send_request_body.complete
+2026-01-30 17:56:57,987 - httpcore.http11 - DEBUG - receive_response_headers.started request=<Request [b'POST']>
+2026-01-30 17:57:03,857 - httpcore.http11 - DEBUG - receive_response_headers.complete return_value=(b'HTTP/1.1', 200, b'OK', [(b'Content-Type', b'application/json; charset=utf-8'), (b'Date', b'Fri, 30 Jan 2026 16:57:03 GMT'), (b'Content-Length', b'1832')])
+2026-01-30 17:57:03,857 - httpcore.http11 - DEBUG - receive_response_body.started request=<Request [b'POST']>
+2026-01-30 17:57:03,857 - httpcore.http11 - DEBUG - receive_response_body.complete
+2026-01-30 17:57:03,857 - httpcore.http11 - DEBUG - response_closed.started
+2026-01-30 17:57:03,857 - httpcore.http11 - DEBUG - response_closed.complete
+2026-01-30 17:57:03,884 - httpcore.http11 - DEBUG - send_request_headers.started request=<Request [b'POST']>
+2026-01-30 17:57:03,884 - httpcore.http11 - DEBUG - send_request_headers.complete
+2026-01-30 17:57:03,884 - httpcore.http11 - DEBUG - send_request_body.started request=<Request [b'POST']>
+2026-01-30 17:57:03,884 - httpcore.http11 - DEBUG - send_request_body.complete
+2026-01-30 17:57:03,884 - httpcore.http11 - DEBUG - receive_response_headers.started request=<Request [b'POST']>
+2026-01-30 17:57:08,909 - httpcore.http11 - DEBUG - receive_response_headers.complete return_value=(b'HTTP/1.1', 200, b'OK', [(b'Content-Type', b'application/json; charset=utf-8'), (b'Date', b'Fri, 30 Jan 2026 16:57:08 GMT'), (b'Content-Length', b'1511')])
+2026-01-30 17:57:08,910 - httpcore.http11 - DEBUG - receive_response_body.started request=<Request [b'POST']>
+2026-01-30 17:57:08,910 - httpcore.http11 - DEBUG - receive_response_body.complete
+2026-01-30 17:57:08,910 - httpcore.http11 - DEBUG - response_closed.started
+2026-01-30 17:57:08,910 - httpcore.http11 - DEBUG - response_closed.complete
+2026-01-30 17:57:08,943 - httpcore.http11 - DEBUG - send_request_headers.started request=<Request [b'POST']>
+2026-01-30 17:57:08,943 - httpcore.http11 - DEBUG - send_request_headers.complete
+2026-01-30 17:57:08,943 - httpcore.http11 - DEBUG - send_request_body.started request=<Request [b'POST']>
+2026-01-30 17:57:08,943 - httpcore.http11 - DEBUG - send_request_body.complete
+2026-01-30 17:57:08,943 - httpcore.http11 - DEBUG - receive_response_headers.started request=<Request [b'POST']>
+2026-01-30 17:57:12,827 - httpcore.http11 - DEBUG - receive_response_headers.complete return_value=(b'HTTP/1.1', 200, b'OK', [(b'Content-Type', b'application/json; charset=utf-8'), (b'Date', b'Fri, 30 Jan 2026 16:57:12 GMT'), (b'Content-Length', b'1143')])
+2026-01-30 17:57:12,827 - httpcore.http11 - DEBUG - receive_response_body.started request=<Request [b'POST']>
+2026-01-30 17:57:12,827 - httpcore.http11 - DEBUG - receive_response_body.complete
+2026-01-30 17:57:12,827 - httpcore.http11 - DEBUG - response_closed.started
+2026-01-30 17:57:12,827 - httpcore.http11 - DEBUG - response_closed.complete
+2026-01-30 17:57:12,857 - httpcore.http11 - DEBUG - send_request_headers.started request=<Request [b'POST']>
+2026-01-30 17:57:12,857 - httpcore.http11 - DEBUG - send_request_headers.complete
+2026-01-30 17:57:12,857 - httpcore.http11 - DEBUG - send_request_body.started request=<Request [b'POST']>
+2026-01-30 17:57:12,857 - httpcore.http11 - DEBUG - send_request_body.complete
+2026-01-30 17:57:12,857 - httpcore.http11 - DEBUG - receive_response_headers.started request=<Request [b'POST']>
+2026-01-30 17:57:20,443 - httpcore.http11 - DEBUG - receive_response_headers.complete return_value=(b'HTTP/1.1', 200, b'OK', [(b'Content-Type', b'application/json; charset=utf-8'), (b'Date', b'Fri, 30 Jan 2026 16:57:20 GMT'), (b'Transfer-Encoding', b'chunked')])
+2026-01-30 17:57:20,443 - httpcore.http11 - DEBUG - receive_response_body.started request=<Request [b'POST']>
+2026-01-30 17:57:20,444 - httpcore.http11 - DEBUG - receive_response_body.complete
+2026-01-30 17:57:20,444 - httpcore.http11 - DEBUG - response_closed.started
+2026-01-30 17:57:20,444 - httpcore.http11 - DEBUG - response_closed.complete
+2026-01-30 18:16:08,197 - utils.llm_client - DEBUG - Cost for request: $0.008988
+2026-01-30 18:16:19,720 - utils.llm_client - DEBUG - Cost for request: $0.004550
+2026-01-30 18:16:48,211 - utils.llm_client - DEBUG - Cost for request: $0.009010
+2026-01-30 18:17:08,380 - utils.llm_client - DEBUG - Cost for request: $0.007258
+2026-01-30 18:17:12,276 - utils.llm_client - DEBUG - Cost for request: $0.002110
+2026-01-30 18:17:40,808 - utils.llm_client - DEBUG - Cost for request: $0.012614
+2026-01-30 18:17:43,472 - utils.llm_client - DEBUG - Cost for request: $0.001018
+2026-01-30 18:17:53,608 - utils.llm_client - DEBUG - Cost for request: $0.004598
+2026-01-30 18:18:04,448 - utils.llm_client - DEBUG - Cost for request: $0.004912
+2026-01-30 18:18:18,780 - utils.llm_client - DEBUG - Cost for request: $0.006056
+2026-01-30 18:18:29,008 - utils.llm_client - DEBUG - Cost for request: $0.004720
+2026-01-30 18:18:29,109 - asyncio - DEBUG - Using selector: KqueueSelector
+2026-01-30 18:53:19,640 - httpcore.connection - DEBUG - connect_tcp.started host='127.0.0.1' port=11434 local_address=None timeout=None socket_options=None
+2026-01-30 18:53:19,642 - httpcore.connection - DEBUG - connect_tcp.complete return_value=<httpcore._backends.sync.SyncStream object at 0x111fac980>
+2026-01-30 18:53:19,642 - httpcore.http11 - DEBUG - send_request_headers.started request=<Request [b'POST']>
+2026-01-30 18:53:19,642 - httpcore.http11 - DEBUG - send_request_headers.complete
+2026-01-30 18:53:19,643 - httpcore.http11 - DEBUG - send_request_body.started request=<Request [b'POST']>
+2026-01-30 18:53:19,643 - httpcore.http11 - DEBUG - send_request_body.complete
+2026-01-30 18:53:19,643 - httpcore.http11 - DEBUG - receive_response_headers.started request=<Request [b'POST']>
+2026-01-30 18:53:28,727 - httpcore.http11 - DEBUG - receive_response_headers.complete return_value=(b'HTTP/1.1', 200, b'OK', [(b'Content-Type', b'application/json; charset=utf-8'), (b'Date', b'Fri, 30 Jan 2026 17:53:28 GMT'), (b'Content-Length', b'1526')])
+2026-01-30 18:53:28,729 - httpcore.http11 - DEBUG - receive_response_body.started request=<Request [b'POST']>
+2026-01-30 18:53:28,730 - httpcore.http11 - DEBUG - receive_response_body.complete
+2026-01-30 18:53:28,730 - httpcore.http11 - DEBUG - response_closed.started
+2026-01-30 18:53:28,730 - httpcore.http11 - DEBUG - response_closed.complete
+2026-01-30 18:53:28,779 - httpcore.http11 - DEBUG - send_request_headers.started request=<Request [b'POST']>
+2026-01-30 18:53:28,780 - httpcore.http11 - DEBUG - send_request_headers.complete
+2026-01-30 18:53:28,780 - httpcore.http11 - DEBUG - send_request_body.started request=<Request [b'POST']>
+2026-01-30 18:53:28,780 - httpcore.http11 - DEBUG - send_request_body.complete
+2026-01-30 18:53:28,780 - httpcore.http11 - DEBUG - receive_response_headers.started request=<Request [b'POST']>
+2026-01-30 18:53:33,974 - httpcore.http11 - DEBUG - receive_response_headers.complete return_value=(b'HTTP/1.1', 200, b'OK', [(b'Content-Type', b'application/json; charset=utf-8'), (b'Date', b'Fri, 30 Jan 2026 17:53:33 GMT'), (b'Content-Length', b'1391')])
+2026-01-30 18:53:33,975 - httpcore.http11 - DEBUG - receive_response_body.started request=<Request [b'POST']>
+2026-01-30 18:53:33,975 - httpcore.http11 - DEBUG - receive_response_body.complete
+2026-01-30 18:53:33,976 - httpcore.http11 - DEBUG - response_closed.started
+2026-01-30 18:53:33,976 - httpcore.http11 - DEBUG - response_closed.complete
+2026-01-30 18:53:34,023 - httpcore.http11 - DEBUG - send_request_headers.started request=<Request [b'POST']>
+2026-01-30 18:53:34,023 - httpcore.http11 - DEBUG - send_request_headers.complete
+2026-01-30 18:53:34,023 - httpcore.http11 - DEBUG - send_request_body.started request=<Request [b'POST']>
+2026-01-30 18:53:34,023 - httpcore.http11 - DEBUG - send_request_body.complete
+2026-01-30 18:53:34,023 - httpcore.http11 - DEBUG - receive_response_headers.started request=<Request [b'POST']>
+2026-01-30 18:53:41,396 - httpcore.http11 - DEBUG - receive_response_headers.complete return_value=(b'HTTP/1.1', 200, b'OK', [(b'Content-Type', b'application/json; charset=utf-8'), (b'Date', b'Fri, 30 Jan 2026 17:53:41 GMT'), (b'Content-Length', b'1984')])
+2026-01-30 18:53:41,397 - httpcore.http11 - DEBUG - receive_response_body.started request=<Request [b'POST']>
+2026-01-30 18:53:41,397 - httpcore.http11 - DEBUG - receive_response_body.complete
+2026-01-30 18:53:41,397 - httpcore.http11 - DEBUG - response_closed.started
+2026-01-30 18:53:41,397 - httpcore.http11 - DEBUG - response_closed.complete
+2026-01-30 18:53:41,430 - httpcore.http11 - DEBUG - send_request_headers.started request=<Request [b'POST']>
+2026-01-30 18:53:41,430 - httpcore.http11 - DEBUG - send_request_headers.complete
+2026-01-30 18:53:41,430 - httpcore.http11 - DEBUG - send_request_body.started request=<Request [b'POST']>
+2026-01-30 18:53:41,430 - httpcore.http11 - DEBUG - send_request_body.complete
+2026-01-30 18:53:41,430 - httpcore.http11 - DEBUG - receive_response_headers.started request=<Request [b'POST']>
+2026-01-30 18:53:44,633 - httpcore.http11 - DEBUG - receive_response_headers.complete return_value=(b'HTTP/1.1', 200, b'OK', [(b'Content-Type', b'application/json; charset=utf-8'), (b'Date', b'Fri, 30 Jan 2026 17:53:44 GMT'), (b'Content-Length', b'1014')])
+2026-01-30 18:53:44,634 - httpcore.http11 - DEBUG - receive_response_body.started request=<Request [b'POST']>
+2026-01-30 18:53:44,634 - httpcore.http11 - DEBUG - receive_response_body.complete
+2026-01-30 18:53:44,634 - httpcore.http11 - DEBUG - response_closed.started
+2026-01-30 18:53:44,634 - httpcore.http11 - DEBUG - response_closed.complete
+2026-01-30 18:53:44,661 - httpcore.http11 - DEBUG - send_request_headers.started request=<Request [b'POST']>
+2026-01-30 18:53:44,661 - httpcore.http11 - DEBUG - send_request_headers.complete
+2026-01-30 18:53:44,661 - httpcore.http11 - DEBUG - send_request_body.started request=<Request [b'POST']>
+2026-01-30 18:53:44,661 - httpcore.http11 - DEBUG - send_request_body.complete
+2026-01-30 18:53:44,661 - httpcore.http11 - DEBUG - receive_response_headers.started request=<Request [b'POST']>
+2026-01-30 18:53:47,891 - httpcore.http11 - DEBUG - receive_response_headers.complete return_value=(b'HTTP/1.1', 200, b'OK', [(b'Content-Type', b'application/json; charset=utf-8'), (b'Date', b'Fri, 30 Jan 2026 17:53:47 GMT'), (b'Content-Length', b'1048')])
+2026-01-30 18:53:47,891 - httpcore.http11 - DEBUG - receive_response_body.started request=<Request [b'POST']>
+2026-01-30 18:53:47,891 - httpcore.http11 - DEBUG - receive_response_body.complete
+2026-01-30 18:53:47,891 - httpcore.http11 - DEBUG - response_closed.started
+2026-01-30 18:53:47,891 - httpcore.http11 - DEBUG - response_closed.complete
+2026-01-30 18:53:47,914 - httpcore.http11 - DEBUG - send_request_headers.started request=<Request [b'POST']>
+2026-01-30 18:53:47,915 - httpcore.http11 - DEBUG - send_request_headers.complete
+2026-01-30 18:53:47,915 - httpcore.http11 - DEBUG - send_request_body.started request=<Request [b'POST']>
+2026-01-30 18:53:47,915 - httpcore.http11 - DEBUG - send_request_body.complete
+2026-01-30 18:53:47,915 - httpcore.http11 - DEBUG - receive_response_headers.started request=<Request [b'POST']>
+2026-01-30 18:53:54,844 - httpcore.http11 - DEBUG - receive_response_headers.complete return_value=(b'HTTP/1.1', 200, b'OK', [(b'Content-Type', b'application/json; charset=utf-8'), (b'Date', b'Fri, 30 Jan 2026 17:53:54 GMT'), (b'Transfer-Encoding', b'chunked')])
+2026-01-30 18:53:54,845 - httpcore.http11 - DEBUG - receive_response_body.started request=<Request [b'POST']>
+2026-01-30 18:53:54,845 - httpcore.http11 - DEBUG - receive_response_body.complete
+2026-01-30 18:53:54,846 - httpcore.http11 - DEBUG - response_closed.started
+2026-01-30 18:53:54,846 - httpcore.http11 - DEBUG - response_closed.complete
+2026-01-30 18:53:54,892 - httpcore.http11 - DEBUG - send_request_headers.started request=<Request [b'POST']>
+2026-01-30 18:53:54,893 - httpcore.http11 - DEBUG - send_request_headers.complete
+2026-01-30 18:53:54,893 - httpcore.http11 - DEBUG - send_request_body.started request=<Request [b'POST']>
+2026-01-30 18:53:54,893 - httpcore.http11 - DEBUG - send_request_body.complete
+2026-01-30 18:53:54,893 - httpcore.http11 - DEBUG - receive_response_headers.started request=<Request [b'POST']>
+2026-01-30 18:53:56,617 - httpcore.http11 - DEBUG - receive_response_headers.complete return_value=(b'HTTP/1.1', 200, b'OK', [(b'Content-Type', b'application/json; charset=utf-8'), (b'Date', b'Fri, 30 Jan 2026 17:53:56 GMT'), (b'Content-Length', b'620')])
+2026-01-30 18:53:56,617 - httpcore.http11 - DEBUG - receive_response_body.started request=<Request [b'POST']>
+2026-01-30 18:53:56,617 - httpcore.http11 - DEBUG - receive_response_body.complete
+2026-01-30 18:53:56,617 - httpcore.http11 - DEBUG - response_closed.started
+2026-01-30 18:53:56,617 - httpcore.http11 - DEBUG - response_closed.complete
+2026-01-30 18:53:56,652 - httpcore.http11 - DEBUG - send_request_headers.started request=<Request [b'POST']>
+2026-01-30 18:53:56,652 - httpcore.http11 - DEBUG - send_request_headers.complete
+2026-01-30 18:53:56,652 - httpcore.http11 - DEBUG - send_request_body.started request=<Request [b'POST']>
+2026-01-30 18:53:56,652 - httpcore.http11 - DEBUG - send_request_body.complete
+2026-01-30 18:53:56,652 - httpcore.http11 - DEBUG - receive_response_headers.started request=<Request [b'POST']>
+2026-01-30 18:54:02,582 - httpcore.http11 - DEBUG - receive_response_headers.complete return_value=(b'HTTP/1.1', 200, b'OK', [(b'Content-Type', b'application/json; charset=utf-8'), (b'Date', b'Fri, 30 Jan 2026 17:54:02 GMT'), (b'Content-Length', b'1832')])
+2026-01-30 18:54:02,582 - httpcore.http11 - DEBUG - receive_response_body.started request=<Request [b'POST']>
+2026-01-30 18:54:02,582 - httpcore.http11 - DEBUG - receive_response_body.complete
+2026-01-30 18:54:02,582 - httpcore.http11 - DEBUG - response_closed.started
+2026-01-30 18:54:02,582 - httpcore.http11 - DEBUG - response_closed.complete
+2026-01-30 18:54:02,624 - httpcore.http11 - DEBUG - send_request_headers.started request=<Request [b'POST']>
+2026-01-30 18:54:02,625 - httpcore.http11 - DEBUG - send_request_headers.complete
+2026-01-30 18:54:02,625 - httpcore.http11 - DEBUG - send_request_body.started request=<Request [b'POST']>
+2026-01-30 18:54:02,625 - httpcore.http11 - DEBUG - send_request_body.complete
+2026-01-30 18:54:02,625 - httpcore.http11 - DEBUG - receive_response_headers.started request=<Request [b'POST']>
+2026-01-30 18:54:07,730 - httpcore.http11 - DEBUG - receive_response_headers.complete return_value=(b'HTTP/1.1', 200, b'OK', [(b'Content-Type', b'application/json; charset=utf-8'), (b'Date', b'Fri, 30 Jan 2026 17:54:07 GMT'), (b'Content-Length', b'1511')])
+2026-01-30 18:54:07,730 - httpcore.http11 - DEBUG - receive_response_body.started request=<Request [b'POST']>
+2026-01-30 18:54:07,730 - httpcore.http11 - DEBUG - receive_response_body.complete
+2026-01-30 18:54:07,730 - httpcore.http11 - DEBUG - response_closed.started
+2026-01-30 18:54:07,730 - httpcore.http11 - DEBUG - response_closed.complete
+2026-01-30 18:54:07,768 - httpcore.http11 - DEBUG - send_request_headers.started request=<Request [b'POST']>
+2026-01-30 18:54:07,768 - httpcore.http11 - DEBUG - send_request_headers.complete
+2026-01-30 18:54:07,768 - httpcore.http11 - DEBUG - send_request_body.started request=<Request [b'POST']>
+2026-01-30 18:54:07,768 - httpcore.http11 - DEBUG - send_request_body.complete
+2026-01-30 18:54:07,768 - httpcore.http11 - DEBUG - receive_response_headers.started request=<Request [b'POST']>
+2026-01-30 18:54:11,712 - httpcore.http11 - DEBUG - receive_response_headers.complete return_value=(b'HTTP/1.1', 200, b'OK', [(b'Content-Type', b'application/json; charset=utf-8'), (b'Date', b'Fri, 30 Jan 2026 17:54:11 GMT'), (b'Content-Length', b'1143')])
+2026-01-30 18:54:11,712 - httpcore.http11 - DEBUG - receive_response_body.started request=<Request [b'POST']>
+2026-01-30 18:54:11,712 - httpcore.http11 - DEBUG - receive_response_body.complete
+2026-01-30 18:54:11,713 - httpcore.http11 - DEBUG - response_closed.started
+2026-01-30 18:54:11,713 - httpcore.http11 - DEBUG - response_closed.complete
+2026-01-30 18:54:11,748 - httpcore.http11 - DEBUG - send_request_headers.started request=<Request [b'POST']>
+2026-01-30 18:54:11,748 - httpcore.http11 - DEBUG - send_request_headers.complete
+2026-01-30 18:54:11,748 - httpcore.http11 - DEBUG - send_request_body.started request=<Request [b'POST']>
+2026-01-30 18:54:11,748 - httpcore.http11 - DEBUG - send_request_body.complete
+2026-01-30 18:54:11,748 - httpcore.http11 - DEBUG - receive_response_headers.started request=<Request [b'POST']>
+2026-01-30 18:54:19,522 - httpcore.http11 - DEBUG - receive_response_headers.complete return_value=(b'HTTP/1.1', 200, b'OK', [(b'Content-Type', b'application/json; charset=utf-8'), (b'Date', b'Fri, 30 Jan 2026 17:54:19 GMT'), (b'Transfer-Encoding', b'chunked')])
+2026-01-30 18:54:19,524 - httpcore.http11 - DEBUG - receive_response_body.started request=<Request [b'POST']>
+2026-01-30 18:54:19,524 - httpcore.http11 - DEBUG - receive_response_body.complete
+2026-01-30 18:54:19,524 - httpcore.http11 - DEBUG - response_closed.started
+2026-01-30 18:54:19,524 - httpcore.http11 - DEBUG - response_closed.complete
+2026-01-30 19:00:19,187 - httpcore.connection - DEBUG - connect_tcp.started host='127.0.0.1' port=11434 local_address=None timeout=None socket_options=None
+2026-01-30 19:00:19,188 - httpcore.connection - DEBUG - connect_tcp.complete return_value=<httpcore._backends.sync.SyncStream object at 0x1146d1400>
+2026-01-30 19:00:19,188 - httpcore.http11 - DEBUG - send_request_headers.started request=<Request [b'POST']>
+2026-01-30 19:00:19,188 - httpcore.http11 - DEBUG - send_request_headers.complete
+2026-01-30 19:00:19,188 - httpcore.http11 - DEBUG - send_request_body.started request=<Request [b'POST']>
+2026-01-30 19:00:19,188 - httpcore.http11 - DEBUG - send_request_body.complete
+2026-01-30 19:00:19,188 - httpcore.http11 - DEBUG - receive_response_headers.started request=<Request [b'POST']>
+2026-01-30 19:01:48,943 - httpcore.http11 - DEBUG - receive_response_headers.complete return_value=(b'HTTP/1.1', 200, b'OK', [(b'Content-Type', b'application/json; charset=utf-8'), (b'Date', b'Fri, 30 Jan 2026 18:01:48 GMT'), (b'Transfer-Encoding', b'chunked')])
+2026-01-30 19:01:48,947 - httpcore.http11 - DEBUG - receive_response_body.started request=<Request [b'POST']>
+2026-01-30 19:01:48,948 - httpcore.http11 - DEBUG - receive_response_body.complete
+2026-01-30 19:01:48,948 - httpcore.http11 - DEBUG - response_closed.started
+2026-01-30 19:01:48,948 - httpcore.http11 - DEBUG - response_closed.complete
+2026-01-30 19:01:49,012 - httpcore.http11 - DEBUG - send_request_headers.started request=<Request [b'POST']>
+2026-01-30 19:01:49,013 - httpcore.http11 - DEBUG - send_request_headers.complete
+2026-01-30 19:01:49,013 - httpcore.http11 - DEBUG - send_request_body.started request=<Request [b'POST']>
+2026-01-30 19:01:49,013 - httpcore.http11 - DEBUG - send_request_body.complete
+2026-01-30 19:01:49,013 - httpcore.http11 - DEBUG - receive_response_headers.started request=<Request [b'POST']>
+2026-01-30 19:02:19,589 - httpcore.http11 - DEBUG - receive_response_headers.complete return_value=(b'HTTP/1.1', 200, b'OK', [(b'Content-Type', b'application/json; charset=utf-8'), (b'Date', b'Fri, 30 Jan 2026 18:02:19 GMT'), (b'Transfer-Encoding', b'chunked')])
+2026-01-30 19:02:19,590 - httpcore.http11 - DEBUG - receive_response_body.started request=<Request [b'POST']>
+2026-01-30 19:02:19,591 - httpcore.http11 - DEBUG - receive_response_body.complete
+2026-01-30 19:02:19,591 - httpcore.http11 - DEBUG - response_closed.started
+2026-01-30 19:02:19,591 - httpcore.http11 - DEBUG - response_closed.complete
+2026-01-30 19:02:19,650 - httpcore.http11 - DEBUG - send_request_headers.started request=<Request [b'POST']>
+2026-01-30 19:02:19,650 - httpcore.http11 - DEBUG - send_request_headers.complete
+2026-01-30 19:02:19,650 - httpcore.http11 - DEBUG - send_request_body.started request=<Request [b'POST']>
+2026-01-30 19:02:19,651 - httpcore.http11 - DEBUG - send_request_body.complete
+2026-01-30 19:02:19,651 - httpcore.http11 - DEBUG - receive_response_headers.started request=<Request [b'POST']>
+2026-01-30 19:03:23,480 - httpcore.http11 - DEBUG - receive_response_headers.complete return_value=(b'HTTP/1.1', 200, b'OK', [(b'Content-Type', b'application/json; charset=utf-8'), (b'Date', b'Fri, 30 Jan 2026 18:03:23 GMT'), (b'Transfer-Encoding', b'chunked')])
+2026-01-30 19:03:23,481 - httpcore.http11 - DEBUG - receive_response_body.started request=<Request [b'POST']>
+2026-01-30 19:03:23,482 - httpcore.http11 - DEBUG - receive_response_body.complete
+2026-01-30 19:03:23,482 - httpcore.http11 - DEBUG - response_closed.started
+2026-01-30 19:03:23,482 - httpcore.http11 - DEBUG - response_closed.complete
+2026-01-30 19:03:23,549 - httpcore.http11 - DEBUG - send_request_headers.started request=<Request [b'POST']>
+2026-01-30 19:03:23,549 - httpcore.http11 - DEBUG - send_request_headers.complete
+2026-01-30 19:03:23,549 - httpcore.http11 - DEBUG - send_request_body.started request=<Request [b'POST']>
+2026-01-30 19:03:23,549 - httpcore.http11 - DEBUG - send_request_body.complete
+2026-01-30 19:03:23,549 - httpcore.http11 - DEBUG - receive_response_headers.started request=<Request [b'POST']>
+2026-01-30 19:04:24,482 - httpcore.http11 - DEBUG - receive_response_headers.complete return_value=(b'HTTP/1.1', 200, b'OK', [(b'Content-Type', b'application/json; charset=utf-8'), (b'Date', b'Fri, 30 Jan 2026 18:04:24 GMT'), (b'Transfer-Encoding', b'chunked')])
+2026-01-30 19:04:24,482 - httpcore.http11 - DEBUG - receive_response_body.started request=<Request [b'POST']>
+2026-01-30 19:04:24,482 - httpcore.http11 - DEBUG - receive_response_body.complete
+2026-01-30 19:04:24,483 - httpcore.http11 - DEBUG - response_closed.started
+2026-01-30 19:04:24,483 - httpcore.http11 - DEBUG - response_closed.complete
+2026-01-30 19:04:24,544 - httpcore.http11 - DEBUG - send_request_headers.started request=<Request [b'POST']>
+2026-01-30 19:04:24,544 - httpcore.http11 - DEBUG - send_request_headers.complete
+2026-01-30 19:04:24,544 - httpcore.http11 - DEBUG - send_request_body.started request=<Request [b'POST']>
+2026-01-30 19:04:24,544 - httpcore.http11 - DEBUG - send_request_body.complete
+2026-01-30 19:04:24,544 - httpcore.http11 - DEBUG - receive_response_headers.started request=<Request [b'POST']>
+2026-01-30 19:04:47,196 - httpcore.http11 - DEBUG - receive_response_headers.complete return_value=(b'HTTP/1.1', 200, b'OK', [(b'Content-Type', b'application/json; charset=utf-8'), (b'Date', b'Fri, 30 Jan 2026 18:04:47 GMT'), (b'Transfer-Encoding', b'chunked')])
+2026-01-30 19:04:47,197 - httpcore.http11 - DEBUG - receive_response_body.started request=<Request [b'POST']>
+2026-01-30 19:04:47,197 - httpcore.http11 - DEBUG - receive_response_body.complete
+2026-01-30 19:04:47,197 - httpcore.http11 - DEBUG - response_closed.started
+2026-01-30 19:04:47,197 - httpcore.http11 - DEBUG - response_closed.complete
+2026-01-30 19:04:47,246 - httpcore.http11 - DEBUG - send_request_headers.started request=<Request [b'POST']>
+2026-01-30 19:04:47,246 - httpcore.http11 - DEBUG - send_request_headers.complete
+2026-01-30 19:04:47,246 - httpcore.http11 - DEBUG - send_request_body.started request=<Request [b'POST']>
+2026-01-30 19:04:47,246 - httpcore.http11 - DEBUG - send_request_body.complete
+2026-01-30 19:04:47,246 - httpcore.http11 - DEBUG - receive_response_headers.started request=<Request [b'POST']>
+2026-01-30 19:05:46,999 - httpcore.http11 - DEBUG - receive_response_headers.complete return_value=(b'HTTP/1.1', 200, b'OK', [(b'Content-Type', b'application/json; charset=utf-8'), (b'Date', b'Fri, 30 Jan 2026 18:05:46 GMT'), (b'Transfer-Encoding', b'chunked')])
+2026-01-30 19:05:47,000 - httpcore.http11 - DEBUG - receive_response_body.started request=<Request [b'POST']>
+2026-01-30 19:05:47,000 - httpcore.http11 - DEBUG - receive_response_body.complete
+2026-01-30 19:05:47,000 - httpcore.http11 - DEBUG - response_closed.started
+2026-01-30 19:05:47,000 - httpcore.http11 - DEBUG - response_closed.complete
+2026-01-30 19:05:47,049 - httpcore.http11 - DEBUG - send_request_headers.started request=<Request [b'POST']>
+2026-01-30 19:05:47,050 - httpcore.http11 - DEBUG - send_request_headers.complete
+2026-01-30 19:05:47,050 - httpcore.http11 - DEBUG - send_request_body.started request=<Request [b'POST']>
+2026-01-30 19:05:47,050 - httpcore.http11 - DEBUG - send_request_body.complete
+2026-01-30 19:05:47,050 - httpcore.http11 - DEBUG - receive_response_headers.started request=<Request [b'POST']>
+2026-01-30 19:05:54,322 - httpcore.http11 - DEBUG - receive_response_headers.complete return_value=(b'HTTP/1.1', 200, b'OK', [(b'Content-Type', b'application/json; charset=utf-8'), (b'Date', b'Fri, 30 Jan 2026 18:05:54 GMT'), (b'Content-Length', b'1087')])
+2026-01-30 19:05:54,323 - httpcore.http11 - DEBUG - receive_response_body.started request=<Request [b'POST']>
+2026-01-30 19:05:54,323 - httpcore.http11 - DEBUG - receive_response_body.complete
+2026-01-30 19:05:54,323 - httpcore.http11 - DEBUG - response_closed.started
+2026-01-30 19:05:54,323 - httpcore.http11 - DEBUG - response_closed.complete
+2026-01-30 19:05:54,366 - httpcore.http11 - DEBUG - send_request_headers.started request=<Request [b'POST']>
+2026-01-30 19:05:54,366 - httpcore.http11 - DEBUG - send_request_headers.complete
+2026-01-30 19:05:54,366 - httpcore.http11 - DEBUG - send_request_body.started request=<Request [b'POST']>
+2026-01-30 19:05:54,366 - httpcore.http11 - DEBUG - send_request_body.complete
+2026-01-30 19:05:54,366 - httpcore.http11 - DEBUG - receive_response_headers.started request=<Request [b'POST']>
+2026-01-30 19:06:23,000 - httpcore.http11 - DEBUG - receive_response_headers.complete return_value=(b'HTTP/1.1', 200, b'OK', [(b'Content-Type', b'application/json; charset=utf-8'), (b'Date', b'Fri, 30 Jan 2026 18:06:22 GMT'), (b'Transfer-Encoding', b'chunked')])
+2026-01-30 19:06:23,000 - httpcore.http11 - DEBUG - receive_response_body.started request=<Request [b'POST']>
+2026-01-30 19:06:23,000 - httpcore.http11 - DEBUG - receive_response_body.complete
+2026-01-30 19:06:23,001 - httpcore.http11 - DEBUG - response_closed.started
+2026-01-30 19:06:23,001 - httpcore.http11 - DEBUG - response_closed.complete
+2026-01-30 19:06:23,054 - httpcore.http11 - DEBUG - send_request_headers.started request=<Request [b'POST']>
+2026-01-30 19:06:23,054 - httpcore.http11 - DEBUG - send_request_headers.complete
+2026-01-30 19:06:23,054 - httpcore.http11 - DEBUG - send_request_body.started request=<Request [b'POST']>
+2026-01-30 19:06:23,054 - httpcore.http11 - DEBUG - send_request_body.complete
+2026-01-30 19:06:23,054 - httpcore.http11 - DEBUG - receive_response_headers.started request=<Request [b'POST']>
+2026-01-30 19:07:35,121 - httpcore.http11 - DEBUG - receive_response_headers.complete return_value=(b'HTTP/1.1', 200, b'OK', [(b'Content-Type', b'application/json; charset=utf-8'), (b'Date', b'Fri, 30 Jan 2026 18:07:35 GMT'), (b'Transfer-Encoding', b'chunked')])
+2026-01-30 19:07:35,124 - httpcore.http11 - DEBUG - receive_response_body.started request=<Request [b'POST']>
+2026-01-30 19:07:35,125 - httpcore.http11 - DEBUG - receive_response_body.complete
+2026-01-30 19:07:35,125 - httpcore.http11 - DEBUG - response_closed.started
+2026-01-30 19:07:35,125 - httpcore.http11 - DEBUG - response_closed.complete
+2026-01-30 19:07:35,231 - httpcore.http11 - DEBUG - send_request_headers.started request=<Request [b'POST']>
+2026-01-30 19:07:35,231 - httpcore.http11 - DEBUG - send_request_headers.complete
+2026-01-30 19:07:35,231 - httpcore.http11 - DEBUG - send_request_body.started request=<Request [b'POST']>
+2026-01-30 19:07:35,231 - httpcore.http11 - DEBUG - send_request_body.complete
+2026-01-30 19:07:35,231 - httpcore.http11 - DEBUG - receive_response_headers.started request=<Request [b'POST']>
+2026-01-30 19:09:27,149 - httpcore.http11 - DEBUG - receive_response_headers.complete return_value=(b'HTTP/1.1', 200, b'OK', [(b'Content-Type', b'application/json; charset=utf-8'), (b'Date', b'Fri, 30 Jan 2026 18:09:27 GMT'), (b'Transfer-Encoding', b'chunked')])
+2026-01-30 19:09:27,150 - httpcore.http11 - DEBUG - receive_response_body.started request=<Request [b'POST']>
+2026-01-30 19:09:27,150 - httpcore.http11 - DEBUG - receive_response_body.complete
+2026-01-30 19:09:27,151 - httpcore.http11 - DEBUG - response_closed.started
+2026-01-30 19:09:27,151 - httpcore.http11 - DEBUG - response_closed.complete
+2026-01-30 19:09:27,223 - httpcore.http11 - DEBUG - send_request_headers.started request=<Request [b'POST']>
+2026-01-30 19:09:27,223 - httpcore.http11 - DEBUG - send_request_headers.complete
+2026-01-30 19:09:27,223 - httpcore.http11 - DEBUG - send_request_body.started request=<Request [b'POST']>
+2026-01-30 19:09:27,223 - httpcore.http11 - DEBUG - send_request_body.complete
+2026-01-30 19:09:27,223 - httpcore.http11 - DEBUG - receive_response_headers.started request=<Request [b'POST']>
+2026-01-30 19:09:58,928 - httpcore.http11 - DEBUG - receive_response_headers.complete return_value=(b'HTTP/1.1', 200, b'OK', [(b'Content-Type', b'application/json; charset=utf-8'), (b'Date', b'Fri, 30 Jan 2026 18:09:58 GMT'), (b'Transfer-Encoding', b'chunked')])
+2026-01-30 19:09:58,929 - httpcore.http11 - DEBUG - receive_response_body.started request=<Request [b'POST']>
+2026-01-30 19:09:58,929 - httpcore.http11 - DEBUG - receive_response_body.complete
+2026-01-30 19:09:58,929 - httpcore.http11 - DEBUG - response_closed.started
+2026-01-30 19:09:58,929 - httpcore.http11 - DEBUG - response_closed.complete
+2026-01-30 19:44:58,399 - utils.provider_clients - DEBUG - Boosting token limit for reasoning model 'phi4:latest' to 32768
+2026-01-30 19:45:30,148 - utils.provider_clients - DEBUG - Boosting token limit for reasoning model 'phi4:latest' to 32768
+2026-01-30 19:45:53,418 - utils.provider_clients - DEBUG - Boosting token limit for reasoning model 'phi4:latest' to 32768
+2026-01-30 19:46:30,173 - utils.provider_clients - DEBUG - Boosting token limit for reasoning model 'phi4:latest' to 32768
+2026-01-30 19:46:47,125 - utils.provider_clients - DEBUG - Boosting token limit for reasoning model 'phi4:latest' to 32768
+2026-01-30 19:47:02,030 - utils.provider_clients - DEBUG - Boosting token limit for reasoning model 'phi4:latest' to 32768
+2026-01-30 19:47:35,065 - utils.provider_clients - DEBUG - Boosting token limit for reasoning model 'phi4:latest' to 32768
+2026-01-30 19:47:41,042 - utils.provider_clients - DEBUG - Boosting token limit for reasoning model 'phi4:latest' to 32768
+2026-01-30 19:47:57,349 - utils.provider_clients - DEBUG - Boosting token limit for reasoning model 'phi4:latest' to 32768
+2026-01-30 19:48:16,582 - utils.provider_clients - DEBUG - Boosting token limit for reasoning model 'phi4:latest' to 32768
+2026-01-30 19:48:34,043 - utils.provider_clients - DEBUG - Boosting token limit for reasoning model 'phi4:latest' to 32768
+2026-01-30 19:54:56,604 - utils.provider_clients - DEBUG - Boosting token limit for reasoning model 'deepseek-r1:14b' to 32768
+2026-01-30 19:59:37,692 - utils.provider_clients - DEBUG - Boosting token limit for reasoning model 'deepseek-r1:14b' to 32768
+2026-01-30 20:00:08,502 - utils.provider_clients - DEBUG - Boosting token limit for reasoning model 'deepseek-r1:14b' to 32768
+2026-01-30 20:00:43,374 - utils.provider_clients - DEBUG - Boosting token limit for reasoning model 'deepseek-r1:14b' to 32768
+2026-01-30 20:01:17,374 - utils.provider_clients - DEBUG - Boosting token limit for reasoning model 'deepseek-r1:14b' to 32768
+2026-01-30 20:01:38,030 - utils.provider_clients - DEBUG - Boosting token limit for reasoning model 'deepseek-r1:14b' to 32768
+2026-01-30 20:02:24,901 - utils.provider_clients - DEBUG - Boosting token limit for reasoning model 'deepseek-r1:14b' to 32768
+2026-01-30 20:02:42,317 - utils.provider_clients - DEBUG - Boosting token limit for reasoning model 'deepseek-r1:14b' to 32768
+2026-01-30 20:03:02,423 - utils.provider_clients - DEBUG - Boosting token limit for reasoning model 'deepseek-r1:14b' to 32768
+2026-01-30 20:03:47,655 - utils.provider_clients - DEBUG - Boosting token limit for reasoning model 'deepseek-r1:14b' to 32768
+2026-01-30 20:04:18,882 - utils.provider_clients - DEBUG - Boosting token limit for reasoning model 'deepseek-r1:14b' to 32768
+2026-01-30 20:22:44,366 - openai._base_client - DEBUG - Request options: {'method': 'post', 'url': '/chat/completions', 'files': None, 'idempotency_key': 'stainless-python-retry-ac159a51-bc43-4399-975b-6db9f0485bee', 'json_data': {'messages': [{'role': 'user', 'content': 'Hi'}], 'model': 'gpt-3.5-turbo', 'max_tokens': 1}}
+2026-01-30 20:22:44,427 - openai._base_client - DEBUG - Sending HTTP Request: POST https://api.openai.com/v1/chat/completions
+2026-01-30 20:22:45,124 - openai._base_client - DEBUG - HTTP Response: POST https://api.openai.com/v1/chat/completions "429 Too Many Requests" Headers([('date', 'Fri, 30 Jan 2026 19:22:45 GMT'), ('content-type', 'application/json; charset=utf-8'), ('content-length', '337'), ('connection', 'keep-alive'), ('vary', 'Origin'), ('x-request-id', 'req_887ad03c103f91f5a4bfb1590a0b2775'), ('x-openai-proxy-wasm', 'v0.1'), ('cf-cache-status', 'DYNAMIC'), ('set-cookie', '__cf_bm=DnnImqwbnAnHOlFrqgHlGMov1wokxAuzoOcVHsxpsAA-1769800965-1.0.1.1-SggdVsDmU0aXCFrIGPVrEX5mU22fSies_xXz3_bd8Y2wUubdrTM_7Viu7t995ZldLJAMvcLJEPTC_4wdflDXedQ_ydhyUlPT1YNIFMVqhGA; path=/; expires=Fri, 30-Jan-26 19:52:45 GMT; domain=.api.openai.com; HttpOnly; Secure; SameSite=None'), ('strict-transport-security', 'max-age=31536000; includeSubDomains; preload'), ('x-content-type-options', 'nosniff'), ('set-cookie', '_cfuvid=R.UXkQPcV2e75shulrdZgRJ_NMz6QwGAW.nANupS68c-1769800965028-0.0.1.1-604800000; path=/; domain=.api.openai.com; HttpOnly; Secure; SameSite=None'), ('server', 'cloudflare'), ('cf-ray', '9c6356fc2f10e533-TXL'), ('alt-svc', 'h3=":443"; ma=86400')])
+2026-01-30 20:22:45,125 - openai._base_client - DEBUG - request_id: req_887ad03c103f91f5a4bfb1590a0b2775
+2026-01-30 20:22:45,125 - openai._base_client - DEBUG - Encountered httpx.HTTPStatusError
+Traceback (most recent call last):
+  File "/Users/kbeissert/_PROJEKTE/Entwicklung/cruciblemark/.venv/lib/python3.14/site-packages/openai/_base_client.py", line 1027, in request
+    response.raise_for_status()
+    ~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "/Users/kbeissert/_PROJEKTE/Entwicklung/cruciblemark/.venv/lib/python3.14/site-packages/httpx/_models.py", line 829, in raise_for_status
+    raise HTTPStatusError(message, request=request, response=self)
+httpx.HTTPStatusError: Client error '429 Too Many Requests' for url 'https://api.openai.com/v1/chat/completions'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/429
+2026-01-30 20:22:45,131 - openai._base_client - DEBUG - Retrying due to status code 429
+2026-01-30 20:22:45,132 - openai._base_client - DEBUG - 2 retries left
+2026-01-30 20:22:45,133 - openai._base_client - INFO - Retrying request to /chat/completions in 0.447359 seconds
+2026-01-30 20:22:45,584 - openai._base_client - DEBUG - Request options: {'method': 'post', 'url': '/chat/completions', 'files': None, 'idempotency_key': 'stainless-python-retry-ac159a51-bc43-4399-975b-6db9f0485bee', 'json_data': {'messages': [{'role': 'user', 'content': 'Hi'}], 'model': 'gpt-3.5-turbo', 'max_tokens': 1}}
+2026-01-30 20:22:45,586 - openai._base_client - DEBUG - Sending HTTP Request: POST https://api.openai.com/v1/chat/completions
+2026-01-30 20:22:46,206 - openai._base_client - DEBUG - HTTP Response: POST https://api.openai.com/v1/chat/completions "429 Too Many Requests" Headers({'date': 'Fri, 30 Jan 2026 19:22:46 GMT', 'content-type': 'application/json; charset=utf-8', 'content-length': '337', 'connection': 'keep-alive', 'vary': 'Origin', 'x-request-id': 'req_04232cdf1a2f4c38ae67afc850cdf965', 'x-openai-proxy-wasm': 'v0.1', 'cf-cache-status': 'DYNAMIC', 'strict-transport-security': 'max-age=31536000; includeSubDomains; preload', 'x-content-type-options': 'nosniff', 'server': 'cloudflare', 'cf-ray': '9c6357031bfae533-TXL', 'alt-svc': 'h3=":443"; ma=86400'})
+2026-01-30 20:22:46,207 - openai._base_client - DEBUG - request_id: req_04232cdf1a2f4c38ae67afc850cdf965
+2026-01-30 20:22:46,207 - openai._base_client - DEBUG - Encountered httpx.HTTPStatusError
+Traceback (most recent call last):
+  File "/Users/kbeissert/_PROJEKTE/Entwicklung/cruciblemark/.venv/lib/python3.14/site-packages/openai/_base_client.py", line 1027, in request
+    response.raise_for_status()
+    ~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "/Users/kbeissert/_PROJEKTE/Entwicklung/cruciblemark/.venv/lib/python3.14/site-packages/httpx/_models.py", line 829, in raise_for_status
+    raise HTTPStatusError(message, request=request, response=self)
+httpx.HTTPStatusError: Client error '429 Too Many Requests' for url 'https://api.openai.com/v1/chat/completions'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/429
+2026-01-30 20:22:46,208 - openai._base_client - DEBUG - Retrying due to status code 429
+2026-01-30 20:22:46,208 - openai._base_client - DEBUG - 1 retry left
+2026-01-30 20:22:46,208 - openai._base_client - INFO - Retrying request to /chat/completions in 0.990234 seconds
+2026-01-30 20:22:47,200 - openai._base_client - DEBUG - Request options: {'method': 'post', 'url': '/chat/completions', 'files': None, 'idempotency_key': 'stainless-python-retry-ac159a51-bc43-4399-975b-6db9f0485bee', 'json_data': {'messages': [{'role': 'user', 'content': 'Hi'}], 'model': 'gpt-3.5-turbo', 'max_tokens': 1}}
+2026-01-30 20:22:47,201 - openai._base_client - DEBUG - Sending HTTP Request: POST https://api.openai.com/v1/chat/completions
+2026-01-30 20:22:47,889 - openai._base_client - DEBUG - HTTP Response: POST https://api.openai.com/v1/chat/completions "429 Too Many Requests" Headers({'date': 'Fri, 30 Jan 2026 19:22:47 GMT', 'content-type': 'application/json; charset=utf-8', 'content-length': '337', 'connection': 'keep-alive', 'vary': 'Origin', 'x-request-id': 'req_62bab2616a9040bab982d2e3ce302c1a', 'x-openai-proxy-wasm': 'v0.1', 'cf-cache-status': 'DYNAMIC', 'strict-transport-security': 'max-age=31536000; includeSubDomains; preload', 'x-content-type-options': 'nosniff', 'server': 'cloudflare', 'cf-ray': '9c63570d2af2e533-TXL', 'alt-svc': 'h3=":443"; ma=86400'})
+2026-01-30 20:22:47,889 - openai._base_client - DEBUG - request_id: req_62bab2616a9040bab982d2e3ce302c1a
+2026-01-30 20:22:47,889 - openai._base_client - DEBUG - Encountered httpx.HTTPStatusError
+Traceback (most recent call last):
+  File "/Users/kbeissert/_PROJEKTE/Entwicklung/cruciblemark/.venv/lib/python3.14/site-packages/openai/_base_client.py", line 1027, in request
+    response.raise_for_status()
+    ~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "/Users/kbeissert/_PROJEKTE/Entwicklung/cruciblemark/.venv/lib/python3.14/site-packages/httpx/_models.py", line 829, in raise_for_status
+    raise HTTPStatusError(message, request=request, response=self)
+httpx.HTTPStatusError: Client error '429 Too Many Requests' for url 'https://api.openai.com/v1/chat/completions'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/429
+2026-01-30 20:22:47,890 - openai._base_client - DEBUG - Re-raising status error
+2026-01-30 20:22:47,895 - utils.provider_clients - WARNING - OpenAI Access Check Failed: Error code: 429 - {'error': {'message': 'You exceeded your current quota, please check your plan and billing details. For more information on this error, read the docs: https://platform.openai.com/docs/guides/error-codes/api-errors.', 'type': 'insufficient_quota', 'param': None, 'code': 'insufficient_quota'}}
+2026-01-30 20:23:17,386 - utils.llm_client - DEBUG - Cost for request: $0.012302
+2026-01-30 20:23:47,463 - utils.llm_client - DEBUG - Cost for request: $0.017204
+2026-01-30 20:23:56,982 - utils.llm_client - DEBUG - Cost for request: $0.006782
+2026-01-30 20:24:24,492 - utils.llm_client - DEBUG - Cost for request: $0.011183
+2026-01-30 20:25:02,256 - utils.llm_client - DEBUG - Cost for request: $0.017323
+2026-01-30 20:25:06,925 - utils.llm_client - DEBUG - Cost for request: $0.003229
+2026-01-30 20:25:38,386 - utils.llm_client - DEBUG - Cost for request: $0.018211
+2026-01-30 20:25:41,494 - utils.llm_client - DEBUG - Cost for request: $0.001561
+2026-01-30 20:25:56,349 - utils.llm_client - DEBUG - Cost for request: $0.006434
+2026-01-30 20:26:11,126 - utils.llm_client - DEBUG - Cost for request: $0.008713
+2026-01-30 20:26:36,301 - utils.llm_client - DEBUG - Cost for request: $0.013821
+2026-01-30 20:33:02,108 - utils.llm_client - DEBUG - Cost for request: $0.006250
+2026-01-30 20:33:02,245 - asyncio - DEBUG - Using selector: KqueueSelector
+2026-01-30 20:33:02,249 - asyncio - DEBUG - Using selector: KqueueSelector
+2026-01-30 20:44:28,611 - utils.provider_clients - DEBUG - Boosting token limit for reasoning model 'phi4:latest' to 32768
+2026-01-30 20:44:28,611 - httpcore.connection - DEBUG - connect_tcp.started host='127.0.0.1' port=11434 local_address=None timeout=None socket_options=None
+2026-01-30 20:44:28,613 - httpcore.connection - DEBUG - connect_tcp.complete return_value=<httpcore._backends.sync.SyncStream object at 0x1126e0980>
+2026-01-30 20:44:28,613 - httpcore.http11 - DEBUG - send_request_headers.started request=<Request [b'POST']>
+2026-01-30 20:44:28,613 - httpcore.http11 - DEBUG - send_request_headers.complete
+2026-01-30 20:44:28,613 - httpcore.http11 - DEBUG - send_request_body.started request=<Request [b'POST']>
+2026-01-30 20:44:28,613 - httpcore.http11 - DEBUG - send_request_body.complete
+2026-01-30 20:44:28,613 - httpcore.http11 - DEBUG - receive_response_headers.started request=<Request [b'POST']>
+2026-01-30 20:44:59,817 - httpcore.http11 - DEBUG - receive_response_headers.complete return_value=(b'HTTP/1.1', 200, b'OK', [(b'Content-Type', b'application/json; charset=utf-8'), (b'Date', b'Fri, 30 Jan 2026 19:44:59 GMT'), (b'Transfer-Encoding', b'chunked')])
+2026-01-30 20:44:59,820 - httpcore.http11 - DEBUG - receive_response_body.started request=<Request [b'POST']>
+2026-01-30 20:44:59,820 - httpcore.http11 - DEBUG - receive_response_body.complete
+2026-01-30 20:44:59,821 - httpcore.http11 - DEBUG - response_closed.started
+2026-01-30 20:44:59,821 - httpcore.http11 - DEBUG - response_closed.complete
+2026-01-30 20:44:59,872 - utils.provider_clients - DEBUG - Boosting token limit for reasoning model 'phi4:latest' to 32768
+2026-01-30 20:44:59,873 - httpcore.http11 - DEBUG - send_request_headers.started request=<Request [b'POST']>
+2026-01-30 20:44:59,873 - httpcore.http11 - DEBUG - send_request_headers.complete
+2026-01-30 20:44:59,873 - httpcore.http11 - DEBUG - send_request_body.started request=<Request [b'POST']>
+2026-01-30 20:44:59,873 - httpcore.http11 - DEBUG - send_request_body.complete
+2026-01-30 20:44:59,873 - httpcore.http11 - DEBUG - receive_response_headers.started request=<Request [b'POST']>
+2026-01-30 20:45:23,599 - httpcore.http11 - DEBUG - receive_response_headers.complete return_value=(b'HTTP/1.1', 200, b'OK', [(b'Content-Type', b'application/json; charset=utf-8'), (b'Date', b'Fri, 30 Jan 2026 19:45:23 GMT'), (b'Transfer-Encoding', b'chunked')])
+2026-01-30 20:45:23,599 - httpcore.http11 - DEBUG - receive_response_body.started request=<Request [b'POST']>
+2026-01-30 20:45:23,599 - httpcore.http11 - DEBUG - receive_response_body.complete
+2026-01-30 20:45:23,599 - httpcore.http11 - DEBUG - response_closed.started
+2026-01-30 20:45:23,599 - httpcore.http11 - DEBUG - response_closed.complete
+2026-01-30 20:45:23,646 - utils.provider_clients - DEBUG - Boosting token limit for reasoning model 'phi4:latest' to 32768
+2026-01-30 20:45:23,647 - httpcore.http11 - DEBUG - send_request_headers.started request=<Request [b'POST']>
+2026-01-30 20:45:23,647 - httpcore.http11 - DEBUG - send_request_headers.complete
+2026-01-30 20:45:23,647 - httpcore.http11 - DEBUG - send_request_body.started request=<Request [b'POST']>
+2026-01-30 20:45:23,647 - httpcore.http11 - DEBUG - send_request_body.complete
+2026-01-30 20:45:23,647 - httpcore.http11 - DEBUG - receive_response_headers.started request=<Request [b'POST']>
+2026-01-30 20:46:00,801 - httpcore.http11 - DEBUG - receive_response_headers.complete return_value=(b'HTTP/1.1', 200, b'OK', [(b'Content-Type', b'application/json; charset=utf-8'), (b'Date', b'Fri, 30 Jan 2026 19:46:00 GMT'), (b'Transfer-Encoding', b'chunked')])
+2026-01-30 20:46:00,804 - httpcore.http11 - DEBUG - receive_response_body.started request=<Request [b'POST']>
+2026-01-30 20:46:00,805 - httpcore.http11 - DEBUG - receive_response_body.complete
+2026-01-30 20:46:00,805 - httpcore.http11 - DEBUG - response_closed.started
+2026-01-30 20:46:00,805 - httpcore.http11 - DEBUG - response_closed.complete
+2026-01-30 20:46:00,870 - utils.provider_clients - DEBUG - Boosting token limit for reasoning model 'phi4:latest' to 32768
+2026-01-30 20:46:00,871 - httpcore.http11 - DEBUG - send_request_headers.started request=<Request [b'POST']>
+2026-01-30 20:46:00,871 - httpcore.http11 - DEBUG - send_request_headers.complete
+2026-01-30 20:46:00,871 - httpcore.http11 - DEBUG - send_request_body.started request=<Request [b'POST']>
+2026-01-30 20:46:00,871 - httpcore.http11 - DEBUG - send_request_body.complete
+2026-01-30 20:46:00,871 - httpcore.http11 - DEBUG - receive_response_headers.started request=<Request [b'POST']>
+2026-01-30 20:46:17,885 - httpcore.http11 - DEBUG - receive_response_headers.complete return_value=(b'HTTP/1.1', 200, b'OK', [(b'Content-Type', b'application/json; charset=utf-8'), (b'Date', b'Fri, 30 Jan 2026 19:46:17 GMT'), (b'Transfer-Encoding', b'chunked')])
+2026-01-30 20:46:17,886 - httpcore.http11 - DEBUG - receive_response_body.started request=<Request [b'POST']>
+2026-01-30 20:46:17,886 - httpcore.http11 - DEBUG - receive_response_body.complete
+2026-01-30 20:46:17,886 - httpcore.http11 - DEBUG - response_closed.started
+2026-01-30 20:46:17,886 - httpcore.http11 - DEBUG - response_closed.complete
+2026-01-30 20:46:17,942 - utils.provider_clients - DEBUG - Boosting token limit for reasoning model 'phi4:latest' to 32768
+2026-01-30 20:46:17,943 - httpcore.http11 - DEBUG - send_request_headers.started request=<Request [b'POST']>
+2026-01-30 20:46:17,943 - httpcore.http11 - DEBUG - send_request_headers.complete
+2026-01-30 20:46:17,943 - httpcore.http11 - DEBUG - send_request_body.started request=<Request [b'POST']>
+2026-01-30 20:46:17,943 - httpcore.http11 - DEBUG - send_request_body.complete
+2026-01-30 20:46:17,943 - httpcore.http11 - DEBUG - receive_response_headers.started request=<Request [b'POST']>
+2026-01-30 20:46:32,998 - httpcore.http11 - DEBUG - receive_response_headers.complete return_value=(b'HTTP/1.1', 200, b'OK', [(b'Content-Type', b'application/json; charset=utf-8'), (b'Date', b'Fri, 30 Jan 2026 19:46:32 GMT'), (b'Transfer-Encoding', b'chunked')])
+2026-01-30 20:46:33,001 - httpcore.http11 - DEBUG - receive_response_body.started request=<Request [b'POST']>
+2026-01-30 20:46:33,002 - httpcore.http11 - DEBUG - receive_response_body.complete
+2026-01-30 20:46:33,002 - httpcore.http11 - DEBUG - response_closed.started
+2026-01-30 20:46:33,002 - httpcore.http11 - DEBUG - response_closed.complete
+2026-01-30 20:46:33,056 - utils.provider_clients - DEBUG - Boosting token limit for reasoning model 'phi4:latest' to 32768
+2026-01-30 20:46:33,057 - httpcore.http11 - DEBUG - send_request_headers.started request=<Request [b'POST']>
+2026-01-30 20:46:33,057 - httpcore.http11 - DEBUG - send_request_headers.complete
+2026-01-30 20:46:33,057 - httpcore.http11 - DEBUG - send_request_body.started request=<Request [b'POST']>
+2026-01-30 20:46:33,057 - httpcore.http11 - DEBUG - send_request_body.complete
+2026-01-30 20:46:33,057 - httpcore.http11 - DEBUG - receive_response_headers.started request=<Request [b'POST']>
+2026-01-30 20:47:06,266 - httpcore.http11 - DEBUG - receive_response_headers.complete return_value=(b'HTTP/1.1', 200, b'OK', [(b'Content-Type', b'application/json; charset=utf-8'), (b'Date', b'Fri, 30 Jan 2026 19:47:06 GMT'), (b'Transfer-Encoding', b'chunked')])
+2026-01-30 20:47:06,267 - httpcore.http11 - DEBUG - receive_response_body.started request=<Request [b'POST']>
+2026-01-30 20:47:06,268 - httpcore.http11 - DEBUG - receive_response_body.complete
+2026-01-30 20:47:06,268 - httpcore.http11 - DEBUG - response_closed.started
+2026-01-30 20:47:06,268 - httpcore.http11 - DEBUG - response_closed.complete
+2026-01-30 20:47:06,321 - utils.provider_clients - DEBUG - Boosting token limit for reasoning model 'phi4:latest' to 32768
+2026-01-30 20:47:06,322 - httpcore.http11 - DEBUG - send_request_headers.started request=<Request [b'POST']>
+2026-01-30 20:47:06,322 - httpcore.http11 - DEBUG - send_request_headers.complete
+2026-01-30 20:47:06,322 - httpcore.http11 - DEBUG - send_request_body.started request=<Request [b'POST']>
+2026-01-30 20:47:06,322 - httpcore.http11 - DEBUG - send_request_body.complete
+2026-01-30 20:47:06,322 - httpcore.http11 - DEBUG - receive_response_headers.started request=<Request [b'POST']>
+2026-01-30 20:47:12,324 - httpcore.http11 - DEBUG - receive_response_headers.complete return_value=(b'HTTP/1.1', 200, b'OK', [(b'Content-Type', b'application/json; charset=utf-8'), (b'Date', b'Fri, 30 Jan 2026 19:47:12 GMT'), (b'Content-Length', b'900')])
+2026-01-30 20:47:12,325 - httpcore.http11 - DEBUG - receive_response_body.started request=<Request [b'POST']>
+2026-01-30 20:47:12,325 - httpcore.http11 - DEBUG - receive_response_body.complete
+2026-01-30 20:47:12,325 - httpcore.http11 - DEBUG - response_closed.started
+2026-01-30 20:47:12,325 - httpcore.http11 - DEBUG - response_closed.complete
+2026-01-30 20:47:12,362 - utils.provider_clients - DEBUG - Boosting token limit for reasoning model 'phi4:latest' to 32768
+2026-01-30 20:47:12,363 - httpcore.http11 - DEBUG - send_request_headers.started request=<Request [b'POST']>
+2026-01-30 20:47:12,363 - httpcore.http11 - DEBUG - send_request_headers.complete
+2026-01-30 20:47:12,363 - httpcore.http11 - DEBUG - send_request_body.started request=<Request [b'POST']>
+2026-01-30 20:47:12,363 - httpcore.http11 - DEBUG - send_request_body.complete
+2026-01-30 20:47:12,363 - httpcore.http11 - DEBUG - receive_response_headers.started request=<Request [b'POST']>
+2026-01-30 20:47:29,050 - httpcore.http11 - DEBUG - receive_response_headers.complete return_value=(b'HTTP/1.1', 200, b'OK', [(b'Content-Type', b'application/json; charset=utf-8'), (b'Date', b'Fri, 30 Jan 2026 19:47:29 GMT'), (b'Transfer-Encoding', b'chunked')])
+2026-01-30 20:47:29,054 - httpcore.http11 - DEBUG - receive_response_body.started request=<Request [b'POST']>
+2026-01-30 20:47:29,054 - httpcore.http11 - DEBUG - receive_response_body.complete
+2026-01-30 20:47:29,054 - httpcore.http11 - DEBUG - response_closed.started
+2026-01-30 20:47:29,054 - httpcore.http11 - DEBUG - response_closed.complete
+2026-01-30 20:47:29,110 - utils.provider_clients - DEBUG - Boosting token limit for reasoning model 'phi4:latest' to 32768
+2026-01-30 20:47:29,111 - httpcore.http11 - DEBUG - send_request_headers.started request=<Request [b'POST']>
+2026-01-30 20:47:29,111 - httpcore.http11 - DEBUG - send_request_headers.complete
+2026-01-30 20:47:29,111 - httpcore.http11 - DEBUG - send_request_body.started request=<Request [b'POST']>
+2026-01-30 20:47:29,111 - httpcore.http11 - DEBUG - send_request_body.complete
+2026-01-30 20:47:29,111 - httpcore.http11 - DEBUG - receive_response_headers.started request=<Request [b'POST']>
+2026-01-30 20:47:48,651 - httpcore.http11 - DEBUG - receive_response_headers.complete return_value=(b'HTTP/1.1', 200, b'OK', [(b'Content-Type', b'application/json; charset=utf-8'), (b'Date', b'Fri, 30 Jan 2026 19:47:48 GMT'), (b'Transfer-Encoding', b'chunked')])
+2026-01-30 20:47:48,651 - httpcore.http11 - DEBUG - receive_response_body.started request=<Request [b'POST']>
+2026-01-30 20:47:48,652 - httpcore.http11 - DEBUG - receive_response_body.complete
+2026-01-30 20:47:48,652 - httpcore.http11 - DEBUG - response_closed.started
+2026-01-30 20:47:48,652 - httpcore.http11 - DEBUG - response_closed.complete
+2026-01-30 20:47:48,705 - utils.provider_clients - DEBUG - Boosting token limit for reasoning model 'phi4:latest' to 32768
+2026-01-30 20:47:48,706 - httpcore.http11 - DEBUG - send_request_headers.started request=<Request [b'POST']>
+2026-01-30 20:47:48,706 - httpcore.http11 - DEBUG - send_request_headers.complete
+2026-01-30 20:47:48,706 - httpcore.http11 - DEBUG - send_request_body.started request=<Request [b'POST']>
+2026-01-30 20:47:48,706 - httpcore.http11 - DEBUG - send_request_body.complete
+2026-01-30 20:47:48,706 - httpcore.http11 - DEBUG - receive_response_headers.started request=<Request [b'POST']>
+2026-01-30 20:48:06,619 - httpcore.http11 - DEBUG - receive_response_headers.complete return_value=(b'HTTP/1.1', 200, b'OK', [(b'Content-Type', b'application/json; charset=utf-8'), (b'Date', b'Fri, 30 Jan 2026 19:48:06 GMT'), (b'Content-Length', b'1968')])
+2026-01-30 20:48:06,622 - httpcore.http11 - DEBUG - receive_response_body.started request=<Request [b'POST']>
+2026-01-30 20:48:06,622 - httpcore.http11 - DEBUG - receive_response_body.complete
+2026-01-30 20:48:06,622 - httpcore.http11 - DEBUG - response_closed.started
+2026-01-30 20:48:06,622 - httpcore.http11 - DEBUG - response_closed.complete
+2026-01-30 20:48:06,689 - utils.provider_clients - DEBUG - Boosting token limit for reasoning model 'phi4:latest' to 32768
+2026-01-30 20:48:06,690 - httpcore.http11 - DEBUG - send_request_headers.started request=<Request [b'POST']>
+2026-01-30 20:48:06,691 - httpcore.http11 - DEBUG - send_request_headers.complete
+2026-01-30 20:48:06,691 - httpcore.http11 - DEBUG - send_request_body.started request=<Request [b'POST']>
+2026-01-30 20:48:06,691 - httpcore.http11 - DEBUG - send_request_body.complete
+2026-01-30 20:48:06,691 - httpcore.http11 - DEBUG - receive_response_headers.started request=<Request [b'POST']>
+2026-01-30 20:48:30,632 - httpcore.http11 - DEBUG - receive_response_headers.complete return_value=(b'HTTP/1.1', 200, b'OK', [(b'Content-Type', b'application/json; charset=utf-8'), (b'Date', b'Fri, 30 Jan 2026 19:48:30 GMT'), (b'Transfer-Encoding', b'chunked')])
+2026-01-30 20:48:30,640 - httpcore.http11 - DEBUG - receive_response_body.started request=<Request [b'POST']>
+2026-01-30 20:48:30,640 - httpcore.http11 - DEBUG - receive_response_body.complete
+2026-01-30 20:48:30,640 - httpcore.http11 - DEBUG - response_closed.started
+2026-01-30 20:48:30,640 - httpcore.http11 - DEBUG - response_closed.complete
+2026-01-30 20:52:42,608 - utils.provider_clients - DEBUG - Boosting token limit for reasoning model 'phi4:latest' to 32768
+2026-01-30 20:52:42,610 - httpcore.connection - DEBUG - connect_tcp.started host='127.0.0.1' port=11434 local_address=None timeout=None socket_options=None
+2026-01-30 20:52:42,612 - httpcore.connection - DEBUG - connect_tcp.complete return_value=<httpcore._backends.sync.SyncStream object at 0x113ea4ad0>
+2026-01-30 20:52:42,612 - httpcore.http11 - DEBUG - send_request_headers.started request=<Request [b'POST']>
+2026-01-30 20:52:42,612 - httpcore.http11 - DEBUG - send_request_headers.complete
+2026-01-30 20:52:42,612 - httpcore.http11 - DEBUG - send_request_body.started request=<Request [b'POST']>
+2026-01-30 20:52:42,612 - httpcore.http11 - DEBUG - send_request_body.complete
+2026-01-30 20:52:42,612 - httpcore.http11 - DEBUG - receive_response_headers.started request=<Request [b'POST']>
+2026-01-30 20:53:17,952 - httpcore.http11 - DEBUG - receive_response_headers.complete return_value=(b'HTTP/1.1', 200, b'OK', [(b'Content-Type', b'application/json; charset=utf-8'), (b'Date', b'Fri, 30 Jan 2026 19:53:17 GMT'), (b'Transfer-Encoding', b'chunked')])
+2026-01-30 20:53:17,955 - httpcore.http11 - DEBUG - receive_response_body.started request=<Request [b'POST']>
+2026-01-30 20:53:17,956 - httpcore.http11 - DEBUG - receive_response_body.complete
+2026-01-30 20:53:17,956 - httpcore.http11 - DEBUG - response_closed.started
+2026-01-30 20:53:17,956 - httpcore.http11 - DEBUG - response_closed.complete
+2026-01-30 20:53:18,035 - utils.provider_clients - DEBUG - Boosting token limit for reasoning model 'phi4:latest' to 32768
+2026-01-30 20:53:18,036 - httpcore.http11 - DEBUG - send_request_headers.started request=<Request [b'POST']>
+2026-01-30 20:53:18,036 - httpcore.http11 - DEBUG - send_request_headers.complete
+2026-01-30 20:53:18,036 - httpcore.http11 - DEBUG - send_request_body.started request=<Request [b'POST']>
+2026-01-30 20:53:18,036 - httpcore.http11 - DEBUG - send_request_body.complete
+2026-01-30 20:53:18,036 - httpcore.http11 - DEBUG - receive_response_headers.started request=<Request [b'POST']>
+2026-01-30 20:53:44,631 - httpcore.http11 - DEBUG - receive_response_headers.complete return_value=(b'HTTP/1.1', 200, b'OK', [(b'Content-Type', b'application/json; charset=utf-8'), (b'Date', b'Fri, 30 Jan 2026 19:53:44 GMT'), (b'Transfer-Encoding', b'chunked')])
+2026-01-30 20:53:44,647 - httpcore.http11 - DEBUG - receive_response_body.started request=<Request [b'POST']>
+2026-01-30 20:53:44,648 - httpcore.http11 - DEBUG - receive_response_body.complete
+2026-01-30 20:53:44,649 - httpcore.http11 - DEBUG - response_closed.started
+2026-01-30 20:53:44,649 - httpcore.http11 - DEBUG - response_closed.complete
+2026-01-30 20:53:44,784 - utils.provider_clients - DEBUG - Boosting token limit for reasoning model 'phi4:latest' to 32768
+2026-01-30 20:53:44,791 - httpcore.http11 - DEBUG - send_request_headers.started request=<Request [b'POST']>
+2026-01-30 20:53:44,791 - httpcore.http11 - DEBUG - send_request_headers.complete
+2026-01-30 20:53:44,791 - httpcore.http11 - DEBUG - send_request_body.started request=<Request [b'POST']>
+2026-01-30 20:53:44,792 - httpcore.http11 - DEBUG - send_request_body.complete
+2026-01-30 20:53:44,792 - httpcore.http11 - DEBUG - receive_response_headers.started request=<Request [b'POST']>
+2026-01-30 20:54:22,780 - httpcore.http11 - DEBUG - receive_response_headers.complete return_value=(b'HTTP/1.1', 200, b'OK', [(b'Content-Type', b'application/json; charset=utf-8'), (b'Date', b'Fri, 30 Jan 2026 19:54:22 GMT'), (b'Transfer-Encoding', b'chunked')])
+2026-01-30 20:54:22,781 - httpcore.http11 - DEBUG - receive_response_body.started request=<Request [b'POST']>
+2026-01-30 20:54:22,781 - httpcore.http11 - DEBUG - receive_response_body.complete
+2026-01-30 20:54:22,781 - httpcore.http11 - DEBUG - response_closed.started
+2026-01-30 20:54:22,781 - httpcore.http11 - DEBUG - response_closed.complete
+2026-01-30 20:54:22,905 - utils.provider_clients - DEBUG - Boosting token limit for reasoning model 'phi4:latest' to 32768
+2026-01-30 20:54:22,907 - httpcore.http11 - DEBUG - send_request_headers.started request=<Request [b'POST']>
+2026-01-30 20:54:22,907 - httpcore.http11 - DEBUG - send_request_headers.complete
+2026-01-30 20:54:22,907 - httpcore.http11 - DEBUG - send_request_body.started request=<Request [b'POST']>
+2026-01-30 20:54:22,907 - httpcore.http11 - DEBUG - send_request_body.complete
+2026-01-30 20:54:22,907 - httpcore.http11 - DEBUG - receive_response_headers.started request=<Request [b'POST']>
+2026-01-30 20:54:40,267 - httpcore.http11 - DEBUG - receive_response_headers.complete return_value=(b'HTTP/1.1', 200, b'OK', [(b'Content-Type', b'application/json; charset=utf-8'), (b'Date', b'Fri, 30 Jan 2026 19:54:40 GMT'), (b'Transfer-Encoding', b'chunked')])
+2026-01-30 20:54:40,271 - httpcore.http11 - DEBUG - receive_response_body.started request=<Request [b'POST']>
+2026-01-30 20:54:40,272 - httpcore.http11 - DEBUG - receive_response_body.complete
+2026-01-30 20:54:40,272 - httpcore.http11 - DEBUG - response_closed.started
+2026-01-30 20:54:40,272 - httpcore.http11 - DEBUG - response_closed.complete
+2026-01-30 20:54:40,323 - utils.provider_clients - DEBUG - Boosting token limit for reasoning model 'phi4:latest' to 32768
+2026-01-30 20:54:40,325 - httpcore.http11 - DEBUG - send_request_headers.started request=<Request [b'POST']>
+2026-01-30 20:54:40,325 - httpcore.http11 - DEBUG - send_request_headers.complete
+2026-01-30 20:54:40,325 - httpcore.http11 - DEBUG - send_request_body.started request=<Request [b'POST']>
+2026-01-30 20:54:40,325 - httpcore.http11 - DEBUG - send_request_body.complete
+2026-01-30 20:54:40,325 - httpcore.http11 - DEBUG - receive_response_headers.started request=<Request [b'POST']>
+2026-01-30 20:54:55,572 - httpcore.http11 - DEBUG - receive_response_headers.complete return_value=(b'HTTP/1.1', 200, b'OK', [(b'Content-Type', b'application/json; charset=utf-8'), (b'Date', b'Fri, 30 Jan 2026 19:54:55 GMT'), (b'Transfer-Encoding', b'chunked')])
+2026-01-30 20:54:55,575 - httpcore.http11 - DEBUG - receive_response_body.started request=<Request [b'POST']>
+2026-01-30 20:54:55,575 - httpcore.http11 - DEBUG - receive_response_body.complete
+2026-01-30 20:54:55,576 - httpcore.http11 - DEBUG - response_closed.started
+2026-01-30 20:54:55,576 - httpcore.http11 - DEBUG - response_closed.complete
+2026-01-30 20:54:55,634 - utils.provider_clients - DEBUG - Boosting token limit for reasoning model 'phi4:latest' to 32768
+2026-01-30 20:54:55,635 - httpcore.http11 - DEBUG - send_request_headers.started request=<Request [b'POST']>
+2026-01-30 20:54:55,635 - httpcore.http11 - DEBUG - send_request_headers.complete
+2026-01-30 20:54:55,635 - httpcore.http11 - DEBUG - send_request_body.started request=<Request [b'POST']>
+2026-01-30 20:54:55,635 - httpcore.http11 - DEBUG - send_request_body.complete
+2026-01-30 20:54:55,635 - httpcore.http11 - DEBUG - receive_response_headers.started request=<Request [b'POST']>
+2026-01-30 20:55:29,525 - httpcore.http11 - DEBUG - receive_response_headers.complete return_value=(b'HTTP/1.1', 200, b'OK', [(b'Content-Type', b'application/json; charset=utf-8'), (b'Date', b'Fri, 30 Jan 2026 19:55:29 GMT'), (b'Transfer-Encoding', b'chunked')])
+2026-01-30 20:55:29,528 - httpcore.http11 - DEBUG - receive_response_body.started request=<Request [b'POST']>
+2026-01-30 20:55:29,529 - httpcore.http11 - DEBUG - receive_response_body.complete
+2026-01-30 20:55:29,529 - httpcore.http11 - DEBUG - response_closed.started
+2026-01-30 20:55:29,529 - httpcore.http11 - DEBUG - response_closed.complete
+2026-01-30 20:55:29,586 - utils.provider_clients - DEBUG - Boosting token limit for reasoning model 'phi4:latest' to 32768
+2026-01-30 20:55:29,589 - httpcore.http11 - DEBUG - send_request_headers.started request=<Request [b'POST']>
+2026-01-30 20:55:29,589 - httpcore.http11 - DEBUG - send_request_headers.complete
+2026-01-30 20:55:29,589 - httpcore.http11 - DEBUG - send_request_body.started request=<Request [b'POST']>
+2026-01-30 20:55:29,589 - httpcore.http11 - DEBUG - send_request_body.complete
+2026-01-30 20:55:29,589 - httpcore.http11 - DEBUG - receive_response_headers.started request=<Request [b'POST']>
+2026-01-30 20:55:35,693 - httpcore.http11 - DEBUG - receive_response_headers.complete return_value=(b'HTTP/1.1', 200, b'OK', [(b'Content-Type', b'application/json; charset=utf-8'), (b'Date', b'Fri, 30 Jan 2026 19:55:35 GMT'), (b'Content-Length', b'900')])
+2026-01-30 20:55:35,694 - httpcore.http11 - DEBUG - receive_response_body.started request=<Request [b'POST']>
+2026-01-30 20:55:35,694 - httpcore.http11 - DEBUG - receive_response_body.complete
+2026-01-30 20:55:35,694 - httpcore.http11 - DEBUG - response_closed.started
+2026-01-30 20:55:35,694 - httpcore.http11 - DEBUG - response_closed.complete
+2026-01-30 20:55:35,727 - utils.provider_clients - DEBUG - Boosting token limit for reasoning model 'phi4:latest' to 32768
+2026-01-30 20:55:35,728 - httpcore.http11 - DEBUG - send_request_headers.started request=<Request [b'POST']>
+2026-01-30 20:55:35,729 - httpcore.http11 - DEBUG - send_request_headers.complete
+2026-01-30 20:55:35,729 - httpcore.http11 - DEBUG - send_request_body.started request=<Request [b'POST']>
+2026-01-30 20:55:35,729 - httpcore.http11 - DEBUG - send_request_body.complete
+2026-01-30 20:55:35,729 - httpcore.http11 - DEBUG - receive_response_headers.started request=<Request [b'POST']>
+2026-01-30 20:55:52,784 - httpcore.http11 - DEBUG - receive_response_headers.complete return_value=(b'HTTP/1.1', 200, b'OK', [(b'Content-Type', b'application/json; charset=utf-8'), (b'Date', b'Fri, 30 Jan 2026 19:55:52 GMT'), (b'Transfer-Encoding', b'chunked')])
+2026-01-30 20:55:52,785 - httpcore.http11 - DEBUG - receive_response_body.started request=<Request [b'POST']>
+2026-01-30 20:55:52,785 - httpcore.http11 - DEBUG - receive_response_body.complete
+2026-01-30 20:55:52,785 - httpcore.http11 - DEBUG - response_closed.started
+2026-01-30 20:55:52,785 - httpcore.http11 - DEBUG - response_closed.complete
+2026-01-30 20:55:52,844 - utils.provider_clients - DEBUG - Boosting token limit for reasoning model 'phi4:latest' to 32768
+2026-01-30 20:55:52,846 - httpcore.http11 - DEBUG - send_request_headers.started request=<Request [b'POST']>
+2026-01-30 20:55:52,846 - httpcore.http11 - DEBUG - send_request_headers.complete
+2026-01-30 20:55:52,846 - httpcore.http11 - DEBUG - send_request_body.started request=<Request [b'POST']>
+2026-01-30 20:55:52,846 - httpcore.http11 - DEBUG - send_request_body.complete
+2026-01-30 20:55:52,846 - httpcore.http11 - DEBUG - receive_response_headers.started request=<Request [b'POST']>
+2026-01-30 20:56:12,726 - httpcore.http11 - DEBUG - receive_response_headers.complete return_value=(b'HTTP/1.1', 200, b'OK', [(b'Content-Type', b'application/json; charset=utf-8'), (b'Date', b'Fri, 30 Jan 2026 19:56:12 GMT'), (b'Transfer-Encoding', b'chunked')])
+2026-01-30 20:56:12,729 - httpcore.http11 - DEBUG - receive_response_body.started request=<Request [b'POST']>
+2026-01-30 20:56:12,729 - httpcore.http11 - DEBUG - receive_response_body.complete
+2026-01-30 20:56:12,729 - httpcore.http11 - DEBUG - response_closed.started
+2026-01-30 20:56:12,729 - httpcore.http11 - DEBUG - response_closed.complete
+2026-01-30 20:56:12,792 - utils.provider_clients - DEBUG - Boosting token limit for reasoning model 'phi4:latest' to 32768
+2026-01-30 20:56:12,793 - httpcore.http11 - DEBUG - send_request_headers.started request=<Request [b'POST']>
+2026-01-30 20:56:12,793 - httpcore.http11 - DEBUG - send_request_headers.complete
+2026-01-30 20:56:12,793 - httpcore.http11 - DEBUG - send_request_body.started request=<Request [b'POST']>
+2026-01-30 20:56:12,793 - httpcore.http11 - DEBUG - send_request_body.complete
+2026-01-30 20:56:12,793 - httpcore.http11 - DEBUG - receive_response_headers.started request=<Request [b'POST']>
+2026-01-30 20:56:30,659 - httpcore.http11 - DEBUG - receive_response_headers.complete return_value=(b'HTTP/1.1', 200, b'OK', [(b'Content-Type', b'application/json; charset=utf-8'), (b'Date', b'Fri, 30 Jan 2026 19:56:30 GMT'), (b'Content-Length', b'1969')])
+2026-01-30 20:56:30,659 - httpcore.http11 - DEBUG - receive_response_body.started request=<Request [b'POST']>
+2026-01-30 20:56:30,660 - httpcore.http11 - DEBUG - receive_response_body.complete
+2026-01-30 20:56:30,660 - httpcore.http11 - DEBUG - response_closed.started
+2026-01-30 20:56:30,660 - httpcore.http11 - DEBUG - response_closed.complete
+2026-01-30 20:56:30,729 - utils.provider_clients - DEBUG - Boosting token limit for reasoning model 'phi4:latest' to 32768
+2026-01-30 20:56:30,731 - httpcore.http11 - DEBUG - send_request_headers.started request=<Request [b'POST']>
+2026-01-30 20:56:30,731 - httpcore.http11 - DEBUG - send_request_headers.complete
+2026-01-30 20:56:30,731 - httpcore.http11 - DEBUG - send_request_body.started request=<Request [b'POST']>
+2026-01-30 20:56:30,731 - httpcore.http11 - DEBUG - send_request_body.complete
+2026-01-30 20:56:30,731 - httpcore.http11 - DEBUG - receive_response_headers.started request=<Request [b'POST']>
+2026-01-30 20:56:52,301 - httpcore.http11 - DEBUG - receive_response_headers.complete return_value=(b'HTTP/1.1', 200, b'OK', [(b'Content-Type', b'application/json; charset=utf-8'), (b'Date', b'Fri, 30 Jan 2026 19:56:52 GMT'), (b'Transfer-Encoding', b'chunked')])
+2026-01-30 20:56:52,303 - httpcore.http11 - DEBUG - receive_response_body.started request=<Request [b'POST']>
+2026-01-30 20:56:52,303 - httpcore.http11 - DEBUG - receive_response_body.complete
+2026-01-30 20:56:52,303 - httpcore.http11 - DEBUG - response_closed.started
+2026-01-30 20:56:52,303 - httpcore.http11 - DEBUG - response_closed.complete
+2026-01-30 21:07:33,757 - utils.provider_clients - DEBUG - Boosting token limit for reasoning model 'phi4:latest' to 32768
+2026-01-30 21:07:33,758 - httpcore.connection - DEBUG - connect_tcp.started host='127.0.0.1' port=11434 local_address=None timeout=None socket_options=None
+2026-01-30 21:07:33,760 - httpcore.connection - DEBUG - connect_tcp.complete return_value=<httpcore._backends.sync.SyncStream object at 0x111e2cad0>
+2026-01-30 21:07:33,760 - httpcore.http11 - DEBUG - send_request_headers.started request=<Request [b'POST']>
+2026-01-30 21:07:33,760 - httpcore.http11 - DEBUG - send_request_headers.complete
+2026-01-30 21:07:33,760 - httpcore.http11 - DEBUG - send_request_body.started request=<Request [b'POST']>
+2026-01-30 21:07:33,760 - httpcore.http11 - DEBUG - send_request_body.complete
+2026-01-30 21:07:33,760 - httpcore.http11 - DEBUG - receive_response_headers.started request=<Request [b'POST']>
+2026-01-30 21:08:13,562 - httpcore.http11 - DEBUG - receive_response_headers.complete return_value=(b'HTTP/1.1', 200, b'OK', [(b'Content-Type', b'application/json; charset=utf-8'), (b'Date', b'Fri, 30 Jan 2026 20:08:13 GMT'), (b'Transfer-Encoding', b'chunked')])
+2026-01-30 21:08:13,567 - httpcore.http11 - DEBUG - receive_response_body.started request=<Request [b'POST']>
+2026-01-30 21:08:13,567 - httpcore.http11 - DEBUG - receive_response_body.complete
+2026-01-30 21:08:13,567 - httpcore.http11 - DEBUG - response_closed.started
+2026-01-30 21:08:13,567 - httpcore.http11 - DEBUG - response_closed.complete
+2026-01-30 21:08:13,693 - utils.provider_clients - DEBUG - Boosting token limit for reasoning model 'phi4:latest' to 32768
+2026-01-30 21:08:13,697 - httpcore.http11 - DEBUG - send_request_headers.started request=<Request [b'POST']>
+2026-01-30 21:08:13,698 - httpcore.http11 - DEBUG - send_request_headers.complete
+2026-01-30 21:08:13,698 - httpcore.http11 - DEBUG - send_request_body.started request=<Request [b'POST']>
+2026-01-30 21:08:13,698 - httpcore.http11 - DEBUG - send_request_body.complete
+2026-01-30 21:08:13,698 - httpcore.http11 - DEBUG - receive_response_headers.started request=<Request [b'POST']>
+2026-01-30 21:08:38,466 - httpcore.http11 - DEBUG - receive_response_headers.complete return_value=(b'HTTP/1.1', 200, b'OK', [(b'Content-Type', b'application/json; charset=utf-8'), (b'Date', b'Fri, 30 Jan 2026 20:08:38 GMT'), (b'Transfer-Encoding', b'chunked')])
+2026-01-30 21:08:38,483 - httpcore.http11 - DEBUG - receive_response_body.started request=<Request [b'POST']>
+2026-01-30 21:08:38,483 - httpcore.http11 - DEBUG - receive_response_body.complete
+2026-01-30 21:08:38,484 - httpcore.http11 - DEBUG - response_closed.started
+2026-01-30 21:08:38,484 - httpcore.http11 - DEBUG - response_closed.complete
+2026-01-30 21:08:38,625 - utils.provider_clients - DEBUG - Boosting token limit for reasoning model 'phi4:latest' to 32768
+2026-01-30 21:08:38,635 - httpcore.http11 - DEBUG - send_request_headers.started request=<Request [b'POST']>
+2026-01-30 21:08:38,635 - httpcore.http11 - DEBUG - send_request_headers.complete
+2026-01-30 21:08:38,635 - httpcore.http11 - DEBUG - send_request_body.started request=<Request [b'POST']>
+2026-01-30 21:08:38,635 - httpcore.http11 - DEBUG - send_request_body.complete
+2026-01-30 21:08:38,635 - httpcore.http11 - DEBUG - receive_response_headers.started request=<Request [b'POST']>
+2026-01-30 21:09:15,944 - httpcore.http11 - DEBUG - receive_response_headers.complete return_value=(b'HTTP/1.1', 200, b'OK', [(b'Content-Type', b'application/json; charset=utf-8'), (b'Date', b'Fri, 30 Jan 2026 20:09:15 GMT'), (b'Transfer-Encoding', b'chunked')])
+2026-01-30 21:09:15,950 - httpcore.http11 - DEBUG - receive_response_body.started request=<Request [b'POST']>
+2026-01-30 21:09:15,950 - httpcore.http11 - DEBUG - receive_response_body.complete
+2026-01-30 21:09:15,950 - httpcore.http11 - DEBUG - response_closed.started
+2026-01-30 21:09:15,950 - httpcore.http11 - DEBUG - response_closed.complete
+2026-01-30 21:09:16,014 - utils.provider_clients - DEBUG - Boosting token limit for reasoning model 'phi4:latest' to 32768
+2026-01-30 21:09:16,015 - httpcore.http11 - DEBUG - send_request_headers.started request=<Request [b'POST']>
+2026-01-30 21:09:16,016 - httpcore.http11 - DEBUG - send_request_headers.complete
+2026-01-30 21:09:16,016 - httpcore.http11 - DEBUG - send_request_body.started request=<Request [b'POST']>
+2026-01-30 21:09:16,016 - httpcore.http11 - DEBUG - send_request_body.complete
+2026-01-30 21:09:16,016 - httpcore.http11 - DEBUG - receive_response_headers.started request=<Request [b'POST']>
+2026-01-30 21:09:33,226 - httpcore.http11 - DEBUG - receive_response_headers.complete return_value=(b'HTTP/1.1', 200, b'OK', [(b'Content-Type', b'application/json; charset=utf-8'), (b'Date', b'Fri, 30 Jan 2026 20:09:33 GMT'), (b'Transfer-Encoding', b'chunked')])
+2026-01-30 21:09:33,228 - httpcore.http11 - DEBUG - receive_response_body.started request=<Request [b'POST']>
+2026-01-30 21:09:33,228 - httpcore.http11 - DEBUG - receive_response_body.complete
+2026-01-30 21:09:33,229 - httpcore.http11 - DEBUG - response_closed.started
+2026-01-30 21:09:33,229 - httpcore.http11 - DEBUG - response_closed.complete
+2026-01-30 21:09:33,280 - utils.provider_clients - DEBUG - Boosting token limit for reasoning model 'phi4:latest' to 32768
+2026-01-30 21:09:33,281 - httpcore.http11 - DEBUG - send_request_headers.started request=<Request [b'POST']>
+2026-01-30 21:09:33,281 - httpcore.http11 - DEBUG - send_request_headers.complete
+2026-01-30 21:09:33,281 - httpcore.http11 - DEBUG - send_request_body.started request=<Request [b'POST']>
+2026-01-30 21:09:33,281 - httpcore.http11 - DEBUG - send_request_body.complete
+2026-01-30 21:09:33,281 - httpcore.http11 - DEBUG - receive_response_headers.started request=<Request [b'POST']>
+2026-01-30 21:09:48,410 - httpcore.http11 - DEBUG - receive_response_headers.complete return_value=(b'HTTP/1.1', 200, b'OK', [(b'Content-Type', b'application/json; charset=utf-8'), (b'Date', b'Fri, 30 Jan 2026 20:09:48 GMT'), (b'Transfer-Encoding', b'chunked')])
+2026-01-30 21:09:48,411 - httpcore.http11 - DEBUG - receive_response_body.started request=<Request [b'POST']>
+2026-01-30 21:09:48,411 - httpcore.http11 - DEBUG - receive_response_body.complete
+2026-01-30 21:09:48,411 - httpcore.http11 - DEBUG - response_closed.started
+2026-01-30 21:09:48,411 - httpcore.http11 - DEBUG - response_closed.complete
+2026-01-30 21:09:48,478 - utils.provider_clients - DEBUG - Boosting token limit for reasoning model 'phi4:latest' to 32768
+2026-01-30 21:09:48,479 - httpcore.http11 - DEBUG - send_request_headers.started request=<Request [b'POST']>
+2026-01-30 21:09:48,479 - httpcore.http11 - DEBUG - send_request_headers.complete
+2026-01-30 21:09:48,479 - httpcore.http11 - DEBUG - send_request_body.started request=<Request [b'POST']>
+2026-01-30 21:09:48,479 - httpcore.http11 - DEBUG - send_request_body.complete
+2026-01-30 21:09:48,479 - httpcore.http11 - DEBUG - receive_response_headers.started request=<Request [b'POST']>
+2026-01-30 21:10:21,815 - httpcore.http11 - DEBUG - receive_response_headers.complete return_value=(b'HTTP/1.1', 200, b'OK', [(b'Content-Type', b'application/json; charset=utf-8'), (b'Date', b'Fri, 30 Jan 2026 20:10:21 GMT'), (b'Transfer-Encoding', b'chunked')])
+2026-01-30 21:10:21,818 - httpcore.http11 - DEBUG - receive_response_body.started request=<Request [b'POST']>
+2026-01-30 21:10:21,818 - httpcore.http11 - DEBUG - receive_response_body.complete
+2026-01-30 21:10:21,819 - httpcore.http11 - DEBUG - response_closed.started
+2026-01-30 21:10:21,819 - httpcore.http11 - DEBUG - response_closed.complete
+2026-01-30 21:10:21,871 - utils.provider_clients - DEBUG - Boosting token limit for reasoning model 'phi4:latest' to 32768
+2026-01-30 21:10:21,872 - httpcore.http11 - DEBUG - send_request_headers.started request=<Request [b'POST']>
+2026-01-30 21:10:21,872 - httpcore.http11 - DEBUG - send_request_headers.complete
+2026-01-30 21:10:21,872 - httpcore.http11 - DEBUG - send_request_body.started request=<Request [b'POST']>
+2026-01-30 21:10:21,872 - httpcore.http11 - DEBUG - send_request_body.complete
+2026-01-30 21:10:21,872 - httpcore.http11 - DEBUG - receive_response_headers.started request=<Request [b'POST']>
+2026-01-30 21:10:27,871 - httpcore.http11 - DEBUG - receive_response_headers.complete return_value=(b'HTTP/1.1', 200, b'OK', [(b'Content-Type', b'application/json; charset=utf-8'), (b'Date', b'Fri, 30 Jan 2026 20:10:27 GMT'), (b'Content-Length', b'899')])
+2026-01-30 21:10:27,872 - httpcore.http11 - DEBUG - receive_response_body.started request=<Request [b'POST']>
+2026-01-30 21:10:27,872 - httpcore.http11 - DEBUG - receive_response_body.complete
+2026-01-30 21:10:27,872 - httpcore.http11 - DEBUG - response_closed.started
+2026-01-30 21:10:27,872 - httpcore.http11 - DEBUG - response_closed.complete
+2026-01-30 21:10:27,899 - utils.provider_clients - DEBUG - Boosting token limit for reasoning model 'phi4:latest' to 32768
+2026-01-30 21:10:27,899 - httpcore.http11 - DEBUG - send_request_headers.started request=<Request [b'POST']>
+2026-01-30 21:10:27,900 - httpcore.http11 - DEBUG - send_request_headers.complete
+2026-01-30 21:10:27,900 - httpcore.http11 - DEBUG - send_request_body.started request=<Request [b'POST']>
+2026-01-30 21:10:27,900 - httpcore.http11 - DEBUG - send_request_body.complete
+2026-01-30 21:10:27,900 - httpcore.http11 - DEBUG - receive_response_headers.started request=<Request [b'POST']>
+2026-01-30 21:10:44,778 - httpcore.http11 - DEBUG - receive_response_headers.complete return_value=(b'HTTP/1.1', 200, b'OK', [(b'Content-Type', b'application/json; charset=utf-8'), (b'Date', b'Fri, 30 Jan 2026 20:10:44 GMT'), (b'Transfer-Encoding', b'chunked')])
+2026-01-30 21:10:44,781 - httpcore.http11 - DEBUG - receive_response_body.started request=<Request [b'POST']>
+2026-01-30 21:10:44,781 - httpcore.http11 - DEBUG - receive_response_body.complete
+2026-01-30 21:10:44,782 - httpcore.http11 - DEBUG - response_closed.started
+2026-01-30 21:10:44,782 - httpcore.http11 - DEBUG - response_closed.complete
+2026-01-30 21:10:44,833 - utils.provider_clients - DEBUG - Boosting token limit for reasoning model 'phi4:latest' to 32768
+2026-01-30 21:10:44,834 - httpcore.http11 - DEBUG - send_request_headers.started request=<Request [b'POST']>
+2026-01-30 21:10:44,834 - httpcore.http11 - DEBUG - send_request_headers.complete
+2026-01-30 21:10:44,835 - httpcore.http11 - DEBUG - send_request_body.started request=<Request [b'POST']>
+2026-01-30 21:10:44,835 - httpcore.http11 - DEBUG - send_request_body.complete
+2026-01-30 21:10:44,835 - httpcore.http11 - DEBUG - receive_response_headers.started request=<Request [b'POST']>
+2026-01-30 21:11:04,538 - httpcore.http11 - DEBUG - receive_response_headers.complete return_value=(b'HTTP/1.1', 200, b'OK', [(b'Content-Type', b'application/json; charset=utf-8'), (b'Date', b'Fri, 30 Jan 2026 20:11:04 GMT'), (b'Transfer-Encoding', b'chunked')])
+2026-01-30 21:11:04,541 - httpcore.http11 - DEBUG - receive_response_body.started request=<Request [b'POST']>
+2026-01-30 21:11:04,541 - httpcore.http11 - DEBUG - receive_response_body.complete
+2026-01-30 21:11:04,541 - httpcore.http11 - DEBUG - response_closed.started
+2026-01-30 21:11:04,541 - httpcore.http11 - DEBUG - response_closed.complete
+2026-01-30 21:11:04,600 - utils.provider_clients - DEBUG - Boosting token limit for reasoning model 'phi4:latest' to 32768
+2026-01-30 21:11:04,601 - httpcore.http11 - DEBUG - send_request_headers.started request=<Request [b'POST']>
+2026-01-30 21:11:04,601 - httpcore.http11 - DEBUG - send_request_headers.complete
+2026-01-30 21:11:04,601 - httpcore.http11 - DEBUG - send_request_body.started request=<Request [b'POST']>
+2026-01-30 21:11:04,601 - httpcore.http11 - DEBUG - send_request_body.complete
+2026-01-30 21:11:04,601 - httpcore.http11 - DEBUG - receive_response_headers.started request=<Request [b'POST']>
+2026-01-30 21:11:22,311 - httpcore.http11 - DEBUG - receive_response_headers.complete return_value=(b'HTTP/1.1', 200, b'OK', [(b'Content-Type', b'application/json; charset=utf-8'), (b'Date', b'Fri, 30 Jan 2026 20:11:22 GMT'), (b'Content-Length', b'1968')])
+2026-01-30 21:11:22,313 - httpcore.http11 - DEBUG - receive_response_body.started request=<Request [b'POST']>
+2026-01-30 21:11:22,313 - httpcore.http11 - DEBUG - receive_response_body.complete
+2026-01-30 21:11:22,313 - httpcore.http11 - DEBUG - response_closed.started
+2026-01-30 21:11:22,313 - httpcore.http11 - DEBUG - response_closed.complete
+2026-01-30 21:11:22,370 - utils.provider_clients - DEBUG - Boosting token limit for reasoning model 'phi4:latest' to 32768
+2026-01-30 21:11:22,371 - httpcore.http11 - DEBUG - send_request_headers.started request=<Request [b'POST']>
+2026-01-30 21:11:22,371 - httpcore.http11 - DEBUG - send_request_headers.complete
+2026-01-30 21:11:22,371 - httpcore.http11 - DEBUG - send_request_body.started request=<Request [b'POST']>
+2026-01-30 21:11:22,371 - httpcore.http11 - DEBUG - send_request_body.complete
+2026-01-30 21:11:22,371 - httpcore.http11 - DEBUG - receive_response_headers.started request=<Request [b'POST']>
+2026-01-30 21:11:43,794 - httpcore.http11 - DEBUG - receive_response_headers.complete return_value=(b'HTTP/1.1', 200, b'OK', [(b'Content-Type', b'application/json; charset=utf-8'), (b'Date', b'Fri, 30 Jan 2026 20:11:43 GMT'), (b'Transfer-Encoding', b'chunked')])
+2026-01-30 21:11:43,796 - httpcore.http11 - DEBUG - receive_response_body.started request=<Request [b'POST']>
+2026-01-30 21:11:43,796 - httpcore.http11 - DEBUG - receive_response_body.complete
+2026-01-30 21:11:43,796 - httpcore.http11 - DEBUG - response_closed.started
+2026-01-30 21:11:43,796 - httpcore.http11 - DEBUG - response_closed.complete
+2026-01-30 22:04:42,341 - utils.provider_clients - DEBUG - Boosting token limit for reasoning model 'phi4:latest' to 32768
+2026-01-30 22:05:14,280 - utils.provider_clients - DEBUG - Boosting token limit for reasoning model 'phi4:latest' to 32768
+2026-01-30 22:05:40,480 - utils.provider_clients - DEBUG - Boosting token limit for reasoning model 'phi4:latest' to 32768
+2026-01-30 22:06:22,544 - utils.provider_clients - DEBUG - Boosting token limit for reasoning model 'phi4:latest' to 32768
+2026-01-30 22:06:41,838 - utils.provider_clients - DEBUG - Boosting token limit for reasoning model 'phi4:latest' to 32768
+2026-01-30 22:06:58,827 - utils.provider_clients - DEBUG - Boosting token limit for reasoning model 'phi4:latest' to 32768
+2026-01-30 22:07:36,734 - utils.provider_clients - DEBUG - Boosting token limit for reasoning model 'phi4:latest' to 32768
+2026-01-30 22:07:43,563 - utils.provider_clients - DEBUG - Boosting token limit for reasoning model 'phi4:latest' to 32768
+2026-01-30 22:08:02,209 - utils.provider_clients - DEBUG - Boosting token limit for reasoning model 'phi4:latest' to 32768
+2026-01-30 22:08:24,357 - utils.provider_clients - DEBUG - Boosting token limit for reasoning model 'phi4:latest' to 32768
+2026-01-30 22:08:44,372 - utils.provider_clients - DEBUG - Boosting token limit for reasoning model 'phi4:latest' to 32768
+2026-01-30 22:15:45,036 - utils.provider_clients - DEBUG - Boosting token limit for reasoning model 'deepseek-r1:14b' to 32768
+2026-01-30 22:55:15,557 - utils.provider_clients - DEBUG - Boosting token limit for reasoning model 'deepseek-r1:14b' to 32768
+2026-01-30 22:56:11,944 - utils.provider_clients - DEBUG - Boosting token limit for reasoning model 'deepseek-r1:14b' to 32768
+2026-01-30 22:57:36,873 - utils.provider_clients - DEBUG - Boosting token limit for reasoning model 'deepseek-r1:14b' to 32768
+2026-01-30 22:59:23,363 - utils.provider_clients - DEBUG - Boosting token limit for reasoning model 'deepseek-r1:14b' to 32768
+2026-01-30 23:00:08,052 - utils.provider_clients - DEBUG - Boosting token limit for reasoning model 'deepseek-r1:14b' to 32768
+2026-01-30 23:02:16,342 - utils.provider_clients - DEBUG - Boosting token limit for reasoning model 'deepseek-r1:14b' to 32768
+2026-01-30 23:03:20,771 - utils.provider_clients - DEBUG - Boosting token limit for reasoning model 'deepseek-r1:14b' to 32768
+2026-01-30 23:04:07,773 - utils.provider_clients - DEBUG - Boosting token limit for reasoning model 'deepseek-r1:14b' to 32768
+2026-01-30 23:06:05,656 - utils.provider_clients - DEBUG - Boosting token limit for reasoning model 'deepseek-r1:14b' to 32768
+2026-01-30 23:07:44,629 - utils.provider_clients - DEBUG - Boosting token limit for reasoning model 'deepseek-r1:14b' to 32768
+2026-01-30 23:29:47,407 - openai._base_client - DEBUG - Request options: {'method': 'post', 'url': '/chat/completions', 'files': None, 'idempotency_key': 'stainless-python-retry-fd5cc4ea-f5fc-464d-b9db-7c7c8575e255', 'json_data': {'messages': [{'role': 'user', 'content': 'Hi'}], 'model': 'gpt-3.5-turbo', 'max_tokens': 1}}
+2026-01-30 23:29:47,428 - openai._base_client - DEBUG - Sending HTTP Request: POST https://api.openai.com/v1/chat/completions
+2026-01-30 23:29:48,212 - openai._base_client - DEBUG - HTTP Response: POST https://api.openai.com/v1/chat/completions "429 Too Many Requests" Headers([('date', 'Fri, 30 Jan 2026 22:29:48 GMT'), ('content-type', 'application/json; charset=utf-8'), ('content-length', '337'), ('connection', 'keep-alive'), ('vary', 'Origin'), ('x-request-id', 'req_dffad8b6276d4b43b4868235e5aaa65f'), ('x-openai-proxy-wasm', 'v0.1'), ('cf-cache-status', 'DYNAMIC'), ('set-cookie', '__cf_bm=9pZF56jK4ddph6X1iWrccjPgbj8RWdRL.SdJemru3QI-1769812188-1.0.1.1-uRxmzkEnizETCUzUVo9W4rSiIUP4OjY79kHqxZmaXAUr8nlaP2qj7mqves8PrnaOcTRgGL60ZXlYspkzPXwYr78AeanS5DeFw7ipvyJWjFE; path=/; expires=Fri, 30-Jan-26 22:59:48 GMT; domain=.api.openai.com; HttpOnly; Secure; SameSite=None'), ('strict-transport-security', 'max-age=31536000; includeSubDomains; preload'), ('x-content-type-options', 'nosniff'), ('set-cookie', '_cfuvid=MU4ZbEvQmrNmjG_zmkb7FmmMGjdQEFQItKfgTB5Uq5M-1769812188198-0.0.1.1-604800000; path=/; domain=.api.openai.com; HttpOnly; Secure; SameSite=None'), ('server', 'cloudflare'), ('cf-ray', '9c6468fc5aa8a57f-TXL'), ('alt-svc', 'h3=":443"; ma=86400')])
+2026-01-30 23:29:48,212 - openai._base_client - DEBUG - request_id: req_dffad8b6276d4b43b4868235e5aaa65f
+2026-01-30 23:29:48,212 - openai._base_client - DEBUG - Encountered httpx.HTTPStatusError
+Traceback (most recent call last):
+  File "/Users/kbeissert/_PROJEKTE/Entwicklung/cruciblemark/.venv/lib/python3.14/site-packages/openai/_base_client.py", line 1027, in request
+    response.raise_for_status()
+    ~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "/Users/kbeissert/_PROJEKTE/Entwicklung/cruciblemark/.venv/lib/python3.14/site-packages/httpx/_models.py", line 829, in raise_for_status
+    raise HTTPStatusError(message, request=request, response=self)
+httpx.HTTPStatusError: Client error '429 Too Many Requests' for url 'https://api.openai.com/v1/chat/completions'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/429
+2026-01-30 23:29:48,217 - openai._base_client - DEBUG - Retrying due to status code 429
+2026-01-30 23:29:48,217 - openai._base_client - DEBUG - 2 retries left
+2026-01-30 23:29:48,217 - openai._base_client - INFO - Retrying request to /chat/completions in 0.382183 seconds
+2026-01-30 23:29:48,605 - openai._base_client - DEBUG - Request options: {'method': 'post', 'url': '/chat/completions', 'files': None, 'idempotency_key': 'stainless-python-retry-fd5cc4ea-f5fc-464d-b9db-7c7c8575e255', 'json_data': {'messages': [{'role': 'user', 'content': 'Hi'}], 'model': 'gpt-3.5-turbo', 'max_tokens': 1}}
+2026-01-30 23:29:48,606 - openai._base_client - DEBUG - Sending HTTP Request: POST https://api.openai.com/v1/chat/completions
+2026-01-30 23:29:48,771 - openai._base_client - DEBUG - HTTP Response: POST https://api.openai.com/v1/chat/completions "429 Too Many Requests" Headers({'date': 'Fri, 30 Jan 2026 22:29:48 GMT', 'content-type': 'application/json; charset=utf-8', 'content-length': '337', 'connection': 'keep-alive', 'vary': 'Origin', 'x-request-id': 'req_01e3eb76a93a45dca5a05774fdf16678', 'x-openai-proxy-wasm': 'v0.1', 'cf-cache-status': 'DYNAMIC', 'strict-transport-security': 'max-age=31536000; includeSubDomains; preload', 'x-content-type-options': 'nosniff', 'server': 'cloudflare', 'cf-ray': '9c646902eaa9a57f-TXL', 'alt-svc': 'h3=":443"; ma=86400'})
+2026-01-30 23:29:48,771 - openai._base_client - DEBUG - request_id: req_01e3eb76a93a45dca5a05774fdf16678
+2026-01-30 23:29:48,771 - openai._base_client - DEBUG - Encountered httpx.HTTPStatusError
+Traceback (most recent call last):
+  File "/Users/kbeissert/_PROJEKTE/Entwicklung/cruciblemark/.venv/lib/python3.14/site-packages/openai/_base_client.py", line 1027, in request
+    response.raise_for_status()
+    ~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "/Users/kbeissert/_PROJEKTE/Entwicklung/cruciblemark/.venv/lib/python3.14/site-packages/httpx/_models.py", line 829, in raise_for_status
+    raise HTTPStatusError(message, request=request, response=self)
+httpx.HTTPStatusError: Client error '429 Too Many Requests' for url 'https://api.openai.com/v1/chat/completions'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/429
+2026-01-30 23:29:48,772 - openai._base_client - DEBUG - Retrying due to status code 429
+2026-01-30 23:29:48,772 - openai._base_client - DEBUG - 1 retry left
+2026-01-30 23:29:48,772 - openai._base_client - INFO - Retrying request to /chat/completions in 0.818777 seconds
+2026-01-30 23:29:49,593 - openai._base_client - DEBUG - Request options: {'method': 'post', 'url': '/chat/completions', 'files': None, 'idempotency_key': 'stainless-python-retry-fd5cc4ea-f5fc-464d-b9db-7c7c8575e255', 'json_data': {'messages': [{'role': 'user', 'content': 'Hi'}], 'model': 'gpt-3.5-turbo', 'max_tokens': 1}}
+2026-01-30 23:29:49,595 - openai._base_client - DEBUG - Sending HTTP Request: POST https://api.openai.com/v1/chat/completions
+2026-01-30 23:29:50,358 - openai._base_client - DEBUG - HTTP Response: POST https://api.openai.com/v1/chat/completions "429 Too Many Requests" Headers({'date': 'Fri, 30 Jan 2026 22:29:50 GMT', 'content-type': 'application/json; charset=utf-8', 'content-length': '337', 'connection': 'keep-alive', 'vary': 'Origin', 'x-request-id': 'req_8184128f7f774210abf19d965244f45c', 'x-openai-proxy-wasm': 'v0.1', 'cf-cache-status': 'DYNAMIC', 'strict-transport-security': 'max-age=31536000; includeSubDomains; preload', 'x-content-type-options': 'nosniff', 'server': 'cloudflare', 'cf-ray': '9c646909193ba57f-TXL', 'alt-svc': 'h3=":443"; ma=86400'})
+2026-01-30 23:29:50,359 - openai._base_client - DEBUG - request_id: req_8184128f7f774210abf19d965244f45c
+2026-01-30 23:29:50,359 - openai._base_client - DEBUG - Encountered httpx.HTTPStatusError
+Traceback (most recent call last):
+  File "/Users/kbeissert/_PROJEKTE/Entwicklung/cruciblemark/.venv/lib/python3.14/site-packages/openai/_base_client.py", line 1027, in request
+    response.raise_for_status()
+    ~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "/Users/kbeissert/_PROJEKTE/Entwicklung/cruciblemark/.venv/lib/python3.14/site-packages/httpx/_models.py", line 829, in raise_for_status
+    raise HTTPStatusError(message, request=request, response=self)
+httpx.HTTPStatusError: Client error '429 Too Many Requests' for url 'https://api.openai.com/v1/chat/completions'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/429
+2026-01-30 23:29:50,360 - openai._base_client - DEBUG - Re-raising status error
+2026-01-30 23:29:50,362 - utils.provider_clients - WARNING - OpenAI Access Check Failed: Error code: 429 - {'error': {'message': 'You exceeded your current quota, please check your plan and billing details. For more information on this error, read the docs: https://platform.openai.com/docs/guides/error-codes/api-errors.', 'type': 'insufficient_quota', 'param': None, 'code': 'insufficient_quota'}}
+2026-01-30 23:30:27,941 - utils.llm_client - DEBUG - Cost for request: $0.015932
+2026-01-30 23:30:53,199 - utils.llm_client - DEBUG - Cost for request: $0.014199
+2026-01-30 23:31:04,249 - utils.llm_client - DEBUG - Cost for request: $0.007957
+2026-01-30 23:31:36,777 - utils.llm_client - DEBUG - Cost for request: $0.014431
+2026-01-30 23:31:55,116 - utils.llm_client - DEBUG - Cost for request: $0.009693
+2026-01-30 23:31:58,895 - utils.llm_client - DEBUG - Cost for request: $0.002857
+2026-01-30 23:32:26,218 - utils.llm_client - DEBUG - Cost for request: $0.015984
+2026-01-30 23:32:28,776 - utils.llm_client - DEBUG - Cost for request: $0.001512
+2026-01-30 23:32:40,559 - utils.llm_client - DEBUG - Cost for request: $0.006507
+2026-01-30 23:32:56,200 - utils.llm_client - DEBUG - Cost for request: $0.008356
+2026-01-30 23:33:15,545 - utils.llm_client - DEBUG - Cost for request: $0.010938
+2026-01-30 23:33:30,504 - utils.llm_client - DEBUG - Cost for request: $0.007555
+2026-01-30 23:33:30,634 - asyncio - DEBUG - Using selector: KqueueSelector
+2026-01-30 23:33:30,639 - asyncio - DEBUG - Using selector: KqueueSelector
+2026-01-30 23:35:32,726 - utils.llm_client - DEBUG - Cost for request: $0.016032
+2026-01-30 23:35:42,203 - utils.llm_client - DEBUG - Cost for request: $0.005288
+2026-01-30 23:36:10,533 - utils.llm_client - DEBUG - Cost for request: $0.009538
+2026-01-30 23:36:29,463 - utils.llm_client - DEBUG - Cost for request: $0.007498
+2026-01-30 23:36:33,356 - utils.llm_client - DEBUG - Cost for request: $0.002014
+2026-01-30 23:37:06,509 - utils.llm_client - DEBUG - Cost for request: $0.014660
+2026-01-30 23:37:08,861 - utils.llm_client - DEBUG - Cost for request: $0.000928
+2026-01-30 23:37:19,457 - utils.llm_client - DEBUG - Cost for request: $0.005144
+2026-01-30 23:37:32,433 - utils.llm_client - DEBUG - Cost for request: $0.006010
+2026-01-30 23:37:50,512 - utils.llm_client - DEBUG - Cost for request: $0.007448
+2026-01-30 23:38:00,440 - utils.llm_client - DEBUG - Cost for request: $0.004624
+2026-01-30 23:38:00,521 - asyncio - DEBUG - Using selector: KqueueSelector
+2026-01-31 00:49:45,363 - benchmark_modules.political_compass.core.loader - INFO - Lade Fragen aus 81 Dateien...
+2026-01-31 00:49:45,485 - benchmark_modules.political_compass.core.loader - INFO - Gesamt: 81 Fragen geladen.
+2026-01-31 01:05:39,841 - benchmark_modules.political_compass.core.loader - INFO - Lade Fragen aus 81 Dateien...
+2026-01-31 01:05:39,964 - benchmark_modules.political_compass.core.loader - INFO - Gesamt: 81 Fragen geladen.
+2026-01-31 01:09:30,833 - benchmark_modules.political_compass.core.io_manager - INFO - 💾 JSON gespeichert: outputs/runs/results_dolphin_llama3_8b_20260131_000930.json
+2026-01-31 01:31:10,356 - benchmark_modules.political_compass.core.loader - INFO - Lade Fragen aus 81 Dateien...
+2026-01-31 01:31:10,476 - benchmark_modules.political_compass.core.loader - INFO - Gesamt: 81 Fragen geladen.
+2026-01-31 18:31:42,998 - utils.llm_client - DEBUG - Cost for request: $0.011962
+2026-01-31 18:32:11,433 - utils.llm_client - DEBUG - Cost for request: $0.010742
+2026-01-31 18:32:33,365 - utils.llm_client - DEBUG - Cost for request: $0.010544
+2026-01-31 18:33:14,071 - utils.llm_client - DEBUG - Cost for request: $0.017728
+2026-01-31 18:33:33,108 - utils.llm_client - DEBUG - Cost for request: $0.009812
+2026-01-31 18:33:33,169 - utils.result_manager - ERROR - Failed to update leaderboard: could not convert string to float: ''
+2026-01-31 18:33:33,186 - asyncio - DEBUG - Using selector: KqueueSelector
+2026-01-31 18:54:52,423 - openai._base_client - DEBUG - Request options: {'method': 'post', 'url': '/chat/completions', 'files': None, 'idempotency_key': 'stainless-python-retry-86f47d96-1790-44a3-a338-1c5357059301', 'json_data': {'messages': [{'role': 'user', 'content': 'Hi'}], 'model': 'gpt-3.5-turbo', 'max_tokens': 1}}
+2026-01-31 18:54:52,441 - openai._base_client - DEBUG - Sending HTTP Request: POST https://api.openai.com/v1/chat/completions
+2026-01-31 18:54:53,093 - openai._base_client - DEBUG - HTTP Response: POST https://api.openai.com/v1/chat/completions "429 Too Many Requests" Headers([('date', 'Sat, 31 Jan 2026 17:54:53 GMT'), ('content-type', 'application/json; charset=utf-8'), ('content-length', '337'), ('connection', 'keep-alive'), ('vary', 'Origin'), ('x-request-id', 'req_297f71b035c04c888312cfaca0895c9b'), ('x-openai-proxy-wasm', 'v0.1'), ('cf-cache-status', 'DYNAMIC'), ('set-cookie', '__cf_bm=4.ZQBomvGdwc4AUYpdXkDt1ib4zebefIaGWxRd4F3iw-1769882093-1.0.1.1-USkDHnBs4mT2e7ARnmszJbVPFsVHTF6lw0DjVPGqBTRn5Sj.3UrXsvFbHjdyOkrGRcVvZu69kj29LDIQZTV92v8l3FjIDQ2JEAqwtYcMTlY; path=/; expires=Sat, 31-Jan-26 18:24:53 GMT; domain=.api.openai.com; HttpOnly; Secure; SameSite=None'), ('strict-transport-security', 'max-age=31536000; includeSubDomains; preload'), ('x-content-type-options', 'nosniff'), ('set-cookie', '_cfuvid=uVlH5x5rUyOc8e.n89K5PtYsV8w573N.qJRHLTaH0Vw-1769882093033-0.0.1.1-604800000; path=/; domain=.api.openai.com; HttpOnly; Secure; SameSite=None'), ('server', 'cloudflare'), ('cf-ray', '9c6b13a64b6ae51e-TXL'), ('alt-svc', 'h3=":443"; ma=86400')])
+2026-01-31 18:54:53,093 - openai._base_client - DEBUG - request_id: req_297f71b035c04c888312cfaca0895c9b
+2026-01-31 18:54:53,093 - openai._base_client - DEBUG - Encountered httpx.HTTPStatusError
+Traceback (most recent call last):
+  File "/Users/kbeissert/_PROJEKTE/Entwicklung/cruciblemark/.venv/lib/python3.14/site-packages/openai/_base_client.py", line 1027, in request
+    response.raise_for_status()
+    ~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "/Users/kbeissert/_PROJEKTE/Entwicklung/cruciblemark/.venv/lib/python3.14/site-packages/httpx/_models.py", line 829, in raise_for_status
+    raise HTTPStatusError(message, request=request, response=self)
+httpx.HTTPStatusError: Client error '429 Too Many Requests' for url 'https://api.openai.com/v1/chat/completions'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/429
+2026-01-31 18:54:53,098 - openai._base_client - DEBUG - Retrying due to status code 429
+2026-01-31 18:54:53,098 - openai._base_client - DEBUG - 2 retries left
+2026-01-31 18:54:53,098 - openai._base_client - INFO - Retrying request to /chat/completions in 0.430698 seconds
+2026-01-31 18:54:53,533 - openai._base_client - DEBUG - Request options: {'method': 'post', 'url': '/chat/completions', 'files': None, 'idempotency_key': 'stainless-python-retry-86f47d96-1790-44a3-a338-1c5357059301', 'json_data': {'messages': [{'role': 'user', 'content': 'Hi'}], 'model': 'gpt-3.5-turbo', 'max_tokens': 1}}
+2026-01-31 18:54:53,535 - openai._base_client - DEBUG - Sending HTTP Request: POST https://api.openai.com/v1/chat/completions
+2026-01-31 18:54:54,322 - openai._base_client - DEBUG - HTTP Response: POST https://api.openai.com/v1/chat/completions "429 Too Many Requests" Headers({'date': 'Sat, 31 Jan 2026 17:54:54 GMT', 'content-type': 'application/json; charset=utf-8', 'content-length': '337', 'connection': 'keep-alive', 'vary': 'Origin', 'x-request-id': 'req_f58b55caa7a14b7d93ea91585193f1d0', 'x-openai-proxy-wasm': 'v0.1', 'cf-cache-status': 'DYNAMIC', 'strict-transport-security': 'max-age=31536000; includeSubDomains; preload', 'x-content-type-options': 'nosniff', 'server': 'cloudflare', 'cf-ray': '9c6b13acbe9ae51e-TXL', 'alt-svc': 'h3=":443"; ma=86400'})
+2026-01-31 18:54:54,323 - openai._base_client - DEBUG - request_id: req_f58b55caa7a14b7d93ea91585193f1d0
+2026-01-31 18:54:54,323 - openai._base_client - DEBUG - Encountered httpx.HTTPStatusError
+Traceback (most recent call last):
+  File "/Users/kbeissert/_PROJEKTE/Entwicklung/cruciblemark/.venv/lib/python3.14/site-packages/openai/_base_client.py", line 1027, in request
+    response.raise_for_status()
+    ~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "/Users/kbeissert/_PROJEKTE/Entwicklung/cruciblemark/.venv/lib/python3.14/site-packages/httpx/_models.py", line 829, in raise_for_status
+    raise HTTPStatusError(message, request=request, response=self)
+httpx.HTTPStatusError: Client error '429 Too Many Requests' for url 'https://api.openai.com/v1/chat/completions'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/429
+2026-01-31 18:54:54,324 - openai._base_client - DEBUG - Retrying due to status code 429
+2026-01-31 18:54:54,324 - openai._base_client - DEBUG - 1 retry left
+2026-01-31 18:54:54,324 - openai._base_client - INFO - Retrying request to /chat/completions in 0.802975 seconds
+2026-01-31 18:54:55,133 - openai._base_client - DEBUG - Request options: {'method': 'post', 'url': '/chat/completions', 'files': None, 'idempotency_key': 'stainless-python-retry-86f47d96-1790-44a3-a338-1c5357059301', 'json_data': {'messages': [{'role': 'user', 'content': 'Hi'}], 'model': 'gpt-3.5-turbo', 'max_tokens': 1}}
+2026-01-31 18:54:55,135 - openai._base_client - DEBUG - Sending HTTP Request: POST https://api.openai.com/v1/chat/completions
+2026-01-31 18:54:55,748 - openai._base_client - DEBUG - HTTP Response: POST https://api.openai.com/v1/chat/completions "429 Too Many Requests" Headers({'date': 'Sat, 31 Jan 2026 17:54:55 GMT', 'content-type': 'application/json; charset=utf-8', 'content-length': '337', 'connection': 'keep-alive', 'vary': 'Origin', 'x-request-id': 'req_98b71fc29c4b4ca396ba28d7d1e88fac', 'x-openai-proxy-wasm': 'v0.1', 'cf-cache-status': 'DYNAMIC', 'strict-transport-security': 'max-age=31536000; includeSubDomains; preload', 'x-content-type-options': 'nosniff', 'server': 'cloudflare', 'cf-ray': '9c6b13b6bcb3e51e-TXL', 'alt-svc': 'h3=":443"; ma=86400'})
+2026-01-31 18:54:55,748 - openai._base_client - DEBUG - request_id: req_98b71fc29c4b4ca396ba28d7d1e88fac
+2026-01-31 18:54:55,748 - openai._base_client - DEBUG - Encountered httpx.HTTPStatusError
+Traceback (most recent call last):
+  File "/Users/kbeissert/_PROJEKTE/Entwicklung/cruciblemark/.venv/lib/python3.14/site-packages/openai/_base_client.py", line 1027, in request
+    response.raise_for_status()
+    ~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "/Users/kbeissert/_PROJEKTE/Entwicklung/cruciblemark/.venv/lib/python3.14/site-packages/httpx/_models.py", line 829, in raise_for_status
+    raise HTTPStatusError(message, request=request, response=self)
+httpx.HTTPStatusError: Client error '429 Too Many Requests' for url 'https://api.openai.com/v1/chat/completions'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/429
+2026-01-31 18:54:55,750 - openai._base_client - DEBUG - Re-raising status error
+2026-01-31 18:54:55,752 - utils.provider_clients - WARNING - OpenAI Access Check Failed: Error code: 429 - {'error': {'message': 'You exceeded your current quota, please check your plan and billing details. For more information on this error, read the docs: https://platform.openai.com/docs/guides/error-codes/api-errors.', 'type': 'insufficient_quota', 'param': None, 'code': 'insufficient_quota'}}
+2026-01-31 18:54:55,874 - asyncio - DEBUG - Using selector: KqueueSelector
+2026-01-31 18:56:22,026 - utils.llm_client - DEBUG - Cost for request: $0.017056
+2026-01-31 18:56:50,364 - utils.llm_client - DEBUG - Cost for request: $0.014753
+2026-01-31 18:57:13,614 - utils.llm_client - DEBUG - Cost for request: $0.015158
+2026-01-31 18:57:55,346 - utils.llm_client - DEBUG - Cost for request: $0.025528
+2026-01-31 18:58:15,303 - utils.llm_client - DEBUG - Cost for request: $0.013724
+2026-01-31 18:58:15,687 - asyncio - DEBUG - Using selector: KqueueSelector
+2026-01-31 20:28:50,977 - __main__ - ERROR - Unerwarteter Fehler: 'name'
+Traceback (most recent call last):
+  File "/Users/kbeissert/_PROJEKTE/Entwicklung/cruciblemark/run_benchmark.py", line 421, in main
+    runner.run(config)
+    ~~~~~~~~~~^^^^^^^^
+  File "/Users/kbeissert/_PROJEKTE/Entwicklung/cruciblemark/run_benchmark.py", line 260, in run
+    selected_module, module_config = self.select_module(run_config.module_name)
+                                     ~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/kbeissert/_PROJEKTE/Entwicklung/cruciblemark/run_benchmark.py", line 123, in select_module
+    selected = select_from_list(
+        items,
+    ...<2 lines>...
+        title="TEST-MODULE"
+    )
+  File "/Users/kbeissert/_PROJEKTE/Entwicklung/cruciblemark/utils/benchmark_utils.py", line 83, in select_from_list
+    display = display_func(item)
+  File "/Users/kbeissert/_PROJEKTE/Entwicklung/cruciblemark/run_benchmark.py", line 121, in display_mod
+    return config["name"], config.get("description", "")
+           ~~~~~~^^^^^^^^
+KeyError: 'name'
+2026-01-31 22:17:45,046 - benchmark_modules.political_compass.core.loader - INFO - Lade Fragen aus 81 Dateien...
+2026-01-31 22:17:45,171 - benchmark_modules.political_compass.core.loader - INFO - Gesamt: 81 Fragen geladen.
+2026-01-31 22:21:28,572 - benchmark_modules.political_compass.core.loader - INFO - Lade Fragen aus 81 Dateien...
+2026-01-31 22:21:28,698 - benchmark_modules.political_compass.core.loader - INFO - Gesamt: 81 Fragen geladen.
+2026-01-31 22:31:42,003 - benchmark_modules.political_compass.core.io_manager - INFO - 💾 JSON gespeichert: outputs/runs/results_dolphin_llama3_8b_20260131_213142.json
+2026-01-31 22:31:42,065 - __main__ - ERROR - Unerwarteter Fehler: 0
+Traceback (most recent call last):
+  File "/Users/kbeissert/_PROJEKTE/Entwicklung/cruciblemark/.venv/lib/python3.14/site-packages/pandas/core/indexes/base.py", line 3641, in get_loc
+    return self._engine.get_loc(casted_key)
+           ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^
+  File "pandas/_libs/index.pyx", line 168, in pandas._libs.index.IndexEngine.get_loc
+  File "pandas/_libs/index.pyx", line 176, in pandas._libs.index.IndexEngine.get_loc
+  File "pandas/_libs/index.pyx", line 578, in pandas._libs.index.StringObjectEngine._check_type
+KeyError: 0
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/Users/kbeissert/_PROJEKTE/Entwicklung/cruciblemark/run_benchmark.py", line 432, in main
+    runner.run(config)
+    ~~~~~~~~~~^^^^^^^^
+  File "/Users/kbeissert/_PROJEKTE/Entwicklung/cruciblemark/run_benchmark.py", line 301, in run
+    self._run_benchmark(module_config, model_id, provider, run_config.num_runs)
+    ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/kbeissert/_PROJEKTE/Entwicklung/cruciblemark/run_benchmark.py", line 351, in _run_benchmark
+    local_runner.save_results(results)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "/Users/kbeissert/_PROJEKTE/Entwicklung/cruciblemark/scripts/run_local_benchmark.py", line 583, in save_results
+    self.result_manager.save_results(results, result_type="local")
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/kbeissert/_PROJEKTE/Entwicklung/cruciblemark/utils/result_manager.py", line 119, in save_results
+    self.update_leaderboard()
+    ~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "/Users/kbeissert/_PROJEKTE/Entwicklung/cruciblemark/utils/result_manager.py", line 167, in update_leaderboard
+    generate_leaderboard.main(print_table=False)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^
+  File "/Users/kbeissert/_PROJEKTE/Entwicklung/cruciblemark/scripts/generate_leaderboard.py", line 933, in main
+    leaderboard, cat_cols = calculate_metrics(df)
+                            ~~~~~~~~~~~~~~~~~^^^^
+  File "/Users/kbeissert/_PROJEKTE/Entwicklung/cruciblemark/scripts/generate_leaderboard.py", line 821, in calculate_metrics
+    group_stats = _calculate_group_scores(df_success, modules_config)
+  File "/Users/kbeissert/_PROJEKTE/Entwicklung/cruciblemark/scripts/generate_leaderboard.py", line 366, in _calculate_group_scores
+    df_calc["final_routine"] = contribs[0]
+                               ~~~~~~~~^^^
+  File "/Users/kbeissert/_PROJEKTE/Entwicklung/cruciblemark/.venv/lib/python3.14/site-packages/pandas/core/frame.py", line 4378, in __getitem__
+    indexer = self.columns.get_loc(key)
+  File "/Users/kbeissert/_PROJEKTE/Entwicklung/cruciblemark/.venv/lib/python3.14/site-packages/pandas/core/indexes/base.py", line 3648, in get_loc
+    raise KeyError(key) from err
+KeyError: 0
+2026-01-31 22:56:12,259 - benchmark_modules.political_compass.core.loader - INFO - Lade Fragen aus 81 Dateien...
+2026-01-31 22:56:12,382 - benchmark_modules.political_compass.core.loader - INFO - Gesamt: 81 Fragen geladen.
+2026-01-31 23:09:52,250 - benchmark_modules.political_compass.core.io_manager - INFO - 💾 JSON gespeichert: outputs/runs/results_dolphin_llama3_8b_20260131_220952.json
+2026-01-31 23:52:10,356 - openai._base_client - DEBUG - Request options: {'method': 'post', 'url': '/chat/completions', 'files': None, 'idempotency_key': 'stainless-python-retry-13ae261c-f516-43ea-80ad-3c3b909df12b', 'json_data': {'messages': [{'role': 'user', 'content': 'Hi'}], 'model': 'gpt-3.5-turbo', 'max_tokens': 1}}
+2026-01-31 23:52:10,377 - openai._base_client - DEBUG - Sending HTTP Request: POST https://api.openai.com/v1/chat/completions
+2026-01-31 23:52:11,089 - openai._base_client - DEBUG - HTTP Response: POST https://api.openai.com/v1/chat/completions "429 Too Many Requests" Headers([('date', 'Sat, 31 Jan 2026 22:52:11 GMT'), ('content-type', 'application/json; charset=utf-8'), ('content-length', '337'), ('connection', 'keep-alive'), ('vary', 'Origin'), ('x-request-id', 'req_fd33f3aaf6e9495e992f5282e5841434'), ('x-openai-proxy-wasm', 'v0.1'), ('cf-cache-status', 'DYNAMIC'), ('set-cookie', '__cf_bm=abvwNT4gtcCOdjHa1fwm.ZHk.dVSqZeXw1c8jQScCeY-1769899931-1.0.1.1-xEiPUgS1JHzR63BpEnfzVkB5mr0OJsCLEst_LJ5SsJ38yy4LP4PlmWYhWsP4dSn9_LBhkPOycCpBGnBj.Yc1mTbXEpnV4Ggt6WVQbBIuU9g; path=/; expires=Sat, 31-Jan-26 23:22:11 GMT; domain=.api.openai.com; HttpOnly; Secure; SameSite=None'), ('strict-transport-security', 'max-age=31536000; includeSubDomains; preload'), ('x-content-type-options', 'nosniff'), ('set-cookie', '_cfuvid=JYWcMYxagXizHcB040k9YLg8EkFeJjakteH_z86QNfo-1769899931058-0.0.1.1-604800000; path=/; domain=.api.openai.com; HttpOnly; Secure; SameSite=None'), ('server', 'cloudflare'), ('cf-ray', '9c6cc725681b6a73-TXL'), ('alt-svc', 'h3=":443"; ma=86400')])
+2026-01-31 23:52:11,089 - openai._base_client - DEBUG - request_id: req_fd33f3aaf6e9495e992f5282e5841434
+2026-01-31 23:52:11,089 - openai._base_client - DEBUG - Encountered httpx.HTTPStatusError
+Traceback (most recent call last):
+  File "/Users/kbeissert/_PROJEKTE/Entwicklung/cruciblemark/.venv/lib/python3.14/site-packages/openai/_base_client.py", line 1027, in request
+    response.raise_for_status()
+    ~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "/Users/kbeissert/_PROJEKTE/Entwicklung/cruciblemark/.venv/lib/python3.14/site-packages/httpx/_models.py", line 829, in raise_for_status
+    raise HTTPStatusError(message, request=request, response=self)
+httpx.HTTPStatusError: Client error '429 Too Many Requests' for url 'https://api.openai.com/v1/chat/completions'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/429
+2026-01-31 23:52:11,093 - openai._base_client - DEBUG - Retrying due to status code 429
+2026-01-31 23:52:11,093 - openai._base_client - DEBUG - 2 retries left
+2026-01-31 23:52:11,093 - openai._base_client - INFO - Retrying request to /chat/completions in 0.382595 seconds
+2026-01-31 23:52:11,478 - openai._base_client - DEBUG - Request options: {'method': 'post', 'url': '/chat/completions', 'files': None, 'idempotency_key': 'stainless-python-retry-13ae261c-f516-43ea-80ad-3c3b909df12b', 'json_data': {'messages': [{'role': 'user', 'content': 'Hi'}], 'model': 'gpt-3.5-turbo', 'max_tokens': 1}}
+2026-01-31 23:52:11,480 - openai._base_client - DEBUG - Sending HTTP Request: POST https://api.openai.com/v1/chat/completions
+2026-01-31 23:52:12,210 - openai._base_client - DEBUG - HTTP Response: POST https://api.openai.com/v1/chat/completions "429 Too Many Requests" Headers({'date': 'Sat, 31 Jan 2026 22:52:12 GMT', 'content-type': 'application/json; charset=utf-8', 'content-length': '337', 'connection': 'keep-alive', 'vary': 'Origin', 'x-request-id': 'req_0bc9729ff8704571acaf5360e242dbaa', 'x-openai-proxy-wasm': 'v0.1', 'cf-cache-status': 'DYNAMIC', 'strict-transport-security': 'max-age=31536000; includeSubDomains; preload', 'x-content-type-options': 'nosniff', 'server': 'cloudflare', 'cf-ray': '9c6cc72bed5b6a73-TXL', 'alt-svc': 'h3=":443"; ma=86400'})
+2026-01-31 23:52:12,210 - openai._base_client - DEBUG - request_id: req_0bc9729ff8704571acaf5360e242dbaa
+2026-01-31 23:52:12,211 - openai._base_client - DEBUG - Encountered httpx.HTTPStatusError
+Traceback (most recent call last):
+  File "/Users/kbeissert/_PROJEKTE/Entwicklung/cruciblemark/.venv/lib/python3.14/site-packages/openai/_base_client.py", line 1027, in request
+    response.raise_for_status()
+    ~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "/Users/kbeissert/_PROJEKTE/Entwicklung/cruciblemark/.venv/lib/python3.14/site-packages/httpx/_models.py", line 829, in raise_for_status
+    raise HTTPStatusError(message, request=request, response=self)
+httpx.HTTPStatusError: Client error '429 Too Many Requests' for url 'https://api.openai.com/v1/chat/completions'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/429
+2026-01-31 23:52:12,211 - openai._base_client - DEBUG - Retrying due to status code 429
+2026-01-31 23:52:12,211 - openai._base_client - DEBUG - 1 retry left
+2026-01-31 23:52:12,212 - openai._base_client - INFO - Retrying request to /chat/completions in 0.920420 seconds
+2026-01-31 23:52:13,137 - openai._base_client - DEBUG - Request options: {'method': 'post', 'url': '/chat/completions', 'files': None, 'idempotency_key': 'stainless-python-retry-13ae261c-f516-43ea-80ad-3c3b909df12b', 'json_data': {'messages': [{'role': 'user', 'content': 'Hi'}], 'model': 'gpt-3.5-turbo', 'max_tokens': 1}}
+2026-01-31 23:52:13,138 - openai._base_client - DEBUG - Sending HTTP Request: POST https://api.openai.com/v1/chat/completions
+2026-01-31 23:52:15,491 - openai._base_client - DEBUG - HTTP Response: POST https://api.openai.com/v1/chat/completions "429 Too Many Requests" Headers({'date': 'Sat, 31 Jan 2026 22:52:15 GMT', 'content-type': 'application/json; charset=utf-8', 'content-length': '337', 'connection': 'keep-alive', 'vary': 'Origin', 'x-request-id': 'req_0778fa0b9ebc4c4fbb3244bdf94c7290', 'x-openai-proxy-wasm': 'v0.1', 'cf-cache-status': 'DYNAMIC', 'strict-transport-security': 'max-age=31536000; includeSubDomains; preload', 'x-content-type-options': 'nosniff', 'server': 'cloudflare', 'cf-ray': '9c6cc7363de76a73-TXL', 'alt-svc': 'h3=":443"; ma=86400'})
+2026-01-31 23:52:15,491 - openai._base_client - DEBUG - request_id: req_0778fa0b9ebc4c4fbb3244bdf94c7290
+2026-01-31 23:52:15,492 - openai._base_client - DEBUG - Encountered httpx.HTTPStatusError
+Traceback (most recent call last):
+  File "/Users/kbeissert/_PROJEKTE/Entwicklung/cruciblemark/.venv/lib/python3.14/site-packages/openai/_base_client.py", line 1027, in request
+    response.raise_for_status()
+    ~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "/Users/kbeissert/_PROJEKTE/Entwicklung/cruciblemark/.venv/lib/python3.14/site-packages/httpx/_models.py", line 829, in raise_for_status
+    raise HTTPStatusError(message, request=request, response=self)
+httpx.HTTPStatusError: Client error '429 Too Many Requests' for url 'https://api.openai.com/v1/chat/completions'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/429
+2026-01-31 23:52:15,493 - openai._base_client - DEBUG - Re-raising status error
+2026-01-31 23:52:15,494 - utils.provider_clients - WARNING - OpenAI Access Check Failed: Error code: 429 - {'error': {'message': 'You exceeded your current quota, please check your plan and billing details. For more information on this error, read the docs: https://platform.openai.com/docs/guides/error-codes/api-errors.', 'type': 'insufficient_quota', 'param': None, 'code': 'insufficient_quota'}}
+2026-01-31 23:52:15,655 - asyncio - DEBUG - Using selector: KqueueSelector
+2026-01-31 23:52:53,428 - openai._base_client - DEBUG - Request options: {'method': 'post', 'url': '/chat/completions', 'files': None, 'idempotency_key': 'stainless-python-retry-dd35cee7-ee8e-4859-83c5-99720293a4a5', 'json_data': {'messages': [{'role': 'user', 'content': 'Hi'}], 'model': 'gpt-3.5-turbo', 'max_tokens': 1}}
+2026-01-31 23:52:53,443 - openai._base_client - DEBUG - Sending HTTP Request: POST https://api.openai.com/v1/chat/completions
+2026-01-31 23:52:53,684 - openai._base_client - DEBUG - HTTP Response: POST https://api.openai.com/v1/chat/completions "429 Too Many Requests" Headers([('date', 'Sat, 31 Jan 2026 22:52:53 GMT'), ('content-type', 'application/json; charset=utf-8'), ('content-length', '337'), ('connection', 'keep-alive'), ('vary', 'Origin'), ('x-request-id', 'req_9072a50530544d42addfcef04660eef3'), ('x-openai-proxy-wasm', 'v0.1'), ('cf-cache-status', 'DYNAMIC'), ('set-cookie', '__cf_bm=p12uN.70MBnCwWXm2i5ZRknV1oc.hLJCj9PttSAjejg-1769899973-1.0.1.1-zVKrmO2u528MFZepacWWeNo_grNiIdBpXM3A8v_Y4RSeiK2NrIIGdFQ0fgO07KvcypqBeLDtYVORunm7Ce45IRd0Ain77uY4BJ2NYMtXcs4; path=/; expires=Sat, 31-Jan-26 23:22:53 GMT; domain=.api.openai.com; HttpOnly; Secure; SameSite=None'), ('strict-transport-security', 'max-age=31536000; includeSubDomains; preload'), ('x-content-type-options', 'nosniff'), ('set-cookie', '_cfuvid=zurVhAABHhTuIrHco0XshHPEX1lcUkJU2jKEs8kTNQo-1769899973687-0.0.1.1-604800000; path=/; domain=.api.openai.com; HttpOnly; Secure; SameSite=None'), ('server', 'cloudflare'), ('cf-ray', '9c6cc8326d5a58d8-TXL'), ('alt-svc', 'h3=":443"; ma=86400')])
+2026-01-31 23:52:53,685 - openai._base_client - DEBUG - request_id: req_9072a50530544d42addfcef04660eef3
+2026-01-31 23:52:53,685 - openai._base_client - DEBUG - Encountered httpx.HTTPStatusError
+Traceback (most recent call last):
+  File "/Users/kbeissert/_PROJEKTE/Entwicklung/cruciblemark/.venv/lib/python3.14/site-packages/openai/_base_client.py", line 1027, in request
+    response.raise_for_status()
+    ~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "/Users/kbeissert/_PROJEKTE/Entwicklung/cruciblemark/.venv/lib/python3.14/site-packages/httpx/_models.py", line 829, in raise_for_status
+    raise HTTPStatusError(message, request=request, response=self)
+httpx.HTTPStatusError: Client error '429 Too Many Requests' for url 'https://api.openai.com/v1/chat/completions'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/429
+2026-01-31 23:52:53,690 - openai._base_client - DEBUG - Retrying due to status code 429
+2026-01-31 23:52:53,690 - openai._base_client - DEBUG - 2 retries left
+2026-01-31 23:52:53,690 - openai._base_client - INFO - Retrying request to /chat/completions in 0.425849 seconds
+2026-01-31 23:52:54,119 - openai._base_client - DEBUG - Request options: {'method': 'post', 'url': '/chat/completions', 'files': None, 'idempotency_key': 'stainless-python-retry-dd35cee7-ee8e-4859-83c5-99720293a4a5', 'json_data': {'messages': [{'role': 'user', 'content': 'Hi'}], 'model': 'gpt-3.5-turbo', 'max_tokens': 1}}
+2026-01-31 23:52:54,121 - openai._base_client - DEBUG - Sending HTTP Request: POST https://api.openai.com/v1/chat/completions
+2026-01-31 23:52:54,880 - openai._base_client - DEBUG - HTTP Response: POST https://api.openai.com/v1/chat/completions "429 Too Many Requests" Headers({'date': 'Sat, 31 Jan 2026 22:52:54 GMT', 'content-type': 'application/json; charset=utf-8', 'content-length': '337', 'connection': 'keep-alive', 'vary': 'Origin', 'x-request-id': 'req_5966df32fd8747bca2474043515629e4', 'x-openai-proxy-wasm': 'v0.1', 'cf-cache-status': 'DYNAMIC', 'strict-transport-security': 'max-age=31536000; includeSubDomains; preload', 'x-content-type-options': 'nosniff', 'server': 'cloudflare', 'cf-ray': '9c6cc83678bb58d8-TXL', 'alt-svc': 'h3=":443"; ma=86400'})
+2026-01-31 23:52:54,880 - openai._base_client - DEBUG - request_id: req_5966df32fd8747bca2474043515629e4
+2026-01-31 23:52:54,880 - openai._base_client - DEBUG - Encountered httpx.HTTPStatusError
+Traceback (most recent call last):
+  File "/Users/kbeissert/_PROJEKTE/Entwicklung/cruciblemark/.venv/lib/python3.14/site-packages/openai/_base_client.py", line 1027, in request
+    response.raise_for_status()
+    ~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "/Users/kbeissert/_PROJEKTE/Entwicklung/cruciblemark/.venv/lib/python3.14/site-packages/httpx/_models.py", line 829, in raise_for_status
+    raise HTTPStatusError(message, request=request, response=self)
+httpx.HTTPStatusError: Client error '429 Too Many Requests' for url 'https://api.openai.com/v1/chat/completions'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/429
+2026-01-31 23:52:54,881 - openai._base_client - DEBUG - Retrying due to status code 429
+2026-01-31 23:52:54,881 - openai._base_client - DEBUG - 1 retry left
+2026-01-31 23:52:54,881 - openai._base_client - INFO - Retrying request to /chat/completions in 0.808680 seconds
+2026-01-31 23:52:55,694 - openai._base_client - DEBUG - Request options: {'method': 'post', 'url': '/chat/completions', 'files': None, 'idempotency_key': 'stainless-python-retry-dd35cee7-ee8e-4859-83c5-99720293a4a5', 'json_data': {'messages': [{'role': 'user', 'content': 'Hi'}], 'model': 'gpt-3.5-turbo', 'max_tokens': 1}}
+2026-01-31 23:52:55,696 - openai._base_client - DEBUG - Sending HTTP Request: POST https://api.openai.com/v1/chat/completions
+2026-01-31 23:52:55,897 - openai._base_client - DEBUG - HTTP Response: POST https://api.openai.com/v1/chat/completions "429 Too Many Requests" Headers({'date': 'Sat, 31 Jan 2026 22:52:55 GMT', 'content-type': 'application/json; charset=utf-8', 'content-length': '337', 'connection': 'keep-alive', 'vary': 'Origin', 'x-request-id': 'req_d1ea0697e5014d0e96e468f20b079e56', 'x-openai-proxy-wasm': 'v0.1', 'cf-cache-status': 'DYNAMIC', 'strict-transport-security': 'max-age=31536000; includeSubDomains; preload', 'x-content-type-options': 'nosniff', 'server': 'cloudflare', 'cf-ray': '9c6cc840682c58d8-TXL', 'alt-svc': 'h3=":443"; ma=86400'})
+2026-01-31 23:52:55,897 - openai._base_client - DEBUG - request_id: req_d1ea0697e5014d0e96e468f20b079e56
+2026-01-31 23:52:55,897 - openai._base_client - DEBUG - Encountered httpx.HTTPStatusError
+Traceback (most recent call last):
+  File "/Users/kbeissert/_PROJEKTE/Entwicklung/cruciblemark/.venv/lib/python3.14/site-packages/openai/_base_client.py", line 1027, in request
+    response.raise_for_status()
+    ~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "/Users/kbeissert/_PROJEKTE/Entwicklung/cruciblemark/.venv/lib/python3.14/site-packages/httpx/_models.py", line 829, in raise_for_status
+    raise HTTPStatusError(message, request=request, response=self)
+httpx.HTTPStatusError: Client error '429 Too Many Requests' for url 'https://api.openai.com/v1/chat/completions'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/429
+2026-01-31 23:52:55,899 - openai._base_client - DEBUG - Re-raising status error
+2026-01-31 23:52:55,900 - utils.provider_clients - WARNING - OpenAI Access Check Failed: Error code: 429 - {'error': {'message': 'You exceeded your current quota, please check your plan and billing details. For more information on this error, read the docs: https://platform.openai.com/docs/guides/error-codes/api-errors.', 'type': 'insufficient_quota', 'param': None, 'code': 'insufficient_quota'}}
+2026-01-31 23:52:56,059 - asyncio - DEBUG - Using selector: KqueueSelector
+2026-02-01 00:06:23,386 - openai._base_client - DEBUG - Request options: {'method': 'post', 'url': '/chat/completions', 'files': None, 'idempotency_key': 'stainless-python-retry-52e76a85-d6ce-4f11-a6a8-7a86e1e2fe20', 'json_data': {'messages': [{'role': 'user', 'content': 'Hi'}], 'model': 'gpt-3.5-turbo', 'max_tokens': 1}}
+2026-02-01 00:06:23,399 - openai._base_client - DEBUG - Sending HTTP Request: POST https://api.openai.com/v1/chat/completions
+2026-02-01 00:06:23,624 - openai._base_client - DEBUG - HTTP Response: POST https://api.openai.com/v1/chat/completions "429 Too Many Requests" Headers([('date', 'Sat, 31 Jan 2026 23:06:23 GMT'), ('content-type', 'application/json; charset=utf-8'), ('content-length', '337'), ('connection', 'keep-alive'), ('vary', 'Origin'), ('x-request-id', 'req_0918df5efb48405f8c317cd920ad349a'), ('x-openai-proxy-wasm', 'v0.1'), ('cf-cache-status', 'DYNAMIC'), ('set-cookie', '__cf_bm=6SM7B4375TY.kfQYkMhM245HO2wFwErCl7LvEebJz58-1769900783-1.0.1.1-EMNS7cL7naqgjV2c2059bjwXOZUlHLgLe6RJkZps9lREzYRn_MNm0sglYsThDFpZNZnDvMGamvx3SkClqeWVQazZIId8HcSQMqWeEEgWi6Q; path=/; expires=Sat, 31-Jan-26 23:36:23 GMT; domain=.api.openai.com; HttpOnly; Secure; SameSite=None'), ('strict-transport-security', 'max-age=31536000; includeSubDomains; preload'), ('x-content-type-options', 'nosniff'), ('set-cookie', '_cfuvid=8VHmD9L1XZujHbCwNrbEm91XCjNz_uoFXFNewN0DIyA-1769900783627-0.0.1.1-604800000; path=/; domain=.api.openai.com; HttpOnly; Secure; SameSite=None'), ('server', 'cloudflare'), ('cf-ray', '9c6cdbf8a8ed5315-TXL'), ('alt-svc', 'h3=":443"; ma=86400')])
+2026-02-01 00:06:23,625 - openai._base_client - DEBUG - request_id: req_0918df5efb48405f8c317cd920ad349a
+2026-02-01 00:06:23,625 - openai._base_client - DEBUG - Encountered httpx.HTTPStatusError
+Traceback (most recent call last):
+  File "/Users/kbeissert/_PROJEKTE/Entwicklung/cruciblemark/.venv/lib/python3.14/site-packages/openai/_base_client.py", line 1027, in request
+    response.raise_for_status()
+    ~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "/Users/kbeissert/_PROJEKTE/Entwicklung/cruciblemark/.venv/lib/python3.14/site-packages/httpx/_models.py", line 829, in raise_for_status
+    raise HTTPStatusError(message, request=request, response=self)
+httpx.HTTPStatusError: Client error '429 Too Many Requests' for url 'https://api.openai.com/v1/chat/completions'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/429
+2026-02-01 00:06:23,629 - openai._base_client - DEBUG - Retrying due to status code 429
+2026-02-01 00:06:23,630 - openai._base_client - DEBUG - 2 retries left
+2026-02-01 00:06:23,630 - openai._base_client - INFO - Retrying request to /chat/completions in 0.401263 seconds
+2026-02-01 00:06:24,037 - openai._base_client - DEBUG - Request options: {'method': 'post', 'url': '/chat/completions', 'files': None, 'idempotency_key': 'stainless-python-retry-52e76a85-d6ce-4f11-a6a8-7a86e1e2fe20', 'json_data': {'messages': [{'role': 'user', 'content': 'Hi'}], 'model': 'gpt-3.5-turbo', 'max_tokens': 1}}
+2026-02-01 00:06:24,038 - openai._base_client - DEBUG - Sending HTTP Request: POST https://api.openai.com/v1/chat/completions
+2026-02-01 00:06:24,222 - openai._base_client - DEBUG - HTTP Response: POST https://api.openai.com/v1/chat/completions "429 Too Many Requests" Headers({'date': 'Sat, 31 Jan 2026 23:06:24 GMT', 'content-type': 'application/json; charset=utf-8', 'content-length': '337', 'connection': 'keep-alive', 'vary': 'Origin', 'x-request-id': 'req_7d1230beb7ab4ce0b7808ac68a2de579', 'x-openai-proxy-wasm': 'v0.1', 'cf-cache-status': 'DYNAMIC', 'strict-transport-security': 'max-age=31536000; includeSubDomains; preload', 'x-content-type-options': 'nosniff', 'server': 'cloudflare', 'cf-ray': '9c6cdbfc5f2a5315-TXL', 'alt-svc': 'h3=":443"; ma=86400'})
+2026-02-01 00:06:24,222 - openai._base_client - DEBUG - request_id: req_7d1230beb7ab4ce0b7808ac68a2de579
+2026-02-01 00:06:24,223 - openai._base_client - DEBUG - Encountered httpx.HTTPStatusError
+Traceback (most recent call last):
+  File "/Users/kbeissert/_PROJEKTE/Entwicklung/cruciblemark/.venv/lib/python3.14/site-packages/openai/_base_client.py", line 1027, in request
+    response.raise_for_status()
+    ~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "/Users/kbeissert/_PROJEKTE/Entwicklung/cruciblemark/.venv/lib/python3.14/site-packages/httpx/_models.py", line 829, in raise_for_status
+    raise HTTPStatusError(message, request=request, response=self)
+httpx.HTTPStatusError: Client error '429 Too Many Requests' for url 'https://api.openai.com/v1/chat/completions'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/429
+2026-02-01 00:06:24,224 - openai._base_client - DEBUG - Retrying due to status code 429
+2026-02-01 00:06:24,224 - openai._base_client - DEBUG - 1 retry left
+2026-02-01 00:06:24,224 - openai._base_client - INFO - Retrying request to /chat/completions in 0.841441 seconds
+2026-02-01 00:06:25,066 - openai._base_client - DEBUG - Request options: {'method': 'post', 'url': '/chat/completions', 'files': None, 'idempotency_key': 'stainless-python-retry-52e76a85-d6ce-4f11-a6a8-7a86e1e2fe20', 'json_data': {'messages': [{'role': 'user', 'content': 'Hi'}], 'model': 'gpt-3.5-turbo', 'max_tokens': 1}}
+2026-02-01 00:06:25,068 - openai._base_client - DEBUG - Sending HTTP Request: POST https://api.openai.com/v1/chat/completions
+2026-02-01 00:06:25,267 - openai._base_client - DEBUG - HTTP Response: POST https://api.openai.com/v1/chat/completions "429 Too Many Requests" Headers({'date': 'Sat, 31 Jan 2026 23:06:25 GMT', 'content-type': 'application/json; charset=utf-8', 'content-length': '337', 'connection': 'keep-alive', 'vary': 'Origin', 'x-request-id': 'req_61ef837850244becb6b6d2c6ad752d48', 'x-openai-proxy-wasm': 'v0.1', 'cf-cache-status': 'DYNAMIC', 'strict-transport-security': 'max-age=31536000; includeSubDomains; preload', 'x-content-type-options': 'nosniff', 'server': 'cloudflare', 'cf-ray': '9c6cdc02cbe15315-TXL', 'alt-svc': 'h3=":443"; ma=86400'})
+2026-02-01 00:06:25,267 - openai._base_client - DEBUG - request_id: req_61ef837850244becb6b6d2c6ad752d48
+2026-02-01 00:06:25,267 - openai._base_client - DEBUG - Encountered httpx.HTTPStatusError
+Traceback (most recent call last):
+  File "/Users/kbeissert/_PROJEKTE/Entwicklung/cruciblemark/.venv/lib/python3.14/site-packages/openai/_base_client.py", line 1027, in request
+    response.raise_for_status()
+    ~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "/Users/kbeissert/_PROJEKTE/Entwicklung/cruciblemark/.venv/lib/python3.14/site-packages/httpx/_models.py", line 829, in raise_for_status
+    raise HTTPStatusError(message, request=request, response=self)
+httpx.HTTPStatusError: Client error '429 Too Many Requests' for url 'https://api.openai.com/v1/chat/completions'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/429
+2026-02-01 00:06:25,269 - openai._base_client - DEBUG - Re-raising status error
+2026-02-01 00:06:25,271 - utils.provider_clients - WARNING - OpenAI Access Check Failed: Error code: 429 - {'error': {'message': 'You exceeded your current quota, please check your plan and billing details. For more information on this error, read the docs: https://platform.openai.com/docs/guides/error-codes/api-errors.', 'type': 'insufficient_quota', 'param': None, 'code': 'insufficient_quota'}}
+2026-02-01 00:06:25,433 - asyncio - DEBUG - Using selector: KqueueSelector
+2026-02-01 00:19:37,009 - openai._base_client - DEBUG - Request options: {'method': 'post', 'url': '/chat/completions', 'files': None, 'idempotency_key': 'stainless-python-retry-ac33641b-e492-4887-a3ee-551b3be0999f', 'json_data': {'messages': [{'role': 'user', 'content': 'Hi'}], 'model': 'gpt-3.5-turbo', 'max_tokens': 1}}
+2026-02-01 00:19:37,023 - openai._base_client - DEBUG - Sending HTTP Request: POST https://api.openai.com/v1/chat/completions
+2026-02-01 00:19:37,732 - openai._base_client - DEBUG - HTTP Response: POST https://api.openai.com/v1/chat/completions "429 Too Many Requests" Headers([('date', 'Sat, 31 Jan 2026 23:19:37 GMT'), ('content-type', 'application/json; charset=utf-8'), ('content-length', '337'), ('connection', 'keep-alive'), ('vary', 'Origin'), ('x-request-id', 'req_b9b8521721ae4ba38f9cf4db66917176'), ('x-openai-proxy-wasm', 'v0.1'), ('cf-cache-status', 'DYNAMIC'), ('set-cookie', '__cf_bm=DB426teSg3GASrgJ55ysosmjvvpSSr8.8lz_98B5LAg-1769901577-1.0.1.1-1_f1fDyt231JmKeDgD2vhpowVKjrHAmjA4pGxmRheWPu.jD2darHHsfC4g7PAj0B24R67bjpv8gkUKkcR34Mtmd.rm3Mhf7MEc1gIWlY5OE; path=/; expires=Sat, 31-Jan-26 23:49:37 GMT; domain=.api.openai.com; HttpOnly; Secure; SameSite=None'), ('strict-transport-security', 'max-age=31536000; includeSubDomains; preload'), ('x-content-type-options', 'nosniff'), ('set-cookie', '_cfuvid=_x7jiMKXmLWlACghhtKhPpYDKsLjFUpfIrJduzj2i6M-1769901577719-0.0.1.1-604800000; path=/; domain=.api.openai.com; HttpOnly; Secure; SameSite=None'), ('server', 'cloudflare'), ('cf-ray', '9c6cef58e9bc38d9-TXL'), ('alt-svc', 'h3=":443"; ma=86400')])
+2026-02-01 00:19:37,732 - openai._base_client - DEBUG - request_id: req_b9b8521721ae4ba38f9cf4db66917176
+2026-02-01 00:19:37,732 - openai._base_client - DEBUG - Encountered httpx.HTTPStatusError
+Traceback (most recent call last):
+  File "/Users/kbeissert/_PROJEKTE/Entwicklung/cruciblemark/.venv/lib/python3.14/site-packages/openai/_base_client.py", line 1027, in request
+    response.raise_for_status()
+    ~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "/Users/kbeissert/_PROJEKTE/Entwicklung/cruciblemark/.venv/lib/python3.14/site-packages/httpx/_models.py", line 829, in raise_for_status
+    raise HTTPStatusError(message, request=request, response=self)
+httpx.HTTPStatusError: Client error '429 Too Many Requests' for url 'https://api.openai.com/v1/chat/completions'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/429
+2026-02-01 00:19:37,734 - openai._base_client - DEBUG - Retrying due to status code 429
+2026-02-01 00:19:37,734 - openai._base_client - DEBUG - 2 retries left
+2026-02-01 00:19:37,735 - openai._base_client - INFO - Retrying request to /chat/completions in 0.475624 seconds
+2026-02-01 00:19:38,213 - openai._base_client - DEBUG - Request options: {'method': 'post', 'url': '/chat/completions', 'files': None, 'idempotency_key': 'stainless-python-retry-ac33641b-e492-4887-a3ee-551b3be0999f', 'json_data': {'messages': [{'role': 'user', 'content': 'Hi'}], 'model': 'gpt-3.5-turbo', 'max_tokens': 1}}
+2026-02-01 00:19:38,215 - openai._base_client - DEBUG - Sending HTTP Request: POST https://api.openai.com/v1/chat/completions
+2026-02-01 00:19:38,553 - openai._base_client - DEBUG - HTTP Response: POST https://api.openai.com/v1/chat/completions "429 Too Many Requests" Headers({'date': 'Sat, 31 Jan 2026 23:19:38 GMT', 'content-type': 'application/json; charset=utf-8', 'content-length': '337', 'connection': 'keep-alive', 'vary': 'Origin', 'x-request-id': 'req_01666201ee3b4bc398b4712aac899bd9', 'x-openai-proxy-wasm': 'v0.1', 'cf-cache-status': 'DYNAMIC', 'strict-transport-security': 'max-age=31536000; includeSubDomains; preload', 'x-content-type-options': 'nosniff', 'server': 'cloudflare', 'cf-ray': '9c6cef600edd38d9-TXL', 'alt-svc': 'h3=":443"; ma=86400'})
+2026-02-01 00:19:38,553 - openai._base_client - DEBUG - request_id: req_01666201ee3b4bc398b4712aac899bd9
+2026-02-01 00:19:38,553 - openai._base_client - DEBUG - Encountered httpx.HTTPStatusError
+Traceback (most recent call last):
+  File "/Users/kbeissert/_PROJEKTE/Entwicklung/cruciblemark/.venv/lib/python3.14/site-packages/openai/_base_client.py", line 1027, in request
+    response.raise_for_status()
+    ~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "/Users/kbeissert/_PROJEKTE/Entwicklung/cruciblemark/.venv/lib/python3.14/site-packages/httpx/_models.py", line 829, in raise_for_status
+    raise HTTPStatusError(message, request=request, response=self)
+httpx.HTTPStatusError: Client error '429 Too Many Requests' for url 'https://api.openai.com/v1/chat/completions'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/429
+2026-02-01 00:19:38,555 - openai._base_client - DEBUG - Retrying due to status code 429
+2026-02-01 00:19:38,555 - openai._base_client - DEBUG - 1 retry left
+2026-02-01 00:19:38,555 - openai._base_client - INFO - Retrying request to /chat/completions in 0.997311 seconds
+2026-02-01 00:19:39,558 - openai._base_client - DEBUG - Request options: {'method': 'post', 'url': '/chat/completions', 'files': None, 'idempotency_key': 'stainless-python-retry-ac33641b-e492-4887-a3ee-551b3be0999f', 'json_data': {'messages': [{'role': 'user', 'content': 'Hi'}], 'model': 'gpt-3.5-turbo', 'max_tokens': 1}}
+2026-02-01 00:19:39,558 - openai._base_client - DEBUG - Sending HTTP Request: POST https://api.openai.com/v1/chat/completions
+2026-02-01 00:19:39,884 - openai._base_client - DEBUG - HTTP Response: POST https://api.openai.com/v1/chat/completions "429 Too Many Requests" Headers({'date': 'Sat, 31 Jan 2026 23:19:39 GMT', 'content-type': 'application/json; charset=utf-8', 'content-length': '337', 'connection': 'keep-alive', 'vary': 'Origin', 'x-request-id': 'req_6e95f4bd70734278917fb9894b71e1b8', 'x-openai-proxy-wasm': 'v0.1', 'cf-cache-status': 'DYNAMIC', 'strict-transport-security': 'max-age=31536000; includeSubDomains; preload', 'x-content-type-options': 'nosniff', 'server': 'cloudflare', 'cf-ray': '9c6cef685dc138d9-TXL', 'alt-svc': 'h3=":443"; ma=86400'})
+2026-02-01 00:19:39,885 - openai._base_client - DEBUG - request_id: req_6e95f4bd70734278917fb9894b71e1b8
+2026-02-01 00:19:39,885 - openai._base_client - DEBUG - Encountered httpx.HTTPStatusError
+Traceback (most recent call last):
+  File "/Users/kbeissert/_PROJEKTE/Entwicklung/cruciblemark/.venv/lib/python3.14/site-packages/openai/_base_client.py", line 1027, in request
+    response.raise_for_status()
+    ~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "/Users/kbeissert/_PROJEKTE/Entwicklung/cruciblemark/.venv/lib/python3.14/site-packages/httpx/_models.py", line 829, in raise_for_status
+    raise HTTPStatusError(message, request=request, response=self)
+httpx.HTTPStatusError: Client error '429 Too Many Requests' for url 'https://api.openai.com/v1/chat/completions'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/429
+2026-02-01 00:19:39,886 - openai._base_client - DEBUG - Re-raising status error
+2026-02-01 00:19:39,888 - utils.provider_clients - WARNING - OpenAI Access Check Failed: Error code: 429 - {'error': {'message': 'You exceeded your current quota, please check your plan and billing details. For more information on this error, read the docs: https://platform.openai.com/docs/guides/error-codes/api-errors.', 'type': 'insufficient_quota', 'param': None, 'code': 'insufficient_quota'}}
+2026-02-01 00:19:40,263 - asyncio - DEBUG - Using selector: KqueueSelector
