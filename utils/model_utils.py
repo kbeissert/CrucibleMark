@@ -81,12 +81,6 @@ def is_model_suitable_for_benchmark(model_name: str) -> bool:
     return True
 
 
-def is_reasoning_model(model_name: str) -> bool:
-    """Checks if a model is a reasoning model (CoT)."""
-    name_lower = model_name.lower()
-    return "deepseek-r1" in name_lower or "reasoning" in name_lower
-
-
 def get_ollama_models_info() -> list[dict]:
     """Holt und normalisiert Ollama-Modelle."""
     try:

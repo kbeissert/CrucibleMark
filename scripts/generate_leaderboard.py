@@ -5,17 +5,15 @@ Führt lokale und kommerzielle Ergebnisse zusammen und berechnet Durchschnittswe
 """
 
 import csv
+import json
 import sys
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Tuple
 
 # pylint: disable=import-error
 import yaml
 import pandas as pd
 # pylint: enable=import-error
-
-# Suppress FutureWarning about downcasting
-pd.set_option("future.no_silent_downcasting", True)
 
 # Pfad für Imports setzen
 ROOT_DIR = Path(__file__).parent.parent
@@ -24,6 +22,7 @@ sys.path.insert(0, str(ROOT_DIR))
 # pylint: disable=wrong-import-position, import-error
 from utils.config_validator import ConfigValidator  # noqa: E402
 from utils.csv_recovery import parse_row_robust, get_csv_header_idx  # noqa: E402
+from utils.module_registry import get_active_modules # noqa: E402
 # pylint: enable=wrong-import-position, import-error
 
 # Konstanten - Defaults (Falls Module Config fehlt)
@@ -211,7 +210,6 @@ def _aggregate_stats(df: pd.DataFrame, modules_config: Dict[str, Any]) -> pd.Dat
     
     # Calculate Expected Assets Count from Config (excluding info/batch if needed?)
     expected_assets = 0
-    optional_assets_ids = []
     
     for _, mod_data in modules_config.items():
         if not mod_data.get("enabled", True):
@@ -241,16 +239,15 @@ def _aggregate_stats(df: pd.DataFrame, modules_config: Dict[str, Any]) -> pd.Dat
         count = mod_data.get("assets_count", 0)
         expected_assets += count
 
-    # Filter out 'info' group assets from the SCORING aggregation
-    cat_to_group = {}
+    # Filter out non-scoring modules from SCORING aggregation (Total Score)
+    cat_to_scoring = {}
     for mod_key, mod_data in modules_config.items():
         name = mod_data.get("name", mod_key)
-        cat_to_group[name] = mod_data.get("score_group", "")
+        cat_to_scoring[name] = mod_data.get("enable_scoring", True)
         
     def is_scoring_asset(row):
         cat = row.get("category", "")
-        group = cat_to_group.get(cat, "")
-        return group != "info"
+        return cat_to_scoring.get(cat, True)
 
     scoring_df = df[df.apply(is_scoring_asset, axis=1)]
     
@@ -283,113 +280,124 @@ def _calculate_group_scores(df: pd.DataFrame, modules_config: Dict[str, Any]) ->
     
     # Map category names to score groups
 def _calculate_group_scores(df: pd.DataFrame, modules_config: Dict[str, Any]) -> pd.DataFrame:
-    """Calculates Routine vs Reasoning scores based on Config Score Groups."""
+    """Calculates Routine vs Reasoning scores using granular contributions (v3 logic)."""
     
-    # Map category names to score groups
-    cat_to_group = {}
+    df_calc = df.copy()
+    
+    # 1. Ensure columns exist
+    if "routine_contribution" not in df_calc.columns:
+        df_calc["routine_contribution"] = pd.NA
+    if "reasoning_contribution" not in df_calc.columns:
+        df_calc["reasoning_contribution"] = pd.NA
+
+    # 2. Filter for active modules (needed for list checks)
+    active_categories = set()
+    cat_to_config = {}
+
     for mod_key, mod_data in modules_config.items():
+        if not mod_data.get("enabled", True):
+            continue
         name = mod_data.get("name", mod_key)
-        cat_to_group[name] = mod_data.get("score_group", "")
+        active_categories.add(name)
+        cat_to_config[name] = mod_data
     
-    # Helper to get group for a row
-    def get_group(row):
-        return cat_to_group.get(row.get("category"), None)
-        
-    df_copy = df.copy()
-    df_copy["score_group"] = df_copy.apply(get_group, axis=1)
+    # Filter for active modules only
+    df_calc = df_calc[df_calc["category"].isin(active_categories)]
+    
+    # Filter out non-scoring modules from denominator/numerators (Routine vs Reasoning Score)
+    # IMPORTANT: We keep them in the main DF for display, but remove them here for metric calc.
+    def is_scoring_mod(cat):
+        return cat_to_config.get(cat, {}).get("enable_scoring", True)
 
-    # --- 1. ROUTINE SCORES (Standard Average) ---
-    # Filter for routine items and group
-    routine_df = df_copy[df_copy["score_group"] == "routine"]
-    if not routine_df.empty:
-        routine_scores = (
-            routine_df.groupby(["model", "model_version"])["percentage"]
-            .mean()
-            .reset_index(name="Routine Score")
-        )
+    df_calc = df_calc[df_calc["category"].map(is_scoring_mod)]
+
+    # 2b. Build Asset-Level Contribution Map (v3 Granular Scoring)
+    asset_contrib_map: Dict[str, Dict[str, float]] = {}
+    for mod_key, mod_data in modules_config.items():
+        if not mod_data.get("enabled", True):
+            continue
+        benchmarks = mod_data.get("benchmarks", [])
+        for b in benchmarks:
+            if "score_contribution" in b and "id" in b:
+                asset_contrib_map[b["id"]] = b["score_contribution"]
+
+    # 3. Apply Fallback Logic (Backward Compatibility)
+    def fill_contributions(row):
+        # 1. Check if values explicitly in columns (future proofing)
+        r = row.get("routine_contribution")
+        l = row.get("reasoning_contribution")
+        
+        # Safe float conversion handling empty strings
+        def to_float_safe(val):
+            try:
+                if pd.isna(val) or str(val).strip() == "":
+                    return None
+                return float(val)
+            except (ValueError, TypeError):
+                return None
+
+        r_val = to_float_safe(r)
+        l_val = to_float_safe(l)
+        
+        # If both present, use them
+        if r_val is not None and l_val is not None:
+            return r_val, l_val
+
+        # 2. Check Granular Config (Asset Level)
+        pct = float(row.get("percentage", 0))
+        asset_id = row.get("asset_id")
+        
+        if asset_id in asset_contrib_map:
+             contrib = asset_contrib_map[asset_id]
+             f_routine = float(contrib.get("routine", 0.0))
+             f_reasoning = float(contrib.get("reasoning", 0.0))
+             return pct * f_routine, pct * f_reasoning
+            
+        # 3. Fallback: Use Module-Level Default Contribution
+        cat = row.get("category", "")
+        mod_conf = cat_to_config.get(cat, {})
+        def_contrib = mod_conf.get("default_contribution", {})
+        
+        d_routine = float(def_contrib.get("routine", 0.0))
+        d_reasoning = float(def_contrib.get("reasoning", 0.0))
+        
+        return pct * d_routine, pct * d_reasoning
+
+    # If df_calc is empty after filtering (e.g., only non-scoring modules ran like PoliticalCompass),
+    # then contribs will be an empty DataFrame. Direct assignment will fail with KeyError if result_type='expand'
+    # didn't generate columns 0/1 properly.
+    if df_calc.empty:
+        return pd.DataFrame() # Return empty GroupStats
+
+    contribs = df_calc.apply(fill_contributions, axis=1, result_type='expand')
+    
+    # Safety Check: If there are no rows, apply returns empty DF with no columns
+    if contribs.empty:
+         df_calc["final_routine"] = 0.0
+         df_calc["final_reasoning"] = 0.0
     else:
-        routine_scores = pd.DataFrame(columns=["model", "model_version", "Routine Score"])
+        df_calc["final_routine"] = contribs[0]
+        df_calc["final_reasoning"] = contribs[1]
 
-    # --- 2. REASONING SCORES (Tier-Weighted: v2.2 Alignment) ---
-    reasoning_df = df_copy[df_copy["score_group"] == "reasoning"].copy()
-    reasoning_scores_list = []
+    # 4. Aggregation: Sum / Count
+    # Routine Score = Sum(Routine Contribs) / Count(Benchmarks)
+    # This standardizes the score to 0-100 range regardless of mix.
+    scores = df_calc.groupby(["model", "model_version"]).agg(
+        sum_routine=("final_routine", "sum"),
+        sum_reasoning=("final_reasoning", "sum"),
+        count=("asset_id", "count")
+    ).reset_index()
+    
+    # Avoid division by zero
+    scores["Routine Score"] = scores.apply(
+        lambda x: x["sum_routine"] / x["count"] if x["count"] > 0 else 0, axis=1
+    )
+    scores["Reasoning Score"] = scores.apply(
+        lambda x: x["sum_reasoning"] / x["count"] if x["count"] > 0 else 0, axis=1
+    )
+    
+    return scores[["model", "model_version", "Routine Score", "Reasoning Score"]]
 
-    if not reasoning_df.empty:
-        # v2.2 Tier Classification
-        # Tier 1 (Basic): river, 5a, metacog_001-005 (Weight: 1.0)
-        # Tier 2 (Advanced): 5b, 5c, 5d (Weight: 1.5)
-        # Tier 3 (Expert): 5e (Weight: 2.0)
-        
-        def get_tier(asset_id):
-            aid = str(asset_id).lower()
-            
-            # Tier 3 (Expert - Highest Weight)
-            if "5e" in aid:
-                return 3
-            
-            # Tier 2 (Advanced)
-            if any(x in aid for x in ["5b", "5c", "5d"]):
-                return 2
-            
-            # Tier 1 (Basic - includes metacog!)
-            # Default for: reasoning_001, 5a, metacog_*
-            return 1
-        
-        reasoning_df["tier"] = reasoning_df["asset_id"].apply(get_tier)
-        
-        # Group by model, version, tier
-        tier_stats = reasoning_df.groupby(["model", "model_version", "tier"])["percentage"].mean().unstack()
-        
-        # Tier weights
-        TIER_WEIGHTS = {1: 1.0, 2: 1.5, 3: 2.0}
-        
-        # Tier asset counts (for proper averaging)
-        tier_counts = reasoning_df.groupby("tier")["asset_id"].nunique().to_dict()
-        
-        for (model, version), row in tier_stats.iterrows():
-            t1_score = row.get(1)  # Tier 1 (Basic)
-            t2_score = row.get(2)  # Tier 2 (Advanced)
-            t3_score = row.get(3)  # Tier 3 (Expert)
-            
-            # Calculate weighted average
-            weighted_sum = 0.0
-            total_weight = 0.0
-            
-            for tier, score in [(1, t1_score), (2, t2_score), (3, t3_score)]:
-                if pd.notna(score):
-                    weight = TIER_WEIGHTS[tier]
-                    count = tier_counts.get(tier, 1)
-                    weighted_sum += score * count * weight
-                    total_weight += count * weight
-            
-            # Final R-Score
-            if total_weight > 0:
-                r_score = weighted_sum / total_weight
-            else:
-                r_score = 0.0
-            
-            reasoning_scores_list.append({
-                "model": model,
-                "model_version": version,
-                "Reasoning Score": round(r_score, 2)
-            })
-        
-        reasoning_scores_df = pd.DataFrame(reasoning_scores_list)
-    else:
-        reasoning_scores_df = pd.DataFrame(columns=["model", "model_version", "Reasoning Score"])
-
-    # --- 3. MERGE & FINALIZE ---
-    # Start with all unique models present in the input
-    models = df_copy[["model", "model_version"]].drop_duplicates()
-    
-    final_df = models.merge(routine_scores, on=["model", "model_version"], how="left")
-    final_df = final_df.merge(reasoning_scores_df, on=["model", "model_version"], how="left")
-    
-    # Fill NaNs with 0.0 (assuming missing score = 0 for the group metric)
-    final_df["Routine Score"] = final_df["Routine Score"].fillna(0.0)
-    final_df["Reasoning Score"] = final_df["Reasoning Score"].fillna(0.0)
-    
-    return final_df
 
 
 try:
@@ -464,95 +472,196 @@ def _format_metrics(
     # This ensures that removed modules disappear from the leaderboard immediately.
     # The 'Other' category or legacy columns in CSV are ignored.
 
+    # Filter `cat_cols` based on enabled modules and their scoring configuration.
+    # If a module has `enable_scoring: false` (like Political Compass),
+    # its name should NOT be in `cat_cols` (which are used for numeric scores).
+    
+    scoring_cat_cols = []
+    
+    for mod_key, mod_data in modules_config.items():
+        if not mod_data.get("enabled", True):
+            continue
+            
+        display_name = mod_data.get("name", mod_key)
+        
+        # Only add to list of numeric metric columns if scoring is enabled
+        if mod_data.get("enable_scoring", True):
+             if display_name in cat_cols:
+                 scoring_cat_cols.append(display_name)
+    
+    # Replace the broad list with the filtered list
+    cat_cols = scoring_cat_cols
+
     # Round category columns (Handle Pending)
-    pc_labels = [
-        "Political Compass Ideologie",
-        "Political Compass Haltung",
-        "Political Compass",
-    ]
+    # Note: `cat_cols` now only contains scoring modules.
     for col in cat_cols:
-        if col in result.columns and col not in pc_labels:
+        if col in result.columns:
             result[col] = pd.to_numeric(result[col], errors="coerce")
             result[col] = result[col].round(2).astype(object).fillna("Pending")
 
     return result, cat_cols
 
 
-def _merge_political_compass(
-    result: pd.DataFrame, cat_cols: List[str]
-) -> Tuple[pd.DataFrame, List[str]]:
-    """Merges Political Compass results into the leaderboard."""
-    pc_csv = SCORES_DIR / "political_compass_results.csv"
+def _enrich_from_csv_source(
+    result: pd.DataFrame,
+    label: str,
+    source_config: Dict[str, Any]
+) -> pd.DataFrame:
+    """
+    Generic Enrichment: Loads data from a custom CSV based on Config.
+    Supports joining, filtering, and value templating.
+    """
+    filename = source_config.get("file")
+    if not filename:
+        return result
 
-    # Cleanup old columns if present
-    if "Political Compass" in result.columns:
-        result = result.drop(columns=["Political Compass"])
-    if "Political Compass" in cat_cols:
-        cat_cols.remove("Political Compass")
+    file_path = SCORES_DIR / filename
+    if not file_path.exists():
+        # Add column with missing value if file not found
+        fallback = source_config.get("missing_value", "Pending")
+        result[label] = fallback
+        return result
 
-    # Initialize columns with status "Ausstehend" (default)
-    # Using 'Ausstehend' as requested for pending PC run.
-    for col_name in ["Political Compass Ideologie", "Political Compass Haltung"]:
-        if col_name not in result.columns:
-            result[col_name] = "Ausstehend"
-        if col_name not in cat_cols:
-            cat_cols.append(col_name)
+    try:
+        source_df = pd.read_csv(file_path)
+        
+        # 1. Deduplication / Version Handling
+        if "model" in source_df.columns:
+            if "model_version" not in source_df.columns:
+                source_df["model_version"] = "unknown"
+            source_df["model_version"] = source_df["model_version"].fillna("unknown")
+            
+        # 2. Key Filtering (e.g. run_id == AVG)
+        filters = source_config.get("filter", {})
+        for col, val in filters.items():
+            if col in source_df.columns:
+                source_df = source_df[source_df[col] == val]
 
-    # Only merge if data exists
-    if pc_csv.exists():
-        try:
-            pc_df = pd.read_csv(pc_csv)
-            if "run_id" in pc_df.columns:
-                pc_df = pc_df[pc_df["run_id"] == "AVG"]
+        # 3. Deduplicate (keep last entry per model/version)
+        if "model" in source_df.columns:
+             source_df = source_df.drop_duplicates(subset=["model", "model_version"], keep="last")
 
-            if "x_coordinate" in pc_df.columns and "x_label" in pc_df.columns:
-                pc_df["Political Compass Ideologie"] = (
-                    pc_df["x_label"] + " (" + pc_df["x_coordinate"].astype(str) + ")"
-                )
-            if "y_coordinate" in pc_df.columns and "y_label" in pc_df.columns:
-                pc_df["Political Compass Haltung"] = (
-                    pc_df["y_label"] + " (" + pc_df["y_coordinate"].astype(str) + ")"
-                )
-
-            if "model" in pc_df.columns:
-                # Deduplicate entries by model/version (keep latest)
-                # Need to handle case where model_version might be missing
-                if "model_version" not in pc_df.columns:
-                     pc_df["model_version"] = "unknown"
+        # 4. Value Construction (JSON Object Access OR Templating)
+        template = source_config.get("value_template")
+        json_key = source_config.get("key")
+        
+        def safe_format(row):
+            try:
+                # Option A: JSON Object Access (Structured Data)
+                if json_key and "metrics_json" in row:
+                    try:
+                        metrics = json.loads(row["metrics_json"])
+                        # Support dot notation (e.g. "labels.x")
+                        val = metrics
+                        for k in json_key.split('.'):
+                            val = val.get(k, {})
+                        
+                        if isinstance(val, (dict, list)):
+                            return json.dumps(val, ensure_ascii=False)
+                        return str(val) if val is not None else ""
+                    except (json.JSONDecodeError, AttributeError):
+                        return "Error (JSON)"
                 
-                pc_df["model_version"] = pc_df["model_version"].fillna("unknown")
-                pc_df = pc_df.drop_duplicates(subset=["model", "model_version"], keep="last")
+                # Option B: Legacy String Templating
+                if template:
+                    # Convert row to dict, ensure all values are strings for safe substitution
+                    data = row.to_dict()
+                    return template.format(**data)
+                
+                return ""
+            except KeyError:
+                return "Error (Key)"
+            except Exception:
+                return "Error"
 
-            # Prepare subset for merge
-            cols_to_merge = ["model", "model_version"]
-            for col in ["Political Compass Ideologie", "Political Compass Haltung"]:
-                if col in pc_df.columns:
-                    cols_to_merge.append(col)
+        if template or json_key:
+             source_df[label] = source_df.apply(safe_format, axis=1)
+        else:
+             source_df[label] = ""
+
+        # 5. Merge
+        cols_to_merge = ["model", "model_version", label]
+        
+        # Check if columns exist
+        available_cols = [c for c in cols_to_merge if c in source_df.columns]
+        if len(available_cols) < 3: # Need at least model keys + target
+            return result
             
-            pc_subset = pc_df[cols_to_merge]
-
-            # Drop existing columns in result before merge to avoid _x _y suffixes
-            drop_cols = [c for c in ["Political Compass Ideologie", "Political Compass Haltung"] if c in result.columns]
-            if drop_cols:
-                result = result.drop(columns=drop_cols)
+        merge_subset = source_df[available_cols]
+        
+        # Drop if exists in result (overwrite logic)
+        if label in result.columns:
+            result = result.drop(columns=[label])
             
-            # Merge on model AND version
-            result = result.merge(pc_subset, on=["model", "model_version"], how="left")
+        result = result.merge(merge_subset, on=["model", "model_version"], how="left")
+        
+        # Fill Missing
+        fallback = source_config.get("missing_value", "Pending")
+        result[label] = result[label].fillna(fallback)
 
-            # Fill NaNs with "Ausstehend"
-            for col in ["Political Compass Ideologie", "Political Compass Haltung"]:
-                if col in result.columns:
-                    result[col] = result[col].fillna("Ausstehend")
-                else:
-                    result[col] = "Ausstehend"
+    except Exception as e:
+        print(f"Generic CSV Merge Error ({filename}): {e}")
+        if label not in result.columns:
+             result[label] = "Error"
+             
+    return result
 
-        except Exception as e:  # pylint: disable=broad-exception-caught
-            print(f"Warning: Failed to merge Political Compass details: {e}")
-            # Ensure index reset just in case
-            if result.index.name == "model":
-                result.reset_index(inplace=True)
+
+def _merge_custom_module_data(
+    result: pd.DataFrame, cat_cols: List[str], modules_config: Dict[str, Any]
+) -> Tuple[pd.DataFrame, List[str]]:
+    """
+    Merges custom/additional data columns for modules defined in their config.
+    Iterates over all enabled modules and checks for 'source' definition in 'columns'.
+    """
+    
+    # Needs valid result frame
+    if result.empty:
+        return result, cat_cols
+
+    # Access full registry configuration to get deep 'integration' block
+    # Note: `modules_config` from calculate_metrics is simplified.
+    # We load the full registry logic again or pass deeper config?
+    # Actually, let's load active modules again to be sure we get the full nested config.
+    # Performance impact is negligible.
+    
+    active_modules_data = get_active_modules(config)
+    
+    for mod_id, mod_meta, mod_int_config in active_modules_data:
+        # Check if enabled
+        if not mod_int_config.get("enabled", True): # Default enabled?
+            # mod_int_config usually comes from file, defaults to dict. 
+            # Check modules_config for enabled state
+            if not modules_config.get(mod_id, {}).get("enabled", True):
+                continue
+        
+        # Parse Columns Config
+        integration = mod_int_config.get("integration", {})
+        lb_config = integration.get("leaderboard", {})
+        columns_def = lb_config.get("columns", [])
+        
+        for col_def in columns_def:
+            source = col_def.get("source")
+            if source:
+                label = col_def.get("label", col_def.get("id"))
+                
+                # Perform Generic Enrichment
+                result = _enrich_from_csv_source(result, label, source)
+                
+                # Add to Cat Cols for display order
+                if label not in cat_cols:
+                    cat_cols.append(label)
 
     return result, cat_cols
+
+# NOTE: _enrich_political_compass_data is REMOVED/OBSOLETED by above generic function.
+
+def _enrich_political_compass_data(
+    result: pd.DataFrame, cat_cols: List[str], mod_key: str, mod_data: Dict[str, Any]
+) -> Tuple[pd.DataFrame, List[str]]:
+    """Legacy Placeholder - Do not use."""
+    return result, cat_cols
+
 
 
 # pylint: disable=too-many-branches, too-many-statements, too-many-locals
@@ -576,7 +685,9 @@ def _finalize_result_df(
     result = result.sort_values(sort_col, ascending=False)
 
     result, cat_cols = _format_metrics(result, cat_stats, modules_config)
-    result, cat_cols = _merge_political_compass(result, cat_cols)
+    
+    # Generic Hook for Custom Module Data
+    result, cat_cols = _merge_custom_module_data(result, cat_cols, modules_config)
 
     return result, cat_cols
 
@@ -625,7 +736,75 @@ def load_golden_references() -> Dict[str, float]:
 # pylint: disable=too-many-locals
 def calculate_metrics(df: pd.DataFrame) -> Tuple[pd.DataFrame, List[str]]:
     """Berechnet Scores pro Modell inkl. Meta-Metriken"""
-    modules_config = config.get("modules", {})
+    
+    # ---------------------------------------------------------
+    # NEW: Load modules via Registry (Phase 3)
+    # ---------------------------------------------------------
+    active_modules_data = get_active_modules(config)
+    modules_config = {}
+    
+    for mod_id, mod_meta, mod_int_config in active_modules_data:
+        # Merge benchmark_config metadata with internal module config
+        # Priority: Internal Config > Benchmark Config
+        
+        # Extract Leaderboard info from Internal Config
+        integration = mod_int_config.get("integration", {})
+        lb_config = integration.get("leaderboard", {})
+        
+        # Determine Display Name
+        # If columns are defined, use the label of the first column as the main module name
+        display_name = mod_meta.get("name", mod_id)
+        if lb_config.get("columns"):
+             # Use the label of the first column as the module name/header in the simplified view
+             display_name = lb_config.get("columns")[0].get("label", display_name)
+        elif mod_int_config.get("metadata", {}).get("name"):
+             display_name = mod_int_config.get("metadata", {}).get("name")
+             
+        # Determine Scoring Config (SSOT v3)
+        # integration.leaderboard.enable_scoring (bool)
+        # integration.leaderboard.default_contribution (dict)
+        
+        lb_config = integration.get("leaderboard", {})
+        
+        # Determine Display Name
+        display_name = mod_meta.get("name", mod_id)
+        if lb_config.get("columns"):
+             display_name = lb_config.get("columns")[0].get("label", display_name)
+        elif mod_int_config.get("metadata", {}).get("name"):
+             display_name = mod_int_config.get("metadata", {}).get("name")
+             
+        # Scoring Enabled? (Default True, unless explicitly False)
+        # "Info" modules from old config map to False
+        enable_scoring = lb_config.get("enable_scoring", True)
+        if mod_meta.get("score_group") == "info" or lb_config.get("score_group") == "info":
+            enable_scoring = False
+            
+        # Default Contribution
+        # Used if an asset has no granular scoring defined
+        default_contrib = lb_config.get("default_contribution", {"routine": 0.0, "reasoning": 0.0})
+        
+        # Determine Assets Count
+        execution = mod_int_config.get("execution", {})
+        assets_count = execution.get("assets_count", mod_meta.get("assets_count", 0))
+
+        mod_entry = {
+            "name": display_name,
+            "enabled": True,
+            "enable_scoring": enable_scoring,
+            "default_contribution": default_contrib,
+            "assets_count": assets_count,
+            "path": mod_meta.get("path", ""),
+            "benchmarks": mod_int_config.get("benchmarks", [])
+        }
+        
+        if mod_meta.get("prefix"):
+            mod_entry["prefix"] = mod_meta.get("prefix")
+            
+        modules_config[mod_id] = mod_entry
+
+    # Debug: Print modules config keys and lookup check
+    # print("Modules Config Keys:", list(modules_config.keys()))
+
     df_success = df[df["status"] == "success"].copy()
 
     # --- DEDUPLICATION & VERSION UNIFICATION (FIX DUPLICATE MODELS) ---
@@ -693,6 +872,10 @@ def calculate_metrics(df: pd.DataFrame) -> Tuple[pd.DataFrame, List[str]]:
         return "Other"
 
     df_success["category"] = df_success["asset_id"].apply(get_category_name)
+
+    # STRICT FILTER: Enabled modules only
+    # Assets returning "Other" (because their module is disabled) are dropped.
+    df_success = df_success[df_success["category"] != "Other"]
     
     # We do NOT filter out Political Compass here manually anymore
     # The _aggregate_stats function handles filtering based on 'score_group' == 'info'
@@ -722,15 +905,14 @@ def calculate_metrics(df: pd.DataFrame) -> Tuple[pd.DataFrame, List[str]]:
         # We need to filter again for correct AVG
         
         # Re-use logic for scoring assets
-        cat_to_group = {}
+        cat_to_scoring = {}
         for mod_key, mod_data in modules_config.items():
             name = mod_data.get("name", mod_key)
-            cat_to_group[name] = mod_data.get("score_group", "")
+            cat_to_scoring[name] = mod_data.get("enable_scoring", True)
         
         def is_scoring_asset(row):
             cat = row.get("category", "")
-            group = cat_to_group.get(cat, "")
-            return group != "info"
+            return cat_to_scoring.get(cat, True)
             
         scoring_idx = df_success.apply(is_scoring_asset, axis=1)
         

@@ -162,7 +162,7 @@ class ResultManager:
             # pylint: disable=import-outside-toplevel
             from scripts import generate_leaderboard
 
-            print(f"🔄 Aktualisiere Leaderboard...")
+            print("🔄 Aktualisiere Leaderboard...")
             sys.stdout.flush()
             generate_leaderboard.main(print_table=False)
             print("✅ Leaderboard aktualisiert.")

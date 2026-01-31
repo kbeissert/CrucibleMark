@@ -2,55 +2,105 @@
 # ======================================================
 
 metadata:
+  id: "content_transformation"
   name: "Content Transformation & Adaption"
   version: "1.0.0"
-  description: "Bewertet die Fähigkeit von LLMs, Content in verschiedene Formate und Stile zu transformieren (z.B. Blog zu Twitter, Feature zu Benefit)"
+  description: "Bewertet die Fähigkeit von LLMs, Content in verschiedene Formate und Stile zu transformieren"
   author: "CrucibleMark"
   created: "2025-12-29"
-  updated: "2025-12-29"
+  updated: "2026-01-31" 
+  tags:
+    - content-creation
+    - copywriting
+    - transformation
+    - marketing
+    - social-media
 
-# Modul-spezifische Einstellungen
-module:
+integration:
+  leaderboard:
+    enable_scoring: true
+    default_contribution:
+      routine: 1.0
+      reasoning: 0.0
+    columns:
+      - id: "content_transformation_score"
+        label: "Content Transformation & Adaption"
+        weight: 1.0
+
+execution:
   test_class: "ContentTransformationTest"
-  base_class: "BaseTest"
-  
-# Test-Assets
-assets:
-  path: "assets"
-  count: 5
-  types:
-    - landing_page_copy       # Feature-Liste -> Hero Section
-    - social_media_thread     # Blogpost -> Twitter Thread
-    - glossary_simplification # Fachbegriff -> Einfache Erklärung
-    - video_script            # Outline -> Video Script
-    - newsletter_adaptation   # Case Study -> Email Newsletter
+  assets_dir: "assets"
+  assets_count: 5
+  asset_types:
+    - landing_page_copy
+    - social_media_thread
+    - glossary_simplification
+    - video_script
+    - newsletter_adaptation
 
-# Kategorien und Gewichtung
-categories:
-  structure_format:
-    name: "Structure & Format"
-    weight: 0.25
-    description: "Einhaltung des Zielformats (z.B. Thread-Struktur, Script-Timing, Email-Layout)"
-  
-  content_quality:
-    name: "Content Quality & Clarity"
-    weight: 0.25
-    description: "Informationsdichte, Verständlichkeit, Fokus auf Kernbotschaften"
+# Internal Module Configuration
+config:
+  categories:
+    structure_format:
+      name: "Structure & Format"
+      weight: 0.25
+      description: "Einhaltung des Zielformats"
     
-  engagement_emotion:
-    name: "Engagement & Emotion"
-    weight: 0.25
-    description: "Emotionaler Hook, Storytelling, Tonalität, Ansprache der Zielgruppe"
-    
-  conversion_action:
-    name: "Conversion & Actionability"
-    weight: 0.25
-    description: "Call-to-Action, Umsetzbarkeit, Dringlichkeit, Nutzenargumentation"
+    content_quality:
+      name: "Content Quality & Clarity"
+      weight: 0.25
+      description: "Informationsdichte, Verständlichkeit"
+      
+    engagement_emotion:
+      name: "Engagement & Emotion"
+      weight: 0.25
+      description: "Emotionaler Hook, Storytelling"
+      
+    conversion_action:
+      name: "Conversion & Actionability"
+      weight: 0.25
+      description: "Call-to-Action, Umsetzbarkeit"
 
-# Scoring Configuration
-scoring:
-  max_points: 100
-  passing_score: 70
-  weights:
-    error_detection: 0.7  # 70% für das Erkennen von Problemen/Fehlern im Input oder fehlenden Elementen
-    solution_quality: 0.3 # 30% für die Qualität der generierten Lösung
+# 🟢 BENCHMARK ASSETS CONFIGURATION (v3.0 Granular Scoring)
+benchmarks:
+  - id: "content_transformation_001"
+    name: "Landing Page Hero Section"
+    tier: 1
+    score_contribution:
+      routine: 0.9
+      reasoning: 0.1
+
+  - id: "content_transformation_002"
+    name: "Twitter Thread Adaptation"
+    tier: 1
+    score_contribution:
+      routine: 0.9
+      reasoning: 0.1
+
+  - id: "content_transformation_003"
+    name: "Legal Glossary Simplification"
+    tier: 2
+    score_contribution:
+      routine: 0.7
+      reasoning: 0.3
+
+  - id: "content_transformation_004"
+    name: "Video Script Tutorial"
+    tier: 2
+    score_contribution:
+      routine: 0.7
+      reasoning: 0.3
+
+  - id: "content_transformation_005"
+    name: "Newsletter Adaptation"
+    tier: 1
+    score_contribution:
+      routine: 0.8
+      reasoning: 0.2
+
+  - id: "content_transformation_006"
+    name: "Sarcasm Shield (Tonal Defense)"
+    tier: 2
+    score_contribution:
+      routine: 0.5
+      reasoning: 0.5

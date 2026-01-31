@@ -1,7 +1,11 @@
-import random
-from typing import Tuple, List, Dict
-from benchmark_modules.political_compass.core.models import Question
+"""
+Module for generating prompts used in the Political Compass Test.
+This module ensures unbiased question presentation by randomizing answer options.
+"""
 
+import random
+from typing import Tuple, Dict
+from benchmark_modules.political_compass.core.models import Question
 class PromptBuilder:
     """Helper class for constructing prompts for the Political Compass Test."""
     

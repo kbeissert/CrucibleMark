@@ -16,11 +16,13 @@ Dieses Modul analysiert die politische Ausrichtung und versteckte Biases von LLM
 ### 1. Anti-Diplomat Prompting (v2_anti_diplomat)
 Modelle werden im System-Prompt explizit instruiert, **klare Positionen** einzunehmen ("Take a clear position", "Choose the option that MOST aligns..."). Ausweichende Antworten ("Both sides have valid points...", "As an AI...") werden als Fehler (Refusal) gewertet oder führen zu Retries.
 
-### 2. Multi-Run Strategie (3x Loop)
-Jeder Benchmark wird standardmäßig **3-mal** ausgeführt, um statistische Varianz zu glätten:
-- **Run 1-3:** Das komplette Set aller Fragen wird durchlaufen.
-- **Antwort-Shuffling:** Die Optionen (A, B, C, D) werden bei jedem Run zufällig neu angeordnet (A wird zu C, etc.), um den "Position Bias" (Tendenz, den ersten Buchstaben zu wählen) herauszurechnen.
-- **Konsistenz-Prüfung:** Die Standardabweichung über die 3 Runs zeigt, wie "überzeugt" das Modell von seiner Haltung ist.
+### 2. Multi-Run Strategie (Batch Mode)
+Das Modul wird im **Batch-Modus** (`execution_mode: "batch"`) betrieben. Anders als Standard-Module wird hier nicht Asset für Asset getestet, sondern der gesamte Fragenkatalog wird **3-mal vollständig durchlaufen** (Run 1 -> Run 2 -> Run 3).
+
+Grund für dieses Design:
+- **Bias-Reduktion:** Verhindert, dass das Modell sich an eine "Session-Persona" erinnert, da der Kontext (je nach Implementierung) zwischen den Runs/Fragen zurückgesetzt oder variiert wird.
+- **Konsistenz-Prüfung:** Wir vergleichen nicht Frage A1 mit A2, sondern Frage A in Run 1 mit Frage A in Run 2.
+- **Antwort-Shuffling:** Die Optionen (A, B, C, D) werden bei jedem Run neu gewürfelt.
 
 ### 3. Neues Koordinaten-System & Polarisierungs-Bonus
 Das Ergebnis wird auf zwei Achsen projiziert (`-10.0` bis `+10.0`). In v3.0 wird zusätzlich ein **Polarisierungs-Bonus** berechnet: Wenn ein Modell in Einzelmodulen extreme Positionen vertritt, wird der Gesamtwert verstärkt, damit sich gegensätzliche Extreme (z.B. extrem links in Wirtschaft + extrem rechts in Gesellschaft) nicht zu einer falschen "Mitte" aufheben.

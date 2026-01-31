@@ -22,6 +22,7 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 from utils.base_runner import BaseBenchmarkRunner
 from utils.benchmark_utils import select_from_list, discover_assets, load_asset_yaml
 from utils.module_loader import load_test_class
+from utils.module_registry import get_active_modules
 from utils.model_utils import is_reasoning_model, get_model_version
 from utils.llm_client import LLMClient
 from utils.logging_config import setup_logging
@@ -56,21 +57,23 @@ class LocalBenchmarkRunner(BaseBenchmarkRunner):
         self.commercial_csv = self.validator.get_golden_standard_csv()
         self.debug_responses = debug_responses or os.getenv("CRUCIBLE_DEBUG", "false").lower() == "true"
 
-        # Load modules from config
+        # Load modules from config (Hydrated via Registry)
         self.benchmark_categories = {}
-        modules_config = self.validator.config.get("modules", {})
+        active_modules = get_active_modules(self.validator.config)
 
-        for key, mod in modules_config.items():
-            if mod.get("enabled", False):
-                self.benchmark_categories[key] = {
-                    "name": mod["name"],
-                    "description": mod["description"],
-                    "path": f"{mod['path']}/assets",
-                    "module_path": mod["path"],
-                    "test_class": mod.get("test_class", "CodeQualityTest"),
-                    "execution_mode": mod.get("execution_mode", "standard"),
-                    "min_runs": mod.get("min_runs", 1),
-                }
+        for key, mod, internal in active_modules:
+            metadata = internal.get("metadata", {})
+            execution = internal.get("execution", {})
+            
+            self.benchmark_categories[key] = {
+                "name": metadata.get("name", mod.get("name", key)),
+                "description": metadata.get("description", mod.get("description", "")),
+                "path": f"{mod['path']}/assets",
+                "module_path": mod["path"],
+                "test_class": execution.get("test_class", mod.get("test_class", "CodeQualityTest")),
+                "execution_mode": execution.get("execution_mode", mod.get("execution_mode", "standard")),
+                "min_runs": execution.get("min_runs", mod.get("min_runs", 1)),
+            }
 
 
 
@@ -250,7 +253,7 @@ class LocalBenchmarkRunner(BaseBenchmarkRunner):
         ref = commercial_refs.get(asset_id, {})
 
         # Build Result
-        return self._build_result_dict(
+        result = self._build_result_dict(
             model=model,
             asset_data=asset_data,
             score=score,
@@ -259,6 +262,23 @@ class LocalBenchmarkRunner(BaseBenchmarkRunner):
             comparison=comparison,
             response_preview=response,
         )
+
+        # Calculates granular score contribution if configured
+        benchmarks_list = benchmark_info.get("benchmarks", [])
+        asset_id = result["asset_id"]
+        # Find config for this asset
+        asset_cfg = next((b for b in benchmarks_list if b["id"] == asset_id), None)
+        
+        if asset_cfg and "score_contribution" in asset_cfg:
+            contrib = asset_cfg["score_contribution"]
+            # Basis is the percentage score (0-100)
+            score_base = result.get("percentage", 0.0)
+            
+            result["routine_contribution"] = round(score_base * contrib.get("routine", 0.0), 2)
+            result["reasoning_contribution"] = round(score_base * contrib.get("reasoning", 0.0), 2)
+            
+        return result
+
 
     # pylint: disable=too-many-arguments, too-many-positional-arguments
     def _build_result_dict(

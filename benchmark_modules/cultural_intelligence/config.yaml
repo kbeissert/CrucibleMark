@@ -1,12 +1,79 @@
-name: "Cultural Intelligence"
-description: "Evaluates language proficiency and cultural fit (German context)"
-enabled: true
-weight: 1.0
-top_p: 0.7
-temperature: 0.5
-assets:
-  - "asset_6a_german_tech_localization.yaml"
-  - "asset_6b_inclusive_job_ad.yaml"
-  - "asset_6c_berlin_agency_vibe.yaml"
-scoring:
-  pass_threshold: 0.7
+# Cultural Intelligence Module Configuration
+# ==========================================
+
+metadata:
+  id: "cultural_intelligence"
+  name: "Cultural Intelligence"
+  version: "1.0.0"
+  description: "Evaluates language proficiency and cultural fit (German context)"
+  author: "CrucibleMark"
+  created: "2025-01-01"
+  updated: "2026-01-31" 
+  tags:
+    - language
+    - culture
+    - german
+    - tone
+
+integration:
+  leaderboard:
+    enable_scoring: true
+    default_contribution:
+      routine: 1.0
+      reasoning: 0.0
+    columns:
+      - id: "cultural_intelligence_score"
+        label: "Cultural Intelligence"
+        weight: 1.0
+
+execution:
+  test_class: "CulturalIntelligenceTest"
+  assets_dir: "assets"
+  assets_count: 5
+
+benchmarks:
+  - id: "cultural_intel_001"
+    name: "German Tech Localization"
+    tier: 1
+    score_contribution:
+      routine: 1.0
+      reasoning: 0.0
+
+  - id: "cultural_intel_002"
+    name: "Inclusive Job Ad"
+    tier: 2
+    score_contribution:
+      routine: 0.5
+      reasoning: 0.5
+
+  - id: "cultural_intel_003"
+    name: "Berlin Agency Vibe"
+    tier: 2
+    score_contribution:
+      routine: 0.4
+      reasoning: 0.6
+
+  - id: "cultural_intel_004"
+    name: "Formal/Informal German"
+    tier: 1
+    score_contribution:
+      routine: 1.0
+      reasoning: 0.0
+
+  - id: "cultural_intel_005"
+    name: "German Idioms"
+    tier: 1
+    score_contribution:
+      routine: 0.7
+      reasoning: 0.3
+  
+# Internal Module Configuration
+config:
+  top_p: 0.7
+  temperature: 0.5
+  assets:
+    - "asset_6a_german_tech_localization.yaml"
+    - "asset_6b_inclusive_job_ad.yaml"
+    - "asset_6c_berlin_agency_vibe.yaml"
+  scoring:
+    pass_threshold: 0.7

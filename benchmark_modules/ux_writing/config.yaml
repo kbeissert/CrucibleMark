@@ -1,15 +1,73 @@
-# testmodules/ux_writing/config.yaml
-name: "UX Writing & Microcopy"
-description: "Bewertet UX-Writing-Fähigkeiten: Error Messages, Button Labels, Onboarding, ARIA-Labels"
-version: "1.0.0"
-test_class: "UXWritingTest"
-enabled: true
-assets_count: 5
-tags:
-  - ux-writing
-  - microcopy
-  - accessibility
-  - user-experience
-  - tonality
-author: "LLM Benchmark Suite"
-created: "2025-12-27"
+# UX Writing Module Configuration
+# ===============================
+
+metadata:
+  id: "ux_writing"
+  name: "UX Writing & Microcopy"
+  version: "1.0.0"
+  description: "Bewertet UX-Writing-Fähigkeiten: Error Messages, Button Labels, Onboarding, ARIA-Labels"
+  author: "CrucibleMark"
+  created: "2025-12-27"
+  updated: "2026-01-31" 
+  tags:
+    - ux-writing
+    - microcopy
+    - accessibility
+    - user-experience
+    - tonality
+
+integration:
+  leaderboard:
+    enable_scoring: true
+    default_contribution:
+      routine: 1.0
+      reasoning: 0.0
+    columns:
+      - id: "ux_writing_score"
+        label: "UX Writing & Microcopy"
+        weight: 1.0
+
+execution:
+  test_class: "UXWritingTest"
+  assets_dir: "assets"
+  assets_count: 5
+
+benchmarks:
+  - id: "ux_writing_001"
+    name: "Error Messages"
+    tier: 1
+    score_contribution:
+      routine: 1.0
+      reasoning: 0.0
+
+  - id: "ux_writing_002"
+    name: "Button Labels"
+    tier: 1
+    score_contribution:
+      routine: 1.0
+      reasoning: 0.0
+
+  - id: "ux_writing_003"
+    name: "Onboarding Flow"
+    tier: 3
+    score_contribution:
+      routine: 0.5
+      reasoning: 0.5
+
+  - id: "ux_writing_004"
+    name: "Accessibility Labels"
+    tier: 2
+    score_contribution:
+      routine: 0.9
+      reasoning: 0.1
+
+  - id: "ux_writing_005"
+    name: "Microcopy Audit"
+    tier: 2
+    score_contribution:
+      routine: 0.8
+      reasoning: 0.2
+
+
+# Internal Module Configuration
+config: {}

@@ -1,37 +1,137 @@
-name: "Logical Reasoning"
-version: "2.2.0"
-description: "Tests complex logical reasoning, math problems, puzzle solving, and metacognitive thought quality. Tier 1-3 assessment with RCI classification."
-author: "CrucibleMark"
-tags:
-  - logic
-  - math
-  - reasoning
-  - puzzle
-  - metacognition
-  - thought-quality
-assets_path: "assets"
-test_class: "ReasoningLogicTest"
-enabled: true
-order: 50
-tiers:
-  - name: "Tier 0 (Sanity Check)"
-    assets: ["reasoning_001_river"]
-    description: "Baseline reasoning checkpoint"
-  - name: "Tier 2 (Deep Reasoning)"
-    assets: ["reasoning_5c_001", "reasoning_5d_001", "reasoning_5e_001"]
-    description: "Complex operational logic testing"
-  - name: "Tier 3 (Metacognition)"
-    assets: ["reasoning_metacog_001", "reasoning_metacog_002", "reasoning_metacog_003", "reasoning_metacog_004", "reasoning_metacog_005"]
-    description: "Thought quality and reasoning process assessment"
-rci:
-  enabled: true
-  formula: "RCI = (Avg_Output_Tier1+2 × 0.6) + (Avg_Thought_Tier3 × 0.4)"
-  classifications:
-    - threshold: 50
-      label: "Non-Thinking Model"
-    - threshold: 70
-      label: "Basic Thinking Model"
-    - threshold: 85
-      label: "Thinking Model"
-    - threshold: 100
-      label: "Deep Thinking Model"
+# Reasoning Logic Module Configuration
+# ====================================
+
+metadata:
+  id: "reasoning"
+  name: "Logical Reasoning"
+  version: "2.2.0"
+  description: "Tests complex logical reasoning, math problems, puzzle solving, and metacognitive thought quality."
+  author: "CrucibleMark"
+  created: "2024-12-01"
+  updated: "2026-01-31" 
+  tags:
+    - logic
+    - math
+    - reasoning
+    - puzzle
+    - metacognition
+    - thought-quality
+
+integration:
+  leaderboard:
+    enable_scoring: true
+    default_contribution:
+      routine: 0.0
+      reasoning: 1.0
+    columns:
+      - id: "reasoning_score"
+        label: "Logical Reasoning"
+        weight: 1.0
+
+execution:
+  test_class: "ReasoningLogicTest"
+  assets_dir: "assets"
+
+benchmarks:
+  # Classical Logic
+  - id: "reasoning_001_river"
+    name: "River Crossing"
+    tier: 1
+    score_contribution:
+      routine: 0.0
+      reasoning: 1.0
+
+  # Advanced Reasoning Chains (Category 5)
+  - id: "reasoning_5a_001"
+    name: "Error Recovery"
+    tier: 1
+    score_contribution:
+      routine: 0.2
+      reasoning: 0.8
+
+  - id: "reasoning_5b_001"
+    name: "Complex Chains"
+    tier: 2
+    score_contribution:
+      routine: 0.0
+      reasoning: 1.0
+
+  - id: "reasoning_5c_001"
+    name: "Adversarial Robustness"
+    tier: 2
+    score_contribution:
+      routine: 0.0
+      reasoning: 1.0
+
+  - id: "reasoning_5d_001"
+    name: "Circular Dependency"
+    tier: 2
+    score_contribution:
+      routine: 0.0
+      reasoning: 1.0
+
+  - id: "reasoning_5e_001"
+    name: "Nested Paradox"
+    tier: 3
+    score_contribution:
+      routine: 0.0
+      reasoning: 1.0
+
+  # Metacognition Series
+  - id: "reasoning_metacog_001"
+    name: "Metacog 1"
+    tier: 1
+    score_contribution:
+      routine: 0.0
+      reasoning: 1.0
+  - id: "reasoning_metacog_002"
+    name: "Metacog 2"
+    tier: 1
+    score_contribution:
+      routine: 0.0
+      reasoning: 1.0
+  - id: "reasoning_metacog_003"
+    name: "Metacog 3"
+    tier: 1
+    score_contribution:
+      routine: 0.0
+      reasoning: 1.0
+  - id: "reasoning_metacog_004"
+    name: "Metacog 4"
+    tier: 1
+    score_contribution:
+      routine: 0.0
+      reasoning: 1.0
+  - id: "reasoning_metacog_005"
+    name: "Metacog 5"
+    tier: 1
+    score_contribution:
+      routine: 0.0
+      reasoning: 1.0
+
+# Internal Module Configuration
+config:
+  order: 50
+  tiers:
+    - name: "Tier 0 (Sanity Check)"
+      assets: ["reasoning_001_river"]
+      description: "Baseline reasoning checkpoint"
+    - name: "Tier 2 (Deep Reasoning)"
+      assets: ["reasoning_5c_001", "reasoning_5d_001", "reasoning_5e_001"]
+      description: "Complex operational logic testing"
+    - name: "Tier 3 (Metacognition)"
+      assets: ["reasoning_metacog_001", "reasoning_metacog_002", "reasoning_metacog_003", "reasoning_metacog_004", "reasoning_metacog_005"]
+      description: "Thought quality and reasoning process assessment"
+  
+  rci:
+    enabled: true
+    formula: "RCI = (Avg_Output_Tier1+2 × 0.6) + (Avg_Thought_Tier3 × 0.4)"
+    classifications:
+      - threshold: 50
+        label: "Non-Thinking Model"
+      - threshold: 70
+        label: "Basic Thinking Model"
+      - threshold: 85
+        label: "Thinking Model"
+      - threshold: 100
+        label: "Deep Thinking Model"

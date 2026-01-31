@@ -10,7 +10,6 @@ Ermöglicht einfache Berechnung und Speicherung von RCI-Scores.
 from typing import Any, Dict, List
 from pathlib import Path
 import csv
-import json
 from benchmark_modules.reasoning_logic.core.evaluators import (
     calculate_rci,
     classify_model,

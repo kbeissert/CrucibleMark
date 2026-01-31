@@ -6,8 +6,6 @@ Usage: python scripts/scaffold_module.py [module_name]
 """
 
 import sys
-import os
-import argparse
 from pathlib import Path
 from datetime import datetime
 
@@ -16,31 +14,36 @@ TEMPLATE_CONFIG = """# {display_name} Configuration
 # ========================================
 
 metadata:
+  id: "{module_name}"
   name: "{display_name}"
   version: "0.1.0-alpha"
   description: "TODO: Add description for {display_name}"
   author: "CrucibleMark User"
   created: "{date}"
-
-# Module Specific Settings
-module:
-  test_class: "{class_name}Test"
-  base_class: "BaseTest"
-  
-# Leaderboard Configuration (Required for v0.9.6+)
-leaderboard:
-  enabled: true
-  assets_count: 5          # TODO: Adjust expected asset count
-  score_group: "{score_group}"   # Options: routine, reasoning, info
   tags:
     - todo
-    - tag_me
 
-# Assets Configuration
-assets:
-  path: "assets"
-  types:
-    - standard
+integration:
+  leaderboard:
+    enable_scoring: true
+    default_contribution:
+      routine: 0.5
+      reasoning: 0.5
+    columns:
+      - id: "total_score"
+        label: "{display_name}"
+        weight: 1.0
+
+execution:
+  test_class: "{class_name}Test"
+  assets_dir: "assets"
+  assets_count: 5
+
+# Internal Module Configuration
+config:
+  categories:
+    default:
+      weight: 1.0
 """
 
 TEMPLATE_TEST = """\"\"\"
@@ -119,20 +122,20 @@ class {class_name}Test(BaseTest):
         return result.get('score', 0.0)
 """
 
-TEMPLATE_EVALUATOR = """\"\"\"
+TEMPLATE_EVALUATOR = '''"""
 Pure Logic Layer for {display_name}.
 Contains all scoring algorithms. Zero dependencies on LLM clients or IO.
-\"\"\"
+"""
 
 from typing import Dict, Any
 
 class {class_name}Evaluator:
-    \"\"\"
+    """
     Evaluates model outputs against asset criteria.
-    \"\"\"
+    """
     
     def evaluate(self, response_text: str, asset: Dict[str, Any]) -> Dict[str, Any]:
-        \"\"\"
+        """
         Main evaluation entry point.
         
         Args:
@@ -170,7 +173,7 @@ class {class_name}Evaluator:
         if not text:
             return 0.0
         return 50.0 # TODO: Implement real scoring
-"""
+'''
 
 TEMPLATE_INIT = "\"\"\"\nExpose the Test Class for dynamic loading.\n\"\"\"\nfrom .test import {class_name}Test\n"
 
@@ -279,13 +282,13 @@ def main():
         
     print("\n🎉 Module created successfully!")
     print("\nNext Steps:")
-    print(f"1. Add the module to benchmark_config.yaml:")
-    print(f"   modules:")
+    print("1. Add the module to benchmark_config.yaml:")
+    print("   modules:")
     print(f"     {module_name}:")
-    print(f"       enabled: true")
+    print("       enabled: true")
     print(f"       name: \"{display_name}\"")
     print(f"       test_class: \"{class_name}Test\"")
-    print(f"       assets_count: 5")
+    print("       assets_count: 5")
     print(f"       score_group: \"{score_group}\"")
     print(f"2. Customize logic in {base_dir}/core/evaluators.py")
     print(f"3. Add assets to {base_dir}/assets/")

@@ -15,7 +15,6 @@ Usage:
     python scripts/consolidate_csv.py
 """
 
-import sys
 import logging
 from pathlib import Path
 import pandas as pd

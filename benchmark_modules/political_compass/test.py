@@ -37,7 +37,7 @@ from benchmark_modules.political_compass.core.services import (
     FrameworkAdapter,
     MockLLMService
 )
-from benchmark_modules.political_compass.core.io_manager import ResultManager, CheckpointManager
+from benchmark_modules.political_compass.core.io_manager import ResultManager
 from benchmark_modules.political_compass.core.loader import QuestionLoader
 from benchmark_modules.political_compass.core.prompts import PromptBuilder
 
@@ -84,9 +84,13 @@ class PoliticalCompassTest(BaseTest):
             config_path = Path(__file__).parent / "config.yaml"
             if config_path.exists():
                 with open(config_path, "r") as f:
-                    config = yaml.safe_load(f)
-                    if "runs" in config:
-                        self.num_runs = int(config["runs"])
+                    yaml_content = yaml.safe_load(f)
+                    # Check top level or nested config block
+                    cfg_block = yaml_content.get("config", {})
+                    if "runs" in cfg_block:
+                        self.num_runs = int(cfg_block["runs"])
+                    elif "runs" in yaml_content: # Fallback legacy
+                        self.num_runs = int(yaml_content["runs"])
         except Exception as e:
             logging.warning(f"Could not load political compass config: {e}")
 

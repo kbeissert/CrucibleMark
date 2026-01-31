@@ -32,10 +32,25 @@ make list-models
 ```
 
 ### B. Automatischer "Auffüll-Modus" (Auto-Benchmark)
-Sucht nach installierten Modellen, die noch **nicht** vollständig getestet wurden, und führt fehlende Benchmarks aus. Ideal, um Lücken in der Datenbasis zu schließen.
+
+Der Auto-Benchmark ist für den **täglichen Betrieb** optimiert. Er prüft intelligent, welche Tests wirklich notwendig sind.
+
 ```bash
 make benchmark-auto
 ```
+
+**Features:**
+*   **Smart Skipping:** Überspringt Tests, die für dieses Modell bereits erfolgreich (`status: success`) absolviert wurden.
+*   **Auto-Retry:** Fehlgeschlagene Tests werden automatisch erkannt und neu ausgeführt.
+*   **Kosten-Effizienz:** Spart API-Kosten bei kommerziellen Modellen, da keine unnötigen Doppelausführungen stattfinden.
+
+**Erzwungener Neustart (Force Mode):**
+Wenn Sie bewusst alle Tests neu ausführen möchten (z.B. nach Änderungen am Code oder Prompting), nutzen Sie das Skript direkt mit dem `--force` Flag:
+
+```bash
+python scripts/benchmark_auto.py --force
+```
+> **Warnung:** Dies führt ALLE Benchmarks erneut aus und verursacht entsprechende API-Kosten!
 
 ### C. Einzelnes Modell testen (CLI)
 Startet einen gezielten Testlauf für ein spezifisches Modell. Optional kann ein einzelnes Modul isoliert werden.
@@ -139,4 +154,40 @@ Beispiel: `benchmark_scores/debug_responses/phi4_latest_reasoning_5d_001.txt`
 Inhalt:
 *   Score & Erklärung des Judges
 *   **Vollständige Modell-Antwort** (ungekürzt)
+
+---
+
+## 7. Daten-Management & Bereinigung 🧹
+
+CrucibleMark unterscheidet zwischen **historisch wertvollen Daten** (Benchmarks) und **temporären Caches**.
+
+### Grundregel: "Daten sind heilig" 🛡️
+Normalerweise sollten Sie Benchmark-Ergebnisse **nicht löschen**, sondern neue Läufe einfach hinzufügen (History).
+*   **Auffüllen:** `make benchmark-auto` (Ergänzt nur Fehlendes)
+*   **Neu Messen:** `python scripts/benchmark_auto.py --force` (Erzwingt neue Messung, behält History)
+
+### Gezieltes Löschen (Clean-Up)
+Nutzen Sie diese Befehle nur, wenn Sie **fehlerhafte Daten** (z.B. falsche Config) entfernen müssen. Sie löschen die Einträge unwiderruflich aus der Datenbank (CSV).
+
+#### A. Einzelnes Modell bereinigen
+Entfernt alle Ergebnisse eines spezifischen Modells aus der CSV sowie dessen temporäre Session-Dateien.
+```bash
+# Löscht alles zu 'mistral-large'
+make clean-model MODEL=mistral-large
+```
+*Anwendungsfall: Ein Modell wurde neu installiert/trainiert oder lief mit falschen Parametern.*
+
+#### B. Modul-Ergebnisse bereinigen
+Entfernt die Ergebnisse eines bestimmten Moduls für **alle** Modelle.
+```bash
+# Löscht Ergebnisse des Moduls 'ux_writing'
+make clean-module MODULE=ux_writing
+```
+*Anwendungsfall: Sie haben die Test-Assets eines Moduls verändert, wodurch alte Scores nicht mehr vergleichbar sind.*
+
+#### C. Komplett-Reset
+Achtung: Dies löscht **alle** Benchmark-Ergebnisse und setzt das Leaderboard auf Null.
+```bash
+make clean-csv
+```
 

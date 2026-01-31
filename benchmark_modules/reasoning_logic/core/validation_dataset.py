@@ -212,7 +212,7 @@ def validate_response_against_ground_truth(
         "variance": variance,
         "tolerance": tolerance,
         "message": (
-            f"✅ PASS" if passed 
+            "✅ PASS" if passed 
             else f"❌ FAIL: Expected {expected}±{tolerance}, got {actual_score}"
         )
     }

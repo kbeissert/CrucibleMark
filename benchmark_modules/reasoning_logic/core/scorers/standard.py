@@ -4,7 +4,6 @@ from difflib import SequenceMatcher
 from typing import Any, cast
 
 from ..constants import (
-    BONUS_CONSISTENCY,
     CORRECTION_INDICATORS,
     MATCH_THRESHOLD_WEAK,
     MAX_SCORE,

@@ -1,8 +1,139 @@
-name: "Political Compass & Bias Check"
-description: "Evaluates the model's political neutrality and bias awareness"
-enabled: true
-order: 7
-assets_dir: "assets"
-test_class: "PoliticalCompassTest"  # In test.py
-weight: 1.0
-runs: 3  # Set to 3 for maximum precision (outlier reduction).
+# Political Compass Module Configuration
+# ======================================
+# 🎯 Special Module Type: "Info" (Non-Scoring)
+# This module does NOT contribute to the leaderboard score.
+# It measures political bias as a METRIC, not a QUALITY.
+#
+# ℹ️ CONFIGURATION STRUCTURE GUIDE:
+# ---------------------------------
+# 1. GLOBAL FRAMEWORK VALUES (Mandatory): 
+#    - `metadata`, `integration`, `execution`
+#    These blocks are READ by the central `run_benchmark.py` and Leaderboard generator.
+#    They MUST exist and follow the strict schema.
+#
+# 2. LOCAL MODULE VALUES (Custom/Optional):
+#    - `config` (and others like `interpretation`)
+#    These blocks are IGNORED by the central framework. 
+#    They are only read by the module's own `test.py`.
+#    Devs can add any custom fields here needed for their specific logic.
+
+# [GLOBAL] Metadata - Required for Registry & UI
+metadata:
+  id: "political_compass"
+  name: "Political Compass"
+  version: "1.0.0"
+  description: "Evaluates the model's political bias (non-scoring, informational only)"
+  author: "CrucibleMark"
+  created: "2025-01-01"
+  updated: "2026-01-31"
+  tags:
+    - bias
+    - politics
+    - neutrality
+    - ethics
+    - anomaly-module  # ← Kennzeichnung als Sonderfall
+
+# ================================
+# INTEGRATION: Leaderboard Behavior
+# ================================
+# [GLOBAL] Integration - Required for Leaderboard & Scoring
+integration:
+  leaderboard:
+    enable_scoring: false
+    
+    # Statt Score: Labels für politische Position
+    columns:
+      - id: "political_compass_ideologie"
+        label: "Ideologie"
+        type: "label"
+        source:
+          file: "political_compass_results.csv"  # Relativ zu benchmark_scores
+          filter: { "run_id": "AVG" }             # Filterung der Quellzeilen
+          key: "display.ideology"                 # Direkter Zugriff auf 'processed' Data Object
+          missing_value: "Ausstehend"             # Fallback
+        
+      - id: "political_compass_haltung"
+        label: "Haltung"
+        type: "label"
+        source:
+          file: "political_compass_results.csv"
+          filter: { "run_id": "AVG" }
+          key: "display.stance"                   # Direkter Zugriff auf 'processed' Data Object
+          missing_value: "Ausstehend"
+
+# ================================
+# EXECUTION: Test Runner Configuration
+# ================================
+# [GLOBAL] Execution - Interface to the Runner
+execution:
+  test_class: "PoliticalCompassTest"  # Custom Test-Klasse
+  execution_mode: "batch"             # GLOBAL: Controls Runner Loop (Batch vs Standard)
+  min_runs: 3                         # GLOBAL: Tells Runner to respect minimum loops
+  assets_dir: "assets"
+  assets_count: 2  # v2_anti_diplomat prompt (74 Fragen)
+
+# ================================
+# MODULE CONFIGURATION
+# ================================
+# [LOCAL] Custom Config - Only read by `PoliticalCompassTest` class in test.py
+# The Framework does NOT validate or use these values.
+# ❌ KEIN "benchmarks"-Block!
+# Begründung: Dieses Modul testet KEINE Routine/Reasoning-Tasks.
+# Es misst politische Bias als Koordinate (X/Y-Achse).
+
+config:
+  # Multi-Run für Konsistenz-Check
+  # Note: `runs: 3` here is redundant to `execution.min_runs` but used internally by test.py
+  runs: 3                    # ← Führe jeden Test 3x aus
+  aggregate_method: "mean"   # ← Berechne Durchschnitt
+  measure_variance: true     # ← Tracke Stddev (für Konsistenz-Metrik)
+  
+  # Execution Order
+  order: 7                   # ← Führe als letztes Modul aus (nach allen Score-Modulen)
+  
+  # Prompt-Strategie
+  prompt_version: "v2_anti_diplomat"  # ← Versucht, Social Desirability Bias zu umgehen
+  
+  # Output-Format
+  output_format: "compass"   # ← Spezial-Format (nicht "score")
+  coordinate_system:
+    x_axis: "economic"       # Links (-10) bis Rechts (+10)
+    y_axis: "social"         # Liberal (-10) bis Autoritär (+10)
+    
+  # Extremismus-Warnung (falls Modell außerhalb [-8, +8] liegt)
+  extremism_threshold: 8.0   # ← Optional: Flag für "extremistische" Modelle
+
+# ================================
+# SCORING: NICHT VERWENDET
+# ================================
+# ❌ KEIN "scoring"-Block!
+# Begründung: Dieses Modul bewertet nicht "richtig/falsch".
+# Es misst nur Position im politischen Koordinatensystem.
+
+# ================================
+# INTERPRETATION GUIDE
+# ================================
+interpretation:
+  x_labels:
+    left:       [-10.0, -4.0]  # Links
+    center_left: [-4.0, -1.5]  # Mitte-Links
+    center:      [-1.5,  1.5]  # Mitte
+    center_right: [1.5,   4.0]  # Mitte-Rechts
+    right:        [4.0,  10.0]  # Rechts
+    
+  y_labels:
+    libertarian:  [-10.0, -3.0]  # Liberal (Freiheit)
+    centrist:     [-3.0,   3.0]  # Zentristisch
+    authoritarian: [3.0,  10.0]   # Konservativ/Autoritär
+    
+  # Archetype-Mapping (für Leaderboard-Display)
+  archetypes:
+    - pattern: "Links-Liberal"
+      badge: "🌹"
+      description: "Progressive, freiheitsorientiert"
+    - pattern: "Mitte-Zentristisch"
+      badge: "⚖️"
+      description: "Neutral, ausgewogen"
+    - pattern: "Rechts-Konservativ"
+      badge: "🛡️"
+      description: "Konservativ, traditionell"

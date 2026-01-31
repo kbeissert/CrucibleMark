@@ -11,10 +11,12 @@ Usage:
 
 import sys
 import os
+import argparse
 import logging
 import shutil
 import subprocess
 from pathlib import Path
+from datetime import datetime
 from typing import Any, List, Dict, Set, Tuple
 from dotenv import load_dotenv
 
@@ -23,8 +25,8 @@ load_dotenv()
 
 # Third-party imports
 # pylint: disable=import-error
-import yaml
-import pandas as pd
+import yaml  # noqa: E402
+import pandas as pd  # noqa: E402
 # pylint: enable=import-error
 
 # Pfad setup
@@ -39,6 +41,7 @@ from scripts.generate_leaderboard import main as gen_leaderboard  # noqa: E402
 from utils.config_validator import ConfigValidator  # noqa: E402
 from utils.model_utils import is_model_suitable_for_benchmark  # noqa: E402
 from utils.llm_client import LLMClient  # noqa: E402
+from utils.module_registry import get_active_modules  # noqa: E402
 # pylint: enable=import-error, wrong-import-position
 
 # Logging Setup
@@ -72,9 +75,14 @@ def check_ollama_status() -> bool:
         return False
 
 
-def get_existing_results(csv_path: Path) -> Set[Tuple[str, str]]:
+from datetime import datetime
+
+def get_existing_results(csv_path: Path, force: bool = False) -> Set[Tuple[str, str]]:
     """Lädt Set von (Model, AssetID) für bereits existierende Tests."""
     cache = set()
+    if force:
+        return cache  # Force Mode: Ignoriere existierende Ergebnisse
+
     if csv_path.exists():
         try:
             df = pd.read_csv(csv_path)
@@ -83,6 +91,13 @@ def get_existing_results(csv_path: Path) -> Set[Tuple[str, str]]:
             if required.issubset(df.columns):
                 # Wir merken uns (Model, AssetID) als erledigt
                 for _, row in df.iterrows():
+                    # Wenn Status vorhanden, prüfen wir auf success
+                    # (Fehlgeschlagene Tests werden wiederholt)
+                    if "status" in df.columns:
+                        status = str(row.get("status", "")).lower()
+                        if status != "success":
+                            continue # Skip failed tests (retry)
+
                     cache.add((str(row["model"]), str(row["asset_id"])))
         except Exception as e:  # pylint: disable=broad-exception-caught
             print(f"⚠️ Warnung beim Lesen von {csv_path}: {e}")
@@ -90,23 +105,25 @@ def get_existing_results(csv_path: Path) -> Set[Tuple[str, str]]:
 
 
 def get_all_modules(validator: ConfigValidator) -> List[Dict[str, Any]]:
-    """Extrahiert alle aktivierten Module aus der Config."""
+    """Extrahiert alle aktivierten Module aus der Config (SSOT)."""
     modules = []
-    if "modules" in validator.config:
-        for key, mod in validator.config["modules"].items():
-            if mod.get("enabled", False):
-                modules.append(
-                    {
-                        "key": key,
-                        "name": mod["name"],
-                        "path": f"{mod['path']}/assets",
-                        "module_path": mod["path"],  # Wichtig für Module Loader
-                        "test_class": mod.get("test_class", "CodeQualityTest"),
-                        "description": mod["description"],
-                        "execution_mode": mod.get("execution_mode", "standard"),
-                        "min_runs": mod.get("min_runs", 1),
-                    }
-                )
+    active = get_active_modules(validator.config)
+    
+    for key, mod, internal in active:
+        metadata = internal.get("metadata", {})
+        execution = internal.get("execution", {})
+        modules.append(
+            {
+                "key": key,
+                "name": metadata.get("name", mod.get("name", key)),
+                "path": f"{mod['path']}/assets",
+                "module_path": mod["path"],  # Wichtig für Module Loader
+                "test_class": execution.get("test_class", mod.get("test_class", "CodeQualityTest")),
+                "description": metadata.get("description", mod.get("description", "")),
+                "execution_mode": execution.get("execution_mode", mod.get("execution_mode", "standard")),
+                "min_runs": execution.get("min_runs", mod.get("min_runs", 1)),
+            }
+        )
     return modules
 
 
@@ -195,7 +212,7 @@ def _run_module_for_model(
         print(f"   ❌ Fehler: {e}")
 
 
-def run_local_batch(modules: List[Dict[str, Any]], validator: ConfigValidator) -> None:
+def run_local_batch(modules: List[Dict[str, Any]], validator: ConfigValidator, force: bool = False) -> None:
     """Batch-Run für alle lokalen Ollama-Modelle."""
     # pylint: disable=unused-argument
     print("\n🤖  [1/2] LOKALE MODELLE (OLLAMA)")
@@ -209,7 +226,7 @@ def run_local_batch(modules: List[Dict[str, Any]], validator: ConfigValidator) -
 
     # Cache laden (bereits erledigte Tests)
     csv_path = Path("benchmark_scores/local_models_benchmark.csv")
-    existing_tests = get_existing_results(csv_path)
+    existing_tests = get_existing_results(csv_path, force=force)
 
     # Modelle holen
     try:
@@ -237,7 +254,7 @@ def run_local_batch(modules: List[Dict[str, Any]], validator: ConfigValidator) -
 
 
 def run_commercial_batch(
-    modules: List[Dict[str, Any]], validator: ConfigValidator
+    modules: List[Dict[str, Any]], validator: ConfigValidator, force: bool = False
 ) -> None:
     """Batch-Run für alle konfigurierten kommerziellen Modelle."""
     print("\n🏢  [2/2] KOMMERZIELLE MODELLE (API)")
@@ -302,10 +319,10 @@ def run_commercial_batch(
     comm_csv = Path("benchmark_scores/commercial_models_benchmark.csv")
     gold_csv = Path("benchmark_scores/golden_standard_benchmark.csv")
     
-    existing_tests = get_existing_results(comm_csv)
+    existing_tests = get_existing_results(comm_csv, force=force)
     # Merge with golden standards if they exist (since they are also valid test runs)
     if gold_csv.exists():
-        existing_gold = get_existing_results(gold_csv)
+        existing_gold = get_existing_results(gold_csv, force=force)
         existing_tests.update(existing_gold)
         
     print(f"Ignoriere bereits vorhandene Ergebnisse ({len(existing_tests)} Einträge)\n")
@@ -357,9 +374,19 @@ def run_commercial_batch(
 
 def main():
     """Main entry point."""
+    parser = argparse.ArgumentParser(description="Crucible Automatic Benchmark")
+    parser.add_argument(
+        "--force", 
+        action="store_true", 
+        help="Erzwingt das erneute Ausführen aller Tests (ignoriert Cache)."
+    )
+    args = parser.parse_args()
+
     print(f"{'#' * 60}")
     print("🤖  CRUCIBLE AUTOMATIC BENCHMARK")
     print("    Füllt automatisch fehlende Benchmarks auf.")
+    if args.force:
+        print("    ⚠️  FORCE MODE: Alle Tests laufen erneut!")
     print(f"{'#' * 60}\n")
 
     # Pre-Check Ollama
@@ -379,10 +406,18 @@ def main():
         print(f"   - {m['name']} ({m['key']})")
 
     # 1. Lokale Modelle
-    run_local_batch(modules, validator)
+    try:
+        run_local_batch(modules, validator, force=args.force)
+    except KeyboardInterrupt:
+        print("\n⛔  Abbruch durch Benutzer.")
+        sys.exit(1)
 
     # 2. Kommerzielle Modelle
-    run_commercial_batch(modules, validator)
+    try:
+        run_commercial_batch(modules, validator, force=args.force)
+    except KeyboardInterrupt:
+        print("\n⛔  Abbruch durch Benutzer.")
+        sys.exit(1)
 
     print("\n\n✅  AUTOMATIC RUN COMPLETED.")
     print("    Ergebnisse wurden in die CSV-Dateien gespeichert.")

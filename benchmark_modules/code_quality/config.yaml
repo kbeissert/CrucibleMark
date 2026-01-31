@@ -2,73 +2,106 @@
 # ========================================
 
 metadata:
+  id: "code_quality"
   name: "Code Quality Audit"
   version: "0.2.0-beta"
   description: "Umfassende Code-Qualitätsanalyse für verschiedene Aspekte der Softwareentwicklung"
   author: "CrucibleMark"
   created: "2024-12-26"
-  updated: "2024-12-27"
+  updated: "2026-01-31" 
+  tags:
+    - quality
+    - security
+    - performance
+    - accessibility
+    - best-practices
 
-# Modul-spezifische Einstellungen
-module:
+integration:
+  leaderboard:
+    enable_scoring: true
+    default_contribution:
+      routine: 0.0
+      reasoning: 1.0
+    columns:
+      - id: "code_quality_score" 
+        label: "Code Quality Audit"
+        weight: 1.0
+
+execution:
   test_class: "CodeQualityTest"
-  base_class: "BaseTest"
-  
-# Test-Assets
-assets:
-  path: "assets"
-  count: 5
-  types:
-    - accessibility  # WCAG Audit
-    - security       # Security Audit
-    - performance    # Performance Audit
-    - api_design     # API Design Audit
-    - code_smells    # Code Smells Audit
+  assets_dir: "assets"
+  assets_count: 5
+  asset_types:
+    - accessibility
+    - security
+    - performance
+    - api_design
+    - code_smells
 
-# Kategorien und Gewichtung
-categories:
-  wcag_violations:
-    name: "WCAG Violations"
-    weight: 1.0
-    max_score: 10
-  
-  security_issues:
-    name: "Security Issues"
-    weight: 1.0
-    max_score: 10
-  
-  performance_problems:
-    name: "Performance Problems"
-    weight: 1.0
-    max_score: 10
-  
-  api_design_issues:
-    name: "API Design Issues"
-    weight: 1.0
-    max_score: 10
-  
-  code_smells:
-    name: "Code Smells"
-    weight: 1.0
-    max_score: 10
+benchmarks:
+  - id: "code_quality_001"
+    name: "WCAG 2.2 Audit"
+    tier: 1
+    score_contribution:
+      routine: 1.0
+      reasoning: 0.0
 
-# Output-Konfiguration
-output:
-  format: "detailed"  # minimal, standard, detailed
-  include_raw_response: false
-  save_golden_standards: true
+  - id: "code_quality_002"
+    name: "Security Audit"
+    tier: 2
+    score_contribution:
+      routine: 0.3
+      reasoning: 0.7
 
-# Golden Standards
-golden_standards:
-  enabled: true
-  provider: "mistral"
-  model: "mistral-large-latest"
-  similarity_threshold: 0.7
+  - id: "code_quality_003"
+    name: "Performance Audit"
+    tier: 3
+    score_contribution:
+      routine: 0.2
+      reasoning: 0.8
 
-# Tags für Filterung
-tags:
-  - quality
-  - security
-  - performance
-  - accessibility
-  - best-practices
+  - id: "code_quality_004"
+    name: "REST API Design Audit"
+    tier: 4
+    score_contribution:
+      routine: 0.2
+      reasoning: 0.8
+
+  - id: "code_quality_005"
+    name: "Code Smells Audit"
+    tier: 2
+    score_contribution:
+      routine: 0.7
+      reasoning: 0.3
+
+# Internal Module Configuration
+config:
+  categories:
+    wcag_violations:
+      name: "WCAG Violations"
+      weight: 1.0
+      max_score: 10
+    
+    security_issues:
+      name: "Security Issues"
+      weight: 1.0
+      max_score: 10
+    
+    performance_problems:
+      name: "Performance Problems"
+      weight: 1.0
+      max_score: 10
+    
+    api_design_issues:
+      name: "API Design Issues"
+      weight: 1.0
+      max_score: 10
+    
+    code_smells:
+      name: "Code Smells"
+      weight: 1.0
+      max_score: 10
+
+  output:
+    format: "detailed"
+    include_raw_response: false

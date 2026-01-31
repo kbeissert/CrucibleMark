@@ -10,6 +10,8 @@ import yaml
 import json
 from datetime import datetime
 
+from schemas.result import BenchmarkResult
+
 
 # Scoring constant
 TOTAL_SCORING_WEIGHT = 100
@@ -140,25 +142,15 @@ class BaseTest(ABC):
         pass
 
     @abstractmethod
-    def score_response(self, response: str) -> Dict[str, Any]:
+    def score_response(self, response: str) -> BenchmarkResult:
         """
-        Bewertet Response nach Asset-Kriterien
+        Bewertet Response nach Asset-Kriterien.
 
         Args:
             response: LLM Response Text
 
         Returns:
-            Dict mit Scoring-Ergebnissen:
-            {
-                'total_score': int,
-                'category_scores': {
-                    'category_name': {
-                        'achieved': int,
-                        'max': int,
-                        'details': str
-                    }
-                }
-            }
+            BenchmarkResult: Standardisiertes Ergebnisobjekt mit Score und Metriken.
         """
         pass
 
