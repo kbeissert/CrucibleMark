@@ -1,0 +1,45 @@
+CrucibleMark
+Copyright 2026 Kay Beißert
+
+This product includes software developed by Kay Beißert.
+
+================================================================================
+
+This project was developed with assistance from AI tools:
+- GitHub Copilot (Code completion & refactoring)
+- Perplexity AI (Architecture consulting & research)
+- Claude Sonnet (Documentation & code review)
+
+================================================================================
+
+Third-Party Dependencies:
+
+This software contains components from the following projects:
+
+1. Ollama (MIT License)
+   Copyright 2023 Ollama Inc.
+   https://github.com/ollama/ollama
+
+2. Sentence Transformers (Apache 2.0)
+   Copyright 2019 UKP Lab, Technische Universität Darmstadt
+   https://github.com/UKPLab/sentence-transformers
+
+3. PyYAML (MIT License)
+   Copyright 2017-2021 Ingy döt Net, Copyright 2006-2016 Kirill Simonov
+   https://github.com/yaml/pyyaml
+
+4. Python Requests (Apache 2.0)
+   Copyright 2019 Kenneth Reitz
+   https://github.com/psf/requests
+
+5. Mistral AI Python Client (Apache 2.0)
+   Copyright 2023 Mistral AI
+   https://github.com/mistralai/client-python
+
+For a complete list of dependencies, see requirements.txt
+
+================================================================================
+
+NOTICE:
+This software is provided "AS IS" without warranty of any kind.
+See LICENSE file for full terms and conditions.
