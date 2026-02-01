@@ -96,6 +96,7 @@ scoring:
   
   error_detection:
     weight: 60
+    default_required_ratio: 1.0
     description: "Erkennung und Optimierung der ARIA-Labels"
     
     # 1. Labeled Issues (10 Punkte)
