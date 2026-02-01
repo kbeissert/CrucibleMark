@@ -160,7 +160,7 @@ class ResultManager:
         try:
             # Import hier, um Zirkelbezüge zu vermeiden und Skript-Charakter zu nutzen
             # pylint: disable=import-outside-toplevel
-            from scripts import generate_leaderboard
+            from scripts.core import generate_leaderboard
 
             print("🔄 Aktualisiere Leaderboard...")
             sys.stdout.flush()

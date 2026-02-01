@@ -21,5 +21,24 @@ PATTERN_CODE_BLOCK = r"```[\s\S]*?```"
 PATTERN_TABLE_ROW = r"\|.*\|"
 
 # Error Messages
-ERROR_INVALID_RESPONSE = "Keine gültige Response erhalten"
-ERROR_TEST_FAILED = "Test konnte nicht ausgeführt werden"
+ERROR_INVALID_RESPONSE = "No valid response received"
+ERROR_TEST_FAILED = "Test execution failed"
+ERROR_EMPTY_RESPONSE = "Response is empty after cleaning"
+
+# =======================
+# Scoring Categories
+# =======================
+
+# Generic categories evaluated in all assets
+SCORING_CATEGORIES = ["solution_quality", "formatting", "expertise"]
+
+# Error detection category suffixes
+ERROR_CATEGORY_SUFFIXES = ["_issues"]
+BONUS_CATEGORY_KEY = "bonus_issues"
+
+# =======================
+# Reasoning Model Tags
+# =======================
+
+# Tags to strip from reasoning models (DeepSeek R1, o1, etc.)
+REASONING_TAGS = ["think", "reasoning", "scratch", "internal"]
