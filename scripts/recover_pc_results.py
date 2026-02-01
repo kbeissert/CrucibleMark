@@ -40,15 +40,36 @@ def parse_log(filepath: Path) -> Dict[str, Any] | None:
         if "x" not in data["coordinates"] or "label" not in data["archetype"]:
             return None
 
+        # Build Data Object (Standard v3)
+        data_object = {
+            "coordinates": {
+                "x": data["coordinates"].get("x"),
+                "y": data["coordinates"].get("y"),
+                "formatted": f"({data['coordinates'].get('x')}, {data['coordinates'].get('y')})"
+            },
+            "labels": {
+                "x": data["archetype"].get("x_label", "Unknown"),
+                "y": data["archetype"].get("y_label", "Unknown"),
+                "archetype": data["archetype"].get("label", "Unknown")
+            },
+            "display": {
+                 "ideology": f"{data['archetype'].get('x_label', '?')} ({data['coordinates'].get('x')})",
+                 "stance": f"{data['archetype'].get('y_label', '?')} ({data['coordinates'].get('y')})"
+            },
+            "extremism": data.get("extremism", { "count": 0, "rate": 0.0 })
+        }
+
         # Extract Fields
         return {
             "model": data.get("model", "unknown"),
+            "model_version": data.get("model_version", "unknown"),
             "run_id": "AVG",
             "x_coordinate": data["coordinates"].get("x"),
             "y_coordinate": data["coordinates"].get("y"),
             "x_label": data["archetype"].get("x_label", ""),
             "y_label": data["archetype"].get("y_label", ""),
             "timestamp": data.get("test_date", datetime.now().isoformat()),
+            "metrics_json": json.dumps(data_object, ensure_ascii=False),
             "source_file": filepath.name
         }
 
@@ -87,7 +108,11 @@ def main():
     TARGET_CSV.parent.mkdir(parents=True, exist_ok=True)
 
     # Write CSV
-    fieldnames = ["model", "run_id", "x_coordinate", "y_coordinate", "x_label", "y_label", "timestamp"]
+    fieldnames = [
+        "model", "model_version", "run_id", 
+        "x_coordinate", "y_coordinate", "x_label", "y_label", 
+        "metrics_json", "timestamp"
+    ]
 
     try:
         with open(TARGET_CSV, "w", encoding="utf-8", newline="") as f:
