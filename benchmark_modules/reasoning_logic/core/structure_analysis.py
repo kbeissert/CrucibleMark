@@ -13,7 +13,15 @@ from .constants import (
 
 
 def contains_any(text: str, keywords: list[str]) -> bool:
-    """Check if any keyword exists in text."""
+    """Check if any keyword exists in text.
+
+    Args:
+        text (str): The text to search within (will be case-sensitive unless per-processed).
+        keywords (list[str]): List of keyword strings to search for.
+
+    Returns:
+        bool: True if at least one keyword is found, False otherwise.
+    """
     return any(k in text for k in keywords)
 
 
@@ -22,10 +30,16 @@ def parse_thought_tags(response: str) -> dict[str, Any]:
 
     Supports multiple tag formats: <thought>, <think>, <thinking>, <reason>.
 
-    Returns:
-        dict with keys: thought_content, thought_length,
-        answer_content, has_thought_tags
+    Args:
+        response (str): The full raw model response string.
 
+    Returns:
+        dict[str, Any]: A dictionary containing:
+            - thought_content (str): Extracted internal reasoning.
+            - thought_length (int): Word count of reasoning.
+            - answer_content (str): The final answer text.
+            - has_thought_tags (bool): Whether tags were successfully found.
+            - thought_tag_type (str | None): The type of tag found (e.g. "<think>").
     """
     # Try different thought tag patterns (for different models)
     thought_patterns = [
@@ -92,17 +106,44 @@ def parse_thought_tags(response: str) -> dict[str, Any]:
 
 
 def detect_self_correction(thought: str) -> bool:
-    """Detect self-correction keywords in thought process."""
+    """Detect self-correction keywords in thought process.
+
+    Args:
+        thought (str): The thought content to analyze.
+
+    Returns:
+        bool: True if self-correction keywords are present.
+    """
     return contains_any(thought.lower(), METACOG_SELF_CORRECTION_KEYWORDS)
 
 
 def detect_alternatives(thought: str) -> int:
-    """Count alternative approach indicators in thought."""
+    """Count alternative approach indicators in thought.
+
+    Args:
+        thought (str): The thought content to analyze.
+
+    Args:
+        thought (str): The thought content to analyze.
+
+    Returns:
+        dict[str, Any]: A dictionary containing:
+            - has_confidence (bool): If confidence keywords exist.
+            - has_uncertainty (bool): If uncertainty keywords exist.
+            - confidence_type (str): 'calibrated', 'confident', or 'uncertain'.
+    """
     return sum(1 for kw in METACOG_ALTERNATIVES_KEYWORDS if kw in thought.lower())
 
 
 def detect_iteration(thought: str) -> bool:
-    """Detect iterative refinement keywords in thought."""
+    """Detect iterative refinement keywords in thought.
+
+    Args:
+        thought (str): The thought content to analyze.
+
+    Returns:
+        bool: True if iterative refinement keywords are present.
+    """
     return contains_any(thought.lower(), METACOG_ITERATION_KEYWORDS)
 
 

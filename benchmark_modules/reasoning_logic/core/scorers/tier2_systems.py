@@ -1,5 +1,7 @@
 """Scores Tier 2 Systems Thinking Assets (e.g. 5B, 5D)."""
 
+from __future__ import annotations
+
 import re
 from dataclasses import dataclass
 from typing import Any
@@ -12,13 +14,16 @@ from ..constants import (
     ASSET_5B_QUALIFIER_KEYWORDS,
     ASSET_5B_SOLUTION_KEYWORDS,
     BONUS_CONSISTENCY,
+    DEADLOCK_FEASIBILITY_CAUTIOUS_MAX,
+    DEADLOCK_FEASIBILITY_CAUTIOUS_MIN,
+    DEADLOCK_FEASIBILITY_HARD_MAX,
+    DEADLOCK_MIN_EXPLANATION_INDICATORS,
     SCORE_THRESHOLD_HIGH,
     SCORE_THRESHOLD_MED,
+    SYSTEMS_MAX_ERROR_POINTS,
+    SYSTEMS_PRIORITIZATION_BONUS,
 )
 from ..structure_analysis import contains_any
-
-PRIORITIZATION_BONUS = 20.0
-MAX_ERROR_POINTS = 40.0
 
 
 def _detect_5b_signals(response: str) -> dict[str, Any]:
@@ -67,7 +72,7 @@ def score_5b_complex(response: str) -> tuple[float, dict[str, Any], list[str]]:
     # --- SCORING LOGIC ---
 
     # Base Points: Error Detection (Max 40)
-    error_pts = MAX_ERROR_POINTS if signals["has_root_cause"] else 0.0
+    error_pts = SYSTEMS_MAX_ERROR_POINTS if signals["has_root_cause"] else 0.0
     details.append(
         "✅ Root Cause: Identified Versioning/Deprecation inconsistency.",
     )
@@ -100,7 +105,7 @@ def score_5b_complex(response: str) -> tuple[float, dict[str, Any], list[str]]:
 
         # Check for Tier 3 (Prioritization) ONLY if solution is valid
         if signals["has_prioritization"]:
-            solution_pts += PRIORITIZATION_BONUS
+            solution_pts += SYSTEMS_PRIORITIZATION_BONUS
             details.append(
                 "✅ Prioritization: "
                 "Structured plan with clear steps/priorities.",
@@ -140,14 +145,6 @@ def score_5b_complex(response: str) -> tuple[float, dict[str, Any], list[str]]:
     }
 
     return total_score, score_breakdown, details
-
-
-
-# Constants for Deadlock Seoring
-FEASIBILITY_HARD_LIMIT = 2
-FEASIBILITY_SOFT_LIMIT_LOW = 3
-FEASIBILITY_SOFT_LIMIT_HIGH = 4
-EXPLANATION_MIN_COUNT = 2
 
 
 @dataclass
@@ -193,19 +190,23 @@ def _check_strong_partial(s: DeadlockSignals) -> tuple[int, str] | None:
 
 
 def _check_weak_awareness(s: DeadlockSignals) -> tuple[int, str] | None:
-    if 1 <= s.feasibility <= FEASIBILITY_HARD_LIMIT and s.has_tier1:
+    if 1 <= s.feasibility <= DEADLOCK_FEASIBILITY_HARD_MAX and s.has_tier1:
         return 50, "Weak: Sensed conflict but unclear on deadlock mechanism"
     return None
 
 
 def _check_minimal_warning(s: DeadlockSignals) -> tuple[int, str] | None:
-    if FEASIBILITY_SOFT_LIMIT_LOW <= s.feasibility <= FEASIBILITY_SOFT_LIMIT_HIGH:
+    if (
+        DEADLOCK_FEASIBILITY_CAUTIOUS_MIN
+        <= s.feasibility
+        <= DEADLOCK_FEASIBILITY_CAUTIOUS_MAX
+    ):
         return 30, "Minimal: Expressed doubt but no clear conflict identification"
     return None
 
 
 def _check_failure(s: DeadlockSignals) -> tuple[int, str] | None:
-    if s.feasibility > FEASIBILITY_SOFT_LIMIT_HIGH or s.has_contradiction:
+    if s.feasibility > DEADLOCK_FEASIBILITY_CAUTIOUS_MAX or s.has_contradiction:
         return (
             0,
             "Failure: Optimism bias or contradicted deadlock with feasibility claim",
@@ -250,7 +251,7 @@ def _build_deadlock_signals(
     explanation_count = sum(
         1 for ind in explanation_indicators if ind in response_lower
     )
-    has_explanation = explanation_count >= EXPLANATION_MIN_COUNT
+    has_explanation = explanation_count >= DEADLOCK_MIN_EXPLANATION_INDICATORS
 
     # --- CONTRADICTION CHECK ---
     contradiction_keywords = [
@@ -278,13 +279,18 @@ def _build_deadlock_signals(
     )
 
 
-def score_5d_deadlock(response: str, feasibility: int) -> tuple[int, str]:
+def score_5d_deadlock(
+    response: str, feasibility: int,
+) -> tuple[float, dict[str, float], list[str]]:
     """Tier 2: Asset 5D - Deadlock Detection.
 
     Asset: reasoning_5d_001 (Circular dependency in workflow)
     Tests: Multi-signal deadlock recognition (Feasibility + Keywords + Explanation)
     """
     signals = _build_deadlock_signals(response, feasibility)
+
+    total_score = 20.0
+    reason = "Edge case: Unclear response pattern"
 
     # --- SCORING LADDER ---
     for check in (
@@ -296,7 +302,11 @@ def score_5d_deadlock(response: str, feasibility: int) -> tuple[int, str]:
     ):
         result = check(signals)
         if result:
-            return result
+            total_score = float(result[0])
+            reason = result[1]
+            break
 
-    # Fallback (edge cases)
-    return 20, "Edge case: Unclear response pattern"
+    breakdown = {"deadlock_detection": total_score}
+    details = [reason]
+
+    return total_score, breakdown, details

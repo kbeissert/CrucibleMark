@@ -33,20 +33,20 @@ class ThoughtQualityResult(TypedDict):
 def detect_self_correction_robust(
     thought: str, answer: str, expected_answer: str = "9"
 ) -> CorrectionDetectionResult:
-    """
-    Multi-layer self-correction detection (Hybrid Approach).
-    
-    Layer 1 (20pts): Explicit correction keywords
-    Layer 2 (20pts): Structural revision pattern ("Initially... but actually...")
-    Layer 3 (10pts): Answer trajectory (wrong → correct)
-    
+    """Multi-layer self-correction detection (Hybrid Approach).
+
+    Analysis Layers:
+    - Layer 1 (20pts): Explicit correction keywords.
+    - Layer 2 (20pts): Structural revision pattern ("Initially... but actually...").
+    - Layer 3 (10pts): Answer trajectory (wrong → correct).
+
     Args:
-        thought: Model's thinking process
-        answer: Model's final answer
-        expected_answer: Ground truth answer (for trajectory analysis)
-    
+        thought (str): Model's thinking process text.
+        answer (str): Model's final answer text.
+        expected_answer (str): Ground truth answer for trajectory analysis.
+
     Returns:
-        CorrectionDetectionResult with score and evidence
+        CorrectionDetectionResult: Dictionary containing score, evidence, and match details.
     """
     score = 0.0
     evidence = []
@@ -126,20 +126,20 @@ def detect_self_correction_robust(
 def score_linguistic_analysis_objective(
     thought: str, answer: str, phrase: str = "all but 9"
 ) -> LinguisticAnalysisResult:
-    """
-    Objective linguistic analysis scoring with clear criteria.
-    
-    Criterion 1 (10pts): Phrase mentioned
-    Criterion 2 (20pts): Semantic explanation provided
-    Criterion 3 (10pts): Contrasts with wrong interpretation
-    
+    """Objective linguistic analysis scoring with clear criteria.
+
+    Scoring Criteria:
+    - Criterion 1 (10pts): Phrase mentioned in text.
+    - Criterion 2 (20pts): Semantic explanation provided (e.g., "means...").
+    - Criterion 3 (10pts): Contrasts with wrong interpretation (e.g. "not...").
+
     Args:
-        thought: Model's thinking
-        answer: Model's answer
-        phrase: Phrase to analyze (default: "all but 9")
-    
+        thought (str): Model's thinking process text.
+        answer (str): Model's final answer text.
+        phrase (str): The target phrase to analyze (default: "all but 9").
+
     Returns:
-        LinguisticAnalysisResult with score and evidence
+        LinguisticAnalysisResult: Dictionary containing score and evidence.
     """
     score = 0.0
     evidence = []
@@ -211,19 +211,19 @@ def score_linguistic_analysis_objective(
 def measure_thought_quality_robust(
     thought: str, has_thought_tags: bool = True
 ) -> ThoughtQualityResult:
-    """
-    Structure-based thought quality assessment.
-    
-    Dimension 1 (5pts): Sufficient depth (>30 words)
-    Dimension 2 (5pts): Structured reasoning
-    Dimension 3 (5pts): Reasoning indicators
-    
+    """Structure-based thought quality assessment.
+
+    Scoring Dimensions:
+    - Dimension 1 (5pts): Sufficient depth (>30 words).
+    - Dimension 2 (5pts): Structured reasoning (lists, steps).
+    - Dimension 3 (5pts): Reasoning indicators (because, therefore).
+
     Args:
-        thought: The thought text to evaluate
-        has_thought_tags: Whether thought tags were present
-    
+        thought (str): The thought text to evaluate.
+        has_thought_tags (bool): Whether thought tags were present in response.
+
     Returns:
-        ThoughtQualityResult with dimensional breakdown
+        ThoughtQualityResult: Dictionary with dimensional breakdown and score.
     """
     import re
     
