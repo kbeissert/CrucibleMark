@@ -20,12 +20,14 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 
 # pylint: disable=wrong-import-position, import-error
 from utils.base_runner import BaseBenchmarkRunner
-from utils.benchmark_utils import select_from_list, discover_assets, load_asset_yaml
+from utils.benchmark_utils import select_from_list, discover_assets, load_asset_yaml, format_political_compass_data, prepare_pc_csv_row
 from utils.module_loader import load_test_class
-from utils.module_registry import get_active_modules
+from utils.module_registry import load_active_benchmarks
 from utils.model_utils import is_reasoning_model, get_model_version
 from utils.llm_client import LLMClient
 from utils.logging_config import setup_logging
+
+from utils.scoring_utils import calculate_score_contributions
 
 # Setup Logging centrally
 setup_logging()
@@ -58,22 +60,7 @@ class LocalBenchmarkRunner(BaseBenchmarkRunner):
         self.debug_responses = debug_responses or os.getenv("CRUCIBLE_DEBUG", "false").lower() == "true"
 
         # Load modules from config (Hydrated via Registry)
-        self.benchmark_categories = {}
-        active_modules = get_active_modules(self.validator.config)
-
-        for key, mod, internal in active_modules:
-            metadata = internal.get("metadata", {})
-            execution = internal.get("execution", {})
-            
-            self.benchmark_categories[key] = {
-                "name": metadata.get("name", mod.get("name", key)),
-                "description": metadata.get("description", mod.get("description", "")),
-                "path": f"{mod['path']}/assets",
-                "module_path": mod["path"],
-                "test_class": execution.get("test_class", mod.get("test_class", "CodeQualityTest")),
-                "execution_mode": execution.get("execution_mode", mod.get("execution_mode", "standard")),
-                "min_runs": execution.get("min_runs", mod.get("min_runs", 1)),
-            }
+        self.benchmark_categories = load_active_benchmarks(self.validator.config)
 
 
 
@@ -269,13 +256,7 @@ class LocalBenchmarkRunner(BaseBenchmarkRunner):
         # Find config for this asset
         asset_cfg = next((b for b in benchmarks_list if b["id"] == asset_id), None)
         
-        if asset_cfg and "score_contribution" in asset_cfg:
-            contrib = asset_cfg["score_contribution"]
-            # Basis is the percentage score (0-100)
-            score_base = result.get("percentage", 0.0)
-            
-            result["routine_contribution"] = round(score_base * contrib.get("routine", 0.0), 2)
-            result["reasoning_contribution"] = round(score_base * contrib.get("reasoning", 0.0), 2)
+        result = calculate_score_contributions(result, asset_cfg)
             
         return result
 
@@ -326,13 +307,13 @@ class LocalBenchmarkRunner(BaseBenchmarkRunner):
 
         # Debug Auto-Save Logic
         if result["percentage"] < 30 or getattr(self, "debug_responses", False):
-             self._save_debug_response(
-                 result["model"], 
-                 result["asset_id"], 
-                 response_preview,
-                 f"{result['total_score']}/{result['max_score']} ({result['percentage']}%)",
-                 score.get("reasoning", "No explanation provided")
-             )
+            self._save_debug_response(
+                result["model"],
+                result["asset_id"],
+                response_preview,
+                f"{result['total_score']}/{result['max_score']} ({result['percentage']}%)",
+                score.get("reasoning", "No explanation provided")
+            )
 
         return result
 
@@ -360,13 +341,28 @@ class LocalBenchmarkRunner(BaseBenchmarkRunner):
         pc_csv = Path("benchmark_scores/political_compass_results.csv")
         pc_csv.parent.mkdir(exist_ok=True, parents=True)
 
-        fieldnames = ["model", "model_version", "run_id", "x_coordinate", "y_coordinate", "x_label", "y_label", "timestamp"]
+        fieldnames = [
+            "model", "model_version", "run_id", "x_coordinate", "y_coordinate",
+            "x_label", "y_label", "metrics_json", "timestamp"
+        ]
+
+        # Determine strict fieldnames or adaptive?
+        # If file exists and has extra columns, we should respect them or ignore them properly
+        if pc_csv.exists():
+            with open(pc_csv, "r", encoding="utf-8") as f:
+                reader = csv.DictReader(f)
+                if reader.fieldnames:
+                    for col in reader.fieldnames:
+                        if col not in fieldnames:
+                            fieldnames.append(col)
+
         rows_to_write = []
 
         # 1. Archive individual runs if available
         if "individual_runs" in report:
             for run in report["individual_runs"]:
-                 rows_to_write.append({
+                # Individual runs usually don't need full Metrics JSON yet
+                rows_to_write.append({
                     "model": model,
                     "model_version": model_version,
                     "run_id": f"Run {run['id']}",
@@ -375,24 +371,20 @@ class LocalBenchmarkRunner(BaseBenchmarkRunner):
                     "x_label": run["x_label"],
                     "y_label": run["y_label"],
                     "timestamp": datetime.now().isoformat(),
-                 })
+                })
 
         # 2. Archive Average / Total Result
-        rows_to_write.append({
-            "model": model,
-            "model_version": model_version,
-            "run_id": "AVG",
-            "x_coordinate": report["coordinates"]["x"],
-            "y_coordinate": report["coordinates"]["y"],
-            "x_label": report["archetype"]["x_label"],
-            "y_label": report["archetype"]["y_label"],
-            "timestamp": datetime.now().isoformat(),
-        })
+        # Create Data Object
+        data_object = format_political_compass_data(report)
+
+        row = prepare_pc_csv_row(model, report, data_object, model_version)
+        row["timestamp"] = datetime.now().isoformat()
+        rows_to_write.append(row)
 
         file_exists = pc_csv.exists() and pc_csv.stat().st_size > 0
         
         with open(pc_csv, "a", encoding="utf-8", newline="") as f:
-            writer = csv.DictWriter(f, fieldnames=fieldnames)
+            writer = csv.DictWriter(f, fieldnames=fieldnames, extrasaction='ignore')
             if not file_exists:
                 writer.writeheader()
             writer.writerows(rows_to_write)
@@ -477,7 +469,9 @@ class LocalBenchmarkRunner(BaseBenchmarkRunner):
 
         self._update_political_compass_csv(model, report, model_version=model_version)
 
-        return [self._create_standard_result_from_batch(model, report, result_wrapper, model_version=model_version)]
+        return [self._create_standard_result_from_batch(
+            model, report, result_wrapper, model_version=model_version
+        )]
 
     def _run_standard_benchmark(
         self,
@@ -493,8 +487,8 @@ class LocalBenchmarkRunner(BaseBenchmarkRunner):
             assets = self.discover_assets(benchmark_info["path"])
 
         if not assets:
-             print(f"⚠️  Keine Tests für {benchmark_info['name']} gefunden/ausstehend.")
-             return []
+            print(f"⚠️  Keine Tests für {benchmark_info['name']} gefunden/ausstehend.")
+            return []
 
         print(
             f"\n{'=' * 60}\n📊 Starte Benchmark: {benchmark_info['name']}\n{'=' * 60}"

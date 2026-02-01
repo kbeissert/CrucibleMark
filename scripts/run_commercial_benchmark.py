@@ -22,9 +22,10 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 # pylint: disable=wrong-import-position, import-error
 from utils.base_runner import BaseBenchmarkRunner  # noqa: E402
 from utils.module_loader import load_test_class  # noqa: E402
-from utils.benchmark_utils import select_from_list, discover_assets, load_asset_yaml  # noqa: E402
+from utils.benchmark_utils import select_from_list, discover_assets, load_asset_yaml, format_political_compass_data, prepare_pc_csv_row  # noqa: E402
 from utils.llm_client import LLMClient  # noqa: E402
-from utils.module_registry import get_active_modules # noqa: E402
+from utils.module_registry import load_active_benchmarks # noqa: E402
+from utils.scoring_utils import calculate_score_contributions # noqa: E402
 
 try:
     from benchmark_modules.political_compass.core.io_manager import ResultManager
@@ -54,21 +55,7 @@ class CommercialBenchmarkRunner(BaseBenchmarkRunner):
 
     def _load_categories(self):
         """Loads benchmark categories from config (Hydrated)."""
-        self.benchmark_categories = {}
-        active_modules = get_active_modules(self.validator.config)
-        
-        for key, mod, internal in active_modules:
-            metadata = internal.get("metadata", {})
-            execution = internal.get("execution", {})
-            self.benchmark_categories[key] = {
-                "name": metadata.get("name", mod.get("name", key)),
-                "description": metadata.get("description", mod.get("description", "")),
-                "path": f"{mod['path']}/assets",
-                "module_path": mod["path"],
-                "test_class": execution.get("test_class", mod.get("test_class", "CodeQualityTest")),
-                "execution_mode": execution.get("execution_mode", mod.get("execution_mode", "standard")),
-                "min_runs": execution.get("min_runs", mod.get("min_runs", 1)),
-            }
+        self.benchmark_categories = load_active_benchmarks(self.validator.config)
 
     def get_available_providers(self) -> Dict[str, dict]:
         """Holt aktivierte kommerzielle Provider aus Config."""
@@ -253,7 +240,10 @@ class CommercialBenchmarkRunner(BaseBenchmarkRunner):
                     cost_str = "Cached"
                     time_str = f"{res['execution_time']:.1f}s"
                     print(
-                        f"[{index}/{total_count}] {asset_id:<15} | {asset_name[:20]:<20} {badge} Score: {res['percentage']:>5.1f} | Cost: {cost_str:>8} | Time: {time_str}"
+                        f"[{index}/{total_count}] {asset_id:<15} | "
+                        f"{asset_name[:20]:<20} {badge} "
+                        f"Score: {res['percentage']:>5.1f} | "
+                        f"Cost: {cost_str:>8} | Time: {time_str}"
                     )
                     return res
 
@@ -285,11 +275,7 @@ class CommercialBenchmarkRunner(BaseBenchmarkRunner):
         benchmarks_list = benchmark_info.get("benchmarks", [])
         asset_cfg = next((b for b in benchmarks_list if b["id"] == result["asset_id"]), None)
         
-        if asset_cfg and "score_contribution" in asset_cfg:
-            contrib = asset_cfg["score_contribution"]
-            score_base = result.get("percentage", 0.0)
-            result["routine_contribution"] = round(score_base * contrib.get("routine", 0.0), 2)
-            result["reasoning_contribution"] = round(score_base * contrib.get("reasoning", 0.0), 2)
+        result = calculate_score_contributions(result, asset_cfg)
 
         # Add Version/Fingerprint if available from API
         result["model_version"] = exec_result.get("metadata", {}).get("system_fingerprint", "unknown")
@@ -318,7 +304,9 @@ class CommercialBenchmarkRunner(BaseBenchmarkRunner):
         # [1/5] codequality001 | WCAG Audit ✓ Score: 88 | Cost: $0.0047 | Time: 12.3s
         time_val = exec_result.get("execution_time", 0.0)
         print(
-            f"[{index}/{total_count}] {asset_id:<15} | {asset_name[:20]:<20} {badge} Score: {result['percentage']:>5.1f} | Cost: ${cost_val:.4f} | {token_str:>7} | Time: {time_val:.1f}s"
+            f"[{index}/{total_count}] {asset_id:<15} | {asset_name[:20]:<20} {badge} "
+            f"Score: {result['percentage']:>5.1f} | Cost: ${cost_val:.4f} | "
+            f"{token_str:>7} | Time: {time_val:.1f}s"
         )
 
         # Save Golden Standard JSON if needed
@@ -431,31 +419,33 @@ class CommercialBenchmarkRunner(BaseBenchmarkRunner):
             pc_csv = Path("benchmark_scores/political_compass_results.csv")
             pc_csv.parent.mkdir(exist_ok=True, parents=True)
 
-            fieldnames = ["model", "model_version", "run_id", "x_coordinate", "y_coordinate", "x_label", "y_label", "timestamp"]
+            fieldnames = ["model", "model_version", "run_id", "x_coordinate", "y_coordinate", "x_label", "y_label", "metrics_json", "timestamp"]
             
             # Read logic for existing file to append/update
             pc_rows = []
             if pc_csv.exists():
                 with open(pc_csv, "r", encoding="utf-8") as f:
-                    pc_rows = list(csv.DictReader(f))
+                    # Handle potential schema mismatch on read
+                    reader = csv.DictReader(f)
+                    pc_rows = list(reader)
+                    # If file on disk has more columns than we know, update known fieldnames
+                    if reader.fieldnames:
+                        for col in reader.fieldnames:
+                            if col not in fieldnames:
+                                fieldnames.append(col)
 
             # Remove old entry for this model if exists
             pc_rows = [r for r in pc_rows if r.get("model") != model]
 
-            new_row = {
-                "model": model,
-                "model_version": "unknown",
-                "run_id": "AVG",
-                "x_coordinate": report["coordinates"]["x"],
-                "y_coordinate": report["coordinates"]["y"],
-                "x_label": report["archetype"]["x_label"],
-                "y_label": report["archetype"]["y_label"],
-                "timestamp": datetime.now().isoformat()
-            }
+            # Construct Data Object
+            data_object = format_political_compass_data(report)
+
+            new_row = prepare_pc_csv_row(model, report, data_object, model_version="unknown")
+            new_row["timestamp"] = datetime.now().isoformat()
             pc_rows.append(new_row)
 
             with open(pc_csv, "w", encoding="utf-8", newline="") as f:
-                writer = csv.DictWriter(f, fieldnames=fieldnames)
+                writer = csv.DictWriter(f, fieldnames=fieldnames, extrasaction='ignore')
                 writer.writeheader()
                 writer.writerows(pc_rows)
 
