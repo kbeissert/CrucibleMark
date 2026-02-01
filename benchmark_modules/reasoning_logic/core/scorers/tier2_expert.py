@@ -5,6 +5,8 @@ Expert-level reasoning challenges for top-tier models.
 Designed to prevent ceiling effects (no model should easily get 100%).
 """
 
+from __future__ import annotations
+
 from ..constants import (
     EXPERT_ANALYSIS_PERFECT,
     EXPERT_REQUIREMENTS_ALL,
@@ -164,8 +166,8 @@ def _assess_technical_depth(response_lower: str) -> tuple[int, str]:
 
 
 def score_5e_nested_paradox(
-    response: str, feasibility: int
-) -> tuple[int, str]:
+    response: str, feasibility: int,
+) -> tuple[float, dict[str, float], list[str]]:
     """
     Nested Transaction Paradox - v2.2 NEW EXPERT ASSET
 
@@ -176,16 +178,23 @@ def score_5e_nested_paradox(
 
     analysis_score, analysis_note = _analyze_problem(response_lower)
     solution_score, solution_note = _evaluate_solution(
-        response_lower, feasibility
+        response_lower, feasibility,
     )
     depth_score, depth_note = _assess_technical_depth(response_lower)
 
-    total_score = analysis_score + solution_score + depth_score
+    total_score = float(analysis_score + solution_score + depth_score)
 
-    explanation = (
-        f"Analysis: {analysis_note} ({analysis_score}/40) | "
-        f"Solution: {solution_note} ({solution_score}/40) | "
-        f"Depth: {depth_note} ({depth_score}/20)"
-    )
+    breakdown = {
+        "analysis": float(analysis_score),
+        "solution": float(solution_score),
+        "technical_depth": float(depth_score),
+    }
 
-    return total_score, explanation
+    # Format details similar to before but split
+    details = [
+        f"Analysis: {analysis_note} ({analysis_score}/40)",
+        f"Solution: {solution_note} ({solution_score}/40)",
+        f"Depth: {depth_note} ({depth_score}/20)",
+    ]
+
+    return total_score, breakdown, details

@@ -3,9 +3,12 @@
 Contains the core scoring logic related to dispatching and result aggregation.
 """
 
+from __future__ import annotations
+
 from typing import Any, cast
 
 from .constants import (
+    FEASIBILITY_DEFAULT_OPTIMISTIC,
     MAX_SCORE,
     OUTPUT_QUALITY_WEIGHT,
     RCI_THRESHOLD_BASIC_THINKING,
@@ -18,7 +21,7 @@ from .scorers.standard import score_similarity_fallback, score_standard_asset
 from .scorers.tier1_physics import score_5c_paradox
 from .scorers.tier2_expert import score_5e_nested_paradox
 from .scorers.tier2_systems import score_5b_complex, score_5d_deadlock
-from .scorers.tier3_metacog import (
+from .scorers.tier3 import (
     score_metacog_001,
     score_metacog_002,
     score_metacog_003,
@@ -71,44 +74,12 @@ class ReasoningEvaluator:
             # Assets 5d and 5e now require feasibility parameter
             if asset_id in ["reasoning_5d_001", "reasoning_5e_001"]:
                 feasibility = self._extract_feasibility(input_text)
-                
-                # Call handle with feasibility
-                if asset_id == "reasoning_5e_001":
-                     # Expert Asset returns only (score, explanation) (int, str)
-                     # We need to adapt it to expected tuple(float, dict, list) format for consistency
-                     # OR update the call signature handling here.
-                     
-                     # Adapter for new signature (int, str) -> (float, dict, list)
-                     raw_score, expl = handler(input_text, feasibility)
-                     
-                     total_score = float(raw_score)
-                     details = [expl]
-                     # Mock breakdown since simple return doesn't have it
-                     score_breakdown = {
-                         "error_detection": total_score * 0.4,
-                         "solution_quality": total_score * 0.4,
-                         "consistency": total_score * 0.2
-                     }
-                elif asset_id == "reasoning_5d_001":
-                     # Deadlock Asset also updated to (int, str) signature in Step 2
-                     raw_score, expl = handler(input_text, feasibility)
-
-                     total_score = float(raw_score)
-                     details = [expl]
-                     score_breakdown = {
-                         "analysis": total_score
-                     }
+                total_score, score_breakdown, details = handler(
+                    input_text, feasibility,
+                )
             else:
-                # Standard signature
-                if asset_id == "reasoning_5c_001":
-                    # Step 1 updated signature to (int, str)
-                    raw_score, expl = handler(input_text)
-                    total_score = float(raw_score)
-                    details = [expl]
-                    score_breakdown = {"logic": total_score}
-                else:
-                    # Legacy signature (float, dict, list)
-                    total_score, score_breakdown, details = handler(input_text)
+                # Standard signature (float, dict, list)
+                total_score, score_breakdown, details = handler(input_text)
             
         elif (
             isinstance(expected_output, dict) and "required_findings" in expected_output
@@ -153,7 +124,14 @@ class ReasoningEvaluator:
         }
 
     def _determine_tier(self, asset_id: str) -> str:
-        """Determine the reasoning tier based on asset ID from configuration."""
+        """Determine the reasoning tier based on asset ID from configuration.
+
+        Args:
+            asset_id (str): The unique identifier of the asset.
+
+        Returns:
+            str: The Tier name (e.g. "Tier 2 (Expert Systems)").
+        """
         for tier_name, assets in TIER_MAPPING.items():
             if asset_id in assets:
                 return tier_name
@@ -162,7 +140,14 @@ class ReasoningEvaluator:
     def _strip_thinking_tags(self, text: str) -> str:
         """Remove <think>...</think> blocks from DeepSeek R1 responses.
 
-        These blocks contain internal reasoning that should not be scored.
+        These blocks contain internal reasoning that should not be scored
+        for non-metacognitive tasks (like Tier 1/2 standard assets).
+
+        Args:
+            text (str): The raw response text containing potential tags.
+
+        Returns:
+            str: Cleaned text with thought blocks removed and whitespace trimmed.
         """
         # We can reuse the logic from parse_thought_tags or keep it simple here.
         # Since we just want to remove them, we can use the parser to get answer_content
@@ -184,48 +169,51 @@ class ReasoningEvaluator:
         return parse_thought_tags(response)
 
     def _extract_feasibility(self, response: str) -> int:
-        """Extract feasibility rating from model response."""
+        """Extract feasibility rating from model response.
+
+        Parses text for explicit ratings like "Feasibility: 7/10",
+        markdown formats, or loose contextual keywords.
+        Uses optimized regex pattern matching (Single Pass with Groups).
+
+        Args:
+            response (str): The raw text response from the model.
+
+        Returns:
+            int: Extracted feasibility score (0-10). Returns DEFAULT if not found.
+        """
         import re
-        
-        # Try to find feasibility rating in response
-        patterns = [
-            # PRIORITY 1: Explicit formats (X/10)
-            r"(\d+)\s*/\s*10",                    # "0/10", "0 / 10"
-            r"(\d+)\s*out of 10",                 # "0 out of 10"
-            r"Feasibility:\s*(\d+)\s*/\s*10",     # "Feasibility: 0/10"
-            
-            # PRIORITY 2: Markdown & Labels (X without /10)
-            r"(?:^|\n)\*\*Feasibility:\s*(\d+)\*\*",  # "**Feasibility: 0**" (Markdown bold)
-            r"Feasibility:\s*(\d+)(?!\d)",        # "Feasibility: 0"
-            r"feasibility.*?:\s*(\d+)(?!\d)",     # "feasibility: 0" (case-insensitive)
-            
-            # PRIORITY 3: Loose/Contextual patterns (Fallback)
-            r'feasibility[:\s]+(\d+)',
-            r'feasibility assessment[:\s]+(\d+)',
-            
-            r'feasibility.*?(\d+)\s*/\s*10',  # "Feasibility... 3/10"
-            r'rate.*?(\d+)\s*/\s*10',         # "I rate this 2/10"
-            r'assess.*?(\d+)\s*/\s*10',       # "I assess: 1/10"
-            r'impossib.*feasibility[:\s]*(\d+)', # "impossible... feasibility: 0"
-        ]
-        
-        for pattern in patterns:
-            match = re.search(pattern, response, re.IGNORECASE | re.DOTALL)
-            if match:
-                try:
-                    rating = int(match.group(1))
-                    # Clamp to 0-10 range
-                    clamped = max(0, min(10, rating))
-                    
-                    return clamped
-                except (ValueError, IndexError):
-                    continue
-        
+
+        # Optimization: Combined regex pattern (Task-10)
+        # Groups correspond to the original priority list logic
+        pattern = (
+            r"(\d+)\s*/\s*10|"                        # 1. 0/10
+            r"(\d+)\s*out of 10|"                     # 2. 0 out of 10
+            r"Feasibility:\s*(\d+)\s*/\s*10|"         # 3. Feasibility: 0/10
+            r"(?:^|\n)\*\*Feasibility:\s*(\d+)\*\*|"  # 4. **Feasibility: 0**
+            r"Feasibility:\s*(\d+)(?!\d)|"            # 5. Feasibility: 0
+            r"feasibility.*?:\s*(\d+)(?!\d)|"         # 6. feasibility...: 0
+            r"feasibility assessment[:\s]+(\d+)|"     # 7. feasibility assessment: 0
+            r"feasibility[:\s]+(\d+)|"                # 8. feasibility: 0
+            r"feasibility.*?(\d+)\s*/\s*10|"          # 9. feasibility... 0/10
+            r"rate.*?(\d+)\s*/\s*10|"                 # 10. rate... 0/10
+            r"assess.*?(\d+)\s*/\s*10|"               # 11. assess... 0/10
+            r"impossib.*feasibility[:\s]*(\d+)"       # 12. impossible... feasibility: 0
+        )
+
+        match = re.search(pattern, response, re.IGNORECASE | re.DOTALL)
+        if match:
+            # Find the captured group (only one will be non-None)
+            for group_val in match.groups():
+                if group_val is not None:
+                    try:
+                        rating = int(group_val)
+                        return max(0, min(10, rating))
+                    except ValueError:
+                        continue
+
         # ⚠️ BETTER DEFAULT: 7 instead of 5
         # Rationale: If no explicit rating given, assume "optimistic but cautious"
-        # This prevents auto-fail on missing extraction
-        
-        return 7  # Changed from 5 to 7
+        return FEASIBILITY_DEFAULT_OPTIMISTIC
 
 
 

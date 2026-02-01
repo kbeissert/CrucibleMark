@@ -1,5 +1,7 @@
 """Standard scorers for generic assets."""
 
+from __future__ import annotations
+
 from difflib import SequenceMatcher
 from typing import Any, cast
 
