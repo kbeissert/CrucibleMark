@@ -51,6 +51,14 @@ Refer to [GOLDEN_STANDARD_CHANGELOG.md](GOLDEN_STANDARD_CHANGELOG.md) for full h
 - **>100%:** Exceeds Golden Standard (rare, indicates major capability leap or outdated Golden Standard).
 - **<100%:** Below Golden Standard (typical for local models).
 
+### 📦 Included Golden Standard
+This repository comes with pre-generated Golden Standard files (based on Mistral Large). This allows you to check out the repo and run benchmarks immediately without needing an API key or a commercial account.
+
+If you wish to establish a new standard (e.g., using GPT-5 or a newer Mistral version):
+1. Update `benchmark_config.yaml` with your new provider/model.
+2. Run `make generate-golden`.
+3. Commit the updated JSON files in `golden_standards/` to make them the new baseline for your project.
+
 **Note:** If you see consistent >100% ratios, the Golden Standard may be outdated. Run `make generate-golden` after benchmarking Mistral Large.
 
 ---
