@@ -25,11 +25,12 @@ except ImportError:
 
 # Add project root to path to import utils
 # pylint: disable=wrong-import-position, import-error
-ROOT_DIR = Path(__file__).parent.parent
+ROOT_DIR = Path(__file__).parent.parent.parent
 sys.path.insert(0, str(ROOT_DIR))
 
 from utils.model_utils import is_model_suitable_for_benchmark  # noqa: E402
 from utils.llm_client import LLMClient  # noqa: E402
+from utils.constants import Colors  # noqa: E402
 # pylint: enable=wrong-import-position, import-error
 
 
@@ -42,21 +43,6 @@ logging.getLogger("utils.retry_handler").setLevel(logging.CRITICAL)
 logging.getLogger("httpx").setLevel(logging.CRITICAL)
 logging.getLogger("httpcore").setLevel(logging.CRITICAL)
 logging.getLogger("openai").setLevel(logging.CRITICAL)
-
-
-# pylint: disable=too-few-public-methods
-class Colors:
-    """ANSI Colors for Terminal Output."""
-
-    HEADER = "\033[95m"
-    BLUE = "\033[94m"
-    CYAN = "\033[96m"
-    GREEN = "\033[92m"
-    WARNING = "\033[93m"
-    FAIL = "\033[91m"
-    ENDC = "\033[0m"
-    BOLD = "\033[1m"
-    UNDERLINE = "\033[4m"
 
 
 def load_config() -> Dict[str, Any]:

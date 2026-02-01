@@ -19,25 +19,16 @@ except ImportError:
     ENCODING = None
 
 # Add project root to path
-ROOT_DIR = Path(__file__).parent.parent
+ROOT_DIR = Path(__file__).parent.parent.parent
 sys.path.insert(0, str(ROOT_DIR))
 
 from utils.benchmark_utils import load_asset_yaml  # noqa: E402
+from utils.constants import Colors  # noqa: E402
 
 # Configuration
 MODULES_DIR = ROOT_DIR / "benchmark_modules"
 WARN_THRESHOLD = 2000  # Tokens
 CRITICAL_THRESHOLD = 4000  # Tokens
-
-class Colors:
-    HEADER = "\033[95m"
-    BLUE = "\033[94m"
-    CYAN = "\033[96m"
-    GREEN = "\033[92m"
-    WARNING = "\033[93m"
-    FAIL = "\033[91m"
-    ENDC = "\033[0m"
-    BOLD = "\033[1m"
 
 
 def count_tokens(text: str) -> int:
