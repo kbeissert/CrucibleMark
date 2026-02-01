@@ -9,7 +9,7 @@ from pathlib import Path
 import sys
 
 # Add root to sys.path
-sys.path.insert(0, str(Path(__file__).parent.parent))
+sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
 from utils.module_registry import get_active_modules # noqa: E402
 

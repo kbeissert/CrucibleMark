@@ -15,7 +15,7 @@ from datetime import datetime
 from typing import List, Dict, Any
 
 # Setup
-ROOT_DIR = Path(__file__).parent.parent
+ROOT_DIR = Path(__file__).parent.parent.parent
 LOGS_DIR = ROOT_DIR / "outputs" / "runs"
 TARGET_CSV = ROOT_DIR / "benchmark_scores" / "political_compass_results.csv"
 

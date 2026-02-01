@@ -36,7 +36,7 @@ def main():
     print("--------------------------------")
 
     # Pfade definieren
-    root_dir = Path(__file__).parent.parent
+    root_dir = Path(__file__).parent.parent.parent
     req_light = root_dir / "requirements.txt"
     req_semantic = root_dir / "requirements-semantic.txt"
 

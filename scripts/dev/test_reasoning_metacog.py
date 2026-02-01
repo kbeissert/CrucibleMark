@@ -24,7 +24,7 @@ from typing import Any, Dict, List, Optional
 import time
 
 # Add project root to path
-sys.path.insert(0, str(Path(__file__).parent.parent))
+sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
 from utils.benchmark_utils import load_asset_yaml, select_from_list
 from utils.llm_client import LLMClient

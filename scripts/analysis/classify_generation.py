@@ -12,7 +12,7 @@ from typing import Dict, Any, Optional
 import yaml
 # pylint: enable=import-error
 
-ROOT_DIR = Path(__file__).parent.parent
+ROOT_DIR = Path(__file__).parent.parent.parent
 HEURISTICS_FILE = ROOT_DIR / "generation_heuristics.yaml"
 OVERRIDES_FILE = ROOT_DIR / "model_overrides.yaml"
 

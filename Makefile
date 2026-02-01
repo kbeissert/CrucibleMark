@@ -43,7 +43,7 @@ help:
 
 install:
 	@echo "📦 Installing dependencies (Smart Setup)..."
-	$(PYTHON) scripts/setup_env.py
+	$(PYTHON) scripts/dev/setup_env.py
 
 install-dev: install
 	@echo "🛠️ Installing development dependencies..."
@@ -69,17 +69,17 @@ benchmark-single:
 benchmark-auto:
 	@echo "🌙 Starte Full Auto Benchmark (Overnight Mode)..."
 	@echo "   Führt ALLE Module auf ALLEN Modellen aus."
-	$(PYTHON) scripts/benchmark_auto.py
+	$(PYTHON) scripts/core/benchmark_auto.py
 
 leaderboard:
 	@echo "📊 Generiere Leaderboard..."
-	$(PYTHON) scripts/generate_leaderboard.py
+	$(PYTHON) scripts/core/generate_leaderboard.py
 
 # === VALIDATION ===
 
 validate:
 	@echo "🔍 Validiere alle Module aus benchmark_config.yaml..."
-	$(PYTHON) scripts/validate_assets.py --all
+	$(PYTHON) scripts/utilities/validate_assets.py --all
 
 validate-single:
 	@if [ -z "$(ASSET)" ]; then \
@@ -87,15 +87,15 @@ validate-single:
 		echo "Usage: make validate-single ASSET=benchmark_modules/code_quality/assets/asset_001_wcag_audit.yaml"; \
 		exit 1; \
 	fi
-	$(PYTHON) scripts/validate_assets.py $(ASSET)
+	$(PYTHON) scripts/utilities/validate_assets.py $(ASSET)
 
 generate-golden:
 	@echo "🏆 Generiere Golden Standard für alle Module (nur fehlende)..."
-	$(PYTHON) scripts/run_commercial_benchmark.py --mode golden_standard --auto
+	$(PYTHON) scripts/core/run_commercial_benchmark.py --mode golden_standard --auto
 
 generate-golden-new:
 	@echo "🏆 Generiere Golden Standard für alle Module (FORCE UPDATE)..."
-	$(PYTHON) scripts/run_commercial_benchmark.py --mode golden_standard --auto --force
+	$(PYTHON) scripts/core/run_commercial_benchmark.py --mode golden_standard --auto --force
 
 run-benchmark:
 	$(PYTHON) run_benchmark.py
@@ -124,7 +124,7 @@ clean-model:
 		exit 1; \
 	fi
 	@echo "🧹 Lösche Ergebnisse für Modell: $(MODEL)"
-	$(PYTHON) scripts/clean_results.py --model "$(MODEL)"
+	$(PYTHON) scripts/maintenance/clean_results.py --model "$(MODEL)"
 
 clean-module:
 	@if [ -z "$(MODULE)" ]; then \
@@ -132,29 +132,29 @@ clean-module:
 		exit 1; \
 	fi
 	@echo "🧹 Lösche Ergebnisse für Modul: $(MODULE)"
-	$(PYTHON) scripts/clean_results.py --module "$(MODULE)"
+	$(PYTHON) scripts/maintenance/clean_results.py --module "$(MODULE)"
 
 clean-all: clean clean-csv
 	@echo "✨ All clean! (Caches and CSVs deleted)"
 
 clean-runs:
-	@if [ -f "scripts/cleanup_runs.py" ]; then \
-		$(PYTHON) scripts/cleanup_runs.py --keep 1; \
+	@if [ -f "scripts/maintenance/cleanup_runs.py" ]; then \
+		$(PYTHON) scripts/maintenance/cleanup_runs.py --keep 1; \
 	else \
 		echo "⚠️  cleanup_runs.py nicht gefunden"; \
 	fi
 
 clean-runs-force:
-	@if [ -f "scripts/cleanup_runs.py" ]; then \
-		$(PYTHON) scripts/cleanup_runs.py --keep 1 --force; \
+	@if [ -f "scripts/maintenance/cleanup_runs.py" ]; then \
+		$(PYTHON) scripts/maintenance/cleanup_runs.py --keep 1 --force; \
 	else \
 		echo "⚠️  cleanup_runs.py nicht gefunden"; \
 	fi
 
 list-modules:
 	@echo "📋 Available Modules (Ordered by Config):"
-	@if [ -f "scripts/list_modules.py" ]; then \
-		$(PYTHON) scripts/list_modules.py; \
+	@if [ -f "scripts/utilities/list_modules.py" ]; then \
+		$(PYTHON) scripts/utilities/list_modules.py; \
 	else \
 		$(PYTHON) -c "import yaml; config=yaml.safe_load(open('benchmark_config.yaml')); [print(f'  {i+1}. {k}: {v[\"name\"]}') for i, (k,v) in enumerate(config.get('modules', {}).items()) if v.get('enabled', True)]"; \
 	fi
@@ -164,35 +164,35 @@ test: validate
 	$(PYTHON) -m pytest benchmark_modules/
 
 list-models:
-	@$(PYTHON) scripts/list_models.py
+	@$(PYTHON) scripts/utilities/list_models.py
 
 # === UTILITIES & VALIDATION ===
 
 validate-structure:
 	@echo "🏗️ Checking Module Structure..."
-	$(PYTHON) scripts/validate_structure.py
+	$(PYTHON) scripts/utilities/validate_structure.py
 
 # === DEVELOPMENT ===
 
 create-module:
-	@$(PYTHON) scripts/scaffold_module.py
+	@$(PYTHON) scripts/dev/scaffold_module.py
 
 analyze-costs:
 	@echo "💰 Analyzing Prompt Token Costs..."
-	$(PYTHON) scripts/analyze_prompts.py
+	$(PYTHON) scripts/analysis/analyze_prompts.py
 
 diff-results:
 	@echo "⚖️ Comparing Benchmark Results..."
-	@echo "Usage: $(PYTHON) scripts/compare_baselines.py --ref REF.json --test TEST.json"
-	@$(PYTHON) scripts/compare_baselines.py --help
+	@echo "Usage: $(PYTHON) scripts/analysis/compare_baselines.py --ref REF.json --test TEST.json"
+	@$(PYTHON) scripts/analysis/compare_baselines.py --help
 
 # === BACKUP ===
 
 consolidate-csv:
-	@if [ -f "scripts/consolidate_csv.py" ]; then \
-		$(PYTHON) scripts/consolidate_csv.py; \
+	@if [ -f "scripts/maintenance/consolidate_csv.py" ]; then \
+		$(PYTHON) scripts/maintenance/consolidate_csv.py; \
 	else \
-		echo "⚠️  scripts/consolidate_csv.py nicht gefunden"; \
+		echo "⚠️  scripts/maintenance/consolidate_csv.py nicht gefunden"; \
 	fi
 
 backup:

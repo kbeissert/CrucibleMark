@@ -16,7 +16,7 @@ from typing import List
 import pandas as pd
 
 # Setup Root Path
-ROOT_DIR = Path(__file__).parent.parent
+ROOT_DIR = Path(__file__).parent.parent.parent
 sys.path.insert(0, str(ROOT_DIR))
 
 # Local imports
@@ -188,7 +188,7 @@ def main():
     # Leaderboard Update triggern, wenn nicht dry run
     if not args.dry_run:
         print("\n📈 Aktualisiere Leaderboard...")
-        from scripts.generate_leaderboard import main as gen_leaderboard
+        from scripts.core.generate_leaderboard import main as gen_leaderboard
         try:
             gen_leaderboard()
         except Exception as e:
