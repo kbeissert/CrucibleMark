@@ -72,6 +72,7 @@ class UXCriterion:
 class UXErrorDetectionSection:
     weight: float
     description: str
+    default_required_ratio: Optional[float] = None
     labeled_issues: List[UXIssue] = field(default_factory=list)
     standard_issues: List[UXIssue] = field(default_factory=list)
     advanced_issues: List[UXIssue] = field(default_factory=list)
@@ -82,6 +83,7 @@ class UXErrorDetectionSection:
         return cls(
             weight=float(data.get("weight", 0.0)),
             description=data.get("description", ""),
+            default_required_ratio=data.get("default_required_ratio"),
             labeled_issues=[UXIssue.from_dict(i) for i in data.get("labeled_issues", [])],
             standard_issues=[UXIssue.from_dict(i) for i in data.get("standard_issues", [])],
             advanced_issues=[UXIssue.from_dict(i) for i in data.get("advanced_issues", [])],

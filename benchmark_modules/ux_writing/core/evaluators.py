@@ -3,13 +3,15 @@ from abc import ABC, abstractmethod
 from typing import Tuple, List
 from utils.similarity import SemanticSimilarity
 from .models import UXCriterion, UXIssue
-
-# Constants
-MIN_SENTENCE_LENGTH = 15
-SIMILARITY_THRESHOLD = 0.78
-MIN_TABLE_COLUMNS = 2
-MAX_BUTTON_LENGTH = 50
-MAX_STEP_WORDS = 80
+from .constants import (
+    MIN_SENTENCE_LENGTH,
+    SIMILARITY_THRESHOLD,
+    MIN_TABLE_COLUMNS,
+    MAX_BUTTON_LENGTH,
+    MAX_STEP_WORDS,
+    DEFAULT_MIN_REGEX_MATCHES,
+    DEFAULT_REQUIRED_RATIO
+)
 
 class CriterionEvaluator(ABC):
     """Abstract base class for criterion evaluators."""
@@ -114,7 +116,7 @@ class RegexEvaluator(CriterionEvaluator):
         # Assuming count_unique is True based on original code defaults,
         # though original code checked a dict key.
         count = len(set(matches))
-        min_required = 4 # Default from original code
+        min_required = DEFAULT_MIN_REGEX_MATCHES
 
         if count >= min_required:
             return points, f"✓ {criterion.name}: {count} Treffer ({points}p)"
@@ -182,7 +184,7 @@ class IssueEvaluator:
     """Evaluates error detection issues using hybrid matching."""
 
     @staticmethod
-    def check_issue_mentioned(response_lower: str, keywords: List[str], required_ratio: float = 0.6) -> bool:
+    def check_issue_mentioned(response_lower: str, keywords: List[str], required_ratio: float = DEFAULT_REQUIRED_RATIO) -> bool:
         """
         Prüft ob ein Issue in der Response erwähnt wurde.
         Nutzt Hybrid-Ansatz: String-Matching + Semantic Similarity
@@ -238,8 +240,8 @@ class IssueEvaluator:
         """
         Returns (points_awarded, explanation, is_match).
         """
-        # Use issue-specific ratio if present, else default to 0.6
-        ratio = issue.required_ratio if issue.required_ratio is not None else 0.6
+        # Use issue-specific ratio if present, else default to DEFAULT_REQUIRED_RATIO
+        ratio = issue.required_ratio if issue.required_ratio is not None else DEFAULT_REQUIRED_RATIO
         matched = cls.check_issue_mentioned(response_lower, issue.keywords, required_ratio=ratio)
 
         # If inverse_match is True, we want matched to be False for points

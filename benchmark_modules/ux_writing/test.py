@@ -19,12 +19,15 @@ if str(root_dir) not in sys.path:
 from benchmark_modules.base_test import BaseTest  # noqa: E402
 from benchmark_modules.ux_writing.core.models import UXScenario, UXScoringConfig  # noqa: E402
 from benchmark_modules.ux_writing.core.evaluators import IssueEvaluator, EvaluatorFactory  # noqa: E402
-
-# Constants for Tier Calculation
-TIER_S_THRESHOLD = 95.0
-TIER_A_THRESHOLD = 85.0
-TIER_B_THRESHOLD = 70.0
-TIER_C_THRESHOLD = 50.0
+from benchmark_modules.ux_writing.core.constants import (  # noqa: E402
+    TIER_S_THRESHOLD,
+    TIER_A_THRESHOLD,
+    TIER_B_THRESHOLD,
+    TIER_C_THRESHOLD,
+    ASSET_REQUIRED_RATIOS,
+    DEFAULT_REQUIRED_RATIO
+)
+from utils.llm_client import LLMClient  # noqa: E402
 
 class UXWritingTest(BaseTest):
     """
@@ -43,9 +46,17 @@ class UXWritingTest(BaseTest):
         # BaseTest loads self.asset
         self.scenario = UXScenario.from_dict(self.asset)
 
-    def execute(self, model: str, llm_client: Any, provider: str = "ollama") -> Dict[str, Any]:
+    def execute(self, model: str, llm_client: LLMClient, provider: str = "ollama") -> Dict[str, Any]:
         """
         Führt den Test für das geladene Asset aus.
+
+        Args:
+            model: Name des Modells.
+            llm_client: Client für LLM-Anfragen.
+            provider: LLM-Provider (default: ollama).
+
+        Returns:
+            Dictionary mit Response, Execution-Time und Metadaten.
         """
         prompt = self.scenario.to_prompt()
 
@@ -68,6 +79,12 @@ class UXWritingTest(BaseTest):
     def score_response(self, response: str) -> Dict[str, Any]:
         """
         Bewertet die Antwort basierend auf den Kriterien im Asset.
+
+        Args:
+            response: Vom LLM generierte Antwort.
+
+        Returns:
+            Dictionary mit Scores, Tier und Details.
         """
         scores, details = self._evaluate_response(response, self.scenario.scoring)
 
@@ -94,7 +111,15 @@ class UXWritingTest(BaseTest):
         }
 
     def _calculate_tier(self, score: float) -> str:
-        """Calculates Tier based on score."""
+        """
+        Berechnet das Tier basierend auf dem Score.
+
+        Args:
+            score: Erreichter Gesamtscore.
+
+        Returns:
+            Tier-Name (z.B. "Tier S (Expert)").
+        """
         if score >= TIER_S_THRESHOLD:
             return "Tier S (Expert)"
         if score >= TIER_A_THRESHOLD:
@@ -107,7 +132,14 @@ class UXWritingTest(BaseTest):
 
     def _evaluate_response(self, response: str, config: UXScoringConfig) -> Tuple[Dict[str, float], List[str]]:
         """
-        Core evaluation logic ported from previous implementation.
+        Führt die eigentliche Bewertung durch.
+
+        Args:
+            response: Antworttext.
+            config: Scoring-Konfiguration aus dem Asset.
+
+        Returns:
+            Tuple: (Score-Breakdown Dict, Liste von Detail-Strings).
         """
         total_score = 0.0
         breakdown = {
@@ -129,14 +161,12 @@ class UXWritingTest(BaseTest):
                 config.error_detection.expert_issues
             )
 
-            # Determine Ratio Baseline based on Asset ID (User Tuning)
-            asset_id = self.asset.get("metadata", {}).get("id", "")
-            ASSET_RATIOS = {
-                "ux_writing_004": 1.0,  # A11y (Harder)
-                "ux_writing_003": 0.5,  # Onboarding (Softer)
-                "ux_writing_005": 0.4,  # Microcopy (Reset to Original)
-            }
-            default_ratio = ASSET_RATIOS.get(asset_id, 0.6)
+            # Determine Ratio Baseline based on Config or Asset ID
+            if config.error_detection and config.error_detection.default_required_ratio is not None:
+                default_ratio = config.error_detection.default_required_ratio
+            else:
+                asset_id = self.asset.get("metadata", {}).get("id", "")
+                default_ratio = ASSET_REQUIRED_RATIOS.get(asset_id, DEFAULT_REQUIRED_RATIO)
 
             for issue in all_issues:
                  # Apply dynamic ratio if not explicitly set in YAML

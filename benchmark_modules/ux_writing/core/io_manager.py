@@ -1,9 +1,12 @@
+"""
+Input/Output management for UX Writing benchmark results.
+"""
 import json
 import csv
 import re
 from pathlib import Path
 from datetime import datetime
-from typing import Dict, Any
+from typing import Dict, Any, Optional
 
 class UXResultManager:
     """
@@ -13,15 +16,35 @@ class UXResultManager:
 
     @staticmethod
     def generate_filename(model: str, scenario_id: str, prefix: str = "ux_result") -> str:
-        """Generates a consistent filename with timestamp."""
+        """
+        Generates a consistent filename with timestamp.
+
+        Args:
+            model: Model name.
+            scenario_id: Scenario identifier.
+            prefix: Prefix for filename (default: ux_result).
+
+        Returns:
+            Generated filename string.
+        """
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
         safe_model = re.sub(r"[^a-zA-Z0-9]", "_", model)
         safe_scenario = re.sub(r"[^a-zA-Z0-9]", "_", scenario_id)
         return f"{prefix}_{safe_model}_{safe_scenario}_{timestamp}"
 
     @staticmethod
-    def save_json(report: Dict[str, Any], directory: Path, filename: str | None = None) -> Path:
-        """Saves the full report as JSON."""
+    def save_json(report: Dict[str, Any], directory: Path, filename: Optional[str] = None) -> Path:
+        """
+        Saves the full report as JSON.
+
+        Args:
+            report: The report dictionary.
+            directory: Target directory.
+            filename: Optional filename. If None, generated automatically.
+
+        Returns:
+            Path to the saved file.
+        """
         if not filename:
             filename = UXResultManager.generate_filename(
                 report.get("model", "unknown"),
@@ -39,7 +62,16 @@ class UXResultManager:
 
     @staticmethod
     def save_csv(report: Dict[str, Any], filepath: Path) -> Path:
-        """Appends the result to a CSV leaderboard file."""
+        """
+        Appends the result to a CSV leaderboard file.
+
+        Args:
+            report: The report dictionary.
+            filepath: Target CSV file path.
+
+        Returns:
+            Path to the saved CSV file.
+        """
         file_exists = filepath.exists()
 
         # Ensure directory exists
@@ -83,8 +115,13 @@ class UXResultManager:
         return filepath
 
     @staticmethod
-    def print_summary(report: Dict[str, Any]):
-        """Prints a CLI summary of the report."""
+    def print_summary(report: Dict[str, Any]) -> None:
+        """
+        Prints a CLI summary of the report.
+
+        Args:
+            report: The report dictionary.
+        """
         scores = report.get("scores", {})
         print("\n" + "=" * 80)
         print(f"UX WRITING TEST - {report.get('scenario_name', 'Unknown')}")
