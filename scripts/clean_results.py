@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# ruff: noqa: E402
 """
 Skript zum gezielten Löschen von Benchmark-Ergebnissen aus den CSV-Caches.
 Erlaubt das Entfernen bestimmter Modelle oder Module (Asset-Gruppen).
@@ -13,7 +14,6 @@ from typing import List
 
 # Third-party
 import pandas as pd
-from dotenv import load_dotenv
 
 # Setup Root Path
 ROOT_DIR = Path(__file__).parent.parent
@@ -22,7 +22,6 @@ sys.path.insert(0, str(ROOT_DIR))
 # Local imports
 from utils.module_registry import get_active_modules
 from utils.config_validator import ConfigValidator
-from utils.result_manager import ResultManager
 
 # Setup Logging
 logging.basicConfig(level=logging.INFO, format="%(message)s")
@@ -138,9 +137,9 @@ def clean_csv(file_path: Path, model: str = None, asset_ids: List[str] = None, d
             if not dry_run:
                 # CSV speichern (ohne Index)
                 df_filtered.to_csv(file_path, index=False)
-                print(f"     ✅ Gespeichert.")
+                print("     ✅ Gespeichert.")
             else:
-                print(f"     (Dry Run - keine Änderung)")
+                print("     (Dry Run - keine Änderung)")
         else:
             print(f"   - {file_path.name}: Keine passenden Einträge gefunden.")
 
@@ -159,7 +158,7 @@ def main():
         print("❌ Bitte --model [NAME] oder --module [KEY] angeben.")
         sys.exit(1)
 
-    print(f"\n🧹 Starte Bereinigung...")
+    print("\n🧹 Starte Bereinigung...")
     if args.dry_run:
         print("   (DRY RUN - Simulation)")
 

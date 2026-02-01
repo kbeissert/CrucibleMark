@@ -68,6 +68,10 @@ metadata:
 integration:
   leaderboard:
     enable_scoring: true   # Setze 'false' für reine Info-Module (z.B. Political Compass)
+    
+    # 🆕 OPTIONAL: Manueller Test-Zähler
+    # Nur nötig, wenn Dateianzahl != Testanzahl (z.B. bei Aggregation)
+    display_test_count: 9 
 
 execution:
   test_class: "CodeQualityTest"     # Name der Klasse in test.py

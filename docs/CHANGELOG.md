@@ -5,6 +5,37 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.9.13] - 2026-02-01
+
+### Modular Leaderboard Architecture
+
+**Status:** ✅ PRODUCTION-READY
+
+#### **Refactoring**
+*   **Modular Package Structure**: Split the monolithic `generate_leaderboard.py` into a structured namespace package `scripts/leaderboard/`.
+    *   `config.py`: Centralized configuration and constants.
+    *   `data_loader.py`: Robust CSV parsing and loading logic.
+    *   `score_calculator.py`: Core logic for Routine/Reasoning splits and stats aggregation.
+    *   `module_integration.py`: Logic for enrolling external modules and custom data columns.
+    *   `formatter.py`: Badge logic and console output.
+    *   `exporter.py`: CSV file handling.
+*   **Code Quality**: Optimized all leaderboard sub-modules to achieve Pylint scores > 9.0.
+*   **Entry Point**: `scripts/generate_leaderboard.py` is now a thin wrapper maintaining backward compatibility for CI/CD pipelines.
+
+#### **Deprecations**
+*   **Legacy Update Interface**: The function `update_leaderboard_entry` (previously used by Political Compass for direct CSV writes) has been **REMOVED**. Modules must now use the standard `integration.leaderboard.columns` configuration to merge data during the generation phase.
+
+## [0.9.12] - 2026-02-01
+
+### Logic Decoupling & Display Fixes
+
+**Status:** ✅ PRODUCTION-READY
+
+#### **Leaderboard & Reporting**
+*   **Decoupled Counting Logic**: Removed hardcoded exception for "Political Compass" from the central `generate_leaderboard.py`. The aggregation logic (mapping 81 question files to 9 logical axes) is now controlled via configuration.
+*   **New Module Config**: Introduced `display_test_count` in `config.yaml` (under `integration.leaderboard`). This allows modules to manually specify the "Expected Tests" count if it differs from the physical file count (e.g., aggregating multiple questions into one result).
+*   **Bug Fix (Tests Run)**: Fixed a bug in the stats aggregation loop where the "Expected Assets" count was calculated incorrectly for some modules, leading to misleading "Tests Run" ratios (e.g., "32/27" instead of "32/46").
+
 ## [0.9.11] - 2026-01-31
 
 ### Granular Scoring System (Architecture v3.0)

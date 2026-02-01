@@ -14,6 +14,9 @@ metadata:
     - culture
     - german
     - tone
+  
+  # Prefix Matching for Assets (IDs start with cultural_intel_, not cultural_intelligence_)
+  prefix: "cultural_intel"
 
 integration:
   leaderboard:

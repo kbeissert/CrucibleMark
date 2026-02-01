@@ -40,6 +40,7 @@ metadata:
 integration:
   leaderboard:
     enable_scoring: false
+    display_test_count: 9  # 81 Fragen werden zu 9 Achsen aggregiert
     
     # Statt Score: Labels für politische Position
     columns:
