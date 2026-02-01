@@ -1,193 +1,395 @@
 # User Guide: Benchmarking Workflow
 
-Dieser Guide beschreibt Schritt für Schritt, wie Benchmarks in CrucibleMark ausgeführt, gesteuert und ausgewertet werden.
+**Zielgruppe:** Alle, die CrucibleMark nutzen wollen – ohne Code-Kenntnisse erforderlich.
 
-> **Voraussetzung:** Stellen Sie sicher, dass die Installation korrekt durchgeführt wurde (`make install` oder `scripts/setup_env.py`).
+**Was Sie hier finden:**
+- Quick Start (3 Befehle bis zum ersten Ergebnis)
+- Benchmark-Steuerung (Modus-Auswahl, Modell-Filter)
+- Auswertung & Leaderboard
+- Troubleshooting
+
+> **Voraussetzung:** Installation abgeschlossen (`make install` ausgeführt).
 
 ---
 
-## 1. Quick Start (Der Wizard) 🧙
+## ⚡ Quick Start (3 Befehle)
 
-Für den einfachsten Einstieg nutzen Sie den interaktiven Wizard. Er führt Sie durch alle notwendigen Schritte: Modellauswahl, Modulauswahl und Validierung.
+```bash
+# 1. Installation prüfen
+make list-models
+
+# 2. Ersten Benchmark starten (Interaktiver Wizard)
+make benchmark
+
+# 3. Ergebnisse als Leaderboard anzeigen
+make leaderboard
+```
+
+**Fertig!** Die Ergebnisse finden Sie in `benchmark_scores/benchmark_leaderboard.csv`.
+
+---
+
+## 🎮 Der Interaktive Wizard
+
+Der einfachste Weg, Benchmarks zu starten:
 
 ```bash
 make benchmark
 ```
 
-1.  **Modus wählen:** "Single Model" (fokussierter Test) oder "Batch" (mehrere Modelle).
-2.  **Modell wählen:** Liste der verfügbaren lokalen (Ollama) oder kommerziellen Modelle.
-3.  **Module wählen:** Aktivieren Sie Test-Kategorien (z.B. Political Compass, Code Quality).
-4.  **Starten:** Der Benchmark läuft automatisch ab.
+### Was passiert?
+
+1. **Modus wählen:**
+   - **Single Model** – Testen Sie ein spezifisches Modell (z.B. nur Qwen 2.5)
+   - **Batch Mode** – Testen Sie alle verfügbaren Modelle auf einmal
+
+2. **Modell auswählen:**
+   - Liste aller lokalen (Ollama) und kommerziellen Modelle
+   - Mit Connectivity-Check (✅ verfügbar / ❌ offline)
+
+3. **Module aktivieren:**
+   - Code Quality, UX Writing, Reasoning, etc.
+   - Oder "All" für vollständigen Test
+
+4. **Automatischer Start:**
+   - Progress-Bar zeigt Fortschritt
+   - Ergebnisse werden live in CSV geschrieben
 
 ---
 
-## 2. Benchmark-Steuerung via Makefile
+## 🎯 Benchmark-Modi im Detail
 
-Für präzisere Kontrolle oder wiederkehrende Aufgaben nutzen Sie die Makefile-Befehle direkt.
+### A. Single Model (Fokussiert)
 
-### A. Lokale Modelle (Ollama) auflisten
-Prüft die Verbindung zu Ollama und zeigt verfügbare Modelle an.
+**Wann nutzen?**
+- Schneller Test eines neuen Modells
+- Debugging (wenn ein Modell unerwartete Scores hat)
+- API-Kosten sparen (nur 1 Modell testen)
+
+**Befehl:**
 ```bash
-make list-models
+make benchmark-single MODEL=qwen2.5:14b
 ```
 
-### B. Automatischer "Auffüll-Modus" (Auto-Benchmark)
+**Optional: Nur ein Modul testen:**
+```bash
+make benchmark-single MODEL=qwen2.5:14b MODULE=code_quality
+```
 
-Der Auto-Benchmark ist für den **täglichen Betrieb** optimiert. Er prüft intelligent, welche Tests wirklich notwendig sind.
+---
 
+### B. Batch Mode (Vollständig)
+
+**Wann nutzen?**
+- Leaderboard-Update (alle Modelle auf neuesten Stand bringen)
+- Vergleich zwischen lokalen und kommerziellen Modellen
+- Overnight-Run (dauert 2-6 Stunden je nach Anzahl)
+
+**Befehl:**
 ```bash
 make benchmark-auto
 ```
 
-**Features:**
-*   **Smart Skipping:** Überspringt Tests, die für dieses Modell bereits erfolgreich (`status: success`) absolviert wurden.
-*   **Auto-Retry:** Fehlgeschlagene Tests werden automatisch erkannt und neu ausgeführt.
-*   **Kosten-Effizienz:** Spart API-Kosten bei kommerziellen Modellen, da keine unnötigen Doppelausführungen stattfinden.
+**Was ist "auto"?**
+- **Smart Skipping:** Überspringt bereits getestete Assets
+- **Auto-Retry:** Führt fehlgeschlagene Tests erneut aus
+- **Kosten-Effizienz:** Keine doppelten API-Calls
 
-**Erzwungener Neustart (Force Mode):**
-Wenn Sie bewusst alle Tests neu ausführen möchten (z.B. nach Änderungen am Code oder Prompting), nutzen Sie das Skript direkt mit dem `--force` Flag:
-
+**Forced Re-Run (alles neu testen):**
 ```bash
 python scripts/benchmark_auto.py --force
 ```
-> **Warnung:** Dies führt ALLE Benchmarks erneut aus und verursacht entsprechende API-Kosten!
-
-### C. Einzelnes Modell testen (CLI)
-Startet einen gezielten Testlauf für ein spezifisches Modell. Optional kann ein einzelnes Modul isoliert werden.
-
-```bash
-# Alle aktiven Module für 'mistral' testen
-make benchmark-single MODEL=mistral
-
-# Nur das Modul 'ux_writing' testen
-make benchmark-single MODEL=mistral MODULE=ux_writing
-```
+⚠️ **Warnung:** Dies ignoriert vorherige Ergebnisse und kostet API-Credits!
 
 ---
 
-## 3. Crash Recovery & Session Management 🛡️
+## 🏆 Leaderboard generieren
 
-Besonders das Modul **Political Compass** benötigt aufgrund der vielen Testfragen (viele Runs = lange Laufzeit) Zeit. CrucibleMark besitzt daher ein eingebautes Sicherungssystem.
-
-### Wie Session Resume funktioniert
-Wenn ein Benchmark abstürzt, unterbrochen wird (Strg+C) oder der Rechner ausgeht:
-1.  Der Fortschritt wird automatisch in `outputs/temp/session_<model>.json` gespeichert.
-2.  Starten Sie den Benchmark einfach mit demselben Befehl neu.
-3.  Das System meldet: `🔄 Resuming session for <model>...` und setzt exakt dort fort, wo es aufgehört hat.
-
-### Session Expiry (Verfallsdatum)
-Um zu verhindern, dass Sie nach Wochen versehentlich einen veralteten Test fortsetzen:
-*   Sessions älter als **48 Stunden** werden automatisch verworfen (automatischer Neustart bei 0).
-
-### Manuelles Zurücksetzen (Clean Sessions)
-Wenn Sie *trotz* eines vorhandenen Checkpoints frisch von vorne beginnen wollen:
-
-```bash
-make clean-sessions
-```
-Dies löscht alle temporären Speicherstände. Der nächste Benchmark-Start beginnt bei 0.
-
----
-
-## 4. Auswertung & Leaderboard 🏆
-
-Nachdem die Benchmarks durchgelaufen sind, liegen die Rohdaten in CSV-Dateien im Ordner `benchmark_scores/`. Um diese lesbar aufzubereiten:
+Nach dem Benchmark-Run:
 
 ```bash
 make leaderboard
 ```
 
-Dies generiert die Datei `benchmark_scores/benchmark_leaderboard.csv` mit:
-*   Ranking nach Gesamt-Score
-*   Gruppierung nach Modell-Versionen (z.B. "v1" vs "v2")
-*   Berechnung von "Routine" vs "Reasoning" Scores
-*   Vergabe von Badges (z.B. "Context King")
+**Output:** `benchmark_scores/benchmark_leaderboard.csv`
 
-Mehr Details zum Datenformat finden Sie in [DATA_FORMAT.md](DATA_FORMAT.md).
+### Was zeigt das Leaderboard?
 
----
+| Spalte | Bedeutung |
+|--------|-----------|
+| **Rank** | Platzierung (nach Total Score) |
+| **Model Name** | Modellname + Version |
+| **Badge** | Klassifizierung (God Mode, Daily Driver, Deep Thinker) |
+| **Total Score** | Gesamtdurchschnitt (0-100%) |
+| **Routine Score** | Performance bei Standardaufgaben (Doku, UX Writing) |
+| **Reasoning Score** | Performance bei Logik-Rätseln (Code Quality, Deadlocks) |
+| **Ratio** | Vergleich zum Golden Standard (100% = wie Mistral Large) |
+| **Avg Time** | Durchschnittliche Antwortzeit in Sekunden |
 
-## 5. Troubleshooting & Logging 🔍
-
-CrucibleMark trennt Benutzerinformationen strikt von technischen Details, um die Übersichtlichkeit zu wahren.
-
-### Konsole (Terminal)
-Im Terminal sehen Sie nur das Wichtigste:
-*   Fortschritt der Tests
-*   Ergebnisse und Scores
-*   Verständliche Statusmeldungen (z.B. "Lade Modell...")
-*   Kein technisches "Rauschen" von Bibliotheken
-
-### Log-Datei (Debugger)
-Wenn etwas schiefgeht oder Sie technische Fehler (Tracebacks, HTTP-Timeouts, Warnungen) im Detail sehen wollen, prüfen Sie:
-👉 **`logs/crucible.log`**
-
-Diese Datei speichert **alles** (Debug-Level), inklusive der Warnmeldungen externer Bibliotheken (HuggingFace, Ollama, etc.), die im Terminal unterdrückt werden.
+**Module-Spalten:**
+- Jedes aktive Modul bekommt eine eigene Spalte (z.B. "Code Quality: 85%")
 
 ---
 
-## 6. Developer & Debug Mode 🛠️
+## 🏅 Badges erklärt
 
-Für tiefere Analysen von Modell-Antworten (z.B. bei unerwarteten 0%-Scores) gibt es einen speziellen Debug-Modus.
+Das Leaderboard vergibt **4 Kategorien** basierend auf Performance:
 
-### Automatische Debug-Logs
-Standardmäßig speichert das System die **vollständigen Antworten** eines Modells automatisch ab, wenn ein Test mit weniger als **30%** bewertet wird. Dies hilft sofort zu erkennen, ob das Modell den Task verweigert hat ("I cannot do this") oder halluziniert hat.
+| Badge | Kriterien | Bedeutung |
+|-------|-----------|-----------|
+| 👑 **God Mode** | Routine >85% + Reasoning >80% | Alleskönner – perfekt für autonome Agenten |
+| 🧠 **Deep Thinker** | Reasoning >80% | Spezialist für komplexe Logik (langsam, aber präzise) |
+| 🏎️ **Daily Driver** | Routine >80% | Zuverlässig bei Alltags-Tasks (schnell, solide) |
+| ⚖️ **Standard** | Rest | Durchschnittliche Leistung |
 
-### Manueller Debug-Modus (`--debug-responses`)
-Um **alle** Antworten (auch erfolgreiche) zu inspizieren, starten Sie den Benchmark mit dem Debug-Flag oder der Umgebungsvariable:
+**Tipp:** Wählen Sie Modelle basierend auf Ihrem Use Case:
+- **Chat & Coding:** Daily Driver (schnell, zuverlässig)
+- **Research & Analysis:** Deep Thinker (gründlich, langsam)
+- **Production Systems:** God Mode (beides)
 
-**Via CLI (Skript):**
+---
+
+## 🛡️ Crash Recovery & Sessions
+
+### Was passiert bei Absturz?
+
+CrucibleMark speichert den Fortschritt automatisch:
+
+1. **Checkpoint erstellt:** Nach jedem abgeschlossenen Asset
+2. **Session-Datei:** `outputs/temp/session_<model>.json`
+3. **Auto-Resume:** Beim nächsten Start wird gefragt:
+   ```
+   🔄 Found existing session for qwen2.5:14b (45% complete).
+   Resume? [Y/n]
+   ```
+
+### Session-Verfallsdatum
+
+- **48 Stunden:** Sessions älter als 2 Tage werden verworfen
+- **Grund:** Verhindert versehentliches Fortsetzen veralteter Tests
+
+### Manuelle Session-Bereinigung
+
+```bash
+# Alle Sessions löschen (Fresh Start)
+make clean-sessions
+```
+
+---
+
+## 🔍 Troubleshooting
+
+### Problem: "Model not found"
+
+**Lösung:**
+```bash
+# Prüfen, ob Modell verfügbar ist
+make list-models
+
+# Falls nicht da (Ollama):
+ollama pull qwen2.5:14b
+```
+
+---
+
+### Problem: "API Rate Limit" (kommerzielle Modelle)
+
+**Symptom:**
+```
+❌ Error: 429 Too Many Requests
+```
+
+**Lösung:**
+- Warten Sie 60 Sekunden
+- CrucibleMark hat **automatisches Retry** mit Exponential Backoff
+- Bei wiederholten Fehlern: API-Key-Limit prüfen
+
+---
+
+### Problem: Scores sind 0% (obwohl Antwort gut aussieht)
+
+**Debug-Modus aktivieren:**
 ```bash
 python scripts/run_local_benchmark.py --debug-responses
 ```
 
-**Via Umgebungsvariable:**
-```bash
-CRUCIBLE_DEBUG=true make benchmark
-```
+**Was passiert:**
+- Vollständige Modell-Antworten werden gespeichert
+- Pfad: `benchmark_scores/debug_responses/<model>_<asset>.txt`
+- Enthält: Score, Reasoning, ungekürzte Antwort
 
-**Wo finde ich die Ausgaben?**
-Die Antworten werden als Textdateien gespeichert unter:
-`benchmark_scores/debug_responses/<model>_<asset_id>.txt`
-
-Beispiel: `benchmark_scores/debug_responses/phi4_latest_reasoning_5d_001.txt`
-Inhalt:
-*   Score & Erklärung des Judges
-*   **Vollständige Modell-Antwort** (ungekürzt)
+**Automatisch aktiviert bei:**
+- Scores < 30% (Asset wird automatisch geloggt)
 
 ---
 
-## 7. Daten-Management & Bereinigung 🧹
+### Problem: Benchmark hängt bei "Generating response..."
 
-CrucibleMark unterscheidet zwischen **historisch wertvollen Daten** (Benchmarks) und **temporären Caches**.
+**Mögliche Ursachen:**
+1. **Ollama offline:** `ollama list` testen
+2. **Modell zu groß:** RAM voll (prüfen Sie `htop` / Task Manager)
+3. **API-Timeout:** Kommerzielle Modelle > 120s Response-Zeit
 
-### Grundregel: "Daten sind heilig" 🛡️
-Normalerweise sollten Sie Benchmark-Ergebnisse **nicht löschen**, sondern neue Läufe einfach hinzufügen (History).
-*   **Auffüllen:** `make benchmark-auto` (Ergänzt nur Fehlendes)
-*   **Neu Messen:** `python scripts/benchmark_auto.py --force` (Erzwingt neue Messung, behält History)
-
-### Gezieltes Löschen (Clean-Up)
-Nutzen Sie diese Befehle nur, wenn Sie **fehlerhafte Daten** (z.B. falsche Config) entfernen müssen. Sie löschen die Einträge unwiderruflich aus der Datenbank (CSV).
-
-#### A. Einzelnes Modell bereinigen
-Entfernt alle Ergebnisse eines spezifischen Modells aus der CSV sowie dessen temporäre Session-Dateien.
+**Lösung:**
 ```bash
-# Löscht alles zu 'mistral-large'
-make clean-model MODEL=mistral-large
+# Ollama neustarten
+ollama restart
+
+# Kleineres Modell testen
+make benchmark-single MODEL=qwen2.5:7b
 ```
-*Anwendungsfall: Ein Modell wurde neu installiert/trainiert oder lief mit falschen Parametern.*
 
-#### B. Modul-Ergebnisse bereinigen
-Entfernt die Ergebnisse eines bestimmten Moduls für **alle** Modelle.
+---
+
+## 📊 Daten-Management
+
+### Wo werden Ergebnisse gespeichert?
+
+```
+benchmark_scores/
+├── local_models_benchmark.csv       # Rohdaten (jeder einzelne Test)
+├── commercial_models_benchmark.csv  # Rohdaten (API-Modelle)
+├── benchmark_leaderboard.csv        # Aggregierte Rankings
+├── political_compass_results.csv    # Spezial-Modul (Koordinaten)
+└── debug_responses/                 # Debug-Logs (optional)
+```
+
+---
+
+### Backup erstellen
+
+**Empfehlung:** Vor großen Änderungen (neue Module, Config-Updates):
+
 ```bash
-# Löscht Ergebnisse des Moduls 'ux_writing'
+make backup
+```
+
+**Was wird gesichert:**
+- Alle CSV-Dateien
+- Konfigurationen
+- Golden Standards
+- Archiviert als: `backups/cruciblemark_backup_YYYYMMDD.tar.gz`
+
+---
+
+### Daten bereinigen
+
+⚠️ **Vorsicht:** Diese Befehle löschen Daten unwiderruflich!
+
+```bash
+# Einzelnes Modell entfernen
+make clean-model MODEL=mistral:latest
+
+# Modul-Ergebnisse entfernen (alle Modelle)
 make clean-module MODULE=ux_writing
-```
-*Anwendungsfall: Sie haben die Test-Assets eines Moduls verändert, wodurch alte Scores nicht mehr vergleichbar sind.*
 
-#### C. Komplett-Reset
-Achtung: Dies löscht **alle** Benchmark-Ergebnisse und setzt das Leaderboard auf Null.
-```bash
+# Alles löschen (Komplett-Reset)
 make clean-csv
 ```
 
+**Wann nutzen?**
+- Fehlerhafter Test-Run (falsche Config)
+- Modell wurde neu trainiert
+- Modul-Assets wurden geändert (alte Scores nicht mehr vergleichbar)
+
+---
+
+## 📈 Fortgeschrittene Nutzung
+
+### Kosten schätzen (vor Batch-Run)
+
+```bash
+make analyze-costs
+```
+
+**Output:**
+```
+Estimated API costs:
+- Mistral Large: $12.50 (500 requests)
+- GPT-4: $28.00 (500 requests)
+Total: $40.50
+```
+
+---
+
+### Nur fehlgeschlagene Tests wiederholen
+
+```bash
+make benchmark-auto
+```
+(Smart-Skip überspringt erfolgreiche Tests automatisch)
+
+---
+
+### Custom Module aktivieren/deaktivieren
+
+**Datei:** `benchmark_config.yaml`
+
+```yaml
+modules:
+  political_compass:
+    enabled: false  # Modul überspringen
+```
+
+Nach Änderung:
+```bash
+make leaderboard  # Leaderboard neu generieren
+```
+
+---
+
+## 🆘 Hilfe & Support
+
+### Logs prüfen
+
+**Konsole:** Zeigt nur wichtige Meldungen (User-freundlich)
+
+**Vollständiges Log:**
+```bash
+tail -f logs/crucible.log
+```
+(Enthält alle technischen Details, Warnings, Tracebacks)
+
+---
+
+### Projekt validieren
+
+```bash
+# Struktur prüfen
+make validate-structure
+
+# Assets prüfen (YAML-Schema)
+make validate-assets
+```
+
+---
+
+### Community & Docs
+
+- **GitHub Issues:** [github.com/yourusername/cruciblemark/issues](https://github.com/yourusername/cruciblemark/issues)
+- **Discussions:** [github.com/yourusername/cruciblemark/discussions](https://github.com/yourusername/cruciblemark/discussions)
+- **Developer Guide:** Siehe `docs/DEVELOPER_GUIDE.md` (für Modul-Entwicklung)
+- **Architecture:** Siehe `docs/ARCHITECTURE.md` (für System-Design)
+
+---
+
+## 🎓 Nächste Schritte
+
+**Nach dem ersten Benchmark:**
+1. ✅ Leaderboard studieren (`benchmark_leaderboard.csv`)
+2. ✅ Badge-Kategorien verstehen (God Mode vs Daily Driver)
+3. ✅ Modell für Ihren Use Case wählen
+
+**Für Fortgeschrittene:**
+- Eigene Module erstellen (siehe `DEVELOPER_GUIDE.md`)
+- Golden Standard aktualisieren (`make generate-golden`)
+- Custom Scoring-Logik implementieren
+
+---
+
+**Happy Benchmarking! 🚀**
+
+---
+
+**Dokumenten-Version:** 1.0.0 (Rewrite Feb 2026)  
+**Kompatibel mit:** CrucibleMark v0.9.5+

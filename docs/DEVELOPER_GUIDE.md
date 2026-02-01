@@ -1,0 +1,460 @@
+# Developer Guide: Extending CrucibleMark
+
+**Zielgruppe:** Entwickler, die neue Test-Module erstellen oder das Scoring-System erweitern wollen.
+
+**Was Sie hier finden:**
+- Quick Start: Neues Modul in 15 Minuten
+- Asset-Format & YAML-Schema
+- Scoring-Logik implementieren
+- CSV-Output & Leaderboard-Integration
+- Testing & Validation
+
+> **Voraussetzung:** Grundkenntnisse in Python, YAML und Regex.
+
+---
+
+## ⚡ Quick Start: Neues Modul erstellen
+
+### Option 1: Generator (Empfohlen)
+
+```bash
+make create-module
+```
+
+**Der Wizard fragt:**
+1. Modul-ID (z.B. `api_design`)
+2. Score Group (`routine`, `reasoning`, `info`)
+3. Anzeigename (z.B. "API Design Review")
+
+**Output:**
+- Vollständige Ordnerstruktur
+- Template `test.py` mit Basis-Code
+- `config.yaml` vorkonfiguriert
+- Dummy-Assets zum Testen
+
+**Zeit:** ~2 Minuten bis zum ersten Test-Run
+
+---
+
+### Option 2: Manuell (für volle Kontrolle)
+
+```bash
+# Struktur erstellen
+mkdir -p benchmark_modules/your_module/{assets,core}
+touch benchmark_modules/your_module/{__init__.py,test.py,config.yaml,README.md}
+touch benchmark_modules/your_module/core/{__init__.py,evaluators.py,constants.py}
+```
+
+**Minimale Dateien:**
+- `config.yaml` – Metadaten & Leaderboard-Config
+- `test.py` – Runner (Controller)
+- `core/evaluators.py` – Scoring-Logik
+- `assets/*.yaml` – Test-Cases
+
+---
+
+## 📁 Modul-Anatomie
+
+### Verzeichnis-Struktur
+
+```
+benchmark_modules/
+└── your_module/
+    ├── README.md              # Dokumentation (Template siehe unten)
+    ├── config.yaml            # ⚙️ SSOT (Single Source of Truth)
+    ├── test.py                # 🎮 Controller (LLM-Ausführung)
+    ├── assets/                # 📦 Test-Fixtures
+    │   ├── your_module_001_task.yaml
+    │   ├── your_module_002_task.yaml
+    │   └── ...
+    └── core/                  # 🧠 Business Logic
+        ├── __init__.py
+        ├── evaluators.py      # Scoring-Engine
+        └── constants.py       # Schwellenwerte, Regex-Patterns
+```
+
+---
+
+## ⚙️ Konfiguration: `config.yaml`
+
+### SSOT Prinzip (Single Source of Truth)
+
+Die `config.yaml` ist in **zwei Bereiche** unterteilt:
+
+#### 1. GLOBAL (Mandatory) – Framework-Contract
+
+Diese Blöcke sind **Pflicht** und werden vom Framework gelesen:
+
+```yaml
+# ====================================================================
+# GLOBAL CONFIGURATION (Required by Framework)
+# ====================================================================
+
+metadata:
+  id: "your_module"                    # Eindeutige ID (Dateiname-Prefix)
+  name: "Your Module Name"             # Anzeigename im Leaderboard
+  version: "1.0.0"                     # SemVer
+  description: "What this module tests"
+
+integration:
+  leaderboard:
+    enable_scoring: true               # false = Info-Modul (kein Ranking)
+
+    # OPTIONAL: Manueller Test-Counter (nur bei Aggregation nötig)
+    # display_test_count: 9
+
+    # Fallback für alle Assets ohne eigene Definition
+    default_contribution:
+      routine: 1.0                     # 100% Routine-Anteil
+      reasoning: 0.0                   # 0% Reasoning-Anteil
+
+    # Spalten im Leaderboard (optional)
+    columns:
+      - id: "your_score"
+        label: "Your Score"
+
+execution:
+  test_class: "YourModuleTest"         # Klassenname in test.py
+  execution_mode: "standard"           # "standard" oder "batch"
+  assets_dir: "assets"                 # Verzeichnis mit YAML-Files
+
+# ====================================================================
+# BENCHMARK DEFINITIONS (Cascading Scoring)
+# ====================================================================
+
+benchmarks:
+  # Fall A: Standard (erbt default_contribution)
+  - id: "your_module_001"
+    name: "Basic Task"
+    tier: 1
+
+  # Fall B: Ausnahme (überschreibt Default)
+  - id: "your_module_002"
+    name: "Complex Puzzle"
+    tier: 3
+    score_contribution:
+      routine: 0.2                     # 20% Routine
+      reasoning: 0.8                   # 80% Reasoning
+```
+
+---
+
+#### 2. LOKAL (Optional) – Modul-spezifische Config
+
+Beliebige eigene Blöcke für Ihre Scoring-Logik:
+
+```yaml
+# ====================================================================
+# LOCAL CONFIGURATION (Module-specific, ignored by framework)
+# ====================================================================
+
+config:
+  keyword_threshold: 0.4               # Min. 40% Keywords gefunden
+  semantic_threshold: 0.78             # Semantische Ähnlichkeit
+
+parameters:
+  max_response_length: 2000
+  timeout_seconds: 30
+
+interpretation:
+  tier1_description: "Labeled errors (easy)"
+  tier2_description: "Obvious issues (medium)"
+```
+
+**Zugriff in test.py:**
+```python
+self.config = self.load_config()
+threshold = self.config['config']['keyword_threshold']
+```
+
+---
+
+### Execution Modes
+
+| Mode | Verhalten | Use Case |
+|------|-----------|----------|
+| **`standard`** | Framework lädt Assets einzeln, instanziiert Test pro Asset | Code Quality, UX Writing (isolierte Tests) |
+| **`batch`** | Framework übergibt alle Assets, Test kontrolliert Loop | Political Compass (3x Runs), Custom Aggregation |
+
+---
+
+### Kaskadierende Score-Contributions
+
+**Problem:** Redundanz vermeiden (100 Assets × 2 Zeilen Config = 200 Zeilen)
+
+**Lösung:** Hierarchie
+
+1. **Asset-Level** (höchste Priorität):
+   ```yaml
+   - id: "reasoning_5d_002"
+     score_contribution:
+       reasoning: 1.0  # Überschreibt Default
+   ```
+
+2. **Modul-Level** (Fallback):
+   ```yaml
+   default_contribution:
+     routine: 1.0      # Gilt für alle ohne eigene Definition
+   ```
+
+3. **Framework-Level** (Last Resort):
+   ```yaml
+   enable_scoring: false  # Modul zählt gar nicht
+   ```
+
+---
+
+## 📝 Asset-Format (YAML-Schema)
+
+### Standard-Assets
+
+```yaml
+meta:
+  id: "your_module_001"                # Muss mit Dateiname übereinstimmen
+  difficulty: 2                        # Tier (1-4)
+  name: "Descriptive Task Name"
+  tags: ["category", "subcategory"]    # Optional
+
+input:
+  prompt: |
+    Your instruction to the LLM.
+    Can be multi-line.
+
+  context: |                           # Optional: Zusätzlicher Context
+    Background information...
+
+evaluation:
+  # Keyword-basierte Bewertung
+  keywords:
+    - "expected_term_1"
+    - "expected_term_2"
+
+  # Semantische Referenz (optional)
+  golden_answer: |
+    The ideal response should explain...
+
+  # Strukturelle Anforderungen (optional)
+  min_length: 100
+  max_length: 500
+  required_format: "markdown"          # markdown, json, code, text
+```
+
+---
+
+### Info-Module (Structured Output)
+
+Für Module ohne Scoring (z.B. Political Compass):
+
+```yaml
+meta:
+  id: "political_compass_q001"
+
+input:
+  prompt: "Statement: Free markets solve all problems."
+
+evaluation:
+  # Keine Keywords! Stattdessen:
+  output_type: "coordinate"            # coordinate, label, json
+  expected_structure:
+    x_range: [-10, 10]                 # Wirtschaftliche Achse
+    y_range: [-10, 10]                 # Soziale Achse
+```
+
+---
+
+## 🧠 Scoring-Logik implementieren
+
+### Architektur-Prinzip: MVC
+
+```
+test.py (Controller)
+   ↓ delegiert an
+core/evaluators.py (Model/Logic)
+   ↓ nutzt
+core/constants.py (Config/Data)
+```
+
+**Regel:** `test.py` darf **keine** Scoring-Logik enthalten!
+
+---
+
+### Beispiel: `core/evaluators.py`
+
+```python
+# Scoring Logic for Your Module
+
+from typing import Dict, Any
+import re
+
+class YourEvaluator:
+    # Evaluates LLM responses against criteria
+
+    def __init__(self, config: Dict = None):
+        self.config = config or {}
+        self.keyword_threshold = self.config.get('keyword_threshold', 0.4)
+
+    def evaluate(self, response_text: str, asset: Dict) -> Dict[str, Any]:
+        # Main entry point
+        # Args: response_text (raw LLM output), asset (YAML definition)
+        # Returns: dict with score, details, passed flag
+
+        # 1. Preprocessing
+        clean_text = self._clean_response(response_text)
+
+        # 2. Component Scoring
+        keyword_score = self._check_keywords(clean_text, asset)
+        structure_score = self._check_structure(clean_text, asset)
+
+        # 3. Weighted Aggregation
+        total_score = (keyword_score * 0.7) + (structure_score * 0.3)
+
+        return {
+            "score": total_score,
+            "details": {
+                "keywords": keyword_score,
+                "structure": structure_score
+            },
+            "passed": total_score >= 50.0
+        }
+
+    def _clean_response(self, text: str) -> str:
+        # Remove thinking tags, normalize whitespace
+        text = re.sub(r'<think>.*?</think>', '', text, flags=re.DOTALL)
+        return text.strip()
+
+    def _check_keywords(self, text: str, asset: Dict) -> float:
+        # Keyword matching with threshold
+        # Returns: 0-100 based on percentage of keywords found
+        keywords = asset.get('evaluation', {}).get('keywords', [])
+        if not keywords:
+            return 100.0
+
+        found = sum(1 for kw in keywords if kw.lower() in text.lower())
+        percentage = (found / len(keywords))
+
+        if percentage >= self.keyword_threshold:
+            return 100.0 * percentage
+        else:
+            return 0.0
+
+    def _check_structure(self, text: str, asset: Dict) -> float:
+        # Check formatting requirements
+        min_len = asset.get('evaluation', {}).get('min_length', 0)
+
+        if len(text) >= min_len:
+            return 100.0
+        else:
+            return (len(text) / min_len) * 100.0
+```
+
+---
+
+## 📊 CSV-Output & Leaderboard
+
+### Automatische Spalten
+
+Diese Spalten werden vom Framework gefüllt:
+
+| Spalte | Typ | Quelle |
+|--------|-----|--------|
+| `asset_id` | String | Dateiname |
+| `model` | String | Parameter |
+| `timestamp` | DateTime | System |
+| `execution_time` | Float | execute() Return |
+| `total_score` | Float | score_response() Return |
+| `percentage` | Float | Normalisiert (0-100) |
+| `routine_contribution` | Float | config.yaml |
+| `reasoning_contribution` | Float | config.yaml |
+
+---
+
+### Custom Spalten
+
+In `test.py`:
+```python
+def score_response(self, response: Dict) -> float:
+    result = self.evaluator.evaluate(...)
+
+    # Store für CSV
+    self.latest_score_details = {
+        "keyword_match": result['keywords'],
+        "structure_score": result['structure']
+    }
+
+    return result['score']
+```
+
+Framework schreibt automatisch Spalten `keyword_match`, `structure_score`.
+
+---
+
+## 🧪 Testing & Validation
+
+### Asset-Schema prüfen
+
+```bash
+make validate-assets
+```
+
+### Modul-Isolations-Test
+
+```bash
+# Nur Ihr Modul in benchmark_config.yaml aktivieren
+make benchmark-single MODEL=qwen2.5:7b MODULE=your_module
+```
+
+### Leaderboard-Integration
+
+```bash
+make leaderboard
+# Prüfen: Ist Ihre Spalte da? Werte korrekt?
+```
+
+---
+
+## 📐 Best Practices
+
+### DO's ✅
+
+1. **MVC-Trennung:** test.py = Controller, evaluators.py = Logik
+2. **Determinismus:** Fixe Seeds, keine Random ohne Seed
+3. **Config-First:** Schwellenwerte in config.yaml
+4. **Dokumentation:** README.md nach Template
+
+### DON'Ts ❌
+
+1. **Keine LLM-Calls in Evaluators**
+2. **Keine Modell-spezifischen Hacks** (Unfairer Boost)
+3. **Keine Silent Failures** (Exceptions loggen!)
+
+---
+
+## 🆘 Troubleshooting
+
+### "Scores are always 0%"
+
+Debug-Checklist:
+1. `score_response()` implementiert?
+2. Returned Float (nicht Dict)?
+3. Keywords case-sensitive?
+
+Debug-Tool:
+```bash
+python scripts/run_local_benchmark.py --debug-responses
+# Prüfe: benchmark_scores/debug_responses/
+```
+
+---
+
+## 📚 Weiterführende Ressourcen
+
+- **ARCHITECTURE.md** – System-Design & MVC-Patterns
+- **USER_GUIDE.md** – Wie Nutzer Module ausführen
+- **GOLDEN_STANDARDS.md** – Referenz-Methodik
+
+---
+
+**Happy Coding! 🚀**
+
+**Dokumenten-Version:** 1.0.0 (Rewrite Feb 2026)  
+**Kompatibel mit:** CrucibleMark v0.9.5+
