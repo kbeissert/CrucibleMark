@@ -8,7 +8,7 @@ Delegates logic to benchmark_modules.code_quality.core.evaluators.
 import sys
 import time
 from pathlib import Path
-from typing import Any, Dict
+from typing import Any, Dict, Optional
 
 # Ensure root directory is in sys.path
 root_dir = Path(__file__).parent.parent.parent
@@ -20,20 +20,33 @@ from benchmark_modules.code_quality.core.constants import (  # noqa: E402
     DEFAULT_TEMPERATURE,
     TOKEN_MULTIPLIER,
 )
-from benchmark_modules.code_quality.core.evaluators import CodeQualityEvaluator  # noqa: E402
+from benchmark_modules.code_quality.core import CodeQualityEvaluator  # noqa: E402
 
 
 class CodeQualityTest(BaseTest):
     """
-    Test-Modul für Code-Qualität und Accessibility.
+    Test module for Code Quality and Accessibility.
     Acts as a lightweight runner, delegating scoring to CodeQualityEvaluator.
     """
 
     def execute(
-        self, model: str, llm_client: Any, provider: str = "ollama", **kwargs
+        self,
+        model: str,
+        llm_client: Any,  # TODO: Später durch LLMClient Interface ersetzen
+        provider: str = "ollama",
+        **kwargs: Any
     ) -> Dict[str, Any]:
         """
-        Führt den Code Quality Test aus.
+        Executes the Code Quality test for a given model.
+
+        Args:
+            model: Model identifier
+            llm_client: Client for LLM interaction
+            provider: Provider name (default: "ollama")
+            **kwargs: Additional arguments
+
+        Returns:
+            Dict containing raw_response, execution_time, tokens_used, metadata
         """
         prompt = self.asset["prompt"]
         full_prompt = f"{self.asset.get('context', '')}\n\n{prompt}".strip()
@@ -65,10 +78,17 @@ class CodeQualityTest(BaseTest):
             }
         except Exception as e:
             return {
-                "raw_response": f"ERROR: {str(e)}",
+                "status": "error",
+                "error_message": str(e),
+                "error_type": type(e).__name__,
+                "raw_response": "",
                 "execution_time": 0.0,
                 "tokens_used": 0,
-                "metadata": {"model": model, "error": str(e)},
+                "metadata": {
+                    "model": model, 
+                    "asset_id": self.asset.get("metadata", {}).get("id", "unknown"),
+                    "error": str(e)
+                },
             }
 
     def score_response(self, response: str) -> Dict[str, Any]:

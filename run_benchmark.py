@@ -46,8 +46,8 @@ DEFAULT_CONFIG_PATH = "benchmark_config.yaml"
 
 # Pre-import runners to fail fast on import errors
 try:
-    from scripts.run_local_benchmark import LocalBenchmarkRunner
-    from scripts.run_commercial_benchmark import CommercialBenchmarkRunner
+    from scripts.core.run_local_benchmark import LocalBenchmarkRunner
+    from scripts.core.run_commercial_benchmark import CommercialBenchmarkRunner
 except ImportError as e:
     logger.error("Error importing benchmark runners: %s", e)
     sys.exit(1)
@@ -263,6 +263,23 @@ class BenchmarkRunner:
         """Führt Benchmark aus."""
         self._print_header("CRUCIBLE MARK - BENCHMARK RUNNER")
 
+        # Validate Model Existence (Fail Fast)
+        if run_config.model_name:
+            provider, model_id = resolve_provider(run_config.model_name)
+            if provider == "ollama":
+                available_models = get_ollama_models_info()
+                model_names = [m["name"] for m in available_models]
+
+                if model_id not in model_names:
+                    print(f"\n❌ Error: Local model '{model_id}' not found in Ollama!")
+                    print("\n📋 Available Local Models:")
+                    for m in available_models:
+                        print(f"   - {m['name']} ({m['size_gb']:.1f} GB)")
+
+                    print("\n💡 Tip: Provide the exact name (case-sensitive) or pull it first.")
+                    print(f"   ollama pull {model_id}")
+                    sys.exit(1)
+
         # Determine modules to run
         modules_to_run = []
         if run_config.run_all:
@@ -304,7 +321,7 @@ class BenchmarkRunner:
         if modules_to_run:
             print("\n📊 Aktualisiere Leaderboard...")
             try:
-                subprocess.run([sys.executable, "scripts/generate_leaderboard.py"], check=True)
+                subprocess.run([sys.executable, "scripts/core/generate_leaderboard.py"], check=True)
             except subprocess.CalledProcessError:
                 print("⚠️ Fehler beim Aktualisieren des Leaderboards.")
             except Exception as e:
