@@ -16,7 +16,6 @@ import logging
 import shutil
 import subprocess
 from pathlib import Path
-from datetime import datetime
 from typing import Any, List, Dict, Set, Tuple
 from dotenv import load_dotenv
 
@@ -75,7 +74,6 @@ def check_ollama_status() -> bool:
         return False
 
 
-from datetime import datetime
 
 def get_existing_results(csv_path: Path, force: bool = False) -> Set[Tuple[str, str]]:
     """Lädt Set von (Model, AssetID) für bereits existierende Tests."""
