@@ -20,6 +20,7 @@ class DocumentationEvaluator:
     Maintains v1.0 interface for backward compatibility while orchestrating
     specialized sub-evaluators.
     """
+    # pylint: disable=too-few-public-methods
 
     def __init__(self, asset: Dict[str, Any], asset_path: Path = None):
         self.asset = asset

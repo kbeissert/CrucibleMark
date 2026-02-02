@@ -11,6 +11,7 @@ class TieredScoringEngine:
     Handles scoring for tiered error detection (Labeled, Standard, Advanced, Expert).
     Manages scoring logic including inverse matching and severity penalties.
     """
+    # pylint: disable=too-few-public-methods
 
     def __init__(self, asset_id: str):
         self.asset_id = asset_id
@@ -32,6 +33,7 @@ class TieredScoringEngine:
             - details (list of strings)
             - violations (list of strings)
         """
+        # pylint: disable=too-many-locals
         tier_score: float = 0.0
         details: List[str] = []
         violations: List[str] = []

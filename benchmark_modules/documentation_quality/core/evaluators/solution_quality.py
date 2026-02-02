@@ -10,6 +10,7 @@ class SolutionQualityEvaluator:
     Evaluates the quality of the solution based on positive criteria
     (e.g. code examples, best practices).
     """
+    # pylint: disable=too-few-public-methods
 
     @staticmethod
     def score_criteria(response: str, criteria: list[dict]) -> Tuple[float, List[str]]:

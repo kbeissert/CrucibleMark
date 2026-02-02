@@ -12,6 +12,7 @@ class CompletenessChecker:
     Checks for required sections in documentation based on document type.
     Uses fuzzy matching to handle naming variations.
     """
+    # pylint: disable=too-few-public-methods
 
     @staticmethod
     def check_completeness(response: str, doc_type: str) -> Dict[str, Any]:
@@ -108,6 +109,7 @@ class CompletenessChecker:
                 insertions = previous_row[j + 1] + 1
                 deletions = current_row[j] + 1
                 substitutions = previous_row[j] + (char1 != char2)
+                current_row.append(min(insertions, deletions, substitutions))
             previous_row = current_row
 
         return previous_row[-1]
