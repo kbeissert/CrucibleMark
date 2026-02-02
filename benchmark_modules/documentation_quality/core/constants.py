@@ -1,3 +1,14 @@
+"""
+Configuration constants for Documentation Quality module.
+
+Thresholds:
+- TIER_THRESHOLDS: Keyword match ratios per tier (lower = stricter)
+- SIMILARITY_THRESHOLD: Semantic similarity baseline (0.70 = 70% match)
+- MIN_SENTENCE_LENGTH: Minimum chars for sentence chunking
+
+Asset-specific overrides in ASSET_SPECIFIC_CONFIG.
+"""
+
 # Constants
 TOKEN_MULTIPLIER = 1.3
 DEFAULT_TEMPERATURE = 0.3
@@ -13,4 +24,22 @@ ASSET_SPECIFIC_CONFIG = {
     "asset_003_component_props_documentation": {"semantic_threshold": 0.35},
     "asset_004_setup_guide_troubleshooting": {"semantic_threshold": 0.35},
     "asset_005_changelog_release_notes": {"semantic_threshold": 0.30},
+}
+
+DOC_TYPE_SCHEMAS = {
+    "readme": {
+        "required_sections": ["installation", "usage", "examples"],
+        "min_code_blocks": 1,
+        "min_headings": 3
+    },
+    "api_docs": {
+        "required_sections": ["endpoint", "parameters", "response", "example"],
+        "min_code_blocks": 2,
+        "min_headings": 4
+    },
+    "setup_guide": {
+        "required_sections": ["prerequisites", "steps", "troubleshooting"],
+        "min_code_blocks": 1,
+        "min_headings": 3
+    }
 }
