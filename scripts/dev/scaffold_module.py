@@ -37,7 +37,6 @@ integration:
 execution:
   test_class: "{class_name}Test"
   assets_dir: "assets"
-  assets_count: 5
 
 # Internal Module Configuration
 config:
@@ -286,10 +285,7 @@ def main():
     print("   modules:")
     print(f"     {module_name}:")
     print("       enabled: true")
-    print(f"       name: \"{display_name}\"")
-    print(f"       test_class: \"{class_name}Test\"")
-    print("       assets_count: 5")
-    print(f"       score_group: \"{score_group}\"")
+    print(f"       path: \"benchmark_modules/{module_name}\"")
     print(f"2. Customize logic in {base_dir}/core/evaluators.py")
     print(f"3. Add assets to {base_dir}/assets/")
 

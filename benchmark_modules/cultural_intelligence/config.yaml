@@ -32,7 +32,6 @@ integration:
 execution:
   test_class: "CulturalIntelligenceTest"
   assets_dir: "assets"
-  assets_count: 5
 
 benchmarks:
   - id: "cultural_intel_001"

@@ -30,7 +30,6 @@ integration:
 execution:
   test_class: "CodeQualityTest"
   assets_dir: "assets"
-  assets_count: 5
   asset_types:
     - accessibility
     - security

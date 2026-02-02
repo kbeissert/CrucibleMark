@@ -30,13 +30,13 @@ integration:
 execution:
   test_class: "ContentTransformationTest"
   assets_dir: "assets"
-  assets_count: 5
   asset_types:
     - landing_page_copy
     - social_media_thread
     - glossary_simplification
     - video_script
     - newsletter_adaptation
+    - subtext_adaptation
 
 # Internal Module Configuration
 config:
