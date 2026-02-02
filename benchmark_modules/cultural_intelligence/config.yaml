@@ -4,11 +4,11 @@
 metadata:
   id: "cultural_intelligence"
   name: "Cultural Intelligence"
-  version: "1.0.0"
+  version: "2.0.0"
   description: "Evaluates language proficiency and cultural fit (German context)"
   author: "CrucibleMark"
   created: "2025-01-01"
-  updated: "2026-01-31" 
+  updated: "2026-02-02" 
   tags:
     - language
     - culture

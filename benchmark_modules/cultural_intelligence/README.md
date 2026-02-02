@@ -4,8 +4,8 @@
 > - **ID:** `cultural_intelligence`
 > - **Namespace:** `benchmark_modules.cultural_intelligence`
 > - **Class:** `CulturalIntelligenceTest` (inherits `BaseTest`)
-> - **Evaluator:** `CulturalEvaluator`
-> - **Version:** v1.0.0 (Clean Architecture)
+> - **Evaluator:** `CulturalIntelligenceEvaluator`
+> - **Version:** v2.0.0 (Modular Evaluators Architecture)
 > - **Type:** Nuance, Translation & Ethics
 
 ## 🔍 Module Overview
@@ -14,22 +14,29 @@ Dieses Modul testet das "Feingefühl" des Modells. Es geht über bloße Überset
 
 ---
 
-## 🏗 Architecture (Core/MVC)
+## 🏗 Architecture (v2.0)
 
-This module follows the **Core/MVC** standard pattern enforced across the framework:
+This module follows a modular architecture orchestrated by a Facade pattern:
 
-- **`test.py` (The Runner)**:
-    - Provides scenarios with heavy cultural context (e.g., business etiquette in Japan vs. USA).
-    - Delegates nuance analysis to `core/evaluators.py`.
-- **`core/evaluators.py` (The Logic)**:
-    - Contains `CulturalEvaluator`.
-    - Uses **Lambda Scoring** (dynamic small functions to check specific nuance triggers).
-    - Checks for **Stereotyping** via negative keyword lists.
-- **`core/constants.py` (Configuration)**:
-    - Definitions of "Cultural Markers" (e.g., bowing vs. handshaking).
-    - Lists of offensive terms/tropes per region.
-- **`assets/*.yaml` (Data)**:
-    - Scenarios: Source culture, Target culture, and the "Situation".
+```
+core/evaluators/
+├── __init__.py                    # CulturalIntelligenceEvaluator (Facade)
+├── language_proficiency.py        # German markers, formality detection
+├── cultural_fit.py                # Regional expressions, politeness
+├── solution_quality.py            # Keyword-based quality checks
+├── regional_validator.py          # Regional consistency checks (NEW)
+└── formality_scorer.py            # Continuous formality scale (NEW)
+```
+
+## New Features (v2.0)
+
+### Regional Consistency Validation
+- Detects mixing of DE/AT/CH terms
+- Example: "Brötchen" (DE) + "Semmel" (AT) = inconsistent
+
+### Enhanced Formality Scoring
+- Continuous scale (0.0-1.0) instead of binary Sie/Du
+- Classifies: very_informal, informal, neutral, formal, very_formal
 
 ---
 
