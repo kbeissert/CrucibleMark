@@ -72,8 +72,8 @@ benchmark-cross-model:
 	@$(PYTHON) scripts/core/run_cross_model_benchmark.py $(if $(MODULE),--module $(MODULE))
 
 benchmark-auto:
-	@echo "🌙 Starte Full Auto Benchmark (Overnight Mode)..."
-	@echo "   Führt ALLE Module auf ALLEN Modellen aus."
+	@echo "🤖 Starte Full Auto Benchmark (Smart Autofill Mode)..."
+	@echo "   Führt intelligent nur FEHLENDE Tests auf allen Modellen aus."
 	$(PYTHON) scripts/core/benchmark_auto.py
 
 leaderboard:

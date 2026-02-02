@@ -89,16 +89,23 @@ class BaseTest(ABC):
 
         # Validiere Scoring-Gewichte
         if "scoring" in self.asset:
+            scoring = self.asset["scoring"]
             # Use total_points from asset if available, else default to constant
-            expected_total = self.asset["scoring"].get(
+            expected_total = scoring.get(
                 "total_points", TOTAL_SCORING_WEIGHT
             )
 
-            total_weight = sum(
-                cat.get("weight", 0)
-                for cat in self.asset["scoring"].values()
-                if isinstance(cat, dict)
-            )
+            # Check for "criteria" list (V1 / Legacy Schema)
+            if "criteria" in scoring and isinstance(scoring["criteria"], list):
+                total_weight = sum(c.get("weight", 0) for c in scoring["criteria"])
+            else:
+                # V2 Schema: dict of categories
+                total_weight = sum(
+                    cat.get("weight", 0)
+                    for cat in scoring.values()
+                    if isinstance(cat, dict)
+                )
+
             if total_weight != expected_total:
                 raise ValueError(
                     f"Scoring weights must sum to {expected_total}, got {total_weight}"

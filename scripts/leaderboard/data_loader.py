@@ -78,7 +78,7 @@ def load_benchmark_data() -> pd.DataFrame:
     df = pd.concat(dfs, ignore_index=True)
     df["percentage"] = pd.to_numeric(df["percentage"], errors="coerce")
     df["execution_time"] = pd.to_numeric(df["execution_time"], errors="coerce")
-    df["timestamp"] = pd.to_datetime(df["timestamp"], errors="coerce")
+    df["timestamp"] = pd.to_datetime(df["timestamp"], errors="coerce", format="mixed")
 
     # If model_version is missing (e.g. newly loaded CSV didn't have it yet), fill with "unknown"
     if "model_version" not in df.columns:
