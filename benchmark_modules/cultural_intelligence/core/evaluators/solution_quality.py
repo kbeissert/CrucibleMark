@@ -14,6 +14,8 @@ class SolutionQualityEvaluator:
     - Completeness
     """
 
+    # pylint: disable=too-few-public-methods
+
     @staticmethod
     def score_quality(response: str, criteria: List[Dict[str, Any]]) -> Dict[str, Any]:
         """

@@ -21,6 +21,8 @@ class LanguageProficiencyEvaluator:
     - Grammar correctness (bonus points)
     """
 
+    # pylint: disable=too-few-public-methods
+
     @staticmethod
     def score_proficiency(response: str, criteria: List[Dict[str, Any]]) -> Dict[str, Any]:
         """
