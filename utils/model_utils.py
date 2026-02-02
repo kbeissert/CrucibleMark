@@ -119,6 +119,28 @@ def get_ollama_models_info() -> list[dict]:
         return []
 
 
+def get_commercial_models_from_config(config: Dict) -> list[tuple[str, str, str]]:
+    """
+    Extracts enabled commercial models from the configuration dictionary.
+    
+    Args:
+        config (Dict): The loaded benchmark_config.yaml content.
+
+    Returns:
+        List[Tuple[str, str, str]]: List of (model_id, pretty_name, provider_key)
+    """
+    models = []
+    providers = config.get("providers", {}).get("commercial", {})
+    
+    for p_key, p_config in providers.items():
+        if p_config.get("enabled", False):
+            for m in p_config.get("models", []):
+                # model_id, name, provider
+                models.append((m["id"], m["name"], p_key))
+    
+    return models
+
+
 def resolve_provider(model_name: str) -> tuple[str, str]:
     """Ermittelt Provider basierend auf Modell-Präfix."""
     name_lower = model_name.lower()

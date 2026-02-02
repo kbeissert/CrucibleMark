@@ -58,6 +58,7 @@ class LLMClient:
         # Initialize cost tracker
         self.cost_tracker = CostTracker()
         self.last_request_cost = 0.0
+        self.last_response_metadata = {}
 
         # Load Model Version Locks
         self.model_locks = self._load_model_locks()
@@ -158,6 +159,10 @@ class LLMClient:
         response_text = self.retry_handler.execute_with_retry(
             _call_provider, max_retries=max_retries
         )
+
+        # Update Metadata from Client
+        if hasattr(self.clients[provider], "last_response_metadata"):
+            self.last_response_metadata = self.clients[provider].last_response_metadata
 
         # 3. Cost Tracking (Estimates)
         # Hinweis: Exakte Token-Counts sind API-abhängig. Hier eine Heuristik oder
