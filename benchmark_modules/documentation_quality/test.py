@@ -62,6 +62,7 @@ class DocumentationTest(BaseTest):
                     "model": model,
                     "asset_id": self.asset["metadata"]["id"],
                     "prompt_length": len(full_prompt),
+                    **getattr(llm_client, "last_response_metadata", {}),
                 },
             }
         except Exception as e:
