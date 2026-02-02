@@ -15,6 +15,7 @@ help:
 	@echo "  make list-models          List available Local & Commercial models (with Connectivity Check)"
 	@echo "  make benchmark-auto       🤖 Auto-Fill Mode: Ergänzt fehlende Benchmarks (Smart Skip)"
 	@echo "  make benchmark-single     Einzelnes Modell (MODEL=name [MODULE=name])"
+	@echo "  make benchmark-cross-model Einzelnes Modul gegen ALLE LLMs (MODULE=name)"
 	@echo "  make leaderboard          Generiere Leaderboard-CSV aus Ergebnissen"
 	@echo "  make clean-sessions       🗑️  Lösche temporäre Checkpoints (Political Compass)"
 	@echo ""
@@ -65,6 +66,10 @@ benchmark-single:
 	@echo "🤖 Starte automatisierten Benchmark mit Modell: $(MODEL)..."
 	$(PYTHON) run_benchmark.py --model $(MODEL) $(if $(MODULE),--module $(MODULE))
 	@$(MAKE) leaderboard
+
+benchmark-cross-model:
+	@echo "🚀 Starting Cross-Model Benchmark..."
+	@$(PYTHON) scripts/core/run_cross_model_benchmark.py $(if $(MODULE),--module $(MODULE))
 
 benchmark-auto:
 	@echo "🌙 Starte Full Auto Benchmark (Overnight Mode)..."
