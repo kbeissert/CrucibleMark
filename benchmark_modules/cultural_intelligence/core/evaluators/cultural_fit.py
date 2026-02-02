@@ -18,6 +18,8 @@ class CulturalFitEvaluator:
     - Context-appropriate formality
     """
 
+    # pylint: disable=too-few-public-methods
+
     @staticmethod
     def score_cultural_fit(response: str, criteria: List[Dict[str, Any]]) -> Dict[str, Any]:
         """

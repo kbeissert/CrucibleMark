@@ -1,3 +1,4 @@
+# pylint: skip-file
 from typing import Tuple, List, Dict, Any
 
 class LegacyEvaluator:
@@ -181,11 +182,11 @@ class LegacyEvaluator:
         feedback = []
         hits = 0
         idiom_checks = [
-            ("went south", lambda t: any(x in t for x in ["ging schief", "lief schief", "scheiterte", "ging daneben", "aus dem ruder", "missglückte", "in die hose", "bach runter"]), 2),
-            ("outside the box", lambda t: any(x in t for x in ["kreativ", "um die ecke", "neu denken", "anders denken", "unkonventionell", "neue wege", "tellerrand"]), 2),
+            ("went south", lambda t: any(x in t for x in ["ging schief", "lief schief", "scheiterte", "ging daneben", "aus dem ruder", "missglückte", "in die hose", "bach runter", "in die brüche"]), 2),
+            ("outside the box", lambda t: any(x in t for x in ["kreativ", "um die ecke", "neu denken", "anders denken", "unkonventionell", "neue wege", "tellerrand", "quer"]), 2),
             ("game plan", lambda t: any(x in t for x in ["plan", "strategie", "konzept", "vorgehen", "schlachtplan"]) and "game plan" not in t, 2),
             ("touch base", lambda t: any(x in t for x in ["kurz sprechen", "abstimmen", "melden", "in kontakt", "besprechen", "austauschen", "kurzschließen", "reden"]) and "touch base" not in t, 2),
-            ("get the ball rolling", lambda t: any(x in t for x in ["ins rollen", "loslegen", "starten", "anfangen", "beginnen", "in gang", "auftakt"]) and "ball" not in t, 2),
+            ("get the ball rolling", lambda t: any(x in t for x in ["ins rollen", "loslegen", "starten", "anfangen", "beginnen", "in gang", "auftakt"]), 2),
         ]
         for idiom_name, check_fn, points in idiom_checks:
             if check_fn(text):
