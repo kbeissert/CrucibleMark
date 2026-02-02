@@ -5,7 +5,7 @@
 > - **Namespace:** `benchmark_modules.documentation_quality`
 > - **Class:** `DocumentationQualityTest` (inherits `BaseTest`)
 > - **Evaluator:** `DocumentationEvaluator`
-> - **Version:** v1.0.0 (Clean Architecture)
+> - **Version:** v2.0.0 (Modular Evaluators Architecture)
 > - **Type:** Technical Writing & Education
 
 ## 🔍 Module Overview
@@ -14,9 +14,38 @@ Dieses Modul prüft die Fähigkeit von LLMs, technische Konzepte zu erklären, A
 
 ---
 
-## 🏗 Architecture (Core/MVC)
+## 🏗 Architecture (v2.0)
 
 This module follows the **Core/MVC** standard pattern enforced across the framework:
+
+```
+core/evaluators/
+├── __init__.py              # DocumentationEvaluator (Facade)
+├── semantic_matcher.py      # Hybrid keyword + semantic matching
+├── tiered_scoring.py        # Tiered difficulty engine
+├── solution_quality.py      # Criteria-based quality checks
+├── structure_validator.py   # Markdown format validation (NEW)
+├── readability_scorer.py    # Flesch-Kincaid metrics (NEW)
+└── completeness_checker.py  # Required sections detection (NEW)
+```
+
+## New Features (v2.0)
+
+### Structure Validation
+- Heading hierarchy checks (H1 → H2 → H3)
+- Code block counting
+- Required sections detection (per doc_type)
+
+### Readability Scoring
+- Flesch Reading Ease (0-100 scale)
+- Average sentence length
+- Grade level estimation
+
+### Completeness Checking
+- Fuzzy matching for section names
+- Doc-type specific requirements (README vs API vs Setup Guide)
+
+## Old Architecture
 
 - **`test.py` (The Runner)**:
     - Provides code snippets or architecture diagrams as context.
