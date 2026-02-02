@@ -1,5 +1,6 @@
 metadata:
   id: documentation_quality_001
+  doc_type: "readme"
   name: README Quality Assessment (Tiered)
   category: documentation_quality
   subcategory: readme_quality

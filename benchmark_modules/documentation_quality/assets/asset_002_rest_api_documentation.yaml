@@ -7,6 +7,7 @@
 
 metadata:
   id: documentation_quality_002
+  doc_type: "api_docs"
   name: "REST API Endpoint Documentation"
   category: documentation_quality
   subcategory: api_documentation

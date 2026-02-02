@@ -10,6 +10,9 @@ from ..constants import TIER_THRESHOLDS
 from .semantic_matcher import SemanticMatcher
 from .tiered_scoring import TieredScoringEngine
 from .solution_quality import SolutionQualityEvaluator
+from .structure_validator import StructureValidator
+from .readability_scorer import ReadabilityScorer
+from .completeness_checker import CompletenessChecker
 
 class DocumentationEvaluator:
     """
@@ -74,6 +77,9 @@ class DocumentationEvaluator:
         details.extend(sq_details)
         total_achieved += sq_score
 
+        # Phase 2: Advanced Validators (Structure, Readability, Completeness)
+        adv_results = self._run_advanced_validators(response, details, violations)
+
         return {
             "status": "success",
             "total_score": round(total_achieved, 2),
@@ -85,8 +91,38 @@ class DocumentationEvaluator:
             "metadata": {
                 "response_length": len(response),
                 "word_count": len(response.split()),
+                **adv_results
             },
         }
+
+    def _run_advanced_validators(self, response: str, details: List[str],
+                               violations: List[str]) -> Dict[str, Any]:
+        """Runs Phase 2 validators: Structure, Readability, Completeness."""
+        doc_type = self.asset.get("metadata", {}).get("doc_type", "readme")
+        results = {"doc_type": doc_type}
+
+        # Structure Validation
+        structure = StructureValidator.validate_markdown_structure(response, doc_type)
+        if not structure["is_valid"]:
+            violations.extend(structure["violations"])
+        results["structure"] = structure["stats"]
+        results["structure_violations"] = structure["violations"]
+
+        # Completeness Check
+        completeness = CompletenessChecker.check_completeness(response, doc_type)
+        for missing in completeness["missing_sections"]:
+            violations.append(f"✗ Missing required section: {missing}")
+        results["completeness_score"] = completeness["score"]
+
+        # Readability (Conditional)
+        readability = None
+        if doc_type in ["setup_guide", "tutorial"]:
+            readability = ReadabilityScorer.calculate_readability(response)
+            if readability and readability["flesch_reading_ease"] > 60:
+                details.append("✓ Readability: Good (Flesch > 60)")
+        results["readability"] = readability
+
+        return results
 
     def _score_error_detection(self, response: str, config: dict) -> tuple:
         """Delegates error detection to TieredScoringEngine."""
@@ -142,5 +178,8 @@ __all__ = [
     "DocumentationEvaluator",
     "SemanticMatcher",
     "TieredScoringEngine",
-    "SolutionQualityEvaluator"
+    "SolutionQualityEvaluator",
+    "StructureValidator",
+    "ReadabilityScorer",
+    "CompletenessChecker",
 ]
