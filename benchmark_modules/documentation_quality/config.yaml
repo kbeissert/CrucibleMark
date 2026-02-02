@@ -31,7 +31,6 @@ integration:
 execution:
   test_class: "DocumentationTest"
   assets_dir: "assets"
-  assets_count: 5
   asset_types:
     - readme_quality
     - api_docs

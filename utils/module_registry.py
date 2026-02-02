@@ -75,10 +75,14 @@ def get_module_test_count(module_path: Path, internal_config: Dict[str, Any]) ->
     1. Explicit Override: 'integration.leaderboard.display_test_count'
        (Used for aggregated modules like Political Compass where 81 files = 9 axes)
 
-    2. Dynamic Count: Number of .yaml files in assets/ directory
+    2. Grouping Strategy: Automatic detection of 'Group ID' in filename
+       (e.g. 'political_compass_7.1.001.yaml' -> Group '7.1')
+       If a group ID like 'X.Y' is detected, assets are grouped by it.
+
+    3. Dynamic Count: Number of .yaml files in assets/ directory
        (Standard for file-based benchmarks)
 
-    3. Config Fallback: 'execution.assets_count'
+    4. Config Fallback: 'execution.assets_count'
        (Legacy or specific manual setting)
     """
     # 1. Explicit Override
@@ -90,22 +94,42 @@ def get_module_test_count(module_path: Path, internal_config: Dict[str, Any]) ->
         except (ValueError, TypeError):
             pass
 
-    # 2. Dynamic Count (Files on Disk)
-    # We assume module_path is correct (relative to CWD or absolute)
-    if not module_path.is_absolute():
-        # Try to resolve relative to common root locations if needed,
-        # but standard usage is running from root.
-        pass
-
     assets_dir = module_path / "assets"
+
     if assets_dir.exists():
-        # Count .yaml files, ignoring hidden ones
-        real_count = len([
-            f for f in assets_dir.glob("*.yaml")
-            if not f.name.startswith(".")
-        ])
-        if real_count > 0:
-            return real_count
+        import re
+        
+        files = [f for f in assets_dir.glob("*.yaml") if not f.name.startswith(".")]
+        if not files:
+            # Fallback to Config below if no files found
+            pass
+        else:
+            # 2. Smart Grouping & 3. Dynamic Count
+            # Strategy: "Last Hyphen Rule"
+            # If filename ends with "-{digits}.yaml", treat everything before as Group ID.
+            # Example: "pol_7.1-001.yaml" -> Group "pol_7.1"
+            
+            unique_groups = set()
+            ungrouped_count = 0
+            
+            # Pattern: Capture anything greedy (.+) before a hyphen and digits at the end
+            group_regex = re.compile(r"(.+)-\d+\.yaml$")
+
+            for f in files:
+                match = group_regex.search(f.name)
+                if match:
+                    # Found a grouped asset
+                    unique_groups.add(match.group(1))
+                else:
+                    # Standard asset (no variant ID found)
+                    ungrouped_count += 1
+            
+            # Total = Number of unique groups + Number of standalone assets
+            total_count = len(unique_groups) + ungrouped_count
+            return total_count
+
+    # 4. Configuration Fallback
+
 
     # 3. Configuration Fallback
     execution = internal_config.get("execution", {})

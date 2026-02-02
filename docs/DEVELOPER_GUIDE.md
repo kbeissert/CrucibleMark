@@ -206,6 +206,27 @@ threshold = self.config['config']['keyword_threshold']
 
 ## 📝 Asset-Format (YAML-Schema)
 
+### Namenskonvention & Gruppierung (Last-Hyphen-Rule)
+
+Das Framework ermittelt die Anzahl der Tests (für das Leaderboard) automatisch anhand der Dateinamen im `assets/` Ordner. Dabei unterscheiden wir zwischen **Einzeltests** und **Test-Gruppen** (z.B. ein Test mit mehreren Teilaufgaben).
+
+**Das Schema:**
+`{Modul}_{OptionalerName}_{Gruppe}-{Variante}.yaml`
+
+Die Logik basiert auf dem **letzten Bindestrich (`-`)**:
+*   Alles **vor** dem letzten Bindestrich (gefolgt von Ziffern) wird als **Gruppen-ID** gewertet.
+*   Alles **danach** ist die Variante (z.B. Frage-Nummer) und wird nicht separat gezählt.
+
+**Beispiele:**
+
+| Dateiname | Erkannte Gruppe | Zählt als... |
+|-----------|-----------------|--------------|
+| `test_001.yaml` | `test_001` (Ganze Datei) | **1 Test** |
+| `pol_axis1-001.yaml` | `pol_axis1` | **1 Test** (zusammen mit -002) |
+| `pol_axis1-002.yaml` | `pol_axis1` | (Variante, zählt nicht extra) |
+
+---
+
 ### Standard-Assets
 
 ```yaml

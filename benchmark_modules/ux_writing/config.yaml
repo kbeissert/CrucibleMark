@@ -30,7 +30,6 @@ integration:
 execution:
   test_class: "UXWritingTest"
   assets_dir: "assets"
-  assets_count: 5
 
 benchmarks:
   - id: "ux_writing_001"

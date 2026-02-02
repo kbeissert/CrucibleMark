@@ -40,7 +40,7 @@ metadata:
 integration:
   leaderboard:
     enable_scoring: false
-    display_test_count: 9  # 81 Fragen werden zu 9 Achsen aggregiert
+    # display_test_count: 9  <-- Jetzt dynamisch via group_assets_by_pattern
     
     # Statt Score: Labels für politische Position
     columns:
@@ -71,7 +71,6 @@ execution:
   execution_mode: "batch"             # GLOBAL: Controls Runner Loop (Batch vs Standard)
   min_runs: 3                         # GLOBAL: Tells Runner to respect minimum loops
   assets_dir: "assets"
-  assets_count: 2  # v2_anti_diplomat prompt (74 Fragen)
 
 # ================================
 # MODULE CONFIGURATION
