@@ -142,9 +142,54 @@ def main(print_table: bool = True) -> None:
     leaderboard["Model Name"] = leaderboard["model"]
     
     def format_version_display(row):
-        version = row.get("model_version", "unknown")
+        version = str(row.get("model_version", "unknown"))
+        model_name = str(row.get("model", ""))
         
-        # Extract Date (Month/Year) if available
+        # 1. Strip Model Name from Version if it starts with it
+        # Exact match check
+        if version.startswith(model_name + "-"):
+            display_ver = version[len(model_name)+1:]
+        # Case insensitive check
+        elif version.lower().startswith(model_name.lower() + "-"):
+            display_ver = version[len(model_name)+1:]
+        elif model_name and model_name in version:
+            # If model name is part of version but not perfectly at start or casing differs slightly
+             display_ver = version.replace(model_name, "").strip("-")
+        else:
+            display_ver = version
+
+        # 2. Extract specific parts if it looks like a fingerprint
+        # Format: {official}-{hash}-{date} or {hash}-{date}
+        # Example: 2411-7f3a9c2b-2026-02-02
+        parts = display_ver.split("-")
+        
+        # If we have a hash-like part, keep it short
+        import re
+        
+        final_parts = []
+        for p in parts:
+            # Check for behavioral hash (8 char hex) or ollama hash (12+ hex)
+            if re.match(r'^[a-f0-9]{8}$', p) or re.match(r'^[a-f0-9]{12,}$', p):
+                 final_parts.append(p[:7])
+            # Check for date (YYYY-MM-DD or YYYYMMDD) -> maybe remove or format?
+            # User wants version number. Date is usually extra info.
+            # But the previous code added date suffix from timestamp column.
+            elif re.match(r'^\d{4}-\d{2}-\d{2}$', p) and p == datetime.now().strftime("%Y-%m-%d"):
+                 # Skip if it is today's date (redundant)
+                 pass
+            elif re.match(r'^\d{4}$', p): # Year e.g., 2411 (Mistral Version) or 2024
+                 final_parts.append(p)
+            else:
+                 final_parts.append(p)
+        
+        display_ver = "-".join(final_parts) if final_parts else display_ver
+
+        # 3. Handle 'unknown'
+        if display_ver == "unknown":
+             # If unknown, we rely on timestamp date
+             pass
+
+        # Extract Date (Month/Year) from timestamp for suffix if needed
         date_suffix = ""
         raw_ts = row.get("timestamp")
         if pd.notna(raw_ts):
@@ -154,22 +199,13 @@ def main(print_table: bool = True) -> None:
             except (ValueError, TypeError):
                 pass
         
-        # Smart formatting
-        display_ver = str(version)
-        if version and version != "unknown":
-            # Sólo Hash-Werte kürzen (z.B. Ollama Digest oder Git SHA)
-            # Namen wie "mistral-medium-latest" sollen erhalten bleiben
-            import re
-            is_probably_hash = bool(re.match(r'^[a-f0-9]{10,}$', display_ver) or (':' in display_ver and 'sha256' in display_ver))
-            
-            if is_probably_hash:
-                display_ver = display_ver[:7]
-            elif len(display_ver) > 25:
-                # Lange Namen sanft kürzen
-                display_ver = display_ver[:22] + "..."
-        
-        if date_suffix:
+        if display_ver in ["", "unknown"]:
+             return f"({date_suffix})" if date_suffix else "unknown"
+             
+        if date_suffix and date_suffix not in display_ver:
+             # Only add if not already in string (e.g. if we kept the date in fingerprint)
             return f"{display_ver} ({date_suffix})"
+            
         return display_ver
 
     leaderboard["Version"] = leaderboard.apply(format_version_display, axis=1)

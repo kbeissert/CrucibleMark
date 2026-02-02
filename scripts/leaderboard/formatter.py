@@ -99,6 +99,7 @@ def print_leaderboard_table(leaderboard: pd.DataFrame) -> None:
         "Rank",
         "Recommendation",
         "Model Name",
+        "Version",
         "Generation",
         "Total Score",
         "Avg Time (s)",
