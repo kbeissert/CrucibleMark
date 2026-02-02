@@ -62,7 +62,7 @@
 | `ux_writing` | 🟡 Planned | 2-3h | Scorer-Logik Review, Test-Coverage |
 | `documentation_quality` | 🟡 Planned | 2-3h | Asset-Erweiterung (aktuell nur 5 Assets) |
 | `content_transformation` | 🟡 Planned | 2-3h | Beta → v1.0 (Scorer-Validierung) |
-| `cultural_intelligence` | 🟡 Planned | 2-3h | Asset-Diversität (aktuell sehr Europa-fokussiert) |
+| `cultural_intelligence` | 🟡 Planned | 2-3h | Asset-Diversität, **Negative Keywords** (v2.1 Feature für Idiom-Tests) |
 | `reasoning_logic` | 🟡 Planned | 3-4h | RCI-Optimierung, Metacognition-Erweiterung |
 | `political_compass` | ✅ Complete | - | v3.0 bereits Production-Ready |
 

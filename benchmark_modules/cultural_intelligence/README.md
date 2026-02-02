@@ -760,6 +760,41 @@ class DialectAuthenticator:
 
 ---
 
+## ⚠️ **Known Issues & Limitations**
+
+### **Special Case: Asset 6E (German Idioms)**
+
+**Status:** Uses `LegacyEvaluator` instead of v2.0 modular architecture.
+
+**Why?**
+Asset 6E requires **negative keyword checking**: verifying that English idioms are **removed** (not just translated). 
+
+**Example:**
+```
+❌ BAD: "The game plan went south" → "Der game plan ging schief"
+         (English "game plan" still present!)
+
+✅ GOOD: "The game plan went south" → "Der Plan ging schief"
+         (English removed, German equivalent used)
+```
+
+The v2.0 `SolutionQualityEvaluator` currently only checks for **positive keywords** (German equivalents present), but lacks support for **negative keywords** (English removed).
+
+**Impact:**
+- ✅ **Stricter quality control** (catches literal translations)
+- ✅ **Higher accuracy** (penalizes mixed-language responses)
+- ⚠️ **Architectural inconsistency** (one asset uses different evaluator)
+
+**Future Roadmap (v2.1):**
+- Create specialized `IdiomReplacementEvaluator`
+- Migrate Asset 6E to new evaluator
+- Deprecate `LegacyEvaluator` (remove in v3.0)
+
+**Configuration:**
+The YAML schema is V2-compatible (uses Dict format), but scoring logic remains in `core/legacy/evaluators.py`. This is intentional.
+
+---
+
 ## 📚 **References**
 
 - **Hofstede's Cultural Dimensions**: https://www.hofstede-insights.com/
