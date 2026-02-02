@@ -154,10 +154,19 @@ def main(print_table: bool = True) -> None:
             except (ValueError, TypeError):
                 pass
         
-        # Short hash
+        # Smart formatting
         display_ver = str(version)
         if version and version != "unknown":
-            display_ver = version[:7] if len(version) > 10 else version
+            # Sólo Hash-Werte kürzen (z.B. Ollama Digest oder Git SHA)
+            # Namen wie "mistral-medium-latest" sollen erhalten bleiben
+            import re
+            is_probably_hash = bool(re.match(r'^[a-f0-9]{10,}$', display_ver) or (':' in display_ver and 'sha256' in display_ver))
+            
+            if is_probably_hash:
+                display_ver = display_ver[:7]
+            elif len(display_ver) > 25:
+                # Lange Namen sanft kürzen
+                display_ver = display_ver[:22] + "..."
         
         if date_suffix:
             return f"{display_ver} ({date_suffix})"

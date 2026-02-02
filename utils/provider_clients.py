@@ -11,6 +11,7 @@ from utils.ollama_config import CODING_BENCHMARK_OPTIONS, CREATIVE_BENCHMARK_OPT
 from utils.constants import MAX_TOKENS_ANTHROPIC, DEFAULT_MISTRAL_MODEL
 from utils.env_utils import get_required_env
 from utils.model_utils import is_reasoning_model
+from utils.fingerprinting import ModelFingerprinter, get_official_version
 
 # Optional Provider Imports
 try:
@@ -43,6 +44,18 @@ class BaseProviderClient:
     def __init__(self, config: dict[str, Any]):
         self.config = config
         self.last_response_metadata = {}
+        self.fingerprint_cache = {}
+
+    def get_fingerprint(self, model: str) -> str:
+        """
+        Retrieves or generates a fingerprint for the given model.
+        Should be implemented/used by subclasses for commercial models.
+        """
+        # Default behavior: return model version from API or unknown
+        # Since local Ollama models have their own mechanism in provider_clients? 
+        # Actually Ollama fingerprint is generated in get_model_version inside model_utils.py.
+        # But we want to unify this if possible or just use this for commercial.
+        return "unknown"
 
     def query(
         self,
@@ -293,11 +306,35 @@ class AnthropicClient(BaseProviderClient):
 
     def _resolve_model(self, model: str) -> str:
         """Löst Modell-Name auf (Config-Fallback)"""
-        if not model or model.startswith("claude"):
+        # Nur wenn kein Modell oder der generische Provider-Name übergeben wurde, Fallback nutzen.
+        if not model or model == "claude":
             return self.config.get("anthropic", {}).get(
                 "model", "claude-3-5-sonnet-20241022"
             )
         return model
+
+    def _get_fingerprint(self, model: str) -> str:
+        """Generates fingerprint for Anthropic Model."""
+        if model in self.fingerprint_cache:
+            return self.fingerprint_cache[model]
+
+        official_version = get_official_version("anthropic", model)
+        # Use simple model type (claude-3-opus)
+        model_type = model.replace("claude-", "claude").replace("-", "").replace(":", "") 
+        
+        behavioral_hash = ModelFingerprinter.generate_behavioral_hash(
+            client=self,
+            model_name=model  
+        )
+        
+        fingerprint = ModelFingerprinter.create_fingerprint(
+            provider="anthropic",
+            model_name=model_type,
+            official_version=official_version,
+            behavioral_hash=behavioral_hash
+        )
+        self.fingerprint_cache[model] = fingerprint
+        return fingerprint
 
     def query(
         self,
@@ -310,6 +347,7 @@ class AnthropicClient(BaseProviderClient):
         """Query Anthropic API"""
         try:
             model = self._resolve_model(model)
+            skip_fingerprint = kwargs.pop("skip_fingerprint", False)
 
             # Default to config, but override with kwargs if present
             max_tokens = kwargs.get("max_tokens")
@@ -332,6 +370,11 @@ class AnthropicClient(BaseProviderClient):
                 "id": response.id,
                 "usage": response.usage,
             }
+
+            if not skip_fingerprint:
+                fp = self._get_fingerprint(model)
+                self.last_response_metadata["model_fingerprint"] = fp
+                self.last_response_metadata["system_fingerprint"] = fp
 
             if (
                 stream_handler
@@ -392,9 +435,34 @@ class MistralClient(BaseProviderClient):
 
     def _resolve_model(self, model: str) -> str:
         """Löst Modell-Name auf (Config-Fallback)"""
-        if not model or model.startswith("mistral"):
+        # Nur wenn kein Modell oder der generische Provider-Name übergeben wurde, Fallback nutzen.
+        if not model or model == "mistral":
             return self.config.get("mistral", {}).get("model", DEFAULT_MISTRAL_MODEL)
         return model
+
+    def _get_fingerprint(self, model: str) -> str:
+        """Generates fingerprint for Mistral Model."""
+        if model in self.fingerprint_cache:
+            return self.fingerprint_cache[model]
+
+        official_version = get_official_version("mistral", model)
+        # Use simple model type name for fingerprinting
+        model_type = model.replace("mistral-", "").split("-")[0]
+        
+        # NOTE: self passed as client. query() must handle skip_fingerprint kwarg
+        behavioral_hash = ModelFingerprinter.generate_behavioral_hash(
+            client=self,
+            model_name=model  
+        )
+        
+        fingerprint = ModelFingerprinter.create_fingerprint(
+            provider="mistral",
+            model_name=model_type,
+            official_version=official_version,
+            behavioral_hash=behavioral_hash
+        )
+        self.fingerprint_cache[model] = fingerprint
+        return fingerprint
 
     def query(
         self,
@@ -407,6 +475,7 @@ class MistralClient(BaseProviderClient):
         """Query Mistral API"""
         try:
             model = self._resolve_model(model)
+            skip_fingerprint = kwargs.pop("skip_fingerprint", False)
 
             # Mistral supports max_tokens
             max_tokens = kwargs.get("max_tokens")
@@ -426,6 +495,12 @@ class MistralClient(BaseProviderClient):
                 "id": response.id,
                 "usage": response.usage,
             }
+
+            if not skip_fingerprint:
+                # Calculate fingerprint (this might call query recursively with skip_fingerprint=True)
+                fp = self._get_fingerprint(model)
+                self.last_response_metadata["model_fingerprint"] = fp
+                self.last_response_metadata["system_fingerprint"] = fp # Alias for runner compatibility
 
             content = response.choices[0].message.content
             if stream_handler and content:
@@ -482,6 +557,29 @@ class OpenAIClient(BaseProviderClient):
             logger.warning("OpenAI Access Check Failed: %s", e)
             return False
 
+    def _get_fingerprint(self, model: str) -> str:
+        """Generates fingerprint for OpenAI Model."""
+        if model in self.fingerprint_cache:
+            return self.fingerprint_cache[model]
+
+        official_version = get_official_version("openai", model)
+        # Use simple model type name for fingerprinting
+        model_type = model.replace("gpt-", "gpt").split("-")[0]
+        
+        behavioral_hash = ModelFingerprinter.generate_behavioral_hash(
+            client=self,
+            model_name=model  
+        )
+        
+        fingerprint = ModelFingerprinter.create_fingerprint(
+            provider="openai",
+            model_name=model_type,
+            official_version=official_version,
+            behavioral_hash=behavioral_hash
+        )
+        self.fingerprint_cache[model] = fingerprint
+        return fingerprint
+
     def query(
         self,
         model: str,
@@ -492,6 +590,7 @@ class OpenAIClient(BaseProviderClient):
     ) -> str:
         """Query OpenAI API"""
         try:
+            skip_fingerprint = kwargs.pop("skip_fingerprint", False)
             params = {
                 "model": model,
                 "messages": [{"role": "user", "content": prompt}],
@@ -510,6 +609,18 @@ class OpenAIClient(BaseProviderClient):
                 "system_fingerprint": getattr(response, "system_fingerprint", None),
                 "usage": response.usage,
             }
+
+            if not skip_fingerprint:
+                 # Calculate custom fingerprint
+                fp = self._get_fingerprint(model)
+                self.last_response_metadata["model_fingerprint"] = fp
+                
+                # OpenAI already has system_fingerprint, but we overwrite/augment it 
+                # if we want consistent behavioral fingerprint across providers.
+                # OpenAI's system_fingerprint changes frequently.
+                # Ours is stable per behavioral hash logic.
+                # Let's use ours as the primary "version" for benchmark tracking.
+                self.last_response_metadata["system_fingerprint"] = fp
 
             content = response.choices[0].message.content or ""
 
