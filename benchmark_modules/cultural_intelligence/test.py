@@ -50,7 +50,11 @@ class CulturalIntelligenceTest(BaseTest):
             "response": response_text,
             "raw_response": response_text,
             "execution_time": execution_time,
-            "metadata": {"model": model, "provider": provider},
+            "metadata": {
+                "model": model, 
+                "provider": provider,
+                **getattr(llm_client, "last_response_metadata", {})
+            },
         }
 
     def score_response(self, response: str) -> Dict[str, Any]:
