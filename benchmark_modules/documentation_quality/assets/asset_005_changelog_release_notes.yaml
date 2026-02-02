@@ -7,6 +7,7 @@
 
 metadata:
   id: documentation_quality_005
+  doc_type: "changelog"
   name: "Changelog - Git Commits to User-Facing Release Notes"
   category: documentation_quality
   subcategory: changelog

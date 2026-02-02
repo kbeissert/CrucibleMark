@@ -7,6 +7,7 @@
 
 metadata:
   id: documentation_quality_004
+  doc_type: "setup_guide"
   name: "Setup Guide - Local Dev Environment (Docker + Vite)"
   category: documentation_quality
   subcategory: setup_guide
