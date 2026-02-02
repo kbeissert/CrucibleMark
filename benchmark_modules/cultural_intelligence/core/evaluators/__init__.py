@@ -45,9 +45,16 @@ class CulturalIntelligenceEvaluator:
         if not response or response.startswith("ERROR:"):
             return self._create_error_score("Invalid or error response")
 
-        # Legacy Dispatch
-        if "scoring" not in self.asset:
-            # Delegate to legacy evaluator
+        # Smart Dispatch: Check if configured for v2 (has specialized categories)
+        # or if we should fallback to legacy v1 logic.
+        scoring_config = self.asset.get("scoring", {})
+        is_v2_config = any(
+            key in scoring_config 
+            for key in ["language_proficiency", "cultural_fit", "solution_quality"]
+        )
+
+        if not is_v2_config:
+            # Delegate to legacy evaluator (handles Assets 001-005)
             legacy = LegacyEvaluator(self.asset)
             return legacy.score_response(response)
 
