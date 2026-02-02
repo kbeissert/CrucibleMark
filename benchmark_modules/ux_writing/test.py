@@ -69,11 +69,15 @@ class UXWritingTest(BaseTest):
             self.logger.error("Empty response received from LLM")
             response = ""
 
+        # Merge metadata
+        meta = self.asset.get("metadata", {}).copy()
+        meta.update(getattr(llm_client, "last_response_metadata", {}))
+
         return {
             "raw_response": response,
             "response": response,
             "execution_time": execution_time,
-            "metadata": self.asset.get("metadata", {})
+            "metadata": meta
         }
 
     def score_response(self, response: str) -> Dict[str, Any]:

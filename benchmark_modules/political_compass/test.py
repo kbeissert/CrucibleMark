@@ -469,6 +469,11 @@ class PoliticalCompassTest(BaseTest):
         return {
             "raw_response": json.dumps(self.last_score_result, default=str),
             "execution_time": time.time() - start_time,
+            "metadata": {
+                "model": model, 
+                "provider": provider,
+                **getattr(llm_client, "last_response_metadata", {})
+            },
         }
 
     def _calculate_scores(self, responses_count: int) -> dict:
