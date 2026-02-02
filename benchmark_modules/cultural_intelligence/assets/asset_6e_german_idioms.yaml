@@ -24,9 +24,12 @@ prompt: |
   "The project went south last week. We need to think outside the box and come up with a game plan. Let's touch base on Monday to get the ball rolling. We can't afford to drop the ball on this one."
 
 scoring:
+  total_points: 100
   criteria:
-    weight: 100
-    description: "10-Point Idiom Translation Check (5 idioms, 2 points each)"
+    - name: "Idiom Translation"
+      weight: 100
+      description: "10-Point Idiom Translation Check (5 idioms, 2 points each)"
+      expected_idioms: ["went south", "outside the box", "game plan", "touch base", "get the ball rolling"]
 
 expected_output: |
   "Das Projekt ging letzte Woche schief. Wir müssen kreativ denken und einen Plan entwickeln. Lass uns am Montag kurz sprechen, um die Sache ins Rollen zu bringen. Wir können uns hier keinen Fehler erlauben."
