@@ -42,6 +42,7 @@ class BaseProviderClient:
 
     def __init__(self, config: dict[str, Any]):
         self.config = config
+        self.last_response_metadata = {}
 
     def query(
         self,
@@ -165,6 +166,12 @@ class OllamaClient(BaseProviderClient):
         **kwargs,
     ) -> str:
         """Query Ollama API"""
+        # Validate inputs early to prevent opaque 400 errors from backend
+        if not model:
+            raise ValueError("OllamaClient.query called with empty 'model' parameter.")
+        if " " in model:
+            logger.warning("Model name '%s' contains spaces. This may cause 'model is required' errors in Ollama.", model)
+
         try:
             options = self._get_options(model, temperature)
 
@@ -176,11 +183,21 @@ class OllamaClient(BaseProviderClient):
                 return self._handle_streaming(model, prompt, options, stream_handler)
 
             # Standard Blocking Call
-            response = self.client.chat(
-                model=model,
-                messages=[{"role": "user", "content": prompt}],
-                options=options,
-            )
+            try:
+                response = self.client.chat(
+                    model=model,
+                    messages=[{"role": "user", "content": prompt}],
+                    options=options,
+                )
+            except Exception as e:
+                # Catch specific Ollama 400 errors to inform user
+                err_str = str(e)
+                if "model is required" in err_str:
+                    raise ValueError(
+                        f"Ollama rejected the request for model='{model}'. "
+                        "Check if the model name is correct and has no illegal characters (spaces, etc.)."
+                    ) from e
+                raise e
 
             msg = response.get("message", {})
             # Handle diff response formats (dict vs object)
@@ -309,6 +326,13 @@ class AnthropicClient(BaseProviderClient):
                 messages=[{"role": "user", "content": prompt}],
             )
 
+            # Capture Metadata
+            self.last_response_metadata = {
+                "model": response.model,
+                "id": response.id,
+                "usage": response.usage,
+            }
+
             if (
                 stream_handler
                 and response.content
@@ -396,6 +420,13 @@ class MistralClient(BaseProviderClient):
                 max_tokens=max_tokens, # Pass None if not provided (SDK default)
             )
 
+            # Capture Metadata
+            self.last_response_metadata = {
+                "model": response.model,
+                "id": response.id,
+                "usage": response.usage,
+            }
+
             content = response.choices[0].message.content
             if stream_handler and content:
                 stream_handler(content)
@@ -471,6 +502,15 @@ class OpenAIClient(BaseProviderClient):
 
             # Note: Streaming not implemented yet for OpenAI in this wrapper
             response = self.client.chat.completions.create(**params)
+
+            # Capture Metadata
+            self.last_response_metadata = {
+                "model": response.model,
+                "id": response.id,
+                "system_fingerprint": getattr(response, "system_fingerprint", None),
+                "usage": response.usage,
+            }
+
             content = response.choices[0].message.content or ""
 
             if stream_handler and content:

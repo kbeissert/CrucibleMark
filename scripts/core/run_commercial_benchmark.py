@@ -278,7 +278,16 @@ class CommercialBenchmarkRunner(BaseBenchmarkRunner):
         result = calculate_score_contributions(result, asset_cfg)
 
         # Add Version/Fingerprint if available from API
-        result["model_version"] = exec_result.get("metadata", {}).get("system_fingerprint", "unknown")
+        meta = exec_result.get("metadata", {})
+        version = meta.get("system_fingerprint")
+
+        # Fallback to returned model ID only if it differs from the requested model alias
+        if not version:
+            returned_model = meta.get("model")
+            if returned_model and returned_model != model:
+                version = returned_model
+
+        result["model_version"] = version or "unknown"
 
         # Add Cost Tracking
         cost_val = 0.0
@@ -440,7 +449,18 @@ class CommercialBenchmarkRunner(BaseBenchmarkRunner):
             # Construct Data Object
             data_object = format_political_compass_data(report)
 
-            new_row = prepare_pc_csv_row(model, report, data_object, model_version="unknown")
+            # Resolve Version from Client Metadata
+            meta = client.last_response_metadata
+            version = meta.get("system_fingerprint")
+
+            if not version:
+                returned_model = meta.get("model")
+                if returned_model and returned_model != model:
+                    version = returned_model
+            
+            version = version or "unknown"
+
+            new_row = prepare_pc_csv_row(model, report, data_object, model_version=version)
             new_row["timestamp"] = datetime.now().isoformat()
             pc_rows.append(new_row)
 
