@@ -1,8 +1,18 @@
+"""
+Cultural Intelligence Evaluators Facade.
+
+This module provides the main entry point (CulturalIntelligenceEvaluator)
+and exposes specialized evaluators for language proficiency, cultural fit,
+solution quality, and regional consistency.
+"""
+
 from typing import Any, Dict
 from pathlib import Path
 from .language_proficiency import LanguageProficiencyEvaluator
 from .cultural_fit import CulturalFitEvaluator
 from .solution_quality import SolutionQualityEvaluator
+from .regional_validator import RegionalConsistencyValidator
+from .formality_scorer import FormalityScorer
 from .legacy import LegacyEvaluator
 
 class CulturalIntelligenceEvaluator:
@@ -10,6 +20,8 @@ class CulturalIntelligenceEvaluator:
     Facade for Cultural Intelligence evaluation.
     Maintains v1.0 interface for backward compatibility.
     """
+
+    # pylint: disable=too-few-public-methods
 
     def __init__(self, asset: Dict[str, Any], asset_path: Path = None):
         self.asset = asset
@@ -94,6 +106,16 @@ class CulturalIntelligenceEvaluator:
         if "cultural_fit" in category_scores:
             metadata.update(cultural_result.get("metadata", {}))
 
+        # NEW: Regional consistency check
+        regional_check = RegionalConsistencyValidator.validate_consistency(response)
+        metadata["regional_consistency"] = regional_check["is_consistent"]
+        metadata["regional_violations"] = regional_check["violations"]
+        metadata["dominant_region"] = regional_check["dominant_region"]
+
+        # NEW: Enhanced formality scoring
+        formality = FormalityScorer.calculate_formality(response)
+        metadata["formality"] = formality
+
         return {
             "status": "success",
             "total_score": round(total_achieved, 2),
@@ -124,5 +146,7 @@ __all__ = [
     "CulturalIntelligenceEvaluator",
     "LanguageProficiencyEvaluator",
     "CulturalFitEvaluator",
-    "SolutionQualityEvaluator"
+    "SolutionQualityEvaluator",
+    "RegionalConsistencyValidator",
+    "FormalityScorer"
 ]
