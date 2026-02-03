@@ -18,3 +18,7 @@ expected_output:
   required_findings:
     - "deadlock"
     - "circular"
+
+scoring:
+  method: "rubric"
+  max_score: 100

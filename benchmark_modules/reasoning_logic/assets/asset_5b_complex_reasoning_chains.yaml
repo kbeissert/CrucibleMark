@@ -20,3 +20,7 @@ expected_output:
   required_findings:
     - "database"
     - "latency"
+
+scoring:
+  method: "rubric"
+  max_score: 100
