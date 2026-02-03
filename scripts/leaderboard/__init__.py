@@ -112,12 +112,15 @@ def main(print_table: bool = True) -> None:
         "Avg Time (s)",
         "Routine Score",
         "Reasoning Score",
-        "Efficiency_Index",
-        "Cost per 1K"
+        "Efficiency_Index"
     ]
     for col in cols_to_round:
         if col in leaderboard.columns:
             leaderboard[col] = leaderboard[col].round(2)
+            
+    # Round Cost per 1K to 4 places separately
+    if "Cost per 1K (USD)" in leaderboard.columns:
+        leaderboard["Cost per 1K (USD)"] = leaderboard["Cost per 1K (USD)"].round(4)
 
     # Format category columns (rounding)
     cat_cols = []

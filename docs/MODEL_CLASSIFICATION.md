@@ -1,285 +1,255 @@
-# Model Classification & RCI (Reasoning Complexity Index)
+# Model Classification & Badge System
 
-**Zielgruppe:** Alle, die verstehen wollen, wie CrucibleMark Modelle in "Generationen" einteilt.
+**Zielgruppe:** Alle, die verstehen wollen, wie CrucibleMark Modelle klassifiziert und bewertet.
 
 **Was Sie hier finden:**
-- RCI (Reasoning Complexity Index) erklärt
-- 3 Generationen von LLMs (Pattern Matcher → Reasoning → Distilled)
-- Hybrid-Klassifizierungs-System (Auto + Manual)
-- Wie man neue Modelle pflegt
+- Badge-System (Standard, Bronze, Silver, Gold)
+- Speed Classes (Fast, Medium, Slow)
+- Skill Profiles (automatische Kategorisierung)
+- Reasoning Score Interpretation
+- Best Practices für neue Modelle
 
 ---
 
-## 📊 Der Reasoning Complexity Index (RCI)
+## 🏅 Badge-System
 
-Der RCI ist die zentrale Metrik zur Bewertung der **kognitiven Tiefe** eines Modells.
+Badges reflektieren die **Gesamt-Performance** über alle Module hinweg.
 
-**Skala:** 0% bis 100%
+### Klassifizierung nach Total Score
 
-### Berechnung
+| Badge | Score Range | Beschreibung | Beispiele (Feb 2026) |
+|-------|-------------|--------------|----------------------|
+| 🥇 **Gold** | ≥ 85.0 | Elite-Performance, Cloud-Niveau | *(Noch nicht erreicht)* |
+| 🥈 **Silver** | 70.0 - 84.9 | Production-ready, gute Balance | Mistral Large (78.8), Ministral-3:14b (77.6), Cogito:14b (72.5) |
+| 🥉 **Bronze** | 60.0 - 69.9 | Solide Basis, spezialisiert | Qwen 2.5:14b (69.4), DeepSeek-R1 (65.1) |
+| ⚖️ **Standard** | < 60.0 | Entwicklungs-Stadium, limitiert | Dolphin-Llama3:8b (44.4) |
 
-Der Score setzt sich aus zwei Faktoren zusammen:
+**Aktuelle Verteilung (16 Modelle):**
+- Gold: 0
+- Silver: 8 (50%)
+- Bronze: 7 (44%)
+- Standard: 1 (6%)
+
+---
+
+## ⚡ Speed Classes
+
+Speed Classes kategorisieren Modelle nach ihrer **durchschnittlichen Inferenz-Zeit** über alle 37 Tests.
+
+### Klassifizierung
+
+| Class | Symbol | Avg Time | Beschreibung | Use Case |
+|-------|--------|----------|--------------|----------|
+| **Fast** | ⚡ | < 30s | Instant-Gefühl, interaktive Nutzung | Autocomplete, Chat, Prototyping |
+| **Medium** | ⏱️ | 30-60s | Spürbare Latenz, akzeptabel | Deep-Work Sessions, Batch Processing |
+| **Slow** | 🐢 | > 60s | "Kaffeepause"-Modell | Hintergrund-Jobs, nächtliche Analysen |
+
+**Beispiele:**
+- **Fast:** Mistral Large (25.4s), Qwen 2.5-Coder:7b (17.9s)
+- **Medium:** Cogito:14b (62.2s), Mistral-Nemo (60.0s)
+- **Slow:** Ministral-3:14b (168s), Gemma3:12b (100.7s)
+
+**Wichtig:** Speed ≠ Quality! Ministral-3:14b ist Slow, aber Rang 4 im Leaderboard.
+
+---
+
+## 🎯 Skill Profiles
+
+Skill Profiles beschreiben die **Stärken-Kombination** eines Modells basierend auf Performance-Clustering.
+
+### Profil-Typen
+
+#### 1. **Fast Specialist**
+- **Speed:** Fast (< 30s)
+- **Stärken:** Code Quality + Reasoning
+- **Beispiele:** Mistral Large (83.6 Code, 67.7 Reasoning)
+
+#### 2. **Fast Content Adapter**
+- **Speed:** Fast (< 30s)
+- **Stärken:** Content Transformation + Cultural Intelligence
+- **Beispiele:** Qwen 2.5-Coder:14b (77.1 Content, 63.0 Cultural)
+
+#### 3. **Fast Code Reviewer**
+- **Speed:** Fast (< 30s)
+- **Stärken:** Code Quality (> 85) + Documentation
+- **Beispiele:** Mistral Medium (90.2 Code, 70.9 Docs)
+
+#### 4. **Balanced Specialist**
+- **Speed:** Medium
+- **Stärken:** Gleichmäßig über alle Module
+- **Beispiele:** Cogito:14b (82.4 Code, 70.1 Reasoning)
+
+#### 5. **Slow Specialist**
+- **Speed:** Slow (> 60s)
+- **Stärken:** Einzelne Domäne (meist Reasoning oder Cultural)
+- **Beispiele:** Ministral-3:8b (71.5 Reasoning, 86.0 Cultural)
+
+#### 6. **Slow Content Adapter**
+- **Speed:** Slow (> 60s)
+- **Stärken:** Content + Cultural Intelligence
+- **Beispiele:** Ministral-3:14b (85.3 Content, 83.4 Cultural)
+
+**Automatische Erkennung:** Basiert auf Top-2-Kategorien + Speed Class.
+
+---
+
+## 📊 Performance/s = "Qualität pro Sekunde"
+
+**Performance/s sagt:**  
+"Wie effizient ist das Modell in Bezug auf Wartezeit?"
+
+### Formel
+```
+Performance/s = Total Score ÷ Avg Time (s)
+```
+
+**Was es misst:** Wie viel Leistung (Score) du **pro Sekunde Wartezeit** bekommst.
+
+---
+
+## 🎯 Interpretation
+
+### Top-Performer (Efficiency-Könige)
+
+| Model | Total Score | Zeit | Performance/s | Bedeutung |
+|-------|-------------|------|---------------|-----------|
+| **Mistral Large** | 78.84 | 25.4s | **3.10** | Schnell & stark → Ideal für Echtzeit |
+| **Dolphin-Llama3** | 47.56 | 20.7s | **2.30** | Schnell, aber schwach → Nur für Simple Tasks |
+| **Qwen 2.5:14b** | 70.29 | 32.4s | **2.17** | Guter Kompromiss |
+
+### Slow Thinkers (Quality über Speed)
+
+| Model | Total Score | Zeit | Performance/s | Bedeutung |
+|-------|-------------|------|---------------|-----------|
+| **Ministral-3:14b** | 77.63 | 167.95s | **0.46** | Langsam, aber Rang 2! → Batch-Jobs |
+| **Ministral-3:8b** | 75.19 | 106.0s | **0.71** | Mittellangsam, stark |
+| **Gemma3:12b** | 72.11 | 100.7s | **0.72** | Ähnlich wie Ministral-3:8b |
+
+---
+
+## 💡 Use Cases nach Performance/s
+
+### 🚀 Hoch (> 3.0) - "Echtzeit-Klasse"
+**Use Case:** Chat, Autocomplete, interaktive UIs  
+**Beispiel:** Mistral Large (3.10)  
+**Trade-off:** Meist Commercial oder schwächere Modelle
+
+### ⚡ Mittel (1.0 - 3.0) - "Deep-Work-Klasse"
+**Use Case:** Code-Reviews, Dokumentations-Analysen  
+**Beispiel:** Qwen 2.5:14b (2.17), Cogito:14b (1.16)  
+**Trade-off:** Spürbare Latenz, aber akzeptabel
+
+### 🐢 Niedrig (< 1.0) - "Batch-Klasse"
+**Use Case:** Nächtliche Scans, Background-Jobs  
+**Beispiel:** Ministral-3:14b (0.46)  
+**Trade-off:** Zu langsam für interaktive Nutzung, aber oft **höchste Quality**
+
+---
+
+## 📊 Reasoning Score Interpretation
+
+Der **Reasoning Score** ist der härteste Test in CrucibleMark.
+
+### Score-Bereiche & Bedeutung
+
+| Score | Klassifizierung | Fähigkeiten | Beispiele |
+|-------|-----------------|-------------|-----------|
+| **35-40** | Elite | Tier 2 (Deep Reasoning) konstant > 70%, Tier 3 (Metacognition) > 50% | Mistral Medium (39.8) |
+| **31-34** | Production-Ready | Tier 2 > 60%, Tier 3 variabel | Ministral-3:14b (36.4), Cogito (35.0) |
+| **26-30** | Entwicklung | Tier 2 > 50%, Tier 3 schwach | Gemma2:9b (26.6), Mistral-Nemo (30.4) |
+| **< 26** | Limitiert | Tier 2 inkonsistent, Tier 3 Fail | Dolphin-Llama3 (17.6) |
+
+### Warum sind die Scores niedrig?
+
+**Das ist gewollt!** CrucibleMark misst **operatives Reasoning** (Deadlock-Detection, Root-Cause-Analyse), nicht "wie viel schreibt das Modell".
+
+**Tier-Breakdown:**
+- **Tier 0 (Sanity Check):** 80% schaffen 60+ Punkte
+- **Tier 2 (Deep Reasoning):** 50% schaffen 70+ Punkte
+- **Tier 3 (Metacognition):** 20% schaffen 70+ Punkte
+
+**Referenz:** Selbst DeepSeek-R1 (Marketing: "Reasoning Model") erreicht nur **31.6** → Das zeigt, dass Tier 2/3 **wirklich schwer** sind.
+
+---
+
+## 🔍 Routine vs. Reasoning Score
+
+### Unterschied
+
+| Metrik | Misst | Gewichtung | Beispiel-Tasks |
+|--------|-------|------------|----------------|
+| **Routine Score** | Alltags-Produktivität | Code (20%), UX (15%), Docs (20%), Content (20%), Cultural (25%) | Code-Audits, Button-Labels, README-Qualität |
+| **Reasoning Score** | Kognitive Tiefe | Tier 0 (10%), Tier 2 (50%), Tier 3 (40%) | Deadlock-Erkennung, Paradox-Lösung, Selbstkorrektur |
+
+**Warum beide?**
+- **Routine:** Zeigt "Kann ich damit arbeiten?"
+- **Reasoning:** Zeigt "Kann es komplexe Probleme lösen?"
+
+**Beispiel:** Ministral-3:14b hat **41.3 Routine** (Rang 4) aber **36.4 Reasoning** (Rang 1 lokal) → Gut für Alltag UND tiefes Denken.
+
+---
+
+## 🛠️ Workflow: Neue Modelle hinzufügen
+
+### 1. Benchmark ausführen
+
+```bash
+python test.py --model neues-modell:14b --runs 1
+```
+
+### 2. Leaderboard generieren
+
+```bash
+make leaderboard
+```
+
+### 3. Automatische Klassifizierung prüfen
+
+Das System vergibt automatisch:
+- **Badge:** Basierend auf Total Score
+- **Speed Class:** Basierend auf Avg Time
+- **Skill Profile:** Basierend auf Top-2-Kategorien
+
+### 4. Manuelle Review (optional)
+
+**Überprüfe, ob:**
+- Badge passt zur erwarteten Performance
+- Speed Class korrekt ist (manchmal langsame Runs durch System-Load)
+- Skill Profile Sinn macht (z.B. "Fast Code Reviewer" sollte > 80 Code Quality haben)
+
+**Bei Unstimmigkeiten:**
+- Check `validation_dataset.py` → Sind alle Tests ausgeführt?
+- Check `benchmark_leaderboard.csv` → Fehlerhafte Daten?
+
+---
+
+## 📈 Performance-Ratio & Vergleich mit Golden Standards
+
+### Was sind Golden Standards?
+
+**Golden Standards** sind **kommerzielle Referenz-Modelle** (aktuell: Mistral Large/Medium), gegen die alle lokalen Modelle gemessen werden.
+
+**Performance-Ratio Formel:**
 
 ```
-RCI = (Avg_Tier1_2_Score × 0.6) + (Avg_Tier3_Score × 0.4)
+Performance Ratio = (Local Model Score / Golden Standard Score) × 100
 ```
-
-**Komponenten:**
-1. **Operationale Logik (60%):** Kann das Modell komplexe Rätsel lösen? (Tier 1 & 2)
-2. **Metakognition (40%):** Reflektiert das Modell über seinen eigenen Denkprozess? (Tier 3)
-
-**Siehe:** `ARCHITECTURE.md` für Details zu den Tiers.
-
----
-
-### Klassifizierung basierend auf RCI
-
-| Kategorie | RCI Bereich | Beschreibung | Beispiel |
-|-----------|-------------|--------------|----------|
-| **Standard** | < 50% | Löst Standard-Tasks, scheitert an Selbstreflexion | Dolphin 8B (~42%) |
-| **Silver** | >> 70% | Gute Logik (Routine + Standard Reasoning) | Qwen 2.5 (~65%) |
-| **Gold** | > 85% | Exzellente Logik + aktive Selbstkorrektur | DeepSeek R1 (~87%) |
-
-Anmerkung: Die RCI-Werte korrelieren stark mit den **Leaderboard Badges** (Standard, Bronze, Silver, Gold).
-
-
----
-
-## 🧬 3 Generationen von LLMs
-
-CrucibleMark unterscheidet Modelle nach ihrer **Trainings-Architektur**:
-
-### Gen 1: Pattern Matcher (Standard-LLMs)
-
-**Training:** Supervised Fine-Tuning auf Text-Completion
-
-**Charakteristik:**
-- Schnell (< 10s Antwortzeit) → Siehe **Speed Class: Fast**
-- Niedrige Reasoning Scores (< 70%) → Siehe **Badge: Bronze/Standard**
-- Gut bei Routine-Tasks (Code, Doku, UX Writing)
-
-**Beispiele:**
-- Llama 3.1 8B
-- Mistral 7B
-- Qwen 2.5 14B (Base)
-
----
-
-### Gen 2: Reasoning Models (mit <think> Tags)
-
-**Training:** Reinforcement Learning auf Reasoning-Traces
-
-**Charakteristik:**
-- Langsam (> 30s Antwortzeit) → Siehe **Speed Class: Slow/Medium**
-- Hohe Reasoning Scores (> 80%) → Siehe **Badge: Silver/Gold**
-- Zeigen Denkprozess in `<think>` Tags
-- Gut bei Logik-Rätseln, Mathematik, Constraint-Solving
-
-**Beispiele:**
-- DeepSeek R1
-- Phi-4 14B
-- Llama-R1 (Reasoning-Variant)
-
-**Erkennung:** Framework parst `<think>` Tags automatisch
-
----
-
-### Gen 3: Distilled Reasoning (o1-Preview-Style)
-
-**Training:** Destillation von Gen 2 Modellen (ohne Traces)
-
-**Charakteristik:**
-- Mittelschnell (15-25s) → Siehe **Speed Class: Fast/Medium**
-- Hohe Reasoning Scores (> 75%) → Siehe **Badge: Silver/Gold**
-- **KEINE** `<think>` Tags (unsichtbares Reasoning)
-- Nicht automatisch erkennbar
-
-**Beispiele:**
-- o1-preview (OpenAI)
-- o1-mini (OpenAI)
-
-**Problem:** Gen 3 ist **nicht unterscheidbar** von gut getunetem Gen 1 ohne Insider-Wissen!
-
----
-
-## 🛠️ Hybrid-Klassifizierungs-System
-
-### Problem: Automatik allein reicht nicht
-
-**Warum?**
-- Gen 3 (o1) ist unsichtbar (keine `<think>` Tags)
-- Langsames Gen 1 Modell sieht aus wie Gen 2 (False Positive)
-- Neue Modell-Familien erscheinen wöchentlich
-
-**Lösung:** Kombination aus Auto-Detection + Manual Override
-
----
-
-## 🚀 Workflow: Neue Modelle pflegen
-
-### Dein täglicher Workflow
-
-1. **Leaderboard generieren:**
-   ```bash
-   make leaderboard
-   ```
-
-2. **Auf Warnungen achten:**
-   ```
-   ⚠️  REVIEW NEEDED: neues-modell:14b
-       → Metrics indicate Reasoning model but name unknown
-   ```
-
-3. **Entscheiden:**
-   - **Fall A:** Standard-Modell (nur langsam oder Glückstreffer)
-     → Eintrag in `model_overrides.yaml`
-
-   - **Fall B:** Echtes Gen 2 Modell (neue Reasoning-Familie)
-     → Eintrag in `generation_heuristics.yaml` (wenn Familie)  
-     → Oder `model_overrides.yaml` (wenn Einzelfall)
-
----
-
-## ⚙️ Konfigurations-Dateien
-
-### 1. `model_overrides.yaml` (Dein Cockpit)
-
-**Zweck:** Einzelentscheidungen für spezifische Modelle
-
-**Priorität:** Höchste (überschreibt alles)
 
 **Beispiel:**
-
-```yaml
-overrides:
-  # Standard-Modell, das fälschlicherweise als Gen 2 erkannt wurde
-  qwen3:8b:
-    generation: Gen 1 (Pattern Matcher)
-    reason: Standard Model, just slow execution time
-    last_reviewed: '2026-02-01'
-
-  # Unbekanntes Modell, dessen Herkunft unklar ist
-  cogito:14b:
-    generation: Gen 1 (Pattern Matcher)
-    reason: High score but no evidence of reasoning training
-    last_reviewed: '2026-02-01'
-
-  # o1-Modell (Gen 3 - nicht automatisch erkennbar)
-  o1-preview:
-    generation: Gen 3 (Distilled Reasoner)
-    reason: OpenAI o1 family - RL training without traces
-    last_reviewed: '2026-02-01'
+```
+Ministral-3:14b: 77.6 Total Score
+Mistral Large: 78.8 Total Score
+→ Performance Ratio = (77.6 / 78.8) × 100 = 98.5%
 ```
 
----
+**Interpretation:**
+- **≥ 95%:** "Cloud-Niveau" erreicht
+- **85-94%:** "Sehr nah", praxistauglich
+- **75-84%:** "Gute Alternative", mit Einschränkungen
+- **< 75%:** "Deutlicher Abstand"
 
-### 2. `generation_heuristics.yaml` (System-Update)
-
-**Zweck:** Patterns für ganze Modell-Familien
-
-**Wann bearbeiten:** Nur wenn eine **neue Klasse** von Modellen erscheint
-
-**Beispiel:**
-
-```yaml
-patterns:
-  gen2_names:
-    - "phi4"           # Matches phi4:14b, phi4-medium, etc.
-    - "r1"             # Matches deepseek-r1, llama-r1, etc.
-    - "reasoning"      # Matches any model with "reasoning" in name
-    - "think"          # Matches qwen-think, mistral-think, etc.
-```
-
-**Wenn du hier `- "gemma4"` hinzufügst:**
-- Alle Gemma 4 Varianten (8b, 27b, instruction) werden automatisch als Gen 2 erkannt
-
----
-
-## 🧠 Auto-Detection-Logik
-
-Das Skript `scripts/classify_generation.py` nutzt eine 3-Stufen-Hierarchie:
-
-### Stufe 1: Override Check (Höchste Priorität)
-
-```python
-if model in model_overrides:
-    return model_overrides[model]['generation']
-```
-
-**Wenn Modell in `model_overrides.yaml`:** Nimm diesen Wert (Ende).
-
----
-
-### Stufe 2: Auto-Metrik Check (High Confidence)
-
-```python
-if avg_time > 40 and reasoning_score > 70:
-    # Sehr langsam + sehr schlau = vermutlich Gen 2
-    if model_name_matches_pattern():
-        return "Gen 2 (Reasoner)"
-    else:
-        # Flag for review
-        return "Gen 1 (Pattern Matcher)" + WARNING
-```
-
-**Kriterien:**
-- Durchschnittliche Antwortzeit > 40s
-- Reasoning Score > 70%
-- Name enthält bekannte Pattern (r1, phi4, etc.)
-
----
-
-### Stufe 3: Heuristik Check
-
-```python
-if any(pattern in model_name for pattern in gen2_patterns):
-    return "Gen 2 (Reasoner)"
-```
-
-**Wenn Name Pattern matched:** Automatisch Gen 2.
-
----
-
-### Stufe 4: Fallback / Review
-
-```python
-# Metriken deuten auf Gen 2 hin, aber Name unbekannt
-if metrics_indicate_gen2() and not name_known():
-    print("⚠️  REVIEW NEEDED: " + model)
-    return "Gen 1 (Pattern Matcher)"  # Safe Default
-```
-
-**Warnung im Terminal:** Du musst manuell entscheiden.
-
----
-
-## ❓ FAQ: Wann was nutzen?
-
-### Q: Wann `model_overrides.yaml`?
-
-**A:** Immer, wenn du **sofort** handeln musst:
-- Neues Modell getestet, Klassifizierung falsch
-- Einzelfall (nicht ganze Familie)
-- Unsicher → lieber Override (kann später in Heuristics verschoben werden)
-
----
-
-### Q: Wann `generation_heuristics.yaml`?
-
-**A:** Nur wenn eine **ganze Familie** erscheint:
-- Gemma 4 führt Reasoning ein
-- Neue Mistral-Serie mit `<think>` Tags
-- Qwen 3 hat neue Reasoning-Variante
-
-**Faustregel:** Wenn du denkst "Das wird öfter vorkommen" → Heuristics
-
----
-
-### Q: Was ist mit o1-Modellen?
-
-**A:** **Immer manuell** in `model_overrides.yaml` eintragen.
-
-**Grund:** Gen 3 ist nicht automatisch erkennbar (keine `<think>` Tags, mittlere Speed).
+**Aktuell:**
+- Ministral-3:14b erreicht **98.5%** von Mistral Large → Fast identisch!
 
 ---
 
@@ -287,36 +257,62 @@ if metrics_indicate_gen2() and not name_known():
 
 ### DO's ✅
 
-1. **Leaderboard regelmäßig prüfen** (nach jedem Batch-Run)
-2. **Warnungen ernst nehmen** (Review Needed = Handlungsbedarf)
-3. **Overrides dokumentieren** (Feld `reason` ausfüllen)
-4. **Date tracken** (`last_reviewed` Datum setzen)
-
----
+1. **Badge als Schnell-Indikator nutzen:** Silver = Production-ready
+2. **Speed Class für Use-Case wählen:** Autocomplete = Fast, Deep-Work = Medium/Slow okay
+3. **Skill Profile beachten:** Brauchst du Code-Reviewer oder Content-Adapter?
+4. **Reasoning Score ernst nehmen:** < 30 = schwach bei komplexen Problemen
 
 ### DON'Ts ❌
 
-1. **Nicht alle Modelle manuell eintragen** (Heuristics nutzen!)
-2. **Nicht raten** (Lieber Gen 1 Default + Warning)
-3. **Nicht Pattern-Spam** (Zu generische Pattern wie "llama" vermeiden)
+1. **Nicht nur Badge anschauen:** Silver-Modelle haben unterschiedliche Stärken
+2. **Nicht Speed ignorieren:** Ein 168s-Modell ist unbrauchbar für Autocomplete
+3. **Nicht nur Reasoning:** Ein Modell mit 40 Reasoning aber 30 Routine ist unpraktisch
+4. **Nicht Commercial blind vertrauen:** Mistral Large ist nur 1.2 Punkte besser als Ministral-3:14b (lokal!)
+
+---
+
+## 📊 Aktuelle Leaderboard-Highlights (Feb 2026)
+
+### Top 5 Models
+
+1. **Mistral Medium** (Commercial) → 81.3 Total, 39.8 Reasoning, Fast
+2. **Mistral Large** (Commercial) → 78.8 Total, 35.6 Reasoning, Fast
+3. **Ministral-3:14b** (Local) → 77.6 Total, 36.4 Reasoning, Slow ← **Bestes lokales Modell!**
+4. **Ministral-3:8b** (Local) → 75.2 Total, 34.6 Reasoning, Slow
+5. **Cogito:14b** (Local) → 72.5 Total, 35.0 Reasoning, Medium
+
+### Key Insights
+
+- **Gap Commercial → Local:** Nur **3.7 Punkte** (Mistral Medium vs. Ministral-3:14b)
+- **Bestes Reasoning (lokal):** Ministral-3:14b (36.4) übertrifft DeepSeek-R1 (31.6)!
+- **Schnellstes Production-Modell:** Qwen 2.5-Coder:7b (17.9s, Bronze)
+- **Bester Allrounder:** Cogito:14b (Balanced Specialist, 62.2s)
 
 ---
 
 ## 🔗 Verwandte Dokumentation
 
-- **ARCHITECTURE.md** – Wie Klassifizierung technisch funktioniert
-- **GOLDEN_STANDARDS.md** – Performance Ratio & Benchmarking
-- **USER_GUIDE.md** – Wie Leaderboard-Badges vergeben werden
+- **ARCHITECTURE.md** – Technische Details zu Modulen & Scoring
+- **USER_GUIDE.md** – Wie man Tests ausführt und interpretiert
+- **README.md** – Übersicht & Quick Start
 
 ---
 
-## 📜 Lizenz-Hinweis
+## 📜 Änderungshistorie
 
-Die Klassifizierungs-Logik und Config-Dateien sind Teil von CrucibleMark und unterliegen der **Apache License 2.0**.
+**v2.0.0 (Feb 2026):**
+- Badge-System vereinfacht (RCI entfernt, Total Score maßgeblich)
+- Speed Classes hinzugefügt
+- Skill Profiles automatisiert
+- Golden Standard Performance-Ratio integriert
+- Reasoning Score Interpretation erweitert
 
-**Siehe:** `LICENSE` für Details.
+**v1.0.0 (Jan 2026):**
+- Initiale Version mit RCI (Reasoning Complexity Index)
+- Generation-Klassifizierung (Gen 1/2/3)
 
 ---
 
-**Dokumenten-Version:** 1.0.0 (Rewrite Feb 2026)  
-**Kompatibel mit:** CrucibleMark v0.9.5+
+**Dokumenten-Version:** 2.0.0 (Feb 2026)  
+**Kompatibel mit:** CrucibleMark v0.9.5+  
+**Lizenz:** Apache License 2.0
