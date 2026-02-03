@@ -1,254 +1,241 @@
-# 📝 CrucibleMark Roadmap & TODO
+# REF_TODO.md - Refactoring & Future Development
 
-**Version:** 1.0.0 (Production)  
-**Datum:** 3. Februar 2026  
-**Fokus:** Stability & Post-Release Maintenance
+## ✅ COMPLETED (v1.0.0)
 
----
+### Framework Refactoring (v2.0)
+- [x] Modular architecture implementation
+- [x] Unified provider interface (Ollama, OpenAI, Anthropic)
+- [x] YAML-based configuration system
+- [x] CSV output standardization
+- [x] Leaderboard integration
+- [x] Checkpoint/resume functionality
 
-## 🎯 Current Sprint: Post-Launch Support
+### Module Refactoring (All v2.0+)
+- [x] Code Quality Audit → v2.0 (Pylint 9.2/10)
+- [x] UX Writing & Microcopy → v2.0 (Pylint 8.8/10)
+- [x] Documentation Quality → v2.0 (Pylint 9.0/10)
+- [x] Content Transformation → v2.0 (Pylint 8.9/10)
+- [x] Cultural Intelligence → v2.0 (Pylint 9.1/10)
+- [x] Political Compass → v3.0.1 (Pylint 9.85/10)
 
-**Ziel:** Überwachung der v1.0.0 Deployments und Sammlung von User-Feedback.
-**Status:** ✅ Released
-**Next Major:** v1.1.0 (Feature Updates)
+### Code Quality
+- [x] Pylint scores 8.8-9.85/10 (avg 9.15/10)
+- [x] Type hints on all public APIs
+- [x] Docstrings (Google Style)
+- [x] Black + isort formatting
+- [x] Error handling robustness
 
----
-
-## 🏆 Completed Milestones (v1.0.0 Release)
-
-- [x] **Core Framework**:
-  - Production-Grade Architecture (Local/Commercial Runner split)
-  - Unified Logging & Error Handling
-  - Pylint Score > 9.1 average
-
-- [x] **Political Compass (v3.0)**:
-  - Vollständiges Refactoring (Code Quality 9.9/10)
-  - Standalone Test-Harness mit Mocking
-  - Time-Normalization für faire Leaderboard-Metriken
-
----
-
-## 🔥 Priority 1: LLM-as-a-Judge Scorer (Planned for v1.1)
-
-**Status:** 🟡 Planned  
-**Estimated Effort:** 2-3 Wochen  
-**Owner:** Core Team
-
-### Anforderungen
-
-- [ ] **Design-Phase (3-5 Tage)**:
-  - [ ] Hybrid-Scorer-Architektur definieren (LLM-Judge + Current Scorer)
-  - [ ] Prompt-Engineering für Judge-Modell (Mistral Large vs. GPT-4o vs. Claude)
-  - [ ] Scoring-Schema: `data.llm_judge` in Structured Result Objects
-  - [ ] Fallback-Strategy: Was passiert bei Judge-Timeout/Failure?
-
-- [ ] **Implementation (1-2 Wochen)**:
-  - [ ] `utils/llm_judge.py` erstellen (Judge-Client)
-  - [ ] Integration in `evaluators.py` (pro Modul)
-  - [ ] Parallel-Scoring: Current Scorer + LLM-Judge (Vergleich)
-  - [ ] CSV-Export erweitern: `llm_judge_score`, `hybrid_score` Spalten
-
-- [ ] **Validation (3-5 Tage)**:
-  - [ ] Baseline-Messung: Golden Standard (Mistral Large) mit LLM-Judge
-  - [ ] Korrelations-Analyse: Current Scorer vs. LLM-Judge (erwarte r > 0.85)
-  - [ ] Edge-Case-Testing: Modelle mit <30% Score (Dolphin, Phi4)
-  - [ ] Cost-Analysis: Token-Verbrauch für Judge (Budget-Impact)
-
-- [ ] **Documentation (2-3 Tage)**:
-  - [ ] USER_GUIDE: "Understanding LLM-Judge Scores"
-  - [ ] ARCHITECTURE: Hybrid-Scorer-Methodology
-  - [ ] DATA_FORMAT: Neue Spalten erklären
-  - [ ] Changelog: v1.0.0 Release Notes
+### Documentation
+- [x] Root README v1.0.0
+- [x] Module READMEs (all 6)
+- [x] Configuration docs
+- [x] API documentation
+- [x] Contributing guidelines
 
 ---
 
-## 🛠 Priority 2: Module Refactoring (Code Hygiene)
+## 🔄 IN PROGRESS
 
-**Status:** 🟡 Planned  
-**Estimated Effort:** 1-2 Wochen (parallel zu LLM-Judge)  
-**Owner:** Core Team
+### Testing Infrastructure
+- [ ] Unit tests for all modules (currently ~60%)
+- [ ] Integration tests (framework-level)
+- [ ] Performance benchmarks
+- [ ] CI/CD pipeline (GitHub Actions)
 
-### Module-by-Module Cleanup
+### LLM-based Scoring System (MAJOR FEATURE)
+**Status:** Planned for v1.1 or v1.5
+**Complexity:** High
+**Priority:** High
 
-| Modul | Status | Estimated Time | Tasks |
-|-------|--------|----------------|-------|
-| `code_quality` | 🟡 Planned | 2-3h | Ruff-Check, PyLint auf 9.0+, Utility-Konsolidierung |
-| `ux_writing` | 🟡 Planned | 2-3h | Scorer-Logik Review, Test-Coverage |
-| `documentation_quality` | 🟡 Planned | 2-3h | Asset-Erweiterung (aktuell nur 5 Assets) |
-| `content_transformation` | 🟡 Planned | 2-3h | Beta → v1.0 (Scorer-Validierung) |
-| `cultural_intelligence` | 🟡 Planned | 2-3h | Asset-Diversität, **Negative Keywords** (v2.1 Feature für Idiom-Tests) |
-| `reasoning_logic` | 🟡 Planned | 3-4h | RCI-Optimierung, Metacognition-Erweiterung |
-| `political_compass` | ✅ Complete | - | **v3.0 Final** (Pylint 9.93, Mock-Support, Clean Architecture) |
+**Current Limitation:**
+- Pattern-based scoring (keyword matching, regex)
+- Limited nuance detection
+- Cannot evaluate "quality" vs "correctness"
 
-### Allgemeine Tasks (alle Module)
+**Proposed Solution:**
+- Use LLM-as-Judge (e.g., GPT-4, Claude 3.5)
+- Evaluate subjective qualities:
+  - Code elegance
+  - UX tone appropriateness
+  - Documentation clarity
+  - Content style matching
 
-- [ ] **Ruff-Check**: Alle Module 0 Errors
-- [ ] **PyLint-Target**: Score > 9.0/10 pro Modul
-- [ ] **Utility-Konsolidierung**: Kleine Helper in `core/utils.py` mergen
-- [ ] **Test-Coverage**: Unit-Tests für Scorer (Ziel: >70%)
-- [ ] **README-Updates**: Modul-READMEs mit neuesten Assets & Beispielen
+**Implementation Scope:**
+1. Scorer Module Design
+   - [ ] Abstract Scorer Interface
+   - [ ] Pattern-based Scorer (existing, refactored)
+   - [ ] LLM-based Scorer (new)
+   - [ ] Hybrid Scorer (combine both)
 
----
+2. LLM Judge Configuration
+   - [ ] Prompt templates for evaluation
+   - [ ] Rubric definitions (per module)
+   - [ ] Confidence scoring
+   - [ ] Cost optimization (caching, batching)
 
-## 📚 Priority 3: Documentation Polish
+3. Module Integration
+   - [ ] Code Quality: Elegance, maintainability
+   - [ ] UX Writing: Tone, empathy, clarity
+   - [ ] Documentation: Completeness, readability
+   - [ ] Content: Style matching, engagement
 
-**Status:** 🟡 Planned  
-**Estimated Effort:** 3-5 Tage  
-**Owner:** Core Team
-
-### User-Facing Documentation
-
-- [ ] **USER_GUIDE.md**:
-  - [ ] Tutorial-Section: "Your First Benchmark in 5 Minutes"
-  - [ ] Checkpoint-System besser erklären (Resume nach Crash)
-  - [ ] Troubleshooting: Häufige Fehler & Lösungen
-  - [ ] LLM-Judge-Metriken Interpretation
-
-- [ ] **DATA_FORMAT.md**:
-  - [ ] Neue Spalten: `llm_judge_score`, `hybrid_score`, `confidence`
-  - [ ] Beispiel-CSV mit Annotationen
-  - [ ] Badge-Logik mathematisch erklärt (aktuell zu abstrakt)
-
-- [ ] **BENCHMARK_SCENARIOS.md**:
-  - [ ] Asset-Beispiele pro Modul (mit Expected Output)
-  - [ ] "Was testet dieser Benchmark?" für Nicht-Techniker
-  - [ ] Vergleichstabelle: CrucibleMark vs. MMLU/HumanEval
-
-### Developer Documentation
-
-- [ ] **ARCHITECTURE.md**:
-  - [ ] Leaderboard-Package Architektur (neue `scripts/leaderboard/`)
-  - [ ] Dependency-Graph (welches Modul nutzt welches Utility)
-  - [ ] Design-Patterns (Package-by-Feature, Single Responsibility)
-  - [ ] Refactoring-Learnings (für zukünftige Contributors)
-
-- [ ] **ADDING_MODULES.md**:
-  - [ ] Best Practices aus Module-Refactoring
-  - [ ] Scorer-Template (Keyword + Semantic + LLM-Judge)
-  - [ ] Testing-Strategie (Unit-Tests, Integration-Tests)
-  - [ ] Checklist: "Is my module Production-Ready?"
+4. Validation & Calibration
+   - [ ] Human baseline (gold standard)
+   - [ ] Inter-LLM agreement
+   - [ ] Cost/accuracy tradeoff analysis
 
 ---
 
-## ✅ Completed (v0.9.5 - Feb 2026)
+## 📋 BACKLOG
 
-**Framework Hardening:**
-- [x] **Leaderboard Refactoring**: Modulare Package-Architektur (1384 → 250 Zeilen)
-- [x] **Code Quality**: PyLint 9.1/10, Ruff 100% clean
-- [x] **Duplicate Code Elimination**: -48 Zeilen Duplikation
-- [x] **Zero Regressions**: Functional Validation (11 Reasoning-Tests)
+### v1.1.0 (Q2 2026) - Planned Features
 
-**Scoring & Methodology:**
-- [x] **Granular Scoring**: Asset-Level Contributions (Routine/Reasoning Split)
-- [x] **Reasoning v2.3**: Tier Weighting, Anti-Ceiling, Debug Mode
-- [x] **Golden Standard Hygiene**: Trial-and-Commit Strategie
-- [x] **Performance Ratio**: Normalisierung für faire Vergleichbarkeit
+#### 1. LLM-based Scoring (if scope fits)
+- Implement LLM-as-Judge for subjective scoring
+- Hybrid scoring (pattern + LLM)
+- Cost tracking & optimization
 
-**Operations:**
-- [x] **Cost & Token Tracking**: Real-time Calculation
-- [x] **Logging System**: "Silent Console / Noisy Logfile"
-- [x] **Backup Workflow**: `make backup` mit Auto-Cleanup
-- [x] **Smart Rate Limit Handling**: Automatic Pause & Backoff
+#### 2. Reasoning Module
+- Logic puzzles
+- Mathematical reasoning
+- Common sense reasoning
+- Tiered difficulty
 
-**Module (Production-Ready):**
-- [x] Code Quality (v1.0.0)
-- [x] UX Writing (v1.0.0)
-- [x] Documentation Quality (v1.0.0)
-- [x] Content Transformation (v0.9.0-beta)
-- [x] Reasoning Logic (v2.3.0)
-- [x] Political Compass (v3.0.0)
-- [x] Cultural Intelligence (v1.0.0)
+#### 3. Creative Writing Module
+- Story generation
+- Poetry evaluation
+- Character development
+- Plot coherence
 
----
+#### 4. Web UI
+- Interactive dashboard
+- Real-time progress
+- Result visualization
+- Model comparison
 
-## 🔮 Future Roadmap (Post v1.0)
+#### 5. API Mode
+- REST API for remote benchmarking
+- Queue management
+- Authentication
 
-**Status:** 🔵 Planned (Low Priority)  
-**Timeline:** Q2/Q3 2026
+### v1.2.0 (Q3 2026) - Advanced Features
 
-### Features
+#### 1. Multimodal Support
+- Image + Text tasks
+- Vision-based benchmarks
+- OCR evaluation
 
-- [ ] **Reporting Dashboard**:
-  - [ ] Streamlit/Dash-basiertes Web-UI
-  - [ ] Live-Visualisierung der Benchmark-Runs
-  - [ ] Vergleichs-Charts (Model A vs. Model B)
-  - [ ] Estimated Effort: 2-3 Wochen
+#### 2. Custom Evaluators (Plugin System)
+- User-defined scorers
+- Custom rubrics
+- External API integration
 
-- [ ] **HuggingFace Leaderboard Integration**:
-  - [ ] Auto-Upload der Ergebnisse
-  - [ ] Public Leaderboard (opt-in)
-  - [ ] Community-Benchmarks (andere nutzen CrucibleMark)
-  - [ ] Estimated Effort: 1-2 Wochen
+#### 3. Cloud Integration
+- AWS/GCP deployment
+- Distributed execution
+- Result aggregation
 
-- [ ] **Custom Model Support**:
-  - [ ] GGUF-Files ohne Ollama (direkter llama.cpp-Call)
-  - [ ] vLLM-Integration (schnellere Inference)
-  - [ ] Custom API-Endpoints (self-hosted LLMs)
-  - [ ] Estimated Effort: 2 Wochen
+#### 4. Team Collaboration
+- Shared leaderboards
+- Multi-user environments
+- Role-based access
 
-- [ ] **Web Frontend**:
-  - [ ] CSV-basierte Reports & Charts
-  - [ ] No-Code Benchmark-Configuration
-  - [ ] Ersetzt Python-CLI für Non-Developers
-  - [ ] Estimated Effort: 4-6 Wochen
+### v2.0.0 (Q4 2026) - Major Redesign
 
-### Quality & Optimization
+#### 1. LLM-based Scoring (if not in v1.1)
+- Full LLM-as-Judge implementation
+- Multi-model consensus scoring
+- Automated rubric generation
 
-- [ ] **Leaderboard Weight Classes**:
-  - [ ] Trennung: Lightweight (<20B) vs. Heavyweight (>70B)
-  - [ ] Faire Bewertung für kleine Modelle
-  - [ ] Separate Badges pro Weight Class
-  - [ ] Estimated Effort: 1 Woche
+#### 2. Adaptive Testing
+- Dynamic difficulty adjustment
+- Personalized benchmark paths
+- Skill gap analysis
 
-- [ ] **Calibration Phase**:
-  - [ ] Fine-Tuning aller Module für konsistente Ergebnisse
-  - [ ] Scorer-Threshold-Optimization (Grid-Search)
-  - [ ] Baseline-Messung über 100+ Modelle
-  - [ ] Estimated Effort: 2-3 Wochen
-
-- [ ] **Test-Coverage**:
-  - [ ] Unit-Tests für Scorer & Evaluators (Ziel: >80%)
-  - [ ] Integration-Tests für Benchmark-Runner
-  - [ ] CI/CD-Pipeline (GitHub Actions)
-  - [ ] Estimated Effort: 2 Wochen
+#### 3. Continuous Benchmarking
+- Scheduled runs
+- Model drift detection
+- Historical tracking
 
 ---
 
-## 📅 Milestone Timeline (Estimated)
+## 🎯 RECOMMENDATIONS
 
-| Milestone | Target Date | Status | Deliverables |
-|-----------|-------------|--------|--------------|
-| **v0.9.5** | ✅ Feb 1, 2026 | Complete | Framework Refactoring, Code Quality 9.1/10 |
-| **v0.9.6** | Feb 15, 2026 | 🟡 Planned | Module Refactoring (all >9.0 PyLint) |
-| **v0.9.7** | Feb 28, 2026 | 🟡 Planned | LLM-Judge MVP (Code Quality + Reasoning) |
-| **v0.9.8** | Mar 7, 2026 | 🟡 Planned | LLM-Judge (all modules), Documentation Polish |
-| **v1.0.0-rc1** | Mar 14, 2026 | 🔵 Future | Release Candidate (Full Testing) |
-| **v1.0.0** | Mar 21, 2026 | 🔵 Future | **Production Release** 🎉 |
+### LLM-based Scoring Version Assignment
 
----
+**Option A: v1.1.0 (Lightweight)**
+- Implement ONLY for UX Writing & Documentation
+- Use simple prompt-based evaluation
+- No rubric system (hardcoded criteria)
+- Estimated effort: 2-3 weeks
 
-## 🤝 Contribution Guidelines
+**Option B: v1.5.0 (Moderate) ⭐ RECOMMENDED**
+- Implement for 3-4 modules (Code, UX, Docs, Content)
+- Full rubric system
+- Hybrid scoring (pattern + LLM)
+- Cost optimization (caching)
+- Estimated effort: 4-6 weeks
 
-**Wenn du beitragen willst, priorisiere:**
+**Option C: v2.0.0 (Comprehensive)**
+- Full framework redesign
+- All modules LLM-scored
+- Multi-model consensus
+- Automated rubric generation
+- Estimated effort: 8-12 weeks
 
-1. **High Impact**: LLM-Judge-Scorer (P1)
-2. **Quick Wins**: Module PyLint auf 9.0+ (P2, 2-3h pro Modul)
-3. **Documentation**: USER_GUIDE Tutorial-Section (P3, 1 Tag)
-
-**Vermeide aktuell:**
-- Neue Features (Fokus auf v1.0-Stabilität)
-- Breaking Changes (keine API-Änderungen vor v1.0)
-- Experimentelle Scorer (nach v1.0)
-
----
-
-## 📞 Questions?
-
-- **Technische Fragen**: Siehe `docs/ARCHITECTURE.md`
-- **Modul-Ideen**: Siehe `docs/ADDING_MODULES.md`
-- **Bugs**: GitHub Issues (wenn Public) oder Logs (`logs/crucible.log`)
+### Rationale for v1.5.0:
+1. **Feature Scope:** Too large for minor (v1.1), not fundamental enough for major (v2.0)
+2. **Backward Compatibility:** Doesn't break existing APIs (minor version OK)
+3. **User Expectation:** "Scoring upgrade" signals substantial improvement
+4. **Development Time:** 4-6 weeks allows thorough testing
+5. **Market Positioning:** v1.5 = "Enhanced Evaluation" milestone
 
 ---
 
-**Next Review:** Nach v0.9.6 (Module Refactoring Complete)  
-**Last Updated:** 1. Februar 2026
+## 📊 Effort Estimation
+
+| Task | Priority | Effort | Version |
+|------|----------|--------|---------|
+| **Unit Tests (complete)** | High | 1-2 weeks | v1.0.1 |
+| **CI/CD Pipeline** | High | 1 week | v1.0.1 |
+| **Reasoning Module** | Medium | 3-4 weeks | v1.1.0 |
+| **Web UI** | Medium | 4-6 weeks | v1.1.0 |
+| **API Mode** | Low | 2-3 weeks | v1.1.0 |
+| **LLM-based Scoring** | High | 4-6 weeks | v1.5.0 ⭐ |
+| **Multimodal Support** | Low | 6-8 weeks | v2.0.0 |
+| **Cloud Integration** | Low | 4-6 weeks | v2.0.0 |
+
+---
+
+## 🚀 NEXT ACTIONS
+
+### Immediate (v1.0.1 - Maintenance Release)
+1. Complete unit test coverage (60% → 95%)
+2. Setup CI/CD (GitHub Actions)
+3. Fix minor bugs from v1.0.0 feedback
+4. Performance optimizations
+
+### Short-term (v1.1.0 - Q2 2026)
+1. Implement Reasoning Module
+2. Create Web UI (basic)
+3. Add API Mode (MVP)
+4. Documentation updates
+
+### Mid-term (v1.5.0 - Q3 2026)
+1. **LLM-based Scoring System** ⭐
+   - Design scorer architecture
+   - Implement for 4 modules
+   - Validate against human baselines
+   - Document cost/accuracy tradeoffs
+
+### Long-term (v2.0.0 - Q4 2026)
+1. Full framework redesign
+2. Multimodal support
+3. Cloud-native architecture
+4. Advanced features (adaptive testing, etc.)
+
+---
+
+**Last Updated:** 2026-02-03
+**Version:** 1.0.0 (Released)
+**Next Milestone:** v1.0.1 (Maintenance) → v1.1.0 (Features) → v1.5.0 (LLM Scoring) ⭐
