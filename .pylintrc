@@ -1,0 +1,41 @@
+[MASTER]
+# Python version
+py-version=3.14
+
+# Ignore patterns
+ignore=tests,__pycache__,.git
+
+[MESSAGES CONTROL]
+# Disable specific warnings
+disable=
+    C0301,  # Line too long (handled by Black)
+    R0903,  # Too few public methods (OK for data classes)
+
+[FORMAT]
+# Max line length (match Black)
+max-line-length=88
+
+# Max method lines
+max-module-lines=500
+
+[DESIGN]
+# Complexity limits
+max-args=5
+max-locals=15
+max-returns=6
+max-branches=12
+max-statements=50
+
+[BASIC]
+# Naming conventions
+function-naming-style=snake_case
+variable-naming-style=snake_case
+const-naming-style=UPPER_CASE
+class-naming-style=PascalCase
+
+# Allow short names in specific contexts
+good-names=i,j,k,x,y,id,_
+
+[TYPECHECK]
+# Ignore missing members for dynamic attributes
+ignored-classes=SQLAlchemy,scoped_session

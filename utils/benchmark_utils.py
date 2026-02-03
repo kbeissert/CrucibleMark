@@ -3,11 +3,11 @@ Shared utilities for benchmark runners.
 Contains common logic for interactive selection and asset discovery.
 """
 
-import logging
 import json
-from pathlib import Path
-from typing import TypeVar, Dict, Any, Optional
+import logging
 from collections.abc import Callable
+from pathlib import Path
+from typing import Any, Dict, Optional, TypeVar
 
 # pylint: disable=import-error
 import yaml
@@ -122,6 +122,47 @@ def discover_assets(directory: str | Path, pattern: str = "*.yaml") -> list[Path
     return sorted(list(path.glob(pattern)))
 
 
+def format_pc_run_data(run_dict: dict, include_extremism: bool = False) -> dict:
+    """
+    Formatiert Political Compass Run-Daten in standardisiertes Schema.
+
+    Args:
+        run_dict: Dict mit keys 'x', 'y', 'x_label', 'y_label'
+        include_extremism: Wenn True, füge extremism/sigma hinzu (für AVG)
+
+    Returns:
+        Standardisiertes Dict für metadata_json
+    """
+    x = run_dict.get("x", 0.0)
+    y = run_dict.get("y", 0.0)
+    x_label = run_dict.get("x_label", "Unbekannt")
+    y_label = run_dict.get("y_label", "Unbekannt")
+
+    # Basis-Struktur (für Individual Runs)
+    formatted = {
+        "coordinates": {"x": x, "y": y, "formatted": f"({x}, {y})"},
+        "labels": {"x": x_label, "y": y_label, "archetype": f"{x_label}-{y_label}"},
+        "display": {"ideology": f"{x_label} ({x})", "stance": f"{y_label} ({y})"},
+    }
+
+    # Erweiterte Struktur (für Aggregate/AVG)
+    if include_extremism:
+        formatted["extremism"] = run_dict.get(
+            "extremism",
+            {
+                "count": 0,
+                "rate": 0.0,
+                "status": "✅ Demokratisch",
+                "categories": {},
+                "details": [],
+            },
+        )
+        formatted["sigma"] = run_dict.get("sigma", {"x": 0.0, "y": 0.0})
+        formatted["module_stats"] = run_dict.get("module_stats", {})
+
+    return formatted
+
+
 def format_political_compass_data(report: Dict[str, Any]) -> Dict[str, Any]:
     """
     Formats the raw Political Compass report into a standardized data object.
@@ -131,18 +172,18 @@ def format_political_compass_data(report: Dict[str, Any]) -> Dict[str, Any]:
         "coordinates": {
             "x": report["coordinates"]["x"],
             "y": report["coordinates"]["y"],
-            "formatted": f"({report['coordinates']['x']}, {report['coordinates']['y']})"
+            "formatted": f"({report['coordinates']['x']}, {report['coordinates']['y']})",
         },
         "labels": {
             "x": report["archetype"].get("x_label", "Unknown"),
             "y": report["archetype"].get("y_label", "Unknown"),
-            "archetype": report["archetype"]["label"]
+            "archetype": report["archetype"]["label"],
         },
         "display": {
             "ideology": f"{report['archetype'].get('x_label', '?')} ({report['coordinates']['x']})",
-            "stance": f"{report['archetype'].get('y_label', '?')} ({report['coordinates']['y']})"
+            "stance": f"{report['archetype'].get('y_label', '?')} ({report['coordinates']['y']})",
         },
-        "extremism": report.get("extremism", {"count": 0, "rate": 0.0})
+        "extremism": report.get("extremism", {"count": 0, "rate": 0.0}),
     }
 
 
@@ -150,7 +191,7 @@ def prepare_pc_csv_row(
     model: str,
     report: Dict[str, Any],
     data_object: Dict[str, Any],
-    model_version: str = "unknown"
+    model_version: str = "unknown",
 ) -> Dict[str, Any]:
     """
     Prepares a dictionary row for the Political Compass CSV.
@@ -164,5 +205,5 @@ def prepare_pc_csv_row(
         "x_label": report["archetype"]["x_label"],
         "y_label": report["archetype"]["y_label"],
         "metrics_json": json.dumps(data_object, ensure_ascii=False),
-        "timestamp": report.get("timestamp", "")
+        "timestamp": report.get("timestamp", ""),
     }

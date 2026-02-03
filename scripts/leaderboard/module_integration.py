@@ -69,9 +69,16 @@ def _enrich_from_csv_source(
         def safe_format(row):
             try:
                 # Option A: JSON Object Access (Structured Data)
-                if json_key and "metrics_json" in row:
+                # Check for either metadata_json (Standard v2) or metrics_json (Legacy)
+                json_col = None
+                if "metadata_json" in row:
+                    json_col = "metadata_json"
+                elif "metrics_json" in row:
+                    json_col = "metrics_json"
+                    
+                if json_key and json_col:
                     try:
-                        metrics = json.loads(row["metrics_json"])
+                        metrics = json.loads(row[json_col])
                         # Support dot notation (e.g. "labels.x")
                         val = metrics
                         for k in json_key.split('.'):
@@ -82,11 +89,51 @@ def _enrich_from_csv_source(
                         
                         if isinstance(val, (dict, list)):
                             return json.dumps(val, ensure_ascii=False)
-                        return str(val) if val is not None else ""
+                        
+                        # Store raw value in temp variable for template
+                        # We cannot modify 'row' here safely for the pandas apply context?
+                        # Actually we are processing one row.
+                        # But wait, 'template' option below uses row.to_dict().
+                        # If we want to support 'format' combining JSON value with other things,
+                        # we need to be clever.
+                        
+                        # Current Logic: Either JSON Access OR Template.
+                        # User wants {value} ({x}).
+                        # This suggests we need formatting AFTER extraction.
+                        
+                        extracted_val = str(val) if val is not None else ""
+                        
+                        # NEW: Check if there is an additional format string in config
+                        fmt = source_config.get("format")
+                        if fmt:
+                            # We can try to make a context dict.
+                            # Standard context: row + 'value'
+                            ctx = row.to_dict()
+                            ctx['value'] = extracted_val
+                            
+                            # Flatten JSON for context?
+                            if isinstance(metrics, dict):
+                                # Flatten top level keys
+                                for mk, mv in metrics.items():
+                                    if isinstance(mv, (str, int, float)):
+                                        ctx[mk] = mv
+                                    elif isinstance(mv, dict):
+                                         # One level deep flattening (e.g. coordinates.x -> x)
+                                         for subk, subv in mv.items():
+                                             if isinstance(subv, (str, int, float)):
+                                                 ctx[subk] = subv
+                                                 
+                            try:
+                                return fmt.format(**ctx)
+                            except KeyError:
+                                return extracted_val # Fallback to raw value
+                        
+                        return extracted_val
+
                     except (json.JSONDecodeError, AttributeError):
                         return "Error (JSON)"
 
-                # Option B: Legacy String Templating
+                # Option B: Legacy String Templating (No JSON key)
                 if template:
                     # Convert row to dict, ensure all values are strings for safe substitution
                     data = row.to_dict()
