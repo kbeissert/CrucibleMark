@@ -92,44 +92,41 @@ def _get_row_contribution(
     row: pd.Series,
     asset_contrib_map: Dict[str, Dict[str, float]],
     cat_to_config: Dict[str, Any]
-) -> Tuple[float, float]:
-    """Helper to calculate routine/reasoning contribution for a single row."""
-    # 1. Check if values explicitly in columns
+) -> Tuple[float, float, float, float]:
+    """
+    Helper to calculate routine/reasoning contribution AND weights for a single row.
+    Returns: (contrib_routine, contrib_reasoning, weight_routine, weight_reasoning)
+    """
+    # Helper to get weights
+    def get_weights_from_map_or_fallback():
+        asset_id = row.get("asset_id")
+        if asset_id in asset_contrib_map:
+            c = asset_contrib_map[asset_id]
+            return float(c.get("routine", 0.0)), float(c.get("reasoning", 0.0))
+        
+        # Module-Level Default
+        cat = row.get("category", "")
+        mod_conf = cat_to_config.get(cat, {})
+        def_contrib = mod_conf.get("default_contribution", {})
+        return float(def_contrib.get("routine", 0.0)), float(def_contrib.get("reasoning", 0.0))
+
+    w_routine, w_reasoning = get_weights_from_map_or_fallback()
+    pct = float(row.get("percentage", 0))
+
+    # 1. Try CSV Values first
     try:
         r_raw = row.get("routine_contribution")
-        if pd.notna(r_raw) and str(r_raw).strip():
-            r_val = float(r_raw)
-        else:
-            r_val = None
-
         l_raw = row.get("reasoning_contribution")
-        if pd.notna(l_raw) and str(l_raw).strip():
-            l_val = float(l_raw)
-        else:
-            l_val = None
 
-        if r_val is not None and l_val is not None:
-            return r_val, l_val
+        if pd.notna(r_raw) and pd.notna(l_raw) and str(r_raw).strip() and str(l_raw).strip():
+            # SUCCESS: Use pre-calculated values
+            # Return weights from config map because extracting them from contrib/pct is unsafe if pct=0
+            return float(r_raw), float(l_raw), w_routine, w_reasoning
     except (ValueError, TypeError):
         pass
 
-    pct = float(row.get("percentage", 0))
-
-    # 2. Check Granular Config (Asset Level)
-    asset_id = row.get("asset_id")
-    if asset_id in asset_contrib_map:
-        contrib = asset_contrib_map[asset_id]
-        return pct * float(contrib.get("routine", 0.0)), pct * float(contrib.get("reasoning", 0.0))
-
-    # 3. Fallback: Module-Level Default
-    cat = row.get("category", "")
-    mod_conf = cat_to_config.get(cat, {})
-    def_contrib = mod_conf.get("default_contribution", {})
-
-    return (
-        pct * float(def_contrib.get("routine", 0.0)),
-        pct * float(def_contrib.get("reasoning", 0.0)),
-    )
+    # 2. Variable Calculation Fallback
+    return pct * w_routine, pct * w_reasoning, w_routine, w_reasoning
 
 
 def _calculate_group_scores(df: pd.DataFrame, modules_config: Dict[str, Any]) -> pd.DataFrame:
@@ -163,6 +160,11 @@ def _calculate_group_scores(df: pd.DataFrame, modules_config: Dict[str, Any]) ->
         for b in mod_data.get("benchmarks", []):
             if "score_contribution" in b and "id" in b:
                 asset_contrib_map[b["id"]] = b["score_contribution"]
+    
+    # DEBUG: Check map
+    # print(f"DEBUG: Asset Contrib Map Size: {len(asset_contrib_map)}")
+    # if 'code_quality_001' in asset_contrib_map:
+    #      print(f"DEBUG: code_quality_001 found in map: {asset_contrib_map['code_quality_001']}")
 
     # 3. Apply Scoring
     contribs = df_calc.apply(
@@ -174,22 +176,28 @@ def _calculate_group_scores(df: pd.DataFrame, modules_config: Dict[str, Any]) ->
     if contribs.empty:
         df_calc["final_routine"] = 0.0
         df_calc["final_reasoning"] = 0.0
+        df_calc["weight_routine"] = 0.0
+        df_calc["weight_reasoning"] = 0.0
     else:
         df_calc["final_routine"] = contribs[0]
         df_calc["final_reasoning"] = contribs[1]
+        df_calc["weight_routine"] = contribs[2]
+        df_calc["weight_reasoning"] = contribs[3]
 
-    # 4. Aggregation: Sum / Count
+    # 4. Aggregation: Sum / Sum of Weights
     scores = df_calc.groupby(["model", "model_version"]).agg(
         sum_routine=("final_routine", "sum"),
         sum_reasoning=("final_reasoning", "sum"),
+        total_weight_routine=("weight_routine", "sum"),
+        total_weight_reasoning=("weight_reasoning", "sum"),
         count=("asset_id", "count")
     ).reset_index()
 
     scores["Routine Score"] = scores.apply(
-        lambda x: x["sum_routine"] / x["count"] if x["count"] > 0 else 0, axis=1
+        lambda x: x["sum_routine"] / x["total_weight_routine"] if x["total_weight_routine"] > 0 else 0, axis=1
     )
     scores["Reasoning Score"] = scores.apply(
-        lambda x: x["sum_reasoning"] / x["count"] if x["count"] > 0 else 0, axis=1
+        lambda x: x["sum_reasoning"] / x["total_weight_reasoning"] if x["total_weight_reasoning"] > 0 else 0, axis=1
     )
 
     return scores[["model", "model_version", "Routine Score", "Reasoning Score"]]
