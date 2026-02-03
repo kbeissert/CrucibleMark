@@ -62,21 +62,31 @@ def load_golden_references() -> Dict[str, float]:
     if refs:
         return refs
 
-    # 2. Fallback: Search in Commercial CSV
+    # 2. Fallback: Search in Commercial CSV and Backup
     golden_model = config.get("golden_standard", {}).get("model")
-    if golden_model and COMMERCIAL_CSV.exists():
-        try:
-            df = pd.read_csv(COMMERCIAL_CSV, on_bad_lines='skip')
-            if "model" in df.columns:
-                # Filter for golden model
-                df_golden = df[df["model"] == golden_model]
-                if not df_golden.empty:
-                    refs = _extract_scores_from_df(df_golden)
-                    if refs:
-                        # Optional: Info print, but keep clean for now
-                        pass
-        except Exception:
-            pass
+    
+    fallback_paths = [
+        COMMERCIAL_CSV, 
+        Path("backups/commercial_models_baseline_20260122.csv")
+    ]
+
+    if golden_model:
+        for path in fallback_paths:
+            if not path.exists():
+                continue
+            
+            try:
+                df = pd.read_csv(path, on_bad_lines='skip')
+                if "model" in df.columns:
+                    # Filter for golden model
+                    df_golden = df[df["model"] == golden_model]
+                    if not df_golden.empty:
+                        refs = _extract_scores_from_df(df_golden)
+                        if refs:
+                            # Found it, stop searching
+                            break
+            except Exception:
+                continue
 
     return refs
 
