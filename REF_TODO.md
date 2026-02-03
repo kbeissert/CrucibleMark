@@ -1,22 +1,36 @@
 # 📝 CrucibleMark Roadmap & TODO
 
-**Version:** 0.9.5-beta → 1.0.0  
-**Datum:** 1. Februar 2026  
-**Fokus:** LLM-Judge-Scorer + Module-Hygiene
+**Version:** 1.0.0 (Production)  
+**Datum:** 3. Februar 2026  
+**Fokus:** Stability & Post-Release Maintenance
 
 ---
 
-## 🎯 Current Sprint: Path to v1.0.0
+## 🎯 Current Sprint: Post-Launch Support
 
-**Ziel:** Production-Ready Release mit LLM-as-a-Judge Scoring  
-**Timeline:** Q1 2026 (geschätzt: 4-6 Wochen)  
-**Blocker:** LLM-Judge-Implementierung & Validation
+**Ziel:** Überwachung der v1.0.0 Deployments und Sammlung von User-Feedback.
+**Status:** ✅ Released
+**Next Major:** v1.1.0 (Feature Updates)
 
 ---
 
-## 🔥 Priority 1: LLM-as-a-Judge Scorer (Critical for v1.0)
+## 🏆 Completed Milestones (v1.0.0 Release)
 
-**Status:** 🔴 Not Started  
+- [x] **Core Framework**:
+  - Production-Grade Architecture (Local/Commercial Runner split)
+  - Unified Logging & Error Handling
+  - Pylint Score > 9.1 average
+
+- [x] **Political Compass (v3.0)**:
+  - Vollständiges Refactoring (Code Quality 9.9/10)
+  - Standalone Test-Harness mit Mocking
+  - Time-Normalization für faire Leaderboard-Metriken
+
+---
+
+## 🔥 Priority 1: LLM-as-a-Judge Scorer (Planned for v1.1)
+
+**Status:** 🟡 Planned  
 **Estimated Effort:** 2-3 Wochen  
 **Owner:** Core Team
 
@@ -64,7 +78,7 @@
 | `content_transformation` | 🟡 Planned | 2-3h | Beta → v1.0 (Scorer-Validierung) |
 | `cultural_intelligence` | 🟡 Planned | 2-3h | Asset-Diversität, **Negative Keywords** (v2.1 Feature für Idiom-Tests) |
 | `reasoning_logic` | 🟡 Planned | 3-4h | RCI-Optimierung, Metacognition-Erweiterung |
-| `political_compass` | ✅ Complete | - | v3.0 bereits Production-Ready |
+| `political_compass` | ✅ Complete | - | **v3.0 Final** (Pylint 9.93, Mock-Support, Clean Architecture) |
 
 ### Allgemeine Tasks (alle Module)
 

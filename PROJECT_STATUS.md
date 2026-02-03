@@ -1,15 +1,53 @@
 # CrucibleMark - Projekt-Status & Architektur
 
-**System Version:** 0.9.5-beta  
+**System Version:** 1.0.0  
 **Golden Standard:** v2.1.0 (Mistral Large, 30. Jan 2026)  
-**Datum:** 1. Februar 2026  
-**Status:** Pre-Release Validation (Path to v1.0)
+**Datum:** 3. Februar 2026  
+**Status:** Production Release
 
 ---
 
-## 🚧 Aktueller Status (Februar 2026)
+## 🚀 Aktueller Status (Februar 2026)
 
-Wir befinden uns in der **Beta-Phase (0.9.5)** – der Weg zu Version 1.0.0 ist klar definiert.
+Wir haben **Version 1.0.0** erreicht! Das Framework ist bereit für den produktiven Einsatz.
+
+### ✅ Milestone: Production Release (v1.0.0)
+
+**Das System hat die Beta-Phase verlassen:**
+
+1.  **Framework Stability**:
+    *   Alle Kernkomponenten (`core`, `scripts`, `utils`) sind stabil und getestet.
+    *   Code Quality ist auf Enterprise-Niveau (Pylint > 9.0 im Durchschnitt).
+    *   Robuste Fehlerbehandlung und Retry-Logik in allen Clients.
+
+2.  **Module Maturity**:
+    *   `political_compass`: **v3.0** (Clean Architecture, Mock-Testing)
+    *   `code_quality`: **v2.0** (Granulares Scoring)
+    *   `reasoning_logic`: **v2.3** (Tiered Scoring)
+
+3.  **Documentation**:
+    *   Vollständige Abdeckung in `README.md`, `USER_GUIDE.md` und `DEVELOPER_GUIDE.md`.
+    *   Transparente Methodik für Scoring und Leaderboard.
+
+---
+
+### ✅ Political Compass v3.0 (Feb 2026)
+
+**Das Modul `political_compass` wurde vollständig modernisiert und validiert:**
+
+1.  **Code Quality**:
+    *   **Pylint Score:** **9.93/10** (nahezu perfekt)
+    *   Vollständige Typisierung un Docstrings
+    *   Modulare Struktur: Trennung von `test.py` (Runner), `core/` (Logik) und `assets/`
+
+2.  **Testability**:
+    *   Neuer **Standalone Test-Mode** (`python -m ... test --provider mock`)
+    *   Mocking-Support für CI/CD-Pipelines ohne API-Kosten
+    *   Robuste Fehlerbehandlung für CSV-I/O und LLM-Timeouts
+
+3.  **Features**:
+    *   Batch-Execution Logic refactored (keine monolithischen Methoden mehr)
+    *   Automatische Time-Normalization (fairer Vergleich im Leaderboard)
 
 ### ✅ Framework Refactoring Complete (Phase 4 - Feb 2026)
 
