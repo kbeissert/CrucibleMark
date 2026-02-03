@@ -28,3 +28,7 @@ expected_output:
   required_findings:
     - "impossible"
     - "constraint"
+
+scoring:
+  method: "rubric"
+  max_score: 100
