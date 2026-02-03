@@ -296,7 +296,8 @@ def run_commercial_batch(
     for k, v in active_providers.items():
         client = llm_client.clients.get(k)
         if client:
-            print(f"   • {k}: Prüfe Zugang...", end=" ", flush=True)
+            # Formatierung verbessert: Feste Breite für Provider-Namen
+            print(f"   • {k:<12} Prüfe Zugang...", end=" ", flush=True)
             if client.is_accessible():
                 print("✅ OK")
                 accessible_providers[k] = v

@@ -293,15 +293,16 @@ class AnthropicClient(BaseProviderClient):
     def is_accessible(self) -> bool:
         """Prüft Zugang zu Anthropic API durch Test-Request."""
         try:
-            # Versuche minimale Generierung (Cheap & Fast)
-            self.client.messages.create(
+            # Versuche minimale Generierung (Cheap & Fast) mit max_retries=0
+            check_client = anthropic.Anthropic(api_key=self.client.api_key, max_retries=0)
+            check_client.messages.create(
                 model="claude-3-haiku-20240307",  # Günstigstes Modell für Test
                 max_tokens=1,
                 messages=[{"role": "user", "content": "Hi"}]
             )
             return True
         except Exception as e:
-            logger.warning("Anthropic Access Check Failed: %s", e)
+            logger.debug("Anthropic Access Check Failed: %s", e)
             return False
 
     def _resolve_model(self, model: str) -> str:
@@ -430,7 +431,7 @@ class MistralClient(BaseProviderClient):
             self.client.models.list()
             return True
         except Exception as e:
-            logger.warning("Mistral Access Check Failed: %s", e)
+            logger.debug("Mistral Access Check Failed: %s", e)
             return False
 
     def _resolve_model(self, model: str) -> str:
@@ -546,7 +547,9 @@ class OpenAIClient(BaseProviderClient):
         try:
             # list() reicht nicht für Quota Check (gibt oft success bei leerem Quota).
             # Daher führen wir eine minimale Generierung durch, um Billing-Status zu prüfen.
-            self.client.chat.completions.create(
+            # Eigener Client mit max_retries=0 um "Retrying..." Logs im Terminal zu vermeiden
+            check_client = OpenAI(api_key=self.client.api_key, max_retries=0)
+            check_client.chat.completions.create(
                 model="gpt-3.5-turbo",
                 messages=[{"role": "user", "content": "Hi"}],
                 max_tokens=1
@@ -554,7 +557,7 @@ class OpenAIClient(BaseProviderClient):
             return True
         except Exception as e:
             # Fängt InsufficientQuotaError, AuthenticationError, etc.
-            logger.warning("OpenAI Access Check Failed: %s", e)
+            logger.debug("OpenAI Access Check Failed: %s", e)
             return False
 
     def _get_fingerprint(self, model: str) -> str:
