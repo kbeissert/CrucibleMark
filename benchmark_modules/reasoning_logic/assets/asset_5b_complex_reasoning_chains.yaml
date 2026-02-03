@@ -1,70 +1,22 @@
 metadata:
   id: "reasoning_5b_001"
-  name: "Complex Reasoning Chains: Cross-Domain Root Cause"
-  description: "Testet Root-Cause-Analyse über Code+Docs+UX, inkl. integrierter Lösung."
-  category: "Reasoning"
-  subcategory: "Complex-Chains"
-  difficulty: "Hard"
-  version: "1.0"
-  tags: ["reasoning", "root-cause", "cross-domain", "system-thinking"]
+  name: "Reasoning 5B: Root Cause Analysis"
+  version: "2.0.0"
+  description: "Tests root cause identification in a technical system scenario."
+  scoring_version: 2.0
 
 prompt: |
-  Du bist ein Principal Engineer / Tech Lead.
-  Du bekommst 3 unabhängige Test-Outputs (Code, Docs, UX).
-  Diese hängen zusammen. Deine Aufgabe ist nicht, Einzelprobleme zu fixen, sondern das System zu verstehen.
-
-  === INPUT A: CODE QUALITY (API/Backend) ===
-  - Befund 1: Versioning inkonsistent (URL sagt v2, Header/Docs uneindeutig).
-  - Befund 2: Deprecated Endpoint /users weiterhin aktiv.
-  - Befund 3: PUT ist nicht idempotent (Duplicate Requests riskieren Doppel-Write).
-
-  === INPUT B: DOCUMENTATION QUALITY ===
-  - README sagt: "Nutze /api/v2/users", erwähnt aber nicht, dass /users weiter aktiv ist.
-  - Migration Guide fehlt oder behauptet falsches Deprecation-Verhalten.
-  - Keine Warnung zur PUT-Idempotenz.
-
-  === INPUT C: UX WRITING / ERROR MESSAGES ===
-  - Meldung bei /users: "Deprecated endpoint" (aber funktioniert).
-  - Meldung bei v1/v2 Mix: "Use v2 instead" (ohne Anleitung/Mapping).
-  - Duplicate Request: "Request already processing" (User versteht Ursache nicht).
-
-  DEINE AUFGABE (mit Reasoning):
-  1) ROOT CAUSE: Was ist die zentrale Ursache hinter allem?
-  2) CROSS-DOMAIN LINKS: Erkläre Ursache→Symptome über Code+Docs+UX.
-  3) INTEGRIERTE LÖSUNG: Schlage EINE zentrale Maßnahme vor, die alle 3 Bereiche repariert.
-  4) PRIORISIERUNG: Nenne 3 Schritte in Reihenfolge (mit Begründung).
-  5) META: Kurzer Abschnitt "So bin ich vorgegangen".
-
-  OUTPUT FORMAT (Markdown):
-  - Root Cause:
-  - Cross-Domain Links (Bullets):
-  - Integrierte Lösung:
-  - Priorisierung (1-3):
-  - Mein Reasoning-Prozess:
+  We are investigating a performance issue. Users report the dashboard is loading very slowly.
+  Here is the data we have collected:
+  
+  1. The API logs show that the `/dashboard` endpoint returns a response in 20ms on average.
+  2. The Database CPU usage is consistently at 99-100% during these periods.
+  3. The frontend application shows a spinner for 5-10 seconds before rendering.
+  4. The network latency between client and server is normal.
+  
+  What is the most likely root cause of the slow user experience? Explain your reasoning and propose a solution.
 
 expected_output:
   required_findings:
-    # Finding 1: Root Cause (Versioning/Deprecation)
-    - "Root cause inkonsistent Versioning Deprecation Strategie inconsistent versioning strategy lifecycle management API mismatch veraltet"
-    # Finding 2: Cross-Domain Alignment (Code <-> Docs <-> UX)
-    - "Code Docs UX alignment cross-domain idempotenz idempotency konsequenzen spiegeln reflect dependencies abhängigkeiten"
-    # Finding 3: Solution (Unified Policy)
-    - "Integrierte Lösung Unified Versioning Policy Deprecation Governance Kommunikation Communication Standardisierung"
-  scoring_hints:
-    - "Keine 3 separate Fixes, sondern EIN policy-getriebener Fix."
-    - "Sollte konkrete Schritte enthalten (z.B. Deprecation Timeline, Migration Guide, Error Message Mapping)."
-
-scoring:
-  total_points: 100
-  error_detection:
-    weight: 40
-    points: 40
-    description: "Erkennt Root Cause + Cross-Domain Abhängigkeiten."
-  solution_quality:
-    weight: 50
-    points: 50
-    description: "Liefert eine integrierte, implementierbare Lösung + Priorisierung."
-  consistency:
-    weight: 10
-    points: 10
-    description: "Reasoning, Lösung und Priorisierung widersprechen sich nicht."
+    - "database"
+    - "latency"

@@ -31,6 +31,119 @@ from .scorers.tier3 import (
 from .structure_analysis import parse_thought_tags
 
 
+# ============================================================================
+# NEW GRANULAR SCORING RUBRICS (v2.0)
+# ============================================================================
+
+RUBRICS = {
+    'reasoning_5c_001': {
+        'problem_recognition': {
+            'weight': 20,
+            'description': 'Identifies constraints (3 meetings, 2 time slots)',
+            'keywords': ['constraint', 'impossible', 'conflict', 'overlap', '3 meetings', '2 hours']
+        },
+        'logical_analysis': {
+            'weight': 25,
+            'description': "Explains WHY it's impossible (pigeonhole principle)",
+            'keywords': ['pigeonhole', 'cannot fit', '3 into 2', 'insufficient time', 'duration']
+        },
+        'appropriate_refusal': {
+            'weight': 40,
+            'description': 'Refuses invalid request instead of forcing solution',
+            'keywords': ['cannot schedule', 'impossible', 'not feasible', 'unable', 'decline']
+        },
+        'alternative_proposal': {
+            'weight': 15,
+            'description': 'Suggests workarounds (overlap, reschedule)',
+            'keywords': ['alternative', 'workaround', 'different time', 'reschedule', 'shorten', 'simultaneous']
+        }
+    },
+    'reasoning_5b_001': {
+        'problem_identification': {
+            'weight': 20,
+            'description': 'Identifies the root cause domain (database vs API)',
+            'keywords': ['database', 'db', 'query', 'sql', 'high cpu', 'bottleneck']
+        },
+        'cross_domain_analysis': {
+            'weight': 30,
+            'description': 'Traces issue across layers (API -> DB -> Performance)',
+            'keywords': ['cascade', 'layer', 'propagate', 'underlying cause', 'root cause']
+        },
+        'solution_quality': {
+            'weight': 30,
+            'description': 'Proposes correct fix (index, cache, optimize)',
+            'keywords': ['index', 'cache', 'optimize', 'query plan', 'sharding', 'replica']
+        },
+        'reasoning_depth': {
+            'weight': 20,
+            'description': 'Explains WHY solution works',
+            'keywords': ['because', 'reduces', 'improves', 'speeds up', 'efficiency', 'load']
+        }
+    },
+    'reasoning_5d_001': {
+        'deadlock_recognition': {
+            'weight': 30,
+            'description': 'Identifies circular dependency',
+            'keywords': ['deadlock', 'circular', 'cycle', 'mutual wait', 'circular dependency']
+        },
+        'resource_identification': {
+            'weight': 25,
+            'description': 'Names the conflicting resources (locks, threads)',
+            'keywords': ['lock', 'thread', 'resource', 'process', 'mutex', 'monitor']
+        },
+        'causality_explanation': {
+            'weight': 25,
+            'description': 'Explains HOW deadlock forms',
+            'keywords': ['holds', 'waits for', 'depends on', 'blocked', 'waiting for']
+        },
+        'solution_proposal': {
+            'weight': 20,
+            'description': 'Suggests fix (timeout, ordering, detection)',
+            'keywords': ['timeout', 'order', 'priority', 'detect', 'break cycle', 'ordering']
+        }
+    }
+}
+
+
+def calculate_dimension_score(response: str, keywords: list[str], max_weight: int) -> float:
+    """Proportional keyword matching with partial credit."""
+    if not keywords:
+        return 0.0
+    
+    matches = sum(1 for kw in keywords if kw.lower() in response.lower())
+    match_ratio = matches / len(keywords)
+
+    if match_ratio >= 0.5 or matches >= 2:  # Adjusted threshold for flexibility
+        return float(max_weight)
+    elif match_ratio >= 0.25 or matches >= 1:
+        return float(max_weight * 0.6)
+    return 0.0
+
+
+def score_granular_rubric(response: str, asset_id: str) -> tuple[float, dict[str, float], list[str]]:
+    """Generic granular scorer using RUBRICS."""
+    rubric = RUBRICS.get(asset_id)
+    if not rubric:
+        return 0.0, {}, ["Error: Missing Rubric"]
+    
+    scores = {}
+    details = []
+    
+    for dimension, config in rubric.items():
+        weight = config['weight']
+        keywords = config.get('keywords', [])
+        
+        score = calculate_dimension_score(response, keywords, weight)
+        scores[dimension] = score
+        if score > 0:
+            details.append(f"✅ {dimension}: {score:.1f}/{weight}")
+        else:
+            details.append(f"❌ {dimension}: 0/{weight}")
+            
+    total = sum(scores.values())
+    return total, scores, details
+
+
 class ReasoningEvaluator:
     """Evaluator class for Reasoning benchmarks.
 
@@ -40,18 +153,43 @@ class ReasoningEvaluator:
     def __init__(self, asset: dict[str, Any]) -> None:
         """Initialize the evaluator with asset configuration."""
         self.asset = asset
+        
         # Dispatcher Mapping
         self._scorers = {
-            "reasoning_5c_001": score_5c_paradox,
-            "reasoning_5d_001": score_5d_deadlock,
             "reasoning_5e_001": score_5e_nested_paradox,
-            "reasoning_5b_001": score_5b_complex,
             "reasoning_metacog_001": score_metacog_001,
             "reasoning_metacog_002": score_metacog_002,
             "reasoning_metacog_003": score_metacog_003,
             "reasoning_metacog_004": score_metacog_004,
             "reasoning_metacog_005": score_metacog_005,
         }
+        
+        # Check scoring version for granular scoring (v2.0)
+        # Defaults to 1.0 (Legacy) if not specified
+        try:
+            version = float(self.asset.get("scoring_version", 1.0))
+        except (ValueError, TypeError):
+            version = 1.0
+
+        if version >= 2.0:
+            # Use new rubrics
+            def wrapper_5c(text: str, *args: Any) -> tuple[float, dict[str, float], list[str]]:
+                return score_granular_rubric(text, "reasoning_5c_001")
+            
+            def wrapper_5b(text: str, *args: Any) -> tuple[float, dict[str, float], list[str]]:
+                return score_granular_rubric(text, "reasoning_5b_001")
+                
+            def wrapper_5d(text: str, *args: Any) -> tuple[float, dict[str, float], list[str]]:
+                return score_granular_rubric(text, "reasoning_5d_001")
+                
+            self._scorers["reasoning_5c_001"] = wrapper_5c
+            self._scorers["reasoning_5b_001"] = wrapper_5b
+            self._scorers["reasoning_5d_001"] = wrapper_5d
+        else:
+            # Uses Legacy Scorers
+            self._scorers["reasoning_5c_001"] = score_5c_paradox
+            self._scorers["reasoning_5b_001"] = score_5b_complex
+            self._scorers["reasoning_5d_001"] = score_5d_deadlock
 
     def score_response(self, response: str) -> dict[str, Any]:
         """Customize scoring for reasoning.

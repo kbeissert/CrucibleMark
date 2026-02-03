@@ -103,6 +103,24 @@ python scripts/benchmark_auto.py --force
 
 ---
 
+## 📐 Scoring Explained (v1.1)
+
+CrucibleMark verwendet unterschiedliche Scoring-Mechanismen:
+
+### 1. Granular Rubric Scoring (Reasoning)
+Für komplexe Reasoning-Aufgaben nutzen wir **v2.0 Granular Rubrics** für faire Teilpunkte.
+
+**Beispiel (Scheduling Paradox):**
+- **Problem Detection (20 Pkt):** ✅ Erkannt (20/20)
+- **Refusal (40 Pkt):** ❌ Versuch einer Lösung (0/40)
+- **Analysis (25 Pkt):** ✅ Korrekte Logik (15/25)
+- **Total:** 35/100 (statt 0)
+
+### 2. Hybrid Scoring (General)
+Standard-Module nutzen eine Mischung aus **40% Keyword-Matching** und **60% Semantic Similarity** zum Gold Standard.
+
+---
+
 ## 🏆 Leaderboard generieren
 
 Nach dem Benchmark-Run:
