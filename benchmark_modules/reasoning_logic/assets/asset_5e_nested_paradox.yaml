@@ -4,7 +4,8 @@ metadata:
   tier: "Tier 2 (Expert)"
   difficulty: "Very Hard"
   category: "Systems Thinking"
-  version: "1.0.0"
+  version: "2.1.0"
+  scoring_version: 2.0
   author: "CrucibleMark AI Team"
   description: "Expert-level distributed systems paradox testing multi-layered impossibility recognition."
 

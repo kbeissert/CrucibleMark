@@ -411,6 +411,40 @@ make validate-assets
 
 ---
 
+## 🏗️ Creating New Tests (v2.1+)
+
+All new reasoning tests **must** use v2.1 rubric-based scoring. The legacy system is deprecated.
+
+### 1. Define Rubric in `evaluators.py`
+
+```python
+RUBRICS = {
+    'your_test_001': {
+        'dimension_name': {
+            'weight': 25,  # Max points (0-100 total)
+            'description': 'What this dimension measures',
+            'keywords': ['keyword1', 'keyword2', ...]
+        },
+        # ... more dimensions (must sum to 100)
+    }
+}
+```
+
+### 2. Set scoring_version in YAML Asset
+
+```yaml
+metadata:
+  scoring_version: 2.0
+```
+
+### 3. Test Locally
+
+```bash
+make benchmark-single MODEL=your-test-model
+```
+
+---
+
 **Happy Benchmarking! 🚀**
 
 ---

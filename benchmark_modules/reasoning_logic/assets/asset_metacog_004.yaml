@@ -1,7 +1,8 @@
 metadata:
   id: reasoning_metacog_004
   name: 'Metacognition 004: The Monty Hall Problem (Iterative Refinement)'
-  version: 1.0.0
+  version: 2.1.0
+  scoring_version: 2.0
   author: CrucibleMark AI Team
   tier: Tier 3 (Metacognition)
   category: Iterative Refinement
