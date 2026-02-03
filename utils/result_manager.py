@@ -164,8 +164,8 @@ class ResultManager:
 
             print("🔄 Aktualisiere Leaderboard...")
             sys.stdout.flush()
+            # Suppress console output for automation calls
             generate_leaderboard.main(print_table=False)
-            print("✅ Leaderboard aktualisiert.")
             sys.stdout.flush()
         except (ImportError, OSError, ValueError) as e:
             logger.error("Failed to update leaderboard: %s", e)
