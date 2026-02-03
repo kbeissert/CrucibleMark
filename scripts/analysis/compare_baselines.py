@@ -25,7 +25,8 @@ ROOT_DIR = Path(__file__).resolve().parent.parent.parent
 if str(ROOT_DIR) not in sys.path:
     sys.path.insert(0, str(ROOT_DIR))
 
-from utils.constants import Colors
+# pylint: disable=wrong-import-position
+from utils.constants import Colors  # noqa: E402
 
 def load_json(path: str) -> Any:
     try:

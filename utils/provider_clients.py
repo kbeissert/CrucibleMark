@@ -421,7 +421,8 @@ class MistralClient(BaseProviderClient):
                 raise ValueError(
                     "MISTRAL_API_KEY or CODESTRAL_API_KEY environment variable not set"
                 )
-            self._client = Mistral(api_key=api_key)
+            # Set explicit timeout (120s) to avoid indefinite hangs on API congestion
+            self._client = Mistral(api_key=api_key, timeout_ms=120000)
         return self._client
 
     def is_accessible(self) -> bool:

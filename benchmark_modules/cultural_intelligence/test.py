@@ -44,7 +44,11 @@ class CulturalIntelligenceTest(BaseTest):
         except Exception as e:
             response_text = f"Error executing model: {str(e)}"
 
-        execution_time = time.time() - start_time
+        # Use clean execution time (excluding timeouts/retries) if available
+        if hasattr(llm_client, "last_query_duration") and llm_client.last_query_duration > 0:
+            execution_time = llm_client.last_query_duration
+        else:
+            execution_time = time.time() - start_time
 
         return {
             "response": response_text,

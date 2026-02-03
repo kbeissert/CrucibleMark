@@ -12,7 +12,8 @@ from pathlib import Path
 root_dir = Path(__file__).parents[3]
 sys.path.insert(0, str(root_dir))
 
-from benchmark_modules.content_transformation.core.evaluators import (
+# noqa: E402
+from benchmark_modules.content_transformation.core.evaluators import (  # noqa: E402
     FormatValidator,
     ToneEvaluator
 )

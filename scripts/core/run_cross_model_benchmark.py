@@ -29,7 +29,7 @@ sys.path.insert(0, str(ROOT_DIR))
 
 try:
     from utils.model_utils import get_ollama_models_info, get_commercial_models_from_config
-    from utils.config_validator import ConfigValidator
+    # from utils.config_validator import ConfigValidator
     from utils.module_registry import get_active_modules
     from utils.benchmark_utils import select_from_list
     from utils.llm_client import LLMClient

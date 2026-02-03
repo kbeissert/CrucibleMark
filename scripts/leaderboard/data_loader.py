@@ -166,51 +166,14 @@ def load_benchmark_data() -> pd.DataFrame:
     # Sort by timestamp to ensure 'last' is actually the most recent
     df = df.sort_values("timestamp")
 
+    # Normalize model_version: Remove date suffix (YYYY-MM-DD from fingerprint)
+    # to aggregate runs of the same version across different days.
+    if "model_version" in df.columns:
+        df["model_version"] = df["model_version"].astype(str).str.replace(r'-\d{4}-\d{2}-\d{2}$', '', regex=True)
+
     # DEDUPLICATION LOGIC with VERSIONING:
     # We now group by model AND model_version.
     # This means 'mistral:latest' (v1) and 'mistral:latest' (v2) are treated as DIFFERENT entities.
     df = df.drop_duplicates(subset=["model", "model_version", "type", "asset_id"], keep="last")
     return df
-
-
-def load_golden_references() -> Dict[str, float]:
-    """
-    Loads reference scores per asset from the Golden Standard CSV.
-    Fallback: Looks for golden model in Commercial CSV if separate file missing.
-
-    Returns:
-        Dict[str, float]: Mapping of asset_id to percentage score.
-    """
-    refs = {}
-
-    # 1. Try dedicated Golden CSV
-    if GOLDEN_CSV.exists():
-        try:
-            # Check if file is empty or readable
-            with open(GOLDEN_CSV, "r", encoding="utf-8") as f:
-                first_line = f.readline()
-            
-            if first_line:
-                df = pd.read_csv(GOLDEN_CSV, on_bad_lines='skip')
-                refs = _extract_scores_from_df(df)
-        except Exception as e:
-            print(f"⚠️ Warning: Could not load Golden CSV: {e}")
-
-    if refs:
-        return refs
-
-    # 2. Fallback: Search in Commercial CSV
-    golden_model = config.get("golden_standard", {}).get("model")
-    if golden_model and COMMERCIAL_CSV.exists():
-        try:
-            df = pd.read_csv(COMMERCIAL_CSV, on_bad_lines='skip')
-            if "model" in df.columns:
-                # Filter for golden model
-                df_golden = df[df["model"] == golden_model]
-                if not df_golden.empty:
-                    refs = _extract_scores_from_df(df_golden)
-        except Exception:
-            pass
-
-    return refs
 

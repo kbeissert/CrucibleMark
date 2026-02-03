@@ -10,7 +10,7 @@ def test_semantic_match_simple():
     response = "<think>hmm</think>Missing installation steps and setup guide"
     keywords = ["installation", "setup", "guide"]
     # Should match 2 keywords ("installation", "setup")
-    assert SemanticMatcher.check_match(response, keywords, 2, "asset_001") == True
+    assert SemanticMatcher.check_match(response, keywords, 2, "asset_001") is True
     print("test_semantic_match_simple Passed")
 
 if __name__ == "__main__":

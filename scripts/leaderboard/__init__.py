@@ -160,7 +160,8 @@ def main(print_table: bool = True) -> None:
 
         display_ver = version
         for token in tokens:
-            if not token: continue
+            if not token:
+                continue
             # Check if current display_ver starts with this token (case insensitive)
             # We look for token followed by separator or start
 
@@ -213,7 +214,7 @@ def main(print_table: bool = True) -> None:
         if pd.notna(raw_ts):
             try:
                 # Need datetime import inside function scope or top level
-                from datetime import datetime
+                # from datetime import datetime
                 ts = pd.to_datetime(raw_ts)
                 # Format: Feb 2026 (Month Year) - granular enough for versions
                 date_suffix = ts.strftime("%b %Y")

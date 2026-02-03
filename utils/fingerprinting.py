@@ -8,7 +8,7 @@ expose native hash IDs (Mistral AI, OpenAI, Anthropic).
 import hashlib
 import logging
 from datetime import datetime
-from typing import Dict, List, Optional, Any
+from typing import Optional
 
 # Configure logging
 logger = logging.getLogger(__name__)
@@ -154,7 +154,9 @@ class ModelFingerprinter:
         if behavioral_hash:
             parts.append(behavioral_hash)
 
-        parts.append(date_str)
+        # Remove date from fingerprint to ensure stable versioning across days
+        # The timestamp column in results handles the timeline.
+        # parts.append(date_str)
 
         return "-".join(parts)
 

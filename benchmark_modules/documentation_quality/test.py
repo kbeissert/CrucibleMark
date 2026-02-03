@@ -49,7 +49,11 @@ class DocumentationTest(BaseTest):
             response = llm_client.query(
                 model, full_prompt, provider=provider, temperature=DEFAULT_TEMPERATURE
             )
-            elapsed = time.time() - start
+            # Use clean execution time if available, otherwise fallback to wall clock
+            if hasattr(llm_client, "last_query_duration") and llm_client.last_query_duration > 0:
+                elapsed = llm_client.last_query_duration
+            else:
+                elapsed = time.time() - start
 
             # Token-Approximation
             approx_tokens = int(len(response.split()) * TOKEN_MULTIPLIER)

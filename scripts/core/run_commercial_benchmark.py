@@ -320,7 +320,9 @@ class CommercialBenchmarkRunner(BaseBenchmarkRunner):
                 benchmark_info=benchmark_info,
                 provider=provider,
             )
-            exec_result["execution_time"] = time.time() - start_time
+            # Use inner execution time if available (excludes potential retry delays)
+            if "execution_time" not in exec_result:
+                exec_result["execution_time"] = time.time() - start_time
         except Exception as e:  # pylint: disable=broad-exception-caught
             print(f"\n❌ Fehler bei Ausführung ({asset_name}): {e}")
             return None

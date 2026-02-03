@@ -63,8 +63,8 @@ class BenchmarkRunConfig:
     run_all: bool = False
     num_runs: int = 1
 
-
-import subprocess
+# pylint: disable=wrong-import-position
+import subprocess  # noqa: E402
 
 class BenchmarkRunner:
     """Globaler Benchmark-Runner mit dynamischem Modul-Loading."""
