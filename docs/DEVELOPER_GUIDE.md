@@ -113,6 +113,11 @@ integration:
       - id: "your_score"
         label: "Your Score"
 
+    # HINWEIS: Ab v1.1 wird die 'Total Score' Formel durch das Framework bestimmt
+    # (AVG(Routine) + AVG(Reasoning) / 2).
+    # Dieses Modul liefert seinen Score an die entsprechende Kategorie.
+
+
 execution:
   test_class: "YourModuleTest"         # Klassenname in test.py
   execution_mode: "standard"           # "standard" oder "batch"
@@ -180,27 +185,25 @@ threshold = self.config['config']['keyword_threshold']
 
 ### Kaskadierende Score-Contributions
 
-**Problem:** Redundanz vermeiden (100 Assets × 2 Zeilen Config = 200 Zeilen)
-
-**Lösung:** Hierarchie
+**Ab v1.1:** Das Framework berechnet den **Routine Score** und **Reasoning Score** automatisch als Durchschnitt der entsprechenden Module. Die Unterscheidung findet primär auf **Modul-Level** statt (Mapping via Config), aber granulare Contributions sind weiterhin unterstützt.
 
 1. **Asset-Level** (höchste Priorität):
    ```yaml
    - id: "reasoning_5d_002"
      score_contribution:
-       reasoning: 1.0  # Überschreibt Default
+       reasoning: 1.0  # Ordnet dieses Asset dem Reasoning Score zu
    ```
 
-2. **Modul-Level** (Fallback):
-   ```yaml
-   default_contribution:
-     routine: 1.0      # Gilt für alle ohne eigene Definition
-   ```
+2. **Modul-Level** (Standard):
+   Definiert in `config.yaml` → `integration` → `default_contribution`.
+   *   `routine: 1.0` → Zählt zum "Routine Score" (z.B. Documentation, UX)
+   *   `reasoning: 1.0` → Zählt zum "Reasoning Score" (z.B. Logical Reasoning)
 
-3. **Framework-Level** (Last Resort):
-   ```yaml
-   enable_scoring: false  # Modul zählt gar nicht
+3. **Total Score Berechnung:**
+   ```python
+   Total Score = (Routine Score + Reasoning Score) / 2
    ```
+   Dies belohnt Spezialisten und verhindert, dass reine Routine-Modelle durch Masse (viele einfache Tests) den Score verzerren.
 
 ---
 

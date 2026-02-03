@@ -178,17 +178,10 @@ def hybrid_score(response: str, asset: Dict) -> float:
 
 ### Golden Standard Comparison
 
-**Konzept:** Alle Modelle werden gegen **Mistral Large** (123B) gemessen.
+**Konzept:** Alle Modelle werden gegen **Mistral Large** (123B) als Referenz verglichen, aber das Leaderboard basiert ab v1.1 auf **Absoluten Standards**.
 
-**Performance Ratio:**
-
-```
-Ratio = (Model Score / Golden Standard Score) * 100
-
-- 100% = Auf Augenhöhe mit Mistral Large
-- >100% = Besser als Referenz
-- <100% = Unter Referenz (typisch für lokale Modelle)
-```
+**Warum Absolute Standards?**
+Die "Performance Ratio" (Relativ zu Mistral) war hilfreich, führt aber zu Verwirrung, wenn sich der Referenzwert ändert. Ab v1.1 gelten feste Hürden (z.B. >85% für Gold).
 
 ---
 
@@ -196,33 +189,35 @@ Ratio = (Model Score / Golden Standard Score) * 100
 
 ### Leaderboard-Generation
 
-**Score-Berechnung:**
+**Score-Berechnung (v1.1):**
 
 ```python
-# Routine Score
-routine_assets = [row for row in data if row['routine_contribution'] > 0]
-routine_score = sum(row['routine_contribution'] for row in routine_assets) / len(routine_assets)
+# Modul Scores
+routine_modules = [m for m in modules if "Reasoning" not in "Name"]
+reasoning_modules = [m for m in modules if "Reasoning" in "Name"]
 
-# Reasoning Score
-reasoning_assets = [row for row in data if row['reasoning_contribution'] > 0]
-reasoning_score = sum(row['reasoning_contribution'] for row in reasoning_assets) / len(reasoning_assets)
+routine_score = avg(score for score in routine_modules)
+reasoning_score = avg(score for score in reasoning_modules)
 
-# Total Score
+# Total Score (Balanced Average)
 total_score = (routine_score + reasoning_score) / 2
 ```
 
-**Badge-Vergabe:**
+**Badge-Vergabe (v1.1):**
 
 ```python
-if routine_score > 85 and reasoning_score > 80:
-    badge = "👑 God Mode"
-elif reasoning_score > 80:
-    badge = "🧠 Deep Thinker"
-elif routine_score > 80:
-    badge = "🏎️ Daily Driver"
+if total_score >= 85:
+    badge = "🏆 Gold"
+elif total_score >= 70:
+    badge = "🥈 Silver"
+elif total_score >= 55:
+    badge = "🥉 Bronze"
 else:
     badge = "⚖️ Standard"
 ```
+
+**Skill Profile Generation:**
+Zusätzlich erstellt das System ein Profil basierend auf Speed Class und Top-Modul (z.B. "Fast Code Reviewer").
 
 ---
 

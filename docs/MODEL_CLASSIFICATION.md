@@ -36,9 +36,12 @@ RCI = (Avg_Tier1_2_Score × 0.6) + (Avg_Tier3_Score × 0.4)
 
 | Kategorie | RCI Bereich | Beschreibung | Beispiel |
 |-----------|-------------|--------------|----------|
-| **Non-Thinking Model** | < 50% | Löst Standard-Tasks, scheitert an Selbstreflexion | Dolphin 8B (~42%) |
-| **Basic Thinking Model** | 50% - 85% | Gute Logik, aber schwache Metakognition | Qwen 2.5 (~65%) |
-| **Deep Thinking Model** | > 85% | Exzellente Logik + aktive Selbstkorrektur | DeepSeek R1 (~87%) |
+| **Standard** | < 50% | Löst Standard-Tasks, scheitert an Selbstreflexion | Dolphin 8B (~42%) |
+| **Silver** | >> 70% | Gute Logik (Routine + Standard Reasoning) | Qwen 2.5 (~65%) |
+| **Gold** | > 85% | Exzellente Logik + aktive Selbstkorrektur | DeepSeek R1 (~87%) |
+
+Anmerkung: Die RCI-Werte korrelieren stark mit den **Leaderboard Badges** (Standard, Bronze, Silver, Gold).
+
 
 ---
 
@@ -51,8 +54,8 @@ CrucibleMark unterscheidet Modelle nach ihrer **Trainings-Architektur**:
 **Training:** Supervised Fine-Tuning auf Text-Completion
 
 **Charakteristik:**
-- Schnell (< 10s Antwortzeit)
-- Niedrige Reasoning Scores (< 70%)
+- Schnell (< 10s Antwortzeit) → Siehe **Speed Class: Fast**
+- Niedrige Reasoning Scores (< 70%) → Siehe **Badge: Bronze/Standard**
 - Gut bei Routine-Tasks (Code, Doku, UX Writing)
 
 **Beispiele:**
@@ -67,8 +70,8 @@ CrucibleMark unterscheidet Modelle nach ihrer **Trainings-Architektur**:
 **Training:** Reinforcement Learning auf Reasoning-Traces
 
 **Charakteristik:**
-- Langsam (> 30s Antwortzeit)
-- Hohe Reasoning Scores (> 80%)
+- Langsam (> 30s Antwortzeit) → Siehe **Speed Class: Slow/Medium**
+- Hohe Reasoning Scores (> 80%) → Siehe **Badge: Silver/Gold**
 - Zeigen Denkprozess in `<think>` Tags
 - Gut bei Logik-Rätseln, Mathematik, Constraint-Solving
 
@@ -86,8 +89,8 @@ CrucibleMark unterscheidet Modelle nach ihrer **Trainings-Architektur**:
 **Training:** Destillation von Gen 2 Modellen (ohne Traces)
 
 **Charakteristik:**
-- Mittelschnell (15-25s)
-- Hohe Reasoning Scores (> 75%)
+- Mittelschnell (15-25s) → Siehe **Speed Class: Fast/Medium**
+- Hohe Reasoning Scores (> 75%) → Siehe **Badge: Silver/Gold**
 - **KEINE** `<think>` Tags (unsichtbares Reasoning)
 - Nicht automatisch erkennbar
 
