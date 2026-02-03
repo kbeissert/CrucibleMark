@@ -171,7 +171,7 @@ def calculate_dimension_score(response: str, keywords: list[str], max_weight: in
     """Proportional keyword matching with partial credit (v2.1 Stricter)."""
     if not keywords:
         return 0.0
-    
+
     matches = sum(1 for kw in keywords if kw.lower() in response.lower())
     match_ratio = matches / len(keywords)
 
@@ -183,11 +183,11 @@ def calculate_dimension_score(response: str, keywords: list[str], max_weight: in
 
     if match_ratio >= 0.80:
         return float(max_weight)
-    elif match_ratio >= 0.60:
+    if match_ratio >= 0.60:
         return float(max_weight * 0.75)
-    elif match_ratio >= 0.40:
+    if match_ratio >= 0.40:
         return float(max_weight * 0.50)
-    
+
     return 0.0
 
 
@@ -196,21 +196,21 @@ def score_granular_rubric(response: str, asset_id: str) -> tuple[float, dict[str
     rubric = RUBRICS.get(asset_id)
     if not rubric:
         return 0.0, {}, ["Error: Missing Rubric"]
-    
+
     scores = {}
-    details = [f"ℹ️ Algorithm: v2.1 Stricter Matching"]
-    
+    details = ["ℹ️ Algorithm: v2.1 Stricter Matching"]
+
     for dimension, config in rubric.items():
         weight = config['weight']
         keywords = config.get('keywords', [])
-        
+
         score = calculate_dimension_score(response, keywords, weight)
         scores[dimension] = score
         if score > 0:
             details.append(f"✅ {dimension}: {score:.1f}/{weight}")
         else:
             details.append(f"❌ {dimension}: 0/{weight}")
-            
+
     total = sum(scores.values())
     return total, scores, details
 
@@ -224,7 +224,7 @@ class ReasoningEvaluator:
     def __init__(self, asset: dict[str, Any]) -> None:
         """Initialize the evaluator with asset configuration."""
         self.asset = asset
-        
+
         # Dispatcher Mapping
         self._scorers = {
             "reasoning_5e_001": score_5e_nested_paradox,
@@ -234,7 +234,7 @@ class ReasoningEvaluator:
             "reasoning_metacog_004": score_metacog_004,
             "reasoning_metacog_005": score_metacog_005,
         }
-        
+
         # Check scoring version for granular scoring (v2.0)
         # Defaults to 1.0 (Legacy) if not specified
         try:
@@ -250,10 +250,10 @@ class ReasoningEvaluator:
             # Use new rubrics
             def wrapper_5c(text: str, *args: Any) -> tuple[float, dict[str, float], list[str]]:
                 return score_granular_rubric(text, "reasoning_5c_001")
-            
+
             def wrapper_5b(text: str, *args: Any) -> tuple[float, dict[str, float], list[str]]:
                 return score_granular_rubric(text, "reasoning_5b_001")
-                
+
             def wrapper_5d(text: str, *args: Any) -> tuple[float, dict[str, float], list[str]]:
                 # 5d requires feasibility extraction by default logic, but granular rubric just needs text
                 # We ignore args (feasibility) if passed, or use it if rubric needs it?
@@ -263,9 +263,9 @@ class ReasoningEvaluator:
             def wrapper_5e(text: str, *args: Any) -> tuple[float, dict[str, float], list[str]]:
                 # 5e previously used specialized scorer. Now uses granular rubric (v2.1)
                 return score_granular_rubric(text, "reasoning_5e_001")
-                
+
             def wrapper_metacog_004(text: str, *args: Any) -> tuple[float, dict[str, float], list[str]]:
-                 return score_granular_rubric(text, "reasoning_metacog_004")
+                return score_granular_rubric(text, "reasoning_metacog_004")
 
             self._scorers["reasoning_5c_001"] = wrapper_5c
             self._scorers["reasoning_5b_001"] = wrapper_5b
@@ -307,7 +307,7 @@ class ReasoningEvaluator:
             else:
                 # Standard signature (float, dict, list)
                 total_score, score_breakdown, details = handler(input_text)
-            
+
         elif (
             isinstance(expected_output, dict) and "required_findings" in expected_output
         ):
