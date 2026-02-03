@@ -1,16 +1,16 @@
 #!/usr/bin/env python3
 """Benchmark Runner für lokale Ollama-Modelle."""
 
-import sys
-import subprocess
-import shutil
-import csv
-import logging
-import json
-import traceback
-import time
-import os
 import argparse
+import csv
+import json
+import logging
+import os
+import shutil
+import subprocess
+import sys
+import time
+import traceback
 from datetime import datetime
 from pathlib import Path
 from typing import Any, Dict, List, Optional
@@ -18,27 +18,34 @@ from typing import Any, Dict, List, Optional
 # Add project root to path
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
-# pylint: disable=wrong-import-position, import-error
+# pylint: disable=wrong-import-position, import-error, duplicate-code
 from utils.base_runner import BaseBenchmarkRunner
-from utils.benchmark_utils import select_from_list, discover_assets, load_asset_yaml, format_political_compass_data, prepare_pc_csv_row
-from utils.module_loader import load_test_class
-from utils.module_registry import load_active_benchmarks
-from utils.model_utils import is_reasoning_model, get_model_version
+from utils.benchmark_utils import (
+    discover_assets,
+    format_pc_run_data,
+    load_asset_yaml,
+    select_from_list,
+)
 from utils.llm_client import LLMClient
 from utils.logging_config import setup_logging
-
+from utils.model_utils import get_model_version, is_reasoning_model
+from utils.module_loader import load_test_class
+from utils.module_registry import load_active_benchmarks
 from utils.scoring_utils import calculate_score_contributions
 
 # Setup Logging centrally
 setup_logging()
 
 # Optional: Tightly coupled for now, should be decoupled later
+# pylint: disable=invalid-name
 RESULT_MANAGER = None
 try:
     from benchmark_modules.political_compass.core.io_manager import ResultManager as RM
+
     RESULT_MANAGER = RM
 except ImportError:
     pass
+# pylint: enable=invalid-name
 
 # pylint: enable=wrong-import-position, import-error
 
@@ -57,12 +64,12 @@ class LocalBenchmarkRunner(BaseBenchmarkRunner):
         """Initialisiert Runner."""
         super().__init__()
         self.commercial_csv = self.validator.get_golden_standard_csv()
-        self.debug_responses = debug_responses or os.getenv("CRUCIBLE_DEBUG", "false").lower() == "true"
+        self.debug_responses = (
+            debug_responses or os.getenv("CRUCIBLE_DEBUG", "false").lower() == "true"
+        )
 
         # Load modules from config (Hydrated via Registry)
         self.benchmark_categories = load_active_benchmarks(self.validator.config)
-
-
 
     @staticmethod
     def get_ollama_models() -> List[str]:
@@ -245,7 +252,7 @@ class LocalBenchmarkRunner(BaseBenchmarkRunner):
             asset_data=asset_data,
             score=score,
             exec_result=exec_result,
-            ref=ref,
+            _ref=ref,
             comparison=comparison,
             response_preview=response,
         )
@@ -255,11 +262,10 @@ class LocalBenchmarkRunner(BaseBenchmarkRunner):
         asset_id = result["asset_id"]
         # Find config for this asset
         asset_cfg = next((b for b in benchmarks_list if b["id"] == asset_id), None)
-        
-        result = calculate_score_contributions(result, asset_cfg)
-            
-        return result
 
+        result = calculate_score_contributions(result, asset_cfg)
+
+        return result
 
     # pylint: disable=too-many-arguments, too-many-positional-arguments
     def _build_result_dict(
@@ -268,14 +274,14 @@ class LocalBenchmarkRunner(BaseBenchmarkRunner):
         asset_data: Dict[str, Any],
         score: Dict[str, Any],
         exec_result: Dict[str, Any],
-        ref: Dict[str, Any],
+        _ref: Dict[str, Any],
         comparison: Dict[str, Any],
         response_preview: str,
     ) -> Dict[str, Any]:
         """Helper to construct the result dictionary."""
         # Use base runner implementation
         result = self.build_base_result(model, asset_data, score, exec_result, "ollama")
-        
+
         # Add Model Version (ID)
         result["model_version"] = get_model_version(model, provider="ollama")
 
@@ -312,7 +318,7 @@ class LocalBenchmarkRunner(BaseBenchmarkRunner):
                 result["asset_id"],
                 response_preview,
                 f"{result['total_score']}/{result['max_score']} ({result['percentage']}%)",
-                score.get("reasoning", "No explanation provided")
+                score.get("reasoning", "No explanation provided"),
             )
 
         return result
@@ -336,61 +342,100 @@ class LocalBenchmarkRunner(BaseBenchmarkRunner):
 
         return commercial_refs, is_valid
 
-    def _update_political_compass_csv(self, model: str, report: Dict[str, Any], model_version: str = "unknown") -> None:
-        """Aktualisiert die Leaderboard-CSV für Batch-Tests (Append-Only)."""
+    def _update_political_compass_csv(
+        self, model: str, report: Dict[str, Any], _model_version: str = "unknown"
+    ) -> None:
+        """
+        Aktualisiert die Leaderboard-CSV für Batch-Tests (Append-Only).
+        Uses the Standard V2 Schema defined in political_compass/core/io_manager.py
+        to ensure compatibility with other tools.
+        """
         pc_csv = Path("benchmark_scores/political_compass_results.csv")
         pc_csv.parent.mkdir(exist_ok=True, parents=True)
 
+        # Standard V2 Schema
         fieldnames = [
-            "model", "model_version", "run_id", "x_coordinate", "y_coordinate",
-            "x_label", "y_label", "metrics_json", "timestamp"
+            "model",
+            "module",
+            "run_id",
+            "status",
+            "execution_time",
+            "metadata_json",
         ]
 
-        # Determine strict fieldnames or adaptive?
-        # If file exists and has extra columns, we should respect them or ignore them properly
-        if pc_csv.exists():
-            with open(pc_csv, "r", encoding="utf-8") as f:
-                reader = csv.DictReader(f)
-                if reader.fieldnames:
-                    for col in reader.fieldnames:
-                        if col not in fieldnames:
-                            fieldnames.append(col)
+        file_exists = pc_csv.exists() and pc_csv.stat().st_size > 0
 
         rows_to_write = []
 
-        # 1. Archive individual runs if available
+        # Calculate execution time from statistics if available
+        exec_time = 0.0
+        if "statistics" in report:
+            exec_time = report["statistics"].get("execution_time", 0.0)
+
+        # 1. Archive individual runs
         if "individual_runs" in report:
-            for run in report["individual_runs"]:
-                # Individual runs usually don't need full Metrics JSON yet
-                rows_to_write.append({
-                    "model": model,
-                    "model_version": model_version,
-                    "run_id": f"Run {run['id']}",
-                    "x_coordinate": run["x"],
-                    "y_coordinate": run["y"],
-                    "x_label": run["x_label"],
-                    "y_label": run["y_label"],
-                    "timestamp": datetime.now().isoformat(),
-                })
+            for i, run in enumerate(report["individual_runs"], 1):
+                run_formatted = format_pc_run_data(run, include_extremism=False)
+
+                rows_to_write.append(
+                    {
+                        "model": model,
+                        "module": "political_compass",
+                        # "asset_id": "aggregate",  <-- Removed
+                        "run_id": f"RUN_{run.get('id', i)}",
+                        # "total_score": 0, <-- Removed
+                        # "max_score": 0, <-- Removed
+                        "status": "success",
+                        "execution_time": round(
+                            exec_time / len(report["individual_runs"]), 2
+                        ),
+                        "metadata_json": json.dumps(run_formatted, ensure_ascii=False),
+                    }
+                )
 
         # 2. Archive Average / Total Result
-        # Create Data Object
-        data_object = format_political_compass_data(report)
+        avg_formatted = format_pc_run_data(
+            {
+                "x": report["coordinates"]["x"],
+                "y": report["coordinates"]["y"],
+                "x_label": report["archetype"]["x_label"],
+                "y_label": report["archetype"]["y_label"],
+                "extremism": report.get("extremism", {}),
+                "sigma": report.get("sigma", {}),
+                "module_stats": report.get("statistics", {}).get("module_stats", {}),
+            },
+            include_extremism=True,
+        )
 
-        row = prepare_pc_csv_row(model, report, data_object, model_version)
-        row["timestamp"] = datetime.now().isoformat()
-        rows_to_write.append(row)
+        rows_to_write.append(
+            {
+                "model": model,
+                "module": "political_compass",
+                # "asset_id": "aggregate", <-- Removed
+                "run_id": "AVG",
+                # "total_score": 0, <-- Removed
+                # "max_score": 0, <-- Removed
+                "status": "success",
+                "execution_time": round(exec_time, 2),
+                "metadata_json": json.dumps(avg_formatted, ensure_ascii=False),
+            }
+        )
 
-        file_exists = pc_csv.exists() and pc_csv.stat().st_size > 0
-        
-        with open(pc_csv, "a", encoding="utf-8", newline="") as f:
-            writer = csv.DictWriter(f, fieldnames=fieldnames, extrasaction='ignore')
-            if not file_exists:
-                writer.writeheader()
-            writer.writerows(rows_to_write)
+        try:
+            with open(pc_csv, "a", encoding="utf-8", newline="") as f:
+                writer = csv.DictWriter(f, fieldnames=fieldnames, extrasaction="ignore")
+                if not file_exists:
+                    writer.writeheader()
+                writer.writerows(rows_to_write)
+        except Exception as e:  # pylint: disable=broad-exception-caught
+            logger.error("Fehler beim Schreiben der CSV: %s", e)
 
     def _create_standard_result_from_batch(
-        self, model: str, report: Dict[str, Any], result_wrapper: Dict[str, Any], model_version: str = "unknown"
+        self,
+        model: str,
+        report: Dict[str, Any],
+        result_wrapper: Dict[str, Any],
+        model_version: str = "unknown",
     ) -> Dict[str, Any]:
         """Erstellt ein Standard-Resultat aus einem Batch-Report."""
         return {
@@ -421,17 +466,20 @@ class LocalBenchmarkRunner(BaseBenchmarkRunner):
         test_class_name = benchmark_info.get("test_class")
 
         if not test_class_name or not isinstance(test_class_name, str):
-            logger.error("Keine gültige Test-Klasse für %s definiert.", benchmark_info["name"])
+            logger.error(
+                "Keine gültige Test-Klasse für %s definiert.", benchmark_info["name"]
+            )
             return []
 
         try:
             test_class_type = load_test_class(test_file, test_class_name)
-        except Exception as e:
+        except Exception as e:  # pylint: disable=broad-exception-caught
             logger.error(
                 "Failed to load batch module %s: %s", benchmark_info["name"], e
             )
             return []
 
+        # pylint: disable=fixme
         # TODO: Generic ResultManager for batch modules
         print(f"🛠️  Initialisiere Batch-Test: {benchmark_info['name']} ({model})")
         test = test_class_type()
@@ -467,11 +515,13 @@ class LocalBenchmarkRunner(BaseBenchmarkRunner):
             output_dir = Path("outputs/runs")
             RESULT_MANAGER.save_json(report, output_dir)
 
-        self._update_political_compass_csv(model, report, model_version=model_version)
+        self._update_political_compass_csv(model, report, _model_version=model_version)
 
-        return [self._create_standard_result_from_batch(
-            model, report, result_wrapper, model_version=model_version
-        )]
+        return [
+            self._create_standard_result_from_batch(
+                model, report, result_wrapper, model_version=model_version
+            )
+        ]
 
     def _run_standard_benchmark(
         self,
@@ -592,7 +642,8 @@ class LocalBenchmarkRunner(BaseBenchmarkRunner):
         # Calculate averages (excluding Political Compass if it's the only test)
         # Filter out political compass for average score calculation because it's qualitative
         scored_results = [
-            r for r in successful
+            r
+            for r in successful
             if not str(r.get("asset_id", "")).startswith("political_compass")
         ]
 
@@ -614,7 +665,6 @@ class LocalBenchmarkRunner(BaseBenchmarkRunner):
         avg_max = sum(r["max_score"] for r in scored_results) / len(scored_results)
         avg_pct = sum(r["percentage"] for r in scored_results) / len(scored_results)
         avg_time = sum(r["execution_time"] for r in successful) / len(successful)
-
 
         quality = self.get_quality_badge(avg_pct)
 
@@ -648,10 +698,14 @@ class LocalBenchmarkRunner(BaseBenchmarkRunner):
         if avg_diff > 0:
             print(f"   🎯 Differenz: +{avg_diff:.1f} (besser!)")
             print(f"\n   {'=' * 60}")
-            print(f"   ⚠️  ACHTUNG: GOLDEN STANDARD ÜBERTROFFEN! (Ratio: {100 + avg_diff:.1f}%)")
+            print(
+                f"   ⚠️  ACHTUNG: GOLDEN STANDARD ÜBERTROFFEN! (Ratio: {100 + avg_diff:.1f}%)"
+            )
             print(f"   {'=' * 60}")
             print("   Dieses Modell übertrifft die kommerzielle Referenz.")
-            print("   Bitte Ergebnisse prüfen (und ggf. Golden Standard aktualisieren).")
+            print(
+                "   Bitte Ergebnisse prüfen (und ggf. Golden Standard aktualisieren)."
+            )
         elif avg_diff < 0:
             print(f"   📉 Differenz: {avg_diff:.1f} (Gap)")
         else:
@@ -714,16 +768,19 @@ class LocalBenchmarkRunner(BaseBenchmarkRunner):
         print(f"   Tier 1 (Operational): {t1_avg:.1f}%")
         print(f"   Tier 2 (Deep Logic):  {t2_avg:.1f}%")
         print(f"   Profile: {profile}\n{'-' * 60}")
-    def _save_debug_response(self, model: str, asset_id: str, response: str, score_str: str, explanation: str):
+
+    def _save_debug_response(
+        self, model: str, asset_id: str, response: str, score_str: str, explanation: str
+    ):
         """Saves response to debug file."""
         debug_dir = Path("benchmark_scores/debug_responses")
         debug_dir.mkdir(exist_ok=True, parents=True)
-        
+
         # Sanitize filename
         safe_model = str(model).replace(":", "_").replace("/", "_")
         filename = f"{safe_model}_{asset_id}.txt"
         filepath = debug_dir / filename
-        
+
         try:
             with open(filepath, "w", encoding="utf-8") as f:
                 f.write(f"Model: {model}\n")
@@ -734,16 +791,20 @@ class LocalBenchmarkRunner(BaseBenchmarkRunner):
                 f.write("RESPONSE:\n")
                 f.write("=" * 80 + "\n")
                 f.write(str(response))
-            
+
             print(f"   💾 Debug response saved: {filepath}")
-        except Exception as e:
+        except Exception as e:  # pylint: disable=broad-exception-caught
             print(f"   ⚠️ Failed to save debug response: {e}")
 
 
 def main():
     """CLI Entry Point."""
     parser = argparse.ArgumentParser(description="CrucibleMark Local Benchmark Runner")
-    parser.add_argument("--debug-responses", action="store_true", help="Save all responses to debug files")
+    parser.add_argument(
+        "--debug-responses",
+        action="store_true",
+        help="Save all responses to debug files",
+    )
     args, _ = parser.parse_known_args()
 
     runner = LocalBenchmarkRunner(debug_responses=args.debug_responses)
@@ -774,4 +835,3 @@ if __name__ == "__main__":
     print("🏁 BENCHMARK ABGESCHLOSSEN")
     print("Alle Ergebnisse wurden in den Benchmark Scores erfasst.")
     print(f"{'=' * 60}\n")
-
