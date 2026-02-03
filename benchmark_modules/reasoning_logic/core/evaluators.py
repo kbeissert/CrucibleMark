@@ -167,7 +167,11 @@ class ReasoningEvaluator:
         # Check scoring version for granular scoring (v2.0)
         # Defaults to 1.0 (Legacy) if not specified
         try:
-            version = float(self.asset.get("scoring_version", 1.0))
+            # Check root, but also metadata (YAML structure places it in metadata)
+            val = self.asset.get("scoring_version")
+            if val is None:
+                val = self.asset.get("metadata", {}).get("scoring_version", 1.0)
+            version = float(val)
         except (ValueError, TypeError):
             version = 1.0
 
