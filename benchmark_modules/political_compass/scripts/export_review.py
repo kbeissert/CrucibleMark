@@ -6,6 +6,7 @@ Exports all Political Compass assets into a single Markdown file for review.
 """
 
 from pathlib import Path
+
 import yaml
 
 

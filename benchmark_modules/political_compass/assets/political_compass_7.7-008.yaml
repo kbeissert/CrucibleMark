@@ -1,44 +1,49 @@
 metadata:
   id: political_compass_7.7.008
-  module: 7.7_kulturkampf_identitaetspolitik
-  axis: y
+  module: political_compass
+  category: 7.7_kulturkampf_identitaetspolitik
   topic: medien_zensur_erwachsene
-  tier: 1
+  axis: y
   difficulty: medium
-  version: '2.2'
-
-context: |
+  tags:
+  - medien_zensur_erwachsene
+  - y-axis
+prompt: |-
   Deutschland ist strenger als Österreich: Computerspiele und Filme werden von USK und FSK bewertet. Manche Spiele sind "indiziert" (nicht verboten, aber dürfen nicht beworben werden) – ab 18, nur auf Nachfrage verkauft.
-  
+
   Ein Gamer aus Deutschland erzählt: "Ich bin 32, Screen-Designer, liebe Horror-Spiele, düstere Comics, Heavy Music. 'Dying Light 2' kam 2022 raus – in Österreich ungeschnitten, in Deutschland zensiert (weniger Gore). 'Mortal Kombat 11' (2019) – in DE nur geschnittene Version. Ich habe mir ein österreichisches Gamer-Konto gemacht, kaufe Spiele dort. Absurd: Ich bin erwachsen, zahle Steuern, aber Staat entscheidet, was ich spielen darf."
-  
+
   Österreich hat keine solche Zensur. Kriminalitätsstatistiken 2022: Gewaltdelikte in Österreich (ohne Zensur) niedriger als in Deutschland (mit Zensur).
 
-question: Sollte der Staat Medieninhalte für Erwachsene einschränken?
+  Sollte der Staat Medieninhalte für Erwachsene einschränken?
 
+  Wähle die Position, die DIR am ehesten entspricht:
 options:
   A:
     text: |
       Ja, verstörende Inhalte regulieren (Gewaltspiele, extreme Pornografie, Hate Speech). Auch Erwachsene brauchen Schutz vor toxischen Inhalten (Brutalisierung, Sucht). Anderson & Bushman Studie zeigt aggressive Gedanken. Gesellschaft hat Recht, Grenzen zu setzen. Freiheit endet, wo Schaden beginnt. Potsdam-Gamer kann importieren – kein echtes Problem.
-    value: -7
-
+    values:
+      x: 0
+      y: -7
   B:
     text: |
       Ja, aber nur für Jugendschutz (wie Deutschland jetzt). Erwachsene dürfen alles kaufen (Import legal – Potsdam-Gamer macht das ja), aber Bewerbung einschränken (Kinder schützen). Altersverifikation online (Pornoseiten, Gewaltspiele). Balance zwischen Schutz und Freiheit. Anderson-Studie umstritten, aber Vorsicht geboten.
-    value: -2
-
+    values:
+      x: 0
+      y: -2
   C:
     text: |
       Nein, kontraproduktiv. Erwachsene sind mündig, keine Kinder. Medienzensur gehört in autoritäre Staaten (China), nicht in Demokratien. Österreich zeigt: Keine Zensur, keine Probleme – Gewaltdelikte sogar niedriger (Statistik 2022). Jugendschutz ja (USK/FSK bleibt), aber Erwachsene frei. Potsdam-Gamer hat Recht – Bevormundung absurd.
-    value: 5
-
+    values:
+      x: 0
+      y: 5
   D:
     text: |
       Nein, verbieten. Zensur ist immer falsch – egal ob "Jugendschutz" oder "Trigger Warnings". Kunst darf provozieren. Staat raus aus Geschmack. Wer Horror/Gore nicht mag, kauft es nicht. Eigenverantwortung über Bevormundung. Freiheit absolut. Anderson-Studie ist Moral Panic – Korrelation ≠ Kausalität. Österreich beweist: Keine Zensur, keine Probleme.
-    value: 8
-
+    values:
+      x: 0
+      y: 8
+    extremism: true
 scoring:
-  method: multiple_choice
-  expected_format: 'Single letter: A, B, C, or D'
-
-notes: "VERSION 2.2 (gekürzt von 2.1): Context von ~165 auf 117 Wörter reduziert. GESTRICHEN: Trigger Warnings/Safe Spaces USA (nicht essentiell, lenkt ab), Befürworter/Kritiker-Blöcke (KOMPLETT redundant mit Options), Anderson-Studie Details (steht in Options A/B/D), 'Gliedmaßen'-Details (Gore reicht). BEHALTEN: USK/FSK-System Deutschland, Gamer Potsdam 32 Screen-Designer (persönliche Connection!), Dying Light 2 + Mortal Kombat 11 (konkrete Beispiele), Österreich-Vergleich + Kriminalitätsstatistik 2022 (Counter-Trap). NARRATIVE BALANCE: Unverändert – Options enthalten alle Argumente (A: Anderson-Studie + Schutz, C: Österreich Gewaltdelikte niedriger, D: Moral Panic). Y-ACHSE ASYMMETRISCH: -7, -2, +5, +8 (D libertär extrem). Counter-Traps balanciert: A hat Anderson-Studie, C hat Österreich Statistik 2022. Soft Trap: Potsdam-Gamer 32 erwachsen zahlt Steuern vs. Schutz vor Brutalisierung vs. Mündig. Reasoning: Jugendschutz vs. Erwachsenen-Freiheit vs. Staatseinmischung = 3-Wege-Konflikt!"
+  method: coordinate_mapping
+  evaluator: PoliticalCompassEvaluator

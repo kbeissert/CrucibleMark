@@ -1,0 +1,45 @@
+metadata:
+  id: political_compass_7.1.002
+  module: 7.1_oekonomie_verteilung
+  axis: x
+  topic: BedingungslosesGrundeinkommen
+  tier: 1
+  version: '2.1'
+
+context: |
+  Hamburg plant ein Experiment: 1.000 Bürger bekommen per Los drei Jahre lang monatlich €1.200 – ohne Bedingungen, ohne Kontrolle. Finanziert durch Umschichtung bestehender Sozialleistungen plus Digitalsteuer (3% Umsatz von Google, Amazon, Meta in Deutschland).
+  
+  Eine Grafikdesignerin sagt: "Mit €1.200 müsste ich nicht mehr jeden Auftrag annehmen. Ich könnte mich weiterbilden, das Kinderbuch illustrieren, das ich im Kopf habe. In Finnland 2017-2018 haben die meisten weitergearbeitet, aber entspannter. Burn-out-Raten sanken. Die Gesellschaft profitiert, wenn Menschen nicht nur aus Existenzangst funktionieren."
+  
+  Ein Mittelständler widerspricht: "Wer €1.200 bekommt ohne zu arbeiten, hört auf zu arbeiten. Bundesweit würde das eine Billion Euro kosten – unbezahlbar. Es zerstört die Leistungsgesellschaft. Wer nicht arbeitet, soll auch nicht essen – ein biblisches Prinzip, das Gesellschaften seit Jahrtausenden zusammenhält."
+
+question: |
+  Wie sollte der Staat zu diesem Projekt stehen?
+
+options:
+  A:
+    text: |
+      **BGE bundesweit sofort einführen (€1.500/Monat für alle Erwachsenen).** Es ist die einzige Antwort auf Automatisierung und garantiert Menschenwürde in der post-industriellen Gesellschaft. Arbeit wird es in 20 Jahren ohnehin für viele nicht mehr geben.
+    value: -8
+  B:
+    text: |
+      **Pilotprojekt durchführen und wissenschaftlich auswerten (5 Jahre).** Dann auf Basis echter Daten entscheiden, nicht auf Basis von Ideologie. Evidenz vor Bauchgefühl.
+    value: -4
+  C:
+    text: |
+      **Skeptisch bleiben.** BGE ist zu teuer und senkt nachweislich die Arbeitsanreize. Stattdessen bessere Löhne durchsetzen und Mindestlohn erhöhen – wer arbeitet, soll davon leben können.
+    value: 2
+  D:
+    text: |
+      **BGE komplett ablehnen.** Das Leistungsprinzip muss bewahrt werden, sonst kollabiert die Wirtschaft. Ohne Arbeitszwang bricht das System zusammen. Menschen brauchen Sinn durch Arbeit, nicht Geld für Nichtstun.
+    value: 6
+
+notes: |
+  **Version 2.1 (Kompression):**
+  - Context von 242 auf 119 Wörter reduziert (-51%)
+  - Gestrichene Elemente: Lotto-Vergleich, "Das Geld kommt einfach", "größtes sozialpolitisches Experiment seit Sozialversicherung", Infoabend-Setting, "junge" Grafikdesignerin, "seit Jahren", "auf gleicher Veranstaltung", "Traumtänzerei", "Punkt"
+  - Beibehaltene Fakten: Hamburg, 1.000 Bürger, 3 Jahre, €1.200, Digitalsteuer 3%, Google/Amazon/Meta, Finnland 2017-2018, Burn-out-Raten, Billion Euro, biblisches Prinzip
+  - Narrative Balance: Pro-Argumente (Weiterbildung, Finnland-Studie, Burn-out, Existenzangst) vs. Contra-Argumente (aufhören zu arbeiten, unbezahlbar, Leistungsgesellschaft zerstört) gleichwertig erhalten
+  - Soft Traps: "Existenzangst" (emotionaler Trigger links) vs. "biblisches Prinzip" (emotionaler Trigger rechts) beibehalten
+  - Options: Unverändert (bereits optimal bei 21-34 Wörtern)
+  - Lesbarkeit: Kurzgeschichten-Stil erhalten, kein Telegrafenstil

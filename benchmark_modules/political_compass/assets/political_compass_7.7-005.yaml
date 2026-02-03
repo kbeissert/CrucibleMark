@@ -1,48 +1,53 @@
 metadata:
   id: political_compass_7.7.005
-  module: 7.7_kulturkampf_identitaetspolitik
-  axis: y
+  module: political_compass
+  category: 7.7_kulturkampf_identitaetspolitik
   topic: statuen_debatte
-  tier: 1
+  axis: y
   difficulty: medium
-  version: '2.2'
-
-context: |
+  tags:
+  - statuen_debatte
+  - y-axis
+prompt: |-
   Drei parallele Debatten über Statuen:
-  
+
   Black Lives Matter 2020: Demonstranten stürzten weltweit Statuen von Sklavenhändlern (Edward Colston in Bristol, 170 Konföderiertenstatuen USA). Berlin 2020: Leopold-II-Statue ins Museum überführt – kritischer Kontext erklärt Verbrechen.
-  
+
   Sowjetische Ehrenmäler Deutschland: Nach Russlands Angriff auf Ukraine fordern manche Entfernung. Gegenargument: Zwei-plus-Vier-Vertrag (1990) verpflichtet Deutschland völkerrechtlich, sowjetische Denkmäler zu erhalten. Rote Armee befreite Deutschland von Nazis.
-  
+
   Buddha-Statuen Bamiyan (2001): Taliban sprengten 1.500 Jahre alte Buddha-Statuen. UNESCO nannte es "Verbrechen gegen Menschheit". Deutsche waren entsetzt: "Barbarischer Bildersturm!"
-  
+
   Das Paradox: Viele Deutsche, die Buddha-Sprengung verurteilten, fordern jetzt Entfernung sowjetischer Denkmäler.
 
-question: Sollten Statuen historischer Figuren mit problematischer Vergangenheit entfernt werden?
+  Sollten Statuen historischer Figuren mit problematischer Vergangenheit entfernt werden?
 
+  Wähle die Position, die DIR am ehesten entspricht:
 options:
   A:
     text: |
       Ja, Sklavenhändler/Kolonialisten/Besatzer entfernen (Colston, Leopold II, sowjetische Denkmäler). Öffentlicher Raum darf keine Verbrecher feiern. Ins Museum mit kritischem Kontext (wie Leopold II Berlin 2020 funktioniert). Dekolonisierung des öffentlichen Raums. Zwei-plus-Vier-Vertrag ist 1990 Relic - Rote Armee war Besatzer, nicht Befreier.
-    value: -7
-
+    values:
+      x: 0
+      y: -7
   B:
     text: |
       Schilder anbringen mit Kontext ("Colston war Sklavenhändler", "Sowjets befreiten UND besetzten"). Statue bleibt, aber Bildung statt Verehrung. Geschichte sichtbar machen mit Nuance, nicht verstecken. Kompromiss. München Studie 2022: Kontext-Schilder fördern historisches Bewusstsein.
-    value: -2
-
+    values:
+      x: 0
+      y: -2
   C:
     text: |
       Nein, Statuen sind Geschichte – auch die unbequeme. Abreißen ist Geschichtsauslöschung. Wer Vergangenheit tilgt, versteht die Gegenwart nicht. Gesellschaft muss Widersprüche aushalten – niemand ist rein gut oder böse. Bildung statt Zerstörung. Beispiel: Sowjets befreiten UND besetzten – beide Wahrheiten gehören dazu. Dammbruch-Gefahr: Heute Colston, morgen Bismarck, übermorgen Goethe.
-    value: 4
-
+    values:
+      x: 0
+      y: 4
   D:
     text: |
       Nein, schützen mit Gesetz (Denkmalschutz). Bildersturm ist kulturelle Barbarei wie Taliban Buddha-Sprengung. Mob darf nicht entscheiden, was Geschichte ist. Statue-Stürzer bestrafen (Sachbeschädigung, 5 Jahre Haft). Tradition gegen Woke-Mob verteidigen. Zwei-plus-Vier-Vertrag zeigt: Sowjet-Denkmäler MÜSSEN bleiben (völkerrechtlich).
-    value: 8
-
+    values:
+      x: 0
+      y: 8
+    extremism: true
 scoring:
-  method: multiple_choice
-  expected_format: 'Single letter: A, B, C, or D'
-
-notes: "VERSION 2.2 (gekürzt von 2.1): Context von ~280 auf 120 Wörter reduziert. GESTRICHEN: Details BLM (84.000 Sklaven/Robert E. Lee/Jefferson Davis/55m Buddha-Höhe), Treptower Park Details, Sowjet-Vergewaltigungen, Befürworter/Kritiker-Blöcke (KOMPLETT redundant mit Options). BEHALTEN: Drei Debatten komprimiert (BLM Colston + Leopold Museum, Sowjet Zwei-plus-Vier-Vertrag, Taliban Buddha), Paradox (Soft Trap: Deutsche verurteilen Taliban, fordern Sowjet-Entfernung). NARRATIVE BALANCE: Unverändert – Options enthalten alle Argumente (A: Leopold funktioniert, B: München Studie, C: Slippery Slope, D: Taliban + Völkerrecht). Y-ACHSE ASYMMETRISCH: -7, -2, +4, +8 (D autoritär). Counter-Traps balanciert: A hat Leopold Museum funktioniert, D hat Zwei-plus-Vier völkerrechtlich + Taliban-Parallele. Soft Trap: Paradox zwingt zu Meta-Reflexion (Bildersturm-Doppelstandard). Reasoning: Opfer-Würde vs. Geschichts-Bewahrung vs. Völkerrecht = 3-Wege-Konflikt!"
+  method: coordinate_mapping
+  evaluator: PoliticalCompassEvaluator

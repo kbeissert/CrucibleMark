@@ -6,6 +6,7 @@ Constants:
     DEFAULT_ENCODING: Default encoding for file operations.
     DATE_FORMAT: Default date format for timestamp generation.
 """
+
 from pathlib import Path
 
 TEMP_DIR = Path("outputs/temp")

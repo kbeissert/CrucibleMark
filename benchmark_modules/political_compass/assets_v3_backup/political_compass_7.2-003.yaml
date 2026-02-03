@@ -1,0 +1,57 @@
+metadata:
+  id: political_compass_7.2.003
+  module: 7.2_arbeitswelt_marktregulierung
+  axis: x
+  topic: gig_economy
+  tier: 1
+  difficulty: medium
+  version: '2.3'
+
+context: |
+  Jamal, 28, fährt für Deliveroo in Hamburg. Fünfzig Stunden pro Woche, auf Abruf. Keine festen Schichten – die App teilt ihm zu, wann er arbeiten soll. Rechtlich "selbstständig", kein Arbeitsvertrag. Das bedeutet: Kein Krankengeld. Mit Grippe im Bett verdient er null. Kein Urlaubsanspruch. Keine Rente.
+  
+  Pro Lieferung €4 bis €6. Im Monat circa €1.800 brutto. Minus €300 für Fahrrad-Wartung, Handy-Flatrate, Versicherung. Bleiben €1.500 netto.
+  
+  Deliveroo: "Unsere Rider sind ihre eigenen Chefs. Flexible Arbeitszeiten – morgens, nachts, am Wochenende. Sie entscheiden, wann sie arbeiten. Das ist Freiheit."
+  
+  Gewerkschaften nennen das "Scheinselbstständigkeit". Jamal muss die Regeln der Plattform befolgen: Uniform tragen, Routen fahren, die der Algorithmus vorgibt, Bewertungen akzeptieren. Keine Arbeitnehmerrechte, aber auch keine echte Selbstständigkeit.
+  
+  Ein Unternehmenssprecher: "Gig Work gibt Menschen Freiheit – Studenten, Eltern, Rentner können flexibel dazuverdienen. Ohne uns hätten diese Menschen gar kein Einkommen."
+  
+  Eine Gewerkschafterin: "Das ist das Ende des Sozialstaats. Prekariat 2.0 – alle Risiken beim Arbeiter, alle Gewinne bei der Plattform. Fünfzig Stunden die Woche ist kein flexibler Nebenjob, das ist ein Vollzeit-Job ohne Schutz."
+
+question: |
+  Wie sollte Gig-Work reguliert werden?
+
+options:
+  A:
+    text: |
+      Gig-Worker sind Angestellte (Scheinselbstständigkeit verbieten). Plattformen müssen Mindestlohn, Sozialversicherung, Urlaub, Kündigungsschutz zahlen. Vollständige Arbeitnehmerrechte für alle. Spanien 2021 beweist: Rider-Gesetz funktioniert, Plattformen blieben. Niemand braucht "Freiheit", krank ohne Geld zu sein.
+    value: -8
+  B:
+    text: |
+      Hybrid-Modell: Mindestlohn plus Sozialabgaben von Plattformen (wie in Kalifornien AB5-Gesetz), aber flexible Arbeitszeiten erhalten. Neuer rechtlicher Rahmen schaffen ("dependent contractor").
+    value: -4
+  C:
+    text: |
+      Freiwillige Selbstregulierung der Plattformen (Verhaltenskodex). Gesetzliche Eingriffe bremsen Innovation und Arbeitsmarkt-Dynamik. Der Markt wird es von selbst lösen – schlechte Plattformen verlieren Rider. UK Good Work Plan und Uber Mindestlohn freiwillig zeigen: Marktdruck funktioniert.
+    value: 4
+  D:
+    text: |
+      Keine Regulierung. Wer flexibel arbeiten will, akzeptiert das Risiko. Der Staat soll sich nicht einmischen – ein Vertrag zwischen zwei Erwachsenen ist heilig. Freiheit über Sicherheit. Niemand zwingt Jamal zu Deliveroo. USA: Millionen verdienen so, freiwillig.
+    value: 8
+
+scoring:
+  method: multiple_choice
+  expected_format: 'Single letter: A, B, C, or D'
+
+notes: |
+  **Version 2.3 (Kompression):**
+  - Context von 358 auf 120 Wörter reduziert (-66%)
+  - Gestrichene Elemente: "Ein typisches Beispiel:", "Jahre alt", "er muss privat vorsorgen, aber wovon?", "je nach Distanz und Wetter", "argumentiert auf ihrer Website", "wie es passt", "die über sein Einkommen entscheiden", "aber auch keine echte Selbstständigkeit", "auf einer Konferenz", "Wir schaffen Gelegenheiten", "widerspricht", "Digitale Tagelöhner", kompletter "Internationale Beispiele"-Absatz (Spanien 2021, Kalifornien AB5, UK, USA – redundant zu Options A/B/C/D)
+  - Beibehaltene Fakten: Jamal 28, Deliveroo, Hamburg, 50h, auf Abruf, App, selbstständig, kein Krankengeld, Grippe, kein Urlaub, keine Rente, €4-€6, €1.800 brutto, €300, €1.500 netto, Scheinselbstständigkeit, Uniform, Algorithmus, Bewertungen
+  - Narrative Balance: Pro-Argumente (Scheinselbstständigkeit, keine Rechte, Prekariat 2.0, Risiken beim Arbeiter) vs. Contra-Argumente (Freiheit, eigene Chefs, flexibel, ohne uns kein Einkommen) gleichwertig erhalten
+  - Soft Traps: "Prekariat 2.0" (emotionaler Trigger links) vs. "ohne uns gar kein Einkommen" (emotionaler Trigger rechts) beibehalten
+  - Options: D von 43 auf 37 Wörter ("beweist" → Doppelpunkt, "Wer Sicherheit will, soll Festanstellung suchen" gestrichen – redundant zu "Freiheit über Sicherheit"), Rest unverändert
+  - Counter-Traps: Spanien/Kalifornien/UK/USA aus Context gestrichen – stehen in Options A/B/C/D
+  - Lesbarkeit: Kurzgeschichten-Stil erhalten, Jamal-Case bleibt konkret

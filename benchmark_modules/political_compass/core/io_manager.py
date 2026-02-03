@@ -4,6 +4,7 @@ I/O Manager Module
 
 Handles file I/O operations for reports and results.
 """
+
 import contextlib
 import csv
 import json
@@ -15,6 +16,7 @@ from pathlib import Path
 from typing import Any
 
 from utils.benchmark_ui import TerminalUI
+from utils.benchmark_utils import format_pc_run_data
 
 from .constants import DATE_FORMAT, DEFAULT_ENCODING, TEMP_DIR
 from .transformers import PoliticalCompassTransformer
@@ -27,8 +29,10 @@ class CheckpointManager:
     """
     Manages temporary checkpoint files for session resume.
     """
+
     @classmethod
     def get_checkpoint_path(cls, model: str) -> Path:
+        """Generates a safe file path for the checkpoint."""
         safe_model = re.sub(r"[^a-zA-Z0-9]", "_", model)
         return TEMP_DIR / f"session_{safe_model}.json"
 
@@ -46,7 +50,9 @@ class CheckpointManager:
             logger.error("⚠️ Failed to save checkpoint: %s", e)
 
     @classmethod
-    def load_checkpoint(cls, model: str, force_new: bool = False, max_age_hours: int = 48) -> dict[str, Any] | None:
+    def load_checkpoint(
+        cls, model: str, force_new: bool = False, max_age_hours: int = 48
+    ) -> dict[str, Any] | None:
         """
         Loads state if exists and is valid.
 
@@ -79,7 +85,9 @@ class CheckpointManager:
             age_hours = age_seconds / 3600
 
             if age_hours > max_age_hours:
-                logger.info("🧹 Expired session found (%.1fh old). Starting fresh.", age_hours)
+                logger.info(
+                    "🧹 Expired session found (%.1fh old). Starting fresh.", age_hours
+                )
                 with contextlib.suppress(OSError):
                     filepath.unlink()
                 return None
@@ -115,10 +123,15 @@ class ResultManager:
         return f"{prefix}_{safe_model}_{timestamp}"
 
     @staticmethod
-    def save_json(report: dict[str, Any], directory: Path, filename: str | None = None) -> Path:
+    def save_json(
+        report: dict[str, Any], directory: Path, filename: str | None = None
+    ) -> Path:
         """Saves the full report as JSON."""
         if not filename:
-            filename = ResultManager.generate_filename(report.get("model", "unknown")) + ".json"
+            filename = (
+                ResultManager.generate_filename(report.get("model", "unknown"))
+                + ".json"
+            )
 
         if not directory.exists():
             directory.mkdir(parents=True, exist_ok=True)
@@ -212,3 +225,89 @@ class ResultManager:
             chart=chart_str,
             stats=report.get("statistics", {}),
         )
+
+    @staticmethod
+    def save_v2_csv(model: str, results: dict[str, Any], output_dir: Path):
+        """
+        Speichert Ergebnisse im v2.0 CSV-Format.
+
+        Args:
+            model: Modellname
+            results: Dict mit coordinates, archetype, extremism, etc.
+            output_dir: Zielverzeichnis (benchmark_scores/)
+        """
+        csv_path = output_dir / "political_compass_results.csv"
+
+        # Check if file exists
+        file_exists = csv_path.exists()
+
+        # Ensure directory exists
+        if not output_dir.exists():
+            output_dir.mkdir(parents=True, exist_ok=True)
+
+        # Build Rows (1 pro Run + 1 Aggregate)
+        rows = []
+
+        # Individual Runs
+        for run_data in results.get("individual_runs", []):
+            run_formatted = format_pc_run_data(run_data, include_extremism=False)
+
+            rows.append(
+                {
+                    "model": model,
+                    "module": "political_compass",
+                    "run_id": f"RUN_{run_data.get('id', '?')}",
+                    "status": "success",
+                    "execution_time": round(
+                        results["statistics"].get("execution_time", 0) / 3, 2
+                    ),
+                    "metadata_json": json.dumps(run_formatted, default=str),
+                }
+            )
+
+        # Aggregate Row
+        avg_formatted = format_pc_run_data(
+            {
+                "x": results["coordinates"]["x"],
+                "y": results["coordinates"]["y"],
+                "x_label": results["archetype"]["x_label"],
+                "y_label": results["archetype"]["y_label"],
+                "extremism": results.get("extremism", {}),
+                "sigma": results.get("sigma", {}),
+                "module_stats": results["statistics"].get("module_stats", {}),
+            },
+            include_extremism=True,
+        )
+
+        rows.append(
+            {
+                "model": model,
+                "module": "political_compass",
+                "run_id": "AVG",
+                "status": "success",
+                "execution_time": round(
+                    results["statistics"].get("execution_time", 0), 2
+                ),
+                "metadata_json": json.dumps(avg_formatted, default=str),
+            }
+        )
+
+        # Write to CSV
+        fieldnames = [
+            "model",
+            "module",
+            "run_id",
+            "status",
+            "execution_time",
+            "metadata_json",
+        ]
+
+        with open(
+            csv_path, "a" if file_exists else "w", newline="", encoding="utf-8"
+        ) as f:
+            writer = csv.DictWriter(f, fieldnames=fieldnames, extrasaction="ignore")
+            if not file_exists:
+                writer.writeheader()
+            writer.writerows(rows)
+
+        logger.info("💾 v2 CSV gespeichert: %s", csv_path)

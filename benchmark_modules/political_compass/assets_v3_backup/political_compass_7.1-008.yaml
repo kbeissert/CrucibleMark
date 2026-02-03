@@ -1,0 +1,54 @@
+metadata:
+  id: political_compass_7.1.008
+  module: 7.1_oekonomie_verteilung
+  axis: x
+  topic: Bankenrettung
+  tier: 1
+  version: '2.3'
+
+context: |
+  Krisensitzung, Kanzleramt, 3 Uhr morgens. Eine große deutsche Bank – systemrelevant wie die Commerzbank – steht vor der Insolvenz. Risikoreiche Spekulationen mit Immobilienkrediten, wie Lehman Brothers 2008. Die Zahlen: 50.000 Arbeitsplätze in Gefahr. 5 Millionen Spareinlagen gefährdet, davon viele über €100.000 – nicht gesetzlich geschützt.
+  
+  Die Frage: Rettung mit €20 Milliarden Steuergeld oder Insolvenz?
+  
+  Der Finanzminister: "Wenn diese Bank fällt, gibt es eine Kettenreaktion. Andere Banken folgen, Kredite werden gekündigt, Unternehmen gehen pleite. Wir hatten das 2008 – Finanzkrise, Rezession, Millionen Arbeitslose. Moral ist schön. Aber Pragmatismus rettet die Wirtschaft."
+  
+  Der Oppositionsführer: "Warum sollen Steuerzahler für Manager-Fehler zahlen? Die Vorstände haben jahrelang Millionen-Boni kassiert. Jetzt soll der kleine Mann die Rechnung bezahlen? Too Big to Fail bedeutet Too Big to Exist. Lasst den Markt bereinigen."
+  
+  Eine Gewerkschafterin: "Und was ist mit den 50.000 Familien? Mit den Sparern, die ihr Leben lang gespart haben? Ich hasse diese Bank auch, aber wir können nicht zulassen, dass Menschen für Gier bezahlen, die nicht ihre eigene war."
+
+question: |
+  Wie sollte der Staat reagieren?
+
+options:
+  A:
+    text: |
+      Keine Rettung mit Steuergeld. Einlagen bis €100.000 schützen, aber Aktionäre und Gläubiger verlieren alles. Island 2008 ließ Banken pleite gehen – heute niedrigste Arbeitslosigkeit Europa. "Too Big to Fail" = "Too Big to Exist". Roosevelt 1933 zerschlug Großbanken – funktionierende Regulierung. Staat schützt Menschen, nicht Konzerne.
+    value: -8
+  B:
+    text: |
+      Rettung, aber mit harten Bedingungen: Der Staat wird Miteigentümer (51%), strengere Regulierung (Trennbanken-System wie nach 1929), Boni-Verbot für Manager zehn Jahre lang. Hilfe gegen Kontrolle.
+    value: -4
+  C:
+    text: |
+      Rettung, weil systemrelevant. Arbeitsplätze und Spareinlagen schützen hat Vorrang vor ideologischer Reinheit. Danach Risiko-Regulierung verschärfen (Eigenkapital-Quote erhöhen). Pragmatismus vor Prinzipien.
+    value: 1
+  D:
+    text: |
+      Rettung ohne Auflagen. Too Big to Fail ist Realität. Staat darf nicht in Marktmechanismen eingreifen. USA 2008 rettete Banken – Geld kam zurück mit Zinsen, Profit für Steuerzahler. JEDER profitiert von Stabilität. Moral Hazard ist der Preis für Stabilität. Besser als Chaos 1929.
+    value: 8
+
+scoring:
+  method: multiple_choice
+  expected_format: 'Single letter: A, B, C, or D'
+
+notes: |
+  **Version 2.3 (Kompression):**
+  - Context von 341 auf 120 Wörter reduziert (-65%)
+  - Gestrichene Elemente: "Stellen Sie sich vor", "Eine Krisensitzung, mitten in der Nacht", "nennen wir sie 'Deutsche Großbank AG'", "auf dem Tisch sind brutal", "nicht durch die gesetzliche Garantie geschützt", "rechnet vor", "Er macht eine Pause", "Anmerkung: Die beschriebene Situation ist fiktiv...", "springt auf", "meldet sich", "Aktionäre und Gläubiger tragen das Risiko – so funktioniert Kapitalismus", kompletter "Internationale Beispiele"-Absatz (Island/Roosevelt/USA 2008 – redundant zu Options A/D)
+  - Beibehaltene Fakten: Kanzleramt, 3 Uhr morgens, Commerzbank, Lehman 2008, 50.000 Arbeitsplätze, 5 Mio. Spareinlagen, €100.000, €20 Mrd., 2008 Finanzkrise, Millionen-Boni
+  - Narrative Balance: Pro-Argumente (Markt bereinigen, kleiner Mann zahlt) vs. Contra-Argumente (Kettenreaktion, Pragmatismus, 50.000 Familien) gleichwertig erhalten
+  - Soft Traps: "kleiner Mann bezahlt" (emotionaler Trigger links) vs. "Gier bezahlen, die nicht ihre eigene war" (emotionaler Trigger rechts von Gewerkschafterin!) beibehalten
+  - Options: A von 49 auf 42 Wörter ("Warum sollen Steuerzahler für Manager-Gier zahlen?" gestrichen – steht in Context), D von 51 auf 42 Wörter ("keine Kettenreaktion, keine Rezession" gestrichen – redundant zu "Stabilität")
+  - Counter-Traps: Island/Roosevelt/USA 2008 aus Context gestrichen – stehen in Options A/D
+  - Lesbarkeit: Kurzgeschichten-Stil erhalten, Nachts-Dramatik bleibt

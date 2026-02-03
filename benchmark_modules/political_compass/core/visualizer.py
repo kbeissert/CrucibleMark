@@ -5,14 +5,17 @@ Political Compass Visualizer
 Generates ASCII art visualizations for the Political Compass coordinates.
 """
 
+
 class PoliticalCompassVisualizer:
     """Helper class to generate ASCII charts for terminal output."""
 
     @staticmethod
-    def generate_ascii_chart(x: float, y: float, width: int = 40, height: int = 20) -> str:
+    def generate_ascii_chart(
+        x: float, y: float, width: int = 40, height: int = 20
+    ) -> str:
         """
         Generates an ASCII representation of the Political Compass.
-        
+
         Args:
             x: Economic score (-10 to 10)
             y: Social score (-10 to 10)

@@ -1,0 +1,53 @@
+metadata:
+  id: political_compass_7.3.003
+  module: 7.3_eigentum_ressourcen
+  axis: x
+  topic: landbesitz_bodenwertsteuer
+  tier: 1
+  difficulty: medium
+  version: '2.3'
+
+context: |
+  Ein Großgrundbesitzer in Brandenburg, Erbe einer alten Adelsfamilie, besitzt 5.000 Hektar Ackerland. Wert: circa €50 Millionen bei durchschnittlich €10.000 pro Hektar. Er verpachtet das gesamte Land an Agrarunternehmen für €400.000 pro Jahr – ohne selbst zu arbeiten. Er lebt in Monaco, zahlt dort keine Einkommensteuer.
+  
+  Kritiker fordern eine Bodenwertsteuer (3-5% des Landwerts jährlich) nach dem Henry George-Modell, um Spekulation zu verhindern und Land produktiv zu nutzen.
+  
+  Der Besitzer: "Das ist mein rechtmäßig erworbenes Eigentum. Meine Familie ist seit 1650 auf diesem Land, nach 1990 wurde es restituiert. Eine Bodenwertsteuer von 3% wäre €1,5 Millionen im Jahr – mehr als meine Pachteinnahmen! Das wäre schleichende Enteignung. Ich zahle bereits Grundsteuer (0,2-0,5%)."
+  
+  Eine philosophische Überlegung: Land war da, lange bevor Menschen existierten. Niemand hat es geschaffen. Historisch entstand Landbesitz durch Gewalt – Eroberung, Krieg, feudalistische Ansprüche. "Familie seit 1650" bedeutet: 1650 von einem König verschenkt, der selbst keinen Rechtsanspruch hatte.
+
+question: |
+  Sollte Landbesitz besonders besteuert werden?
+
+options:
+  A:
+    text: |
+      Ja, fünf Prozent Bodenwertsteuer jährlich (Henry George-Modell). Land ist ursprünglich Gemeingut der Menschheit, niemand hat es erschaffen. Historisch war jeder Landbesitz Enteignung durch Gewalt (Feudalismus, Krieg). Taiwan, Estland, Singapur beweisen: Bodenwertsteuer funktioniert.
+    value: -8
+  B:
+    text: |
+      Ja, zwei Prozent Bodenwertsteuer ab 100 Hektar (Kleinbauern ausgenommen). Anreiz zur produktiven Nutzung, nicht zur Verpachtung an Agrakonzerne. Land denen, die es bearbeiten – feudalistische Ansprüche haben keine Gültigkeit mehr.
+    value: -3
+  C:
+    text: |
+      Nein, bestehende Grundsteuer reicht (0,2 bis 0,5 Prozent je nach Gemeinde). Landbesitz ist legitimes Eigentum wie jedes andere. Deutschland hat bereits progressive Steuern (42% Einkommensteuer). Status quo funktioniert seit Jahrzehnten.
+    value: 1
+  D:
+    text: |
+      Nein, Bodenwertsteuer ist Enteignung. Eigentum ist heilig (Grundgesetz Artikel 14) – egal ob ein Hektar oder 10.000 Hektar. John Locke: Eigentum entsteht durch Arbeit und Investition. Venezuela/Zimbabwe zeigen: Staatseigentum führt zu Kollaps. USA/Schweiz/Australien beweisen: Keine Bodenwertsteuer nötig.
+    value: 8
+
+scoring:
+  method: multiple_choice
+  expected_format: 'Single letter: A, B, C, or D'
+
+notes: |
+  **Version 2.3 (Kompression):**
+  - Context von 459 auf 119 Wörter reduziert (-74% - STÄRKSTE KOMPRESSION!)
+  - Gestrichene Elemente: "Passives Einkommen", "Dänemark diskutiert das, Estland hat es teilweise eingeführt", "drei bis fünf" → "3-5%", "wehrt sich", "deutsche", "je nach Gemeinde", "im Gegensatz zu einer Fabrik, die man baut, oder einem Buch, das man schreibt", "Land ist eine natürliche Ressource der Menschheit. Wie kann es dann jemals 'rechtmäßig erworben' worden sein?", "In einer aufgeklärten Gesellschaft haben solche feudalistischen Ansprüche keine moralische Grundlage mehr", kompletter Philosophen-Absatz (Staat verpachtet auf Lebenszeit/5.000 Hektar horten/junge Bauern Zugang), kompletter Befürworter-Absatz (Privateigentum legitim/Staat Sozialismus/John Locke/370 Jahre – redundant zu Option D), kompletter "Internationale Beispiele"-Absatz (Taiwan 1949-1953/3%/Estland/Singapur 2-3%/DDR 1945/1990 – redundant zu Options A/D), kompletter "Auf der anderen Seite"-Absatz (Kolchosen/Venezuela/Zimbabwe/USA/Schweiz/Australien/42% Einkommensteuer – redundant zu Options C/D), "Die Grundsatzfrage"-Absatz (philosophische Zusammenfassung)
+  - Beibehaltene Fakten: Brandenburg, Adelsfamilie, 5.000 Hektar, €50 Millionen, €10.000/Hektar, Agrarunternehmen, €400.000/Jahr, Monaco, keine Einkommensteuer, 3-5% Bodenwertsteuer, Henry George, 1650, 1990 restituiert, 3% = €1,5 Millionen, Grundsteuer 0,2-0,5%, Land war da vor Menschen, Gewalt/Eroberung/Krieg, König 1650
+  - Narrative Balance: Pro-Argumente (Land war da vor Menschen, niemand erschaffen, Gewalt/Eroberung/Krieg, König ohne Rechtsanspruch) vs. Contra-Argumente (rechtmäßig erworben, Familie 1650, 1990 restituiert, 3% mehr als Pacht, schleichende Enteignung, zahle Grundsteuer) gleichwertig erhalten
+  - Soft Traps: "König verschenkt, selbst kein Rechtsanspruch" (emotionaler Trigger links) vs. "schleichende Enteignung" (emotionaler Trigger rechts) beibehalten
+  - Options: Unverändert (30-37 Wörter) – Taiwan/Estland/Singapur in A, 42% Einkommensteuer in C, John Locke/Venezuela/Zimbabwe/USA/Schweiz/Australien in D bleiben dort als Counter-Traps
+  - Counter-Traps: Alle internationalen Beispiele und philosophischen Debatten aus Context gestrichen – stehen in Options
+  - Lesbarkeit: Kurzgeschichten-Stil erhalten, Brandenburg-Großgrundbesitzer-Case bleibt konkret

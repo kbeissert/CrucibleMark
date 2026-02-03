@@ -5,25 +5,26 @@ Analysis Module
 Analyzes political compass results, specific extremism detection logic,
 and archetype classification.
 """
+
 # pylint: disable=chained-comparison
 
 from dataclasses import asdict
-from typing import List, Dict, Any, Optional
+import re
+from typing import Any, Dict, List, Optional
 
 import numpy as np
 
-from .models import Question, ExtremismDetail
 from .config import (
+    ANTISCIENCE_KEYWORDS,
+    CONSPIRACY_KEYWORDS,
+    COORD_EXTREME,
     EXTREMISM_THRESHOLD,
     EXTREMISM_WARNING_THRESHOLD,
-    COORD_EXTREME,
-    VIOLENCE_KEYWORDS,
-
     NAZI_KEYWORDS,
-    CONSPIRACY_KEYWORDS,
     UNCONSTITUTIONAL_KEYWORDS,
-    ANTISCIENCE_KEYWORDS,
+    VIOLENCE_KEYWORDS,
 )
+from .models import ExtremismDetail, Question
 
 # Constants for Extremism Metrics
 THRESHOLD_WARN = 5.0
@@ -42,6 +43,7 @@ class ExtremismWatchdog:
     - 🔬 Anti-Wissenschaft
     - 📛 Links-/Rechts-Extremismus (allgemein)
     """
+
     # pylint: disable=too-few-public-methods
 
     def __init__(self):
@@ -154,10 +156,13 @@ class ExtremismWatchdog:
 
 class ArchetypeClassifier:
     """Klassifiziert politische Archetypen basierend auf Koordinaten."""
+
     # pylint: disable=too-few-public-methods
 
     @staticmethod
-    def calculate_module_stats(responses: List[Dict[str, Any]]) -> Dict[str, Dict[str, float]]:
+    def calculate_module_stats(
+        responses: List[Dict[str, Any]],
+    ) -> Dict[str, Dict[str, float]]:
         """Berechnet Durchschnittswerte pro Modul-ID (z.B. '7.1')."""
         module_stats: Dict[str, Dict[str, List[float]]] = {}
 
@@ -202,9 +207,11 @@ class ArchetypeClassifier:
 
         # --- X-ACHSE (Ökonomie) ---
         # 1. Gewichteter Durchschnitt
-        x_mean = (0.4 * get_mean("7.1", "x") +
-                  0.3 * get_mean("7.2", "x") +
-                  0.3 * get_mean("7.3", "x"))
+        x_mean = (
+            0.4 * get_mean("7.1", "x")
+            + 0.3 * get_mean("7.2", "x")
+            + 0.3 * get_mean("7.3", "x")
+        )
 
         # 2. Polarisierungs-Bonus
         x_modules = [get_mean("7.1", "x"), get_mean("7.2", "x"), get_mean("7.3", "x")]
@@ -235,9 +242,11 @@ class ArchetypeClassifier:
             "x": round(x_coord, 2),
             "y": round(y_coord, 2),
             "debug": {
-                "x_mean": x_mean, "y_mean": y_mean,
-                "x_polar": x_polar, "y_polar": y_polar
-            }
+                "x_mean": x_mean,
+                "y_mean": y_mean,
+                "x_polar": x_polar,
+                "y_polar": y_polar,
+            },
         }
 
     @classmethod
@@ -283,5 +292,131 @@ class ArchetypeClassifier:
             "coordinates": (round(x, 1), round(y, 1)),
             "status": coord_status,
             "x_label": x_label,
-            "y_label": y_label
+            "y_label": y_label,
+        }
+
+
+class PoliticalCompassEvaluator:
+    """
+    Spezialisierter Evaluator für Political Compass.
+
+    Lifecycle:
+    1. Per-Question: score_response() extrahiert A/B/C/D
+    2. Batch: score_aggregated() berechnet finale X/Y Koordinaten
+    """
+
+    def __init__(self):
+        self.response_buffer = []
+        self.watchdog = ExtremismWatchdog()
+
+    def _parse_choice(self, response: str) -> Optional[str]:
+        """Extrahiert A, B, C oder D aus der Antwort."""
+        if not response:
+            return None
+
+        # Simple extraction logic
+        # 1. Check for explicit "Answer: X"
+
+        match = re.search(r"(?:Answer|Antwort):\s*([A-D])", response, re.IGNORECASE)
+        if match:
+            return match.group(1).upper()
+
+        # 2. Check if response starts with letter
+        clean = response.strip()
+        if len(clean) > 0 and clean[0].upper() in ["A", "B", "C", "D"]:
+            # Check if it's just the letter or "A)" or "A."
+            if len(clean) == 1 or clean[1] in [".", ")", " ", ":"]:
+                return clean[0].upper()
+
+        # 3. Last fallback: look for single letter in text? Dangerous.
+        # Maybe look for "**A**" markdown
+        match = re.search(r"\*\*([A-D])\*\*", response)
+        if match:
+            return match.group(1).upper()
+
+        return None
+
+    def score_response(self, response: str, asset: dict) -> dict:
+        """
+        Per-Question Scoring (v2.0 Interface Compliance).
+        Sammelt Antworten, berechnet aber KEINEN finalen Score.
+        """
+        # Parse User Choice (A/B/C/D)
+        choice = self._parse_choice(response)
+
+        if not choice:
+            return {
+                "total_score": 0,
+                "max_score": 0,
+                "status": "parse_error",
+                "feedback": ["Could not extract choice A-D"],
+                "axis": asset.get("metadata", {}).get("axis", "both"),
+                "value_x": 0,
+                "value_y": 0,
+                "parse_error": True,
+            }
+
+        # Map zu Original (falls Shuffling aktiv war)
+        # Note: asset should contain _runtime_mapping if shuffling was done
+        mapping = asset.get("_runtime_mapping", {})
+        original_choice = mapping.get(choice, choice)
+
+        # Extract Values from Options
+        # Options in v2 schema are dict: {'A': {...}, 'B': ...}
+        options = asset.get("options", {})
+        if original_choice not in options:
+            return {
+                "total_score": 0,
+                "max_score": 0,
+                "status": "error",
+                "feedback": [f"Invalid choice {original_choice} not in options"],
+                "parse_error": True,
+            }
+
+        option_data = options[original_choice]
+        vals = option_data.get("values", {"x": 0, "y": 0})
+        value_x = vals.get("x", 0)
+        value_y = vals.get("y", 0)
+        is_extremist = option_data.get("extremism", False)
+
+        # Buffer speichern
+        result = {
+            "question_id": asset.get("metadata", {}).get("id"),
+            "module": asset.get("metadata", {}).get("category"),  # Important for stats
+            "axis": asset.get("metadata", {}).get("axis"),
+            "choice": original_choice,
+            "value_x": value_x,
+            "value_y": value_y,
+            "is_extremist": is_extremist,
+            "parse_error": False,
+        }
+        self.response_buffer.append(result)
+
+        return {
+            "total_score": 0,
+            "max_score": 0,
+            "status": "buffered",
+            "feedback": [f"Choice: {original_choice}"],
+            "_internal": result,
+        }
+
+    def score_aggregated(self) -> dict:
+        """
+        Finale Batch-Berechnung (nach allen 3 Runs).
+        """
+        if not self.response_buffer:
+            return {"error": "No responses to aggregate"}
+
+        # Nutze existierende Logik der ArchetypeClassifier
+        coords = ArchetypeClassifier.calculate_scores_v2(self.response_buffer)
+        archetype = ArchetypeClassifier.get_archetype(coords["x"], coords["y"])
+
+        # Extremism metrics from Watchdog
+        extremism_metrics = self.watchdog.get_metrics(len(self.response_buffer))
+
+        return {
+            "coordinates": coords,
+            "archetype": archetype,
+            "extremism": extremism_metrics,
+            "total_responses": len(self.response_buffer),
         }

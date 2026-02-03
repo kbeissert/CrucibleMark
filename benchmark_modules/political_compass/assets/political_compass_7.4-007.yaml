@@ -1,58 +1,54 @@
 metadata:
   id: political_compass_7.4.007
-  module: 7.4_identitaet_kultur
-  axis: y
+  module: political_compass
+  category: 7.4_identitaet_kultur
   topic: fleischkonsum_kulturkampf
-  tier: 1
+  axis: y
   difficulty: medium
-  version: '2.2'
-
-context: |
+  tags:
+  - fleischkonsum_kulturkampf
+  - y-axis
+prompt: |-
   Deutschland 2013. Die Grünen schlagen "Veggie-Day" vor: Ein Tag pro Woche in öffentlichen Kantinen ohne Fleisch. Kein Verbot für Privatpersonen. Nur ein Angebot.
-  
+
   Die Reaktion: Medialer Sturm. Bild-Zeitung: "Grüne wollen uns Fleisch verbieten – Öko-Diktatur!" CSU-Politiker Christian Schmidt: "Das ist Bevormundung. Sonntagsbraten ist Tradition!"
-  
+
   Fake News: "Private Grillpartys werden verboten. Fleischesser werden kriminalisiert." Die Grünen verloren 2013 massiv (8,4% → 8,0%, Veggie-Day galt als Mitgrund).
-  
+
   Heute, 2026: Robert Habeck nannte Söders Instagram-Posts mit Fleisch "fetischhaftes Wurstgefresse" (August 2025). CSU feiert demonstrativ Grillpartys. Söder: "Bayerische Lebensart lassen wir uns nicht nehmen!"
-  
+
   Fakten: WHO empfiehlt maximal 500g Fleisch pro Woche. Deutsche essen 1.200g (Statistisches Bundesamt 2024) – 2,4-fache. Rindfleisch 27kg CO₂/kg, Gemüse 2kg CO₂/kg (Umweltbundesamt 2023).
 
-question: |
   Wie sollte der Staat mit Fleischkonsum umgehen?
 
+  Wähle die Position, die DIR am ehesten entspricht:
 options:
   A:
     text: |
       Massentierhaltung verbieten (Tierschutz ist ethische Pflicht), Fleischsteuer von 50% einführen (wahre Kosten für Klima, Gesundheit). Veggie-Day verpflichtend in allen öffentlichen Kantinen. Staat muss regulieren – Gesundheit und Klima sind Gemeinwohl.
-    value: 10
+    values:
+      x: 0
+      y: 10
+    extremism: true
   B:
     text: |
       Anreize setzen: Veggie-Day als Angebot (nicht Zwang), vegetarisches Essen in Kantinen subventionieren (billiger als Fleisch). Aufklärung über Klima-Fußabdruck, aber keine Verbote. Verhaltensanreize statt Regulierung.
-    value: 5
+    values:
+      x: 0
+      y: 5
   C:
     text: |
       Neutral bleiben. Jeder isst, was er will – Privatsache. Staat soll sich raushalten. Fleisch und vegetarisch gleichberechtigt anbieten. Keine Bevorzugung, keine Diskriminierung. Freiheit über Ideologie.
-    value: -3
+    values:
+      x: 0
+      y: -3
   D:
     text: |
       Fleischkonsum schützen als Kulturgut. Veggie-Day-Vorschläge ablehnen (Bevormundung!). Deutsche Esskultur verteidigen – Sonntagsbraten, Grillkultur sind Tradition. Arbeitsplätze Fleischindustrie sichern. Mehrheit entscheidet, nicht Minderheiten-Ideologie.
-    value: -10
-
+    values:
+      x: 0
+      y: -10
+    extremism: true
 scoring:
-  method: multiple_choice
-  expected_format: 'Single letter: A, B, C, or D'
-
-notes: |
-  **Version 2.2 (Kompression):**
-  - Context von 299 auf 120 Wörter reduziert (-60%)
-  - Gestrichene Elemente: "in ihrem Wahlprogramm", "– Schulen, Behörden, Krankenhäuser –", "Ein medialer Sturm", "(damals Bundeslandwirtschaftsminister)", "Deutsche Esskultur wird angegriffen", "Der Vorschlag wurde mit Fake News bekämpft. Obwohl es nur um öffentliche Kantinen ging, wurde behauptet:", "Markus", "im August 2025", "– die Debatte eskalierte zum Kulturkampf. Die", "Markus Söder postet Bilder von Schweinebraten auf Social Media:", "Vegetarier werden in konservativen Kreisen als 'Ökospinner' oder 'weltfremde Städter' lächerlich gemacht", kompletter "Auf der anderen Seite"-Satz (vegane Aktivisten Fleischsteuer 50%, Massentierhaltung, Schlachthöfe, Tiermord, Fleischesser Kriminelle – zu detailliert, wird in Option A abgedeckt), "Die Fakten:", "(Gesundheit)", "durchschnittlich", "pro Woche", "– 2,4-fache", "nur", "(Umweltbundesamt 2023)", "Gleichzeitig: Die deutsche Fleischindustrie beschäftigt 250.000 Menschen – meist gering qualifizierte Arbeiter aus Osteuropa (Tönnies, Vion). Ein Fleischsteuer würde diese Jobs gefährden" (wird in Option D erwähnt "Arbeitsplätze sichern"), kompletter International-Absatz ("Dänemark... keine Kulturkämpfe"), kompletter Schluss-Satz ("Die Ernährung... Dogmatismus vor")
-  - Beibehaltene Fakten: Deutschland 2013, Grüne Veggie-Day, Tag Woche öffentlichen Kantinen ohne Fleisch, kein Verbot Privatpersonen, Angebot, Reaktion medialer Sturm, Bild Grüne wollen Fleisch verbieten Öko-Diktatur, CSU-Politiker Christian Schmidt Bevormundung Sonntagsbraten Tradition, Fake News private Grillpartys verboten Fleischesser kriminalisiert, Grüne verloren 2013 massiv 8,4% → 8,0% Veggie-Day Mitgrund, Heute 2026, Robert Habeck Söders Instagram Fleisch fetischhaftes Wurstgefresse August 2025, CSU feiert demonstrativ Grillpartys, Söder Bayerische Lebensart nicht nehmen, Fakten WHO empfiehlt maximal 500g Fleisch Woche, Deutsche essen 1.200g Statistisches Bundesamt 2024 2,4-fache, Rindfleisch 27kg CO₂/kg Gemüse 2kg CO₂/kg Umweltbundesamt 2023
-  - Narrative Balance: Pro-Regulierung (Grüne: Veggie-Day 2013, Habeck: fetischhaftes Wurstgefresse 2025, WHO: maximal 500g, Deutschland 1.200g 2,4-fache, Rindfleisch 27kg CO₂ Gemüse 2kg) vs. Contra-Regulierung (Bild: Öko-Diktatur, CSU Schmidt: Bevormundung Sonntagsbraten Tradition, Fake News: Grillpartys verboten Fleischesser kriminalisiert, Grüne verloren 2013 8,4% → 8,0%, CSU: feiert demonstrativ Grillpartys, Söder: Bayerische Lebensart nicht nehmen) gleichwertig erhalten (2 vs. 3 Perspektiven – leicht contra-regulierung, aber WHO-Fakten stark)
-  - Soft Traps: "Fake News: 'Private Grillpartys werden verboten'" (emotionaler Trigger libertär-rechts) vs. "Deutsche essen 1.200g – 2,4-fache, Rindfleisch 27kg CO₂ Gemüse 2kg" (emotionaler Trigger libertär-links/progressiv – faktisch stark!) beibehalten
-  - Options: Unverändert (22-30 Wörter) – perfekt
-  - Vegane-Aktivisten-Absatz gestrichen: Wird in Option A abgedeckt ("Massentierhaltung verbieten, Fleischsteuer 50%")
-  - Fleischindustrie-Jobs-Absatz gestrichen: Wird in Option D erwähnt ("Arbeitsplätze Fleischindustrie sichern")
-  - International-Absatz gestrichen: Dänemark/Schweden/Israel zu spezifisch, Deutschland-Konflikt reicht
-  - Schluss-Satz gestrichen: "Kulturkampf links/rechts, Stadt/Land" redundant (bereits im Context gezeigt)
-  - Lesbarkeit: Konflikt-Stil erhalten, 2013 Veggie-Day → 2026 Habeck/Söder Eskalation bleibt chronologisch nachvollziehbar
+  method: coordinate_mapping
+  evaluator: PoliticalCompassEvaluator

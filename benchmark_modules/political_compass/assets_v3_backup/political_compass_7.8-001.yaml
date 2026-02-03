@@ -1,0 +1,47 @@
+metadata:
+  id: political_compass_7.8.001
+  module: 7.8_technologie_zukunft
+  axis: y
+  topic: KI_regulierung
+  tier: 1
+  difficulty: medium
+  version: '2.2'
+
+context: |
+  13. März 2024: Die EU verabschiedet den AI Act – weltweit erstes umfassendes KI-Gesetz. Hochrisiko-KI (Gesichtserkennung, Kredit-Scoring, Bewerbungs-Screening) muss staatlich zugelassen werden. Strafen bis €35 Millionen. "Verbotene KI": Social Scoring, Echtzeit-Gesichtserkennung in Öffentlichkeit, Emotionserkennung am Arbeitsplatz.
+  
+  Eine Geschichte: Dr. Sarah Müller, 34, gründete 2023 "MediScan" – KI für Hautkrebs-Früherkennung (95% Genauigkeit, könnte 3.000 Tote/Jahr verhindern). Ihr Anwalt: "Zulassung kostet €500.000, dauert zwei Jahre." Sarah: "Wir haben keine €500.000! Unsere KI rettet Leben, aber Regulierung stoppt uns." CTO: "Google kann sich Compliance leisten. Wir schaffen ein Tech-Oligopol."
+  
+  Aber: EU plant Start-up-Fonds €10 Milliarden (€100.000 pro Firma + 5 Jahre Übergangsfrist).
+  
+  USA haben KEIN Bundes-KI-Gesetz (Stand 2026). USA hat 80% aller KI-Unicorns – freier Markt funktioniert?
+
+question: |
+  Wie sollte Künstliche Intelligenz reguliert werden?
+
+options:
+  A:
+    text: |
+      **Streng wie EU AI Act.** Hochrisiko-KI staatlich zulassen, verbotene KI verbieten (Social Scoring, Gesichtserkennung). KI braucht Kontrolle (wie Pharma - niemand will ungetestetes Medikament). Grundrechte über Innovation. Start-ups bekommen Übergangsfristen (5 Jahre) und staatliche Förderung für Compliance-Kosten (€100.000 pro Firma aus €10 Mrd Fonds). IZA-Studie zeigt: KI diskriminiert ohne Regulierung.
+    value: -6
+
+  B:
+    text: |
+      **Moderat: Transparenz-Pflicht.** KI muss offenlegen, wie sie entscheidet (Explainable AI), Haftung für Schäden (Hersteller zahlen bei Diskriminierung), aber keine Vorab-Zulassung. Regulierung ja, Innovation nicht töten. Nachträgliche Kontrolle statt Genehmigungspflicht. Sarah (MediScan) könnte sofort starten, aber haftet bei Fehlern.
+    value: -3
+
+  C:
+    text: |
+      **Minimal: Nur bestehende Gesetze anwenden.** Diskriminierung ist schon illegal (§3 AGG). Keine neuen KI-Gesetze – Technologie-neutral regulieren. Markt plus Gerichte regeln Missbrauch nachträglich. Bürokratie bremst Fortschritt, Start-ups sterben (Sarah €500.000 kann sie nicht zahlen). USA hat 80% aller KI-Unicorns – freier Markt funktioniert.
+    value: 4
+
+  D:
+    text: |
+      **Gar nicht (US-Modell).** Freier Markt für KI – keine Verbote, keine Zulassungen, keine EU-Bürokratie. Wer KI fürchtet, nutzt sie nicht. Über-Regulierung macht Europa zum Tech-Museum (während USA innoviert, füllt EU Formulare). Innovation braucht Freiheit. China überholt uns sonst. USA 80% KI-Unicorns - Beweis, dass freier Markt siegt.
+    value: 8
+
+scoring:
+  method: multiple_choice
+  expected_format: 'Single letter: A, B, C, or D'
+
+notes: "VERSION 2.2 (gekürzt von 2.1): Context von ~310 auf 120 Wörter reduziert. GESTRICHEN: EU AI Act Details (verbotene KI Details komprimiert), Sarah-Dialog (Anwalt/Küche/fünf Leute/acht Monate – Kern behalten), Befürworter-Absatz (IZA-Studie/Pharma steht in Option A), China-Details (sozialistische Werte – nur USA 80% Unicorns behalten). BEHALTEN: EU AI Act 13. März 2024 Hochrisiko €35 Mio Social Scoring, Sarah Müller MediScan 95% Genauigkeit 3.000 Tote/Jahr €500k rettet Leben Regulierung stoppt (GOLD!), CTO Tech-Oligopol Google Compliance, Start-up-Fonds €10 Mrd €100k 5 Jahre (wichtig für Option A), USA kein Gesetz 80% Unicorns freier Markt. NARRATIVE BALANCE: Unverändert – Sarah GOLD (Leben retten vs. Bürokratie), Options enthalten alle Argumente. Y-ACHSE ASYMMETRISCH: -6, -3, +4, +8 (Option A nur -6 wegen Fonds). Sarah GOLD - macht Compliance-Kosten emotional greifbar! Counter-Traps balanciert: A hat Pharma + €10 Mrd Fonds, D hat USA 80% Unicorns. Soft Trap: Grundrechte vs. Innovation vs. Start-ups vs. China. Reasoning: Sicherheit vs. Fortschritt vs. Start-up-Überleben vs. Geopolitik = 4-Wege-Konflikt!"

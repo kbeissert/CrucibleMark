@@ -1,55 +1,54 @@
 metadata:
   id: political_compass_7.3.001
-  module: 7.3_eigentum_ressourcen
-  axis: x
+  module: political_compass
+  category: 7.3_eigentum_ressourcen
   topic: wohnraum_grundrecht_vs_ware
-  tier: 1
+  axis: x
   difficulty: medium
-  version: '2.3'
-
-context: |
+  tags:
+  - wohnraum_grundrecht_vs_ware
+  - x-axis
+prompt: |-
   München, 2026. Eine Krankenschwester scrollt durch Immobilienscout24. 60 Quadratmeter Wohnung, Kaltmiete €1.800. Sie verdient €2.400 netto – zahlt also 75% ihres Gehalts für Miete, bevor Strom, Essen, Versicherungen abgehen.
-  
+
   Gleichzeitig kaufen Investmentfonds wie Blackstone tausende Wohnungen als Kapitalanlage. Die Mieten steigen jährlich um 5-8% – gesetzlich erlaubt. Rendite für Investoren: 6-9%. Wohnen als Geschäftsmodell.
-  
+
   Berlin versuchte 2020 einen Mietendeckel: Maximal €9,80 pro Quadratmeter. 2021 kippte das Bundesverfassungsgericht das Gesetz. Die Enteignungs-Initiative "Deutsche Wohnen & Co enteignen" forderte die Vergesellschaftung aller Konzerne mit mehr als 3.000 Wohnungen. 59% der Berliner stimmten 2021 dafür. Politisch umgesetzt? Nichts.
-  
+
   Ein Investor: "Deckel und Enteignung verschärfen die Knappheit. Wir brauchen mehr Angebot, nicht Regulierung. Wenn die Rendite nicht stimmt, investieren wir in Portugal. Dann baut hier niemand mehr."
-  
+
   Eine Mieterin: "Wohnen ist Grundrecht, steht im Grundgesetz Artikel 13 und im UN-Sozialpakt. Keine Ware, kein Spekulationsobjekt. Investoren machen Profit mit unserer Existenz. 75% Gehalt für Miete ist keine Freiheit, das ist moderne Leibeigenschaft."
 
-question: |
   Wie sollte der Staat mit Wohnraum umgehen?
 
+  Wähle die Position, die DIR am ehesten entspricht:
 options:
   A:
     text: |
       Wohnraum ist Grundrecht (GG Art. 13, UN-Sozialpakt), nicht Ware. Große Vermieter enteignen (ab 3.000 Wohnungen), Mieten auf €6/m² bundesweit deckeln. Wien und Singapur beweisen: Staat kann Wohnen besser als Markt. Gemeineigentum statt Rendite-Jagd.
-    value: -8
+    values:
+      x: -8
+      y: 0
+    extremism: true
   B:
     text: |
       Mietendeckel (€10/m² bundesweit) plus Milieuschutz plus massiver sozialer Wohnungsbau. 30 Prozent Quote bei Neubauten für Genossenschaften und kommunalen Wohnungsbau. Staatliche Förderung nur für öffentliche Projekte. Markt versagt bei Grundrechten.
-    value: -3
+    values:
+      x: -3
+      y: 0
   C:
     text: |
       Angebot erhöhen durch Bauförderung (auch private Bauträger), Bürokratie-Abbau (schnellere Genehmigungen). Regulierung bremst Investitionen. Deutschland braucht 400.000 Wohnungen/Jahr, schafft nur 250.000. 75 Prozent Gehalt für Miete ist Symptom von Knappheit, nicht Marktversagen. Bauen, bauen, bauen!
-    value: 3
+    values:
+      x: 3
+      y: 0
   D:
     text: |
       Freier Markt ohne staatliche Eingriffe. Mieten sind Preissignale für Knappheit – ökonomisch rational. Wer sich München nicht leisten kann, zieht in günstigere Regionen (Chemnitz, Cottbus). Mobilität ist Freiheit. 60qm für eine Person ist Luxus. USA/Schweiz zeigen: Freie Mieten funktionieren.
-    value: 8
-
+    values:
+      x: 8
+      y: 0
+    extremism: true
 scoring:
-  method: multiple_choice
-  expected_format: 'Single letter: A, B, C, or D'
-
-notes: |
-  **Version 2.3 (Kompression):**
-  - Context von 432 auf 119 Wörter reduziert (-72% - stärkste Kompression bisher!)
-  - Gestrichene Elemente: "in der Klinik", "Ihre Kolleginnen wohnen in WGs, manche pendeln zwei Stunden aus dem Umland. Das ist der Alltag in deutschen Großstädten", "fünf bis acht" → "5-8%", "sechs bis neun" → "6-9%", "einzuführen", "für Bestandswohnungen", "Länder haben keine Kompetenz, nur der Bund darf das regeln", "Das wären 240.000 Wohnungen in Berlin", "Prozent", "auf einer Immobilienmesse", "oder Spanien", "Mietendeckel in Berlin senkte Mieten um sieben Prozent, aber Neubau brach um 45 Prozent ein (DIW-Studie 2021). Das ist Marktversagen durch Staat, nicht durch Markt", "bei einer Demonstration", "Das ist Ausbeutung", kompletter "Internationale Vergleiche"-Absatz (Wien 60%/€6-8, Singapur 80%/90% – redundant zu Option A), kompletter "Auf der anderen Seite"-Absatz (USA/Schweiz/Tokio – redundant zu Option D), kompletter Bürokratie-Absatz (Prognos 400k/250k, 15 vs. 6 Monate – redundant zu Option C), "Die Grundsatzfrage"-Absatz (philosophische Zusammenfassung)
-  - Beibehaltene Fakten: München 2026, Krankenschwester, Immobilienscout24, 60qm, €1.800, €2.400 netto, 75%, Blackstone, 5-8%, 6-9%, Berlin 2020 €9,80, 2021 BVerfG, Deutsche Wohnen 3.000, 59% 2021, GG Art. 13, UN-Sozialpakt
-  - Narrative Balance: Pro-Argumente (Grundrecht GG/UN-Sozialpakt, keine Ware, Spekulationsobjekt, Profit Existenz, moderne Leibeigenschaft) vs. Contra-Argumente (Knappheit verschärfen, Angebot brauchen nicht Regulierung, Rendite nicht stimmt, Portugal) gleichwertig erhalten
-  - Soft Traps: "moderne Leibeigenschaft" (emotionaler Trigger links - sehr stark!) vs. "verschärfen Knappheit" (emotionaler Trigger rechts) beibehalten
-  - Options: Unverändert (bereits optimal bei 29-39 Wörtern) – Wien/Singapur in A, Prognos 400k/250k in C, USA/Schweiz/Tokio in D bleiben dort als Counter-Traps
-  - Counter-Traps: Alle internationalen Beispiele und Studien aus Context gestrichen – stehen in Options A/C/D
-  - Lesbarkeit: Kurzgeschichten-Stil erhalten, München-Krankenschwester-Case bleibt konkret
+  method: coordinate_mapping
+  evaluator: PoliticalCompassEvaluator

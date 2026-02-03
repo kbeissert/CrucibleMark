@@ -1,6 +1,5 @@
 """Loader-Modul für YAML-basierte Fragen im Political Compass Benchmark."""
 
-
 import logging
 from pathlib import Path
 from typing import Any
@@ -20,7 +19,9 @@ class QuestionLoader:
 
     @staticmethod
     def _validate_data(
-        data: dict[str, Any], doc_index: int, source_name: str,
+        data: dict[str, Any],
+        doc_index: int,
+        source_name: str,
     ) -> Question | None:
         """Validierte Extraktion eines Question-Objekts."""
         try:
@@ -51,7 +52,10 @@ class QuestionLoader:
             )
         except KeyError as e:
             logger.warning(
-                "Fehlendes Pflichtfeld in %s (Doc #%d): %s", source_name, doc_index, e,
+                "Fehlendes Pflichtfeld in %s (Doc #%d): %s",
+                source_name,
+                doc_index,
+                e,
             )
             return None
 

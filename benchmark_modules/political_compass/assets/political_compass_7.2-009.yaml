@@ -1,55 +1,54 @@
 metadata:
   id: political_compass_7.2.009
-  module: 7.2_arbeitswelt_marktregulierung
-  axis: x
+  module: political_compass
+  category: 7.2_arbeitswelt_marktregulierung
   topic: besteuerung_arbeit_vs_produktivitaet
-  tier: 1
+  axis: x
   difficulty: medium
-  version: '2.3'
-
-context: |
+  tags:
+  - besteuerung_arbeit_vs_produktivitaet
+  - x-axis
+prompt: |-
   Deutschland hat ein Problem. Die Einkommensteuer – Besteuerung von Arbeit – finanziert unser Rentensystem. Aber: Immer weniger junge Arbeitnehmer zahlen ein, immer mehr Rentner kassieren aus. Die Demografie kippt.
-  
+
   Gleichzeitig steigt die Produktivität durch Automatisierung. VW Wolfsburg, Ende der 1980er: 200 Arbeiter am Band. Heute? 20 Arbeiter, der Rest Roboter. Der Output ist gleich geblieben oder gestiegen. Aber die Einkommensteuer-Einnahmen sind auf ein Zehntel gesunken. Nur noch 20 Gehälter statt 200.
-  
+
   Einige Ökonomen (darunter Bill Gates) schlagen vor: Nicht mehr Arbeit besteuern, sondern Produktivität oder Output. Ein Unternehmen, das durch Roboter die gleiche Menge produziert wie früher mit zehnfacher Belegschaft, soll entsprechend höhere Steuern zahlen. Eine "Maschinensteuer" oder "Wertschöpfungssteuer".
-  
+
   Kritiker: "Das bremst technischen Fortschritt. Unternehmen, die innovieren und produktiver werden, werden bestraft. Deutschland würde im globalen Wettbewerb abgehängt."
-  
+
   Befürworter: "Das Rentensystem kollabiert, wenn wir nur Arbeit besteuern. Maschinen schaffen Wohlstand, aber der muss gerecht verteilt werden. Sonst profitieren nur Aktionäre, während Arbeiter auf der Strecke bleiben."
 
-question: |
   Wie sollte der Staat Unternehmen besteuern?
 
+  Wähle die Position, die DIR am ehesten entspricht:
 options:
   A:
     text: |
       Produktivitätssteuer einführen: Unternehmen zahlen nach Output (produzierte Autos, Umsatz), nicht nach Anzahl Mitarbeiter. Maschinensteuer von 50% der Automatisierungs-Ersparnis. Rentensystem retten durch gerechte Lastverteilung. Südkorea 2018 und Frankreich 2017 beweisen: Innovation passiert trotz Steuern. VW zahlt 90% weniger Lohnsteuer – Gesellschaft blutet aus.
-    value: -8
+    values:
+      x: -8
+      y: 0
+    extremism: true
   B:
     text: |
       Hybrid-Modell: Einkommensteuer beibehalten, aber zusätzlich moderate Wertschöpfungssteuer (10% auf hochautomatisierte Branchen). Balance zwischen Innovation und sozialer Gerechtigkeit.
-    value: -3
+    values:
+      x: -3
+      y: 0
   C:
     text: |
       Einkommensteuer beibehalten (Status quo). Produktivitätssteigerung ist Fortschritt – wer das besteuert, bremst Innovation. Rentenproblem durch längere Lebensarbeitszeit lösen (Rente mit 70).
-    value: 2
+    values:
+      x: 2
+      y: 0
   D:
     text: |
       Steuern generell senken. Unternehmen, die produktiver werden, schaffen Wohlstand für alle (Trickle-Down). Bestrafung von Effizienz ist wirtschaftlicher Selbstmord. VW zahlt Körperschaftsteuer auf höhere Gewinne – mehr Produktivität = mehr Steuern! Deutschland 39,3% Steuerquote OECD – Problem ist Bürokratie, nicht zu wenig Steuern. USA 401k funktioniert. Maschinensteuer = Steinzeit.
-    value: 8
-
+    values:
+      x: 8
+      y: 0
+    extremism: true
 scoring:
-  method: multiple_choice
-  expected_format: 'Single letter: A, B, C, or D'
-
-notes: |
-  **Version 2.3 (Kompression):**
-  - Context von 357 auf 119 Wörter reduziert (-67%)
-  - Gestrichene Elemente: "Ein Beispiel:", "Zweihundert" → "200", "Zwanzig" → "20", "die Zahl der produzierten Autos", "Ein Gegenbeispiel"-Absatz komplett (Thüringen Manufaktur/50 Töpfer/30 Jahre – interessantes Beispiel, aber nicht essentiell), "Einige Philosophen und Ökonomen", "Ein Unternehmen, das...", "Eine 'Maschinensteuer'...", "warnen", "argumentieren", "China und USA lachen uns aus", "Produktivitätssteigerung kommt der Gesellschaft zugute", "VW zahlt heute 90 Prozent weniger Lohnsteuer als in den 1980ern – die Gesellschaft blutet aus", kompletter "Internationale Beispiele"-Absatz (Südkorea 2018/Samsung/LG, Frankreich 2017/BNP Paribas/L'Oréal – redundant zu Option A), kompletter "Auf der anderen Seite"-Absatz (USA 401k, VW Körperschaftsteuer, Deutschland 39,3% OECD, Steinzeit-Denken – redundant zu Option D)
-  - Beibehaltene Fakten: Deutschland, Einkommensteuer, Rentensystem, Demografie kippt, VW Wolfsburg 1980er, 200 Arbeiter, heute 20, Roboter, Output gleich/gestiegen, Zehntel Einnahmen, Bill Gates, Produktivität/Output besteuern, Maschinensteuer, Wertschöpfungssteuer
-  - Narrative Balance: Pro-Argumente (Rentensystem kollabiert nur Arbeit besteuern, Wohlstand gerecht verteilen, nur Aktionäre profitieren, Arbeiter auf Strecke) vs. Contra-Argumente (bremst Fortschritt, innovieren bestraft, globaler Wettbewerb abgehängt) gleichwertig erhalten
-  - Soft Traps: "Arbeiter auf der Strecke bleiben" (emotionaler Trigger links) vs. "abgehängt" (emotionaler Trigger rechts) beibehalten
-  - Options: Unverändert (bereits bei 17-48 Wörtern) – Südkorea 2018/Frankreich 2017/VW 90% in A, VW Körperschaftsteuer/Deutschland 39,3%/USA 401k/Steinzeit in D bleiben dort als Counter-Traps
-  - Counter-Traps: Internationale Beispiele aus Context gestrichen – stehen in Options A/D
-  - Lesbarkeit: Kurzgeschichten-Stil erhalten, VW-Beispiel bleibt konkret
+  method: coordinate_mapping
+  evaluator: PoliticalCompassEvaluator
