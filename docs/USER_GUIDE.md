@@ -115,37 +115,43 @@ make leaderboard
 
 ### Was zeigt das Leaderboard?
 
+Das neue Leaderboard (v1.1) ist ein **Decision-Making Tool**, nicht nur ein Ranking.
+
 | Spalte | Bedeutung |
 |--------|-----------|
-| **Rank** | Platzierung (nach Total Score) |
-| **Model Name** | Modellname + Version |
-| **Badge** | Klassifizierung (God Mode, Daily Driver, Deep Thinker) |
-| **Total Score** | Gesamtdurchschnitt (0-100%) |
-| **Routine Score** | Performance bei Standardaufgaben (Doku, UX Writing) |
-| **Reasoning Score** | Performance bei Logik-Rätseln (Code Quality, Deadlocks) |
-| **Ratio** | Vergleich zum Golden Standard (100% = wie Mistral Large) |
-| **Avg Time** | Durchschnittliche Antwortzeit in Sekunden |
-
-**Module-Spalten:**
-- Jedes aktive Modul bekommt eine eigene Spalte (z.B. "Code Quality: 85%")
+| **Badge** | Qualitäts-Tier (🏆 Gold, 🥈 Silver, 🥉 Bronze, ⚖️ Standard) |
+| **Speed Class** | ⚡ Fast (<40s), ⏱️ Medium, 🐢 Slow (>80s) |
+| **Skill Profile** | Automatische Job-Empfehlung (z.B. "Fast Code Reviewer") |
+| **Performance/s** | Speed-Quality Tradeoff (höher ist besser) |
+| **Cost per 1K** | Echte API-Kosten pro 1000 Tests (nur kommerziell) |
+| **Total Score** | (Routine Score + Reasoning Score) / 2 |
 
 ---
 
-## 🏅 Badges erklärt
+## 🏅 Neue Badges & Klassen (v1.1)
 
-Das Leaderboard vergibt **4 Kategorien** basierend auf Performance:
+### 1. Quality Tiers (Absolute Standards)
 
-| Badge | Kriterien | Bedeutung |
-|-------|-----------|-----------|
-| 👑 **God Mode** | Routine >85% + Reasoning >80% | Alleskönner – perfekt für autonome Agenten |
-| 🧠 **Deep Thinker** | Reasoning >80% | Spezialist für komplexe Logik (langsam, aber präzise) |
-| 🏎️ **Daily Driver** | Routine >80% | Zuverlässig bei Alltags-Tasks (schnell, solide) |
-| ⚖️ **Standard** | Rest | Durchschnittliche Leistung |
+| Badge | Score Hürde | Bedeutung |
+|-------|-------------|-----------|
+| 🏆 **Gold** | ≥ 85% | Elite, Production-Ready |
+| 🥈 **Silver** | ≥ 70% | Solide für die meisten Aufgaben |
+| 🥉 **Bronze** | ≥ 55% | OK für einfache Tasks |
+| ⚖️ **Standard** | < 55% | Needs Improvement |
 
-**Tipp:** Wählen Sie Modelle basierend auf Ihrem Use Case:
-- **Chat & Coding:** Daily Driver (schnell, zuverlässig)
-- **Research & Analysis:** Deep Thinker (gründlich, langsam)
-- **Production Systems:** God Mode (beides)
+### 2. Speed Classes
+
+| Klasse | Zeitlimit | Use Case |
+|--------|-----------|----------|
+| ⚡ **Fast** | < 40s | Autocomplete, Chat, Realtime |
+| ⏱️ **Medium** | 40s - 80s | Code Review, Doku, Interaktiv |
+| 🐢 **Slow** | > 80s | Batch Processing, Deep Analysis |
+
+### 3. Skill Profiles (Beispiele)
+
+- **Fast All-Rounder:** Schnell & gut in allem (z.B. Mistral Large)
+- **Fast Code Reviewer:** Spezialist für Code, sehr schnell (z.B. Qwen 2.5 Coder)
+- **Slow Deep Thinker:** Stark im Reasoning, aber langsam (z.B. Phi-4)
 
 ---
 

@@ -75,7 +75,7 @@ def _enrich_from_csv_source(
                     json_col = "metadata_json"
                 elif "metrics_json" in row:
                     json_col = "metrics_json"
-                    
+
                 if json_key and json_col:
                     try:
                         metrics = json.loads(row[json_col])
@@ -86,23 +86,23 @@ def _enrich_from_csv_source(
                                 val = val.get(k, {})
                             else:
                                 return "Error (Struct)"
-                        
+
                         if isinstance(val, (dict, list)):
                             return json.dumps(val, ensure_ascii=False)
-                        
+
                         # Store raw value in temp variable for template
                         # We cannot modify 'row' here safely for the pandas apply context?
                         # Actually we are processing one row.
                         # But wait, 'template' option below uses row.to_dict().
                         # If we want to support 'format' combining JSON value with other things,
                         # we need to be clever.
-                        
+
                         # Current Logic: Either JSON Access OR Template.
                         # User wants {value} ({x}).
                         # This suggests we need formatting AFTER extraction.
-                        
+
                         extracted_val = str(val) if val is not None else ""
-                        
+
                         # NEW: Check if there is an additional format string in config
                         fmt = source_config.get("format")
                         if fmt:
@@ -110,7 +110,7 @@ def _enrich_from_csv_source(
                             # Standard context: row + 'value'
                             ctx = row.to_dict()
                             ctx['value'] = extracted_val
-                            
+
                             # Flatten JSON for context?
                             if isinstance(metrics, dict):
                                 # Flatten top level keys
@@ -122,12 +122,12 @@ def _enrich_from_csv_source(
                                          for subk, subv in mv.items():
                                              if isinstance(subv, (str, int, float)):
                                                  ctx[subk] = subv
-                                                 
+
                             try:
                                 return fmt.format(**ctx)
                             except KeyError:
                                 return extracted_val # Fallback to raw value
-                        
+
                         return extracted_val
 
                     except (json.JSONDecodeError, AttributeError):
@@ -205,13 +205,13 @@ def enrich_with_module_data(
     """
     Merges custom/additional data columns for modules defined in their config.
     Iterates over all enabled modules and checks for 'source' definition in 'columns'.
-    
+
     Args:
         result: Leaderboard DataFrame
         cat_cols: List of category columns (will be updated)
         modules_config: Simplified modules config (from score_calculator)
         full_config: Full benchmark config (for re-loading detailed integrations)
-        
+
     Returns:
         Tuple of (Enriched DataFrame, Updated Category Columns list)
     """
@@ -228,7 +228,7 @@ def enrich_with_module_data(
             # Check modules_config as secondary enabled check (if passed)
             if modules_config and not modules_config.get(mod_id, {}).get("enabled", True):
                 continue
-        
+
         # Parse Columns Config
         integration = mod_int_config.get("integration", {})
         lb_config = integration.get("leaderboard", {})

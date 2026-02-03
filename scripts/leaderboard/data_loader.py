@@ -19,7 +19,7 @@ from .config import COMMERCIAL_CSV, GOLDEN_CSV, LOCAL_CSV
 def _process_csv(dfs: List[pd.DataFrame], filepath: Path, type_label: str) -> None:
     """
     Helper to process a single CSV File and append to list of DataFrames.
-    
+
     Args:
         dfs: List to append the resulting DataFrame to.
         filepath: Path to the CSV file.
@@ -61,7 +61,7 @@ def _process_csv(dfs: List[pd.DataFrame], filepath: Path, type_label: str) -> No
 def load_benchmark_data() -> pd.DataFrame:
     """
     Loads and normalizes data from commercial and local CSVs.
-    
+
     Returns:
         pd.DataFrame: Concatenated and deduplicated benchmark results.
                       Returns empty DataFrame if no data found.
@@ -78,6 +78,8 @@ def load_benchmark_data() -> pd.DataFrame:
     df = pd.concat(dfs, ignore_index=True)
     df["percentage"] = pd.to_numeric(df["percentage"], errors="coerce")
     df["execution_time"] = pd.to_numeric(df["execution_time"], errors="coerce")
+    if "cost_usd" in df.columns:
+        df["cost_usd"] = pd.to_numeric(df["cost_usd"], errors="coerce").fillna(0.0)
     df["timestamp"] = pd.to_datetime(df["timestamp"], errors="coerce", format="mixed")
 
     # If model_version is missing (e.g. newly loaded CSV didn't have it yet), fill with "unknown"
@@ -88,7 +90,7 @@ def load_benchmark_data() -> pd.DataFrame:
 
     # Sort by timestamp to ensure 'last' is actually the most recent
     df = df.sort_values("timestamp")
-    
+
     # DEDUPLICATION LOGIC with VERSIONING:
     # We now group by model AND model_version.
     # This means 'mistral:latest' (v1) and 'mistral:latest' (v2) are treated as DIFFERENT entities.
@@ -99,7 +101,7 @@ def load_benchmark_data() -> pd.DataFrame:
 def load_golden_references() -> Dict[str, float]:
     """
     Loads reference scores per asset from the Golden Standard CSV.
-    
+
     Returns:
         Dict[str, float]: Mapping of asset_id to percentage score.
     """
