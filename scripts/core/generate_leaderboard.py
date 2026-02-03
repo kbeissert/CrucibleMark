@@ -17,4 +17,5 @@ if str(ROOT_DIR) not in sys.path:
 from scripts.leaderboard import main
 
 if __name__ == "__main__":
-    main()
+    # Disable printing table to terminal to avoid spam
+    main(print_table=False)

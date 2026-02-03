@@ -65,7 +65,6 @@ benchmark-single:
 	fi
 	@echo "🤖 Starte automatisierten Benchmark mit Modell: $(MODEL)..."
 	$(PYTHON) run_benchmark.py --model $(MODEL) $(if $(MODULE),--module $(MODULE))
-	@$(MAKE) leaderboard
 
 benchmark-cross-model:
 	@echo "🚀 Starting Cross-Model Benchmark..."

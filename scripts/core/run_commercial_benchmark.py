@@ -52,6 +52,31 @@ class CommercialBenchmarkRunner(BaseBenchmarkRunner):
         self.mode = mode
         self.force = force
         self._load_categories()
+        self.existing_benchmarks = self._load_existing_benchmarks()
+
+    def _load_existing_benchmarks(self) -> Dict[Tuple[str, str], Dict[str, Any]]:
+        """Loads processed assets with data (SSOT Source)."""
+        cache = {}
+        # Check both Commercial and Local Csvs to be sure
+        csv_files = [
+            self.result_manager._get_csv_path("commercial"),
+            self.result_manager._get_csv_path("local")
+        ]
+        
+        for p in csv_files:
+            if p.exists():
+                try:
+                    with open(p, "r", encoding="utf-8") as f:
+                        reader = csv.DictReader(f)
+                        for row in reader:
+                            # Key: (Model, AssetID)
+                            m = row.get("model")
+                            a = row.get("asset_id")
+                            if m and a:
+                                cache[(m, a)] = row
+                except Exception:
+                    pass
+        return cache
 
     def _load_categories(self):
         """Loads benchmark categories from config (Hydrated)."""
@@ -222,30 +247,54 @@ class CommercialBenchmarkRunner(BaseBenchmarkRunner):
             "metadata", {}
         ).get("topic", asset_id)
 
-        json_path = Path(f"golden_standards/{provider}/{asset_id}.json")
+        # 1. SSOT Check / Golden Mode Data Reuse
+        # If result exists in ANY benchmark CSV (Commercial/Local), use it immediately!
+        # Do not run a new request unless specific force/missing scenario.
+        
+        cached_row = self.existing_benchmarks.get((model, asset_id))
 
-        # Check for cached Golden Standard
-        if is_golden_model and json_path.exists():
-            if self.mode == "golden_standard" and not self.force:
-                # print(f"⏭️  Überspringe {asset_name} (Golden Standard existiert)")
-                res = self._recover_from_json(
-                    json_path, asset_path, benchmark_info, provider, model
-                )
-                if res:
-                    res["asset_name"] = asset_name
-                    # print(f"   ✓ Cached: {res['percentage']}%")
-
-                    # Formatted output for cached
+        if not self.force and cached_row:
+            if self.mode == "golden_standard":
+                # User Requirement: "Fehlt der golden Standard, soll er dort nachsehen."
+                # REUSE existing data for Golden Standard generation (don't re-run/pay).
+                
+                # Convert CSV strings to proper types for ResultManager
+                try:
+                    res = dict(cached_row)
+                    res["total_score"] = float(res.get("total_score", 0))
+                    res["max_score"] = float(res.get("max_score", 100))
+                    res["percentage"] = float(res.get("percentage", 0))
+                    res["execution_time"] = float(res.get("execution_time", 0))
+                    
+                    # Print "Cached" status
                     badge = self.get_quality_badge(res["percentage"])
-                    cost_str = "Cached"
-                    time_str = f"{res['execution_time']:.1f}s"
                     print(
                         f"[{index}/{total_count}] {asset_id:<15} | "
                         f"{asset_name[:20]:<20} {badge} "
                         f"Score: {res['percentage']:>5.1f} | "
-                        f"Cost: {cost_str:>8} | Time: {time_str}"
+                        f"Cost:   Cached | Time: {res['execution_time']:.1f}s"
                     )
                     return res
+                except ValueError:
+                    pass # Malformed CSV row, fallback to re-run
+
+            else:
+                # Test Mode: Skip already processed tests (SSOT Behavior)
+                 return None
+
+        # 2. JSON Cache (Golden Standard) - DISABLED
+        # User Feedback: "Fehlt der golden Standard, soll er dort nachsehen [CSV].
+        # Fehlen Werte ... soll ein benchmark ... angestößen werden."
+        # recovering from JSON caused outdated version numbers/metadata in the leaderboard.
+        
+        # json_path = Path(f"golden_standards/{provider}/{asset_id}.json")
+        # if is_golden_model and json_path.exists():
+        #     if self.mode == "golden_standard" and not self.force:
+        #         res = self._recover_from_json(
+        #             json_path, asset_path, benchmark_info, provider, model
+        #         )
+        #         if res:
+        #             ... return res
 
         # print(f"▶️  Teste: {asset_name}...")
         # Optional: Print simple status if long running
@@ -552,9 +601,15 @@ class CommercialBenchmarkRunner(BaseBenchmarkRunner):
         avg_pct = (total_score / max_possible * 100) if max_possible > 0 else 0
 
         # Calculate Costs & Time
-        total_cost = sum(float(r.get("cost_usd", 0)) for r in results)
+        def safe_float(val):
+            try:
+                return float(val) if val not in (None, "") else 0.0
+            except ValueError:
+                return 0.0
+
+        total_cost = sum(safe_float(r.get("cost_usd")) for r in results)
         avg_time = (
-            sum(float(r.get("execution_time", 0)) for r in results) / len(results)
+            sum(safe_float(r.get("execution_time")) for r in results) / len(results)
             if results
             else 0
         )
