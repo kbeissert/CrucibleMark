@@ -193,14 +193,20 @@ def _calculate_group_scores(df: pd.DataFrame, modules_config: Dict[str, Any]) ->
         count=("asset_id", "count")
     ).reset_index()
 
+    # Calculate Total Weight (Global denominator for components)
+    scores["total_weight_global"] = scores["total_weight_routine"] + scores["total_weight_reasoning"]
+
+    # Calculate Component Scores (Weighted Contribution to Total)
+    # This ensures Routine Score + Reasoning Score = Total Score
     scores["Routine Score"] = scores.apply(
-        lambda x: x["sum_routine"] / x["total_weight_routine"] if x["total_weight_routine"] > 0 else 0, axis=1
+        lambda x: x["sum_routine"] / x["total_weight_global"] if x["total_weight_global"] > 0 else 0, axis=1
     )
     scores["Reasoning Score"] = scores.apply(
-        lambda x: x["sum_reasoning"] / x["total_weight_reasoning"] if x["total_weight_reasoning"] > 0 else 0, axis=1
+        lambda x: x["sum_reasoning"] / x["total_weight_global"] if x["total_weight_global"] > 0 else 0, axis=1
     )
 
-    return scores[["model", "model_version", "Routine Score", "Reasoning Score"]]
+    # Return intermediate sums for weighted total calculation
+    return scores[["model", "model_version", "Routine Score", "Reasoning Score", "sum_routine", "sum_reasoning", "total_weight_routine", "total_weight_reasoning"]]
 
 
 # ==============================================================================
@@ -393,37 +399,45 @@ def calculate_scores(
     )
     result = pd.merge(result, cat_stats, on=["model", "model_version"], how="left")
 
-    # --- Routine vs Reasoning (v1.1: Category Averaging) ---
-    # We use simpler logic: Average of Module Scores.
-    # Reasoning = Logical Reasoning module. Routine = All other scoring modules.
+    # --- Routine vs Reasoning (v2.1: Granular Weights) ---
+    # Calculates scores based on per-asset routine/reasoning split
+    granular_scores = _calculate_group_scores(df_success, modules_config)
+    
+    if not granular_scores.empty:
+        # Merge granular scores
+        result = pd.merge(
+            result, 
+            granular_scores, 
+            on=["model", "model_version"], 
+            how="left"
+        )
+    else:
+        # Fallback if granular calc fails (should not happen)
+        result["Routine Score"] = 0.0
+        result["Reasoning Score"] = 0.0
 
-    cat_cols = [c for c in cat_stats.columns if c not in ["model", "model_version"]]
-    # Heuristic: "Reasoning" in name -> Reasoning Score. Else -> Routine Score.
-    reasoning_cats = [c for c in cat_cols if "Reasoning" in c]
-    routine_cats = [c for c in cat_cols if "Reasoning" not in c]
-
-    def get_routine_score(row):
-        vals = [row[c] for c in routine_cats if pd.notna(row.get(c))]
-        return sum(vals) / len(vals) if vals else 0.0
-
-    def get_reasoning_score(row):
-        vals = [row[c] for c in reasoning_cats if pd.notna(row.get(c))]
-        return sum(vals) / len(vals) if vals else 0.0
-
-    result["Routine Score"] = result.apply(get_routine_score, axis=1)
-    result["Reasoning Score"] = result.apply(get_reasoning_score, axis=1)
-
-    # Ensure they are not NaNs (though function returns 0.0)
+    # Ensure they are not NaNs
     result["Routine Score"] = result["Routine Score"].fillna(0.0)
     result["Reasoning Score"] = result["Reasoning Score"].fillna(0.0)
 
-    # Fill defaults
-    for col in ["Routine Score", "Reasoning Score"]:
-        if col not in result.columns:
-            result[col] = 0.0
+    # Total Score Calculation (Volume-Weighted)
+    # Uses the actual weight of routine vs reasoning tasks in the run benchmark
+    def calc_weighted_total(row):
+        w_routine = row.get("total_weight_routine", 0)
+        w_reasoning = row.get("total_weight_reasoning", 0)
+        sum_routine = row.get("sum_routine", 0)
+        sum_reasoning = row.get("sum_reasoning", 0)
+        
+        total_weight = w_routine + w_reasoning
+        total_sum = sum_routine + sum_reasoning
+        
+        if total_weight > 0:
+            return total_sum / total_weight
+        else:
+            # Fallback if no weights (should not happen)
+            return 0.0
 
-    # Total Score Calculation (New v1.1 Formula)
-    result["Total Score"] = (result["Routine Score"] + result["Reasoning Score"]) / 2
+    result["Total Score"] = result.apply(calc_weighted_total, axis=1)
 
     # Cost per 1K (Commercial Only)
     # asset_id in stats is the count of tests run
@@ -447,6 +461,10 @@ def calculate_scores(
         else 0,
         axis=1,
     )
+
+    # Remove temporary calculation columns
+    cols_to_drop = ["sum_routine", "sum_reasoning", "total_weight_routine", "total_weight_reasoning"]
+    result = result.drop(columns=[c for c in cols_to_drop if c in result.columns])
 
     # --- Cleanup Renaming ---
     result = result.rename(
