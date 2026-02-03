@@ -8,7 +8,7 @@ Delegates logic to benchmark_modules.code_quality.core.evaluators.
 import sys
 import time
 from pathlib import Path
-from typing import Any, Dict, Optional
+from typing import Any, Dict
 
 # Ensure root directory is in sys.path
 root_dir = Path(__file__).parent.parent.parent
@@ -62,7 +62,11 @@ class CodeQualityTest(BaseTest):
                 temperature=DEFAULT_TEMPERATURE,
                 **kwargs,
             )
-            elapsed = time.time() - start
+            # Use clean execution time (excluding timeouts/retries) if available
+            if hasattr(llm_client, "last_query_duration") and llm_client.last_query_duration > 0:
+                elapsed = llm_client.last_query_duration
+            else:
+                elapsed = time.time() - start
 
             approx_tokens = int(len(response.split()) * TOKEN_MULTIPLIER)
 

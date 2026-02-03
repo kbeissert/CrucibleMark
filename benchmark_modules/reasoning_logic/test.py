@@ -42,7 +42,11 @@ class ReasoningLogicTest(BaseTest):
         response = llm_client.query(
             model, full_prompt, provider=provider, temperature=DEFAULT_TEMPERATURE
         )
-        elapsed = time.time() - start
+        # Use clean execution time (excluding timeouts/retries) if available
+        if hasattr(llm_client, "last_query_duration") and llm_client.last_query_duration > 0:
+            elapsed = llm_client.last_query_duration
+        else:
+            elapsed = time.time() - start
 
         approx_tokens = self._estimate_tokens(response)
 

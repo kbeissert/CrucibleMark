@@ -46,7 +46,7 @@ def test_completeness_checker():
 def test_semantic_matcher():
     response = "Missing installation instructions and setup guide"
     keywords = ["installation", "setup"]
-    assert SemanticMatcher.check_match(response, keywords, 2, "asset_001") == True
+    assert SemanticMatcher.check_match(response, keywords, 2, "asset_001") is True
     print("✓ SemanticMatcher test passed")
 
 if __name__ == "__main__":

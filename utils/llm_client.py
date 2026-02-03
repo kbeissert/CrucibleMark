@@ -43,6 +43,9 @@ class LLMClient:
             config: Optionales Config-Dict (bereits geladen)
         """
         self.config = config or {}
+        
+        # Performance tracking
+        self.last_query_duration = 0.0
 
         # Initialize provider clients
         self.clients = {
@@ -145,15 +148,21 @@ class LLMClient:
                 "default_temperature", DEFAULT_TEMPERATURE
             )
 
+        import time
+
         # 2. Ausführung
         def _call_provider():
-            return self.clients[provider].query(
+            t_start = time.time()
+            res = self.clients[provider].query(
                 model=target_model,
                 prompt=prompt,
                 temperature=temperature,
                 stream_handler=stream_handler,
                 **kwargs,
             )
+            # Only record time if call succeeds (returns without exception)
+            self.last_query_duration = time.time() - t_start
+            return res
 
         # 3. Führe mit Retry-Logik aus
         response_text = self.retry_handler.execute_with_retry(

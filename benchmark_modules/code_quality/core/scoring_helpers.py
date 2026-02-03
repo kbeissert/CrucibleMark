@@ -3,7 +3,7 @@ Scoring Helper Methods for Code Quality Evaluation.
 Contains all check methods (regex, keyword, semantic, etc.).
 """
 
-from typing import Any, Dict, List, Tuple
+from typing import Any, Dict, Tuple
 import re
 from utils.similarity import SemanticSimilarity
 
