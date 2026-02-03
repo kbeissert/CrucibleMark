@@ -42,11 +42,11 @@ Most LLM benchmarks focus on academic metrics (MMLU, HumanEval) that don't trans
 ### Hybrid Scoring
 - **Automated Metrics:** Pattern matching, keyword checks
 - **Manual Review:** For subjective quality (UX, tone)
-- **Comparative Scoring:** vs. Reference Models (mistral-large/medium)
+- **Absolute Standards:** Gold/Silver/Bronze badges (v1.1)
 
 ### Rich Output
 - **CSV Exports:** Detailed per-test results
-- **Leaderboard:** Cross-model comparison
+- **Leaderboard:** Decision-making tool with Speed Classes & Skill Profiles
 - **Progress Tracking:** Resume interrupted runs
 - **Cost Tracking:** Token usage & API costs
 
@@ -263,16 +263,15 @@ X-Axis: -10 (Left) to +10 (Right)
 Y-Axis: -10 (Libertarian) to +10 (Authoritarian)
 ```
 
-#### 3. **Tier-Weighted Score**
+#### 3. **Total Score (Balanced Average)**
 ```
-Final Score = (Tier1 × 0.3) + (Tier2 × 0.4) + (Tier3 × 0.3)
+Total Score = (Routine Score + Reasoning Score) / 2
 ```
 
 ### Performance Metrics
-- **Execution Time:** Per-test and total
-- **Token Usage:** For cost estimation
-- **Success Rate:** % of tests passed
-- **Tier Distribution:** Performance across difficulty levels
+- **Speed Class:** Fast (<40s), Medium, Slow (>80s)
+- **Performance/s:** Quality points per second execution time
+- **Cost per 1K:** Normalized API cost (commercial models only)
 
 ---
 
