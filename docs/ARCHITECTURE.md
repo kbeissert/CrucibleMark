@@ -152,7 +152,21 @@ class LLMClient:
 
 ## 🧮 Layer 3: Scoring Engine
 
-### Hybrid-Ansatz (Keyword + Semantic)
+### 1. Granular Rubric Scoring (v2.0)
+Genutzt für **Reasoning Modules** (Tier 1-2). Ersetzt binäre Scores durch partielle Punktevergabe basierend auf Rubriken.
+
+```python
+RUBRICS = {
+    'reasoning_5c_001': {
+        'problem_recognition': {'weight': 20, 'keywords': [...]},
+        'appropriate_refusal': {'weight': 40, 'keywords': [...]},
+        # ...
+    }
+}
+```
+
+### 2. Hybrid-Ansatz (Keyword + Semantic)
+Genutzt für **Standard Modules** (Code Quality, UX Writing).
 
 ```python
 def hybrid_score(response: str, asset: Dict) -> float:

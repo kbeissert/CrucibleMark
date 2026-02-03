@@ -13,7 +13,7 @@ from benchmark_modules.reasoning_logic.core.constants import (
     SYSTEM_PROMPT_REASONING,
     MODEL_REASONING_CAPABILITIES,
 )
-from benchmark_modules.reasoning_logic.core.evaluators import ReasoningEvaluator
+from benchmark_modules.reasoning_logic.core.evaluators import ReasoningEvaluator, RUBRICS
 
 
 class ReasoningLogicTest(BaseTest):
@@ -67,7 +67,22 @@ class ReasoningLogicTest(BaseTest):
         Delegates scoring to ReasoningEvaluator.
         """
         evaluator = ReasoningEvaluator(self.asset)
-        return evaluator.score_response(response)
+        eval_result = evaluator.score_response(response)
+
+        # Flatten breakdown for CSV (Granular Scoring Support)
+        if "category_scores" in eval_result:
+            asset_id = self.asset["metadata"]["id"]
+            rubric = RUBRICS.get(asset_id, {})
+
+            for key, data in eval_result["category_scores"].items():
+                achieved = data["achieved"]
+                # Try to get max weight from rubric
+                max_weight = rubric.get(key, {}).get("weight", "??")
+                
+                # Add flattened key to result (e.g., 'problem_recognition': '20.0/20')
+                eval_result[key] = f"{achieved}/{max_weight}"
+
+        return eval_result
 
     def get_system_prompt(self) -> str:
         """
