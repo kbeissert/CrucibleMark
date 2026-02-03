@@ -106,17 +106,26 @@ RUBRICS = {
 
 
 def calculate_dimension_score(response: str, keywords: list[str], max_weight: int) -> float:
-    """Proportional keyword matching with partial credit."""
+    """Proportional keyword matching with partial credit (v2.1 Stricter)."""
     if not keywords:
         return 0.0
     
     matches = sum(1 for kw in keywords if kw.lower() in response.lower())
     match_ratio = matches / len(keywords)
 
-    if match_ratio >= 0.5 or matches >= 2:  # Adjusted threshold for flexibility
+    # Stricter thresholds for better discrimination (v2.1)
+    # - 80%+ keywords: 100% credit
+    # - 60-79% keywords: 75% credit
+    # - 40-59% keywords: 50% credit
+    # - <40% keywords: 0% credit
+
+    if match_ratio >= 0.80:
         return float(max_weight)
-    elif match_ratio >= 0.25 or matches >= 1:
-        return float(max_weight * 0.6)
+    elif match_ratio >= 0.60:
+        return float(max_weight * 0.75)
+    elif match_ratio >= 0.40:
+        return float(max_weight * 0.50)
+    
     return 0.0
 
 
@@ -127,7 +136,7 @@ def score_granular_rubric(response: str, asset_id: str) -> tuple[float, dict[str
         return 0.0, {}, ["Error: Missing Rubric"]
     
     scores = {}
-    details = []
+    details = [f"ℹ️ Algorithm: v2.1 Stricter Matching"]
     
     for dimension, config in rubric.items():
         weight = config['weight']
