@@ -129,7 +129,7 @@ def _get_row_contribution(
     return (
         pct * float(def_contrib.get("routine", 0.0)),
         pct * float(def_contrib.get("reasoning", 0.0)),
-    )    
+    )
 
 
 def _calculate_group_scores(df: pd.DataFrame, modules_config: Dict[str, Any]) -> pd.DataFrame:
@@ -215,9 +215,11 @@ def _aggregate_basic_stats(df: pd.DataFrame, modules_config: Dict[str, Any]) -> 
     # 1. Base Stats (Presence, Time) - From ALL valid runs (scoring + info)
     # This ensures models with ONLY info modules (like Political Compass) are listed.
     base_aggs = {
-        "execution_time": "mean", 
+        "execution_time": "mean",
         "asset_id": "count"
     }
+    if "cost_usd" in df.columns:
+        base_aggs["cost_usd"] = "sum"
     if "timestamp" in df.columns:
         base_aggs["timestamp"] = "max"
 
@@ -229,12 +231,12 @@ def _aggregate_basic_stats(df: pd.DataFrame, modules_config: Dict[str, Any]) -> 
 
     # 2. Scoring Stats (Percentage) - From SCORING runs only
     scoring_df = df[df.apply(is_scoring_asset, axis=1)]
-    
+
     if not scoring_df.empty:
         score_aggs = {"percentage": "mean"}
         if "performance_ratio" in df.columns:
             score_aggs["performance_ratio"] = "mean"
-            
+
         score_stats = (
             scoring_df.groupby(["model", "model_version", "type"])
             .agg(score_aggs)
@@ -315,11 +317,12 @@ def calculate_scores(
         modules_config: Configuration dictionary for active modules
 
     Returns:
-        Tuple[pd.DataFrame, pd.DataFrame]: 
+        Tuple[pd.DataFrame, pd.DataFrame]:
             1. Main leaderboard stats (model-level)
             2. Category stats (stats per module category)
     """
 
+    # pylint: disable=too-many-locals,too-many-statements
     df_success = df[df["status"] == "success"].copy()
 
     # --- Performance Ratio Calculation ---
@@ -356,12 +359,12 @@ def calculate_scores(
     stats = _aggregate_basic_stats(df_success, modules_config)
     # Note: uses Full DF (incl non-scoring)
     run_counts = _calculate_run_counts(df_success, modules_config)
-    
+
     # Merge Counts
     result = pd.merge(
-        stats, 
-        run_counts, 
-        on=["model", "model_version", "type"], 
+        stats,
+        run_counts,
+        on=["model", "model_version", "type"],
         how="left"
     )
 
@@ -382,15 +385,52 @@ def calculate_scores(
     )
     result = pd.merge(result, cat_stats, on=["model", "model_version"], how="left")
 
-    # --- Routine vs Reasoning ---
-    group_stats = _calculate_group_scores(df_success, modules_config)
-    if not group_stats.empty:
-        result = pd.merge(result, group_stats, on=["model", "model_version"], how="left")
-    
+    # --- Routine vs Reasoning (v1.1: Category Averaging) ---
+    # We use simpler logic: Average of Module Scores.
+    # Reasoning = Logical Reasoning module. Routine = All other scoring modules.
+
+    cat_cols = [c for c in cat_stats.columns if c not in ["model", "model_version"]]
+    # Heuristic: "Reasoning" in name -> Reasoning Score. Else -> Routine Score.
+    reasoning_cats = [c for c in cat_cols if "Reasoning" in c]
+    routine_cats = [c for c in cat_cols if "Reasoning" not in c]
+
+    def get_routine_score(row):
+        vals = [row[c] for c in routine_cats if pd.notna(row.get(c))]
+        return sum(vals) / len(vals) if vals else 0.0
+
+    def get_reasoning_score(row):
+        vals = [row[c] for c in reasoning_cats if pd.notna(row.get(c))]
+        return sum(vals) / len(vals) if vals else 0.0
+
+    result["Routine Score"] = result.apply(get_routine_score, axis=1)
+    result["Reasoning Score"] = result.apply(get_reasoning_score, axis=1)
+
+    # Ensure they are not NaNs (though function returns 0.0)
+    result["Routine Score"] = result["Routine Score"].fillna(0.0)
+    result["Reasoning Score"] = result["Reasoning Score"].fillna(0.0)
+
     # Fill defaults
     for col in ["Routine Score", "Reasoning Score"]:
         if col not in result.columns:
             result[col] = 0.0
+
+    # Total Score Calculation (New v1.1 Formula)
+    result["Total Score"] = (result["Routine Score"] + result["Reasoning Score"]) / 2
+
+    # Cost per 1K (Commercial Only)
+    # asset_id in stats is the count of tests run
+    if "cost_usd" in result.columns and "asset_id" in result.columns:
+        def calc_cost(row):
+            cost = row.get("cost_usd")
+            count = row.get("asset_id")
+            if pd.isna(cost) or pd.isna(count) or count == 0:
+                return None
+            # Only calculate if cost > 0 or explicitly Commercial
+            if cost == 0 and str(row.get("type", "")).lower() != "commercial":
+                return None
+            return round((cost / count) * 1000, 2)
+
+        result["Cost per 1K"] = result.apply(calc_cost, axis=1)
 
     # Efficiency Index
     result["Efficiency_Index"] = result.apply(
@@ -413,8 +453,10 @@ def calculate_scores(
     # --- Classification ---
     result = _apply_classification(result)
 
-    # Sort
-    if "Overall Score" in result.columns:
+    # Sort by Total Score (v1.1)
+    if "Total Score" in result.columns:
+        result = result.sort_values("Total Score", ascending=False)
+    elif "Overall Score" in result.columns:
         result = result.sort_values("Overall Score", ascending=False)
 
     return result, cat_stats
