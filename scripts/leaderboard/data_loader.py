@@ -90,6 +90,8 @@ def load_golden_references() -> Dict[str, float]:
 
     return refs
 
+
+def _process_csv(dfs: List[pd.DataFrame], filepath: Path, type_label: str) -> None:
     """
     Helper to process a single CSV File and append to list of DataFrames.
 
