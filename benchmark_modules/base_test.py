@@ -90,6 +90,13 @@ class BaseTest(ABC):
         # Validiere Scoring-Gewichte
         if "scoring" in self.asset:
             scoring = self.asset["scoring"]
+            
+            # SCORING V2.0 EXCEPTION:
+            # If method is "rubric" (Granular Python Scoring), weights are defined in code code (RUBRICS).
+            # We skip the YAML weight sum validation in this case.
+            if scoring.get("method") == "rubric":
+                return
+
             # Use total_points from asset if available, else default to constant
             expected_total = scoring.get(
                 "total_points", TOTAL_SCORING_WEIGHT

@@ -22,6 +22,3 @@ expected_output:
 scoring:
   method: "rubric"
   max_score: 100
-  # Dummy criteria to pass BaseTest schema validation (sum must be 100)
-  validation_placeholder:
-    weight: 100
