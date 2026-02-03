@@ -200,7 +200,7 @@ def _calculate_group_scores(df: pd.DataFrame, modules_config: Dict[str, Any]) ->
 # ==============================================================================
 
 def _aggregate_basic_stats(df: pd.DataFrame, modules_config: Dict[str, Any]) -> pd.DataFrame:
-    """Aggregates percentage, time and counts."""
+    """Aggregates percentage, time and counts. Handles non-scoring modules correctly."""
 
     # Filter for scoring assets only
     cat_to_scoring = {}
@@ -212,19 +212,48 @@ def _aggregate_basic_stats(df: pd.DataFrame, modules_config: Dict[str, Any]) -> 
         cat = row.get("category", "")
         return cat_to_scoring.get(cat, True)
 
-    scoring_df = df[df.apply(is_scoring_asset, axis=1)]
-
-    aggs = {"percentage": "mean", "execution_time": "mean", "asset_id": "count"}
-    if "performance_ratio" in df.columns:
-        aggs["performance_ratio"] = "mean"
+    # 1. Base Stats (Presence, Time) - From ALL valid runs (scoring + info)
+    # This ensures models with ONLY info modules (like Political Compass) are listed.
+    base_aggs = {
+        "execution_time": "mean", 
+        "asset_id": "count"
+    }
     if "timestamp" in df.columns:
-        aggs["timestamp"] = "max"
+        base_aggs["timestamp"] = "max"
 
-    stats = (
-        scoring_df.groupby(["model", "model_version", "type"])
-        .agg(aggs)
+    base_stats = (
+        df.groupby(["model", "model_version", "type"])
+        .agg(base_aggs)
         .reset_index()
     )
+
+    # 2. Scoring Stats (Percentage) - From SCORING runs only
+    scoring_df = df[df.apply(is_scoring_asset, axis=1)]
+    
+    if not scoring_df.empty:
+        score_aggs = {"percentage": "mean"}
+        if "performance_ratio" in df.columns:
+            score_aggs["performance_ratio"] = "mean"
+            
+        score_stats = (
+            scoring_df.groupby(["model", "model_version", "type"])
+            .agg(score_aggs)
+            .reset_index()
+        )
+        # Merge scoring stats into base stats
+        stats = pd.merge(base_stats, score_stats, on=["model", "model_version", "type"], how="left")
+    else:
+        stats = base_stats
+        stats["percentage"] = 0.0
+        if "performance_ratio" in df.columns:
+            stats["performance_ratio"] = 0.0
+
+    # Fill NaNs (for models with only info modules)
+    if "percentage" in stats.columns:
+        stats["percentage"] = stats["percentage"].fillna(0.0)
+    if "performance_ratio" in stats.columns:
+        stats["performance_ratio"] = stats["performance_ratio"].fillna(0.0)
+
     return stats
 
 
@@ -239,7 +268,8 @@ def _calculate_run_counts(df: pd.DataFrame, modules_config: Dict[str, Any]) -> p
             continue
 
         name = mod_data.get("name")
-        if mod_data.get("score_group") != "info":
+        # Only count assets towards expected total if scoring is enabled
+        if mod_data.get("enable_scoring", True):
             expected_assets += mod_data.get("assets_count", 0)
 
         if mod_data.get("display_test_count"):

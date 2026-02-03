@@ -58,6 +58,7 @@ class ReasoningLogicTest(BaseTest):
                 "asset_id": self.asset["metadata"]["id"],
                 "reasoning_capability_score": reasoning_cap,
                 "reasoning_type": reasoning_type,
+                **getattr(llm_client, "last_response_metadata", {}),
             },
         }
 

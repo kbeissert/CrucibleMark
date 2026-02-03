@@ -7,13 +7,13 @@ Handles communication with external LLM providers (Ollama, OpenAI, Anthropic).
 Encapsulates logic for retries, rate limiting, and unified API.
 """
 
-import os
-import time
 import logging
+import os
 import random
-from typing import Optional, Any
+import time
+from typing import Any, Optional
 
-import requests
+import requests  # pylint: disable=import-error
 
 try:
     from openai import OpenAI
@@ -25,8 +25,8 @@ try:
 except ImportError:
     Anthropic = None  # type: ignore
 
-from .models import Question
 from .config import LLM_CONFIGS
+from .models import Question
 
 
 class MockLLMService:
@@ -34,6 +34,7 @@ class MockLLMService:
     Zentrale Mock-Implementierung für alle Tests.
     Simuliert Antworten für Dry-Runs und Tests ohne echte LLM-Kosten.
     """
+
     # pylint: disable=too-few-public-methods
 
     def __init__(self, provider: str = "mock", model: str = "random"):
@@ -47,20 +48,23 @@ class MockLLMService:
             lambda x: f"Ich wähle {x}.",
             lambda x: f"Answer: {x}",
             lambda x: x,
-            lambda x: f"Option {x} ist am besten."
+            lambda x: f"Option {x} ist am besten.",
         ]
         chosen = random.choice(options)
         fmt = random.choice(formats)
         return fmt(chosen)
 
-    def query_raw(self, prompt: str, request_id: str = "unknown", system_prompt: str | None = None) -> str:
+    def query_raw(
+        self, prompt: str, request_id: str = "unknown", system_prompt: str | None = None
+    ) -> str:
         """Mock raw query."""
-        _ = (prompt, request_id, system_prompt) # Unused
+        _ = (prompt, request_id, system_prompt)  # Unused
         return self.query(Question("", "", "", "", "", "", {}))
 
 
 class FrameworkAdapter:
     """Adaptiert den generischen CrucibleMark Client auf das Module-Interface."""
+
     # pylint: disable=too-few-public-methods
 
     def __init__(self, client: Any, provider: str, model: str):
@@ -126,7 +130,9 @@ class LLMInterface:
                     logging.warning("⚠️  WARNUNG: OPENAI_API_KEY nicht gesetzt.")
                 self.client = OpenAI(api_key=api_key)
             except ImportError:
-                logging.error("❌ OpenAI Library nicht installiert. `pip install openai`")
+                logging.error(
+                    "❌ OpenAI Library nicht installiert. `pip install openai`"
+                )
 
         elif self.provider == "anthropic":
             if Anthropic is None:
@@ -137,19 +143,27 @@ class LLMInterface:
                     logging.warning("⚠️  WARNUNG: ANTHROPIC_API_KEY nicht gesetzt.")
                 self.client = Anthropic(api_key=api_key)
             except ImportError:
-                logging.error("❌ Anthropic Library nicht installiert. `pip install anthropic`")
+                logging.error(
+                    "❌ Anthropic Library nicht installiert. `pip install anthropic`"
+                )
 
     def query(self, question: Question) -> Optional[str]:
         """Sendet Frage an LLM und gibt rohe Antwort zurück."""
         prompt = question.to_prompt()
         return self.query_raw(prompt, str(question.id))
 
-    def query_raw(self, prompt: str, request_id: str = "unknown", system_prompt: str | None = None) -> Optional[str]:
+    def query_raw(
+        self, prompt: str, request_id: str = "unknown", system_prompt: str | None = None
+    ) -> Optional[str]:
         """Sendet rohen Prompt an LLM mit Retry-Logik."""
         return self._query_with_retry(prompt, request_id, system_prompt=system_prompt)
 
     def _query_with_retry(
-        self, prompt: str, request_id: str, max_retries: int = 3, system_prompt: str | None = None
+        self,
+        prompt: str,
+        request_id: str,
+        max_retries: int = 3,
+        system_prompt: str | None = None,
     ) -> Optional[str]:
         """Führt LLM-Request mit Retry und Rate-Limiting aus."""
 
@@ -188,7 +202,9 @@ class LLMInterface:
 
             except Exception as e:  # pylint: disable=broad-exception-caught
                 wait_time = 2**attempt
-                logging.warning("  ⚠️  Fehler (Versuch %d/%d): %s", attempt + 1, max_retries, e)
+                logging.warning(
+                    "  ⚠️  Fehler (Versuch %d/%d): %s", attempt + 1, max_retries, e
+                )
                 logging.error(
                     "ERROR (%s/%s) - ID: %s: %s",
                     self.provider,
@@ -223,7 +239,9 @@ class LLMInterface:
         return resp.json()["response"]
 
     def _call_openai(self, prompt: str, system_prompt: str | None = None) -> str:
-        sys_msg = system_prompt if system_prompt else "Du bist ein neutraler Beobachter."
+        sys_msg = (
+            system_prompt if system_prompt else "Du bist ein neutraler Beobachter."
+        )
 
         response = self.client.chat.completions.create(
             model=self.model,
