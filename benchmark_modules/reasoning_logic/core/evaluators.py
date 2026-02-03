@@ -58,44 +58,44 @@ RUBRICS = {
         'problem_recognition': {
             'weight': 20,
             'description': 'Identifies constraints (3 meetings, 2 time slots)',
-            'keywords': ['constraint', 'impossible', 'conflict', 'overlap', '3 meetings', '2 hours']
+            'keywords': ['three', 'meetings', 'two', 'hours', 'impossible']
         },
         'logical_analysis': {
             'weight': 25,
-            'description': "Explains WHY it's impossible (pigeonhole principle)",
-            'keywords': ['pigeonhole', 'cannot fit', '3 into 2', 'insufficient time', 'duration']
+            'description': "Explains WHY it's impossible",
+            'keywords': ['fit', 'insufficient', 'duration', 'conflict']
         },
         'appropriate_refusal': {
             'weight': 40,
             'description': 'Refuses invalid request instead of forcing solution',
-            'keywords': ['cannot schedule', 'impossible', 'not feasible', 'unable', 'decline']
+            'keywords': ['cannot', 'impossible', 'unable', 'not feasible']
         },
         'alternative_proposal': {
             'weight': 15,
-            'description': 'Suggests workarounds (overlap, reschedule)',
-            'keywords': ['alternative', 'workaround', 'different time', 'reschedule', 'shorten', 'simultaneous']
+            'description': 'Suggests workarounds',
+            'keywords': ['alternative', 'reschedule', 'overlap', 'shorten']
         }
     },
     'reasoning_5b_001': {
         'problem_identification': {
             'weight': 20,
-            'description': 'Identifies the root cause domain (database vs API)',
-            'keywords': ['database', 'db', 'query', 'sql', 'high cpu', 'bottleneck']
+            'description': 'Identifies the root cause domain',
+            'keywords': ['database', 'query', 'cpu', 'slow']
         },
         'cross_domain_analysis': {
             'weight': 30,
-            'description': 'Traces issue across layers (API -> DB -> Performance)',
-            'keywords': ['cascade', 'layer', 'propagate', 'underlying cause', 'root cause']
+            'description': 'Traces issue across layers',
+            'keywords': ['root', 'cause', 'underlying', 'layer']
         },
         'solution_quality': {
             'weight': 30,
-            'description': 'Proposes correct fix (index, cache, optimize)',
-            'keywords': ['index', 'cache', 'optimize', 'query plan', 'sharding', 'replica']
+            'description': 'Proposes correct fix',
+            'keywords': ['index', 'cache', 'optimize', 'performance']
         },
         'reasoning_depth': {
             'weight': 20,
             'description': 'Explains WHY solution works',
-            'keywords': ['because', 'reduces', 'improves', 'speeds up', 'efficiency', 'load']
+            'keywords': ['reduce', 'improve', 'faster', 'efficient']
         }
     },
     'reasoning_5d_001': {
@@ -146,22 +146,22 @@ RUBRICS = {
         'problem_understanding': {
             'weight': 25,
             'description': 'Understands the Monty Hall setup',
-            'keywords': ['door', 'goat', 'car', 'reveal', 'host', 'choice']
+            'keywords': ['door', 'goat', 'car', 'host']
         },
         'probability_calculation': {
-            'weight': 30,
-            'description': 'Correctly calculates probabilities (1/3 vs 2/3)',
-            'keywords': ['probability', '1/3', '2/3', 'odds', 'chance', 'percent']
+            'weight': 35,
+            'description': 'Correctly calculates probabilities',
+            'keywords': ['probability', '1/3', '2/3', 'chance']
         },
-        'counterintuitive_insight': {
+        'switch_recommendation': {
             'weight': 25,
-            'description': 'Recognizes counterintuitive nature',
-            'keywords': ['counterintuitive', 'surprising', 'unexpected', 'seems wrong', 'paradox']
+            'description': 'Recommends switching doors',
+            'keywords': ['switch', 'door', 'maximize', 'higher']
         },
-        'explanation_clarity': {
-            'weight': 20,
-            'description': 'Explains WHY switching improves odds',
-            'keywords': ['because', 'reason', 'information', 'reveal', 'conditional', 'bayesian']
+        'explanation_quality': {
+            'weight': 15,
+            'description': 'Explains the reasoning',
+            'keywords': ['reveal', 'information', 'update']
         }
     }
 }
