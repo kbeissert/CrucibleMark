@@ -8,7 +8,7 @@ from typing import Any, Dict, Tuple
 import pandas as pd
 
 # Import constants and config logic
-from .config import ROOT_DIR, load_model_registry
+from .config import ROOT_DIR
 from .data_loader import load_golden_references
 
 # Ensure root dir in path for local imports
@@ -17,71 +17,6 @@ if str(ROOT_DIR) not in sys.path:
 
 # Removed unused imports from utils.module_registry as functionality is passed via config
 
-try:
-    # Attempt absolute import first (if running from root)
-    from scripts.classify_generation import GenerationClassifier
-except ImportError:
-    try:
-        # Fallback to local import (if running from scripts dir)
-        from classify_generation import GenerationClassifier
-    except ImportError:
-        GenerationClassifier = None
-
-
-# ==============================================================================
-# 1. HELPERS: GENERATION CLASSIFICATION
-# ==============================================================================
-
-def _suggest_generation(model_name: str) -> str:
-    """Heuristic for generation detection (Fallback)."""
-    name = str(model_name).lower()
-    if any(t in name for t in ["o1", "o3", "deepseek-r1:671b", "deepseek-r1-671b"]):
-        return "Gen 3 (Pure Reasoner)"
-    if any(t in name for t in ["deepseek-r1", "phi4", "phi-4", "qwq", "reasoning"]):
-        return "Gen 2 (Distilled Reasoner)"
-    return "Gen 1 (Pattern Matcher)"
-
-
-def _get_model_generation(model_name: str) -> str:
-    """Gets Generation from Registry (Cached load) or suggests it."""
-    registry = load_model_registry()
-    models = registry.get("models", {})
-    if model_name in models:
-        return models[model_name].get("generation", "Unknown")
-    return _suggest_generation(model_name)
-
-
-def _apply_classification(result: pd.DataFrame) -> pd.DataFrame:
-    """Applies generation classification to the result DataFrame."""
-    if "model" not in result.columns:
-        return result
-
-    classifier = GenerationClassifier() if GenerationClassifier else None
-    if classifier:
-        def get_gen(row):
-            stats = {
-                "avg_time": row.get("Avg Time (s)", 0),
-                "reasoning_score": row.get("Reasoning Score", 0),
-                "code_quality": row.get("Code Quality Audit", 0),
-            }
-            res = classifier.classify(row["model"], stats)
-            if res.get("flag_for_review"):
-                print(f"⚠️  REVIEW NEEDED: {row['model']} -> {res['reason']}")
-            return res["generation"]
-
-        result["Generation"] = result.apply(get_gen, axis=1)
-    else:
-        result["Generation"] = result["model"].apply(_get_model_generation)
-
-    # Reorder Generation column
-    cols_order = result.columns.tolist()
-    if "Generation" in cols_order and "model" in cols_order:
-        cols_order.remove("Generation")
-        model_index = cols_order.index("model")
-        cols_order.insert(model_index + 1, "Generation")
-        result = result[cols_order]
-
-    return result
 
 
 # ==============================================================================
@@ -475,9 +410,6 @@ def calculate_scores(
             "type": "Type",
         }
     )
-
-    # --- Classification ---
-    result = _apply_classification(result)
 
     # Sort by Total Score (v1.1)
     if "Total Score" in result.columns:
