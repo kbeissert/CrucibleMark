@@ -24,7 +24,13 @@ def export_to_csv(leaderboard: pd.DataFrame, cat_cols: List[str]) -> None:
 
     # Rename for export if not already done (though main script does it)
     if "Overall Score" in df_export.columns:
-        df_export = df_export.rename(columns={"Overall Score": "Total Score"})
+        if "Total Score" in df_export.columns:
+            # v1.1 Fix: Total Score (Routine/Reasoning split) already exists.
+            # Drop legacy "Overall Score" (raw mean) to avoid duplicate columns.
+            df_export = df_export.drop(columns=["Overall Score"])
+        else:
+            # Legacy: Rename Overall Score to Total Score if it's the only one
+            df_export = df_export.rename(columns={"Overall Score": "Total Score"})
 
     cols = [
         "Rank",
