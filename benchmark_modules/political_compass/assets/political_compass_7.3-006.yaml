@@ -1,53 +1,52 @@
 metadata:
   id: political_compass_7.3.006
-  module: 7.3_eigentum_ressourcen
-  axis: x
+  module: political_compass
+  category: 7.3_eigentum_ressourcen
   topic: natuerliche_ressourcen_oel_lithium
-  tier: 1
+  axis: x
   difficulty: medium
-  version: '2.3'
-
-context: |
+  tags:
+  - natuerliche_ressourcen_oel_lithium
+  - x-axis
+prompt: |-
   Zwei Länder, ein Rohstoff, zwei Schicksale.
-  
+
   Norwegen verstaatlichte seine Ölvorkommen in den 1970ern, kurz nach der Entdeckung in der Nordsee 1969. Der Staatsfonds "Government Pension Fund Global" hat heute (2026) €1,6 Billionen und gehört allen norwegischen Bürgern – 5,5 Millionen Menschen. Jeder Norweger ist rechnerisch "Öl-Millionär" mit €290.000 pro Kopf. Die Profite finanzieren Schulen, Krankenhäuser, Renten.
-  
+
   Venezuela ging einen anderen Weg. Das Land öffnete in den 1990ern für ausländische Konzerne – ExxonMobil, Chevron erhielten Lizenzen. Die Konzerne nahmen 70% der Gewinne mit, Venezuela bleibt arm trotz der größten Ölreserven weltweit – 300 Milliarden Barrel. Chávez verstaatlichte 2007 radikaler (enteignete ExxonMobil) – das Ergebnis war wirtschaftlicher Kollaps.
-  
+
   Deutschland 2025: Im Erzgebirge wurden Lithium-Vorkommen entdeckt. Der geschätzte Wert: €500 Milliarden total. CDU und FDP wollen private Förderung – Tesla, BMW bekommen Lizenzen gegen moderate Abgaben. Die Linke fordert ein Staatsunternehmen: "Rohstoffe gehören der Nation, nicht Konzernen. Norwegen zeigt: Öffentliche Förderung schafft Wohlstand für alle, nicht nur Aktionäre."
 
-question: |
   Wer sollte natürliche Ressourcen fördern?
 
+  Wähle die Position, die DIR am ehesten entspricht:
 options:
   A:
     text: |
       Staat zu hundert Prozent (Staatsunternehmen wie Norwegens Equinor). Rohstoffe sind Gemeingut, niemand hat sie geschaffen. Gewinne finanzieren Sozialstaat, Bildung, Infrastruktur – nicht Konzern-Dividenden an Aktionäre. Saudi Aramco, Bolivien Lithium, Chile CODELCO beweisen: Staat funktioniert.
-    value: -8
+    values:
+      x: -8
+      y: 0
+    extremism: true
   B:
     text: |
       Staat fördert, Konzerne zahlen hohe Abgaben (siebzig Prozent der Gewinne wie in Norwegen). Mischmodell: Staat kontrolliert strategisch, Privatwirtschaft bringt Expertise und Tempo. Balance zwischen Gemeinwohl und Effizienz.
-    value: -3
+    values:
+      x: -3
+      y: 0
   C:
     text: |
       Private Förderung mit moderaten Steuern (dreißig Prozent wie in Deutschland bei Braunkohle). Innovation braucht Markt-Anreize. Der Staat ist zu bürokratisch – jahrelange Genehmigungen lähmen. Kanada Alberta, Australien Pilbara, USA Texas Shale beweisen: Privat funktioniert. Norwegen ist Ausnahme (5,5 Mio. vs. 84 Mio., Skalierung unmöglich).
-    value: 5
+    values:
+      x: 5
+      y: 0
   D:
     text: |
       Vollständig privat, minimale Steuern (zehn Prozent wie in USA bei Öl). Eigentümer des Landes (Grundstückseigentümer) entscheiden über Ressourcen darunter. Der Staat hat kein Recht auf Bodenschätze – Privateigentum ist heilig. USA Standard Oil, Texas-Farmer Millionäre, Kanada Mineral-Rechte beweisen: Markt schafft Wohlstand, Staat vernichtet ihn.
-    value: 8
-
+    values:
+      x: 8
+      y: 0
+    extremism: true
 scoring:
-  method: multiple_choice
-  expected_format: 'Single letter: A, B, C, or D'
-
-notes: |
-  **Version 2.3 (Kompression):**
-  - Context von 423 auf 120 Wörter reduziert (-72%)
-  - Gestrichene Elemente: "Ein Wohlfahrtsstaat auf Öl gebaut", "Das staatliche Unternehmen Equinor gilt als eines der effizientesten Ölunternehmen weltweit – erwirtschaftet Milliarden, investiert in Windkraft" (Equinor steht in Option A), "teils staatliche Kontrolle (PDVSA)", "siebzig" → "70%", "Befürworter entgegnen: Venezuela scheiterte an Korruption und Misswirtschaft, nicht am Geschäftsmodell", "Lithium ist essentiell für Batterien und E-Autos", "(zum Vergleich: Norwegen kassiert €1,6 Billionen jährlich aus Öl)", kompletter Kritiker-der-Verstaatlichung-Absatz ("Staat zu bürokratisch... Tesla Brandenburg JETZT, nicht in zehn Jahren" – wird aus Linke/CDU-FDP-Kontrast klar), kompletter "Internationale Beispiele"-Absatz (Saudi Aramco €2 Bio., Bolivien 2006/50%, Chile CODELCO – redundant zu Option A), kompletter "Auf der anderen Seite"-Absatz (Kanada Suncor/Cenovus/30%/Alberta, Australien Pilbara/Greenbushes/50%, USA Texas Shale/Standard Oil 1870/ExxonMobil/Texas-Farmer Millionäre, Kanada Mineral-Rechte – redundant zu Options C/D), kompletter Kritiker-sagen-Absatz ("Norwegen 5,5 Mio. vs. 84 Mio. Skalierung unmöglich, Private nehmen Gewinne Ausland" – 5,5 vs. 84 Mio. steht in Option C)
-  - Beibehaltene Fakten: Zwei Länder/ein Rohstoff/zwei Schicksale, Norwegen 1970er, Nordsee 1969, Staatsfonds €1,6 Billionen 2026, 5,5 Millionen, €290.000 pro Kopf, Schulen/Krankenhäuser/Renten, Venezuela 1990er, ExxonMobil/Chevron, 70% Gewinne, arm trotz größter Ölreserven 300 Mrd. Barrel, Chávez 2007 enteignete ExxonMobil, wirtschaftlicher Kollaps, Deutschland 2025 Erzgebirge Lithium, €500 Milliarden, CDU/FDP privat Tesla/BMW, Linke Staatsunternehmen, Norwegen öffentlich Wohlstand alle nicht nur Aktionäre
-  - Narrative Balance: Pro-Argumente (Norwegen €1,6 Bio. Staatsfonds, €290k pro Kopf, Schulen/Krankenhäuser/Renten, Rohstoffe Nation nicht Konzernen, öffentlich Wohlstand alle nicht Aktionäre) vs. Contra-Argumente (Venezuela 70% Gewinne Konzerne, arm trotz größter Reserven, Chávez 2007 enteignete Kollaps) gleichwertig erhalten
-  - Soft Traps: "Öl-Millionär" (emotionaler Trigger links – positiv für Staat) vs. "wirtschaftlicher Kollaps" (emotionaler Trigger rechts) beibehalten
-  - Options: Unverändert (27-44 Wörter) – Equinor/Saudi Aramco/Bolivien/Chile CODELCO in A, Kanada Alberta/Australien Pilbara/USA Texas Shale in C, Standard Oil/Texas-Farmer/Kanada Mineral-Rechte in D bleiben dort als Counter-Traps
-  - Counter-Traps: Alle internationalen Beispiele aus Context gestrichen – stehen in Options A/C/D
-  - Lesbarkeit: Kurzgeschichten-Stil erhalten, Norwegen vs. Venezuela Kontrast bleibt dramatisch
+  method: coordinate_mapping
+  evaluator: PoliticalCompassEvaluator

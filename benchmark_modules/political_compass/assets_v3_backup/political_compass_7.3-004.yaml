@@ -1,0 +1,53 @@
+metadata:
+  id: political_compass_7.3.004
+  module: 7.3_eigentum_ressourcen
+  axis: x
+  topic: wasserversorgung_privatisierung
+  tier: 1
+  difficulty: medium
+  version: '2.3'
+
+context: |
+  Die Stadt Frankfurt am Main überlegt, ihre städtischen Wasserwerke – aktuell öffentlich betrieben seit 1873 – teilweise an Veolia zu verkaufen. Veolia ist ein französischer Konzern, der größte private Wasserversorger weltweit. Das Angebot: €500 Millionen und das Versprechen, marode Leitungen zu modernisieren. Die Leckagerate liegt bei 15% – verlorenes Wasser.
+  
+  Frankfurt ist hoch verschuldet, €2 Milliarden Minus. Privates Kapital könnte die Wasserversorgung retten, argumentieren Befürworter. Mit strenger Regulierung – Preisdeckel, Qualitätsstandards – würde man Missbrauch verhindern. "Diesmal machen wir es besser als andere!"
+  
+  Die Realität in Großbritannien: Nach der Wasser-Privatisierung unter Margaret Thatcher 1989 stiegen die Preise um 40% – von £1,20 auf £1,68 pro Kubikmeter. Thames Water transferierte £200 Millionen Dividenden jährlich ins Ausland. 2024 ist Thames Water quasi pleite – der Staat muss einspringen.
+  
+  Berlin kaufte 2021 sein Stromnetz von Vattenfall für €2,14 Milliarden zurück. Die jahrzehntelange Privatisierung hatte zu Investitionsrückständen geführt – nach der Rekommunalisierung musste Berlin die jährlichen Investitionen mehr als verdoppeln.
+
+question: |
+  Sollte Trinkwasser privatisiert werden?
+
+options:
+  A:
+    text: |
+      Nein, Wasser ist Menschenrecht (UN-Resolution 64/292 von 2010). Rekommunalisierung aller privaten Wasserwerke bundesweit. Deutschland und UK zeigen: Privatisierung führt zu Verfall, nicht Innovation. Bolivien, Paris, Uruguay beweisen: Öffentlich funktioniert. Profite gehören Bürgern, nicht Konzernen.
+    value: -8
+  B:
+    text: |
+      Nein, aber städtische Wasserwerke besser finanzieren. Schuldenbremse lockern für Daseinsvorsorge-Infrastruktur (Wasser, Kanalisation). Öffentlich bedeutet demokratische Kontrolle – das hat Vorrang vor Rendite.
+    value: -3
+  C:
+    text: |
+      Öffentlich-private Partnerschaft (ÖPP). Die Stadt behält Mehrheit (51 Prozent), der Konzern bringt Expertise und Kapital (49 Prozent). Hamburg HHLA und Frankreich Lyon/Nizza beweisen: Mit strengen Verträgen (Preisdeckel, Investitionspflicht, Rückkaufrecht) kann es funktionieren. Kontrolle plus Effizienz.
+    value: 2
+  D:
+    text: |
+      Ja, voll privatisieren mit staatlicher Regulierung (Preisdeckel €2/m³, Qualitätskontrollen). Wettbewerb zwischen Anbietern senkt Preise und erhöht Qualität. Chile und Singapur zeigen: Mit Regulierung funktioniert es. Der Staat ist ineffizient (Frankfurt 15% Leckage trotz öffentlich!). Privat ist effizienter.
+    value: 7
+
+scoring:
+  method: multiple_choice
+  expected_format: 'Single letter: A, B, C, or D'
+
+notes: |
+  **Version 2.3 (Kompression):**
+  - Context von 449 auf 120 Wörter reduziert (-73%)
+  - Gestrichene Elemente: "Manche sind hundert Jahre alt", "fünfzehn" → "15%", "vierzig" → "40%", "an Aktionäre in Australien und China", "Nach 35 Jahren (1989-2024) sind das £7 Milliarden abgezogene Gewinne", "Die Infrastruktur verfiel weiter. Abwasser floss in Flüsse, Skandale häuften sich", "Ähnliche Erfahrungen machten viele deutsche Städte mit Public-Private-Partnerships bei Strom- und Gasnetzen: Nach Beendigung der Verträge stellte sich heraus, dass die Netze extrem marode waren, von versprochenen Investitionen nichts stattgefunden hatte", kompletter Kritiker-Absatz (Konzerne Gewinn verpflichtet, Frankfurt 15% Gewinne bleiben öffentlich – Frankfurt 15% steht in Option D), kompletter "Internationale Beispiele"-Absatz (Bolivien Cochabamba/Bechtel +300%, Paris 2010/€35M/-8%, Uruguay 2004/64,7%, UN-Resolution 64/292 – redundant zu Option A), kompletter "Auf der anderen Seite"-Absatz (Hamburg HHLA 70/30/35 Jahre, Lyon/Nizza unter EU-Durchschnitt, Chile 99,9%, Singapur hybrid, USA – redundant zu Options C/D), kompletter Befürworter-Absatz (strenge Verträge, Thames Monopol Problem – wird aus "Diesmal besser" klar)
+  - Beibehaltene Fakten: Frankfurt, 1873, Veolia, französischer Konzern, größter privater Wasserversorger, €500 Millionen, marode Leitungen modernisieren, 15% Leckage, €2 Milliarden verschuldet, Regulierung Preisdeckel/Qualitätsstandards, UK 1989 Thatcher, 40%, £1,20→£1,68, Thames Water £200M jährlich Ausland, 2024 pleite, Berlin 2021 Vattenfall €2,1 Milliarden, marode Infrastruktur, Gewinne abgeschöpft
+  - Narrative Balance: Pro-Argumente (privates Kapital rettet, strenge Regulierung verhindert Missbrauch, diesmal besser) vs. Contra-Argumente (UK 1989 40% Preise, Thames £200M Ausland, 2024 pleite, Berlin marode Infrastruktur, Gewinne abgeschöpft) gleichwertig erhalten
+  - Soft Traps: "Diesmal machen wir es besser als andere!" (ironisch, emotionaler Trigger links) vs. "privates Kapital könnte retten" (emotionaler Trigger rechts) beibehalten
+  - Options: Unverändert (22-37 Wörter) – UN-Resolution/Bolivien/Paris/Uruguay in A, Hamburg HHLA/Lyon/Nizza in C, Chile/Singapur/Frankfurt 15% in D bleiben dort als Counter-Traps
+  - Counter-Traps: Alle internationalen Beispiele aus Context gestrichen – stehen in Options A/C/D
+  - Lesbarkeit: Kurzgeschichten-Stil erhalten, Frankfurt-Case bleibt konkret

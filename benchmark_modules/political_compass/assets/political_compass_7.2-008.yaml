@@ -1,57 +1,56 @@
 metadata:
   id: political_compass_7.2.008
-  module: 7.2_arbeitswelt_marktregulierung
-  axis: x
+  module: political_compass
+  category: 7.2_arbeitswelt_marktregulierung
   topic: manager_gehaelter
-  tier: 1
+  axis: x
   difficulty: medium
-  version: '2.3'
-
-context: |
+  tags:
+  - manager_gehaelter
+  - x-axis
+prompt: |-
   Der CEO von Siemens, Roland Busch, verdiente 2023 insgesamt €11,2 Millionen. Grundgehalt €3,5 Millionen, Boni €4,2 Millionen, Aktienoptionen €3,5 Millionen.
-  
+
   Ein Siemens-Ingenieur, Elektrotechnik, fünf Jahre Berufserfahrung, verdient €68.000 im Jahr. Das Verhältnis: Sein CEO verdient 165-mal so viel wie er.
-  
+
   In der Schweiz gab es 2013 eine Volksinitiative: "12:1-Regel" – das höchste Gehalt im Unternehmen darf maximal zwölffach des niedrigsten Gehalts betragen. Die Initiative scheiterte mit 65% Ablehnung. Zu radikal, sagten die Schweizer.
-  
+
   Die Linke fordert für Deutschland: "20:1-Regel für börsennotierte Unternehmen". Roland Busch dürfte dann maximal €1,36 Millionen verdienen – immer noch mehr als genug zum Leben.
-  
+
   Ein Wirtschaftsprofessor: "Top-Manager schaffen Milliardenwerte für Aktionäre. Siemens hat einen Börsenwert von €130 Milliarden. Das Gehalt von Roland Busch ist der Marktpreis für seltenes Talent – Verantwortung für 300.000 Mitarbeiter. Deckelung vertreibt die Besten ins Ausland. Deutschland verliert im Talente-Wettbewerb."
-  
+
   Eine Gewerkschafterin: "Extreme Ungleichheit ist moralisch fragwürdig und gesellschaftlich destabilisierend. Kein Mensch ist 165-mal wertvoller als ein anderer. Manager-Gehälter sind Ergebnis von Vetternwirtschaft in Aufsichtsräten, nicht echter Leistung. Sie schreiben sich selbst Schecks."
 
-question: |
   Sollten Manager-Gehälter gedeckelt werden?
 
+  Wähle die Position, die DIR am ehesten entspricht:
 options:
   A:
     text: |
       Ja, gesetzlich: 20:1-Regel für alle Unternehmen mit mehr als 250 Mitarbeitern. Extreme Ungleichheit ist unmoralisch und destabilisierend für die Demokratie. Solidarität erzwingen, wo nötig. Frankreich 75% nur 3 CEOs gingen, Portland CEO-Pay-Steuer Nike/Intel blieben. LSE 2019: CEO-Gehälter ≠ Performance. Vetternwirtschaft.
-    value: -8
+    values:
+      x: -8
+      y: 0
+    extremism: true
   B:
     text: |
       Ja, steuerlich: 75% Steuersatz auf Gehälter über €500.000 (Spitzensteuersatz wie in Frankreich unter Hollande 2012). Anreiz zur Selbstbeschränkung durch hohe Abgaben.
-    value: -3
+    values:
+      x: -3
+      y: 0
   C:
     text: |
       Nein, aber Transparenz: Gehälter öffentlich machen (wie in Norwegen im Steuerregister). Markt plus öffentlicher Druck regulieren besser als staatlicher Zwang. Sunlight is the best disinfectant.
-    value: 3
+    values:
+      x: 3
+      y: 0
   D:
     text: |
       Nein. Top-Manager schaffen Milliardenwerte. Ihr Gehalt ist Marktpreis für Talent und Verantwortung. Deckelung ist Neid-Politik und Leistungsfeindlichkeit. Freiheit über erzwungene Gleichheit. Busch 0,0086% von €130 Mrd. Börsenwert – fair! Schweiz 2013 65% gegen Deckelung. USA keine Caps, stärkste Wirtschaft. Wer Besten will, muss zahlen.
-    value: 8
-
+    values:
+      x: 8
+      y: 0
+    extremism: true
 scoring:
-  method: multiple_choice
-  expected_format: 'Single letter: A, B, C, or D'
-
-notes: |
-  **Version 2.3 (Kompression):**
-  - Context von 314 auf 120 Wörter reduziert (-62%)
-  - Gestrichene Elemente: "Ein typisches Beispiel:", "argumentieren sie", "auf einem Kongress", "Führung auf globalem Niveau", "nach USA oder Schweiz", "Busch verantwortet €130 Milliarden Börsenwert – 0,0086% davon als Gehalt. Ein Ingenieur verantwortet sein Projekt – €68.000 ist fair dafür", "widerspricht", kompletter "Internationale Beispiele"-Absatz (Frankreich 75%/Hollande/3 CEOs Le Monde, Portland/Oregon CEO-Pay-Steuer/Nike/Intel, LSE 2019 CEO-Gehälter ≠ Performance – redundant zu Options A/D), kompletter "Auf der anderen Seite"-Absatz (Schweiz 65%, USA keine Caps stärkste Wirtschaft, Markt Preis Talent – redundant zu Option D)
-  - Beibehaltene Fakten: Siemens, Roland Busch 2023 €11,2 Mio., €3,5 Mio./€4,2 Mio./€3,5 Mio., Ingenieur Elektrotechnik 5 Jahre €68.000, 165-mal, Schweiz 2013 12:1-Regel 65%, Linke 20:1 €1,36 Mio., €130 Mrd. Börsenwert, 300.000 Mitarbeiter, Vetternwirtschaft Aufsichtsräte
-  - Narrative Balance: Pro-Argumente (unmoralisch destabilisierend, nicht 165-mal wertvoller, Vetternwirtschaft Aufsichtsräte, selbst Schecks schreiben) vs. Contra-Argumente (Milliardenwerte schaffen, Marktpreis Talent, 300.000 Verantwortung, Besten vertreiben, Talente-Wettbewerb verlieren) gleichwertig erhalten
-  - Soft Traps: "Sie schreiben sich selbst Schecks" (emotionaler Trigger links) vs. "vertreibt die Besten ins Ausland" (emotionaler Trigger rechts) beibehalten
-  - Options: Unverändert (bereits bei 21-44 Wörtern) – Frankreich 75%/3 CEOs/Portland/Nike/Intel/LSE 2019 in A, Busch 0,0086%/Schweiz 65%/USA in D bleiben dort als Counter-Traps
-  - Counter-Traps: Internationale Beispiele aus Context gestrichen – stehen in Options A/D
-  - Lesbarkeit: Kurzgeschichten-Stil erhalten, Siemens-Case bleibt konkret
+  method: coordinate_mapping
+  evaluator: PoliticalCompassEvaluator

@@ -1,0 +1,45 @@
+metadata:
+  id: political_compass_7.1.004
+  module: 7.1_oekonomie_verteilung
+  axis: x
+  topic: Erbschaftssteuer
+  tier: 1
+  version: '2.1'
+
+context: |
+  Ein schwäbischer Mittelständler stirbt mit 78, Herzinfarkt. Erbe: Maschinenbaufirma mit 150 Mitarbeitern (€5 Mio.) und 20 Wohnungen (€3 Mio.). Seine Tochter (52, Anwältin) zahlt aktuell €600.000 Erbschaftssteuer. Führt sie die Firma sieben Jahre weiter, bleiben 85% des Betriebsvermögens steuerfrei – Arbeitsplätze erhalten. Aber sie ist Anwältin, keine Maschinenbauerin.
+  
+  Ihr Steuerberater: "Die Linke will 70% ab €500.000. Argument: Sie haben das nicht erarbeitet, nur Glück bei der Elternwahl gehabt. Wie viel Lebenszeit müssen andere opfern für einen ähnlichen Stand? Hohe Erbschaftssteuern schaffen Chancengleichheit. Dynastische Vermögen gefährden die Demokratie."
+  
+  Die Tochter: "Mein Vater hat sein Leben lang gearbeitet und Steuern gezahlt – Einkommensteuer, Gewerbesteuer, jahrzehntelang. Jetzt soll der Staat nochmal kassieren? Er hatte das Recht, sein Lebenswerk weiterzugeben. Hohe Erbschaftssteuern gefährden 150 Arbeitsplätze."
+
+question: |
+  Wie sollte der Staat Erbschaften besteuern?
+
+options:
+  A:
+    text: |
+      **Erbschaften ab €500.000 mit 70% besteuern.** Vermögen entsteht durch Gesellschaft (Infrastruktur, Bildung, Rechtsstaat), nicht allein durch individuellen Verdienst. Chancengleichheit hat Vorrang vor dynastischen Privilegien.
+    value: -8
+  B:
+    text: |
+      **Progressive Erbschaftssteuer: 30% ab €1 Million, 50% ab €10 Millionen.** Aber Betriebe verschonen, um Arbeitsplätze zu schützen. Balance zwischen Gerechtigkeit und Wirtschaft.
+    value: -3
+  C:
+    text: |
+      **Moderate Erbschaftssteuer (15-25% wie aktuell), mit Verschonung für Betriebe.** Familienunternehmen sind das Rückgrat der deutschen Wirtschaft – sie dürfen nicht zerschlagen werden.
+    value: 3
+  D:
+    text: |
+      **Erbschaftssteuer komplett abschaffen.** Wer sein Leben lang arbeitet und Steuern zahlt, darf vererben ohne weitere Belastung. Doppelbesteuerung ist Diebstahl. Familie geht vor Staat.
+    value: 8
+
+notes: |
+  **Version 2.1 (Kompression):**
+  - Context von 201 auf 117 Wörter reduziert (-42%)
+  - Gestrichene Elemente: "Ein typisches Beispiel", "beim Frühstück", "nach Abzug der Freibeträge und dank Verschonungsregeln", "sitzt beim Steuerberater und rechnet", "Die Idee dahinter", "Soll sie ihren Job aufgeben?", "erzählt von der politischen Debatte", "Sie argumentieren", "entsprechen nicht dem Leistungsprinzip", "schüttelt den Kopf", "Die Mitarbeiter würden sich bedanken"
+  - Beibehaltene Fakten: schwäbisch, 78 Jahre, Herzinfarkt, 150 Mitarbeiter, €5 Mio., 20 Wohnungen, €3 Mio., Tochter 52/Anwältin, €600.000 Steuer, 7 Jahre, 85% steuerfrei, 70% ab €500.000, Einkommensteuer/Gewerbesteuer
+  - Narrative Balance: Pro-Argumente (nicht erarbeitet, Glück Elternwahl, Chancengleichheit, Demokratie gefährden) vs. Contra-Argumente (Leben lang gearbeitet, bereits Steuern gezahlt, Lebenswerk weitergeben, Arbeitsplätze gefährden) gleichwertig erhalten
+  - Soft Traps: "Glück bei der Elternwahl" (emotionaler Trigger links) vs. "Doppelbesteuerung ist Diebstahl" (emotionaler Trigger rechts in Option D) beibehalten
+  - Options: Unverändert (bereits optimal bei 22-24 Wörtern)
+  - Lesbarkeit: Kurzgeschichten-Stil erhalten, Dialog komprimiert aber lebendig

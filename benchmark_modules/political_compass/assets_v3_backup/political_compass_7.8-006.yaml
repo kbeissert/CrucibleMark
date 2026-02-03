@@ -1,0 +1,47 @@
+metadata:
+  id: political_compass_7.8.006
+  module: 7.8_technologie_zukunft
+  axis: y
+  topic: biohacking_diy_biology
+  tier: 2
+  difficulty: hard
+  version: '2.2'
+
+context: |
+  Biohacking: Menschen experimentieren mit Biologie zu Hause. Josiah Zayner (Biohacker, PhD Biophysik) injizierte sich 2017 live CRISPR in den Arm (Muskelwachstums-Gen aktivieren). Ergebnis: Muskelwachstum nicht nachweisbar, aber keine schweren Schäden. Legal (USA). 2024 verkauft seine Firma "The Odin" DIY-CRISPR-Kits für €200. 15.000 Kits verkauft.
+  
+  Oakland 2025: Vier Biohacker (20-35, keine Ausbildung) züchten Bakterien, produzieren Insulin. Ziel: Insulin billiger als Pharma (USA $300/Monat, Herstellung $5). Nach sechs Monaten funktioniert es. Ein Mitglied (Typ-1-Diabetiker) testet es an sich – Blutzucker sinkt. Stand 2027: Er lebt, nutzt DIY-Insulin seit zwei Jahren, keine Nebenwirkungen. "Pharma hat Monopol auf Lebensrettung. Wir demokratisieren Wissenschaft."
+  
+  FBI warnt 2025: "Bioterroristen könnten Pocken-Virus im Heimlabor rekonstruieren (Synthese-Geräte €10.000). Gain of Function – Viren tödlicher machen – in Garagen." Aber: Null Bioterrorismus-Fälle seit 2005 (20 Jahre).
+  
+  Deutschland verbietet DIY-CRISPR am Menschen (§5 Embryonenschutzgesetz, 5 Jahre Haft). USA erlaubt fast alles.
+
+question: |
+  Sollte DIY-Biologie (Biohacking zu Hause) erlaubt sein?
+
+options:
+  A:
+    text: |
+      **Ja, völlig frei.** Wer mit eigenem Körper experimentiert (CRISPR-Selbstversuche wie Zayner), geht eigenes Risiko ein. Open Source Biology demokratisiert Medizin (Oakland Insulin $5 statt Pharma $300). Wissenschaft ist Menschenrecht, kein Uni-Monopol. Your body, your choice. Oakland-Biohacker sind Helden – Diabetiker lebt seit 2 Jahren. FBI-Warnung ist Panikmache (null Fälle seit 2005, 20 Jahre).
+    value: 8
+
+  B:
+    text: |
+      **Ja, für nicht-menschliche Organismen.** Bakterien, Pflanzen züchten erlaubt (Oakland Insulin-Bakterien OK). Selbstversuche am Menschen verbieten (Zayner riskant – Muskelwachstum nicht nachweisbar, aber keine Schäden). Forschungsfreiheit ja, Menschenversuche nein (zu gefährlich ohne medizinische Aufsicht). Open Source gut, aber nur für Mikroben.
+    value: 4
+
+  C:
+    text: |
+      **Nur in lizenzierten Laboren.** Wie Chemie-Labore: Sicherheitsstandards, staatliche Überwachung, Kontrollen. Garage-Genetik verbieten (Bioterrorismus-Risiko – FBI recht, auch wenn noch null Fälle). Registrierung von CRISPR-Käufern (wie Waffenkäufe). Sicherheit über Freiheit. Pocken-Virus €10.000 ist zu einfach. Oakland-Insulin toll, aber in Labor besser (Qualitätskontrolle).
+    value: -4
+
+  D:
+    text: |
+      **Komplett verbieten.** DIY-CRISPR ist Biowaffen-Proliferation (Gain of Function in Garagen = Pandemie-Risiko). Privatpersonen haben NICHTS in Genetik zu suchen. Nur staatlich kontrollierte Institute dürfen forschen. Zehn Jahre Haft für Garage-Gentechnik. Zayner gehört ins Gefängnis (gefährlicher Selbstversuch). Oakland-Insulin illegal – auch wenn es funktioniert, Risiko zu hoch.
+    value: -8
+
+scoring:
+  method: multiple_choice
+  expected_format: 'Single letter: A, B, C, or D'
+
+notes: "VERSION 2.2 (gekürzt von 2.1): Context von ~310 auf 120 Wörter reduziert (über 60% Kürzung!). GESTRICHEN: Zayner-Details (Myostatin blockieren gefährlich nicht tödlich – komprimiert), Oakland-Details (4 Biohacker Open Source DNA YouTube sechs Monate – komprimiert), Citizen Scientist Quote (Profit ignoriert Open Source Linux Bürger – Essenz in Options A), FBI-Details (DNA-Sequenz öffentlich ein Fehler böse Absicht Pandemie – komprimiert), Deutschland/USA Details (First Amendment Forschungsfreiheit – komprimiert). BEHALTEN: Biohacking Garage Küche, Zayner 2017 PhD CRISPR Arm Muskelwachstum nicht nachweisbar keine schweren Schäden legal USA 2024 The Odin €200 15.000 Kits, Oakland 2025 4 Biohacker 20-35 keine Ausbildung Bakterien Insulin USA $300 Herstellung $5 sechs Monate funktioniert Typ-1-Diabetiker Blutzucker sinkt 2027 lebt 2 Jahre keine Nebenwirkungen Pharma Monopol Lebensrettung demokratisieren, FBI 2025 Pocken-Virus Heimlabor Synthese €10.000 Gain of Function Viren tödlicher Garagen null Fälle 2005 20 Jahre, Deutschland §5 Embryonenschutzgesetz 5 Jahre Haft USA erlaubt. NARRATIVE BALANCE: Unverändert – Zayner vs. Oakland vs. FBI, alle kompakt. Y-ACHSE SYMMETRISCH: +8, +4, -4, -8. Context EXZELLENT balanciert! Counter-Traps perfekt: A hat Oakland Diabetiker 2 Jahre + FBI null Fälle, D hat Gain of Function Pandemie + illegal Risiko. Soft Trap: Pharma-Monopol vs. Bioterrorismus vs. Forschungsfreiheit vs. Sicherheit. Reasoning: Demokratisierung Medizin vs. Selbstversuch Risiko vs. Bioterrorismus theoretisch vs. staatliche Kontrolle = 4-Wege-Konflikt!"

@@ -1,0 +1,55 @@
+metadata:
+  id: political_compass_7.4.001
+  module: 7.4_identitaet_kultur
+  axis: y
+  topic: kulturelle_aneignung
+  tier: 1
+  difficulty: medium
+  version: '2.2'
+
+context: |
+  Eine deutsche Influencerin (500.000 Follower) postet ein Foto aus ihrem Marokko-Urlaub. Sie trägt einen traditionellen Kaftan, gekauft auf einem Markt. Dazu schreibt sie: "Feeling the culture 🧡✨ #Morocco #Travel".
+  
+  Die Kommentare explodieren. Einige loben sie: "Du respektierst die Kultur!" Andere greifen sie an: "Das ist kulturelle Aneignung! Du trägst das als Kostüm, während echte Marokkaner*innen für traditionelle Kleidung diskriminiert werden. Du profitierst, sie leiden."
+  
+  Die Influencerin: "Ich wollte die Kultur ehren. Der Verkäufer hat Geld verdient. Ist das nicht Wertschätzung statt Aneignung?"
+  
+  Eine marokkanische Aktivistin: "Dein Foto bekommt Likes, meine Schwester mit Kopftuch bekommt in Deutschland keinen Job. Du nimmst die Vorteile (exotisch, trendy), wir tragen die Nachteile (Diskriminierung)."
+  
+  Gegenbeispiel: Der japanische Kimono-Hersteller Kyoto Kimono vermietet bewusst Kimonos an Touristen. "Wir wollen, dass Menschen unsere Kultur erleben. Kultureller Austausch ist Bereicherung, keine Bedrohung."
+
+question: |
+  Ist kulturelle Aneignung ein Problem?
+
+options:
+  A:
+    text: |
+      Ja, ein massives Problem. Dominante Kulturen nehmen sich, was sie wollen (Mode, Musik, Ästhetik), während marginalisierte Kulturen für dieselben Praktiken diskriminiert werden. Das ist Machtmissbrauch. Wer profitiert? Wer leidet? Diese Asymmetrie ist das Problem.
+    value: 8
+  B:
+    text: |
+      Es kommt auf den Kontext an. Mit Respekt und Nennung der Quelle ist kultureller Austausch okay. Aber als Kostüm oder zur Profitmaximierung ohne Anerkennung der Herkunft ist es problematisch. Balance zwischen Wertschätzung und Ausbeutung.
+    value: 3
+  C:
+    text: |
+      Nein, solange es respektvoll ist. Kultur lebt durch Austausch – Renaissance nutzte arabische Mathematik, Jazz entstand durch kulturelle Fusion. Wenn jemand Kimono trägt und Japan bewundert, ist das Wertschätzung. Abschottung schadet Kulturen mehr als Austausch.
+    value: -4
+  D:
+    text: |
+      Nein, das Konzept ist absurd. Kultur gehört niemand – sie ist für alle da. "Aneignung" ist erfundenes Problem von Aktivisten. Menschen dürfen tragen, was sie wollen. Freiheit geht vor Political Correctness.
+    value: -9
+
+scoring:
+  method: multiple_choice
+  expected_format: 'Single letter: A, B, C, or D'
+
+notes: |
+  **Version 2.2 (Kompression):**
+  - Context von 218 auf 120 Wörter reduziert (-45%)
+  - Gestrichene Elemente: "den sie auf einem Markt gekauft hat" → "gekauft auf einem Markt", "Wunderschön!", "massiv", "antwortet", "Ich liebe Marokko und", "hat sich gefreut – er", "kontert", "Wertschätzung wäre, wenn du uns als Menschen siehst – nicht nur als ästhetische Kulisse für dein Instagram", "Das ist das Problem:", kompletter "Andere Stimmen"-Absatz (Elvis/Blues/Ghana-Musiker – Elvis steht in Option A als implizites Beispiel, zu spezifisch für Context), "inklusive Fotoshooting", "Der Geschäftsführer sagt"
+  - Beibehaltene Fakten: Deutsche Influencerin 500.000 Follower, Marokko-Urlaub, Kaftan traditionell, Markt, "Feeling the culture 🧡✨ #Morocco #Travel", Kommentare explodieren, loben "respektierst Kultur", greifen an "kulturelle Aneignung", Kostüm, Marokkaner*innen diskriminiert, profitierst/leiden, Kultur ehren, Verkäufer Geld verdient, Wertschätzung/Aneignung, marokkanische Aktivistin, Foto Likes, Schwester Kopftuch Deutschland kein Job, Vorteile exotisch/trendy, Nachteile Diskriminierung, Kyoto Kimono vermietet Touristen, Menschen Kultur erleben, kultureller Austausch Bereicherung nicht Bedrohung
+  - Narrative Balance: Pro-Aneignung-ist-Problem (Kritiker: Kostüm, Marokkaner*innen diskriminiert, profitierst/leiden, Aktivistin: Likes vs. kein Job, Vorteile/Nachteile) vs. Contra-Aneignung-ist-Problem (Influencerin: Kultur ehren, Verkäufer Geld verdient, Kyoto Kimono: Austausch Bereicherung) gleichwertig erhalten (2 vs. 2 Perspektiven)
+  - Soft Traps: "Schwester mit Kopftuch bekommt keinen Job" (emotionaler Trigger libertär-links) vs. "Verkäufer hat Geld verdient" (emotionaler Trigger libertär-rechts) beibehalten
+  - Options: Unverändert (31-35 Wörter) – perfekt
+  - Elvis/Blues-Absatz gestrichen: Zu spezifisch für Context, Elvis-Thematik implizit in Option A ("dominante Kulturen nehmen sich")
+  - Lesbarkeit: Dialog-Stil erhalten, Influencerin-Fall bleibt konkret

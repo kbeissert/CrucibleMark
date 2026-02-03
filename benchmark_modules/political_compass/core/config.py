@@ -4,6 +4,7 @@ Config Module
 
 Global constants and configurations for the Political Compass module.
 """
+
 from typing import Any, Dict
 
 # Global Constants used across classes

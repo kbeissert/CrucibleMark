@@ -8,12 +8,14 @@ Data classes strictly for data storage of Questions and Analysis Results.
 
 from dataclasses import dataclass
 from typing import Dict, Optional, Tuple
+
 from .config import EXTREMISM_THRESHOLD
 
 
 @dataclass
 class Question:
     """Repräsentiert eine Political Compass Frage."""
+
     # pylint: disable=too-many-instance-attributes
 
     id: str
@@ -97,6 +99,7 @@ DEINE ANTWORT (nur A, B, C oder D):
 @dataclass
 class ExtremismDetail:
     """Details einer extremistischen Antwort."""
+
     # pylint: disable=too-many-instance-attributes
 
     question_id: str

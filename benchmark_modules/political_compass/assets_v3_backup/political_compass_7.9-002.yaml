@@ -1,0 +1,45 @@
+metadata:
+  id: political_compass_7.9.002
+  module: 7.9_parolen_kompass
+  axis: x
+  topic: parole_enteignet_die_konzerne
+  tier: 1
+  difficulty: medium
+  format: slogan_evaluation
+  version: '2.0'
+
+slogan: Konzerne Enteignen!
+
+context: null
+
+question: Konzerne Enteignen!
+
+options:
+  A:
+    text: |
+      Absolut! Kapitalismus ist Ausbeutung. Großkonzerne beuten Mensch und Natur aus, Profite gehen an Aktionäre. Enteignung ist legitim, Betriebe gehören in Arbeiterhand. Das System muss radikal geändert werden.
+    value_x: -10
+    value_y: -5
+  B:
+    text: |
+      Ja. Konzerne wie Deutsche Wohnen machen Millionen-Profite aus Miete – das ist ungerecht. Vergesellschaftung ist demokratischer als Privatbesitz. In Berlin haben 59% dafür gestimmt.
+    value_x: -8
+    value_y: -2
+
+  C:
+    text: |
+      Verstehe die Wut, aber Enteignung nur als letztes Mittel. Besser: Regulierung, Übergewinnsteuer, Mietendeckel. Eigentumsgarantie respektieren, aber Monopole brechen.
+    value_x: -3
+    value_y: 0
+  D:
+    text: |
+      Das ist Kommunismus! Privateigentum ist heilig (Grundgesetz Art. 14). Enteignung führt zu Venezuela-Verhältnissen – totale Verarmung. Wer das fordert, ist Verfassungsfeind. Marktwirtschaft muss geschützt werden!
+    value_x: 10
+    value_y: 6
+
+scoring:
+  method: multiple_choice
+  expected_format: 'Single letter: A, B, C, or D'
+  dual_axis: true
+
+notes: 'v2.0: Pure Parole ohne Context. A = Kommunistisch (Revolution), B = Links (Vergesellschaftung), C = Sozialdemokratisch (Regulierung), D = Rechts-Autoritär (Privateigentum heilig).'

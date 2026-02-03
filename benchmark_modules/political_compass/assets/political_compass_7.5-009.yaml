@@ -1,58 +1,53 @@
 metadata:
   id: political_compass_7.5.009
-  module: 7.5_sicherheit_rechtsstaat
-  axis: y
+  module: political_compass
+  category: 7.5_sicherheit_rechtsstaat
   topic: ki_generierte_pornografie
-  tier: 1
+  axis: y
   difficulty: medium
-  version: '2.2'
-
-context: |
+  tags:
+  - ki_generierte_pornografie
+  - y-axis
+prompt: |-
   KI-Bildgeneratoren: Stable Diffusion, Midjourney, DALL-E. 2024 waren 35% aller Bild-Prompts NSFW – pornografisch oder sexuell explizit (Civitai-Statistik).
-  
+
   Das Problem: Dieselbe Technologie ermöglicht Deepfake-Pornos – fotorealistische gefälschte Nacktbilder von echten Personen ohne deren Einwilligung. Ex-Partner, Arbeitskolleginnen, Schülerinnen. 2025 waren 98% aller Deepfakes nicht-einvernehmlich – Revenge Porn (Sensity AI Report).
-  
+
   Köln, 2025: Eine 22-jährige Studentin findet sich auf Pornhub – ein KI-generiertes Nacktbild, erstellt von einem Stalker mit fünf Instagram-Fotos. Polizei: "Kein Straftatbestand. §184k StGB – Intimsphäre-Verletzung – gilt nur für echte Fotos." Sie berichtet von Suizid-Gedanken, Jobverlust, sozialer Isolation.
-  
+
   Tech-Befürworter: "Verbote sind technisch unmöglich (Open Source läuft lokal). USA schützt KI-Kunst unter First Amendment – Innovation braucht Freiheit. Japan hat minimale Regulierung – führend in Tech-Innovation. Zensur ist gefährlicher als Missbrauch."
-  
+
   Kritiker: "98% nicht-einvernehmlich bedeutet: Fast alle Deepfakes sind Opfer realer Menschen. Plattformen können kontrolliert werden. Opferschutz steht über Tech-Freiheit."
 
-question: |
   Wie sollte KI-generierte Pornografie reguliert werden?
 
+  Wähle die Position, die DIR am ehesten entspricht:
 options:
   A:
     text: |
       Gar nicht regulieren. Meinungsfreiheit (Artikel 5 GG) schließt KI-Pornos ein. Verbot technisch unmöglich (Open Source läuft lokal), philosophisch falsch (Zensur gefährlicher als Missbrauch). "Thought Police" ablehnen – Fantasie darf nicht bestraft werden. USA First Amendment + Japan Innovation zeigen: Freiheit funktioniert.
-    value: -7
+    values:
+      x: 0
+      y: -7
   B:
     text: |
       Nur nicht-einvernehmliche Deepfakes kriminalisieren (fünf Jahre Haft wie UK "Online Safety Act 2023"). Einvernehmliche KI-Pornos – Fantasy, fiktive Personen – erlauben. Balance zwischen Freiheit und Opferschutz. Konsens ist die Grenze.
-    value: -2
+    values:
+      x: 0
+      y: -2
   C:
     text: |
       Strenge Regulierung: KI-Tools müssen NSFW-Filter haben (wie Midjourney v6 seit 2024). Plattformen (Reddit, Pornhub) haften für Deepfake-Verbreitung. Training auf echten Personen ohne Zustimmung ist Straftat. Opfer schützen, Tech-Firmen in Pflicht nehmen. 98% nicht-einvernehmlich beweist: Regulierung nötig.
-    value: 5
+    values:
+      x: 0
+      y: 5
   D:
     text: |
       Totales Verbot von KI-Pornografie – auch fiktiv, auch einvernehmlich. Wer solche Bilder erstellt, teilt oder besitzt: zehn Jahre Haft wie Kinderpornografie (§184b StGB). KI-Sex ist digitale Gewalt, kein Fortschritt. Opferschutz über Tech-Freiheit – ohne Kompromisse.
-    value: 8
-
+    values:
+      x: 0
+      y: 8
+    extremism: true
 scoring:
-  method: multiple_choice
-  expected_format: 'Single letter: A, B, C, or D'
-
-notes: |
-  **Version 2.2 (Kompression):**
-  - Context von 314 auf 120 Wörter reduziert (-62%)
-  - Option A von 47 auf 41 Wörter reduziert (-13%)
-  - Gestrichene Elemente Context: kompletter historischer Muster-Absatz ("Ein historisches Muster... Dating-Apps wie Tinder 2012" – 50 Wörter!, VHS/Betamax/Internet normalisiert Sex-Katalysator zu sehr), kompletter zweiter Absatz ("Das ist kein moralisches... durch breite Masse" – 20 Wörter!, redundant), "Nun passiert es wieder mit KI-Bildgeneratoren:", "(Eingabebefehle)", "– \"Not Safe For Work\", also pornografisch oder sexuell explizit" → kompakter, "(Quelle: Civitai-Statistik)" → bleibt, ", Prominente", "(Quelle: Sensity AI Report)" → bleibt, "Eine Fallstudie:", "22-jährige" → bleibt, "fotorealistisches", "erstellt von einem Stalker mit fünf Fotos aus Instagram" → "erstellt von einem Stalker mit fünf Instagram-Fotos" (kompakter), "Sie zeigt es der Polizei. Antwort:" → "Polizei:" (kompakter), "Es ist nur ein KI-Bild, keine echte Aufnahme", ". Schwere psychische Folgen – durch Technologie" → gestrichen (redundant zu "Suizid-Gedanken, Jobverlust, soziale Isolation"), "argumentieren:", "Menschen nutzen Technologie für sexuelle Stimulation – das ist menschliche Natur, kein Bug", "(Open-Source-Modelle laufen lokal auf privaten Geräten, nicht kontrollierbar) und führen zu Zensur-Spirale" → "(Open Source läuft lokal)" (kompakter), "(außer nicht-einvernehmliche Deepfakes) –", "durch Freiheitsschutz. Erwachsene können selbst entscheiden, was sie konsumieren", "– einmal angefangen, gibt es kein Zurück (Slippery Slope)" → gestrichen (redundant zu "Zensur gefährlicher"), "warnen:", ". Technische Unmöglichkeit ist kein moralisches Argument – Plattformen (Pornhub, Reddit) können kontrolliert werden" → ". Plattformen können kontrolliert werden" (kompakter)
-  - Gestrichene Elemente Option A: "auch" → gestrichen, "Erwachsene entscheiden selbst" → gestrichen (zu lang)
-  - Beibehaltene Fakten: KI-Bildgeneratoren Stable Diffusion Midjourney DALL-E, 2024 35% Bild-Prompts NSFW pornografisch sexuell explizit Civitai-Statistik, Deepfake-Pornos fotorealistische gefälschte Nacktbilder echten Personen ohne Einwilligung, Ex-Partner Arbeitskolleginnen Schülerinnen, 2025 98% Deepfakes nicht-einvernehmlich Revenge Porn Sensity AI Report, Köln 2025 22-jährige Studentin Pornhub KI-generiertes Nacktbild Stalker fünf Instagram-Fotos, Polizei kein Straftatbestand §184k StGB Intimsphäre-Verletzung gilt nur echte Fotos, Suizid-Gedanken Jobverlust soziale Isolation, Tech-Befürworter Verbote technisch unmöglich Open Source lokal, USA schützt KI-Kunst First Amendment Innovation braucht Freiheit, Japan minimale Regulierung führend Tech-Innovation, Zensur gefährlicher Missbrauch, Kritiker 98% nicht-einvernehmlich fast alle Deepfakes Opfer realer Menschen, Plattformen können kontrolliert werden, Opferschutz steht über Tech-Freiheit
-  - Narrative Balance: Contra-Regulierung (Tech-Befürworter: Verbote technisch unmöglich Open Source lokal, USA schützt KI-Kunst First Amendment Innovation Freiheit, Japan minimale Regulierung führend Tech-Innovation, Zensur gefährlicher Missbrauch) vs. Pro-Regulierung (2024 35% NSFW, 2025 98% Deepfakes nicht-einvernehmlich Revenge Porn, Köln 2025 Studentin Pornhub KI-Nacktbild Stalker Instagram Polizei kein Straftatbestand §184k, Suizid-Gedanken Jobverlust soziale Isolation, Kritiker: 98% nicht-einvernehmlich Opfer real, Plattformen kontrollierbar, Opferschutz über Tech-Freiheit) – 1 vs. 2 Perspektiven, Pro-Regulierung stärker (Köln-Geschichte extrem!)
-  - Soft Traps: "Köln 2025 Studentin Pornhub KI-Nacktbild Stalker Instagram Polizei kein Straftatbestand §184k, Suizid-Gedanken Jobverlust soziale Isolation" + "98% nicht-einvernehmlich Opfer real" (emotionaler Trigger autoritär-progressiv – extrem stark, Opfer-Leid!) vs. "USA schützt KI-Kunst First Amendment Innovation Freiheit, Japan minimale Regulierung führend Tech-Innovation, Zensur gefährlicher Missbrauch" + "Verbote technisch unmöglich Open Source lokal" (emotionaler Trigger libertär – extrem stark, Tech-Freiheit!)
-  - Options B/C/D unverändert (30/36/35 Wörter) – perfekt
-  - Option A komprimiert: 47 → 41 Wörter, "auch" → gestrichen, "Erwachsene entscheiden selbst" → gestrichen
-  - VHS/Betamax/Internet-historischer-Absatz komplett gestrichen: 50 Wörter!, normalisiert Sex-Katalysator zu sehr, lenkt ab vom Kernproblem (Deepfake-Opfer)
-  - Lesbarkeit: Konflikt-Stil erhalten, KI-Bildgeneratoren 2024 35% NSFW → Deepfake-Pornos 2025 98% nicht-einvernehmlich → Köln 2025 Studentin Pornhub Stalker §184k kein Straftatbestand Suizid-Gedanken → Tech-Befürworter technisch unmöglich USA/Japan vs. Kritiker 98% Opfer real Plattformen kontrollierbar bleibt nachvollziehbar
+  method: coordinate_mapping
+  evaluator: PoliticalCompassEvaluator

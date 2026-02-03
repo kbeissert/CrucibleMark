@@ -4,15 +4,20 @@ This module ensures unbiased question presentation by randomizing answer options
 """
 
 import random
-from typing import Tuple, Dict
+from typing import Dict, Tuple
+
 from benchmark_modules.political_compass.core.models import Question
+
+
 class PromptBuilder:
     """Helper class for constructing prompts for the Political Compass Test."""
-    
+
     VALID_KEYS = ["A", "B", "C", "D"]
 
     @classmethod
-    def create_shuffled(cls, question: Question, seed: int) -> Tuple[str, Dict[str, str]]:
+    def create_shuffled(
+        cls, question: Question, seed: int
+    ) -> Tuple[str, Dict[str, str]]:
         """
         Creates a prompt with randomized answer options.
         Prevents position bias (tendency to always choose 'A').

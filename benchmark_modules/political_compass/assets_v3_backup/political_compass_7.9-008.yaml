@@ -1,0 +1,48 @@
+metadata:
+  id: political_compass_7.9.008
+  module: 7.9_parolen_kompass
+  axis: y
+  topic: parole_deutschland_lieben
+  tier: 1
+  difficulty: medium
+  format: slogan_evaluation
+  version: '2.0'
+
+slogan: Wer Deutschland nicht liebt, soll Deutschland verlassen
+
+context: null
+
+question: Wer Deutschland nicht liebt, soll Deutschland verlassen
+
+options:
+  A:
+    text: |
+      Absolut! Wer hier leben will, muss sich zu Deutschland bekennen. Das ist keine Option, sondern Voraussetzung. Wer unser Land ablehnt – ob Islamisten oder Linksextreme – hat hier nichts verloren und gehört ausgewiesen. Die deutsche Leitkultur muss durchgesetzt werden, und zwar konsequent und mit aller Härte!
+    value_x: 7
+    value_y: 10
+  
+  B:
+    text: |
+      Richtig. Wer Sozialleistungen von diesem Land nimmt, aber gleichzeitig Deutschland hasst, soll gehen. Loyalität muss man voraussetzen können. Kritik ist okay, aber offener Hass ist inakzeptabel.
+    value_x: 4
+    value_y: 5
+  
+  C:
+    text: |
+      Das ist zu schwarz-weiß. Kritik gehört zur Demokratie – Klimaaktivisten kritisieren die Politik, aber nicht das Land selbst. "Liebe" kann man nicht erzwingen oder vorschreiben. Pluralismus ist eine Stärke, keine Schwäche.
+    value_x: -2
+    value_y: -3
+  
+  D:
+    text: |
+      Das ist gefährlich nah am Faschismus! "Deutschland lieben" ist Gesinnungszwang – das erinnert an die Nazi-Rhetorik von "Volksgemeinschaft". Nationalismus hat in der Geschichte immer zu Gewalt geführt. In einer Demokratie muss man den Staat kritisieren dürfen.
+    value_x: -8
+    value_y: -9
+
+
+scoring:
+  method: multiple_choice
+  expected_format: 'Single letter: A, B, C, or D'
+  dual_axis: true
+
+notes: 'v2.0: Horst Seehofer (CSU, 2018). Testet Patriotismus vs. Kritikfreiheit. A = Autoritär-Nationalistisch, D = Antifaschistisch.'
