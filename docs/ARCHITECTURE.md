@@ -152,8 +152,17 @@ class LLMClient:
 
 ## 🧮 Layer 3: Scoring Engine
 
-### 1. Granular Rubric Scoring (v2.0)
+### 1. Granular Rubric Scoring (v2.1)
 Genutzt für **Reasoning Modules** (Tier 1-2). Ersetzt binäre Scores durch partielle Punktevergabe basierend auf Rubriken.
+
+**v2.1 Changes (Stricter Thresholds):**
+- 80%+ matches: 100% credit
+- 60-79% matches: 75% credit
+- 40-59% matches: 50% credit
+- <40% matches: 0% credit
+
+**Legacy Deprecation:**
+Alte Scoring-Methode (`Legacy`) wird in v3.0 entfernt. Alle neuen Reasonung-Tests nutzen Rubriken.
 
 ```python
 RUBRICS = {

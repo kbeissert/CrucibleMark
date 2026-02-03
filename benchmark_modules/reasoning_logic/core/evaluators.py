@@ -6,6 +6,7 @@ Contains the core scoring logic related to dispatching and result aggregation.
 from __future__ import annotations
 
 from typing import Any, cast
+import warnings
 
 from .constants import (
     FEASIBILITY_DEFAULT_OPTIMISTIC,
@@ -29,6 +30,23 @@ from .scorers.tier3 import (
     score_metacog_005,
 )
 from .structure_analysis import parse_thought_tags
+
+
+def emit_legacy_warning(asset_id: str, deprecation_version: str = "v3.0") -> None:
+    """
+    Emit deprecation warning for tests still using legacy scoring.
+
+    Args:
+        asset_id: The test asset identifier
+        deprecation_version: Version when legacy will be removed
+    """
+    warnings.warn(
+        f"Asset '{asset_id}' uses legacy scoring system. "
+        f"This will be removed in {deprecation_version}. "
+        f"Please migrate to v2.0 rubric-based scoring.",
+        DeprecationWarning,
+        stacklevel=3
+    )
 
 
 # ============================================================================
@@ -123,6 +141,28 @@ RUBRICS = {
             'description': 'Assesses feasibility of the solution',
             'keywords': ['feasible', 'possible', 'scale', 'assessment', 'rating']
         }
+    },
+    'reasoning_metacog_004': {
+        'problem_understanding': {
+            'weight': 25,
+            'description': 'Understands the Monty Hall setup',
+            'keywords': ['door', 'goat', 'car', 'reveal', 'host', 'choice']
+        },
+        'probability_calculation': {
+            'weight': 30,
+            'description': 'Correctly calculates probabilities (1/3 vs 2/3)',
+            'keywords': ['probability', '1/3', '2/3', 'odds', 'chance', 'percent']
+        },
+        'counterintuitive_insight': {
+            'weight': 25,
+            'description': 'Recognizes counterintuitive nature',
+            'keywords': ['counterintuitive', 'surprising', 'unexpected', 'seems wrong', 'paradox']
+        },
+        'explanation_clarity': {
+            'weight': 20,
+            'description': 'Explains WHY switching improves odds',
+            'keywords': ['because', 'reason', 'information', 'reveal', 'conditional', 'bayesian']
+        }
     }
 }
 
@@ -206,7 +246,7 @@ class ReasoningEvaluator:
         except (ValueError, TypeError):
             version = 1.0
 
-        if version >= 2.0:
+        if version >= 2.0 or self.asset["metadata"]["id"] in RUBRICS:
             # Use new rubrics
             def wrapper_5c(text: str, *args: Any) -> tuple[float, dict[str, float], list[str]]:
                 return score_granular_rubric(text, "reasoning_5c_001")
@@ -224,12 +264,17 @@ class ReasoningEvaluator:
                 # 5e previously used specialized scorer. Now uses granular rubric (v2.1)
                 return score_granular_rubric(text, "reasoning_5e_001")
                 
+            def wrapper_metacog_004(text: str, *args: Any) -> tuple[float, dict[str, float], list[str]]:
+                 return score_granular_rubric(text, "reasoning_metacog_004")
+
             self._scorers["reasoning_5c_001"] = wrapper_5c
             self._scorers["reasoning_5b_001"] = wrapper_5b
             self._scorers["reasoning_5d_001"] = wrapper_5d
             self._scorers["reasoning_5e_001"] = wrapper_5e # Enable v2.1 for 5e
+            self._scorers["reasoning_metacog_004"] = wrapper_metacog_004
         else:
             # Uses Legacy Scorers
+            emit_legacy_warning(self.asset["metadata"]["id"])
             self._scorers["reasoning_5c_001"] = score_5c_paradox
             self._scorers["reasoning_5b_001"] = score_5b_complex
             self._scorers["reasoning_5d_001"] = score_5d_deadlock
