@@ -42,7 +42,7 @@ def export_to_csv(leaderboard: pd.DataFrame, cat_cols: List[str]) -> None:
         "Total Score",
         "Performance/s",
         "Avg Time (s)",
-        "Cost per 1K",
+        "Cost per 1K (USD)",
         "Routine Score",
         "Reasoning Score",
         "Type",

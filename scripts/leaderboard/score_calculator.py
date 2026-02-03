@@ -161,6 +161,12 @@ def _aggregate_basic_stats(df: pd.DataFrame, modules_config: Dict[str, Any]) -> 
         cat = row.get("category", "")
         return cat_to_scoring.get(cat, True)
 
+    # Ensure numeric columns for aggregation (Fix: prevent string concatenation in sum)
+    cols_to_numeric = ["execution_time", "cost_usd", "tokens_used"]
+    for col in cols_to_numeric:
+        if col in df.columns:
+            df[col] = pd.to_numeric(df[col], errors="coerce").fillna(0)
+
     # 1. Base Stats (Presence, Time) - From ALL valid runs (scoring + info)
     # This ensures models with ONLY info modules (like Political Compass) are listed.
     base_aggs = {
@@ -169,6 +175,8 @@ def _aggregate_basic_stats(df: pd.DataFrame, modules_config: Dict[str, Any]) -> 
     }
     if "cost_usd" in df.columns:
         base_aggs["cost_usd"] = "sum"
+    if "tokens_used" in df.columns:
+        base_aggs["tokens_used"] = "sum"
     if "timestamp" in df.columns:
         base_aggs["timestamp"] = "max"
 
@@ -374,20 +382,46 @@ def calculate_scores(
 
     result["Total Score"] = result.apply(calc_weighted_total, axis=1)
 
-    # Cost per 1K (Commercial Only)
-    # asset_id in stats is the count of tests run
-    if "cost_usd" in result.columns and "asset_id" in result.columns:
-        def calc_cost(row):
+    # Cost per 1K Tokens (Commercial Only)
+    # v3.0: Now calculates Cost per 1K TOKENS (USD), not per 1K Tests.
+    if "cost_usd" in result.columns and "tokens_used" in result.columns:
+        def calc_cost_per_1k_tokens(row):
+            cost_total = row.get("cost_usd")
+            tokens_total = row.get("tokens_used")
+            
+            # Safe Float Conversion
+            try:
+                cost_total = float(cost_total) if pd.notna(cost_total) else 0.0
+                tokens_total = float(tokens_total) if pd.notna(tokens_total) else 0.0
+            except (ValueError, TypeError):
+                return None
+
+            # Validation
+            if tokens_total == 0:
+                return None
+            
+            # Logic: Avoid confusing free models with missing data
+            if cost_total == 0 and str(row.get("type", "")).lower() != "commercial":
+                return None
+
+            # Calc: (Total Cost / Total Tokens) * 1000
+            # Result is in USD (e.g. 0.0050 for half a cent)
+            return round((cost_total / tokens_total) * 1000, 4)
+
+        result["Cost per 1K (USD)"] = result.apply(calc_cost_per_1k_tokens, axis=1)
+    
+    # Fallback to old "Cost per 1K Tests" if tokens are missing (Legacy compat)
+    elif "cost_usd" in result.columns and "asset_id" in result.columns:
+        def calc_cost_per_1k_tests(row):
             cost = row.get("cost_usd")
             count = row.get("asset_id")
             if pd.isna(cost) or pd.isna(count) or count == 0:
                 return None
-            # Only calculate if cost > 0 or explicitly Commercial
             if cost == 0 and str(row.get("type", "")).lower() != "commercial":
                 return None
             return round((cost / count) * 1000, 2)
 
-        result["Cost per 1K"] = result.apply(calc_cost, axis=1)
+        result["Cost per 1K (USD)"] = result.apply(calc_cost_per_1k_tests, axis=1)
 
     # Efficiency Index
     result["Efficiency_Index"] = result.apply(

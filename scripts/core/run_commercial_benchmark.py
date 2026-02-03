@@ -157,8 +157,19 @@ class CommercialBenchmarkRunner(BaseBenchmarkRunner):
     def select_benchmark(self) -> Optional[Dict[str, Any]]:
         """Interaktive Benchmark-Auswahl."""
         categories = list(self.benchmark_categories.items())
+
+        # Add "All Modules" option
+        all_option = (
+            "all",
+            {
+                "name": "Alle Module ausführen",
+                "description": "Führt alle verfügbaren Benchmarks nacheinander aus",
+            },
+        )
+        options = categories + [all_option]
+
         selected = select_from_list(
-            categories,
+            options,
             lambda item: (item[1]["name"], item[1]["description"]),
             prompt="Wähle Benchmark",
             title="📊 VERFÜGBARE BENCHMARKS",
@@ -705,6 +716,27 @@ def main():
 
     benchmark_info = runner.select_benchmark()
     if not benchmark_info:
+        return
+
+    # Handle "All Modules" selection
+    if benchmark_info.get("key") == "all":
+        print("\n🚀 Starte Sequenz für ALLE Module...")
+        error_count = 0
+        for key, cat_info in runner.benchmark_categories.items():
+            try:
+                print(f"\n👉 Modul: {cat_info['name']}")
+                results = runner.run_benchmark(provider, model_id, cat_info)
+                runner.save_results(results)
+                runner.print_summary(results)
+            except Exception as e:  # pylint: disable=broad-exception-caught
+                print(f"❌ Fehler im Modul '{cat_info['name']}': {e}")
+                traceback.print_exc()
+                error_count += 1
+        
+        if error_count > 0:
+            print(f"\n⚠️  Fertig mit {error_count} Fehlern.")
+        else:
+            print("\n✅ Alle Module erfolgreich abgeschlossen.")
         return
 
     try:
