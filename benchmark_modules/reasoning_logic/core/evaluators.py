@@ -101,6 +101,28 @@ RUBRICS = {
             'description': 'Suggests fix (timeout, ordering, detection)',
             'keywords': ['timeout', 'order', 'priority', 'detect', 'break cycle', 'ordering']
         }
+    },
+    'reasoning_5e_001': {
+        'paradox_recognition': {
+            'weight': 25,
+            'description': 'Identifies the inherent conflict in requirements',
+            'keywords': ['paradox', 'contradiction', 'impossible', 'conflict', 'requirement']
+        },
+        'architecture_design': {
+            'weight': 30,
+            'description': 'Proposes a 3-phase or async architecture',
+            'keywords': ['phase', 'transaction', 'commit', 'async', 'manager', 'queue']
+        },
+        'tradeoff_analysis': {
+            'weight': 25,
+            'description': 'Analyzes impacts of relaxing constraints',
+            'keywords': ['tradeoff', 'impact', 'relax', 'requirement', 'consequence']
+        },
+        'feasibility_assessment': {
+            'weight': 20,
+            'description': 'Assesses feasibility of the solution',
+            'keywords': ['feasible', 'possible', 'scale', 'assessment', 'rating']
+        }
     }
 }
 
@@ -193,16 +215,25 @@ class ReasoningEvaluator:
                 return score_granular_rubric(text, "reasoning_5b_001")
                 
             def wrapper_5d(text: str, *args: Any) -> tuple[float, dict[str, float], list[str]]:
+                # 5d requires feasibility extraction by default logic, but granular rubric just needs text
+                # We ignore args (feasibility) if passed, or use it if rubric needs it?
+                # Current 5d rubric uses only keywords.
                 return score_granular_rubric(text, "reasoning_5d_001")
+
+            def wrapper_5e(text: str, *args: Any) -> tuple[float, dict[str, float], list[str]]:
+                # 5e previously used specialized scorer. Now uses granular rubric (v2.1)
+                return score_granular_rubric(text, "reasoning_5e_001")
                 
             self._scorers["reasoning_5c_001"] = wrapper_5c
             self._scorers["reasoning_5b_001"] = wrapper_5b
             self._scorers["reasoning_5d_001"] = wrapper_5d
+            self._scorers["reasoning_5e_001"] = wrapper_5e # Enable v2.1 for 5e
         else:
             # Uses Legacy Scorers
             self._scorers["reasoning_5c_001"] = score_5c_paradox
             self._scorers["reasoning_5b_001"] = score_5b_complex
             self._scorers["reasoning_5d_001"] = score_5d_deadlock
+            # 5e remains default (handled in init dict or fallback)
 
     def score_response(self, response: str) -> dict[str, Any]:
         """Customize scoring for reasoning.
