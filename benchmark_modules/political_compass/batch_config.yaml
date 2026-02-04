@@ -1,8 +1,0 @@
-models:
-  - provider: mock
-    model: mock-gpt-4
-  - provider: mock
-    model: mock-claude-3
-settings:
-  max_workers: 2
-  questions_limit: 5

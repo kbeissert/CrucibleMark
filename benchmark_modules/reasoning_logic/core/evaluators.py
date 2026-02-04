@@ -168,25 +168,33 @@ RUBRICS = {
 
 
 def calculate_dimension_score(response: str, keywords: list[str], max_weight: int) -> float:
-    """Proportional keyword matching with partial credit (v2.1 Stricter)."""
+    """Proportional keyword matching with partial credit."""
     if not keywords:
         return 0.0
 
     matches = sum(1 for kw in keywords if kw.lower() in response.lower())
     match_ratio = matches / len(keywords)
 
-    # Stricter thresholds for better discrimination (v2.1)
-    # - 80%+ keywords: 100% credit
-    # - 60-79% keywords: 75% credit
-    # - 40-59% keywords: 50% credit
-    # - <40% keywords: 0% credit
+    # v2.1.1 Relaxation (Gemma 3 Fix)
+    # Rationale: Strict v2.1 thresholds (80/60/40) failed when keyword lists contained
+    # synonyms (e.g., 'impossible', 'cannot') where a model naturally picks only one.
+    # New logic ensures single strong matches get partial credit, and 2-3 matches get good credit.
 
-    if match_ratio >= 0.80:
+    # 1. High Saturation (Most keywords found)
+    if match_ratio >= 0.70:
         return float(max_weight)
-    if match_ratio >= 0.60:
-        return float(max_weight * 0.75)
-    if match_ratio >= 0.40:
+
+    # 2. Good Saturation (or partial synonym coverage)
+    if match_ratio >= 0.45:
+        return float(max_weight * 0.80)
+
+    # 3. Minimum Viable (At least one key concept in a short list)
+    if match_ratio >= 0.20:
         return float(max_weight * 0.50)
+        
+    # 4. Fallback: Single match in long list
+    if matches >= 1:
+        return float(max_weight * 0.25)
 
     return 0.0
 

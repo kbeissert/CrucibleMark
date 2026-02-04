@@ -12,6 +12,27 @@ BADGE_BRONZE_THRESHOLD = 55.0
 SPEED_FAST_THRESHOLD = 40.0
 SPEED_MEDIUM_THRESHOLD = 80.0
 
+def get_performance_tier(avg_time: float) -> str:
+    """
+    Classifies the model into a performance tier based on average execution time.
+    
+    Tiers:
+    - ⚡ Real-Time (< 20s): Suitable for autocomplete/copilot
+    - ⏱️ Interactive (20s - 45s): Suitable for chat
+    - 🕐 Batch (45s - 120s): Background tasks only
+    - ❌ Unusable (>= 120s): Disqualified for production
+    """
+    if pd.isna(avg_time) or avg_time <= 0:
+        return "Unknown"
+    
+    if avg_time < 20.0:
+        return "⚡ Real-Time"
+    if avg_time < 45.0:
+        return "⏱️ Interactive"
+    if avg_time < 120.0:
+        return "🕐 Batch"
+    return "❌ Unusable"
+
 def get_quality_badge(total_score: float) -> str:
     """
     Strict quality tiers based on absolute performance.
@@ -53,19 +74,12 @@ def get_speed_class(avg_time: float) -> str:
         return "⏱️ Medium"
     return "🐢 Slow"
 
-def generate_skill_profile(row: pd.Series) -> str:
+def get_skill_role(row: pd.Series) -> str:
     """
-    Generate human-readable use-case recommendation.
-
-    Args:
-        row: A row from the leaderboard DataFrame containing scores and speed.
-
-    Returns:
-        A short descriptive profile string.
+    Determine the skill role (Specialist/All-Rounder type) based on scores.
+    Does NOT include speed/tier info.
     """
-    # Extract scores - adapting column names to match what is likely in the DF
-    # The DF columns usually match the "name" in module config.
-    # We try to map them safely.
+    # Extract scores
     categories = {
         'Code Quality': row.get('Code Quality Audit', 0),
         'UX Writing': row.get('UX Writing & Microcopy', 0),
@@ -85,46 +99,60 @@ def generate_skill_profile(row: pd.Series) -> str:
         except (ValueError, TypeError):
             continue
 
-    if not valid_categories:
-        return "Unknown"
+    role = "Specialist" # Default
 
-    # Find top category
-    # If all are close, it's an all-rounder.
+    if valid_categories:
+        # Check if all-rounder
+        vals = list(valid_categories.values())
+        score_range = max(vals) - min(vals)
+        is_all_rounder = score_range < 12 # Slightly looser than 10
 
-    top_cat = max(valid_categories, key=valid_categories.get)
-    # top_score = valid_categories[top_cat]
+        if is_all_rounder:
+            role = "All-Rounder"
+        else:
+            # Find top category
+            top_cat = max(valid_categories, key=valid_categories.get)
+            specialist_map = {
+                'Code Quality': "Code Reviewer",
+                'UX Writing': "UX Writer",
+                'Documentation': "Doc Writer",
+                'Content': "Content Adapter",
+                'Reasoning': "Reasoning Expert",
+                'Cultural': "Cultural Expert"
+            }
+            role = specialist_map.get(top_cat, "Specialist")
+            
+    return role
 
-    # Check if all-rounder (all present categories within 10 points)
-    # Using 10 points as range based on spec "within 10% range" (assuming points scale 0-100)
-    vals = list(valid_categories.values())
-    score_range = max(vals) - min(vals)
-    is_all_rounder = score_range < 10
+def format_speed_profile(row: pd.Series) -> str:
+    """
+    Generate merged 'Speed Profile' (Tier Emoji + Tier Name + Role + Warnings).
+    """
+    tier_raw = str(row.get("Performance Tier", ""))
+    role = str(row.get("Skill Profile", ""))
+    
+    # Extract Emoji and Base Tier Name
+    parts = tier_raw.split(maxsplit=1) 
+    emoji = parts[0] if parts else ""
+    tier_name = parts[1] if len(parts) > 1 else ""
+    
+    # Construct Base Profile
+    if tier_name and role:
+        profile = f"{emoji} {tier_name} {role}"
+    else:
+        profile = f"{tier_raw} {role}".strip()
 
-    # Speed context
-    speed = row.get("Speed Class", "")
-    speed_label = "Fast" if "⚡" in speed else "Slow" if "🐢" in speed else "Balanced"
+    # Add Stability Warning
+    try:
+        timeouts = float(row.get("Timeout Count", 0))
+        if timeouts >= 3:
+            profile += " ❌ UNSTABLE"
+        elif timeouts > 0:
+            profile += f" ⚠️ ({int(timeouts)} timeouts)"
+    except (ValueError, TypeError):
+        pass
 
-    total_score = row.get("Total Score", 0)
-
-    # Generate profile
-    if is_all_rounder:
-        if total_score >= 75:
-            return f"{speed_label} All-Rounder"
-        return f"{speed_label} Generalist"
-
-    # Specialist mapping
-    specialist_map = {
-        'Code Quality': f"{speed_label} Code Reviewer",
-        'UX Writing': f"{speed_label} UX Writer",
-        'Documentation': f"{speed_label} Doc Writer",
-        'Content': f"{speed_label} Content Adapter",
-        'Reasoning': f"Reasoning Specialist ({speed_label.lower()})"
-    }
-
-    if top_cat in specialist_map:
-        return specialist_map[top_cat]
-
-    return f"{speed_label} Specialist"
+    return profile
 
 def calculate_performance_per_second(total_score: float, avg_time: float) -> float:
     """
@@ -139,7 +167,7 @@ def calculate_performance_per_second(total_score: float, avg_time: float) -> flo
 
 def assign_rank_and_badges(df: pd.DataFrame) -> pd.DataFrame:
     """
-    Vergibt Rank, Badges, Speed Class und Skill Profile.
+    Vergibt Rank, Badges und Speed Profile.
     Updates the DataFrame in place / returns modified DF.
     """
     if df.empty:
@@ -153,13 +181,18 @@ def assign_rank_and_badges(df: pd.DataFrame) -> pd.DataFrame:
     # 1. Badge Assignment
     df["Badge"] = df["Total Score"].apply(get_quality_badge)
 
-    # 2. Speed Class
-    df["Speed Class"] = df["Avg Time (s)"].apply(get_speed_class)
+    # 2. Performance Tier (Calculated but not always displayed raw)
+    # Using Avg Time column name safely
+    if "Avg Time (s)" in df.columns:
+        df["Performance Tier"] = df["Avg Time (s)"].apply(get_performance_tier)
+    
+    # 3. Skill Profile (Role Only)
+    df["Skill Profile"] = df.apply(get_skill_role, axis=1)
 
-    # 3. Apply Skill Profile (requires Speed Class to be present)
-    df["Skill Profile"] = df.apply(generate_skill_profile, axis=1)
+    # 4. Speed Profile (Merged Tier + Skill + Warnings)
+    df["Speed Profile"] = df.apply(format_speed_profile, axis=1)
 
-    # 4. Performance per Second
+    # 5. Performance per Second
     df["Performance/s"] = df.apply(
         lambda row: calculate_performance_per_second(row.get("Total Score"), row.get("Avg Time (s)")),
         axis=1
@@ -184,15 +217,24 @@ def assign_rank_and_badges(df: pd.DataFrame) -> pd.DataFrame:
 def print_leaderboard_table(leaderboard: pd.DataFrame) -> None:
     """
     Outputs the leaderboard grouped by Badges using new columns.
+    Optimized for ~120 char width.
     """
-    print("\n--- Benchmark Leaderboard (v1.1) ---\n")
+    print("\n--- Benchmark Leaderboard (v1.2) ---\n")
 
-    # Desired column order for display
+    # Compact column list for main display
     display_fields = [
-        "Rank", "Model Name", "Version", "Badge", "Speed Class", "Skill Profile",
-        "Total Score", "Performance/s", "Avg Time (s)", "Cost per 1K",
-        "Routine Score", "Reasoning Score", "Tests Run"
+        "Rank", "Model Name", "Version", "Badge", 
+        "Speed Profile", 
+        "Total Score", "Performance/s", 
+        "Avg Time (s)"
+        # Note: Cost, specific scores, etc. hidden to fit width
+        # But user requested Cost per 1K in text description, let's keep it if possible
     ]
+    
+    # Add Cost if space suggests, but 120 chars is tight. Try adding it.
+    display_fields.append("Cost per 1K")
+    
+    # We remove Routine/Reasoning Score from main view as requested
 
     badges_order = ["🏆 Gold", "🥈 Silver", "🥉 Bronze", "⚖️ Standard"]
 
