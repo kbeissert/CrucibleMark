@@ -32,10 +32,10 @@ logger = logging.getLogger("consolidate")
 def consolidate_file(file_path: Path):
     """Liest, bereinigt und überschreibt eine einzelne CSV-Datei."""
     if not file_path.exists():
-        logger.info(f"⚠️  Datei nicht gefunden (überspringe): {file_path}")
+        logger.info("⚠️  Datei nicht gefunden (überspringe): %s", file_path)
         return
 
-    logger.info(f"🔄 Verarbeite: {file_path}")
+    logger.info("Verarbeite: %s", file_path)
 
     try:
         # Laden
@@ -50,7 +50,7 @@ def consolidate_file(file_path: Path):
         required_cols = ["model", "asset_id", "timestamp"]
         if not all(col in df.columns for col in required_cols):
             logger.error(
-                f"   ❌ Fehler: Fehlende Spalten. Erwartet: {required_cols}"
+                "   ❌ Fehler: Fehlende Spalten. Erwartet: %s", required_cols
             )
             return
 
@@ -74,16 +74,18 @@ def consolidate_file(file_path: Path):
             # falls andere Tools Strings erwarten. Pandas to_csv schreibt ISO8601 standardmäßig.
             df_clean.to_csv(file_path, index=False)
             logger.info(
-                f"   ✅ Bereinigt: {original_count} -> {cleaned_count} Zeilen. ({removed_count} alte Einträge entfernt)"
+                "   ✅ Bereinigt: %d -> %d Zeilen. (%d alte Einträge entfernt)",
+                original_count, cleaned_count, removed_count
             )
         else:
             logger.info("   ✨ Keine Duplikate gefunden. Datei unverändert.")
 
     except Exception as e:
-        logger.error(f"   ❌ Kritischer Fehler beim Verarbeiten von {file_path}: {e}")
+        logger.error("   ❌ Kritischer Fehler beim Verarbeiten von %s: %s", file_path, e)
 
 
 def main():
+    """Consolidation Main Entry Point."""
     print("🧹 Starte CSV-Konsolidierung (The Crucible Memory Law)...")
     for csv_file in CSV_FILES:
         consolidate_file(csv_file)

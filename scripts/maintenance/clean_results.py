@@ -13,6 +13,7 @@ from pathlib import Path
 from typing import List
 
 # Third-party
+import yaml
 import pandas as pd
 
 # Setup Root Path
@@ -20,8 +21,10 @@ ROOT_DIR = Path(__file__).parent.parent.parent
 sys.path.insert(0, str(ROOT_DIR))
 
 # Local imports
+# pylint: disable=wrong-import-position
 from utils.module_registry import get_active_modules
 from utils.config_validator import ConfigValidator
+# pylint: enable=wrong-import-position
 
 # Setup Logging
 logging.basicConfig(level=logging.INFO, format="%(message)s")
@@ -42,7 +45,7 @@ def get_module_asset_ids(module_key: str) -> List[str]:
             break
     
     if not target_module:
-        logger.error(f"❌ Modul '{module_key}' nicht in der Konfiguration gefunden.")
+        logger.error("❌ Modul '%s' nicht in der Konfiguration gefunden.", module_key)
         return []
 
     # Pfad zu Assets
@@ -56,7 +59,6 @@ def get_module_asset_ids(module_key: str) -> List[str]:
     ids = []
     
     # 1. YAML Assets scannen
-    import yaml
     if assets_dir.exists():
         for f in assets_dir.glob("*.yaml"):
             try:

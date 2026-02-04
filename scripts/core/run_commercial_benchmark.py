@@ -23,6 +23,7 @@ sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 from utils.base_runner import BaseBenchmarkRunner  # noqa: E402
 from utils.module_loader import load_test_class  # noqa: E402
 from utils.benchmark_utils import select_from_list, discover_assets, load_asset_yaml, format_political_compass_data, prepare_pc_csv_row  # noqa: E402
+from utils.model_utils import get_model_version  # noqa: E402
 from utils.llm_client import LLMClient  # noqa: E402
 from utils.module_registry import load_active_benchmarks # noqa: E402
 from utils.scoring_utils import calculate_score_contributions # noqa: E402
@@ -291,7 +292,7 @@ class CommercialBenchmarkRunner(BaseBenchmarkRunner):
 
             else:
                 # Test Mode: Skip already processed tests (SSOT Behavior)
-                 return None
+                return None
 
         # 2. JSON Cache (Golden Standard) - DISABLED
         # User Feedback: "Fehlt der golden Standard, soll er dort nachsehen [CSV].
@@ -343,13 +344,11 @@ class CommercialBenchmarkRunner(BaseBenchmarkRunner):
         meta = exec_result.get("metadata", {})
         version = meta.get("system_fingerprint")
 
-        # Fallback to returned model ID only if it differs from the requested model alias
+        # Fallback to SSOT from model_utils if API/Fingerprint parsing failed
         if not version:
-            returned_model = meta.get("model")
-            if returned_model and returned_model != model:
-                version = returned_model
+            version = get_model_version(model, provider)
 
-        result["model_version"] = version or "unknown"
+        result["model_version"] = version
 
         # Add Cost Tracking
         cost_val = 0.0

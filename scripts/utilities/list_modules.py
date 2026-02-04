@@ -11,11 +11,10 @@ import sys
 # Add root to sys.path
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
-from utils.module_registry import get_active_modules # noqa: E402
-
-# pylint: disable=import-error
+# pylint: disable=wrong-import-position, wrong-import-order
 import yaml
-# pylint: enable=import-error
+from utils.module_registry import get_active_modules # noqa: E402
+# pylint: enable=wrong-import-position, wrong-import-order
 
 CONFIG_PATH = Path("benchmark_config.yaml")
 
