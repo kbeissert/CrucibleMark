@@ -6,8 +6,6 @@ import csv
 import json
 import logging
 import os
-import shutil
-import subprocess
 import sys
 import time
 import traceback
@@ -28,7 +26,11 @@ from utils.benchmark_utils import (
 )
 from utils.llm_client import LLMClient
 from utils.logging_config import setup_logging
-from utils.model_utils import get_model_version, is_reasoning_model
+from utils.model_utils import (
+    get_model_version,
+    get_ollama_models_info,
+    is_reasoning_model
+)
 from utils.module_loader import load_test_class
 from utils.module_registry import load_active_benchmarks
 from utils.scoring_utils import calculate_score_contributions
@@ -73,40 +75,10 @@ class LocalBenchmarkRunner(BaseBenchmarkRunner):
 
     @staticmethod
     def get_ollama_models() -> List[str]:
-        """Holt verfügbare Ollama-Modelle."""
-        try:
-            ollama_path = shutil.which("ollama")
-            if not ollama_path:
-                print("⚠️  Ollama Executable nicht gefunden.")
-                return []
-
-            result = subprocess.run(
-                [ollama_path, "list"],
-                capture_output=True,
-                text=True,
-                check=True,
-                timeout=10,
-            )
-
-            models = []
-            for line in result.stdout.strip().split("\n")[1:]:
-                if not line.strip():
-                    continue
-                model_name = line.split()[0]
-                name_lower = model_name.lower()
-                # Exclude non-generative models
-                if not any(x in name_lower for x in ["embed", "-vl", "vision"]):
-                    models.append(model_name)
-
-            return models
-
-        except (
-            subprocess.CalledProcessError,
-            FileNotFoundError,
-            subprocess.TimeoutExpired,
-        ) as e:
-            print(f"⚠️  Ollama nicht verfügbar: {e}")
-            return []
+        """Holt verfügbare Ollama-Modelle via SSOT Utility."""
+        infos = get_ollama_models_info()
+        # Extract names from the SSOT-provided dicts
+        return [m["name"] for m in infos]
 
     def load_commercial_references(self) -> Dict[str, Dict[str, Any]]:
         """Lädt kommerzielle Referenzwerte aus CSV."""
@@ -353,14 +325,17 @@ class LocalBenchmarkRunner(BaseBenchmarkRunner):
         pc_csv = Path("benchmark_scores/political_compass_results.csv")
         pc_csv.parent.mkdir(exist_ok=True, parents=True)
 
-        # Standard V2 Schema
+        # Standard V2 Schema (Aligned with Commercial Runner)
         fieldnames = [
             "model",
-            "module",
+            "model_version",
             "run_id",
-            "status",
-            "execution_time",
-            "metadata_json",
+            "x_coordinate",
+            "y_coordinate",
+            "x_label",
+            "y_label",
+            "metrics_json",
+            "timestamp",
         ]
 
         file_exists = pc_csv.exists() and pc_csv.stat().st_size > 0
@@ -368,9 +343,11 @@ class LocalBenchmarkRunner(BaseBenchmarkRunner):
         rows_to_write = []
 
         # Calculate execution time from statistics if available
-        exec_time = 0.0
+        # exec_time = 0.0 hiding unused variable warning if removed completely
         if "statistics" in report:
-            exec_time = report["statistics"].get("execution_time", 0.0)
+            _ = report["statistics"].get("execution_time", 0.0)
+
+        timestamp_str = datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%f")
 
         # 1. Archive individual runs
         if "individual_runs" in report:
@@ -380,16 +357,14 @@ class LocalBenchmarkRunner(BaseBenchmarkRunner):
                 rows_to_write.append(
                     {
                         "model": model,
-                        "module": "political_compass",
-                        # "asset_id": "aggregate",  <-- Removed
+                        "model_version": _model_version,
                         "run_id": f"RUN_{run.get('id', i)}",
-                        # "total_score": 0, <-- Removed
-                        # "max_score": 0, <-- Removed
-                        "status": "success",
-                        "execution_time": round(
-                            exec_time / len(report["individual_runs"]), 2
-                        ),
-                        "metadata_json": json.dumps(run_formatted, ensure_ascii=False),
+                        "x_coordinate": run.get("x", 0.0),
+                        "y_coordinate": run.get("y", 0.0),
+                        "x_label": run.get("x_label", ""),
+                        "y_label": run.get("y_label", ""),
+                        "metrics_json": json.dumps(run_formatted, ensure_ascii=False),
+                        "timestamp": timestamp_str,
                     }
                 )
 
@@ -410,14 +385,14 @@ class LocalBenchmarkRunner(BaseBenchmarkRunner):
         rows_to_write.append(
             {
                 "model": model,
-                "module": "political_compass",
-                # "asset_id": "aggregate", <-- Removed
+                "model_version": _model_version,
                 "run_id": "AVG",
-                # "total_score": 0, <-- Removed
-                # "max_score": 0, <-- Removed
-                "status": "success",
-                "execution_time": round(exec_time, 2),
-                "metadata_json": json.dumps(avg_formatted, ensure_ascii=False),
+                "x_coordinate": report["coordinates"]["x"],
+                "y_coordinate": report["coordinates"]["y"],
+                "x_label": report.get("archetype", {}).get("x_label", ""),
+                "y_label": report.get("archetype", {}).get("y_label", ""),
+                "metrics_json": json.dumps(avg_formatted, ensure_ascii=False),
+                "timestamp": timestamp_str,
             }
         )
 

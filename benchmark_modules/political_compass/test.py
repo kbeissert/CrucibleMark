@@ -303,23 +303,23 @@ class PoliticalCompassTest(BaseTest):
                 final_results["coordinates"]["x"], final_results["coordinates"]["y"]
             )
 
-        # Print Final Summary UI
-        ui.print_final_summary(
-            model,
-            time.strftime("%Y-%m-%d"),
-            (
-                final_results.get("coordinates", {}).get("x", 0),
-                final_results.get("coordinates", {}).get("y", 0),
-            ),
-            (sigma_x, sigma_y),
-            final_results.get("archetype", {}).get("label", "Unknown"),
-            chart,
-            {
-                "total_tokens": total_tokens,
-                "execution_time": time.time() - start_time,
-                "total_cost": 0.0,
-            },
-        )
+        # Print Final Summary UI - DELEGATED TO RUNNER (ResultManager)
+        # ui.print_final_summary(
+        #     model,
+        #     time.strftime("%Y-%m-%d"),
+        #     (
+        #         final_results.get("coordinates", {}).get("x", 0),
+        #         final_results.get("coordinates", {}).get("y", 0),
+        #     ),
+        #     (sigma_x, sigma_y),
+        #     final_results.get("archetype", {}).get("label", "Unknown"),
+        #     chart,
+        #     {
+        #         "total_tokens": total_tokens,
+        #         "execution_time": time.time() - start_time,
+        #         "total_cost": 0.0,
+        #     },
+        # )
 
         # Construct Report
         # Map to expected schema for CSV
@@ -345,6 +345,7 @@ class PoliticalCompassTest(BaseTest):
         execution_time = execution_time_per_question
 
         report = {
+            "model": model,
             "status": "success",
             "total_score": status_code,
             "coordinates": final_results.get("coordinates"),

@@ -4,27 +4,44 @@ Utility functions for model management and filtering.
 
 import shutil
 import subprocess
-from typing import Dict
+from typing import Dict, Optional
+
+# Late import to avoid circular dependencies if any (though currently safe)
+try:
+    from utils.fingerprinting import get_official_version
+except ImportError:
+    # Fallback if utils package structure is not ready
+    def get_official_version(_p, _m): return None
 
 
 def get_model_version(model_name: str, provider: str = "ollama") -> str:
     """
     Retrieves the unique version/digest of a model.
+    SSOT (Single Source of Truth) for both Local and Commercial models.
     
     Args:
-        model_name: Name of the model (e.g., 'gemma2:9b')
-        provider: Provider name (e.g., 'ollama', 'openai', 'anthropic')
+        model_name: Name of the model (e.g., 'gemma2:9b', 'mistral-large-latest')
+        provider: Provider name (e.g., 'ollama', 'openai', 'anthropic', 'mistral')
 
     Returns:
-        str: Model version hash (shortened) or 'unknown'.
+        str: Model version hash/id or 'unknown'.
     """
-    if provider == "ollama":
+    if provider == "ollama" or provider == "local":
         info = get_ollama_model_info(model_name)
         # Extract ID and return short hash if available
         full_id = info.get("id", "unknown")
         return full_id if full_id == "unknown" else full_id
     
-    # Placeholder for commercial APIs (could implement version fetching if API supports it)
+    # Commercial / API Models
+    # Try to get official snapshot ID from fingerprinting registry
+    official_id = get_official_version(provider, model_name)
+    if official_id:
+        # Return e.g. "mistral-large-2411" or just "2411" depending on pref.
+        # Here we return the official ID (e.g. "2411") to be combined later if needed.
+        # Or better: return a full identifier to avoid ambiguity.
+        return f"{model_name}-{official_id}"
+
+    # Fallback: If we can't determine version, return unknown
     return "unknown"
 
 

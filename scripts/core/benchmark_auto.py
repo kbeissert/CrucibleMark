@@ -17,16 +17,20 @@ import shutil
 import subprocess
 from pathlib import Path
 from typing import Any, List, Dict, Set, Tuple
-from dotenv import load_dotenv
-
-# Load environment variables
-load_dotenv()
 
 # Third-party imports
 # pylint: disable=import-error
 import yaml  # noqa: E402
 import pandas as pd  # noqa: E402
+try:
+    from dotenv import load_dotenv
+except ImportError:
+    # pylint: disable=unused-argument
+    def load_dotenv(): pass
 # pylint: enable=import-error
+
+# Load environment variables
+load_dotenv()
 
 # Pfad setup
 ROOT_DIR = Path(__file__).parent.parent.parent

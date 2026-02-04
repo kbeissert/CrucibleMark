@@ -18,10 +18,12 @@ import subprocess
 from pathlib import Path
 from typing import List, Tuple
 
+# pylint: disable=import-error
 import yaml
 from rich.console import Console
 from rich.table import Table
 from rich import print as rprint
+# pylint: enable=import-error
 
 # Add project root to path
 ROOT_DIR = Path(__file__).parent.parent.parent
@@ -56,7 +58,7 @@ def get_commercial_models(config_path: str = "benchmark_config.yaml") -> List[Tu
 
 
 def check_provider_health(
-    models: List[Tuple[str, str, str]], 
+    models: List[Tuple[str, str, str]],
     config_path: str = "benchmark_config.yaml"
 ) -> List[str]:
     """
