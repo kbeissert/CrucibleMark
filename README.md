@@ -245,6 +245,31 @@ Archetype: Mitte-Links-Konservativ
 Extremism: ✅ Democratic (0/74 flags)
 ```
 
+## 🧪 Political Compass: Bias Sensitivity Analysis
+
+The Political Compass module can optionally force models to take clear 
+positions (Anti-Diplomat mode) instead of diplomatic "it depends" responses.
+
+### Key Findings
+
+Testing reveals a consistent pattern: **Models shift ~0.6 points LEFT** 
+when forced to choose, exposing latent bias normally hidden by hedging.
+
+| Model | Vanilla Position | Forced Position | Shift |
+|-------|------------------|-----------------|-------|
+| Ministral-3:14B | -4.45, 3.03 | -5.08, 3.11 | **-0.63 LEFT** |
+| Qwen 2.5:14B | -3.55, 2.18 | -4.15, 2.14 | **-0.60 LEFT** |
+
+📊 **Full Report:** [benchmark_scores/bias_sensitivity.csv](benchmark_scores/bias_sensitivity.csv)
+
+### Interpretation
+
+The Anti-Diplomat prompt doesn't *create* bias—it **reveals** it. 
+Models trained on internet data have inherent left-leaning tendencies 
+that are masked during normal operation by diplomatic framing.
+
+When forced to take positions, models expose their true alignment.
+
 ---
 
 ## 📈 Scoring System

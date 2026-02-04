@@ -160,6 +160,11 @@ def get_commercial_models_from_config(config: Dict) -> list[tuple[str, str, str]
 
 def resolve_provider(model_name: str) -> tuple[str, str]:
     """Ermittelt Provider basierend auf Modell-Präfix."""
+    
+    # Determine if likely Ollama (contains tag separator)
+    if ":" in model_name:
+        return "ollama", model_name
+
     name_lower = model_name.lower()
     if name_lower.startswith(("mistral-", "open-mixtral", "ministral")):
         return "mistral", model_name

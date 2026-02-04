@@ -134,11 +134,17 @@ class OllamaClient(BaseProviderClient):
         prompt: str,
         options: Dict[str, Any],
         stream_handler: Callable[[str], None],
+        system_prompt: Optional[str] = None,
     ) -> str:
         """Behandelt Streaming-Response von Ollama."""
+        messages = []
+        if system_prompt:
+            messages.append({"role": "system", "content": system_prompt})
+        messages.append({"role": "user", "content": prompt})
+
         response = self.client.chat(
             model=model,
-            messages=[{"role": "user", "content": prompt}],
+            messages=messages,
             options=options,
             stream=True,
         )
@@ -192,14 +198,24 @@ class OllamaClient(BaseProviderClient):
             if "max_tokens" in kwargs:
                 options["num_predict"] = kwargs["max_tokens"]
 
-            if stream_handler:
-                return self._handle_streaming(model, prompt, options, stream_handler)
+            # Prepare messages list
+            messages = []
+            
+            # Check for system prompt in kwargs
+            system_prompt = kwargs.get("system")
+            if system_prompt:
+                messages.append({"role": "system", "content": system_prompt})
+                
+            messages.append({"role": "user", "content": prompt})
 
+            if stream_handler:
+                return self._handle_streaming(model, prompt, options, stream_handler, system_prompt=system_prompt)
+            
             # Standard Blocking Call
             try:
                 response = self.client.chat(
                     model=model,
-                    messages=[{"role": "user", "content": prompt}],
+                    messages=messages,
                     options=options,
                 )
             except Exception as e:

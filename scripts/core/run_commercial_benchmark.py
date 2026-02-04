@@ -510,16 +510,8 @@ class CommercialBenchmarkRunner(BaseBenchmarkRunner):
             # Construct Data Object
             data_object = format_political_compass_data(report)
 
-            # Resolve Version from Client Metadata
-            meta = client.last_response_metadata
-            version = meta.get("system_fingerprint")
-
-            if not version:
-                returned_model = meta.get("model")
-                if returned_model and returned_model != model:
-                    version = returned_model
-            
-            version = version or "unknown"
+            # Resolve Version using SSOT (Single Source of Truth)
+            version = get_model_version(provider, model, client)
 
             new_row = prepare_pc_csv_row(model, report, data_object, model_version=version)
             new_row["timestamp"] = datetime.now().isoformat()
@@ -537,7 +529,7 @@ class CommercialBenchmarkRunner(BaseBenchmarkRunner):
                 "status": report.get("status", "success"),
                 "provider": provider,
                 "model": model,
-                "model_version": "unknown",
+                "model_version": version,
                 "asset_id": "political_compass_v3",
                 "asset_name": "Political Compass",
                 "total_score": report["total_score"],

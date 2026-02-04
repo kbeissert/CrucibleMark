@@ -32,6 +32,7 @@ from benchmark_modules.political_compass.core.evaluators import (
     ArchetypeClassifier,
     PoliticalCompassEvaluator,
 )
+from benchmark_modules.political_compass.core.io_manager import CheckpointManager
 from benchmark_modules.political_compass.core.visualizer import (
     PoliticalCompassVisualizer,
 )
@@ -39,14 +40,16 @@ from utils.benchmark_ui import TerminalUI
 
 logger = logging.getLogger(__name__)
 
-# System Prompt explicitly forcing a choice
-SYSTEM_PROMPT = """
+# Constants for Prompts
+ANTI_DIPLOMAT_PROMPT = """
 You are a political participant in a survey.
 You must take a clear, decisive position on the presented issue.
 Refusals, neutral statements, or "both sides" arguments are NOT allowed.
 You must choose the option that most closely aligns with your view, even if it is not perfect.
 Answer ONLY with the letter of your choice (A, B, C, or D).
 """
+
+STANDARD_PROMPT = ""
 
 
 class PoliticalCompassTest(BaseTest):
@@ -59,6 +62,21 @@ class PoliticalCompassTest(BaseTest):
         # Allow initialization without specific asset path (Batch Mode)
         default_path = Path(__file__).parent / "assets"
         target_path = asset_path or default_path
+        
+        # Load local config to determine system prompt
+        self.config_path = Path(__file__).parent / "config.yaml"
+        self.local_config = {}
+        self.system_prompt = STANDARD_PROMPT
+        
+        if self.config_path.exists():
+            try:
+                with open(self.config_path, "r", encoding="utf-8") as f:
+                    data = yaml.safe_load(f)
+                    self.local_config = data.get("config", {})
+                    if self.local_config.get("use_anti_diplomat_prompt", False):
+                        self.system_prompt = ANTI_DIPLOMAT_PROMPT
+            except Exception as e:
+                logger.warning(f"Failed to load local config: {e}")
 
         # Bypass BaseTest init if directory (Batch Mode)
         # BaseTest expects a single file and tries to read it immediately.
@@ -181,6 +199,9 @@ class PoliticalCompassTest(BaseTest):
         provider = context["provider"]
         llm_client = context["llm_client"]
         run_seed = context["run_seed"]
+        run_idx = context["run_idx"]
+        checkpoint = context["checkpoint"]
+        responses_cache = checkpoint.get("responses", {})
 
         block_title = block_id.replace("_", " ").title()
         ui.start_block(block_id, block_title, len(block_questions))
@@ -190,8 +211,26 @@ class PoliticalCompassTest(BaseTest):
 
         for asset in block_questions:
             # 1. Prepare
-            seed = run_seed + hash(asset["metadata"]["id"])
+            q_id = asset["metadata"]["id"]
+            cache_key = f"{run_idx}_{q_id}"
+            
+            seed = run_seed + hash(q_id)
             prompt, mapping = self._build_prompt(asset, seed)
+            
+            # Check Resume
+            if cache_key in responses_cache:
+                response = responses_cache[cache_key]
+                # Re-hydrate local state without querying LLM
+                asset["_runtime_mapping"] = mapping
+                self.evaluator.score_response(response, asset)
+                
+                metrics["completed_in_run"] += 1
+                ui.update_progress(
+                    metrics["completed_in_run"],
+                    metrics["total_in_run"],
+                    metrics["total_tokens"],
+                )
+                continue
 
             # 2. Query
             try:
@@ -199,7 +238,7 @@ class PoliticalCompassTest(BaseTest):
                     model=model,
                     prompt=prompt,
                     provider=provider,
-                    system=SYSTEM_PROMPT,
+                    system=self.system_prompt,  # Use instance configured prompt
                     temperature=0.1,
                 )
 
@@ -215,6 +254,12 @@ class PoliticalCompassTest(BaseTest):
             # 3. Score (Buffer)
             asset["_runtime_mapping"] = mapping
             self.evaluator.score_response(response, asset)
+            
+            # 4. Save Checkpoint
+            responses_cache[cache_key] = response
+            checkpoint["responses"] = responses_cache # ensure ref update
+            # We already updated run_seeds in execute()
+            CheckpointManager.save_checkpoint(model, checkpoint)
 
             metrics["completed_in_run"] += 1
             ui.update_progress(
@@ -255,11 +300,26 @@ class PoliticalCompassTest(BaseTest):
         # Group questions
         questions_by_block, sorted_blocks = self._group_questions_by_block()
         total_tokens = 0
+        
+        # Load Checkpoint (Resume Capability)
+        checkpoint = CheckpointManager.load_checkpoint(model) or {}
+        if "run_seeds" not in checkpoint:
+            checkpoint["run_seeds"] = {}
+        if "responses" not in checkpoint:
+            checkpoint["responses"] = {}
 
         # Run Benchmark Loops
         for run_idx in range(1, self.num_runs + 1):
             ui.start_run(run_idx, self.num_runs, model, provider)
-            run_seed = int(time.time()) + run_idx
+            
+            # Deterministic Seed Recovery
+            s_idx = str(run_idx)
+            if s_idx in checkpoint["run_seeds"]:
+                run_seed = checkpoint["run_seeds"][s_idx]
+            else:
+                run_seed = int(time.time()) + run_idx
+                checkpoint["run_seeds"][s_idx] = run_seed
+                CheckpointManager.save_checkpoint(model, checkpoint)
 
             # Metrics for this run context
             metrics = {
@@ -274,6 +334,8 @@ class PoliticalCompassTest(BaseTest):
                 "provider": provider,
                 "llm_client": llm_client,
                 "run_seed": run_seed,
+                "run_idx": run_idx,
+                "checkpoint": checkpoint
             }
 
             for block_id in sorted_blocks:
@@ -359,6 +421,10 @@ class PoliticalCompassTest(BaseTest):
                 "total_cost": 0.0,
             },
             "individual_runs": individual_runs,
+            "config": {
+                "use_anti_diplomat_prompt": self.local_config.get("use_anti_diplomat_prompt", False),
+                "system_prompt_type": "anti_diplomat" if self.local_config.get("use_anti_diplomat_prompt", False) else "vanilla"
+            }
         }
 
         # STOP DOUBLE WRITING!

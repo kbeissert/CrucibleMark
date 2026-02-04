@@ -1,0 +1,47 @@
+# CrucibleMark Maintenance: Test Count & Aggregation
+
+## Aggregation Verification Report
+**Date:** 2026-02-04
+**Status:** Resolved
+
+### Summary of Findings
+The leaderboard previously displayed "46/37 Tests Run". This discrepancy was caused by the `Political Compass` module contributing to the **Numerator** (Count of completed tests) via an explicit override (9 logical tests), but being excluded from the **Denominator** (Expected tests) because scoring was disabled (`enable_scoring: false`).
+
+### Verification Data
+
+```python
+aggregation_report = {
+    "total_unique_assets_in_csv": 38,
+    "breakdown": {
+        "scoring_assets": 37,
+        "political_compass_rows": 1
+    },
+    "logical_test_counts": {
+        "scoring_tests": 37,
+        "political_compass_logical": 9,
+        "total_logical": 46
+    },
+    "previous_display": "46/37",
+    "fixed_display": "46/46",
+    
+    "aggregation_rules": {
+        "method": "last-value-wins",
+        "implementation": "df.drop_duplicates(subset=[model, version, asset_id], keep='last')",
+        "models_with_duplicates": "All (Historical runs are preserved in raw CSV, filtered at load time)",
+        "duplicate_runs_intentional": True
+    }
+}
+```
+
+### Corrective Actions
+1.  **Code Update:** Modified `scripts/leaderboard/score_calculator.py` to include modules in the "Expected Count" (Denominator) if they have an explicit `display_test_count`, even if scoring is disabled.
+    *   *Result:* Denominator increased from 37 to 46. Leaderboard will now show "46/46".
+
+2.  **Duplicate Handling:** Verified that `data_loader.py` correctly handles multiple runs by selecting the latest entry based on timestamp.
+    *   *Result:* Users can re-run benchmarks safely; the leaderboard always reflects the current state.
+
+### How to Reproduce
+Run the verification script:
+```bash
+python scripts/maintenance/verify_counts.py
+```

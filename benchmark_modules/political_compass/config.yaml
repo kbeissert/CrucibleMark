@@ -86,7 +86,12 @@ config:
   runs: 3
   aggregate_method: "mean"
   measure_variance: true
-  prompt_version: "v2_anti_diplomat"
+  
+  # Anti-Diplomat Prompt Configuration
+  # Set to true to force decisive answers via strict system prompt (prevents neutral "both sides" responses).
+  # Set to false for standard/natural model behavior.
+  use_anti_diplomat_prompt: true
+  
   output_format: "compass"
   coordinate_system:
     x_axis: "economic"

@@ -180,11 +180,39 @@ def _aggregate_basic_stats(df: pd.DataFrame, modules_config: Dict[str, Any]) -> 
     if "timestamp" in df.columns:
         base_aggs["timestamp"] = "max"
 
+    # Enhanced Time Stats (Max, P95, P99, Timeouts)
+    # Define custom aggregation functions
+    def p95(x): return x.quantile(0.95)
+    def p99(x): return x.quantile(0.99)
+    def count_timeouts(x): return (x > 120.0).sum()
+
+    # Create separate stats for time to avoid complex multi-index flattening
+    time_aggs = {
+        "execution_time": ["mean", "max", p95, p99, count_timeouts]
+    }
+    
+    # 1. Base Aggregation
     base_stats = (
         df.groupby(["model", "model_version", "type"])
         .agg(base_aggs)
         .reset_index()
     )
+
+    # Calculate rigorous time stats
+    time_stats = (
+        df.groupby(["model", "model_version", "type"])["execution_time"]
+        .agg(
+            Avg_Time="mean",
+            Max_Time="max",
+            P95_Time=p95,
+            P99_Time=p99,
+            Timeout_Count=count_timeouts
+        )
+        .reset_index()
+    )
+
+    # Merge time stats into base stats
+    base_stats = pd.merge(base_stats, time_stats, on=["model", "model_version", "type"])
 
     # 2. Scoring Stats (Percentage) - From SCORING runs only
     scoring_df = df[df.apply(is_scoring_asset, axis=1)]
@@ -227,8 +255,8 @@ def _calculate_run_counts(df: pd.DataFrame, modules_config: Dict[str, Any]) -> p
             continue
 
         name = mod_data.get("name")
-        # Only count assets towards expected total if scoring is enabled
-        if mod_data.get("enable_scoring", True):
+        # Only count assets towards expected total if scoring is enabled OR if explicit display count is set
+        if mod_data.get("enable_scoring", True) or mod_data.get("display_test_count"):
             expected_assets += mod_data.get("assets_count", 0)
 
         if mod_data.get("display_test_count"):
@@ -432,7 +460,7 @@ def calculate_scores(
     )
 
     # Remove temporary calculation columns
-    cols_to_drop = ["sum_routine", "sum_reasoning", "total_weight_routine", "total_weight_reasoning"]
+    cols_to_drop = ["sum_routine", "sum_reasoning", "total_weight_routine", "total_weight_reasoning", "Avg_Time"]
     result = result.drop(columns=[c for c in cols_to_drop if c in result.columns])
 
     # --- Cleanup Renaming ---
@@ -441,6 +469,10 @@ def calculate_scores(
             "percentage": "Overall Score",
             "performance_ratio": "Performance Ratio",
             "execution_time": "Avg Time (s)",
+            "Max_Time": "Max Time (s)",
+            "P95_Time": "P95 Time (s)",
+            "P99_Time": "P99 Time (s)",
+            "Timeout_Count": "Timeout Count",
             "type": "Type",
         }
     )
