@@ -6,6 +6,7 @@ import csv
 import json
 import logging
 import os
+import subprocess
 import sys
 import time
 import traceback
@@ -489,6 +490,18 @@ class LocalBenchmarkRunner(BaseBenchmarkRunner):
             RESULT_MANAGER.print_summary(report)
             output_dir = Path("outputs/runs")
             RESULT_MANAGER.save_json(report, output_dir)
+            
+            # Auto-Trigger Bias Analysis (if Political Compass)
+            if benchmark_info.get("id", "") == "political_compass_v3":
+                 try:
+                     print("📊 Updating Bias Sensitivity Report...")
+                     subprocess.run(
+                        [sys.executable, "scripts/analysis/update_bias_report.py"], 
+                        check=False,
+                        capture_output=False
+                    )
+                 except Exception as e:
+                     logger.warning("Could not update bias report: %s", e)
 
         self._update_political_compass_csv(model, report, _model_version=model_version)
 

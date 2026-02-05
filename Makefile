@@ -17,6 +17,7 @@ help:
 	@echo "  make benchmark-single     Einzelnes Modell (MODEL=name [MODULE=name])"
 	@echo "  make benchmark-cross-model Einzelnes Modul gegen ALLE LLMs (MODULE=name)"
 	@echo "  make leaderboard          Generiere Leaderboard-CSV aus Ergebnissen"
+	@echo "  make bias-report          📊 Update Bias Sensitivity Report (Political Compass)"
 	@echo "  make clean-sessions       🗑️  Lösche temporäre Checkpoints (Political Compass)"
 	@echo ""
 	@echo "=== Golden Standards ==="
@@ -78,6 +79,10 @@ benchmark-auto:
 leaderboard:
 	@echo "📊 Generiere Leaderboard..."
 	$(PYTHON) scripts/core/generate_leaderboard.py
+
+bias-report:
+	@echo "📊 Aktualisiere Bias Sensitivity Report (Vanilla vs. Anti-Diplomat)..."
+	$(PYTHON) scripts/analysis/update_bias_report.py
 
 # === VALIDATION ===
 

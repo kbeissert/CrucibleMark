@@ -36,6 +36,13 @@
 
 ## 🔄 IN PROGRESS
 
+### Planned for Next Session
+- [ ] **Human Baseline Script (`run_human_compass.py`)**:
+    - Tool to allow humans to take the Political Compass test.
+    - Terminal UI with shuffled options.
+    - User identification (Pseudonym/Name).
+    - Compatible JSON/CSV output for comparison in reports.
+
 ### Testing Infrastructure
 - [ ] Unit tests for all modules (currently ~60%)
 - [ ] Integration tests (framework-level)

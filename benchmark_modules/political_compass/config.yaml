@@ -90,7 +90,7 @@ config:
   # Anti-Diplomat Prompt Configuration
   # Set to true to force decisive answers via strict system prompt (prevents neutral "both sides" responses).
   # Set to false for standard/natural model behavior.
-  use_anti_diplomat_prompt: true
+  use_anti_diplomat_prompt: false
   
   output_format: "compass"
   coordinate_system:
