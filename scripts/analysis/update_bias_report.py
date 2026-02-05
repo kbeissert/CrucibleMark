@@ -141,6 +141,7 @@ def generate_report():
         # Determine Mode
         mode = detect_run_mode(run, float(x))
 
+
         if model_id not in model_runs:
             model_runs[model_id] = []
             
