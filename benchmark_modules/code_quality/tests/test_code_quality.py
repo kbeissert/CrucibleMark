@@ -149,7 +149,7 @@ class TestScoringLogic:
 
     def test_empty_response_returns_zero_score(self, security_asset_path):
         """Leere Response gibt 0 Punkte"""
-        test = CodeQualityTest(security_asset_path)
+        # test = CodeQualityTest(security_asset_path)
         # Use Evaluator explicitly since test.execute returns BenchmarkResult
         from benchmark_modules.code_quality.core.evaluators import CodeQualityEvaluator
         

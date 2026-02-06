@@ -35,7 +35,7 @@ except ImportError:
     ResultManager = None
 # pylint: enable=wrong-import-position, import-error
 
-from utils.fingerprinting import ModelFingerprinter
+from utils.fingerprinting import ModelFingerprinter  # noqa: E402
 
 logger = logging.getLogger(__name__)
 
@@ -349,7 +349,7 @@ class CommercialBenchmarkRunner(BaseBenchmarkRunner):
         result = calculate_score_contributions(result, asset_cfg)
 
         # Add Version/Fingerprint if available from API
-        meta = exec_result.meta
+        # meta = exec_result.meta
         
         # Use Global SSOT (Dual Version format) from Fingerprinting Utility
         # We pass self.client if available to allow behavioral hashing

@@ -35,7 +35,7 @@ from benchmark_modules.political_compass.core.evaluators import (
 )
 from benchmark_modules.political_compass.core.io_manager import CheckpointManager
 from benchmark_modules.political_compass.core.visualizer import (
-    PoliticalCompassVisualizer,
+    PoliticalCompassVisualizer,  # noqa: F401
 )
 from utils.benchmark_ui import TerminalUI
 from utils.model_utils import get_model_version
@@ -370,11 +370,12 @@ class PoliticalCompassTest(BaseTest):
         sigma_x, sigma_y = self._calculate_sigma(individual_runs)
 
         # Generate Chart
-        chart = None
+        # chart = None
         if final_results.get("coordinates"):
-            chart = PoliticalCompassVisualizer.generate_ascii_chart(
-                final_results["coordinates"]["x"], final_results["coordinates"]["y"]
-            )
+            # chart = PoliticalCompassVisualizer.generate_ascii_chart(
+            #    final_results["coordinates"]["x"], final_results["coordinates"]["y"]
+            # )
+            pass
 
         # Print Final Summary UI - DELEGATED TO RUNNER (ResultManager)
         # ui.print_final_summary(

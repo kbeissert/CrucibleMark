@@ -57,7 +57,7 @@ class ContentTransformationEvaluator:
         
         transformation_start = clean_response.find("TRANSFORMATION")
         if transformation_start > 0:
-            analysis_part = clean_response[:transformation_start]
+            # analysis_part = clean_response[:transformation_start]
             transformation_part = clean_response[transformation_start:]
         elif "ANALYSE" in clean_response and "1/x" in clean_response:
              # Heuristic fallback if TRANSFORMATION keyword missing but parts exist
@@ -78,9 +78,9 @@ class ContentTransformationEvaluator:
         # Prepare texts
         # If we have an explicit analysis part, we use it for Error Detection.
         # Otherwise, we use the transformation part (fallback).
-        # We append transformation to analysis if analysis is too short to avoid losing context 
+        # We append transformation to analysis if analysis is too short to avoid losing context
         # for keywords that might appear in the intro.
-        error_detection_text = (analysis_part + "\n" + transformation_part).lower() 
+        # error_detection_text = (analysis_part + "\n" + transformation_part).lower()
         # But wait, the user said: "Problem: Scorer sucht nach Analyse-Keywords im GESAMTEN Response"
         # and "Scorer findet nur noch: ✓ 'Hook' → +5.0p".
         # This implies that searching the WHOLE text was GOOD for Error Detection.

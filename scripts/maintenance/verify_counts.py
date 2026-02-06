@@ -5,16 +5,15 @@ checks the raw CSV and simulates the aggregation logic to confirm counts.
 """
 import sys
 from pathlib import Path
-import pandas as pd
 
 # Add root to python path
 ROOT_DIR = Path(__file__).resolve().parent.parent.parent
 sys.path.insert(0, str(ROOT_DIR))
 
 # Import logic (re-implementing simplified version to verify)
-from scripts.leaderboard.data_loader import load_benchmark_data
-from scripts.leaderboard.config import config
-from utils.module_registry import get_active_modules
+from scripts.leaderboard.data_loader import load_benchmark_data  # noqa: E402
+from scripts.leaderboard.config import config  # noqa: E402
+from utils.module_registry import get_active_modules  # noqa: E402
 
 def _build_modules_config_local(full_config):
     """Local implementation of config building to mirror leaderboard script"""
@@ -129,16 +128,20 @@ def verify_counts():
             
             # Count Categories
             # Replicate simple categorization
-            categories = []
+            # categories = []
             scoring_count = 0
             
             for _, row in v_df.iterrows():
                 aid = str(row.get("asset_id", ""))
                 # Quick heuristic for category
-                if "code_quality" in aid: cat = "Code"
-                elif "political" in aid or "political" in str(row.get("asset_name", "")).lower(): cat = "Political"
-                elif "river" in aid or "metacog" in aid or "_5" in aid: cat = "Reasoning" # Simple check
-                else: cat = "Other"
+                if "code_quality" in aid:
+                    cat = "Code"
+                elif "political" in aid or "political" in str(row.get("asset_name", "")).lower():
+                    cat = "Political"
+                elif "river" in aid or "metacog" in aid or "_5" in aid:
+                    cat = "Reasoning" # Simple check
+                else:
+                    cat = "Other"
                 
                 if cat != "Political":
                     scoring_count += 1

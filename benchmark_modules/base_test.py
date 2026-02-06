@@ -89,26 +89,6 @@ class BaseTest(ABC):
         if errors:
             raise ValueError(f"Asset Validation Error: {'; '.join(errors)}")
 
-            expected_total = scoring.get(
-                "total_points", TOTAL_SCORING_WEIGHT
-            )
-
-            # Check for "criteria" list (V1 / Legacy Schema)
-            if "criteria" in scoring and isinstance(scoring["criteria"], list):
-                total_weight = sum(c.get("weight", 0) for c in scoring["criteria"])
-            else:
-                # V2 Schema: dict of categories
-                total_weight = sum(
-                    cat.get("weight", 0)
-                    for cat in scoring.values()
-                    if isinstance(cat, dict)
-                )
-
-            if total_weight != expected_total:
-                raise ValueError(
-                    f"Scoring weights must sum to {expected_total}, got {total_weight}"
-                )
-
     def _clean_reasoning_tags(self, response: str) -> str:
         """
         Removes <think>...</think> blocks from response to avoid scoring internal reasoning.

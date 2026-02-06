@@ -6,7 +6,7 @@ from pathlib import Path
 ROOT_DIR = Path(__file__).resolve().parent.parent.parent
 sys.path.insert(0, str(ROOT_DIR))
 
-from benchmark_modules.reasoning_logic.core.evaluators import score_granular_rubric
+from benchmark_modules.reasoning_logic.core.evaluators import score_granular_rubric  # noqa: E402
 
 gemma_response = """
 Okay, let's schedule these meetings. Here's my reasoning process:

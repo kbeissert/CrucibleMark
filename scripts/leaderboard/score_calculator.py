@@ -187,9 +187,9 @@ def _aggregate_basic_stats(df: pd.DataFrame, modules_config: Dict[str, Any]) -> 
     def count_timeouts(x): return (x > 120.0).sum()
 
     # Create separate stats for time to avoid complex multi-index flattening
-    time_aggs = {
-        "execution_time": ["mean", "max", p95, p99, count_timeouts]
-    }
+    # time_aggs = {
+    #    "execution_time": ["mean", "max", p95, p99, count_timeouts]
+    # }
     
     # 1. Base Aggregation
     base_stats = (

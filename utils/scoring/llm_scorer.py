@@ -2,7 +2,7 @@
 LLM Scorer implementation.
 Uses a small local LLM (e.g. qwen2.5:14b) to evaluate responses against a rubric.
 """
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict
 from .base import BaseScorer
 
 class LLMScorer(BaseScorer):
@@ -35,8 +35,8 @@ class LLMScorer(BaseScorer):
                 "error": "LLMScorer requires 'llm_client' in kwargs"
             }
             
-        judge_model = kwargs.get("judge_model", "qwen2.5:14b") # Default fallback
-        scoring_config = asset.get("scoring", {})
+        # judge_model = kwargs.get("judge_model", "qwen2.5:14b") # Default fallback
+        # scoring_config = asset.get("scoring", {})
         
         # TODO: Implement the actual query to the Judge LLM
         # 1. Construct Prompt (System + User + Response + Rubric)
