@@ -170,6 +170,35 @@ def load_benchmark_data() -> pd.DataFrame:
     # to aggregate runs of the same version across different days.
     if "model_version" in df.columns:
         df["model_version"] = df["model_version"].astype(str).str.replace(r'-\d{4}-\d{2}-\d{2}$', '', regex=True)
+
+    # --- VERSION ALIASING/MERGING ---
+    # Fix mismatches where some entries use date-strings and others use hashes for the same model.
+    # We prefer alphanumeric hashes over pure numeric date-strings if both exist for a model.
+    if "model" in df.columns and "model_version" in df.columns:
+        pairs = df[["model", "model_version"]].drop_duplicates()
+        multi_ver_models = pairs["model"].value_counts()
+        multi_ver_models = multi_ver_models[multi_ver_models > 1].index
+        
+        version_map = {}
+        for m in multi_ver_models:
+            vers = pairs[pairs["model"] == m]["model_version"].tolist()
+            # Heuristic: Prefer version with letters (e.g. hash) over pure numeric (e.g. date)
+            # Exclude 'unknown'/'none' from being considered a valid "alpha" version (target)
+            alphas = [v for v in vers if any(c.isalpha() for c in str(v)) and str(v).lower() not in ["unknown", "none", "nan", ""]]
+            
+            # If we have exactly one 'alpha' version and other 'numeric' versions, map all to alpha.
+            # If multiple alpha versions exist, we assume they are distinct releases and do NOT merge.
+            if len(alphas) == 1:
+                best_v = alphas[0]
+                for v in vers:
+                    if v != best_v:
+                        # Only merge if the other version is purely numeric (date-like) or shorter/generic
+                        if str(v).replace("-","").isdigit() or v in ["unknown", "None"]:
+                            version_map[(m, v)] = best_v
+        
+        if version_map:
+            # print(f"Merging alias versions: {version_map}")
+            df["model_version"] = df.apply(lambda row: version_map.get((row["model"], row["model_version"]), row["model_version"]), axis=1)
     
     # --- EXTERNAL MODULE INJECTION (v2.1) ---
     # Injects "ghost rows" for modules that store results in separate CSVs (e.g. Political Compass).
@@ -187,32 +216,69 @@ def load_benchmark_data() -> pd.DataFrame:
             if "model_version" in pc_df.columns:
                  pc_df["model_version"] = pc_df["model_version"].fillna("unknown").astype(str).str.replace(r'-\d{4}-\d{2}-\d{2}$', '', regex=True)
 
+            # Identify models that ALREADY have Political Compass data in the main dataframe
+            # to prevent duplicate "ghost" entries.
+            existing_pc_keys = set()
+            if "category" in df.columns:
+                 mask = df["category"] == "Political Compass"
+                 existing_pc_keys.update(zip(df[mask]["model"], df[mask]["model_version"]))
+            if "asset_id" in df.columns:
+                 mask = df["asset_id"].astype(str).str.contains("political_compass", case=False, na=False)
+                 existing_pc_keys.update(zip(df[mask]["model"], df[mask]["model_version"]))
+
+            # Identify models that ALREADY have Political Compass data in the main dataframe
+            # to prevent duplicate "ghost" entries.
+            existing_pc_keys = set()
+            if "category" in df.columns:
+                 mask = df["category"] == "Political Compass"
+                 existing_pc_keys.update(zip(df[mask]["model"], df[mask]["model_version"]))
+            if "asset_id" in df.columns:
+                 mask = df["asset_id"].astype(str).str.contains("political_compass", case=False, na=False)
+                 existing_pc_keys.update(zip(df[mask]["model"], df[mask]["model_version"]))
+
             ghost_rows = []
             for _, pc_row in pc_df.iterrows():
                 m = pc_row.get("model")
                 v = pc_row.get("model_version", "unknown")
                 
-                # Loose matching: Try exact version, then fallback to model-only lookup if version implies match
+                # Loose matching: Try exact version, then fallback to model-only lookup
                 t = known_models.get((m, v))
+                final_v = v 
+
                 if not t:
                     # Retry: Find any type for this model
-                    # (Simple heuristic: if model matches, assume same type)
                     matching_keys = [k for k in known_models.keys() if k[0] == m]
                     if matching_keys:
-                        # Found a match on model name! Use its Type AND Version (if ours is weak)
-                        # This merges "unknown" version rows into the main model entry
-                        best_key = matching_keys[0]
-                        t = known_models[best_key]
+                        # Find best version match (e.g. fuzzy string match or just latest)
+                        # Prefer explicitly matching versions (substring)
+                        best_key = None
                         
-                        # Only upgrade version if current is junk
-                        if v in ["unknown", "None", "", None]:
-                             v = best_key[1]
+                        # 1. Try substring match (e.g. 'claude-sonnet' in 'claude-sonnet-2024')
+                        for key in matching_keys:
+                            if str(v) in str(key[1]) or str(key[1]) in str(v):
+                                best_key = key
+                                break
+                        
+                        # 2. If no substring match, pick the latest known version
+                        # This handles cases where version strings are disjoint (e.g. hash '8717af19' vs date '20250929')
+                        # but represent the same model instance.
+                        if not best_key and matching_keys:
+                             best_key = matching_keys[-1] # Assume latest version is intended
+                        
+                        if best_key:
+                            t = known_models[best_key]
+                            final_v = best_key[1]
                 
+                # Skip injection if this model/version already has PC data
+                if (m, final_v) in existing_pc_keys:
+                    continue
+
+
                 if t:
                     # Append Ghost Row
                     ghost_rows.append({
                         "model": m,
-                        "model_version": v,
+                        "model_version": final_v,
                         "type": t,
                         "category": "Political Compass", # MUST match config name
                         "asset_id": "political_compass_placeholder",

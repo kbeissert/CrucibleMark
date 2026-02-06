@@ -1,5 +1,19 @@
 # CrucibleMark Maintenance: Test Count & Aggregation
 
+## Ghost Entries & Versioning Refactor
+**Date:** 2026-02-06
+**Status:** Resolved
+
+### Problem Description
+The leaderboard showed duplicate entries for single models (e.g., "Claude Haiku"). One entry contained benchmark scores, while a second "Ghost Entry" contained only Political Compass results.
+**Root Cause:** Inconsistent version strings between the Benchmark Runner (`8717af19`) and the Political Compass Runner (`unknown`).
+
+### Resolution
+1.  **Centralization:** Refactored `utils/fingerprinting.py` to be the Single Source of Truth (SSOT).
+2.  **Dual-Versioning:** Implemented unified format `{OFFICIAL_ID}-{BEHAVIORAL_HASH}` enforced across all scripts.
+3.  **Data Patch:** Merged split entries in CSVs.
+4.  **Golden Standard Optimization:** Excluded Political Compass from Golden Standard generation (Methodology Update).
+
 ## Aggregation Verification Report
 **Date:** 2026-02-04
 **Status:** Resolved

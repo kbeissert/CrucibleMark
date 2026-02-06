@@ -13,6 +13,7 @@ import traceback
 from datetime import datetime
 from pathlib import Path
 from typing import Any, Dict, List, Optional
+from schemas.result import BenchmarkResult
 
 # Add project root to path
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
@@ -34,6 +35,7 @@ from utils.model_utils import (
     get_ollama_models_info,
     is_reasoning_model
 )
+from utils.fingerprinting import ModelFingerprinter
 from utils.module_loader import load_test_class
 from utils.module_registry import load_active_benchmarks
 from utils.scoring_utils import calculate_score_contributions
@@ -209,11 +211,12 @@ class LocalBenchmarkRunner(BaseBenchmarkRunner):
             test_instance, exec_result = self._execute_test(
                 model, asset_path, benchmark_info
             )
-            exec_result["execution_time"] = time.time() - start_time
+            if not exec_result.execution_time:
+                exec_result.execution_time = time.time() - start_time
         except (FileNotFoundError, ImportError, AttributeError) as e:
             return self._create_error_result(asset_path, str(e))
 
-        response = exec_result["raw_response"]
+        response = exec_result.raw_response
         score = test_instance.score_response(response)
 
         # Comparisons
@@ -248,7 +251,7 @@ class LocalBenchmarkRunner(BaseBenchmarkRunner):
         model: str,
         asset_data: Dict[str, Any],
         score: Dict[str, Any],
-        exec_result: Dict[str, Any],
+        exec_result: BenchmarkResult,
         _ref: Dict[str, Any],
         comparison: Dict[str, Any],
         response_preview: str,
@@ -258,14 +261,21 @@ class LocalBenchmarkRunner(BaseBenchmarkRunner):
         result = self.build_base_result(model, asset_data, score, exec_result, "ollama")
 
         # Add Model Version (ID)
-        result["model_version"] = get_model_version(model, provider="ollama")
+        # Use cached global unified version if available
+        if hasattr(self, "current_model_version") and self.current_model_version:
+            result["model_version"] = self.current_model_version
+        else:
+            # Fallback (should not happen in standard runs)
+            result["model_version"] = ModelFingerprinter.get_unified_version(
+                provider="ollama", model_name=model
+            )
 
         # Add Token Usage (Prefer centralized tracking from client)
         tokens = 0
         if hasattr(self.client, "last_token_usage"):
             tokens = self.client.last_token_usage
         else:
-            tokens = exec_result.get("tokens_used", 0)
+            tokens = exec_result.tokens_used or 0
 
         result["tokens_used"] = tokens
         result["cost_usd"] = 0.0  # Local models are free
@@ -412,7 +422,7 @@ class LocalBenchmarkRunner(BaseBenchmarkRunner):
         self,
         model: str,
         report: Dict[str, Any],
-        result_wrapper: Dict[str, Any],
+        result_wrapper: BenchmarkResult,
         model_version: str = "unknown",
     ) -> Dict[str, Any]:
         """Erstellt ein Standard-Resultat aus einem Batch-Report."""
@@ -427,7 +437,7 @@ class LocalBenchmarkRunner(BaseBenchmarkRunner):
             "total_score": report["total_score"],
             "max_score": 100,
             "percentage": report["total_score"],
-            "execution_time": round(result_wrapper.get("execution_time", 0), 1),
+            "execution_time": round(result_wrapper.execution_time or 0, 1),
             "response_length": 0,
             "tier": report.get("tier", "N/A"),
             "cost_usd": report.get("statistics", {}).get("total_cost", 0.0),
@@ -483,7 +493,7 @@ class LocalBenchmarkRunner(BaseBenchmarkRunner):
         result_wrapper = test.execute(model=model, llm_client=client, provider="ollama")
 
         # Reporting
-        report = json.loads(result_wrapper["raw_response"])
+        report = json.loads(result_wrapper.raw_response)
 
         # Get Model Version
         model_version = get_model_version(model, provider="ollama")
@@ -520,6 +530,17 @@ class LocalBenchmarkRunner(BaseBenchmarkRunner):
         assets: Optional[List[Path]] = None,
     ) -> List[Dict[str, Any]]:
         """Führt Standard-Benchmarks (Asset-basiert) aus."""
+        
+        # --- VERSIONING ---
+        # Get unified version (Format: {local_digest}-nohash)
+        # We assume local execution doesn't do rigorous behavioral hashing yet for speed.
+        # But we adhere to the global format.
+        self.current_model_version = ModelFingerprinter.get_unified_version(
+            provider="ollama",
+            model_name=model
+        )
+        # ------------------
+        
         commercial_refs, _ = self._setup_benchmark_resources()
 
         # Use filtered assets if provided, otherwise discover all

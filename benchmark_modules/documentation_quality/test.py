@@ -15,6 +15,7 @@ root_dir = Path(__file__).parent.parent.parent
 if str(root_dir) not in sys.path:
     sys.path.insert(0, str(root_dir))
 
+from schemas.result import BenchmarkResult
 from benchmark_modules.base_test import BaseTest  # noqa: E402
 from benchmark_modules.documentation_quality.core.constants import (  # noqa: E402
     DEFAULT_TEMPERATURE,
@@ -29,7 +30,7 @@ class DocumentationTest(BaseTest):
     Acts as a runner, delegating scoring to DocumentationEvaluator.
     """
 
-    def execute(self, model: str, llm_client: Any, provider: str = "ollama") -> dict:
+    def execute(self, model: str, llm_client: Any, provider: str = "ollama") -> BenchmarkResult:
         """
         Führt Documentation Quality Test aus
         """
@@ -58,24 +59,30 @@ class DocumentationTest(BaseTest):
             # Token-Approximation
             approx_tokens = int(len(response.split()) * TOKEN_MULTIPLIER)
 
-            return {
-                "raw_response": response,
-                "execution_time": elapsed,
-                "tokens_used": approx_tokens,
-                "metadata": {
+            return BenchmarkResult(
+                status="success",
+                primary_score=None,
+                rendered_value="Pending",
+                raw_response=response,
+                execution_time=elapsed,
+                tokens_used=approx_tokens,
+                cost_usd=getattr(llm_client, "last_request_cost", 0.0),
+                model_version=getattr(llm_client, "last_response_metadata", {}).get("system_fingerprint", "unknown"),
+                meta={
                     "model": model,
                     "asset_id": self.asset["metadata"]["id"],
                     "prompt_length": len(full_prompt),
                     **getattr(llm_client, "last_response_metadata", {}),
-                },
-            }
+                }
+            )
         except Exception as e:
-            return {
-                "raw_response": f"ERROR: {str(e)}",
-                "execution_time": 0.0,
-                "tokens_used": 0,
-                "metadata": {"model": model, "error": str(e)},
-            }
+            return BenchmarkResult(
+                status="error",
+                rendered_value="ERROR",
+                raw_response=f"ERROR: {str(e)}",
+                execution_time=0.0,
+                meta={"model": model, "error": str(e)}
+            )
 
     def score_response(self, response: str) -> dict:
         """

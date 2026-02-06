@@ -2,21 +2,23 @@
 
 ## ✅ COMPLETED (v1.0.0)
 
-### Framework Refactoring (v2.0)
-- [x] Modular architecture implementation
-- [x] Unified provider interface (Ollama, OpenAI, Anthropic)
-- [x] YAML-based configuration system
-- [x] CSV output standardization
-- [x] Leaderboard integration
-- [x] Checkpoint/resume functionality
+### Version 1.1 Support (v1.1.0+)
+- [x] **Leaderboard Overhaul (v1.1)**
+  - Absolute Scoring Standards (Gold/Silver)
+  - Speed Profiles
+- [x] **Reasoning Module Implementation (v1.1)** (Completed Feb 2026)
+  - Logical Paradoxes
+  - Metacognition Assets
+  - Integration with `BenchmarkResult` Schema
 
 ### Module Refactoring (All v2.0+)
-- [x] Code Quality Audit → v2.0 (Pylint 9.2/10)
-- [x] UX Writing & Microcopy → v2.0 (Pylint 8.8/10)
-- [x] Documentation Quality → v2.0 (Pylint 9.0/10)
-- [x] Content Transformation → v2.0 (Pylint 8.9/10)
-- [x] Cultural Intelligence → v2.0 (Pylint 9.1/10)
-- [x] Political Compass → v3.0.1 (Pylint 9.85/10)
+- [x] Code Quality Audit → v2.0.1 (Fixed Import)
+- [x] UX Writing & Microcopy → v2.0
+- [x] Documentation Quality → v2.0
+- [x] Content Transformation → v2.0.1 (Fixed Logic)
+- [x] Cultural Intelligence → v2.0
+- [x] Logical Reasoning → v1.0 (Released)
+- [x] Political Compass → v3.0.1
 
 ### Code Quality
 - [x] Pylint scores 8.8-9.85/10 (avg 9.15/10)
@@ -216,17 +218,15 @@
 
 ## 🚀 NEXT ACTIONS
 
-### Immediate (v1.0.1 - Maintenance Release)
+### Immediate (v1.1.x - Post-Release Maintenance)
 1. Complete unit test coverage (60% → 95%)
 2. Setup CI/CD (GitHub Actions)
-3. Fix minor bugs from v1.0.0 feedback
-4. Performance optimizations
+3. Performance optimizations
 
-### Short-term (v1.1.0 - Q2 2026)
-1. Implement Reasoning Module
-2. Create Web UI (basic)
-3. Add API Mode (MVP)
-4. Documentation updates
+### Short-term (v1.2.0 - Q2 2026)
+1. Create Web UI (basic)
+2. Add API Mode (MVP)
+3. Documentation updates for Web UI
 
 ### Mid-term (v1.5.0 - Q3 2026)
 1. **LLM-based Scoring System** ⭐

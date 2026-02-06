@@ -127,7 +127,7 @@ class BaseTest(ABC):
         return cleaned.strip()
 
     @abstractmethod
-    def execute(self, model: str, llm_client, **kwargs) -> Dict[str, Any]:
+    def execute(self, model: str, llm_client, **kwargs) -> BenchmarkResult:
         """
         Führt Test aus und gibt Response zurück
 

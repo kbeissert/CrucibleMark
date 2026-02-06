@@ -18,22 +18,6 @@ golden_standard:
   model: "claude-sonnet-4-5-20250929"  # Welches Modell für Referenz-Benchmark
   description: "Claude 4.5 Sonnet als Referenz für Benchmark Tests"
 
-# Leaderboard & Badging Logic
-# ---------------------------
-# Schwellenwerte für die Vergabe der automatischen Badges im Leaderboard.
-# Werte sind Prozentpunkte (0-100).
-leaderboard:
-  thresholds:
-    # "👑 God Mode": Muss BEIDE Bedingung erfüllen (Routine + Reasoning)
-    god_mode_routine: 85
-    god_mode_reasoning: 80
-    
-    # "🧠 Deep Thinker": Stark im Reasoning, Routine weniger wichtig
-    deep_thinker_reasoning: 80
-    
-    # "🏎️ Daily Driver": Stark in Routine (Code, Chat), Reasoning weniger wichtig
-    daily_driver_routine: 80
-
 # Provider Configuration
 # ----------------------
 # Definiert verfügbare LLM-Provider und deren Modelle.

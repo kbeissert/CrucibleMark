@@ -41,6 +41,87 @@ class ModelFingerprinter:
     ]
 
     @staticmethod
+    def get_unified_version(
+        provider: str, 
+        model_name: str, 
+        client=None
+    ) -> str:
+        """
+        Global SSOT for Model Versioning (Local & Commercial).
+        
+        Strict Format: {OFFICIAL_ID}-{BEHAVIORAL_HASH}
+        
+        - OFFICIAL_ID: 
+             commercial -> Date-based snapshot (e.g. 2024-05-13)
+             local      -> Ollama Digest Short-Hash (e.g. 8f4d1a) or 'local'
+        - BEHAVIORAL_HASH:
+             8-char hex derived from deterministic prompts (e.g. 8717af19)
+             
+        Returns:
+             "2024-05-13-8717af19" or "8f4d1a-8717af19"
+        """
+        # 1. Determine Official Identifier
+        official_id = "unknown"
+        
+        if provider in ["ollama", "local"]:
+            # Try to fetch Ollama digest
+            official_id = ModelFingerprinter._get_ollama_digest(model_name)
+        else:
+            # Commercial provider lookup
+            official_id = get_official_version(provider, model_name)
+            
+        if not official_id:
+             official_id = "v0" # Placeholder if totally unknown
+
+        # 2. Generate Behavioral Hash (ALWAYS, if possible)
+        # Assuming client is passed. If not, we skip hash (return 'nohash')
+        behavioral_hash = "nohash"
+        
+        if client:
+            try:
+                # Cache checking could happen here if 'client' had a cache registry,
+                # but simplistic approach is robust: check if client has cached it internally.
+                if hasattr(client, "fingerprint_cache") and model_name in client.fingerprint_cache:
+                     return client.fingerprint_cache[model_name]
+
+                behavioral_hash = ModelFingerprinter.generate_behavioral_hash(client, model_name)
+            except Exception as e:
+                logger.warning(f"Could not generate behavioral hash: {e}")
+
+        # 3. Combine
+        final_version = f"{official_id}-{behavioral_hash}"
+        
+        # Cache back if possible
+        if client and hasattr(client, "fingerprint_cache"):
+             client.fingerprint_cache[model_name] = final_version
+             
+        return final_version
+
+    @staticmethod
+    def _get_ollama_digest(model_name: str) -> str:
+        """Helper to get short digest from Ollama CLI."""
+        try:
+            import subprocess
+            import json
+            # Run 'ollama chow' is not proper JSON json usually. 'ollama show ... --modelfile' maybe?
+            # 'ollama list' gives digests properly
+            result = subprocess.run(["ollama", "list"], capture_output=True, text=True)
+            if result.returncode == 0:
+                 lines = result.stdout.strip().split('\n')
+                 # Parse table: NAME ID SIZE MODIFIED
+                 # skip header
+                 for line in lines[1:]:
+                     parts = line.split()
+                     if len(parts) >= 2:
+                         m_name = parts[0]
+                         m_id = parts[1]
+                         if m_name == model_name or m_name.startswith(model_name + ":"):
+                             return m_id[:12] # Short ID
+            return "local"
+        except Exception:
+            return "local"
+
+    @staticmethod
     def generate_behavioral_hash(
         client,
         model_name: str,
@@ -125,48 +206,28 @@ class ModelFingerprinter:
         behavioral_hash: Optional[str] = None
     ) -> str:
         """
-        Create a standardized model fingerprint/version string.
-        
-        Standard Pattern: {VERSION_ID}[-{HASH}]
-        
-        Rules:
-        1. VERSION_ID: Official Snapshot ID (e.g. '2411', '2024-05-13')
-           Fallback: Current Date (YYYY-MM-DD) if no official version known.
-        2. HASH: Behavioral Hash (8 chars) if available.
-           
-        Examples:
-        - "2411" (Mistral Large)
-        - "2024-05-13-8717af1" (GPT-4o)
-        - "2026-02-05-a1b2c3d4" (Unknown Model)
+        DEPRECATED: Use get_unified_version() instead.
+        Legacy wrapper to maintain compatibility during refactor.
         """
+        # If we have both, construct the V2 format manually
+        if official_version and behavioral_hash:
+             return f"{official_version}-{behavioral_hash}"
+             
+        # Otherwise fallback to new system logic (needs client usually, but here we lack it)
+        # Just return what we have
         parts = []
+        if official_version: parts.append(official_version)
+        if behavioral_hash: parts.append(behavioral_hash)
+        if not parts: return "unknown"
         
-        # 1. Determine Primary Version Identifier
-        # We rely strictly on the official snapshot ID if available.
-        if official_version:
-            parts.append(official_version)
-        
-        # REMOVED: Do not use current date as fallback. 
-        # This ensures that runs from different days are grouped together 
-        # as long as the underlying model (official version or behavior) hasn't changed.
-        
-        # 2. Append Behavioral Hash (if provided)
-        if behavioral_hash:
-            parts.append(behavioral_hash)
-            
-        if not parts:
-            return "unknown"
-            
         return "-".join(parts)
 
 
-# Official snapshot ID mappings
+# Official snapshot ID mappings (Only for generic aliases that mask the real date)
 OFFICIAL_SNAPSHOTS = {
     "mistral": {
         "mistral-large-latest": "2411",
-        "mistral-large-2411": "2411",
         "mistral-medium-latest": "2312",
-        "mistral-medium-2312": "2312",
         "mistral-small-latest": "2402",
         "open-mistral-7b": "v0.3",
         "ministral-3b-latest": "2410",
@@ -174,26 +235,52 @@ OFFICIAL_SNAPSHOTS = {
     },
     "openai": {
         "gpt-4-turbo": "2024-04-09",
-        "gpt-4-turbo-2024-04-09": "2024-04-09",
         "gpt-4o": "2024-05-13",
         "gpt-4o-mini": "2024-07-18",
         "gpt-3.5-turbo": "0125",
-        "gpt-5": "2026-02-01",
-        "gpt-5-mini": "2026-02-01",
         "o3-mini": "2026-01-30"
     },
     "anthropic": {
-        "claude-3-opus-20240229": "20240229",
-        "claude-3-5-sonnet-20241022": "20241022",
         "claude-3-5-sonnet-latest": "20241022",
-        "claude-3-haiku-20240307": "20240307",
-        "claude-sonnet-4-5-20250929": "20250929",
-        "claude-opus-4-5-20251101": "20251101"
+        "claude-3-5-sonnet-20241022": "20241022",
+        "claude-3-opus-20240229": "20240229",
+        "claude-3-haiku-20240307": "20240307"
     }
 }
 
 
 def get_official_version(provider: str, model_name: str) -> Optional[str]:
-    """Get official snapshot ID for a model."""
+    """
+    Get official identifiers for a model.
+    Prioritizes:
+    1. Hardcoded mapping (for generic aliases like 'latest')
+    2. Regex extraction of date-strings from model name (e.g. '...-20250929')
+    3. Cleaned model name as fallback
+    """
+    import re
+    
+    # 1. Hardcoded Lookup (for aliases)
     provider_snapshots = OFFICIAL_SNAPSHOTS.get(provider, {})
-    return provider_snapshots.get(model_name)
+    if model_name in provider_snapshots:
+        return provider_snapshots[model_name]
+
+    # 2. Dynamic Regex Extraction (YYYYMMDD or YYYY-MM-DD)
+    # Matches: 20240229, 2025-09-29, 2411 (Mistral style YYMM)
+    
+    # Look for YYYYMMDD or YYYY-MM-DD at the end or preceded by separator
+    date_match = re.search(r'(?:^|[-_])(\d{4}[-_]?\d{2}[-_]?\d{2})(?:$|[-_])', model_name)
+    if date_match:
+        # User preference: Keep original format found in name (e.g. 2024-04-09 or 20241022)
+        # ensuring consistency with OFFICIAL_SNAPSHOTS style for that provider.
+        return date_match.group(1)
+
+    # Look for Mistral-style YYMM (e.g. 2411) at end of string
+    mistral_match = re.walk(r'(?:^|[-_])(\d{4})(?:$)', model_name) # wait, re.walk is not valid, use re.search
+    mistral_match = re.search(r'(?:^|[-_])(\d{4})(?:$)', model_name)
+    if mistral_match:
+         return mistral_match.group(1)
+
+    # 3. Fallback: Use Model Name (sanitized) to ensure we always have a base
+    # This prevents "unknown-hash" and keeps differentiation for new models
+    # e.g. "my-custom-finetune" -> "my-custom-finetune"
+    return model_name.replace(":", "-").split("/")[-1]

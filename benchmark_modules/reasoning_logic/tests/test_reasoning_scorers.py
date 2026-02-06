@@ -35,7 +35,7 @@ class TestReasoningScorers(unittest.TestCase):
                 "expected_score": 100.0,
                 "input": "<thought>Option 1: A. Option 2: B. Let's compare.</thought>\nAnswer: Because logic.",
                 "asset": {
-                    "metadata": {"id": "reasoning_metacog_003"},
+                    "metadata": {"id": "reasoning_metacog_003", "scoring_version": 2.0},
                     "expected_output": {},
                 },
             },
@@ -43,7 +43,7 @@ class TestReasoningScorers(unittest.TestCase):
                 "expected_score": 100.0,
                 "input": "<thought>Initial thought: Stay. Wait, probabilities change. I should switch.</thought>\nAnswer: switch (2/3 chance)",
                 "asset": {
-                    "metadata": {"id": "reasoning_metacog_004"},
+                    "metadata": {"id": "reasoning_metacog_004", "scoring_version": 2.0},
                     "expected_output": {},
                 },
             },
@@ -51,7 +51,7 @@ class TestReasoningScorers(unittest.TestCase):
                 "expected_score": 100.0,
                 "input": "<thought>I am 90% confident. This is counter-intuitive.</thought>\nAnswer: 50.73%",
                 "asset": {
-                    "metadata": {"id": "reasoning_metacog_005"},
+                    "metadata": {"id": "reasoning_metacog_005", "scoring_version": 2.0},
                     "expected_output": {},
                 },
             },
@@ -149,7 +149,7 @@ class TestReasoningScorers(unittest.TestCase):
     def test_feasibility_extraction(self) -> None:
         """Test extraction of feasibility scores from text."""
         # We need to access the helper method. It's on the instance.
-        evaluator = ReasoningEvaluator({"metadata": {"id": "dummy"}})
+        evaluator = ReasoningEvaluator({"metadata": {"id": "dummy", "scoring_version": 2.0}})
         
         test_cases = [
             ("Feasibility: 10/10", 10),

@@ -8,39 +8,27 @@ from typing import Dict, Optional
 
 # Late import to avoid circular dependencies if any (though currently safe)
 try:
-    from utils.fingerprinting import get_official_version
+    from utils.fingerprinting import ModelFingerprinter
 except ImportError:
     # Fallback if utils package structure is not ready
-    def get_official_version(_p, _m): return None
+    ModelFingerprinter = None
 
 
 def get_model_version(model_name: str, provider: str = "ollama") -> str:
     """
     Retrieves the unique version/digest of a model.
-    SSOT (Single Source of Truth) for both Local and Commercial models.
+    SSOT (Single Source of Truth) via ModelFingerprinter.
     
     Args:
-        model_name: Name of the model (e.g., 'gemma2:9b', 'mistral-large-latest')
-        provider: Provider name (e.g., 'ollama', 'openai', 'anthropic', 'mistral')
+        model_name: Name of the model
+        provider: Provider name
 
     Returns:
-        str: Model version hash/id or 'unknown'.
+        str: Unified version string (e.g. '2411-nohash' or '8f3d1a-nohash')
     """
-    if provider == "ollama" or provider == "local":
-        info = get_ollama_model_info(model_name)
-        # Extract ID and return short hash if available
-        full_id = info.get("id", "unknown")
-        return full_id if full_id == "unknown" else full_id
-    
-    # Commercial / API Models
-    # Try to get official snapshot ID from fingerprinting registry
-    official_id = get_official_version(provider, model_name)
-    if official_id:
-        # Return strict official ID (e.g. "2411" or "2024-05-13")
-        # Do NOT prepend model name anymore (Standardization)
-        return official_id
-
-    # Fallback: If we can't determine version, return unknown
+    if ModelFingerprinter:
+        return ModelFingerprinter.get_unified_version(provider, model_name)
+        
     return "unknown"
 
 

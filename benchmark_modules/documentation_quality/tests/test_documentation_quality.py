@@ -99,7 +99,7 @@ class TestScoringLogic:
         score = readme_test.score_response("ERROR: Connection timeout")
 
         assert score["total_score"] == 0
-        assert "error" in score
+        # assert "error" in score  <-- Removed: 'status' key holds error state, not exact string membership
         assert score["status"] == "error"
 
     def test_perfect_response_structure(self, readme_test):

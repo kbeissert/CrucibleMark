@@ -20,7 +20,8 @@ from benchmark_modules.code_quality.core.constants import (  # noqa: E402
     DEFAULT_TEMPERATURE,
     TOKEN_MULTIPLIER,
 )
-from benchmark_modules.code_quality.core import CodeQualityEvaluator  # noqa: E402
+from benchmark_modules.code_quality.core.evaluators import CodeQualityEvaluator
+from schemas.result import BenchmarkResult  # Correct import
 
 
 class CodeQualityTest(BaseTest):
@@ -70,31 +71,34 @@ class CodeQualityTest(BaseTest):
 
             approx_tokens = int(len(response.split()) * TOKEN_MULTIPLIER)
 
-            return {
-                "raw_response": response,
-                "execution_time": elapsed,
-                "tokens_used": approx_tokens,
-                "metadata": {
+            return BenchmarkResult(
+                status="success",
+                primary_score=None,
+                rendered_value="Pending",
+                raw_response=response,
+                execution_time=elapsed,
+                tokens_used=approx_tokens,
+                cost_usd=getattr(llm_client, "last_request_cost", 0.0),
+                model_version=getattr(llm_client, "last_response_metadata", {}).get("system_fingerprint", "unknown"),
+                meta={
                     "model": model,
                     "asset_id": self.asset["metadata"]["id"],
                     "prompt_length": len(full_prompt),
                     **getattr(llm_client, "last_response_metadata", {}),
-                },
-            }
+                }
+            )
         except Exception as e:
-            return {
-                "status": "error",
-                "error_message": str(e),
-                "error_type": type(e).__name__,
-                "raw_response": "",
-                "execution_time": 0.0,
-                "tokens_used": 0,
-                "metadata": {
+            return BenchmarkResult(
+                status="error",
+                rendered_value="ERROR",
+                raw_response=str(e),
+                execution_time=0.0,
+                meta={
                     "model": model, 
                     "asset_id": self.asset.get("metadata", {}).get("id", "unknown"),
                     "error": str(e)
-                },
-            }
+                }
+            )
 
     def score_response(self, response: str) -> Dict[str, Any]:
         """

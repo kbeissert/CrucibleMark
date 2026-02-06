@@ -11,6 +11,8 @@ from benchmark_modules.base_test import BaseTest
 from benchmark_modules.cultural_intelligence.core.evaluators import CulturalIntelligenceEvaluator
 
 
+from schemas.result import BenchmarkResult
+
 class CulturalIntelligenceTest(BaseTest):
     """
     Evaluates Cultural Intelligence / Fit in German context.
@@ -19,7 +21,7 @@ class CulturalIntelligenceTest(BaseTest):
 
     def execute(
         self, model: str, llm_client: Any, provider: str = "ollama"
-    ) -> Dict[str, Any]:
+    ) -> BenchmarkResult:
         """
         Executes the benchmark test using the provided LLM client.
         """
@@ -50,16 +52,25 @@ class CulturalIntelligenceTest(BaseTest):
         else:
             execution_time = time.time() - start_time
 
-        return {
-            "response": response_text,
-            "raw_response": response_text,
-            "execution_time": execution_time,
-            "metadata": {
-                "model": model, 
-                "provider": provider,
-                **getattr(llm_client, "last_response_metadata", {})
-            },
+        # Extract meta
+        meta = {
+            "model": model, 
+            "provider": provider,
+            **getattr(llm_client, "last_response_metadata", {})
         }
+        
+        # Helper to safely get costs/tokens if avaiable in metadata
+        # (This depends on llm_client populating metadata correctly)
+        
+        return BenchmarkResult(
+            primary_score=None, # Not scored yet
+            rendered_value="Pending",
+            execution_time=execution_time,
+            raw_response=response_text,
+            tokens_used=getattr(llm_client, "last_token_usage", 0),
+            cost_usd=getattr(llm_client, "last_request_cost", 0.0),
+            meta=meta
+        )
 
     def score_response(self, response: str) -> Dict[str, Any]:
         """

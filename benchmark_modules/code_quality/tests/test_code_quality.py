@@ -87,10 +87,9 @@ class TestAssetLoading:
 class TestScoringLogic:
     """Scoring-Logik Tests"""
 
+
     def test_keyword_matching_above_threshold(self, security_asset_path):
         """Keywords über 40% Threshold werden erkannt"""
-        test = CodeQualityTest(security_asset_path)
-
         response = "sql injection prepared statement pdo bindparam"
         keywords = [
             "sql injection",
@@ -100,14 +99,21 @@ class TestScoringLogic:
             "mysqli_prepare",
         ]
         # Matches: 4/5 = 80% > 40%
-
-        result = test._check_issue_mentioned(response.lower(), keywords)
-        assert result is True, "Keywords über Threshold sollten erkannt werden"
+        
+        # Test helper logic directly (since _check_issue_mentioned was refactored)
+        from benchmark_modules.code_quality.core.scoring_helpers import ScoringHelpers
+        
+        helper = ScoringHelpers()
+        criterion = {"keywords": keywords, "points": 10, "description": "Test"}
+        
+        # Check standard keyword presence
+        points, _ = helper.score_keyword_presence(response.lower(), criterion)
+        result = points > 0
+        
+        assert result is True, "Keywords sollten erkannt werden"
 
     def test_keyword_matching_below_threshold(self, security_asset_path):
         """Keywords unter 40% Threshold nicht erkannt"""
-        test = CodeQualityTest(security_asset_path)
-
         response = "security problem was fixed"
         keywords = [
             "sql injection",
@@ -117,26 +123,42 @@ class TestScoringLogic:
             "mysqli_prepare",
         ]
         # Matches: 0/5 = 0% < 40%
-
-        result = test._check_issue_mentioned(response.lower(), keywords)
+        
+        from benchmark_modules.code_quality.core.scoring_helpers import ScoringHelpers
+        helper = ScoringHelpers()
+        criterion = {"keywords": keywords, "points": 10, "description": "Test"}
+        
+        points, _ = helper.score_keyword_presence(response.lower(), criterion)
+        result = points > 0
+        
         assert result is False, "Keywords unter Threshold sollten nicht erkannt werden"
 
     def test_wcag_number_alone_sufficient(self, wcag_asset_path):
         """WCAG-Nummer allein reicht für Match"""
-        test = CodeQualityTest(wcag_asset_path)
-
         response = "guideline 2.4.11 is important"
         keywords = ["2.4.11", "focus", "visible", "keyboard"]
-        # Hat WCAG-Nummer, sollte matchen
-
-        result = test._check_issue_mentioned(response.lower(), keywords)
+        
+        from benchmark_modules.code_quality.core.scoring_helpers import ScoringHelpers
+        helper = ScoringHelpers()
+        criterion = {"keywords": keywords, "points": 10, "description": "Test"}
+        
+        points, _ = helper.score_keyword_presence(response.lower(), criterion)
+        result = points > 0
+        
         assert result is True, "WCAG-Nummer allein sollte ausreichen"
 
     def test_empty_response_returns_zero_score(self, security_asset_path):
         """Leere Response gibt 0 Punkte"""
         test = CodeQualityTest(security_asset_path)
+        # Use Evaluator explicitly since test.execute returns BenchmarkResult
+        from benchmark_modules.code_quality.core.evaluators import CodeQualityEvaluator
+        
+        evaluator = CodeQualityEvaluator({"scoring": {"total_points": 100}})
+        result = evaluator.score_response("")
 
-        result = test.score_response("")
+        assert result["total_score"] == 0
+        assert "error" in result["status"]
+
 
         assert result["total_score"] == 0
         assert len(result["violations"]) > 0

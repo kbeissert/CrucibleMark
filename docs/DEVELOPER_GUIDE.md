@@ -75,6 +75,36 @@ benchmark_modules/
 
 ---
 
+## 🏷️ Model Versioning & Fingerprinting
+
+CrucibleMark nutzt ein striktes **Dual-Versionierungssystem**, um Änderungen an Cloud-Modellen ("Silent Updates") transparent zu machen.
+
+### Das Format: `{OFFICIAL_ID}-{BEHAVIORAL_HASH}`
+
+Jede Version besteht aus zwei Komponenten:
+
+1.  **OFFICIAL_ID (Basis):**
+    *   Leitet sich vom offiziellen Anbieter-Namen ab.
+    *   Format: `YYYYMMDD` (z.B. `20240513` für GPT-4o) oder `v0.3` (z.B. Mistral 7B).
+    *   Wird automatisch per Regex aus dem Modellnamen extrahiert oder via `OFFICIAL_SNAPSHOTS` gemappt.
+
+2.  **BEHAVIORAL_HASH (Suffix):**
+    *   Ein 8-stelliger Hex-Hash (z.B. `8717af19`).
+    *   Basierend auf deterministischen Standard-Prompts ("Fingerprints"), die das Modell beim Start ausführt.
+    *   **Zweck:** Ändert der Anbieter das Modell im Hintergrund (gleicher Name, gleiches Datum, aber anderes Verhalten), ändert sich dieser Hash -> **Neue Leaderboard-Entry**.
+
+**Implementation:**
+Die Logik liegt zentral in `utils/fingerprinting.py`. Nutzen Sie beim Caching von Ergebnissen immer:
+
+```python
+from utils.fingerprinting import ModelFingerprinter
+
+# Generates generic version string
+version = ModelFingerprinter.get_unified_version(provider, model_name, client)
+```
+
+---
+
 ## ⚙️ Konfiguration: `config.yaml`
 
 ### SSOT Prinzip (Single Source of Truth)
@@ -141,6 +171,39 @@ benchmarks:
       routine: 0.2                     # 20% Routine
       reasoning: 0.8                   # 80% Reasoning
 ```
+
+# ====================================================================
+# OUTPUT CONTRACT: BENCHMARK RESULT
+# ====================================================================
+
+Every module's Controller (test.py) must return a `BenchmarkResult` object.
+This strictly typed DTO ensures all modules provide compatible data for the Leaderboard.
+
+```python
+from schemas.result import BenchmarkResult
+
+# The Object Schema
+class BenchmarkResult(BaseModel):
+    status: str = "success"           # success, error
+    primary_score: Optional[float]    # 0.0 - 100.0 (ranking)
+    rendered_value: str = "N/A"       # Display string ("85.5 %")
+    
+    # Execution Metrics
+    execution_time: float             # Seconds
+    tokens_used: int                  # Estimated token count
+    cost_usd: float                   # Estimated cost
+    raw_response: str                 # The full LLM output text
+    
+    # Identification
+    model_version: str                # e.g., "gpt-4-0613"
+
+    # Deep Data
+    data: Dict[str, Any] = {}         # Module-specific details metrics
+    meta: Dict[str, Any] = {}         # Context (timestamp, prompt_len)
+```
+
+**Why strict typing?**
+Previous versions returned loose Dictionaries, leading to chaotic CSV columns (`score` vs `total_score` vs `result`). The `BenchmarkResult` class enforces a single standard.
 
 ---
 
@@ -298,7 +361,36 @@ core/evaluators.py (Model/Logic)
 core/constants.py (Config/Data)
 ```
 
-**Regel:** `test.py` darf **keine** Scoring-Logik enthalten!
+**Regel:** `test.py` darf **keine** Scoring-Logik enthalten! Es orchestriert nur den Aufruf und verpackt das Ergebnis in `BenchmarkResult`.
+
+### Der Controller (`test.py`)
+
+Implementation des `execute`-Contracts:
+
+```python
+from schemas.result import BenchmarkResult
+
+def execute(self, model: str, llm_client: Any, **kwargs) -> BenchmarkResult:
+    # 1. Run LLM
+    response_text = llm_client.query(prompt, ...)
+    
+    # 2. Delegate to Evaluator
+    evaluator = CodeQualityEvaluator(self.asset)
+    scoring_result = evaluator.score_response(response_text)
+    
+    # 3. Return Standard Object
+    return BenchmarkResult(
+        status="success",
+        primary_score=scoring_result["score"],  # The ranking metric
+        rendered_value=f"{scoring_result['score']:.1f} %",
+        raw_response=response_text,
+        execution_time=elapsed_time,
+        data={
+            "details": scoring_result["details"],
+            "subscores": scoring_result["subscores"]
+        }
+    )
+```
 
 ---
 
@@ -384,8 +476,8 @@ Diese Spalten werden vom Framework gefüllt:
 | `asset_id` | String | Dateiname |
 | `model` | String | Parameter |
 | `timestamp` | DateTime | System |
-| `execution_time` | Float | execute() Return |
-| `total_score` | Float | score_response() Return |
+| `execution_time` | Float | `BenchmarkResult.execution_time` |
+| `total_score` | Float | `BenchmarkResult.primary_score` |
 | `percentage` | Float | Normalisiert (0-100) |
 | `routine_contribution` | Float | config.yaml |
 | `reasoning_contribution` | Float | config.yaml |
@@ -394,21 +486,21 @@ Diese Spalten werden vom Framework gefüllt:
 
 ### Custom Spalten
 
-In `test.py`:
+Das Framework schreibt automatisch die Werte aus `BenchmarkResult.data` in die CSV, sofern sie flach genug sind.
+
+In `test.py` (via Evaluator):
 ```python
-def score_response(self, response: Dict) -> float:
-    result = self.evaluator.evaluate(...)
-
-    # Store für CSV
-    self.latest_score_details = {
-        "keyword_match": result['keywords'],
-        "structure_score": result['structure']
+# Evaluator return
+return {
+    "score": 85.0,
+    "details": {
+        "keyword_match": 100.0,    # Wird CSV-Spalte
+        "structure_score": 70.0    # Wird CSV-Spalte
     }
-
-    return result['score']
+}
 ```
 
-Framework schreibt automatisch Spalten `keyword_match`, `structure_score`.
+Die `BenchmarkResult`-Validierung stellt sicher, dass keine zu tief verschachtelten Objekte (max 5 Levels) zurückgegeben werden.
 
 ---
 

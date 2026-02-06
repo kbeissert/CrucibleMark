@@ -10,52 +10,49 @@ help:
 	@echo "  make install              Install runtime dependencies (User)"
 	@echo "  make install-dev          Install dev dependencies (Developer)"
 	@echo ""
-	@echo "=== Benchmarking (Neue modulare Struktur) ==="
-	@echo "  make benchmark            Interaktiver Benchmark (Wizard)"
-	@echo "  make list-models          List available Local & Commercial models (with Connectivity Check)"
-	@echo "  make benchmark-auto       🤖 Auto-Fill Mode: Ergänzt fehlende Benchmarks (Smart Skip)"
-	@echo "  make benchmark-single     Einzelnes Modell (MODEL=name [MODULE=name])"
-	@echo "  make benchmark-cross-model Einzelnes Modul gegen ALLE LLMs (MODULE=name)"
+	@echo "=== Benchmarking ==="
+	@echo "  make benchmark            Interactive Benchmark (Wizard)"
+	@echo "  make benchmark-auto       🤖 Auto-Fill Mode: Supplement missing benchmarks"
+	@echo "  make benchmark-single     Single Model (MODEL=name [MODULE=name])"
+	@echo "  make benchmark-cross-model Single Module vs ALL LLMs (MODULE=name)"
 	@echo "  make benchmark-human      👤 Human Baseline Test (Political Compass)"
-	@echo "  make leaderboard          Generiere Leaderboard-CSV aus Ergebnissen"
-	@echo "  make bias-report          📊 Update Bias Sensitivity Report (Political Compass)"
-	@echo "  make clean-sessions       🗑️  Lösche temporäre Checkpoints (Political Compass)"
 	@echo ""
-	@echo "=== Golden Standards ==="
+	@echo "=== Reporting & Standards ==="
+	@echo "  make leaderboard          Generate Leaderboard CSV"
+	@echo "  make bias-report          📊 Update Bias Sensitivity Report"
 	@echo "  make generate-golden      Generate golden standard (ASSET=path)"
 	@echo ""
-	@echo "=== Validation & Testing ==="
+	@echo "=== Validation & QA ==="
 	@echo "  make validate             Validate all test assets"
 	@echo "  make validate-single      Validate single asset (ASSET=path)"
-	@echo "  make validate-structure   Check module directory structure compliance (Clean Architecture)"
+	@echo "  make validate-structure   Check module directory structure"
 	@echo "  make test                 Run validation & unit tests"
-	@echo "  make analyze-costs        Calculate estimated token costs for all assets"
-	@echo "  make diff-results         Compare two benchmark JSONs (Regression Testing)"
+	@echo "  make diff-results         Compare two benchmark JSONs"
+	@echo "  make analyze-costs        Calculate token costs"
 	@echo ""
-	@echo "=== Utilities ==="
-	@echo "  make clean                Clean caches and temporary outputs"
-	@echo "  make clean-model          Delete results for specific MODEL"
-	@echo "  make clean-module         Delete results for specific MODULE"
-	@echo "  make clean-csv            Delete all benchmark CSV files"
-	@echo "  make clean-all            Delete EVERYTHING (caches + CSVs)"
-	@echo "  make list-models          List models (Local & Commercial Status)"
-	@echo "  make list-modules         List available benchmark modules"
-	@echo "  make create-module        🚀 Scaffold a new benchmark module (Interactive)"
-	@echo "  make backup               Backup benchmark scores to backups/"
+	@echo "=== Tools & Maintenance ==="
+	@echo "  make list-models          List available Models"
+	@echo "  make list-modules         List available Modules"
+	@echo "  make create-module        🚀 Scaffold a new module"
+	@echo "  make clean                Clean caches/temp files"
+	@echo "  make clean-all            Deep Clean (Caches + CSVs)"
+	@echo "  make backup               Create full backup"
 	@echo ""
 
+# === INSTALLATION ===
+
 install:
-	@echo "📦 Installing dependencies (Smart Setup)..."
+	@echo "📦 Installing dependencies..."
 	$(PYTHON) scripts/dev/setup_env.py
 
 install-dev: install
 	@echo "🛠️ Installing development dependencies..."
 	$(PYTHON) -m pip install -r requirements-dev.txt
 
-# === NEUE MODULARE BENCHMARK-COMMANDS ===
+# === BENCHMARKING ===
 
 benchmark:
-	@echo "🚀 Starte interaktiven Benchmark..."
+	@echo "🚀 Starting Interactive Benchmark..."
 	$(PYTHON) run_benchmark.py
 	@$(MAKE) leaderboard
 
@@ -65,7 +62,7 @@ benchmark-single:
 		echo "Usage: make benchmark-single MODEL=qwen2.5:14b [MODULE=code_quality]"; \
 		exit 1; \
 	fi
-	@echo "🤖 Starte automatisierten Benchmark mit Modell: $(MODEL)..."
+	@echo "🤖 Starting automated benchmark for: $(MODEL)..."
 	$(PYTHON) run_benchmark.py --model $(MODEL) $(if $(MODULE),--module $(MODULE))
 
 benchmark-cross-model:
@@ -73,48 +70,78 @@ benchmark-cross-model:
 	@$(PYTHON) scripts/core/run_cross_model_benchmark.py $(if $(MODULE),--module $(MODULE))
 
 benchmark-auto:
-	@echo "🤖 Starte Full Auto Benchmark (Smart Autofill Mode)..."
-	@echo "   Führt intelligent nur FEHLENDE Tests auf allen Modellen aus."
+	@echo "🤖 Starting Full Auto Benchmark (Smart Autofill)..."
 	$(PYTHON) scripts/core/benchmark_auto.py
 
-leaderboard:
-	@echo "📊 Generiere Leaderboard..."
-	$(PYTHON) scripts/core/generate_leaderboard.py
-
 benchmark-human:
-	@echo "👤 Starte Human Baseline Test (Political Compass)..."
+	@echo "👤 Starting Human Baseline Test..."
 	$(PYTHON) scripts/tools/run_human_compass.py
-
-bias-report:
-	@echo "📊 Aktualisiere Bias Sensitivity Report (Vanilla vs. Anti-Diplomat)..."
-	$(PYTHON) scripts/analysis/update_bias_report.py
-
-# === VALIDATION ===
-
-validate:
-	@echo "🔍 Validiere alle Module aus benchmark_config.yaml..."
-	$(PYTHON) scripts/utilities/validate_assets.py --all
-
-validate-single:
-	@if [ -z "$(ASSET)" ]; then \
-		echo "Error: ASSET variable not set"; \
-		echo "Usage: make validate-single ASSET=benchmark_modules/code_quality/assets/asset_001_wcag_audit.yaml"; \
-		exit 1; \
-	fi
-	$(PYTHON) scripts/utilities/validate_assets.py $(ASSET)
-
-generate-golden:
-	@echo "🏆 Generiere Golden Standard für alle Module (nur fehlende)..."
-	$(PYTHON) scripts/core/run_commercial_benchmark.py --mode golden_standard --auto
-
-generate-golden-new:
-	@echo "🏆 Generiere Golden Standard für alle Module (FORCE UPDATE)..."
-	$(PYTHON) scripts/core/run_commercial_benchmark.py --mode golden_standard --auto --force
 
 run-benchmark:
 	$(PYTHON) run_benchmark.py
 
-# === UTILITIES ===
+# === REPORTING & STANDARDS ===
+
+leaderboard:
+	@echo "📊 Generating Leaderboard..."
+	$(PYTHON) scripts/core/generate_leaderboard.py
+
+bias-report:
+	@echo "📊 Updating Bias Sensitivity Report..."
+	$(PYTHON) scripts/analysis/update_bias_report.py
+
+generate-golden:
+	@echo "🏆 Generating Golden Standards (missing only)..."
+	$(PYTHON) scripts/core/run_commercial_benchmark.py --mode golden_standard --auto
+
+generate-golden-new:
+	@echo "🏆 Generating Golden Standards (FORCE UPDATE)..."
+	$(PYTHON) scripts/core/run_commercial_benchmark.py --mode golden_standard --auto --force
+
+# === VALIDATION & QA ===
+
+validate:
+	@echo "🔍 Validating all modules..."
+	$(PYTHON) scripts/tools/validate_assets.py --all
+
+validate-single:
+	@if [ -z "$(ASSET)" ]; then \
+		echo "Error: ASSET variable not set"; \
+		exit 1; \
+	fi
+	$(PYTHON) scripts/tools/validate_assets.py $(ASSET)
+
+validate-structure:
+	@echo "🏗️ Checking Module Structure..."
+	$(PYTHON) scripts/tools/validate_structure.py
+
+test: validate
+	@echo "🧪 Running Unit Tests..."
+	$(PYTHON) -m pytest benchmark_modules/
+
+diff-results:
+	@echo "⚖️ Comparing Benchmark Results..."
+	@$(PYTHON) scripts/analysis/compare_baselines.py --help
+
+analyze-costs:
+	@echo "💰 Analyzing Prompt Token Costs..."
+	$(PYTHON) scripts/analysis/analyze_prompts.py
+
+# === TOOLS & MAINTENANCE ===
+
+list-models:
+	@$(PYTHON) scripts/tools/list_models.py
+
+list-modules:
+	@echo "📋 Available Modules:"
+	@if [ -f "scripts/tools/list_modules.py" ]; then \
+		$(PYTHON) scripts/tools/list_modules.py; \
+	else \
+		$(PYTHON) -c "import yaml; config=yaml.safe_load(open('benchmark_config.yaml')); [print(f'  {i+1}. {k}: {v[\"name\"]}') for i, (k,v) in enumerate(config.get('modules', {}).items()) if v.get('enabled', True)]"; \
+	fi
+
+create-module:
+	@$(PYTHON) scripts/dev/scaffold_module.py
 
 clean:
 	@echo "🧹 Cleaning caches and temporary files..."
@@ -124,9 +151,8 @@ clean:
 	find . -type f -name "*.pyc" -delete
 
 clean-sessions:
-	@echo "🧹 Cleaning temporary benchmark sessions (Checkpoints)..."
+	@echo "🧹 Cleaning temporary benchmark sessions..."
 	@rm -rf outputs/temp/session_*.json
-	@echo "Done."
 
 clean-csv:
 	@echo "🗑️  Deleting ALL benchmark CSV files..."
@@ -134,92 +160,43 @@ clean-csv:
 
 clean-model:
 	@if [ -z "$(MODEL)" ]; then \
-		echo "❌ Fehler: MODEL Variable fehlt. Nutzung: make clean-model MODEL=name"; \
+		echo "❌ Use: make clean-model MODEL=name"; \
 		exit 1; \
 	fi
-	@echo "🧹 Lösche Ergebnisse für Modell: $(MODEL)"
+	@echo "🧹 Deleting results for model: $(MODEL)"
 	$(PYTHON) scripts/maintenance/clean_results.py --model "$(MODEL)"
 
 clean-module:
 	@if [ -z "$(MODULE)" ]; then \
-		echo "❌ Fehler: MODULE Variable fehlt. Nutzung: make clean-module MODULE=key"; \
+		echo "❌ Use: make clean-module MODULE=key"; \
 		exit 1; \
 	fi
-	@echo "🧹 Lösche Ergebnisse für Modul: $(MODULE)"
+	@echo "🧹 Deleting results for module: $(MODULE)"
 	$(PYTHON) scripts/maintenance/clean_results.py --module "$(MODULE)"
 
 clean-all: clean clean-csv
-	@echo "✨ All clean! (Caches and CSVs deleted)"
+	@echo "✨ All clean!"
 
 clean-runs:
 	@if [ -f "scripts/maintenance/cleanup_runs.py" ]; then \
 		$(PYTHON) scripts/maintenance/cleanup_runs.py --keep 1; \
-	else \
-		echo "⚠️  cleanup_runs.py nicht gefunden"; \
 	fi
 
 clean-runs-force:
 	@if [ -f "scripts/maintenance/cleanup_runs.py" ]; then \
 		$(PYTHON) scripts/maintenance/cleanup_runs.py --keep 1 --force; \
-	else \
-		echo "⚠️  cleanup_runs.py nicht gefunden"; \
 	fi
-
-list-modules:
-	@echo "📋 Available Modules (Ordered by Config):"
-	@if [ -f "scripts/utilities/list_modules.py" ]; then \
-		$(PYTHON) scripts/utilities/list_modules.py; \
-	else \
-		$(PYTHON) -c "import yaml; config=yaml.safe_load(open('benchmark_config.yaml')); [print(f'  {i+1}. {k}: {v[\"name\"]}') for i, (k,v) in enumerate(config.get('modules', {}).items()) if v.get('enabled', True)]"; \
-	fi
-
-test: validate
-	@echo "🧪 Running Unit Tests..."
-	$(PYTHON) -m pytest benchmark_modules/
-
-list-models:
-	@$(PYTHON) scripts/utilities/list_models.py
-
-# === UTILITIES & VALIDATION ===
-
-validate-structure:
-	@echo "🏗️ Checking Module Structure..."
-	$(PYTHON) scripts/utilities/validate_structure.py
-
-# === DEVELOPMENT ===
-
-create-module:
-	@$(PYTHON) scripts/dev/scaffold_module.py
-
-analyze-costs:
-	@echo "💰 Analyzing Prompt Token Costs..."
-	$(PYTHON) scripts/analysis/analyze_prompts.py
-
-diff-results:
-	@echo "⚖️ Comparing Benchmark Results..."
-	@echo "Usage: $(PYTHON) scripts/analysis/compare_baselines.py --ref REF.json --test TEST.json"
-	@$(PYTHON) scripts/analysis/compare_baselines.py --help
-
-# === BACKUP ===
 
 consolidate-csv:
 	@if [ -f "scripts/maintenance/consolidate_csv.py" ]; then \
 		$(PYTHON) scripts/maintenance/consolidate_csv.py; \
-	else \
-		echo "⚠️  scripts/maintenance/consolidate_csv.py nicht gefunden"; \
 	fi
 
 backup:
-	@echo "💾 Creating full backup (scores, outputs, modules, standards)..."
+	@echo "💾 Creating full backup..."
 	@mkdir -p backups
-	@tar --exclude='__pycache__' --exclude='.DS_Store' -czf backups/cruciblemark_backup_$(shell date +%Y%m%d_%H%M%S).tar.gz \
-		benchmark_scores/ \
-		outputs/ \
-		benchmark_modules/ \
-		golden_standards/
-	@echo "✅ Backup created in backups/"
-	@echo "🧹 Post-Backup Cleanup Phase 1: Cleaning old JSON logs..."
+	@tar --exclude='__pycache__' --exclude='.DS_Store' -czf backups/cruciblemark_backup_$(shell date +%Y%m%d_%H%M%S).tar.gz benchmark_scores/ outputs/ benchmark_modules/ golden_standards/
+	@echo "✅ Backup created."
 	@$(MAKE) clean-runs-force
-	@echo "🧹 Post-Backup Cleanup Phase 2: Consolidating CSV scores (Keep Latest)..."
 	@$(MAKE) consolidate-csv
-	@echo "✨ Backup chain complete (Archived + Cleaned + Consolidated)."
+	@echo "✨ Backup chain complete."

@@ -10,6 +10,7 @@ import time
 import logging
 from pathlib import Path
 from typing import Dict, Any, List, Tuple
+from schemas.result import BenchmarkResult
 
 # Ensure root directory is in sys.path
 root_dir = Path(__file__).parent.parent.parent
@@ -46,17 +47,10 @@ class UXWritingTest(BaseTest):
         # BaseTest loads self.asset
         self.scenario = UXScenario.from_dict(self.asset)
 
-    def execute(self, model: str, llm_client: LLMClient, provider: str = "ollama") -> Dict[str, Any]:
+    def execute(self, model: str, llm_client: LLMClient, provider: str = "ollama") -> BenchmarkResult:
         """
         Führt den Test für das geladene Asset aus.
-
-        Args:
-            model: Name des Modells.
-            llm_client: Client für LLM-Anfragen.
-            provider: LLM-Provider (default: ollama).
-
-        Returns:
-            Dictionary mit Response, Execution-Time und Metadaten.
+        Returns BenchmarkResult object.
         """
         prompt = self.scenario.to_prompt()
 
@@ -81,13 +75,18 @@ class UXWritingTest(BaseTest):
         # Merge metadata
         meta = self.asset.get("metadata", {}).copy()
         meta.update(getattr(llm_client, "last_response_metadata", {}))
-
-        return {
-            "raw_response": response,
-            "response": response,
-            "execution_time": execution_time,
-            "metadata": meta
-        }
+        
+        return BenchmarkResult(
+            status="success",
+            primary_score=None,
+            rendered_value="Pending",
+            execution_time=execution_time,
+            raw_response=response,
+            tokens_used=getattr(llm_client, "last_token_usage", 0),
+            cost_usd=getattr(llm_client, "last_request_cost", 0.0),
+            model_version=getattr(llm_client, "last_response_metadata", {}).get("system_fingerprint", "unknown"),
+            meta=meta
+        )
 
     def score_response(self, response: str) -> Dict[str, Any]:
         """
