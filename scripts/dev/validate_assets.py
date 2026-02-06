@@ -42,16 +42,18 @@ class CLIAssetValidator:
             else:
                 results["invalid"] += 1
         elif path.is_dir():
-            # Skip political_compass as it uses a custom schema v2.0
-            if "political_compass" in path.parts:
-                return results
-
             for file_path in path.rglob("*.yaml"):
-                # Ignore files in ignored directories (starting with . or _)
-                if any(part.startswith((".", "_")) for part in file_path.parts):
+                # Ignore files in ignored directories (starting with . or _) or named "backup"
+                if any(part.startswith((".", "_")) or "backup" in part.lower() for part in file_path.parts):
+                    continue
+
+                # Ignore config and template files
+                if file_path.name in ["config.yaml", "MODULE_SCHEMA_TEMPLATE.yaml", "local_override.yaml"]:
+
                     continue
 
                 is_valid, error = self.validator._validate_file_internal(file_path)
+
                 results["details"].append(
                     {
                         "path": str(file_path),
@@ -65,22 +67,6 @@ class CLIAssetValidator:
                     results["invalid"] += 1
 
         return results
-                weight = category_data["weight"]
-                if not isinstance(weight, (int, float)):
-                    errors.append(f"scoring.{category_name}.weight muss Zahl sein")
-                else:
-                    total_weight += weight
-
-            if "criteria" in category_data:
-                if not isinstance(category_data["criteria"], list):
-                    errors.append(f"scoring.{category_name}.criteria muss Liste sein")
-
-        if total_weight != TOTAL_SCORING_WEIGHT:
-            errors.append(
-                f"scoring weights müssen {TOTAL_SCORING_WEIGHT} ergeben, sind {total_weight}"
-            )
-
-        return errors
 
 
     def validate_all_modules(self) -> dict[str, Any]:
@@ -141,7 +127,7 @@ def _print_report(results: Dict[str, Any]) -> None:
 
 def main():
     """CLI Entry Point."""
-    validator = AssetValidator()
+    validator = CLIAssetValidator()
 
     if len(sys.argv) > 1 and sys.argv[1] == "--all":
         results = validator.validate_all_modules()
