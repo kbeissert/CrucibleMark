@@ -120,7 +120,8 @@ class AssetValidator:
         TOTAL_SCORING_WEIGHT = 100
 
         for category_name, category_data in scoring.items():
-             if category_name == "method": continue
+             if category_name == "method":
+                 continue
 
              if not isinstance(category_data, dict):
                  errors.append(f"scoring.{category_name} muss Dictionary sein")

@@ -15,7 +15,7 @@ root_dir = Path(__file__).parent.parent.parent
 if str(root_dir) not in sys.path:
     sys.path.insert(0, str(root_dir))
 
-from schemas.result import BenchmarkResult
+from schemas.result import BenchmarkResult  # noqa: E402
 from benchmark_modules.base_test import BaseTest  # noqa: E402
 from benchmark_modules.documentation_quality.core.constants import (  # noqa: E402
     DEFAULT_TEMPERATURE,

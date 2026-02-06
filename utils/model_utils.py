@@ -4,7 +4,7 @@ Utility functions for model management and filtering.
 
 import shutil
 import subprocess
-from typing import Dict, Optional
+from typing import Dict
 
 # Late import to avoid circular dependencies if any (though currently safe)
 try:

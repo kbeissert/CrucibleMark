@@ -3,7 +3,7 @@
 
 import sys
 from pathlib import Path
-from typing import Any, Dict, Tuple
+from typing import Any, Dict
 
 # pylint: disable=import-error
 import yaml
@@ -13,7 +13,7 @@ import yaml
 ROOT_DIR = Path(__file__).parent.parent.parent
 sys.path.insert(0, str(ROOT_DIR))
 
-from utils.asset_validator import AssetValidator
+from utils.asset_validator import AssetValidator  # noqa: E402
 
 # Constants
 MIN_CLI_ARGS = 2

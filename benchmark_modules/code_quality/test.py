@@ -20,8 +20,8 @@ from benchmark_modules.code_quality.core.constants import (  # noqa: E402
     DEFAULT_TEMPERATURE,
     TOKEN_MULTIPLIER,
 )
-from benchmark_modules.code_quality.core.evaluators import CodeQualityEvaluator
-from schemas.result import BenchmarkResult  # Correct import
+from benchmark_modules.code_quality.core.evaluators import CodeQualityEvaluator  # noqa: E402
+from schemas.result import BenchmarkResult  # noqa: E402
 
 
 class CodeQualityTest(BaseTest):

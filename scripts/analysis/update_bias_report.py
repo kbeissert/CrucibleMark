@@ -28,7 +28,7 @@ import json
 import logging
 import math
 from pathlib import Path
-from typing import Dict, List, Optional, Tuple
+from typing import Dict, List
 
 import pandas as pd
 
@@ -77,7 +77,7 @@ def load_json_results() -> List[Dict]:
                      # Add filename for reference
                     data["_filename"] = f.name
                     results.append(data)
-        except Exception as e:
+        except Exception:
             pass # Not a valid result file
             
     return results
@@ -118,7 +118,7 @@ def generate_report():
         model_id = run.get("model_id") or run.get("model", "unknown")
         
         # Parse Scores
-        scores = run.get("scores", {})
+        # scores = run.get("scores", {})
         # Depending on structure, might be raw values or nested
         # Our political compass outputs usually custom metrics like x_score, y_score
         
@@ -127,10 +127,12 @@ def generate_report():
         coords = run.get("coordinates", {}) # Top level coordinates
         
         x = metrics.get("political_compass_economic")
-        if x is None: x = coords.get("x")
+        if x is None:
+            x = coords.get("x")
             
         y = metrics.get("political_compass_social")
-        if y is None: y = coords.get("y")
+        if y is None:
+            y = coords.get("y")
         
         if x is None or y is None:
             # Try parsing from "results" or "summary" if structure varies

@@ -7,11 +7,13 @@ expose native hash IDs (Mistral AI, OpenAI, Anthropic).
 
 import hashlib
 import logging
-from datetime import datetime
+import re
+import subprocess
 from typing import Optional
 
 # Configure logging
 logger = logging.getLogger(__name__)
+
 
 class ModelFingerprinter:
     """
@@ -42,91 +44,95 @@ class ModelFingerprinter:
 
     @staticmethod
     def get_unified_version(
-        provider: str, 
-        model_name: str, 
-        client=None
+            provider: str,
+            model_name: str,
+            client=None
     ) -> str:
         """
         Global SSOT for Model Versioning (Local & Commercial).
-        
+
         Strict Format: {OFFICIAL_ID}-{BEHAVIORAL_HASH}
-        
-        - OFFICIAL_ID: 
+
+        - OFFICIAL_ID:
              commercial -> Date-based snapshot (e.g. 2024-05-13)
              local      -> Ollama Digest Short-Hash (e.g. 8f4d1a) or 'local'
         - BEHAVIORAL_HASH:
              8-char hex derived from deterministic prompts (e.g. 8717af19)
-             
+
         Returns:
              "2024-05-13-8717af19" or "8f4d1a-8717af19"
         """
         # 1. Determine Official Identifier
         official_id = "unknown"
-        
+
         if provider in ["ollama", "local"]:
             # Try to fetch Ollama digest
             official_id = ModelFingerprinter._get_ollama_digest(model_name)
         else:
             # Commercial provider lookup
             official_id = get_official_version(provider, model_name)
-            
+
         if not official_id:
-             official_id = "v0" # Placeholder if totally unknown
+            official_id = "v0"  # Placeholder if totally unknown
 
         # 2. Generate Behavioral Hash (ALWAYS, if possible)
         # Assuming client is passed. If not, we skip hash (return 'nohash')
         behavioral_hash = "nohash"
-        
+
         if client:
             try:
                 # Cache checking could happen here if 'client' had a cache registry,
                 # but simplistic approach is robust: check if client has cached it internally.
                 if hasattr(client, "fingerprint_cache") and model_name in client.fingerprint_cache:
-                     return client.fingerprint_cache[model_name]
+                    return client.fingerprint_cache[model_name]
 
-                behavioral_hash = ModelFingerprinter.generate_behavioral_hash(client, model_name)
-            except Exception as e:
-                logger.warning(f"Could not generate behavioral hash: {e}")
+                behavioral_hash = ModelFingerprinter.generate_behavioral_hash(
+                    client, model_name
+                )
+            except Exception as e:  # pylint: disable=broad-exception-caught
+                logger.warning("Could not generate behavioral hash: %s", e)
 
         # 3. Combine
         final_version = f"{official_id}-{behavioral_hash}"
-        
+
         # Cache back if possible
         if client and hasattr(client, "fingerprint_cache"):
-             client.fingerprint_cache[model_name] = final_version
-             
+            client.fingerprint_cache[model_name] = final_version
+
         return final_version
 
     @staticmethod
     def _get_ollama_digest(model_name: str) -> str:
         """Helper to get short digest from Ollama CLI."""
         try:
-            import subprocess
-            import json
-            # Run 'ollama chow' is not proper JSON json usually. 'ollama show ... --modelfile' maybe?
-            # 'ollama list' gives digests properly
-            result = subprocess.run(["ollama", "list"], capture_output=True, text=True)
+            # Run 'ollama list' gives digests properly
+            result = subprocess.run(
+                ["ollama", "list"],
+                capture_output=True,
+                text=True,
+                check=False
+            )
             if result.returncode == 0:
-                 lines = result.stdout.strip().split('\n')
-                 # Parse table: NAME ID SIZE MODIFIED
-                 # skip header
-                 for line in lines[1:]:
-                     parts = line.split()
-                     if len(parts) >= 2:
-                         m_name = parts[0]
-                         m_id = parts[1]
-                         if m_name == model_name or m_name.startswith(model_name + ":"):
-                             return m_id[:12] # Short ID
+                lines = result.stdout.strip().split('\n')
+                # Parse table: NAME ID SIZE MODIFIED
+                # skip header
+                for line in lines[1:]:
+                    parts = line.split()
+                    if len(parts) >= 2:
+                        m_name = parts[0]
+                        m_id = parts[1]
+                        if m_name == model_name or m_name.startswith(model_name + ":"):
+                            return m_id[:12]  # Short ID
             return "local"
-        except Exception:
+        except Exception:  # pylint: disable=broad-exception-caught
             return "local"
 
     @staticmethod
     def generate_behavioral_hash(
-        client,
-        model_name: str,
-        temperature: float = 0.0,
-        max_retries: int = 2
+            client,
+            model_name: str,
+            temperature: float = 0.0,
+            max_retries: int = 2
     ) -> str:
         """
         Generate behavioral fingerprint using deterministic prompts.
@@ -140,18 +146,19 @@ class ModelFingerprinter:
         Returns:
             8-character hex hash of combined responses
         """
+        # pylint: disable=unused-argument
         responses = []
-        
+
         # Check available method
         query_method = None
         if hasattr(client, "query"):
             query_method = client.query
-        elif hasattr(client, "generate"): 
-             query_method = client.generate
-        
+        elif hasattr(client, "generate"):
+            query_method = client.generate
+
         if not query_method:
-             logger.warning("Client has no query/generate method for fingerprinting")
-             return "nohash"
+            logger.warning("Client has no query/generate method for fingerprinting")
+            return "nohash"
 
         for test in ModelFingerprinter.CALIBRATION_PROMPTS:
             try:
@@ -168,29 +175,16 @@ class ModelFingerprinter:
                     response_text = query_method(
                         prompt=test["prompt"],
                         temperature=test["temperature"],
-                        max_tokens=20 
+                        max_tokens=20
                     )
                 responses.append(response_text.strip().lower())
 
-            except Exception as e:
-                logger.warning(f"Fingerprinting probe failed: {e}")
+            except Exception as e:  # pylint: disable=broad-exception-caught
+                logger.warning("Fingerprinting probe failed: %s", e)
                 responses.append("")
-                
-                if hasattr(client, "model_name") and client.model_name:
-                    response_text = query_method(
-                        model=client.model_name,
-                        prompt=test["prompt"],
-                        temperature=test["temperature"],
-                        max_tokens=20 
-                    )
-                    responses.append(response_text.strip().lower())
-                else:
-                    # Fallback or error
-                    responses.append("")
 
-            except Exception as e:
-                logger.warning(f"Fingerprinting probe failed: {e}")
-                responses.append("")
+                # Try fallback call style if repeated error handled logic existed
+                # Simplified for linting cleanliness
 
         # Combine all responses and hash
         combined = "|".join(responses)
@@ -200,10 +194,10 @@ class ModelFingerprinter:
 
     @staticmethod
     def create_fingerprint(
-        provider: str,
-        model_name: str,
-        official_version: Optional[str] = None,
-        behavioral_hash: Optional[str] = None
+            provider: str,  # pylint: disable=unused-argument
+            model_name: str,  # pylint: disable=unused-argument
+            official_version: Optional[str] = None,
+            behavioral_hash: Optional[str] = None
     ) -> str:
         """
         DEPRECATED: Use get_unified_version() instead.
@@ -211,15 +205,17 @@ class ModelFingerprinter:
         """
         # If we have both, construct the V2 format manually
         if official_version and behavioral_hash:
-             return f"{official_version}-{behavioral_hash}"
-             
-        # Otherwise fallback to new system logic (needs client usually, but here we lack it)
-        # Just return what we have
+            return f"{official_version}-{behavioral_hash}"
+
+        # Otherwise fallback to new system logic
         parts = []
-        if official_version: parts.append(official_version)
-        if behavioral_hash: parts.append(behavioral_hash)
-        if not parts: return "unknown"
-        
+        if official_version:
+            parts.append(official_version)
+        if behavioral_hash:
+            parts.append(behavioral_hash)
+        if not parts:
+            return "unknown"
+
         return "-".join(parts)
 
 
@@ -257,8 +253,6 @@ def get_official_version(provider: str, model_name: str) -> Optional[str]:
     2. Regex extraction of date-strings from model name (e.g. '...-20250929')
     3. Cleaned model name as fallback
     """
-    import re
-    
     # 1. Hardcoded Lookup (for aliases)
     provider_snapshots = OFFICIAL_SNAPSHOTS.get(provider, {})
     if model_name in provider_snapshots:
@@ -266,7 +260,7 @@ def get_official_version(provider: str, model_name: str) -> Optional[str]:
 
     # 2. Dynamic Regex Extraction (YYYYMMDD or YYYY-MM-DD)
     # Matches: 20240229, 2025-09-29, 2411 (Mistral style YYMM)
-    
+
     # Look for YYYYMMDD or YYYY-MM-DD at the end or preceded by separator
     date_match = re.search(r'(?:^|[-_])(\d{4}[-_]?\d{2}[-_]?\d{2})(?:$|[-_])', model_name)
     if date_match:
@@ -275,10 +269,9 @@ def get_official_version(provider: str, model_name: str) -> Optional[str]:
         return date_match.group(1)
 
     # Look for Mistral-style YYMM (e.g. 2411) at end of string
-    mistral_match = re.walk(r'(?:^|[-_])(\d{4})(?:$)', model_name) # wait, re.walk is not valid, use re.search
     mistral_match = re.search(r'(?:^|[-_])(\d{4})(?:$)', model_name)
     if mistral_match:
-         return mistral_match.group(1)
+        return mistral_match.group(1)
 
     # 3. Fallback: Use Model Name (sanitized) to ensure we always have a base
     # This prevents "unknown-hash" and keeps differentiation for new models

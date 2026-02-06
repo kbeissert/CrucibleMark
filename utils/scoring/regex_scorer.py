@@ -2,8 +2,7 @@
 Regex/Rule-based Scorer implementation.
 Evaluates responses based on defined criteria (Regex, Keywords, etc).
 """
-import re
-from typing import Any, Dict, List, Tuple
+from typing import Any, Dict, Tuple
 from .base import BaseScorer
 from .helpers import ScoringHelpers
 

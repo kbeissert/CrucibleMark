@@ -19,7 +19,6 @@ sys.path.append(str(Path(__file__).parent.parent.parent))
 from benchmark_modules.political_compass.test import PoliticalCompassTest
 from benchmark_modules.political_compass.core.evaluators import PoliticalCompassEvaluator
 from benchmark_modules.political_compass.core.visualizer import PoliticalCompassVisualizer
-from utils.result_manager import ResultManager
 from utils.benchmark_utils import format_pc_run_data
 
 # Constants
@@ -112,7 +111,7 @@ def run_human_test():
     for i, asset in enumerate(questions, 1):
         meta = asset.get("metadata", {})
         q_id = meta.get("id", "??")
-        q_text = asset.get("question", "")
+        # q_text = asset.get("question", "")
         
         # Build shuffled prompt
         seed = session_seed + hash(q_id)
