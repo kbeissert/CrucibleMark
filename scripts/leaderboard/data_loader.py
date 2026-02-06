@@ -170,10 +170,70 @@ def load_benchmark_data() -> pd.DataFrame:
     # to aggregate runs of the same version across different days.
     if "model_version" in df.columns:
         df["model_version"] = df["model_version"].astype(str).str.replace(r'-\d{4}-\d{2}-\d{2}$', '', regex=True)
+    
+    # --- EXTERNAL MODULE INJECTION (v2.1) ---
+    # Injects "ghost rows" for modules that store results in separate CSVs (e.g. Political Compass).
+    # This ensures "Tests Run" count is accurate without needing to merge full datasets.
+    
+    # 1. Build Map of Known Models: (model, version) -> type
+    known_models = df[["model", "model_version", "type"]].drop_duplicates().set_index(["model", "model_version"])["type"].to_dict()
+    
+    # 2. Check Political Compass
+    compass_csv = Path("benchmark_scores/political_compass_results.csv")
+    if compass_csv.exists():
+        try:
+            pc_df = pd.read_csv(compass_csv)
+            # Normalize Versions (important!)
+            if "model_version" in pc_df.columns:
+                 pc_df["model_version"] = pc_df["model_version"].fillna("unknown").astype(str).str.replace(r'-\d{4}-\d{2}-\d{2}$', '', regex=True)
+
+            ghost_rows = []
+            for _, pc_row in pc_df.iterrows():
+                m = pc_row.get("model")
+                v = pc_row.get("model_version", "unknown")
+                
+                # Loose matching: Try exact version, then fallback to model-only lookup if version implies match
+                t = known_models.get((m, v))
+                if not t:
+                    # Retry: Find any type for this model
+                    # (Simple heuristic: if model matches, assume same type)
+                    matching_keys = [k for k in known_models.keys() if k[0] == m]
+                    if matching_keys:
+                        # Found a match on model name! Use its Type AND Version (if ours is weak)
+                        # This merges "unknown" version rows into the main model entry
+                        best_key = matching_keys[0]
+                        t = known_models[best_key]
+                        
+                        # Only upgrade version if current is junk
+                        if v in ["unknown", "None", "", None]:
+                             v = best_key[1]
+                
+                if t:
+                    # Append Ghost Row
+                    ghost_rows.append({
+                        "model": m,
+                        "model_version": v,
+                        "type": t,
+                        "category": "Political Compass", # MUST match config name
+                        "asset_id": "political_compass_placeholder",
+                        "percentage": 0.0, # Non-scoring
+                        "status": "success",
+                        "timestamp": pc_row.get("timestamp")
+                    })
+            
+            if ghost_rows:
+                ghost_df = pd.DataFrame(ghost_rows)
+                # Ensure timestamp is datetime (matches main df type) to avoid accumulation errors
+                # mixed types cause TypeError in groupby().max()
+                if "timestamp" in ghost_df.columns:
+                    ghost_df["timestamp"] = pd.to_datetime(ghost_df["timestamp"], errors="coerce")
+                
+                df = pd.concat([df, ghost_df], ignore_index=True)
+                
+        except Exception as e:
+            print(f"⚠️ Warning: Failed to inject Political Compass data: {e}")
 
     # DEDUPLICATION LOGIC with VERSIONING:
-    # We now group by model AND model_version.
-    # This means 'mistral:latest' (v1) and 'mistral:latest' (v2) are treated as DIFFERENT entities.
     df = df.drop_duplicates(subset=["model", "model_version", "type", "asset_id"], keep="last")
     return df
 

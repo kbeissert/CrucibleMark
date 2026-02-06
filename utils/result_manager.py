@@ -89,30 +89,34 @@ class ResultManager:
         fieldnames = self._get_updated_fieldnames(csv_path, current_keys)
         file_exists = csv_path.exists() and csv_path.stat().st_size > 0
 
-        # Wenn wir neue Spalten haben, müssen wir die Datei neu schreiben,
-        # damit der Header aktualisiert wird. Append funktioniert nur bei gleichen Spalten.
-        # Prüfen, ob geänderte Fieldnames mehr sind als existierende Spalten (falls Datei existiert)
-        needs_rewrite = False
+        # Wir lesen IMMER die existierenden Zeilen, um Duplikate zu entfernen (Upsert-Pattern)
         existing_rows = []
 
         if file_exists:
             try:
                 with csv_path.open("r", encoding="utf-8") as f:
                     reader = csv.DictReader(f)
-                    if reader.fieldnames:
-                        existing_header_set = set(reader.fieldnames)
-                        new_fields = set(fieldnames) - existing_header_set
-                        if new_fields:
-                            needs_rewrite = True
-                            existing_rows = list(reader)
+                    existing_rows = list(reader)
             except (OSError, csv.Error):
-                # Bei Lesefehlern lieber append versuchen oder überschreiben?
-                # Wir gehen auf Nummer sicher und machen Append, falls Rewrite scheitert.
-                needs_rewrite = False
+                # Falls Fehler beim Lesen, fangen wir "frisch" an (überschreiben korrupte Datei)
+                existing_rows = []
+
+        # Deduplizierung: Entferne Zeilen aus 'existing_rows', wenn (model, asset_id) in 'results' enthalten ist
+        # Wir bauen ein Set von (model, asset_id) der neuen Ergebnisse
+        new_keys_combo = {
+            (r.get("model", ""), r.get("asset_id", "")) for r in results
+        }
+
+        # Behalte nur Zeilen, die NICHT überschrieben werden
+        clean_existing_rows = [
+            row
+            for row in existing_rows
+            if (row.get("model", ""), row.get("asset_id", "")) not in new_keys_combo
+        ]
 
         try:
             self._write_to_csv(
-                csv_path, fieldnames, results, needs_rewrite, existing_rows, file_exists
+                csv_path, fieldnames, results, clean_existing_rows
             )
 
             # Leaderboard automatisch aktualisieren
@@ -128,32 +132,20 @@ class ResultManager:
         self,
         csv_path: Path,
         fieldnames: list[str],
-        results: list[dict[str, Any]],
-        needs_rewrite: bool,
+        new_results: list[dict[str, Any]],
         existing_rows: list[dict[str, Any]],
-        file_exists: bool,
     ) -> None:
-        """Schreibt die Daten in die CSV-Datei."""
-        # pylint: disable=too-many-arguments, too-many-positional-arguments
-        if needs_rewrite:
-            # Komplettes Neuschreiben mit erweitertem Header
-            with csv_path.open("w", newline="", encoding="utf-8") as f:
-                writer = csv.DictWriter(f, fieldnames=fieldnames, extrasaction="ignore")
-                writer.writeheader()
-                if existing_rows:
-                    writer.writerows(existing_rows)
-                writer.writerows(results)
-            print(f"\n💾 Ergebnisse (inkl. neuer Spalten) aktualisiert in: {csv_path}")
+        """Schreibt die kombinierten Daten in die CSV-Datei (Rewrite mit Deduplizierung)."""
+        # Wir kombinieren alte (gefilterte) Zeilen und neue Zeilen
+        all_rows = existing_rows + new_results
 
-        else:
-            # Normales Append (entweder neue Datei oder keine neuen Spalten)
-            mode = "a" if file_exists else "w"
-            with csv_path.open(mode, newline="", encoding="utf-8") as f:
-                writer = csv.DictWriter(f, fieldnames=fieldnames, extrasaction="ignore")
-                if not file_exists:
-                    writer.writeheader()
-                writer.writerows(results)
-            print(f"\n💾 Ergebnisse gespeichert in: {csv_path}")
+        # Komplettes Neuschreiben
+        with csv_path.open("w", newline="", encoding="utf-8") as f:
+            writer = csv.DictWriter(f, fieldnames=fieldnames, extrasaction="ignore")
+            writer.writeheader()
+            writer.writerows(all_rows)
+        
+        print(f"\n💾 Ergebnisse gespeichert in: {csv_path} (Upsert: {len(new_results)} neu/updated)")
 
     def update_leaderboard(self):
         """Triggert das Update des Leaderboards."""

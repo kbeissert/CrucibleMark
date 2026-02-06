@@ -85,7 +85,8 @@ class LLMClient:
             if model_alias in provider_locks:
                 locked_version = provider_locks[model_alias].get("version")
                 if locked_version:
-                    logger.info(f"🔒 Model Lock: Using {locked_version} for {model_alias}")
+                    # Changed to DEBUG to reduce console spam during batches (e.g. Political Compass)
+                    logger.debug(f"🔒 Model Lock: Using {locked_version} for {model_alias}")
                     return locked_version
         return model_alias
 
@@ -148,6 +149,28 @@ class LLMClient:
                 "default_temperature", DEFAULT_TEMPERATURE
             )
 
+        # Enable streaming output for commercial providers by default (configurable)
+        use_default_stream = False
+        streaming_setting = (
+            self.config.get("output", {})
+            .get("streaming_output_commercial_providers", True)
+        )
+        streaming_disabled = (
+            isinstance(streaming_setting, str)
+            and streaming_setting.strip().lower() == "force"
+        ) or (streaming_setting is False)
+
+        if (
+            not streaming_disabled
+            and stream_handler is None
+            and provider in ["anthropic", "openai", "mistral"]
+        ):
+            def _default_stream_printer(chunk: str) -> None:
+                print(chunk, end="", flush=True)
+
+            stream_handler = _default_stream_printer
+            use_default_stream = True
+
         import time
 
         # 2. Ausführung
@@ -173,12 +196,26 @@ class LLMClient:
         if hasattr(self.clients[provider], "last_response_metadata"):
             self.last_response_metadata = self.clients[provider].last_response_metadata
 
-        # 3. Cost Tracking (Estimates)
-        # Hinweis: Exakte Token-Counts sind API-abhängig. Hier eine Heuristik oder
-        # man erweitert die Provider-Clients um Token-Usage Return-Werte.
-        # Fürs erste schätzen wir: 1 Token ~= 4 Charaktere
-        input_tokens = len(prompt) // 4
-        output_tokens = len(response_text) // 4
+        # 3. Cost Tracking
+        # Try to get exact usage from metadata if available (API)
+        input_tokens = 0
+        output_tokens = 0
+        
+        usage = self.last_response_metadata.get("usage") if self.last_response_metadata else None
+        
+        if usage:
+            # Handle both object (Pydantic/API libs) and dict formats
+            if hasattr(usage, "prompt_tokens"):
+                input_tokens = usage.prompt_tokens
+                output_tokens = usage.completion_tokens or 0  # completion_tokens can be None
+            elif isinstance(usage, dict):
+                input_tokens = usage.get("prompt_tokens", 0)
+                output_tokens = usage.get("completion_tokens", 0)
+        
+        # Fallback to estimation for Local/Ollama or if Usage missing
+        if input_tokens == 0 and output_tokens == 0:
+            input_tokens = len(prompt) // 4
+            output_tokens = len(response_text) // 4
 
         cost = self.cost_tracker.track_request(
             provider, model, input_tokens, output_tokens
@@ -197,6 +234,9 @@ class LLMClient:
             response_text = re.sub(r'<think>.*?</think>', '', response_text, flags=re.DOTALL).strip()
             # Also cleanup potential empty lines left behind
             response_text = re.sub(r'\n{3,}', '\n\n', response_text)
+
+        if use_default_stream:
+            print()
 
         return response_text
 

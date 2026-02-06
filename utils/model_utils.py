@@ -36,10 +36,9 @@ def get_model_version(model_name: str, provider: str = "ollama") -> str:
     # Try to get official snapshot ID from fingerprinting registry
     official_id = get_official_version(provider, model_name)
     if official_id:
-        # Return e.g. "mistral-large-2411" or just "2411" depending on pref.
-        # Here we return the official ID (e.g. "2411") to be combined later if needed.
-        # Or better: return a full identifier to avoid ambiguity.
-        return f"{model_name}-{official_id}"
+        # Return strict official ID (e.g. "2411" or "2024-05-13")
+        # Do NOT prepend model name anymore (Standardization)
+        return official_id
 
     # Fallback: If we can't determine version, return unknown
     return "unknown"

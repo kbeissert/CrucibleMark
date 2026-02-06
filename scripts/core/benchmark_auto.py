@@ -138,14 +138,15 @@ def _get_startable_assets(
     # -------------------------------------------------------
     # SPECIAL HANDLING FOR BATCH MODULES (e.g. Political Compass)
     # -------------------------------------------------------
-    # Batch-Module (wie Political Compass) erzeugen oft nur EINEN Eintrag (Aggregiert)
-    # und keine 1:1 Einträge pro Asset-Datei.
-    # Wir müssen prüfen, ob das Aggregat bereits existiert.
-    if module.get("execution_mode") == "batch" or module.get("key") == "political_compass":
-        # Known Batch IDs (TODO: Should be in config)
-        batch_id = "political_compass_v3"
-        if (model, batch_id) in existing_tests:
-            return []
+    # FIX: Wir deaktivieren den aggressiven Skip für Batch-Module temporär/dauerhaft,
+    # damit neue Assets auch dann gefunden werden, wenn der Batch-ID Eintrag schon existiert.
+    # Der darunterliegende Runner muss entscheiden, ob er cached oder neu läuft.
+    #
+    # if module.get("execution_mode") == "batch" or module.get("key") == "political_compass":
+    #    # Known Batch IDs (TODO: Should be in config)
+    #    batch_id = "political_compass_v3"
+    #    if (model, batch_id) in existing_tests:
+    #        return []
     # -------------------------------------------------------
 
     # Der Runner hat Methode zum Finden, aber wir brauchen den Pfad
@@ -383,6 +384,11 @@ def main():
         action="store_true", 
         help="Erzwingt das erneute Ausführen aller Tests (ignoriert Cache)."
     )
+    parser.add_argument(
+        "--modules",
+        type=str,
+        help="Kommagetrennte Liste von Modulen (Keys), die ausgeführt werden sollen (z.B. 'political_compass')."
+    )
     args = parser.parse_args()
 
     print(f"{'#' * 60}")
@@ -390,6 +396,8 @@ def main():
     print("    Füllt automatisch fehlende Benchmarks auf.")
     if args.force:
         print("    ⚠️  FORCE MODE: Alle Tests laufen erneut!")
+    if args.modules:
+        print(f"    🎯 FOKUS: Nur Module '{args.modules}'")
     print(f"{'#' * 60}\n")
 
     # Pre-Check Ollama
@@ -400,6 +408,18 @@ def main():
 
     # Module laden
     modules = get_all_modules(validator)
+    
+    # Filter modules if requested
+    if args.modules:
+        wanted = [m.strip() for m in args.modules.split(",")]
+        # Wir filtern die geladenen Module anhand des Keys
+        filtered = [m for m in modules if m['key'] in wanted]
+        if len(filtered) < len(wanted):
+            found_keys = [m['key'] for m in filtered]
+            missing = set(wanted) - set(found_keys)
+            print(f"⚠️  Warnung: Gewünschte Module nicht gefunden/aktiviert: {missing}")
+        modules = filtered
+
     if not modules:
         print("❌ Keine Module konfiguriert/aktiviert.")
         sys.exit(1)

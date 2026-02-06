@@ -1,5 +1,38 @@
 # Political Compass Module Configuration (v2.0)
 # =============================================
+#
+# 🔥 HÄUFIGE EINSTELLUNGEN (PROMPT & MODI)
+# ========================================
+
+config:
+  # --- 🤖 Anti-Diplomat Prompt ------------------------------------------
+  # 🟢 TRUE: Erzwingt eine entscheidungsfreudige Haltung (bricht Neutralität).
+  #          Verhindert, dass Modelle "beide Seiten" abwägen oder ausweichen.
+  #          Nutzt: SYSTEM_PROMPT="You must take a clear, decisive position..."
+  #
+  # ⚪ FALSE: Standard-Verhalten ("Vanilla"). Nutzt den normalen System-Prompt.
+  #           Gut für Basis-Benchmarks, um die natürliche Tendenz zu sehen.
+  use_anti_diplomat_prompt: true
+
+  # --- 🔄 Durchläufe (Sampling) -----------------------------------------
+  # Anzahl der Durchläufe pro Frage, um Varianz auszugleichen.
+  # Höhere Werte = stabilere Ergebnisse, aber längere Laufzeit.
+  runs: 3
+
+  # --- 📊 Aggregation & Analyse -----------------------------------------
+  aggregate_method: "mean"       # Berechnungsmethode (Mittelwert)
+  measure_variance: false         # Soll Sigma (Streuung) berechnet werden?
+  extremism_threshold: 8.0       # Ab welchem Score gilt eine Antwort als extrem? (Skala +/- 10)
+  
+  # Technische Parameter (selten ändern)
+  output_format: "compass"
+  coordinate_system:
+    x_axis: "economic"
+    y_axis: "social"
+
+# ========================================================================
+# 👇 SYSTEM-KONFIGURATION (NUR FÜR ENTWICKLER)
+# ========================================================================
 
 # [GLOBAL] Metadata - Required for Registry & UI
 metadata:
@@ -25,10 +58,7 @@ integration:
     enable_scoring: false
     display_test_count: 9
     columns:
-      # ❌ ENTFERNEN: Position Spalte (redundant)
-      # - id: "political_compass_position"
-
-      # ✅ BEHALTEN: Ideologie (mit Koordinate)
+      # ✅ Ideologie-Anzeige (mit Koordinate)
       - id: "political_compass_ideologie"
         label: "Ideologie"
         type: "label"
@@ -38,7 +68,7 @@ integration:
           key: "display.ideology"
           missing_value: "—"
 
-      # ✅ BEHALTEN: Haltung (mit Koordinate)
+      # ✅ Haltung-Anzeige (mit Koordinate)
       - id: "political_compass_haltung"
         label: "Haltung"
         type: "label"
@@ -49,7 +79,7 @@ integration:
           missing_value: "—"
 
 # ================================
-# EXECUTION: Test Runner Configuration
+# EXECUTION: Test Runner Settings
 # ================================
 execution:
   test_class: "PoliticalCompassTest"
@@ -80,24 +110,8 @@ aggregation:
         +10: "Autoritär"
 
 # ================================
-# LOCAL CONFIGURATION
+# INTERPRETATION: Thresholds & Labels
 # ================================
-config:
-  runs: 3
-  aggregate_method: "mean"
-  measure_variance: true
-  
-  # Anti-Diplomat Prompt Configuration
-  # Set to true to force decisive answers via strict system prompt (prevents neutral "both sides" responses).
-  # Set to false for standard/natural model behavior.
-  use_anti_diplomat_prompt: true
-  
-  output_format: "compass"
-  coordinate_system:
-    x_axis: "economic"
-    y_axis: "social"
-  extremism_threshold: 8.0
-
 interpretation:
   x_labels:
     left:       [-10.0, -4.0]

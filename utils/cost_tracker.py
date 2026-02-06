@@ -71,10 +71,22 @@ class CostTracker:
         # Versuche spezifisches Modell zu finden, sonst Default-Werte suchen (falls vorhanden)
         # Hier gehen wir davon aus, dass die Struktur ist: providers -> provider -> model_name -> costs
         # Manchmal sind Model-Namen ungenau (z.B. Versionen), hier striktes Matching für V1.
-
+        
         model_config = provider_config.get(model)
+
+        # Relaxed matching: If exact model not found, try to match by prefix (e.g. gpt-4o matches gpt-4o-2024-05-13)
         if not model_config:
-            # Logging warning here might be verbose if not configured models are used
+            for conf_model_key in provider_config:
+                if conf_model_key == "daily_budget":
+                     continue
+                if model.startswith(conf_model_key):
+                    model_config = provider_config[conf_model_key]
+                    break
+        
+        if not model_config:
+            # Fallback for completely unknown models to avoid 0 cost if we can verify it's the provider
+            # Maybe use a "default" rate if configured?
+            # For now, just return 0.0
             return 0.0
 
         input_price = model_config.get("input_cost_per_1k", 0.0)

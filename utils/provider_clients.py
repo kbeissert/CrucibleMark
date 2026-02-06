@@ -4,6 +4,7 @@ Getrennte Implementierungen für Ollama, Anthropic, Mistral
 """
 
 import os
+import time
 import logging
 from typing import Any, List, Optional, Callable, Dict
 
@@ -292,6 +293,10 @@ class AnthropicClient(BaseProviderClient):
     def __init__(self, config: dict[str, Any]):
         super().__init__(config)
         self._client = None
+        self.last_request_time = 0
+        self.min_request_interval = self.config.get("anthropic", {}).get(
+            "min_request_interval", 0.2
+        )  # Default: 0.2s between requests
 
     @property
     def client(self):
@@ -303,7 +308,7 @@ class AnthropicClient(BaseProviderClient):
             api_key = get_required_env(
                 "ANTHROPIC_API_KEY", "ANTHROPIC_API_KEY environment variable not set"
             )
-            self._client = anthropic.Anthropic(api_key=api_key)
+            self._client = anthropic.Anthropic(api_key=api_key, timeout=120.0)
         return self._client
 
     def is_accessible(self) -> bool:
@@ -362,6 +367,15 @@ class AnthropicClient(BaseProviderClient):
         **kwargs,
     ) -> str:
         """Query Anthropic API"""
+        # Rate Limit Protection
+        elapsed = time.time() - self.last_request_time
+        if elapsed < self.min_request_interval:
+            sleep_time = self.min_request_interval - elapsed
+            logger.debug(f"⏱️ Rate limit protection: sleeping {sleep_time:.1f}s")
+            time.sleep(sleep_time)
+        
+        self.last_request_time = time.time()
+
         try:
             model = self._resolve_model(model)
             skip_fingerprint = kwargs.pop("skip_fingerprint", False)
@@ -408,9 +422,9 @@ class AnthropicClient(BaseProviderClient):
     def get_available_models(self) -> List[str]:
         """Listet verfügbare Claude-Modelle"""
         return [
-            "claude-3-5-sonnet-20241022",
-            "claude-3-opus-20240229",
-            "claude-3-sonnet-20240229",
+            "claude-sonnet-4-5-20250929",
+            "claude-opus-4-5-20251101",
+            "claude-3-haiku-20240307",
         ]
 
 
@@ -556,7 +570,22 @@ class OpenAIClient(BaseProviderClient):
             api_key = get_required_env(
                 "OPENAI_API_KEY", "OPENAI_API_KEY environment variable not set"
             )
-            self._client = OpenAI(api_key=api_key)
+            
+            # Configure explicit Timeout object for better handling of TTFT vs Connection
+            # read=180.0s allows up to 3 mins wait for TTFT or between chunks
+            # Note: httpx.Timeout does not accept 'total' argument in this version's constructor apparently,
+            # or the way OpenAI client passes it down is specific.
+            # Using connect/read/write/pool is standard for httpx used by OpenAI.
+            
+            import httpx
+            timeout_config = httpx.Timeout(
+                connect=10.0,
+                read=180.0,
+                write=180.0,
+                pool=180.0
+            )
+
+            self._client = OpenAI(api_key=api_key, timeout=timeout_config)
         return self._client
 
     def is_accessible(self) -> bool:
@@ -614,12 +643,72 @@ class OpenAIClient(BaseProviderClient):
             params = {
                 "model": model,
                 "messages": [{"role": "user", "content": prompt}],
-                "temperature": temperature,
             }
-            if "max_tokens" in kwargs:
-                params["max_tokens"] = kwargs["max_tokens"]
+            
+            # Reasoning models (o1, o3) and some newer minis often don't support temperature
+            # or have strict fixed values.
+            is_reasoning = (
+                model.startswith("o1") 
+                or model.startswith("o3") 
+                or "gpt-5" in model
+            )
+            if not is_reasoning:
+                params["temperature"] = temperature
 
-            # Note: Streaming not implemented yet for OpenAI in this wrapper
+            if "max_tokens" in kwargs:
+                # O-series models use max_completion_tokens
+                if is_reasoning:
+                    # Bump limit for reasoning models as they count reasoning tokens
+                    # If input implies short output (e.g. <4000), we grant more headroom (e.g. 25k)
+                    # to avoid cutting off reasoning.
+                    req_tokens = kwargs["max_tokens"]
+                    if req_tokens < 10000:
+                        params["max_completion_tokens"] = 25000
+                    else:
+                        params["max_completion_tokens"] = req_tokens
+                else:
+                    params["max_tokens"] = kwargs["max_tokens"]
+
+            # Note: Streaming implemented now
+            if stream_handler:
+                params["stream"] = True
+                # Request usage info in stream (OpenAI feature)
+                params["stream_options"] = {"include_usage": True}
+                
+                response_stream = self.client.chat.completions.create(**params)
+                
+                full_content = ""
+                self.last_response_metadata = {}
+
+                for chunk in response_stream:
+                    # Capture basic metadata from chunks
+                    if not self.last_response_metadata.get("id") and chunk.id:
+                        self.last_response_metadata["id"] = chunk.id
+                    if not self.last_response_metadata.get("model") and chunk.model:
+                        self.last_response_metadata["model"] = chunk.model
+                    if getattr(chunk, "system_fingerprint", None):
+                        self.last_response_metadata["system_fingerprint"] = chunk.system_fingerprint
+                    
+                    # Capture Usage (usually in last chunk)
+                    if hasattr(chunk, "usage") and chunk.usage:
+                        self.last_response_metadata["usage"] = chunk.usage
+
+                    # Content
+                    if chunk.choices:
+                        delta = chunk.choices[0].delta.content
+                        if delta:
+                            stream_handler(delta)
+                            full_content += delta
+                
+                if not skip_fingerprint:
+                    fp = self._get_fingerprint(model)
+                    self.last_response_metadata["model_fingerprint"] = fp
+                    # Overwrite/Augment system_fingerprint
+                    self.last_response_metadata["system_fingerprint"] = fp
+
+                return full_content
+
+            # Blocking Call (Legacy / No Stream)
             response = self.client.chat.completions.create(**params)
 
             # Capture Metadata
@@ -644,9 +733,13 @@ class OpenAIClient(BaseProviderClient):
 
             content = response.choices[0].message.content or ""
 
-            if stream_handler and content:
-                stream_handler(content)
-
+            # Ensure we don't call stream_handler twice if falling back to blocking
+            # The original code called it here, but since we have a dedicated stream branch,
+            # this is only for the non-streaming case.
+            # However, if the caller PROVIDED a stream_handler but somehow we ended up here 
+            # (which we shouldn't given the if above), we should call it.
+            # But the 'if stream_handler' block handles that. 
+            
             return content
         except Exception as e:
             logger.error("OpenAI query failed: %s", e)
@@ -654,4 +747,9 @@ class OpenAIClient(BaseProviderClient):
 
     def get_available_models(self) -> List[str]:
         """List available OpenAI models"""
-        return ["gpt-4o", "gpt-4-turbo", "gpt-3.5-turbo"]
+        return [
+            "gpt-5.2-pro", 
+            "gpt-5-mini", 
+            "o3-mini", 
+            "gpt-4o"
+        ]

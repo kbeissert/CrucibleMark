@@ -1,0 +1,28 @@
+default:
+  requests_per_minute: 60
+  concurrent_requests: 1
+  tokens_per_minute: 20000
+
+anthropic:
+  # Tier 1 Limits (Free/Low) are 5 RPM!
+  # Tier 2 (Paid < $50) are 1000 RPM / 40k TPM
+  # We assume Tier 2 for safety, but can be configured.
+  tier_1:
+    requests_per_minute: 5
+    tokens_per_minute: 20000
+    concurrent_requests: 1
+  tier_2:
+    requests_per_minute: 1000
+    tokens_per_minute: 40000
+    concurrent_requests: 5
+  
+  # Active Default
+  active_tier: "tier_2"
+
+mistral:
+  requests_per_minute: 60
+  concurrent_requests: 2
+
+openai:
+  requests_per_minute: 500
+  concurrent_requests: 5

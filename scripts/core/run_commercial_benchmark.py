@@ -22,11 +22,12 @@ sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 # pylint: disable=wrong-import-position, import-error
 from utils.base_runner import BaseBenchmarkRunner  # noqa: E402
 from utils.module_loader import load_test_class  # noqa: E402
-from utils.benchmark_utils import select_from_list, discover_assets, load_asset_yaml, format_political_compass_data, prepare_pc_csv_row  # noqa: E402
+from utils.benchmark_utils import select_from_list, discover_assets, load_asset_yaml, format_political_compass_data, prepare_pc_csv_row, save_debug_response  # noqa: E402
 from utils.model_utils import get_model_version  # noqa: E402
 from utils.llm_client import LLMClient  # noqa: E402
 from utils.module_registry import load_active_benchmarks # noqa: E402
 from utils.scoring_utils import calculate_score_contributions # noqa: E402
+from utils.rate_limiter import RateLimiter # noqa: E402
 
 try:
     from benchmark_modules.political_compass.core.io_manager import ResultManager
@@ -237,7 +238,7 @@ class CommercialBenchmarkRunner(BaseBenchmarkRunner):
             print(f"   ⚠️ Fehler beim Wiederherstellen aus JSON: {e}")
             return None
 
-    # pylint: disable=too-many-arguments, too-many-locals, too-many-positional-arguments
+
     def _process_single_asset(
         self,
         asset_path: Path,
@@ -247,6 +248,7 @@ class CommercialBenchmarkRunner(BaseBenchmarkRunner):
         is_golden_model: bool,
         index: int = 1,
         total_count: int = 1,
+        limiter: Optional[RateLimiter] = None,
     ) -> Optional[Dict[str, Any]]:
         """Processes a single asset."""
         asset_data = load_asset_yaml(asset_path)
@@ -311,6 +313,10 @@ class CommercialBenchmarkRunner(BaseBenchmarkRunner):
         # print(f"▶️  Teste: {asset_name}...")
         # Optional: Print simple status if long running
         print(f"[{index}/{total_count}] Running: {asset_name}...", end="\r", flush=True)
+
+        # Rate Limit Logic
+        if limiter:
+            limiter.wait_for_slot()
 
         # Execute Test using BaseRunner logic
         try:
@@ -388,6 +394,16 @@ class CommercialBenchmarkRunner(BaseBenchmarkRunner):
             )
             # Logik entfernt, die bei mode="test" automatisch speichert.
             # Rationale: "100%" should be static until manual update.
+
+        # Debug Auto-Save Logic (Ported from Local Runner)
+        if result["percentage"] < 30:
+            save_debug_response(
+                result["model"],
+                result["asset_id"],
+                response,
+                f"{result['total_score']}/{result['max_score']} ({result['percentage']}%)",
+                score.get("reasoning", "No explanation provided"),
+            )
 
         return result
 
@@ -481,7 +497,12 @@ class CommercialBenchmarkRunner(BaseBenchmarkRunner):
             result_wrapper = test.execute(model=model, llm_client=client, provider=provider)
 
             # Reporting
-            report = json.loads(result_wrapper["raw_response"])
+            try:
+                report = json.loads(result_wrapper["raw_response"])
+            except (json.JSONDecodeError, TypeError) as e:
+                print(f"❌ Batch Execution Failed: Invalid JSON response ({e})")
+                return []
+
             ResultManager.print_summary(report)
             ResultManager.save_json(report, Path("outputs/runs"))
 
@@ -511,7 +532,8 @@ class CommercialBenchmarkRunner(BaseBenchmarkRunner):
             data_object = format_political_compass_data(report)
 
             # Resolve Version using SSOT (Single Source of Truth)
-            version = get_model_version(provider, model, client)
+            # Corrected arguments: model_name, provider (client not needed for static lookup)
+            version = get_model_version(model, provider)
 
             new_row = prepare_pc_csv_row(model, report, data_object, model_version=version)
             new_row["timestamp"] = datetime.now().isoformat()
@@ -563,6 +585,9 @@ class CommercialBenchmarkRunner(BaseBenchmarkRunner):
             
         print(f"Tests:    {len(assets)}\n{'=' * 60}\n")
 
+        # Initialize Rate Limiter
+        run_limiter = RateLimiter(provider)
+
         results = []
         total_assets = len(assets)
         for i, asset_path in enumerate(assets, 1):
@@ -574,6 +599,7 @@ class CommercialBenchmarkRunner(BaseBenchmarkRunner):
                 is_golden_model,
                 index=i,
                 total_count=total_assets,
+                limiter=run_limiter
             )
             if res:
                 results.append(res)

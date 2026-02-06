@@ -134,6 +134,9 @@ def main(print_table: bool = True) -> None:
             if name in leaderboard.columns:
                 cat_cols.append(name)
 
+    # 4b. Enrich with External Module Data (e.g. Political Compass)
+    leaderboard, cat_cols = enrich_with_module_data(leaderboard, cat_cols, modules_config, config)
+
     for col in cat_cols:
         if col in leaderboard.columns:
             leaderboard[col] = pd.to_numeric(leaderboard[col], errors="coerce")
