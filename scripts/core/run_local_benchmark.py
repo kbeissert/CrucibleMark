@@ -23,6 +23,7 @@ from utils.benchmark_utils import (
     discover_assets,
     format_pc_run_data,
     load_asset_yaml,
+    save_debug_response,
     select_from_list,
 )
 from utils.llm_client import LLMClient
@@ -286,7 +287,7 @@ class LocalBenchmarkRunner(BaseBenchmarkRunner):
 
         # Debug Auto-Save Logic
         if result["percentage"] < 30 or getattr(self, "debug_responses", False):
-            self._save_debug_response(
+            save_debug_response(
                 result["model"],
                 result["asset_id"],
                 response_preview,
@@ -757,32 +758,7 @@ class LocalBenchmarkRunner(BaseBenchmarkRunner):
         print(f"   Tier 2 (Deep Logic):  {t2_avg:.1f}%")
         print(f"   Profile: {profile}\n{'-' * 60}")
 
-    def _save_debug_response(
-        self, model: str, asset_id: str, response: str, score_str: str, explanation: str
-    ):
-        """Saves response to debug file."""
-        debug_dir = Path("benchmark_scores/debug_responses")
-        debug_dir.mkdir(exist_ok=True, parents=True)
 
-        # Sanitize filename
-        safe_model = str(model).replace(":", "_").replace("/", "_")
-        filename = f"{safe_model}_{asset_id}.txt"
-        filepath = debug_dir / filename
-
-        try:
-            with open(filepath, "w", encoding="utf-8") as f:
-                f.write(f"Model: {model}\n")
-                f.write(f"Asset: {asset_id}\n")
-                f.write(f"Score: {score_str}\n")
-                f.write(f"Explanation: {explanation}\n")
-                f.write("=" * 80 + "\n")
-                f.write("RESPONSE:\n")
-                f.write("=" * 80 + "\n")
-                f.write(str(response))
-
-            print(f"   💾 Debug response saved: {filepath}")
-        except Exception as e:  # pylint: disable=broad-exception-caught
-            print(f"   ⚠️ Failed to save debug response: {e}")
 
 
 def main():

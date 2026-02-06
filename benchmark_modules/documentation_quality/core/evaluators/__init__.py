@@ -5,6 +5,7 @@ Handles orchestration of specialized sub-evaluators.
 
 from typing import Dict, Any, List
 from pathlib import Path
+import re
 
 from ..constants import TIER_THRESHOLDS
 from .semantic_matcher import SemanticMatcher
@@ -42,7 +43,10 @@ class DocumentationEvaluator:
         Returns:
             Dictionary containing score results and metadata.
         """
-        if not response or response.startswith("ERROR:"):
+        # Clean reasoning tags (e.g. DeepSeek <think> or <thought>)
+        clean_response = self._clean_reasoning_tags(response)
+
+        if not clean_response or clean_response.startswith("ERROR:") or clean_response.strip() == "":
             return self._create_error_score("Invalid or error response")
 
         scoring_config = self.asset["scoring"]
@@ -53,7 +57,7 @@ class DocumentationEvaluator:
         violations: List[str] = []
         total_achieved: float = 0.0
 
-        response_lower = response.lower()
+        response_lower = clean_response.lower()
 
         # 1. Error Detection (Delegated to TieredScoringEngine)
         ed_score, ed_details, ed_violations = self._score_error_detection(
@@ -79,7 +83,8 @@ class DocumentationEvaluator:
         total_achieved += sq_score
 
         # Phase 2: Advanced Validators (Structure, Readability, Completeness)
-        adv_results = self._run_advanced_validators(response, details, violations)
+        # Use CLEAN response for structure check
+        adv_results = self._run_advanced_validators(clean_response, details, violations)
 
         return {
             "status": "success",
@@ -90,11 +95,23 @@ class DocumentationEvaluator:
             "details": details,
             "violations": violations,
             "metadata": {
-                "response_length": len(response),
-                "word_count": len(response.split()),
+                "response_length": len(clean_response),
+                "word_count": len(clean_response.split()),
                 **adv_results
             },
         }
+
+    def _clean_reasoning_tags(self, response: str) -> str:
+        """Removes <think>...</think> blocks from reasoning models."""
+        if not response:
+            return ""
+        cleaned = response
+        # Supporting multiple variants
+        tags = ["think", "thought", "reasoning"]
+        for tag in tags:
+            pattern = f"<{tag}>.*?</{tag}>"
+            cleaned = re.sub(pattern, "", cleaned, flags=re.DOTALL)
+        return cleaned.strip()
 
     def _run_advanced_validators(self, response: str, details: List[str],
                                violations: List[str]) -> Dict[str, Any]:

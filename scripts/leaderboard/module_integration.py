@@ -167,12 +167,14 @@ def _enrich_from_csv_source(
         # A) Try Exact Match
         result = result.merge(merge_subset, on=["model", "model_version"], how="left")
 
-        # B) Try Fallback (Match on model only where source version is 'unknown')
+        # B) Try Fallback (Match on model only - Relaxed)
         # Identify rows that failed the exact match
         missing_mask = result[label].isna()
         if missing_mask.any():
-            # Get subset of source where version is unknown
-            fallback_source = source_df[source_df["model_version"] == "unknown"][["model", label]]
+            # RELAXED: Use any version from source, removing duplicates by keeping last
+            # This allows matching 'gpt-4o' (ver A) with 'gpt-4o' (ver B) if exact match failed
+            fallback_source = source_df[["model", label]].drop_duplicates(subset=["model"], keep="last")
+            
             if not fallback_source.empty:
                 # Rename col to avoid collision during merge
                 fallback_source = fallback_source.rename(columns={label: label + "_fallback"})
@@ -180,9 +182,12 @@ def _enrich_from_csv_source(
                 # Merge on model only
                 result = result.merge(fallback_source, on="model", how="left")
 
-                # Fill NaNs in main column with fallback
+                # Fill NaNs in main column with fallback (only where matching failed)
                 result[label] = result[label].fillna(result[label + "_fallback"])
-                result = result.drop(columns=[label + "_fallback"])
+                
+                # Cleanup
+                if (label + "_fallback") in result.columns:
+                    result = result.drop(columns=[label + "_fallback"])
 
         # Fill Missing
         fallback = source_config.get("missing_value", "Pending")

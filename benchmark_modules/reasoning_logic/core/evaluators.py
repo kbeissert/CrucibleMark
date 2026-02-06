@@ -5,6 +5,7 @@ Contains the core scoring logic related to dispatching and result aggregation.
 
 from __future__ import annotations
 
+import re  # Added for regex matching
 from typing import Any, cast
 import warnings
 
@@ -54,26 +55,43 @@ def emit_legacy_warning(asset_id: str, deprecation_version: str = "v3.0") -> Non
 # ============================================================================
 
 RUBRICS = {
+    'reasoning_5a_001': {
+        'error_detection': {
+            'weight': 40,
+            'description': 'Identifies the infinite loop',
+            'keywords': [r"infinite.*loop", r"hangs?", r"freez", r"forever", r"current_index", r"not.*increment"]
+        },
+        'root_cause_analysis': {
+            'weight': 30,
+            'description': 'Locates the bug (increment inside if-block)',
+            'keywords': [r"inside.*if", r"indentation", r"scope", r"else.*block"]
+        },
+        'solution_quality': {
+            'weight': 30,
+            'description': 'Proposes correct fix and alternatives',
+            'keywords': [r"\+= 1", r"increment", r"outside", r"move.*line", r"alternative", r"cleaner", r"continue", r"skip"]
+        }
+    },
     'reasoning_5c_001': {
         'problem_recognition': {
             'weight': 20,
             'description': 'Identifies constraints (3 meetings, 2 time slots)',
-            'keywords': ['three', 'meetings', 'two', 'hours', 'impossible']
+            'keywords': [r"three.*meetings", r"two.*hours", r"impossible", r"deficit", r"2.*hour.*3.*hour"]
         },
         'logical_analysis': {
             'weight': 25,
             'description': "Explains WHY it's impossible",
-            'keywords': ['fit', 'insufficient', 'duration', 'conflict']
+            'keywords': [r"fit", r"insufficient", r"duration", r"conflict", r"mathematically", r"pigeonhole"]
         },
         'appropriate_refusal': {
             'weight': 40,
             'description': 'Refuses invalid request instead of forcing solution',
-            'keywords': ['cannot', 'impossible', 'unable', 'not feasible']
+            'keywords': [r"cannot", r"impossible", r"unable", r"not feasible", r"refuse", r"no way"]
         },
         'alternative_proposal': {
             'weight': 15,
             'description': 'Suggests workarounds',
-            'keywords': ['alternative', 'reschedule', 'overlap', 'shorten']
+            'keywords': [r"alternative", r"reschedule", r"overlap", r"shorten", r"extend", r"remove"]
         }
     },
     'reasoning_5b_001': {
@@ -143,56 +161,62 @@ RUBRICS = {
         }
     },
     'reasoning_metacog_004': {
+        'iterative_refinement': {
+             'weight': 20, 
+             'description': 'Shows internal thought process',
+             'keywords': [r"<thought>", r"initially", r"at first", r"reconsider"]
+        },
         'problem_understanding': {
-            'weight': 25,
+            'weight': 20,
             'description': 'Understands the Monty Hall setup',
-            'keywords': ['door', 'goat', 'car', 'host']
+            'keywords': [r"door", r"goat", r"car", r"host", r"monty"]
         },
         'probability_calculation': {
-            'weight': 35,
+            'weight': 30,
             'description': 'Correctly calculates probabilities',
-            'keywords': ['probability', '1/3', '2/3', 'chance']
+            'keywords': [r"1/3", r"2/3", r"0\.66", r"66%", r"33%", r"0\.33"]
         },
         'switch_recommendation': {
-            'weight': 25,
+            'weight': 20,
             'description': 'Recommends switching doors',
-            'keywords': ['switch', 'door', 'maximize', 'higher']
+            'keywords': [r"switch", r"higher.*chance", r"maximize", r"advantage"]
         },
         'explanation_quality': {
-            'weight': 15,
+            'weight': 10,
             'description': 'Explains the reasoning',
-            'keywords': ['reveal', 'information', 'update']
+            'keywords': [r"reveal", r"information", r"update", r"\|.*\|", r"table", r"scenario"]
         }
     }
 }
 
 
 def calculate_dimension_score(response: str, keywords: list[str], max_weight: int) -> float:
-    """Proportional keyword matching with partial credit."""
+    """Proportional keyword matching with partial credit using Regex."""
     if not keywords:
         return 0.0
 
-    matches = sum(1 for kw in keywords if kw.lower() in response.lower())
+    # Switch to Regex counting
+    matches = 0
+    for pattern in keywords:
+        if re.search(pattern, response, re.IGNORECASE):
+            matches += 1
+            
     match_ratio = matches / len(keywords)
 
-    # v2.1.1 Relaxation (Gemma 3 Fix)
-    # Rationale: Strict v2.1 thresholds (80/60/40) failed when keyword lists contained
-    # synonyms (e.g., 'impossible', 'cannot') where a model naturally picks only one.
-    # New logic ensures single strong matches get partial credit, and 2-3 matches get good credit.
-
-    # 1. High Saturation (Most keywords found)
+    # v2.2 RegEx Robustness (Claude/Opus Fix)
+    # 1. High Saturation (Most patterns matched)
     if match_ratio >= 0.70:
         return float(max_weight)
 
-    # 2. Good Saturation (or partial synonym coverage)
+    # 2. Good Saturation 
     if match_ratio >= 0.45:
         return float(max_weight * 0.80)
 
-    # 3. Minimum Viable (At least one key concept in a short list)
+    # 3. Minimum Viable 
     if match_ratio >= 0.20:
         return float(max_weight * 0.50)
         
-    # 4. Fallback: Single match in long list
+    # 4. Fallback: Single match
     if matches >= 1:
         return float(max_weight * 0.25)
 
@@ -256,6 +280,9 @@ class ReasoningEvaluator:
 
         if version >= 2.0 or self.asset["metadata"]["id"] in RUBRICS:
             # Use new rubrics
+            def wrapper_5a(text: str, *args: Any) -> tuple[float, dict[str, float], list[str]]:
+                return score_granular_rubric(text, "reasoning_5a_001")
+
             def wrapper_5c(text: str, *args: Any) -> tuple[float, dict[str, float], list[str]]:
                 return score_granular_rubric(text, "reasoning_5c_001")
 
@@ -275,6 +302,7 @@ class ReasoningEvaluator:
             def wrapper_metacog_004(text: str, *args: Any) -> tuple[float, dict[str, float], list[str]]:
                 return score_granular_rubric(text, "reasoning_metacog_004")
 
+            self._scorers["reasoning_5a_001"] = wrapper_5a
             self._scorers["reasoning_5c_001"] = wrapper_5c
             self._scorers["reasoning_5b_001"] = wrapper_5b
             self._scorers["reasoning_5d_001"] = wrapper_5d

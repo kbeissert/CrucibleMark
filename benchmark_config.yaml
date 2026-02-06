@@ -14,9 +14,9 @@
 # Der Provider muss in 'providers.commercial' existieren und enabled sein.
 
 golden_standard:
-  provider: "mistral"  # Referenz zu providers.commercial.mistral
-  model: "mistral-large-latest"  # Welches Modell für Referenz-Benchmark
-  description: "Mistral Large als leistungsstarke Referenz für Benchmark Tests"
+  provider: "anthropic"  # Referenz zu providers.commercial.anthropic
+  model: "claude-sonnet-4-5-20250929"  # Welches Modell für Referenz-Benchmark
+  description: "Claude 4.5 Sonnet als Referenz für Benchmark Tests"
 
 # Leaderboard & Badging Logic
 # ---------------------------
@@ -59,31 +59,40 @@ providers:
       name: "Anthropic"
       api_type: "anthropic"
       enabled: true
+      # Der API-Key gehört NICHT hierher, sondern in die .env Datei oder .zshrc!
+      # Tragen Sie hier nur den Namen der Variable ein.
+      # Beispiel .env: ANTHROPIC_API_KEY=sk-ant-...
       env_var: "ANTHROPIC_API_KEY"
       models:
-        - id: "claude-3-5-sonnet-20241022"
-          name: "Claude 3.5 Sonnet"
-          description: "State of the Art"
-        - id: "claude-3-opus-20240229"
-          name: "Claude 3 Opus"
-          description: "Höchste Qualität"
+        - id: "claude-sonnet-4-5-20250929"
+          name: "Claude 4.5 Sonnet"
+          description: "State of the Art (2025)"
+        - id: "claude-opus-4-5-20251101"
+          name: "Claude 4.5 Opus"
+          description: "Höchste Qualität, großes Kontextfenster"
+        - id: "claude-haiku-4-5-20251001"
+          name: "Claude 4.5 Haiku"
+          description: "High-Speed Intelligence (Active)"
+        - id: "claude-3-haiku-20240307"
+          name: "Claude 3 Haiku"
+          description: "Legacy Efficiency Model"
     
     openai:
       name: "OpenAI"
       api_type: "openai"
-      enabled: true
+      enabled: false
       env_var: "OPENAI_API_KEY"
       models:
-        - id: "gpt-4o"
-          name: "GPT-4o"
-          description: "Aktuelles Flaggschiff (Omni)"
-        - id: "gpt-4o-mini"
-          name: "GPT-4o Mini"
-          description: "Sehr schnell & kosteneffizient"
-        # Hinweis: o1-Modelle erfordern OpenAI Tier 1 (mind. $5 Guthaben), sonst Fehler 404 (Not Found)
-        - id: "o1-mini"
-          name: "o1 Mini"
-          description: "Neues Reasoning-Modell (Deep Thinking)"
+        - id: "gpt-5"
+          name: "GPT-5"
+          description: "Optimierte Leistung (2026)"
+        - id: "gpt-5-mini"
+          name: "GPT-5 Mini"
+          description: "Schnell & kosteneffizient"
+        # Hinweis: o3-Modelle erfordern OpenAI Tier 1+
+        - id: "o3-mini"
+          name: "o3 Mini"
+          description: "Reasoning (Deep Thinking)"
   
   local:
     ollama:
@@ -100,6 +109,7 @@ output:
   local_models_csv: "benchmark_scores/local_models_benchmark.csv"
   golden_standard_csv: "benchmark_scores/golden_standard_benchmark.csv"
   leaderboard_csv: "benchmark_scores/benchmark_leaderboard.csv"
+  streaming_output_commercial_providers: true  # true | false | "Force" (Force disables streaming)
 
 # ====================
 # Test-Module Registry

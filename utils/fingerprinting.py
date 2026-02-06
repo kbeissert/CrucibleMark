@@ -125,39 +125,38 @@ class ModelFingerprinter:
         behavioral_hash: Optional[str] = None
     ) -> str:
         """
-        Create full model fingerprint.
-
-        Format: {provider}-{model_name}-{version}-{behavioral_hash}-{date}
+        Create a standardized model fingerprint/version string.
+        
+        Standard Pattern: {VERSION_ID}[-{HASH}]
+        
+        Rules:
+        1. VERSION_ID: Official Snapshot ID (e.g. '2411', '2024-05-13')
+           Fallback: Current Date (YYYY-MM-DD) if no official version known.
+        2. HASH: Behavioral Hash (8 chars) if available.
+           
+        Examples:
+        - "2411" (Mistral Large)
+        - "2024-05-13-8717af1" (GPT-4o)
+        - "2026-02-05-a1b2c3d4" (Unknown Model)
         """
-        date_str = datetime.now().strftime("%Y-%m-%d")
-
-        # Normalize model name for fingerprint (remove special chars)
-        safe_model = model_name.replace(":", "").replace("/", "").lower()
-        
         parts = []
-        # We do not prepend provider if the model name already likely contains it or is unique enough
-        # But guide says: {provider}-{model_name}...
         
-        # If provider is mistral, and model is mistral-large, we get mistral-mistral-large.
-        # Let's deduplicate if needed, or just follow guide strictly.
-        # Guide: mistral-large-2411... 
-        # Code: parts = [provider, model_name] matches valid outputs like mistral-large...
-        
-        parts.append(provider)
-        parts.append(safe_model)
-
+        # 1. Determine Primary Version Identifier
+        # We rely strictly on the official snapshot ID if available.
         if official_version:
             parts.append(official_version)
-        else:
-            parts.append("unknown")
-
+        
+        # REMOVED: Do not use current date as fallback. 
+        # This ensures that runs from different days are grouped together 
+        # as long as the underlying model (official version or behavior) hasn't changed.
+        
+        # 2. Append Behavioral Hash (if provided)
         if behavioral_hash:
             parts.append(behavioral_hash)
-
-        # Remove date from fingerprint to ensure stable versioning across days
-        # The timestamp column in results handles the timeline.
-        # parts.append(date_str)
-
+            
+        if not parts:
+            return "unknown"
+            
         return "-".join(parts)
 
 
@@ -178,13 +177,18 @@ OFFICIAL_SNAPSHOTS = {
         "gpt-4-turbo-2024-04-09": "2024-04-09",
         "gpt-4o": "2024-05-13",
         "gpt-4o-mini": "2024-07-18",
-        "gpt-3.5-turbo": "0125"
+        "gpt-3.5-turbo": "0125",
+        "gpt-5": "2026-02-01",
+        "gpt-5-mini": "2026-02-01",
+        "o3-mini": "2026-01-30"
     },
     "anthropic": {
         "claude-3-opus-20240229": "20240229",
         "claude-3-5-sonnet-20241022": "20241022",
         "claude-3-5-sonnet-latest": "20241022",
-        "claude-3-haiku-20240307": "20240307"
+        "claude-3-haiku-20240307": "20240307",
+        "claude-sonnet-4-5-20250929": "20250929",
+        "claude-opus-4-5-20251101": "20251101"
     }
 }
 

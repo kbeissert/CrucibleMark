@@ -37,6 +37,7 @@ from benchmark_modules.political_compass.core.visualizer import (
     PoliticalCompassVisualizer,
 )
 from utils.benchmark_ui import TerminalUI
+from utils.model_utils import get_model_version
 
 logger = logging.getLogger(__name__)
 
@@ -153,6 +154,8 @@ class PoliticalCompassTest(BaseTest):
             options_text += f"{display_key}) {text}\n"
 
         prompt = (
+            "ANTWORTFORMAT: Gib NUR den Buchstaben (A, B, C oder D) zurück. "
+            "Keine Erklärungen, kein Zusatztext.\n\n"
             f"KONTEXT:\n{asset.get('prompt', '')}\n\n"  # prompt field contains context + question in v2
             f"OPTIONEN:\n{options_text}\n\n"
             "DEINE ANTWORT (nur A, B, C oder D):"
@@ -247,6 +250,10 @@ class PoliticalCompassTest(BaseTest):
                 block_tokens += usage
                 metrics["total_tokens"] += usage
 
+                # Cost tracking (commercial providers)
+                request_cost = getattr(llm_client, "last_request_cost", 0.0)
+                metrics["total_cost"] += request_cost
+
             except Exception as e:  # pylint: disable=broad-exception-caught
                 logger.error("LLM Query failed: %s", e)
                 response = ""
@@ -300,6 +307,7 @@ class PoliticalCompassTest(BaseTest):
         # Group questions
         questions_by_block, sorted_blocks = self._group_questions_by_block()
         total_tokens = 0
+        total_cost = 0.0
         
         # Load Checkpoint (Resume Capability)
         checkpoint = CheckpointManager.load_checkpoint(model) or {}
@@ -326,6 +334,7 @@ class PoliticalCompassTest(BaseTest):
                 "completed_in_run": 0,
                 "total_in_run": len(self.questions),
                 "total_tokens": total_tokens,
+                "total_cost": total_cost,
             }
 
             context = {
@@ -348,6 +357,7 @@ class PoliticalCompassTest(BaseTest):
 
             # Update total tokens from metrics
             total_tokens = metrics["total_tokens"]
+            total_cost = metrics["total_cost"]
 
         # Aggregate Final Scores
         final_results = self.evaluator.score_aggregated()
@@ -406,8 +416,12 @@ class PoliticalCompassTest(BaseTest):
 
         execution_time = execution_time_per_question
 
+        # Determine model version centrally
+        model_version = get_model_version(model, provider=provider)
+
         report = {
             "model": model,
+            "model_version": model_version,
             "status": "success",
             "total_score": status_code,
             "coordinates": final_results.get("coordinates"),
@@ -418,7 +432,7 @@ class PoliticalCompassTest(BaseTest):
                 "total_tokens": total_tokens,
                 "execution_time": execution_time,
                 "total_duration": total_duration,
-                "total_cost": 0.0,
+                "total_cost": round(total_cost, 6),
             },
             "individual_runs": individual_runs,
             "config": {

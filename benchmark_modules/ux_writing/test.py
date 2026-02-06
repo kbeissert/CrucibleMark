@@ -62,7 +62,11 @@ class UXWritingTest(BaseTest):
 
         start_time = time.time()
         # Adapter for LLMClient.query(model, prompt, provider)
-        response = llm_client.query(model=model, prompt=prompt, provider=provider)
+        response = llm_client.query(
+            model=model, 
+            prompt=prompt, 
+            provider=provider
+        )
         
         # Use clean execution time (excluding timeouts/retries) if available
         if hasattr(llm_client, "last_query_duration") and llm_client.last_query_duration > 0:
