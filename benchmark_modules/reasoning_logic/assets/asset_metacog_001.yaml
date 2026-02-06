@@ -2,6 +2,7 @@ metadata:
   id: reasoning_metacog_001
   name: 'Metacognition 001: The Sheep Trap (Self-Correction)'
   version: 1.0.0
+  scoring_version: 2.0
   author: CrucibleMark AI Team
   tier: Tier 3 (Metacognition)
   category: Self-Correction

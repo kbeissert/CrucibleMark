@@ -88,7 +88,7 @@ def test_ground_truth_reproducibility():
     print(f"Reproducibility Test: {status}")
     print("="*70)
     
-    return all_passed
+    assert all_passed, "Ground truth reproducibility check failed"
 
 
 def test_hybrid_metrics_evidence():
@@ -177,12 +177,14 @@ def test_non_gameable_scoring():
     
     # Should NOT have multiple layers matched (trajectory analysis should fail)
     # Keywords alone = max 20pts, no trajectory = max 40pts total
-    if len(result['layers_matched']) == 1 and result['score'] <= 20:
+    success = len(result['layers_matched']) == 1 and result['score'] <= 20
+
+    if success:
         print(f"\n✅ PASS: Keyword stuffing prevented (only explicit_keywords layer, score: {result['score']:.0f})")
-        return True
     else:
         print(f"\n❌ FAIL: Scoring can be gamed! Got {result['score']:.0f} with {len(result['layers_matched'])} layers")
-        return False
+
+    assert success, f"Scoring gamed! Got {result['score']:.0f} points with layers: {result['layers_matched']}"
 
 
 def test_consistency_across_runs():
@@ -224,12 +226,14 @@ def test_consistency_across_runs():
     print(f"Std Dev: {(sum((x - sum(scores)/len(scores))**2 for x in scores) / len(scores)) ** 0.5:.2f}")
     
     # All scores should be identical
-    if len(set(scores)) == 1:
+    is_consistent = len(set(scores)) == 1
+
+    if is_consistent:
         print(f"\n✅ PASS: Consistent scoring ({scores[0]:.1f} every time)")
-        return True
     else:
         print("\n❌ FAIL: Inconsistent scoring across runs!")
-        return False
+
+    assert is_consistent, f"Inconsistent scoring across runs: {scores}"
 
 
 if __name__ == "__main__":
@@ -238,11 +242,26 @@ if __name__ == "__main__":
     print("="*70)
     
     try:
-        test1 = test_ground_truth_reproducibility()
+        try:
+            test_ground_truth_reproducibility()
+            test1 = True
+        except AssertionError:
+            test1 = False
+
         test2_passed = True  # Just for display
         test_hybrid_metrics_evidence()
-        test3 = test_non_gameable_scoring()
-        test4 = test_consistency_across_runs()
+
+        try:
+            test_non_gameable_scoring()
+            test3 = True
+        except AssertionError:
+            test3 = False
+
+        try:
+            test_consistency_across_runs()
+            test4 = True
+        except AssertionError:
+            test4 = False
         
         print("\n" + "="*70)
         print("SUMMARY")

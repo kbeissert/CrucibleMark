@@ -26,12 +26,14 @@ In `benchmark_config.yaml` ist genau **ein** Golden Standard definiert. Es gibt 
 
 ```yaml
 golden_standard:
-  provider: "mistral"              # Fixer Provider
-  model: "mistral-large-latest"   # Das Referenz-Modell (123B)
+  provider: "anthropic"            # Fixer Provider
+  model: "claude-sonnet-4-5-20250929" # Das Referenz-Modell
   description: "Die absolute Messlatte für alle lokalen Tests."
 ```
 
 Alle lokalen Modelle (Llama, Gemma, Qwen) werden relativ zu diesem einen Ankerpunkt bewertet.
+
+**Ausnahme:** Der **Political Compass** ist *kein* Teil des Golden Standards, da Bias-Messungen keine Leistung gegen ein Ideal darstellen („Neutralität“ ist kein absoluter Benchmark-Score in der gleichen Weise wie Code-Qualität). Der Golden Standard Prozess überspringt dieses Modul daher automatisch.
 
 ---
 

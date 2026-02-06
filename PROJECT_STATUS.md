@@ -1,38 +1,36 @@
 # PROJECT_STATUS.md
 
-**Last Updated:** 2026-02-04
-**Current Version:** 1.1.0 (Leaderboard Overhaul)
+**Last Updated:** 2026-02-06
+**Current Version:** 1.1.2 (Versioning Refactor & Golden Standard Fix)
 **Status:** ✅ Production-Ready
 
 ---
 
 ## 🎯 Executive Summary
 
-CrucibleMark v1.1.0 is a **production-ready LLM benchmark framework** designed for product engineers. This release introduces a **Comprehensive Leaderboard Overhaul** with absolute standards, profiling, and refined metrics. All modules maintain their high code quality standards.
+CrucibleMark v1.1.2 stabilisiert die Referenz-Systeme des Frameworks. Das **Versioning-System** wurde komplett überarbeitet, um "Silent Updates" von Cloud-Modellen zuverlässig zu erkennen und Leaderboard-Duplikate ("Ghost Entries") zu eliminieren. Der **Golden Standard** Prozess ist nun effizienter und schließt Bias-Tests (Political Compass) logisch aus.
 
 **Key Achievements:**
-- ✅ Leaderboard v1.1 (Profiles, Speed Classes, Absolute Badges)
-- ✅ Complete framework refactoring (v1.0 → v2.0)
-- ✅ All 6 modules production-ready (Pylint 8.8-9.85/10)
-- ✅ Unified provider interface (Ollama, OpenAI, Anthropic)
-- ✅ Standardized CSV output & leaderboard integration
-- ✅ Comprehensive documentation (Root + Module READMEs)
-- ✅ Type hints & docstrings (100% coverage on public APIs)
+- ✅ **Versioning 2.0:** Unified Fingerprinting `{OFFICIAL_ID}-{BEHAVIORAL_HASH}` verhindert Dubletten.
+- ✅ **Ghost-Entry Fix:** Bereinigung des Leaderboards von gesplitteten Einträgen (Merged Data).
+- ✅ **Golden Standard 2.0:** Optimierter Prozess (Skipping Political Compass, Auto-Cache Reuse).
+- ✅ **Refactoring:** `fingerprinting.py` ist nun Single Source of Truth (SSOT).
 
 ---
 
 ## 📊 Module Status Overview
 
-### Production-Ready Modules (6/6) ✅
+### Production-Ready Modules (7/7) ✅
 
 | # | Module | Version | Pylint | Status | Assets | Features |
 |---|--------|---------|--------|--------|--------|----------|
-| 1 | **Code Quality Audit** | v2.0 | 9.2/10 | ✅ Prod | 25 files | 3 tiers, pattern scoring |
+| 1 | **Code Quality Audit** | v2.0.1 | 9.2/10 | ✅ Prod | 25 files | 3 tiers, pattern scoring |
 | 2 | **UX Writing & Microcopy** | v2.0 | 8.8/10 | ✅ Prod | 20 scenarios | Tone analysis, keyword checks |
 | 3 | **Documentation Quality** | v2.0 | 9.0/10 | ✅ Prod | 15 tasks | Completeness metrics |
-| 4 | **Content Transformation** | v2.0 | 8.9/10 | ✅ Prod | 12 pieces | Tone adaptation, format conversion |
+| 4 | **Content Transformation** | v2.0.1 | 8.9/10 | ✅ Prod | 12 pieces | Tone adaptation, format conversion |
 | 5 | **Cultural Intelligence** | v2.0 | 9.1/10 | ✅ Prod | 18 scenarios | Idiom understanding, cultural context |
-| 6 | **Political Compass** | v3.0.1 | 9.85/10 | ✅ Prod | 74 questions | Batch mode, 3 runs, variance analysis |
+| 6 | **Logical Reasoning** | v1.0 | 9.0/10 | ✅ Prod | 11 scenarios | Paradox detection, Metacognition |
+| 7 | **Political Compass** | v3.0.1 | 9.85/10 | ✅ Prod | 74 questions | Batch mode, 3 runs, variance analysis |
 
 **Average Code Quality:** 9.15/10 (Elite-Level) 🏆
 
@@ -120,6 +118,22 @@ CrucibleMark v1.1.0 is a **production-ready LLM benchmark framework** designed f
 ---
 
 ## ✅ Completed Milestones (v1.0.0)
+
+### Infrastructure Refactoring (v1.1.2)
+- [x] **Versioning System Overhaul**
+  - Implementation of Dual-Version format (`{OFFICIAL_ID}-{BEHAVIORAL_HASH}`)
+  - Centralized logic in `utils/fingerprinting.py` (SSOT)
+  - Automatic detection of date-based versions via Regex
+  - Detection of "Silent Updates" via hash change
+
+- [x] **Leaderboard Integrity**
+  - Elimination of "Ghost Entries" (Duplicate rows)
+  - Improved CSV Aggregation Logic (`data_loader.py`)
+  - Retroactive fix for `Claude Haiku` split entries
+
+- [x] **Golden Standard Optimization**
+  - Exclusion of `Political Compass` (Bias vs Benchmark differentiation)
+  - Intelligent Cache Reuse for Golden Standard generation
 
 ### Refactoring Phase (v0.9.5 → v1.0.0)
 
@@ -267,20 +281,32 @@ CrucibleMark v1.1.0 is a **production-ready LLM benchmark framework** designed f
 
 ---
 
-### v1.1.0 (Q2 2026) - New Modules & Features
+### v1.1.1 (February 2026) - Reasoning Module & Hotfixes
+**Status:** ✅ Released
+
+**Features:**
+
+#### 1. Reasoning Module (Active)
+- Logic puzzles (River Crossing)
+- Paradox detection (Scheduling Paradox, Time Travel)
+- Metacognition tests (Self-Correction protocols)
+- Tiered difficulty (3 levels)
+
+#### 2. Infrastructure
+- Fixed imports in `schemas.result.BenchmarkResult`
+- Stabilized JSON handling in Content Transformation
+
+**(Older roadmap items shifted to v1.2.0)**
+
+---
+
+### v1.2.0 (Q2 2026) - Web UI & API
 **Timeline:** 6-8 weeks  
 **Status:** Planned
 
 **Features:**
 
-#### 1. Reasoning Module
-- Logic puzzles
-- Mathematical reasoning
-- Common sense reasoning
-- Tiered difficulty (3 levels)
-- **Effort:** 3-4 weeks
-
-#### 2. Web UI (MVP)
+#### 1. Web UI (MVP)
 - Dashboard for results
 - Real-time progress tracking
 - Model comparison view

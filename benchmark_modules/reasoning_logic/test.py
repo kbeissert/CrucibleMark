@@ -14,6 +14,7 @@ from benchmark_modules.reasoning_logic.core.constants import (
     MODEL_REASONING_CAPABILITIES,
 )
 from benchmark_modules.reasoning_logic.core.evaluators import ReasoningEvaluator, RUBRICS
+from schemas.result import BenchmarkResult
 
 
 class ReasoningLogicTest(BaseTest):
@@ -53,18 +54,25 @@ class ReasoningLogicTest(BaseTest):
         # Determine Reasoning Capability
         reasoning_cap, reasoning_type = self._get_reasoning_capability(model)
 
-        return {
-            "raw_response": response,
-            "execution_time": elapsed,
-            "tokens_used": approx_tokens,
-            "metadata": {
-                "model": model,
-                "asset_id": self.asset["metadata"]["id"],
+        return BenchmarkResult(
+            status="success",
+            primary_score=None,
+            rendered_value="Pending",
+            raw_response=response,
+            execution_time=elapsed,
+            tokens_used=approx_tokens,
+            cost_usd=getattr(llm_client, "last_request_cost", 0.0),
+            model_version=getattr(llm_client, "last_response_metadata", {}).get("system_fingerprint", "unknown"),
+            data={
                 "reasoning_capability_score": reasoning_cap,
                 "reasoning_type": reasoning_type,
-                **getattr(llm_client, "last_response_metadata", {}),
             },
-        }
+            meta={
+                "model": model,
+                "asset_id": self.asset["metadata"]["id"],
+                **getattr(llm_client, "last_response_metadata", {}),
+            }
+        )
 
     def score_response(self, response: str) -> dict[str, Any]:
         """

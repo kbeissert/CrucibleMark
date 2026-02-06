@@ -35,6 +35,8 @@ except ImportError:
     ResultManager = None
 # pylint: enable=wrong-import-position, import-error
 
+from utils.fingerprinting import ModelFingerprinter
+
 logger = logging.getLogger(__name__)
 
 
@@ -328,13 +330,13 @@ class CommercialBenchmarkRunner(BaseBenchmarkRunner):
                 provider=provider,
             )
             # Use inner execution time if available (excludes potential retry delays)
-            if "execution_time" not in exec_result:
-                exec_result["execution_time"] = time.time() - start_time
+            if not exec_result.execution_time:
+                exec_result.execution_time = time.time() - start_time
         except Exception as e:  # pylint: disable=broad-exception-caught
             print(f"\n❌ Fehler bei Ausführung ({asset_name}): {e}")
             return None
 
-        response = exec_result["raw_response"]
+        response = exec_result.raw_response
         score = test_inst.score_response(response)
 
         # Build Standardized Result
@@ -347,12 +349,15 @@ class CommercialBenchmarkRunner(BaseBenchmarkRunner):
         result = calculate_score_contributions(result, asset_cfg)
 
         # Add Version/Fingerprint if available from API
-        meta = exec_result.get("metadata", {})
-        version = meta.get("system_fingerprint")
-
-        # Fallback to SSOT from model_utils if API/Fingerprint parsing failed
-        if not version:
-            version = get_model_version(model, provider)
+        meta = exec_result.meta
+        
+        # Use Global SSOT (Dual Version format) from Fingerprinting Utility
+        # We pass self.client if available to allow behavioral hashing
+        version = ModelFingerprinter.get_unified_version(
+            provider=provider,
+            model_name=model,
+            client=self.client if hasattr(self, "client") else None
+        )
 
         result["model_version"] = version
 
@@ -378,7 +383,7 @@ class CommercialBenchmarkRunner(BaseBenchmarkRunner):
 
         # Clear the "Running..." line by overwriting with full line
         # [1/5] codequality001 | WCAG Audit ✓ Score: 88 | Cost: $0.0047 | Time: 12.3s
-        time_val = exec_result.get("execution_time", 0.0)
+        time_val = exec_result.execution_time or 0.0
         print(
             f"[{index}/{total_count}] {asset_id:<15} | {asset_name[:20]:<20} {badge} "
             f"Score: {result['percentage']:>5.1f} | Cost: ${cost_val:.4f} | "
@@ -390,7 +395,7 @@ class CommercialBenchmarkRunner(BaseBenchmarkRunner):
         # This prevents auto-updating the reference when just testing the reference model.
         if self.mode == "golden_standard":
             self._save_golden_json(
-                provider, asset_id, response, exec_result["execution_time"]
+                provider, asset_id, response, exec_result.execution_time
             )
             # Logik entfernt, die bei mode="test" automatisch speichert.
             # Rationale: "100%" should be static until manual update.
@@ -498,7 +503,7 @@ class CommercialBenchmarkRunner(BaseBenchmarkRunner):
 
             # Reporting
             try:
-                report = json.loads(result_wrapper["raw_response"])
+                report = json.loads(result_wrapper.raw_response)
             except (json.JSONDecodeError, TypeError) as e:
                 print(f"❌ Batch Execution Failed: Invalid JSON response ({e})")
                 return []
@@ -557,7 +562,7 @@ class CommercialBenchmarkRunner(BaseBenchmarkRunner):
                 "total_score": report["total_score"],
                 "max_score": 100,
                 "percentage": report["total_score"],
-                "execution_time": round(result_wrapper.get("execution_time", 0), 1),
+                "execution_time": round(result_wrapper.execution_time or 0, 1),
                 "response_length": 0,
                 "tier": report.get("tier", "N/A"),
                 "cost_usd": report.get("statistics", {}).get("total_cost", 0.0),
@@ -727,7 +732,12 @@ def main():
     # 3. Select Benchmark (or Auto)
     if args.auto:
         print("\n🚀 Starte automatischen Golden Standard Run für alle Module...")
-        for _, cat_info in runner.benchmark_categories.items():
+        for cat_key, cat_info in runner.benchmark_categories.items():
+            # Skip Political Compass in Golden Standard (Bias != Benchmark)
+            if mode == "golden_standard" and cat_key == "political_compass":
+                print(f"⏩ Überspringe {cat_info['name']} im Golden Standard Modus (Bias-Benchmark)")
+                continue
+
             results = runner.run_benchmark(provider, model_id, cat_info)
             runner.save_results(results)
             runner.print_summary(results)

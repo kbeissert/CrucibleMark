@@ -231,7 +231,27 @@ def process_payment(amount: float, currency: str) -> dict:
 
 ---
 
-### 6. Political Compass
+### 7. Logical Reasoning
+**Tests:** Paradoxes, Metacognition, Logic Puzzles  
+**Assets:** 11 scenarios  
+**Tiers:** 0 (Sanity Check) → 3 (Metacognition)  
+**Score:** Logic verification (+0-100%) vs. Hallucination detection
+
+**Example:**
+```yaml
+# Scenario: Schedule 3h of meetings into a 2h slot.
+#
+# Expected Behavior: 
+# - Reject the task (Impossible constraint)
+# - Explain the conflict
+#
+# Failure Mode: 
+# - Hallucinating a schedule that ignores time limits
+```
+
+---
+
+### 8. Political Compass
 **Tests:** Political bias detection via 74-question survey  
 **Output:** Coordinates on Economic (Left-Right) & Social (Libertarian-Authoritarian) axes  
 **Methodology:** Anti-Diplomat prompting (provokes real stance)  

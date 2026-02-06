@@ -2,6 +2,7 @@ metadata:
   id: reasoning_metacog_003
   name: 'Metacognition 003: The Two Doors (Ambiguous Problem)'
   version: 1.0.0
+  scoring_version: 2.0
   author: CrucibleMark AI Team
   tier: Tier 3 (Metacognition)
   category: Alternative Exploration

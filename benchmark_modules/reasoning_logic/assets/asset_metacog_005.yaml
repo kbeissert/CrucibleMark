@@ -2,6 +2,7 @@ metadata:
   id: reasoning_metacog_005
   name: 'Metacognition 005: The Birthday Paradox (Uncertainty Calibration)'
   version: 1.0.0
+  scoring_version: 2.0
   author: CrucibleMark AI Team
   tier: Tier 3 (Metacognition)
   category: Uncertainty Calibration

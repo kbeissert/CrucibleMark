@@ -88,9 +88,10 @@ class CLIAssetValidator:
                 continue
 
             module_path = Path(module_data["path"]) / "assets"
-            print(f"\nPrüfe Modul: {module_data['name']} ({module_key})")
+            print(f"\nPrüfe Modul: {module_data.get('name', module_key)} ({module_key})")
 
             if not module_path.exists():
+
                 print(f"⚠️  Asset-Ordner fehlt: {module_path}")
                 continue
 

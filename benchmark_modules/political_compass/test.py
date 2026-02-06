@@ -15,6 +15,7 @@ from pathlib import Path
 from typing import Any, Dict, List, Tuple
 
 import yaml
+from schemas.result import BenchmarkResult
 
 # CrucibleMark Core
 try:
@@ -462,11 +463,20 @@ class PoliticalCompassTest(BaseTest):
         # )
 
         # Runner expects 'raw_response' to be the JSON string of the report
-        return {
-            "raw_response": json.dumps(report, default=str),
-            "execution_time": execution_time_per_question,
-            "tokens_used": total_tokens,
-        }
+        json_report = json.dumps(report, default=str)
+        
+        return BenchmarkResult(
+            status=str(report.get("status", "success")),
+            primary_score=float(status_code),
+            rendered_value=f"PC ({final_results.get('coordinates', {}).get('x'):.2f}, {final_results.get('coordinates', {}).get('y'):.2f})",
+            execution_time=float(execution_time_per_question),
+            tokens_used=int(total_tokens),
+            cost_usd=float(total_cost),
+            raw_response=json_report,
+            model_version=str(model_version),
+            data=report,
+            meta={"run_mode": "batch"}
+        )
 
     def score_response(self, _response: str) -> Dict[str, Any]:
         """

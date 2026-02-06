@@ -340,21 +340,13 @@ class AnthropicClient(BaseProviderClient):
         if model in self.fingerprint_cache:
             return self.fingerprint_cache[model]
 
-        official_version = get_official_version("anthropic", model)
-        # Use simple model type (claude-3-opus)
-        model_type = model.replace("claude-", "claude").replace("-", "").replace(":", "") 
-        
-        behavioral_hash = ModelFingerprinter.generate_behavioral_hash(
-            client=self,
-            model_name=model  
-        )
-        
-        fingerprint = ModelFingerprinter.create_fingerprint(
+        # Use Standardized Global Versioning
+        fingerprint = ModelFingerprinter.get_unified_version(
             provider="anthropic",
-            model_name=model_type,
-            official_version=official_version,
-            behavioral_hash=behavioral_hash
+            model_name=model,
+            client=self
         )
+        
         self.fingerprint_cache[model] = fingerprint
         return fingerprint
 

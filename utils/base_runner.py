@@ -14,6 +14,8 @@ from utils.result_manager import ResultManager
 from utils.module_loader import load_test_class
 from utils.constants import QUALITY_EXCELLENT, QUALITY_GOOD, QUALITY_OK
 
+from schemas.result import BenchmarkResult
+
 logger = logging.getLogger(__name__)
 
 
@@ -73,6 +75,7 @@ class BaseBenchmarkRunner:
             ) from e
 
         test_instance = test_cls(asset_path)
+        # exec_result is now a BenchmarkResult object
         exec_result = test_instance.execute(model, self.client, provider=provider)
         return test_instance, exec_result
 
@@ -82,7 +85,7 @@ class BaseBenchmarkRunner:
         model: str,
         asset_data: Dict[str, Any],
         score: Dict[str, Any],
-        exec_result: Dict[str, Any],
+        exec_result: BenchmarkResult,  # Updated type hint
         provider: str,
     ) -> Dict[str, Any]:
         """Erstellt das standardisierte Ergebnis-Dictionary."""
@@ -96,6 +99,7 @@ class BaseBenchmarkRunner:
         total_score = score.get("total_score", 0)
         percentage = round((total_score / max_score * 100), 1) if max_score > 0 else 0.0
 
+        # Build dict from BenchmarkResult object + Scoring
         result = {
             "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
             "status": score.get("status", "success"),
@@ -106,8 +110,9 @@ class BaseBenchmarkRunner:
             "total_score": total_score,
             "max_score": max_score,
             "percentage": percentage,
-            "execution_time": round(exec_result.get("execution_time", 0), 1),
-            "response_length": len(exec_result.get("raw_response", "")),
+            # Use object attributes
+            "execution_time": round(exec_result.execution_time, 1),
+            "response_length": len(exec_result.raw_response),
             "tier": score.get("tier", "Tier 1 (Undefined)"),
         }
 
