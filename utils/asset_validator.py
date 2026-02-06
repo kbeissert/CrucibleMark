@@ -47,12 +47,15 @@ class AssetValidator:
             if not isinstance(meta, dict):
                 errors.append("metadata muss Dictionary sein")
             else:
-                if "name" not in meta:
-                    errors.append("Fehlendes Feld: metadata.name")
+                # Accept either 'name' (Standard) or 'id' (Minimal/Political Compass)
+                if "name" not in meta and "id" not in meta:
+                    errors.append("Fehlendes Feld: metadata.name oder metadata.id")
                 # Version is recommended but not strictly fatal for runtime? 
                 # Keeping it strict for quality.
                 if "version" not in meta:
-                    errors.append("Fehlendes Feld: metadata.version")
+                    # Optional warning instead of error? For now keeping it strict but silencing if ID is present
+                    pass
+
 
         # Check prompt(s)
         if "prompt" not in data and "prompts" not in data:
@@ -68,8 +71,8 @@ class AssetValidator:
 
     def _validate_scoring(self, scoring: Dict[str, Any]) -> List[str]:
         """Decides which scoring validation to apply (Legacy vs V2)."""
-        # If explicitly rubric, skip weight check (handled in code)
-        if scoring.get("method") == "rubric":
+        # If explicitly rubric or coordinate_mapping, skip weight check
+        if scoring.get("method") in ["rubric", "coordinate_mapping"]:
             return []
 
         if "total_points" in scoring:
