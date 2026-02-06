@@ -76,28 +76,19 @@ class BaseTest(ABC):
 
     def _validate_asset(self) -> None:
         """
-        Validiert Asset-Schema
+        Validiert Asset-Schema mittels zentralem Validator.
 
         Raises:
-            ValueError: Wenn erforderliche Felder fehlen
+            ValueError: Wenn Validierung fehlschlägt
         """
-        required_fields = ["metadata", "prompt", "scoring"]
+        from utils.asset_validator import AssetValidator
+        
+        validator = AssetValidator()
+        errors = validator.validate_structure(self.asset)
+        
+        if errors:
+            raise ValueError(f"Asset Validation Error: {'; '.join(errors)}")
 
-        for field in required_fields:
-            if field not in self.asset:
-                raise ValueError(f"Asset missing required field: {field}")
-
-        # Validiere Scoring-Gewichte
-        if "scoring" in self.asset:
-            scoring = self.asset["scoring"]
-            
-            # SCORING V2.0 EXCEPTION:
-            # If method is "rubric" (Granular Python Scoring), weights are defined in code code (RUBRICS).
-            # We skip the YAML weight sum validation in this case.
-            if scoring.get("method") == "rubric":
-                return
-
-            # Use total_points from asset if available, else default to constant
             expected_total = scoring.get(
                 "total_points", TOTAL_SCORING_WEIGHT
             )

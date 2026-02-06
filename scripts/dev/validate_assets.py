@@ -8,20 +8,28 @@ from typing import Any, Dict, Tuple
 # pylint: disable=import-error
 import yaml
 
+
+# Add project root to path
+ROOT_DIR = Path(__file__).parent.parent.parent
+sys.path.insert(0, str(ROOT_DIR))
+
+from utils.asset_validator import AssetValidator
+
 # Constants
 MIN_CLI_ARGS = 2
-TOTAL_SCORING_WEIGHT = 100
 
+class CLIAssetValidator:
+    """CLI Wrapper for Asset Validator."""
 
-class AssetValidator:
-    """Validiert Test-Assets (YAML)."""
+    def __init__(self):
+        self.validator = AssetValidator()
 
     def validate_path(self, path: Path) -> dict[str, Any]:
         """Validiert Datei oder Verzeichnis."""
         results = {"valid": 0, "invalid": 0, "details": []}
 
         if path.is_file():
-            is_valid, error = self.validate_file(path)
+            is_valid, error = self.validator._validate_file_internal(path)
             results["details"].append(
                 {
                     "path": str(path),
@@ -43,7 +51,7 @@ class AssetValidator:
                 if any(part.startswith((".", "_")) for part in file_path.parts):
                     continue
 
-                is_valid, error = self.validate_file(file_path)
+                is_valid, error = self.validator._validate_file_internal(file_path)
                 results["details"].append(
                     {
                         "path": str(file_path),
@@ -57,97 +65,6 @@ class AssetValidator:
                     results["invalid"] += 1
 
         return results
-
-    def validate_file(self, file_path: Path) -> Tuple[bool, str]:
-        """Validiert eine einzelne Asset-Datei."""
-        try:
-            with open(file_path, encoding="utf-8") as f:
-                data = yaml.safe_load(f)
-
-            if not data:
-                return False, "Leere Datei"
-
-            errors = self._validate_structure(data)
-            if errors:
-                return False, "; ".join(errors)
-
-            return True, ""
-
-        except Exception as e:  # pylint: disable=broad-exception-caught
-            return False, f"YAML Error: {e}"
-
-    def _validate_structure(self, data: dict[str, Any]) -> list[str]:
-        """Prüft die Struktur des Assets."""
-        errors = []
-
-        # Check metadata
-        if "metadata" not in data:
-            errors.append("Fehlendes Feld: metadata")
-        else:
-            meta = data["metadata"]
-            if not isinstance(meta, dict):
-                errors.append("metadata muss Dictionary sein")
-            else:
-                if "name" not in meta:
-                    errors.append("Fehlendes Feld: metadata.name")
-                if "version" not in meta:
-                    errors.append("Fehlendes Feld: metadata.version")
-
-        # Check prompt(s)
-        if "prompt" not in data and "prompts" not in data:
-            errors.append("Fehlendes Feld: prompt oder prompts")
-
-        # Check scoring
-        if "scoring" in data:
-            errors.extend(self._validate_scoring(data["scoring"]))
-        else:
-            errors.append("Fehlendes Feld: scoring")
-
-        return errors
-
-    @staticmethod
-    def _validate_v2_scoring(scoring: dict[str, Any]) -> list[str]:
-        """Validiert Scoring v2.0 Format mit total_points als Integer."""
-        errors = []
-        total_weight = 0
-
-        for category_name, category_data in scoring.items():
-            if category_name == "total_points":
-                continue
-
-            if not isinstance(category_data, dict):
-                errors.append(f"scoring.{category_name} muss Dictionary sein")
-                continue
-
-            if "weight" in category_data:
-                weight = category_data["weight"]
-                if not isinstance(weight, (int, float)):
-                    errors.append(f"scoring.{category_name}.weight muss Zahl sein")
-                else:
-                    total_weight += weight
-
-        if total_weight != scoring["total_points"] and total_weight > 0:
-            errors.append(
-                f"scoring weights ({total_weight}) müssen "
-                f"total_points ({scoring['total_points']}) entsprechen"
-            )
-
-        return errors
-
-    @staticmethod
-    def _validate_legacy_scoring(scoring: dict[str, Any]) -> list[str]:
-        """Validiert altes Scoring-Format für Backward Compatibility."""
-        errors = []
-        total_weight = 0
-
-        for category_name, category_data in scoring.items():
-            if not isinstance(category_data, dict):
-                errors.append(f"scoring.{category_name} muss Dictionary sein")
-                continue
-
-            if "weight" not in category_data:
-                errors.append(f"scoring.{category_name}.weight fehlt")
-            else:
                 weight = category_data["weight"]
                 if not isinstance(weight, (int, float)):
                     errors.append(f"scoring.{category_name}.weight muss Zahl sein")
@@ -165,20 +82,6 @@ class AssetValidator:
 
         return errors
 
-    @staticmethod
-    def _validate_scoring(scoring: dict[str, Any]) -> list[str]:
-        """Validiert Scoring-Sektion (unterstützt beide Formate: alt und v2.0)."""
-        if not scoring:
-            return []
-
-        if not isinstance(scoring, dict):
-            return ["scoring muss Dictionary sein"]
-
-        # Check if new format (v2.0) with total_points as integer
-        if "total_points" in scoring and isinstance(scoring["total_points"], int):
-            return AssetValidator._validate_v2_scoring(scoring)
-
-        return AssetValidator._validate_legacy_scoring(scoring)
 
     def validate_all_modules(self) -> dict[str, Any]:
         """Validiert alle in benchmark_config.yaml definierten Module."""

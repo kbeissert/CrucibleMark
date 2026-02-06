@@ -48,10 +48,9 @@ def load_asset_yaml(asset_path: Path) -> Dict[str, Any]:
 
 
 def print_header(title: str, width: int = 60) -> None:
-    """Prints a formatted header."""
-    print(f"\n{'=' * width}")
-    print(title)
-    print(f"{'=' * width}")
+    """DEPRECATED: Use TerminalUI.print_header instead."""
+    from utils.benchmark_ui import TerminalUI
+    TerminalUI.print_header(title, width)
 
 
 def select_from_list(
@@ -60,47 +59,9 @@ def select_from_list(
     prompt: str = "Wähle einen Eintrag",
     title: Optional[str] = None,
 ) -> Optional[T]:
-    """
-    Generic interactive selection from a list.
-
-    Args:
-        items: List of items to select from
-        display_func: Function that takes an item and returns a string representation
-                      (or tuple of strings)
-        prompt: Prompt text for input
-        title: Optional title to print before list
-
-    Returns:
-        Selected item or None if aborted
-    """
-    if not items:
-        print("❌ Keine Einträge verfügbar.")
-        return None
-
-    if title:
-        print_header(title)
-
-    for i, item in enumerate(items, 1):
-        display = display_func(item)
-        if isinstance(display, tuple):
-            for line in display:
-                print(f"  {i}. {line}" if line == display[0] else f"     {line}")
-        else:
-            print(f"  {i}. {display}")
-
-    print("  0. Abbrechen")
-
-    while True:
-        try:
-            choice = input(f"\n{prompt} (0-{len(items)}): ").strip()
-            if choice == "0":
-                return None
-            idx = int(choice)
-            if 1 <= idx <= len(items):
-                return items[idx - 1]
-            print("⚠️  Ungültige Auswahl.")
-        except ValueError:
-            print("⚠️  Bitte eine Zahl eingeben.")
+    """DEPRECATED: Use TerminalUI.select_from_list instead."""
+    from utils.benchmark_ui import TerminalUI
+    return TerminalUI.select_from_list(items, display_func, prompt, title)
 
 
 def discover_assets(directory: str | Path, pattern: str = "*.yaml") -> list[Path]:

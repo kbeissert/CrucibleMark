@@ -138,15 +138,15 @@ def _get_startable_assets(
     # -------------------------------------------------------
     # SPECIAL HANDLING FOR BATCH MODULES (e.g. Political Compass)
     # -------------------------------------------------------
-    # FIX: Wir deaktivieren den aggressiven Skip für Batch-Module temporär/dauerhaft,
-    # damit neue Assets auch dann gefunden werden, wenn der Batch-ID Eintrag schon existiert.
-    # Der darunterliegende Runner muss entscheiden, ob er cached oder neu läuft.
-    #
-    # if module.get("execution_mode") == "batch" or module.get("key") == "political_compass":
-    #    # Known Batch IDs (TODO: Should be in config)
-    #    batch_id = "political_compass_v3"
-    #    if (model, batch_id) in existing_tests:
-    #        return []
+    # Batch-Module (wie Political Compass) erzeugen oft nur EINEN Eintrag (Aggregiert).
+    # Da ein Re-Run sehr teuer ist (81+ Fragen), überspringen wir, wenn das Aggregat da ist.
+    # Wir prüfen hier NICHT auf Aktualität (Datum) oder Vollständigkeit der Assets.
+    if module.get("execution_mode") == "batch" or module.get("key") == "political_compass":
+        batch_id = "political_compass_v3"
+        if (model, batch_id) in existing_tests:
+            # Optional: Man könnte hier loggen, dass geskippt wird.
+            # Da dies für jedes Modell passiert, halten wir es still oder loggen einmalig außen.
+            return [] 
     # -------------------------------------------------------
 
     # Der Runner hat Methode zum Finden, aber wir brauchen den Pfad
@@ -195,9 +195,10 @@ def _run_module_for_model(
 
     if not assets_todo:
         # If we calculate that everything is done, we could skip calling the runner.
-        # But since the runner runs everything, skipping call prevents redundant runs.
-        # So this IS an optimization if 100% are done.
-        print(f"   ✓ Bench: {module['name']} (Alle Tests bereits vorhanden)")
+        msg = f"   ✓ Bench: {module['name']} (Alle Tests bereits vorhanden)"
+        if module.get("key") == "political_compass":
+             msg += " [Batch-Mode Skip]"
+        print(msg)
         return
 
     print(f"   📊 Bench: {module['name']} ({len(assets_todo)} neue Tests) ...")
