@@ -14,7 +14,7 @@ Design Principles:
 import time
 import sys
 import unicodedata
-from typing import Optional
+from typing import Optional, List, TypeVar, Callable
 
 # Constants
 VARIATION_SELECTOR_16 = 0xFE0F
@@ -23,6 +23,7 @@ TOKEN_K_THRESHOLD = 999
 PC_THRESHOLD_STRONG_NEG = -2.0
 PC_THRESHOLD_STRONG_POS = 2.0
 
+T = TypeVar("T")
 
 class TerminalUI:
     """
@@ -36,6 +37,66 @@ class TerminalUI:
     def __init__(self):
         self.terminal_width = 60
         self.start_time = time.time()
+
+    # --- Static Helpers (moved from benchmark_utils) ---
+
+    @staticmethod
+    def print_header(title: str, width: int = 60) -> None:
+        """Prints a formatted header."""
+        print(f"\n{'=' * width}")
+        print(title)
+        print(f"{'=' * width}")
+
+    @staticmethod
+    def select_from_list(
+        items: List[T],
+        display_func: Callable[[T], str | tuple[str, str]],
+        prompt: str = "Wähle einen Eintrag",
+        title: Optional[str] = None,
+    ) -> Optional[T]:
+        """
+        Generic interactive selection from a list.
+
+        Args:
+            items: List of items to select from
+            display_func: Function that takes an item and returns a string representation
+                        (or tuple of strings)
+            prompt: Prompt text for input
+            title: Optional title to print before list
+
+        Returns:
+            Selected item or None if aborted
+        """
+        if not items:
+            print("❌ Keine Einträge verfügbar.")
+            return None
+
+        if title:
+            TerminalUI.print_header(title)
+
+        for i, item in enumerate(items, 1):
+            display = display_func(item)
+            if isinstance(display, tuple):
+                for line in display:
+                    print(f"  {i}. {line}" if line == display[0] else f"     {line}")
+            else:
+                print(f"  {i}. {display}")
+
+        print("  0. Abbrechen")
+
+        while True:
+            try:
+                choice = input(f"\n{prompt} (0-{len(items)}): ").strip()
+                if choice == "0":
+                    return None
+                idx = int(choice)
+                if 1 <= idx <= len(items):
+                    return items[idx - 1]
+                print("⚠️  Ungültige Auswahl.")
+            except ValueError:
+                print("⚠️  Bitte eine Zahl eingeben.")
+
+    # --- Instance Methods ---
 
     def _get_display_width(self, text: str) -> int:
         """Estimates visual width of text (accounting for emojis/wide chars)."""

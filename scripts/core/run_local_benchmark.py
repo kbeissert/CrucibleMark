@@ -19,15 +19,16 @@ sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
 # pylint: disable=wrong-import-position, import-error, duplicate-code
 from utils.base_runner import BaseBenchmarkRunner
+from utils.benchmark_ui import TerminalUI
 from utils.benchmark_utils import (
     discover_assets,
     format_pc_run_data,
     load_asset_yaml,
     save_debug_response,
-    select_from_list,
 )
 from utils.llm_client import LLMClient
 from utils.logging_config import setup_logging
+
 from utils.model_utils import (
     get_model_version,
     get_ollama_models_info,
@@ -114,7 +115,7 @@ class LocalBenchmarkRunner(BaseBenchmarkRunner):
             print("Installiere Modelle mit: ollama pull qwen2.5-coder:7b-instruct")
             return None
 
-        selected = select_from_list(
+        selected = TerminalUI.select_from_list(
             models,
             lambda m: m,
             prompt="Wähle ein Modell",
@@ -133,7 +134,7 @@ class LocalBenchmarkRunner(BaseBenchmarkRunner):
     def select_benchmark(self) -> Optional[Dict[str, Any]]:
         """Interaktive Benchmark-Auswahl."""
         categories = list(self.benchmark_categories.items())
-        selected_item = select_from_list(
+        selected_item = TerminalUI.select_from_list(
             categories,
             lambda item: (item[1]["name"], item[1]["description"]),
             prompt="Wähle einen Benchmark",
