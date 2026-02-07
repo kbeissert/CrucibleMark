@@ -435,7 +435,18 @@ Beispiele:
         help="Anzahl der Runs (default: 1, empfohlen für Political Compass: 3)",
     )
 
+    parser.add_argument(
+        "--dev",
+        action="store_true",
+        help="Run in DEV mode (Faster iteration, 5-10s pauses). Default is Production (15-30s).",
+    )
+
     args = parser.parse_args()
+
+    # Propagate DEV flag globally via Environment Variable
+    if args.dev:
+        import os
+        os.environ["CRUCIBLE_BM_MODE"] = "DEV"
 
     try:
         runner = BenchmarkRunner(args.config)
