@@ -39,6 +39,7 @@ from utils.fingerprinting import ModelFingerprinter
 from utils.module_loader import load_test_class
 from utils.module_registry import load_active_benchmarks
 from utils.scoring_utils import calculate_score_contributions
+from utils.adaptive_pause import AdaptivePauseCalculator, BenchmarkMode
 
 # Setup Logging centrally
 setup_logging()
@@ -67,9 +68,16 @@ class LocalBenchmarkRunner(BaseBenchmarkRunner):
     TIER_SCORE_LOW = 50
     TOKEN_K_FACTOR = 1000
 
-    def __init__(self, debug_responses: bool = False):
+    def __init__(self, debug_responses: bool = False, mode: BenchmarkMode = BenchmarkMode.PRODUCTION):
         """Initialisiert Runner."""
         super().__init__()
+        # If mode is passed explicitly, use it. Otherwise fall back to Env Var if set.
+        env_mode = os.getenv("CRUCIBLE_BM_MODE")
+        if env_mode == "DEV":
+            self.mode = BenchmarkMode.DEV
+        else:
+            self.mode = mode
+            
         self.commercial_csv = self.validator.get_golden_standard_csv()
         self.debug_responses = (
             debug_responses or os.getenv("CRUCIBLE_DEBUG", "false").lower() == "true"
@@ -556,10 +564,18 @@ class LocalBenchmarkRunner(BaseBenchmarkRunner):
         )
         print(f"Modell: {model}\nTests: {len(assets)}\n{'=' * 60}\n")
 
+        # Initialize Adaptive Pause Calculator
+        pause_calculator = AdaptivePauseCalculator(model_name=model, mode=self.mode)
+
         results = []
         print("Fortschritt:")
 
+        previous_test_stats = None
+
         for i, asset_path in enumerate(assets, 1):
+            # ADAPTIVE PAUSE
+            pause_calculator.wait(previous_test_stats)
+
             asset_name = asset_path.stem.replace("asset_", "").replace("_", " ").title()
             print(
                 f"   ⏳ [{i}/{len(assets)}] {asset_name}: Test läuft...",
@@ -571,6 +587,13 @@ class LocalBenchmarkRunner(BaseBenchmarkRunner):
                 result = self._process_single_test(
                     model, asset_path, commercial_refs, benchmark_info
                 )
+                
+                # Update stats for next iteration
+                previous_test_stats = {
+                    'execution_time': result.get('execution_time', 0),
+                    'response_length': result.get('tokens_used', 0) * 4  # Estimate chars from tokens
+                }
+
                 results.append(result)
                 self._print_result_status(i, len(assets), asset_name, result)
             except Exception as e:  # pylint: disable=broad-exception-caught
@@ -791,10 +814,19 @@ def main():
         action="store_true",
         help="Save all responses to debug files",
     )
+    parser.add_argument(
+        "--dev",
+        action="store_true",
+        help="Run in DEV mode (Fast iteration, shorter pauses). Default is PRODUCTION.",
+    )
     args, _ = parser.parse_known_args()
 
-    runner = LocalBenchmarkRunner(debug_responses=args.debug_responses)
+    # Determine Benchmark Mode
+    mode = BenchmarkMode.DEV if args.dev else BenchmarkMode.PRODUCTION
+
+    runner = LocalBenchmarkRunner(debug_responses=args.debug_responses, mode=mode)
     print(f"\n{'=' * 60}\n🚀 LOKALE MODELLE BENCHMARK\n{'=' * 60}")
+    print(f"Modus: {mode.value.upper()} (Adaptive Pausen aktiviert)")
 
     model = runner.select_model()
     if not model:

@@ -52,8 +52,13 @@ install-dev: install
 # === BENCHMARKING ===
 
 benchmark:
-	@echo "🚀 Starting Interactive Benchmark..."
+	@echo "🚀 Starting Interactive Benchmark (Production Mode)..."
 	$(PYTHON) run_benchmark.py
+	@$(MAKE) leaderboard
+
+benchmark-dev:
+	@echo "🚀 Starting Interactive Benchmark (Dev Mode - Fast Iteration)..."
+	$(PYTHON) run_benchmark.py --dev
 	@$(MAKE) leaderboard
 
 benchmark-single:
