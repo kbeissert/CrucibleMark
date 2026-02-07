@@ -134,5 +134,5 @@ modules:
 
   political_compass:
     path: "benchmark_modules/political_compass"
-    enabled: true
+    enabled: false
 
