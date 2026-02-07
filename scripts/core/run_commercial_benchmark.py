@@ -666,30 +666,35 @@ class CommercialBenchmarkRunner(BaseBenchmarkRunner):
             f"Overall Quality: {avg_pct:.1f}% {badge} ({total_score}/{max_possible} Pts)"
         )
 
-        # Check for Golden Standard Breach
-        try:
-            csv_path = Path("benchmark_scores/golden_standard_benchmark.csv")
-            if csv_path.exists():
-                with open(csv_path, encoding="utf-8") as f:
-                    reader = csv.DictReader(f)
-                    # Map asset_id to percentage
-                    golden_map = {row.get("asset_id"): float(row.get("percentage", 0.0)) for row in reader}
+        # Check for Golden Standard Breach (Only in Test Mode)
+        if self.mode != "golden_standard":
+            try:
+                csv_path = Path("benchmark_scores/golden_standard_benchmark.csv")
+                if csv_path.exists():
+                    with open(csv_path, encoding="utf-8") as f:
+                        reader = csv.DictReader(f)
+                        # Map asset_id to percentage
+                        golden_map = {row.get("asset_id"): float(row.get("percentage", 0.0)) for row in reader}
 
-                current_assets = [r["asset_id"] for r in results]
-                matching_golden_scores = [golden_map[aid] for aid in current_assets if aid in golden_map]
+                    current_assets = [r["asset_id"] for r in results]
+                    matching_golden_scores = [golden_map[aid] for aid in current_assets if aid in golden_map]
 
-                if matching_golden_scores:
-                    golden_avg = sum(matching_golden_scores) / len(matching_golden_scores)
-                    if avg_pct > golden_avg:
-                        diff = avg_pct - golden_avg
-                        print(f"\n{'=' * 66}")
-                        print(f"⚠️  ACHTUNG: GOLDEN STANDARD ÜBERTROFFEN! (+{diff:.1f}%)")
-                        print(f"{'=' * 66}")
-                        print("Dieses Modell schneidet BESSER ab als die aktuelle Referenz.")
-                        print("Bitte prüfen: Ist der Golden Standard veraltet?")
-                        print("Handlungsempfehlung: `make generate-golden` (falls das Ergebnis validiert ist).")
-        except Exception:  # pylint: disable=broad-exception-caught
-            pass
+                    if matching_golden_scores:
+                        golden_avg = sum(matching_golden_scores) / len(matching_golden_scores)
+                        # Consider it surpassed if slightly more than 0 due to float precision, 
+                        # but show message only if meaningful difference (e.g. >= 0.1%)
+                        if avg_pct > golden_avg:
+                            diff = avg_pct - golden_avg
+                            # Only warn if difference is significant enough to show up in .1f format
+                            if diff >= 0.05: 
+                                print(f"\n{'=' * 66}")
+                                print(f"⚠️  ACHTUNG: GOLDEN STANDARD ÜBERTROFFEN! (+{diff:.1f}%)")
+                                print(f"{'=' * 66}")
+                                print("Dieses Modell schneidet BESSER ab als die aktuelle Referenz.")
+                                print("Bitte prüfen: Ist der Golden Standard veraltet?")
+                                print("Handlungsempfehlung: `make generate-golden` (falls das Ergebnis validiert ist).")
+            except Exception:  # pylint: disable=broad-exception-caught
+                pass
 
         print(f"{'=' * 66}\n")
 

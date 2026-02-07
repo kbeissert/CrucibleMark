@@ -92,32 +92,29 @@ class ModelFingerprinter:
             except Exception as e:  # pylint: disable=broad-exception-caught
                 logger.warning("Could not generate behavioral hash: %s", e)
 
-        # 3. Combine
+        # 3. Combine Logic (Hybrid Approach)
         
-        # Special Case: If the official_id is already contained in the model name (redundant),
-        # AND we have a valid behavioral hash, we can prefer just the hash for cleaner display.
-        # However, for consistency with existing "Legacy" benchmarks, we should only do this 
-        # for specific known "clean" formats, or IF the official_id is basically just the model name.
+        # Case A: Local/Ollama Models
+        # Strategy: Use the official Digest/Hash only.
+        # Rationale: Local models verify via hash (like git/docker). 
+        # Adding "-nohash" or behavioral hashes is redundant and confusing for users.
+        if provider in ["ollama", "local"]:
+             if official_id not in ["unknown", "local", "v0"] and official_id:
+                  final_version = official_id
+             else:
+                  # Fallback if we couldn't get a proper digest
+                  final_version = f"local-{behavioral_hash}" if behavioral_hash != "nohash" else "local"
 
-        # FIX 2026-02-07: Some commercial benchmarks used ONLY the behavioral hash 
-        # or a partial "Date-Hash" that differs from this logic.
-        # To align "claude-haiku-4-5-20251001" (where ID=20251001) with existing "8717af19",
-        # we check if the official_id is essentially part of the model_name.
-        
-        # If the official ID (e.g. 20251001) is part of the model name, 
-        # and we have a strong behavioral hash, we can optionally use just the hash?
-        # NO, that's risky.
-        
-        # Better: Allow overriding logic if needed, OR stick to strict format.
-        # The user's problem is that existing CSVs have "HashOnly" for some models.
-        # We must align with THAT.
-
-        # If it's a commercial model and the date is already in the name,
-        # users seem to have used just the Hash in previous runs.
-        
-        is_date_in_name = official_id in model_name
-        if is_date_in_name and behavioral_hash != "nohash" and provider not in ["ollama", "local"]:
+        # Case B: Commercial Models (Date already in name)
+        # Strategy: Use Behavioral Hash only to avoid redundancy.
+        # Example: "claude-20241022" -> version "8717af19" (Cleaner than "20241022-8717af19")
+        elif (official_id in model_name and 
+              behavioral_hash != "nohash" and 
+              provider not in ["ollama", "local"]):
              final_version = behavioral_hash
+
+        # Case C: Standard Commercial (Date + Behavioral Hash)
+        # Example: "gpt-4o" -> "2024-05-13-8717af19"
         else:
              final_version = f"{official_id}-{behavioral_hash}"
 
