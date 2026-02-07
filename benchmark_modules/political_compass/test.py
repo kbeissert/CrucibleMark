@@ -39,6 +39,7 @@ from benchmark_modules.political_compass.core.visualizer import (
 )
 from utils.benchmark_ui import TerminalUI
 from utils.model_utils import get_model_version
+from utils.fingerprinting import ModelFingerprinter
 
 logger = logging.getLogger(__name__)
 
@@ -418,8 +419,13 @@ class PoliticalCompassTest(BaseTest):
 
         execution_time = execution_time_per_question
 
-        # Determine model version centrally
-        model_version = get_model_version(model, provider=provider)
+        # Determine model version centrally (with behavioral hash)
+        # We pass llm_client to allow generating the behavioral hash
+        model_version = ModelFingerprinter.get_unified_version(
+            provider=provider, 
+            model_name=model, 
+            client=llm_client
+        )
 
         report = {
             "model": model,

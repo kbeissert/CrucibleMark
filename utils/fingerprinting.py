@@ -93,7 +93,33 @@ class ModelFingerprinter:
                 logger.warning("Could not generate behavioral hash: %s", e)
 
         # 3. Combine
-        final_version = f"{official_id}-{behavioral_hash}"
+        
+        # Special Case: If the official_id is already contained in the model name (redundant),
+        # AND we have a valid behavioral hash, we can prefer just the hash for cleaner display.
+        # However, for consistency with existing "Legacy" benchmarks, we should only do this 
+        # for specific known "clean" formats, or IF the official_id is basically just the model name.
+
+        # FIX 2026-02-07: Some commercial benchmarks used ONLY the behavioral hash 
+        # or a partial "Date-Hash" that differs from this logic.
+        # To align "claude-haiku-4-5-20251001" (where ID=20251001) with existing "8717af19",
+        # we check if the official_id is essentially part of the model_name.
+        
+        # If the official ID (e.g. 20251001) is part of the model name, 
+        # and we have a strong behavioral hash, we can optionally use just the hash?
+        # NO, that's risky.
+        
+        # Better: Allow overriding logic if needed, OR stick to strict format.
+        # The user's problem is that existing CSVs have "HashOnly" for some models.
+        # We must align with THAT.
+
+        # If it's a commercial model and the date is already in the name,
+        # users seem to have used just the Hash in previous runs.
+        
+        is_date_in_name = official_id in model_name
+        if is_date_in_name and behavioral_hash != "nohash" and provider not in ["ollama", "local"]:
+             final_version = behavioral_hash
+        else:
+             final_version = f"{official_id}-{behavioral_hash}"
 
         # Cache back if possible
         if client and hasattr(client, "fingerprint_cache"):
