@@ -87,7 +87,7 @@ class ModelFingerprinter:
                     return client.fingerprint_cache[model_name]
 
                 behavioral_hash = ModelFingerprinter.generate_behavioral_hash(
-                    client, model_name
+                    client, model_name, provider=provider
                 )
             except Exception as e:  # pylint: disable=broad-exception-caught
                 logger.warning("Could not generate behavioral hash: %s", e)
@@ -155,7 +155,8 @@ class ModelFingerprinter:
             client,
             model_name: str,
             temperature: float = 0.0,
-            max_retries: int = 2
+            max_retries: int = 2,
+            provider: str = "ollama"
     ) -> str:
         """
         Generate behavioral fingerprint using deterministic prompts.
@@ -165,6 +166,7 @@ class ModelFingerprinter:
             model_name: Name of the model to fingerprint.
             temperature: Must be 0.0 for deterministic responses
             max_retries: Retry attempts if API fails
+            provider: Provider key (e.g., 'mistral', 'openai')
 
         Returns:
             8-character hex hash of combined responses
@@ -187,9 +189,12 @@ class ModelFingerprinter:
             try:
                 # Call client.query(model=model_name, ...)
                 if query_method == client.query:
+                    # Check if query supports provider argument (it should given LLMClient definition)
+                    # We pass provider to ensure correct routing
                     response_text = query_method(
                         model=model_name,
                         prompt=test["prompt"],
+                        provider=provider,
                         temperature=test["temperature"],
                         max_tokens=20,
                         skip_fingerprint=True  # Prevent recursion

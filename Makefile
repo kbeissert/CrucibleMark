@@ -64,11 +64,11 @@ benchmark-dev:
 benchmark-single:
 	@if [ -z "$(MODEL)" ]; then \
 		echo "❌ Error: MODEL variable not set"; \
-		echo "Usage: make benchmark-single MODEL=qwen2.5:14b [MODULE=code_quality]"; \
+		echo "Usage: make benchmark-single MODEL=qwen2.5:14b [MODULE=code_quality] [FORCE=true]"; \
 		exit 1; \
 	fi
 	@echo "🤖 Starting automated benchmark for: $(MODEL)..."
-	$(PYTHON) run_benchmark.py --model $(MODEL) $(if $(MODULE),--module $(MODULE))
+	$(PYTHON) run_benchmark.py --model $(MODEL) $(if $(MODULE),--module $(MODULE)) $(if $(filter true,$(FORCE)),--force)
 
 benchmark-cross-model:
 	@echo "🚀 Starting Cross-Model Benchmark..."

@@ -62,9 +62,8 @@ class BenchmarkRunConfig:
     model_name: Optional[str] = None
     run_all: bool = False
     num_runs: int = 1
+    force: bool = False
 
-# pylint: disable=wrong-import-position
-import subprocess  # noqa: E402
 
 class BenchmarkRunner:
     """Globaler Benchmark-Runner mit dynamischem Modul-Loading."""
@@ -315,7 +314,13 @@ class BenchmarkRunner:
         # Run benchmark for each module
         for _, module_config in modules_to_run:
             print(f"\n>>> Running Module: {module_config['name']}")
-            self._run_benchmark(module_config, model_id, provider, run_config.num_runs)
+            self._run_benchmark(
+                module_config,
+                model_id,
+                provider,
+                num_runs=run_config.num_runs,
+                force=run_config.force
+            )
 
         # Leaderboard Update
         if modules_to_run:
@@ -333,6 +338,7 @@ class BenchmarkRunner:
         model: str,
         provider: str,
         num_runs: int = 1,
+        force: bool = False,
     ):
         """Führt Benchmark aus (Lokal oder Kommerziell)."""
         is_local = provider == "ollama"
@@ -344,6 +350,7 @@ class BenchmarkRunner:
         print(f"Modell: {model}")
         print(f"Provider: {provider.upper() if not is_local else 'Ollama (Local)'}")
         print(f"Runs: {num_runs}")
+        print(f"Force: {'Yes (Ignore Cache)' if force else 'No'}")
         print(f"{'=' * 60}\n")
 
         # Load internal module config to get benchmarks/contributions
@@ -368,7 +375,7 @@ class BenchmarkRunner:
                 local_runner.save_results(results)
                 local_runner.print_summary(results, model)
         else:
-            comm_runner = CommercialBenchmarkRunner()
+            comm_runner = CommercialBenchmarkRunner(force=force)
             results = comm_runner.run_benchmark(
                 provider, model, benchmark_info, num_runs=num_runs
             )
@@ -441,6 +448,12 @@ Beispiele:
         help="Run in DEV mode (Faster iteration, 5-10s pauses). Default is Production (15-30s).",
     )
 
+    parser.add_argument(
+        "--force",
+        action="store_true",
+        help="Force re-run of benchmarks even if results exist (ignores cache).",
+    )
+
     args = parser.parse_args()
 
     # Propagate DEV flag globally via Environment Variable
@@ -456,6 +469,7 @@ Beispiele:
             model_name=args.model,
             run_all=args.all,
             num_runs=args.multi_run,
+            force=args.force,
         )
         runner.run(config)
     except KeyboardInterrupt:
