@@ -72,7 +72,7 @@ def export_leaderboard_detailed(leaderboard: pd.DataFrame, cat_cols: List[str]) 
     
     # Ensure Score columns exist
     if "Overall Score" in df_export.columns:
-         if "Total Score" not in df_export.columns:
+        if "Total Score" not in df_export.columns:
             df_export = df_export.rename(columns={"Overall Score": "Total Score"})
             
     cols = [

@@ -268,7 +268,8 @@ class OllamaClient(BaseProviderClient):
 
             # Check for truncation even if content exists
             done_reason = response.get("done_reason")
-            if done_reason == "length":
+            # Only warn if it's a real generation (not a probe with tiny token limit)
+            if done_reason == "length" and options.get("num_predict", 0) > 100:
                 logger.warning(
                     "⚠️  Ollama Output Truncated! Model hit context/token limit. (ctx=%s, predict=%s)",
                     options.get("num_ctx", "default"),
