@@ -59,6 +59,8 @@ class CulturalIntelligenceTest(BaseTest):
             **getattr(llm_client, "last_response_metadata", {})
         }
         
+        load_time = getattr(llm_client, "last_response_metadata", {}).get("load_duration", 0.0)
+        
         # Helper to safely get costs/tokens if avaiable in metadata
         # (This depends on llm_client populating metadata correctly)
         
@@ -66,6 +68,7 @@ class CulturalIntelligenceTest(BaseTest):
             primary_score=None, # Not scored yet
             rendered_value="Pending",
             execution_time=execution_time,
+            load_time=load_time,
             raw_response=response_text,
             tokens_used=getattr(llm_client, "last_token_usage", 0),
             cost_usd=getattr(llm_client, "last_request_cost", 0.0),

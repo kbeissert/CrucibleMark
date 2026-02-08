@@ -111,7 +111,8 @@ class BaseBenchmarkRunner:
             "max_score": max_score,
             "percentage": percentage,
             # Use object attributes
-            "execution_time": round(exec_result.execution_time, 1),
+            "execution_time": round(exec_result.execution_time, 4),
+            "load_time": round(getattr(exec_result, "load_time", 0.0), 4),
             "response_length": len(exec_result.raw_response),
             "tier": score.get("tier", "Tier 1 (Undefined)"),
         }

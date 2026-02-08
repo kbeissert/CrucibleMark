@@ -119,6 +119,15 @@ CrucibleMark v1.1.2 stabilisiert die Referenz-Systeme des Frameworks. Das **Vers
 
 ## ✅ Completed Milestones (v1.0.0)
 
+### Upcoming Features (v1.2.0)
+- [x] **Cold Start / Load Duration Metrics**
+  - Implementation of `load_duration` vs. `pure_execution_time` distinguishing.
+  - Integration into `OllamaClient` to capture VRAM loading times.
+  - Updates to `BenchmarkResult` schema to carry `load_time`.
+  - Automatic CSV column expansion for `load_time`.
+- [ ] **LLM-as-Judge**
+  - Use stronger models (e.g., GPT-4) to grade weaker models.
+
 ### Infrastructure Refactoring (v1.1.2)
 - [x] **Versioning System Overhaul**
   - Implementation of Dual-Version format (`{OFFICIAL_ID}-{BEHAVIORAL_HASH}`)

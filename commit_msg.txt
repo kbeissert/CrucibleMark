@@ -1,0 +1,6 @@
+feat: add force-run capability and fix fingerprinting provider context
+
+- Implemented `Force Run` feature in `run_benchmark.py` and `CommercialBenchmarkRunner` to bypass SSOT caching.
+- Updated `Makefile` to include `FORCE=true` logic for `benchmark-single` target.
+- Fixed a bug in `utils/fingerprinting.py` where the provider context was lost during fingerprinting, causing 404 errors on commercial models (defaulting to Ollama).
+- Ensured consistent `force` parameter propagation through the stack.

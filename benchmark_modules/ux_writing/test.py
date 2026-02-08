@@ -76,11 +76,14 @@ class UXWritingTest(BaseTest):
         meta = self.asset.get("metadata", {}).copy()
         meta.update(getattr(llm_client, "last_response_metadata", {}))
         
+        load_time = getattr(llm_client, "last_response_metadata", {}).get("load_duration", 0.0)
+
         return BenchmarkResult(
             status="success",
             primary_score=None,
             rendered_value="Pending",
             execution_time=execution_time,
+            load_time=load_time,
             raw_response=response,
             tokens_used=getattr(llm_client, "last_token_usage", 0),
             cost_usd=getattr(llm_client, "last_request_cost", 0.0),

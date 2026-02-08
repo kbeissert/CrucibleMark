@@ -171,6 +171,13 @@ def load_benchmark_data() -> pd.DataFrame:
     if "model_version" in df.columns:
         df["model_version"] = df["model_version"].astype(str).str.replace(r'-\d{4}-\d{2}-\d{2}$', '', regex=True)
 
+    # --- DEDUPLICATION (Latest Run Only) ---
+    # Crucial for accurate metrics (e.g. Load Time on new hardware):
+    # We only want the LATEST run for each unique (model, version, asset).
+    # Since df is already sorted by timestamp (asc), 'keep=last' preserves the most recent.
+    if "asset_id" in df.columns:
+        df = df.drop_duplicates(subset=["model", "model_version", "asset_id"], keep="last")
+
     # --- VERSION ALIASING/MERGING ---
     # Fix mismatches where some entries use date-strings and others use hashes for the same model.
     # We prefer alphanumeric hashes over pure numeric date-strings if both exist for a model.

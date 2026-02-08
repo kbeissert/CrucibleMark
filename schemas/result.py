@@ -47,6 +47,7 @@ class BenchmarkResult(BaseModel):
     
     # --- Execution Metrics (Standardized) ---
     execution_time: float = Field(0.0, description="Runtime in seconds")
+    load_time: float = Field(0.0, description="Model loading time in seconds (cold start)")
     tokens_used: int = Field(0, description="Total tokens consumed")
     cost_usd: float = Field(0.0, description="Estimated cost in USD")
     raw_response: str = Field("", description="The raw string output from the model")

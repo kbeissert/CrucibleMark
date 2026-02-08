@@ -110,6 +110,7 @@ def main(print_table: bool = True) -> None:
         "Overall Score",
         "Performance Ratio",
         "Avg Time (s)",
+        "Initial Load Time (s)",
         "P95 Time (s)",
         "Max Time (s)",
         "Routine Score",
