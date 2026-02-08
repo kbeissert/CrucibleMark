@@ -198,6 +198,34 @@ benchmarks:
 Every module's Controller (test.py) must return a `BenchmarkResult` object.
 This strictly typed DTO ensures all modules provide compatible data for the Leaderboard.
 
+The Result Schema (`schemas/result.py`) now includes:
+
+```python
+class BenchmarkResult(BaseModel):
+    status: str
+    primary_score: Optional[float]
+    rendered_value: str
+    
+    # Execution Metrics
+    execution_time: float   # Total runtime (Inference + Latency)
+    load_time: float        # Cold Start / Loading to VRAM (Ollama specific)
+    
+    # ...
+```
+
+When implementing `execute()`, ensure you populate `load_time` if available via `llm_client.last_response_metadata["load_duration"]`.
+
+```python
+# Example in your Controller (test.py)
+load_time = getattr(llm_client, "last_response_metadata", {}).get("load_duration", 0.0)
+
+return BenchmarkResult(
+    # ...
+    load_time=load_time,
+    # ...
+)
+```
+
 ```python
 from schemas.result import BenchmarkResult
 

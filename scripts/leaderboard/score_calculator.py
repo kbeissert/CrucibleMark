@@ -162,23 +162,50 @@ def _aggregate_basic_stats(df: pd.DataFrame, modules_config: Dict[str, Any]) -> 
         return cat_to_scoring.get(cat, True)
 
     # Ensure numeric columns for aggregation (Fix: prevent string concatenation in sum)
-    cols_to_numeric = ["execution_time", "cost_usd", "tokens_used"]
+    cols_to_numeric = ["execution_time", "cost_usd", "tokens_used", "load_time"]
     for col in cols_to_numeric:
         if col in df.columns:
             df[col] = pd.to_numeric(df[col], errors="coerce").fillna(0)
 
     # 1. Base Stats (Presence, Time) - From ALL valid runs (scoring + info)
-    # This ensures models with ONLY info modules (like Political Compass) are listed.
+    
+    # SPLIT AGGREGATION: 
+    # - Execution Time: Excluding "System" probes (to avoid skewing averages with 0.1s dummy values)
+    # - Load Time: Using ALL rows (System probe carries the Max Load Time)
+    
+    # A) Standard Metrics (without System Probe)
+    df_metrics = df[df["category"] != "System"]
+    
     base_aggs = {
         "execution_time": "mean",
         "asset_id": "count"
     }
-    if "cost_usd" in df.columns:
+
+    if "cost_usd" in df_metrics.columns:
         base_aggs["cost_usd"] = "sum"
-    if "tokens_used" in df.columns:
+    if "tokens_used" in df_metrics.columns:
         base_aggs["tokens_used"] = "sum"
-    if "timestamp" in df.columns:
-        base_aggs["timestamp"] = "max"
+        
+    stats_metrics = (
+        df_metrics.groupby(["model", "model_version", "type"])
+        .agg(base_aggs)
+        .reset_index()
+    )
+    
+    # B) Load Time (Include System Probe because it has the Cold Start data)
+    stats_load = pd.DataFrame()
+    if "load_time" in df.columns:
+        stats_load = (
+            df.groupby(["model", "model_version", "type"])["load_time"]
+            .max()
+            .reset_index()
+        )
+    
+    # Merge results if load stats exist
+    if not stats_load.empty:
+        base_stats = pd.merge(stats_metrics, stats_load, on=["model", "model_version", "type"], how="left")
+    else:
+        base_stats = stats_metrics
 
     # Enhanced Time Stats (Max, P95, P99, Timeouts)
     # Define custom aggregation functions
@@ -375,6 +402,10 @@ def calculate_scores(
 
     # --- Assign Categories ---
     def get_category_name(asset_id: str) -> str:
+        # Special Case: System Probes
+        if asset_id == "system_warmup_probe":
+            return "System"
+            
         for mod_key, mod_data in modules_config.items():
             if "prefix" in mod_data and str(asset_id).startswith(str(mod_data["prefix"])):
                 return str(mod_data.get("name", mod_key))
@@ -383,7 +414,8 @@ def calculate_scores(
         return "Other"
 
     df_success["category"] = df_success["asset_id"].apply(get_category_name)
-    df_success = df_success[df_success["category"] != "Other"]
+    # Filter "Other" but KEEP "System"
+    df_success = df_success[(df_success["category"] != "Other")]
 
     # --- Aggregation ---
     stats = _aggregate_basic_stats(df_success, modules_config)
@@ -521,6 +553,7 @@ def calculate_scores(
             "percentage": "Overall Score",
             "performance_ratio": "Performance Ratio",
             "execution_time": "Avg Time (s)",
+            "load_time": "Initial Load Time (s)",
             "Max_Time": "Max Time (s)",
             "P95_Time": "P95 Time (s)",
             "P99_Time": "P99 Time (s)",

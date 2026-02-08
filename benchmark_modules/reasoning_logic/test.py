@@ -53,6 +53,8 @@ class ReasoningLogicTest(BaseTest):
 
         # Determine Reasoning Capability
         reasoning_cap, reasoning_type = self._get_reasoning_capability(model)
+        
+        load_time = getattr(llm_client, "last_response_metadata", {}).get("load_duration", 0.0)
 
         return BenchmarkResult(
             status="success",
@@ -60,6 +62,7 @@ class ReasoningLogicTest(BaseTest):
             rendered_value="Pending",
             raw_response=response,
             execution_time=elapsed,
+            load_time=load_time,
             tokens_used=approx_tokens,
             cost_usd=getattr(llm_client, "last_request_cost", 0.0),
             model_version=getattr(llm_client, "last_response_metadata", {}).get("system_fingerprint", "unknown"),

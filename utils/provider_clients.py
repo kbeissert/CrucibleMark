@@ -229,6 +229,29 @@ class OllamaClient(BaseProviderClient):
                     ) from e
                 raise e
 
+            # --- Time Tracking (Load Duration vs Eval Duration) ---
+            # Extract raw durations (nanoseconds)
+            total_ns = response.get("total_duration", 0)
+            load_ns = response.get("load_duration", 0)
+            eval_ns = response.get("eval_duration", 0)
+            prompt_eval_ns = response.get("prompt_eval_duration", 0)
+
+            # Convert to seconds
+            metrics = {
+                "total_duration": total_ns / 1e9,
+                "load_duration": load_ns / 1e9,
+                "eval_duration": eval_ns / 1e9,
+                "prompt_eval_duration": prompt_eval_ns / 1e9,
+            }
+
+            # If load_duration is significant, we calculate pure execution time
+            # Pure Execution = Total - Load
+            # This is fairer for heavy models that are not yet in VRAM.
+            metrics["pure_execution_time"] = metrics["total_duration"] - metrics["load_duration"]
+            
+            # Save raw metadata for client wrapper
+            self.last_response_metadata = metrics
+
             msg = response.get("message", {})
             # Handle diff response formats (dict vs object)
             if isinstance(msg, dict):

@@ -121,6 +121,11 @@ Für komplexe Reasoning-Aufgaben nutzen wir **v2.0 Granular Rubrics** für faire
 ### 2. Hybrid Scoring (General)
 Standard-Module nutzen eine Mischung aus **40% Keyword-Matching** und **60% Semantic Similarity** zum Gold Standard.
 
+> **ℹ️ Info zur Semantic Similarity:**
+> CrucibleMark nutzt das lokale KI-Modell **`all-MiniLM-L6-v2`** (via `sentence-transformers`), um die inhaltliche Bedeutung der Antworten mit der Musterlösung zu vergleichen.
+> - **Vorteil:** Antwortet das Modell korrekt, nutzt aber andere Worte als die Musterlösung, wird dies erkannt.
+> - **Setup:** Das Modell (~80MB) wird bei der Installation (`make install`) einmalig heruntergeladen und lokal gecached.
+
 ---
 
 ## 🏆 Leaderboard generieren
@@ -135,13 +140,13 @@ make leaderboard
 
 ### Was zeigt das Leaderboard?
 
-Das neue Leaderboard (v1.1) ist ein **Decision-Making Tool**, nicht nur ein Ranking.
+Das neue Leaderboard (v1.2) ist ein **Decision-Making Tool**, nicht nur ein Ranking. Es berücksichtigt immer nur den **letzten lokalen Run** pro Modell, sodass Hardware-Upgrades (z.B. SSD statt HDD) sofort sichtbar werden.
 
 | Spalte | Bedeutung |
 |--------|-----------|
 | **Badge** | Qualitäts-Tier (🏆 Gold, 🥈 Silver, 🥉 Bronze, ⚖️ Standard) |
 | **Speed Class** | ⚡ Fast (<40s), ⏱️ Medium, 🐢 Slow (>80s) |
-| **Skill Profile** | Automatische Job-Empfehlung (z.B. "Fast Code Reviewer") |
+| **Initial Load** | **Cold Start Zeit** aus der separaten Warm-up Phase. Verfälscht nicht den Average. |
 | **Performance/s** | Speed-Quality Tradeoff (höher ist besser) |
 | **Cost per 1K** | Echte API-Kosten pro 1000 Tests (nur kommerziell) |
 | **Total Score** | (Routine Score + Reasoning Score) / 2 |
@@ -172,6 +177,26 @@ Das neue Leaderboard (v1.1) ist ein **Decision-Making Tool**, nicht nur ein Rank
 - **Fast All-Rounder:** Schnell & gut in allem (z.B. Mistral Large)
 - **Fast Code Reviewer:** Spezialist für Code, sehr schnell (z.B. Qwen 2.5 Coder)
 - **Slow Deep Thinker:** Stark im Reasoning, aber langsam (z.B. Phi-4)
+
+---
+
+## ⏱️ Performance Metriken (Neu in v1.2)
+
+CrucibleMark unterscheidet nun präzise zwischen **Ladezeit** und **Ausführungszeit**:
+
+1. **Phase 1: Warm-up Probe (Kaltstart Messung)**
+   - Vor jedem Benchmark sendet der Runner eine "Ping"-Anfrage (`system_warmup_probe`).
+   - **Ziel:** Messen, wie lange das Modell braucht, um von der Festplatte in den VRAM zu laden (Initial Load).
+   - Dieser Wert landet als `Initial Load` im Leaderboard, fließt aber **nicht** in die Durchschnitts-Geschwindigkeit ein.
+
+2. **Phase 2: Benchmark (Warmzustand)**
+   - Die eigentlichen Tests laufen auf dem bereits geladenen Modell.
+   - **Execution Time:** Die reine Rechenzeit für die Antwort-Generierung (ohne Lade-Latenz).
+   - Dies sorgt für faire Messergebnisse der Modell-Geschwindigkeit, unabhängig von der Hardware-Startzeit.
+
+> **Hinweis:** Bitte beachten Sie, dass es sich hierbei um **hardwareabhängige Momentaufnahmen** handelt. Die Werte (`Initial Load` & `Avg Speed`) evaluieren nicht das isolierte Modell, sondern das Zusammenspiel aus Modellarchitektur und der spezifischen Hardwareumgebung (RAM, GPU), auf der der Test ausgeführt wird.
+
+In den CSV-Ausgaben (`local_models_benchmark.csv`) finden Sie nun eine dedizierte Spalte `load_time`.
 
 ---
 

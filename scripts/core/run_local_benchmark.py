@@ -166,6 +166,57 @@ class LocalBenchmarkRunner(BaseBenchmarkRunner):
             raise ValueError(f"Keine Assets gefunden in: {category_path}")
         return assets
 
+    def _measure_cold_start(self, model: str) -> Optional[Dict[str, Any]]:
+        """
+        Sends a lightweight probe to the model to force loading (Cold Start).
+        Returns a BenchmarkResult dict capturing the 'load_time'.
+        """
+        print("\nChecking Model Status (Warmup)... ", end="", flush=True)
+        try:
+            # Short prompt, minimal tokens
+            _ = self.client.query(
+                model=model,
+                prompt="Ping",
+                max_tokens=2,
+                temperature=0.0
+            )
+            
+            # Extract detected load time
+            meta = getattr(self.client, "last_response_metadata", {})
+            load_time = meta.get("load_duration", 0.0)
+            
+            # Formatting for user feedback
+            if load_time > 2.0:
+                print(f"❄️  Cold Start Detected: {load_time:.2f}s")
+            else:
+                print(f"🔥 Model Warm ({load_time:.2f}s)")
+                
+            # Create a synthetic result for the CSV
+            # This ensures the Leaderboard calculator can pick up 'max(load_time)'
+            # even if all subsequent tests run fast.
+            return {
+                "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                "status": "success",
+                "provider": "ollama",
+                "model": model,
+                "asset_id": "system_warmup_probe",
+                "asset_name": "System: Cold Start Probe",
+                "total_score": 0.0, 
+                "max_score": 0.0,
+                "percentage": 0.0,
+                "execution_time": 0.1,  # Irrelevant for this row
+                "load_time": round(load_time, 4),
+                "response_length": 0,
+                "tier": "Tier 0 (System)",
+                "category": "System",
+                "routine_contribution": 0,
+                "reasoning_contribution": 0
+            }
+
+        except Exception as e:
+            print(f"⚠️ Warmup Probe Failed: {e}")
+            return None
+
     def _execute_test(
         self, model: str, asset_path: Path, benchmark_info: Dict[str, Any]
     ):
@@ -539,6 +590,11 @@ class LocalBenchmarkRunner(BaseBenchmarkRunner):
     ) -> List[Dict[str, Any]]:
         """Führt Standard-Benchmarks (Asset-basiert) aus."""
         
+        # --- WARMUP / COLD START PROBE ---
+        # Führt eine "Dummy"-Anfrage aus, um den Kaltstart separat zu messen.
+        # Dies verhindert, dass der erste eigentliche Benchmark durch Ladezeiten verfälscht wird.
+        warmup_result = self._measure_cold_start(model)
+        
         # --- VERSIONING ---
         # Get unified version (Format: {local_digest}-nohash)
         # We assume local execution doesn't do rigorous behavioral hashing yet for speed.
@@ -555,9 +611,17 @@ class LocalBenchmarkRunner(BaseBenchmarkRunner):
         if assets is None:
             assets = self.discover_assets(benchmark_info["path"])
 
+        results = []
+        
+        # Inject Warmup Result if available
+        if warmup_result:
+            # We enrich it with version info now that we have it
+            warmup_result["model_version"] = self.current_model_version
+            results.append(warmup_result)
+
         if not assets:
             print(f"⚠️  Keine Tests für {benchmark_info['name']} gefunden/ausstehend.")
-            return []
+            return results # Return results (might contain warmup) instead of empty list
 
         print(
             f"\n{'=' * 60}\n📊 Starte Benchmark: {benchmark_info['name']}\n{'=' * 60}"
