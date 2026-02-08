@@ -168,11 +168,25 @@ class LocalBenchmarkRunner(BaseBenchmarkRunner):
 
     def _measure_cold_start(self, model: str) -> Optional[Dict[str, Any]]:
         """
-        Sends a lightweight probe to the model to force loading (Cold Start).
-        Returns a BenchmarkResult dict capturing the 'load_time'.
+        Sends a lightweight probe to the model.
+        Phase 1: Force Unload (Reset State)
+        Phase 2: Probe (Measure Load Time)
         """
         print("\nChecking Model Status (Warmup)... ", end="", flush=True)
+        
         try:
+            # 1. Force Unload to ensure we measure real Cold Start AND apply new num_ctx
+            # Using generate with keep_alive=0 unwraps the model from VRAM
+            # We use the raw client to avoid our wrapper's retry logic here
+            try:
+                self.client.client.generate(model=model, prompt="", keep_alive=0)
+                # Give Ollama a split second to clear memory
+                import time
+                time.sleep(0.5)
+            except Exception as e:
+                logger.warning(f"Could not force unload model: {e}")
+
+            # 2. Send Probe (now guarantees a reload with new config)
             # Short prompt, minimal tokens
             _ = self.client.query(
                 model=model,
@@ -732,7 +746,12 @@ class LocalBenchmarkRunner(BaseBenchmarkRunner):
         successful = [r for r in results if r.get("status") != "error"]
         failed = [r for r in results if r.get("status") == "error"]
 
-        if not successful:
+        # Separate Probe Result from Scoring
+        probe_result = next((r for r in successful if r.get("asset_id") == "system_warmup_probe"), None)
+        # Filter probe out of scoring results
+        scoring_candidates = [r for r in successful if r.get("asset_id") != "system_warmup_probe"]
+
+        if not scoring_candidates and not probe_result:
             print(f"\n{'=' * 60}\n📈 BENCHMARK ZUSAMMENFASSUNG\n{'=' * 60}")
             print(f"Modell: {model}\n❌ Alle {len(results)} Tests fehlgeschlagen!")
             return
@@ -741,38 +760,46 @@ class LocalBenchmarkRunner(BaseBenchmarkRunner):
         # Filter out political compass for average score calculation because it's qualitative
         scored_results = [
             r
-            for r in successful
+            for r in scoring_candidates
             if not str(r.get("asset_id", "")).startswith("political_compass")
         ]
 
         if not scored_results:
-            # If only Political Compass ran
-            avg_time = sum(r["execution_time"] for r in successful) / len(successful)
-            print("\n✅ Benchmark abgeschlossen für Modul: Political Compass")
-            print(f"   Modell: {model}")
-            print(f"   Dauer:  {avg_time:.1f}s")
-
-            # Print specific PC info instead of score
-            for r in successful:
-                if "tier" in r:
-                    print(f"   Resultat: {r['tier']}")
-
+             # If only Political Compass (or just Probe?) ran
+            if scoring_candidates: # If we have actual tests (e.g. Political Compass)
+                avg_time = sum(r["execution_time"] for r in scoring_candidates) / len(scoring_candidates)
+                print("\n✅ Benchmark abgeschlossen für Modul: Political Compass")
+                print(f"   Modell: {model}")
+                print(f"   Dauer:  {avg_time:.1f}s")
+                
+                # Print specific PC info instead of score
+                for r in scoring_candidates:
+                    if "tier" in r:
+                        print(f"   Resultat: {r['tier']}")
+            elif probe_result:
+                # Only Probe ran (unlikely, but safe)
+                print(f"\n⚠️ Nur System Probe ausgeführt.")
+            
             return
 
         avg_score = sum(r["total_score"] for r in scored_results) / len(scored_results)
         avg_max = sum(r["max_score"] for r in scored_results) / len(scored_results)
         avg_pct = sum(r["percentage"] for r in scored_results) / len(scored_results)
-        avg_time = sum(r["execution_time"] for r in successful) / len(successful)
+        avg_time = sum(r["execution_time"] for r in successful if r.get("asset_id") != "system_warmup_probe") / len(scored_results)
 
         quality = self.get_quality_badge(avg_pct)
 
         print(f"\n✅ Modul abgeschlossen: {model}")
-        print(f"Tests: {len(results)} ({len(successful)} ✅, {len(failed)} ❌)")
+        print(f"Tests: {len(scoring_candidates)} ({len(scoring_candidates)} ✅, {len(failed)} ❌)")
         print("\n📊 Durchschnitt (erfolgreiche Tests des Moduls):")
         print(
             f"   Dein Modell: {avg_score:.1f}/{avg_max:.0f} ({avg_pct:.1f}%) {quality}"
         )
-        print(f"   Zeit: {avg_time:.1f}s")
+        print(f"   Avg Speed:   {avg_time:.1f}s (Execution)")
+        
+        if probe_result:
+            load_time = probe_result.get("load_time", 0)
+            print(f"   Cold Start:  {load_time:.2f}s (Initial Load)")
 
         self._print_reference_comparison(successful)
         self._print_best_worst(successful)

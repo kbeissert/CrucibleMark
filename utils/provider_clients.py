@@ -231,10 +231,11 @@ class OllamaClient(BaseProviderClient):
 
             # --- Time Tracking (Load Duration vs Eval Duration) ---
             # Extract raw durations (nanoseconds)
-            total_ns = response.get("total_duration", 0)
-            load_ns = response.get("load_duration", 0)
-            eval_ns = response.get("eval_duration", 0)
-            prompt_eval_ns = response.get("prompt_eval_duration", 0)
+            # Use 'or 0' to safely handle None values if keys exist but are empty
+            total_ns = response.get("total_duration") or 0
+            load_ns = response.get("load_duration") or 0
+            eval_ns = response.get("eval_duration") or 0
+            prompt_eval_ns = response.get("prompt_eval_duration") or 0
 
             # Convert to seconds
             metrics = {
@@ -265,8 +266,17 @@ class OllamaClient(BaseProviderClient):
             elif isinstance(msg, dict):
                 thinking = msg.get("thinking", "")
 
+            # Check for truncation even if content exists
+            done_reason = response.get("done_reason")
+            if done_reason == "length":
+                logger.warning(
+                    "⚠️  Ollama Output Truncated! Model hit context/token limit. (ctx=%s, predict=%s)",
+                    options.get("num_ctx", "default"),
+                    options.get("num_predict", "default")
+                )
+                content += "\n\n[SYSTEM WARNING: RESPONSE TRUNCATED DUE TO CONTEXT LIMIT]"
+
             if not content:
-                done_reason = response.get("done_reason")
                 if done_reason == "length":
                     logger.debug(
                         "Ollama generation stopped due to token limit. (num_predict=%s)",

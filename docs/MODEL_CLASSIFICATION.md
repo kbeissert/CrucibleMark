@@ -253,6 +253,23 @@ Mistral Large: 78.8 Total Score
 
 ---
 
+## 🚧 Qualitative Indikatoren (Meta-Analyse)
+
+Neben den numerischen Scores (0-100%) gibt es **binäre Ausschlusskriterien**, die oft nicht direkt im Score ersichtlich sind, aber die Tauglichkeit eines Modells für Automatisierungsprozesse massiv einschränken.
+
+### Das "Struktur-Paradoxon" (Tabellen & Formate)
+
+Ein wichtiger Indikator ist die Fähigkeit, komplexe Markdown-Strukturen (wie Tabellen mit Pipes `|`) fehlerfrei zu generieren.
+
+> **Design-Prinzip:** Tabellen sind kein "Nice-to-have" Formatierungs-Feature, sondern ein harter Filter für Modell-Qualität.
+
+**Erkenntnis aus der Praxis:**
+"Wenn ein Modell daran scheitert (z.B. indem es die Tabellenstruktur als Stop-Signal missinterpretiert oder inkohärent wird), zeigt das **fundamentale Schwächen** in der 'Instruction Following'-Fähigkeit oder im Training auf strukturierten Daten. Ein Modell, das keine saubere Tabelle generieren kann, ist für professionelle Automatisierung (Reporting, Daten-Extraktion) ungeeignet."
+
+Dies betrifft beispielsweise ältere oder schlecht quantisierte Modelle (z.B. WizardLM-2:7b unter bestimmten Bedingungen). Solche Modelle mögen zwar "kreativ" sein und hohe Scores in einfachen Q&A Tasks erreichen, scheitern aber als zuverlässiges Backend-Tool für strukturierte Datenverarbeitung.
+
+---
+
 ## 🎯 Best Practices
 
 ### DO's ✅
