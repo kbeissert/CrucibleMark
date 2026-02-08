@@ -8,6 +8,7 @@ Verwendet deterministische Settings für reproduzierbare Ergebnisse.
 CODING_BENCHMARK_OPTIONS = {
     "temperature": 0.1,  # Deterministisch für Code
     "num_predict": 8192,  # Fixierte Max-Tokens für Konsistenz
+    "num_ctx": 8192,  # Erhöhtes Kontext-Fenster (Standard ist oft nur 2048)
     "top_k": 10,  # Reduzierte Sampling-Varianz
     "repeat_penalty": 1.1,  # Leichte Penalty gegen Loops (erforderlich für Cogito/Qwen)
     "seed": 42,  # Reproduzierbarer Seed
@@ -18,6 +19,7 @@ CODING_BENCHMARK_OPTIONS = {
 CREATIVE_BENCHMARK_OPTIONS = {
     "temperature": 0.3,  # Leichte Varianz erlaubt
     "num_predict": 8192,
+    "num_ctx": 8192,  # Erhöhtes Kontext-Fenster für lange Texte/Audits
     "top_k": 20,  # Etwas mehr Auswahl bei Tokens
     "repeat_penalty": 1.1,  # Leichte Penalty gegen Loops (wichtig für UX!)
     "seed": 42,
