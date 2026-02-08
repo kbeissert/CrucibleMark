@@ -58,3 +58,28 @@ To fix the confusing "46/37" display, we have two options:
 2.  **Display Fix:** Update `score_calculator.py` to include `display_test_count` overrides in the expected total (Denominator), even if scoring is disabled. This would result in "46/46".
 
 **Current Status:** Valid & Safe. No critical data bug found.
+
+---
+
+## 4. Stability Score (New in v3.1)
+
+### The Problem
+Previously, "Stability" was measured by crude metrics like timeouts or simple variance. This unfairly penalized models performing diverse tasks (e.g., a 4s translation vs. a 170s documentation task), marking them "UNSTABLE" simply because their execution times varied naturally.
+
+### The Solution: Category-Aware Variance
+We now calculate stability based on **Coefficient of Variation (CV)** *within* each category, then average those CVs.
+
+1.  **Calculate CV per Category**:
+    $CV_{cat} = \frac{\sigma_{cat}}{\mu_{cat}}$
+    (Standard Deviation divided by Mean for that category)
+
+2.  **Average Stability Score**:
+    $Score_{stability} = \frac{1}{N} \sum CV_{cat}$
+
+### Thresholds
+*   **< 0.35 (35%)**: **STABLE** (Normal variance)
+*   **0.35 - 0.50 (35-50%)**: **MODERATE** (High natural variance or slight instability)
+*   **> 0.50 (50%)**: **UNSTABLE** (Significant unpredictability)
+
+This ensures that a model performing consistently strictly within its categories (e.g. always fast on translations, always slow on docs) receives a good stability score.
+

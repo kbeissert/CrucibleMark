@@ -287,6 +287,49 @@ def _calculate_run_counts(df: pd.DataFrame, modules_config: Dict[str, Any]) -> p
     return run_counts
 
 
+def _calculate_stability_score(df: pd.DataFrame) -> pd.DataFrame:
+    """
+    Calculates stability score based on average Category Variance Coefficient.
+    CV = StdDev / Mean.
+    Higher Score (>0.5) = High Variance (Unstable/Variable).
+    Lower Score (<0.3) = Low Variance (Stable).
+    """
+    # 1. Filter valid execution times
+    # Ensure numeric
+    df_perf = df.copy()
+    if "execution_time" not in df_perf.columns:
+        return pd.DataFrame()
+    
+    df_perf["execution_time"] = pd.to_numeric(df_perf["execution_time"], errors="coerce")
+    df_perf = df_perf[df_perf["execution_time"] > 0]
+    
+    if df_perf.empty:
+         return pd.DataFrame()
+
+    # 2. Calculate Per-Category Stats (Mean, Std)
+    # Group by Model, Version, Type AND Category
+    cat_stats = df_perf.groupby(["model", "model_version", "type", "category"])["execution_time"].agg(
+        cat_mean="mean",
+        cat_std="std"
+    ).reset_index()
+    
+    # Handle single-item variance (std is NaN) -> CV is 0
+    cat_stats["cat_std"] = cat_stats["cat_std"].fillna(0)
+    
+    # 3. Calculate CV per category (Coefficient of Variation)
+    cat_stats["cat_cv"] = cat_stats.apply(
+        lambda x: x["cat_std"] / x["cat_mean"] if x["cat_mean"] > 0 else 0, axis=1
+    )
+    
+    # 4. Average the CVs (This is the "Category-Aware Stability" metric)
+    stability_stats = cat_stats.groupby(["model", "model_version", "type"])["cat_cv"].agg(
+        stability_score="mean" # Average of CVs
+    ).reset_index()
+
+    # stability_score is e.g. 0.26 (26%), 0.69 (69%)
+    return stability_stats
+
+
 # ==============================================================================
 # 4. MAIN ORCHESTRATOR
 # ==============================================================================
@@ -390,6 +433,13 @@ def calculate_scores(
     # Ensure they are not NaNs
     result["Routine Score"] = result["Routine Score"].fillna(0.0)
     result["Reasoning Score"] = result["Reasoning Score"].fillna(0.0)
+
+    # --- Stability Score (New v3.1 Logic) ---
+    stability = _calculate_stability_score(df_success)
+    if not stability.empty:
+        result = pd.merge(result, stability, on=["model", "model_version", "type"], how="left")
+    else:
+        result["stability_score"] = 0.0
 
     # Total Score Calculation (Volume-Weighted)
     # Uses the actual weight of routine vs reasoning tasks in the run benchmark
