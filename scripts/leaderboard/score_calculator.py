@@ -306,24 +306,26 @@ def _calculate_stability_score(df: pd.DataFrame) -> pd.DataFrame:
     if df_perf.empty:
          return pd.DataFrame()
 
-    # 2. Calculate Per-Category Stats (Mean, Std)
-    # Group by Model, Version, Type AND Category
-    cat_stats = df_perf.groupby(["model", "model_version", "type", "category"])["execution_time"].agg(
-        cat_mean="mean",
-        cat_std="std"
+    # 2. Calculate PER-ASSET Stats (Mean, Std)
+    # Group by Model, Version, Type AND Asset ID (compare runs of same asset)
+    # v3.1 Fix: Use per-asset variance instead of per-category to avoid flagging models 
+    # as unstable simply because they have diverse task durations (e.g. 5s vs 50s tasks).
+    asset_stats = df_perf.groupby(["model", "model_version", "type", "asset_id"])["execution_time"].agg(
+        asset_mean="mean",
+        asset_std="std"
     ).reset_index()
     
-    # Handle single-item variance (std is NaN) -> CV is 0
-    cat_stats["cat_std"] = cat_stats["cat_std"].fillna(0)
+    # Handle single-item variance (std is NaN) -> CV is 0 (Stable)
+    asset_stats["asset_std"] = asset_stats["asset_std"].fillna(0)
     
-    # 3. Calculate CV per category (Coefficient of Variation)
-    cat_stats["cat_cv"] = cat_stats.apply(
-        lambda x: x["cat_std"] / x["cat_mean"] if x["cat_mean"] > 0 else 0, axis=1
+    # 3. Calculate CV per asset (Coefficient of Variation)
+    asset_stats["asset_cv"] = asset_stats.apply(
+        lambda x: x["asset_std"] / x["asset_mean"] if x["asset_mean"] > 0 else 0, axis=1
     )
     
-    # 4. Average the CVs (This is the "Category-Aware Stability" metric)
-    stability_stats = cat_stats.groupby(["model", "model_version", "type"])["cat_cv"].agg(
-        stability_score="mean" # Average of CVs
+    # 4. Average the CVs across all assets (Asset-Aware Stability)
+    stability_stats = asset_stats.groupby(["model", "model_version", "type"])["asset_cv"].agg(
+        stability_score="mean" 
     ).reset_index()
 
     # stability_score is e.g. 0.26 (26%), 0.69 (69%)
