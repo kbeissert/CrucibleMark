@@ -36,6 +36,25 @@ make create-module
 
 ---
 
+### 🚀 Development Loop & Testing
+
+Für schnelle Iterationen ohne lange Wartezeiten (Memory Recovery) nutzen Sie den **Dev-Modus**:
+
+```bash
+# Startet Benchmark mit verkürzten Pausen (5-10s statt 20-30s)
+make benchmark-dev
+```
+
+Oder direkt über das CLI:
+```bash
+python run_benchmark.py --dev --model ministral:8b
+```
+
+**Adaptive Pausen:** 
+Das Framework nutzt `utils/adaptive_pause.py`, um dynamische Erholungspausen einzulegen (wichtig für Mac M-Chips mit Unified Memory). Im Dev-Modus sind diese Pausen aggressiver verkürzt, was zu leicht verfälschter Performance führen kann, aber die Entwicklungszeit drastisch reduziert.
+
+---
+
 ### Option 2: Manuell (für volle Kontrolle)
 
 ```bash

@@ -142,13 +142,18 @@ def format_speed_profile(row: pd.Series) -> str:
     else:
         profile = f"{tier_raw} {role}".strip()
 
-    # Add Stability Warning
+    # Add Stability Warning (v3.1 Category-Aware Variance)
     try:
-        timeouts = float(row.get("Timeout Count", 0))
-        if timeouts >= 3:
+        stability = float(row.get("stability_score", 0.0))
+        
+        # Thresholds: > 50% (0.5) is UNSTABLE (High Variance)
+        # 30-50% is MODERATE (Normal for diverse local benchmarks)
+        if stability >= 0.5:
             profile += " ❌ UNSTABLE"
-        elif timeouts > 0:
-            profile += f" ⚠️ ({int(timeouts)} timeouts)"
+        elif stability >= 0.35:
+            # Only flag heavily if variance is significant but not critical
+            pass 
+
     except (ValueError, TypeError):
         pass
 

@@ -66,12 +66,25 @@ CrucibleMark folgt einer **Plugin-basierten Architektur**, bei der Benchmark-Mod
 
 **Einstiegspunkt:** `make benchmark` → `scripts/core/run_local_benchmark.py`
 
-**Verantwortlichkeiten:**
+**Dual-Runner Strategy:**
+CrucibleMark trennt strikt zwischen lokalen und kommerziellen Laufzeitumgebungen, um faire Ergebnisse fÃ¼r jeden Kontext zu liefern.
+
+1.  **Local Runner (`scripts/core/run_local_benchmark.py`):**
+    *   **Ziel:** "User Experience Simulation" (Wie fühlte es sich an, lokal zu arbeiten?)
+    *   **Komponente:** `AdaptivePauseCalculator` (`utils/adaptive_pause.py`)
+    *   **Logik:** Pausiert zwischen Tests basierend auf Modellgröße (RAM Footprint), Output-Länge (Context Overhead) und voriger Ausführungszeit.
+    *   **Modes:** `PRODUCTION` (15-30s Pausen für max. Stabilität) vs `DEV` (5-10s Pausen für schnelle Iteration).
+
+2.  **Commercial Runner (`scripts/core/run_commercial_benchmark.py`):**
+    *   **Ziel:** "Throughput & Reliability" (API-Stress-Test)
+    *   **Komponente:** `RateLimiter` (`utils/rate_limiter.py`)
+    *   **Logik:** Respektiert Provider-Limitate (RPM), aber nutzt ansonsten minimale Pausen für maximalen Throughput.
+
+**Verantwortlichkeiten (Shared Framework):**
 - Config-Parsing
 - Modul-Discovery (nur aktive Module laden)
 - Execution-Flow
 - Provider-Abstraktion
-- Rate-Limiting & Retry-Logic
 
 **Key Invariant:** Der Orchestrator kennt **keine Modul-Namen**. Alles läuft über Config-Discovery.
 

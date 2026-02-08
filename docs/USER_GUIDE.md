@@ -18,8 +18,10 @@
 # 1. Installation prüfen
 make list-models
 
-# 2. Ersten Benchmark starten (Interaktiver Wizard)
+# 2. Benchmark starten (Production Mode)
 make benchmark
+# ... oder für schnelle Tests (Dev Mode):
+make benchmark-dev
 
 # 3. Ergebnisse als Leaderboard anzeigen
 make leaderboard
