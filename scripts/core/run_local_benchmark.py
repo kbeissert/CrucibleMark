@@ -15,6 +15,12 @@ from pathlib import Path
 from typing import Any, Dict, List, Optional
 from schemas.result import BenchmarkResult
 
+# Optional: Direct Ollama access for low-level operations
+try:
+    import ollama
+except ImportError:
+    ollama = None
+
 # Add project root to path
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
@@ -177,23 +183,31 @@ class LocalBenchmarkRunner(BaseBenchmarkRunner):
         try:
             # 1. Force Unload to ensure we measure real Cold Start AND apply new num_ctx
             # Using generate with keep_alive=0 unwraps the model from VRAM
-            # We use the raw client to avoid our wrapper's retry logic here
-            try:
-                self.client.client.generate(model=model, prompt="", keep_alive=0)
-                # Give Ollama a split second to clear memory
-                import time
-                time.sleep(0.5)
-            except Exception as e:
-                logger.warning(f"Could not force unload model: {e}")
+            if ollama:
+                try:
+                    ollama.generate(model=model, prompt="", keep_alive=0)
+                    # Give Ollama a split second to clear memory
+                    time.sleep(0.5)
+                except Exception as e:
+                    logger.debug("Could not force unload model: %s", e)
+            else:
+                logger.debug("Ollama library not available for force unload")
 
             # 2. Send Probe (now guarantees a reload with new config)
-            # Short prompt, minimal tokens
-            _ = self.client.query(
-                model=model,
-                prompt="Ping",
-                max_tokens=2,
-                temperature=0.0
-            )
+            # Note: For Reasoning models (e.g. DeepSeek-R1), the response might be in 'thinking' only
+            try:
+                response = self.client.query(
+                    model=model,
+                    prompt="Ping",
+                    max_tokens=50,  # Increased for Reasoning models (was: 2)
+                    temperature=0.0
+                )
+                # If query succeeded, response will be a string (even if empty)
+            except Exception as probe_error:
+                # Probe failed - this is not critical, just log and continue
+                logger.warning("⚠️ Warmup Probe Failed: %s", probe_error)
+                print("⚠️  Probe Failed (continuing anyway)")
+                return None
             
             # Extract detected load time
             meta = getattr(self.client, "last_response_metadata", {})

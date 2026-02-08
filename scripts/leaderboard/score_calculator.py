@@ -331,7 +331,7 @@ def _calculate_stability_score(df: pd.DataFrame) -> pd.DataFrame:
     df_perf = df_perf[df_perf["execution_time"] > 0]
     
     if df_perf.empty:
-         return pd.DataFrame()
+        return pd.DataFrame()
 
     # 2. Calculate PER-ASSET Stats (Mean, Std)
     # Group by Model, Version, Type AND Asset ID (compare runs of same asset)

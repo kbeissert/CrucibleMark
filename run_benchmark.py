@@ -128,7 +128,7 @@ class BenchmarkRunner:
         items.extend(list(modules.items()))
 
         def display_mod(item):
-            key, config = item
+            _, config = item
             return config["name"], config.get("description", "")
 
         selected = select_from_list(
@@ -302,18 +302,18 @@ class BenchmarkRunner:
                     run_config.num_runs = max(run_config.num_runs, min_runs)
 
         # Determine provider and model (once for all modules if possible)
-        provider = None
-        model_id = None
-
-        if run_config.model_name:
-            # Auto-detect provider from model name using utils
-            provider, model_id = resolve_provider(run_config.model_name)
-        else:
+        # Note: If model_name was provided, this was already validated above
+        if not run_config.model_name:
             # Interactive selection
             provider, model_id = self.select_provider(run_config.provider_type)
+            if not provider or not model_id:
+                print("\n❌ Provider or Model could not be determined.")
+                return
 
         # Run benchmark for each module
         for _, module_config in modules_to_run:
+            if not module_config:
+                continue
             print(f"\n>>> Running Module: {module_config['name']}")
             self._run_benchmark(
                 module_config,

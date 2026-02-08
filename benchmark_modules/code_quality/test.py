@@ -93,9 +93,14 @@ class CodeQualityTest(BaseTest):
         except Exception as e:
             return BenchmarkResult(
                 status="error",
+                primary_score=0.0,
                 rendered_value="ERROR",
                 raw_response=str(e),
                 execution_time=0.0,
+                load_time=0.0,
+                tokens_used=0,
+                cost_usd=0.0,
+                model_version="unknown",
                 meta={
                     "model": model, 
                     "asset_id": self.asset.get("metadata", {}).get("id", "unknown"),

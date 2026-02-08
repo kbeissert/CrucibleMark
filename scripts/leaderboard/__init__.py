@@ -9,6 +9,7 @@ Usage:
 try:
     from pathlib import Path
     import pandas as pd
+    import re
 except ImportError:
     pass
 
@@ -161,7 +162,6 @@ def main(print_table: bool = True) -> None:
 
         # 1. Greedy Token Strip Strategy
         # Split model name by common separators
-        import re
         tokens = re.split(r'[-: ]+', model_name_clean)
 
         display_ver = version
@@ -188,7 +188,6 @@ def main(print_table: bool = True) -> None:
         parts = display_ver.split("-")
 
         # If we have a hash-like part, keep it short
-        import re
 
         final_parts = []
         for p in parts:
