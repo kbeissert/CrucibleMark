@@ -1,13 +1,50 @@
 import logging
 import sys
+import yaml
 from pathlib import Path
 
-def setup_logging(log_file: Path = Path("logs/crucible.log")):
+# Central Config Path
+ROOT_DIR = Path(__file__).parent.parent
+CONFIG_PATH = ROOT_DIR / "benchmark_config.yaml"
+
+def _load_logging_config():
+    """Lädt Logging-Config aus YAML oder nutzt Defaults."""
+    defaults = {
+        "file_path": "logs/crucible.log",
+        "console_level": "INFO",
+        "file_level": "DEBUG"
+    }
+    try:
+        if CONFIG_PATH.exists():
+            with open(CONFIG_PATH, "r", encoding="utf-8") as f:
+                data = yaml.safe_load(f)
+                return data.get("logging", defaults)
+    except Exception:
+        pass
+    return defaults
+
+def setup_logging(log_file: Path = None):
     """
-    Konfiguriert das Logging-System.
-    - Datei: Speichert alles (DEBUG level) für Fehlersuche.
-    - Konsole: Zeigt nur wichtige Infos (INFO level), filtert technisches Rauschen.
+    Konfiguriert das Logging-System basierend auf benchmark_config.yaml.
     """
+    config = _load_logging_config()
+    
+    # 1. Determine Log File Path
+    if log_file is None:
+        # Resolve path relative to root if not absolute
+        p = Path(config.get("file_path", "logs/crucible.log"))
+        if not p.is_absolute():
+            log_file = ROOT_DIR / p
+        else:
+            log_file = p
+
+    # 2. Determine Levels
+    console_lvl_str = config.get("console_level", "INFO").upper()
+    file_lvl_str = config.get("file_level", "DEBUG").upper()
+    
+    console_level = getattr(logging, console_lvl_str, logging.INFO)
+    file_level = getattr(logging, file_lvl_str, logging.DEBUG)
+
     # Create logs directory if not exists
     log_file.parent.mkdir(parents=True, exist_ok=True)
 
@@ -26,14 +63,15 @@ def setup_logging(log_file: Path = Path("logs/crucible.log")):
 
     # 1. File Handler (Detailliert, speichert Warnungen/Errors von Libraries)
     file_handler = logging.FileHandler(log_file, encoding='utf-8', mode='a')
-    file_handler.setLevel(logging.DEBUG)
+    file_handler.setLevel(file_level)
     file_handler.setFormatter(file_format)
     root_logger.addHandler(file_handler)
 
     # 2. Console Handler (Sauber, für den Benutzer)
     console_handler = logging.StreamHandler(sys.stdout)
-    console_handler.setLevel(logging.INFO)
+    console_handler.setLevel(console_level)
     console_handler.setFormatter(console_format)
+
     
     # Filter für die Konsole: Unterdrücke technische Logs von Bibliotheken
     class NoisyLibFilter(logging.Filter):
