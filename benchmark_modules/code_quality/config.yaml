@@ -16,6 +16,15 @@ metadata:
     - accessibility
     - best-practices
 
+# ⚙️ Generation Parameters (Module Specific)
+# Diese Werte überschreiben die globalen Defaults für alle Tests dieses Moduls.
+generation:
+  temperature: 0.3         # Erhöht auf 0.3 (Sanity Check bestätigt: 0.2 reicht nicht für alle Assets)
+  repeat_penalty: 1.05     
+  top_k: 40                
+  top_p: 0.9
+  num_predict: 8192
+
 integration:
   leaderboard:
     enable_scoring: true

@@ -1,14 +1,56 @@
 """
-Zentrale Ollama-Konfiguration für alle Benchmark-Systeme.
-
-Verwendet deterministische Settings für reproduzierbare Ergebnisse.
+Zentrale Ollama-Konfiguration.
+Lädt Hardware-Limits aus der `benchmark_config.yaml` (SSOT).
 """
+from pathlib import Path
+import yaml
+
+# Lade Konfiguration zentral aus der YAML-Datei
+# Das verhindert, dass User in utils-Dateien editieren müssen.
+ROOT_DIR = Path(__file__).parent.parent
+CONFIG_PATH = ROOT_DIR / "benchmark_config.yaml"
+
+def _load_context_window():
+    """Liest context_window sicher aus benchmark_config.yaml."""
+    try:
+        if CONFIG_PATH.exists():
+            with open(CONFIG_PATH, "r", encoding="utf-8") as f:
+                data = yaml.safe_load(f)
+                return int(data.get("providers", {}).get("local", {}).get("config", {}).get("context_window", 8192))
+    except Exception:
+        pass  # Silent fallback
+    
+    return 8192  # Absoluter Fallback
+
+def get_generation_defaults() -> dict:
+    """Lädt globale Generation-Defaults aus benchmark_config.yaml."""
+    try:
+        if CONFIG_PATH.exists():
+            with open(CONFIG_PATH, "r", encoding="utf-8") as f:
+                data = yaml.safe_load(f)
+                return data.get("defaults", {}).get("generation", {})
+    except Exception:
+        pass
+    
+    # Hardcoded Fallback if config breaks
+    return {
+        "temperature": 0.1,
+        "repeat_penalty": 1.1,
+        "top_k": 40,
+        "top_p": 0.9,
+    }
+
+# ==============================================================================
+# OLLAMA DYNAMIC CONFIGURATION
+# ==============================================================================
+OLLAMA_NUM_CTX = _load_context_window()
+GLOBAL_GEN_DEFAULTS = get_generation_defaults()
 
 # Benchmark-Options für Coding & Logik (temperature=0.1)
 CODING_BENCHMARK_OPTIONS = {
     "temperature": 0.1,  # Deterministisch für Code
-    "num_predict": 8192,  # Fixierte Max-Tokens für Konsistenz
-    "num_ctx": 8192,  # Erhöhtes Kontext-Fenster (Standard ist oft nur 2048)
+    "num_predict": 8192,  # Fixierte Max-Tokens für Output
+    "num_ctx": OLLAMA_NUM_CTX,  # Dynamische Context Size aus YAML
     "top_k": 10,  # Reduzierte Sampling-Varianz
     "repeat_penalty": 1.1,  # Leichte Penalty gegen Loops (erforderlich für Cogito/Qwen)
     "seed": 42,  # Reproduzierbarer Seed
@@ -19,7 +61,7 @@ CODING_BENCHMARK_OPTIONS = {
 CREATIVE_BENCHMARK_OPTIONS = {
     "temperature": 0.3,  # Leichte Varianz erlaubt
     "num_predict": 8192,
-    "num_ctx": 8192,  # Erhöhtes Kontext-Fenster für lange Texte/Audits
+    "num_ctx": OLLAMA_NUM_CTX,  # Dynamische Context Size aus YAML
     "top_k": 20,  # Etwas mehr Auswahl bei Tokens
     "repeat_penalty": 1.1,  # Leichte Penalty gegen Loops (wichtig für UX!)
     "seed": 42,

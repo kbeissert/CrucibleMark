@@ -18,6 +18,18 @@ golden_standard:
   model: "claude-sonnet-4-5-20250929"  # Welches Modell für Referenz-Benchmark
   description: "Claude 4.5 Sonnet als Referenz für Benchmark Tests"
 
+# Global Generation Defaults
+# --------------------------
+# Fallback-Werte für alle Benchmarks.
+# Werden verwendet, wenn ein Modul (config.yaml) keine eigenen Werte definiert.
+defaults:
+  generation:
+    temperature: 0.1
+    repeat_penalty: 1.1
+    top_k: 40
+    top_p: 0.9
+    num_predict: 8192
+
 # Provider Configuration
 # ----------------------
 # Definiert verfügbare LLM-Provider und deren Modelle.
@@ -25,6 +37,8 @@ golden_standard:
 # Der Golden Standard (oben definiert) wird als Referenz für Vergleiche genutzt.
 
 providers:
+
+
   commercial:
     mistral:
       name: "Mistral AI"
@@ -79,6 +93,18 @@ providers:
           description: "Reasoning (Deep Thinking)"
   
   local:
+    # Globale Konfiguration für alle lokalen Ollama-Modelle
+    # Hier definierst du Hardware-Limits deines Systems
+    config:
+      # Context Window (RAM-abhängig):
+      # - 8192  (8k)  : Standard für 8GB RAM
+      # - 16384 (16k) : Empfohlen für 16GB RAM
+      # - 32768 (32k) : Empfohlen für 24GB+ RAM (und Reasoning Models)
+      context_window: 32768
+      
+      # Default Generation Profile
+      default_temperature: 0.1
+
     ollama:
       name: "Ollama (Local)"
       api_type: "ollama"
@@ -94,6 +120,14 @@ output:
   golden_standard_csv: "benchmark_scores/golden_standard_benchmark.csv"
   leaderboard_csv: "benchmark_scores/benchmark_leaderboard.csv"
   streaming_output_commercial_providers: true  # true | false | "Force" (Force disables streaming)
+
+# Logging Configuration
+# ---------------------
+logging:
+  file_path: "logs/crucible.log"
+  console_level: "INFO"  # DEBUG, INFO, WARNING, ERROR
+  file_level: "DEBUG"    # DEBUG captures everything for troubleshooting
+
 
 # ====================
 # Test-Module Registry
@@ -134,5 +168,4 @@ modules:
 
   political_compass:
     path: "benchmark_modules/political_compass"
-    enabled: false
-
+    enabled: true

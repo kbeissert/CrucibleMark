@@ -7,6 +7,7 @@ Delegates logic to benchmark_modules.code_quality.core.evaluators.
 
 import sys
 import time
+import yaml
 from pathlib import Path
 from typing import Any, Dict
 
@@ -24,11 +25,34 @@ from benchmark_modules.code_quality.core.evaluators import CodeQualityEvaluator 
 from schemas.result import BenchmarkResult  # noqa: E402
 
 
+from utils.ollama_config import GLOBAL_GEN_DEFAULTS
+
 class CodeQualityTest(BaseTest):
     """
     Test module for Code Quality and Accessibility.
     Acts as a lightweight runner, delegating scoring to CodeQualityEvaluator.
     """
+
+    def __init__(self, asset_path: Path):
+        super().__init__(asset_path)
+        # 1. Start with Global Defaults
+        self.generation_config = GLOBAL_GEN_DEFAULTS.copy()
+        # 2. Merge Module Overrides
+        self._load_module_config()
+
+    def _load_module_config(self):
+        """Loads generation parameters from config.yaml and merges with defaults."""
+        try:
+            config_path = Path(__file__).parent / "config.yaml"
+            if config_path.exists():
+                with open(config_path, "r", encoding="utf-8") as f:
+                    data = yaml.safe_load(f)
+                    module_gen = data.get("generation", {})
+                    # Update (Override) global defaults with module specifics
+                    self.generation_config.update(module_gen)
+        except Exception as e:
+            # Fallback is silent as these are optional overrides
+            pass
 
     def execute(
         self,
@@ -52,16 +76,24 @@ class CodeQualityTest(BaseTest):
         prompt = self.asset["prompt"]
         full_prompt = f"{self.asset.get('context', '')}\n\n{prompt}".strip()
 
+        # Merge module config into kwargs
+        # (kwargs from caller take precedence if collision, but usually config is the source)
+        query_kwargs = {**self.generation_config, **kwargs}
+
         start = time.time()
 
         try:
             # Deterministic output via low temperature
+            # Temperature from config overrides DEFAULT_TEMPERATURE if present in query_kwargs
+            # We pop it to avoid "multiple values for keyword argument" error
+            temp = query_kwargs.pop("temperature", DEFAULT_TEMPERATURE)
+            
             response = llm_client.query(
                 model,
                 full_prompt,
                 provider=provider,
-                temperature=DEFAULT_TEMPERATURE,
-                **kwargs,
+                temperature=temp,
+                **query_kwargs,
             )
             # Use clean execution time (excluding timeouts/retries) if available
             if hasattr(llm_client, "last_query_duration") and llm_client.last_query_duration > 0:

@@ -143,38 +143,85 @@ class OllamaClient(BaseProviderClient):
             messages.append({"role": "system", "content": system_prompt})
         messages.append({"role": "user", "content": prompt})
 
-        response = self.client.chat(
-            model=model,
-            messages=messages,
-            options=options,
-            stream=True,
-        )
         full_content = ""
         full_thinking = ""
 
-        for chunk in response:
-            msg = chunk.get("message", {})
-            # Handle diff response formats (dict vs object)
-            if isinstance(msg, dict):
-                val_content = msg.get("content", "")
-            else:
-                val_content = getattr(msg, "content", "")
+        try:
+            response = self.client.chat(
+                model=model,
+                messages=messages,
+                options=options,
+                stream=True,
+            )
 
-            # Try to extract thinking
-            val_thinking = ""
-            if hasattr(msg, "thinking"):
-                val_thinking = msg.thinking
-            elif isinstance(msg, dict):
-                val_thinking = msg.get("thinking", "")
+            for chunk in response:
+                if chunk.get("done"):
+                    # Extract metrics from final chunk
+                    total_ns = chunk.get("total_duration") or 0
+                    load_ns = chunk.get("load_duration") or 0
+                    eval_ns = chunk.get("eval_duration") or 0
+                    prompt_eval_ns = chunk.get("prompt_eval_duration") or 0
 
-            if val_thinking:
-                stream_handler(val_thinking)
-                full_thinking += val_thinking
+                    metrics = {
+                        "total_duration": total_ns / 1e9,
+                        "load_duration": load_ns / 1e9,
+                        "eval_duration": eval_ns / 1e9,
+                        "prompt_eval_duration": prompt_eval_ns / 1e9,
+                    }
+                    metrics["pure_execution_time"] = metrics["total_duration"] - metrics["load_duration"]
+                    self.last_response_metadata = metrics
+                    continue
 
-            if val_content:
-                stream_handler(val_content)
-                full_content += val_content
+                msg = chunk.get("message", {})
+                # Handle diff response formats (dict vs object)
+                if isinstance(msg, dict):
+                    val_content = msg.get("content", "")
+                else:
+                    val_content = getattr(msg, "content", "")
 
+                # Try to extract thinking
+                val_thinking = ""
+                if hasattr(msg, "thinking"):
+                    val_thinking = msg.thinking
+                elif isinstance(msg, dict):
+                    val_thinking = msg.get("thinking", "")
+
+                if val_thinking:
+                    stream_handler(val_thinking)
+                    full_thinking += val_thinking
+
+                if val_content:
+                    stream_handler(val_content)
+                    full_content += val_content
+                    
+        except Exception as e:
+            # Emergency Recovery for Ollama Parser Errors (e.g. XML in JSON)
+            # "error parsing tool call: raw='<thought>...'"
+            err_str = str(e)
+            if "error parsing tool call" in err_str and "raw='" in err_str:
+                logger.warning(f"Ollama Parser Error Recovery active for: {model}")
+                try:
+                    # Extract content between raw=' and ', err=
+                    import re
+                    match = re.search(r"raw='(.*?)', err=", err_str, re.DOTALL)
+                    if match:
+                        recovered_content = match.group(1)
+                        # Fix escaped quotes if strictly necessary, but usually raw is just string
+                        full_content += "\n" + recovered_content
+                        # Stream it out for UI
+                        stream_handler(recovered_content)
+                        logger.info("Successfully recovered content from Ollama parser error.")
+                        return full_content
+                except Exception as ex:
+                    logger.error(f"Failed to recover from parser error: {ex}")
+            
+            # If not recoverable, re-raise
+            raise e
+            
+        if not full_content and full_thinking:
+             logger.debug("Ollama streaming returned thinking but no content. Using thinking as fallback.")
+             return full_thinking
+             
         return full_content
 
     def query(
@@ -199,6 +246,13 @@ class OllamaClient(BaseProviderClient):
             if "max_tokens" in kwargs:
                 options["num_predict"] = kwargs["max_tokens"]
 
+            # 🟢 Allow Overrides from kwargs (Benchmark Module Config)
+            # This allows modules to define specific params like repeat_penalty in their config.yaml
+            allowed_overrides = ["repeat_penalty", "top_k", "top_p", "seed", "num_predict", "num_ctx"]
+            for key in allowed_overrides:
+                if key in kwargs:
+                    options[key] = kwargs[key]
+
             # Prepare messages list
             messages = []
             
@@ -209,16 +263,11 @@ class OllamaClient(BaseProviderClient):
                 
             messages.append({"role": "user", "content": prompt})
 
-            if stream_handler:
-                return self._handle_streaming(model, prompt, options, stream_handler, system_prompt=system_prompt)
-            
-            # Standard Blocking Call
+            # Force Streaming Mode to avoid "error parsing tool call" with reasoning models
+            # that output XML <thought> tags which confuse Ollama's blocking parser.
             try:
-                response = self.client.chat(
-                    model=model,
-                    messages=messages,
-                    options=options,
-                )
+                handler = stream_handler if stream_handler else lambda x: None
+                return self._handle_streaming(model, prompt, options, handler, system_prompt=system_prompt)
             except Exception as e:
                 # Catch specific Ollama 400 errors to inform user
                 err_str = str(e)
@@ -228,76 +277,6 @@ class OllamaClient(BaseProviderClient):
                         "Check if the model name is correct and has no illegal characters (spaces, etc.)."
                     ) from e
                 raise e
-
-            # --- Time Tracking (Load Duration vs Eval Duration) ---
-            # Extract raw durations (nanoseconds)
-            # Use 'or 0' to safely handle None values if keys exist but are empty
-            total_ns = response.get("total_duration") or 0
-            load_ns = response.get("load_duration") or 0
-            eval_ns = response.get("eval_duration") or 0
-            prompt_eval_ns = response.get("prompt_eval_duration") or 0
-
-            # Convert to seconds
-            metrics = {
-                "total_duration": total_ns / 1e9,
-                "load_duration": load_ns / 1e9,
-                "eval_duration": eval_ns / 1e9,
-                "prompt_eval_duration": prompt_eval_ns / 1e9,
-            }
-
-            # If load_duration is significant, we calculate pure execution time
-            # Pure Execution = Total - Load
-            # This is fairer for heavy models that are not yet in VRAM.
-            metrics["pure_execution_time"] = metrics["total_duration"] - metrics["load_duration"]
-            
-            # Save raw metadata for client wrapper
-            self.last_response_metadata = metrics
-
-            msg = response.get("message", {})
-            # Handle diff response formats (dict vs object)
-            if isinstance(msg, dict):
-                content = msg.get("content", "")
-            else:
-                content = getattr(msg, "content", "")
-
-            thinking = ""
-            if hasattr(msg, "thinking"):
-                thinking = msg.thinking
-            elif isinstance(msg, dict):
-                thinking = msg.get("thinking", "")
-
-            # Check for truncation even if content exists
-            done_reason = response.get("done_reason")
-            # Only warn if it's a real generation (not a probe with tiny token limit)
-            if done_reason == "length" and options.get("num_predict", 0) > 100:
-                logger.warning(
-                    "⚠️  Ollama Output Truncated! Model hit context/token limit. (ctx=%s, predict=%s)",
-                    options.get("num_ctx", "default"),
-                    options.get("num_predict", "default")
-                )
-                content += "\n\n[SYSTEM WARNING: RESPONSE TRUNCATED DUE TO CONTEXT LIMIT]"
-
-            if not content:
-                if done_reason == "length":
-                    logger.debug(
-                        "Ollama generation stopped due to token limit. (num_predict=%s)",
-                        options.get("num_predict"),
-                    )
-                    if thinking:
-                        logger.debug(
-                            "Returning partial 'thinking' content as fallback."
-                        )
-                        return thinking
-                    raise ValueError("Empty response from Ollama (Token limit reached)")
-
-                if thinking:
-                    logger.debug("Received 'thinking' but no 'content'. Fallback.")
-                    return thinking
-
-                logger.error("Empty content received. Full response: %s", response)
-                raise ValueError("Received empty response from Ollama")
-
-            return content
         except Exception as e:
             logger.error("Ollama query failed: %s", e)
             raise

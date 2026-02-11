@@ -1,20 +1,21 @@
 # PROJECT_STATUS.md
 
-**Last Updated:** 2026-02-06
-**Current Version:** 1.1.2 (Versioning Refactor & Golden Standard Fix)
+**Last Updated:** 2026-02-09
+**Current Version:** 1.1.3 (Reasoning Model Support & Stability Improvements)
 **Status:** ✅ Production-Ready
 
 ---
 
 ## 🎯 Executive Summary
 
-CrucibleMark v1.1.2 stabilisiert die Referenz-Systeme des Frameworks. Das **Versioning-System** wurde komplett überarbeitet, um "Silent Updates" von Cloud-Modellen zuverlässig zu erkennen und Leaderboard-Duplikate ("Ghost Entries") zu eliminieren. Der **Golden Standard** Prozess ist nun effizienter und schließt Bias-Tests (Political Compass) logisch aus.
+CrucibleMark v1.1.3 bringt kritische Verbesserungen für **Reasoning Models** (DeepSeek-R1) und umfassende **Code Quality Fixes**. Das Framework unterstützt nun fortgeschrittene Model-Typen mit langen "Thinking"-Phasen und bietet robustere Fehlerbehandlung für Edge Cases in Ollama-Interaktionen.
 
 **Key Achievements:**
-- ✅ **Versioning 2.0:** Unified Fingerprinting `{OFFICIAL_ID}-{BEHAVIORAL_HASH}` verhindert Dubletten.
-- ✅ **Ghost-Entry Fix:** Bereinigung des Leaderboards von gesplitteten Einträgen (Merged Data).
-- ✅ **Golden Standard 2.0:** Optimierter Prozess (Skipping Political Compass, Auto-Cache Reuse).
-- ✅ **Refactoring:** `fingerprinting.py` ist nun Single Source of Truth (SSOT).
+- ✅ **Reasoning Model Support:** DeepSeek-R1 kompatibel (max_tokens=50, graceful warmup failures).
+- ✅ **Context Window Expansion:** Ollama num_ctx erhöht auf 8192 (war: 2048) für komplexe Audits.
+- ✅ **Code Quality Audit:** 7 Dateien mit Fixes (Indentation, Imports, Type Safety).
+- ✅ **Error Handling:** Truncation Warnings mit Threshold (>100 tokens), False Positives eliminiert.
+- ✅ **Cold Start Probe:** Force Unload via `ollama.generate(keep_alive=0)` für akkurate Load Times.
 
 ---
 
@@ -119,14 +120,42 @@ CrucibleMark v1.1.2 stabilisiert die Referenz-Systeme des Frameworks. Das **Vers
 
 ## ✅ Completed Milestones (v1.0.0)
 
+### Recent Improvements (v1.1.3) - February 9, 2026
+- [x] **Reasoning Model Support (DeepSeek-R1)**
+  - Increased warmup probe `max_tokens` from 2 to 50 tokens.
+  - Added direct `ollama` library import for force unload operations.
+  - Made warmup probe failure non-fatal with graceful fallback.
+  - Detection and special handling of Reasoning models via `is_reasoning_model()`.
+
+- [x] **Error Handling Improvements**
+  - Added threshold (>100 tokens) to truncation warning to prevent false positives.
+  - Improved error messages for warmup probe failures.
+  - None-safe metric extraction with `or 0` pattern in `provider_clients.py`.
+
+- [x] **Code Quality Audit (7 Files)**
+  - Fixed indentation errors in `score_calculator.py` and `exporter.py`.
+  - Moved `re` import to top in `leaderboard/__init__.py`.
+  - Fixed variable redefinition in `run_benchmark.py`.
+  - Added missing `BenchmarkResult` fields in `code_quality/test.py` error handling.
+
+- [x] **Ollama Configuration**
+  - Increased `num_ctx` to 8192 in both CODING and CREATIVE modes (was: 2048).
+  - Force model unload via `ollama.generate(keep_alive=0)` for accurate Cold Start measurement.
+
+- [x] **Documentation Updates**
+  - Added hardware dependency note to `USER_GUIDE.md`.
+  - Added "Qualitative Indikatoren" section to `MODEL_CLASSIFICATION.md`.
+
 ### Upcoming Features (v1.2.0)
-- [x] **Cold Start / Load Duration Metrics**
+- [x] **Cold Start / Load Duration Metrics** ✅ (Completed in v1.1.3)
   - Implementation of `load_duration` vs. `pure_execution_time` distinguishing.
   - Integration into `OllamaClient` to capture VRAM loading times.
   - Updates to `BenchmarkResult` schema to carry `load_time`.
   - Automatic CSV column expansion for `load_time`.
+  - Force Unload via `ollama.generate(keep_alive=0)` for accurate measurement.
 - [ ] **LLM-as-Judge**
   - Use stronger models (e.g., GPT-4) to grade weaker models.
+  - Implementation planned for v1.5.0 (Major Feature Release).
 
 ### Infrastructure Refactoring (v1.1.2)
 - [x] **Versioning System Overhaul**
@@ -306,6 +335,45 @@ CrucibleMark v1.1.2 stabilisiert die Referenz-Systeme des Frameworks. Das **Vers
 - Stabilized JSON handling in Content Transformation
 
 **(Older roadmap items shifted to v1.2.0)**
+
+---
+
+### v1.1.3 (February 9, 2026) - Reasoning Model Support & Stability
+**Status:** ✅ Released  
+**Timeline:** 1 day (Emergency Hotfix + Code Quality Audit)
+
+**Features:**
+
+#### 1. Reasoning Model Compatibility (DeepSeek-R1)
+- Increased warmup probe `max_tokens` to 50 (was: 2) to accommodate models with "thinking" phases.
+- Added direct `ollama` library import for low-level operations (force unload).
+- Made warmup probe failure non-fatal with graceful degradation.
+- Special handling for Reasoning models detected via `is_reasoning_model()`.
+
+#### 2. Error Handling & Robustness
+- **Truncation Warning Threshold:** Only warns if `num_predict > 100` (prevents false positives on warmup pings).
+- **None-Safe Metrics:** Fixed `NoneType` division crashes with `or 0` pattern.
+- **Improved Logging:** Changedforce unload errors from `warning` to `debug` level.
+
+#### 3. Code Quality Audit (7 Files)
+- **Indentation Fixes:** `score_calculator.py` (line 334), `exporter.py` (line 75).
+- **Import Optimization:** Moved `re` import to top in `leaderboard/__init__.py`.
+- **Variable Naming:** Fixed redefinition in `run_benchmark.py` (provider/model_id).
+- **Schema Compliance:** Added missing fields in `code_quality/test.py` error cases.
+
+#### 4. Ollama Configuration Updates
+- **Context Window:** Increased `num_ctx` to 8192 in both CODING and CREATIVE modes (was: 2048).
+- **Cold Start Probe:** Force model unload via `ollama.generate(keep_alive=0)` for accurate Load Time measurement.
+
+#### 5. Documentation Enhancements
+- **USER_GUIDE.md:** Added hardware dependency note (context window varies by RAM).
+- **MODEL_CLASSIFICATION.md:** Added "Qualitative Indikatoren" section (table generation as quality filter).
+
+**Impact:**
+- ✅ Framework ready for advanced model types (Reasoning, Long-Context).
+- ✅ Eliminated false positive warnings during warmup.
+- ✅ Improved code maintainability (cleaner imports, better error handling).
+- ✅ Accurate Cold Start measurement for performance profiling.
 
 ---
 
