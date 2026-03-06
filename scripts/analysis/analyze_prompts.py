@@ -148,6 +148,69 @@ def main():
     est_cost_claude = (total_project_tokens / 1_000_000) * 3.00
     print(f"   Est. Cost (Claude 3.5):  ${est_cost_claude:.4f}")
 
+    # --- Actual Cost Log Breakdown ---
+    _print_cost_log_breakdown()
+
+
+def _print_cost_log_breakdown():
+    """Liest outputs/cost_log.csv und gibt einen Breakdown nach call_type aus."""
+    import csv
+    from datetime import datetime, timedelta
+
+    cost_log = Path("outputs/cost_log.csv")
+    if not cost_log.exists():
+        return
+
+    # Letzte 30 Tage berücksichtigen
+    cutoff = (datetime.now() - timedelta(days=30)).strftime("%Y-%m-%d")
+
+    # { provider: { call_type: total_cost } }
+    data: Dict[str, Dict[str, float]] = {}
+
+    try:
+        with open(cost_log, "r", encoding="utf-8") as f:
+            reader = csv.DictReader(f)
+            for row in reader:
+                if row.get("date", "") < cutoff:
+                    continue
+                prov = row.get("provider", "unknown")
+                ctype = row.get("call_type", "benchmark")
+                try:
+                    cost = float(row.get("cost_usd", 0))
+                except ValueError:
+                    cost = 0.0
+                data.setdefault(prov, {})
+                data[prov][ctype] = data[prov].get(ctype, 0.0) + cost
+    except Exception as e:
+        print(f"⚠️  Fehler beim Lesen des Cost-Logs: {e}")
+        return
+
+    commercial = {p: v for p, v in data.items() if any(v.values())}
+    if not commercial:
+        return
+
+    # Nur kommerzielle Provider (mit Kosten > 0) ausgeben
+    commercial = {p: v for p, v in commercial.items()
+                  if sum(v.values()) > 0}
+    if not commercial:
+        return
+
+    print("\n" + "=" * 70)
+    print("📊 Tatsächliche Kosten (letzten 30 Tage) — Aufschlüsselung nach Typ")
+    print("-" * 70)
+    LABELS = {
+        "benchmark":             "Benchmark-Auswertung",
+        "overhead_ping":         "Overhead: Konnektivitäts-Ping",
+        "overhead_fingerprint":  "Overhead: Fingerprint-Kalibrierung",
+    }
+    for prov, by_type in sorted(commercial.items()):
+        total = sum(by_type.values())
+        print(f"\n  {prov.upper()}  (Gesamt: ${total:.4f})")
+        for ctype, cost in sorted(by_type.items(), key=lambda x: -x[1]):
+            label = LABELS.get(ctype, ctype)
+            pct = (cost / total * 100) if total else 0
+            print(f"    {label:<38}  ${cost:.4f}  ({pct:.1f}%)")
+
 
 if __name__ == "__main__":
     main()
