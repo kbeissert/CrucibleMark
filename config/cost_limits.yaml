@@ -18,6 +18,15 @@ providers:
     daily_budget: 20.0 # Max $20/Tag total for OpenAI
 
   anthropic:
+    # Claude 4.6 (Feb 2026) - Preise verifiziert via LiteLLM/BerriAI pricing DB
+    # Quelle: https://github.com/BerriAI/litellm/blob/main/model_prices_and_context_window.json
+    claude-sonnet-4-6:
+      input_cost_per_1k: 0.003    # $3.00/1M  (verifiziert)
+      output_cost_per_1k: 0.015   # $15.00/1M (verifiziert)
+    claude-opus-4-6:
+      input_cost_per_1k: 0.005    # $5.00/1M  (verifiziert) – NICHT $15 wie Opus 4.1!
+      output_cost_per_1k: 0.025   # $25.00/1M (verifiziert)
+    # Claude 4.5 (2025)
     claude-sonnet-4-5-20250929:
       input_cost_per_1k: 0.003
       output_cost_per_1k: 0.015
@@ -51,3 +60,10 @@ settings:
   budget_warning_threshold: 0.8
   currency: USD
   cost_log_file: "outputs/cost_log.csv"
+  # Maximales Alter des LiteLLM-Preis-Caches in Tagen.
+  # 7 Tage = guter Kompromiss: Preise aktuell, kein täglicher Netzwerk-Overhead.
+  # Provider ändern Preise typischerweise 2-4x/Jahr.
+  pricing_ttl_days: 7
+  # Quelle für automatische Tokenpreis-Updates.
+  # Standardmäßig die öffentlich gepflegte LiteLLM Pricing DB (BerriAI).
+  pricing_source_url: "https://raw.githubusercontent.com/BerriAI/litellm/main/model_prices_and_context_window.json"

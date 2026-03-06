@@ -9,7 +9,7 @@ from pathlib import Path
 from typing import Any, Callable, Dict, List, Optional
 import yaml  # pylint: disable=import-error
 
-from utils.provider_clients import OllamaClient, AnthropicClient, MistralClient, OpenAIClient
+from utils.provider_clients import OllamaClient, AnthropicClient, MistralClient, OpenAIClient, GoogleClient
 from utils.retry_handler import RetryHandler
 from utils.cost_tracker import CostTracker
 from utils.constants import (
@@ -53,6 +53,7 @@ class LLMClient:
             "anthropic": AnthropicClient(self.config),
             "mistral": MistralClient(self.config),
             "openai": OpenAIClient(self.config),
+            "google": GoogleClient(self.config),
         }
 
         # Initialize retry handler
@@ -161,6 +162,10 @@ class LLMClient:
                 f"Unknown provider: {provider}. Available: {valid_providers}"
             )
 
+        # call_type aus kwargs extrahieren (z.B. "overhead_ping", "overhead_fingerprint")
+        # Muss VOR _call_provider() passieren, da es kein gültiger Provider-Parameter ist.
+        call_type = kwargs.pop("call_type", "benchmark")
+
         # Resolve Model Version (Locking)
         target_model = self._resolve_model_version(provider, model)
 
@@ -238,7 +243,7 @@ class LLMClient:
             output_tokens = len(response_text) // 4
 
         cost = self.cost_tracker.track_request(
-            provider, model, input_tokens, output_tokens
+            provider, model, input_tokens, output_tokens, call_type=call_type
         )
         self.last_request_cost = cost
         self.last_token_usage = input_tokens + output_tokens

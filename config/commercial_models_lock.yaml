@@ -20,14 +20,43 @@ providers:
       tested_on: "2026-01-26"
 
   anthropic:
+    # Claude 4.6 Series (Feb 2026 - Current Generation, API-verified)
+    # Note: 4.6 models use no date suffix and no Haiku variant yet.
+    claude-4-6-sonnet:
+      version: "claude-sonnet-4-6"
+      description: "Balanced performance & cost - Golden Standard (Feb 2026)"
+      tested_on: "2026-02-20"
+    
+    claude-4-6-opus:
+      version: "claude-opus-4-6"
+      description: "Highest intelligence, advanced reasoning (Feb 2026)"
+      tested_on: "2026-02-20"
+    
+    # Claude 4.5 Series (Legacy - 2025)
+    claude-4-5-sonnet:
+      version: "claude-sonnet-4-5-20250929"
+      description: "Legacy: State of the Art (2025)"
+      tested_on: "2026-01-26"
+    
+    claude-4-5-opus:
+      version: "claude-opus-4-5-20251101"
+      description: "Legacy: Highest quality (2025)"
+      tested_on: "2026-01-26"
+    
+    claude-4-5-haiku:
+      version: "claude-haiku-4-5-20251001"
+      description: "Legacy: High-speed intelligence (2025)"
+      tested_on: "2026-01-26"
+    
+    # Claude 3 Series (Legacy - 2024)
     claude-3-5-sonnet:
       version: "claude-3-5-sonnet-20241022" 
-      description: "Most intelligent Anthropic model"
+      description: "Legacy: Most intelligent model (2024)"
       tested_on: "2026-01-26"
       
     claude-3-haiku:
       version: "claude-3-haiku-20240307"
-      description: "Fastest, most compact model"
+      description: "Legacy: Fastest, most compact model (2024)"
       tested_on: "2026-01-26"
 
   mistral:

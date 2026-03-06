@@ -50,3 +50,6 @@ outputs/comparisons/*
 .idea/
 .DS_Store
 Thumbs.db
+
+# Auto-generierter LiteLLM Preis-Cache (machine-generated, nicht committen)
+config/.prices_cache.json
