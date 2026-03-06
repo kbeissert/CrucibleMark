@@ -14,7 +14,7 @@ except ImportError:
     ModelFingerprinter = None
 
 
-def get_model_version(model_name: str, provider: str = "ollama") -> str:
+def get_model_version(model_name: str, provider: str = "ollama", client=None) -> str:
     """
     Retrieves the unique version/digest of a model.
     SSOT (Single Source of Truth) via ModelFingerprinter.
@@ -22,12 +22,13 @@ def get_model_version(model_name: str, provider: str = "ollama") -> str:
     Args:
         model_name: Name of the model
         provider: Provider name
+        client: Optional LLMClient for behavioral hashing
 
     Returns:
         str: Unified version string (e.g. '2411-nohash' or '8f3d1a-nohash')
     """
     if ModelFingerprinter:
-        return ModelFingerprinter.get_unified_version(provider, model_name)
+        return ModelFingerprinter.get_unified_version(provider, model_name, client=client)
         
     return "unknown"
 
@@ -161,6 +162,75 @@ def resolve_provider(model_name: str) -> tuple[str, str]:
         return "anthropic", model_name
     # Default to local
     return "ollama", model_name
+
+
+def is_cloud_model(model_name: str, size_gb: float = None) -> bool:
+    """
+    SSOT: Determines if an Ollama model is a cloud proxy model.
+    
+    This is the canonical definition used across the entire codebase:
+    - UI filtering (run_benchmark.py)
+    - Data loading (data_loader.py)
+    - Model categorization (get_model_category)
+    
+    Args:
+        model_name: Name of the model (e.g., 'minimax-m2:cloud')
+        size_gb: Optional model size in GB (if available)
+    
+    Returns:
+        bool: True if model is a cloud proxy model
+    
+    Detection Rules:
+        1. Model name contains ':cloud' tag (e.g., 'minimax-m2:cloud')
+        2. Model name ends with '-cloud' suffix (e.g., 'gpt-oss:120b-cloud')
+        3. Model size is extremely small (< 0.01 GB = proxy, not locally stored)
+    """
+    model_lower = model_name.lower()
+    
+    # Rule 1 & 2: Name-based detection
+    if ":cloud" in model_lower or model_lower.endswith("-cloud"):
+        return True
+    
+    # Rule 3: Size-based heuristic (proxy models have minimal/no local storage)
+    if size_gb is not None and size_gb < 0.01:
+        return True
+    
+    return False
+
+
+def get_model_category(model_name: str, source_file: str = "local", size_gb: float = None) -> str:
+    """
+    Central SSOT for model categorization.
+    Determines whether a model is Commercial, Local, or Local Cloud.
+    
+    Args:
+        model_name: Name of the model (e.g., 'ministral-3:14b', 'gpt-oss:120b-cloud')
+        source_file: Source CSV file ('local' or 'commercial')
+        size_gb: Optional model size in GB (for better cloud detection)
+    
+    Returns:
+        str: 'Commercial', 'Local', or 'Local Cloud'
+    
+    Examples:
+        >>> get_model_category('ministral-3:14b', 'local')
+        'Local'
+        >>> get_model_category('minimax-m2:cloud', 'local')
+        'Local Cloud'
+        >>> get_model_category('gpt-oss:120b-cloud', 'local')
+        'Local Cloud'
+        >>> get_model_category('claude-sonnet-4', 'commercial')
+        'Commercial'
+    """
+    # Rule 1: Commercial CSV → Always Commercial
+    if source_file == "commercial":
+        return "Commercial"
+    
+    # Rule 2: Local CSV → Check if it's a cloud proxy using canonical logic
+    if is_cloud_model(model_name, size_gb):
+        return "Local Cloud"
+    
+    # Rule 3: Everything else from Local CSV → Local
+    return "Local"
 
 
 def is_reasoning_model(model_name: str) -> bool:

@@ -11,9 +11,8 @@ help:
 	@echo "  make install-dev          Install dev dependencies (Developer)"
 	@echo ""
 	@echo "=== Benchmarking ==="
-	@echo "  make benchmark            Interactive Benchmark (Wizard)"
+	@echo "  make benchmark            Interactive OR Single Model (MODEL=name [MODULE=name])"
 	@echo "  make benchmark-auto       🤖 Auto-Fill Mode: Supplement missing benchmarks"
-	@echo "  make benchmark-single     Single Model (MODEL=name [MODULE=name])"
 	@echo "  make benchmark-cross-model Single Module vs ALL LLMs (MODULE=name)"
 	@echo "  make benchmark-human      👤 Human Baseline Test (Political Compass)"
 	@echo ""
@@ -34,6 +33,7 @@ help:
 	@echo "  make list-models          List available Models"
 	@echo "  make list-modules         List available Modules"
 	@echo "  make create-module        🚀 Scaffold a new module"
+	@echo "  make update-prices        💱 Force-update LiteLLM token price cache"
 	@echo "  make clean                Clean caches/temp files"
 	@echo "  make clean-all            Deep Clean (Caches + CSVs)"
 	@echo "  make backup               Create full backup"
@@ -52,23 +52,14 @@ install-dev: install
 # === BENCHMARKING ===
 
 benchmark:
-	@echo "🚀 Starting Interactive Benchmark (Production Mode)..."
-	$(PYTHON) run_benchmark.py
+	@echo "🚀 Starting Benchmark..."
+	$(PYTHON) run_benchmark.py $(if $(MODEL),--model "$(MODEL)") $(if $(MODULE),--module "$(MODULE)") $(if $(filter true,$(FORCE)),--force)
 	@$(MAKE) leaderboard
 
 benchmark-dev:
 	@echo "🚀 Starting Interactive Benchmark (Dev Mode - Fast Iteration)..."
 	$(PYTHON) run_benchmark.py --dev
 	@$(MAKE) leaderboard
-
-benchmark-single:
-	@if [ -z "$(MODEL)" ]; then \
-		echo "❌ Error: MODEL variable not set"; \
-		echo "Usage: make benchmark-single MODEL=qwen2.5:14b [MODULE=code_quality] [FORCE=true]"; \
-		exit 1; \
-	fi
-	@echo "🤖 Starting automated benchmark for: $(MODEL)..."
-	$(PYTHON) run_benchmark.py --model $(MODEL) $(if $(MODULE),--module $(MODULE)) $(if $(filter true,$(FORCE)),--force)
 
 benchmark-cross-model:
 	@echo "🚀 Starting Cross-Model Benchmark..."
@@ -130,7 +121,12 @@ diff-results:
 
 analyze-costs:
 	@echo "💰 Analyzing Prompt Token Costs..."
+	$(PYTHON) -c "from utils.pricing_updater import PricingUpdater; p=PricingUpdater(); p.ensure_fresh(); print(p.get_status_line())"
 	$(PYTHON) scripts/analysis/analyze_prompts.py
+
+update-prices:
+	@echo "💱 Updating token pricing cache from LiteLLM Pricing DB..."
+	$(PYTHON) scripts/dev/update_prices.py
 
 # === TOOLS & MAINTENANCE ===
 

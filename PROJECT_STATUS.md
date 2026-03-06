@@ -1,16 +1,23 @@
 # PROJECT_STATUS.md
 
-**Last Updated:** 2026-02-09
-**Current Version:** 1.1.3 (Reasoning Model Support & Stability Improvements)
+**Last Updated:** 2026-02-14
+**Current Version:** 2.1.1 (Local Cloud Categorization & SSOT Architecture)
 **Status:** ✅ Production-Ready
 
 ---
 
 ## 🎯 Executive Summary
 
-CrucibleMark v1.1.3 bringt kritische Verbesserungen für **Reasoning Models** (DeepSeek-R1) und umfassende **Code Quality Fixes**. Das Framework unterstützt nun fortgeschrittene Model-Typen mit langen "Thinking"-Phasen und bietet robustere Fehlerbehandlung für Edge Cases in Ollama-Interaktionen.
+CrucibleMark v2.1.1 führt eine neue **Provider-Kategorie "Local Cloud"** ein und implementiert eine **Single Source of Truth (SSOT)** Architektur für Modell-Kategorisierung. Ollama Cloud Proxy-Modelle (wie MiniMax, GPT-OSS) werden nun korrekt von echten lokalen Modellen unterschieden, mit einheitlicher Erkennungslogik über die gesamte Codebasis.
 
 **Key Achievements:**
+- ✅ **Local Cloud Category:** Neue Kategorie für Ollama Cloud-Proxy-Modelle (minimax-m2:cloud, gpt-oss:120b-cloud).
+- ✅ **SSOT Architecture:** Zentrale `is_cloud_model()` Funktion in `utils/model_utils.py` für konsistente Kategorisierung.
+- ✅ **UI Enhancement:** Provider-Auswahl zeigt drei klare Kategorien (Commercial, Local, Local Cloud).
+- ✅ **Data Layer:** Kategorisierung erfolgt beim Laden der Benchmark-Daten (nicht im UI).
+- ✅ **Documentation:** Vollständig dokumentierte Erkennungsregeln in `MODEL_CLASSIFICATION.md`.
+
+**Previous Version (v1.1.3):**
 - ✅ **Reasoning Model Support:** DeepSeek-R1 kompatibel (max_tokens=50, graceful warmup failures).
 - ✅ **Context Window Expansion:** Ollama num_ctx erhöht auf 8192 (war: 2048) für komplexe Audits.
 - ✅ **Code Quality Audit:** 7 Dateien mit Fixes (Indentation, Imports, Type Safety).

@@ -88,6 +88,9 @@ class LocalBenchmarkRunner(BaseBenchmarkRunner):
         self.debug_responses = (
             debug_responses or os.getenv("CRUCIBLE_DEBUG", "false").lower() == "true"
         )
+        
+        # Cache for Cold Start measurements to prevent redundant unloads
+        self.warmup_cache = set()
 
         # Load modules from config (Hydrated via Registry)
         self.benchmark_categories = load_active_benchmarks(self.validator.config)
@@ -178,6 +181,10 @@ class LocalBenchmarkRunner(BaseBenchmarkRunner):
         Phase 1: Force Unload (Reset State)
         Phase 2: Probe (Measure Load Time)
         """
+        # Skip if already measured in this session (prevents redundant unloads)
+        if hasattr(self, "warmup_cache") and model in self.warmup_cache:
+            return None
+
         print("\nChecking Model Status (Warmup)... ", end="", flush=True)
         
         try:
@@ -218,6 +225,10 @@ class LocalBenchmarkRunner(BaseBenchmarkRunner):
                 print(f"❄️  Cold Start Detected: {load_time:.2f}s")
             else:
                 print(f"🔥 Model Warm ({load_time:.2f}s)")
+
+            # Cache success to avoid repeating for this model in this session
+            if hasattr(self, "warmup_cache"):
+                self.warmup_cache.add(model)
                 
             # Create a synthetic result for the CSV
             # This ensures the Leaderboard calculator can pick up 'max(load_time)'

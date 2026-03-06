@@ -31,6 +31,7 @@ sys.path.insert(0, str(ROOT_DIR))
 from utils.model_utils import is_model_suitable_for_benchmark  # noqa: E402
 from utils.llm_client import LLMClient  # noqa: E402
 from utils.constants import Colors  # noqa: E402
+from utils.model_utils import is_cloud_model  # noqa: E402
 # pylint: enable=wrong-import-position, import-error
 
 
@@ -82,9 +83,8 @@ def _print_ollama_model_row(model: Any) -> None:
 
 
 def check_ollama() -> None:
-    """Prüft und listet Ollama Modelle mit Eignungs-Check."""
-    print(f"\n{Colors.HEADER}=== Lokale Modelle (Ollama) ==={Colors.ENDC}")
-
+    """Prüft und listet Ollama Modelle (Lokal und Cloud) mit Eignungs-Check."""
+    
     if ollama:
         try:
             models_response = ollama.list()
@@ -97,16 +97,50 @@ def check_ollama() -> None:
             if not model_list:
                 print(f"{Colors.WARNING}Keine Modelle in Ollama gefunden.{Colors.ENDC}")
                 return
-
-            # Header
-            print(
-                f"{Colors.BOLD}{'STATUS':<4} {'NAME':<30} "
-                f"{'SIZE':<10} {'REASON'}{Colors.ENDC}"
-            )
-            print("-" * 60)
+            
+            # Trennung in Lokal und Cloud basierend auf SSOT-Funktion
+            local_models = []
+            cloud_models = []
 
             for model in model_list:
-                _print_ollama_model_row(model)
+                name = model.model if hasattr(model, "model") else model.get("name", "unknown")
+                size = model.size if hasattr(model, "size") else model.get("size", 0)
+                size_gb = (size or 0) / (1024**3)
+                
+                # Use SSOT function for cloud detection
+                if is_cloud_model(name, size_gb):
+                    cloud_models.append(model)
+                else:
+                    local_models.append(model)
+
+            # --- Lokale Modelle ---
+            print(f"\n{Colors.HEADER}=== Lokale Modelle (Ollama) ==={Colors.ENDC}")
+            if local_models:
+                print(
+                    f"{Colors.BOLD}{'STATUS':<4} {'NAME':<30} "
+                    f"{'SIZE':<10} {'REASON'}{Colors.ENDC}"
+                )
+                print("-" * 60)
+                for model in local_models:
+                    _print_ollama_model_row(model)
+            else:
+                print("Keine lokalen Modelle gefunden.")
+
+            # --- Cloud Modelle ---
+            # Nur anzeigen, wenn vorhanden
+            if cloud_models:
+                print(f"\n{Colors.HEADER}=== Cloud Modelle (Ollama) ==={Colors.ENDC}")
+                print(
+                    f"{Colors.BOLD}{'STATUS':<4} {'NAME':<30} "
+                    f"{'TYPE':<10} {'REASON'}{Colors.ENDC}"
+                )
+                print("-" * 60)
+                
+                for model in cloud_models:
+                    # Slightly different printing for cloud (No size usually)
+                    name = model.model if hasattr(model, "model") else model.get("name", "unknown")
+                    # Reuse row printer or custom? Reuse is fine, size is just 0.0 GB
+                    _print_ollama_model_row(model)
 
         except Exception as e:  # pylint: disable=broad-exception-caught
             print(
@@ -173,6 +207,7 @@ def _test_model_connectivity(
             provider=prov_key,
             temperature=0.1,
             max_retries=1,  # Don't retry too much for liveness check
+            call_type="overhead_ping",
         )
 
         status = f"{Colors.GREEN}OK  {Colors.ENDC}"

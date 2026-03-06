@@ -32,6 +32,41 @@ Badges reflektieren die **Gesamt-Performance** über alle Module hinweg.
 
 ---
 
+## 🌐 Provider-Kategorien
+
+CrucibleMark unterscheidet drei Arten von Modell-Providern basierend auf ihrer Infrastruktur und Zugriffsmethode.
+
+### Kategorien
+
+| Kategorie | Beschreibung | Beispiele | Charakteristik |
+|-----------|--------------|-----------|----------------|
+| **Commercial** | Cloud-basierte kommerzielle APIs | Claude (Anthropic), GPT (OpenAI), Mistral AI | Kosten pro Token, API-Keys erforderlich, keine lokale Installation |
+| **Local** | Vollständig lokal ausgeführte Modelle | Qwen 2.5, DeepSeek-R1, Ministral-3 (via Ollama) | Keine Kosten, volle Privatsphäre, lokale GPU/CPU |
+| **Local Cloud** | Cloud-Modelle über Ollama Proxy | MiniMax-M2, GPT-OSS (via Ollama Cloud) | Ollama leitet Anfragen zu Cloud-Diensten weiter, erkennbar am `:cloud` Suffix |
+
+### Erkennung (SSOT: `utils/model_utils.py::get_model_category()`)
+
+Die Kategorisierung erfolgt automatisch beim Laden der Benchmark-Daten basierend auf zwei Faktoren:
+
+1. **Quelldatei**: Aus welcher CSV stammen die Daten?
+   - `commercial_models_benchmark.csv` → Immer **Commercial**
+   - `local_models_benchmark.csv` → Weiter zu Regel 2
+
+2. **Modellname**: Enthält der Name das Suffix `:cloud`?
+   - Ja (z.B. `minimax-m2:cloud`) → **Local Cloud**
+   - Nein (z.B. `ministral-3:14b`) → **Local**
+
+**Beispiele:**
+```python
+get_model_category('claude-sonnet-4', 'commercial')    # → 'Commercial'
+get_model_category('ministral-3:14b', 'local')         # → 'Local'
+get_model_category('minimax-m2:cloud', 'local')        # → 'Local Cloud'
+```
+
+**Hinweis:** Local Cloud-Modelle sind technisch Cloud-Dienste, werden aber über die lokale Ollama-Installation als Proxy aufgerufen. Sie bieten Zugang zu externen APIs mit der Benutzerfreundlichkeit von Ollama.
+
+---
+
 ## ⚡ Speed Classes
 
 Speed Classes kategorisieren Modelle nach ihrer **durchschnittlichen Inferenz-Zeit** über alle 37 Tests.

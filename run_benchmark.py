@@ -149,13 +149,14 @@ class BenchmarkRunner:
         sys.exit(0)
 
     def select_provider(self, provider_type: Optional[str] = None) -> tuple[str, str]:
-        """Interaktive Provider-Auswahl (commercial/local)."""
-        if provider_type and provider_type in ["commercial", "local"]:
+        """Interaktive Provider-Auswahl (commercial/local/cloud)."""
+        if provider_type and provider_type in ["commercial", "local", "cloud"]:
             return self._select_provider_models(provider_type)
 
         options = [
-            ("commercial", "Kommerzielle Modelle (API) - Mistral, Claude, GPT"),
-            ("local", "Lokale Modelle (Ollama) - Datenschutz, lokal gehostet"),
+            ("commercial", "Kommerzielle Modelle (API Provider) - Mistral, Claude, GPT"),
+            ("local", "Lokale Modelle (Ollama, LM Studio) - Offline"),
+            ("cloud", "Cloud Modelle (Ollama Proxy) - MiniMax, DeepSeek Cloud"),
         ]
 
         selected = select_from_list(
@@ -166,7 +167,9 @@ class BenchmarkRunner:
         )
 
         if selected:
-            print(f"✓  {selected[1].split(' - ')[0]}")
+            # Shorten display for UX
+            short_name = selected[1].split(' - ')[0]
+            print(f"✓  {short_name}")
             return self._select_provider_models(selected[0])
             
         sys.exit(0)
@@ -175,7 +178,43 @@ class BenchmarkRunner:
         """Wählt Provider und Modell basierend auf Typ."""
         if provider_type == "commercial":
             return self._select_commercial_model()
+        elif provider_type == "cloud":
+            return self._select_cloud_model()
         return self._select_local_model()
+    
+    def _select_cloud_model(self) -> tuple[str, str]:
+        """Wählt ein Cloud-Modell über Ollama."""
+        print("\nLade Cloud-Modelle via Ollama...")
+        
+        models = get_ollama_models_info()
+        
+        # Filter for Cloud-Only models using SSOT function
+        from utils.model_utils import is_cloud_model
+        cloud_models = [m for m in models if is_cloud_model(m["name"], m["size_gb"])]
+
+        if not cloud_models:
+            print("\n⚠️  Keine Cloud-Modelle in Ollama gefunden.")
+            print("Hast du Modelle wie 'minimax-m2:cloud' geladen?")
+            sys.exit(1)
+
+        def display_model(m):
+            return (
+                m["name"],
+                f"Typ: Cloud Proxy | Aktualisiert: {m['modified']}"
+            )
+
+        selected = select_from_list(
+            cloud_models,
+            display_func=display_model,
+            prompt="Wähle ein Cloud-Modell",
+            title="CLOUD OLLAMA-MODELLE"
+        )
+        
+        if selected:
+            print(f"✓ Ausgewählt: {selected['name']}")
+            return "ollama", selected["name"]
+            
+        sys.exit(0)
 
     def _select_commercial_model(self) -> tuple[str, str]:
         """Wählt kommerzielles Modell (Mistral/Claude/GPT)."""
@@ -219,7 +258,11 @@ class BenchmarkRunner:
         
         models = get_ollama_models_info()
         
-        if not models:
+        # Filter OUT cloud models for the local list to avoid confusion (using SSOT)
+        from utils.model_utils import is_cloud_model
+        local_models = [m for m in models if not is_cloud_model(m["name"], m["size_gb"])]
+        
+        if not local_models:
             # Check if we should warn about installation
             if importlib.util.find_spec("ollama") is None:
                 print("\n❌ Ollama Python-Bibliothek nicht installiert.")
@@ -227,7 +270,7 @@ class BenchmarkRunner:
                 sys.exit(1)
 
             print(
-                "\n⚠️  Keine geeigneten Ollama-Modelle gefunden (oder Ollama läuft nicht)!"
+                "\n⚠️  Keine geeigneten lokalen Ollama-Modelle gefunden (oder Ollama läuft nicht)!"
             )
             print("Installiere Modelle mit: ollama pull qwen2.5-coder:7b")
             print("Befehl zum Starten: ollama serve")
@@ -240,7 +283,7 @@ class BenchmarkRunner:
             )
 
         selected = select_from_list(
-            models,
+            local_models,
             display_func=display_model,
             prompt="Wähle ein Modell",
             title="LOKALE OLLAMA-MODELLE"
@@ -304,6 +347,11 @@ class BenchmarkRunner:
         # Determine provider and model (once for all modules if possible)
         # Note: If model_name was provided, this was already validated above
         if not run_config.model_name:
+            # Interactive selection implies --force=True since "make benchmark-auto" handles autofill
+            if not run_config.force:
+                print("ℹ️  Interaktiver Modus: Force-Mode aktiviert für SSOT Konformität.")
+                run_config.force = True
+
             # Interactive selection
             provider, model_id = self.select_provider(run_config.provider_type)
             if not provider or not model_id:
