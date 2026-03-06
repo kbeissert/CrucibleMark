@@ -417,14 +417,15 @@ class ReasoningEvaluator:
         # or stick to the regex. To keep it simple and decoupled from parser logic which
         # aims to extract thoughts:
         parsed = parse_thought_tags(text)
-        # If tags were found, answer_content is the stripped version
-        if parsed["has_thought_tags"]:
-            return parsed["answer_content"]
-        # If no tags, check if it's implicitly separated
-        if parsed["thought_tag_type"] == "implicit_separator":
+        
+        # Only strip explicit XML structural tags (<think>, <thought>, etc.)
+        # for standard logic testing. Implicit separators (like "**Answer:**")
+        # usually mean the model provided its reasoning in the main body,
+        # which we MUST evaluate for points.
+        if parsed["has_thought_tags"] and parsed.get("thought_tag_type") != "implicit_separator":
             return parsed["answer_content"]
 
-        # Fallback if parser didn't split it (e.g. standard model output)
+        # Fallback if parser didn't split it or if it's an implicit separator that is part of the final answer text
         return text.strip()
 
     def parse_thought_tags(self, response: str) -> dict[str, Any]:
