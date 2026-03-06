@@ -106,17 +106,28 @@ class ModelFingerprinter:
                   final_version = f"local-{behavioral_hash}" if behavioral_hash != "nohash" else "local"
 
         # Case B: Commercial Models (Date already in name)
-        # Strategy: Use Behavioral Hash only to avoid redundancy.
-        # Example: "claude-20241022" -> version "8717af19" (Cleaner than "20241022-8717af19")
+        # Strategy: Keep official ID, but append behavioral hash if unique/useful.
+        # CHANGED: We now prioritize the official ID as the primary version identifier
+        # because behavioral hashes can collide across different high-quality models.
         elif (official_id in model_name and 
               behavioral_hash != "nohash" and 
               provider not in ["ollama", "local"]):
-             final_version = behavioral_hash
+             final_version = f"{official_id}-{behavioral_hash}"
+             
+        # Case B2: Explicit Version in Name (e.g. 20251101) + nohash
+        # If we have a clear official ID from the name, and no behavioral hash, just use the ID.
+        elif (official_id in model_name and
+              behavioral_hash == "nohash" and
+              provider not in ["ollama", "local"]):
+             final_version = official_id
 
         # Case C: Standard Commercial (Date + Behavioral Hash)
         # Example: "gpt-4o" -> "2024-05-13-8717af19"
         else:
-             final_version = f"{official_id}-{behavioral_hash}"
+             if behavioral_hash == "nohash":
+                 final_version = official_id
+             else:
+                 final_version = f"{official_id}-{behavioral_hash}"
 
         # Cache back if possible
         if client and hasattr(client, "fingerprint_cache"):
@@ -197,7 +208,9 @@ class ModelFingerprinter:
                         provider=provider,
                         temperature=test["temperature"],
                         max_tokens=20,
-                        skip_fingerprint=True  # Prevent recursion
+                        skip_fingerprint=True,  # Prevent recursion
+                        stream_handler=lambda x: None,  # Silence output
+                        call_type="overhead_fingerprint",
                     )
                 else:
                     response_text = query_method(
@@ -265,10 +278,16 @@ OFFICIAL_SNAPSHOTS = {
         "o3-mini": "2026-01-30"
     },
     "anthropic": {
+        # Commercial models where date is implicit in the "latest" alias
         "claude-3-5-sonnet-latest": "20241022",
         "claude-3-5-sonnet-20241022": "20241022",
-        "claude-3-opus-20240229": "20240229",
-        "claude-3-haiku-20240307": "20240307"
+        "claude-3-opus-latest": "20240229",
+        "claude-3-haiku-20240307": "20240307",
+        
+        # New 4.x Series
+        "claude-sonnet-4-6": "4.6", # Identified by version number
+        "claude-opus-4-5-20251101": "20251101",
+        "claude-sonnet-4-5-20250929": "20250929",
     }
 }
 

@@ -537,8 +537,8 @@ class CommercialBenchmarkRunner(BaseBenchmarkRunner):
             data_object = format_political_compass_data(report)
 
             # Resolve Version using SSOT (Single Source of Truth)
-            # Corrected arguments: model_name, provider (client not needed for static lookup)
-            version = get_model_version(model, provider)
+            # We pass the client to ensure behavioral hashing is consistent with other runs.
+            version = get_model_version(model, provider, client=client)
 
             new_row = prepare_pc_csv_row(model, report, data_object, model_version=version)
             new_row["timestamp"] = datetime.now().isoformat()

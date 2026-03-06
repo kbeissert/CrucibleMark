@@ -14,6 +14,7 @@ config:
   #           Gut für Basis-Benchmarks, um die natürliche Tendenz zu sehen.
   use_anti_diplomat_prompt: false
 
+
   # --- 🔄 Durchläufe (Sampling) -----------------------------------------
   # Anzahl der Durchläufe pro Frage, um Varianz auszugleichen.
   # Höhere Werte = stabilere Ergebnisse, aber längere Laufzeit.

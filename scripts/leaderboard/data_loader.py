@@ -15,6 +15,23 @@ from utils.csv_recovery import get_csv_header_idx, parse_row_robust
 # Import configuration and constants
 from .config import COMMERCIAL_CSV, GOLDEN_CSV, LOCAL_CSV, config
 
+# pylint: disable=import-error
+try:
+    from utils.model_utils import get_model_category
+except ImportError:
+    # Fallback if import fails (should match SSOT logic in model_utils.py)
+    def get_model_category(model_name: str, source_file: str = "local", size_gb: float = None) -> str:
+        """Fallback categorization matching SSOT."""
+        if source_file == "commercial":
+            return "Commercial"
+        model_lower = model_name.lower()
+        if ":cloud" in model_lower or model_lower.endswith("-cloud"):
+            return "Local Cloud"
+        if size_gb is not None and size_gb < 0.01:
+            return "Local Cloud"
+        return "Local"
+# pylint: enable=import-error
+
 
 def _extract_scores_from_df(df: pd.DataFrame) -> Dict[str, float]:
     """Helper to extract latest scores per asset from a DataFrame."""
@@ -124,7 +141,17 @@ def _process_csv(dfs: List[pd.DataFrame], filepath: Path, type_label: str) -> No
 
         if rows:
             df_new = pd.DataFrame(rows)
-            df_new["type"] = type_label
+            
+            # SSOT: Centralized Model Categorization
+            # Uses get_model_category() from model_utils.py as Single Source of Truth
+            if "model" in df_new.columns:
+                # Determine source context (local vs commercial CSV)
+                source_context = "commercial" if type_label == "Commercial" else "local"
+                df_new["type"] = df_new["model"].apply(
+                    lambda m: get_model_category(m, source_context)
+                )
+            else:
+                df_new["type"] = type_label
             dfs.append(df_new)
     except (OSError, csv.Error) as e:
         print(f"Error parsing {filepath}: {e}")

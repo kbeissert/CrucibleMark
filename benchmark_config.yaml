@@ -15,8 +15,8 @@
 
 golden_standard:
   provider: "anthropic"  # Referenz zu providers.commercial.anthropic
-  model: "claude-sonnet-4-5-20250929"  # Welches Modell für Referenz-Benchmark
-  description: "Claude 4.5 Sonnet als Referenz für Benchmark Tests"
+  model: "claude-sonnet-4-6"  # Welches Modell für Referenz-Benchmark
+  description: "Claude 4.6 Sonnet als Referenz für Benchmark Tests (Feb 2026)"
 
 # Global Generation Defaults
 # --------------------------
@@ -37,7 +37,6 @@ defaults:
 # Der Golden Standard (oben definiert) wird als Referenz für Vergleiche genutzt.
 
 providers:
-
 
   commercial:
     mistral:
@@ -62,18 +61,27 @@ providers:
       # Beispiel .env: ANTHROPIC_API_KEY=sk-ant-...
       env_var: "ANTHROPIC_API_KEY"
       models:
+        # Claude 4.6 Series (Feb 2026 - Current Generation, API-verified)
+        - id: "claude-sonnet-4-6"
+          name: "Claude 4.6 Sonnet"
+          description: "Ausgewogene Performance & Kosten (Golden Standard)"
+        - id: "claude-opus-4-6"
+          name: "Claude 4.6 Opus"
+          description: "Höchste Intelligenz, erweitertes Reasoning"
+        # Claude 4.5 Series (2025 - Legacy)
         - id: "claude-sonnet-4-5-20250929"
           name: "Claude 4.5 Sonnet"
-          description: "State of the Art (2025)"
+          description: "Legacy: State of the Art (2025)"
         - id: "claude-opus-4-5-20251101"
           name: "Claude 4.5 Opus"
-          description: "Höchste Qualität, großes Kontextfenster"
+          description: "Legacy: Höchste Qualität (2025)"
         - id: "claude-haiku-4-5-20251001"
           name: "Claude 4.5 Haiku"
-          description: "High-Speed Intelligence (Active)"
+          description: "Legacy: High-Speed Intelligence (2025)"
+        # Claude 3 Series (Legacy - 2024)
         - id: "claude-3-haiku-20240307"
           name: "Claude 3 Haiku"
-          description: "Legacy Efficiency Model"
+          description: "Legacy: Efficiency Model (2024)"
     
     openai:
       name: "OpenAI"
@@ -91,6 +99,57 @@ providers:
         - id: "o3-mini"
           name: "o3 Mini"
           description: "Reasoning (Deep Thinking)"
+
+    google:
+      name: "Google Gemini"
+      api_type: "google"
+      enabled: true
+      # Der API-Key gehört NICHT hierher, sondern in die .env Datei oder .zshrc!
+      # Beispiel .env: GOOGLE_API_KEY=AIzaSy...
+      env_var: "GOOGLE_API_KEY"
+      models:
+        # Gemini 3 Series (Feb 2026 - Neuste Generation, Preview)
+        - id: "gemini-3.1-pro-preview"
+          name: "Gemini 3.1 Pro"
+          description: "Leistungsstärkstes Modell, multimodales Reasoning (2026, Preview)"
+        - id: "gemini-3-flash-preview"
+          name: "Gemini 3 Flash"
+          description: "Frontier-Performance zu einem Bruchteil der Kosten (Preview)"
+        # Gemini 2.5 Series (Stabil)
+        - id: "gemini-2.5-pro"
+          name: "Gemini 2.5 Pro"
+          description: "Fortschrittlichstes stabiles Modell, Reasoning & Coding"
+        - id: "gemini-2.5-flash"
+          name: "Gemini 2.5 Flash"
+          description: "Bestes Preis-Leistungs-Modell, latenzarm"
+        - id: "gemini-2.5-flash-lite"
+          name: "Gemini 2.5 Flash-Lite"
+          description: "Schnellstes & kostengünstigstes Modell der 2.5-Familie"
+        # Hinweis: Gemini 2.0 Flash & Flash-Lite sind eingestellt (deprecated Feb 2026)
+
+    xai:
+      name: "xAI (Grok)"
+      api_type: "xai"
+      enabled: false  # Standardmäßig deaktiviert, Aktivierung via Config
+      # Der API-Key gehört in die .env Datei!
+      # Beispiel .env: XAI_API_KEY=xai-...
+      env_var: "XAI_API_KEY"
+      models:
+        # Grok 3 Series (Current Gen - Feb 2026)
+        - id: "grok-3-latest"
+          name: "Grok 3"
+          description: "Starkes Reasoning & Wissen (Feb 2026)"
+        - id: "grok-3-mini-latest"
+          name: "Grok 3 Mini"
+          description: "Effizient & schnell"
+        # Grok 4 Preview (Next Gen)
+        - id: "grok-4-latest"
+          name: "Grok 4 (Preview)"
+          description: "Vorschau auf die nächste Generation"
+        # Legacy
+        - id: "grok-2-latest"
+          name: "Grok 2 (Legacy)"
+          description: "Vorherige Generation (2025)"
   
   local:
     # Globale Konfiguration für alle lokalen Ollama-Modelle
