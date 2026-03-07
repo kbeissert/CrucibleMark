@@ -74,21 +74,12 @@ def get_speed_class(avg_time: float) -> str:
         return "⏱️ Medium"
     return "🐢 Slow"
 
-def get_skill_role(row: pd.Series) -> str:
+def get_skill_role(row: pd.Series, cat_cols: list) -> str:
     """
-    Determine the skill role (Specialist/All-Rounder type) based on scores.
-    Does NOT include speed/tier info.
+    Determine the skill role (Specialist/All-Rounder type) based on dynamic category scores.
     """
-    # Extract scores
-    categories = {
-        'Code Quality': row.get('Code Quality Audit', 0),
-        'UX Writing': row.get('UX Writing & Microcopy', 0),
-        'Documentation': row.get('Documentation Quality', 0),
-        'Content': row.get('Content Transformation & Adaption', 0),
-        'Cultural': row.get('Cultural Intelligence', 0),
-        'Reasoning': row.get('Logical Reasoning', 0),
-        'CLI Operations': row.get('CLI Operations', 0)
-    }
+    # Extract dynamic scores
+    categories = {col: row.get(col, 0) for col in cat_cols}
 
     # Clean up NaNs and ensure floats
     valid_categories = {}
@@ -111,18 +102,23 @@ def get_skill_role(row: pd.Series) -> str:
         if is_all_rounder:
             role = "All-Rounder"
         else:
-            # Find top category
+            # Find top category dynamically
             top_cat = max(valid_categories, key=valid_categories.get)
-            specialist_map = {
-                'Code Quality': "Code Reviewer",
-                'UX Writing': "UX Writer",
-                'Documentation': "Doc Writer",
-                'Content': "Content Adapter",
-                'Reasoning': "Reasoning Expert",
-                'Cultural': "Cultural Expert",
-                'CLI Operations': "DevOps Expert"
-            }
-            role = specialist_map.get(top_cat, "Specialist")
+            
+            # Simple heuristic mapping for dynamic categories
+            name_lower = top_cat.lower()
+            if "code" in name_lower: role = "Code Reviewer"
+            elif "ux" in name_lower: role = "UX Writer"
+            elif "doc" in name_lower: role = "Doc Writer"
+            elif "content" in name_lower: role = "Content Adapter"
+            elif "reasoning" in name_lower: role = "Reasoning Expert"
+            elif "cultur" in name_lower: role = "Cultural Expert"
+            elif "cli" in name_lower or "devops" in name_lower: role = "DevOps Expert"
+            elif "politi" in name_lower: role = "Policy Expert"
+            else:
+                # Dynamically generate role name from category (e.g. "Security Check" -> "Security Expert")
+                first_word = top_cat.split(" ")[0]
+                role = f"{first_word} Expert"
             
     return role
 
@@ -172,13 +168,16 @@ def calculate_performance_per_second(total_score: float, avg_time: float) -> flo
 
     return round(total_score / avg_time, 2)
 
-def assign_rank_and_badges(df: pd.DataFrame) -> pd.DataFrame:
+def assign_rank_and_badges(df: pd.DataFrame, cat_cols: list = None) -> pd.DataFrame:
     """
     Vergibt Rank, Badges und Speed Profile.
     Updates the DataFrame in place / returns modified DF.
     """
     if df.empty:
         return df
+        
+    if cat_cols is None:
+        cat_cols = []
 
     # Rank assignment (assuming df is already sorted by Total Score)
     df = df.reset_index(drop=True)
@@ -194,7 +193,7 @@ def assign_rank_and_badges(df: pd.DataFrame) -> pd.DataFrame:
         df["Performance Tier"] = df["Avg Time (s)"].apply(get_performance_tier)
     
     # 3. Skill Profile (Role Only)
-    df["Skill Profile"] = df.apply(get_skill_role, axis=1)
+    df["Skill Profile"] = df.apply(lambda row: get_skill_role(row, cat_cols), axis=1)
 
     # 4. Speed Profile (Merged Tier + Skill + Warnings)
     df["Speed Profile"] = df.apply(format_speed_profile, axis=1)

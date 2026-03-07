@@ -359,11 +359,12 @@ class BenchmarkRunner:
                 return
 
         # Run benchmark for each module
-        for _, module_config in modules_to_run:
+        for mod_id, module_config in modules_to_run:
             if not module_config:
                 continue
             print(f"\n>>> Running Module: {module_config['name']}")
             self._run_benchmark(
+                mod_id,
                 module_config,
                 model_id,
                 provider,
@@ -383,6 +384,7 @@ class BenchmarkRunner:
 
     def _run_benchmark(
         self,
+        mod_id: str,
         module_config: dict[str, Any],
         model: str,
         provider: str,
@@ -406,6 +408,7 @@ class BenchmarkRunner:
         internal_config = load_module_config(Path(module_config['path']))
 
         benchmark_info = {
+            "id": mod_id,
             "name": module_config["name"],
             "path": f"{module_config['path']}/assets",
             "module_path": module_config["path"],

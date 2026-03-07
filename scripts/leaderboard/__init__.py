@@ -147,8 +147,8 @@ def main(print_table: bool = True) -> None:
     # 5. Enrich with Custom Data (from other CSVs via module config)
     leaderboard, cat_cols = enrich_with_module_data(leaderboard, cat_cols, modules_config, config)
 
-    # 6. Assign badges and ranks
-    leaderboard = assign_rank_and_badges(leaderboard)
+    # 6. Assign badges and ranks dynamically using detected category columns
+    leaderboard = assign_rank_and_badges(leaderboard, cat_cols)
 
     # 7. Model Name & Version Formatting
     leaderboard["Model Name"] = leaderboard["model"]
