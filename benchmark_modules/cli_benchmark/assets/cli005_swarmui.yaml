@@ -1,0 +1,10 @@
+metadata:
+  id: "cli005"
+  name: "SwarmUI Docker Deployment"
+  tier: 3
+description: "Start swarmui via docker compose with listen 0.0.0.0:7801, then curl localhost:7801 to test accessibility."
+tools: ["docker", "curl"]
+golden:
+  required_commands: ["docker", "compose", "up", "swarmui", "0.0.0.0:7801", "curl", "localhost:7801"]
+  banned_commands: ["rm ", "stop", "down"]
+  max_steps: 4

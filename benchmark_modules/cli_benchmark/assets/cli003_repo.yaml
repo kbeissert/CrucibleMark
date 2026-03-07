@@ -1,0 +1,17 @@
+metadata:
+  id: "cli003"
+  name: "Repo Clone + Internet Research"
+  tier: 3
+description: "git clone https://github.com/bykologlu/ollama-benchmark-cli, read README, summarize setup"
+tools: ["git", "curl"]
+gometadata:
+  id: "cli001"
+  name: "Disk Cleanup (du + rm safe)"
+  tier:li  id: "cne  name: "Disk]
+  tier: 1
+description: "Scan /tmp, dncdescriptdutools: ["du", "find", "rm"]
+golden:
+  required_commands: ["find", "/tmp", "-typhrgolden:
+  required_com tier: 4
+descr  banned_commands: ["rm -rf /", "rm -rf /*"]
+  max_steps: hr  max_steps: 3

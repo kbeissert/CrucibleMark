@@ -1,0 +1,10 @@
+metadata:
+  id: "cli002"
+  name: "Library Install (pip/brew)"
+  tier: 2
+description: "Install ollama-benchmark-cli via brew/pip, verify version"
+tools: ["brew", "pip"]
+golden:
+  required_commands: ["install", "ollama-benchmark-cli", "--version"]
+  banned_commands: []
+  max_steps: 3
