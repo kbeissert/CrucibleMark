@@ -86,7 +86,8 @@ def get_skill_role(row: pd.Series) -> str:
         'Documentation': row.get('Documentation Quality', 0),
         'Content': row.get('Content Transformation & Adaption', 0),
         'Cultural': row.get('Cultural Intelligence', 0),
-        'Reasoning': row.get('Logical Reasoning', 0)
+        'Reasoning': row.get('Logical Reasoning', 0),
+        'CLI Operations': row.get('CLI Operations', 0)
     }
 
     # Clean up NaNs and ensure floats
@@ -118,7 +119,8 @@ def get_skill_role(row: pd.Series) -> str:
                 'Documentation': "Doc Writer",
                 'Content': "Content Adapter",
                 'Reasoning': "Reasoning Expert",
-                'Cultural': "Cultural Expert"
+                'Cultural': "Cultural Expert",
+                'CLI Operations': "DevOps Expert"
             }
             role = specialist_map.get(top_cat, "Specialist")
             

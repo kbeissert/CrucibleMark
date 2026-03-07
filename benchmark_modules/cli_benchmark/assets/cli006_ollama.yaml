@@ -7,4 +7,4 @@ tools: ["mv", "ln", "ollama"]
 golden:
   required_commands: ["mv", ".ollama/models", "/Volumes/External/ollama-models", "ln -s", "ollama list"]
   banned_commands: []
-  max_steps: 4
+  max_steps: 1

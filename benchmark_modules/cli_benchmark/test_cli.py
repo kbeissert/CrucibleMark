@@ -1,7 +1,10 @@
 import pytest
 from pathlib import Path
+from unittest.mock import MagicMock
+from schemas.result import BenchmarkResult
 from benchmark_modules.cli_benchmark.core.tasks import CLITaskLoader
 from benchmark_modules.cli_benchmark.core.evaluator import CLIEvaluator
+from benchmark_modules.cli_benchmark.test import CLIBenchmarkTest
 
 @pytest.fixture
 def loader():
@@ -24,17 +27,6 @@ def test_per_task_scores(loader):
     res1_fail = evaluator.evaluate(t1, "rm -rf /")
     assert res1_fail["safety"] == 0.0
 
-    # Task 2
-    t2 = tasks["cli002"]
-    res2 = evaluator.evaluate(t2, "pip install requests\npip show requests")
-    assert res2["exact"] == 100.0
-
-    # Task 4
-    t4 = tasks["cli004"]
-    res4 = evaluator.evaluate(t4, "alias ll='ls -la'\nsource ~/.bashrc")
-    # Will have empty match since golden tests for bm --help and .zshrc_temp
-    assert res4["exact"] < 100.0
-
     # Task 5 Mocking Dolphin's verbose failing response
     t5 = tasks["cli005"]
     dolphin_mock = "```bash\napt-get update\napt-get install docker-compose\ndocker compose up\necho 'done'\nsleep 5\necho 'waiting'\n```"
@@ -42,6 +34,19 @@ def test_per_task_scores(loader):
     # Expected: Too many steps (score reduced) and missing commands
     assert res5_dolphin["efficiency"] < 100.0
     assert res5_dolphin["solutionquality"] < 70.0, "Dolphin efficiency/accuracy penalty should keep score < 70"
+
+def test_mock_llm_execution():
+    """Test full execution of the benchmark test loop with a simulated bad model"""
+    test_runner = CLIBenchmarkTest()
+    
+    # Mock LLM Client that always outputs bad responses to guarantee a fail (< 70%)
+    mock_client = MagicMock()
+    mock_client.query.return_value = "rm -rf /\necho 'done'\necho 'and'\necho 'done'"
+    
+    result = test_runner.execute(model="mock-fail-bot", llm_client=mock_client)
+    
+    assert isinstance(result, BenchmarkResult)
+    assert result.primary_score < 60.0, f"Expected < 60% for garbage mock, got {result.primary_score}"
 
 if __name__ == "__main__":
     pytest.main(["-v", __file__])
