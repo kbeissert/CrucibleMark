@@ -7,4 +7,4 @@ tools: ["docker", "curl"]
 golden:
   required_commands: ["docker", "compose", "up", "swarmui", "0.0.0.0:7801", "curl", "localhost:7801"]
   banned_commands: ["rm ", "stop", "down"]
-  max_steps: 4
+  max_steps: 2

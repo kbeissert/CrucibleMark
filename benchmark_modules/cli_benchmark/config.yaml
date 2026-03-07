@@ -42,6 +42,8 @@ execution:
   test_class: "CLIBenchmarkTest"
   execution_mode: "batch"
   min_runs: 1
+  max_parallel: 4
+  metal_force: true
 
 benchmarks:
   - id: "cli001"

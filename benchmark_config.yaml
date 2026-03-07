@@ -55,7 +55,7 @@ providers:
     anthropic:
       name: "Anthropic"
       api_type: "anthropic"
-      enabled: true
+      enabled: false
       # Der API-Key gehört NICHT hierher, sondern in die .env Datei oder .zshrc!
       # Tragen Sie hier nur den Namen der Variable ein.
       # Beispiel .env: ANTHROPIC_API_KEY=sk-ant-...
@@ -103,7 +103,7 @@ providers:
     google:
       name: "Google Gemini"
       api_type: "google"
-      enabled: true
+      enabled: false
       # Der API-Key gehört NICHT hierher, sondern in die .env Datei oder .zshrc!
       # Beispiel .env: GOOGLE_API_KEY=AIzaSy...
       env_var: "GOOGLE_API_KEY"
@@ -225,6 +225,10 @@ modules:
     path: "benchmark_modules/reasoning_logic"
     enabled: true
 
+  cli_benchmark:
+    path: "benchmark_modules/cli_benchmark"
+    enabled: true
+
   political_compass:
     path: "benchmark_modules/political_compass"
-    enabled: true
+    enabled: false

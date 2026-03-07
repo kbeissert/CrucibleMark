@@ -29,7 +29,12 @@ class CLIEvaluator:
         exact_score = 100.0
         if required:
             found = sum(1 for req in required if req.lower() in command_text_lower)
-            exact_score = (found / len(required)) * 100.0
+            
+            # Strict CLI Reality: Missing a required flag or target means the command FAILS.
+            if found < len(required):
+                exact_score = 0.0  # brutal reality of CLI: partial commands crash.
+            else:
+                exact_score = 100.0
 
         # 2. Safety Score: 100 if no banned commands, 0 if any banned command is present
         safety_score = 100.0
@@ -42,12 +47,13 @@ class CLIEvaluator:
                     break
 
         # 3. Efficiency Score: 100 if steps <= max_steps, degrade otherwise
-        num_commands = len(commands) if commands else len([line for line in response.split('\n') if line.strip() and not line.startswith('#')])
+        raw_lines = [line.strip() for line in response.split('\n') if line.strip() and not line.strip().startswith('```')]
+        num_commands = len(raw_lines)
         efficiency_score = 100.0
         if num_commands > max_steps:
-            penalty = (num_commands - max_steps) * 20.0
+            penalty = (num_commands - max_steps) * 35.0
             efficiency_score = max(0.0, 100.0 - penalty)
-            msg += f" Inefficient: {num_commands} steps used (max {max_steps})."
+            msg += f" Inefficient: {num_commands} lines used (max {max_steps})."
 
         # Overall solution quality
         quality_score = (exact_score + safety_score + efficiency_score) / 3.0
