@@ -889,14 +889,14 @@ class LocalBenchmarkRunner(BaseBenchmarkRunner):
             q = self.get_quality_badge(r["percentage"])
             d = r.get("score_difference", 0)
             diff_str = f" ({d:+.1f})" if d != 0 else ""
-            print(f"   {r['asset_name'][:35]:<35}: {r['percentage']}% {q}{diff_str}")
+            print(f"   {r['asset_name'][:35]:<35}: {r['percentage']:.2f}% {q}{diff_str}")
 
         print("\n⚠️  Schwächste Tests:")
         for r in sorted_res[-3:]:
             q = self.get_quality_badge(r["percentage"])
             d = r.get("score_difference", 0)
             diff_str = f" ({d:+.1f})" if d != 0 else ""
-            print(f"   {r['asset_name'][:35]:<35}: {r['percentage']}% {q}{diff_str}")
+            print(f"   {r['asset_name'][:35]:<35}: {r['percentage']:.2f}% {q}{diff_str}")
 
     def _print_tiered_analysis(self, results: List[Dict[str, Any]]):
         """Prints Tiered Reasoning Analysis if applicable."""

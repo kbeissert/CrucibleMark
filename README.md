@@ -231,6 +231,18 @@ def process_payment(amount: float, currency: str) -> dict:
 
 ---
 
+### 6. CLI Operations (Batch-Modul)
+**Tests:** Systemverwaltung, Docker-Befehle, Paketmanagement, Dateioperationen  
+**Assets:** 6 hoch verdichtete Shell-Szenarien  
+**Tiers:** 1 (Fast-Fail Batch-Test)  
+**Score:** Strict Regex-Matching (Exact, Safety, Efficiency)
+
+**Besonderheit (Batch-Modul):**
+Im Gegensatz zu Standard-Modulen, die jede Asset-Datei einzeln auswerten, ist dieses Modul als *Batch-Modul* implementiert. Es lädt alle CLI-Aufgaben gebündelt und führt sie extrem schnell und effizient hintereinander im LLM aus. 
+**Warum?** CLI- und Tooling-Fähigkeiten (wie sie von AI-Coding-Agenten à la Cline, Devin oder Cursor gefordert werden) benötigen präzise, valide Shell-Kommandos ohne umschweifendes Markdown-Gerede. Der Batch-Modus simuliert diesen schnellen, maschinellen Workflow ("Gib mir nur den Befehl") und stresst das Modell auf Konsistenz. Es zeigt sich sofort, ob ein LLM reibungslos als System-Agent agieren kann.
+
+---
+
 ### 7. Logical Reasoning
 **Tests:** Paradoxes, Metacognition, Logic Puzzles  
 **Assets:** 11 scenarios  
