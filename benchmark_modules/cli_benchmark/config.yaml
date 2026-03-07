@@ -29,6 +29,7 @@ generation:
 integration:
   leaderboard:
     enable_scoring: true
+    display_test_count: 1
     default_contribution:
       routine: 0.7
       reasoning: 0.3

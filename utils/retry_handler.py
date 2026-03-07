@@ -70,7 +70,7 @@ class RetryHandler:
                 )
 
                 if attempt == current_max_retries - 1:
-                    logger.error(
+                    logger.debug(
                         "All %d retries failed. Last error: %s", current_max_retries, e
                     )
                     raise
@@ -79,7 +79,7 @@ class RetryHandler:
                 if is_rate_limit:
                     # Specific Backoff for Rate Limits: Start high (e.g. 60s) to clear the penalty
                     wait_time = 60 * (attempt + 1)
-                    logger.warning(
+                    logger.debug(
                         "⚠️ Rate Limit detected (attempt %d/%d). Pausing for %ds to cool down...",
                         attempt + 1,
                         current_max_retries,
@@ -88,7 +88,7 @@ class RetryHandler:
                 else:
                     # Standard Exponential Backoff
                     wait_time = 2**attempt
-                    logger.warning(
+                    logger.debug(
                         "Retry %d/%d after %ds: %s",
                         attempt + 1,
                         current_max_retries,
