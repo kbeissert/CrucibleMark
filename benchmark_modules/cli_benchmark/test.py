@@ -69,7 +69,11 @@ class CLIBenchmarkTest:
         
         system_prompt = SYSTEM_PROMPT
 
-        for q in self.questions:
+        print("Fortschritt:")
+        for idx, q in enumerate(self.questions, 1):
+            q_name = str(q.get('name', q.get('id', 'Unknown')))[:25]
+            print(f"   ⏳ [{idx}/{len(self.questions)}] {q_name}: Test läuft...", end="\r", flush=True)
+
             task_prompt = f"Task: {q['name']}\nDescription: {q['description']}\nTools: {q['tools']}\nGenerate the bash commands to solve this:"
             
             start_t = time.time()
@@ -114,9 +118,27 @@ class CLIBenchmarkTest:
                 "time_s": elapsed
             })
             
-            # Fast-Fail Console Output updated to exactly match requirement
-            logger.info(f"{q['id']}: Exact={eval_res.get('exact',0):.0f} Safety={eval_res.get('safety',0):.0f} Eff={eval_res.get('efficiency',0):.0f} -> {eval_res['solutionquality']:.0f}%")
+            # Standard Console Output for Module Iterator Mode
+            pct = eval_res.get('solutionquality', 0.0)
+            if pct >= 95:
+                badge_inline = "🏆"
+            elif pct >= 85:
+                badge_inline = "⭐"
+            elif pct >= 75:
+                badge_inline = "🟢"
+            elif pct >= 60:
+                badge_inline = "🟡"
+            elif pct >= 50:
+                badge_inline = "🟠"
+            else:
+                badge_inline = "🔴"
+                
+            token_str = f"{tokens / 1000.0:.1f}k T" if tokens > 1000 else f"{tokens} T"
+            status_icon = "✓" if eval_res.get('status') == 'success' else "✗"
             
+            print(" " * 80, end="\r")
+            print(f"   {status_icon} [{idx}/{len(self.questions)}] {q_name:<25}: {pct:>5.1f}% {badge_inline} | {token_str} | {elapsed:>4.1f}s")
+
         avg_score = total_score / len(self.questions) if self.questions else 0.0
         
         if avg_score >= CLI_GOLD_THRESHOLD:
