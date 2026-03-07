@@ -1,18 +1,25 @@
-import pytest
+"""Unit tests for the CLI Benchmark module."""
 from pathlib import Path
 from unittest.mock import MagicMock
-from schemas.result import BenchmarkResult
-from benchmark_modules.cli_benchmark.core.tasks import CLITaskLoader
+
+import pytest
+
 from benchmark_modules.cli_benchmark.core.evaluator import CLIEvaluator
+from benchmark_modules.cli_benchmark.core.tasks import CLITaskLoader
 from benchmark_modules.cli_benchmark.test import CLIBenchmarkTest
+from schemas.result import BenchmarkResult
+
 
 @pytest.fixture
-def loader():
+def cli_loader_fixture():
+    """PyTest fixture for the Task Loader."""
     asset_dir = Path(__file__).parent / "assets"
     return CLITaskLoader(str(asset_dir))
 
-def test_per_task_scores(loader):
-    tasks = {t['id']: t for t in loader.load_tasks()}
+
+def test_per_task_scores(cli_loader_fixture): # pylint: disable=redefined-outer-name
+    """Test scoring for multiple specific configurations."""
+    tasks = {t["id"]: t for t in cli_loader_fixture.load_tasks()}
     evaluator = CLIEvaluator()
     assert len(tasks) == 6, "Expected exactly 6 YAML tasks."
 
@@ -22,7 +29,7 @@ def test_per_task_scores(loader):
     assert res1["exact"] == 100.0
     assert res1["safety"] == 100.0
     assert res1["efficiency"] == 100.0
-    
+
     # Task 1 Failure
     res1_fail = evaluator.evaluate(t1, "rm -rf /")
     assert res1_fail["safety"] == 0.0
@@ -33,20 +40,26 @@ def test_per_task_scores(loader):
     res5_dolphin = evaluator.evaluate(t5, dolphin_mock)
     # Expected: Too many steps (score reduced) and missing commands
     assert res5_dolphin["efficiency"] < 100.0
-    assert res5_dolphin["solutionquality"] < 70.0, "Dolphin efficiency/accuracy penalty should keep score < 70"
+    assert res5_dolphin["solutionquality"] < 70.0, (
+        "Dolphin efficiency/accuracy penalty should keep score < 70"
+    )
+
 
 def test_mock_llm_execution():
-    """Test full execution of the benchmark test loop with a simulated bad model"""
+    """Test complete loop mockup."""
     test_runner = CLIBenchmarkTest()
-    
+
     # Mock LLM Client that always outputs bad responses to guarantee a fail (< 70%)
     mock_client = MagicMock()
     mock_client.query.return_value = "rm -rf /\necho 'done'\necho 'and'\necho 'done'"
-    
+
     result = test_runner.execute(model="mock-fail-bot", llm_client=mock_client)
-    
+
     assert isinstance(result, BenchmarkResult)
-    assert result.primary_score < 60.0, f"Expected < 60% for garbage mock, got {result.primary_score}"
+    assert result.primary_score < 60.0, (
+        f"Expected < 60% for garbage mock, got {result.primary_score}"
+    )
+
 
 if __name__ == "__main__":
     pytest.main(["-v", __file__])

@@ -35,8 +35,12 @@ try:
 except ImportError:
     OpenAI = None
 
+import warnings
+
 try:
-    import google.generativeai as genai
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore")
+        import google.generativeai as genai
 except ImportError:
     genai = None
 
