@@ -229,13 +229,24 @@ class LLMClient:
         usage = self.last_response_metadata.get("usage") if self.last_response_metadata else None
         
         if usage:
-            # Handle both object (Pydantic/API libs) and dict formats
-            if hasattr(usage, "prompt_tokens"):
+            # Handle Anthropic Format (has input_tokens, output_tokens)
+            if hasattr(usage, "input_tokens"):
+                input_tokens = usage.input_tokens
+                output_tokens = usage.output_tokens or 0
+                
+                # Wenn Cache Tokens vorhanden sind (Claude 3.5 Sonnet Cache read)
+                if hasattr(usage, "cache_read_input_tokens") and usage.cache_read_input_tokens:
+                    input_tokens += usage.cache_read_input_tokens
+                if hasattr(usage, "cache_creation_input_tokens") and usage.cache_creation_input_tokens:
+                    pass # these are naturally billed as base input tokens or are implicitly counted. To be precise, let's just use what's given. Some SDKs split them.
+
+            # Handle both object (Pydantic/API libs) and dict formats (OpenAI / Mistral)
+            elif hasattr(usage, "prompt_tokens"):
                 input_tokens = usage.prompt_tokens
                 output_tokens = usage.completion_tokens or 0  # completion_tokens can be None
             elif isinstance(usage, dict):
-                input_tokens = usage.get("prompt_tokens", 0)
-                output_tokens = usage.get("completion_tokens", 0)
+                input_tokens = usage.get("prompt_tokens", usage.get("input_tokens", 0))
+                output_tokens = usage.get("completion_tokens", usage.get("output_tokens", 0))
         
         # Fallback to estimation for Local/Ollama or if Usage missing
         if input_tokens == 0 and output_tokens == 0:

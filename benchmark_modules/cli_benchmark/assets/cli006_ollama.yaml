@@ -1,10 +1,24 @@
 metadata:
-  id: "cli006"
-  name: "Ollama Models to External Disk + Symlink"
+  id: cli006
+  name: Ollama Models to External Disk + Symlink
   tier: 5
-description: "mv ~/.ollama/models /Volumes/External/ollama-models, ln -s back, ollama list works"
-tools: ["mv", "ln", "ollama"]
+description: mv ~/.ollama/models /Volumes/External/ollama-models, ln -s back, ollama
+  list works
+tools:
+- mv
+- ln
+- ollama
 golden:
-  required_commands: ["mv", ".ollama/models", "/Volumes/External/ollama-models", "ln -s", "ollama list"]
-  banned_commands: []
-  max_steps: 1
+  required_commands: &id001
+  - mv
+  - .ollama/models
+  - /Volumes/External/ollama-models
+  - ln -s /Volumes/External/ollama-models ~/.ollama
+  - ollama list
+  banned_commands:
+  - ollama-models/models
+  max_steps: 20
+scoring:
+  accept_script: true
+  core_commands: *id001
+  bonus_criteria: []

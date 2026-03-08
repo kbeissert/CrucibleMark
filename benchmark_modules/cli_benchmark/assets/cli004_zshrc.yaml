@@ -1,10 +1,23 @@
 metadata:
-  id: "cli004"
-  name: "Zshrc Alias & Source"
+  id: cli004
+  name: Zshrc Alias & Source
   tier: 2
-description: "Set an alias 'bm=ollama-benchmark-cli', source ~/.zshrc_temp, and test it with 'bm --help'."
-tools: ["alias", "source"]
+description: Set alias bm=ollama-benchmark-cli, persist to ~/.zshrc (NOT ~/.zshrc_temp),
+  source it, test with bm --help
+tools:
+- alias
+- source
 golden:
-  required_commands: ["alias bm=ollama-benchmark-cli", "source", ".zshrc_temp", "bm --help"]
-  banned_commands: ["rm ", "echo '' >"]
-  max_steps: 3
+  required_commands: &id001
+  - alias bm=
+  - source
+  - bm --help
+  - .zshrc
+  banned_commands:
+  - 'rm '
+  - .zshrc_temp
+  max_steps: 10
+scoring:
+  accept_script: true
+  core_commands: *id001
+  bonus_criteria: []
