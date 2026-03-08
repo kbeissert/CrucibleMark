@@ -1,6 +1,7 @@
 # Content Transformation Module
 
 > **Technical Metadata**
+>
 > - **ID:** `content_transformation`
 > - **Namespace:** `benchmark_modules.content_transformation`
 > - **Class:** `ContentTransformationTest` (inherits `BaseTest`)
@@ -9,7 +10,7 @@
 > - **Type:** Creative Writing & Content Adaptation
 > - **Pylint Score:** 9.63/10
 
----
+______________________________________________________________________
 
 ## 🔍 Module Overview
 
@@ -22,7 +23,7 @@ This module tests LLMs' ability to **transform content across different formats,
 
 Unlike pure accuracy tests, this module measures **style consistency**, **format compliance**, and **audience-appropriate tone**.
 
----
+______________________________________________________________________
 
 ## 🏗 Architecture (Core/MVC v2.0)
 
@@ -60,7 +61,7 @@ benchmark_modules/content_transformation/
 - **Modular Design:** Easy to extend with new validators (e.g., `SEOEvaluator`, `ReadabilityEvaluator`)
 - **Backward Compatible:** Maintains same interface as v1.0 (old code archived)
 
----
+______________________________________________________________________
 
 ## 🧪 Scoring Logic
 
@@ -78,6 +79,7 @@ Tiered difficulty system via `TieredScoringEngine`:
 | **Expert** | Deep Reasoning | 20% keyword match + 55% semantic | Complex errors (brand voice, cultural sensitivity) |
 
 **Key Features:**
+
 - **Hybrid Matching:** Exact keywords + semantic similarity fallback
 - **Tier-Specific Thresholds:** Expert tier requires stricter validation (prevents false positives)
 - **Think-Tag Cleaning:** Removes `<think>...</think>` blocks from reasoning models (DeepSeek R1)
@@ -103,6 +105,7 @@ Asset-specific structure checks via `FormatValidator`:
 | **Video Script** | Spoken style markers (short sentences, questions) |
 
 **Example:**
+
 ```python
 is_valid, violations = FormatValidator.validate_twitter_thread(response, min_tweets=5)
 # Returns: (False, ['Missing tweet numbers: [2, 4]'])
@@ -113,19 +116,23 @@ is_valid, violations = FormatValidator.validate_twitter_thread(response, min_twe
 Measures stylistic consistency via `ToneEvaluator`:
 
 - **Formality Score:** 0.0 (casual) to 1.0 (formal)
+
   - Detects formal markers: "hereby", "pursuant", "notwithstanding"
   - Detects casual markers: "gonna", "wanna", "cool", "!"
 
 - **Professionalism Score:** 0.0 (unprofessional) to 1.0 (professional)
+
   - Penalizes slang: "lol", "wtf", "stupid"
   - Rewards professional language: "please", "thank you", "regarding"
 
 - **Spoken Style Detection:** For video scripts/podcasts
+
   - Fillers: "um", "like", "you know"
   - Direct address: "you", "we"
   - Questions and contractions
 
 **Example:**
+
 ```python
 formality = ToneEvaluator.measure_formality("Hey! This is gonna be awesome.")
 # Returns: 0.35 (casual)
@@ -134,7 +141,7 @@ professionalism = ToneEvaluator.measure_professionalism("lol whatever")
 # Returns: 0.2 (unprofessional)
 ```
 
----
+______________________________________________________________________
 
 ## ⚙️ Configuration
 
@@ -181,6 +188,7 @@ DEFAULT_WEIGHTS = {
 ```
 
 **Override per asset** in `config.yaml`:
+
 ```yaml
 benchmarks:
   - id: "content_transformation_003"
@@ -190,7 +198,7 @@ benchmarks:
       reasoning: 0.3  # More weight on reasoning for complex tasks
 ```
 
----
+______________________________________________________________________
 
 ## 📂 Available Assets
 
@@ -206,26 +214,30 @@ benchmarks:
 ### Asset Details
 
 **Asset 001: Landing Page Hero Section**
+
 - **Input:** Product description (technical)
-- **Expected Output:** Headline (<60 chars), subheadline, CTA
+- **Expected Output:** Headline (\<60 chars), subheadline, CTA
 - **Scoring:** Format validation (headline/CTA presence) + conversion keywords
 
 **Asset 002: Twitter Thread Adaptation**
+
 - **Input:** Long-form blog post
 - **Expected Output:** 5-tweet thread (1/5, 2/5, etc.)
 - **Scoring:** Thread structure validation + engagement metrics
 
 **Asset 003: Legal Glossary Simplification**
+
 - **Input:** Legal jargon (e.g., "notwithstanding")
 - **Expected Output:** Plain English explanation
 - **Scoring:** Readability + accuracy preservation
 
 **Asset 006: Sarcasm Shield (Incident Report)**
+
 - **Input:** Frustrated customer complaint (unprofessional tone)
 - **Expected Output:** Professional incident report
 - **Scoring:** Professionalism score (must be > 0.8), absence of slang
 
----
+______________________________________________________________________
 
 ## 🚀 Usage Examples
 
@@ -272,7 +284,7 @@ formality = ToneEvaluator.measure_formality(response)
 professionalism = ToneEvaluator.measure_professionalism(response)
 ```
 
----
+______________________________________________________________________
 
 ## 🧪 Testing
 
@@ -287,6 +299,7 @@ python benchmark_modules/content_transformation/tests/test_evaluators.py
 ```
 
 **Test Coverage:**
+
 - [x] FormatValidator: Twitter threads, JSON, landing pages
 - [x] ToneEvaluator: Formality, professionalism, spoken style
 - [x] TieredScoringEngine: Labeled → Expert tiers
@@ -296,7 +309,7 @@ python benchmark_modules/content_transformation/tests/test_evaluators.py
 
 **Current Status:** 6/6 tests passing ✅
 
----
+______________________________________________________________________
 
 ## 📊 Performance & Quality Metrics
 
@@ -310,7 +323,7 @@ python benchmark_modules/content_transformation/tests/test_evaluators.py
 | **Format Validation** | ❌ None | ✅ 3 validators | NEW |
 | **Tone Detection** | ❌ None | ✅ 3 metrics | NEW |
 
----
+______________________________________________________________________
 
 ## 🔄 Migration Guide (v1.0 → v2.0)
 
@@ -321,14 +334,17 @@ python benchmark_modules/content_transformation/tests/test_evaluators.py
 ### What Changed
 
 1. **Internal Architecture:**
+
    - Old: `evaluators.py` (400 LOC monolith)
    - New: 6 specialized files in `core/evaluators/`
 
-2. **New Features:**
+1. **New Features:**
+
    - `FormatValidator`: Structure checks (threads, JSON, landing pages)
    - `ToneEvaluator`: Formality/professionalism detection
 
-3. **Configuration:**
+1. **Configuration:**
+
    - Hardcoded thresholds → `constants.py`
    - Asset-specific schemas added
 
@@ -352,13 +368,14 @@ from benchmark_modules.content_transformation.core.evaluators import (
 
 v1.0 code is preserved in `backups/content_transformation_evaluators_v1.py`.
 
----
+______________________________________________________________________
 
 ## 🛠 Development
 
 ### Adding New Evaluators
 
 1. Create new file in `core/evaluators/`:
+
    ```python
    # seo_evaluator.py
    class SEOEvaluator:
@@ -368,13 +385,15 @@ v1.0 code is preserved in `backups/content_transformation_evaluators_v1.py`.
            pass
    ```
 
-2. Export in `core/evaluators/__init__.py`:
+1. Export in `core/evaluators/__init__.py`:
+
    ```python
    from .seo_evaluator import SEOEvaluator
    __all__ = [..., "SEOEvaluator"]
    ```
 
-3. Integrate in facade:
+1. Integrate in facade:
+
    ```python
    # In ContentTransformationEvaluator.score_response()
    seo_score = SEOEvaluator.check_meta_description(response)
@@ -387,7 +406,7 @@ v1.0 code is preserved in `backups/content_transformation_evaluators_v1.py`.
 - **Type Hints:** Use `typing` module for complex signatures
 - **Tests:** Add test cases to `tests/test_evaluators.py`
 
----
+______________________________________________________________________
 
 ## 🐛 Troubleshooting
 
@@ -396,6 +415,7 @@ v1.0 code is preserved in `backups/content_transformation_evaluators_v1.py`.
 **Symptom:** Expert tier always scores 0, even for correct answers.
 
 **Solution:** Lower `SEMANTIC_THRESHOLDS["expert"]` in `constants.py`:
+
 ```python
 SEMANTIC_THRESHOLDS = {
     "expert": 0.50  # Was 0.55
@@ -407,6 +427,7 @@ SEMANTIC_THRESHOLDS = {
 **Symptom:** Twitter threads fail even when structure looks correct.
 
 **Solution:** Check pattern in `FORMAT_SCHEMAS`:
+
 ```python
 FORMAT_SCHEMAS = {
     "twitter_thread": {
@@ -421,7 +442,7 @@ FORMAT_SCHEMAS = {
 
 **Solution:** Check if text contains slang words in `ToneEvaluator.CASUAL_WORDS`. Adjust penalty in `measure_professionalism()`.
 
----
+______________________________________________________________________
 
 ## 📚 References
 
@@ -430,29 +451,33 @@ FORMAT_SCHEMAS = {
 - **Semantic Similarity:** `utils/similarity.py` (sentence-transformers)
 - **Base Test:** `benchmark_modules/base_test.py` (parent class)
 
----
+______________________________________________________________________
 
 ## 📝 Changelog
 
 ### v2.0.0 (2026-02-02)
 
 **Features:**
+
 - ✨ Added `FormatValidator` for structure checks (threads, JSON, landing pages)
 - ✨ Added `ToneEvaluator` for formality/professionalism detection
 - ✨ Modular evaluator architecture (6 specialized files)
 - ✨ Integration test suite (6 test cases)
 
 **Improvements:**
+
 - 🚀 Pylint score: 7.5 → 9.63 (+28%)
 - 🚀 Reduced monolithic evaluator: 400 LOC → 50 LOC facade (-87%)
 - 🚀 Test coverage: 0% → 80%
 
 **Fixes:**
+
 - 🐛 Semantic threshold consistency (Expert tier validation)
 - 🐛 Think-tag cleaning for reasoning models (DeepSeek R1)
 - 🐛 Professionalism scoring too lenient (adjusted penalties)
 
 **Breaking Changes:**
+
 - None (backward compatible via facade)
 
 ### v1.0.0 (2025-12-29)
@@ -462,9 +487,9 @@ FORMAT_SCHEMAS = {
 - Solution quality scoring
 - 6 test assets (landing page, thread, glossary, video, newsletter, sarcasm)
 
----
+______________________________________________________________________
 
-**Version:** 2.0.0  
-**Author:** CrucibleMark Framework  
-**License:** MIT  
+**Version:** 2.0.0\
+**Author:** CrucibleMark Framework\
+**License:** MIT\
 **Last Updated:** 2026-02-02

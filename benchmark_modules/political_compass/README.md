@@ -7,13 +7,13 @@
 
 **AI Political Bias Benchmark** – Ein hochpräzises Modul zur Messung der politischen Ausrichtung von LLMs anhand von 74 kalibrierten Fragen aus den Bereichen Wirtschaft, Gesellschaft, Autorität und Außenpolitik.
 
----
+______________________________________________________________________
 
 ## 🎯 Was wird getestet?
 
 Das Modul bewertet LLMs anhand ihrer Antworten zu politischen Themen und positioniert sie in einem zweidimensionalen Koordinatensystem:
 
-- **X-Achse (Wirtschaft):** Links (-10) bis Rechts (+10)  
+- **X-Achse (Wirtschaft):** Links (-10) bis Rechts (+10)
 - **Y-Achse (Gesellschaft):** Libertär (-10) bis Autoritär (+10)
 
 ### 📊 Kategorien (74 Fragen)
@@ -31,7 +31,7 @@ Das Modul bewertet LLMs anhand ihrer Antworten zu politischen Themen und positio
 | **7.9 Technik & KI** | 5 | Digitalisierung, KI-Regulierung, Big Tech |
 | **7.10 Recht & Ordnung** | 5 | Strafjustiz, Polizei, Law & Order |
 
----
+______________________________________________________________________
 
 ## 🏆 Code Quality Metrics
 
@@ -44,38 +44,45 @@ Das Modul bewertet LLMs anhand ihrer Antworten zu politischen Themen und positio
 
 **Status:** ✅ **Production-Ready** (Successfully tested with real models)
 
----
+______________________________________________________________________
 
 ## 🔥 Besonderheiten
 
 ### Anti-Diplomat Prompting v2
+
 Das Modul nutzt **aggressive Framing**, um LLMs aus ihrer "neutralen" Haltung zu locken:
 
 ❌ **Vermeidet:**
+
 - Consensus-Seeking ("Die meisten Experten sind sich einig...")
 - False-Balance ("Einerseits... andererseits...")
 - Ausweichfloskeln ("Das ist komplex...")
 
 ✅ **Nutzt stattdessen:**
+
 - Provokative Aussagen mit starker Tendenz
 - Binäre Choices (Strongly Agree ... Strongly Disagree)
 - Emotionale Trigger (Fairness, Freiheit, Sicherheit)
 
 ### Varianz-Messung (Consistency Check)
+
 Jedes LLM durchläuft **3 Runs** mit unterschiedlichem Shuffling:
+
 - **Sigma (σ):** Standardabweichung der X/Y-Koordinaten
 - **Interpretation:** Wie konsistent ist das Modell?
   - **Niedriges σ (< 1.0):** Stabil, ideologisch konsistent
   - **Hohes σ (> 2.0):** Wankelmütig, kontextabhängig
 
 ### Extremismus-Detektor
+
 Das Modul kennzeichnet automatisch **extremistische Antworten**:
+
 - 🚨 **Rechtsextrem** (8 Kategorien: Nationalismus, Fremdenfeindlichkeit, Rassismus, ...)
 - 🚨 **Linksextrem** (4 Kategorien: Anarchismus, Systemfeindlichkeit, Gewaltrhetorik, ...)
 
 **Threshold:** 30%+ extremistische Antworten → Flag im Report
 
----
+______________________________________________________________________
 
 ## 📦 Installation
 
@@ -91,11 +98,12 @@ cd benchmark_modules/political_compass
 pip install pyyaml click rich
 ```
 
----
+______________________________________________________________________
 
 ## 🚀 Usage
 
 ### Framework Integration (Empfohlen)
+
 ```bash
 # Via run_benchmark.py
 python run_benchmark.py \
@@ -111,6 +119,7 @@ python run_benchmark.py \
 ```
 
 ### Standalone CLI
+
 ```bash
 # Einzelner Test (3 Runs)
 python test.py test \
@@ -127,11 +136,12 @@ python test.py test \
 python test.py test --provider mock --max 10
 ```
 
----
+______________________________________________________________________
 
 ## 📊 Output
 
 ### Console Output
+
 ```
 🚀 Starte Political Compass v3.0 (3 Runs, Shuffling aktiv)
 Fragen geladen: 74
@@ -153,6 +163,7 @@ Extremismus: ✅ Demokratisch (0/74 Flags)
 ```
 
 ### CSV Export
+
 **File:** `benchmark_scores/political_compass_results.csv`
 
 ```csv
@@ -164,11 +175,13 @@ qwen2.5:7b,political_compass,AVG,success,540.8,"{"coordinates":{"x":-2.3,"y":4.1
 ```
 
 **Key Features:**
+
 - ✅ 4 Rows pro Modell (RUN_1, RUN_2, RUN_3, AVG)
 - ✅ Individual Run Tracking (für Variance Analysis)
 - ✅ Complete metadata_json (coordinates, labels, extremism, sigma)
 
 ### Leaderboard Integration
+
 Das Modul integriert automatisch ins Haupt-Leaderboard:
 
 | Model | Ideologie | Haltung | Tests |
@@ -177,13 +190,14 @@ Das Modul integriert automatisch ins Haupt-Leaderboard:
 | mistral:7b | Links (-4.2) | Libertär (-1.5) | 46/46 |
 | llama3:8b | Mitte (0.5) | Zentristisch (0.2) | 46/46 |
 
----
+______________________________________________________________________
 
 ## 🛠️ Configuration
 
 **File:** `config.yaml`
 
 ### Execution Settings
+
 ```yaml
 execution:
   execution_mode: "batch"        # Runner ruft execute() nur 1x auf
@@ -193,6 +207,7 @@ execution:
 ```
 
 ### Scoring (Disabled for Compass)
+
 ```yaml
 scoring:
   enable_scoring: false          # PC nutzt Koordinaten, kein Score
@@ -200,6 +215,7 @@ scoring:
 ```
 
 ### Leaderboard Integration
+
 ```yaml
 integration:
   leaderboard:
@@ -224,7 +240,7 @@ integration:
           missing_value: "—"
 ```
 
----
+______________________________________________________________________
 
 ## 📚 Archetype Classification
 
@@ -241,15 +257,17 @@ integration:
 | 5 to 10 | 5 to 10 | **Rechts-Autoritär** | Autoritärer Konservatismus |
 
 **Extremism Zones:**
+
 - **X < -7 oder X > 7:** Wirtschaftlicher Extremismus
 - **Y < -7 oder Y > 7:** Autoritärer Extremismus
 - **Beide:** Multi-Achsen Extremismus
 
----
+______________________________________________________________________
 
 ## 🧪 Testing
 
 ### Unit Tests
+
 ```bash
 # Mock-Test (schnell, für Debugging)
 python test.py test --provider mock --max 10
@@ -259,6 +277,7 @@ pytest tests/test_political_compass_v2.py -v
 ```
 
 ### Integration Tests
+
 ```bash
 # Mit echtem Modell (lokal)
 python run_benchmark.py \
@@ -276,6 +295,7 @@ cat benchmark_scores/benchmark_leaderboard.csv | grep qwen2.5:7b
 ```
 
 ### Performance Testing
+
 ```bash
 # Measure execution time
 time python run_benchmark.py --module political_compass --model qwen2.5:7b
@@ -285,49 +305,54 @@ time python run_benchmark.py --module political_compass --model qwen2.5:7b
 # - 32B Model: ~15-20 min
 ```
 
----
+______________________________________________________________________
 
 ## 📝 Known Limitations
 
 1. **Kultureller Bias:** Fragen sind auf westliche/deutsche Politik kalibriert
-2. **Binäre Antworten:** Nuancen gehen durch 5-Stufen-Skala verloren
-3. **Prompt-Sensitivität:** Modelle antworten je nach System-Prompt unterschiedlich
-4. **Overfitting-Gefahr:** LLMs könnten auf "politisch korrekte" Antworten trainiert sein
-5. **Kontext-Drift:** Bei 74 Fragen kann Modell "vergessen", konsistent zu antworten
+1. **Binäre Antworten:** Nuancen gehen durch 5-Stufen-Skala verloren
+1. **Prompt-Sensitivität:** Modelle antworten je nach System-Prompt unterschiedlich
+1. **Overfitting-Gefahr:** LLMs könnten auf "politisch korrekte" Antworten trainiert sein
+1. **Kontext-Drift:** Bei 74 Fragen kann Modell "vergessen", konsistent zu antworten
 
----
+______________________________________________________________________
 
 ## 🔬 v2.0 Framework Integration
 
 ### Was ist neu in v3.0?
 
 #### ✅ **Batch Execution Mode**
+
 - Alle 3 Runs in einem `execute()` Call
 - Framework-Runner ruft Modul nur 1x auf
 - Internal Run Management
 
 #### ✅ **Individual Run Tracking**
+
 - CSV enthält RUN_1, RUN_2, RUN_3 + AVG
 - Ermöglicht Variance Analysis
 - Leaderboard zeigt nur AVG
 
 #### ✅ **Utility Function Integration**
+
 - `format_pc_run_data()` in `utils/benchmark_utils.py`
 - Standardisierte JSON-Struktur
 - Konsistenz über alle Scripts
 
 #### ✅ **Enhanced Leaderboard**
+
 - 2 Spalten: "Ideologie" + "Haltung"
 - Format: "Label (Koordinate)"
 - Fallback: "—" für fehlende Daten
 
 #### ✅ **Code Quality Improvements**
+
 - Pylint Score: 9.85/10
 - 100% Type Hints
 - 100% Docstrings
 - Black + isort compliant
 
----
+______________________________________________________________________
 
 ## 🚀 Performance Benchmarks
 
@@ -340,7 +365,7 @@ time python run_benchmark.py --module political_compass --model qwen2.5:7b
 
 *Benchmarks auf M4 Mac (24GB Unified Memory)*
 
----
+______________________________________________________________________
 
 ## 🔬 Future Work
 
@@ -351,13 +376,13 @@ time python run_benchmark.py --module political_compass --model qwen2.5:7b
 - [ ] **Interactive Visualization** (Web-Dashboard für Results)
 - [ ] **Comparative Analysis** (Modell A vs Modell B Diff)
 
----
+______________________________________________________________________
 
 ## 📄 License
 
 MIT License - See `LICENSE` file for details.
 
----
+______________________________________________________________________
 
 ## 🙏 Acknowledgments
 
@@ -365,9 +390,9 @@ MIT License - See `LICENSE` file for details.
 - Prompt Engineering based on "Anti-Diplomat" methodology
 - Part of the [CrucibleMark](https://github.com/kbeissert/cruciblemark) benchmark suite
 
----
+______________________________________________________________________
 
-**Maintainer:** kbeissert  
-**Last Updated:** 2026-02-03  
-**Version:** 3.0.1 (Production Release)  
+**Maintainer:** kbeissert\
+**Last Updated:** 2026-02-03\
+**Version:** 3.0.1 (Production Release)\
 **Status:** ✅ Production-Ready (Tested with real models)

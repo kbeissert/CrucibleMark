@@ -3,6 +3,7 @@
 **Zielgruppe:** Entwickler, die neue Test-Module erstellen oder das Scoring-System erweitern wollen.
 
 **Was Sie hier finden:**
+
 - Quick Start: Neues Modul in 15 Minuten
 - Asset-Format & YAML-Schema
 - Scoring-Logik implementieren
@@ -11,7 +12,7 @@
 
 > **Voraussetzung:** Grundkenntnisse in Python, YAML und Regex.
 
----
+______________________________________________________________________
 
 ## ⚡ Quick Start: Neues Modul erstellen
 
@@ -22,11 +23,13 @@ make create-module
 ```
 
 **Der Wizard fragt:**
+
 1. Modul-ID (z.B. `api_design`)
-2. Score Group (`routine`, `reasoning`, `info`)
-3. Anzeigename (z.B. "API Design Review")
+1. Score Group (`routine`, `reasoning`, `info`)
+1. Anzeigename (z.B. "API Design Review")
 
 **Output:**
+
 - Vollständige Ordnerstruktur
 - Template `test.py` mit Basis-Code
 - `config.yaml` vorkonfiguriert
@@ -34,7 +37,7 @@ make create-module
 
 **Zeit:** ~2 Minuten bis zum ersten Test-Run
 
----
+______________________________________________________________________
 
 ### 🚀 Development Loop & Testing
 
@@ -46,14 +49,15 @@ make benchmark-dev
 ```
 
 Oder direkt über das CLI:
+
 ```bash
 python run_benchmark.py --dev --model ministral:8b
 ```
 
-**Adaptive Pausen:** 
+**Adaptive Pausen:**
 Das Framework nutzt `utils/adaptive_pause.py`, um dynamische Erholungspausen einzulegen (wichtig für Mac M-Chips mit Unified Memory). Im Dev-Modus sind diese Pausen aggressiver verkürzt, was zu leicht verfälschter Performance führen kann, aber die Entwicklungszeit drastisch reduziert.
 
----
+______________________________________________________________________
 
 ### Option 2: Manuell (für volle Kontrolle)
 
@@ -65,12 +69,13 @@ touch benchmark_modules/your_module/core/{__init__.py,evaluators.py,constants.py
 ```
 
 **Minimale Dateien:**
+
 - `config.yaml` – Metadaten & Leaderboard-Config
 - `test.py` – Runner (Controller)
 - `core/evaluators.py` – Scoring-Logik
 - `assets/*.yaml` – Test-Cases
 
----
+______________________________________________________________________
 
 ## 📁 Modul-Anatomie
 
@@ -92,7 +97,7 @@ benchmark_modules/
         └── constants.py       # Schwellenwerte, Regex-Patterns
 ```
 
----
+______________________________________________________________________
 
 ## 🏷️ Model Versioning & Fingerprinting
 
@@ -102,15 +107,17 @@ CrucibleMark nutzt ein striktes **Dual-Versionierungssystem**, um Änderungen an
 
 Jede Version besteht aus zwei Komponenten:
 
-1.  **OFFICIAL_ID (Basis):**
-    *   Leitet sich vom offiziellen Anbieter-Namen ab.
-    *   Format: `YYYYMMDD` (z.B. `20240513` für GPT-4o) oder `v0.3` (z.B. Mistral 7B).
-    *   Wird automatisch per Regex aus dem Modellnamen extrahiert oder via `OFFICIAL_SNAPSHOTS` gemappt.
+1. **OFFICIAL_ID (Basis):**
 
-2.  **BEHAVIORAL_HASH (Suffix):**
-    *   Ein 8-stelliger Hex-Hash (z.B. `8717af19`).
-    *   Basierend auf deterministischen Standard-Prompts ("Fingerprints"), die das Modell beim Start ausführt.
-    *   **Zweck:** Ändert der Anbieter das Modell im Hintergrund (gleicher Name, gleiches Datum, aber anderes Verhalten), ändert sich dieser Hash -> **Neue Leaderboard-Entry**.
+   - Leitet sich vom offiziellen Anbieter-Namen ab.
+   - Format: `YYYYMMDD` (z.B. `20240513` für GPT-4o) oder `v0.3` (z.B. Mistral 7B).
+   - Wird automatisch per Regex aus dem Modellnamen extrahiert oder via `OFFICIAL_SNAPSHOTS` gemappt.
+
+1. **BEHAVIORAL_HASH (Suffix):**
+
+   - Ein 8-stelliger Hex-Hash (z.B. `8717af19`).
+   - Basierend auf deterministischen Standard-Prompts ("Fingerprints"), die das Modell beim Start ausführt.
+   - **Zweck:** Ändert der Anbieter das Modell im Hintergrund (gleicher Name, gleiches Datum, aber anderes Verhalten), ändert sich dieser Hash -> **Neue Leaderboard-Entry**.
 
 **Implementation:**
 Die Logik liegt zentral in `utils/fingerprinting.py`. Nutzen Sie beim Caching von Ergebnissen immer:
@@ -122,7 +129,7 @@ from utils.fingerprinting import ModelFingerprinter
 version = ModelFingerprinter.get_unified_version(provider, model_name, client)
 ```
 
----
+______________________________________________________________________
 
 ## ⚙️ Konfiguration: `config.yaml`
 
@@ -192,7 +199,9 @@ benchmarks:
 ```
 
 # ====================================================================
+
 # OUTPUT CONTRACT: BENCHMARK RESULT
+
 # ====================================================================
 
 Every module's Controller (test.py) must return a `BenchmarkResult` object.
@@ -252,7 +261,7 @@ class BenchmarkResult(BaseModel):
 **Why strict typing?**
 Previous versions returned loose Dictionaries, leading to chaotic CSV columns (`score` vs `total_score` vs `result`). The `BenchmarkResult` class enforces a single standard.
 
----
+______________________________________________________________________
 
 #### 2. LOKAL (Optional) – Modul-spezifische Config
 
@@ -277,12 +286,13 @@ interpretation:
 ```
 
 **Zugriff in test.py:**
+
 ```python
 self.config = self.load_config()
 threshold = self.config['config']['keyword_threshold']
 ```
 
----
+______________________________________________________________________
 
 ### Execution Modes
 
@@ -291,31 +301,35 @@ threshold = self.config['config']['keyword_threshold']
 | **`standard`** | Framework lädt Assets einzeln, instanziiert Test pro Asset | Code Quality, UX Writing (isolierte Tests) |
 | **`batch`** | Framework übergibt alle Assets, Test kontrolliert Loop | Political Compass (3x Runs), Custom Aggregation |
 
----
+______________________________________________________________________
 
 ### Kaskadierende Score-Contributions
 
 **Ab v1.1:** Das Framework berechnet den **Routine Score** und **Reasoning Score** automatisch als Durchschnitt der entsprechenden Module. Die Unterscheidung findet primär auf **Modul-Level** statt (Mapping via Config), aber granulare Contributions sind weiterhin unterstützt.
 
 1. **Asset-Level** (höchste Priorität):
+
    ```yaml
    - id: "reasoning_5d_002"
      score_contribution:
        reasoning: 1.0  # Ordnet dieses Asset dem Reasoning Score zu
    ```
 
-2. **Modul-Level** (Standard):
+1. **Modul-Level** (Standard):
    Definiert in `config.yaml` → `integration` → `default_contribution`.
-   *   `routine: 1.0` → Zählt zum "Routine Score" (z.B. Documentation, UX)
-   *   `reasoning: 1.0` → Zählt zum "Reasoning Score" (z.B. Logical Reasoning)
 
-3. **Total Score Berechnung:**
+   - `routine: 1.0` → Zählt zum "Routine Score" (z.B. Documentation, UX)
+   - `reasoning: 1.0` → Zählt zum "Reasoning Score" (z.B. Logical Reasoning)
+
+1. **Total Score Berechnung:**
+
    ```python
    Total Score = (Routine Score + Reasoning Score) / 2
    ```
+
    Dies belohnt Spezialisten und verhindert, dass reine Routine-Modelle durch Masse (viele einfache Tests) den Score verzerren.
 
----
+______________________________________________________________________
 
 ## 📝 Asset-Format (YAML-Schema)
 
@@ -327,8 +341,9 @@ Das Framework ermittelt die Anzahl der Tests (für das Leaderboard) automatisch 
 `{Modul}_{OptionalerName}_{Gruppe}-{Variante}.yaml`
 
 Die Logik basiert auf dem **letzten Bindestrich (`-`)**:
-*   Alles **vor** dem letzten Bindestrich (gefolgt von Ziffern) wird als **Gruppen-ID** gewertet.
-*   Alles **danach** ist die Variante (z.B. Frage-Nummer) und wird nicht separat gezählt.
+
+- Alles **vor** dem letzten Bindestrich (gefolgt von Ziffern) wird als **Gruppen-ID** gewertet.
+- Alles **danach** ist die Variante (z.B. Frage-Nummer) und wird nicht separat gezählt.
 
 **Beispiele:**
 
@@ -338,7 +353,7 @@ Die Logik basiert auf dem **letzten Bindestrich (`-`)**:
 | `pol_axis1-001.yaml` | `pol_axis1` | **1 Test** (zusammen mit -002) |
 | `pol_axis1-002.yaml` | `pol_axis1` | (Variante, zählt nicht extra) |
 
----
+______________________________________________________________________
 
 ### Standard-Assets
 
@@ -373,7 +388,7 @@ evaluation:
   required_format: "markdown"          # markdown, json, code, text
 ```
 
----
+______________________________________________________________________
 
 ### Info-Module (Structured Output)
 
@@ -394,7 +409,7 @@ evaluation:
     y_range: [-10, 10]                 # Soziale Achse
 ```
 
----
+______________________________________________________________________
 
 ## 🧠 Scoring-Logik implementieren
 
@@ -439,7 +454,7 @@ def execute(self, model: str, llm_client: Any, **kwargs) -> BenchmarkResult:
     )
 ```
 
----
+______________________________________________________________________
 
 ### Beispiel: `core/evaluators.py`
 
@@ -510,7 +525,7 @@ class YourEvaluator:
             return (len(text) / min_len) * 100.0
 ```
 
----
+______________________________________________________________________
 
 ## 📊 CSV-Output & Leaderboard
 
@@ -529,13 +544,14 @@ Diese Spalten werden vom Framework gefüllt:
 | `routine_contribution` | Float | config.yaml |
 | `reasoning_contribution` | Float | config.yaml |
 
----
+______________________________________________________________________
 
 ### Custom Spalten
 
 Das Framework schreibt automatisch die Werte aus `BenchmarkResult.data` in die CSV, sofern sie flach genug sind.
 
 In `test.py` (via Evaluator):
+
 ```python
 # Evaluator return
 return {
@@ -549,7 +565,7 @@ return {
 
 Die `BenchmarkResult`-Validierung stellt sicher, dass keine zu tief verschachtelten Objekte (max 5 Levels) zurückgegeben werden.
 
----
+______________________________________________________________________
 
 ## 🧪 Testing & Validation
 
@@ -573,41 +589,43 @@ make leaderboard
 # Prüfen: Ist Ihre Spalte da? Werte korrekt?
 ```
 
----
+______________________________________________________________________
 
 ## 📐 Best Practices
 
 ### DO's ✅
 
 1. **MVC-Trennung:** test.py = Controller, evaluators.py = Logik
-2. **Determinismus:** Fixe Seeds, keine Random ohne Seed
-3. **Config-First:** Schwellenwerte in config.yaml
-4. **Dokumentation:** README.md nach Template
+1. **Determinismus:** Fixe Seeds, keine Random ohne Seed
+1. **Config-First:** Schwellenwerte in config.yaml
+1. **Dokumentation:** README.md nach Template
 
 ### DON'Ts ❌
 
 1. **Keine LLM-Calls in Evaluators**
-2. **Keine Modell-spezifischen Hacks** (Unfairer Boost)
-3. **Keine Silent Failures** (Exceptions loggen!)
+1. **Keine Modell-spezifischen Hacks** (Unfairer Boost)
+1. **Keine Silent Failures** (Exceptions loggen!)
 
----
+______________________________________________________________________
 
 ## 🆘 Troubleshooting
 
 ### "Scores are always 0%"
 
 Debug-Checklist:
+
 1. `score_response()` implementiert?
-2. Returned Float (nicht Dict)?
-3. Keywords case-sensitive?
+1. Returned Float (nicht Dict)?
+1. Keywords case-sensitive?
 
 Debug-Tool:
+
 ```bash
 python scripts/run_local_benchmark.py --debug-responses
 # Prüfe: benchmark_scores/debug_responses/
 ```
 
----
+______________________________________________________________________
 
 ## 📚 Weiterführende Ressourcen
 
@@ -615,9 +633,9 @@ python scripts/run_local_benchmark.py --debug-responses
 - **USER_GUIDE.md** – Wie Nutzer Module ausführen
 - **GOLDEN_STANDARDS.md** – Referenz-Methodik
 
----
+______________________________________________________________________
 
 **Happy Coding! 🚀**
 
-**Dokumenten-Version:** 1.0.0 (Rewrite Feb 2026)  
+**Dokumenten-Version:** 1.0.0 (Rewrite Feb 2026)\
 **Kompatibel mit:** CrucibleMark v0.9.5+

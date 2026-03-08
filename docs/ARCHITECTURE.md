@@ -3,6 +3,7 @@
 **Zielgruppe:** Engineers, die den Framework-Core verstehen oder erweitern wollen.
 
 **Was Sie hier finden:**
+
 - Layer-basierte Architektur (Core → Modules → Scoring → Data)
 - MVC-Pattern & Design-Prinzipien
 - Provider-Abstraktion (Ollama, OpenAI, Mistral)
@@ -11,7 +12,7 @@
 
 > **Siehe auch:** DEVELOPER_GUIDE.md (für Modul-Entwicklung)
 
----
+______________________________________________________________________
 
 ## 🏗️ Architektur-Übersicht
 
@@ -20,11 +21,11 @@ CrucibleMark folgt einer **Plugin-basierten Architektur**, bei der Benchmark-Mod
 ### Design-Prinzipien
 
 1. **Config-First:** Alle Module werden via `benchmark_config.yaml` entdeckt (kein Hardcoding)
-2. **Provider-Agnostisch:** Module wissen nicht, ob sie Ollama oder GPT-4 testen
-3. **Stateless Runs:** Jeder Benchmark ist unabhängig (keine Cross-Run-Pollution)
-4. **Reproducibility:** Fixe Seeds + deterministische Prompts
+1. **Provider-Agnostisch:** Module wissen nicht, ob sie Ollama oder GPT-4 testen
+1. **Stateless Runs:** Jeder Benchmark ist unabhängig (keine Cross-Run-Pollution)
+1. **Reproducibility:** Fixe Seeds + deterministische Prompts
 
----
+______________________________________________________________________
 
 ## 🎯 Layer-Architektur
 
@@ -58,7 +59,7 @@ CrucibleMark folgt einer **Plugin-basierten Architektur**, bei der Benchmark-Mod
 └─────────────────────────────────────────────────────┘
 ```
 
----
+______________________________________________________________________
 
 ## 🎮 Layer 1: Framework Core
 
@@ -69,18 +70,21 @@ CrucibleMark folgt einer **Plugin-basierten Architektur**, bei der Benchmark-Mod
 **Dual-Runner Strategy:**
 CrucibleMark trennt strikt zwischen lokalen und kommerziellen Laufzeitumgebungen, um faire Ergebnisse fÃ¼r jeden Kontext zu liefern.
 
-1.  **Local Runner (`scripts/core/run_local_benchmark.py`):**
-    *   **Ziel:** "User Experience Simulation" (Wie fühlte es sich an, lokal zu arbeiten?)
-    *   **Komponente:** `AdaptivePauseCalculator` (`utils/adaptive_pause.py`)
-    *   **Logik:** Pausiert zwischen Tests basierend auf Modellgröße (RAM Footprint), Output-Länge (Context Overhead) und voriger Ausführungszeit.
-    *   **Modes:** `PRODUCTION` (15-30s Pausen für max. Stabilität) vs `DEV` (5-10s Pausen für schnelle Iteration).
+1. **Local Runner (`scripts/core/run_local_benchmark.py`):**
 
-2.  **Commercial Runner (`scripts/core/run_commercial_benchmark.py`):**
-    *   **Ziel:** "Throughput & Reliability" (API-Stress-Test)
-    *   **Komponente:** `RateLimiter` (`utils/rate_limiter.py`)
-    *   **Logik:** Respektiert Provider-Limitate (RPM), aber nutzt ansonsten minimale Pausen für maximalen Throughput.
+   - **Ziel:** "User Experience Simulation" (Wie fühlte es sich an, lokal zu arbeiten?)
+   - **Komponente:** `AdaptivePauseCalculator` (`utils/adaptive_pause.py`)
+   - **Logik:** Pausiert zwischen Tests basierend auf Modellgröße (RAM Footprint), Output-Länge (Context Overhead) und voriger Ausführungszeit.
+   - **Modes:** `PRODUCTION` (15-30s Pausen für max. Stabilität) vs `DEV` (5-10s Pausen für schnelle Iteration).
+
+1. **Commercial Runner (`scripts/core/run_commercial_benchmark.py`):**
+
+   - **Ziel:** "Throughput & Reliability" (API-Stress-Test)
+   - **Komponente:** `RateLimiter` (`utils/rate_limiter.py`)
+   - **Logik:** Respektiert Provider-Limitate (RPM), aber nutzt ansonsten minimale Pausen für maximalen Throughput.
 
 **Verantwortlichkeiten (Shared Framework):**
+
 - Config-Parsing
 - Modul-Discovery (nur aktive Module laden)
 - Execution-Flow
@@ -88,7 +92,7 @@ CrucibleMark trennt strikt zwischen lokalen und kommerziellen Laufzeitumgebungen
 
 **Key Invariant:** Der Orchestrator kennt **keine Modul-Namen**. Alles läuft über Config-Discovery.
 
----
+______________________________________________________________________
 
 ### Provider-Abstraktion
 
@@ -111,7 +115,7 @@ class LLMClient:
 | OpenAI | Bearer token | 128K (GPT-4) | ✅ Yes | 429 → Exponential Backoff |
 | Mistral | API key | 32K | ❌ No | 500 → Retry 3x |
 
----
+______________________________________________________________________
 
 ## 📦 Layer 2: Benchmark Modules
 
@@ -142,37 +146,40 @@ class LLMClient:
 ```
 
 **Warum diese Trennung?**
-1. **Testbarkeit:** Evaluators ohne LLM testbar (Unit-Tests)
-2. **Reproduzierbarkeit:** Scoring deterministisch
-3. **Modularität:** Scoring austauschbar (Regex → LLM-Judge)
 
----
+1. **Testbarkeit:** Evaluators ohne LLM testbar (Unit-Tests)
+1. **Reproduzierbarkeit:** Scoring deterministisch
+1. **Modularität:** Scoring austauschbar (Regex → LLM-Judge)
+
+______________________________________________________________________
 
 ### Modul-Discovery (Config-First)
 
 **Ablauf:**
 
 1. Framework parst `benchmark_config.yaml`
-2. Filtert Module mit `enabled: true`
-3. Lädt `benchmark_modules/<module_id>/config.yaml`
-4. Importiert `test_class` dynamisch
-5. Instanziiert Test-Objekt
-6. Führt `execute()` aus
+1. Filtert Module mit `enabled: true`
+1. Lädt `benchmark_modules/<module_id>/config.yaml`
+1. Importiert `test_class` dynamisch
+1. Instanziiert Test-Objekt
+1. Führt `execute()` aus
 
 **Wichtig:** Ein Entwickler kann ein Modul hinzufügen, ohne Framework-Code zu ändern!
 
----
+______________________________________________________________________
 
 ## 🧮 Layer 3: Scoring Engine
 
 ### 1. Granular Rubric Scoring (v2.1)
+
 Genutzt für **Reasoning Modules** (Tier 1-2). Ersetzt binäre Scores durch partielle Punktevergabe basierend auf Rubriken.
 
 **v2.1 Changes (Stricter Thresholds):**
+
 - 80%+ matches: 100% credit
 - 60-79% matches: 75% credit
 - 40-59% matches: 50% credit
-- <40% matches: 0% credit
+- \<40% matches: 0% credit
 
 **Legacy Deprecation:**
 Alte Scoring-Methode (`Legacy`) wird in v3.0 entfernt. Alle neuen Reasonung-Tests nutzen Rubriken.
@@ -188,6 +195,7 @@ RUBRICS = {
 ```
 
 ### 2. Hybrid-Ansatz (Keyword + Semantic)
+
 Genutzt für **Standard Modules** (Code Quality, UX Writing).
 
 ```python
@@ -206,11 +214,12 @@ def hybrid_score(response: str, asset: Dict) -> float:
 ```
 
 **Semantic Similarity:**
+
 - **Model:** `sentence-transformers/all-MiniLM-L6-v2`
 - **Metric:** Cosine Similarity (0-1 → 0-100%)
 - **Threshold:** 0.78 (Standard), 0.55 (Expert Tier)
 
----
+______________________________________________________________________
 
 ### Golden Standard Comparison
 
@@ -219,7 +228,7 @@ def hybrid_score(response: str, asset: Dict) -> float:
 **Warum Absolute Standards?**
 Die "Performance Ratio" (Relativ zu Mistral) war hilfreich, führt aber zu Verwirrung, wenn sich der Referenzwert ändert. Ab v1.1 gelten feste Hürden (z.B. >85% für Gold).
 
----
+______________________________________________________________________
 
 ## 📊 Layer 4: Data Persistence
 
@@ -255,21 +264,21 @@ else:
 **Skill Profile Generation:**
 Zusätzlich erstellt das System ein Profil basierend auf Speed Class und Top-Modul (z.B. "Fast Code Reviewer").
 
----
+______________________________________________________________________
 
 ### Backup-Strategie (Snapshot & Prune)
 
 **Workflow** (`make backup`):
 
 1. **Snapshot:** Archiv erstellen
-2. **Prune JSON-Logs:** Nur letzte 5 Runs behalten
-3. **CSV-Konsolidierung:** Nur neueste Zeile pro (Modell, Asset)
+1. **Prune JSON-Logs:** Nur letzte 5 Runs behalten
+1. **CSV-Konsolidierung:** Nur neueste Zeile pro (Modell, Asset)
 
 **Effekt:** CSV-Dateien bleiben < 5 MB
 
 **Siehe:** `docs/BACKUP_STRATEGY.md`
 
----
+______________________________________________________________________
 
 ## 🔍 Observability & Logging
 
@@ -284,71 +293,81 @@ print("⏳ Testing Reasoning Module (2/7)...")
 
 **Gefiltert:** Warnings von Drittanbieter-Bibliotheken
 
----
+______________________________________________________________________
 
 #### 2. Log-Datei (Developer-Facing)
 
 **Pfad:** `logs/crucible.log`
 
 **Inhalt:**
+
 - Alles (Level: DEBUG)
 - Inkl. unterdrückter Warnings
 - Tracebacks bei Exceptions
 
----
+______________________________________________________________________
 
 ## 🔧 Known Technical Debt
 
 ### Kategorie: Untested Assumptions
 
 1. **Single-Module Isolation**
+
    - **Annahme:** Framework funktioniert mit nur 1 aktivem Modul
    - **Risiko:** Leaderboard könnte crashen
    - **Test:** Config mit nur 1 Modul aktiv
 
-2. **Column Pruning**
+1. **Column Pruning**
+
    - **Annahme:** Leaderboard löscht Spalten deaktivierter Module
    - **Risiko:** Zombie-Spalten
    - **Test:** Modul deaktivieren → Spalte weg?
 
-3. **Cache Orphans**
+1. **Cache Orphans**
+
    - **Annahme:** JSON-Files werden bei Modul-Löschung bereinigt
    - **Risiko:** Festplatten-Müll
    - **Test:** Modul löschen → Prüfen
 
----
+______________________________________________________________________
 
 ### Kategorie: Code Smells
 
 1. **Duplicated Config Parsing**
+
    - **Problem:** 3+ Skripte parsen separat
    - **Fix:** Zentrales `core/config_manager.py`
 
-2. **Hardcoded Paths**
+1. **Hardcoded Paths**
+
    - **Problem:** Einige nutzen `results/` statt Config
    - **Fix:** Alle Pfade aus Config lesen
 
-3. **Inconsistent Error Handling**
+1. **Inconsistent Error Handling**
+
    - **Problem:** Ollama crasht, API retries
    - **Fix:** Einheitliche `ErrorHandler`-Klasse
 
----
+______________________________________________________________________
 
 ### Kategorie: Missing Features
 
 1. **No Rollback Mechanism**
+
    - **Impact:** Medium
    - **Effort:** 2 Stunden
 
-2. **No Incremental Leaderboard**
+1. **No Incremental Leaderboard**
+
    - **Impact:** Low
    - **Effort:** 4 Stunden
 
-3. **No Diff Reports**
+1. **No Diff Reports**
+
    - **Impact:** High
    - **Effort:** 6 Stunden
 
----
+______________________________________________________________________
 
 ## 🗺️ Roadmap (Path to v1.0)
 
@@ -357,22 +376,24 @@ print("⏳ Testing Reasoning Module (2/7)...")
 **Ziel:** Framework-Contract validieren
 
 **Tasks:**
+
 - [ ] Single-Module-Test
 - [ ] Column-Pruning-Test
 - [ ] Cache-Cleanup-Test
 
----
+______________________________________________________________________
 
 ### Phase 2: Code Hygiene
 
 **Ziel:** DRY-Prinzip durchsetzen
 
 **Tasks:**
+
 - [ ] Zentrales Config-Parsing
 - [ ] Type-Hints + Docstrings
 - [ ] Einheitliches Error-Handling
 
----
+______________________________________________________________________
 
 ### Phase 3: LLM-as-a-Judge
 
@@ -382,7 +403,7 @@ print("⏳ Testing Reasoning Module (2/7)...")
 
 **Backwards-Compatible:** Config-Flag `scoring_method`
 
----
+______________________________________________________________________
 
 ## 📚 Appendix: Design-Patterns
 
@@ -394,7 +415,7 @@ class BaseEvaluator:
         raise NotImplementedError
 ```
 
----
+______________________________________________________________________
 
 ### 2. Template Method Pattern (BaseTest)
 
@@ -407,7 +428,7 @@ class BaseTest:
         self.save_to_csv(score)
 ```
 
----
+______________________________________________________________________
 
 ### 3. Factory Pattern (Provider)
 
@@ -420,7 +441,7 @@ class LLMClientFactory:
         # ...
 ```
 
----
+______________________________________________________________________
 
-**Dokumenten-Version:** 1.0.0 (Rewrite Feb 2026)  
+**Dokumenten-Version:** 1.0.0 (Rewrite Feb 2026)\
 **Kompatibel mit:** CrucibleMark v0.9.5+

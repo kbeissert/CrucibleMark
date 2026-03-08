@@ -1,6 +1,7 @@
 # UX Writing Module
 
 > **Technical Metadata**
+>
 > - **ID:** `ux_writing`
 > - **Namespace:** `benchmark_modules.ux_writing`
 > - **Class:** `UXWritingTest` (inherits `BaseTest`)
@@ -9,7 +10,7 @@
 > - **Quality Score:** 99/100 (A+)
 > - **Pylint Score:** 9.07/10
 
----
+______________________________________________________________________
 
 ## 🔍 Module Overview
 
@@ -21,7 +22,7 @@ Dieses Modul prüft die Kompetenz von LLMs im Bereich **User Experience Writing*
 - **Accessibility Labels** (ARIA/Screen Reader)
 - **Microcopy Audits** (Health & Safety-Critical Content)
 
----
+______________________________________________________________________
 
 ## 🏗 Architecture (v2.0)
 
@@ -55,7 +56,7 @@ benchmark_modules/ux_writing/
     └── test_yaml_consistency.py     # YAML Structure Validation (5+ tests)
 ```
 
----
+______________________________________________________________________
 
 ## 🎯 Core Components
 
@@ -87,7 +88,7 @@ DEFAULT_REQUIRED_RATIO = 0.6
 
 **Vorteil:** Änderungen an Schwellenwerten müssen nur an **einer Stelle** gemacht werden!
 
----
+______________________________________________________________________
 
 ### 2. **evaluators/** – Modulare Scoring-Engine
 
@@ -123,7 +124,7 @@ EvaluatorFactory.get_evaluator("keyword_presence")
 # → KeywordPresenceEvaluator()
 ```
 
----
+______________________________________________________________________
 
 ### 3. **Scoring Logic** – Tiered Difficulty
 
@@ -138,11 +139,11 @@ Alle Assets verwenden ein **60/30/10 Scoring-Schema**:
 **Error Detection Tiers:**
 
 1. **Labeled Issues** (10 Punkte): Basics (z.B. "Kein Jargon")
-2. **Standard Issues** (20 Punkte): Intermediate (z.B. "Actionable Language")
-3. **Advanced Issues** (15 Punkte): Empathie & Ton
-4. **Expert Issues** (15 Punkte): Psychologie (z.B. Endowed Progress Effect)
+1. **Standard Issues** (20 Punkte): Intermediate (z.B. "Actionable Language")
+1. **Advanced Issues** (15 Punkte): Empathie & Ton
+1. **Expert Issues** (15 Punkte): Psychologie (z.B. Endowed Progress Effect)
 
----
+______________________________________________________________________
 
 ## 📂 Available Assets
 
@@ -154,7 +155,7 @@ Alle Assets verwenden ein **60/30/10 Scoring-Schema**:
 | **004** | Accessibility (ARIA) | Tiered | WCAG-Konformität, Screen Reader | 1.0 (strict) |
 | **005** | Microcopy Audit | Tiered | Health Context, Safety-Critical | 0.4 (empathy) |
 
----
+______________________________________________________________________
 
 ## 🧪 Testing
 
@@ -181,7 +182,7 @@ pytest benchmark_modules/ux_writing/tests/test_yaml_consistency.py -v
 
 **Alle Tests sind deterministisch** (keine LLM-Calls, nur String-Matching auf Fixtures).
 
----
+______________________________________________________________________
 
 ## 📊 Quality Metrics
 
@@ -195,13 +196,14 @@ pytest benchmark_modules/ux_writing/tests/test_yaml_consistency.py -v
 | **Magic Numbers** | **0** | ✅ (was 8) |
 | **Tests Passing** | **28/28** | ✅ All Green |
 
----
+______________________________________________________________________
 
 ## 🔄 Changelog
 
 ### v2.0.1 (2026-02-02) – Pylint Optimization
 
 **Polish & Bug Fixes:**
+
 - 🐛 **Fixed critical duplicate method** in `IssueEvaluator` (was causing incorrect scoring)
 - 🐛 **Removed unreachable code** in `validation.py` (partial scoring now works)
 - ✨ Added module docstrings to all evaluators (95% coverage)
@@ -210,17 +212,19 @@ pytest benchmark_modules/ux_writing/tests/test_yaml_consistency.py -v
 - 📈 **Pylint Score: 8.24 → 9.07** (+10%)
 
 **Metrics Update:**
+
 - Quality Score: 98/100 → **99/100**
 - Type-Hint Coverage: 98% (unchanged)
 - Test Coverage: ~80% (unchanged)
 
----
+______________________________________________________________________
 
 ### v2.0.0 (2026-02-01) – Major Refactoring
 
 **Breaking Changes:** None (API-compatible)
 
 **New Features:**
+
 - ✨ Created `core/constants.py` (all magic numbers centralized)
 - 🏗 Split `evaluators.py` → 6 modules (`base`, `keyword`, `structure`, `validation`, `factory`)
 - 🐛 Fixed YAML bugs in Asset 002/003:
@@ -231,13 +235,14 @@ pytest benchmark_modules/ux_writing/tests/test_yaml_consistency.py -v
 - 📚 Added Google-style docstrings (all public methods)
 
 **Metrics:**
+
 - Quality Score: 65/100 → **98/100** (+51%)
 - Largest File: 310 LOC → **119 LOC** (-68%)
 - Magic Numbers: 8 → **0** (-100%)
 - Type-Hint Coverage: 85% → **98%** (+15%)
 - Test Coverage: ~20% → **~80%** (+300%)
 
----
+______________________________________________________________________
 
 ## 🚀 Usage Example
 
@@ -268,7 +273,7 @@ print(f"Tier: {scores['tier']}")
 # Tier: Tier B (Competent)
 ```
 
----
+______________________________________________________________________
 
 ## 🛠 Development
 
@@ -287,7 +292,7 @@ pytest benchmark_modules/ux_writing/tests/
 mypy benchmark_modules/ux_writing/ --strict
 ```
 
----
+______________________________________________________________________
 
 ## 📖 Further Reading
 
@@ -295,14 +300,14 @@ mypy benchmark_modules/ux_writing/ --strict
 - **Data Format:** See `docs/DATA_FORMAT.md`
 - **Golden Standards:** See `docs/GOLDEN_STANDARDS.md`
 
----
+______________________________________________________________________
 
 ## 📝 License & Maintainers
 
-**Maintainer:** CrucibleMark Core Team  
-**Status:** ✅ Production-Ready (v2.0.1)  
+**Maintainer:** CrucibleMark Core Team\
+**Status:** ✅ Production-Ready (v2.0.1)\
 **Last Updated:** 2026-02-02
 
----
+______________________________________________________________________
 
 **Questions?** Open an issue or contact the maintainers.

@@ -3,13 +3,14 @@
 **Zielgruppe:** Alle, die verstehen wollen, wie CrucibleMark Modelle klassifiziert und bewertet.
 
 **Was Sie hier finden:**
+
 - Badge-System (Standard, Bronze, Silver, Gold)
 - Speed Classes (Fast, Medium, Slow)
 - Skill Profiles (automatische Kategorisierung)
 - Reasoning Score Interpretation
 - Best Practices für neue Modelle
 
----
+______________________________________________________________________
 
 ## 🏅 Badge-System
 
@@ -25,12 +26,13 @@ Badges reflektieren die **Gesamt-Performance** über alle Module hinweg.
 | ⚖️ **Standard** | < 60.0 | Entwicklungs-Stadium, limitiert | Dolphin-Llama3:8b (44.4) |
 
 **Aktuelle Verteilung (16 Modelle):**
+
 - Gold: 0
 - Silver: 8 (50%)
 - Bronze: 7 (44%)
 - Standard: 1 (6%)
 
----
+______________________________________________________________________
 
 ## 🌐 Provider-Kategorien
 
@@ -49,14 +51,17 @@ CrucibleMark unterscheidet drei Arten von Modell-Providern basierend auf ihrer I
 Die Kategorisierung erfolgt automatisch beim Laden der Benchmark-Daten basierend auf zwei Faktoren:
 
 1. **Quelldatei**: Aus welcher CSV stammen die Daten?
+
    - `commercial_models_benchmark.csv` → Immer **Commercial**
    - `local_models_benchmark.csv` → Weiter zu Regel 2
 
-2. **Modellname**: Enthält der Name das Suffix `:cloud`?
+1. **Modellname**: Enthält der Name das Suffix `:cloud`?
+
    - Ja (z.B. `minimax-m2:cloud`) → **Local Cloud**
    - Nein (z.B. `ministral-3:14b`) → **Local**
 
 **Beispiele:**
+
 ```python
 get_model_category('claude-sonnet-4', 'commercial')    # → 'Commercial'
 get_model_category('ministral-3:14b', 'local')         # → 'Local'
@@ -65,7 +70,7 @@ get_model_category('minimax-m2:cloud', 'local')        # → 'Local Cloud'
 
 **Hinweis:** Local Cloud-Modelle sind technisch Cloud-Dienste, werden aber über die lokale Ollama-Installation als Proxy aufgerufen. Sie bieten Zugang zu externen APIs mit der Benutzerfreundlichkeit von Ollama.
 
----
+______________________________________________________________________
 
 ## ⚡ Speed Classes
 
@@ -80,13 +85,14 @@ Speed Classes kategorisieren Modelle nach ihrer **durchschnittlichen Inferenz-Ze
 | **Slow** | 🐢 | > 60s | "Kaffeepause"-Modell | Hintergrund-Jobs, nächtliche Analysen |
 
 **Beispiele:**
+
 - **Fast:** Mistral Large (25.4s), Qwen 2.5-Coder:7b (17.9s)
 - **Medium:** Cogito:14b (62.2s), Mistral-Nemo (60.0s)
 - **Slow:** Ministral-3:14b (168s), Gemma3:12b (100.7s)
 
 **Wichtig:** Speed ≠ Quality! Ministral-3:14b ist Slow, aber Rang 4 im Leaderboard.
 
----
+______________________________________________________________________
 
 ## 🎯 Skill Profiles
 
@@ -95,52 +101,59 @@ Skill Profiles beschreiben die **Stärken-Kombination** eines Modells basierend 
 ### Profil-Typen
 
 #### 1. **Fast Specialist**
+
 - **Speed:** Fast (< 30s)
 - **Stärken:** Code Quality + Reasoning
 - **Beispiele:** Mistral Large (83.6 Code, 67.7 Reasoning)
 
 #### 2. **Fast Content Adapter**
+
 - **Speed:** Fast (< 30s)
 - **Stärken:** Content Transformation + Cultural Intelligence
 - **Beispiele:** Qwen 2.5-Coder:14b (77.1 Content, 63.0 Cultural)
 
 #### 3. **Fast Code Reviewer**
+
 - **Speed:** Fast (< 30s)
 - **Stärken:** Code Quality (> 85) + Documentation
 - **Beispiele:** Mistral Medium (90.2 Code, 70.9 Docs)
 
 #### 4. **Balanced Specialist**
+
 - **Speed:** Medium
 - **Stärken:** Gleichmäßig über alle Module
 - **Beispiele:** Cogito:14b (82.4 Code, 70.1 Reasoning)
 
 #### 5. **Slow Specialist**
+
 - **Speed:** Slow (> 60s)
 - **Stärken:** Einzelne Domäne (meist Reasoning oder Cultural)
 - **Beispiele:** Ministral-3:8b (71.5 Reasoning, 86.0 Cultural)
 
 #### 6. **Slow Content Adapter**
+
 - **Speed:** Slow (> 60s)
 - **Stärken:** Content + Cultural Intelligence
 - **Beispiele:** Ministral-3:14b (85.3 Content, 83.4 Cultural)
 
 **Automatische Erkennung:** Basiert auf Top-2-Kategorien + Speed Class.
 
----
+______________________________________________________________________
 
 ## 📊 Performance/s = "Qualität pro Sekunde"
 
-**Performance/s sagt:**  
+**Performance/s sagt:**\
 "Wie effizient ist das Modell in Bezug auf Wartezeit?"
 
 ### Formel
+
 ```
 Performance/s = Total Score ÷ Avg Time (s)
 ```
 
 **Was es misst:** Wie viel Leistung (Score) du **pro Sekunde Wartezeit** bekommst.
 
----
+______________________________________________________________________
 
 ## 🎯 Interpretation
 
@@ -160,26 +173,29 @@ Performance/s = Total Score ÷ Avg Time (s)
 | **Ministral-3:8b** | 75.19 | 106.0s | **0.71** | Mittellangsam, stark |
 | **Gemma3:12b** | 72.11 | 100.7s | **0.72** | Ähnlich wie Ministral-3:8b |
 
----
+______________________________________________________________________
 
 ## 💡 Use Cases nach Performance/s
 
 ### 🚀 Hoch (> 3.0) - "Echtzeit-Klasse"
-**Use Case:** Chat, Autocomplete, interaktive UIs  
-**Beispiel:** Mistral Large (3.10)  
+
+**Use Case:** Chat, Autocomplete, interaktive UIs\
+**Beispiel:** Mistral Large (3.10)\
 **Trade-off:** Meist Commercial oder schwächere Modelle
 
 ### ⚡ Mittel (1.0 - 3.0) - "Deep-Work-Klasse"
-**Use Case:** Code-Reviews, Dokumentations-Analysen  
-**Beispiel:** Qwen 2.5:14b (2.17), Cogito:14b (1.16)  
+
+**Use Case:** Code-Reviews, Dokumentations-Analysen\
+**Beispiel:** Qwen 2.5:14b (2.17), Cogito:14b (1.16)\
 **Trade-off:** Spürbare Latenz, aber akzeptabel
 
 ### 🐢 Niedrig (< 1.0) - "Batch-Klasse"
-**Use Case:** Nächtliche Scans, Background-Jobs  
-**Beispiel:** Ministral-3:14b (0.46)  
+
+**Use Case:** Nächtliche Scans, Background-Jobs\
+**Beispiel:** Ministral-3:14b (0.46)\
 **Trade-off:** Zu langsam für interaktive Nutzung, aber oft **höchste Quality**
 
----
+______________________________________________________________________
 
 ## 📊 Reasoning Score Interpretation
 
@@ -199,13 +215,14 @@ Der **Reasoning Score** ist der härteste Test in CrucibleMark.
 **Das ist gewollt!** CrucibleMark misst **operatives Reasoning** (Deadlock-Detection, Root-Cause-Analyse), nicht "wie viel schreibt das Modell".
 
 **Tier-Breakdown:**
+
 - **Tier 0 (Sanity Check):** 80% schaffen 60+ Punkte
 - **Tier 2 (Deep Reasoning):** 50% schaffen 70+ Punkte
 - **Tier 3 (Metacognition):** 20% schaffen 70+ Punkte
 
 **Referenz:** Selbst DeepSeek-R1 (Marketing: "Reasoning Model") erreicht nur **31.6** → Das zeigt, dass Tier 2/3 **wirklich schwer** sind.
 
----
+______________________________________________________________________
 
 ## 🔍 Routine vs. Reasoning Score
 
@@ -217,12 +234,13 @@ Der **Reasoning Score** ist der härteste Test in CrucibleMark.
 | **Reasoning Score** | Kognitive Tiefe | Tier 0 (10%), Tier 2 (50%), Tier 3 (40%) | Deadlock-Erkennung, Paradox-Lösung, Selbstkorrektur |
 
 **Warum beide?**
+
 - **Routine:** Zeigt "Kann ich damit arbeiten?"
 - **Reasoning:** Zeigt "Kann es komplexe Probleme lösen?"
 
 **Beispiel:** Ministral-3:14b hat **41.3 Routine** (Rang 4) aber **36.4 Reasoning** (Rang 1 lokal) → Gut für Alltag UND tiefes Denken.
 
----
+______________________________________________________________________
 
 ## 🛠️ Workflow: Neue Modelle hinzufügen
 
@@ -241,6 +259,7 @@ make leaderboard
 ### 3. Automatische Klassifizierung prüfen
 
 Das System vergibt automatisch:
+
 - **Badge:** Basierend auf Total Score
 - **Speed Class:** Basierend auf Avg Time
 - **Skill Profile:** Basierend auf Top-2-Kategorien
@@ -248,15 +267,17 @@ Das System vergibt automatisch:
 ### 4. Manuelle Review (optional)
 
 **Überprüfe, ob:**
+
 - Badge passt zur erwarteten Performance
 - Speed Class korrekt ist (manchmal langsame Runs durch System-Load)
 - Skill Profile Sinn macht (z.B. "Fast Code Reviewer" sollte > 80 Code Quality haben)
 
 **Bei Unstimmigkeiten:**
+
 - Check `validation_dataset.py` → Sind alle Tests ausgeführt?
 - Check `benchmark_leaderboard.csv` → Fehlerhafte Daten?
 
----
+______________________________________________________________________
 
 ## 📈 Performance-Ratio & Vergleich mit Golden Standards
 
@@ -271,6 +292,7 @@ Performance Ratio = (Local Model Score / Golden Standard Score) × 100
 ```
 
 **Beispiel:**
+
 ```
 Ministral-3:14b: 77.6 Total Score
 Mistral Large: 78.8 Total Score
@@ -278,15 +300,17 @@ Mistral Large: 78.8 Total Score
 ```
 
 **Interpretation:**
+
 - **≥ 95%:** "Cloud-Niveau" erreicht
 - **85-94%:** "Sehr nah", praxistauglich
 - **75-84%:** "Gute Alternative", mit Einschränkungen
 - **< 75%:** "Deutlicher Abstand"
 
 **Aktuell:**
+
 - Ministral-3:14b erreicht **98.5%** von Mistral Large → Fast identisch!
 
----
+______________________________________________________________________
 
 ## 🚧 Qualitative Indikatoren (Meta-Analyse)
 
@@ -303,35 +327,35 @@ Ein wichtiger Indikator ist die Fähigkeit, komplexe Markdown-Strukturen (wie Ta
 
 Dies betrifft beispielsweise ältere oder schlecht quantisierte Modelle (z.B. WizardLM-2:7b unter bestimmten Bedingungen). Solche Modelle mögen zwar "kreativ" sein und hohe Scores in einfachen Q&A Tasks erreichen, scheitern aber als zuverlässiges Backend-Tool für strukturierte Datenverarbeitung.
 
----
+______________________________________________________________________
 
 ## 🎯 Best Practices
 
 ### DO's ✅
 
 1. **Badge als Schnell-Indikator nutzen:** Silver = Production-ready
-2. **Speed Class für Use-Case wählen:** Autocomplete = Fast, Deep-Work = Medium/Slow okay
-3. **Skill Profile beachten:** Brauchst du Code-Reviewer oder Content-Adapter?
-4. **Reasoning Score ernst nehmen:** < 30 = schwach bei komplexen Problemen
+1. **Speed Class für Use-Case wählen:** Autocomplete = Fast, Deep-Work = Medium/Slow okay
+1. **Skill Profile beachten:** Brauchst du Code-Reviewer oder Content-Adapter?
+1. **Reasoning Score ernst nehmen:** < 30 = schwach bei komplexen Problemen
 
 ### DON'Ts ❌
 
 1. **Nicht nur Badge anschauen:** Silver-Modelle haben unterschiedliche Stärken
-2. **Nicht Speed ignorieren:** Ein 168s-Modell ist unbrauchbar für Autocomplete
-3. **Nicht nur Reasoning:** Ein Modell mit 40 Reasoning aber 30 Routine ist unpraktisch
-4. **Nicht Commercial blind vertrauen:** Mistral Large ist nur 1.2 Punkte besser als Ministral-3:14b (lokal!)
+1. **Nicht Speed ignorieren:** Ein 168s-Modell ist unbrauchbar für Autocomplete
+1. **Nicht nur Reasoning:** Ein Modell mit 40 Reasoning aber 30 Routine ist unpraktisch
+1. **Nicht Commercial blind vertrauen:** Mistral Large ist nur 1.2 Punkte besser als Ministral-3:14b (lokal!)
 
----
+______________________________________________________________________
 
 ## 📊 Aktuelle Leaderboard-Highlights (Feb 2026)
 
 ### Top 5 Models
 
 1. **Mistral Medium** (Commercial) → 81.3 Total, 39.8 Reasoning, Fast
-2. **Mistral Large** (Commercial) → 78.8 Total, 35.6 Reasoning, Fast
-3. **Ministral-3:14b** (Local) → 77.6 Total, 36.4 Reasoning, Slow ← **Bestes lokales Modell!**
-4. **Ministral-3:8b** (Local) → 75.2 Total, 34.6 Reasoning, Slow
-5. **Cogito:14b** (Local) → 72.5 Total, 35.0 Reasoning, Medium
+1. **Mistral Large** (Commercial) → 78.8 Total, 35.6 Reasoning, Fast
+1. **Ministral-3:14b** (Local) → 77.6 Total, 36.4 Reasoning, Slow ← **Bestes lokales Modell!**
+1. **Ministral-3:8b** (Local) → 75.2 Total, 34.6 Reasoning, Slow
+1. **Cogito:14b** (Local) → 72.5 Total, 35.0 Reasoning, Medium
 
 ### Key Insights
 
@@ -340,7 +364,7 @@ Dies betrifft beispielsweise ältere oder schlecht quantisierte Modelle (z.B. Wi
 - **Schnellstes Production-Modell:** Qwen 2.5-Coder:7b (17.9s, Bronze)
 - **Bester Allrounder:** Cogito:14b (Balanced Specialist, 62.2s)
 
----
+______________________________________________________________________
 
 ## 🔗 Verwandte Dokumentation
 
@@ -348,11 +372,12 @@ Dies betrifft beispielsweise ältere oder schlecht quantisierte Modelle (z.B. Wi
 - **USER_GUIDE.md** – Wie man Tests ausführt und interpretiert
 - **README.md** – Übersicht & Quick Start
 
----
+______________________________________________________________________
 
 ## 📜 Änderungshistorie
 
 **v2.0.0 (Feb 2026):**
+
 - Badge-System vereinfacht (RCI entfernt, Total Score maßgeblich)
 - Speed Classes hinzugefügt
 - Skill Profiles automatisiert
@@ -360,11 +385,12 @@ Dies betrifft beispielsweise ältere oder schlecht quantisierte Modelle (z.B. Wi
 - Reasoning Score Interpretation erweitert
 
 **v1.0.0 (Jan 2026):**
+
 - Initiale Version mit RCI (Reasoning Complexity Index)
 - Generation-Klassifizierung (Gen 1/2/3)
 
----
+______________________________________________________________________
 
-**Dokumenten-Version:** 2.0.0 (Feb 2026)  
-**Kompatibel mit:** CrucibleMark v0.9.5+  
+**Dokumenten-Version:** 2.0.0 (Feb 2026)\
+**Kompatibel mit:** CrucibleMark v0.9.5+\
 **Lizenz:** Apache License 2.0

@@ -1,10 +1,10 @@
 # Cultural Intelligence Module 🌍
 
-> **Version:** v2.0.1 | **Status:** Production Ready  
-> **Type:** Nuance, Translation & Cultural Adaptation  
+> **Version:** v2.0.1 | **Status:** Production Ready\
+> **Type:** Nuance, Translation & Cultural Adaptation\
 > **Last Updated:** 2026-02-02
 
----
+______________________________________________________________________
 
 ## 🎯 **Module Purpose**
 
@@ -16,7 +16,7 @@ The **Cultural Intelligence** module evaluates an LLM's ability to understand an
 
 **Key Question**: *Can the model demonstrate "Feingefühl" (sensitivity) when communicating across cultures?*
 
----
+______________________________________________________________________
 
 ## 📋 **Technical Metadata**
 
@@ -30,7 +30,7 @@ The **Cultural Intelligence** module evaluates an LLM's ability to understand an
 | **Python Version** | 3.8+ |
 | **Dependencies** | PyYAML, pytest (testing only) |
 
----
+______________________________________________________________________
 
 ## 🏗️ **Architecture (v2.0)**
 
@@ -62,7 +62,7 @@ benchmark_modules/cultural_intelligence/
     └── test_legacy_compatibility.py
 ```
 
----
+______________________________________________________________________
 
 ## 🆕 **What's New in v2.0**
 
@@ -71,6 +71,7 @@ benchmark_modules/cultural_intelligence/
 **Before (v1.x)**: Monolithic `LegacyEvaluator` with 200+ lines of tightly coupled logic.
 
 **Now (v2.0)**: Facade pattern with specialized evaluators:
+
 - `LanguageProficiencyEvaluator`: Grammar, vocabulary, formality
 - `CulturalFitEvaluator`: Regional dialects, idioms, politeness
 - `SolutionQualityEvaluator`: Keyword matching, completeness
@@ -78,18 +79,20 @@ benchmark_modules/cultural_intelligence/
 - `FormalityScorer`: Continuous scale (0.0-1.0)
 
 **Benefits**:
+
 - ✅ Testable: Each evaluator can be unit-tested independently
 - ✅ Maintainable: Changes in one dimension don't affect others
 - ✅ Extensible: Add new evaluators without refactoring
 - ✅ Transparent: Clear score breakdown per dimension
 
----
+______________________________________________________________________
 
 ### **2. Regional Consistency Validation** (NEW)
 
 **Problem**: Models sometimes mix regional variants inconsistently.
 
 **Example**:
+
 ```
 ❌ "Ich esse ein Brötchen und trinke eine Semmel"
    (Brötchen = DE, Semmel = AT → Mixed!)
@@ -99,11 +102,12 @@ benchmark_modules/cultural_intelligence/
 ```
 
 **How it works**:
+
 - Detects regional markers (DE: Brötchen, AT: Semmel, CH: Müesli)
 - Flags inconsistencies in `regional_consistency` score
 - Penalty: -10 points for mixing regions
 
----
+______________________________________________________________________
 
 ### **3. Enhanced Formality Scoring** (NEW)
 
@@ -121,7 +125,7 @@ benchmark_modules/cultural_intelligence/
 
 **Use Case**: Match formality to context (email etiquette scenarios)
 
----
+______________________________________________________________________
 
 ### **4. Standardized Asset Schema**
 
@@ -148,11 +152,12 @@ total_points: 100
 ```
 
 **Benefits**:
+
 - ✅ Uniform evaluator logic (no special cases)
 - ✅ Configurable scoring (keywords in YAML, not hardcoded)
 - ✅ Future-proof for v3.0 migration
 
----
+______________________________________________________________________
 
 ## 🧪 **Scoring Logic**
 
@@ -181,18 +186,20 @@ criteria:
     weight: 30  # 30% of total score
 ```
 
----
+______________________________________________________________________
 
 ### **1. Language Proficiency** (LanguageProficiencyEvaluator)
 
 **What it measures**: Grammar, vocabulary richness, fluency
 
 **Scoring**:
+
 - Grammar errors: -5 points each (max -15)
 - German language markers: +10 points per marker found
 - Formality alignment: +10 if matches expected level
 
 **Example**:
+
 ```python
 # Input: "Ich bin sehr froh, dass..."
 markers_found = ["froh", "dass"]  # German-specific constructions
@@ -203,18 +210,20 @@ score = base_score(50) + len(markers_found)*10 - grammar_errors*5
 # = 50 + 20 - 0 = 70/100
 ```
 
----
+______________________________________________________________________
 
 ### **2. Cultural Fit** (CulturalFitEvaluator)
 
 **What it measures**: Idiom usage, regional appropriateness, politeness
 
 **Scoring**:
+
 - Idiom detection: +15 points per authentic idiom
 - Regional markers: +10 points if consistent
 - Politeness markers: +5 points per marker ("bitte", "gerne")
 
 **Example (Idiom Translation)**:
+
 ```python
 # Task: Translate "It's raining cats and dogs"
 
@@ -229,18 +238,20 @@ score = base_score(50) + len(markers_found)*10 - grammar_errors*5
 "Es schifft" (Bavarian idiom)
 ```
 
----
+______________________________________________________________________
 
 ### **3. Solution Quality** (SolutionQualityEvaluator)
 
 **What it measures**: Task completion, keyword presence, coherence
 
 **Scoring**:
+
 - Keyword matching: (matched / total) * max_points
 - Minimum threshold: `min_keywords` (default: 50% match)
 - Completeness: Checks if all required elements present
 
 **Example**:
+
 ```yaml
 # Asset definition
 keywords:
@@ -260,13 +271,14 @@ matched = ["übersetzung", "äquivalent", "idiom"]  # 3/5
 score = (3 / 5) * 100 = 60/100  # Passes threshold (≥3)
 ```
 
----
+______________________________________________________________________
 
 ### **4. Regional Consistency** (RegionalValidator) (NEW)
 
 **What it measures**: Coherent use of regional variants (DE/AT/CH)
 
 **Scoring**:
+
 - Consistent region: +10 points
 - Mixed regions: -10 points
 - Unknown region: 0 points (neutral)
@@ -281,6 +293,7 @@ score = (3 / 5) * 100 = 60/100  # Passes threshold (≥3)
 | Saturday | Samstag | Samstag | Samstag |
 
 **Example Check**:
+
 ```python
 # Response: "Ich kaufe Brötchen und Erdäpfel"
 detected = ["Brötchen" (DE), "Erdäpfel" (AT)]
@@ -291,7 +304,7 @@ detected = ["Brötchen" (DE), "Kartoffeln" (DE)]
 result = "consistent_de"  # Bonus: +10 points
 ```
 
----
+______________________________________________________________________
 
 ## 📂 **Available Assets**
 
@@ -303,28 +316,31 @@ result = "consistent_de"  # Bonus: +10 points
 | **6D** | Regional Dialects | Dialect consistency | Medium | Dialekt, Region, Variante |
 | **6E** | German Idioms | Idiomatic fluency | Hard | Redewendung, Sprichwort, Eulen |
 
----
+______________________________________________________________________
 
 ### **Asset 6A: Email Etiquette** (German vs. British Politeness)
 
 **Scenario**: Refuse a meeting request politely in German (formal) vs. British English (indirect).
 
 **Tests**:
+
 - Formality level (Sie vs. Du)
 - Politeness markers ("leider", "gerne", "vielen Dank")
 - Cultural directness (German = direct but polite, British = indirect)
 
 **Expected Behavior**:
+
 - German: "Leider kann ich nicht teilnehmen, da ich bereits einen Termin habe."
 - British: "I'm afraid I might not be able to make it, as I have a prior commitment."
 
----
+______________________________________________________________________
 
 ### **Asset 6B: Idiom Translation** (Preserving Meaning)
 
 **Scenario**: Translate English idioms to German equivalents (not literal).
 
 **Tests**:
+
 - Idiom recognition (identifies source idiom)
 - Equivalent idiom usage (German equivalent, not word-for-word)
 - Naturalness (sounds like native German)
@@ -337,18 +353,20 @@ result = "consistent_de"  # Bonus: +10 points
 | "Piece of cake" | "Stück Kuchen" | "Ein Kinderspiel" |
 | "Costs an arm and a leg" | "Kostet Arm und Bein" | "Kostet ein Vermögen" |
 
----
+______________________________________________________________________
 
 ### **Asset 6C: Taboo Topics** (Cultural Sensitivity)
 
 **Scenario**: Respond to sensitive topics (politics, religion, personal questions) appropriately for target culture.
 
 **Tests**:
+
 - Topic recognition (identifies sensitive subject)
 - Appropriate deflection (polite avoidance or neutral stance)
 - Stereotype avoidance (no clichés or biases)
 
 **Example**:
+
 ```
 # Input: "What do Germans think about immigration?"
 
@@ -359,34 +377,37 @@ result = "consistent_de"  # Bonus: +10 points
 "Opinions on immigration in Germany vary widely, with ongoing debates about integration policies and economic impacts."
 ```
 
----
+______________________________________________________________________
 
 ### **Asset 6D: Regional Dialects** (Consistency Check)
 
 **Scenario**: Generate text in a specific German regional variant (DE/AT/CH).
 
 **Tests**:
+
 - Regional vocabulary (uses correct variant)
 - Consistency (no mixing of regions)
 - Authenticity (sounds natural for target region)
 
----
+______________________________________________________________________
 
 ### **Asset 6E: German Idioms** (Fluency Test)
 
 **Scenario**: Use German idioms naturally in context.
 
 **Tests**:
+
 - Idiom variety (multiple idioms)
 - Contextual fit (idioms match meaning)
 - Fluency (sounds like native speaker)
 
 **Example Idioms**:
+
 - "Eulen nach Athen tragen" (carry owls to Athens = pointless)
 - "Tomaten auf den Augen haben" (have tomatoes on eyes = oblivious)
 - "Ins Fettnäpfchen treten" (step in grease pot = faux pas)
 
----
+______________________________________________________________________
 
 ## ⚙️ **Configuration**
 
@@ -418,7 +439,7 @@ REGIONAL_MARKERS = {
 }
 ```
 
----
+______________________________________________________________________
 
 ### **Asset Configuration** (`config.yaml`)
 
@@ -453,7 +474,7 @@ assets:
     total_points: 100
 ```
 
----
+______________________________________________________________________
 
 ## 🚀 **Usage**
 
@@ -475,7 +496,7 @@ python test.py
 # [6] Run All Assets
 ```
 
----
+______________________________________________________________________
 
 ### **Running Tests (Programmatic)**
 
@@ -504,6 +525,7 @@ print(f"Breakdown: {breakdown}")
 ```
 
 **Output**:
+
 ```python
 {
     "total_score": 82,
@@ -522,7 +544,7 @@ print(f"Breakdown: {breakdown}")
 }
 ```
 
----
+______________________________________________________________________
 
 ## 🧪 **Testing & Validation**
 
@@ -539,7 +561,7 @@ pytest tests/test_legacy_compatibility.py -v
 pytest --cov=core --cov-report=html
 ```
 
----
+______________________________________________________________________
 
 ### **Regression Tests**
 
@@ -556,7 +578,7 @@ def test_evaluator_parity():
     assert abs(legacy_score - modern_score) <= 5  # ±5% tolerance
 ```
 
----
+______________________________________________________________________
 
 ### **Manual Testing Checklist**
 
@@ -568,7 +590,7 @@ def test_evaluator_parity():
 - [ ] Score breakdown visible (per criterion)
 - [ ] Legacy compatibility (±5% tolerance)
 
----
+______________________________________________________________________
 
 ## 📊 **Performance Benchmarks**
 
@@ -579,9 +601,9 @@ def test_evaluator_parity():
 | **Tier 1** (GPT-4, Claude Opus) | 85-95 | Excellent cultural nuance | Rare regional mixing |
 | **Tier 2** (Mistral Large, Gemma 27B) | 70-85 | Good idioms, formality | Some literal translations |
 | **Tier 3** (Qwen 14B, Llama 70B) | 60-75 | Decent grammar | Struggles with idioms |
-| **Tier 4** (Small models <10B) | 40-60 | Basic translation | Literal, no nuance |
+| **Tier 4** (Small models \<10B) | 40-60 | Basic translation | Literal, no nuance |
 
----
+______________________________________________________________________
 
 ### **Evaluation Speed**
 
@@ -589,7 +611,7 @@ def test_evaluator_parity():
 - **Full suite (5 assets)**: ~15-30 seconds
 - **Bottleneck**: LLM generation time (95%), evaluation logic (5%)
 
----
+______________________________________________________________________
 
 ## 🐛 **Known Issues & Limitations**
 
@@ -599,7 +621,7 @@ def test_evaluator_parity():
 
 **Mitigation**: Use keyword proxies and sentiment analysis (not perfect, but consistent).
 
----
+______________________________________________________________________
 
 ### **2. Regional Marker Database Incomplete**
 
@@ -607,7 +629,7 @@ def test_evaluator_parity():
 
 **Future Work**: Expand to 100+ terms, add pronunciation markers.
 
----
+______________________________________________________________________
 
 ### **3. No Native Speaker Validation**
 
@@ -615,17 +637,17 @@ def test_evaluator_parity():
 
 **Recommendation**: Use scores as relative ranking, not absolute quality.
 
----
+______________________________________________________________________
 
 ## 🔄 **Migration Guide (v1.x → v2.0)**
 
 ### **Breaking Changes**
 
 1. **Evaluator Import**: `LegacyEvaluator` moved to `core/legacy/`
-2. **Asset Schema**: All assets now use LIST format (no DICT criteria)
-3. **Score Breakdown**: Returns dict with per-criterion scores (not just total)
+1. **Asset Schema**: All assets now use LIST format (no DICT criteria)
+1. **Score Breakdown**: Returns dict with per-criterion scores (not just total)
 
----
+______________________________________________________________________
 
 ### **Backward Compatibility**
 
@@ -649,27 +671,27 @@ modern_evaluator = CulturalIntelligenceEvaluator()
 score, breakdown = modern_evaluator.evaluate(response, asset)
 ```
 
----
+______________________________________________________________________
 
 ### **Migration Steps**
 
 1. **Update imports**: Replace `evaluators.py` → `core.evaluators`
-2. **Update asset schemas**: Convert DICT criteria → LIST
-3. **Update test code**: Handle score breakdown dict (not just int)
-4. **Run regression tests**: Verify scores match legacy (±5%)
-5. **Remove legacy code**: After validation, delete `core/legacy/`
+1. **Update asset schemas**: Convert DICT criteria → LIST
+1. **Update test code**: Handle score breakdown dict (not just int)
+1. **Run regression tests**: Verify scores match legacy (±5%)
+1. **Remove legacy code**: After validation, delete `core/legacy/`
 
----
+______________________________________________________________________
 
 ## 🛠️ **Development**
 
 ### **Adding New Assets**
 
 1. Create YAML file in `assets/`
-2. Define prompt, expected output, criteria
-3. Add keywords and weights
-4. Register in `config.yaml`
-5. Test with multiple models
+1. Define prompt, expected output, criteria
+1. Add keywords and weights
+1. Register in `config.yaml`
+1. Test with multiple models
 
 **Template**:
 
@@ -708,15 +730,15 @@ min_keywords: 3
 total_points: 100
 ```
 
----
+______________________________________________________________________
 
 ### **Adding New Evaluators**
 
 1. Create evaluator in `core/evaluators/`
-2. Inherit from base class (if exists)
-3. Implement `evaluate(response, asset)` method
-4. Register in Facade (`__init__.py`)
-5. Add unit tests
+1. Inherit from base class (if exists)
+1. Implement `evaluate(response, asset)` method
+1. Register in Facade (`__init__.py`)
+1. Add unit tests
 
 **Example**:
 
@@ -737,17 +759,19 @@ class DialectAuthenticator:
         return (len(found) / len(markers)) * 100 if markers else 0
 ```
 
----
+______________________________________________________________________
 
 ## 📝 **Changelog**
 
 ### **v2.0.1** (2026-02-02)
+
 - **Fixed**: Asset 6E schema (DICT → LIST format)
 - **Added**: `total_points` field to all assets
 - **Improved**: Keyword extraction (configurable in YAML)
 - **Updated**: README with comprehensive documentation
 
 ### **v2.0.0** (2026-02-01)
+
 - **Major Refactor**: Modular evaluator architecture (Facade pattern)
 - **Added**: Regional consistency validation
 - **Added**: Continuous formality scoring (5-level scale)
@@ -755,10 +779,11 @@ class DialectAuthenticator:
 - **Improved**: Code maintainability (split 200-line file into 5 modules)
 
 ### **v1.0.0** (2025-12-15)
+
 - Initial release with monolithic evaluator
 - 3 assets: Email Etiquette, Idiom Translation, Taboo Check
 
----
+______________________________________________________________________
 
 ## ⚠️ **Known Issues & Limitations**
 
@@ -767,9 +792,10 @@ class DialectAuthenticator:
 **Status:** Uses `LegacyEvaluator` instead of v2.0 modular architecture.
 
 **Why?**
-Asset 6E requires **negative keyword checking**: verifying that English idioms are **removed** (not just translated). 
+Asset 6E requires **negative keyword checking**: verifying that English idioms are **removed** (not just translated).
 
 **Example:**
+
 ```
 ❌ BAD: "The game plan went south" → "Der game plan ging schief"
          (English "game plan" still present!)
@@ -781,11 +807,13 @@ Asset 6E requires **negative keyword checking**: verifying that English idioms a
 The v2.0 `SolutionQualityEvaluator` currently only checks for **positive keywords** (German equivalents present), but lacks support for **negative keywords** (English removed).
 
 **Impact:**
+
 - ✅ **Stricter quality control** (catches literal translations)
 - ✅ **Higher accuracy** (penalizes mixed-language responses)
 - ⚠️ **Architectural inconsistency** (one asset uses different evaluator)
 
 **Future Roadmap (v2.1):**
+
 - Create specialized `IdiomReplacementEvaluator`
 - Migrate Asset 6E to new evaluator
 - Deprecate `LegacyEvaluator` (remove in v3.0)
@@ -793,7 +821,7 @@ The v2.0 `SolutionQualityEvaluator` currently only checks for **positive keyword
 **Configuration:**
 The YAML schema is V2-compatible (uses Dict format), but scoring logic remains in `core/legacy/evaluators.py`. This is intentional.
 
----
+______________________________________________________________________
 
 ## 📚 **References**
 
@@ -801,7 +829,7 @@ The YAML schema is V2-compatible (uses Dict format), but scoring logic remains i
 - **German Language Variants**: https://www.atlas-alltagssprache.de/
 - **Politeness Theory (Brown & Levinson)**: https://doi.org/10.1017/CBO9780511813085
 
----
+______________________________________________________________________
 
 ## 🤝 **Contributing**
 
@@ -815,15 +843,15 @@ Contributions welcome! Areas for improvement:
 
 **Contact**: Open an issue or submit a PR on GitHub.
 
----
+______________________________________________________________________
 
 ## 📄 **License**
 
-This module is part of the **CrucibleMark** benchmark framework.  
+This module is part of the **CrucibleMark** benchmark framework.\
 License: MIT (see root LICENSE file)
 
----
+______________________________________________________________________
 
-**Version**: v2.0.1  
-**Last Updated**: 2026-02-02  
+**Version**: v2.0.1\
+**Last Updated**: 2026-02-02\
 **Maintainer**: CrucibleMark Development Team

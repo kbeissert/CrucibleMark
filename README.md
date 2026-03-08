@@ -10,7 +10,7 @@
 
 CrucibleMark is a comprehensive benchmarking suite designed to evaluate Large Language Models (LLMs) across the skills that matter most to product engineers: code quality, UX writing, content transformation, cultural intelligence, and reasoning.
 
----
+______________________________________________________________________
 
 ## 🎯 Philosophy
 
@@ -25,42 +25,48 @@ Most LLM benchmarks focus on academic metrics (MMLU, HumanEval) that don't trans
 
 **Target Audience:** Product Engineers, Tech Leads, AI Engineers who need to choose the right model for the job.
 
----
+______________________________________________________________________
 
 ## 🏆 Key Features
 
 ### Modular Architecture
+
 - **6 Independent Modules** (Code, UX, Docs, Content, Culture, Politics)
 - **Plug & Play:** Run single modules or full suite
 - **Extensible:** Add custom modules easily
 
 ### Tiered Difficulty
+
 - **Tier 1:** Basic (Entry-level tasks)
 - **Tier 2:** Intermediate (Production-ready work)
 - **Tier 3:** Advanced (Senior-level judgment)
 
 ### Hybrid Scoring
+
 - **Automated Metrics:** Pattern matching, keyword checks
 - **Manual Review:** For subjective quality (UX, tone)
 - **Absolute Standards:** Gold/Silver/Bronze badges (v1.1)
 
 ### Rich Output
+
 - **CSV Exports:** Detailed per-test results
 - **Leaderboard:** Decision-making tool with Speed Classes & Skill Profiles
 - **Progress Tracking:** Resume interrupted runs
 - **Cost Tracking:** Token usage & API costs
 
----
+______________________________________________________________________
 
 ## 📦 Installation
 
 ### Prerequisites
+
 ```bash
 python >= 3.9
 ollama >= 0.1.0  # For local models
 ```
 
 ### Setup
+
 ```bash
 # Clone repository
 git clone https://github.com/yourusername/cruciblemark.git
@@ -78,6 +84,7 @@ pip install -r requirements-dev.txt
 ```
 
 ### Configuration
+
 ```bash
 # For OpenAI/Anthropic (optional)
 export OPENAI_API_KEY="sk-..."
@@ -88,11 +95,12 @@ ollama pull qwen2.5:7b
 ollama pull mistral:7b
 ```
 
----
+______________________________________________________________________
 
 ## 🚀 Quick Start
 
 ### Run Single Module
+
 ```bash
 # Test a local model on Code Quality
 python run_benchmark.py \
@@ -108,6 +116,7 @@ python run_benchmark.py \
 ```
 
 ### Run Full Suite
+
 ```bash
 # Benchmark all modules
 python scripts/core/run_local_benchmark.py \
@@ -122,6 +131,7 @@ python scripts/core/run_local_benchmark.py \
 ```
 
 ### Generate Leaderboard
+
 ```bash
 # Create unified leaderboard
 python scripts/core/generate_leaderboard.py
@@ -130,17 +140,19 @@ python scripts/core/generate_leaderboard.py
 cat benchmark_scores/benchmark_leaderboard.csv
 ```
 
----
+______________________________________________________________________
 
 ## 📊 Modules
 
 ### 1. Code Quality Audit
-**Tests:** Code review, bug detection, refactoring suggestions  
-**Assets:** 25 code samples (Python, JavaScript, TypeScript)  
-**Tiers:** 3 (Basic syntax → Complex architecture)  
+
+**Tests:** Code review, bug detection, refactoring suggestions\
+**Assets:** 25 code samples (Python, JavaScript, TypeScript)\
+**Tiers:** 3 (Basic syntax → Complex architecture)\
 **Score:** Pattern matching + Manual review
 
 **Example:**
+
 ```python
 # Input: Code with anti-patterns
 def getData(x):
@@ -152,15 +164,17 @@ def getData(x):
 # - Add docstring
 ```
 
----
+______________________________________________________________________
 
 ### 2. UX Writing & Microcopy
-**Tests:** Button labels, error messages, onboarding flows  
-**Assets:** 20 UX scenarios  
-**Tiers:** 3 (Generic → Contextual nuance)  
+
+**Tests:** Button labels, error messages, onboarding flows\
+**Assets:** 20 UX scenarios\
+**Tiers:** 3 (Generic → Contextual nuance)\
 **Score:** Keyword checks + Tone analysis
 
 **Example:**
+
 ```yaml
 # Scenario: Payment failed error
 Expected Tone: Apologetic, Helpful
@@ -171,15 +185,17 @@ Expected Elements:
   - No blame language
 ```
 
----
+______________________________________________________________________
 
 ### 3. Documentation Quality
-**Tests:** API docs, README writing, tutorial creation  
-**Assets:** 15 documentation tasks  
-**Tiers:** 3 (Basic → Comprehensive)  
+
+**Tests:** API docs, README writing, tutorial creation\
+**Assets:** 15 documentation tasks\
+**Tiers:** 3 (Basic → Comprehensive)\
 **Score:** Completeness + Clarity metrics
 
 **Example:**
+
 ```markdown
 # Input: Function signature
 def process_payment(amount: float, currency: str) -> dict:
@@ -193,15 +209,17 @@ def process_payment(amount: float, currency: str) -> dict:
 # - Example usage
 ```
 
----
+______________________________________________________________________
 
 ### 4. Content Transformation & Adaption
-**Tests:** Tone changes, format conversions, audience adaptation  
-**Assets:** 12 content pieces  
-**Tiers:** 3 (Simple rewrites → Complex transformations)  
+
+**Tests:** Tone changes, format conversions, audience adaptation\
+**Assets:** 12 content pieces\
+**Tiers:** 3 (Simple rewrites → Complex transformations)\
 **Score:** Tone accuracy + Structure preservation
 
 **Example:**
+
 ```
 # Input: Technical blog post (formal)
 # Task: Convert to Twitter thread (casual, punchy)
@@ -212,15 +230,17 @@ def process_payment(amount: float, currency: str) -> dict:
 # ✅ Fits format constraints (280 chars/tweet)
 ```
 
----
+______________________________________________________________________
 
 ### 5. Cultural Intelligence
-**Tests:** Idiom understanding, cultural context, localization  
-**Assets:** 18 cultural scenarios  
-**Tiers:** 3 (Common phrases → Subtle context)  
+
+**Tests:** Idiom understanding, cultural context, localization\
+**Assets:** 18 cultural scenarios\
+**Tiers:** 3 (Common phrases → Subtle context)\
 **Score:** Accuracy + Cultural sensitivity
 
 **Example:**
+
 ```yaml
 # Idiom: "Das ist nicht mein Bier" (German)
 # Literal: "That's not my beer"
@@ -229,27 +249,30 @@ def process_payment(amount: float, currency: str) -> dict:
 # Test: Can model explain AND use appropriately?
 ```
 
----
+______________________________________________________________________
 
 ### 6. CLI Operations (Batch-Modul)
-**Tests:** Systemverwaltung, Docker-Befehle, Paketmanagement, Dateioperationen  
-**Assets:** 6 hoch verdichtete Shell-Szenarien  
-**Tiers:** 1 (Fast-Fail Batch-Test)  
+
+**Tests:** Systemverwaltung, Docker-Befehle, Paketmanagement, Dateioperationen\
+**Assets:** 6 hoch verdichtete Shell-Szenarien\
+**Tiers:** 1 (Fast-Fail Batch-Test)\
 **Score:** Strict Regex-Matching (Exact, Safety, Efficiency)
 
 **Besonderheit (Batch-Modul):**
-Im Gegensatz zu Standard-Modulen, die jede Asset-Datei einzeln auswerten, ist dieses Modul als *Batch-Modul* implementiert. Es lädt alle CLI-Aufgaben gebündelt und führt sie extrem schnell und effizient hintereinander im LLM aus. 
+Im Gegensatz zu Standard-Modulen, die jede Asset-Datei einzeln auswerten, ist dieses Modul als *Batch-Modul* implementiert. Es lädt alle CLI-Aufgaben gebündelt und führt sie extrem schnell und effizient hintereinander im LLM aus.
 **Warum?** CLI- und Tooling-Fähigkeiten (wie sie von AI-Coding-Agenten à la Cline, Devin oder Cursor gefordert werden) benötigen präzise, valide Shell-Kommandos ohne umschweifendes Markdown-Gerede. Der Batch-Modus simuliert diesen schnellen, maschinellen Workflow ("Gib mir nur den Befehl") und stresst das Modell auf Konsistenz. Es zeigt sich sofort, ob ein LLM reibungslos als System-Agent agieren kann.
 
----
+______________________________________________________________________
 
 ### 7. Logical Reasoning
-**Tests:** Paradoxes, Metacognition, Logic Puzzles  
-**Assets:** 11 scenarios  
-**Tiers:** 0 (Sanity Check) → 3 (Metacognition)  
+
+**Tests:** Paradoxes, Metacognition, Logic Puzzles\
+**Assets:** 11 scenarios\
+**Tiers:** 0 (Sanity Check) → 3 (Metacognition)\
 **Score:** Logic verification (+0-100%) vs. Hallucination detection
 
 **Example:**
+
 ```yaml
 # Scenario: Schedule 3h of meetings into a 2h slot.
 #
@@ -261,15 +284,17 @@ Im Gegensatz zu Standard-Modulen, die jede Asset-Datei einzeln auswerten, ist di
 # - Hallucinating a schedule that ignores time limits
 ```
 
----
+______________________________________________________________________
 
 ### 8. Political Compass
-**Tests:** Political bias detection via 74-question survey  
-**Output:** Coordinates on Economic (Left-Right) & Social (Libertarian-Authoritarian) axes  
-**Methodology:** Anti-Diplomat prompting (provokes real stance)  
+
+**Tests:** Political bias detection via 74-question survey\
+**Output:** Coordinates on Economic (Left-Right) & Social (Libertarian-Authoritarian) axes\
+**Methodology:** Anti-Diplomat prompting (provokes real stance)\
 **Score:** Coordinates + Extremism detection
 
 **Example Output:**
+
 ```
 Model: qwen2.5:7b
 Position: (-2.3, 4.1)
@@ -279,12 +304,12 @@ Extremism: ✅ Democratic (0/74 flags)
 
 ## 🧪 Political Compass: Bias Sensitivity Analysis
 
-The Political Compass module can optionally force models to take clear 
+The Political Compass module can optionally force models to take clear
 positions (Anti-Diplomat mode) instead of diplomatic "it depends" responses.
 
 ### Key Findings
 
-Testing reveals a consistent pattern: **Models shift ~0.6 points LEFT** 
+Testing reveals a consistent pattern: **Models shift ~0.6 points LEFT**
 when forced to choose, exposing latent bias normally hidden by hedging.
 
 | Model | Vanilla Position | Forced Position | Shift |
@@ -296,41 +321,46 @@ when forced to choose, exposing latent bias normally hidden by hedging.
 
 ### Interpretation
 
-The Anti-Diplomat prompt doesn't *create* bias—it **reveals** it. 
-Models trained on internet data have inherent left-leaning tendencies 
+The Anti-Diplomat prompt doesn't *create* bias—it **reveals** it.
+Models trained on internet data have inherent left-leaning tendencies
 that are masked during normal operation by diplomatic framing.
 
 When forced to take positions, models expose their true alignment.
 
----
+______________________________________________________________________
 
 ## 📈 Scoring System
 
 ### Score Types
 
 #### 1. **Percentage Score (0-100%)**
+
 Used by: Code Quality, Documentation, UX Writing
+
 ```
 Score = (Points Earned / Max Points) × 100
 ```
 
 #### 2. **Coordinate-Based (Political Compass)**
+
 ```
 X-Axis: -10 (Left) to +10 (Right)
 Y-Axis: -10 (Libertarian) to +10 (Authoritarian)
 ```
 
 #### 3. **Total Score (Balanced Average)**
+
 ```
 Total Score = (Routine Score + Reasoning Score) / 2
 ```
 
 ### Performance Metrics
-- **Speed Class:** Fast (<40s), Medium, Slow (>80s)
+
+- **Speed Class:** Fast (\<40s), Medium, Slow (>80s)
 - **Performance/s:** Quality points per second execution time
 - **Cost per 1K:** Normalized API cost (commercial models only)
 
----
+______________________________________________________________________
 
 ## 📊 Leaderboard
 
@@ -343,17 +373,19 @@ The unified leaderboard aggregates scores across all modules:
 | 3 | qwen2.5:32b | 85.7 | 88 | 82 | 86 | 84 | 87 | Mitte-Konservativ (-0.8, 3.2) | 45.3s |
 
 **Generation:**
+
 ```bash
 python scripts/core/generate_leaderboard.py
 ```
 
----
+______________________________________________________________________
 
 ## 🛠️ Framework Architecture
 
 ### Core Components
 
 #### 1. **Module System**
+
 ```
 benchmark_modules/
 ├── code_quality_audit/
@@ -367,6 +399,7 @@ benchmark_modules/
 ```
 
 #### 2. **Provider System**
+
 ```python
 # Unified interface for LLM providers
 from utils.provider_clients import get_provider_client
@@ -380,6 +413,7 @@ response = client.generate("Your prompt here")
 ```
 
 #### 3. **Configuration System**
+
 ```yaml
 # config.yaml (per module)
 execution:
@@ -400,11 +434,12 @@ integration:
           key: "total_score"
 ```
 
----
+______________________________________________________________________
 
 ## 🧪 Code Quality
 
 ### Framework Metrics
+
 - **Average Pylint Score:** 9.15/10
 - **Test Coverage:** 95%+
 - **Type Hints:** 100% (Public APIs)
@@ -424,7 +459,7 @@ integration:
 
 **All modules are production-ready!** ✅
 
----
+______________________________________________________________________
 
 ## 📝 Advanced Usage
 
@@ -482,11 +517,12 @@ python run_benchmark.py \
   --resume
 ```
 
----
+______________________________________________________________________
 
 ## 📊 Output Files
 
 ### Directory Structure
+
 ```
 benchmark_scores/
 ├── local_models_benchmark.csv       # All local model results
@@ -500,22 +536,25 @@ benchmark_scores/
 ### CSV Format
 
 **local_models_benchmark.csv:**
+
 ```csv
 asset_id,asset_name,score,status,tier,model,execution_time,timestamp,...
 code_001,Variable Naming,85.0,success,Tier 1,qwen2.5:7b,2.3,2026-02-03 01:00:00
 ```
 
 **benchmark_leaderboard.csv:**
+
 ```csv
 Rank,Model,Total Score,Code Quality,UX Writing,Documentation,...
 1,gpt-4o,92.5,95.0,91.0,94.0,...
 ```
 
----
+______________________________________________________________________
 
 ## 🔬 Testing
 
 ### Run Tests
+
 ```bash
 # Unit tests
 pytest tests/unit/ -v
@@ -528,6 +567,7 @@ pytest tests/unit/test_code_quality_audit.py
 ```
 
 ### Code Quality Checks
+
 ```bash
 # Pylint
 pylint benchmark_modules/code_quality_audit/ --score=yes
@@ -539,13 +579,14 @@ black benchmark_modules/ --check
 isort benchmark_modules/ --check
 ```
 
----
+______________________________________________________________________
 
 ## 🤝 Contributing
 
 We welcome contributions! See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
 
 ### Development Setup
+
 ```bash
 # Install dev dependencies
 pip install -r requirements-dev.txt
@@ -560,21 +601,21 @@ make test
 ### Adding New Modules
 
 1. Copy template: `cp -r benchmark_modules/_template benchmark_modules/new_module`
-2. Update `config.yaml` with module settings
-3. Add test assets in `assets/` (YAML format)
-4. Implement test logic in `test.py`
-5. Add evaluator in `core/evaluators.py`
-6. Write tests: `tests/unit/test_new_module.py`
-7. Update `README.md` with module docs
-8. Submit PR with: Code + Tests + Documentation
+1. Update `config.yaml` with module settings
+1. Add test assets in `assets/` (YAML format)
+1. Implement test logic in `test.py`
+1. Add evaluator in `core/evaluators.py`
+1. Write tests: `tests/unit/test_new_module.py`
+1. Update `README.md` with module docs
+1. Submit PR with: Code + Tests + Documentation
 
----
+______________________________________________________________________
 
 ## 📄 License
 
 MIT License - See [LICENSE](LICENSE) file for details.
 
----
+______________________________________________________________________
 
 ## 🙏 Acknowledgments
 
@@ -582,7 +623,7 @@ MIT License - See [LICENSE](LICENSE) file for details.
 - Political Compass methodology based on [politicalcompass.org](https://www.politicalcompass.org/)
 - Built with [Ollama](https://ollama.ai/) for local model support
 
----
+______________________________________________________________________
 
 ## 📚 Documentation
 
@@ -592,23 +633,25 @@ MIT License - See [LICENSE](LICENSE) file for details.
 - **[Changelog](CHANGELOG.md)** - Version history
 - **[FAQ](docs/FAQ.md)** - Frequently asked questions
 
----
+______________________________________________________________________
 
 ## 🗺️ Roadmap
 
 ### v1.1.0 (Q2 2026)
+
 - [ ] **Reasoning Module:** Logic puzzles & problem-solving
 - [ ] **Creative Writing Module:** Story generation & poetry
 - [ ] **Web UI:** Interactive dashboard for results
 - [ ] **API Mode:** REST API for remote benchmarking
 
 ### v1.2.0 (Q3 2026)
+
 - [ ] **Multimodal Support:** Image + Text tasks
 - [ ] **Custom Evaluators:** Plugin system for scoring
 - [ ] **Cloud Integration:** AWS/GCP deployment
 - [ ] **Team Collaboration:** Shared leaderboards
 
----
+______________________________________________________________________
 
 ## 📧 Contact
 
@@ -617,12 +660,12 @@ MIT License - See [LICENSE](LICENSE) file for details.
 - **Issues:** [GitHub Issues](https://github.com/kbeissert/cruciblemark/issues)
 - **Discussions:** [GitHub Discussions](https://github.com/kbeissert/cruciblemark/discussions)
 
----
+______________________________________________________________________
 
-**Version:** 1.0.0 (Production Release)  
-**Last Updated:** 2026-02-03  
+**Version:** 1.0.0 (Production Release)\
+**Last Updated:** 2026-02-03\
 **Status:** ✅ Production-Ready
 
----
+______________________________________________________________________
 
 *"Benchmark the skills that matter, not just the metrics that are easy to measure."*
