@@ -24,3 +24,12 @@ scoring:
   accept_script: true
   core_commands: *id001
   bonus_criteria: []
+  method: rubric
+prompt: 'Task: SwarmUI Docker Deployment
+
+  Description: Deploy SwarmUI using Docker Compose with image ghcr.io/mcmonkeyprojects/swarmui:latest,
+  listen on 0.0.0.0:7801, then test with curl localhost:7801.
+
+  Tools: [''docker'', ''curl'']
+
+  Generate the bash commands to solve this:'

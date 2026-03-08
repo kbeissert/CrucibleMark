@@ -18,3 +18,11 @@ scoring:
   accept_script: true
   core_commands: *id001
   bonus_criteria: []
+  method: rubric
+prompt: 'Task: Library Install (pip/brew)
+
+  Description: Install ollama-benchmark-cli via brew/pip, verify version
+
+  Tools: [''brew'', ''pip'']
+
+  Generate the bash commands to solve this:'

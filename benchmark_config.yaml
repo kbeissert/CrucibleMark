@@ -55,7 +55,7 @@ providers:
     anthropic:
       name: "Anthropic"
       api_type: "anthropic"
-      enabled: false
+      enabled: true
       # Der API-Key gehört NICHT hierher, sondern in die .env Datei oder .zshrc!
       # Tragen Sie hier nur den Namen der Variable ein.
       # Beispiel .env: ANTHROPIC_API_KEY=sk-ant-...

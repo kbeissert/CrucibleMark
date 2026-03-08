@@ -21,3 +21,12 @@ scoring:
   accept_script: true
   core_commands: *id001
   bonus_criteria: []
+  method: rubric
+prompt: 'Task: Zshrc Alias & Source
+
+  Description: Set alias bm=ollama-benchmark-cli, persist to ~/.zshrc (NOT ~/.zshrc_temp),
+  source it, test with bm --help
+
+  Tools: [''alias'', ''source'']
+
+  Generate the bash commands to solve this:'

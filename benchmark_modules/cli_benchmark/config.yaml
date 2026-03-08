@@ -1,72 +1,62 @@
-# CLI Benchmark Test Module Configuration
-# ========================================
-
 metadata:
-  id: "cli_benchmark"
-  name: "CLI Operations"
-  version: "1.0.0"
-  description: "Bewertet die Fähigkeit des Modells, komplexe Kommandozeilenaufgaben in einer simulierten Unix/Docker Umgebung sicher und effektiv zu lösen."
-  author: "CrucibleMark"
-  created: "2024-03-07"
-  updated: "2024-03-07"
+  id: cli_benchmark
+  prefix: "cli"
+  name: CLI Operations
+  version: 1.0.0
+  description: "Bewertet die F\xE4higkeit des Modells, komplexe Kommandozeilenaufgaben\
+    \ in einer simulierten Unix/Docker Umgebung sicher und effektiv zu l\xF6sen."
+  author: CrucibleMark
+  created: '2024-03-07'
+  updated: '2024-03-07'
   tags:
-    - cli
-    - shell
-    - operations
-    - devops
-    - safe-execution
-
-# ⚙️ Generation Parameters (Module Specific)
-# Optimiert für M4-24GB: Q6_K quantizations, fast speeds
+  - cli
+  - shell
+  - operations
+  - devops
+  - safe-execution
 generation:
-  temperature: 0.1         # Niedrige Temperatur für deterministische Shell-Kommandos
-  repeat_penalty: 1.1     
-  top_k: 40                
+  temperature: 0.1
+  repeat_penalty: 1.1
+  top_k: 40
   top_p: 0.9
-  num_predict: 2048        # Shell-Antworten sind meist kurz, aber wir lassen genug Raum
-  timeout: 120             # Max 120s pro Task für Ministral/Qwen
-
+  num_predict: 2048
+  timeout: 120
 integration:
   leaderboard:
     enable_scoring: true
-    display_test_count: 1
     default_contribution:
       routine: 0.7
       reasoning: 0.3
     columns:
-      - id: "cli_benchmark_score" 
-        label: "CLI Badge"
-        weight: 1.0
-
-# Batch-Modus nutzen, damit wir direkt CSV/Sim ausführen können ohne einzelne YAMLS
+    - id: cli_benchmark
+      label: CLI Badge
+      weight: 1.0
 execution:
-  test_class: "CLIBenchmarkTest"
-  execution_mode: "batch"
+  test_class: CLIBenchmarkTest
+  execution_mode: standard
   min_runs: 1
   max_parallel: 4
   metal_force: true
-
 benchmarks:
-  - id: "cli001"
-    name: "Disk Cleanup (du + rm safe)"
-    tier: 1
-  - id: "cli002"
-    name: "Library Install (pip/brew)"
-    tier: 2
-  - id: "cli003"
-    name: "Repo Clone + Internet Research"
-    tier: 3
-  - id: "cli004"
-    name: "Zshrc Script + Shortcut"
-    tier: 4
-  - id: "cli005"
-    name: "SwarmUI Upgrade + Config"
-    tier: 5
-  - id: "cli006"
-    name: "Ollama Models to External Disk + Symlink"
-    tier: 5
-
+- id: cli001
+  name: Disk Cleanup (du + rm safe)
+  tier: 1
+- id: cli002
+  name: Library Install (pip/brew)
+  tier: 2
+- id: cli003
+  name: Repo Clone + Internet Research
+  tier: 3
+- id: cli004
+  name: Zshrc Script + Shortcut
+  tier: 4
+- id: cli005
+  name: SwarmUI Upgrade + Config
+  tier: 5
+- id: cli006
+  name: Ollama Models to External Disk + Symlink
+  tier: 5
 config:
   output:
-    format: "detailed"
+    format: detailed
     include_raw_response: false

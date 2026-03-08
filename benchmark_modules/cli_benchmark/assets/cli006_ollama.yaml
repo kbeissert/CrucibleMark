@@ -22,3 +22,12 @@ scoring:
   accept_script: true
   core_commands: *id001
   bonus_criteria: []
+  method: rubric
+prompt: 'Task: Ollama Models to External Disk + Symlink
+
+  Description: mv ~/.ollama/models /Volumes/External/ollama-models, ln -s back, ollama
+  list works
+
+  Tools: [''mv'', ''ln'', ''ollama'']
+
+  Generate the bash commands to solve this:'

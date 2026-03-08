@@ -22,3 +22,11 @@ scoring:
   accept_script: true
   core_commands: *id001
   bonus_criteria: []
+  method: rubric
+prompt: 'Task: Disk Cleanup (du + rm safe)
+
+  Description: Scan /tmp, delete >1GB old files, report savings. No rm -rf root!
+
+  Tools: [''du'', ''find'', ''rm'']
+
+  Generate the bash commands to solve this:'
