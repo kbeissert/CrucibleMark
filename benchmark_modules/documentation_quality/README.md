@@ -1,6 +1,7 @@
 # Documentation Quality Module
 
 > **Technical Metadata**
+>
 > - **ID:** `documentation_quality`
 > - **Namespace:** `benchmark_modules.documentation_quality`
 > - **Class:** `DocumentationTest` (inherits `BaseTest`)
@@ -9,7 +10,7 @@
 > - **Type:** Technical Writing & Education
 > - **Pylint Score:** 9.74/10
 
----
+______________________________________________________________________
 
 ## 🔍 Module Overview
 
@@ -23,7 +24,7 @@ Unlike marketing-focused modules, this tests **technical precision** and **devel
 - **Accuracy**: No hallucinated parameters, correct code examples
 - **Usability**: Clear installation steps, troubleshooting sections, working examples
 
----
+______________________________________________________________________
 
 ## 🏗 Architecture (Core/MVC v2.0)
 
@@ -62,7 +63,7 @@ benchmark_modules/documentation_quality/
 - **Modular Design:** Easy to extend (e.g., add `SEOValidator`, `LinkChecker`)
 - **Backward Compatible:** Maintains v1.0 interface (old code archived)
 
----
+______________________________________________________________________
 
 ## 🧪 Scoring Logic
 
@@ -80,12 +81,14 @@ Tiered difficulty system via `TieredScoringEngine`:
 | **Expert** | Deep Reasoning | 30% keyword match + 70% semantic | Ambiguous error messages, unclear setup steps |
 
 **Key Features:**
+
 - **Hybrid Matching:** Exact keywords + semantic similarity fallback
 - **Think-Tag Cleaning:** Removes `<think>...</think>` blocks from reasoning models
 - **Inverse Matching:** Penalizes marketing fluff in technical docs
 - **Asset-Specific Thresholds:** Per-asset semantic tuning in `ASSET_SPECIFIC_CONFIG`
 
 **Semantic Matching Logic:**
+
 ```python
 # Example: "setup instructions" matches "installation guide" (semantic match)
 if keyword_match < threshold:
@@ -94,7 +97,7 @@ if keyword_match < threshold:
         return True  # Match via semantics
 ```
 
----
+______________________________________________________________________
 
 ### 2. Solution Quality (30 points)
 
@@ -106,11 +109,12 @@ Evaluated by `SolutionQualityEvaluator`:
 - **Actionability:** Clear next steps, troubleshooting sections
 
 **Criteria Types:**
+
 - `keyword_presence`: Min N keywords from list (e.g., "example", "usage", "demo")
 - `code_block_count`: Min N code blocks (e.g., README requires ≥1)
 - Future: `link_validity`, `image_presence`
 
----
+______________________________________________________________________
 
 ### 3. Structure Validation (NEW in v2.0)
 
@@ -124,6 +128,7 @@ Markdown format checks via `StructureValidator`:
 | **List Formatting** | Proper markdown lists | Mixed bullet styles |
 
 **Doc-Type Schemas (from `constants.py`):**
+
 ```python
 DOC_TYPE_SCHEMAS = {
     "readme": {
@@ -145,12 +150,13 @@ DOC_TYPE_SCHEMAS = {
 ```
 
 **Usage:**
+
 ```python
 result = StructureValidator.validate_markdown_structure(response, "readme")
 # Returns: {"is_valid": bool, "violations": [...], "stats": {...}}
 ```
 
----
+______________________________________________________________________
 
 ### 4. Readability Scoring (NEW in v2.0)
 
@@ -160,20 +166,22 @@ Measures clarity via `ReadabilityScorer`:
   - 90-100: Elementary (5th grade)
   - 60-70: High School
   - 0-30: College Graduate
-- **Average Sentence Length:** Shorter = clearer (target: <20 words)
+- **Average Sentence Length:** Shorter = clearer (target: \<20 words)
 - **Grade Level Estimation:** Derived from Flesch score
 
 **Formula (Flesch-Kincaid):**
 \[
-\text{Flesch Score} = 206.835 - 1.015 \left(\frac{\text{words}}{\text{sentences}}\right) - 84.6 \left(\frac{\text{syllables}}{\text{words}}\right)
+\\text{Flesch Score} = 206.835 - 1.015 \\left(\\frac{\\text{words}}{\\text{sentences}}\\right) - 84.6 \\left(\\frac{\\text{syllables}}{\\text{words}}\\right)
 \]
 
 **When Applied:**
+
 - Setup Guides: Readability is critical (user-facing)
 - Tutorials: Must be accessible to beginners
 - API References: Less critical (technical audience)
 
 **Example:**
+
 ```python
 readability = ReadabilityScorer.calculate_readability(response)
 # Returns: {
@@ -183,7 +191,7 @@ readability = ReadabilityScorer.calculate_readability(response)
 # }
 ```
 
----
+______________________________________________________________________
 
 ### 5. Completeness Checking (NEW in v2.0)
 
@@ -194,6 +202,7 @@ Verifies all required sections present via `CompletenessChecker`:
 - **Score:** 0-100% (percentage of required sections present)
 
 **Example:**
+
 ```python
 completeness = CompletenessChecker.check_completeness(response, "readme")
 # Returns: {
@@ -203,7 +212,7 @@ completeness = CompletenessChecker.check_completeness(response, "readme")
 # }
 ```
 
----
+______________________________________________________________________
 
 ## ⚙️ Configuration
 
@@ -240,7 +249,7 @@ ASSET_SPECIFIC_CONFIG = {
 
 See "Structure Validation" section above for full `DOC_TYPE_SCHEMAS` definition.
 
----
+______________________________________________________________________
 
 ## 📂 Available Assets
 
@@ -255,31 +264,36 @@ See "Structure Validation" section above for full `DOC_TYPE_SCHEMAS` definition.
 ### Asset Details
 
 **Asset 001: README Quality**
+
 - **Input:** Open-source project code snippet
 - **Expected Output:** README with Installation, Usage, Examples sections
 - **Scoring:** Structure (headings, code blocks) + Completeness (all sections) + Clarity
 
 **Asset 002: REST API Documentation**
+
 - **Input:** API endpoint code (Python Flask)
 - **Expected Output:** OpenAPI-style docs (Endpoint, Parameters, Response, Example)
 - **Scoring:** Accuracy (correct parameter types) + Completeness (all fields documented)
 
 **Asset 003: Component Props Documentation**
+
 - **Input:** React/Vue component code
 - **Expected Output:** Props table (Name, Type, Default, Description)
 - **Scoring:** Format (markdown table) + Completeness (all props) + Type accuracy
 
 **Asset 004: Setup & Troubleshooting**
+
 - **Input:** Complex installation scenario (Docker, dependencies)
 - **Expected Output:** Prerequisites → Steps → Troubleshooting sections
 - **Scoring:** **Readability is critical** (Flesch > 60), Structure, Completeness
 
 **Asset 005: Changelog & Release Notes**
+
 - **Input:** Git commit log
 - **Expected Output:** Structured changelog (Added, Changed, Fixed, Removed)
 - **Scoring:** Format compliance (Keep a Changelog standard), Date formatting
 
----
+______________________________________________________________________
 
 ## 🚀 Usage Examples
 
@@ -338,7 +352,7 @@ completeness = CompletenessChecker.check_completeness(markdown_response, "readme
 print(f"Missing: {completeness['missing_sections']}")  # ['usage', 'examples']
 ```
 
----
+______________________________________________________________________
 
 ## 🧪 Testing
 
@@ -357,6 +371,7 @@ python tests/test_evaluators.py
 ```
 
 **Test Coverage:**
+
 - [x] StructureValidator: Heading hierarchy, code blocks, required sections
 - [x] ReadabilityScorer: Flesch-Kincaid formula, grade level estimation
 - [x] CompletenessChecker: Fuzzy section matching
@@ -364,7 +379,7 @@ python tests/test_evaluators.py
 
 **Current Status:** 4/4 tests passing ✅
 
----
+______________________________________________________________________
 
 ## 📊 Performance & Quality Metrics
 
@@ -377,7 +392,7 @@ python tests/test_evaluators.py
 | **Maintainability** | Medium | High | ✅ |
 | **New Features** | 2 | 5 | +150% |
 
----
+______________________________________________________________________
 
 ## 🔄 Migration Guide (v1.0 → v2.0)
 
@@ -388,15 +403,18 @@ python tests/test_evaluators.py
 ### What Changed
 
 1. **Internal Architecture:**
+
    - Old: `evaluators.py` (280 LOC monolith)
    - New: 6 specialized files in `core/evaluators/`
 
-2. **New Features:**
+1. **New Features:**
+
    - `StructureValidator`: Markdown format checks
    - `ReadabilityScorer`: Flesch-Kincaid metrics
    - `CompletenessChecker`: Required sections detection
 
-3. **Configuration:**
+1. **Configuration:**
+
    - Added `DOC_TYPE_SCHEMAS` to `constants.py`
    - Asset-specific semantic thresholds now in `ASSET_SPECIFIC_CONFIG`
 
@@ -420,13 +438,14 @@ from benchmark_modules.documentation_quality.core.evaluators import (
 
 v1.0 code is preserved in `backups/documentation_quality_evaluators_v1.py`.
 
----
+______________________________________________________________________
 
 ## 🛠 Development
 
 ### Adding New Evaluators
 
 1. Create new file in `core/evaluators/`:
+
    ```python
    # link_validator.py
    class LinkValidator:
@@ -437,13 +456,15 @@ v1.0 code is preserved in `backups/documentation_quality_evaluators_v1.py`.
            pass
    ```
 
-2. Export in `core/evaluators/__init__.py`:
+1. Export in `core/evaluators/__init__.py`:
+
    ```python
    from .link_validator import LinkValidator
    __all__ = [..., "LinkValidator"]
    ```
 
-3. Integrate in facade:
+1. Integrate in facade:
+
    ```python
    # In DocumentationEvaluator.score_response()
    link_check = LinkValidator.check_links(response)
@@ -457,7 +478,7 @@ v1.0 code is preserved in `backups/documentation_quality_evaluators_v1.py`.
 - **Type Hints:** Use `typing` module for complex signatures
 - **Tests:** Add test cases to `tests/test_evaluators.py` for new features
 
----
+______________________________________________________________________
 
 ## 🐛 Troubleshooting
 
@@ -466,6 +487,7 @@ v1.0 code is preserved in `backups/documentation_quality_evaluators_v1.py`.
 **Symptom:** Expert tier always scores 0, even for correct docs.
 
 **Solution:** Lower `SIMILARITY_THRESHOLD` in `constants.py`:
+
 ```python
 SIMILARITY_THRESHOLD = 0.65  # Was 0.70
 ```
@@ -475,6 +497,7 @@ SIMILARITY_THRESHOLD = 0.65  # Was 0.70
 **Symptom:** READMEs fail even when sections are present.
 
 **Solution:** Check fuzzy matching tolerance in `CompletenessChecker`:
+
 ```python
 def _fuzzy_match_section(heading: str, required: str) -> bool:
     # Increase Levenshtein distance threshold
@@ -486,12 +509,13 @@ def _fuzzy_match_section(heading: str, required: str) -> bool:
 **Symptom:** Clear documentation scores 40 (expected > 60).
 
 **Solution:** Check sentence splitting logic in `ReadabilityScorer`:
+
 ```python
 # Split by periods, but ignore abbreviations (e.g., "Dr.", "Inc.")
 sentences = re.split(r'(?<!\w\.\w.)(?<![A-Z][a-z]\.)(?<=\.|\?)\s', text)
 ```
 
----
+______________________________________________________________________
 
 ## 📚 References
 
@@ -500,13 +524,14 @@ sentences = re.split(r'(?<!\w\.\w.)(?<![A-Z][a-z]\.)(?<=\.|\?)\s', text)
 - **Keep a Changelog**: [Standard](https://keepachangelog.com/)
 - **Base Test Class**: `benchmark_modules/base_test.py`
 
----
+______________________________________________________________________
 
 ## 📝 Changelog
 
 ### v2.0.0 (2026-02-02)
 
 **Features:**
+
 - ✨ Added `StructureValidator` for markdown format checks (headings, code blocks, hierarchy)
 - ✨ Added `ReadabilityScorer` for Flesch-Kincaid metrics and grade level estimation
 - ✨ Added `CompletenessChecker` for required sections detection with fuzzy matching
@@ -514,6 +539,7 @@ sentences = re.split(r'(?<!\w\.\w.)(?<![A-Z][a-z]\.)(?<=\.|\?)\s', text)
 - ✨ Integration test suite (4 test cases)
 
 **Improvements:**
+
 - 🚀 Pylint score: 7.5 → 9.74 (+30%)
 - 🚀 Reduced monolithic evaluator: 280 LOC → 60 LOC facade (-79%)
 - 🚀 Test coverage: 0% → 70%+
@@ -521,11 +547,13 @@ sentences = re.split(r'(?<!\w\.\w.)(?<![A-Z][a-z]\.)(?<=\.|\?)\s', text)
 - 🚀 Enhanced metadata output (structure, readability, completeness)
 
 **Fixes:**
+
 - 🐛 Asset-specific semantic thresholds now properly applied
 - 🐛 Think-tag cleaning for reasoning models (DeepSeek R1)
 - 🐛 Inverse matching now correctly penalizes unwanted patterns
 
 **Breaking Changes:**
+
 - None (backward compatible via facade pattern)
 
 ### v1.0.0 (2025-12-28)
@@ -536,9 +564,9 @@ sentences = re.split(r'(?<!\w\.\w.)(?<![A-Z][a-z]\.)(?<=\.|\?)\s', text)
 - Solution quality scoring (keyword presence)
 - 5 test assets (README, API, Component, Setup, Changelog)
 
----
+______________________________________________________________________
 
-**Version:** 2.0.0  
-**Author:** CrucibleMark Framework  
-**License:** MIT  
+**Version:** 2.0.0\
+**Author:** CrucibleMark Framework\
+**License:** MIT\
 **Last Updated:** 2026-02-02

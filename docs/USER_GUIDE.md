@@ -3,6 +3,7 @@
 **Zielgruppe:** Alle, die CrucibleMark nutzen wollen – ohne Code-Kenntnisse erforderlich.
 
 **Was Sie hier finden:**
+
 - Quick Start (3 Befehle bis zum ersten Ergebnis)
 - Benchmark-Steuerung (Modus-Auswahl, Modell-Filter)
 - Auswertung & Leaderboard
@@ -10,7 +11,7 @@
 
 > **Voraussetzung:** Installation abgeschlossen (`make install` ausgeführt).
 
----
+______________________________________________________________________
 
 ## ⚡ Quick Start (3 Befehle)
 
@@ -29,7 +30,7 @@ make leaderboard
 
 **Fertig!** Die Ergebnisse finden Sie in `benchmark_scores/benchmark_leaderboard.csv`.
 
----
+______________________________________________________________________
 
 ## 🎮 Der Interaktive Wizard
 
@@ -42,91 +43,107 @@ make benchmark
 ### Was passiert?
 
 1. **Modus wählen:**
+
    - **Single Model** – Testen Sie ein spezifisches Modell (z.B. nur Qwen 2.5)
    - **Batch Mode** – Testen Sie alle verfügbaren Modelle auf einmal
 
-2. **Modell auswählen:**
+1. **Modell auswählen:**
+
    - Liste aller lokalen (Ollama) und kommerziellen Modelle
    - Mit Connectivity-Check (✅ verfügbar / ❌ offline)
 
-3. **Module aktivieren:**
+1. **Module aktivieren:**
+
    - Code Quality, UX Writing, Reasoning, etc.
    - Oder "All" für vollständigen Test
 
-4. **Automatischer Start:**
+1. **Automatischer Start:**
+
    - Progress-Bar zeigt Fortschritt
    - Ergebnisse werden live in CSV geschrieben
 
----
+______________________________________________________________________
 
 ## 🎯 Benchmark-Modi im Detail
 
 ### A. Single Model (Fokussiert)
 
 **Wann nutzen?**
+
 - Schneller Test eines neuen Modells
 - Debugging (wenn ein Modell unerwartete Scores hat)
 - API-Kosten sparen (nur 1 Modell testen)
 
 **Befehl:**
+
 ```bash
 make benchmark-single MODEL=qwen2.5:14b
 ```
 
 **Optional: Nur ein Modul testen:**
+
 ```bash
 make benchmark-single MODEL=qwen2.5:14b MODULE=code_quality
 ```
 
----
+______________________________________________________________________
 
 ### B. Batch Mode (Vollständig)
 
 **Wann nutzen?**
+
 - Leaderboard-Update (alle Modelle auf neuesten Stand bringen)
 - Vergleich zwischen lokalen und kommerziellen Modellen
 - Overnight-Run (dauert 2-6 Stunden je nach Anzahl)
 
 **Befehl:**
+
 ```bash
 make benchmark-auto
 ```
 
 **Was ist "auto"?**
+
 - **Smart Skipping:** Überspringt bereits getestete Assets
 - **Auto-Retry:** Führt fehlgeschlagene Tests erneut aus
 - **Kosten-Effizienz:** Keine doppelten API-Calls
 
 **Forced Re-Run (alles neu testen):**
+
 ```bash
 python scripts/benchmark_auto.py --force
 ```
+
 ⚠️ **Warnung:** Dies ignoriert vorherige Ergebnisse und kostet API-Credits!
 
----
+______________________________________________________________________
 
 ## 📐 Scoring Explained (v1.1)
 
 CrucibleMark verwendet unterschiedliche Scoring-Mechanismen:
 
 ### 1. Granular Rubric Scoring (Reasoning)
+
 Für komplexe Reasoning-Aufgaben nutzen wir **v2.0 Granular Rubrics** für faire Teilpunkte.
 
 **Beispiel (Scheduling Paradox):**
+
 - **Problem Detection (20 Pkt):** ✅ Erkannt (20/20)
 - **Refusal (40 Pkt):** ❌ Versuch einer Lösung (0/40)
 - **Analysis (25 Pkt):** ✅ Korrekte Logik (15/25)
 - **Total:** 35/100 (statt 0)
 
 ### 2. Hybrid Scoring (General)
+
 Standard-Module nutzen eine Mischung aus **40% Keyword-Matching** und **60% Semantic Similarity** zum Gold Standard.
 
 > **ℹ️ Info zur Semantic Similarity:**
 > CrucibleMark nutzt das lokale KI-Modell **`all-MiniLM-L6-v2`** (via `sentence-transformers`), um die inhaltliche Bedeutung der Antworten mit der Musterlösung zu vergleichen.
+>
 > - **Vorteil:** Antwortet das Modell korrekt, nutzt aber andere Worte als die Musterlösung, wird dies erkannt.
 > - **Setup:** Das Modell (~80MB) wird bei der Installation (`make install`) einmalig heruntergeladen und lokal gecached.
 
----
+______________________________________________________________________
 
 ## 🏆 Leaderboard generieren
 
@@ -145,13 +162,13 @@ Das neue Leaderboard (v1.2) ist ein **Decision-Making Tool**, nicht nur ein Rank
 | Spalte | Bedeutung |
 |--------|-----------|
 | **Badge** | Qualitäts-Tier (🏆 Gold, 🥈 Silver, 🥉 Bronze, ⚖️ Standard) |
-| **Speed Class** | ⚡ Fast (<40s), ⏱️ Medium, 🐢 Slow (>80s) |
+| **Speed Class** | ⚡ Fast (\<40s), ⏱️ Medium, 🐢 Slow (>80s) |
 | **Initial Load** | **Cold Start Zeit** aus der separaten Warm-up Phase. Verfälscht nicht den Average. |
 | **Performance/s** | Speed-Quality Tradeoff (höher ist besser) |
 | **Cost per 1K** | Echte API-Kosten pro 1000 Tests (nur kommerziell) |
 | **Total Score** | (Routine Score + Reasoning Score) / 2 |
 
----
+______________________________________________________________________
 
 ## 🏅 Neue Badges & Klassen (v1.1)
 
@@ -178,18 +195,20 @@ Das neue Leaderboard (v1.2) ist ein **Decision-Making Tool**, nicht nur ein Rank
 - **Fast Code Reviewer:** Spezialist für Code, sehr schnell (z.B. Qwen 2.5 Coder)
 - **Slow Deep Thinker:** Stark im Reasoning, aber langsam (z.B. Phi-4)
 
----
+______________________________________________________________________
 
 ## ⏱️ Performance Metriken (Neu in v1.2)
 
 CrucibleMark unterscheidet nun präzise zwischen **Ladezeit** und **Ausführungszeit**:
 
 1. **Phase 1: Warm-up Probe (Kaltstart Messung)**
+
    - Vor jedem Benchmark sendet der Runner eine "Ping"-Anfrage (`system_warmup_probe`).
    - **Ziel:** Messen, wie lange das Modell braucht, um von der Festplatte in den VRAM zu laden (Initial Load).
    - Dieser Wert landet als `Initial Load` im Leaderboard, fließt aber **nicht** in die Durchschnitts-Geschwindigkeit ein.
 
-2. **Phase 2: Benchmark (Warmzustand)**
+1. **Phase 2: Benchmark (Warmzustand)**
+
    - Die eigentlichen Tests laufen auf dem bereits geladenen Modell.
    - **Execution Time:** Die reine Rechenzeit für die Antwort-Generierung (ohne Lade-Latenz).
    - Dies sorgt für faire Messergebnisse der Modell-Geschwindigkeit, unabhängig von der Hardware-Startzeit.
@@ -198,7 +217,7 @@ CrucibleMark unterscheidet nun präzise zwischen **Ladezeit** und **Ausführungs
 
 In den CSV-Ausgaben (`local_models_benchmark.csv`) finden Sie nun eine dedizierte Spalte `load_time`.
 
----
+______________________________________________________________________
 
 ## 🛡️ Crash Recovery & Sessions
 
@@ -207,8 +226,8 @@ In den CSV-Ausgaben (`local_models_benchmark.csv`) finden Sie nun eine dediziert
 CrucibleMark speichert den Fortschritt automatisch:
 
 1. **Checkpoint erstellt:** Nach jedem abgeschlossenen Asset
-2. **Session-Datei:** `outputs/temp/session_<model>.json`
-3. **Auto-Resume:** Beim nächsten Start wird gefragt:
+1. **Session-Datei:** `outputs/temp/session_<model>.json`
+1. **Auto-Resume:** Beim nächsten Start wird gefragt:
    ```
    🔄 Found existing session for qwen2.5:14b (45% complete).
    Resume? [Y/n]
@@ -226,13 +245,14 @@ CrucibleMark speichert den Fortschritt automatisch:
 make clean-sessions
 ```
 
----
+______________________________________________________________________
 
 ## 🔍 Troubleshooting
 
 ### Problem: "Model not found"
 
 **Lösung:**
+
 ```bash
 # Prüfen, ob Modell verfügbar ist
 make list-models
@@ -241,47 +261,54 @@ make list-models
 ollama pull qwen2.5:14b
 ```
 
----
+______________________________________________________________________
 
 ### Problem: "API Rate Limit" (kommerzielle Modelle)
 
 **Symptom:**
+
 ```
 ❌ Error: 429 Too Many Requests
 ```
 
 **Lösung:**
+
 - Warten Sie 60 Sekunden
 - CrucibleMark hat **automatisches Retry** mit Exponential Backoff
 - Bei wiederholten Fehlern: API-Key-Limit prüfen
 
----
+______________________________________________________________________
 
 ### Problem: Scores sind 0% (obwohl Antwort gut aussieht)
 
 **Debug-Modus aktivieren:**
+
 ```bash
 python scripts/run_local_benchmark.py --debug-responses
 ```
 
 **Was passiert:**
+
 - Vollständige Modell-Antworten werden gespeichert
 - Pfad: `benchmark_scores/debug_responses/<model>_<asset>.txt`
 - Enthält: Score, Reasoning, ungekürzte Antwort
 
 **Automatisch aktiviert bei:**
+
 - Scores < 30% (Asset wird automatisch geloggt)
 
----
+______________________________________________________________________
 
 ### Problem: Benchmark hängt bei "Generating response..."
 
 **Mögliche Ursachen:**
+
 1. **Ollama offline:** `ollama list` testen
-2. **Modell zu groß:** RAM voll (prüfen Sie `htop` / Task Manager)
-3. **API-Timeout:** Kommerzielle Modelle > 120s Response-Zeit
+1. **Modell zu groß:** RAM voll (prüfen Sie `htop` / Task Manager)
+1. **API-Timeout:** Kommerzielle Modelle > 120s Response-Zeit
 
 **Lösung:**
+
 ```bash
 # Ollama neustarten
 ollama restart
@@ -290,7 +317,7 @@ ollama restart
 make benchmark-single MODEL=qwen2.5:7b
 ```
 
----
+______________________________________________________________________
 
 ## 📊 Daten-Management
 
@@ -305,7 +332,7 @@ benchmark_scores/
 └── debug_responses/                 # Debug-Logs (optional)
 ```
 
----
+______________________________________________________________________
 
 ### Backup erstellen
 
@@ -316,12 +343,13 @@ make backup
 ```
 
 **Was wird gesichert:**
+
 - Alle CSV-Dateien
 - Konfigurationen
 - Golden Standards
 - Archiviert als: `backups/cruciblemark_backup_YYYYMMDD.tar.gz`
 
----
+______________________________________________________________________
 
 ### Daten bereinigen
 
@@ -339,11 +367,12 @@ make clean-csv
 ```
 
 **Wann nutzen?**
+
 - Fehlerhafter Test-Run (falsche Config)
 - Modell wurde neu trainiert
 - Modul-Assets wurden geändert (alte Scores nicht mehr vergleichbar)
 
----
+______________________________________________________________________
 
 ## 📈 Fortgeschrittene Nutzung
 
@@ -354,6 +383,7 @@ make analyze-costs
 ```
 
 **Output:**
+
 ```
 Estimated API costs:
 - Mistral Large: $12.50 (500 requests)
@@ -361,16 +391,17 @@ Estimated API costs:
 Total: $40.50
 ```
 
----
+______________________________________________________________________
 
 ### Nur fehlgeschlagene Tests wiederholen
 
 ```bash
 make benchmark-auto
 ```
+
 (Smart-Skip überspringt erfolgreiche Tests automatisch)
 
----
+______________________________________________________________________
 
 ### Custom Module aktivieren/deaktivieren
 
@@ -383,11 +414,12 @@ modules:
 ```
 
 Nach Änderung:
+
 ```bash
 make leaderboard  # Leaderboard neu generieren
 ```
 
----
+______________________________________________________________________
 
 ## 🆘 Hilfe & Support
 
@@ -396,12 +428,14 @@ make leaderboard  # Leaderboard neu generieren
 **Konsole:** Zeigt nur wichtige Meldungen (User-freundlich)
 
 **Vollständiges Log:**
+
 ```bash
 tail -f logs/crucible.log
 ```
+
 (Enthält alle technischen Details, Warnings, Tracebacks)
 
----
+______________________________________________________________________
 
 ### Projekt validieren
 
@@ -413,7 +447,7 @@ make validate-structure
 make validate-assets
 ```
 
----
+______________________________________________________________________
 
 ### Community & Docs
 
@@ -422,21 +456,23 @@ make validate-assets
 - **Developer Guide:** Siehe `docs/DEVELOPER_GUIDE.md` (für Modul-Entwicklung)
 - **Architecture:** Siehe `docs/ARCHITECTURE.md` (für System-Design)
 
----
+______________________________________________________________________
 
 ## 🎓 Nächste Schritte
 
 **Nach dem ersten Benchmark:**
+
 1. ✅ Leaderboard studieren (`benchmark_leaderboard.csv`)
-2. ✅ Badge-Kategorien verstehen (God Mode vs Daily Driver)
-3. ✅ Modell für Ihren Use Case wählen
+1. ✅ Badge-Kategorien verstehen (God Mode vs Daily Driver)
+1. ✅ Modell für Ihren Use Case wählen
 
 **Für Fortgeschrittene:**
+
 - Eigene Module erstellen (siehe `DEVELOPER_GUIDE.md`)
 - Golden Standard aktualisieren (`make generate-golden`)
 - Custom Scoring-Logik implementieren
 
----
+______________________________________________________________________
 
 ## 🏗️ Creating New Tests (v2.1+)
 
@@ -470,11 +506,11 @@ metadata:
 make benchmark-single MODEL=your-test-model
 ```
 
----
+______________________________________________________________________
 
 **Happy Benchmarking! 🚀**
 
----
+______________________________________________________________________
 
-**Dokumenten-Version:** 1.0.0 (Rewrite Feb 2026)  
+**Dokumenten-Version:** 1.0.0 (Rewrite Feb 2026)\
 **Kompatibel mit:** CrucibleMark v0.9.5+

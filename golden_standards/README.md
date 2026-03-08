@@ -9,4 +9,3 @@ Sie dienen als Basis für semantische Ähnlichkeitsvergleiche.
 ## Struktur
 
 - `mistral/`: Ordner mit allen JSON-Antworten des aktuellen Standards.
-
