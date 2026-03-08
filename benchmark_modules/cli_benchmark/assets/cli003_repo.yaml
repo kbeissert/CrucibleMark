@@ -21,3 +21,12 @@ scoring:
   accept_script: true
   core_commands: *id001
   bonus_criteria: []
+  method: rubric
+prompt: 'Task: Repo Clone + Web Fetch
+
+  Description: Clone https://github.com/bykologlu/ollama-benchmark-cli, read README
+  with cat
+
+  Tools: [''git'', ''cat'']
+
+  Generate the bash commands to solve this:'
