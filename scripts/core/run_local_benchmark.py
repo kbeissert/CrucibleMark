@@ -626,7 +626,7 @@ class LocalBenchmarkRunner(BaseBenchmarkRunner):
             # Für andere Batch-Module wie CLI Benchmark
             print(f"\n📊 {benchmark_info.get('name', 'Batch Module')} Summary:")
             print(f"Modell: {model}")
-            print(f"Score: {report.get('score', report.get('total_score', 0.0)):.1f}/100")
+            print(f"Score: {report.get('score', report.get('total_score', 0.0)):.2f}/100")
             print(f"Erfolgsrate: {report.get('success_rate', 'N/A')}")
             if "badge" in report:
                 print(f"Badge: {report['badge']}\n")
@@ -761,7 +761,7 @@ class LocalBenchmarkRunner(BaseBenchmarkRunner):
         )
 
         base_msg = (
-            f"   ✓ [{idx}/{total}] {name:<25}: {result['percentage']:>5.1f}% {quality} "
+            f"   ✓ [{idx}/{total}] {name:<25}: {result['percentage']:>6.2f}% {quality} "
         )
 
         if result.get("reference_score", 0) > 0:
@@ -834,7 +834,7 @@ class LocalBenchmarkRunner(BaseBenchmarkRunner):
         print(f"Tests: {len(scoring_candidates)} ({len(scoring_candidates)} ✅, {len(failed)} ❌)")
         print("\n📊 Durchschnitt (erfolgreiche Tests des Moduls):")
         print(
-            f"   Dein Modell: {avg_score:.1f}/{avg_max:.0f} ({avg_pct:.1f}%) {quality}"
+            f"   Dein Modell: {avg_score:.2f}/{avg_max:.0f} ({avg_pct:.2f}%) {quality}"
         )
         print(f"   Avg Speed:   {avg_time:.1f}s (Execution)")
         
@@ -860,12 +860,12 @@ class LocalBenchmarkRunner(BaseBenchmarkRunner):
         avg_ref = sum(r.get("reference_score", 0) for r in results) / len(results)
         avg_diff = sum(r.get("score_difference", 0) for r in results) / len(results)
 
-        print(f"   Referenz:    {avg_ref:.1f}/100")
+        print(f"   Referenz:    {avg_ref:.2f}/100")
         if avg_diff > 0:
-            print(f"   🎯 Differenz: +{avg_diff:.1f} (besser!)")
+            print(f"   🎯 Differenz: +{avg_diff:.2f} (besser!)")
             print(f"\n   {'=' * 60}")
             print(
-                f"   ⚠️  ACHTUNG: GOLDEN STANDARD ÜBERTROFFEN! (Ratio: {100 + avg_diff:.1f}%)"
+                f"   ⚠️  ACHTUNG: GOLDEN STANDARD ÜBERTROFFEN! (Ratio: {100 + avg_diff:.2f}%)"
             )
             print(f"   {'=' * 60}")
             print("   Dieses Modell übertrifft die kommerzielle Referenz.")
@@ -873,7 +873,7 @@ class LocalBenchmarkRunner(BaseBenchmarkRunner):
                 "   Bitte Ergebnisse prüfen (und ggf. Golden Standard aktualisieren)."
             )
         elif avg_diff < 0:
-            print(f"   📉 Differenz: {avg_diff:.1f} (Gap)")
+            print(f"   📉 Differenz: {avg_diff:.2f} (Gap)")
         else:
             print("   ⚖️  Differenz: ±0")
 
@@ -888,14 +888,14 @@ class LocalBenchmarkRunner(BaseBenchmarkRunner):
         for r in sorted_res[:3]:
             q = self.get_quality_badge(r["percentage"])
             d = r.get("score_difference", 0)
-            diff_str = f" ({d:+.1f})" if d != 0 else ""
+            diff_str = f" ({d:+.2f})" if d != 0 else ""
             print(f"   {r['asset_name'][:35]:<35}: {r['percentage']:.2f}% {q}{diff_str}")
 
         print("\n⚠️  Schwächste Tests:")
         for r in sorted_res[-3:]:
             q = self.get_quality_badge(r["percentage"])
             d = r.get("score_difference", 0)
-            diff_str = f" ({d:+.1f})" if d != 0 else ""
+            diff_str = f" ({d:+.2f})" if d != 0 else ""
             print(f"   {r['asset_name'][:35]:<35}: {r['percentage']:.2f}% {q}{diff_str}")
 
     def _print_tiered_analysis(self, results: List[Dict[str, Any]]):
@@ -931,8 +931,8 @@ class LocalBenchmarkRunner(BaseBenchmarkRunner):
         elif t1_avg < self.TIER_SCORE_LOW:
             profile = "⚠️  Needs Improvement"
 
-        print(f"   Tier 1 (Operational): {t1_avg:.1f}%")
-        print(f"   Tier 2 (Deep Logic):  {t2_avg:.1f}%")
+        print(f"   Tier 1 (Operational): {t1_avg:.2f}%")
+        print(f"   Tier 2 (Deep Logic):  {t2_avg:.2f}%")
         print(f"   Profile: {profile}\n{'-' * 60}")
 
 

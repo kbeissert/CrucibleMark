@@ -1,10 +1,23 @@
 metadata:
-  id: "cli003"
-  name: "Repo Clone + Web Fetch"
+  id: cli003
+  name: Repo Clone + Web Fetch
   tier: 3
-description: "Clone https://github.com/bykologlu/ollama-benchmark-cli, read README with cat"
-tools: ["git", "cat"]
+description: Clone https://github.com/bykologlu/ollama-benchmark-cli, read README
+  with cat
+tools:
+- git
+- cat
 golden:
-  required_commands: ["git clone", "bykologlu/ollama-benchmark-cli", "cat", "readme"]
-  banned_commands: ["rm ", "rmdir"]
-  max_steps: 1
+  required_commands: &id001
+  - git clone
+  - bykologlu/ollama-benchmark-cli
+  - cat
+  - readme
+  banned_commands:
+  - 'rm '
+  - rmdir
+  max_steps: 60
+scoring:
+  accept_script: true
+  core_commands: *id001
+  bonus_criteria: []

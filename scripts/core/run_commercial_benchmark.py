@@ -287,7 +287,7 @@ class CommercialBenchmarkRunner(BaseBenchmarkRunner):
                     print(
                         f"[{index}/{total_count}] {asset_id:<15} | "
                         f"{asset_name[:20]:<20} {badge} "
-                        f"Score: {res['percentage']:>5.1f} | "
+                        f"Score: {res['percentage']:>6.2f} | "
                         f"Cost:   Cached | Time: {res['execution_time']:.1f}s"
                     )
                     return res
@@ -386,7 +386,7 @@ class CommercialBenchmarkRunner(BaseBenchmarkRunner):
         time_val = exec_result.execution_time or 0.0
         print(
             f"[{index}/{total_count}] {asset_id:<15} | {asset_name[:20]:<20} {badge} "
-            f"Score: {result['percentage']:>5.1f} | Cost: ${cost_val:.4f} | "
+            f"Score: {result['percentage']:>6.2f} | Cost: ${cost_val:.4f} | "
             f"{token_str:>7} | Time: {time_val:.1f}s"
         )
 
@@ -460,6 +460,11 @@ class CommercialBenchmarkRunner(BaseBenchmarkRunner):
 
         # Dispatch Batch Mode (e.g. Political Compass) via Config
         if benchmark_info.get("execution_mode") == "batch":
+            batch_asset_id = benchmark_info.get("id", "batch_module")
+            if not self.force and self.existing_benchmarks.get((model, batch_asset_id)):
+                print(f"⏩ Überspringe {benchmark_info['name']} (Batch-Modus; Bereits im Cache vorhanden)")
+                return [dict(self.existing_benchmarks.get((model, batch_asset_id)))]
+
             # Dynamic Loading
             module_path = Path(benchmark_info.get("module_path", ""))
             test_file = module_path / "test.py"
@@ -508,47 +513,57 @@ class CommercialBenchmarkRunner(BaseBenchmarkRunner):
                 print(f"❌ Batch Execution Failed: Invalid JSON response ({e})")
                 return []
 
-            ResultManager.print_summary(report)
-            ResultManager.save_json(report, Path("outputs/runs"))
+            is_political_compass = benchmark_info.get("id", "") in ["political_compass", "political_compass_v3"] or benchmark_info.get("name", "") == "Political Compass"
 
-            # Save to shared CSV for Leaderboard
-            pc_csv = Path("benchmark_scores/political_compass_results.csv")
-            pc_csv.parent.mkdir(exist_ok=True, parents=True)
+            if is_political_compass and ResultManager:
+                try:
+                    ResultManager.print_summary(report)
+                    ResultManager.save_json(report, Path("outputs/runs"))
+                except Exception as e:
+                    print(f"⚠️ Political Compass Reporting Error: {e}")
 
-            fieldnames = ["model", "model_version", "run_id", "x_coordinate", "y_coordinate", "x_label", "y_label", "metrics_json", "timestamp"]
-            
-            # Read logic for existing file to append/update
-            pc_rows = []
-            if pc_csv.exists():
-                with open(pc_csv, "r", encoding="utf-8") as f:
-                    # Handle potential schema mismatch on read
-                    reader = csv.DictReader(f)
-                    pc_rows = list(reader)
-                    # If file on disk has more columns than we know, update known fieldnames
-                    if reader.fieldnames:
-                        for col in reader.fieldnames:
-                            if col not in fieldnames:
-                                fieldnames.append(col)
+                # Save to shared CSV for Leaderboard
+                try:
+                    pc_csv = Path("benchmark_scores/political_compass_results.csv")
+                    pc_csv.parent.mkdir(exist_ok=True, parents=True)
 
-            # Remove old entry for this model if exists
-            pc_rows = [r for r in pc_rows if r.get("model") != model]
+                    fieldnames = ["model", "model_version", "run_id", "x_coordinate", "y_coordinate", "x_label", "y_label", "metrics_json", "timestamp"]
+                    
+                    # Read logic for existing file to append/update
+                    pc_rows = []
+                    if pc_csv.exists():
+                        with open(pc_csv, "r", encoding="utf-8") as f:
+                            # Handle potential schema mismatch on read
+                            reader = csv.DictReader(f)
+                            pc_rows = list(reader)
+                            # If file on disk has more columns than we know, update known fieldnames
+                            if reader.fieldnames:
+                                for col in reader.fieldnames:
+                                    if col not in fieldnames:
+                                        fieldnames.append(col)
 
-            # Construct Data Object
-            data_object = format_political_compass_data(report)
+                    # Remove old entry for this model if exists
+                    pc_rows = [r for r in pc_rows if r.get("model") != model]
 
-            # Resolve Version using SSOT (Single Source of Truth)
-            # We pass the client to ensure behavioral hashing is consistent with other runs.
+                    # Construct Data Object
+                    data_object = format_political_compass_data(report)
+
+                    # Resolve Version using SSOT (Single Source of Truth)
+                    # We pass the client to ensure behavioral hashing is consistent with other runs.
+                    version = get_model_version(model, provider, client=client)
+
+                    new_row = prepare_pc_csv_row(model, report, data_object, model_version=version)
+                    new_row["timestamp"] = datetime.now().isoformat()
+                    pc_rows.append(new_row)
+
+                    with open(pc_csv, "w", encoding="utf-8", newline="") as f:
+                        writer = csv.DictWriter(f, fieldnames=fieldnames, extrasaction='ignore')
+                        writer.writeheader()
+                        writer.writerows(pc_rows)
+                except Exception as e:
+                    print(f"⚠️ Political Compass CSV Error: {e}")
+
             version = get_model_version(model, provider, client=client)
-
-            new_row = prepare_pc_csv_row(model, report, data_object, model_version=version)
-            new_row["timestamp"] = datetime.now().isoformat()
-            pc_rows.append(new_row)
-
-            with open(pc_csv, "w", encoding="utf-8", newline="") as f:
-                writer = csv.DictWriter(f, fieldnames=fieldnames, extrasaction='ignore')
-                writer.writeheader()
-                writer.writerows(pc_rows)
-
 
             # Create Standard Result for CSV
             std_result = {
@@ -557,16 +572,16 @@ class CommercialBenchmarkRunner(BaseBenchmarkRunner):
                 "provider": provider,
                 "model": model,
                 "model_version": version,
-                "asset_id": "political_compass_v3",
-                "asset_name": "Political Compass",
-                "total_score": report["total_score"],
+                "asset_id": benchmark_info.get("id", "batch_module"),
+                "asset_name": benchmark_info.get("name", "Batch Module"),
+                "total_score": report.get("total_score", report.get("score", 0.0)),
                 "max_score": 100,
-                "percentage": report["total_score"],
+                "percentage": report.get("total_score", report.get("score", 0.0)),
                 "execution_time": round(result_wrapper.execution_time or 0, 1),
                 "response_length": 0,
                 "tier": report.get("tier", "N/A"),
-                "cost_usd": report.get("statistics", {}).get("total_cost", 0.0),
-                "tokens": report.get("statistics", {}).get("total_tokens", 0)
+                "cost_usd": result_wrapper.cost_usd,
+                "tokens": result_wrapper.tokens_used,
             }
             return [std_result]
 
@@ -663,7 +678,7 @@ class CommercialBenchmarkRunner(BaseBenchmarkRunner):
         # Keep Score Summary
         badge = self._get_quality_badge(avg_pct)
         print(
-            f"Overall Quality: {avg_pct:.1f}% {badge} ({total_score}/{max_possible} Pts)"
+            f"Overall Quality: {avg_pct:.2f}% {badge} ({total_score}/{max_possible} Pts)"
         )
 
         # Check for Golden Standard Breach (Only in Test Mode)
@@ -681,14 +696,14 @@ class CommercialBenchmarkRunner(BaseBenchmarkRunner):
 
                     if matching_golden_scores:
                         golden_avg = sum(matching_golden_scores) / len(matching_golden_scores)
-                        # Consider it surpassed if slightly more than 0 due to float precision, 
-                        # but show message only if meaningful difference (e.g. >= 0.1%)
+                        # Consider it surpassed if slightly more than 0 due to float precision,
+                        # but show message only if meaningful difference (e.g. >= 0.01%)
                         if avg_pct > golden_avg:
                             diff = avg_pct - golden_avg
-                            # Only warn if difference is significant enough to show up in .1f format
-                            if diff >= 0.05: 
+                            # Only warn if difference is significant enough to show up in .2f format
+                            if diff >= 0.005: 
                                 print(f"\n{'=' * 66}")
-                                print(f"⚠️  ACHTUNG: GOLDEN STANDARD ÜBERTROFFEN! (+{diff:.1f}%)")
+                                print(f"⚠️  ACHTUNG: GOLDEN STANDARD ÜBERTROFFEN! (+{diff:.2f}%)")
                                 print(f"{'=' * 66}")
                                 print("Dieses Modell schneidet BESSER ab als die aktuelle Referenz.")
                                 print("Bitte prüfen: Ist der Golden Standard veraltet?")

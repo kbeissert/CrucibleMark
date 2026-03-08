@@ -35,11 +35,9 @@ class ShellSimulator:
                         if line.strip() and not line.strip().startswith("#")
                     ]
                 )
-        else:
-            commands = [
-                line.strip()
-                for line in llm_output.split("\n")
-                if line.strip() and not line.strip().startswith("#")
-            ]
+        
+        # Statt nur ```bash-Blöcke: auch den Raw-Text durchsuchen als Fallback
+        if not commands:
+            commands = [llm_output.strip()]
 
         return commands

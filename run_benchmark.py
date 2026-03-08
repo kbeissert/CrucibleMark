@@ -222,6 +222,10 @@ class BenchmarkRunner:
         models_flat = []
 
         for provider_key, provider_data in commercial_config.items():
+            # Only include models from enabled providers
+            if not provider_data.get("enabled", False):
+                continue
+                
             for model in provider_data.get("models", []):
                 models_flat.append(
                     {
