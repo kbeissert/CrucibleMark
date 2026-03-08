@@ -1,12 +1,10 @@
 # Active Context
 
-## Aktueller Stand
-- Neue Modelle von Google (Gemini 2.5/3.0 Preview) und xAI (Grok 3/4) in die `benchmark_config.yaml` integriert und im Pricing-Updater verknüpft.
-- Ein fälschlicher 0-Punkte Bug im `reasoning_logic` Modul für lokale reasoning-Modelle (Zerstörung der Antwort durch `implicit_separator` Cutoff) wurde in `evaluators.py` behoben.
-- Sämtliche Konfigurationsänderungen sowie Bugfixes wurden fehlerfrei im Repository committet.
+## Was wurde heute fertiggestellt?
+Das `cli_benchmark` Modul wurde architektonisch in das Framework integriert, indem es nun von `BaseTest` erbt und jede Aufgabe einzeln verarbeitet. Zusätzlich wurde ein Leaderboard-Bug gefixt: Das fehlende `prefix: cli` in der `config.yaml` führte dazu, dass Tests ignoriert wurden und Modelle fälschlicherweise den Status "unvollständig" (`*`) erhielten.
 
-## Nächster logischer Schritt
-- Neu-Evaluation des Moduls `reasoning_logic` für betroffene Modelle durchführen, damit die Scores im Leaderboard durch den reparierten Parser aktualisiert werden.
+## Was ist der nächste logische Schritt?
+Ein kompletter neuer lokaler Benchmark-Durchlauf sollte gestartet werden, um die sauberen 43/43 Metriken für alle Modelle bereitzustellen.
 
-## Offene Fragen oder Risiken
-- Bei Modellen, die ihr Output-Limit überschreiten (wie Trinity in `metacog_005`), resultieren unvollständige JSON/Prozentausgaben zu Recht in 0 Punkten; potenzielles Risiko für unzureichend konfigurierte Max-Token bei lokalen Runs.
+## Welche offenen Fragen oder Risiken gibt es?
+Ältere oder zukünftige Test-Assets müssen strikt gegen den `AssetValidator` geprüft werden, andernfalls kann eine einzige fehlerhafte YAML-Datei den gesamten Lauf eines Modells zum Absturz bringen.
