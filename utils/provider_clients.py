@@ -131,9 +131,13 @@ class OllamaClient(BaseProviderClient):
 
         # SPECIAL HANDLING for Reasoning Models (e.g. DeepSeek-R1)
         if is_reasoning_model(model):
-            options["num_predict"] = 32768
+            # Reduced to 8192 to prevent excessive unified memory swapping 
+            # (which causes system-wide freezes on Mac when 32768 context explodes VRAM)
+            options["num_predict"] = 8192
+            if "num_ctx" not in options:
+                options["num_ctx"] = 8192
             logger.debug(
-                "Boosting token limit for reasoning model '%s' to 32768", model
+                "Boosting token limit for reasoning model '%s' to 8192 to prevent memory freezes", model
             )
 
         return options
