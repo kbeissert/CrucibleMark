@@ -13,6 +13,7 @@
 <!-- KI trägt hier ein, was schief gelaufen ist -->
 - Code-Modelle (z.B. Hermes) neigen bei Tabellen zu Loops → `repeat_penalty` erhöhen (1.15).
 - Doppelte Argumente in `kwargs`: Parameter explizit mit `.pop()` entfernen, bevor sie an den Client weitergereicht werden.
+- Parser-Fallback (`_strip_thinking_tags`): Darf auf keinen Fall an `implicit_separator` (z.B. "**Answer:**") abschneiden, da dies korrekte Modellantworten der Tier 1/2 Reasoning-Tests fälschlicherweise nullt. Nur explizite XML-Tags entfernen.
 
 ## Patterns (gelernt)
 <!-- KI trägt hier erfolgreiche Lösungsmuster ein -->
