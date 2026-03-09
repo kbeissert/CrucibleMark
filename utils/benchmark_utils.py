@@ -7,9 +7,8 @@ import json
 import logging
 from collections.abc import Callable
 from pathlib import Path
-from typing import Any, Dict, Optional, TypeVar
+from typing import Any, Optional, TypeVar
 
-# pylint: disable=import-error
 import yaml
 
 T = TypeVar("T")
@@ -17,7 +16,7 @@ T = TypeVar("T")
 logger = logging.getLogger(__name__)
 
 
-def load_asset_yaml(asset_path: Path) -> Dict[str, Any]:
+def load_asset_yaml(asset_path: Path) -> dict[str, Any]:
     """
     Safely loads a YAML asset file.
     Handles single document and multi-document files (returns the metadata one).
@@ -124,7 +123,7 @@ def format_pc_run_data(run_dict: dict, include_extremism: bool = False) -> dict:
     return formatted
 
 
-def format_political_compass_data(report: Dict[str, Any]) -> Dict[str, Any]:
+def format_political_compass_data(report: dict[str, Any]) -> dict[str, Any]:
     """
     Formats the raw Political Compass report into a standardized data object.
     Used for consistent JSON structure in results.
@@ -150,10 +149,10 @@ def format_political_compass_data(report: Dict[str, Any]) -> Dict[str, Any]:
 
 def prepare_pc_csv_row(
     model: str,
-    report: Dict[str, Any],
-    data_object: Dict[str, Any],
+    report: dict[str, Any],
+    data_object: dict[str, Any],
     model_version: str = "unknown",
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """
     Prepares a dictionary row for the Political Compass CSV.
     """

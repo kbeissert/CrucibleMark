@@ -93,41 +93,41 @@ class ModelFingerprinter:
                 logger.warning("Could not generate behavioral hash: %s", e)
 
         # 3. Combine Logic (Hybrid Approach)
-        
+
         # Case A: Local/Ollama Models
         # Strategy: Use the official Digest/Hash only.
-        # Rationale: Local models verify via hash (like git/docker). 
+        # Rationale: Local models verify via hash (like git/docker).
         # Adding "-nohash" or behavioral hashes is redundant and confusing for users.
         if provider in ["ollama", "local"]:
-             if official_id not in ["unknown", "local", "v0"] and official_id:
-                  final_version = official_id
-             else:
-                  # Fallback if we couldn't get a proper digest
-                  final_version = f"local-{behavioral_hash}" if behavioral_hash != "nohash" else "local"
+            if official_id not in ["unknown", "local", "v0"] and official_id:
+                final_version = official_id
+            else:
+                # Fallback if we couldn't get a proper digest
+                final_version = f"local-{behavioral_hash}" if behavioral_hash != "nohash" else "local"
 
         # Case B: Commercial Models (Date already in name)
         # Strategy: Keep official ID, but append behavioral hash if unique/useful.
         # CHANGED: We now prioritize the official ID as the primary version identifier
         # because behavioral hashes can collide across different high-quality models.
-        elif (official_id in model_name and 
-              behavioral_hash != "nohash" and 
+        elif (official_id in model_name and
+              behavioral_hash != "nohash" and
               provider not in ["ollama", "local"]):
-             final_version = f"{official_id}-{behavioral_hash}"
-             
+            final_version = f"{official_id}-{behavioral_hash}"
+
         # Case B2: Explicit Version in Name (e.g. 20251101) + nohash
         # If we have a clear official ID from the name, and no behavioral hash, just use the ID.
         elif (official_id in model_name and
               behavioral_hash == "nohash" and
               provider not in ["ollama", "local"]):
-             final_version = official_id
+            final_version = official_id
 
         # Case C: Standard Commercial (Date + Behavioral Hash)
         # Example: "gpt-4o" -> "2024-05-13-8717af19"
         else:
-             if behavioral_hash == "nohash":
-                 final_version = official_id
-             else:
-                 final_version = f"{official_id}-{behavioral_hash}"
+            if behavioral_hash == "nohash":
+                final_version = official_id
+            else:
+                final_version = f"{official_id}-{behavioral_hash}"
 
         # Cache back if possible
         if client and hasattr(client, "fingerprint_cache"):

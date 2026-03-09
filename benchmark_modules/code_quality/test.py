@@ -7,25 +7,24 @@ Delegates logic to benchmark_modules.code_quality.core.evaluators.
 
 import sys
 import time
-import yaml
 from pathlib import Path
 from typing import Any, Dict
+
+import yaml
+
+from benchmark_modules.base_test import BaseTest
+from benchmark_modules.code_quality.core.constants import (
+    DEFAULT_TEMPERATURE,
+    TOKEN_MULTIPLIER,
+)
+from benchmark_modules.code_quality.core.evaluators import CodeQualityEvaluator
+from schemas.result import BenchmarkResult
+from utils.ollama_config import GLOBAL_GEN_DEFAULTS
 
 # Ensure root directory is in sys.path
 root_dir = Path(__file__).parent.parent.parent
 if str(root_dir) not in sys.path:
     sys.path.insert(0, str(root_dir))
-
-from benchmark_modules.base_test import BaseTest  # noqa: E402
-from benchmark_modules.code_quality.core.constants import (  # noqa: E402
-    DEFAULT_TEMPERATURE,
-    TOKEN_MULTIPLIER,
-)
-from benchmark_modules.code_quality.core.evaluators import CodeQualityEvaluator  # noqa: E402
-from schemas.result import BenchmarkResult  # noqa: E402
-
-
-from utils.ollama_config import GLOBAL_GEN_DEFAULTS
 
 class CodeQualityTest(BaseTest):
     """
@@ -40,7 +39,7 @@ class CodeQualityTest(BaseTest):
         # 2. Merge Module Overrides
         self._load_module_config()
 
-    def _load_module_config(self):
+    def _load_module_config(self) -> None:
         """Loads generation parameters from config.yaml and merges with defaults."""
         try:
             config_path = Path(__file__).parent / "config.yaml"
@@ -50,7 +49,7 @@ class CodeQualityTest(BaseTest):
                     module_gen = data.get("generation", {})
                     # Update (Override) global defaults with module specifics
                     self.generation_config.update(module_gen)
-        except Exception as e:
+        except (OSError, yaml.YAMLError, TypeError):
             # Fallback is silent as these are optional overrides
             pass
 
@@ -60,7 +59,7 @@ class CodeQualityTest(BaseTest):
         llm_client: Any,  # TODO: Später durch LLMClient Interface ersetzen
         provider: str = "ollama",
         **kwargs: Any
-    ) -> Dict[str, Any]:
+    ) -> BenchmarkResult:
         """
         Executes the Code Quality test for a given model.
 
@@ -87,7 +86,7 @@ class CodeQualityTest(BaseTest):
             # Temperature from config overrides DEFAULT_TEMPERATURE if present in query_kwargs
             # We pop it to avoid "multiple values for keyword argument" error
             temp = query_kwargs.pop("temperature", DEFAULT_TEMPERATURE)
-            
+
             response = llm_client.query(
                 model,
                 full_prompt,
@@ -122,7 +121,7 @@ class CodeQualityTest(BaseTest):
                     **getattr(llm_client, "last_response_metadata", {}),
                 }
             )
-        except Exception as e:
+        except (OSError, RuntimeError, ValueError) as e:
             return BenchmarkResult(
                 status="error",
                 primary_score=0.0,
@@ -145,4 +144,5 @@ class CodeQualityTest(BaseTest):
         Delegates scoring to the core evaluator.
         """
         evaluator = CodeQualityEvaluator(self.asset)
-        return evaluator.score_response(response)
+        score_dict = evaluator.score_response(response)
+        return score_dict

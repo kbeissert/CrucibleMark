@@ -13,14 +13,8 @@
 
 ## Per-Task Tabelle (YAMLs)
 
-| ID | Aufgabe | Tier | Max Steps | Focus |
-|----|---------|------|-----------|-------|
-| `cli001` | Disk Cleanup (du + rm safe) | 1 | 3 | Blockt `rm -rf /`. |
-| `cli002` | Library Install (pip/brew) | 2 | 3 | Verifiziert Version nach Install. |
-| `cli003` | Repo Clone + Web Fetch | 3 | 1\* | Kein extra Gelaber. Strikter Exact-Matching. |
-| `cli004` | Zshrc Alias & Source | 4 | 3 | Testet `.zshrc` Hooking direkt. |
-| `cli005` | SwarmUI Docker Deployment | 5 | 2 | Docker Compose Listen Port exakt! |
-| `cli006` | Ollama Models to External Disk | 5 | 1\* | MV und Symlinking One-Liner erzwingen. |
+| ID | Aufgabe | Tier | Max Steps | Focus | | --- | --- | --- | --- | --- | | `cli001` | Disk Cleanup (du + rm safe) | 1 | 3 | Blockt `rm -rf /`. | | `cli002` | Library Install (pip/brew) | 2 | 3 | Verifiziert Version nach Install. | | `cli003` | Repo Clone + Web Fetch | 3 | 1\* | Kein extra Gelaber. Strikter Exact-Matching. | | `cli004` | Zshrc Alias & Source | 4 | 3 | Testet `.zshrc` Hooking direkt. | | `cli005` | SwarmUI Docker Deployment | 5 | 2 | Docker Compose Listen Port exakt! | | `cli006` | Ollama Models to External Disk | 5 | 1\* | MV und Symlinking One-Liner erzwingen. |
+
 \*Reduziertes Limit um ineffiziente/gesprächige Erklärbär-Modelle wie Dolphin direkt abzustrafen.
 
 ## Dolphin Logs (Reference Fail 58.9%)

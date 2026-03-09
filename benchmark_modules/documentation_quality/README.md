@@ -73,12 +73,7 @@ The module uses a **multi-dimensional scoring system** with tiered difficulty:
 
 Tiered difficulty system via `TieredScoringEngine`:
 
-| Tier | Difficulty | Threshold | Example |
-|------|------------|-----------|---------|
-| **Labeled** | Easy | 40% keyword match | Missing installation section |
-| **Standard** | Medium | 40% keyword match | Incomplete API parameters |
-| **Advanced** | Hard | 35% keyword match | Missing edge case documentation |
-| **Expert** | Deep Reasoning | 30% keyword match + 70% semantic | Ambiguous error messages, unclear setup steps |
+| Tier | Difficulty | Threshold | Example | |------|------------|-----------|---------| | **Labeled** | Easy | 40% keyword match | Missing installation section | | **Standard** | Medium | 40% keyword match | Incomplete API parameters | | **Advanced** | Hard | 35% keyword match | Missing edge case documentation | | **Expert** | Deep Reasoning | 30% keyword match + 70% semantic | Ambiguous error messages, unclear setup steps |
 
 **Key Features:**
 
@@ -120,12 +115,7 @@ ______________________________________________________________________
 
 Markdown format checks via `StructureValidator`:
 
-| Validation | Description | Example Violation |
-|------------|-------------|-------------------|
-| **Heading Hierarchy** | No level skipping (H1 → H2 → H3) | `# Title` followed by `### Subsection` (missing H2) |
-| **Code Blocks** | Min count per doc-type | README with 0 code blocks |
-| **Required Sections** | Doc-type specific | API docs without "Parameters" section |
-| **List Formatting** | Proper markdown lists | Mixed bullet styles |
+| Validation | Description | Example Violation | |------------|-------------|-------------------| | **Heading Hierarchy** | No level skipping (H1 → H2 → H3) | `# Title` followed by `### Subsection` (missing H2) | | **Code Blocks** | Min count per doc-type | README with 0 code blocks | | **Required Sections** | Doc-type specific | API docs without "Parameters" section | | **List Formatting** | Proper markdown lists | Mixed bullet styles |
 
 **Doc-Type Schemas (from `constants.py`):**
 
@@ -169,10 +159,7 @@ Measures clarity via `ReadabilityScorer`:
 - **Average Sentence Length:** Shorter = clearer (target: \<20 words)
 - **Grade Level Estimation:** Derived from Flesch score
 
-**Formula (Flesch-Kincaid):**
-\[
-\\text{Flesch Score} = 206.835 - 1.015 \\left(\\frac{\\text{words}}{\\text{sentences}}\\right) - 84.6 \\left(\\frac{\\text{syllables}}{\\text{words}}\\right)
-\]
+**Formula (Flesch-Kincaid):** [ \\text{Flesch Score} = 206.835 - 1.015 \\left(\\frac{\\text{words}}{\\text{sentences}}\\right) - 84.6 \\left(\\frac{\\text{syllables}}{\\text{words}}\\right) ]
 
 **When Applied:**
 
@@ -253,13 +240,7 @@ ______________________________________________________________________
 
 ## 📂 Available Assets
 
-| ID | Name | Tier | Doc Type | Key Challenge |
-|----|------|------|----------|---------------|
-| **001** | README Quality | 1 | readme | Balancing completeness with brevity |
-| **002** | REST API Documentation | 1 | api_docs | Accurate parameters, response examples |
-| **003** | Component Props | 1 | component_docs | Type definitions, prop descriptions |
-| **004** | Setup & Troubleshooting | 2 | setup_guide | Clear step-by-step, error resolution |
-| **005** | Changelog & Release Notes | 1 | changelog | Structured format, version clarity |
+| ID | Name | Tier | Doc Type | Key Challenge | |----|------|------|----------|---------------| | **001** | README Quality | 1 | readme | Balancing completeness with brevity | | **002** | REST API Documentation | 1 | api_docs | Accurate parameters, response examples | | **003** | Component Props | 1 | component_docs | Type definitions, prop descriptions | | **004** | Setup & Troubleshooting | 2 | setup_guide | Clear step-by-step, error resolution | | **005** | Changelog & Release Notes | 1 | changelog | Structured format, version clarity |
 
 ### Asset Details
 
@@ -383,14 +364,7 @@ ______________________________________________________________________
 
 ## 📊 Performance & Quality Metrics
 
-| Metric | v1.0 | v2.0 | Improvement |
-|--------|------|------|-------------|
-| **LOC (evaluators.py)** | 280 | ~60 (facade) | -79% |
-| **Files** | 1 monolithic | 6 specialized | +500% modularity |
-| **Pylint Score** | 7.5/10 | 9.74/10 | +30% |
-| **Test Coverage** | 0% | 70%+ | +70% |
-| **Maintainability** | Medium | High | ✅ |
-| **New Features** | 2 | 5 | +150% |
+| Metric | v1.0 | v2.0 | Improvement | |--------|------|------|-------------| | **LOC (evaluators.py)** | 280 | ~60 (facade) | -79% | | **Files** | 1 monolithic | 6 specialized | +500% modularity | | **Pylint Score** | 7.5/10 | 9.74/10 | +30% | | **Test Coverage** | 0% | 70%+ | +70% | | **Maintainability** | Medium | High | ✅ | | **New Features** | 2 | 5 | +150% |
 
 ______________________________________________________________________
 

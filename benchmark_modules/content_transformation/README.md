@@ -71,12 +71,7 @@ The module uses a **multi-dimensional scoring system** with configurable weights
 
 Tiered difficulty system via `TieredScoringEngine`:
 
-| Tier | Difficulty | Threshold | Example |
-|------|------------|-----------|---------|
-| **Labeled** | Easy | 40% keyword match | Explicitly marked issues (e.g., TODO) |
-| **Standard** | Medium | 40% keyword match | Common violations (grammar, consistency) |
-| **Advanced** | Hard | 35% keyword match | Subtle flaws (tone mismatch, missing CTA) |
-| **Expert** | Deep Reasoning | 20% keyword match + 55% semantic | Complex errors (brand voice, cultural sensitivity) |
+| Tier | Difficulty | Threshold | Example | |------|------------|-----------|---------| | **Labeled** | Easy | 40% keyword match | Explicitly marked issues (e.g., TODO) | | **Standard** | Medium | 40% keyword match | Common violations (grammar, consistency) | | **Advanced** | Hard | 35% keyword match | Subtle flaws (tone mismatch, missing CTA) | | **Expert** | Deep Reasoning | 20% keyword match + 55% semantic | Complex errors (brand voice, cultural sensitivity) |
 
 **Key Features:**
 
@@ -97,12 +92,7 @@ Evaluated by `ContentQualityEvaluator`:
 
 Asset-specific structure checks via `FormatValidator`:
 
-| Asset Type | Validation Rules |
-|------------|------------------|
-| **Twitter Thread** | Sequential numbering (1/5, 2/5), max 280 chars per tweet |
-| **JSON Export** | Valid syntax, required keys, schema compliance |
-| **Landing Page** | Headline, subheadline, CTA presence |
-| **Video Script** | Spoken style markers (short sentences, questions) |
+| Asset Type | Validation Rules | |------------|------------------| | **Twitter Thread** | Sequential numbering (1/5, 2/5), max 280 chars per tweet | | **JSON Export** | Valid syntax, required keys, schema compliance | | **Landing Page** | Headline, subheadline, CTA presence | | **Video Script** | Spoken style markers (short sentences, questions) |
 
 **Example:**
 
@@ -202,14 +192,7 @@ ______________________________________________________________________
 
 ## 📂 Available Assets
 
-| ID | Name | Tier | Format | Key Challenge |
-|----|------|------|--------|---------------|
-| **001** | Landing Page Hero | 1 | Marketing Copy | Conversion-focused writing |
-| **002** | Twitter Thread | 1 | Social Media | Sequential numbering, 280-char limit |
-| **003** | Legal Glossary Simplification | 2 | Technical → Layman | Simplification without losing accuracy |
-| **004** | Video Script Tutorial | 2 | Written → Spoken | Conversational tone, pacing |
-| **005** | Email Newsletter | 1 | Corporate → Engaging | Tone shift (formal → friendly) |
-| **006** | Sarcasm Shield | 2 | Defensive Writing | Professionalism under pressure |
+| ID | Name | Tier | Format | Key Challenge | |----|------|------|--------|---------------| | **001** | Landing Page Hero | 1 | Marketing Copy | Conversion-focused writing | | **002** | Twitter Thread | 1 | Social Media | Sequential numbering, 280-char limit | | **003** | Legal Glossary Simplification | 2 | Technical → Layman | Simplification without losing accuracy | | **004** | Video Script Tutorial | 2 | Written → Spoken | Conversational tone, pacing | | **005** | Email Newsletter | 1 | Corporate → Engaging | Tone shift (formal → friendly) | | **006** | Sarcasm Shield | 2 | Defensive Writing | Professionalism under pressure |
 
 ### Asset Details
 
@@ -313,15 +296,7 @@ ______________________________________________________________________
 
 ## 📊 Performance & Quality Metrics
 
-| Metric | v1.0 | v2.0 | Improvement |
-|--------|------|------|-------------|
-| **LOC (evaluators.py)** | 400+ | ~50 (facade) | -87% |
-| **Files** | 1 monolithic | 6 specialized | +500% modularity |
-| **Pylint Score** | 7.5/10 | 9.63/10 | +28% |
-| **Test Coverage** | 0% | 80% | +80% |
-| **Maintainability** | Low | High | ✅ |
-| **Format Validation** | ❌ None | ✅ 3 validators | NEW |
-| **Tone Detection** | ❌ None | ✅ 3 metrics | NEW |
+| Metric | v1.0 | v2.0 | Improvement | |--------|------|------|-------------| | **LOC (evaluators.py)** | 400+ | ~50 (facade) | -87% | | **Files** | 1 monolithic | 6 specialized | +500% modularity | | **Pylint Score** | 7.5/10 | 9.63/10 | +28% | | **Test Coverage** | 0% | 80% | +80% | | **Maintainability** | Low | High | ✅ | | **Format Validation** | ❌ None | ✅ 3 validators | NEW | | **Tone Detection** | ❌ None | ✅ 3 metrics | NEW |
 
 ______________________________________________________________________
 

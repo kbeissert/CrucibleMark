@@ -1,13 +1,13 @@
 """Module for tasks.py."""
 from pathlib import Path
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Optional
 
 import yaml
 
 
 class CLITaskLoader:
     """Task Loader."""
-    def __init__(self, assets_dir: str = None):
+    def __init__(self, assets_dir: Optional[str] = None) -> None:
         if assets_dir is None:
             self.assets_dir = Path(__file__).parent.parent / "assets"
         else:
@@ -15,7 +15,7 @@ class CLITaskLoader:
 
     def load_tasks(self) -> List[Dict[str, Any]]:
         """Liest die YAML Tasks aus dem assets Ordner."""
-        tasks = []
+        tasks: List[Dict[str, Any]] = []
         if not self.assets_dir.exists():
             return tasks
 

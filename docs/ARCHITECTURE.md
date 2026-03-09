@@ -67,8 +67,7 @@ ______________________________________________________________________
 
 **Einstiegspunkt:** `make benchmark` → `scripts/core/run_local_benchmark.py`
 
-**Dual-Runner Strategy:**
-CrucibleMark trennt strikt zwischen lokalen und kommerziellen Laufzeitumgebungen, um faire Ergebnisse fÃ¼r jeden Kontext zu liefern.
+**Dual-Runner Strategy:** CrucibleMark trennt strikt zwischen lokalen und kommerziellen Laufzeitumgebungen, um faire Ergebnisse fÃ¼r jeden Kontext zu liefern.
 
 1. **Local Runner (`scripts/core/run_local_benchmark.py`):**
 
@@ -109,11 +108,7 @@ class LLMClient:
 
 **Provider-Spezifische Quirks:**
 
-| Provider | Auth | Token Limit | Streaming | Retry Logic |
-|----------|------|-------------|-----------|-------------|
-| Ollama | None (localhost) | Model-dependent (8K-128K) | ✅ Yes | N/A (local) |
-| OpenAI | Bearer token | 128K (GPT-4) | ✅ Yes | 429 → Exponential Backoff |
-| Mistral | API key | 32K | ❌ No | 500 → Retry 3x |
+| Provider | Auth | Token Limit | Streaming | Retry Logic | |----------|------|-------------|-----------|-------------| | Ollama | None (localhost) | Model-dependent (8K-128K) | ✅ Yes | N/A (local) | | OpenAI | Bearer token | 128K (GPT-4) | ✅ Yes | 429 → Exponential Backoff | | Mistral | API key | 32K | ❌ No | 500 → Retry 3x |
 
 ______________________________________________________________________
 
@@ -181,8 +176,7 @@ Genutzt für **Reasoning Modules** (Tier 1-2). Ersetzt binäre Scores durch part
 - 40-59% matches: 50% credit
 - \<40% matches: 0% credit
 
-**Legacy Deprecation:**
-Alte Scoring-Methode (`Legacy`) wird in v3.0 entfernt. Alle neuen Reasonung-Tests nutzen Rubriken.
+**Legacy Deprecation:** Alte Scoring-Methode (`Legacy`) wird in v3.0 entfernt. Alle neuen Reasonung-Tests nutzen Rubriken.
 
 ```python
 RUBRICS = {
@@ -225,8 +219,7 @@ ______________________________________________________________________
 
 **Konzept:** Alle Modelle werden gegen **Mistral Large** (123B) als Referenz verglichen, aber das Leaderboard basiert ab v1.1 auf **Absoluten Standards**.
 
-**Warum Absolute Standards?**
-Die "Performance Ratio" (Relativ zu Mistral) war hilfreich, führt aber zu Verwirrung, wenn sich der Referenzwert ändert. Ab v1.1 gelten feste Hürden (z.B. >85% für Gold).
+**Warum Absolute Standards?** Die "Performance Ratio" (Relativ zu Mistral) war hilfreich, führt aber zu Verwirrung, wenn sich der Referenzwert ändert. Ab v1.1 gelten feste Hürden (z.B. >85% für Gold).
 
 ______________________________________________________________________
 
@@ -261,8 +254,7 @@ else:
     badge = "⚖️ Standard"
 ```
 
-**Skill Profile Generation:**
-Zusätzlich erstellt das System ein Profil basierend auf Speed Class und Top-Modul (z.B. "Fast Code Reviewer").
+**Skill Profile Generation:** Zusätzlich erstellt das System ein Profil basierend auf Speed Class und Top-Modul (z.B. "Fast Code Reviewer").
 
 ______________________________________________________________________
 

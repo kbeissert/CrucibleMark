@@ -10,9 +10,9 @@ Prüft:
 import os
 import logging
 from pathlib import Path
-from typing import Any, Dict, Optional, Tuple
-import yaml  # pylint: disable=import-error
-from dotenv import load_dotenv  # pylint: disable=import-error
+from typing import Any, Optional, Tuple
+import yaml
+from dotenv import load_dotenv
 
 # Load environment variables from .env file if present
 load_dotenv()
@@ -33,7 +33,7 @@ class ConfigValidator:
         self.config_path = Path(config_path)
         self.config = self._load_config()
 
-    def _load_config(self) -> Dict[str, Any]:
+    def _load_config(self) -> dict[str, Any]:
         """Lädt Config-Datei."""
         if not self.config_path.exists():
             logger.error("Config file not found: %s", self.config_path)
@@ -46,7 +46,7 @@ class ConfigValidator:
             logger.error("Failed to load config: %s", e)
             raise
 
-    def get_golden_standard_config(self) -> Optional[Dict[str, Any]]:
+    def get_golden_standard_config(self) -> Optional[dict[str, Any]]:
         """Holt Golden Standard Konfiguration.
 
         Returns:
@@ -54,7 +54,7 @@ class ConfigValidator:
         """
         return self.config.get("golden_standard")
 
-    def get_provider_config(self, provider_key: str) -> Optional[Dict[str, Any]]:
+    def get_provider_config(self, provider_key: str) -> Optional[dict[str, Any]]:
         """Holt Provider-Konfiguration.
 
         Args:
@@ -244,7 +244,7 @@ class ConfigValidator:
 
         return True, ""
 
-    def get_enabled_commercial_providers(self) -> Dict[str, Dict[str, Any]]:
+    def get_enabled_commercial_providers(self) -> dict[str, dict[str, Any]]:
         """Holt alle aktivierten kommerziellen Provider.
 
         Returns:
@@ -268,7 +268,7 @@ class ConfigValidator:
         )
         return Path(csv_file)
 
-    def get_golden_standard_info(self) -> Optional[Tuple[str, str, Dict[str, Any]]]:
+    def get_golden_standard_info(self) -> Optional[Tuple[str, str, dict[str, Any]]]:
         """Holt Golden Standard Provider, Modell und Provider-Config.
 
         Returns:
@@ -300,8 +300,8 @@ def validate_config_quick() -> bool:
     try:
         validator = ConfigValidator()
         is_valid, message = validator.validate_golden_standard()
-        print(message)
+        logger.info(message)
         return is_valid
     except (OSError, yaml.YAMLError) as e:
-        print(f"❌ Config-Validierung fehlgeschlagen: {e}")
+        logger.error("Config-Validierung fehlgeschlagen: %s", e)
         return False

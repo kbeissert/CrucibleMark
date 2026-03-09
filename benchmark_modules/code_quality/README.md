@@ -136,20 +136,11 @@ Supports **4 tag types** for reasoning models:
 
 Dynamic difficulty levels defined in `assets/*.yaml`:
 
-| Tier | Difficulty | Example | Weight |
-|------|------------|---------|--------|
-| **Tier 1** | Labeled Issues (Easy) | Explicitly marked errors (`// TODO`, `// FIXME`) | Low |
-| **Tier 2** | Standard Issues (Medium) | Common OWASP/WCAG violations (SQL injection, missing ARIA) | Medium |
-| **Tier 3** | Advanced Issues (Hard) | Subtle logical flaws (race conditions, edge cases) | High |
-| **Tier 4** | Expert Issues (Deep Reasoning) | Architectural flaws requiring context (API design anti-patterns) | Very High |
+| Tier | Difficulty | Example | Weight | |------|------------|---------|--------| | **Tier 1** | Labeled Issues (Easy) | Explicitly marked errors (`// TODO`, `// FIXME`) | Low | | **Tier 2** | Standard Issues (Medium) | Common OWASP/WCAG violations (SQL injection, missing ARIA) | Medium | | **Tier 3** | Advanced Issues (Hard) | Subtle logical flaws (race conditions, edge cases) | High | | **Tier 4** | Expert Issues (Deep Reasoning) | Architectural flaws requiring context (API design anti-patterns) | Very High |
 
 ### 3. Scoring Dimensions (Total: 100 Points)
 
-| Category | Points | What's Evaluated |
-|----------|--------|------------------|
-| **Error Detection** | 60p | Finds specific anti-patterns or bugs via keyword/regex matching |
-| **Solution Quality** | 30p | Evaluates proposed fix (code validation, syntax correctness) |
-| **Formatting/Expertise** | 10p | Professional structure (Markdown, ARIA references, clear explanations) |
+| Category | Points | What's Evaluated | |----------|--------|------------------| | **Error Detection** | 60p | Finds specific anti-patterns or bugs via keyword/regex matching | | **Solution Quality** | 30p | Evaluates proposed fix (code validation, syntax correctness) | | **Formatting/Expertise** | 10p | Professional structure (Markdown, ARIA references, clear explanations) |
 
 **Scoring Formula:**
 
@@ -208,13 +199,7 @@ ______________________________________________________________________
 
 ## 📂 Available Assets
 
-| ID | Name | Focus | Tier | Max Score |
-|----|------|-------|------|-----------|
-| **001** | WCAG Audit | Accessibility (Button implementation) | 1 | 100 |
-| **002** | Security Review | SQL Injection & XSS vulnerabilities | 2 | 100 |
-| **003** | Performance Audit | React Renders & DB Queries optimization | 3 | 100 |
-| **004** | REST API Design Audit | API Design Patterns & anti-patterns | 4 | 100 |
-| **005** | Code Smells Audit | Anti-Patterns & Technical Debt detection | 2 | 100 |
+| ID | Name | Focus | Tier | Max Score | |----|------|-------|------|-----------| | **001** | WCAG Audit | Accessibility (Button implementation) | 1 | 100 | | **002** | Security Review | SQL Injection & XSS vulnerabilities | 2 | 100 | | **003** | Performance Audit | React Renders & DB Queries optimization | 3 | 100 | | **004** | REST API Design Audit | API Design Patterns & anti-patterns | 4 | 100 | | **005** | Code Smells Audit | Anti-Patterns & Technical Debt detection | 2 | 100 |
 
 **How to add new assets:** See `docs/DEVELOPER_GUIDE.md` for asset creation guidelines.
 
@@ -234,12 +219,7 @@ ______________________________________________________________________
 
 **Test Setup:** `qwen2.5:14b-instruct` on all 5 assets (Mac M4 Pro, 24GB RAM)
 
-| Metric | Value |
-|--------|-------|
-| Avg. execution time per asset | ~8.4s |
-| Avg. score (qwen2.5:14b) | 71.6% |
-| Memory usage (peak) | < 50 MB |
-| Tokens per second | ~25 t/s |
+| Metric | Value | |--------|-------| | Avg. execution time per asset | ~8.4s | | Avg. score (qwen2.5:14b) | 71.6% | | Memory usage (peak) | < 50 MB | | Tokens per second | ~25 t/s |
 
 **Comparison with v1.0.0:**
 

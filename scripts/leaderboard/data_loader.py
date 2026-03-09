@@ -20,7 +20,7 @@ try:
     from utils.model_utils import get_model_category
 except ImportError:
     # Fallback if import fails (should match SSOT logic in model_utils.py)
-    def get_model_category(model_name: str, source_file: str = "local", size_gb: float = None) -> str:
+    def get_model_category(model_name: str, source_file: str = "local", size_gb: float | None = None) -> str:
         """Fallback categorization matching SSOT."""
         if source_file == "commercial":
             return "Commercial"
@@ -252,23 +252,13 @@ def load_benchmark_data() -> pd.DataFrame:
 
             # Identify models that ALREADY have Political Compass data in the main dataframe
             # to prevent duplicate "ghost" entries.
-            existing_pc_keys = set()
+            existing_pc_keys: set = set()
             if "category" in df.columns:
                  mask = df["category"] == "Political Compass"
-                 existing_pc_keys.update(zip(df[mask]["model"], df[mask]["model_version"]))
+                 existing_pc_keys.update(zip(df[mask]["model"].values, df[mask]["model_version"].values))
             if "asset_id" in df.columns:
                  mask = df["asset_id"].astype(str).str.contains("political_compass", case=False, na=False)
-                 existing_pc_keys.update(zip(df[mask]["model"], df[mask]["model_version"]))
-
-            # Identify models that ALREADY have Political Compass data in the main dataframe
-            # to prevent duplicate "ghost" entries.
-            existing_pc_keys = set()
-            if "category" in df.columns:
-                 mask = df["category"] == "Political Compass"
-                 existing_pc_keys.update(zip(df[mask]["model"], df[mask]["model_version"]))
-            if "asset_id" in df.columns:
-                 mask = df["asset_id"].astype(str).str.contains("political_compass", case=False, na=False)
-                 existing_pc_keys.update(zip(df[mask]["model"], df[mask]["model_version"]))
+                 existing_pc_keys.update(zip(df[mask]["model"].values, df[mask]["model_version"].values))
 
             ghost_rows = []
             for _, pc_row in pc_df.iterrows():

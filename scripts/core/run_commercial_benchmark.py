@@ -23,19 +23,21 @@ sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 from utils.base_runner import BaseBenchmarkRunner  # noqa: E402
 from utils.module_loader import load_test_class  # noqa: E402
 from utils.benchmark_utils import select_from_list, discover_assets, load_asset_yaml, format_political_compass_data, prepare_pc_csv_row, save_debug_response  # noqa: E402
+from utils.fingerprinting import ModelFingerprinter  # noqa: E402
 from utils.model_utils import get_model_version  # noqa: E402
 from utils.llm_client import LLMClient  # noqa: E402
-from utils.module_registry import load_active_benchmarks # noqa: E402
-from utils.scoring_utils import calculate_score_contributions # noqa: E402
-from utils.rate_limiter import RateLimiter # noqa: E402
+from utils.module_registry import load_active_benchmarks  # noqa: E402
+from utils.scoring_utils import calculate_score_contributions  # noqa: E402
+from utils.rate_limiter import RateLimiter  # noqa: E402
 
+# Declare ResultManager with proper type annotation
+# pylint: disable=invalid-name
+ResultManager: Optional[Any] = None  # noqa: E402
 try:
     from benchmark_modules.political_compass.core.io_manager import ResultManager
 except ImportError:
-    ResultManager = None
-# pylint: enable=wrong-import-position, import-error
-
-from utils.fingerprinting import ModelFingerprinter  # noqa: E402
+    pass
+# pylint: enable=wrong-import-position, import-error,invalid-name
 
 logger = logging.getLogger(__name__)
 
@@ -66,7 +68,7 @@ class CommercialBenchmarkRunner(BaseBenchmarkRunner):
             self.result_manager._get_csv_path("commercial"),
             self.result_manager._get_csv_path("local")
         ]
-        
+
         for p in csv_files:
             if p.exists():
                 try:
@@ -241,6 +243,7 @@ class CommercialBenchmarkRunner(BaseBenchmarkRunner):
             return None
 
 
+    # pylint: disable=unused-argument
     def _process_single_asset(
         self,
         asset_path: Path,
@@ -253,6 +256,7 @@ class CommercialBenchmarkRunner(BaseBenchmarkRunner):
         limiter: Optional[RateLimiter] = None,
     ) -> Optional[Dict[str, Any]]:
         """Processes a single asset."""
+        # pylint: enable=unused-argument
         asset_data = load_asset_yaml(asset_path)
         if not asset_data:
             print(f"⚠️  Skipping empty asset: {asset_path.name}")
@@ -266,14 +270,14 @@ class CommercialBenchmarkRunner(BaseBenchmarkRunner):
         # 1. SSOT Check / Golden Mode Data Reuse
         # If result exists in ANY benchmark CSV (Commercial/Local), use it immediately!
         # Do not run a new request unless specific force/missing scenario.
-        
+
         cached_row = self.existing_benchmarks.get((model, asset_id))
 
         if not self.force and cached_row:
             if self.mode == "golden_standard":
                 # User Requirement: "Fehlt der golden Standard, soll er dort nachsehen."
                 # REUSE existing data for Golden Standard generation (don't re-run/pay).
-                
+
                 # Convert CSV strings to proper types for ResultManager
                 try:
                     res = dict(cached_row)
@@ -281,7 +285,7 @@ class CommercialBenchmarkRunner(BaseBenchmarkRunner):
                     res["max_score"] = float(res.get("max_score", 100))
                     res["percentage"] = float(res.get("percentage", 0))
                     res["execution_time"] = float(res.get("execution_time", 0))
-                    
+
                     # Print "Cached" status
                     badge = self.get_quality_badge(res["percentage"])
                     print(
@@ -302,7 +306,7 @@ class CommercialBenchmarkRunner(BaseBenchmarkRunner):
         # User Feedback: "Fehlt der golden Standard, soll er dort nachsehen [CSV].
         # Fehlen Werte ... soll ein benchmark ... angestößen werden."
         # recovering from JSON caused outdated version numbers/metadata in the leaderboard.
-        
+
         # json_path = Path(f"golden_standards/{provider}/{asset_id}.json")
         # if is_golden_model and json_path.exists():
         #     if self.mode == "golden_standard" and not self.force:
@@ -345,12 +349,12 @@ class CommercialBenchmarkRunner(BaseBenchmarkRunner):
         # ADDED: Granular Score Contribution
         benchmarks_list = benchmark_info.get("benchmarks", [])
         asset_cfg = next((b for b in benchmarks_list if b["id"] == result["asset_id"]), None)
-        
+
         result = calculate_score_contributions(result, asset_cfg)
 
         # Add Version/Fingerprint if available from API
         # meta = exec_result.meta
-        
+
         # Use Global SSOT (Dual Version format) from Fingerprinting Utility
         # We pass self.client if available to allow behavioral hashing
         version = ModelFingerprinter.get_unified_version(
@@ -449,7 +453,7 @@ class CommercialBenchmarkRunner(BaseBenchmarkRunner):
         assets: Optional[List[Path]] = None,
     ) -> List[Dict[str, Any]]:
         """Main benchmark execution loop.
-        
+
         Args:
             provider: Provider Key
             model: Model ID
@@ -471,7 +475,7 @@ class CommercialBenchmarkRunner(BaseBenchmarkRunner):
             test_class_name = benchmark_info.get("test_class")
 
             try:
-                TestClass = load_test_class(test_file, test_class_name)
+                test_class = load_test_class(test_file, test_class_name)
             except Exception as e:
                 logger.error("Failed to load batch module %s: %s", benchmark_info['name'], e)
                 return []
@@ -482,7 +486,7 @@ class CommercialBenchmarkRunner(BaseBenchmarkRunner):
             # Imports moved to top-level
 
             print(f"🛠️  Initialisiere Batch-Test: {benchmark_info['name']} ({provider}:{model})")
-            test = TestClass()
+            test = test_class()
 
             # Load assets dynamically from module path
             assets_dir = module_path / "assets"
@@ -528,7 +532,7 @@ class CommercialBenchmarkRunner(BaseBenchmarkRunner):
                     pc_csv.parent.mkdir(exist_ok=True, parents=True)
 
                     fieldnames = ["model", "model_version", "run_id", "x_coordinate", "y_coordinate", "x_label", "y_label", "metrics_json", "timestamp"]
-                    
+
                     # Read logic for existing file to append/update
                     pc_rows = []
                     if pc_csv.exists():
@@ -602,7 +606,7 @@ class CommercialBenchmarkRunner(BaseBenchmarkRunner):
 
         if not assets:
             assets = discover_assets(benchmark_info["path"])
-            
+
         print(f"Tests:    {len(assets)}\n{'=' * 60}\n")
 
         # Initialize Rate Limiter
@@ -701,7 +705,7 @@ class CommercialBenchmarkRunner(BaseBenchmarkRunner):
                         if avg_pct > golden_avg:
                             diff = avg_pct - golden_avg
                             # Only warn if difference is significant enough to show up in .2f format
-                            if diff >= 0.005: 
+                            if diff >= 0.005:
                                 print(f"\n{'=' * 66}")
                                 print(f"⚠️  ACHTUNG: GOLDEN STANDARD ÜBERTROFFEN! (+{diff:.2f}%)")
                                 print(f"{'=' * 66}")
@@ -771,7 +775,7 @@ def main():
     if benchmark_info.get("key") == "all":
         print("\n🚀 Starte Sequenz für ALLE Module...")
         error_count = 0
-        for key, cat_info in runner.benchmark_categories.items():
+        for _, cat_info in runner.benchmark_categories.items():
             try:
                 print(f"\n👉 Modul: {cat_info['name']}")
                 results = runner.run_benchmark(provider, model_id, cat_info)
@@ -781,7 +785,7 @@ def main():
                 print(f"❌ Fehler im Modul '{cat_info['name']}': {e}")
                 traceback.print_exc()
                 error_count += 1
-        
+
         if error_count > 0:
             print(f"\n⚠️  Fertig mit {error_count} Fehlern.")
         else:
