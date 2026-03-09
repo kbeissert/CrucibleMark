@@ -4,14 +4,17 @@ Utility functions for model management and filtering.
 
 import shutil
 import subprocess
-from typing import Dict
+from typing import Any, Optional, TypeVar
 
 # Late import to avoid circular dependencies if any (though currently safe)
 try:
     from utils.fingerprinting import ModelFingerprinter
 except ImportError:
     # Fallback if utils package structure is not ready
-    ModelFingerprinter = None
+    ModelFingerprinter: Optional[type] = None
+
+
+T = TypeVar("T")
 
 
 def get_model_version(model_name: str, provider: str = "ollama", client=None) -> str:
@@ -27,13 +30,13 @@ def get_model_version(model_name: str, provider: str = "ollama", client=None) ->
     Returns:
         str: Unified version string (e.g. '2411-nohash' or '8f3d1a-nohash')
     """
-    if ModelFingerprinter:
+    if ModelFingerprinter is not None:
         return ModelFingerprinter.get_unified_version(provider, model_name, client=client)
         
     return "unknown"
 
 
-def get_ollama_model_info(model_name: str) -> Dict[str, str]:
+def get_ollama_model_info(model_name: str) -> dict[str, Any]:
     """Holt Details (ID/Digest) zu einem bestimmten Ollama-Modell via CLI."""
     try:
         ollama_path = shutil.which("ollama")
@@ -56,7 +59,7 @@ def get_ollama_model_info(model_name: str) -> Dict[str, str]:
                 
         return {}
 
-    except Exception:
+    except (subprocess.CalledProcessError, OSError, subprocess.TimeoutExpired):
         return {}
 
 
@@ -86,7 +89,7 @@ def is_model_suitable_for_benchmark(model_name: str) -> bool:
     return True
 
 
-def get_ollama_models_info() -> list[dict]:
+def get_ollama_models_info() -> list[dict[str, Any]]:
     """Holt und normalisiert Ollama-Modelle."""
     try:
         import ollama
@@ -97,7 +100,7 @@ def get_ollama_models_info() -> list[dict]:
             response.models if hasattr(response, "models") else response.get("models", [])
         )
         
-        results = []
+        results: list[dict[str, Any]] = []
         for m in models:
             # Access attributes safely (pydantic model vs dict)
             name = m.model if hasattr(m, "model") else m.get("name", "")
@@ -120,21 +123,21 @@ def get_ollama_models_info() -> list[dict]:
         
         return sorted(results, key=lambda x: x["name"])
             
-    except (ImportError, Exception):
+    except (ImportError, subprocess.CalledProcessError, OSError, subprocess.TimeoutExpired):
         return []
 
 
-def get_commercial_models_from_config(config: Dict) -> list[tuple[str, str, str]]:
+def get_commercial_models_from_config(config: dict[str, Any]) -> list[tuple[str, str, str]]:
     """
     Extracts enabled commercial models from the configuration dictionary.
     
     Args:
-        config (Dict): The loaded benchmark_config.yaml content.
+        config (dict): The loaded benchmark_config.yaml content.
 
     Returns:
         List[Tuple[str, str, str]]: List of (model_id, pretty_name, provider_key)
     """
-    models = []
+    models: list[tuple[str, str, str]] = []
     providers = config.get("providers", {}).get("commercial", {})
     
     for p_key, p_config in providers.items():
@@ -164,7 +167,7 @@ def resolve_provider(model_name: str) -> tuple[str, str]:
     return "ollama", model_name
 
 
-def is_cloud_model(model_name: str, size_gb: float = None) -> bool:
+def is_cloud_model(model_name: str, size_gb: Optional[float] = None) -> bool:
     """
     SSOT: Determines if an Ollama model is a cloud proxy model.
     
@@ -198,7 +201,7 @@ def is_cloud_model(model_name: str, size_gb: float = None) -> bool:
     return False
 
 
-def get_model_category(model_name: str, source_file: str = "local", size_gb: float = None) -> str:
+def get_model_category(model_name: str, source_file: str = "local", size_gb: Optional[float] = None) -> str:
     """
     Central SSOT for model categorization.
     Determines whether a model is Commercial, Local, or Local Cloud.

@@ -20,15 +20,7 @@ ______________________________________________________________________
 
 ## 📋 **Technical Metadata**
 
-| Property | Value |
-|----------|-------|
-| **Module ID** | `cultural_intelligence` |
-| **Namespace** | `benchmark_modules.cultural_intelligence` |
-| **Test Class** | `CulturalIntelligenceTest` (inherits `BaseTest`) |
-| **Evaluator** | `CulturalIntelligenceEvaluator` (Facade Pattern) |
-| **Version** | v2.0.1 (Modular Architecture) |
-| **Python Version** | 3.8+ |
-| **Dependencies** | PyYAML, pytest (testing only) |
+| Property | Value | |----------|-------| | **Module ID** | `cultural_intelligence` | | **Namespace** | `benchmark_modules.cultural_intelligence` | | **Test Class** | `CulturalIntelligenceTest` (inherits `BaseTest`) | | **Evaluator** | `CulturalIntelligenceEvaluator` (Facade Pattern) | | **Version** | v2.0.1 (Modular Architecture) | | **Python Version** | 3.8+ | | **Dependencies** | PyYAML, pytest (testing only) |
 
 ______________________________________________________________________
 
@@ -115,13 +107,7 @@ ______________________________________________________________________
 
 **Now**: Continuous 5-level scale:
 
-| Score | Level | Indicators |
-|-------|-------|------------|
-| 0.0-0.2 | Very Informal | "Du", "Hey", slang, emojis |
-| 0.2-0.4 | Informal | "Du", casual tone, contractions |
-| 0.4-0.6 | Neutral | No clear Sie/Du, standard vocab |
-| 0.6-0.8 | Formal | "Sie", respectful tone, titles |
-| 0.8-1.0 | Very Formal | "Sehr geehrte", honorifics, bureaucratic |
+| Score | Level | Indicators | |-------|-------|------------| | 0.0-0.2 | Very Informal | "Du", "Hey", slang, emojis | | 0.2-0.4 | Informal | "Du", casual tone, contractions | | 0.4-0.6 | Neutral | No clear Sie/Du, standard vocab | | 0.6-0.8 | Formal | "Sie", respectful tone, titles | | 0.8-1.0 | Very Formal | "Sehr geehrte", honorifics, bureaucratic |
 
 **Use Case**: Match formality to context (email etiquette scenarios)
 
@@ -285,12 +271,7 @@ ______________________________________________________________________
 
 **Regional Markers**:
 
-| Term | DE (Germany) | AT (Austria) | CH (Switzerland) |
-|------|--------------|--------------|------------------|
-| Bread roll | Brötchen | Semmel | Brötli |
-| Breakfast cereal | Müsli | Müsli | Müesli |
-| Potatoes | Kartoffeln | Erdäpfel | Härdöpfel |
-| Saturday | Samstag | Samstag | Samstag |
+| Term | DE (Germany) | AT (Austria) | CH (Switzerland) | |------|--------------|--------------|------------------| | Bread roll | Brötchen | Semmel | Brötli | | Breakfast cereal | Müsli | Müsli | Müesli | | Potatoes | Kartoffeln | Erdäpfel | Härdöpfel | | Saturday | Samstag | Samstag | Samstag |
 
 **Example Check**:
 
@@ -308,13 +289,7 @@ ______________________________________________________________________
 
 ## 📂 **Available Assets**
 
-| ID | Asset Name | Focus | Difficulty | Keywords |
-|----|------------|-------|------------|----------|
-| **6A** | Email Etiquette | Formality, politeness | Medium | Sie/Du, höflich, Anfrage |
-| **6B** | Idiom Translation | Cultural adaptation | Hard | Idiom, Äquivalent, natürlich |
-| **6C** | Taboo Topics | Sensitivity, context | Hard | Tabu, angemessen, respektvoll |
-| **6D** | Regional Dialects | Dialect consistency | Medium | Dialekt, Region, Variante |
-| **6E** | German Idioms | Idiomatic fluency | Hard | Redewendung, Sprichwort, Eulen |
+| ID | Asset Name | Focus | Difficulty | Keywords | |----|------------|-------|------------|----------| | **6A** | Email Etiquette | Formality, politeness | Medium | Sie/Du, höflich, Anfrage | | **6B** | Idiom Translation | Cultural adaptation | Hard | Idiom, Äquivalent, natürlich | | **6C** | Taboo Topics | Sensitivity, context | Hard | Tabu, angemessen, respektvoll | | **6D** | Regional Dialects | Dialect consistency | Medium | Dialekt, Region, Variante | | **6E** | German Idioms | Idiomatic fluency | Hard | Redewendung, Sprichwort, Eulen |
 
 ______________________________________________________________________
 
@@ -347,11 +322,7 @@ ______________________________________________________________________
 
 **Examples**:
 
-| English | ❌ Literal | ✅ Idiomatic |
-|---------|-----------|--------------|
-| "Break a leg" | "Brich ein Bein" | "Hals- und Beinbruch" |
-| "Piece of cake" | "Stück Kuchen" | "Ein Kinderspiel" |
-| "Costs an arm and a leg" | "Kostet Arm und Bein" | "Kostet ein Vermögen" |
+| English | ❌ Literal | ✅ Idiomatic | |---------|-----------|--------------| | "Break a leg" | "Brich ein Bein" | "Hals- und Beinbruch" | | "Piece of cake" | "Stück Kuchen" | "Ein Kinderspiel" | | "Costs an arm and a leg" | "Kostet Arm und Bein" | "Kostet ein Vermögen" |
 
 ______________________________________________________________________
 
@@ -596,12 +567,7 @@ ______________________________________________________________________
 
 ### **Expected Scores by Model Tier**
 
-| Model Tier | Expected Score | Strengths | Weaknesses |
-|------------|---------------|-----------|------------|
-| **Tier 1** (GPT-4, Claude Opus) | 85-95 | Excellent cultural nuance | Rare regional mixing |
-| **Tier 2** (Mistral Large, Gemma 27B) | 70-85 | Good idioms, formality | Some literal translations |
-| **Tier 3** (Qwen 14B, Llama 70B) | 60-75 | Decent grammar | Struggles with idioms |
-| **Tier 4** (Small models \<10B) | 40-60 | Basic translation | Literal, no nuance |
+| Model Tier | Expected Score | Strengths | Weaknesses | |------------|---------------|-----------|------------| | **Tier 1** (GPT-4, Claude Opus) | 85-95 | Excellent cultural nuance | Rare regional mixing | | **Tier 2** (Mistral Large, Gemma 27B) | 70-85 | Good idioms, formality | Some literal translations | | **Tier 3** (Qwen 14B, Llama 70B) | 60-75 | Decent grammar | Struggles with idioms | | **Tier 4** (Small models \<10B) | 40-60 | Basic translation | Literal, no nuance |
 
 ______________________________________________________________________
 
@@ -791,8 +757,7 @@ ______________________________________________________________________
 
 **Status:** Uses `LegacyEvaluator` instead of v2.0 modular architecture.
 
-**Why?**
-Asset 6E requires **negative keyword checking**: verifying that English idioms are **removed** (not just translated).
+**Why?** Asset 6E requires **negative keyword checking**: verifying that English idioms are **removed** (not just translated).
 
 **Example:**
 
@@ -818,8 +783,7 @@ The v2.0 `SolutionQualityEvaluator` currently only checks for **positive keyword
 - Migrate Asset 6E to new evaluator
 - Deprecate `LegacyEvaluator` (remove in v3.0)
 
-**Configuration:**
-The YAML schema is V2-compatible (uses Dict format), but scoring logic remains in `core/legacy/evaluators.py`. This is intentional.
+**Configuration:** The YAML schema is V2-compatible (uses Dict format), but scoring logic remains in `core/legacy/evaluators.py`. This is intentional.
 
 ______________________________________________________________________
 

@@ -8,6 +8,7 @@
 - [DONE] Bugfix im `reasoning_logic` Evaluator: Parsing-Cutoffs bei `implicit_separator` ("**Answer:**") für Standard Logic-Tests verhindert
 - [DONE] Refaktorierung von `cli_benchmark` für korrekte `BaseTest`-Integration und Einzel-Test Ausführung.
 - [DONE] Fix Leaderboard-Asterisk Bug (`*`) durch Ergänzung des Modul-Präfix in der `cli_benchmark/config.yaml`.
+- [DONE] MyPy-Fehler Zeile 35 in `run_commercial_benchmark.py` behoben (Optional-Import Type-Hint). Pylint: 10/10.
 
 ## Ongoing
 

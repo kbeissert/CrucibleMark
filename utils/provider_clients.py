@@ -308,7 +308,7 @@ class OllamaClient(BaseProviderClient):
                 model.model if hasattr(model, "model") else model.get("name", "unknown")
                 for model in models
             ]
-        except Exception as e:  # pylint: disable=broad-exception-caught
+        except (ConnectionError, OSError, RuntimeError) as e:
             logger.error("Error listing Ollama models: %s", e)
             return []
 

@@ -130,11 +130,7 @@ ______________________________________________________________________
 
 Alle Assets verwenden ein **60/30/10 Scoring-Schema**:
 
-| Category | Weight | Beschreibung |
-|----------|--------|--------------|
-| **Error Detection** | 60% | Issue-Erkennung (Labeled → Standard → Advanced → Expert) |
-| **Solution Quality** | 30% | Ton, Struktur, Clarity |
-| **Formatting** | 10% | Markdown, Spalten-Struktur |
+| Category | Weight | Beschreibung | |----------|--------|--------------| | **Error Detection** | 60% | Issue-Erkennung (Labeled → Standard → Advanced → Expert) | | **Solution Quality** | 30% | Ton, Struktur, Clarity | | **Formatting** | 10% | Markdown, Spalten-Struktur |
 
 **Error Detection Tiers:**
 
@@ -147,13 +143,7 @@ ______________________________________________________________________
 
 ## 📂 Available Assets
 
-| Asset ID | Name | Schwierigkeit | Besonderheit | Default Ratio |
-|----------|------|---------------|--------------|---------------|
-| **001** | Error Messages | Tiered | Jargon-Elimination, Call-to-Action | 0.6 |
-| **002** | Button Labels | Tiered | Length < 25 chars, Context-Aware CTAs | 0.6 |
-| **003** | Onboarding Flow | Tiered | Progressive Disclosure, Jargon-Free | 0.5 (softer) |
-| **004** | Accessibility (ARIA) | Tiered | WCAG-Konformität, Screen Reader | 1.0 (strict) |
-| **005** | Microcopy Audit | Tiered | Health Context, Safety-Critical | 0.4 (empathy) |
+| Asset ID | Name | Schwierigkeit | Besonderheit | Default Ratio | |----------|------|---------------|--------------|---------------| | **001** | Error Messages | Tiered | Jargon-Elimination, Call-to-Action | 0.6 | | **002** | Button Labels | Tiered | Length < 25 chars, Context-Aware CTAs | 0.6 | | **003** | Onboarding Flow | Tiered | Progressive Disclosure, Jargon-Free | 0.5 (softer) | | **004** | Accessibility (ARIA) | Tiered | WCAG-Konformität, Screen Reader | 1.0 (strict) | | **005** | Microcopy Audit | Tiered | Health Context, Safety-Critical | 0.4 (empathy) |
 
 ______________________________________________________________________
 
@@ -173,12 +163,7 @@ pytest benchmark_modules/ux_writing/tests/test_yaml_consistency.py -v
 
 ### Test-Coverage Breakdown
 
-| Test-Datei | Tests | Coverage |
-|------------|-------|----------|
-| `test_ux_writing.py` | 3 | Asset Loading |
-| `test_evaluators.py` | 15+ | Alle Evaluator-Klassen |
-| `test_issue_evaluator.py` | 8+ | Hybrid Matching (String + Semantic) |
-| `test_yaml_consistency.py` | 5+ | YAML-Struktur & Gewichte |
+| Test-Datei | Tests | Coverage | |------------|-------|----------| | `test_ux_writing.py` | 3 | Asset Loading | | `test_evaluators.py` | 15+ | Alle Evaluator-Klassen | | `test_issue_evaluator.py` | 8+ | Hybrid Matching (String + Semantic) | | `test_yaml_consistency.py` | 5+ | YAML-Struktur & Gewichte |
 
 **Alle Tests sind deterministisch** (keine LLM-Calls, nur String-Matching auf Fixtures).
 
@@ -186,15 +171,7 @@ ______________________________________________________________________
 
 ## 📊 Quality Metrics
 
-| Metric | Value | Status |
-|--------|-------|--------|
-| **Overall Quality Score** | **99/100** | ✅ A+ |
-| **Pylint Score** | **9.07/10** | ✅ Excellent |
-| **Type-Hint Coverage** | **98%** | ✅ Near-Perfect |
-| **Test Coverage** | **~80%** | ✅ Production-Ready |
-| **Largest File** | **119 LOC** | ✅ (was 310) |
-| **Magic Numbers** | **0** | ✅ (was 8) |
-| **Tests Passing** | **28/28** | ✅ All Green |
+| Metric | Value | Status | |--------|-------|--------| | **Overall Quality Score** | **99/100** | ✅ A+ | | **Pylint Score** | **9.07/10** | ✅ Excellent | | **Type-Hint Coverage** | **98%** | ✅ Near-Perfect | | **Test Coverage** | **~80%** | ✅ Production-Ready | | **Largest File** | **119 LOC** | ✅ (was 310) | | **Magic Numbers** | **0** | ✅ (was 8) | | **Tests Passing** | **28/28** | ✅ All Green |
 
 ______________________________________________________________________
 

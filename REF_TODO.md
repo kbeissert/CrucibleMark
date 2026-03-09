@@ -59,9 +59,7 @@ ______________________________________________________________________
 
 ### LLM-based Scoring System (MAJOR FEATURE)
 
-**Status:** Planned for v1.1 or v1.5
-**Complexity:** High
-**Priority:** High
+**Status:** Planned for v1.1 or v1.5 **Complexity:** High **Priority:** High
 
 **Current Limitation:**
 
@@ -233,16 +231,7 @@ ______________________________________________________________________
 
 ## 📊 Effort Estimation
 
-| Task | Priority | Effort | Version |
-|------|----------|--------|---------|
-| **Unit Tests (complete)** | High | 1-2 weeks | v1.0.1 |
-| **CI/CD Pipeline** | High | 1 week | v1.0.1 |
-| **Reasoning Module** | Medium | 3-4 weeks | v1.1.0 |
-| **Web UI** | Medium | 4-6 weeks | v1.1.0 |
-| **API Mode** | Low | 2-3 weeks | v1.1.0 |
-| **LLM-based Scoring** | High | 4-6 weeks | v1.5.0 ⭐ |
-| **Multimodal Support** | Low | 6-8 weeks | v2.0.0 |
-| **Cloud Integration** | Low | 4-6 weeks | v2.0.0 |
+| Task | Priority | Effort | Version | |------|----------|--------|---------| | **Unit Tests (complete)** | High | 1-2 weeks | v1.0.1 | | **CI/CD Pipeline** | High | 1 week | v1.0.1 | | **Reasoning Module** | Medium | 3-4 weeks | v1.1.0 | | **Web UI** | Medium | 4-6 weeks | v1.1.0 | | **API Mode** | Low | 2-3 weeks | v1.1.0 | | **LLM-based Scoring** | High | 4-6 weeks | v1.5.0 ⭐ | | **Multimodal Support** | Low | 6-8 weeks | v2.0.0 | | **Cloud Integration** | Low | 4-6 weeks | v2.0.0 |
 
 ______________________________________________________________________
 
@@ -277,6 +266,4 @@ ______________________________________________________________________
 
 ______________________________________________________________________
 
-**Last Updated:** 2026-02-03
-**Version:** 1.0.0 (Released)
-**Next Milestone:** v1.0.1 (Maintenance) → v1.1.0 (Features) → v1.5.0 (LLM Scoring) ⭐
+**Last Updated:** 2026-02-03 **Version:** 1.0.0 (Released) **Next Milestone:** v1.0.1 (Maintenance) → v1.1.0 (Features) → v1.5.0 (LLM Scoring) ⭐

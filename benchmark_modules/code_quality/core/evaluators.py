@@ -47,7 +47,7 @@ class CodeQualityEvaluator:
         scoring_config = self.asset["scoring"]
         total_possible = scoring_config.get("total_points", 100)
 
-        results = {
+        results: Dict[str, Any] = {
             "category_scores": {},
             "details": [],
             "violations": [],

@@ -2,6 +2,7 @@
 
 Contains the core scoring logic related to dispatching and result aggregation.
 """
+# pylint: disable=too-many-lines
 
 from __future__ import annotations
 
@@ -200,7 +201,7 @@ def calculate_dimension_score(response: str, keywords: list[str], max_weight: in
     for pattern in keywords:
         if re.search(pattern, response, re.IGNORECASE):
             matches += 1
-            
+
     match_ratio = matches / len(keywords)
 
     # v2.2 RegEx Robustness (Claude/Opus Fix)
@@ -208,14 +209,14 @@ def calculate_dimension_score(response: str, keywords: list[str], max_weight: in
     if match_ratio >= 0.70:
         return float(max_weight)
 
-    # 2. Good Saturation 
+    # 2. Good Saturation
     if match_ratio >= 0.45:
         return float(max_weight * 0.80)
 
-    # 3. Minimum Viable 
+    # 3. Minimum Viable
     if match_ratio >= 0.20:
         return float(max_weight * 0.50)
-        
+
     # 4. Fallback: Single match
     if matches >= 1:
         return float(max_weight * 0.25)
@@ -233,8 +234,8 @@ def score_granular_rubric(response: str, asset_id: str) -> tuple[float, dict[str
     details = ["ℹ️ Algorithm: v2.1 Stricter Matching"]
 
     for dimension, config in rubric.items():
-        weight = config['weight']
-        keywords = config.get('keywords', [])
+        weight = cast(int, config.get('weight', 0))
+        keywords = cast(list[str], config.get('keywords', []))
 
         score = calculate_dimension_score(response, keywords, weight)
         scores[dimension] = score
@@ -280,26 +281,26 @@ class ReasoningEvaluator:
 
         if version >= 2.0 or self.asset["metadata"]["id"] in RUBRICS:
             # Use new rubrics
-            def wrapper_5a(text: str, *args: Any) -> tuple[float, dict[str, float], list[str]]:
+            def wrapper_5a(text: str, *_args: Any) -> tuple[float, dict[str, float], list[str]]:
                 return score_granular_rubric(text, "reasoning_5a_001")
 
-            def wrapper_5c(text: str, *args: Any) -> tuple[float, dict[str, float], list[str]]:
+            def wrapper_5c(text: str, *_args: Any) -> tuple[float, dict[str, float], list[str]]:
                 return score_granular_rubric(text, "reasoning_5c_001")
 
-            def wrapper_5b(text: str, *args: Any) -> tuple[float, dict[str, float], list[str]]:
+            def wrapper_5b(text: str, *_args: Any) -> tuple[float, dict[str, float], list[str]]:
                 return score_granular_rubric(text, "reasoning_5b_001")
 
-            def wrapper_5d(text: str, *args: Any) -> tuple[float, dict[str, float], list[str]]:
+            def wrapper_5d(text: str, *_args: Any) -> tuple[float, dict[str, float], list[str]]:
                 # 5d requires feasibility extraction by default logic, but granular rubric just needs text
                 # We ignore args (feasibility) if passed, or use it if rubric needs it?
                 # Current 5d rubric uses only keywords.
                 return score_granular_rubric(text, "reasoning_5d_001")
 
-            def wrapper_5e(text: str, *args: Any) -> tuple[float, dict[str, float], list[str]]:
+            def wrapper_5e(text: str, *_args: Any) -> tuple[float, dict[str, float], list[str]]:
                 # 5e previously used specialized scorer. Now uses granular rubric (v2.1)
                 return score_granular_rubric(text, "reasoning_5e_001")
 
-            def wrapper_metacog_004(text: str, *args: Any) -> tuple[float, dict[str, float], list[str]]:
+            def wrapper_metacog_004(text: str, *_args: Any) -> tuple[float, dict[str, float], list[str]]:
                 return score_granular_rubric(text, "reasoning_metacog_004")
 
             self._scorers["reasoning_5a_001"] = wrapper_5a
@@ -337,12 +338,12 @@ class ReasoningEvaluator:
             # Assets 5d and 5e now require feasibility parameter
             if asset_id in ["reasoning_5d_001", "reasoning_5e_001"]:
                 feasibility = self._extract_feasibility(input_text)
-                total_score, score_breakdown, details = handler(
+                total_score, score_breakdown, details = cast(Any, handler)(
                     input_text, feasibility,
                 )
             else:
                 # Standard signature (float, dict, list)
-                total_score, score_breakdown, details = handler(input_text)
+                total_score, score_breakdown, details = cast(Any, handler)(input_text)
 
         elif (
             isinstance(expected_output, dict) and "required_findings" in expected_output
@@ -417,7 +418,7 @@ class ReasoningEvaluator:
         # or stick to the regex. To keep it simple and decoupled from parser logic which
         # aims to extract thoughts:
         parsed = parse_thought_tags(text)
-        
+
         # Only strip explicit XML structural tags (<think>, <thought>, etc.)
         # for standard logic testing. Implicit separators (like "**Answer:**")
         # usually mean the model provided its reasoning in the main body,
@@ -445,8 +446,6 @@ class ReasoningEvaluator:
         Returns:
             int: Extracted feasibility score (0-10). Returns DEFAULT if not found.
         """
-        import re
-
         # Optimization: Combined regex pattern (Task-10)
         # Groups correspond to the original priority list logic
         pattern = (

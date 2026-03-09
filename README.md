@@ -6,7 +6,7 @@
 [![Code Quality](https://img.shields.io/badge/pylint-9.15%2F10-brightgreen)](.)
 [![Status](https://img.shields.io/badge/status-production--ready-brightgreen)](.)
 
-**A Modular LLM Benchmark Framework for Product Engineers**
+## A Modular LLM Benchmark Framework for Product Engineers
 
 CrucibleMark is a comprehensive benchmarking suite designed to evaluate Large Language Models (LLMs) across the skills that matter most to product engineers: code quality, UX writing, content transformation, cultural intelligence, and reasoning.
 

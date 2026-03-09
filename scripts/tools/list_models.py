@@ -142,7 +142,7 @@ def check_ollama() -> None:
                     # Reuse row printer or custom? Reuse is fine, size is just 0.0 GB
                     _print_ollama_model_row(model)
 
-        except Exception as e:  # pylint: disable=broad-exception-caught
+        except (ConnectionError, OSError, RuntimeError) as e:
             print(
                 f"{Colors.FAIL}Fehler bei der Kommunikation mit Ollama: {e}{Colors.ENDC}"
             )

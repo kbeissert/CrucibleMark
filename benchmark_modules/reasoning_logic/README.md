@@ -29,14 +29,7 @@ ______________________________________________________________________
 
 ### 📊 Code Quality Metrics
 
-| Metric | Before | After | Improvement |
-|--------|--------|-------|-------------|
-| Overall Score | 60/100 | **92/100** | +53% |
-| Largest File | 450 lines | **\<180 lines** | -60% |
-| Type-Hints | 60% | **100%** | +67% |
-| Documentation | 60% | **95%** | +58% |
-| Tests | 0 | **14 tests** | NEW! |
-| Performance | O(N×12) | **O(N)** | 12x faster |
+| Metric | Before | After | Improvement | |--------|--------|-------|-------------| | Overall Score | 60/100 | **92/100** | +53% | | Largest File | 450 lines | **\<180 lines** | -60% | | Type-Hints | 60% | **100%** | +67% | | Documentation | 60% | **95%** | +58% | | Tests | 0 | **14 tests** | NEW! | | Performance | O(N×12) | **O(N)** | 12x faster |
 
 ______________________________________________________________________
 

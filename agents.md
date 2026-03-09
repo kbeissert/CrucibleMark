@@ -27,3 +27,4 @@
 
 - Konfig-Hierarchie: Global (`benchmark_config`) → Modul (`config.yaml`) → Runtime. Modul-Config überschreibt Global.
 - **Test-Architektur:** Neue Module (wie das `cli_benchmark`) müssen in Python zwingend von `BaseTest` erben und in `execute()` stets **einzelne** Aufgaben verarbeiten. Modul-interne Batch-Schleifen zerstören das allgemeine Leaderboard-Reporting.
+- **Optional-Import Type-Hint:** Bei optional importierten Modulen (z.B. `try/except ImportError`) vor dem try-Block `Variable: Optional[Any] = None` deklarieren, nicht im except-Block. Das verhindert MyPy-Fehler "Cannot assign to a type".

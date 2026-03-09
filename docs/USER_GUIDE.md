@@ -137,8 +137,7 @@ Für komplexe Reasoning-Aufgaben nutzen wir **v2.0 Granular Rubrics** für faire
 
 Standard-Module nutzen eine Mischung aus **40% Keyword-Matching** und **60% Semantic Similarity** zum Gold Standard.
 
-> **ℹ️ Info zur Semantic Similarity:**
-> CrucibleMark nutzt das lokale KI-Modell **`all-MiniLM-L6-v2`** (via `sentence-transformers`), um die inhaltliche Bedeutung der Antworten mit der Musterlösung zu vergleichen.
+> **ℹ️ Info zur Semantic Similarity:** CrucibleMark nutzt das lokale KI-Modell **`all-MiniLM-L6-v2`** (via `sentence-transformers`), um die inhaltliche Bedeutung der Antworten mit der Musterlösung zu vergleichen.
 >
 > - **Vorteil:** Antwortet das Modell korrekt, nutzt aber andere Worte als die Musterlösung, wird dies erkannt.
 > - **Setup:** Das Modell (~80MB) wird bei der Installation (`make install`) einmalig heruntergeladen und lokal gecached.
@@ -159,14 +158,7 @@ make leaderboard
 
 Das neue Leaderboard (v1.2) ist ein **Decision-Making Tool**, nicht nur ein Ranking. Es berücksichtigt immer nur den **letzten lokalen Run** pro Modell, sodass Hardware-Upgrades (z.B. SSD statt HDD) sofort sichtbar werden.
 
-| Spalte | Bedeutung |
-|--------|-----------|
-| **Badge** | Qualitäts-Tier (🏆 Gold, 🥈 Silver, 🥉 Bronze, ⚖️ Standard) |
-| **Speed Class** | ⚡ Fast (\<40s), ⏱️ Medium, 🐢 Slow (>80s) |
-| **Initial Load** | **Cold Start Zeit** aus der separaten Warm-up Phase. Verfälscht nicht den Average. |
-| **Performance/s** | Speed-Quality Tradeoff (höher ist besser) |
-| **Cost per 1K** | Echte API-Kosten pro 1000 Tests (nur kommerziell) |
-| **Total Score** | (Routine Score + Reasoning Score) / 2 |
+| Spalte | Bedeutung | |--------|-----------| | **Badge** | Qualitäts-Tier (🏆 Gold, 🥈 Silver, 🥉 Bronze, ⚖️ Standard) | | **Speed Class** | ⚡ Fast (\<40s), ⏱️ Medium, 🐢 Slow (>80s) | | **Initial Load** | **Cold Start Zeit** aus der separaten Warm-up Phase. Verfälscht nicht den Average. | | **Performance/s** | Speed-Quality Tradeoff (höher ist besser) | | **Cost per 1K** | Echte API-Kosten pro 1000 Tests (nur kommerziell) | | **Total Score** | (Routine Score + Reasoning Score) / 2 |
 
 ______________________________________________________________________
 
@@ -174,20 +166,11 @@ ______________________________________________________________________
 
 ### 1. Quality Tiers (Absolute Standards)
 
-| Badge | Score Hürde | Bedeutung |
-|-------|-------------|-----------|
-| 🏆 **Gold** | ≥ 85% | Elite, Production-Ready |
-| 🥈 **Silver** | ≥ 70% | Solide für die meisten Aufgaben |
-| 🥉 **Bronze** | ≥ 55% | OK für einfache Tasks |
-| ⚖️ **Standard** | < 55% | Needs Improvement |
+| Badge | Score Hürde | Bedeutung | |-------|-------------|-----------| | 🏆 **Gold** | ≥ 85% | Elite, Production-Ready | | 🥈 **Silver** | ≥ 70% | Solide für die meisten Aufgaben | | 🥉 **Bronze** | ≥ 55% | OK für einfache Tasks | | ⚖️ **Standard** | < 55% | Needs Improvement |
 
 ### 2. Speed Classes
 
-| Klasse | Zeitlimit | Use Case |
-|--------|-----------|----------|
-| ⚡ **Fast** | < 40s | Autocomplete, Chat, Realtime |
-| ⏱️ **Medium** | 40s - 80s | Code Review, Doku, Interaktiv |
-| 🐢 **Slow** | > 80s | Batch Processing, Deep Analysis |
+| Klasse | Zeitlimit | Use Case | |--------|-----------|----------| | ⚡ **Fast** | < 40s | Autocomplete, Chat, Realtime | | ⏱️ **Medium** | 40s - 80s | Code Review, Doku, Interaktiv | | 🐢 **Slow** | > 80s | Batch Processing, Deep Analysis |
 
 ### 3. Skill Profiles (Beispiele)
 

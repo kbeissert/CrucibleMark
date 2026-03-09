@@ -19,7 +19,7 @@ from schemas.result import BenchmarkResult
 try:
     import ollama
 except ImportError:
-    ollama = None
+    ollama = None  # type: ignore
 
 # Add project root to path
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
@@ -36,11 +36,7 @@ from utils.benchmark_utils import (
 from utils.llm_client import LLMClient
 from utils.logging_config import setup_logging
 
-from utils.model_utils import (
-    get_model_version,
-    get_ollama_models_info,
-    is_reasoning_model
-)
+from utils.model_utils import get_model_version, get_ollama_models_info, is_reasoning_model
 from utils.fingerprinting import ModelFingerprinter
 from utils.module_loader import load_test_class
 from utils.module_registry import load_active_benchmarks
@@ -74,7 +70,9 @@ class LocalBenchmarkRunner(BaseBenchmarkRunner):
     TIER_SCORE_LOW = 50
     TOKEN_K_FACTOR = 1000
 
-    def __init__(self, debug_responses: bool = False, mode: BenchmarkMode = BenchmarkMode.PRODUCTION):
+    def __init__(
+        self, debug_responses: bool = False, mode: BenchmarkMode = BenchmarkMode.PRODUCTION
+    ):
         """Initialisiert Runner."""
         super().__init__()
         # If mode is passed explicitly, use it. Otherwise fall back to Env Var if set.
@@ -83,14 +81,14 @@ class LocalBenchmarkRunner(BaseBenchmarkRunner):
             self.mode = BenchmarkMode.DEV
         else:
             self.mode = mode
-            
+
         self.commercial_csv = self.validator.get_golden_standard_csv()
         self.debug_responses = (
             debug_responses or os.getenv("CRUCIBLE_DEBUG", "false").lower() == "true"
         )
-        
+
         # Cache for Cold Start measurements to prevent redundant unloads
-        self.warmup_cache = set()
+        self.warmup_cache: set[str] = set()
 
         # Load modules from config (Hydrated via Registry)
         self.benchmark_categories = load_active_benchmarks(self.validator.config)
@@ -186,7 +184,7 @@ class LocalBenchmarkRunner(BaseBenchmarkRunner):
             return None
 
         print("\nChecking Model Status (Warmup)... ", end="", flush=True)
-        
+
         try:
             # 1. Force Unload to ensure we measure real Cold Start AND apply new num_ctx
             # Using generate with keep_alive=0 unwraps the model from VRAM
@@ -207,7 +205,7 @@ class LocalBenchmarkRunner(BaseBenchmarkRunner):
                     model=model,
                     prompt="Ping",
                     max_tokens=50,  # Increased for Reasoning models (was: 2)
-                    temperature=0.0
+                    temperature=0.0,
                 )
                 # If query succeeded, response will be a string (even if empty)
             except Exception as probe_error:
@@ -215,11 +213,11 @@ class LocalBenchmarkRunner(BaseBenchmarkRunner):
                 logger.warning("⚠️ Warmup Probe Failed: %s", probe_error)
                 print("⚠️  Probe Failed (continuing anyway)")
                 return None
-            
+
             # Extract detected load time
             meta = getattr(self.client, "last_response_metadata", {})
             load_time = meta.get("load_duration", 0.0)
-            
+
             # Formatting for user feedback
             if load_time > 2.0:
                 print(f"❄️  Cold Start Detected: {load_time:.2f}s")
@@ -229,7 +227,7 @@ class LocalBenchmarkRunner(BaseBenchmarkRunner):
             # Cache success to avoid repeating for this model in this session
             if hasattr(self, "warmup_cache"):
                 self.warmup_cache.add(model)
-                
+
             # Create a synthetic result for the CSV
             # This ensures the Leaderboard calculator can pick up 'max(load_time)'
             # even if all subsequent tests run fast.
@@ -240,7 +238,7 @@ class LocalBenchmarkRunner(BaseBenchmarkRunner):
                 "model": model,
                 "asset_id": "system_warmup_probe",
                 "asset_name": "System: Cold Start Probe",
-                "total_score": 0.0, 
+                "total_score": 0.0,
                 "max_score": 0.0,
                 "percentage": 0.0,
                 "execution_time": 0.1,  # Irrelevant for this row
@@ -249,24 +247,18 @@ class LocalBenchmarkRunner(BaseBenchmarkRunner):
                 "tier": "Tier 0 (System)",
                 "category": "System",
                 "routine_contribution": 0,
-                "reasoning_contribution": 0
+                "reasoning_contribution": 0,
             }
 
         except Exception as e:
             print(f"⚠️ Warmup Probe Failed: {e}")
             return None
 
-    def _execute_test(
-        self, model: str, asset_path: Path, benchmark_info: Dict[str, Any]
-    ):
+    def _execute_test(self, model: str, asset_path: Path, benchmark_info: Dict[str, Any]):
         """Executes the test using the dynamically loaded test class."""
-        return self.execute_test_module(
-            model, asset_path, benchmark_info, provider="ollama"
-        )
+        return self.execute_test_module(model, asset_path, benchmark_info, provider="ollama")
 
-    def _create_error_result(
-        self, asset_path: Path, error_message: str
-    ) -> Dict[str, Any]:
+    def _create_error_result(self, asset_path: Path, error_message: str) -> Dict[str, Any]:
         """Creates an error result dictionary."""
         return {
             "status": "error",
@@ -286,9 +278,7 @@ class LocalBenchmarkRunner(BaseBenchmarkRunner):
         """Compares response with golden standard."""
         asset_id = asset_data.get("metadata", {}).get("id", "unknown")
         golden_config = asset_data.get("golden_standard", {})
-        provider = golden_config.get("generate_with", [{}])[0].get(
-            "provider", "mistral"
-        )
+        provider = golden_config.get("generate_with", [{}])[0].get("provider", "mistral")
         golden_path = Path(f"golden_standards/{provider}/{asset_id}.json")
         return test_instance.compare_to_golden_standard(response, golden_path)
 
@@ -306,9 +296,7 @@ class LocalBenchmarkRunner(BaseBenchmarkRunner):
 
         try:
             start_time = time.time()
-            test_instance, exec_result = self._execute_test(
-                model, asset_path, benchmark_info
-            )
+            test_instance, exec_result = self._execute_test(model, asset_path, benchmark_info)
             if not exec_result.execution_time:
                 exec_result.execution_time = time.time() - start_time
         except (FileNotFoundError, ImportError, AttributeError) as e:
@@ -409,9 +397,7 @@ class LocalBenchmarkRunner(BaseBenchmarkRunner):
     def _setup_benchmark_resources(self) -> tuple[Dict[str, Dict[str, Any]], bool]:
         """Loads and validates validation/reference resources."""
         is_valid, message = self.validator.validate_golden_standard()
-        print(
-            f"\n{'=' * 60}\n🔍 GOLDEN STANDARD VALIDIERUNG\n{'=' * 60}\n{message}\n{'=' * 60}"
-        )
+        print(f"\n{'=' * 60}\n🔍 GOLDEN STANDARD VALIDIERUNG\n{'=' * 60}\n{message}\n{'=' * 60}")
 
         commercial_refs = self.load_commercial_references()
         if commercial_refs:
@@ -554,17 +540,13 @@ class LocalBenchmarkRunner(BaseBenchmarkRunner):
         test_class_name = benchmark_info.get("test_class")
 
         if not test_class_name or not isinstance(test_class_name, str):
-            logger.error(
-                "Keine gültige Test-Klasse für %s definiert.", benchmark_info["name"]
-            )
+            logger.error("Keine gültige Test-Klasse für %s definiert.", benchmark_info["name"])
             return []
 
         try:
             test_class_type = load_test_class(test_file, test_class_name)
         except Exception as e:  # pylint: disable=broad-exception-caught
-            logger.error(
-                "Failed to load batch module %s: %s", benchmark_info["name"], e
-            )
+            logger.error("Failed to load batch module %s: %s", benchmark_info["name"], e)
             return []
 
         # pylint: disable=fixme
@@ -599,7 +581,10 @@ class LocalBenchmarkRunner(BaseBenchmarkRunner):
         model_version = get_model_version(model, provider="ollama")
 
         module_id = benchmark_info.get("id", "")
-        is_political_compass = module_id in ["political_compass", "political_compass_v3"] or benchmark_info.get("name", "") == "Political Compass"
+        is_political_compass = (
+            module_id in ["political_compass", "political_compass_v3"]
+            or benchmark_info.get("name", "") == "Political Compass"
+        )
 
         if is_political_compass and RESULT_MANAGER:
             try:
@@ -608,18 +593,18 @@ class LocalBenchmarkRunner(BaseBenchmarkRunner):
                 RESULT_MANAGER.save_json(report, output_dir)
             except Exception as e:
                 logger.error("Political compass manager failed: %s", e)
-            
+
             # Auto-Trigger Bias Analysis (if Political Compass)
             if benchmark_info.get("id", "") == "political_compass_v3":
-                 try:
-                     print("📊 Updating Bias Sensitivity Report...")
-                     subprocess.run(
+                try:
+                    print("📊 Updating Bias Sensitivity Report...")
+                    subprocess.run(
                         [sys.executable, "scripts/analysis/update_bias_report.py"],
                         check=False,
-                        capture_output=False
+                        capture_output=False,
                     )
-                 except Exception as e:
-                     logger.warning("Could not update bias report: %s", e)
+                except subprocess.CalledProcessError as e:
+                    logger.warning("Could not update bias report: %s", e)
 
             self._update_political_compass_csv(model, report, _model_version=model_version)
         else:
@@ -633,7 +618,11 @@ class LocalBenchmarkRunner(BaseBenchmarkRunner):
 
         return [
             self._create_standard_result_from_batch(
-                model, report, result_wrapper, benchmark_info=benchmark_info, model_version=model_version
+                model,
+                report,
+                result_wrapper,
+                benchmark_info=benchmark_info,
+                model_version=model_version,
             )
         ]
 
@@ -644,22 +633,21 @@ class LocalBenchmarkRunner(BaseBenchmarkRunner):
         assets: Optional[List[Path]] = None,
     ) -> List[Dict[str, Any]]:
         """Führt Standard-Benchmarks (Asset-basiert) aus."""
-        
+
         # --- WARMUP / COLD START PROBE ---
         # Führt eine "Dummy"-Anfrage aus, um den Kaltstart separat zu messen.
         # Dies verhindert, dass der erste eigentliche Benchmark durch Ladezeiten verfälscht wird.
         warmup_result = self._measure_cold_start(model)
-        
+
         # --- VERSIONING ---
         # Get unified version (Format: {local_digest}-nohash)
         # We assume local execution doesn't do rigorous behavioral hashing yet for speed.
         # But we adhere to the global format.
         self.current_model_version = ModelFingerprinter.get_unified_version(
-            provider="ollama",
-            model_name=model
+            provider="ollama", model_name=model
         )
         # ------------------
-        
+
         commercial_refs, _ = self._setup_benchmark_resources()
 
         # Use filtered assets if provided, otherwise discover all
@@ -667,7 +655,7 @@ class LocalBenchmarkRunner(BaseBenchmarkRunner):
             assets = self.discover_assets(benchmark_info["path"])
 
         results = []
-        
+
         # Inject Warmup Result if available
         if warmup_result:
             # We enrich it with version info now that we have it
@@ -676,11 +664,9 @@ class LocalBenchmarkRunner(BaseBenchmarkRunner):
 
         if not assets:
             print(f"⚠️  Keine Tests für {benchmark_info['name']} gefunden/ausstehend.")
-            return results # Return results (might contain warmup) instead of empty list
+            return results  # Return results (might contain warmup) instead of empty list
 
-        print(
-            f"\n{'=' * 60}\n📊 Starte Benchmark: {benchmark_info['name']}\n{'=' * 60}"
-        )
+        print(f"\n{'=' * 60}\n📊 Starte Benchmark: {benchmark_info['name']}\n{'=' * 60}")
         print(f"Modell: {model}\nTests: {len(assets)}\n{'=' * 60}\n")
 
         # Initialize Adaptive Pause Calculator
@@ -706,20 +692,19 @@ class LocalBenchmarkRunner(BaseBenchmarkRunner):
                 result = self._process_single_test(
                     model, asset_path, commercial_refs, benchmark_info
                 )
-                
+
                 # Update stats for next iteration
                 previous_test_stats = {
-                    'execution_time': result.get('execution_time', 0),
-                    'response_length': result.get('tokens_used', 0) * 4  # Estimate chars from tokens
+                    "execution_time": result.get("execution_time", 0),
+                    "response_length": result.get("tokens_used", 0)
+                    * 4,  # Estimate chars from tokens
                 }
 
                 results.append(result)
                 self._print_result_status(i, len(assets), asset_name, result)
             except Exception as e:  # pylint: disable=broad-exception-caught
                 print(" " * 80, end="\r")
-                print(
-                    f"   ✗ [{i}/{len(assets)}] {asset_name}: Abgebrochen - {str(e)[:50]}"
-                )
+                print(f"   ✗ [{i}/{len(assets)}] {asset_name}: Abgebrochen - {str(e)[:50]}")
 
         return results
 
@@ -738,9 +723,7 @@ class LocalBenchmarkRunner(BaseBenchmarkRunner):
 
         return self._run_standard_benchmark(model, benchmark_info, assets)
 
-    def _print_result_status(
-        self, idx: int, total: int, name: str, result: Dict[str, Any]
-    ):
+    def _print_result_status(self, idx: int, total: int, name: str, result: Dict[str, Any]):
         """Prints the result of a single test line."""
         print(" " * 80, end="\r")
 
@@ -760,9 +743,7 @@ class LocalBenchmarkRunner(BaseBenchmarkRunner):
             else f"{t_count} T"
         )
 
-        base_msg = (
-            f"   ✓ [{idx}/{total}] {name:<25}: {result['percentage']:>6.2f}% {quality} "
-        )
+        base_msg = f"   ✓ [{idx}/{total}] {name:<25}: {result['percentage']:>6.2f}% {quality} "
 
         if result.get("reference_score", 0) > 0:
             diff = result["score_difference"]
@@ -788,7 +769,9 @@ class LocalBenchmarkRunner(BaseBenchmarkRunner):
         failed = [r for r in results if r.get("status") == "error"]
 
         # Separate Probe Result from Scoring
-        probe_result = next((r for r in successful if r.get("asset_id") == "system_warmup_probe"), None)
+        probe_result = next(
+            (r for r in successful if r.get("asset_id") == "system_warmup_probe"), None
+        )
         # Filter probe out of scoring results
         scoring_candidates = [r for r in successful if r.get("asset_id") != "system_warmup_probe"]
 
@@ -806,13 +789,15 @@ class LocalBenchmarkRunner(BaseBenchmarkRunner):
         ]
 
         if not scored_results:
-             # If only Political Compass (or just Probe?) ran
-            if scoring_candidates: # If we have actual tests (e.g. Political Compass)
-                avg_time = sum(r["execution_time"] for r in scoring_candidates) / len(scoring_candidates)
+            # If only Political Compass (or just Probe?) ran
+            if scoring_candidates:  # If we have actual tests (e.g. Political Compass)
+                avg_time = sum(r["execution_time"] for r in scoring_candidates) / len(
+                    scoring_candidates
+                )
                 print("\n✅ Benchmark abgeschlossen für Modul: Political Compass")
                 print(f"   Modell: {model}")
                 print(f"   Dauer:  {avg_time:.1f}s")
-                
+
                 # Print specific PC info instead of score
                 for r in scoring_candidates:
                     if "tier" in r:
@@ -820,24 +805,24 @@ class LocalBenchmarkRunner(BaseBenchmarkRunner):
             elif probe_result:
                 # Only Probe ran (unlikely, but safe)
                 print(f"\n⚠️ Nur System Probe ausgeführt.")
-            
+
             return
 
         avg_score = sum(r["total_score"] for r in scored_results) / len(scored_results)
         avg_max = sum(r["max_score"] for r in scored_results) / len(scored_results)
         avg_pct = sum(r["percentage"] for r in scored_results) / len(scored_results)
-        avg_time = sum(r["execution_time"] for r in successful if r.get("asset_id") != "system_warmup_probe") / len(scored_results)
+        avg_time = sum(
+            r["execution_time"] for r in successful if r.get("asset_id") != "system_warmup_probe"
+        ) / len(scored_results)
 
         quality = self.get_quality_badge(avg_pct)
 
         print(f"\n✅ Modul abgeschlossen: {model}")
         print(f"Tests: {len(scoring_candidates)} ({len(scoring_candidates)} ✅, {len(failed)} ❌)")
         print("\n📊 Durchschnitt (erfolgreiche Tests des Moduls):")
-        print(
-            f"   Dein Modell: {avg_score:.2f}/{avg_max:.0f} ({avg_pct:.2f}%) {quality}"
-        )
+        print(f"   Dein Modell: {avg_score:.2f}/{avg_max:.0f} ({avg_pct:.2f}%) {quality}")
         print(f"   Avg Speed:   {avg_time:.1f}s (Execution)")
-        
+
         if probe_result:
             load_time = probe_result.get("load_time", 0)
             print(f"   Cold Start:  {load_time:.2f}s (Initial Load)")
@@ -864,14 +849,10 @@ class LocalBenchmarkRunner(BaseBenchmarkRunner):
         if avg_diff > 0:
             print(f"   🎯 Differenz: +{avg_diff:.2f} (besser!)")
             print(f"\n   {'=' * 60}")
-            print(
-                f"   ⚠️  ACHTUNG: GOLDEN STANDARD ÜBERTROFFEN! (Ratio: {100 + avg_diff:.2f}%)"
-            )
+            print(f"   ⚠️  ACHTUNG: GOLDEN STANDARD ÜBERTROFFEN! (Ratio: {100 + avg_diff:.2f}%)")
             print(f"   {'=' * 60}")
             print("   Dieses Modell übertrifft die kommerzielle Referenz.")
-            print(
-                "   Bitte Ergebnisse prüfen (und ggf. Golden Standard aktualisieren)."
-            )
+            print("   Bitte Ergebnisse prüfen (und ggf. Golden Standard aktualisieren).")
         elif avg_diff < 0:
             print(f"   📉 Differenz: {avg_diff:.2f} (Gap)")
         else:
@@ -901,9 +882,7 @@ class LocalBenchmarkRunner(BaseBenchmarkRunner):
     def _print_tiered_analysis(self, results: List[Dict[str, Any]]):
         """Prints Tiered Reasoning Analysis if applicable."""
         reasoning_res = [
-            r
-            for r in results
-            if r.get("details", {}).get("asset_id", "").startswith("reasoning_")
+            r for r in results if r.get("details", {}).get("asset_id", "").startswith("reasoning_")
         ]
         if not reasoning_res:
             return
@@ -934,8 +913,6 @@ class LocalBenchmarkRunner(BaseBenchmarkRunner):
         print(f"   Tier 1 (Operational): {t1_avg:.2f}%")
         print(f"   Tier 2 (Deep Logic):  {t2_avg:.2f}%")
         print(f"   Profile: {profile}\n{'-' * 60}")
-
-
 
 
 def main():

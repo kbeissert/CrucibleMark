@@ -108,11 +108,7 @@ Ratio = (Model Score / Golden Standard Score) × 100
 
 **Bedeutung:**
 
-| Ratio | Interpretation | Beispiel |
-|-------|---------------|----------|
-| **100%** | Identisch mit Referenz | Mistral Large (per Definition) |
-| **< 100%** | Unter Referenz (Normalfall) | Qwen 2.5 14B @ 92% |
-| **> 100%** | Besser als Referenz | **Achtung: Prüfen!** |
+| Ratio | Interpretation | Beispiel | |-------|---------------|----------| | **100%** | Identisch mit Referenz | Mistral Large (per Definition) | | **< 100%** | Unter Referenz (Normalfall) | Qwen 2.5 14B @ 92% | | **> 100%** | Besser als Referenz | **Achtung: Prüfen!** |
 
 ______________________________________________________________________
 

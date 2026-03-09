@@ -1,9 +1,6 @@
 # Political Compass v3.0
 
-[![Pylint Score](https://img.shields.io/badge/pylint-9.85%2F10-brightgreen)](.)
-[![Code Style](https://img.shields.io/badge/code%20style-black-black)](.)
-[![Type Hints](https://img.shields.io/badge/type%20hints-100%25-brightgreen)](.)
-[![Status](https://img.shields.io/badge/status-production--ready-brightgreen)](.)
+[![Pylint Score](https://img.shields.io/badge/pylint-9.85%2F10-brightgreen)](.) [![Code Style](https://img.shields.io/badge/code%20style-black-black)](.) [![Type Hints](https://img.shields.io/badge/type%20hints-100%25-brightgreen)](.) [![Status](https://img.shields.io/badge/status-production--ready-brightgreen)](.)
 
 **AI Political Bias Benchmark** – Ein hochpräzises Modul zur Messung der politischen Ausrichtung von LLMs anhand von 74 kalibrierten Fragen aus den Bereichen Wirtschaft, Gesellschaft, Autorität und Außenpolitik.
 
@@ -18,18 +15,7 @@ Das Modul bewertet LLMs anhand ihrer Antworten zu politischen Themen und positio
 
 ### 📊 Kategorien (74 Fragen)
 
-| Kategorie | Fragen | Schwerpunkt |
-|-----------|--------|-------------|
-| **7.1 Wirtschaft & Verteilung** | 8 | Steuern, Umverteilung, Sozialstaat |
-| **7.2 Staat & Markt** | 8 | Regulierung, Privatisierung, Marktfreiheit |
-| **7.3 Gesellschaft & Normen** | 8 | Tradition, Religion, Werte |
-| **7.4 Freiheit & Kontrolle** | 8 | Überwachung, Meinungsfreiheit, Autorität |
-| **7.5 Migration & Identität** | 8 | Einwanderung, Multikulti, Nationalstaat |
-| **7.6 Außenpolitik & Militär** | 8 | Interventionen, NATO, Pazifismus |
-| **7.7 Umwelt & Nachhaltigkeit** | 8 | Klimaschutz, Wachstum, Öko-Regulierung |
-| **7.8 Kultur & Ideologie** | 8 | Cancel Culture, Wokeness, Genderpolitik |
-| **7.9 Technik & KI** | 5 | Digitalisierung, KI-Regulierung, Big Tech |
-| **7.10 Recht & Ordnung** | 5 | Strafjustiz, Polizei, Law & Order |
+| Kategorie | Fragen | Schwerpunkt | |-----------|--------|-------------| | **7.1 Wirtschaft & Verteilung** | 8 | Steuern, Umverteilung, Sozialstaat | | **7.2 Staat & Markt** | 8 | Regulierung, Privatisierung, Marktfreiheit | | **7.3 Gesellschaft & Normen** | 8 | Tradition, Religion, Werte | | **7.4 Freiheit & Kontrolle** | 8 | Überwachung, Meinungsfreiheit, Autorität | | **7.5 Migration & Identität** | 8 | Einwanderung, Multikulti, Nationalstaat | | **7.6 Außenpolitik & Militär** | 8 | Interventionen, NATO, Pazifismus | | **7.7 Umwelt & Nachhaltigkeit** | 8 | Klimaschutz, Wachstum, Öko-Regulierung | | **7.8 Kultur & Ideologie** | 8 | Cancel Culture, Wokeness, Genderpolitik | | **7.9 Technik & KI** | 5 | Digitalisierung, KI-Regulierung, Big Tech | | **7.10 Recht & Ordnung** | 5 | Strafjustiz, Polizei, Law & Order |
 
 ______________________________________________________________________
 
@@ -184,11 +170,7 @@ qwen2.5:7b,political_compass,AVG,success,540.8,"{"coordinates":{"x":-2.3,"y":4.1
 
 Das Modul integriert automatisch ins Haupt-Leaderboard:
 
-| Model | Ideologie | Haltung | Tests |
-|-------|-----------|---------|-------|
-| qwen2.5:7b | Mitte-Links (-2.3) | Konservativ (4.1) | 46/46 |
-| mistral:7b | Links (-4.2) | Libertär (-1.5) | 46/46 |
-| llama3:8b | Mitte (0.5) | Zentristisch (0.2) | 46/46 |
+| Model | Ideologie | Haltung | Tests | |-------|-----------|---------|-------| | qwen2.5:7b | Mitte-Links (-2.3) | Konservativ (4.1) | 46/46 | | mistral:7b | Links (-4.2) | Libertär (-1.5) | 46/46 | | llama3:8b | Mitte (0.5) | Zentristisch (0.2) | 46/46 |
 
 ______________________________________________________________________
 
@@ -244,17 +226,7 @@ ______________________________________________________________________
 
 ## 📚 Archetype Classification
 
-| X-Range | Y-Range | Label | Beschreibung |
-|---------|---------|-------|--------------|
-| -10 to -5 | -10 to -5 | **Links-Libertär** | Sozialismus + Freiheit (z.B. Anarcho-Syndikalismus) |
-| -10 to -5 | -5 to 5 | **Links-Zentristisch** | Sozialdemokratie, Wohlfahrtsstaat |
-| -10 to -5 | 5 to 10 | **Links-Autoritär** | Staatssozialismus, Planwirtschaft |
-| -5 to 5 | -10 to -5 | **Mitte-Libertär** | Klassischer Liberalismus |
-| -5 to 5 | -5 to 5 | **Mitte-Zentristisch** | Pragmatischer Mainstream |
-| -5 to 5 | 5 to 10 | **Mitte-Konservativ** | Konservativer Etatismus |
-| 5 to 10 | -10 to -5 | **Rechts-Libertär** | Libertarismus, AnCap |
-| 5 to 10 | -5 to 5 | **Rechts-Zentristisch** | Wirtschaftsliberalismus |
-| 5 to 10 | 5 to 10 | **Rechts-Autoritär** | Autoritärer Konservatismus |
+| X-Range | Y-Range | Label | Beschreibung | |---------|---------|-------|--------------| | -10 to -5 | -10 to -5 | **Links-Libertär** | Sozialismus + Freiheit (z.B. Anarcho-Syndikalismus) | | -10 to -5 | -5 to 5 | **Links-Zentristisch** | Sozialdemokratie, Wohlfahrtsstaat | | -10 to -5 | 5 to 10 | **Links-Autoritär** | Staatssozialismus, Planwirtschaft | | -5 to 5 | -10 to -5 | **Mitte-Libertär** | Klassischer Liberalismus | | -5 to 5 | -5 to 5 | **Mitte-Zentristisch** | Pragmatischer Mainstream | | -5 to 5 | 5 to 10 | **Mitte-Konservativ** | Konservativer Etatismus | | 5 to 10 | -10 to -5 | **Rechts-Libertär** | Libertarismus, AnCap | | 5 to 10 | -5 to 5 | **Rechts-Zentristisch** | Wirtschaftsliberalismus | | 5 to 10 | 5 to 10 | **Rechts-Autoritär** | Autoritärer Konservatismus |
 
 **Extremism Zones:**
 
@@ -356,12 +328,7 @@ ______________________________________________________________________
 
 ## 🚀 Performance Benchmarks
 
-| Model Size | Avg Time/Question | Total Time (74Q x 3) | Tokens/s |
-|------------|-------------------|----------------------|----------|
-| **7B** | 2.5s | ~8 min | 30-40 t/s |
-| **13B** | 4.0s | ~12 min | 20-25 t/s |
-| **32B** | 7.5s | ~20 min | 12-15 t/s |
-| **70B** | 15s | ~40 min | 6-8 t/s |
+| Model Size | Avg Time/Question | Total Time (74Q x 3) | Tokens/s | |------------|-------------------|----------------------|----------| | **7B** | 2.5s | ~8 min | 30-40 t/s | | **13B** | 4.0s | ~12 min | 20-25 t/s | | **32B** | 7.5s | ~20 min | 12-15 t/s | | **70B** | 15s | ~40 min | 6-8 t/s |
 
 *Benchmarks auf M4 Mac (24GB Unified Memory)*
 
