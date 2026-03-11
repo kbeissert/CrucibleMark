@@ -118,29 +118,29 @@ class TestScoreOnDifferentLine:
 class TestMarkdownVariants:
     """Markdown header and bold permutations."""
 
-    def test_parse_markdown_bold_header_score(self):
-        raw = "REASONING: Good.\n### **SCORE: 3**"
+    def test_parse_markdown_bold_score(self):
+        raw = "REASONING: Good.\n**SCORE: 3**"
         result = parse(raw)
         assert result.score == 3
         assert result.parse_success is True
 
     def test_parse_markdown_header_score(self):
-        raw = "REASONING: Okay.\n### SCORE: 3"
+        raw = "REASONING: Okay.\n### **SCORE: 3**"
         result = parse(raw)
         assert result.score == 3
         assert result.parse_success is True
 
-    def test_parse_markdown_bold_inline_score(self):
-        raw = "REASONING: Average.\n**SCORE: 3**"
+    def test_parse_separator_bold_score(self):
+        raw = "REASONING: Fine.\n---\n**SCORE: 3**"
         result = parse(raw)
         assert result.score == 3
         assert result.parse_success is True
 
-    def test_parse_markdown_reasoning_header(self):
-        raw = "### **REASONING:**\nThis is the markdown reasoning block.\n### **SCORE: 5**"
+    def test_parse_reasoning_stripped_markdown(self):
+        raw = "---\n### **REASONING:**\nclean text\n---\n**SCORE: 3**"
         result = parse(raw)
-        assert result.score == 5
-        assert "markdown reasoning block" in result.reasoning
+        assert result.score == 3
+        assert result.reasoning == "clean text"
         assert result.parse_success is True
 
 
