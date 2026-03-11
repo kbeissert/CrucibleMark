@@ -31,6 +31,7 @@ help:
 	@echo ""
 	@echo "=== Tools & Maintenance ==="
 	@echo "  make list-models          List available Models"
+	@echo "  make judge-health         Check LLM Judge provider status [PROVIDER=name]"
 	@echo "  make list-modules         List available Modules"
 	@echo "  make create-module        🚀 Scaffold a new module"
 	@echo "  make update-prices        💱 Force-update LiteLLM token price cache"
@@ -113,7 +114,7 @@ validate-structure:
 
 test: validate
 	@echo "🧪 Running Unit Tests..."
-	$(PYTHON) -m pytest benchmark_modules/
+	$(PYTHON) -m pytest benchmark_modules/ utils/scoring/llm_judge/tests/ -v --tb=short
 
 diff-results:
 	@echo "⚖️ Comparing Benchmark Results..."
@@ -132,6 +133,10 @@ update-prices:
 
 list-models:
 	@$(PYTHON) scripts/tools/list_models.py
+
+judge-health:
+	@echo "🩺 Checking LLM Judge provider connectivity..."
+	$(PYTHON) scripts/tools/judge_health.py $(if $(PROVIDER),--provider $(PROVIDER))
 
 list-modules:
 	@echo "📋 Available Modules:"

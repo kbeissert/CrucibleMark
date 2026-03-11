@@ -166,6 +166,9 @@ def _aggregate_basic_stats(df: pd.DataFrame, modules_config: Dict[str, Any]) -> 
     for col in cols_to_numeric:
         if col in df.columns:
             df[col] = pd.to_numeric(df[col], errors="coerce").fillna(0)
+            
+    if "llm_judge_score" in df.columns:
+        df["llm_judge_score"] = pd.to_numeric(df["llm_judge_score"], errors="coerce")
 
     # 1. Base Stats (Presence, Time) - From ALL valid runs (scoring + info)
     
@@ -267,6 +270,24 @@ def _aggregate_basic_stats(df: pd.DataFrame, modules_config: Dict[str, Any]) -> 
         stats["percentage"] = stats["percentage"].fillna(0.0)
     if "performance_ratio" in stats.columns:
         stats["performance_ratio"] = stats["performance_ratio"].fillna(0.0)
+
+    # 3. Judge Stats - From ALL runs
+    if "llm_judge_score" in df.columns:
+        def calc_coverage(x):
+            return x.notna().sum() / len(x) if len(x) > 0 else 0.0
+            
+        judge_stats = (
+            df.groupby(["model", "model_version", "type"])["llm_judge_score"]
+            .agg(
+                llm_judge_avg="mean",
+                judge_coverage=calc_coverage
+            )
+            .reset_index()
+        )
+        stats = pd.merge(stats, judge_stats, on=["model", "model_version", "type"], how="left")
+    else:
+        stats["llm_judge_avg"] = None
+        stats["judge_coverage"] = 0.0
 
     return stats
 
@@ -559,6 +580,8 @@ def calculate_scores(
             "P99_Time": "P99 Time (s)",
             "Timeout_Count": "Timeout Count",
             "type": "Type",
+            "llm_judge_avg": "LLM Judge Avg",
+            "judge_coverage": "LLM Judge Coverage",
         }
     )
 

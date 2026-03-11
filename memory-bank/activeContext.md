@@ -1,13 +1,24 @@
 # Active Context
 
-## Was wurde heute fertiggestellt?
+## Status
+Ready for first production benchmark run or Batch-Mode implementation.
 
-MyPy-Fehler auf Zeile 35 in `scripts/core/run_commercial_benchmark.py` behoben: Explizite Type-Annotation `ResultManager: Optional[Any] = None` hinzugefügt und Imports reorganisiert. Pylint-Bewertung erreicht perfekt 10.00/10 nach Bereinigung von trailing whitespace, unused variables und snake_case-Konventionen.
+## Was wurde zuletzt fertiggestellt?
 
-## Was ist der nächste logische Schritt?
+- LLM Judge Modul ist vollständig implementiert und getestet.
+- LLM Judge Markdown-Ausreißer geparsed (`judge_parser.py` Regex erweitert).
+- Ollama Judge Request Timeout hochgesetzt (30s auf 120s in SSOT Config).
+- Hardcoding in `judge_health.py` entfernt, liest nun komplett aus `benchmark_config.yaml`.
+- Pydantic Validierungs-Bug (ValidationError in Config) und Leaderboard TypeError `None` Bug in `__init__.py` behoben. Alle 165 Tests grün.
 
-Verbleibende MyPy/Pylance Type-Checking-Fehler sind untergeordnet (Dict[str, Any] vs. BenchmarkResult). Code ist produktionsreif und benötigt nur optionale Type-Safety-Verbesserungen später.
+## Was ist der nächste Schritt?
 
-## Welche offenen Fragen oder Risiken gibt es?
+- Option A: Single module test run (ux_writing, ein lokales Modell).
+- Option B: Umsetzung des **Batch-Mode** (Phase 3.5), da per-task Loading (~40s Overhead pro Task bei 9GB Modellen) extrem teuer ist.
 
-Keine kritischen Probleme. MyPy-Fehler sind Typ-Inkompatibilitäten, die eine größere Refactorierung (Dict → Dataclass) erfordern würden, sind aber nicht blockierend.
+## Offene Risiken / Bekannte Baustellen
+
+- LLM Judge Latency: Jeder Judge-Aufruf lädt das Judge-Modell neu (9GB Model = ~40s). Erfordert Batch-Mode.
+- Post-run CSV verification of llm_judge_* columns.
+- Re-run reasoning_logic Benchmark (lokale Modelle, verfälschte 0-Punkte).
+- Volldurchlauf aller lokalen Modelle (43/43) für finales Leaderboard.

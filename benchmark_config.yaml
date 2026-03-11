@@ -1,3 +1,23 @@
+llm_judge:
+  enabled: true
+  mode: complement
+  provider:
+    # name: anthropic
+    # model: claude-haiku-4-5-20251001
+    name: ollama
+    model: ministral-3:14b
+    unload_delay_ms: 1500
+    fallback:
+      name: ollama
+      model: ministral-3:8b
+  scoring:
+    scale: 5
+    require_reasoning: true
+    fail_on_parse_error: false
+  applicable_modules:
+    - ux_writing
+    - documentation_quality
+
 # ============================================================
 # CrucibleMark - Benchmark Configuration
 # ============================================================
@@ -204,31 +224,40 @@ modules:
   code_quality:
     path: "benchmark_modules/code_quality"
     enabled: true
+    llm_judge_model: "ministral-3:14b"
 
   ux_writing:
     path: "benchmark_modules/ux_writing"
     enabled: true
+    llm_judge_model: "ministral-3:14b"
 
   documentation_quality:
     path: "benchmark_modules/documentation_quality"
     enabled: true
+    llm_judge_model: "ministral-3:14b"
 
   content_transformation:
     path: "benchmark_modules/content_transformation"
     enabled: true
+    llm_judge_model: "ministral-3:14b"
 
   cultural_intelligence:
     path: "benchmark_modules/cultural_intelligence"
     enabled: true
+    llm_judge_model: "ministral-3:14b"
 
   reasoning:
     path: "benchmark_modules/reasoning_logic"
     enabled: true
+    llm_judge_model: "deepseek-r1:8b"
 
   cli_benchmark:
     path: "benchmark_modules/cli_benchmark"
     enabled: true
+    llm_judge_model: "ministral-3:14b"
 
   political_compass:
     path: "benchmark_modules/political_compass"
     enabled: false
+    llm_judge_model: "ministral-3:14b"
+

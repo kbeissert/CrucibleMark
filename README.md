@@ -1,6 +1,6 @@
 # CrucibleMark
 
-[![Version](https://img.shields.io/badge/version-1.0.0-blue)](.)
+[![Version](https://img.shields.io/badge/version-2.2.0-blue)](.)
 [![Python](https://img.shields.io/badge/python-3.9%2B-blue)](.)
 [![License](https://img.shields.io/badge/license-MIT-green)](.)
 [![Code Quality](https://img.shields.io/badge/pylint-9.15%2F10-brightgreen)](.)
@@ -46,6 +46,7 @@ ______________________________________________________________________
 - **Automated Metrics:** Pattern matching, keyword checks
 - **Manual Review:** For subjective quality (UX, tone)
 - **Absolute Standards:** Gold/Silver/Bronze badges (v1.1)
+- **LLM Judge:** AI-assisted qualitative scoring via a dedicated judge model (complement or replace mode)
 
 ### Rich Output
 
@@ -353,6 +354,17 @@ Y-Axis: -10 (Libertarian) to +10 (Authoritarian)
 ```
 Total Score = (Routine Score + Reasoning Score) / 2
 ```
+
+#### 4. **LLM Judge Score (0-100, normalised)**
+
+Used by: UX Writing, Documentation Quality, Content Transformation, Reasoning Logic (when enabled)
+
+```
+LLM Judge Score = (raw_judge_score / scale) × 100
+```
+
+Providers: Anthropic, Mistral, OpenAI, Ollama. Configurable scale: 3 | 5 | 10 points.
+See [`utils/scoring/llm_judge/README.md`](utils/scoring/llm_judge/README.md) for setup.
 
 ### Performance Metrics
 

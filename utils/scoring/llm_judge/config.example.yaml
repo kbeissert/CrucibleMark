@@ -1,0 +1,17 @@
+# llm_judge/config.example.yaml
+#
+# Module-spezifische Overrides für den LLM Judge.
+# Die Hauptkonfiguration (Provider, Fallback, Standard-Skala)
+# liegt nun zentral in `benchmark_config.yaml`.
+#
+# Config hierarchy:
+#   Global (`benchmark_config.yaml`)
+#     → Module (`config.yaml` in benchmark_modules/*/)
+#       → Runtime kwargs
+
+llm_judge:
+  # Optionale Modul-Level Overrides.
+  # Überschreibt die globalen Settings aus `benchmark_config.yaml` 
+  # für dieses spezifische Modul (z.B. in benchmark_modules/ux_writing/config.yaml).
+  
+      # model: "llama3.2"

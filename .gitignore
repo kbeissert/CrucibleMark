@@ -53,3 +53,4 @@ Thumbs.db
 
 # Auto-generierter LiteLLM Preis-Cache (machine-generated, nicht committen)
 config/.prices_cache.json
+_smoke_test.py
