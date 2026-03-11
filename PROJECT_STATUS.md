@@ -1,30 +1,25 @@
 # PROJECT_STATUS.md
 
-**Last Updated:** 2026-02-14 **Current Version:** 2.1.1 (Local Cloud Categorization & SSOT Architecture) **Status:** ✅ Production-Ready
+**Last Updated:** 2026-03-11 **Current Version:** 2.2.0 (LLM Judge Integration) **Status:** ✅ Production-Ready
 
 ______________________________________________________________________
 
 ## 🎯 Executive Summary
+CrucibleMark v2.2.0 bringt das **LLM Judge Modul** zur Produktionsreife. 
+Die Kernarchitektur für die automatisierte Auswertung freier Antworten wurde vollständig integriert, getestet und stabilisiert.
+Eine SSOT-basierte (Single Source of Truth) Konfiguration in `benchmark_config.yaml` garantiert saubere Testdurchläufe ohne Fallstricke.
 
-CrucibleMark v2.1.1 führt eine neue **Provider-Kategorie "Local Cloud"** ein und implementiert eine **Single Source of Truth (SSOT)** Architektur für Modell-Kategorisierung. Ollama Cloud Proxy-Modelle (wie MiniMax, GPT-OSS) werden nun korrekt von echten lokalen Modellen unterschieden, mit einheitlicher Erkennungslogik über die gesamte Codebasis.
+**Key Achievements (v2.2.0):**
+- ✅ **LLM Judge Pipeline:** Vollständige Integration von 4 Providern (Ollama, Anthropic, Mistral, OpenAI) mit automatischer Fallback-Chain.
+- ✅ **Bulletproof Parsing:** Robuster Regex-Parser, der auch Markdown-Ausreißer von Modellen (z.B. `### **SCORE:**`) sicher verarbeitet.
+- ✅ **Lifecycle Management:** Isolierte Lade/Entlade-Zyklen (Ollama) mit Delays für fehlerfreie VRAM-Freigabe, Timeout-Resilienz (120s).
+- ✅ **Leaderboard & Metric Stability:** Leaderboard Typ-Konvertierungen und Pydantic Validierungen gehärtet. 165+ Tests Passed.
 
-**Key Achievements:**
+**Previous Version (v2.1.1):**
+- Leaderboard & Aggregation Update
+- Pydantic Migration für Typ-Sicherheit
+- Political Compass Batch Mode
 
-- ✅ **Local Cloud Category:** Neue Kategorie für Ollama Cloud-Proxy-Modelle (minimax-m2:cloud, gpt-oss:120b-cloud).
-- ✅ **SSOT Architecture:** Zentrale `is_cloud_model()` Funktion in `utils/model_utils.py` für konsistente Kategorisierung.
-- ✅ **UI Enhancement:** Provider-Auswahl zeigt drei klare Kategorien (Commercial, Local, Local Cloud).
-- ✅ **Data Layer:** Kategorisierung erfolgt beim Laden der Benchmark-Daten (nicht im UI).
-- ✅ **Documentation:** Vollständig dokumentierte Erkennungsregeln in `MODEL_CLASSIFICATION.md`.
-
-**Previous Version (v1.1.3):**
-
-- ✅ **Reasoning Model Support:** DeepSeek-R1 kompatibel (max_tokens=50, graceful warmup failures).
-- ✅ **Context Window Expansion:** Ollama num_ctx erhöht auf 8192 (war: 2048) für komplexe Audits.
-- ✅ **Code Quality Audit:** 7 Dateien mit Fixes (Indentation, Imports, Type Safety).
-- ✅ **Error Handling:** Truncation Warnings mit Threshold (>100 tokens), False Positives eliminiert.
-- ✅ **Cold Start Probe:** Force Unload via `ollama.generate(keep_alive=0)` für akkurate Load Times.
-
-______________________________________________________________________
 
 ## 📊 Module Status Overview
 

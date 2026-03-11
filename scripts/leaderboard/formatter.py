@@ -239,6 +239,8 @@ def print_leaderboard_table(leaderboard: pd.DataFrame) -> None:
     
     # Add Cost if space suggests, but 120 chars is tight. Try adding it.
     display_fields.append("Cost per 1K")
+    display_fields.append("LLM Judge Avg")
+    display_fields.append("LLM Judge Coverage")
     
     # We remove Routine/Reasoning Score from main view as requested
 

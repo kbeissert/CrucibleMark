@@ -1,6 +1,17 @@
-feat: add force-run capability and fix fingerprinting provider context
+feat: LLM Judge vollständig implementiert inkl. Parser-Fix & Timeouts
 
-- Implemented `Force Run` feature in `run_benchmark.py` and `CommercialBenchmarkRunner` to bypass SSOT caching.
-- Updated `Makefile` to include `FORCE=true` logic for `benchmark-single` target.
-- Fixed a bug in `utils/fingerprinting.py` where the provider context was lost during fingerprinting, causing 404 errors on commercial models (defaulting to Ollama).
-- Ensured consistent `force` parameter propagation through the stack.
+- Provider-Abstraktion (Anthropic, Mistral, OpenAI, Ollama)
+- judge_handoff.py, Fallback-Chain, Ollama-Lifecycle
+- Pipeline-Integration in base_runner.py + run_commercial_benchmark.py
+- ResultManager CSV Schema (5 neue llm_judge_* Spalten)
+- judge_health.py dynamisch aus benchmark_config.yaml
+- SSOT-Config-Architektur (benchmark_config.yaml als Single Source)
+- Per-Modul Judge-Modell via modules.llm_judge_model
+- Parser Regex-Robustheit für Markdown-Ausreißer verbessert
+- Timeout von Ollama auf 120s erhöht
+
+Alle Dokumentationen (PROJECT_STATUS, README) auf v2.2.0 aktualisiert.
+165+ Tests passed.
+Erster produktiver Lauf: ux_writing/lfm2.5-thinking:1.2b ✓
+
+Open: Batch-Mode (Phase 3.5)

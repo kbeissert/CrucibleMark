@@ -29,7 +29,7 @@ def export_leaderboard_compact(leaderboard: pd.DataFrame, cat_cols: List[str]) -
         "Rank", "Model Name", "Version", "Badge",
         "Speed Profile",  # Merged column
         "Total Score", "Performance/s", "Avg Time (s)",
-        "Cost per 1K (USD)", "Type"
+        "Cost per 1K (USD)", "LLM Judge Avg", "LLM Judge Coverage", "Type"
     ]
     
     final_cols = []
@@ -80,7 +80,7 @@ def export_leaderboard_detailed(leaderboard: pd.DataFrame, cat_cols: List[str]) 
         "Speed Profile", "Performance Tier",  # Keep raw tier for analysis
         "Total Score", "Performance/s", 
         "Avg Time (s)", "Initial Load Time (s)", "P95 Time (s)", "Max Time (s)", "Timeout Count",
-        "Cost per 1K (USD)", 
+        "Cost per 1K (USD)", "LLM Judge Avg", "LLM Judge Coverage",
         "Routine Score", "Reasoning Score", "Type"
     ]
     

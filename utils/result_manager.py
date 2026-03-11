@@ -45,9 +45,21 @@ class ResultManager:
         return Path(filename)
 
     def _get_updated_fieldnames(self, csv_path: Path, new_keys: set[str]) -> list[str]:
-        """Liest existierende Header und fügt neue Spalten hinzu."""
+        """Liest existierende Header und fügt neue Spalten hinzu.
+        Garantiert immer die Existenz der llm_judge_* Spalten am Ende."""
+        judge_fields = [
+            "llm_judge_score",
+            "llm_judge_reasoning",
+            "llm_judge_latency_ms",
+            "llm_judge_provider_used",
+            "llm_judge_parse_success"
+        ]
+        
+        new_keys.update(judge_fields)
+
         if not csv_path.exists():
-            return sorted(new_keys)
+            base_keys = sorted([k for k in new_keys if k not in judge_fields])
+            return base_keys + judge_fields
 
         try:
             with csv_path.open("r", encoding="utf-8") as f:
@@ -55,15 +67,19 @@ class ResultManager:
                 try:
                     existing_keys = next(reader)
                 except StopIteration:
-                    return sorted(new_keys)
+                    base_keys = sorted([k for k in new_keys if k not in judge_fields])
+                    return base_keys + judge_fields
         except (OSError, csv.Error) as e:
             logger.warning("Could not read header from %s: %s", csv_path, e)
-            return sorted(new_keys)
+            base_keys = sorted([k for k in new_keys if k not in judge_fields])
+            return base_keys + judge_fields
 
         # Neue Keys anhängen (behält Reihenfolge der alten bei)
         existing_set = set(existing_keys)
-        added_keys = sorted([k for k in new_keys if k not in existing_set])
-        return existing_keys + added_keys
+        normal_added = sorted([k for k in new_keys if k not in existing_set and k not in judge_fields])
+        judge_added = [jf for jf in judge_fields if jf not in existing_set]
+        
+        return list(existing_keys) + normal_added + judge_added
 
     def save_results(
         self, results: list[dict[str, Any]], result_type: str

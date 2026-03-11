@@ -414,6 +414,58 @@ class CommercialBenchmarkRunner(BaseBenchmarkRunner):
                 score.get("reasoning", "No explanation provided"),
             )
 
+        # ---------------------------------------------------------------------
+        # PHASE 2.5: LLM JUDGE INTEGRATION
+        # ---------------------------------------------------------------------
+        # Guaranteed Defaults
+        for key in ["llm_judge_score", "llm_judge_reasoning", "llm_judge_latency_ms", "llm_judge_provider_used", "llm_judge_parse_success"]:
+            result[key] = None
+
+        judge_cfg_dict = self.validator.config.get("llm_judge", {})
+        is_enabled = judge_cfg_dict.get("enabled", True)
+        eval_module_id = benchmark_info.get("id", "")
+        applicable_modules = judge_cfg_dict.get("applicable_modules", [])
+
+        if is_enabled and eval_module_id in applicable_modules:
+            from utils.scoring.llm_judge.judge_config import LLMJudgeConfig
+            from utils.scoring.llm_judge.judge_runner import JudgeRunner
+            import logging
+            
+            try:
+                judge_config = LLMJudgeConfig.from_dict(judge_cfg_dict)
+                # Apply optional per-module override
+                if "llm_judge_model" in benchmark_info:
+                    judge_config.module_judge_model = benchmark_info["llm_judge_model"]
+
+                runner = JudgeRunner(judge_config)
+
+                raw_prompt = asset_data.get("prompt", asset_data.get("instruction", ""))
+                golden = asset_data.get("golden_standard", "")
+                if isinstance(golden, dict):
+                    golden = golden.get("text", "")
+                golden = str(golden)
+
+                judge_res = runner.score(
+                    task_prompt=raw_prompt,
+                    model_response=response,
+                    golden_standard=golden,
+                    module_id=eval_module_id,
+                    rubric_override=asset_data.get("scoring", {}).get("rubric"),
+                    tested_model_id=model,
+                    tested_model_provider=provider,
+                    response_time_ms=result.get("execution_time", 0) * 1000.0
+                )
+
+                # Merge fields
+                result["llm_judge_score"] = judge_res.score
+                result["llm_judge_reasoning"] = judge_res.reasoning
+                result["llm_judge_latency_ms"] = judge_res.judge_latency_ms
+                result["llm_judge_provider_used"] = judge_res.judge_provider_used
+                result["llm_judge_parse_success"] = judge_res.parse_success
+            except Exception as e:
+                logging.error(f"LLM Judge execution failed: {e}")
+        # ---------------------------------------------------------------------
+
         return result
 
     @staticmethod

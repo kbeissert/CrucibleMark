@@ -87,6 +87,33 @@ def _build_modules_config(full_config, registry_func=get_active_modules) -> dict
     return modules_config
 
 
+def _enrich_with_llm_judge(leaderboard: pd.DataFrame, df: pd.DataFrame) -> pd.DataFrame:
+    """
+    Add a 'LLM Judge Score' column to the leaderboard when per-asset judge scores
+    are present in the raw benchmark data.
+
+    The column is only added when at least one row in *df* carries a numeric
+    ``llm_judge_score`` value. If the column is absent or entirely empty the
+    leaderboard is returned unchanged (non-breaking).
+    """
+    if "llm_judge_score" not in df.columns:
+        return leaderboard
+
+    judge_df = df[df["llm_judge_score"].notna()].copy()
+    if judge_df.empty:
+        return leaderboard
+
+    judge_df["llm_judge_score"] = pd.to_numeric(judge_df["llm_judge_score"], errors="coerce")
+    judge_agg = (
+        judge_df.groupby(["model", "model_version"])["llm_judge_score"]
+        .mean()
+        .reset_index()
+        .rename(columns={"llm_judge_score": "LLM Judge Score"})
+    )
+    leaderboard = pd.merge(leaderboard, judge_agg, on=["model", "model_version"], how="left")
+    return leaderboard
+
+
 def main(print_table: bool = True) -> None:
     """Main orchestration function for leaderboard generation."""
     print("Generating Leaderboard with Metrics...")
@@ -104,6 +131,9 @@ def main(print_table: bool = True) -> None:
     # 3. Calculate Scores & Stats
     leaderboard, _ = calculate_scores(df, modules_config)
 
+    # 3b. Enrich with LLM Judge scores (no-op when column is absent)
+    leaderboard = _enrich_with_llm_judge(leaderboard, df)
+
     # 4. Final Formatting (Rounding etc.)
     # Note: Some rounding happens in formatter/exporter phase or here if needed
     cols_to_round = [
@@ -116,7 +146,8 @@ def main(print_table: bool = True) -> None:
         "Max Time (s)",
         "Routine Score",
         "Reasoning Score",
-        "Efficiency_Index"
+        "Efficiency_Index",
+        "LLM Judge Score",
     ]
     for col in cols_to_round:
         if col in leaderboard.columns:
@@ -124,7 +155,7 @@ def main(print_table: bool = True) -> None:
             
     # Round Cost per 1K to 4 places separately
     if "Cost per 1K (USD)" in leaderboard.columns:
-        leaderboard["Cost per 1K (USD)"] = leaderboard["Cost per 1K (USD)"].round(4)
+        leaderboard["Cost per 1K (USD)"] = pd.to_numeric(leaderboard["Cost per 1K (USD)"], errors="coerce").round(4)
 
     # Format category columns (rounding)
     cat_cols = []
