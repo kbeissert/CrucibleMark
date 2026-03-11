@@ -27,7 +27,8 @@ def load_test_class(module_path: Path, class_name: str) -> type:
     if not module_path.exists():
         raise FileNotFoundError(f"Test module file not found: {module_path}")
 
-    module_name = module_path.stem
+    # Use parent directory name + stem to ensure unique module names in sys.modules
+    module_name = f"{module_path.parent.name}_{module_path.stem}"
     spec = importlib.util.spec_from_file_location(module_name, module_path)
     if spec is None or spec.loader is None:
         raise ImportError(f"Could not load spec for module: {module_path}")

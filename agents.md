@@ -34,6 +34,8 @@
 
 ## Patterns (gelernt)
 
+- **Dynamische Modul-Ladung / Namespace-Kollision (sys.modules):** Wenn `importlib` verwendet wird, und sich viele Plugins eine Datei auf Dateisystem-Ebene den gleichen Namen teilen (z.B. `test.py`), müssen sie programmatisch zwingend einen eindeutigen Namen erhalten (z.B. `{module_path.parent.name}_{module_path.stem}`), um Singleton-Kollisionen im globalen `sys.modules` Cache zu vermeiden. Andernfalls führt das Skript-Routing immer nur das als Erstes in den Cache geladene Modul aus.
+
 - **LLM Judge Config SSOT:** Globale Judge-Einstellungen (Provider, Fallback, Modell,
   scale, unload_delay_ms, applicable_modules) gehören in `benchmark_config.yaml`
   unter dem Top-Level-Block `llm_judge:` – analog zu `golden_standard:`.

@@ -6,10 +6,12 @@ llm_judge:
     # model: claude-haiku-4-5-20251001
     name: ollama
     model: ministral-3:14b
+    max_tokens: 4096
     unload_delay_ms: 1500
     fallback:
       name: ollama
       model: ministral-3:8b
+      max_tokens: 4096
   scoring:
     scale: 5
     require_reasoning: true
@@ -17,6 +19,9 @@ llm_judge:
   applicable_modules:
     - ux_writing
     - documentation_quality
+    - content_transformation
+    - cultural_intelligence
+    - reasoning
 
 # ============================================================
 # CrucibleMark - Benchmark Configuration

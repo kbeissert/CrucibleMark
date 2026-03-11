@@ -28,7 +28,9 @@
 - [DONE] **LLM Judge Modul – Phase 3 (ResultManager Schema)**: Abwärtskompatible Schema-Erweiterung für 5 neue `llm_judge_*`-Spalten. Leaderboard-Aggregation (`scripts/leaderboard/score_calculator.py`) um `llm_judge_avg` und `judge_coverage` ergänzt. Unit-Tests für Legacy-Laden und Partial-Data etabliert.
 
 ## Ongoing
-- [ ] First real benchmark run (single module, single model)
+- [DONE] Systematische Modul-Routing Bugs und Namespace-Kollisionen in importlib/sys.modules behoben.
+- [DONE] First real benchmark run (single module, single model) erfolgreich abgeschlossen.
+- [DONE] Cache-Integrität nach Routing-Fix validiert.
 - [ ] Re-run des `reasoning_logic` Benchmarks für (lokale) Modelle, um verfälschte 0-Punkte Resultate auszugleichen
 - [ ] Analyse der Stabilität von `gpt-oss` (vorheriger Absturz-Kandidat)
 - [ ] Monitor full benchmark suite execution

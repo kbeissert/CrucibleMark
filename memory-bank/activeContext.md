@@ -1,9 +1,11 @@
 # Active Context
 
 ## Status
-Ready for first production benchmark run or Batch-Mode implementation.
+Erster erfolgreicher Lauf (Production) mit LLM Judge bestätigt.
 
-## Was wurde zuletzt fertiggestellt?
+## Was wurde zuletzt fertiggestellt? 
+- Namespace-Kollision (sys.modules) im dynamischen module_loader repariert (Routing-Bug behoben).
+- VRAM Memory Leaks durch unsaubere Thread-Terminierungen aufgelöst.
 
 - LLM Judge Modul ist vollständig implementiert und getestet.
 - LLM Judge Markdown-Ausreißer geparsed (`judge_parser.py` Regex erweitert).
@@ -13,7 +15,7 @@ Ready for first production benchmark run or Batch-Mode implementation.
 
 ## Was ist der nächste Schritt?
 
-- Option A: Single module test run (ux_writing, ein lokales Modell).
+- Option B: Umsetzung des **Batch-Mode** (Phase 3.5)
 - Option B: Umsetzung des **Batch-Mode** (Phase 3.5), da per-task Loading (~40s Overhead pro Task bei 9GB Modellen) extrem teuer ist.
 
 ## Offene Risiken / Bekannte Baustellen

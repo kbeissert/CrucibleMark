@@ -39,12 +39,12 @@ _WORD_TO_INT: Dict[str, int] = {
 
 # Regex patterns (compiled once at import time)
 _RE_SCORE = re.compile(
-    r"(?:#{1,4}\s*)?(?:\*{1,2})?\s*SCORE\s*(?:\*{1,2})?[\s:\-]+\s*(?:\*{1,2})?\s*[\[\(\"']?(\d+|one|two|three|four|five|six|seven|eight|nine|ten)[\]\)\"']?(?:\*{1,2})?",
+    r"(?:#{1,4}\s*)?(?:\*{1,2})?\s*SCORE\s*(?:\*{1,2})?[\s:\-]+(?:\*{1,2})?\s*[\[\(\"']?(\d+|one|two|three|four|five|six|seven|eight|nine|ten)[\]\)\"']?(?:\*{1,2})?",
     re.IGNORECASE | re.MULTILINE,
 )
 
 _RE_REASONING = re.compile(
-    r"(?:#{1,4}\s*)?(?:\*{1,2})?\s*REASONING\s*(?:\*{1,2})?[\s:\-]+\s*(?:\*{1,2})?\s*(.*?)(?=(?:#{1,4}\s*)?(?:\*{1,2})?\s*SCORE|\Z)",
+    r"(?:-{3,}\s*\n\s*)?(?:#{1,4}\s*)?(?:\*{1,2})?\s*REASONING\s*(?:\*{1,2})?[\s:\-]+\s*(?:\*{1,2})?\s*(.*?)(?=(?:-{3,}\s*\n\s*)?(?:#{1,4}\s*)?(?:\*{1,2})?\s*SCORE|\Z)",
     re.IGNORECASE | re.DOTALL,
 )
 
@@ -81,9 +81,11 @@ def parse(raw_response: str) -> JudgeResult:
     if score is None:
         logger.warning(
             "LLM Judge: could not parse SCORE from response. "
-            "Raw response (first 300 chars): %.300s",
-            raw_response,
+            "Raw response (last 800 chars): %.800s",
+            raw_response[-800:],
         )
+        with open("last_failed_raw.txt", "w", encoding="utf-8") as f:
+            f.write(raw_response)
         return JudgeResult(
             score=None,
             reasoning=reasoning,
@@ -114,11 +116,12 @@ def _extract_score(text: str) -> Optional[int]:
         SCORE - 4
         score: 4          (case-insensitive)
     """
-    match = _RE_SCORE.search(text)
-    if not match:
+    matches = _RE_SCORE.findall(text)
+    if not matches:
         return None
 
-    raw_value = match.group(1).lower().strip()
+    # Always take the last match to avoid false positives in reasoning text
+    raw_value = matches[-1].lower().strip()
 
     # Numeric string
     if raw_value.isdigit():

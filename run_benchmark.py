@@ -413,10 +413,10 @@ class BenchmarkRunner:
 
         benchmark_info = {
             "id": mod_id,
-            "name": module_config["name"],
+            "name": module_config.get("name", mod_id),
             "path": f"{module_config['path']}/assets",
             "module_path": module_config["path"],
-            "test_class": module_config.get("test_class", "CodeQualityTest"),
+            "test_class": internal_config.get("execution", {}).get("test_class") or module_config.get("test_class", "CodeQualityTest"),
             "execution_mode": module_config.get("execution_mode", "standard"),
             "min_runs": module_config.get("min_runs", 1),
             "benchmarks": internal_config.get("benchmarks", []),
