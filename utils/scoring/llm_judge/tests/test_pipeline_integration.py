@@ -35,7 +35,7 @@ def mock_dependencies():
         mock_test_instance.score_response.return_value = {"total_score": 100}
         
         # Provide a BenchmarkResult object initialized legally
-        mock_exec_res = BenchmarkResult(status="success", execution_time=1.5, tokens_used=100, cost_usd=0.0, raw_response="hello")
+        mock_exec_res = BenchmarkResult(status="success", execution_time=1.5, tokens_used=100, cost_usd=0.0, raw_response="hello world, this is a very long response that passes the 15 char limit")
         
         mock_exec.return_value = (mock_test_instance, mock_exec_res)
         mock_cmp.return_value = {}

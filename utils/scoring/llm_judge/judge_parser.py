@@ -43,9 +43,9 @@ _RE_SCORE = re.compile(
     re.IGNORECASE | re.MULTILINE,
 )
 
-_RE_REASONING = re.compile(
-    r"(?:-{3,}\s*\n\s*)?(?:#{1,4}\s*)?(?:\*{1,2})?\s*REASONING\s*(?:\*{1,2})?[\s:\-]+\s*(?:\*{1,2})?\s*(.*?)(?=(?:-{3,}\s*\n\s*)?(?:#{1,4}\s*)?(?:\*{1,2})?\s*SCORE|\Z)",
-    re.IGNORECASE | re.DOTALL,
+_RE_REASONING_START = re.compile(
+    r"(?:-{3,}\s*\n\s*)?(?:#{1,4}\s*)?(?:\*{1,2})?\s*REASONING\s*(?:\*{1,2})?[\s:\-]+\s*(?:\*{1,2})?\s*",
+    re.IGNORECASE,
 )
 
 
@@ -138,7 +138,24 @@ def _extract_reasoning(text: str) -> str:
 
     Returns an empty string if REASONING: is absent (non-fatal).
     """
-    match = _RE_REASONING.search(text)
+    match = _RE_REASONING_START.search(text)
     if not match:
         return ""
-    return match.group(1).strip()
+    
+    start_pos = match.end()
+    
+    # Use the start position of the LAST valid SCORE marker (if any) as the end bound.
+    # This prevents truncating the reasoning if the word "score" is used inside the reasoning itself.
+    score_matches = list(_RE_SCORE.finditer(text))
+    if score_matches:
+        end_pos = score_matches[-1].start()
+        # Ensure the score marker appears AFTER the reasoning marker
+        if end_pos > start_pos:
+            reasoning_text = text[start_pos:end_pos].strip()
+            # Strip markdown horizontal rules often placed before the score
+            reasoning_text = re.sub(r"-{3,}\s*$", "", reasoning_text).strip()
+            return reasoning_text
+
+    reasoning_text = text[start_pos:].strip()
+    reasoning_text = re.sub(r"-{3,}\s*$", "", reasoning_text).strip()
+    return reasoning_text
