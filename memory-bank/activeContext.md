@@ -1,18 +1,14 @@
 # Active Context
 
-## Status
-Erster erfolgreicher Lauf (Production) mit LLM Judge bestätigt, nun auch als primärer Score aktiv!
-
-## Was wurde heute fertiggestellt? 
-- Integration des LLM Judge Scores in `total_score` und `percentage` für qualitative Module bei erfolgreichem Parsing.
-- Einführung des `scoring_method` (llm_judge | regex_fallback | skipped) Flags im CSV-Export (und Update in `ResultManager`).
-- Dynamischer zur-Laufzeit-Fallback (`ANTHROPIC_API_KEY`-Prüfung in `judge_runner.py` via `os.getenv`), um nahtlos auf Ollama zurückzufallen.
-- CLI-Modul Test-Fix für fehlerhafte Mock-Klasse.
+## Was wurde heute fertiggestellt?
+- Ein robuster Audit-Log-Modus (`make benchmark-audit`) wurde implementiert, der alle Interaktionen (inklusive dem final evaluierten Prompt und der vollständigen LLM-Judge Reasoning-Historie) als Markdown in `outputs/audit_logs/` speichert.
+- Die Daten-Übergabe (`BenchmarkResult`) aus den Evaluatoren in die Core-Treiberschicht wurde überarbeitet, um die präzisen Prompts und Regex-Subkategorien für den Audit-Log durchzuschleifen.
+- Umfassende Dokumentation zum Audit-Mode in `USER_GUIDE.md` und `README.md` integriert.
 
 ## Was ist der nächste logische Schritt?
-- Volldurchlauf aller lokalen Modelle starten, um das finale Leaderboard mit Judge-Daten zu befüllen.
-- Umsetzung des **Batch-Mode** (Phase 3.5), da per-task Loading (~40s Overhead pro Task bei 9GB Modellen) extrem teuer ist.
+- Volldurchlauf aller lokalen Modelle starten, um das finale Leaderboard mit den kompletten Judge-Daten und Regex-Kategorien zu befüllen und die Stabilität in einem Langzeit-Lauf (Overnight) abzusichern.
+- Umsetzung des **Batch-Mode** (Phase 3.5), da das per-task Loading (~40s Overhead pro Task bei 9GB Judge-Modellen) nach wie vor extrem teuer ist.
 
-## Offene Risiken / Bekannte Baustellen
-- LLM Judge Latency: Jeder Judge-Aufruf lädt das Judge-Modell neu (9GB Model = ~40s).
-- Post-run CSV Verifizierung der neu befüllten Scores, insbesondere `scoring_method`.
+## Welche offenen Fragen oder Risiken gibt es?
+- **LLM Judge Latency:** Jeder Task-Wechsel, der den LLM-Judge anstößt, triggert auf lokalen Systemen das In-Memory-Loading, was den Test-Lauf künstlich in die Länge zieht, bis Model-Batching implementiert ist.
+- Risiko von Datenverlust bei OOM-Kills durch Ollama bei zu kleinen RAM-Limits, das durch das neue `PendingJudgeResult`-Safety-Net abgefangen werden sollte, aber im Dauerbetrieb noch validiert werden muss.
