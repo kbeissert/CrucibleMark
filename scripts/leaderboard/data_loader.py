@@ -368,7 +368,7 @@ def load_benchmark_data() -> pd.DataFrame:
 
                 df = pd.concat([df, ghost_df], ignore_index=True)
 
-        except Exception as e:
+        except (ValueError, TypeError, KeyError) as e:
             print(f"⚠️ Warning: Failed to inject Political Compass data: {e}")
 
     # DEDUPLICATION LOGIC with VERSIONING:
