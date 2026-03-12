@@ -67,6 +67,7 @@ class CulturalIntelligenceTest(BaseTest):
         return BenchmarkResult(
             primary_score=None, # Not scored yet
             rendered_value="Pending",
+            evaluated_prompt=full_prompt,
             execution_time=execution_time,
             load_time=load_time,
             raw_response=response_text,

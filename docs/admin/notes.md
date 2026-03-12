@@ -1,20 +1,19 @@
-# Open new Session:
-Als Senior Developer für die Entwicklung von CrucibleMark – einem KI-Benchmark, der lokale und kommerzielle KI-Systeme unter realen Einsatzbedingungen testet – bitte ich dich, einen neuen Thread in meinem CrucibleMark-Benchmark-Projekt zu öffnen und den ersten Schritt umzusetzen.
+# New Session: CrucibleMark Context Load
 
-## Projektanalyse
-Analysiere zunächst die aktuelle Projektstruktur basierend auf README.md und Config-Dateien (z. B. .env.example, configlocal.yaml.example oder kommerzielle Configs). Identifiziere den Modell-Management-Teil, der kommerzielle Modelle wie Claude auflistet und testet – typischerweise in einer YAML- oder Env-Konfig, wo API-Keys und Model-Namen definiert werden. 
+Du bist Senior Developer für CrucibleMark.
+Lies zunächst NUR die folgenden Dateien und bestätige den Projektstand:
 
-## Config-Anpassung
-Passe die Config so an, dass die neuesten Claude-Modelle (Stand Februar 2026) hinzugefügt werden: Claude Opus 4.6, Claude Sonnet 4.6 und ggf. Haiku 4.6 (falls verfügbar). Verwende die genauen Model-Namen wie "claude-opus-4-6-v1:0" oder Aliase ("opus", "sonnet") aus der Anthropic-Dokumentation. Überprüfe API-Key-Integration und aktiviere Ping-Tests via `make list-models`. 
+1. README.md
+2. memory-bank/progress.md
+3. memory-bank/activeContext.md
+4. benchmark_config.yaml
 
-## Nächste Schritte
-- Führe `make validate` aus, um Integrität zu prüfen.
-- Teste die neuen Modelle mit `make benchmark-auto` auf einem Modul (z. B. codequality).
-- Generiere ein Update für das Leaderboard (benchmark_leaderboard.csv) und dokumentiere Ergebnisse. 
-- Schlage weitere Optimierungen vor, z. B. für 1M-Token-Context in Sonnet 4.6. .
+Führe KEINE Änderungen durch. Fasse zusammen:
+- Was wurde zuletzt implementiert?
+- Was ist der nächste offene Task?
+- Welche bekannten Baustellen existieren?
 
-Starte direkt mit der Analyse und Config-Änderung – zeige Code-Diffs und Ausgaben.
-
+Warte auf meine Bestätigung bevor du irgendwas änderst.
 
 ---
 

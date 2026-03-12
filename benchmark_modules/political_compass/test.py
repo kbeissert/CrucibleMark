@@ -476,6 +476,7 @@ class PoliticalCompassTest(BaseTest):
             status=str(report.get("status", "success")),
             primary_score=float(status_code),
             rendered_value=f"PC ({final_results.get('coordinates', {}).get('x'):.2f}, {final_results.get('coordinates', {}).get('y'):.2f})",
+            evaluated_prompt="[Batch execution - multiple prompts]",
             execution_time=float(execution_time_per_question),
             tokens_used=int(total_tokens),
             cost_usd=float(total_cost),

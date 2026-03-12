@@ -60,6 +60,7 @@ class JudgeResult:
     # Populated by judge_runner after parsing (not set by the parser itself)
     judge_latency_ms: Optional[float] = None
     judge_provider_used: Optional[str] = None
+    judge_model_used: Optional[str] = None
 
 
 def parse(raw_response: str) -> JudgeResult:

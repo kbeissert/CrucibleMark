@@ -174,6 +174,7 @@ def load_active_benchmarks(config: Dict[str, Any]) -> Dict[str, Any]:
         execution = internal.get("execution", {})
 
         benchmark_categories[key] = {
+            "id": key,
             "name": metadata.get("name", mod.get("name", key)),
             "description": metadata.get("description", mod.get("description", "")),
             "path": f"{mod['path']}/assets",

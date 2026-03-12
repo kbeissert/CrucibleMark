@@ -22,7 +22,7 @@ sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 # pylint: disable=wrong-import-position, import-error
 from utils.base_runner import BaseBenchmarkRunner  # noqa: E402
 from utils.module_loader import load_test_class  # noqa: E402
-from utils.benchmark_utils import select_from_list, discover_assets, load_asset_yaml, format_political_compass_data, prepare_pc_csv_row, save_debug_response  # noqa: E402
+from utils.benchmark_utils import select_from_list, discover_assets, load_asset_yaml, format_political_compass_data, prepare_pc_csv_row, save_debug_response, save_audit_log  # noqa: E402
 from utils.fingerprinting import ModelFingerprinter  # noqa: E402
 from utils.model_utils import get_model_version  # noqa: E402
 from utils.llm_client import LLMClient  # noqa: E402
@@ -47,16 +47,18 @@ class CommercialBenchmarkRunner(BaseBenchmarkRunner):
 
     benchmark_categories: Dict[str, Any] = {}
 
-    def __init__(self, mode: str = "test", force: bool = False):
+    def __init__(self, mode: str = "test", force: bool = False, audit_mode: bool = False):
         """Initialisiert Runner.
 
         Args:
             mode: 'golden_standard' oder 'test'
             force: Wenn True, werden existierende Golden Standards überschrieben
+            audit_mode: Wenn True, wird pro Durchlauf ein Audit-Log (Prompt, Antwort, Judge) gespeichert.
         """
         super().__init__()
         self.mode = mode
         self.force = force
+        self.audit_mode = audit_mode
         self._load_categories()
         self.existing_benchmarks = self._load_existing_benchmarks()
 
@@ -350,22 +352,12 @@ class CommercialBenchmarkRunner(BaseBenchmarkRunner):
         benchmarks_list = benchmark_info.get("benchmarks", [])
         asset_cfg = next((b for b in benchmarks_list if b["id"] == result["asset_id"]), None)
 
+        # Calculate initial score contributions
         result = calculate_score_contributions(result, asset_cfg)
 
-        # Add Version/Fingerprint if available from API
-        # meta = exec_result.meta
-
-        # Use Global SSOT (Dual Version format) from Fingerprinting Utility
-        # We pass self.client if available to allow behavioral hashing
-        version = ModelFingerprinter.get_unified_version(
-            provider=provider,
-            model_name=model,
-            client=self.client if hasattr(self, "client") else None
-        )
-
-        result["model_version"] = version
-
-        # Add Cost Tracking
+        # ---------------------------------------------------------------------
+        # Add Cost Tracking (Must happen BEFORE fingerprinting to avoid overwrite)
+        # ---------------------------------------------------------------------
         cost_val = 0.0
         token_str = "0 T"
         if hasattr(self.client, "last_request_cost"):
@@ -382,16 +374,103 @@ class CommercialBenchmarkRunner(BaseBenchmarkRunner):
             else:
                 token_str = f"{t_count} T"
 
+        # Add Version/Fingerprint if available from API
+        # meta = exec_result.meta
+
+        # Use Global SSOT (Dual Version format) from Fingerprinting Utility
+        # We pass self.client if available to allow behavioral hashing
+        version = ModelFingerprinter.get_unified_version(
+            provider=provider,
+            model_name=model,
+            client=self.client if hasattr(self, "client") else None
+        )
+
+        result["model_version"] = version
+
+        # ---------------------------------------------------------------------
+        # PHASE 2.5: LLM JUDGE INTEGRATION
+        # ---------------------------------------------------------------------
+        # Guaranteed Defaults
+        for key in ["llm_judge_score", "llm_judge_reasoning", "llm_judge_latency_ms", "llm_judge_provider_used", "llm_judge_model_used", "llm_judge_parse_success"]:
+            result[key] = None
+            
+        result["scoring_method"] = "regex_fallback"
+
+        judge_cfg_dict = self.validator.config.get("llm_judge", {})
+        is_enabled = judge_cfg_dict.get("enabled", True)
+        eval_module_id = benchmark_info.get("id", "")
+        applicable_modules = judge_cfg_dict.get("applicable_modules", [])
+
+        if is_enabled and eval_module_id in applicable_modules:
+            if len(response.strip()) < 15:
+                result["judge_progress_status"] = "⚠️ Judge: skip"
+            else:
+                from utils.scoring.llm_judge.judge_config import LLMJudgeConfig
+                from utils.scoring.llm_judge.judge_runner import JudgeRunner
+                import logging
+                
+                try:
+                    judge_config = LLMJudgeConfig.from_dict(judge_cfg_dict)
+                    # Apply optional per-module override
+                    if "llm_judge_model" in benchmark_info:
+                        judge_config.module_judge_model = benchmark_info["llm_judge_model"]
+
+                    runner = JudgeRunner(judge_config)
+
+                    raw_prompt = asset_data.get("prompt", asset_data.get("instruction", ""))
+                    golden = asset_data.get("golden_standard", "")
+                    if isinstance(golden, dict):
+                        golden = golden.get("text", "")
+                    golden = str(golden)
+
+                    judge_res = runner.score(
+                        task_prompt=raw_prompt,
+                        model_response=response,
+                        golden_standard=golden,
+                        module_id=eval_module_id,
+                        rubric_override=asset_data.get("scoring", {}).get("rubric"),
+                        tested_model_id=model,
+                        tested_model_provider=provider,
+                        response_time_ms=result.get("execution_time", 0) * 1000.0
+                    )
+
+                    # Merge fields
+                    result["llm_judge_score"] = judge_res.score
+                    result["llm_judge_reasoning"] = judge_res.reasoning
+                    result["llm_judge_latency_ms"] = judge_res.judge_latency_ms
+                    result["llm_judge_provider_used"] = judge_res.judge_provider_used
+                    result["llm_judge_model_used"] = judge_res.judge_model_used
+                    result["llm_judge_parse_success"] = judge_res.parse_success
+                    
+                    if judge_res.parse_success and judge_res.score is not None:
+                        judge_scale = judge_config.scoring.scale
+                        result["total_score"] = (judge_res.score / judge_scale) * 100
+                        result["percentage"] = result["total_score"]
+                        result["scoring_method"] = "llm_judge"
+                        result["judge_progress_status"] = f"⚖️ Judge: {judge_res.score}/{judge_scale}"
+                        
+                        # RECALCULATE contributions based on the new Judge score
+                        result = calculate_score_contributions(result, asset_cfg)
+                    else:
+                        result["judge_progress_status"] = "❌ Judge: failed"
+                        
+                except Exception as e:
+                    logging.error(f"LLM Judge execution failed: {e}")
+                    result["judge_progress_status"] = "❌ Judge: failed"
+        # ---------------------------------------------------------------------
+
         # Print Output
         badge = self.get_quality_badge(result["percentage"])
 
         # Clear the "Running..." line by overwriting with full line
         # [1/5] codequality001 | WCAG Audit ✓ Score: 88 | Cost: $0.0047 | Time: 12.3s
         time_val = exec_result.execution_time or 0.0
+        judge_status = result.get("judge_progress_status", "")
+        judge_str = f" | {judge_status}" if judge_status else ""
         print(
             f"[{index}/{total_count}] {asset_id:<15} | {asset_name[:20]:<20} {badge} "
             f"Score: {result['percentage']:>6.2f} | Cost: ${cost_val:.4f} | "
-            f"{token_str:>7} | Time: {time_val:.1f}s"
+            f"{token_str:>7} | Time: {time_val:.1f}s{judge_str}"
         )
 
         # Save Golden Standard JSON if needed
@@ -414,57 +493,45 @@ class CommercialBenchmarkRunner(BaseBenchmarkRunner):
                 score.get("reasoning", "No explanation provided"),
             )
 
-        # ---------------------------------------------------------------------
-        # PHASE 2.5: LLM JUDGE INTEGRATION
-        # ---------------------------------------------------------------------
-        # Guaranteed Defaults
-        for key in ["llm_judge_score", "llm_judge_reasoning", "llm_judge_latency_ms", "llm_judge_provider_used", "llm_judge_parse_success"]:
-            result[key] = None
-
-        judge_cfg_dict = self.validator.config.get("llm_judge", {})
-        is_enabled = judge_cfg_dict.get("enabled", True)
-        eval_module_id = benchmark_info.get("id", "")
-        applicable_modules = judge_cfg_dict.get("applicable_modules", [])
-
-        if is_enabled and eval_module_id in applicable_modules:
-            from utils.scoring.llm_judge.judge_config import LLMJudgeConfig
-            from utils.scoring.llm_judge.judge_runner import JudgeRunner
-            import logging
+        if getattr(self, "audit_mode", False):
+            rp_fallback = asset_data.get("prompt", asset_data.get("instruction", "No prompt found"))
+            rp = getattr(exec_result, "evaluated_prompt", "") or rp_fallback
             
-            try:
-                judge_config = LLMJudgeConfig.from_dict(judge_cfg_dict)
-                # Apply optional per-module override
-                if "llm_judge_model" in benchmark_info:
-                    judge_config.module_judge_model = benchmark_info["llm_judge_model"]
+            if result.get("scoring_method") == "llm_judge":
+                judge_provider = result.get('llm_judge_provider_used', 'unknown')
+                judge_model = result.get('llm_judge_model_used', 'unknown')
+                judge_info = f"*(Evaluated using {judge_provider} / {judge_model})*"
+                
+                # Fetch module-level category scores that are logged to CSV
+                cat_section = ""
+                cat_scores = score.get("category_scores", {})
+                if cat_scores:
+                    cat_section = "\n\n**Category Scores (Rule-based / CSV):**\n"
+                    for cat_name, cat_vals in cat_scores.items():
+                        cat_section += f"- **{cat_name}:** {cat_vals.get('achieved', 0)} / {cat_vals.get('max', 0)}\n"
+                    cat_section += f"\n**Rule-based Total Score:** {score.get('total_score', 0)} / {score.get('max_score', 0)}"
 
-                runner = JudgeRunner(judge_config)
+                # Also capture any detail/reasoning arrays generated by the regex scorer
+                details_section = ""
+                if "details" in score and score["details"]:
+                    details_section = "\n\n**Rule-based Evaluation Details:**\n"
+                    details_data = score["details"]
+                    if isinstance(details_data, list):
+                        details_section += "\n".join([f"- {d}" for d in details_data])
+                    else:
+                        details_section += str(details_data)
 
-                raw_prompt = asset_data.get("prompt", asset_data.get("instruction", ""))
-                golden = asset_data.get("golden_standard", "")
-                if isinstance(golden, dict):
-                    golden = golden.get("text", "")
-                golden = str(golden)
+                judge_resp = f"{judge_info}\n\n**LLM Judge Score:** {result.get('llm_judge_score', 'N/A')}\n\n**LLM Judge Reasoning:**\n{result.get('llm_judge_reasoning', 'No reasoning provided.')}{cat_section}{details_section}"
+            else:
+                judge_resp = f"**Regex / Rule Scorer ({result.get('scoring_method', 'unknown')}):**\n\n**Score:** {result.get('total_score', 0)} / {result.get('max_score', 0)}\n\n**Details:**\n```json\n{json.dumps(score, indent=2, ensure_ascii=False)}\n```"
 
-                judge_res = runner.score(
-                    task_prompt=raw_prompt,
-                    model_response=response,
-                    golden_standard=golden,
-                    module_id=eval_module_id,
-                    rubric_override=asset_data.get("scoring", {}).get("rubric"),
-                    tested_model_id=model,
-                    tested_model_provider=provider,
-                    response_time_ms=result.get("execution_time", 0) * 1000.0
-                )
-
-                # Merge fields
-                result["llm_judge_score"] = judge_res.score
-                result["llm_judge_reasoning"] = judge_res.reasoning
-                result["llm_judge_latency_ms"] = judge_res.judge_latency_ms
-                result["llm_judge_provider_used"] = judge_res.judge_provider_used
-                result["llm_judge_parse_success"] = judge_res.parse_success
-            except Exception as e:
-                logging.error(f"LLM Judge execution failed: {e}")
-        # ---------------------------------------------------------------------
+            save_audit_log(
+                model=result["model"],
+                asset_id=result["asset_id"],
+                prompt=rp,
+                response=response,
+                judge_response=judge_resp
+            )
 
         return result
 

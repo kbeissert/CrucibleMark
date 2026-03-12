@@ -51,6 +51,7 @@ class BenchmarkResult(BaseModel):
     tokens_used: int = Field(0, description="Total tokens consumed")
     cost_usd: float = Field(0.0, description="Estimated cost in USD")
     raw_response: str = Field("", description="The raw string output from the model")
+    evaluated_prompt: str = Field("", description="The actual prompt that was sent to the model after evaluation/variable substitution")
     
     # --- Identification ---
     model_version: str = Field("unknown", description="Fingerprint or version string of the model")

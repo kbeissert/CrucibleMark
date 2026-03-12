@@ -142,6 +142,19 @@ Standard-Module nutzen eine Mischung aus **40% Keyword-Matching** und **60% Sema
 > - **Vorteil:** Antwortet das Modell korrekt, nutzt aber andere Worte als die Musterlösung, wird dies erkannt.
 > - **Setup:** Das Modell (~80MB) wird bei der Installation (`make install`) einmalig heruntergeladen und lokal gecached.
 
+### 3. Audit Mode (Log-Protokoll)
+
+Der **Audit Mode** generiert zu jedem getesteten Asset eine übersichtliche Markdown-Datei. Diese Dateien protokollieren exakt:
+1. Den vollständig evaluierten **Prompt**, der an das Modell geschickt wurde.
+2. Die **Antwort** des bewerteten Modells.
+3. Die detaillierte Herleitung der Bewertung (sowohl Regex-Details als auch LLM-Judge Reasoning).
+
+Um den Modus zu aktivieren:
+```bash
+make benchmark-audit
+```
+Alle generierten Markdown-Files findest du im Ordner `outputs/audit_logs/`. Dieser Modus ist besonders hilfreich, wenn du analysieren möchtest, *warum* ein Modell eine bestimmte (oder unerwartete) Punktzahl bekommen hat oder wenn du System-Prompts finetunen möchtest.
+
 ______________________________________________________________________
 
 ## 🏆 Leaderboard generieren

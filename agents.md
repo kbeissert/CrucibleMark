@@ -57,3 +57,4 @@
 - **Optional Provider Import:** Provider-Imports in `__init__.py` mit `Optional[Any] = None` Guard absichern (bekanntes MyPy-Pattern aus `run_commercial_benchmark.py`).
 - **LLM Judge Phase-Trennung:** Benchmark-Zeitmessung muss eingefroren sein, bevor der Judge lädt. VRAM-Überschneidung auf M4 Unified Memory verfälscht Messungen. Ollama-Unload (keep_alive: 0) abwarten, dann 500ms Delay, dann Judge laden.
 - **PendingJudgeResult als Safety-Net:** Bei Overnight-Runs immer auf Disk persistieren. Bei Judge-Absturz kann der Score nachträglich ohne Re-Run des Benchmarks vergeben werden.
+- **CSV Output Felder (ResultManager):** Alle neuen dynamischen Spalten wie `scoring_method` müssen in `utils/result_manager.py` bei `_get_updated_fieldnames` explizit zu den garantierten Feldern hinzugefügt werden, da sonst DictWriter fehlschlägt oder Felder verloren gehen.

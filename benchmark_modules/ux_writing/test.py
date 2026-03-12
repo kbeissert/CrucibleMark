@@ -85,6 +85,7 @@ class UXWritingTest(BaseTest):
             execution_time=execution_time,
             load_time=load_time,
             raw_response=response,
+            evaluated_prompt=prompt,
             tokens_used=getattr(llm_client, "last_token_usage", 0),
             cost_usd=getattr(llm_client, "last_request_cost", 0.0),
             model_version=getattr(llm_client, "last_response_metadata", {}).get("system_fingerprint", "unknown"),

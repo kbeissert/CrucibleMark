@@ -199,3 +199,39 @@ def save_debug_response(
             f.write(str(response))
     except OSError as e:
         logger.warning("Failed to save debug response for %s: %s", asset_id, e)
+
+
+def save_audit_log(
+    model: str,
+    asset_id: str,
+    prompt: str,
+    response: str,
+    judge_response: str,
+    base_dir: Path = Path("outputs/audit_logs"),
+) -> None:
+    """
+    Saves a comprehensive audit log for every test, containing prompt, response, and judge feedback.
+    """
+    try:
+        # Create subdirectories for the model
+        safe_model = str(model).replace(":", "_").replace("/", "_")
+        model_dir = base_dir / safe_model
+        model_dir.mkdir(exist_ok=True, parents=True)
+
+        filename = f"{asset_id}.md"
+        filepath = model_dir / filename
+
+        with open(filepath, "w", encoding="utf-8") as f:
+            f.write(f"# Audit Log: {asset_id}\n")
+            f.write(f"**Model:** {model}\n\n")
+            f.write("## 1. Prompt / Fragestellung\n")
+            f.write("---\n")
+            f.write(f"{prompt}\n\n")
+            f.write("## 2. Model Response / Antwort\n")
+            f.write("---\n")
+            f.write(f"{response}\n\n")
+            f.write("## 3. Evaluation / LLM-Judge / Scorer\n")
+            f.write("---\n")
+            f.write(f"{judge_response}\n")
+    except OSError as e:
+        logger.warning("Failed to save audit log for %s: %s", asset_id, e)

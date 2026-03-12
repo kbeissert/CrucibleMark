@@ -91,15 +91,17 @@ def test_new_csv_preserves_judge_columns(temp_result_manager):
         reader = csv.DictReader(f)
         fields = reader.fieldnames
         
-        # Verify the 5 judge fields exist in the appended set. They might not be exactly strictly the last 5 
-        # depending on sorting logic, but they are guaranteed to be in fieldnames. 
-        # Actually our implementation `base_keys + judge_fields` makes them exactly the last 5!
-        assert fields[-5:] == [
+# Verify the 6 judge fields exist in the appended set. They might not be exactly strictly the last 6
+        # depending on sorting logic, but they are guaranteed to be in fieldnames.
+        # Actually our implementation `base_keys + judge_fields` makes them exactly the last 7!
+        assert fields[-7:] == [
             "llm_judge_score",
             "llm_judge_reasoning",
             "llm_judge_latency_ms",
             "llm_judge_provider_used",
-            "llm_judge_parse_success"
+            "llm_judge_model_used",
+            "llm_judge_parse_success",
+            "scoring_method"
         ]
         
         rows = list(reader)

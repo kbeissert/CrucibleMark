@@ -52,7 +52,9 @@ class ResultManager:
             "llm_judge_reasoning",
             "llm_judge_latency_ms",
             "llm_judge_provider_used",
-            "llm_judge_parse_success"
+            "llm_judge_model_used",
+            "llm_judge_parse_success",
+            "scoring_method"
         ]
         
         new_keys.update(judge_fields)
