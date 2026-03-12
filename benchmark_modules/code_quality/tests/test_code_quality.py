@@ -15,7 +15,6 @@ sys.path.insert(0, str(Path(__file__).parents[3]))
 
 from benchmark_modules.code_quality.test import CodeQualityTest
 
-
 # Test constants
 TOTAL_POINTS = 100
 EXPECTED_SECURITY_ISSUES = 12
@@ -87,7 +86,6 @@ class TestAssetLoading:
 class TestScoringLogic:
     """Scoring-Logik Tests"""
 
-
     def test_keyword_matching_above_threshold(self, security_asset_path):
         """Keywords über 40% Threshold werden erkannt"""
         response = "sql injection prepared statement pdo bindparam"
@@ -99,17 +97,17 @@ class TestScoringLogic:
             "mysqli_prepare",
         ]
         # Matches: 4/5 = 80% > 40%
-        
+
         # Test helper logic directly (since _check_issue_mentioned was refactored)
         from benchmark_modules.code_quality.core.scoring_helpers import ScoringHelpers
-        
+
         helper = ScoringHelpers()
         criterion = {"keywords": keywords, "points": 10, "description": "Test"}
-        
+
         # Check standard keyword presence
         points, _ = helper.score_keyword_presence(response.lower(), criterion)
         result = points > 0
-        
+
         assert result is True, "Keywords sollten erkannt werden"
 
     def test_keyword_matching_below_threshold(self, security_asset_path):
@@ -123,28 +121,30 @@ class TestScoringLogic:
             "mysqli_prepare",
         ]
         # Matches: 0/5 = 0% < 40%
-        
+
         from benchmark_modules.code_quality.core.scoring_helpers import ScoringHelpers
+
         helper = ScoringHelpers()
         criterion = {"keywords": keywords, "points": 10, "description": "Test"}
-        
+
         points, _ = helper.score_keyword_presence(response.lower(), criterion)
         result = points > 0
-        
+
         assert result is False, "Keywords unter Threshold sollten nicht erkannt werden"
 
     def test_wcag_number_alone_sufficient(self, wcag_asset_path):
         """WCAG-Nummer allein reicht für Match"""
         response = "guideline 2.4.11 is important"
         keywords = ["2.4.11", "focus", "visible", "keyboard"]
-        
+
         from benchmark_modules.code_quality.core.scoring_helpers import ScoringHelpers
+
         helper = ScoringHelpers()
         criterion = {"keywords": keywords, "points": 10, "description": "Test"}
-        
+
         points, _ = helper.score_keyword_presence(response.lower(), criterion)
         result = points > 0
-        
+
         assert result is True, "WCAG-Nummer allein sollte ausreichen"
 
     def test_empty_response_returns_zero_score(self, security_asset_path):
@@ -152,13 +152,12 @@ class TestScoringLogic:
         # test = CodeQualityTest(security_asset_path)
         # Use Evaluator explicitly since test.execute returns BenchmarkResult
         from benchmark_modules.code_quality.core.evaluators import CodeQualityEvaluator
-        
+
         evaluator = CodeQualityEvaluator({"scoring": {"total_points": 100}})
         result = evaluator.score_response("")
 
         assert result["total_score"] == 0
         assert "error" in result["status"]
-
 
         assert result["total_score"] == 0
         assert len(result["violations"]) > 0
@@ -234,9 +233,9 @@ class TestStability:
         std = ((sum((x - mean) ** 2 for x in scores)) / len(scores)) ** 0.5
         cv = (std / mean) * 100 if mean > 0 else 0
 
-        assert cv < MAX_EXCELLENT_CV, (
-            f"Security Asset sollte CV <{MAX_EXCELLENT_CV}% haben, ist {cv:.2f}%"
-        )
+        assert (
+            cv < MAX_EXCELLENT_CV
+        ), f"Security Asset sollte CV <{MAX_EXCELLENT_CV}% haben, ist {cv:.2f}%"
 
     def test_wcag_asset_stability(self):
         """WCAG Asset hat akzeptable Stabilität (CV <10%)"""
@@ -246,9 +245,9 @@ class TestStability:
         std = ((sum((x - mean) ** 2 for x in scores)) / len(scores)) ** 0.5
         cv = (std / mean) * 100 if mean > 0 else 0
 
-        assert cv < MAX_ACCEPTABLE_CV, (
-            f"WCAG Asset sollte CV <{MAX_ACCEPTABLE_CV}% haben, ist {cv:.2f}%"
-        )
+        assert (
+            cv < MAX_ACCEPTABLE_CV
+        ), f"WCAG Asset sollte CV <{MAX_ACCEPTABLE_CV}% haben, ist {cv:.2f}%"
 
 
 class TestModuleIntegration:

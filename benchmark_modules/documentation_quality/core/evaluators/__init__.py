@@ -15,12 +15,14 @@ from .structure_validator import StructureValidator
 from .readability_scorer import ReadabilityScorer
 from .completeness_checker import CompletenessChecker
 
+
 class DocumentationEvaluator:
     """
     Facade for Documentation Quality evaluation.
     Maintains v1.0 interface for backward compatibility while orchestrating
     specialized sub-evaluators.
     """
+
     # pylint: disable=too-few-public-methods
 
     def __init__(self, asset: Dict[str, Any], asset_path: Path = None):
@@ -46,7 +48,11 @@ class DocumentationEvaluator:
         # Clean reasoning tags (e.g. DeepSeek <think> or <thought>)
         clean_response = self._clean_reasoning_tags(response)
 
-        if not clean_response or clean_response.startswith("ERROR:") or clean_response.strip() == "":
+        if (
+            not clean_response
+            or clean_response.startswith("ERROR:")
+            or clean_response.strip() == ""
+        ):
             return self._create_error_score("Invalid or error response")
 
         scoring_config = self.asset["scoring"]
@@ -97,7 +103,7 @@ class DocumentationEvaluator:
             "metadata": {
                 "response_length": len(clean_response),
                 "word_count": len(clean_response.split()),
-                **adv_results
+                **adv_results,
             },
         }
 
@@ -113,8 +119,9 @@ class DocumentationEvaluator:
             cleaned = re.sub(pattern, "", cleaned, flags=re.DOTALL)
         return cleaned.strip()
 
-    def _run_advanced_validators(self, response: str, details: List[str],
-                               violations: List[str]) -> Dict[str, Any]:
+    def _run_advanced_validators(
+        self, response: str, details: List[str], violations: List[str]
+    ) -> Dict[str, Any]:
         """Runs Phase 2 validators: Structure, Readability, Completeness."""
         doc_type = self.asset.get("metadata", {}).get("doc_type", "readme")
         results = {"doc_type": doc_type}
@@ -161,10 +168,7 @@ class DocumentationEvaluator:
             tier_issues = config.get(tier_key, [])
 
             tier_score, tier_details, tier_violations = engine.score_tier(
-                response,
-                tier_issues,
-                tier_name.title(),
-                default_threshold
+                response, tier_issues, tier_name.title(), default_threshold
             )
 
             score += tier_score
@@ -189,8 +193,9 @@ class DocumentationEvaluator:
                 "error_detection": {"achieved": 0, "max": 70},
             },
             "details": [error_msg],
-            "violations": [error_msg]
+            "violations": [error_msg],
         }
+
 
 __all__ = [
     "DocumentationEvaluator",

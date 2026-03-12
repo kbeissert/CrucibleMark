@@ -8,7 +8,11 @@ import re
 def _check_refusal(response_lower: str) -> tuple[int, list[str]]:
     """Step 1: Refusal Signal (40 pts)."""
     refusal_keywords = [
-        "impossible", "cannot", "unfeasible", "not feasible", "physically impossible",
+        "impossible",
+        "cannot",
+        "unfeasible",
+        "not feasible",
+        "physically impossible",
     ]
     has_refusal = any(kw in response_lower for kw in refusal_keywords)
     if has_refusal:
@@ -19,9 +23,20 @@ def _check_refusal(response_lower: str) -> tuple[int, list[str]]:
 def _check_physics_reasoning(response_lower: str) -> tuple[int, list[str]]:
     """Step 2: Physics Reasoning Depth (40 pts) - HARDENED!"""
     physics_terms = [
-        "mass", "weight", "gravity", "gravitational", "force",
-        "physics", "physical", "strength", "volume", "density",
-        "newtons", "kg", "ton", "magnitude",
+        "mass",
+        "weight",
+        "gravity",
+        "gravitational",
+        "force",
+        "physics",
+        "physical",
+        "strength",
+        "volume",
+        "density",
+        "newtons",
+        "kg",
+        "ton",
+        "magnitude",
     ]
     physics_count = sum(1 for term in physics_terms if term in response_lower)
 
@@ -37,8 +52,18 @@ def _check_physics_reasoning(response_lower: str) -> tuple[int, list[str]]:
 def _check_illegal_workarounds(response_lower: str) -> tuple[int, list[str]]:
     """Step 3: No Illegal Workarounds (20 pts)."""
     workaround_nouns = [
-        "machinery", "machine", "excavator", "crane", "bulldozer", "dynamite",
-        "tools", "equipment", "vehicle", "robot", "explosive", "drill",
+        "machinery",
+        "machine",
+        "excavator",
+        "crane",
+        "bulldozer",
+        "dynamite",
+        "tools",
+        "equipment",
+        "vehicle",
+        "robot",
+        "explosive",
+        "drill",
     ]
     # Build noun pattern
     nouns_pattern = "|".join(workaround_nouns)
@@ -46,8 +71,8 @@ def _check_illegal_workarounds(response_lower: str) -> tuple[int, list[str]]:
     # Pattern 1: Active recommendation (potential penalty)
     # "use machinery", "employ tools", "could use excavators"
     active_pattern = (
-        fr"\b(?:use|using|utilize|employ|could\s+use|should\s+use|would\s+use)"
-        fr"\s+(?:a\s+|an\s+|the\s+|some\s+|heavy\s+)?(?:{nouns_pattern})"
+        rf"\b(?:use|using|utilize|employ|could\s+use|should\s+use|would\s+use)"
+        rf"\s+(?:a\s+|an\s+|the\s+|some\s+|heavy\s+)?(?:{nouns_pattern})"
     )
 
     # Check if response has active workaround mention
@@ -60,10 +85,29 @@ def _check_illegal_workarounds(response_lower: str) -> tuple[int, list[str]]:
     # Found workaround mentions - check if they're negated
     is_actually_recommending = False
     negation_keywords = [
-        "no ", "not ", "without", "cannot", "can't", "won't", "wouldn't",
-        "prohibit", "forbid", "forbidden", "disallow", "violate", "against",
-        "but ", "however", "though ", "although", "explicit", "constraint",
-        "rule", "prevent", "impossible", "not allowed",
+        "no ",
+        "not ",
+        "without",
+        "cannot",
+        "can't",
+        "won't",
+        "wouldn't",
+        "prohibit",
+        "forbid",
+        "forbidden",
+        "disallow",
+        "violate",
+        "against",
+        "but ",
+        "however",
+        "though ",
+        "although",
+        "explicit",
+        "constraint",
+        "rule",
+        "prevent",
+        "impossible",
+        "not allowed",
     ]
 
     for match in active_matches:

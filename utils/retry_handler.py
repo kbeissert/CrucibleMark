@@ -53,7 +53,9 @@ class RetryHandler:
             Exception: If all retries fail.
         """
         last_exception = None
-        current_max_retries = max_retries if max_retries is not None else self.max_retries
+        current_max_retries = (
+            max_retries if max_retries is not None else self.max_retries
+        )
 
         for attempt in range(current_max_retries):
             try:

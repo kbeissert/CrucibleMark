@@ -106,6 +106,7 @@ def parse(raw_response: str) -> JudgeResult:
 # Internal helpers
 # ---------------------------------------------------------------------------
 
+
 def _extract_score(text: str) -> Optional[int]:
     """
     Locate the SCORE marker and return the integer value.
@@ -141,9 +142,9 @@ def _extract_reasoning(text: str) -> str:
     match = _RE_REASONING_START.search(text)
     if not match:
         return ""
-    
+
     start_pos = match.end()
-    
+
     # Use the start position of the LAST valid SCORE marker (if any) as the end bound.
     # This prevents truncating the reasoning if the word "score" is used inside the reasoning itself.
     score_matches = list(_RE_SCORE.finditer(text))

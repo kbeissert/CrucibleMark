@@ -29,7 +29,7 @@ def load_module_config(module_path: Path) -> Dict[str, Any]:
 
 
 def get_active_modules(
-    benchmark_config: Dict[str, Any]
+    benchmark_config: Dict[str, Any],
 ) -> List[Tuple[str, Dict[str, Any], Dict[str, Any]]]:
     """
     Returns a list of active modules in the order defined in benchmark_config.yaml.
@@ -98,7 +98,7 @@ def get_module_test_count(module_path: Path, internal_config: Dict[str, Any]) ->
 
     if assets_dir.exists():
         import re
-        
+
         files = [f for f in assets_dir.glob("*.yaml") if not f.name.startswith(".")]
         if not files:
             # Fallback to Config below if no files found
@@ -108,10 +108,10 @@ def get_module_test_count(module_path: Path, internal_config: Dict[str, Any]) ->
             # Strategy: "Last Hyphen Rule"
             # If filename ends with "-{digits}.yaml", treat everything before as Group ID.
             # Example: "pol_7.1-001.yaml" -> Group "pol_7.1"
-            
+
             unique_groups = set()
             ungrouped_count = 0
-            
+
             # Pattern: Capture anything greedy (.+) before a hyphen and digits at the end
             group_regex = re.compile(r"(.+)-\d+\.yaml$")
 
@@ -123,13 +123,12 @@ def get_module_test_count(module_path: Path, internal_config: Dict[str, Any]) ->
                 else:
                     # Standard asset (no variant ID found)
                     ungrouped_count += 1
-            
+
             # Total = Number of unique groups + Number of standalone assets
             total_count = len(unique_groups) + ungrouped_count
             return total_count
 
     # 4. Configuration Fallback
-
 
     # 3. Configuration Fallback
     execution = internal_config.get("execution", {})

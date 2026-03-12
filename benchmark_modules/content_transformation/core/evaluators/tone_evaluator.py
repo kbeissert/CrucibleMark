@@ -2,6 +2,7 @@
 Tone Evaluator
 Analyzes text for formality, professionalism, and spoken style attributes.
 """
+
 import re
 from typing import Dict, Set
 
@@ -12,21 +13,60 @@ class ToneEvaluator:
     # Static word lists
     # Note: Move to external config if these grow large
     FORMAL_WORDS: Set[str] = {
-        "therefore", "consequently", "furthermore", "regarding", "facilitate",
-        "utilize", "commence", "assistance", "implementation", "verify",
-        "ensure", "collaboration", "objective", "demonstrate", "however",
-        "approximately", "sufficient", "indicate"
+        "therefore",
+        "consequently",
+        "furthermore",
+        "regarding",
+        "facilitate",
+        "utilize",
+        "commence",
+        "assistance",
+        "implementation",
+        "verify",
+        "ensure",
+        "collaboration",
+        "objective",
+        "demonstrate",
+        "however",
+        "approximately",
+        "sufficient",
+        "indicate",
     }
 
     CASUAL_WORDS: Set[str] = {
-        "hey", "cool", "stuff", "awesome", "crazy", "grab", "wanna",
-        "gonna", "super", "actually", "basically", "pretty", "weird",
-        "total", "literally", "totally", "sure", "yep", "nope", "okay",
-        "kid", "guy", "job"
+        "hey",
+        "cool",
+        "stuff",
+        "awesome",
+        "crazy",
+        "grab",
+        "wanna",
+        "gonna",
+        "super",
+        "actually",
+        "basically",
+        "pretty",
+        "weird",
+        "total",
+        "literally",
+        "totally",
+        "sure",
+        "yep",
+        "nope",
+        "okay",
+        "kid",
+        "guy",
+        "job",
     }
 
     SPOKEN_MARKERS: Set[str] = {
-        "um", "uh", "like", "mean", "right?", "sort of", "kind of"
+        "um",
+        "uh",
+        "like",
+        "mean",
+        "right?",
+        "sort of",
+        "kind of",
     }
 
     @staticmethod
@@ -39,7 +79,7 @@ class ToneEvaluator:
             return 0.5
 
         text_lower = response.lower()
-        words = re.findall(r'\b\w+\b', text_lower)
+        words = re.findall(r"\b\w+\b", text_lower)
         total_words = len(words)
 
         if total_words == 0:
@@ -63,7 +103,9 @@ class ToneEvaluator:
         # Each formal word adds 0.05, casual/contraction removes 0.05
         # Cap at 0 and 1
 
-        adjustment = (formal_count * 0.05) - (casual_count * 0.05) - (contractions * 0.03)
+        adjustment = (
+            (formal_count * 0.05) - (casual_count * 0.05) - (contractions * 0.03)
+        )
 
         final_score = base_score + adjustment
         return max(0.0, min(1.0, final_score))
@@ -81,8 +123,15 @@ class ToneEvaluator:
 
         # Slang/Profanity penalty
         slang_words = [
-            "lmao", "lol", "wtf", "omg", "crap",
-            "suck", "freaking", "idiot", "stupid"
+            "lmao",
+            "lol",
+            "wtf",
+            "omg",
+            "crap",
+            "suck",
+            "freaking",
+            "idiot",
+            "stupid",
         ]
         slang_hits = sum(1 for w in slang_words if w in text_lower)
 
@@ -94,7 +143,7 @@ class ToneEvaluator:
             score = 1.0
 
         # Formatting penalty: excessive exclamation marks
-        exclamations = response.count('!')
+        exclamations = response.count("!")
         if exclamations > 3:
             score -= 0.1
 
@@ -119,7 +168,7 @@ class ToneEvaluator:
         fillers_found = []
         for marker in ToneEvaluator.SPOKEN_MARKERS:
             # Check for marker as a whole word/phrase
-            if re.search(r'\b' + re.escape(marker) + r'\b', text_lower):
+            if re.search(r"\b" + re.escape(marker) + r"\b", text_lower):
                 fillers_found.append(marker)
 
         # Conversational contractions
@@ -129,7 +178,7 @@ class ToneEvaluator:
         has_direct_address = re.search(r"\byou\b|\byour\b", text_lower) is not None
 
         # Question count
-        questions_count = response.count('?')
+        questions_count = response.count("?")
 
         is_conversational = (len(fillers_found) > 0) or (len(contractions) > 2)
 
@@ -138,5 +187,5 @@ class ToneEvaluator:
             "fillers_detected": fillers_found,
             "contraction_count": len(contractions),
             "uses_direct_address": has_direct_address,
-            "questions_count": questions_count
+            "questions_count": questions_count,
         }

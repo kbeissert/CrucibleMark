@@ -155,10 +155,12 @@ def detect_confidence(thought: str) -> dict[str, Any]:
     """
     thought_lower = thought.lower()
     has_confidence = contains_any(
-        thought_lower, METACOG_CONFIDENCE_KEYWORDS,
+        thought_lower,
+        METACOG_CONFIDENCE_KEYWORDS,
     )
     has_uncertainty = contains_any(
-        thought_lower, METACOG_UNCERTAINTY_KEYWORDS,
+        thought_lower,
+        METACOG_UNCERTAINTY_KEYWORDS,
     )
 
     confidence_type = (

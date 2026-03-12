@@ -13,9 +13,7 @@ Covers:
 - Empty input
 """
 
-import pytest
-
-from utils.scoring.llm_judge.judge_parser import JudgeResult, parse
+from utils.scoring.llm_judge.judge_parser import parse
 
 
 class TestParseHappyPath:

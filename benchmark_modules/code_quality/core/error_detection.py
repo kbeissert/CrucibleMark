@@ -77,7 +77,9 @@ class ErrorDetector:
 
         return min(score, max_score), details, violations
 
-    def _identify_found_issues(self, text_lower: str, config: Dict[str, Any]) -> Set[str]:
+    def _identify_found_issues(
+        self, text_lower: str, config: Dict[str, Any]
+    ) -> Set[str]:
         """
         Scans text for all issue keywords and returns set of found issue names.
         Optimized to single text pass per keyword.

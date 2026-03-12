@@ -85,12 +85,12 @@ class RCIIntegrator:
         return {
             "rci": rci,
             "classification": classification,
-            "tier1_2_avg": sum(tier1_2_scores) / len(tier1_2_scores)
-            if tier1_2_scores
-            else None,
-            "tier3_avg": sum(tier3_scores) / len(tier3_scores)
-            if tier3_scores
-            else None,
+            "tier1_2_avg": (
+                sum(tier1_2_scores) / len(tier1_2_scores) if tier1_2_scores else None
+            ),
+            "tier3_avg": (
+                sum(tier3_scores) / len(tier3_scores) if tier3_scores else None
+            ),
             "tier1_2_count": len(tier1_2_scores),
             "tier3_count": len(tier3_scores),
         }
@@ -131,18 +131,26 @@ class RCIIntegrator:
             "model": model_name,
             "rci": f"{rci_data['rci']:.1f}",
             "classification": rci_data["classification"],
-            "tier1_2_avg": f"{rci_data['tier1_2_avg']:.1f}"
-            if rci_data["tier1_2_avg"] is not None
-            else "N/A",
-            "tier3_avg": f"{rci_data['tier3_avg']:.1f}"
-            if rci_data["tier3_avg"] is not None
-            else "N/A",
-            "thought_quality": f"{rci_data['tier3_avg']:.1f}%"
-            if rci_data["tier3_avg"] is not None
-            else "N/A",
-            "output_quality": f"{rci_data['tier1_2_avg']:.1f}%"
-            if rci_data["tier1_2_avg"] is not None
-            else "N/A",
+            "tier1_2_avg": (
+                f"{rci_data['tier1_2_avg']:.1f}"
+                if rci_data["tier1_2_avg"] is not None
+                else "N/A"
+            ),
+            "tier3_avg": (
+                f"{rci_data['tier3_avg']:.1f}"
+                if rci_data["tier3_avg"] is not None
+                else "N/A"
+            ),
+            "thought_quality": (
+                f"{rci_data['tier3_avg']:.1f}%"
+                if rci_data["tier3_avg"] is not None
+                else "N/A"
+            ),
+            "output_quality": (
+                f"{rci_data['tier1_2_avg']:.1f}%"
+                if rci_data["tier1_2_avg"] is not None
+                else "N/A"
+            ),
         }
 
         if additional_data:

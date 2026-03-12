@@ -24,11 +24,13 @@ sys.path.insert(0, str(ROOT_DIR))
 # pylint: disable=wrong-import-position
 from utils.module_registry import get_active_modules
 from utils.config_validator import ConfigValidator
+
 # pylint: enable=wrong-import-position
 
 # Setup Logging
 logging.basicConfig(level=logging.INFO, format="%(message)s")
 logger = logging.getLogger("clean_results")
+
 
 def get_module_asset_ids(module_key: str) -> List[str]:
     """
@@ -43,29 +45,29 @@ def get_module_asset_ids(module_key: str) -> List[str]:
         if key == module_key:
             target_module = conf
             break
-    
+
     if not target_module:
         logger.error("❌ Modul '%s' nicht in der Konfiguration gefunden.", module_key)
         return []
 
     # Pfad zu Assets
-    module_path = Path(target_module['path'])
+    module_path = Path(target_module["path"])
     assets_dir = module_path / "assets"
-    
+
     if not assets_dir.exists():
         # Fallback: Vielleicht ist der Pfad direkt das Asset-Dir oder Batch Mode
         assets_dir = module_path
-    
+
     ids = []
-    
+
     # 1. YAML Assets scannen
     if assets_dir.exists():
         for f in assets_dir.glob("*.yaml"):
             try:
-                with open(f, 'r', encoding='utf-8') as yf:
+                with open(f, "r", encoding="utf-8") as yf:
                     data = yaml.safe_load(yf)
-                    if 'metadata' in data and 'id' in data['metadata']:
-                        ids.append(str(data['metadata']['id']))
+                    if "metadata" in data and "id" in data["metadata"]:
+                        ids.append(str(data["metadata"]["id"]))
             except Exception:
                 continue
 
@@ -74,6 +76,7 @@ def get_module_asset_ids(module_key: str) -> List[str]:
         ids.append("political_compass_v3")
 
     return ids
+
 
 def clean_checkpoints(model: str = None, module_key: str = None, dry_run: bool = False):
     """
@@ -89,9 +92,9 @@ def clean_checkpoints(model: str = None, module_key: str = None, dry_run: bool =
 
     # Pattern: session_{safe_model}.json
     # Safe Model Logic: re.sub(r"[^a-zA-Z0-9]", "_", model)
-    
+
     files_to_delete = []
-    
+
     if model:
         safe_model = re.sub(r"[^a-zA-Z0-9]", "_", model)
         target_file = temp_dir / f"session_{safe_model}.json"
@@ -102,7 +105,9 @@ def clean_checkpoints(model: str = None, module_key: str = None, dry_run: bool =
         files_to_delete = list(temp_dir.glob("session_*.json"))
 
     if files_to_delete:
-        print(f"🧹 Bereinige {len(files_to_delete)} Session-Checkpoints (Political Compass)...")
+        print(
+            f"🧹 Bereinige {len(files_to_delete)} Session-Checkpoints (Political Compass)..."
+        )
         for f in files_to_delete:
             print(f"   - {f.name}")
             if not dry_run:
@@ -110,6 +115,7 @@ def clean_checkpoints(model: str = None, module_key: str = None, dry_run: bool =
                     f.unlink()
                 except OSError as e:
                     print(f"     ❌ Fehler beim Löschen: {e}")
+
 
 def clean_debug_responses(model: str = None, dry_run: bool = False):
     """Löscht Debug-Response Textdateien für das Modell."""
@@ -123,7 +129,7 @@ def clean_debug_responses(model: str = None, dry_run: bool = False):
     # Safe Model Name Logic (analog zu Dateinamen-Generierung)
     # z.B. falcon2:11b -> falcon2_11b
     safe_model = re.sub(r"[^a-zA-Z0-9]", "_", model)
-    
+
     # Suche Dateien, die mit dem Modellnamen beginnen
     # debug responses heißen z.B. falcon2_11b_code_quality_002.txt
     files_to_delete = list(debug_dir.glob(f"{safe_model}_*.txt"))
@@ -140,7 +146,12 @@ def clean_debug_responses(model: str = None, dry_run: bool = False):
                 print(f"     (Dry Run) Würde löschen: {f.name}")
 
 
-def clean_csv(file_path: Path, model: str = None, asset_ids: List[str] = None, dry_run: bool = False):
+def clean_csv(
+    file_path: Path,
+    model: str = None,
+    asset_ids: List[str] = None,
+    dry_run: bool = False,
+):
     """Löscht Zeilen aus einer CSV basierend auf Filtern."""
     if not file_path.exists():
         return
@@ -148,17 +159,17 @@ def clean_csv(file_path: Path, model: str = None, asset_ids: List[str] = None, d
     try:
         df = pd.read_csv(file_path)
         initial_count = len(df)
-        
+
         mask = pd.Series([True] * len(df))
 
         if model:
             # Case-insensitive match für Modellname
-            mask = mask & (df['model'] != model)
+            mask = mask & (df["model"] != model)
 
         if asset_ids:
             # Filter rows where asset_id IS in the list (we want to keep those NOT in list)
             # So mask keeps rows where asset_id is NOT in asset_ids
-            mask = mask & (~df['asset_id'].isin(asset_ids))
+            mask = mask & (~df["asset_id"].isin(asset_ids))
 
         df_filtered = df[mask]
         removed_count = initial_count - len(df_filtered)
@@ -177,12 +188,23 @@ def clean_csv(file_path: Path, model: str = None, asset_ids: List[str] = None, d
     except Exception as e:
         print(f"❌ Fehler bei {file_path.name}: {e}")
 
+
 def main():
-    parser = argparse.ArgumentParser(description="Löscht Benchmark-Ergebnisse aus Cache-CSVs.")
-    parser.add_argument("--model", type=str, help="Name des Modells, das gelöscht werden soll.")
-    parser.add_argument("--module", type=str, help="Key des Moduls, dessen Ergebnisse gelöscht werden sollen.")
-    parser.add_argument("--dry-run", action="store_true", help="Zeigt nur an, was gelöscht würde.")
-    
+    parser = argparse.ArgumentParser(
+        description="Löscht Benchmark-Ergebnisse aus Cache-CSVs."
+    )
+    parser.add_argument(
+        "--model", type=str, help="Name des Modells, das gelöscht werden soll."
+    )
+    parser.add_argument(
+        "--module",
+        type=str,
+        help="Key des Moduls, dessen Ergebnisse gelöscht werden sollen.",
+    )
+    parser.add_argument(
+        "--dry-run", action="store_true", help="Zeigt nur an, was gelöscht würde."
+    )
+
     args = parser.parse_args()
 
     if not args.model and not args.module:
@@ -202,7 +224,9 @@ def main():
             print("   Keine Assets gefunden oder Modul existiert nicht.")
             # Wir machen weiter, vielleicht ist nur der Name falsch, aber clean csv logik skipped dann eh
         else:
-            print(f"   Gefundene Asset-IDs: {len(target_assets)} (z.B. {target_assets[:3]}...)")
+            print(
+                f"   Gefundene Asset-IDs: {len(target_assets)} (z.B. {target_assets[:3]}...)"
+            )
 
     # Checkpoints und Debug-Files bereinigen
     clean_checkpoints(model=args.model, module_key=args.module, dry_run=args.dry_run)
@@ -212,7 +236,7 @@ def main():
     files = [
         Path("benchmark_scores/local_models_benchmark.csv"),
         Path("benchmark_scores/commercial_models_benchmark.csv"),
-        Path("benchmark_scores/political_compass_results.csv")
+        Path("benchmark_scores/political_compass_results.csv"),
     ]
 
     for f in files:
@@ -222,12 +246,14 @@ def main():
     if not args.dry_run:
         print("\n📈 Aktualisiere Leaderboard...")
         from scripts.core.generate_leaderboard import main as gen_leaderboard
+
         try:
             gen_leaderboard()
         except Exception as e:
             print(f"⚠️ Leaderboard-Update fehlgeschlagen: {e}")
 
     print("\n✅ Fertig.")
+
 
 if __name__ == "__main__":
     main()

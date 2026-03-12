@@ -8,7 +8,6 @@ from typing import Any, Dict
 # pylint: disable=import-error
 import yaml
 
-
 # Add project root to path
 ROOT_DIR = Path(__file__).parent.parent.parent
 sys.path.insert(0, str(ROOT_DIR))
@@ -17,6 +16,7 @@ from utils.asset_validator import AssetValidator  # noqa: E402
 
 # Constants
 MIN_CLI_ARGS = 2
+
 
 class CLIAssetValidator:
     """CLI Wrapper for Asset Validator."""
@@ -44,11 +44,18 @@ class CLIAssetValidator:
         elif path.is_dir():
             for file_path in path.rglob("*.yaml"):
                 # Ignore files in ignored directories (starting with . or _) or named "backup"
-                if any(part.startswith((".", "_")) or "backup" in part.lower() for part in file_path.parts):
+                if any(
+                    part.startswith((".", "_")) or "backup" in part.lower()
+                    for part in file_path.parts
+                ):
                     continue
 
                 # Ignore config and template files
-                if file_path.name in ["config.yaml", "MODULE_SCHEMA_TEMPLATE.yaml", "local_override.yaml"]:
+                if file_path.name in [
+                    "config.yaml",
+                    "MODULE_SCHEMA_TEMPLATE.yaml",
+                    "local_override.yaml",
+                ]:
 
                     continue
 
@@ -67,7 +74,6 @@ class CLIAssetValidator:
                     results["invalid"] += 1
 
         return results
-
 
     def validate_all_modules(self) -> dict[str, Any]:
         """Validiert alle in benchmark_config.yaml definierten Module."""
@@ -88,7 +94,9 @@ class CLIAssetValidator:
                 continue
 
             module_path = Path(module_data["path"]) / "assets"
-            print(f"\nPrüfe Modul: {module_data.get('name', module_key)} ({module_key})")
+            print(
+                f"\nPrüfe Modul: {module_data.get('name', module_key)} ({module_key})"
+            )
 
             if not module_path.exists():
 

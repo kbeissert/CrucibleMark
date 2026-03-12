@@ -1,12 +1,14 @@
 """
 Evaluators for structural elements (tables, formatting).
 """
+
 from typing import Tuple
 from ..models import UXCriterion
 from ..constants import MIN_TABLE_COLUMNS
 from .base import CriterionEvaluator
 
 # pylint: disable=too-few-public-methods
+
 
 class MarkdownTableEvaluator(CriterionEvaluator):
     """

@@ -23,8 +23,14 @@ class ScoringHelpers:
         found = bool(re.search(pattern, text, re.MULTILINE | re.IGNORECASE))
         if negate:
             if not found:
-                return points, f"✓ {criterion.get('description')}: Kein unerwünschtes Muster gefunden"
-            return 0.0, f"✗ {criterion.get('description')}: Unerwünschtes Muster gefunden"
+                return (
+                    points,
+                    f"✓ {criterion.get('description')}: Kein unerwünschtes Muster gefunden",
+                )
+            return (
+                0.0,
+                f"✗ {criterion.get('description')}: Unerwünschtes Muster gefunden",
+            )
         if found:
             return points, f"✓ {criterion.get('description')}"
         return 0.0, f"✗ {criterion.get('description')} nicht gefunden"

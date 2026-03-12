@@ -5,6 +5,7 @@
 This is a thin wrapper around the leaderboard package.
 Kept for backward compatibility with existing Makefile/CI scripts.
 """
+
 import sys
 from pathlib import Path
 

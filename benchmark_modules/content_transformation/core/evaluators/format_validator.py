@@ -2,6 +2,7 @@
 Format Validator
 Validates structure of specific content types (Twitter threads, JSON, Landing Pages)
 """
+
 import json
 import re
 from typing import Dict, List, Tuple
@@ -13,8 +14,7 @@ class FormatValidator:
 
     @staticmethod
     def validate_twitter_thread(
-        response: str,
-        config: Dict = None
+        response: str, config: Dict = None
     ) -> Tuple[bool, List[str]]:
         """
         Validates a Twitter thread structure.
@@ -37,7 +37,7 @@ class FormatValidator:
             for i, match in enumerate(matches):
                 start = match.end()
                 if i + 1 < len(matches):
-                    end = matches[i+1].start()
+                    end = matches[i + 1].start()
                 else:
                     end = len(response)
                 content = response[start:end].strip()
@@ -46,9 +46,7 @@ class FormatValidator:
             # Strategy 2: Split by double newlines if no numbering found
             # Filter out short lines that might be just spacers
             potential_tweets = response.split("\n\n")
-            tweets = [
-                t.strip() for t in potential_tweets if len(t.strip()) > 10
-            ]
+            tweets = [t.strip() for t in potential_tweets if len(t.strip()) > 10]
 
         if not tweets:
             # Fallback: treat lines as tweets if there are multiple lines
@@ -60,9 +58,7 @@ class FormatValidator:
 
         # Validate constraints
         if len(tweets) < min_tweets:
-            issues.append(
-                f"Found {len(tweets)} tweets, expected at least {min_tweets}"
-            )
+            issues.append(f"Found {len(tweets)} tweets, expected at least {min_tweets}")
 
         for i, tweet in enumerate(tweets):
             if len(tweet) > max_chars:
@@ -74,8 +70,7 @@ class FormatValidator:
 
     @staticmethod
     def validate_json_structure(
-        response: str,
-        schema: Dict = None
+        response: str, schema: Dict = None
     ) -> Tuple[bool, List[str]]:
         """
         Validates if the response contains valid JSON and optionally matches a schema.
@@ -111,9 +106,7 @@ class FormatValidator:
                 elif isinstance(data, list) and required_keys:
                     # Check first item if it's a list
                     if data and isinstance(data[0], dict):
-                        missing = [
-                            k for k in required_keys if k not in data[0]
-                        ]
+                        missing = [k for k in required_keys if k not in data[0]]
                         if missing:
                             issues.append(
                                 f"Missing required keys: {', '.join(missing)}"
@@ -126,9 +119,7 @@ class FormatValidator:
                 actual_set = set(data.keys())
                 extra = actual_set - required_set
                 if extra:
-                    issues.append(
-                        f"Found unauthorized extra keys: {', '.join(extra)}"
-                    )
+                    issues.append(f"Found unauthorized extra keys: {', '.join(extra)}")
 
         except json.JSONDecodeError as e:
             issues.append(f"Invalid JSON format: {str(e)}")
@@ -139,8 +130,7 @@ class FormatValidator:
 
     @staticmethod
     def validate_landing_page_structure(
-        response: str,
-        config: Dict = None
+        response: str, config: Dict = None
     ) -> Tuple[bool, List[str]]:
         """
         Validates markdown structure for landing pages (Headers, CTA).

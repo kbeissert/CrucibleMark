@@ -49,9 +49,7 @@ def consolidate_file(file_path: Path):
         # Prüfen ob notwendige Spalten existieren
         required_cols = ["model", "asset_id", "timestamp"]
         if not all(col in df.columns for col in required_cols):
-            logger.error(
-                "   ❌ Fehler: Fehlende Spalten. Erwartet: %s", required_cols
-            )
+            logger.error("   ❌ Fehler: Fehlende Spalten. Erwartet: %s", required_cols)
             return
 
         # Sicherstellen, dass Timestamp datetime ist (für korrekte Sortierung)
@@ -75,13 +73,17 @@ def consolidate_file(file_path: Path):
             df_clean.to_csv(file_path, index=False)
             logger.info(
                 "   ✅ Bereinigt: %d -> %d Zeilen. (%d alte Einträge entfernt)",
-                original_count, cleaned_count, removed_count
+                original_count,
+                cleaned_count,
+                removed_count,
             )
         else:
             logger.info("   ✨ Keine Duplikate gefunden. Datei unverändert.")
 
     except Exception as e:
-        logger.error("   ❌ Kritischer Fehler beim Verarbeiten von %s: %s", file_path, e)
+        logger.error(
+            "   ❌ Kritischer Fehler beim Verarbeiten von %s: %s", file_path, e
+        )
 
 
 def main():

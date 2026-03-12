@@ -44,6 +44,7 @@ def _load_pricing_url() -> str:
     try:
         if COST_LIMITS_PATH.exists():
             import yaml  # pylint: disable=import-outside-toplevel
+
             data = yaml.safe_load(COST_LIMITS_PATH.read_text(encoding="utf-8")) or {}
             url = data.get("settings", {}).get("pricing_source_url", "")
             if url:
@@ -52,6 +53,7 @@ def _load_pricing_url() -> str:
         logger.debug("Konnte pricing_source_url nicht aus Config laden: %s", e)
     return LITELLM_PRICING_URL
 
+
 # Mapping: CrucibleMark model-ID → LiteLLM-Key in pricing DB.
 #
 # Nur Modelle eintragen die in LiteLLM vorhanden sind.
@@ -59,36 +61,36 @@ def _load_pricing_url() -> str:
 # manuell gepflegt und werden als Fallback verwendet.
 LITELLM_MODEL_MAP: Dict[str, str] = {
     # --- Anthropic ---
-    "claude-sonnet-4-6":           "claude-sonnet-4-6",
-    "claude-opus-4-6":             "claude-opus-4-6",
-    "claude-sonnet-4-5-20250929":  "claude-sonnet-4-5-20250929",
-    "claude-opus-4-5-20251101":    "claude-opus-4-5-20251101",
-    "claude-haiku-4-5-20251001":   "claude-haiku-4-5-20251001",
-    "claude-3-5-sonnet":           "claude-3-5-sonnet-20241022",
-    "claude-3-5-sonnet-20241022":  "claude-3-5-sonnet-20241022",
-    "claude-3-haiku-20240307":     "claude-3-haiku-20240307",
-    "claude-3-haiku":              "claude-3-haiku-20240307",
+    "claude-sonnet-4-6": "claude-sonnet-4-6",
+    "claude-opus-4-6": "claude-opus-4-6",
+    "claude-sonnet-4-5-20250929": "claude-sonnet-4-5-20250929",
+    "claude-opus-4-5-20251101": "claude-opus-4-5-20251101",
+    "claude-haiku-4-5-20251001": "claude-haiku-4-5-20251001",
+    "claude-3-5-sonnet": "claude-3-5-sonnet-20241022",
+    "claude-3-5-sonnet-20241022": "claude-3-5-sonnet-20241022",
+    "claude-3-haiku-20240307": "claude-3-haiku-20240307",
+    "claude-3-haiku": "claude-3-haiku-20240307",
     # --- OpenAI ---
-    "gpt-4o":                      "gpt-4o",
-    "gpt-4o-mini":                 "gpt-4o-mini",
-    "o3-mini":                     "o3-mini",
+    "gpt-4o": "gpt-4o",
+    "gpt-4o-mini": "gpt-4o-mini",
+    "o3-mini": "o3-mini",
     # gpt-5 / gpt-5-mini sind noch nicht in LiteLLM → cost_limits.yaml-Fallback
     # --- Mistral (LiteLLM nutzt Provider-Prefix) ---
-    "mistral-large-latest":        "mistral/mistral-large-latest",
-    "mistral-medium-latest":       "mistral/mistral-medium-latest",
-    "ministral-8b":                "mistral/ministral-8b-latest",
-    "ministral-3b":                "mistral/ministral-3b-latest",
+    "mistral-large-latest": "mistral/mistral-large-latest",
+    "mistral-medium-latest": "mistral/mistral-medium-latest",
+    "ministral-8b": "mistral/ministral-8b-latest",
+    "ministral-3b": "mistral/ministral-3b-latest",
     # --- xAI (Grok) ---
-    "grok-3-latest":               "xai/grok-3-latest",
-    "grok-3-mini-latest":          "xai/grok-3-mini-latest",
-    "grok-4-latest":               "xai/grok-4-latest",
-    "grok-2-latest":               "xai/grok-2-latest",
+    "grok-3-latest": "xai/grok-3-latest",
+    "grok-3-mini-latest": "xai/grok-3-mini-latest",
+    "grok-4-latest": "xai/grok-4-latest",
+    "grok-2-latest": "xai/grok-2-latest",
     # --- Google Gemini ---
-    "gemini-3.1-pro-preview":      "gemini/gemini-3.1-pro-preview",
-    "gemini-3-flash-preview":      "gemini/gemini-3-flash-preview",
-    "gemini-2.5-pro":              "gemini/gemini-2.5-pro",
-    "gemini-2.5-flash":            "gemini/gemini-2.5-flash",
-    "gemini-2.5-flash-lite":       "gemini/gemini-2.5-flash-lite",
+    "gemini-3.1-pro-preview": "gemini/gemini-3.1-pro-preview",
+    "gemini-3-flash-preview": "gemini/gemini-3-flash-preview",
+    "gemini-2.5-pro": "gemini/gemini-2.5-pro",
+    "gemini-2.5-flash": "gemini/gemini-2.5-flash",
+    "gemini-2.5-flash-lite": "gemini/gemini-2.5-flash-lite",
 }
 
 
@@ -238,11 +240,11 @@ class PricingUpdater:
             if not entry:
                 missing.append(our_id)
                 continue
-            inp = entry.get("input_cost_per_token", 0.0) * 1000   # → per 1k
+            inp = entry.get("input_cost_per_token", 0.0) * 1000  # → per 1k
             out = entry.get("output_cost_per_token", 0.0) * 1000
             if inp > 0 or out > 0:
                 prices[our_id] = {
-                    "input_cost_per_1k":  round(inp, 8),
+                    "input_cost_per_1k": round(inp, 8),
                     "output_cost_per_1k": round(out, 8),
                 }
 
@@ -265,6 +267,8 @@ class PricingUpdater:
             "model_count": len(prices),
             "prices": prices,
         }
-        CACHE_PATH.write_text(json.dumps(cache, indent=2, ensure_ascii=False), encoding="utf-8")
+        CACHE_PATH.write_text(
+            json.dumps(cache, indent=2, ensure_ascii=False), encoding="utf-8"
+        )
         self._prices = prices
         return True

@@ -9,8 +9,9 @@ from .constants import (
     MIN_TABLE_COLUMNS,
     MAX_BUTTON_LENGTH,
     DEFAULT_MIN_REGEX_MATCHES,
-    DEFAULT_REQUIRED_RATIO
+    DEFAULT_REQUIRED_RATIO,
 )
+
 
 class CriterionEvaluator(ABC):
     """Abstract base class for criterion evaluators."""
@@ -19,6 +20,7 @@ class CriterionEvaluator(ABC):
     def evaluate(self, response: str, criterion: UXCriterion) -> Tuple[float, str]:
         """Returns (score, explanation_string)."""
         pass
+
 
 class KeywordPresenceEvaluator(CriterionEvaluator):
     def evaluate(self, response: str, criterion: UXCriterion) -> Tuple[float, str]:
@@ -34,11 +36,12 @@ class KeywordPresenceEvaluator(CriterionEvaluator):
                 points,
                 f"✓ {criterion.name}: {len(found_keywords)}/{min_required} ({display_kws}) ({points}p)",
             )
-        display_kws = ", ".join(found_keywords) if found_keywords else 'keine'
+        display_kws = ", ".join(found_keywords) if found_keywords else "keine"
         return (
             0.0,
             f"✗ {criterion.name}: {len(found_keywords)}/{min_required} ({display_kws})",
         )
+
 
 class KeywordAbsenceEvaluator(CriterionEvaluator):
     def evaluate(self, response: str, criterion: UXCriterion) -> Tuple[float, str]:
@@ -56,6 +59,7 @@ class KeywordAbsenceEvaluator(CriterionEvaluator):
             0.0,
             f"✗ {criterion.name}: Verbotene Begriffe gefunden: {', '.join(found_forbidden)}",
         )
+
 
 class MarkdownTableEvaluator(CriterionEvaluator):
     def evaluate(self, response: str, criterion: UXCriterion) -> Tuple[float, str]:
@@ -86,6 +90,7 @@ class MarkdownTableEvaluator(CriterionEvaluator):
 
         return 0.0, f"✗ {criterion.name}: Keine Tabelle gefunden"
 
+
 class StructureValidationEvaluator(CriterionEvaluator):
     def evaluate(self, response: str, criterion: UXCriterion) -> Tuple[float, str]:
         points = criterion.points
@@ -103,6 +108,7 @@ class StructureValidationEvaluator(CriterionEvaluator):
 
         missing = set(required_structure) - set(found)
         return 0.0, f"✗ {criterion.name}: Fehlende Elemente: {', '.join(missing)}"
+
 
 class RegexEvaluator(CriterionEvaluator):
     def evaluate(self, response: str, criterion: UXCriterion) -> Tuple[float, str]:
@@ -125,6 +131,7 @@ class RegexEvaluator(CriterionEvaluator):
             partial,
             f"⚠ {criterion.name}: {count}/{min_required} Treffer ({partial:.1f}p)",
         )
+
 
 class CodeValidationEvaluator(CriterionEvaluator):
     def evaluate(self, response: str, criterion: UXCriterion) -> Tuple[float, str]:
@@ -151,6 +158,7 @@ class CodeValidationEvaluator(CriterionEvaluator):
             0.0,
             f"✗ {criterion.name}: {total_found}/{min_blocks} Code-Beispiele",
         )
+
 
 class LengthValidationEvaluator(CriterionEvaluator):
     def evaluate(self, response: str, criterion: UXCriterion) -> Tuple[float, str]:
@@ -179,17 +187,24 @@ class LengthValidationEvaluator(CriterionEvaluator):
             f"⚠ {criterion.name}: {len(too_long)} Buttons zu lang (z.B. '{too_long[0][:30]}...')",
         )
 
+
 class IssueEvaluator:
     """Evaluates error detection issues using hybrid matching."""
 
     @staticmethod
-    def check_issue_mentioned(response_lower: str, keywords: List[str], required_ratio: float = DEFAULT_REQUIRED_RATIO) -> bool:
+    def check_issue_mentioned(
+        response_lower: str,
+        keywords: List[str],
+        required_ratio: float = DEFAULT_REQUIRED_RATIO,
+    ) -> bool:
         """
         Prüft ob ein Issue in der Response erwähnt wurde.
         Nutzt Hybrid-Ansatz: String-Matching + Semantic Similarity
         """
         # Strip reasoning tags before processing (DeepSeek <think> tags)
-        response_lower = re.sub(r'<think>.*?</think>', '', response_lower, flags=re.DOTALL)
+        response_lower = re.sub(
+            r"<think>.*?</think>", "", response_lower, flags=re.DOTALL
+        )
 
         if not keywords:
             return False
@@ -228,11 +243,11 @@ class IssueEvaluator:
         # Suche besten Match
         # Assuming SemanticSimilarity is available and configured
         try:
-             best_score = SemanticSimilarity.find_best_match(query, sentences)
-             return best_score > SIMILARITY_THRESHOLD
+            best_score = SemanticSimilarity.find_best_match(query, sentences)
+            return best_score > SIMILARITY_THRESHOLD
         except Exception:
-             # Fallback if similarity check fails (e.g. model not loaded)
-             return False
+            # Fallback if similarity check fails (e.g. model not loaded)
+            return False
 
     @classmethod
     def evaluate(cls, response_lower: str, issue: UXIssue) -> Tuple[float, str, bool]:
@@ -240,17 +255,28 @@ class IssueEvaluator:
         Returns (points_awarded, explanation, is_match).
         """
         # Use issue-specific ratio if present, else default to DEFAULT_REQUIRED_RATIO
-        ratio = issue.required_ratio if issue.required_ratio is not None else DEFAULT_REQUIRED_RATIO
-        matched = cls.check_issue_mentioned(response_lower, issue.keywords, required_ratio=ratio)
+        ratio = (
+            issue.required_ratio
+            if issue.required_ratio is not None
+            else DEFAULT_REQUIRED_RATIO
+        )
+        matched = cls.check_issue_mentioned(
+            response_lower, issue.keywords, required_ratio=ratio
+        )
 
         # If inverse_match is True, we want matched to be False for points
         if issue.inverse_match:
             if not matched:
-                return issue.points, f"✓ {issue.issue}: Erfolgreich vermieden ({issue.points}p)", False
+                return (
+                    issue.points,
+                    f"✓ {issue.issue}: Erfolgreich vermieden ({issue.points}p)",
+                    False,
+                )
             return 0.0, f"✗ {issue.issue}: Unerwünscht gefunden", True
         if matched:
             return issue.points, f"✓ {issue.issue}: Erkannt ({issue.points}p)", True
         return 0.0, f"✗ {issue.issue}: Nicht erkannt", False
+
 
 class EvaluatorFactory:
     _evaluators = {
@@ -271,4 +297,3 @@ class EvaluatorFactory:
     @classmethod
     def get_evaluator(cls, check_method: str) -> CriterionEvaluator:
         return cls._evaluators.get(check_method, KeywordPresenceEvaluator())
-

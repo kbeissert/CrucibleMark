@@ -1,12 +1,14 @@
 """
 Input/Output management for UX Writing benchmark results.
 """
+
 import json
 import csv
 import re
 from pathlib import Path
 from datetime import datetime
 from typing import Dict, Any, Optional
+
 
 class UXResultManager:
     """
@@ -15,7 +17,9 @@ class UXResultManager:
     """
 
     @staticmethod
-    def generate_filename(model: str, scenario_id: str, prefix: str = "ux_result") -> str:
+    def generate_filename(
+        model: str, scenario_id: str, prefix: str = "ux_result"
+    ) -> str:
         """
         Generates a consistent filename with timestamp.
 
@@ -33,7 +37,9 @@ class UXResultManager:
         return f"{prefix}_{safe_model}_{safe_scenario}_{timestamp}"
 
     @staticmethod
-    def save_json(report: Dict[str, Any], directory: Path, filename: Optional[str] = None) -> Path:
+    def save_json(
+        report: Dict[str, Any], directory: Path, filename: Optional[str] = None
+    ) -> Path:
         """
         Saves the full report as JSON.
 
@@ -46,10 +52,12 @@ class UXResultManager:
             Path to the saved file.
         """
         if not filename:
-            filename = UXResultManager.generate_filename(
-                report.get("model", "unknown"),
-                report.get("scenario_id", "unknown")
-            ) + ".json"
+            filename = (
+                UXResultManager.generate_filename(
+                    report.get("model", "unknown"), report.get("scenario_id", "unknown")
+                )
+                + ".json"
+            )
 
         if not directory.exists():
             directory.mkdir(parents=True, exist_ok=True)
@@ -88,7 +96,7 @@ class UXResultManager:
                 "error_detection_score",
                 "solution_quality_score",
                 "formatting_score",
-                "bonus_score"
+                "bonus_score",
             ]
             writer = csv.DictWriter(f, fieldnames=fieldnames)
 
@@ -107,7 +115,7 @@ class UXResultManager:
                     "error_detection_score": scores.get("error_detection", 0.0),
                     "solution_quality_score": scores.get("solution_quality", 0.0),
                     "formatting_score": scores.get("formatting", 0.0),
-                    "bonus_score": scores.get("bonus", 0.0)
+                    "bonus_score": scores.get("bonus", 0.0),
                 }
             )
 

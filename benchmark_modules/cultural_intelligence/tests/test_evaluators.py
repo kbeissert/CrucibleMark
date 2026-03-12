@@ -8,20 +8,25 @@ from benchmark_modules.cultural_intelligence.core.evaluators import (
     LanguageProficiencyEvaluator,
     CulturalFitEvaluator,
     RegionalConsistencyValidator,
-    FormalityScorer
+    FormalityScorer,
 )
 
 
 def test_language_proficiency():
     response = "Das ist nicht für uns, sondern für sie noch wichtig."
     criteria = [
-        {"name": "German Words", "points": 10, "check_method": "german_word_count", "min_count": 3}
+        {
+            "name": "German Words",
+            "points": 10,
+            "check_method": "german_word_count",
+            "min_count": 3,
+        }
     ]
     result = LanguageProficiencyEvaluator.score_proficiency(response, criteria)
     assert result["score"] == 10
-    # Note: formality might be "informal" or "neutral" depending on markers found, 
+    # Note: formality might be "informal" or "neutral" depending on markers found,
     # but "sie" is in FORMAL_MARKERS['pronouns'], so it should detect formality if logic holds.
-    # Let's check what logic expects. 
+    # Let's check what logic expects.
     # FORMAL_MARKERS["pronouns"] = ["sie", "ihnen"...]
     # "sie" is in response (lowercase).
     # So it should be formal.
@@ -32,7 +37,12 @@ def test_language_proficiency():
 def test_cultural_fit():
     response = "Bitte schön! Vielen Dank für Ihre Hilfe. Das ist sehr freundlich."
     criteria = [
-        {"name": "Politeness", "points": 10, "check_method": "politeness_count", "min_count": 2}
+        {
+            "name": "Politeness",
+            "points": 10,
+            "check_method": "politeness_count",
+            "min_count": 2,
+        }
     ]
     result = CulturalFitEvaluator.score_cultural_fit(response, criteria)
     assert result["score"] == 10

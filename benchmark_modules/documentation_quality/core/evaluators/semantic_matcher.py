@@ -8,16 +8,19 @@ import re
 from utils.similarity import SemanticSimilarity
 from ..constants import SIMILARITY_THRESHOLD, MIN_SENTENCE_LENGTH, ASSET_SPECIFIC_CONFIG
 
+
 class SemanticMatcher:
     """
     Hybrid matching engine using both keyword counting and semantic similarity.
     Handles response cleaning (think-tags) and asset-specific thresholds.
     """
+
     # pylint: disable=too-few-public-methods
 
     @staticmethod
-    def check_match(response: str, keywords: List[str],
-                    target_matches: int, asset_id: str) -> bool:
+    def check_match(
+        response: str, keywords: List[str], target_matches: int, asset_id: str
+    ) -> bool:
         """
         Checks if keywords are present using hybrid approach.
         """
@@ -43,28 +46,30 @@ class SemanticMatcher:
             threshold = SIMILARITY_THRESHOLD
 
             if asset_id in ASSET_SPECIFIC_CONFIG:
-                threshold = ASSET_SPECIFIC_CONFIG[asset_id].get("semantic_threshold", threshold)
+                threshold = ASSET_SPECIFIC_CONFIG[asset_id].get(
+                    "semantic_threshold", threshold
+                )
 
             best_score = SemanticSimilarity.find_best_match(query, sentences)
             return best_score > threshold
-        except Exception: # pylint: disable=broad-exception-caught
+        except Exception:  # pylint: disable=broad-exception-caught
             return False
 
     @staticmethod
     def _clean_think_tags(response: str) -> str:
         """Removes <think>...</think> blocks from reasoning models."""
-        return re.sub(r'<think>.*?</think>', '', response, flags=re.DOTALL)
+        return re.sub(r"<think>.*?</think>", "", response, flags=re.DOTALL)
 
     @staticmethod
     def _chunk_response(response: str) -> List[str]:
         """Splits response into semantic chunks (sentences or character blocks)."""
         sentences = [
             s.strip()
-            for s in response.split('.')
+            for s in response.split(".")
             if len(s.strip()) > MIN_SENTENCE_LENGTH
         ]
 
         if not sentences:
-            sentences = [response[i:i+200] for i in range(0, len(response), 200)]
+            sentences = [response[i : i + 200] for i in range(0, len(response), 200)]
 
         return sentences

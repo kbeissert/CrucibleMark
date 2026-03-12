@@ -9,6 +9,7 @@ from benchmark_modules.reasoning_logic.core.evaluators import (
     classify_model,
 )
 
+
 def test_parse_thought_tags() -> None:
     """Test thought tag parsing."""
     test_asset = {
@@ -28,8 +29,10 @@ def test_parse_thought_tags() -> None:
 
 def test_self_correction_detection() -> None:
     """Test self-correction keyword detection."""
-    from benchmark_modules.reasoning_logic.core.structure_analysis import detect_self_correction
-    
+    from benchmark_modules.reasoning_logic.core.structure_analysis import (
+        detect_self_correction,
+    )
+
     thought_with_correction = "Wait, actually I realized my mistake. Let me reconsider."
     has_correction = detect_self_correction(thought_with_correction)
     assert has_correction is True
@@ -58,13 +61,17 @@ def test_classification() -> None:
 
     for rci, expected_class in test_cases:
         classification = classify_model(rci)
-        assert classification == expected_class, f"Expected {expected_class}, got {classification}"
+        assert (
+            classification == expected_class
+        ), f"Expected {expected_class}, got {classification}"
     print("✅ Classification test passed")
 
 
 def test_metacog_001_scoring() -> None:
     """Test METACOG_001 scoring function."""
-    from benchmark_modules.reasoning_logic.core.scorers.tier3.metacog_001_sheep import score_metacog_001
+    from benchmark_modules.reasoning_logic.core.scorers.tier3.metacog_001_sheep import (
+        score_metacog_001,
+    )
 
     test_response = "<thought>\nWait, I initially thought 17-9=8, but actually all but 9 die means 9 survive.\n</thought>\n\nAnswer: 9"
 

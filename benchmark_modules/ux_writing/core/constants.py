@@ -2,6 +2,7 @@
 Constants for UX Writing benchmarks.
 Includes thresholds, configuration defaults, and ratio mappings.
 """
+
 from typing import Dict
 
 # Tier Calculation Thresholds

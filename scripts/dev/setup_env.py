@@ -47,7 +47,7 @@ def main():
 
     if success:
         print("\n✅ ERFOLG: Semantic Mode installiert!")
-        
+
         # Trigger Model Download
         preload_script = root_dir / "scripts/tools/preload_models.py"
         if preload_script.exists():
@@ -55,7 +55,7 @@ def main():
                 subprocess.run([sys.executable, str(preload_script)], check=False)
             except Exception as e:
                 print(f"⚠️  Warnung: Modell-Preload fehlgeschlagen: {e}")
-        
+
         print("CrucibleMark läuft jetzt mit maximaler Präzision.")
     else:
         print("\n⚠️  FEHLER bei Semantic Installation.")

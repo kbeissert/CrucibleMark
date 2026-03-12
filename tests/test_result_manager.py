@@ -10,11 +10,13 @@ import os
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
 from utils.result_manager import ResultManager
-from scripts.leaderboard.score_calculator import calculate_scores, _aggregate_basic_stats
+from scripts.leaderboard.score_calculator import _aggregate_basic_stats
+
 
 class MockConfigValidator:
     def __init__(self, config):
         self.config = config
+
 
 @pytest.fixture
 def temp_result_manager():
@@ -24,40 +26,41 @@ def temp_result_manager():
             "output": {
                 "local_models_csv": str(tmp_path / "local.csv"),
                 "golden_standard_csv": str(tmp_path / "golden.csv"),
-                "commercial_csv": str(tmp_path / "commercial.csv")
+                "commercial_csv": str(tmp_path / "commercial.csv"),
             }
         }
         rm = ResultManager(config_validator=MockConfigValidator(config))
         yield rm, tmp_path
 
+
 def test_old_csv_loads_without_judge_columns(temp_result_manager):
     rm, tmp_path = temp_result_manager
     csv_file = tmp_path / "local.csv"
-    
+
     # Create an "old" CSV manually without judge columns
     old_fields = ["model", "asset_id", "execution_time"]
     with csv_file.open("w", encoding="utf-8", newline="") as f:
         writer = csv.DictWriter(f, fieldnames=old_fields)
         writer.writeheader()
         writer.writerow({"model": "m1", "asset_id": "a1", "execution_time": "1.5"})
-    
+
     # Now we save a new result using ResultManager, which should merge old + new keys
     # and guarantee the 5 judge columns are present at the end.
     new_result = {
         "model": "m1",
         "asset_id": "a2",
-        "execution_time": "2.0"
+        "execution_time": "2.0",
         # No judge columns explicitly in the result dictionary
     }
     rm.save_results([new_result], result_type="local")
-    
+
     # Verify the resulted CSV has the old data, the new data, and all judge columns are present and empty (None/empty str)
     with csv_file.open("r", encoding="utf-8", newline="") as f:
         reader = csv.DictReader(f)
         fieldnames = reader.fieldnames
         assert "llm_judge_score" in fieldnames
         assert "llm_judge_latency_ms" in fieldnames
-        
+
         rows = list(reader)
         assert len(rows) == 2
         # First row from old schema
@@ -72,7 +75,7 @@ def test_old_csv_loads_without_judge_columns(temp_result_manager):
 
 def test_new_csv_preserves_judge_columns(temp_result_manager):
     rm, tmp_path = temp_result_manager
-    
+
     result = {
         "model": "m2",
         "asset_id": "a1",
@@ -81,17 +84,17 @@ def test_new_csv_preserves_judge_columns(temp_result_manager):
         "llm_judge_reasoning": "Good",
         "llm_judge_latency_ms": 100,
         "llm_judge_provider_used": "openai",
-        "llm_judge_parse_success": True
+        "llm_judge_parse_success": True,
     }
-    
+
     rm.save_results([result], result_type="local")
-    
+
     csv_file = tmp_path / "local.csv"
     with csv_file.open("r", encoding="utf-8", newline="") as f:
         reader = csv.DictReader(f)
         fields = reader.fieldnames
-        
-# Verify the 6 judge fields exist in the appended set. They might not be exactly strictly the last 6
+
+        # Verify the 6 judge fields exist in the appended set. They might not be exactly strictly the last 6
         # depending on sorting logic, but they are guaranteed to be in fieldnames.
         # Actually our implementation `base_keys + judge_fields` makes them exactly the last 7!
         assert fields[-7:] == [
@@ -101,9 +104,9 @@ def test_new_csv_preserves_judge_columns(temp_result_manager):
             "llm_judge_provider_used",
             "llm_judge_model_used",
             "llm_judge_parse_success",
-            "scoring_method"
+            "scoring_method",
         ]
-        
+
         rows = list(reader)
         row = rows[0]
         assert row["llm_judge_score"] == "5"
@@ -111,35 +114,79 @@ def test_new_csv_preserves_judge_columns(temp_result_manager):
 
 
 def test_leaderboard_aggregation_with_partial_judge_data():
-    df = pd.DataFrame([
-        # Model 1 has full judge data
-        {"model": "M1", "model_version": "v1", "type": "local", "category": "Scoring", "execution_time": 1.0, "llm_judge_score": 4.0, "asset_id": "a1", "percentage": 100},
-        {"model": "M1", "model_version": "v1", "type": "local", "category": "Scoring", "execution_time": 1.0, "llm_judge_score": 5.0, "asset_id": "a2", "percentage": 100},
-        
-        # Model 2 has partial judge data
-        {"model": "M2", "model_version": "v1", "type": "local", "category": "Scoring", "execution_time": 1.0, "llm_judge_score": 2.0, "asset_id": "a1", "percentage": 100},
-        {"model": "M2", "model_version": "v1", "type": "local", "category": "Scoring", "execution_time": 1.0, "llm_judge_score": None, "asset_id": "a2", "percentage": 100}, # NaN
-        
-        # Model 3 has no judge data
-        {"model": "M3", "model_version": "v1", "type": "local", "category": "Scoring", "execution_time": 1.0, "asset_id": "a1", "percentage": 100},
-    ])
-    
+    df = pd.DataFrame(
+        [
+            # Model 1 has full judge data
+            {
+                "model": "M1",
+                "model_version": "v1",
+                "type": "local",
+                "category": "Scoring",
+                "execution_time": 1.0,
+                "llm_judge_score": 4.0,
+                "asset_id": "a1",
+                "percentage": 100,
+            },
+            {
+                "model": "M1",
+                "model_version": "v1",
+                "type": "local",
+                "category": "Scoring",
+                "execution_time": 1.0,
+                "llm_judge_score": 5.0,
+                "asset_id": "a2",
+                "percentage": 100,
+            },
+            # Model 2 has partial judge data
+            {
+                "model": "M2",
+                "model_version": "v1",
+                "type": "local",
+                "category": "Scoring",
+                "execution_time": 1.0,
+                "llm_judge_score": 2.0,
+                "asset_id": "a1",
+                "percentage": 100,
+            },
+            {
+                "model": "M2",
+                "model_version": "v1",
+                "type": "local",
+                "category": "Scoring",
+                "execution_time": 1.0,
+                "llm_judge_score": None,
+                "asset_id": "a2",
+                "percentage": 100,
+            },  # NaN
+            # Model 3 has no judge data
+            {
+                "model": "M3",
+                "model_version": "v1",
+                "type": "local",
+                "category": "Scoring",
+                "execution_time": 1.0,
+                "asset_id": "a1",
+                "percentage": 100,
+            },
+        ]
+    )
+
     # We can invoke _aggregate_basic_stats directly
     modules_config = {
         "Scoring": {"enable_scoring": True, "name": "Scoring", "enabled": True}
     }
-    
+
     agg_df = _aggregate_basic_stats(df, modules_config)
-    
+
     # Verify outputs
     m1_stats = agg_df[agg_df["model"] == "M1"].iloc[0]
     assert m1_stats["llm_judge_avg"] == 4.5
     assert m1_stats["judge_coverage"] == 1.0
-    
+
     m2_stats = agg_df[agg_df["model"] == "M2"].iloc[0]
     assert m2_stats["llm_judge_avg"] == 2.0
     assert m2_stats["judge_coverage"] == 0.5
-    
+
     m3_stats = agg_df[agg_df["model"] == "M3"].iloc[0]
     assert pd.isna(m3_stats["llm_judge_avg"])
     assert m3_stats["judge_coverage"] == 0.0

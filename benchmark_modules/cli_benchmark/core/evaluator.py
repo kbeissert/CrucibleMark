@@ -1,4 +1,5 @@
 """Module for evaluator.py."""
+
 from typing import Any, Dict
 
 from benchmark_modules.cli_benchmark.core.constants import (
@@ -10,6 +11,7 @@ from benchmark_modules.cli_benchmark.core.shell_sim import ShellSimulator
 
 class CLIEvaluator:
     """Evaluator."""
+
     def __init__(self):
         self.simulator = ShellSimulator()
 
@@ -41,7 +43,9 @@ class CLIEvaluator:
                 "message": "Critical: Model returned no viable command or an executing error occurred.",
             }
 
-        golden = task.get("golden", {}); scoring = task.get("scoring", {}); accept_script = scoring.get("accept_script", False)
+        golden = task.get("golden", {})
+        scoring = task.get("scoring", {})
+        accept_script = scoring.get("accept_script", False)
         required = scoring.get("core_commands", golden.get("required_commands", []))
         banned = golden.get("banned_commands", [])
         max_steps = golden.get("max_steps", 5)
@@ -78,10 +82,10 @@ class CLIEvaluator:
         num_commands = len(raw_lines)
         if num_commands <= max_steps:
             efficiency_score = 100.0
-        elif num_commands <= 60:          # Scripts bis 60 Zeilen = volle Punktzahl
+        elif num_commands <= 60:  # Scripts bis 60 Zeilen = volle Punktzahl
             efficiency_score = 100.0
         else:
-            penalty = (num_commands - 60) * 2.0   # 2 Punkte pro Zeile über 60
+            penalty = (num_commands - 60) * 2.0  # 2 Punkte pro Zeile über 60
             efficiency_score = max(0.0, 100.0 - penalty)
             msg += f" Inefficient: {num_commands} lines used (>60)."
 

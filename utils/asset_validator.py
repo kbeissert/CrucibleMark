@@ -15,7 +15,9 @@ class AssetValidator:
     def validate_file(file_path: Path) -> Tuple[bool, str]:
         """Validates a single asset file (convenience wrapper)."""
         validator = AssetValidator()
-        return validator._validate_file_internal(file_path) # pylint: disable=protected-access
+        return validator._validate_file_internal(
+            file_path
+        )  # pylint: disable=protected-access
 
     def _validate_file_internal(self, file_path: Path) -> Tuple[bool, str]:
         """Internal validation logic."""
@@ -50,12 +52,11 @@ class AssetValidator:
                 # Accept either 'name' (Standard) or 'id' (Minimal/Political Compass)
                 if "name" not in meta and "id" not in meta:
                     errors.append("Fehlendes Feld: metadata.name oder metadata.id")
-                # Version is recommended but not strictly fatal for runtime? 
+                # Version is recommended but not strictly fatal for runtime?
                 # Keeping it strict for quality.
                 if "version" not in meta:
                     # Optional warning instead of error? For now keeping it strict but silencing if ID is present
                     pass
-
 
         # Check prompt(s)
         if "prompt" not in data and "prompts" not in data:
@@ -115,28 +116,28 @@ class AssetValidator:
         """Validates Legacy Scoring Format."""
         errors = []
         total_weight = 0
-        
+
         # Hardcoded 100 assumption for legacy
         TOTAL_SCORING_WEIGHT = 100
 
         for category_name, category_data in scoring.items():
-             if category_name == "method":
-                 continue
+            if category_name == "method":
+                continue
 
-             if not isinstance(category_data, dict):
-                 errors.append(f"scoring.{category_name} muss Dictionary sein")
-                 continue
+            if not isinstance(category_data, dict):
+                errors.append(f"scoring.{category_name} muss Dictionary sein")
+                continue
 
-             if "weight" not in category_data:
-                 errors.append(f"scoring.{category_name}.weight fehlt")
-             else:
-                 weight = category_data["weight"]
-                 if not isinstance(weight, (int, float)):
-                     errors.append(f"scoring.{category_name}.weight muss Zahl sein")
-                 else:
-                     total_weight += weight
+            if "weight" not in category_data:
+                errors.append(f"scoring.{category_name}.weight fehlt")
+            else:
+                weight = category_data["weight"]
+                if not isinstance(weight, (int, float)):
+                    errors.append(f"scoring.{category_name}.weight muss Zahl sein")
+                else:
+                    total_weight += weight
 
         if total_weight != TOTAL_SCORING_WEIGHT:
-             errors.append(f"Summe der Gewichte ({total_weight}) ungleich 100")
+            errors.append(f"Summe der Gewichte ({total_weight}) ungleich 100")
 
         return errors

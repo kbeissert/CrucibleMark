@@ -2,6 +2,7 @@
 Semantic Matching Logic
 Handles keyword detection with semantic fallback for fuzzy matching
 """
+
 import re
 from typing import List
 from utils.similarity import SemanticSimilarity
@@ -16,7 +17,7 @@ class SemanticMatcher:
         response_lower: str,
         keywords: List[str],
         tier_name: str,
-        min_keyword_threshold: float = 0.40
+        min_keyword_threshold: float = 0.40,
     ) -> bool:
         """
         Checks if keywords are present via exact match OR semantic similarity.
@@ -41,7 +42,7 @@ class SemanticMatcher:
         match_rate = matches / len(keywords)
 
         # 2. Expert Tier: Require 100% exact match OR semantic validation
-        if tier_name.lower() == 'expert':
+        if tier_name.lower() == "expert":
             if match_rate == 1.0:
                 return True
             # Fall through to semantic check for missing keywords
@@ -57,10 +58,7 @@ class SemanticMatcher:
 
     @staticmethod
     def _semantic_check(
-        response_lower: str,
-        keywords: List[str],
-        threshold: float,
-        tier_name: str
+        response_lower: str, keywords: List[str], threshold: float, tier_name: str
     ) -> bool:
         """
         Performs semantic similarity check using sentence-transformers.
@@ -70,14 +68,14 @@ class SemanticMatcher:
             # Split response into sentence chunks
             chunks = [
                 s.strip()
-                for s in re.split(r'[.!?\n]+', response_lower)
+                for s in re.split(r"[.!?\n]+", response_lower)
                 if len(s.strip()) > 15
             ]
             if not chunks:
                 chunks = [response_lower]
 
             # Expert Mode: Validate each missing keyword individually
-            if tier_name.lower() == 'expert':
+            if tier_name.lower() == "expert":
                 missing = [kw for kw in keywords if kw.lower() not in response_lower]
                 for kw in missing:
                     score = SemanticSimilarity.find_best_match(kw, chunks)

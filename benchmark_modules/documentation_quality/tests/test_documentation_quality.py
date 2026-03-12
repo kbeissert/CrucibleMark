@@ -14,7 +14,6 @@ sys.path.insert(0, str(Path(__file__).parents[3]))
 
 from benchmark_modules.documentation_quality.test import DocumentationTest
 
-
 # Test constants
 TOTAL_POINTS = 100
 STRUCTURE_POINTS = 25
@@ -78,9 +77,9 @@ class TestAssetLoading:
         sq_weight = asset["scoring"]["solution_quality"]["weight"]
 
         total_weight = ed_weight + sq_weight
-        assert total_weight == expected_total, (
-            f"Weights ({total_weight}) müssen der Gesamtpunktzahl ({expected_total}) entsprechen"
-        )
+        assert (
+            total_weight == expected_total
+        ), f"Weights ({total_weight}) müssen der Gesamtpunktzahl ({expected_total}) entsprechen"
 
 
 class TestScoringLogic:
@@ -143,9 +142,9 @@ Priority: high, medium, low
         score = readme_test.score_response(response)
 
         # Sollte mehrere Issues erkennen durch Keyword-Matching
-        assert score["total_score"] > 30, (
-            f"Sollte >30 Punkte bekommen, war {score['total_score']}"
-        )
+        assert (
+            score["total_score"] > 30
+        ), f"Sollte >30 Punkte bekommen, war {score['total_score']}"
         assert score["status"] == "success"
 
     def test_tiered_difficulty_scoring(self, readme_test):
@@ -174,9 +173,9 @@ class TestResponsePatterns:
         response = "Die README ist ok."
         score = readme_test.score_response(response)
 
-        assert score["total_score"] < 30, (
-            f"Minimale Response sollte < 30 bekommen, war {score['total_score']}"
-        )
+        assert (
+            score["total_score"] < 30
+        ), f"Minimale Response sollte < 30 bekommen, war {score['total_score']}"
 
     def test_comprehensive_response_gets_high_score(self, readme_test):
         """Umfassende Response bekommt hohen Score"""
@@ -290,9 +289,9 @@ severity_levels:
         # - Code-Beispiele mit Syntax
         # - Best Practices erwähnt
         # - Priorisierung vorhanden
-        assert score["total_score"] > 50, (
-            f"Comprehensive response sollte >50 bekommen, war {score['total_score']}"
-        )
+        assert (
+            score["total_score"] > 50
+        ), f"Comprehensive response sollte >50 bekommen, war {score['total_score']}"
         assert score["status"] == "success"
 
 

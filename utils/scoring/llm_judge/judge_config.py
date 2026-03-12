@@ -118,7 +118,7 @@ class LLMJudgeConfig(BaseModel):
     )
     module_judge_model: Optional[str] = Field(
         None,
-        description="Optional module-specific override for the fallback judge model."
+        description="Optional module-specific override for the fallback judge model.",
     )
 
     @classmethod

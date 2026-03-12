@@ -1,15 +1,17 @@
 """
 Language Proficiency Evaluator Module.
 """
+
 from typing import Tuple, List, Dict, Any
 from benchmark_modules.cultural_intelligence.core.constants import (
     GERMAN_WORD_MARKERS,
     FORMAL_MARKERS,
     INFORMAL_MARKERS,
     MIN_GERMAN_WORDS,
-    FORMALITY_THRESHOLD
+    FORMALITY_THRESHOLD,
 )
 from .utils import evaluate_keyword_presence
+
 
 class LanguageProficiencyEvaluator:
     """
@@ -24,7 +26,9 @@ class LanguageProficiencyEvaluator:
     # pylint: disable=too-few-public-methods
 
     @staticmethod
-    def score_proficiency(response: str, criteria: List[Dict[str, Any]]) -> Dict[str, Any]:
+    def score_proficiency(
+        response: str, criteria: List[Dict[str, Any]]
+    ) -> Dict[str, Any]:
         """
         Score language proficiency based on German markers.
 
@@ -39,12 +43,14 @@ class LanguageProficiencyEvaluator:
         details = []
         response_lower = response.lower()
 
-        german_word_count = LanguageProficiencyEvaluator._count_german_words(response_lower)
+        german_word_count = LanguageProficiencyEvaluator._count_german_words(
+            response_lower
+        )
 
         for criterion in criteria:
             points = criterion.get("points", 0)
             check_method = criterion.get("check_method", "keyword_presence")
-            
+
             if check_method == "german_word_count":
                 s, d = LanguageProficiencyEvaluator._check_german_words(
                     german_word_count, criterion, points
@@ -61,7 +67,9 @@ class LanguageProficiencyEvaluator:
 
             elif check_method == "keyword_presence":
                 name = criterion.get("name", "Unknown")
-                s, d = evaluate_keyword_presence(response_lower, criterion, points, name)
+                s, d = evaluate_keyword_presence(
+                    response_lower, criterion, points, name
+                )
                 score += s
                 details.append(d)
 
@@ -75,16 +83,15 @@ class LanguageProficiencyEvaluator:
             "metadata": {
                 "german_word_count": german_word_count,
                 "formality_level": formality_level,
-                "formal_ratio": round(formal_ratio, 2)
-            }
+                "formal_ratio": round(formal_ratio, 2),
+            },
         }
 
     @staticmethod
     def _count_german_words(response_lower: str) -> int:
         """Count presence of common German words."""
         german_words_found = [
-            word for word in GERMAN_WORD_MARKERS 
-            if word in response_lower
+            word for word in GERMAN_WORD_MARKERS if word in response_lower
         ]
         return len(german_words_found)
 
@@ -105,11 +112,16 @@ class LanguageProficiencyEvaluator:
     ) -> Tuple[float, str]:
         """Check if formality matches expected level."""
         name = criterion.get("name", "Unknown")
-        formality_level, _ = LanguageProficiencyEvaluator._detect_formality(response_lower)
+        formality_level, _ = LanguageProficiencyEvaluator._detect_formality(
+            response_lower
+        )
         expected_level = criterion.get("expected_level", "formal")
 
         if formality_level == expected_level:
-            return points, f"✓ {name}: {formality_level.capitalize()} detected (+{points}p)"
+            return (
+                points,
+                f"✓ {name}: {formality_level.capitalize()} detected (+{points}p)",
+            )
         return 0.0, f"○ {name}: Expected {expected_level}, got {formality_level}"
 
     @staticmethod
@@ -121,13 +133,15 @@ class LanguageProficiencyEvaluator:
             (formality_level, formal_ratio)
         """
         formal_count = sum(
-            1 for marker_list in FORMAL_MARKERS.values()
+            1
+            for marker_list in FORMAL_MARKERS.values()
             for marker in marker_list
             if marker in response_lower
         )
 
         informal_count = sum(
-            1 for marker_list in INFORMAL_MARKERS.values()
+            1
+            for marker_list in INFORMAL_MARKERS.values()
             for marker in marker_list
             if marker in response_lower
         )

@@ -14,7 +14,7 @@ from __future__ import annotations
 
 import json
 import logging
-from dataclasses import asdict, dataclass, field
+from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Dict, Optional
@@ -118,6 +118,7 @@ class PendingJudgeResult:
 # Persistence helpers
 # ---------------------------------------------------------------------------
 
+
 def save_pending(result: PendingJudgeResult, path: Path) -> None:
     """
     Write a PendingJudgeResult to a JSON file.
@@ -154,8 +155,15 @@ def load_pending(path: Path) -> PendingJudgeResult:
         json.JSONDecodeError: If the file is not valid JSON.
     """
     raw = json.loads(path.read_text(encoding="utf-8"))
-    required = {"task_id", "module_id", "task_prompt", "model_response",
-                "golden_standard", "hybrid_score", "response_time_ms"}
+    required = {
+        "task_id",
+        "module_id",
+        "task_prompt",
+        "model_response",
+        "golden_standard",
+        "hybrid_score",
+        "response_time_ms",
+    }
     missing = required - raw.keys()
     if missing:
         raise ValueError(

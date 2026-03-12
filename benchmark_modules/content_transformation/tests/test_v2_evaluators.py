@@ -3,6 +3,7 @@
 Integration Tests for Content Transformation v2.0
 Tests Phase 2 evaluators (FormatValidator, ToneEvaluator)
 """
+
 import sys
 from pathlib import Path
 
@@ -15,8 +16,9 @@ sys.path.insert(0, str(root_dir))
 # noqa: E402
 from benchmark_modules.content_transformation.core.evaluators import (  # noqa: E402
     FormatValidator,
-    ToneEvaluator
+    ToneEvaluator,
 )
+
 
 def test_manual_execution():
     """
@@ -32,11 +34,15 @@ def test_manual_execution():
     thread_invalid = "1/5 First\n3/5 Third"  # Missing 2, 4, 5
 
     # Changed to pass config dict instead of kwargs to match implementation
-    is_valid, violations = FormatValidator.validate_twitter_thread(thread_valid, config={"min_tweets": 3})
+    is_valid, violations = FormatValidator.validate_twitter_thread(
+        thread_valid, config={"min_tweets": 3}
+    )
     print(f"  ✓ Valid thread: {is_valid} (expected: True)")
     assert is_valid is True, "Valid thread should pass"
 
-    is_valid, violations = FormatValidator.validate_twitter_thread(thread_invalid, config={"min_tweets": 5})
+    is_valid, violations = FormatValidator.validate_twitter_thread(
+        thread_invalid, config={"min_tweets": 5}
+    )
     print(f"  ✓ Invalid thread: {is_valid} (expected: False)")
     print(f"    Violations: {violations}")
     assert is_valid is False, "Invalid thread should fail"
@@ -75,8 +81,12 @@ CTA: Sign up now!
 
     print(f"  ✓ Formal text score: {formality_formal} (expected: > 0.5)")
     print(f"  ✓ Casual text score: {formality_casual} (expected: < 0.5)")
-    assert formality_formal > 0.5, f"Formal text should score > 0.5, got {formality_formal}"
-    assert formality_casual < 0.5, f"Casual text should score < 0.5, got {formality_casual}"
+    assert (
+        formality_formal > 0.5
+    ), f"Formal text should score > 0.5, got {formality_formal}"
+    assert (
+        formality_casual < 0.5
+    ), f"Casual text should score < 0.5, got {formality_casual}"
 
     # Test 5: Professionalism
     print("\n[Test 5] ToneEvaluator.measure_professionalism()")
@@ -89,7 +99,9 @@ CTA: Sign up now!
     print(f"  ✓ Professional text: {prof_score} (expected: > 0.5)")
     print(f"  ✓ Unprofessional text: {unprof_score} (expected: < 0.3)")
     assert prof_score > 0.5, f"Professional text should score > 0.5, got {prof_score}"
-    assert unprof_score < 0.3, f"Unprofessional text should score < 0.3, got {unprof_score}"
+    assert (
+        unprof_score < 0.3
+    ), f"Unprofessional text should score < 0.3, got {unprof_score}"
 
     # Test 6: Spoken Style Detection
     print("\n[Test 6] ToneEvaluator.detect_spoken_style()")
@@ -101,11 +113,12 @@ CTA: Sign up now!
 
     print(f"  ✓ Spoken text metrics: {spoken_metrics}")
     print(f"  ✓ Written text metrics: {written_metrics}")
-    assert spoken_metrics['questions_count'] > 0, "Spoken text should have questions"
+    assert spoken_metrics["questions_count"] > 0, "Spoken text should have questions"
 
     print("\n" + "=" * 60)
     print("✅ All 6 tests passed! Content Transformation v2.0 ready.")
     print("=" * 60)
+
 
 if __name__ == "__main__":
     test_manual_execution()

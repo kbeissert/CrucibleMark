@@ -12,7 +12,9 @@ MIN_TABLE_COLUMNS = 2
 DEFAULT_MIN_TABLE_ROWS = 8  # RESTORED: Default back to strict (Audit recommendation)
 DEFAULT_MIN_KEYWORDS = 3
 MIN_SENTENCE_LENGTH = 20
-SIMILARITY_THRESHOLD = 0.78  # HARDENED: Increased from 0.65 to 0.78 to prevent weak semantic matches
+SIMILARITY_THRESHOLD = (
+    0.78  # HARDENED: Increased from 0.65 to 0.78 to prevent weak semantic matches
+)
 
 # Regex Patterns
 # Matches markdown code blocks: ```language ... ```

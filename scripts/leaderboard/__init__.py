@@ -6,6 +6,7 @@ Usage:
     from scripts.leaderboard import main
     main()
 """
+
 try:
     from pathlib import Path
     import pandas as pd
@@ -23,7 +24,10 @@ from .exporter import export_to_csv
 
 # pylint: disable=import-error
 try:
-    from utils.module_registry import get_active_modules, get_module_test_count  # noqa: E402
+    from utils.module_registry import (
+        get_active_modules,
+        get_module_test_count,
+    )  # noqa: E402
 except ImportError:
     pass
 # pylint: enable=import-error
@@ -50,11 +54,16 @@ def _build_modules_config(full_config, registry_func=get_active_modules) -> dict
 
         # Scoring Enabled?
         enable_scoring = lb_config.get("enable_scoring", True)
-        if mod_meta.get("score_group") == "info" or lb_config.get("score_group") == "info":
+        if (
+            mod_meta.get("score_group") == "info"
+            or lb_config.get("score_group") == "info"
+        ):
             enable_scoring = False
 
         # Default Contribution
-        default_contrib = lb_config.get("default_contribution", {"routine": 0.0, "reasoning": 0.0})
+        default_contrib = lb_config.get(
+            "default_contribution", {"routine": 0.0, "reasoning": 0.0}
+        )
 
         # Determine Assets Count
         mod_path_val = mod_meta.get("path", "")
@@ -103,14 +112,18 @@ def _enrich_with_llm_judge(leaderboard: pd.DataFrame, df: pd.DataFrame) -> pd.Da
     if judge_df.empty:
         return leaderboard
 
-    judge_df["llm_judge_score"] = pd.to_numeric(judge_df["llm_judge_score"], errors="coerce")
+    judge_df["llm_judge_score"] = pd.to_numeric(
+        judge_df["llm_judge_score"], errors="coerce"
+    )
     judge_agg = (
         judge_df.groupby(["model", "model_version"])["llm_judge_score"]
         .mean()
         .reset_index()
         .rename(columns={"llm_judge_score": "LLM Judge Score"})
     )
-    leaderboard = pd.merge(leaderboard, judge_agg, on=["model", "model_version"], how="left")
+    leaderboard = pd.merge(
+        leaderboard, judge_agg, on=["model", "model_version"], how="left"
+    )
     return leaderboard
 
 
@@ -153,10 +166,12 @@ def main(print_table: bool = True) -> None:
     for col in cols_to_round:
         if col in leaderboard.columns:
             leaderboard[col] = leaderboard[col].round(2)
-            
+
     # Round Cost per 1K to 4 places separately
     if "Cost per 1K (USD)" in leaderboard.columns:
-        leaderboard["Cost per 1K (USD)"] = pd.to_numeric(leaderboard["Cost per 1K (USD)"], errors="coerce").round(4)
+        leaderboard["Cost per 1K (USD)"] = pd.to_numeric(
+            leaderboard["Cost per 1K (USD)"], errors="coerce"
+        ).round(4)
 
     # Format category columns (rounding)
     cat_cols = []
@@ -169,15 +184,21 @@ def main(print_table: bool = True) -> None:
                 cat_cols.append(name)
 
     # 4b. Enrich with External Module Data (e.g. Political Compass)
-    leaderboard, cat_cols = enrich_with_module_data(leaderboard, cat_cols, modules_config, config)
+    leaderboard, cat_cols = enrich_with_module_data(
+        leaderboard, cat_cols, modules_config, config
+    )
 
     for col in cat_cols:
         if col in leaderboard.columns:
             leaderboard[col] = pd.to_numeric(leaderboard[col], errors="coerce")
-            leaderboard[col] = leaderboard[col].round(2).astype(object).fillna("Pending")
+            leaderboard[col] = (
+                leaderboard[col].round(2).astype(object).fillna("Pending")
+            )
 
     # 5. Enrich with Custom Data (from other CSVs via module config)
-    leaderboard, cat_cols = enrich_with_module_data(leaderboard, cat_cols, modules_config, config)
+    leaderboard, cat_cols = enrich_with_module_data(
+        leaderboard, cat_cols, modules_config, config
+    )
 
     # 6. Assign badges and ranks dynamically using detected category columns
     leaderboard = assign_rank_and_badges(leaderboard, cat_cols)
@@ -194,7 +215,7 @@ def main(print_table: bool = True) -> None:
 
         # 1. Greedy Token Strip Strategy
         # Split model name by common separators
-        tokens = re.split(r'[-: ]+', model_name_clean)
+        tokens = re.split(r"[-: ]+", model_name_clean)
 
         display_ver = version
         for token in tokens:
@@ -207,9 +228,11 @@ def main(print_table: bool = True) -> None:
             if re.match(f"^{re.escape(token)}[-_:]?", display_ver, re.IGNORECASE):
                 # Remove it
                 # Find length of match
-                match = re.match(f"^{re.escape(token)}[-_:]?", display_ver, re.IGNORECASE)
+                match = re.match(
+                    f"^{re.escape(token)}[-_:]?", display_ver, re.IGNORECASE
+                )
                 if match:
-                    display_ver = display_ver[match.end():]
+                    display_ver = display_ver[match.end() :]
 
         # Cleanup leading separators
         display_ver = display_ver.lstrip("-_: ")
@@ -224,15 +247,15 @@ def main(print_table: bool = True) -> None:
         final_parts = []
         for p in parts:
             # Check for behavioral hash (8 char hex) or ollama hash (12+ hex)
-            if re.match(r'^[a-f0-9]{8}$', p) or re.match(r'^[a-f0-9]{12,}$', p):
+            if re.match(r"^[a-f0-9]{8}$", p) or re.match(r"^[a-f0-9]{12,}$", p):
                 final_parts.append(p[:7])
             # Check for date (YYYY-MM-DD or YYYYMMDD) -> maybe remove or format?
             # User wants version number. Date is usually extra info.
             # But the previous code added date suffix from timestamp column.
             # elif re.match(r'^\d{4}-\d{2}-\d{2}$', p) and p == datetime.now().strftime("%Y-%m-%d"):
-                # Skip if it is today's date (redundant)
-                # pass
-            elif re.match(r'^\d{4}$', p):  # Year e.g., 2411 (Mistral Version) or 2024
+            # Skip if it is today's date (redundant)
+            # pass
+            elif re.match(r"^\d{4}$", p):  # Year e.g., 2411 (Mistral Version) or 2024
                 final_parts.append(p)
             else:
                 final_parts.append(p)
@@ -267,7 +290,7 @@ def main(print_table: bool = True) -> None:
         # Normalize: Strip YYYY-MM-DD from the end of the version string if present
         # This ensures we don't have double dates (e.g. "...-2026-02-02 (Feb 2026)")
         # and standardizes the look to "Version (Month Year)"
-        display_ver = re.sub(r'[-\s]?\d{4}-\d{2}-\d{2}$', '', display_ver)
+        display_ver = re.sub(r"[-\s]?\d{4}-\d{2}-\d{2}$", "", display_ver)
 
         # Always append the friendly date suffix
         if date_suffix:

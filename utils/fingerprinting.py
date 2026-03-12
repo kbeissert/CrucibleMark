@@ -28,26 +28,22 @@ class ModelFingerprinter:
         {
             "prompt": "Calculate: 17 * 3. Answer with number only.",
             "expected_format": "number",
-            "temperature": 0.0
+            "temperature": 0.0,
         },
         {
             "prompt": "What is the capital of France? Answer in one word.",
             "expected_format": "single_word",
-            "temperature": 0.0
+            "temperature": 0.0,
         },
         {
             "prompt": "First 5 letters of English alphabet. No formatting.",
             "expected_format": "text",
-            "temperature": 0.0
-        }
+            "temperature": 0.0,
+        },
     ]
 
     @staticmethod
-    def get_unified_version(
-            provider: str,
-            model_name: str,
-            client=None
-    ) -> str:
+    def get_unified_version(provider: str, model_name: str, client=None) -> str:
         """
         Global SSOT for Model Versioning (Local & Commercial).
 
@@ -83,7 +79,10 @@ class ModelFingerprinter:
             try:
                 # Cache checking could happen here if 'client' had a cache registry,
                 # but simplistic approach is robust: check if client has cached it internally.
-                if hasattr(client, "fingerprint_cache") and model_name in client.fingerprint_cache:
+                if (
+                    hasattr(client, "fingerprint_cache")
+                    and model_name in client.fingerprint_cache
+                ):
                     return client.fingerprint_cache[model_name]
 
                 behavioral_hash = ModelFingerprinter.generate_behavioral_hash(
@@ -103,22 +102,30 @@ class ModelFingerprinter:
                 final_version = official_id
             else:
                 # Fallback if we couldn't get a proper digest
-                final_version = f"local-{behavioral_hash}" if behavioral_hash != "nohash" else "local"
+                final_version = (
+                    f"local-{behavioral_hash}"
+                    if behavioral_hash != "nohash"
+                    else "local"
+                )
 
         # Case B: Commercial Models (Date already in name)
         # Strategy: Keep official ID, but append behavioral hash if unique/useful.
         # CHANGED: We now prioritize the official ID as the primary version identifier
         # because behavioral hashes can collide across different high-quality models.
-        elif (official_id in model_name and
-              behavioral_hash != "nohash" and
-              provider not in ["ollama", "local"]):
+        elif (
+            official_id in model_name
+            and behavioral_hash != "nohash"
+            and provider not in ["ollama", "local"]
+        ):
             final_version = f"{official_id}-{behavioral_hash}"
 
         # Case B2: Explicit Version in Name (e.g. 20251101) + nohash
         # If we have a clear official ID from the name, and no behavioral hash, just use the ID.
-        elif (official_id in model_name and
-              behavioral_hash == "nohash" and
-              provider not in ["ollama", "local"]):
+        elif (
+            official_id in model_name
+            and behavioral_hash == "nohash"
+            and provider not in ["ollama", "local"]
+        ):
             final_version = official_id
 
         # Case C: Standard Commercial (Date + Behavioral Hash)
@@ -141,13 +148,10 @@ class ModelFingerprinter:
         try:
             # Run 'ollama list' gives digests properly
             result = subprocess.run(
-                ["ollama", "list"],
-                capture_output=True,
-                text=True,
-                check=False
+                ["ollama", "list"], capture_output=True, text=True, check=False
             )
             if result.returncode == 0:
-                lines = result.stdout.strip().split('\n')
+                lines = result.stdout.strip().split("\n")
                 # Parse table: NAME ID SIZE MODIFIED
                 # skip header
                 for line in lines[1:]:
@@ -163,11 +167,11 @@ class ModelFingerprinter:
 
     @staticmethod
     def generate_behavioral_hash(
-            client,
-            model_name: str,
-            temperature: float = 0.0,
-            max_retries: int = 2,
-            provider: str = "ollama"
+        client,
+        model_name: str,
+        temperature: float = 0.0,
+        max_retries: int = 2,
+        provider: str = "ollama",
     ) -> str:
         """
         Generate behavioral fingerprint using deterministic prompts.
@@ -216,7 +220,7 @@ class ModelFingerprinter:
                     response_text = query_method(
                         prompt=test["prompt"],
                         temperature=test["temperature"],
-                        max_tokens=20
+                        max_tokens=20,
                     )
                 responses.append(response_text.strip().lower())
 
@@ -235,10 +239,10 @@ class ModelFingerprinter:
 
     @staticmethod
     def create_fingerprint(
-            provider: str,  # pylint: disable=unused-argument
-            model_name: str,  # pylint: disable=unused-argument
-            official_version: Optional[str] = None,
-            behavioral_hash: Optional[str] = None
+        provider: str,  # pylint: disable=unused-argument
+        model_name: str,  # pylint: disable=unused-argument
+        official_version: Optional[str] = None,
+        behavioral_hash: Optional[str] = None,
     ) -> str:
         """
         DEPRECATED: Use get_unified_version() instead.
@@ -268,14 +272,14 @@ OFFICIAL_SNAPSHOTS = {
         "mistral-small-latest": "2402",
         "open-mistral-7b": "v0.3",
         "ministral-3b-latest": "2410",
-        "ministral-8b-latest": "2410"
+        "ministral-8b-latest": "2410",
     },
     "openai": {
         "gpt-4-turbo": "2024-04-09",
         "gpt-4o": "2024-05-13",
         "gpt-4o-mini": "2024-07-18",
         "gpt-3.5-turbo": "0125",
-        "o3-mini": "2026-01-30"
+        "o3-mini": "2026-01-30",
     },
     "anthropic": {
         # Commercial models where date is implicit in the "latest" alias
@@ -283,12 +287,11 @@ OFFICIAL_SNAPSHOTS = {
         "claude-3-5-sonnet-20241022": "20241022",
         "claude-3-opus-latest": "20240229",
         "claude-3-haiku-20240307": "20240307",
-        
         # New 4.x Series
-        "claude-sonnet-4-6": "4.6", # Identified by version number
+        "claude-sonnet-4-6": "4.6",  # Identified by version number
         "claude-opus-4-5-20251101": "20251101",
         "claude-sonnet-4-5-20250929": "20250929",
-    }
+    },
 }
 
 
@@ -309,14 +312,16 @@ def get_official_version(provider: str, model_name: str) -> Optional[str]:
     # Matches: 20240229, 2025-09-29, 2411 (Mistral style YYMM)
 
     # Look for YYYYMMDD or YYYY-MM-DD at the end or preceded by separator
-    date_match = re.search(r'(?:^|[-_])(\d{4}[-_]?\d{2}[-_]?\d{2})(?:$|[-_])', model_name)
+    date_match = re.search(
+        r"(?:^|[-_])(\d{4}[-_]?\d{2}[-_]?\d{2})(?:$|[-_])", model_name
+    )
     if date_match:
         # User preference: Keep original format found in name (e.g. 2024-04-09 or 20241022)
         # ensuring consistency with OFFICIAL_SNAPSHOTS style for that provider.
         return date_match.group(1)
 
     # Look for Mistral-style YYMM (e.g. 2411) at end of string
-    mistral_match = re.search(r'(?:^|[-_])(\d{4})(?:$)', model_name)
+    mistral_match = re.search(r"(?:^|[-_])(\d{4})(?:$)", model_name)
     if mistral_match:
         return mistral_match.group(1)
 

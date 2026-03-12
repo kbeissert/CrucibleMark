@@ -23,27 +23,54 @@ DEFAULT_TEMPERATURE = 0.3
 # German Language Markers
 GERMAN_WORD_MARKERS = [
     # Common German words
-    "aber", "auch", "bei", "durch", "für", "gegen", "jedoch", 
-    "nicht", "oder", "sondern", "sowie", "über", "während", "zwischen",
+    "aber",
+    "auch",
+    "bei",
+    "durch",
+    "für",
+    "gegen",
+    "jedoch",
+    "nicht",
+    "oder",
+    "sondern",
+    "sowie",
+    "über",
+    "während",
+    "zwischen",
     # Verbs
-    "haben", "sein", "werden", "können", "müssen", "sollen",
+    "haben",
+    "sein",
+    "werden",
+    "können",
+    "müssen",
+    "sollen",
     # Conjunctions
-    "obwohl", "weil", "dass", "damit", "falls", "nachdem",
+    "obwohl",
+    "weil",
+    "dass",
+    "damit",
+    "falls",
+    "nachdem",
     # Articles
-    "der", "die", "das", "den", "dem", "des",
+    "der",
+    "die",
+    "das",
+    "den",
+    "dem",
+    "des",
 ]
 
 # Formality Markers
 FORMAL_MARKERS = {
     "pronouns": ["sie", "ihnen", "ihr", "ihre"],
     "verbs": ["möchten", "würden", "könnten"],
-    "phrases": ["sehr geehrte", "mit freundlichen grüßen", "hochachtungsvoll"]
+    "phrases": ["sehr geehrte", "mit freundlichen grüßen", "hochachtungsvoll"],
 }
 
 INFORMAL_MARKERS = {
     "pronouns": ["du", "dir", "dein", "deine"],
     "verbs": ["willst", "kannst", "magst"],
-    "phrases": ["hallo", "tschüss", "liebe grüße"]
+    "phrases": ["hallo", "tschüss", "liebe grüße"],
 }
 
 # Regional Expressions (DE/AT/CH)
@@ -51,31 +78,37 @@ REGIONAL_EXPRESSIONS = {
     "de": {
         "food": ["brötchen", "frikadelle", "pfannkuchen"],
         "phrases": ["guten tag", "tschüss", "moin"],
-        "vocab": ["handy", "führerschein", "abitur"]
+        "vocab": ["handy", "führerschein", "abitur"],
     },
     "at": {
         "food": ["semmel", "faschiertes", "palatschinken"],
         "phrases": ["grüß gott", "baba", "servus"],
-        "vocab": ["jänner", "erdäpfel", "matura"]
+        "vocab": ["jänner", "erdäpfel", "matura"],
     },
     "ch": {
         "food": ["brötli", "gehacktes", "omeletten"],
         "phrases": ["grüezi", "ade", "merci"],
-        "vocab": ["natel", "velo", "parkierung"]
-    }
+        "vocab": ["natel", "velo", "parkierung"],
+    },
 }
 
 # Politeness Markers
 POLITENESS_MARKERS = [
-    "bitte", "danke", "entschuldigung", "gerne", "freundlich",
-    "höflich", "respektvoll", "zuvorkommend"
+    "bitte",
+    "danke",
+    "entschuldigung",
+    "gerne",
+    "freundlich",
+    "höflich",
+    "respektvoll",
+    "zuvorkommend",
 ]
 
 # Default scoring weights
 DEFAULT_WEIGHTS = {
     "language_proficiency": 0.40,  # 40 points
-    "cultural_fit": 0.30,          # 30 points
-    "solution_quality": 0.30       # 30 points
+    "cultural_fit": 0.30,  # 30 points
+    "solution_quality": 0.30,  # 30 points
 }
 
 # Minimum keyword matches for language proficiency

@@ -60,11 +60,7 @@ def score_metacog_005(response: str) -> tuple[float, dict[str, Any], list[str]]:
     percent_match = re.search(r"(\d+(?:\.\d+)?)\s*%", answer)
     if percent_match:
         percentage = float(percent_match.group(1))
-        if (
-            METACOG_005_CALC_LOWER
-            <= percentage
-            <= METACOG_005_CALC_UPPER
-        ):
+        if METACOG_005_CALC_LOWER <= percentage <= METACOG_005_CALC_UPPER:
             breakdown["calculation_correctness"] = METACOG_005_CALCULATION
             details.append(f"✅ Calculation: Correct probability (~{percentage}%).")
         else:

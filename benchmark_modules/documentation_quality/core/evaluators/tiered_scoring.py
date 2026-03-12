@@ -6,18 +6,21 @@ Handles scoring for tiered error detection (Labeled, Standard, Advanced, Expert)
 from typing import List, Tuple
 from .semantic_matcher import SemanticMatcher
 
+
 class TieredScoringEngine:
     """
     Handles scoring for tiered error detection (Labeled, Standard, Advanced, Expert).
     Manages scoring logic including inverse matching and severity penalties.
     """
+
     # pylint: disable=too-few-public-methods
 
     def __init__(self, asset_id: str):
         self.asset_id = asset_id
 
-    def score_tier(self, response: str, issues: list[dict],
-                   tier_name: str, min_threshold: float) -> Tuple[float, List[str], List[str]]:
+    def score_tier(
+        self, response: str, issues: list[dict], tier_name: str, min_threshold: float
+    ) -> Tuple[float, List[str], List[str]]:
         """
         Scores a single tier level (e.g. "Standard Issues").
 
@@ -65,8 +68,9 @@ class TieredScoringEngine:
         details.append(f"  → {tier_name} Total: {tier_score:.1f}/{max_points}p")
         return round(tier_score, 2), details, violations
 
-    def _evaluate_issue(self, issue: dict, found: bool,
-                        tier_name: str, points: float) -> Tuple[float, str, str]:
+    def _evaluate_issue(
+        self, issue: dict, found: bool, tier_name: str, points: float
+    ) -> Tuple[float, str, str]:
         """Evaluates a single issue and determines score impact and message."""
         name = issue.get("issue", "Unknown Issue")
         severity = issue.get("severity", "medium")
@@ -74,8 +78,16 @@ class TieredScoringEngine:
 
         if inverse:
             if not found:
-                return points, "detail", f"✓ [{tier_name}] {name} (Nicht gefunden): +{points}p"
-            return 0.0, "violation", f"✗ [{tier_name}] {name} (Unerwünscht gefunden): -{points}p"
+                return (
+                    points,
+                    "detail",
+                    f"✓ [{tier_name}] {name} (Nicht gefunden): +{points}p",
+                )
+            return (
+                0.0,
+                "violation",
+                f"✗ [{tier_name}] {name} (Unerwünscht gefunden): -{points}p",
+            )
 
         if found:
             return points, "detail", f"✓ [{tier_name}] {name}: +{points}p"
@@ -85,9 +97,9 @@ class TieredScoringEngine:
 
         return 0.0, "detail", f"○ [{tier_name}] {name}: 0p"
 
-    def _calculate_target_matches(self, issue: dict,
-                                   keywords: list[str],
-                                   min_threshold: float) -> int:
+    def _calculate_target_matches(
+        self, issue: dict, keywords: list[str], min_threshold: float
+    ) -> int:
         """Determines the number of keyword matches required."""
         explicit_min = issue.get("min_keywords")
         explicit_ratio = issue.get("required_ratio")

@@ -33,7 +33,9 @@ class MistralProvider(LLMJudgeProvider):
 
     PROVIDER_NAME = "mistral"
 
-    def __init__(self, model: str, temperature: float, max_tokens: int, timeout_seconds: int) -> None:
+    def __init__(
+        self, model: str, temperature: float, max_tokens: int, timeout_seconds: int
+    ) -> None:
         if mistral_module is None:
             raise ImportError(
                 "The 'mistralai' package is required for MistralProvider. "

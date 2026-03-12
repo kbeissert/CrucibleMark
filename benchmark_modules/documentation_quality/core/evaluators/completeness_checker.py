@@ -7,11 +7,13 @@ import re
 from typing import Dict, List, Any
 from ..constants import DOC_TYPE_SCHEMAS
 
+
 class CompletenessChecker:
     """
     Checks for required sections in documentation based on document type.
     Uses fuzzy matching to handle naming variations.
     """
+
     # pylint: disable=too-few-public-methods
 
     @staticmethod
@@ -21,19 +23,11 @@ class CompletenessChecker:
         """
         schema = DOC_TYPE_SCHEMAS.get(doc_type)
         if not schema:
-            return {
-                "score": 1.0,
-                "missing_sections": [],
-                "present_sections": []
-            }
+            return {"score": 1.0, "missing_sections": [], "present_sections": []}
 
         required = schema.get("required_sections", [])
         if not required:
-            return {
-                "score": 1.0,
-                "missing_sections": [],
-                "present_sections": []
-            }
+            return {"score": 1.0, "missing_sections": [], "present_sections": []}
 
         headings = CompletenessChecker._extract_headings(response)
         missing = []
@@ -57,7 +51,7 @@ class CompletenessChecker:
         return {
             "score": round(score, 2),
             "missing_sections": missing,
-            "present_sections": present
+            "present_sections": present,
         }
 
     @staticmethod
@@ -67,7 +61,7 @@ class CompletenessChecker:
         """
         # Extract title text
         return [
-            m.strip() for m in re.findall(r'^#{1,6}\s+(.+)$', response, re.MULTILINE)
+            m.strip() for m in re.findall(r"^#{1,6}\s+(.+)$", response, re.MULTILINE)
         ]
 
     @staticmethod
@@ -97,7 +91,9 @@ class CompletenessChecker:
         Calculates Levenshtein distance between two strings.
         """
         if len(seq1) < len(seq2):
-            return CompletenessChecker._levenshtein(seq2, seq1)  # pylint: disable=arguments-out-of-order
+            return CompletenessChecker._levenshtein(
+                seq2, seq1
+            )  # pylint: disable=arguments-out-of-order
 
         if len(seq2) == 0:
             return len(seq1)

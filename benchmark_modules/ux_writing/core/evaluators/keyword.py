@@ -1,11 +1,13 @@
 """
 Evaluators for keyword presence and absence.
 """
+
 from typing import Tuple
 from ..models import UXCriterion
 from .base import CriterionEvaluator
 
 # pylint: disable=too-few-public-methods
+
 
 class KeywordPresenceEvaluator(CriterionEvaluator):
     """
@@ -36,11 +38,12 @@ class KeywordPresenceEvaluator(CriterionEvaluator):
                 f"✓ {criterion.name}: {len(found_keywords)}/{min_required} "
                 f"({display_kws}) ({points}p)",
             )
-        display_kws = ", ".join(found_keywords) if found_keywords else 'keine'
+        display_kws = ", ".join(found_keywords) if found_keywords else "keine"
         return (
             0.0,
             f"✗ {criterion.name}: {len(found_keywords)}/{min_required} ({display_kws})",
         )
+
 
 class KeywordAbsenceEvaluator(CriterionEvaluator):
     """

@@ -6,11 +6,15 @@ No real API calls are made.
 """
 
 from typing import Any
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock
 
 import pytest
 
-from utils.scoring.llm_judge.judge_config import LLMJudgeConfig, ProviderConfig, ScoringConfig
+from utils.scoring.llm_judge.judge_config import (
+    LLMJudgeConfig,
+    ProviderConfig,
+    ScoringConfig,
+)
 from utils.scoring.llm_judge.judge_parser import JudgeResult
 from utils.scoring.llm_judge.judge_runner import JudgeRunner
 from utils.scoring.llm_judge.providers.base_provider import JudgeProviderResponse

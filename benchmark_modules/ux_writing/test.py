@@ -18,17 +18,24 @@ if str(root_dir) not in sys.path:
     sys.path.insert(0, str(root_dir))
 
 from benchmark_modules.base_test import BaseTest  # noqa: E402
-from benchmark_modules.ux_writing.core.models import UXScenario, UXScoringConfig  # noqa: E402
-from benchmark_modules.ux_writing.core.evaluators import IssueEvaluator, EvaluatorFactory  # noqa: E402
+from benchmark_modules.ux_writing.core.models import (
+    UXScenario,
+    UXScoringConfig,
+)  # noqa: E402
+from benchmark_modules.ux_writing.core.evaluators import (
+    IssueEvaluator,
+    EvaluatorFactory,
+)  # noqa: E402
 from benchmark_modules.ux_writing.core.constants import (  # noqa: E402
     TIER_S_THRESHOLD,
     TIER_A_THRESHOLD,
     TIER_B_THRESHOLD,
     TIER_C_THRESHOLD,
     ASSET_REQUIRED_RATIOS,
-    DEFAULT_REQUIRED_RATIO
+    DEFAULT_REQUIRED_RATIO,
 )
 from utils.llm_client import LLMClient  # noqa: E402
+
 
 class UXWritingTest(BaseTest):
     """
@@ -47,7 +54,9 @@ class UXWritingTest(BaseTest):
         # BaseTest loads self.asset
         self.scenario = UXScenario.from_dict(self.asset)
 
-    def execute(self, model: str, llm_client: LLMClient, provider: str = "ollama") -> BenchmarkResult:
+    def execute(
+        self, model: str, llm_client: LLMClient, provider: str = "ollama"
+    ) -> BenchmarkResult:
         """
         Führt den Test für das geladene Asset aus.
         Returns BenchmarkResult object.
@@ -56,14 +65,13 @@ class UXWritingTest(BaseTest):
 
         start_time = time.time()
         # Adapter for LLMClient.query(model, prompt, provider)
-        response = llm_client.query(
-            model=model, 
-            prompt=prompt, 
-            provider=provider
-        )
-        
+        response = llm_client.query(model=model, prompt=prompt, provider=provider)
+
         # Use clean execution time (excluding timeouts/retries) if available
-        if hasattr(llm_client, "last_query_duration") and llm_client.last_query_duration > 0:
+        if (
+            hasattr(llm_client, "last_query_duration")
+            and llm_client.last_query_duration > 0
+        ):
             execution_time = llm_client.last_query_duration
         else:
             execution_time = time.time() - start_time
@@ -75,8 +83,10 @@ class UXWritingTest(BaseTest):
         # Merge metadata
         meta = self.asset.get("metadata", {}).copy()
         meta.update(getattr(llm_client, "last_response_metadata", {}))
-        
-        load_time = getattr(llm_client, "last_response_metadata", {}).get("load_duration", 0.0)
+
+        load_time = getattr(llm_client, "last_response_metadata", {}).get(
+            "load_duration", 0.0
+        )
 
         return BenchmarkResult(
             status="success",
@@ -88,8 +98,10 @@ class UXWritingTest(BaseTest):
             evaluated_prompt=prompt,
             tokens_used=getattr(llm_client, "last_token_usage", 0),
             cost_usd=getattr(llm_client, "last_request_cost", 0.0),
-            model_version=getattr(llm_client, "last_response_metadata", {}).get("system_fingerprint", "unknown"),
-            meta=meta
+            model_version=getattr(llm_client, "last_response_metadata", {}).get(
+                "system_fingerprint", "unknown"
+            ),
+            meta=meta,
         )
 
     def score_response(self, response: str) -> Dict[str, Any]:
@@ -114,16 +126,16 @@ class UXWritingTest(BaseTest):
             # Simple fallback for visualization to match base runner expectation {achieved, max}
             category_scores[key] = {
                 "achieved": round(value, 1),
-                "max": 100 # Placeholder as max is dynamic
+                "max": 100,  # Placeholder as max is dynamic
             }
 
         return {
             "total_score": total_score,
-            "max_score": 100, # Normalized to 100 in logic
+            "max_score": 100,  # Normalized to 100 in logic
             "category_scores": category_scores,
             "status": "success",
             "tier": self._calculate_tier(total_score),
-            "details": details
+            "details": details,
         }
 
     def _calculate_tier(self, score: float) -> str:
@@ -146,7 +158,9 @@ class UXWritingTest(BaseTest):
             return "Tier C (Novice)"
         return "Tier D (Inadequate)"
 
-    def _evaluate_response(self, response: str, config: UXScoringConfig) -> Tuple[Dict[str, float], List[str]]:
+    def _evaluate_response(
+        self, response: str, config: UXScoringConfig
+    ) -> Tuple[Dict[str, float], List[str]]:
         """
         Führt die eigentliche Bewertung durch.
 
@@ -162,7 +176,7 @@ class UXWritingTest(BaseTest):
             "error_detection": 0.0,
             "solution_quality": 0.0,
             "formatting": 0.0,
-            "total": 0.0
+            "total": 0.0,
         }
         details = []
 
@@ -171,30 +185,35 @@ class UXWritingTest(BaseTest):
             ed_score = 0.0
 
             all_issues = (
-                config.error_detection.labeled_issues +
-                config.error_detection.standard_issues +
-                config.error_detection.advanced_issues +
-                config.error_detection.expert_issues
+                config.error_detection.labeled_issues
+                + config.error_detection.standard_issues
+                + config.error_detection.advanced_issues
+                + config.error_detection.expert_issues
             )
 
             # Determine Ratio Baseline based on Config or Asset ID
-            if config.error_detection and config.error_detection.default_required_ratio is not None:
+            if (
+                config.error_detection
+                and config.error_detection.default_required_ratio is not None
+            ):
                 default_ratio = config.error_detection.default_required_ratio
             else:
                 asset_id = self.asset.get("metadata", {}).get("id", "")
-                default_ratio = ASSET_REQUIRED_RATIOS.get(asset_id, DEFAULT_REQUIRED_RATIO)
+                default_ratio = ASSET_REQUIRED_RATIOS.get(
+                    asset_id, DEFAULT_REQUIRED_RATIO
+                )
 
             for issue in all_issues:
-                 # Apply dynamic ratio if not explicitly set in YAML
-                 if issue.required_ratio is None:
-                     issue.required_ratio = default_ratio
+                # Apply dynamic ratio if not explicitly set in YAML
+                if issue.required_ratio is None:
+                    issue.required_ratio = default_ratio
 
-                 # points, explanation, matched_boolean
-                 points, msg, _ = IssueEvaluator.evaluate(response.lower(), issue)
-                 ed_score += points
-                 if points > 0 or "✗" in msg:
-                     # details.append(msg)
-                     pass
+                # points, explanation, matched_boolean
+                points, msg, _ = IssueEvaluator.evaluate(response.lower(), issue)
+                ed_score += points
+                if points > 0 or "✗" in msg:
+                    # details.append(msg)
+                    pass
 
             breakdown["error_detection"] = ed_score
             total_score += breakdown["error_detection"]

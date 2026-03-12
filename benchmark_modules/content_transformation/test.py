@@ -21,7 +21,9 @@ from benchmark_modules.content_transformation.core.constants import (  # noqa: E
     DEFAULT_TEMPERATURE,
     TOKEN_MULTIPLIER,
 )
-from benchmark_modules.content_transformation.core.evaluators import ContentTransformationEvaluator  # noqa: E402
+from benchmark_modules.content_transformation.core.evaluators import (
+    ContentTransformationEvaluator,
+)  # noqa: E402
 
 
 class ContentTransformationTest(BaseTest):
@@ -30,7 +32,9 @@ class ContentTransformationTest(BaseTest):
     Acts as a runner, delegating scoring to ContentTransformationEvaluator.
     """
 
-    def execute(self, model: str, llm_client: Any, provider: str = "ollama") -> BenchmarkResult:
+    def execute(
+        self, model: str, llm_client: Any, provider: str = "ollama"
+    ) -> BenchmarkResult:
         """
         Führt Content Transformation Test aus
         """
@@ -52,11 +56,14 @@ class ContentTransformationTest(BaseTest):
                 full_prompt,
                 provider=provider,
                 temperature=DEFAULT_TEMPERATURE,
-                max_tokens=2048
+                max_tokens=2048,
             )
-            
+
             # Use clean execution time if available, otherwise fallback to wall clock
-            if hasattr(llm_client, "last_query_duration") and llm_client.last_query_duration > 0:
+            if (
+                hasattr(llm_client, "last_query_duration")
+                and llm_client.last_query_duration > 0
+            ):
                 elapsed = llm_client.last_query_duration
             else:
                 elapsed = time.time() - start
@@ -64,7 +71,9 @@ class ContentTransformationTest(BaseTest):
             # Token-Approximation
             approx_tokens = int(len(response.split()) * TOKEN_MULTIPLIER)
 
-            load_time = getattr(llm_client, "last_response_metadata", {}).get("load_duration", 0.0)
+            load_time = getattr(llm_client, "last_response_metadata", {}).get(
+                "load_duration", 0.0
+            )
 
             return BenchmarkResult(
                 status="success",
@@ -76,13 +85,15 @@ class ContentTransformationTest(BaseTest):
                 load_time=load_time,
                 tokens_used=approx_tokens,
                 cost_usd=getattr(llm_client, "last_request_cost", 0.0),
-                model_version=getattr(llm_client, "last_response_metadata", {}).get("system_fingerprint", "unknown"),
+                model_version=getattr(llm_client, "last_response_metadata", {}).get(
+                    "system_fingerprint", "unknown"
+                ),
                 meta={
                     "model": model,
                     "asset_id": self.asset["metadata"]["id"],
                     "prompt_length": len(full_prompt),
                     **getattr(llm_client, "last_response_metadata", {}),
-                }
+                },
             )
         except Exception as e:
             return BenchmarkResult(
@@ -90,7 +101,7 @@ class ContentTransformationTest(BaseTest):
                 rendered_value="ERROR",
                 raw_response=f"ERROR: {str(e)}",
                 execution_time=0.0,
-                meta={"model": model, "error": str(e)}
+                meta={"model": model, "error": str(e)},
             )
 
     def score_response(self, response: str) -> dict:

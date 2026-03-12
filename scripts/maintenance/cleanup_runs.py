@@ -20,7 +20,7 @@ def get_benchmark_files(runs_dir: Path) -> dict[str, list[Path]]:
     """
     Finds all benchmark result files and groups them by model.
     Checks for pattern: results_{model}_{timestamp}.json
-    
+
     Returns:
         Dict {model_name: [sorted list of paths (newest first)]}
     """
@@ -69,7 +69,9 @@ def cleanup_runs(
     for model, files in grouped_runs.items():
         if len(files) > keep:
             to_remove = files[keep:]
-            print(f"   Model '{model}': Found {len(files)} runs. Marking {len(to_remove)} for deletion (older than top {keep}).")
+            print(
+                f"   Model '{model}': Found {len(files)} runs. Marking {len(to_remove)} for deletion (older than top {keep})."
+            )
             files_to_delete.extend(to_remove)
 
     if not files_to_delete:
@@ -108,7 +110,7 @@ def cleanup_runs(
 def main():
     parser = argparse.ArgumentParser(
         description="Cleanup outdated benchmark run files.",
-        formatter_class=argparse.RawDescriptionHelpFormatter
+        formatter_class=argparse.RawDescriptionHelpFormatter,
     )
     parser.add_argument(
         "--path",
@@ -135,10 +137,12 @@ def main():
     if not args.path.exists():
         # Create it if it doesn't exist to avoid error
         try:
-             args.path.mkdir(parents=True, exist_ok=True)
+            args.path.mkdir(parents=True, exist_ok=True)
         except Exception:
-             print(f"❌ Error: Directory not found and could not be created: {args.path}")
-             sys.exit(1)
+            print(
+                f"❌ Error: Directory not found and could not be created: {args.path}"
+            )
+            sys.exit(1)
 
     cleanup_runs(args.path, keep=args.keep, force=args.force, dry_run=args.dry_run)
 

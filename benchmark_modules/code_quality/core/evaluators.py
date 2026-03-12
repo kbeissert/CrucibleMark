@@ -15,6 +15,7 @@ from .constants import (
     REASONING_TAGS,
 )
 
+
 class CodeQualityEvaluator:
     """
     Main evaluator for Code Quality benchmarks.

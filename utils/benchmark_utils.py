@@ -49,6 +49,7 @@ def load_asset_yaml(asset_path: Path) -> dict[str, Any]:
 def print_header(title: str, width: int = 60) -> None:
     """DEPRECATED: Use TerminalUI.print_header instead."""
     from utils.benchmark_ui import TerminalUI
+
     TerminalUI.print_header(title, width)
 
 
@@ -60,6 +61,7 @@ def select_from_list(
 ) -> Optional[T]:
     """DEPRECATED: Use TerminalUI.select_from_list instead."""
     from utils.benchmark_ui import TerminalUI
+
     return TerminalUI.select_from_list(items, display_func, prompt, title)
 
 

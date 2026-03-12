@@ -1,16 +1,23 @@
 """
 Factory for creating evaluator instances.
 """
+
 from .base import CriterionEvaluator
 from .keyword import KeywordPresenceEvaluator, KeywordAbsenceEvaluator
 from .structure import MarkdownTableEvaluator, StructureValidationEvaluator
-from .validation import RegexEvaluator, CodeValidationEvaluator, LengthValidationEvaluator
+from .validation import (
+    RegexEvaluator,
+    CodeValidationEvaluator,
+    LengthValidationEvaluator,
+)
+
 
 class EvaluatorFactory:
     """
     Factory class to retrieve specific CriterionEvaluator implementations
     based on the check method name.
     """
+
     # pylint: disable=too-few-public-methods
 
     _evaluators = {

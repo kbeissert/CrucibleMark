@@ -155,7 +155,5 @@ class OllamaProvider(LLMJudgeProvider):
                 time.sleep(unload_delay_ms / 1000.0)
             return True
         except Exception as exc:  # pylint: disable=broad-exception-caught
-            logger.warning(
-                "Ollama unload failed for model '%s': %s", model_id, exc
-            )
+            logger.warning("Ollama unload failed for model '%s': %s", model_id, exc)
             return False

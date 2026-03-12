@@ -343,10 +343,10 @@ class PoliticalCompassEvaluator:
         """
         # Clean reasoning tags (Fix 10)
         if response:
-             for tag in ["think", "thought", "reasoning"]:
-                 pattern = f"<{tag}>.*?</{tag}>"
-                 response = re.sub(pattern, "", response, flags=re.DOTALL)
-             response = response.strip()
+            for tag in ["think", "thought", "reasoning"]:
+                pattern = f"<{tag}>.*?</{tag}>"
+                response = re.sub(pattern, "", response, flags=re.DOTALL)
+            response = response.strip()
 
         # Parse User Choice (A/B/C/D)
         choice = self._parse_choice(response)

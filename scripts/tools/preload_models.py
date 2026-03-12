@@ -7,20 +7,20 @@ Used during installation to ensure offline capability.
 """
 
 import sys
-from pathlib import Path
+
 
 def preload_similarity_model():
     """Downloads the 'all-MiniLM-L6-v2' model."""
     try:
         # Import lazily to avoid import errors if package is missing
         from sentence_transformers import SentenceTransformer
-        
+
         print("\n⏳ Downloading Semantic Model (all-MiniLM-L6-v2) to local cache...")
         print("   (This prevents timeouts during benchmark execution)")
-        
+
         # This triggers the download
         model = SentenceTransformer("all-MiniLM-L6-v2")
-        
+
         print("✅ Model downloaded successfully (Cached).")
         return True
     except ImportError:
@@ -29,6 +29,7 @@ def preload_similarity_model():
     except Exception as e:
         print(f"❌ Failed to download model: {e}")
         return False
+
 
 if __name__ == "__main__":
     success = preload_similarity_model()

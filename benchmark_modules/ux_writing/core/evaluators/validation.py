@@ -1,6 +1,7 @@
 """
 Evaluators for validation rules (Regex, Code presence, Length constraints).
 """
+
 import re
 from typing import Tuple
 from ..models import UXCriterion
@@ -8,6 +9,7 @@ from ..constants import MAX_BUTTON_LENGTH, DEFAULT_MIN_REGEX_MATCHES
 from .base import CriterionEvaluator
 
 # pylint: disable=too-few-public-methods
+
 
 class RegexEvaluator(CriterionEvaluator):
     """
@@ -36,6 +38,7 @@ class RegexEvaluator(CriterionEvaluator):
             f"⚠ {criterion.name}: {count}/{min_required} Treffer ({partial:.1f}p)",
         )
 
+
 class CodeValidationEvaluator(CriterionEvaluator):
     """
     Evaluates if the response contains required code elements or blocks.
@@ -57,7 +60,7 @@ class CodeValidationEvaluator(CriterionEvaluator):
                 found_elements.append(f"{elem}({count}x)")
 
         if total_found >= min_blocks:
-            found_summary = ', '.join(found_elements[:3])
+            found_summary = ", ".join(found_elements[:3])
             return (
                 points,
                 f"✓ {criterion.name}: {total_found} Code-Beispiele "
@@ -68,6 +71,7 @@ class CodeValidationEvaluator(CriterionEvaluator):
             0.0,
             f"✗ {criterion.name}: {total_found}/{min_blocks} Code-Beispiele",
         )
+
 
 class LengthValidationEvaluator(CriterionEvaluator):
     """

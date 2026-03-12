@@ -1,9 +1,11 @@
 from dataclasses import dataclass, field
 from typing import List, Dict, Any, Optional
 
+
 @dataclass
 class UXIssue:
     """Represents a specific issue to detect in the response."""
+
     issue: str
     points: float = 0.0
     keywords: List[str] = field(default_factory=list)
@@ -15,7 +17,7 @@ class UXIssue:
     required_ratio: Optional[float] = None
 
     @classmethod
-    def from_dict(cls, data: Dict[str, Any]) -> 'UXIssue':
+    def from_dict(cls, data: Dict[str, Any]) -> "UXIssue":
         # Handles optional fields safely
         return cls(
             issue=data.get("issue", "Unknown Issue"),
@@ -25,12 +27,14 @@ class UXIssue:
             severity=data.get("severity", "medium"),
             explanation=data.get("explanation", ""),
             check_method=data.get("check_method"),
-            required_ratio=data.get("required_ratio")
+            required_ratio=data.get("required_ratio"),
         )
+
 
 @dataclass
 class UXCriterion:
     """Represents a generic scoring criterion for solution quality or formatting."""
+
     id: str
     name: str
     points: float
@@ -49,7 +53,7 @@ class UXCriterion:
     min_indicators: int = 0
 
     @classmethod
-    def from_dict(cls, data: Dict[str, Any]) -> 'UXCriterion':
+    def from_dict(cls, data: Dict[str, Any]) -> "UXCriterion":
         return cls(
             id=data.get("id", ""),
             name=data.get("name", "Unnamed Criterion"),
@@ -65,8 +69,9 @@ class UXCriterion:
             required_elements=data.get("required_elements", []),
             min_code_blocks=data.get("min_code_blocks", 0),
             indicators=data.get("indicators", []),
-            min_indicators=data.get("min_indicators", 0)
+            min_indicators=data.get("min_indicators", 0),
         )
+
 
 @dataclass
 class UXErrorDetectionSection:
@@ -79,16 +84,23 @@ class UXErrorDetectionSection:
     expert_issues: List[UXIssue] = field(default_factory=list)
 
     @classmethod
-    def from_dict(cls, data: Dict[str, Any]) -> 'UXErrorDetectionSection':
+    def from_dict(cls, data: Dict[str, Any]) -> "UXErrorDetectionSection":
         return cls(
             weight=float(data.get("weight", 0.0)),
             description=data.get("description", ""),
             default_required_ratio=data.get("default_required_ratio"),
-            labeled_issues=[UXIssue.from_dict(i) for i in data.get("labeled_issues", [])],
-            standard_issues=[UXIssue.from_dict(i) for i in data.get("standard_issues", [])],
-            advanced_issues=[UXIssue.from_dict(i) for i in data.get("advanced_issues", [])],
-            expert_issues=[UXIssue.from_dict(i) for i in data.get("expert_issues", [])]
+            labeled_issues=[
+                UXIssue.from_dict(i) for i in data.get("labeled_issues", [])
+            ],
+            standard_issues=[
+                UXIssue.from_dict(i) for i in data.get("standard_issues", [])
+            ],
+            advanced_issues=[
+                UXIssue.from_dict(i) for i in data.get("advanced_issues", [])
+            ],
+            expert_issues=[UXIssue.from_dict(i) for i in data.get("expert_issues", [])],
         )
+
 
 @dataclass
 class UXScoringSection:
@@ -97,12 +109,13 @@ class UXScoringSection:
     criteria: List[UXCriterion] = field(default_factory=list)
 
     @classmethod
-    def from_dict(cls, data: Dict[str, Any]) -> 'UXScoringSection':
+    def from_dict(cls, data: Dict[str, Any]) -> "UXScoringSection":
         return cls(
             weight=float(data.get("weight", 0.0)),
             description=data.get("description", ""),
-            criteria=[UXCriterion.from_dict(c) for c in data.get("criteria", [])]
+            criteria=[UXCriterion.from_dict(c) for c in data.get("criteria", [])],
         )
+
 
 @dataclass
 class UXScoringConfig:
@@ -112,17 +125,18 @@ class UXScoringConfig:
     formatting: Optional[UXScoringSection] = None
 
     @classmethod
-    def from_dict(cls, data: Dict[str, Any]) -> 'UXScoringConfig':
-        obj = cls(
-            total_points=float(data.get("total_points", 100.0))
-        )
+    def from_dict(cls, data: Dict[str, Any]) -> "UXScoringConfig":
+        obj = cls(total_points=float(data.get("total_points", 100.0)))
         if "error_detection" in data:
-            obj.error_detection = UXErrorDetectionSection.from_dict(data["error_detection"])
+            obj.error_detection = UXErrorDetectionSection.from_dict(
+                data["error_detection"]
+            )
         if "solution_quality" in data:
             obj.solution_quality = UXScoringSection.from_dict(data["solution_quality"])
         if "formatting" in data:
             obj.formatting = UXScoringSection.from_dict(data["formatting"])
         return obj
+
 
 @dataclass
 class UXAssetMetadata:
@@ -136,7 +150,7 @@ class UXAssetMetadata:
     tags: List[str]
 
     @classmethod
-    def from_dict(cls, data: Dict[str, Any]) -> 'UXAssetMetadata':
+    def from_dict(cls, data: Dict[str, Any]) -> "UXAssetMetadata":
         return cls(
             id=data.get("id", ""),
             name=data.get("name", ""),
@@ -145,22 +159,24 @@ class UXAssetMetadata:
             subcategory=data.get("subcategory", ""),
             difficulty=data.get("difficulty", "medium"),
             estimated_time_seconds=int(data.get("estimated_time_seconds", 0)),
-            tags=data.get("tags", [])
+            tags=data.get("tags", []),
         )
+
 
 @dataclass
 class UXScenario:
     """Represents a full test scenario loaded from an asset yaml."""
+
     metadata: UXAssetMetadata
     context: str
     prompt_template: str
     requirements: List[str]
     input_text: str
-    testdata_issues: List[Dict[str, Any]] # Keeping raw for now or model if needed
+    testdata_issues: List[Dict[str, Any]]  # Keeping raw for now or model if needed
     scoring: UXScoringConfig
 
     @classmethod
-    def from_dict(cls, data: Dict[str, Any]) -> 'UXScenario':
+    def from_dict(cls, data: Dict[str, Any]) -> "UXScenario":
         return cls(
             metadata=UXAssetMetadata.from_dict(data.get("metadata", {})),
             context=data.get("context", ""),
@@ -168,7 +184,7 @@ class UXScenario:
             requirements=data.get("requirements", []),
             input_text=data.get("input_text", ""),
             testdata_issues=data.get("testdata", {}).get("issues", []),
-            scoring=UXScoringConfig.from_dict(data.get("scoring", {}))
+            scoring=UXScoringConfig.from_dict(data.get("scoring", {})),
         )
 
     def to_prompt(self) -> str:

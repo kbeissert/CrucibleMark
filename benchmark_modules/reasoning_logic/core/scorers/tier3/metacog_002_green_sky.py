@@ -197,9 +197,7 @@ def score_metacog_002(response: str) -> tuple[float, dict[str, Any], list[str]]:
     details.append(fc_detail)
 
     # 3. Thought Quality (20 pts) - REQUIRE SUBSTANTIVE REASONING
-    tq_score, tq_detail = _evaluate_thought_quality(
-        parsed, has_physics_explanation
-    )
+    tq_score, tq_detail = _evaluate_thought_quality(parsed, has_physics_explanation)
     breakdown["thought_quality"] = tq_score
     details.append(tq_detail)
 
