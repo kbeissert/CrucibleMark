@@ -222,8 +222,8 @@ def load_benchmark_data() -> pd.DataFrame:
     # We prefer alphanumeric hashes over pure numeric date-strings if both exist for a model.
     if "model" in df.columns and "model_version" in df.columns:
         pairs = df[["model", "model_version"]].drop_duplicates()
-        multi_ver_models = pairs["model"].value_counts()
-        multi_ver_models = multi_ver_models[multi_ver_models > 1].index
+        m_counts = pairs["model"].value_counts()
+        multi_ver_models = m_counts[m_counts > 1].index
 
         version_map = {}
         for m in multi_ver_models:
@@ -305,8 +305,8 @@ def load_benchmark_data() -> pd.DataFrame:
 
             ghost_rows = []
             for _, pc_row in pc_df.iterrows():
-                m = pc_row.get("model")
-                v = pc_row.get("model_version", "unknown")
+                m = str(pc_row.get("model", ""))
+                v = str(pc_row.get("model_version", "unknown"))
 
                 # Loose matching: Try exact version, then fallback to model-only lookup
                 t = known_models.get((m, v))
