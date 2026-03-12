@@ -1,6 +1,7 @@
 # Progress
 
 ## Completed
+- [DONE] Audit-Mode Vollintegration: Dynamischer `evaluated_prompt` in `BenchmarkResult`, vollständiges Logging von Regex Category-Scores und Deduction-Details im Markdown-Log (`run_local_benchmark.py` & `run_commercial_benchmark.py`), umfängliche Doku in `USER_GUIDE.md` & `README.md`.
 - [DONE] Leaderboard TypeError `None` Bug in `__init__.py` und Pydantic Validierungs-Bug (ValidationError in Config) behoben.
 - [DONE] Hardcoded Models in `judge_health.py` entfernt, Konfiguration erfolgt über `benchmark_config.yaml`.
 - [DONE] LLM Judge Timeout für Ollama von 30s auf 120s hochgesetzt.

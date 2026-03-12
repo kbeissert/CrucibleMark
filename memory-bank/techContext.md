@@ -13,6 +13,7 @@
 
 ## LLM Judge – Implemented Architecture
 
+- **Audit Logging**: Runner-Scripts extahieren DTO-Daten, verknüpfen rule-basierte `category_scores` und deduktive `details` Logs und überführen den finalen `evaluated_prompt` samt LLM-Reasoning in formatierte Markdown-Dateien zur manuellen Inspektion.
 - **Location**: `scoring/llm_judge/`
 - **Mode**: `complement` (runs alongside Hybrid Scorer) or `replace`
 - **Provider Abstraction**: Abstract base class `LLMJudgeProvider` in `base_provider.py`
