@@ -22,12 +22,23 @@ sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 # pylint: disable=wrong-import-position, import-error
 from utils.base_runner import BaseBenchmarkRunner  # noqa: E402
 from utils.module_loader import load_test_class  # noqa: E402
-from utils.benchmark_utils import select_from_list, discover_assets, load_asset_yaml, format_political_compass_data, prepare_pc_csv_row, save_debug_response, save_audit_log  # noqa: E402
+from utils.benchmark_utils import (
+    select_from_list,
+    discover_assets,
+    load_asset_yaml,
+    format_political_compass_data,
+    prepare_pc_csv_row,
+    save_debug_response,
+    save_audit_log,
+)  # noqa: E402
 from utils.fingerprinting import ModelFingerprinter  # noqa: E402
 from utils.model_utils import get_model_version  # noqa: E402
 from utils.llm_client import LLMClient  # noqa: E402
 from utils.module_registry import load_active_benchmarks  # noqa: E402
-from utils.scoring_utils import calculate_score_contributions, calculate_hybrid_score  # noqa: E402
+from utils.scoring_utils import (
+    calculate_score_contributions,
+    calculate_hybrid_score,
+)  # noqa: E402
 from utils.rate_limiter import RateLimiter  # noqa: E402
 
 # Declare ResultManager with proper type annotation
@@ -47,7 +58,9 @@ class CommercialBenchmarkRunner(BaseBenchmarkRunner):
 
     benchmark_categories: Dict[str, Any] = {}
 
-    def __init__(self, mode: str = "test", force: bool = False, audit_mode: bool = False):
+    def __init__(
+        self, mode: str = "test", force: bool = False, audit_mode: bool = False
+    ):
         """Initialisiert Runner.
 
         Args:
@@ -66,10 +79,12 @@ class CommercialBenchmarkRunner(BaseBenchmarkRunner):
         """Loads processed assets with data (SSOT Source)."""
         cache = {}
         # Check both Commercial and Local Csvs to be sure
+        # pylint: disable=protected-access
         csv_files = [
             self.result_manager._get_csv_path("commercial"),
-            self.result_manager._get_csv_path("local")
+            self.result_manager._get_csv_path("local"),
         ]
+        # pylint: enable=protected-access
 
         for p in csv_files:
             if p.exists():
@@ -82,7 +97,7 @@ class CommercialBenchmarkRunner(BaseBenchmarkRunner):
                             a = row.get("asset_id")
                             if m and a:
                                 cache[(m, a)] = row
-                except Exception:
+                except (OSError, csv.Error):
                     pass
         return cache
 
@@ -244,7 +259,6 @@ class CommercialBenchmarkRunner(BaseBenchmarkRunner):
             print(f"   ⚠️ Fehler beim Wiederherstellen aus JSON: {e}")
             return None
 
-
     # pylint: disable=unused-argument
     def _process_single_asset(
         self,
@@ -298,7 +312,7 @@ class CommercialBenchmarkRunner(BaseBenchmarkRunner):
                     )
                     return res
                 except ValueError:
-                    pass # Malformed CSV row, fallback to re-run
+                    pass  # Malformed CSV row, fallback to re-run
 
             else:
                 # Test Mode: Skip already processed tests (SSOT Behavior)
@@ -350,7 +364,9 @@ class CommercialBenchmarkRunner(BaseBenchmarkRunner):
 
         # ADDED: Granular Score Contribution
         benchmarks_list = benchmark_info.get("benchmarks", [])
-        asset_cfg = next((b for b in benchmarks_list if b["id"] == result["asset_id"]), None)
+        asset_cfg = next(
+            (b for b in benchmarks_list if b["id"] == result["asset_id"]), None
+        )
 
         # Calculate initial score contributions
         result = calculate_score_contributions(result, asset_cfg)
@@ -382,7 +398,7 @@ class CommercialBenchmarkRunner(BaseBenchmarkRunner):
         version = ModelFingerprinter.get_unified_version(
             provider=provider,
             model_name=model,
-            client=self.client if hasattr(self, "client") else None
+            client=self.client if hasattr(self, "client") else None,
         )
 
         result["model_version"] = version
@@ -391,9 +407,16 @@ class CommercialBenchmarkRunner(BaseBenchmarkRunner):
         # PHASE 2.5: LLM JUDGE INTEGRATION
         # ---------------------------------------------------------------------
         # Guaranteed Defaults
-        for key in ["llm_judge_score", "llm_judge_reasoning", "llm_judge_latency_ms", "llm_judge_provider_used", "llm_judge_model_used", "llm_judge_parse_success"]:
+        for key in [
+            "llm_judge_score",
+            "llm_judge_reasoning",
+            "llm_judge_latency_ms",
+            "llm_judge_provider_used",
+            "llm_judge_model_used",
+            "llm_judge_parse_success",
+        ]:
             result[key] = None
-            
+
         result["scoring_method"] = "regex_fallback"
 
         judge_cfg_dict = self.validator.config.get("llm_judge", {})
@@ -405,19 +428,24 @@ class CommercialBenchmarkRunner(BaseBenchmarkRunner):
             if len(response.strip()) < 15:
                 result["judge_progress_status"] = "⚠️ Judge: skip"
             else:
+                # pylint: disable=import-outside-toplevel
                 from utils.scoring.llm_judge.judge_config import LLMJudgeConfig
                 from utils.scoring.llm_judge.judge_runner import JudgeRunner
-                import logging
-                
+                # pylint: enable=import-outside-toplevel
+
                 try:
                     judge_config = LLMJudgeConfig.from_dict(judge_cfg_dict)
                     # Apply optional per-module override
                     if "llm_judge_model" in benchmark_info:
-                        judge_config.module_judge_model = benchmark_info["llm_judge_model"]
+                        judge_config.module_judge_model = benchmark_info[
+                            "llm_judge_model"
+                        ]
 
                     runner = JudgeRunner(judge_config)
 
-                    raw_prompt = asset_data.get("prompt", asset_data.get("instruction", ""))
+                    raw_prompt = asset_data.get(
+                        "prompt", asset_data.get("instruction", "")
+                    )
                     golden = asset_data.get("golden_standard", "")
                     if isinstance(golden, dict):
                         golden = golden.get("text", "")
@@ -431,7 +459,7 @@ class CommercialBenchmarkRunner(BaseBenchmarkRunner):
                         rubric_override=asset_data.get("scoring", {}).get("rubric"),
                         tested_model_id=model,
                         tested_model_provider=provider,
-                        response_time_ms=result.get("execution_time", 0) * 1000.0
+                        response_time_ms=result.get("execution_time", 0) * 1000.0,
                     )
 
                     # Merge fields
@@ -441,11 +469,11 @@ class CommercialBenchmarkRunner(BaseBenchmarkRunner):
                     result["llm_judge_provider_used"] = judge_res.judge_provider_used
                     result["llm_judge_model_used"] = judge_res.judge_model_used
                     result["llm_judge_parse_success"] = judge_res.parse_success
-                    
+
                     if judge_res.parse_success and judge_res.score is not None:
                         judge_scale = judge_config.scoring.scale
                         judge_pct = (judge_res.score / judge_scale) * 100
-                        
+
                         # Hybrid Score berechnen
                         regex_pct = result.get("percentage", 0.0)
                         hybrid_score = calculate_hybrid_score(
@@ -453,21 +481,23 @@ class CommercialBenchmarkRunner(BaseBenchmarkRunner):
                             judge_score=judge_pct,
                             asset_config=asset_cfg,
                             module_config=benchmark_info,
-                            judge_enabled=judge_config.enabled
+                            judge_enabled=judge_config.enabled,
                         )
-                        
+
                         result["total_score"] = hybrid_score
                         result["percentage"] = hybrid_score
                         result["scoring_method"] = "hybrid"
-                        result["judge_progress_status"] = f"⚖️ Judge: {judge_res.score}/{judge_scale} (Hybrid)"
-                        
+                        result["judge_progress_status"] = (
+                            f"⚖️ Judge: {judge_res.score}/{judge_scale} (Hybrid)"
+                        )
+
                         # RECALCULATE contributions based on the new Hybrid score
                         result = calculate_score_contributions(result, asset_cfg)
                     else:
                         result["judge_progress_status"] = "❌ Judge: failed"
-                        
-                except Exception as e:
-                    logging.error(f"LLM Judge execution failed: {e}")
+
+                except Exception as e:  # pylint: disable=broad-exception-caught
+                    logging.error("LLM Judge execution failed: %s", e)
                     result["judge_progress_status"] = "❌ Judge: failed"
         # ---------------------------------------------------------------------
 
@@ -506,14 +536,16 @@ class CommercialBenchmarkRunner(BaseBenchmarkRunner):
             )
 
         if getattr(self, "audit_mode", False):
-            rp_fallback = asset_data.get("prompt", asset_data.get("instruction", "No prompt found"))
+            rp_fallback = asset_data.get(
+                "prompt", asset_data.get("instruction", "No prompt found")
+            )
             rp = getattr(exec_result, "evaluated_prompt", "") or rp_fallback
-            
+
             if result.get("scoring_method") in ["llm_judge", "hybrid"]:
-                judge_provider = result.get('llm_judge_provider_used', 'unknown')
-                judge_model = result.get('llm_judge_model_used', 'unknown')
+                judge_provider = result.get("llm_judge_provider_used", "unknown")
+                judge_model = result.get("llm_judge_model_used", "unknown")
                 judge_info = f"*(Evaluated using {judge_provider} / {judge_model})*"
-                
+
                 # Fetch module-level category scores that are logged to CSV
                 cat_section = ""
                 cat_scores = score.get("category_scores", {})
@@ -545,7 +577,7 @@ class CommercialBenchmarkRunner(BaseBenchmarkRunner):
                 asset_id=result["asset_id"],
                 prompt=rp,
                 response=response,
-                judge_response=judge_resp
+                judge_response=judge_resp,
             )
 
         return result
@@ -600,7 +632,9 @@ class CommercialBenchmarkRunner(BaseBenchmarkRunner):
         if benchmark_info.get("execution_mode") == "batch":
             batch_asset_id = benchmark_info.get("id", "batch_module")
             if not self.force and self.existing_benchmarks.get((model, batch_asset_id)):
-                print(f"⏩ Überspringe {benchmark_info['name']} (Batch-Modus; Bereits im Cache vorhanden)")
+                print(
+                    f"⏩ Überspringe {benchmark_info['name']} (Batch-Modus; Bereits im Cache vorhanden)"
+                )
                 return [dict(self.existing_benchmarks.get((model, batch_asset_id)))]
 
             # Dynamic Loading
@@ -610,8 +644,10 @@ class CommercialBenchmarkRunner(BaseBenchmarkRunner):
 
             try:
                 test_class = load_test_class(test_file, test_class_name)
-            except Exception as e:
-                logger.error("Failed to load batch module %s: %s", benchmark_info['name'], e)
+            except Exception as e:  # pylint: disable=broad-exception-caught
+                logger.error(
+                    "Failed to load batch module %s: %s", benchmark_info["name"], e
+                )
                 return []
 
             # TODO: Generic ResultManager for batch modules
@@ -619,7 +655,9 @@ class CommercialBenchmarkRunner(BaseBenchmarkRunner):
             # Ideally, the TestClass should handle IO or return a standard object
             # Imports moved to top-level
 
-            print(f"🛠️  Initialisiere Batch-Test: {benchmark_info['name']} ({provider}:{model})")
+            print(
+                f"🛠️  Initialisiere Batch-Test: {benchmark_info['name']} ({provider}:{model})"
+            )
             test = test_class()
 
             # Load assets dynamically from module path
@@ -642,7 +680,9 @@ class CommercialBenchmarkRunner(BaseBenchmarkRunner):
             client = LLMClient(config=self.validator.config)
 
             # Execution
-            result_wrapper = test.execute(model=model, llm_client=client, provider=provider)
+            result_wrapper = test.execute(
+                model=model, llm_client=client, provider=provider
+            )
 
             # Reporting
             try:
@@ -651,13 +691,17 @@ class CommercialBenchmarkRunner(BaseBenchmarkRunner):
                 print(f"❌ Batch Execution Failed: Invalid JSON response ({e})")
                 return []
 
-            is_political_compass = benchmark_info.get("id", "") in ["political_compass", "political_compass_v3"] or benchmark_info.get("name", "") == "Political Compass"
+            is_political_compass = (
+                benchmark_info.get("id", "")
+                in ["political_compass", "political_compass_v3"]
+                or benchmark_info.get("name", "") == "Political Compass"
+            )
 
             if is_political_compass and ResultManager:
                 try:
                     ResultManager.print_summary(report)
                     ResultManager.save_json(report, Path("outputs/runs"))
-                except Exception as e:
+                except Exception as e:  # pylint: disable=broad-exception-caught
                     print(f"⚠️ Political Compass Reporting Error: {e}")
 
                 # Save to shared CSV for Leaderboard
@@ -665,7 +709,17 @@ class CommercialBenchmarkRunner(BaseBenchmarkRunner):
                     pc_csv = Path("benchmark_scores/political_compass_results.csv")
                     pc_csv.parent.mkdir(exist_ok=True, parents=True)
 
-                    fieldnames = ["model", "model_version", "run_id", "x_coordinate", "y_coordinate", "x_label", "y_label", "metrics_json", "timestamp"]
+                    fieldnames = [
+                        "model",
+                        "model_version",
+                        "run_id",
+                        "x_coordinate",
+                        "y_coordinate",
+                        "x_label",
+                        "y_label",
+                        "metrics_json",
+                        "timestamp",
+                    ]
 
                     # Read logic for existing file to append/update
                     pc_rows = []
@@ -690,15 +744,19 @@ class CommercialBenchmarkRunner(BaseBenchmarkRunner):
                     # We pass the client to ensure behavioral hashing is consistent with other runs.
                     version = get_model_version(model, provider, client=client)
 
-                    new_row = prepare_pc_csv_row(model, report, data_object, model_version=version)
+                    new_row = prepare_pc_csv_row(
+                        model, report, data_object, model_version=version
+                    )
                     new_row["timestamp"] = datetime.now().isoformat()
                     pc_rows.append(new_row)
 
                     with open(pc_csv, "w", encoding="utf-8", newline="") as f:
-                        writer = csv.DictWriter(f, fieldnames=fieldnames, extrasaction='ignore')
+                        writer = csv.DictWriter(
+                            f, fieldnames=fieldnames, extrasaction="ignore"
+                        )
                         writer.writeheader()
                         writer.writerows(pc_rows)
-                except Exception as e:
+                except Exception as e:  # pylint: disable=broad-exception-caught
                     print(f"⚠️ Political Compass CSV Error: {e}")
 
             version = get_model_version(model, provider, client=client)
@@ -757,7 +815,7 @@ class CommercialBenchmarkRunner(BaseBenchmarkRunner):
                 is_golden_model,
                 index=i,
                 total_count=total_assets,
-                limiter=run_limiter
+                limiter=run_limiter,
             )
             if res:
                 results.append(res)
@@ -827,13 +885,20 @@ class CommercialBenchmarkRunner(BaseBenchmarkRunner):
                     with open(csv_path, encoding="utf-8") as f:
                         reader = csv.DictReader(f)
                         # Map asset_id to percentage
-                        golden_map = {row.get("asset_id"): float(row.get("percentage", 0.0)) for row in reader}
+                        golden_map = {
+                            row.get("asset_id"): float(row.get("percentage", 0.0))
+                            for row in reader
+                        }
 
                     current_assets = [r["asset_id"] for r in results]
-                    matching_golden_scores = [golden_map[aid] for aid in current_assets if aid in golden_map]
+                    matching_golden_scores = [
+                        golden_map[aid] for aid in current_assets if aid in golden_map
+                    ]
 
                     if matching_golden_scores:
-                        golden_avg = sum(matching_golden_scores) / len(matching_golden_scores)
+                        golden_avg = sum(matching_golden_scores) / len(
+                            matching_golden_scores
+                        )
                         # Consider it surpassed if slightly more than 0 due to float precision,
                         # but show message only if meaningful difference (e.g. >= 0.01%)
                         if avg_pct > golden_avg:
@@ -841,11 +906,17 @@ class CommercialBenchmarkRunner(BaseBenchmarkRunner):
                             # Only warn if difference is significant enough to show up in .2f format
                             if diff >= 0.005:
                                 print(f"\n{'=' * 66}")
-                                print(f"⚠️  ACHTUNG: GOLDEN STANDARD ÜBERTROFFEN! (+{diff:.2f}%)")
+                                print(
+                                    f"⚠️  ACHTUNG: GOLDEN STANDARD ÜBERTROFFEN! (+{diff:.2f}%)"
+                                )
                                 print(f"{'=' * 66}")
-                                print("Dieses Modell schneidet BESSER ab als die aktuelle Referenz.")
+                                print(
+                                    "Dieses Modell schneidet BESSER ab als die aktuelle Referenz."
+                                )
                                 print("Bitte prüfen: Ist der Golden Standard veraltet?")
-                                print("Handlungsempfehlung: `make generate-golden` (falls das Ergebnis validiert ist).")
+                                print(
+                                    "Handlungsempfehlung: `make generate-golden` (falls das Ergebnis validiert ist)."
+                                )
             except Exception:  # pylint: disable=broad-exception-caught
                 pass
 
@@ -893,7 +964,9 @@ def main():
         for cat_key, cat_info in runner.benchmark_categories.items():
             # Skip Political Compass in Golden Standard (Bias != Benchmark)
             if mode == "golden_standard" and cat_key == "political_compass":
-                print(f"⏩ Überspringe {cat_info['name']} im Golden Standard Modus (Bias-Benchmark)")
+                print(
+                    f"⏩ Überspringe {cat_info['name']} im Golden Standard Modus (Bias-Benchmark)"
+                )
                 continue
 
             results = runner.run_benchmark(provider, model_id, cat_info)
