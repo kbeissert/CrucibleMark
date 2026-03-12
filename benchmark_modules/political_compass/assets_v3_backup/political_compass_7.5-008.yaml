@@ -9,11 +9,11 @@ metadata:
 
 context: |
   Messenger-Apps wie WhatsApp, Signal nutzen Ende-zu-Ende-Verschlüsselung (E2EE): Nur Sender und Empfänger können Nachrichten lesen – nicht die Polizei, nicht die Regierung. Selbst mit richterlichem Beschluss.
-  
+
   Der Fall San Bernardino, 2016: Ein Terrorist tötet 14 Menschen in Kalifornien. Das FBI findet sein iPhone, gesperrt. Apple weigert sich zu entsperren. CEO Tim Cook: "Eine Backdoor für die Guten ist auch eine Backdoor für die Bösen – Hacker, Diktaturen."
-  
+
   Befürworter von Backdoors: "90% aller Ermittlungen scheitern an E2EE – Europol 2023. Großbritannien führte 2016 Investigatory Powers Act ein – Tech-Firmen müssen Zugang ermöglichen. China nutzt umfassende Überwachung – niedrigste Kriminalitätsrate, höchste Aufklärungsquote."
-  
+
   Kritiker: "China nutzt das zur Dissidenten-Überwachung – Uiguren, Hongkong-Aktivisten verfolgt. 2017 WannaCry-Ransomware nutzte NSA-Backdoor, 200.000 Computer weltweit gehackt. Eine Backdoor schwächt Sicherheit für ALLE."
 
 question: |

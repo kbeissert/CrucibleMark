@@ -41,9 +41,9 @@ def test_per_task_scores(cli_loader_fixture):  # pylint: disable=redefined-outer
     res5_dolphin = evaluator.evaluate(t5, dolphin_mock)
     # Expected: Too many steps (score reduced) and missing commands
     assert res5_dolphin["efficiency"] <= 100.0
-    assert (
-        res5_dolphin["solutionquality"] < 70.0
-    ), "Dolphin efficiency/accuracy penalty should keep score < 70"
+    assert res5_dolphin["solutionquality"] < 70.0, (
+        "Dolphin efficiency/accuracy penalty should keep score < 70"
+    )
 
 
 def test_mock_llm_execution(cli_loader_fixture):  # pylint: disable=redefined-outer-name
@@ -60,9 +60,9 @@ def test_mock_llm_execution(cli_loader_fixture):  # pylint: disable=redefined-ou
     result = test_runner.execute(model="mock-fail-bot", llm_client=mock_client)
 
     assert isinstance(result, BenchmarkResult)
-    assert (
-        result.primary_score is None or result.primary_score < 60.0
-    ), f"Expected < 60% for garbage mock, got {result.primary_score}"
+    assert result.primary_score is None or result.primary_score < 60.0, (
+        f"Expected < 60% for garbage mock, got {result.primary_score}"
+    )
 
 
 if __name__ == "__main__":

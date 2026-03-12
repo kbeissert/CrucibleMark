@@ -30,7 +30,7 @@ context: |
 
 prompt: |
   Analysiere den folgenden Python/Flask-Code auf **API-Design-Fehler** und **REST-Verstöße**.
-  
+
   Der Code enthält drei Kategorien von Fehlern:
   1. **Markierte Issues**: Bereits identifizierte Probleme (bestätige diese).
   2. **Offensichtliche Issues**: Standard REST-Fehler (Verben, Status Codes).
@@ -42,56 +42,56 @@ prompt: |
   **API Code (Flask):**
   ```python
   from flask import Flask, request, jsonify
-  
+
   app = Flask(__name__)
-  
+
   # In-memory database
   users = []
-  
+
   # ISSUE 1: Wrong HTTP Verb for fetching data
   @app.route('/get_users', methods=['POST'])
   def get_all_users():
       return jsonify(users), 200
-  
+
   # ISSUE 2: Non-standard URL structure
   @app.route('/create_new_user_entry', methods=['POST'])
   def add_user():
       data = request.json
-      
+
       # Validation
       if 'username' not in data:
           # Returning 200 OK even for errors
           return jsonify({"error": "Missing username", "status": "fail"}), 200
-      
+
       user = {
           "id": len(users) + 1,
           "username": data['username'],
           "email": data.get('email', '')
       }
       users.append(user)
-      
+
       return jsonify({"message": "User created", "id": user['id']}), 200
-  
+
   @app.route('/user/delete', methods=['GET'])
   def delete_user():
       user_id = request.args.get('id')
       # Logic to delete user...
       return jsonify({"status": "deleted"}), 200
-      
+
   @app.route('/api/update_email', methods=['POST'])
   def update_email():
       # Updates email, but what if network fails and client retries?
       # Not idempotent!
       user_id = request.json.get('id')
       new_email = request.json.get('email')
-      
+
       for user in users:
           if user['id'] == user_id:
               user['email'] = new_email
               # Side effect: Sends email notification every time
-              send_notification(user['email'], "Email changed") 
+              send_notification(user['email'], "Email changed")
               return jsonify(user), 200
-              
+
       return jsonify({"error": "User not found"}), 404
 
   # Helper
@@ -118,7 +118,7 @@ test_data:
       severity: "high"
       type: "labeled"
       explanation: "GET statt POST für Datenabruf (/get_users)."
-    
+
     - issue: "URL Naming (/create_new_user_entry)"
       severity: "medium"
       type: "labeled"
@@ -129,12 +129,12 @@ test_data:
       severity: "high"
       type: "standard"
       explanation: "Fehler sollten 4xx Codes nutzen, nicht 200 OK mit Error-Body."
-    
+
     - issue: "GET for State Change (Delete)"
       severity: "critical"
       type: "standard"
       explanation: "Löschen via GET ist unsicher (Caching, Crawler)."
-      
+
     - issue: "Inconsistent Response Format"
       severity: "medium"
       type: "standard"
@@ -145,12 +145,12 @@ test_data:
       severity: "medium"
       type: "advanced"
       explanation: "Keine API-Versionierung (/v1/) in URL oder Header."
-      
+
     - issue: "No Pagination"
       severity: "medium"
       type: "advanced"
       explanation: "get_all_users gibt alles zurück -> Performance-Problem."
-      
+
     - issue: "Query Params vs Path Params"
       severity: "medium"
       type: "advanced"
@@ -173,17 +173,17 @@ test_data:
 
 scoring:
   total_points: 100
-  
+
   error_detection:
     weight: 60
     description: "Erkennung der Design-Fehler (Gestaffelt)"
-    
+
     # 1. Labeled Issues (10 Punkte)
     labeled_issues:
       - issue: "Wrong Verb (GET/POST)"
         points: 5
         keywords: ["wrong verb", "falsche methode", "get instead of post", "post request", "http verb", "richtiges verb", "get vs post"]
-      
+
       - issue: "URL Naming"
         points: 5
         keywords: ["resource based", "url structure", "naming convention", "restful url", "nomen statt verben", "ressourcen-orientiert", "keine verben in url"]
@@ -193,11 +193,11 @@ scoring:
       - issue: "Status Code 200 Error"
         points: 5
         keywords: ["status code", "200 ok", "400", "4xx", "http status", "fehlercode", "return code"]
-        
+
       - issue: "GET for Delete"
         points: 5
         keywords: ["delete via get", "unsafe delete", "delete method", "method for deleting", "löschen via get"]
-        
+
       - issue: "Inconsistent Response"
         points: 5
         keywords: ["envelope", "wrapper", "consistent response", "structure mismatch", "inkonsistent", "format mismatch", "rückgabestruktur"]
@@ -207,11 +207,11 @@ scoring:
       - issue: "Missing Versioning"
         points: 5
         keywords: ["versioning", "api version", "breaking change", "versionierung", "prefix /v1", "url versioning"]
-        
+
       - issue: "No Pagination"
         points: 5
         keywords: ["pagination", "limit/offset", "large dataset", "paginierung", "paging support", "große datenmengen"]
-        
+
       - issue: "Query vs Path Params"
         points: 5
         keywords: ["path param", "query param", "restful identifier", "identifier in path", "pfadparameter", "id im pfad"]
@@ -221,7 +221,7 @@ scoring:
       - issue: "Idempotency Violation"
         points: 10
         keywords: ["idempotency", "idempotent", "side effect", "retry", "email", "notification", "idempotenz", "wiederholung", "nebenwirkung"]
-        
+
       - issue: "Security Headers"
         points: 10
         keywords: ["content-type", "header", "security", "cors", "accept", "sicherheit", "mime"]
@@ -229,21 +229,21 @@ scoring:
   solution_quality:
     weight: 30
     description: "Qualität der Verbesserungsvorschläge"
-    
+
     criteria:
       - id: "SQ-001"
         name: "Correct Status Codes"
         points: 10
         check_method: "keyword_presence"
         keywords: ["400", "201", "204", "status code", "http status", "4xx", "2xx"]
-        
+
       - id: "SQ-002"
         name: "Resource Oriented URLs"
         points: 10
         check_method: "keyword_presence"
         keywords: ["/users", "/users/<id>", "methods=['GET']", "methods=['DELETE']", "resource", "rest-konform"]
         min_keywords: 1
-        
+
       - id: "SQ-003"
         name: "Idempotency Fix"
         points: 10

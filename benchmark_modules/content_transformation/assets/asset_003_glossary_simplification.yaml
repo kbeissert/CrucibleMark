@@ -20,34 +20,34 @@ metadata:
 context: |
   Du bist ein Technical Writer für ein Design System Team, das ein internes
   UX-Glossar für nicht-Designer pflegt (Produktmanager, Junior Devs, Stakeholder).
-  
+
   Das Problem: Die aktuellen Glossar-Einträge sind zu akademisch und verwenden
   Fachjargon, den nur UX-Designer verstehen. Neue Teammitglieder sind verwirrt,
   wenn in Meetings über "Progressive Disclosure" oder "Information Architecture"
   gesprochen wird.
-  
+
   Deine Aufgabe: Transformiere einen Wikipedia-Style Glossar-Eintrag in eine
   kinderleichte Erklärung mit einer Alltagsmetapher, die jeder sofort versteht.
-  
+
   **Zielgruppe:** Nicht-Designer (PMs, Junior Devs, Marketing, Business)
   **Ziel:** Verständnis in unter 30 Sekunden, ohne UX-Vorkenntnisse
   **Ton:** Freundlich, einladend, nicht herablassend
 
 prompt: |
   Du bist ein Technical Writer. Deine Aufgabe besteht aus zwei Teilen:
-  
+
   1. ANALYSE: Analysiere kurz, warum der akademische Text schwer verständlich ist. Benenne Probleme (nutze Begriffe wie "Jargon", "Komplexität", "Metapher", "Beispiel").
   2. TRANSFORMATION: Erstelle basierend auf deiner Analyse die vereinfachte Erklärung.
   3. EXPERT-LEVEL: Nutze eine Analogie aus der physischen Welt (Kochen/Verkehr) und vermeide abstrakte Konzepte komplett.
-  
+
   ## INPUT: AKADEMISCHER GLOSSAR-EINTRAG
-  
+
   WICHTIG: Bitte führe zuerst die ANALYSE durch (Schritt 1) und nenne explizit die fehlenden Elemente, bevor du die TRANSFORMATION erstellst.
-  
+
   **Begriff:** Progressive Disclosure
-  
+
   **Definition (Wikipedia-Style):**
-  
+
   > Progressive disclosure is an interaction design pattern that sequences
   > information and actions across multiple screens or sections to reduce
   > cognitive load. The technique is rooted in cognitive load theory and
@@ -57,53 +57,53 @@ prompt: |
   > Progressive disclosure is particularly effective in onboarding flows,
   > complex forms, and settings menus where feature depth might overwhelm
   > novice users.
-  
+
   **Fachbegriffe im Text:**
   - "Cognitive Load" (Kognitive Belastung)
   - "Information Architecture" (Informationsarchitektur)
   - "Decision Paralysis" (Entscheidungslähmung)
   - "Onboarding Flows" (Nutzer-Einführung)
-  
+
   ---
-  
+
   ## ANFORDERUNGEN AN DIE VEREINFACHTE ERKLÄRUNG:
-  
+
   1. **Verständlichkeit:**
      - KEIN Fachjargon (keine "Cognitive Load", "IA", etc.)
      - Einfache, kurze Sätze (max 15 Wörter)
      - Aktive Sprache ("Du zeigst" statt "Es wird gezeigt")
-  
+
   2. **Metapher:**
      - Alltagsmetapher MUSS vorhanden sein (z.B. Schubladen, Menü, Spiel)
      - Metapher muss visuell vorstellbar sein
      - Metapher muss zum Konzept passen
-  
+
   3. **Beispiele:**
      - Mindestens 1 konkretes UX-Beispiel (App/Website)
      - 1 Anti-Beispiel ("Schlecht wäre...")
      - Beispiele müssen bekannt sein (keine Nischen-Apps)
-  
+
   4. **Actionable:**
      - Wann sollte ich es nutzen? (Use-Case)
      - Wann NICHT nutzen? (Grenzen)
      - Wie setze ich es um? (Quick-Tipp)
-  
+
   5. **Format:**
      - Max 150 Wörter
      - Überschrift + Kurz-Definition (1 Satz)
      - Metapher-Abschnitt
      - Beispiel-Abschnitt
      - Wann-nutzen-Abschnitt
-  
+
   Erstelle die vollständige vereinfachte Glossar-Erklärung.
 
 scoring:
   total_points: 100
-  
+
   error_detection:
     weight: 40
     description: "Erkennung fehlender/falscher Simplification (Tiered)"
-    
+
     labeled_issues:
       - issue: "Fachjargon nicht entfernt"
         category: "Verständlichkeit"
@@ -121,7 +121,7 @@ scoring:
           - "cognitive load"
           - "laienverständlich"
         transformation_principle: "Jargon → Plain Language"
-      
+
       - issue: "Keine Metapher"
         category: "Metapher-Qualität"
         severity: critical
@@ -138,7 +138,7 @@ scoring:
           - "beispiel"
           - "vorstellung"
         transformation_principle: "Abstract → Concrete"
-    
+
     standard_issues:
       - issue: "Keine konkreten Beispiele"
         category: "Beispiele"
@@ -156,7 +156,7 @@ scoring:
           - "app"
           - "website"
         transformation_principle: "Abstract → Example-Based"
-      
+
       - issue: "Sätze zu lang"
         category: "Verständlichkeit"
         severity: medium
@@ -173,7 +173,7 @@ scoring:
           - "lesbar"
           - "klar"
         transformation_principle: "Complex → Simple Sentences"
-      
+
       - issue: "Keine Visualisierungs-Hinweise"
         category: "Metapher-Qualität"
         severity: medium
@@ -190,7 +190,7 @@ scoring:
           - "bild"
           - "denke an"
         transformation_principle: "Text → Visual Thinking"
-      
+
       - issue: "Anti-Beispiel fehlt"
         category: "Beispiele"
         severity: medium
@@ -207,7 +207,7 @@ scoring:
           - "vermeide"
           - "don't"
         transformation_principle: "Single-Sided → Contrasted"
-      
+
       - issue: "Zielgruppe nicht adressiert"
         category: "Actionable"
         severity: medium
@@ -224,7 +224,7 @@ scoring:
           - "nutzer"
           - "wer"
         transformation_principle: "Generic → Targeted"
-    
+
     advanced_issues:
       - issue: "Metapher nicht konsistent"
         category: "Metapher-Qualität"
@@ -242,7 +242,7 @@ scoring:
           - "einheitlich"
           - "roten faden"
         transformation_principle: "Mixed → Consistent Metaphor"
-      
+
       - issue: "Keine 'Before/After' Struktur"
         category: "Beispiele"
         severity: medium
@@ -259,7 +259,7 @@ scoring:
           - "ohne"
           - "vergleich"
         transformation_principle: "Static → Before/After"
-      
+
       - issue: "Use-Case unklar"
         category: "Actionable"
         severity: high
@@ -276,7 +276,7 @@ scoring:
           - "einsetzen"
           - "szenario"
         transformation_principle: "What → When"
-      
+
       - issue: "Keine visuellen Anchor-Punkte"
         category: "Format"
         severity: medium
@@ -293,7 +293,7 @@ scoring:
           - "formatierung"
           - "übersicht"
         transformation_principle: "Wall-of-Text → Structured"
-      
+
       - issue: "Zu lang"
         category: "Verständlichkeit"
         severity: medium
@@ -310,7 +310,7 @@ scoring:
           - "kürzer"
           - "knapp"
         transformation_principle: "Verbose → Concise"
-    
+
     expert_issues:
       - issue: "Zu abstrakte Erklärung"
         category: "Verständlichkeit"
@@ -328,7 +328,7 @@ scoring:
           - "realität"
           - "analogie"
         transformation_principle: "Abstract → Concrete"
-      
+
       - issue: "Analogie-Bruch"
         category: "Verständlichkeit"
         severity: low
@@ -345,7 +345,7 @@ scoring:
           - "unpassend"
           - "komplex"
         transformation_principle: "Complex → Simple"
-      
+
       - issue: "Keine Anekdote/Story"
         category: "Engagement"
         severity: low
@@ -362,7 +362,7 @@ scoring:
           - "beispiel aus"
           - "erfahrung"
         transformation_principle: "Definition → Story-Based"
-      
+
       - issue: "SEO-Keywords fehlen"
         category: "Discoverability"
         severity: low
@@ -379,11 +379,11 @@ scoring:
           - "alternativ"
           - "genannt"
         transformation_principle: "Single-Term → Discoverable"
-  
+
   solution_quality:
     weight: 60
     description: "Qualität der Glossar-Simplification"
-    
+
     criteria:
       - name: "Simplicity"
         points: 20
@@ -399,7 +399,7 @@ scoring:
           - "ohne jargon"
           - "zugänglich"
         description: "Ist die Sprache einfach und ohne Fachjargon?"
-      
+
       - name: "Metaphor-Quality"
         points: 20
         check_method: keyword_presence
@@ -414,7 +414,7 @@ scoring:
           - "stell dir vor"
           - "ähnlich"
         description: "Ist die Metapher nachvollziehbar, visuell und treffend?"
-      
+
       - name: "Actionable"
         points: 20
         check_method: keyword_presence

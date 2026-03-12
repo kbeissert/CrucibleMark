@@ -12,7 +12,7 @@ metadata:
 context: |
   Du bist ein Senior UX Writer, spezialisiert auf Conversion-Optimierung und Microcopy.
   Deine Aufgabe ist es, Button-Labels (Call-to-Actions) zu optimieren, damit sie klar, handlungsorientiert und kontextgerecht sind.
-  
+
   Kontexte:
   - E-Commerce (B2C): Klar, vertrauenswürdig, rechtssicher.
   - Newsletter (Marketing): Einladend, aber kurz.
@@ -23,12 +23,12 @@ context: |
 
 prompt: |
   Optimiere die folgenden Button-Labels für die angegebenen Szenarien.
-  
+
   Eingabe-Szenarien:
   {input_text}
-  
+
   WICHTIG: Bitte führe zuerst die ANALYSE durch (Schritt 1) und nenne explizit die identifizierten Probleme, bevor du die Optimierung erstellst (Schritt 2).
-  
+
   Erfülle dabei strikt die folgenden Anforderungen:
   {requirements}
 
@@ -115,12 +115,12 @@ testdata:
 
 scoring:
   total_points: 100
-  
+
   error_detection:
     weight: 60
     default_required_ratio: 0.6
     description: "Erkennung und Optimierung der Button-Labels"
-    
+
     # 1. Labeled Issues (10 Punkte)
     labeled_issues:
       - issue: "Newsletter-Button gekürzt (positive)"
@@ -131,7 +131,7 @@ scoring:
         points: 2.5
         keywords: ["möchte", "informiert", "werden"]
         inverse_match: true
-        
+
       - issue: "Checkout ist rechtssicher/klar"
         points: 5
         keywords: ["kaufen", "zahlen", "bestellen", "pflichtig"]
@@ -141,7 +141,7 @@ scoring:
       - issue: "SaaS Upload ist präzise"
         points: 10
         keywords: ["hochladen", "signieren", "übertragen"]
-        
+
       - issue: "Löschen warnt/ist präzise"
         points: 10
         keywords: ["endgültig", "unwiderruflich", "konto", "schließen"]
@@ -152,7 +152,7 @@ scoring:
         points: 8
         keywords: ["!"]
         inverse_match: true
-        
+
       - issue: "Health App ist empathisch"
         points: 7
         keywords: ["speichern", "erfassen", "notieren", "sichern"]
@@ -162,7 +162,7 @@ scoring:
       - issue: "SaaS Trial Hypothese"
         points: 8
         keywords: ["kostenlos", "gratis", "hürde", "commitment", "risk"]
-        
+
       - issue: "Mobile Game Motivation"
         points: 7
         keywords: ["weiterspielen", "retten", "chance", "revive"]
@@ -170,21 +170,21 @@ scoring:
   solution_quality:
     weight: 30
     description: "Qualität der Labels"
-    
+
     criteria:
       - id: "SQ-001"
         name: "Markdown Tabelle vorhanden"
         points: 10
         check_method: "markdown_table_validation"
         min_rows: 8
-        
+
       - id: "SQ-002"
         name: "Aktive Verben genutzt"
         points: 10
         check_method: "keyword_presence"
         keywords: ["kaufen", "abonnieren", "hochladen", "löschen", "speichern", "überweisen", "testen"]
         min_keywords: 4
-        
+
       - id: "SQ-003"
         name: "Kurze Labels (< 25 Zeichen)"
         points: 10

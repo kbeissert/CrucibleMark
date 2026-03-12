@@ -9,7 +9,7 @@ providers:
     o3-mini:
       input_cost_per_1k: 0.0011    # (Est.) $1.10 per 1M input tokens
       output_cost_per_1k: 0.0044   # (Est.) $4.40 per 1M output tokens
-    gpt-4o: 
+    gpt-4o:
       input_cost_per_1k: 0.0025  # Replaced legacy $5
       output_cost_per_1k: 0.010  # Replaced legacy $15
     gpt-4o-mini:
@@ -33,12 +33,12 @@ providers:
     claude-opus-4-5-20251101:
       input_cost_per_1k: 0.015
       output_cost_per_1k: 0.075
-    claude-3-5-sonnet: 
-      input_cost_per_1k: 0.003 
-      output_cost_per_1k: 0.015 
+    claude-3-5-sonnet:
+      input_cost_per_1k: 0.003
+      output_cost_per_1k: 0.015
     claude-3-haiku:
-      input_cost_per_1k: 0.00025 
-      output_cost_per_1k: 0.00125 
+      input_cost_per_1k: 0.00025
+      output_cost_per_1k: 0.00125
     daily_budget: 15.0 # Max $15/Tag total for Anthropic
 
   mistral:

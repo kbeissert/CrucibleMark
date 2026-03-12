@@ -19,17 +19,17 @@ metadata:
 
 context: |
   Du bist ein Video-Script-Writer für Tech-YouTube-Kanäle und Online-Tutorials.
-  
+
   Dein Kunde hat eine Bullet-Point-Outline für ein Tutorial-Video erstellt:
   "How to Set Up Two-Factor Authentication in 5 Minutes"
-  
+
   Das Problem: Die Outline ist viel zu technisch geschrieben, hat keine Spoken-Word-Sprache
   (klingt wie Dokumentation), und es fehlen alle Production-Hinweise (Timing, Screen-Annotations,
   Pausen, B-Roll, Musik-Cues).
-  
+
   Deine Aufgabe: Transformiere die trockene Outline in ein vollständiges, production-ready
   Video-Script mit Timestamps, Spoken-Word-Style und allen Technical-Cues für den Editor.
-  
+
   **Zielgruppe:** YouTube/TikTok Tutorial (Nicht-Tech-Savvy User, 18-45 Jahre)
   **Video-Länge:** 3-5 Minuten (optimal für Retention)
   **Ton:** Freundlich, energetisch, hilfreich (nicht roboterhaft)
@@ -37,99 +37,99 @@ context: |
 
 prompt: |
   Du bist ein Video-Script-Writer. Deine Aufgabe besteht aus zwei Teilen:
-  
+
   1. ANALYSE: Analysiere kurz, was der Outline fehlt, um ein gutes Video zu sein. Benenne fehlende Elemente (nutze Begriffe wie "Hook", "Timing", "Visuals", "Spoken Word").
   2. TRANSFORMATION: Erstelle basierend auf deiner Analyse das vollständige Video-Script.
   3. EXPERT-LEVEL: Füge einen "Easter Egg" Hinweis für aufmerksame Zuschauer ein (z.B. im Hintergrund oder als kurzer Text-Flash), um die Community-Bindung zu stärken.
 
   ## INPUT: TUTORIAL-OUTLINE (Bullet-Point-Format)
-  
+
   WICHTIG: Bitte führe zuerst die ANALYSE durch (Schritt 1) und nenne explizit die fehlenden Elemente, bevor du die TRANSFORMATION erstellst.
-  
+
   **Title:** How to Set Up Two-Factor Authentication in 5 Minutes
-  
+
   **Outline:**
-  
+
   1. **Introduction**
      - Explain what 2FA is
      - Why it's important (security)
-  
+
   2. **Prerequisites**
      - Email address
      - Phone number
      - Authenticator app (optional)
-  
+
   3. **Step 1: Go to Settings**
      - Navigate to account settings
      - Find security section
-  
+
   4. **Step 2: Enable 2FA**
      - Click "Enable Two-Factor Authentication"
      - Choose method (SMS or App)
-  
+
   5. **Step 3: Scan QR Code**
      - Open authenticator app
      - Scan QR code shown on screen
-  
+
   6. **Step 4: Enter Verification Code**
      - App generates 6-digit code
      - Enter code to confirm
-  
+
   7. **Troubleshooting**
      - Code not working? Check time sync
      - Lost phone? Use backup codes
-  
+
   8. **Conclusion**
      - Recap benefits
      - Call to action (like, subscribe)
-  
+
   ---
-  
+
   ## ANFORDERUNGEN AN DAS VIDEO-SCRIPT:
-  
+
   1. **Timing-Markers:**
      - Jeder Abschnitt MUSS Timestamp haben [00:00] - [05:00]
      - [PAUSE] Marker für natürliche Sprechpausen (1-2 Sekunden)
      - Realistische Timing-Erwartungen (nicht 5 Schritte in 30 Sekunden)
-  
+
   2. **Spoken-Word-Style:**
      - Konversationell ("Hey, let's..." statt "In this video we will...")
      - Kurze Sätze (max 12 Wörter pro Satz)
      - Füllwörter erlaubt ("also", "okay", "jetzt", "gut")
      - Direkte Ansprache ("Du klickst..." statt "Man navigiert zu...")
-  
+
   3. **Screen-Annotations:**
      - [SHOW: Settings Icon] für Zoom/Highlight
      - [CLICK: Enable Button] für Mouse-Click-Animation
      - [CIRCLE: QR Code] für visuellen Focus
      - [ARROW: Security Tab] für Richtungshinweise
-  
+
   4. **Engagement-Elements:**
      - Hook in ersten 5 Sekunden (Problem + Lösung)
      - Pattern-Interrupt bei 1:30 ("But wait...")
      - Retention-Hooks ("Coming up next...")
      - CTA am Ende (Like, Subscribe, Comment)
-  
+
   5. **Production-Cues:**
      - [B-ROLL: Hacker News Headlines] für Stock-Footage
      - [MUSIC: Upbeat Intro] für Audio-Layers
      - [TEXT ON SCREEN: "2FA = Safer"] für Grafik-Overlays
      - [JUMP CUT] für Edit-Points
-  
+
   6. **Format:**
      - 400-600 Wörter (3-5 Min bei 150 WPM Speak-Rate)
      - Klar getrennte Sections mit Timestamps
      - "Why"-Erklärungen (nicht nur "How")
-  
+
   Erstelle das vollständige Video-Script mit allen Elementen.
 
 scoring:
   total_points: 100
-  
+
   error_detection:
     weight: 40
     description: "Erkennung fehlender/falscher Video-Script-Transformation (Tiered)"
-    
+
     labeled_issues:
       - issue: "Keine Timing-Markers"
         category: "Timing-Markers"
@@ -147,7 +147,7 @@ scoring:
           - "marker"
           - "minute"
         transformation_principle: "Outline → Timed Script"
-      
+
       - issue: "Kein Hook"
         category: "Engagement"
         severity: critical
@@ -164,7 +164,7 @@ scoring:
           - "aufmerksamkeit"
           - "frage"
         transformation_principle: "Introduction → Hook"
-    
+
     standard_issues:
       - issue: "Schriftsprache statt Spoken-Word"
         category: "Spoken-Word-Style"
@@ -182,7 +182,7 @@ scoring:
           - "sprache"
           - "reden"
         transformation_principle: "Written → Spoken"
-      
+
       - issue: "Keine Pausen-Marker"
         category: "Timing-Markers"
         severity: high
@@ -199,7 +199,7 @@ scoring:
           - "luft holen"
           - "break"
         transformation_principle: "Continuous → Paced"
-      
+
       - issue: "Screen-Annotations fehlen"
         category: "Screen-Annotations"
         severity: critical
@@ -216,7 +216,7 @@ scoring:
           - "highlight"
           - "zoom"
         transformation_principle: "Audio-Only → Multimodal"
-      
+
       - issue: "Troubleshooting zu kurz"
         category: "Content-Quality"
         severity: medium
@@ -233,7 +233,7 @@ scoring:
           - "lösung"
           - "backup"
         transformation_principle: "Brief → Comprehensive"
-      
+
       - issue: "Kein CTA am Ende"
         category: "Engagement"
         severity: high
@@ -250,7 +250,7 @@ scoring:
           - "glocke"
           - "abonnieren"
         transformation_principle: "Conclusion → CTA"
-    
+
     advanced_issues:
       - issue: "Keine Pattern-Interrupts"
         category: "Engagement"
@@ -268,7 +268,7 @@ scoring:
           - "achtung"
           - "pro tip"
         transformation_principle: "Linear → Dynamic"
-      
+
       - issue: "Timing unrealistisch"
         category: "Timing-Markers"
         severity: high
@@ -285,7 +285,7 @@ scoring:
           - "dauer"
           - "länge"
         transformation_principle: "Rushed → Realistic Pacing"
-      
+
       - issue: "Keine 'Why'-Erklärung"
         category: "Content-Quality"
         severity: medium
@@ -302,7 +302,7 @@ scoring:
           - "benefit"
           - "nutzen"
         transformation_principle: "How → How + Why"
-      
+
       - issue: "Keine Viewer-Retention-Hooks"
         category: "Engagement"
         severity: medium
@@ -319,7 +319,7 @@ scoring:
           - "am ende"
           - "bonus"
         transformation_principle: "Static → Retention-Optimized"
-      
+
       - issue: "B-Roll-Hinweise fehlen"
         category: "Production-Cues"
         severity: medium
@@ -336,7 +336,7 @@ scoring:
           - "video"
           - "clip"
         transformation_principle: "Single-Layer → Multi-Layer"
-    
+
     expert_issues:
       - issue: "Kein Easter Egg"
         category: "Community-Building"
@@ -354,7 +354,7 @@ scoring:
           - "text flash"
           - "frame"
         transformation_principle: "Standard → Community-Insider"
-      
+
       - issue: "Kein Fourth-Wall-Break"
         category: "Engagement"
         severity: low
@@ -371,7 +371,7 @@ scoring:
           - "regie"
           - "zuschauer"
         transformation_principle: "Scripted → Meta-Aware"
-      
+
       - issue: "Musik-Cues fehlen"
         category: "Production-Cues"
         severity: low
@@ -388,7 +388,7 @@ scoring:
           - "outro"
           - "background"
         transformation_principle: "Silent → Scored"
-      
+
       - issue: "Keine Retention-Grafik"
         category: "Engagement"
         severity: low
@@ -405,11 +405,11 @@ scoring:
           - "grafik"
           - "visual"
         transformation_principle: "Linear → Progress-Tracked"
-  
+
   solution_quality:
     weight: 60
     description: "Qualität der Video-Script-Transformation"
-    
+
     criteria:
       - name: "Spoken-Word-Quality"
         points: 20
@@ -425,7 +425,7 @@ scoring:
           - "locker"
           - "freundlich"
         description: "Ist das Script konversationell und natürlich (nicht roboterhaft)?"
-      
+
       - name: "Timing-Accuracy"
         points: 20
         check_method: keyword_presence
@@ -440,7 +440,7 @@ scoring:
           - "realistisch"
           - "tempo"
         description: "Sind Timestamps und Pausen realistisch und präzise?"
-      
+
       - name: "Video-Production-Ready"
         points: 20
         check_method: keyword_presence

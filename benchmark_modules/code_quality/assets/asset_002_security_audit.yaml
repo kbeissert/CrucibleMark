@@ -30,7 +30,7 @@ context: |
 
 prompt: |
   Analysiere den folgenden PHP-Code auf **Security-Vulnerabilities**.
-  
+
   Der Code enthält drei Kategorien von Fehlern:
   1. **Markierte Issues**: Bereits identifizierte Probleme (bestätige diese).
   2. **Offensichtliche Issues**: Standard OWASP-Fehler ohne Markierung.
@@ -46,53 +46,53 @@ prompt: |
   // Debugging enabled for dev (TODO: disable in prod)
   error_reporting(E_ALL);
   ini_set('display_errors', 1);
-  
+
   $db = mysqli_connect("localhost", "root", "", "users_db");
 
   // === LOGIN HANDLER ===
   if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['login'])) {
       $username = $_POST['username'];
       $password = $_POST['password'];
-      
+
       // ISSUE 1: SQL Injection Vulnerability
       $query = "SELECT * FROM users WHERE username='$username' AND password='$password'";
       $result = mysqli_query($db, $query);
-      
+
       // ISSUE 2: Password stored in plain text
       if ($row = mysqli_fetch_assoc($result)) {
           // Login successful
           session_start();
           $_SESSION['user_id'] = $row['id'];
           $_SESSION['role'] = $row['role'];
-          
+
           // Set "Remember Me" cookie
           setcookie('auth_user', $username, time() + 86400 * 30);
-          
+
           echo "<h1>Welcome back, " . $username . "!</h1>";
-          
+
           // Redirect to dashboard
           header("Location: /dashboard.php?uid=" . $row['id']);
       } else {
           echo "Invalid username or password";
       }
   }
-  
+
   // === PASSWORD RESET ===
   if (isset($_POST['reset_request'])) {
       $email = $_POST['email'];
       // Generate reset token
       $token = md5(time() . rand());
-      
+
       $sql = "UPDATE users SET reset_token='$token' WHERE email='$email'";
       mysqli_query($db, $sql);
-      
+
       mail($email, "Password Reset", "Your token: $token");
   }
-  
+
   // === API AUTHENTICATION ===
   function checkApiAccess($request_data) {
       $secret_key = "s8sk_api_2024";
-      
+
       // Validate API Key
       if (isset($request_data['api_key'])) {
           // Loose comparison to allow flexible input types
@@ -114,7 +114,7 @@ prompt: |
           }
       }
   }
-  
+
   // === ADMIN ACTION ===
   if (isset($_POST['delete_user'])) {
       // Only admin can delete
@@ -124,18 +124,18 @@ prompt: |
           echo "User deleted.";
       }
   }
-  
+
   // === PROFILE UPDATE ===
   // Allow users to update their email
   if (isset($_POST['update_profile'])) {
       $new_email = $_POST['email'];
       $user_id = $_POST['user_id']; // Hidden field from form
-      
+
       // Update email
       $stmt = mysqli_prepare($db, "UPDATE users SET email=? WHERE id=?");
       mysqli_stmt_bind_param($stmt, "si", $new_email, $user_id);
       mysqli_stmt_execute($stmt);
-      
+
       echo "Profile updated!";
   }
   ?>
@@ -167,7 +167,7 @@ test_data:
       severity: "critical"
       type: "labeled"
       explanation: "Explizit markierte SQL Injection im Login."
-    
+
     - issue: "Plaintext Passwords"
       severity: "critical"
       type: "labeled"
@@ -178,12 +178,12 @@ test_data:
       severity: "high"
       type: "standard"
       explanation: "Unescaped echo output ($username)."
-    
+
     - issue: "Session Fixation"
       severity: "high"
       type: "standard"
       explanation: "Kein session_regenerate_id() nach Login."
-      
+
     - issue: "Insecure Cookie"
       severity: "medium"
       type: "standard"
@@ -199,17 +199,17 @@ test_data:
       severity: "medium"
       type: "advanced"
       explanation: "display_errors = 1 in Production Code."
-      
+
     - issue: "Weak Randomness (Reset Token)"
       severity: "high"
       type: "advanced"
       explanation: "md5(time() . rand()) ist vorhersagbar."
-      
+
     - issue: "Type Juggling (API Key)"
       severity: "high"
       type: "advanced"
       explanation: "Loose comparison (==) erlaubt Bypass wenn Input true/0 ist."
-      
+
     - issue: "Insecure Admin Check (Cookie Manipulation)"
       severity: "critical"
       type: "advanced"
@@ -232,17 +232,17 @@ test_data:
 
 scoring:
   total_points: 100
-  
+
   error_detection:
     weight: 60
     description: "Erkennung der Vulnerabilities (Gestaffelt)"
-    
+
     # 1. Labeled Issues (10 Punkte)
     labeled_issues:
       - issue: "SQL Injection (Login)"
         points: 5
         keywords: ["sql injection", "login query", "prepared statement", "sql-einschleusung", "datenbank query"]
-      
+
       - issue: "Plaintext Passwords"
         points: 5
         keywords: ["password hash", "plaintext password", "passwort im klartext", "bcrypt", "unverschlüsseltes passwort"]
@@ -252,15 +252,15 @@ scoring:
       - issue: "XSS (Welcome Message)"
         points: 4
         keywords: ["xss", "cross-site scripting", "htmlspecialchars", "output escaping", "skriptausführung"]
-        
+
       - issue: "Session Fixation"
         points: 4
         keywords: ["session_regenerate_id", "session fixation", "session hijacking", "sitzungsübernahme"]
-        
+
       - issue: "Path Traversal"
         points: 4
         keywords: ["path traversal", "directory traversal", "lfi", "local file inclusion", "pfadmanipulation", "unbefugter dateizugriff"]
-        
+
       - issue: "Insecure Cookie"
         points: 3
         keywords: ["httponly flag", "secure flag", "insecure cookie", "cookie sicherheit"]
@@ -270,15 +270,15 @@ scoring:
       - issue: "Weak Randomness (Token)"
         points: 4
         keywords: ["random_bytes", "random_int", "predictable randomness", "entropy", "kryptographisch sicher"]
-        
+
       - issue: "Type Juggling (API Key)"
         points: 4
         keywords: ["type juggling", "loose comparison", "strict comparison", "typunsicherer vergleich"]
-        
+
       - issue: "Insecure Admin Check"
         points: 4
         keywords: ["client-side trust", "cookie manipulation", "insecure authorization", "privilege escalation"]
-        
+
       - issue: "Information Disclosure"
         points: 3
         keywords: ["display_errors", "error_reporting", "information leakage", "debug info"]
@@ -288,7 +288,7 @@ scoring:
       - issue: "IDOR (Profile Update)"
         points: 10
         keywords: ["idor", "insecure direct object reference", "authorization check", "fremder zugriff"]
-        
+
       - issue: "CSRF (Missing Tokens)"
         points: 10
         keywords: ["csrf", "cross-site request forgery", "csrf token", "anti-csrf"]
@@ -296,7 +296,7 @@ scoring:
   solution_quality:
     weight: 30
     description: "Qualität der Fixes"
-    
+
     criteria:
       - id: "SQ-001"
         name: "Prepared Statements (Code)"
@@ -304,14 +304,14 @@ scoring:
         check_method: "code_validation"
         required_elements: ["prepare", "bind_param", "execute"]
         min_code_blocks: 1
-        
+
       - id: "SQ-002"
         name: "CSRF Token Implementation"
         points: 10
         check_method: "keyword_presence"
         keywords: ["csrf_token", "session", "token", "input type=\"hidden\""]
         min_keywords: 2
-        
+
       - id: "SQ-003"
         name: "Authorization Check (IDOR Fix)"
         points: 10

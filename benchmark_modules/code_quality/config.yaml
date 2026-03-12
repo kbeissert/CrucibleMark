@@ -8,7 +8,7 @@ metadata:
   description: "Umfassende Code-Qualitätsanalyse für verschiedene Aspekte der Softwareentwicklung"
   author: "CrucibleMark"
   created: "2024-12-26"
-  updated: "2026-01-31" 
+  updated: "2026-01-31"
   tags:
     - quality
     - security
@@ -20,8 +20,8 @@ metadata:
 # Diese Werte überschreiben die globalen Defaults für alle Tests dieses Moduls.
 generation:
   temperature: 0.3         # Erhöht auf 0.3 (Sanity Check bestätigt: 0.2 reicht nicht für alle Assets)
-  repeat_penalty: 1.05     
-  top_k: 40                
+  repeat_penalty: 1.05
+  top_k: 40
   top_p: 0.9
   num_predict: 8192
 
@@ -32,7 +32,7 @@ integration:
       routine: 0.0
       reasoning: 1.0
     columns:
-      - id: "code_quality_score" 
+      - id: "code_quality_score"
         label: "Code Quality Audit"
         weight: 1.0
 
@@ -109,22 +109,22 @@ config:
       name: "WCAG Violations"
       weight: 1.0
       max_score: 10
-    
+
     security_issues:
       name: "Security Issues"
       weight: 1.0
       max_score: 10
-    
+
     performance_problems:
       name: "Performance Problems"
       weight: 1.0
       max_score: 10
-    
+
     api_design_issues:
       name: "API Design Issues"
       weight: 1.0
       max_score: 10
-    
+
     code_smells:
       name: "Code Smells"
       weight: 1.0

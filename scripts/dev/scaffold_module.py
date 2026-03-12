@@ -60,12 +60,12 @@ class {class_name}Test(BaseTest):
     Controller class for {display_name}.
     Handles LLM communication and delegates scoring to the core evaluator.
     \"\"\"
-    
+
     def __init__(self):
         super().__init__()
         # Initialize the separated logic layer
         self.evaluator = {class_name}Evaluator()
-    
+
     def execute(self, model: str, llm_client, provider: str = 'ollama') -> Dict[str, Any]:
         \"\"\"
         Executes the test for a single model and asset.
@@ -73,16 +73,16 @@ class {class_name}Test(BaseTest):
         # 1. Load Asset Data
         if not self.asset:
             return {"error": "No asset loaded"}
-            
+
         system_prompt = self.asset.get('input', {}).get('system_prompt', "You are a helpful assistant.")
         user_prompt = self.asset.get('input', {}).get('prompt', "")
-        
+
         # 2. Execute LLM Call
         start_time = time.time()
         try:
             # Note: Adjust call signature if needed (some modules use specific prompt formats)
             response = llm_client.generate(
-                model=model, 
+                model=model,
                 prompt=user_prompt,
                 system=system_prompt
             )
@@ -93,7 +93,7 @@ class {class_name}Test(BaseTest):
                 "duration": 0
             }
         duration = time.time() - start_time
-        
+
         # 3. Return Raw Data (Scoring happens in next step)
         return {
             "status": "success",
@@ -109,15 +109,15 @@ class {class_name}Test(BaseTest):
         \"\"\"
         if response.get("status") != "success":
             return 0.0
-            
+
         result = self.evaluator.evaluate(
             response_text=response.get("raw_response", ""),
             asset=self.asset
         )
-        
+
         # Store detailed breakdown for the CSV output or UI
         self.latest_score_details = result.get('details', {})
-        
+
         return result.get('score', 0.0)
 """
 
@@ -132,28 +132,28 @@ class {class_name}Evaluator:
     """
     Evaluates model outputs against asset criteria.
     """
-    
+
     def evaluate(self, response_text: str, asset: Dict[str, Any]) -> Dict[str, Any]:
         """
         Main evaluation entry point.
-        
+
         Args:
             response_text: The raw string output from the LLM.
             asset: The loaded definition of the test case.
-            
+
         Returns:
             Dict with keys 'score' (float 0-100) and 'details' (Dict).
         """
-        
+
         # 1. Preprocessing (e.g. remove think tags)
         clean_text = self._clean_response(response_text)
-        
+
         # 2. Logic Implementation (TODO: Add your custom logic here)
         # Example: Keyword matching
         expected_keywords = asset.get('evaluation', {}).get('keywords', [])
-        
+
         score = self._calculate_dummy_score(clean_text, expected_keywords)
-        
+
         return {
             "score": score,
             "details": {
@@ -161,12 +161,12 @@ class {class_name}Evaluator:
                 "keyword_match_rate": score
             }
         }
-    
+
     def _clean_response(self, text: str) -> str:
         if not text:
             return ""
         return text.strip()
-        
+
     def _calculate_dummy_score(self, text: str, keywords: list) -> float:
         # Placeholder logic
         if not text:

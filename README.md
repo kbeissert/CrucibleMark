@@ -224,7 +224,7 @@ ______________________________________________________________________
 ```
 # Input: Technical blog post (formal)
 # Task: Convert to Twitter thread (casual, punchy)
-# 
+#
 # Evaluation:
 # ✅ Maintains key points
 # ✅ Adapts tone appropriately
@@ -246,7 +246,7 @@ ______________________________________________________________________
 # Idiom: "Das ist nicht mein Bier" (German)
 # Literal: "That's not my beer"
 # Meaning: "That's not my problem/responsibility"
-# 
+#
 # Test: Can model explain AND use appropriately?
 ```
 
@@ -277,11 +277,11 @@ ______________________________________________________________________
 ```yaml
 # Scenario: Schedule 3h of meetings into a 2h slot.
 #
-# Expected Behavior: 
+# Expected Behavior:
 # - Reject the task (Impossible constraint)
 # - Explain the conflict
 #
-# Failure Mode: 
+# Failure Mode:
 # - Hallucinating a schedule that ignores time limits
 ```
 

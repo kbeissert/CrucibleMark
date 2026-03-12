@@ -4,7 +4,7 @@ metadata:
   version: "1.0"
   description: "Tests ability to filter out 10 specific corporate buzzwords"
   tier: 3
-  tags: 
+  tags:
     - "tone"
     - "creative"
     - "german"
@@ -14,7 +14,7 @@ prompt: |
   Rewrite this corporate text for a Berlin Agency intro ("Du"-tone).
   Mission: Remove ALL corporate buzzwords and make it sound authentic German (Berlin style).
   IMPORTANT: Output ONLY the rewritten German text. Do NOT repeat the original text or explain your changes.
-  
+
   Original:
   "We utilize a holistic ecosystem to drive synergy. Our paradigm-shift is a gamechanger. We take a deep-dive into next-level disruptive solutions to ensure 360-degree success."
 

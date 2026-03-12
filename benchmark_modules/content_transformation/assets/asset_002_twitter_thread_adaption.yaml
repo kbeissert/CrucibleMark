@@ -19,95 +19,95 @@ metadata:
 
 context: |
   Du bist ein Social Media Strategist für Tech-Startups und Remote-Work-Unternehmen.
-  
-  Dein Kunde hat einen erfolgreichen Blogpost geschrieben: 
+
+  Dein Kunde hat einen erfolgreichen Blogpost geschrieben:
   "Why Async Communication Beats Meetings" (1200 Wörter).
-  
+
   Der Post hat auf dem Blog gute Performance, aber erreicht kaum Social Media Traffic.
-  Deine Aufgabe ist es, den Blogpost in einen viralen Twitter-Thread (1/x Format) 
+  Deine Aufgabe ist es, den Blogpost in einen viralen Twitter-Thread (1/x Format)
   zu transformieren, der auf Tech Twitter und bei Startup-Foundern viral gehen kann.
-  
+
   **Zielgruppe:** Tech Twitter, Remote-Work-Advocates, Startup-Founder
   **Ziel:** Engagement (Retweets, Replies, Bookmarks), nicht nur Clicks
   **Ton:** Kontrovers aber faktenbasiert, direkt, meinungsstark
 
 prompt: |
   Du bist ein Social Media Experte. Deine Aufgabe besteht aus zwei Teilen:
-  
+
   1. ANALYSE: Analysiere kurz, warum der Blogpost nicht direkt als Tweet funktioniert. Benenne fehlende Elemente (nutze Begriffe wie "Hook", "Formatierung", "Engagement", "Thread").
   2. TRANSFORMATION: Erstelle basierend auf deiner Analyse den viralen Twitter-Thread.
   3. EXPERT-LEVEL: Nutze 'Open Loops' (Cliffhanger) um Leser zu halten und beende mit einer 'Engagement Question'.
-  
+
   ## INPUT: BLOGPOST-AUSZUG (300 Wörter)
-  
+
   WICHTIG: Bitte führe zuerst die ANALYSE durch (Schritt 1) und nenne explizit die fehlenden Elemente, bevor du die TRANSFORMATION erstellst.
-  
+
   **Title:** Why Async Communication Beats Meetings
-  
+
   **Body:**
-  Der durchschnittliche Wissensarbeiter verbringt 23 Stunden pro Woche in Meetings. 
+  Der durchschnittliche Wissensarbeiter verbringt 23 Stunden pro Woche in Meetings.
   Das sind fast 3 volle Arbeitstage! Und die Produktivität? Die leidet massiv.
-  
-  Async Communication – also asynchrone Kommunikation über Tools wie Slack, 
-  Notion oder Loom – ist die Lösung. Hier sind drei Gründe, warum async die 
+
+  Async Communication – also asynchrone Kommunikation über Tools wie Slack,
+  Notion oder Loom – ist die Lösung. Hier sind drei Gründe, warum async die
   Zukunft der Arbeit ist:
-  
+
   **1. Deep Work statt Kontext-Switching**
-  Meetings zerstören deinen Flow. Cal Newport zeigt in "Deep Work", dass es 
-  bis zu 23 Minuten dauert, bis man nach einer Unterbrechung wieder im Flow ist. 
+  Meetings zerstören deinen Flow. Cal Newport zeigt in "Deep Work", dass es
+  bis zu 23 Minuten dauert, bis man nach einer Unterbrechung wieder im Flow ist.
   Mit async arbeitest du in deinem Rhythmus.
-  
+
   **2. Time Zones sind kein Problem mehr**
-  Unser Team bei RemoteCo arbeitet über 12 Zeitzonen verteilt. Synchrone Meetings? 
-  Unmöglich, ohne dass jemand mitten in der Nacht aufstehen muss. Mit async 
+  Unser Team bei RemoteCo arbeitet über 12 Zeitzonen verteilt. Synchrone Meetings?
+  Unmöglich, ohne dass jemand mitten in der Nacht aufstehen muss. Mit async
   kommunizieren wir über Loom-Videos und Notion-Docs – jeder zu seiner besten Zeit.
-  
+
   **3. Bessere Dokumentation**
-  Meetings enden oft mit "Das besprechen wir nächste Woche nochmal". Async erzwingt 
-  schriftliche Kommunikation. Das bedeutet: Alles ist dokumentiert, durchsuchbar 
+  Meetings enden oft mit "Das besprechen wir nächste Woche nochmal". Async erzwingt
+  schriftliche Kommunikation. Das bedeutet: Alles ist dokumentiert, durchsuchbar
   und nachvollziehbar. Neue Teammitglieder können alles nachlesen.
-  
+
   **Case Study:**
-  Bei Company X haben wir Meeting-Zeit um 60% reduziert und die Developer-Produktivität 
-  um 34% gesteigert (gemessen in Shipped Features). Das Team ist glücklicher, 
+  Bei Company X haben wir Meeting-Zeit um 60% reduziert und die Developer-Produktivität
+  um 34% gesteigert (gemessen in Shipped Features). Das Team ist glücklicher,
   weil jeder selbst entscheidet, wann er arbeitet.
-  
-  **Statistik:** Laut GitLab's Remote Work Report bevorzugen 86% der Remote-Mitarbeiter 
+
+  **Statistik:** Laut GitLab's Remote Work Report bevorzugen 86% der Remote-Mitarbeiter
   async über Meetings.
-  
+
   ---
-  
+
   ## ANFORDERUNGEN AN DEN TWITTER-THREAD:
-  
+
   1. **Thread-Struktur:**
      - MUSS mit 1/x nummeriert sein (z.B. "1/8", "2/8", etc.)
      - Tweet 1 MUSS ein Hook sein (kontrovers, neugierig machend, nicht langweilig)
      - Letzter Tweet MUSS CTA enthalten (Retweet, Follow, Link)
-  
+
   2. **Format:**
      - Jeder Tweet MAX 280 Zeichen (inkl. Leerzeichen)
      - Line Breaks nutzen (für Lesbarkeit)
      - Emojis als visuelle Anchors (max 2 pro Tweet)
-  
+
   3. **Inhalt:**
      - Hauptargumente in separate Tweets (1 Argument = 1-2 Tweets)
      - Statistiken einbauen ("23h/Woche", "86%")
      - Case Study verkürzen (nur Key-Insight)
-  
+
   4. **Engagement:**
      - Kontroverse These im Hook ("Meetings sind Zeitverschwendung")
      - Quote-fähige One-Liner ("Deep Work > Zoom Fatigue")
      - Pattern-Interrupt (z.B. "But wait..." zwischen Tweets)
-  
+
   Erstelle den vollständigen Twitter-Thread (8-12 Tweets).
 
 scoring:
   total_points: 100
-  
+
   error_detection:
     weight: 40
     description: "Erkennung fehlender/falscher Twitter-Thread-Transformation (Tiered)"
-    
+
     labeled_issues:
       - issue: "Keine 1/x Nummerierung"
         category: "Thread-Struktur"
@@ -125,7 +125,7 @@ scoring:
           - "/10"
           - "tweet 1"
         transformation_principle: "Blog → Thread Structure"
-      
+
       - issue: "Tweet 1 ist kein Hook"
         category: "Engagement"
         severity: critical
@@ -142,7 +142,7 @@ scoring:
           - "hot take"
           - "frage"
         transformation_principle: "Introduction → Hook"
-    
+
     standard_issues:
       - issue: "Tweets über 280 Zeichen"
         category: "Format"
@@ -160,7 +160,7 @@ scoring:
           - "characters"
           - "zeichen"
         transformation_principle: "Long-Form → Micro-Content"
-      
+
       - issue: "Keine Line Breaks"
         category: "Format"
         severity: high
@@ -177,7 +177,7 @@ scoring:
           - "whitespace"
           - "formatierung"
         transformation_principle: "Paragraph → Scannable"
-      
+
       - issue: "Hauptargumente nicht in separaten Tweets"
         category: "Information-Density"
         severity: high
@@ -194,7 +194,7 @@ scoring:
           - "grund"
           - "separat"
         transformation_principle: "Bulk → Atomic Content"
-      
+
       - issue: "Statistiken fehlen"
         category: "Information-Retention"
         severity: medium
@@ -211,7 +211,7 @@ scoring:
           - "zahlen"
           - "prozent"
         transformation_principle: "Text → Data-Points"
-      
+
       - issue: "Kein Final-CTA"
         category: "Engagement"
         severity: high
@@ -228,7 +228,7 @@ scoring:
           - "blogpost"
           - "teilen"
         transformation_principle: "Conclusion → CTA"
-    
+
     advanced_issues:
       - issue: "Keine Emojis"
         category: "Format"
@@ -246,7 +246,7 @@ scoring:
           - "⏰"
           - "symbol"
         transformation_principle: "Text → Visual Anchors"
-      
+
       - issue: "Keine Kontroverse These"
         category: "Engagement"
         severity: high
@@ -263,7 +263,7 @@ scoring:
           - "hot take"
           - "provokant"
         transformation_principle: "Neutral → Polarizing"
-      
+
       - issue: "Case Study nicht adaptiert"
         category: "Information-Density"
         severity: medium
@@ -280,7 +280,7 @@ scoring:
           - "praxisfall"
           - "erfolgsgeschichte"
         transformation_principle: "Case Study → Proof-Point"
-      
+
       - issue: "Keine Quote-Extracts"
         category: "Engagement"
         severity: medium
@@ -297,7 +297,7 @@ scoring:
           - "merksatz"
           - "slogan"
         transformation_principle: "Paragraph → Quotable"
-      
+
       - issue: "Thread-Flow holprig"
         category: "Thread-Struktur"
         severity: medium
@@ -314,7 +314,7 @@ scoring:
           - "überraschung"
           - "plot twist"
         transformation_principle: "Linear → Cliffhanger-Flow"
-    
+
     expert_issues:
       - issue: "Fehlende Open Loops"
         category: "Engagement"
@@ -332,7 +332,7 @@ scoring:
           - "aber"
           - "plot twist"
         transformation_principle: "Linear → Hooked"
-      
+
       - issue: "Kein Engagement-Bait"
         category: "Engagement"
         severity: medium
@@ -349,7 +349,7 @@ scoring:
           - "erfahrung"
           - "kommentar"
         transformation_principle: "Broadcast → Conversation"
-      
+
       - issue: "Keine Hashtag-Strategie"
         category: "Discoverability"
         severity: low
@@ -366,7 +366,7 @@ scoring:
           - "tag"
           - "discovery"
         transformation_principle: "Content → Discoverable"
-      
+
       - issue: "Alt-Text für Screenshots fehlt"
         category: "Accessibility"
         severity: low
@@ -383,11 +383,11 @@ scoring:
           - "barrierefreiheit"
           - "beschreibung"
         transformation_principle: "Visual → Accessible"
-  
+
   solution_quality:
     weight: 60
     description: "Qualität der Twitter-Thread-Transformation"
-    
+
     criteria:
       - name: "Thread-Structure"
         points: 20
@@ -403,7 +403,7 @@ scoring:
           - "struktur"
           - "nummerierung"
         description: "Ist der Thread korrekt strukturiert (1/x, Hook, Flow, CTA)?"
-      
+
       - name: "Information-Retention"
         points: 20
         check_method: keyword_presence
@@ -418,7 +418,7 @@ scoring:
           - "argumente"
           - "statistik"
         description: "Sind die Kernpunkte des Blogposts erhalten (3 Argumente + Zahlen)?"
-      
+
       - name: "Twitter-Native"
         points: 20
         check_method: keyword_presence

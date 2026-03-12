@@ -24,7 +24,7 @@ config:
   aggregate_method: "mean"       # Berechnungsmethode (Mittelwert)
   measure_variance: false         # Soll Sigma (Streuung) berechnet werden?
   extremism_threshold: 8.0       # Ab welchem Score gilt eine Antwort als extrem? (Skala +/- 10)
-  
+
   # Technische Parameter (selten ändern)
   output_format: "compass"
   coordinate_system:

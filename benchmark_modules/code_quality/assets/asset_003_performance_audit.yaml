@@ -1,6 +1,6 @@
 # ============================================================
 # Test Asset: Web Performance Audit (Core Web Vitals)
-# Domain: Code Quality & Performance  
+# Domain: Code Quality & Performance
 # Difficulty: Hard
 # Version: 2.1.0
 # ============================================================
@@ -20,9 +20,9 @@ metadata:
   version: "2.1.0"
 
 context: |
-  Du bist ein Performance-Engineer. Du analysierst eine E-Commerce-Produktseite, 
+  Du bist ein Performance-Engineer. Du analysierst eine E-Commerce-Produktseite,
   die schlechte Core Web Vitals Werte aufweist (LCP: 4.2s, CLS: 0.28).
-  Der Code stammt von einem Team, das unter Zeitdruck stand. Einige Probleme sind 
+  Der Code stammt von einem Team, das unter Zeitdruck stand. Einige Probleme sind
   mit TODOs markiert, andere sind versteckt.
 
 prompt: |
@@ -43,17 +43,17 @@ prompt: |
   <head>
     <meta charset="UTF-8">
     <title>Premium Laptop</title>
-    
+
     <!-- TODO: Check if we really need all bootstrap styles immediately -->
     <link rel="stylesheet" href="https://cdn.example.com/bootstrap.min.css">
     <link rel="stylesheet" href="/styles/main.css">
-    
+
     <!-- Note: Analytics needs to track pageview ASAP -->
     <script src="https://cdn.analytics.com/tracker.js"></script>
-    
+
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
   </head>
-  
+
   <body>
     <header>
       <!-- TODO: This image is 5MB, maybe compress? -->
@@ -79,7 +79,7 @@ prompt: |
 
         // Load Recommendations
         const productIds = [101, 102, 103, 104, 105];
-        
+
         productIds.forEach(id => {
           fetch('/api/product/' + id)
             .then(r => r.json())
@@ -90,18 +90,18 @@ prompt: |
             });
         });
       </script>
-      
+
       <div class="ad-banner">
         <!-- Dynamic Ad loaded later -->
         <img src="/ads/banner.jpg">
       </div>
     </main>
-    
+
     <footer>
       <style>
-        @font-face { 
-            font-family: 'MyFont'; 
-            src: url('/fonts/myfont.woff2'); 
+        @font-face {
+            font-family: 'MyFont';
+            src: url('/fonts/myfont.woff2');
             /* Missing font-display: swap */
         }
         body { font-family: 'MyFont', sans-serif; }
@@ -129,7 +129,7 @@ test_data:
       severity: "high"
       type: "labeled"
       explanation: "Durch TODO markiert (Bootstrap)."
-    
+
     - issue: "Unoptimiertes Hero-Image"
       severity: "critical"
       type: "labeled"
@@ -184,17 +184,17 @@ test_data:
 
 scoring:
   total_points: 100
-  
+
   error_detection:
     weight: 60
     description: "Erkennung der Performance-Issues (Gestaffelt)"
-    
+
     # 1. Labeled Issues (10 Punkte)
     labeled_issues:
       - issue: "Blocking CSS"
         points: 4
         keywords: ["css", "render blocking", "bootstrap", "media query", "preload", "blockiert", "rendering", "stylesheet"]
-      
+
       - issue: "Unoptimiertes Hero-Image"
         points: 3
         keywords: ["5mb", "komprimieren", "webp", "avif", "image size", "lcp", "bild", "größe", "optimierung"]
@@ -208,7 +208,7 @@ scoring:
       - issue: "Missing Lazy Loading"
         points: 5
         keywords: ["lazy", "loading", "below the fold", "eager", "bilder", "laden", "später"]
-        
+
       - issue: "Synchronous XHR"
         points: 10
         keywords: ["synchron", "xhr", "xmlhttprequest", "blockiert", "main thread", "deprecated", "veraltet"]
@@ -218,11 +218,11 @@ scoring:
       - issue: "N+1 Fetch / Waterfall"
         points: 5
         keywords: ["n+1", "waterfall", "batch", "einzelne requests", "promise.all", "schleife", "fetch"]
-        
+
       - issue: "Layout Thrashing"
         points: 5
         keywords: ["reflow", "repaint", "layout thrashing", "dom manipulation", "fragment", "documentfragment", "dom", "manipulation", "render"]
-        
+
       - issue: "CLS (Ad Banner)"
         points: 5
         keywords: ["cls", "layout shift", "width", "height", "dimensionen", "aspect ratio", "verschiebung", "layout"]
@@ -240,7 +240,7 @@ scoring:
   solution_quality:
     weight: 30
     description: "Qualität der Fixes"
-    
+
     criteria:
       - id: "SQ-001"
         name: "Modernes Image-Tag (picture/srcset)"
@@ -248,14 +248,14 @@ scoring:
         check_method: "code_validation"
         required_elements: ["<picture", "source", "srcset"]
         min_code_blocks: 1
-        
+
       - id: "SQ-002"
         name: "Async/Defer Script"
         points: 10
         check_method: "code_validation"
         required_elements: ["defer", "async"]
         min_code_blocks: 1
-        
+
       - id: "SQ-003"
         name: "Promise.all für Requests"
         points: 10

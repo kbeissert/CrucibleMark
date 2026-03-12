@@ -13,7 +13,7 @@ context: |
   Du bist ein Senior UX Writer für eine Gesundheits-App (Medikamenten-Management).
   Zielgruppe: Ältere Nutzer (60+) und chronisch Kranke.
   Kontext: Hohe Verantwortung (Gesundheit), Compliance ist wichtig, aber Nutzer dürfen sich nicht bevormundet fühlen.
-  
+
   Tone of Voice:
   - Empathisch & Beruhigend (nicht alarmierend)
   - Klar & Sicher (keine Mehrdeutigkeit bei Dosierungen)
@@ -21,12 +21,12 @@ context: |
 
 prompt: |
   Führe ein Microcopy-Audit für die folgenden Screens durch und optimiere die Texte.
-  
+
   Eingabe-Screens:
   {input_text}
-  
+
   WICHTIG: Bitte führe zuerst die ANALYSE durch (Schritt 1) und nenne explizit die identifizierten Probleme, bevor du die Optimierung erstellst (Schritt 2).
-  
+
   Erfülle dabei strikt die folgenden Anforderungen:
   {requirements}
 
@@ -96,18 +96,18 @@ testdata:
 
 scoring:
   total_points: 100
-  
+
   error_detection:
     weight: 60
     default_required_ratio: 0.4
     description: "Erkennung und Optimierung der Microcopy"
-    
+
     # 1. Labeled Issues (10 Punkte)
     labeled_issues:
       - issue: "Einheit fehlt"
         points: 5
         keywords: ["einheit", "mg", "ml", "tablette", "dosis", "spezifizieren"]
-        
+
       - issue: "Notification unklar"
         points: 5
         keywords: ["welches", "name", "konkret", "spezifisch"]
@@ -118,7 +118,7 @@ scoring:
         points: 10
         keywords: ["verpasst", "versäumt", "fehler"]
         inverse_match: true
-        
+
       - issue: "Buttons sind klar"
         points: 10
         keywords: ["genommen", "einnehmen", "erledigt", "bestätigen"]
@@ -134,7 +134,7 @@ scoring:
       - issue: "Konsistente Terminologie"
         points: 8
         keywords: ["konsistenz", "wording", "begriff", "einheitlich"]
-        
+
       - issue: "Löschen Sicherheitsabfrage"
         points: 7
         keywords: ["export", "sichern", "unwiderruflich", "konsequenz"]
@@ -142,21 +142,21 @@ scoring:
   solution_quality:
     weight: 30
     description: "Qualität der Texte"
-    
+
     criteria:
       - id: "SQ-001"
         name: "Markdown Tabelle vorhanden"
         points: 10
         check_method: "markdown_table_validation"
         min_rows: 6
-        
+
       - id: "SQ-002"
         name: "Empathischer Ton"
         points: 10
         check_method: "keyword_presence"
         keywords: ["bitte", "erinnerung", "zeit", "einnahme"]
         min_keywords: 2
-        
+
       - id: "SQ-003"
         name: "Sicherheitsrelevante Klarheit"
         points: 10

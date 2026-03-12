@@ -214,11 +214,11 @@ class BenchmarkResult(BaseModel):
     status: str
     primary_score: Optional[float]
     rendered_value: str
-    
+
     # Execution Metrics
     execution_time: float   # Total runtime (Inference + Latency)
     load_time: float        # Cold Start / Loading to VRAM (Ollama specific)
-    
+
     # ...
 ```
 
@@ -243,13 +243,13 @@ class BenchmarkResult(BaseModel):
     status: str = "success"           # success, error
     primary_score: Optional[float]    # 0.0 - 100.0 (ranking)
     rendered_value: str = "N/A"       # Display string ("85.5 %")
-    
+
     # Execution Metrics
     execution_time: float             # Seconds
     tokens_used: int                  # Estimated token count
     cost_usd: float                   # Estimated cost
     raw_response: str                 # The full LLM output text
-    
+
     # Identification
     model_version: str                # e.g., "gpt-4-0613"
 
@@ -435,11 +435,11 @@ from schemas.result import BenchmarkResult
 def execute(self, model: str, llm_client: Any, **kwargs) -> BenchmarkResult:
     # 1. Run LLM
     response_text = llm_client.query(prompt, ...)
-    
+
     # 2. Delegate to Evaluator
     evaluator = CodeQualityEvaluator(self.asset)
     scoring_result = evaluator.score_response(response_text)
-    
+
     # 3. Return Standard Object
     return BenchmarkResult(
         status="success",

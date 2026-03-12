@@ -84,7 +84,7 @@ def check_asset_saturation():
 
     print(f"Total Asset Executions Analyzed: {total_runs}")
     print(
-        f"Total Perfect Scores (100%): {total_perfect} ({total_perfect/total_runs:.1%})"
+        f"Total Perfect Scores (100%): {total_perfect} ({total_perfect / total_runs:.1%})"
     )
 
     saturated = stats[stats["rate"] > 0.5]

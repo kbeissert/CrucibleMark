@@ -233,9 +233,9 @@ class TestStability:
         std = ((sum((x - mean) ** 2 for x in scores)) / len(scores)) ** 0.5
         cv = (std / mean) * 100 if mean > 0 else 0
 
-        assert (
-            cv < MAX_EXCELLENT_CV
-        ), f"Security Asset sollte CV <{MAX_EXCELLENT_CV}% haben, ist {cv:.2f}%"
+        assert cv < MAX_EXCELLENT_CV, (
+            f"Security Asset sollte CV <{MAX_EXCELLENT_CV}% haben, ist {cv:.2f}%"
+        )
 
     def test_wcag_asset_stability(self):
         """WCAG Asset hat akzeptable Stabilität (CV <10%)"""
@@ -245,9 +245,9 @@ class TestStability:
         std = ((sum((x - mean) ** 2 for x in scores)) / len(scores)) ** 0.5
         cv = (std / mean) * 100 if mean > 0 else 0
 
-        assert (
-            cv < MAX_ACCEPTABLE_CV
-        ), f"WCAG Asset sollte CV <{MAX_ACCEPTABLE_CV}% haben, ist {cv:.2f}%"
+        assert cv < MAX_ACCEPTABLE_CV, (
+            f"WCAG Asset sollte CV <{MAX_ACCEPTABLE_CV}% haben, ist {cv:.2f}%"
+        )
 
 
 class TestModuleIntegration:

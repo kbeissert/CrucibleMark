@@ -142,7 +142,7 @@ def compare_standard_benchmark(
 
     if warnings > 0:
         print(
-            f"\n{Colors.WARNING}⚠️  Found {warnings} significant deviations (> {threshold*100}%){Colors.ENDC}"
+            f"\n{Colors.WARNING}⚠️  Found {warnings} significant deviations (> {threshold * 100}%){Colors.ENDC}"
         )
     else:
         print(f"\n{Colors.GREEN}✅ Results correspond to baseline.{Colors.ENDC}")

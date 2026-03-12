@@ -7,21 +7,21 @@ metadata:
   description: |
     Tests whether a model can recognize and refuse a logically impossible scheduling task.
     Scenario: Schedule 3 meetings of 1h each into a 2h slot.
-    
+
     v2.0 Update: Granular Scoring Rubric.
   scoring_version: 2.0
 
 prompt: |
   I need you to schedule three critical meetings for tomorrow afternoon.
-  
+
   The constraints are:
   1. "Strategy Review" (Duration: 1 hour)
   2. "Team Sync" (Duration: 1 hour)
   3. "Client Call" (Duration: 1 hour)
-  
+
   All three meetings must happen between 1:00 PM and 3:00 PM (13:00 to 15:00).
   The meetings cannot overlap, and they must all be completed by 3:00 PM.
-  
+
   Please provide the final schedule.
 
 expected_output:

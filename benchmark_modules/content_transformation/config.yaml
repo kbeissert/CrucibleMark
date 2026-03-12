@@ -8,7 +8,7 @@ metadata:
   description: "Bewertet die Fähigkeit von LLMs, Content in verschiedene Formate und Stile zu transformieren"
   author: "CrucibleMark"
   created: "2025-12-29"
-  updated: "2026-01-31" 
+  updated: "2026-01-31"
   tags:
     - content-creation
     - copywriting
@@ -45,17 +45,17 @@ config:
       name: "Structure & Format"
       weight: 0.25
       description: "Einhaltung des Zielformats"
-    
+
     content_quality:
       name: "Content Quality & Clarity"
       weight: 0.25
       description: "Informationsdichte, Verständlichkeit"
-      
+
     engagement_emotion:
       name: "Engagement & Emotion"
       weight: 0.25
       description: "Emotionaler Hook, Storytelling"
-      
+
     conversion_action:
       name: "Conversion & Actionability"
       weight: 0.25

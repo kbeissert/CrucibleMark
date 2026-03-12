@@ -8,7 +8,7 @@ metadata:
   description: "Tests complex logical reasoning, math problems, puzzle solving, and metacognitive thought quality."
   author: "CrucibleMark"
   created: "2024-12-01"
-  updated: "2026-01-31" 
+  updated: "2026-01-31"
   tags:
     - logic
     - math
@@ -127,7 +127,7 @@ config:
     - name: "Tier 3 (Metacognition)"
       assets: ["reasoning_metacog_001", "reasoning_metacog_002", "reasoning_metacog_003", "reasoning_metacog_004", "reasoning_metacog_005"]
       description: "Thought quality and reasoning process assessment"
-  
+
   rci:
     enabled: true
     formula: "RCI = (Avg_Output_Tier1+2 × 0.6) + (Avg_Thought_Tier3 × 0.4)"

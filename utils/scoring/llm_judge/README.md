@@ -15,7 +15,7 @@ The **LLM Judge** is a self-contained scoring extension for CrucibleMark. It rep
 
 A judge model (e.g. Claude Haiku, Mistral Small, or a local Ollama model) receives the original task prompt, the model's response, and a golden standard. It reasons step-by-step — following Chain-of-Thought principles — and returns a structured score with reasoning. The score is added to the benchmark result without changing the existing scoring pipeline.
 
-> **💡 Tip: Debugging with Audit Mode**  
+> **💡 Tip: Debugging with Audit Mode**
 > If you want to see exactly how the LLM Judge arrived at its score, including its full CoT reasoning, run the benchmarker with `make benchmark-audit`. See the [Audit Mode documentation](../../../docs/USER_GUIDE.md#3-audit-mode-log-protokoll) for details.
 
 ---

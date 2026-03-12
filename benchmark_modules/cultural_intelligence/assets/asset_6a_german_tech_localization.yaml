@@ -4,7 +4,7 @@ metadata:
   version: "1.0"
   description: "Tests 10-point glossary consistency in technical translation"
   tier: 3
-  tags: 
+  tags:
     - "translation"
     - "tech"
     - "glossary"
@@ -12,7 +12,7 @@ metadata:
 
 prompt: |
   Translate this developer changelog into German. Use standard industry jargon (Anglicisms where appropriate) but German grammar.
-  
+
   Text:
   "We decided to push the commit to the remote repository. After the merge, the build failed to build because of an issue in the branch. We must pull the latest changes and clean the cache."
 

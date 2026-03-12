@@ -15,9 +15,7 @@ class AssetValidator:
     def validate_file(file_path: Path) -> Tuple[bool, str]:
         """Validates a single asset file (convenience wrapper)."""
         validator = AssetValidator()
-        return validator._validate_file_internal(
-            file_path
-        )  # pylint: disable=protected-access
+        return validator._validate_file_internal(file_path)  # pylint: disable=protected-access
 
     def _validate_file_internal(self, file_path: Path) -> Tuple[bool, str]:
         """Internal validation logic."""
