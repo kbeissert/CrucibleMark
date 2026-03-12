@@ -32,6 +32,11 @@ execution:
   test_class: "ReasoningLogicTest"
   assets_dir: "assets"
 
+scoring:
+  fallback_weights:
+    regex: 0.60
+    judge: 0.40
+
 benchmarks:
   # Classical Logic
   - id: "reasoning_001_river"

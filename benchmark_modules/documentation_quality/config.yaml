@@ -39,6 +39,11 @@ execution:
     - setup_guide
     - changelog
 
+scoring:
+  fallback_weights:
+    regex: 0.30
+    judge: 0.70
+
 benchmarks:
   - id: "documentation_quality_001"
     name: "README Quality"

@@ -186,7 +186,8 @@ def load_active_benchmarks(config: Dict[str, Any]) -> Dict[str, Any]:
                 "execution_mode", mod.get("execution_mode", "standard")
             ),
             "min_runs": execution.get("min_runs", mod.get("min_runs", 1)),
-            "benchmarks": internal.get("benchmarks", [])
+            "benchmarks": internal.get("benchmarks", []),
+            "scoring": internal.get("scoring", {}),
         }
 
     return benchmark_categories

@@ -61,6 +61,11 @@ config:
       weight: 0.25
       description: "Call-to-Action, Umsetzbarkeit"
 
+scoring:
+  fallback_weights:
+    regex: 0.25
+    judge: 0.75
+
 # 🟢 BENCHMARK ASSETS CONFIGURATION (v3.0 Granular Scoring)
 benchmarks:
   - id: "content_transformation_001"

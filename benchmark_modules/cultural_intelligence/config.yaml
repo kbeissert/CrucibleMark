@@ -33,6 +33,11 @@ execution:
   test_class: "CulturalIntelligenceTest"
   assets_dir: "assets"
 
+scoring:
+  fallback_weights:
+    regex: 0.35
+    judge: 0.65
+
 benchmarks:
   - id: "cultural_intel_001"
     name: "German Tech Localization"
