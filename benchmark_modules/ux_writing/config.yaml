@@ -32,6 +32,11 @@ execution:
   test_class: "UXWritingTest"
   assets_dir: "assets"
 
+scoring:
+  fallback_weights:
+    regex: 0.25
+    judge: 0.75
+
 benchmarks:
   - id: "ux_writing_001"
     name: "Error Messages"

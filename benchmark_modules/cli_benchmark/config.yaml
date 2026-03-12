@@ -37,6 +37,12 @@ execution:
   min_runs: 1
   max_parallel: 4
   metal_force: true
+
+scoring:
+  fallback_weights:
+    regex: 0.80
+    judge: 0.20
+
 benchmarks:
 - id: cli001
   name: Disk Cleanup (du + rm safe)

@@ -1,6 +1,9 @@
 # Progress
 
 ## Completed
+- [DONE] Modulare, gewichtete Hybrid-Scoring Architecture inkl. `scoring.fallback_weights` und `scoring_weights` pro Asset eingerichtet.
+- [DONE] Fix Audit Logger to display LLM Judge Reasoning in hybrid mode.
+- [DONE] Fix benchmark_info mapping to propagate scoring dictionary in run_benchmark.py.
 - [DONE] Audit-Mode Vollintegration: Dynamischer `evaluated_prompt` in `BenchmarkResult`, vollständiges Logging von Regex Category-Scores und Deduction-Details im Markdown-Log (`run_local_benchmark.py` & `run_commercial_benchmark.py`), umfängliche Doku in `USER_GUIDE.md` & `README.md`.
 - [DONE] Leaderboard TypeError `None` Bug in `__init__.py` und Pydantic Validierungs-Bug (ValidationError in Config) behoben.
 - [DONE] Hardcoded Models in `judge_health.py` entfernt, Konfiguration erfolgt über `benchmark_config.yaml`.

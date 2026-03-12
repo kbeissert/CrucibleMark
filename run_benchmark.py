@@ -425,6 +425,7 @@ class BenchmarkRunner:
             "execution_mode": module_config.get("execution_mode", "standard"),
             "min_runs": module_config.get("min_runs", 1),
             "benchmarks": internal_config.get("benchmarks", []),
+            "scoring": internal_config.get("scoring", {}),
         }
 
         if is_local:

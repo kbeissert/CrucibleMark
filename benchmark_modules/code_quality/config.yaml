@@ -46,6 +46,11 @@ execution:
     - api_design
     - code_smells
 
+scoring:
+  fallback_weights:
+    regex: 0.55
+    judge: 0.45
+
 benchmarks:
   - id: "code_quality_001"
     name: "WCAG 2.2 Audit"
@@ -53,6 +58,9 @@ benchmarks:
     score_contribution:
       routine: 1.0
       reasoning: 0.0
+    scoring_weights:
+      regex: 0.70
+      judge: 0.30
 
   - id: "code_quality_002"
     name: "Security Audit"
@@ -60,6 +68,9 @@ benchmarks:
     score_contribution:
       routine: 0.3
       reasoning: 0.7
+    scoring_weights:
+      regex: 0.40
+      judge: 0.60
 
   - id: "code_quality_003"
     name: "Performance Audit"
@@ -67,6 +78,9 @@ benchmarks:
     score_contribution:
       routine: 0.2
       reasoning: 0.8
+    scoring_weights:
+      regex: 0.40
+      judge: 0.60
 
   - id: "code_quality_004"
     name: "REST API Design Audit"
@@ -74,6 +88,9 @@ benchmarks:
     score_contribution:
       routine: 0.2
       reasoning: 0.8
+    scoring_weights:
+      regex: 0.40
+      judge: 0.60
 
   - id: "code_quality_005"
     name: "Code Smells Audit"
@@ -81,6 +98,9 @@ benchmarks:
     score_contribution:
       routine: 0.7
       reasoning: 0.3
+    scoring_weights:
+      regex: 0.60
+      judge: 0.40
 
 # Internal Module Configuration
 config:

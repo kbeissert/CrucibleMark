@@ -27,7 +27,7 @@ from utils.fingerprinting import ModelFingerprinter  # noqa: E402
 from utils.model_utils import get_model_version  # noqa: E402
 from utils.llm_client import LLMClient  # noqa: E402
 from utils.module_registry import load_active_benchmarks  # noqa: E402
-from utils.scoring_utils import calculate_score_contributions  # noqa: E402
+from utils.scoring_utils import calculate_score_contributions, calculate_hybrid_score  # noqa: E402
 from utils.rate_limiter import RateLimiter  # noqa: E402
 
 # Declare ResultManager with proper type annotation
@@ -444,12 +444,24 @@ class CommercialBenchmarkRunner(BaseBenchmarkRunner):
                     
                     if judge_res.parse_success and judge_res.score is not None:
                         judge_scale = judge_config.scoring.scale
-                        result["total_score"] = (judge_res.score / judge_scale) * 100
-                        result["percentage"] = result["total_score"]
-                        result["scoring_method"] = "llm_judge"
-                        result["judge_progress_status"] = f"⚖️ Judge: {judge_res.score}/{judge_scale}"
+                        judge_pct = (judge_res.score / judge_scale) * 100
                         
-                        # RECALCULATE contributions based on the new Judge score
+                        # Hybrid Score berechnen
+                        regex_pct = result.get("percentage", 0.0)
+                        hybrid_score = calculate_hybrid_score(
+                            regex_score=regex_pct,
+                            judge_score=judge_pct,
+                            asset_config=asset_cfg,
+                            module_config=benchmark_info,
+                            judge_enabled=judge_config.enabled
+                        )
+                        
+                        result["total_score"] = hybrid_score
+                        result["percentage"] = hybrid_score
+                        result["scoring_method"] = "hybrid"
+                        result["judge_progress_status"] = f"⚖️ Judge: {judge_res.score}/{judge_scale} (Hybrid)"
+                        
+                        # RECALCULATE contributions based on the new Hybrid score
                         result = calculate_score_contributions(result, asset_cfg)
                     else:
                         result["judge_progress_status"] = "❌ Judge: failed"
@@ -497,7 +509,7 @@ class CommercialBenchmarkRunner(BaseBenchmarkRunner):
             rp_fallback = asset_data.get("prompt", asset_data.get("instruction", "No prompt found"))
             rp = getattr(exec_result, "evaluated_prompt", "") or rp_fallback
             
-            if result.get("scoring_method") == "llm_judge":
+            if result.get("scoring_method") in ["llm_judge", "hybrid"]:
                 judge_provider = result.get('llm_judge_provider_used', 'unknown')
                 judge_model = result.get('llm_judge_model_used', 'unknown')
                 judge_info = f"*(Evaluated using {judge_provider} / {judge_model})*"
@@ -521,7 +533,10 @@ class CommercialBenchmarkRunner(BaseBenchmarkRunner):
                     else:
                         details_section += str(details_data)
 
-                judge_resp = f"{judge_info}\n\n**LLM Judge Score:** {result.get('llm_judge_score', 'N/A')}\n\n**LLM Judge Reasoning:**\n{result.get('llm_judge_reasoning', 'No reasoning provided.')}{cat_section}{details_section}"
+                if result.get("scoring_method") == "hybrid":
+                    judge_resp = f"{judge_info}\n\n**Hybrid Score:** {result.get('percentage', 'N/A')}%\n\n**LLM Judge Score (Raw):** {result.get('llm_judge_score', 'N/A')}\n\n**LLM Judge Reasoning:**\n{result.get('llm_judge_reasoning', 'No reasoning provided.')}{cat_section}{details_section}"
+                else:
+                    judge_resp = f"{judge_info}\n\n**LLM Judge Score:** {result.get('llm_judge_score', 'N/A')}\n\n**LLM Judge Reasoning:**\n{result.get('llm_judge_reasoning', 'No reasoning provided.')}{cat_section}{details_section}"
             else:
                 judge_resp = f"**Regex / Rule Scorer ({result.get('scoring_method', 'unknown')}):**\n\n**Score:** {result.get('total_score', 0)} / {result.get('max_score', 0)}\n\n**Details:**\n```json\n{json.dumps(score, indent=2, ensure_ascii=False)}\n```"
 

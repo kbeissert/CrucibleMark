@@ -1,14 +1,15 @@
 # Active Context
 
 ## Was wurde heute fertiggestellt?
-- Ein robuster Audit-Log-Modus (`make benchmark-audit`) wurde implementiert, der alle Interaktionen (inklusive dem final evaluierten Prompt und der vollständigen LLM-Judge Reasoning-Historie) als Markdown in `outputs/audit_logs/` speichert.
-- Die Daten-Übergabe (`BenchmarkResult`) aus den Evaluatoren in die Core-Treiberschicht wurde überarbeitet, um die präzisen Prompts und Regex-Subkategorien für den Audit-Log durchzuschleifen.
-- Umfassende Dokumentation zum Audit-Mode in `USER_GUIDE.md` und `README.md` integriert.
+- Implementierung der voll funktionsfähigen Hybrid Scoring Architecture (Regex + LLM Judge Weighted Formula).
+- Config-Hierarchie für `scoring_weights` (Asset-Level) und `scoring.fallback_weights` (Module-Level) in den Modul-Configs ergänzt.
+- Neue Framework-Logik `calculate_hybrid_score` in `utils/scoring_utils.py` verankert und Variablen-Propagation im Loader repariert.
+- Den Audit-Logger korrigiert, sodass in Hybrid-Logik (Regex + Judge) der Judgescore wieder korrekt in Markdown gerendet wird.
 
 ## Was ist der nächste logische Schritt?
-- Volldurchlauf aller lokalen Modelle starten, um das finale Leaderboard mit den kompletten Judge-Daten und Regex-Kategorien zu befüllen und die Stabilität in einem Langzeit-Lauf (Overnight) abzusichern.
-- Umsetzung des **Batch-Mode** (Phase 3.5), da das per-task Loading (~40s Overhead pro Task bei 9GB Judge-Modellen) nach wie vor extrem teuer ist.
+- Phase 3.5 angehen: Umsetzung des Batch-Mode (Model Caching) für den LLM Judge, um das extrem hohe Lade-Overhead pro Task abzustellen.
+- Alternativ / und danach: Volldurchlauf aller Modelle starten, um das finale Leaderboard mit den Hybrid-Scores zu befüllen.
 
 ## Welche offenen Fragen oder Risiken gibt es?
-- **LLM Judge Latency:** Jeder Task-Wechsel, der den LLM-Judge anstößt, triggert auf lokalen Systemen das In-Memory-Loading, was den Test-Lauf künstlich in die Länge zieht, bis Model-Batching implementiert ist.
-- Risiko von Datenverlust bei OOM-Kills durch Ollama bei zu kleinen RAM-Limits, das durch das neue `PendingJudgeResult`-Safety-Net abgefangen werden sollte, aber im Dauerbetrieb noch validiert werden muss.
+- LLM Judge Latency ohne Batch-Mode zu hoch (~40s pro Task).
+- Einfluss der neuen hybriden Gewichtungsfaktoren (z.B. 25% Regex / 75% Judge) auf vorherige Benchmark-Rankings genau beobachten.
