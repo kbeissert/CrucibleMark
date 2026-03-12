@@ -34,6 +34,7 @@ logger = logging.getLogger(__name__)
 # Provider factory helpers
 # ---------------------------------------------------------------------------
 
+
 def _build_provider(config: LLMJudgeConfig) -> LLMJudgeProvider:
     """
     Instantiate the primary provider from config.
@@ -48,7 +49,9 @@ def _build_provider(config: LLMJudgeConfig) -> LLMJudgeProvider:
         ValueError: If the provider name is unrecognised.
     """
     prov_cfg = config.provider
-    final_model = config.module_judge_model if config.module_judge_model else prov_cfg.model
+    final_model = (
+        config.module_judge_model if config.module_judge_model else prov_cfg.model
+    )
     kwargs: Dict[str, Any] = {
         "model": final_model,
         "temperature": prov_cfg.temperature,
@@ -58,18 +61,22 @@ def _build_provider(config: LLMJudgeConfig) -> LLMJudgeProvider:
 
     if prov_cfg.name == "anthropic":
         from .providers.anthropic_provider import AnthropicProvider
+
         return AnthropicProvider(**kwargs)
 
     if prov_cfg.name == "mistral":
         from .providers.mistral_provider import MistralProvider
+
         return MistralProvider(**kwargs)
 
     if prov_cfg.name == "openai":
         from .providers.openai_provider import OpenAIProvider
+
         return OpenAIProvider(**kwargs)
 
     if prov_cfg.name == "ollama":
         from .providers.ollama_provider import OllamaProvider
+
         base_url = prov_cfg.base_url or "http://localhost:11434"
         return OllamaProvider(**kwargs, base_url=base_url)
 
@@ -79,7 +86,9 @@ def _build_provider(config: LLMJudgeConfig) -> LLMJudgeProvider:
     )
 
 
-def _build_fallback_provider(fb_cfg: FallbackProviderConfig, module_judge_model: Optional[str] = None) -> LLMJudgeProvider:
+def _build_fallback_provider(
+    fb_cfg: FallbackProviderConfig, module_judge_model: Optional[str] = None
+) -> LLMJudgeProvider:
     """
     Instantiate the fallback provider from a FallbackProviderConfig.
 
@@ -102,18 +111,22 @@ def _build_fallback_provider(fb_cfg: FallbackProviderConfig, module_judge_model:
 
     if fb_cfg.name == "anthropic":
         from .providers.anthropic_provider import AnthropicProvider
+
         return AnthropicProvider(**kwargs)
 
     if fb_cfg.name == "mistral":
         from .providers.mistral_provider import MistralProvider
+
         return MistralProvider(**kwargs)
 
     if fb_cfg.name == "openai":
         from .providers.openai_provider import OpenAIProvider
+
         return OpenAIProvider(**kwargs)
 
     if fb_cfg.name == "ollama":
         from .providers.ollama_provider import OllamaProvider
+
         base_url = fb_cfg.base_url or "http://localhost:11434"
         return OllamaProvider(**kwargs, base_url=base_url)
 
@@ -126,6 +139,7 @@ def _build_fallback_provider(fb_cfg: FallbackProviderConfig, module_judge_model:
 # ---------------------------------------------------------------------------
 # Internal helpers
 # ---------------------------------------------------------------------------
+
 
 def _try_complete(
     provider: LLMJudgeProvider,
@@ -179,6 +193,7 @@ def _should_unload(
 # Runner
 # ---------------------------------------------------------------------------
 
+
 class JudgeRunner:
     """
     Orchestrates a single judge evaluation run.
@@ -223,8 +238,7 @@ class JudgeRunner:
         """Lazily initialise the fallback provider when configured."""
         if self._fallback_provider is None and self._config.provider.fallback:
             self._fallback_provider = _build_fallback_provider(
-                self._config.provider.fallback,
-                self._config.module_judge_model
+                self._config.provider.fallback, self._config.module_judge_model
             )
         return self._fallback_provider
 
@@ -327,10 +341,14 @@ class JudgeRunner:
         # -- 1. Primary API Key / environment check --
         use_primary = True
         import os
+
         if primary_name == "anthropic" and not os.getenv("ANTHROPIC_API_KEY"):
-            logger.info("LLM Judge: ANTHROPIC_API_KEY not found. Skipping primary provider '%s'.", primary_name)
+            logger.info(
+                "LLM Judge: ANTHROPIC_API_KEY not found. Skipping primary provider '%s'.",
+                primary_name,
+            )
             use_primary = False
-            
+
         # -- 2. Primary health check --
         if use_primary:
             try:

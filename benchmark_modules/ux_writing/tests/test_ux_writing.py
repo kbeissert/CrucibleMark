@@ -14,7 +14,6 @@ sys.path.insert(0, str(Path(__file__).parents[3]))
 
 from benchmark_modules.ux_writing.test import UXWritingTest
 
-
 # Test constants
 TOTAL_POINTS = 100
 

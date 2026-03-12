@@ -6,6 +6,7 @@ Calculates Flesch-Kincaid Reading Ease and other metrics.
 import re
 from typing import Dict, Any
 
+
 class ReadabilityScorer:
     """
     Evaluates text readability using standard metrics.
@@ -17,35 +18,39 @@ class ReadabilityScorer:
         Calculates Flesch Reading Ease score and statistics.
         """
         # Clean text (remove code blocks for readability analysis)
-        clean_text = re.sub(r'```.*?```', '', response, flags=re.DOTALL)
+        clean_text = re.sub(r"```.*?```", "", response, flags=re.DOTALL)
 
-        sentences = re.findall(r'[.!?]+', clean_text)
-        words = re.findall(r'\b\w+\b', clean_text)
+        sentences = re.findall(r"[.!?]+", clean_text)
+        words = re.findall(r"\b\w+\b", clean_text)
 
         num_sentences = max(1, len(sentences))
         num_words = max(1, len(words))
 
         syllables = sum(ReadabilityScorer._count_syllables(w) for w in words)
 
-        score = ReadabilityScorer._flesch_reading_ease(num_sentences, num_words, syllables)
+        score = ReadabilityScorer._flesch_reading_ease(
+            num_sentences, num_words, syllables
+        )
         grade = ReadabilityScorer.get_grade_level(score)
 
         return {
             "flesch_reading_ease": round(score, 2),
             "avg_sentence_length": round(num_words / num_sentences, 2),
             "avg_word_length": round(sum(len(w) for w in words) / num_words, 2),
-            "grade_level": grade
+            "grade_level": grade,
         }
 
     @staticmethod
-    def _flesch_reading_ease(num_sentences: int, num_words: int, num_syllables: int) -> float:
+    def _flesch_reading_ease(
+        num_sentences: int, num_words: int, num_syllables: int
+    ) -> float:
         """
         Formula: 206.835 - 1.015(words/sentences) - 84.6(syllables/words)
         """
         asl = num_words / num_sentences
         asw = num_syllables / num_words
         score = 206.835 - (1.015 * asl) - (84.6 * asw)
-        return min(100.0, max(0.0, score)) # Clamp 0-100
+        return min(100.0, max(0.0, score))  # Clamp 0-100
 
     @staticmethod
     def _count_syllables(word: str) -> int:
@@ -58,7 +63,7 @@ class ReadabilityScorer:
             return 1
 
         # Remove trailing 'e' (usually silent)
-        if word.endswith('e'):
+        if word.endswith("e"):
             word = word[:-1]
 
         vowels = "aeiouy"
@@ -83,7 +88,7 @@ class ReadabilityScorer:
             (70, "7th Grade"),
             (60, "High School"),
             (50, "Some College"),
-            (30, "College Graduate")
+            (30, "College Graduate"),
         ]
 
         for threshold, label in grades:

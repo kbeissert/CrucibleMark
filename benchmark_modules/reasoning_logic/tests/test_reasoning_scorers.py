@@ -58,44 +58,44 @@ class TestReasoningScorers(unittest.TestCase):
             # Tier 1
             "reasoning_5c_001": {
                 "expected_score": 100.0,
-                "input": "The ball is red.", # Simplified, assumes scorer specific logic
+                "input": "The ball is red.",  # Simplified, assumes scorer specific logic
                 "asset": {
                     "metadata": {"id": "reasoning_5c_001"},
-                    "expected_output": {"findings": ["ball is red"]}, # Example
+                    "expected_output": {"findings": ["ball is red"]},  # Example
                 },
             },
-             # Tier 2
+            # Tier 2
             "reasoning_5d_001": {
-                "expected_score": 100.0, # Feasibility bonus
+                "expected_score": 100.0,  # Feasibility bonus
                 "input": "Feasibility: 10/10. Solution is perfect.",
                 "asset": {
                     "metadata": {"id": "reasoning_5d_001"},
-                     "expected_output": {},
-                }
+                    "expected_output": {},
+                },
             },
-             "reasoning_5e_001": {
+            "reasoning_5e_001": {
                 "expected_score": 100.0,
                 "input": "Feasibility: 10/10. Expert solution.",
                 "asset": {
                     "metadata": {"id": "reasoning_5e_001"},
-                     "expected_output": {},
-                }
+                    "expected_output": {},
+                },
             },
-             "reasoning_5b_001": {
+            "reasoning_5b_001": {
                 "expected_score": 100.0,
-                 "input": "Complex solution.",
-                 "asset": {
+                "input": "Complex solution.",
+                "asset": {
                     "metadata": {"id": "reasoning_5b_001"},
-                     "expected_output": {},
-                }
-            }
+                    "expected_output": {},
+                },
+            },
         }
 
     def test_ground_truth_metacog_assets(self) -> None:
         """Test scorers against defined Ground Truth in validation_dataset.py."""
         # Convert internal ID (e.g., asset_metacog_001) to evaluator ID (reasoning_metacog_001)
         # Note: validation_dataset uses "asset_metacog_001", evaluator mapping uses "reasoning_metacog_001"
-        
+
         id_mapping = {
             "asset_metacog_001": "reasoning_metacog_001",
             "asset_metacog_002": "reasoning_metacog_002",
@@ -114,7 +114,7 @@ class TestReasoningScorers(unittest.TestCase):
             for response_type, data in dataset["gold_responses"].items():
                 response_text = data["text"]
                 expected_score = data["expected_score"]
-                
+
                 result = evaluator.score_response(response_text)
                 actual_score = result["total_score"]
 
@@ -123,7 +123,9 @@ class TestReasoningScorers(unittest.TestCase):
                     f"Asset {evaluator_id} ({response_type}): "
                     f"Expected {expected_score}, got {actual_score}"
                 )
-                self.assertAlmostEqual(actual_score, expected_score, delta=10.0, msg=msg)
+                self.assertAlmostEqual(
+                    actual_score, expected_score, delta=10.0, msg=msg
+                )
 
     def test_simulated_other_scorers(self) -> None:
         """Test the remaining scorers not in ground truth file to ensure no crashes."""
@@ -132,12 +134,12 @@ class TestReasoningScorers(unittest.TestCase):
             # Real validation requires expanding validation_dataset.py
             asset = data["asset"]
             evaluator = ReasoningEvaluator(asset)
-            
+
             # For Tier 1/2 which depend heavily on specific keywords being present,
             # this test mainly checks wiring. We will mock the scorer functions if needed
             # but here we try to run the real ones if the input triggers them.
             # Since inputs in setUp are minimal, scores might be low, so we check types.
-            
+
             try:
                 result = evaluator.score_response(data["input"])
                 self.assertIn("total_score", result)
@@ -149,8 +151,10 @@ class TestReasoningScorers(unittest.TestCase):
     def test_feasibility_extraction(self) -> None:
         """Test extraction of feasibility scores from text."""
         # We need to access the helper method. It's on the instance.
-        evaluator = ReasoningEvaluator({"metadata": {"id": "dummy", "scoring_version": 2.0}})
-        
+        evaluator = ReasoningEvaluator(
+            {"metadata": {"id": "dummy", "scoring_version": 2.0}}
+        )
+
         test_cases = [
             ("Feasibility: 10/10", 10),
             ("Feasibility: 5/10", 5),
@@ -158,8 +162,8 @@ class TestReasoningScorers(unittest.TestCase):
             ("Test 7/10 score", 7),
             ("**Feasibility: 8**", 8),
             ("feasibility assessment: 9", 9),
-            ("No rating here", 7), # Default
-            ("Feasibility: 12/10", 10), # Clamped
+            ("No rating here", 7),  # Default
+            ("Feasibility: 12/10", 10),  # Clamped
         ]
 
         for text, expected in test_cases:
@@ -167,22 +171,22 @@ class TestReasoningScorers(unittest.TestCase):
             # Based on code read:
             # r"(\d+)\s*/\s*10" is first priority.
             # "No rating here" -> returns 7 (default)
-            
+
             try:
                 actual = evaluator._extract_feasibility(text)
                 self.assertEqual(actual, expected, f"Failed for input: '{text}'")
             except AssertionError as e:
                 # If "Rating: 0 out of 10" fails, it means pattern isn't covered.
                 # Validating known behavior.
-                if "Rating" in text: 
+                if "Rating" in text:
                     # If it fails, that's fine, it validates current code behavior
-                    pass 
+                    pass
                 else:
                     raise e
 
     def test_structure_analysis(self) -> None:
         """Test parsing of thought tags."""
-        
+
         # 1. XML Tags
         xml_input = "<thought>Thinking...</thought>Answer: 42"
         res = parse_thought_tags(xml_input)
@@ -195,7 +199,9 @@ class TestReasoningScorers(unittest.TestCase):
         implicit_input = "Reasoning here. This is a longer thought.\nAnswer: 42"
         res = parse_thought_tags(implicit_input)
         self.assertTrue(res["has_thought_tags"])
-        self.assertEqual(res["thought_content"], "Reasoning here. This is a longer thought.")
+        self.assertEqual(
+            res["thought_content"], "Reasoning here. This is a longer thought."
+        )
         self.assertEqual(res["answer_content"], "Answer: 42")
         self.assertEqual(res["thought_tag_type"], "implicit_separator")
 
@@ -207,7 +213,7 @@ class TestReasoningScorers(unittest.TestCase):
 
     def test_rci_calculation(self) -> None:
         """Test Reasoning Complexity Index calculation."""
-        
+
         # Test 1: High scores
         rci = calculate_rci([100.0, 100.0], [100.0, 100.0])
         self.assertAlmostEqual(rci, 100.0)
@@ -222,7 +228,9 @@ class TestReasoningScorers(unittest.TestCase):
         # If Output = 50, Thought = 100 -> 30 + 40 = 70
         rci = calculate_rci([50.0], [100.0])
         self.assertAlmostEqual(rci, 70.0)
-        self.assertEqual(classify_model(rci), "Thinking Model") # 70 is threshold for Thinking?
+        self.assertEqual(
+            classify_model(rci), "Thinking Model"
+        )  # 70 is threshold for Thinking?
         # Thresholds: Non < 50, Basic < 70, Thinking < 85
         # If 70, it is NOT < 70, so it is Thinking. Correct.
 

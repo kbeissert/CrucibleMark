@@ -4,6 +4,7 @@ update_prices.py
 Erzwingt eine Aktualisierung des LiteLLM-Preis-Caches, unabhängig von der TTL.
 Verwendung: make update-prices
 """
+
 import logging
 import sys
 from pathlib import Path

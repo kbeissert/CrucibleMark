@@ -17,11 +17,11 @@ print("🧪 STRICTER METACOG SCORING TEST")
 print("=" * 70)
 
 # Load METACOG_001
-assets_dir = PROJECT_ROOT / 'benchmark_modules/reasoning_logic/assets'
+assets_dir = PROJECT_ROOT / "benchmark_modules/reasoning_logic/assets"
 # Dynamic path finding
-asset_file = assets_dir / 'reasoning_metacog_001.yaml'
+asset_file = assets_dir / "reasoning_metacog_001.yaml"
 if not asset_file.exists():
-    asset_file = assets_dir / 'asset_metacog_001.yaml'
+    asset_file = assets_dir / "asset_metacog_001.yaml"
 
 if not asset_file.exists():
     print(f"Error: Asset not found at {asset_file}")
@@ -106,7 +106,7 @@ print("TEST 4: METACOG_002 with NO thought tags (Dolphin typical)")
 print("=" * 70)
 
 # Load METACOG_002
-asset_file2 = assets_dir / 'reasoning_metacog_002.yaml'
+asset_file2 = assets_dir / "reasoning_metacog_002.yaml"
 if not asset_file2.exists():
     asset_file2 = assets_dir / "asset_metacog_002.yaml"
 

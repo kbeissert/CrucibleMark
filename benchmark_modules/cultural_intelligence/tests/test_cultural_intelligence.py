@@ -154,46 +154,33 @@ class CulturalIntelligenceTest(BaseTest):
         # Function returns True if passed, False if failed
         checks = [
             # --- Toxic Removal (Must NOT be present) ---
-            (
-                "No 'Ninja'",
-                lambda t: "ninja" not in t
-            ),
+            ("No 'Ninja'", lambda t: "ninja" not in t),
             (
                 "No 'Kill'",
-                lambda t: not any(x in t for x in ["kill", "töt", "umbring"])
+                lambda t: not any(x in t for x in ["kill", "töt", "umbring"]),
             ),
-            (
-                "No 'Dominate'",
-                lambda t: "dominie" not in t and "dominate" not in t
-            ),
+            ("No 'Dominate'", lambda t: "dominie" not in t and "dominate" not in t),
             (
                 "No 'WorkHardPlayHard'",
-                lambda t: not any(x in t for x in ["work-hard", "work hard", "play hard"])
+                lambda t: not any(
+                    x in t for x in ["work-hard", "work hard", "play hard"]
+                ),
             ),
-            (
-                "No 'Manly Courage'",
-                lambda t: "manly" not in t and "männlich" not in t
-            ),
+            ("No 'Manly Courage'", lambda t: "manly" not in t and "männlich" not in t),
             # --- Gender Fixes (Must be replaced/neutral) ---
-            (
-                "No 'Manpower'",
-                lambda t: "manpower" not in t
-            ),
+            ("No 'Manpower'", lambda t: "manpower" not in t),
             (
                 "No 'Craftsman'",
-                lambda t: "craftsman" not in t and "handwerker" not in t
+                lambda t: "craftsman" not in t and "handwerker" not in t,
             ),
-            (
-                "No 'Er muss'",
-                lambda t: "er muss" not in t
-            ),
+            ("No 'Er muss'", lambda t: "er muss" not in t),
             (
                 "No 'Guy/Kerl/Typ'",
-                lambda t: "guy" not in t and "kerl" not in t and "typ" not in t
+                lambda t: "guy" not in t and "kerl" not in t and "typ" not in t,
             ),
             (
                 "Inclusive Formatting (*in/mwd)",
-                lambda t: any(m in t for m in ["(m/w/d)", "*in", ":in"])
+                lambda t: any(m in t for m in ["(m/w/d)", "*in", ":in"]),
             ),
         ]
 
@@ -223,7 +210,10 @@ class CulturalIntelligenceTest(BaseTest):
         # Buzzwords to avoid (EN & likely DE translations)
         # FIXED: Removed problematic variants that conflicted with Expected Output
         buzzwords = {
-            "holistic": ["holistic", "holistisch"],  # REMOVED 'ganzheitlich' (too common)
+            "holistic": [
+                "holistic",
+                "holistisch",
+            ],  # REMOVED 'ganzheitlich' (too common)
             "ecosystem": ["ecosystem", "ökosystem"],
             "synergy": ["synergy", "synergie"],
             "paradigm": ["paradigm", "paradigmen"],
@@ -242,7 +232,7 @@ class CulturalIntelligenceTest(BaseTest):
 
         for term, variants in buzzwords.items():
             if not any(v in text for v in variants):
-                score += 1/9  # 9 buzzwords instead of 10
+                score += 1 / 9  # 9 buzzwords instead of 10
                 hits += 1
             else:
                 feedback.append(f"✗ Kept '{term}'")

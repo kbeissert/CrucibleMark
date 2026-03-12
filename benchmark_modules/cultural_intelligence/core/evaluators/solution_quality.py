@@ -1,8 +1,10 @@
 """
 Solution Quality Evaluator Module.
 """
+
 from typing import List, Dict, Any
 from .utils import evaluate_keyword_presence
+
 
 class SolutionQualityEvaluator:
     """
@@ -38,13 +40,12 @@ class SolutionQualityEvaluator:
             check_method = criterion.get("check_method", "keyword_presence")
 
             if check_method == "keyword_presence":
-                s, d = evaluate_keyword_presence(response_lower, criterion, points, name)
+                s, d = evaluate_keyword_presence(
+                    response_lower, criterion, points, name
+                )
                 score += s
                 details.append(d)
             else:
                 details.append(f"○ {name}: unsupported check_method '{check_method}'")
 
-        return {
-            "score": round(score, 2),
-            "details": details
-        }
+        return {"score": round(score, 2), "details": details}

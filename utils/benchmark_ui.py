@@ -25,6 +25,7 @@ PC_THRESHOLD_STRONG_POS = 2.0
 
 T = TypeVar("T")
 
+
 class TerminalUI:
     """
     Standardized UI for CrucibleMark Benchmarks.
@@ -108,12 +109,12 @@ class TerminalUI:
                 continue
 
             # Zero width joiner and other invisible control chars
-            if unicodedata.category(char) in ('Mn', 'Me', 'Cf'):
+            if unicodedata.category(char) in ("Mn", "Me", "Cf"):
                 continue
 
             # East Asian Width 'W' (Wide) or 'F' (Fullwidth) -> 2
             eaw = unicodedata.east_asian_width(char)
-            if eaw in ('W', 'F'):
+            if eaw in ("W", "F"):
                 width += 2
                 continue
 
@@ -149,14 +150,20 @@ class TerminalUI:
 
         print(f"╚{'═' * inner_width}╝\n")
 
-    def print_intro(self, module_name: str, model_name: str, provider: str,
-                   num_runs: int, extra_info: list[str] = None):
+    def print_intro(
+        self,
+        module_name: str,
+        model_name: str,
+        provider: str,
+        num_runs: int,
+        extra_info: list[str] = None,
+    ):
         """Prints the module introduction screen."""
         lines = [
             f"Modul: {module_name}",
             f"Modell: {model_name}",
             f"Provider: {provider}",
-            f"Runs: {num_runs}"
+            f"Runs: {num_runs}",
         ]
 
         print("\n" + "=" * self.terminal_width)
@@ -180,7 +187,14 @@ class TerminalUI:
         """Announces a new question block."""
         print(f"📂 Starte Block: {block_id} {title} ({count} Fragen)")
 
-    def update_progress(self, current: int, total: int, tokens: int, cost: float = 0.0, finished: bool = False):
+    def update_progress(
+        self,
+        current: int,
+        total: int,
+        tokens: int,
+        cost: float = 0.0,
+        finished: bool = False,
+    ):
         """Updates the progress line in-place."""
         cost_str = f" | ${cost:.4f}" if cost > 0 else ""
         token_str = f"Tokens: {tokens}{cost_str}"
@@ -197,7 +211,9 @@ class TerminalUI:
         if not finished:
             sys.stdout.flush()
 
-    def finish_block(self, block_name: str, elapsed: float, tokens: int, cost: float = 0.0):
+    def finish_block(
+        self, block_name: str, elapsed: float, tokens: int, cost: float = 0.0
+    ):
         """Prints summary of completed block."""
         if tokens > TOKEN_K_THRESHOLD:
             token_k = f"{tokens / 1000:.1f}k"
@@ -214,19 +230,29 @@ class TerminalUI:
         print(f"   Zeit: {elapsed:.1f}s | Tokens: {token_k}{cost_str}")
         print("-" * 50)
 
-    def print_run_result(self, run_idx: int, coords: tuple[float, float],
-                        legacy_coords: tuple[float, float],
-                        bonus: tuple[float, float]):
+    def print_run_result(
+        self,
+        run_idx: int,
+        coords: tuple[float, float],
+        legacy_coords: tuple[float, float],
+        bonus: tuple[float, float],
+    ):
         """Prints result of a single run (Political Compass specific but adaptable)."""
         # pylint: disable=line-too-long
         text = f"\n[RUN {run_idx}] Result: ({coords[0]:.2f}, {coords[1]:.2f}) [Legacy: {legacy_coords[0]:.2f}, {legacy_coords[1]:.2f}]"
         print(text)
         print(f"   ↳ Bonus: X={bonus[0]:.2f}, Y={bonus[1]:.2f}\n")
 
-    def print_final_summary(self, model: str, date_str: str,
-                           coords: tuple[float, float], sigma: tuple[float, float],
-                           archetype: str, chart: Optional[str],
-                           stats: dict):
+    def print_final_summary(
+        self,
+        model: str,
+        date_str: str,
+        coords: tuple[float, float],
+        sigma: tuple[float, float],
+        archetype: str,
+        chart: Optional[str],
+        stats: dict,
+    ):
         """Prints the comprehensive final report."""
         x, y = coords
         x_label = "Mitte"
@@ -249,8 +275,8 @@ class TerminalUI:
         else:
             y_label = "Autoritär-Mittig"
 
-        total_tokens = stats.get('total_tokens', 0)
-        total_time = stats.get('execution_time', 0)
+        total_tokens = stats.get("total_tokens", 0)
+        total_time = stats.get("execution_time", 0)
 
         token_str = f"{total_tokens/1000:.1f}k" if total_tokens > 0 else "0"
 
@@ -270,7 +296,7 @@ class TerminalUI:
         print(f"   Tokens: {token_str} | Zeit: {total_time:.1f}s")
 
         avg_tokens = int(total_tokens / 3) if total_tokens > 0 else 0
-        avg_cost = stats.get('total_cost', 0) / 3
+        avg_cost = stats.get("total_cost", 0) / 3
 
         print("\n" + "─" * 60)
         print(f"✅ Leaderboard updated: {model}")
@@ -279,4 +305,3 @@ class TerminalUI:
         print(f"   Ø Tokens:  {avg_tokens}")
         print(f"   Ø Cost:    ${avg_cost:.5f}")
         print("─" * 60 + "\n")
-

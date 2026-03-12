@@ -2,6 +2,7 @@
 Zentrale Ollama-Konfiguration.
 Lädt Hardware-Limits aus der `benchmark_config.yaml` (SSOT).
 """
+
 from pathlib import Path
 import yaml
 
@@ -10,17 +11,24 @@ import yaml
 ROOT_DIR = Path(__file__).parent.parent
 CONFIG_PATH = ROOT_DIR / "benchmark_config.yaml"
 
+
 def _load_context_window():
     """Liest context_window sicher aus benchmark_config.yaml."""
     try:
         if CONFIG_PATH.exists():
             with open(CONFIG_PATH, "r", encoding="utf-8") as f:
                 data = yaml.safe_load(f)
-                return int(data.get("providers", {}).get("local", {}).get("config", {}).get("context_window", 8192))
+                return int(
+                    data.get("providers", {})
+                    .get("local", {})
+                    .get("config", {})
+                    .get("context_window", 8192)
+                )
     except Exception:
         pass  # Silent fallback
-    
+
     return 8192  # Absoluter Fallback
+
 
 def get_generation_defaults() -> dict:
     """Lädt globale Generation-Defaults aus benchmark_config.yaml."""
@@ -31,7 +39,7 @@ def get_generation_defaults() -> dict:
                 return data.get("defaults", {}).get("generation", {})
     except Exception:
         pass
-    
+
     # Hardcoded Fallback if config breaks
     return {
         "temperature": 0.1,
@@ -39,6 +47,7 @@ def get_generation_defaults() -> dict:
         "top_k": 40,
         "top_p": 0.9,
     }
+
 
 # ==============================================================================
 # OLLAMA DYNAMIC CONFIGURATION

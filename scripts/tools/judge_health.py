@@ -40,14 +40,15 @@ _DEFAULT_CONFIG = ROOT_DIR / "benchmark_config.yaml"
 _ALL_PROVIDERS: list[ProviderName] = ["anthropic", "mistral", "openai", "ollama"]
 
 
-def _check_provider(name: ProviderName, config: LLMJudgeConfig) -> tuple[str, bool, str]:
+def _check_provider(
+    name: ProviderName, config: LLMJudgeConfig
+) -> tuple[str, bool, str]:
     """
     Attempt to instantiate and health-check a single provider.
 
     Returns:
         Tuple of (provider_name, is_healthy, status_message).
     """
-    import copy
 
     cfg_copy = config.model_copy(deep=True)
     cfg_copy.provider.name = name  # type: ignore[assignment]
@@ -60,17 +61,21 @@ def _check_provider(name: ProviderName, config: LLMJudgeConfig) -> tuple[str, bo
     else:
         if name == "anthropic":
             from utils.scoring.llm_judge.judge_config import DEFAULT_ANTHROPIC_MODEL
+
             cfg_copy.provider.model = DEFAULT_ANTHROPIC_MODEL  # type: ignore[assignment]
         elif name == "mistral":
             from utils.scoring.llm_judge.judge_config import DEFAULT_MISTRAL_MODEL
+
             cfg_copy.provider.model = DEFAULT_MISTRAL_MODEL  # type: ignore[assignment]
         elif name == "openai":
             from utils.scoring.llm_judge.judge_config import DEFAULT_OPENAI_MODEL
+
             cfg_copy.provider.model = DEFAULT_OPENAI_MODEL  # type: ignore[assignment]
         elif name == "ollama":
             from utils.scoring.llm_judge.judge_config import DEFAULT_OLLAMA_MODEL
+
             cfg_copy.provider.model = DEFAULT_OLLAMA_MODEL  # type: ignore[assignment]
-            
+
     if name == "ollama" and not cfg_copy.provider.base_url:
         cfg_copy.provider.base_url = DEFAULT_OLLAMA_BASE_URL  # type: ignore[assignment]
 

@@ -21,7 +21,9 @@ from benchmark_modules.documentation_quality.core.constants import (  # noqa: E4
     DEFAULT_TEMPERATURE,
     TOKEN_MULTIPLIER,
 )
-from benchmark_modules.documentation_quality.core.evaluators import DocumentationEvaluator  # noqa: E402
+from benchmark_modules.documentation_quality.core.evaluators import (
+    DocumentationEvaluator,
+)  # noqa: E402
 
 
 class DocumentationTest(BaseTest):
@@ -30,7 +32,9 @@ class DocumentationTest(BaseTest):
     Acts as a runner, delegating scoring to DocumentationEvaluator.
     """
 
-    def execute(self, model: str, llm_client: Any, provider: str = "ollama") -> BenchmarkResult:
+    def execute(
+        self, model: str, llm_client: Any, provider: str = "ollama"
+    ) -> BenchmarkResult:
         """
         Führt Documentation Quality Test aus
         """
@@ -51,7 +55,10 @@ class DocumentationTest(BaseTest):
                 model, full_prompt, provider=provider, temperature=DEFAULT_TEMPERATURE
             )
             # Use clean execution time if available, otherwise fallback to wall clock
-            if hasattr(llm_client, "last_query_duration") and llm_client.last_query_duration > 0:
+            if (
+                hasattr(llm_client, "last_query_duration")
+                and llm_client.last_query_duration > 0
+            ):
                 elapsed = llm_client.last_query_duration
             else:
                 elapsed = time.time() - start
@@ -59,7 +66,9 @@ class DocumentationTest(BaseTest):
             # Token-Approximation
             approx_tokens = int(len(response.split()) * TOKEN_MULTIPLIER)
 
-            load_time = getattr(llm_client, "last_response_metadata", {}).get("load_duration", 0.0)
+            load_time = getattr(llm_client, "last_response_metadata", {}).get(
+                "load_duration", 0.0
+            )
 
             return BenchmarkResult(
                 status="success",
@@ -71,13 +80,15 @@ class DocumentationTest(BaseTest):
                 load_time=load_time,
                 tokens_used=approx_tokens,
                 cost_usd=getattr(llm_client, "last_request_cost", 0.0),
-                model_version=getattr(llm_client, "last_response_metadata", {}).get("system_fingerprint", "unknown"),
+                model_version=getattr(llm_client, "last_response_metadata", {}).get(
+                    "system_fingerprint", "unknown"
+                ),
                 meta={
                     "model": model,
                     "asset_id": self.asset["metadata"]["id"],
                     "prompt_length": len(full_prompt),
                     **getattr(llm_client, "last_response_metadata", {}),
-                }
+                },
             )
         except Exception as e:
             return BenchmarkResult(
@@ -85,7 +96,7 @@ class DocumentationTest(BaseTest):
                 rendered_value="ERROR",
                 raw_response=f"ERROR: {str(e)}",
                 execution_time=0.0,
-                meta={"model": model, "error": str(e)}
+                meta={"model": model, "error": str(e)},
             )
 
     def score_response(self, response: str) -> dict:

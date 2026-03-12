@@ -25,8 +25,7 @@ def _analyze_problem(response_lower: str) -> tuple[int, str]:
         ]
     )
     mentions_req_b = any(
-        kw in response_lower
-        for kw in ["requirement b", "commit triggers", "cleanup"]
+        kw in response_lower for kw in ["requirement b", "commit triggers", "cleanup"]
     )
     mentions_req_c = any(
         kw in response_lower
@@ -38,9 +37,7 @@ def _analyze_problem(response_lower: str) -> tuple[int, str]:
         ]
     )
 
-    requirements_identified = sum(
-        [mentions_req_a, mentions_req_b, mentions_req_c]
-    )
+    requirements_identified = sum([mentions_req_a, mentions_req_b, mentions_req_c])
 
     conflict_keywords_basic = [
         "conflict",
@@ -56,20 +53,13 @@ def _analyze_problem(response_lower: str) -> tuple[int, str]:
         "circular dependency",
     ]
 
-    has_basic_conflict = any(
-        kw in response_lower for kw in conflict_keywords_basic
-    )
+    has_basic_conflict = any(kw in response_lower for kw in conflict_keywords_basic)
     has_advanced_conflict = any(
         kw in response_lower for kw in conflict_keywords_advanced
     )
-    has_expert_conflict = any(
-        kw in response_lower for kw in conflict_keywords_expert
-    )
+    has_expert_conflict = any(kw in response_lower for kw in conflict_keywords_expert)
 
-    if (
-        requirements_identified == EXPERT_REQUIREMENTS_ALL
-        and has_expert_conflict
-    ):
+    if requirements_identified == EXPERT_REQUIREMENTS_ALL and has_expert_conflict:
         return EXPERT_ANALYSIS_PERFECT, "Perfect analysis (all reqs + expert notation)"
     if requirements_identified == 3 and has_advanced_conflict:
         return 35, "Strong analysis (all reqs + advanced conflict)"
@@ -81,9 +71,7 @@ def _analyze_problem(response_lower: str) -> tuple[int, str]:
     return 0, "No conflict recognition"
 
 
-def _evaluate_solution(
-    response_lower: str, feasibility: int
-) -> tuple[int, str]:
+def _evaluate_solution(response_lower: str, feasibility: int) -> tuple[int, str]:
     """Dimension 2: Solution Quality (40pts max)"""
     solution_keywords_req_b = [
         "modify requirement b",
@@ -110,15 +98,9 @@ def _evaluate_solution(
         "here's the architecture",
     ]
 
-    has_req_b_solution = any(
-        kw in response_lower for kw in solution_keywords_req_b
-    )
-    has_generic_solution = any(
-        kw in response_lower for kw in solution_keywords_generic
-    )
-    has_wrong_solution = any(
-        kw in response_lower for kw in solution_keywords_wrong
-    )
+    has_req_b_solution = any(kw in response_lower for kw in solution_keywords_req_b)
+    has_generic_solution = any(kw in response_lower for kw in solution_keywords_generic)
+    has_wrong_solution = any(kw in response_lower for kw in solution_keywords_wrong)
 
     feasibility_correct = feasibility <= 2
 
@@ -166,7 +148,8 @@ def _assess_technical_depth(response_lower: str) -> tuple[int, str]:
 
 
 def score_5e_nested_paradox(
-    response: str, feasibility: int,
+    response: str,
+    feasibility: int,
 ) -> tuple[float, dict[str, float], list[str]]:
     """
     Nested Transaction Paradox - v2.2 NEW EXPERT ASSET
@@ -178,7 +161,8 @@ def score_5e_nested_paradox(
 
     analysis_score, analysis_note = _analyze_problem(response_lower)
     solution_score, solution_note = _evaluate_solution(
-        response_lower, feasibility,
+        response_lower,
+        feasibility,
     )
     depth_score, depth_note = _assess_technical_depth(response_lower)
 

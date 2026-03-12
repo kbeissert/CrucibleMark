@@ -10,8 +10,7 @@ Covers:
 - judge_latency_ms and judge_provider_used are present in results
 """
 
-from typing import Any
-from unittest.mock import MagicMock, call, patch
+from unittest.mock import MagicMock, patch
 
 import pytest
 
@@ -22,14 +21,13 @@ from utils.scoring.llm_judge.judge_config import (
     ScoringConfig,
 )
 from utils.scoring.llm_judge.judge_handoff import PendingJudgeResult
-from utils.scoring.llm_judge.judge_parser import JudgeResult
 from utils.scoring.llm_judge.judge_runner import JudgeRunner, _should_unload
 from utils.scoring.llm_judge.providers.base_provider import JudgeProviderResponse
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
+
 
 def _make_config(
     provider_name: str = "anthropic",
@@ -82,6 +80,7 @@ def _inject_fallback(runner: JudgeRunner, mock: MagicMock) -> None:
 # Tests: Ollama unload lifecycle
 # ---------------------------------------------------------------------------
 
+
 class TestOllamaUnloadLifecycle:
     """Verify unload is called before the judge when both are Ollama-based."""
 
@@ -126,9 +125,9 @@ class TestOllamaUnloadLifecycle:
 
         assert "unload" in call_order, "Unload should have been called"
         assert "complete" in call_order, "Complete should have been called"
-        assert call_order.index("unload") < call_order.index("complete"), (
-            "unload must be called BEFORE complete"
-        )
+        assert call_order.index("unload") < call_order.index(
+            "complete"
+        ), "unload must be called BEFORE complete"
 
     def test_unload_not_called_when_cloud_tested_model(self):
         """When tested model is cloud (not Ollama), no unload should happen."""
@@ -137,7 +136,9 @@ class TestOllamaUnloadLifecycle:
 
         mock_provider = MagicMock()
         mock_provider.health_check.return_value = True
-        mock_provider.complete.return_value = _make_provider_response(provider_name="ollama")
+        mock_provider.complete.return_value = _make_provider_response(
+            provider_name="ollama"
+        )
         _inject_provider(runner, mock_provider)
 
         with patch(
@@ -200,6 +201,7 @@ class TestShouldUnloadHelper:
 # Tests: Fallback provider chain
 # ---------------------------------------------------------------------------
 
+
 class TestProviderFallback:
     """Fallback triggers on health_check=False or complete() exception."""
 
@@ -211,7 +213,9 @@ class TestProviderFallback:
         # Primary: health_check fails
         primary = MagicMock()
         primary.health_check.return_value = False
-        primary.complete.return_value = _make_provider_response()  # should not be called
+        primary.complete.return_value = (
+            _make_provider_response()
+        )  # should not be called
         _inject_provider(runner, primary)
 
         # Fallback: works fine
@@ -319,6 +323,7 @@ class TestFallbackNotTriggeredOnParseError:
     def test_fail_on_parse_error_raises_not_falls_back(self):
         """fail_on_parse_error=True should raise RuntimeError, not trigger fallback."""
         from utils.scoring.llm_judge.judge_config import ScoringConfig  # noqa: PLC0415
+
         config = LLMJudgeConfig(
             provider=ProviderConfig(name="anthropic", model="model"),
             scoring=ScoringConfig(fail_on_parse_error=True),
@@ -347,6 +352,7 @@ class TestFallbackNotTriggeredOnParseError:
 # ---------------------------------------------------------------------------
 # Tests: response_time_ms immutability through pipeline
 # ---------------------------------------------------------------------------
+
 
 class TestResponseTimePassthrough:
     """response_time_ms must pass through the pipeline unchanged."""
@@ -418,6 +424,7 @@ class TestResponseTimePassthrough:
 # ---------------------------------------------------------------------------
 # Tests: judge_latency_ms and judge_provider_used surface to caller
 # ---------------------------------------------------------------------------
+
 
 class TestJudgeMetadataInResult:
     """judge_latency_ms and judge_provider_used are present and correct."""

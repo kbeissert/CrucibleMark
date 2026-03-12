@@ -23,6 +23,7 @@ import yaml
 from rich.console import Console
 from rich.table import Table
 from rich import print as rprint
+
 # pylint: enable=import-error
 
 # Add project root to path
@@ -30,7 +31,11 @@ ROOT_DIR = Path(__file__).parent.parent.parent
 sys.path.insert(0, str(ROOT_DIR))
 
 try:
-    from utils.model_utils import get_ollama_models_info, get_commercial_models_from_config
+    from utils.model_utils import (
+        get_ollama_models_info,
+        get_commercial_models_from_config,
+    )
+
     # from utils.config_validator import ConfigValidator
     from utils.module_registry import get_active_modules
     from utils.benchmark_utils import select_from_list
@@ -43,7 +48,10 @@ logging.basicConfig(level=logging.INFO, format="%(message)s")
 logger = logging.getLogger("cross_model_benchmark")
 console = Console()
 
-def get_commercial_models(config_path: str = "benchmark_config.yaml") -> List[Tuple[str, str, str]]:
+
+def get_commercial_models(
+    config_path: str = "benchmark_config.yaml",
+) -> List[Tuple[str, str, str]]:
     """
     Parses config to find enabled commercial models.
     Delegates to shared utility.
@@ -58,8 +66,7 @@ def get_commercial_models(config_path: str = "benchmark_config.yaml") -> List[Tu
 
 
 def check_provider_health(
-    models: List[Tuple[str, str, str]],
-    config_path: str = "benchmark_config.yaml"
+    models: List[Tuple[str, str, str]], config_path: str = "benchmark_config.yaml"
 ) -> List[str]:
     """
     Checks health/quota for all commercial providers involved.
@@ -77,7 +84,9 @@ def check_provider_health(
     if not providers_to_check:
         return []
 
-    rprint(f"\n[bold]🔍 Pre-flight Prüfung ({len(providers_to_check)} Provider)...[/bold]")
+    rprint(
+        f"\n[bold]🔍 Pre-flight Prüfung ({len(providers_to_check)} Provider)...[/bold]"
+    )
 
     # Retrieve config
     try:
@@ -91,7 +100,9 @@ def check_provider_health(
     try:
         llm_client = LLMClient(config)
     except Exception as e:  # pylint: disable=broad-exception-caught
-        rprint(f"[red]Kritisch: Fehler bei der Initialisierung von LLMClient: {e}[/red]")
+        rprint(
+            f"[red]Kritisch: Fehler bei der Initialisierung von LLMClient: {e}[/red]"
+        )
         return list(providers_to_check)
 
     for p_key in providers_to_check:
@@ -106,10 +117,14 @@ def check_provider_health(
                 if is_ok:
                     rprint(f"  ✅ [green]{p_key.title()}[/green]:  Online & Quota OK")
                 else:
-                    rprint(f"  ❌ [red]{p_key.title()}[/red]:  Verbindung abgelehnt oder Quota erschöpft")
+                    rprint(
+                        f"  ❌ [red]{p_key.title()}[/red]:  Verbindung abgelehnt oder Quota erschöpft"
+                    )
                     failed_providers.append(p_key)
             else:
-                rprint(f"  ⚠️ [yellow]{p_key.title()}[/yellow]:  Keine Implementierung im LLMClient gefunden")
+                rprint(
+                    f"  ⚠️ [yellow]{p_key.title()}[/yellow]:  Keine Implementierung im LLMClient gefunden"
+                )
                 failed_providers.append(p_key)
 
         except Exception as e:  # pylint: disable=broad-exception-caught
@@ -117,6 +132,7 @@ def check_provider_health(
             failed_providers.append(p_key)
 
     return failed_providers
+
 
 def get_local_models() -> List[Tuple[str, str, str]]:
     """
@@ -132,8 +148,9 @@ def get_local_models() -> List[Tuple[str, str, str]]:
     except Exception as e:  # pylint: disable=broad-exception-caught
         # Ollama might not be running
         logger.warning("Fehler beim Abrufen lokaler Modelle (Läuft Ollama?): %s", e)
-    
+
     return models
+
 
 def run_benchmark(module: str, model_id: str, provider: str):
     """
@@ -146,18 +163,23 @@ def run_benchmark(module: str, model_id: str, provider: str):
     cmd = [
         sys.executable,
         "run_benchmark.py",
-        "--module", module,
-        "--provider", cli_provider,
-        "--model", model_id,
-        "--multi-run", "1" # Default to 1 run for speed
+        "--module",
+        module,
+        "--provider",
+        cli_provider,
+        "--model",
+        model_id,
+        "--multi-run",
+        "1",  # Default to 1 run for speed
     ]
-    
+
     try:
         # Stream output directly to console
         subprocess.run(cmd, check=True)
         return True
     except subprocess.CalledProcessError:
         return False
+
 
 def select_benchmark_module(args_module: str = None) -> str:
     """Interaktive Modulauswahl, falls kein Modul per CLI übergeben wurde."""
@@ -173,11 +195,11 @@ def select_benchmark_module(args_module: str = None) -> str:
         # comes from.
         # Ah, ConfigValidator("path") returns an instance. instance.config is the dict.
         # But maybe select_benchmark_module calls something incorrectly?
-        
+
         # Let's just load yaml directly to be safe and simple here
         with open("benchmark_config.yaml", "r", encoding="utf-8") as f:
             config = yaml.safe_load(f)
-            
+
         modules_list = get_active_modules(config)
 
         choices = []
@@ -190,7 +212,7 @@ def select_benchmark_module(args_module: str = None) -> str:
         selection_tuple = select_from_list(
             items=choices,
             display_func=lambda x: x[0],
-            prompt="Wähle ein Benchmark-Modul für den Cross-Model Run:"
+            prompt="Wähle ein Benchmark-Modul für den Cross-Model Run:",
         )
 
         if not selection_tuple:
@@ -204,7 +226,9 @@ def select_benchmark_module(args_module: str = None) -> str:
         sys.exit(1)
 
 
-def gather_models(skip_local: bool, skip_commercial: bool) -> List[Tuple[str, str, str]]:
+def gather_models(
+    skip_local: bool, skip_commercial: bool
+) -> List[Tuple[str, str, str]]:
     """Sammelt alle zu testenden Modelle."""
     all_models = []
 
@@ -223,13 +247,19 @@ def gather_models(skip_local: bool, skip_commercial: bool) -> List[Tuple[str, st
 
 def main():
     """Main execution flow for cross-model benchmark."""
-    parser = argparse.ArgumentParser(description="Run a benchmark module against ALL models.")
+    parser = argparse.ArgumentParser(
+        description="Run a benchmark module against ALL models."
+    )
     parser.add_argument(
         "--module",
         help="ID of the module (e.g. content_transformation). If omitted, interactive selection is used.",
     )
-    parser.add_argument("--skip-local", action="store_true", help="Skip local Ollama models")
-    parser.add_argument("--skip-commercial", action="store_true", help="Skip commercial API models")
+    parser.add_argument(
+        "--skip-local", action="store_true", help="Skip local Ollama models"
+    )
+    parser.add_argument(
+        "--skip-commercial", action="store_true", help="Skip commercial API models"
+    )
 
     args = parser.parse_args()
 
@@ -249,11 +279,15 @@ def main():
 
     if failed_providers:
         # pylint: disable=line-too-long
-        rprint(f"\n[bold red]⚠️  Überspringe Provider mit Fehlern: {', '.join(failed_providers)}[/bold red]")
+        rprint(
+            f"\n[bold red]⚠️  Überspringe Provider mit Fehlern: {', '.join(failed_providers)}[/bold red]"
+        )
         all_models = [m for m in all_models if m[2] not in failed_providers]
 
         if not all_models:
-            rprint("[bold red]❌ Alle Modelle aufgrund von Provider-Fehlern übersprungen. Beende.[/bold red]")
+            rprint(
+                "[bold red]❌ Alle Modelle aufgrund von Provider-Fehlern übersprungen. Beende.[/bold red]"
+            )
             sys.exit(1)
 
     # 2. Confirm
@@ -274,7 +308,9 @@ def main():
     results = {"success": [], "failure": []}
 
     for i, (m_id, m_name, p_type) in enumerate(all_models):
-        console.rule(f"[yellow]🚀 Starte Lauf {i+1}/{len(all_models)}: {m_name}[/yellow]")
+        console.rule(
+            f"[yellow]🚀 Starte Lauf {i+1}/{len(all_models)}: {m_name}[/yellow]"
+        )
 
         success = run_benchmark(selected_module, m_id, p_type)
 
@@ -292,6 +328,7 @@ def main():
 
     if results["failure"]:
         rprint("Fehlgeschlagene Modelle:", ", ".join(results["failure"]))
+
 
 if __name__ == "__main__":
     main()

@@ -1,11 +1,12 @@
 # pylint: skip-file
 from typing import Tuple, List, Dict, Any
 
+
 class LegacyEvaluator:
     """
     Legacy evaluation logic (v1.0) for backward compatibility.
     """
-    
+
     def __init__(self, asset: Dict[str, Any]):
         self.asset = asset
 
@@ -43,19 +44,31 @@ class LegacyEvaluator:
             },
             "feedback": "; ".join(feedback),
             "scoring_explanation": " | ".join(feedback),
-            "details": feedback # Compatibility for result manager
+            "details": feedback,  # Compatibility for result manager
         }
 
     def _evaluate_tech_localization(self, text: str) -> Tuple[float, List[str]]:
         rules = [
             ("Push", lambda t: "push" in t and "drück" not in t),
-            ("Commit", lambda t: "commit" in t and "verpflicht" not in t and "begehen" not in t),
+            (
+                "Commit",
+                lambda t: "commit" in t
+                and "verpflicht" not in t
+                and "begehen" not in t,
+            ),
             ("Remote", lambda t: "remote" in t or "entfernt" in t or "server" in t),
             ("Repository", lambda t: "repo" in t or "repository" in t),
             ("Merge", lambda t: "merge" in t and "verschmelz" not in t),
             ("Build(Noun)", lambda t: "build" in t or "version" in t),
-            ("Build(Verb)", lambda t: any(w in t for w in ["bau", "erstell", "kompilier"])),
-            ("Issue", lambda t: any(w in t for w in ["issue", "problem", "fehler", "ticket"]) and "ausgabe" not in t),
+            (
+                "Build(Verb)",
+                lambda t: any(w in t for w in ["bau", "erstell", "kompilier"]),
+            ),
+            (
+                "Issue",
+                lambda t: any(w in t for w in ["issue", "problem", "fehler", "ticket"])
+                and "ausgabe" not in t,
+            ),
             ("Branch", lambda t: "branch" in t and "zweig" not in t),
             ("Pull", lambda t: "pull" in t and "zieh" not in t),
         ]
@@ -76,15 +89,32 @@ class LegacyEvaluator:
         feedback = []
         checks = [
             ("No 'Ninja'", lambda t: "ninja" not in t),
-            ("No 'Kill'", lambda t: not any(x in t for x in ["kill", "töt", "umbring"])),
+            (
+                "No 'Kill'",
+                lambda t: not any(x in t for x in ["kill", "töt", "umbring"]),
+            ),
             ("No 'Dominate'", lambda t: "dominie" not in t and "dominate" not in t),
-            ("No 'WorkHardPlayHard'", lambda t: not any(x in t for x in ["work-hard", "work hard", "play hard"])),
+            (
+                "No 'WorkHardPlayHard'",
+                lambda t: not any(
+                    x in t for x in ["work-hard", "work hard", "play hard"]
+                ),
+            ),
             ("No 'Manly Courage'", lambda t: "manly" not in t and "männlich" not in t),
             ("No 'Manpower'", lambda t: "manpower" not in t),
-            ("No 'Craftsman'", lambda t: "craftsman" not in t and "handwerker" not in t),
+            (
+                "No 'Craftsman'",
+                lambda t: "craftsman" not in t and "handwerker" not in t,
+            ),
             ("No 'Er muss'", lambda t: "er muss" not in t),
-            ("No 'Guy/Kerl/Typ'", lambda t: "guy" not in t and "kerl" not in t and "typ" not in t),
-            ("Inclusive Formatting (*in/mwd)", lambda t: any(m in t for m in ["(m/w/d)", "*in", ":in"])),
+            (
+                "No 'Guy/Kerl/Typ'",
+                lambda t: "guy" not in t and "kerl" not in t and "typ" not in t,
+            ),
+            (
+                "Inclusive Formatting (*in/mwd)",
+                lambda t: any(m in t for m in ["(m/w/d)", "*in", ":in"]),
+            ),
         ]
         for desc, check_fn in checks:
             if check_fn(text):
@@ -111,7 +141,7 @@ class LegacyEvaluator:
         }
         for term, variants in buzzwords.items():
             if not any(v in text for v in variants):
-                score += 1/9
+                score += 1 / 9
                 hits += 1
             else:
                 feedback.append(f"✗ Kept '{term}'")
@@ -121,9 +151,10 @@ class LegacyEvaluator:
     def _evaluate_formal_informal(self, text: str) -> Tuple[float, List[str]]:
         hits = 0
         feedback = []
+
         def count_words(t, words):
             return sum(t.count(w) for w in words)
-        
+
         du_forms = ["du", "dir", "dich", "dein", "deine", "deinem", "deinen"]
         du_count = count_words(text, du_forms)
         if du_count >= 2:
@@ -156,7 +187,15 @@ class LegacyEvaluator:
         else:
             feedback.append("✗ Formal/Missing Greeting")
 
-        casual_closings = ["viele grüße", "liebe grüße", "grüße", "lg", "bis dann", "cheers", "besten gruß"]
+        casual_closings = [
+            "viele grüße",
+            "liebe grüße",
+            "grüße",
+            "lg",
+            "bis dann",
+            "cheers",
+            "besten gruß",
+        ]
         if any(c in text for c in casual_closings):
             hits += 1
             feedback.append("✓ Casual Closing")
@@ -164,7 +203,10 @@ class LegacyEvaluator:
             feedback.append("✗ Formal/Missing Closing")
 
         swaps = [
-            ("bezüglich/betreffs", lambda t: "bezüglich" not in t and "betreffs" not in t),
+            (
+                "bezüglich/betreffs",
+                lambda t: "bezüglich" not in t and "betreffs" not in t,
+            ),
             ("herunterladen -> laden/hol dir", lambda t: "herunterladen" not in t),
             ("Sollten Sie -> Falls du", lambda t: "sollten sie" not in t),
             ("kontaktieren -> melden/schreiben", lambda t: "kontaktieren" not in t),
@@ -182,11 +224,90 @@ class LegacyEvaluator:
         feedback = []
         hits = 0
         idiom_checks = [
-            ("went south", lambda t: any(x in t for x in ["ging schief", "lief schief", "scheiterte", "ging daneben", "aus dem ruder", "missglückte", "in die hose", "bach runter", "in die brüche"]), 2),
-            ("outside the box", lambda t: any(x in t for x in ["kreativ", "um die ecke", "neu denken", "anders denken", "unkonventionell", "neue wege", "tellerrand", "quer"]), 2),
-            ("game plan", lambda t: any(x in t for x in ["plan", "strategie", "konzept", "vorgehen", "schlachtplan"]) and "game plan" not in t, 2),
-            ("touch base", lambda t: any(x in t for x in ["kurz sprechen", "abstimmen", "melden", "in kontakt", "besprechen", "austauschen", "kurzschließen", "reden"]) and "touch base" not in t, 2),
-            ("get the ball rolling", lambda t: any(x in t for x in ["ins rollen", "loslegen", "starten", "anfangen", "beginnen", "in gang", "auftakt"]), 2),
+            (
+                "went south",
+                lambda t: any(
+                    x in t
+                    for x in [
+                        "ging schief",
+                        "lief schief",
+                        "scheiterte",
+                        "ging daneben",
+                        "aus dem ruder",
+                        "missglückte",
+                        "in die hose",
+                        "bach runter",
+                        "in die brüche",
+                    ]
+                ),
+                2,
+            ),
+            (
+                "outside the box",
+                lambda t: any(
+                    x in t
+                    for x in [
+                        "kreativ",
+                        "um die ecke",
+                        "neu denken",
+                        "anders denken",
+                        "unkonventionell",
+                        "neue wege",
+                        "tellerrand",
+                        "quer",
+                    ]
+                ),
+                2,
+            ),
+            (
+                "game plan",
+                lambda t: any(
+                    x in t
+                    for x in [
+                        "plan",
+                        "strategie",
+                        "konzept",
+                        "vorgehen",
+                        "schlachtplan",
+                    ]
+                )
+                and "game plan" not in t,
+                2,
+            ),
+            (
+                "touch base",
+                lambda t: any(
+                    x in t
+                    for x in [
+                        "kurz sprechen",
+                        "abstimmen",
+                        "melden",
+                        "in kontakt",
+                        "besprechen",
+                        "austauschen",
+                        "kurzschließen",
+                        "reden",
+                    ]
+                )
+                and "touch base" not in t,
+                2,
+            ),
+            (
+                "get the ball rolling",
+                lambda t: any(
+                    x in t
+                    for x in [
+                        "ins rollen",
+                        "loslegen",
+                        "starten",
+                        "anfangen",
+                        "beginnen",
+                        "in gang",
+                        "auftakt",
+                    ]
+                ),
+                2,
+            ),
         ]
         for idiom_name, check_fn, points in idiom_checks:
             if check_fn(text):

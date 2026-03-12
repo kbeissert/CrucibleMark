@@ -9,7 +9,13 @@ from pathlib import Path
 from typing import Any, Callable, Dict, List, Optional
 import yaml  # pylint: disable=import-error
 
-from utils.provider_clients import OllamaClient, AnthropicClient, MistralClient, OpenAIClient, GoogleClient
+from utils.provider_clients import (
+    OllamaClient,
+    AnthropicClient,
+    MistralClient,
+    OpenAIClient,
+    GoogleClient,
+)
 from utils.retry_handler import RetryHandler
 from utils.cost_tracker import CostTracker
 from utils.constants import (
@@ -43,7 +49,7 @@ class LLMClient:
             config: Optionales Config-Dict (bereits geladen)
         """
         self.config = config or {}
-        
+
         # Performance tracking
         self.last_query_duration = 0.0
 
@@ -87,7 +93,9 @@ class LLMClient:
                 locked_version = provider_locks[model_alias].get("version")
                 if locked_version:
                     # Changed to DEBUG to reduce console spam during batches (e.g. Political Compass)
-                    logger.debug(f"🔒 Model Lock: Using {locked_version} for {model_alias}")
+                    logger.debug(
+                        f"🔒 Model Lock: Using {locked_version} for {model_alias}"
+                    )
                     return locked_version
         return model_alias
 
@@ -183,9 +191,8 @@ class LLMClient:
 
         # Enable streaming output for commercial providers by default (configurable)
         use_default_stream = False
-        streaming_setting = (
-            self.config.get("output", {})
-            .get("streaming_output_commercial_providers", True)
+        streaming_setting = self.config.get("output", {}).get(
+            "streaming_output_commercial_providers", True
         )
         streaming_disabled = (
             isinstance(streaming_setting, str)
@@ -197,6 +204,7 @@ class LLMClient:
             and stream_handler is None
             and provider in ["anthropic", "openai", "mistral"]
         ):
+
             def _default_stream_printer(chunk: str) -> None:
                 print(chunk, end="", flush=True)
 
@@ -232,29 +240,43 @@ class LLMClient:
         # Try to get exact usage from metadata if available (API)
         input_tokens = 0
         output_tokens = 0
-        
-        usage = self.last_response_metadata.get("usage") if self.last_response_metadata else None
-        
+
+        usage = (
+            self.last_response_metadata.get("usage")
+            if self.last_response_metadata
+            else None
+        )
+
         if usage:
             # Handle Anthropic Format (has input_tokens, output_tokens)
             if hasattr(usage, "input_tokens"):
                 input_tokens = usage.input_tokens
                 output_tokens = usage.output_tokens or 0
-                
+
                 # Wenn Cache Tokens vorhanden sind (Claude 3.5 Sonnet Cache read)
-                if hasattr(usage, "cache_read_input_tokens") and usage.cache_read_input_tokens:
+                if (
+                    hasattr(usage, "cache_read_input_tokens")
+                    and usage.cache_read_input_tokens
+                ):
                     input_tokens += usage.cache_read_input_tokens
-                if hasattr(usage, "cache_creation_input_tokens") and usage.cache_creation_input_tokens:
-                    pass # these are naturally billed as base input tokens or are implicitly counted. To be precise, let's just use what's given. Some SDKs split them.
+                if (
+                    hasattr(usage, "cache_creation_input_tokens")
+                    and usage.cache_creation_input_tokens
+                ):
+                    pass  # these are naturally billed as base input tokens or are implicitly counted. To be precise, let's just use what's given. Some SDKs split them.
 
             # Handle both object (Pydantic/API libs) and dict formats (OpenAI / Mistral)
             elif hasattr(usage, "prompt_tokens"):
                 input_tokens = usage.prompt_tokens
-                output_tokens = usage.completion_tokens or 0  # completion_tokens can be None
+                output_tokens = (
+                    usage.completion_tokens or 0
+                )  # completion_tokens can be None
             elif isinstance(usage, dict):
                 input_tokens = usage.get("prompt_tokens", usage.get("input_tokens", 0))
-                output_tokens = usage.get("completion_tokens", usage.get("output_tokens", 0))
-        
+                output_tokens = usage.get(
+                    "completion_tokens", usage.get("output_tokens", 0)
+                )
+
         # Fallback to estimation for Local/Ollama or if Usage missing
         if input_tokens == 0 and output_tokens == 0:
             input_tokens = len(prompt) // 4
@@ -274,9 +296,11 @@ class LLMClient:
         # Centralized cleanup to prevent false positives in ALL modules
         # This regex removes <think>...</think> blocks if present
         if "<think>" in response_text:
-            response_text = re.sub(r'<think>.*?</think>', '', response_text, flags=re.DOTALL).strip()
+            response_text = re.sub(
+                r"<think>.*?</think>", "", response_text, flags=re.DOTALL
+            ).strip()
             # Also cleanup potential empty lines left behind
-            response_text = re.sub(r'\n{3,}', '\n\n', response_text)
+            response_text = re.sub(r"\n{3,}", "\n\n", response_text)
 
         if use_default_stream:
             print()

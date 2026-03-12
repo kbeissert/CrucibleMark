@@ -1,4 +1,5 @@
 """Module for test.py."""
+
 import logging
 import time
 from pathlib import Path
@@ -10,6 +11,7 @@ from benchmark_modules.cli_benchmark.core.evaluator import CLIEvaluator
 from schemas.result import BenchmarkResult
 
 logger = logging.getLogger(__name__)
+
 
 class CLIBenchmarkTest(BaseTest):
     """
@@ -66,12 +68,17 @@ class CLIBenchmarkTest(BaseTest):
             status = "error"
             logger.error("Error calling model: %s", e)
 
-        if hasattr(llm_client, "last_query_duration") and getattr(llm_client, "last_query_duration", 0) > 0:
+        if (
+            hasattr(llm_client, "last_query_duration")
+            and getattr(llm_client, "last_query_duration", 0) > 0
+        ):
             elapsed = llm_client.last_query_duration
         else:
             elapsed = time.time() - start_t
 
-        load_time = getattr(llm_client, "last_response_metadata", {}).get("load_duration", 0.0)
+        load_time = getattr(llm_client, "last_response_metadata", {}).get(
+            "load_duration", 0.0
+        )
 
         # Assuming roughly 4 chars per token for simple estimation if token count not available
         tokens = int(len(output_text) / 4)
@@ -86,7 +93,7 @@ class CLIBenchmarkTest(BaseTest):
             tokens_used=int(tokens),
             cost_usd=0.0,
             raw_response=output_text,
-            model_version="unknown"
+            model_version="unknown",
         )
 
     def score_response(self, response: str) -> dict[str, Any]:

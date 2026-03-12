@@ -7,8 +7,7 @@ from typing import Any, Dict, Optional
 
 
 def calculate_score_contributions(
-    result: Dict[str, Any],
-    asset_cfg: Optional[Dict[str, Any]]
+    result: Dict[str, Any], asset_cfg: Optional[Dict[str, Any]]
 ) -> Dict[str, Any]:
     """
     Calculate routine/reasoning score contributions.
@@ -18,22 +17,25 @@ def calculate_score_contributions(
 
     contrib = asset_cfg["score_contribution"]
     score_base = result.get("percentage", 0.0)
-    
+
     # Validation/Calculation if percentage missing
     if "percentage" not in result and result.get("max_score", 0) > 0:
-            score_base = (result.get("total_score", 0) / result.get("max_score", 1)) * 100
+        score_base = (result.get("total_score", 0) / result.get("max_score", 1)) * 100
 
     result["routine_contribution"] = round(score_base * contrib.get("routine", 0.0), 2)
-    result["reasoning_contribution"] = round(score_base * contrib.get("reasoning", 0.0), 2)
+    result["reasoning_contribution"] = round(
+        score_base * contrib.get("reasoning", 0.0), 2
+    )
 
     return result
+
 
 def calculate_hybrid_score(
     regex_score: float,
     judge_score: Optional[float],
     asset_config: Optional[Dict[str, Any]],
     module_config: Optional[Dict[str, Any]],
-    judge_enabled: bool
+    judge_enabled: bool,
 ) -> float:
     """
     Formel A (Judge aktiv):

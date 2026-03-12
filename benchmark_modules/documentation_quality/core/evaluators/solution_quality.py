@@ -5,11 +5,13 @@ Evaluates positive criteria like code examples and best practices.
 
 from typing import List, Tuple
 
+
 class SolutionQualityEvaluator:
     """
     Evaluates the quality of the solution based on positive criteria
     (e.g. code examples, best practices).
     """
+
     # pylint: disable=too-few-public-methods
 
     @staticmethod
@@ -34,15 +36,21 @@ class SolutionQualityEvaluator:
             c_name = criterion.get("name")
 
             if check_method == "keyword_presence":
-                earned, msg = SolutionQualityEvaluator._check_keyword_presence(response, criterion)
+                earned, msg = SolutionQualityEvaluator._check_keyword_presence(
+                    response, criterion
+                )
                 score += earned
                 details.append(msg)
             elif check_method == "code_block_count":
                 # Placeholder for Phase 2
-                details.append(f"○ {c_name}: check_method 'code_block_count' not implemented yet")
+                details.append(
+                    f"○ {c_name}: check_method 'code_block_count' not implemented yet"
+                )
             elif check_method == "readability_score":
                 # Placeholder for Phase 2
-                details.append(f"○ {c_name}: check_method 'readability_score' not implemented yet")
+                details.append(
+                    f"○ {c_name}: check_method 'readability_score' not implemented yet"
+                )
             else:
                 details.append(f"○ {c_name}: unsupported check_method '{check_method}'")
 

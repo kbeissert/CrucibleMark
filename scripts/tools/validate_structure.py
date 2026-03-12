@@ -23,16 +23,13 @@ ALLOWED_ROOT_FILES = {
     "config.yaml",
     "README.md",
     "batch_config.yaml",  # Optional batch config
-    "requirements.txt"    # Optional requirements
+    "requirements.txt",  # Optional requirements
 }
 
-MANDATORY_DIRS = {
-    "assets",
-    "core"  # Now mandatory for ALL modules (MVC Standard)
-}
+MANDATORY_DIRS = {"assets", "core"}  # Now mandatory for ALL modules (MVC Standard)
 
 # Strict mode enforces 'core' folder and strict root file cleaner
-STRICT_MODE_MODULES = {"*"} # All modules are strict now
+STRICT_MODE_MODULES = {"*"}  # All modules are strict now
 
 
 def get_modules(root: Path) -> List[Path]:
@@ -43,7 +40,9 @@ def get_modules(root: Path) -> List[Path]:
         return []
 
     for item in root.iterdir():
-        is_generic_module = (item / "__init__.py").exists() or (item / "test.py").exists()
+        is_generic_module = (item / "__init__.py").exists() or (
+            item / "test.py"
+        ).exists()
         if item.is_dir() and item.name not in IGNORED_DIRS and is_generic_module:
             modules.append(item)
     return sorted(modules)

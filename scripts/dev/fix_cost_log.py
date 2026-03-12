@@ -21,12 +21,12 @@ from pathlib import Path
 # ---------------------------------------------------------------------------
 PRICES = {
     "anthropic": {
-        "claude-sonnet-4-6":        {"in": 0.003,    "out": 0.015},
-        "claude-opus-4-6":          {"in": 0.015,    "out": 0.075},
-        "claude-sonnet-4-5-20250929": {"in": 0.003,  "out": 0.015},
-        "claude-opus-4-5-20251101": {"in": 0.015,    "out": 0.075},
+        "claude-sonnet-4-6": {"in": 0.003, "out": 0.015},
+        "claude-opus-4-6": {"in": 0.015, "out": 0.075},
+        "claude-sonnet-4-5-20250929": {"in": 0.003, "out": 0.015},
+        "claude-opus-4-5-20251101": {"in": 0.015, "out": 0.075},
         "claude-haiku-4-5-20251001": {"in": 0.00025, "out": 0.00125},
-        "claude-3-haiku-20240307":  {"in": 0.00025,  "out": 0.00125},
+        "claude-3-haiku-20240307": {"in": 0.00025, "out": 0.00125},
     },
 }
 
@@ -63,18 +63,22 @@ def main():
                     cost = calculate(row["provider"], row["model"], inp, out)
                     if cost > 0.0:
                         if DRY_RUN:
-                            print(f"  WOULD FIX  {row['timestamp'][:19]}  "
-                                  f"{row['model']:40s}  "
-                                  f"in={inp:5d} out={out:5d}  "
-                                  f"→ ${cost:.6f}")
+                            print(
+                                f"  WOULD FIX  {row['timestamp'][:19]}  "
+                                f"{row['model']:40s}  "
+                                f"in={inp:5d} out={out:5d}  "
+                                f"→ ${cost:.6f}"
+                            )
                         row["cost_usd"] = f"{cost:.6f}"
                         fixed += 1
                         total_recovered += cost
             rows.append(row)
 
     if DRY_RUN:
-        print(f"\n--- DRY RUN: {fixed} Einträge würden korrigiert, "
-              f"${total_recovered:.4f} retroaktiv gebucht ---")
+        print(
+            f"\n--- DRY RUN: {fixed} Einträge würden korrigiert, "
+            f"${total_recovered:.4f} retroaktiv gebucht ---"
+        )
         return
 
     # Backup anlegen
@@ -87,7 +91,9 @@ def main():
         writer.writeheader()
         writer.writerows(rows)
 
-    print(f"✅ {fixed} Einträge korrigiert — ${total_recovered:.4f} retroaktiv nachgebucht.")
+    print(
+        f"✅ {fixed} Einträge korrigiert — ${total_recovered:.4f} retroaktiv nachgebucht."
+    )
     print(f"   Log: {COST_LOG}")
 
 

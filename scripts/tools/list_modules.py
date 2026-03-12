@@ -13,7 +13,8 @@ sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
 # pylint: disable=wrong-import-position, wrong-import-order
 import yaml
-from utils.module_registry import get_active_modules # noqa: E402
+from utils.module_registry import get_active_modules  # noqa: E402
+
 # pylint: enable=wrong-import-position, wrong-import-order
 
 CONFIG_PATH = Path("benchmark_config.yaml")
@@ -31,15 +32,15 @@ def main():
 
         print("\n📋 Checking Active Modules:")
         active = get_active_modules(config)
-        
+
         for i, (mod_id, meta, internal) in enumerate(active, 1):
-             metadata = internal.get("metadata", {})
-             name = metadata.get("name", meta.get("name", mod_id))
-             desc = metadata.get("description", meta.get("description", ""))
-             
-             print(f"  {i}. {mod_id}: {name}")
-             if desc:
-                 print(f"     -> {desc}")
+            metadata = internal.get("metadata", {})
+            name = metadata.get("name", meta.get("name", mod_id))
+            desc = metadata.get("description", meta.get("description", ""))
+
+            print(f"  {i}. {mod_id}: {name}")
+            if desc:
+                print(f"     -> {desc}")
 
     except Exception as e:
         print(f"❌ Error reading config: {e}")

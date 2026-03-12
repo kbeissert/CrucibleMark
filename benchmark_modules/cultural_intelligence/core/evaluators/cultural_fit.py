@@ -1,12 +1,14 @@
 """
 Cultural Fit Evaluator Module.
 """
+
 from typing import List, Dict, Any
 from benchmark_modules.cultural_intelligence.core.constants import (
-    REGIONAL_EXPRESSIONS, 
-    POLITENESS_MARKERS
+    REGIONAL_EXPRESSIONS,
+    POLITENESS_MARKERS,
 )
 from .utils import evaluate_keyword_presence
+
 
 class CulturalFitEvaluator:
     """
@@ -21,7 +23,9 @@ class CulturalFitEvaluator:
     # pylint: disable=too-few-public-methods
 
     @staticmethod
-    def score_cultural_fit(response: str, criteria: List[Dict[str, Any]]) -> Dict[str, Any]:
+    def score_cultural_fit(
+        response: str, criteria: List[Dict[str, Any]]
+    ) -> Dict[str, Any]:
         """
         Score cultural fit based on regional and politeness markers.
 
@@ -38,8 +42,7 @@ class CulturalFitEvaluator:
 
         # Count politeness markers
         politeness_count = sum(
-            1 for marker in POLITENESS_MARKERS 
-            if marker in response_lower
+            1 for marker in POLITENESS_MARKERS if marker in response_lower
         )
 
         # Detect regional markers
@@ -81,7 +84,9 @@ class CulturalFitEvaluator:
                     )
 
             elif check_method == "keyword_presence":
-                s, d = evaluate_keyword_presence(response_lower, criterion, points, name)
+                s, d = evaluate_keyword_presence(
+                    response_lower, criterion, points, name
+                )
                 score += s
                 details.append(d)
 
@@ -91,8 +96,8 @@ class CulturalFitEvaluator:
             "metadata": {
                 "politeness_marker_count": politeness_count,
                 "regional_markers": list(regional_markers.keys()),
-                "dominant_region": dominant_region
-            }
+                "dominant_region": dominant_region,
+            },
         }
 
     @staticmethod

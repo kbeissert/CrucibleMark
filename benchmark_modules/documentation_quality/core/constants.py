@@ -30,16 +30,16 @@ DOC_TYPE_SCHEMAS = {
     "readme": {
         "required_sections": ["installation", "usage", "examples"],
         "min_code_blocks": 1,
-        "min_headings": 3
+        "min_headings": 3,
     },
     "api_docs": {
         "required_sections": ["endpoint", "parameters", "response", "example"],
         "min_code_blocks": 2,
-        "min_headings": 4
+        "min_headings": 4,
     },
     "setup_guide": {
         "required_sections": ["prerequisites", "steps", "troubleshooting"],
         "min_code_blocks": 1,
-        "min_headings": 3
-    }
+        "min_headings": 3,
+    },
 }

@@ -39,13 +39,16 @@ def _detect_5b_signals(response: str) -> dict[str, Any]:
     has_cross_domain = c2_domain and c2_concept
 
     has_integrated_solution = contains_any(
-        resp_lower, ASSET_5B_SOLUTION_KEYWORDS,
+        resp_lower,
+        ASSET_5B_SOLUTION_KEYWORDS,
     )
 
     # 2. Prioritization Check (Tier 3 Check)
     has_numbering = bool(
         re.search(
-            r"(?:^|\n)\s*(?:\d+\.|step \d|phase \d)", response, re.IGNORECASE,
+            r"(?:^|\n)\s*(?:\d+\.|step \d|phase \d)",
+            response,
+            re.IGNORECASE,
         ),
     )
     has_prio_kw = contains_any(resp_lower, ASSET_5B_PRIO_KEYWORDS)
@@ -77,15 +80,13 @@ def score_5b_complex(response: str) -> tuple[float, dict[str, Any], list[str]]:
         "✅ Root Cause: Identified Versioning/Deprecation inconsistency.",
     )
     details.append(
-        "❌ Root Cause: "
-        "Missed the core versioning/deprecation strategy issue.",
+        "❌ Root Cause: " "Missed the core versioning/deprecation strategy issue.",
     )
 
     if signals["has_cross_domain"]:
         error_pts += 20.0
         details.append(
-            "✅ Cross-Domain: "
-            "Identified need for alignment between Code/Docs/UX.",
+            "✅ Cross-Domain: " "Identified need for alignment between Code/Docs/UX.",
         )
     else:
         details.append(
@@ -107,8 +108,7 @@ def score_5b_complex(response: str) -> tuple[float, dict[str, Any], list[str]]:
         if signals["has_prioritization"]:
             solution_pts += SYSTEMS_PRIORITIZATION_BONUS
             details.append(
-                "✅ Prioritization: "
-                "Structured plan with clear steps/priorities.",
+                "✅ Prioritization: " "Structured plan with clear steps/priorities.",
             )
         else:
             details.append(
@@ -119,8 +119,7 @@ def score_5b_complex(response: str) -> tuple[float, dict[str, Any], list[str]]:
     elif "fix" in resp_lower or "korrigieren" in resp_lower:
         solution_pts = 10.0
         details.append(
-            "⚠️ Solution: "
-            "Proposed fixes but missed the 'Unified Policy' aspect.",
+            "⚠️ Solution: " "Proposed fixes but missed the 'Unified Policy' aspect.",
         )
     else:
         details.append("❌ Solution: No clear integrated solution found.")
@@ -129,10 +128,7 @@ def score_5b_complex(response: str) -> tuple[float, dict[str, Any], list[str]]:
     # Bonus for full Tier 2 achievemen
     consistency_pts = (
         BONUS_CONSISTENCY
-        if (
-            error_pts >= SCORE_THRESHOLD_HIGH
-            and solution_pts >= SCORE_THRESHOLD_MED
-        )
+        if (error_pts >= SCORE_THRESHOLD_HIGH and solution_pts >= SCORE_THRESHOLD_MED)
         else 0.0
     )
 
@@ -215,7 +211,8 @@ def _check_failure(s: DeadlockSignals) -> tuple[int, str] | None:
 
 
 def _build_deadlock_signals(
-    response: str, feasibility: int,
+    response: str,
+    feasibility: int,
 ) -> DeadlockSignals:
     """Helper: Extracts signals for Deadlock scoring."""
     response_lower = response.lower()
@@ -265,9 +262,7 @@ def _build_deadlock_signals(
         "just need to",
         "simply",
     ]
-    has_contradiction = any(
-        kw in response_lower for kw in contradiction_keywords
-    )
+    has_contradiction = any(kw in response_lower for kw in contradiction_keywords)
 
     return DeadlockSignals(
         feasibility=feasibility,
@@ -280,7 +275,8 @@ def _build_deadlock_signals(
 
 
 def score_5d_deadlock(
-    response: str, feasibility: int,
+    response: str,
+    feasibility: int,
 ) -> tuple[float, dict[str, float], list[str]]:
     """Tier 2: Asset 5D - Deadlock Detection.
 

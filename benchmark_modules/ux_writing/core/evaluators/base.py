@@ -4,6 +4,7 @@ Base classes and common functionality for UX Writing evaluators.
 This module defines the abstract base class for criterion evaluators
 and the issue evaluator logic used across different benchmarks.
 """
+
 import re
 from abc import ABC, abstractmethod
 from typing import Tuple, List
@@ -12,11 +13,13 @@ from ..models import UXCriterion, UXIssue
 from ..constants import (
     MIN_SENTENCE_LENGTH,
     SIMILARITY_THRESHOLD,
-    DEFAULT_REQUIRED_RATIO
+    DEFAULT_REQUIRED_RATIO,
 )
+
 
 class CriterionEvaluator(ABC):
     """Abstract base class for criterion evaluators."""
+
     # pylint: disable=too-few-public-methods
 
     @abstractmethod
@@ -31,6 +34,7 @@ class CriterionEvaluator(ABC):
             Tuple containing (score, explanation_string).
         """
 
+
 class IssueEvaluator:
     """Evaluates error detection issues using hybrid matching."""
 
@@ -38,7 +42,7 @@ class IssueEvaluator:
     def check_issue_mentioned(
         response_lower: str,
         keywords: List[str],
-        required_ratio: float = DEFAULT_REQUIRED_RATIO
+        required_ratio: float = DEFAULT_REQUIRED_RATIO,
     ) -> bool:
         """
         Prüft ob ein Issue in der Response erwähnt wurde.
@@ -53,7 +57,9 @@ class IssueEvaluator:
             True if issue is considered mentioned/detected.
         """
         # Strip reasoning tags before processing (DeepSeek <think> tags)
-        response_lower = re.sub(r'<think>.*?</think>', '', response_lower, flags=re.DOTALL)
+        response_lower = re.sub(
+            r"<think>.*?</think>", "", response_lower, flags=re.DOTALL
+        )
 
         if not keywords:
             return False
@@ -112,20 +118,21 @@ class IssueEvaluator:
         """
         # Use issue-specific ratio if present, else default to DEFAULT_REQUIRED_RATIO
         ratio = (
-            issue.required_ratio if issue.required_ratio is not None
+            issue.required_ratio
+            if issue.required_ratio is not None
             else DEFAULT_REQUIRED_RATIO
         )
         matched = cls.check_issue_mentioned(
             response_lower, issue.keywords, required_ratio=ratio
         )
-        
+
         # If inverse_match is True, we want matched to be False for points
         if issue.inverse_match:
             if not matched:
                 return (
                     issue.points,
                     f"✓ {issue.issue}: Erfolgreich vermieden ({issue.points}p)",
-                    False
+                    False,
                 )
             return 0.0, f"✗ {issue.issue}: Unerwünscht gefunden", True
         if matched:

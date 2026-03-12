@@ -34,6 +34,7 @@ from benchmark_modules.reasoning_logic.core.evaluators import (
     calculate_rci,
     classify_model,
 )
+
 # pylint: enable=wrong-import-position
 
 logging.basicConfig(
@@ -165,9 +166,7 @@ class MetacogPerformanceTester:
             elapsed = time.time() - start_time
 
             # Score response
-            score_result = test_instance.score_response(
-                result.get("raw_response", "")
-            )
+            score_result = test_instance.score_response(result.get("raw_response", ""))
 
             return {
                 "asset_id": asset_id,

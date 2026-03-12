@@ -2,6 +2,7 @@
 Integration of external module data into leaderboard.
 Handles generic CSV merging and value extraction based on module configuration.
 """
+
 import json
 import sys
 from typing import Any, Dict, List, Tuple
@@ -24,9 +25,7 @@ except ImportError:
 
 
 def _enrich_from_csv_source(
-    result: pd.DataFrame,
-    label: str,
-    source_config: Dict[str, Any]
+    result: pd.DataFrame, label: str, source_config: Dict[str, Any]
 ) -> pd.DataFrame:
     """
     Generic Enrichment: Loads data from a custom CSV based on Config.
@@ -60,7 +59,9 @@ def _enrich_from_csv_source(
 
         # 3. Deduplicate (keep last entry per model/version)
         if "model" in source_df.columns:
-            source_df = source_df.drop_duplicates(subset=["model", "model_version"], keep="last")
+            source_df = source_df.drop_duplicates(
+                subset=["model", "model_version"], keep="last"
+            )
 
         # 4. Value Construction (JSON Object Access OR Templating)
         template = source_config.get("value_template")
@@ -81,7 +82,7 @@ def _enrich_from_csv_source(
                         metrics = json.loads(row[json_col])
                         # Support dot notation (e.g. "labels.x")
                         val = metrics
-                        for k in json_key.split('.'):
+                        for k in json_key.split("."):
                             if isinstance(val, dict):
                                 val = val.get(k, {})
                             else:
@@ -109,7 +110,7 @@ def _enrich_from_csv_source(
                             # We can try to make a context dict.
                             # Standard context: row + 'value'
                             ctx = row.to_dict()
-                            ctx['value'] = extracted_val
+                            ctx["value"] = extracted_val
 
                             # Flatten JSON for context?
                             if isinstance(metrics, dict):
@@ -118,15 +119,15 @@ def _enrich_from_csv_source(
                                     if isinstance(mv, (str, int, float)):
                                         ctx[mk] = mv
                                     elif isinstance(mv, dict):
-                                         # One level deep flattening (e.g. coordinates.x -> x)
-                                         for subk, subv in mv.items():
-                                             if isinstance(subv, (str, int, float)):
-                                                 ctx[subk] = subv
+                                        # One level deep flattening (e.g. coordinates.x -> x)
+                                        for subk, subv in mv.items():
+                                            if isinstance(subv, (str, int, float)):
+                                                ctx[subk] = subv
 
                             try:
                                 return fmt.format(**ctx)
                             except KeyError:
-                                return extracted_val # Fallback to raw value
+                                return extracted_val  # Fallback to raw value
 
                         return extracted_val
 
@@ -142,7 +143,7 @@ def _enrich_from_csv_source(
                 return ""
             except KeyError:
                 return "Error (Key)"
-            except Exception: # pylint: disable=broad-exception-caught
+            except Exception:  # pylint: disable=broad-exception-caught
                 return "Error"
 
         if template or json_key:
@@ -173,18 +174,22 @@ def _enrich_from_csv_source(
         if missing_mask.any():
             # RELAXED: Use any version from source, removing duplicates by keeping last
             # This allows matching 'gpt-4o' (ver A) with 'gpt-4o' (ver B) if exact match failed
-            fallback_source = source_df[["model", label]].drop_duplicates(subset=["model"], keep="last")
-            
+            fallback_source = source_df[["model", label]].drop_duplicates(
+                subset=["model"], keep="last"
+            )
+
             if not fallback_source.empty:
                 # Rename col to avoid collision during merge
-                fallback_source = fallback_source.rename(columns={label: label + "_fallback"})
+                fallback_source = fallback_source.rename(
+                    columns={label: label + "_fallback"}
+                )
 
                 # Merge on model only
                 result = result.merge(fallback_source, on="model", how="left")
 
                 # Fill NaNs in main column with fallback (only where matching failed)
                 result[label] = result[label].fillna(result[label + "_fallback"])
-                
+
                 # Cleanup
                 if (label + "_fallback") in result.columns:
                     result = result.drop(columns=[label + "_fallback"])
@@ -193,7 +198,7 @@ def _enrich_from_csv_source(
         fallback = source_config.get("missing_value", "Pending")
         result[label] = result[label].fillna(fallback)
 
-    except Exception as e: # pylint: disable=broad-exception-caught
+    except Exception as e:  # pylint: disable=broad-exception-caught
         print(f"Generic CSV Merge Error ({filename}): {e}")
         if label not in result.columns:
             result[label] = "Error"
@@ -205,7 +210,7 @@ def enrich_with_module_data(
     result: pd.DataFrame,
     cat_cols: List[str],
     modules_config: Dict[str, Any],
-    full_config: Dict[str, Any]
+    full_config: Dict[str, Any],
 ) -> Tuple[pd.DataFrame, List[str]]:
     """
     Merges custom/additional data columns for modules defined in their config.
@@ -231,7 +236,9 @@ def enrich_with_module_data(
         # Check if enabled
         if not mod_int_config.get("enabled", True):
             # Check modules_config as secondary enabled check (if passed)
-            if modules_config and not modules_config.get(mod_id, {}).get("enabled", True):
+            if modules_config and not modules_config.get(mod_id, {}).get(
+                "enabled", True
+            ):
                 continue
 
         # Parse Columns Config

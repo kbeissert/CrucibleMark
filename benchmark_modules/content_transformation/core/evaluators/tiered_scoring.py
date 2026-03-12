@@ -2,6 +2,7 @@
 Tiered Scoring Logic
 Handles the structured scoring through labeled, standard, advanced, and expert tiers.
 """
+
 from typing import List, Tuple
 from ..constants import TIER_THRESHOLDS
 from .semantic_matcher import SemanticMatcher
@@ -16,7 +17,7 @@ class TieredScoringEngine:
     ) -> Tuple[float, List[str], List[str], float]:
         """
         Bewertet Issue Detection mit Tiered Difficulty (70 Punkte)
-        
+
         Returns:
             (score, details, violations, max_possible)
         """
@@ -42,10 +43,7 @@ class TieredScoringEngine:
 
             # Calculate score for this tier
             tier_res = TieredScoringEngine._score_tier_issues(
-                response_lower,
-                tier_issues,
-                default_threshold,
-                tier_name.title()
+                response_lower, tier_issues, default_threshold, tier_name.title()
             )
             tier_score, tier_details, tier_violations, tier_max = tier_res
 
@@ -87,7 +85,7 @@ class TieredScoringEngine:
                 response_lower,
                 keywords,
                 tier_name=tier_name,
-                min_keyword_threshold=min_threshold
+                min_keyword_threshold=min_threshold,
             )
 
             if found:

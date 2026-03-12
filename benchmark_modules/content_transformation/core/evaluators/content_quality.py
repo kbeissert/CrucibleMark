@@ -2,6 +2,7 @@
 Content Quality Evaluator
 Scores solution quality (creativity, flow, format compliance)
 """
+
 from typing import List, Tuple
 
 
@@ -10,8 +11,7 @@ class ContentQualityEvaluator:
 
     @staticmethod
     def score_solution_quality(
-        response_lower: str,
-        config: dict
+        response_lower: str, config: dict
     ) -> Tuple[float, List[str], float]:
         """
         Scores solution quality based on criteria (e.g., creativity, CTA presence).

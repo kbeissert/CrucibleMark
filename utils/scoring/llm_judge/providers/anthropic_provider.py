@@ -33,7 +33,9 @@ class AnthropicProvider(LLMJudgeProvider):
 
     PROVIDER_NAME = "anthropic"
 
-    def __init__(self, model: str, temperature: float, max_tokens: int, timeout_seconds: int) -> None:
+    def __init__(
+        self, model: str, temperature: float, max_tokens: int, timeout_seconds: int
+    ) -> None:
         if anthropic_module is None:
             raise ImportError(
                 "The 'anthropic' package is required for AnthropicProvider. "
@@ -42,7 +44,9 @@ class AnthropicProvider(LLMJudgeProvider):
         from utils.env_utils import get_required_env
 
         api_key = get_required_env("ANTHROPIC_API_KEY")
-        self._client = anthropic_module.Anthropic(api_key=api_key, timeout=float(timeout_seconds))
+        self._client = anthropic_module.Anthropic(
+            api_key=api_key, timeout=float(timeout_seconds)
+        )
         self._model = model
         self._temperature = temperature
         self._max_tokens = max_tokens

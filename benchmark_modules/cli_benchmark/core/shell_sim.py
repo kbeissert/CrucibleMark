@@ -1,4 +1,5 @@
 """Module for shell_sim.py."""
+
 import re
 from typing import List
 
@@ -35,7 +36,7 @@ class ShellSimulator:
                         if line.strip() and not line.strip().startswith("#")
                     ]
                 )
-        
+
         # Statt nur ```bash-Blöcke: auch den Raw-Text durchsuchen als Fallback
         if not commands:
             commands = [llm_output.strip()]

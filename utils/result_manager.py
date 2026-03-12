@@ -54,9 +54,9 @@ class ResultManager:
             "llm_judge_provider_used",
             "llm_judge_model_used",
             "llm_judge_parse_success",
-            "scoring_method"
+            "scoring_method",
         ]
-        
+
         new_keys.update(judge_fields)
 
         if not csv_path.exists():
@@ -78,9 +78,11 @@ class ResultManager:
 
         # Neue Keys anhängen (behält Reihenfolge der alten bei)
         existing_set = set(existing_keys)
-        normal_added = sorted([k for k in new_keys if k not in existing_set and k not in judge_fields])
+        normal_added = sorted(
+            [k for k in new_keys if k not in existing_set and k not in judge_fields]
+        )
         judge_added = [jf for jf in judge_fields if jf not in existing_set]
-        
+
         return list(existing_keys) + normal_added + judge_added
 
     def save_results(
@@ -121,9 +123,7 @@ class ResultManager:
 
         # Deduplizierung: Entferne Zeilen aus 'existing_rows', wenn (model, asset_id) in 'results' enthalten ist
         # Wir bauen ein Set von (model, asset_id) der neuen Ergebnisse
-        new_keys_combo = {
-            (r.get("model", ""), r.get("asset_id", "")) for r in results
-        }
+        new_keys_combo = {(r.get("model", ""), r.get("asset_id", "")) for r in results}
 
         # Behalte nur Zeilen, die NICHT überschrieben werden
         clean_existing_rows = [
@@ -133,9 +133,7 @@ class ResultManager:
         ]
 
         try:
-            self._write_to_csv(
-                csv_path, fieldnames, results, clean_existing_rows
-            )
+            self._write_to_csv(csv_path, fieldnames, results, clean_existing_rows)
 
             # Leaderboard automatisch aktualisieren
             self.update_leaderboard()
@@ -162,8 +160,10 @@ class ResultManager:
             writer = csv.DictWriter(f, fieldnames=fieldnames, extrasaction="ignore")
             writer.writeheader()
             writer.writerows(all_rows)
-        
-        print(f"\n💾 Ergebnisse gespeichert in: {csv_path} (Upsert: {len(new_results)} neu/updated)")
+
+        print(
+            f"\n💾 Ergebnisse gespeichert in: {csv_path} (Upsert: {len(new_results)} neu/updated)"
+        )
 
     def update_leaderboard(self):
         """Triggert das Update des Leaderboards."""

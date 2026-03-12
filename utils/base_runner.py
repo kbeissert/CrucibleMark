@@ -46,7 +46,7 @@ class BaseBenchmarkRunner:
         asset_path: Path,
         benchmark_info: Dict[str, Any],
         provider: str = "ollama",
-    ) -> Tuple[Any, Dict[str, Any]]:
+    ) -> Tuple[Any, BenchmarkResult]:
         """Lädt und führt ein Test-Modul aus (Shared Logic)."""
         # Pfad-Logik vereinheitlichen
         if "path" in benchmark_info:

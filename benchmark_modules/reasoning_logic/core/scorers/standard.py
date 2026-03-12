@@ -52,7 +52,9 @@ def score_standard_asset(
 
     # 1. Error Detection (Match Keywords)
     error_score = _measure_error_detection(
-        resp_lower, required_findings, asset,
+        resp_lower,
+        required_findings,
+        asset,
     )
 
     error_max = float(WEIGHT_ERROR_DETECTION)
@@ -71,7 +73,11 @@ def score_standard_asset(
 
     # 3. Consistency and Finalize
     return _measure_consistency_and_return_full(
-        total_score, score_breakdown, details, response, asset,
+        total_score,
+        score_breakdown,
+        details,
+        response,
+        asset,
     )
 
 
@@ -90,7 +96,8 @@ def _measure_error_detection(
             matches += 1
 
     error_cfg = cast(
-        "dict[str, Any]", asset.get("scoring", {}).get("error_detection", {}),
+        "dict[str, Any]",
+        asset.get("scoring", {}).get("error_detection", {}),
     )
     error_max = float(error_cfg.get("points", WEIGHT_ERROR_DETECTION))
 
@@ -99,12 +106,11 @@ def _measure_error_detection(
     return (matches / len(required_findings)) * error_max
 
 
-def _measure_solution_quality(
-    resp_lower: str, asset: dict[str, Any]
-) -> float:
+def _measure_solution_quality(resp_lower: str, asset: dict[str, Any]) -> float:
     """Calculate solution quality score based on structure patterns."""
     qual_cfg = cast(
-        "dict[str, Any]", asset.get("scoring", {}).get("solution_quality", {}),
+        "dict[str, Any]",
+        asset.get("scoring", {}).get("solution_quality", {}),
     )
     quality_max = float(qual_cfg.get("points", WEIGHT_SOLUTION_QUALITY))
     quality_score = 0.0
@@ -128,7 +134,8 @@ def _measure_consistency_and_return_full(
 ) -> tuple[float, dict[str, Any], list[str]]:
     """Measure consistency, add it to totals, and return final standard result."""
     const_cfg = cast(
-        "dict[str, Any]", asset.get("scoring", {}).get("consistency", {}),
+        "dict[str, Any]",
+        asset.get("scoring", {}).get("consistency", {}),
     )
     const_max = float(const_cfg.get("points", WEIGHT_CONSISTENCY))
     sc, _ = score_consistency(response, {"points": const_max})
@@ -140,9 +147,7 @@ def _measure_consistency_and_return_full(
     return total_score, score_breakdown, details
 
 
-def score_consistency(
-    response: str, config: dict[str, Any]
-) -> tuple[float, list[str]]:
+def score_consistency(response: str, config: dict[str, Any]) -> tuple[float, list[str]]:
     """Evaluate consistency for reasoning tests."""
     score = 0.0
     details: list[str] = []

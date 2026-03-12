@@ -7,6 +7,7 @@ import re
 from typing import List, Dict, Any
 from ..constants import DOC_TYPE_SCHEMAS
 
+
 class StructureValidator:
     """
     Validates the structural integrity of Markdown documentation.
@@ -26,9 +27,9 @@ class StructureValidator:
         violations.extend(hierarchy_violations)
 
         # 2. Stats
-        heading_count = len(re.findall(r'^#{1,6}\s', response, re.MULTILINE))
+        heading_count = len(re.findall(r"^#{1,6}\s", response, re.MULTILINE))
         code_block_count = StructureValidator.count_code_blocks(response)
-        list_count = len(re.findall(r'^(\s*[-*+]|\s*\d+\.)\s+', response, re.MULTILINE))
+        list_count = len(re.findall(r"^(\s*[-*+]|\s*\d+\.)\s+", response, re.MULTILINE))
 
         # 3. Schema checks (Code blocks)
         if code_block_count < schema.get("min_code_blocks", 0):
@@ -49,8 +50,8 @@ class StructureValidator:
             "stats": {
                 "heading_count": heading_count,
                 "code_block_count": code_block_count,
-                "list_count": list_count
-            }
+                "list_count": list_count,
+            },
         }
 
     @staticmethod
@@ -59,7 +60,7 @@ class StructureValidator:
         Checks that headings do not skip levels (e.g. H1 to H3).
         """
         violations = []
-        headings = re.findall(r'^(#{1,6})\s+(.+)$', response, re.MULTILINE)
+        headings = re.findall(r"^(#{1,6})\s+(.+)$", response, re.MULTILINE)
 
         if not headings:
             return []
@@ -72,8 +73,8 @@ class StructureValidator:
             # Allowing start with H1 or H2.
 
             if i == 0:
-                if level > 2: # warning if starts with H3+
-                    pass # not strictly a hierarchy violation but odd
+                if level > 2:  # warning if starts with H3+
+                    pass  # not strictly a hierarchy violation but odd
             else:
                 if level > prev_level + 1:
                     violations.append(
@@ -90,7 +91,7 @@ class StructureValidator:
         # Simple count of opening triple backticks
         # Note: This might overcount if nested or not properly specific, but standard regex
         # for code blocks is roughly ```.*?```
-        matches = re.findall(r'```', response)
+        matches = re.findall(r"```", response)
         # Divide by 2 to get block count? Or just count starts?
         # Usually checking pairs is better.
         # Let's count pairs.
@@ -110,7 +111,7 @@ class StructureValidator:
 
         # Simple case-insensitive check in headings
         headings_text = [
-            h.lower() for h in re.findall(r'^#{1,6}\s+(.+)$', response, re.MULTILINE)
+            h.lower() for h in re.findall(r"^#{1,6}\s+(.+)$", response, re.MULTILINE)
         ]
 
         for req in required:

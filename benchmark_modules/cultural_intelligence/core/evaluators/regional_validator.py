@@ -48,7 +48,7 @@ class RegionalConsistencyValidator:
                 "is_consistent": True,
                 "violations": [],
                 "dominant_region": "unknown",
-                "regional_markers": regional_markers
+                "regional_markers": regional_markers,
             }
 
         # Dominant region has most markers
@@ -69,5 +69,5 @@ class RegionalConsistencyValidator:
             "is_consistent": is_consistent,
             "violations": violations,
             "dominant_region": dominant_region,
-            "regional_markers": regional_markers
+            "regional_markers": regional_markers,
         }

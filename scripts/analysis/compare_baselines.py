@@ -28,6 +28,7 @@ if str(ROOT_DIR) not in sys.path:
 # pylint: disable=wrong-import-position
 from utils.constants import Colors  # noqa: E402
 
+
 def load_json(path: str) -> Any:
     try:
         with open(path, "r", encoding="utf-8") as f:
@@ -36,7 +37,10 @@ def load_json(path: str) -> Any:
         print(f"{Colors.FAIL}Error loading {path}: {e}{Colors.ENDC}")
         sys.exit(1)
 
-def compare_political_compass(ref: Dict[str, Any], test: Dict[str, Any], threshold: float):
+
+def compare_political_compass(
+    ref: Dict[str, Any], test: Dict[str, Any], threshold: float
+):
     """Specific comparison logic for Political Compass results."""
     print(f"\n{Colors.HEADER}🧭 Political Compass Comparison{Colors.ENDC}")
 
@@ -65,18 +69,25 @@ def compare_political_compass(ref: Dict[str, Any], test: Dict[str, Any], thresho
     if shift > 4.0:
         color = Colors.FAIL
 
-    print(f"Total Shift (Euclidean): {color}{shift:.2f}{Colors.ENDC} (Threshold: 2.0/4.0)")
+    print(
+        f"Total Shift (Euclidean): {color}{shift:.2f}{Colors.ENDC} (Threshold: 2.0/4.0)"
+    )
 
     # Compare Archetypes
     ref_arch = ref.get("archetype", {}).get("label", "Unknown")
     test_arch = test.get("archetype", {}).get("label", "Unknown")
 
     if ref_arch != test_arch:
-        print(f"\n{Colors.WARNING}⚠️  Archetype changed: {ref_arch} -> {test_arch}{Colors.ENDC}")
+        print(
+            f"\n{Colors.WARNING}⚠️  Archetype changed: {ref_arch} -> {test_arch}{Colors.ENDC}"
+        )
     else:
         print(f"\n{Colors.GREEN}✅ Archetype stable: {ref_arch}{Colors.ENDC}")
 
-def compare_standard_benchmark(ref: List[Dict[str, Any]], test: List[Dict[str, Any]], threshold: float):
+
+def compare_standard_benchmark(
+    ref: List[Dict[str, Any]], test: List[Dict[str, Any]], threshold: float
+):
     """Compares standard list-based benchmark results."""
     print(f"\n{Colors.HEADER}📊 Score Comparison{Colors.ENDC}")
 
@@ -112,34 +123,46 @@ def compare_standard_benchmark(ref: List[Dict[str, Any]], test: List[Dict[str, A
             color = Colors.WARNING
             warnings += 1
 
-        if abs(delta) > 50: # Massive swing
+        if abs(delta) > 50:  # Massive swing
             status = "DIFF ❗"
             color = Colors.FAIL
 
-        print(f"{aid[:30]:<30} {r_score:>8.1f} {t_score:>8.1f} {delta:>+8.1f} {color}{status}{Colors.ENDC}")
+        print(
+            f"{aid[:30]:<30} {r_score:>8.1f} {t_score:>8.1f} {delta:>+8.1f} {color}{status}{Colors.ENDC}"
+        )
 
     if missing_ids:
-        print(f"\n{Colors.WARNING}Missing in Test ({len(missing_ids)}): {', '.join(list(missing_ids)[:5])}...{Colors.ENDC}")
+        print(
+            f"\n{Colors.WARNING}Missing in Test ({len(missing_ids)}): {', '.join(list(missing_ids)[:5])}...{Colors.ENDC}"
+        )
 
     avg_delta = total_delta / len(common_ids) if common_ids else 0
     print("-" * 75)
     print(f"Average Absolute Deviation: {avg_delta:.1f}%")
 
     if warnings > 0:
-        print(f"\n{Colors.WARNING}⚠️  Found {warnings} significant deviations (> {threshold*100}%){Colors.ENDC}")
+        print(
+            f"\n{Colors.WARNING}⚠️  Found {warnings} significant deviations (> {threshold*100}%){Colors.ENDC}"
+        )
     else:
         print(f"\n{Colors.GREEN}✅ Results correspond to baseline.{Colors.ENDC}")
+
 
 def main():
     parser = argparse.ArgumentParser(description="Compare Benchmark Results")
     parser.add_argument("--ref", required=True, help="Reference JSON file")
     parser.add_argument("--test", required=True, help="Test JSON file")
-    parser.add_argument("--threshold", type=float, default=0.15, help="Warning threshold (e.g. 0.15 for 15 percent)")
+    parser.add_argument(
+        "--threshold",
+        type=float,
+        default=0.15,
+        help="Warning threshold (e.g. 0.15 for 15 percent)",
+    )
 
     args = parser.parse_args()
 
     ref_data = load_json(args.ref)
-    test_data = load_json(args.test) # Fixed: Using args.test instead of args.ref
+    test_data = load_json(args.test)  # Fixed: Using args.test instead of args.ref
 
     # Detect Type
     is_pol_compass = isinstance(ref_data, dict) and "coordinates" in ref_data
@@ -151,6 +174,7 @@ def main():
     else:
         print(f"{Colors.FAIL}Unknown Result Format.{Colors.ENDC}")
         sys.exit(1)
+
 
 if __name__ == "__main__":
     main()

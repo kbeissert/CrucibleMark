@@ -203,10 +203,12 @@ class ResultManager:
         """Prints a CLI summary of the report using TerminalUI."""
         ui = TerminalUI()
 
-        if "coordinates" not in report: # Defensive check for generic batch modules
+        if "coordinates" not in report:  # Defensive check for generic batch modules
             logger.info("Batch Module Execution Completed.")
             if "score" in report:
-                print(f"Score: {report['score']} | Status: {report.get('status', 'success')}")
+                print(
+                    f"Score: {report['score']} | Status: {report.get('status', 'success')}"
+                )
             return
 
         coords = report["coordinates"]

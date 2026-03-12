@@ -12,7 +12,6 @@ from datetime import datetime
 
 from schemas.result import BenchmarkResult
 
-
 # Scoring constant
 TOTAL_SCORING_WEIGHT = 100
 
@@ -82,10 +81,10 @@ class BaseTest(ABC):
             ValueError: Wenn Validierung fehlschlägt
         """
         from utils.asset_validator import AssetValidator
-        
+
         validator = AssetValidator()
         errors = validator.validate_structure(self.asset)
-        
+
         if errors:
             raise ValueError(f"Asset Validation Error: {'; '.join(errors)}")
 

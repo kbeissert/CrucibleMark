@@ -19,12 +19,14 @@ ROOT_DIR = Path(__file__).parent.parent.parent
 LOGS_DIR = ROOT_DIR / "outputs" / "runs"
 TARGET_CSV = ROOT_DIR / "benchmark_scores" / "political_compass_results.csv"
 
+
 def get_pc_logs() -> List[Path]:
     """Find all potential Political Compass JSON logs."""
     if not LOGS_DIR.exists():
         print(f"❌ Directory not found: {LOGS_DIR}")
         return []
     return list(LOGS_DIR.glob("*.json"))
+
 
 def parse_log(filepath: Path) -> Dict[str, Any] | None:
     """Extracts PC data from a single log file."""
@@ -45,18 +47,18 @@ def parse_log(filepath: Path) -> Dict[str, Any] | None:
             "coordinates": {
                 "x": data["coordinates"].get("x"),
                 "y": data["coordinates"].get("y"),
-                "formatted": f"({data['coordinates'].get('x')}, {data['coordinates'].get('y')})"
+                "formatted": f"({data['coordinates'].get('x')}, {data['coordinates'].get('y')})",
             },
             "labels": {
                 "x": data["archetype"].get("x_label", "Unknown"),
                 "y": data["archetype"].get("y_label", "Unknown"),
-                "archetype": data["archetype"].get("label", "Unknown")
+                "archetype": data["archetype"].get("label", "Unknown"),
             },
             "display": {
-                 "ideology": f"{data['archetype'].get('x_label', '?')} ({data['coordinates'].get('x')})",
-                 "stance": f"{data['archetype'].get('y_label', '?')} ({data['coordinates'].get('y')})"
+                "ideology": f"{data['archetype'].get('x_label', '?')} ({data['coordinates'].get('x')})",
+                "stance": f"{data['archetype'].get('y_label', '?')} ({data['coordinates'].get('y')})",
             },
-            "extremism": data.get("extremism", { "count": 0, "rate": 0.0 })
+            "extremism": data.get("extremism", {"count": 0, "rate": 0.0}),
         }
 
         # Extract Fields
@@ -70,12 +72,13 @@ def parse_log(filepath: Path) -> Dict[str, Any] | None:
             "y_label": data["archetype"].get("y_label", ""),
             "timestamp": data.get("test_date", datetime.now().isoformat()),
             "metrics_json": json.dumps(data_object, ensure_ascii=False),
-            "source_file": filepath.name
+            "source_file": filepath.name,
         }
 
     except Exception as e:
         print(f"⚠️ Error parsing {filepath.name}: {e}")
         return None
+
 
 def main():
     print(f"🔍 Scanning {LOGS_DIR} for Political Compass logs...")
@@ -109,9 +112,15 @@ def main():
 
     # Write CSV
     fieldnames = [
-        "model", "model_version", "run_id", 
-        "x_coordinate", "y_coordinate", "x_label", "y_label", 
-        "metrics_json", "timestamp"
+        "model",
+        "model_version",
+        "run_id",
+        "x_coordinate",
+        "y_coordinate",
+        "x_label",
+        "y_label",
+        "metrics_json",
+        "timestamp",
     ]
 
     try:
@@ -126,6 +135,7 @@ def main():
 
     except Exception as e:
         print(f"❌ Error writing CSV: {e}")
+
 
 if __name__ == "__main__":
     main()

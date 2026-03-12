@@ -2,6 +2,7 @@
 Core scoring and aggregation logic for leaderboard.
 Calculates Routine vs Reasoning scores, aggregates stats, and classifies models.
 """
+
 import sys
 from typing import Any, Dict, Tuple
 
@@ -18,32 +19,35 @@ if str(ROOT_DIR) not in sys.path:
 # Removed unused imports from utils.module_registry as functionality is passed via config
 
 
-
 # ==============================================================================
 # 2. HELPERS: SCORING (Granular Contribution)
 # ==============================================================================
 
+
 def _get_row_contribution(
     row: pd.Series,
     asset_contrib_map: Dict[str, Dict[str, float]],
-    cat_to_config: Dict[str, Any]
+    cat_to_config: Dict[str, Any],
 ) -> Tuple[float, float, float, float]:
     """
     Helper to calculate routine/reasoning contribution AND weights for a single row.
     Returns: (contrib_routine, contrib_reasoning, weight_routine, weight_reasoning)
     """
+
     # Helper to get weights
     def get_weights_from_map_or_fallback():
         asset_id = row.get("asset_id")
         if asset_id in asset_contrib_map:
             c = asset_contrib_map[asset_id]
             return float(c.get("routine", 0.0)), float(c.get("reasoning", 0.0))
-        
+
         # Module-Level Default
         cat = row.get("category", "")
         mod_conf = cat_to_config.get(cat, {})
         def_contrib = mod_conf.get("default_contribution", {})
-        return float(def_contrib.get("routine", 0.0)), float(def_contrib.get("reasoning", 0.0))
+        return float(def_contrib.get("routine", 0.0)), float(
+            def_contrib.get("reasoning", 0.0)
+        )
 
     w_routine, w_reasoning = get_weights_from_map_or_fallback()
     pct = float(row.get("percentage", 0))
@@ -53,7 +57,12 @@ def _get_row_contribution(
         r_raw = row.get("routine_contribution")
         l_raw = row.get("reasoning_contribution")
 
-        if pd.notna(r_raw) and pd.notna(l_raw) and str(r_raw).strip() and str(l_raw).strip():
+        if (
+            pd.notna(r_raw)
+            and pd.notna(l_raw)
+            and str(r_raw).strip()
+            and str(l_raw).strip()
+        ):
             # SUCCESS: Use pre-calculated values
             # Return weights from config map because extracting them from contrib/pct is unsafe if pct=0
             return float(r_raw), float(l_raw), w_routine, w_reasoning
@@ -64,7 +73,9 @@ def _get_row_contribution(
     return pct * w_routine, pct * w_reasoning, w_routine, w_reasoning
 
 
-def _calculate_group_scores(df: pd.DataFrame, modules_config: Dict[str, Any]) -> pd.DataFrame:
+def _calculate_group_scores(
+    df: pd.DataFrame, modules_config: Dict[str, Any]
+) -> pd.DataFrame:
     """
     Calculates Routine vs Reasoning scores using granular contributions (v3 logic).
     Returns DataFrame with [model, model_version, Routine Score, Reasoning Score].
@@ -82,9 +93,11 @@ def _calculate_group_scores(df: pd.DataFrame, modules_config: Dict[str, Any]) ->
     df_calc = df_calc[df_calc["category"].isin(active_cats)]
 
     # Filter out non-scoring modules
-    df_calc = df_calc[df_calc["category"].apply(
-        lambda c: cat_to_config.get(c, {}).get("enable_scoring", True)
-    )]
+    df_calc = df_calc[
+        df_calc["category"].apply(
+            lambda c: cat_to_config.get(c, {}).get("enable_scoring", True)
+        )
+    ]
 
     if df_calc.empty:
         return pd.DataFrame()
@@ -95,7 +108,7 @@ def _calculate_group_scores(df: pd.DataFrame, modules_config: Dict[str, Any]) ->
         for b in mod_data.get("benchmarks", []):
             if "score_contribution" in b and "id" in b:
                 asset_contrib_map[b["id"]] = b["score_contribution"]
-    
+
     # DEBUG: Check map
     # print(f"DEBUG: Asset Contrib Map Size: {len(asset_contrib_map)}")
     # if 'code_quality_001' in asset_contrib_map:
@@ -105,7 +118,7 @@ def _calculate_group_scores(df: pd.DataFrame, modules_config: Dict[str, Any]) ->
     contribs = df_calc.apply(
         lambda r: _get_row_contribution(r, asset_contrib_map, cat_to_config),
         axis=1,
-        result_type="expand"
+        result_type="expand",
     )
 
     if contribs.empty:
@@ -120,35 +133,65 @@ def _calculate_group_scores(df: pd.DataFrame, modules_config: Dict[str, Any]) ->
         df_calc["weight_reasoning"] = contribs[3]
 
     # 4. Aggregation: Sum / Sum of Weights
-    scores = df_calc.groupby(["model", "model_version"]).agg(
-        sum_routine=("final_routine", "sum"),
-        sum_reasoning=("final_reasoning", "sum"),
-        total_weight_routine=("weight_routine", "sum"),
-        total_weight_reasoning=("weight_reasoning", "sum"),
-        count=("asset_id", "count")
-    ).reset_index()
+    scores = (
+        df_calc.groupby(["model", "model_version"])
+        .agg(
+            sum_routine=("final_routine", "sum"),
+            sum_reasoning=("final_reasoning", "sum"),
+            total_weight_routine=("weight_routine", "sum"),
+            total_weight_reasoning=("weight_reasoning", "sum"),
+            count=("asset_id", "count"),
+        )
+        .reset_index()
+    )
 
     # Calculate Total Weight (Global denominator for components)
-    scores["total_weight_global"] = scores["total_weight_routine"] + scores["total_weight_reasoning"]
+    scores["total_weight_global"] = (
+        scores["total_weight_routine"] + scores["total_weight_reasoning"]
+    )
 
     # Calculate Component Scores (Weighted Contribution to Total)
     # This ensures Routine Score + Reasoning Score = Total Score
     scores["Routine Score"] = scores.apply(
-        lambda x: x["sum_routine"] / x["total_weight_global"] if x["total_weight_global"] > 0 else 0, axis=1
+        lambda x: (
+            x["sum_routine"] / x["total_weight_global"]
+            if x["total_weight_global"] > 0
+            else 0
+        ),
+        axis=1,
     )
     scores["Reasoning Score"] = scores.apply(
-        lambda x: x["sum_reasoning"] / x["total_weight_global"] if x["total_weight_global"] > 0 else 0, axis=1
+        lambda x: (
+            x["sum_reasoning"] / x["total_weight_global"]
+            if x["total_weight_global"] > 0
+            else 0
+        ),
+        axis=1,
     )
 
     # Return intermediate sums for weighted total calculation
-    return scores[["model", "model_version", "Routine Score", "Reasoning Score", "sum_routine", "sum_reasoning", "total_weight_routine", "total_weight_reasoning"]]
+    return scores[
+        [
+            "model",
+            "model_version",
+            "Routine Score",
+            "Reasoning Score",
+            "sum_routine",
+            "sum_reasoning",
+            "total_weight_routine",
+            "total_weight_reasoning",
+        ]
+    ]
 
 
 # ==============================================================================
 # 3. HELPERS: STATS AGGREGATION
 # ==============================================================================
 
-def _aggregate_basic_stats(df: pd.DataFrame, modules_config: Dict[str, Any]) -> pd.DataFrame:
+
+def _aggregate_basic_stats(
+    df: pd.DataFrame, modules_config: Dict[str, Any]
+) -> pd.DataFrame:
     """Aggregates percentage, time and counts. Handles non-scoring modules correctly."""
 
     # Filter for scoring assets only
@@ -166,35 +209,32 @@ def _aggregate_basic_stats(df: pd.DataFrame, modules_config: Dict[str, Any]) -> 
     for col in cols_to_numeric:
         if col in df.columns:
             df[col] = pd.to_numeric(df[col], errors="coerce").fillna(0)
-            
+
     if "llm_judge_score" in df.columns:
         df["llm_judge_score"] = pd.to_numeric(df["llm_judge_score"], errors="coerce")
 
     # 1. Base Stats (Presence, Time) - From ALL valid runs (scoring + info)
-    
-    # SPLIT AGGREGATION: 
+
+    # SPLIT AGGREGATION:
     # - Execution Time: Excluding "System" probes (to avoid skewing averages with 0.1s dummy values)
     # - Load Time: Using ALL rows (System probe carries the Max Load Time)
-    
+
     # A) Standard Metrics (without System Probe)
     df_metrics = df[df["category"] != "System"]
-    
-    base_aggs = {
-        "execution_time": "mean",
-        "asset_id": "count"
-    }
+
+    base_aggs = {"execution_time": "mean", "asset_id": "count"}
 
     if "cost_usd" in df_metrics.columns:
         base_aggs["cost_usd"] = "sum"
     if "tokens_used" in df_metrics.columns:
         base_aggs["tokens_used"] = "sum"
-        
+
     stats_metrics = (
         df_metrics.groupby(["model", "model_version", "type"])
         .agg(base_aggs)
         .reset_index()
     )
-    
+
     # B) Load Time (Include System Probe because it has the Cold Start data)
     stats_load = pd.DataFrame()
     if "load_time" in df.columns:
@@ -203,29 +243,34 @@ def _aggregate_basic_stats(df: pd.DataFrame, modules_config: Dict[str, Any]) -> 
             .max()
             .reset_index()
         )
-    
+
     # Merge results if load stats exist
     if not stats_load.empty:
-        base_stats = pd.merge(stats_metrics, stats_load, on=["model", "model_version", "type"], how="left")
+        base_stats = pd.merge(
+            stats_metrics, stats_load, on=["model", "model_version", "type"], how="left"
+        )
     else:
         base_stats = stats_metrics
 
     # Enhanced Time Stats (Max, P95, P99, Timeouts)
     # Define custom aggregation functions
-    def p95(x): return x.quantile(0.95)
-    def p99(x): return x.quantile(0.99)
-    def count_timeouts(x): return (x > 120.0).sum()
+    def p95(x):
+        return x.quantile(0.95)
+
+    def p99(x):
+        return x.quantile(0.99)
+
+    def count_timeouts(x):
+        return (x > 120.0).sum()
 
     # Create separate stats for time to avoid complex multi-index flattening
     # time_aggs = {
     #    "execution_time": ["mean", "max", p95, p99, count_timeouts]
     # }
-    
+
     # 1. Base Aggregation
     base_stats = (
-        df.groupby(["model", "model_version", "type"])
-        .agg(base_aggs)
-        .reset_index()
+        df.groupby(["model", "model_version", "type"]).agg(base_aggs).reset_index()
     )
 
     # Calculate rigorous time stats
@@ -236,7 +281,7 @@ def _aggregate_basic_stats(df: pd.DataFrame, modules_config: Dict[str, Any]) -> 
             Max_Time="max",
             P95_Time=p95,
             P99_Time=p99,
-            Timeout_Count=count_timeouts
+            Timeout_Count=count_timeouts,
         )
         .reset_index()
     )
@@ -258,7 +303,9 @@ def _aggregate_basic_stats(df: pd.DataFrame, modules_config: Dict[str, Any]) -> 
             .reset_index()
         )
         # Merge scoring stats into base stats
-        stats = pd.merge(base_stats, score_stats, on=["model", "model_version", "type"], how="left")
+        stats = pd.merge(
+            base_stats, score_stats, on=["model", "model_version", "type"], how="left"
+        )
     else:
         stats = base_stats
         stats["percentage"] = 0.0
@@ -273,18 +320,18 @@ def _aggregate_basic_stats(df: pd.DataFrame, modules_config: Dict[str, Any]) -> 
 
     # 3. Judge Stats - From ALL runs
     if "llm_judge_score" in df.columns:
+
         def calc_coverage(x):
             return x.notna().sum() / len(x) if len(x) > 0 else 0.0
-            
+
         judge_stats = (
             df.groupby(["model", "model_version", "type"])["llm_judge_score"]
-            .agg(
-                llm_judge_avg="mean",
-                judge_coverage=calc_coverage
-            )
+            .agg(llm_judge_avg="mean", judge_coverage=calc_coverage)
             .reset_index()
         )
-        stats = pd.merge(stats, judge_stats, on=["model", "model_version", "type"], how="left")
+        stats = pd.merge(
+            stats, judge_stats, on=["model", "model_version", "type"], how="left"
+        )
     else:
         stats["llm_judge_avg"] = None
         stats["judge_coverage"] = 0.0
@@ -292,7 +339,9 @@ def _aggregate_basic_stats(df: pd.DataFrame, modules_config: Dict[str, Any]) -> 
     return stats
 
 
-def _calculate_run_counts(df: pd.DataFrame, modules_config: Dict[str, Any]) -> pd.DataFrame:
+def _calculate_run_counts(
+    df: pd.DataFrame, modules_config: Dict[str, Any]
+) -> pd.DataFrame:
     """Calculates 'Tests Run' using logic overrides (e.g. PC = 9 tests)."""
 
     name_to_override = {}
@@ -328,7 +377,6 @@ def _calculate_run_counts(df: pd.DataFrame, modules_config: Dict[str, Any]) -> p
         .reset_index(name="logical_count")
     )
 
-
     run_counts["expected_assets"] = expected_assets
     # Note: adding expected_assets as column for easy merge, though it's constant
 
@@ -347,34 +395,41 @@ def _calculate_stability_score(df: pd.DataFrame) -> pd.DataFrame:
     df_perf = df.copy()
     if "execution_time" not in df_perf.columns:
         return pd.DataFrame()
-    
-    df_perf["execution_time"] = pd.to_numeric(df_perf["execution_time"], errors="coerce")
+
+    df_perf["execution_time"] = pd.to_numeric(
+        df_perf["execution_time"], errors="coerce"
+    )
     df_perf = df_perf[df_perf["execution_time"] > 0]
-    
+
     if df_perf.empty:
         return pd.DataFrame()
 
     # 2. Calculate PER-ASSET Stats (Mean, Std)
     # Group by Model, Version, Type AND Asset ID (compare runs of same asset)
-    # v3.1 Fix: Use per-asset variance instead of per-category to avoid flagging models 
+    # v3.1 Fix: Use per-asset variance instead of per-category to avoid flagging models
     # as unstable simply because they have diverse task durations (e.g. 5s vs 50s tasks).
-    asset_stats = df_perf.groupby(["model", "model_version", "type", "asset_id"])["execution_time"].agg(
-        asset_mean="mean",
-        asset_std="std"
-    ).reset_index()
-    
+    asset_stats = (
+        df_perf.groupby(["model", "model_version", "type", "asset_id"])[
+            "execution_time"
+        ]
+        .agg(asset_mean="mean", asset_std="std")
+        .reset_index()
+    )
+
     # Handle single-item variance (std is NaN) -> CV is 0 (Stable)
     asset_stats["asset_std"] = asset_stats["asset_std"].fillna(0)
-    
+
     # 3. Calculate CV per asset (Coefficient of Variation)
     asset_stats["asset_cv"] = asset_stats.apply(
         lambda x: x["asset_std"] / x["asset_mean"] if x["asset_mean"] > 0 else 0, axis=1
     )
-    
+
     # 4. Average the CVs across all assets (Asset-Aware Stability)
-    stability_stats = asset_stats.groupby(["model", "model_version", "type"])["asset_cv"].agg(
-        stability_score="mean" 
-    ).reset_index()
+    stability_stats = (
+        asset_stats.groupby(["model", "model_version", "type"])["asset_cv"]
+        .agg(stability_score="mean")
+        .reset_index()
+    )
 
     # stability_score is e.g. 0.26 (26%), 0.69 (69%)
     return stability_stats
@@ -383,6 +438,7 @@ def _calculate_stability_score(df: pd.DataFrame) -> pd.DataFrame:
 # ==============================================================================
 # 4. MAIN ORCHESTRATOR
 # ==============================================================================
+
 
 def calculate_scores(
     df: pd.DataFrame, modules_config: Dict[str, Any]
@@ -426,9 +482,11 @@ def calculate_scores(
         # Special Case: System Probes
         if asset_id == "system_warmup_probe":
             return "System"
-            
+
         for mod_key, mod_data in modules_config.items():
-            if "prefix" in mod_data and str(asset_id).startswith(str(mod_data["prefix"])):
+            if "prefix" in mod_data and str(asset_id).startswith(
+                str(mod_data["prefix"])
+            ):
                 return str(mod_data.get("name", mod_key))
             if str(asset_id).startswith(mod_key):
                 return str(mod_data.get("name", mod_key))
@@ -445,15 +503,14 @@ def calculate_scores(
 
     # Merge Counts
     result = pd.merge(
-        stats,
-        run_counts,
-        on=["model", "model_version", "type"],
-        how="left"
+        stats, run_counts, on=["model", "model_version", "type"], how="left"
     )
 
     # Completion Status
     # Using 'max' of expected_assets column, as it's constant
-    expected = result["expected_assets"].max() if "expected_assets" in result.columns else 0
+    expected = (
+        result["expected_assets"].max() if "expected_assets" in result.columns else 0
+    )
     result["is_complete"] = result["logical_count"] >= expected
     result["Tests Run"] = result["logical_count"].astype(str) + "/" + str(expected)
     if "expected_assets" in result.columns:
@@ -471,14 +528,11 @@ def calculate_scores(
     # --- Routine vs Reasoning (v2.1: Granular Weights) ---
     # Calculates scores based on per-asset routine/reasoning split
     granular_scores = _calculate_group_scores(df_success, modules_config)
-    
+
     if not granular_scores.empty:
         # Merge granular scores
         result = pd.merge(
-            result, 
-            granular_scores, 
-            on=["model", "model_version"], 
-            how="left"
+            result, granular_scores, on=["model", "model_version"], how="left"
         )
     else:
         # Fallback if granular calc fails (should not happen)
@@ -492,7 +546,9 @@ def calculate_scores(
     # --- Stability Score (New v3.1 Logic) ---
     stability = _calculate_stability_score(df_success)
     if not stability.empty:
-        result = pd.merge(result, stability, on=["model", "model_version", "type"], how="left")
+        result = pd.merge(
+            result, stability, on=["model", "model_version", "type"], how="left"
+        )
     else:
         result["stability_score"] = 0.0
 
@@ -503,10 +559,10 @@ def calculate_scores(
         w_reasoning = row.get("total_weight_reasoning", 0)
         sum_routine = row.get("sum_routine", 0)
         sum_reasoning = row.get("sum_reasoning", 0)
-        
+
         total_weight = w_routine + w_reasoning
         total_sum = sum_routine + sum_reasoning
-        
+
         if total_weight > 0:
             return total_sum / total_weight
         else:
@@ -518,10 +574,11 @@ def calculate_scores(
     # Cost per 1K Tokens (Commercial Only)
     # v3.0: Now calculates Cost per 1K TOKENS (USD), not per 1K Tests.
     if "cost_usd" in result.columns and "tokens_used" in result.columns:
+
         def calc_cost_per_1k_tokens(row):
             cost_total = row.get("cost_usd")
             tokens_total = row.get("tokens_used")
-            
+
             # Safe Float Conversion
             try:
                 cost_total = float(cost_total) if pd.notna(cost_total) else 0.0
@@ -532,7 +589,7 @@ def calculate_scores(
             # Validation
             if tokens_total == 0:
                 return None
-            
+
             # Logic: Avoid confusing free models with missing data
             if cost_total == 0 and str(row.get("type", "")).lower() != "commercial":
                 return None
@@ -542,9 +599,10 @@ def calculate_scores(
             return round((cost_total / tokens_total) * 1000, 4)
 
         result["Cost per 1K (USD)"] = result.apply(calc_cost_per_1k_tokens, axis=1)
-    
+
     # Fallback to old "Cost per 1K Tests" if tokens are missing (Legacy compat)
     elif "cost_usd" in result.columns and "asset_id" in result.columns:
+
         def calc_cost_per_1k_tests(row):
             cost = row.get("cost_usd")
             count = row.get("asset_id")
@@ -558,14 +616,22 @@ def calculate_scores(
 
     # Efficiency Index
     result["Efficiency_Index"] = result.apply(
-        lambda row: row["Routine Score"] / row["execution_time"]
-        if row.get("execution_time", 0) > 0
-        else 0,
+        lambda row: (
+            row["Routine Score"] / row["execution_time"]
+            if row.get("execution_time", 0) > 0
+            else 0
+        ),
         axis=1,
     )
 
     # Remove temporary calculation columns
-    cols_to_drop = ["sum_routine", "sum_reasoning", "total_weight_routine", "total_weight_reasoning", "Avg_Time"]
+    cols_to_drop = [
+        "sum_routine",
+        "sum_reasoning",
+        "total_weight_routine",
+        "total_weight_reasoning",
+        "Avg_Time",
+    ]
     result = result.drop(columns=[c for c in cols_to_drop if c in result.columns])
 
     # --- Cleanup Renaming ---

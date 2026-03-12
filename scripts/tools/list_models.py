@@ -32,6 +32,7 @@ from utils.model_utils import is_model_suitable_for_benchmark  # noqa: E402
 from utils.llm_client import LLMClient  # noqa: E402
 from utils.constants import Colors  # noqa: E402
 from utils.model_utils import is_cloud_model  # noqa: E402
+
 # pylint: enable=wrong-import-position, import-error
 
 
@@ -84,7 +85,7 @@ def _print_ollama_model_row(model: Any) -> None:
 
 def check_ollama() -> None:
     """Prüft und listet Ollama Modelle (Lokal und Cloud) mit Eignungs-Check."""
-    
+
     if ollama:
         try:
             models_response = ollama.list()
@@ -97,16 +98,20 @@ def check_ollama() -> None:
             if not model_list:
                 print(f"{Colors.WARNING}Keine Modelle in Ollama gefunden.{Colors.ENDC}")
                 return
-            
+
             # Trennung in Lokal und Cloud basierend auf SSOT-Funktion
             local_models = []
             cloud_models = []
 
             for model in model_list:
-                name = model.model if hasattr(model, "model") else model.get("name", "unknown")
+                name = (
+                    model.model
+                    if hasattr(model, "model")
+                    else model.get("name", "unknown")
+                )
                 size = model.size if hasattr(model, "size") else model.get("size", 0)
                 size_gb = (size or 0) / (1024**3)
-                
+
                 # Use SSOT function for cloud detection
                 if is_cloud_model(name, size_gb):
                     cloud_models.append(model)
@@ -135,10 +140,14 @@ def check_ollama() -> None:
                     f"{'TYPE':<10} {'REASON'}{Colors.ENDC}"
                 )
                 print("-" * 60)
-                
+
                 for model in cloud_models:
                     # Slightly different printing for cloud (No size usually)
-                    name = model.model if hasattr(model, "model") else model.get("name", "unknown")
+                    name = (
+                        model.model
+                        if hasattr(model, "model")
+                        else model.get("name", "unknown")
+                    )
                     # Reuse row printer or custom? Reuse is fine, size is just 0.0 GB
                     _print_ollama_model_row(model)
 
@@ -240,7 +249,9 @@ def check_commercial(config: Dict[str, Any]) -> None:
     try:
         llm_client = LLMClient(config)
     except Exception as e:
-        print(f"{Colors.FAIL}Critical: Failed to initialize LLMClient: {e}{Colors.ENDC}")
+        print(
+            f"{Colors.FAIL}Critical: Failed to initialize LLMClient: {e}{Colors.ENDC}"
+        )
         return
 
     # Header

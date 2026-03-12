@@ -14,6 +14,7 @@ from typing import Dict, Any, List
 # Third-party imports
 try:
     import tiktoken
+
     ENCODING = tiktoken.get_encoding("cl100k_base")  # GPT-4Tokenizer
 except ImportError:
     ENCODING = None
@@ -78,13 +79,15 @@ def analyze_module(module_path: Path) -> List[Dict[str, Any]]:
         user_tokens = count_tokens(full_content)
         total_tokens = sys_tokens + user_tokens
 
-        results.append({
-            "id": asset_id,
-            "file": asset_file.name,
-            "sys_tokens": sys_tokens,
-            "user_tokens": user_tokens,
-            "total_tokens": total_tokens
-        })
+        results.append(
+            {
+                "id": asset_id,
+                "file": asset_file.name,
+                "sys_tokens": sys_tokens,
+                "user_tokens": user_tokens,
+                "total_tokens": total_tokens,
+            }
+        )
 
     return sorted(results, key=lambda x: x["total_tokens"], reverse=True)
 
@@ -120,14 +123,20 @@ def print_report(module_name: str, assets: List[Dict[str, Any]]):
 def main():
     print(f"{Colors.BOLD}🔍 Prompt Token Analysis{Colors.ENDC}")
     if ENCODING:
-        print(f"   Parser: {Colors.CYAN}tiktoken (cl100k_base){Colors.ENDC} - Accurate for GPT-4")
+        print(
+            f"   Parser: {Colors.CYAN}tiktoken (cl100k_base){Colors.ENDC} - Accurate for GPT-4"
+        )
     else:
-        print(f"   Parser: {Colors.WARNING}Heuristic (Char/4){Colors.ENDC} - Install 'tiktoken' for accuracy")
+        print(
+            f"   Parser: {Colors.WARNING}Heuristic (Char/4){Colors.ENDC} - Install 'tiktoken' for accuracy"
+        )
 
     print("-" * 70)
 
     total_project_tokens = 0
-    modules = sorted([d for d in MODULES_DIR.iterdir() if d.is_dir() and not d.name.startswith("__")])
+    modules = sorted(
+        [d for d in MODULES_DIR.iterdir() if d.is_dir() and not d.name.startswith("__")]
+    )
 
     for module_dir in modules:
         assets = analyze_module(module_dir)
@@ -137,7 +146,9 @@ def main():
             total_project_tokens += module_total
 
     print("\n" + "=" * 70)
-    print(f"💰 Total Tokens (One Full Run): {Colors.BOLD}{total_project_tokens:,}{Colors.ENDC}")
+    print(
+        f"💰 Total Tokens (One Full Run): {Colors.BOLD}{total_project_tokens:,}{Colors.ENDC}"
+    )
 
     # Cost Estimate (avg price mix)
     # Assume $5/1M input tokens (GPT-4o)
@@ -190,8 +201,7 @@ def _print_cost_log_breakdown():
         return
 
     # Nur kommerzielle Provider (mit Kosten > 0) ausgeben
-    commercial = {p: v for p, v in commercial.items()
-                  if sum(v.values()) > 0}
+    commercial = {p: v for p, v in commercial.items() if sum(v.values()) > 0}
     if not commercial:
         return
 
@@ -199,9 +209,9 @@ def _print_cost_log_breakdown():
     print("📊 Tatsächliche Kosten (letzten 30 Tage) — Aufschlüsselung nach Typ")
     print("-" * 70)
     LABELS = {
-        "benchmark":             "Benchmark-Auswertung",
-        "overhead_ping":         "Overhead: Konnektivitäts-Ping",
-        "overhead_fingerprint":  "Overhead: Fingerprint-Kalibrierung",
+        "benchmark": "Benchmark-Auswertung",
+        "overhead_ping": "Overhead: Konnektivitäts-Ping",
+        "overhead_fingerprint": "Overhead: Fingerprint-Kalibrierung",
     }
     for prov, by_type in sorted(commercial.items()):
         total = sum(by_type.values())

@@ -33,7 +33,9 @@ class OpenAIProvider(LLMJudgeProvider):
 
     PROVIDER_NAME = "openai"
 
-    def __init__(self, model: str, temperature: float, max_tokens: int, timeout_seconds: int) -> None:
+    def __init__(
+        self, model: str, temperature: float, max_tokens: int, timeout_seconds: int
+    ) -> None:
         if openai_module is None:
             raise ImportError(
                 "The 'openai' package is required for OpenAIProvider. "
@@ -42,7 +44,9 @@ class OpenAIProvider(LLMJudgeProvider):
         from utils.env_utils import get_required_env
 
         api_key = get_required_env("OPENAI_API_KEY")
-        self._client = openai_module.OpenAI(api_key=api_key, timeout=float(timeout_seconds))
+        self._client = openai_module.OpenAI(
+            api_key=api_key, timeout=float(timeout_seconds)
+        )
         self._model = model
         self._temperature = temperature
         self._max_tokens = max_tokens

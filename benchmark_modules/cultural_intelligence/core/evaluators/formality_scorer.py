@@ -78,6 +78,6 @@ class FormalityScorer:
             "informal_count": informal_count,
             "indicators": {
                 "formal": formal_indicators,
-                "informal": informal_indicators
-            }
+                "informal": informal_indicators,
+            },
         }

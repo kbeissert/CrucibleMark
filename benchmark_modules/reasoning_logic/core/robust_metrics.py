@@ -8,6 +8,7 @@ from typing import TypedDict
 
 class CorrectionDetectionResult(TypedDict):
     """Result of self-correction detection."""
+
     score: float
     evidence: list[str]
     has_self_correction: bool
@@ -16,6 +17,7 @@ class CorrectionDetectionResult(TypedDict):
 
 class LinguisticAnalysisResult(TypedDict):
     """Result of linguistic analysis."""
+
     score: float
     evidence: list[str]
     phrase_mentioned: bool
@@ -25,6 +27,7 @@ class LinguisticAnalysisResult(TypedDict):
 
 class ThoughtQualityResult(TypedDict):
     """Result of thought quality assessment."""
+
     score: float
     evidence: list[str]
     dimensions: dict[str, bool]
@@ -78,13 +81,23 @@ def detect_self_correction_robust(
     # ============================================
     # Pattern 1: "Initially/First... but/however/actually..."
     initial_indicators = [
-        "initially", "at first", "first thought", "first, i thought",
-        "my first instinct", "i initially thought"
+        "initially",
+        "at first",
+        "first thought",
+        "first, i thought",
+        "my first instinct",
+        "i initially thought",
     ]
 
     revision_indicators = [
-        "but actually", "however", "reconsidering", "wait,", "but then",
-        "on second thought", "let me reconsider", "actually, no"
+        "but actually",
+        "however",
+        "reconsidering",
+        "wait,",
+        "but then",
+        "on second thought",
+        "let me reconsider",
+        "actually, no",
     ]
 
     has_initial = any(ind in thought_lower for ind in initial_indicators)
@@ -119,7 +132,7 @@ def detect_self_correction_robust(
         score=min(score, 40.0),  # Max 40pts for self-correction
         evidence=evidence,
         has_self_correction=score > 0,
-        layers_matched=layers_matched
+        layers_matched=layers_matched,
     )
 
 
@@ -163,20 +176,20 @@ def score_linguistic_analysis_objective(
     # ❌ "all but 9 remain"          → usage only (no credit)
 
     semantic_patterns = [
-        f"{phrase_lower} means",           # "all but 9 means X"
-        f'"{phrase_lower}"',               # Phrase in quotes: "all but 9" means...
-        f"'{phrase_lower}'",               # Phrase in single quotes: 'all but 9' means...
-        "all but x means x",               # Generic explanation pattern
-        f"phrase {phrase_lower}",          # "the phrase 'all but 9'..."
-        "means that",                      # "all but 9 means that..."
-        "that means",                      # "that means only the 9 survive"
-        "means only",                      # "means only the 9 survive"
-        "means 9",                         # "means 9 survive" (catches "all but 9" means 9)
-        f"{phrase_lower} indicates",       # "all but 9 indicates..."
-        "semantically",                    # "semantically, all but 9..."
-        "expression means",                # "the expression means..."
-        "refers to",                       # "all but 9 refers to..."
-        "denotes",                         # "all but 9 denotes..."
+        f"{phrase_lower} means",  # "all but 9 means X"
+        f'"{phrase_lower}"',  # Phrase in quotes: "all but 9" means...
+        f"'{phrase_lower}'",  # Phrase in single quotes: 'all but 9' means...
+        "all but x means x",  # Generic explanation pattern
+        f"phrase {phrase_lower}",  # "the phrase 'all but 9'..."
+        "means that",  # "all but 9 means that..."
+        "that means",  # "that means only the 9 survive"
+        "means only",  # "means only the 9 survive"
+        "means 9",  # "means 9 survive" (catches "all but 9" means 9)
+        f"{phrase_lower} indicates",  # "all but 9 indicates..."
+        "semantically",  # "semantically, all but 9..."
+        "expression means",  # "the expression means..."
+        "refers to",  # "all but 9 refers to..."
+        "denotes",  # "all but 9 denotes..."
     ]
 
     semantic_explanation = any(pattern in combined for pattern in semantic_patterns)
@@ -204,7 +217,7 @@ def score_linguistic_analysis_objective(
         evidence=evidence,
         phrase_mentioned=phrase_mentioned,
         semantic_explanation=semantic_explanation,
-        answer_contrast=has_wrong_mention and has_contrast
+        answer_contrast=has_wrong_mention and has_contrast,
     )
 
 
@@ -235,7 +248,7 @@ def measure_thought_quality_robust(
         return ThoughtQualityResult(
             score=0.0,
             evidence=["❌ No thought tags provided"],
-            dimensions={"depth": False, "structure": False, "reasoning": False}
+            dimensions={"depth": False, "structure": False, "reasoning": False},
         )
 
     thought_lower = thought.lower()
@@ -255,7 +268,7 @@ def measure_thought_quality_robust(
     # Dimension 2: Structured reasoning (5pts)
     # ========================================
     structure_indicators = [
-        bool(re.search(r'\d+\.', thought)),  # Numbered list
+        bool(re.search(r"\d+\.", thought)),  # Numbered list
         "step" in thought_lower,
         ("first" in thought_lower and "second" in thought_lower),
         ("then" in thought_lower and "finally" in thought_lower),
@@ -272,7 +285,15 @@ def measure_thought_quality_robust(
 
     # Dimension 3: Reasoning indicators (5pts)
     # ========================================
-    reasoning_keywords = ["because", "therefore", "thus", "since", "implies", "so", "hence"]
+    reasoning_keywords = [
+        "because",
+        "therefore",
+        "thus",
+        "since",
+        "implies",
+        "so",
+        "hence",
+    ]
     has_reasoning = any(kw in thought_lower for kw in reasoning_keywords)
     dimensions["reasoning"] = has_reasoning
 
@@ -285,5 +306,5 @@ def measure_thought_quality_robust(
     return ThoughtQualityResult(
         score=min(score, 15.0),  # Max 15pts for structured quality
         evidence=evidence,
-        dimensions=dimensions
+        dimensions=dimensions,
     )

@@ -2,6 +2,7 @@
 Content Transformation Evaluator (Facade)
 Orchestrates the evaluation process by delegating to specialized evaluators.
 """
+
 from typing import Any, Dict
 import re
 
@@ -17,8 +18,9 @@ __all__ = [
     "ContentQualityEvaluator",
     "FormatValidator",
     "ToneEvaluator",
-    "SemanticMatcher"
+    "SemanticMatcher",
 ]
+
 
 class ContentTransformationEvaluator:
     """
@@ -51,18 +53,18 @@ class ContentTransformationEvaluator:
         # If "TRANSFORMATION" separates the sections, we split them.
         # - Analysis part covers "Error Detection" (Concept Identification)
         # - Transformation part covers "Solution Quality" (Structure/Execution)
-        
+
         analysis_part = ""
         transformation_part = clean_response
-        
+
         transformation_start = clean_response.find("TRANSFORMATION")
         if transformation_start > 0:
             # analysis_part = clean_response[:transformation_start]
             transformation_part = clean_response[transformation_start:]
         elif "ANALYSE" in clean_response and "1/x" in clean_response:
-             # Heuristic fallback if TRANSFORMATION keyword missing but parts exist
-             # Split at first numbered tweet pattern approx
-             pass
+            # Heuristic fallback if TRANSFORMATION keyword missing but parts exist
+            # Split at first numbered tweet pattern approx
+            pass
 
         if not transformation_part or transformation_part.startswith("ERROR:"):
             return self._create_error_score("Invalid or error response")
@@ -86,7 +88,7 @@ class ContentTransformationEvaluator:
         # This implies that searching the WHOLE text was GOOD for Error Detection.
         # The previous fix REMOVED the analysis part, which CAUSED the drop.
         # So for Error Detection, we should use the FULL response (cleaned).
-        
+
         ed_text_to_use = clean_response.lower()
         sq_text_to_use = transformation_part.lower()
 
@@ -107,7 +109,7 @@ class ContentTransformationEvaluator:
             "achieved": round(ed_final_score, 2),
             "raw_score": ed_raw_score,
             "max": ed_weight,
-            "raw_max": ed_max_possible
+            "raw_max": ed_max_possible,
         }
         details.extend(ed_details)
         violations.extend(ed_violations)
@@ -116,12 +118,14 @@ class ContentTransformationEvaluator:
         # ===== KATEGORIE 2: Solution Quality =====
         # Only score the Transformation part for Solution Quality
         # (e.g. structure, line breaks, length constraints of the tweets)
-        
+
         # Check if Solution Quality exists in config - handled by evaluator usually but good to check
         if "solution_quality" in scoring_config:
             sq_weight = scoring_config["solution_quality"]["weight"]
-            sq_raw_score, sq_details, sq_max_possible = ContentQualityEvaluator.score_solution_quality(
-                sq_text_to_use, scoring_config["solution_quality"]
+            sq_raw_score, sq_details, sq_max_possible = (
+                ContentQualityEvaluator.score_solution_quality(
+                    sq_text_to_use, scoring_config["solution_quality"]
+                )
             )
 
             # Normalize Score to Weight (Scaling)
@@ -134,7 +138,7 @@ class ContentTransformationEvaluator:
                 "achieved": round(sq_final_score, 2),
                 "raw_score": sq_raw_score,
                 "max": sq_weight,
-                "raw_max": sq_max_possible
+                "raw_max": sq_max_possible,
             }
             details.extend(sq_details)
             total_achieved += sq_final_score
@@ -161,14 +165,16 @@ class ContentTransformationEvaluator:
         # Only remove <think> tags as they are standard for R1/DeepSeek.
         # Other tags like <reflection> caused content loss in Glossary tasks.
         tags = [
-            (r'<think>.*?</think>', ''),
-            (r'<reflection>.*?</reflection>', ''),
-            (r'\[Reasoning\].*?\[/Reasoning\]', ''),
+            (r"<think>.*?</think>", ""),
+            (r"<reflection>.*?</reflection>", ""),
+            (r"\[Reasoning\].*?\[/Reasoning\]", ""),
         ]
 
         cleaned = response
         for pattern, replacement in tags:
-            cleaned = re.sub(pattern, replacement, cleaned, flags=re.DOTALL|re.IGNORECASE)
+            cleaned = re.sub(
+                pattern, replacement, cleaned, flags=re.DOTALL | re.IGNORECASE
+            )
 
         return cleaned.strip()
 

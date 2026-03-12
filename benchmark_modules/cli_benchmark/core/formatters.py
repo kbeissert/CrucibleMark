@@ -1,4 +1,5 @@
 """Module for formatters.py."""
+
 from benchmark_modules.cli_benchmark.core.constants import (
     BIG_TOKEN_THRESHOLD,
     INLINE_GREEN,

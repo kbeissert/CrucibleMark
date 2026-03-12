@@ -90,7 +90,7 @@ class BenchmarkRunner:
             merged.update(internal_config.get("metadata", {}))
             # Module config's 'execution' block overrides/supplements (test_class, etc)
             merged.update(internal_config.get("execution", {}))
-            
+
             # Ensure name defaults to ID if missing
             if "name" not in merged:
                 merged["name"] = mod_id.replace("_", " ").title()
@@ -136,7 +136,7 @@ class BenchmarkRunner:
             items,
             display_func=display_mod,
             prompt="Wähle ein Modul",
-            title="TEST-MODULE"
+            title="TEST-MODULE",
         )
 
         if selected:
@@ -146,7 +146,7 @@ class BenchmarkRunner:
                 return None, None
             print(f"✓  {config['name']}")
             return key, config
-            
+
         sys.exit(0)
 
     def select_provider(self, provider_type: Optional[str] = None) -> tuple[str, str]:
@@ -155,7 +155,10 @@ class BenchmarkRunner:
             return self._select_provider_models(provider_type)
 
         options = [
-            ("commercial", "Kommerzielle Modelle (API Provider) - Mistral, Claude, GPT"),
+            (
+                "commercial",
+                "Kommerzielle Modelle (API Provider) - Mistral, Claude, GPT",
+            ),
             ("local", "Lokale Modelle (Ollama, LM Studio) - Offline"),
             ("cloud", "Cloud Modelle (Ollama Proxy) - MiniMax, DeepSeek Cloud"),
         ]
@@ -164,15 +167,15 @@ class BenchmarkRunner:
             options,
             display_func=lambda x: x[1],
             prompt="Wähle Provider-Typ",
-            title="PROVIDER"
+            title="PROVIDER",
         )
 
         if selected:
             # Shorten display for UX
-            short_name = selected[1].split(' - ')[0]
+            short_name = selected[1].split(" - ")[0]
             print(f"✓  {short_name}")
             return self._select_provider_models(selected[0])
-            
+
         sys.exit(0)
 
     def _select_provider_models(self, provider_type: str) -> tuple[str, str]:
@@ -182,15 +185,16 @@ class BenchmarkRunner:
         elif provider_type == "cloud":
             return self._select_cloud_model()
         return self._select_local_model()
-    
+
     def _select_cloud_model(self) -> tuple[str, str]:
         """Wählt ein Cloud-Modell über Ollama."""
         print("\nLade Cloud-Modelle via Ollama...")
-        
+
         models = get_ollama_models_info()
-        
+
         # Filter for Cloud-Only models using SSOT function
         from utils.model_utils import is_cloud_model
+
         cloud_models = [m for m in models if is_cloud_model(m["name"], m["size_gb"])]
 
         if not cloud_models:
@@ -199,22 +203,19 @@ class BenchmarkRunner:
             sys.exit(1)
 
         def display_model(m):
-            return (
-                m["name"],
-                f"Typ: Cloud Proxy | Aktualisiert: {m['modified']}"
-            )
+            return (m["name"], f"Typ: Cloud Proxy | Aktualisiert: {m['modified']}")
 
         selected = select_from_list(
             cloud_models,
             display_func=display_model,
             prompt="Wähle ein Cloud-Modell",
-            title="CLOUD OLLAMA-MODELLE"
+            title="CLOUD OLLAMA-MODELLE",
         )
-        
+
         if selected:
             print(f"✓ Ausgewählt: {selected['name']}")
             return "ollama", selected["name"]
-            
+
         sys.exit(0)
 
     def _select_commercial_model(self) -> tuple[str, str]:
@@ -226,7 +227,7 @@ class BenchmarkRunner:
             # Only include models from enabled providers
             if not provider_data.get("enabled", False):
                 continue
-                
+
             for model in provider_data.get("models", []):
                 models_flat.append(
                     {
@@ -241,32 +242,35 @@ class BenchmarkRunner:
         def display_model(m):
             return (
                 f"[{m['provider_name']}] {m['name']}",
-                f"{m['description']} (Model: {m['id']})"
+                f"{m['description']} (Model: {m['id']})",
             )
 
         selected = select_from_list(
             models_flat,
             display_func=display_model,
             prompt="Wähle ein Modell",
-            title="KOMMERZIELLE MODELLE"
+            title="KOMMERZIELLE MODELLE",
         )
-        
+
         if selected:
             print(f"✓ Ausgewählt: {selected['name']}")
             return str(selected["provider"]), str(selected["id"])
-            
+
         sys.exit(0)
 
     def _select_local_model(self) -> tuple[str, str]:
         """Wählt lokales Ollama-Modell."""
         print("\nLade verfügbare Modelle...")
-        
+
         models = get_ollama_models_info()
-        
+
         # Filter OUT cloud models for the local list to avoid confusion (using SSOT)
         from utils.model_utils import is_cloud_model
-        local_models = [m for m in models if not is_cloud_model(m["name"], m["size_gb"])]
-        
+
+        local_models = [
+            m for m in models if not is_cloud_model(m["name"], m["size_gb"])
+        ]
+
         if not local_models:
             # Check if we should warn about installation
             if importlib.util.find_spec("ollama") is None:
@@ -284,20 +288,20 @@ class BenchmarkRunner:
         def display_model(m):
             return (
                 m["name"],
-                f"Größe: {m['size_gb']:.1f} GB | Aktualisiert: {m['modified']}"
+                f"Größe: {m['size_gb']:.1f} GB | Aktualisiert: {m['modified']}",
             )
 
         selected = select_from_list(
             local_models,
             display_func=display_model,
             prompt="Wähle ein Modell",
-            title="LOKALE OLLAMA-MODELLE"
+            title="LOKALE OLLAMA-MODELLE",
         )
-        
+
         if selected:
             print(f"✓ Ausgewählt: {selected['name']}")
             return "ollama", selected["name"]
-            
+
         sys.exit(0)
 
     def load_module(self, _: str, module_config: dict[str, Any]):
@@ -324,7 +328,9 @@ class BenchmarkRunner:
                     for m in available_models:
                         print(f"   - {m['name']} ({m['size_gb']:.1f} GB)")
 
-                    print("\n💡 Tip: Provide the exact name (case-sensitive) or pull it first.")
+                    print(
+                        "\n💡 Tip: Provide the exact name (case-sensitive) or pull it first."
+                    )
                     print(f"   ollama pull {model_id}")
                     sys.exit(1)
 
@@ -354,7 +360,9 @@ class BenchmarkRunner:
         if not run_config.model_name:
             # Interactive selection implies --force=True since "make benchmark-auto" handles autofill
             if not run_config.force:
-                print("ℹ️  Interaktiver Modus: Force-Mode aktiviert für SSOT Konformität.")
+                print(
+                    "ℹ️  Interaktiver Modus: Force-Mode aktiviert für SSOT Konformität."
+                )
                 run_config.force = True
 
             # Interactive selection
@@ -375,14 +383,16 @@ class BenchmarkRunner:
                 provider,
                 num_runs=run_config.num_runs,
                 force=run_config.force,
-                audit_mode=run_config.audit_mode
+                audit_mode=run_config.audit_mode,
             )
 
         # Leaderboard Update
         if modules_to_run:
             print("\n📊 Aktualisiere Leaderboard...")
             try:
-                subprocess.run([sys.executable, "scripts/core/generate_leaderboard.py"], check=True)
+                subprocess.run(
+                    [sys.executable, "scripts/core/generate_leaderboard.py"], check=True
+                )
             except subprocess.CalledProcessError:
                 print("⚠️ Fehler beim Aktualisieren des Leaderboards.")
             except Exception as e:
@@ -414,14 +424,15 @@ class BenchmarkRunner:
         print(f"{'=' * 60}\n")
 
         # Load internal module config to get benchmarks/contributions
-        internal_config = load_module_config(Path(module_config['path']))
+        internal_config = load_module_config(Path(module_config["path"]))
 
         benchmark_info = {
             "id": mod_id,
             "name": module_config.get("name", mod_id),
             "path": f"{module_config['path']}/assets",
             "module_path": module_config["path"],
-            "test_class": internal_config.get("execution", {}).get("test_class") or module_config.get("test_class", "CodeQualityTest"),
+            "test_class": internal_config.get("execution", {}).get("test_class")
+            or module_config.get("test_class", "CodeQualityTest"),
             "execution_mode": module_config.get("execution_mode", "standard"),
             "min_runs": module_config.get("min_runs", 1),
             "benchmarks": internal_config.get("benchmarks", []),
@@ -527,6 +538,7 @@ Beispiele:
     # Propagate DEV flag globally via Environment Variable
     if args.dev:
         import os
+
         os.environ["CRUCIBLE_BM_MODE"] = "DEV"
 
     try:

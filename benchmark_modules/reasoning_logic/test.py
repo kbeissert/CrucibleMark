@@ -13,7 +13,10 @@ from benchmark_modules.reasoning_logic.core.constants import (
     SYSTEM_PROMPT_REASONING,
     MODEL_REASONING_CAPABILITIES,
 )
-from benchmark_modules.reasoning_logic.core.evaluators import ReasoningEvaluator, RUBRICS
+from benchmark_modules.reasoning_logic.core.evaluators import (
+    ReasoningEvaluator,
+    RUBRICS,
+)
 from schemas.result import BenchmarkResult
 
 
@@ -44,7 +47,10 @@ class ReasoningLogicTest(BaseTest):
             model, full_prompt, provider=provider, temperature=DEFAULT_TEMPERATURE
         )
         # Use clean execution time (excluding timeouts/retries) if available
-        if hasattr(llm_client, "last_query_duration") and llm_client.last_query_duration > 0:
+        if (
+            hasattr(llm_client, "last_query_duration")
+            and llm_client.last_query_duration > 0
+        ):
             elapsed = llm_client.last_query_duration
         else:
             elapsed = time.time() - start
@@ -53,8 +59,10 @@ class ReasoningLogicTest(BaseTest):
 
         # Determine Reasoning Capability
         reasoning_cap, reasoning_type = self._get_reasoning_capability(model)
-        
-        load_time = getattr(llm_client, "last_response_metadata", {}).get("load_duration", 0.0)
+
+        load_time = getattr(llm_client, "last_response_metadata", {}).get(
+            "load_duration", 0.0
+        )
 
         return BenchmarkResult(
             status="success",
@@ -66,7 +74,9 @@ class ReasoningLogicTest(BaseTest):
             load_time=load_time,
             tokens_used=approx_tokens,
             cost_usd=getattr(llm_client, "last_request_cost", 0.0),
-            model_version=getattr(llm_client, "last_response_metadata", {}).get("system_fingerprint", "unknown"),
+            model_version=getattr(llm_client, "last_response_metadata", {}).get(
+                "system_fingerprint", "unknown"
+            ),
             data={
                 "reasoning_capability_score": reasoning_cap,
                 "reasoning_type": reasoning_type,
@@ -75,7 +85,7 @@ class ReasoningLogicTest(BaseTest):
                 "model": model,
                 "asset_id": self.asset["metadata"]["id"],
                 **getattr(llm_client, "last_response_metadata", {}),
-            }
+            },
         )
 
     def score_response(self, response: str) -> dict[str, Any]:
@@ -94,7 +104,7 @@ class ReasoningLogicTest(BaseTest):
                 achieved = data["achieved"]
                 # Try to get max weight from rubric
                 max_weight = rubric.get(key, {}).get("weight", "??")
-                
+
                 # Add flattened key to result (e.g., 'problem_recognition': '20.0/20')
                 eval_result[key] = f"{achieved}/{max_weight}"
 

@@ -32,7 +32,9 @@ class CostTracker:
 
         # Preise bei Bedarf aus LiteLLM Pricing DB aktualisieren.
         # TTL kann in cost_limits.yaml unter settings.pricing_ttl_days überschrieben werden.
-        ttl_days = self.config.get("settings", {}).get("pricing_ttl_days", DEFAULT_TTL_DAYS)
+        ttl_days = self.config.get("settings", {}).get(
+            "pricing_ttl_days", DEFAULT_TTL_DAYS
+        )
         self.pricing_updater = PricingUpdater()
         self.pricing_updater.ensure_fresh(ttl_days=ttl_days)
 
@@ -81,27 +83,39 @@ class CostTracker:
             # Neue Datei mit call_type-Spalte schreiben
             backup = self.cost_log_file.with_suffix(".csv.bak_migration")
             import shutil
+
             shutil.copy2(self.cost_log_file, backup)
             with open(self.cost_log_file, "w", newline="", encoding="utf-8") as f:
                 writer = csv.writer(f)
                 writer.writerow(
-                    ["timestamp", "date", "provider", "model",
-                     "input_tokens", "output_tokens", "cost_usd", "call_type"]
+                    [
+                        "timestamp",
+                        "date",
+                        "provider",
+                        "model",
+                        "input_tokens",
+                        "output_tokens",
+                        "cost_usd",
+                        "call_type",
+                    ]
                 )
                 for row in rows:
-                    writer.writerow([
-                        row.get("timestamp", ""),
-                        row.get("date", ""),
-                        row.get("provider", ""),
-                        row.get("model", ""),
-                        row.get("input_tokens", 0),
-                        row.get("output_tokens", 0),
-                        row.get("cost_usd", "0.000000"),
-                        row.get("call_type", "benchmark"),  # Altdaten → benchmark
-                    ])
+                    writer.writerow(
+                        [
+                            row.get("timestamp", ""),
+                            row.get("date", ""),
+                            row.get("provider", ""),
+                            row.get("model", ""),
+                            row.get("input_tokens", 0),
+                            row.get("output_tokens", 0),
+                            row.get("cost_usd", "0.000000"),
+                            row.get("call_type", "benchmark"),  # Altdaten → benchmark
+                        ]
+                    )
             logging.getLogger(__name__).info(
                 "cost_log.csv migriert: call_type-Spalte hinzugefügt (%d Zeilen). Backup: %s",
-                len(rows), backup.name,
+                len(rows),
+                backup.name,
             )
         except Exception as e:
             logging.getLogger(__name__).error("CSV-Migration fehlgeschlagen: %s", e)
@@ -145,15 +159,15 @@ class CostTracker:
         if not model_config:
             logging.getLogger(__name__).debug(
                 "Kein Preis für Modell '%s' (%s) in Cache oder cost_limits.yaml.",
-                model, provider,
+                model,
+                provider,
             )
             return 0.0
 
         input_price = model_config.get("input_cost_per_1k", 0.0)
         output_price = model_config.get("output_cost_per_1k", 0.0)
         return round(
-            (input_tokens / 1000) * input_price
-            + (output_tokens / 1000) * output_price,
+            (input_tokens / 1000) * input_price + (output_tokens / 1000) * output_price,
             6,
         )
 
@@ -275,7 +289,9 @@ class CostTracker:
                         continue
                     ctype = row.get("call_type", "benchmark")
                     try:
-                        breakdown[ctype] = breakdown.get(ctype, 0.0) + float(row["cost_usd"])
+                        breakdown[ctype] = breakdown.get(ctype, 0.0) + float(
+                            row["cost_usd"]
+                        )
                     except (ValueError, KeyError):
                         pass
         except Exception as e:

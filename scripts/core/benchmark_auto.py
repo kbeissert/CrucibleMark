@@ -22,11 +22,15 @@ from typing import Any, List, Dict, Set, Tuple
 # pylint: disable=import-error
 import yaml  # noqa: E402
 import pandas as pd  # noqa: E402
+
 try:
     from dotenv import load_dotenv
 except ImportError:
     # pylint: disable=unused-argument
-    def load_dotenv(): pass
+    def load_dotenv():
+        pass
+
+
 # pylint: enable=import-error
 
 # Load environment variables
@@ -39,18 +43,20 @@ sys.path.insert(0, str(ROOT_DIR))
 # Local imports
 # pylint: disable=import-error, wrong-import-position
 from scripts.core.run_local_benchmark import LocalBenchmarkRunner  # noqa: E402
-from scripts.core.run_commercial_benchmark import CommercialBenchmarkRunner  # noqa: E402
+from scripts.core.run_commercial_benchmark import (
+    CommercialBenchmarkRunner,
+)  # noqa: E402
 from scripts.core.generate_leaderboard import main as gen_leaderboard  # noqa: E402
 from utils.config_validator import ConfigValidator  # noqa: E402
 from utils.model_utils import is_model_suitable_for_benchmark  # noqa: E402
 from utils.llm_client import LLMClient  # noqa: E402
 from utils.module_registry import get_active_modules  # noqa: E402
+
 # pylint: enable=import-error, wrong-import-position
 
 # Logging Setup
 logging.basicConfig(level=logging.INFO, format="%(message)s")
 logger = logging.getLogger("auto_benchmark")
-
 
 
 def check_ollama_status() -> bool:
@@ -78,7 +84,6 @@ def check_ollama_status() -> bool:
         return False
 
 
-
 def get_existing_results(csv_path: Path, force: bool = False) -> Set[Tuple[str, str]]:
     """Lädt Set von (Model, AssetID) für bereits existierende Tests."""
     cache = set()
@@ -98,7 +103,7 @@ def get_existing_results(csv_path: Path, force: bool = False) -> Set[Tuple[str, 
                     if "status" in df.columns:
                         status = str(row.get("status", "")).lower()
                         if status != "success":
-                            continue # Skip failed tests (retry)
+                            continue  # Skip failed tests (retry)
 
                     cache.add((str(row["model"]), str(row["asset_id"])))
         except Exception as e:  # pylint: disable=broad-exception-caught
@@ -110,7 +115,7 @@ def get_all_modules(validator: ConfigValidator) -> List[Dict[str, Any]]:
     """Extrahiert alle aktivierten Module aus der Config (SSOT)."""
     modules = []
     active = get_active_modules(validator.config)
-    
+
     for key, mod, internal in active:
         metadata = internal.get("metadata", {})
         execution = internal.get("execution", {})
@@ -120,9 +125,13 @@ def get_all_modules(validator: ConfigValidator) -> List[Dict[str, Any]]:
                 "name": metadata.get("name", mod.get("name", key)),
                 "path": f"{mod['path']}/assets",
                 "module_path": mod["path"],  # Wichtig für Module Loader
-                "test_class": execution.get("test_class", mod.get("test_class", "CodeQualityTest")),
+                "test_class": execution.get(
+                    "test_class", mod.get("test_class", "CodeQualityTest")
+                ),
                 "description": metadata.get("description", mod.get("description", "")),
-                "execution_mode": execution.get("execution_mode", mod.get("execution_mode", "standard")),
+                "execution_mode": execution.get(
+                    "execution_mode", mod.get("execution_mode", "standard")
+                ),
                 "min_runs": execution.get("min_runs", mod.get("min_runs", 1)),
             }
         )
@@ -134,19 +143,22 @@ def _get_startable_assets(
 ) -> List[Path]:
     """Ermittelt Asset-Pfade, die für dieses Modell noch nicht getestet wurden."""
     assets_path = module["path"]
-    
+
     # -------------------------------------------------------
     # SPECIAL HANDLING FOR BATCH MODULES (e.g. Political Compass)
     # -------------------------------------------------------
     # Batch-Module (wie Political Compass) erzeugen oft nur EINEN Eintrag (Aggregiert).
     # Da ein Re-Run sehr teuer ist (81+ Fragen), überspringen wir, wenn das Aggregat da ist.
     # Wir prüfen hier NICHT auf Aktualität (Datum) oder Vollständigkeit der Assets.
-    if module.get("execution_mode") == "batch" or module.get("key") == "political_compass":
+    if (
+        module.get("execution_mode") == "batch"
+        or module.get("key") == "political_compass"
+    ):
         batch_id = "political_compass_v3"
         if (model, batch_id) in existing_tests:
             # Optional: Man könnte hier loggen, dass geskippt wird.
             # Da dies für jedes Modell passiert, halten wir es still oder loggen einmalig außen.
-            return [] 
+            return []
     # -------------------------------------------------------
 
     # Der Runner hat Methode zum Finden, aber wir brauchen den Pfad
@@ -197,7 +209,7 @@ def _run_module_for_model(
         # If we calculate that everything is done, we could skip calling the runner.
         msg = f"   ✓ Bench: {module['name']} (Alle Tests bereits vorhanden)"
         if module.get("key") == "political_compass":
-             msg += " [Batch-Mode Skip]"
+            msg += " [Batch-Mode Skip]"
         print(msg)
         return
 
@@ -216,7 +228,9 @@ def _run_module_for_model(
         print(f"   ❌ Fehler: {e}")
 
 
-def run_local_batch(modules: List[Dict[str, Any]], validator: ConfigValidator, force: bool = False) -> None:
+def run_local_batch(
+    modules: List[Dict[str, Any]], validator: ConfigValidator, force: bool = False
+) -> None:
     """Batch-Run für alle lokalen Ollama-Modelle."""
     # pylint: disable=unused-argument
     print("\n🤖  [1/2] LOKALE MODELLE (OLLAMA)")
@@ -282,10 +296,12 @@ def run_commercial_batch(
         env_key = v.get("env_var")
         if env_key:
             if not os.getenv(env_key):
-                print(f"⚠️  Überspringe Provider '{k}': API Key ({env_key}) fehlt in Umgebung.")
+                print(
+                    f"⚠️  Überspringe Provider '{k}': API Key ({env_key}) fehlt in Umgebung."
+                )
                 continue
         valid_providers[k] = v
-        
+
     active_providers = valid_providers
 
     if not active_providers:
@@ -310,7 +326,9 @@ def run_commercial_batch(
             else:
                 print("❌ Fehlgeschlagen (Kein Zugriff/Budget). Überspringe.")
         else:
-            print(f"   ⚠️  Provider '{k}' hat keinen dedizierten Client. Überspringe Check.")
+            print(
+                f"   ⚠️  Provider '{k}' hat keinen dedizierten Client. Überspringe Check."
+            )
             accessible_providers[k] = v
 
     active_providers = accessible_providers
@@ -323,13 +341,13 @@ def run_commercial_batch(
     # Check BOTH commercial CSV and golden standard CSV
     comm_csv = Path("benchmark_scores/commercial_models_benchmark.csv")
     gold_csv = Path("benchmark_scores/golden_standard_benchmark.csv")
-    
+
     existing_tests = get_existing_results(comm_csv, force=force)
     # Merge with golden standards if they exist (since they are also valid test runs)
     if gold_csv.exists():
         existing_gold = get_existing_results(gold_csv, force=force)
         existing_tests.update(existing_gold)
-        
+
     print(f"Ignoriere bereits vorhandene Ergebnisse ({len(existing_tests)} Einträge)\n")
 
     # Flatten list of (provider, model_id, model_name)
@@ -349,13 +367,13 @@ def run_commercial_batch(
     for i, task in enumerate(tasks, 1):
         full_name = f"{task['provider']}/{task['name']}"
         model_id = task["id"]
-        
+
         print(f"\n➡️  MOD [Comm {i}/{len(tasks)}]: {full_name}")
 
         for module in modules:
             # Filter assets
             assets_todo = _get_startable_assets(module, model_id, existing_tests)
-            
+
             if not assets_todo:
                 print(f"   ✓ Bench: {module['name']} (Bereits erledigt)")
                 continue
@@ -363,10 +381,7 @@ def run_commercial_batch(
             print(f"   📊 Bench: {module['name']} ({len(assets_todo)} neue Tests) ...")
             try:
                 results = runner.run_benchmark(
-                    task["provider"], 
-                    model_id, 
-                    module, 
-                    assets=assets_todo
+                    task["provider"], model_id, module, assets=assets_todo
                 )
                 if results:
                     runner.save_results(results)
@@ -381,14 +396,14 @@ def main():
     """Main entry point."""
     parser = argparse.ArgumentParser(description="Crucible Automatic Benchmark")
     parser.add_argument(
-        "--force", 
-        action="store_true", 
-        help="Erzwingt das erneute Ausführen aller Tests (ignoriert Cache)."
+        "--force",
+        action="store_true",
+        help="Erzwingt das erneute Ausführen aller Tests (ignoriert Cache).",
     )
     parser.add_argument(
         "--modules",
         type=str,
-        help="Kommagetrennte Liste von Modulen (Keys), die ausgeführt werden sollen (z.B. 'political_compass')."
+        help="Kommagetrennte Liste von Modulen (Keys), die ausgeführt werden sollen (z.B. 'political_compass').",
     )
     args = parser.parse_args()
 
@@ -409,14 +424,14 @@ def main():
 
     # Module laden
     modules = get_all_modules(validator)
-    
+
     # Filter modules if requested
     if args.modules:
         wanted = [m.strip() for m in args.modules.split(",")]
         # Wir filtern die geladenen Module anhand des Keys
-        filtered = [m for m in modules if m['key'] in wanted]
+        filtered = [m for m in modules if m["key"] in wanted]
         if len(filtered) < len(wanted):
-            found_keys = [m['key'] for m in filtered]
+            found_keys = [m["key"] for m in filtered]
             missing = set(wanted) - set(found_keys)
             print(f"⚠️  Warnung: Gewünschte Module nicht gefunden/aktiviert: {missing}")
         modules = filtered
@@ -446,7 +461,6 @@ def main():
     print("\n\n✅  AUTOMATIC RUN COMPLETED.")
     print("    Ergebnisse wurden in die CSV-Dateien gespeichert.")
     print("    Generiere Leaderboard...")
-
 
     # Am Ende das Leaderboard aktualisieren
     try:

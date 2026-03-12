@@ -2,6 +2,7 @@
 
 Contains the core scoring logic related to dispatching and result aggregation.
 """
+
 # pylint: disable=too-many-lines
 
 from __future__ import annotations
@@ -47,7 +48,7 @@ def emit_legacy_warning(asset_id: str, deprecation_version: str = "v3.0") -> Non
         f"This will be removed in {deprecation_version}. "
         f"Please migrate to v2.0 rubric-based scoring.",
         DeprecationWarning,
-        stacklevel=3
+        stacklevel=3,
     )
 
 
@@ -56,142 +57,213 @@ def emit_legacy_warning(asset_id: str, deprecation_version: str = "v3.0") -> Non
 # ============================================================================
 
 RUBRICS = {
-    'reasoning_5a_001': {
-        'error_detection': {
-            'weight': 40,
-            'description': 'Identifies the infinite loop',
-            'keywords': [r"infinite.*loop", r"hangs?", r"freez", r"forever", r"current_index", r"not.*increment"]
+    "reasoning_5a_001": {
+        "error_detection": {
+            "weight": 40,
+            "description": "Identifies the infinite loop",
+            "keywords": [
+                r"infinite.*loop",
+                r"hangs?",
+                r"freez",
+                r"forever",
+                r"current_index",
+                r"not.*increment",
+            ],
         },
-        'root_cause_analysis': {
-            'weight': 30,
-            'description': 'Locates the bug (increment inside if-block)',
-            'keywords': [r"inside.*if", r"indentation", r"scope", r"else.*block"]
+        "root_cause_analysis": {
+            "weight": 30,
+            "description": "Locates the bug (increment inside if-block)",
+            "keywords": [r"inside.*if", r"indentation", r"scope", r"else.*block"],
         },
-        'solution_quality': {
-            'weight': 30,
-            'description': 'Proposes correct fix and alternatives',
-            'keywords': [r"\+= 1", r"increment", r"outside", r"move.*line", r"alternative", r"cleaner", r"continue", r"skip"]
-        }
+        "solution_quality": {
+            "weight": 30,
+            "description": "Proposes correct fix and alternatives",
+            "keywords": [
+                r"\+= 1",
+                r"increment",
+                r"outside",
+                r"move.*line",
+                r"alternative",
+                r"cleaner",
+                r"continue",
+                r"skip",
+            ],
+        },
     },
-    'reasoning_5c_001': {
-        'problem_recognition': {
-            'weight': 20,
-            'description': 'Identifies constraints (3 meetings, 2 time slots)',
-            'keywords': [r"three.*meetings", r"two.*hours", r"impossible", r"deficit", r"2.*hour.*3.*hour"]
+    "reasoning_5c_001": {
+        "problem_recognition": {
+            "weight": 20,
+            "description": "Identifies constraints (3 meetings, 2 time slots)",
+            "keywords": [
+                r"three.*meetings",
+                r"two.*hours",
+                r"impossible",
+                r"deficit",
+                r"2.*hour.*3.*hour",
+            ],
         },
-        'logical_analysis': {
-            'weight': 25,
-            'description': "Explains WHY it's impossible",
-            'keywords': [r"fit", r"insufficient", r"duration", r"conflict", r"mathematically", r"pigeonhole"]
+        "logical_analysis": {
+            "weight": 25,
+            "description": "Explains WHY it's impossible",
+            "keywords": [
+                r"fit",
+                r"insufficient",
+                r"duration",
+                r"conflict",
+                r"mathematically",
+                r"pigeonhole",
+            ],
         },
-        'appropriate_refusal': {
-            'weight': 40,
-            'description': 'Refuses invalid request instead of forcing solution',
-            'keywords': [r"cannot", r"impossible", r"unable", r"not feasible", r"refuse", r"no way"]
+        "appropriate_refusal": {
+            "weight": 40,
+            "description": "Refuses invalid request instead of forcing solution",
+            "keywords": [
+                r"cannot",
+                r"impossible",
+                r"unable",
+                r"not feasible",
+                r"refuse",
+                r"no way",
+            ],
         },
-        'alternative_proposal': {
-            'weight': 15,
-            'description': 'Suggests workarounds',
-            'keywords': [r"alternative", r"reschedule", r"overlap", r"shorten", r"extend", r"remove"]
-        }
+        "alternative_proposal": {
+            "weight": 15,
+            "description": "Suggests workarounds",
+            "keywords": [
+                r"alternative",
+                r"reschedule",
+                r"overlap",
+                r"shorten",
+                r"extend",
+                r"remove",
+            ],
+        },
     },
-    'reasoning_5b_001': {
-        'problem_identification': {
-            'weight': 20,
-            'description': 'Identifies the root cause domain',
-            'keywords': ['database', 'query', 'cpu', 'slow']
+    "reasoning_5b_001": {
+        "problem_identification": {
+            "weight": 20,
+            "description": "Identifies the root cause domain",
+            "keywords": ["database", "query", "cpu", "slow"],
         },
-        'cross_domain_analysis': {
-            'weight': 30,
-            'description': 'Traces issue across layers',
-            'keywords': ['root', 'cause', 'underlying', 'layer']
+        "cross_domain_analysis": {
+            "weight": 30,
+            "description": "Traces issue across layers",
+            "keywords": ["root", "cause", "underlying", "layer"],
         },
-        'solution_quality': {
-            'weight': 30,
-            'description': 'Proposes correct fix',
-            'keywords': ['index', 'cache', 'optimize', 'performance']
+        "solution_quality": {
+            "weight": 30,
+            "description": "Proposes correct fix",
+            "keywords": ["index", "cache", "optimize", "performance"],
         },
-        'reasoning_depth': {
-            'weight': 20,
-            'description': 'Explains WHY solution works',
-            'keywords': ['reduce', 'improve', 'faster', 'efficient']
-        }
+        "reasoning_depth": {
+            "weight": 20,
+            "description": "Explains WHY solution works",
+            "keywords": ["reduce", "improve", "faster", "efficient"],
+        },
     },
-    'reasoning_5d_001': {
-        'deadlock_recognition': {
-            'weight': 30,
-            'description': 'Identifies circular dependency',
-            'keywords': ['deadlock', 'circular', 'cycle', 'mutual wait', 'circular dependency']
+    "reasoning_5d_001": {
+        "deadlock_recognition": {
+            "weight": 30,
+            "description": "Identifies circular dependency",
+            "keywords": [
+                "deadlock",
+                "circular",
+                "cycle",
+                "mutual wait",
+                "circular dependency",
+            ],
         },
-        'resource_identification': {
-            'weight': 25,
-            'description': 'Names the conflicting resources (locks, threads)',
-            'keywords': ['lock', 'thread', 'resource', 'process', 'mutex', 'monitor']
+        "resource_identification": {
+            "weight": 25,
+            "description": "Names the conflicting resources (locks, threads)",
+            "keywords": ["lock", "thread", "resource", "process", "mutex", "monitor"],
         },
-        'causality_explanation': {
-            'weight': 25,
-            'description': 'Explains HOW deadlock forms',
-            'keywords': ['holds', 'waits for', 'depends on', 'blocked', 'waiting for']
+        "causality_explanation": {
+            "weight": 25,
+            "description": "Explains HOW deadlock forms",
+            "keywords": ["holds", "waits for", "depends on", "blocked", "waiting for"],
         },
-        'solution_proposal': {
-            'weight': 20,
-            'description': 'Suggests fix (timeout, ordering, detection)',
-            'keywords': ['timeout', 'order', 'priority', 'detect', 'break cycle', 'ordering']
-        }
+        "solution_proposal": {
+            "weight": 20,
+            "description": "Suggests fix (timeout, ordering, detection)",
+            "keywords": [
+                "timeout",
+                "order",
+                "priority",
+                "detect",
+                "break cycle",
+                "ordering",
+            ],
+        },
     },
-    'reasoning_5e_001': {
-        'paradox_recognition': {
-            'weight': 25,
-            'description': 'Identifies the inherent conflict in requirements',
-            'keywords': ['paradox', 'contradiction', 'impossible', 'conflict', 'requirement']
+    "reasoning_5e_001": {
+        "paradox_recognition": {
+            "weight": 25,
+            "description": "Identifies the inherent conflict in requirements",
+            "keywords": [
+                "paradox",
+                "contradiction",
+                "impossible",
+                "conflict",
+                "requirement",
+            ],
         },
-        'architecture_design': {
-            'weight': 30,
-            'description': 'Proposes a 3-phase or async architecture',
-            'keywords': ['phase', 'transaction', 'commit', 'async', 'manager', 'queue']
+        "architecture_design": {
+            "weight": 30,
+            "description": "Proposes a 3-phase or async architecture",
+            "keywords": ["phase", "transaction", "commit", "async", "manager", "queue"],
         },
-        'tradeoff_analysis': {
-            'weight': 25,
-            'description': 'Analyzes impacts of relaxing constraints',
-            'keywords': ['tradeoff', 'impact', 'relax', 'requirement', 'consequence']
+        "tradeoff_analysis": {
+            "weight": 25,
+            "description": "Analyzes impacts of relaxing constraints",
+            "keywords": ["tradeoff", "impact", "relax", "requirement", "consequence"],
         },
-        'feasibility_assessment': {
-            'weight': 20,
-            'description': 'Assesses feasibility of the solution',
-            'keywords': ['feasible', 'possible', 'scale', 'assessment', 'rating']
-        }
+        "feasibility_assessment": {
+            "weight": 20,
+            "description": "Assesses feasibility of the solution",
+            "keywords": ["feasible", "possible", "scale", "assessment", "rating"],
+        },
     },
-    'reasoning_metacog_004': {
-        'iterative_refinement': {
-             'weight': 20, 
-             'description': 'Shows internal thought process',
-             'keywords': [r"<thought>", r"initially", r"at first", r"reconsider"]
+    "reasoning_metacog_004": {
+        "iterative_refinement": {
+            "weight": 20,
+            "description": "Shows internal thought process",
+            "keywords": [r"<thought>", r"initially", r"at first", r"reconsider"],
         },
-        'problem_understanding': {
-            'weight': 20,
-            'description': 'Understands the Monty Hall setup',
-            'keywords': [r"door", r"goat", r"car", r"host", r"monty"]
+        "problem_understanding": {
+            "weight": 20,
+            "description": "Understands the Monty Hall setup",
+            "keywords": [r"door", r"goat", r"car", r"host", r"monty"],
         },
-        'probability_calculation': {
-            'weight': 30,
-            'description': 'Correctly calculates probabilities',
-            'keywords': [r"1/3", r"2/3", r"0\.66", r"66%", r"33%", r"0\.33"]
+        "probability_calculation": {
+            "weight": 30,
+            "description": "Correctly calculates probabilities",
+            "keywords": [r"1/3", r"2/3", r"0\.66", r"66%", r"33%", r"0\.33"],
         },
-        'switch_recommendation': {
-            'weight': 20,
-            'description': 'Recommends switching doors',
-            'keywords': [r"switch", r"higher.*chance", r"maximize", r"advantage"]
+        "switch_recommendation": {
+            "weight": 20,
+            "description": "Recommends switching doors",
+            "keywords": [r"switch", r"higher.*chance", r"maximize", r"advantage"],
         },
-        'explanation_quality': {
-            'weight': 10,
-            'description': 'Explains the reasoning',
-            'keywords': [r"reveal", r"information", r"update", r"\|.*\|", r"table", r"scenario"]
-        }
-    }
+        "explanation_quality": {
+            "weight": 10,
+            "description": "Explains the reasoning",
+            "keywords": [
+                r"reveal",
+                r"information",
+                r"update",
+                r"\|.*\|",
+                r"table",
+                r"scenario",
+            ],
+        },
+    },
 }
 
 
-def calculate_dimension_score(response: str, keywords: list[str], max_weight: int) -> float:
+def calculate_dimension_score(
+    response: str, keywords: list[str], max_weight: int
+) -> float:
     """Proportional keyword matching with partial credit using Regex."""
     if not keywords:
         return 0.0
@@ -224,7 +296,9 @@ def calculate_dimension_score(response: str, keywords: list[str], max_weight: in
     return 0.0
 
 
-def score_granular_rubric(response: str, asset_id: str) -> tuple[float, dict[str, float], list[str]]:
+def score_granular_rubric(
+    response: str, asset_id: str
+) -> tuple[float, dict[str, float], list[str]]:
     """Generic granular scorer using RUBRICS."""
     rubric = RUBRICS.get(asset_id)
     if not rubric:
@@ -234,8 +308,8 @@ def score_granular_rubric(response: str, asset_id: str) -> tuple[float, dict[str
     details = ["ℹ️ Algorithm: v2.1 Stricter Matching"]
 
     for dimension, config in rubric.items():
-        weight = cast(int, config.get('weight', 0))
-        keywords = cast(list[str], config.get('keywords', []))
+        weight = cast(int, config.get("weight", 0))
+        keywords = cast(list[str], config.get("keywords", []))
 
         score = calculate_dimension_score(response, keywords, weight)
         scores[dimension] = score
@@ -281,33 +355,45 @@ class ReasoningEvaluator:
 
         if version >= 2.0 or self.asset["metadata"]["id"] in RUBRICS:
             # Use new rubrics
-            def wrapper_5a(text: str, *_args: Any) -> tuple[float, dict[str, float], list[str]]:
+            def wrapper_5a(
+                text: str, *_args: Any
+            ) -> tuple[float, dict[str, float], list[str]]:
                 return score_granular_rubric(text, "reasoning_5a_001")
 
-            def wrapper_5c(text: str, *_args: Any) -> tuple[float, dict[str, float], list[str]]:
+            def wrapper_5c(
+                text: str, *_args: Any
+            ) -> tuple[float, dict[str, float], list[str]]:
                 return score_granular_rubric(text, "reasoning_5c_001")
 
-            def wrapper_5b(text: str, *_args: Any) -> tuple[float, dict[str, float], list[str]]:
+            def wrapper_5b(
+                text: str, *_args: Any
+            ) -> tuple[float, dict[str, float], list[str]]:
                 return score_granular_rubric(text, "reasoning_5b_001")
 
-            def wrapper_5d(text: str, *_args: Any) -> tuple[float, dict[str, float], list[str]]:
+            def wrapper_5d(
+                text: str, *_args: Any
+            ) -> tuple[float, dict[str, float], list[str]]:
                 # 5d requires feasibility extraction by default logic, but granular rubric just needs text
                 # We ignore args (feasibility) if passed, or use it if rubric needs it?
                 # Current 5d rubric uses only keywords.
                 return score_granular_rubric(text, "reasoning_5d_001")
 
-            def wrapper_5e(text: str, *_args: Any) -> tuple[float, dict[str, float], list[str]]:
+            def wrapper_5e(
+                text: str, *_args: Any
+            ) -> tuple[float, dict[str, float], list[str]]:
                 # 5e previously used specialized scorer. Now uses granular rubric (v2.1)
                 return score_granular_rubric(text, "reasoning_5e_001")
 
-            def wrapper_metacog_004(text: str, *_args: Any) -> tuple[float, dict[str, float], list[str]]:
+            def wrapper_metacog_004(
+                text: str, *_args: Any
+            ) -> tuple[float, dict[str, float], list[str]]:
                 return score_granular_rubric(text, "reasoning_metacog_004")
 
             self._scorers["reasoning_5a_001"] = wrapper_5a
             self._scorers["reasoning_5c_001"] = wrapper_5c
             self._scorers["reasoning_5b_001"] = wrapper_5b
             self._scorers["reasoning_5d_001"] = wrapper_5d
-            self._scorers["reasoning_5e_001"] = wrapper_5e # Enable v2.1 for 5e
+            self._scorers["reasoning_5e_001"] = wrapper_5e  # Enable v2.1 for 5e
             self._scorers["reasoning_metacog_004"] = wrapper_metacog_004
         else:
             # Uses Legacy Scorers
@@ -339,7 +425,8 @@ class ReasoningEvaluator:
             if asset_id in ["reasoning_5d_001", "reasoning_5e_001"]:
                 feasibility = self._extract_feasibility(input_text)
                 total_score, score_breakdown, details = cast(Any, handler)(
-                    input_text, feasibility,
+                    input_text,
+                    feasibility,
                 )
             else:
                 # Standard signature (float, dict, list)
@@ -423,7 +510,10 @@ class ReasoningEvaluator:
         # for standard logic testing. Implicit separators (like "**Answer:**")
         # usually mean the model provided its reasoning in the main body,
         # which we MUST evaluate for points.
-        if parsed["has_thought_tags"] and parsed.get("thought_tag_type") != "implicit_separator":
+        if (
+            parsed["has_thought_tags"]
+            and parsed.get("thought_tag_type") != "implicit_separator"
+        ):
             return parsed["answer_content"]
 
         # Fallback if parser didn't split it or if it's an implicit separator that is part of the final answer text
@@ -449,18 +539,18 @@ class ReasoningEvaluator:
         # Optimization: Combined regex pattern (Task-10)
         # Groups correspond to the original priority list logic
         pattern = (
-            r"(\d+)\s*/\s*10|"                        # 1. 0/10
-            r"(\d+)\s*out of 10|"                     # 2. 0 out of 10
-            r"Feasibility:\s*(\d+)\s*/\s*10|"         # 3. Feasibility: 0/10
+            r"(\d+)\s*/\s*10|"  # 1. 0/10
+            r"(\d+)\s*out of 10|"  # 2. 0 out of 10
+            r"Feasibility:\s*(\d+)\s*/\s*10|"  # 3. Feasibility: 0/10
             r"(?:^|\n)\*\*Feasibility:\s*(\d+)\*\*|"  # 4. **Feasibility: 0**
-            r"Feasibility:\s*(\d+)(?!\d)|"            # 5. Feasibility: 0
-            r"feasibility.*?:\s*(\d+)(?!\d)|"         # 6. feasibility...: 0
-            r"feasibility assessment[:\s]+(\d+)|"     # 7. feasibility assessment: 0
-            r"feasibility[:\s]+(\d+)|"                # 8. feasibility: 0
-            r"feasibility.*?(\d+)\s*/\s*10|"          # 9. feasibility... 0/10
-            r"rate.*?(\d+)\s*/\s*10|"                 # 10. rate... 0/10
-            r"assess.*?(\d+)\s*/\s*10|"               # 11. assess... 0/10
-            r"impossib.*feasibility[:\s]*(\d+)"       # 12. impossible... feasibility: 0
+            r"Feasibility:\s*(\d+)(?!\d)|"  # 5. Feasibility: 0
+            r"feasibility.*?:\s*(\d+)(?!\d)|"  # 6. feasibility...: 0
+            r"feasibility assessment[:\s]+(\d+)|"  # 7. feasibility assessment: 0
+            r"feasibility[:\s]+(\d+)|"  # 8. feasibility: 0
+            r"feasibility.*?(\d+)\s*/\s*10|"  # 9. feasibility... 0/10
+            r"rate.*?(\d+)\s*/\s*10|"  # 10. rate... 0/10
+            r"assess.*?(\d+)\s*/\s*10|"  # 11. assess... 0/10
+            r"impossib.*feasibility[:\s]*(\d+)"  # 12. impossible... feasibility: 0
         )
 
         match = re.search(pattern, response, re.IGNORECASE | re.DOTALL)
@@ -477,7 +567,6 @@ class ReasoningEvaluator:
         # ⚠️ BETTER DEFAULT: 7 instead of 5
         # Rationale: If no explicit rating given, assume "optimistic but cautious"
         return FEASIBILITY_DEFAULT_OPTIMISTIC
-
 
 
 # ============================================================================

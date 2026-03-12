@@ -15,6 +15,7 @@ from .regional_validator import RegionalConsistencyValidator
 from .formality_scorer import FormalityScorer
 from .legacy import LegacyEvaluator
 
+
 class CulturalIntelligenceEvaluator:
     """
     Facade for Cultural Intelligence evaluation.
@@ -49,7 +50,7 @@ class CulturalIntelligenceEvaluator:
         # or if we should fallback to legacy v1 logic.
         scoring_config = self.asset.get("scoring", {})
         is_v2_config = any(
-            key in scoring_config 
+            key in scoring_config
             for key in ["language_proficiency", "cultural_fit", "solution_quality"]
         )
 
@@ -67,12 +68,11 @@ class CulturalIntelligenceEvaluator:
         # ===== KATEGORIE 1: Language Proficiency (40 Punkte) =====
         if "language_proficiency" in scoring_config:
             lang_result = LanguageProficiencyEvaluator.score_proficiency(
-                response,
-                scoring_config["language_proficiency"]["criteria"]
+                response, scoring_config["language_proficiency"]["criteria"]
             )
             category_scores["language_proficiency"] = {
                 "achieved": lang_result["score"],
-                "max": scoring_config["language_proficiency"]["weight"]
+                "max": scoring_config["language_proficiency"]["weight"],
             }
             details.extend(lang_result["details"])
             total_achieved += lang_result["score"]
@@ -80,12 +80,11 @@ class CulturalIntelligenceEvaluator:
         # ===== KATEGORIE 2: Cultural Fit (30 Punkte) =====
         if "cultural_fit" in scoring_config:
             cultural_result = CulturalFitEvaluator.score_cultural_fit(
-                response,
-                scoring_config["cultural_fit"]["criteria"]
+                response, scoring_config["cultural_fit"]["criteria"]
             )
             category_scores["cultural_fit"] = {
                 "achieved": cultural_result["score"],
-                "max": scoring_config["cultural_fit"]["weight"]
+                "max": scoring_config["cultural_fit"]["weight"],
             }
             details.extend(cultural_result["details"])
             total_achieved += cultural_result["score"]
@@ -93,12 +92,11 @@ class CulturalIntelligenceEvaluator:
         # ===== KATEGORIE 3: Solution Quality (30 Punkte) =====
         if "solution_quality" in scoring_config:
             quality_result = SolutionQualityEvaluator.score_quality(
-                response,
-                scoring_config["solution_quality"]["criteria"]
+                response, scoring_config["solution_quality"]["criteria"]
             )
             category_scores["solution_quality"] = {
                 "achieved": quality_result["score"],
-                "max": scoring_config["solution_quality"]["weight"]
+                "max": scoring_config["solution_quality"]["weight"],
             }
             details.extend(quality_result["details"])
             total_achieved += quality_result["score"]
@@ -106,7 +104,7 @@ class CulturalIntelligenceEvaluator:
         # Metadata collection (using get() for safety if category skipped)
         metadata = {
             "response_length": len(response),
-            "word_count": len(response.split())
+            "word_count": len(response.split()),
         }
         if "language_proficiency" in category_scores:
             metadata.update(lang_result.get("metadata", {}))
@@ -130,7 +128,7 @@ class CulturalIntelligenceEvaluator:
             "percentage": round((total_achieved / total_possible) * 100, 2),
             "category_scores": category_scores,
             "details": details,
-            "metadata": metadata
+            "metadata": metadata,
         }
 
     def _create_error_score(self, error_msg: str) -> dict:
@@ -143,11 +141,12 @@ class CulturalIntelligenceEvaluator:
             "category_scores": {
                 "language_proficiency": {"achieved": 0, "max": 40},
                 "cultural_fit": {"achieved": 0, "max": 30},
-                "solution_quality": {"achieved": 0, "max": 30}
+                "solution_quality": {"achieved": 0, "max": 30},
             },
             "details": [error_msg],
-            "metadata": {"error": error_msg}
+            "metadata": {"error": error_msg},
         }
+
 
 __all__ = [
     "CulturalIntelligenceEvaluator",
@@ -155,5 +154,5 @@ __all__ = [
     "CulturalFitEvaluator",
     "SolutionQualityEvaluator",
     "RegionalConsistencyValidator",
-    "FormalityScorer"
+    "FormalityScorer",
 ]

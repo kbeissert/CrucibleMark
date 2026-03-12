@@ -1,4 +1,5 @@
 """Module for constants.py."""
+
 CLI_GOLD_THRESHOLD = 90.0
 CLI_SILVER_THRESHOLD = 80.0
 CLI_BRONZE_THRESHOLD = 60.0

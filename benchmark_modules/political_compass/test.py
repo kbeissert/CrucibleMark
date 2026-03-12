@@ -38,7 +38,6 @@ from benchmark_modules.political_compass.core.visualizer import (
     PoliticalCompassVisualizer,  # noqa: F401
 )
 from utils.benchmark_ui import TerminalUI
-from utils.model_utils import get_model_version
 from utils.fingerprinting import ModelFingerprinter
 
 logger = logging.getLogger(__name__)
@@ -65,12 +64,12 @@ class PoliticalCompassTest(BaseTest):
         # Allow initialization without specific asset path (Batch Mode)
         default_path = Path(__file__).parent / "assets"
         target_path = asset_path or default_path
-        
+
         # Load local config to determine system prompt
         self.config_path = Path(__file__).parent / "config.yaml"
         self.local_config = {}
         self.system_prompt = STANDARD_PROMPT
-        
+
         if self.config_path.exists():
             try:
                 with open(self.config_path, "r", encoding="utf-8") as f:
@@ -218,17 +217,17 @@ class PoliticalCompassTest(BaseTest):
             # 1. Prepare
             q_id = asset["metadata"]["id"]
             cache_key = f"{run_idx}_{q_id}"
-            
+
             seed = run_seed + hash(q_id)
             prompt, mapping = self._build_prompt(asset, seed)
-            
+
             # Check Resume
             if cache_key in responses_cache:
                 response = responses_cache[cache_key]
                 # Re-hydrate local state without querying LLM
                 asset["_runtime_mapping"] = mapping
                 self.evaluator.score_response(response, asset)
-                
+
                 metrics["completed_in_run"] += 1
                 ui.update_progress(
                     metrics["completed_in_run"],
@@ -263,10 +262,10 @@ class PoliticalCompassTest(BaseTest):
             # 3. Score (Buffer)
             asset["_runtime_mapping"] = mapping
             self.evaluator.score_response(response, asset)
-            
+
             # 4. Save Checkpoint
             responses_cache[cache_key] = response
-            checkpoint["responses"] = responses_cache # ensure ref update
+            checkpoint["responses"] = responses_cache  # ensure ref update
             # We already updated run_seeds in execute()
             CheckpointManager.save_checkpoint(model, checkpoint)
 
@@ -310,7 +309,7 @@ class PoliticalCompassTest(BaseTest):
         questions_by_block, sorted_blocks = self._group_questions_by_block()
         total_tokens = 0
         total_cost = 0.0
-        
+
         # Load Checkpoint (Resume Capability)
         checkpoint = CheckpointManager.load_checkpoint(model) or {}
         if "run_seeds" not in checkpoint:
@@ -321,7 +320,7 @@ class PoliticalCompassTest(BaseTest):
         # Run Benchmark Loops
         for run_idx in range(1, self.num_runs + 1):
             ui.start_run(run_idx, self.num_runs, model, provider)
-            
+
             # Deterministic Seed Recovery
             s_idx = str(run_idx)
             if s_idx in checkpoint["run_seeds"]:
@@ -346,7 +345,7 @@ class PoliticalCompassTest(BaseTest):
                 "llm_client": llm_client,
                 "run_seed": run_seed,
                 "run_idx": run_idx,
-                "checkpoint": checkpoint
+                "checkpoint": checkpoint,
             }
 
             for block_id in sorted_blocks:
@@ -422,9 +421,7 @@ class PoliticalCompassTest(BaseTest):
         # Determine model version centrally (with behavioral hash)
         # We pass llm_client to allow generating the behavioral hash
         model_version = ModelFingerprinter.get_unified_version(
-            provider=provider, 
-            model_name=model, 
-            client=llm_client
+            provider=provider, model_name=model, client=llm_client
         )
 
         report = {
@@ -444,9 +441,15 @@ class PoliticalCompassTest(BaseTest):
             },
             "individual_runs": individual_runs,
             "config": {
-                "use_anti_diplomat_prompt": self.local_config.get("use_anti_diplomat_prompt", False),
-                "system_prompt_type": "anti_diplomat" if self.local_config.get("use_anti_diplomat_prompt", False) else "vanilla"
-            }
+                "use_anti_diplomat_prompt": self.local_config.get(
+                    "use_anti_diplomat_prompt", False
+                ),
+                "system_prompt_type": (
+                    "anti_diplomat"
+                    if self.local_config.get("use_anti_diplomat_prompt", False)
+                    else "vanilla"
+                ),
+            },
         }
 
         # STOP DOUBLE WRITING!
@@ -471,7 +474,7 @@ class PoliticalCompassTest(BaseTest):
 
         # Runner expects 'raw_response' to be the JSON string of the report
         json_report = json.dumps(report, default=str)
-        
+
         return BenchmarkResult(
             status=str(report.get("status", "success")),
             primary_score=float(status_code),
@@ -483,7 +486,7 @@ class PoliticalCompassTest(BaseTest):
             raw_response=json_report,
             model_version=str(model_version),
             data=report,
-            meta={"run_mode": "batch"}
+            meta={"run_mode": "batch"},
         )
 
     def score_response(self, _response: str) -> Dict[str, Any]:
@@ -595,7 +598,7 @@ if __name__ == "__main__":
                 model=args.model, llm_client=client, provider=args.provider
             )
             print("\n✅ Execution Successful")
-            
+
             # Parse inner report
             report = json.loads(result["raw_response"])
             print(f"Status: {report.get('status')}")
@@ -606,4 +609,3 @@ if __name__ == "__main__":
             traceback.print_exc()
             print(f"\n❌ Execution Failed: {e}")
             sys.exit(1)
-

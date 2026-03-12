@@ -62,7 +62,7 @@ class BaseProviderClient:
         Should be implemented/used by subclasses for commercial models.
         """
         # Default behavior: return model version from API or unknown
-        # Since local Ollama models have their own mechanism in provider_clients? 
+        # Since local Ollama models have their own mechanism in provider_clients?
         # Actually Ollama fingerprint is generated in get_model_version inside model_utils.py.
         # But we want to unify this if possible or just use this for commercial.
         return "unknown"
@@ -131,13 +131,14 @@ class OllamaClient(BaseProviderClient):
 
         # SPECIAL HANDLING for Reasoning Models (e.g. DeepSeek-R1)
         if is_reasoning_model(model):
-            # Reduced to 8192 to prevent excessive unified memory swapping 
+            # Reduced to 8192 to prevent excessive unified memory swapping
             # (which causes system-wide freezes on Mac when 32768 context explodes VRAM)
             options["num_predict"] = 8192
             if "num_ctx" not in options:
                 options["num_ctx"] = 8192
             logger.debug(
-                "Boosting token limit for reasoning model '%s' to 8192 to prevent memory freezes", model
+                "Boosting token limit for reasoning model '%s' to 8192 to prevent memory freezes",
+                model,
             )
 
         return options
@@ -181,7 +182,9 @@ class OllamaClient(BaseProviderClient):
                         "eval_duration": eval_ns / 1e9,
                         "prompt_eval_duration": prompt_eval_ns / 1e9,
                     }
-                    metrics["pure_execution_time"] = metrics["total_duration"] - metrics["load_duration"]
+                    metrics["pure_execution_time"] = (
+                        metrics["total_duration"] - metrics["load_duration"]
+                    )
                     self.last_response_metadata = metrics
                     continue
 
@@ -206,7 +209,7 @@ class OllamaClient(BaseProviderClient):
                 if val_content:
                     stream_handler(val_content)
                     full_content += val_content
-                    
+
         except Exception as e:
             # Emergency Recovery for Ollama Parser Errors (e.g. XML in JSON)
             # "error parsing tool call: raw='<thought>...'"
@@ -216,6 +219,7 @@ class OllamaClient(BaseProviderClient):
                 try:
                     # Extract content between raw=' and ', err=
                     import re
+
                     match = re.search(r"raw='(.*?)', err=", err_str, re.DOTALL)
                     if match:
                         recovered_content = match.group(1)
@@ -223,18 +227,22 @@ class OllamaClient(BaseProviderClient):
                         full_content += "\n" + recovered_content
                         # Stream it out for UI
                         stream_handler(recovered_content)
-                        logger.info("Successfully recovered content from Ollama parser error.")
+                        logger.info(
+                            "Successfully recovered content from Ollama parser error."
+                        )
                         return full_content
                 except Exception as ex:
                     logger.error(f"Failed to recover from parser error: {ex}")
-            
+
             # If not recoverable, re-raise
             raise e
-            
+
         if not full_content and full_thinking:
-             logger.debug("Ollama streaming returned thinking but no content. Using thinking as fallback.")
-             return full_thinking
-             
+            logger.debug(
+                "Ollama streaming returned thinking but no content. Using thinking as fallback."
+            )
+            return full_thinking
+
         return full_content
 
     def query(
@@ -250,7 +258,10 @@ class OllamaClient(BaseProviderClient):
         if not model:
             raise ValueError("OllamaClient.query called with empty 'model' parameter.")
         if " " in model:
-            logger.warning("Model name '%s' contains spaces. This may cause 'model is required' errors in Ollama.", model)
+            logger.warning(
+                "Model name '%s' contains spaces. This may cause 'model is required' errors in Ollama.",
+                model,
+            )
 
         try:
             options = self._get_options(model, temperature)
@@ -261,26 +272,35 @@ class OllamaClient(BaseProviderClient):
 
             # 🟢 Allow Overrides from kwargs (Benchmark Module Config)
             # This allows modules to define specific params like repeat_penalty in their config.yaml
-            allowed_overrides = ["repeat_penalty", "top_k", "top_p", "seed", "num_predict", "num_ctx"]
+            allowed_overrides = [
+                "repeat_penalty",
+                "top_k",
+                "top_p",
+                "seed",
+                "num_predict",
+                "num_ctx",
+            ]
             for key in allowed_overrides:
                 if key in kwargs:
                     options[key] = kwargs[key]
 
             # Prepare messages list
             messages = []
-            
+
             # Check for system prompt in kwargs
             system_prompt = kwargs.get("system")
             if system_prompt:
                 messages.append({"role": "system", "content": system_prompt})
-                
+
             messages.append({"role": "user", "content": prompt})
 
             # Force Streaming Mode to avoid "error parsing tool call" with reasoning models
             # that output XML <thought> tags which confuse Ollama's blocking parser.
             try:
                 handler = stream_handler if stream_handler else lambda x: None
-                return self._handle_streaming(model, prompt, options, handler, system_prompt=system_prompt)
+                return self._handle_streaming(
+                    model, prompt, options, handler, system_prompt=system_prompt
+                )
             except Exception as e:
                 # Catch specific Ollama 400 errors to inform user
                 err_str = str(e)
@@ -341,11 +361,13 @@ class AnthropicClient(BaseProviderClient):
         """Prüft Zugang zu Anthropic API durch Test-Request."""
         try:
             # Versuche minimale Generierung (Cheap & Fast) mit max_retries=0
-            check_client = anthropic.Anthropic(api_key=self.client.api_key, max_retries=0)
+            check_client = anthropic.Anthropic(
+                api_key=self.client.api_key, max_retries=0
+            )
             check_client.messages.create(
                 model="claude-3-haiku-20240307",  # Günstigstes Modell für Test
                 max_tokens=1,
-                messages=[{"role": "user", "content": "Hi"}]
+                messages=[{"role": "user", "content": "Hi"}],
             )
             return True
         except Exception as e:
@@ -368,11 +390,9 @@ class AnthropicClient(BaseProviderClient):
 
         # Use Standardized Global Versioning
         fingerprint = ModelFingerprinter.get_unified_version(
-            provider="anthropic",
-            model_name=model,
-            client=self
+            provider="anthropic", model_name=model, client=self
         )
-        
+
         self.fingerprint_cache[model] = fingerprint
         return fingerprint
 
@@ -391,7 +411,7 @@ class AnthropicClient(BaseProviderClient):
             sleep_time = self.min_request_interval - elapsed
             logger.debug(f"⏱️ Rate limit protection: sleeping {sleep_time:.1f}s")
             time.sleep(sleep_time)
-        
+
         self.last_request_time = time.time()
 
         try:
@@ -498,18 +518,17 @@ class MistralClient(BaseProviderClient):
         official_version = get_official_version("mistral", model)
         # Use simple model type name for fingerprinting
         model_type = model.replace("mistral-", "").split("-")[0]
-        
+
         # NOTE: self passed as client. query() must handle skip_fingerprint kwarg
         behavioral_hash = ModelFingerprinter.generate_behavioral_hash(
-            client=self,
-            model_name=model  
+            client=self, model_name=model
         )
-        
+
         fingerprint = ModelFingerprinter.create_fingerprint(
             provider="mistral",
             model_name=model_type,
             official_version=official_version,
-            behavioral_hash=behavioral_hash
+            behavioral_hash=behavioral_hash,
         )
         self.fingerprint_cache[model] = fingerprint
         return fingerprint
@@ -536,7 +555,7 @@ class MistralClient(BaseProviderClient):
                 messages=[{"role": "user", "content": prompt}],
                 temperature=temperature,
                 random_seed=42,  # Ensure deterministic output
-                max_tokens=max_tokens, # Pass None if not provided (SDK default)
+                max_tokens=max_tokens,  # Pass None if not provided (SDK default)
             )
 
             # Capture Metadata
@@ -550,7 +569,9 @@ class MistralClient(BaseProviderClient):
                 # Calculate fingerprint (this might call query recursively with skip_fingerprint=True)
                 fp = self._get_fingerprint(model)
                 self.last_response_metadata["model_fingerprint"] = fp
-                self.last_response_metadata["system_fingerprint"] = fp # Alias for runner compatibility
+                self.last_response_metadata["system_fingerprint"] = (
+                    fp  # Alias for runner compatibility
+                )
 
             content = response.choices[0].message.content
             if stream_handler and content:
@@ -588,19 +609,17 @@ class OpenAIClient(BaseProviderClient):
             api_key = get_required_env(
                 "OPENAI_API_KEY", "OPENAI_API_KEY environment variable not set"
             )
-            
+
             # Configure explicit Timeout object for better handling of TTFT vs Connection
             # read=180.0s allows up to 3 mins wait for TTFT or between chunks
             # Note: httpx.Timeout does not accept 'total' argument in this version's constructor apparently,
             # or the way OpenAI client passes it down is specific.
             # Using connect/read/write/pool is standard for httpx used by OpenAI.
-            
+
             import httpx
+
             timeout_config = httpx.Timeout(
-                connect=10.0,
-                read=180.0,
-                write=180.0,
-                pool=180.0
+                connect=10.0, read=180.0, write=180.0, pool=180.0
             )
 
             self._client = OpenAI(api_key=api_key, timeout=timeout_config)
@@ -616,7 +635,7 @@ class OpenAIClient(BaseProviderClient):
             check_client.chat.completions.create(
                 model="gpt-3.5-turbo",
                 messages=[{"role": "user", "content": "Hi"}],
-                max_tokens=1
+                max_tokens=1,
             )
             return True
         except Exception as e:
@@ -632,17 +651,16 @@ class OpenAIClient(BaseProviderClient):
         official_version = get_official_version("openai", model)
         # Use simple model type name for fingerprinting
         model_type = model.replace("gpt-", "gpt").split("-")[0]
-        
+
         behavioral_hash = ModelFingerprinter.generate_behavioral_hash(
-            client=self,
-            model_name=model  
+            client=self, model_name=model
         )
-        
+
         fingerprint = ModelFingerprinter.create_fingerprint(
             provider="openai",
             model_name=model_type,
             official_version=official_version,
-            behavioral_hash=behavioral_hash
+            behavioral_hash=behavioral_hash,
         )
         self.fingerprint_cache[model] = fingerprint
         return fingerprint
@@ -662,13 +680,11 @@ class OpenAIClient(BaseProviderClient):
                 "model": model,
                 "messages": [{"role": "user", "content": prompt}],
             }
-            
+
             # Reasoning models (o1, o3) and some newer minis often don't support temperature
             # or have strict fixed values.
             is_reasoning = (
-                model.startswith("o1") 
-                or model.startswith("o3") 
-                or "gpt-5" in model
+                model.startswith("o1") or model.startswith("o3") or "gpt-5" in model
             )
             if not is_reasoning:
                 params["temperature"] = temperature
@@ -692,9 +708,9 @@ class OpenAIClient(BaseProviderClient):
                 params["stream"] = True
                 # Request usage info in stream (OpenAI feature)
                 params["stream_options"] = {"include_usage": True}
-                
+
                 response_stream = self.client.chat.completions.create(**params)
-                
+
                 full_content = ""
                 self.last_response_metadata = {}
 
@@ -705,8 +721,10 @@ class OpenAIClient(BaseProviderClient):
                     if not self.last_response_metadata.get("model") and chunk.model:
                         self.last_response_metadata["model"] = chunk.model
                     if getattr(chunk, "system_fingerprint", None):
-                        self.last_response_metadata["system_fingerprint"] = chunk.system_fingerprint
-                    
+                        self.last_response_metadata["system_fingerprint"] = (
+                            chunk.system_fingerprint
+                        )
+
                     # Capture Usage (usually in last chunk)
                     if hasattr(chunk, "usage") and chunk.usage:
                         self.last_response_metadata["usage"] = chunk.usage
@@ -717,7 +735,7 @@ class OpenAIClient(BaseProviderClient):
                         if delta:
                             stream_handler(delta)
                             full_content += delta
-                
+
                 if not skip_fingerprint:
                     fp = self._get_fingerprint(model)
                     self.last_response_metadata["model_fingerprint"] = fp
@@ -738,11 +756,11 @@ class OpenAIClient(BaseProviderClient):
             }
 
             if not skip_fingerprint:
-                 # Calculate custom fingerprint
+                # Calculate custom fingerprint
                 fp = self._get_fingerprint(model)
                 self.last_response_metadata["model_fingerprint"] = fp
-                
-                # OpenAI already has system_fingerprint, but we overwrite/augment it 
+
+                # OpenAI already has system_fingerprint, but we overwrite/augment it
                 # if we want consistent behavioral fingerprint across providers.
                 # OpenAI's system_fingerprint changes frequently.
                 # Ours is stable per behavioral hash logic.
@@ -754,10 +772,10 @@ class OpenAIClient(BaseProviderClient):
             # Ensure we don't call stream_handler twice if falling back to blocking
             # The original code called it here, but since we have a dedicated stream branch,
             # this is only for the non-streaming case.
-            # However, if the caller PROVIDED a stream_handler but somehow we ended up here 
+            # However, if the caller PROVIDED a stream_handler but somehow we ended up here
             # (which we shouldn't given the if above), we should call it.
-            # But the 'if stream_handler' block handles that. 
-            
+            # But the 'if stream_handler' block handles that.
+
             return content
         except Exception as e:
             logger.error("OpenAI query failed: %s", e)
@@ -765,12 +783,7 @@ class OpenAIClient(BaseProviderClient):
 
     def get_available_models(self) -> List[str]:
         """List available OpenAI models"""
-        return [
-            "gpt-5.2-pro", 
-            "gpt-5-mini", 
-            "o3-mini", 
-            "gpt-4o"
-        ]
+        return ["gpt-5.2-pro", "gpt-5-mini", "o3-mini", "gpt-4o"]
 
 
 class GoogleClient(BaseProviderClient):
@@ -782,14 +795,16 @@ class GoogleClient(BaseProviderClient):
         if genai:
             genai.configure(api_key=self.api_key)
         else:
-            logger.warning("Google Generative AI library (google-generativeai) not installed.")
+            logger.warning(
+                "Google Generative AI library (google-generativeai) not installed."
+            )
 
     def is_accessible(self) -> bool:
         """Prüft, ob der API Key gültig ist."""
         if not genai:
             print("❌ Google Generative AI (google-generativeai) nicht installiert.")
             return False
-        
+
         try:
             # Minimaler Check: ListModels
             # List models, limit to 1 to check auth
@@ -814,62 +829,57 @@ class GoogleClient(BaseProviderClient):
 
         try:
             # Configure Generation Config
-            generation_config = genai.types.GenerationConfig(
-                temperature=temperature
-            )
-            
+            generation_config = genai.types.GenerationConfig(temperature=temperature)
+
             if "max_tokens" in kwargs:
                 # Gemini uses max_output_tokens
                 generation_config.max_output_tokens = kwargs["max_tokens"]
-            
+
             if "top_p" in kwargs:
                 generation_config.top_p = kwargs["top_p"]
-            
+
             if "top_k" in kwargs:
                 generation_config.top_k = kwargs["top_k"]
 
             # Initialize Model
             gemini_model = genai.GenerativeModel(model_name=model)
-            
+
             # Streaming Support
             if stream_handler:
                 response = gemini_model.generate_content(
-                    prompt, 
-                    generation_config=generation_config,
-                    stream=True
+                    prompt, generation_config=generation_config, stream=True
                 )
-                
+
                 full_text = ""
-                self.last_response_metadata = {} # Reset
-                
+                self.last_response_metadata = {}  # Reset
+
                 for chunk in response:
                     # chunk.text can throw if blocked by safety settings
                     text_chunk = ""
                     try:
                         text_chunk = chunk.text
                     except ValueError:
-                         # Handle safety filter blocking
-                         logger.warning("Gemini chunk blocked (safety filters).")
-                    
+                        # Handle safety filter blocking
+                        logger.warning("Gemini chunk blocked (safety filters).")
+
                     if text_chunk:
                         stream_handler(text_chunk)
                         full_text += text_chunk
-                        
+
                     # Metadata Extraction (if available in chunk)
                     if hasattr(chunk, "usage_metadata"):
                         # Gemini usage is cumulative in last chunk usually
                         # Convert proto to dict if needed, or use object
                         # We just store it for now
-                        pass 
+                        pass
 
                 return full_text
 
             # Blocking Call
             response = gemini_model.generate_content(
-                prompt,
-                generation_config=generation_config
+                prompt, generation_config=generation_config
             )
-            
+
             try:
                 return response.text
             except ValueError:
@@ -888,6 +898,10 @@ class GoogleClient(BaseProviderClient):
         try:
             models = genai.list_models()
             # Filter for generateContent support
-            return [m.name.replace("models/", "") for m in models if "generateContent" in m.supported_generation_methods]
+            return [
+                m.name.replace("models/", "")
+                for m in models
+                if "generateContent" in m.supported_generation_methods
+            ]
         except Exception:
             return []

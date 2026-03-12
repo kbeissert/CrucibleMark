@@ -203,7 +203,7 @@ class LocalBenchmarkRunner(BaseBenchmarkRunner):
             # 2. Send Probe (now guarantees a reload with new config)
             # Note: For Reasoning models (e.g. DeepSeek-R1), the response might be in 'thinking' only
             try:
-                response = self.client.query(
+                _ = self.client.query(
                     model=model,
                     prompt="Ping",
                     max_tokens=50,  # Increased for Reasoning models (was: 2)
@@ -431,7 +431,7 @@ class LocalBenchmarkRunner(BaseBenchmarkRunner):
                         result["judge_progress_status"] = "❌ Judge: failed"
                         
                 except Exception as e:
-                    import logging
+
                     logging.error(f"LLM Judge execution failed: {e}")
                     result["judge_progress_status"] = "❌ Judge: failed"
         # ---------------------------------------------------------------------
@@ -825,8 +825,6 @@ class LocalBenchmarkRunner(BaseBenchmarkRunner):
         results = []
         print("Fortschritt:")
 
-        previous_test_stats = None
-
         for i, asset_path in enumerate(assets, 1):
             # ADAPTIVE PAUSE: Moved to INSIDE _process_single_test for LLM Judge integration!
 
@@ -841,13 +839,6 @@ class LocalBenchmarkRunner(BaseBenchmarkRunner):
                 result = self._process_single_test(
                     model, asset_path, commercial_refs, benchmark_info, pause_calculator
                 )
-
-                # Update stats for next iteration
-                previous_test_stats = {
-                    "execution_time": result.get("execution_time", 0),
-                    "response_length": result.get("tokens_used", 0)
-                    * 4,  # Estimate chars from tokens
-                }
 
                 results.append(result)
                 self._print_result_status(i, len(assets), asset_name, result)

@@ -26,6 +26,7 @@ root_dir = Path(__file__).parent.parent.parent
 if str(root_dir) not in sys.path:
     sys.path.insert(0, str(root_dir))
 
+
 class CodeQualityTest(BaseTest):
     """
     Test module for Code Quality and Accessibility.
@@ -58,7 +59,7 @@ class CodeQualityTest(BaseTest):
         model: str,
         llm_client: Any,  # TODO: Später durch LLMClient Interface ersetzen
         provider: str = "ollama",
-        **kwargs: Any
+        **kwargs: Any,
     ) -> BenchmarkResult:
         """
         Executes the Code Quality test for a given model.
@@ -95,14 +96,19 @@ class CodeQualityTest(BaseTest):
                 **query_kwargs,
             )
             # Use clean execution time (excluding timeouts/retries) if available
-            if hasattr(llm_client, "last_query_duration") and llm_client.last_query_duration > 0:
+            if (
+                hasattr(llm_client, "last_query_duration")
+                and llm_client.last_query_duration > 0
+            ):
                 elapsed = llm_client.last_query_duration
             else:
                 elapsed = time.time() - start
 
             approx_tokens = int(len(response.split()) * TOKEN_MULTIPLIER)
 
-            load_time = getattr(llm_client, "last_response_metadata", {}).get("load_duration", 0.0)
+            load_time = getattr(llm_client, "last_response_metadata", {}).get(
+                "load_duration", 0.0
+            )
 
             return BenchmarkResult(
                 status="success",
@@ -114,13 +120,15 @@ class CodeQualityTest(BaseTest):
                 load_time=load_time,
                 tokens_used=approx_tokens,
                 cost_usd=getattr(llm_client, "last_request_cost", 0.0),
-                model_version=getattr(llm_client, "last_response_metadata", {}).get("system_fingerprint", "unknown"),
+                model_version=getattr(llm_client, "last_response_metadata", {}).get(
+                    "system_fingerprint", "unknown"
+                ),
                 meta={
                     "model": model,
                     "asset_id": self.asset["metadata"]["id"],
                     "prompt_length": len(full_prompt),
                     **getattr(llm_client, "last_response_metadata", {}),
-                }
+                },
             )
         except (OSError, RuntimeError, ValueError) as e:
             return BenchmarkResult(
@@ -128,16 +136,17 @@ class CodeQualityTest(BaseTest):
                 primary_score=0.0,
                 rendered_value="ERROR",
                 raw_response=str(e),
+                evaluated_prompt="",
                 execution_time=0.0,
                 load_time=0.0,
                 tokens_used=0,
                 cost_usd=0.0,
                 model_version="unknown",
                 meta={
-                    "model": model, 
+                    "model": model,
                     "asset_id": self.asset.get("metadata", {}).get("id", "unknown"),
-                    "error": str(e)
-                }
+                    "error": str(e),
+                },
             )
 
     def score_response(self, response: str) -> Dict[str, Any]:

@@ -14,8 +14,9 @@ import yaml
 GROUND_TRUTH_DIR = os.path.join(
     os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
     "assets",
-    "ground_truth"
+    "ground_truth",
 )
+
 
 def load_ground_truth_datasets() -> dict:
     """Load all YAML ground truth definitions."""
@@ -38,6 +39,7 @@ def load_ground_truth_datasets() -> dict:
 
     return datasets
 
+
 GROUND_TRUTH_DATASETS = load_ground_truth_datasets()
 
 
@@ -45,7 +47,7 @@ def validate_response_against_ground_truth(
     asset_id: str,
     response_type: str,  # "perfect", "good", "minimal", "wrong"
     actual_score: float,
-    tolerance: float = 10.0  # Allow ±10 point variance
+    tolerance: float = 10.0,  # Allow ±10 point variance
 ) -> dict:
     """
     Validate that actual score matches ground truth within tolerance.
@@ -62,7 +64,7 @@ def validate_response_against_ground_truth(
     if asset_id not in GROUND_TRUTH_DATASETS:
         return {
             "success": False,
-            "message": f"Asset {asset_id} not in ground truth database"
+            "message": f"Asset {asset_id} not in ground truth database",
         }
 
     dataset = GROUND_TRUTH_DATASETS[asset_id]
@@ -70,7 +72,7 @@ def validate_response_against_ground_truth(
     if response_type not in dataset["gold_responses"]:
         return {
             "success": False,
-            "message": f"Response type '{response_type}' not found in {asset_id}"
+            "message": f"Response type '{response_type}' not found in {asset_id}",
         }
 
     expected = dataset["gold_responses"][response_type]["expected_score"]
@@ -86,9 +88,10 @@ def validate_response_against_ground_truth(
         "variance": variance,
         "tolerance": tolerance,
         "message": (
-            "✅ PASS" if passed
+            "✅ PASS"
+            if passed
             else f"❌ FAIL: Expected {expected}±{tolerance}, got {actual_score}"
-        )
+        ),
     }
 
 
