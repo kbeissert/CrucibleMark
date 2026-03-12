@@ -63,8 +63,8 @@ config:
 
 scoring:
   fallback_weights:
-    regex: 0.25
-    judge: 0.75
+    regex: 0.10
+    judge: 0.90
 
 # 🟢 BENCHMARK ASSETS CONFIGURATION (v3.0 Granular Scoring)
 benchmarks:
