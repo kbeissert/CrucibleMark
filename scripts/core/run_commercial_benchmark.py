@@ -636,7 +636,7 @@ class CommercialBenchmarkRunner(BaseBenchmarkRunner):
                 print(
                     f"⏩ Überspringe {benchmark_info['name']} (Batch-Modus; Bereits im Cache vorhanden)"
                 )
-                return [dict(cached_res)]
+                return [cached_res.copy()]
 
             # Dynamic Loading
             module_path = Path(str(benchmark_info.get("module_path", "")))

@@ -182,7 +182,7 @@ class BenchmarkRunner:
         """Wählt Provider und Modell basierend auf Typ."""
         if provider_type == "commercial":
             return self._select_commercial_model()
-        elif provider_type == "cloud":
+        if provider_type == "cloud":
             return self._select_cloud_model()
         return self._select_local_model()
 
@@ -395,7 +395,7 @@ class BenchmarkRunner:
                 )
             except subprocess.CalledProcessError:
                 print("⚠️ Fehler beim Aktualisieren des Leaderboards.")
-            except Exception as e:
+            except Exception as e:  # pylint: disable=broad-exception-caught
                 print(f"⚠️ Unerwarteter Fehler: {e}")
 
     def _run_benchmark(
@@ -556,7 +556,7 @@ Beispiele:
     except KeyboardInterrupt:
         print("\n\n❌ Benchmark abgebrochen")
         sys.exit(1)
-    except Exception as e:
+    except Exception as e:  # pylint: disable=broad-exception-caught
         logger.exception("Unerwarteter Fehler: %s", e)
         sys.exit(1)
 
