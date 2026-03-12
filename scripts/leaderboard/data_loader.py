@@ -314,7 +314,11 @@ def load_benchmark_data() -> pd.DataFrame:
 
                 if not t:
                     # Retry: Find any type for this model
-                    matching_keys = [k for k in known_models.keys() if k[0] == m]
+                    matching_keys = [
+                        k
+                        for k in known_models.keys()
+                        if isinstance(k, tuple) and len(k) > 0 and k[0] == m
+                    ]
                     if matching_keys:
                         # Find best version match (e.g. fuzzy string match or just latest)
                         # Prefer explicitly matching versions (substring)
@@ -322,7 +326,11 @@ def load_benchmark_data() -> pd.DataFrame:
 
                         # 1. Try substring match (e.g. 'claude-sonnet' in 'claude-sonnet-2024')
                         for key in matching_keys:
-                            if str(v) in str(key[1]) or str(key[1]) in str(v):
+                            if (
+                                isinstance(key, tuple)
+                                and len(key) > 1
+                                and (str(v) in str(key[1]) or str(key[1]) in str(v))
+                            ):
                                 best_key = key
                                 break
 
