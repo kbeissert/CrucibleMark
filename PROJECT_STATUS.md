@@ -1,19 +1,23 @@
 # PROJECT_STATUS.md
 
-**Last Updated:** 2026-03-11 **Current Version:** 2.2.0 (LLM Judge Integration) **Status:** ✅ Production-Ready
+**Last Updated:** 2026-03-12 **Current Version:** 2.3.0 (Audit Mode Vollintegration) **Status:** ✅ Production-Ready
 
 ______________________________________________________________________
 
 ## 🎯 Executive Summary
-CrucibleMark v2.2.0 bringt das **LLM Judge Modul** zur Produktionsreife. 
+CrucibleMark v2.3.0 bringt die **Audit Mode Vollintegration** und schließt die LLM Judge Pipeline ab. 
 Die Kernarchitektur für die automatisierte Auswertung freier Antworten wurde vollständig integriert, getestet und stabilisiert.
 Eine SSOT-basierte (Single Source of Truth) Konfiguration in `benchmark_config.yaml` garantiert saubere Testdurchläufe ohne Fallstricke.
 
-**Key Achievements (v2.2.0):**
+**Key Achievements (v2.3.0):**
+- ✅ **Audit Mode Logging:** Vollständige Markdown-Protokollierung mit dynamischem `evaluated_prompt`, regelbasierten Category-Scores und LLM-Judge Reasoning.
 - ✅ **LLM Judge Pipeline:** Vollständige Integration von 4 Providern (Ollama, Anthropic, Mistral, OpenAI) mit automatischer Fallback-Chain.
 - ✅ **Bulletproof Parsing:** Robuster Regex-Parser, der auch Markdown-Ausreißer von Modellen (z.B. `### **SCORE:**`) sicher verarbeitet.
 - ✅ **Lifecycle Management:** Isolierte Lade/Entlade-Zyklen (Ollama) mit Delays für fehlerfreie VRAM-Freigabe, Timeout-Resilienz (120s).
 - ✅ **Leaderboard & Metric Stability:** Leaderboard Typ-Konvertierungen und Pydantic Validierungen gehärtet. 165+ Tests Passed.
+
+**Previous Version (v2.2.0):**
+- LLM Judge Pipeline Kernarchitektur
 
 **Previous Version (v2.1.1):**
 - Leaderboard & Aggregation Update
