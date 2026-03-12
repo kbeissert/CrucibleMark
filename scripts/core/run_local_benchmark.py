@@ -37,7 +37,11 @@ from utils.benchmark_utils import (
 from utils.llm_client import LLMClient
 from utils.logging_config import setup_logging
 
-from utils.model_utils import get_model_version, get_ollama_models_info, is_reasoning_model
+from utils.model_utils import (
+    get_model_version,
+    get_ollama_models_info,
+    is_reasoning_model,
+)
 from utils.fingerprinting import ModelFingerprinter
 from utils.module_loader import load_test_class
 from utils.module_registry import load_active_benchmarks
@@ -72,7 +76,10 @@ class LocalBenchmarkRunner(BaseBenchmarkRunner):
     TOKEN_K_FACTOR = 1000
 
     def __init__(
-        self, debug_responses: bool = False, mode: BenchmarkMode = BenchmarkMode.PRODUCTION, audit_mode: bool = False
+        self,
+        debug_responses: bool = False,
+        mode: BenchmarkMode = BenchmarkMode.PRODUCTION,
+        audit_mode: bool = False,
     ):
         """Initialisiert Runner."""
         super().__init__()
@@ -195,7 +202,7 @@ class LocalBenchmarkRunner(BaseBenchmarkRunner):
                     ollama.generate(model=model, prompt="", keep_alive=0)
                     # Give Ollama a split second to clear memory
                     time.sleep(0.5)
-                except Exception as e:
+                except Exception as e:  # pylint: disable=broad-exception-caught
                     logger.debug("Could not force unload model: %s", e)
             else:
                 logger.debug("Ollama library not available for force unload")
@@ -210,7 +217,7 @@ class LocalBenchmarkRunner(BaseBenchmarkRunner):
                     temperature=0.0,
                 )
                 # If query succeeded, response will be a string (even if empty)
-            except Exception as probe_error:
+            except Exception as probe_error:  # pylint: disable=broad-exception-caught
                 # Probe failed - this is not critical, just log and continue
                 logger.warning("⚠️ Warmup Probe Failed: %s", probe_error)
                 print("⚠️  Probe Failed (continuing anyway)")
@@ -252,15 +259,21 @@ class LocalBenchmarkRunner(BaseBenchmarkRunner):
                 "reasoning_contribution": 0,
             }
 
-        except Exception as e:
+        except Exception as e:  # pylint: disable=broad-exception-caught
             print(f"⚠️ Warmup Probe Failed: {e}")
             return None
 
-    def _execute_test(self, model: str, asset_path: Path, benchmark_info: Dict[str, Any]):
+    def _execute_test(
+        self, model: str, asset_path: Path, benchmark_info: Dict[str, Any]
+    ):
         """Executes the test using the dynamically loaded test class."""
-        return self.execute_test_module(model, asset_path, benchmark_info, provider="ollama")
+        return self.execute_test_module(
+            model, asset_path, benchmark_info, provider="ollama"
+        )
 
-    def _create_error_result(self, asset_path: Path, error_message: str) -> Dict[str, Any]:
+    def _create_error_result(
+        self, asset_path: Path, error_message: str
+    ) -> Dict[str, Any]:
         """Creates an error result dictionary."""
         return {
             "status": "error",
@@ -280,7 +293,9 @@ class LocalBenchmarkRunner(BaseBenchmarkRunner):
         """Compares response with golden standard."""
         asset_id = asset_data.get("metadata", {}).get("id", "unknown")
         golden_config = asset_data.get("golden_standard", {})
-        provider = golden_config.get("generate_with", [{}])[0].get("provider", "mistral")
+        provider = golden_config.get("generate_with", [{}])[0].get(
+            "provider", "mistral"
+        )
         golden_path = Path(f"golden_standards/{provider}/{asset_id}.json")
         return test_instance.compare_to_golden_standard(response, golden_path)
 
@@ -299,7 +314,9 @@ class LocalBenchmarkRunner(BaseBenchmarkRunner):
 
         try:
             start_time = time.time()
-            test_instance, exec_result = self._execute_test(model, asset_path, benchmark_info)
+            test_instance, exec_result = self._execute_test(
+                model, asset_path, benchmark_info
+            )
             if not exec_result.execution_time:
                 exec_result.execution_time = time.time() - start_time
         except (FileNotFoundError, ImportError, AttributeError) as e:
@@ -337,9 +354,16 @@ class LocalBenchmarkRunner(BaseBenchmarkRunner):
         # PHASE 2.5: LLM JUDGE INTEGRATION
         # ---------------------------------------------------------------------
         # Guaranteed Defaults
-        for key in ["llm_judge_score", "llm_judge_reasoning", "llm_judge_latency_ms", "llm_judge_provider_used", "llm_judge_model_used", "llm_judge_parse_success"]:
+        for key in [
+            "llm_judge_score",
+            "llm_judge_reasoning",
+            "llm_judge_latency_ms",
+            "llm_judge_provider_used",
+            "llm_judge_model_used",
+            "llm_judge_parse_success",
+        ]:
             result[key] = None
-            
+
         result["scoring_method"] = "regex_fallback"
 
         judge_cfg_dict = self.validator.config.get("llm_judge", {})
@@ -361,11 +385,16 @@ class LocalBenchmarkRunner(BaseBenchmarkRunner):
 
                 # 5. Local Runner: Unload the TESTED Ollama model (free VRAM)
                 import requests as _requests
+
                 try:
-                    _requests.post("http://localhost:11434/api/generate", json={"model": model, "keep_alive": 0}, timeout=5)
-                except Exception:
+                    _requests.post(
+                        "http://localhost:11434/api/generate",
+                        json={"model": model, "keep_alive": 0},
+                        timeout=5,
+                    )
+                except Exception:  # pylint: disable=broad-exception-caught
                     pass
-                
+
                 time.sleep(0.5)
 
                 # 6. JudgeRunner instantiated & .score() called
@@ -378,11 +407,15 @@ class LocalBenchmarkRunner(BaseBenchmarkRunner):
                     if asset_cfg and "llm_judge_model" in asset_cfg:
                         judge_config.module_judge_model = asset_cfg["llm_judge_model"]
                     elif "llm_judge_model" in benchmark_info:
-                        judge_config.module_judge_model = benchmark_info["llm_judge_model"]
+                        judge_config.module_judge_model = benchmark_info[
+                            "llm_judge_model"
+                        ]
 
                     runner = JudgeRunner(judge_config)
 
-                    raw_prompt = asset_data.get("prompt", asset_data.get("instruction", ""))
+                    raw_prompt = asset_data.get(
+                        "prompt", asset_data.get("instruction", "")
+                    )
                     golden = asset_data.get("golden_standard", "")
                     if isinstance(golden, dict):
                         golden = golden.get("text", "")
@@ -395,7 +428,7 @@ class LocalBenchmarkRunner(BaseBenchmarkRunner):
                         module_id=eval_module_id,
                         rubric_override=asset_data.get("scoring", {}).get("rubric"),
                         tested_model_id=model,
-                        response_time_ms=result.get("execution_time", 0) * 1000.0
+                        response_time_ms=result.get("execution_time", 0) * 1000.0,
                     )
 
                     # 7. Merge fields
@@ -405,11 +438,11 @@ class LocalBenchmarkRunner(BaseBenchmarkRunner):
                     result["llm_judge_provider_used"] = judge_res.judge_provider_used
                     result["llm_judge_model_used"] = judge_res.judge_model_used
                     result["llm_judge_parse_success"] = judge_res.parse_success
-                    
+
                     if judge_res.parse_success and judge_res.score is not None:
                         judge_scale = judge_config.scoring.scale
                         judge_pct = (judge_res.score / judge_scale) * 100
-                        
+
                         # Hybrid Score berechnen
                         regex_pct = result.get("percentage", 0.0)
                         hybrid_score = calculate_hybrid_score(
@@ -417,21 +450,22 @@ class LocalBenchmarkRunner(BaseBenchmarkRunner):
                             judge_score=judge_pct,
                             asset_config=asset_cfg,
                             module_config=benchmark_info,
-                            judge_enabled=judge_config.enabled
+                            judge_enabled=judge_config.enabled,
                         )
-                        
+
                         result["total_score"] = hybrid_score
                         result["percentage"] = hybrid_score
                         result["scoring_method"] = "hybrid"
-                        result["judge_progress_status"] = f"⚖️ Judge: {judge_res.score}/{judge_scale} (Hybrid)"
-                        
+                        result["judge_progress_status"] = (
+                            f"⚖️ Judge: {judge_res.score}/{judge_scale} (Hybrid)"
+                        )
+
                         # RECALCULATE contributions based on the new Hybrid score
                         result = calculate_score_contributions(result, asset_cfg)
                     else:
                         result["judge_progress_status"] = "❌ Judge: failed"
-                        
-                except Exception as e:
 
+                except Exception as e:  # pylint: disable=broad-exception-caught
                     logging.error(f"LLM Judge execution failed: {e}")
                     result["judge_progress_status"] = "❌ Judge: failed"
         # ---------------------------------------------------------------------
@@ -500,14 +534,16 @@ class LocalBenchmarkRunner(BaseBenchmarkRunner):
             )
 
         if getattr(self, "audit_mode", False):
-            rp_fallback = asset_data.get("prompt", asset_data.get("instruction", "No prompt found"))
+            rp_fallback = asset_data.get(
+                "prompt", asset_data.get("instruction", "No prompt found")
+            )
             rp = getattr(exec_result, "evaluated_prompt", "") or rp_fallback
-            
+
             if result.get("scoring_method") in ["llm_judge", "hybrid"]:
-                judge_provider = result.get('llm_judge_provider_used', 'unknown')
-                judge_model = result.get('llm_judge_model_used', 'unknown')
+                judge_provider = result.get("llm_judge_provider_used", "unknown")
+                judge_model = result.get("llm_judge_model_used", "unknown")
                 judge_info = f"*(Evaluated using {judge_provider} / {judge_model})*"
-                
+
                 # Fetch module-level category scores that are logged to CSV
                 cat_section = ""
                 cat_scores = score.get("category_scores", {})
@@ -538,8 +574,8 @@ class LocalBenchmarkRunner(BaseBenchmarkRunner):
                 model=result["model"],
                 asset_id=result["asset_id"],
                 prompt=rp,
-                response=response_preview, # response is called response_preview here
-                judge_response=judge_resp
+                response=response_preview,  # response is called response_preview here
+                judge_response=judge_resp,
             )
 
         return result
@@ -547,7 +583,9 @@ class LocalBenchmarkRunner(BaseBenchmarkRunner):
     def _setup_benchmark_resources(self) -> tuple[Dict[str, Dict[str, Any]], bool]:
         """Loads and validates validation/reference resources."""
         is_valid, message = self.validator.validate_golden_standard()
-        print(f"\n{'=' * 60}\n🔍 GOLDEN STANDARD VALIDIERUNG\n{'=' * 60}\n{message}\n{'=' * 60}")
+        print(
+            f"\n{'=' * 60}\n🔍 GOLDEN STANDARD VALIDIERUNG\n{'=' * 60}\n{message}\n{'=' * 60}"
+        )
 
         commercial_refs = self.load_commercial_references()
         if commercial_refs:
@@ -649,7 +687,7 @@ class LocalBenchmarkRunner(BaseBenchmarkRunner):
                 if not file_exists:
                     writer.writeheader()
                 writer.writerows(rows_to_write)
-        except Exception as e:  # pylint: disable=broad-exception-caught
+        except Exception as e:  # pylint: disable=broad-exception-caught  # pylint: disable=broad-exception-caught
             logger.error("Fehler beim Schreiben der CSV: %s", e)
 
     def _create_standard_result_from_batch(
@@ -690,13 +728,17 @@ class LocalBenchmarkRunner(BaseBenchmarkRunner):
         test_class_name = benchmark_info.get("test_class")
 
         if not test_class_name or not isinstance(test_class_name, str):
-            logger.error("Keine gültige Test-Klasse für %s definiert.", benchmark_info["name"])
+            logger.error(
+                "Keine gültige Test-Klasse für %s definiert.", benchmark_info["name"]
+            )
             return []
 
         try:
             test_class_type = load_test_class(test_file, test_class_name)
-        except Exception as e:  # pylint: disable=broad-exception-caught
-            logger.error("Failed to load batch module %s: %s", benchmark_info["name"], e)
+        except Exception as e:  # pylint: disable=broad-exception-caught  # pylint: disable=broad-exception-caught
+            logger.error(
+                "Failed to load batch module %s: %s", benchmark_info["name"], e
+            )
             return []
 
         # pylint: disable=fixme
@@ -741,7 +783,7 @@ class LocalBenchmarkRunner(BaseBenchmarkRunner):
                 RESULT_MANAGER.print_summary(report)
                 output_dir = Path("outputs/runs")
                 RESULT_MANAGER.save_json(report, output_dir)
-            except Exception as e:
+            except Exception as e:  # pylint: disable=broad-exception-caught
                 logger.error("Political compass manager failed: %s", e)
 
             # Auto-Trigger Bias Analysis (if Political Compass)
@@ -756,12 +798,16 @@ class LocalBenchmarkRunner(BaseBenchmarkRunner):
                 except subprocess.CalledProcessError as e:
                     logger.warning("Could not update bias report: %s", e)
 
-            self._update_political_compass_csv(model, report, _model_version=model_version)
+            self._update_political_compass_csv(
+                model, report, _model_version=model_version
+            )
         else:
             # Für andere Batch-Module wie CLI Benchmark
             print(f"\n📊 {benchmark_info.get('name', 'Batch Module')} Summary:")
             print(f"Modell: {model}")
-            print(f"Score: {report.get('score', report.get('total_score', 0.0)):.2f}/100")
+            print(
+                f"Score: {report.get('score', report.get('total_score', 0.0)):.2f}/100"
+            )
             print(f"Erfolgsrate: {report.get('success_rate', 'N/A')}")
             if "badge" in report:
                 print(f"Badge: {report['badge']}\n")
@@ -814,9 +860,13 @@ class LocalBenchmarkRunner(BaseBenchmarkRunner):
 
         if not assets:
             print(f"⚠️  Keine Tests für {benchmark_info['name']} gefunden/ausstehend.")
-            return results  # Return results (might contain warmup) instead of empty list
+            return (
+                results  # Return results (might contain warmup) instead of empty list
+            )
 
-        print(f"\n{'=' * 60}\n📊 Starte Benchmark: {benchmark_info['name']}\n{'=' * 60}")
+        print(
+            f"\n{'=' * 60}\n📊 Starte Benchmark: {benchmark_info['name']}\n{'=' * 60}"
+        )
         print(f"Modell: {model}\nTests: {len(assets)}\n{'=' * 60}\n")
 
         # Initialize Adaptive Pause Calculator
@@ -842,9 +892,11 @@ class LocalBenchmarkRunner(BaseBenchmarkRunner):
 
                 results.append(result)
                 self._print_result_status(i, len(assets), asset_name, result)
-            except Exception as e:  # pylint: disable=broad-exception-caught
+            except Exception as e:  # pylint: disable=broad-exception-caught  # pylint: disable=broad-exception-caught
                 print(" " * 80, end="\r")
-                print(f"   ✗ [{i}/{len(assets)}] {asset_name}: Abgebrochen - {str(e)[:50]}")
+                print(
+                    f"   ✗ [{i}/{len(assets)}] {asset_name}: Abgebrochen - {str(e)[:50]}"
+                )
 
         return results
 
@@ -863,7 +915,9 @@ class LocalBenchmarkRunner(BaseBenchmarkRunner):
 
         return self._run_standard_benchmark(model, benchmark_info, assets)
 
-    def _print_result_status(self, idx: int, total: int, name: str, result: Dict[str, Any]):
+    def _print_result_status(
+        self, idx: int, total: int, name: str, result: Dict[str, Any]
+    ):
         """Prints the result of a single test line."""
         print(" " * 80, end="\r")
 
@@ -883,7 +937,9 @@ class LocalBenchmarkRunner(BaseBenchmarkRunner):
             else f"{t_count} T"
         )
 
-        base_msg = f"   ✓ [{idx}/{total}] {name:<25}: {result['percentage']:>6.2f}% {quality} "
+        base_msg = (
+            f"   ✓ [{idx}/{total}] {name:<25}: {result['percentage']:>6.2f}% {quality} "
+        )
         judge_status = result.get("judge_progress_status", "")
         judge_str = f" | {judge_status}" if judge_status else ""
 
@@ -896,7 +952,9 @@ class LocalBenchmarkRunner(BaseBenchmarkRunner):
                 f"{base_msg}| vs Ref: {sym}{diff:.1f} {icon} | {token_str:>7} | {result['execution_time']:>5.1f}s{judge_str}"
             )
         else:
-            print(f"{base_msg}| {token_str:>7} | {result['execution_time']:>5.1f}s{judge_str}")
+            print(
+                f"{base_msg}| {token_str:>7} | {result['execution_time']:>5.1f}s{judge_str}"
+            )
 
     def save_results(self, results: List[Dict[str, Any]]) -> None:
         """Speichert Ergebnisse in CSV via ResultManager."""
@@ -915,7 +973,9 @@ class LocalBenchmarkRunner(BaseBenchmarkRunner):
             (r for r in successful if r.get("asset_id") == "system_warmup_probe"), None
         )
         # Filter probe out of scoring results
-        scoring_candidates = [r for r in successful if r.get("asset_id") != "system_warmup_probe"]
+        scoring_candidates = [
+            r for r in successful if r.get("asset_id") != "system_warmup_probe"
+        ]
 
         if not scoring_candidates and not probe_result:
             print(f"\n{'=' * 60}\n📈 BENCHMARK ZUSAMMENFASSUNG\n{'=' * 60}")
@@ -946,7 +1006,7 @@ class LocalBenchmarkRunner(BaseBenchmarkRunner):
                         print(f"   Resultat: {r['tier']}")
             elif probe_result:
                 # Only Probe ran (unlikely, but safe)
-                print(f"\n⚠️ Nur System Probe ausgeführt.")
+                print("\n⚠️ Nur System Probe ausgeführt.")
 
             return
 
@@ -954,15 +1014,21 @@ class LocalBenchmarkRunner(BaseBenchmarkRunner):
         avg_max = sum(r["max_score"] for r in scored_results) / len(scored_results)
         avg_pct = sum(r["percentage"] for r in scored_results) / len(scored_results)
         avg_time = sum(
-            r["execution_time"] for r in successful if r.get("asset_id") != "system_warmup_probe"
+            r["execution_time"]
+            for r in successful
+            if r.get("asset_id") != "system_warmup_probe"
         ) / len(scored_results)
 
         quality = self.get_quality_badge(avg_pct)
 
         print(f"\n✅ Modul abgeschlossen: {model}")
-        print(f"Tests: {len(scoring_candidates)} ({len(scoring_candidates)} ✅, {len(failed)} ❌)")
+        print(
+            f"Tests: {len(scoring_candidates)} ({len(scoring_candidates)} ✅, {len(failed)} ❌)"
+        )
         print("\n📊 Durchschnitt (erfolgreiche Tests des Moduls):")
-        print(f"   Dein Modell: {avg_score:.2f}/{avg_max:.0f} ({avg_pct:.2f}%) {quality}")
+        print(
+            f"   Dein Modell: {avg_score:.2f}/{avg_max:.0f} ({avg_pct:.2f}%) {quality}"
+        )
         print(f"   Avg Speed:   {avg_time:.1f}s (Execution)")
 
         if probe_result:
@@ -991,10 +1057,14 @@ class LocalBenchmarkRunner(BaseBenchmarkRunner):
         if avg_diff > 0:
             print(f"   🎯 Differenz: +{avg_diff:.2f} (besser!)")
             print(f"\n   {'=' * 60}")
-            print(f"   ⚠️  ACHTUNG: GOLDEN STANDARD ÜBERTROFFEN! (Ratio: {100 + avg_diff:.2f}%)")
+            print(
+                f"   ⚠️  ACHTUNG: GOLDEN STANDARD ÜBERTROFFEN! (Ratio: {100 + avg_diff:.2f}%)"
+            )
             print(f"   {'=' * 60}")
             print("   Dieses Modell übertrifft die kommerzielle Referenz.")
-            print("   Bitte Ergebnisse prüfen (und ggf. Golden Standard aktualisieren).")
+            print(
+                "   Bitte Ergebnisse prüfen (und ggf. Golden Standard aktualisieren)."
+            )
         elif avg_diff < 0:
             print(f"   📉 Differenz: {avg_diff:.2f} (Gap)")
         else:
@@ -1012,19 +1082,25 @@ class LocalBenchmarkRunner(BaseBenchmarkRunner):
             q = self.get_quality_badge(r["percentage"])
             d = r.get("score_difference", 0)
             diff_str = f" ({d:+.2f})" if d != 0 else ""
-            print(f"   {r['asset_name'][:35]:<35}: {r['percentage']:.2f}% {q}{diff_str}")
+            print(
+                f"   {r['asset_name'][:35]:<35}: {r['percentage']:.2f}% {q}{diff_str}"
+            )
 
         print("\n⚠️  Schwächste Tests:")
         for r in sorted_res[-3:]:
             q = self.get_quality_badge(r["percentage"])
             d = r.get("score_difference", 0)
             diff_str = f" ({d:+.2f})" if d != 0 else ""
-            print(f"   {r['asset_name'][:35]:<35}: {r['percentage']:.2f}% {q}{diff_str}")
+            print(
+                f"   {r['asset_name'][:35]:<35}: {r['percentage']:.2f}% {q}{diff_str}"
+            )
 
     def _print_tiered_analysis(self, results: List[Dict[str, Any]]):
         """Prints Tiered Reasoning Analysis if applicable."""
         reasoning_res = [
-            r for r in results if r.get("details", {}).get("asset_id", "").startswith("reasoning_")
+            r
+            for r in results
+            if r.get("details", {}).get("asset_id", "").startswith("reasoning_")
         ]
         if not reasoning_res:
             return
@@ -1092,7 +1168,7 @@ def main():
         runner.save_results(results)
         runner.print_summary(results, model)
 
-    except Exception as e:  # pylint: disable=broad-exception-caught
+    except Exception as e:  # pylint: disable=broad-exception-caught  # pylint: disable=broad-exception-caught
         print(f"\n❌ Fehler beim Benchmark: {e}")
         traceback.print_exc()
         sys.exit(1)
