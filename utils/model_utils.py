@@ -11,7 +11,7 @@ try:
     from utils.fingerprinting import ModelFingerprinter
 except ImportError:
     # Fallback if utils package structure is not ready
-    ModelFingerprinter: Optional[type] = None
+    ModelFingerprinter = None  # type: ignore
 
 
 T = TypeVar("T")
@@ -107,7 +107,7 @@ def get_ollama_models_info() -> list[dict[str, Any]]:
         results: list[dict[str, Any]] = []
         for m in models:
             # Access attributes safely (pydantic model vs dict)
-            name = m.model if hasattr(m, "model") else m.get("name", "")
+            name = str(m.model) if hasattr(m, "model") else str(m.get("name", ""))
             if not is_model_suitable_for_benchmark(name):
                 continue
 
