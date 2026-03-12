@@ -5,7 +5,7 @@
 ______________________________________________________________________
 
 ## 🎯 Executive Summary
-CrucibleMark v2.3.0 bringt die **Audit Mode Vollintegration** und schließt die LLM Judge Pipeline ab. 
+CrucibleMark v2.3.0 bringt die **Audit Mode Vollintegration** und schließt die LLM Judge Pipeline ab.
 Die Kernarchitektur für die automatisierte Auswertung freier Antworten wurde vollständig integriert, getestet und stabilisiert.
 Eine SSOT-basierte (Single Source of Truth) Konfiguration in `benchmark_config.yaml` garantiert saubere Testdurchläufe ohne Fallstricke.
 

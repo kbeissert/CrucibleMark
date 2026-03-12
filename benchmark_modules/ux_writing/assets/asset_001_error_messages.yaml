@@ -12,18 +12,18 @@ metadata:
 context: |
   Du bist ein Senior UX Writer für eine E-Commerce-Plattform.
   Deine Aufgabe ist es, technische Fehlermeldungen in hilfreiche, nutzerzentrierte Texte zu verwandeln.
-  
+
   Zielgruppe: Durchschnittliche Online-Käufer (kein technisches Wissen).
   Tone of Voice: Klar, lösungsorientiert, freundlich (aber nicht albern), prägnant.
 
 prompt: |
   Analysiere die folgenden Fehlermeldungen und schreibe sie um.
-  
+
   Eingabe-Fehlermeldungen:
   {input_text}
-  
+
   WICHTIG: Bitte führe zuerst die ANALYSE durch (Schritt 1) und nenne explizit die identifizierten Probleme, bevor du die Optimierung erstellst (Schritt 2).
-  
+
   Erfülle dabei strikt die folgenden Anforderungen:
   {requirements}
 
@@ -95,12 +95,12 @@ testdata:
 
 scoring:
   total_points: 100
-  
+
   error_detection:
     weight: 60
     default_required_ratio: 0.6
     description: "Erkennung und Behebung der UX-Probleme"
-    
+
     # 1. Labeled Issues (10 Punkte)
     labeled_issues:
       - issue: "Technischer Jargon entfernt"
@@ -113,7 +113,7 @@ scoring:
       - issue: "Verständliche Sprache"
         points: 10
         keywords: ["verbindung", "server", "e-mail", "anmeldung", "zahlung"]
-        
+
       - issue: "Handlungsanweisung vorhanden"
         points: 10
         keywords: ["versuchen", "prüfen", "erneut", "später", "kundenservice", "support"]
@@ -124,7 +124,7 @@ scoring:
         points: 8
         keywords: ["ungültig", "falsch", "fehlerhaft"]
         inverse_match: true
-        
+
       - issue: "UX-Prinzipien erklärt"
         points: 7
         keywords: ["klarheit", "tonalität", "hilfsbereitschaft", "kontext", "prägnanz"]
@@ -134,7 +134,7 @@ scoring:
       - issue: "Session Expiry Empathy"
         points: 8
         keywords: ["gespeichert", "sicher", "keine sorge", "daten", "warenkorb"]
-        
+
       - issue: "Payment Decline Help"
         points: 7
         keywords: ["andere zahlungsmethode", "kreditkarte prüfen", "bank kontaktieren", "alternative"]
@@ -142,21 +142,21 @@ scoring:
   solution_quality:
     weight: 30
     description: "Qualität der Texte"
-    
+
     criteria:
       - id: "SQ-001"
         name: "Markdown Tabelle vorhanden"
         points: 10
         check_method: "markdown_table_validation"
         min_rows: 6
-        
+
       - id: "SQ-002"
         name: "Freundlicher Ton"
         points: 10
         check_method: "keyword_presence"
         keywords: ["bitte", "leider", "hoppla", "ups", "entschuldigung"]
         min_keywords: 1
-        
+
       - id: "SQ-003"
         name: "Konkrete Lösungen"
         points: 10

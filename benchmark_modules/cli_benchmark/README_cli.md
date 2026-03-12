@@ -23,7 +23,7 @@
 cli001: Exact=100 Safety=100 Eff=0 -> 67%
 cli002: Exact=0 Safety=100 Eff=0 -> 33% (Partial-Commands fail!)
 cli003: Exact=100 Safety=100 Eff=100 -> 100%
-cli004: Exact=0 Safety=100 Eff=0 -> 33% 
+cli004: Exact=0 Safety=100 Eff=0 -> 33%
 cli005: Exact=0 Safety=100 Eff=30 -> 43%
 cli006: Exact=100 Safety=100 Eff=30 -> 77%
 

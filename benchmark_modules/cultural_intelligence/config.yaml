@@ -8,13 +8,13 @@ metadata:
   description: "Evaluates language proficiency and cultural fit (German context)"
   author: "CrucibleMark"
   created: "2025-01-01"
-  updated: "2026-02-02" 
+  updated: "2026-02-02"
   tags:
     - language
     - culture
     - german
     - tone
-  
+
   # Prefix Matching for Assets (IDs start with cultural_intel_, not cultural_intelligence_)
   prefix: "cultural_intel"
 
@@ -73,7 +73,7 @@ benchmarks:
     score_contribution:
       routine: 0.7
       reasoning: 0.3
-  
+
 # Internal Module Configuration
 config:
   top_p: 0.7

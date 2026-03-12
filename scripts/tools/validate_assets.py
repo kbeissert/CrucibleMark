@@ -56,7 +56,6 @@ class CLIAssetValidator:
                     "MODULE_SCHEMA_TEMPLATE.yaml",
                     "local_override.yaml",
                 ]:
-
                     continue
 
                 is_valid, error = self.validator._validate_file_internal(file_path)
@@ -99,7 +98,6 @@ class CLIAssetValidator:
             )
 
             if not module_path.exists():
-
                 print(f"⚠️  Asset-Ordner fehlt: {module_path}")
                 continue
 

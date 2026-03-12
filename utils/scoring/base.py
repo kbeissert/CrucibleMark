@@ -17,7 +17,7 @@ class BaseScorer(ABC):
         self,
         response: str,
         asset: Dict[str, Any],
-        **kwargs  # Context, previous messages, etc.
+        **kwargs,  # Context, previous messages, etc.
     ) -> Dict[str, Any]:
         """
         Scores a text response against the provided asset configuration.

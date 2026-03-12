@@ -77,9 +77,9 @@ class TestAssetLoading:
         sq_weight = asset["scoring"]["solution_quality"]["weight"]
 
         total_weight = ed_weight + sq_weight
-        assert (
-            total_weight == expected_total
-        ), f"Weights ({total_weight}) müssen der Gesamtpunktzahl ({expected_total}) entsprechen"
+        assert total_weight == expected_total, (
+            f"Weights ({total_weight}) müssen der Gesamtpunktzahl ({expected_total}) entsprechen"
+        )
 
 
 class TestScoringLogic:
@@ -142,9 +142,9 @@ Priority: high, medium, low
         score = readme_test.score_response(response)
 
         # Sollte mehrere Issues erkennen durch Keyword-Matching
-        assert (
-            score["total_score"] > 30
-        ), f"Sollte >30 Punkte bekommen, war {score['total_score']}"
+        assert score["total_score"] > 30, (
+            f"Sollte >30 Punkte bekommen, war {score['total_score']}"
+        )
         assert score["status"] == "success"
 
     def test_tiered_difficulty_scoring(self, readme_test):
@@ -173,9 +173,9 @@ class TestResponsePatterns:
         response = "Die README ist ok."
         score = readme_test.score_response(response)
 
-        assert (
-            score["total_score"] < 30
-        ), f"Minimale Response sollte < 30 bekommen, war {score['total_score']}"
+        assert score["total_score"] < 30, (
+            f"Minimale Response sollte < 30 bekommen, war {score['total_score']}"
+        )
 
     def test_comprehensive_response_gets_high_score(self, readme_test):
         """Umfassende Response bekommt hohen Score"""
@@ -185,56 +185,56 @@ class TestResponsePatterns:
 ## Identified Issues
 
 ### LEVEL 1: Critical Issues (Labeled)
-1. **Fehlende Code Syntax Highlighting** 
+1. **Fehlende Code Syntax Highlighting**
    - Problem: Code blocks lack ```python or ```bash syntax highlighting
    - Solution: Add proper language tags
-   
+
 2. **Installation zu kurz**
    - Problem: No prerequisites, no venv recommendation, no python version requirements
    - Solution: Add detailed installation with virtual environment setup
-   
+
 3. **Kein Troubleshooting/FAQ**
    - Missing: No FAQ section, no common issues, no troubleshooting guide
-   
+
 4. **Code-Beispiele ohne Kontext**
    - Problem: Examples lack output, explanation, or ergebnis demonstration
 
 ### LEVEL 2: Standard Issues
 5. **Fehlendes TOC (Table of Contents)**
    - No inhaltsverzeichnis or navigation links
-   
+
 6. **Keine Links zu Dokumentation**
    - Missing: Links to docs, repository, github issues, weitere informationen
-   
+
 7. **Konfiguration nicht dokumentiert**
    - No config beispiel, configuration example, or yaml settings shown
-   
+
 8. **Keine Versions-Info**
    - Missing: Python version, compatibility info, requires statements
-   
+
 9. **Fehlende Badges**
    - No build status, shields, pypi version, or license badge
 
 ### LEVEL 3: Advanced Issues
 10. **Fehlender Quick Start**
     - No getting started, quick start, or tldr section
-    
+
 11. **Zielgruppe nicht genannt**
     - Target audience (devops, backend developers) not specified
-    
+
 12. **Kein Contributing Guide**
     - Missing contribution, beitragen, pull request guidelines
-    
+
 13. **Schwache visuelle Hierarchie**
     - Limited use of bold, formatierung, hervorhebung
 
 ### LEVEL 4: Expert Issues
 14. **API-Dokumentation unvollständig**
     - LogParser needs more parameter, optionen, methoden documentation
-    
+
 15. **Keine Keywords/Tags**
     - Missing SEO keywords, github topics, tags for discoverability
-    
+
 16. **Kein Production Readiness Hinweis**
     - No stable, beta, experimental status indication
 
@@ -289,9 +289,9 @@ severity_levels:
         # - Code-Beispiele mit Syntax
         # - Best Practices erwähnt
         # - Priorisierung vorhanden
-        assert (
-            score["total_score"] > 50
-        ), f"Comprehensive response sollte >50 bekommen, war {score['total_score']}"
+        assert score["total_score"] > 50, (
+            f"Comprehensive response sollte >50 bekommen, war {score['total_score']}"
+        )
         assert score["status"] == "success"
 
 

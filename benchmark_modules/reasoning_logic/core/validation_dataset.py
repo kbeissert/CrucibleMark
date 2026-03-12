@@ -98,9 +98,9 @@ def validate_response_against_ground_truth(
 if __name__ == "__main__":
     # Display dataset structure
     for ds_id, ds_data in GROUND_TRUTH_DATASETS.items():
-        print(f"\n{'='*70}")
+        print(f"\n{'=' * 70}")
         print(f"Asset: {ds_data['test_name']}")
-        print(f"{'='*70}")
+        print(f"{'=' * 70}")
 
         for resp_type, resp_data in ds_data["gold_responses"].items():
             print(f"\n{resp_type.upper()}: {resp_data['expected_score']}pts")

@@ -278,7 +278,7 @@ class TerminalUI:
         total_tokens = stats.get("total_tokens", 0)
         total_time = stats.get("execution_time", 0)
 
-        token_str = f"{total_tokens/1000:.1f}k" if total_tokens > 0 else "0"
+        token_str = f"{total_tokens / 1000:.1f}k" if total_tokens > 0 else "0"
 
         print("\n" + "=" * 80)
         print("BENCHMARK TEST - ERGEBNIS")

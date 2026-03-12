@@ -41,9 +41,9 @@ def test_scoring_weights(asset_path):
     sq_weight = scoring["solution_quality"]["weight"]
     fmt_weight = scoring["formatting"]["weight"]
 
-    assert (
-        ed_weight + sq_weight + fmt_weight == 100
-    ), f"Weights do not sum to 100 in {asset_path.name}"
+    assert ed_weight + sq_weight + fmt_weight == 100, (
+        f"Weights do not sum to 100 in {asset_path.name}"
+    )
 
 
 @pytest.mark.parametrize("asset_path", get_assets())
@@ -64,6 +64,6 @@ def test_testdata_consistency(asset_path):
 
     # Check if all scoring issues are present in testdata
     missing = scoring_issue_names - testdata_issue_names
-    assert (
-        not missing
-    ), f"Issues in scoring but not in testdata in {asset_path.name}: {missing}"
+    assert not missing, (
+        f"Issues in scoring but not in testdata in {asset_path.name}: {missing}"
+    )

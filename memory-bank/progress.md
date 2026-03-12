@@ -1,6 +1,9 @@
 # Progress
 
 ## Completed
+- [DONE] Globale Code-Bereinigung und Typisierung (Mypy, Pylint, vscode/settings.json Formatierung)
+- [DONE] Behebung von Pylance Type-Checker Konflikten in Dictionary-Verarbeitungen (dict vs. .copy)
+- [DONE] Einführung von pandas-stubs für sauberes Types-Checking
 - [DONE] Modulare, gewichtete Hybrid-Scoring Architecture inkl. `scoring.fallback_weights` und `scoring_weights` pro Asset eingerichtet.
 - [DONE] Fix Audit Logger to display LLM Judge Reasoning in hybrid mode.
 - [DONE] Fix benchmark_info mapping to propagate scoring dictionary in run_benchmark.py.
@@ -33,6 +36,8 @@
 - [DONE] **Judge-Score als Primär-Score (Total Score)**: Runtime Fallback von Anthropic auf Ollama falls kein API Key vorhanden, `total_score` und `percentage` Übernahme, `scoring_method` Flag im CSV.
 
 ## Ongoing
+- [ ] LLM Judge Umbau auf natives strukturiertes JSON-Output
+- [ ] Laufender Umbau auf JSON-basierte Prompts (Phase 3 Parser-Refactoring)
 - [DONE] Systematische Modul-Routing Bugs und Namespace-Kollisionen in importlib/sys.modules behoben.
 - [DONE] First real benchmark run (single module, single model) erfolgreich abgeschlossen.
 - [DONE] Cache-Integrität nach Routing-Fix validiert.

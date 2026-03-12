@@ -42,7 +42,7 @@ aggregation_report = {
     },
     "previous_display": "46/37",
     "fixed_display": "46/46",
-    
+
     "aggregation_rules": {
         "method": "last-value-wins",
         "implementation": "df.drop_duplicates(subset=[model, version, asset_id], keep='last')",

@@ -97,7 +97,7 @@ temperature (0.0-2.0):
 
 num_predict (int):
     Maximale Anzahl generierter Tokens
-    
+
 top_k (int):
     Anzahl der Top-Token-Kandidaten beim Sampling
     - Niedriger = konsistenter
@@ -107,7 +107,7 @@ repeat_penalty (float):
     Bestraft Wiederholungen
     - 1.0 = keine Penalty
     - >1.0 = weniger Wiederholungen
-    
+
 seed (int):
     Reproduzierbarer Seed für identische Outputs
 """

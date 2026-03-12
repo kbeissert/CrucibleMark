@@ -28,43 +28,43 @@ context: |
   Du bist ein Technical Writer für ein SaaS-Produkt (Projektmanagement-Tool).
   Das Team released alle 2 Wochen eine neue Version, aber die Release Notes
   sind nur eine Copy-Paste der Git-Commit-Messages - unverständlich für Endnutzer.
-  
+
   **Produkt:** TaskFlow (Projektmanagement SaaS)
-  **Zielgruppe Release Notes:** 
+  **Zielgruppe Release Notes:**
     - End-User (Projektmanager, keine Tech-Kenntnisse)
     - Admins (Setup, Security-Awareness)
     - Developers (API-Changes, Breaking Changes)
-  
+
   **Problem:** Git-Commits sind:
     - Zu technisch ("refactor: extract auth middleware")
     - Keine User-Benefits erklärt ("fix: update regex pattern")
     - Nicht kategorisiert (Features, Bugfixes, Breaking Changes)
     - Nicht priorisiert (Wichtige Fixes vs. Minor Tweaks)
-  
+
   **Release:** v2.3.0 (15 Commits aus letzten 2 Wochen)
 
 prompt: |
   Analysiere die folgende Git-Commit-History und transformiere sie in
   **user-facing Release Notes nach Keep a Changelog Standard**.
-  
+
   **Wichtig:** Identifiziere ALLE Probleme und transformiere in nutzerfreundliche Sprache.
-  
+
   ## Kategorien:
   1. **Struktur & Kategorisierung** - Added/Changed/Fixed/Security, Semantic Versioning, Summary
   2. **User-Centricity** - User-Benefits statt Tech-Details, verständliche Sprache
   3. **Vollständigkeit & Priorisierung** - Breaking Changes, Security, Migration Guides
   4. **Format & Wartbarkeit** - Keep a Changelog Standard, Links, Contributors
-  
+
   ---
-  
+
   ## Git-Commit-History (v2.3.0):
-  
-  
-  
+
+
+
   ---
-  
+
   ## Deine Aufgabe
-  
+
   1. **Identifiziere alle Probleme** in den 4 Kategorien
   2. **Bestimme Semantic Version:**
      - MAJOR (Breaking Changes) → v3.0.0
@@ -81,7 +81,7 @@ prompt: |
      - "feat(api): add webhook support" → "You can now receive real-time notifications via webhooks"
      - "fix: resolve XSS vulnerability" → "Fixed a security issue in comments"
   5. **Erstelle vollständige Release Notes** mit Migration Guides, Links, Segmentierung
-  
+
   WICHTIG: Bitte liste zuerst explizit alle gefundenen Probleme auf (Schritt 1), bevor du die Release Notes erstellst.
 
 # ============================================================
@@ -90,14 +90,14 @@ prompt: |
 
 scoring:
   total_points: 130
-  
+
   # ------------------------------------------------------------
   # 1. Error Detection (100 Points)
   # ------------------------------------------------------------
   error_detection:
     weight: 100
     description: "Erkennung fehlender/falscher Setup-Anleitung (Tiered)"
-    
+
     # LEVEL 1: Labeled Issues (Easy - 25.0 Points)
     labeled_issues:
       - issue: "Keine Kategorisierung der Commits"
@@ -109,7 +109,7 @@ scoring:
         min_keywords: 2
         keywords: ["kategorien", "categories", "## added", "## changed", "## fixed", "## security", "gruppiert"]
         changelog_principle: "Keep a Changelog Structure"
-      
+
       - issue: "Technische Sprache statt User-Benefits"
         category: "user_centricity"
         severity: "high"
@@ -131,7 +131,7 @@ scoring:
         min_keywords: 2
         keywords: ["breaking change", "🚨", "breaking", "major version", "nicht kompatibel", "migration"]
         changelog_principle: "Breaking Changes First"
-      
+
       - issue: "Security Fix nicht priorisiert"
         category: "prioritization"
         severity: "critical"
@@ -141,7 +141,7 @@ scoring:
         min_keywords: 2
         keywords: ["security", "cve", "vulnerability", "sicherheit", "xss", "🔒"]
         changelog_principle: "Security Transparency"
-      
+
       - issue: "Refactoring-Commits für Endnutzer irrelevant"
         category: "user_centricity"
         severity: "medium"
@@ -151,7 +151,7 @@ scoring:
         min_keywords: 2
         keywords: ["refactor", "internal", "chore", "test", "nicht relevant", "ausblenden"]
         changelog_principle: "Signal vs Noise"
-      
+
       - issue: "Keine Semantic Versioning Begründung"
         category: "structure"
         severity: "high"
@@ -161,7 +161,7 @@ scoring:
         min_keywords: 2
         keywords: ["semantic versioning", "v3.0.0", "major", "minor", "patch", "semver"]
         changelog_principle: "Version Semantics"
-      
+
       - issue: "Fehlende Release-Zusammenfassung"
         category: "structure"
         severity: "medium"
@@ -183,7 +183,7 @@ scoring:
         min_keywords: 2
         keywords: ["migration", "upgrade guide", "how to migrate", "umstellung", "anleitung"]
         changelog_principle: "User Enablement"
-      
+
       - issue: "Performance-Verbesserungen ohne Kontext"
         category: "user_centricity"
         severity: "medium"
@@ -193,7 +193,7 @@ scoring:
         min_keywords: 2
         keywords: ["performance", "context", "impact", "wer profitiert", "use case"]
         changelog_principle: "Context Matters"
-      
+
       - issue: "Keine Links zu Issues/PRs"
         category: "traceability"
         severity: "medium"
@@ -203,7 +203,7 @@ scoring:
         min_keywords: 2
         keywords: ["links", "#234", "#189", "#312", "github", "issue"]
         changelog_principle: "Traceability"
-      
+
       - issue: "Enterprise-Feature nicht als solches gekennzeichnet"
         category: "segmentation"
         severity: "medium"
@@ -213,7 +213,7 @@ scoring:
         min_keywords: 2
         keywords: ["enterprise", "plan", "tier", "pricing", "premium", "💼"]
         changelog_principle: "Feature Availability"
-      
+
       - issue: "Deprecation ohne Timeline"
         category: "completeness"
         severity: "low"
@@ -235,7 +235,7 @@ scoring:
         min_keywords: 2
         keywords: ["for developers", "for admins", "api changes", "zielgruppe", "segmentierung"]
         changelog_principle: "Audience Segmentation"
-      
+
       - issue: "Keine Contributors-Credits"
         category: "community"
         severity: "low"
@@ -245,7 +245,7 @@ scoring:
         min_keywords: 2
         keywords: ["contributors", "credits", "thanks", "community", "@username"]
         changelog_principle: "Community Recognition"
-      
+
       - issue: "Keine Rollback-Informationen"
         category: "completeness"
         severity: "medium"
@@ -255,7 +255,7 @@ scoring:
         min_keywords: 2
         keywords: ["rollback", "downgrade", "revert", "zurück", "rückgängig"]
         changelog_principle: "Risk Mitigation"
-      
+
       - issue: "Fehlende Known Issues Section"
         category: "transparency"
         severity: "low"
@@ -265,7 +265,7 @@ scoring:
         min_keywords: 2
         keywords: ["known issues", "limitations", "bekannte probleme", "einschränkungen"]
         changelog_principle: "Transparency"
-      
+
       - issue: "Nicht maschinenlesbar (kein strukturiertes Format)"
         category: "maintainability"
         severity: "low"
@@ -282,7 +282,7 @@ scoring:
   solution_quality:
     weight: 30
     description: "Qualität der verbesserten Release Notes"
-    
+
     criteria:
       - name: "Keep a Changelog Structure"
         points: 10
@@ -290,14 +290,14 @@ scoring:
         keywords: ["added", "changed", "fixed", "security", "breaking"]
         min_keywords: 2
         description: "Are commits grouped by Added, Changed, Fixed, Security?"
-      
+
       - name: "User-Centric Language"
         points: 10
         check_method: "keyword_presence"
         keywords: ["user", "benefit", "you can now", "easier"]
         min_keywords: 2
         description: "Are technical details translated into user benefits?"
-      
+
       - name: "Semantic Versioning"
         points: 10
         check_method: "keyword_presence"

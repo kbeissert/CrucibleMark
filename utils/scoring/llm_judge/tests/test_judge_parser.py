@@ -20,10 +20,7 @@ class TestParseHappyPath:
     """Standard well-formed judge output."""
 
     def test_standard_score_and_reasoning(self):
-        raw = (
-            "REASONING: The response covers all key points with minor gaps.\n"
-            "SCORE: 4"
-        )
+        raw = "REASONING: The response covers all key points with minor gaps.\nSCORE: 4"
         result = parse(raw)
         assert result.parse_success is True
         assert result.score == 4

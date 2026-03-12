@@ -9,20 +9,20 @@ metadata:
     The error is not a syntax error, but a control flow logic error.
 
 prompt: |
-  Review the following Python function. 
+  Review the following Python function.
   The developer reports that it works correctly when all items are valid, but the application "freezes" or "hangs" when there is invalid data in the list.
-  
+
   Identify the logical cause of the freeze and correct the code.
-  
+
   ```python
   def process_batch(items):
       """Processing batch of items. Returns True if all processed."""
       current_index = 0
       processed_count = 0
-      
+
       while current_index < len(items):
           item = items[current_index]
-          
+
           if item.is_valid():
               save_to_database(item)
               processed_count += 1
@@ -30,7 +30,7 @@ prompt: |
           else:
               log_error(f"Invalid item at {current_index}")
               # We want to skip invalid items and continue
-              
+
       return True
   ```
 

@@ -91,9 +91,7 @@ class CompletenessChecker:
         Calculates Levenshtein distance between two strings.
         """
         if len(seq1) < len(seq2):
-            return CompletenessChecker._levenshtein(
-                seq2, seq1
-            )  # pylint: disable=arguments-out-of-order
+            return CompletenessChecker._levenshtein(seq2, seq1)  # pylint: disable=arguments-out-of-order
 
         if len(seq2) == 0:
             return len(seq1)

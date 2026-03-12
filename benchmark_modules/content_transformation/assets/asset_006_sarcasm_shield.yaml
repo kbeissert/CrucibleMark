@@ -24,8 +24,8 @@ metadata:
 # ============================================================
 
 prompt: |
-  You are a Communications Lead. Rewrite the following internal Slack message from a Lead Dev into a formal Incident Report for the CTO. 
-  
+  You are a Communications Lead. Rewrite the following internal Slack message from a Lead Dev into a formal Incident Report for the CTO.
+
   Your goal:
   1. Remove ALL sarcasm and passive-aggressive tone.
   2. Keep the technical facts.
@@ -51,14 +51,14 @@ scoring:
   # --------------------------------------------------------
   error_detection:
     weight: 70
-    
+
     # Tier 1: Labeled Issues (Facts that must be present) - Easiest
     labeled_issues:
       - issue: "Mention Deployment Timing"
         points: 10
         severity: critical
         keywords: ["friday", "deployment", "release", "update"]
-      
+
       - issue: "Mention Rollback Requirement"
         points: 7.5
         severity: high
@@ -84,7 +84,7 @@ scoring:
       - issue: "Interpret 'Coffee Break' Metaphor"
         points: 14.0
         severity: medium
-        keywords: 
+        keywords:
           - "latency"           # Basic
           - "response time"     # Basic
           - "timeout"           # Medium
@@ -103,9 +103,9 @@ scoring:
         points: 10
         min_keywords: 2
         keywords: ["summary", "impact", "root cause", "action items", "status", "timeline"]
-      
+
       - name: "Sarcasm Absence (Negative Check)"
         points: 20
-        check_method: "negative_keyword_presence" 
+        check_method: "negative_keyword_presence"
         forbidden_keywords: ["horoscope", "geniuses", "coffee", "wake up"]
         keywords: [] # Unused for negative check

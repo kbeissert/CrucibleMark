@@ -61,9 +61,9 @@ def test_classification() -> None:
 
     for rci, expected_class in test_cases:
         classification = classify_model(rci)
-        assert (
-            classification == expected_class
-        ), f"Expected {expected_class}, got {classification}"
+        assert classification == expected_class, (
+            f"Expected {expected_class}, got {classification}"
+        )
     print("✅ Classification test passed")
 
 

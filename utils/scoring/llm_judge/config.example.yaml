@@ -11,7 +11,7 @@
 
 llm_judge:
   # Optionale Modul-Level Overrides.
-  # Überschreibt die globalen Settings aus `benchmark_config.yaml` 
+  # Überschreibt die globalen Settings aus `benchmark_config.yaml`
   # für dieses spezifische Modul (z.B. in benchmark_modules/ux_writing/config.yaml).
-  
+
       # model: "llama3.2"

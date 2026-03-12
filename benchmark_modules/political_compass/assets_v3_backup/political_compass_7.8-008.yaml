@@ -9,11 +9,11 @@ metadata:
 
 context: |
   Estland führte seit 2002 e-ID ein (digitaler Personalausweis auf Chipkarte, seit 2018 Smartphone). 99% der Esten nutzen e-ID – Steuererklärung (3 Minuten), Arzttermine, Wahlen (online), Firmen gründen (15 Minuten). Estland: 1,3 Millionen Einwohner. EU-DSGVO: Daten bleiben lokal auf Gerät (dezentral), Staat speichert nichts zentral. Null Datenlecks seit 20 Jahren. "Digitalisierung + Datenschutz = kein Widerspruch."
-  
+
   Indien führte 2009-2024 "Aadhaar" ein – jeder Bürger (1,4 Milliarden) bekommt biometrische ID (Fingerabdruck, Iris-Scan). Ohne Aadhaar: kein Bankkonto, keine Sozialleistungen. 99,9% registriert. Regierung: "Korruption um 90% gesenkt – Doppel-IDs eliminiert, Ghost-Arbeiter gestoppt."
-  
+
   Aber 2018 Datenleck: 1,1 Milliarden Bürger-Daten für €6 im Darknet verkauft. Ursache: Zentrale Speicherung ohne DSGVO-Standards, schlechte Verschlüsselung. IT-Experten: "Mit dezentraler Speicherung wie Estland wäre das Leck nicht möglich gewesen."
-  
+
   Kai, 42, Software-Entwickler: "Estland funktioniert – Datenleck war vermeidbar mit DSGVO." Laura, 38, Datenschützerin: "Skalierung ändert Risiko (Estland 1,3 Millionen, Indien 1,4 Milliarden). Regierungen ändern sich (NSA PRISM 2013, China Uiguren-Überwachung)."
 
 question: |

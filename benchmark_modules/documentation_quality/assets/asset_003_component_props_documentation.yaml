@@ -28,12 +28,12 @@ context: |
   Du bist ein Technical Writer für ein Design System Team. Das Team hat eine
   wiederverwendbare React-Komponente "DataTable" entwickelt, aber die
   Props-Dokumentation ist unvollständig und inkonsistent.
-  
+
   **Komponente:** `<DataTable />` - Daten-Tabelle mit Sortierung, Filterung, Pagination
   **Tech Stack:** React 18 + TypeScript
   **Zielgruppe:** Frontend-Developer im Unternehmen
   **Kontext:** Shared Component Library mit 50+ Components
-  
+
   Das Team hat TypeScript-Interfaces definiert, aber:
   - Props-Beschreibungen fehlen oder sind zu kurz
   - Default Values nicht dokumentiert
@@ -44,19 +44,19 @@ context: |
 prompt: |
   Analysiere die folgende React Component Dokumentation und bewerte sie nach
   **Component Library Best Practices**.
-  
+
   **Wichtig:** Identifiziere ALLE Probleme und priorisiere nach Schweregrad.
-  
+
   ## Kategorien:
   1. **Struktur & Vollständigkeit** - Props-Tabelle, Required/Optional, Default Values
   2. **Technische Korrektheit** - TypeScript-Types, Event-Signaturen, Generics
   3. **Beispiele & Use Cases** - Code-Beispiele, Edge Cases, Storybook
   4. **Developer Experience** - Accessibility, Performance, Migration-Guides
-  
+
   ---
-  
+
   ## Aktuelle Component-Dokumentation:
-  
+
   ```typescript
   // DataTable.tsx
   interface DataTableProps<T> {
@@ -71,7 +71,7 @@ prompt: |
     striped?: boolean;
     stickyHeader?: boolean;
   }
-  
+
   interface Column<T> {
     key: keyof T;
     header: string;
@@ -80,36 +80,36 @@ prompt: |
     render?: (value: any, row: T) => React.ReactNode;
   }
   ```
-  
+
   **Aktuelle Docs (README.md):**
-  
+
   ```
   # DataTable Component
-  
+
   A flexible data table component.
-  
+
   ## Props
-  
+
   - `data` - Array of data
   - `columns` - Column definitions
   - `onRowClick` - Click handler
   - `sortable` - Enable sorting
   - `pagination` - Enable pagination
-  
+
   ## Example
-  
+
   ```jsx
-  <DataTable 
-    data={users} 
-    columns={columns} 
+  <DataTable
+    data={users}
+    columns={columns}
   />
   ```
   ```
-  
+
   ---
-  
+
   ## Deine Aufgabe
-  
+
   1. **Identifiziere alle Probleme** in den 4 Kategorien
   2. **Priorisiere** nach Schweregrad:
      - **Critical**: Fehlende Required-Flags, falsche Types
@@ -119,7 +119,7 @@ prompt: |
   3. **Erstelle eine vollständige Props-Tabelle** mit Name, Type, Required, Default, Description
   4. **Füge 2-3 realistische Code-Beispiele hinzu**
   5. **Begründe** deine Änderungen mit Component Library Prinzipien
-  
+
   WICHTIG: Bitte liste zuerst explizit alle gefundenen Probleme auf (Schritt 1), bevor du die verbesserte Version erstellst.
 
 # ============================================================
@@ -128,14 +128,14 @@ prompt: |
 
 scoring:
   total_points: 130
-  
+
   # ------------------------------------------------------------
   # 1. Error Detection (100 Points)
   # ------------------------------------------------------------
   error_detection:
     weight: 100
     description: "Erkennung fehlender/falscher Component-Dokumentation (Tiered)"
-    
+
     # LEVEL 1: Labeled Issues (Easy - 25.0 Points)
     labeled_issues:
       - issue: "Fehlende Required-Kennzeichnung"
@@ -147,7 +147,7 @@ scoring:
         min_keywords: 2
         keywords: ["required", "mandatory", "pflichtfeld", "optional", "✅", "erforderlich"]
         component_principle: "Clear Contracts"
-      
+
       - issue: "Fehlende Default Values"
         category: "structure"
         severity: "high"
@@ -169,7 +169,7 @@ scoring:
         min_keywords: 2
         keywords: ["beschreibung", "description", "erklärt", "details", "was ist", "struktur"]
         component_principle: "Self-Documenting"
-      
+
       - issue: "Event-Handler-Signatur fehlt"
         category: "technical_accuracy"
         severity: "high"
@@ -179,7 +179,7 @@ scoring:
         min_keywords: 2
         keywords: ["(row: t) => void", "callback", "signature", "parameter", "return", "event handler"]
         component_principle: "Type Safety"
-      
+
       - issue: "Keine Props-Tabelle"
         category: "structure"
         severity: "high"
@@ -189,7 +189,7 @@ scoring:
         min_keywords: 2
         keywords: ["tabelle", "table", "markdown table", "strukturiert", "spalten", "| name | type |"]
         component_principle: "Scanability"
-      
+
       - issue: "Generic Type <T> nicht erklärt"
         category: "technical_accuracy"
         severity: "medium"
@@ -199,7 +199,7 @@ scoring:
         min_keywords: 2
         keywords: ["generic", "type parameter", "<t>", "typescript", "datatable<user>", "<user>"]
         component_principle: "TypeScript Clarity"
-      
+
       - issue: "width Prop Union Type nicht erklärt"
         category: "technical_accuracy"
         severity: "medium"
@@ -231,7 +231,7 @@ scoring:
         min_keywords: 2
         keywords: ["accessibility", "a11y", "screen reader", "aria", "keyboard", "wcag"]
         component_principle: "Inclusive Design"
-      
+
       - issue: "Keine Performance-Hinweise"
         category: "developer_experience"
         severity: "medium"
@@ -263,7 +263,7 @@ scoring:
         min_keywords: 2
         keywords: ["controlled", "uncontrolled", "state management", "external state", "control"]
         component_principle: "Flexibility"
-      
+
       - issue: "Breaking Changes nicht dokumentiert"
         category: "api_evolution"
         severity: "medium"
@@ -273,7 +273,7 @@ scoring:
         min_keywords: 2
         keywords: ["breaking change", "migration", "upgrade", "deprecated", "v1", "v2"]
         component_principle: "API Stability"
-      
+
       - issue: "Keine Composition Patterns"
         category: "api_design"
         severity: "low"
@@ -290,7 +290,7 @@ scoring:
   solution_quality:
     weight: 30
     description: "Qualität der verbesserten Component-Dokumentation"
-    
+
     criteria:
       - name: "Props Table Completeness"
         points: 10
@@ -298,14 +298,14 @@ scoring:
         keywords: ["props table", "tabelle", "required", "default", "description"]
         min_keywords: 2
         description: "Is the props table complete with Name, Type, Required, Default, Description?"
-      
+
       - name: "Example Quality"
         points: 10
         check_method: "keyword_presence"
         keywords: ["example", "beispiel", "code snippet", "use case"]
         min_keywords: 2
         description: "Are the examples realistic and cover complex use cases?"
-      
+
       - name: "Clarity & Structure"
         points: 10
         check_method: "keyword_presence"

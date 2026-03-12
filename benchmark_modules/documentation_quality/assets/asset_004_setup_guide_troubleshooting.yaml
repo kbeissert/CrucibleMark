@@ -28,17 +28,17 @@ context: |
   Du bist ein Technical Writer für ein Web-Development-Team. Das Team hat eine
   neue Microservices-Architektur mit Docker Compose aufgesetzt, aber die
   Setup-Anleitung für neue Developer ist unvollständig und führt zu Support-Anfragen.
-  
+
   **Projekt:** E-Commerce-Platform (React Frontend + Node.js Backend + PostgreSQL)
-  **Tech Stack:** 
+  **Tech Stack:**
     - Frontend: Vite 5 + React 18 + TypeScript
     - Backend: Node.js 20 + Express + Prisma ORM
     - Database: PostgreSQL 16
     - Infrastruktur: Docker Compose
-  
+
   **Zielgruppe:** Junior bis Mid-Level Frontend/Backend Developers
   **Problem:** Setup-Anleitung ist zu kurz, fehlt Troubleshooting, keine Prerequisites
-  
+
   Häufige Support-Tickets:
   - "Port 5432 already in use" (lokales Postgres läuft)
   - "Vite Hot Reload funktioniert nicht in Docker"
@@ -48,61 +48,61 @@ context: |
 
 prompt: |
   Analysiere die folgende Setup-Anleitung und bewerte sie nach **Developer Onboarding Best Practices**.
-  
+
   **Wichtig:** Identifiziere ALLE Probleme und priorisiere nach Schweregrad.
-  
+
   ## Kategorien:
   1. **Struktur & Vollständigkeit** - Prerequisites, nummerierte Schritte, Erfolgs-Checks
   2. **Technische Korrektheit** - Copy-pastable Commands, ENV-Vars, Ports, Versionen
   3. **Troubleshooting** - Häufige Fehler, Lösungen, Error Messages
   4. **Developer Experience** - Quick Start, OS-Hinweise, nächste Schritte
-  
+
   ---
-  
+
   ## Aktuelle Setup-Anleitung (SETUP.md):
-  
+
   ```
   # Setup
-  
+
   ## Installation
-  
+
   Clone the repo:
   ```
   git clone https://github.com/company/ecommerce-platform.git
   cd ecommerce-platform
   ```
-  
+
   Install dependencies:
   ```
   npm install
   ```
-  
+
   Start the app:
   ```
   docker-compose up
   ```
-  
+
   Open http://localhost:3000
-  
+
   ## Configuration
-  
+
   Create a .env file with:
   ```
   DATABASE_URL=postgresql://user:password@localhost:5432/ecommerce
   ```
-  
+
   Run migrations:
   ```
   npm run migrate
   ```
-  
+
   Done!
   ```
-  
+
   ---
-  
+
   ## Deine Aufgabe
-  
+
   1. **Identifiziere alle Probleme** in den 4 Kategorien
   2. **Priorisiere** nach Schweregrad:
      - **Critical**: Fehlende Prerequisites, Commands funktionieren nicht
@@ -115,7 +115,7 @@ prompt: |
      - Troubleshooting-Section mit 5+ häufigen Fehlern
      - OS-spezifische Hinweise (Mac M1/M2, Linux, Windows WSL)
   4. **Begründe** deine Änderungen mit Onboarding-Prinzipien
-  
+
   WICHTIG: Bitte liste zuerst explizit alle gefundenen Probleme auf (Schritt 1), bevor du die verbesserte Version erstellst.
 
 # ============================================================
@@ -124,14 +124,14 @@ prompt: |
 
 scoring:
   total_points: 130
-  
+
   # ------------------------------------------------------------
   # 1. Error Detection (100 Points)
   # ------------------------------------------------------------
   error_detection:
     weight: 100
     description: "Erkennung fehlender/falscher Setup-Anleitung (Tiered)"
-    
+
     # LEVEL 1: Labeled Issues (Easy - 25.0 Points)
     labeled_issues:
       - issue: "Fehlende Prerequisites"
@@ -143,7 +143,7 @@ scoring:
         min_keywords: 2
         keywords: ["prerequisites", "voraussetzungen", "requirements", "benötigt", "node", "docker", "git"]
         setup_principle: "Prerequisites First"
-      
+
       - issue: "Keine Versions-Anforderungen"
         category: "technical_accuracy"
         severity: "high"
@@ -165,7 +165,7 @@ scoring:
         min_keywords: 2
         keywords: ["reihenfolge", "order", "sequence", "erst", "vorher", "nachher", "bevor"]
         setup_principle: "Logical Flow"
-      
+
       - issue: "Keine .env.example Datei"
         category: "configuration"
         severity: "high"
@@ -175,7 +175,7 @@ scoring:
         min_keywords: 2
         keywords: [".env.example", "env example", "template", "umgebungsvariablen", "environment"]
         setup_principle: "Configuration Templates"
-      
+
       - issue: "Keine Erfolgs-Validierung"
         category: "structure"
         severity: "medium"
@@ -185,7 +185,7 @@ scoring:
         min_keywords: 2
         keywords: ["validierung", "check", "success", "expected output", "sollte", "funktioniert"]
         setup_principle: "Feedback Loops"
-      
+
       - issue: "Port-Conflicts nicht erwähnt"
         category: "troubleshooting"
         severity: "high"
@@ -195,7 +195,7 @@ scoring:
         min_keywords: 2
         keywords: ["port conflict", "port already in use", "address already in use", "5432", "3000", "eaddrinuse"]
         setup_principle: "Common Errors"
-      
+
       - issue: "Migrations ohne Seed-Daten"
         category: "usability"
         severity: "medium"
@@ -217,7 +217,7 @@ scoring:
         min_keywords: 2
         keywords: ["hmr", "hot reload", "vite", "docker", "volumes", "watchpack", "polling", "usepolling"]
         setup_principle: "Dev Experience"
-      
+
       - issue: "M1/M2 Mac-spezifische Probleme"
         category: "platform_compatibility"
         severity: "medium"
@@ -227,7 +227,7 @@ scoring:
         min_keywords: 2
         keywords: ["m1", "m2", "arm", "silicon", "rosetta", "platform", "architecture", "mac"]
         setup_principle: "Cross-Platform"
-      
+
       - issue: "Keine Health-Check-Endpoints"
         category: "technical_accuracy"
         severity: "medium"
@@ -237,7 +237,7 @@ scoring:
         min_keywords: 2
         keywords: ["health check", "readiness", "liveness", "/health", "status endpoint", "healthcheck"]
         setup_principle: "Observability"
-      
+
       - issue: "CORS-Probleme nicht dokumentiert"
         category: "troubleshooting"
         severity: "medium"
@@ -247,7 +247,7 @@ scoring:
         min_keywords: 2
         keywords: ["cors", "cross-origin", "allowed origins", "cors error", "preflight"]
         setup_principle: "Integration Testing"
-      
+
       - issue: "Keine Cleanup-Anleitung"
         category: "usability"
         severity: "low"
@@ -269,7 +269,7 @@ scoring:
         min_keywords: 2
         keywords: ["bare metal", "native", "local setup", "without docker", "alternative", "ohne docker"]
         setup_principle: "Flexibility"
-      
+
       - issue: "Keine Performance-Optimierung für Docker"
         category: "performance"
         severity: "low"
@@ -279,7 +279,7 @@ scoring:
         min_keywords: 2
         keywords: ["performance", "mutagen", "nfs", "volumes", "docker slow", "optimize", "langsam"]
         setup_principle: "Performance"
-      
+
       - issue: "Keine IDE-Integration (Debugger)"
         category: "developer_experience"
         severity: "low"
@@ -289,7 +289,7 @@ scoring:
         min_keywords: 2
         keywords: ["debugger", "vscode", "ide", "breakpoint", "launch.json", "debug"]
         setup_principle: "Tooling"
-      
+
       - issue: "Keine CI/CD-Erwähnung"
         category: "consistency"
         severity: "low"
@@ -306,7 +306,7 @@ scoring:
   solution_quality:
     weight: 30
     description: "Qualität der verbesserten Setup-Anleitung"
-    
+
     criteria:
       - name: "Prerequisites & Structure"
         points: 10
@@ -314,14 +314,14 @@ scoring:
         keywords: ["prerequisites", "structure", "numbered", "steps"]
         min_keywords: 2
         description: "Are prerequisites clear and steps numbered logically?"
-      
+
       - name: "Troubleshooting Section"
         points: 10
         check_method: "keyword_presence"
         keywords: ["troubleshooting", "errors", "solutions", "faq"]
         min_keywords: 2
         description: "Is there a comprehensive troubleshooting section?"
-      
+
       - name: "Cross-Platform Support"
         points: 10
         check_method: "keyword_presence"

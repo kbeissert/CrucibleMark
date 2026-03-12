@@ -25,8 +25,8 @@ metadata:
 
 context: |
   Du bist ein Senior Frontend Developer mit WCAG 2.2 Zertifizierung.
-  Ein Junior Developer hat eine Produkt-Karten-Komponente für ein E-Commerce-Portal 
-  entwickelt. Der Code enthält Kommentare des Developers, der sich bei einigen 
+  Ein Junior Developer hat eine Produkt-Karten-Komponente für ein E-Commerce-Portal
+  entwickelt. Der Code enthält Kommentare des Developers, der sich bei einigen
   Stellen unsicher war.
 
   Die Komponente ist derzeit in Production und verursacht Support-Anfragen von:
@@ -50,13 +50,13 @@ prompt: |
   ```html
   <div class="product-card" onclick="window.location='/product/123'">
     <div class="badge">NEU</div>
-    
+
     <!-- TODO: Add alt text later -->
     <img src="/images/shoe-red-nike-air.jpg" width="300">
-    
+
     <div class="product-info">
       <h3>Nike Air Max</h3>
-      
+
       <!-- Note: Design wants this grey (#888), check if readable against white -->
       <div class="price" style="color: #888; font-size: 14px;">
         49.99€
@@ -64,20 +64,20 @@ prompt: |
           89.99€
         </span>
       </div>
-      
+
       <div style="color: #999; background: #ddd; padding: 4px; margin: 8px 0;">
         ⚠️ Nur noch 3 verfügbar!
       </div>
-      
+
       <div class="rating">
         <img src="/stars-4.png" alt="4 stars">
       </div>
     </div>
-    
+
     <button style="background: lightblue; color: white; border: none; padding: 10px;">
       In den Warenkorb
     </button>
-    
+
     <a href="#details" style="color: blue;">Mehr</a>
   </div>
   ```
@@ -91,7 +91,7 @@ prompt: |
 
   ### Anforderungen an die Antwort:
   1. Erstelle eine **Markdown-Tabelle** mit allen gefundenen Issues.
-  2. Gib für jedes Issue folgende Spalten an: 
+  2. Gib für jedes Issue folgende Spalten an:
      - **WCAG-Kriterium** (z.B. 1.1.1)
      - **Beschreibung**
      - **Schweregrad**
@@ -108,7 +108,7 @@ test_data:
       severity: "critical"
       type: "labeled"
       explanation: "Durch TODO markiert."
-    
+
     - issue: "Farbkontrast (Text)"
       severity: "high"
       type: "labeled"
@@ -168,17 +168,17 @@ test_data:
 
 scoring:
   total_points: 100
-  
+
   error_detection:
     weight: 60
     description: "Erkennung der WCAG-Issues (Gestaffelt)"
-    
+
     # 1. Labeled Issues (10 Punkte)
     labeled_issues:
       - issue: "Fehlender alt-Text"
         points: 4
         keywords: ["alt", "alt-attribut", "bildbeschreibung", "alternative text", "bild", "image", "beschriftung"]
-      
+
       - issue: "Farbkontrast (Text)"
         points: 3
         keywords: ["kontrast", "contrast", "farbe", "grau", "lesbarkeit", "1.4.3", "hintergrund", "schrift"]
@@ -192,11 +192,11 @@ scoring:
       - issue: "Keyboard Trap (div onclick)"
         points: 7
         keywords: ["onclick", "div", "button", "tastatur", "keyboard", "interaktiv", "maus", "klickbar", "element", "semantisch"]
-        
+
       - issue: "Link-Text 'Mehr'"
         points: 7
         keywords: ["link", "text", "aussagekräftig", "kontext", "mehr", "screen reader", "beschriftung", "ziel"]
-        
+
       - issue: "Farbkontrast (Button)"
         points: 6
         keywords: ["button", "lightblue", "hellblau", "weiß", "kontrast", "lesbarkeit", "hintergrund"]
@@ -206,11 +206,11 @@ scoring:
       - issue: "Strikethrough Semantics"
         points: 5
         keywords: ["durchgestrichen", "visuell", "screen reader", "versteckt", "sr-only", "alt-preis"]
-        
+
       - issue: "Emoji Accessibility"
         points: 5
         keywords: ["emoji", "role", "img", "aria-label", "warnung"]
-        
+
       - issue: "Semantik (Article/List)"
         points: 5
         keywords: ["article", "liste", "li", "ul", "semantik", "struktur"]
@@ -220,7 +220,7 @@ scoring:
       - issue: "Status Message (Live Region)"
         points: 8
         keywords: ["status", "role", "live region", "aria-live", "dynamisch", "verfügbarkeit"]
-        
+
       - issue: "Touch Target Size"
         points: 7
         keywords: ["touch", "target", "größe", "klickfläche", "24px", "44px", "mobil"]
@@ -228,7 +228,7 @@ scoring:
   solution_quality:
     weight: 30
     description: "Qualität der Fixes"
-    
+
     criteria:
       - id: "SQ-001"
         name: "Semantisches HTML (Button)"
@@ -236,14 +236,14 @@ scoring:
         check_method: "code_validation"
         required_elements: ["<button"]
         min_code_blocks: 1
-        
+
       - id: "SQ-002"
         name: "Visually Hidden Text (Preis)"
         points: 10
         check_method: "keyword_presence"
         keywords: ["sr-only", "visually-hidden", "clip", "absolute"]
         min_keywords: 1
-        
+
       - id: "SQ-003"
         name: "ARIA-Label für Emoji/Link"
         points: 10

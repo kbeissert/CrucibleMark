@@ -8,10 +8,10 @@ metadata:
 prompt: |
   I am debugging a multi-threaded application that hangs.
   State dump:
-  
+
   - Thread A is holding 'Resource_X' (Mutex) and is waiting to acquire 'Resource_Y'.
   - Thread B is holding 'Resource_Y' (Mutex) and is waiting to acquire 'Resource_X'.
-  
+
   Explain what is happening here, why the application is hanging, and suggest a strategy to fix it.
 
 expected_output:

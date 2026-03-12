@@ -177,8 +177,7 @@ def score_metacog_002(response: str) -> tuple[float, dict[str, Any], list[str]]:
     if has_premise_challenge and "blue" in answer:
         breakdown["premise_challenge"] = METACOG_002_PREMISE
         details.append(
-            "✅ Premise Challenge: Explicitly identified false premise "
-            "about green sky."
+            "✅ Premise Challenge: Explicitly identified false premise about green sky."
         )
     else:
         breakdown["premise_challenge"] = 0.0

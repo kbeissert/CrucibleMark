@@ -12,18 +12,18 @@ metadata:
 context: |
   Du bist ein UX Writer mit Accessibility-Expertise.
   Deine Aufgabe ist es, Texte für Screen Reader (ARIA-Labels) zu schreiben, die blinden Nutzern eine gleichwertige Experience bieten.
-  
+
   Zielgruppe: Screen-Reader-Nutzer (NVDA, JAWS, VoiceOver).
   Kontext: Ein komplexes Enterprise-Dashboard mit vielen Icons und interaktiven Elementen.
 
 prompt: |
   Optimiere die ARIA-Labels für die folgenden UI-Elemente.
-  
+
   Eingabe-Elemente:
   {input_text}
-  
+
   WICHTIG: Bitte führe zuerst die ANALYSE durch (Schritt 1) und nenne explizit die identifizierten Probleme, bevor du die Optimierung erstellst (Schritt 2).
-  
+
   Erfülle dabei strikt die folgenden Anforderungen:
   {requirements}
 
@@ -93,18 +93,18 @@ testdata:
 
 scoring:
   total_points: 100
-  
+
   error_detection:
     weight: 60
     default_required_ratio: 1.0
     description: "Erkennung und Optimierung der ARIA-Labels"
-    
+
     # 1. Labeled Issues (10 Punkte)
     labeled_issues:
       - issue: "Icon-Button hat Label"
         points: 5
         keywords: ["aria-label", "löschen"]
-        
+
       - issue: "Keine Redundanz"
         points: 5
         keywords: ["button", "schaltfläche", "knopf"]
@@ -115,7 +115,7 @@ scoring:
       - issue: "Filter ist sprechend"
         points: 10
         keywords: ["status filtern", "nach status", "filter status"]
-        
+
       - issue: "Suche ist spezifisch"
         points: 10
         keywords: ["global", "gesamte", "portal", "dashboard"]
@@ -131,7 +131,7 @@ scoring:
       - issue: "Toggle State (aria-pressed)"
         points: 8
         keywords: ["aria-pressed", "zustand", "aktiviert", "umschalten"]
-        
+
       - issue: "Live Region (aria-live)"
         points: 7
         keywords: ["aria-live", "polite", "atomic", "updates"]
@@ -139,21 +139,21 @@ scoring:
   solution_quality:
     weight: 30
     description: "Qualität der Labels"
-    
+
     criteria:
       - id: "SQ-001"
         name: "Markdown Tabelle vorhanden"
         points: 10
         check_method: "markdown_table_validation"
         min_rows: 6
-        
+
       - id: "SQ-002"
         name: "Funktionale Beschreibung"
         points: 10
         check_method: "keyword_presence"
         keywords: ["löschen", "filtern", "suchen", "umschalten", "nächste"]
         min_keywords: 3
-        
+
       - id: "SQ-003"
         name: "ARIA-Attribute korrekt"
         points: 10

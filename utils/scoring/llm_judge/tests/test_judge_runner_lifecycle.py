@@ -103,16 +103,19 @@ class TestOllamaUnloadLifecycle:
         call_order: list[str] = []
 
         # Patch OllamaProvider.unload_model to track calls
-        with patch(
-            "utils.scoring.llm_judge.judge_runner.JudgeRunner._maybe_unload_tested_model",
-            wraps=lambda self, *a, **kw: call_order.append("unload"),
-        ) as mock_unload, patch.object(
-            mock_provider,
-            "complete",
-            side_effect=lambda *a, **kw: (
-                call_order.append("complete"),
-                _make_provider_response(provider_name="ollama"),
-            )[1],
+        with (
+            patch(
+                "utils.scoring.llm_judge.judge_runner.JudgeRunner._maybe_unload_tested_model",
+                wraps=lambda self, *a, **kw: call_order.append("unload"),
+            ) as mock_unload,
+            patch.object(
+                mock_provider,
+                "complete",
+                side_effect=lambda *a, **kw: (
+                    call_order.append("complete"),
+                    _make_provider_response(provider_name="ollama"),
+                )[1],
+            ),
         ):
             runner.score(
                 task_prompt="task",
@@ -125,9 +128,9 @@ class TestOllamaUnloadLifecycle:
 
         assert "unload" in call_order, "Unload should have been called"
         assert "complete" in call_order, "Complete should have been called"
-        assert call_order.index("unload") < call_order.index(
-            "complete"
-        ), "unload must be called BEFORE complete"
+        assert call_order.index("unload") < call_order.index("complete"), (
+            "unload must be called BEFORE complete"
+        )
 
     def test_unload_not_called_when_cloud_tested_model(self):
         """When tested model is cloud (not Ollama), no unload should happen."""

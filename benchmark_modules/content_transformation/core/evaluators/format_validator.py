@@ -63,7 +63,7 @@ class FormatValidator:
         for i, tweet in enumerate(tweets):
             if len(tweet) > max_chars:
                 issues.append(
-                    f"Tweet {i+1} length {len(tweet)} exceeds limit of {max_chars}"
+                    f"Tweet {i + 1} length {len(tweet)} exceeds limit of {max_chars}"
                 )
 
         return len(issues) == 0, issues
@@ -153,8 +153,7 @@ class FormatValidator:
             headline = h1_match.group(1).strip()
             if len(headline) > max_headline_len:
                 issues.append(
-                    f"Main headline exceeds {max_headline_len} "
-                    f"chars ({len(headline)})"
+                    f"Main headline exceeds {max_headline_len} chars ({len(headline)})"
                 )
 
         return len(issues) == 0, issues

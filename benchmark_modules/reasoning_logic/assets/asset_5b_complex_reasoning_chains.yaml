@@ -8,12 +8,12 @@ metadata:
 prompt: |
   We are investigating a performance issue. Users report the dashboard is loading very slowly.
   Here is the data we have collected:
-  
+
   1. The API logs show that the `/dashboard` endpoint returns a response in 20ms on average.
   2. The Database CPU usage is consistently at 99-100% during these periods.
   3. The frontend application shows a spinner for 5-10 seconds before rendering.
   4. The network latency between client and server is normal.
-  
+
   What is the most likely root cause of the slow user experience? Explain your reasoning and propose a solution.
 
 expected_output:

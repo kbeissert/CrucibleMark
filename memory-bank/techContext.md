@@ -45,3 +45,5 @@ Alle Einträge sind auskommentiert – nur aktiv setzen, wenn Abweichung vom Glo
 Globale Felder gehören NICHT in diese Datei – sie wurden bewusst entfernt.
 
 Priorität bei Konflikt: Modul-Override > Global (benchmark_config.yaml) > Code-Defaults
+
+- **Code Quality / Typisierung**: `pandas-stubs` wird jetzt verbindlich als Dependency für Typechecking verwendet. In `.vscode/settings.json` ist die Trailing-Whitespace und Newline-Bereinigung (`files.trimTrailingWhitespace` / `files.insertFinalNewline`) verbindlich auf `true` gesetzt.

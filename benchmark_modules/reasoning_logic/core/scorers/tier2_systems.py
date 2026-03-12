@@ -80,13 +80,13 @@ def score_5b_complex(response: str) -> tuple[float, dict[str, Any], list[str]]:
         "✅ Root Cause: Identified Versioning/Deprecation inconsistency.",
     )
     details.append(
-        "❌ Root Cause: " "Missed the core versioning/deprecation strategy issue.",
+        "❌ Root Cause: Missed the core versioning/deprecation strategy issue.",
     )
 
     if signals["has_cross_domain"]:
         error_pts += 20.0
         details.append(
-            "✅ Cross-Domain: " "Identified need for alignment between Code/Docs/UX.",
+            "✅ Cross-Domain: Identified need for alignment between Code/Docs/UX.",
         )
     else:
         details.append(
@@ -108,7 +108,7 @@ def score_5b_complex(response: str) -> tuple[float, dict[str, Any], list[str]]:
         if signals["has_prioritization"]:
             solution_pts += SYSTEMS_PRIORITIZATION_BONUS
             details.append(
-                "✅ Prioritization: " "Structured plan with clear steps/priorities.",
+                "✅ Prioritization: Structured plan with clear steps/priorities.",
             )
         else:
             details.append(
@@ -119,7 +119,7 @@ def score_5b_complex(response: str) -> tuple[float, dict[str, Any], list[str]]:
     elif "fix" in resp_lower or "korrigieren" in resp_lower:
         solution_pts = 10.0
         details.append(
-            "⚠️ Solution: " "Proposed fixes but missed the 'Unified Policy' aspect.",
+            "⚠️ Solution: Proposed fixes but missed the 'Unified Policy' aspect.",
         )
     else:
         details.append("❌ Solution: No clear integrated solution found.")

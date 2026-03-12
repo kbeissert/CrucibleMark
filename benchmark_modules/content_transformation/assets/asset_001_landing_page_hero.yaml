@@ -20,45 +20,45 @@ metadata:
 context: |
   Du bist ein erfahrener Conversion Copywriter für B2B SaaS-Produkte.
   Dein Kunde ist "TaskFlow Pro", ein neues Projektmanagement-Tool, das sich an Projektmanager und Team-Leads richtet.
-  
+
   Das Problem: Die aktuelle Landing Page ist viel zu technisch und feature-lastig. Sie spricht nicht über den Nutzen (Benefits) für den Kunden, sondern listet nur Funktionen auf. Es fehlt an Emotion, Dringlichkeit und einer klaren Handlungsaufforderung (CTA).
-  
+
   Deine Aufgabe ist es, die trockene Feature-Liste in eine überzeugende, benefit-orientierte Hero-Section zu verwandeln.
 
 prompt: |
   Du bist ein Conversion-Experte. Deine Aufgabe besteht aus zwei Teilen:
-  
+
   1. ANALYSE: Analysiere kurz, warum die aktuelle Feature-Liste nicht funktioniert. Benenne fehlende Elemente (nutze Begriffe wie "Benefit", "Headline", "Zielgruppe", "Trust").
   2. TRANSFORMATION: Erstelle basierend auf deiner Analyse die optimierte Hero-Section.
-  
+
   Integere 'Risk Reversal' (z.B. Garantie/No-Risk) und nutze emotionale 'Power Words' nur, wenn es in den Kontext passt.
-  
+
   **Input (Feature-Liste):**
-  
+
   WICHTIG: Bitte führe zuerst die ANALYSE durch (Schritt 1) und nenne explizit die fehlenden Elemente, bevor du die TRANSFORMATION erstellst.
-  
+
   - "Unlimited Projects"
   - "Real-time Collaboration"
   - "Advanced Analytics Dashboard"
   - "99.9% Uptime SLA"
   - "SOC 2 Type II Certified"
-  
+
   **Anforderungen an die Hero-Section:**
   1.  **Headline:** Muss den Hauptnutzen (Benefit) emotional und klar kommunizieren. Keine reinen Feature-Nennungen!
   2.  **Subheadline:** Erklärt, wie das Produkt das Versprechen der Headline einlöst und für wen es ist.
   3.  **Call-to-Action (CTA):** Ein starker, handlungsorientierter Button-Text (kein "Submit").
   4.  **Social Proof / Trust:** Integriere Elemente, die Vertrauen schaffen (basierend auf den Features wie SLA/Security).
   5.  **Tonalität:** Professionell, aber motivierend und direkt.
-  
+
   Erstelle den Text für die Hero-Section.
 
 scoring:
   total_points: 100
   semantic_threshold: 0.50
-  
+
   error_detection:
     weight: 40
-    
+
     labeled_issues:
       - issue: "Keine Benefit-Formulierung"
         category: Benefit-Orientation
@@ -76,7 +76,7 @@ scoring:
           - ergebnis
           - outcome
         transformation_principle: "Feature → Benefit"
-        
+
       - issue: "Fehlende Headline"
         category: Format
         severity: critical
@@ -351,7 +351,7 @@ scoring:
           - fokus
           - team
           - zusammenarbeit
-          
+
       - name: "Hero-Structure"
         points: 20
         check_method: keyword_presence
@@ -365,7 +365,7 @@ scoring:
           - section
           - header
           - layout
-          
+
       - name: "Engagement"
         points: 20
         check_method: keyword_presence

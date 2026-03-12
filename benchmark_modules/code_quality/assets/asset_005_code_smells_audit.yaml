@@ -39,7 +39,7 @@ prompt: |
   **JavaScript-Code:**
   ```javascript
   // User Management Component (LEGACY CODE)
-  
+
   class UserManager {
     constructor() {
       // TODO: This class does too much (DB, Email, Logging, Cache...)
@@ -48,12 +48,12 @@ prompt: |
       this.logService = new LogService();
       this.cache = new Cache();
     }
-    
+
     async createUser(data) {
       // ISSUE: Magic Numbers
       if (data.age < 18) return { error: "Too young" };
       if (data.username.length < 3) return { error: "Username too short" };
-      
+
       // Deeply nested conditionals (Arrow Code)
       if (data.role === "admin") {
         if (data.permissions.includes("manage_users")) {
@@ -64,28 +64,28 @@ prompt: |
           }
         }
       }
-      
+
       // Duplicated Code
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
       if (!emailRegex.test(data.email)) return { error: "Invalid email" };
-      
+
       if (data.altEmail && !emailRegex.test(data.altEmail)) return { error: "Invalid alt email" };
-      
+
       // Long Parameter List
       await this.validateUser(
-        data.username, data.email, data.firstName, data.lastName, 
+        data.username, data.email, data.firstName, data.lastName,
         data.age, data.role, data.permissions, data.preferences
       );
-      
+
       // Dead Code
       if (false) { console.log("Debug"); }
-      
+
       return { status: "created" };
     }
-    
+
     async validateUser(username, email, age) { /*...*/ }
     async sendNotification(username, email, age) { /*...*/ }
-    
+
     getPermissions(role) {
       switch(role) {
         case 'admin': return ['all'];
@@ -118,17 +118,17 @@ prompt: |
 
 scoring:
   total_points: 100
-  
+
   error_detection:
     weight: 60
     description: "Erkennung der Code Smells (Gestaffelt)"
-    
+
     # 1. Labeled Issues (10 Punkte)
     labeled_issues:
       - issue: "God Object"
         points: 5
         keywords: ["god object", "large class", "single responsibility", "gott-objekt", "zu viele aufgaben"]
-      
+
       - issue: "Magic Numbers"
         points: 5
         keywords: ["magic number", "hardcoded value", "magische zahl", "fest codiert"]
@@ -138,11 +138,11 @@ scoring:
       - issue: "Nested Conditionals"
         points: 5
         keywords: ["nested conditionals", "verschachtelte if", "arrow code", "deeply nested", "guard clause"]
-        
+
       - issue: "Duplicated Code"
         points: 5
         keywords: ["duplicated code", "doppelter code", "code duplication", "wiederholung", "redundant code"]
-        
+
       - issue: "Long Parameter List"
         points: 5
         keywords: ["long parameter list", "zu viele parameter", "many arguments", "parameter object", "zu viele argumente"]
@@ -152,11 +152,11 @@ scoring:
       - issue: "Data Clumps"
         points: 5
         keywords: ["data clump", "datenklumpen", "group of variables", "zusammengehörige daten"]
-        
+
       - issue: "Switch Statement"
         points: 5
         keywords: ["switch statement", "polymorphism", "polymorphie", "replace switch", "fallunterscheidung"]
-        
+
       - issue: "Dead Code"
         points: 5
         keywords: ["dead code", "toter code", "unreachable code", "unused code", "unerreichbar"]
@@ -166,7 +166,7 @@ scoring:
       - issue: "Feature Envy"
         points: 10
         keywords: ["feature envy", "funktionsneid", "move method", "belongs to another class", "fremde daten nutzen"]
-        
+
       - issue: "Primitive Obsession"
         points: 10
         keywords: ["primitive obsession", "value object", "primitive types", "eigene klasse", "typisierung"]
@@ -174,7 +174,7 @@ scoring:
   solution_quality:
     weight: 30
     description: "Qualität der Refactorings"
-    
+
     criteria:
       - id: "SQ-001"
         name: "Guard Clauses vorgeschlagen"
@@ -182,14 +182,14 @@ scoring:
         check_method: "keyword_presence"
         keywords: ["guard clause", "early return", "invert if", "return early", "vorzeitig beenden"]
         min_keywords: 1
-        
+
       - id: "SQ-002"
         name: "Parameter Object Pattern"
         points: 10
         check_method: "keyword_presence"
         keywords: ["parameter object", "objekt für parameter", "struct", "dto", "transfer object", "zusammenfassen"]
         min_keywords: 1
-        
+
       - id: "SQ-003"
         name: "Named Constants"
         points: 10

@@ -15,7 +15,7 @@ anthropic:
     requests_per_minute: 1000
     tokens_per_minute: 40000
     concurrent_requests: 5
-  
+
   # Active Default
   active_tier: "tier_2"
 

@@ -12,18 +12,18 @@ metadata:
 context: |
   Du bist ein Senior UX Writer für eine Projektmanagement-SaaS (ähnlich Asana/Trello).
   Das Feature "Automatische Workflows" ist komplex (Trigger, Conditions, Actions), soll aber für nicht-technische Nutzer einfach wirken.
-  
+
   Zielgruppe: Projektmanager ohne Programmierkenntnisse.
   Ziel: Nutzer sollen verstehen, dass sie Routineaufgaben automatisieren können, ohne sich von "Wenn-Dann-Logik" erschlagen zu fühlen.
 
 prompt: |
   Optimiere den folgenden 3-Schritt-Onboarding-Flow.
-  
+
   Eingabe-Flow:
   {input_text}
-  
+
   WICHTIG: Bitte führe zuerst die ANALYSE durch (Schritt 1) und nenne explizit die identifizierten Probleme, bevor du die Optimierung erstellst (Schritt 2).
-  
+
   Erfülle dabei strikt die folgenden Anforderungen:
   {requirements}
 
@@ -95,19 +95,19 @@ testdata:
 
 scoring:
   total_points: 100
-  
+
   error_detection:
     weight: 60
     default_required_ratio: 0.5
     description: "Erkennung und Optimierung des Onboarding-Flows"
-    
+
     # 1. Labeled Issues (10 Punkte)
     labeled_issues:
       - issue: "Step 1 gekürzt"
         points: 5
         keywords: ["willkommen", "komponenten", "definieren", "liste"]
         inverse_match: true
-        
+
       - issue: "Kein Tech-Jargon"
         points: 5
         keywords: ["trigger", "condition"]
@@ -118,7 +118,7 @@ scoring:
       - issue: "Alltagssprache genutzt"
         points: 10
         keywords: ["wenn", "sobald", "automatisch", "passiert", "regel"]
-        
+
       - issue: "Step 2 vereinfacht"
         points: 10
         keywords: ["nur", "falls", "wichtig", "filter"]
@@ -134,7 +134,7 @@ scoring:
       - issue: "Endowed Progress Effect"
         points: 8
         keywords: ["fortschritt", "fast", "geschafft", "gleich", "fertig", "progress"]
-        
+
       - issue: "Positive Reinforcement"
         points: 7
         keywords: ["super", "klasse", "bereit", "los", "startklar"]
@@ -142,21 +142,21 @@ scoring:
   solution_quality:
     weight: 30
     description: "Qualität der Texte"
-    
+
     criteria:
       - id: "SQ-001"
         name: "Markdown Tabelle vorhanden"
         points: 10
         check_method: "markdown_table_validation"
         min_rows: 3
-        
+
       - id: "SQ-002"
         name: "Kurze Schritte (< 40 Wörter)"
         points: 10
         check_method: "keyword_presence"
         keywords: ["wenn", "dann", "fertig"]
         min_keywords: 1
-        
+
       - id: "SQ-003"
         name: "Progressive Disclosure"
         points: 10

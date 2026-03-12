@@ -66,8 +66,7 @@ def score_metacog_005(response: str) -> tuple[float, dict[str, Any], list[str]]:
         else:
             breakdown["calculation_correctness"] = 0.0
             details.append(
-                f"❌ Calculation: Wrong percentage ({percentage}%). "
-                "Expected 48-51%.",
+                f"❌ Calculation: Wrong percentage ({percentage}%). Expected 48-51%.",
             )
     else:
         breakdown["calculation_correctness"] = 0.0

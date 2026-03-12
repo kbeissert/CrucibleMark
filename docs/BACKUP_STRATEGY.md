@@ -219,7 +219,7 @@ df_sorted = df.sort_values('timestamp', ascending=False)
 
 # Behalte nur neueste Zeile pro (Model, Asset)
 df_latest = df_sorted.drop_duplicates(
-    subset=['model', 'asset_id'], 
+    subset=['model', 'asset_id'],
     keep='first'
 )
 

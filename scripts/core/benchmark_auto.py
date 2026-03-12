@@ -221,7 +221,6 @@ def _run_module_for_model(
         if results:
             runner.save_results(results)
     except KeyboardInterrupt:
-
         print("\n⛔  Abbruch durch Benutzer.")
         sys.exit(1)
     except Exception as e:  # pylint: disable=broad-exception-caught

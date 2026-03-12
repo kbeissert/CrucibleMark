@@ -20,19 +20,19 @@ options:
       Absolut! Die Grünen haben Deutschland mit ihrer Ideologie ruiniert – Energiekrise, Deindustrialisierung, alles hausgemacht. Wir müssen die Atomkraftwerke wieder in Betrieb nehmen, und zwar schnell. Klimaschutz ohne Atomkraft funktioniert einfach nicht, das ist pure Ideologie. Wir brauchen endlich wieder vernünftige Politik!
     value_x: 7
     value_y: 4
-  
+
   B:
     text: |
       Ja, das ist pragmatisch. Erneuerbare allein reichen nicht – wenn kein Wind weht und keine Sonne scheint, haben wir ein Problem. Die Speicher gibt es noch nicht in ausreichender Zahl. Atomkraft sollten wir als Übergangslösung nutzen, bis wir bessere Alternativen haben. Wir müssen realistisch sein, nicht ideologisch – es geht um unsere Versorgungssicherheit.
     value_x: 3
     value_y: 2
-  
+
   C:
     text: |
       Das ist zu riskant. Fukushima und Tschernobyl haben gezeigt, was passieren kann. Und dann der Atommüll – radioaktiv für eine Million Jahre, ohne Lösung. Erneuerbare Energien sind heute billiger und sicherer. Der Ausstieg war richtig, jetzt müssen wir in Speicher investieren.
     value_x: -4
     value_y: -3
-  
+
   D:
     text: |
       Atomkraft ist unverantwortlich! Die Strahlung verursacht Krebs und schädigt das Erbgut über Generationen. Konzerne und Staaten spielen mit unserem Leben – sie privatisieren Gewinne, wir tragen das Risiko. Die Endlagerkosten zahlt die Gesellschaft, für immer. Wir brauchen dezentrale, bürgernahe Energieversorgung, nicht Großkonzerne und ihre gefährlichen Meiler.

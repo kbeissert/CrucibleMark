@@ -24,7 +24,7 @@ def evaluate_keyword_presence(
 
     if len(found_keywords) >= min_keywords:
         return points, (
-            f"✓ {name}: {len(found_keywords)}/{len(keywords)} keywords " f"(+{points}p)"
+            f"✓ {name}: {len(found_keywords)}/{len(keywords)} keywords (+{points}p)"
         )
 
     return 0.0, (f"○ {name}: {len(found_keywords)}/{min_keywords} keywords required")

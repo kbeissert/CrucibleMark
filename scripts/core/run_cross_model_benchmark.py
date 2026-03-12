@@ -309,7 +309,7 @@ def main():
 
     for i, (m_id, m_name, p_type) in enumerate(all_models):
         console.rule(
-            f"[yellow]🚀 Starte Lauf {i+1}/{len(all_models)}: {m_name}[/yellow]"
+            f"[yellow]🚀 Starte Lauf {i + 1}/{len(all_models)}: {m_name}[/yellow]"
         )
 
         success = run_benchmark(selected_module, m_id, p_type)

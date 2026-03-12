@@ -81,12 +81,12 @@ CTA: Sign up now!
 
     print(f"  ✓ Formal text score: {formality_formal} (expected: > 0.5)")
     print(f"  ✓ Casual text score: {formality_casual} (expected: < 0.5)")
-    assert (
-        formality_formal > 0.5
-    ), f"Formal text should score > 0.5, got {formality_formal}"
-    assert (
-        formality_casual < 0.5
-    ), f"Casual text should score < 0.5, got {formality_casual}"
+    assert formality_formal > 0.5, (
+        f"Formal text should score > 0.5, got {formality_formal}"
+    )
+    assert formality_casual < 0.5, (
+        f"Casual text should score < 0.5, got {formality_casual}"
+    )
 
     # Test 5: Professionalism
     print("\n[Test 5] ToneEvaluator.measure_professionalism()")
@@ -99,9 +99,9 @@ CTA: Sign up now!
     print(f"  ✓ Professional text: {prof_score} (expected: > 0.5)")
     print(f"  ✓ Unprofessional text: {unprof_score} (expected: < 0.3)")
     assert prof_score > 0.5, f"Professional text should score > 0.5, got {prof_score}"
-    assert (
-        unprof_score < 0.3
-    ), f"Unprofessional text should score < 0.3, got {unprof_score}"
+    assert unprof_score < 0.3, (
+        f"Unprofessional text should score < 0.3, got {unprof_score}"
+    )
 
     # Test 6: Spoken Style Detection
     print("\n[Test 6] ToneEvaluator.detect_spoken_style()")

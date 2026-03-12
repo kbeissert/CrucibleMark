@@ -110,7 +110,7 @@ def test_hybrid_metrics_evidence():
 
     # Test response with clear self-correction
     test_thought = """
-    Wait, I think I made a mistake. Initially I thought 17-9=8, 
+    Wait, I think I made a mistake. Initially I thought 17-9=8,
     but actually, "all but 9" means that 9 remain alive.
     """
 
@@ -163,7 +163,7 @@ def test_non_gameable_scoring():
 
     # Response with keywords but no real correction
     keyword_stuffed = """
-    Wait, actually, let me reconsider. But I was wrong. 
+    Wait, actually, let me reconsider. But I was wrong.
     Actually, thinking about it again, but actually that's not right.
     Answer: 8 (wrong answer)
     """
@@ -192,9 +192,9 @@ def test_non_gameable_scoring():
             f"\n❌ FAIL: Scoring can be gamed! Got {result['score']:.0f} with {len(result['layers_matched'])} layers"
         )
 
-    assert (
-        success
-    ), f"Scoring gamed! Got {result['score']:.0f} points with layers: {result['layers_matched']}"
+    assert success, (
+        f"Scoring gamed! Got {result['score']:.0f} points with layers: {result['layers_matched']}"
+    )
 
 
 def test_consistency_across_runs():
@@ -219,7 +219,7 @@ def test_consistency_across_runs():
     test_response = """<thought>
     The key phrase here is "all but 9" which means that 9 survive.
     </thought>
-    
+
     Answer: 9"""
 
     evaluator = ReasoningEvaluator(asset)
@@ -234,7 +234,7 @@ def test_consistency_across_runs():
     print(f"\nRuns: {scores}")
     print(f"Mean: {sum(scores) / len(scores):.1f}")
     print(
-        f"Std Dev: {(sum((x - sum(scores)/len(scores))**2 for x in scores) / len(scores)) ** 0.5:.2f}"
+        f"Std Dev: {(sum((x - sum(scores) / len(scores)) ** 2 for x in scores) / len(scores)) ** 0.5:.2f}"
     )
 
     # All scores should be identical

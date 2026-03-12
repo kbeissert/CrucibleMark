@@ -77,7 +77,7 @@ providers:
         - id: "mistral-medium-latest"
           name: "Mistral Medium"
           description: "Ausgeglichenes Preis/Leistung"
-    
+
     anthropic:
       name: "Anthropic"
       api_type: "anthropic"
@@ -108,7 +108,7 @@ providers:
         - id: "claude-3-haiku-20240307"
           name: "Claude 3 Haiku"
           description: "Legacy: Efficiency Model (2024)"
-    
+
     openai:
       name: "OpenAI"
       api_type: "openai"
@@ -176,7 +176,7 @@ providers:
         - id: "grok-2-latest"
           name: "Grok 2 (Legacy)"
           description: "Vorherige Generation (2025)"
-  
+
   local:
     # Globale Konfiguration für alle lokalen Ollama-Modelle
     # Hier definierst du Hardware-Limits deines Systems
@@ -186,7 +186,7 @@ providers:
       # - 16384 (16k) : Empfohlen für 16GB RAM
       # - 32768 (32k) : Empfohlen für 24GB+ RAM (und Reasoning Models)
       context_window: 32768
-      
+
       # Default Generation Profile
       default_temperature: 0.1
 

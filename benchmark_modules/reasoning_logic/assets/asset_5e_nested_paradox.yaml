@@ -11,17 +11,17 @@ metadata:
 
 prompt: |
   **System Architecture Constraint Analysis**
-  
+
   You are designing a distributed transaction manager for a microservices platform.
   The system must satisfy these three requirements:
-  
+
   **Requirement A:** "All async operations must complete before transaction commit"
   **Requirement B:** "Transaction commit triggers async cleanup jobs"
   **Requirement C:** "Cleanup jobs must not block the commit process"
-  
+
   **Task:**
   Design a transaction manager that satisfies ALL three requirements simultaneously.
-  
+
   provide:
   1. **Feasibility Assessment** (0-10 scale, where 0=impossible, 10=trivial)
   2. **Your Architecture** (design OR explanation why impossible)

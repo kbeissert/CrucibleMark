@@ -10,9 +10,11 @@ from schemas.result import BenchmarkResult
 @pytest.fixture
 def mock_local_runner():
     # We create a LocalBenchmarkRunner with a mocked validator
-    with patch("utils.base_runner.ConfigValidator") as MockValidator, patch(
-        "utils.base_runner.LLMClient"
-    ), patch("utils.base_runner.ResultManager"):
+    with (
+        patch("utils.base_runner.ConfigValidator") as MockValidator,
+        patch("utils.base_runner.LLMClient"),
+        patch("utils.base_runner.ResultManager"),
+    ):
         runner = LocalBenchmarkRunner("test")
         # We inject a mock config
         runner.validator = MagicMock()
@@ -21,20 +23,23 @@ def mock_local_runner():
 
 @pytest.fixture
 def mock_dependencies():
-    with patch("scripts.core.run_local_benchmark.load_asset_yaml") as mock_load, patch(
-        "scripts.core.run_local_benchmark.LocalBenchmarkRunner._execute_test"
-    ) as mock_exec, patch(
-        "scripts.core.run_local_benchmark.LocalBenchmarkRunner._compare_golden"
-    ) as mock_cmp, patch(
-        "scripts.core.run_local_benchmark.LocalBenchmarkRunner.build_base_result"
-    ) as mock_base, patch(
-        "scripts.core.run_local_benchmark.calculate_score_contributions"
-    ) as mock_calc, patch(
-        "requests.post"
-    ) as mock_req, patch(
-        "time.sleep"
-    ) as mock_sleep:
-
+    with (
+        patch("scripts.core.run_local_benchmark.load_asset_yaml") as mock_load,
+        patch(
+            "scripts.core.run_local_benchmark.LocalBenchmarkRunner._execute_test"
+        ) as mock_exec,
+        patch(
+            "scripts.core.run_local_benchmark.LocalBenchmarkRunner._compare_golden"
+        ) as mock_cmp,
+        patch(
+            "scripts.core.run_local_benchmark.LocalBenchmarkRunner.build_base_result"
+        ) as mock_base,
+        patch(
+            "scripts.core.run_local_benchmark.calculate_score_contributions"
+        ) as mock_calc,
+        patch("requests.post") as mock_req,
+        patch("time.sleep") as mock_sleep,
+    ):
         mock_load.return_value = {
             "metadata": {"id": "asset_1"},
             "prompt": "test prompt",
@@ -125,14 +130,11 @@ def test_pipeline_integration_enabled_applicable(mock_local_runner, mock_depende
 
     mock_pause = MagicMock()
 
-    with patch(
-        "utils.scoring.llm_judge.judge_runner.JudgeRunner"
-    ) as MockJudgeRunner, patch(
-        "utils.scoring.llm_judge.judge_config.LLMJudgeConfig"
-    ) as MockConfig, patch(
-        "requests.post"
-    ) as mock_req_post:
-
+    with (
+        patch("utils.scoring.llm_judge.judge_runner.JudgeRunner") as MockJudgeRunner,
+        patch("utils.scoring.llm_judge.judge_config.LLMJudgeConfig") as MockConfig,
+        patch("requests.post") as mock_req_post,
+    ):
         mock_judge_instance = MagicMock()
         mock_judge_instance.score.return_value = MagicMock(
             score=95.0,
