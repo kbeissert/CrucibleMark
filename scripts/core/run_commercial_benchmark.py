@@ -630,17 +630,18 @@ class CommercialBenchmarkRunner(BaseBenchmarkRunner):
 
         # Dispatch Batch Mode (e.g. Political Compass) via Config
         if benchmark_info.get("execution_mode") == "batch":
-            batch_asset_id = benchmark_info.get("id", "batch_module")
-            if not self.force and self.existing_benchmarks.get((model, batch_asset_id)):
+            batch_asset_id = str(benchmark_info.get("id", "batch_module"))
+            cached_res = self.existing_benchmarks.get((model, batch_asset_id))
+            if not self.force and cached_res:
                 print(
                     f"⏩ Überspringe {benchmark_info['name']} (Batch-Modus; Bereits im Cache vorhanden)"
                 )
-                return [dict(self.existing_benchmarks.get((model, batch_asset_id)))]
+                return [dict(cached_res)]
 
             # Dynamic Loading
-            module_path = Path(benchmark_info.get("module_path", ""))
+            module_path = Path(str(benchmark_info.get("module_path", "")))
             test_file = module_path / "test.py"
-            test_class_name = benchmark_info.get("test_class")
+            test_class_name = str(benchmark_info.get("test_class", ""))
 
             try:
                 test_class = load_test_class(test_file, test_class_name)
