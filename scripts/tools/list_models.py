@@ -20,7 +20,7 @@ from dotenv import load_dotenv
 try:
     import ollama
 except ImportError:
-    ollama = None
+    ollama: Any = None  # type: ignore
 # pylint: enable=import-error
 
 # Add project root to path to import utils
