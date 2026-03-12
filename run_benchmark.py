@@ -64,6 +64,7 @@ class BenchmarkRunConfig:
     run_all: bool = False
     num_runs: int = 1
     force: bool = False
+    audit_mode: bool = False
 
 
 class BenchmarkRunner:
@@ -373,7 +374,8 @@ class BenchmarkRunner:
                 model_id,
                 provider,
                 num_runs=run_config.num_runs,
-                force=run_config.force
+                force=run_config.force,
+                audit_mode=run_config.audit_mode
             )
 
         # Leaderboard Update
@@ -394,6 +396,7 @@ class BenchmarkRunner:
         provider: str,
         num_runs: int = 1,
         force: bool = False,
+        audit_mode: bool = False,
     ):
         """Führt Benchmark aus (Lokal oder Kommerziell)."""
         is_local = provider == "ollama"
@@ -406,6 +409,8 @@ class BenchmarkRunner:
         print(f"Provider: {provider.upper() if not is_local else 'Ollama (Local)'}")
         print(f"Runs: {num_runs}")
         print(f"Force: {'Yes (Ignore Cache)' if force else 'No'}")
+        if audit_mode:
+            print("Audit Mode: Enabled")
         print(f"{'=' * 60}\n")
 
         # Load internal module config to get benchmarks/contributions
@@ -423,7 +428,7 @@ class BenchmarkRunner:
         }
 
         if is_local:
-            local_runner = LocalBenchmarkRunner()
+            local_runner = LocalBenchmarkRunner(audit_mode=audit_mode)
             results = local_runner.run_benchmark(
                 model, benchmark_info, num_runs=num_runs
             )
@@ -431,7 +436,7 @@ class BenchmarkRunner:
                 local_runner.save_results(results)
                 local_runner.print_summary(results, model)
         else:
-            comm_runner = CommercialBenchmarkRunner(force=force)
+            comm_runner = CommercialBenchmarkRunner(force=force, audit_mode=audit_mode)
             results = comm_runner.run_benchmark(
                 provider, model, benchmark_info, num_runs=num_runs
             )
@@ -510,6 +515,12 @@ Beispiele:
         help="Force re-run of benchmarks even if results exist (ignores cache).",
     )
 
+    parser.add_argument(
+        "--audit",
+        action="store_true",
+        help="Aktiviert den Audit-Modus (Gibt zu jedem Asset Prompt, Response und Judge Output als MD-Datei aus).",
+    )
+
     args = parser.parse_args()
 
     # Propagate DEV flag globally via Environment Variable
@@ -526,6 +537,7 @@ Beispiele:
             run_all=args.all,
             num_runs=args.multi_run,
             force=args.force,
+            audit_mode=args.audit,
         )
         runner.run(config)
     except KeyboardInterrupt:

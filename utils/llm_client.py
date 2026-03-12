@@ -104,6 +104,13 @@ class LLMClient:
         return 0.0
 
     @property
+    def fingerprint_cache(self) -> Dict[str, str]:
+        """Globaler Fingerprint Cache über alle Provider hinweg."""
+        if not hasattr(self, "_fingerprint_cache"):
+            self._fingerprint_cache = {}
+        return self._fingerprint_cache
+
+    @property
     def last_pure_execution_time(self) -> float:
         """Returns execution time minus load time (if available)."""
         ollama_client = self.clients.get("ollama")

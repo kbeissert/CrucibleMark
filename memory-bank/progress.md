@@ -25,13 +25,14 @@
 - [DONE] **LLM Judge Modul – Phase 1**: Provider-Abstraktion (Anthropic, Mistral, OpenAI, Ollama), Pydantic-Config, CoT-Prompt Builder, Response Parser, `JudgeRunner`, Leaderboard-Integration, `make judge-health`, Tests (35), README, `config.example.yaml`.
 - [DONE] **LLM Judge Modul – Phase 2**: `judge_handoff.py` (PendingJudgeResult + frozen response_time_ms + JSON-Persistenz), `unload_model()` in OllamaProvider, `FallbackProviderConfig` + `unload_delay_ms` in Config, Fallback-Chain + Lifecycle in `JudgeRunner`, 38 neue Tests (73 gesamt grün).
 - [DONE] **LLM Judge Modul – Phase 2.5 (Pipeline Integration)**: `run_local_benchmark.py`, `run_commercial_benchmark.py`. Strikte Phase-Run Sequenz eingebaut (Execute -> Zeitmesser -> Unload -> Judge -> Result Merge). Unit-Tests implementiert & erfolgreich.
-- [DONE] **LLM Judge Modul – Phase 3 (ResultManager Schema)**: Abwärtskompatible Schema-Erweiterung für 5 neue `llm_judge_*`-Spalten. Leaderboard-Aggregation (`scripts/leaderboard/score_calculator.py`) um `llm_judge_avg` und `judge_coverage` ergänzt. Unit-Tests für Legacy-Laden und Partial-Data etabliert.
+- [DONE] **LLM Judge Modul – Phase 3 (ResultManager Schema)**: Abwärtskompatible Schema-Erweiterung für 5 neue `llm_judge_*` Spalten + `scoring_method`. Leaderboard-Aggregation (`scripts/leaderboard/score_calculator.py`) um `llm_judge_avg` und `judge_coverage` ergänzt. Unit-Tests für Legacy-Laden und Partial-Data etabliert.
+- [DONE] **Judge-Score als Primär-Score (Total Score)**: Runtime Fallback von Anthropic auf Ollama falls kein API Key vorhanden, `total_score` und `percentage` Übernahme, `scoring_method` Flag im CSV.
 
 ## Ongoing
 - [DONE] Systematische Modul-Routing Bugs und Namespace-Kollisionen in importlib/sys.modules behoben.
 - [DONE] First real benchmark run (single module, single model) erfolgreich abgeschlossen.
 - [DONE] Cache-Integrität nach Routing-Fix validiert.
+- [ ] LLM Judge **Batch-Mode** (Phase 3.5)
 - [ ] Re-run des `reasoning_logic` Benchmarks für (lokale) Modelle, um verfälschte 0-Punkte Resultate auszugleichen
 - [ ] Analyse der Stabilität von `gpt-oss` (vorheriger Absturz-Kandidat)
-- [ ] Monitor full benchmark suite execution
 - [ ] Volldurchlauf des Benchmarks für alle lokalen Modelle starten, um das finale Leaderboard (43/43 Tests) zu befüllen.

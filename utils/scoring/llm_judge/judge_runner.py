@@ -302,7 +302,7 @@ class JudgeRunner:
         self,
         system_prompt: str,
         user_prompt: str,
-    ) -> tuple[Optional[JudgeProviderResponse], str]:
+    ) -> tuple[Optional[JudgeProviderResponse], str, str]:
         """
         Try primary provider; fall back on health-check failure or exception.
 
@@ -318,59 +318,68 @@ class JudgeRunner:
             user_prompt: User payload with evaluation context.
 
         Returns:
-            Tuple of (JudgeProviderResponse or None, provider_label_used).
+            Tuple of (JudgeProviderResponse or None, provider_label_used, model_label_used).
         """
         primary_name = self._config.provider.name
+        primary_model = self._config.provider.model
         fb_cfg = self._config.provider.fallback
 
-        # -- 1. Primary health check --
+        # -- 1. Primary API Key / environment check --
         use_primary = True
-        try:
-            if not self.provider.health_check():
+        import os
+        if primary_name == "anthropic" and not os.getenv("ANTHROPIC_API_KEY"):
+            logger.info("LLM Judge: ANTHROPIC_API_KEY not found. Skipping primary provider '%s'.", primary_name)
+            use_primary = False
+            
+        # -- 2. Primary health check --
+        if use_primary:
+            try:
+                if not self.provider.health_check():
+                    logger.warning(
+                        "LLM Judge: primary provider '%s' health_check() returned False.",
+                        primary_name,
+                    )
+                    use_primary = False
+            except Exception as exc:  # pylint: disable=broad-exception-caught
                 logger.warning(
-                    "LLM Judge: primary provider '%s' health_check() returned False.",
+                    "LLM Judge: primary provider '%s' health_check() raised: %s",
                     primary_name,
+                    exc,
                 )
                 use_primary = False
-        except Exception as exc:  # pylint: disable=broad-exception-caught
-            logger.warning(
-                "LLM Judge: primary provider '%s' health_check() raised: %s",
-                primary_name,
-                exc,
-            )
-            use_primary = False
 
-        # -- 2. Primary complete() --
+        # -- 3. Primary complete() --
         if use_primary:
             response = _try_complete(
                 self.provider, system_prompt, user_prompt, primary_name
             )
             if response is not None:
-                return response, primary_name
+                return response, primary_name, primary_model
             logger.warning(
                 "LLM Judge: primary provider '%s' failed; checking fallback.",
                 primary_name,
             )
 
-        # -- 3. Fallback --
+        # -- 4. Fallback --
         if fb_cfg is None or self.fallback_provider is None:
             logger.warning(
                 "LLM Judge: no fallback configured for provider '%s'; "
                 "returning score=None.",
                 primary_name,
             )
-            return None, primary_name
+            return None, primary_name, primary_model
 
         fallback_name = fb_cfg.name
+        fallback_model = fb_cfg.model
         logger.info(
             "LLM Judge: switching to fallback provider '%s' (model=%s).",
             fallback_name,
-            fb_cfg.model,
+            fallback_model,
         )
         response = _try_complete(
             self.fallback_provider, system_prompt, user_prompt, fallback_name
         )
-        return response, fallback_name
+        return response, fallback_name, fallback_model
 
     # ------------------------------------------------------------------
     # Public API
@@ -421,6 +430,7 @@ class JudgeRunner:
                 parse_success=False,
                 judge_latency_ms=None,
                 judge_provider_used=None,
+                judge_model_used=None,
             )
 
         # Unload tested model (Ollama-only; confirmed before judge loads)
@@ -445,7 +455,7 @@ class JudgeRunner:
 
         # Measure latency independently around the provider call only
         t_start = time.monotonic()
-        provider_response, provider_used = self._call_with_fallback(
+        provider_response, provider_used, model_used = self._call_with_fallback(
             system_prompt, user_prompt
         )
         judge_latency_ms = (time.monotonic() - t_start) * 1000.0
@@ -458,12 +468,14 @@ class JudgeRunner:
                 parse_success=False,
                 judge_latency_ms=judge_latency_ms,
                 judge_provider_used=None,
+                judge_model_used=None,
             )
 
         result = parse(provider_response.raw_text)
         # Attach runner-level metadata not set by the parser
         result.judge_latency_ms = judge_latency_ms
         result.judge_provider_used = provider_used
+        result.judge_model_used = model_used
 
         if not result.parse_success and self._config.scoring.fail_on_parse_error:
             raise RuntimeError(
@@ -597,5 +609,6 @@ class JudgeRunner:
             "scale": scale,
             "judge_latency_ms": judge_result.judge_latency_ms,
             "judge_provider_used": judge_result.judge_provider_used,
+            "judge_model_used": judge_result.judge_model_used,
             "response_time_ms": response_time_ms,
         }

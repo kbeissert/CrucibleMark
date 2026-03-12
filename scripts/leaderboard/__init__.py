@@ -147,7 +147,8 @@ def main(print_table: bool = True) -> None:
         "Routine Score",
         "Reasoning Score",
         "Efficiency_Index",
-        "LLM Judge Score",
+        "LLM Judge Avg",
+        "LLM Judge Coverage",
     ]
     for col in cols_to_round:
         if col in leaderboard.columns:

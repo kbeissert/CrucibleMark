@@ -66,6 +66,7 @@ class DocumentationTest(BaseTest):
                 primary_score=None,
                 rendered_value="Pending",
                 raw_response=response,
+                evaluated_prompt=full_prompt,
                 execution_time=elapsed,
                 load_time=load_time,
                 tokens_used=approx_tokens,

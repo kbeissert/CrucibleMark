@@ -12,6 +12,7 @@ help:
 	@echo ""
 	@echo "=== Benchmarking ==="
 	@echo "  make benchmark            Interactive OR Single Model (MODEL=name [MODULE=name])"
+	@echo "  make benchmark-audit      🕵️ Interactive Audit Mode (Log Prompts & Judges)"
 	@echo "  make benchmark-auto       🤖 Auto-Fill Mode: Supplement missing benchmarks"
 	@echo "  make benchmark-cross-model Single Module vs ALL LLMs (MODULE=name)"
 	@echo "  make benchmark-human      👤 Human Baseline Test (Political Compass)"
@@ -55,6 +56,11 @@ install-dev: install
 benchmark:
 	@echo "🚀 Starting Benchmark..."
 	$(PYTHON) run_benchmark.py $(if $(MODEL),--model "$(MODEL)") $(if $(MODULE),--module "$(MODULE)") $(if $(filter true,$(FORCE)),--force)
+	@$(MAKE) leaderboard
+
+benchmark-audit:
+	@echo "🕵️  Starting Benchmark (Audit Mode)..."
+	$(PYTHON) run_benchmark.py --audit $(if $(MODEL),--model "$(MODEL)") $(if $(MODULE),--module "$(MODULE)") $(if $(filter true,$(FORCE)),--force)
 	@$(MAKE) leaderboard
 
 benchmark-dev:

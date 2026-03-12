@@ -1,26 +1,18 @@
 # Active Context
 
 ## Status
-Erster erfolgreicher Lauf (Production) mit LLM Judge bestätigt.
+Erster erfolgreicher Lauf (Production) mit LLM Judge bestätigt, nun auch als primärer Score aktiv!
 
-## Was wurde zuletzt fertiggestellt? 
-- Namespace-Kollision (sys.modules) im dynamischen module_loader repariert (Routing-Bug behoben).
-- VRAM Memory Leaks durch unsaubere Thread-Terminierungen aufgelöst.
+## Was wurde heute fertiggestellt? 
+- Integration des LLM Judge Scores in `total_score` und `percentage` für qualitative Module bei erfolgreichem Parsing.
+- Einführung des `scoring_method` (llm_judge | regex_fallback | skipped) Flags im CSV-Export (und Update in `ResultManager`).
+- Dynamischer zur-Laufzeit-Fallback (`ANTHROPIC_API_KEY`-Prüfung in `judge_runner.py` via `os.getenv`), um nahtlos auf Ollama zurückzufallen.
+- CLI-Modul Test-Fix für fehlerhafte Mock-Klasse.
 
-- LLM Judge Modul ist vollständig implementiert und getestet.
-- LLM Judge Markdown-Ausreißer geparsed (`judge_parser.py` Regex erweitert).
-- Ollama Judge Request Timeout hochgesetzt (30s auf 120s in SSOT Config).
-- Hardcoding in `judge_health.py` entfernt, liest nun komplett aus `benchmark_config.yaml`.
-- Pydantic Validierungs-Bug (ValidationError in Config) und Leaderboard TypeError `None` Bug in `__init__.py` behoben. Alle 165 Tests grün.
-
-## Was ist der nächste Schritt?
-
-- Option B: Umsetzung des **Batch-Mode** (Phase 3.5)
-- Option B: Umsetzung des **Batch-Mode** (Phase 3.5), da per-task Loading (~40s Overhead pro Task bei 9GB Modellen) extrem teuer ist.
+## Was ist der nächste logische Schritt?
+- Volldurchlauf aller lokalen Modelle starten, um das finale Leaderboard mit Judge-Daten zu befüllen.
+- Umsetzung des **Batch-Mode** (Phase 3.5), da per-task Loading (~40s Overhead pro Task bei 9GB Modellen) extrem teuer ist.
 
 ## Offene Risiken / Bekannte Baustellen
-
-- LLM Judge Latency: Jeder Judge-Aufruf lädt das Judge-Modell neu (9GB Model = ~40s). Erfordert Batch-Mode.
-- Post-run CSV verification of llm_judge_* columns.
-- Re-run reasoning_logic Benchmark (lokale Modelle, verfälschte 0-Punkte).
-- Volldurchlauf aller lokalen Modelle (43/43) für finales Leaderboard.
+- LLM Judge Latency: Jeder Judge-Aufruf lädt das Judge-Modell neu (9GB Model = ~40s).
+- Post-run CSV Verifizierung der neu befüllten Scores, insbesondere `scoring_method`.

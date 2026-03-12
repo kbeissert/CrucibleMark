@@ -2,21 +2,22 @@ llm_judge:
   enabled: true
   mode: complement
   provider:
-    # name: anthropic
+    # name: anthropic          # PRIMARY: Claude Haiku (schnell, konsistent)
     # model: claude-haiku-4-5-20251001
     name: ollama
-    model: ministral-3:14b
-    max_tokens: 4096
+    model: deepseek-v3.1:671b-cloud
     unload_delay_ms: 1500
     fallback:
-      name: ollama
-      model: ministral-3:8b
+      name: ollama             # FALLBACK: nur wenn kein API-Key
+      model: ministral-3:14b
       max_tokens: 4096
   scoring:
     scale: 5
     require_reasoning: true
     fail_on_parse_error: false
+  # Nur Module die hier gelistet sind werden vom LLM-Judge bewertet. Alle anderen Module werden vom Regex/Rule Scorer bewertet.
   applicable_modules:
+    - code_quality
     - ux_writing
     - documentation_quality
     - content_transformation

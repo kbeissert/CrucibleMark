@@ -80,6 +80,7 @@ class CLIBenchmarkTest(BaseTest):
             status=status,
             primary_score=None,
             rendered_value="",
+            evaluated_prompt=task_prompt,
             execution_time=float(elapsed),
             load_time=float(load_time),
             tokens_used=int(tokens),
