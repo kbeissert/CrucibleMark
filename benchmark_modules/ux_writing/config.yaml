@@ -34,8 +34,8 @@ execution:
 
 scoring:
   fallback_weights:
-    regex: 0.25
-    judge: 0.75
+    regex: 0.10
+    judge: 0.90
 
 benchmarks:
   - id: "ux_writing_001"
