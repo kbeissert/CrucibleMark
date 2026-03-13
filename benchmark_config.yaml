@@ -36,12 +36,12 @@ llm_judge:
       scale: 5
   # Nur Module die hier gelistet sind werden vom LLM-Judge bewertet. Alle anderen Module werden vom Regex/Rule Scorer bewertet.
   applicable_modules:
-    - code_quality
-    - ux_writing
-    - documentation_quality
-    - content_transformation
-    - cultural_intelligence
-    - reasoning
+    # - code_quality
+    # - ux_writing
+    # - documentation_quality
+    # - content_transformation
+    # - cultural_intelligence
+    # - reasoning
 
 llm_review:
   enabled: true
