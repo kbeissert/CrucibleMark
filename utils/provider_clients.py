@@ -425,17 +425,28 @@ class AnthropicClient(BaseProviderClient):
                     "max_tokens", MAX_TOKENS_ANTHROPIC
                 )
 
-            # Limit strictly for older Claude 3 models that have max_tokens hard-capped at 4096
-            if ("claude-3-haiku-20" in model or "claude-3-sonnet-20" in model or "claude-3-opus-20" in model) and max_tokens > 4096:
-                max_tokens = 4096
-
             # Note: Streaming not implemented yet for Anthropic in this wrapper
-            response = self.client.messages.create(
-                model=model,
-                max_tokens=max_tokens,
-                temperature=temperature,
-                messages=[{"role": "user", "content": prompt}],
-            )
+            try:
+                response = self.client.messages.create(
+                    model=model,
+                    max_tokens=max_tokens,
+                    temperature=temperature,
+                    messages=[{"role": "user", "content": prompt}],
+                )
+            except Exception as e:
+                # Automatisches dynamisches Umschalten auf die Fallback-Option:
+                err_str = str(e)
+                if "max_tokens" in err_str and max_tokens > 4096:
+                    logger.warning(f"⚠️ Token limit rejected for {model}. Switching from {max_tokens} to Fallback (4096).")
+                    max_tokens = 4096
+                    response = self.client.messages.create(
+                        model=model,
+                        max_tokens=max_tokens,
+                        temperature=temperature,
+                        messages=[{"role": "user", "content": prompt}],
+                    )
+                else:
+                    raise e
 
             # Capture Metadata
             self.last_response_metadata = {
