@@ -13,7 +13,7 @@ QUALITY_GOOD = 70.0  # Star badge (Sehr gut / Brauchbar)
 QUALITY_OK = 55.0  # Checkmark badge (OK für einfache Tasks)
 
 # Provider Settings
-MAX_TOKENS_ANTHROPIC = 4000
+MAX_TOKENS_ANTHROPIC = 8192
 DEFAULT_MISTRAL_MODEL = "mistral-large-latest"
 
 
