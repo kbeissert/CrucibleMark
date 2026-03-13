@@ -7,7 +7,7 @@ CrucibleMark bietet neben dem Standard-Benchmark einen erweiterten **Audit-Modus
 Der Befehl `make benchmark-audit` führt drei Hauptschritte aus:
 1. **Benchmark-Durchlauf (`--audit`)**: Das System testet die Konfiguration wie gewohnt, sichert aber zusätzlich hochdetaillierte Markdown-Protokolle (mit Prompt, Antwort und LLM-Judge Reasoning) im Ordner `outputs/audit_logs/`.
 2. **Leaderboard Generierung**: Die aggregierten Scores werden wie üblich als CSV aufbereitet.
-3. **Meta-Review (`generate_magazine_review.py`)**: Ein von Ihnen wählbares dediziertes Reviewer-LLM liest die CSV *sowie* die detaillierten Judge-Logdateien (*REASONING* Blöcke) ein und schreibt einen umfassenden, redaktionellen Artikel ("Magazine-Style") über die Stärken und Schwächen der getesteten Modelle.
+3. **Meta-Review (`generate_review.py`)**: Ein von Ihnen wählbares dediziertes Reviewer-LLM liest die CSV *sowie* die detaillierten Judge-Logdateien (*REASONING* Blöcke) ein und schreibt einen umfassenden, redaktionellen Artikel ("Magazine-Style") über die Stärken und Schwächen der getesteten Modelle.
 
 ## Konfiguration (benchmark_config.yaml)
 
@@ -24,7 +24,7 @@ llm_review:
 
 ## Ordnerstruktur & Outputs
 
-Das Skript `generate_magazine_review.py` iteriert nach dem Audit-Run intelligent über alle getesteten Modelle und legt systematisch Berichte an:
+Das Skript `generate_review.py` iteriert nach dem Audit-Run intelligent über alle getesteten Modelle und legt systematisch Berichte an:
 
 ```text
 outputs/
@@ -54,7 +54,7 @@ Dieser Befehl stoppt nicht bei der reinen Score-Ermittlung, sondern schließt de
 ### 2. Manueller Review-Trigger (Rückwirkend)
 Wenn Sie bereits Audit-Logs (aus der Vergangenheit) im Ordner `/outputs/audit_logs/` haben und nur den redaktionellen Review-Prozess nachträglich ausführen wollen, um einen neuen Artikel zu generieren:
 ```bash
-.venv/bin/python scripts/analysis/generate_magazine_review.py
+.venv/bin/python scripts/analysis/generate_review.py
 ```
 *Hinweis: Das Skript wählt automatisch immer den neuesten Lauf (nach Änderungsdatum sortiert) in `outputs/audit_logs/` aus.*
 

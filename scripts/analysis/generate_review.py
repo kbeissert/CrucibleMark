@@ -86,7 +86,7 @@ Nutze die qualitativen Protokolle, um echte Beispiele (z. B. aufgetretene Fehler
 ### Qualitative Judge-Protokolle (Auszüge für {tested_model_name}):
 {log_data}
 
-Schreibe nun deinen umfassenden, redaktionellen Bericht in Deutsch, nutze Überschriften (Markdown) und gestalte ihn ansprechend:
+Schreibe nun deinen umfassenden, redaktionellen Bericht in Deutsch, nutze Überschriften (Markdown) und gestalte ihn ansprechend. Beginne direkt mit dem generierten Artikel. Verzichte strikt auf Begrüßungsfloskeln, Einleitungssätze wie "Hier ist das Review" oder Bestätigungen wie "Absolut. Als...". Beginne sofort mit der #-Hauptüberschrift.
 """
 
     print(f"🤖 Generiere Review für {tested_model_name} mit {provider}/{model_id}...")
@@ -137,17 +137,16 @@ def main():
     csv_data = collect_data()
 
     audit_base_dir = ROOT_DIR / "outputs" / "audit_logs"
-    latest_dir = get_latest_audit_dir(audit_base_dir)
 
-    if not latest_dir:
+    if not audit_base_dir.exists():
         print("❌ Keine Audit-Logs gefunden.")
         return
 
-    print(f"📁 Durchsuche neuesten Audit-Run: {latest_dir.name}")
+    print("📁 Durchsuche Audit-Logs nach Modellen...")
 
     found_models = False
     # Iteriere über die Modell-Ordner (z.B. mistral-medium-latest) im Audit-Root
-    for subdir in latest_dir.iterdir():
+    for subdir in audit_base_dir.iterdir():
         if subdir.is_dir() and subdir.name != ".DS_Store":
             found_models = True
             process_model_review(subdir, csv_data, client, provider, model_id)
