@@ -1,12 +1,11 @@
 # Active Context
 
-## Was wurde heute fertiggestellt?
-- Bereinigung der restlichen Pylance- und Mypy-Warnungen (z.B. Tuple-Validierung beim Datenladen, dict()-Constructor Workarounds mit .copy()).
-- Automatisierung für IDE-Formatierungen und Trailing Whitespace in .vscode/settings.json ergänzt sowie globale Whitespace-Reinigung implementiert.
-- Integration von pandas-stubs zur Auflösung typenbasierter Warnungen im Result Manager. Alle Skripte erreichen nun exzellente Pylint-Werte.
+## Abgeschlossen
+- Golden Standards in YAML als SSOT konsolidiert; obsolete rohe Referenzdaten (`outputs/reference-logs/`) zugunsten verdichteten ("Design by Intention") Standards gelöscht.
+- Tooling zur Inhaltsvalidierung existiert für Audit-Zwecke, manueller Workflow aber etabliert.
 
-## Was ist der nächste logische Schritt?
-- Umbau der Parsing-Logik des LLM Judge (judge_parser.py und dazugehörige Prompts) auf eine strikte JSON-Rückgabe-Struktur statt der bisherigen textbasierten Regex-Auswertung.
+## Nächster Schritt
+- LLM Judge Pipeline auf strikte JSON-Rückgabe umbauen (`judge_parser.py` + Prompts) oder Implementierung des Batch-Mode (Phase 3.5).
 
-## Welche offenen Fragen oder Risiken gibt es?
-- JSON-Formatierung durch kleinere / dedizierte Judges: Es muss beobachtet werden, ob die strikte JSON-Spezifikation von kleinen Modellen konsistent eingehalten werden kann.
+## Offen / Risiko
+- Kleine Judge-Modelle (wie Mistral/Ollama-basierte): JSON-Konsistenz als Evaluator unter realen Bedingungen noch unbewiesen.

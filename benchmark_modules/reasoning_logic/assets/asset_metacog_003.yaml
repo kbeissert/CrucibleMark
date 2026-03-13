@@ -91,3 +91,97 @@ scoring:
       deep:
         points: 30
         criteria: Extensive reasoning (> 150 tokens)
+
+golden_standard: |
+  <thought>
+  Das ist das klassische Zwei-Wächter-Zwei-Türen-Rätsel.
+
+  Setup:
+  - Zwei Türen: eine führt zur Freiheit, eine zum Tod
+  - Zwei Wächter: einer sagt immer die Wahrheit, einer lügt immer
+  - Ich kenne weder die Identität der Wächter noch welche Tür wohin führt
+  - Ich darf einem Wächter EINE Frage stellen
+
+  Das Problem mit direkten Fragen:
+  "Welche Tür führt zur Freiheit?" → Ehrlicher Wächter: richtige Tür.
+  Lügner: falsche Tür. Ich weiß nicht, wem ich gefragt habe.
+
+  Der Schlüssel: Ich brauche eine Frage, bei der BEIDE Wächter
+  dieselbe (nutzbare) Antwort geben.
+
+  Die Lösung: "Was würde DER ANDERE Wächter sagen, wenn ich ihn fragte,
+  welche Tür zur Freiheit führt?"
+
+  Verifikation:
+
+  Fall 1 – Ich frage den EHRLICHEN Wächter:
+  - Er berichtet wahrheitsgemäß, was der Lügner sagen würde
+  - Der Lügner würde auf die FALSCHE Tür zeigen
+  - Ehrlicher Wächter berichtet: → FALSCHE Tür ❌
+
+  Fall 2 – Ich frage den LÜGNER:
+  - Er lügt über das, was der ehrliche Wächter sagen würde
+  - Der ehrliche Wächter würde auf die RICHTIGE Tür zeigen
+  - Der Lügner lügt darüber: → FALSCHE Tür ❌
+
+  In BEIDEN Fällen zeigt der befragte Wächter auf die FALSCHE Tür.
+  → Ich wähle die ANDERE Tür als die angezeigte.
+
+  Das ist die elegante "Doppelverneinung": Wahrhaftiger berichtet die
+  Lüge des Lügners. Lügner lügt über die Wahrheit des Ehrlichen.
+  Beide Wege enden beim falschen Ergebnis → ich invvertiere es.
+  </thought>
+
+  Answer: Stelle **einem beliebigen** Wächter diese Frage:
+
+  > *"Wenn ich den anderen Wächter fragen würde, welche Tür zur
+  > Freiheit führt – was würde er sagen?"*
+
+  Dann wähle die **gegenüberliegende Tür** von der angezeigten.
+
+  ---
+
+  ## Warum das funktioniert
+
+  | Befragter Wächter | Logikkette | Zeigt auf |
+  |---|---|---|
+  | **Ehrlicher** | Berichtet wahrheitsgemäß die Lüge des Lügners | ❌ Falsche Tür |
+  | **Lügner** | Lügt über die Wahrheit des Ehrlichen | ❌ Falsche Tür |
+
+  ```
+  Ehrlichen fragen → berichtet Lüge des Lügners → zeigt auf TOD-Tür
+  Lügner fragen   → lügt über Wahrheit des Ehrlichen → zeigt auf TOD-Tür
+                                    ↓
+               Beide zeigen immer auf die FALSCHE Tür
+               → Zuverlässige Information: andere Tür wählen
+  ```
+
+  Die Frage erzeugt eine garantierte **Doppel-Inversion** – die
+  Negativierungen neutralisieren sich gegenseitig und liefern
+  immer ein konsistentes (wenn auch falsches) Ergebnis.
+
+  ---
+
+  ## Begründungen
+
+  1. **Self-referential question als Technik:** Die Frage "Was würde
+     ich sagen, wenn ..." (Frage über Frage) erzeugt die Doppel-
+     inversion. Dies ist das allgemeine Muster für Rätsel dieser Art.
+
+  2. **Warum beide auf dieselbe Tür zeigen:** Der Ehrliche filtert
+     durch "Wahrheit der Lüge" (1 Inversion), der Lügner durch
+     "Lüge über die Wahrheit" (1 Inversion). Beide enden mit genau
+     einer Inversion des richtigen Ergebnisses.
+
+  3. **Die gegenteilige Strategie:** Wähle immer die dem angezeigten
+     gegenüberliegende Tür. Das macht die bekannte Fehlinformation
+     zu nutzbarer Information.
+
+  4. **Alternative Formulierung:** "Was würde ICH sagen, wenn ich
+     mich selbst fragte, welche Tür zur Freiheit führt?" (Frage an
+     sich selbst) funktioniert ebenfalls – Ehrlicher sagt richtige
+     Tür, Lügner muss über seine eigene Lüge lügen → auch richtige Tür.
+
+  5. **Eleganz durch Allgemeingültigkeit:** Man muss nicht wissen,
+     wer der Lügner ist. Dieselbe Frage, dieselbe Strategie –
+     unabhängig vom Wächter. Das macht die Lösung robust.

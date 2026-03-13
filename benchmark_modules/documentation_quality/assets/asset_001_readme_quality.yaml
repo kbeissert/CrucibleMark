@@ -382,3 +382,305 @@ success_thresholds:
   good: 75
   acceptable: 60
   needs_improvement: 40
+
+
+golden_standard: |
+  # README.md Analyse: LogAnalyzer
+
+  ## Executive Summary
+
+  Die aktuelle README.md erfüllt nur **Minimalanforderungen** und würde erfahrene DevOps Engineers und Backend Developers nicht überzeugen. Von 20 Best-Practice-Kriterien werden nur **4 ansatzweise erfüllt**. Es wurden **23 Probleme** in 4 Kategorien identifiziert, davon **4 kritisch** (blockieren Adoption direkt).
+
+  ---
+
+  ## 📊 Probleme nach Kategorien & Schweregrad
+
+  ### Legende
+  | Symbol | Schweregrad | Bedeutung |
+  |--------|-------------|-----------|
+  | 🔴 | **Critical** | Blockiert Nutzung / verhindert Adoption |
+  | 🟠 | **High** | Signifikante Beeinträchtigung der UX |
+  | 🟡 | **Medium** | Qualitätsmangel, aber umgehbar |
+  | 🟢 | **Low** | Nice-to-have / Polish |
+
+  ---
+
+  ### Kategorie 1: Struktur & Klarheit
+
+  | # | Problem | Schweregrad | Konkrete Lösung |
+  |---|---------|-------------|-----------------|
+  | 1.1 | **Kein Table of Contents** – Bei wachsender Doku sofort unnavigierbar | 🟠 High | TOC mit Anchor-Links nach dem Intro-Absatz einfügen |
+  | 1.2 | **Kein Badges/Status-Bereich** – Keine Info zu Build-Status, Version, Python-Kompatibilität | 🟠 High | Shields.io Badges für PyPI, CI/CD, Coverage, License direkt unter dem Titel |
+  | 1.3 | **Schwache Projekt-Beschreibung** – „A Python tool for analyzing log files" ist zu generisch | 🟠 High | USP herausstellen: Geschwindigkeit, Formate, konkrete Zielgruppe |
+  | 1.4 | **Sections in falscher Reihenfolge** – „Features" steht nach „Usage" | 🟡 Medium | Reihenfolge: Intro → Badges → Features → Installation → Quick Start → Usage → Config |
+  | 1.5 | **„Config" zu informell** – Inkonsistente Terminologie | 🟢 Low | Umbenennen zu `## Configuration` |
+  | 1.6 | **Kein visueller Trenner zwischen Major-Sections** | 🟢 Low | Horizontale Linien (`---`) zwischen Haupt-Sektionen |
+
+  **Beispiel TOC:**
+  ```markdown
+  ## Table of Contents
+  - [Quick Start](#quick-start)
+  - [Features](#features)
+  - [Installation](#installation)
+  - [Usage](#usage)
+  - [Configuration](#configuration)
+  - [Examples](#examples)
+  - [Troubleshooting](#troubleshooting)
+  - [Contributing](#contributing)
+  - [License](#license)
+  ```
+
+  ---
+
+  ### Kategorie 2: Vollständigkeit
+
+  | # | Problem | Schweregrad | Konkrete Lösung |
+  |---|---------|-------------|-----------------|
+  | 2.1 | **Keine Prerequisites/Requirements** – Python-Version? OS-Support? Dependencies? | 🔴 Critical | Eigene Section `## Prerequisites` mit Python-Version, OS-Matrix |
+  | 2.2 | **Configuration Section ist leer** – „Create a config.yaml" ohne Inhalt | 🔴 Critical | Vollständige `config.yaml` mit allen Keys, Typen, Defaults und Kommentaren |
+  | 2.3 | **Keine CLI-Referenz** – Welche Flags/Options existieren? | 🔴 Critical | `## CLI Reference` mit vollständiger Options-Tabelle |
+  | 2.4 | **Installation unvollständig** – Kein venv-Hinweis, kein Extras-Install, kein Source-Install | 🔴 Critical | Mehrere Installations-Pfade (PyPI, Source, Dev-Setup) |
+  | 2.5 | **Keine Real-World Examples** – Nur ein einziger Basis-Befehl, kein Output gezeigt | 🟠 High | Mindestens 3–5 Use-Cases mit echten Befehlen und erwarteten Outputs |
+  | 2.6 | **Kein Troubleshooting-Bereich** | 🟠 High | `## Troubleshooting` mit häufigen Fehlern und Lösungen |
+  | 2.7 | **Email-Notification-Feature undokumentiert** – In Features erwähnt, nicht erklärt | 🟠 High | SMTP-Config-Beispiel in Configuration-Section |
+  | 2.8 | **Keine API-Dokumentation für Library-Usage** – `LogParser` ist nicht dokumentiert | 🟠 High | Methoden, Parameter, Return-Types dokumentieren |
+  | 2.9 | **Kein Contributing Guide** | 🟡 Medium | `## Contributing` mit Link zu `CONTRIBUTING.md` |
+  | 2.10 | **Kein Changelog / Versionshistorie** | 🟡 Medium | Link zu `CHANGELOG.md` |
+
+  **Beispiel Prerequisites:**
+  ```markdown
+  ## Prerequisites
+
+  - **Python**: 3.9 or higher
+  - **OS**: Linux, macOS, Windows (WSL recommended)
+  - **Memory**: Minimum 512 MB RAM for large log files (>1 GB)
+
+  ### System Dependencies
+  ```bash
+  # Ubuntu/Debian
+  sudo apt-get install python3-dev
+
+  # macOS
+  brew install python@3.11
+  ```
+  ```
+
+  **Beispiel vollständige Installation:**
+  ```markdown
+  ## Installation
+
+  ### Option 1: PyPI (Recommended)
+  ```bash
+  pip install loganalyzer
+
+  # With optional email support
+  pip install loganalyzer[email]
+
+  # With all extras
+  pip install loganalyzer[all]
+  ```
+
+  ### Option 2: From Source
+  ```bash
+  git clone https://github.com/yourorg/loganalyzer.git
+  cd loganalyzer
+  python -m venv .venv
+  source .venv/bin/activate  # Windows: .venv\Scripts\activate
+  pip install -e ".[dev]"
+  ```
+
+  ### Verify Installation
+  ```bash
+  loganalyzer --version
+  # Expected output: loganalyzer 1.4.2
+  ```
+  ```
+
+  ---
+
+  ### Kategorie 3: Technische Korrektheit
+
+  | # | Problem | Schweregrad | Konkrete Lösung |
+  |---|---------|-------------|-----------------|
+  | 3.1 | **Kein Syntax Highlighting** – Alle Code-Blöcke ohne Sprach-Tag | 🔴 Critical | ` ```bash ` für Shell, ` ```python ` für Python, ` ```yaml ` für Config |
+  | 3.2 | **Python-Code nicht als Code-Block formatiert** – Wird als Fließtext gerendert | 🔴 Critical | Fenced Code Blocks mit Sprach-Tag für alle Beispiele |
+  | 3.3 | **Keine Versionsinformation** – Welche Version wird dokumentiert? | 🟠 High | Version in Badges + explizit in Installation |
+  | 3.4 | **Keine Links** – Keine Verweise auf PyPI, GitHub, Docs, Issue Tracker | 🟡 Medium | Links zu PyPI, Repository, ReadTheDocs etc. |
+  | 3.5 | **Custom-Log-Format undokumentiert** – Feature erwähnt, Syntax fehlt | 🟡 Medium | Format-Spezifikation mit Regex-Beispiel |
+  | 3.6 | **Python-API-Beispiel unvollständig** – Kein Error Handling, kein vollständiger Import | 🟡 Medium | Lauffähiges Code-Snippet mit try/except |
+
+  **Beispiel korrektes Syntax Highlighting:**
+  ````markdown
+  ```bash
+  loganalyzer analyze /var/log/nginx/access.log \
+    --format nginx \
+    --output-format json \
+    --severity ERROR,CRITICAL \
+    --output ./reports/
+  ```
+
+  ```python
+  from loganalyzer import LogParser, ReportGenerator
+
+  parser = LogParser(format="nginx")
+
+  try:
+      results = parser.analyze("access.log")
+      print(f"Found {results.error_count} errors")
+  except FileNotFoundError as e:
+      print(f"Log file not found: {e}")
+  ```
+
+  ```yaml
+  # config.yaml
+  loganalyzer:
+    format_type: nginx
+    severity_filter:
+      - WARNING
+      - ERROR
+      - CRITICAL
+    output:
+      format: html
+      path: ./reports/
+  ```
+  ````
+
+  ---
+
+  ### Kategorie 4: Usability
+
+  | # | Problem | Schweregrad | Konkrete Lösung |
+  |---|---------|-------------|-----------------|
+  | 4.1 | **Kein Quick Start** – DevOps Engineers wollen sofort loslegen | 🟠 High | `## Quick Start` als zweite Section mit Copy-Paste-Ready Commands |
+  | 4.2 | **Keine Keywords/SEO** – „log analysis python", „nginx log parser" etc. fehlen | 🟠 High | Keywords natürlich in Beschreibung integrieren |
+  | 4.3 | **Kein Screenshot/Demo** – Keine visuelle Vorschau des Outputs | 🟠 High | GIF/Screenshot des CLI-Outputs oder generierten Reports |
+  | 4.4 | **Value Proposition zu schwach** | 🟠 High | Konkrete Vorteile: Geschwindigkeit, Formate, Unique Features |
+  | 4.5 | **Kein Support-Kanal** – Wo stellt man Fragen? | 🟡 Medium | Links zu GitHub Issues, Discussions |
+  | 4.6 | **Keine Security-Information** | 🟡 Medium | Verweis auf `SECURITY.md` |
+
+  **Beispiel starker Quick Start:**
+  ```markdown
+  ## ⚡ Quick Start
+
+  ```bash
+  # Install
+  pip install loganalyzer
+
+  # Analyze your first log file
+  loganalyzer analyze /var/log/nginx/access.log --format nginx
+
+  # Output: reports/report.html
+  ```
+
+  **That's it.** For advanced usage, see [Configuration](#configuration).
+  ```
+
+  **Beispiel starke Value Proposition:**
+  ```markdown
+  # LogAnalyzer 🔍
+
+  > Parse, analyze, and report on log files from **Apache, Nginx, and custom formats**
+  > in seconds — not hours.
+
+  **LogAnalyzer** is a fast, extensible CLI tool for DevOps Engineers and Backend Developers
+  who need actionable insights from log data without writing custom parsing scripts.
+
+  - 🚀 **Fast**: Processes 1M log lines in under 10 seconds
+  - 📊 **Rich Reports**: HTML dashboards and machine-readable JSON output
+  - 🔔 **Alerting**: Email notifications for critical error thresholds
+  - 🔧 **Flexible**: Custom log format support via regex patterns
+  ```
+
+  ---
+
+  ## 📈 Gesamtbewertung
+
+  ```
+  Kategorie                  Aktuell    Nach Fixes    Gewichtung
+  ─────────────────────────────────────────────────────────────
+  Struktur & Klarheit          2/10        9/10          20%
+  Vollständigkeit              1/10        9/10          35%
+  Technische Korrektheit       2/10        9/10          30%
+  Usability                    1/10        8/10          15%
+  ─────────────────────────────────────────────────────────────
+  GESAMT                      1.5/10      8.9/10        100%
+  ```
+
+  ---
+
+  ## 🗺️ Empfohlene Prioritäten-Roadmap
+
+  ```
+  SPRINT 1 – Critical (sofort, blockiert Adoption)
+  ├── Syntax Highlighting für alle Code-Blöcke
+  ├── Prerequisites Section
+  ├── Quick Start Section
+  ├── CLI Reference mit vollständiger Options-Tabelle
+  └── Configuration Section mit vollständigem YAML-Beispiel
+
+  SPRINT 2 – High (diese Woche)
+  ├── Badges (Version, CI, License)
+  ├── Real-World Examples (3–5 Szenarien mit Output)
+  ├── Troubleshooting Section
+  ├── Screenshot/Demo GIF
+  ├── API-Dokumentation für Library-Nutzung
+  └── Stärkere Value Proposition
+
+  SPRINT 3 – Medium (nächste Woche)
+  ├── Table of Contents
+  ├── Contributing Guide
+  ├── Email-Feature dokumentieren
+  ├── Support & Security Sections
+  └── Changelog Link
+
+  SPRINT 4 – Low (Backlog)
+  ├── Code of Conduct
+  ├── Acknowledgements
+  ├── Visual Polish
+  └── SEO-Optimierung
+  ```
+
+  ---
+
+  ## 💡 Wichtigste Einzelempfehlung
+
+  Das **größte ROI-Problem** ist die fehlende `Configuration`-Section. Sie ist die häufigste Ursache für Support-Anfragen bei CLI-Tools. Eine vollständige, kommentierte `config.yaml` mit allen Optionen, Typen und Defaults würde allein ~40% der potenziellen GitHub Issues verhindern.
+
+  **Vollständiges config.yaml-Beispiel:**
+  ```yaml
+  # config.yaml
+  loganalyzer:
+    # Default log format (auto-detected if omitted)
+    format_type: nginx  # apache | nginx | syslog | custom
+
+    # Severity levels to include
+    severity_filter:
+      - WARNING
+      - ERROR
+      - CRITICAL
+
+    # Output settings
+    output:
+      format: html        # html | json | csv
+      path: ./reports/
+      timestamp_suffix: true  # report_2024-01-15.html
+
+    # Email notifications
+    notifications:
+      enabled: false
+      smtp_host: smtp.company.com
+      smtp_port: 587
+      from: loganalyzer@company.com
+      to:
+        - devops@company.com
+      triggers:
+        - severity: CRITICAL
+          threshold: 5
+          window_minutes: 10
+
+    # Custom log format (regex)
+    custom_formats:
+      myapp:
+        pattern: '^\[(?P<timestamp>[\d\-\: ]+)\] (?P<severity>\w+) (?P<message>.*)'
+        timestamp_format: '%Y-%m-%d %H:%M:%S'
+  ```

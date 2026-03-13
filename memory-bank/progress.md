@@ -1,47 +1,20 @@
 # Progress
 
-## Completed
-- [DONE] Globale Code-Bereinigung und Typisierung (Mypy, Pylint, vscode/settings.json Formatierung)
-- [DONE] Behebung von Pylance Type-Checker Konflikten in Dictionary-Verarbeitungen (dict vs. .copy)
-- [DONE] Einführung von pandas-stubs für sauberes Types-Checking
-- [DONE] Modulare, gewichtete Hybrid-Scoring Architecture inkl. `scoring.fallback_weights` und `scoring_weights` pro Asset eingerichtet.
-- [DONE] Fix Audit Logger to display LLM Judge Reasoning in hybrid mode.
-- [DONE] Fix benchmark_info mapping to propagate scoring dictionary in run_benchmark.py.
-- [DONE] Audit-Mode Vollintegration: Dynamischer `evaluated_prompt` in `BenchmarkResult`, vollständiges Logging von Regex Category-Scores und Deduction-Details im Markdown-Log (`run_local_benchmark.py` & `run_commercial_benchmark.py`), umfängliche Doku in `USER_GUIDE.md` & `README.md`.
-- [DONE] Leaderboard TypeError `None` Bug in `__init__.py` und Pydantic Validierungs-Bug (ValidationError in Config) behoben.
-- [DONE] Hardcoded Models in `judge_health.py` entfernt, Konfiguration erfolgt über `benchmark_config.yaml`.
-- [DONE] LLM Judge Timeout für Ollama von 30s auf 120s hochgesetzt.
-- [DONE] LLM Judge Markdown-Ausreißer geparsed (`judge_parser.py` Regex robuster gegen Headings und Bold-Tags).
-- [DONE] LLM Judge Config-Architektur finalisiert:
-  benchmark_config.yaml als SSOT (llm_judge:-Block),
-  config.example.yaml auf Modul-Override-Rolle verschlankt.
-- [DONE] LLM Judge Modul implementiert (utils/scoring/llm_judge/)
-  - Phase 1: Provider-Abstraktion (4 Provider), judge_config, judge_prompt_builder,
-    judge_parser, judge_runner, 35 Tests
-  - Phase 2: judge_handoff.py, Ollama-Lifecycle (unload_model), Fallback-Chain,
-    unload_delay_ms, response_time_ms-Übergabe, 38 weitere Tests
-  - Selbstkorrektur: is_complete()-Bug eigenständig durch Claude identifiziert und gefixt
-
-- [DONE] Konfigurations-Hierarchie und Laufzeitparameter vereinheitlicht
-- [DONE] Fix infinite loops in Hermes3 (Code Quality Module)
-- [DONE] Integration von Google Gemini (2.5 / 3.0 Serie) und xAI Grok (3 / 4) in Config und Pricing-Pipeline
-- [DONE] Bugfix im `reasoning_logic` Evaluator: Parsing-Cutoffs bei `implicit_separator` ("**Answer:**") für Standard Logic-Tests verhindert
-- [DONE] Refaktorierung von `cli_benchmark` für korrekte `BaseTest`-Integration und Einzel-Test Ausführung.
-- [DONE] Fix Leaderboard-Asterisk Bug (`*`) durch Ergänzung des Modul-Präfix in der `cli_benchmark/config.yaml`.
-- [DONE] MyPy-Fehler Zeile 35 in `run_commercial_benchmark.py` behoben (Optional-Import Type-Hint). Pylint: 10/10.
-- [DONE] **LLM Judge Modul – Phase 1**: Provider-Abstraktion (Anthropic, Mistral, OpenAI, Ollama), Pydantic-Config, CoT-Prompt Builder, Response Parser, `JudgeRunner`, Leaderboard-Integration, `make judge-health`, Tests (35), README, `config.example.yaml`.
-- [DONE] **LLM Judge Modul – Phase 2**: `judge_handoff.py` (PendingJudgeResult + frozen response_time_ms + JSON-Persistenz), `unload_model()` in OllamaProvider, `FallbackProviderConfig` + `unload_delay_ms` in Config, Fallback-Chain + Lifecycle in `JudgeRunner`, 38 neue Tests (73 gesamt grün).
-- [DONE] **LLM Judge Modul – Phase 2.5 (Pipeline Integration)**: `run_local_benchmark.py`, `run_commercial_benchmark.py`. Strikte Phase-Run Sequenz eingebaut (Execute -> Zeitmesser -> Unload -> Judge -> Result Merge). Unit-Tests implementiert & erfolgreich.
-- [DONE] **LLM Judge Modul – Phase 3 (ResultManager Schema)**: Abwärtskompatible Schema-Erweiterung für 5 neue `llm_judge_*` Spalten + `scoring_method`. Leaderboard-Aggregation (`scripts/leaderboard/score_calculator.py`) um `llm_judge_avg` und `judge_coverage` ergänzt. Unit-Tests für Legacy-Laden und Partial-Data etabliert.
-- [DONE] **Judge-Score als Primär-Score (Total Score)**: Runtime Fallback von Anthropic auf Ollama falls kein API Key vorhanden, `total_score` und `percentage` Übernahme, `scoring_method` Flag im CSV.
-
 ## Ongoing
-- [ ] LLM Judge Umbau auf natives strukturiertes JSON-Output
-- [ ] Laufender Umbau auf JSON-basierte Prompts (Phase 3 Parser-Refactoring)
-- [DONE] Systematische Modul-Routing Bugs und Namespace-Kollisionen in importlib/sys.modules behoben.
-- [DONE] First real benchmark run (single module, single model) erfolgreich abgeschlossen.
-- [DONE] Cache-Integrität nach Routing-Fix validiert.
-- [ ] LLM Judge **Batch-Mode** (Phase 3.5)
-- [ ] Re-run des `reasoning_logic` Benchmarks für (lokale) Modelle, um verfälschte 0-Punkte Resultate auszugleichen
-- [ ] Analyse der Stabilität von `gpt-oss` (vorheriger Absturz-Kandidat)
-- [ ] Volldurchlauf des Benchmarks für alle lokalen Modelle starten, um das finale Leaderboard (43/43 Tests) zu befüllen.
+- [ ] LLM Judge: Umbau auf natives JSON-Output (`judge_parser.py` + Prompts)
+- [ ] LLM Judge: Batch-Mode (Phase 3.5)
+- [ ] Volldurchlauf aller lokalen Modelle → finales Leaderboard (43/43 Tests)
+- [ ] Re-run `reasoning_logic` für lokale Modelle (verfälschte 0-Punkte bereinigen)
+- [ ] Stabilität `gpt-oss` analysieren (vorheriger Absturz-Kandidat)
+
+## Abgeschlossen (Meilensteine)
+- [DONE] Golden Standard Validierung und SSOT-Konsolidierung (`asset.yaml` Blöcke verifiziert, obsoletes LLM-Referenz-Raw-Log System entfernt). Project Status geupdated.
+- [DONE] LLM Judge Modul vollständig implementiert (Phase 1–3.5): Provider-Abstraktion,
+  Fallback-Chain, Pipeline-Integration, ResultManager-Schema, Batch-Vorbereitung
+- [DONE] Hybrid-Scoring Architektur: gewichtete Regex/Judge-Scores, Fallback-Weights
+- [DONE] Konfig-Architektur finalisiert: `benchmark_config.yaml` als SSOT,
+  `config.example.yaml` auf Modul-Override verschlankt
+- [DONE] Code-Qualität: Mypy/Pylint clean, pandas-stubs, IDE-Formatierung
+- [DONE] Erste echte Benchmark-Runs erfolgreich (Single Module + Cache-Validierung)
+- [DONE] Kritische Bugfixes: Namespace-Kollision (importlib), Parser-Cutoff
+  (implicit_separator), is_complete()-Deadlock, Leaderboard-Asterisk Bug

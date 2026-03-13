@@ -109,3 +109,86 @@ scoring:
         check_method: "negative_keyword_presence"
         forbidden_keywords: ["horoscope", "geniuses", "coffee", "wake up"]
         keywords: [] # Unused for negative check
+
+golden_standard: |
+  # Incident Report
+
+  **Date:** [Date]
+  **Reported By:** Lead Developer
+  **Submitted By:** Communications Lead
+  **Recipient:** Chief Technology Officer
+  **Severity Level:** High
+  **Status:** Action Required
+
+  ---
+
+  ## Incident Summary
+
+  A deployment executed on Friday has resulted in degraded system performance
+  affecting the real-time database and customer-facing dashboard. Immediate
+  remediation is recommended prior to peak customer usage hours.
+
+  ---
+
+  ## Identified Issues
+
+  **1. Real-Time Database Inconsistency**
+  The Friday deployment has introduced instability in the real-time database,
+  resulting in unpredictable and unreliable data consistency. The root cause
+  appears to be linked to changes included in the most recent optimization update.
+
+  **2. Elevated Latency**
+  Significant latency spikes have been observed across the system, most notably
+  impacting dashboard load times. Response times have degraded to a level that
+  is likely to produce a materially negative customer experience if left unresolved.
+
+  ---
+
+  ## Recommended Action
+
+  It is strongly recommended that we **initiate an immediate rollback** of the
+  Friday optimization deployment to restore system stability and data consistency
+  before customers encounter widespread impact during regular usage hours.
+
+  ---
+
+  ## Next Steps
+
+  - Authorize and execute rollback of the Friday deployment
+  - Monitor system performance post-rollback to confirm stabilization
+  - Conduct a root cause analysis of the optimization changes
+  - Schedule a post-incident review to prevent recurrence
+
+  ---
+
+  *Please advise on rollback authorization at your earliest convenience.*
+
+  ---
+
+  ## 5 Begründungen
+
+  1. **Sarcasm und Jargon vollständig entfernt** – Ausdrücke wie „absolute genius
+     move" oder Bezüge auf Horoskope bzw. Coffee sind in einer formellen
+     Kommunikation an das CTO-Level inakzeptabel und untergraben die Glaubwürdigkeit
+     des Berichts. Alle emotionalen Färbungen wurden in sachliche Faktenaussagen
+     übersetzt.
+
+  2. **Klare Heading-Struktur für Executive-Leseverhalten** – CTOs lesen Incident
+     Reports nicht linear. Sie scannen: Zusammenfassung → Problem → Empfehlung →
+     Nächste Schritte. Die Struktur folgt diesem Lesepfad, damit die Kernaussage
+     (Rollback jetzt) in Sekunden erfassbar ist.
+
+  3. **Passive, professionelle Formulierungen statt Vorwürfe** – „The deployment
+     has introduced instability" statt „jemand hat Mist gebaut". Das schützt das
+     Team, fokussiert auf das Problem und ermöglicht konstruktive Lösungsfindung
+     ohne defensive Reaktion beim Empfänger.
+
+  4. **Explizite CTA am Ende** – „Please advise on rollback authorization" macht
+     klar, was vom CTO konkret erwartet wird. Ohne explizite Handlungsaufforderung
+     bleibt der Ball im Unklaren – bei kritischen Vorfällen ist Entscheidungsklarheit
+     geschäftskritisch.
+
+  5. **Metadata-Block am Anfang** – Datum, Schweregrad, Status und Empfänger als
+     strukturierte Header-Informationen ermöglichen schnelle Einordnung und
+     Archivierung. Bei Post-Incident-Reviews und Audits sind diese Felder
+     entscheidend für Traceability.

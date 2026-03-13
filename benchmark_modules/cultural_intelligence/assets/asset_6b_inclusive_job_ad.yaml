@@ -25,3 +25,40 @@ scoring:
 
 expected_output: |
   "Wir suchen eine engagierte Kraft (Staff). Wenn Sie ein Entwickler (Craftsman) sind, der den Markt anführen (dominate) will... Wir suchen Mut (manly courage)."
+
+golden_standard: |
+  „Wir suchen eine engagierte Fachkraft mit Tatkraft und Leidenschaft! Wenn Sie
+  talentiert sind und gemeinsam mit uns erfolgreich am Markt agieren möchten,
+  freuen wir uns auf Ihre Bewerbung. Wir wünschen uns eine Person, die motiviert
+  und lösungsorientiert arbeitet sowie Herausforderungen mit Begeisterung begegnet.
+  Mut, Eigeninitiative und eine positive Einstellung sind bei uns sehr willkommen."
+
+  ---
+
+  **5 Begründungen:**
+
+  1. **Genderneutraler Singular „Fachkraft"** – Statt eines gendered Nomens
+     (z. B. „Handwerker") oder eines formalen m/w/d-Zusatzes wird ein genusneutrales
+     Substantiv gewählt. Dies entspricht modernen deutschen Richtlinien für inklusive
+     Stellenausschreibungen und spricht alle Bewerber:innen gleichermaßen an.
+
+  2. **„am Markt agieren" statt aggressiver Marktsprache** – Die Originalphrase
+     „crushing the competition" ist im deutschen B2B-Kontext unüblich und wirkt
+     für viele Bewerber:innen abstoßend. „Erfolgreich am Markt agieren" transportiert
+     Wettbewerbsorientierung, ohne Aggression oder Exklusion zu signalisieren.
+
+  3. **„Tatkraft und Leidenschaft" als Power-Equivalent** – „Ninja/Rockstar"-Sprache
+     ist in deutschen Stellenanzeigen ein bekanntes Anti-Pattern. Diese Formulierung
+     übersetzt den Energie-Appeal der Vorlage in professionell akzeptable Deutsche
+     Idiomatik.
+
+  4. **Keine kulturspezifischen Sport-/Kampfmetaphern** – Phrases wie „10x Player"
+     oder „kill it" sind im deutschsprachigen Recruiting stark mit US-Tech-Kultur
+     assoziiert und können qualifizierte Bewerber:innen abschrecken. Die Ersetzung
+     durch abstrakte Kompetenzbeschreibungen hält die Anzeige kulturneutral.
+
+  5. **„Wir wünschen uns" statt imperativischer Anforderungslisten** – Der
+     einladende Konjunktiv entspricht dem im deutschsprachigen HR-Bereich
+     bevorzugten Ton. Harte Anforderungsformulierungen („You must be...") wirken
+     in deutschen Anzeigen unfreundlich und senken die Bewerbungsbereitschaft,
+     besonders bei unterrepräsentierten Gruppen.

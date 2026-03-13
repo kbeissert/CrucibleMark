@@ -35,8 +35,8 @@ execution:
 
 scoring:
   fallback_weights:
-    regex: 0.35
-    judge: 0.65
+    regex: 0.20
+    judge: 0.80
 
 benchmarks:
   - id: "cultural_intel_001"
@@ -59,6 +59,9 @@ benchmarks:
     score_contribution:
       routine: 0.4
       reasoning: 0.6
+    scoring_weights:
+      regex: 0.10
+      judge: 0.90
 
   - id: "cultural_intel_004"
     name: "Formal/Informal German"

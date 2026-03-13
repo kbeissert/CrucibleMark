@@ -91,6 +91,10 @@ class BenchmarkRunner:
             # Module config's 'execution' block overrides/supplements (test_class, etc)
             merged.update(internal_config.get("execution", {}))
 
+            # Explizite Übernahme wichter Top-Level Felder in benchmark_info
+            merged["id"] = mod_id
+            merged["scoring"] = internal_config.get("scoring", {})
+
             # Ensure name defaults to ID if missing
             if "name" not in merged:
                 merged["name"] = mod_id.replace("_", " ").title()
@@ -314,6 +318,9 @@ class BenchmarkRunner:
     def run(self, run_config: BenchmarkRunConfig):
         """Führt Benchmark aus."""
         self._print_header("CRUCIBLE MARK - BENCHMARK RUNNER")
+
+        provider = ""
+        model_id = ""
 
         # Validate Model Existence (Fail Fast)
         if run_config.model_name:

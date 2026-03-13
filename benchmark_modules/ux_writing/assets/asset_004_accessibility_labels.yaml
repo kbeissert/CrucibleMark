@@ -171,3 +171,75 @@ scoring:
         check_method: "keyword_presence"
         keywords: ["Element", "Original", "Optimiertes ARIA-Label", "Begründung"]
         min_keywords: 4
+
+
+golden_standard: |
+  # ARIA-Label Optimierung – Enterprise Dashboard
+
+  ---
+
+  ## Schritt 1: Analyse der Probleme
+
+  ### Element 1 – Icon-Button (Mülleimer)
+  **Problem:** Kein `aria-label`. Screen Reader lesen „Button" oder SVG-Inhalt. **WCAG 2.1 Level A-Verstoß** (1.1.1 Non-text Content, 4.1.2 Name, Role, Value). SVG ohne `aria-hidden="true"` führt zu doppelter Ankündigung.
+
+  ### Element 2 – Dropdown-Filter (Status)
+  **Problem:** `aria-label="filter-dropdown-status-col"` — technischer Code-Bezeichner, nicht menschenlesbar. Fehlt `aria-expanded` für Zustand (offen/geschlossen). Kontext fehlt.
+
+  ### Element 3 – Suchfeld (Global)
+  **Problem:** `aria-label="Suchen"` zu generisch in Multi-Suchfeld-Dashboard. Scope (global vs. lokal) fehlt. Placeholder redundant.
+
+  ### Element 4 – Dark Mode Toggle
+  **Problem:** `aria-label="Dark Mode"` beschreibt Namen, nicht Funktion/Zustand. Toggle braucht `aria-pressed="false/true"`. Englisch in DE-UI inkonsistent.
+
+  ### Element 5 – Pagination (Pfeil rechts)
+  **Problem:** Kein `aria-label`. `›` unzuverlässig („Größer-als" oder ignoriert). Fehlt Seitenzahl-Kontext.
+
+  ### Element 6 – Live-Ticker (Aktienkurse)
+  **Problem:** Kein `aria-live`. Dynamik wird ignoriert. Fehlt `aria-atomic="false"` für partielle Updates. Keine Rolle/Label.
+
+  ---
+
+  ## Schritt 2: Optimierung
+
+  | Element | Original | Optimiertes ARIA-Label / Code | Begründung |
+  |---|---|---|---|
+  | **Icon-Button** (Mülleimer) | `<button class="icon-btn"><svg>...</svg></button>` | ```html<button class="icon-btn" aria-label="Eintrag löschen" aria-describedby="delete-hint"><svg aria-hidden="true" focusable="false">...</svg></button><span id="delete-hint" class="sr-only">Diese Aktion kann nicht rückgängig gemacht werden</span>``` | Funktion statt Aussehen. `aria-hidden` + `focusable="false"` verhindert SVG-Rauschen. `aria-describedby` für destruktive Warnung (Enterprise-Standard). `.sr-only` = visuell versteckt, SR-lesbar. |
+  | **Dropdown-Filter** (Status) | `<select aria-label="filter-dropdown-status-col">` | ```html<label for="status-filter" class="sr-only">Einträge nach Status filtern</label><select id="status-filter" aria-expanded="false" aria-haspopup="listbox">...</select>``` | `<label class="sr-only">` semantischer als `aria-label` (WCAG 2.5.3). `aria-expanded` für Zustand. `aria-haspopup="listbox"` für Erwartung. |
+  | **Suchfeld** (Global) | `<input type="search" placeholder="Suchen..." aria-label="Suchen">` | ```html<search role="search"><label for="global-search" class="sr-only">Dashboard durchsuchen</label><input id="global-search" type="search" placeholder="z.B. Projektname, Nutzer"><span id="search-hint" class="sr-only">Durchsucht Projekte, Aufgaben, Nutzer</span></search>``` | `<search role="search">` + `.sr-only`-Label = moderne Semantik. Scope + Beispiele. `aria-describedby` optional für Details. |
+  | **Dark Mode Toggle** | `<button onclick="toggle()" aria-label="Dark Mode">` | ```html<button aria-label="Dunklen Modus umschalten" aria-pressed="false" onclick="toggleDarkMode(this)"><svg aria-hidden="true">...</svg></button>``` | „Umschalten" + `aria-pressed` für Funktion/Zustand. Deutsch. JS: `setAttribute('aria-pressed', isActive ? 'true' : 'false')`. |
+  | **Pagination** (Pfeil rechts) | `<button>›</button>` | ```html<nav aria-label="Seitennavigation"><button aria-label="Nächste Seite, Seite ${current+1} von ${total}">›</button></nav>``` | Dynamische Seitenzahl als Standard. `nav`-Kontext. |
+  | **Live-Ticker** (Aktienkurse) | `<div id="ticker">...</div>` | ```html<div id="ticker" role="region" aria-label="Aktienkurse – Live-Ticker" aria-live="polite" aria-atomic="false" aria-relevant="additions">...</div>``` | `aria-live="polite"` + `aria-atomic="false"` + `aria-relevant="additions"` = nur Änderungen/Hinzufügungen ansagen. `role="region"` als Landmark. |
+
+  ---
+
+  ## Ergänzende Hinweise für die Implementierung
+
+  ```
+  ⚠️ aria-pressed (Dark Mode): JS-Pflicht
+  function toggleDarkMode(btn) {
+    const isPressed = btn.getAttribute('aria-pressed') === 'true';
+    btn.setAttribute('aria-pressed', !isPressed);
+    // Toggle CSS-Klasse
+  }
+
+  ⚠️ Pagination: Seitenzahl dynamisch
+  button.setAttribute('aria-label', `Nächste Seite, Seite ${current + 1} von ${total}`);
+
+  ⚠️ SVG-Icons global: Alle dekorativen SVGs
+  aria-hidden="true" focusable="false"
+
+  ⚠️ Live-Ticker: aria-live vor DOM-Änderung setzen
+  aria-relevant="additions" für nur neue Items
+  ```
+
+  > **F.I.R.S.T.-Prinzip (Mnemonic für Teams):** **F**unctional (Was passiert?), **I**ntuitiv (natürliche Sprache), **R**edundant-frei, **S**tate-aware (`aria-pressed`, `aria-expanded`), **T**argeted (Kontext).
+
+  > **Grundprinzip:** ARIA-Labels beantworten: *„Was passiert beim Klick?"* — Funktion + Kontext + Zustand.
+
+  ### Checkliste für Screen-Reader-Tests
+  - [ ] NVDA (Windows), JAWS, VoiceOver (macOS)
+  - [ ] Alle interaktiven Elemente tastaturnavigierbar?
+  - [ ] Fokus-Ordnung logisch?
+  - [ ] Live-Regionen bei Update?
+  - [ ] Zustandsänderungen hörbar?

@@ -23,3 +23,56 @@ scoring:
 
 expected_output: |
   "Wir haben entschieden, den Commit in das Remote-Repository zu pushen. Nach dem Merge schlug der Build fehl (beim Bauen), wegen eines Issues im Branch. Wir müssen die neuesten Änderungen pullen und den Cache bereinigen."
+
+golden_standard: |
+  „Wir haben uns entschieden, den Commit in das Remote-Repository zu pushen. Nach
+  dem Merge ist der Build aufgrund eines Problems im Branch fehlgeschlagen. Wir
+  müssen die neuesten Änderungen pullen und den Cache leeren."
+
+  ---
+
+  **Anmerkungen zu den Übersetzungsentscheidungen:**
+
+  - **„pushen / pullen"** – Weit verbreitete, korrekt konjugierte Germanismen der
+    englischen Verben *push* und *pull*, die im deutschen Entwicklerumfeld Standard sind
+    (Infinitiv mit *-en*, Partizip: *gepusht / gepullt*).
+
+  - **„der Commit / der Merge / der Build / der Branch / der Cache"** – Alle als Maskulinum
+    behandelt (*der*), was die im Deutschen gebräuchlichste grammatikalische Zuweisung für
+    diese technischen Anglizismen ist.
+
+  - **„das Remote-Repository"** – Als Bindestrich-Kompositum geschrieben, entsprechend den
+    deutschen Orthographieregeln für Komposita mit Fremdwörtern.
+
+  - **„fehlgeschlagen"** – Natürliches deutsches Kompositverb (*fehlschlagen*) für *failed*;
+    vermeidet eine unidiomatische Lehnübersetzung.
+
+  - **„die neuesten Änderungen"** – Idioматisches Deutsch für *the latest changes*; ein
+    unnötiger Anglizismus (z. B. *Changes*) wird vermieden, da eine natürliche deutsche
+    Entsprechung existiert.
+
+  ---
+
+  **5 Begründungen:**
+
+  1. **Anglizismen selektiv einsetzen** – Technische Nomen (*Commit, Merge, Branch*) werden
+     als etablierte Fachbegriffe übernommen. Verben (*pushen, pullen*) werden germanisiert.
+     Wo eine idiomatische deutsche Entsprechung existiert (*Änderungen*, *fehlgeschlagen*),
+     wird diese bevorzugt, um unnötiges „Denglisch" zu vermeiden.
+
+  2. **Grammatikalisches Geschlecht konsistent** – Die Zuweisung *der* als Default-Genus für
+     technische Anglizismen folgt dem im deutschen Entwickleralltag gelebten Standard und
+     sichert grammatikalische Kohärenz im Text.
+
+  3. **Bindestrich-Kompositum bei Remote-Repository** – Deutsche Orthographie schreibt für
+     Komposita mit fremdsprachlichem Erstglied den Bindestrich vor. Diese Regel wird
+     konsequent angewendet.
+
+  4. **„fehlgeschlagen" statt „gefailed"** – Obwohl *failen* in Entwicklerslang vorkommt,
+     ist *fehlgeschlagen* die stilistisch neutrale, registerübergreifend verständliche Form
+     für technische Dokumentation und Team-Kommunikation.
+
+  5. **Zielgruppe: deutschsprachige Entwicklerteams** – Die Übersetzung trifft den
+     realistischen Register-Mix, der in deutschen Dev-Teams gesprochen und geschrieben
+     wird: keine vollständige Eindeutschung (unnatürlich), kein reines Englisch
+     (Aufgabe verfehlt), sondern idiomatisches Tech-Deutsch.

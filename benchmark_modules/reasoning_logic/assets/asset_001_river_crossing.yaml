@@ -49,3 +49,59 @@ scoring:
     points: 10
     weight: 10
 
+
+golden_standard: |
+  # Wolf, Ziege und Kohl – Flussüberquerungsproblem
+
+  ## Kernbeobachtung
+
+  Die **Ziege** ist das Problemtier – sie kollidiert mit Beiden:
+  - Wolf + Ziege allein → Wolf frisst Ziege ❌
+  - Ziege + Kohl allein → Ziege frisst Kohl ❌
+  - Wolf + Kohl allein → sicher ✅
+
+  **Strategie:** Die Ziege zuerst übersetzen, dann den cleversten Zug
+  nutzen: die Ziege auf dem Rückweg mitnehmen.
+
+  ---
+
+  ## Schritt-für-Schritt-Lösung
+
+  | Schritt | Aktion | Linkes Ufer | Rechtes Ufer |
+  |---------|--------|-------------|--------------|
+  | Start | — | Bauer, Wolf, Ziege, Kohl | — |
+  | 1 | Bauer nimmt **Ziege** → | Wolf, Kohl | Bauer, Ziege |
+  | 2 | Bauer kehrt **allein** zurück ← | Bauer, Wolf, Kohl | Ziege |
+  | 3 | Bauer nimmt **Wolf** → | Kohl | Bauer, Wolf, Ziege |
+  | 4 | Bauer bringt **Ziege zurück** ← | Bauer, Ziege, Kohl | Wolf |
+  | 5 | Bauer nimmt **Kohl** → | Ziege | Bauer, Wolf, Kohl |
+  | 6 | Bauer kehrt **allein** zurück ← | Bauer, Ziege | Wolf, Kohl |
+  | 7 | Bauer nimmt **Ziege** → | — | **Bauer, Wolf, Ziege, Kohl** ✅ |
+
+  **Gesamtergebnis: 7 Fahrten** – Alle kommen sicher ans Ziel!
+
+  ---
+
+  ## Begründungen
+
+  1. **Ziege zuerst:** Die Ziege ist das einzige Tier, das zwei
+     andere gefährdet. Durch das sofortige Übersetzen der Ziege
+     verbleiben Wolf und Kohl sicher zusammen.
+
+  2. **Der clevere Trick – Ziege zurückbringen (Schritt 4):**
+     Nach dem Übersetzen des Wolfs würden Wolf und Ziege allein
+     auf dem rechten Ufer bleiben. Die einzige Lösung ist, die
+     Ziege wieder zurückzunehmen – ein kontraintuitiver, aber
+     notwendiger Zug.
+
+  3. **Wolf + Kohl sind harmlos:** Diese Paarung verursacht kein
+     Problem, was das Zwischenspeichern des Wolfs allein auf dem
+     rechten Ufer in Schritt 4 ermöglicht.
+
+  4. **Alternative Reihenfolge möglich:** Statt Wolf in Schritt 3
+     kann auch der Kohl genommen werden (Wolf und Kohl tauschen
+     die Rollen in Schritten 3 und 5) – beide Varianten sind korrekt.
+
+  5. **Minimale Lösung:** 7 Fahrten sind die kleinstmögliche Anzahl
+     für dieses Problem unter den gegebenen Randbedingungen. Kein
+     kürzerer Weg ist möglich.

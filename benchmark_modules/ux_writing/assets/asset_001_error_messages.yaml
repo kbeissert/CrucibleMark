@@ -174,3 +174,84 @@ scoring:
         check_method: "keyword_presence"
         keywords: ["Original", "Verbesserung", "Begründung"]
         min_keywords: 3
+
+golden_standard: |
+  # UX Writing Analyse & Optimierung: Fehlermeldungen
+
+  > **Anmerkung zum Register:** Alle Texte im Du-Register (Consumer-App-Kontext). In B2B- oder Finanz-Kontexten auf "Sie" anpassen. Emojis in CTAs: sinnvoll im Consumer-E-Commerce, in Accessibility-kritischen oder seriösen Kontexten (Banking, HR) weglassen.
+
+  ---
+
+  ## Schritt 1: Analyse – Identifizierte Probleme
+
+  **Fehlermeldung 1 – `Error: Database connection timeout (code: ETIMEDOUT)`**
+  - Technischer Jargon völlig unverständlich für Laien ("Database", "ETIMEDOUT")
+  - Kein Kontext: Was ist passiert? Was soll der Nutzer tun?
+  - **Dead End:** Keine Handlungsoption, kein nächster Schritt
+  - Fehlendes Empathie-Signal – klingt wie eine Systemkonsole
+
+  **Fehlermeldung 2 – `Error 500: Internal Server Error`**
+  - HTTP-Statuscode ist für Endnutzer bedeutungslos
+  - "Internal Server Error" klingt bedrohlich und erzeugt Panik
+  - **Dead End:** Kein CTA, keine Zeitangabe, keine Entschuldigung
+  - Impliziert möglicherweise Datenverlust, ohne das anzusprechen
+
+  **Fehlermeldung 3 – `Invalid input in field 'email'`**
+  - Technischer Variablenname `'email'` in Anführungszeichen wirkt wie Code
+  - Schuldzuweisung durch "Invalid input" (impliziert Nutzerfehler)
+  - Keine Erklärung, was konkret falsch ist (Format? Leerzeichen? Sonderzeichen?)
+  - Kein konstruktiver Hinweis zur Korrektur
+
+  **Fehlermeldung 4 – `Authentication failed: JWT token expired`**
+  - "JWT token" ist reiner Entwickler-Jargon – für Nutzer vollkommen unverständlich
+  - "Authentication failed" klingt wie eine Sicherheitswarnung/Ablehnung
+  - **Dead End:** Keine Erklärung, was zu tun ist
+  - Kann Verwirrung oder sogar Misstrauen auslösen ("Wurde ich gehackt?")
+
+  **Fehlermeldung 5 – `Payment declined`**
+  - Extrem kurz und kalt – kein Empathie-Signal bei einem emotional sensiblen Moment
+  - Keine Erklärung des Grundes (falsches Limit? Falsche Daten? Bank?)
+  - **Dead End:** Kein nächster Schritt, keine Alternativen
+  - Hohes Abbruch-Risiko (Cart Abandonment) durch fehlende Orientierung
+
+  **Fehlermeldung 6 – `"Your session has expired. Please log in again."`**
+  - Subtiles, aber kritisches Problem: **Datenverlust-Risiko** nicht kommuniziert
+  - Kein Hinweis, ob der Warenkorb, das Formular oder Eingaben noch vorhanden sind
+  - "Please log in again" klingt wie eine Bestrafung, nicht wie Hilfe
+  - Fehlende Empathie: Der Nutzer verliert möglicherweise gerade seine gesamte Arbeit
+  - **Dead End für Kontext:** Was passiert nach dem Login? Kommt man zurück?
+  - **Fehlende Prävention:** Idealerweise Countdown-Warnung *vor* dem Ablauf (z. B. "Deine Sitzung läuft in 2 Minuten ab") — die optimierte Meldung behandelt das Symptom, nicht die Ursache
+
+  ---
+
+  ## Schritt 2: Optimierung
+
+  | Original | Verbesserung | Begründung |
+  |---|---|---|
+  | `Error: Database connection timeout (code: ETIMEDOUT)` | **Kurze Unterbrechung – wir sind gleich wieder da.** Unsere Server sind gerade kurz nicht erreichbar. Bitte versuche es in wenigen Minuten erneut. *(Sofern serverseitige Persistenz sichergestellt ist: "Deine bisherigen Eingaben sollten noch vorhanden sein.")* [🔄 Seite neu laden] | **Jargon-Eliminierung** + **Fehler-Ownership** (Nielsen #9): Das System übernimmt Verantwortung. Zeitliche Eingrenzung ("wenigen Minuten") reduziert Frustration. Hinweis auf Eingaben nur wenn technisch einlösbar! CTA gibt klare Handlungsoption (**Progressive Disclosure**: einfachste Lösung zuerst). |
+  | `Error 500: Internal Server Error` | **Auf unserer Seite ist etwas schiefgelaufen.** Das liegt nicht an dir – wir arbeiten bereits daran. Bitte versuche es in ein paar Minuten noch einmal. [🔄 Erneut versuchen] · [🏠 Zur Startseite] | **Fehler-Ownership** (Nielsen #9) + **Empathie:** "Das liegt nicht an dir" ist die direkteste Schuld-Entlastungsformel. Zwei CTAs vermeiden den Dead End: Retry oder sicherer Ausweg (Nielsen #3: User Control & Freedom). Kein Statuscode, keine technischen Begriffe. |
+  | `Invalid input in field 'email'` | **Bitte überprüfe deine E-Mail-Adresse.** Sie sollte in diesem Format eingegeben werden: name@beispiel.de | **Konstruktives Feedback** (Nielsen #9) + **Schuld-Neutralität:** Kein "falsch" oder "ungültig". Konkretes Beispielformat gibt sofortige Orientierung. Kein CTA nötig — bei Inline-Validierung direkt am Feld ist das Formular der Kontext; ein Button "Korrigieren" würde eine falsche Handlungserwartung erzeugen. |
+  | `Authentication failed: JWT token expired` | **Zu deiner Sicherheit wurdest du automatisch abgemeldet.** Das passiert nach längerer Inaktivität. *(Kontextabhängig ergänzen, sofern zutreffend: "Dein Warenkorb ist noch gesichert.")* Melde dich einfach erneut an. [🔐 Jetzt anmelden] | **Vertrauen & Transparenz** (Nielsen #1: Visibility of System Status): "Zu deiner Sicherheit" wandelt eine negative Erfahrung in ein Sicherheits-Feature um — die stärkste Reframing-Technik dieser Analyse. Datenstatus-Hinweis nur context-aware einblenden (nicht auf der Login-Seite ohne aktiven Checkout). |
+  | `Payment declined` | **Deine Zahlung konnte leider nicht abgeschlossen werden.** Das passiert manchmal — zum Beispiel bei einem abgelaufenen Ablaufdatum oder einem Tageslimit deiner Bank. Bitte überprüfe deine Zahlungsdaten oder wähle eine andere Zahlungsmethode. Deine Bestellung ist noch gespeichert. [💳 Zahlungsdaten prüfen] · [➕ Andere Zahlungsmethode wählen] | **Empathie bei High-Stakes-Moment** (Nielsen #7: Flexibility & Efficiency) + **Stigma-Vermeidung:** "declined" = implizite Ablehnung als Person, deswegen neutrales "konnte nicht abgeschlossen werden". Zwei konkrete häufige Ursachen nennen (Ablaufdatum, Tageslimit) statt vages "verschiedene Gründe" — das reduziert Unsicherheit mehr als Vagheit. Dual-CTA hält den Kaufprozess am Leben. "Bestellung gespeichert" ist die entscheidende Anti-Abandonment-Aussage. |
+  | `"Your session has expired. Please log in again."` | **Du wurdest zum Schutz deiner Daten abgemeldet.** Keine Sorge: Dein Warenkorb und deine Eingaben sind noch gespeichert. Nach dem Anmelden kannst du genau dort weitermachen, wo du aufgehört hast. [🔐 Anmelden & weitermachen] | **Subtiles Datenverlust-Risiko adressiert** (Nielsen #1 + #3): Explizite Bestätigung "Eingaben sind gespeichert" + "genau dort weitermachen" beseitigt die größte Nutzer-Angst. CTA-Text "& weitermachen" signalisiert Kontinuität statt Neustart — die wirkungsstärkste CTA-Formulierung dieser Analyse. **Implementierungshinweis:** Diese Meldung nur zeigen, wenn tatsächlich ein aktiver Kontext (Formular, Warenkorb) unterbrochen wurde; neutrale Version für einfache Login-Timeouts. Langfristige Best Practice: Session-Countdown-Warnung 2 Minuten vor Ablauf einbauen. |
+
+  ---
+
+  ## Angewandte UX-Prinzipien (Übersicht)
+
+  | Prinzip | Angewendet bei |
+  |---------|---------------|
+  | **Blame the system, not the user** | #1, #2, #4, #5 |
+  | **Progressive Disclosure** | #1, #5 (einfachste Lösung zuerst) |
+  | **Dead-End-Vermeidung** (immer ≥ 1 CTA) | Alle |
+  | **Nielsen #1** – Visibility of system status | #2, #4, #6 |
+  | **Nielsen #3** – User control & freedom | #2, #6 |
+  | **Nielsen #7** – Flexibility & efficiency of use | #5 |
+  | **Nielsen #9** – Help users recognize, diagnose, recover | #1, #2, #3, #5 |
+  | **Emotional Design / Stigma-Vermeidung** | #5, #6 |
+  | **Context-aware Messaging** | #4, #6 |
+  | **Proaktive Fehlervermeidung** (Systemempfehlung) | #6 |
+
+  ---
+
+  > **💡 Übergreifendes Prinzip:** Alle Optimierungen folgen dem Grundsatz *"Das System arbeitet für den Nutzer – nicht umgekehrt."* Fehler sind immer eine Kommunikationschance: Wer in einem Fehlermoment Orientierung, Empathie und einen klaren nächsten Schritt bietet, stärkt das Vertrauen nachhaltig – auch wenn etwas schiefläuft.

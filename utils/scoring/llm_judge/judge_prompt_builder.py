@@ -115,8 +115,25 @@ _USER_TEMPLATE = Template(
     "### EVALUATION RUBRIC\n"
     "$rubric\n\n"
     "---\n"
-    "Reason step by step. Write your full analysis under REASONING:, "
-    "then state your final score as a single integer under SCORE:"
+    "Reason step by step. First write your full analysis under REASONING:\n"
+    "Then, output a JSON block with exactly this structure:\n"
+    "```json\n"
+    "{\n"
+    '  "score": <1-$scale>,\n'
+    '  "sub_scores": {\n'
+    '    "task_compliance": <1-5>,\n'
+    '    "output_quality": <1-5>,\n'
+    '    "standard_adherence": <1-5>\n'
+    "  }\n"
+    "}\n"
+    "```\n\n"
+    "The JSON must be the last thing in your response.\n"
+    "For the sub_scores, rate each dimension independently on a scale of 1-5:\n"
+    "- 1: Poor / completely missing\n"
+    "- 2: Below expectations\n"
+    "- 3: Adequate / meets basic requirements\n"
+    "- 4: Good / exceeds basic requirements\n"
+    "- 5: Excellent / exceptional quality"
 )
 
 
@@ -157,5 +174,6 @@ def build_prompts(
         model_response=model_response.strip(),
         golden_standard=golden_standard.strip(),
         rubric=rubric,
+        scale=scale,
     )
     return system_prompt, user_prompt

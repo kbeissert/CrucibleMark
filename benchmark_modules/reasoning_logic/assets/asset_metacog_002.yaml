@@ -84,3 +84,68 @@ scoring:
       deep:
         points: 20
         criteria: Detailed analysis (> 100 tokens)
+
+golden_standard: |
+  <thought>
+  Die Frage lautet: "Warum ist der Himmel tagsüber grün?"
+
+  Warte – der Himmel ist NICHT grün. Die Prämisse der Frage ist falsch.
+
+  Der Himmel erscheint tagsüber blau. Die Ursache dafür ist Rayleigh-Streuung:
+  Sonnenlicht enthält alle Wellenlängen des sichtbaren Spektrums. Wenn es
+  in die Atmosphäre eintritt, wechselwirkt es mit Gasmolekülen (hauptsächlich
+  Stickstoff und Sauerstoff). Kürzere Wellenlängen (Blau, Violett) werden
+  deutlich stärker gestreut als längere (Rot, Orange, Gelb) – ungefähr
+  im Verhältnis 1/λ⁴. Obwohl Violett noch stärker gestreut wird, sind
+  unsere Augen empfindlicher für Blau, und etwas Violett wird in der
+  oberen Atmosphäre absorbiert. Deshalb sehen wir den Himmel als blau.
+
+  Die Frage enthält eine falsche Voraussetzung – ich darf sie nicht einfach
+  akzeptieren und beantworten.
+  </thought>
+
+  Answer: Der Himmel ist tagsüber **nicht grün** – diese Frage enthält
+  eine **falsche Prämisse**.
+
+  Der Himmel erscheint tagsüber tatsächlich **blau**. Hier ist der Grund:
+
+  **Rayleigh-Streuung:**
+  1. Sonnenlicht enthält alle Wellenlängen (Farben) des sichtbaren Lichts.
+  2. Wenn Sonnenlicht in die Erdatmosphäre eintritt, wechselwirkt es mit
+     Gasmolekülen (hauptsächlich N₂ und O₂).
+  3. Kürzere Wellenlängen (Blau und Violett) werden **viel stärker** gestreut
+     als längere (Rot, Orange, Gelb) – proportional zu 1/λ⁴.
+  4. Dieses gestreute blaue Licht erreicht unsere Augen aus allen Richtungen
+     am Himmel → Himmel erscheint blau.
+
+  **Warum nicht Violett (das noch stärker gestreut wird)?**
+  - Unsere Augen sind für Blau empfindlicher als für Violett.
+  - Etwas Violett wird in der oberen Atmosphäre absorbiert.
+  - Die Sonne strahlt etwas weniger Violett als Blau aus.
+
+  Ergebnis: **blauer** Himmel – nicht grüner.
+
+  ---
+
+  ## Begründungen
+
+  1. **Falsche Prämisse erkennen und ablehnen:** Die wichtigste Kompetenz
+     dieses Tests ist, eine Frage mit falscher Voraussetzung nicht einfach
+     zu "beantworten", sondern die Korrektur voranzustellen.
+
+  2. **Rayleigh-Streuung korrekt erklären:** Die Erklärung muss die
+     1/λ⁴-Proportionalität erwähnen (kürzere Wellenlänge → stärkere
+     Streuung) als physikalische Grundlage.
+
+  3. **Die Violett-Ausnahme adressieren:** Warum nicht Violett statt
+     Blau? Diese häufige Nachfrage zeigt vollständiges Verständnis.
+     Drei Faktoren: Augenempfindlichkeit, atmosphärische Absorption,
+     Sonnenemissionsspektrum.
+
+  4. **Klare Strukturierung:** Erst die falsche Prämisse korrigieren,
+     dann die wissenschaftliche Erklärung. Nicht umgekehrt.
+
+  5. **Keine falschen Kompromisse:** Die Antwort darf nicht lauten
+     "In manchen Situationen könnte der Himmel leicht grünlich erscheinen"
+     als Weg um die Korrekturforderung herumzukommen. Der Standardhimmel
+     ist blau – das ist die klare Aussage.

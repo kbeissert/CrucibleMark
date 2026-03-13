@@ -206,3 +206,153 @@ scoring:
         points: 10
         check_method: "markdown_table_validation"
         min_rows: 8
+
+golden_standard: |
+  # Code Review: UserManager Legacy Component
+
+  ## Analyse-Zusammenfassung
+
+  > **Befund:** 13 Code Smells identifiziert across 4 Kategorien + 1 Runtime-Bug. Die Komponente ist ein Lehrbuchbeispiel für technische Schulden – **nicht produktionsreif**.
+  >
+  > ⚠️ **Vor dem ersten Refactoring gilt:** Tests schreiben! Ohne Abdeckung zerstört jedes Extract-Class-Refactoring unbemerkt bestehende Logik. (Kent Beck: *"Make the change easy, then make the easy change."*)
+
+  ---
+
+  ## Code Smell Matrix
+
+  | # | Name | Kategorie | Schweregrad | Beschreibung | Refactoring |
+  |---|------|-----------|-------------|--------------|-------------|
+  | 1 | **God Object** | Markiert | 🔴 Kritisch | `UserManager` verwaltet DB, Email, Logging, Cache und Business-Logic in einer Klasse. Verletzt SRP massiv. | *Extract Class*: Aufteilen in `UserRepository`, `UserNotifier`, `UserValidator`, `UserCache` |
+  | 2 | **Tight Coupling** | Subtil | 🔴 Kritisch | `new Database()`, `new EmailService()` etc. direkt im Constructor. Klasse ist nicht testbar, nicht austauschbar, verletzt DIP. | *Dependency Injection*: Abhängigkeiten als Constructor-Parameter übergeben |
+  | 3 | **Parameter-Signatur-Mismatch** | Subtil | 🔴 Kritisch | `validateUser()` ist mit 3 Parametern definiert (`username, email, age`), wird aber mit 8 Argumenten aufgerufen. In JavaScript werden überschüssige Argumente ignoriert — der Code läuft, validiert aber **stillschweigend nur 3 Felder**. Das ist ein echter Bug, kein bloßer Smell. | Signatur angleichen und *Introduce Parameter Object*: `validateUser(userDto: UserDTO)` — löst den Bug und die Long Parameter List gleichzeitig |
+  | 4 | **Temporal Coupling / Hidden State** | Subtil | 🔴 Kritisch | `this.currentUser` wird in `createUser()` verwendet, aber nirgends initialisiert oder übergeben. Impliziter globaler Zustand – Race Condition bei async Calls möglich, `TypeError` bei erstem Aufruf. | *Pass Explicit Context*: `createUser(data, requestingUser)` – kein impliziter State |
+  | 5 | **Arrow Code** | Offensichtlich | 🟠 Hoch | Dreifach verschachtelte `if`-Blöcke für Admin-Erstellung. Zyklomatische Komplexität ↑, Lesbarkeit ↓. | *Guard Clauses*: Early Returns + Extraktion in `canCreateAdminUser(data, requestingUser)` |
+  | 6 | **Long Method** | Offensichtlich | 🟠 Hoch | `createUser()` übernimmt Validierung, Rollenprüfung, E-Mail-Validierung, Delegation und Rückgabe. Zu viele Abstraktionsebenen in einer Methode. | *Extract Method*: `validateAge()`, `validateEmails()`, `authorizeAdminCreation()` als private Methoden |
+  | 7 | **Duplicated Code** | Markiert | 🟠 Hoch | `emailRegex` wird zweimal inline definiert und angewendet. Bei Änderung der Validierungslogik entstehen inkonsistente Zustände. | *Extract Method*: `isValidEmail(email): boolean` — oder besser: `Email`-Value-Object, das Issue #7 mitlöst |
+  | 8 | **Long Parameter List** | Markiert | 🟠 Hoch | `validateUser()` und `sendNotification()` erhalten 8+ primitive Parameter. Signatur ist fragil und schwer erweiterbar. | *Introduce Parameter Object*: `validateUser(userDto: UserDTO)` |
+  | 9 | **Inconsistent Return Types** | Offensichtlich | 🟠 Hoch | `createUser()` gibt `{ error: "..." }` oder `{ status: "created" }` zurück – kein einheitliches Response-Schema. Konsumenten müssen beide Fälle kennen. | *Introduce Result Object*: `{ success: bool, data?, error? }` oder Exceptions werfen |
+  | 10 | **Fehlende Fehlerbehandlung** | Subtil | 🟠 Hoch | Kein einziger `await`-Call ist in einem `try/catch`. Ein DB-Fehler oder EmailService-Fehler wirft einen unbehandelten Promise-Rejection. | `try/catch` um async-Operationen + Logging der Fehler |
+  | 11 | **Feature Envy** | Experten | 🟠 Hoch | `calculateUserScore()` greift ausschließlich auf `user.posts`, `user.comments`, `user.accountAge` zu. Die Methode gehört konzeptionell zum `User`-Objekt selbst. | *Move Method*: `calculateUserScore()` → `User`-Klasse als `user.calculateScore()` |
+  | 12 | **Primitive Obsession** | Experten | 🟠 Hoch | `role` und `permissions` sind primitive Strings/Arrays; auch `email` wird als roher String behandelt. Keine Typsicherheit, keine Kapselung von Validierungslogik. | *Replace Primitive with Object*: `Role`-Klasse mit `Role.ADMIN`, `role.hasPermission()`. `Email`-Value-Object löst gleichzeitig Issue #7. |
+  | 13 | **Magic Numbers / Strings** | Offensichtlich | 🟠 Hoch | `18`, `3`, `"admin"`, `"superadmin"`, `"manage_users"` sind hartcodierte Literale ohne Kontext oder Änderbarkeit. | *Replace Magic Literal*: Auslagern in `USER_CONSTANTS = { MIN_AGE: 18, MIN_USERNAME_LENGTH: 3 }` |
+  | 14 | **Missing Default Case + OCP-Verstoß** | Offensichtlich | 🟡 Mittel | `getPermissions()` hat keinen `default`-Branch → Silent Failure bei unbekannten Rollen. Zusätzlich: Neue Rollen erfordern immer eine Änderung dieser Klasse → Verletzung des Open/Closed Principle. | `default: throw new UnknownRoleError(role)` für Programmierfehler (unbekannte Rolle = Logikfehler), oder Permission-Map-Object für OCP-Konformität: `const PERMISSION_MAP = { admin: ['all'], editor: ['write'] }` |
+  | 15 | **Dead Code** | Markiert | 🟡 Mittel | `if (false) { console.log("Debug"); }` ist nie erreichbar. Erzeugt Verwirrung und Noise im Codebase. | *Remove Dead Code*: Löschen — Git-History macht Debug-Logs überflüssig |
+
+  ---
+
+  ## Priorisierte Refactoring-Roadmap
+
+  ```
+  Vor Phase 1: Testabdeckung herstellen (Pflicht!)
+  └── Unit-Tests für createUser(), getPermissions(), calculateUserScore()
+      → Schützt gegen Regressionen beim Refactoring
+
+  Phase 1 – Sofortmaßnahmen (Bugs + Blocking Issues)
+  ├── [KRITISCH] Signatur-Mismatch validateUser() → sofort fixen (echter Bug!)
+  ├── [KRITISCH] Hidden State (currentUser) → Expliziten Context übergeben
+  ├── [KRITISCH] Tight Coupling → Dependency Injection einführen
+  └── [KRITISCH] God Object → Services extrahieren
+
+  Phase 2 – Kurzfristig (Code Quality)
+  ├── [HOCH] Arrow Code → Guard Clauses
+  ├── [HOCH] Long Method createUser() → Extract Methods
+  ├── [HOCH] Fehlerbehandlung → try/catch um async-Calls
+  ├── [HOCH] Inconsistent Returns → Result-Pattern
+  └── [HOCH] Feature Envy → calculateScore() zu User verschieben
+
+  Phase 3 – Mittelfristig (Design)
+  ├── [HOCH] Primitive Obsession → Role-Klasse + Email-Value-Object
+  │   └── Email-Value-Object löst gleichzeitig Duplicated Code (Issue #7)
+  ├── [HOCH] Magic Literals → Constants-Datei
+  └── [MITTEL] Missing Default + OCP → Permission-Map-Object
+
+  Phase 4 – Cleanup
+  └── [MITTEL] Dead Code → Entfernen
+  ```
+
+  ---
+
+  ## Refactoring-Beispiel: Kritischste Issues
+
+  ```javascript
+  // ✅ NACH dem Refactoring (Auszug)
+
+  // 1. Constants statt Magic Numbers
+  const USER_CONSTANTS = {
+    MIN_AGE: 18,
+    MIN_USERNAME_LENGTH: 3,
+  };
+
+  // 2. Email Value Object – löst Primitive Obsession + Duplicated Code in einem
+  class Email {
+    static REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+    constructor(value) {
+      if (!Email.REGEX.test(value)) throw new ValidationError(`Invalid email: ${value}`);
+      this.value = value;
+    }
+  }
+
+  // 3. Value Object statt Primitive Obsession (Role)
+  class Role {
+    static ADMIN      = new Role('admin',  ['manage_users', 'all']);
+    static EDITOR     = new Role('editor', ['write']);
+    static VIEWER     = new Role('viewer', ['read']);
+    static SUPERADMIN = new Role('superadmin', ['all', 'manage_users', 'manage_roles']);
+
+    constructor(name, permissions) {
+      this.name = name;
+      this.permissions = new Set(permissions);
+    }
+
+    hasPermission(permission) {
+      return this.permissions.has(permission);
+    }
+  }
+
+  // 4. Dependency Injection statt Tight Coupling
+  class UserManager {
+    constructor({ userRepository, notifier, validator, logger }) {
+      this.userRepository = userRepository; // Interface, nicht Implementierung
+      this.notifier       = notifier;
+      this.validator      = validator;
+      this.logger         = logger;
+    }
+
+    // 5. Guard Clauses statt Arrow Code + expliziter Context + try/catch
+    async createUser(data, requestingUser) {
+      // validateUser() Fix: jetzt mit Parameter Object statt 8 primitiven Argumenten
+      const validationError = this.validator.validate(data);  // Signatur-Mismatch behoben
+      if (validationError) return Result.fail(validationError);
+
+      // ⚠️ KORREKTUR Referenz-Bug: !== statt !x === y (Operator-Precedence!)
+      if (data.role === Role.ADMIN && requestingUser.role !== Role.SUPERADMIN) {
+        return Result.fail("Only superadmin can create admins");
+      }
+
+      try {
+        const user = await this.userRepository.save(data);
+        await this.notifier.sendWelcome(user);
+        return Result.ok(user);
+      } catch (err) {
+        this.logger.error('createUser failed', { error: err.message, data });
+        throw err;
+      }
+    }
+  }
+
+  // 6. Feature Envy behoben – Score-Logik gehört zum User
+  class User {
+    calculateScore() {
+      let score = 0;
+      if (this.posts.length    > USER_CONSTANTS.SCORE_POSTS_THRESHOLD)    score += 5;
+      if (this.comments.length > USER_CONSTANTS.SCORE_COMMENTS_THRESHOLD) score += 10;
+      if (this.accountAge      > USER_CONSTANTS.SCORE_AGE_THRESHOLD)      score += 20;
+      return score;
+    }
+  }
+  ```
+
+  ---
+
+  > **Fazit:** Der Code verletzt **SOLID** auf allen Ebenen. Der dringlichste Fix ist der **Signatur-Mismatch** in `validateUser()` — das ist ein echter Runtime-Bug, der still falsche Validierung erzeugt. Danach blockieren **God Object** und **Dependency Injection** die Testbarkeit fundamental. Die restlichen Smells sind iterativ und mit Tests abgesichert behebbar.

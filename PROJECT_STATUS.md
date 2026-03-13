@@ -1,15 +1,20 @@
 # PROJECT_STATUS.md
 
-**Last Updated:** 2026-03-13 **Current Version:** 2.3.0 (Audit Audit Mode Vollintegration Meta-Review Workflow) **Status:** ✅ Production-Ready
+**Last Updated:** 2026-03-13 **Current Version:** 2.4.1 (Golden Standard SSOT) **Status:** ✅ Production-Ready
 
 ______________________________________________________________________
 
 ## 🎯 Executive Summary
-CrucibleMark v2.4.0 bringt die **Audit Audit Mode Vollintegration Meta-Review Workflow** und schließt die LLM Judge Pipeline ab.
-Die Kernarchitektur für die automatisierte Auswertung freier Antworten wurde vollständig integriert, getestet und stabilisiert.
-Eine SSOT-basierte (Single Source of Truth) Konfiguration in `benchmark_config.yaml` garantiert saubere Testdurchläufe ohne Fallstricke.
+CrucibleMark v2.4.1 etabliert die **Golden Standard SSOT (Single Source of Truth)** und schließt die Konsolidierung der Referenzdaten ab.
+Die Kernarchitektur für die automatisierte Auswertung freier Antworten wurde in v2.4.0 vollständig integriert, getestet und stabilisiert.
+Eine SSOT-basierte Konfiguration in `benchmark_config.yaml` sowie detaillierte `golden_standard` Blöcke in den Assets garantieren saubere Testdurchläufe ohne Fallstricke.
 
-**Key Achievements (v2.4.0):**
+**Key Achievements (v2.4.1):**
+- ✅ **Golden Standard Consolidation (SSOT):** 37 `golden_standard` Konfigurationen über alle YAML-Assets strukturell validiert. Die manuell verdichteten Standards fungieren nun offiziell als "Design by Intention" Ground Truth.
+- ✅ **Validation Tooling:** Einführung von `scripts/analysis/validate_golden_standards.py` zur LLM-basierten Validierung (Claude Haiku) von Aufgaben-Assets.
+- ✅ **Storage Cleanup:** Entfernung der obsoleten Roh-Referenz-Logs (`outputs/reference-logs/`), um den Fokus auf qualitätsgesicherte, manuelle Golden Standards zu legen und pedantische LLM-False-Positives zu vermeiden.
+
+**Previous Version (v2.4.0):**
 - ✅ **Audit Mode Logging:** Vollständige Markdown-Protokollierung mit dynamischem `evaluated_prompt`, regelbasierten Category-Scores und LLM-Judge Reasoning.
 - ✅ **LLM Judge Pipeline:** Vollständige Integration von 4 Providern (Ollama, Anthropic, Mistral, OpenAI) mit automatischer Fallback-Chain.
 - ✅ **Bulletproof Parsing:** Robuster Regex-Parser, der auch Markdown-Ausreißer von Modellen (z.B. `### **SCORE:**`) sicher verarbeitet.

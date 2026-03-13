@@ -58,6 +58,11 @@ class BenchmarkResult(BaseModel):
         description="The actual prompt that was sent to the model after evaluation/variable substitution",
     )
 
+    # --- Judge Sub-Scores ---
+    judge_task_compliance: Optional[int] = Field(default=None, description="Task Compliance sub-score from LLM Judge")
+    judge_output_quality: Optional[int] = Field(default=None, description="Output Quality sub-score from LLM Judge")
+    judge_standard_adherence: Optional[int] = Field(default=None, description="Standard Adherence sub-score from LLM Judge")
+
     # --- Identification ---
     model_version: str = Field(
         "unknown", description="Fingerprint or version string of the model"

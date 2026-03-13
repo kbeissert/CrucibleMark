@@ -84,3 +84,49 @@ scoring:
       correct:
         points: 30
         criteria: Answer is 9 sheep
+
+golden_standard: |
+  <thought>
+  Die Schlüsselformulierung lautet "All but 9 die."
+
+  "All but 9" bedeutet "alle außer 9" – also sterben alle Schafe
+  mit Ausnahme von 9.
+
+  Erster Impuls: 17 - 9 = 8. Aber warte – das wäre falsch.
+
+  "All but 9 die" sagt direkt, dass 9 Schafe NICHT sterben.
+  Die Ausgangszahl 17 ist ein Distractor.
+
+  Keine weiteren Berechnungen nötig: 9 Schafe überleben.
+  </thought>
+
+  Answer: **9 Schafe** sind übrig.
+
+  Die Formulierung "all but 9 die" bedeutet "alle *außer* 9 sterben" –
+  also überleben genau 9 Schafe. Die häufige Fehlantwort ist 8
+  (durch vorschnelles 17 - 9 = 8), aber das wäre die Anzahl der
+  gestorbenen Schafe (17 - 9 = 8 sterben, 9 bleiben am Leben).
+
+  ---
+
+  ## Begründungen
+
+  1. **Linguistische Präzision schlägt arithmetischen Reflex:** Das
+     Gehirn will sofort "17 minus 9" rechnen, aber "all but X die"
+     ist eine Formulierung für "X überleben" – nicht "X sterben".
+     Sprachliche Analyse muss vor der Rechnung kommen.
+
+  2. **Selbstkorrektur ist der Kern dieses Tests:** Ein gutes Modell
+     bemerkt den eigenen Fehler-Impuls (17-9=8) und korrigiert
+     ihn explizit, bevor die Antwort gegeben wird.
+
+  3. **Die Ausgangszahl 17 ist ein Distractor:** Sie dient nur dazu,
+     den Rechen-Reflex auszulösen. Die tatsächliche Antwort hängt
+     ausschließlich von der Formulierung "all but 9" ab.
+
+  4. **Verifikation durch Umkehrung:** Wenn 9 überleben, sterben
+     17 - 9 = 8. "All but 9 die" = 8 sterben, 9 leben. ✅ Konsistent.
+
+  5. **Klassische Sprachfalle:** Ähnliche Formulierungen wie
+     "only 3 survived", "except for 5, all perished" testen dasselbe
+     Muster – direkte Benennung der Überlebenden.

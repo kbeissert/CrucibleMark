@@ -104,7 +104,7 @@ def check_ollama() -> None:
             cloud_models = []
 
             for model in model_list:
-                name = (
+                name = str(
                     model.model
                     if hasattr(model, "model")
                     else model.get("name", "unknown")
@@ -143,7 +143,7 @@ def check_ollama() -> None:
 
                 for model in cloud_models:
                     # Slightly different printing for cloud (No size usually)
-                    name = (
+                    name = str(
                         model.model
                         if hasattr(model, "model")
                         else model.get("name", "unknown")

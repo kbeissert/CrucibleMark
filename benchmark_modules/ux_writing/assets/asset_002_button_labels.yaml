@@ -202,3 +202,69 @@ scoring:
         check_method: "keyword_presence"
         keywords: ["Szenario", "Original", "Optimierung", "Begründung"]
         min_keywords: 4
+
+golden_standard: |
+  # UX Copy Audit: Button-Label-Optimierung
+
+  ---
+
+  ## Schritt 1: Analyse – Identifizierte Probleme
+
+  | # | Szenario | Problem(e) |
+  |---|----------|------------|
+  | 1 | E-Commerce Checkout | ❌ „OK" ist bedeutungslos – keine Handlungsklarheit, kein Vertrauen, keine Summenbestätigung. Rechtlich problematisch: § 312j BGB verlangt eine explizite Zahlungsaufforderung im Button-Label. |
+  | 2 | Newsletter-Popup | ❌ Viel zu lang (67+ Zeichen), unleserlich auf Mobile. Redundant: Der Kontext ist bereits klar. Wirkt bürokratisch statt einladend. |
+  | 3 | Enterprise SaaS | ❌ Englisches „Upload" im deutschen UI ist inkonsistent. Zu generisch – unklar, *was* hochgeladen wird. Kein Vertrauens- oder Sicherheitssignal für Compliance-sensible B2B-Umgebungen. |
+  | 4 | Account löschen | ❌ „Löschen" ohne Warnung ist gefährlich bei irreversiblen Aktionen. Kein Hinweis auf Konsequenz. Fehlende Friction ist ein UX-Risiko. **Wichtig:** Das Label allein reicht nicht – ein Bestätigungsdialog (Modal) ist zusätzlich erforderlich (vgl. Apple HIG, Material Design Guidelines). |
+  | 5 | Health App | ❌ „Weiter" ist kalt und klinisch – kein Empathiesignal nach Schmerz-Eingabe. Kommuniziert nicht, was nach dem Klick passiert. Ignoriert den emotionalen Zustand der Nutzerin/des Nutzers und aktiviert keine Selbstwirksamkeit. |
+  | 6 | Banking | ❌ „Jetzt abschicken!" – Ausrufezeichen erzeugt künstliche Dringlichkeit. Wirkt unseriös für eine 5.000 €-Transaktion. „Abschicken" ist zu unspezifisch. Fehlendes Sicherheitssignal. |
+  | 7 | SaaS Trial A/B | ⚠️ Beide Labels haben Stärken und Schwächen – Analyse folgt unten. Keines der Originale ist optimal. |
+  | 8 | Mobile Game | ❌ „Kaufen" ist zu abrupt und transaktional ohne Motivationskontext. Kein emotionaler Anker nach einem Verlust. Verschenkt den Revanchemoment. |
+
+  ---
+
+  ## Schritt 2: Optimierung
+
+  | Szenario | Original | Optimierung | Begründung |
+  |---|---|---|---|
+  | **1** E-Commerce Checkout (234,50 €) | `OK` | `Kaufen (234,50 €)` | Rechtssicher gem. § 312j BGB: explizite Zahlungsaufforderung + Betrag in Klammern (scanbarer als Em-Dash). Nutzer wissen exakt, was ausgelöst wird. ✅ 16 Zeichen |
+  | **2** Newsletter-Popup | `Ja, ich möchte den Newsletter abonnieren und über Angebote informiert werden` | `Angebote sichern` | Radikal gekürzt. „Sichern" aktiviert Loss Aversion stärker als neutrales „erhalten" – der Nutzer sichert sich etwas, das sonst weg wäre. Aktiv, positiv, kein „Ja"-Prefix nötig – der Klick selbst ist die Zustimmung. ✅ 16 Zeichen |
+  | **3** Enterprise SaaS (Vertrag hochladen) | `Upload` | `Vertrag sicher hochladen` | Deutsches UI → deutsche Copy. Kontexts-spezifisch + Vertrauenssignal: „sicher" adressiert das Hauptbedürfnis in Compliance-sensiblen B2B-Umgebungen. Nutzer weiß exakt, was hochgeladen wird. ✅ 25 Zeichen (Grenzwert begründet*) |
+  | **4** Account löschen (unwiderruflich) | `Löschen` | `Account unwiderruflich löschen` | Bewusste Friction durch Wiederholung der Konsequenz im Label selbst. Schützt vor versehentlichen Klicks. **Zusätzlich:** Confirmation Dialog (Modal mit Eingabefeld „Bitte tippe LÖSCHEN zur Bestätigung") ist als zweite Sicherheitsstufe obligatorisch. ✅ 31 Zeichen → Ausnahme begründet** |
+  | **5** Health App (nach Schmerz-Eingabe) | `Weiter` | `Auswertung ansehen` | Empathischer Shift + Konkretion: Kommuniziert, was nach dem Klick passiert (Auswertung), aktiviert Selbstwirksamkeit („meine Eingabe führt zu etwas Nützlichem"). Ruhiger als „Hilfe finden", das einen Notfall suggeriert. ✅ 19 Zeichen |
+  | **6** Banking (5.000 € überweisen) | `Jetzt abschicken!` | `Überweisung bestätigen` | Seriöses Verb „bestätigen" signalisiert Kontrolle und Sicherheit. Kein Ausrufezeichen. Kein „Jetzt" – keine Dringlichkeit bei Finanzoperationen. ✅ 23 Zeichen |
+  | **7** SaaS Trial A/B | A: `Kostenlos testen` B: `Jetzt starten` | **Synthese → `Kostenlos starten`** (Hypothese ↓) | Kombiniert die Stärken beider Originale: „Kostenlos" (Risikoabbau von A) + „starten" (Handlungsenergie und höheres Commitment von B). Schlägt beide Originale. Fallback: A → Cold Traffic, B → Warm Traffic (Segmentierung ↓) |
+  | **8** Mobile Game (Level verloren) | `Kaufen` | `Nochmal versuchen` | Adressiert den Revanchemoment direkt (Endowment Effect: Spielfortschritt nicht verlieren). Fokus auf die Chance nach der Niederlage, nicht auf die Transaktion. Reduziert psychologische Kaufbarriere durch Kontext-Framing. ✅ 17 Zeichen |
+
+  > *️⃣ *Szenario 3: „sicher" als Vertrauenssignal in Compliance-sensiblen B2B-Kontexten rechtfertigt den Grenzwert.*
+  > *️⃣ *Szenario 4: Die 25-Zeichen-Regel wird bewusst gebrochen. Bei irreversiblen, destruktiven Aktionen ist vollständige Klarheit im Label eine UX-Sicherheitspflicht, die Usability-Konventionen überwiegt. Das Label ist jedoch nicht ausreichend – ein Confirmation Dialog ist obligatorisch.*
+
+  ---
+
+  ## Expert-Hypothese: Szenario 7 – Warum gewinnt „Kostenlos starten"?
+
+  ```
+  Synthese-Hypothese:
+  "Kostenlos starten" schlägt beide Originale, weil es
+  Risikoabbau (kostenlos) UND Handlungsenergie (starten) vereint –
+  die zwei stärksten Conversion-Treiber bei SaaS Trials.
+  ```
+
+  **Psychologisches Modell: Prospect Theory (Kahneman & Tversky)**
+
+  > Menschen gewichten **Verluste stärker als Gewinne**. Im Trial-Kontext ist die unbewusste Frage: *„Was kostet mich das?"* – nicht *„Was bekomme ich?"*
+
+  | Kriterium | `Kostenlos testen` | `Jetzt starten` | `Kostenlos starten` ✅ |
+  |---|---|---|---|
+  | **Risikoabbau** | ✅ Explizit: „kostenlos" eliminiert Preisangst | ❌ Implizit: unklar ob Kosten entstehen | ✅ Explizit |
+  | **Commitment-Level** | ⚠️ Niedrig: „testen" = unverbindlich | ✅ Mittel: „starten" = klare Handlung | ✅ Mittel-niedrig: Risiko weg, Momentum da |
+  | **Zielgruppe B2B** | ✅ Entscheider brauchen Rechtfertigung gegenüber Budget | ❌ Kein Kosten-Argument | ✅ Stärkstes Budget-Argument |
+  | **Erwartete Conversion** | Benchmark +12–18% CTR vs. generisch (HubSpot, Unbounce) | Baseline | Hypothese: +5–10% über A |
+
+  **Traffic-Segmentierung (wann welches Label?):**
+  - **Cold Traffic** (Erstbesucher, Ads, SEO): `Kostenlos starten` oder `Kostenlos testen` → Risikoabbau hat Priorität
+  - **Warm Traffic** (nach Demo-Call, Retargeting, Pricing-Page): `Jetzt starten` → Risiko bereits geklärt, Momentum wichtiger als Absicherung
+
+  ---
+
+  *Alle Labels wurden auf Mobile-First-Lesbarkeit (max. Daumenzone, min. 44px Touch-Target) und aktive Verbstruktur geprüft. Tonalität ist kontextabhängig: Banking ≠ Game ≠ Health ≠ E-Commerce.*

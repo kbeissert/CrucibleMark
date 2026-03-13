@@ -149,6 +149,34 @@ class TestMissingScore:
         assert result.parse_success is False
         assert "I couldn't decide" in result.reasoning
 
+
+class TestJsonSubScores:
+    """When a SCORE marker is present, parse also looks for embedded JSON for sub_scores."""
+
+    def test_sub_scores_present(self):
+        raw = 'REASONING: Good attempt.\nSCORE: 4\n```json\n{"task_compliance": 5, "output_quality": 3, "standard_adherence": 4}\n```'
+        result = parse(raw)
+        assert result.score == 4
+        assert result.parse_success is True
+        assert result.judge_task_compliance == 5
+        assert result.judge_output_quality == 3
+        assert result.judge_standard_adherence == 4
+
+    def test_missing_or_invalid_json(self):
+        # Missing keys
+        raw = 'REASONING: Good attempt.\nSCORE: 4\n```json\n{"task_compliance": 5}\n```'
+        result = parse(raw)
+        assert result.score == 4
+        assert result.parse_success is True
+        assert result.judge_task_compliance is None
+
+    def test_invalid_json_format(self):
+        raw = "REASONING: Good attempt.\nSCORE: 4\n```json\n{task_compliance: 5}\n```"
+        result = parse(raw)
+        assert result.score == 4
+        assert result.parse_success is True
+        assert result.judge_task_compliance is None
+
     def test_empty_string(self):
         result = parse("")
         assert result.score is None

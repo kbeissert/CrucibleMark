@@ -455,3 +455,268 @@ scoring:
           - "editor"
           - "cue"
         description: "Sind alle Production-Cues für Editor vorhanden (Annotations, B-Roll, Musik)?"
+
+golden_standard: |
+  ## SCHRITT 1: ANALYSE – Was der Outline fehlt
+
+  | Fehlendes Element | Problem | Impact |
+  |---|---|---|
+  | **Hook** | Kein emotionaler Einstieg. Die Intro erklärt 2FA wie ein Wikipedia-Artikel. | Zuschauer klicken in den ersten 5 Sekunden weg |
+  | **Spoken Word / Tonalität** | Sprache ist passiv & dokumentarisch („Navigate to", „Choose method"). Klingt wie eine Bedienungsanleitung. | Wirkt roboterhaft, keine Verbindung zur Zielgruppe |
+  | **Timing / Timestamps** | Keine einzige Zeitangabe. Unklar, wie lang jeder Schritt dauert. | Editor kann nicht schneiden, Pacing ist chaotisch |
+  | **Visuals / Screen-Annotations** | Null Hinweise, was auf dem Screen passiert. Kein Zoom, kein Highlight, kein Cursor-Cue. | Tutorial ohne Visuals ist nicht nachvollziehbar |
+  | **Production-Cues** | Kein B-Roll, keine Musik, keine Text-Overlays, keine Jump-Cuts. | Video wirkt amateurhaft |
+  | **Engagement-Elements** | Kein Pattern-Interrupt, kein Retention-Hook, kein „But wait..."-Moment. | Zuschauer steigen bei ~1:30 aus (YouTube-Daten) |
+  | **„Why"-Erklärungen** | Nur „What" und „How". Kein emotionaler Grund, warum Zuschauer das JETZT tun sollten. | Kein Urgency-Gefühl |
+  | **CTA** | „Like, subscribe" als letzter Bullet – ohne Kontext, ohne Emotion, ohne spezifischen Aufruf. | Schwacher Abschluss, niedrige Conversion |
+  | **Easter Egg** | Komplett fehlend. Keine Community-Bindung. | Verpasste Chance für Subscriber-Loyalität |
+
+  **Kern-Problem:** Die Outline ist ein technisches Memo, das jemand vorliest –
+  kein Video-Script, das jemanden *begeistert*, etwas zu tun.
+
+  ---
+
+  ## SCHRITT 2: TRANSFORMATION – Production-Ready Video Script
+
+  ```
+  ╔══════════════════════════════════════════════════════════════╗
+  ║   HOW TO SET UP TWO-FACTOR AUTHENTICATION IN 5 MINUTES      ║
+  ║   Full Production Script | YouTube Tutorial                  ║
+  ║   Target Length: 4:00–4:30 min | Speak Rate: ~150 WPM       ║
+  ╚══════════════════════════════════════════════════════════════╝
+  ```
+
+  ---
+
+  ### ━━━ [00:00 – 00:18] HOOK ━━━
+
+  ```
+  [MUSIC: Upbeat, punchy intro — 2 Sekunden, dann fade to low background]
+  [B-ROLL: Rapid-fire Montage — News-Headlines "Data Breach", "Account Hacked",
+   "Millions of Passwords Leaked" — je 1,5 Sekunden]
+  [TEXT ON SCREEN: "Your password alone? Not enough."]
+  ```
+
+  **SPEAKER:**
+  > Stell dir vor — du wachst morgens auf. [PAUSE]
+  > Dein E-Mail-Account ist weg. [PAUSE]
+  > Dein Instagram. Dein Netflix. Alles. [PAUSE]
+  > Das passiert jeden Tag — weil ein einziges Passwort
+  > einfach nicht mehr reicht.
+
+  ```
+  [JUMP CUT — Host direkt in die Kamera, energisch]
+  [TEXT ON SCREEN: "Die Lösung: 2FA ✓"]
+  ```
+
+  > Aber heute fixst du das. In unter 5 Minuten.
+
+  ---
+
+  ### ━━━ [00:18 – 00:50] WHAT IS 2FA? ━━━
+
+  ```
+  [SHOW: Animated Grafik — Schloss-Icon mit zwei Schlüsseln]
+  [TEXT ON SCREEN: "2FA = Zwei Schlösser statt einem"]
+  ```
+
+  **SPEAKER:**
+  > Kurz erklärt – was ist 2FA? [PAUSE]
+  > 2FA heißt: Zwei-Faktor-Authentifizierung.
+  > Klingt kompliziert. Ist es aber nicht. [PAUSE]
+  > Du kennst das schon. Online-Banking?
+  > Erst Passwort, dann SMS-Code. [PAUSE]
+  > Das ist 2FA. Selbst wenn jemand dein Passwort klaut –
+  > ohne dein Handy kommt er nirgendwo rein.
+
+  ```
+  [TEXT ON SCREEN: "Passwort geklaut? Kein Problem. 🔒"]
+  ```
+
+  ---
+
+  ### ━━━ [00:50 – 01:10] PREREQUISITES ━━━
+
+  ```
+  [SHOW: Checkliste erscheint animiert auf Screen]
+  ```
+
+  **SPEAKER:**
+  > Erstens: Deine E-Mail-Adresse. Hast du. ✓ [PAUSE]
+  > Zweitens: Dein Handy – für den SMS-Code. ✓ [PAUSE]
+  > Und optional, aber empfohlen:
+  > Eine Authenticator-App. [PAUSE]
+  > Google Authenticator oder Authy – beide gratis, Link in der Beschreibung.
+
+  ```
+  [TEXT ON SCREEN: "Google Authenticator / Authy — kostenlos 📱"]
+  [ARROW: Zeigt auf "Beschreibung" unten im Video-Frame]
+  ```
+
+  ---
+
+  ### ━━━ [01:10 – 01:45] STEP 1: SETTINGS ━━━
+
+  ```
+  [JUMP CUT — Screen Recording beginnt]
+  [SHOW: Account-Übersicht im Browser]
+  ```
+
+  **SPEAKER:**
+  > Du bist in deinem Account. Gut. [PAUSE]
+  > Jetzt oben rechts — dein Profilbild oder Avatar. Klick drauf.
+
+  ```
+  [CIRCLE: Profilbild-Icon oben rechts]
+  [CLICK: Mausklick-Sound-Animation]
+  [SHOW: Dropdown-Menü öffnet sich]
+  [ARROW: Zeigt auf "Settings" im Dropdown]
+  [CLICK: Settings-Option]
+  [SHOW: Settings-Seite lädt]
+  [ARROW: Zeigt auf "Security"-Tab in der Sidebar]
+  [CIRCLE: Security-Option leuchtet auf]
+  ```
+
+  > Links in der Sidebar — da ist der Bereich "Sicherheit" oder "Security".
+  > Klick da drauf. [PAUSE] Genau.
+
+  ---
+
+  ### ━━━ [01:45 – 01:55] PATTERN INTERRUPT ━━━
+
+  ```
+  [JUMP CUT — Host-Face-Cam, kurz eingeblendet]
+  [MUSIC: Kurzer "sting" Sound-Effekt]
+  [TEXT ON SCREEN: "⚠️ Wichtiger Tipp – nicht überspringen!"]
+  ```
+
+  **SPEAKER:**
+  > Kurz Stop. [PAUSE]
+  > Du siehst gleich einen QR-Code.
+  > Mach einen Screenshot davon, bevor du weitermachst.
+  > Das ist dein Backup. Falls du dein Handy verlierst – das rettet dich.
+
+  ```
+  [JUMP CUT zurück zum Screen Recording]
+  ```
+
+  ---
+
+  ### ━━━ [01:55 – 02:30] STEP 2: METHOD WÄHLEN ━━━
+
+  ```
+  [SHOW: Zwei Optionen auf Screen: "SMS" vs. "Authenticator App"]
+  [HIGHLIGHT: Authenticator App mit Checkmark]
+  ```
+
+  **SPEAKER:**
+  > Du siehst zwei Optionen.
+  > SMS – easy, aber weniger sicher. Texte können onderschept werden. [PAUSE]
+  > Authenticator App – das ist der Pro Move. Empfehlung: Google Authenticator.
+  > Ich zeige dir den App-Weg.
+
+  ```
+  [CLICK: "Authenticator App"-Button]
+  [SHOW: QR-Code erscheint]
+  [TEXT ON SCREEN: "📸 Screenshot machen!"]
+  ```
+
+  ---
+
+  ### ━━━ [02:30 – 03:15] STEP 3: QR-CODE SCANNEN ━━━
+
+  ```
+  [SHOW: Split-Screen — Computer mit QR-Code links, Phone-Screen rechts]
+  [CIRCLE: QR-Code mit animiertem Rahmen]
+  ```
+
+  **SPEAKER:**
+  > Das ist dein QR-Code. Öffne jetzt die Authenticator-App auf deinem Handy.
+  > Tippe auf das Plus-Icon oder "Code hinzufügen".
+  > Halte die Kamera auf den QR-Code auf deinem Screen.
+
+  ```
+  [SHOW: Phone-Camera scannt QR-Code — animiert]
+  [SHOW: App zeigt 6-stelligen Code]
+  [TEXT ON SCREEN: "✓ Verbunden!"]
+  ```
+
+  > Siehst du den 6-stelligen Code? Perfekt. Der ändert sich alle 30 Sekunden.
+  > Gib ihn jetzt in das Feld auf deinem Computer ein.
+
+  ---
+
+  ### ━━━ [03:15 – 03:45] STEP 4: BACKUP-CODES ━━━
+
+  ```
+  [TEXT ON SCREEN: "🔑 Backup-Codes — NICHT überspringen!"]
+  [B-ROLL: Jemand speichert Datei auf USB-Stick]
+  ```
+
+  **SPEAKER:**
+  > Letzter Schritt – und der wichtigste: Backup-Codes.
+  > Die bekommst du jetzt angezeigt. Speichere sie. Drucke sie aus. [PAUSE]
+  > Falls du dein Handy verlierst oder kaputt geht —
+  > diese Codes sind dein Ausweg. Ohne sie bist du ausgesperrt. Für immer.
+
+  ```
+  [TEXT ON SCREEN: "Speichern: USB / Passwort-Manager / Ausdrucken"]
+  ```
+
+  ---
+
+  ### ━━━ [03:45 – 04:10] ABSCHLUSS + CTA ━━━
+
+  ```
+  [JUMP CUT — Host Face-Cam, entspannte Energie]
+  [MUSIC: Leichte Abschluss-Musik]
+  [TEXT ON SCREEN: "2FA aktiviert ✓ Du bist sicher."]
+  ```
+
+  **SPEAKER:**
+  > Das war's. Ernsthaft – du hast gerade dein Konto deutlich sicherer gemacht.
+  > Die meisten Leute tun das nie. Du hast es in 5 Minuten erledigt. [PAUSE]
+  > Falls du Fragen hast – Kommentare sind offen, ich lese alles.
+  > Und wenn dir das Video geholfen hat: Ein Like hilft mehr als du denkst.
+  > Bis zum nächsten Mal. 👋
+
+  ```
+  [EASTER EGG: Untertitel in letzter Sekunde: "Wer das liest: Schreib 'SICHER'
+   in die Kommentare für ein Shoutout!"]
+  [END SCREEN: Subscribe-Button + verlinktes Video "Password Manager Setup"]
+  ```
+
+  ---
+
+  ## 7 Begründungen
+
+  1. **Hook mit konkretem Horror-Szenario** – „Du wachst auf und alles ist weg"
+     aktiviert Verlust-Angst, den stärksten Motivator für Sicherheitsverhalten.
+     Ein statistischer Einstieg erzeugt keine Emotion – ein Szenario schon.
+
+  2. **Timestamps für das gesamte Script** – Jeder Abschnitt kennt seine Position
+     im Video. Das ermöglicht präzises Pacing im Edit und gibt dem Zuschauer
+     Orientierung (YouTube-Chapters sind automatisch befüllbar).
+
+  3. **Pattern Interrupt bei 01:45** – Laut YouTube-Daten verlassen Zuschauer
+     Tutorial-Videos nach ~75 Sekunden, wenn kein neuer Stimulus kommt. Der
+     Pattern Interrupt (Host-Cameo + sting) durchbricht die Routine und resettet
+     die Aufmerksamkeit.
+
+  4. **Screen-Annotations als Regie** – Circle, Arrow, Highlight und Click-Sound
+     sind konkrete Anweisungen für den Editor. Ohne sie entstehen Screenshots
+     statt Videos. Jede Annotation führt das Zuschauerauge exakt dorthin, wo es
+     hinschauen soll.
+
+  5. **Backup-Code-Warnung als emotionaler Hochpunkt** – „Für immer ausgesperrt"
+     ist die emotionale Spitze des Videos. Dieser Moment macht das Tutorial
+     unvergessslich – und erzeugt Dankbarkeit, weil der Zuschauer etwas erfährt,
+     das er ohne das Video verpasst hätte.
+
+  6. **Easter Egg als Community-Signal** – Der versteckte Untertitel belohnt
+     aufmerksame Zuschauer und erzeugt organische Kommentare mit einem Keyword.
+     Das verbessert den Algorithmus-Score des Videos.
+
+  7. **Gesprochener Abschluss statt Standard-CTA** – „Die meisten tun das nie –
+     du hast es in 5 Minuten erledigt" gibt dem Zuschauer ein Erfolgserlebnis.
+     Ein zufriedener Zuschauer klickt auf Like aus Überzeugung, nicht auf Aufforderung.

@@ -41,8 +41,8 @@ execution:
 
 scoring:
   fallback_weights:
-    regex: 0.30
-    judge: 0.70
+    regex: 0.10
+    judge: 0.90
 
 benchmarks:
   - id: "documentation_quality_001"
@@ -65,6 +65,9 @@ benchmarks:
     score_contribution:
       routine: 0.85
       reasoning: 0.15
+    scoring_weights:
+      regex: 0.40
+      judge: 0.60
 
   - id: "documentation_quality_004"
     name: "Setup & Troubleshooting"
@@ -72,6 +75,9 @@ benchmarks:
     score_contribution:
       routine: 0.7
       reasoning: 0.3
+    scoring_weights:
+      regex: 0.20
+      judge: 0.80
 
   - id: "documentation_quality_005"
     name: "Changelog & Release Notes"

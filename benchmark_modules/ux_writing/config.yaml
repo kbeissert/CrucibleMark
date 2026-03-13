@@ -58,6 +58,9 @@ benchmarks:
     score_contribution:
       routine: 0.5
       reasoning: 0.5
+    scoring_weights:
+      regex: 0.20
+      judge: 0.80
 
   - id: "ux_writing_004"
     name: "Accessibility Labels"
@@ -72,6 +75,9 @@ benchmarks:
     score_contribution:
       routine: 0.8
       reasoning: 0.2
+    scoring_weights:
+      regex: 0.40
+      judge: 0.60
 
 
 # Internal Module Configuration

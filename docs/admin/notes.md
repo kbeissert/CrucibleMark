@@ -16,28 +16,48 @@ Führe KEINE Änderungen durch. Fasse zusammen:
 Warte auf meine Bestätigung bevor du irgendwas änderst.
 
 ---
-
 ## SESSION COMMIT
 
-Diese Session war erfolgreich. Bevor wir schließen, aktualisiere bitte das Projekt-Wissen:
+Aktualisiere das Projekt-Wissen. Qualität vor Vollständigkeit –
+lieber nichts schreiben als etwas Falsches oder Triviales.
 
-### 1. AGENTS.md — Neue Regeln
-Prüfe, ob du heute ein Pattern oder eine Konvention verwendet hast,
-die noch NICHT in AGENTS.md dokumentiert ist. Wenn ja, ergänze sie
-unter dem passenden Abschnitt. Maximal 3 neue Punkte, präzise formuliert.
+### Filter (vor dem Schreiben prüfen)
+Nur dokumentieren wenn:
+- Es ein nicht-offensichtliches Problem war, das Zeit gekostet hat
+- Es eine Entscheidung ist, die man in 3 Monaten nicht mehr rekonstruieren kann
+- Es den nächsten Schritt direkt beeinflusst
 
-### 2. memory-bank/activeContext.md — Aktueller Stand
-Überschreibe den Inhalt mit:
-- Was wurde heute fertiggestellt?
-- Was ist der nächste logische Schritt?
-- Welche offenen Fragen oder Risiken gibt es?
+Nicht dokumentieren:
+- Standard-Python/Framework-Verhalten
+- Dinge, die bereits im Code selbst klar ersichtlich sind
+- Einzel-Fixes ohne Wiederholungsrisiko
 
-### 3. memory-bank/progress.md — Fortschritt
-Markiere abgeschlossene Tasks als [DONE], füge neue hinzu.
+---
 
-### 4. memory-bank/techContext.md — Nur wenn nötig
-Ergänze NUR wenn heute eine neue technische Entscheidung gefallen ist
-(neue Dependency, geänderter Build-Befehl, neues Tool).
+### 1. AGENTS.md — Fallstricke & Verbote
+Nur ergänzen wenn ein neuer, nicht-offensichtlicher Fallstrick aufgetreten ist,
+der noch nicht dokumentiert ist. Max. 1–2 Sätze. Ein Satz pro Eintrag.
+Kein Eintrag? Nichts schreiben.
 
-Schreibe nichts in die Dateien, was du nicht mit Sicherheit weißt.
-Halte jeden Eintrag unter 2 Sätzen. Bestätige mit: "Memory updated ✓"
+### 2. memory-bank/systemPatterns.md — Architekturentscheidungen
+Nur ergänzen wenn heute eine neue Architekturentscheidung getroffen wurde
+oder ein bestehendes Pattern sich als falsch erwiesen hat.
+Kein struktureller Wandel? Nichts schreiben.
+
+### 3. memory-bank/activeContext.md — Aktueller Stand
+Vollständig überschreiben mit:
+- Abgeschlossen: [was – max. 2 Zeilen]
+- Nächster Schritt: [konkret, ein Satz]
+- Offen/Risiko: [was – oder "keine"]
+
+### 4. memory-bank/progress.md — Nur aktueller Zustand
+Laufende Tasks: Status aktualisieren ([ ] → [DONE] oder Fortschritt ergänzen).
+Abgeschlossene Meilensteine: Nicht neu anlegen – nur bestehende als [DONE] markieren.
+Neue Tasks nur ergänzen wenn sie den nächsten logischen Schritt darstellen.
+Kein Changelog, keine Erklärungen – nur Status.
+
+### 5. memory-bank/techContext.md — Stack & Tools
+Nur anfassen bei neuer Dependency, geändertem Build-Befehl oder neuem Tool.
+Sonst: nicht ändern.
+
+Bestätige mit: "Memory updated ✓"

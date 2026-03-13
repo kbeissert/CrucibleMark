@@ -55,6 +55,9 @@ class ResultManager:
             "llm_judge_model_used",
             "llm_judge_parse_success",
             "scoring_method",
+            "judge_task_compliance",
+            "judge_output_quality",
+            "judge_standard_adherence",
         ]
 
         new_keys.update(judge_fields)
