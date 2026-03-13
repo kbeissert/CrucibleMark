@@ -1,15 +1,15 @@
 # PROJECT_STATUS.md
 
-**Last Updated:** 2026-03-12 **Current Version:** 2.3.0 (Audit Mode Vollintegration) **Status:** ✅ Production-Ready
+**Last Updated:** 2026-03-13 **Current Version:** 2.3.0 (Audit Audit Mode Vollintegration Meta-Review Workflow) **Status:** ✅ Production-Ready
 
 ______________________________________________________________________
 
 ## 🎯 Executive Summary
-CrucibleMark v2.3.0 bringt die **Audit Mode Vollintegration** und schließt die LLM Judge Pipeline ab.
+CrucibleMark v2.4.0 bringt die **Audit Audit Mode Vollintegration Meta-Review Workflow** und schließt die LLM Judge Pipeline ab.
 Die Kernarchitektur für die automatisierte Auswertung freier Antworten wurde vollständig integriert, getestet und stabilisiert.
 Eine SSOT-basierte (Single Source of Truth) Konfiguration in `benchmark_config.yaml` garantiert saubere Testdurchläufe ohne Fallstricke.
 
-**Key Achievements (v2.3.0):**
+**Key Achievements (v2.4.0):**
 - ✅ **Audit Mode Logging:** Vollständige Markdown-Protokollierung mit dynamischem `evaluated_prompt`, regelbasierten Category-Scores und LLM-Judge Reasoning.
 - ✅ **LLM Judge Pipeline:** Vollständige Integration von 4 Providern (Ollama, Anthropic, Mistral, OpenAI) mit automatischer Fallback-Chain.
 - ✅ **Bulletproof Parsing:** Robuster Regex-Parser, der auch Markdown-Ausreißer von Modellen (z.B. `### **SCORE:**`) sicher verarbeitet.
