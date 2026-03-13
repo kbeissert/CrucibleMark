@@ -87,6 +87,7 @@ def setup_logging(log_file: Path = None):
                 "huggingface_hub",
                 "httpx",
                 "httpcore",
+                "anthropic",
             ]
             if any(record.name.startswith(lib) for lib in noisy_libs):
                 # Erlaube Errors, blockiere alles darunter (z.B. Warnings, Info)
@@ -104,5 +105,6 @@ def setup_logging(log_file: Path = None):
         "urllib3",
         "huggingface_hub",
         "httpx",
+        "anthropic",
     ]:
         logging.getLogger(lib).setLevel(logging.WARNING)
