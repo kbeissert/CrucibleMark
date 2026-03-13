@@ -62,8 +62,6 @@ benchmark-audit:
 	@echo "🕵️  Starting Benchmark (Audit Mode)..."
 	$(PYTHON) run_benchmark.py --audit $(if $(MODEL),--model "$(MODEL)") $(if $(MODULE),--module "$(MODULE)") $(if $(filter true,$(FORCE)),--force)
 	@$(MAKE) leaderboard
-	@echo "📰 Generating Review..."
-	$(PYTHON) scripts/analysis/generate_review.py
 
 benchmark-dev:
 	@echo "🚀 Starting Interactive Benchmark (Dev Mode - Fast Iteration)..."
@@ -86,6 +84,18 @@ run-benchmark:
 	$(PYTHON) run_benchmark.py
 
 # === REPORTING & STANDARDS ===
+
+review-model:
+	@if [ -z "$(MODEL)" ]; then \
+		echo "❌ Fehler: Gib ein Modell an. Beispiel: make review-model MODEL=claude-haiku-4-5-20251001"; \
+		exit 1; \
+	fi
+	@echo "📰 Generating Review for $(MODEL)..."
+	$(PYTHON) scripts/analysis/generate_review.py --model "$(MODEL)"
+
+review-all:
+	@echo "📰 Generating Reviews for ALL models..."
+	$(PYTHON) scripts/analysis/generate_review.py --all
 
 leaderboard:
 	@echo "📊 Generating Leaderboard..."

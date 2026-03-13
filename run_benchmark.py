@@ -405,6 +405,18 @@ class BenchmarkRunner:
             except Exception as e:  # pylint: disable=broad-exception-caught
                 print(f"⚠️ Unerwarteter Fehler: {e}")
 
+        # Meta-Review Generierung (NUR für das gerade getestete Modell im Audit-Modus)
+        if run_config.audit_mode and model_id:
+            print(f"\n📰 Generiere Review für das getestete Modell: {model_id}...")
+            try:
+                subprocess.run(
+                    [sys.executable, "scripts/analysis/generate_review.py", "--model", model_id], check=True
+                )
+            except subprocess.CalledProcessError:
+                print("⚠️ Fehler beim Generieren des Reviews.")
+            except Exception as e:  # pylint: disable=broad-exception-caught
+                print(f"⚠️ Unerwarteter Fehler: {e}")
+
     def _run_benchmark(
         self,
         mod_id: str,
