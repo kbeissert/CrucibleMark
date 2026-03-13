@@ -108,7 +108,7 @@ class LLMClient:
 
 **Provider-Spezifische Quirks:**
 
-| Provider | Auth | Token Limit | Streaming | Retry Logic | |----------|------|-------------|-----------|-------------| | Ollama | None (localhost) | Model-dependent (8K-128K) | ✅ Yes | N/A (local) | | OpenAI | Bearer token | 128K (GPT-4) | ✅ Yes | 429 → Exponential Backoff | | Mistral | API key | 32K | ❌ No | 500 → Retry 3x |
+| Provider | Auth | Token Limit | Streaming | Retry Logic | |----------|------|-------------|-----------|-------------| | Ollama | None (localhost) | Model-dependent (8K-128K) | ✅ Yes | N/A (local) | | OpenAI | Bearer token | 128K (GPT-4) | ✅ Yes | 429 → Exponential Backoff | | Mistral | API key | 32K | ❌ No | 500 → Retry 3x | | Anthropic | API key | 200K | ✅ Yes | 429 → Exponential Backoff | | Google | API key | 1M - 2M | ❌ No | SDK Handled |
 
 ______________________________________________________________________
 

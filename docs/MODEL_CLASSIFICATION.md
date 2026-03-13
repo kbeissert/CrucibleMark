@@ -42,7 +42,7 @@ CrucibleMark unterscheidet drei Arten von Modell-Providern basierend auf ihrer I
 
 | Kategorie | Beschreibung | Beispiele | Charakteristik |
 |-----------|--------------|-----------|----------------|
-| **Commercial** | Cloud-basierte kommerzielle APIs | Claude (Anthropic), GPT (OpenAI), Mistral AI | Kosten pro Token, API-Keys erforderlich, keine lokale Installation |
+| **Commercial** | Cloud-basierte kommerzielle APIs | Claude (Anthropic), Gemini (Google), GPT (OpenAI), Mistral AI | Kosten pro Token, API-Keys erforderlich, keine lokale Installation |
 | **Local** | Vollständig lokal ausgeführte Modelle | Qwen 2.5, DeepSeek-R1, Ministral-3 (via Ollama) | Keine Kosten, volle Privatsphäre, lokale GPU/CPU |
 | **Local Cloud** | Cloud-Modelle über Ollama Proxy | MiniMax-M2, GPT-OSS (via Ollama Cloud) | Ollama leitet Anfragen zu Cloud-Diensten weiter, erkennbar am `:cloud` Suffix |
 
