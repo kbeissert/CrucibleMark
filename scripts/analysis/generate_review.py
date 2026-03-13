@@ -8,6 +8,7 @@ basierend auf der Benchmark-Leaderboard-CSV und den qualitativen Audit-Logs pro 
 import os
 import sys
 import re
+import argparse
 from pathlib import Path
 from datetime import datetime
 import yaml
@@ -115,7 +116,16 @@ Schreibe nun deinen umfassenden, redaktionellen Bericht in Deutsch, nutze Übers
 
 
 def main():
-    print("📰 Starte Meta-Reviewer Auswertung (pro Modell)...")
+    parser = argparse.ArgumentParser(description="Generiert qualitative LLM-Reviews basierend auf den Audit-Logs.")
+    parser.add_argument("-m", "--model", type=str, help="Generiere den Review nur für dieses spezifische Modell (z.B. claude-haiku-4-5-20251001)")
+    parser.add_argument("-a", "--all", action="store_true", help="Generiere Reviews für alle Modelle mit gefundenen Audit-Logs")
+    args = parser.parse_args()
+
+    if not args.model and not args.all:
+        print("❌ Bitte gib ein Modell an (-m <modell>) oder nutze --all für alle Modelle.")
+        sys.exit(1)
+
+    print("📰 Starte Meta-Reviewer Auswertung...")
 
     # Init config and client
     config = load_config()
@@ -148,11 +158,13 @@ def main():
     # Iteriere über die Modell-Ordner (z.B. mistral-medium-latest) im Audit-Root
     for subdir in audit_base_dir.iterdir():
         if subdir.is_dir() and subdir.name != ".DS_Store":
+            if args.model and subdir.name != args.model:
+                continue
             found_models = True
             process_model_review(subdir, csv_data, client, provider, model_id)
 
     if not found_models:
-        print("⚠️ Keine Modell-Ordner im Audit-Log Verzeichnis gefunden.")
+        print("⚠️ Keine Audit-Logs für das spezifizierte Modell gefunden.")
 
 
 if __name__ == "__main__":
