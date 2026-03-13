@@ -2,10 +2,18 @@ llm_judge:
   enabled: true
   mode: complement
   provider:
+    # ANTROPHIC
     # name: anthropic          # PRIMARY: Claude Haiku (schnell, konsistent)
     # model: claude-haiku-4-5-20251001
-    name: ollama
-    model: deepseek-v3.1:671b-cloud
+
+    # GOOGLE
+    name: google
+    model: gemini-3.1-pro-preview
+
+    # OLLAMA
+    # name: ollama
+    # model: deepseek-v3.1:671b-cloud
+    max_tokens: 4096
     unload_delay_ms: 1500
     fallback:
       name: ollama             # FALLBACK: nur wenn kein API-Key
@@ -15,6 +23,19 @@ llm_judge:
     scale: 5
     require_reasoning: true
     fail_on_parse_error: false
+  sub_scores:
+    task_compliance:
+      label: "Task Compliance"
+      description: "Wurde die Aufgabe vollständig und korrekt erfüllt?"
+      scale: 5
+    output_quality:
+      label: "Output Quality"
+      description: "Ist der Output klar, präzise und professionell?"
+      scale: 5
+    standard_adherence:
+      label: "Standard Adherence"
+      description: "Werden Fach-Standards und Best Practices korrekt angewendet?"
+      scale: 5
   # Nur Module die hier gelistet sind werden vom LLM-Judge bewertet. Alle anderen Module werden vom Regex/Rule Scorer bewertet.
   applicable_modules:
     - code_quality
@@ -129,7 +150,7 @@ providers:
     google:
       name: "Google Gemini"
       api_type: "google"
-      enabled: false
+      enabled: true
       # Der API-Key gehört NICHT hierher, sondern in die .env Datei oder .zshrc!
       # Beispiel .env: GOOGLE_API_KEY=AIzaSy...
       env_var: "GOOGLE_API_KEY"
@@ -266,4 +287,3 @@ modules:
     path: "benchmark_modules/political_compass"
     enabled: false
     llm_judge_model: "ministral-3:14b"
-

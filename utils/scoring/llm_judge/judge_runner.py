@@ -64,6 +64,11 @@ def _build_provider(config: LLMJudgeConfig) -> LLMJudgeProvider:
 
         return AnthropicProvider(**kwargs)
 
+    if prov_cfg.name == "google":
+        from .providers.google_provider import GoogleProvider
+
+        return GoogleProvider(**kwargs)
+
     if prov_cfg.name == "mistral":
         from .providers.mistral_provider import MistralProvider
 
@@ -82,7 +87,7 @@ def _build_provider(config: LLMJudgeConfig) -> LLMJudgeProvider:
 
     raise ValueError(
         f"Unknown LLM Judge provider: '{prov_cfg.name}'. "
-        "Valid values: anthropic, mistral, openai, ollama."
+        "Valid values: anthropic, mistral, openai, ollama, google."
     )
 
 
@@ -114,6 +119,11 @@ def _build_fallback_provider(
 
         return AnthropicProvider(**kwargs)
 
+    if fb_cfg.name == "google":
+        from .providers.google_provider import GoogleProvider
+
+        return GoogleProvider(**kwargs)
+
     if fb_cfg.name == "mistral":
         from .providers.mistral_provider import MistralProvider
 
@@ -132,7 +142,7 @@ def _build_fallback_provider(
 
     raise ValueError(
         f"Unknown fallback provider: '{fb_cfg.name}'. "
-        "Valid values: anthropic, mistral, openai, ollama."
+        "Valid values: anthropic, mistral, openai, ollama, google."
     )
 
 
@@ -345,6 +355,12 @@ class JudgeRunner:
         if primary_name == "anthropic" and not os.getenv("ANTHROPIC_API_KEY"):
             logger.info(
                 "LLM Judge: ANTHROPIC_API_KEY not found. Skipping primary provider '%s'.",
+                primary_name,
+            )
+            use_primary = False
+        elif primary_name == "google" and not os.getenv("GOOGLE_API_KEY"):
+            logger.info(
+                "LLM Judge: GOOGLE_API_KEY not found. Skipping primary provider '%s'.",
                 primary_name,
             )
             use_primary = False
