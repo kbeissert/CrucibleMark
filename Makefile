@@ -161,6 +161,7 @@ clean:
 	@echo "🧹 Cleaning caches and temporary files..."
 	rm -rf outputs/runs/*
 	rm -rf outputs/comparisons/*
+	rm -rf outputs/audit_logs/*
 	find . -type d -name __pycache__ -exec rm -rf {} +
 	find . -type f -name "*.pyc" -delete
 
