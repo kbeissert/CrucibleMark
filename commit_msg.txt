@@ -11,3 +11,11 @@ fix: resolve routing, caching and parsing bugs in llm judge
   extract scores surrounded by deep Markdown heading chains or bolded keys.
 - Augmented leaderboard metadata values for doc and ux writing modules.
 - Updated technical memory and agent guidelines tracking namespace traps.
+feat(core): implement Magazine-Style Meta-Reviewer for audit mode
+
+- Added `generate_magazine_review.py` script to parse audit logs
+- Added logic to group reviews per LLM model in `outputs/comparisons/`
+- Added `llm_review` configuration block in `benchmark_config.yaml`
+- Hooked `generate_magazine_review.py` directly into the `make benchmark-audit` command
+- Created `AUDIT_AND_METAREVIEW.md` documentation explaining workflow and setup
+- Incremented system status to v2.4.0
