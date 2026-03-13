@@ -55,3 +55,109 @@ scoring:
     points: 10
     weight: 10
 
+
+golden_standard: |
+  # Fehleranalyse: Endlosschleife in process_batch()
+
+  ## Chain of Thought
+
+  ### Schritt 1: Kontrollfluss verstehen
+
+  Die Funktion nutzt eine `while`-Schleife, gesteuert durch `current_index`.
+  Sie läuft, solange `current_index < len(items)`.
+
+  ### Schritt 2: Ablauf pro Branch verfolgen
+
+  **Wenn `item.is_valid()` True:**
+  ```
+  current_index += 1  ✅  Index rückt vor → Schleife macht Fortschritt
+  ```
+
+  **Wenn `item.is_valid()` False:**
+  ```python
+  log_error(f"Invalid item at {current_index}")
+  # ← Danach passiert nichts!
+  # current_index wird NIEMALS erhöht
+  ```
+
+  ### Schritt 3: Bug identifizieren
+
+  Wenn ein **ungültiges Item** angetroffen wird:
+  1. `log_error()` wird aufgerufen ✅
+  2. `current_index` wird **nicht erhöht** ❌
+  3. Die Schleifenbedingung bleibt `True` → gleicher Index
+  4. Dasselbe ungültige Item wird erneut geprüft → bleibt ungültig
+  5. **Endlosschleife / Freeze** 🔴
+
+  ```
+  Iteration 1: index=2, Item ungültig → log → index bleibt 2
+  Iteration 2: index=2, Item ungültig → log → index bleibt 2
+  Iteration 3: index=2, Item ungültig → log → index bleibt 2
+  ... für immer
+  ```
+
+  ---
+
+  ## Fix
+
+  **`current_index += 1` aus dem `if/else`-Block herauslösen:**
+
+  ```python
+  def process_batch(items):
+      current_index = 0
+      while current_index < len(items):
+          item = items[current_index]
+          if item.is_valid():
+              process(item)
+          else:
+              log_error(f"Invalid item at {current_index}")
+          current_index += 1  # Immer erhöhen, unabhängig vom Branch
+      return True
+  ```
+
+  ### Alternative – Python-Schreibweise:
+
+  ```python
+  def process_batch(items):
+      for index, item in enumerate(items):
+          if item.is_valid():
+              process(item)
+          else:
+              log_error(f"Invalid item at {index}")
+      return True
+  ```
+  > `for`-Schleife eliminiert das manuelle Index-Management und
+  > verhindert diese Fehlerklasse vollständig.
+
+  ---
+
+  ## Zusammenfassung
+
+  | | Ursache | Wirkung |
+  |---|---|---|
+  | 🐛 **Bug** | `current_index` wird im `else`-Branch nie erhöht | Endlosschleife beim ersten ungültigen Item |
+  | ✅ **Fix** | `current_index += 1` **außerhalb** des `if/else` | Index rückt immer vor, unabhängig von Gültigkeit |
+
+  ---
+
+  ## Begründungen
+
+  1. **Wurzelursache ist fehlende Inkrementierung:** Im `else`-Branch
+     fehlt der einzige Mechanismus, der die Schleife vorwärtsbewegt.
+     Das Programm friert ein, sobald das erste ungültige Item auftritt.
+
+  2. **Fix: Inkrementierung außerhalb des Branches:** `current_index += 1`
+     gehört nach dem `if/else`-Block, da der Index immer weiterrücken
+     soll – unabhängig davon, ob das Item gültig ist oder nicht.
+
+  3. **Pythonic Alternative mit `for`:** Die `for`-Schleife übernimmt
+     das Index-Management automatisch und eliminiert diese Fehlerklasse.
+     Bevorzugt bei Python-Code.
+
+  4. **Der Kommentar täuschte:** Ein Kommentar "skip invalid items"
+     beschrieb die Absicht, aber der Code setzte sie nicht um –
+     ein Hinweis, dass Kommentare den Ablauf nie ersetzen.
+
+  5. **Code-Review-Pattern:** Immer prüfen, ob `while`-Schleifen in
+     **jedem** Branch eine Abbruchbedingung erfüllen. Loops ohne
+     Voranschreiten in einem Branch sind ein klassisches Bug-Pattern.

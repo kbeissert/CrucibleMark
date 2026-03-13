@@ -272,3 +272,263 @@ scoring:
         points: 10
         check_method: "markdown_table_validation"
         min_rows: 8
+
+golden_standard: |
+  # Performance-Analyse: E-Commerce Produktseite
+
+  ## Zusammenfassung
+
+  > **Aktuelle Werte:** LCP: 4.2s (schlecht) | CLS: 0.28 (schlecht)
+  > **Zielwerte:** LCP: < 2.5s | CLS: < 0.1
+
+  ---
+
+  ## Issue-Tabelle
+
+  | # | Kategorie | Issue | Schweregrad | Lösung / Code-Snippet |
+  |---|-----------|-------|-------------|----------------------|
+  | 1 | **LCP / Blocking** | **Synchrones XHR für Reviews** blockiert den Main Thread komplett bis API antwortet (`xhr.open('GET', ..., false)`) | 🔴 Kritisch | `xhr.open('GET', '/api/reviews', **true**);` → besser: `fetch('/api/reviews').then(...)` nach DOMContentLoaded |
+  | 2 | **LCP** | **Hero-Image 5MB unkomprimiert** (raw PNG) – direkt verantwortlich für LCP 4.2s | 🔴 Kritisch | WebP/AVIF + Komprimierung: `<img src="/images/hero-laptop.avif" fetchpriority="high" alt="…">` |
+  | 3 | **Blocking / LCP** | **Render-blocking Analytics-Script** im `<head>` ohne `async`/`defer`. Für Analytics ist `async` semantisch korrekt: das Script soll ASAP feuern und hat keine DOM-Abhängigkeit — `defer` würde das Tracking verzögern. | 🔴 Kritisch | `<script src="https://cdn.analytics.com/tracker.js" **async**></script>` |
+  | 4 | **Blocking / LCP** | **Render-blocking jQuery** im `<head>` ohne `async`/`defer` | 🔴 Kritisch | `<script src="…/jquery.min.js" **defer**></script>` oder jQuery eliminieren (wird im Code nicht genutzt) |
+  | 5 | **CLS** | **Hero-Image ohne Dimensionen** – Browser reserviert keinen Platz → Layout-Shift beim Laden | 🔴 Kritisch | `<img src="…" width="1200" height="600" class="hero" alt="…">` |
+  | 6 | **CLS** | **Gallery-Images ohne Dimensionen** (alle 3 `<img>` ohne width/height) | 🔴 Kritisch | `<img src="/img/1.jpg" width="400" height="300" loading="lazy" decoding="async" alt="…">` für alle Gallery-Bilder |
+  | 7 | **CLS** | **Ad-Banner ohne reservierten Platz** – dynamisch geladenes Banner verschiebt Layout | 🔴 Kritisch | `.ad-banner { min-height: 90px; width: 728px; }` + `aspect-ratio: 728/90` |
+  | 8 | **CLS / LCP** | **Recommendations via 5 parallele Fetches** mit nicht-deterministischer Auflösungsreihenfolge → DOM-Elemente erscheinen in zufälliger Reihenfolge, jedes Append triggert Reflow. Kein Error-Handling. | 🟠 Hoch | Bevorzugt: Batch-API `fetch('/api/products?ids=101,102,103,104,105')` → 1 Request statt 5. Fallback: `Promise.all([...]).then(results => { /* einmaliges DOM-Update via Fragment */ })` |
+  | 9 | **CLS** | **`#reviews` und `#recommendations` Container ohne reservierten Platz** — beide starten mit `height: 0`. Wenn Inhalte nachladen, verschieben sie alles darunter. Dies ist neben den Bild-Dimensionen eine Hauptursache für CLS 0.28. | 🟠 Hoch | `#reviews, #recommendations { min-height: 250px; contain: layout; }` |
+  | 10 | **LCP / Blocking** | **Bootstrap vollständig geladen** ohne Critical CSS Strategie – blockiert Rendering. Langfristige Lösung: PurgeCSS/Tree-Shaking, kurzfristiger Workaround: async nachladen. | 🟠 Hoch | Critical CSS inlinen + Bootstrap async: `<link rel="preload" href="bootstrap.min.css" as="style" onload="this.rel='stylesheet'">` |
+  | 11 | **LCP / Blocking** | **`main.css` ist ebenfalls render-blocking** — oft übersehen, weil lokal gehostet. Blockiert aber ebenso den First Paint wie externe Stylesheets. | 🟠 Hoch | `<link rel="preload" href="/styles/main.css" as="style" onload="this.rel='stylesheet'">` |
+  | 12 | **LCP** | **Kein `fetchpriority="high"`** auf Hero-Image – Browser erkennt LCP-Element nicht als Priorität | 🟠 Hoch | `<img src="…" fetchpriority="high" alt="…">` |
+  | 13 | **LCP** | **Kein `<link rel="preload">`** für Hero-Image – wird zu spät im Waterfall entdeckt | 🟠 Hoch | `<link rel="preload" as="image" href="/images/hero-laptop.avif" fetchpriority="high">` |
+  | 14 | **Font / CLS** | **Fehlendes `font-display: swap`** im `@font-face` → FOIT (Flash of Invisible Text) blockiert Text-Rendering | 🟠 Hoch | `@font-face { font-family: 'MyFont'; src: url('…'); **font-display: swap;** }` |
+  | 15 | **CLS / Blocking** | **`<style>` im `<footer>`** – Browser muss Styles nachträglich anwenden → FOUC + mögliche Layout-Shifts | 🟠 Hoch | `<style>`-Block in den `<head>` verschieben |
+  | 16 | **Subtil / Security** | **XSS-Lücke in Recommendations**: `div.innerHTML = \`<h3>${data.name}</h3>\`` – unsanitisierter API-Response direkt als HTML. Gleiches Muster gilt für Reviews-`innerHTML`, sofern der Endpoint nicht vollständig server-seitig kontrolliert ist. | 🟡 Mittel | `h3.textContent = data.name` (kein HTML-Parsing) oder `DOMPurify.sanitize(...)`. Für Reviews: nur anwenden wenn Endpoint externe Daten enthält. |
+  | 17 | **LCP** | **Kein `loading="lazy"`** für Below-the-fold Gallery-Images – verschwenden Bandwidth für LCP-kritische Ressourcen | 🟡 Mittel | `<img src="/img/2.jpg" loading="lazy" width="400" height="300" decoding="async" alt="…">` |
+  | 18 | **Subtil / Blocking** | **Inline `<script>` mitten im `<body>`** (nach Gallery, vor Footer) blockiert HTML-Parsing an dieser Stelle | 🟡 Mittel | Script ans Ende des `<body>` verschieben oder `<script type="module">` (implizites `defer`) |
+  | 19 | **Caching / LCP** | **Keine `preconnect`-Hints** für externe Domains (cdn.example.com, cdn.analytics.com, code.jquery.com) — DNS-Lookup und TLS-Handshake kosten 100–300ms pro Domain | 🟡 Mittel | `<link rel="preconnect" href="https://cdn.example.com">` für jede externe Domain |
+  | 20 | **Subtil / LCP** | **jQuery wird geladen aber nicht genutzt** (alle sichtbaren Scripts nutzen Vanilla JS / fetch) – unnötiger 87KB Transfer | 🟡 Mittel | jQuery entfernen oder durch Vanilla JS ersetzen |
+  | 21 | **Accessibility / SEO** | **Alle `<img>`-Tags ohne `alt`-Attribut** – schadet SEO und Accessibility | 🟢 Niedrig | `alt=""` für dekorative Bilder, beschreibender Text für inhaltliche Bilder |
+
+  ---
+
+  ## Kritische Code-Fixes
+
+  ### Fix #1 & #8 & #9 – Synchrones XHR + Race Condition + DOM-Thrashing
+
+  ```javascript
+  // ❌ VORHER: Blockiert Main Thread + nicht-deterministische Einfügereihenfolge
+  var xhr = new XMLHttpRequest();
+  xhr.open('GET', '/api/reviews', false); // false = synchron!
+  xhr.send();
+  document.getElementById('reviews').innerHTML = xhr.responseText;
+
+  const productIds = [101, 102, 103, 104, 105];
+  productIds.forEach(id => {          // 5 unkontrollierte Fetches
+    fetch('/api/product/' + id)
+      .then(r => r.json())
+      .then(data => {
+        const div = document.createElement('div');
+        div.innerHTML = `<h3>${data.name}</h3><img src="${data.img}">`;
+        document.getElementById('recommendations').appendChild(div); // Reflow x5!
+      });
+  });
+  ```
+
+  ```javascript
+  // ✅ NACHHER: Async + gebündeltes DOM-Update
+  // <script type="module"> im HTML impliziert automatisch defer — kein DOMContentLoaded-Wrapper nötig
+
+  // Reviews: async, non-blocking
+  // Hinweis: innerHTML ist hier sicher, wenn /api/reviews server-seitig gerenderte HTML-Fragmente
+  // ohne User-Input liefert. Bei unbekanntem Datenursprung DOMPurify.sanitize() verwenden.
+  fetch('/api/reviews')
+    .then(r => r.text())
+    .then(html => {
+      document.getElementById('reviews').innerHTML = html;
+    });
+
+  // Recommendations: bevorzugt als Batch-Request (1 HTTP-Request statt 5)
+  fetch('/api/products?ids=101,102,103,104,105')
+    .then(r => r.json())
+    .then(renderRecommendations)
+    .catch(err => console.error('Recommendations failed:', err));
+
+  // Fallback wenn kein Batch-Endpoint verfügbar: Promise.all
+  async function renderRecommendations(results) {
+    // Falls kein Batch-Endpoint: ersetze durch:
+    // const results = await Promise.all(
+    //   [101, 102, 103, 104, 105].map(id => fetch('/api/product/'+id).then(r => r.json()))
+    // );
+
+    // Fragment verhindert 5x Reflow → nur 1x DOM-Update
+    const fragment = document.createDocumentFragment();
+
+    results.forEach(data => {
+      const div = document.createElement('div');
+      const h3  = document.createElement('h3');
+      const img = document.createElement('img');
+
+      h3.textContent  = data.name;          // Kein XSS-Risiko durch textContent
+      img.src         = data.img;
+      img.width       = 200;                // CLS: Dimensionen setzen
+      img.height      = 200;
+      img.loading     = 'lazy';
+      img.decoding    = 'async';            // Bild-Dekodierung off-thread
+      img.alt         = data.name;
+
+      div.appendChild(h3);
+      div.appendChild(img);
+      fragment.appendChild(div);
+    });
+
+    document.getElementById('recommendations').appendChild(fragment);
+  }
+  ```
+
+  ---
+
+  ### Fix #2 & #5 & #12 & #13 – Hero Image (LCP-Hauptverursacher)
+
+  ```html
+  <!-- ❌ VORHER -->
+  <head>
+    <!-- Kein Preload, kein fetchpriority -->
+  </head>
+  <body>
+    <img src="/images/hero-laptop-raw.png" class="hero">
+    <!-- 5MB PNG, keine Dimensionen, kein alt -->
+  </body>
+  ```
+
+  ```html
+  <!-- ✅ NACHHER -->
+  <head>
+    <!-- 1. Frühzeitig preloaden (höchste Priorität im Waterfall) -->
+    <!-- imagesrcset/imagesizes auf preload-Link: responsive Preload korrekt implementiert -->
+    <link rel="preload"
+          as="image"
+          href="/images/hero-laptop.avif"
+          imagesrcset="/images/hero-laptop-800.avif 800w,
+                       /images/hero-laptop-1200.avif 1200w"
+          imagesizes="100vw"
+          fetchpriority="high">
+  </head>
+  <body>
+    <!-- 2. Komprimiert (AVIF ~150KB statt 5MB PNG) + Dimensionen + Priorität -->
+    <img src="/images/hero-laptop.avif"
+         srcset="/images/hero-laptop-800.avif 800w,
+                 /images/hero-laptop-1200.avif 1200w"
+         sizes="100vw"
+         width="1200"
+         height="600"
+         fetchpriority="high"
+         class="hero"
+         alt="Premium Laptop Frontansicht">
+  </body>
+  ```
+
+  ---
+
+  ### Fix #10 & #11 – Bootstrap + main.css nicht render-blocking laden
+
+  ```html
+  <!-- ❌ VORHER: Beide Stylesheets blockieren komplettes Rendering -->
+  <link rel="stylesheet" href="https://cdn.example.com/bootstrap.min.css">
+  <link rel="stylesheet" href="/styles/main.css">
+  ```
+
+  ```html
+  <!-- ✅ NACHHER: Critical CSS inline + Rest async -->
+  <head>
+    <!-- Preconnect für schnellere DNS/TLS -->
+    <link rel="preconnect" href="https://cdn.example.com">
+
+    <!-- Critical CSS inline (Above-the-fold Styles) -->
+    <style>
+      /* Nur die Styles für Hero + Header */
+      .hero { width: 100%; height: auto; display: block; }
+      header { /* … */ }
+    </style>
+
+    <!-- Bootstrap non-blocking nachladen -->
+    <!-- Langfristige Lösung: PurgeCSS/Tree-Shaking im Build-Step (spart 70-90% der Dateigröße) -->
+    <link rel="preload"
+          href="https://cdn.example.com/bootstrap.min.css"
+          as="style"
+          onload="this.rel='stylesheet'">
+    <noscript>
+      <link rel="stylesheet" href="https://cdn.example.com/bootstrap.min.css">
+    </noscript>
+
+    <!-- main.css ebenfalls async -->
+    <link rel="preload"
+          href="/styles/main.css"
+          as="style"
+          onload="this.rel='stylesheet'">
+    <noscript>
+      <link rel="stylesheet" href="/styles/main.css">
+    </noscript>
+  </head>
+  ```
+
+  ---
+
+  ### Fix #14 & #15 – Font-Display + Style-Position + reservierter Container-Platz
+
+  ```html
+  <!-- ❌ VORHER: Im Footer, fehlendes font-display, keine Container-Reservierung -->
+  <div id="reviews"></div>
+  <div id="recommendations"></div>
+
+  <footer>
+    <style>
+      @font-face {
+        font-family: 'MyFont';
+        src: url('/fonts/myfont.woff2');
+        /* font-display fehlt → FOIT */
+      }
+    </style>
+  </footer>
+  ```
+
+  ```html
+  <!-- ✅ NACHHER: Im <head>, mit font-display + preload + Container-Reservierung -->
+  <head>
+    <!-- Font frühzeitig laden -->
+    <link rel="preload" href="/fonts/myfont.woff2" as="font" type="font/woff2" crossorigin>
+
+    <style>
+      @font-face {
+        font-family: 'MyFont';
+        src: url('/fonts/myfont.woff2') format('woff2');
+        font-display: swap;   /* Verhindert FOIT, minimiert CLS */
+        font-weight: normal;
+        font-style: normal;
+      }
+      body { font-family: 'MyFont', sans-serif; }
+
+      /* CLS-Prävention: Platz reservieren bevor dynamischer Inhalt nachladen */
+      #reviews, #recommendations {
+        min-height: 250px;    /* Anpassen an tatsächliche Content-Höhe */
+        contain: layout;      /* Verhindert, dass Reflows nach oben propagieren */
+      }
+    </style>
+  </head>
+  ```
+
+  ---
+
+  ## Erwartete Verbesserungen nach allen Fixes
+
+  ```text
+  Metrik    | Vorher | Nachher (erwartet) | Haupthebel
+  ----------|--------|-------------------|---------------------------
+  FCP       | ~3.5s  | ~0.8s             | Render-blocking CSS/JS entfernt
+  LCP       | 4.2s   | ~1.4s             | Hero-Komprimierung + Preload + Sync-XHR entfernt
+  CLS       | 0.28   | ~0.02             | Img-Dimensionen + Font-swap + Container-Reservierung
+  FID/INP   | hoch   | niedrig           | Sync-XHR entfernt, kein Main-Thread-Block mehr
+  TBT       | hoch   | niedrig           | Render-blocking Scripts + Sync-XHR entfernt
+  ```
+
+  > **Wichtigste Einzelmaßnahme:** Das synchrone XHR (`xhr.open(..., false)`) ist der versteckteste Bug – es friert die gesamte Seite ein bis die API antwortet, unabhängig von der Netzwerkgeschwindigkeit des Nutzers. Alle anderen Fixes verbessern inkrementell; dieser Fix entfernt eine absolute Rendering-Blockade.
+

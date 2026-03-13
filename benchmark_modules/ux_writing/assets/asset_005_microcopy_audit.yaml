@@ -174,3 +174,104 @@ scoring:
         check_method: "keyword_presence"
         keywords: ["Screen", "Original", "Optimierung", "Begründung"]
         min_keywords: 4
+
+
+golden_standard: |
+  # Microcopy-Audit: Medikamenten-Management App
+
+  ---
+
+  ## Schritt 1: Analyse – Identifizierte Probleme
+
+  ### 🔴 Kritische Probleme
+
+  **Screen 1 – Medikament hinzufügen (Dosis)**
+  - **Fehlende Einheit:** Placeholder „z.B. 10" ist medizinisch gefährlich mehrdeutig. 10 mg? 10 ml? 10 Tabletten? Eindeutigkeit ist hier eine Patientensicherheitsfrage.
+  - **Hilfetext zu generisch:** „Geben Sie die Menge ein" gibt keine Orientierung, welches Format erwartet wird.
+  - **Kein Einheitsfeld:** Zahl und Einheit müssen als getrennte Eingaben konzipiert werden (Zahl + Dropdown), nicht als ein Freitext.
+
+  **Screen 2 – Push-Notification**
+  - **Alarmierende Sprache:** „fällig!" klingt wie eine Mahnung. Erzeugt Stress statt Motivation.
+  - **Fehlender Kontext:** Kein Medikamentenname, keine Dosis – für Nutzer mit mehreren Medikamenten unbrauchbar.
+  - **Kein Call-to-Action:** Kein direkter Bestätigungs-Button in der Notification.
+  - **Barrierefreiheit:** Screen Reader liest nur „Medikament fällig!" ohne semantischen Kontext.
+
+  **Screen 3 – Alert (Einnahme vergessen)**
+  - **Schuldzuweisung:** „Sie haben … verpasst" verstößt gegen den Tone of Voice und kann bei chronisch Kranken Scham auslösen.
+  - **Button „OK":** Bedeutungslos und für Screen Reader nicht interpretierbar.
+  - **Button „Später erinnern":** Zeitlich unspezifisch – wann später?
+  - **Medizinisches Sicherheitsrisiko:** Fehlt ein Hinweis, dass nicht alle Medikamente gefahrlos nachgeholt werden dürfen (z. B. Blutverdünner, Insulin).
+  - **Terminologie-Inkonsistenz:** „Medikation" (Screen 3) vs. „Medikament" (andere Screens).
+
+  ### 🟡 Mittlere Probleme
+
+  **Screen 4 – Empty State**
+  - **Negativer Einstieg:** „Sie haben noch keine Medikamente hinzugefügt" betont Mangel statt Möglichkeit.
+  - **Icon-Referenz als Barriere:** „Tippen Sie auf '+'" ist für Screen Reader suboptimal und fragil bei UI-Änderungen.
+  - **Kein Mehrwert-Versprechen:** Fehlende Motivation – warum sollte der Nutzer beginnen?
+
+  **Screen 5 – Erfolgs-Toast**
+  - **Kein Medikamentenname:** Bei mehreren Medikamenten Unsicherheit, ob das Richtige bestätigt wurde.
+  - **Barrierefreiheit:** Toast-Meldungen werden von Screen Readern nicht automatisch vorgelesen – `aria-live="polite"` erforderlich. „✓" kann als „Häkchen" oder gar nicht vorgelesen werden.
+  - **Keine positive Bestärkung:** Verpasste Chance für Adherence-Motivation.
+
+  **Screen 6 – Account löschen**
+  - **Unspezifische Konsequenz:** „Alle Daten gehen verloren" – welche Daten konkret?
+  - **Kein Alternativangebot:** Keine Option zum Daten-Export vor Löschung.
+  - **Button-Wording:** „Ja, löschen" – „Ja" redundant, schwächt Klarheit.
+  - **Kein expliziter Abbrechen-Button** als Safe Default.
+
+  ### 🔵 Terminologie-Konsistenz-Audit
+
+  | Begriff | Verwendung | Problem |
+  |---|---|---|
+  | „Medikament" | Screen 1, 2, 4 | ✅ Primärer Term |
+  | „Medikation" | Screen 3 | ❌ Synonym – inkonsistent |
+  | „Dosis" | Screen 1 | Ohne Einheitsfeld unvollständig |
+  | „Einnahme" | Screen 5 | ✅ Primärer Handlungsterm |
+  | „Konto" | Screen 6 | ✅ Deutschsprachig konsistent |
+  | „verpasst" / „fällig" | Screen 2, 3 | ❌ Alarmierende Terminologie – eliminieren |
+
+  ---
+
+  ## Schritt 2: Optimierung
+
+  | Screen | Original | Optimierung | Begründung |
+  |---|---|---|---|
+  | **1 – Dosis-Feld** | **Label:** Dosis · **Placeholder:** z.B. 10 · **Hilfetext:** Geben Sie die Menge ein. | **Label:** Dosis & Einheit · **Feld 1 (Zahl):** Placeholder: z. B. 10 · **Feld 2 (Dropdown):** mg / ml / Tablette(n) / Tropfen / IE · **Hilfetext:** Tragen Sie Menge und Einheit ein – genau so, wie es auf Ihrer Packung oder Ihrem Rezept steht. | ① **Patientensicherheit:** Zwei getrennte Felder eliminieren die Mehrdeutigkeit (10 mg ≠ 10 ml). ② Hilfetext verankert Angabe an Packungsbeilage/Rezept. ③ **Dropdown** ist für motorisch eingeschränkte Nutzer leichter als freie Texteingabe. |
+  | **2 – Push-Notification** | Medikament fällig! | **Titel:** Zeit für Ihr Ramipril · **Body:** Jetzt einnehmen – 5 mg, 1 Tablette · **Action-Button:** ✓ Eingenommen | ① „Fällig" → einladende Formulierung, kein Mahnungs-Ton. ② Medikamentenname + Dosis direkt in der Notification – bei Polypharmazie (5+ Medikamente) essenziell. ③ **Notification Action** ermöglicht Bestätigung ohne App-Öffnung (iOS/Android). ④ Screen Reader liest vollständigen Satz mit Kontext. |
+  | **3 – Alert (Einnahme vergessen)** | Sie haben Ihre Medikation um 14:00 Uhr verpasst. · **Buttons:** OK · Später erinnern | **Titel:** Ramipril noch nicht eingenommen · **Body:** Möchten Sie die Einnahme jetzt nachholen? Bitte prüfen Sie in Ihrer Packungsbeilage, ob das bei diesem Medikament möglich ist. · **Button 1 (primär):** Jetzt einnehmen · **Button 2 (sekundär):** In 30 Minuten erinnern · **Button 3 (tertiär):** Einnahme heute auslassen | ① **Keine Schuldzuweisung:** „noch nicht eingenommen" beschreibt Zustand, bewertet nicht. ② **Sicherheitshinweis:** Nachholen ist nicht bei allen Medikamenten sicher (Blutverdünner, Insulin). ③ **Drei klare Aktionen** statt bedeutungslosem „OK". ④ **Konkrete Zeitangabe** „In 30 Minuten" schafft Verlässlichkeit. ⑤ Terminologie: „Medikament"/Name statt „Medikation". |
+  | **4 – Empty State** | Sie haben noch keine Medikamente hinzugefügt. Tippen Sie auf '+', um zu beginnen. | **Headline:** Ihr persönlicher Medikamentenplan wartet auf Sie · **Body:** Fügen Sie Ihr erstes Medikament hinzu – wir erinnern Sie dann zuverlässig an jede Einnahme. · **Button:** Erstes Medikament hinzufügen | ① **Empathischer Einstieg:** Headline formuliert positiven Ausblick statt Mangel. ② **Mehrwert-Versprechen** im Body: Nutzer verstehen sofort Nutzen. ③ **Dedizierter CTA-Button** statt Icon-Referenz: barrierefreier, robuster, Screen Reader liest vollständigen Buttontext. ④ Terminologie: „Medikament" + „Einnahme" konsistent. |
+  | **5 – Erfolgs-Toast** | Einnahme bestätigt ✓ | **Text:** Ramipril eingenommen – gut gemacht! · **Subtext (optional):** Nächste Einnahme: heute, 20:00 Uhr · *(aria-label: „Einnahme von Ramipril erfolgreich gespeichert")* | ① **Medikamentenname** gibt Sicherheit, dass das Richtige bestätigt wurde. ② **„gut gemacht!"** = positive Bestärkung, fördert Adherence (Therapietreue) nachweislich. ③ **Optionaler Subtext** gibt proaktiv die nächste relevante Information. ④ **Barrierefreiheit:** Toast als `aria-live="polite"`-Region. Separates `aria-label`, da „✓" als „Häkchen" oder gar nicht vorgelesen wird. |
+  | **6 – Account löschen** | Wollen Sie Ihr Konto wirklich löschen? Alle Daten gehen verloren. · **Button:** Ja, löschen | **Titel:** Konto dauerhaft löschen · **Body:** Ihr Medikamentenplan, Ihre Einnahmehistorie und alle gespeicherten Erinnerungen werden unwiderruflich gelöscht. · **Hinweis-Link:** 💾 Daten vorher exportieren · **Button 1 (destruktiv):** Konto endgültig löschen · **Button 2 (primär, Safe Default):** Abbrechen | ① **Spezifische Konsequenzen** statt „alle Daten": informierte Entscheidung möglich. ② **Export-Hinweis** als Sicherheitsnetz: Respektiert Autonomie. ③ „Ja, löschen" → „Konto endgültig löschen": Redundantes „Ja" entfernt, „endgültig" verdeutlicht Irreversibilität. ④ **„Wirklich" entfernt**: Bevormundend. ⑤ **Abbrechen als Safe Default** schützt vor versehentlichem Tippen (besonders 60+). |
+
+  ---
+
+  ## Zusammenfassung: Wording-Konsistenz-Glossar
+
+  > Diese Regeln sollten ins **Content Style Guide** der App übernommen werden.
+
+  | ✅ Verwenden | ❌ Vermeiden | Begründung |
+  |---|---|---|
+  | Medikament / [Medikamentenname] | Medikation, Arznei, Präparat | Einheitlicher, allgemeinverständlicher Term |
+  | einnehmen / eingenommen | nehmen, schlucken, konsumieren | Medizinisch korrekt, nicht umgangssprachlich |
+  | Einnahme | Dosis (als Handlungsterm) | „Dosis" = Menge; „Einnahme" = Handlung |
+  | Konto | Account, Profil | Deutschsprachige Konsistenz |
+  | noch nicht eingenommen | verpasst, vergessen, versäumt | Keine Schuldzuweisung |
+  | Zeit für … / Jetzt einnehmen | fällig, überfällig, Warnung | Einladend statt mahnend |
+  | endgültig / dauerhaft | wirklich (bevormundend) | Klar, ohne Fachjargon |
+  | Erinnerung | Alarm, Warnung, Mahnung | Unterstützend statt alarmierend |
+
+  ---
+
+  ## Kernprinzipien (HEART-Prinzip für Gesundheits-Apps)
+
+  ```
+  H – Helpful:     Konkrete Handlungsoptionen, nie bedeutungslose Buttons (kein „OK")
+  E – Empowering:  Nutzer behält Kontrolle (Einnahme auslassen, Daten exportieren, Abbrechen)
+  A – Accurate:    Medizinische Eindeutigkeit vor allem anderen (Einheit immer explizit)
+  R – Respectful:  Keine Schuldzuweisungen, keine Bevormundung, Alltagssprache
+  T – Trustworthy: Sicherheitshinweise wo nötig, transparente Konsequenzen
+  ```
+
+  > **Grundregel:** Jede Microcopy-Entscheidung beantwortet zwei Fragen: *„Versteht jemand mit 70 Jahren ohne UX-Kenntnisse das sofort?"* und *„Entsteht durch diese Formulierung ein Sicherheitsrisiko?"*

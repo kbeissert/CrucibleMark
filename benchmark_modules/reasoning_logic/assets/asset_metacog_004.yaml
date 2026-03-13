@@ -92,3 +92,112 @@ scoring:
       correct:
         points: 30
         criteria: Says switch to Door 2
+
+golden_standard: |
+  <thought>
+  Das ist das klassische Monty-Hall-Problem.
+
+  Erster Instinkt: Nach dem Öffnen einer Tür bleiben 2 Türen übrig,
+  also 50/50 – egal ob wechseln oder bleiben. ABER das ist falsch.
+
+  Sorgfältige Wahrscheinlichkeitsanalyse:
+
+  Setup:
+  - 3 Türen: Tür 1, 2, 3
+  - Auto hinter einer Tür (je 1/3)
+  - Ich wähle Tür 1
+  - Moderator öffnet Tür 3 (zeigt Ziege) – er weiß wo das Auto ist
+    und öffnet IMMER eine Ziegen-Tür
+
+  Ausgangszustand:
+  P(Auto hinter Tür 1) = 1/3
+  P(Auto hinter Tür 2) = 1/3
+  P(Auto hinter Tür 3) = 1/3
+
+  Fall 1 – Auto hinter Tür 1 (P = 1/3):
+  Moderator kann Tür 2 oder 3 öffnen → öffnet Tür 3
+  BLEIBEN → Gewinn; WECHSELN → Verlust
+
+  Fall 2 – Auto hinter Tür 2 (P = 1/3):
+  Moderator MUSS Tür 3 öffnen (einzige verfügbare Ziegen-Tür)
+  BLEIBEN → Verlust; WECHSELN → Gewinn
+
+  Fall 3 – Auto hinter Tür 3 (P = 1/3):
+  Moderator kann Tür 3 nicht öffnen (Auto!) → dieser Fall ist
+  unmöglich gegeben, dass Tür 3 geöffnet wurde.
+
+  Bayes-Theorem:
+  P(H3 | Auto bei Tür 1) = 1/2  (Moderator hat Wahl)
+  P(H3 | Auto bei Tür 2) = 1    (Moderator muss Tür 3 öffnen)
+  P(H3 | Auto bei Tür 3) = 0    (würde Auto zeigen)
+
+  P(H3) = (1/2)(1/3) + (1)(1/3) + (0)(1/3) = 1/6 + 2/6 = 1/2
+
+  P(Auto bei Tür 1 | H3) = (1/2 · 1/3) / (1/2) = 1/3
+  P(Auto bei Tür 2 | H3) = (1 · 1/3) / (1/2) = 2/3
+
+  → WECHSELN verdoppelt die Gewinnchance von 1/3 auf 2/3.
+
+  Intuition: Meine initiale Wahl hatte 1/3 Chance. Die anderen
+  Türen zusammen hatten 2/3. Der Moderator hat eine Nichtkandidaten-
+  Tür eliminiert. Die gesamte 2/3-Wahrscheinlichkeit liegt jetzt
+  auf Tür 2 allein.
+  </thought>
+
+  Answer: **Wechseln** – das verdoppelt die Gewinnchance.
+
+  | Strategie | Gewinnwahrscheinlichkeit |
+  |-----------|--------------------------|
+  | **Bleiben** bei Tür 1 | **1/3 ≈ 33,3%** |
+  | **Wechseln** zu Tür 2 | **2/3 ≈ 66,7%** |
+
+  ---
+
+  ## Beweis via Bayes-Theorem
+
+  Sei H₃ = "Moderator öffnet Tür 3":
+
+  P(H₃) = (1/2 · 1/3) + (1 · 1/3) + (0 · 1/3) = **1/2**
+
+  P(Auto bei Tür 1 | H₃) = (1/2 × 1/3) / (1/2) = **1/3**
+
+  P(Auto bei Tür 2 | H₃) = (1 × 1/3) / (1/2) = **2/3**
+
+  ---
+
+  ## Intuitive Erklärung
+
+  ```
+  VOR Aktion des Moderators:   Tür 1 = 1/3    [Türen 2+3 = 2/3 zusammen]
+  NACH Aktion des Moderators:  Tür 1 = 1/3    [Tür 2 = 2/3, Tür 3 = 0]
+  ```
+
+  Die initiale Wahl hatte **1/3 Chance** richtig zu sein. Diese Zahl
+  ändert sich durch die Aktion des Moderators nicht. Die **2/3
+  Wahrscheinlichkeit** der "anderen Türen" kollabiert jetzt vollständig
+  auf Tür 2.
+
+  ---
+
+  ## Begründungen
+
+  1. **Der Moderator handelt NICHT zufällig:** Das ist der zentrale
+     Punkt. Er weiß wo das Auto ist und wählt die Ziegen-Tür bewusst.
+     Diese Information ist nicht neutral – sie verändert die
+     Wahrscheinlichkeiten asymmetrisch.
+
+  2. **50/50 ist die häufigste Fehlantwort:** Zwei Türen übrig implies
+     nicht 50/50, weil die Ausgangsbedingungen nicht symmetrisch sind.
+     Bayes' Theorem formalisiert warum.
+
+  3. **Wahrscheinlichkeiten "fließen" zur richtigen Tür:** Die 2/3
+     Chance, initial falsch gelegen zu haben, konzentriert sich nach
+     dem Öffnen auf die verbleibende andere Tür.
+
+  4. **Empirische Bestätigung:** Simulation mit 10.000 Durchläufen
+     bestätigt ~66,7% Gewinnrate beim Wechseln. Das Ergebnis ist
+     mathematisch eindeutig, auch wenn es kontraintuitiv wirkt.
+
+  5. **Verallgemeinerung:** Mit n Türen, Moderator öffnet n-2, bleibt
+     eine andere: Chance beim Wechseln = (n-1)/n, beim Bleiben = 1/n.
+     Bei n=3: 2/3 vs. 1/3.

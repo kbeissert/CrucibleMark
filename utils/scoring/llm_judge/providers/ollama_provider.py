@@ -100,6 +100,10 @@ class OllamaProvider(LLMJudgeProvider):
             resp.raise_for_status()
             models = [m.get("name", "") for m in resp.json().get("models", [])]
             # Accept both exact match and prefix match (e.g. "llama3.2" in "llama3.2:latest")
+            # Cloud models might not appear in /api/tags if they are proxied
+            if "-cloud" in self._model.lower() or ":cloud" in self._model.lower():
+                return True
+
             available = any(
                 self._model == m or m.startswith(self._model) for m in models
             )

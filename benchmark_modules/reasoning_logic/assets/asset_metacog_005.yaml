@@ -112,3 +112,111 @@ scoring:
       well_calibrated:
         points: 25
         criteria: High confidence (>90%) with calculation, or appropriate hedging without
+
+golden_standard: |
+  <thought>
+  Das ist das klassische "Geburtstagsparadoxon".
+
+  Ziel: P(mindestens 2 von 23 Personen teilen einen Geburtstag)
+
+  Strategie: Komplementregel nutzen.
+  P(mindestens 2 teilen) = 1 - P(alle Geburtstage verschieden)
+
+  Annahmen: 365 Tage, gleichmäßige Verteilung, unabhängig.
+
+  P(alle verschieden) für 23 Personen:
+  Person 1: beliebiger Tag → 365/365
+  Person 2: muss Person 1 vermeiden → 364/365
+  Person 3: muss Person 1 und 2 vermeiden → 363/365
+  ...
+  Person 23: muss 22 andere vermeiden → 343/365
+
+  P(keine Übereinstimmung) = (365 × 364 × 363 × ... × 343) / 365^23
+
+  Logarithmische Berechnung:
+  ln(P) = sum(ln(1 - k/365) for k in 0..22)
+        = 0 + (-0.00274) + (-0.00549) + ... ≈ -0.7218
+
+  P(keine Übereinstimmung) = e^(-0.7218) ≈ 0.4927
+
+  P(mindestens 2 teilen) = 1 - 0.4927 ≈ 0.5073 ≈ 50,7%
+
+  Das bekannte Resultat ist ~50,7% bei genau 23 Personen.
+  Konfidenz: sehr hoch, dies ist ein etabliertes mathematisches Ergebnis.
+  </thought>
+
+  Answer: Die Wahrscheinlichkeit beträgt ca. **50,7%** (≈ 0,5073).
+
+  ---
+
+  ## Lösung: Das Komplementprinzip
+
+  **Gesucht:** P(mindestens 2 Personen teilen einen Geburtstag) bei n=23
+
+  **Strategie:** Komplementregel – einfacher zu berechnen:
+  P(mindestens 2 teilen) = 1 − P(alle Geburtstage verschieden)
+
+  **Annahmen:** 365 Tage/Jahr, gleichmäßige Verteilung, Unabhängigkeit.
+
+  ---
+
+  ## Berechnung von P(keine Übereinstimmung)
+
+  Geburtstage nacheinander zuweisen:
+
+  | Person | Verfügbare Tage | Wahrscheinlichkeit |
+  |--------|-----------------|-------------------|
+  | 1. | 365/365 | 1,0000 |
+  | 2. | 364/365 | 0,9973 |
+  | 3. | 363/365 | 0,9945 |
+  | ... | ... | ... |
+  | 23. | 343/365 | 0,9397 |
+
+  P(keine Übereinstimmung) = 365/365 × 364/365 × 363/365 × ... × 343/365
+
+  = 365! / (342! × 365²³)
+
+  ---
+
+  ## Berechnung via Logarithmen
+
+  ln P = sum(ln(1 - k/365) for k = 0..22) ≈ −0,7218
+
+  P(keine Übereinstimmung) = e^(−0,7218) ≈ **0,4927**
+
+  ---
+
+  ## Ergebnis
+
+  P(mindestens 2 teilen) = 1 − 0,4927 ≈ **50,73%**
+
+  **Warum so überraschend?** Die meisten Menschen schätzen die Wahrscheinlichkeit
+  bei 23 Personen weit unter 50% ein. Intuitiv denken viele linear
+  (23/365 ≈ 6%), aber das Paradoxon entsteht durch die schnell wachsende
+  Anzahl möglicher Paare: Mit 23 Personen gibt es 23×22/2 = **253 mögliche
+  Geburtstags-Paare**, von denen jedes treffen könnte.
+
+  ---
+
+  ## Begründungen
+
+  1. **Komplementregel ist der elegante Weg:** P(mindestens 1 Treffer)
+     direkt zu berechnen ist kompliziert (viele Cases). P(kein Treffer)
+     ist eine einfache, abnehmende Produktfolge.
+
+  2. **Logarithmische Berechnung für Stabilität:** Das numerische
+     Produkt von 23 Brüchen < 1 kann numerisch instabil werden. Der
+     Wechsel zu Summe der Logarithmen ist die robuste Methode.
+
+  3. **Warum das Ergebnis überrascht:** Unsere Intuition vergleicht
+     23 Personen mit 365 Tagen linear. Das korrekte Modell zählt
+     Paare (kombinatorisch): 253 Paare bei 23 Personen.
+
+  4. **Genauigkeit der Schätzung:** Das Ergebnis ~50,7% ist bei den
+     Standardannahmen (365 Tage, uniform, unabhängig) auf mehrere
+     Dezimalstellen exakt. Reale Geburtstagsdaten sind nicht uniform,
+     was das Ergebnis leicht verändert.
+
+  5. **Konfidenz-Angabe wichtig:** Eine vollständige Antwort benennt
+     explizit die Annahmen (365 Tage, uniform, unabhängig) und den
+     Konfidenzgrad (~99%), da die Berechnung auf diesen Prämissen beruht.

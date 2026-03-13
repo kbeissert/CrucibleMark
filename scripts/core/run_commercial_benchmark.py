@@ -414,6 +414,9 @@ class CommercialBenchmarkRunner(BaseBenchmarkRunner):
             "llm_judge_provider_used",
             "llm_judge_model_used",
             "llm_judge_parse_success",
+            "judge_task_compliance",
+            "judge_output_quality",
+            "judge_standard_adherence",
         ]:
             result[key] = None
 
@@ -422,7 +425,7 @@ class CommercialBenchmarkRunner(BaseBenchmarkRunner):
         judge_cfg_dict = self.validator.config.get("llm_judge", {})
         is_enabled = judge_cfg_dict.get("enabled", True)
         eval_module_id = benchmark_info.get("id", "")
-        applicable_modules = judge_cfg_dict.get("applicable_modules", [])
+        applicable_modules = judge_cfg_dict.get("applicable_modules") or []
 
         if is_enabled and eval_module_id in applicable_modules:
             if len(response.strip()) < 15:
@@ -469,6 +472,10 @@ class CommercialBenchmarkRunner(BaseBenchmarkRunner):
                     result["llm_judge_provider_used"] = judge_res.judge_provider_used
                     result["llm_judge_model_used"] = judge_res.judge_model_used
                     result["llm_judge_parse_success"] = judge_res.parse_success
+                    # Add sub-scores
+                    result["judge_task_compliance"] = judge_res.judge_task_compliance
+                    result["judge_output_quality"] = judge_res.judge_output_quality
+                    result["judge_standard_adherence"] = judge_res.judge_standard_adherence
 
                     if judge_res.parse_success and judge_res.score is not None:
                         judge_scale = judge_config.scoring.scale
@@ -497,7 +504,7 @@ class CommercialBenchmarkRunner(BaseBenchmarkRunner):
                         result["judge_progress_status"] = "❌ Judge: failed"
 
                 except Exception as e:  # pylint: disable=broad-exception-caught
-                    logging.error("LLM Judge execution failed: %s", e)
+                    import traceback; traceback.print_exc(); logging.error("LLM Judge execution failed: %s", e)
                     result["judge_progress_status"] = "❌ Judge: failed"
         # ---------------------------------------------------------------------
 
@@ -565,10 +572,22 @@ class CommercialBenchmarkRunner(BaseBenchmarkRunner):
                     else:
                         details_section += str(details_data)
 
+                # Capture Sub-Scores if present
+                subscore_section = ""
+                if result.get("judge_task_compliance") is not None:
+                    subscore_section = (
+                        "\n\n**Judge Sub-Scores:**\n"
+                        "| Dimension | Score |\n"
+                        "|---|---|\n"
+                        f"| Task Compliance | {result.get('judge_task_compliance')}/5 |\n"
+                        f"| Output Quality | {result.get('judge_output_quality')}/5 |\n"
+                        f"| Standard Adherence | {result.get('judge_standard_adherence')}/5 |"
+                    )
+
                 if result.get("scoring_method") == "hybrid":
-                    judge_resp = f"{judge_info}\n\n**Hybrid Score:** {result.get('percentage', 'N/A')}%\n\n**LLM Judge Score (Raw):** {result.get('llm_judge_score', 'N/A')}\n\n**LLM Judge Reasoning:**\n{result.get('llm_judge_reasoning', 'No reasoning provided.')}{cat_section}{details_section}"
+                    judge_resp = f"{judge_info}\n\n**Hybrid Score:** {result.get('percentage', 'N/A')}%\n\n**LLM Judge Score (Raw):** {result.get('llm_judge_score', 'N/A')}\n\n**LLM Judge Reasoning:**\n{result.get('llm_judge_reasoning', 'No reasoning provided.')}{subscore_section}{cat_section}{details_section}"
                 else:
-                    judge_resp = f"{judge_info}\n\n**LLM Judge Score:** {result.get('llm_judge_score', 'N/A')}\n\n**LLM Judge Reasoning:**\n{result.get('llm_judge_reasoning', 'No reasoning provided.')}{cat_section}{details_section}"
+                    judge_resp = f"{judge_info}\n\n**LLM Judge Score:** {result.get('llm_judge_score', 'N/A')}\n\n**LLM Judge Reasoning:**\n{result.get('llm_judge_reasoning', 'No reasoning provided.')}{subscore_section}{cat_section}{details_section}"
             else:
                 judge_resp = f"**Regex / Rule Scorer ({result.get('scoring_method', 'unknown')}):**\n\n**Score:** {result.get('total_score', 0)} / {result.get('max_score', 0)}\n\n**Details:**\n```json\n{json.dumps(score, indent=2, ensure_ascii=False)}\n```"
 

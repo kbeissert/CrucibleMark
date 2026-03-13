@@ -48,8 +48,8 @@ execution:
 
 scoring:
   fallback_weights:
-    regex: 0.55
-    judge: 0.45
+    regex: 0.2
+    judge: 0.8
 
 benchmarks:
   - id: "code_quality_001"
@@ -59,8 +59,8 @@ benchmarks:
       routine: 1.0
       reasoning: 0.0
     scoring_weights:
-      regex: 0.70
-      judge: 0.30
+      regex: 0.2
+      judge: 0.8
 
   - id: "code_quality_002"
     name: "Security Audit"
@@ -69,8 +69,8 @@ benchmarks:
       routine: 0.3
       reasoning: 0.7
     scoring_weights:
-      regex: 0.40
-      judge: 0.60
+      regex: 0.2
+      judge: 0.8
 
   - id: "code_quality_003"
     name: "Performance Audit"
@@ -79,8 +79,8 @@ benchmarks:
       routine: 0.2
       reasoning: 0.8
     scoring_weights:
-      regex: 0.40
-      judge: 0.60
+      regex: 0.20
+      judge: 0.80
 
   - id: "code_quality_004"
     name: "REST API Design Audit"
@@ -89,8 +89,8 @@ benchmarks:
       routine: 0.2
       reasoning: 0.8
     scoring_weights:
-      regex: 0.40
-      judge: 0.60
+      regex: 0.20
+      judge: 0.80
 
   - id: "code_quality_005"
     name: "Code Smells Audit"
@@ -99,8 +99,8 @@ benchmarks:
       routine: 0.7
       reasoning: 0.3
     scoring_weights:
-      regex: 0.60
-      judge: 0.40
+      regex: 0.20
+      judge: 0.80
 
 # Internal Module Configuration
 config:

@@ -53,3 +53,153 @@ validation:
     ministral_3: "60-70"
     deepseek_r1: "50-60"
     gemma2: "20-40"
+
+golden_standard: |
+  # Systemarchitektur-Constraint-Analyse: Distributed Transaction Manager
+
+  ## Chain of Thought
+
+  ### Schritt 1: Jede Anforderung analysieren
+
+  **Anforderung A:** "Alle Async-Ops müssen vor dem Commit abgeschlossen sein"
+  → `async_ops → DONE` bevor `COMMIT`
+  → **Synchronisationsbarriere** vor dem Commit
+
+  **Anforderung B:** "Transaction Commit triggert Async Cleanup Jobs"
+  → `COMMIT` → löst `cleanup_jobs` aus (async)
+  → Cleanup-Jobs werden durch den Commit **initiiert**
+
+  **Anforderung C:** "Cleanup Jobs dürfen den Commit-Prozess nicht blockieren"
+  → `cleanup_jobs` laufen **unabhängig** vom Commit-Abschluss
+  → Commit wartet NICHT auf Cleanup
+
+  ### Schritt 2: Auf logische Widersprüche prüfen
+
+  ```
+  A: async_ops_complete → COMMIT           (Pre-Commit-Barriere)
+  B: COMMIT → triggert cleanup_jobs        (Post-Commit-Trigger)
+  C: cleanup_jobs ∦ COMMIT                 (Non-blocking, Fire-and-Forget)
+  ```
+
+  **Kritische Beobachtung:**
+  - A bezieht sich auf **Business-Async-Operationen** (Pre-Commit)
+  - B+C beziehen sich auf **Cleanup-Async-Jobs** (Post-Commit)
+
+  Diese sind **zwei verschiedene Kategorien** von Async-Arbeit
+  → **Kein echter Widerspruch!**
+
+  ### Schritt 3: Timeline verifizieren
+
+  ```
+  [Business Async Ops] → [BARRIERE] → [COMMIT] → [Event senden] → [DONE]
+                                                        ↓
+                                          [Cleanup läuft unabhängig weiter]
+  ```
+
+  Vollständig kohärent – die Anforderungen operieren in verschiedenen Phasen.
+
+  ---
+
+  ## 1. Machbarkeitsbewertung
+
+  **Score: 8 / 10**
+
+  Rationale:
+  - Logisch machbar (kein echter Widerspruch) ✅
+  - Moderate Implementierungskomplexität
+  - Distributed Systems bringen Fehlerfall-Edge-Cases (−2 Punkte)
+
+  ---
+
+  ## 2. Architektur-Design
+
+  ### Drei-Phasen-Struktur
+
+  ```
+  ┌──────────────────────────────────────────────────────────────┐
+  │                  TRANSACTION MANAGER                          │
+  │                                                              │
+  │  Phase 1: PRE-COMMIT                                         │
+  │  ┌────────────────────────────────────────────────────────┐  │
+  │  │  Business Async Op 1 ──┐                               │  │
+  │  │  Business Async Op 2 ──┼──► ASYNC BARRIER ──► WARTE   │  │
+  │  │  Business Async Op N ──┘                               │  │
+  │  │  [Req A erfüllt: alle Ops abgeschlossen]               │  │
+  │  └────────────────────────────────────────────────────────┘  │
+  │                          │                                   │
+  │  Phase 2: COMMIT                                             │
+  │  ┌────────────────────────────────────────────────────────┐  │
+  │  │  ► Commit-Record in WAL schreiben                      │  │
+  │  │  ► Transaction-State → COMMITTED                       │  │
+  │  │  ► "TX_COMMITTED"-Event publizieren ──────────────►    │  │
+  │  │  ► SUCCESS an Caller zurückgeben                       │  │
+  │  │  [Req B: Commit triggert Cleanup via Event]            │  │
+  │  └────────────────────────────────────────────────────────┘  │
+  │                                                              │
+  │  Phase 3: POST-COMMIT (Non-blocking)                         │
+  │  ┌────────────────────────────────────────────────────────┐  │
+  │  │  Event Bus empfängt "TX_COMMITTED"                     │  │
+  │  │       ├──► Cleanup Job 1 (async, unabhängig)           │  │
+  │  │       ├──► Cleanup Job 2 (async, unabhängig)           │  │
+  │  │       └──► Cleanup Job N (async, unabhängig)           │  │
+  │  │  [Req C: Cleanup blockiert Commit NICHT]               │  │
+  │  └────────────────────────────────────────────────────────┘  │
+  └──────────────────────────────────────────────────────────────┘
+  ```
+
+  ### Schlüssel-Design-Entscheidungen
+
+  | Entscheidung | Begründung |
+  |---|---|
+  | Event Bus | Entkoppelt Commit von Cleanup-Ausführung |
+  | `publish_nowait()` | Fire-and-forget erfüllt Req C |
+  | AT_LEAST_ONCE Delivery | Stellt sicher, dass Cleanup irgendwann läuft (Req B) |
+  | AsyncBarrier | Erzwingt Req A ohne Polling |
+  | WAL vor Event | Durabilität vor Cleanup-Trigger |
+  | Separater Worker | Cleanup-Fehler beeinflussen Commits nicht |
+
+  ---
+
+  ## 3. Trade-off-Analyse
+
+  **Was passiert, wenn Req A modifiziert wird?**
+  → Commit-Latenz sinkt (kein Warten), aber Business-Ops könnten
+    nach einem Crash halbfertig sein → Durability-Risiko
+
+  **Was passiert, wenn Req C aufgehoben wird?**
+  → Commit blockiert auf Cleanup → höhere Latenz, aber stärkere
+    Consistency-Garantien für Post-Commit-Zustand
+
+  **Was passiert, wenn die Boundary zwischen A und B unscharf wird?**
+  → Echte Widersprüche entstehen. Die saubere Trennung zwischen
+    "Business-Ops (pre-commit blocking)" und "Cleanup-Ops
+    (post-commit non-blocking)" ist der architektonische Kern.
+
+  ---
+
+  ## Begründungen
+
+  1. **Kein Widerspruch, nur zwei Async-Kategorien:** A, B und C
+     erscheinen widersprüchlich, aber sie betreffen verschiedene
+     Zeitphasen. Präzise Kategoriendefinition ("was ist Business-Async
+     vs. Cleanup-Async") ist der Schlüssel zur Auflösung.
+
+  2. **Event Bus als Entkopplungsschicht:** Der Event Bus ist das
+     architektonische Mittel, das Req B (Commit triggert Cleanup)
+     und Req C (Cleanup blockiert nicht) gleichzeitig erfüllt –
+     Fire-and-forget nach dem Commit.
+
+  3. **WAL-first für Durabilität:** Der Commit-Record muss in den
+     Write-Ahead-Log geschrieben werden, bevor der Event publiziert
+     wird. Bei einem Crash kann der Event aus dem WAL neu gesendet
+     werden.
+
+  4. **AT_LEAST_ONCE Delivery unverzichtbar:** Wenn der Event Bus
+     keine Delivery-Garantie hat, können Cleanup-Jobs verloren
+     gehen. AT_LEAST_ONCE + Idempotenz der Cleanup-Jobs ist
+     das richtige Muster.
+
+  5. **Separate Fehlerdomänen:** Cleanup-Fehler dürfen niemals die
+     Commit-Performance oder -Verfügbarkeit beeinflussen. Der
+     separate CleanupWorker-Prozess ist deshalb eine Architektur-,
+     nicht nur eine Code-Entscheidung.

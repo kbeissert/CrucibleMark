@@ -45,7 +45,7 @@ class GoogleProvider(LLMJudgeProvider):
 
         api_key = get_required_env("GOOGLE_API_KEY")
         genai.configure(api_key=api_key)
-        
+
         self._model = model
         self._temperature = temperature
         self._max_tokens = max_tokens
@@ -56,10 +56,10 @@ class GoogleProvider(LLMJudgeProvider):
     def complete(self, system_prompt: str, user_prompt: str) -> JudgeProviderResponse:
         """Send a chat completion request to the Google Gemini API."""
         start = time.monotonic()
-        
+
         # Configure model with system prompt
         gemini_model = genai.GenerativeModel(
-            model_name=self._model, 
+            model_name=self._model,
             system_instruction=system_prompt
         )
 
@@ -69,12 +69,12 @@ class GoogleProvider(LLMJudgeProvider):
         )
 
         response = gemini_model.generate_content(
-            user_prompt, 
+            user_prompt,
             generation_config=generation_config
         )
-        
+
         latency_ms = (time.monotonic() - start) * 1000.0
-        
+
         raw_text: str = ""
         try:
             raw_text = response.text
@@ -88,7 +88,7 @@ class GoogleProvider(LLMJudgeProvider):
             self._model,
             latency_ms,
         )
-        
+
         return JudgeProviderResponse(
             raw_text=raw_text,
             model_id=self._model,

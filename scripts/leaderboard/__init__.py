@@ -165,7 +165,7 @@ def main(print_table: bool = True) -> None:
     ]
     for col in cols_to_round:
         if col in leaderboard.columns:
-            leaderboard[col] = leaderboard[col].round(2)
+            leaderboard[col] = pd.to_numeric(leaderboard[col], errors="coerce").round(2)
 
     # Round Cost per 1K to 4 places separately
     if "Cost per 1K (USD)" in leaderboard.columns:

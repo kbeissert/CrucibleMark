@@ -22,3 +22,128 @@ expected_output:
 scoring:
   method: "rubric"
   max_score: 100
+
+golden_standard: |
+  # Deadlock-Analyse: Multi-threaded Anwendung
+
+  ## Chain of Thought
+
+  ### Schritt 1: Zustand jedes Threads ermitteln
+
+  | Thread | Hält | Wartet auf |
+  |--------|------|------------|
+  | Thread A | Resource_X | Resource_Y |
+  | Thread B | Resource_Y | Resource_X |
+
+  ### Schritt 2: Abhängigkeitszyklus nachverfolgen
+
+  ```
+  Thread A ──hält──► Resource_X ◄──will── Thread B
+  Thread A ──will──► Resource_Y ──hält──► Thread B
+  ```
+
+  **Zirkuläre Abhängigkeit:**
+  - Thread A kann nicht fortfahren, weil Resource_Y von Thread B gehalten wird
+  - Thread B kann nicht fortfahren, weil Resource_X von Thread A gehalten wird
+  - Keiner Thread wird jemals freigeben, was der andere braucht
+
+  ### Schritt 3: Alle vier Coffman-Bedingungen prüfen
+
+  | Bedingung | Erfüllt? | Beweis |
+  |-----------|----------|--------|
+  | **1. Mutual Exclusion** | ✅ Ja | Mutexe erlauben nur einen Thread gleichzeitig |
+  | **2. Hold and Wait** | ✅ Ja | Jeder Thread hält eine Resource und wartet auf eine weitere |
+  | **3. No Preemption** | ✅ Ja | Kein Mutex kann einem Thread zwangsweise entzogen werden |
+  | **4. Circular Wait** | ✅ Ja | A→wartet auf Y (gehalten von B)→wartet auf X (gehalten von A) |
+
+  > **Alle vier Bedingungen erfüllt → Deadlock bestätigt.**
+
+  ---
+
+  ### Schritt 4: Warum die Anwendung hängt
+
+  ```
+  ┌──────────────────────────────────────────┐
+  │  Thread A          Thread B              │
+  │  ┌──────────┐      ┌──────────┐          │
+  │  │ Hält X   │      │ Hält Y   │          │
+  │  │          │      │          │          │
+  │  │ Wartet   │◄────►│ Wartet   │          │
+  │  │  auf Y   │      │  auf X   │          │
+  │  └──────────┘      └──────────┘          │
+  │                                          │
+  │  ← Keiner kann fortfahren. Für immer. →  │
+  └──────────────────────────────────────────┘
+  ```
+
+  Beide Threads sind **permanent blockiert** – keine CPU-Last,
+  aber auch kein Fortschritt. Die Anwendung hängt unbegrenzt.
+
+  ---
+
+  ## Fix-Strategien
+
+  ### ✅ Strategie 1: Lock Ordering (Bester / Einfachster Fix)
+
+  **Globale, konsistente Reihenfolge** beim Erwerb von Locks erzwingen.
+
+  ```python
+  # VORHER (Defekt):
+  # Thread A: lock(X) → lock(Y)
+  # Thread B: lock(Y) → lock(X)  ← umgekehrte Reihenfolge = Deadlock
+
+  # NACHHER (Behoben):
+  # Thread A: lock(X) → lock(Y)
+  # Thread B: lock(X) → lock(Y)  ← gleiche Reihenfolge = kein Zyklus
+  ```
+  > Bricht die **Circular Wait**-Bedingung – damit ist kein Deadlock möglich.
+
+  ### ✅ Strategie 2: Try-Lock mit Timeout / Backoff
+
+  Nicht-blockierende Lock-Versuche mit Timeout: Wenn der zweite Lock
+  nicht erworben werden kann, ersten freigeben und erneut versuchen.
+  > ⚠️ Achtung vor **Livelock**, wenn beide Threads synchron wiederholen.
+
+  ### ✅ Strategie 3: Einzelner übergeordneter Lock
+
+  Wenn beide Ressourcen immer gemeinsam verwendet werden, mit
+  **einem Mutex** schützen:
+  ```python
+  lock(Resource_XY)
+    # X und Y gleichzeitig nutzen
+  unlock(Resource_XY)
+  ```
+
+  ### ✅ Strategie 4: Deadlock-Erkennung zur Laufzeit
+
+  | Tool | Plattform |
+  |------|-----------|
+  | **Valgrind (Helgrind)** | Linux/C++ |
+  | **ThreadSanitizer (TSan)** | C/C++/Go |
+  | **Java VisualVM / jstack** | Java |
+
+  ---
+
+  ## Begründungen
+
+  1. **Alle vier Coffman-Bedingungen sind erfüllt:** Das ist der formale
+     Beweis für einen Deadlock. Bei der Analyse muss man alle vier
+     prüfen – das Fehlen einer einzigen würde keinen Deadlock erlauben.
+
+  2. **Lock Ordering ist die robusteste Prävention:** Es verhindert
+     zirkuläre Wartezyklen strukturell. Einmal global definiert,
+     verhindert es Deadlocks über das gesamte Codebase.
+
+  3. **Die umgekehrte Lock-Reihenfolge ist die Wurzelursache:** A erwirbt
+     X→Y, B erwirbt Y→X. Würde B ebenfalls X→Y verwenden, würde
+     Thread B beim Versuch Resource_X zu sperren blockieren (da A es
+     hält) – aber Thread A kann dann Y erwerben und abschließen.
+
+  4. **Try-Lock hat Risiken:** Livelock entsteht, wenn beide Threads
+     ständig die gleichen Locks zeitgleich freigeben und wiederholen.
+     Randomisierter Backoff mindert das Risiko.
+
+  5. **Goldene Regel:** Mehrere Locks immer in derselben vordefinierten
+     Reihenfolge über alle Threads hinweg erwerben. Diese Konvention
+     sollte im Codebase dokumentiert und ggf. durch Linting durchgesetzt
+     werden.

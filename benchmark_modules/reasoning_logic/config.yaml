@@ -34,8 +34,8 @@ execution:
 
 scoring:
   fallback_weights:
-    regex: 0.60
-    judge: 0.40
+    regex: 0.20
+    judge: 0.80
 
 benchmarks:
   # Classical Logic
@@ -45,6 +45,9 @@ benchmarks:
     score_contribution:
       routine: 0.0
       reasoning: 1.0
+    scoring_weights:
+      regex: 0.10
+      judge: 0.90
 
   # Advanced Reasoning Chains (Category 5)
   - id: "reasoning_5a_001"
@@ -67,6 +70,9 @@ benchmarks:
     score_contribution:
       routine: 0.0
       reasoning: 1.0
+    scoring_weights:
+      regex: 0.10
+      judge: 0.90
 
   - id: "reasoning_5d_001"
     name: "Circular Dependency"
@@ -89,6 +95,9 @@ benchmarks:
     score_contribution:
       routine: 0.0
       reasoning: 1.0
+    scoring_weights:
+      regex: 0.10
+      judge: 0.90
   - id: "reasoning_metacog_002"
     name: "Metacog 2"
     tier: 1

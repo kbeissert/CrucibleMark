@@ -379,3 +379,158 @@ scoring:
           - begeistert
           - lieben
           - revolutionieren
+
+golden_standard: |
+  ## SCHRITT 1: ANALYSE – Warum die Feature-Liste nicht funktioniert
+
+  ### Diagnose der Schwachstellen
+
+  | Element | Status | Problem |
+  |---------|--------|---------|
+  | **Benefit-Orientierung** | ❌ Fehlt | Die Liste kommuniziert ausschließlich *Was* das Produkt kann – nicht *Was der Nutzer davon hat*. „Unlimited Projects" ist ein Feature. Die Frage des Kunden: „Was bedeutet das für mich?" bleibt unbeantwortet. |
+  | **Headline** | ❌ Fehlt | Kein übergeordneter Satz, der den Besucher in 3 Sekunden abholt, emotional anspricht und zum Weiterlesen motiviert. Ohne starke Headline → sofortiger Bounce. |
+  | **Zielgruppen-Ansprache** | ❌ Fehlt | Kein einziger Satz adressiert Projektmanager oder Team-Leads direkt. Kein „Du", keine Schmerzpunkte gespiegelt (verpasste Deadlines, Kommunikationschaos, Kontrollverlust). |
+  | **Trust-Aufbau** | ⚠️ Falsch eingesetzt | „SOC 2 Type II" und „99.9% Uptime SLA" sind starke Vertrauenssignale – aber kontextlos in einer Aufzählung begraben wirken sie wie Fußnoten statt Vertrauensanker. |
+  | **Call-to-Action** | ❌ Fehlt | Keine Handlungsaufforderung. Kein Button. Kein nächster Schritt. Der Besucher weiß nicht, was er tun soll – und tut deshalb: nichts. |
+  | **Risk Reversal / Dringlichkeit** | ❌ Fehlt | Kein Grund, jetzt zu handeln. Keine Testphase, keine Garantie, kein Risk Reversal. Hemmschwelle bleibt hoch. |
+  | **Emotionale Ansprache** | ❌ Fehlt | Sprache ist vollständig neutral und technisch. B2B-Entscheider unter Druck brauchen Worte, die Kontrolle, Klarheit und Sicherheit vermitteln. |
+
+  **Kern-Diagnose:** Die Seite spricht die Sprache des Entwicklerteams ("Was haben wir gebaut?")
+  statt die Sprache des Käufers ("Was löst das für mich?"). Projektmanager kaufen keine
+  Dashboards – sie kaufen **Kontrolle, Klarheit und pünktliche Lieferung.**
+
+  ---
+
+  ## SCHRITT 2: TRANSFORMATION – Optimierte Hero-Section
+
+  ---
+
+  ### 🎯 HEADLINE
+
+  > # Schluss mit dem Chaos. Dein Team. Deine Deadlines. Deine Kontrolle.
+
+  *„Chaos" trifft den emotionalen Kern der Zielgruppe. Die dreifache Wiederholung „Dein/e"
+  schafft sofortige persönliche Relevanz. Das Versprechen ist das Ergebnis – kein Feature.*
+
+  ---
+
+  ### 📌 SUBHEADLINE
+
+  **TaskFlow Pro gibt Projektmanagern und Team-Leads die zentrale Plattform, die sie wirklich
+  brauchen:** Alle Projekte, das gesamte Team und jede Entscheidung – an einem Ort, in
+  Echtzeit, ohne Kompromisse bei Sicherheit oder Verfügbarkeit.
+
+  *Nennt explizit die Zielgruppe, löst das Headline-Versprechen ein und übersetzt Features
+  in Benefits ohne technische Sprache.*
+
+  ---
+
+  ### ✅ BENEFIT-BULLETS (Feature → Benefit-Mapping)
+
+  | Feature (intern) | Benefit (Kundensprache) |
+  |-----------------|------------------------|
+  | Real-time Collaboration | **Alle ziehen am gleichen Strang** – Dein Team sieht Änderungen in Echtzeit. Keine veralteten Dateien, keine doppelte Arbeit. |
+  | Advanced Analytics Dashboard | **Dein nächstes Stakeholder-Meeting? Vorbereitet in 5 Minuten** – Klare Reports, die Fortschritt zeigen, bevor jemand danach fragt. |
+  | Unlimited Projects | **Skaliere ohne Grenzen** – Ob 5 oder 500 Projekte: Dein Workspace wächst mit deinem Team, ohne Aufpreis. |
+
+  ---
+
+  ### 🔒 TRUST-BLOCK
+
+  **Gebaut für Teams, die keine Kompromisse machen:**
+
+  ```
+  🔒 SOC 2 Type II zertifiziert    ⚡ 99,9 % Uptime garantiert
+     Ihre Daten sind sicher.          Kein Ausfall. Vertraglich zugesichert.
+  ```
+
+  *Trust-Signale herausgelöst aus der Feature-Liste als eigenständiger Block mit
+  kurzer Alltagssprache-Erklärung. „Vertraglich zugesichert" verstärkt Risk Reversal.*
+
+  ---
+
+  ### 🚀 CALL-TO-ACTION
+
+  ```
+  ┌─────────────────────────────────────────────────┐
+  │                                                 │
+  │   [ Kostenlosen Workspace einrichten →  ]       │  ← PRIMARY CTA
+  │                                                 │
+  │   ✓ 14 Tage kostenlos testen                    │
+  │   ✓ Keine Kreditkarte erforderlich              │
+  │   ✓ Setup in unter 10 Minuten                   │
+  │                                                 │
+  └─────────────────────────────────────────────────┘
+
+       oder  [ Live-Demo ansehen → ]               ← SECONDARY CTA
+  ```
+
+  *CTA-Text handlungsorientiert und konkret: „Kostenlosen Workspace einrichten"
+  statt generisches „Jetzt starten". Dreifaches Risk Reversal eliminiert die größten
+  Einwände bei SaaS-Signups: Kosten, Commitment, Zeitaufwand.*
+
+  ---
+
+  ## VOLLSTÄNDIGE HERO-SECTION (Gesamtansicht)
+
+  ```
+  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  🔒 Enterprise-grade Sicherheit · SOC 2 Type II zertifiziert
+  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+    SCHLUSS MIT DEM CHAOS.
+    DEIN TEAM. DEINE DEADLINES. DEINE KONTROLLE.
+
+    TaskFlow Pro gibt Projektmanagern und Team-Leads die zentrale
+    Plattform, die sie wirklich brauchen: Alle Projekte, das
+    gesamte Team und jede Entscheidung – an einem Ort, in Echtzeit,
+    ohne Kompromisse bei Sicherheit oder Verfügbarkeit.
+
+  ──────────────────────────────────────────────────────────────
+
+  📊 Entscheidungen in Sekunden  💬 Schluss mit Status-Chaos  ∞ Ohne Limit wachsen
+     Analytics auf einen Blick      Alle am gleichen Stand       Unbegrenzte Projekte
+
+  ──────────────────────────────────────────────────────────────
+
+       [ Kostenlosen Workspace einrichten → ]
+
+        ✓ 14 Tage free   ✓ Keine Kreditkarte   ✓ In 10 Min bereit
+
+               oder  Live-Demo ansehen →
+
+  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  🔒 SOC 2 Type II     ⚡ 99,9 % Uptime     ⭐ 4,8/5 auf G2
+  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  ```
+
+  ---
+
+  ## 6 Begründungen
+
+  1. **Headline spricht Schmerz, nicht Features** – „Chaos" ist das emotionale Kernproblem
+     der Zielgruppe. Eine emotionale Headline erzeugt 3× mehr Aufmerksamkeit als eine
+     feature-beschreibende Headline, weil Entscheider nach Lösungen für Probleme suchen,
+     nicht nach Funktionslisten.
+
+  2. **Micro-Badge oberhalb der Headline** – „SOC 2 Type II zertifiziert" als erstes
+     visuelles Element für Enterprise-Entscheider, die Sicherheit als K.O.-Kriterium
+     bewerten. So passiert das Vertrauen, bevor der Haupttext überhaupt gelesen wird.
+
+  3. **Feature→Benefit-Übersetzung durch Zielgruppensprache** – Jedes Feature wird in
+     die Sprache des tatsächlichen Kaufmotivs übersetzt: PM kaufen keine Dashboards,
+     sie kaufen „5-Minuten-Vorbereitung fürs Stakeholder-Meeting". Der Nutzen ist
+     konkret, zeitlich messbar, emotional relevant.
+
+  4. **Dreifaches Risk Reversal unter dem CTA** – Kreditkarte, Testphase, Setup-Zeit
+     adressieren die drei häufigsten SaaS-Einwände direkt im Conversion-Hot-Spot.
+     Jedes Häkchen senkt die Hemmschwelle um eine weitere Stufe.
+
+  5. **Sekundär-CTA als Escape Valve** – „Live-Demo ansehen" fängt Entscheider ab,
+     die noch nicht kaufbereit sind, aber Interesse haben. Ohne Sekundär-CTA verlässt
+     diese Gruppe die Seite. Mit ihm bleiben sie im Funnel.
+
+  6. **Trust-Bar am Ende der Section** – Soziale Beweise (G2-Rating, Kundenzahl)
+     zusammen mit technischen Garantien (SLA, Zertifizierung) schließen die Section
+     mit einem Vertrauensanker ab. Leser, die bis hierher gescrollt haben, sind bereits
+     interessiert – dieser Block liefert die letzte Bestätigung.

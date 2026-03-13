@@ -429,3 +429,115 @@ scoring:
           - "praxis"
           - "konkret"
         description: "Sind Beispiele, Use-Cases und Umsetzungs-Tipps vorhanden?"
+
+golden_standard: |
+  ## SCHRITT 1: ANALYSE – Warum der akademische Text schwer verständlich ist
+
+  | Problem-Kategorie | Konkrete Stelle | Auswirkung |
+  |---|---|---|
+  | **Jargon-Dichte** | „cognitive load theory", „information architecture principles", „decision paralysis" – 4 Fachbegriffe in Satz 2 | Leser stolpert bereits beim zweiten Satz |
+  | **Fehlende Metapher** | Kein einziges Bild aus der Alltagswelt | Konzept bleibt abstrakt, nicht greifbar |
+  | **Fehlende Beispiele** | Nur abstrakte Kategorien („onboarding flows", „settings menus") – keine echte App, keine echte Situation | Leser kann sich nichts vorstellen |
+  | **Passive Sprache** | „is presented", „is particularly effective", „might overwhelm" | Distanziert, akademisch, kein Bezug zu „mir" |
+  | **Satzstruktur-Komplexität** | Satz 2 hat 3 Nebensätze + 4 Fachbegriffe gleichzeitig | Kognitive Überlastung – ironischerweise beim Erklären von Überlastung |
+  | **Fehlende Handlungsanweisung** | Kein „Wann nutze ich das?" | Leser weiß nach dem Lesen nicht, was er *tun* soll |
+  | **Fehlende Anti-Beispiele** | Kein Kontrast zu „Progressive Disclosure nicht eingesetzt" | Konzept wirkt wie Allheilmittel; Wann es *nicht* passt bleibt unklar |
+
+  **Kern-Diagnose:**
+  > Der Text erklärt *was* Progressive Disclosure theoretisch ist – aber nicht *warum
+  > es mich interessieren sollte* und *wie es sich in meinem Alltag zeigt*. Er setzt
+  > UX-Grundwissen als gegeben voraus. Für Nicht-Designer ist das wie eine Anleitung
+  > auf Latein.
+
+  ---
+
+  ## SCHRITT 2 & 3: TRANSFORMATION
+
+  ---
+
+  # 🗂️ Progressive Disclosure
+  ### Zeige Nutzern nur das, was sie gerade brauchen – den Rest erst auf Nachfrage.
+
+  ---
+
+  ### 🍳 Die Küchen-Analogie
+
+  Stell dir vor, du kochst zum ersten Mal.
+  Ein guter Kochkurs zeigt dir **zuerst nur Schritt 1**: Zwiebeln schneiden.
+  Nicht gleichzeitig: Soße ansetzen, Gewürze abwiegen, Timing managen.
+
+  Genau das macht gutes UI-Design:
+  **Du zeigst nur, was der Nutzer in diesem Moment braucht.** Den Rest holst du
+  raus, wenn er bereit ist.
+
+  ---
+
+  ### ✅ Gutes Beispiel
+  **Gmail → „Weitere Optionen"** beim E-Mail schreiben:
+  Du siehst zuerst nur: Senden, Anhang, Formatierung.
+  Zeitplan, Vertraulichkeit, Signatur? Versteckt – bis du sie brauchst.
+
+  ### ❌ Schlechtes Beispiel
+  Ein Anmeldeformular, das sofort 12 Felder zeigt:
+  Steuerklasse, Abteilung, Kostenstelle, Notfallkontakt…
+  → Viele Nutzer brechen ab. Zu viel auf einmal.
+
+  ---
+
+  ### 🎯 Wann nutzen?
+
+  | Ja ✅ | Nein ❌ |
+  |-------|--------|
+  | Komplexe Formulare mit vielen Feldern | Wenn Nutzer alle Infos gleichzeitig brauchen (z. B. Preisvergleich) |
+  | Einstellungsmenüs mit Advanced Options | Checkout-Prozesse, bei denen Transparenz Vertrauen schafft |
+  | Neue Features schrittweise einführen | Wenn das Verstecken von Infos Verwirrung erzeugt |
+
+  ---
+
+  ### ⚡ Quick-Tipp für dein nächstes Meeting
+
+  Frag: *„Was braucht der Nutzer in diesem Moment – und was kann noch warten?"*
+  Alles, was warten kann → ausblenden, bis es gebraucht wird.
+
+  ---
+
+  **Wortanzahl Transformation:** ~148 ✓
+
+  ---
+
+  ## Vorher / Nachher auf einen Blick
+
+  ```
+  VORHER: "...reduces cognitive load by hiding secondary features to
+           prevent decision paralysis in onboarding flows..."
+
+  NACHHER: "Zeige Nutzern nur das, was sie gerade brauchen –
+            den Rest erst auf Nachfrage."
+  ```
+
+  ---
+
+  ## 5 Begründungen
+
+  1. **Alltagsmetapher als kognitiver Anker** – Die Küchen-Analogie schafft einen
+     Referenzpunkt, den jeder kennt. Neues Wissen „hängt sich" an Bekanntes –
+     das ist das Grundprinzip der Lernpsychologie. Ohne Metapher bleibt das
+     Konzept abstrakt und flüchtig.
+
+  2. **Gutes + Schlechtes Beispiel statt nur Theorie** – Zwei konkrete Beispiele
+     (Gmail vs. 12-Feld-Formular) geben dem Abstrakten ein Gesicht. Das schlechte
+     Beispiel ist besonders wertvoll: Es zeigt, welches Problem Progressive Disclosure
+     löst, bevor man den Begriff überhaupt kannte.
+
+  3. **Ja/Nein-Tabelle statt Pauschalaussage** – Anti-Beispiele und Einschränkungen
+     erhöhen die Glaubwürdigkeit. Ein Konzept ohne Grenzen wirkt wie ein Allheilmittel –
+     das erzeugt Skepsis. Mit Grenzen demonstriert man Expertise.
+
+  4. **Aktive Sprache mit „Du" als Subjekt** – Der Wechsel von „information is
+     presented" zu „Du zeigst" macht den Leser zum handelnden Subjekt. Das senkt
+     die kognitive Distanz und erhöht den Handlungsimpuls.
+
+  5. **Quick-Tipp als sofort einsetzbare Handlungsanweisung** – Theorie ohne Praxis
+     ist Infotainment. Der Quick-Tipp überbrückt die Lücke zwischen Verstehen und
+     Anwenden. Er beantwortet die implizite Frage jedes Nicht-Designers: „Was soll
+     ich jetzt damit anfangen?"

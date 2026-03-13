@@ -88,6 +88,9 @@ benchmarks:
     score_contribution:
       routine: 0.7
       reasoning: 0.3
+    scoring_weights:
+      regex: 0.30
+      judge: 0.70
 
   - id: "content_transformation_004"
     name: "Video Script Tutorial"
@@ -109,3 +112,6 @@ benchmarks:
     score_contribution:
       routine: 0.5
       reasoning: 0.5
+    scoring_weights:
+      regex: 0.30
+      judge: 0.70
