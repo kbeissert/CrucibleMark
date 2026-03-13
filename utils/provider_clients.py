@@ -425,6 +425,10 @@ class AnthropicClient(BaseProviderClient):
                     "max_tokens", MAX_TOKENS_ANTHROPIC
                 )
 
+            # Limit strictly for older Claude 3 models that have max_tokens hard-capped at 4096
+            if ("claude-3-haiku-20" in model or "claude-3-sonnet-20" in model or "claude-3-opus-20" in model) and max_tokens > 4096:
+                max_tokens = 4096
+
             # Note: Streaming not implemented yet for Anthropic in this wrapper
             response = self.client.messages.create(
                 model=model,
