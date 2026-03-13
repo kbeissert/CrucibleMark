@@ -62,6 +62,8 @@ benchmark-audit:
 	@echo "🕵️  Starting Benchmark (Audit Mode)..."
 	$(PYTHON) run_benchmark.py --audit $(if $(MODEL),--model "$(MODEL)") $(if $(MODULE),--module "$(MODULE)") $(if $(filter true,$(FORCE)),--force)
 	@$(MAKE) leaderboard
+	@echo "📰 Generating Magazine-Style Review..."
+	$(PYTHON) scripts/analysis/generate_magazine_review.py
 
 benchmark-dev:
 	@echo "🚀 Starting Interactive Benchmark (Dev Mode - Fast Iteration)..."
