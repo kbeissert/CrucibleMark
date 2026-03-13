@@ -14,6 +14,7 @@ Never raises an exception from parse(); callers can check parse_success.
 
 from __future__ import annotations
 
+import json
 import logging
 import re
 from dataclasses import dataclass
@@ -62,6 +63,11 @@ class JudgeResult:
     judge_provider_used: Optional[str] = None
     judge_model_used: Optional[str] = None
 
+    # Sub-scores
+    judge_task_compliance: Optional[int] = None
+    judge_output_quality: Optional[int] = None
+    judge_standard_adherence: Optional[int] = None
+
 
 def parse(raw_response: str) -> JudgeResult:
     """
@@ -77,7 +83,33 @@ def parse(raw_response: str) -> JudgeResult:
         JudgeResult with extracted score and reasoning.
     """
     reasoning = _extract_reasoning(raw_response)
-    score = _extract_score(raw_response)
+
+    # Try to extract from JSON first since prompt enforces JSON format
+    json_data = _extract_json_block(raw_response)
+
+    # Initialize variables
+    score = None
+    sub_scores = None
+
+    if json_data:
+        score = json_data.get("score")
+        if isinstance(score, int) or (isinstance(score, str) and score.isdigit()):
+            score = int(score)
+        else:
+            score = None
+
+        sub_scores = json_data.get("sub_scores")
+
+    # If JSON parse fails or is missing, try legacy text parsing
+    if score is None:
+        score = _extract_score(raw_response)
+
+    if sub_scores is None:
+        sub_scores = _extract_sub_scores_legacy(raw_response)
+
+    judge_task_compliance = sub_scores.get("task_compliance") if sub_scores else None
+    judge_output_quality = sub_scores.get("output_quality") if sub_scores else None
+    judge_standard_adherence = sub_scores.get("standard_adherence") if sub_scores else None
 
     if score is None:
         logger.warning(
@@ -92,6 +124,9 @@ def parse(raw_response: str) -> JudgeResult:
             reasoning=reasoning,
             raw_response=raw_response,
             parse_success=False,
+            judge_task_compliance=judge_task_compliance,
+            judge_output_quality=judge_output_quality,
+            judge_standard_adherence=judge_standard_adherence,
         )
 
     return JudgeResult(
@@ -99,6 +134,9 @@ def parse(raw_response: str) -> JudgeResult:
         reasoning=reasoning,
         raw_response=raw_response,
         parse_success=True,
+        judge_task_compliance=judge_task_compliance,
+        judge_output_quality=judge_output_quality,
+        judge_standard_adherence=judge_standard_adherence,
     )
 
 
@@ -145,6 +183,18 @@ def _extract_reasoning(text: str) -> str:
 
     start_pos = match.end()
 
+    # Try to end reasoning before JSON block if it exists
+    json_match = re.search(r"```json\s*(.*?)\s*```", text, re.DOTALL | re.IGNORECASE)
+    if not json_match:
+        json_match = re.search(r"(\{.*\"score\".*\})", text, re.DOTALL)
+
+    if json_match:
+        end_pos = json_match.start()
+        if end_pos > start_pos:
+            reasoning_text = text[start_pos:end_pos].strip()
+            reasoning_text = re.sub(r"-{3,}\s*$", "", reasoning_text).strip()
+            return reasoning_text
+
     # Use the start position of the LAST valid SCORE marker (if any) as the end bound.
     # This prevents truncating the reasoning if the word "score" is used inside the reasoning itself.
     score_matches = list(_RE_SCORE.finditer(text))
@@ -160,3 +210,71 @@ def _extract_reasoning(text: str) -> str:
     reasoning_text = text[start_pos:].strip()
     reasoning_text = re.sub(r"-{3,}\s*$", "", reasoning_text).strip()
     return reasoning_text
+
+
+def _extract_json_block(text: str) -> Optional[dict]:
+    """
+    Extracts the JSON block from the new prompt format and parses it.
+    Returns the parsed dict if successful, None otherwise.
+    """
+    matches = list(re.finditer(r"```json\s*(.*?)\s*```", text, re.DOTALL | re.IGNORECASE))
+
+    json_str = None
+    if matches:
+        json_str = matches[-1].group(1)
+    else:
+        # Fallback: some models forget the markdown block and just output raw JSON.
+        # Find the last block that looks like a JSON object containing "score".
+        fallback_match = re.search(r"(\{.*\"score\".*\})", text, re.DOTALL)
+        if fallback_match:
+            json_str = fallback_match.group(1)
+
+    if not json_str:
+        return None
+
+    try:
+        data = json.loads(json_str)
+        if not isinstance(data, dict):
+            return None
+        return data
+    except json.JSONDecodeError:
+        return None
+
+
+def _extract_sub_scores_legacy(text: str) -> Optional[dict]:
+    """
+    Extracts the JSON sub-score block from the legacy judge's output.
+    Looks for the last ```json ... ``` block in the text or a raw JSON fallback.
+    Returns None if no valid block is found.
+    Validates that all three mandatory keys are present.
+    """
+    matches = list(re.finditer(r"```json\s*(.*?)\s*```", text, re.DOTALL | re.IGNORECASE))
+
+    json_str = None
+    if matches:
+        json_str = matches[-1].group(1)
+    else:
+        fallback_match = re.search(r"(\{.*\"task_compliance\".*\})", text, re.DOTALL)
+        if fallback_match:
+            json_str = fallback_match.group(1)
+
+    if not json_str:
+        return None
+
+    try:
+        data = json.loads(json_str)
+        if not isinstance(data, dict):
+            return None
+
+        required_keys = ["task_compliance", "output_quality", "standard_adherence"]
+        if not all(key in data for key in required_keys):
+            return None
+
+        for key in required_keys:
+            val = data[key]
+            if not isinstance(val, int) or val < 1 or val > 5:
+                return None
+
+        return {key: data[key] for key in required_keys}
+    except json.JSONDecodeError:
+        return None

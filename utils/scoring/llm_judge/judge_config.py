@@ -10,7 +10,7 @@ from typing import List, Literal, Optional
 from pydantic import BaseModel, Field
 
 # Valid literals — changing these here is the single source of truth
-ProviderName = Literal["anthropic", "mistral", "ollama", "openai"]
+ProviderName = Literal["anthropic", "mistral", "ollama", "openai", "google"]
 JudgeMode = Literal["complement", "replace"]
 ScoreScale = Literal[3, 5, 10]
 
@@ -18,6 +18,7 @@ ScoreScale = Literal[3, 5, 10]
 DEFAULT_ANTHROPIC_MODEL = "claude-haiku-4-5"
 DEFAULT_MISTRAL_MODEL = "mistral-small-latest"
 DEFAULT_OPENAI_MODEL = "gpt-4o-mini"
+DEFAULT_GOOGLE_MODEL = "gemini-2.5-pro"
 DEFAULT_OLLAMA_MODEL = "llama3.2"
 DEFAULT_OLLAMA_BASE_URL = "http://localhost:11434"
 DEFAULT_TEMPERATURE = 0.1
