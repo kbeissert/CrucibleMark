@@ -54,12 +54,15 @@ def process_model_review(model_dir: Path, csv_data: str, client: LLMClient, prov
 
             # Simple Extraktion via Regex (suche nach Judge Evaluation Blöcken unten)
             judge_section_match = re.search(r'\*\*LLM Judge Score \(Raw\):\*\*.*', content, re.DOTALL)
+            system_info_match = re.search(r'> \*\*⚠️ SYSTEM INFO:\*\*.*', content)
+            
+            system_info_text = f"\n{system_info_match.group(0)}\n" if system_info_match else ""
 
             if judge_section_match:
                 extracted = judge_section_match.group(0).strip()
-                extracted_logs.append(f"--- Datei: {md_file.name} ---\n{extracted}")
+                extracted_logs.append(f"--- Datei: {md_file.name} ---{system_info_text}\n{extracted}")
             else:
-                extracted_logs.append(f"--- Datei: {md_file.name} ---\n{content[-1500:]}")
+                extracted_logs.append(f"--- Datei: {md_file.name} ---{system_info_text}\n{content[-1500:]}")
         except Exception as e:
             continue
 
@@ -78,6 +81,7 @@ Analysiere die folgenden Benchmark-Ergebnisse und qualitativen Judge-Protokolle 
 Schreibe ein detailliertes Review (als Markdown), das die Stärken und Schwächen dieses spezifischen Modells beleuchtet.
 
 Gehe speziell auf Kategorien wie Code Quality, Logik, Security und Halluzinationen ein.
+ACHTUNG: Achte zwingend auf eventuelle '⚠️ SYSTEM INFO' Warnungen (wie Token-Limit-Fallbacks) in den Protokollen und erwähne diese prominent im Review als 'Kopfnoten', da sie für den realen Einsatz (z.B. in Agenten-Frameworks) kritisch sind.
 Ziehe ein klares, professionell begründetes Fazit (mit Empfehlungen für Einsatzzwecke).
 Nutze die qualitativen Protokolle, um echte Beispiele (z. B. aufgetretene Fehler, Missverständnisse, gute Workarounds) zu nennen.
 
