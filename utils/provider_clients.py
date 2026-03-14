@@ -769,12 +769,12 @@ class OpenAIClient(BaseProviderClient):
             # Reasoning models (o1, o3) and some newer minis often don't support temperature
             # or have strict fixed values.
             is_reasoning = (
-                model.startswith("o1") or model.startswith("o3") or "gpt-5" in model
+                model.startswith("o1") or model.startswith("o3") or "gpt-5" in model 
             )
             if not is_reasoning:
                 params["temperature"] = temperature
 
-            token_param_name = "max_completion_tokens" if is_reasoning else "max_tokens"
+            token_param_name = "max_completion_tokens"  # OpenAI now universally prefers max_completion_tokens for newer models
             req_tokens = kwargs.get("max_tokens")
             if not req_tokens:
                 req_tokens = self.config.get("defaults", {}).get("generation", {}).get("num_predict", 8192)
@@ -1034,3 +1034,181 @@ class GoogleClient(BaseProviderClient):
             ]
         except Exception:
             return []
+
+
+class XAIClient(BaseProviderClient):
+    """XAI Provider Client"""
+
+    def __init__(self, config: dict):
+        super().__init__(config)
+        self._client = None
+
+    @property
+    def client(self):
+        """Lazy-loaded XAI Client using OpenAI wrapper"""
+        if self._client is None:
+            try:
+                from openai import OpenAI
+            except ImportError:
+                raise ImportError("Library 'openai' not installed.")
+            
+            import httpx
+            from utils.env_utils import get_required_env
+
+            api_key = get_required_env(
+                "XAI_API_KEY", "XAI_API_KEY environment variable not set"
+            )
+
+            timeout_config = httpx.Timeout(
+                connect=10.0, read=180.0, write=180.0, pool=180.0
+            )
+
+            self._client = OpenAI(
+                api_key=api_key, 
+                base_url="https://api.x.ai/v1",
+                timeout=timeout_config
+            )
+        return self._client
+
+    def is_accessible(self) -> bool:
+        """Prüft Zugang zu XAI API."""
+        try:
+            from openai import OpenAI
+            check_client = OpenAI(api_key=self.client.api_key, base_url="https://api.x.ai/v1", max_retries=0)
+            check_client.chat.completions.create(
+                model="grok-beta",
+                messages=[{"role": "user", "content": "Hi"}],
+                max_tokens=1,
+            )
+            return True
+        except Exception as e:
+            from utils.logging_config import setup_logging
+            logger = setup_logging()
+            logger.debug("XAI Access Check Failed: %s", e)
+            return False
+
+    def _get_fingerprint(self, model: str) -> str:
+        """Generates fingerprint for XAI Model."""
+        if model in self.fingerprint_cache:
+            return self.fingerprint_cache[model]
+
+        from utils.fingerprinting import get_official_version
+        from utils.fingerprinting import ModelFingerprinter
+
+        official_version = get_official_version("xai", model)
+        model_type = "grok"
+
+        behavioral_hash = ModelFingerprinter.generate_behavioral_hash(
+            client=self, model_name=model
+        )
+
+        fingerprint = ModelFingerprinter.create_fingerprint(
+            provider="xai",
+            model_name=model_type,
+            official_version=official_version,
+            behavioral_hash=behavioral_hash,
+        )
+        self.fingerprint_cache[model] = fingerprint
+        return fingerprint
+
+    def query(
+        self,
+        model: str,
+        prompt: str,
+        temperature: float,
+        stream_handler = None,
+        **kwargs,
+    ) -> str:
+        """Query XAI API"""
+        try:
+            from utils.logging_config import setup_logging
+            logger = setup_logging()
+            
+            skip_fingerprint = kwargs.pop("skip_fingerprint", False)
+            params = {
+                "model": model,
+                "messages": [{"role": "user", "content": prompt}],
+                "temperature": temperature,
+            }
+
+            req_tokens = kwargs.get("max_tokens")
+            if not req_tokens:
+                req_tokens = self.config.get("defaults", {}).get("generation", {}).get("num_predict", 8192)
+
+            params["max_completion_tokens"] = req_tokens
+
+            if stream_handler:
+                params["stream"] = True
+
+            response, used_max_tokens, fallback_triggered = self._execute_with_token_fallback(
+                func=self.client.chat.completions.create,
+                token_param_name="max_completion_tokens",
+                initial_max_tokens=req_tokens,
+                error_keywords=["maximum context length", "max_tokens", "max_completion_tokens"],
+                func_kwargs=params
+            )
+
+            if stream_handler:
+                full_content = ""
+                self.last_response_metadata = {
+                    "token_limit_fallback": fallback_triggered,
+                    "token_limit_used": used_max_tokens,
+                }
+
+                for chunk in response:
+                    if not self.last_response_metadata.get("id") and chunk.id:
+                        self.last_response_metadata["id"] = chunk.id
+                    if not self.last_response_metadata.get("model") and chunk.model:
+                        self.last_response_metadata["model"] = chunk.model
+                    
+                    if chunk.choices and hasattr(chunk.choices[0], "finish_reason") and chunk.choices[0].finish_reason:
+                        self.last_response_metadata["finish_reason"] = chunk.choices[0].finish_reason
+                        
+                    if chunk.choices:
+                        delta = chunk.choices[0].delta.content
+                        if delta:
+                            stream_handler(delta)
+                            full_content += delta
+
+                if not skip_fingerprint:
+                    fp = self._get_fingerprint(model)
+                    self.last_response_metadata["model_fingerprint"] = fp
+                    self.last_response_metadata["system_fingerprint"] = fp
+
+                return full_content
+            else:
+                raw_text = response.choices[0].message.content
+                
+                self.last_response_metadata = {
+                    "token_limit_fallback": fallback_triggered,
+                    "token_limit_used": used_max_tokens,
+                    "id": getattr(response, "id", None),
+                    "model": getattr(response, "model", None),
+                    "finish_reason": response.choices[0].finish_reason if response.choices else None,
+                }
+                
+                if hasattr(response, "usage") and response.usage:
+                    self.last_response_metadata["usage"] = response.usage
+                
+                if getattr(response, "system_fingerprint", None):
+                    self.last_response_metadata["system_fingerprint"] = response.system_fingerprint
+                else:
+                    if not skip_fingerprint:
+                        fp = self._get_fingerprint(model)
+                        self.last_response_metadata["model_fingerprint"] = fp
+                        self.last_response_metadata["system_fingerprint"] = fp
+
+                return raw_text if raw_text else ""
+                
+        except Exception as e:
+            from utils.logging_config import setup_logging
+            logger = setup_logging()
+            logger.error("XAI API Error: %s", e)
+            raise e
+
+    def get_available_models(self) -> list:
+        try:
+            models = self.client.models.list()
+            return [m.id for m in models.data]
+        except Exception:
+            return ["grok-2-latest", "grok-3-latest"]

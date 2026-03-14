@@ -14,6 +14,8 @@ from utils.provider_clients import (
     AnthropicClient,
     MistralClient,
     OpenAIClient,
+    XAIClient,
+    XAIClient,
     GoogleClient,
 )
 from utils.retry_handler import RetryHandler
@@ -60,6 +62,7 @@ class LLMClient:
             "mistral": MistralClient(self.config),
             "openai": OpenAIClient(self.config),
             "google": GoogleClient(self.config),
+            "xai": XAIClient(self.config),
         }
 
         # Initialize retry handler
