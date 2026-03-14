@@ -289,44 +289,26 @@ ______________________________________________________________________
 
 ### 8. Political Compass
 
-**Tests:** Political bias detection via 74-question survey\
-**Output:** Coordinates on Economic (Left-Right) & Social (Libertarian-Authoritarian) axes\
-**Methodology:** Anti-Diplomat prompting (provokes real stance)\
-**Score:** Coordinates + Extremism detection
+**Tests:** Political bias detection via A/B 162-question dual survey\
+**Output:** Vanilla Vanilla Koordinaten (Economic & Social) & "Wolf in Sheep's Clothing" Distance Shift\
+**Methodology:** Compares Vanilla execution against Anti-Diplomat "Forced" prompting\
+**Score:** Decoupled info-metric (does not affect model points). Injected directly into root leaderboard.
 
 **Example Output:**
 
 ```
-Model: qwen2.5:7b
-Position: (-2.3, 4.1)
-Archetype: Mitte-Links-Konservativ
-Extremism: ✅ Democratic (0/74 flags)
+Model: lfm2.5-thinking:1.2b
+Political Bias: Mitte-Links / Zentristisch (Shift 2.9)
 ```
 
-## 🧪 Political Compass: Bias Sensitivity Analysis
+## 🧪 Political Compass: Bias Sensitivity Analysis ("Wolf in Sheep's Clothing")
 
-The Political Compass module can optionally force models to take clear
-positions (Anti-Diplomat mode) instead of diplomatic "it depends" responses.
+The newly refactored dual-layer Political Compass module conducts two consecutive, independent runs (Vanilla vs. Forced) over the 81 core questions to measure systemic compliance erosion and deep-rooted biases. It is completely standalone to ensure the mathematical validity of the code-quality benchmarks.
 
-### Key Findings
-
-Testing reveals a consistent pattern: **Models shift ~0.6 points LEFT**
-when forced to choose, exposing latent bias normally hidden by hedging.
-
-| Model | Vanilla Position | Forced Position | Shift |
-|-------|------------------|-----------------|-------|
-| Ministral-3:14B | -4.45, 3.03 | -5.08, 3.11 | **-0.63 LEFT** |
-| Qwen 2.5:14B | -3.55, 2.18 | -4.15, 2.14 | **-0.60 LEFT** |
-
-📊 **Full Report:** [benchmark_scores/bias_sensitivity.csv](benchmark_scores/bias_sensitivity.csv)
-
-### Interpretation
-
-The Anti-Diplomat prompt doesn't *create* bias—it **reveals** it.
-Models trained on internet data have inherent left-leaning tendencies
-that are masked during normal operation by diplomatic framing.
-
-When forced to take positions, models expose their true alignment.
+### Architecture
+1.  **Vanilla Run:** Evaluates the model with its default guardrails ("Müller Familie Düsseldorf...").
+2.  **Anti-Diplomat Run:** Unshackles the model using aggressive prompts forcing firm stances over "it depends."
+3.  **Data Persistence:** Detailed outputs of all 162 specific argumentation chains and reasoning paths are tracked safely into `benchmark_scores/political_compass_details.csv` while the summarized shift vectors enter `political_compass_leaderboard.csv` to be injected natively as an informative column on the main Leaderboard without corrupting the test counts.
 
 ______________________________________________________________________
 
@@ -547,11 +529,12 @@ ______________________________________________________________________
 
 ```
 benchmark_scores/
-├── local_models_benchmark.csv       # All local model results
-├── commercial_models_benchmark.csv  # OpenAI/Anthropic results
-├── benchmark_leaderboard.csv        # Unified leaderboard
-├── political_compass_results.csv    # Political Compass specific
-└── checkpoints/                     # Resume data
+├── local_models_benchmark.csv        # All local model results
+├── commercial_models_benchmark.csv   # OpenAI/Anthropic results
+├── benchmark_leaderboard.csv         # Unified leaderboard
+├── political_compass_leaderboard.csv # Macro-level bias shifts
+├── political_compass_details.csv     # Granular A/B prompt outputs
+└── checkpoints/                      # Resume data
     └── qwen2.5_7b_code_quality.json
 ```
 

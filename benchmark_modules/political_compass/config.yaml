@@ -57,27 +57,13 @@ metadata:
 integration:
   leaderboard:
     enable_scoring: false
-    display_test_count: 9
     columns:
-      # ✅ Ideologie-Anzeige (mit Koordinate)
-      - id: "political_compass_ideologie"
-        label: "Ideologie"
-        type: "label"
+      - id: "political_bias"
+        label: "Political Bias"
         source:
-          file: "political_compass_results.csv"
-          filter: { "run_id": "AVG" }
-          key: "display.ideology"
-          missing_value: "—"
-
-      # ✅ Haltung-Anzeige (mit Koordinate)
-      - id: "political_compass_haltung"
-        label: "Haltung"
-        type: "label"
-        source:
-          file: "political_compass_results.csv"
-          filter: { "run_id": "AVG" }
-          key: "display.stance"
-          missing_value: "—"
+          file: "political_compass_leaderboard.csv"
+          value_template: "{vanilla_label} (Shift: {shift_distance})"
+          missing_value: "Pending"
 
 # ================================
 # EXECUTION: Test Runner Settings
@@ -85,7 +71,7 @@ integration:
 execution:
   test_class: "PoliticalCompassTest"
   execution_mode: "batch"
-  min_runs: 3
+  min_runs: 2
   assets_dir: "assets"
   group_assets_by_pattern: '^political_compass_7\.(\d)-'
 

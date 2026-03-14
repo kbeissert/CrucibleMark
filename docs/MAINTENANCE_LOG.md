@@ -1,5 +1,22 @@
 # CrucibleMark Maintenance: Test Count & Aggregation
 
+## Political Compass Architecture Decoupling (v2.1)
+
+**Date:** 2026-03-14
+**Status:** Resolved
+
+### Problem Description
+
+The logic that appended the Political Compass module into the main dataframes ('Ghost Rows') to register it as a "completed test" led to mathematically inaccurate UI metadata ("Test Runs: 165/156"). By having an informational-only ethical survey integrated inside the primary dataframe structure, the purity of the code-quality test counts and time-benchmarks was hindered.
+
+### Resolution
+
+1. **Full Decoupling:** Removed standard Data Loader ghost row injection routines (`scripts/leaderboard/data_loader.py`) for the PC module, and detached its config `display_test_count`.
+2. **Isolating Outputs:** Split outputs elegantly into "Wolf in Sheep's Clothing" logic—producing `benchmark_scores/political_compass_details.csv` (162 granular A/B queries) & `benchmark_scores/political_compass_leaderboard.csv` (Shift aggregations).
+3. **Post-Evaluation Stitching:** Altered the final steps of `generate_leaderboard.py` to extract only the Vanilla alignment tag and distance Shift string as a standalone right-aligned text column, ignoring `score_calculator.py`.
+
+***
+
 ## Ghost Entries & Versioning Refactor
 
 **Date:** 2026-02-06
