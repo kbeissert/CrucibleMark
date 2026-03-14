@@ -67,3 +67,12 @@ settings:
   # Quelle für automatische Tokenpreis-Updates.
   # Standardmäßig die öffentlich gepflegte LiteLLM Pricing DB (BerriAI).
   pricing_source_url: "https://raw.githubusercontent.com/BerriAI/litellm/main/model_prices_and_context_window.json"
+
+  xai:
+    grok-2-latest:
+      input_cost_per_1k: 0.002
+      output_cost_per_1k: 0.010
+    grok-3-latest:
+      input_cost_per_1k: 0.005
+      output_cost_per_1k: 0.015
+    daily_budget: 15.0 # Max $15/Tag total for XAI
