@@ -33,7 +33,7 @@ from benchmark_modules.political_compass.core.evaluators import (
     ArchetypeClassifier,
     PoliticalCompassEvaluator,
 )
-from benchmark_modules.political_compass.core.io_manager import CheckpointManager
+from benchmark_modules.political_compass.core.io_manager import CheckpointManager, ResultManager
 from benchmark_modules.political_compass.core.visualizer import (
     PoliticalCompassVisualizer,  # noqa: F401
 )
@@ -65,21 +65,6 @@ class PoliticalCompassTest(BaseTest):
         default_path = Path(__file__).parent / "assets"
         target_path = asset_path or default_path
 
-        # Load local config to determine system prompt
-        self.config_path = Path(__file__).parent / "config.yaml"
-        self.local_config = {}
-        self.system_prompt = STANDARD_PROMPT
-
-        if self.config_path.exists():
-            try:
-                with open(self.config_path, "r", encoding="utf-8") as f:
-                    data = yaml.safe_load(f)
-                    self.local_config = data.get("config", {})
-                    if self.local_config.get("use_anti_diplomat_prompt", False):
-                        self.system_prompt = ANTI_DIPLOMAT_PROMPT
-            except Exception as e:
-                logger.warning(f"Failed to load local config: {e}")
-
         # Bypass BaseTest init if directory (Batch Mode)
         # BaseTest expects a single file and tries to read it immediately.
         if target_path.is_dir():
@@ -90,10 +75,11 @@ class PoliticalCompassTest(BaseTest):
 
         self.assets_dir = target_path if target_path.is_dir() else default_path
         self.questions: List[Dict[str, Any]] = []
-        self.num_runs = 1  # Default, updated by runner
+        self.num_runs = 2  # Forced 2 runs for A/B Bias Shift
 
-        # New Evaluator
-        self.evaluator = PoliticalCompassEvaluator()
+        # Setup standard and forced evaluators
+        self.evaluator_vanilla = PoliticalCompassEvaluator()
+        self.evaluator_forced = PoliticalCompassEvaluator()
 
     def load_questions(self, assets_dir: str = None):
         """Loads all YAML questions from the assets directory."""
@@ -226,7 +212,7 @@ class PoliticalCompassTest(BaseTest):
                 response = responses_cache[cache_key]
                 # Re-hydrate local state without querying LLM
                 asset["_runtime_mapping"] = mapping
-                self.evaluator.score_response(response, asset)
+                context["evaluator"].score_response(response, asset)
 
                 metrics["completed_in_run"] += 1
                 ui.update_progress(
@@ -234,6 +220,12 @@ class PoliticalCompassTest(BaseTest):
                     metrics["total_in_run"],
                     metrics["total_tokens"],
                 )
+                if "detailed_responses" not in checkpoint:
+                    checkpoint["detailed_responses"] = {}
+                ans_letter = response.strip().upper()[0:1] if response else ""
+                orig_key = mapping.get(ans_letter, ans_letter)
+                ans_text = asset.get("options", {}).get(orig_key, {}).get("text", response)
+                checkpoint["detailed_responses"][cache_key] = {"id": asset.get("id", ""), "question": asset.get('prompt', ''), "answer": ans_text, "category": block_id}
                 continue
 
             # 2. Query
@@ -242,7 +234,7 @@ class PoliticalCompassTest(BaseTest):
                     model=model,
                     prompt=prompt,
                     provider=provider,
-                    system=self.system_prompt,  # Use instance configured prompt
+                    system=context["system_prompt"],  # Use context configured prompt
                     temperature=0.1,
                 )
 
@@ -261,11 +253,18 @@ class PoliticalCompassTest(BaseTest):
 
             # 3. Score (Buffer)
             asset["_runtime_mapping"] = mapping
-            self.evaluator.score_response(response, asset)
+            context["evaluator"].score_response(response, asset)
 
             # 4. Save Checkpoint
             responses_cache[cache_key] = response
             checkpoint["responses"] = responses_cache  # ensure ref update
+            if "detailed_responses" not in checkpoint:
+                checkpoint["detailed_responses"] = {}
+            ans_letter = response.strip().upper()[0:1] if response else ""
+            orig_key = mapping.get(ans_letter, ans_letter)
+            ans_text = asset.get("options", {}).get(orig_key, {}).get("text", response)
+            checkpoint["detailed_responses"][cache_key] = {"id": asset.get("id", ""), "question": asset.get('prompt', ''), "answer": ans_text, "category": block_id}
+
             # We already updated run_seeds in execute()
             CheckpointManager.save_checkpoint(model, checkpoint)
 
@@ -317,9 +316,17 @@ class PoliticalCompassTest(BaseTest):
         if "responses" not in checkpoint:
             checkpoint["responses"] = {}
 
-        # Run Benchmark Loops
-        for run_idx in range(1, self.num_runs + 1):
+        # Run Benchmark Loops A/B
+        for run_idx in range(1, 3):
+            is_forced = run_idx == 2
+            system_prompt = ANTI_DIPLOMAT_PROMPT if is_forced else STANDARD_PROMPT
+            evaluator = self.evaluator_forced if is_forced else self.evaluator_vanilla
+
             ui.start_run(run_idx, self.num_runs, model, provider)
+            if is_forced:
+                print("\n\033[93m[🎯 Verhaltensfilter Aktiviert: Anti-Diplomat Modus (Run 2)]\033[0m\n")
+            else:
+                print("\n\033[92m[🐑 Verhaltensfilter Deaktiviert: Vanilla Modus (Run 1)]\033[0m\n")
 
             # Deterministic Seed Recovery
             s_idx = str(run_idx)
@@ -346,6 +353,8 @@ class PoliticalCompassTest(BaseTest):
                 "run_seed": run_seed,
                 "run_idx": run_idx,
                 "checkpoint": checkpoint,
+                "system_prompt": system_prompt,
+                "evaluator": evaluator,
             }
 
             for block_id in sorted_blocks:
@@ -361,39 +370,27 @@ class PoliticalCompassTest(BaseTest):
             total_cost = metrics["total_cost"]
 
         # Aggregate Final Scores
-        final_results = self.evaluator.score_aggregated()
+        vanilla_results = self.evaluator_vanilla.score_aggregated()
+        forced_results = self.evaluator_forced.score_aggregated()
 
-        # Calculate Individual Runs
-        individual_runs = self._calculate_individual_runs()
+        v_x = vanilla_results.get("coordinates", {}).get("x", 0)
+        v_y = vanilla_results.get("coordinates", {}).get("y", 0)
+        f_x = forced_results.get("coordinates", {}).get("x", 0)
+        f_y = forced_results.get("coordinates", {}).get("y", 0)
 
-        # Simple Sigma Calculation
-        sigma_x, sigma_y = self._calculate_sigma(individual_runs)
+        shift_x = round(f_x - v_x, 2)
+        shift_y = round(f_y - v_y, 2)
+        shift_distance = round(((shift_x ** 2) + (shift_y ** 2)) ** 0.5, 2)
 
-        # Generate Chart
-        # chart = None
-        if final_results.get("coordinates"):
-            # chart = PoliticalCompassVisualizer.generate_ascii_chart(
-            #    final_results["coordinates"]["x"], final_results["coordinates"]["y"]
-            # )
-            pass
+        # Write A/B Report
+        self._write_audit_log(model, vanilla_results, forced_results, shift_x, shift_y, shift_distance, checkpoint.get("detailed_responses", {}))
 
-        # Print Final Summary UI - DELEGATED TO RUNNER (ResultManager)
-        # ui.print_final_summary(
-        #     model,
-        #     time.strftime("%Y-%m-%d"),
-        #     (
-        #         final_results.get("coordinates", {}).get("x", 0),
-        #         final_results.get("coordinates", {}).get("y", 0),
-        #     ),
-        #     (sigma_x, sigma_y),
-        #     final_results.get("archetype", {}).get("label", "Unknown"),
-        #     chart,
-        #     {
-        #         "total_tokens": total_tokens,
-        #         "execution_time": time.time() - start_time,
-        #         "total_cost": 0.0,
-        #     },
-        # )
+        final_results = vanilla_results
+        sigma_x, sigma_y = 0.0, 0.0
+        individual_runs = [
+            {"id": 1, "type": "vanilla", "x": v_x, "y": v_y, "x_label": vanilla_results.get("archetype", {}).get("x_label", ""), "y_label": vanilla_results.get("archetype", {}).get("y_label", "")},
+            {"id": 2, "type": "forced", "x": f_x, "y": f_y, "x_label": forced_results.get("archetype", {}).get("x_label", ""), "y_label": forced_results.get("archetype", {}).get("y_label", "")}
+        ]
 
         # Construct Report
         # Map to expected schema for CSV
@@ -426,12 +423,18 @@ class PoliticalCompassTest(BaseTest):
 
         report = {
             "model": model,
+            "provider": provider,
             "model_version": model_version,
             "status": "success",
             "total_score": status_code,
             "coordinates": final_results.get("coordinates"),
             "archetype": final_results.get("archetype"),
             "extremism": final_results.get("extremism"),
+            "shift": {
+                "x": shift_x,
+                "y": shift_y,
+                "distance": shift_distance,
+            },
             "sigma": {"x": sigma_x, "y": sigma_y},
             "statistics": {
                 "total_tokens": total_tokens,
@@ -441,44 +444,31 @@ class PoliticalCompassTest(BaseTest):
             },
             "individual_runs": individual_runs,
             "config": {
-                "use_anti_diplomat_prompt": self.local_config.get(
-                    "use_anti_diplomat_prompt", False
-                ),
-                "system_prompt_type": (
-                    "anti_diplomat"
-                    if self.local_config.get("use_anti_diplomat_prompt", False)
-                    else "vanilla"
-                ),
+                "use_anti_diplomat_prompt": True,
+                "system_prompt_type": "ab_shift_test"
             },
         }
 
-        # STOP DOUBLE WRITING!
-        # The Runners (run_local_benchmark.py / run_commercial_benchmark.py) handle CSV saving.
-        # Calling this here causes duplicate entries, conflict in schema, and concurrency issues.
-        #
-        # ResultManager.save_v2_csv(
-        #     model=model,
-        #     results={
-        #         "coordinates": final_results.get("coordinates"),
-        #         "archetype": final_results.get("archetype"),
-        #         "extremism": final_results.get("extremism"),
-        #         "sigma": {"x": sigma_x, "y": sigma_y},
-        #         "individual_runs": individual_runs,
-        #         "statistics": {
-        #            "execution_time": execution_time,
-        #            "module_stats": {}
-        #         }
-        #     },
-        #     output_dir=Path("benchmark_scores")
-        # )
+        # Write CSV Reports (Leaderboard & Details)
+        out_dir = Path("benchmark_scores")
+        try:
+            ResultManager.save_leaderboard_csv(report, out_dir)
+            ResultManager.save_details_csv(model, checkpoint.get("detailed_responses", {}), out_dir)
+        except Exception as e:
+            logger.error("Failed to write CSV logs: %s", e)
 
         # Runner expects 'raw_response' to be the JSON string of the report
         json_report = json.dumps(report, default=str)
 
+        # Safely extract coordinates for string formatting
+        coords = final_results.get("coordinates", {}) if final_results else {}
+        cx = coords.get("x", 0.0) if coords.get("x") is not None else 0.0
+        cy = coords.get("y", 0.0) if coords.get("y") is not None else 0.0
+
         return BenchmarkResult(
             status=str(report.get("status", "success")),
             primary_score=float(status_code),
-            rendered_value=f"PC ({final_results.get('coordinates', {}).get('x'):.2f}, {final_results.get('coordinates', {}).get('y'):.2f})",
+            rendered_value=f"PC ({cx:.2f}, {cy:.2f})",
             evaluated_prompt="[Batch execution - multiple prompts]",
             execution_time=float(execution_time_per_question),
             tokens_used=int(total_tokens),
@@ -488,6 +478,63 @@ class PoliticalCompassTest(BaseTest):
             data=report,
             meta={"run_mode": "batch"},
         )
+
+    def _write_audit_log(self, model, vanilla_res, forced_res, shift_x, shift_y, shift_distance, detailed_responses):
+        import os
+        from pathlib import Path
+        out_dir = Path(f"outputs/audit_logs/{model}")
+        out_dir.mkdir(parents=True, exist_ok=True)
+
+        md_path = out_dir / "pol_comp_report.md"
+
+        lines = []
+        lines.append(f"# Audit Log: Political Compass (A/B Bias Shift)")
+        lines.append(f"**Model:** {model}\n")
+        lines.append(f"## 1. System Prompt Modes (Verhaltensfilter)")
+        lines.append(f"---")
+        lines.append(f"- **Run 1 (Vanilla):** Gewöhnlicher Prompt. Testet vorgeschobene Neutralität.")
+        lines.append(f"- **Run 2 (Anti-Diplomat):** Neutralitätsverweigerung. Zwingt zur Positionierung.\n")
+
+        lines.append(f"## 2. The Shift (Der Wolf im Schafspelz)")
+        lines.append(f"---")
+        v_x, v_y = vanilla_res.get("coordinates", {}).get("x", 0), vanilla_res.get("coordinates", {}).get("y", 0)
+        f_x, f_y = forced_res.get("coordinates", {}).get("x", 0), forced_res.get("coordinates", {}).get("y", 0)
+        lines.append(f"- **Position (Vanilla):** ({v_x:.2f}, {v_y:.2f}) -> {vanilla_res.get('archetype', {}).get('label', '')}")
+        lines.append(f"- **Position (Forced):** ({f_x:.2f}, {f_y:.2f}) -> {forced_res.get('archetype', {}).get('label', '')}")
+        lines.append(f"- **Delta Verschiebungs-Vektor:** X: {shift_x:+.2f} | Y: {shift_y:+.2f}")
+        lines.append(f"- **Distance Shift:** {shift_distance:.2f}\n")
+
+        lines.append(f"## 3. Detail-Antworten nach Kategorie")
+        lines.append(f"---\n")
+
+        # Group detailed responses by category
+        categories = {}
+        for k, v in detailed_responses.items():
+            run_id = k.split("_")[0]
+            cat = v["category"]
+            q = v["question"]
+            if cat not in categories:
+                categories[cat] = {}
+            if q not in categories[cat]:
+                categories[cat][q] = {"vanilla": "N/A", "forced": "N/A"}
+            if run_id == "1":
+                categories[cat][q]["vanilla"] = v["answer"]
+            elif run_id == "2":
+                categories[cat][q]["forced"] = v["answer"]
+
+        for cat, qs in sorted(categories.items()):
+            lines.append(f"### {cat.replace('_', ' ').title()}")
+            for q, answers in qs.items():
+                lines.append(f"**Q:** {q}")
+                lines.append(f"- *Vanilla:* {answers['vanilla']}")
+                lines.append(f"- *Forced:*  {answers['forced']}\n")
+
+        lines.append("\n**Political Compass Editorial Evaluation:**")
+        lines.append("Review the shift distance and detailed answers. Generate a compelling 'Wolf in Sheep's Clothing' editorial analysis on the political bias shift, noting if the model showed extreme restraint normally but leaned heavily under pressure.")
+
+        with open(md_path, "w", encoding="utf-8") as out:
+            out.write("\n".join(lines))
+        print(f"\n📄 Wrote A/B Shift Report to {md_path}")
 
     def score_response(self, _response: str) -> Dict[str, Any]:
         """
@@ -600,7 +647,7 @@ if __name__ == "__main__":
             print("\n✅ Execution Successful")
 
             # Parse inner report
-            report = json.loads(result["raw_response"])
+            report = json.loads(result.raw_response)
             print(f"Status: {report.get('status')}")
             print(f"Score:  {report.get('total_score')}")
         except Exception as e:

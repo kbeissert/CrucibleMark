@@ -1,31 +1,18 @@
 # CrucibleMark Aggregation & Counting Logic Report
 
-## 1. Test Count Discrepancy ("46/37")
+## 1. Test Count Discrepancy & Political Compass
 
-The observed "46/37" test count in the leaderboard is **intentional behavior** resulting from the configuration of the "Political Compass" module, but presents a confusing User Interface.
+**Update v2.1:** The "Political Compass" module has been **fully decoupled** from the main benchmark scoring and test counts.
 
-### Breakdown
+### Previous Behavior (Pre-v2.1)
+The leaderboard previously showed a discrepancy (e.g., "46/37" tests run). This was because the Political Compass module injected "Ghost Rows" into the dataset to register as completed (adding `+9` to the numerator) without contributing to the score denominator. This caused mathematical confusion.
 
-- **Denominator (37):** Represents the total number of **Scoring Assets**.
-  - Code Quality: 5
-  - UX Writing: 5
-  - Documentation: 5
-  - Content: 6
-  - Cultural: 5
-  - Reasoning: 11
-  - **Total:** 37
-- **Numerator (46):** Represents the "Logical Run Count" of completed tests.
-  - Completed Scoring Assets: 37
-  - Political Compass Override: **+9**
-  - **Total:** 46
-
-### Why 9?
-
-The `Political Compass` module is configured in `benchmark_modules/political_compass/config.yaml` with `display_test_count: 9`. This override is applied to the performed test count to represent the semantic complexity of the module (which evaluates ~88 questions across multiple axes), even though technically it runs as a single batch process producing 1 result row.
-
-### Why not in Denominator?
-
-The Political Compass module has `enable_scoring: false` in its configuration (as it provides bias info, not a quality score). The denominator calculation currently sums only assets from **scoring-enabled** modules.
+### Current Behavior (v2.1+)
+The Political Compass is now strictly an informational metadata module:
+- It **does not** inject ghost rows into the main dataframes (`local_models_benchmark.csv` / `commercial_models_benchmark.csv`).
+- It **does not** artificially inflate the `Tests Run` counter.
+- It operates entirely autarkic, saving its detailed 162-question runs directly into `benchmark_scores/political_compass_details.csv` and its aggregates into `benchmark_scores/political_compass_leaderboard.csv`.
+- The `generate_leaderboard.py` script simply checks the final `political_compass_leaderboard.csv` to append a simple `Political Bias` text column to the final display table, injecting purely informational tags (e.g., `Mitte-Links / Zentristisch (Shift 2.9)`) without touching the core mathematics of the benchmark.
 
 ______________________________________________________________________
 

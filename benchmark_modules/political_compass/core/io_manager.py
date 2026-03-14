@@ -235,87 +235,97 @@ class ResultManager:
         )
 
     @staticmethod
-    def save_v2_csv(model: str, results: dict[str, Any], output_dir: Path):
+    def save_leaderboard_csv(report: dict[str, Any], output_dir: Path):
         """
-        Speichert Ergebnisse im v2.0 CSV-Format.
-
-        Args:
-            model: Modellname
-            results: Dict mit coordinates, archetype, extremism, etc.
-            output_dir: Zielverzeichnis (benchmark_scores/)
+        Speichert die Makro-Resultate in der political_compass_leaderboard.csv.
+        Eine Zeile pro Modell mit Vanilla vs. Forced und dem Shift-Delta.
         """
-        csv_path = output_dir / "political_compass_results.csv"
-
-        # Check if file exists
+        csv_path = output_dir / "political_compass_leaderboard.csv"
         file_exists = csv_path.exists()
 
-        # Ensure directory exists
         if not output_dir.exists():
             output_dir.mkdir(parents=True, exist_ok=True)
 
-        # Build Rows (1 pro Run + 1 Aggregate)
-        rows = []
-
-        # Individual Runs
-        for run_data in results.get("individual_runs", []):
-            run_formatted = format_pc_run_data(run_data, include_extremism=False)
-
-            rows.append(
-                {
-                    "model": model,
-                    "module": "political_compass",
-                    "run_id": f"RUN_{run_data.get('id', '?')}",
-                    "status": "success",
-                    "execution_time": round(
-                        results["statistics"].get("execution_time", 0) / 3, 2
-                    ),
-                    "metadata_json": json.dumps(run_formatted, default=str),
-                }
-            )
-
-        # Aggregate Row
-        avg_formatted = format_pc_run_data(
-            {
-                "x": results["coordinates"]["x"],
-                "y": results["coordinates"]["y"],
-                "x_label": results["archetype"]["x_label"],
-                "y_label": results["archetype"]["y_label"],
-                "extremism": results.get("extremism", {}),
-                "sigma": results.get("sigma", {}),
-                "module_stats": results["statistics"].get("module_stats", {}),
-            },
-            include_extremism=True,
-        )
-
-        rows.append(
-            {
-                "model": model,
-                "module": "political_compass",
-                "run_id": "AVG",
-                "status": "success",
-                "execution_time": round(
-                    results["statistics"].get("execution_time", 0), 2
-                ),
-                "metadata_json": json.dumps(avg_formatted, default=str),
-            }
-        )
-
-        # Write to CSV
         fieldnames = [
-            "model",
-            "module",
-            "run_id",
-            "status",
-            "execution_time",
-            "metadata_json",
+            "timestamp", "model", "provider_type", "model_version", "cost",
+            "vanilla_x", "vanilla_y", "vanilla_label",
+            "forced_x", "forced_y", "forced_label",
+            "shift_x", "shift_y", "shift_distance"
         ]
 
-        with open(
-            csv_path, "a" if file_exists else "w", newline="", encoding="utf-8"
-        ) as f:
+        # Build Row
+        model = report.get("model", "unknown")
+        # Find explicit provider logic if passed down, empty otherwise. Provider logic will be extracted from the model's test call.
+        ind_runs = report.get("individual_runs", [])
+        v_run = next((r for r in ind_runs if r["type"] == "vanilla"), {})
+        f_run = next((r for r in ind_runs if r["type"] == "forced"), {})
+
+        row = {
+            "timestamp": datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S"),
+            "model": model,
+            "provider_type": report.get("provider", "unknown"),
+            "model_version": report.get("model_version", ""),
+            "cost": report.get("statistics", {}).get("total_cost", 0.0),
+
+            "vanilla_x": v_run.get("x", 0.0),
+            "vanilla_y": v_run.get("y", 0.0),
+            "vanilla_label": f"{v_run.get('x_label', '')} / {v_run.get('y_label', '')}".strip(" /"),
+
+            "forced_x": f_run.get("x", 0.0),
+            "forced_y": f_run.get("y", 0.0),
+            "forced_label": f"{f_run.get('x_label', '')} / {f_run.get('y_label', '')}".strip(" /"),
+
+            "shift_x": report.get("shift", {}).get("x", 0.0),
+            "shift_y": report.get("shift", {}).get("y", 0.0),
+            "shift_distance": report.get("shift", {}).get("distance", 0.0)
+        }
+
+        with open(csv_path, "a" if file_exists else "w", newline="", encoding="utf-8") as f:
+            writer = csv.DictWriter(f, fieldnames=fieldnames, extrasaction="ignore")
+            if not file_exists:
+                writer.writeheader()
+            writer.writerow(row)
+
+        logger.info("💾 Leaderboard CSV gespeichert: %s", csv_path)
+
+    @staticmethod
+    def save_details_csv(model: str, detailed_responses: dict[str, Any], output_dir: Path):
+        """
+        Speichert die granularen Antworten pro Frage in der political_compass_details.csv.
+        Jede Frage erzeugt zwei Zeilen (Vanilla und Forced).
+        """
+        csv_path = output_dir / "political_compass_details.csv"
+        file_exists = csv_path.exists()
+
+        if not output_dir.exists():
+            output_dir.mkdir(parents=True, exist_ok=True)
+
+        fieldnames = [
+            "timestamp", "model", "mode", "category", "question_id", "answer", "reasoning"
+        ]
+
+        rows = []
+        timestamp = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S")
+
+        # detailed_responses is flat: { "1_qid": {"category": "...", "question": "...", "answer": "..."} }
+        for cache_key, data in detailed_responses.items():
+            run_id = cache_key.split("_")[0]
+            mode = "vanilla" if str(run_id) == "1" else "forced"
+
+            rows.append({
+                "timestamp": timestamp,
+                "model": model,
+                "mode": mode,
+                "category": data.get("category", "unknown"),
+                "question_id": data.get("id") or data.get("question", "unknown")[:100],
+                "answer": data.get("answer", ""),
+                "reasoning": data.get("reasoning", "")
+            })
+
+        with open(csv_path, "a" if file_exists else "w", newline="", encoding="utf-8") as f:
             writer = csv.DictWriter(f, fieldnames=fieldnames, extrasaction="ignore")
             if not file_exists:
                 writer.writeheader()
             writer.writerows(rows)
 
-        logger.info("💾 v2 CSV gespeichert: %s", csv_path)
+        logger.info("💾 Details CSV gespeichert: %s (%d Rows)", csv_path, len(rows))
