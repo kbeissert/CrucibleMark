@@ -176,13 +176,29 @@ Nach dem Benchmark-Run:
 make leaderboard
 ```
 
-**Output:** `benchmark_scores/benchmark_leaderboard.csv`
+Der Befehl generiert **zwei CSV-Dateien** im Ordner `benchmark_scores/`:
 
-### Was zeigt das Leaderboard?
+1. **`benchmark_leaderboard.csv` (Standard / Compact)**
+   - Entwickelt für die tägliche Ansicht, Dashboards, Readmes und kurze Vergleiche.
+   - Zeigt nur die wichtigsten aggregierten Score-Säulen und Performance-Ratings an.
+2. **`benchmark_leaderboard_detailed.csv` (Detailed)**
+   - Entwickelt für tiefgreifende Architekturanalysen, System-Stabilität und Latenz-Audits.
+   - Enthält ungefilterte Metriken wie Langzeit-Ausreißer (`P95 Time`), `Max Time`, `Timeout Counts` und strikt getrennte Basis-Scorings (`Routine Score` & `Reasoning Score`), die in der Compact-Version im `Total Score` verdeckt zusammenfließen.
 
-Das Leaderboard ist ein **Decision-Making Tool**, nicht nur ein Ranking. Es berücksichtigt immer nur den **letzten lokalen Run** pro Modell, sodass Hardware-Upgrades (z.B. SSD statt HDD) sofort sichtbar werden.
+### Was zeigen die Leaderboard Metriken?
 
-| Spalte | Bedeutung | |--------|-----------| | **Badge** | Qualitäts-Tier (🏆 Gold, 🥈 Silver, 🥉 Bronze, ⚖️ Standard) | | **Speed Class** | ⚡ Fast (\<40s), ⏱️ Medium, 🐢 Slow (>80s) | | **Initial Load** | **Cold Start Zeit** aus der separaten Warm-up Phase. Verfälscht nicht den Average. | | **Performance/s** | Speed-Quality Tradeoff (höher ist besser) | | **Cost per 1K** | Echte API-Kosten pro 1000 Tests (nur kommerziell) | | **Total Score** | (Routine Score + Reasoning Score) / 2 |
+Das Leaderboard ist ein **Decision-Making Tool**, nicht nur ein Ranking. Es berücksichtigt immer nur den **letzten lokalen Run** pro Modell.
+
+| Metrik (Auszug) | Zu finden in | Bedeutung |
+|-----------------|--------------|-----------|
+| **Badge** | Beide | Qualitäts-Tier (🏆 Gold, 🥈 Silver, 🥉 Bronze, ⚖️ Standard) |
+| **Speed Profile** | Beide | Mix aus Speed & Skill (z. B. ⚡ Real-Time DevOps) |
+| **Total Score** | Beide | 50/50 Gewichtung aus Routine & Reasoning |
+| **Routine Score** | Detailed | Leistung bei einfachen Tasks (Tippfehler, UX Text) |
+| **Reasoning Score** | Detailed | Leistung bei Logik-Rätseln & System-Architektur |
+| **P95 Time (s)** | Detailed | Latenz-Spitze: Dauer der langsamsten 5% der Requests |
+| **Max Time (s)** | Detailed | Dauer des extremsten Einzelausreißers |
+| **Timeout Count** | Detailed | Anzahl der erzwungenen Abbrüche (API / Lokaler Error) |
 
 ______________________________________________________________________
 
