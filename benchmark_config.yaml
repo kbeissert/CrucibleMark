@@ -10,6 +10,24 @@
 #
 # Hinweis: API-Keys gehören NICHT hierher, sondern in die .env Datei!
 
+# ============================================================
+# Runner Environment (Hardware & System Context)
+# ============================================================
+runner_environment:
+  active_profile: "apple_silicon_m4"
+
+  profiles:
+    apple_silicon_m4:
+      type: "local_unified"
+      description: "Apple Silicon M4, 24GB Unified Memory (Shared RAM/VRAM)"
+      compute_unit: "CPU/Metal"
+      ram_gb: 24
+    nvidia_rtx4090:
+      type: "local_dedicated"
+      description: "NVIDIA RTX 4090, 24GB VRAM, 64GB System RAM"
+      compute_unit: "CUDA"
+      ram_gb: 64
+
 # ------------------------------------------------------------
 # 1. Pipeline: LLM Judge & Meta-Reviewer
 # ------------------------------------------------------------
@@ -157,9 +175,22 @@ providers:
     openai:
       name: "OpenAI"
       api_type: "openai"
-      enabled: false
+      enabled: true
+
       env_var: "OPENAI_API_KEY"
       models:
+        - id: "o1"
+          name: "o1"
+          description: "Reasoning Flagship"
+        - id: "o1-mini"
+          name: "o1-mini"
+          description: "Fast Reasoning"
+        - id: "gpt-4o"
+          name: "GPT-4o"
+          description: "Robust Omni Model"
+        - id: "gpt-4o-mini"
+          name: "GPT-4o Mini"
+          description: "Fast Omni Model"
         - id: "gpt-5"
           name: "GPT-5"
           description: "Optimierte Leistung (2026)"
@@ -201,7 +232,7 @@ providers:
     xai:
       name: "xAI (Grok)"
       api_type: "xai"
-      enabled: false  # Standardmäßig deaktiviert, Aktivierung via Config
+      enabled: true  # Standardmäßig deaktiviert, Aktivierung via Config
       # Der API-Key gehört in die .env Datei!
       # Beispiel .env: XAI_API_KEY=xai-...
       env_var: "XAI_API_KEY"
@@ -301,4 +332,4 @@ modules:
 
   political_compass:
     path: "benchmark_modules/political_compass"
-    enabled: false
+    enabled: true

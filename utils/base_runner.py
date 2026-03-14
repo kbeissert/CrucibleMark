@@ -117,6 +117,11 @@ class BaseBenchmarkRunner:
         total_score = score.get("total_score", 0)
         percentage = round((total_score / max_score * 100), 1) if max_score > 0 else 0.0
 
+        # Prepare tokens per second logic
+        tps = 0.0
+        if exec_result.execution_time > 0 and getattr(exec_result, "tokens_used", 0) > 0:
+            tps = round(exec_result.tokens_used / exec_result.execution_time, 2)
+
         # Build dict from BenchmarkResult object + Scoring
         result = {
             "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
@@ -130,6 +135,8 @@ class BaseBenchmarkRunner:
             "percentage": percentage,
             # Use object attributes
             "execution_time": round(exec_result.execution_time, 4),
+            "tokens_used": getattr(exec_result, "tokens_used", 0),
+            "tokens_per_second": tps,
             "load_time": round(getattr(exec_result, "load_time", 0.0), 4),
             "response_length": len(exec_result.raw_response),
             "finish_reason": getattr(exec_result, "finish_reason", None),

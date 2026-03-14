@@ -64,10 +64,10 @@ benchmark-audit:
 	$(PYTHON) run_benchmark.py --audit $(if $(MODEL),--model "$(MODEL)") $(if $(MODULE),--module "$(MODULE)") $(if $(filter true,$(FORCE)),--force)
 	@$(MAKE) leaderboard
 
-benchmark-dev:
-	@echo "🚀 Starting Interactive Benchmark (Dev Mode - Fast Iteration)..."
-	$(PYTHON) run_benchmark.py --dev
-	@$(MAKE) leaderboard
+audit-bias:
+	@echo "🐺 Starting Political Compass Bias Audit (Vanilla vs Anti-Diplomat)..."
+	$(PYTHON) run_benchmark.py --module political_compass $(if $(MODEL),--model "$(MODEL)") $(if $(filter true,$(FORCE)),--force)
+		@$(MAKE) leaderboard
 
 benchmark-cross-model:
 	@echo "🚀 Starting Cross-Model Benchmark..."

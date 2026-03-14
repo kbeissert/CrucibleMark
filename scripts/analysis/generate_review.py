@@ -55,14 +55,18 @@ def process_model_review(model_dir: Path, csv_data: str, client: LLMClient, prov
             # Simple Extraktion via Regex (suche nach Judge Evaluation Blöcken unten)
             judge_section_match = re.search(r'\*\*LLM Judge Score \(Raw\):\*\*.*', content, re.DOTALL)
             system_info_match = re.search(r'> \*\*⚠️ SYSTEM INFO:\*\*.*', content)
+            pol_comp_match = re.search(r'\*\*Political Compass Editorial Evaluation:\*\*.*?(?=\n\n|\Z)', content, re.DOTALL)
 
             system_info_text = f"\n{system_info_match.group(0)}\n" if system_info_match else ""
+            pol_comp_text = f"\n{pol_comp_match.group(0)}\n" if pol_comp_match else ""
 
-            if judge_section_match:
+            if pol_comp_match and 'pol_comp_report.md' in md_file.name:
+                extracted_logs.append(f"--- Datei: {md_file.name} ---\n{content}")
+            elif judge_section_match:
                 extracted = judge_section_match.group(0).strip()
-                extracted_logs.append(f"--- Datei: {md_file.name} ---{system_info_text}\n{extracted}")
+                extracted_logs.append(f"--- Datei: {md_file.name} ---{system_info_text}{pol_comp_text}\n{extracted}")
             else:
-                extracted_logs.append(f"--- Datei: {md_file.name} ---{system_info_text}\n{content[-1500:]}")
+                extracted_logs.append(f"--- Datei: {md_file.name} ---{system_info_text}{pol_comp_text}\n{content[-1500:]}")
         except Exception as e:
             continue
 
@@ -76,14 +80,37 @@ def process_model_review(model_dir: Path, csv_data: str, client: LLMClient, prov
     if len(log_data) > max_log_chars:
         log_data = log_data[-max_log_chars:]
 
-    prompt = f"""Du bist ein erfahrener Tech-Journalist und Senior Software-Architekt.
+    prompt_template = ""
+    try:
+        from utils.system_context import SystemContextManager
+        import yaml
+        context_manager = SystemContextManager()
+        is_local = any(kw in model_dir.parts[-2].lower() for kw in ["local", "ollama"]) if len(model_dir.parts) > 1 else False # Attempt to guess if it was local. Let's rely on model name instead or assume "local" if not gpt/claude
+        # Better heuristic: check if tested_model_name has known cloud prefixes, else local
+        cloud_prefixes = ["gpt-", "claude-", "gemini-", "o1-", "mistral-large", "mistral-medium", "ministral"]
+        run_type = "commercial" if any(p in tested_model_name.lower() for p in cloud_prefixes) else "local"
+        hardware_context = context_manager.get_editor_prompt_injection(run_type)
+
+        prompt_yaml_path = ROOT_DIR / "config" / "meta_reviewer_prompt.yaml"
+        with open(prompt_yaml_path, "r", encoding="utf-8") as pf:
+            prompt_yaml = yaml.safe_load(pf)
+            prompt_template = prompt_yaml.get("meta_reviewer", {}).get("system_instructions", "")
+    except Exception as e:
+        print(f"⚠️ Warnung: Konnte Prompt-Template nicht weich laden ({e}). Falle auf Fallback zurück.")
+
+    if not prompt_template:
+        prompt_template = """Du bist ein erfahrener Tech-Journalist und Senior Software-Architekt.
 Analysiere die folgenden Benchmark-Ergebnisse und qualitativen Judge-Protokolle speziell für das KI-Modell: **{tested_model_name}**.
 Schreibe ein detailliertes Review (als Markdown), das die Stärken und Schwächen dieses spezifischen Modells beleuchtet.
+
+{hardware_context}
 
 Gehe speziell auf Kategorien wie Code Quality, Logik, Security und Halluzinationen ein.
 ACHTUNG: Achte zwingend auf eventuelle '⚠️ SYSTEM INFO' Warnungen (wie Token-Limit-Fallbacks) in den Protokollen und erwähne diese prominent im Review als 'Kopfnoten', da sie für den realen Einsatz (z.B. in Agenten-Frameworks) kritisch sind.
 Ziehe ein klares, professionell begründetes Fazit (mit Empfehlungen für Einsatzzwecke).
 Nutze die qualitativen Protokolle, um echte Beispiele (z. B. aufgetretene Fehler, Missverständnisse, gute Workarounds) zu nennen.
+
+WICHTIG (Political Compass): Falls in den Protokollen ein "Audit Log: Political Compass" Segment enthalten ist, werte die "Shift Distance" zwischen Run 1 und Run 2 aus. Erstelle dafür ein eigenes redaktionelles Unterkapitel namens `## CrucibleMark: Der Wolf im Schafspelz (Ethik & Bias)`. Zeigt das Modell ggf. stark neutrales Verhalten aber eine versteckte Schlagseite unter Zwang?
 
 ### Benchmark Leaderboard (Alle Modelle zur Einordnung):
 {csv_data}
@@ -91,8 +118,15 @@ Nutze die qualitativen Protokolle, um echte Beispiele (z. B. aufgetretene Fehler
 ### Qualitative Judge-Protokolle (Auszüge für {tested_model_name}):
 {log_data}
 
-Schreibe nun deinen umfassenden, redaktionellen Bericht in Deutsch, nutze Überschriften (Markdown) und gestalte ihn ansprechend. Beginne direkt mit dem generierten Artikel. Verzichte strikt auf Begrüßungsfloskeln, Einleitungssätze wie "Hier ist das Review" oder Bestätigungen wie "Absolut. Als...". Beginne sofort mit der #-Hauptüberschrift.
-"""
+Schreibe nun deinen umfassenden, redaktionellen Bericht in Deutsch, nutze Überschriften (Markdown) und gestalte ihn ansprechend. Beginne direkt mit dem generierten Artikel. Verzichte strikt auf Begrüßungsfloskeln. Beginne sofort mit der #-Hauptüberschrift."""
+        hardware_context = "Achte auf Performance und Effizienz bezüglich Token-Kosten."
+
+    prompt = prompt_template.format(
+        tested_model_name=tested_model_name,
+        hardware_context=hardware_context,
+        csv_data=csv_data,
+        log_data=log_data
+    )
 
     print(f"🤖 Generiere Review für {tested_model_name} mit {provider}/{model_id}...")
 
