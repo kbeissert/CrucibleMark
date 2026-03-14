@@ -77,6 +77,24 @@ class BaseBenchmarkRunner:
         test_instance = test_cls(asset_path)
         # exec_result is now a BenchmarkResult object
         exec_result = test_instance.execute(model, self.client, provider=provider)
+
+        # Inject finish_reason if available
+        if hasattr(self.client, "last_response_metadata"):
+            fr = self.client.last_response_metadata.get("finish_reason")
+            if fr:
+                exec_result.finish_reason = str(fr)
+                if str(fr).lower() in ["length", "max_tokens"]:
+                    exec_result.token_limit_cutoff = True
+
+            fb = self.client.last_response_metadata.get("token_limit_fallback")
+            if fb:
+                # Add it to the model so the schema allows it
+                exec_result.token_limit_fallback = True
+
+            tlu = self.client.last_response_metadata.get("token_limit_used")
+            if tlu is not None:
+                exec_result.token_limit_used = tlu
+
         return test_instance, exec_result
 
     # pylint: disable=too-many-arguments, too-many-positional-arguments
@@ -114,6 +132,10 @@ class BaseBenchmarkRunner:
             "execution_time": round(exec_result.execution_time, 4),
             "load_time": round(getattr(exec_result, "load_time", 0.0), 4),
             "response_length": len(exec_result.raw_response),
+            "finish_reason": getattr(exec_result, "finish_reason", None),
+            "token_limit_cutoff": getattr(exec_result, "token_limit_cutoff", False),
+            "token_limit_fallback": getattr(exec_result, "token_limit_fallback", False),
+            "token_limit_used": getattr(exec_result, "token_limit_used", None),
             "tier": score.get("tier", "Tier 1 (Undefined)"),
         }
 

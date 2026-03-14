@@ -82,6 +82,11 @@ defaults:
     top_p: 0.9
     num_predict: 8192
 
+  # Globale Token-Kaskade für API-Provider (kann in Provider-Settings überschrieben werden)
+  token_limits:
+    default_max: 8192
+    fallback_cascade: [4096, 2048, 1024]
+
 # Provider Configuration
 # ----------------------
 # Definiert verfügbare LLM-Provider und deren Modelle.
@@ -108,6 +113,14 @@ providers:
       name: "Anthropic"
       api_type: "anthropic"
       enabled: true
+
+      # --- Token Limits ---
+      # max_tokens: Standardmäßig 8192.
+      # fallback_max_tokens: Einige Modelle verweigern 8192 Token. Das System schaltet in dem Fall automatisch auf 4096 um.
+      # Diese Werte können in Zukunft erhöht werden, wenn Modelle größere Output-Fenster erlauben.
+      max_tokens: 8192
+      fallback_max_tokens: 4096
+
       # Der API-Key gehört NICHT hierher, sondern in die .env Datei oder .zshrc!
       # Tragen Sie hier nur den Namen der Variable ein.
       # Beispiel .env: ANTHROPIC_API_KEY=sk-ant-...

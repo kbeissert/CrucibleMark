@@ -58,6 +58,10 @@ class ResultManager:
             "judge_task_compliance",
             "judge_output_quality",
             "judge_standard_adherence",
+            "finish_reason",
+            "token_limit_cutoff",
+            "token_limit_fallback",
+            "token_limit_used",
         ]
 
         new_keys.update(judge_fields)

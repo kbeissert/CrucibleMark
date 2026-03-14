@@ -155,6 +155,17 @@ make benchmark-audit
 ```
 Alle generierten Markdown-Files findest du im Ordner `outputs/audit_logs/`. Dieser Modus ist besonders hilfreich, wenn du analysieren möchtest, *warum* ein Modell eine bestimmte (oder unerwartete) Punktzahl bekommen hat oder wenn du System-Prompts finetunen möchtest.
 
+### 4. Metadaten-Tracking (Token-Limits / "Kopfnoten")
+
+Nicht jeder LLM-Provider kann beliebige Output-Längen realisieren. Erlaubt ein Asset bis zu `8192` Token und das Modell verweigert dies (z.B. OpenAI max_completion_tokens, Anthropic max_tokens), greift ein **kaskadierendes Fallback** im Framework. Es schraubt die Limitanforderung transparent nach unten (z.B. auf 4096, 2048 Token), bis das Modell antwortet.
+
+- **Pro Asset Info**: Jeder Audit-Log und jede Testzeile im Dashboard weist den final verwendeten Token-Wert gesondert als Info-Feld aus. Es verfälscht nicht die Mathe-Note, ist aber entscheidend als "Kopfnote".
+- **LLM Judge**: Dem Judge wird diese Kaskade ausgeblendet, er bewertet isoliert den Output-String ohne Bias bezüglich der Konfiguration.
+
+### 5. Editor-Auswertung für System-Integration (Wrappper)
+
+Diese Meta-Informationen spielen im finalen Editor-Bericht eine prominente Rolle. Bevor Entwickler ein hoch-scorendes Modell (wie *Mistral* oder eine *lokale Ollama-Variante*) in eigene Tools (wie **AnythingLLM** oder **WebUI-Wrapper**) einbinden, ist die Information zum Output-Ratio essentiell. Ein Modell mit perfektem Score, das aber im Framework auf 2048 Token "zugeschnürt" werden musste um nicht abzustürzen, eignet sich oft nicht z.B. als Document-Analysis-Agent. Diese "Kopfnoten" bewahren Administratoren in der Praxis vor unliebsamen "Generation Cutoffs" in eigenen Projekten.
+
 ______________________________________________________________________
 
 ## 🏆 Leaderboard generieren
@@ -169,13 +180,13 @@ make leaderboard
 
 ### Was zeigt das Leaderboard?
 
-Das neue Leaderboard (v1.2) ist ein **Decision-Making Tool**, nicht nur ein Ranking. Es berücksichtigt immer nur den **letzten lokalen Run** pro Modell, sodass Hardware-Upgrades (z.B. SSD statt HDD) sofort sichtbar werden.
+Das Leaderboard ist ein **Decision-Making Tool**, nicht nur ein Ranking. Es berücksichtigt immer nur den **letzten lokalen Run** pro Modell, sodass Hardware-Upgrades (z.B. SSD statt HDD) sofort sichtbar werden.
 
 | Spalte | Bedeutung | |--------|-----------| | **Badge** | Qualitäts-Tier (🏆 Gold, 🥈 Silver, 🥉 Bronze, ⚖️ Standard) | | **Speed Class** | ⚡ Fast (\<40s), ⏱️ Medium, 🐢 Slow (>80s) | | **Initial Load** | **Cold Start Zeit** aus der separaten Warm-up Phase. Verfälscht nicht den Average. | | **Performance/s** | Speed-Quality Tradeoff (höher ist besser) | | **Cost per 1K** | Echte API-Kosten pro 1000 Tests (nur kommerziell) | | **Total Score** | (Routine Score + Reasoning Score) / 2 |
 
 ______________________________________________________________________
 
-## 🏅 Neue Badges & Klassen (v1.1)
+## 🏅 Badges & Klassen
 
 ### 1. Quality Tiers (Absolute Standards)
 
@@ -193,9 +204,9 @@ ______________________________________________________________________
 
 ______________________________________________________________________
 
-## ⏱️ Performance Metriken (Neu in v1.2)
+## ⏱️ Performance Metriken
 
-CrucibleMark unterscheidet nun präzise zwischen **Ladezeit** und **Ausführungszeit**:
+CrucibleMark unterscheidet präzise zwischen **Ladezeit** und **Ausführungszeit**:
 
 1. **Phase 1: Warm-up Probe (Kaltstart Messung)**
 
@@ -211,7 +222,7 @@ CrucibleMark unterscheidet nun präzise zwischen **Ladezeit** und **Ausführungs
 
 > **Hinweis:** Bitte beachten Sie, dass es sich hierbei um **hardwareabhängige Momentaufnahmen** handelt. Die Werte (`Initial Load` & `Avg Speed`) evaluieren nicht das isolierte Modell, sondern das Zusammenspiel aus Modellarchitektur und der spezifischen Hardwareumgebung (RAM, GPU), auf der der Test ausgeführt wird.
 
-In den CSV-Ausgaben (`local_models_benchmark.csv`) finden Sie nun eine dedizierte Spalte `load_time`.
+In den CSV-Ausgaben (`local_models_benchmark.csv`) befindet sich eine dedizierte Spalte `load_time`.
 
 ______________________________________________________________________
 

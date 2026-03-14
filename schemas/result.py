@@ -52,6 +52,10 @@ class BenchmarkResult(BaseModel):
     )
     tokens_used: int = Field(0, description="Total tokens consumed")
     cost_usd: float = Field(0.0, description="Estimated cost in USD")
+    finish_reason: Optional[str] = Field(None, description="The reason the model stopped generating (e.g. length/max_tokens)")
+    token_limit_cutoff: bool = Field(False, description="Flag indicating if the response was cut off due to max_token limits")
+    token_limit_fallback: bool = Field(False, description="Flag indicating if the system dynamically lowered the requested max_tokens to accommodate model constraints (e.g. 8192 -> 4096)")
+    token_limit_used: Optional[int] = Field(None, description="The actual max_tokens value used for the successful generation (metadata/Kopfnote)")
     raw_response: str = Field("", description="The raw string output from the model")
     evaluated_prompt: str = Field(
         "",
