@@ -1,15 +1,21 @@
 # PROJECT_STATUS.md
 
-**Last Updated:** 2026-03-13 **Current Version:** 2.4.1 (Golden Standard SSOT) **Status:** ✅ Production-Ready
+**Last Updated:** 2026-03-14 **Current Version:** 2.5.0 (Architectural Clean-Up) **Status:** ✅ Production-Ready
 
 ______________________________________________________________________
 
 ## 🎯 Executive Summary
-CrucibleMark v2.4.1 etabliert die **Golden Standard SSOT (Single Source of Truth)** und schließt die Konsolidierung der Referenzdaten ab.
+CrucibleMark v2.5.0 schließt die SSOT-Migration ab, indem die alte, dynamische "Golden Standard Model" Pipeline vollständig entfernt wurde. Ab sofort existiert **ausschließlich eine statische "Design by Intention" Evaluierung** via LLM-Judge auf Basis der `asset.yaml`.
 Die Kernarchitektur für die automatisierte Auswertung freier Antworten wurde in v2.4.0 vollständig integriert, getestet und stabilisiert.
 Eine SSOT-basierte Konfiguration in `benchmark_config.yaml` sowie detaillierte `golden_standard` Blöcke in den Assets garantieren saubere Testdurchläufe ohne Fallstricke.
 
-**Key Achievements (v2.4.1):**
+**Key Achievements (v2.5.0):**
+- ✅ **Architectural Deprecation:** Vollständiges Entfernen des `--mode golden_standard` in Kommandozeilen. Kein Referenz-Modell generiert mehr dynamische Responses für den Vergleich.
+- ✅ **Clean Runner Logic:** `run_commercial_benchmark.py` & `run_local_benchmark.py` verarbeiten nur noch den puren Test-Modus ohne komplexe Interaktionen.
+- ✅ **Leaderboard Isolation:** Evaluierung nutzt jetzt 1:1 die rohen Prozent-Werte des Intent-Judges; die fehleranfällige, relative Berechnungslogik (`performance_ratio`) zur Referenz wurde gelöscht.
+- ✅ **Validation Tools Cleanup:** Veraltete Analyse- und Validator-Skripte wie `validate_golden_standards.py` getilgt.
+
+**Previous Version (v2.4.1):**
 - ✅ **Golden Standard Consolidation (SSOT):** 37 `golden_standard` Konfigurationen über alle YAML-Assets strukturell validiert. Die manuell verdichteten Standards fungieren nun offiziell als "Design by Intention" Ground Truth.
 - ✅ **Validation Tooling:** Einführung von `scripts/analysis/validate_golden_standards.py` zur LLM-basierten Validierung (Claude Haiku) von Aufgaben-Assets.
 - ✅ **Storage Cleanup:** Entfernung der obsoleten Roh-Referenz-Logs (`outputs/reference-logs/`), um den Fokus auf qualitätsgesicherte, manuelle Golden Standards zu legen und pedantische LLM-False-Positives zu vermeiden.

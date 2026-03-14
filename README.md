@@ -653,7 +653,7 @@ ______________________________________________________________________
 - **[Developer Guide](docs/DEVELOPER_GUIDE.md)** - Extending the framework
 - **[Architecture](docs/ARCHITECTURE.md)** - System design and logic
 - **[Scoring Methodology](docs/SCORING_METHODOLOGY.md)** - Logic for LLM Judge, Regex, and Hybrid scoring
-- **[Golden Standards](docs/GOLDEN_STANDARDS.md)** - Reference models and updates
+- **[Golden Standards](docs/GOLDEN_STANDARDS.md)** - Design by Intention methodology
 - **[Module Docs](docs/modules/)** - Detailed module documentation
 - **[API Reference](docs/api/)** - Framework API docs
 - **[FAQ](docs/FAQ.md)** - Frequently asked questions
