@@ -61,3 +61,8 @@ Nur anfassen bei neuer Dependency, geändertem Build-Befehl oder neuem Tool.
 Sonst: nicht ändern.
 
 Bestätige mit: "Memory updated ✓"
+
+---
+Reviews
+
+Bei kommerziellen Modellen Konzentrieren wir uns bei den Reviews auf den Preis. Das macht Sinn, obwohl eine Erwähnung des Preises in Bezug auf Token sinnvoll wäre. Dies wird umso interessanter, da wir bei lokalen Modellen keinen Preis haben, aber einen Tokenverbrauch der sich am Ende in Speichergröße und Wartezeit (die eigentliche Währung lokaler Modelle ) niederschlägt. Deshalb habe ich die Idee, das Review Muster so anzupassen, dass Preis (bzw preis pro 1k Token - over wie uch immer die standardisierte Messgröße hierbei ist) bei kommerziellen Modellen erwähnt wird, aber auch Wartezeit bei der Bearbeitung eine Rolle spielt. Denn spätestens bei lokalen Modellen spielt der Zeitfaktor auf dem getesteten System eine Rolle. Hier musst du mir helfen, wie man das am besten kommuniziert. Denn die Wartezeit ist ja am Ende wieder von der Hardware abhängig. Bei mir ohne NVIDIA HArdware (MacBook M4 24GB shared Memory) führt das zu anderen Messergebnissen als auf Nvidia oder optimierter Hardware.

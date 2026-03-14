@@ -337,15 +337,9 @@ def run_commercial_batch(
         return
 
     # Cache laden (bereits erledigte Tests)
-    # Check BOTH commercial CSV and golden standard CSV
+    # Cache laden (bereits erledigte Tests)
     comm_csv = Path("benchmark_scores/commercial_models_benchmark.csv")
-    gold_csv = Path("benchmark_scores/golden_standard_benchmark.csv")
-
     existing_tests = get_existing_results(comm_csv, force=force)
-    # Merge with golden standards if they exist (since they are also valid test runs)
-    if gold_csv.exists():
-        existing_gold = get_existing_results(gold_csv, force=force)
-        existing_tests.update(existing_gold)
 
     print(f"Ignoriere bereits vorhandene Ergebnisse ({len(existing_tests)} Einträge)\n")
 

@@ -19,8 +19,9 @@ help:
 	@echo ""
 	@echo "=== Reporting & Standards ==="
 	@echo "  make leaderboard          Generate Leaderboard CSV"
+	@echo "  make review-model         📰 Generate Review for a model (MODEL=name)"
+	@echo "  make review-all           📰 Generate Reviews for ALL models"
 	@echo "  make bias-report          📊 Update Bias Sensitivity Report"
-	@echo "  make generate-golden      Generate golden standard (ASSET=path)"
 	@echo ""
 	@echo "=== Validation & QA ==="
 	@echo "  make validate             Validate all test assets"
@@ -104,14 +105,6 @@ leaderboard:
 bias-report:
 	@echo "📊 Updating Bias Sensitivity Report..."
 	$(PYTHON) scripts/analysis/update_bias_report.py
-
-generate-golden:
-	@echo "🏆 Generating Golden Standards (missing only)..."
-	$(PYTHON) scripts/core/run_commercial_benchmark.py --mode golden_standard --auto
-
-generate-golden-new:
-	@echo "🏆 Generating Golden Standards (FORCE UPDATE)..."
-	$(PYTHON) scripts/core/run_commercial_benchmark.py --mode golden_standard --auto --force
 
 # === VALIDATION & QA ===
 

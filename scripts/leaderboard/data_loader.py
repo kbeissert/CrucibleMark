@@ -15,7 +15,7 @@ from utils.csv_recovery import get_csv_header_idx, parse_row_robust
 # pylint: enable=import-error
 
 # Import configuration and constants
-from .config import COMMERCIAL_CSV, GOLDEN_CSV, LOCAL_CSV, config
+from .config import COMMERCIAL_CSV, LOCAL_CSV, config
 
 # pylint: disable=import-error
 try:
@@ -56,61 +56,6 @@ def _extract_scores_from_df(df: pd.DataFrame) -> Dict[str, float]:
         for _, row in latest.iterrows():
             if pd.notna(row["percentage"]):
                 refs[row["asset_id"]] = float(row["percentage"])
-    return refs
-
-
-def load_golden_references() -> Dict[str, float]:
-    """
-    Loads reference scores per asset from the Golden Standard CSV.
-    Fallback: Looks for golden model in Commercial CSV if separate file missing.
-
-    Returns:
-        Dict[str, float]: Mapping of asset_id to percentage score.
-    """
-    refs = {}
-
-    # 1. Try dedicated Golden CSV
-    if GOLDEN_CSV.exists():
-        try:
-            # Check if file is empty or readable
-            with open(GOLDEN_CSV, "r", encoding="utf-8") as f:
-                first_line = f.readline()
-
-            if first_line:
-                df = pd.read_csv(GOLDEN_CSV, on_bad_lines="skip")
-                refs = _extract_scores_from_df(df)
-        except Exception as e:
-            print(f"⚠️ Warning: Could not load Golden CSV: {e}")
-
-    if refs:
-        return refs
-
-    # 2. Fallback: Search in Commercial CSV and Backup
-    golden_model = config.get("golden_standard", {}).get("model")
-
-    fallback_paths = [
-        COMMERCIAL_CSV,
-        Path("backups/commercial_models_baseline_20260122.csv"),
-    ]
-
-    if golden_model:
-        for path in fallback_paths:
-            if not path.exists():
-                continue
-
-            try:
-                df = pd.read_csv(path, on_bad_lines="skip")
-                if "model" in df.columns:
-                    # Filter for golden model
-                    df_golden = df[df["model"] == golden_model]
-                    if not df_golden.empty:
-                        refs = _extract_scores_from_df(df_golden)
-                        if refs:
-                            # Found it, stop searching
-                            break
-            except Exception:
-                continue
-
     return refs
 
 

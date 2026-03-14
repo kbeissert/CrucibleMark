@@ -16,7 +16,6 @@ logs/
 
 # Configuration (Local overrides)
 config_local.yaml
-golden_standard_models.yaml
 
 # Outputs & Artifacts
 backups/

@@ -91,7 +91,9 @@ class LocalBenchmarkRunner(BaseBenchmarkRunner):
             self.mode = mode
 
         self.audit_mode = audit_mode
-        self.commercial_csv = self.validator.get_golden_standard_csv()
+        self.commercial_csv = Path(
+            self.validator.config.get("output", {}).get("commercial_csv", "benchmark_scores/commercial_models_benchmark.csv")
+        )
         self.debug_responses = (
             debug_responses or os.getenv("CRUCIBLE_DEBUG", "false").lower() == "true"
         )
@@ -287,18 +289,6 @@ class LocalBenchmarkRunner(BaseBenchmarkRunner):
             "max_score": 0,
         }
 
-    def _compare_golden(
-        self, asset_data: Dict[str, Any], response: str, test_instance: Any
-    ) -> Dict[str, Any]:
-        """Compares response with golden standard."""
-        asset_id = asset_data.get("metadata", {}).get("id", "unknown")
-        golden_config = asset_data.get("golden_standard", {})
-        provider = golden_config.get("generate_with", [{}])[0].get(
-            "provider", "mistral"
-        )
-        golden_path = Path(f"golden_standards/{provider}/{asset_id}.json")
-        return test_instance.compare_to_golden_standard(response, golden_path)
-
     def _process_single_test(
         self,
         model: str,
@@ -326,7 +316,7 @@ class LocalBenchmarkRunner(BaseBenchmarkRunner):
         score = test_instance.score_response(response)
 
         # Comparisons
-        comparison = self._compare_golden(asset_data, response, test_instance)
+        comparison = {}
         asset_id = asset_data.get("metadata", {}).get("id", asset_path.stem)
         ref = commercial_refs.get(asset_id, {})
 

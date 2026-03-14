@@ -25,7 +25,6 @@ def temp_result_manager():
         config = {
             "output": {
                 "local_models_csv": str(tmp_path / "local.csv"),
-                "golden_standard_csv": str(tmp_path / "golden.csv"),
                 "commercial_csv": str(tmp_path / "commercial.csv"),
             }
         }
