@@ -8,6 +8,7 @@
 - [ ] Stabilität `gpt-oss` analysieren (vorheriger Absturz-Kandidat)
 
 ## Abgeschlossen (Meilensteine)
+- [DONE] Globales kaskadierendes Token-Fallback & Provider Error Handling ("Fast-Fail" für Budget, Metadaten in Ergebnissen)
 - [DONE] Golden Standard Validierung und SSOT-Konsolidierung (`asset.yaml` Blöcke verifiziert, obsoletes LLM-Referenz-Raw-Log System entfernt). Project Status geupdated.
 - [DONE] LLM Judge Modul vollständig implementiert (Phase 1–3.5): Provider-Abstraktion,
   Fallback-Chain, Pipeline-Integration, ResultManager-Schema, Batch-Vorbereitung

@@ -96,8 +96,8 @@ def test_new_csv_preserves_judge_columns(temp_result_manager):
 
         # Verify the 10 judge fields exist in the appended set. They might not be exactly strictly the last 10
         # depending on sorting logic, but they are guaranteed to be in fieldnames.
-        # Actually our implementation `base_keys + judge_fields` makes them exactly the last 10!
-        assert fields[-10:] == [
+        # Actually our implementation `base_keys + judge_fields` makes them exactly the last N fields!
+        assert fields[-14:] == [
             "llm_judge_score",
             "llm_judge_reasoning",
             "llm_judge_latency_ms",
@@ -108,6 +108,10 @@ def test_new_csv_preserves_judge_columns(temp_result_manager):
             "judge_task_compliance",
             "judge_output_quality",
             "judge_standard_adherence",
+            "finish_reason",
+            "token_limit_cutoff",
+            "token_limit_fallback",
+            "token_limit_used",
         ]
 
         rows = list(reader)

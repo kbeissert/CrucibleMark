@@ -101,6 +101,67 @@ class BaseProviderClient:
         """
         return True
 
+    def _execute_with_token_fallback(
+        self,
+        func: Callable,
+        token_param_name: str,
+        initial_max_tokens: int,
+        error_keywords: List[str],
+        func_kwargs: dict
+    ) -> tuple[Any, int, bool]:
+        """
+        Führt einen API-Aufruf mit kaskadierendem Token-Fallback aus ("Kopfnoten"-Tracking).
+        Gibt (Response, used_max_tokens, fallback_triggered) zurück.
+        """
+        # Globale Fallback-Kaskade laden (z.B. [4096, 2048, 1024])
+        cascade = self.config.get("defaults", {}).get("token_limits", {}).get(
+            "fallback_cascade", [8192, 4096, 2048, 1024]
+        )
+
+        # Liste der zu probierenden Limits aufbauen (absteigend, strikt kleiner als initial_max_tokens)
+        valid_cascade = [t for t in cascade if t < initial_max_tokens]
+        tokens_to_try = [initial_max_tokens] + valid_cascade
+
+        fallback_triggered = False
+        last_exception = None
+
+        for current_tokens in tokens_to_try:
+            if current_tokens < initial_max_tokens:
+                fallback_triggered = True
+                logger.warning(
+                    f"⚠️ Token limit rejected. Retrying with fallback limit: {current_tokens} tokens."
+                )
+
+            func_kwargs[token_param_name] = current_tokens
+
+            try:
+                response = func(**func_kwargs)
+                return response, current_tokens, fallback_triggered
+            except Exception as e:
+                err_str = str(e).lower()
+
+                # --- FAST FAIL für Budget/Quota-Fehler ---
+                budget_keywords = [
+                    "quota", "budget", "billing", "credit", "insufficient_funds",
+                    "payment", "402 payment required", "exceeded your current quota"
+                ]
+                if any(kw in err_str for kw in budget_keywords):
+                    logger.error("💸 Budget/Quota erschöpft! API-Anfrage sofort abgebrochen (kein Token-Fallback).")
+                    raise e
+
+                # --- Token-Fallback Check ---
+                is_token_error = any(kw.lower() in err_str for kw in error_keywords)
+
+                if is_token_error:
+                    last_exception = e
+                    continue  # Versuche das nächstkleinere Limit in der Kaskade
+                else:
+                    # Ein nicht-Token bezogener Fehler (z.B. Timeout, Parsing)
+                    raise e
+
+        logger.error("❌ All token limits in the cascade were rejected by the provider API.")
+        raise last_exception or Exception("Token fallback cascade failed unexpectedly.")
+
 
 class OllamaClient(BaseProviderClient):
     """Ollama Provider Client"""
@@ -181,6 +242,7 @@ class OllamaClient(BaseProviderClient):
                         "load_duration": load_ns / 1e9,
                         "eval_duration": eval_ns / 1e9,
                         "prompt_eval_duration": prompt_eval_ns / 1e9,
+                        "finish_reason": chunk.get("done_reason"),
                     }
                     metrics["pure_execution_time"] = (
                         metrics["total_duration"] - metrics["load_duration"]
@@ -427,33 +489,28 @@ class AnthropicClient(BaseProviderClient):
                 )
 
             # Note: Streaming not implemented yet for Anthropic in this wrapper
-            try:
-                response = self.client.messages.create(
-                    model=model,
-                    max_tokens=max_tokens,
-                    temperature=temperature,
-                    messages=[{"role": "user", "content": prompt}],
-                )
-            except Exception as e:
-                # Automatisches dynamisches Umschalten auf die Fallback-Option:
-                err_str = str(e)
-                if "max_tokens" in err_str and max_tokens > 4096:
-                    logger.warning(f"⚠️ Token limit rejected for {model}. Switching from {max_tokens} to Fallback (4096).")
-                    max_tokens = 4096
-                    response = self.client.messages.create(
-                        model=model,
-                        max_tokens=max_tokens,
-                        temperature=temperature,
-                        messages=[{"role": "user", "content": prompt}],
-                    )
-                else:
-                    raise e
+            func_kwargs = {
+                "model": model,
+                "temperature": temperature,
+                "messages": [{"role": "user", "content": prompt}],
+            }
+
+            response, used_max_tokens, fallback_triggered = self._execute_with_token_fallback(
+                func=self.client.messages.create,
+                token_param_name="max_tokens",
+                initial_max_tokens=max_tokens,
+                error_keywords=["max_tokens"],
+                func_kwargs=func_kwargs
+            )
 
             # Capture Metadata
             self.last_response_metadata = {
                 "model": response.model,
                 "id": response.id,
                 "usage": response.usage,
+                "finish_reason": getattr(response, "stop_reason", None),
+                "token_limit_fallback": fallback_triggered,
+                "token_limit_used": used_max_tokens,
             }
 
             if not skip_fingerprint:
@@ -564,14 +621,23 @@ class MistralClient(BaseProviderClient):
 
             # Mistral supports max_tokens
             max_tokens = kwargs.get("max_tokens")
+            if not max_tokens:
+                max_tokens = self.config.get("defaults", {}).get("generation", {}).get("num_predict", 8192)
 
             # Note: Streaming not implemented yet for Mistral in this wrapper
-            response = self.client.chat.complete(
-                model=model,
-                messages=[{"role": "user", "content": prompt}],
-                temperature=temperature,
-                random_seed=42,  # Ensure deterministic output
-                max_tokens=max_tokens,  # Pass None if not provided (SDK default)
+            func_kwargs = {
+                "model": model,
+                "messages": [{"role": "user", "content": prompt}],
+                "temperature": temperature,
+                "random_seed": 42,
+            }
+
+            response, used_max_tokens, fallback_triggered = self._execute_with_token_fallback(
+                func=self.client.chat.complete,
+                token_param_name="max_tokens",
+                initial_max_tokens=max_tokens,
+                error_keywords=["maximum context length", "max_tokens", "too large"],
+                func_kwargs=func_kwargs
             )
 
             # Capture Metadata
@@ -579,6 +645,9 @@ class MistralClient(BaseProviderClient):
                 "model": response.model,
                 "id": response.id,
                 "usage": response.usage,
+                "token_limit_fallback": fallback_triggered,
+                "token_limit_used": used_max_tokens,
+                "finish_reason": getattr(response.choices[0], "finish_reason", None) if response.choices else None,
             }
 
             if not skip_fingerprint:
@@ -705,30 +774,36 @@ class OpenAIClient(BaseProviderClient):
             if not is_reasoning:
                 params["temperature"] = temperature
 
-            if "max_tokens" in kwargs:
-                # O-series models use max_completion_tokens
-                if is_reasoning:
-                    # Bump limit for reasoning models as they count reasoning tokens
-                    # If input implies short output (e.g. <4000), we grant more headroom (e.g. 25k)
-                    # to avoid cutting off reasoning.
-                    req_tokens = kwargs["max_tokens"]
-                    if req_tokens < 10000:
-                        params["max_completion_tokens"] = 25000
-                    else:
-                        params["max_completion_tokens"] = req_tokens
-                else:
-                    params["max_tokens"] = kwargs["max_tokens"]
+            token_param_name = "max_completion_tokens" if is_reasoning else "max_tokens"
+            req_tokens = kwargs.get("max_tokens")
+            if not req_tokens:
+                req_tokens = self.config.get("defaults", {}).get("generation", {}).get("num_predict", 8192)
 
-            # Note: Streaming implemented now
+            if is_reasoning and req_tokens < 10000:
+                initial_tokens_to_try = 25000
+            else:
+                initial_tokens_to_try = req_tokens
+
             if stream_handler:
                 params["stream"] = True
                 # Request usage info in stream (OpenAI feature)
                 params["stream_options"] = {"include_usage": True}
 
-                response_stream = self.client.chat.completions.create(**params)
+            response_or_stream, used_max_tokens, fallback_triggered = self._execute_with_token_fallback(
+                func=self.client.chat.completions.create,
+                token_param_name=token_param_name,
+                initial_max_tokens=initial_tokens_to_try,
+                error_keywords=["maximum context length", "max_tokens", "max_completion_tokens", "too large"],
+                func_kwargs=params
+            )
 
+            if stream_handler:
+                response_stream = response_or_stream
                 full_content = ""
-                self.last_response_metadata = {}
+                self.last_response_metadata = {
+                    "token_limit_fallback": fallback_triggered,
+                    "token_limit_used": used_max_tokens,
+                }
 
                 for chunk in response_stream:
                     # Capture basic metadata from chunks
@@ -744,6 +819,9 @@ class OpenAIClient(BaseProviderClient):
                     # Capture Usage (usually in last chunk)
                     if hasattr(chunk, "usage") and chunk.usage:
                         self.last_response_metadata["usage"] = chunk.usage
+
+                    if chunk.choices and hasattr(chunk.choices[0], "finish_reason") and chunk.choices[0].finish_reason:
+                        self.last_response_metadata["finish_reason"] = chunk.choices[0].finish_reason
 
                     # Content
                     if chunk.choices:
@@ -761,7 +839,7 @@ class OpenAIClient(BaseProviderClient):
                 return full_content
 
             # Blocking Call (Legacy / No Stream)
-            response = self.client.chat.completions.create(**params)
+            response = response_or_stream
 
             # Capture Metadata
             self.last_response_metadata = {
@@ -769,6 +847,9 @@ class OpenAIClient(BaseProviderClient):
                 "id": response.id,
                 "system_fingerprint": getattr(response, "system_fingerprint", None),
                 "usage": response.usage,
+                "finish_reason": getattr(response.choices[0], "finish_reason", None) if response.choices else None,
+                "token_limit_fallback": fallback_triggered,
+                "token_limit_used": used_max_tokens,
             }
 
             if not skip_fingerprint:
@@ -860,14 +941,33 @@ class GoogleClient(BaseProviderClient):
             # Initialize Model
             gemini_model = genai.GenerativeModel(model_name=model)
 
+            initial_max_tokens = kwargs.get("max_tokens", self.config.get("defaults", {}).get("generation", {}).get("num_predict", 8192))
+
+            def _google_generator(max_tokens, **gen_kwargs):
+                generation_config.max_output_tokens = max_tokens
+                return gemini_model.generate_content(prompt, generation_config=generation_config, **gen_kwargs)
+
+            func_kwargs = {}
+            if stream_handler:
+                func_kwargs["stream"] = True
+
+            response_or_stream, used_max_tokens, fallback_triggered = self._execute_with_token_fallback(
+                func=_google_generator,
+                token_param_name="max_tokens",
+                initial_max_tokens=initial_max_tokens,
+                error_keywords=["400 bad request", "invalid argument", "maximum context length", "too large"],
+                func_kwargs=func_kwargs
+            )
+
             # Streaming Support
             if stream_handler:
-                response = gemini_model.generate_content(
-                    prompt, generation_config=generation_config, stream=True
-                )
+                response = response_or_stream
 
                 full_text = ""
-                self.last_response_metadata = {}  # Reset
+                self.last_response_metadata = {
+                    "token_limit_fallback": fallback_triggered,
+                    "token_limit_used": used_max_tokens,
+                }
 
                 for chunk in response:
                     # chunk.text can throw if blocked by safety settings
@@ -889,12 +989,25 @@ class GoogleClient(BaseProviderClient):
                         # We just store it for now
                         pass
 
+                    if hasattr(chunk, "candidates") and chunk.candidates:
+                        fr = chunk.candidates[0].finish_reason
+                        if fr:
+                            # Usually an enum, convert to string
+                            self.last_response_metadata["finish_reason"] = getattr(fr, "name", str(fr))
+
                 return full_text
 
             # Blocking Call
-            response = gemini_model.generate_content(
-                prompt, generation_config=generation_config
-            )
+            response = response_or_stream
+
+            self.last_response_metadata = {
+                "token_limit_fallback": fallback_triggered,
+                "token_limit_used": used_max_tokens,
+            }
+            if hasattr(response, "candidates") and response.candidates:
+                fr = response.candidates[0].finish_reason
+                if fr:
+                    self.last_response_metadata["finish_reason"] = getattr(fr, "name", str(fr))
 
             try:
                 return response.text

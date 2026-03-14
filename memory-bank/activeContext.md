@@ -1,8 +1,7 @@
 # Active Context
 
 ## Abgeschlossen
-- Golden Standards in YAML als SSOT konsolidiert; obsolete rohe Referenzdaten (`outputs/reference-logs/`) zugunsten verdichteten ("Design by Intention") Standards gelöscht.
-- Tooling zur Inhaltsvalidierung existiert für Audit-Zwecke, manueller Workflow aber etabliert.
+- Globales kaskadierendes Token-Fallback-System implementiert, inkl. transparentem Metadaten-Tracking ("Kopfnoten") in der Leaderboard-Auswertung.
 
 ## Nächster Schritt
 - LLM Judge Pipeline auf strikte JSON-Rückgabe umbauen (`judge_parser.py` + Prompts) oder Implementierung des Batch-Mode (Phase 3.5).

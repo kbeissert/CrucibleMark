@@ -110,6 +110,12 @@ class LLMClient:
 
 | Provider | Auth | Token Limit | Streaming | Retry Logic | |----------|------|-------------|-----------|-------------| | Ollama | None (localhost) | Model-dependent (8K-128K) | ✅ Yes | N/A (local) | | OpenAI | Bearer token | 128K (GPT-4) | ✅ Yes | 429 → Exponential Backoff | | Mistral | API key | 32K | ❌ No | 500 → Retry 3x | | Anthropic | API key | 200K | ✅ Yes | 429 → Exponential Backoff | | Google | API key | 1M - 2M | ❌ No | SDK Handled |
 
+**Globaler Token-Fallback-Wrapper:**
+Das Framework implementiert einen robusten Architekturansatz zur Bewältigung harter Output-Token-Limits, der zentral im `BaseProviderClient` über die Funktion `_execute_with_token_fallback` gesteuert wird.
+1. **Zentrale Kaskade:** Die Systemkonfiguration (`benchmark_config.yaml`) definiert eine globale Fallback-Kaskade (z.B. `[8192, 4096, 2048, 1024]`).
+2. **Dynamische Reduzierung:** Schlägt eine API-Anfrage wegen Limitüberschreitungen fehl, fängt der Wrapper die Exception ab (durch provider-spezifische Error-Keywords wie `"max_tokens"`) und probiert das nächstkleinere Limit transparent erneut.
+3. **Fast-Fail für Budget:** Bei Budget- oder Quota-Fehlern (`"402 payment required"`, `"insufficient_quota"`) greift ein *Fast-Fail*-Mechanismus ein, der sofort blockiert und teure Retrys verhindert.
+4. **Metadaten-Tracking:** Nach Abschluss protokolliert der Client in das `BenchmarkResult`-DTO, ob die Kaskade verwendet wurde (`token_limit_fallback`) und welches Limit endgültig galt (`token_limit_used`).
 ______________________________________________________________________
 
 ## 📦 Layer 2: Benchmark Modules
@@ -165,18 +171,16 @@ ______________________________________________________________________
 
 ## 🧮 Layer 3: Scoring Engine
 
-### 1. Granular Rubric Scoring (v2.1)
+### 1. Granular Rubric Scoring
 
-Genutzt für **Reasoning Modules** (Tier 1-2). Ersetzt binäre Scores durch partielle Punktevergabe basierend auf Rubriken.
+Genutzt für **Reasoning Modules** (Tier 1-2). Nutzt partielle Punktevergabe basierend auf Rubriken.
 
-**v2.1 Changes (Stricter Thresholds):**
+**Thresholds:**
 
 - 80%+ matches: 100% credit
 - 60-79% matches: 75% credit
 - 40-59% matches: 50% credit
-- \<40% matches: 0% credit
-
-**Legacy Deprecation:** Alte Scoring-Methode (`Legacy`) wird in v3.0 entfernt. Alle neuen Reasonung-Tests nutzen Rubriken.
+- <40% matches: 0% credit
 
 ```python
 RUBRICS = {
@@ -217,11 +221,9 @@ ______________________________________________________________________
 
 ### Golden Standard Comparison
 
-**Konzept:** Alle Modelle werden gegen **Mistral Large** (123B) als Referenz verglichen, aber das Leaderboard basiert ab v1.1 auf **Absoluten Standards**.
+**Konzept:** Alle Modelle werden gegen **Mistral Large** (123B) als Referenz verglichen, das Leaderboard basiert jedoch auf **Absoluten Standards**.
 
-**Warum Absolute Standards?** Die "Performance Ratio" (Relativ zu Mistral) war hilfreich, führt aber zu Verwirrung, wenn sich der Referenzwert ändert. Ab v1.1 gelten feste Hürden (z.B. >85% für Gold).
-
-______________________________________________________________________
+**Absolute Standards:** Es gelten feste Hürden (z.B. >85% für Gold) für die Performance. Dadurch bleibt das Tier-Ranking konsistent, selbst wenn das hinterlegte Referenzmodell für die Berechnung der Semantik-Scores geupdatet wird.
 
 ## 📊 Layer 4: Data Persistence
 
