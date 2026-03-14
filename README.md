@@ -649,10 +649,13 @@ ______________________________________________________________________
 
 ## 📚 Documentation
 
+- **[User Guide](docs/USER_GUIDE.md)** - General usage and concepts
+- **[Developer Guide](docs/DEVELOPER_GUIDE.md)** - Extending the framework
+- **[Architecture](docs/ARCHITECTURE.md)** - System design and logic
+- **[Scoring Methodology](docs/SCORING_METHODOLOGY.md)** - Logic for LLM Judge, Regex, and Hybrid scoring
+- **[Golden Standards](docs/GOLDEN_STANDARDS.md)** - Reference models and updates
 - **[Module Docs](docs/modules/)** - Detailed module documentation
 - **[API Reference](docs/api/)** - Framework API docs
-- **[Contributing Guide](CONTRIBUTING.md)** - How to contribute
-- **[Changelog](CHANGELOG.md)** - Version history
 - **[FAQ](docs/FAQ.md)** - Frequently asked questions
 
 ______________________________________________________________________

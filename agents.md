@@ -62,3 +62,4 @@ keine modul-internen Batch-Schleifen (zerstört Leaderboard-Reporting).
 - **Doppelte kwargs:** Parameter vor Client-Übergabe explizit mit `.pop()` entfernen.
 - **PendingJudgeResult:** Bei Overnight-Runs immer auf Disk persistieren –
   ermöglicht nachträgliche Score-Vergabe ohne Re-Run.
+- **Audit-Log Extraction:** Der Meta-Reviewer (`generate_review.py`) greift via Regex auf Audit-Logs zu. Bei neuen Metadaten-Blöcken (z.B. `> **⚠️ SYSTEM INFO:**`) muss der Parser in `generate_review.py` entsprechend erweitert werden.

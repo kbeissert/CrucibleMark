@@ -331,15 +331,15 @@ scoring:
         description: "Are there instructions for different OS (Mac, Windows, Linux)?"
 
 golden_standard: |
-  
+
   # Analyse & Überarbeitung der SETUP.md
-  
+
   ---
-  
+
   ## Schritt 1: Problemanalyse
-  
+
   ### 🔴 Critical – Fehlende Prerequisites / Commands funktionieren nicht
-  
+
   | # | Problem | Auswirkung |
   |---|---------|------------|
   | C1 | **Keine Prerequisites-Section** | Developer wissen nicht, welche Tools (Docker, Node.js, Git) in welcher Version benötigt werden – Setup schlägt still fehl |
@@ -347,11 +347,11 @@ golden_standard: |
   | C3 | **`.env`-Datei wird nach `docker-compose up` erwähnt** | Docker Compose liest ENV-Variablen beim Start – wird `.env` danach erstellt, startet die DB-Verbindung nie korrekt |
   | C4 | **`DATABASE_URL` zeigt auf `localhost:5432`** | Innerhalb von Docker-Netzwerken ist der Hostname der Service-Name (z. B. `db`), nicht `localhost` – führt direkt zu "Connection refused" |
   | C5 | **`npm run migrate` ohne Kontext** | Unklar, ob lokal oder im Container; kein Hinweis auf Reihenfolge (DB muss erst healthy sein). Direkte Ursache des "Database migrations failed"-Tickets |
-  
+
   ---
-  
+
   ### 🟠 High – Fehlende kritische Informationen
-  
+
   | # | Problem | Auswirkung |
   |---|---------|------------|
   | H1 | **Keine Troubleshooting-Section** | Alle 5 häufigen Support-Tickets (Port-Konflikte, Hot Reload, Migrations, CORS, M1) sind vollständig undokumentiert |
@@ -359,11 +359,11 @@ golden_standard: |
   | H3 | **Port-Konflikte nicht adressiert** | Häufigstes Support-Ticket: "Port 5432 already in use" ohne jede Lösungsanleitung |
   | H4 | **Keine Erfolgs-Validierung** | Developer wissen nach keinem Schritt, ob er erfolgreich war |
   | H5 | **Keine Versionsangaben** | Node.js 20, Docker 24+, Docker Compose v2 – Inkompatibilitäten mit älteren Versionen undokumentiert |
-  
+
   ---
-  
+
   ### 🟡 Medium – Qualitätsprobleme
-  
+
   | # | Problem | Auswirkung |
   |---|---------|------------|
   | M1 | **Reihenfolge logisch falsch** | `.env` muss vor `docker compose up` konfiguriert sein – umgedrehte Reihenfolge in der Anleitung |
@@ -371,11 +371,11 @@ golden_standard: |
   | M3 | **`docker-compose` statt `docker compose`** | Compose V1 (`docker-compose`) ist auf neueren Systemen nicht installiert – V2-Syntax (`docker compose`) fehlt |
   | M4 | **Keine Anleitung zum Stoppen/Resetten** | `docker compose down -v` zum vollständigen Zurücksetzen unbekannt |
   | M5 | **Kein Hinweis zu Vite Hot Reload in Docker** | HMR in Docker erfordert `server.watch.usePolling: true` – komplett undokumentiert |
-  
+
   ---
-  
+
   ### 🔵 Low – Developer Experience
-  
+
   | # | Problem | Auswirkung |
   |---|---------|------------|
   | L1 | **Keine OS-spezifischen Hinweise** | M1/M2-Mac-Probleme, Windows WSL2-Anforderungen undokumentiert |
@@ -383,27 +383,27 @@ golden_standard: |
   | L3 | **Kein "Nächste Schritte"-Abschnitt** | Orientierungslosigkeit nach erfolgreichem Setup |
   | L4 | **Keine Kontaktinformation** | Kein Hinweis auf Slack-Channel, Ansprechpartner oder Issue-Tracker |
   | L5 | **Keine Seed-Daten erwähnt** | Leere Datenbank sieht wie eine kaputte App aus |
-  
+
   ---
-  
+
   **Gesamtbefund: 5 Critical · 5 High · 5 Medium · 5 Low = 20 identifizierte Probleme**
-  
+
   ---
-  
+
   ## Schritt 2: Vollständige überarbeitete SETUP.md
-  
+
   ```markdown
   # E-Commerce Platform – Developer Setup Guide
-  
+
   > **Zielgruppe:** Junior bis Mid-Level Developers
   > **Geschätzter Zeitaufwand:** 15-30 Minuten
   > **Letzte Aktualisierung:** 2024-01 | **Maintainer:** #team-platform (Slack)
   > **Probleme?** Slack: `#dev-setup` oder [Issue erstellen](https://github.com/company/ecommerce-platform/issues)
-  
+
   ---
-  
+
   ## Inhaltsverzeichnis
-  
+
   1. [Quick Start](#1-quick-start)
   2. [Prerequisites](#2-prerequisites)
   3. [Repository klonen](#3-repository-klonen)
@@ -415,13 +415,13 @@ golden_standard: |
   9. [Services stoppen & zurücksetzen](#9-services-stoppen--zurücksetzen)
   10. [Troubleshooting](#10-troubleshooting)
   11. [Nächste Schritte](#11-nächste-schritte)
-  
+
   ---
-  
+
   ## 1. Quick Start
-  
+
   > Nur für Developer, die Docker, Node.js 20+ und Git bereits installiert haben.
-  
+
   ```bash
   git clone https://github.com/company/ecommerce-platform.git
   cd ecommerce-platform
@@ -430,20 +430,20 @@ golden_standard: |
   docker compose exec backend npx prisma migrate deploy
   docker compose exec backend npx prisma db seed
   ```
-  
+
   Frontend:     http://localhost:5173
   Backend API:  http://localhost:4000
   API Health:   http://localhost:4000/api/health
-  
+
   ---
-  
+
   ## 2. Prerequisites
-  
+
   Stelle sicher, dass folgende Tools installiert und in den angegebenen
   Versionen verfügbar sind, BEVOR du weitermachst.
-  
+
   ### Erforderliche Tools
-  
+
   | Tool             | Mindestversion | Empfohlen | Prüfen mit                    |
   |------------------|----------------|-----------|-------------------------------|
   | Git              | 2.x            | aktuell   | `git --version`               |
@@ -451,12 +451,12 @@ golden_standard: |
   | Docker Compose   | 2.x (V2)       | 2.24+     | `docker compose version`      |
   | Node.js          | 20.x LTS       | 20.x LTS  | `node --version`              |
   | npm              | 10.x           | 10.x      | `npm --version`               |
-  
+
   > WICHTIG: Dieses Projekt verwendet `docker compose` (ohne Bindestrich – V2).
   > Das ältere `docker-compose` (V1) wird nicht unterstützt.
-  
+
   ### Prerequisites-Check (Copy & Paste)
-  
+
   ```bash
   echo "=== Prerequisites Check ===" && \
   git --version && \
@@ -466,7 +466,7 @@ golden_standard: |
   npm --version && \
   echo "=== Alle Prerequisites erfüllt ==="
   ```
-  
+
   Erwartete Ausgabe:
   ```
   === Prerequisites Check ===
@@ -477,16 +477,16 @@ golden_standard: |
   10.4.0
   === Alle Prerequisites erfüllt ===
   ```
-  
+
   ### OS-spezifische Installation
-  
+
   macOS (Homebrew):
   ```bash
   brew install --cask docker
   brew install nvm
   nvm install 20 && nvm use 20 && nvm alias default 20
   ```
-  
+
   Linux (Ubuntu/Debian):
   ```bash
   curl -fsSL https://get.docker.com | sh
@@ -495,28 +495,28 @@ golden_standard: |
   curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.7/install.sh | bash
   source ~/.bashrc && nvm install 20
   ```
-  
+
   Windows: Ausschliesslich unter WSL2 unterstützt.
     1. `wsl --install -d Ubuntu-22.04` (PowerShell als Admin)
     2. Docker Desktop for Windows installieren, WSL2-Integration aktivieren
     3. Alle weiteren Befehle im WSL2-Terminal (Ubuntu-Schritte oben befolgen)
     WICHTIG: Repository innerhalb des WSL2-Dateisystems klonen (~/projects/),
     NICHT auf dem Windows-Laufwerk (/mnt/c/) – sonst kein Hot Reload!
-  
+
   M1/M2/M3 Mac (Apple Silicon):
     Installation identisch zu macOS. Zusätzlich:
     - Docker Desktop: Settings > General > "Use Rosetta for x86/amd64 emulation" aktivieren
     - Bei npm-Binaries-Fehlern: Siehe Troubleshooting Abschnitt 10.5
-  
+
   ---
-  
+
   ## 3. Repository klonen
-  
+
   ```bash
   git clone https://github.com/company/ecommerce-platform.git
   cd ecommerce-platform
   ```
-  
+
   Erfolgs-Check:
   ```bash
   ls -la
@@ -528,14 +528,14 @@ golden_standard: |
   -rw-r--r--  docker-compose.yml
   -rw-r--r--  .env.example
   ```
-  
+
   Falls `docker-compose.yml` fehlt: Stelle sicher, dass du im richtigen
   Verzeichnis bist (`pwd` sollte `.../ecommerce-platform` zeigen).
-  
+
   ---
-  
+
   ## 4. Projektstruktur & Services
-  
+
   ```
   ecommerce-platform/
   ├── frontend/           # Vite 5 + React 18 + TypeScript
@@ -544,32 +544,32 @@ golden_standard: |
   ├── docker-compose.yml  # Alle Services
   └── .env.example        # Vorlage für .env
   ```
-  
+
   ### Service-Übersicht
-  
+
   | Service    | Technologie                 | Lokaler Port |
   |------------|-----------------------------|--------------|
   | `frontend` | Vite Dev Server (React)     | **5173**     |
   | `backend`  | Express API + Prisma        | **4000**     |
   | `db`       | PostgreSQL 16               | **5432**     |
-  
+
   ---
-  
+
   ## 5. Umgebungsvariablen konfigurieren
-  
+
   > DIESER SCHRITT MUSS VOR `docker compose up` ERFOLGEN.
   > Docker Compose liest die .env-Datei beim Start.
-  
+
   ### 5.1 .env-Datei erstellen
-  
+
   ```bash
   cp .env.example .env
   ```
-  
+
   ### 5.2 .env-Datei befüllen
-  
+
   Öffne `.env` in deinem Editor:
-  
+
   ```dotenv
   # ============================================================
   # DATENBANK
@@ -580,7 +580,7 @@ golden_standard: |
   POSTGRES_USER=ecommerce_user
   POSTGRES_PASSWORD=ecommerce_pass
   POSTGRES_DB=ecommerce_db
-  
+
   # ============================================================
   # BACKEND
   # ============================================================
@@ -588,18 +588,18 @@ golden_standard: |
   PORT=4000
   # JWT Secret – für lokale Entwicklung kann dieser Wert bleiben
   JWT_SECRET=local-dev-secret-change-in-production-min-32-chars
-  
+
   # ============================================================
   # CORS – Frontend-URL, die API-Requests senden darf
   # ============================================================
   CORS_ORIGIN=http://localhost:5173
-  
+
   # ============================================================
   # FRONTEND (Vite – Prefix VITE_ ist Pflicht für Client-Zugriff)
   # ============================================================
   VITE_API_URL=http://localhost:4000/api
   ```
-  
+
   Erfolgs-Check:
   ```bash
   grep DATABASE_URL .env
@@ -607,23 +607,23 @@ golden_standard: |
   #                                            ^^
   #                              Muss "db" sein, NICHT "localhost"
   ```
-  
+
   ---
-  
+
   ## 6. Services starten
-  
+
   ```bash
   docker compose up -d --build
   ```
-  
+
   Das `--build` Flag ist beim ersten Start und nach Dependency-Änderungen nötig.
-  
+
   Warte ca. 30-60 Sekunden. Danach Status prüfen:
-  
+
   ```bash
   docker compose ps
   ```
-  
+
   Erwartete Ausgabe:
   ```
   NAME                     STATUS
@@ -631,112 +631,112 @@ golden_standard: |
   ecommerce-backend        Up (healthy)
   ecommerce-db             Up (healthy)
   ```
-  
+
   ALLE drei Services müssen "(healthy)" anzeigen, bevor du weitermachst.
-  
+
   Logs anschauen (optional, aber empfohlen):
   ```bash
   docker compose logs -f              # Alle Services
   docker compose logs -f backend      # Nur Backend
   docker compose logs -f frontend     # Nur Frontend
   ```
-  
+
   ---
-  
+
   ## 7. Datenbank initialisieren
-  
+
   > Die folgenden Befehle werden IM Backend-Container ausgeführt, nicht lokal.
   > Die Datenbank muss "healthy" sein (Schritt 6).
-  
+
   ```bash
   # Migrationen ausführen
   docker compose exec backend npx prisma migrate deploy
-  
+
   # Seed-Daten laden (empfohlen für lokale Entwicklung)
   docker compose exec backend npx prisma db seed
   ```
-  
+
   Erwarteter Output (migrate deploy):
   ```
   Prisma schema loaded from prisma/schema.prisma
   Datasource "db": PostgreSQL at postgresql://...@db:5432/ecommerce_db
-  
+
   3 migrations found in prisma/migrations
-  
+
   Applying migration `20240101_init`...
   Applying migration `20240115_add_orders`...
   Applying migration `20240120_add_reviews`...
-  
+
   All migrations have been successfully applied.
   ```
-  
+
   > FEHLER "Can't reach database server at localhost:5432"?
   > Deine DATABASE_URL zeigt auf "localhost" statt "db".
   > Lösung: Schritt 5.2 wiederholen.
-  
+
   ---
-  
+
   ## 8. Setup validieren
-  
+
   Führe alle Checks durch – alle müssen grün sein:
-  
+
   ```bash
   # 1. Services laufen?
   docker compose ps
-  
+
   # 2. Backend erreichbar?
   curl http://localhost:4000/api/health
   # Erwartet: {"status":"ok","database":"connected"}
-  
+
   # 3. Frontend erreichbar?
   curl -I http://localhost:5173
   # Erwartet: HTTP/1.1 200 OK
-  
+
   # 4. Frontend kann Backend erreichen?
   # Browser öffnen: http://localhost:5173
   # Browser-Konsole (F12): Keine CORS-Fehler
   ```
-  
+
   Alle Checks grün? Glückwunsch – dein Setup ist vollständig!
-  
+
   ---
-  
+
   ## 9. Services stoppen & zurücksetzen
-  
+
   ```bash
   # Services stoppen (Daten bleiben erhalten)
   docker compose down
-  
+
   # Services stoppen + alle Volumes löschen (kompletter Reset)
   docker compose down -v
-  
+
   # Einzelnen Service neustarten
   docker compose restart backend
-  
+
   # Alle Images neu bauen (nach Dependency-Änderungen)
   docker compose up -d --build
   ```
-  
+
   ---
-  
+
   ## 10. Troubleshooting
-  
+
   ### Problem 1: "Port 5432 already in use"
-  
+
   Ursache: Lokale PostgreSQL-Installation läuft parallel.
-  
+
   Lösung A – Lokales PostgreSQL stoppen:
   ```bash
   # macOS
   brew services stop postgresql@16
-  
+
   # Linux
   sudo systemctl stop postgresql
-  
+
   # Check ob Port frei ist
   lsof -i :5432    # Keine Ausgabe = Port frei
   ```
-  
+
   Lösung B – Anderen Port in docker-compose.override.yml verwenden:
   ```yaml
   # docker-compose.override.yml (nicht committen!)
@@ -746,13 +746,13 @@ golden_standard: |
         - "5433:5432"
   ```
   Dann DATABASE_URL in .env auf Port 5433 anpassen.
-  
+
   ---
-  
+
   ### Problem 2: "Vite Hot Reload funktioniert nicht"
-  
+
   Ursache: Docker kann Dateiänderungen im gemounteten Volume nicht erkennen.
-  
+
   Lösung: In `vite.config.ts` polling aktivieren:
   ```typescript
   export default defineConfig({
@@ -766,175 +766,174 @@ golden_standard: |
     },
   });
   ```
-  
+
   ---
-  
+
   ### Problem 3: "Database migrations failed" / "Connection refused"
-  
+
   Ursachen und Lösungen:
-  
+
   A) DATABASE_URL zeigt auf "localhost":
      Prüfen: `grep DATABASE_URL .env`
      Fix: Hostname auf "db" korrigieren (Service-Name in docker-compose.yml)
-  
+
   B) Datenbank noch nicht ready:
      Fix: `docker compose ps | grep db` – muss "(healthy)" zeigen
      Warten und dann erneut versuchen: `docker compose exec backend npx prisma migrate deploy`
-  
+
   C) Migration im falschen Kontext ausgeführt (lokal statt im Container):
      FALSCH: `npm run migrate`
      RICHTIG: `docker compose exec backend npx prisma migrate deploy`
-  
+
   ---
-  
+
   ### Problem 4: CORS-Fehler im Browser
-  
+
   Symptom: "Access to XMLHttpRequest... blocked by CORS policy" in der Konsole.
-  
+
   Ursache: `CORS_ORIGIN` in .env stimmt nicht mit der Frontend-URL überein.
-  
+
   Fix:
   ```dotenv
   # .env – Exakt die URL, auf der das Frontend läuft
   CORS_ORIGIN=http://localhost:5173
   ```
-  
+
   Danach Backend neustarten: `docker compose restart backend`
-  
+
   ---
-  
+
   ### Problem 5: npm install schlägt fehl (Apple Silicon M1/M2/M3)
-  
+
   Symptom: Fehler mit "Unsupported platform" oder "invalid ELF header".
-  
+
   Ursache: Native Binaries werden für die falsche Architektur gebaut.
-  
+
   Fix in docker-compose.yml für den betroffenen Service:
   ```yaml
   services:
     backend:
       platform: linux/amd64    # Rosetta-Emulation aktivieren
   ```
-  
+
   Danach:
   ```bash
   docker compose down -v
   docker compose up -d --build
   ```
-  
+
   ---
-  
+
   ### Problem 6: `docker-compose` command not found
-  
+
   Ursache: Docker Compose V1 ist nicht installiert – V2 ist als Plugin in Docker integriert.
-  
+
   Fix: `docker compose` (ohne Bindestrich) verwenden.
-  
+
   ```bash
   # V1 (veraltet, nicht installiert)
   docker-compose up
-  
+
   # V2 (korrekt)
   docker compose up
   ```
-  
+
   ---
-  
+
   ## 11. Nächste Schritte
-  
+
   ### Frontend-Development
   ```bash
   # Frontend-Logs in Echtzeit
   docker compose logs -f frontend
-  
+
   # Hot Reload testen: Datei in frontend/src/ ändern
   # Browser aktualisiert sich automatisch
   ```
-  
+
   ### Backend-Development
   ```bash
   # Backend-Logs
   docker compose logs -f backend
-  
+
   # API testen
   curl http://localhost:4000/api/products | jq
-  
+
   # Prisma Studio (Datenbank-GUI)
   docker compose exec backend npx prisma studio
   # Öffnet: http://localhost:5555
   ```
-  
+
   ### Weiterführende Dokumentation
   - [API-Dokumentation](./docs/API.md)
   - [Architektur-Übersicht](./docs/ARCHITECTURE.md)
   - [Contributing Guide](./CONTRIBUTING.md)
   - [Swagger UI](http://localhost:4000/api/docs)
   ```
-  
+
   ---
-  
+
   ## Schritt 3: Begründung der Änderungen
-  
+
   ### 1. Prerequisites-Section mit Version-Matrix (C1/H5)
-  
+
   **Problem:** Häufigstes Onboarding-Blocker: fehlende Voraussetzungen.
   **Lösung:** Vollständige Tabelle mit Mindestversionen, Prüfbefehlen und
   einem Copy-&-Paste-Prerequisites-Check-Block.
   **Prinzip:** Setup-Anleitungen müssen "zero-assumption" sein – kein implizites
   Vorwissen über benötigte Tools.
-  
+
   ### 2. Reihenfolge korrigiert: .env VOR docker compose up (C3/M1)
-  
+
   **Problem:** Die .env-Datei wurde NACH dem Start der Services erwähnt –
   Docker Compose liest sie beim Start.
   **Lösung:** .env-Konfiguration (Schritt 5) kommt explizit vor "Services starten"
   (Schritt 6), mit einem abgesetzten WARNUNG-Hinweis.
   **Prinzip:** Reihenfolge in Setup-Guides ist nicht optional – ein falscher
   Schritt invalidiert alle folgenden.
-  
+
   ### 3. DATABASE_URL: "db" statt "localhost" (C4)
-  
+
   **Problem:** `localhost:5432` funktioniert innerhalb des Docker-Netzwerks nicht –
   der richtige Hostname ist der Service-Name `db`.
   **Lösung:** Kommentar direkt über der Variable: "NICHT localhost!", plus
   Erfolgs-Check mit `grep DATABASE_URL .env` der den Hostname prüft.
   **Prinzip:** Kritische "Gotchas" müssen am Ort des Fehlers dokumentiert sein.
-  
+
   ### 4. npm install entfernt, exec-Kontext erklärt (C2/C5)
-  
+
   **Problem:** Lokales `npm install` ist im Docker-Kontext falsch und ist direkte
   Ursache für Binary-Namespace-Konflikte auf M1/M2.
   **Lösung:** Kein `npm install` in der Anleitung – Commands werden klar als
   "im Container auszuführen" markiert: `docker compose exec backend ...`
   **Prinzip:** Jeder Command braucht seinen Ausführungskontext (lokal vs. Container).
-  
+
   ### 5. Troubleshooting-Section mit den 6 häufigsten Fehlern (H1/H3/M5)
-  
+
   **Problem:** Alle 5 repeatedly genannten Support-Tickets waren undokumentiert.
   **Lösung:** Dedizierte Troubleshooting-Section mit Ursache + Lösung(en) für:
   Port-Konflikte, Vite Hot Reload, Migrations-Fehler, CORS, M1/M2 Binaries,
   `docker-compose` vs. `docker compose`.
   **Prinzip:** Häufige Fehler in der Doku → drastisch reduziertes Support-Volume.
-  
+
   ### 6. Vollständige .env-Vorlage (H2)
-  
+
   **Problem:** Nur `DATABASE_URL` erwähnt; `CORS_ORIGIN` fehlte → CORS-Fehler.
   **Lösung:** Vollständige .env-Vorlage mit allen 7 Variablen, kommentiert nach
   Kategorie (DATABASE, BACKEND, CORS, FRONTEND).
   **Prinzip:** Environments-Variablen unkommentiert im .env zu lassen ist ein
   Security- und Onboarding-Risiko gleichzeitig.
-  
+
   ### 7. Erfolgs-Check nach jedem Schritt (H4)
-  
+
   **Problem:** Kein einziger Step hatte einen Hinweis, ob er erfolgreich war.
   **Lösung:** Jeder Schritt endet mit einem "Erfolgs-Check"-Codeblock mit
   erwarteter Ausgabe. Abweichungen verweisen auf den Troubleshooting-Abschnitt.
   **Prinzip:** Fehler früh erkennen ist billiger als Debugging drei Schritte später.
-  
+
   ### 8. Service-Übersicht mit Ports (M2)
-  
+
   **Problem:** Kein Service-Überblick – Developer öffnen die falsche URL.
   **Lösung:** Tabelle: Frontend→5173, Backend→4000, DB→5432.
   **Prinzip:** Port-Mapping ist nach Prerequisites die wichtigste Info in einer
   Docker-based-Dev-Anleitung.
-  

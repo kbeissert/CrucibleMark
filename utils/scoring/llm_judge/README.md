@@ -126,29 +126,37 @@ No API key required. Run `make judge-health` to verify connectivity.
 
 ---
 
-## Scoring Scale Explained
+## Scoring Scale & Normalization (0-100%)
 
-### 5-Point Scale (default)
+The LLM Judge evaluates responses on a defined integer scale (e.g., 1–5). Because the overarching CrucibleMark leaderboard standardizes all scores to a percentage-based 0–100% scale, the raw LLM Judge score is mathematically converted using a zero-centered normalization.
 
-| Score | Label | Meaning |
+**Formula for Normalization:**
+```python
+normalized_score = ((raw_score - 1) / (max_scale - 1)) * 100.0
+```
+
+### Impact (Example on 5-Point Scale)
+This zero-centered approach ensures that a complete failure (Score 1) accurately results in 0%, while a perfect response (Score 5) results in 100%.
+
+| Raw Judge Score | Calculated Percentage | Meaning |
 |---|---|---|
-| 5 | Excellent | Fully meets requirements; matches or surpasses the golden standard. |
-| 4 | Good | Mostly meets requirements with minor omissions. |
-| 3 | Adequate | Partially meets requirements; important elements missing or vague. |
-| 2 | Poor | Attempts the task but misses most key requirements. |
-| 1 | Unacceptable | Does not address the task or is entirely off-topic. |
+| 5 | **100%** | Excellent (Fully meets requirements) |
+| 4 | **75%** | Good (Mostly meets requirements) |
+| 3 | **50%** | Adequate (Partially meets requirements) |
+| 2 | **25%** | Poor (Misses most key requirements) |
+| 1 | **0%** | Unacceptable (Refusal, empty, or entirely off-topic) |
 
 ### 3-Point Scale
 
-| Score | Meaning |
-|---|---|
-| 3 | Good – meets requirements with minor gaps. |
-| 2 | Adequate – some key aspects missing. |
-| 1 | Poor – largely fails to meet requirements. |
+| Raw Judge Score | Calculated Percentage | Meaning |
+|---|---|---|
+| 3 | **100%** | Good – meets requirements with minor gaps. |
+| 2 | **50%** | Adequate – some key aspects missing. |
+| 1 | **0%** | Poor – largely fails to meet requirements. |
 
 ### 10-Point Scale
 
-Scores 1–10 with a half-point granularity between each adjacent level. See `judge_prompt_builder.py` for per-level definitions.
+Scores 1–10 apply the same mathematical zero-centering (where 1 = 0% and 10 = 100%). See `judge_prompt_builder.py` for per-level definitions.
 
 ---
 

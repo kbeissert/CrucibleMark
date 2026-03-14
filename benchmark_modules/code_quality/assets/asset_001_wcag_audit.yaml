@@ -97,6 +97,8 @@ prompt: |
      - **Schweregrad**
      - **Lösung/Code-Snippet**
 
+  **HINWEIS:** Halte die Fehlerbeschreibungen und Lösungen in der Tabelle extrem kurz und präzise (maximal 1-2 Sätze pro Fehler), um Token-Limits nicht zu überschreiten.
+
 # ============================================================
 # Test-Daten (Issues zum Erkennen)
 # ============================================================

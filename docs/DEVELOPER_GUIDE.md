@@ -167,9 +167,7 @@ integration:
     # Spalten im Leaderboard (optional)
     columns:
       - id: "your_score"
-        label: "Your Score"
-
-    # HINWEIS: Ab v1.1 wird die 'Total Score' Formel durch das Framework bestimmt
+      - label: "Your Score"
     # (AVG(Routine) + AVG(Reasoning) / 2).
     # Dieses Modul liefert seinen Score an die entsprechende Kategorie.
 

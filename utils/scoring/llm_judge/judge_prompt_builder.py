@@ -169,9 +169,14 @@ def build_prompts(
         )
 
     system_prompt = _SYSTEM_TEMPLATE.substitute(domain=domain, scale=scale)
+
+    clean_response = model_response.strip()
+    if not clean_response:
+        clean_response = "[ERROR: THE MODEL GENERATED AN EMPTY OR INVALID RESPONSE. SCORE MUST BE 1.]"
+
     user_prompt = _USER_TEMPLATE.substitute(
         task_prompt=task_prompt.strip(),
-        model_response=model_response.strip(),
+        model_response=clean_response,
         golden_standard=golden_standard.strip(),
         rubric=rubric,
         scale=scale,

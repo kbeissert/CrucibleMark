@@ -22,7 +22,7 @@ prompt: |
   Eingabe-Flow:
   {input_text}
 
-  WICHTIG: Bitte führe zuerst die ANALYSE durch (Schritt 1) und nenne explizit die identifizierten Probleme, bevor du die Optimierung erstellst (Schritt 2).
+  WICHTIG: Bitte führe zuerst die ANALYSE durch (Schritt 1) und nenne explizit die identifizierten Probleme, bevor du die Optimierung erstellst (Schritt 2). Halte die Analyse extrem kurz und kompakt (max. 3-4 Sätze gesamt), um das Token-Limit nicht zu sprengen.
 
   Erfülle dabei strikt die folgenden Anforderungen:
   {requirements}

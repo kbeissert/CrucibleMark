@@ -150,7 +150,7 @@ prompt: |
      - **Warum unsicher**: Kurze Erklärung.
      - **Fix**: Kurzer Code-Schnipsel oder Konzept.
 
-  **WICHTIG**: Formatiere deine Antwort als korrekte Markdown-Tabelle (mit `|`).
+  **WICHTIG**: Formatiere deine Antwort als korrekte Markdown-Tabelle (mit `|`). Fass dich in den Erklärungen in der Tabelle extrem kurz (max. 1-2 Sätze pro Zeile) und vermeide lange Einleitungen oder Ausschweifungen, um Token-Limits zu respektieren.
   Beispiel:
   | Vulnerability | Typ | Schweregrad | Warum unsicher | Fix |
   |---|---|---|---|---|
@@ -389,4 +389,3 @@ golden_standard: |
   ```
 
   > **Fazit**: Der Code ist in seinem aktuellen Zustand **nicht produktionstauglich**. Mindestens 7 der 19 Schwachstellen erlauben vollständige Systemkompromittierung ohne vorherige Authentifizierung.
-

@@ -55,7 +55,7 @@ def process_model_review(model_dir: Path, csv_data: str, client: LLMClient, prov
             # Simple Extraktion via Regex (suche nach Judge Evaluation Blöcken unten)
             judge_section_match = re.search(r'\*\*LLM Judge Score \(Raw\):\*\*.*', content, re.DOTALL)
             system_info_match = re.search(r'> \*\*⚠️ SYSTEM INFO:\*\*.*', content)
-            
+
             system_info_text = f"\n{system_info_match.group(0)}\n" if system_info_match else ""
 
             if judge_section_match:

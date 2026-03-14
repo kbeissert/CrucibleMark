@@ -109,7 +109,7 @@ prompt: |
   3. **Erstelle eine verbesserte API-Dokumentation** mit allen fehlenden Elementen
   4. **Begründe** deine Änderungen mit API-Design-Prinzipien
 
-  WICHTIG: Bitte liste zuerst explizit alle gefundenen Probleme auf (Schritt 1), bevor du die verbesserte Version erstellst.
+  WICHTIG: Bitte liste zuerst explizit alle gefundenen Probleme auf (Schritt 1), bevor du die verbesserte Version erstellst. Halte deine Problemauflistung (Schritt 1) und die Begründungen (Schritt 4) extrem kompakt und auf den Punkt gebracht, um Token-Limits für die finale verbesserte API-Dokumentation nicht zu gefährden.
 
 # ============================================================
 # Test-Daten: Kontext für Evaluierung
@@ -338,25 +338,25 @@ scoring:
         min_keywords: 1
 
 golden_standard: |
-  
+
   # API Documentation Review: POST /api/v1/orders
-  
+
   ---
-  
+
   ## Schritt 1: Problem-Analyse
-  
+
   ### 🔴 CRITICAL – Sofortiger Handlungsbedarf
-  
+
   | # | Problem | Kategorie | Begründung |
   |---|---------|-----------|------------|
   | C1 | **Keine Authentication dokumentiert** | Security | Production-API mit 10.000+ Requests/Tag ohne Auth-Dokumentation ist ein kritisches Sicherheitsrisiko. Developer wissen nicht, wie sie sich authentifizieren sollen (Bearer Token? API Key? OAuth?) |
   | C2 | **Falscher Status Code: `200 OK` statt `201 Created`** | Technische Korrektheit | RFC 7231 §6.3.2: Ressourcenerstellung MUSS `201 Created` zurückgeben. `200 OK` ist semantisch falsch und führt bei API-Clients zu Implementierungsfehlern |
   | C3 | **Kein `Content-Type: application/json` Header im cURL-Beispiel** | Technische Korrektheit | Ohne diesen Header interpretiert der Server den Request-Body als `application/x-www-form-urlencoded` – das Beispiel ist copy-paste-unbrauchbar |
-  
+
   ---
-  
+
   ### 🟠 HIGH – Innerhalb dieser Woche beheben
-  
+
   | # | Problem | Kategorie | Begründung |
   |---|---------|-----------|------------|
   | H1 | **Keine Error Response Bodies dokumentiert** | Error Handling | `400 Bad Request` ohne Response-Schema ist nutzlos. Developer können Fehler nicht programmatisch auswerten |
@@ -364,11 +364,11 @@ golden_standard: |
   | H3 | **Fehlende Pflichtfelder**: `shipping_address`, `payment_method` nicht dokumentiert | Struktur & Vollständigkeit | Eine Bestellung ohne Lieferadresse und Zahlungsmethode ist in keinem realen E-Commerce-System valide |
   | H4 | **Keine Validierungsregeln** für Parameter | Struktur & Vollständigkeit | Was ist das Format von `product_id`? Min/Max von `quantity`? Ist `customer_email` RFC 5322-validiert? |
   | H5 | **Kein `Location`-Header in der 201-Response dokumentiert** | Technische Korrektheit | Bei `201 Created` ist der `Location`-Header (`/api/v1/orders/{id}`) REST-Standard (RFC 7231 §6.3.2) |
-  
+
   ---
-  
+
   ### 🟡 MEDIUM – Im nächsten Sprint beheben
-  
+
   | # | Problem | Kategorie | Begründung |
   |---|---------|-----------|------------|
   | M1 | **Keine Feldbeschreibungen** | Usability | Was ist `product_id`? UUID? SKU? Interner Code? Kein Developer weiß es ohne Rückfragen |
@@ -377,62 +377,62 @@ golden_standard: |
   | M4 | **Keine Idempotency-Key-Dokumentation** | Error Handling | Ohne Idempotency-Keys entstehen bei Netzwerkfehlern Duplicate Orders |
   | M5 | **Response-Body unvollständig** | Struktur & Vollständigkeit | Nur `order_id` und `status` – fehlen: `created_at`, `total`, `estimated_delivery`, `items` |
   | M6 | **Kein API-Versioning-Hinweis** | Struktur & Vollständigkeit | Was passiert bei Breaking Changes? Keine Deprecation-Policy erwähnt |
-  
+
   ---
-  
+
   ### 🔵 LOW – Backlog
-  
+
   | # | Problem | Kategorie | Begründung |
   |---|---------|-----------|------------|
   | L1 | **Keine OpenAPI/Swagger-Spec** | Usability | Verhindert automatische Client-Generierung und interaktive Dokumentation |
   | L2 | **Keine SDK-Beispiele** (Python, JavaScript etc.) | Beispiele | Für externe Partner-APIs besonders relevant |
   | L3 | **Kein Changelog/Version-History** | Struktur | Für eine Production-API mit externen Partnern essenziell |
   | L4 | **Keine Sandbox/Test-Environment** erwähnt | Usability | Developer müssen gegen Production testen – riskant |
-  
+
   ---
-  
+
   **Gesamtbefund: 16 Probleme** (3 Critical, 5 High, 6 Medium, 4 Low)
-  
+
   ---
-  
+
   ## Schritt 2: Verbesserte API-Dokumentation
-  
+
   ---
-  
+
   # POST /api/v1/orders
-  
+
   Erstellt eine neue Bestellung im System. Die Bestellung wird zunächst im Status
   `pending` angelegt und durchläuft anschließend asynchron die Zahlungs- und
   Lagerprüfung. Der Endpoint unterstützt Idempotency zur sicheren Wiederholung bei
   Netzwerkfehlern.
-  
+
   > **Base URL (Production):** `https://api.example.com`
   > **Base URL (Sandbox):**    `https://sandbox.api.example.com`
   > **Version:** v1
   > **Rate Limit:** 100 Requests/Minute pro API-Key
-  
+
   ---
-  
+
   ## Authentication
-  
+
   Alle Requests erfordern einen gültigen API-Key im `Authorization`-Header.
-  
+
   ```
   Authorization: Bearer <your_api_key>
   ```
-  
+
   Unterstützte Scopes:
   - `orders:write` – Pflicht für diesen Endpoint
   - `orders:read`  – Für GET-Endpoints
-  
+
   API-Keys können im [Developer Dashboard](https://dashboard.example.com) generiert werden.
-  
+
   ---
-  
+
   ## Request
-  
+
   ### Headers
-  
+
   | Header            | Typ    | Pflicht       | Beschreibung                                              |
   |-------------------|--------|---------------|-----------------------------------------------------------|
   | `Authorization`   | string | ✅ Ja         | `Bearer <api_key>` mit Scope `orders:write`               |
@@ -440,14 +440,14 @@ golden_standard: |
   | `Idempotency-Key` | string | ⚠️ Empfohlen  | UUID v4 zur Duplikat-Vermeidung bei Retries (24h gültig)  |
   | `Accept`          | string | Nein          | Standard: `application/json`                              |
   | `X-Request-ID`    | string | Nein          | Client-generierte UUID für Tracing und Debugging          |
-  
+
   > **Empfehlung:** Immer einen `Idempotency-Key` senden. Bei Netzwerkfehlern kann der
   > Request sicher wiederholt werden, ohne Duplicate Orders zu erzeugen.
-  
+
   ---
-  
+
   ### Request Body
-  
+
   ```json
   {
     "items": [
@@ -469,11 +469,11 @@ golden_standard: |
     "notes": "Bitte klingeln"
   }
   ```
-  
+
   ### Parameter-Referenz
-  
+
   #### Top-Level
-  
+
   | Feld               | Typ      | Pflicht | Validierung                                          | Beschreibung                           |
   |--------------------|----------|---------|------------------------------------------------------|----------------------------------------|
   | `items`            | array    | ✅ Ja   | Min. 1 Element, max. 50 Elemente                     | Liste der bestellten Produkte          |
@@ -481,17 +481,17 @@ golden_standard: |
   | `shipping_address` | object   | ✅ Ja   | Alle Unterfelder außer `notes` sind Pflicht          | Lieferadresse                          |
   | `payment_method`   | string   | ✅ Ja   | Enum: `credit_card`, `paypal`, `bank_transfer`       | Zahlungsmethode                        |
   | `notes`            | string   | ❌ Nein | Max. 500 Zeichen                                     | Optionale Anmerkungen zur Bestellung   |
-  
+
   #### `items[]` Objekt
-  
+
   | Feld         | Typ     | Pflicht | Validierung                        | Beschreibung                                    |
   |--------------|---------|---------|------------------------------------|-------------------------------------------------|
   | `product_id` | string  | ✅ Ja   | Format: `[A-Z0-9]{3,20}`           | Produkt-SKU aus dem Produktkatalog              |
   | `quantity`   | integer | ✅ Ja   | Min: `1`, Max: `999`               | Bestellmenge. Muss eine positive ganze Zahl sein |
   | `unit_price` | number  | ✅ Ja   | Min: `0.01`, max. 2 Dezimalstellen | Preis pro Einheit in EUR zum Bestellzeitpunkt   |
-  
+
   #### `shipping_address` Objekt
-  
+
   | Feld          | Typ    | Pflicht | Validierung                    | Beschreibung                        |
   |---------------|--------|---------|--------------------------------|-------------------------------------|
   | `name`        | string | ✅ Ja   | Max. 100 Zeichen               | Vollständiger Name des Empfängers   |
@@ -499,23 +499,23 @@ golden_standard: |
   | `city`        | string | ✅ Ja   | Max. 100 Zeichen               | Stadt                               |
   | `postal_code` | string | ✅ Ja   | Format abhängig von `country`  | Postleitzahl                        |
   | `country`     | string | ✅ Ja   | ISO 3166-1 alpha-2 (z.B. `DE`) | Ländercode                          |
-  
+
   ---
-  
+
   ## Response
-  
+
   ### Erfolg: `201 Created`
-  
+
   **Response Headers:**
-  
+
   | Header                   | Beschreibung                                          |
   |--------------------------|-------------------------------------------------------|
   | `Location`               | URL der erstellten Ressource: `/api/v1/orders/{id}`  |
   | `X-Request-ID`           | Server-generierte oder weitergeleitete Request-ID    |
   | `X-RateLimit-Remaining`  | Verbleibende Requests im aktuellen Zeitfenster       |
-  
+
   **Response Body:**
-  
+
   ```json
   {
     "order_id": "ord_7f3a2b1c9d",
@@ -542,11 +542,11 @@ golden_standard: |
     }
   }
   ```
-  
+
   ---
-  
+
   ## Status Codes
-  
+
   | Code                        | Bedeutung                                                                    | Retry? |
   |-----------------------------|------------------------------------------------------------------------------|--------|
   | `201 Created`               | Bestellung erfolgreich erstellt                                              | ❌     |
@@ -559,13 +559,13 @@ golden_standard: |
   | `429 Too Many Requests`     | Rate Limit überschritten (100 Req/Min) – `Retry-After` Header prüfen        | ✅     |
   | `500 Internal Server Error` | Unerwarteter Serverfehler – Support kontaktieren mit `request_id`            | ✅     |
   | `503 Service Unavailable`   | System temporär nicht verfügbar (Maintenance/Überlast)                       | ✅     |
-  
+
   ---
-  
+
   ## Error Responses
-  
+
   Alle Fehler folgen einem einheitlichen Schema:
-  
+
   ```json
   {
     "error": {
@@ -583,11 +583,11 @@ golden_standard: |
     "request_id": "req_9x2k1m3n"
   }
   ```
-  
+
   > **`request_id`**: Immer im Support-Ticket angeben – ermöglicht schnelles Debugging.
-  
+
   ### Error Code Referenz
-  
+
   | HTTP Code | `error.code`          | Beschreibung                                    | Lösung                                           |
   |-----------|-----------------------|-------------------------------------------------|--------------------------------------------------|
   | `400`     | `VALIDATION_ERROR`    | Pflichtfeld fehlt oder Format ungültig          | Siehe `details` Array für betroffene Felder      |
@@ -601,9 +601,9 @@ golden_standard: |
   | `422`     | `PRICE_CHANGED`       | `unit_price` weicht >5% vom Katalogpreis ab     | Aktuellen Preis über Product-API abrufen         |
   | `429`     | `RATE_LIMIT_EXCEEDED` | Zu viele Requests                               | Exponential Backoff, `Retry-After` Header prüfen |
   | `500`     | `INTERNAL_ERROR`      | Unerwarteter Serverfehler                       | Retry nach 30s, dann Support kontaktieren        |
-  
+
   ### Beispiel: Validierungsfehler (400)
-  
+
   ```json
   {
     "error": {
@@ -626,9 +626,9 @@ golden_standard: |
     "request_id": "req_abc123"
   }
   ```
-  
+
   ### Beispiel: Rate Limit (429)
-  
+
   ```json
   {
     "error": {
@@ -639,13 +639,13 @@ golden_standard: |
     "request_id": "req_xyz789"
   }
   ```
-  
+
   ---
-  
+
   ## Beispiele
-  
+
   ### cURL – Bestellung erstellen (vollstaendig)
-  
+
   ```bash
   curl -X POST https://api.example.com/api/v1/orders \
     -H "Authorization: Bearer sk_live_abc123xyz" \
@@ -670,91 +670,90 @@ golden_standard: |
       "payment_method": "credit_card"
     }'
   ```
-  
+
   ---
-  
+
   ## Best Practices
-  
+
   ### Idempotency
-  
+
   - Immer `Idempotency-Key` (UUID v4) senden – besonders wichtig bei Retries
   - Bei gleichem Key innerhalb von 24 Stunden wird die ursprüngliche Response zurückgegeben
   - Key pro logischer Operation generieren (z.B. pro Warenkorb-Checkout-Versuch)
-  
+
   ### Retry-Strategie
-  
+
   Nur bei `429`, `500` und `503` Retries empfohlen:
-  
+
   1. `Retry-After` Header auswerten (bei `429`)
   2. Exponential Backoff: 1s → 2s → 4s → 8s
   3. Maximal 3 Retry-Versuche
   4. Immer denselben `Idempotency-Key` bei Retries verwenden
-  
+
   ### Rate Limiting
-  
+
   Jede Response enthält folgende Headers:
-  
+
   | Header                  | Beschreibung                                   |
   |-------------------------|------------------------------------------------|
   | `X-RateLimit-Limit`     | Maximale Requests pro Minute (100)             |
   | `X-RateLimit-Remaining` | Verbleibende Requests im aktuellen Fenster     |
   | `X-RateLimit-Reset`     | Unix-Timestamp fuer Reset des Limits           |
-  
+
   ---
-  
+
   ## Schritt 3: Begruendung der Aenderungen
-  
+
   ### 1. Sicherheit: Authentication dokumentiert (C1)
-  
+
   **Problem:** Production-API ohne Auth-Dokumentation ist ein Sicherheitsrisiko.
   **Loesung:** Explizites Authentication-Kapitel mit Bearer Token, Scope-Erklaerung und Dashboard-Link.
   **Prinzip:** Security by Design – Auth darf nie optional oder implizit sein.
-  
+
   ### 2. Korrekte HTTP-Semantik: `201` statt `200` (C2)
-  
+
   **Problem:** `200 OK` fuer Ressourcenerstellung verletzt RFC 7231 §6.3.2.
   **Loesung:** `201 Created` mit `Location`-Header.
   **Prinzip:** RESTful Semantik – Clients koennen `201` und den `Location`-Header nutzen, um die neue Ressource direkt zu referenzieren.
-  
+
   ### 3. Funktionierendes cURL-Beispiel (C3)
-  
+
   **Problem:** Fehlendes `-H "Content-Type: application/json"` macht das Beispiel copy-paste-unbrauchbar.
   **Loesung:** Vollstaendiges cURL-Beispiel mit allen erforderlichen Headers und realistischen Daten.
   **Prinzip:** Dokumentationsbeispiele muessen ausfuehrbar und korrekt sein – sie sind der erste Beruehrungspunkt fuer Developer.
-  
+
   ### 4. Standardisiertes Error-Schema (H1)
-  
+
   **Problem:** `400 Bad Request` ohne Struktur ist nutzlos fuer programmatisches Fehler-Handling.
   **Loesung:** Einheitliches Error-Schema mit `code`, `message`, `details`, `request_id` und `documentation_url`.
   **Prinzip:** Maschinenlesbare Fehlercodes statt Prosa – ermoeglicht robustes programmatisches Error-Handling.
-  
+
   ### 5. Vollstaendige Status Codes mit Retry-Empfehlung (H2)
-  
+
   **Problem:** Nur 2 von 10 relevanten Status Codes dokumentiert.
   **Loesung:** Vollstaendige Tabelle mit 10 Status Codes, inkl. Retry?-Spalte.
   **Prinzip:** Unvollstaendige Status-Code-Dokumentation zwingt Developer zu Trial-and-Error-Integration.
-  
+
   ### 6. Vollstaendige Pflichtfelder (H3)
-  
+
   **Problem:** `shipping_address` und `payment_method` fehlten komplett.
   **Loesung:** Vollstaendige Parameter-Referenz-Tabellen fuer alle Ebenen mit Typ, Pflicht-Kennzeichnung und Validierungsregeln.
   **Prinzip:** Eine API-Dokumentation muss alle fuer eine erfolgreiche Anfrage notwendigen Felder enthalten.
-  
+
   ### 7. Validierungsregeln (H4)
-  
+
   **Problem:** Keine Constraints fuer Felder – min/max, Formate, Enums fehlten.
   **Loesung:** Validierungsspalte in allen Parameter-Tabellen.
   **Prinzip:** Explizite Constraints reduzieren unnoetige API-Calls und defensive Programmierung auf Client-Seite.
-  
+
   ### 8. Location-Header + HATEOAS (H5)
-  
+
   **Problem:** REST-Standard `Location`-Header bei `201 Created` fehlte.
   **Loesung:** Response-Headers-Tabelle mit `Location`, `X-Request-ID` und `X-RateLimit-Remaining`; `_links` im Response-Body.
   **Prinzip:** HATEOAS-Prinzip ermoeglicht self-descriptive API-Navigation ohne hartcodierte URLs.
-  
+
   ### 9. Idempotency + Rate Limiting (M3/M4)
-  
+
   **Problem:** Produktionskritische Resilience-Aspekte waren undokumentiert.
   **Loesung:** Dedizierte Best-Practices-Sektion mit Idempotency-Erklaerung, Retry-Strategie und Rate-Limiting-Headers.
   **Prinzip:** Bei Bestellsystemen sind Duplicate Orders ein kritisches Business-Problem – Idempotenz ist Pflicht fuer jede externe Partner-Integration.
-  

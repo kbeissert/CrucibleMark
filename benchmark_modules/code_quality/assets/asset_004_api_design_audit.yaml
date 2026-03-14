@@ -107,6 +107,8 @@ prompt: |
      - **Warum** es problematisch ist
      - **Verbesserungsvorschlag** (Code-Snippet oder Konzept)
 
+  **HINWEIS:** Halte die Spaltentexte extrem kurz und präzise (max. 1-2 Sätze), um Token-Limits sicher einzuhalten. Fasse dich auf das Wesentliche zusammen.
+
 # ============================================================
 # Test-Daten (Issues zum Erkennen)
 # ============================================================

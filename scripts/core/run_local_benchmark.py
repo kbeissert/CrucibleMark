@@ -449,7 +449,7 @@ class LocalBenchmarkRunner(BaseBenchmarkRunner):
 
                     if judge_res.parse_success and judge_res.score is not None:
                         judge_scale = judge_config.scoring.scale
-                        judge_pct = (judge_res.score / judge_scale) * 100
+                        judge_pct = ((judge_res.score - 1) / (judge_scale - 1)) * 100 if judge_scale > 1 else 100
 
                         # Hybrid Score berechnen
                         regex_pct = result.get("percentage", 0.0)
@@ -536,6 +536,8 @@ class LocalBenchmarkRunner(BaseBenchmarkRunner):
                 prompt=rp,
                 response=response,  # response is called response here
                 judge_response=judge_resp,
+                token_limit_cutoff=result.get("token_limit_cutoff", False),
+                token_limit_fallback=result.get("token_limit_fallback", False),
             )
 
         # ---------------------------------------------------------------------
