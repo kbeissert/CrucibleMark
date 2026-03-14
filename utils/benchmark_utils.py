@@ -210,6 +210,8 @@ def save_audit_log(
     response: str,
     judge_response: str,
     base_dir: Path = Path("outputs/audit_logs"),
+    token_limit_cutoff: bool = False,
+    token_limit_fallback: bool = False,
 ) -> None:
     """
     Saves a comprehensive audit log for every test, containing prompt, response, and judge feedback.
@@ -226,11 +228,15 @@ def save_audit_log(
         with open(filepath, "w", encoding="utf-8") as f:
             f.write(f"# Audit Log: {asset_id}\n")
             f.write(f"**Model:** {model}\n\n")
+            if token_limit_fallback:
+                f.write("> **⚠️ SYSTEM INFO:** Das Modell (bzw. die API) hat das initial angeforderte Token-Limit abgelehnt (zu groß für die Architektur). Das System ist dynamisch auf ein kleineres 4096-Token-Fallback gewechselt. Dies zeigt, dass dieses Modell mit großen Token-Anfragen oder Kontexten Probleme hat!\n\n")
             f.write("## 1. Prompt / Fragestellung\n")
             f.write("---\n")
             f.write(f"{prompt}\n\n")
             f.write("## 2. Model Response / Antwort\n")
             f.write("---\n")
+            if token_limit_cutoff:
+                f.write("> **🚨 SYSTEM WARNING:** Das Modell hat das maximale Token-Limit erreicht und die Antwort abgebrochen. Die folgende Antwort ist INKOMPLETT und zeigt an, dass das Modell für diese Aufgabe zu gesprächig (verbose) war.\n\n")
             f.write(f"{response}\n\n")
             f.write("## 3. Evaluation / LLM-Judge / Scorer\n")
             f.write("---\n")

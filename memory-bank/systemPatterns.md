@@ -20,7 +20,7 @@ Gilt für Generation-Parameter UND LLM Judge. Modul-Override gewinnt immer.
 ## Token-Limit Fallback / Kopfnoten
 - Alle Provider nutzen den `_execute_with_token_fallback`-Wrapper in `utils/provider_clients.py`.
 - Harte Exceptions (wie Quota/Budget) provozieren einen sofortigen Test-Abbruch (Fast-Fail), Token-Limit Fehler lösen die Fallback-Kaskade (aus `benchmark_config.yaml`) abwärts aus.
-- Ergebnisse iterieren nicht die Score-Punkte, sondern notieren rein kontextuelle "Kopfnoten" (`token_limit_used`) im Metric-Tracker.
+- Ergebnisse iterieren nicht die Score-Punkte, sondern notieren rein kontextuelle "Kopfnoten" (`token_limit_used`) im Metric-Tracker. Diese flossen später über `generate_review.py` via Regex-Extraktion in die Meta-Reviewer Berichte ein.
 
 ## Neue Provider hinzufügen
 1. In `benchmark_config.yaml` unter `providers.commercial` oder `providers.local` eintragen

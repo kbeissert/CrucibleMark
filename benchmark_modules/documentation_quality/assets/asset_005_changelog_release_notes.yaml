@@ -82,7 +82,7 @@ prompt: |
      - "fix: resolve XSS vulnerability" → "Fixed a security issue in comments"
   5. **Erstelle vollständige Release Notes** mit Migration Guides, Links, Segmentierung
 
-  WICHTIG: Bitte liste zuerst explizit alle gefundenen Probleme auf (Schritt 1), bevor du die Release Notes erstellst.
+  WICHTIG: Bitte liste zuerst explizit alle gefundenen Probleme auf (Schritt 1), bevor du die Release Notes erstellst. Halte deine Problem-Aufzählung jedoch extrem kurz (als kompakte Liste), um Token-Limits für die finalen Release Notes zu wahren.
 
 # ============================================================
 # Scoring Configuration

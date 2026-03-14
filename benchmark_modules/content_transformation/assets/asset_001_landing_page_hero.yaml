@@ -35,7 +35,7 @@ prompt: |
 
   **Input (Feature-Liste):**
 
-  WICHTIG: Bitte führe zuerst die ANALYSE durch (Schritt 1) und nenne explizit die fehlenden Elemente, bevor du die TRANSFORMATION erstellst.
+  WICHTIG: Bitte führe zuerst die ANALYSE durch (Schritt 1) und nenne explizit die fehlenden Elemente, bevor du die TRANSFORMATION erstellst. Fasse dich bei der Analyse extrem kurz (maximal 2-3 Sätze), um Token-Limits einzuhalten.
 
   - "Unlimited Projects"
   - "Real-time Collaboration"

@@ -68,15 +68,11 @@ To fix the confusing "46/37" display, we have two options:
 
 ______________________________________________________________________
 
-## 4. Stability Score (New in v3.1)
+## 4. Stability Score
 
-### The Problem
+To ensure fair stability measurement across diverse tasks with naturally varying execution times (e.g., a fast translation vs. long documentation tasks), the system uses a **Category-Aware Variance** logic.
 
-Previously, "Stability" was measured by crude metrics like timeouts or simple variance. This unfairly penalized models performing diverse tasks (e.g., a 4s translation vs. a 170s documentation task), marking them "UNSTABLE" simply because their execution times varied naturally.
-
-### The Solution: Category-Aware Variance
-
-We now calculate stability based on **Coefficient of Variation (CV)** *within* each category, then average those CVs.
+Stability is calculated based on the **Coefficient of Variation (CV)** *within* each category, and then those CVs are averaged.
 
 1. **Calculate CV per Category**:
    $CV\_{cat} = \\frac{\\sigma\_{cat}}{\\mu\_{cat}}$

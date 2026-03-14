@@ -120,7 +120,7 @@ prompt: |
   4. **Füge 2-3 realistische Code-Beispiele hinzu**
   5. **Begründe** deine Änderungen mit Component Library Prinzipien
 
-  WICHTIG: Bitte liste zuerst explizit alle gefundenen Probleme auf (Schritt 1), bevor du die verbesserte Version erstellst.
+  WICHTIG: Bitte liste zuerst explizit alle gefundenen Probleme auf (Schritt 1), bevor du die verbesserte Version erstellst. Halte deine Problem-Aufzählung und die spätere Begründung extrem kurz und präzise, um Puffer für das finale Resultat und die Token-Limits zu bewahren.
 
 # ============================================================
 # Scoring Configuration
@@ -314,26 +314,26 @@ scoring:
         description: "Is the documentation well-structured and easy to read?"
 
 golden_standard: |
-  
+
   # DataTable Documentation Audit & Überarbeitung
-  
+
   ---
-  
+
   ## Schritt 1: Problem-Analyse
-  
+
   ### 🔴 Critical – Sofortiger Handlungsbedarf
-  
+
   | # | Problem | Betroffene Stelle | Begründung |
   |---|---------|-------------------|------------|
   | C1 | **`data` und `columns` nicht als Required markiert** | Props-Liste | Ohne diese Pflicht-Props wirft die Komponente Runtime-Errors. Fehlende Required-Flags verhindern, dass TypeScript den Entwickler warnen kann. |
   | C2 | **`render?: (value: any, row: T)` verwendet `any`** | `Column<T>` Interface | `any` hebelt TypeScript-Safety vollständig aus. Korrekt wäre `T[keyof T]` – nur so bleibt IntelliSense und Compile-Time-Checking erhalten. |
   | C3 | **Generic `<T>` komplett undokumentiert** | README gesamt | Entwickler wissen nicht, dass die Komponente typsicher verwendbar ist. Der größte Vorteil der Library bleibt verborgen. |
   | C4 | **`Column.key: keyof T` wird nicht erklärt** | README | Der TypeScript-Constraint `keyof T` verhindert ungültige Keys zur Compile-Zeit – dieser Kernvorteil ist nirgends dokumentiert. |
-  
+
   ---
-  
+
   ### 🟠 High – Innerhalb dieser Woche beheben
-  
+
   | # | Problem | Betroffene Stelle | Begründung |
   |---|---------|-------------------|------------|
   | H1 | **Keine Default Values dokumentiert** | Alle optionalen Props | Entwickler müssen den Quellcode lesen, um Standardverhalten zu verstehen. Verletzt "Docs as Single Source of Truth". |
@@ -341,11 +341,11 @@ golden_standard: |
   | H3 | **Sortierungs-Interaktion zwischen Table-Level und Column-Level unklar** | README | Kann `Column.sortable: false` das globale `sortable={true}` überschreiben? Welches hat Vorrang? Für Action-Spalten ist das kritisch. |
   | H4 | **`pageSize` ohne Kontext zu `pagination`** | README | Prop-Abhängigkeiten undokumentiert. Was passiert wenn `pageSize={20}` gesetzt aber `pagination={false}`? Warning? Silent ignore? |
   | H5 | **`width` in `Column<T>`: `number | string` – Einheiten nicht erklärt** | README | Ist `200` Pixel? Prozent? Was ist als `string` erlaubt: `"20%"`, `"200px"`, `"auto"`, `"1fr"`? Führt zu Layout-Bugs. |
-  
+
   ---
-  
+
   ### 🟡 Medium – Im nächsten Sprint beheben
-  
+
   | # | Problem | Betroffene Stelle | Begründung |
   |---|---------|-------------------|------------|
   | M1 | **Nur 1 minimales Code-Beispiel** | README | Kein Beispiel für Sortierung, Pagination, Custom Render oder Loading-State vorhanden. |
@@ -355,11 +355,11 @@ golden_standard: |
   | M5 | **Kein Beispiel für `Column.render`-Callback** | README | Custom Cell Rendering ist ein Kernfeature – kein einziges Beispiel vorhanden. |
   | M6 | **Kein TypeScript-Beispiel für generische Verwendung** | README | Zielgruppe sind TypeScript-Projekte – ein JSX-only-Beispiel zeigt die wichtigsten Vorteile nicht. |
   | M7 | **Keine Performance-Hinweise** | README | Virtualisierung? Maximale empfohlene Zeilenanzahl? Entwickler bauen Tables mit 10.000+ Rows ohne Warnung. |
-  
+
   ---
-  
+
   ### 🔵 Low – Backlog
-  
+
   | # | Problem | Betroffene Stelle | Begründung |
   |---|---------|-------------------|------------|
   | L1 | **Keine Accessibility-Dokumentation** | README | ARIA-Rollen, Keyboard-Navigation, Screen-Reader-Verhalten fehlen – für Enterprise oft Compliance-Requirement. |
@@ -367,25 +367,25 @@ golden_standard: |
   | L3 | **Keine Versionsinformation / Changelog** | README | Breaking Changes in einer Shared Library ohne History sind schmerzhaft. |
   | L4 | **Kein Hinweis auf CSS-Customization / Theming** | README | Wie überschreibt man Styles? CSS Variables? `className`-Prop? Design-Token-Integration? |
   | L5 | **Keine "Related Components"-Sektion** | README | `DataGrid`, `SimpleTable`, `List` – wann nimmt man welche Komponente? |
-  
+
   ---
-  
+
   **Gesamtbefund: 19 Probleme** (4 Critical, 5 High, 7 Medium, 5 Low... davon 4 Low hier gelistet)
-  
+
   ---
-  
+
   ## Schritt 2: Korrigiertes TypeScript Interface
-  
+
   ```typescript
   // DataTable.tsx – Korrigiertes Interface
-  
+
   export type SortDirection = 'asc' | 'desc' | null;
-  
+
   export interface SortState<T> {
     key: keyof T;
     direction: SortDirection;
   }
-  
+
   /**
    * Spalten-Definition fuer DataTable.
    *
@@ -406,10 +406,10 @@ golden_standard: |
      * @example key: 'name'   // Fuer type User = { name: string }
      */
     key: keyof T;
-  
+
     /** Angezeigter Text im Spalten-Header. Auch als aria-label fuer Sort-Buttons verwendet. */
     header: string;
-  
+
     /**
      * Ueberschreibt das Table-Level `sortable` fuer diese Spalte.
      * - `true`:      Spalte sortierbar (auch wenn global `sortable={false}`)
@@ -419,7 +419,7 @@ golden_standard: |
      * @default Erbt von DataTableProps.sortable
      */
     sortable?: boolean;
-  
+
     /**
      * Spaltenbreite.
      * - `number`: Pixel-Wert (z.B. `200` → `200px`)
@@ -428,7 +428,7 @@ golden_standard: |
      * @default 'auto'
      */
     width?: number | string;
-  
+
     /**
      * Custom Render-Funktion fuer den Zellen-Inhalt.
      * Korrekt typisiert: kein `any` – Wert ist T[keyof T].
@@ -442,7 +442,7 @@ golden_standard: |
      */
     render?: (value: T[keyof T], row: T) => React.ReactNode;
   }
-  
+
   /**
    * Props fuer die DataTable-Komponente.
    *
@@ -460,22 +460,22 @@ golden_standard: |
     // Required
     data: T[];
     columns: Column<T>[];
-  
+
     // Interaction
     onRowClick?: (row: T, index: number, event: React.MouseEvent) => void;
     onSortChange?: (sort: SortState<T>) => void;
-  
+
     // Sorting
     sortable?: boolean;
-  
+
     // Pagination
     pagination?: boolean;
     pageSize?: number;
-  
+
     // State & Feedback
     loading?: boolean;
     emptyState?: React.ReactNode;
-  
+
     // Appearance
     striped?: boolean;
     stickyHeader?: boolean;
@@ -483,58 +483,58 @@ golden_standard: |
     'aria-label'?: string;
   }
   ```
-  
+
   ---
-  
+
   ## Schritt 3: Vollständige überarbeitete Dokumentation
-  
+
   ```markdown
   # DataTable
-  
+
   Eine typsichere, generische Tabellen-Komponente mit eingebautem Sorting,
   Pagination und Custom Cell Rendering. Optimiert fuer strukturierte Datensaetze
   bis ~500 Zeilen.
-  
+
   > **Storybook:** [DataTable Stories](https://design-system.internal/storybook/?path=/docs/components-datatable)
   > **Version:** 2.3.0 | **Status:** Stable
-  
+
   ---
-  
+
   ## Inhaltsverzeichnis
-  
+
   - [Quick Start](#quick-start)
   - [Props: DataTableProps](#props-datatable)
   - [Props: Column-Interface](#props-column)
   - [Code-Beispiele](#code-beispiele)
   - [Accessibility](#accessibility)
   - [Performance](#performance)
-  
+
   ---
-  
+
   ## Quick Start
-  
+
   ```tsx
   import { DataTable } from '@company/design-system';
   import type { Column } from '@company/design-system';
-  
+
   interface User {
     id: number;
     name: string;
     email: string;
   }
-  
+
   const columns: Column<User>[] = [
     { key: 'name',  header: 'Name' },
     { key: 'email', header: 'E-Mail' },
   ];
-  
+
   <DataTable<User> data={users} columns={columns} />
   ```
-  
+
   ---
-  
+
   ## Props: DataTableProps<T>
-  
+
   | Prop | Type | Required | Default | Beschreibung |
   |------|------|----------|---------|--------------|
   | `data` | `T[]` | ✅ Ja | – | Array der anzuzeigenden Datenobjekte. Jedes Element entspricht einer Tabellenzeile. Leeres Array zeigt den `emptyState`. |
@@ -549,14 +549,14 @@ golden_standard: |
   | `stickyHeader` | `boolean` | ❌ Nein | `false` | Fixiert den Tabellen-Header beim Scrollen. **Voraussetzung:** Parent-Container muss eine definierte `height` oder `max-height` haben. |
   | `className` | `string` | ❌ Nein | `undefined` | Zusaetzliche CSS-Klassen fuers Root-Element. Fuer strukturelle Anpassungen Design-Tokens verwenden. |
   | `aria-label` | `string` | ❌ Nein | `undefined` | ARIA-Label fuer die Tabelle. Sollte gesetzt werden wenn kein sichtbarer Tabellen-Titel vorhanden ist. |
-  
+
   ---
-  
+
   ## Props: Column<T>
-  
+
   > `Column<T>` ist ein Generic, wobei `T` dem Typ des `data`-Arrays entspricht.
   > `key` ist auf `keyof T` beschraenkt – TypeScript verhindert ungueltige Spalten-Keys zur Compile-Zeit.
-  
+
   | Prop | Type | Required | Default | Beschreibung |
   |------|------|----------|---------|--------------|
   | `key` | `keyof T` | ✅ Ja | – | Property-Key des Datenobjekts fuer diese Spalte. TypeScript stellt sicher, dass nur gueltige Properties von `T` verwendet werden koennen – ungueltige Keys sind Compile-Errors. |
@@ -564,23 +564,23 @@ golden_standard: |
   | `sortable` | `boolean` | ❌ Nein | Erbt von `DataTable.sortable` | Ueberschreibt das Table-Level `sortable` fuer diese Spalte. Nuetzlich um einzelne Spalten (z.B. Action-Spalten) vom Sorting auszuschliessen. |
   | `width` | `number \| string` | ❌ Nein | `auto` | Spaltenbreite. `number` wird als Pixel interpretiert (`200` → `200px`). `string` wird direkt als CSS-Wert verwendet (`"20%"`, `"10rem"`, `"auto"`). |
   | `render` | `(value: T[keyof T], row: T) => React.ReactNode` | ❌ Nein | `String(value)` | Custom Render-Funktion fuer Zellen-Inhalt. Erhaelt den Zellwert (korrekt typisiert als `T[keyof T]`, kein `any`) und das vollstaendige Zeilenobjekt. |
-  
+
   ---
-  
+
   ## Code-Beispiele
-  
+
   ### Beispiel 1: Basis-Tabelle mit TypeScript
-  
+
   ```tsx
   import { DataTable, Column } from '@company/design-system';
-  
+
   interface Product {
     id: number;
     name: string;
     price: number;
     inStock: boolean;
   }
-  
+
   const columns: Column<Product>[] = [
     {
       key: 'name',
@@ -601,7 +601,7 @@ golden_standard: |
       )
     },
   ];
-  
+
   export function ProductList({ products }: { products: Product[] }) {
     return (
       <DataTable<Product>
@@ -613,16 +613,16 @@ golden_standard: |
     );
   }
   ```
-  
+
   ---
-  
+
   ### Beispiel 2: Sortierung, Pagination und Row-Interaction
-  
+
   ```tsx
   import { useState } from 'react';
   import { DataTable, Column } from '@company/design-system';
   import { useNavigate } from 'react-router-dom';
-  
+
   interface Order {
     id: string;
     customer: string;
@@ -630,7 +630,7 @@ golden_standard: |
     status: 'pending' | 'shipped' | 'delivered';
     createdAt: Date;
   }
-  
+
   const columns: Column<Order>[] = [
     { key: 'id',       header: 'Bestell-Nr.', width: 120 },
     { key: 'customer', header: 'Kunde' },
@@ -652,11 +652,11 @@ golden_standard: |
       render: (value) => (value as Date).toLocaleDateString('de-DE')
     },
   ];
-  
+
   export function OrderTable() {
     const navigate = useNavigate();
     const { data, isLoading } = useOrders();
-  
+
     return (
       <DataTable<Order>
         data={data ?? []}
@@ -672,15 +672,15 @@ golden_standard: |
     );
   }
   ```
-  
+
   ---
-  
+
   ### Beispiel 3: Loading- und Empty-State
-  
+
   ```tsx
   export function AsyncTable() {
     const { data, isLoading } = useAsyncData();
-  
+
     return (
       <DataTable<User>
         data={data ?? []}     // Leeres Array waehrend Loading – kein Layout-Sprung
@@ -693,99 +693,98 @@ golden_standard: |
     );
   }
   ```
-  
+
   > **Hinweis:** `loading={true}` und `data={[]}` gleichzeitig zeigt den Loading-Skeleton,
   > **nicht** den `emptyState`. Der `emptyState` wird nur bei `loading={false}` und
   > leerem Array gerendert.
-  
+
   ---
-  
+
   ## Accessibility
-  
+
   Die DataTable-Komponente erfuellt folgende WCAG 2.1 AA Anforderungen:
-  
+
   | Merkmal | Implementierung |
   |---------|-----------------|
   | **Semantische Tabelle** | `<table role="grid">` mit `<caption>` oder `aria-label` |
   | **Sortier-Buttons** | `aria-sort="ascending\|descending\|none"` auf `<th>`-Elementen |
   | **Keyboard-Navigation** | Tab-navigierbar; sortierbare Header per Enter/Space aktivierbar |
   | **Screen-Reader** | Spalten-Header via `scope="col"` mit Datenzellen verknuepft |
-  
+
   Fuer den `aria-label`-Prop gilt: Er sollte **immer** gesetzt werden, wenn
   kein sichtbarer Tabellen-Titel ueber der Komponente vorhanden ist.
-  
+
   ```tsx
   // Gut: Explizites Label
   <DataTable aria-label="Nutzerverwaltung" ... />
-  
+
   // Gut: Visueller Titel vorhanden
   <h2 id="user-table-title">Nutzerverwaltung</h2>
   <DataTable aria-labelledby="user-table-title" ... />
   ```
-  
+
   ---
-  
+
   ## Performance
-  
+
   | Datenmenge | Empfehlung |
   |------------|-----------|
   | 0–200 Zeilen | Standard-Konfiguration |
   | 200–500 Zeilen | `pagination` aktivieren (`pageSize={25}` oder `50`) |
   | 500+ Zeilen | Server-side Pagination mit `onPageChange`-Callback empfohlen |
   | 1.000+ Zeilen | Virtualisierte Alternative (`VirtualDataTable`) verwenden |
-  
+
   > Die Komponente ist **nicht** fuer Virtualisierung ausgelegt.
   > Bei sehr grossen Datensaetzen `VirtualDataTable` aus demselben Package verwenden.
-  
+
   ---
-  
+
   ## Schritt 4: Begruendung der Änderungen
-  
+
   ### 1. Generic `<T>` dokumentiert und erklärt (C3/C4)
-  
+
   **Problem:** Der wichtigste TypeScript-Vorteil der Komponente war komplett unsichtbar.
   **Loesung:** Eigener Abschnitt "Generic Type Parameter" mit Inferenz- und expliziten Beispielen.
   **Prinzip:** In einer TypeScript-Library ist der Generic-Contract die primäre API-Definition.
-  
+
   ### 2. `render` korrekt typisiert: `any` → `T[keyof T]` (C2)
-  
+
   **Problem:** `(value: any, row: T)` macht den Haupt-Vorteil von TypeScript bedeutungslos.
   **Loesung:** `(value: T[keyof T], row: T) => React.ReactNode` – vollständig typsicher.
   **Prinzip:** IntelliSense für `value` in `render`-Callbacks ist ein DX-Kernfeature.
-  
+
   ### 3. Required-Flags explizit markiert (C1)
-  
+
   **Problem:** Developer konnten nicht erkennen welche Props Pflicht sind.
   **Lösung:** Spalte "Required" mit ✅/❌ in allen Props-Tabellen.
   **Prinzip:** Unvollständige Required/Optional-Dokumentation ist die häufigste Ursache von Runtime-Errors bei erstmaliger Komponentennutzung.
-  
+
   ### 4. Default Values für alle 8 optionalen Props (H1)
-  
+
   **Problem:** Entwickler mussten Quellcode lesen, um Standardverhalten zu verstehen.
   **Lösung:** Jede optionale Prop hat einen expliziten Default-Wert in der Tabelle.
   **Prinzip:** "Docs as Single Source of Truth" – Docs müssen vollständig sein ohne Quellcode-Blick.
-  
+
   ### 5. Sortierungs-Hierarchie erklärt (H3)
-  
+
   **Problem:** Zwei `sortable`-Flags (Table-Level + Column-Level) – Präzedenz unklar.
   **Lösung:** Explizite Tabelle: `undefined` erbt, `false` deaktiviert, `true` erzwingt.
   **Prinzip:** Zwei Flags auf verschiedenen Ebenen sind ein häufiger Support-Grund.
-  
+
   ### 6. `width`-Einheiten dokumentiert (H5)
-  
+
   **Problem:** `number | string` ohne Erklärung führt zu Trial-and-Error-Bugs.
   **Lösung:** Explizit: `number` = Pixel, `string` = CSS-Wert mit Beispielen.
   **Prinzip:** Union-Types brauchen immer konkrete Beispiele für jeden Branch.
-  
+
   ### 7. Drei Code-Beispiele statt einem (M1/M5/M6)
-  
+
   **Problem:** Nur ein Minimal-Beispiel ohne relevante Features.
   **Lösung:** Basis-Beispiel + vollständiges Feature-Beispiel + Loading/Empty-State-Beispiel.
   **Prinzip:** Entwickler kopieren Beispiele – schlechte Beispiele multiplizieren schlechten Code.
-  
+
   ### 8. Accessibility-Sektion (L1)
-  
+
   **Problem:** Keine ARIA-Dokumentation für Enterprise-Compliance-Anforderungen.
   **Lösung:** Tabelle mit WCAG-2.1-AA-Merkmalen und konkreten Implementierungsdetails.
   **Prinzip:** Schlechte Tabellen-Accessibility ist einer der häufigsten BITV/WCAG-Audit-Befunde.
-  

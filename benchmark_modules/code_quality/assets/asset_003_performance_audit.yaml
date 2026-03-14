@@ -118,6 +118,8 @@ prompt: |
      - **Schweregrad**
      - **Lösung** (Code-Snippet direkt in der Zelle oder als Referenz)
 
+  **HINWEIS:** Halte die Fehlerbeschreibungen und Lösungen in der Tabelle extrem kurz und präzise (max. 1-2 Sätze), um Output-Längenbegrenzungen einzuhalten.
+
 # ============================================================
 # Test-Daten (Issues zum Erkennen)
 # ============================================================
@@ -531,4 +533,3 @@ golden_standard: |
   ```
 
   > **Wichtigste Einzelmaßnahme:** Das synchrone XHR (`xhr.open(..., false)`) ist der versteckteste Bug – es friert die gesamte Seite ein bis die API antwortet, unabhängig von der Netzwerkgeschwindigkeit des Nutzers. Alle anderen Fixes verbessern inkrementell; dieser Fix entfernt eine absolute Rendering-Blockade.
-
