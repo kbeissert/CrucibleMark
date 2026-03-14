@@ -1,27 +1,50 @@
+# ============================================================
+# CrucibleMark - Benchmark Global Configuration
+# ============================================================
+# Struktur der Datei:
+# 1. Pipeline: LLM Judge & Meta-Reviewer (Editor)
+# 2. Golden Standard (Referenz-Modell)
+# 3. Default Generation Limits (Token Fallback)
+# 4. Provider & Modelle (Commercial & Local)
+# 5. Output-Konfiguration & Module
+#
+# Hinweis: API-Keys gehören NICHT hierher, sondern in die .env Datei!
+
+# ------------------------------------------------------------
+# 1. Pipeline: LLM Judge & Meta-Reviewer
+# ------------------------------------------------------------
+# Konfiguration für die KI-gestützte Auswertung offener Textantworten.
 llm_judge:
   enabled: true
-  mode: complement
+  mode: complement           # 'complement' (Ergänzung zu Regex-Score) oder 'replace' (nur Judge)
+
   provider:
+    # Hier wird das Modell für den kritischen Judging-Prozess definiert.
     # ANTROPHIC
-    # name: anthropic          # PRIMARY: Claude Haiku (schnell, konsistent)
-    # model: claude-haiku-4-5-20251001
-    # max_tokens: 4096
+    name: anthropic          # PRIMARY: Claude Haiku (schnell, konsistent)
+    model: claude-haiku-4-5-20251001
+    max_tokens: 8192         # Großzügiges Limit für ausführliche Reasoning-Blöcke
+                             # (Wird bei älteren Modellen durch die Kaskade automatisch reguliert)
 
-    # GOOGLE
-    name: google
-    model: gemini-2.5-pro
-    max_tokens: 8192
+    # GOOGLE (Alternativ, aktuell kommentiert)
+    # name: google
+    # model: gemini-2.5-pro
+    # max_tokens: 8192
 
-    unload_delay_ms: 1500
+    unload_delay_ms: 1500    # Puffer vor dem Laden des Fallback-Modells (vermeidet RAM-Race-Conditions in Ollama)
+
     fallback:
-      name: ollama             # FALLBACK: nur wenn kein API-Key
+      name: ollama           # Fängt API-Ausfälle oder aufgebrauchtes Budget lokal ab
       model: ministral-3:14b
       max_tokens: 4096
+
   scoring:
-    scale: 5
-    require_reasoning: true
-    fail_on_parse_error: false
+    scale: 5                 # Generelle Punkteskala (1-5)
+    require_reasoning: true  # Judge muss seine Bewertung zwingend vor dem JSON begründen (CoT)
+    fail_on_parse_error: false # Erlaubt Nullpunkte bei kaputtem Format, statt den gesamten Lauf abzubrechen
+
   sub_scores:
+    # Detaillierte Teilnoten-Kriterien für den Meta-Reviewer
     task_compliance:
       label: "Task Compliance"
       description: "Wurde die Aufgabe vollständig und korrekt erfüllt?"
@@ -34,7 +57,8 @@ llm_judge:
       label: "Standard Adherence"
       description: "Werden Fach-Standards und Best Practices korrekt angewendet?"
       scale: 5
-  # Nur Module die hier gelistet sind werden vom LLM-Judge bewertet. Alle anderen Module werden vom Regex/Rule Scorer bewertet.
+
+  # In diesen Modulen wird der LLM-Judge (neben Regex) immer aktiv herangezogen:
   applicable_modules:
     - code_quality
     - ux_writing
@@ -43,55 +67,37 @@ llm_judge:
     - cultural_intelligence
     - reasoning
 
+# Konfiguration für den am Ende (make review-all) generierten analytischen Report.
 llm_review:
   enabled: true
   provider:
-    name: google
+    name: google             # Gemini 2.5 Pro ist sehr stark bei großen Kontexten & Zusammenfassungen
     model: gemini-2.5-pro
     max_tokens: 8192
 
-# ============================================================
-# CrucibleMark - Benchmark Configuration
-# ============================================================
-# Struktur der Datei:
-# 1. Golden Standard (Referenz-Modell)
-# 2. Provider & Modelle (Commercial & Local)
-# 3. Output-Konfiguration
-# 4. Test-Module Registry (ganz unten)
-
-# Golden Standard Configuration
-# -----------------------------
-# Definiert DEN einen Golden Standard für alle Benchmarks.
-# Alle lokalen Modelle werden mit diesem Referenz-Modell verglichen.
-# Der Provider muss in 'providers.commercial' existieren und enabled sein.
-
-golden_standard:
-  provider: "anthropic"  # Referenz zu providers.commercial.anthropic
-  model: "claude-sonnet-4-6"  # Welches Modell für Referenz-Benchmark
-  description: "Claude 4.6 Sonnet als Referenz für Benchmark Tests (Feb 2026)"
-
-# Global Generation Defaults
-# --------------------------
+# ------------------------------------------------------------
+# 2. Global Generation Limits & Token Fallback
+# ------------------------------------------------------------
 # Fallback-Werte für alle Benchmarks.
 # Werden verwendet, wenn ein Modul (config.yaml) keine eigenen Werte definiert.
 defaults:
   generation:
-    temperature: 0.1
+    temperature: 0.1         # Niedrige Temperatur für deterministischere Benchmarks
     repeat_penalty: 1.1
     top_k: 40
     top_p: 0.9
     num_predict: 8192
 
-  # Globale Token-Kaskade für API-Provider (kann in Provider-Settings überschrieben werden)
+  # Globale Token-Kaskade "Fast Fail" für API-Provider.
+  # Vermeidet Abbrüche, indem das Limit beim ersten "Too large"-Fehler automatisch halbiert wird.
   token_limits:
     default_max: 8192
     fallback_cascade: [4096, 2048, 1024]
 
-# Provider Configuration
-# ----------------------
-# Definiert verfügbare LLM-Provider und deren Modelle.
-# Alle aktivierten Provider können für Tests verwendet werden.
-# Der Golden Standard (oben definiert) wird als Referenz für Vergleiche genutzt.
+# ------------------------------------------------------------
+# 4. Provider & Modell-Register
+# ------------------------------------------------------------
+# Alle aktivierten Provider können für Tests (-provider) verwendet werden.
 
 providers:
 
@@ -241,7 +247,6 @@ output:
   directory: "benchmark_scores"
   commercial_csv: "benchmark_scores/commercial_models_benchmark.csv"
   local_models_csv: "benchmark_scores/local_models_benchmark.csv"
-  golden_standard_csv: "benchmark_scores/golden_standard_benchmark.csv"
   leaderboard_csv: "benchmark_scores/benchmark_leaderboard.csv"
   streaming_output_commercial_providers: true  # true | false | "Force" (Force disables streaming)
 
@@ -269,39 +274,31 @@ modules:
   code_quality:
     path: "benchmark_modules/code_quality"
     enabled: true
-    llm_judge_model: "ministral-3:14b"
 
   ux_writing:
     path: "benchmark_modules/ux_writing"
     enabled: true
-    llm_judge_model: "ministral-3:14b"
 
   documentation_quality:
     path: "benchmark_modules/documentation_quality"
     enabled: true
-    llm_judge_model: "ministral-3:14b"
 
   content_transformation:
     path: "benchmark_modules/content_transformation"
     enabled: true
-    llm_judge_model: "ministral-3:14b"
 
   cultural_intelligence:
     path: "benchmark_modules/cultural_intelligence"
     enabled: true
-    llm_judge_model: "ministral-3:14b"
 
   reasoning:
     path: "benchmark_modules/reasoning_logic"
     enabled: true
-    llm_judge_model: "deepseek-r1:8b"
 
   cli_benchmark:
     path: "benchmark_modules/cli_benchmark"
     enabled: true
-    llm_judge_model: "ministral-3:14b"
 
   political_compass:
     path: "benchmark_modules/political_compass"
     enabled: false
-    llm_judge_model: "ministral-3:14b"

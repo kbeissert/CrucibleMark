@@ -35,9 +35,6 @@ class ResultManager:
         elif result_type == "commercial":
             key = "commercial_csv"
             default = "benchmark_scores/commercial_models_benchmark.csv"
-        elif result_type == "golden":
-            key = "golden_standard_csv"
-            default = "benchmark_scores/golden_standard_benchmark.csv"
         else:
             raise ValueError(f"Unknown result type: {result_type}")
 

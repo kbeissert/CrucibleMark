@@ -38,11 +38,6 @@ COMMERCIAL_CSV = Path(
 LOCAL_CSV = Path(
     output_config.get("local_models_csv", SCORES_DIR / "local_models_benchmark.csv")
 )
-GOLDEN_CSV = Path(
-    output_config.get(
-        "golden_standard_csv", SCORES_DIR / "golden_standard_benchmark.csv"
-    )
-)
 OUTPUT_CSV = SCORES_DIR / "benchmark_leaderboard.csv"
 
 

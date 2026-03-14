@@ -10,7 +10,6 @@ import pandas as pd
 
 # Import constants and config logic
 from .config import ROOT_DIR
-from .data_loader import load_golden_references
 
 # Ensure root dir in path for local imports
 if str(ROOT_DIR) not in sys.path:
@@ -458,24 +457,8 @@ def calculate_scores(
 
     # pylint: disable=too-many-locals,too-many-statements
     df_success = df[df["status"] == "success"].copy()
-
-    # --- Performance Ratio Calculation ---
-    refs = load_golden_references()
-    baseline = 0
-
-    def get_performance_ratio(row):
-        asset_id = row.get("asset_id")
-        raw = row.get("percentage")
-        if pd.isna(raw):
-            return 0.0
-        ref = refs.get(asset_id)
-        if ref and ref > baseline:
-            numerator = max(0, raw - baseline)
-            denominator = ref - baseline
-            return (numerator / denominator) * 100.0
-        return raw
-
-    df_success["performance_ratio"] = df_success.apply(get_performance_ratio, axis=1)
+    # --- Performance Ratio Calculation (Removed, using raw) ---
+    df_success["performance_ratio"] = df_success["percentage"]
 
     # --- Assign Categories ---
     def get_category_name(asset_id: str) -> str:
