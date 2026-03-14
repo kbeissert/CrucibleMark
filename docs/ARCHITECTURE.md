@@ -116,6 +116,13 @@ Das Framework implementiert einen robusten Architekturansatz zur Bewältigung ha
 2. **Dynamische Reduzierung:** Schlägt eine API-Anfrage wegen Limitüberschreitungen fehl, fängt der Wrapper die Exception ab (durch provider-spezifische Error-Keywords wie `"max_tokens"`) und probiert das nächstkleinere Limit transparent erneut.
 3. **Fast-Fail für Budget:** Bei Budget- oder Quota-Fehlern (`"402 payment required"`, `"insufficient_quota"`) greift ein *Fast-Fail*-Mechanismus ein, der sofort blockiert und teure Retrys verhindert.
 4. **Metadaten-Tracking:** Nach Abschluss protokolliert der Client in das `BenchmarkResult`-DTO, ob die Kaskade verwendet wurde (`token_limit_fallback`) und welches Limit endgültig galt (`token_limit_used`).
+
+### Hardware Context & "Prompt as Config"
+CrucibleMark verfolgt den Architektur-Ansatz, dass alle Auswertungen an das Hardware- oder Kosten-Umfeld gekoppelt sein sollten. 
+Dies wird durch den **`SystemContextManager` (`utils/system_context.py`)** umgesetzt:
+- **T/s Berechnung:** Dieser berechnet zentral die `tokens_per_second` (T/s) für alle Benchmark-Runs (aus Execution-Time und Output-Tokenanzahl).
+- **Prompt-Injection:** Der Manager holt dynamische Rahmendaten über das Testsystem auf Basis des in der `benchmark_config.yaml` festgelegten `runner_environment` passend zum `run_type` (Local vs Commercial).
+- **"Prompt-as-Config":** System-Prompts für textgenerierende Pipeline-Funktionen (wie z.B. für den Meta-Reviewer) sind vollständig **ausgelagert (z.B. nach `config/meta_reviewer_prompt.yaml`)**. Der System-Code führt lediglich ein `.format()` aus und injiziert Hardware-Variablen und Logs der Ergebnisse in das YAML-Template.
 ______________________________________________________________________
 
 ## 📦 Layer 2: Benchmark Modules

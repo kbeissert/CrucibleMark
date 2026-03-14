@@ -71,6 +71,40 @@ class ConfigValidator:
             if provider.get("enabled", False)
         }
 
+    def validate_golden_standard(self) -> Tuple[bool, str]:
+        """Validiert die golden_standard Konfiguration."""
+        try:
+            # Check basic structure
+            golden_std = self.config.get("golden_standard", {})
+            if not golden_std:
+                return False, "Fehlender 'golden_standard' Bereich in Konfiguration."
+
+            provider_key = golden_std.get("provider")
+            if not provider_key:
+                return False, "Kein Provider für Golden Standard konfiguriert."
+
+            # Verify provider exists and is enabled
+            provider_cfg = self.get_provider_config(provider_key)
+            if not provider_cfg:
+                return False, f"Golden Standard Provider '{provider_key}' ist nicht in 'providers.commercial' konfiguriert."
+
+            if not provider_cfg.get("enabled", False):
+                return False, f"Golden Standard Provider '{provider_key}' ist deaktiviert (enabled: false)."
+
+            # Verify API Key is available
+            api_key_env = provider_cfg.get("api_key_env")
+            if api_key_env and not os.getenv(api_key_env):
+                return False, f"Fehlender API-Key für Golden Standard Provider: Environment Variable '{api_key_env}' nicht gesetzt."
+
+            model = provider_cfg.get("model")
+            if not model:
+                return False, f"Kein Modell für Golden Standard Provider '{provider_key}' konfiguriert."
+
+            return True, f"Golden Standard valide (Provider: {provider_key}, Modell: {model})"
+
+        except Exception as e:
+            return False, f"Interner Validierungsfehler: {e}"
+
 
 def validate_config_quick() -> bool:
     """Schnelle Validierung für CLI-Tools.

@@ -24,7 +24,15 @@ Trotz dieser Schwächen ist das Regex-Scoring unverzichtbar, um "harte Fakten" u
 
 ## 2. Der LLM Judge
 
-Der LLM Judge (z. B. GPT-4o oder Claude 3.5 Sonnet) bewertet als unparteiische Instanz Aufgaben, bei denen starres Regex-Scoring versagt (z.B. fließende Texttransformationen, Code Quality oder UX Writing).
+Der LLM Judge bewertet als unparteiische Instanz Aufgaben, bei denen starres Regex-Scoring versagt (z.B. fließende Texttransformationen, Code Quality oder UX Writing).
+
+### Präferierte Evaluator-Modelle (Stand: März 2026)
+
+**1. Claude Haiku (Präferierter Judge)**
+Claude Haiku fungiert als unbestechlicher, penibler Detailprüfer. Haiku klammert sich extrem strikt an die vorgegebenen Golden Standards (z.B. durch "Penalties für Fluff" oder Abzug bei minimalen Abweichungen im Tone-of-Voice). Dieses "harte" Strafsystem entfaltet eine essenzielle Hebelwirkung, um im Leaderboard echte Differenzierungen (Spread) zwischen Spitzenmodellen und der Mittelklasse zu erzeugen.
+
+**2. Gemini 2.5 Pro (Fallback / Zweitkritischste Instanz)**
+Um Cloud-Modelle zu testen, die möglicherweise einen gewissen Blindspot aufbauen, gibt es ein Fallback auf Gemini 2.5 Pro. Neben Haiku ist Gemini der zweitkritischste LLM-Judge im Benchmark-Feld. Viele andere Evaluator-Modelle neigen zu einem stark ausgeprägten Positivity Bias (versuchen ein gutes Bild zu zeichnen und sind nicht kritisch genug). Gemini bewertet hingegen pragmatischer, vergibt jedoch bei partiell richtiger Wegerfüllung etwas schneller Bestnoten – was zu einem sichtbaren "Ceiling Effect" (Zusammenstauchen der Scores am oberen Ende) führen kann. Daher bleibt Haiku die erste Wahl für harte Kontraste.
 
 ### Geführter vs. Ungeführter Modus
 Um "Drifts" oder Halluzinationen des Evaluators vorzubeugen, kennt der Judge in CrucibleMark zwei primäre Modi:
@@ -93,3 +101,9 @@ Das System arbeitet dabei wie ein technischer Chefredakteur:
 - **Fazit & Profiling:** Es ordnet das Modell praxisnah ein. Anstatt dem Nutzer nur mitzuteilen, dass das Modell "70 Punkte in UX-Writing" hat, formuliert der Meta-Reviewer, ob das Modell beispielsweise besser als Assistent für kreatives Schreiben oder eher für starre Dokumentationsaufgaben geeignet ist.
 
 Dieser Editor-Modus rundet den methodischen Scoring-Prozess ab und schlägt die essenzielle Brücke zwischen quantitativen Testdaten und qualitativen Empfehlungen für den produktiven Einsatz.
+
+### Evaluierung von Performance- und Hardware-Grenzen (t/s)
+Um einen fairen Vergleich zwischen lokalen Modellen (Währung: Rechenleistung/RAM) und kommerziellen Modellen (Währung: Geld/Kosten) zu schaffen, bezieht der Meta-Reviewer in seiner qualitativen Synthese die Metrik **Tokens per Second (t/s)** ein.
+
+- **Kommerzielle Modelle:** API-Latenzen (gemessen in t/s) werden isoliert vom Hardware-Aspekt betrachtet und primär in Relation zu den generierten Kosten ($ pro 1M Token) und dem Anwendungszweck bewertet.
+- **Lokale Modelle (Hardware-Context Injections):** Der Meta-Reviewer erhält über eine Prompt-Injection (gesteuert durch den `SystemContextManager`) dynamisch die Rahmendaten des von dir in der `benchmark_config.yaml` definierten Testsystems (z. B. "Apple Silicon M4, 24GB Unified Memory"). T/s-Metriken lokaler Modelle werden daraufhin **immer relativ zum Speicher-Limit und der Hardware** eingeordnet (z.B. Swapping-Gefahr bei großen Parametern). Er ist instruiert, das Referenzsystem exakt einmal zu benennen, um Voreingenommenheiten der Leser (wegen abweichender Hardware) konstruktiv einzufangen.

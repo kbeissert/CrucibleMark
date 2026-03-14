@@ -25,3 +25,9 @@ Gilt für Generation-Parameter UND LLM Judge. Modul-Override gewinnt immer.
 ## Neue Provider hinzufügen
 1. In `benchmark_config.yaml` unter `providers.commercial` oder `providers.local` eintragen
 2. Klasse in `llm_judge/providers/` anlegen (erbt von `LLMJudgeProvider`)
+
+## Hardware Context & Prompt-as-Config
+- Die Laufzeitumgebung (Hardware) wird unter `runner_environment:` in `benchmark_config.yaml` deklariert (t/s limits, Unified Memory vs VRAM).
+- `SystemContextManager` injiziert dieses Profil automatisch als Kontext in Prompts (z.B. den Meta-Reviewer in `scripts/analysis/generate_review.py`).
+- Zentrale System-Prompts (wie der Meta-Reviewer) werden in `config/*.yaml` externalisiert, um "Prompt-as-Config" zu etablieren und Code von Inhalt zu trennen.
+

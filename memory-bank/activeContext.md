@@ -1,6 +1,8 @@
 # Active Context
 
 ## Abgeschlossen
+- Hardware Context & t/s Metrik eingeführt (`SystemContextManager`), um kommerzielle und lokale Modelle fairer im Meta-Review bewerten zu können.
+- "Prompt-as-Config" Pattern etabliert (Meta-Reviewer Prompt nach `config/meta_reviewer_prompt.yaml` externalisiert).
 - Globales kaskadierendes Token-Fallback-System implementiert, inkl. transparentem Metadaten-Tracking ("Kopfnoten") in der Leaderboard-Auswertung.
 - Meta-Reviewer/Editor (`generate_review.py`) aktualisiert, um via Regex kritische Systemwarnungen ("SYSTEM INFO" / Token-Limit-Fallbacks) aus den Audit-Logs zu lesen. Historische Haiku-Daten erfolgreich gepatcht.
 
