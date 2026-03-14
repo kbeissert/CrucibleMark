@@ -111,30 +111,6 @@ class LocalBenchmarkRunner(BaseBenchmarkRunner):
         # Extract names from the SSOT-provided dicts
         return [m["name"] for m in infos]
 
-    def load_commercial_references(self) -> Dict[str, Dict[str, Any]]:
-        """Lädt kommerzielle Referenzwerte aus CSV."""
-        if not self.commercial_csv.exists():
-            return {}
-
-        references = {}
-        try:
-            with open(self.commercial_csv, encoding="utf-8") as f:
-                reader = csv.DictReader(f)
-                for row in reader:
-                    asset_id = row.get("asset_id", "")
-                    model = row.get("model", "")
-                    if asset_id and model:
-                        references[asset_id] = {
-                            "model": model,
-                            "provider": row.get("provider", ""),
-                            "score": float(row.get("total_score", 0)),
-                            "percentage": float(row.get("percentage", 0)),
-                        }
-        except (OSError, ValueError) as e:
-            logger.warning("Fehler beim Laden der Referenzen: %s", e)
-
-        return references
-
     def select_model(self) -> Optional[str]:
         """Interaktive Modell-Auswahl."""
         models = self.get_ollama_models()
@@ -293,7 +269,6 @@ class LocalBenchmarkRunner(BaseBenchmarkRunner):
         self,
         model: str,
         asset_path: Path,
-        commercial_refs: Dict[str, Dict[str, Any]],
         benchmark_info: Dict[str, Any],
         pause_calculator: Optional[Any] = None,
     ) -> Dict[str, Any]:
@@ -316,9 +291,7 @@ class LocalBenchmarkRunner(BaseBenchmarkRunner):
         score = test_instance.score_response(response)
 
         # Comparisons
-        comparison = {}
         asset_id = asset_data.get("metadata", {}).get("id", asset_path.stem)
-        ref = commercial_refs.get(asset_id, {})
 
         # Build Result
         result = self._build_result_dict(
@@ -326,8 +299,6 @@ class LocalBenchmarkRunner(BaseBenchmarkRunner):
             asset_data=asset_data,
             score=score,
             exec_result=exec_result,
-            _ref=ref,
-            comparison=comparison,
             response_preview=response,
         )
 
@@ -541,8 +512,6 @@ class LocalBenchmarkRunner(BaseBenchmarkRunner):
         asset_data: Dict[str, Any],
         score: Dict[str, Any],
         exec_result: BenchmarkResult,
-        _ref: Dict[str, Any],
-        comparison: Dict[str, Any],
         response_preview: str,
     ) -> Dict[str, Any]:
         """Helper to construct the result dictionary."""
@@ -572,7 +541,7 @@ class LocalBenchmarkRunner(BaseBenchmarkRunner):
         # Add local benchmark specifics
         result.update(
             {
-                "golden_similarity": round(comparison.get("similarity", 0) * 100, 1),
+                "golden_similarity": 0.0,
             }
         )
 
@@ -595,25 +564,6 @@ class LocalBenchmarkRunner(BaseBenchmarkRunner):
                 score.get("reasoning", "No explanation provided"),
             )
         return result
-
-    def _setup_benchmark_resources(self) -> tuple[Dict[str, Dict[str, Any]], bool]:
-        """Loads and validates validation/reference resources."""
-        is_valid, message = self.validator.validate_golden_standard()
-        print(
-            f"\n{'=' * 60}\n🔍 GOLDEN STANDARD VALIDIERUNG\n{'=' * 60}\n{message}\n{'=' * 60}"
-        )
-
-        commercial_refs = self.load_commercial_references()
-        if commercial_refs:
-            print(f"\n📌 Golden Standard Scores geladen: {len(commercial_refs)} Assets")
-            first_asset = list(commercial_refs.values())[0]
-            print(f"   Referenz: {first_asset['model']} ({first_asset['provider']})")
-        elif is_valid:
-            print("\n⚠️  Golden Standard CSV noch nicht vorhanden.")
-        else:
-            print("\n⚠️  Golden Standard nicht verfügbar.")
-
-        return commercial_refs, is_valid
 
     def _update_political_compass_csv(
         self, model: str, report: Dict[str, Any], _model_version: str = "unknown"
@@ -860,8 +810,6 @@ class LocalBenchmarkRunner(BaseBenchmarkRunner):
         )
         # ------------------
 
-        commercial_refs, _ = self._setup_benchmark_resources()
-
         # Use filtered assets if provided, otherwise discover all
         if assets is None:
             assets = self.discover_assets(benchmark_info["path"])
@@ -903,7 +851,7 @@ class LocalBenchmarkRunner(BaseBenchmarkRunner):
 
             try:
                 result = self._process_single_test(
-                    model, asset_path, commercial_refs, benchmark_info, pause_calculator
+                    model, asset_path, benchmark_info, pause_calculator
                 )
 
                 results.append(result)
