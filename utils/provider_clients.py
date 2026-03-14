@@ -354,7 +354,8 @@ class AnthropicClient(BaseProviderClient):
             api_key = get_required_env(
                 "ANTHROPIC_API_KEY", "ANTHROPIC_API_KEY environment variable not set"
             )
-            self._client = anthropic.Anthropic(api_key=api_key, timeout=120.0)
+            # timeout raised to 600s because huge 8000+ token generations can easily take 3-5 minutes
+            self._client = anthropic.Anthropic(api_key=api_key, timeout=600.0)
         return self._client
 
     def is_accessible(self) -> bool:
