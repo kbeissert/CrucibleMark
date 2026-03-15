@@ -156,9 +156,6 @@ integration:
   leaderboard:
     enable_scoring: true               # false = Info-Modul (kein Ranking)
 
-    # OPTIONAL: Manueller Test-Counter (nur bei Aggregation nötig)
-    # display_test_count: 9
-
     # Fallback für alle Assets ohne eigene Definition
     default_contribution:
       routine: 1.0                     # 100% Routine-Anteil

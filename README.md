@@ -478,9 +478,7 @@ scoring:
 
 integration:
   leaderboard:
-    display_test_count: 25
-    columns:
-      - id: "module_score"
+
         label: "Score"
         source:
           key: "total_score"

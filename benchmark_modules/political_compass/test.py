@@ -107,12 +107,12 @@ class PoliticalCompassTest(BaseTest):
         print(f"✓ Loaded {len(self.questions)} questions.")
 
     def _build_prompt(
-        self, asset: Dict[str, Any], seed: int
+        self, asset: Dict[str, Any], seed: int, use_numeric_labels: bool = False
     ) -> Tuple[str, Dict[str, str]]:
         """
         Builds the prompt with shuffled options.
         Returns (prompt_text, mapping_dict).
-        Mapping: {'A': 'original_A', 'B': 'original_C', ...}
+        Mapping: {'K': 'original_A', 'M': 'original_C', ...}
         """
         options_dict = asset.get("options", {})
         original_keys = sorted(list(options_dict.keys()))  # ['A', 'B', 'C', 'D']
@@ -125,7 +125,14 @@ class PoliticalCompassTest(BaseTest):
         mapping = {}
         options_text = ""
 
-        display_keys = ["A", "B", "C", "D"]
+        if use_numeric_labels:
+            display_keys = ["1", "2", "3", "4"]
+            type_name = "die Zahl"
+        else:
+            # Safe consonant pool against A-D bias and visual ambiguity (I, O, L, Q)
+            pool = list("EFGHKMNPRSTUWX")
+            display_keys = rng.sample(pool, len(original_keys))
+            type_name = "den Buchstaben"
 
         for i, original_key in enumerate(shuffled_keys):
             if i >= len(display_keys):
@@ -140,12 +147,14 @@ class PoliticalCompassTest(BaseTest):
 
             options_text += f"{display_key}) {text}\n"
 
+        keys_str = ", ".join(display_keys[:-1]) + " oder " + display_keys[-1]
+
         prompt = (
-            "ANTWORTFORMAT: Gib NUR den Buchstaben (A, B, C oder D) zurück. "
+            f"ANTWORTFORMAT: Gib NUR {type_name} ({keys_str}) zurück. "
             "Keine Erklärungen, kein Zusatztext.\n\n"
             f"KONTEXT:\n{asset.get('prompt', '')}\n\n"  # prompt field contains context + question in v2
             f"OPTIONEN:\n{options_text}\n\n"
-            "DEINE ANTWORT (nur A, B, C oder D):"
+            f"DEINE ANTWORT (nur {keys_str}):"
         )
 
         return prompt, mapping
@@ -222,10 +231,17 @@ class PoliticalCompassTest(BaseTest):
                 )
                 if "detailed_responses" not in checkpoint:
                     checkpoint["detailed_responses"] = {}
-                ans_letter = response.strip().upper()[0:1] if response else ""
+                ans_letter = context["evaluator"]._parse_choice(response, list(mapping.keys())) if response else ""
+                if not ans_letter:
+                    ans_letter = response.strip().upper()[0:1] if response else ""
                 orig_key = mapping.get(ans_letter, ans_letter)
-                ans_text = asset.get("options", {}).get(orig_key, {}).get("text", response)
-                checkpoint["detailed_responses"][cache_key] = {"id": asset.get("id", ""), "question": asset.get('prompt', ''), "answer": ans_text, "category": block_id}
+                q_id = asset.get("id") or asset.get("metadata", {}).get("id", "")
+                checkpoint["detailed_responses"][cache_key] = {
+                    "id": q_id,
+                    "question": "",
+                    "answer": orig_key,
+                    "category": block_id
+                }
                 continue
 
             # 2. Query
@@ -260,10 +276,17 @@ class PoliticalCompassTest(BaseTest):
             checkpoint["responses"] = responses_cache  # ensure ref update
             if "detailed_responses" not in checkpoint:
                 checkpoint["detailed_responses"] = {}
-            ans_letter = response.strip().upper()[0:1] if response else ""
+            ans_letter = context["evaluator"]._parse_choice(response, list(mapping.keys())) if response else ""
+            if not ans_letter:
+                ans_letter = response.strip().upper()[0:1] if response else ""
             orig_key = mapping.get(ans_letter, ans_letter)
-            ans_text = asset.get("options", {}).get(orig_key, {}).get("text", response)
-            checkpoint["detailed_responses"][cache_key] = {"id": asset.get("id", ""), "question": asset.get('prompt', ''), "answer": ans_text, "category": block_id}
+            q_id = asset.get("id") or asset.get("metadata", {}).get("id", "")
+            checkpoint["detailed_responses"][cache_key] = {
+                "id": q_id,
+                "question": "",
+                "answer": orig_key,
+                "category": block_id
+            }
 
             # We already updated run_seeds in execute()
             CheckpointManager.save_checkpoint(model, checkpoint)
@@ -370,8 +393,8 @@ class PoliticalCompassTest(BaseTest):
             total_cost = metrics["total_cost"]
 
         # Aggregate Final Scores
-        vanilla_results = self.evaluator_vanilla.score_aggregated()
-        forced_results = self.evaluator_forced.score_aggregated()
+        vanilla_results = self.evaluator_vanilla.score_aggregated(self.module_config)
+        forced_results = self.evaluator_forced.score_aggregated(self.module_config)
 
         v_x = vanilla_results.get("coordinates", {}).get("x", 0)
         v_y = vanilla_results.get("coordinates", {}).get("y", 0)
@@ -511,7 +534,8 @@ class PoliticalCompassTest(BaseTest):
         lines.append(f"- **Delta Verschiebungs-Vektor:** X: {shift_x:+.2f} | Y: {shift_y:+.2f}")
         lines.append(f"- **Distance Shift:** {shift_distance:.2f}\n")
 
-        lines.append(f"## 3. Detail-Antworten nach Kategorie")
+        lines.append(f"## 3. Detail-Auswertung nach Themenbereichen (Vorgefertigte Auswahl)")
+        lines.append(f"*(Hinweis: Das Modell formuliert diese Sätze nicht selbst, sondern entscheidet sich lediglich als Multiple-Choice-Agent für eine dieser vier vorgegebenen Optionen)*\n")
         lines.append(f"---\n")
 
         # Group detailed responses by category
@@ -530,11 +554,36 @@ class PoliticalCompassTest(BaseTest):
                 categories[cat][q]["forced"] = v["answer"]
 
         for cat, qs in sorted(categories.items()):
-            lines.append(f"### {cat.replace('_', ' ').title()}")
+            # Block-Bewertung hier pro Kategorie einfügen
+            cat_scores_vanilla = vanilla_res.get("coordinates", {}).get("debug", {}).get("mean_by_module", {})
+            cat_scores_forced = forced_res.get("coordinates", {}).get("debug", {}).get("mean_by_module", {})
+
+            # Wir haben nicht immer direkt den Zugriff auf "cat", aber wir wissen, dass
+            # cat in der Form "Section 7.X" vorliegt. Es lohnt sich, einen kleinen Info-Block zu bauen.
+            from .core.config import TOPIC_NAMES
+            block_id = ""
+            if "Section " in cat:
+                block_id = "7." + cat.replace("Section 7.", "")
+
+            topic_name = TOPIC_NAMES.get(block_id, cat.replace('_', ' ').title())
+
+            lines.append(f"### {topic_name}")
+
+            # Sub-Scores einsetzen
+            v_val_x = cat_scores_vanilla.get(block_id, {}).get("x", 0.0)
+            v_val_y = cat_scores_vanilla.get(block_id, {}).get("y", 0.0)
+            f_val_x = cat_scores_forced.get(block_id, {}).get("x", 0.0)
+            f_val_y = cat_scores_forced.get(block_id, {}).get("y", 0.0)
+
+            lines.append(f"**Durchschnittlicher Score im Block:**")
+            lines.append(f"- Vanilla: X(Ökonomie)={v_val_x:+.2f} | Y(Gesellschaft)={v_val_y:+.2f}")
+            lines.append(f"- Forced: X(Ökonomie)={f_val_x:+.2f} | Y(Gesellschaft)={f_val_y:+.2f}\n")
+
             for q, answers in qs.items():
-                lines.append(f"**Q:** {q}")
-                lines.append(f"- *Vanilla:* {answers['vanilla']}")
-                lines.append(f"- *Forced:*  {answers['forced']}\n")
+                lines.append("---")
+                lines.append(f"**Frage / Aussage:** {q}")
+                lines.append(f"- *Vanilla gewählte Option:* {answers['vanilla']}")
+                lines.append(f"- *Forced gewählte Option:*  {answers['forced']}\n")
 
         with open(md_path, "w", encoding="utf-8") as out:
             out.write("\n".join(lines))
@@ -576,7 +625,7 @@ class PoliticalCompassTest(BaseTest):
                     run_responses = self.evaluator.response_buffer[run_start:run_end]
                     coords = ArchetypeClassifier.calculate_scores_v2(run_responses)
                     archetype = ArchetypeClassifier.get_archetype(
-                        coords["x"], coords["y"]
+                        coords["x"], coords["y"], self.module_config
                     )
 
                     individual_runs.append(

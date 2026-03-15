@@ -10,9 +10,9 @@ The leaderboard previously showed a discrepancy (e.g., "46/37" tests run). This 
 ### Current Behavior (v2.1+)
 The Political Compass is now strictly an informational metadata module:
 - It **does not** inject ghost rows into the main dataframes (`local_models_benchmark.csv` / `commercial_models_benchmark.csv`).
-- It **does not** artificially inflate the `Tests Run` counter.
-- It operates entirely autarkic, saving its detailed 162-question runs directly into `benchmark_scores/political_compass_details.csv` and its aggregates into `benchmark_scores/political_compass_leaderboard.csv`.
-- The `generate_leaderboard.py` script simply checks the final `political_compass_leaderboard.csv` to append a simple `Political Bias` text column to the final display table, injecting purely informational tags (e.g., `Mitte-Links / Zentristisch (Shift 2.9)`) without touching the core mathematics of the benchmark.
+- It **does not** artificially inflate the `Tests Run` counter (e.g. 44/43). The score calculator explicitly ignores non-scoring modules for both the numerator and the denominator, unless a `display_test_count` is defined.
+- It operates entirely autarkic, saving its detailed runs directly into `benchmark_scores/political_compass_details.csv` and its aggregates into `benchmark_scores/political_compass_leaderboard.csv`.
+- The `generate_leaderboard.py` script simply checks the final `political_compass_leaderboard.csv` to append a simple `Political Bias` text column to the final display table, injecting purely informational tags without touching the core mathematics of the benchmark.
 
 ______________________________________________________________________
 
@@ -44,18 +44,7 @@ df = df.drop_duplicates(subset=["model", "model_version", "type", "asset_id"], k
 
 ______________________________________________________________________
 
-## 3. Recommendation
-
-To fix the confusing "46/37" display, we have two options:
-
-1. **Semantic Fix (Recommended for Status Quo):** Keep as is, acknowledging that "Extra Credit" or "Non-Scoring" modules add to the completed count but not the required scoring baseline.
-1. **Display Fix:** Update `score_calculator.py` to include `display_test_count` overrides in the expected total (Denominator), even if scoring is disabled. This would result in "46/46".
-
-**Current Status:** Valid & Safe. No critical data bug found.
-
-______________________________________________________________________
-
-## 4. Stability Score
+## 3. Stability Score
 
 To ensure fair stability measurement across diverse tasks with naturally varying execution times (e.g., a fast translation vs. long documentation tasks), the system uses a **Category-Aware Variance** logic.
 
