@@ -135,6 +135,10 @@ ACHTUNG: Achte zwingend auf eventuelle '⚠️ SYSTEM INFO' oder '🚨 SYSTEM WA
 Ziehe ein klares, professionell begründetes Fazit (mit Empfehlungen für Einsatzzwecke).
 Nutze die qualitativen Protokolle, um echte Beispiele (z. B. aufgetretene Fehler, Missverständnisse, gute Workarounds) zu nennen.
 
+ZENTRALE ARCHITEKTUR-REGEL (WICHTIG FÜR DEIN VERSTÄNDNIS):
+Du liest hier Audit-Logs eines KI-Richters (LLM Judge). Das getestete Modell (über das du schreibst) hat eine Test-Aufgabe *komplett blind* gelöst, also **ohne** die Musterlösung (den "Golden Standard") zu kennen. 
+Erst danach hat der Judge die blinde Antwort des Modells mit dem Golden Standard verglichen und die Protokolle geschrieben. Behaute in deinem Artikel niemals, das getestete Modell hätte den "Golden Standard" oder ein "Beispiel" kopiert oder in seinem Prompt gesehen! Das Modell kannte die Lösung vorher nicht.
+
 WICHTIGE VERHALTENSREGEL:
 Verzichte bei der Bewertung absolut darauf, numerische Tabellenplätze ("Platz 1", "Platz 5") zu nennen, da das Leaderboard dynamisch ist und sich Platzierungen ständig verschieben! Konstruiere stattdessen dein Fazit auf Basis absoluter Scores und der CrucibleMark-Tiersystem-Metapher:
 {tier_metaphor_rules}
