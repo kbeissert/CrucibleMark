@@ -5,10 +5,27 @@ Handles badge assignment, speed classification, skill profiling, and console out
 
 import pandas as pd
 
-# Import constants (could be moved to config, but defined here for now as per spec)
-BADGE_GOLD_THRESHOLD = 85.0
-BADGE_SILVER_THRESHOLD = 70.0
-BADGE_BRONZE_THRESHOLD = 55.0
+import yaml
+from pathlib import Path
+
+# Load config
+try:
+    with open(Path("benchmark_config.yaml"), "r", encoding="utf-8") as f:
+        _config = yaml.safe_load(f)
+        _tiers = _config.get("scoring_tiers", {})
+except Exception:
+    _tiers = {}
+
+BADGE_PLATINUM_THRESHOLD = _tiers.get("platinum", {}).get("threshold", 90.0)
+BADGE_GOLD_THRESHOLD = _tiers.get("gold", {}).get("threshold", 75.0)
+BADGE_SILVER_THRESHOLD = _tiers.get("silver", {}).get("threshold", 60.0)
+BADGE_BRONZE_THRESHOLD = _tiers.get("bronze", {}).get("threshold", 50.0)
+
+BADGE_PLATINUM_ICON = _tiers.get("platinum", {}).get("badge", "💎 Platinum")
+BADGE_GOLD_ICON = _tiers.get("gold", {}).get("badge", "🏆 Gold")
+BADGE_SILVER_ICON = _tiers.get("silver", {}).get("badge", "🥈 Silver")
+BADGE_BRONZE_ICON = _tiers.get("bronze", {}).get("badge", "🥉 Bronze")
+BADGE_STANDARD_ICON = _tiers.get("standard", {}).get("badge", "⚖️ Standard")
 
 SPEED_FAST_THRESHOLD = 40.0
 SPEED_MEDIUM_THRESHOLD = 80.0
@@ -48,15 +65,17 @@ def get_quality_badge(total_score: float) -> str:
     """
     # Handle NaNs or invalid input
     if pd.isna(total_score):
-        return "⚖️ Standard"
+        return BADGE_STANDARD_ICON
 
+    if total_score >= BADGE_PLATINUM_THRESHOLD:
+        return BADGE_PLATINUM_ICON
     if total_score >= BADGE_GOLD_THRESHOLD:
-        return "🏆 Gold"
+        return BADGE_GOLD_ICON
     if total_score >= BADGE_SILVER_THRESHOLD:
-        return "🥈 Silver"
+        return BADGE_SILVER_ICON
     if total_score >= BADGE_BRONZE_THRESHOLD:
-        return "🥉 Bronze"
-    return "⚖️ Standard"
+        return BADGE_BRONZE_ICON
+    return BADGE_STANDARD_ICON
 
 
 def get_speed_class(avg_time: float) -> str:
@@ -270,7 +289,7 @@ def print_leaderboard_table(leaderboard: pd.DataFrame) -> None:
 
     # We remove Routine/Reasoning Score from main view as requested
 
-    badges_order = ["🏆 Gold", "🥈 Silver", "🥉 Bronze", "⚖️ Standard"]
+    badges_order = [BADGE_PLATINUM_ICON, BADGE_GOLD_ICON, BADGE_SILVER_ICON, BADGE_BRONZE_ICON, BADGE_STANDARD_ICON]
 
     for badge in badges_order:
         group = leaderboard[leaderboard["Badge"] == badge]
