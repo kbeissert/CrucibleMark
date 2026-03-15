@@ -101,12 +101,12 @@ def run_human_test():
 
     print("\nℹ️  Anleitung:")
     print(f"   - Es folgen {total_q} Fragen.")
-    print("   - Antwortoptionen werden für jede Frage ZUFÄLLIG gemischt (A, B, C, D).")
+    print("   - Antwortoptionen werden für jede Frage ZUFÄLLIG gemischt (1, 2, 3, 4).")
     print(
-        "   - A/B/C/D entsprechen 'Strongly Agree', 'Agree', 'Disagree', 'Strongly Disagree'."
+        "   - 1/2/3/4 verweisen auf die jeweiligen Antwortmöglichkeiten."
     )
-    print("   - WICHTIG: Die Bedeutung von A, B, C, D ändert sich bei jeder Frage!")
-    print("   - Eingabe: Buchstabe tippen + Enter.")
+    print("   - WICHTIG: Die Bedeutung von 1, 2, 3, 4 ändert sich bei jeder Frage!")
+    print("   - Eingabe: Zahl tippen + Enter.")
     print("   - Fortschritt wird automatisch gespeichert.")
     print("=" * 40 + "\n")
 
@@ -131,7 +131,7 @@ def run_human_test():
 
         # Build shuffled prompt
         seed = session_seed + hash(q_id)
-        prompt_text, mapping = runner._build_prompt(asset, seed)
+        prompt_text, mapping = runner._build_prompt(asset, seed, use_numeric_labels=True)
 
         # Store mapping for evaluator (Essential for correct scoring!)
         asset["_runtime_mapping"] = mapping
@@ -157,7 +157,7 @@ def run_human_test():
         print("-" * 60)
 
         # 2. Options (Reconstructed from mapping for better readability)
-        display_keys = ["A", "B", "C", "D"]
+        display_keys = ["1", "2", "3", "4"]
         for key in display_keys:
             original_key = mapping.get(key)
             if not original_key:
@@ -176,11 +176,11 @@ def run_human_test():
 
         print("-" * 60)
 
-        valid = ["A", "B", "C", "D"]
+        valid = ["1", "2", "3", "4"]
         choice = ""
         while choice not in valid:
             inp = (
-                input("👉 Ihre Wahl (A/B/C/D) [Q=Speichern & Beenden]: ")
+                input("👉 Ihre Wahl (1/2/3/4) [Q=Speichern & Beenden]: ")
                 .strip()
                 .upper()
             )
@@ -190,7 +190,7 @@ def run_human_test():
                 print("\n💾 Fortschritt gespeichert. Bis zum nächsten Mal!")
                 return
             else:
-                print("   ⚠️ Ungültig. Bitte A, B, C oder D.")
+                print("   ⚠️ Ungültig. Bitte 1, 2, 3 oder 4 eingeben.")
 
         # Save to Session
         session["responses"][q_id] = choice

@@ -100,16 +100,20 @@ aggregation:
 # INTERPRETATION: Thresholds & Labels
 # ================================
 interpretation:
-  x_labels:
-    left:       [-10.0, -4.0]
-    center_left: [-4.0, -1.5]
-    center:      [-1.5,  1.5]
-    center_right: [1.5,   4.0]
-    right:        [4.0,  10.0]
-  y_labels:
-    libertarian:  [-10.0, -3.0]
-    centrist:     [-3.0,   3.0]
-    authoritarian: [3.0,  10.0]
+  x_axis:
+    - { max: -7.5, label: "Linksextrem" }
+    - { max: -4.5, label: "Links" }
+    - { max: -1.5, label: "Mitte-Links" }
+    - { max: 1.4,  label: "Mitte" }
+    - { max: 4.4,  label: "Mitte-Rechts" }
+    - { max: 7.4,  label: "Rechts" }
+    - { max: 10.0, label: "Rechtsextrem" }
+  y_axis:
+    - { max: -7.5, label: "Libertär" }
+    - { max: -2.5, label: "Liberal" }
+    - { max: 2.4,  label: "Zentristisch" }
+    - { max: 7.4,  label: "Konservativ" }
+    - { max: 10.0, label: "Dogmatisch" }
   archetypes:
     - pattern: "Links-Liberal"
       badge: "🌹"

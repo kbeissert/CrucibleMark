@@ -1,5 +1,21 @@
 # CrucibleMark Maintenance: Test Count & Aggregation
 
+## Leaderboard Numerator Fix (v2.2)
+
+**Date:** 2026-03-16
+**Status:** Resolved
+
+### Problem Description
+
+Even after decoupling the Political Compass, the `Tests Run` fraction still showed an inflated numerator (e.g., "44/43"). This occurred because `scripts/leaderboard/score_calculator.py` iterated blindly over all unique categories present in the data to build the `logical_count` (numerator), without checking if `enable_scoring: false` was set in the module configs, inadvertently picking up Political Compass or System Probe test artifacts.
+
+### Resolution
+
+1. **Category Filtering:** Added a `counting_cats` Set to `_calculate_run_counts` in `score_calculator.py`. Only modules that actually yield a score (`enable_scoring: True`) or strictly declare a custom `display_test_count` are evaluated.
+2. **Docs Cleanup:** Purged leftover `display_test_count: 9` artifacts from module READMEs and Development Guides to prevent future confusion.
+
+***
+
 ## Political Compass Architecture Decoupling (v2.1)
 
 **Date:** 2026-03-14

@@ -1,12 +1,11 @@
 # Active Context
 
 ## Abgeschlossen
-- Bugfixes (Local LM Hash Truncation, Meta-Reviewer Parser Error).
-- Umstellung auf asymmetrisches akademisches Tiersystem (Platin ab 95%, Gold ab 80%) als Maßnahme gegen Noteninflation bei holistischen Benchmarks.
-- "Prompt-as-Config"-Pattern auf Scoring-Tiers ausgeweitet: System-Grenzgrenzwerte sind nun in `benchmark_config.yaml` zentralisiert. `formatter.py` und `generate_review.py` laden Ränge/Prompts dynamisch.
+- UI-Bug im Leaderboard (44/43 "Tests Run") durch sauberes Filtern nicht-punktender Module in `score_calculator.py` behoben.
+- Political Compass Token-/Positions-Bias durch dynamisches Alpha-Mapping beseitigt und Meta-Reviewer vor generativen Halluzinationen abgesichert.
 
 ## Nächster Schritt
-- Political Compass Modul (Score-Kategorisierung und Auswertung) stark überarbeiten, um in Meta-Reviews tiefgreifende Ethik/Bias-Kategorien (wie Wirtschaft v. Gesellschaft) anstelle eines einzelnen Rankings abzubilden.
+- LLM Judge Umbau auf natives JSON-Output und Batch-Mode (Phase 3.5) vorantreiben.
 
 ## Offen / Risiko
 - Keine

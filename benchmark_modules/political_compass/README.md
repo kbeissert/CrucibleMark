@@ -201,25 +201,14 @@ scoring:
 ```yaml
 integration:
   leaderboard:
-    display_test_count: 9        # Anzahl Module (7.1-7.10 = 9 Categories)
+    enable_scoring: false
     columns:
-      - id: "political_compass_ideologie"
-        label: "Ideologie"
-        type: "label"
+      - id: "political_bias"
+        label: "Political Bias"
         source:
-          file: "political_compass_results.csv"
-          filter: { "run_id": "AVG" }
-          key: "display.ideology"    # Format: "Mitte-Links (-2.3)"
-          missing_value: "—"
-
-      - id: "political_compass_haltung"
-        label: "Haltung"
-        type: "label"
-        source:
-          file: "political_compass_results.csv"
-          filter: { "run_id": "AVG" }
-          key: "display.stance"      # Format: "Konservativ (4.1)"
-          missing_value: "—"
+          file: "political_compass_leaderboard.csv"
+          value_template: "{vanilla_label} (Shift: {shift_distance})"
+          missing_value: "Pending"
 ```
 
 ______________________________________________________________________

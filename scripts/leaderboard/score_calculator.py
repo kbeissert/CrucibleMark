@@ -345,6 +345,7 @@ def _calculate_run_counts(
 
     name_to_override = {}
     expected_assets = 0
+    counting_cats = set()
 
     for _, mod_data in modules_config.items():
         if not mod_data.get("enabled", True):
@@ -354,6 +355,7 @@ def _calculate_run_counts(
         # Only count assets towards expected total if scoring is enabled OR if explicit display count is set
         if mod_data.get("enable_scoring", True) or mod_data.get("display_test_count"):
             expected_assets += mod_data.get("assets_count", 0)
+            counting_cats.add(name)
 
         if mod_data.get("display_test_count"):
             name_to_override[name] = int(mod_data.get("display_test_count"))
@@ -362,6 +364,8 @@ def _calculate_run_counts(
         count = 0
         cats = sub_df["category"].unique()
         for cat in cats:
+            if cat not in counting_cats:
+                continue
             row_count = len(sub_df[sub_df["category"] == cat])
             if cat in name_to_override:
                 if row_count > 0:
