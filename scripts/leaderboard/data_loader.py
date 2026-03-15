@@ -152,6 +152,14 @@ def load_benchmark_data() -> pd.DataFrame:
             .astype(str)
             .str.replace(r"-\d{4}-\d{2}-\d{2}$", "", regex=True)
         )
+    
+    # Also normalize model name to remove date suffixes
+    if "model" in df.columns:
+        df["model"] = (
+            df["model"]
+            .astype(str)
+            .str.replace(r"-\d{4}-\d{2}-\d{2}$", "", regex=True)
+        )
 
     # --- DEDUPLICATION (Latest Run Only) ---
     # Crucial for accurate metrics (e.g. Load Time on new hardware):

@@ -204,99 +204,31 @@ def main(print_table: bool = True) -> None:
     leaderboard = assign_rank_and_badges(leaderboard, cat_cols)
 
     # 7. Model Name & Version Formatting
-    leaderboard["Model Name"] = leaderboard["model"]
+    def clean_model_name(name):
+        name = str(name).replace("*", "").strip()
+        # Dates (YYYY-MM-DD or YYYYMMDD)
+        name = re.sub(r"[-_]?\d{4}[-_]?\d{2}[-_]?\d{2}$", "", name)
+        # Year or YearMonth (like mistral 2411)
+        name = re.sub(r"[-_]?\d{4}$", "", name)
+        return name
+
+    leaderboard["Model Name"] = leaderboard["model"].apply(clean_model_name)
 
     def format_version_display(row):
-        version = str(row.get("model_version", "unknown"))
-        model_name = str(row.get("model", ""))
+        version = str(row.get("model_version", "k.A."))
+        if version in ["unknown", "local", "nohash", "", "nan", "None"]:
+            return "k.A."        # Strip legacy historical behavioral hash (8 char hex string ending)
+        version = re.sub(r"-[a-f0-9]{8}$", "", version)
 
-        # Cleanup Model Name (remove status flags like ' *')
-        model_name_clean = model_name.replace("*", "").strip()
+        base_name = str(row.get("model", ""))
+        cn = clean_model_name(base_name)
+        if version == base_name or version == cn:
+            version = "k.A."
 
-        # 1. Greedy Token Strip Strategy
-        # Split model name by common separators
-        tokens = re.split(r"[-: ]+", model_name_clean)
-
-        display_ver = version
-        for token in tokens:
-            if not token:
-                continue
-            # Check if current display_ver starts with this token (case insensitive)
-            # We look for token followed by separator or start
-
-            # Pattern: ^keyword[-_:]?
-            if re.match(f"^{re.escape(token)}[-_:]?", display_ver, re.IGNORECASE):
-                # Remove it
-                # Find length of match
-                match = re.match(
-                    f"^{re.escape(token)}[-_:]?", display_ver, re.IGNORECASE
-                )
-                if match:
-                    display_ver = display_ver[match.end() :]
-
-        # Cleanup leading separators
-        display_ver = display_ver.lstrip("-_: ")
-
-        # 2. Extract specific parts if it looks like a fingerprint
-        # Format: {official}-{hash}-{date} or {hash}-{date}
-        # Example: 2411-7f3a9c2b-2026-02-02
-        parts = display_ver.split("-")
-
-        # If we have a hash-like part, keep it short
-
-        final_parts = []
-        for p in parts:
-            # Check for behavioral hash (8 char hex) or ollama hash (12+ hex)
-            if re.match(r"^[a-f0-9]{8}$", p) or re.match(r"^[a-f0-9]{12,}$", p):
-                final_parts.append(p[:7])
-            # Check for date (YYYY-MM-DD or YYYYMMDD) -> maybe remove or format?
-            # User wants version number. Date is usually extra info.
-            # But the previous code added date suffix from timestamp column.
-            # elif re.match(r'^\d{4}-\d{2}-\d{2}$', p) and p == datetime.now().strftime("%Y-%m-%d"):
-            # Skip if it is today's date (redundant)
-            # pass
-            elif re.match(r"^\d{4}$", p):  # Year e.g., 2411 (Mistral Version) or 2024
-                final_parts.append(p)
-            else:
-                final_parts.append(p)
-
-        display_ver = "-".join(final_parts) if final_parts else display_ver
-
-        # 3. Handle 'unknown'
-        if display_ver == "unknown":
-            # If unknown, we rely on timestamp date
-            pass
-
-        # Extract Date (Month/Year) from timestamp for suffix if needed
-        date_suffix = ""
-        raw_ts = row.get("timestamp")
-
-        if pd.notna(raw_ts):
-            try:
-                # Need datetime import inside function scope or top level
-                # from datetime import datetime
-                ts = pd.to_datetime(raw_ts)
-                # Format: Feb 2026 (Month Year) - granular enough for versions
-                date_suffix = ts.strftime("%b %Y")
-            except (ValueError, TypeError):
-                pass
-
-        # If version is just a hash (no dashes, usually local models), definitely append date
-        # If version is standard, also append date if not redundant
-
-        if display_ver in ["", "unknown"]:
-            return f"({date_suffix})" if date_suffix else "unknown"
-
-        # Normalize: Strip YYYY-MM-DD from the end of the version string if present
-        # This ensures we don't have double dates (e.g. "...-2026-02-02 (Feb 2026)")
-        # and standardizes the look to "Version (Month Year)"
-        display_ver = re.sub(r"[-\s]?\d{4}-\d{2}-\d{2}$", "", display_ver)
-
-        # Always append the friendly date suffix
-        if date_suffix:
-            return f"{display_ver} ({date_suffix})"
-
-        return display_ver
+        # Keep short hash for local models ONLY if alphanumeric
+        if len(version) >= 8 and re.match(r"^[a-f0-9]+$", version) and any(c.isalpha() for c in version):
+            return version[:7]
+        return version
 
     leaderboard["Version"] = leaderboard.apply(format_version_display, axis=1)
 

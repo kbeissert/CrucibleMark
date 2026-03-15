@@ -21,6 +21,8 @@ help:
 	@echo "  make leaderboard          Generate Leaderboard CSV"
 	@echo "  make review-model         📰 Generate Review for a model (MODEL=name)"
 	@echo "  make review-all           📰 Generate Reviews for ALL models"
+	@echo "  make review-bias-model    ⚖️ Generate Bias-Review for a model (MODEL=name)"
+	@echo "  make review-bias-all      ⚖️ Generate Bias-Reviews for ALL models"
 	@echo "  make bias-report          📊 Update Bias Sensitivity Report"
 	@echo ""
 	@echo "=== Validation & QA ==="
@@ -97,6 +99,18 @@ review-model:
 review-all:
 	@echo "📰 Generating Reviews for ALL models..."
 	$(PYTHON) scripts/analysis/generate_review.py --all
+
+review-bias-model:
+	@if [ -z "$(MODEL)" ]; then \
+		echo "❌ Fehler: Gib ein Modell an. Beispiel: make review-bias-model MODEL=claude-haiku-4-5-20251001"; \
+		exit 1; \
+	fi
+	@echo "📰 Generating Bias-Review for model: $(MODEL)"
+	$(PYTHON) scripts/analysis/generate_review.py --model "$(MODEL)" --type bias
+
+review-bias-all:
+	@echo "📰 Generating Bias-Reviews for ALL models..."
+	$(PYTHON) scripts/analysis/generate_review.py --all --type bias
 
 leaderboard:
 	@echo "📊 Generating Leaderboard..."
