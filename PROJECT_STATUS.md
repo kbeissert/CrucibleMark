@@ -1,15 +1,23 @@
 # PROJECT_STATUS.md
 
-**Last Updated:** 2026-03-14 **Current Version:** 2.5.0 (Architectural Clean-Up) **Status:** ✅ Production-Ready
+**Last Updated:** 2026-03-16 **Current Version:** 2.6.0 (Metric Accuracy & Bias Prevention) **Status:** ✅ Production-Ready
 
 ______________________________________________________________________
 
 ## 🎯 Executive Summary
+CrucibleMark v2.6.0 fokussiert sich auf höchste Metrik-Integrität und Bias-Prävention. Das Scoring-System wurde bereinigt, um mathematisch einwandfreie Metriken (z.B. saubere "Tests Run" Zähler) zu garantieren. Gleichzeitig wurde im Political Compass Modul ein Position/Token-Bias durch die Einführung von dynamischem Alpha-Mapping (Randomisierung der Antwortauswahl anstelle starrer A/B/C/D Muster) eliminiert, was die Authentizität der Modellauswertungen steigert. Zudem wurde die Dokumentation vollständig überholt und obsoletes Test-Count-Verhalten restlos verbannt.
+
+**Key Achievements (v2.6.0):**
+- ✅ **Metrics Accuracy:** Behebung des Leaderboard-Numerator-Bugs (44/43 Tests Run), indem nicht-punktende Module (wie Political Compass) beim Parsing vollständig ignoriert werden.
+- ✅ **Bias Prevention:** Alpha-Randomization in Multiple Choice Setups eingebaut, um LLM-Primacy/Token-Gedächtniseffekte (Drift zur Mitte) zu verhindern.
+- ✅ **Meta-Reviewer Tuning:** Prompt-Überarbeitung gegen Halluzinationen (verhindert, dass der Meta-Reviewer generative Argumentationen herbeifantasiert, wo nur Choice-Optionen gewählt wurden).
+- ✅ **Human Baseline Script:** `run_human_compass.py` umstrukturiert auf direkte Nummern-Eingaben für validierbare Human-Benchmarks.
+
+**Previous Version (v2.5.0):**
 CrucibleMark v2.5.0 schließt die SSOT-Migration ab, indem die alte, dynamische "Golden Standard Model" Pipeline vollständig entfernt wurde. Ab sofort existiert **ausschließlich eine statische "Design by Intention" Evaluierung** via LLM-Judge auf Basis der `asset.yaml`.
 Die Kernarchitektur für die automatisierte Auswertung freier Antworten wurde in v2.4.0 vollständig integriert, getestet und stabilisiert.
 Eine SSOT-basierte Konfiguration in `benchmark_config.yaml` sowie detaillierte `golden_standard` Blöcke in den Assets garantieren saubere Testdurchläufe ohne Fallstricke.
 
-**Key Achievements (v2.5.0):**
 - ✅ **Architectural Deprecation:** Vollständiges Entfernen des `--mode golden_standard` in Kommandozeilen. Kein Referenz-Modell generiert mehr dynamische Responses für den Vergleich.
 - ✅ **Clean Runner Logic:** `run_commercial_benchmark.py` & `run_local_benchmark.py` verarbeiten nur noch den puren Test-Modus ohne komplexe Interaktionen.
 - ✅ **Leaderboard Isolation:** Evaluierung nutzt jetzt 1:1 die rohen Prozent-Werte des Intent-Judges; die fehleranfällige, relative Berechnungslogik (`performance_ratio`) zur Referenz wurde gelöscht.
