@@ -175,7 +175,8 @@ Beginne direkt mit dem generierten Artikel. Verzichte strikt auf Begrüßungsflo
         tested_model_name=tested_model_name,
         hardware_context=hardware_context,
         csv_data=csv_data,
-        log_data=log_data
+        log_data=log_data,
+        tier_metaphor_rules=tier_metaphor_rules
     )
 
     print(f"🤖 Generiere {review_type.capitalize()}-Review für {tested_model_name} mit {provider}/{model_id}...")

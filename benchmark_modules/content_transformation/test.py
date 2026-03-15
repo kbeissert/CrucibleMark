@@ -56,7 +56,6 @@ class ContentTransformationTest(BaseTest):
                 full_prompt,
                 provider=provider,
                 temperature=DEFAULT_TEMPERATURE,
-                max_tokens=2048,
             )
 
             # Use clean execution time if available, otherwise fallback to wall clock

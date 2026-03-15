@@ -382,6 +382,54 @@ The unified leaderboard aggregates scores across all modules:
 python scripts/core/generate_leaderboard.py
 ```
 
+---
+
+## 📊 Scoring Methodology v1.0
+
+### **Benchmark Specification: CrucibleMark v1.0 – DevOps & UX Benchmark**
+
+**Status:** Baseline stabil nach Tokenlimit-Fix (2048 → kaskadierend 8000/4000/2000) und vollständigen Re-Runs (Claude/Mistral/Gemini). [Datum]
+
+#### **Technische Rahmenbedingungen**
+- **Max Token (Output):** Kaskadierend 8000 → 4000 → 2000 (pro Task, bei Fehler/Timeout)
+- **Zeitprofile:** ⚡ Real-Time (<40s), ⏱️ Interactive, 🕐 Batch (>80s) – basierend auf P95/Max Time
+- **Metriken pro Modell:**
+  - Total Score (0–100)
+  - Performance/s (Score pro Sekunde)
+  - Avg/P95/Max Time
+  - Timeout Count
+  - Cost per 1K Tokens (USD, Commercial only)
+
+#### **Scoring-Achsen**
+```
+Total Score = (Routine Score + Reasoning Score) / 2
+```
+- **Routine Score:** Umsetzung, Handwerk, Format, Robustheit
+- **Reasoning Score:** Logische Tiefe, Kausalität, Metacognition
+
+#### **Task-Gruppen & Gewichtung**
+| Gruppe | Beispiele | Gewicht |
+|--------|-----------|---------|
+| Code Quality | Audits, Security | 25% |
+| UX Writing | Microcopy, Onboarding | 15% |
+| Documentation | README, API Docs | 20% |
+| Content Transformation | Video-Scripts, Threads | 20% |
+| Cultural Intelligence | Localization, Idioms | 10% |
+| Logical Reasoning | Paradoxes, Deadlocks | 10% |
+
+#### **LLM Judge Setup**
+- **Primär:** Claude Sonnet 4.6 (hohe Sensitivität, detaillierte Begründungen)
+- **Sekundär (hart):** Claude Haiku 4 (Sensitivitäts-Checks)
+- **Pro Task:** LLM-Judge-Score (1–5, normiert 0–100), Coverage (%), Parsing-Success
+
+#### **Versionshistorie**
+```
+v1.0 (2026-03-15): Tokenlimits gefixt, Haiku-4-Rejudging, Claude-Vorsprung robust
+v0.9: Initial mit hartem 2048-Limit → Artefakte bei langen Tasks
+```
+
+**Leaderboard-Generierung:** `python scripts/core/generate_leaderboard.py`
+
 ______________________________________________________________________
 
 ## 🛠️ Framework Architecture

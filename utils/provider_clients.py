@@ -12,7 +12,7 @@ from utils.ollama_config import CODING_BENCHMARK_OPTIONS, CREATIVE_BENCHMARK_OPT
 from utils.constants import MAX_TOKENS_ANTHROPIC, DEFAULT_MISTRAL_MODEL
 from utils.env_utils import get_required_env
 from utils.model_utils import is_reasoning_model
-from utils.fingerprinting import ModelFingerprinter, get_official_version
+from utils.fingerprinting import ModelFingerprinter
 
 # Optional Provider Imports
 try:
@@ -588,24 +588,9 @@ class MistralClient(BaseProviderClient):
         if model in self.fingerprint_cache:
             return self.fingerprint_cache[model]
 
-        official_version = get_official_version("mistral", model)
-        # Use simple model type name for fingerprinting
-        model_type = model.replace("mistral-", "").split("-")[0]
-
-        # NOTE: self passed as client. query() must handle skip_fingerprint kwarg
-        behavioral_hash = ModelFingerprinter.generate_behavioral_hash(
-            client=self, model_name=model
-        )
-
-        fingerprint = ModelFingerprinter.create_fingerprint(
-            provider="mistral",
-            model_name=model_type,
-            official_version=official_version,
-            behavioral_hash=behavioral_hash,
-        )
+        fingerprint = ModelFingerprinter.get_unified_version(provider="mistral", model_name=model)
         self.fingerprint_cache[model] = fingerprint
         return fingerprint
-
     def query(
         self,
         model: str,
@@ -733,23 +718,9 @@ class OpenAIClient(BaseProviderClient):
         if model in self.fingerprint_cache:
             return self.fingerprint_cache[model]
 
-        official_version = get_official_version("openai", model)
-        # Use simple model type name for fingerprinting
-        model_type = model.replace("gpt-", "gpt").split("-")[0]
-
-        behavioral_hash = ModelFingerprinter.generate_behavioral_hash(
-            client=self, model_name=model
-        )
-
-        fingerprint = ModelFingerprinter.create_fingerprint(
-            provider="openai",
-            model_name=model_type,
-            official_version=official_version,
-            behavioral_hash=behavioral_hash,
-        )
+        fingerprint = ModelFingerprinter.get_unified_version(provider="openai", model_name=model)
         self.fingerprint_cache[model] = fingerprint
         return fingerprint
-
     def query(
         self,
         model: str,
@@ -1092,25 +1063,10 @@ class XAIClient(BaseProviderClient):
         if model in self.fingerprint_cache:
             return self.fingerprint_cache[model]
 
-        from utils.fingerprinting import get_official_version
         from utils.fingerprinting import ModelFingerprinter
-
-        official_version = get_official_version("xai", model)
-        model_type = "grok"
-
-        behavioral_hash = ModelFingerprinter.generate_behavioral_hash(
-            client=self, model_name=model
-        )
-
-        fingerprint = ModelFingerprinter.create_fingerprint(
-            provider="xai",
-            model_name=model_type,
-            official_version=official_version,
-            behavioral_hash=behavioral_hash,
-        )
+        fingerprint = ModelFingerprinter.get_unified_version(provider="xai", model_name=model)
         self.fingerprint_cache[model] = fingerprint
         return fingerprint
-
     def query(
         self,
         model: str,

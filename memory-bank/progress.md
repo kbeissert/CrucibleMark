@@ -1,6 +1,7 @@
 # Progress
 
 ## Ongoing
+- [ ] Political Compass Modul Auswertung evaluieren / tiefgreifendere Bias-Kategorien im Reviewing
 - [ ] LLM Judge: Umbau auf natives JSON-Output (`judge_parser.py` + Prompts)
 - [ ] LLM Judge: Batch-Mode (Phase 3.5)
 - [ ] Volldurchlauf aller lokalen Modelle → finales Leaderboard (43/43 Tests)
@@ -8,6 +9,8 @@
 - [ ] Stabilität `gpt-oss` analysieren (vorheriger Absturz-Kandidat)
 
 ## Abgeschlossen (Meilensteine)
+- [DONE] Akademisches "Prompt-as-Config" Tier-System (Platin ab 95%) etabliert und in Pipelines integriert.
+- [DONE] "System Info" Warnungen + Token Fallback Extraktion in Meta-Reviewer.
 - [DONE] Globales kaskadierendes Token-Fallback & Provider Error Handling ("Fast-Fail" für Budget, Metadaten in Ergebnissen)
 - [DONE] Golden Standard Validierung und SSOT-Konsolidierung (`asset.yaml` Blöcke verifiziert, obsoletes LLM-Referenz-Raw-Log System entfernt). Project Status geupdated.
 - [DONE] LLM Judge Modul vollständig implementiert (Phase 1–3.5): Provider-Abstraktion,

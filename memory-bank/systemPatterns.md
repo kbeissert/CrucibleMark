@@ -29,5 +29,5 @@ Gilt für Generation-Parameter UND LLM Judge. Modul-Override gewinnt immer.
 ## Hardware Context & Prompt-as-Config
 - Die Laufzeitumgebung (Hardware) wird unter `runner_environment:` in `benchmark_config.yaml` deklariert (t/s limits, Unified Memory vs VRAM).
 - `SystemContextManager` injiziert dieses Profil automatisch als Kontext in Prompts (z.B. den Meta-Reviewer in `scripts/analysis/generate_review.py`).
-- Zentrale System-Prompts (wie der Meta-Reviewer) werden in `config/*.yaml` externalisiert, um "Prompt-as-Config" zu etablieren und Code von Inhalt zu trennen.
+- **Prompt-as-Config / Tier-System:** Logik-Regeln (wie Leaderboard Scoring-Tiers und deren Prompt-Repräsentanz für den Meta-Reviewer) werden zentral in `benchmark_config.yaml` (`scoring_tiers`) gepflegt. Präsentationsschicht (`formatter.py`) und AI-Anweisungen (`generate_review.py`) lesen diese Werte dynamisch zur Laufzeit, um Hardcoding und Inkonsistenzen (Noteninflation) zu vermeiden.
 
