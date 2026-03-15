@@ -333,3 +333,28 @@ modules:
   political_compass:
     path: "benchmark_modules/political_compass"
     enabled: true
+
+# ============================================================
+# Leaderboard & Scoring Tiers
+# ============================================================
+scoring_tiers:
+  platinum:
+    threshold: 95.0
+    badge: "💎 Platinum"
+    prompt_description: "- **Ab {threshold}% (Platin-Standard, SOTA Elite):** Absolute Spitzenliga."
+  gold:
+    threshold: 80.0
+    badge: "🏆 Gold"
+    prompt_description: "- **{threshold}% bis {next_threshold}% (Gold-Standard, Excellent/Good):** Hervorragende, verlässliche Modelle."
+  silver:
+    threshold: 65.0
+    badge: "🥈 Silver"
+    prompt_description: "- **{threshold}% bis {next_threshold}% (Silber-Standard, Adequate):** Sehr solide Basis. The model performs adequately."
+  bronze:
+    threshold: 50.0
+    badge: "🥉 Bronze"
+    prompt_description: "- **{threshold}% bis {next_threshold}% (Bronze-Standard):** Akzeptable Leistung mit Einschränkungen."
+  standard:
+    threshold: 0.0
+    badge: "⚖️ Standard"
+    prompt_description: "- **Unter {next_threshold}% (Standard/Fail):** Suboptimale Leistung, oft ungeeignet für komplexe Agenten-Aufgaben."
