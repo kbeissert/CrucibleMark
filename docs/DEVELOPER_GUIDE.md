@@ -429,24 +429,29 @@ from schemas.result import BenchmarkResult
 
 def execute(self, model: str, llm_client: Any, **kwargs) -> BenchmarkResult:
     # 1. Run LLM
+    start_time = time.time()
     response_text = llm_client.query(prompt, ...)
+    elapsed_time = time.time() - start_time
 
-    # 2. Delegate to Evaluator
-    evaluator = CodeQualityEvaluator(self.asset)
-    scoring_result = evaluator.score_response(response_text)
-
-    # 3. Return Standard Object
+    # 2. Return pre-scored BenchmarkResult
     return BenchmarkResult(
         status="success",
-        primary_score=scoring_result["score"],  # The ranking metric
-        rendered_value=f"{scoring_result['score']:.1f} %",
         raw_response=response_text,
         execution_time=elapsed_time,
-        data={
-            "details": scoring_result["details"],
-            "subscores": scoring_result["subscores"]
-        }
     )
+
+def score_response(self, result: BenchmarkResult) -> BenchmarkResult:
+    # 3. Delegate to pure text Evaluator
+    evaluator = CodeQualityEvaluator(self.asset)
+    scoring_result = evaluator.score_response(result.raw_response)
+
+    # 4. Map Dict to the BenchmarkResult fields
+    result.primary_score = scoring_result.get("score")
+    result.tier = scoring_result.get("tier", "Tier 1 (Undefined)")
+    result.data = scoring_result
+    result.rendered_value = f"{result.primary_score} %" if result.primary_score is not None else "N/A"
+    
+    return result
 ```
 
 ______________________________________________________________________
@@ -609,8 +614,8 @@ ______________________________________________________________________
 
 Debug-Checklist:
 
-1. `score_response()` implementiert?
-1. Returned Float (nicht Dict)?
+1. Nimmst du ein `BenchmarkResult` in `score_response()` an und retournierst es wieder?
+1. Überträgst du `score_dict["score"]` zu `result.primary_score` in `score_response()`?
 1. Keywords case-sensitive?
 
 Debug-Tool:

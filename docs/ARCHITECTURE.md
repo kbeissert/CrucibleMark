@@ -425,8 +425,8 @@ class BaseTest:
     def run(self, model, llm_client):
         self.load_asset()
         result = self.execute(model, llm_client)  # Override
-        score = self.score_response(result)       # Override
-        self.save_to_csv(score)
+        result = self.score_response(result)      # Override
+        self.save_to_csv(result)
 ```
 
 ______________________________________________________________________

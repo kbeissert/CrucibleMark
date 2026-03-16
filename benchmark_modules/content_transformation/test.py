@@ -8,13 +8,14 @@ Delegates logic to benchmark_modules.content_transformation.core.evaluators.
 import sys
 import time
 from pathlib import Path
-from typing import Any
+from typing import Any, Dict
 
 # Ensure root directory is in sys.path
 root_dir = Path(__file__).parent.parent.parent
 if str(root_dir) not in sys.path:
     sys.path.insert(0, str(root_dir))
 
+# pylint: disable=wrong-import-position
 from schemas.result import BenchmarkResult  # noqa: E402
 from benchmark_modules.base_test import BaseTest  # noqa: E402
 from benchmark_modules.content_transformation.core.constants import (  # noqa: E402
@@ -24,6 +25,7 @@ from benchmark_modules.content_transformation.core.constants import (  # noqa: E
 from benchmark_modules.content_transformation.core.evaluators import (
     ContentTransformationEvaluator,
 )  # noqa: E402
+# pylint: enable=wrong-import-position
 
 
 class ContentTransformationTest(BaseTest):
@@ -33,7 +35,7 @@ class ContentTransformationTest(BaseTest):
     """
 
     def execute(
-        self, model: str, llm_client: Any, provider: str = "ollama"
+        self, model: str, llm_client: Any, provider: str = "ollama", **kwargs: Any
     ) -> BenchmarkResult:
         """
         Führt Content Transformation Test aus
@@ -87,6 +89,13 @@ class ContentTransformationTest(BaseTest):
                 model_version=getattr(llm_client, "last_response_metadata", {}).get(
                     "system_fingerprint", "unknown"
                 ),
+                tokens_per_second=0.0,
+                token_limit_cutoff=False,
+                token_limit_fallback=False,
+                token_limit_used=None,
+                finish_reason=getattr(llm_client, "last_response_metadata", {}).get(
+                    "finish_reason", "completed"
+                ),
                 meta={
                     "model": model,
                     "asset_id": self.asset["metadata"]["id"],
@@ -97,15 +106,33 @@ class ContentTransformationTest(BaseTest):
         except Exception as e:
             return BenchmarkResult(
                 status="error",
+                primary_score=0.0,
                 rendered_value="ERROR",
                 raw_response=f"ERROR: {str(e)}",
+                evaluated_prompt=full_prompt,
                 execution_time=0.0,
+                load_time=0.0,
+                tokens_used=0,
+                cost_usd=0.0,
+                tokens_per_second=0.0,
+                token_limit_cutoff=False,
+                token_limit_fallback=False,
+                token_limit_used=None,
+                model_version="unknown",
+                finish_reason="error",
                 meta={"model": model, "error": str(e)},
             )
 
-    def score_response(self, response: str) -> dict:
+    def score_response(self, result: BenchmarkResult) -> BenchmarkResult:
         """
         Delegates scoring to ContentTransformationEvaluator.
         """
         evaluator = ContentTransformationEvaluator(self.asset)
-        return evaluator.score_response(response)
+        score_dict = evaluator.score_response(result.raw_response)
+        
+        result.primary_score = score_dict.get("score", score_dict.get("total_score"))
+        result.tier = score_dict.get("tier", "Tier 1 (Undefined)")
+        result.data = score_dict
+        result.rendered_value = f"{result.primary_score} %" if result.primary_score is not None else "N/A"
+        
+        return result

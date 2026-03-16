@@ -7,9 +7,10 @@
 
 ## 🎯 Philosophy
 
-**"No perfect scoring, but robust Checks & Balances"**
+> "No perfect scoring, but robust Checks & Balances"
 
 Kombiniert **harte Fakten (Regex)** mit **nuancierter Bewertung (LLM Judge)**. Bewältigt bekannte LLM-Untiefen:
+
 - Regex: Format-Varianz → Embeddings abfedern
 - Judge: Positivity Bias → Regex zentrieren
 
@@ -17,13 +18,13 @@ Kombiniert **harte Fakten (Regex)** mit **nuancierter Bewertung (LLM Judge)**. B
 
 ## 🏗️ Hybrid-Architektur (3 Pfeiler)
 
-| Pfeiler | Stärken | Schwächen | Einsatz |
-|---------|---------|-----------|---------|
-| **Regex** | Objektiv, präzise | Format-Sensitivität | CLI/Code (30-50%) |
-| **Embeddings** | Semantik | Syntax-blind | Text (20-30%) |
-| **LLM Judge** | Nuancen | Bias | UX/Reasoning (30-50%) |
+| Pfeiler      | Stärken           | Schwächen         | Einsatz           |
+| ------------ | ----------------- | ----------------- | ----------------- |
+| **Regex**      | Objektiv, präzise | Format-Sensitivität | CLI/Code (30-50%) |
+| **Embeddings** | Semantik          | Syntax-blind      | Text (20-30%)     |
+| **LLM Judge**  | Nuancen           | Bias              | UX/Reasoning (30-50%) |
 
-```
+```text
 Total Score = (Routine Score + Reasoning Score) / 2
 ```
 
@@ -32,21 +33,24 @@ Total Score = (Routine Score + Reasoning Score) / 2
 ## ⚙️ Technische Specs
 
 ### **Kaskadierende Token-Limits**
-```
+
+```text
 8000 → 4000 → 2000 Tokens (Fallback bei Timeout/Fehler)
 - Cutoff: Judge bewertet Fragment exakt (Score 1 bei abruptem Ende)
 - Tracking: `token_limit_used`, `fallback_active` pro Asset
 ```
 
 ### **Zeitprofile (automatisch)**
-| Profil | P95 | Badge |
-|--------|-----|-------|
-| ⚡ Real-Time | <40s | Real-Time DevOps Expert |
-| ⏱️ Interactive | 40-80s | Interactive DevOps Expert |
-| 🕐 Batch | >80s | Batch Reasoning Expert |
+
+| Profil        | P95  | Badge                     |
+| ------------- | ---- | ------------------------- |
+| ⚡ Real-Time    | <40s | Real-Time DevOps Expert   |
+| ⏱️ Interactive  | 40-80s | Interactive DevOps Expert |
+| 🕐 Batch        | >80s | Batch Reasoning Expert    |
 
 ### **Core Metriken**
-```
+
+```text
 Performance/s = Total Score / Avg Time
 LLM Judge Avg = Normiert (1-5 → 0-100)
 Coverage % = Erfolgreich geparst
@@ -60,12 +64,12 @@ Um einer "Noteninflation" entgegenzuwirken und den "Universalien-Malus" korrekt 
 
 Es ist für ein Modell ungleich schwerer, über 6-7 grundverschiedene Disziplinen (Coding, UX, Cultural, Logik etc.) *zeitgleich* High-Scores abzuräumen, als in einem isolierten Bereich. Daher setzen wir die Schwellenwerte für holistische Exzellenz bewusst hoch an:
 
-| Tier | Schwelle | Bedeutung & Akademisches Äquivalent |
-|------|---------|--------------------------------------|
+| Tier         | Schwelle  | Bedeutung & Akademisches Äquivalent  |
+| ------------ | --------- | ------------------------------------ |
 | 💎 **Platinum** | **≥ 95%** | **SOTA Elite (A+ / Perfektion).** Fast unerreichbare "Hall of Fame", in der nur Modelle landen, die fehlerfrei quer durch alle Module agieren. Hält den Benchmark langfristig "future-proof". |
-| 🏆 **Gold** | **≥ 80%** | **Excellent (A).** Herausragende, verlässliche Modelle. Erfordert konstante Top-Leistung; die aktuelle Grenze für Universal-Modelle. |
-| 🥈 **Silver** | **≥ 65%** | **Good / Adequate (B).** Sehr solide Basis und starkes Expertenlevel. Auch SOTA-Modelle fallen in den Silber-Rang, wenn sie in 1-2 Teildisziplinen schwächeln. |
-| 🥉 **Bronze** | **≥ 50%** | **Acceptable (C).** Die harte Bestehensgrenze ("Pass mark"). Akzeptable Leistung mit klaren Einschränkungen. |
+| 🏆 **Gold**     | **≥ 80%** | **Excellent (A).** Herausragende, verlässliche Modelle. Erfordert konstante Top-Leistung; die aktuelle Grenze für Universal-Modelle. |
+| 🥈 **Silver**   | **≥ 65%** | **Good / Adequate (B).** Sehr solide Basis und starkes Expertenlevel. Auch SOTA-Modelle fallen in den Silber-Rang, wenn sie in 1-2 Teildisziplinen schwächeln. |
+| 🥉 **Bronze**   | **≥ 50%** | **Acceptable (C).** Die harte Bestehensgrenze ("Pass mark"). Akzeptable Leistung mit klaren Einschränkungen. |
 | ⚖️ **Standard** | **< 50%** | **Standard/Fail (F).** Suboptimale Leistung, ungeeignet für komplexe Agenten-Aufgaben. |
 
 *Konfiguration: Diese Grenzwerte sind zentral in der `benchmark_config.yaml` (`scoring_tiers`) parametrisiert und steuern nach dem "Prompt-as-Config"-Pattern automatisch die linguistische Bewertung des Meta-Reviewers.*
@@ -75,37 +79,40 @@ Es ist für ein Modell ungleich schwerer, über 6-7 grundverschiedene Diszipline
 ## 👨‍⚖️ LLM Judge Pipeline
 
 ### **Evaluator-Rangliste**
-```
+
+```text
 1. Claude Haiku 4 ⭐ (Strengster, Spread-Erzeuger)
 2. Gemini 2.5 Pro (Pragmatisch, Ceiling-Effekt)
 3. Claude Sonnet 4.6 (Detailliert)
 ```
 
 ### **Modi**
+
 - **Guided:** + Golden Standard (zentriert)
 - **Unguided:** Reine Kriterien (kreativ)
 
 ### **5-Point-Skala**
-| Raw | % | Label |
-|-----|---|-------|
-| 5 | 100 | Excellent |
-| 4 | 75 | Good |
-| 3 | 50 | Adequate |
-| 2 | 25 | Poor |
-| 1 | 0 | Fail |
+
+| Raw | %   | Label     |
+| --- | --- | --------- |
+| 5   | 100 | Excellent |
+| 4   | 75  | Good      |
+| 3   | 50  | Adequate  |
+| 2   | 25  | Poor      |
+| 1   | 0   | Fail      |
 
 ---
 
 ## 📊 Task-Matrix & Gewichtung
 
-| Gruppe | Tasks | Evaluator | Gewicht |
-|--------|-------|-----------|---------|
-| Code Quality | 5 Audits | Regex+Judge | **25%** |
-| UX Writing | 5 Microcopy | Judge+Patterns | **15%** |
-| Documentation | 5 Docs | Judge+Completeness | **20%** |
-| Content Transf. | 6 Scripts | Judge+Embeddings | **20%** |
-| Cultural Intel. | 5 Idioms | Judge+Accuracy | **10%** |
-| Reasoning | 11 Logic | Judge+Verification | **10%** |
+| Gruppe            | Tasks       | Evaluator          | Gewicht |
+| ----------------- | ----------- | ------------------ | ------- |
+| Code Quality      | 5 Audits    | Regex+Judge        | **25%** |
+| UX Writing        | 5 Microcopy | Judge+Patterns     | **15%** |
+| Documentation     | 5 Docs      | Judge+Completeness | **20%** |
+| Content Transf.   | 6 Scripts   | Judge+Embeddings   | **20%** |
+| Cultural Intel.   | 5 Idioms    | Judge+Accuracy     | **10%** |
+| Reasoning         | 11 Logic    | Judge+Verification | **10%** |
 
 **CLI:** Regex-only (Batch-Modus)
 

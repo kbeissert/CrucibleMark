@@ -4,7 +4,7 @@ Analyzes text for formality, professionalism, and spoken style attributes.
 """
 
 import re
-from typing import Dict, Set
+from typing import Dict, Set, Any
 
 
 class ToneEvaluator:
@@ -157,7 +157,7 @@ class ToneEvaluator:
         return max(0.0, min(1.0, score))
 
     @staticmethod
-    def detect_spoken_style(response: str) -> Dict[str, any]:
+    def detect_spoken_style(response: str) -> Dict[str, Any]:
         """
         Detects if the text sounds like spoken conversation.
         Returns a dictionary with details.

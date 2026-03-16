@@ -84,9 +84,16 @@ class CulturalIntelligenceTest(BaseTest):
             meta=meta,
         )
 
-    def score_response(self, response: str) -> Dict[str, Any]:
+    def score_response(self, result: BenchmarkResult) -> BenchmarkResult:
         """
         Delegates scoring to CulturalIntelligenceEvaluator.
         """
         evaluator = CulturalIntelligenceEvaluator(self.asset)
-        return evaluator.score_response(response)
+        score_dict = evaluator.score_response(result.raw_response)
+        
+        result.primary_score = score_dict.get("score", score_dict.get("total_score"))
+        result.tier = score_dict.get("tier", "Tier 1 (Undefined)")
+        result.data = score_dict
+        result.rendered_value = f"{result.primary_score} %" if result.primary_score is not None else "N/A"
+        
+        return result

@@ -316,24 +316,24 @@ modules:
   # --- SOFT SKILLS: Ghostwriting & Kommunikation ---
   ux_writing:
     path: "benchmark_modules/ux_writing"
-    enabled: false          # Testet UI-Texte, Microcopy & Benutzerführung
+    enabled: true          # Testet UI-Texte, Microcopy & Benutzerführung
 
   documentation_quality:
     path: "benchmark_modules/documentation_quality"
-    enabled: false          # Generierung von sauberem Markdown und API-Docs
+    enabled: true          # Generierung von sauberem Markdown und API-Docs
 
   content_transformation:
     path: "benchmark_modules/content_transformation"
-    enabled: false          # Testet Stil-Adaption, Umschreiben und Tone of Voice
+    enabled: true          # Testet Stil-Adaption, Umschreiben und Tone of Voice
 
   cultural_intelligence:
     path: "benchmark_modules/cultural_intelligence"
-    enabled: false          # Bewertet Empathie, kulturelle Nuancen und Tonalität
+    enabled: true          # Bewertet Empathie, kulturelle Nuancen und Tonalität
 
   # --- SONSTIGE / SPEZIAL-MODULE ---
   political_compass:
     path: "benchmark_modules/political_compass"
-    enabled: false          # Ermittelt die ideologische Ausrichtung (60+ Fragen)
+    enabled: true          # Ermittelt die ideologische Ausrichtung (60+ Fragen)
 
 # ============================================================
 # Leaderboard & Scoring Tiers

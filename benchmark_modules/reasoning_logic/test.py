@@ -88,12 +88,12 @@ class ReasoningLogicTest(BaseTest):
             },
         )
 
-    def score_response(self, response: str) -> dict[str, Any]:
+    def score_response(self, result: BenchmarkResult) -> BenchmarkResult:
         """
         Delegates scoring to ReasoningEvaluator.
         """
         evaluator = ReasoningEvaluator(self.asset)
-        eval_result = evaluator.score_response(response)
+        eval_result = evaluator.score_response(result.raw_response)
 
         # Flatten breakdown for CSV (Granular Scoring Support)
         if "category_scores" in eval_result:
@@ -108,7 +108,12 @@ class ReasoningLogicTest(BaseTest):
                 # Add flattened key to result (e.g., 'problem_recognition': '20.0/20')
                 eval_result[key] = f"{achieved}/{max_weight}"
 
-        return eval_result
+        result.primary_score = eval_result.get("score", eval_result.get("total_score"))
+        result.tier = eval_result.get("tier", "Tier 1 (Undefined)")
+        result.data = eval_result
+        result.rendered_value = f"{result.primary_score} %" if result.primary_score is not None else "N/A"
+        
+        return result
 
     def get_system_prompt(self) -> str:
         """

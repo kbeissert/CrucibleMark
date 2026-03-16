@@ -60,7 +60,7 @@ class CodeQualityEvaluator:
         # 1. Error Detection (Handled specifically due to violations logic)
         ed_conf = scoring_config.get("error_detection", {})
         ed_score, ed_details, ed_violations = self.error_detector.score_error_detection(
-            clean_response, response_lower, ed_conf
+            response_lower, ed_conf
         )
         self._process_category_result(
             "error_detection", ed_score, ed_details, ed_conf.get("weight", 0), results

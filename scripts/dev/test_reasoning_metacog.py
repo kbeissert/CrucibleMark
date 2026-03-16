@@ -147,7 +147,7 @@ class MetacogPerformanceTester:
         try:
             # Load test class and execute
             test_class = load_test_class(
-                "benchmark_modules.reasoning_logic", "ReasoningLogicTest"
+                Path("benchmark_modules/reasoning_logic"), "ReasoningLogicTest"
             )
             if not test_class:
                 logger.error("  ❌ Could not load test class")
@@ -165,16 +165,17 @@ class MetacogPerformanceTester:
             )
             elapsed = time.time() - start_time
 
-            # Score response
-            score_result = test_instance.score_response(result.get("raw_response", ""))
+            # Score response (returns updated BenchmarkResult)
+            completed_result = test_instance.score_response(result)
+            score_result = completed_result.data
 
             return {
                 "asset_id": asset_id,
                 "model": model,
                 "execution_time": elapsed,
-                "total_score": score_result.get("total_score", 0),
-                "max_score": score_result.get("max_score", 100),
-                "tier": score_result.get("tier", "Unknown"),
+                "total_score": completed_result.primary_score,
+                "max_score": completed_result.max_score,
+                "tier": completed_result.tier,
                 "details": score_result.get("details", []),
                 "category_scores": score_result.get("category_scores", {}),
             }

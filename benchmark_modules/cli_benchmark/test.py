@@ -96,7 +96,7 @@ class CLIBenchmarkTest(BaseTest):
             model_version="unknown",
         )
 
-    def score_response(self, response: str) -> dict[str, Any]:
+    def score_response(self, result: BenchmarkResult) -> BenchmarkResult:
         """Evaluate response using the CLIEvaluator."""
         q = {
             "id": self.asset.get("metadata", {}).get("id", "Unknown"),
@@ -107,11 +107,18 @@ class CLIBenchmarkTest(BaseTest):
             "golden": self.asset.get("golden", {}),
         }
 
-        eval_res = self.evaluator.evaluate(q, response)
+        eval_res = self.evaluator.evaluate(q, result.raw_response)
         pct = eval_res.get("solutionquality", 0.0)
 
-        return {
+        score_dict = {
             "total_score": pct,
             "max_score": 100,
             "details": eval_res,
         }
+        
+        result.primary_score = score_dict.get("score", score_dict.get("total_score"))
+        result.tier = score_dict.get("tier", "Tier 1 (Undefined)")
+        result.data = score_dict
+        result.rendered_value = f"{result.primary_score} %" if result.primary_score is not None else "N/A"
+        
+        return result

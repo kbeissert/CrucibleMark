@@ -54,7 +54,7 @@ class ContentTransformationEvaluator:
         # - Analysis part covers "Error Detection" (Concept Identification)
         # - Transformation part covers "Solution Quality" (Structure/Execution)
 
-        analysis_part = ""
+#        analysis_part = ""
         transformation_part = clean_response
 
         transformation_start = clean_response.find("TRANSFORMATION")

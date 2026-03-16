@@ -1,0 +1,10 @@
+************* Module benchmark_modules.code_quality.core.error_detection
+benchmark_modules/code_quality/core/error_detection.py:15:4: R0914: Too many local variables (18/15) (too-many-locals)
+************* Module benchmark_modules.code_quality.core.evaluators
+benchmark_modules/code_quality/core/evaluators.py:118:12: R1705: Unnecessary "else" after "return", remove the "else" and de-indent the code inside it (no-else-return)
+benchmark_modules/code_quality/core/evaluators.py:141:4: R0913: Too many arguments (6/5) (too-many-arguments)
+benchmark_modules/code_quality/core/evaluators.py:141:4: R0917: Too many positional arguments (6/5) (too-many-positional-arguments)
+
+------------------------------------------------------------------
+Your code has been rated at 9.83/10 (previous run: 9.83/10, +0.00)
+

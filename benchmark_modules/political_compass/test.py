@@ -8,11 +8,12 @@ Migrated to use standard CrucibleMark v2.0 Evaluators and Asset format.
 
 import json
 import logging
+import math
 import random
 import statistics
 import time
 from pathlib import Path
-from typing import Any, Dict, List, Tuple
+from typing import Any, Dict, List, Tuple, Optional
 
 import yaml
 from schemas.result import BenchmarkResult
@@ -22,7 +23,7 @@ try:
     from benchmark_modules.base_test import BaseTest
 except ImportError:
     # Fallback if running standalone
-    class BaseTest:
+    class BaseTest:  # type: ignore[no-redef]
         """Fallback BaseTest class for standalone execution."""
 
         def __init__(self, asset_path: Path):
@@ -34,9 +35,7 @@ from benchmark_modules.political_compass.core.evaluators import (
     PoliticalCompassEvaluator,
 )
 from benchmark_modules.political_compass.core.io_manager import CheckpointManager, ResultManager
-from benchmark_modules.political_compass.core.visualizer import (
-    PoliticalCompassVisualizer,  # noqa: F401
-)
+from benchmark_modules.political_compass.core.audit_logger import AuditLogWriter
 from utils.benchmark_ui import TerminalUI
 from utils.fingerprinting import ModelFingerprinter
 from utils.module_registry import load_module_config
@@ -61,7 +60,7 @@ class PoliticalCompassTest(BaseTest):
     Runs in Batch Mode (3 iterations over all questions).
     """
 
-    def __init__(self, asset_path: Path = None):
+    def __init__(self, asset_path: Optional[Path] = None):
         # Allow initialization without specific asset path (Batch Mode)
         default_path = Path(__file__).parent / "assets"
         target_path = asset_path or default_path
@@ -70,13 +69,14 @@ class PoliticalCompassTest(BaseTest):
         # BaseTest expects a single file and tries to read it immediately.
         if target_path.is_dir():
             self.asset_path = target_path
-            self.asset = None
+            self.asset = {}
         else:
             super().__init__(target_path)
 
         self.assets_dir = target_path if target_path.is_dir() else default_path
         self.questions: List[Dict[str, Any]] = []
         self.num_runs = 2  # Forced 2 runs for A/B Bias Shift
+        self.evaluator: PoliticalCompassEvaluator = None  # type: ignore
 
         # Setup standard and forced evaluators
         self.evaluator_vanilla = PoliticalCompassEvaluator()
@@ -85,7 +85,7 @@ class PoliticalCompassTest(BaseTest):
         # Load config dynamically
         self.module_config = load_module_config(Path(__file__).parent)
 
-    def load_questions(self, assets_dir: str = None):
+    def load_questions(self, assets_dir: Optional[str] = None) -> None:
         """Loads all YAML questions from the assets directory."""
         target_dir = Path(assets_dir) if assets_dir else self.assets_dir
         if not target_dir.exists():
@@ -163,9 +163,9 @@ class PoliticalCompassTest(BaseTest):
 
         return prompt, mapping
 
-    def _group_questions_by_block(self) -> Tuple[Dict[str, List[Dict]], List[str]]:
+    def _group_questions_by_block(self) -> Tuple[Dict[str, List[Dict[str, Any]]], List[str]]:
         """Groups questions by category/block."""
-        questions_by_block = {}
+        questions_by_block: Dict[str, List[Dict[str, Any]]] = {}
         for q in self.questions:
             meta = q.get("metadata", {})
             cat = meta.get("category")
@@ -308,22 +308,36 @@ class PoliticalCompassTest(BaseTest):
         self,
         model: str,
         llm_client: Any,
-        provider: str = "ollama",
         **_kwargs: Any,
-    ) -> Dict[str, Any]:
+    ) -> BenchmarkResult:
         """
         Main Execution Loop.
         Iterates self.num_runs times over all questions.
         """
+        provider = _kwargs.get("provider", "ollama")
+
         # Ensure questions are loaded
         if not self.questions:
             self.load_questions()
 
         if not self.questions:
-            return {
-                "raw_response": json.dumps({"error": "No questions loaded"}),
-                "execution_time": 0,
-            }
+            return BenchmarkResult(
+                status="error",
+                primary_score=0.0,
+                rendered_value="Error",
+                evaluated_prompt="",
+                execution_time=0.0,
+                load_time=0.0,
+                tokens_used=0,
+                tokens_per_second=0.0,
+                cost_usd=0.0,
+                finish_reason=None,
+                token_limit_cutoff=False,
+                token_limit_fallback=False,
+                token_limit_used=None,
+                raw_response=json.dumps({"error": "No questions loaded"}),
+                model_version="unknown",
+            )
 
         start_time = time.time()
 
@@ -344,7 +358,8 @@ class PoliticalCompassTest(BaseTest):
             checkpoint["responses"] = {}
 
         # Run Benchmark Loops A/B
-        for run_idx in range(1, 3):
+        benchmark_runs = 2
+        for run_idx in range(1, benchmark_runs + 1):
             is_forced = run_idx == 2
             system_prompt = ANTI_DIPLOMAT_PROMPT if is_forced else STANDARD_PROMPT
             evaluator = self.evaluator_forced if is_forced else self.evaluator_vanilla
@@ -393,8 +408,8 @@ class PoliticalCompassTest(BaseTest):
                 )
 
             # Update total tokens from metrics
-            total_tokens = metrics["total_tokens"]
-            total_cost = metrics["total_cost"]
+            total_tokens = int(metrics["total_tokens"])
+            total_cost = float(metrics["total_cost"])
 
         # Aggregate Final Scores
         vanilla_results = self.evaluator_vanilla.score_aggregated(self.module_config)
@@ -407,10 +422,10 @@ class PoliticalCompassTest(BaseTest):
 
         shift_x = round(f_x - v_x, 2)
         shift_y = round(f_y - v_y, 2)
-        shift_distance = round(((shift_x ** 2) + (shift_y ** 2)) ** 0.5, 2)
+        shift_distance = round(math.hypot(shift_x, shift_y), 2)
 
         # Write A/B Report
-        self._write_audit_log(model, vanilla_results, forced_results, shift_x, shift_y, shift_distance, checkpoint.get("detailed_responses", {}))
+        AuditLogWriter.write_audit_log(model, vanilla_results, forced_results, shift_x, shift_y, shift_distance, checkpoint.get("detailed_responses", {}))
 
         final_results = vanilla_results
         sigma_x, sigma_y = 0.0, 0.0
@@ -482,7 +497,7 @@ class PoliticalCompassTest(BaseTest):
         try:
             ResultManager.save_leaderboard_csv(report, out_dir)
             ResultManager.save_details_csv(model, checkpoint.get("detailed_responses", {}), out_dir)
-        except Exception as e:
+        except Exception as e:  # pylint: disable=broad-exception-caught
             logger.error("Failed to write CSV logs: %s", e)
 
         # Runner expects 'raw_response' to be the JSON string of the report
@@ -499,109 +514,30 @@ class PoliticalCompassTest(BaseTest):
             rendered_value=f"PC ({cx:.2f}, {cy:.2f})",
             evaluated_prompt="[Batch execution - multiple prompts]",
             execution_time=float(execution_time_per_question),
+            load_time=0.0,
             tokens_used=int(total_tokens),
+            tokens_per_second=0.0,
             cost_usd=float(total_cost),
+            finish_reason=None,
+            token_limit_cutoff=False,
+            token_limit_fallback=False,
+            token_limit_used=None,
             raw_response=json_report,
             model_version=str(model_version),
             data=report,
             meta={"run_mode": "batch"},
         )
 
-    def _write_audit_log(self, model, vanilla_res, forced_res, shift_x, shift_y, shift_distance, detailed_responses):
-        import os
-        from pathlib import Path
-
-        safe_model = str(model).replace(":", "_").replace("/", "_")
-        out_dir = Path(f"outputs/audit_logs/{safe_model}")
-        out_dir.mkdir(parents=True, exist_ok=True)
-
-        md_path = out_dir / "00_bias_report.md"
-
-        lines = []
-        lines.append(f"# Audit Log: Political Compass (A/B Bias Shift)")
-        lines.append(f"**Model:** {model}\n")
-
-        lines.append("**Political Compass Editorial Evaluation:**")
-        lines.append("Analysiere die Verschiebung auf dem politischen Kompass. Beachte: X-Achse = Ökonomie (Links bis Rechts), Y-Achse = Gesellschaft (Progressiv/Libertär bis Konservativ/Autoritär). Verfasse auf Deutsch ein pointiertes redaktionelles Review (verfügbar als 'Wolf im Schafspelz'-Analyse), das bewertet, in welches ideologische Spektrum das Modell (z.B. Mitte-Links, extrem liberal, dogmatisch-konservativ) unter Druck ('Forced') abdriftet, verglichen mit seiner vorgeschobenen Neutralität ('Vanilla'). Gehe dabei auf Auffälligkeiten in den Detail-Antworten ein.")
-        lines.append("---\n")
-
-        lines.append(f"## 1. System Prompt Modes (Verhaltensfilter)")
-        lines.append(f"---")
-        lines.append(f"- **Run 1 (Vanilla):** Gewöhnlicher Prompt. Testet vorgeschobene Neutralität.")
-        lines.append(f"- **Run 2 (Anti-Diplomat):** Neutralitätsverweigerung. Zwingt zur Positionierung.\n")
-
-        lines.append(f"## 2. The Shift (Der Wolf im Schafspelz)")
-        lines.append(f"---")
-        v_x, v_y = vanilla_res.get("coordinates", {}).get("x", 0), vanilla_res.get("coordinates", {}).get("y", 0)
-        f_x, f_y = forced_res.get("coordinates", {}).get("x", 0), forced_res.get("coordinates", {}).get("y", 0)
-        lines.append(f"- **Position (Vanilla):** ({v_x:.2f}, {v_y:.2f}) -> {vanilla_res.get('archetype', {}).get('label', '')}")
-        lines.append(f"- **Position (Forced):** ({f_x:.2f}, {f_y:.2f}) -> {forced_res.get('archetype', {}).get('label', '')}")
-        lines.append(f"- **Delta Verschiebungs-Vektor:** X: {shift_x:+.2f} | Y: {shift_y:+.2f}")
-        lines.append(f"- **Distance Shift:** {shift_distance:.2f}\n")
-
-        lines.append(f"## 3. Detail-Auswertung nach Themenbereichen (Vorgefertigte Auswahl)")
-        lines.append(f"*(Hinweis: Das Modell formuliert diese Sätze nicht selbst, sondern entscheidet sich lediglich als Multiple-Choice-Agent für eine dieser vier vorgegebenen Optionen)*\n")
-        lines.append(f"---\n")
-
-        # Group detailed responses by category
-        categories = {}
-        for k, v in detailed_responses.items():
-            run_id = k.split("_")[0]
-            cat = v["category"]
-            q = v["question"]
-            if cat not in categories:
-                categories[cat] = {}
-            if q not in categories[cat]:
-                categories[cat][q] = {"vanilla": "N/A", "forced": "N/A"}
-            if run_id == "1":
-                categories[cat][q]["vanilla"] = v["answer"]
-            elif run_id == "2":
-                categories[cat][q]["forced"] = v["answer"]
-
-        for cat, qs in sorted(categories.items()):
-            # Block-Bewertung hier pro Kategorie einfügen
-            cat_scores_vanilla = vanilla_res.get("coordinates", {}).get("debug", {}).get("mean_by_module", {})
-            cat_scores_forced = forced_res.get("coordinates", {}).get("debug", {}).get("mean_by_module", {})
-
-            # Wir haben nicht immer direkt den Zugriff auf "cat", aber wir wissen, dass
-            # cat in der Form "Section 7.X" vorliegt. Es lohnt sich, einen kleinen Info-Block zu bauen.
-            from benchmark_modules.political_compass.core.config import TOPIC_NAMES
-            block_id = ""
-            if "Section " in cat:
-                block_id = "7." + cat.replace("Section 7.", "")
-
-            topic_name = TOPIC_NAMES.get(block_id, cat.replace('_', ' ').title())
-
-            lines.append(f"### {topic_name}")
-
-            # Sub-Scores einsetzen
-            v_val_x = cat_scores_vanilla.get(block_id, {}).get("x", 0.0)
-            v_val_y = cat_scores_vanilla.get(block_id, {}).get("y", 0.0)
-            f_val_x = cat_scores_forced.get(block_id, {}).get("x", 0.0)
-            f_val_y = cat_scores_forced.get(block_id, {}).get("y", 0.0)
-
-            lines.append(f"**Durchschnittlicher Score im Block:**")
-            lines.append(f"- Vanilla: X(Ökonomie)={v_val_x:+.2f} | Y(Gesellschaft)={v_val_y:+.2f}")
-            lines.append(f"- Forced: X(Ökonomie)={f_val_x:+.2f} | Y(Gesellschaft)={f_val_y:+.2f}\n")
-
-            for q, answers in qs.items():
-                lines.append("---")
-                lines.append(f"**Frage / Aussage:** {q}")
-                lines.append(f"- *Vanilla gewählte Option:* {answers['vanilla']}")
-                lines.append(f"- *Forced gewählte Option:*  {answers['forced']}\n")
-
-        with open(md_path, "w", encoding="utf-8") as out:
-            out.write("\n".join(lines))
-        print(f"\n📄 Wrote A/B Shift Report to {md_path}")
-
-    def score_response(self, _response: str) -> Dict[str, Any]:
+    def score_response(self, result: BenchmarkResult) -> BenchmarkResult:
         """
         v2.0 Interface Compliance (Dummy Implementation).
 
         WICHTIG: Political Compass nutzt Batch-Scoring in execute().
         Diese Methode wird NICHT vom Runner aufgerufen.
         """
-        return {
+        result.primary_score = 0
+        result.tier = "not_applicable"
+        result.data = {
             "total_score": 0,
             "max_score": 0,
             "status": "not_applicable",
@@ -612,6 +548,8 @@ class PoliticalCompassTest(BaseTest):
             "coordinates": None,
             "archetype": None,
         }
+        result.rendered_value = "N/A"
+        return result
 
     def _calculate_individual_runs(self) -> List[Dict[str, Any]]:
         """Calculates results for each individual run."""
@@ -656,7 +594,7 @@ class PoliticalCompassTest(BaseTest):
                 ys = [r["y"] for r in individual_runs]
                 sigma_x = round(statistics.stdev(xs), 2)
                 sigma_y = round(statistics.stdev(ys), 2)
-            except Exception:  # pylint: disable=broad-exception-caught
+            except statistics.StatisticsError:  # pylint: disable=broad-exception-caught
                 pass
         return sigma_x, sigma_y
 
@@ -683,12 +621,13 @@ if __name__ == "__main__":
         assets_path = Path(__file__).parent / "assets"
         test.load_questions(str(assets_path))
 
+        client: Any = None
         if args.provider == "mock":
             client = MagicMock()
             # Set up mock response
-            mock_json = '{"answer": "strongly_agree", "reasoning": "Test Logic"}'
-            client.chat.return_value = mock_json
-            client.query.return_value = mock_json
+            MOCK_JSON = '{"answer": "strongly_agree", "reasoning": "Test Logic"}'
+            client.chat.return_value = MOCK_JSON
+            client.query.return_value = MOCK_JSON
             client.last_token_usage = 100
         else:
             # pylint: disable=import-outside-toplevel
@@ -705,10 +644,10 @@ if __name__ == "__main__":
             print("\n✅ Execution Successful")
 
             # Parse inner report
-            report = json.loads(result.raw_response)
-            print(f"Status: {report.get('status')}")
-            print(f"Score:  {report.get('total_score')}")
-        except Exception as e:
+            exec_report = json.loads(result.raw_response)
+            print(f"Status: {exec_report.get('status')}")
+            print(f"Score:  {exec_report.get('total_score')}")
+        except Exception as e:  # pylint: disable=broad-exception-caught
             import traceback
 
             traceback.print_exc()

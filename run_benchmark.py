@@ -71,6 +71,7 @@ class BenchmarkRunner:
     """Globaler Benchmark-Runner mit dynamischem Modul-Loading."""
 
     def __init__(self, config_path: str = DEFAULT_CONFIG_PATH):
+        """Initialize the Runner with configuration path."""
         self.config_path = Path(config_path)
         # Use centralized config validation
         self.validator = ConfigValidator(config_path)
@@ -308,7 +309,7 @@ class BenchmarkRunner:
 
         sys.exit(0)
 
-    def load_module(self, _: str, module_config: dict[str, Any]):
+    def load_module(self, module_name: str, module_config: dict[str, Any]):
         """Lädt Test-Modul dynamisch."""
         module_path = Path(module_config["path"])
         test_file = module_path / "test.py"
