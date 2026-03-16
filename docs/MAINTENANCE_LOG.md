@@ -28,7 +28,7 @@ The logic that appended the Political Compass module into the main dataframes ('
 ### Resolution
 
 1. **Full Decoupling:** Removed standard Data Loader ghost row injection routines (`scripts/leaderboard/data_loader.py`) for the PC module, and detached its config `display_test_count`.
-2. **Isolating Outputs:** Split outputs elegantly into "Wolf in Sheep's Clothing" logic—producing `benchmark_scores/political_compass_details.csv` (162 granular A/B queries) & `benchmark_scores/political_compass_leaderboard.csv` (Shift aggregations).
+2. **Isolating Outputs:** Split outputs elegantly into "Wolf in Sheep's Clothing" logic—producing `benchmark_scores/political_compass_results.csv` (run records) & `benchmark_scores/political_compass_leaderboard.csv` (shift aggregations).
 3. **Post-Evaluation Stitching:** Altered the final steps of `generate_leaderboard.py` to extract only the Vanilla alignment tag and distance Shift string as a standalone right-aligned text column, ignoring `score_calculator.py`.
 
 ***

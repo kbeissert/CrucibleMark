@@ -37,6 +37,7 @@ from benchmark_modules.political_compass.core.evaluators import (
 from benchmark_modules.political_compass.core.io_manager import CheckpointManager, ResultManager
 from benchmark_modules.political_compass.core.audit_logger import AuditLogWriter
 from utils.benchmark_ui import TerminalUI
+from utils.model_utils import get_model_version
 from utils.module_registry import load_module_config
 
 logger = logging.getLogger(__name__)
@@ -457,10 +458,9 @@ class PoliticalCompassTest(BaseTest):
 
         execution_time = execution_time_per_question
 
-        # Determine model version centrally (with behavioral hash)
-        # We pass llm_client to allow generating the behavioral hash
-        model_version = ModelFingerprinter.get_unified_version(
-            provider=provider, model_name=model, client=llm_client
+        # Determine model version centrally via SSOT utility.
+        model_version = get_model_version(
+            model_name=model, provider=provider, client=llm_client
         )
 
         report = {
@@ -491,11 +491,10 @@ class PoliticalCompassTest(BaseTest):
             },
         }
 
-        # Write CSV Reports (Leaderboard & Details)
+        # Write consolidated political compass leaderboard CSV.
         out_dir = Path("benchmark_scores")
         try:
             ResultManager.save_leaderboard_csv(report, out_dir)
-            ResultManager.save_details_csv(model, checkpoint.get("detailed_responses", {}), out_dir)
         except Exception as e:  # pylint: disable=broad-exception-caught
             logger.error("Failed to write CSV logs: %s", e)
 

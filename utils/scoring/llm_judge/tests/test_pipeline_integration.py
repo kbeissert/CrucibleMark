@@ -29,9 +29,6 @@ def mock_dependencies():
             "scripts.core.run_local_benchmark.LocalBenchmarkRunner._execute_test"
         ) as mock_exec,
         patch(
-            "scripts.core.run_local_benchmark.LocalBenchmarkRunner._compare_golden"
-        ) as mock_cmp,
-        patch(
             "scripts.core.run_local_benchmark.LocalBenchmarkRunner.build_base_result"
         ) as mock_base,
         patch(
@@ -48,7 +45,6 @@ def mock_dependencies():
 
         # execution return
         mock_test_instance = MagicMock()
-        mock_test_instance.score_response.return_value = {"total_score": 100}
 
         # Provide a BenchmarkResult object initialized legally
         mock_exec_res = BenchmarkResult(
@@ -58,9 +54,10 @@ def mock_dependencies():
             cost_usd=0.0,
             raw_response="hello world, this is a very long response that passes the 15 char limit",
         )
+        mock_exec_res.data = {"total_score": 100, "max_score": 100}
+        mock_test_instance.score_response.return_value = mock_exec_res
 
         mock_exec.return_value = (mock_test_instance, mock_exec_res)
-        mock_cmp.return_value = {}
         mock_base.return_value = {
             "asset_id": "asset_1",
             "execution_time": 1.5,
@@ -75,7 +72,6 @@ def mock_dependencies():
         yield {
             "load": mock_load,
             "exec": mock_exec,
-            "cmp": mock_cmp,
             "base": mock_base,
             "calc": mock_calc,
             "req": mock_req,
@@ -91,7 +87,6 @@ def test_pipeline_integration_disabled(mock_local_runner, mock_dependencies):
     result = mock_local_runner._process_single_test(
         model="test_model",
         asset_path=Path("dummy_asset.yaml"),
-        commercial_refs={},
         benchmark_info={"id": "test_mod"},
     )
 
@@ -110,7 +105,6 @@ def test_pipeline_integration_not_applicable(mock_local_runner, mock_dependencie
     result = mock_local_runner._process_single_test(
         model="test_model",
         asset_path=Path("dummy_asset.yaml"),
-        commercial_refs={},
         benchmark_info={"id": "test_mod"},
     )
 
@@ -148,7 +142,6 @@ def test_pipeline_integration_enabled_applicable(mock_local_runner, mock_depende
         result = mock_local_runner._process_single_test(
             model="test_model",
             asset_path=Path("dummy_asset.yaml"),
-            commercial_refs={},
             benchmark_info={"id": "test_mod"},
             pause_calculator=mock_pause,
         )

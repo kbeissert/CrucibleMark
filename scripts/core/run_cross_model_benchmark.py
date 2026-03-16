@@ -152,7 +152,7 @@ def get_local_models() -> List[Tuple[str, str, str]]:
     return models
 
 
-def run_benchmark(module: str, model_id: str, provider: str):
+def run_benchmark(module: str, model_id: str, provider: str, audit: bool = False):
     """
     Executes run_benchmark.py for a single model/module combo.
     """
@@ -172,6 +172,9 @@ def run_benchmark(module: str, model_id: str, provider: str):
         "--multi-run",
         "1",  # Default to 1 run for speed
     ]
+
+    if audit:
+        cmd.append("--audit")
 
     try:
         # Stream output directly to console
@@ -260,6 +263,11 @@ def main():
     parser.add_argument(
         "--skip-commercial", action="store_true", help="Skip commercial API models"
     )
+    parser.add_argument(
+        "--audit",
+        action="store_true",
+        help="Aktiviert Audit-Logging (Prompt/Antwort/Judge-Protokolle) für jeden Lauf.",
+    )
 
     args = parser.parse_args()
 
@@ -312,7 +320,7 @@ def main():
             f"[yellow]🚀 Starte Lauf {i + 1}/{len(all_models)}: {m_name}[/yellow]"
         )
 
-        success = run_benchmark(selected_module, m_id, p_type)
+        success = run_benchmark(selected_module, m_id, p_type, audit=args.audit)
 
         if success:
             results["success"].append(m_id)
