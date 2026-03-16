@@ -16,6 +16,10 @@
 - [x] Rubric & Prompt Configuration (`benchmark_config.yaml`)
 - [x] Module Rollout (Code Quality, UX Writing, Docs, Content)
 
+### Refactoring & Stability (v2.6.1)
+- [x] **LLM Token Loop Hallucination Fallback:** API-Trimming logic implemented in `llm_client.py` and warnings documented in `AUDIT_AND_METAREVIEW.md`
+- [x] **Documentation Restructuring:** README.md updated to rigorously match `benchmark_config.yaml` categories, obsolete scripts fully removed.
+
 ### Module Refactoring & Features
 - [x] Political Compass Decoupling (Metrics logic isolated from scoring)
 - [x] Alpha-Randomization in Multiple Choice Modules (prevent label-bias)
@@ -96,4 +100,4 @@ ______________________________________________________________________
 
 ______________________________________________________________________
 
-**Last Updated:** 2026-03-16 **Version:** 2.1 (Decoupling) **Next Milestone:** v2.2 (Judge Batching & Final Leaderboard)
+**Last Updated:** 2026-03-16 **Version:** 2.6.1 (Stability & Context) **Next Milestone:** v2.7 (Judge Batching & Final Leaderboard)
