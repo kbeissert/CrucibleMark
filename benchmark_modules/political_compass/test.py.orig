@@ -39,7 +39,6 @@ from benchmark_modules.political_compass.core.visualizer import (
 )
 from utils.benchmark_ui import TerminalUI
 from utils.fingerprinting import ModelFingerprinter
-from utils.module_registry import load_module_config
 
 logger = logging.getLogger(__name__)
 
@@ -433,9 +432,8 @@ class PoliticalCompassTest(BaseTest):
             status_code = 0
 
         total_duration = time.time() - start_time
-        # Normalize execution time per question to prevent skewing the leaderboard average.
-        # The Political Compass has a high and variable number of questions,
-        # while other benchmarks typically have only 1-5 tasks.
+        # Normalize execution time per question to prevent skewing the leaderboard average
+        # Political Compass has ~62 questions, while other benchmarks have 1-5 tasks.
         num_questions = len(self.questions) * self.num_runs
         execution_time_per_question = (
             total_duration / num_questions if num_questions > 0 else 0
@@ -565,7 +563,7 @@ class PoliticalCompassTest(BaseTest):
 
             # Wir haben nicht immer direkt den Zugriff auf "cat", aber wir wissen, dass
             # cat in der Form "Section 7.X" vorliegt. Es lohnt sich, einen kleinen Info-Block zu bauen.
-            from benchmark_modules.political_compass.core.config import TOPIC_NAMES
+            from .core.config import TOPIC_NAMES
             block_id = ""
             if "Section " in cat:
                 block_id = "7." + cat.replace("Section 7.", "")

@@ -77,11 +77,18 @@ cd cruciblemark
 python -m venv .venv
 source .venv/bin/activate  # On Windows: .venv\Scripts\activate
 
-# Install dependencies
-pip install -r requirements.txt
+# ------------------------------------------------------------
+# 💡 Optional for NVIDIA/CUDA users (Windows/Linux):
+# Install CUDA-enabled PyTorch *before* the main setup
+# to ensure semantic similarity runs fast on the GPU.
+# Example for CUDA 12.1:
+# pip3 install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu121
+# ------------------------------------------------------------
 
-# Optional: Install development tools
-pip install -r requirements-dev.txt
+# Install dependencies (automatically sets up lightweight or semantic mode)
+make install
+# For development tools (pytest, ruff, pre-commit)
+# make install-dev
 ```
 
 ### Configuration

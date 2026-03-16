@@ -183,11 +183,7 @@ def main(print_table: bool = True) -> None:
             if name in leaderboard.columns:
                 cat_cols.append(name)
 
-    # 4b. Enrich with External Module Data (e.g. Political Compass)
-    leaderboard, cat_cols = enrich_with_module_data(
-        leaderboard, cat_cols, modules_config, config
-    )
-
+    # Convert numeric module scores and format them
     for col in cat_cols:
         if col in leaderboard.columns:
             leaderboard[col] = pd.to_numeric(leaderboard[col], errors="coerce")
@@ -195,7 +191,7 @@ def main(print_table: bool = True) -> None:
                 leaderboard[col].round(2).astype(object).fillna("Pending")
             )
 
-    # 5. Enrich with Custom Data (from other CSVs via module config)
+    # 5. Enrich with Custom Data (from other CSVs via module config, e.g. Political Compass)
     leaderboard, cat_cols = enrich_with_module_data(
         leaderboard, cat_cols, modules_config, config
     )

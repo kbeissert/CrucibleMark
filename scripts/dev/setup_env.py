@@ -43,6 +43,16 @@ def main():
     print("\nVersuche Installation: 🧠 SEMANTIC MODE (Empfohlen)")
     print("Dies aktiviert 'sentence-transformers' für präziseres Scoring.")
 
+
+    # Setup Default Config if missing
+    config_example = root_dir / "benchmark_config.example.yaml"
+    config_actual = root_dir / "benchmark_config.yaml"
+    if config_example.exists() and not config_actual.exists():
+        import shutil
+        print("\n📝 Kopiere Standard-Konfiguration (benchmark_config.yaml)...")
+        shutil.copy(config_example, config_actual)
+        print("   -> Bitte öffne diese Datei später, um Limits/Hardware anzupassen.")
+
     success = install_pip_requirements(str(req_semantic))
 
     if success:
