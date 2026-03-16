@@ -8,6 +8,9 @@
 - [ ] Stabilität `gpt-oss` analysieren (vorheriger Absturz-Kandidat)
 
 ## Abgeschlossen (Meilensteine)
+- [DONE] Release v2.6.1: Stability & Context Handling (API Trimming gegen Token Loops).
+- [DONE] Documentation Consolidation (README, REF_TODO, PROJECT_STATUS strukturell an benchmark_config.yaml angeglichen)
+- [DONE] Git Freeze (v2.6.1 Tag) gesetzt.
 - [DONE] Political Compass vollumfänglich von Score-System entkoppelt (44/43 Bug behoben), Position/Token-Bias durch Random-Alphas eliminiert.
 - [DONE] Akademisches "Prompt-as-Config" Tier-System (Platin ab 95%) etabliert und in Pipelines integriert.
 - [DONE] "System Info" Warnungen + Token Fallback Extraktion in Meta-Reviewer.

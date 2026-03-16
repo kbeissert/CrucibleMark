@@ -1,11 +1,11 @@
 # Active Context
 
 ## Abgeschlossen
-- UI-Bug im Leaderboard (44/43 "Tests Run") durch sauberes Filtern nicht-punktender Module in `score_calculator.py` behoben.
-- Political Compass Token-/Positions-Bias durch dynamisches Alpha-Mapping beseitigt und Meta-Reviewer vor generativen Halluzinationen abgesichert.
+- Leaderboard und Framework-Code auf Status 2.6.1 "gezogen" & Git-gefroren (`v2.6.1`).
+- Fallback-Trimming gegen Token-Loop Halluzinationen implementiert.
 
 ## Nächster Schritt
-- LLM Judge Umbau auf natives JSON-Output und Batch-Mode (Phase 3.5) vorantreiben.
+- LLM Judge Umbau auf natives JSON-Output und Batch-Mode (Phase 3.5) vorantreiben ODER den Volldurchlauf aller lokalen Modelle für das finale Leaderboard starten.
 
 ## Offen / Risiko
-- Keine
+- Terminal-Environment der VS Code API limitiert große multiline sed/Bash injects (wurde via Python Scripts / File Editors umgangen).
