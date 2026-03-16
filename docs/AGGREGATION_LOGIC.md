@@ -11,7 +11,7 @@ The leaderboard previously showed a discrepancy (e.g., "46/37" tests run). This 
 The Political Compass is now strictly an informational metadata module:
 - It **does not** inject ghost rows into the main dataframes (`local_models_benchmark.csv` / `commercial_models_benchmark.csv`).
 - It **does not** artificially inflate the `Tests Run` counter (e.g. 44/43). The score calculator explicitly ignores non-scoring modules for both the numerator and the denominator, unless a `display_test_count` is defined.
-- It operates entirely autarkic, saving its detailed runs directly into `benchmark_scores/political_compass_details.csv` and its aggregates into `benchmark_scores/political_compass_leaderboard.csv`.
+- It operates entirely autarkic, saving run records into `benchmark_scores/political_compass_results.csv` and aggregates into `benchmark_scores/political_compass_leaderboard.csv`.
 - The `generate_leaderboard.py` script simply checks the final `political_compass_leaderboard.csv` to append a simple `Political Bias` text column to the final display table, injecting purely informational tags without touching the core mathematics of the benchmark.
 
 ______________________________________________________________________

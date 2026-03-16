@@ -228,7 +228,10 @@ def _run_module_for_model(
 
 
 def run_local_batch(
-    modules: List[Dict[str, Any]], validator: ConfigValidator, force: bool = False
+    modules: List[Dict[str, Any]],
+    validator: ConfigValidator,
+    force: bool = False,
+    audit_mode: bool = False,
 ) -> None:
     """Batch-Run für alle lokalen Ollama-Modelle."""
     # pylint: disable=unused-argument
@@ -239,7 +242,7 @@ def run_local_batch(
         print("⏭️  Überspringe lokale Benchmarks, da Ollama nicht läuft.")
         return
 
-    runner = LocalBenchmarkRunner()
+    runner = LocalBenchmarkRunner(audit_mode=audit_mode)
 
     # Cache laden (bereits erledigte Tests)
     csv_path = Path("benchmark_scores/local_models_benchmark.csv")
@@ -271,13 +274,16 @@ def run_local_batch(
 
 
 def run_commercial_batch(
-    modules: List[Dict[str, Any]], validator: ConfigValidator, force: bool = False
+    modules: List[Dict[str, Any]],
+    validator: ConfigValidator,
+    force: bool = False,
+    audit_mode: bool = False,
 ) -> None:
     """Batch-Run für alle konfigurierten kommerziellen Modelle."""
     print("\n🏢  [2/2] KOMMERZIELLE MODELLE (API)")
     print(f"{'=' * 40}")
 
-    runner = CommercialBenchmarkRunner()
+    runner = CommercialBenchmarkRunner(audit_mode=audit_mode)
     runner.mode = "test"
     runner.force = False
 
@@ -398,6 +404,11 @@ def main():
         type=str,
         help="Kommagetrennte Liste von Modulen (Keys), die ausgeführt werden sollen (z.B. 'political_compass').",
     )
+    parser.add_argument(
+        "--audit",
+        action="store_true",
+        help="Aktiviert Audit-Logging (Prompt/Antwort/Judge-Protokolle).",
+    )
     args = parser.parse_args()
 
     print(f"{'#' * 60}")
@@ -405,6 +416,8 @@ def main():
     print("    Füllt automatisch fehlende Benchmarks auf.")
     if args.force:
         print("    ⚠️  FORCE MODE: Alle Tests laufen erneut!")
+    if args.audit:
+        print("    🕵️  AUDIT MODE: Protokolle werden erzeugt.")
     if args.modules:
         print(f"    🎯 FOKUS: Nur Module '{args.modules}'")
     print(f"{'#' * 60}\n")
@@ -439,14 +452,16 @@ def main():
 
     # 1. Lokale Modelle
     try:
-        run_local_batch(modules, validator, force=args.force)
+        run_local_batch(modules, validator, force=args.force, audit_mode=args.audit)
     except KeyboardInterrupt:
         print("\n⛔  Abbruch durch Benutzer.")
         sys.exit(1)
 
     # 2. Kommerzielle Modelle
     try:
-        run_commercial_batch(modules, validator, force=args.force)
+        run_commercial_batch(
+            modules, validator, force=args.force, audit_mode=args.audit
+        )
     except KeyboardInterrupt:
         print("\n⛔  Abbruch durch Benutzer.")
         sys.exit(1)

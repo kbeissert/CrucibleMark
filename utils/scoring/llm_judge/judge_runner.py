@@ -589,7 +589,9 @@ class JudgeRunner:
         if result.score is None:
             return None
         scale = self._config.scoring.scale
-        return round(((result.score - 1) / (scale - 1)) * 100.0, 2)
+        if scale <= 0:
+            return None
+        return round((result.score / scale) * 100.0, 2)
 
     def build_result_dict(
         self,
@@ -631,7 +633,8 @@ class JudgeRunner:
         scale = self._config.scoring.scale
         normalised: Optional[float] = None
         if judge_result.score is not None:
-            normalised = round(((judge_result.score - 1) / (scale - 1)) * 100.0, 2)
+            if scale > 0:
+                normalised = round((judge_result.score / scale) * 100.0, 2)
 
         return {
             "score": judge_result.score,

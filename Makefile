@@ -1,4 +1,11 @@
-.PHONY: help install validate generate-golden run-benchmark clean test backup
+.PHONY: \
+	help install install-dev \
+	benchmark benchmark-silent political-compass pc benchmark-political-compass audit-bias benchmark-cross-model benchmark-auto benchmark-auto-silent benchmark-human run-benchmark \
+	review-model review-all review-bias-model review-bias-all leaderboard \
+	validate validate-single validate-structure test diff-results analyze-costs update-prices \
+	list-models judge-health list-modules create-module \
+	clean clean-sessions clean-csv clean-model clean-module clean-all clean-runs clean-runs-force consolidate-csv \
+	backup
 
 # Python-Interpreter aus .venv verwenden
 PYTHON := .venv/bin/python
@@ -11,10 +18,13 @@ help:
 	@echo "  make install-dev          Install dev dependencies (Developer)"
 	@echo ""
 	@echo "=== Benchmarking ==="
-	@echo "  make benchmark            Interactive OR Single Model (MODEL=name [MODULE=name])"
-	@echo "  make benchmark-audit      🕵️ Interactive Audit Mode (Log Prompts & Judges)"
-	@echo "  make benchmark-auto       🤖 Auto-Fill Mode: Supplement missing benchmarks"
-	@echo "  make benchmark-cross-model Single Module vs ALL LLMs (MODULE=name)"
+	@echo "  make benchmark            🕵️ Standard Benchmark (Audit-Logs + LLM-Editor-Protokolle)"
+	@echo "  make benchmark-silent     Silent Benchmark ohne Audit-Logs (Scores direkt in CSV/DB)"
+	@echo "  make benchmark-auto       🤖 Auto-Fill mit Audit-Protokollen (Standard)"
+	@echo "  make benchmark-auto-silent Auto-Fill ohne Audit-Protokolle"
+	@echo "  make benchmark-cross-model Single Module vs ALL LLMs inkl. Audit-Protokollen (MODULE=name)"
+	@echo "  make political-compass    Eigenständiger Political-Compass-Test (immer mit Audit-Protokollen)"
+	@echo "  make pc                   Alias für make political-compass"
 	@echo "  make benchmark-human      👤 Human Baseline Test (Political Compass)"
 	@echo ""
 	@echo "=== Reporting & Standards ==="
@@ -23,7 +33,6 @@ help:
 	@echo "  make review-all           📰 Generate Reviews for ALL models"
 	@echo "  make review-bias-model    ⚖️ Generate Bias-Review for a model (MODEL=name)"
 	@echo "  make review-bias-all      ⚖️ Generate Bias-Reviews for ALL models"
-	@echo "  make bias-report          📊 Update Bias Sensitivity Report"
 	@echo ""
 	@echo "=== Validation & QA ==="
 	@echo "  make validate             Validate all test assets"
@@ -40,6 +49,13 @@ help:
 	@echo "  make create-module        🚀 Scaffold a new module"
 	@echo "  make update-prices        💱 Force-update LiteLLM token price cache"
 	@echo "  make clean                Clean caches/temp files"
+	@echo "  make clean-sessions       Delete temporary benchmark sessions"
+	@echo "  make clean-csv            Delete benchmark CSV files"
+	@echo "  make clean-model          Delete results for one model (MODEL=name)"
+	@echo "  make clean-module         Delete results for one module (MODULE=key)"
+	@echo "  make clean-runs           Keep only latest run snapshots"
+	@echo "  make clean-runs-force     Force cleanup of old run snapshots"
+	@echo "  make consolidate-csv      Consolidate CSV data if tool exists"
 	@echo "  make clean-all            Deep Clean (Caches + CSVs)"
 	@echo "  make backup               Create full backup"
 	@echo ""
@@ -57,26 +73,41 @@ install-dev: install
 # === BENCHMARKING ===
 
 benchmark:
-	@echo "🚀 Starting Benchmark..."
-	$(PYTHON) run_benchmark.py $(if $(MODEL),--model "$(MODEL)") $(if $(MODULE),--module "$(MODULE)") $(if $(filter true,$(FORCE)),--force)
-	@$(MAKE) leaderboard
-
-benchmark-audit:
-	@echo "🕵️  Starting Benchmark (Audit Mode)..."
+	@echo "🕵️  Starting Benchmark (Standard Audit Mode)..."
 	$(PYTHON) run_benchmark.py --audit $(if $(MODEL),--model "$(MODEL)") $(if $(MODULE),--module "$(MODULE)") $(if $(filter true,$(FORCE)),--force)
 	@$(MAKE) leaderboard
 
+benchmark-silent:
+	@echo "🚀 Starting Benchmark (Silent Mode, no audit logs)..."
+	$(PYTHON) run_benchmark.py $(if $(MODEL),--model "$(MODEL)") $(if $(MODULE),--module "$(MODULE)") $(if $(filter true,$(FORCE)),--force)
+	@$(MAKE) leaderboard
+
+political-compass:
+	@echo "🐺 Starting standalone Political Compass benchmark (Audit Logs ON)..."
+	$(PYTHON) run_benchmark.py --module political_compass --audit $(if $(MODEL),--model "$(MODEL)") $(if $(filter true,$(FORCE)),--force)
+	@$(MAKE) leaderboard
+
+pc:
+	@$(MAKE) political-compass MODEL="$(MODEL)" FORCE="$(FORCE)"
+
+benchmark-political-compass:
+	@echo "⚠️  Deprecated alias: forwarding to political-compass"
+	@$(MAKE) political-compass MODEL="$(MODEL)" FORCE="$(FORCE)"
+
 audit-bias:
-	@echo "🐺 Starting Political Compass Bias Audit (Vanilla vs Anti-Diplomat)..."
-	$(PYTHON) run_benchmark.py --module political_compass $(if $(MODEL),--model "$(MODEL)") $(if $(filter true,$(FORCE)),--force)
-		@$(MAKE) leaderboard
+	@echo "⚠️  Deprecated alias: forwarding to political-compass"
+	@$(MAKE) political-compass MODEL="$(MODEL)" FORCE="$(FORCE)"
 
 benchmark-cross-model:
-	@echo "🚀 Starting Cross-Model Benchmark..."
-	@$(PYTHON) scripts/core/run_cross_model_benchmark.py $(if $(MODULE),--module $(MODULE))
+	@echo "🚀 Starting Cross-Model Benchmark (with Audit Logs)..."
+	@$(PYTHON) scripts/core/run_cross_model_benchmark.py --audit $(if $(MODULE),--module $(MODULE))
 
 benchmark-auto:
-	@echo "🤖 Starting Full Auto Benchmark (Smart Autofill)..."
+	@echo "🤖 Starting Full Auto Benchmark (Smart Autofill + Audit Logs)..."
+	$(PYTHON) scripts/core/benchmark_auto.py --audit
+
+benchmark-auto-silent:
+	@echo "🤖 Starting Full Auto Benchmark (Smart Autofill, Silent Mode)..."
 	$(PYTHON) scripts/core/benchmark_auto.py
 
 benchmark-human:
@@ -115,10 +146,6 @@ review-bias-all:
 leaderboard:
 	@echo "📊 Generating Leaderboard..."
 	$(PYTHON) scripts/core/generate_leaderboard.py
-
-bias-report:
-	@echo "📊 Updating Bias Sensitivity Report..."
-	$(PYTHON) scripts/analysis/update_bias_report.py
 
 # === VALIDATION & QA ===
 

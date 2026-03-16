@@ -226,7 +226,7 @@ The newly refactored dual-layer Political Compass module conducts two consecutiv
 ### Architecture
 1.  **Vanilla Run:** Evaluates the model with its default guardrails ("Müller Familie Düsseldorf...").
 2.  **Anti-Diplomat Run:** Unshackles the model using aggressive prompts forcing firm stances over "it depends."
-3.  **Data Persistence:** Detailed outputs of all 162 specific argumentation chains and reasoning paths are tracked safely into `benchmark_scores/political_compass_details.csv` while the summarized shift vectors enter `political_compass_leaderboard.csv` to be injected natively as an informative column on the main Leaderboard without corrupting the test counts.
+3.  **Data Persistence:** Political Compass outputs are consolidated into `benchmark_scores/political_compass_results.csv` (run records) and `benchmark_scores/political_compass_leaderboard.csv` (shift aggregates) for leaderboard enrichment without corrupting the main test counts.
 
 ______________________________________________________________________
 
@@ -497,7 +497,7 @@ benchmark_scores/
 ├── commercial_models_benchmark.csv   # OpenAI/Anthropic results
 ├── benchmark_leaderboard.csv         # Unified leaderboard
 ├── political_compass_leaderboard.csv # Macro-level bias shifts
-├── political_compass_details.csv     # Granular A/B prompt outputs
+├── political_compass_results.csv     # Political Compass run records (SSOT)
 └── checkpoints/                      # Resume data
     └── qwen2.5_7b_code_quality.json
 ```

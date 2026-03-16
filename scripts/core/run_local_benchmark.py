@@ -6,7 +6,6 @@ import csv
 import json
 import logging
 import os
-import subprocess
 import sys
 import time
 import traceback
@@ -409,7 +408,11 @@ class LocalBenchmarkRunner(BaseBenchmarkRunner):
 
                     if judge_res.parse_success and judge_res.score is not None:
                         judge_scale = judge_config.scoring.scale
-                        judge_pct = ((judge_res.score - 1) / (judge_scale - 1)) * 100 if judge_scale > 1 else 100
+                        judge_pct = (
+                            (judge_res.score / judge_scale) * 100
+                            if judge_scale > 0
+                            else 0.0
+                        )
 
                         # Hybrid Score berechnen
                         regex_pct = result.get("percentage", 0.0)
@@ -747,18 +750,6 @@ class LocalBenchmarkRunner(BaseBenchmarkRunner):
                 RESULT_MANAGER.save_json(report, output_dir)
             except Exception as e:  # pylint: disable=broad-exception-caught
                 logger.error("Political compass manager failed: %s", e)
-
-            # Auto-Trigger Bias Analysis (if Political Compass)
-            if benchmark_info.get("id", "") == "political_compass_v3":
-                try:
-                    print("📊 Updating Bias Sensitivity Report...")
-                    subprocess.run(
-                        [sys.executable, "scripts/analysis/update_bias_report.py"],
-                        check=False,
-                        capture_output=False,
-                    )
-                except subprocess.CalledProcessError as e:
-                    logger.warning("Could not update bias report: %s", e)
 
             self._update_political_compass_csv(
                 model, report, _model_version=model_version
