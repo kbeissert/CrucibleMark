@@ -37,7 +37,7 @@ ______________________________________________________________________
 ### Planned for Next Session
 - [ ] **LLM Judge: Native JSON Output**: Refactoring `judge_parser.py` and Prompts
 - [ ] **LLM Judge: Batch-Mode (Phase 3.5)**: Optimize token consumption by bunching requests
-- [ ] **Volldurchlauf aller lokalen Modelle**: Generierung eines echten finalen Leaderboards (43/43) 
+- [ ] **Volldurchlauf aller lokalen Modelle**: Generierung eines echten finalen Leaderboards (43/43)
 - [ ] **Re-run Reasoning Logic**: Verfälschte 0-Punkte für lokale Modelle bereinigen.
 - [ ] **Stabilitätsanalyse `gpt-oss`**: Vorheriger Absturzkandidat prüfen.
 
@@ -71,7 +71,7 @@ ______________________________________________________________________
 - Authentication
 
 #### 4. Cost vs. Accuracy Analysis
-- Meta-analysis of the Judge-Cost / Token ratios across models 
+- Meta-analysis of the Judge-Cost / Token ratios across models
 - Tuning System Prompts to reduce overhead (without sacrificing consensus)
 
 ### v2.0.0 (Cloud & Redesign)
@@ -95,7 +95,7 @@ ______________________________________________________________________
 | **LLM Judge JSON Batching** | High | 1 week | In Progress |
 | **Volldurchlauf Leaderboard** | High | 1 week | Pending |
 | **Unit Tests & CI/CD** | Med | 2-3 weeks | Pending |
-| **Web UI / Analytics Dash.** | Low | 4-6 weeks | Backlog | 
+| **Web UI / Analytics Dash.** | Low | 4-6 weeks | Backlog |
 | **Multimodal Support** | Low | 6-8 weeks | Backlog |
 
 ______________________________________________________________________
