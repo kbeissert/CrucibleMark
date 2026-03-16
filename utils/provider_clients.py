@@ -133,30 +133,45 @@ class BaseProviderClient:
 
             func_kwargs[token_param_name] = current_tokens
 
-            try:
-                response = func(**func_kwargs)
-                return response, current_tokens, fallback_triggered
-            except Exception as e:
-                err_str = str(e).lower()
+            max_rate_limit_retries = 3
+            rate_limit_attempts = 0
 
-                # --- FAST FAIL für Budget/Quota-Fehler ---
-                budget_keywords = [
-                    "quota", "budget", "billing", "credit", "insufficient_funds",
-                    "payment", "402 payment required", "exceeded your current quota"
-                ]
-                if any(kw in err_str for kw in budget_keywords):
-                    logger.error("💸 Budget/Quota erschöpft! API-Anfrage sofort abgebrochen (kein Token-Fallback).")
-                    raise e
+            while rate_limit_attempts < max_rate_limit_retries:
+                try:
+                    response = func(**func_kwargs)
+                    return response, current_tokens, fallback_triggered
+                except Exception as e:
+                    err_str = str(e).lower()
 
-                # --- Token-Fallback Check ---
-                is_token_error = any(kw.lower() in err_str for kw in error_keywords)
+                    # --- Timeout / Rate-Limit Auto-Pause (z.B. Gemini Quota mit delay) ---
+                    import re
+                    match_seconds = re.search(r'retry_delay\s*\{\s*seconds:\s*(\d+)\s*\}', err_str)
+                    if match_seconds:
+                        wait_seconds = int(match_seconds.group(1)) + 5
+                        logger.warning(f"⏳ Quota/Rate Limit erreicht! Warte {wait_seconds} Sekunden... (Versuch {rate_limit_attempts + 1}/{max_rate_limit_retries})")
+                        import time
+                        time.sleep(wait_seconds)
+                        rate_limit_attempts += 1
+                        continue # Retry in the inner while-loop
 
-                if is_token_error:
-                    last_exception = e
-                    continue  # Versuche das nächstkleinere Limit in der Kaskade
-                else:
-                    # Ein nicht-Token bezogener Fehler (z.B. Timeout, Parsing)
-                    raise e
+                    # --- FAST FAIL für Budget/Quota-Fehler ---
+                    budget_keywords = [
+                        "quota", "budget", "billing", "credit", "insufficient_funds",
+                        "payment", "402 payment required", "exceeded your current quota"
+                    ]
+                    if any(kw in err_str for kw in budget_keywords):
+                        logger.error("💸 Budget/Quota erschöpft! API-Anfrage sofort abgebrochen (kein Token-Fallback).")
+                        raise e
+
+                    # --- Token-Fallback Check ---
+                    is_token_error = any(kw.lower() in err_str for kw in error_keywords)
+
+                    if is_token_error:
+                        last_exception = e
+                        break  # Break inner loop, trigger next limit in cascade
+                    else:
+                        # Ein nicht-Token bezogener Fehler (z.B. Timeout, Parsing)
+                        raise e
 
         logger.error("❌ All token limits in the cascade were rejected by the provider API.")
         raise last_exception or Exception("Token fallback cascade failed unexpectedly.")
