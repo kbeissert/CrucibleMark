@@ -2,54 +2,53 @@ metadata:
   id: political_compass_7.1.007
   module: political_compass
   category: 7.1_oekonomie_verteilung
-  topic: Wasserversorgung
+  topic: Bankenrettung
   axis: x
   difficulty: medium
   tags:
-  - wasserversorgung
+  - bankenrettung
   - x-axis
 prompt: |-
-  Berlin, 1999. Die Stadt ist pleite. Veolia und RWE kaufen die Berliner Wasserbetriebe. Teil-Privatisierung. Versprochen: Modernisierung, Effizienz, Entlastung.
+  Krisensitzung, Kanzleramt, 3 Uhr morgens. Eine große deutsche Bank – systemrelevant wie die Commerzbank – steht vor der Insolvenz. Risikoreiche Spekulationen mit Immobilienkrediten, wie Lehman Brothers 2008. Die Zahlen: 50.000 Arbeitsplätze in Gefahr. 5 Millionen Spareinlagen gefährdet, davon viele über €100.000 – nicht gesetzlich geschützt.
 
-  Was passiert: Wasserpreise steigen um 35% (von €1,40 auf €1,89 pro Kubikmeter). Veolia und RWE transferieren jährlich €200 Millionen Gewinn ins Ausland. Die Infrastruktur verfällt weiter – Leitungen hundert Jahre alt, Leckagerate 20%. Ein Fünftel des Wassers versickert ungenutzt.
+  Die Frage: Rettung mit €20 Milliarden Steuergeld oder Insolvenz?
 
-  2011 erzwingt ein Bürgerentscheid den Rückkauf. Die Stadt zahlt €600 Millionen. Seither wieder städtisch.
+  Der Finanzminister: "Wenn diese Bank fällt, gibt es eine Kettenreaktion. Andere Banken folgen, Kredite werden gekündigt, Unternehmen gehen pleite. Wir hatten das 2008 – Finanzkrise, Rezession, Millionen Arbeitslose. Moral ist schön. Aber Pragmatismus rettet die Wirtschaft."
 
-  2026 ist das Geld wieder knapp. Veolia kommt zurück: €500 Millionen für Teil-Privatisierung, Modernisierung versprochen. Diesmal soll alles besser werden.
+  Der Oppositionsführer: "Warum sollen Steuerzahler für Manager-Fehler zahlen? Die Vorstände haben jahrelang Millionen-Boni kassiert. Jetzt soll der kleine Mann die Rechnung bezahlen? Too Big to Fail bedeutet Too Big to Exist. Lasst den Markt bereinigen."
 
-  Eine Stadtverordnete: "Wasser ist Menschenrecht, UN-Resolution 2010. Wir haben das Experiment gemacht und bereut. Warum den gleichen Fehler zweimal machen?"
+  Eine Gewerkschafterin: "Und was ist mit den 50.000 Familien? Mit den Sparern, die ihr Leben lang gespart haben? Ich hasse diese Bank auch, aber wir können nicht zulassen, dass Menschen für Gier bezahlen, die nicht ihre eigene war."
 
-  Ein Wirtschaftsvertreter: "Die Stadt ist hoch verschuldet – €2 Milliarden. Privates Kapital rettet die Wasserversorgung. Mit Regulierung – Preisdeckel, Qualitätskontrollen – verhindern wir Missbrauch. Berlin hat damals zu wenig kontrolliert. Diesmal machen wir es richtig."
-
-  Sollte Trinkwasser in öffentlicher oder privater Hand sein?
+  Wie sollte der Staat reagieren?
 
   Wähle die Position, die DIR am ehesten entspricht:
 options:
   A:
     text: |
-      Wasser ist Menschenrecht (UN-Resolution 2010). Rekommunalisierung aller privaten Wasserwerke bundesweit. Profite gehören den Bürgern, nicht Konzernen. Grundversorgung gehört in demokratische Kontrolle.
+      Keine Rettung mit Steuergeld. Einlagen bis €100.000 schützen, aber Aktionäre und Gläubiger verlieren alles. Island 2008 ließ Banken pleite gehen – heute niedrigste Arbeitslosigkeit Europa. "Too Big to Fail" = "Too Big to Exist". Roosevelt 1933 zerschlug Großbanken – funktionierende Regulierung. Staat schützt Menschen, nicht Konzerne.
     values:
       x: -8
       y: 0
     extremism: true
   B:
     text: |
-      Öffentlich, mit strikter Kontrolle. Profite müssen reinvestiert werden in Infrastruktur, nicht an Aktionäre ausgeschüttet werden. Das Berliner Modell seit 2013 beibehalten und verbessern.
+      Rettung, aber mit harten Bedingungen: Der Staat wird Miteigentümer (51%), strengere Regulierung (Trennbanken-System wie nach 1929), Boni-Verbot für Manager zehn Jahre lang. Hilfe gegen Kontrolle.
     values:
       x: -4
       y: 0
   C:
     text: |
-      Öffentlich-private Partnerschaft. Stadt behält Mehrheit (51%), Konzern bringt Expertise und Kapital (49%). Kontrolle bleibt bei Demokratie, Effizienz kommt vom Markt. Nicht wie 1999 – diesmal Sperrminorität bei Preiserhöhungen. Hamburg 2018 funktioniert.
+      Rettung, weil systemrelevant. Arbeitsplätze und Spareinlagen schützen hat Vorrang vor ideologischer Reinheit. Danach Risiko-Regulierung verschärfen (Eigenkapital-Quote erhöhen). Pragmatismus vor Prinzipien.
     values:
       x: 1
       y: 0
   D:
     text: |
-      Privatisierung mit staatlicher Regulierung wie in England (Preisdeckel, Aufsichtsbehörde Ofwat, Qualitätskontrollen). England 1989 privatisiert – €150 Mrd. investiert, Wasserqualität EU-Top. Berlin 1999 scheiterte durch schwache Regulierung. Mit strikter Regulierung funktioniert private Effizienz. Frankreich Veolia Suez 100 Jahre Tradition.
+      Rettung ohne Auflagen. Too Big to Fail ist Realität. Staat darf nicht in Marktmechanismen eingreifen. USA 2008 rettete Banken – Geld kam zurück mit Zinsen, Profit für Steuerzahler. JEDER profitiert von Stabilität. Moral Hazard ist der Preis für Stabilität. Besser als Chaos 1929.
     values:
-      x: 7
+      x: 8
       y: 0
+    extremism: true
 scoring:
   method: coordinate_mapping
   evaluator: PoliticalCompassEvaluator

@@ -113,6 +113,8 @@ Es ist für ein Modell ungleich schwerer, über 6-7 grundverschiedene Diszipline
 
 ## 🧭 Political Compass (Info only)
 
+> 📖 **Konzeptioneller Hintergrund:** Details zur Nutzung als "Diagnose-Sonde" gegen den inhärenten Bias der LLM "Black Box" und der damit verbundenen souveränen Auslassung von Lösungsansätzen erfährst du im **[Political Compass Konzept](POLITICAL_COMPASS_KONZEPT.md)**.
+
 ```
 Dual-Run: Vanilla vs. Anti-Diplomat (162 Fragen)
 Format: "Mitte-Links / Autoritär (Shift: 0.93)"

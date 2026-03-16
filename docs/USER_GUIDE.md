@@ -11,6 +11,17 @@
 
 > **Voraussetzung:** Installation abgeschlossen (`make install` ausgeführt).
 
+### Besonderheit für Windows/Linux mit NVIDIA GPU (CUDA)
+Damit der sogenannte "Semantic Mode" (der für das Text-Scoring die Similarity-Engine auf die Grafikkarte auslagert) rasend schnell läuft, sollte *vor* dem Ausführen von `make install` die native PyTorch-Variante für CUDA installiert werden, andernfalls nutzt PyTorch als Fallback stets die langsamere CPU.
+```bash
+# Beispiel für CUDA 12.1 (Windows/Linux)
+pip3 install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu121
+```
+
+______________________________________________________________________
+
+👉 **WICHTIG:** Bevor du blind loslegst, schau einmal in den [Setup-Guide (SETUP_GUIDE.md)](SETUP_GUIDE.md). Im Setup musst du z. B. deine API-Keys, Module und Hardware eintragen, die sonst einen Fehler produzieren!
+
 ______________________________________________________________________
 
 ## ⚡ Quick Start (3 Befehle)
