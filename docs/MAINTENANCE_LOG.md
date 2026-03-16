@@ -45,9 +45,9 @@ The leaderboard showed duplicate entries for single models (e.g., "Claude Haiku"
 
 ### Resolution
 
-1. **Centralization:** Refactored `utils/fingerprinting.py` to be the Single Source of Truth (SSOT).
-1. **Dual-Versioning:** Implemented unified format `{OFFICIAL_ID}-{BEHAVIORAL_HASH}` enforced across all scripts.
-1. **Data Patch:** Merged split entries in CSVs.
+1. **Centralization:** Version logic moved to `utils/model_utils.py` (`get_model_version`) as SSOT.
+1. **Deterministic Mapping:** Removed behavioral hash fingerprinting to prevent ghost duplicates.
+1. **Data Patch:** Merged split entries in CSVs and aligned historical cache entries.
 1. **Golden Standard Optimization:** Excluded Political Compass from Golden Standard generation (Methodology Update).
 
 ## Aggregation Verification Report

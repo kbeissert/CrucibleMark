@@ -33,7 +33,6 @@ from utils.benchmark_utils import (
     save_debug_response,
     save_audit_log,
 )  # noqa: E402
-from utils.fingerprinting import ModelFingerprinter  # noqa: E402
 from utils.model_utils import get_model_version  # noqa: E402
 from utils.llm_client import LLMClient  # noqa: E402
 from utils.module_registry import load_active_benchmarks  # noqa: E402
@@ -318,14 +317,10 @@ class CommercialBenchmarkRunner(BaseBenchmarkRunner):
             else:
                 token_str = f"{t_count} T"
 
-        # Add Version/Fingerprint if available from API
-        # meta = exec_result.meta
-
-        # Use Global SSOT (Dual Version format) from Fingerprinting Utility
-        # We pass self.client if available to allow behavioral hashing
-        version = ModelFingerprinter.get_unified_version(
-            provider=provider,
+        # Add canonical version string from model mapping.
+        version = get_model_version(
             model_name=model,
+            provider=provider,
             client=self.client if hasattr(self, "client") else None,
         )
 

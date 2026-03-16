@@ -242,7 +242,6 @@ class CostTracker:
             call_type: Art des Aufrufs.
                 - ``"benchmark"``            – Reguläre Benchmark-Auswertung
                 - ``"overhead_ping"``         – Konnektivitäts-Ping (make list-models)
-                - ``"overhead_fingerprint"``  – Verhaltens-Fingerprint-Kalibrierung
         """
         cost = self.calculate_cost(provider, model, input_tokens, output_tokens)
 

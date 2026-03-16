@@ -32,3 +32,7 @@ Gilt für Generation-Parameter UND LLM Judge. Modul-Override gewinnt immer.
 - `SystemContextManager` injiziert dieses Profil automatisch als Kontext in Prompts (z.B. den Meta-Reviewer in `scripts/analysis/generate_review.py`).
 - **Prompt-as-Config / Tier-System:** Logik-Regeln (wie Leaderboard Scoring-Tiers und deren Prompt-Repräsentanz für den Meta-Reviewer) werden zentral in `benchmark_config.yaml` (`scoring_tiers`) gepflegt. Präsentationsschicht (`formatter.py`) und AI-Anweisungen (`generate_review.py`) lesen diese Werte dynamisch zur Laufzeit, um Hardcoding und Inkonsistenzen (Noteninflation) zu vermeiden.
 
+## Model Versioning (Deterministisch)
+- Keine zufälligen oder hash-basierten Generierungen von Modell-Verisonen für identische API-Aufrufe (wie zuvor im `ModelFingerprinter`).
+- Versionen werden zentral in `utils/model_utils.py` innerhalb der `get_model_version()`-Methode über Regex und statische Mappings (z.B. Regex für Datums-Stamps wie `2024-05-13`) verarbeitet.
+- Ollama-Modellversionen werden direkt als ID-Hash über den `ollama list` Shell-Call zur Laufzeit ermittelt und nativ an das Leaderboard durchgereicht.

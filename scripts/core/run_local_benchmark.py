@@ -42,7 +42,6 @@ from utils.model_utils import (
     get_ollama_models_info,
     is_reasoning_model,
 )
-from utils.fingerprinting import ModelFingerprinter
 from utils.module_loader import load_test_class
 from utils.module_registry import load_active_benchmarks
 from utils.scoring_utils import calculate_score_contributions, calculate_hybrid_score
@@ -523,9 +522,7 @@ class LocalBenchmarkRunner(BaseBenchmarkRunner):
             result["model_version"] = self.current_model_version
         else:
             # Fallback (should not happen in standard runs)
-            result["model_version"] = ModelFingerprinter.get_unified_version(
-                provider="ollama", model_name=model
-            )
+            result["model_version"] = get_model_version(model, provider="ollama")
 
         # Add Token Usage (Prefer centralized tracking from client)
         tokens = 0
@@ -801,12 +798,8 @@ class LocalBenchmarkRunner(BaseBenchmarkRunner):
         warmup_result = self._measure_cold_start(model)
 
         # --- VERSIONING ---
-        # Get unified version (Format: {local_digest}-nohash)
-        # We assume local execution doesn't do rigorous behavioral hashing yet for speed.
-        # But we adhere to the global format.
-        self.current_model_version = ModelFingerprinter.get_unified_version(
-            provider="ollama", model_name=model
-        )
+        # Local model version is derived from Ollama model ID via get_model_version().
+        self.current_model_version = get_model_version(model, provider="ollama")
         # ------------------
 
         # Use filtered assets if provided, otherwise discover all

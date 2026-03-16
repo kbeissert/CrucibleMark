@@ -115,11 +115,6 @@ class LLMClient:
         return 0.0
 
     @property
-    def fingerprint_cache(self) -> Dict[str, str]:
-        """Globaler Fingerprint Cache über alle Provider hinweg."""
-        if not hasattr(self, "_fingerprint_cache"):
-            self._fingerprint_cache = {}
-        return self._fingerprint_cache
 
     @property
     def last_pure_execution_time(self) -> float:
@@ -180,7 +175,7 @@ class LLMClient:
                 f"Unknown provider: {provider}. Available: {valid_providers}"
             )
 
-        # call_type aus kwargs extrahieren (z.B. "overhead_ping", "overhead_fingerprint")
+        # call_type aus kwargs extrahieren (z.B. "overhead_ping")
         # Muss VOR _call_provider() passieren, da es kein gültiger Provider-Parameter ist.
         call_type = kwargs.pop("call_type", "benchmark")
 
