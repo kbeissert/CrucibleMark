@@ -42,9 +42,11 @@ class CheckpointManager:
             TEMP_DIR.mkdir(parents=True, exist_ok=True)
 
         filepath = cls.get_checkpoint_path(model)
+        state_to_save = dict(state)
+        state_to_save["timestamp"] = time.time()
         try:
             with filepath.open("w", encoding=DEFAULT_ENCODING) as f:
-                json.dump(state, f, indent=2, ensure_ascii=False)
+                json.dump(state_to_save, f, indent=2, ensure_ascii=False)
         except (OSError, TypeError) as e:
             logger.error("⚠️ Failed to save checkpoint: %s", e)
 

@@ -175,7 +175,7 @@ providers:
     openai:
       name: "OpenAI"
       api_type: "openai"
-      enabled: false
+      enabled: true
 
       env_var: "OPENAI_API_KEY"
       models:

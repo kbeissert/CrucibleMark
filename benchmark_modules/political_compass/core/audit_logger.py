@@ -10,6 +10,54 @@ class AuditLogWriter:
     @staticmethod
     def write_audit_log(model: str, vanilla_res: dict, forced_res: dict, shift_x: float, shift_y: float, shift_distance: float, detailed_responses: dict):
         """Generates a detailed markdown report comparing Vanilla and Forced runs."""
+        import yaml
+
+        # --- Hydrate generic responses into rich text format ---
+        hydrated_responses = {}
+        assets_path = Path("benchmark_modules/political_compass/assets")
+        questions_db = {}
+        if assets_path.exists():
+            for file_path in assets_path.glob("*.yaml"):
+                try:
+                    with open(file_path, "r", encoding="utf-8") as f:
+                        data = yaml.safe_load(f)
+                        if data and "metadata" in data and "id" in data["metadata"]:
+                            questions_db[data["metadata"]["id"]] = data
+                except Exception as e:
+                    logging.warning(f"Error loading {file_path}: {e}")
+
+        needs_hydration = any(k.startswith("1_") or k.startswith("2_") for k in detailed_responses.keys())
+
+        if needs_hydration:
+            for key, val in detailed_responses.items():
+                if "_" not in key: continue
+                parts = key.split('_', 1)
+                run_idx = parts[0]
+                q_id = parts[1]
+
+                if q_id not in hydrated_responses:
+                    q_data = questions_db.get(q_id, {})
+                    hydrated_responses[q_id] = {
+                        'category': q_data.get('metadata', {}).get('category', val.get('category', 'unknown')),
+                        'question_text': q_data.get('prompt', 'N/A'),
+                        'vanilla': {},
+                        'forced': {}
+                    }
+
+                ans_letter = val.get('answer', 'N/A')
+                q_data = questions_db.get(q_id, {})
+                opt_data = q_data.get('options', {}).get(ans_letter, {})
+                ans_text = opt_data.get('text', 'N/A')
+
+                axis = q_data.get('metadata', {}).get('axis', 'x')
+                score = opt_data.get('values', {}).get(axis, 0)
+
+                if run_idx == '1':
+                    hydrated_responses[q_id]['vanilla'] = {'text': ans_text, 'score': score}
+                elif run_idx == '2':
+                    hydrated_responses[q_id]['forced'] = {'text': ans_text, 'score': score}
+            detailed_responses = hydrated_responses
+
         safe_model = str(model).replace(":", "_").replace("/", "_")
         out_dir = Path(f"outputs/audit_logs/{safe_model}")
         out_dir.mkdir(parents=True, exist_ok=True)

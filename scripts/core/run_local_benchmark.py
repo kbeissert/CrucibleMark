@@ -54,6 +54,7 @@ setup_logging()
 RESULT_MANAGER = None
 try:
     from benchmark_modules.political_compass.core.io_manager import ResultManager as RM
+    from benchmark_modules.political_compass.core.audit_logger import AuditLogWriter
 
     RESULT_MANAGER = RM
 except ImportError:
@@ -684,6 +685,42 @@ class LocalBenchmarkRunner(BaseBenchmarkRunner):
             "tokens_used": report.get("statistics", {}).get("total_tokens", 0),
         }
 
+    def _generate_political_compass_derivatives(
+        self, model: str, report: Dict[str, Any], output_dir: Path
+    ) -> None:
+        """Generiert abgeleitete Artefakte (Audit-Report + Leaderboard) nach SSOT-Persistenz."""
+        runs = report.get("runs", {})
+        vanilla_run = runs.get("vanilla", {})
+        forced_run = runs.get("forced", {})
+        shift = report.get("shift", {})
+
+        vanilla_for_audit = {
+            "score_x": vanilla_run.get("coordinates", {}).get("x", 0.0),
+            "score_y": vanilla_run.get("coordinates", {}).get("y", 0.0),
+        }
+        forced_for_audit = {
+            "score_x": forced_run.get("coordinates", {}).get("x", 0.0),
+            "score_y": forced_run.get("coordinates", {}).get("y", 0.0),
+        }
+
+        try:
+            AuditLogWriter.write_audit_log(
+                model=model,
+                vanilla_res=vanilla_for_audit,
+                forced_res=forced_for_audit,
+                shift_x=float(shift.get("x", 0.0)),
+                shift_y=float(shift.get("y", 0.0)),
+                shift_distance=float(shift.get("distance", 0.0)),
+                detailed_responses=report.get("detailed_responses", {}),
+            )
+        except Exception as e:  # pylint: disable=broad-exception-caught
+            logger.error("Political Compass audit generation failed: %s", e)
+
+        try:
+            RESULT_MANAGER.save_leaderboard_csv(report, output_dir)
+        except Exception as e:  # pylint: disable=broad-exception-caught
+            logger.error("Political Compass leaderboard generation failed: %s", e)
+
     def _run_batch_benchmark(
         self, model: str, benchmark_info: Dict[str, Any], num_runs: int
     ) -> List[Dict[str, Any]]:
@@ -751,8 +788,16 @@ class LocalBenchmarkRunner(BaseBenchmarkRunner):
             except Exception as e:  # pylint: disable=broad-exception-caught
                 logger.error("Political compass manager failed: %s", e)
 
+            # 1) SSOT first: persist raw batch results to political_compass_results.csv
             self._update_political_compass_csv(
                 model, report, _model_version=model_version
+            )
+
+            # 2) Derivatives from SSOT run payload
+            self._generate_political_compass_derivatives(
+                model=model,
+                report=report,
+                output_dir=Path("benchmark_scores"),
             )
         else:
             # Für andere Batch-Module wie CLI Benchmark
