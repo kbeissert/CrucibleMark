@@ -32,34 +32,42 @@ class BenchmarkResult(BaseModel):
 
     # --- Status ---
     status: str = Field(
-        "success", description="Status of the run (success, error, skipped)"
+        default="success", description="Status of the run (success, error, skipped)"
     )
 
     # --- Scoring ---
     primary_score: Optional[float] = Field(
-        None,
+        default=None,
         description="The main numerical score (0.0-100.0) for ranking. 'None' implies purely informational or pending scoring.",
     )
 
+    max_score: float = Field(
+        default=100.0, description="The maximum possible score for this specific task."
+    )
+
+    tier: str = Field(
+        default="Tier 1 (Undefined)", description="The assigned reasoning tier classification based on performance."
+    )
+
     rendered_value: str = Field(
-        "N/A", description="Display string for leaderboard (e.g., '85.5 %')."
+        default="N/A", description="Display string for leaderboard (e.g., '85.5 %')."
     )
 
     # --- Execution Metrics (Standardized) ---
-    execution_time: float = Field(0.0, description="Runtime in seconds")
+    execution_time: float = Field(default=0.0, description="Runtime in seconds")
     load_time: float = Field(
-        0.0, description="Model loading time in seconds (cold start)"
+        default=0.0, description="Model loading time in seconds (cold start)"
     )
-    tokens_used: int = Field(0, description="Total tokens consumed")
-    tokens_per_second: float = Field(0.0, description="Output speed in t/s")
-    cost_usd: float = Field(0.0, description="Estimated cost in USD")
-    finish_reason: Optional[str] = Field(None, description="The reason the model stopped generating (e.g. length/max_tokens)")
-    token_limit_cutoff: bool = Field(False, description="Flag indicating if the response was cut off due to max_token limits")
-    token_limit_fallback: bool = Field(False, description="Flag indicating if the system dynamically lowered the requested max_tokens to accommodate model constraints (e.g. 8192 -> 4096)")
-    token_limit_used: Optional[int] = Field(None, description="The actual max_tokens value used for the successful generation (metadata/Kopfnote)")
-    raw_response: str = Field("", description="The raw string output from the model")
+    tokens_used: int = Field(default=0, description="Total tokens consumed")
+    tokens_per_second: float = Field(default=0.0, description="Output speed in t/s")
+    cost_usd: float = Field(default=0.0, description="Estimated cost in USD")
+    finish_reason: Optional[str] = Field(default=None, description="The reason the model stopped generating (e.g. length/max_tokens)")
+    token_limit_cutoff: bool = Field(default=False, description="Flag indicating if the response was cut off due to max_token limits")
+    token_limit_fallback: bool = Field(default=False, description="Flag indicating if the system dynamically lowered the requested max_tokens to accommodate model constraints (e.g. 8192 -> 4096)")
+    token_limit_used: Optional[int] = Field(default=None, description="The actual max_tokens value used for the successful generation (metadata/Kopfnote)")
+    raw_response: str = Field(default="", description="The raw string output from the model")
     evaluated_prompt: str = Field(
-        "",
+        default="",
         description="The actual prompt that was sent to the model after evaluation/variable substitution",
     )
 
@@ -70,7 +78,7 @@ class BenchmarkResult(BaseModel):
 
     # --- Identification ---
     model_version: str = Field(
-        "unknown", description="Fingerprint or version string of the model"
+        default="unknown", description="Fingerprint or version string of the model"
     )
 
     # --- Details ---

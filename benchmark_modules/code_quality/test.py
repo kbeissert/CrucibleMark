@@ -57,7 +57,7 @@ class CodeQualityTest(BaseTest):
     def execute(
         self,
         model: str,
-        llm_client: Any,  # TODO: Später durch LLMClient Interface ersetzen
+        llm_client: Any,
         provider: str = "ollama",
         **kwargs: Any,
     ) -> BenchmarkResult:
@@ -119,6 +119,11 @@ class CodeQualityTest(BaseTest):
                 execution_time=elapsed,
                 load_time=load_time,
                 tokens_used=approx_tokens,
+                tokens_per_second=getattr(llm_client, "last_response_metadata", {}).get("tokens_per_second", 0.0),
+                finish_reason=getattr(llm_client, "last_response_metadata", {}).get("finish_reason"),
+                token_limit_cutoff=getattr(llm_client, "last_response_metadata", {}).get("token_limit_cutoff", False),
+                token_limit_fallback=getattr(llm_client, "last_response_metadata", {}).get("token_limit_fallback", False),
+                token_limit_used=getattr(llm_client, "last_response_metadata", {}).get("token_limit_used"),
                 cost_usd=getattr(llm_client, "last_request_cost", 0.0),
                 model_version=getattr(llm_client, "last_response_metadata", {}).get(
                     "system_fingerprint", "unknown"
@@ -140,6 +145,11 @@ class CodeQualityTest(BaseTest):
                 execution_time=0.0,
                 load_time=0.0,
                 tokens_used=0,
+                tokens_per_second=0.0,
+                finish_reason="error",
+                token_limit_cutoff=False,
+                token_limit_fallback=False,
+                token_limit_used=None,
                 cost_usd=0.0,
                 model_version="unknown",
                 meta={
@@ -149,10 +159,16 @@ class CodeQualityTest(BaseTest):
                 },
             )
 
-    def score_response(self, response: str) -> Dict[str, Any]:
+    def score_response(self, result: BenchmarkResult) -> BenchmarkResult:
         """
-        Delegates scoring to the core evaluator.
+        Delegates scoring to the core evaluator and updates the BenchmarkResult.
         """
         evaluator = CodeQualityEvaluator(self.asset)
-        score_dict = evaluator.score_response(response)
-        return score_dict
+        score_dict = evaluator.score_response(result.raw_response)
+        
+        result.primary_score = score_dict.get("score")
+        result.tier = score_dict.get("tier", "Tier 1 (Undefined)")
+        result.data = score_dict
+        result.rendered_value = f"{result.primary_score} %" if result.primary_score is not None else "N/A"
+        
+        return result

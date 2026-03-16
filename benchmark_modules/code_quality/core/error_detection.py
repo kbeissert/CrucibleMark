@@ -13,13 +13,12 @@ class ErrorDetector:
         self.known_issues_cache: Set[str] = set()
 
     def score_error_detection(
-        self, response: str, response_lower: str, config: Dict[str, Any]
+        self, response_lower: str, config: Dict[str, Any]
     ) -> Tuple[float, List[str], List[str]]:
         """
         Main error detection scoring method.
 
         Args:
-            response: The original response string (unused in this logic but kept for interface).
             response_lower: Lowercased response for keyword matching.
             config: Configuration dictionary containing issue definitions.
 

@@ -5,7 +5,7 @@ Validates structure of specific content types (Twitter threads, JSON, Landing Pa
 
 import json
 import re
-from typing import Dict, List, Tuple
+from typing import Dict, List, Tuple, Any, Optional
 from ..constants import FORMAT_SCHEMAS
 
 
@@ -14,16 +14,17 @@ class FormatValidator:
 
     @staticmethod
     def validate_twitter_thread(
-        response: str, config: Dict = None
+        response: str, config: Optional[Dict[str, Any]] = None
     ) -> Tuple[bool, List[str]]:
         """
         Validates a Twitter thread structure.
         Expects tweets to be separated by newlines or numbered like 1/X.
         """
-        config = config or FORMAT_SCHEMAS.get("twitter_thread", {})
-        min_tweets = config.get("min_tweets", 3)
-        max_chars = config.get("max_chars_per_tweet", 280)
-        pattern_str = config.get("pattern", r"^\d+/\d+")
+        base_schema: Dict[str, Any] = FORMAT_SCHEMAS.get("twitter_thread", {})
+        cfg: Dict[str, Any] = config if config is not None else base_schema
+        min_tweets = cfg.get("min_tweets", 3)
+        max_chars = cfg.get("max_chars_per_tweet", 280)
+        pattern_str = cfg.get("pattern", r"^\d+/\d+")
 
         issues = []
         tweets = []
@@ -70,12 +71,13 @@ class FormatValidator:
 
     @staticmethod
     def validate_json_structure(
-        response: str, schema: Dict = None
+        response: str, schema: Optional[Dict[str, Any]] = None
     ) -> Tuple[bool, List[str]]:
         """
         Validates if the response contains valid JSON and optionally matches a schema.
         """
-        config = FORMAT_SCHEMAS.get("json_export", {})
+        # Typehint to appease mypy as get on empty dict could be inferred as object
+        config: Dict[str, Any] = FORMAT_SCHEMAS.get("json_export", {})
         issues = []
         json_content = response
 
@@ -123,21 +125,22 @@ class FormatValidator:
 
         except json.JSONDecodeError as e:
             issues.append(f"Invalid JSON format: {str(e)}")
-        except Exception as e:
+        except Exception as e:  # pylint: disable=broad-exception-caught
             issues.append(f"JSON validation error: {str(e)}")
 
         return len(issues) == 0, issues
 
     @staticmethod
     def validate_landing_page_structure(
-        response: str, config: Dict = None
+        response: str, config: Optional[Dict[str, Any]] = None
     ) -> Tuple[bool, List[str]]:
         """
         Validates markdown structure for landing pages (Headers, CTA).
         """
-        config = config or FORMAT_SCHEMAS.get("landing_page", {})
-        required_sections = config.get("required_sections", [])
-        max_headline_len = config.get("max_headline_chars", 60)
+        base_schema: Dict[str, Any] = FORMAT_SCHEMAS.get("landing_page", {})
+        cfg: Dict[str, Any] = config if config is not None else base_schema
+        required_sections = cfg.get("required_sections", [])
+        max_headline_len = cfg.get("max_headline_chars", 60)
 
         issues = []
         lower_response = response.lower()

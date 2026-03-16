@@ -104,17 +104,17 @@ class UXWritingTest(BaseTest):
             meta=meta,
         )
 
-    def score_response(self, response: str) -> Dict[str, Any]:
+    def score_response(self, result: BenchmarkResult) -> BenchmarkResult:
         """
         Bewertet die Antwort basierend auf den Kriterien im Asset.
 
         Args:
-            response: Vom LLM generierte Antwort.
+            result: Das vom Runner generierte BenchmarkResult-Objekt.
 
         Returns:
-            Dictionary mit Scores, Tier und Details.
+            Aktualisiertes BenchmarkResult mit Scores, Tier und Details.
         """
-        scores, details = self._evaluate_response(response, self.scenario.scoring)
+        scores, details = self._evaluate_response(result.raw_response, self.scenario.scoring)
 
         total_score = scores.get("total", 0.0)
 
@@ -129,7 +129,7 @@ class UXWritingTest(BaseTest):
                 "max": 100,  # Placeholder as max is dynamic
             }
 
-        return {
+        score_dict = {
             "total_score": total_score,
             "max_score": 100,  # Normalized to 100 in logic
             "category_scores": category_scores,
@@ -137,6 +137,13 @@ class UXWritingTest(BaseTest):
             "tier": self._calculate_tier(total_score),
             "details": details,
         }
+        
+        result.primary_score = score_dict.get("score", score_dict.get("total_score"))
+        result.tier = score_dict.get("tier", "Tier 1 (Undefined)")
+        result.data = score_dict
+        result.rendered_value = f"{result.primary_score} %" if result.primary_score is not None else "N/A"
+        
+        return result
 
     def _calculate_tier(self, score: float) -> str:
         """

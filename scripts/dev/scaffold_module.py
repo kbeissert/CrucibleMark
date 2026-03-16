@@ -102,23 +102,26 @@ class {class_name}Test(BaseTest):
             "execution_time": duration
         }
 
-    def score_response(self, response: Dict[str, Any]) -> float:
+    def score_response(self, result: BenchmarkResult) -> BenchmarkResult:
         \"\"\"
         Calculates the score based on the raw response.
         Logic is delegated to self.evaluator in core/.
         \"\"\"
-        if response.get("status") != "success":
-            return 0.0
+        if result.status != "success":
+            result.primary_score = 0.0
+            return result
 
-        result = self.evaluator.evaluate(
-            response_text=response.get("raw_response", ""),
+        score_dict = self.evaluator.evaluate(
+            response_text=result.raw_response,
             asset=self.asset
         )
 
         # Store detailed breakdown for the CSV output or UI
-        self.latest_score_details = result.get('details', {})
-
-        return result.get('score', 0.0)
+        result.primary_score = score_dict.get("score", 0.0)
+        result.data = score_dict
+        result.rendered_value = f"{result.primary_score} %" if result.primary_score is not None else "N/A"
+        
+        return result
 """
 
 TEMPLATE_EVALUATOR = '''"""

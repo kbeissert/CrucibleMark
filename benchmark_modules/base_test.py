@@ -126,15 +126,15 @@ class BaseTest(ABC):
         pass
 
     @abstractmethod
-    def score_response(self, response: str) -> Dict[str, Any]:
+    def score_response(self, result: BenchmarkResult) -> BenchmarkResult:
         """
-        Bewertet Response nach Asset-Kriterien.
+        Bewertet Response nach Asset-Kriterien und aktualisiert das BenchmarkResult.
 
         Args:
-            response: LLM Response Text
+            result: Das vom Ausführungsschritt retournierte BenchmarkResult.
 
         Returns:
-            Dict mit Scoring-Ergebnissen (wird von Runner mit exec_result kombiniert).
+            Ein vervollständigtes BenchmarkResult inklusive Scoring-Daten.
         """
         pass
 

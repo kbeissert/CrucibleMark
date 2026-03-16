@@ -13,10 +13,9 @@ import re
 import time
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Any
+from typing import Any, Dict
 
 from utils.benchmark_ui import TerminalUI
-from utils.benchmark_utils import format_pc_run_data
 
 from .constants import DATE_FORMAT, DEFAULT_ENCODING, TEMP_DIR
 from .transformers import PoliticalCompassTransformer
@@ -257,8 +256,8 @@ class ResultManager:
         model = report.get("model", "unknown")
         # Find explicit provider logic if passed down, empty otherwise. Provider logic will be extracted from the model's test call.
         ind_runs = report.get("individual_runs", [])
-        v_run = next((r for r in ind_runs if r["type"] == "vanilla"), {})
-        f_run = next((r for r in ind_runs if r["type"] == "forced"), {})
+        v_run: Dict[str, Any] = next((r for r in ind_runs if r["type"] == "vanilla"), {})
+        f_run: Dict[str, Any] = next((r for r in ind_runs if r["type"] == "forced"), {})
 
         row = {
             "timestamp": datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S"),

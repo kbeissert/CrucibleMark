@@ -102,19 +102,19 @@ class BaseBenchmarkRunner:
         self,
         model: str,
         asset_data: Dict[str, Any],
-        score: Dict[str, Any],
         exec_result: BenchmarkResult,  # Updated type hint
         provider: str,
     ) -> Dict[str, Any]:
         """Erstellt das standardisierte Ergebnis-Dictionary."""
+        score = exec_result.data
         asset_id = asset_data.get("metadata", {}).get("id", "unknown")
         asset_name = asset_data.get("metadata", {}).get("name") or asset_data.get(
             "metadata", {}
         ).get("topic", asset_id)
 
         # Division by zero protection
-        max_score = score.get("max_score", 0)
-        total_score = score.get("total_score", 0)
+        max_score = exec_result.max_score
+        total_score = exec_result.primary_score if exec_result.primary_score is not None else 0.0
         percentage = round((total_score / max_score * 100), 1) if max_score > 0 else 0.0
 
         # Prepare tokens per second logic
@@ -125,7 +125,7 @@ class BaseBenchmarkRunner:
         # Build dict from BenchmarkResult object + Scoring
         result = {
             "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-            "status": score.get("status", "success"),
+            "status": exec_result.status,
             "provider": provider,
             "model": model,
             "asset_id": asset_id,
@@ -133,6 +133,7 @@ class BaseBenchmarkRunner:
             "total_score": total_score,
             "max_score": max_score,
             "percentage": percentage,
+            "tier": exec_result.tier,
             # Use object attributes
             "execution_time": round(exec_result.execution_time, 4),
             "tokens_used": getattr(exec_result, "tokens_used", 0),

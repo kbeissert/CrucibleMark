@@ -12,6 +12,8 @@ from pathlib import Path
 from datetime import datetime
 from typing import Any, Dict, List, Optional, Tuple
 
+from schemas.result import BenchmarkResult
+
 # Suppress verbose HTTP logging
 logging.getLogger("httpx").setLevel(logging.WARNING)
 logging.getLogger("httpcore").setLevel(logging.WARNING)
@@ -188,7 +190,12 @@ class CommercialBenchmarkRunner(BaseBenchmarkRunner):
             test_cls = load_test_class(module_path, test_cls_name)
             test_inst = test_cls(asset_path)
 
-            score = test_inst.score_response(data.get("response", ""))
+            dummy_result = BenchmarkResult(
+                raw_response=data.get("response", ""),
+                execution_time=data.get("execution_time", 0.0),
+            )
+            dummy_result = test_inst.score_response(dummy_result)
+            score = dummy_result.data
             asset_id = data.get("id", asset_path.stem)
 
             result = {
@@ -277,10 +284,11 @@ class CommercialBenchmarkRunner(BaseBenchmarkRunner):
             return None
 
         response = exec_result.raw_response
-        score = test_inst.score_response(response)
+        exec_result = test_inst.score_response(exec_result)
+        score = exec_result.data
 
         # Build Standardized Result
-        result = self.build_base_result(model, asset_data, score, exec_result, provider)
+        result = self.build_base_result(model, asset_data, exec_result, provider)
 
         # ADDED: Granular Score Contribution
         benchmarks_list = benchmark_info.get("benchmarks", [])

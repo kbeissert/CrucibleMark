@@ -288,7 +288,8 @@ class LocalBenchmarkRunner(BaseBenchmarkRunner):
             return self._create_error_result(asset_path, str(e))
 
         response = exec_result.raw_response
-        score = test_instance.score_response(response)
+        exec_result = test_instance.score_response(exec_result)
+        score = exec_result.data
 
         # Comparisons
         asset_id = asset_data.get("metadata", {}).get("id", asset_path.stem)
@@ -297,7 +298,6 @@ class LocalBenchmarkRunner(BaseBenchmarkRunner):
         result = self._build_result_dict(
             model=model,
             asset_data=asset_data,
-            score=score,
             exec_result=exec_result,
             response_preview=response,
         )
@@ -510,13 +510,12 @@ class LocalBenchmarkRunner(BaseBenchmarkRunner):
         self,
         model: str,
         asset_data: Dict[str, Any],
-        score: Dict[str, Any],
         exec_result: BenchmarkResult,
         response_preview: str,
     ) -> Dict[str, Any]:
         """Helper to construct the result dictionary."""
         # Use base runner implementation
-        result = self.build_base_result(model, asset_data, score, exec_result, "ollama")
+        result = self.build_base_result(model, asset_data, exec_result, "ollama")
 
         # Add Model Version (ID)
         # Use cached global unified version if available
@@ -561,7 +560,7 @@ class LocalBenchmarkRunner(BaseBenchmarkRunner):
                 result["asset_id"],
                 response_preview,
                 f"{result['total_score']}/{result['max_score']} ({result['percentage']}%)",
-                score.get("reasoning", "No explanation provided"),
+                exec_result.data.get("reasoning", "No explanation provided"),
             )
         return result
 
