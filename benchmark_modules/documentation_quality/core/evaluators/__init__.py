@@ -3,7 +3,7 @@ Facade for Documentation Quality evaluation.
 Handles orchestration of specialized sub-evaluators.
 """
 
-from typing import Dict, Any, List
+from typing import Dict, Any, List, Optional
 from pathlib import Path
 import re
 
@@ -25,7 +25,7 @@ class DocumentationEvaluator:
 
     # pylint: disable=too-few-public-methods
 
-    def __init__(self, asset: Dict[str, Any], asset_path: Path = None):
+    def __init__(self, asset: Dict[str, Any], asset_path: Optional[Path] = None):
         self.asset = asset
         self.asset_path = asset_path or Path("")
 

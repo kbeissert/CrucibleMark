@@ -120,7 +120,7 @@ class {class_name}Test(BaseTest):
         result.primary_score = score_dict.get("score", 0.0)
         result.data = score_dict
         result.rendered_value = f"{result.primary_score} %" if result.primary_score is not None else "N/A"
-        
+
         return result
 """
 

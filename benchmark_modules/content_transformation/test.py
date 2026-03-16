@@ -8,7 +8,7 @@ Delegates logic to benchmark_modules.content_transformation.core.evaluators.
 import sys
 import time
 from pathlib import Path
-from typing import Any, Dict
+from typing import Any
 
 # Ensure root directory is in sys.path
 root_dir = Path(__file__).parent.parent.parent
@@ -79,6 +79,7 @@ class ContentTransformationTest(BaseTest):
             return BenchmarkResult(
                 status="success",
                 primary_score=None,
+            max_score=100.0,
                 rendered_value="Pending",
                 raw_response=response,
                 evaluated_prompt=full_prompt,
@@ -103,7 +104,7 @@ class ContentTransformationTest(BaseTest):
                     **getattr(llm_client, "last_response_metadata", {}),
                 },
             )
-        except Exception as e:
+        except Exception as e:  # pylint: disable=broad-exception-caught
             return BenchmarkResult(
                 status="error",
                 primary_score=0.0,
@@ -129,10 +130,10 @@ class ContentTransformationTest(BaseTest):
         """
         evaluator = ContentTransformationEvaluator(self.asset)
         score_dict = evaluator.score_response(result.raw_response)
-        
+
         result.primary_score = score_dict.get("score", score_dict.get("total_score"))
         result.tier = score_dict.get("tier", "Tier 1 (Undefined)")
         result.data = score_dict
         result.rendered_value = f"{result.primary_score} %" if result.primary_score is not None else "N/A"
-        
+
         return result

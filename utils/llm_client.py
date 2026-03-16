@@ -235,6 +235,16 @@ class LLMClient:
             _call_provider, max_retries=max_retries
         )
 
+        import re
+        # Sanitize loop hallucinations (z.B. wenn das Modell 80.000 Leerzeichen am Stück ausgibt)
+        if response_text and len(response_text) > 1000:
+            response_text = re.sub(
+                r"(.)\1{500,}",
+                r"\1\n\n> **🚨 SYSTEM WARNING:** Das Framework hat eine Endlosschleife des Modells erkannt (extreme Zeichen-Wiederholung) und den defekten Textblock an dieser Stelle gekürzt.\n\n",
+                response_text,
+                flags=re.DOTALL
+            )
+
         # Update Metadata from Client
         if hasattr(self.clients[provider], "last_response_metadata"):
             self.last_response_metadata = self.clients[provider].last_response_metadata

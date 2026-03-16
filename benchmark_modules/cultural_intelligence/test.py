@@ -6,7 +6,7 @@ Delegates logic to benchmark_modules.cultural_intelligence.core.evaluators.
 """
 
 import time
-from typing import Any, Dict
+from typing import Any
 from benchmark_modules.base_test import BaseTest
 from benchmark_modules.cultural_intelligence.core.evaluators import (
     CulturalIntelligenceEvaluator,
@@ -23,7 +23,7 @@ class CulturalIntelligenceTest(BaseTest):
     """
 
     def execute(
-        self, model: str, llm_client: Any, provider: str = "ollama"
+        self, model: str, llm_client: Any, **kwargs: Any
     ) -> BenchmarkResult:
         """
         Executes the benchmark test using the provided LLM client.
@@ -40,13 +40,14 @@ class CulturalIntelligenceTest(BaseTest):
         )
 
         full_prompt = f"{system_prompt}\n\n{prompt}"
+        provider = kwargs.get("provider")
 
         # Execute via client
         try:
             response_text = llm_client.query(
                 prompt=full_prompt, model=model, provider=provider, temperature=0.5
             )
-        except Exception as e:
+        except Exception as e:  # pylint: disable=broad-exception-caught
             response_text = f"Error executing model: {str(e)}"
 
         # Use clean execution time (excluding timeouts/retries) if available
@@ -73,7 +74,8 @@ class CulturalIntelligenceTest(BaseTest):
         # (This depends on llm_client populating metadata correctly)
 
         return BenchmarkResult(
-            primary_score=None,  # Not scored yet
+            primary_score=None,
+            max_score=100.0,  # Not scored yet
             rendered_value="Pending",
             evaluated_prompt=full_prompt,
             execution_time=execution_time,
@@ -90,10 +92,10 @@ class CulturalIntelligenceTest(BaseTest):
         """
         evaluator = CulturalIntelligenceEvaluator(self.asset)
         score_dict = evaluator.score_response(result.raw_response)
-        
+
         result.primary_score = score_dict.get("score", score_dict.get("total_score"))
         result.tier = score_dict.get("tier", "Tier 1 (Undefined)")
         result.data = score_dict
         result.rendered_value = f"{result.primary_score} %" if result.primary_score is not None else "N/A"
-        
+
         return result

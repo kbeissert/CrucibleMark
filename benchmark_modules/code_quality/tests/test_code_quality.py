@@ -34,6 +34,8 @@ def security_asset_path():
     return Path("benchmark_modules/code_quality/assets/asset_002_security_audit.yaml")
 
 
+from schemas.result import BenchmarkResult
+
 class TestAssetLoading:
     """Asset-Loading Tests"""
 
@@ -166,9 +168,10 @@ class TestScoringLogic:
         """Error-Response gibt 0 Punkte"""
         test = CodeQualityTest(security_asset_path)
 
-        result = test.score_response("ERROR: Something went wrong")
+        dummy_result = BenchmarkResult(status="error", raw_response="ERROR: Something went wrong")
+        result = test.score_response(dummy_result)
 
-        assert result["total_score"] == 0
+        assert result.primary_score == 0
 
 
 class TestGoldenStandardComparison:

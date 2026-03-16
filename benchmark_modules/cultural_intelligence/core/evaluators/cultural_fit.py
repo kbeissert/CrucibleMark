@@ -48,7 +48,7 @@ class CulturalFitEvaluator:
         # Detect regional markers
         regional_markers = CulturalFitEvaluator._detect_regional_markers(response_lower)
         if regional_markers:
-            dominant_region = max(regional_markers, key=regional_markers.get)
+            dominant_region = max(regional_markers, key=lambda k: regional_markers[k])
         else:
             dominant_region = "unknown"
 

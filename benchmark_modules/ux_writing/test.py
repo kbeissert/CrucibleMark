@@ -34,7 +34,6 @@ from benchmark_modules.ux_writing.core.constants import (  # noqa: E402
     ASSET_REQUIRED_RATIOS,
     DEFAULT_REQUIRED_RATIO,
 )
-from utils.llm_client import LLMClient  # noqa: E402
 
 
 class UXWritingTest(BaseTest):
@@ -55,13 +54,14 @@ class UXWritingTest(BaseTest):
         self.scenario = UXScenario.from_dict(self.asset)
 
     def execute(
-        self, model: str, llm_client: LLMClient, provider: str = "ollama"
+        self, model: str, llm_client: Any, **kwargs: Any
     ) -> BenchmarkResult:
         """
         Führt den Test für das geladene Asset aus.
         Returns BenchmarkResult object.
         """
         prompt = self.scenario.to_prompt()
+        provider = kwargs.get("provider")
 
         start_time = time.time()
         # Adapter for LLMClient.query(model, prompt, provider)
@@ -91,6 +91,7 @@ class UXWritingTest(BaseTest):
         return BenchmarkResult(
             status="success",
             primary_score=None,
+            max_score=100.0,
             rendered_value="Pending",
             execution_time=execution_time,
             load_time=load_time,
@@ -137,12 +138,13 @@ class UXWritingTest(BaseTest):
             "tier": self._calculate_tier(total_score),
             "details": details,
         }
-        
-        result.primary_score = score_dict.get("score", score_dict.get("total_score"))
-        result.tier = score_dict.get("tier", "Tier 1 (Undefined)")
+
+        score_val = score_dict.get("score", score_dict.get("total_score"))
+        result.primary_score = float(str(score_val)) if score_val is not None else None
+        result.tier = str(score_dict.get("tier", "Tier 1 (Undefined)"))
         result.data = score_dict
         result.rendered_value = f"{result.primary_score} %" if result.primary_score is not None else "N/A"
-        
+
         return result
 
     def _calculate_tier(self, score: float) -> str:

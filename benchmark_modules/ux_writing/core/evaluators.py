@@ -1,3 +1,4 @@
+"""Core evaluators for UX Writing rules."""
 import re
 from abc import ABC, abstractmethod
 from typing import Tuple, List
@@ -19,7 +20,6 @@ class CriterionEvaluator(ABC):
     @abstractmethod
     def evaluate(self, response: str, criterion: UXCriterion) -> Tuple[float, str]:
         """Returns (score, explanation_string)."""
-        pass
 
 
 class KeywordPresenceEvaluator(CriterionEvaluator):
@@ -245,7 +245,7 @@ class IssueEvaluator:
         try:
             best_score = SemanticSimilarity.find_best_match(query, sentences)
             return best_score > SIMILARITY_THRESHOLD
-        except Exception:
+        except Exception:  # pylint: disable=broad-exception-caught
             # Fallback if similarity check fails (e.g. model not loaded)
             return False
 

@@ -235,7 +235,7 @@ class PoliticalCompassTest(BaseTest):
                 )
                 if "detailed_responses" not in checkpoint:
                     checkpoint["detailed_responses"] = {}
-                ans_letter = context["evaluator"]._parse_choice(response, list(mapping.keys())) if response else ""
+                ans_letter = context["evaluator"]._parse_choice(response, list(mapping.keys())) if response else ""  # pylint: disable=protected-access
                 if not ans_letter:
                     ans_letter = response.strip().upper()[0:1] if response else ""
                 orig_key = mapping.get(ans_letter, ans_letter)
@@ -280,7 +280,7 @@ class PoliticalCompassTest(BaseTest):
             checkpoint["responses"] = responses_cache  # ensure ref update
             if "detailed_responses" not in checkpoint:
                 checkpoint["detailed_responses"] = {}
-            ans_letter = context["evaluator"]._parse_choice(response, list(mapping.keys())) if response else ""
+            ans_letter = context["evaluator"]._parse_choice(response, list(mapping.keys())) if response else ""  # pylint: disable=protected-access
             if not ans_letter:
                 ans_letter = response.strip().upper()[0:1] if response else ""
             orig_key = mapping.get(ans_letter, ans_letter)
@@ -638,13 +638,13 @@ if __name__ == "__main__":
         try:
             # force 1 run for speed
             test.num_runs = 1
-            result = test.execute(
+            main_result = test.execute(
                 model=args.model, llm_client=client, provider=args.provider
             )
             print("\n✅ Execution Successful")
 
             # Parse inner report
-            exec_report = json.loads(result.raw_response)
+            exec_report = json.loads(main_result.raw_response)
             print(f"Status: {exec_report.get('status')}")
             print(f"Score:  {exec_report.get('total_score')}")
         except Exception as e:  # pylint: disable=broad-exception-caught

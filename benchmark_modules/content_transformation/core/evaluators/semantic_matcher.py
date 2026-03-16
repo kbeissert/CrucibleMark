@@ -88,6 +88,6 @@ class SemanticMatcher:
             best_score = SemanticSimilarity.find_best_match(query, chunks)
             return best_score >= threshold
 
-        except Exception:
+        except Exception:  # pylint: disable=broad-exception-caught
             # Fallback: if semantic check fails, return False
             return False

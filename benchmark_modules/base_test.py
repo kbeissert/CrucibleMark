@@ -4,11 +4,12 @@ Abstract Base Class für alle Test-Module
 """
 
 from abc import ABC, abstractmethod
-from pathlib import Path
-from typing import Dict, Any, Optional, NamedTuple
-import yaml
 import json
 from datetime import datetime
+from pathlib import Path
+from typing import Dict, Any, Optional, NamedTuple
+
+import yaml
 
 from schemas.result import BenchmarkResult
 
@@ -123,7 +124,6 @@ class BaseTest(ABC):
                 'metadata': dict
             }
         """
-        pass
 
     @abstractmethod
     def score_response(self, result: BenchmarkResult) -> BenchmarkResult:
@@ -136,7 +136,6 @@ class BaseTest(ABC):
         Returns:
             Ein vervollständigtes BenchmarkResult inklusive Scoring-Daten.
         """
-        pass
 
     def compare_to_golden_standard(
         self, response: str, golden_path: Path

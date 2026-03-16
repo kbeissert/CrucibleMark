@@ -6,7 +6,7 @@ and exposes specialized evaluators for language proficiency, cultural fit,
 solution quality, and regional consistency.
 """
 
-from typing import Any, Dict
+from typing import Any, Dict, Optional
 from pathlib import Path
 from .language_proficiency import LanguageProficiencyEvaluator
 from .cultural_fit import CulturalFitEvaluator
@@ -24,7 +24,7 @@ class CulturalIntelligenceEvaluator:
 
     # pylint: disable=too-few-public-methods
 
-    def __init__(self, asset: Dict[str, Any], asset_path: Path = None):
+    def __init__(self, asset: Dict[str, Any], asset_path: Optional[Path] = None):
         self.asset = asset
         self.asset_path = asset_path or Path("")
 
@@ -102,7 +102,7 @@ class CulturalIntelligenceEvaluator:
             total_achieved += quality_result["score"]
 
         # Metadata collection (using get() for safety if category skipped)
-        metadata = {
+        metadata: Dict[str, Any] = {
             "response_length": len(response),
             "word_count": len(response.split()),
         }
