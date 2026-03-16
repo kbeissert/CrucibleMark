@@ -221,9 +221,15 @@ def main(print_table: bool = True) -> None:
         if version == base_name or version == cn:
             version = "k.A."
 
-        # Keep short hash for local models ONLY if alphanumeric
-        if len(version) >= 8 and re.match(r"^[a-f0-9]+$", version) and any(c.isalpha() for c in version):
-            return version[:7]
+        # Keep short hash for local/Ollama models only.
+        model_type = str(row.get("type", row.get("Type", ""))).strip().lower()
+        if (
+            model_type == "local"
+            and len(version) >= 8
+            and re.match(r"^[a-f0-9]+$", version)
+            and any(c.isalpha() for c in version)
+        ):
+            return version[:6]
         return version
 
     leaderboard["Version"] = leaderboard.apply(format_version_display, axis=1)

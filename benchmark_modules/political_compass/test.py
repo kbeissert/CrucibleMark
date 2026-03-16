@@ -37,7 +37,6 @@ from benchmark_modules.political_compass.core.evaluators import (
 from benchmark_modules.political_compass.core.io_manager import CheckpointManager, ResultManager
 from benchmark_modules.political_compass.core.audit_logger import AuditLogWriter
 from utils.benchmark_ui import TerminalUI
-from utils.fingerprinting import ModelFingerprinter
 from utils.module_registry import load_module_config
 
 logger = logging.getLogger(__name__)

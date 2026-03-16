@@ -99,35 +99,27 @@ benchmark_modules/
 
 ______________________________________________________________________
 
-## 🏷️ Model Versioning & Fingerprinting
+## 🏷️ Model Versioning
 
-CrucibleMark nutzt ein striktes **Dual-Versionierungssystem**, um Änderungen an Cloud-Modellen ("Silent Updates") transparent zu machen.
+CrucibleMark nutzt eine deterministische, provider-spezifische Versionsermittlung.
 
-### Das Format: `{OFFICIAL_ID}-{BEHAVIORAL_HASH}`
+### Aktuelle Regeln
 
-Jede Version besteht aus zwei Komponenten:
+1. **Kommerzielle Modelle:**
 
-1. **OFFICIAL_ID (Basis):**
+  - Versionen werden über feste Regex-Muster und statische Mappings aus dem Modellnamen abgeleitet.
+  - Beispiele: `claude-sonnet-4-6` -> `4.6`, `gpt-4o` -> `2024-05-13`, `mistral-large-latest` -> `2411`.
 
-   - Leitet sich vom offiziellen Anbieter-Namen ab.
-   - Format: `YYYYMMDD` (z.B. `20240513` für GPT-4o) oder `v0.3` (z.B. Mistral 7B).
-   - Wird automatisch per Regex aus dem Modellnamen extrahiert oder via `OFFICIAL_SNAPSHOTS` gemappt.
+1. **Lokale Ollama-Modelle:**
 
-1. **BEHAVIORAL_HASH (Suffix):**
+  - Versionen werden zur Laufzeit aus `ollama list` gelesen.
+  - Verwendet wird die tatsächliche Ollama-ID des installierten Modells (Hash/ID-Spalte).
+  - Für lokale Modelle ist die gespeicherte Version ausschließlich dieser Hash, um Silent Updates direkt am ID-Wechsel zu erkennen.
 
-   - Ein 8-stelliger Hex-Hash (z.B. `8717af19`).
-   - Basierend auf deterministischen Standard-Prompts ("Fingerprints"), die das Modell beim Start ausführt.
-   - **Zweck:** Ändert der Anbieter das Modell im Hintergrund (gleicher Name, gleiches Datum, aber anderes Verhalten), ändert sich dieser Hash -> **Neue Leaderboard-Entry**.
+### Implementation
 
-**Implementation:**
-Die Logik liegt zentral in `utils/fingerprinting.py`. Nutzen Sie beim Caching von Ergebnissen immer:
-
-```python
-from utils.fingerprinting import ModelFingerprinter
-
-# Generates generic version string
-version = ModelFingerprinter.get_unified_version(provider, model_name, client)
-```
+Die SSOT liegt in `utils/model_utils.py` in `get_model_version(model_name, provider, client)`.
+Ein separates Fingerprinting-Modul wird nicht mehr verwendet.
 
 ______________________________________________________________________
 

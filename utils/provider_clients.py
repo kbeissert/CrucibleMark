@@ -12,7 +12,6 @@ from utils.ollama_config import CODING_BENCHMARK_OPTIONS, CREATIVE_BENCHMARK_OPT
 from utils.constants import MAX_TOKENS_ANTHROPIC, DEFAULT_MISTRAL_MODEL
 from utils.env_utils import get_required_env
 from utils.model_utils import is_reasoning_model
-from utils.fingerprinting import ModelFingerprinter
 
 # Optional Provider Imports
 try:
@@ -446,19 +445,6 @@ class AnthropicClient(BaseProviderClient):
             )
         return model
 
-    def _get_fingerprint(self, model: str) -> str:
-        """Generates fingerprint for Anthropic Model."""
-        if model in self.fingerprint_cache:
-            return self.fingerprint_cache[model]
-
-        # Use Standardized Global Versioning
-        fingerprint = ModelFingerprinter.get_unified_version(
-            provider="anthropic", model_name=model, client=self
-        )
-
-        self.fingerprint_cache[model] = fingerprint
-        return fingerprint
-
     def query(
         self,
         model: str,
@@ -479,7 +465,6 @@ class AnthropicClient(BaseProviderClient):
 
         try:
             model = self._resolve_model(model)
-            skip_fingerprint = kwargs.pop("skip_fingerprint", False)
 
             # Default to config, but override with kwargs if present
             max_tokens = kwargs.get("max_tokens")
@@ -512,11 +497,6 @@ class AnthropicClient(BaseProviderClient):
                 "token_limit_fallback": fallback_triggered,
                 "token_limit_used": used_max_tokens,
             }
-
-            if not skip_fingerprint:
-                fp = self._get_fingerprint(model)
-                self.last_response_metadata["model_fingerprint"] = fp
-                self.last_response_metadata["system_fingerprint"] = fp
 
             if (
                 stream_handler
@@ -583,14 +563,6 @@ class MistralClient(BaseProviderClient):
             return self.config.get("mistral", {}).get("model", DEFAULT_MISTRAL_MODEL)
         return model
 
-    def _get_fingerprint(self, model: str) -> str:
-        """Generates fingerprint for Mistral Model."""
-        if model in self.fingerprint_cache:
-            return self.fingerprint_cache[model]
-
-        fingerprint = ModelFingerprinter.get_unified_version(provider="mistral", model_name=model)
-        self.fingerprint_cache[model] = fingerprint
-        return fingerprint
     def query(
         self,
         model: str,
@@ -602,7 +574,6 @@ class MistralClient(BaseProviderClient):
         """Query Mistral API"""
         try:
             model = self._resolve_model(model)
-            skip_fingerprint = kwargs.pop("skip_fingerprint", False)
 
             # Mistral supports max_tokens
             max_tokens = kwargs.get("max_tokens")
@@ -634,14 +605,6 @@ class MistralClient(BaseProviderClient):
                 "token_limit_used": used_max_tokens,
                 "finish_reason": getattr(response.choices[0], "finish_reason", None) if response.choices else None,
             }
-
-            if not skip_fingerprint:
-                # Calculate fingerprint (this might call query recursively with skip_fingerprint=True)
-                fp = self._get_fingerprint(model)
-                self.last_response_metadata["model_fingerprint"] = fp
-                self.last_response_metadata["system_fingerprint"] = (
-                    fp  # Alias for runner compatibility
-                )
 
             content = response.choices[0].message.content
             if stream_handler and content:
@@ -713,14 +676,6 @@ class OpenAIClient(BaseProviderClient):
             logger.debug("OpenAI Access Check Failed: %s", e)
             return False
 
-    def _get_fingerprint(self, model: str) -> str:
-        """Generates fingerprint for OpenAI Model."""
-        if model in self.fingerprint_cache:
-            return self.fingerprint_cache[model]
-
-        fingerprint = ModelFingerprinter.get_unified_version(provider="openai", model_name=model)
-        self.fingerprint_cache[model] = fingerprint
-        return fingerprint
     def query(
         self,
         model: str,
@@ -731,7 +686,6 @@ class OpenAIClient(BaseProviderClient):
     ) -> str:
         """Query OpenAI API"""
         try:
-            skip_fingerprint = kwargs.pop("skip_fingerprint", False)
             params = {
                 "model": model,
                 "messages": [{"role": "user", "content": prompt}],
@@ -801,12 +755,6 @@ class OpenAIClient(BaseProviderClient):
                             stream_handler(delta)
                             full_content += delta
 
-                if not skip_fingerprint:
-                    fp = self._get_fingerprint(model)
-                    self.last_response_metadata["model_fingerprint"] = fp
-                    # Overwrite/Augment system_fingerprint
-                    self.last_response_metadata["system_fingerprint"] = fp
-
                 return full_content
 
             # Blocking Call (Legacy / No Stream)
@@ -822,18 +770,6 @@ class OpenAIClient(BaseProviderClient):
                 "token_limit_fallback": fallback_triggered,
                 "token_limit_used": used_max_tokens,
             }
-
-            if not skip_fingerprint:
-                # Calculate custom fingerprint
-                fp = self._get_fingerprint(model)
-                self.last_response_metadata["model_fingerprint"] = fp
-
-                # OpenAI already has system_fingerprint, but we overwrite/augment it
-                # if we want consistent behavioral fingerprint across providers.
-                # OpenAI's system_fingerprint changes frequently.
-                # Ours is stable per behavioral hash logic.
-                # Let's use ours as the primary "version" for benchmark tracking.
-                self.last_response_metadata["system_fingerprint"] = fp
 
             content = response.choices[0].message.content or ""
 
@@ -1058,15 +994,6 @@ class XAIClient(BaseProviderClient):
             logger.debug("XAI Access Check Failed: %s", e)
             return False
 
-    def _get_fingerprint(self, model: str) -> str:
-        """Generates fingerprint for XAI Model."""
-        if model in self.fingerprint_cache:
-            return self.fingerprint_cache[model]
-
-        from utils.fingerprinting import ModelFingerprinter
-        fingerprint = ModelFingerprinter.get_unified_version(provider="xai", model_name=model)
-        self.fingerprint_cache[model] = fingerprint
-        return fingerprint
     def query(
         self,
         model: str,
@@ -1079,8 +1006,6 @@ class XAIClient(BaseProviderClient):
         try:
             from utils.logging_config import setup_logging
             logger = setup_logging()
-
-            skip_fingerprint = kwargs.pop("skip_fingerprint", False)
             params = {
                 "model": model,
                 "messages": [{"role": "user", "content": prompt}],
@@ -1126,11 +1051,6 @@ class XAIClient(BaseProviderClient):
                             stream_handler(delta)
                             full_content += delta
 
-                if not skip_fingerprint:
-                    fp = self._get_fingerprint(model)
-                    self.last_response_metadata["model_fingerprint"] = fp
-                    self.last_response_metadata["system_fingerprint"] = fp
-
                 return full_content
             else:
                 raw_text = response.choices[0].message.content
@@ -1145,14 +1065,6 @@ class XAIClient(BaseProviderClient):
 
                 if hasattr(response, "usage") and response.usage:
                     self.last_response_metadata["usage"] = response.usage
-
-                if getattr(response, "system_fingerprint", None):
-                    self.last_response_metadata["system_fingerprint"] = response.system_fingerprint
-                else:
-                    if not skip_fingerprint:
-                        fp = self._get_fingerprint(model)
-                        self.last_response_metadata["model_fingerprint"] = fp
-                        self.last_response_metadata["system_fingerprint"] = fp
 
                 return raw_text if raw_text else ""
 
