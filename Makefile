@@ -1,6 +1,6 @@
 .PHONY: \
 	help install install-dev \
-	benchmark benchmark-silent political-compass pc benchmark-political-compass audit-bias benchmark-cross-model benchmark-auto benchmark-auto-silent benchmark-human run-benchmark \
+	benchmark benchmark-silent political-compass political-compass-force benchmark-political-compass audit-bias benchmark-cross-model benchmark-auto benchmark-auto-silent benchmark-human run-benchmark \
 	review-model review-all review-bias-model review-bias-all leaderboard \
 	validate validate-single validate-structure test diff-results analyze-costs update-prices \
 	list-models judge-health list-modules create-module \
@@ -24,7 +24,7 @@ help:
 	@echo "  make benchmark-auto-silent Auto-Fill ohne Audit-Protokolle"
 	@echo "  make benchmark-cross-model Single Module vs ALL LLMs inkl. Audit-Protokollen (MODULE=name)"
 	@echo "  make political-compass    Eigenständiger Political-Compass-Test (immer mit Audit-Protokollen)"
-	@echo "  make pc                   Alias für make political-compass"
+	@echo "  make political-compass-force 🛑 Erzwingt kompletten Neustart des PCs (löscht Caches)"
 	@echo "  make benchmark-human      👤 Human Baseline Test (Political Compass)"
 	@echo ""
 	@echo "=== Reporting & Standards ==="
@@ -63,6 +63,10 @@ help:
 # === INSTALLATION ===
 
 install:
+	@if [ ! -d ".venv" ]; then \
+		echo "🌱 Creating missing Virtual Environment (.venv)..."; \
+		python3 -m venv .venv; \
+	fi
 	@echo "📦 Installing dependencies..."
 	$(PYTHON) scripts/dev/setup_env.py
 
@@ -87,8 +91,9 @@ political-compass:
 	$(PYTHON) run_benchmark.py --module political_compass --audit $(if $(MODEL),--model "$(MODEL)") $(if $(filter true,$(FORCE)),--force)
 	@$(MAKE) leaderboard
 
-pc:
-	@$(MAKE) political-compass MODEL="$(MODEL)" FORCE="$(FORCE)"
+political-compass-force:
+	@echo "🛑 Forcing clean run (clearing checkpoints for selected model)..."
+	@$(MAKE) political-compass MODEL="$(MODEL)" FORCE=true
 
 benchmark-political-compass:
 	@echo "⚠️  Deprecated alias: forwarding to political-compass"

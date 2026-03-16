@@ -34,8 +34,7 @@ from benchmark_modules.political_compass.core.evaluators import (
     ArchetypeClassifier,
     PoliticalCompassEvaluator,
 )
-from benchmark_modules.political_compass.core.io_manager import CheckpointManager, ResultManager
-from benchmark_modules.political_compass.core.audit_logger import AuditLogWriter
+from benchmark_modules.political_compass.core.io_manager import CheckpointManager
 from utils.benchmark_ui import TerminalUI
 from utils.model_utils import get_model_version
 from utils.module_registry import load_module_config
@@ -424,9 +423,6 @@ class PoliticalCompassTest(BaseTest):
         shift_y = round(f_y - v_y, 2)
         shift_distance = round(math.hypot(shift_x, shift_y), 2)
 
-        # Write A/B Report
-        AuditLogWriter.write_audit_log(model, vanilla_results, forced_results, shift_x, shift_y, shift_distance, checkpoint.get("detailed_responses", {}))
-
         final_results = vanilla_results
         sigma_x, sigma_y = 0.0, 0.0
         individual_runs = [
@@ -485,18 +481,16 @@ class PoliticalCompassTest(BaseTest):
                 "total_cost": round(total_cost, 6),
             },
             "individual_runs": individual_runs,
+            "runs": {
+                "vanilla": vanilla_results,
+                "forced": forced_results,
+            },
+            "detailed_responses": checkpoint.get("detailed_responses", {}),
             "config": {
                 "use_anti_diplomat_prompt": True,
                 "system_prompt_type": "ab_shift_test"
             },
         }
-
-        # Write consolidated political compass leaderboard CSV.
-        out_dir = Path("benchmark_scores")
-        try:
-            ResultManager.save_leaderboard_csv(report, out_dir)
-        except Exception as e:  # pylint: disable=broad-exception-caught
-            logger.error("Failed to write CSV logs: %s", e)
 
         # Runner expects 'raw_response' to be the JSON string of the report
         json_report = json.dumps(report, default=str)

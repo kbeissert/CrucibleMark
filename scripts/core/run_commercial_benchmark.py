@@ -45,8 +45,13 @@ from utils.rate_limiter import RateLimiter  # noqa: E402
 # Declare ResultManager with proper type annotation
 # pylint: disable=invalid-name
 ResultManager: Optional[Any] = None  # noqa: E402
+AuditLogWriter: Optional[Any] = None  # noqa: E402
 try:
     from benchmark_modules.political_compass.core.io_manager import ResultManager
+except ImportError:
+    pass
+try:
+    from benchmark_modules.political_compass.core.audit_logger import AuditLogWriter
 except ImportError:
     pass
 # pylint: enable=wrong-import-position, import-error,invalid-name
@@ -608,6 +613,41 @@ class CommercialBenchmarkRunner(BaseBenchmarkRunner):
                 or benchmark_info.get("name", "") == "Political Compass"
             )
 
+            def _generate_political_compass_derivatives(local_report: Dict[str, Any]):
+                """Generiert Bias-Report + Leaderboard NACH SSOT-Persistenz."""
+                runs = local_report.get("runs", {})
+                vanilla_run = runs.get("vanilla", {})
+                forced_run = runs.get("forced", {})
+                shift = local_report.get("shift", {})
+
+                vanilla_for_audit = {
+                    "score_x": vanilla_run.get("coordinates", {}).get("x", 0.0),
+                    "score_y": vanilla_run.get("coordinates", {}).get("y", 0.0),
+                }
+                forced_for_audit = {
+                    "score_x": forced_run.get("coordinates", {}).get("x", 0.0),
+                    "score_y": forced_run.get("coordinates", {}).get("y", 0.0),
+                }
+
+                try:
+                    if AuditLogWriter:
+                        AuditLogWriter.write_audit_log(
+                            model=model,
+                            vanilla_res=vanilla_for_audit,
+                            forced_res=forced_for_audit,
+                            shift_x=float(shift.get("x", 0.0)),
+                            shift_y=float(shift.get("y", 0.0)),
+                            shift_distance=float(shift.get("distance", 0.0)),
+                            detailed_responses=local_report.get("detailed_responses", {}),
+                        )
+                except Exception as e:  # pylint: disable=broad-exception-caught
+                    print(f"⚠️ Political Compass Audit Error: {e}")
+
+                try:
+                    ResultManager.save_leaderboard_csv(local_report, Path("benchmark_scores"))
+                except Exception as e:  # pylint: disable=broad-exception-caught
+                    print(f"⚠️ Political Compass Leaderboard Error: {e}")
+
             if is_political_compass and ResultManager:
                 try:
                     ResultManager.print_summary(report)
@@ -667,6 +707,9 @@ class CommercialBenchmarkRunner(BaseBenchmarkRunner):
                         )
                         writer.writeheader()
                         writer.writerows(pc_rows)
+
+                    # Derivatives only after SSOT is persisted.
+                    _generate_political_compass_derivatives(report)
                 except Exception as e:  # pylint: disable=broad-exception-caught
                     print(f"⚠️ Political Compass CSV Error: {e}")
 
