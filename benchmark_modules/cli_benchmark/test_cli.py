@@ -46,7 +46,7 @@ def test_per_task_scores(cli_loader_fixture):  # pylint: disable=redefined-outer
     )
 
 
-def test_mock_llm_execution(cli_loader_fixture):  # pylint: disable=redefined-outer-name
+def test_mock_llm_execution(cli_loader_fixture):  # pylint: disable=redefined-outer-name, unused-argument
     """Test complete loop mockup."""
     # Load the first CLI asset for the test
     asset_path = Path(__file__).parent / "assets" / "cli001_disk.yaml"

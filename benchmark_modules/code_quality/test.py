@@ -8,7 +8,7 @@ Delegates logic to benchmark_modules.code_quality.core.evaluators.
 import sys
 import time
 from pathlib import Path
-from typing import Any, Dict
+from typing import Any
 
 import yaml
 
@@ -113,6 +113,7 @@ class CodeQualityTest(BaseTest):
             return BenchmarkResult(
                 status="success",
                 primary_score=None,
+            max_score=100.0,
                 rendered_value="Pending",
                 raw_response=response,
                 evaluated_prompt=full_prompt,
@@ -165,10 +166,10 @@ class CodeQualityTest(BaseTest):
         """
         evaluator = CodeQualityEvaluator(self.asset)
         score_dict = evaluator.score_response(result.raw_response)
-        
-        result.primary_score = score_dict.get("score")
+
+        result.primary_score = score_dict.get("score", score_dict.get("total_score"))
         result.tier = score_dict.get("tier", "Tier 1 (Undefined)")
         result.data = score_dict
         result.rendered_value = f"{result.primary_score} %" if result.primary_score is not None else "N/A"
-        
+
         return result

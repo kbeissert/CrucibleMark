@@ -1,3 +1,4 @@
+"""UX Writing Services Layer."""
 import logging
 from utils.llm_client import LLMClient
 
@@ -52,6 +53,6 @@ class UXLLMService:
                 temperature=0.3,  # Low temp for consistency in writing tasks
             )
             return response
-        except Exception as e:
-            self.logger.error(f"LLM Query failed: {e}")
+        except Exception as e:  # pylint: disable=broad-exception-caught
+            self.logger.error("LLM Query failed: %s", e)
             return f"Error: {str(e)}"

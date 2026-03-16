@@ -139,9 +139,6 @@ class ResultManager:
         try:
             self._write_to_csv(csv_path, fieldnames, results, clean_existing_rows)
 
-            # Leaderboard automatisch aktualisieren
-            self.update_leaderboard()
-
             return csv_path
         except (OSError, csv.Error) as e:
             logger.error("Failed to save results to %s: %s", csv_path, e)

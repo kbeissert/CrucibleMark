@@ -1,3 +1,4 @@
+from schemas.result import BenchmarkResult
 #!/usr/bin/env python3
 """
 Unit Tests für Documentation Quality Module
@@ -87,7 +88,7 @@ class TestScoringLogic:
 
     def test_empty_response_gives_zero_score(self, readme_test):
         """Leere Response gibt 0 Punkte"""
-        score = readme_test.score_response("")
+        score = readme_test.score_response(BenchmarkResult(status="success", raw_response="")).data
 
         assert score["total_score"] == 0
         assert score["percentage"] == 0
@@ -95,7 +96,7 @@ class TestScoringLogic:
 
     def test_error_response_gives_zero_score(self, readme_test):
         """Error Response gibt 0 Punkte"""
-        score = readme_test.score_response("ERROR: Connection timeout")
+        score = readme_test.score_response(BenchmarkResult(status="error", raw_response="ERROR: Connection timeout")).data
 
         assert score["total_score"] == 0
         # assert "error" in score  <-- Removed: 'status' key holds error state, not exact string membership
@@ -104,7 +105,7 @@ class TestScoringLogic:
     def test_perfect_response_structure(self, readme_test):
         """Perfekte Response hat 2 Breakdown-Kategorien"""
         response = "# README Analysis\n\nsyntax highlighting\n```python\nprint('test')\n```\nTOC table of contents"
-        score = readme_test.score_response(response)
+        score = readme_test.score_response(BenchmarkResult(status="success", raw_response=response)).data
 
         assert "category_scores" in score
         assert "error_detection" in score["category_scores"]
@@ -139,7 +140,7 @@ pip install package
 Use **bold** for emphasis and proper formatting.
 Priority: high, medium, low
 """
-        score = readme_test.score_response(response)
+        score = readme_test.score_response(BenchmarkResult(status="success", raw_response=response)).data
 
         # Sollte mehrere Issues erkennen durch Keyword-Matching
         assert score["total_score"] > 30, (
@@ -157,7 +158,7 @@ Troubleshooting section fehlt completely.
 TOC table of contents missing for navigation.
 Links to documentation, repository not found.
 """
-        score = readme_test.score_response(response)
+        score = readme_test.score_response(BenchmarkResult(status="success", raw_response=response)).data
 
         # Sollte Punkte in error_detection bekommen
         assert "error_detection" in score["category_scores"]
@@ -171,7 +172,7 @@ class TestResponsePatterns:
     def test_minimal_response_gets_low_score(self, readme_test):
         """Minimale Response bekommt niedrigen Score"""
         response = "Die README ist ok."
-        score = readme_test.score_response(response)
+        score = readme_test.score_response(BenchmarkResult(status="success", raw_response=response)).data
 
         assert score["total_score"] < 30, (
             f"Minimale Response sollte < 30 bekommen, war {score['total_score']}"
@@ -281,7 +282,7 @@ severity_levels:
 - **Medium**: Quick start, contributing, badges
 - **Low**: Keywords, production status
 """
-        score = readme_test.score_response(response)
+        score = readme_test.score_response(BenchmarkResult(status="success", raw_response=response)).data
 
         # Sollte sehr gut scoren durch:
         # - Alle 4 Tier-Levels erwähnt
@@ -301,7 +302,7 @@ class TestMetadata:
     def test_response_metadata_included(self, readme_test):
         """Response enthält Metadata"""
         response = "Test response with some content"
-        score = readme_test.score_response(response)
+        score = readme_test.score_response(BenchmarkResult(status="success", raw_response=response)).data
 
         assert "metadata" in score
         assert "response_length" in score["metadata"]

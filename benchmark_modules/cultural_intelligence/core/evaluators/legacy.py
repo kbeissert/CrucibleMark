@@ -18,7 +18,7 @@ class LegacyEvaluator:
         asset_id = meta.get("id", self.asset.get("id", ""))
         response_lower = response.lower()
         score = 0.0
-        feedback = []
+        feedback: List[str] = []
 
         if asset_id == "cultural_intel_001":
             score, feedback = self._evaluate_tech_localization(response_lower)

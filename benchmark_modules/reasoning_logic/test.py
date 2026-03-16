@@ -30,9 +30,8 @@ class ReasoningLogicTest(BaseTest):
         self,
         model: str,
         llm_client: Any,
-        provider: str = "ollama",
         **kwargs: Any,
-    ) -> dict[str, Any]:
+    ) -> BenchmarkResult:
         """
         Executes the reasoning test.
         """
@@ -40,6 +39,7 @@ class ReasoningLogicTest(BaseTest):
         system_prompt = self.get_system_prompt()
 
         full_prompt = f"System: {system_prompt}\n\nUser: {prompt}"
+        provider = kwargs.get("provider")
 
         start = time.time()
         # Note: We rely on llm_client.query to handle the actual API call
@@ -67,6 +67,7 @@ class ReasoningLogicTest(BaseTest):
         return BenchmarkResult(
             status="success",
             primary_score=None,
+            max_score=100.0,
             rendered_value="Pending",
             raw_response=response,
             evaluated_prompt=full_prompt,
@@ -112,7 +113,7 @@ class ReasoningLogicTest(BaseTest):
         result.tier = eval_result.get("tier", "Tier 1 (Undefined)")
         result.data = eval_result
         result.rendered_value = f"{result.primary_score} %" if result.primary_score is not None else "N/A"
-        
+
         return result
 
     def get_system_prompt(self) -> str:

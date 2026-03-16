@@ -33,7 +33,7 @@ class DocumentationTest(BaseTest):
     """
 
     def execute(
-        self, model: str, llm_client: Any, provider: str = "ollama"
+        self, model: str, llm_client: Any, **kwargs: Any
     ) -> BenchmarkResult:
         """
         Führt Documentation Quality Test aus
@@ -45,6 +45,8 @@ class DocumentationTest(BaseTest):
             full_prompt = f"{self.asset['context']}\n\n{prompt}"
         else:
             full_prompt = prompt
+
+        provider = kwargs.get("provider")
 
         # LLM Query
         start = time.time()
@@ -73,6 +75,7 @@ class DocumentationTest(BaseTest):
             return BenchmarkResult(
                 status="success",
                 primary_score=None,
+            max_score=100.0,
                 rendered_value="Pending",
                 raw_response=response,
                 evaluated_prompt=full_prompt,
@@ -90,7 +93,7 @@ class DocumentationTest(BaseTest):
                     **getattr(llm_client, "last_response_metadata", {}),
                 },
             )
-        except Exception as e:
+        except Exception as e:  # pylint: disable=broad-exception-caught
             return BenchmarkResult(
                 status="error",
                 rendered_value="ERROR",
@@ -106,10 +109,10 @@ class DocumentationTest(BaseTest):
         # Pass path so evaluator can deduce asset_id if needed
         evaluator = DocumentationEvaluator(self.asset, self.asset_path)
         score_dict = evaluator.score_response(result.raw_response)
-        
+
         result.primary_score = score_dict.get("score", score_dict.get("total_score"))
         result.tier = score_dict.get("tier", "Tier 1 (Undefined)")
         result.data = score_dict
         result.rendered_value = f"{result.primary_score} %" if result.primary_score is not None else "N/A"
-        
+
         return result

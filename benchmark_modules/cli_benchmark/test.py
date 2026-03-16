@@ -86,6 +86,7 @@ class CLIBenchmarkTest(BaseTest):
         return BenchmarkResult(
             status=status,
             primary_score=None,
+            max_score=100.0,
             rendered_value="",
             evaluated_prompt=task_prompt,
             execution_time=float(elapsed),
@@ -115,10 +116,10 @@ class CLIBenchmarkTest(BaseTest):
             "max_score": 100,
             "details": eval_res,
         }
-        
+
         result.primary_score = score_dict.get("score", score_dict.get("total_score"))
         result.tier = score_dict.get("tier", "Tier 1 (Undefined)")
         result.data = score_dict
         result.rendered_value = f"{result.primary_score} %" if result.primary_score is not None else "N/A"
-        
+
         return result

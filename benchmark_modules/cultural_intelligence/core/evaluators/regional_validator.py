@@ -31,7 +31,7 @@ class RegionalConsistencyValidator:
             }
         """
         response_lower = response.lower()
-        regional_markers = {"de": [], "at": [], "ch": []}
+        regional_markers: dict[str, list[str]] = {"de": [], "at": [], "ch": []}
 
         # Find all regional markers
         for region, categories in REGIONAL_EXPRESSIONS.items():
@@ -52,7 +52,7 @@ class RegionalConsistencyValidator:
             }
 
         # Dominant region has most markers
-        dominant_region = max(marker_counts, key=marker_counts.get)
+        dominant_region = max(marker_counts, key=lambda k: marker_counts[k])
 
         # Check for inconsistencies (markers from other regions)
         violations = []

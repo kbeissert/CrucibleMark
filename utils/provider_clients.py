@@ -740,7 +740,7 @@ class OpenAIClient(BaseProviderClient):
             # Reasoning models (o1, o3) and some newer minis often don't support temperature
             # or have strict fixed values.
             is_reasoning = (
-                model.startswith("o1") or model.startswith("o3") or "gpt-5" in model 
+                model.startswith("o1") or model.startswith("o3") or "gpt-5" in model
             )
             if not is_reasoning:
                 params["temperature"] = temperature
@@ -1022,7 +1022,7 @@ class XAIClient(BaseProviderClient):
                 from openai import OpenAI
             except ImportError:
                 raise ImportError("Library 'openai' not installed.")
-            
+
             import httpx
             from utils.env_utils import get_required_env
 
@@ -1035,7 +1035,7 @@ class XAIClient(BaseProviderClient):
             )
 
             self._client = OpenAI(
-                api_key=api_key, 
+                api_key=api_key,
                 base_url="https://api.x.ai/v1",
                 timeout=timeout_config
             )
@@ -1079,7 +1079,7 @@ class XAIClient(BaseProviderClient):
         try:
             from utils.logging_config import setup_logging
             logger = setup_logging()
-            
+
             skip_fingerprint = kwargs.pop("skip_fingerprint", False)
             params = {
                 "model": model,
@@ -1116,10 +1116,10 @@ class XAIClient(BaseProviderClient):
                         self.last_response_metadata["id"] = chunk.id
                     if not self.last_response_metadata.get("model") and chunk.model:
                         self.last_response_metadata["model"] = chunk.model
-                    
+
                     if chunk.choices and hasattr(chunk.choices[0], "finish_reason") and chunk.choices[0].finish_reason:
                         self.last_response_metadata["finish_reason"] = chunk.choices[0].finish_reason
-                        
+
                     if chunk.choices:
                         delta = chunk.choices[0].delta.content
                         if delta:
@@ -1134,7 +1134,7 @@ class XAIClient(BaseProviderClient):
                 return full_content
             else:
                 raw_text = response.choices[0].message.content
-                
+
                 self.last_response_metadata = {
                     "token_limit_fallback": fallback_triggered,
                     "token_limit_used": used_max_tokens,
@@ -1142,10 +1142,10 @@ class XAIClient(BaseProviderClient):
                     "model": getattr(response, "model", None),
                     "finish_reason": response.choices[0].finish_reason if response.choices else None,
                 }
-                
+
                 if hasattr(response, "usage") and response.usage:
                     self.last_response_metadata["usage"] = response.usage
-                
+
                 if getattr(response, "system_fingerprint", None):
                     self.last_response_metadata["system_fingerprint"] = response.system_fingerprint
                 else:
@@ -1155,7 +1155,7 @@ class XAIClient(BaseProviderClient):
                         self.last_response_metadata["system_fingerprint"] = fp
 
                 return raw_text if raw_text else ""
-                
+
         except Exception as e:
             from utils.logging_config import setup_logging
             logger = setup_logging()

@@ -1,3 +1,4 @@
+"""Module for writing audit logs in Political Compass standard testing."""
 import logging
 from pathlib import Path
 from typing import Dict, List, Any, Tuple

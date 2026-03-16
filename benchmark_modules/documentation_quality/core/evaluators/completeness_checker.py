@@ -26,6 +26,7 @@ class CompletenessChecker:
             return {"score": 1.0, "missing_sections": [], "present_sections": []}
 
         required = schema.get("required_sections", [])
+        assert isinstance(required, list)
         if not required:
             return {"score": 1.0, "missing_sections": [], "present_sections": []}
 
@@ -96,9 +97,9 @@ class CompletenessChecker:
         if len(seq2) == 0:
             return len(seq1)
 
-        previous_row = range(len(seq2) + 1)
+        previous_row: List[int] = list(range(len(seq2) + 1))
         for i, char1 in enumerate(seq1):
-            current_row = [i + 1]
+            current_row: List[int] = [i + 1]
             for j, char2 in enumerate(seq2):
                 insertions = previous_row[j + 1] + 1
                 deletions = current_row[j] + 1

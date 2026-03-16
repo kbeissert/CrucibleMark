@@ -450,7 +450,7 @@ def score_response(self, result: BenchmarkResult) -> BenchmarkResult:
     result.tier = scoring_result.get("tier", "Tier 1 (Undefined)")
     result.data = scoring_result
     result.rendered_value = f"{result.primary_score} %" if result.primary_score is not None else "N/A"
-    
+
     return result
 ```
 

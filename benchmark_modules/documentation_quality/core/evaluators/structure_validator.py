@@ -20,7 +20,12 @@ class StructureValidator:
         Validates markdown structure and returns violations and stats.
         """
         violations = []
-        schema = DOC_TYPE_SCHEMAS.get(doc_type, DOC_TYPE_SCHEMAS.get("readme"))
+        schema = DOC_TYPE_SCHEMAS.get(doc_type)
+        if schema is None:
+            schema = DOC_TYPE_SCHEMAS.get("readme", {})
+
+        # Keep type checker happy
+        assert schema is not None
 
         # 1. Heading Hierarchy
         hierarchy_violations = StructureValidator.check_heading_hierarchy(response)
@@ -32,16 +37,18 @@ class StructureValidator:
         list_count = len(re.findall(r"^(\s*[-*+]|\s*\d+\.)\s+", response, re.MULTILINE))
 
         # 3. Schema checks (Code blocks)
-        if code_block_count < schema.get("min_code_blocks", 0):
+        min_code_blocks = int(schema.get("min_code_blocks", 0))  # type: ignore
+        if code_block_count < min_code_blocks:
             violations.append(
                 f"Too few code blocks (found {code_block_count}, "
-                f"expected {schema.get('min_code_blocks')})"
+                f"expected {min_code_blocks})"
             )
 
-        if heading_count < schema.get("min_headings", 0):
+        min_headings = int(schema.get("min_headings", 0))  # type: ignore
+        if heading_count < min_headings:
             violations.append(
                 f"Too few headings (found {heading_count}, "
-                f"expected {schema.get('min_headings')})"
+                f"expected {min_headings})"
             )
 
         return {
@@ -107,6 +114,7 @@ class StructureValidator:
             return []
 
         required = schema.get("required_sections", [])
+        assert isinstance(required, list)
         missing = []
 
         # Simple case-insensitive check in headings

@@ -152,161 +152,70 @@ ______________________________________________________________________
 
 ## 📊 Modules
 
-### 1. Code Quality Audit
+Die Benchmarking-Module sind entsprechend der System-Konfiguration (`benchmark_config.yaml`) in vier funktionale Kernbereiche (Tiers) unterteilt. Jedes Modul testet spezifische Fähigkeiten, die für autonome KI-Agenten entscheidend sind.
 
-**Tests:** Code review, bug detection, refactoring suggestions\
-**Assets:** 25 code samples (Python, JavaScript, TypeScript)\
-**Tiers:** 3 (Basic syntax → Complex architecture)\
-**Score:** Pattern matching + Manual review
+### --- HARD SKILLS: Coding & Skripting ---
 
-**Example:**
+#### Code Quality Audit (`code_quality`)
+**Tests:** Code review, bug detection, refactoring suggestions
+**Assets:** 25 code samples (Python, JavaScript, TypeScript)
+**Tiers:** 3 (Basic syntax → Complex architecture)
+**Score:** Pattern matching + LLM Judge review
 
-```python
-# Input: Code with anti-patterns
-def getData(x):
-    return x + 1
-
-# Expected Output:
-# - Rename to `get_data` (snake_case)
-# - Add type hints: `def get_data(x: int) -> int`
-# - Add docstring
-```
+#### CLI Operations (`cli_benchmark`)
+**Tests:** Systemverwaltung, Docker-Befehle, Paketmanagement, Dateioperationen
+**Assets:** 6 hoch verdichtete Shell-Szenarien
+**Tiers:** 1 (Fast-Fail Batch-Test)
+**Score:** Strict Regex-Matching (Exact, Safety, Efficiency)
+**Besonderheit:** Im Gegensatz zu Standard-Modulen lädt dieses Modul alle CLI-Aufgaben gebündelt. Es fordert präzise, valide Shell-Kommandos ohne umschweifendes Markdown-Gerede und simuliert so einen schnellen, maschinellen Workflow.
 
 ______________________________________________________________________
 
-### 2. UX Writing & Microcopy
+### --- CORE METRICS: Kognition & Logik ---
 
-**Tests:** Button labels, error messages, onboarding flows\
-**Assets:** 20 UX scenarios\
-**Tiers:** 3 (Generic → Contextual nuance)\
-**Score:** Keyword checks + Tone analysis
-
-**Example:**
-
-```yaml
-# Scenario: Payment failed error
-Expected Tone: Apologetic, Helpful
-Expected Elements:
-  - Apology
-  - Reason (if known)
-  - Clear next step
-  - No blame language
-```
+#### Logical Reasoning (`reasoning`)
+**Tests:** Paradoxes, Metacognition, Logic Puzzles, Chain-of-Thought
+**Assets:** 11 scenarios
+**Tiers:** 0 (Sanity Check) → 3 (Metacognition)
+**Score:** Logic verification vs. Hallucination detection
 
 ______________________________________________________________________
 
-### 3. Documentation Quality
+### --- SOFT SKILLS: Ghostwriting & Kommunikation ---
 
-**Tests:** API docs, README writing, tutorial creation\
-**Assets:** 15 documentation tasks\
-**Tiers:** 3 (Basic → Comprehensive)\
+#### UX Writing & Microcopy (`ux_writing`)
+**Tests:** Button labels, error messages, onboarding flows, Benutzerführung
+**Assets:** 20 UX scenarios
+**Tiers:** 3 (Generic → Contextual nuance)
+**Score:** Keyword checks + Tone analysis (LLM Judge)
+
+#### Documentation Quality (`documentation_quality`)
+**Tests:** API docs, README writing, tutorial creation, sauberes Markdown
+**Assets:** 15 documentation tasks
+**Tiers:** 3 (Basic → Comprehensive)
 **Score:** Completeness + Clarity metrics
 
-**Example:**
-
-```markdown
-# Input: Function signature
-def process_payment(amount: float, currency: str) -> dict:
-    ...
-
-# Expected: Complete API doc with:
-# - Description
-# - Parameters (types, constraints)
-# - Returns (structure)
-# - Raises (error conditions)
-# - Example usage
-```
-
-______________________________________________________________________
-
-### 4. Content Transformation & Adaption
-
-**Tests:** Tone changes, format conversions, audience adaptation\
-**Assets:** 12 content pieces\
-**Tiers:** 3 (Simple rewrites → Complex transformations)\
+#### Content Transformation & Adaption (`content_transformation`)
+**Tests:** Tone changes, format conversions, audience adaptation, Umschreiben
+**Assets:** 12 content pieces
+**Tiers:** 3 (Simple rewrites → Complex transformations)
 **Score:** Tone accuracy + Structure preservation
 
-**Example:**
-
-```
-# Input: Technical blog post (formal)
-# Task: Convert to Twitter thread (casual, punchy)
-#
-# Evaluation:
-# ✅ Maintains key points
-# ✅ Adapts tone appropriately
-# ✅ Fits format constraints (280 chars/tweet)
-```
-
-______________________________________________________________________
-
-### 5. Cultural Intelligence
-
-**Tests:** Idiom understanding, cultural context, localization\
-**Assets:** 18 cultural scenarios\
-**Tiers:** 3 (Common phrases → Subtle context)\
+#### Cultural Intelligence (`cultural_intelligence`)
+**Tests:** Idiom understanding, cultural context, localization, Empathie
+**Assets:** 18 cultural scenarios
+**Tiers:** 3 (Common phrases → Subtle context)
 **Score:** Accuracy + Cultural sensitivity
 
-**Example:**
-
-```yaml
-# Idiom: "Das ist nicht mein Bier" (German)
-# Literal: "That's not my beer"
-# Meaning: "That's not my problem/responsibility"
-#
-# Test: Can model explain AND use appropriately?
-```
-
 ______________________________________________________________________
 
-### 6. CLI Operations (Batch-Modul)
+### --- SONSTIGE / SPEZIAL-MODULE ---
 
-**Tests:** Systemverwaltung, Docker-Befehle, Paketmanagement, Dateioperationen\
-**Assets:** 6 hoch verdichtete Shell-Szenarien\
-**Tiers:** 1 (Fast-Fail Batch-Test)\
-**Score:** Strict Regex-Matching (Exact, Safety, Efficiency)
-
-**Besonderheit (Batch-Modul):**
-Im Gegensatz zu Standard-Modulen, die jede Asset-Datei einzeln auswerten, ist dieses Modul als *Batch-Modul* implementiert. Es lädt alle CLI-Aufgaben gebündelt und führt sie extrem schnell und effizient hintereinander im LLM aus.
-**Warum?** CLI- und Tooling-Fähigkeiten (wie sie von AI-Coding-Agenten à la Cline, Devin oder Cursor gefordert werden) benötigen präzise, valide Shell-Kommandos ohne umschweifendes Markdown-Gerede. Der Batch-Modus simuliert diesen schnellen, maschinellen Workflow ("Gib mir nur den Befehl") und stresst das Modell auf Konsistenz. Es zeigt sich sofort, ob ein LLM reibungslos als System-Agent agieren kann.
-
-______________________________________________________________________
-
-### 7. Logical Reasoning
-
-**Tests:** Paradoxes, Metacognition, Logic Puzzles\
-**Assets:** 11 scenarios\
-**Tiers:** 0 (Sanity Check) → 3 (Metacognition)\
-**Score:** Logic verification (+0-100%) vs. Hallucination detection
-
-**Example:**
-
-```yaml
-# Scenario: Schedule 3h of meetings into a 2h slot.
-#
-# Expected Behavior:
-# - Reject the task (Impossible constraint)
-# - Explain the conflict
-#
-# Failure Mode:
-# - Hallucinating a schedule that ignores time limits
-```
-
-______________________________________________________________________
-
-### 8. Political Compass
-
-**Tests:** Political bias detection via A/B 162-question dual survey\
-**Output:** Vanilla Vanilla Koordinaten (Economic & Social) & "Wolf in Sheep's Clothing" Distance Shift\
-**Methodology:** Compares Vanilla execution against Anti-Diplomat "Forced" prompting\
+#### Political Compass (`political_compass`)
+**Tests:** Ermittelt die ideologische Ausrichtung (60+ Fragen)
+**Output:** Vanilla Koordinaten (Economic & Social) & "Wolf in Sheep's Clothing" Distance Shift
+**Methodology:** Compares Vanilla execution against Anti-Diplomat "Forced" prompting
 **Score:** Decoupled info-metric (does not affect model points). Injected directly into root leaderboard.
-
-**Example Output:**
-
-```
-Model: lfm2.5-thinking:1.2b
-Political Bias: Mitte-Links / Zentristisch (Shift 2.9)
-```
 
 ## 🧪 Political Compass: Bias Sensitivity Analysis ("Wolf in Sheep's Clothing")
 

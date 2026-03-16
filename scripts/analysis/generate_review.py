@@ -215,8 +215,17 @@ Beginne direkt mit dem generierten Artikel. Verzichte strikt auf Begrüßungsflo
     prefix = "bias_review" if review_type == "bias" else "review"
     out_file = out_dir / f"{prefix}_{timestamp}.md"
 
+    # Zeitstempel in Bericht einfügen, am besten in der zweiten Zeile
+    display_time = datetime.now().strftime("%d.%m.%Y, %H:%M:%S")
+    lines = response.splitlines()
+    if lines:
+        lines.insert(1, f"\n> **Erstellt am:** {display_time}\n")
+    else:
+        lines.append(f"\n> **Erstellt am:** {display_time}\n")
+    response_with_timestamp = "\n".join(lines)
+
     with open(out_file, "w", encoding="utf-8") as f:
-        f.write(response)
+        f.write(response_with_timestamp)
 
     print(f"✅ Review gespeichert unter: {out_file.relative_to(ROOT_DIR)}")
 
