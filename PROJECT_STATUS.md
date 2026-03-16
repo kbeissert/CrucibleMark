@@ -1,10 +1,18 @@
 # PROJECT_STATUS.md
 
-**Last Updated:** 2026-03-16 **Current Version:** 2.6.0 (Metric Accuracy & Bias Prevention) **Status:** ✅ Production-Ready
+**Last Updated:** 2026-03-16 **Current Version:** 2.6.1 (Stability & Context Handling) **Status:** ✅ Production-Ready
 
 ______________________________________________________________________
 
 ## 🎯 Executive Summary
+CrucibleMark v2.6.1 führt wichtige Stabilitäts-Patches für die API-Kommunikation ein (inkl. Token-Loop-Halluzination Fallback für Modelle wie Gemini) und überarbeitet die Dokumentations-Struktur entlang der Konfigurations-Assets.
+
+**Key Achievements (v2.6.1):**
+- ✅ **Halluzinations-Prävention:** Auto-Truncation in `llm_client.py` eingebaut, um "Token-Loops" (z.B. endlose Leerzeichen-Generierung) bei kommerziellen APIs (Gemini 2.5 Flash) abzufangen. Entsprechende Warn-Flags (`⚠️ SYSTEM INFO`) wurden zum Metareview-Audit-Log hinzugefügt.
+- ✅ **Dokumentations-Konsolidierung:** Die `README.md` Modulliste wurde an die logische Kategorisierung (Hard Skills, Core Metrics, Soft Skills, Sonstige) aus der `benchmark_config.yaml` angeglichen; die Aufzählung wurde von 6 auf alle 8 aktiven Module korrigiert.
+- ✅ **Cleanup:** Entfernung obsoleter Check-Skripte (`fix_test_file.py`, `mypy_out.txt`) und tiefere Modul-Refactorings für einen sauberen Root-Workspace.
+
+**Previous Version (v2.6.0 Metric Accuracy & Bias Prevention):**
 CrucibleMark v2.6.0 fokussiert sich auf höchste Metrik-Integrität und Bias-Prävention. Das Scoring-System wurde bereinigt, um mathematisch einwandfreie Metriken (z.B. saubere "Tests Run" Zähler) zu garantieren. Gleichzeitig wurde im Political Compass Modul ein Position/Token-Bias durch die Einführung von dynamischem Alpha-Mapping (Randomisierung der Antwortauswahl anstelle starrer A/B/C/D Muster) eliminiert, was die Authentizität der Modellauswertungen steigert. Zudem wurde die Dokumentation vollständig überholt und obsoletes Test-Count-Verhalten restlos verbannt.
 
 **Key Achievements (v2.6.0):**
@@ -46,9 +54,18 @@ Eine SSOT-basierte Konfiguration in `benchmark_config.yaml` sowie detaillierte `
 
 ## 📊 Module Status Overview
 
-### Production-Ready Modules (7/7) ✅
+### Production-Ready Modules (8/8) ✅
 
-| # | Module | Version | Pylint | Status | Assets | Features | |---|--------|---------|--------|--------|--------|----------| | 1 | **Code Quality Audit** | v2.0.1 | 9.2/10 | ✅ Prod | 25 files | 3 tiers, pattern scoring | | 2 | **UX Writing & Microcopy** | v2.0 | 8.8/10 | ✅ Prod | 20 scenarios | Tone analysis, keyword checks | | 3 | **Documentation Quality** | v2.0 | 9.0/10 | ✅ Prod | 15 tasks | Completeness metrics | | 4 | **Content Transformation** | v2.0.1 | 8.9/10 | ✅ Prod | 12 pieces | Tone adaptation, format conversion | | 5 | **Cultural Intelligence** | v2.0 | 9.1/10 | ✅ Prod | 18 scenarios | Idiom understanding, cultural context | | 6 | **Logical Reasoning** | v1.0 | 9.0/10 | ✅ Prod | 11 scenarios | Paradox detection, Metacognition | | 7 | **Political Compass** | v3.0.1 | 9.85/10 | ✅ Prod | 74 questions | Batch mode, 3 runs, variance analysis |
+| # | Module | Version | Pylint | Status | Assets | Features |
+|---|--------|---------|--------|--------|--------|----------|
+| 1 | **Code Quality Audit** | v2.0.1 | 9.2/10 | ✅ Prod | 25 files | 3 tiers, pattern scoring |
+| 2 | **CLI Operations** | v1.0 | 9.0/10 | ✅ Prod | 6 files | Fast-Fail Batch Mode |
+| 3 | **UX Writing & Microcopy** | v2.0 | 8.8/10 | ✅ Prod | 20 scenarios | Tone analysis, keyword checks |
+| 4 | **Documentation Quality** | v2.0 | 9.0/10 | ✅ Prod | 15 tasks | Completeness metrics |
+| 5 | **Content Transformation** | v2.0.1 | 8.9/10 | ✅ Prod | 12 pieces | Tone adaptation, format conversion |
+| 6 | **Cultural Intelligence** | v2.0 | 9.1/10 | ✅ Prod | 18 scenarios | Idiom understanding, cultural context |
+| 7 | **Logical Reasoning** | v1.0 | 9.0/10 | ✅ Prod | 11 scenarios | Paradox detection, Metacognition |
+| 8 | **Political Compass** | v3.0.1 | 9.85/10 | ✅ Prod | 74 questions | Batch mode, 3 runs, variance analysis |
 
 **Average Code Quality:** 9.15/10 (Elite-Level) 🏆
 

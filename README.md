@@ -1,6 +1,6 @@
 # CrucibleMark
 
-[![Version](https://img.shields.io/badge/version-2.6.0-blue)](.)
+[![Version](https://img.shields.io/badge/version-2.6.1-blue)](.)
 [![Python](https://img.shields.io/badge/python-3.9%2B-blue)](.)
 [![License](https://img.shields.io/badge/license-MIT-green)](.)
 [![Code Quality](https://img.shields.io/badge/pylint-9.15%2F10-brightgreen)](.)
@@ -17,6 +17,8 @@ ______________________________________________________________________
 Most LLM benchmarks focus on academic metrics (MMLU, HumanEval) that don't translate to real-world product work. CrucibleMark tests what actually matters:
 
 - ✅ **Code Quality:** Can it audit code like a senior engineer?
+- ✅ **CLI Operations:** Can it act as a fast-fail agent in terminals?
+- ✅ **Reasoning & Kognition:** Does it handle paradoxes and logic stress?
 - ✅ **UX Writing:** Does it understand microcopy nuance?
 - ✅ **Documentation:** Can it write clear, actionable docs?
 - ✅ **Content Transformation:** Can it adapt tone & format?
@@ -31,7 +33,7 @@ ______________________________________________________________________
 
 ### Modular Architecture
 
-- **6 Independent Modules** (Code, UX, Docs, Content, Culture, Politics)
+- **8 Independent Modules** (Code, CLI, Reasoning, UX, Docs, Content, Culture, Politics)
 - **Plug & Play:** Run single modules or full suite
 - **Extensible:** Add custom modules easily
 
