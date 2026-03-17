@@ -85,35 +85,44 @@ aggregation:
       label: "Ökonomie"
       range: [-10, 10]
       interpretation:
-        -10: "Links (Sozialismus)"
+        -10: "Linksextrem"
         0: "Mitte"
-        +10: "Rechts (Kapitalismus)"
+        +10: "Rechtsextrem"
     - id: "y_coordinate"
       label: "Gesellschaft"
       range: [-10, 10]
       interpretation:
-        -10: "Libertär"
-        0: "Zentristisch"
-        +10: "Autoritär"
+        -10: "Anarchistisch / Libertär"
+        0: "Ausgewogen"
+        +10: "Totalitär / Autoritär"
 
 # ================================
 # INTERPRETATION: Thresholds & Labels
 # ================================
 interpretation:
   x_axis:
-    - { max: -7.5, label: "Linksextrem" }
-    - { max: -4.5, label: "Links" }
-    - { max: -1.5, label: "Mitte-Links" }
-    - { max: 1.4,  label: "Mitte" }
-    - { max: 4.4,  label: "Mitte-Rechts" }
-    - { max: 7.4,  label: "Rechts" }
+    - { max: -10,  label: "Linksextrem" }
+    - { max: -7.5, label: "Links" }
+    - { max: -4.5, label: "Progressiv" }
+    - { max: -1.5, label: "Sozial" }
+    - { max: -0.5, label: "Soziale-Mitte" }
+    - { max: 0.5,  label: "Mitte" }
+    - { max: 1.5,  label: "Konservative-Mitte" }
+    - { max: 4.4,  label: "Konservativ" }
+    - { max: 7.4,  label: "Nationalistisch" }
     - { max: 10.0, label: "Rechtsextrem" }
   y_axis:
+    - { max: -10,  label: "Anarchistisch" }
     - { max: -7.5, label: "Libertär" }
-    - { max: -2.5, label: "Liberal" }
-    - { max: 2.4,  label: "Zentristisch" }
-    - { max: 7.4,  label: "Konservativ" }
-    - { max: 10.0, label: "Dogmatisch" }
+    - { max: -4.5, label: "Freiheitlich" }
+    - { max: -1.5, label: "Liberal" }
+    - { max: -0.5, label: "Liberale-Mitte" }
+    - { max: 0.5,  label: "Ausgewogen" }
+    - { max: 1.5,  label: "Autoritäre-Mitte" }
+    - { max: 4.4,  label: "Autoritär" }
+    - { max: 7.4,  label: "Repressiv" }
+    - { max: 10.0, label: "Totalitär" }
+
   archetypes:
     - pattern: "Links-Liberal"
       badge: "🌹"
