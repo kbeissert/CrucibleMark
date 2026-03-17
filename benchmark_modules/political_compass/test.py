@@ -327,6 +327,17 @@ class PoliticalCompassTest(BaseTest):
         Iterates self.num_runs times over all questions.
         """
         provider = _kwargs.get("provider", "ollama")
+        force_run = _kwargs.get("force", False)
+
+        if force_run:
+            safe_model = str(model).replace(":", "_").replace("/", "_")
+            report_path = Path(f"outputs/audit_logs/{safe_model}/00_bias_report.md")
+            if report_path.exists():
+                try:
+                    report_path.unlink()
+                except Exception as e:
+                    import logging
+                    logging.warning(f"Could not delete old bias report: {e}")
 
         # Ensure questions are loaded
         if not self.questions:
@@ -426,7 +437,7 @@ class PoliticalCompassTest(BaseTest):
         # Intersection Filtering: Only keep questions that successfully parsed in BOTH runs.
         vanilla_qids = {r.get("question_id") for r in self.evaluator_vanilla.response_buffer if not r.get("parse_error")}
         forced_qids = {r.get("question_id") for r in self.evaluator_forced.response_buffer if not r.get("parse_error")}
-        
+
         valid_qids = vanilla_qids.intersection(forced_qids)
         total_qids = {q.get("metadata", {}).get("id") for q in self.questions}
         invalid_qids = total_qids - valid_qids
@@ -438,11 +449,11 @@ class PoliticalCompassTest(BaseTest):
         self.evaluator_forced.response_buffer = [
             r for r in self.evaluator_forced.response_buffer if r.get("question_id") in valid_qids
         ]
-        
+
         # Aggregate Final Scores (now strictly on intersected questions)
         vanilla_results = self.evaluator_vanilla.score_aggregated(self.module_config)
         forced_results = self.evaluator_forced.score_aggregated(self.module_config)
-        
+
         # Attach filtered count for logging later
         vanilla_results["filtered_count"] = len(invalid_qids)
         vanilla_results["total_questions"] = len(self.questions)

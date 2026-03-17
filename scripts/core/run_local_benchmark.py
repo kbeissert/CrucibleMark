@@ -488,9 +488,22 @@ class LocalBenchmarkRunner(BaseBenchmarkRunner):
                     )
 
                 if result.get("scoring_method") == "hybrid":
-                    judge_resp = f"{judge_info}\n\n**Hybrid Score:** {result.get('percentage', 'N/A')}%\n\n**LLM Judge Score (Raw):** {result.get('llm_judge_score', 'N/A')}\n\n**LLM Judge Reasoning:**\n{result.get('llm_judge_reasoning', 'No reasoning provided.')}{subscore_section}{cat_section}{details_section}"
+                    meta_block = (
+                        "> [!NOTE]\n"
+                        "> **Evaluation Metadata**\n"
+                        f"> - **Evaluated by:** {judge_provider} / {judge_model}\n"
+                        f"> - **Hybrid Score:** {result.get('percentage', 'N/A')}%\n"
+                        f"> - **LLM Judge Score (Raw):** {result.get('llm_judge_score', 'N/A')}"
+                    )
+                    judge_resp = f"{meta_block}\n\n**LLM Judge Reasoning:**\n{result.get('llm_judge_reasoning', 'No reasoning provided.')}{subscore_section}{cat_section}{details_section}"
                 else:
-                    judge_resp = f"{judge_info}\n\n**LLM Judge Score:** {result.get('llm_judge_score', 'N/A')}\n\n**LLM Judge Reasoning:**\n{result.get('llm_judge_reasoning', 'No reasoning provided.')}{subscore_section}{cat_section}{details_section}"
+                    meta_block = (
+                        "> [!NOTE]\n"
+                        "> **Evaluation Metadata**\n"
+                        f"> - **Evaluated by:** {judge_provider} / {judge_model}\n"
+                        f"> - **LLM Judge Score:** {result.get('llm_judge_score', 'N/A')}"
+                    )
+                    judge_resp = f"{meta_block}\n\n**LLM Judge Reasoning:**\n{result.get('llm_judge_reasoning', 'No reasoning provided.')}{subscore_section}{cat_section}{details_section}"
             else:
                 judge_resp = f"**Regex / Rule Scorer ({result.get('scoring_method', 'unknown')}):**\n\n**Score:** {result.get('total_score', 0)} / {result.get('max_score', 0)}\n\n**Details:**\n```json\n{json.dumps(score, indent=2, ensure_ascii=False)}\n```"
 
