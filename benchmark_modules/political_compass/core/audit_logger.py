@@ -47,10 +47,15 @@ class AuditLogWriter:
                 ans_letter = val.get('answer', 'N/A')
                 q_data = questions_db.get(q_id, {})
                 opt_data = q_data.get('options', {}).get(ans_letter, {})
-                ans_text = opt_data.get('text', 'N/A')
 
-                axis = q_data.get('metadata', {}).get('axis', 'x')
-                score = opt_data.get('values', {}).get(axis, 0)
+                # Check for refusal / Unparsable responses
+                if ans_letter.startswith("REFUSAL/UNPARSABLE: "):
+                    ans_text = f"❌ {ans_letter}"
+                    score = 0
+                else:
+                    ans_text = opt_data.get('text', 'N/A')
+                    axis = q_data.get('metadata', {}).get('axis', 'x')
+                    score = opt_data.get('values', {}).get(axis, 0)
 
                 if run_idx == '1':
                     hydrated_responses[q_id]['vanilla'] = {'text': ans_text, 'score': score}
