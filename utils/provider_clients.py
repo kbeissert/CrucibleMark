@@ -1004,8 +1004,8 @@ class XAIClient(BaseProviderClient):
             )
             return True
         except Exception as e:
-            from utils.logging_config import setup_logging
-            logger = setup_logging()
+            import logging
+            logger = logging.getLogger(__name__)
             logger.debug("XAI Access Check Failed: %s", e)
             return False
 
@@ -1019,8 +1019,8 @@ class XAIClient(BaseProviderClient):
     ) -> str:
         """Query XAI API"""
         try:
-            from utils.logging_config import setup_logging
-            logger = setup_logging()
+            import logging
+            logger = logging.getLogger(__name__)
             params = {
                 "model": model,
                 "messages": [{"role": "user", "content": prompt}],
@@ -1084,8 +1084,8 @@ class XAIClient(BaseProviderClient):
                 return raw_text if raw_text else ""
 
         except Exception as e:
-            from utils.logging_config import setup_logging
-            logger = setup_logging()
+            import logging
+            logger = logging.getLogger(__name__)
             logger.error("XAI API Error: %s", e)
             raise e
 
