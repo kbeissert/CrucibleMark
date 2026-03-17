@@ -1,3 +1,4 @@
+from typing import Optional
 """
 Leaderboard formatting and display logic.
 Handles badge assignment, speed classification, skill profiling, and console output.
@@ -203,7 +204,7 @@ def calculate_performance_per_second(total_score: float, avg_time: float) -> flo
     return round(total_score / avg_time, 2)
 
 
-def assign_rank_and_badges(df: pd.DataFrame, cat_cols: list = None) -> pd.DataFrame:
+def assign_rank_and_badges(df: pd.DataFrame, cat_cols: Optional[list] = None) -> pd.DataFrame:
     """
     Vergibt Rank, Badges und Speed Profile.
     Updates the DataFrame in place / returns modified DF.

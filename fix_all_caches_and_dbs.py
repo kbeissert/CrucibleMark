@@ -1,4 +1,3 @@
-import os
 import glob
 import json
 import csv
@@ -69,7 +68,7 @@ for filepath in json_files:
             with open(filepath, 'w', encoding='utf-8') as f:
                 json.dump(data, f, indent=2)
             print(f'Updated JSON cache: {filepath}')
-    except Exception as e:
+    except Exception:
         pass
 
 # 2. Update CSV files ("Datenbank-Einträge")
@@ -104,7 +103,7 @@ for filepath in csv_files:
                 writer.writeheader()
                 writer.writerows(rows)
             print(f'Updated DB CSV: {filepath}')
-    except Exception as e:
+    except Exception:
         pass
 
 print("Update complete.")

@@ -1,4 +1,5 @@
-import csv, glob
+import csv
+import glob
 model_versions = {}
 files = [f for f in glob.glob('benchmark_scores/*.csv') if 'leaderboard' not in f]
 for f in files:
@@ -13,7 +14,7 @@ for f in files:
                 if model not in model_versions:
                     model_versions[model] = set()
                 model_versions[model].add(version)
-    except Exception as e:
+    except Exception:
         pass
 
 for m, vs in sorted(model_versions.items()):

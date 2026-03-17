@@ -82,10 +82,10 @@ class AssetValidator:
     def _validate_v2_scoring(scoring: Dict[str, Any]) -> List[str]:
         """Validates Scoring v2.0 Format."""
         errors = []
-        total_weight = 0
+        total_weight: float = 0.0
 
         for category_name, category_data in scoring.items():
-            if category_name == "total_points" or category_name == "method":
+            if category_name in ("total_points", "method"):
                 continue
 
             if not isinstance(category_data, dict):
@@ -113,7 +113,7 @@ class AssetValidator:
     def _validate_legacy_scoring(scoring: Dict[str, Any]) -> List[str]:
         """Validates Legacy Scoring Format."""
         errors = []
-        total_weight = 0
+        total_weight: float = 0.0
 
         # Hardcoded 100 assumption for legacy
         TOTAL_SCORING_WEIGHT = 100

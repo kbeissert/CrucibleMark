@@ -44,6 +44,7 @@ class PendingJudgeResult:
     # --- Phase-1 results ---
     hybrid_score: float
     response_time_ms: float  # FROZEN – see __setattr__
+    _frozen_response_time: float = field(init=False, repr=False)
 
     # --- Timestamp (ISO 8601) ---
     timestamp_completed: str = field(

@@ -33,8 +33,8 @@ class RetryHandler:
     def execute_with_retry(
         self,
         func: Callable[..., T],
-        max_retries: int | None = None,
         *args: Any,
+        max_retries: int | None = None,
         **kwargs: Any,
     ) -> T:
         """

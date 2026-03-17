@@ -22,6 +22,7 @@ import logging
 import time
 from typing import Any, Dict, Optional
 
+from utils.constants import OLLAMA_DEFAULT_BASE_URL
 from .judge_config import FallbackProviderConfig, LLMJudgeConfig
 from .judge_parser import JudgeResult, parse
 from .judge_prompt_builder import build_prompts
@@ -82,7 +83,7 @@ def _build_provider(config: LLMJudgeConfig) -> LLMJudgeProvider:
     if prov_cfg.name == "ollama":
         from .providers.ollama_provider import OllamaProvider
 
-        base_url = prov_cfg.base_url or "http://localhost:11434"
+        base_url = prov_cfg.base_url or OLLAMA_DEFAULT_BASE_URL
         return OllamaProvider(**kwargs, base_url=base_url)
 
     raise ValueError(
@@ -137,7 +138,7 @@ def _build_fallback_provider(
     if fb_cfg.name == "ollama":
         from .providers.ollama_provider import OllamaProvider
 
-        base_url = fb_cfg.base_url or "http://localhost:11434"
+        base_url = fb_cfg.base_url or OLLAMA_DEFAULT_BASE_URL
         return OllamaProvider(**kwargs, base_url=base_url)
 
     raise ValueError(
@@ -291,7 +292,7 @@ class JudgeRunner:
 
         from .providers.ollama_provider import OllamaProvider
 
-        base_url = self._config.provider.base_url or "http://localhost:11434"
+        base_url = self._config.provider.base_url or OLLAMA_DEFAULT_BASE_URL
         unload_delay_ms = self._config.provider.unload_delay_ms
 
         try:

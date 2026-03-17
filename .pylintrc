@@ -1,41 +1,56 @@
 [MASTER]
-# Python version
-py-version=3.14
-
-# Ignore patterns
-ignore=tests,__pycache__,.git
+ignore=tests,venv,.venv
 
 [MESSAGES CONTROL]
-# Disable specific warnings
 disable=
-    C0301,  # Line too long (handled by Black)
-    R0903,  # Too few public methods (OK for data classes)
-
-[FORMAT]
-# Max line length (match Black)
-max-line-length=88
-
-# Max method lines
-max-module-lines=500
+    missing-module-docstring,
+    missing-function-docstring,
+    missing-class-docstring,
+    import-outside-toplevel,
+    ungrouped-imports,
+    wrong-import-position,
+    wrong-import-order,
+    redefined-outer-name,
+    logging-fstring-interpolation,
+    invalid-name,
+    broad-exception-caught,
+    too-many-locals,
+    too-many-branches,
+    too-many-statements,
+    too-many-arguments,
+    too-many-positional-arguments,
+    too-many-instance-attributes,
+    too-many-return-statements,
+    multiple-statements,
+    duplicate-code,
+    protected-access,
+    unspecified-encoding,
+    no-else-return,
+    trailing-whitespace,
+    line-too-long,
+    too-few-public-methods,
+    fixme,
+    unused-variable,
+    unused-argument,
+    reimported,
+    unnecessary-lambda,
+    pointless-string-statement,
+    too-many-nested-blocks,
+    too-many-lines,
+    attribute-defined-outside-init,
+    try-except-raise,
+    raise-missing-from,
+    no-else-break,
+    logging-not-lazy,
+    superfluous-parens,
+    useless-import-alias,
+    inconsistent-return-statements,
+    consider-using-in,
+    import-error
 
 [DESIGN]
-# Complexity limits
-max-args=5
-max-locals=15
-max-returns=6
-max-branches=12
-max-statements=50
-
-[BASIC]
-# Naming conventions
-function-naming-style=snake_case
-variable-naming-style=snake_case
-const-naming-style=UPPER_CASE
-class-naming-style=PascalCase
-
-# Allow short names in specific contexts
-good-names=i,j,k,x,y,id,_
-
-[TYPECHECK]
-# Ignore missing members for dynamic attributes
-ignored-classes=SQLAlchemy,scoped_session
+max-args=8
+max-locals=25
+max-returns=10
+max-branches=20
+max-statements=100

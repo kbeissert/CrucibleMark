@@ -22,7 +22,6 @@ class BaseScorer(ABC):
         """
         Scores a text response against the provided asset configuration.
         """
-        pass
 
     def calculate_score_contributions(
         self, result: Dict[str, Any], asset_cfg: Optional[Dict[str, Any]]

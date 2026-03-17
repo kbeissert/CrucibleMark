@@ -13,6 +13,7 @@ Covers:
 from unittest.mock import MagicMock, patch
 
 import pytest
+from utils.constants import OLLAMA_DEFAULT_BASE_URL
 
 from utils.scoring.llm_judge.judge_config import (
     FallbackProviderConfig,
@@ -40,14 +41,14 @@ def _make_config(
         fallback = FallbackProviderConfig(
             name=fallback_name,  # type: ignore[arg-type]
             model="qwen2.5:14b",
-            base_url="http://localhost:11434",
+            base_url=OLLAMA_DEFAULT_BASE_URL,
         )
     return LLMJudgeConfig(
         enabled=True,
         provider=ProviderConfig(
             name=provider_name,  # type: ignore[arg-type]
             model="judge-model",
-            base_url="http://localhost:11434" if provider_name == "ollama" else None,
+            base_url=OLLAMA_DEFAULT_BASE_URL if provider_name == "ollama" else None,
             fallback=fallback,
         ),
         scoring=ScoringConfig(scale=scale),

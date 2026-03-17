@@ -15,7 +15,7 @@ from utils.csv_recovery import get_csv_header_idx, parse_row_robust
 # pylint: enable=import-error
 
 # Import configuration and constants
-from .config import COMMERCIAL_CSV, LOCAL_CSV, config
+from .config import COMMERCIAL_CSV, LOCAL_CSV
 
 # pylint: disable=import-error
 try:

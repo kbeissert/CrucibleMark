@@ -1,6 +1,6 @@
 # CrucibleMark: Audit-Logs & Meta-Review Workflow
 
-Aus einem ursprünglichen Dev-Tool, das Protokolle primär generierte, um Systemfehler zu suchen, ist ein zentrales visuelles und analytisches Feature geworden. Die Audit-Logs bieten nun ein eindeutiges, transparentes Verständnis der Benchmarks von der Eingabe bis zur Auswertung. Sie sind perfekt im Markdown-Format strukturiert, sodass Mensch und Maschine sie lückenlos parsen und nachvollziehen können. 
+Aus einem ursprünglichen Dev-Tool, das Protokolle primär generierte, um Systemfehler zu suchen, ist ein zentrales visuelles und analytisches Feature geworden. Die Audit-Logs bieten nun ein eindeutiges, transparentes Verständnis der Benchmarks von der Eingabe bis zur Auswertung. Sie sind perfekt im Markdown-Format strukturiert, sodass Mensch und Maschine sie lückenlos parsen und nachvollziehen können.
 
 Der **Audit-Modus** generiert somit nicht nur messbare Scores, sondern führt eine qualitative, textliche Tiefenanalyse der LLM-Antworten durch. Neben dem übersichtlichen Reporting aller Prompts, Evaluierungen und Systemmetadaten ist das Highlight der am Ende des Laufs automatisch erstellte **"Magazine-Style" Meta-Review**.
 

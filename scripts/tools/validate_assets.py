@@ -26,7 +26,7 @@ class CLIAssetValidator:
 
     def validate_path(self, path: Path) -> dict[str, Any]:
         """Validiert Datei oder Verzeichnis."""
-        results = {"valid": 0, "invalid": 0, "details": []}
+        results: dict[str, Any] = {"valid": 0, "invalid": 0, "details": []}
 
         if path.is_file():
             is_valid, error = self.validator._validate_file_internal(path)

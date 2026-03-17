@@ -133,7 +133,7 @@ class BaseBenchmarkRunner:
             "total_score": total_score,
             "max_score": max_score,
             "percentage": percentage,
-            "tier": exec_result.tier,
+            "tier": getattr(exec_result, "tier", score.get("tier", "Tier 1 (Undefined)")),
             # Use object attributes
             "execution_time": round(exec_result.execution_time, 4),
             "tokens_used": getattr(exec_result, "tokens_used", 0),
@@ -144,7 +144,6 @@ class BaseBenchmarkRunner:
             "token_limit_cutoff": getattr(exec_result, "token_limit_cutoff", False),
             "token_limit_fallback": getattr(exec_result, "token_limit_fallback", False),
             "token_limit_used": getattr(exec_result, "token_limit_used", None),
-            "tier": score.get("tier", "Tier 1 (Undefined)"),
         }
 
         # Add category scores

@@ -9,12 +9,11 @@ from pathlib import Path
 from typing import Any, Callable, Dict, List, Optional
 import yaml  # pylint: disable=import-error
 
-from utils.provider_clients import (
+from utils.providers import (
     OllamaClient,
     AnthropicClient,
     MistralClient,
     OpenAIClient,
-    XAIClient,
     XAIClient,
     GoogleClient,
 )
@@ -230,7 +229,6 @@ class LLMClient:
             _call_provider, max_retries=max_retries
         )
 
-        import re
         # Sanitize loop hallucinations (z.B. wenn das Modell 80.000 Leerzeichen am Stück ausgibt)
         if response_text and len(response_text) > 1000:
             response_text = re.sub(
