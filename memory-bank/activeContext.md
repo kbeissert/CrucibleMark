@@ -1,5 +1,5 @@
 # Active Context
 
-- Abgeschlossen: Bereinigung historischer Cache- und CSV-Dateien sowie Umbau der Modell-Versionierung in `utils/model_utils.py` (ModelFingerprinter entfernt, statisches Regex-Mapping aktiv).
-- Nächster Schritt: Leaderboard und Reviewer-Reports verifizieren und künftige Benchmark-Ergebnisse auf sauberes Version-Grouping prüfen.
+- Abgeschlossen: Phase 3 des Refactorings (Provider-Clients via Facade-Pattern modularisiert, Namespace-Kollisionen behoben, Magic Numbers/Endpoints in constants.py extrahiert, CI/CD Checks laufen fehlerfrei).
+- Nächster Schritt: Phase 4 (Finale E2E Systemtests und CI/CD Review).
 - Offen/Risiko: keine

@@ -18,14 +18,15 @@ Gilt für Generation-Parameter UND LLM Judge. Modul-Override gewinnt immer.
   ins `benchmark_info`-Dict übernommen werden
 
 ## Token-Limit Fallback / Kopfnoten
-- Alle Provider nutzen den `_execute_with_token_fallback`-Wrapper in `utils/provider_clients.py`.
+- Alle Provider nutzen den `_execute_with_token_fallback`-Wrapper in `utils/providers/base.py`.
 - Harte Exceptions (wie Quota/Budget) provozieren einen sofortigen Test-Abbruch (Fast-Fail), Token-Limit Fehler lösen die Fallback-Kaskade (aus `benchmark_config.yaml`) abwärts aus.
 - Gegen Token-Loop-Halluzinationen (z.B. endlose Leerzeichen-Repeats von Gemini 2.5 Flash) ist eine Regex-basierte Character-Sequence Validation im BaseClient implementiert, die den Test sofort markiert und abbricht.
 - Ergebnisse iterieren nicht die Score-Punkte, sondern notieren rein kontextuelle "Kopfnoten" (`token_limit_used` oder `⚠️ OUTPUT TRUNCATED/LOOP`) im Metric-Tracker. Diese fließen später über `generate_review.py` via Regex-Extraktion in die Meta-Reviewer Berichte ein.
 
 ## Neue Provider hinzufügen
 1. In `benchmark_config.yaml` unter `providers.commercial` oder `providers.local` eintragen
-2. Klasse in `llm_judge/providers/` anlegen (erbt von `LLMJudgeProvider`)
+2. Falls es ein API Provider ist: Neues Modul in `utils/providers/` anlegen (erbt von `BaseProviderClient`) und in `utils/providers/__init__.py` exportieren.
+3. Falls es ein LLM Judge ist: Klasse in `llm_judge/providers/` anlegen (erbt von `LLMJudgeProvider`).
 
 ## Hardware Context & Prompt-as-Config
 - Die Laufzeitumgebung (Hardware) wird unter `runner_environment:` in `benchmark_config.yaml` deklariert (t/s limits, Unified Memory vs VRAM).

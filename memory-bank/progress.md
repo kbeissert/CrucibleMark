@@ -1,6 +1,7 @@
 # Progress
 
 ## Ongoing
+- [ ] Phase 4: Finale E2E Systemtests und CI/CD Review
 - [ ] LLM Judge: Umbau auf natives JSON-Output (`judge_parser.py` + Prompts)
 - [ ] LLM Judge: Batch-Mode (Phase 3.5)
 - [ ] Volldurchlauf aller lokalen Modelle → finales Leaderboard (43/43 Tests)
@@ -8,6 +9,7 @@
 - [ ] Stabilität `gpt-oss` analysieren (vorheriger Absturz-Kandidat)
 
 ## Abgeschlossen (Meilensteine)
+- [DONE] Phase 3 Refactoring: Code-Modularisierung (utils/providers/), Namespace-Bereinigung, Magic-Numbers extrahiert, Pytest/Mypy/Pylint Pipeline-Erfolg.
 - [DONE] Release v2.6.1: Stability & Context Handling (API Trimming gegen Token Loops).
 - [DONE] Documentation Consolidation (README, REF_TODO, PROJECT_STATUS strukturell an benchmark_config.yaml angeglichen)
 - [DONE] Git Freeze (v2.6.1 Tag) gesetzt.
