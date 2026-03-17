@@ -1,7 +1,0 @@
-cat << 'E
-gggdegggdegggdegggdegggdegggdegggdegggdegggdegggdegggdegggdegggdegggdegggdegggdegggdegggdegggdegggdegggdegggdegggdegggdegggdegggdegggdegggdegggdegggdegggdegggdegggdegggdegggdegggdegggdegggdegggdegggdegggdegggdegggdegggdegggdegggdegggdegggdegggdegggdegggdegggdegggdegggdegggdegggdegggdegggdegggdegggdegggdegggdegggdegggdegggdegggdegggdegggdegggdegggdegggdegggde:7801, verify running"
-tools: ["docker", "curl"]
-golden:
-  required_commands: ["docker", "pull", "run", "0.0.0.0", "7801"]
-  banned_commands: []
-  max_steps: 5
