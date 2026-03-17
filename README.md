@@ -272,15 +272,17 @@ See [`utils/scoring/llm_judge/README.md`](utils/scoring/llm_judge/README.md) for
 - **Performance/s:** Quality points per second execution time
 - **Cost per 1K:** Normalized API cost (commercial models only)
 
-### Audit Mode (Debugging)
+### Audit Logs & Transparenz
 
-If you need to deeply analyze *why* a particular model received a specific score (especially useful when working with the LLM Judge), you can run CrucibleMark in **Audit Mode**:
+Aus einem ursprünglichen Dev-Tool, das Protokolle generierte, um Fehler zu suchen, wurde ein Feature, das ein eindeutiges Verständnis der Benchmarks von der Eingabe bis zur Auswertung ermöglicht. Die Protokolle im Markdown-Format wurden perfektioniert und klar gegliedert, sodass Mensch und Maschine sie gleichermaßen perfekt verstehen können – sie geben einen transparenten Überblick über alle Ein- und Ausgaben sowie die detaillierte Bewertung (inklusive Metadaten und LLM-Judge Reasoning) des Modells.
+
+Wenn Sie tiefgehend nachvollziehen möchten, *warum* ein bestimmtes Modell einen spezifischen Score erhalten hat, führen Sie CrucibleMark einfach im **Audit-Modus** aus:
 
 ```bash
 make benchmark-audit
 ```
 
-This will save detailed markdown files for every single evaluation inside `outputs/audit_logs/`. These files include the fully evaluated prompt, the exact raw response of the model, and the detailed scoring breakdown.
+Dadurch werden strukturierte, fein formatierte Markdown-Dateien für jede einzelne Evaluierung unter `outputs/audit_logs/` gespeichert. Diese Logs beinhalten den vollständig evaluierten Prompt, die exakte Rohantwort des Modells sowie die extrem detaillierte Argumentation des Judges und der Scorer.
 
 ______________________________________________________________________
 
