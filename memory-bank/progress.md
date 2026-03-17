@@ -2,13 +2,15 @@
 
 ## Ongoing
 - [ ] Phase 4: Finale E2E Systemtests und CI/CD Review
-- [ ] LLM Judge: Umbau auf natives JSON-Output (`judge_parser.py` + Prompts)
+- [DONE] LLM Judge: Umbau auf natives JSON-Output (`judge_parser.py` + Prompts)
 - [ ] LLM Judge: Batch-Mode (Phase 3.5)
 - [ ] Volldurchlauf aller lokalen Modelle → finales Leaderboard (43/43 Tests)
 - [ ] Re-run `reasoning_logic` für lokale Modelle (verfälschte 0-Punkte bereinigen)
 - [ ] Stabilität `gpt-oss` analysieren (vorheriger Absturz-Kandidat)
 
 ## Abgeschlossen (Meilensteine)
+- [DONE] LLM Judge Bugfix (0% vs 20% Base-Score behoben, Skala korrigiert auf 0-5).
+- [DONE] Verwaisten Golden-Standard Ordner entfernt und Makefile-Cleans nachgezogen.
 - [DONE] Phase 3 Refactoring: Code-Modularisierung (utils/providers/), Namespace-Bereinigung, Magic-Numbers extrahiert, Pytest/Mypy/Pylint Pipeline-Erfolg.
 - [DONE] Release v2.6.1: Stability & Context Handling (API Trimming gegen Token Loops).
 - [DONE] Documentation Consolidation (README, REF_TODO, PROJECT_STATUS strukturell an benchmark_config.yaml angeglichen)
