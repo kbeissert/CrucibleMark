@@ -780,17 +780,17 @@ class CommercialBenchmarkRunner(BaseBenchmarkRunner):
         if not results:
             return
 
-        total_score = sum(r["total_score"] for r in results)
-        max_possible = sum(r["max_score"] for r in results)
-        avg_pct = (total_score / max_possible * 100) if max_possible > 0 else 0
-
-        # Calculate Costs & Time
         def safe_float(val):
             try:
                 return float(val) if val not in (None, "") else 0.0
             except ValueError:
                 return 0.0
 
+        total_score = sum(safe_float(r.get("total_score", 0)) for r in results)
+        max_possible = sum(safe_float(r.get("max_score", 0)) for r in results)
+        avg_pct = (total_score / max_possible * 100) if max_possible > 0 else 0
+
+        # Calculate Costs & Time
         total_cost = sum(safe_float(r.get("cost_usd")) for r in results)
         avg_time = (
             sum(safe_float(r.get("execution_time")) for r in results) / len(results)
