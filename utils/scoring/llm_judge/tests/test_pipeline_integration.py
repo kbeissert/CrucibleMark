@@ -1,4 +1,5 @@
 import pytest
+from utils.constants import OLLAMA_DEFAULT_BASE_URL
 from unittest.mock import MagicMock, patch
 from pathlib import Path
 
@@ -118,7 +119,7 @@ def test_pipeline_integration_enabled_applicable(mock_local_runner, mock_depende
         "llm_judge": {
             "enabled": True,
             "applicable_modules": ["test_mod"],
-            "providers": {"ollama": "http://localhost:11434"},
+            "providers": {"ollama": OLLAMA_DEFAULT_BASE_URL},
         }
     }
 

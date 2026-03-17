@@ -47,7 +47,7 @@ from utils.rate_limiter import RateLimiter  # noqa: E402
 ResultManager: Optional[Any] = None  # noqa: E402
 AuditLogWriter: Optional[Any] = None  # noqa: E402
 try:
-    from benchmark_modules.political_compass.core.io_manager import ResultManager
+    from benchmark_modules.political_compass.core.io_manager import PoliticalCompassResultManager as ResultManager
 except ImportError:
     pass
 try:
@@ -284,7 +284,7 @@ class CommercialBenchmarkRunner(BaseBenchmarkRunner):
             if not exec_result.execution_time:
                 exec_result.execution_time = time.time() - start_time
         except Exception as e:  # pylint: disable=broad-exception-caught
-            print(f"\n❌ Fehler bei Ausführung ({asset_name}): {e}"); import traceback; traceback.print_exc(); import traceback; traceback.print_exc()
+            print(f"\n❌ Fehler bei Ausführung ({asset_name}): {e}"); traceback.print_exc(); traceback.print_exc()
             return None
 
         response = exec_result.raw_response
@@ -432,7 +432,7 @@ class CommercialBenchmarkRunner(BaseBenchmarkRunner):
                         result["judge_progress_status"] = "❌ Judge: failed"
 
                 except Exception as e:  # pylint: disable=broad-exception-caught
-                    import traceback; traceback.print_exc(); logging.error("LLM Judge execution failed: %s", e)
+                    traceback.print_exc(); logging.error("LLM Judge execution failed: %s", e)
                     result["judge_progress_status"] = "❌ Judge: failed"
         # ---------------------------------------------------------------------
 

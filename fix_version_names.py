@@ -1,7 +1,4 @@
-import os
 import glob
-import json
-import csv
 
 def update_files():
     # we want to target benchmark_scores/*.csv and outputs/runs/**/*.json or outputs/**/*.csv

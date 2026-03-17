@@ -156,7 +156,7 @@ class TerminalUI:
         model_name: str,
         provider: str,
         num_runs: int,
-        extra_info: list[str] = None,
+        extra_info: Optional[list[str]] = None,
     ):
         """Prints the module introduction screen."""
         lines = [

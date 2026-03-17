@@ -8,6 +8,7 @@ import logging
 import time
 from typing import Any, Optional
 
+from utils.constants import OLLAMA_DEFAULT_BASE_URL
 from .base_provider import JudgeProviderResponse, LLMJudgeProvider
 
 # Optional import guard: declared before try-block as per project convention
@@ -46,7 +47,7 @@ class OllamaProvider(LLMJudgeProvider):
         temperature: float,
         max_tokens: int,
         timeout_seconds: int,
-        base_url: str = "http://localhost:11434",
+        base_url: str = OLLAMA_DEFAULT_BASE_URL,
     ) -> None:
         if requests_module is None:
             raise ImportError(
@@ -75,7 +76,7 @@ class OllamaProvider(LLMJudgeProvider):
         }
         url = self._base_url + _CHAT_ENDPOINT
         start = time.monotonic()
-        response = requests_module.post(url, json=payload, timeout=self._timeout)
+        assert requests_module is not None; response = requests_module.post(url, json=payload, timeout=self._timeout)
         response.raise_for_status()
         latency_ms = (time.monotonic() - start) * 1000.0
         data = response.json()

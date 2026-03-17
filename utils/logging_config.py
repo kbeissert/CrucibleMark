@@ -1,3 +1,4 @@
+from typing import Optional
 import logging
 import sys
 import yaml
@@ -25,7 +26,7 @@ def _load_logging_config():
     return defaults
 
 
-def setup_logging(log_file: Path = None):
+def setup_logging(log_file: Optional[Path] = None):
     """
     Konfiguriert das Logging-System basierend auf benchmark_config.yaml.
     """

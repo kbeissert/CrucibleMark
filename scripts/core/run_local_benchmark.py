@@ -2,6 +2,7 @@
 """Benchmark Runner für lokale Ollama-Modelle."""
 
 import argparse
+from utils.constants import OLLAMA_DEFAULT_BASE_URL
 import csv
 import json
 import logging
@@ -53,7 +54,7 @@ setup_logging()
 # pylint: disable=invalid-name
 RESULT_MANAGER = None
 try:
-    from benchmark_modules.political_compass.core.io_manager import ResultManager as RM
+    from benchmark_modules.political_compass.core.io_manager import PoliticalCompassResultManager as RM
     from benchmark_modules.political_compass.core.audit_logger import AuditLogWriter
 
     RESULT_MANAGER = RM
@@ -351,7 +352,7 @@ class LocalBenchmarkRunner(BaseBenchmarkRunner):
 
                 try:
                     _requests.post(
-                        "http://localhost:11434/api/generate",
+                        f"{OLLAMA_DEFAULT_BASE_URL}/api/generate",
                         json={"model": model, "keep_alive": 0},
                         timeout=5,
                     )

@@ -28,3 +28,6 @@ class Colors:
     FAIL = "\033[91m"
     ENDC = "\033[0m"
     BOLD = "\033[1m"
+
+# Provider Endpoints
+OLLAMA_DEFAULT_BASE_URL = "http://localhost:11434"

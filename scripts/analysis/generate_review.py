@@ -1,3 +1,4 @@
+from typing import Optional
 #!/usr/bin/env python3
 """
 Meta-Reviewer für den Audit-Modus
@@ -25,7 +26,7 @@ def load_config() -> dict:
     with open(config_path, "r", encoding="utf-8") as f:
         return yaml.safe_load(f)
 
-def get_latest_audit_dir(base_dir: Path) -> Path:
+def get_latest_audit_dir(base_dir: Path) -> Optional[Path]:
     """Findet das zuletzt aktualisierte Audit-Verzeichnis."""
     subdirs = [d for d in base_dir.iterdir() if d.is_dir() and d.name != ".DS_Store"]
     if not subdirs:
@@ -74,7 +75,7 @@ def process_model_review(model_dir: Path, csv_data: str, client: LLMClient, prov
                 extracted_logs.append(f"--- Datei: {md_file.name} ---{system_info_text}\n{extracted}")
             else:
                 extracted_logs.append(f"--- Datei: {md_file.name} ---{system_info_text}\n{content[-1500:]}")
-        except Exception as e:
+        except Exception:
             continue
 
     if not extracted_logs:
@@ -119,7 +120,7 @@ def process_model_review(model_dir: Path, csv_data: str, client: LLMClient, prov
                 _tier_lines.append(desc)
 
             tier_metaphor_rules = "\n".join(_tier_lines)
-    except Exception as e:
+    except Exception:
         tier_metaphor_rules = "- **Ab 90%:** Platin\n- **Ab 75%:** Gold\n- **Ab 60%:** Silber\n- **Ab 50%:** Bronze\n- **Unter 50%:** Standard"
 
 

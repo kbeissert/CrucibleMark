@@ -236,12 +236,12 @@ def save_audit_log(
 
             def demote_headers_safe(text: str) -> str:
                 blocks = re.split(r'(```.*?```)', text, flags=re.DOTALL)
-                for i in range(len(blocks)):
+                for i, _ in enumerate(blocks):
                     if i % 2 == 0:
                         # Stuft Überschriften ab, limitiert sie aber strikt auf maximal H6 und min H3
                         blocks[i] = re.sub(
                             r'^((?:>\s*)*)(#+)\s',
-                            lambda m: m.group(1) + '#' * min(6, max(3, len(m.group(2)) + 1)) + ' ',
+                            lambda m: str(m.group(1)) + '#' * min(6, max(3, len(m.group(2)) + 1)) + ' ',
                             blocks[i],
                             flags=re.MULTILINE
                         )

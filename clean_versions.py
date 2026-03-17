@@ -1,4 +1,5 @@
-import glob, re
+import glob
+import re
 
 files = glob.glob('benchmark_scores/**/*.csv', recursive=True) + \
         glob.glob('outputs/**/*.csv', recursive=True) + \
@@ -21,6 +22,6 @@ for filepath in files:
             with open(filepath, 'w', encoding='utf-8') as f:
                 f.write(new_content)
             print(f'Updated {filepath}')
-    except Exception as e:
+    except Exception:
         pass
 print("Bereinigung abgeschlossen.")

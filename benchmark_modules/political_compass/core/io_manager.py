@@ -110,7 +110,7 @@ class CheckpointManager:
                 logger.warning("⚠️ Failed to clear checkpoint: %s", e)
 
 
-class ResultManager:
+class PoliticalCompassResultManager:
     """
     Handles file I/O and reporting for Political Compass results.
     Separates data persistence and presentation from business logic.
@@ -130,7 +130,7 @@ class ResultManager:
         """Saves the full report as JSON."""
         if not filename:
             filename = (
-                ResultManager.generate_filename(report.get("model", "unknown"))
+                PoliticalCompassResultManager.generate_filename(report.get("model", "unknown"))
                 + ".json"
             )
 
@@ -186,7 +186,7 @@ class ResultManager:
 
         # Handle Schema Migration (if file exists but missing columns)
         if file_exists:
-            ResultManager._ensure_schema_matches(filepath, fieldnames)
+            PoliticalCompassResultManager._ensure_schema_matches(filepath, fieldnames)
 
         with filepath.open("a", newline="", encoding=DEFAULT_ENCODING) as f:
             writer = csv.DictWriter(f, fieldnames=fieldnames)

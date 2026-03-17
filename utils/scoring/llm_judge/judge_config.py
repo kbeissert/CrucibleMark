@@ -6,6 +6,7 @@ All defaults and valid values live here — never in runner or prompt code.
 from __future__ import annotations
 
 from typing import List, Literal, Optional
+from utils.constants import OLLAMA_DEFAULT_BASE_URL
 
 from pydantic import BaseModel, Field
 
@@ -20,7 +21,7 @@ DEFAULT_MISTRAL_MODEL = "mistral-small-latest"
 DEFAULT_OPENAI_MODEL = "gpt-4o-mini"
 DEFAULT_GOOGLE_MODEL = "gemini-2.5-pro"
 DEFAULT_OLLAMA_MODEL = "llama3.2"
-DEFAULT_OLLAMA_BASE_URL = "http://localhost:11434"
+DEFAULT_OLLAMA_BASE_URL = OLLAMA_DEFAULT_BASE_URL
 DEFAULT_TEMPERATURE = 0.1
 DEFAULT_MAX_TOKENS = 4096
 DEFAULT_TIMEOUT_SECONDS = 120
@@ -106,8 +107,8 @@ class LLMJudgeConfig(BaseModel):
             "replace: LLM Judge replaces the hybrid scorer for applicable modules."
         ),
     )
-    provider: ProviderConfig = Field(default_factory=ProviderConfig)
-    scoring: ScoringConfig = Field(default_factory=ScoringConfig)
+    provider: ProviderConfig = Field(default_factory=lambda: ProviderConfig())
+    scoring: ScoringConfig = Field(default_factory=lambda: ScoringConfig())
     applicable_modules: List[str] = Field(
         default_factory=lambda: [
             "ux_writing",
