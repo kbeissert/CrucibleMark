@@ -18,7 +18,7 @@
 
 ### Refactoring & Stability (v2.6.2)
 - [x] **God-Script Dismantling (Phase 3):** `provider_clients.py` safely split into modular packages in `utils/providers/` utilizing the Facade pattern.
-- [x] **Namespace Collision Resolution:** Extracted module-specific `ResultManager` logic to decouple strictly from global systems. 
+- [x] **Namespace Collision Resolution:** Extracted module-specific `ResultManager` logic to decouple strictly from global systems.
 - [x] **Magic Numbers Centralization:** Safely extracted endpoints and limits (like Ollamas default port 11434) to unified `constants.py`.
 - [x] **LLM Token Loop Hallucination Fallback:** API-Trimming logic implemented in `llm_client.py` and warnings documented in `AUDIT_AND_METAREVIEW.md`
 - [x] **Documentation Restructuring:** README.md updated to rigorously match `benchmark_config.yaml` categories, obsolete scripts fully removed.

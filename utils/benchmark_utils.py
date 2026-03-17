@@ -6,6 +6,7 @@ Contains common logic for interactive selection and asset discovery.
 import json
 import logging
 from collections.abc import Callable
+from datetime import datetime
 from pathlib import Path
 from typing import Any, Optional, TypeVar
 
@@ -227,6 +228,7 @@ def save_audit_log(
 
         with open(filepath, "w", encoding="utf-8") as f:
             f.write(f"# Audit Log: {asset_id}\n")
+            f.write(f"> **Erstellt am:** {datetime.now().strftime('%d.%m.%Y, %H:%M:%S')}\n")
             f.write(f"**Model:** {model}\n\n")
             if token_limit_fallback:
                 f.write("> [!WARNING]\n> Das Modell (bzw. die API) hat das initial angeforderte Token-Limit abgelehnt (zu groß für die Architektur). Das System ist dynamisch auf ein kleineres 4096-Token-Fallback gewechselt. Dies zeigt, dass dieses Modell mit großen Token-Anfragen oder Kontexten Probleme hat!\n\n")
