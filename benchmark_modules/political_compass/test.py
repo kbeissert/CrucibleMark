@@ -239,10 +239,15 @@ class PoliticalCompassTest(BaseTest):
                     ans_letter = response.strip().upper()[0:1] if response else ""
                 orig_key = mapping.get(ans_letter, ans_letter)
                 q_id = asset.get("id") or asset.get("metadata", {}).get("id", "")
+
+                # Use parsed letter or treat entire response as verbatim refusal if parsing fails
+                final_answer_val = orig_key if context["evaluator"]._parse_choice(response, list(mapping.keys())) else f"REFUSAL/UNPARSABLE: {response.strip()}"
+
                 checkpoint["detailed_responses"][cache_key] = {
                     "id": q_id,
                     "question": "",
-                    "answer": orig_key,
+                    "answer": final_answer_val,
+                    "raw_response": response,
                     "category": block_id
                 }
                 continue
@@ -284,10 +289,15 @@ class PoliticalCompassTest(BaseTest):
                 ans_letter = response.strip().upper()[0:1] if response else ""
             orig_key = mapping.get(ans_letter, ans_letter)
             q_id = asset.get("id") or asset.get("metadata", {}).get("id", "")
+
+            # Use parsed letter or treat entire response as verbatim refusal if parsing fails
+            final_answer_val = orig_key if context["evaluator"]._parse_choice(response, list(mapping.keys())) else f"REFUSAL/UNPARSABLE: {response.strip()}"
+
             checkpoint["detailed_responses"][cache_key] = {
                 "id": q_id,
                 "question": "",
-                "answer": orig_key,
+                "answer": final_answer_val,
+                "raw_response": response,
                 "category": block_id
             }
 
@@ -495,6 +505,13 @@ class PoliticalCompassTest(BaseTest):
         # Runner expects 'raw_response' to be the JSON string of the report
         json_report = json.dumps(report, default=str)
 
+        # Create a shallow version for the 'data' property to pass Pydantic max-depth validation
+        # The full deep structure is already serialized into 'raw_response'
+        shallow_data = {
+            k: v for k, v in report.items()
+            if k not in ("individual_runs", "runs", "detailed_responses")
+        }
+
         # Safely extract coordinates for string formatting
         coords = final_results.get("coordinates", {}) if final_results else {}
         cx = coords.get("x", 0.0) if coords.get("x") is not None else 0.0
@@ -516,7 +533,7 @@ class PoliticalCompassTest(BaseTest):
             token_limit_used=None,
             raw_response=json_report,
             model_version=str(model_version),
-            data=report,
+            data=shallow_data,
             meta={"run_mode": "batch"},
         )
 
