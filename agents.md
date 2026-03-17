@@ -62,7 +62,7 @@ keine modul-internen Batch-Schleifen (zerstört Leaderboard-Reporting).
 - **Doppelte kwargs:** Parameter vor Client-Übergabe explizit mit `.pop()` entfernen.
 - **PendingJudgeResult:** Bei Overnight-Runs immer auf Disk persistieren –
   ermöglicht nachträgliche Score-Vergabe ohne Re-Run.
-- **Audit-Log Extraction:** Der Meta-Reviewer (`generate_review.py`) greift via Regex auf Audit-Logs zu. Bei neuen Metadaten-Blöcken (z.B. `> **⚠️ SYSTEM INFO:**`) muss der Parser in `generate_review.py` entsprechend erweitert werden.
+- **Audit-Log Extraction:** Der Meta-Reviewer (`generate_review.py`) greift via Regex auf Audit-Logs zu. Bei neuen Metadaten-Blöcken (z.B. `> [!WARNING]`) muss der Parser in `generate_review.py` entsprechend erweitert werden.
 - **Silent Parser Fails:** Beim Regex-Parsing (z.B. Log-Extraktion) müssen lokale Container-Variablen als Default deklariert werden, bevor try/except-Blöcke starten, um lautlose "Variable Not Bound"-Aufhänger beim Datei-Skip zu vermeiden.
 - **Terminal Execution Limits:** Über das API/VS Code Terminal ausgelöste mehrzeilige Skriptinjektionen (z.B. `cat << 'EOF'`) oder komplexe `sed`-Befehle werden bei großen Textblöcken häufig abgeschnitten oder fehlerhaft interpretiert; für sichere Ersetzungen native VS Code File-Edit-Tools oder dedizierte Python-Dateien verwenden.
 - **Versions-Wirrwarr durch Fingerprinting:** Dynamische Modell-Hashes (z.B. zuvor via `ModelFingerprinter`) erzwingen fehlerhafte Leaderboard-Duplikate; Modell-Versionen stets über deterministisches Regex-Mapping oder feste CLI-ID-Abfragen in `get_model_version()` auflösen.

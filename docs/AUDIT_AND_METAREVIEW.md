@@ -67,11 +67,14 @@ Wenn Sie bereits Audit-Logs (aus der Vergangenheit) im Ordner `/outputs/audit_lo
 
 Während eines Benchmark-Laufs kann das Framework spezielle Systemmeldungen in die Markdown-Protokolle einfügen. Diese Warnungen helfen dem LLM-Judge (bei der Bewertung) und dem Meta-Reviewer (bei der Erstellung des Magazin-Artikels), das technische Verhalten des Modells korrekt einzuschätzen:
 
-* `> **⚠️ SYSTEM INFO:** Das Modell (bzw. die API) hat das initial angeforderte Token-Limit abgelehnt...`
+* `> [!WARNING]`
+  `> Das Modell (bzw. die API) hat das initial angeforderte Token-Limit abgelehnt...`
   **Bedeutung:** Das Modell unterstützt die per Konfiguration geforderte Kontextgröße nicht (oder die API hat sie abgelehnt) und das Framework musste auf einen kleineren Fallback-Wert (z. B. 4096 Tokens) zurückschalten. Das weist auf ein beschränktes Kontextfenster des Modells hin.
 
-* `> **🚨 SYSTEM WARNING:** Das Modell hat das maximale Token-Limit erreicht und die Antwort abgebrochen...`
+* `> [!CAUTION]`
+  `> Das Modell hat das maximale Token-Limit erreicht und die Antwort abgebrochen...`
   **Bedeutung:** Das Modell war für die gestellte Aufgabe extrem gesprächig (verbose) und hat das Ausgabelimit gerissen. Die generierte Antwort wurde mittendrin abgeschnitten. Dies führt in der Regel zu Punktabzügen beim Judge, da das Modell Anweisungen zur Prägnanz missachtet hat.
 
-* `> **🚨 SYSTEM WARNING:** Das Framework hat eine Endlosschleife des Modells erkannt (extreme Zeichen-Wiederholung) und den defekten Textblock an dieser Stelle gekürzt.`
+* `> [!CAUTION]`
+  `> Das Framework hat eine Endlosschleife des Modells erkannt (extreme Zeichen-Wiederholung) und den defekten Textblock an dieser Stelle gekürzt.`
   **Bedeutung:** Das Modell erlitt eine typische LLM-Halluzination und geriet in eine Endlosschleife (z. B. 80.000 Leerzeichen am Stück, um eine Tabelle zu formatieren). Das Framework blockiert diesen Fehler serverseitig (um Token-Kosten und Abstürze zu verhindern). Der Meta-Reviewer registriert so automatisiert, dass das Modell zu Instabilitäten und Endlosschleifen neigt.

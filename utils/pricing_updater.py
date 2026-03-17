@@ -81,10 +81,10 @@ LITELLM_MODEL_MAP: Dict[str, str] = {
     "ministral-8b": "mistral/ministral-8b-latest",
     "ministral-3b": "mistral/ministral-3b-latest",
     # --- xAI (Grok) ---
-    "grok-3-latest": "xai/grok-3-latest",
-    "grok-3-mini-latest": "xai/grok-3-mini-latest",
-    "grok-4-latest": "xai/grok-4-latest",
-    "grok-2-latest": "xai/grok-2-latest",
+    "grok-3": "xai/grok-3",
+    "grok-3-mini": "xai/grok-3-mini",
+    
+    
     # --- Google Gemini ---
     "gemini-3.1-pro-preview": "gemini/gemini-3.1-pro-preview",
     "gemini-3-flash-preview": "gemini/gemini-3-flash-preview",

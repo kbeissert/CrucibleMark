@@ -998,7 +998,7 @@ class XAIClient(BaseProviderClient):
             from openai import OpenAI
             check_client = OpenAI(api_key=self.client.api_key, base_url="https://api.x.ai/v1", max_retries=0)
             check_client.chat.completions.create(
-                model="grok-beta",
+                model="grok-3-mini",
                 messages=[{"role": "user", "content": "Hi"}],
                 max_tokens=1,
             )
@@ -1094,4 +1094,4 @@ class XAIClient(BaseProviderClient):
             models = self.client.models.list()
             return [m.id for m in models.data]
         except Exception:
-            return ["grok-2-latest", "grok-3-latest"]
+            return ["grok-3", "grok-3-mini"]

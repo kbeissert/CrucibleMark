@@ -235,7 +235,7 @@ class LLMClient:
         if response_text and len(response_text) > 1000:
             response_text = re.sub(
                 r"(.)\1{500,}",
-                r"\1\n\n> **🚨 SYSTEM WARNING:** Das Framework hat eine Endlosschleife des Modells erkannt (extreme Zeichen-Wiederholung) und den defekten Textblock an dieser Stelle gekürzt.\n\n",
+                r"\1\n\n> [!CAUTION]\n> Das Framework hat eine Endlosschleife des Modells erkannt (extreme Zeichen-Wiederholung) und den defekten Textblock an dieser Stelle gekürzt.\n\n",
                 response_text,
                 flags=re.DOTALL
             )

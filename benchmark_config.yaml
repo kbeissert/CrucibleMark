@@ -237,21 +237,13 @@ providers:
       # Beispiel .env: XAI_API_KEY=xai-...
       env_var: "XAI_API_KEY"
       models:
-        # Grok 3 Series (Current Gen - Feb 2026)
-        - id: "grok-3-latest"
+        # Grok 3 Series (Current Gen)
+        - id: "grok-3"
           name: "Grok 3"
-          description: "Starkes Reasoning & Wissen (Feb 2026)"
-        - id: "grok-3-mini-latest"
+          description: "Starkes Reasoning & Wissen"
+        - id: "grok-3-mini"
           name: "Grok 3 Mini"
           description: "Effizient & schnell"
-        # Grok 4 Preview (Next Gen)
-        - id: "grok-4-latest"
-          name: "Grok 4 (Preview)"
-          description: "Vorschau auf die nächste Generation"
-        # Legacy
-        - id: "grok-2-latest"
-          name: "Grok 2 (Legacy)"
-          description: "Vorherige Generation (2025)"
 
   local:
     # Globale Konfiguration für alle lokalen Ollama-Modelle

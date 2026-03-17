@@ -61,10 +61,10 @@ def process_model_review(model_dir: Path, csv_data: str, client: LLMClient, prov
                 continue
 
             # Simple Extraktion via Regex (suche nach Judge Evaluation Blöcken unten)
-            judge_section_match = re.search(r'\*\*LLM Judge Score \(Raw\):\*\*.*', content, re.DOTALL)
+            judge_section_match = re.search(r'## 3\. Evaluation.*', content, re.DOTALL)
 
             # Suche nach System-Infos und Warnungen
-            system_info_match = re.search(r'> \*\*(?:⚠️ SYSTEM INFO|🚨 SYSTEM WARNING):\*\*.*', content)
+            system_info_match = re.search(r'> \[!(?:WARNING|CAUTION)\].*', content)
             system_info_text = f"\n\n{system_info_match.group(0)}" if system_info_match else ""
 
             if is_bias_file:
@@ -131,7 +131,7 @@ Schreibe ein detailliertes Review (als Markdown), das die Stärken und Schwäche
 {hardware_context}
 
 Gehe speziell auf Kategorien wie Code Quality, Logik, Security und Halluzinationen ein.
-ACHTUNG: Achte zwingend auf eventuelle '⚠️ SYSTEM INFO' oder '🚨 SYSTEM WARNING' Meldungen (wie Token-Limit-Fallbacks oder verfrühte Abbrüche wegen zu hohem Output) in den Protokollen und erwähne diese prominent im Review als 'Kopfnoten', da sie für den realen Einsatz (z.B. in Agenten-Frameworks) kritisch sind.
+ACHTUNG: Achte zwingend auf eventuelle '> [!WARNING]' oder '> [!CAUTION]' Meldungen (wie Token-Limit-Fallbacks oder verfrühte Abbrüche wegen zu hohem Output) in den Protokollen und erwähne diese prominent im Review als 'Kopfnoten', da sie für den realen Einsatz (z.B. in Agenten-Frameworks) kritisch sind.
 Ziehe ein klares, professionell begründetes Fazit (mit Empfehlungen für Einsatzzwecke).
 Nutze die qualitativen Protokolle, um echte Beispiele (z. B. aufgetretene Fehler, Missverständnisse, gute Workarounds) zu nennen.
 

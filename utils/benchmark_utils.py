@@ -229,17 +229,37 @@ def save_audit_log(
             f.write(f"# Audit Log: {asset_id}\n")
             f.write(f"**Model:** {model}\n\n")
             if token_limit_fallback:
-                f.write("> **⚠️ SYSTEM INFO:** Das Modell (bzw. die API) hat das initial angeforderte Token-Limit abgelehnt (zu groß für die Architektur). Das System ist dynamisch auf ein kleineres 4096-Token-Fallback gewechselt. Dies zeigt, dass dieses Modell mit großen Token-Anfragen oder Kontexten Probleme hat!\n\n")
-            f.write("## 1. Prompt / Fragestellung\n")
-            f.write("---\n")
-            f.write(f"{prompt}\n\n")
-            f.write("## 2. Model Response / Antwort\n")
-            f.write("---\n")
+                f.write("> [!WARNING]\n> Das Modell (bzw. die API) hat das initial angeforderte Token-Limit abgelehnt (zu groß für die Architektur). Das System ist dynamisch auf ein kleineres 4096-Token-Fallback gewechselt. Dies zeigt, dass dieses Modell mit großen Token-Anfragen oder Kontexten Probleme hat!\n\n")
+
+
+            import re
+
+            def demote_headers_safe(text: str) -> str:
+                blocks = re.split(r'(```.*?```)', text, flags=re.DOTALL)
+                for i in range(len(blocks)):
+                    if i % 2 == 0:
+                        # Stuft Überschriften ab, limitiert sie aber strikt auf maximal H6 und min H3
+                        blocks[i] = re.sub(
+                            r'^((?:>\s*)*)(#+)\s',
+                            lambda m: m.group(1) + '#' * min(6, max(3, len(m.group(2)) + 1)) + ' ',
+                            blocks[i],
+                            flags=re.MULTILINE
+                        )
+                return "".join(blocks)
+            f.write("## 1. Prompt / Fragestellung\n\n")
+            safe_prompt = demote_headers_safe(str(prompt))
+            formatted_prompt = "\n".join([f"> {line}" for line in safe_prompt.split("\n")])
+            f.write(f"{formatted_prompt}\n\n")
+
+            f.write("## 2. Model Response / Antwort\n\n")
             if token_limit_cutoff:
-                f.write("> **🚨 SYSTEM WARNING:** Das Modell hat das maximale Token-Limit erreicht und die Antwort abgebrochen. Die folgende Antwort ist INKOMPLETT und zeigt an, dass das Modell für diese Aufgabe zu gesprächig (verbose) war.\n\n")
-            f.write(f"{response}\n\n")
-            f.write("## 3. Evaluation / LLM-Judge / Scorer\n")
-            f.write("---\n")
-            f.write(f"{judge_response}\n")
+                f.write("> [!CAUTION]\n> Das Modell hat das maximale Token-Limit erreicht und die Antwort abgebrochen. Die folgende Antwort ist INKOMPLETT und zeigt an, dass das Modell für diese Aufgabe zu gesprächig (verbose) war.\n\n")
+
+            safe_response = demote_headers_safe(str(response))
+            f.write(f"{safe_response}\n\n")
+
+            f.write("## 3. Evaluation / LLM-Judge / Scorer\n\n")
+            safe_judge = demote_headers_safe(str(judge_response))
+            f.write(f"{safe_judge}\n")
     except OSError as e:
         logger.warning("Failed to save audit log for %s: %s", asset_id, e)
