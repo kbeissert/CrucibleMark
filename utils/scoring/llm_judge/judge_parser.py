@@ -26,6 +26,7 @@ logger = logging.getLogger(__name__)
 # Word-to-integer mapping for written-out score words
 # ---------------------------------------------------------------------------
 _WORD_TO_INT: Dict[str, int] = {
+    "zero": 0,
     "one": 1,
     "two": 2,
     "three": 3,
@@ -40,7 +41,7 @@ _WORD_TO_INT: Dict[str, int] = {
 
 # Regex patterns (compiled once at import time)
 _RE_SCORE = re.compile(
-    r"(?:#{1,4}\s*)?(?:\*{1,2})?\s*SCORE\s*(?:\*{1,2})?[\s:\-]+(?:\*{1,2})?\s*[\[\(\"']?(\d+|one|two|three|four|five|six|seven|eight|nine|ten)[\]\)\"']?(?:\*{1,2})?",
+    r"(?:#{1,4}\s*)?(?:\*{1,2})?\s*SCORE\s*(?:\*{1,2})?[\s:\-]+(?:\*{1,2})?\s*[\[\(\"']?(\d+|zero|one|two|three|four|five|six|seven|eight|nine|ten)[\]\)\"']?(?:\*{1,2})?",
     re.IGNORECASE | re.MULTILINE,
 )
 

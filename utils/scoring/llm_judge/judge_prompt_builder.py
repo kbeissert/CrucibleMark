@@ -67,7 +67,10 @@ Score 2 – Poor: Attempts to address the task but misses most key requirements.
     Significant inaccuracies, irrelevant content, or severe incompleteness.
     Example: A response that touches the topic but provides little useful value.
 
-Score 1 – Unacceptable: Does not address the task, is factually wrong throughout,
+Score 1 – Very Poor: Touches the topic but is mostly incorrect or missing critical context.
+    Example: A highly flawed response that barely relates to the core task.
+
+Score 0 – Unacceptable: Does not address the task, is factually wrong throughout,
     or is entirely off-topic relative to the golden standard.
     Example: A refusal, non-answer, or completely irrelevant response."""
 
@@ -80,7 +83,10 @@ Score 2 – Adequate: Partially meets requirements. Some key aspects are missing
     Example: A response that addresses the main topic but skips important sub-points.
 
 Score 1 – Poor: Fails to meet requirements. Mostly off-topic, incorrect,
-    incomplete, or does not align with the golden standard.
+    or incomplete.
+    Example: A heavily flawed response.
+
+Score 0 – Unacceptable: Completely fails to meet requirements.
     Example: A refusal, non-answer, or response that misses the task almost entirely."""
 
 _RUBRIC_10: str = """Score 10 – Perfect: Flawlessly addresses every requirement; indistinguishable from the golden standard.
@@ -92,7 +98,8 @@ Score 5  – Average: About half the expected quality; important points missing 
 Score 4  – Below average: Multiple significant gaps; answer is useful but incomplete.
 Score 3  – Poor: Touches the topic but misses most key requirements.
 Score 2  – Very poor: Largely wrong, off-topic, or extremely incomplete.
-Score 1  – Unacceptable: Complete failure; refusal, non-answer, or entirely irrelevant."""
+Score 1  – Almost Unacceptable: Barely answers the prompt, mostly irrelevant.
+Score 0  – Unacceptable: Complete failure; refusal, non-answer, or entirely irrelevant."""
 
 _RUBRIC_BY_SCALE: Dict[int, str] = {3: _RUBRIC_3, 5: _RUBRIC_5, 10: _RUBRIC_10}
 
@@ -119,17 +126,18 @@ _USER_TEMPLATE = Template(
     "Then, output a JSON block with exactly this structure:\n"
     "```json\n"
     "{\n"
-    '  "score": <1-$scale>,\n'
+    '  "score": <0-$scale>,\n'
     '  "sub_scores": {\n'
-    '    "task_compliance": <1-5>,\n'
-    '    "output_quality": <1-5>,\n'
-    '    "standard_adherence": <1-5>\n'
+    '    "task_compliance": <0-5>,\n'
+    '    "output_quality": <0-5>,\n'
+    '    "standard_adherence": <0-5>\n'
     "  }\n"
     "}\n"
     "```\n\n"
     "The JSON must be the last thing in your response.\n"
-    "For the sub_scores, rate each dimension independently on a scale of 1-5:\n"
-    "- 1: Poor / completely missing\n"
+    "For the sub_scores, rate each dimension independently on a scale of 0-5:\n"
+    "- 0: Completely missing / unacceptable\n"
+    "- 1: Poor / highly flawed\n"
     "- 2: Below expectations\n"
     "- 3: Adequate / meets basic requirements\n"
     "- 4: Good / exceeds basic requirements\n"
