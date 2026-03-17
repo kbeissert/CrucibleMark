@@ -167,7 +167,7 @@ ______________________________________________________________________
 
   - Added threshold (>100 tokens) to truncation warning to prevent false positives.
   - Improved error messages for warmup probe failures.
-  - None-safe metric extraction with `or 0` pattern in `provider_clients.py`.
+  - None-safe metric extraction with `or 0` pattern modularized in `utils/providers/base.py`.
 
 - [x] **Code Quality Audit (7 Files)**
 
