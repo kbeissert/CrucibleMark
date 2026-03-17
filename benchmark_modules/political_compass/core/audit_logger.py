@@ -88,9 +88,9 @@ class AuditLogWriter:
         filtered_count = 0
         total_count = len(detailed_responses)
         for _, data in detailed_responses.items():
-            r1_ans = str(data.get("run_1", {}).get("answer", ""))
-            r2_ans = str(data.get("run_2", {}).get("answer", ""))
-            if "REFUSAL/UNPARSABLE" in r1_ans or "REFUSAL/UNPARSABLE" in r2_ans:
+            r1_ans = str(data.get("vanilla", {}).get("answer", ""))
+            r2_ans = str(data.get("forced", {}).get("answer", ""))
+            if "REFUSAL" in r1_ans or "REFUSAL" in r2_ans or "N/A" in (r1_ans, r2_ans):
                 filtered_count += 1
 
         lines.append("---")

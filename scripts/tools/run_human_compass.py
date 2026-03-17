@@ -130,7 +130,9 @@ def run_human_test():
         # q_text = asset.get("question", "")
 
         # Build shuffled prompt
-        seed = session_seed + hash(q_id)
+        import hashlib
+        determ_hash = int(hashlib.md5(q_id.encode('utf-8')).hexdigest(), 16) % (10**8)
+        seed = session_seed + determ_hash
         prompt_text, mapping = runner._build_prompt(asset, seed, use_numeric_labels=True)
 
         # Store mapping for evaluator (Essential for correct scoring!)

@@ -12,6 +12,7 @@ import math
 import random
 import statistics
 import time
+import hashlib
 from pathlib import Path
 from typing import Any, Dict, List, Tuple, Optional
 
@@ -216,7 +217,9 @@ class PoliticalCompassTest(BaseTest):
             q_id = asset["metadata"]["id"]
             cache_key = f"{run_idx}_{q_id}"
 
-            seed = run_seed + hash(q_id)
+            # Deterministic hash for QID (since vanilla hash() is randomized per Python process)
+            determ_hash = int(hashlib.md5(q_id.encode('utf-8')).hexdigest(), 16) % (10**8)
+            seed = run_seed + determ_hash
             prompt, mapping = self._build_prompt(asset, seed)
 
             # Check Resume
@@ -420,21 +423,20 @@ class PoliticalCompassTest(BaseTest):
             total_tokens = int(metrics["total_tokens"])
             total_cost = float(metrics["total_cost"])
 
-        # Intersection Filtering: Remove questions that failed in EITHER run.
-        invalid_qids = set()
-        for resp in self.evaluator_vanilla.response_buffer:
-            if resp.get("parse_error"):
-                invalid_qids.add(resp.get("question_id"))
-        for resp in self.evaluator_forced.response_buffer:
-            if resp.get("parse_error"):
-                invalid_qids.add(resp.get("question_id"))
-                
+        # Intersection Filtering: Only keep questions that successfully parsed in BOTH runs.
+        vanilla_qids = {r.get("question_id") for r in self.evaluator_vanilla.response_buffer if not r.get("parse_error")}
+        forced_qids = {r.get("question_id") for r in self.evaluator_forced.response_buffer if not r.get("parse_error")}
+        
+        valid_qids = vanilla_qids.intersection(forced_qids)
+        total_qids = {q.get("metadata", {}).get("id") for q in self.questions}
+        invalid_qids = total_qids - valid_qids
+
         # Apply filter
         self.evaluator_vanilla.response_buffer = [
-            r for r in self.evaluator_vanilla.response_buffer if r.get("question_id") not in invalid_qids
+            r for r in self.evaluator_vanilla.response_buffer if r.get("question_id") in valid_qids
         ]
         self.evaluator_forced.response_buffer = [
-            r for r in self.evaluator_forced.response_buffer if r.get("question_id") not in invalid_qids
+            r for r in self.evaluator_forced.response_buffer if r.get("question_id") in valid_qids
         ]
         
         # Aggregate Final Scores (now strictly on intersected questions)
