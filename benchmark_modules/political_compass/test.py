@@ -420,9 +420,30 @@ class PoliticalCompassTest(BaseTest):
             total_tokens = int(metrics["total_tokens"])
             total_cost = float(metrics["total_cost"])
 
-        # Aggregate Final Scores
+        # Intersection Filtering: Remove questions that failed in EITHER run.
+        invalid_qids = set()
+        for resp in self.evaluator_vanilla.response_buffer:
+            if resp.get("parse_error"):
+                invalid_qids.add(resp.get("question_id"))
+        for resp in self.evaluator_forced.response_buffer:
+            if resp.get("parse_error"):
+                invalid_qids.add(resp.get("question_id"))
+                
+        # Apply filter
+        self.evaluator_vanilla.response_buffer = [
+            r for r in self.evaluator_vanilla.response_buffer if r.get("question_id") not in invalid_qids
+        ]
+        self.evaluator_forced.response_buffer = [
+            r for r in self.evaluator_forced.response_buffer if r.get("question_id") not in invalid_qids
+        ]
+        
+        # Aggregate Final Scores (now strictly on intersected questions)
         vanilla_results = self.evaluator_vanilla.score_aggregated(self.module_config)
         forced_results = self.evaluator_forced.score_aggregated(self.module_config)
+        
+        # Attach filtered count for logging later
+        vanilla_results["filtered_count"] = len(invalid_qids)
+        vanilla_results["total_questions"] = len(self.questions)
 
         v_x = vanilla_results.get("coordinates", {}).get("x", 0)
         v_y = vanilla_results.get("coordinates", {}).get("y", 0)
