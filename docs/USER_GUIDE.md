@@ -153,18 +153,19 @@ Standard-Module nutzen eine Mischung aus **40% Keyword-Matching** und **60% Sema
 > - **Vorteil:** Antwortet das Modell korrekt, nutzt aber andere Worte als die Musterlösung, wird dies erkannt.
 > - **Setup:** Das Modell (~80MB) wird bei der Installation (`make install`) einmalig heruntergeladen und lokal gecached.
 
-### 3. Audit Mode (Log-Protokoll)
+### 3. Audit Logs & Protokolle
 
-Der **Audit Mode** generiert zu jedem getesteten Asset eine übersichtliche Markdown-Datei. Diese Dateien protokollieren exakt:
+Aus einem ursprünglichen Entwickler-Tool für das Debugging von Fehlern ist eine umfassende Protokoll-Engine herangewachsen. Der **Audit-Modus** bietet heute ein klares, lückenloses Verständnis der Benchmarks für Mensch und Maschine von der initialen Eingabe bis zur Auswertung.
+Er generiert zu jedem getesteten Asset eine perfekt formatierte Markdown-Datei, die streng strukturiert ist. Diese Dateien protokollieren exakt:
 1. Den vollständig evaluierten **Prompt**, der an das Modell geschickt wurde.
-2. Die **Antwort** des bewerteten Modells.
-3. Die detaillierte Herleitung der Bewertung (sowohl Regex-Details als auch LLM-Judge Reasoning).
+2. Die unverfälschte **Antwort** des bewerteten Modells.
+3. Die detaillierte Herleitung der Bewertung (inklusive Metadaten, Token-Limits und dem logischen Reasoning des LLM-Judges).
 
 Um den Modus zu aktivieren:
 ```bash
 make benchmark-audit
 ```
-Alle generierten Markdown-Files findest du im Ordner `outputs/audit_logs/`. Dieser Modus ist besonders hilfreich, wenn du analysieren möchtest, *warum* ein Modell eine bestimmte (oder unerwartete) Punktzahl bekommen hat oder wenn du System-Prompts finetunen möchtest.
+Alle generierten Markdown-Files findest du im Ordner `outputs/audit_logs/`. Dieser Modus ist das ideale Werkzeug, wenn du nachvollziehen möchtest, *warum* ein Modell eine bestimmte Punktzahl bekommen hat, ohne dafür manuell im Terminal mitlesen zu müssen.
 
 ### 4. Metadaten-Tracking (Token-Limits / "Kopfnoten")
 
