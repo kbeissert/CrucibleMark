@@ -407,7 +407,7 @@ class CommercialBenchmarkRunner(BaseBenchmarkRunner):
 
                     if judge_res.parse_success and judge_res.score is not None:
                         judge_scale = judge_config.scoring.scale
-                        judge_pct = ((judge_res.score - 1) / (judge_scale - 1)) * 100 if judge_scale > 1 else 100
+                        judge_pct = (judge_res.score / judge_scale) * 100 if judge_scale > 0 else 0.0
 
                         # Hybrid Score berechnen
                         regex_pct = result.get("percentage", 0.0)
