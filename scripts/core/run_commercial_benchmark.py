@@ -444,6 +444,7 @@ class CommercialBenchmarkRunner(BaseBenchmarkRunner):
         time_val = exec_result.execution_time or 0.0
         judge_status = result.get("judge_progress_status", "")
         judge_str = f" | {judge_status}" if judge_status else ""
+        print(" " * 100, end="\r")  # Clear the line
         print(
             f"[{index}/{total_count}] {asset_id:<15} | {asset_name[:20]:<20} {badge} "
             f"Score: {result['percentage']:>6.2f} | Cost: ${cost_val:.4f} | "

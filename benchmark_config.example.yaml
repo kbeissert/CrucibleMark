@@ -271,7 +271,7 @@ output:
   commercial_csv: "benchmark_scores/commercial_models_benchmark.csv"
   local_models_csv: "benchmark_scores/local_models_benchmark.csv"
   leaderboard_csv: "benchmark_scores/benchmark_leaderboard.csv"
-  streaming_output_commercial_providers: true  # true | false | "Force" (Force disables streaming)
+  streaming_output_commercial_providers: false  # false = keine live-response im Terminal
 
 # Logging Configuration
 # ---------------------
