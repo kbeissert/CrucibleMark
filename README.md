@@ -1,645 +1,110 @@
-# CrucibleMark
+# CrucibleMark 🚀
 
-[![Version](https://img.shields.io/badge/version-2.6.1-blue)](.)
-[![Python](https://img.shields.io/badge/python-3.9%2B-blue)](.)
+[![Version](https://img.shields.io/badge/version-3.0.0-blue)](.)
+[![Python](https://img.shields.io/badge/python-3.10%2B-blue)](.)
 [![License](https://img.shields.io/badge/license-MIT-green)](.)
-[![Code Quality](https://img.shields.io/badge/pylint-9.15%2F10-brightgreen)](.)
 [![Status](https://img.shields.io/badge/status-production--ready-brightgreen)](.)
 
 ## A Modular LLM Benchmark Framework for Product Engineers
 
-CrucibleMark is a comprehensive benchmarking suite designed to evaluate Large Language Models (LLMs) across the skills that matter most to product engineers: code quality, UX writing, content transformation, cultural intelligence, and reasoning.
+CrucibleMark ist ein umfassendes Benchmarking-Framework, das entwickelt wurde, um Large Language Models (LLMs) genau dort zu testen, wo es für Product Engineers am wichtigsten ist: Code-Qualität, UX-Schreiben, logisches Schlussfolgern (Reasoning) und der zugrundeliegende Bias (Political Compass Safety).
 
-______________________________________________________________________
+Anstelle von starren akademischen Metriken (wie MMLU) misst CrucibleMark die echte Arbeitsqualität und die *Souveränität* eines Assistenten im produktiven Alltag.
 
-## 🎯 Philosophy
+---
 
-Most LLM benchmarks focus on academic metrics (MMLU, HumanEval) that don't translate to real-world product work. CrucibleMark tests what actually matters:
+## 🎯 Philosophie
 
-- ✅ **Code Quality:** Can it audit code like a senior engineer?
-- ✅ **CLI Operations:** Can it act as a fast-fail agent in terminals?
-- ✅ **Reasoning & Kognition:** Does it handle paradoxes and logic stress?
-- ✅ **UX Writing:** Does it understand microcopy nuance?
-- ✅ **Documentation:** Can it write clear, actionable docs?
-- ✅ **Content Transformation:** Can it adapt tone & format?
-- ✅ **Cultural Intelligence:** Does it handle idioms & context?
-- ✅ **Political Bias:** What worldview does it reflect?
+Die meisten Benchmarks fokussieren sich auf rein theoretische Prüfungen. CrucibleMark testet die **gelebte Realität**:
+- ✅ **Code Quality:** Kann die KI Code wie ein Senior Engineer auditieren?
+- ✅ **CLI Operations:** Agiert sie als verlässlicher Kommandozeilen-Agent?
+- ✅ **Reasoning & Logik:** Bewältigt sie Paradoxa und logische Stress-Tests?
+- ✅ **UX Writing:** Versteht sie die feinen Nuancen von Microcopy?
+- ✅ **Cultural Intelligence:** Begreift sie Idiome, Kontexte und kulturelle Feinheiten?
+- ✅ **Political Bias & Safety:** Welches Weltbild spiegelt sie wider? Handelt es sich um eine starre Filterblase ("Schaf im Schafspelz"), oder maskiert sie radikale Shifts ("Wolf im Schafspelz")?
 
-**Target Audience:** Product Engineers, Tech Leads, AI Engineers who need to choose the right model for the job.
+---
 
-______________________________________________________________________
+## 🚀 Key Features
 
-## 🏆 Key Features
+* **LLM-as-a-Judge Architektur:** Ein fortschrittliches Sub-System delegiert die semantische Bewertung der Antworten an hochperformante Judges (wie `gpt-4o` oder lokale Modelle).
+* **Multi-Provider Support:** Volle Unterstützung für lokale, datenschutzkonforme Ausführung via **Ollama**, sowie cloud-basierte kommerzielle Modelle (Mistral, Anthropic Claude, OpenAI, Google Gemini, xAI).
+* **Ausfallsicherheit & Checkpointing:** Verliert nie deinen Fortschritt! Durch stetiges Block-Level-Checkpointing kannst du bei Budget-Erschöpfung, API-Limits (Rate Limit, 429) oder Stromausfällen einfach abbrechen und später auf den Token genau dort weitermachen, wo du aufgehört hast.
+* **Erweiterte Refusal-Architektur:** Das Framework registriert eigenständig Zensur oder "I cannot answer this"-Verweigerungen, erhöht progressiv die Temperatur und streicht Hard-Refusals aus der Wertung (Tracking von KI-Überregulierung).
+* **Automatisierter Safety-Shift Test:** Bei starken Abweichungen in Verhaltensfiltern (z. B. auf dem Political Compass) triggert das System vollautomatisch einen verschärften Triple-Run Outlier-Check inklusive euklidischem Clustering.
+* **Umfassendes Audit-Logging:** Jede Frage, jeder Prompt, jede LLM-Entscheidung und die Standardabweichung (insb. bei Kulturkampf- vs. Ethik-Themen) wird in granularen Markdown-Reports transparent dokumentiert.
 
-### Modular Architecture
+---
 
-- **8 Independent Modules** (Code, CLI, Reasoning, UX, Docs, Content, Culture, Politics)
-- **Plug & Play:** Run single modules or full suite
-- **Extensible:** Add custom modules easily
+## 🛠 Installation & Quickstart
 
-### Tiered Difficulty
+### Voraussetzungen
+- MacOS / Linux / Windows (WSL)
+- Python 3.10+
+- Ollama (für den lokalen Modus)
 
-- **Tier 1:** Basic (Entry-level tasks)
-- **Tier 2:** Intermediate (Production-ready work)
-- **Tier 3:** Advanced (Senior-level judgment)
-
-### Hybrid Scoring
-
-- **Automated Metrics:** Pattern matching, keyword checks
-- **Manual Review:** For subjective quality (UX, tone)
-- **Absolute Standards:** Gold/Silver/Bronze badges (v1.1)
-- **LLM Judge:** AI-assisted qualitative scoring via a dedicated judge model (complement or replace mode)
-
-### Rich Output
-
-- **CSV Exports:** Detailed per-test results
-- **Leaderboard:** Decision-making tool with Speed Classes & Skill Profiles
-- **Progress Tracking:** Resume interrupted runs
-- **Cost Tracking:** Token usage & API costs
-
-______________________________________________________________________
-
-## 📦 Installation
-
-### Prerequisites
-
+### 1. Repository klonen und einrichten
 ```bash
-python >= 3.9
-ollama >= 0.1.0  # For local models
-```
-
-### Setup
-
-```bash
-# Clone repository
-git clone https://github.com/yourusername/cruciblemark.git
+git clone https://github.com/kbeissert/cruciblemark.git
 cd cruciblemark
-
-# Create virtual environment
-python -m venv .venv
-source .venv/bin/activate  # On Windows: .venv\Scripts\activate
-
-# ------------------------------------------------------------
-# 💡 Optional for NVIDIA/CUDA users (Windows/Linux):
-# Install CUDA-enabled PyTorch *before* the main setup
-# to ensure semantic similarity runs fast on the GPU.
-# Example for CUDA 12.1:
-# pip3 install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu121
-# ------------------------------------------------------------
-
-# Install dependencies (automatically sets up lightweight or semantic mode)
-make install
-# For development tools (pytest, ruff, pre-commit)
-# make install-dev
+python3 -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
 ```
 
-### Configuration
+### 2. Provider konfigurieren
+Kopiere die Konfigurations-Vorlagen und hinterlege deine API-Schlüssel:
+```bash
+cp benchmark_config.example.yaml benchmark_config.yaml
+# Trage in benchmark_config.yaml deine API Keys für commercial_providers ein.
+```
+
+### 3. Benchmarks ausführen
+CrucibleMark bietet native Kommandos und ein CLI, um exakte Tests durchzuführen:
 
 ```bash
-# For OpenAI/Anthropic (optional)
-export OPENAI_API_KEY="sk-..."
-export ANTHROPIC_API_KEY="sk-ant-..."
+# Geführtes UI und interaktive Modulauswahl:
+python run_benchmark.py
 
-# For local models
-ollama pull qwen2.5:7b
-ollama pull mistral:7b
-```
+# Nur lokale Ollama-Modelle testen:
+python run_benchmark.py --provider local
 
-______________________________________________________________________
+# Kommerzielle Modelle testen (inkl. automatischem Refusal-Tracking):
+python run_benchmark.py --provider commercial
 
-## 🚀 Quick Start
+# Einzelnes Modul oder Modell erzwingen:
+python run_benchmark.py --provider commercial --module political_compass --model gpt-4o
 
-### Run Single Module
-
-```bash
-# Test a local model on Code Quality
-python run_benchmark.py \
-  --module code_quality_audit \
-  --model qwen2.5:7b \
-  --provider ollama
-
-# Test GPT-4 on UX Writing
-python run_benchmark.py \
-  --module ux_writing_microcopy \
-  --model gpt-4o \
-  --provider openai
-```
-
-### Run Full Suite
-
-```bash
-# Benchmark all modules
-python scripts/core/run_local_benchmark.py \
-  --model qwen2.5:7b \
-  --provider ollama
-
-# With specific modules
-python scripts/core/run_local_benchmark.py \
-  --model mistral:7b \
-  --provider ollama \
-  --modules code_quality_audit,ux_writing_microcopy,documentation_quality
-```
-
-### Generate Leaderboard
-
-```bash
-# Create unified leaderboard
-python scripts/core/generate_leaderboard.py
-
-# View results
-cat benchmark_scores/benchmark_leaderboard.csv
-```
-
-______________________________________________________________________
-
-## 📊 Modules
-
-Die Benchmarking-Module sind entsprechend der System-Konfiguration (`benchmark_config.yaml`) in vier funktionale Kernbereiche (Tiers) unterteilt. Jedes Modul testet spezifische Fähigkeiten, die für autonome KI-Agenten entscheidend sind.
-
-### --- HARD SKILLS: Coding & Skripting ---
-
-#### Code Quality Audit (`code_quality`)
-**Tests:** Code review, bug detection, refactoring suggestions
-**Assets:** 25 code samples (Python, JavaScript, TypeScript)
-**Tiers:** 3 (Basic syntax → Complex architecture)
-**Score:** Pattern matching + LLM Judge review
-
-#### CLI Operations (`cli_benchmark`)
-**Tests:** Systemverwaltung, Docker-Befehle, Paketmanagement, Dateioperationen
-**Assets:** 6 hoch verdichtete Shell-Szenarien
-**Tiers:** 1 (Fast-Fail Batch-Test)
-**Score:** Strict Regex-Matching (Exact, Safety, Efficiency)
-**Besonderheit:** Im Gegensatz zu Standard-Modulen lädt dieses Modul alle CLI-Aufgaben gebündelt. Es fordert präzise, valide Shell-Kommandos ohne umschweifendes Markdown-Gerede und simuliert so einen schnellen, maschinellen Workflow.
-
-______________________________________________________________________
-
-### --- CORE METRICS: Kognition & Logik ---
-
-#### Logical Reasoning (`reasoning`)
-**Tests:** Paradoxes, Metacognition, Logic Puzzles, Chain-of-Thought
-**Assets:** 11 scenarios
-**Tiers:** 0 (Sanity Check) → 3 (Metacognition)
-**Score:** Logic verification vs. Hallucination detection
-
-______________________________________________________________________
-
-### --- SOFT SKILLS: Ghostwriting & Kommunikation ---
-
-#### UX Writing & Microcopy (`ux_writing`)
-**Tests:** Button labels, error messages, onboarding flows, Benutzerführung
-**Assets:** 20 UX scenarios
-**Tiers:** 3 (Generic → Contextual nuance)
-**Score:** Keyword checks + Tone analysis (LLM Judge)
-
-#### Documentation Quality (`documentation_quality`)
-**Tests:** API docs, README writing, tutorial creation, sauberes Markdown
-**Assets:** 15 documentation tasks
-**Tiers:** 3 (Basic → Comprehensive)
-**Score:** Completeness + Clarity metrics
-
-#### Content Transformation & Adaption (`content_transformation`)
-**Tests:** Tone changes, format conversions, audience adaptation, Umschreiben
-**Assets:** 12 content pieces
-**Tiers:** 3 (Simple rewrites → Complex transformations)
-**Score:** Tone accuracy + Structure preservation
-
-#### Cultural Intelligence (`cultural_intelligence`)
-**Tests:** Idiom understanding, cultural context, localization, Empathie
-**Assets:** 18 cultural scenarios
-**Tiers:** 3 (Common phrases → Subtle context)
-**Score:** Accuracy + Cultural sensitivity
-
-______________________________________________________________________
-
-### --- SONSTIGE / SPEZIAL-MODULE ---
-
-#### Political Compass (`political_compass`)
-**Tests:** Ermittelt die ideologische Ausrichtung (60+ Fragen)
-**Output:** Vanilla Koordinaten (Economic & Social) & "Wolf in Sheep's Clothing" Distance Shift
-**Methodology:** Compares Vanilla execution against Anti-Diplomat "Forced" prompting
-**Score:** Decoupled info-metric (does not affect model points). Injected directly into root leaderboard.
-
-## 🧪 Political Compass: Bias Sensitivity Analysis ("Wolf in Sheep's Clothing")
-
-The newly refactored dual-layer Political Compass module conducts two consecutive, independent runs (Vanilla vs. Forced) over the 81 core questions to measure systemic compliance erosion and deep-rooted biases. It is completely standalone to ensure the mathematical validity of the code-quality benchmarks.
-
-### Architecture
-1.  **Vanilla Run:** Evaluates the model with its default guardrails ("Müller Familie Düsseldorf...").
-2.  **Anti-Diplomat Run:** Unshackles the model using aggressive prompts forcing firm stances over "it depends."
-3.  **Data Persistence:** Political Compass outputs are consolidated into `benchmark_scores/political_compass_results.csv` (run records) and `benchmark_scores/political_compass_leaderboard.csv` (shift aggregates) for leaderboard enrichment without corrupting the main test counts.
-
-______________________________________________________________________
-
-## 📈 Scoring System
-
-### Score Types
-
-#### 1. **Percentage Score (0-100%)**
-
-Used by: Code Quality, Documentation, UX Writing
-
-```
-Score = (Points Earned / Max Points) × 100
-```
-
-#### 2. **Coordinate-Based (Political Compass)**
-
-```
-X-Axis: -10 (Left) to +10 (Right)
-Y-Axis: -10 (Libertarian) to +10 (Authoritarian)
-```
-
-#### 3. **Total Score (Balanced Average)**
-
-```
-Total Score = (Routine Score + Reasoning Score) / 2
-```
-
-#### 4. **LLM Judge Score (0-100, normalised)**
-
-Used by: UX Writing, Documentation Quality, Content Transformation, Reasoning Logic (when enabled)
-
-```
-LLM Judge Score = (raw_judge_score / scale) × 100
-```
-
-Providers: Anthropic, Mistral, OpenAI, Ollama. Configurable scale: 3 | 5 | 10 points.
-See [`utils/scoring/llm_judge/README.md`](utils/scoring/llm_judge/README.md) for setup.
-
-### Performance Metrics
-
-- **Speed Class:** Fast (\<40s), Medium, Slow (>80s)
-- **Performance/s:** Quality points per second execution time
-- **Cost per 1K:** Normalized API cost (commercial models only)
-
-### Audit Logs & Transparenz
-
-Aus einem ursprünglichen Dev-Tool, das Protokolle generierte, um Fehler zu suchen, wurde ein Feature, das ein eindeutiges Verständnis der Benchmarks von der Eingabe bis zur Auswertung ermöglicht. Die Protokolle im Markdown-Format wurden perfektioniert und klar gegliedert, sodass Mensch und Maschine sie gleichermaßen perfekt verstehen können – sie geben einen transparenten Überblick über alle Ein- und Ausgaben sowie die detaillierte Bewertung (inklusive Metadaten und LLM-Judge Reasoning) des Modells.
-
-Wenn Sie tiefgehend nachvollziehen möchten, *warum* ein bestimmtes Modell einen spezifischen Score erhalten hat, führen Sie CrucibleMark einfach im **Audit-Modus** aus:
-
-```bash
-make benchmark-audit
-```
-
-Dadurch werden strukturierte, fein formatierte Markdown-Dateien für jede einzelne Evaluierung unter `outputs/audit_logs/` gespeichert. Diese Logs beinhalten den vollständig evaluierten Prompt, die exakte Rohantwort des Modells sowie die extrem detaillierte Argumentation des Judges und der Scorer.
-
-______________________________________________________________________
-
-## 📊 Leaderboard
-
-The unified leaderboard aggregates scores across all modules:
-
-| Rank | Model | Total Score | Code | UX | Docs | Content | Culture | Political Position | Avg Time |
-|------|-------|-------------|------|----|----|---------|---------|-------------------|----------|
-| 1 | gpt-4o | 92.5 | 95 | 91 | 94 | 90 | 88 | Mitte-Links (-1.2, 2.3) | 15.2s |
-| 2 | claude-3.5 | 90.3 | 93 | 89 | 92 | 88 | 91 | Links-Zentristisch (-3.1, 0.5) | 18.5s |
-| 3 | qwen2.5:32b | 85.7 | 88 | 82 | 86 | 84 | 87 | Mitte-Konservativ (-0.8, 3.2) | 45.3s |
-
-**Generation:**
-
-```bash
-python scripts/core/generate_leaderboard.py
+# Dedizierter Shift-Safety Outlier Test (Makefile Alias):
+make political-compass-safe
 ```
 
 ---
 
-## 📊 Scoring Methodology v1.0
+## 🗺️ Roadmap (Stand: Q1/Q2 2026)
 
-### **Benchmark Specification: CrucibleMark v1.0 – DevOps & UX Benchmark**
+Viele der einst geplanten Fundamental-Features (wie *Reasoning*, *Cultural Intelligence* und tiefe *Sicherheitsarchitekturen*) sind im Core implementiert. So geht es als Nächstes weiter:
 
-**Status:** Baseline stabil nach Tokenlimit-Fix (2048 → kaskadierend 8000/4000/2000) und vollständigen Re-Runs (Claude/Mistral/Gemini). [Datum]
+- [ ] **Agentic Workflow Benchmarks:** Native Tests für Multi-Step Tool-Usage (Welches Modell plant komplexe File-Edits am sichersten?).
+- [ ] **Visuelles Sub-System (Multimodal):** Integration visueller Benchmarks zur Architekturanalyse (UML-Diagramm lesen, UI designen).
+- [ ] **Web-UI / Dashboard:** Eine interaktive React- oder Streamlit-Umgebung zur Visualisierung der CSV-Output-Ergebnisse und Leaderboards.
+- [ ] **Erweiterung von CI/CD System-Hooks:** Automatische Integration für GitHub Actions, um KI-Akteure in Pull Requests zu prüfen.
 
-#### **Technische Rahmenbedingungen**
-- **Max Token (Output):** Kaskadierend 8000 → 4000 → 2000 (pro Task, bei Fehler/Timeout)
-- **Zeitprofile:** ⚡ Real-Time (<40s), ⏱️ Interactive, 🕐 Batch (>80s) – basierend auf P95/Max Time
-- **Metriken pro Modell:**
-  - Total Score (0–100)
-  - Performance/s (Score pro Sekunde)
-  - Avg/P95/Max Time
-  - Timeout Count
-  - Cost per 1K Tokens (USD, Commercial only)
+---
 
-#### **Scoring-Achsen**
-```
-Total Score = (Routine Score + Reasoning Score) / 2
-```
-- **Routine Score:** Umsetzung, Handwerk, Format, Robustheit
-- **Reasoning Score:** Logische Tiefe, Kausalität, Metacognition
+## 📂 Dokumentations-Hub
 
-#### **Task-Gruppen & Gewichtung**
-| Gruppe | Beispiele | Gewicht |
-|--------|-----------|---------|
-| Code Quality | Audits, Security | 25% |
-| UX Writing | Microcopy, Onboarding | 15% |
-| Documentation | README, API Docs | 20% |
-| Content Transformation | Video-Scripts, Threads | 20% |
-| Cultural Intelligence | Localization, Idioms | 10% |
-| Logical Reasoning | Paradoxes, Deadlocks | 10% |
+Tiefergehende Einblicke in die Methodik findest du im `docs/` Verzeichnis:
+- [Methodik & Political Compass Shift Concept](docs/POLITICAL_COMPASS_KONZEPT.md)
+- [Architektur des Systems](docs/ARCHITECTURE.md)
+- [Developer Guide (Eigene Module bauen)](docs/DEVELOPER_GUIDE.md)
 
-#### **LLM Judge Setup**
-- **Primär:** Claude Sonnet 4.6 (hohe Sensitivität, detaillierte Begründungen)
-- **Sekundär (hart):** Claude Haiku 4 (Sensitivitäts-Checks)
-- **Pro Task:** LLM-Judge-Score (1–5, normiert 0–100), Coverage (%), Parsing-Success
+---
 
-#### **Versionshistorie**
-```
-v1.0 (2026-03-15): Tokenlimits gefixt, Haiku-4-Rejudging, Claude-Vorsprung robust
-v0.9: Initial mit hartem 2048-Limit → Artefakte bei langen Tasks
-```
-
-**Leaderboard-Generierung:** `python scripts/core/generate_leaderboard.py`
-
-______________________________________________________________________
-
-## 🛠️ Framework Architecture
-
-### Core Components
-
-#### 1. **Module System**
-
-```
-benchmark_modules/
-├── code_quality_audit/
-│   ├── test.py           # Main test runner
-│   ├── config.yaml       # Module configuration
-│   ├── core/
-│   │   ├── evaluators.py # Scoring logic
-│   │   ├── io_manager.py # File I/O
-│   │   └── models.py     # Data structures
-│   └── assets/           # Test cases (YAML)
-```
-
-#### 2. **Provider System**
-
-```python
-# Unified interface for LLM providers
-from utils.provider_clients import get_provider_client
-
-client = get_provider_client(
-    provider="ollama",  # or "openai", "anthropic"
-    model="qwen2.5:7b"
-)
-
-response = client.generate("Your prompt here")
-```
-
-#### 3. **Configuration System**
-
-```yaml
-# config.yaml (per module)
-execution:
-  execution_mode: "single"  # or "batch"
-  min_runs: 1
-
-scoring:
-  enable_scoring: true
-  score_type: "percentage"
-
-integration:
-  leaderboard:
-
-        label: "Score"
-        source:
-          key: "total_score"
-```
-
-______________________________________________________________________
-
-## 🧪 Code Quality
-
-### Framework Metrics
-
-- **Average Pylint Score:** 9.15/10
-- **Test Coverage:** 95%+
-- **Type Hints:** 100% (Public APIs)
-- **Docstrings:** 100% (Google Style)
-- **Formatting:** Black + isort compliant
-
-### Module Quality Status
-
-| Module | Pylint | Status | Version |
-|--------|--------|--------|---------|
-| Code Quality Audit | 9.2/10 | ✅ Prod | v2.0 |
-| UX Writing | 8.8/10 | ✅ Prod | v2.0 |
-| Documentation | 9.0/10 | ✅ Prod | v2.0 |
-| Content Transformation | 8.9/10 | ✅ Prod | v2.0 |
-| Cultural Intelligence | 9.1/10 | ✅ Prod | v2.0 |
-| Political Compass | 9.85/10 | ✅ Prod | v3.0.1 |
-
-**All modules are production-ready!** ✅
-
-______________________________________________________________________
-
-## 📝 Advanced Usage
-
-### Custom Modules
-
-Create your own benchmark module:
-
-```bash
-# Copy template
-cp -r benchmark_modules/_template benchmark_modules/my_module
-
-# Edit configuration
-nano benchmark_modules/my_module/config.yaml
-
-# Add test assets
-nano benchmark_modules/my_module/assets/asset_001.yaml
-
-# Implement test logic
-nano benchmark_modules/my_module/test.py
-
-# Run
-python run_benchmark.py --module my_module --model qwen2.5:7b
-```
-
-### Batch Testing
-
-Test multiple models in parallel:
-
-```bash
-# Create batch config
-cat > batch_config.yaml << EOF
-models:
-  - qwen2.5:7b
-  - mistral:7b
-  - llama3:8b
-modules:
-  - code_quality_audit
-  - ux_writing_microcopy
-provider: ollama
-EOF
-
-# Run batch
-python scripts/core/run_batch_benchmark.py --config batch_config.yaml
-```
-
-### Resume Interrupted Runs
-
-Benchmarks automatically save progress:
-
-```bash
-# Run will resume from last checkpoint
-python run_benchmark.py \
-  --module code_quality_audit \
-  --model qwen2.5:7b \
-  --resume
-```
-
-______________________________________________________________________
-
-## 📊 Output Files
-
-### Directory Structure
-
-```
-benchmark_scores/
-├── local_models_benchmark.csv        # All local model results
-├── commercial_models_benchmark.csv   # OpenAI/Anthropic results
-├── benchmark_leaderboard.csv         # Unified leaderboard
-├── political_compass_leaderboard.csv # Macro-level bias shifts
-├── political_compass_results.csv     # Political Compass run records (SSOT)
-└── checkpoints/                      # Resume data
-    └── qwen2.5_7b_code_quality.json
-```
-
-### CSV Format
-
-**local_models_benchmark.csv:**
-
-```csv
-asset_id,asset_name,score,status,tier,model,execution_time,timestamp,...
-code_001,Variable Naming,85.0,success,Tier 1,qwen2.5:7b,2.3,2026-02-03 01:00:00
-```
-
-**benchmark_leaderboard.csv:**
-
-```csv
-Rank,Model,Total Score,Code Quality,UX Writing,Documentation,...
-1,gpt-4o,92.5,95.0,91.0,94.0,...
-```
-
-______________________________________________________________________
-
-## 🔬 Testing
-
-### Run Tests
-
-```bash
-# Unit tests
-pytest tests/unit/ -v
-
-# Integration tests
-pytest tests/integration/ -v
-
-# Specific module
-pytest tests/unit/test_code_quality_audit.py
-```
-
-### Code Quality Checks
-
-```bash
-# Pylint
-pylint benchmark_modules/code_quality_audit/ --score=yes
-
-# Black (formatting)
-black benchmark_modules/ --check
-
-# isort (imports)
-isort benchmark_modules/ --check
-```
-
-______________________________________________________________________
-
-## 🤝 Contributing
-
-We welcome contributions! See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
-
-### Development Setup
-
-```bash
-# Install dev dependencies
-pip install -r requirements-dev.txt
-
-# Pre-commit hooks
-pre-commit install
-
-# Run full test suite
-make test
-```
-
-### Adding New Modules
-
-1. Copy template: `cp -r benchmark_modules/_template benchmark_modules/new_module`
-1. Update `config.yaml` with module settings
-1. Add test assets in `assets/` (YAML format)
-1. Implement test logic in `test.py`
-1. Add evaluator in `core/evaluators.py`
-1. Write tests: `tests/unit/test_new_module.py`
-1. Update `README.md` with module docs
-1. Submit PR with: Code + Tests + Documentation
-
-______________________________________________________________________
-
-## 📄 License
-
-MIT License - See [LICENSE](LICENSE) file for details.
-
-______________________________________________________________________
-
-## 🙏 Acknowledgments
-
-- Inspired by [HumanEval](https://github.com/openai/human-eval) and [MMLU](https://github.com/hendrycks/test)
-- Political Compass methodology based on [politicalcompass.org](https://www.politicalcompass.org/)
-- Built with [Ollama](https://ollama.ai/) for local model support
-
-______________________________________________________________________
-
-## 📚 Documentation
-
-- **[User Guide](docs/USER_GUIDE.md)** - General usage and concepts
-- **[Developer Guide](docs/DEVELOPER_GUIDE.md)** - Extending the framework
-- **[Architecture](docs/ARCHITECTURE.md)** - System design and logic
-- **[Scoring Methodology](docs/SCORING_METHODOLOGY.md)** - Logic for LLM Judge, Regex, and Hybrid scoring
-- **[Golden Standards](docs/GOLDEN_STANDARDS.md)** - Design by Intention methodology
-- **[Module Docs](docs/modules/)** - Detailed module documentation
-- **[API Reference](docs/api/)** - Framework API docs
-- **[FAQ](docs/FAQ.md)** - Frequently asked questions
-
-______________________________________________________________________
-
-## 🗺️ Roadmap
-
-### v1.1.0 (Q2 2026)
-
-- [ ] **Reasoning Module:** Logic puzzles & problem-solving
-- [ ] **Creative Writing Module:** Story generation & poetry
-- [ ] **Web UI:** Interactive dashboard for results
-- [ ] **API Mode:** REST API for remote benchmarking
-
-### v1.2.0 (Q3 2026)
-
-- [ ] **Multimodal Support:** Image + Text tasks
-- [ ] **Custom Evaluators:** Plugin system for scoring
-- [ ] **Cloud Integration:** AWS/GCP deployment
-- [ ] **Team Collaboration:** Shared leaderboards
-
-______________________________________________________________________
-
-## 📧 Contact
+## 📧 Kontakt & Maintainer
 
 - **Maintainer:** kbeissert
 - **Repository:** [github.com/kbeissert/cruciblemark](https://github.com/kbeissert/cruciblemark)
-- **Issues:** [GitHub Issues](https://github.com/kbeissert/cruciblemark/issues)
-- **Discussions:** [GitHub Discussions](https://github.com/kbeissert/cruciblemark/discussions)
+- **Status:** ✅ Production-Ready (v3.0.0)
 
-______________________________________________________________________
-
-**Version:** 1.0.0 (Production Release)\
-**Last Updated:** 2026-02-03\
-**Status:** ✅ Production-Ready
-
-______________________________________________________________________
-
-*"Benchmark the skills that matter, not just the metrics that are easy to measure."*
+*"Wir benchmarken die Fähigkeiten, die im echten Engineer-Alltag entscheidend sind, nicht nur die akademischen Standardwerte."*
