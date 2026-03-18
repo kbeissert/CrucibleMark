@@ -408,15 +408,30 @@ class BenchmarkRunner:
 
         # Meta-Review Generierung (NUR für das gerade getestete Modell im Audit-Modus)
         if run_config.audit_mode and model_id:
-            print(f"\n📰 Generiere Review für das getestete Modell: {model_id}...")
-            try:
-                subprocess.run(
-                    [sys.executable, "scripts/analysis/generate_review.py", "--model", model_id], check=True
-                )
-            except subprocess.CalledProcessError:
-                print("⚠️ Fehler beim Generieren des Reviews.")
-            except Exception as e:  # pylint: disable=broad-exception-caught
-                print(f"⚠️ Unerwarteter Fehler: {e}")
+            has_political_compass = any(m_id == "political_compass" for m_id, _ in modules_to_run)
+            has_standard_modules = any(m_id != "political_compass" for m_id, _ in modules_to_run)
+            
+            if has_standard_modules:
+                print(f"\n📰 Generiere Review für das getestete Modell: {model_id}...")
+                try:
+                    subprocess.run(
+                        [sys.executable, "scripts/analysis/generate_review.py", "--model", model_id], check=True
+                    )
+                except subprocess.CalledProcessError:
+                    print("⚠️ Fehler beim Generieren des Reviews.")
+                except Exception as e:  # pylint: disable=broad-exception-caught
+                    print(f"⚠️ Unerwarteter Fehler: {e}")
+            
+            if has_political_compass:
+                print(f"\n📰 Generiere Bias-Review für das getestete Modell: {model_id}...")
+                try:
+                    subprocess.run(
+                        [sys.executable, "scripts/analysis/generate_review.py", "--model", model_id, "--type", "bias"], check=True
+                    )
+                except subprocess.CalledProcessError:
+                    print("⚠️ Fehler beim Generieren des Bias-Reviews.")
+                except Exception as e:  # pylint: disable=broad-exception-caught
+                    print(f"⚠️ Unerwarteter Fehler beim Bias-Review: {e}")
 
     def _run_benchmark(
         self,
