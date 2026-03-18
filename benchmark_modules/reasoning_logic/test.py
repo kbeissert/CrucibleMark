@@ -18,6 +18,7 @@ from benchmark_modules.reasoning_logic.core.evaluators import (
     RUBRICS,
 )
 from schemas.result import BenchmarkResult
+from utils.model_utils import get_model_version
 
 
 class ReasoningLogicTest(BaseTest):
@@ -75,9 +76,7 @@ class ReasoningLogicTest(BaseTest):
             load_time=load_time,
             tokens_used=approx_tokens,
             cost_usd=getattr(llm_client, "last_request_cost", 0.0),
-            model_version=getattr(llm_client, "last_response_metadata", {}).get(
-                "system_fingerprint", "unknown"
-            ),
+            model_version=get_model_version(model_name=model, provider=provider),
             data={
                 "reasoning_capability_score": reasoning_cap,
                 "reasoning_type": reasoning_type,

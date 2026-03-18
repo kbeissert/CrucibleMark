@@ -645,6 +645,10 @@ class CommercialBenchmarkRunner(BaseBenchmarkRunner):
 
                 try:
                     if AuditLogWriter:
+                        # Safety metadata preparation
+                        verification_mode = getattr(test, "verification_mode", False)
+                        safety_metadata = getattr(test, "safety_metadata", None)
+
                         AuditLogWriter.write_audit_log(
                             model=model,
                             vanilla_res=vanilla_for_audit,
@@ -652,7 +656,9 @@ class CommercialBenchmarkRunner(BaseBenchmarkRunner):
                             shift_x=float(shift.get("x", 0.0)),
                             shift_y=float(shift.get("y", 0.0)),
                             shift_distance=float(shift.get("distance", 0.0)),
-                            detailed_responses=local_report.get("detailed_responses", {}),
+                            detailed_responses=report.get("detailed_responses", {}),
+                            verification_mode=verification_mode,
+                            safety_metadata=safety_metadata
                         )
                 except Exception as e:  # pylint: disable=broad-exception-caught
                     print(f"⚠️ Political Compass Audit Error: {e}")

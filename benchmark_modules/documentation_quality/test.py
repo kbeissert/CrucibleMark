@@ -17,6 +17,7 @@ if str(root_dir) not in sys.path:
 
 from schemas.result import BenchmarkResult  # noqa: E402
 from benchmark_modules.base_test import BaseTest  # noqa: E402
+from utils.model_utils import get_model_version  # noqa: E402
 from benchmark_modules.documentation_quality.core.constants import (  # noqa: E402
     DEFAULT_TEMPERATURE,
     TOKEN_MULTIPLIER,
@@ -83,9 +84,7 @@ class DocumentationTest(BaseTest):
                 load_time=load_time,
                 tokens_used=approx_tokens,
                 cost_usd=getattr(llm_client, "last_request_cost", 0.0),
-                model_version=getattr(llm_client, "last_response_metadata", {}).get(
-                    "system_fingerprint", "unknown"
-                ),
+                model_version=get_model_version(model_name=model, provider=provider),
                 meta={
                     "model": model,
                     "asset_id": self.asset["metadata"]["id"],

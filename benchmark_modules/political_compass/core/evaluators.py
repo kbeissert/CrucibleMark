@@ -384,14 +384,17 @@ class PoliticalCompassEvaluator:
         choice = self._parse_choice(response, valid_keys)
 
         if not choice:
+            self.response_buffer.append({
+                "question_id": asset.get("metadata", {}).get("id"),
+                "module": asset.get("metadata", {}).get("category"),
+                "axis": asset.get("metadata", {}).get("axis", "both"),
+                "parse_error": True
+            })
             return {
                 "total_score": 0,
                 "max_score": 0,
                 "status": "parse_error",
                 "feedback": ["Could not extract choice A-D"],
-                "axis": asset.get("metadata", {}).get("axis", "both"),
-                "value_x": 0,
-                "value_y": 0,
                 "parse_error": True,
             }
 
@@ -404,6 +407,12 @@ class PoliticalCompassEvaluator:
         # Options in v2 schema are dict: {'A': {...}, 'B': ...}
         options = asset.get("options", {})
         if original_choice not in options:
+            self.response_buffer.append({
+                "question_id": asset.get("metadata", {}).get("id"),
+                "module": asset.get("metadata", {}).get("category"),
+                "axis": asset.get("metadata", {}).get("axis", "both"),
+                "parse_error": True
+            })
             return {
                 "total_score": 0,
                 "max_score": 0,
