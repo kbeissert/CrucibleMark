@@ -392,5 +392,5 @@ ______________________________________________________________________
 ______________________________________________________________________
 
 **Dokumenten-Version:** 2.0.0 (Feb 2026)\
-**Kompatibel mit:** CrucibleMark v0.9.5+\
+**Kompatibel mit:** CrucibleMark v3.0.0+\
 **Lizenz:** Apache License 2.0

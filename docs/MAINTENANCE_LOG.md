@@ -102,3 +102,22 @@ Run the verification script:
 ```bash
 python scripts/maintenance/verify_counts.py
 ```
+
+
+***
+
+## API Timeout & Nested Pydantic Serialization (v3.0.0)
+
+**Date:** 2026-03-18
+**Status:** Resolved
+
+### Problem Description
+
+Two structural issues blocked the continuous evaluation of strict or censored models (like Gemini/Claude) inside the Political Compass:
+1.  **Refusal Stalling:** Models returning "Sorry, I can't answer this" triggered instant failure in metric parsing, crashing the batch evaluation sequence instead of trying varying permutations.
+2.  **Verify Anomalies Crashes:** Checking shift values natively crashed with `AttributeError`. It attempted to call `.get()` natively on the Pydantic schema return (`base_result.raw_response`), which is strictly stored as a JSON string, not a generic dict.
+
+### Resolution
+
+1.  **3-Tier Refusal Loop:** We introduced a robust `while True` loop with progressive temperature checks (`0.1`, `0.4`, `0.7`) mapping hard limits inside the specific run execution (`_run_single_block` in `political_compass/test.py`). This systematically breaks censorship filters autonomously.
+2.  **Pydantic Deserialize:** Shifted all `raw_response` reads across verify scripts to `json.loads(str)` forcing dict compliance before accessing nested variables (Vanilla/Forced).

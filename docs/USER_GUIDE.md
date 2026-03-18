@@ -135,7 +135,7 @@ CrucibleMark verwendet unterschiedliche Scoring-Mechanismen:
 
 ### 1. Granular Rubric Scoring (Reasoning)
 
-Für komplexe Reasoning-Aufgaben nutzen wir **v2.0 Granular Rubrics** für faire Teilpunkte.
+Für komplexe Evaluierungen nutzen wir den **LLM-Judge** und strukturierte Rubrics für faire Teilpunkte.
 
 **Beispiel (Scheduling Paradox):**
 
@@ -509,9 +509,9 @@ ______________________________________________________________________
 
 ______________________________________________________________________
 
-## 🏗️ Creating New Tests (v2.1+)
+## 🏗️ Creating New Tests (v3.0+)
 
-All new reasoning tests **must** use v2.1 rubric-based scoring. The legacy system is deprecated.
+All new reasoning tests **must** use v3.0 rubric-based scoring. The legacy system is deprecated.
 
 ### 1. Define Rubric in `evaluators.py`
 
@@ -547,5 +547,5 @@ ______________________________________________________________________
 
 ______________________________________________________________________
 
-**Dokumenten-Version:** 1.0.0 (Rewrite Feb 2026)\
-**Kompatibel mit:** CrucibleMark v0.9.5+
+**Dokumenten-Version:** 3.0.0 (Rewrite Mar 2026)\
+**Kompatibel mit:** CrucibleMark v3.0.0+
