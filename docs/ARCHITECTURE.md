@@ -32,7 +32,7 @@ ______________________________________________________________________
 ```
 ┌─────────────────────────────────────────────────────┐
 │ Layer 1: Framework Core (Orchestration)            │
-│ - Benchmark Runner (crucible_mark.py)              │
+│ - Benchmark Runner (run_benchmark.py)              │
 │ - Config Manager (benchmark_config.yaml)           │
 │ - Provider Abstraction (Ollama, OpenAI, Mistral)   │
 └─────────────────────────────────────────────────────┘
@@ -444,5 +444,5 @@ class LLMClientFactory:
 
 ______________________________________________________________________
 
-**Dokumenten-Version:** 1.0.0 (Rewrite Feb 2026)\
-**Kompatibel mit:** CrucibleMark v0.9.5+
+**Dokumenten-Version:** 3.0.0 (Rewrite Mar 2026)\
+**Kompatibel mit:** CrucibleMark v3.0.0+

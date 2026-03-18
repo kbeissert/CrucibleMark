@@ -629,5 +629,5 @@ ______________________________________________________________________
 
 **Happy Coding! 🚀**
 
-**Dokumenten-Version:** 1.0.0 (Rewrite Feb 2026)\
-**Kompatibel mit:** CrucibleMark v0.9.5+
+**Dokumenten-Version:** 3.0.0 (Rewrite Mar 2026)\
+**Kompatibel mit:** CrucibleMark v3.0.0+
