@@ -2,6 +2,12 @@
 
 ## ✅ COMPLETED
 
+### Architecture Hardening & Anti-Censorship (v3.0.0)
+- [x] **3-Tier Refusal Framework:** Intelligentes Abfangen von Hard-/Soft-Refusals und API-Timeouts.
+- [x] **Progressive Temperature Loop:** `while True`-Retry-Block im Execution-Layer mit schrittweisen Temperaturerhöhungen (0.1, 0.4, 0.7) als Safety-Bypass.
+- [x] **Pydantic Schema Serialization:** Behebung von `AttributeError`-Abstürzen durch präzises `json.loads()` Parsing aus der rohen String-Response.
+- [x] **Repository Consolidation:** Major Markdown-Updates, Entschlackung der Roadmap und Framework Bump auf 3.0.0.
+
 ### Version 1.1+ Core Architecture
 - [x] **Leaderboard Overhaul (v1.1)** (Absolute Scoring, Speed Profiles)
 - [x] **Reasoning Module Implementation**
@@ -103,4 +109,4 @@ ______________________________________________________________________
 
 ______________________________________________________________________
 
-**Last Updated:** 2026-03-17 **Version:** 2.6.2 (Phase 3 Refactoring) **Next Milestone:** v2.7 (Judge Batching & Final Leaderboard)
+**Last Updated:** 2026-03-18 **Version:** 3.0.0 (Safety Shift & Refusal Loop) **Next Milestone:** Agentic Workflow & Web-UI
