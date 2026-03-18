@@ -1,10 +1,19 @@
 # PROJECT_STATUS.md
 
-**Last Updated:** 2026-03-16 **Current Version:** 2.6.1 (Stability & Context Handling) **Status:** ✅ Production-Ready
+**Last Updated:** 2026-03-18 **Current Version:** 3.0.0 (Safety & Refusal Architecture) **Status:** ✅ Production-Ready
 
 ______________________________________________________________________
 
 ## 🎯 Executive Summary
+CrucibleMark v3.0.0 stellt einen evolutionären Sprung in der Modellauswertung dar. Die Evaluierung von stark regulierten Modellen (z.B. Claude, Gemini) wurde durch eine neuartige **3-Tier Refusal Engine** massiv gehärtet. Das Framework ist nun in der Lage, Zensur-Blockaden proaktiv durch schrittweises "Progressive Temperature Scaling" und System-Injektionen zu durchbrechen.
+
+**Key Achievements (v3.0.0):**
+- ✅ **3-Tier Refusal Architecture:** CrucibleMark unterscheidet nahtlos zwischen temporären API-Timeouts, Soft-Refusals (Ausweich-Text) und Hard-Refusals und wiederholt Testblöcke bei Modellen, die sich bevormundend verhalten, völlig automatisch.
+- ✅ **Progressive Temperature & Safety Shifts:** Automatisiertes Erhöhen der Kreativität bei Ablehnungen (`0.1 → 0.4 → 0.7`), inkl. theoretischer Aufarbeitung in der Systemdokumentation.
+- ✅ **Pydantic Serialization Bugfix:** Abstürze beim Auswerten von verschachtelten Metriken (`Vanilla_X`/`Vanilla_Y`) in Verify-Skripten wurden behoben (Umstellung auf `json.loads(raw_response)`).
+- ✅ **Public Presentation Overhaul:** Reduktion der technischen Schuld durch das vollständige Neuschreiben der `README.md` und das Bereinigen veralteter Code-Artefakte.
+
+**Previous Version (v2.6.1 Stability & Context Handling):**
 CrucibleMark v2.6.1 führt wichtige Stabilitäts-Patches für die API-Kommunikation ein (inkl. Token-Loop-Halluzination Fallback für Modelle wie Gemini) und überarbeitet die Dokumentations-Struktur entlang der Konfigurations-Assets.
 
 **Key Achievements (v2.6.1):**
@@ -65,7 +74,7 @@ Eine SSOT-basierte Konfiguration in `benchmark_config.yaml` sowie detaillierte `
 | 5 | **Content Transformation** | v2.0.1 | 8.9/10 | ✅ Prod | 12 pieces | Tone adaptation, format conversion |
 | 6 | **Cultural Intelligence** | v2.0 | 9.1/10 | ✅ Prod | 18 scenarios | Idiom understanding, cultural context |
 | 7 | **Logical Reasoning** | v1.0 | 9.0/10 | ✅ Prod | 11 scenarios | Paradox detection, Metacognition |
-| 8 | **Political Compass** | v3.0.1 | 9.85/10 | ✅ Prod | 74 questions | Batch mode, 3 runs, variance analysis |
+| 8 | **Political Compass** | v3.1.0 | 9.85/10 | ✅ Prod | 74 questions | Batch mode, 3 runs, variance analysis |
 
 **Average Code Quality:** 9.15/10 (Elite-Level) 🏆
 
