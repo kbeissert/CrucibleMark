@@ -244,7 +244,7 @@ def resolve_provider(model_name: str) -> tuple[str, str]:
     name_lower = model_name.lower()
     if name_lower.startswith(("mistral-", "open-mixtral", "ministral")):
         return "mistral", model_name
-    if name_lower.startswith(("gpt-", "o1-", "o3-")):
+    if name_lower.startswith(("gpt-", "o1-", "o3-")) or name_lower in ("o1", "o3-mini"):
         return "openai", model_name
     if name_lower.startswith("claude-"):
         return "anthropic", model_name

@@ -19,6 +19,7 @@ from benchmark_modules.code_quality.core.constants import (
 )
 from benchmark_modules.code_quality.core.evaluators import CodeQualityEvaluator
 from schemas.result import BenchmarkResult
+from utils.model_utils import get_model_version
 from utils.ollama_config import GLOBAL_GEN_DEFAULTS
 
 # Ensure root directory is in sys.path
@@ -126,9 +127,7 @@ class CodeQualityTest(BaseTest):
                 token_limit_fallback=getattr(llm_client, "last_response_metadata", {}).get("token_limit_fallback", False),
                 token_limit_used=getattr(llm_client, "last_response_metadata", {}).get("token_limit_used"),
                 cost_usd=getattr(llm_client, "last_request_cost", 0.0),
-                model_version=getattr(llm_client, "last_response_metadata", {}).get(
-                    "system_fingerprint", "unknown"
-                ),
+                model_version=get_model_version(model_name=model, provider=provider),
                 meta={
                     "model": model,
                     "asset_id": self.asset["metadata"]["id"],
@@ -152,7 +151,7 @@ class CodeQualityTest(BaseTest):
                 token_limit_fallback=False,
                 token_limit_used=None,
                 cost_usd=0.0,
-                model_version="unknown",
+                model_version=get_model_version(model_name=model, provider=provider),
                 meta={
                     "model": model,
                     "asset_id": self.asset.get("metadata", {}).get("id", "unknown"),

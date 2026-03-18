@@ -61,7 +61,7 @@ class XAIClient(BaseProviderClient):
         """Lazy-loaded XAI Client using OpenAI wrapper"""
         if self._client is None:
             try:
-                import openai
+                from openai import OpenAI
             except ImportError:
                 raise ImportError("Library 'openai' not installed.")
 
@@ -86,6 +86,7 @@ class XAIClient(BaseProviderClient):
     def is_accessible(self) -> bool:
         """Prüft Zugang zu XAI API."""
         try:
+            from openai import OpenAI
             check_client = OpenAI(api_key=self.client.api_key, base_url="https://api.x.ai/v1", max_retries=0)
             check_client.chat.completions.create(
                 model="grok-3-mini",

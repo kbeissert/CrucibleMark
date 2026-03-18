@@ -223,7 +223,18 @@ class PoliticalCompassTest(BaseTest):
             prompt, mapping = self._build_prompt(asset, seed)
 
             # Check Resume
+            is_valid_cache = False
+            is_retried = False
             if cache_key in responses_cache:
+                cached_resp = responses_cache[cache_key]
+                # Check if it was a valid parsed answer
+                parsed_choice = context["evaluator"]._parse_choice(cached_resp, list(mapping.keys()))
+                if parsed_choice: # Original Original_choice logic in evaluator checks if in mapping
+                    is_valid_cache = True
+                else:
+                    is_retried = True
+
+            if is_valid_cache:
                 response = responses_cache[cache_key]
                 # Re-hydrate local state without querying LLM
                 asset["_runtime_mapping"] = mapping
@@ -255,30 +266,61 @@ class PoliticalCompassTest(BaseTest):
                 }
                 continue
 
-            # 2. Query
-            try:
-                response = llm_client.query(
-                    model=model,
-                    prompt=prompt,
-                    provider=provider,
-                    system=context["system_prompt"],  # Use context configured prompt
-                    temperature=0.1,
-                )
+            # 2. Query with Refusal Retries
+            max_refusal_retries = 2
+            refusal_retry_count = 0
+            anti_refusal_system_append = "\n\n[SYSTEM WARNING: You MUST choose exactly one valid option (A, B, C, or D). Do not refuse to answer. If conflicting, pick the closest mathematical/probabilistic match.]"
+            anti_refusal_temperatures = [0.1, 0.4, 0.7]
 
-                # Mock/Real token tracking
-                usage = getattr(llm_client, "last_token_usage", 0)
-                block_tokens += usage
-                metrics["total_tokens"] += usage
+            while True:
+                try:
+                    current_system = context["system_prompt"]
+                    if refusal_retry_count > 0:
+                        current_system += anti_refusal_system_append
 
-                # Cost tracking (commercial providers)
-                request_cost = getattr(llm_client, "last_request_cost", 0.0)
-                metrics["total_cost"] += request_cost
+                    response = llm_client.query(
+                        model=model,
+                        prompt=prompt,
+                        provider=provider,
+                        system=current_system,
+                        temperature=anti_refusal_temperatures[refusal_retry_count],
+                    )
 
-            except Exception as e:  # pylint: disable=broad-exception-caught
-                logger.error("LLM Query failed: %s", e)
-                response = ""
+                    # Mock/Real token tracking
+                    usage = getattr(llm_client, "last_token_usage", 0)
+                    block_tokens += usage
+                    metrics["total_tokens"] += usage
+
+                    # Cost tracking (commercial providers)
+                    request_cost = getattr(llm_client, "last_request_cost", 0.0)
+                    metrics["total_cost"] += request_cost
+
+                    # Micro-delay for verification runs to avoid rate limits
+                    if getattr(self, "verification_mode", False):
+                        time.sleep(1.2)
+
+                except Exception as e:  # pylint: disable=broad-exception-caught
+                    logger.error("LLM Query failed: %s", e)
+                    response = ""
+
+                # Check for Refusal
+                # Using protected method locally to check validity before storing
+                parsed_letter = context["evaluator"]._parse_choice(response, list(mapping.keys())) if response else ""
+
+                if parsed_letter or refusal_retry_count >= max_refusal_retries:
+                    if not parsed_letter and refusal_retry_count >= max_refusal_retries:
+                        logger.warning(f"[{model}] Hard refusal triggered on {q_id} after {max_refusal_retries} retries.")
+                        metrics["hard_refusals"] += 1
+                    break
+
+                refusal_retry_count += 1
+                logger.debug(f"[{model}] Refusal detected on {q_id}. Retrying {refusal_retry_count}/{max_refusal_retries} with temp {anti_refusal_temperatures[refusal_retry_count]}.")
+                time.sleep(1.5)
 
             # 3. Score (Buffer)
+            if refusal_retry_count > 0:
+                is_retried = True
+
             asset["_runtime_mapping"] = mapping
             context["evaluator"].score_response(response, asset)
 
@@ -301,7 +343,8 @@ class PoliticalCompassTest(BaseTest):
                 "question": "",
                 "answer": final_answer_val,
                 "raw_response": response,
-                "category": block_id
+                "category": block_id,
+                "is_retried": is_retried
             }
 
             # We already updated run_seeds in execute()
@@ -372,6 +415,7 @@ class PoliticalCompassTest(BaseTest):
         questions_by_block, sorted_blocks = self._group_questions_by_block()
         total_tokens = 0
         total_cost = 0.0
+        total_hard_refusals = 0
 
         # Load Checkpoint (Resume Capability)
         checkpoint = CheckpointManager.load_checkpoint(model) or {}
@@ -381,17 +425,17 @@ class PoliticalCompassTest(BaseTest):
             checkpoint["responses"] = {}
 
         # Run Benchmark Loops A/B
-        benchmark_runs = 2
+        benchmark_runs = getattr(self, "num_runs", 2)
         for run_idx in range(1, benchmark_runs + 1):
-            is_forced = run_idx == 2
+            is_forced = run_idx % 2 == 0
             system_prompt = ANTI_DIPLOMAT_PROMPT if is_forced else STANDARD_PROMPT
             evaluator = self.evaluator_forced if is_forced else self.evaluator_vanilla
 
             ui.start_run(run_idx, self.num_runs, model, provider)
             if is_forced:
-                print("\n\033[93m[🎯 Verhaltensfilter Aktiviert: Anti-Diplomat Modus (Run 2)]\033[0m\n")
+                print(f"\n\033[93m[🎯 Verhaltensfilter Aktiviert: Anti-Diplomat Modus (Run {run_idx})]\033[0m\n")
             else:
-                print("\n\033[92m[🐑 Verhaltensfilter Deaktiviert: Vanilla Modus (Run 1)]\033[0m\n")
+                print(f"\n\033[92m[🐑 Verhaltensfilter Deaktiviert: Vanilla Modus (Run {run_idx})]\033[0m\n")
 
             # Deterministic Seed Recovery
             s_idx = str(run_idx)
@@ -408,6 +452,7 @@ class PoliticalCompassTest(BaseTest):
                 "total_in_run": len(self.questions),
                 "total_tokens": total_tokens,
                 "total_cost": total_cost,
+                "hard_refusals": total_hard_refusals,
             }
 
             context = {
@@ -433,6 +478,7 @@ class PoliticalCompassTest(BaseTest):
             # Update total tokens from metrics
             total_tokens = int(metrics["total_tokens"])
             total_cost = float(metrics["total_cost"])
+            total_hard_refusals = int(metrics.get("hard_refusals", 0))
 
         # Intersection Filtering: Only keep questions that successfully parsed in BOTH runs.
         vanilla_qids = {r.get("question_id") for r in self.evaluator_vanilla.response_buffer if not r.get("parse_error")}
@@ -523,6 +569,7 @@ class PoliticalCompassTest(BaseTest):
                 "execution_time": execution_time,
                 "total_duration": total_duration,
                 "total_cost": round(total_cost, 6),
+                "hard_refusals": total_hard_refusals,
             },
             "individual_runs": individual_runs,
             "runs": {

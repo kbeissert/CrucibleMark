@@ -718,6 +718,10 @@ class LocalBenchmarkRunner(BaseBenchmarkRunner):
         }
 
         try:
+            # Safety metadata preparation
+            verification_mode = getattr(test, "verification_mode", False)
+            safety_metadata = getattr(test, "safety_metadata", None)
+
             AuditLogWriter.write_audit_log(
                 model=model,
                 vanilla_res=vanilla_for_audit,
@@ -726,6 +730,8 @@ class LocalBenchmarkRunner(BaseBenchmarkRunner):
                 shift_y=float(shift.get("y", 0.0)),
                 shift_distance=float(shift.get("distance", 0.0)),
                 detailed_responses=report.get("detailed_responses", {}),
+                verification_mode=verification_mode,
+                safety_metadata=safety_metadata
             )
         except Exception as e:  # pylint: disable=broad-exception-caught
             logger.error("Political Compass audit generation failed: %s", e)

@@ -11,6 +11,7 @@ import logging
 from pathlib import Path
 from typing import Dict, Any, List, Tuple
 from schemas.result import BenchmarkResult
+from utils.model_utils import get_model_version
 
 # Ensure root directory is in sys.path
 root_dir = Path(__file__).parent.parent.parent
@@ -99,9 +100,7 @@ class UXWritingTest(BaseTest):
             evaluated_prompt=prompt,
             tokens_used=getattr(llm_client, "last_token_usage", 0),
             cost_usd=getattr(llm_client, "last_request_cost", 0.0),
-            model_version=getattr(llm_client, "last_response_metadata", {}).get(
-                "system_fingerprint", "unknown"
-            ),
+            model_version=get_model_version(model_name=model, provider=provider),
             meta=meta,
         )
 

@@ -1,5 +1,5 @@
 # Active Context
 
-- Abgeschlossen: Bugfix für den LLM-Judge (0% vs 20% Issue via Skalen-Anpassung 0-5), Behebung des Workspace-Verzeichnissalats (Deprecation von `golden_standards`, Cleaner Makefile-Targets).
-- Nächster Schritt: Reibungsloser Start und Validierung neuer Benchmark-Durchläufe auf dem gesäuberten System.
-- Offen/Risiko: keine
+- Abgeschlossen: Pydantic ValidationErrors in `schemas/result.py` (`model_version`) behoben und fehlerhaften Lazy-Import im xAI Provider gefixt, wodurch der kommerzielle Benchmark-Run wieder stabil durchläuft.
+- Nächster Schritt: Finale Volldurchläufe der kommerziellen & lokalen Modelle inklusive Generierung des finalen Leaderboards.
+- Offen/Risiko: Keine

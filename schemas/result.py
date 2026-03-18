@@ -93,6 +93,13 @@ class BenchmarkResult(BaseModel):
 
     # --- Validators ---
 
+    @field_validator("model_version", mode="before")
+    @classmethod
+    def set_model_version_unknown_if_none(cls, v: Any) -> str:
+        if v is None:
+            return "unknown"
+        return str(v)
+
     @field_validator("data")
     @classmethod
     def validate_nested_depth(cls, v: Dict[str, Any]) -> Dict[str, Any]:

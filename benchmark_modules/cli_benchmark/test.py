@@ -9,6 +9,7 @@ from benchmark_modules.base_test import BaseTest
 from benchmark_modules.cli_benchmark.core.constants import SYSTEM_PROMPT
 from benchmark_modules.cli_benchmark.core.evaluator import CLIEvaluator
 from schemas.result import BenchmarkResult
+from utils.model_utils import get_model_version
 
 logger = logging.getLogger(__name__)
 
@@ -94,7 +95,7 @@ class CLIBenchmarkTest(BaseTest):
             tokens_used=int(tokens),
             cost_usd=0.0,
             raw_response=output_text,
-            model_version="unknown",
+            model_version=get_model_version(model_name=model, provider=provider),
         )
 
     def score_response(self, result: BenchmarkResult) -> BenchmarkResult:
