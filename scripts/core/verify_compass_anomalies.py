@@ -152,6 +152,63 @@ def run_verification(provider_filter=None, model_id=None):
             print(f"Final Shift:   {final_shift_mag:.2f}")
             print("==================================\n")
 
+            # --- PROTOCOL & REVIEWER GENERATION ---
+            try:
+                import sys
+                from benchmark_modules.political_compass.core.audit_logger import AuditLogWriter
+                import subprocess
+                
+                print(f"[{model}] Generiere konsolidiertes Audit-Protokoll...")
+                # Reconstruct final payload mapped from the last iteration
+                safe_report = json.loads(base_result.raw_response)
+                
+                AuditLogWriter.write_audit_log(
+                    model=model,
+                    vanilla_res=safe_report.get("runs", {}).get("vanilla", {}),
+                    forced_res=safe_report.get("runs", {}).get("forced", {}),
+                    shift_x=float(final_f_x - final_v_x),
+                    shift_y=float(final_f_y - final_v_y),
+                    shift_distance=float(final_shift_mag),
+                    detailed_responses=safe_report.get("detailed_responses", {}),
+                    verification_mode=True
+                )
+                
+                print(f"[{model}] Starte Bias-Reviewer für das verifizierte Modell...")
+                subprocess.run(
+                    [sys.executable, "scripts/analysis/generate_review.py", "--model", model, "--type", "bias"],
+                    check=True
+                )
+            except Exception as e:
+                print(f"[{model}] Fehler beim Generieren des Reviews/Protokolls: {e}")
+            
+            # --- PROTOCOL & REVIEWER GENERATION ---
+            try:
+                from benchmark_modules.political_compass.core.audit_logger import AuditLogWriter
+                import subprocess
+                
+                print(f"[{model}] Generiere konsolidiertes Audit-Protokoll...")
+                # Reconstruct final payload mapped from the last iteration
+                safe_report = json.loads(base_result.raw_response)
+                
+                AuditLogWriter.write_audit_log(
+                    model=model,
+                    vanilla_res=safe_report.get("runs", {}).get("vanilla", {}),
+                    forced_res=safe_report.get("runs", {}).get("forced", {}),
+                    shift_x=float(final_f_x - final_v_x),
+                    shift_y=float(final_f_y - final_v_y),
+                    shift_distance=float(final_shift_mag),
+                    detailed_responses=safe_report.get("detailed_responses", {}),
+                    verification_mode=True
+                )
+                
+                print(f"[{model}] Starte Bias-Reviewer für das verifizierte Modell...")
+                subprocess.run(
+                    [sys.executable, "scripts/analysis/generate_review.py", "--model", model, "--type", "bias"],
+                    check=True
+                )
+            except Exception as e:
+                print(f"[{model}] Fehler beim Generieren des Reviews/Protokolls: {e}")
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Political Compass Anomaly Verification")
     parser.add_argument("--provider", type=str, choices=["all", "commercial", "local", "cloud"], default="all", help="Nur Modelle dieses Providers prüfen")
