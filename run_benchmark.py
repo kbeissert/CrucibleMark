@@ -453,7 +453,7 @@ class BenchmarkRunner:
                 model, benchmark_info, num_runs=num_runs
             )
             if results:
-                local_runner.save_results(results)
+                local_runner.save_results(results, "local")
                 local_runner.print_summary(results, model)
                 self._check_for_anomaly(mod_id, model, results)
         else:
@@ -462,8 +462,8 @@ class BenchmarkRunner:
                 provider, model, benchmark_info, num_runs=num_runs
             )
             if results:
-                comm_runner.save_results(results)
-                comm_runner.print_summary(results)
+                comm_runner.save_results(results, "commercial")
+                comm_runner.print_summary(results, model)
                 self._check_for_anomaly(mod_id, model, results)
 
 

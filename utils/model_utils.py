@@ -63,12 +63,16 @@ def get_model_version(model_name: str, provider: str = "ollama", client=None) ->
     Retrieves the uniform version mapping of a model without unpredictable fallback fingerprints.
     """
     _ = client  # API compatibility: kept for unchanged call sites.
-    provider = model_name.split("/")[0] if "/" in model_name else provider
-    provider = str(provider).lower().strip()
+    p_lower = str(provider).lower().strip()
+    prefix = model_name.split("/")[0].lower() if "/" in model_name else ""
 
-    # Local Ollama logic
-    if provider in {"ollama", "local"} or model_name.startswith("ollama/"):
-        return _get_local_model_hash_version(model_name=model_name)
+    # Attempt Local Ollama Logic if provider implies local, or no explicit provider is given
+    is_local_attempt = (p_lower in {"ollama", "local"} or prefix in {"ollama", "local"} or p_lower == "ollama")
+
+    if is_local_attempt:
+        local_hash = _get_local_model_hash_version(model_name=model_name)
+        if local_hash != "k.A.":
+            return local_hash
 
     # Commercial Model Logic
     if "claude" in model_name:
@@ -81,6 +85,8 @@ def get_model_version(model_name: str, provider: str = "ollama", client=None) ->
     if "gpt" in model_name:
         match = re.search(r"-(202\d{5})$|-(0\d{3})$", model_name)
         if match: return match.group(1) or match.group(2)
+        if "gpt-5.4" in model_name: return "5.4"
+        if "gpt-5" in model_name: return "5.0"
         if "gpt-4o-mini" in model_name: return "2024-07-18"
         if "gpt-4o" in model_name: return "2024-05-13"
         return "latest"
@@ -96,14 +102,43 @@ def get_model_version(model_name: str, provider: str = "ollama", client=None) ->
         if "large" in model_name: return "2411"
         if "medium" in model_name: return "2312"
     if "grok" in model_name:
+        match = re.search(r"grok-([0-9.]+)(?:-([^/]+))?", model_name)
+        if match:
+            version = match.group(1)
+            suffix = match.group(2)
+            if suffix and "mini" in suffix:
+                return f"{version}-mini"
+            return version
         return "latest"
     if "lfm" in model_name:
         return "latest"
-    if "o3-mini" in model_name:
-        return "2026-01-30"
-    if "o1" in model_name:
+    if "o1" in model_name or "o3" in model_name:
+        match = re.search(r"o[13](?:-[a-z]+)*-(\d{4}-\d{2}-\d{2})", model_name)
+        if match:
+            return match.group(1)
+        if "o3-mini" in model_name:
+            return "2025-01-31"
+        if model_name == "o1" or model_name.endswith("/o1"):
+            return "2024-12-17"
         return "latest"
     return "k.A."
+
+
+def format_version_hash_for_display(version: str, model_type: str = "") -> str:
+    """
+    Truncates local/Ollama model hashes to 6 characters for display purposes.
+    Nur für die Anzeige im Leaderboard. Format: 6 Zeichen hex.
+    """
+    version = str(version).strip()
+    m_type = str(model_type).strip().lower()
+
+    # Check if we should treat it as a local/Ollama model (e.g. "Local", "Local Cloud")
+    is_local_variant = ("local" in m_type or "ollama" in m_type or not m_type)
+
+    if is_local_variant and len(version) > 6 and re.match(r"^[a-f0-9]+$", version):
+        return version[:6]
+
+    return version
 
 
 def get_ollama_model_info(model_name: str) -> dict[str, Any]:

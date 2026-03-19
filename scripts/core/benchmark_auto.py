@@ -461,22 +461,24 @@ def main():
     for m in modules:
         print(f"   - {m['name']} ({m['key']})")
 
+    aborted = False
     try:
         # 1. Lokale Modelle
         try:
             run_local_batch(modules, validator, force=args.force, audit_mode=args.audit)
-        except KeyboardInterrupt:
+        except (KeyboardInterrupt, SystemExit):
             print("\n⛔  Abbruch durch Benutzer (Lokale Modelle).")
-            sys.exit(1)
+            aborted = True
 
         # 2. Kommerzielle Modelle
-        try:
-            run_commercial_batch(
-                modules, validator, force=args.force, audit_mode=args.audit
-            )
-        except KeyboardInterrupt:
-            print("\n⛔  Abbruch durch Benutzer (Kommerzielle Modelle).")
-            sys.exit(1)
+        if not aborted:
+            try:
+                run_commercial_batch(
+                    modules, validator, force=args.force, audit_mode=args.audit
+                )
+            except (KeyboardInterrupt, SystemExit):
+                print("\n⛔  Abbruch durch Benutzer (Kommerzielle Modelle).")
+                aborted = True
 
     finally:
         print("\n\n✅  AUTOMATIC RUN VERLASSEN.")
@@ -484,9 +486,22 @@ def main():
 
         # Am Ende das Leaderboard IMMER aktualisieren (auch bei Abbruch)
         try:
-            gen_leaderboard(print_table=True)
+            df = gen_leaderboard(print_table=not aborted)
+            if aborted and df is not None:
+                print("\n📊 Kurzübersicht Leaderboard:")
+                if "Model Name" in df.columns and "Total Score" in df.columns:
+                    print("   {:<30} | {}".format("Modell", "Score"))
+                    print("   " + "-" * 40)
+                    for _, row in df.iterrows():
+                        print("   {:<30} | {}".format(str(row['Model Name'])[:30], row['Total Score']))
+                else:
+                    print(f"   (Header Fehler. Verfügbar: {', '.join(df.columns[:5])})")
+
         except Exception as e:  # pylint: disable=broad-exception-caught
             print(f"⚠️ Leaderboard konnte nicht generiert werden: {e}")
+
+        if aborted:
+            sys.exit(1)
 
 
 if __name__ == "__main__":

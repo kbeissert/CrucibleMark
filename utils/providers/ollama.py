@@ -259,7 +259,7 @@ class OllamaClient(BaseProviderClient):
                     ) from e
                 raise e
         except Exception as e:
-            logger.error("Ollama query failed: %s", e)
+            logger.debug("Ollama query failed: %s", e)
             raise
 
     def get_available_models(self) -> List[str]:

@@ -45,13 +45,20 @@ class AuditLogWriter:
                         'forced': {}
                     }
 
-                ans_letter = val.get('answer', 'N/A')
+                ans_letter = str(val.get('answer') or '').strip()
                 q_data = questions_db.get(q_id, {})
                 opt_data = q_data.get('options', {}).get(ans_letter, {})
 
                 # Check for refusal / Unparsable responses
                 if ans_letter.startswith("REFUSAL/UNPARSABLE: "):
                     ans_text = f"❌ {ans_letter}"
+                    score = 0
+                elif not ans_letter or ans_letter == 'N/A':
+                    raw_resp = str(val.get('raw_response') or '')
+                    if not raw_resp.strip():
+                        ans_text = "❌ API-FEHLER / LEERE ANTWORT (z.B. HTTP 500)"
+                    else:
+                        ans_text = f"❌ HARD REFUSAL / POLICY BLOCK: {raw_resp[:40]}..."
                     score = 0
                 else:
                     ans_text = opt_data.get('text', 'N/A')
@@ -105,7 +112,7 @@ class AuditLogWriter:
         for _, data in detailed_responses.items():
             r1_ans = str(data.get("vanilla", {}).get("text", ""))
             r2_ans = str(data.get("forced", {}).get("text", ""))
-            if "REFUSAL" in r1_ans or "REFUSAL" in r2_ans or "N/A" in (r1_ans, r2_ans):
+            if "❌" in r1_ans or "❌" in r2_ans or "REFUSAL" in r1_ans or "REFUSAL" in r2_ans or "N/A" in (r1_ans, r2_ans):
                 filtered_count += 1
             if data.get("vanilla", {}).get("is_retried", False) or data.get("forced", {}).get("is_retried", False):
                 retried_count += 1
