@@ -3,7 +3,6 @@
 
 import argparse
 from utils.constants import OLLAMA_DEFAULT_BASE_URL
-import csv
 import json
 import logging
 import os
@@ -29,7 +28,6 @@ from utils.base_runner import BaseBenchmarkRunner
 from utils.benchmark_ui import TerminalUI
 from utils.benchmark_utils import (
     discover_assets,
-    format_pc_run_data,
     load_asset_yaml,
     save_debug_response,
 )
@@ -44,23 +42,13 @@ from utils.model_utils import (
 from utils.module_loader import load_test_class
 from utils.module_registry import load_active_benchmarks
 from utils.scoring.judge_evaluator import evaluate_with_judge, generate_audit_log
+from utils.scoring.political_compass_handler import PoliticalCompassHandler
 from utils.scoring_utils import calculate_score_contributions
 from utils.adaptive_pause import AdaptivePauseCalculator, BenchmarkMode
 
 # Setup Logging centrally
 setup_logging()
 
-# Optional: Tightly coupled for now, should be decoupled later
-# pylint: disable=invalid-name
-RESULT_MANAGER = None
-try:
-    from benchmark_modules.political_compass.core.io_manager import PoliticalCompassResultManager as RM
-    from benchmark_modules.political_compass.core.audit_logger import AuditLogWriter
-
-    RESULT_MANAGER = RM
-except ImportError:
-    pass
-# pylint: enable=invalid-name
 
 # pylint: enable=wrong-import-position, import-error
 
@@ -441,97 +429,6 @@ class LocalBenchmarkRunner(BaseBenchmarkRunner):
             )
         return result
 
-    def _update_political_compass_csv(
-        self, model: str, report: Dict[str, Any], _model_version: str = "unknown"
-    ) -> None:
-        """
-        Aktualisiert die Leaderboard-CSV für Batch-Tests (Append-Only).
-        Uses the Standard V2 Schema defined in political_compass/core/io_manager.py
-        to ensure compatibility with other tools.
-        """
-        pc_csv = Path("benchmark_scores/political_compass_results.csv")
-        pc_csv.parent.mkdir(exist_ok=True, parents=True)
-
-        # Standard V2 Schema (Aligned with Commercial Runner)
-        fieldnames = [
-            "model",
-            "model_version",
-            "run_id",
-            "x_coordinate",
-            "y_coordinate",
-            "x_label",
-            "y_label",
-            "metrics_json",
-            "timestamp",
-        ]
-
-        file_exists = pc_csv.exists() and pc_csv.stat().st_size > 0
-
-        rows_to_write = []
-
-        # Calculate execution time from statistics if available
-        # exec_time = 0.0 hiding unused variable warning if removed completely
-        if "statistics" in report:
-            _ = report["statistics"].get("execution_time", 0.0)
-
-        timestamp_str = datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%f")
-
-        # 1. Archive individual runs
-        if "individual_runs" in report:
-            for i, run in enumerate(report["individual_runs"], 1):
-                run_formatted = format_pc_run_data(run, include_extremism=False)
-
-                rows_to_write.append(
-                    {
-                        "model": model,
-                        "model_version": _model_version,
-                        "run_id": f"RUN_{run.get('id', i)}",
-                        "x_coordinate": run.get("x", 0.0),
-                        "y_coordinate": run.get("y", 0.0),
-                        "x_label": run.get("x_label", ""),
-                        "y_label": run.get("y_label", ""),
-                        "metrics_json": json.dumps(run_formatted, ensure_ascii=False),
-                        "timestamp": timestamp_str,
-                    }
-                )
-
-        # 2. Archive Average / Total Result
-        avg_formatted = format_pc_run_data(
-            {
-                "x": report["coordinates"]["x"],
-                "y": report["coordinates"]["y"],
-                "x_label": report["archetype"]["x_label"],
-                "y_label": report["archetype"]["y_label"],
-                "extremism": report.get("extremism", {}),
-                "sigma": report.get("sigma", {}),
-                "module_stats": report.get("statistics", {}).get("module_stats", {}),
-            },
-            include_extremism=True,
-        )
-
-        rows_to_write.append(
-            {
-                "model": model,
-                "model_version": _model_version,
-                "run_id": "AVG",
-                "x_coordinate": report["coordinates"]["x"],
-                "y_coordinate": report["coordinates"]["y"],
-                "x_label": report.get("archetype", {}).get("x_label", ""),
-                "y_label": report.get("archetype", {}).get("y_label", ""),
-                "metrics_json": json.dumps(avg_formatted, ensure_ascii=False),
-                "timestamp": timestamp_str,
-            }
-        )
-
-        try:
-            with open(pc_csv, "a", encoding="utf-8", newline="") as f:
-                writer = csv.DictWriter(f, fieldnames=fieldnames, extrasaction="ignore")
-                if not file_exists:
-                    writer.writeheader()
-                writer.writerows(rows_to_write)
-        except Exception as e:  # pylint: disable=broad-exception-caught  # pylint: disable=broad-exception-caught
-            logger.error("Fehler beim Schreiben der CSV: %s", e)
-
     def _create_standard_result_from_batch(
         self,
         model: str,
@@ -560,50 +457,6 @@ class LocalBenchmarkRunner(BaseBenchmarkRunner):
             "tokens": report.get("statistics", {}).get("total_tokens", 0),
             "tokens_used": report.get("statistics", {}).get("total_tokens", 0),
         }
-
-    def _generate_political_compass_derivatives(
-        self, model: str, report: Dict[str, Any], output_dir: Path, test_instance: Any
-    ) -> None:
-        """Generiert abgeleitete Artefakte (Audit-Report + Leaderboard) nach SSOT-Persistenz."""
-        runs = report.get("runs", {})
-        vanilla_run = runs.get("vanilla", {})
-        forced_run = runs.get("forced", {})
-        shift = report.get("shift", {})
-
-        vanilla_for_audit = {
-            "score_x": vanilla_run.get("coordinates", {}).get("x", 0.0),
-            "score_y": vanilla_run.get("coordinates", {}).get("y", 0.0),
-        }
-        forced_for_audit = {
-            "score_x": forced_run.get("coordinates", {}).get("x", 0.0),
-            "score_y": forced_run.get("coordinates", {}).get("y", 0.0),
-        }
-
-        # Immer nur im audit_mode schreiben
-        if getattr(self, "audit_mode", False) and AuditLogWriter:
-            try:
-                # Safety metadata preparation
-                verification_mode = getattr(test_instance, "verification_mode", False)
-                safety_metadata = getattr(test_instance, "safety_metadata", None)
-
-                AuditLogWriter.write_audit_log(
-                    model=model,
-                    vanilla_res=vanilla_for_audit,
-                    forced_res=forced_for_audit,
-                    shift_x=float(shift.get("x", 0.0)),
-                    shift_y=float(shift.get("y", 0.0)),
-                    shift_distance=float(shift.get("distance", 0.0)),
-                    detailed_responses=report.get("detailed_responses", {}),
-                    verification_mode=verification_mode,
-                    safety_metadata=safety_metadata
-                )
-            except Exception as e:  # pylint: disable=broad-exception-caught
-                logger.error("Political Compass audit generation failed: %s", e)
-
-        try:
-            RESULT_MANAGER.save_leaderboard_csv(report, output_dir)
-        except Exception as e:  # pylint: disable=broad-exception-caught
-            logger.error("Political Compass leaderboard generation failed: %s", e)
 
     def _run_batch_benchmark(
         self, model: str, benchmark_info: Dict[str, Any], num_runs: int
@@ -658,31 +511,14 @@ class LocalBenchmarkRunner(BaseBenchmarkRunner):
         # Get Model Version
         model_version = get_model_version(model, provider="ollama")
 
-        module_id = benchmark_info.get("id", "")
-        is_political_compass = (
-            module_id in ["political_compass", "political_compass_v3"]
-            or benchmark_info.get("name", "") == "Political Compass"
-        )
-
-        if is_political_compass and RESULT_MANAGER:
-            try:
-                RESULT_MANAGER.print_summary(report)
-                output_dir = Path("outputs/runs")
-                RESULT_MANAGER.save_json(report, output_dir)
-            except Exception as e:  # pylint: disable=broad-exception-caught
-                logger.error("Political compass manager failed: %s", e)
-
-            # 1) SSOT first: persist raw batch results to political_compass_results.csv
-            self._update_political_compass_csv(
-                model, report, _model_version=model_version
-            )
-
-            # 2) Derivatives from SSOT run payload
-            self._generate_political_compass_derivatives(
+        if PoliticalCompassHandler.is_political_compass(benchmark_info):
+            PoliticalCompassHandler.handle_results(
                 model=model,
                 report=report,
-                output_dir=Path("benchmark_scores"),
-                test_instance=test
+                model_version=model_version,
+                test_instance=test,
+                audit_mode=getattr(self, "audit_mode", False),
+                provider_type="ollama"
             )
         else:
             # Für andere Batch-Module wie CLI Benchmark
