@@ -29,8 +29,6 @@ from utils.benchmark_utils import (
     select_from_list,
     discover_assets,
     load_asset_yaml,
-    format_political_compass_data,
-    prepare_pc_csv_row,
     save_debug_response,
 )  # noqa: E402
 from utils.model_utils import get_model_version  # noqa: E402
@@ -40,23 +38,9 @@ from utils.scoring_utils import (
     calculate_score_contributions,
 )  # noqa: E402
 from utils.rate_limiter import RateLimiter  # noqa: E402
-
-# Declare ResultManager with proper type annotation
-# pylint: disable=invalid-name
-ResultManager: Optional[Any] = None  # noqa: E402
-AuditLogWriter: Optional[Any] = None  # noqa: E402
-try:
-    from benchmark_modules.political_compass.core.io_manager import PoliticalCompassResultManager as ResultManager
-except ImportError:
-    pass
-try:
-    from benchmark_modules.political_compass.core.audit_logger import AuditLogWriter
-except ImportError:
-    pass
-# pylint: enable=wrong-import-position, import-error,invalid-name
+from utils.scoring.political_compass_handler import PoliticalCompassHandler  # noqa: E402
 
 logger = logging.getLogger(__name__)
-
 
 class CommercialBenchmarkRunner(BaseBenchmarkRunner):
     """Benchmark Runner für kommerzielle API-basierte Modelle."""
@@ -493,119 +477,17 @@ class CommercialBenchmarkRunner(BaseBenchmarkRunner):
                 print(f"❌ Batch Execution Failed: Invalid JSON response ({e})")
                 return []
 
-            is_political_compass = (
-                benchmark_info.get("id", "")
-                in ["political_compass", "political_compass_v3"]
-                or benchmark_info.get("name", "") == "Political Compass"
-            )
 
-            def _generate_political_compass_derivatives(local_report: Dict[str, Any], test_instance: Any):
-                """Generiert Bias-Report + Leaderboard NACH SSOT-Persistenz."""
-                runs = local_report.get("runs", {})
-                vanilla_run = runs.get("vanilla", {})
-                forced_run = runs.get("forced", {})
-                shift = local_report.get("shift", {})
-
-                vanilla_for_audit = {
-                    "score_x": vanilla_run.get("coordinates", {}).get("x", 0.0),
-                    "score_y": vanilla_run.get("coordinates", {}).get("y", 0.0),
-                }
-                forced_for_audit = {
-                    "score_x": forced_run.get("coordinates", {}).get("x", 0.0),
-                    "score_y": forced_run.get("coordinates", {}).get("y", 0.0),
-                }
-
-                # Immer nur im audit_mode schreiben
-                if getattr(self, "audit_mode", False) and AuditLogWriter:
-                    try:
-                        # Safety metadata preparation
-                        verification_mode = getattr(test_instance, "verification_mode", False)
-                        safety_metadata = getattr(test_instance, "safety_metadata", None)
-
-                        AuditLogWriter.write_audit_log(
-                            model=model,
-                            vanilla_res=vanilla_for_audit,
-                            forced_res=forced_for_audit,
-                            shift_x=float(shift.get("x", 0.0)),
-                            shift_y=float(shift.get("y", 0.0)),
-                            shift_distance=float(shift.get("distance", 0.0)),
-                            detailed_responses=local_report.get("detailed_responses", {}),
-                            verification_mode=verification_mode,
-                            safety_metadata=safety_metadata
-                        )
-                    except Exception as e:  # pylint: disable=broad-exception-caught
-                        print(f"⚠️ Political Compass Audit Error: {e}")
-
-                try:
-                    ResultManager.save_leaderboard_csv(local_report, Path("benchmark_scores"))
-                except Exception as e:  # pylint: disable=broad-exception-caught
-                    print(f"⚠️ Political Compass Leaderboard Error: {e}")
-
-            if is_political_compass and ResultManager:
-                try:
-                    ResultManager.print_summary(report)
-                    ResultManager.save_json(report, Path("outputs/runs"))
-                except Exception as e:  # pylint: disable=broad-exception-caught
-                    print(f"⚠️ Political Compass Reporting Error: {e}")
-
-                # Save to shared CSV for Leaderboard
-                try:
-                    pc_csv = Path("benchmark_scores/political_compass_results.csv")
-                    pc_csv.parent.mkdir(exist_ok=True, parents=True)
-
-                    fieldnames = [
-                        "model",
-                        "model_version",
-                        "run_id",
-                        "x_coordinate",
-                        "y_coordinate",
-                        "x_label",
-                        "y_label",
-                        "metrics_json",
-                        "timestamp",
-                    ]
-
-                    # Read logic for existing file to append/update
-                    pc_rows = []
-                    if pc_csv.exists():
-                        with open(pc_csv, "r", encoding="utf-8") as f:
-                            # Handle potential schema mismatch on read
-                            reader = csv.DictReader(f)
-                            pc_rows = list(reader)
-                            # If file on disk has more columns than we know, update known fieldnames
-                            if reader.fieldnames:
-                                for col in reader.fieldnames:
-                                    if col not in fieldnames:
-                                        fieldnames.append(col)
-
-                    # Remove old entry for this model if exists
-                    pc_rows = [r for r in pc_rows if r.get("model") != model]
-
-                    # Construct Data Object
-                    data_object = format_political_compass_data(report)
-
-                    # Resolve Version using SSOT (Single Source of Truth)
-                    # We pass the client to ensure behavioral hashing is consistent with other runs.
-                    version = get_model_version(model, provider, client=client)
-
-                    new_row = prepare_pc_csv_row(
-                        model, report, data_object, model_version=version
-                    )
-                    new_row["timestamp"] = datetime.now().isoformat()
-                    pc_rows.append(new_row)
-
-                    with open(pc_csv, "w", encoding="utf-8", newline="") as f:
-                        writer = csv.DictWriter(
-                            f, fieldnames=fieldnames, extrasaction="ignore"
-                        )
-                        writer.writeheader()
-                        writer.writerows(pc_rows)
-
-                except Exception as e:  # pylint: disable=broad-exception-caught
-                    print(f"⚠️ Political Compass CSV Error: {e}")
-
-                # Derivatives only after SSOT is persisted (now completely decoupled from the CSV attempt!).
-                _generate_political_compass_derivatives(report, test_instance=test)
+            if PoliticalCompassHandler.is_political_compass(benchmark_info):
+                version = get_model_version(model, provider, client=client)
+                PoliticalCompassHandler.handle_results(
+                    model=model,
+                    report=report,
+                    model_version=version,
+                    test_instance=test,
+                    audit_mode=getattr(self, "audit_mode", False),
+                    provider_type="commercial"
+                )
 
             version = get_model_version(model, provider, client=client)
 
@@ -711,7 +593,6 @@ class CommercialBenchmarkRunner(BaseBenchmarkRunner):
 
         print(f"{'=' * 66}\n")
 
-
 def main():
     """CLI Entry Point."""
     parser = argparse.ArgumentParser(description="Commercial Benchmark Runner")
@@ -781,7 +662,6 @@ def main():
         print(f"\n❌ Fatal Error: {e}")
         traceback.print_exc()
         sys.exit(1)
-
 
 if __name__ == "__main__":
     main()
