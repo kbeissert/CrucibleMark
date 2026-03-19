@@ -32,13 +32,11 @@ from utils.benchmark_utils import (
     save_debug_response,
 )  # noqa: E402
 from utils.model_utils import get_model_version  # noqa: E402
-from utils.llm_client import LLMClient  # noqa: E402
 from utils.module_registry import load_active_benchmarks  # noqa: E402
 from utils.scoring_utils import (
     calculate_score_contributions,
 )  # noqa: E402
 from utils.rate_limiter import RateLimiter  # noqa: E402
-from utils.scoring.political_compass_handler import PoliticalCompassHandler  # noqa: E402
 
 logger = logging.getLogger(__name__)
 
@@ -413,103 +411,16 @@ class CommercialBenchmarkRunner(BaseBenchmarkRunner):
             assets: Optional list of assets to run (overrides discovery)
         """
 
-        # Dispatch Batch Mode (e.g. Political Compass) via Config
+        # Dispatch Batch Mode
         if benchmark_info.get("execution_mode") == "batch":
-            batch_asset_id = str(benchmark_info.get("id", "batch_module"))
-            cached_res = self.existing_benchmarks.get((model, batch_asset_id))
-            if not self.force and cached_res:
-                print(
-                    f"⏩ Überspringe {benchmark_info['name']} (Batch-Modus; Bereits im Cache vorhanden)"
-                )
-                return [cached_res.copy()]
-
-            # Dynamic Loading
-            module_path = Path(str(benchmark_info.get("module_path", "")))
-            test_file = module_path / "test.py"
-            test_class_name = str(benchmark_info.get("test_class", ""))
-
-            try:
-                test_class = load_test_class(test_file, test_class_name)
-            except Exception as e:  # pylint: disable=broad-exception-caught
-                logger.error(
-                    "Failed to load batch module %s: %s", benchmark_info["name"], e
-                )
-                return []
-
-            # TODO: Generic ResultManager for batch modules
-            # For now, we assume Political Compass structure for batch mode
-            # Ideally, the TestClass should handle IO or return a standard object
-            # Imports moved to top-level
-
-            print(
-                f"🛠️  Initialisiere Batch-Test: {benchmark_info['name']} ({provider}:{model})"
+            return self.execute_batch_module(
+                model=model,
+                benchmark_info=benchmark_info,
+                provider=provider,
+                num_runs=num_runs,
+                force=self.force,
+                existing_benchmarks=self.existing_benchmarks
             )
-            test = test_class()
-
-            # Load assets dynamically from module path
-            assets_dir = module_path / "assets"
-            if not assets_dir.exists():
-                print(f"❌ Assets directory not found: {assets_dir}")
-                return []
-
-            if hasattr(test, "load_questions"):
-                test.load_questions(str(assets_dir))
-
-            if hasattr(test, "questions") and not test.questions:
-                print("❌ Keine Fragen geladen!")
-                return []
-
-            # Apply runs config
-            min_runs = benchmark_info.get("min_runs", 1)
-            test.num_runs = max(num_runs, min_runs)
-
-            client = LLMClient(config=self.validator.config)
-
-            # Execution
-            result_wrapper = test.execute(
-                model=model, llm_client=client, provider=provider
-            )
-
-            # Reporting
-            try:
-                report = json.loads(result_wrapper.raw_response)
-            except (json.JSONDecodeError, TypeError) as e:
-                print(f"❌ Batch Execution Failed: Invalid JSON response ({e})")
-                return []
-
-
-            if PoliticalCompassHandler.is_political_compass(benchmark_info):
-                version = get_model_version(model, provider, client=client)
-                PoliticalCompassHandler.handle_results(
-                    model=model,
-                    report=report,
-                    model_version=version,
-                    test_instance=test,
-                    audit_mode=getattr(self, "audit_mode", False),
-                    provider_type="commercial"
-                )
-
-            version = get_model_version(model, provider, client=client)
-
-            # Create Standard Result for CSV
-            std_result = {
-                "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-                "status": report.get("status", "success"),
-                "provider": provider,
-                "model": model,
-                "model_version": version,
-                "asset_id": benchmark_info.get("id", "batch_module"),
-                "asset_name": benchmark_info.get("name", "Batch Module"),
-                "total_score": report.get("total_score", report.get("score", 0.0)),
-                "max_score": 100,
-                "percentage": report.get("total_score", report.get("score", 0.0)),
-                "execution_time": round(result_wrapper.execution_time or 0, 1),
-                "response_length": 0,
-                "tier": report.get("tier", "N/A"),
-                "cost_usd": result_wrapper.cost_usd,
-                "tokens": result_wrapper.tokens_used,
-            }
-            return [std_result]
 
         # Check Golden Standard Status
 
@@ -543,55 +454,6 @@ class CommercialBenchmarkRunner(BaseBenchmarkRunner):
 
         return results
 
-    def save_results(self, results: List[Dict[str, Any]]):
-        """Saves results to CSV."""
-        if not results:
-            return
-        path = self.result_manager.save_results(results, result_type="commercial")
-        if path:
-            print(f"\n💾 Ergebnisse gespeichert: {path}")
-
-    def print_summary(self, results: List[Dict[str, Any]]):
-        """Prints benchmark summary."""
-        if not results:
-            return
-
-        def safe_float(val):
-            try:
-                return float(val) if val not in (None, "") else 0.0
-            except ValueError:
-                return 0.0
-
-        total_score = sum(safe_float(r.get("total_score", 0)) for r in results)
-        max_possible = sum(safe_float(r.get("max_score", 0)) for r in results)
-        avg_pct = (total_score / max_possible * 100) if max_possible > 0 else 0
-
-        # Calculate Costs & Time
-        total_cost = sum(safe_float(r.get("cost_usd")) for r in results)
-        avg_time = (
-            sum(safe_float(r.get("execution_time")) for r in results) / len(results)
-            if results
-            else 0
-        )
-
-        # Get Remaining Budget
-        provider = results[0]["provider"] if results else "mistral"
-        remaining = self.client.cost_tracker.get_remaining_budget(provider)
-        rem_str = f"${remaining:.2f}" if remaining is not None else "N/A"
-
-        print(f"{'─' * 66}")
-        # Module Total: $0.0471 | Avg Time: 13.2s | Remaining Budget: $19.95
-        print(
-            f"Module Total: ${total_cost:.4f} | Avg Time: {avg_time:.1f}s | Remaining Budget: {rem_str}"
-        )
-
-        # Keep Score Summary
-        badge = self._get_quality_badge(avg_pct)
-        print(
-            f"Overall Quality: {avg_pct:.2f}% {badge} ({total_score}/{max_possible} Pts)"
-        )
-
-        print(f"{'=' * 66}\n")
 
 def main():
     """CLI Entry Point."""
@@ -625,8 +487,8 @@ def main():
             # Skip Political Compass in Golden Standard (Bias != Benchmark)
 
             results = runner.run_benchmark(provider, model_id, cat_info)
-            runner.save_results(results)
-            runner.print_summary(results)
+            runner.save_results(results, result_type="commercial")
+            runner.print_summary(results, model=model_id)
         return
 
     benchmark_info = runner.select_benchmark()
@@ -641,8 +503,8 @@ def main():
             try:
                 print(f"\n👉 Modul: {cat_info['name']}")
                 results = runner.run_benchmark(provider, model_id, cat_info)
-                runner.save_results(results)
-                runner.print_summary(results)
+                runner.save_results(results, result_type="commercial")
+                runner.print_summary(results, model=model_id)
             except Exception as e:  # pylint: disable=broad-exception-caught
                 print(f"❌ Fehler im Modul '{cat_info['name']}': {e}")
                 traceback.print_exc()
@@ -656,8 +518,8 @@ def main():
 
     try:
         results = runner.run_benchmark(provider, model_id, benchmark_info)
-        runner.save_results(results)
-        runner.print_summary(results)
+        runner.save_results(results, result_type="commercial")
+        runner.print_summary(results, model=model_id)
     except Exception as e:  # pylint: disable=broad-exception-caught
         print(f"\n❌ Fatal Error: {e}")
         traceback.print_exc()
