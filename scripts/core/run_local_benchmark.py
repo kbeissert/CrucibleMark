@@ -3,7 +3,6 @@
 
 import argparse
 from utils.constants import OLLAMA_DEFAULT_BASE_URL
-import json
 import logging
 import os
 import sys
@@ -31,7 +30,6 @@ from utils.benchmark_utils import (
     load_asset_yaml,
     save_debug_response,
 )
-from utils.llm_client import LLMClient
 from utils.logging_config import setup_logging
 
 from utils.model_utils import (
@@ -39,10 +37,8 @@ from utils.model_utils import (
     get_ollama_models_info,
     is_reasoning_model,
 )
-from utils.module_loader import load_test_class
 from utils.module_registry import load_active_benchmarks
 from utils.scoring.judge_evaluator import evaluate_with_judge, generate_audit_log
-from utils.scoring.political_compass_handler import PoliticalCompassHandler
 from utils.scoring_utils import calculate_score_contributions
 from utils.adaptive_pause import AdaptivePauseCalculator, BenchmarkMode
 
@@ -458,88 +454,6 @@ class LocalBenchmarkRunner(BaseBenchmarkRunner):
             "tokens_used": report.get("statistics", {}).get("total_tokens", 0),
         }
 
-    def _run_batch_benchmark(
-        self, model: str, benchmark_info: Dict[str, Any], num_runs: int
-    ) -> List[Dict[str, Any]]:
-        """Führt Batch-Module (z.B. Political Compass) aus."""
-        module_path = Path(benchmark_info.get("module_path", ""))
-        test_file = module_path / "test.py"
-        test_class_name = benchmark_info.get("test_class")
-
-        if not test_class_name or not isinstance(test_class_name, str):
-            logger.error(
-                "Keine gültige Test-Klasse für %s definiert.", benchmark_info["name"]
-            )
-            return []
-
-        try:
-            test_class_type = load_test_class(test_file, test_class_name)
-        except Exception as e:  # pylint: disable=broad-exception-caught  # pylint: disable=broad-exception-caught
-            logger.error(
-                "Failed to load batch module %s: %s", benchmark_info["name"], e
-            )
-            return []
-
-        # pylint: disable=fixme
-        # TODO: Generic ResultManager for batch modules
-        print(f"🛠️  Initialisiere Batch-Test: {benchmark_info['name']} ({model})")
-        test = test_class_type()
-
-        assets_dir = module_path / "assets"
-        if not assets_dir.exists():
-            print(f"❌ Assets directory not found: {assets_dir}")
-            return []
-
-        if hasattr(test, "load_questions"):
-            test.load_questions(str(assets_dir))
-
-        if hasattr(test, "questions") and not test.questions:
-            print("❌ Keine Fragen geladen!")
-            return []
-
-        min_runs = benchmark_info.get("min_runs", 1)
-        test.num_runs = max(num_runs, min_runs)
-
-        client = LLMClient(config=self.validator.config)
-
-        # Execution
-        result_wrapper = test.execute(model=model, llm_client=client, provider="ollama")
-
-        # Reporting
-        report = json.loads(result_wrapper.raw_response)
-
-        # Get Model Version
-        model_version = get_model_version(model, provider="ollama")
-
-        if PoliticalCompassHandler.is_political_compass(benchmark_info):
-            PoliticalCompassHandler.handle_results(
-                model=model,
-                report=report,
-                model_version=model_version,
-                test_instance=test,
-                audit_mode=getattr(self, "audit_mode", False),
-                provider_type="ollama"
-            )
-        else:
-            # Für andere Batch-Module wie CLI Benchmark
-            print(f"\n📊 {benchmark_info.get('name', 'Batch Module')} Summary:")
-            print(f"Modell: {model}")
-            print(
-                f"Score: {report.get('score', report.get('total_score', 0.0)):.2f}/100"
-            )
-            print(f"Erfolgsrate: {report.get('success_rate', 'N/A')}")
-            if "badge" in report:
-                print(f"Badge: {report['badge']}\n")
-
-        return [
-            self._create_standard_result_from_batch(
-                model,
-                report,
-                result_wrapper,
-                benchmark_info=benchmark_info,
-                model_version=model_version,
-            )
-        ]
 
     def _run_standard_benchmark(
         self,
@@ -624,7 +538,7 @@ class LocalBenchmarkRunner(BaseBenchmarkRunner):
 
         # Dispatch Batch Mode (e.g. Political Compass) via Config
         if benchmark_info.get("execution_mode") == "batch":
-            return self._run_batch_benchmark(model, benchmark_info, num_runs)
+            return self.execute_batch_module(model=model, benchmark_info=benchmark_info, provider="ollama", num_runs=num_runs, existing_benchmarks=None)
 
         return self._run_standard_benchmark(model, benchmark_info, assets)
 
@@ -669,182 +583,6 @@ class LocalBenchmarkRunner(BaseBenchmarkRunner):
                 f"{base_msg}| {token_str:>7} | {result['execution_time']:>5.1f}s{judge_str}"
             )
 
-    def save_results(self, results: List[Dict[str, Any]]) -> None:
-        """Speichert Ergebnisse in CSV via ResultManager."""
-        self.result_manager.save_results(results, result_type="local")
-
-    def print_summary(self, results: List[Dict[str, Any]], model: str) -> None:
-        """Druckt Zusammenfassung."""
-        if not results:
-            return
-
-        successful = [r for r in results if r.get("status") != "error"]
-        failed = [r for r in results if r.get("status") == "error"]
-
-        # Separate Probe Result from Scoring
-        probe_result = next(
-            (r for r in successful if r.get("asset_id") == "system_warmup_probe"), None
-        )
-        # Filter probe out of scoring results
-        scoring_candidates = [
-            r for r in successful if r.get("asset_id") != "system_warmup_probe"
-        ]
-
-        if not scoring_candidates and not probe_result:
-            print(f"\n{'=' * 60}\n📈 BENCHMARK ZUSAMMENFASSUNG\n{'=' * 60}")
-            print(f"Modell: {model}\n❌ Alle {len(results)} Tests fehlgeschlagen!")
-            return
-
-        # Calculate averages (excluding Political Compass if it's the only test)
-        # Filter out political compass for average score calculation because it's qualitative
-        scored_results = [
-            r
-            for r in scoring_candidates
-            if not str(r.get("asset_id", "")).startswith("political_compass")
-        ]
-
-        if not scored_results:
-            # If only Political Compass (or just Probe?) ran
-            if scoring_candidates:  # If we have actual tests (e.g. Political Compass)
-                avg_time = sum(r["execution_time"] for r in scoring_candidates) / len(
-                    scoring_candidates
-                )
-                print("\n✅ Benchmark abgeschlossen für Modul: Political Compass")
-                print(f"   Modell: {model}")
-                print(f"   Dauer:  {avg_time:.1f}s")
-
-                # Print specific PC info instead of score
-                for r in scoring_candidates:
-                    if "tier" in r:
-                        print(f"   Resultat: {r['tier']}")
-            elif probe_result:
-                # Only Probe ran (unlikely, but safe)
-                print("\n⚠️ Nur System Probe ausgeführt.")
-
-            return
-
-        avg_score = sum(r["total_score"] for r in scored_results) / len(scored_results)
-        avg_max = sum(r["max_score"] for r in scored_results) / len(scored_results)
-        avg_pct = sum(r["percentage"] for r in scored_results) / len(scored_results)
-        avg_time = sum(
-            r["execution_time"]
-            for r in successful
-            if r.get("asset_id") != "system_warmup_probe"
-        ) / len(scored_results)
-
-        quality = self.get_quality_badge(avg_pct)
-
-        print(f"\n✅ Modul abgeschlossen: {model}")
-        print(
-            f"Tests: {len(scoring_candidates)} ({len(scoring_candidates)} ✅, {len(failed)} ❌)"
-        )
-        print("\n📊 Durchschnitt (erfolgreiche Tests des Moduls):")
-        print(
-            f"   Dein Modell: {avg_score:.2f}/{avg_max:.0f} ({avg_pct:.2f}%) {quality}"
-        )
-        print(f"   Avg Speed:   {avg_time:.1f}s (Execution)")
-
-        if probe_result:
-            load_time = probe_result.get("load_time", 0)
-            print(f"   Cold Start:  {load_time:.2f}s (Initial Load)")
-
-        self._print_reference_comparison(successful)
-        self._print_best_worst(successful)
-        self._print_tiered_analysis(successful)
-
-        if failed:
-            print("\n❌ Fehlgeschlagen:")
-            for r in failed:
-                print(f"   {r['asset_name'][:40]}: {r.get('error_message')}")
-        print(f"{'=' * 60}")
-
-    def _print_reference_comparison(self, results: List[Dict[str, Any]]):
-        """Prints comparison to commercial reference."""
-        if not results or results[0].get("reference_score", 0) <= 0:
-            return
-
-        avg_ref = sum(r.get("reference_score", 0) for r in results) / len(results)
-        avg_diff = sum(r.get("score_difference", 0) for r in results) / len(results)
-
-        print(f"   Referenz:    {avg_ref:.2f}/100")
-        if avg_diff > 0:
-            print(f"   🎯 Differenz: +{avg_diff:.2f} (besser!)")
-            print(f"\n   {'=' * 60}")
-            print(
-                f"   ⚠️  ACHTUNG: GOLDEN STANDARD ÜBERTROFFEN! (Ratio: {100 + avg_diff:.2f}%)"
-            )
-            print(f"   {'=' * 60}")
-            print("   Dieses Modell übertrifft die kommerzielle Referenz.")
-            print(
-                "   Bitte Ergebnisse prüfen (und ggf. Golden Standard aktualisieren)."
-            )
-        elif avg_diff < 0:
-            print(f"   📉 Differenz: {avg_diff:.2f} (Gap)")
-        else:
-            print("   ⚖️  Differenz: ±0")
-
-    def _print_best_worst(self, results: List[Dict[str, Any]]):
-        """Prints best and worst performing tests."""
-        if not results:
-            return
-
-        sorted_res = sorted(results, key=lambda x: x["percentage"], reverse=True)
-
-        print("\n🏆 Beste Tests:")
-        for r in sorted_res[:3]:
-            q = self.get_quality_badge(r["percentage"])
-            d = r.get("score_difference", 0)
-            diff_str = f" ({d:+.2f})" if d != 0 else ""
-            print(
-                f"   {r['asset_name'][:35]:<35}: {r['percentage']:.2f}% {q}{diff_str}"
-            )
-
-        print("\n⚠️  Schwächste Tests:")
-        for r in sorted_res[-3:]:
-            q = self.get_quality_badge(r["percentage"])
-            d = r.get("score_difference", 0)
-            diff_str = f" ({d:+.2f})" if d != 0 else ""
-            print(
-                f"   {r['asset_name'][:35]:<35}: {r['percentage']:.2f}% {q}{diff_str}"
-            )
-
-    def _print_tiered_analysis(self, results: List[Dict[str, Any]]):
-        """Prints Tiered Reasoning Analysis if applicable."""
-        reasoning_res = [
-            r
-            for r in results
-            if r.get("details", {}).get("asset_id", "").startswith("reasoning_")
-        ]
-        if not reasoning_res:
-            return
-
-        print(f"\n🧠 REASONING ANALYSIS (Tiered)\n{'-' * 60}")
-        t1_scores = [
-            r["total_score"]
-            for r in reasoning_res
-            if "Tier 1" in r.get("details", {}).get("tier", "Tier 1")
-        ]
-        t2_scores = [
-            r["total_score"]
-            for r in reasoning_res
-            if "Tier 2" in r.get("details", {}).get("tier", "")
-        ]
-
-        t1_avg = sum(t1_scores) / len(t1_scores) if t1_scores else 0
-        t2_avg = sum(t2_scores) / len(t2_scores) if t2_scores else 0
-
-        profile = "🤖  Balanced"
-        if t2_avg > self.TIER_SCORE_HIGH:
-            profile = "🧠  Deep Thinker (Complex Logic Expert)"
-        elif t1_avg >= self.TIER_SCORE_HIGH:
-            profile = "🏎️  Daily Driver (Fast & Reliable)"
-        elif t1_avg < self.TIER_SCORE_LOW:
-            profile = "⚠️  Needs Improvement"
-
-        print(f"   Tier 1 (Operational): {t1_avg:.2f}%")
-        print(f"   Tier 2 (Deep Logic):  {t2_avg:.2f}%")
-        print(f"   Profile: {profile}\n{'-' * 60}")
-
 
 def main():
     """CLI Entry Point."""
@@ -878,8 +616,8 @@ def main():
 
     try:
         results = runner.run_benchmark(model, benchmark)
-        runner.save_results(results)
-        runner.print_summary(results, model)
+        runner.save_results(results, result_type="local")
+        runner.print_summary(results, model=model)
 
     except Exception as e:  # pylint: disable=broad-exception-caught  # pylint: disable=broad-exception-caught
         print(f"\n❌ Fehler beim Benchmark: {e}")
