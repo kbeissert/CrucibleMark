@@ -1,5 +1,5 @@
 # Active Context
 
-- Abgeschlossen: Versions-Strings in `model_utils.py` intelligent erweitert (O1, O3, Grok via Regex + korrekte Hash-Auflösung von Hugging-Face Community Repositories mit Slash). Historische Datenbanken (CSV) wurden bereinigt.
+- Abgeschlossen: Automatischer Trigger für den Anomaly Safety Scan in `political_compass_handler.py` (greift vollautomatisch bei `shift > 1.0`) ergänzt.
 - Nächster Schritt: Finale Volldurchläufe der kommerziellen & lokalen Modelle inklusive Generierung des finalen Leaderboards.
 - Offen/Risiko: Keine
