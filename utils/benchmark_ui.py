@@ -230,6 +230,45 @@ class TerminalUI:
         print(f"   Zeit: {elapsed:.1f}s | Tokens: {token_k}{cost_str}")
         print("-" * 50)
 
+
+
+    def print_asset_result(
+        self,
+        index: int,
+        total: int,
+        asset_id: str,
+        asset_name: str,
+        percentage: float,
+        tokens: int,
+        execution_time: float,
+        badge: str,
+        cost: float = 0.0,
+        judge_status: str = "",
+        is_commercial: bool = False
+    ):
+        """Prints the result of a single asset test."""
+        judge_str = f" | {judge_status}" if judge_status else ""
+        
+        # Clear the "Running..." line
+        print(" " * 100, end="\r")
+        
+        if is_commercial:
+            token_str = f"{tokens} t" if tokens > 0 else "0 t"
+            cost_str = f" | Cost: ${cost:.4f}"
+            print(
+                f"[{index}/{total}] {asset_id:<15} | {asset_name[:20]:<20} {badge} "
+                f"Score: {percentage:>6.2f}{cost_str} | "
+                f"{token_str:>7} | Time: {execution_time:.1f}s{judge_str}"
+            )
+        else:
+            token_str = f"{tokens:>6} t"
+            print(
+                f"   [{index}/{total}] {asset_id[:15]:<15} | {asset_name[:20]:<20} "
+                f"{badge} "
+                f"Score: {percentage:>6.2f} "
+                f"| {token_str} "
+                f"| Time: {execution_time:.1f}s{judge_str}"
+            )
     def print_run_result(
         self,
         run_idx: int,
