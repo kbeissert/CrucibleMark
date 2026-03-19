@@ -212,7 +212,12 @@ class TerminalUI:
             sys.stdout.flush()
 
     def finish_block(
-        self, block_name: str, elapsed: float, tokens: int, cost: float = 0.0
+        self,
+        block_name: str,
+        elapsed: float,
+        tokens: int,
+        cost: float = 0.0,
+        refusals: int = 0
     ):
         """Prints summary of completed block."""
         if tokens > TOKEN_K_THRESHOLD:
@@ -227,6 +232,8 @@ class TerminalUI:
 
         print("-" * 50)
         print(f"📦 Sub-Modul abgeschlossen: {display_name}")
+        if refusals > 0:
+            print(f"   ⚠️ Ausgeschlossen (API-Fehler/Verweigerung): {refusals} Fragen")
         print(f"   Zeit: {elapsed:.1f}s | Tokens: {token_k}{cost_str}")
         print("-" * 50)
 
@@ -248,10 +255,10 @@ class TerminalUI:
     ):
         """Prints the result of a single asset test."""
         judge_str = f" | {judge_status}" if judge_status else ""
-        
+
         # Clear the "Running..." line
         print(" " * 100, end="\r")
-        
+
         if is_commercial:
             token_str = f"{tokens} t" if tokens > 0 else "0 t"
             cost_str = f" | Cost: ${cost:.4f}"

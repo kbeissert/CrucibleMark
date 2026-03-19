@@ -152,10 +152,13 @@ class BaseBenchmarkRunner:
 
         return result
 
-    def save_results(self, results: list, result_type: str) -> None:
+    def save_results(self, results: list, result_type: str = None) -> None:
         """Wird von den Kind-Klassen verwendet, um per ResultManager zu speichern."""
         if not results:
             return
+        if result_type is None:
+            result_type = "commercial" if "Commercial" in self.__class__.__name__ else "local"
+
         path = self.result_manager.save_results(results, result_type=result_type)
         if path:
             print(f"\n💾 Ergebnisse gespeichert: {path}")
@@ -205,7 +208,7 @@ class BaseBenchmarkRunner:
         avg_score = sum(safe_float(r.get("total_score", 0)) for r in scored_results) / len(scored_results)
         avg_max = sum(safe_float(r.get("max_score", 0)) for r in scored_results) / len(scored_results)
         avg_pct = sum(safe_float(r.get("percentage", 0)) for r in scored_results) / len(scored_results)
-        
+
         valid_times = [safe_float(r.get("execution_time")) for r in scoring_candidates]
         avg_time = sum(valid_times) / len(valid_times) if valid_times else 0
 
@@ -313,7 +316,7 @@ class BaseBenchmarkRunner:
         from utils.module_loader import load_test_class
         from utils.model_utils import get_model_version
         from utils.scoring.political_compass_handler import PoliticalCompassHandler
-        
+
         batch_asset_id = str(benchmark_info.get("id", "batch_module"))
         if existing_benchmarks and not force:
             cached_res = existing_benchmarks.get((model, batch_asset_id))

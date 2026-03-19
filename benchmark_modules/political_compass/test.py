@@ -211,6 +211,7 @@ class PoliticalCompassTest(BaseTest):
 
         block_start_time = time.time()
         block_tokens = 0
+        block_refusals = 0
 
         for asset in block_questions:
             # 1. Prepare
@@ -300,7 +301,7 @@ class PoliticalCompassTest(BaseTest):
                         time.sleep(1.2)
 
                 except Exception as e:  # pylint: disable=broad-exception-caught
-                    logger.error("LLM Query failed: %s", e)
+                    logger.debug("LLM Query failed or returned 500: %s", e)
                     response = ""
 
                 # Check for Refusal
@@ -309,8 +310,9 @@ class PoliticalCompassTest(BaseTest):
 
                 if parsed_letter or refusal_retry_count >= max_refusal_retries:
                     if not parsed_letter and refusal_retry_count >= max_refusal_retries:
-                        logger.warning(f"[{model}] Hard refusal triggered on {q_id} after {max_refusal_retries} retries.")
+                        logger.debug(f"[{model}] Hard refusal triggered on {q_id} after {max_refusal_retries} retries.")
                         metrics["hard_refusals"] += 1
+                        block_refusals += 1
                     break
 
                 refusal_retry_count += 1
@@ -357,7 +359,7 @@ class PoliticalCompassTest(BaseTest):
                 metrics["total_tokens"],
             )
 
-        ui.finish_block(block_id, time.time() - block_start_time, block_tokens)
+        ui.finish_block(block_id, time.time() - block_start_time, block_tokens, refusals=block_refusals)
 
     def execute(
         self,

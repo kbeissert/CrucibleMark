@@ -28,6 +28,7 @@ try:
         get_active_modules,
         get_module_test_count,
     )  # noqa: E402
+    from utils.model_utils import format_version_hash_for_display  # noqa: E402
 except ImportError:
     pass
 # pylint: enable=import-error
@@ -127,7 +128,9 @@ def _enrich_with_llm_judge(leaderboard: pd.DataFrame, df: pd.DataFrame) -> pd.Da
     return leaderboard
 
 
-def main(print_table: bool = True) -> None:
+from typing import Optional
+
+def main(print_table: bool = True) -> Optional[pd.DataFrame]:
     """Main orchestration function for leaderboard generation."""
     print("Generating Leaderboard with Metrics...")
 
@@ -213,7 +216,8 @@ def main(print_table: bool = True) -> None:
     def format_version_display(row):
         version = str(row.get("model_version", "k.A."))
         if version in ["unknown", "local", "nohash", "", "nan", "None"]:
-            return "k.A."        # Strip legacy historical behavioral hash (8 char hex string ending)
+            return "k.A."
+        # Strip legacy historical behavioral hash (8 char hex string ending)
         version = re.sub(r"-[a-f0-9]{8}$", "", version)
 
         base_name = str(row.get("model", ""))
@@ -223,14 +227,8 @@ def main(print_table: bool = True) -> None:
 
         # Keep short hash for local/Ollama models only.
         model_type = str(row.get("type", row.get("Type", ""))).strip().lower()
-        if (
-            model_type == "local"
-            and len(version) >= 8
-            and re.match(r"^[a-f0-9]+$", version)
-            and any(c.isalpha() for c in version)
-        ):
-            return version[:6]
-        return version
+
+        return format_version_hash_for_display(version, model_type)
 
     leaderboard["Version"] = leaderboard.apply(format_version_display, axis=1)
 
@@ -239,6 +237,8 @@ def main(print_table: bool = True) -> None:
 
     if print_table:
         print_leaderboard_table(leaderboard)
+
+    return leaderboard
 
 
 __all__ = ["main"]

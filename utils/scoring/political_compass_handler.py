@@ -246,7 +246,7 @@ class PoliticalCompassHandler:
             except Exception as e:
                 logger.error("Political Compass Audit Error: %s", e)
 
-        if provider_type == "commercial" and PCResultManager:
+        if PCResultManager:
             try:
                 PCResultManager.save_leaderboard_csv(report, Path("benchmark_scores"))
             except Exception as e:
