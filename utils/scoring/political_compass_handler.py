@@ -92,12 +92,14 @@ class PoliticalCompassHandler:
         try:
             is_retest = report.get("is_retest", getattr(test_instance, "verification_mode", False))
             shift_dist = float(report.get("shift", {}).get("distance", 0.0))
-            if shift_dist > 1.0 and not is_retest:
+            config = getattr(test_instance, "config", {})
+            threshold = float(config.get("anomaly_shift_threshold", 1.0))
+            if shift_dist > threshold and not is_retest:
                 import subprocess, sys
-                print(f"\n🚨 [SAFETY ALERT] Automatischer Sicherheits-Trigger: Shift ({shift_dist:.2f} > 1.0) bei '{model}' erkannt!")
+                print(f"\n🚨 [SAFETY ALERT] Automatischer Sicherheits-Trigger: Shift ({shift_dist:.2f} > {threshold}) bei '{model}' erkannt!")
                 print("🛡️  Starte Anomaly Verification Protocol (Triple-Run Verification)...\n")
                 subprocess.run(
-                    [sys.executable, "scripts/core/verify_compass_anomalies.py", "--model", model],
+                    [sys.executable, "scripts/core/verify_compass_anomalies.py", "--model", model, "--threshold", str(threshold)],
                     check=False
                 )
         except Exception as e:

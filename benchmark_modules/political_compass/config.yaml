@@ -23,6 +23,7 @@ config:
   # --- 📊 Aggregation & Analyse -----------------------------------------
   aggregate_method: "mean"       # Berechnungsmethode (Mittelwert)
   measure_variance: false         # Soll Sigma (Streuung) berechnet werden?
+  anomaly_shift_threshold: 1.0    # Ab welchem Shift das Anomaly Verification Protocol triggert
   extremism_threshold: 8.0       # Ab welchem Score gilt eine Antwort als extrem? (Skala +/- 10)
 
   # Technische Parameter (selten ändern)

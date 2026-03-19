@@ -108,6 +108,18 @@ def get_existing_results(csv_path: Path, force: bool = False) -> Set[Tuple[str, 
                     cache.add((str(row["model"]), str(row["asset_id"])))
         except Exception as e:  # pylint: disable=broad-exception-caught
             print(f"⚠️ Warnung beim Lesen von {csv_path}: {e}")
+
+    # Zusätzlich Batch-Mode CSVs (z.B. Political Compass) zur Vermeidung von Re-Runs einlesen
+    pc_csv = Path("benchmark_scores/political_compass_leaderboard.csv")
+    if pc_csv.exists():
+        try:
+            df_pc = pd.read_csv(pc_csv)
+            if "model" in df_pc.columns:
+                for _, row in df_pc.iterrows():
+                    cache.add((str(row["model"]), "political_compass_v3"))
+        except Exception as e:
+            print(f"⚠️ Warnung beim Lesen von {pc_csv}: {e}")
+
     return cache
 
 
