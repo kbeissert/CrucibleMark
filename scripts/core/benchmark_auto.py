@@ -121,6 +121,7 @@ def get_all_modules(validator: ConfigValidator) -> List[Dict[str, Any]]:
         execution = internal.get("execution", {})
         modules.append(
             {
+                "id": key,
                 "key": key,
                 "name": metadata.get("name", mod.get("name", key)),
                 "path": f"{mod['path']}/assets",
@@ -220,6 +221,11 @@ def _run_module_for_model(
         results = runner.run_benchmark(model, module, assets=assets_todo)
         if results:
             runner.save_results(results)
+            # Modular behavior: Immediate trigger after save.
+            try:
+                gen_leaderboard(print_table=False)
+            except Exception as e:
+                print(f"   ⚠️ Modular Leaderboard update failed: {e}")
     except KeyboardInterrupt:
         print("\n⛔  Abbruch durch Benutzer.")
         sys.exit(1)
@@ -384,6 +390,11 @@ def run_commercial_batch(
                 )
                 if results:
                     runner.save_results(results)
+                    # Modular behavior: Immediate trigger after save.
+                    try:
+                        gen_leaderboard(print_table=False)
+                    except Exception as e:
+                        print(f"   ⚠️ Modular Leaderboard update failed: {e}")
             except KeyboardInterrupt:
                 print("\n⛔  Abbruch durch Benutzer.")
                 sys.exit(1)
@@ -450,31 +461,32 @@ def main():
     for m in modules:
         print(f"   - {m['name']} ({m['key']})")
 
-    # 1. Lokale Modelle
     try:
-        run_local_batch(modules, validator, force=args.force, audit_mode=args.audit)
-    except KeyboardInterrupt:
-        print("\n⛔  Abbruch durch Benutzer.")
-        sys.exit(1)
+        # 1. Lokale Modelle
+        try:
+            run_local_batch(modules, validator, force=args.force, audit_mode=args.audit)
+        except KeyboardInterrupt:
+            print("\n⛔  Abbruch durch Benutzer (Lokale Modelle).")
+            sys.exit(1)
 
-    # 2. Kommerzielle Modelle
-    try:
-        run_commercial_batch(
-            modules, validator, force=args.force, audit_mode=args.audit
-        )
-    except KeyboardInterrupt:
-        print("\n⛔  Abbruch durch Benutzer.")
-        sys.exit(1)
+        # 2. Kommerzielle Modelle
+        try:
+            run_commercial_batch(
+                modules, validator, force=args.force, audit_mode=args.audit
+            )
+        except KeyboardInterrupt:
+            print("\n⛔  Abbruch durch Benutzer (Kommerzielle Modelle).")
+            sys.exit(1)
 
-    print("\n\n✅  AUTOMATIC RUN COMPLETED.")
-    print("    Ergebnisse wurden in die CSV-Dateien gespeichert.")
-    print("    Generiere Leaderboard...")
+    finally:
+        print("\n\n✅  AUTOMATIC RUN VERLASSEN.")
+        print("    Generiere Leaderboard aus den neuen CSV-Daten...")
 
-    # Am Ende das Leaderboard aktualisieren
-    try:
-        gen_leaderboard(print_table=True)
-    except Exception as e:  # pylint: disable=broad-exception-caught
-        print(f"⚠️ Leaderboard konnte nicht generiert werden: {e}")
+        # Am Ende das Leaderboard IMMER aktualisieren (auch bei Abbruch)
+        try:
+            gen_leaderboard(print_table=True)
+        except Exception as e:  # pylint: disable=broad-exception-caught
+            print(f"⚠️ Leaderboard konnte nicht generiert werden: {e}")
 
 
 if __name__ == "__main__":

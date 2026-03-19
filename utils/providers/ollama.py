@@ -15,7 +15,7 @@ from utils.model_utils import is_reasoning_model
 
 # Optional Provider Imports
 try:
-    pass
+    import ollama
 except ImportError:
     ollama = None
 
@@ -279,5 +279,3 @@ class OllamaClient(BaseProviderClient):
         except (ConnectionError, OSError, RuntimeError) as e:
             logger.error("Error listing Ollama models: %s", e)
             return []
-
-

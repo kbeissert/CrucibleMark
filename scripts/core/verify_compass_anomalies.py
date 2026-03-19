@@ -16,31 +16,53 @@ from benchmark_modules.political_compass.test import PoliticalCompassTest
 from benchmark_modules.political_compass.core.io_manager import CheckpointManager
 
 def get_anomalies(threshold=1.0, provider_filter=None, model_id=None):
-    candidates = []
-    csv_path = Path("benchmark_scores/political_compass_leaderboard.csv")
-    if not csv_path.exists():
-        return candidates
-    with open(csv_path, "r", encoding="utf-8") as f:
-        reader = csv.DictReader(f)
-        for row in reader:
-            try:
-                shift = float(row.get("shift_distance", 0.0))
-                model_name = row.get("model", "")
-                row_provider = row.get("provider_type", "")
+    latest_shifts = {}
+    runs_dir = Path("outputs/runs")
 
-                # Filters
-                if shift <= threshold:
-                    continue
-                if model_id and model_name != model_id:
-                    continue
-                if provider_filter and provider_filter != "all" and row_provider != provider_filter:
-                    continue
+    if not runs_dir.exists():
+        return []
 
-                candidates.append(model_name)
-            except (ValueError, KeyError):
-                pass
-    # Deduplicate in case of multiple runs
-    return list(set(candidates))
+    model_files = {}
+    for json_file in runs_dir.glob("results_*.json"):
+        try:
+            with open(json_file, "r", encoding="utf-8") as f:
+                data = json.load(f)
+
+            model_name = data.get("model", "")
+            if not model_name:
+                continue
+
+            # Provider auflösen, falls Filter aktiv
+            row_provider = data.get("provider", "")
+            if not row_provider:
+                row_provider, _ = resolve_provider(model_name)
+
+            if model_id and model_name != model_id:
+                continue
+            if provider_filter and provider_filter != "all" and row_provider != provider_filter:
+                continue
+
+            model_files.setdefault(model_name, []).append((json_file.stat().st_mtime, data))
+        except Exception:
+            pass
+
+    for model_name, files in model_files.items():
+        # Neueste Datei des Modells verwenden (nach mtime)
+        files.sort(key=lambda x: x[0], reverse=True)
+        latest_data = files[0][1]
+
+        # Shift extrahieren
+        shift_data = latest_data.get("shift", {})
+        if isinstance(shift_data, dict):
+            shift = shift_data.get("distance", 0.0)
+        else:
+            shift = float(shift_data) if shift_data else 0.0
+
+        is_retest = latest_data.get("is_retest", False)
+        latest_shifts[model_name] = {"shift": float(shift), "is_retest": bool(is_retest)}
+
+    # Evaluiere nur die _letzten_ bekannten Shifts auf das Threshold, ueberspringe die bereits retesteten!
+    return [model for model, data in latest_shifts.items() if data["shift"] > threshold and not data["is_retest"]]
 
 def calculate_euclidean(p1, p2):
     return math.hypot(p1[0] - p2[0], p1[1] - p2[1])
@@ -157,11 +179,54 @@ def run_verification(provider_filter=None, model_id=None):
                 import sys
                 from benchmark_modules.political_compass.core.audit_logger import AuditLogWriter
                 import subprocess
-                
+
                 print(f"[{model}] Generiere konsolidiertes Audit-Protokoll...")
                 # Reconstruct final payload mapped from the last iteration
                 safe_report = json.loads(base_result.raw_response)
-                
+
+                # Update safe_report with verified average values (rounded to 2 decimal places)
+                final_v_x = round(final_v_x, 2)
+                final_v_y = round(final_v_y, 2)
+                final_f_x = round(final_f_x, 2)
+                final_f_y = round(final_f_y, 2)
+                final_shift_mag = round(final_shift_mag, 2)
+
+                if "runs" in safe_report:
+                    if "vanilla" in safe_report["runs"]:
+                        if "coordinates" not in safe_report["runs"]["vanilla"]:
+                            safe_report["runs"]["vanilla"]["coordinates"] = {}
+                        safe_report["runs"]["vanilla"]["coordinates"]["x"] = final_v_x
+                        safe_report["runs"]["vanilla"]["coordinates"]["y"] = final_v_y
+                    if "forced" in safe_report["runs"]:
+                        if "coordinates" not in safe_report["runs"]["forced"]:
+                            safe_report["runs"]["forced"]["coordinates"] = {}
+                        safe_report["runs"]["forced"]["coordinates"]["x"] = final_f_x
+                        safe_report["runs"]["forced"]["coordinates"]["y"] = final_f_y
+
+                if "individual_runs" in safe_report:
+                    for i_run in safe_report["individual_runs"]:
+                        if i_run.get("type") == "vanilla":
+                            i_run["x"] = final_v_x
+                            i_run["y"] = final_v_y
+                        elif i_run.get("type") == "forced":
+                            i_run["x"] = final_f_x
+                            i_run["y"] = final_f_y
+
+
+                if "coordinates" in safe_report:
+                    safe_report["coordinates"]["x"] = final_v_x
+                    safe_report["coordinates"]["y"] = final_v_y
+                if "shift" not in safe_report:
+                    pass
+                safe_report["shift"] = {
+                    "x": round(final_f_x - final_v_x, 2),
+                    "y": round(final_f_y - final_v_y, 2),
+                    "distance": final_shift_mag
+                }
+
+                # Flaggen, dass diese Werte das Ergebnis eines Safety-Retests sind
+                safe_report["is_retest"] = True
+
                 AuditLogWriter.write_audit_log(
                     model=model,
                     vanilla_res=safe_report.get("runs", {}).get("vanilla", {}),
@@ -172,7 +237,30 @@ def run_verification(provider_filter=None, model_id=None):
                     detailed_responses=safe_report.get("detailed_responses", {}),
                     verification_mode=True
                 )
-                
+
+                # Update Leaderboard CSV
+                try:
+                    from benchmark_modules.political_compass.core.io_manager import PoliticalCompassResultManager
+
+                    from pathlib import Path
+                    out_dir = Path("benchmark_scores")
+
+                    # Call save_leaderboard_csv with updated payload (appends correct values)
+                    PoliticalCompassResultManager.save_leaderboard_csv(safe_report, out_dir)
+                    PoliticalCompassResultManager.save_json(safe_report, Path("outputs/runs"))
+                    print(f"[{model}] Werte im JSON/Cache Cache (outputs/runs/) gesichert.")
+                    print(f"[{model}] Werte in political_compass_leaderboard.csv aktualisiert.")
+                except Exception as e:
+                    print(f"[{model}] Fehler beim Aktualisieren des Leaderboards: {e}")
+
+                print(f"[{model}] Aktualisiere allgemeines Leaderboard...")
+                try:
+                    subprocess.run(
+                        [sys.executable, "scripts/core/generate_leaderboard.py"], check=True
+                    )
+                except Exception as e:
+                    print(f"[{model}] Fehler beim Leaderboard-Update: {e}")
+
                 print(f"[{model}] Starte Bias-Reviewer für das verifizierte Modell...")
                 subprocess.run(
                     [sys.executable, "scripts/analysis/generate_review.py", "--model", model, "--type", "bias"],
@@ -180,39 +268,12 @@ def run_verification(provider_filter=None, model_id=None):
                 )
             except Exception as e:
                 print(f"[{model}] Fehler beim Generieren des Reviews/Protokolls: {e}")
-            
-            # --- PROTOCOL & REVIEWER GENERATION ---
-            try:
-                from benchmark_modules.political_compass.core.audit_logger import AuditLogWriter
-                import subprocess
-                
-                print(f"[{model}] Generiere konsolidiertes Audit-Protokoll...")
-                # Reconstruct final payload mapped from the last iteration
-                safe_report = json.loads(base_result.raw_response)
-                
-                AuditLogWriter.write_audit_log(
-                    model=model,
-                    vanilla_res=safe_report.get("runs", {}).get("vanilla", {}),
-                    forced_res=safe_report.get("runs", {}).get("forced", {}),
-                    shift_x=float(final_f_x - final_v_x),
-                    shift_y=float(final_f_y - final_v_y),
-                    shift_distance=float(final_shift_mag),
-                    detailed_responses=safe_report.get("detailed_responses", {}),
-                    verification_mode=True
-                )
-                
-                print(f"[{model}] Starte Bias-Reviewer für das verifizierte Modell...")
-                subprocess.run(
-                    [sys.executable, "scripts/analysis/generate_review.py", "--model", model, "--type", "bias"],
-                    check=True
-                )
-            except Exception as e:
-                print(f"[{model}] Fehler beim Generieren des Reviews/Protokolls: {e}")
+
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Political Compass Anomaly Verification")
-    parser.add_argument("--provider", type=str, choices=["all", "commercial", "local", "cloud"], default="all", help="Nur Modelle dieses Providers prüfen")
-    parser.add_argument("--model_id", type=str, help="Nur dieses spezifische Modell prüfen")
+    import argparse
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--provider", default=None, choices=["all", "commercial", "local_ollama"])
+    parser.add_argument("--model", default=None)
     args = parser.parse_args()
-
-    run_verification(provider_filter=args.provider, model_id=args.model_id)
+    run_verification(provider_filter=args.provider, model_id=args.model)

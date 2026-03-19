@@ -1,5 +1,22 @@
 # System Patterns
 
+## 🛑 OBERSTE ARCHITEKTUR-REGEL: Strict Separation of Concerns (Measurement vs. Publishing)
+- **Measurement:** Autonom, ausfallsicher, isoliert. Keine Blockaden.
+- **Publishing:** Laufen strikt offline.
+
+## 🛑 ZWEITE ARCHITEKTUR-REGEL: Single Source of Truth (SSOT), DRY & SRP
+- **Logische Exklusivität:** Jede spezifische Funktionalität hat genau **ein** zuständiges Modul.
+- **Wiederverwendung vor Neuerfindung:** Wird eine Funktion anderswo gebraucht, wird das Modul importiert – niemals dupliziert.
+- **Erweiterung (Open/Closed):** Fehlt dem Modul eine Facette, wird es selbst intelligent erweitert.
+
+## 🛑 DRITTE ARCHITEKTUR-REGEL: Configuration-Driven & No Magic Numbers
+- **Keine Hardcodes:** Regeln, Zahlen, Limits oder Formeln dürfen **niemals** direkt im Code stehen ("Magic Numbers").
+- **Auslagerung:** Das Projekt ist konfigurationsgetrieben. Alle Variablen werden in Config-Dateien (YAML) ausgelagert und importiert.
+
+## 🛑 VIERTE ARCHITEKTUR-REGEL: Anti-God-Script & Modularisierung
+- **Aktives Monitoring:** Bei der Weiterentwicklung wird strengstens auf die Länge und Komplexität der Skripte geachtet.
+- **Kapselung:** Erkennst du, dass ein Skript zum monolithischen "God-Script" mutiert, musst du umgehend logische Submodule auslagern. Funktionalitäten werden in kleine Module gekapselt und sauber in das Hauptskript eingebunden.
+
 ## Konfig-Hierarchie (SSOT)
 Global (`benchmark_config.yaml`) → Modul (`config.yaml`) → Runtime.
 Gilt für Generation-Parameter UND LLM Judge. Modul-Override gewinnt immer.

@@ -12,6 +12,21 @@
 
 > **Voraussetzung:** Grundkenntnisse in Python, YAML und Regex.
 
+---
+
+## 🛑 WICHTIG: Die 4 Design-Gesetze von CrucibleMark
+
+Bevor du ein neues Modul schreibst oder bestehenden Code erweiterst, **musst** du die obersten Architekturregeln dieses Projekts respektieren. Sie sind als **unumstoessliche Gesetze** zu betrachten:
+
+1. **Strict Separation of Concerns:** Die Datenmessung (Benchmark Loop) ist heilig, autark und darf NIEMALS durch Publishing-Funktionen blockiert werden.
+2. **SSOT & DRY:** Jede Funktion hat **genau ein** Modul. Kein Code-Kopieren! Erweitere existierende Module (Open/Closed Principle).
+3. **No Magic Numbers:** Alles wird ueber YAML gesteuert (Config-First). Keine hartkodierten Paramter im Code.
+4. **Anti-God-Script:** Schuetze das System vor monolithischen Skripten. Nutze gezielte Submodul-Breakouts.
+
+> 📖 **Details zu diesen Regeln findest du zwingend unter:** [ARCHITECTURE.md](ARCHITECTURE.md)
+
+---
+
 ______________________________________________________________________
 
 ## ⚡ Quick Start: Neues Modul erstellen
@@ -629,5 +644,5 @@ ______________________________________________________________________
 
 **Happy Coding! 🚀**
 
-**Dokumenten-Version:** 3.0.0 (Rewrite Mar 2026)\
-**Kompatibel mit:** CrucibleMark v3.0.0+
+**Dokumenten-Version:** 3.0.1 (Rewrite Mar 2026)\
+**Kompatibel mit:** CrucibleMark v3.0.1+

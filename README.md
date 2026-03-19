@@ -1,6 +1,6 @@
 # CrucibleMark 🚀
 
-[![Version](https://img.shields.io/badge/version-3.0.0-blue)](.)
+[![Version](https://img.shields.io/badge/version-3.0.1-blue)](.)
 [![Python](https://img.shields.io/badge/python-3.10%2B-blue)](.)
 [![License](https://img.shields.io/badge/license-MIT-green)](.)
 [![Status](https://img.shields.io/badge/status-production--ready-brightgreen)](.)
@@ -14,6 +14,8 @@ Anstelle von starren akademischen Metriken (wie MMLU) misst CrucibleMark die ech
 ---
 
 ## 🎯 Philosophie
+
+> 🛑 **WICHTIG (Für Entwickler):** Bevor du an diesem Code arbeitest, lies unbedingt die 4 unumstößlichen Design-Gesetze in [ARCHITECTURE.md](docs/ARCHITECTURE.md). (TL;DR: Keine God-Scripts, Keine Magic Numbers, DRY & Separation of Concerns).
 
 Die meisten Benchmarks fokussieren sich auf rein theoretische Prüfungen. CrucibleMark testet die **gelebte Realität**:
 - ✅ **Code Quality:** Kann die KI Code wie ein Senior Engineer auditieren?
