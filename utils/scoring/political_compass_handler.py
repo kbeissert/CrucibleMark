@@ -88,6 +88,21 @@ class PoliticalCompassHandler:
         except Exception as e:
             logger.error("Political compass derivatives failed: %s", e)
 
+        # Trigger automatic verification on high shifts
+        try:
+            is_retest = report.get("is_retest", getattr(test_instance, "verification_mode", False))
+            shift_dist = float(report.get("shift", {}).get("distance", 0.0))
+            if shift_dist > 1.0 and not is_retest:
+                import subprocess, sys
+                print(f"\n🚨 [SAFETY ALERT] Automatischer Sicherheits-Trigger: Shift ({shift_dist:.2f} > 1.0) bei '{model}' erkannt!")
+                print("🛡️  Starte Anomaly Verification Protocol (Triple-Run Verification)...\n")
+                subprocess.run(
+                    [sys.executable, "scripts/core/verify_compass_anomalies.py", "--model", model],
+                    check=False
+                )
+        except Exception as e:
+            logger.error("Political compass anomaly trigger failed: %s", e)
+
     @staticmethod
     def _update_local_pc_csv(
         model: str, report: Dict[str, Any], model_version: str
