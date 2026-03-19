@@ -16,6 +16,41 @@ ______________________________________________________________________
 
 ## 🏗️ Architektur-Übersicht
 
+### 🛑 Oberste Regel: Strict Separation of Concerns (Measurement vs. Publishing)
+
+Das gesamte CrucibleMark-Projekt folgt einer unumstößlichen Prämisse: der strikten Trennung der reinen Datenmessung (Measurement) von nachgelagerten Auswertungen (Publishing).
+
+1. **Measurement (Core Benchmark Loop):**
+   Der Kern der Benchmark-Orchestrierung (Runner) ist kompromisslos iterativ, ausfallsicher (`try...finally`) und minimalistisch konzipiert. Sein **einzigiges** Ziel ist die isolierte Ausführung der LLM-Tests, das Führen der Roh-/Audit-Logs und das fehler- und blockierungsfreie Generieren (und direkte Speichern) des Leaderboards nach jedem Durchlauf der Module. Es gibt keine Stauungen oder externe Abhängigkeiten, die diesen Prozess gefährden könnten.
+2. **Publishing (Downstream-Features):**
+   Zusätzliche redaktionelle oder bewertende Funktionen — wie zum Beispiel der KI-basierte **Meta-Reviewer** — sind vollständig vom Core-Runner entkoppelt. Sie agieren offline als eigenständige Prozesse und dürfen den iterativen Benchmark-Prozess niemals blockieren, verlangsamen oder durch Fehler (z.B. API-Ausfälle bei Meta-Auswertungen) abbrechen lassen.
+
+### 🛑 Zweite Regel: Single Source of Truth (SSOT) & DRY (Don't Repeat Yourself)
+
+Jede logische Funktion (z.B. Test-Auswertung, Konfigurations-Parsing, Log-Schreiben) hat **genau einen festen Platz** in einem spezifischen Modul.
+- **Wiederverwendung vor Neuerfindung:** Wird eine etablierte Funktion an anderer Stelle benötigt, darf sie unter keinen Umständen neu geschrieben, dupliziert oder "schnell mal in ein Hilfsskript" (Wildwuchs) ausgelagert werden.
+- **Erweiterung (Open/Closed Principle):** Reicht die bestehende Funktionalität eines Moduls für einen neuen Use Case nicht aus, wird das ursprüngliche Modul selbst so abstrahiert, parametrisiert oder erweitert, dass es den neuen Fall *mit abdeckt*, ohne seine alte Funktion zu verlieren. Das Ursprungsmodul bleibt die alleinige fachliche Autorität.
+
+### 🛑 Dritte Regel: Configuration-Driven & No Magic Numbers
+Das Projekt wird strikt über Konfigurationen gesteuert.
+- **Keine Magic Numbers:** Alle Zahlen, Formeln, Metriken und statischen Konstanten dürfen **niemals** hartkodiert im Code (Python-Skripte) stehen.
+- **Auslagerung:** Solche Werte werden in zentrale Konfigurationsdateien (YAML) ausgelagert und importiert.
+
+### 🛑 Vierte Regel: Anti-God-Script & Modularisierung
+Das Framework wehrt sich aktiv gegen monolithische, überlange Skripte ("God-Scripts").
+- **Aktives Monitoring:** Bei Weiterentwicklungen wird die Skriptlänge/-komplexität überwacht. Wird ein Skript zum "God-Script", muss sofort gegengesteuert werden.
+- **Submodul-Kapselung:** Wachsende Skripte werden logisch zerlegt. Funktionalitäten werden in kleine, fokussierte Module gekapselt und in das Hauptskript importiert.
+
+### 🛑 Dritte Regel: Configuration-Driven & No Magic Numbers
+Das Projekt wird strikt über Konfigurationen gesteuert.
+- **Keine Magic Numbers:** Alle Zahlen, Formeln, Metriken und statischen Konstanten dürfen **niemals** hartkodiert im Code (Python-Skripte) stehen.
+- **Auslagerung:** Solche Werte werden in zentrale Konfigurationsdateien (YAML) ausgelagert und importiert.
+
+### 🛑 Vierte Regel: Anti-God-Script & Modularisierung
+Das Framework wehrt sich aktiv gegen monolithische, überlange Skripte ("God-Scripts").
+- **Aktives Monitoring:** Bei Weiterentwicklungen wird die Skriptlänge/-komplexität überwacht. Wird ein Skript zum "God-Script", muss sofort gegengesteuert werden.
+- **Submodul-Kapselung:** Wachsende Skripte werden logisch zerlegt. Funktionalitäten werden in kleine, fokussierte Module gekapselt und in das Hauptskript importiert.
+
 CrucibleMark folgt einer **Plugin-basierten Architektur**, bei der Benchmark-Module vom Core-Framework durch Konfigurations-Contracts entkoppelt sind.
 
 ### Design-Prinzipien
@@ -444,5 +479,5 @@ class LLMClientFactory:
 
 ______________________________________________________________________
 
-**Dokumenten-Version:** 3.0.0 (Rewrite Mar 2026)\
-**Kompatibel mit:** CrucibleMark v3.0.0+
+**Dokumenten-Version:** 3.0.1 (Rewrite Mar 2026)\
+**Kompatibel mit:** CrucibleMark v3.0.1+

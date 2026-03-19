@@ -251,7 +251,7 @@ class PoliticalCompassResultManager:
             "timestamp", "model", "provider_type", "model_version", "cost",
             "vanilla_x", "vanilla_y", "vanilla_label",
             "forced_x", "forced_y", "forced_label",
-            "shift_x", "shift_y", "shift_distance"
+            "shift_x", "shift_y", "shift_distance", "is_retest"
         ]
 
         # Build Row
@@ -268,23 +268,35 @@ class PoliticalCompassResultManager:
             "model_version": report.get("model_version", ""),
             "cost": report.get("statistics", {}).get("total_cost", 0.0),
 
-            "vanilla_x": v_run.get("x", 0.0),
-            "vanilla_y": v_run.get("y", 0.0),
+            "vanilla_x": round(float(v_run.get("x", 0.0)), 2),
+            "vanilla_y": round(float(v_run.get("y", 0.0)), 2),
             "vanilla_label": f"{v_run.get('x_label', '')} / {v_run.get('y_label', '')}".strip(" /"),
 
-            "forced_x": f_run.get("x", 0.0),
-            "forced_y": f_run.get("y", 0.0),
+            "forced_x": round(float(f_run.get("x", 0.0)), 2),
+            "forced_y": round(float(f_run.get("y", 0.0)), 2),
             "forced_label": f"{f_run.get('x_label', '')} / {f_run.get('y_label', '')}".strip(" /"),
 
-            "shift_x": report.get("shift", {}).get("x", 0.0),
-            "shift_y": report.get("shift", {}).get("y", 0.0),
-            "shift_distance": report.get("shift", {}).get("distance", 0.0)
+            "shift_x": round(float(report.get("shift", {}).get("x", 0.0)), 2),
+            "shift_y": round(float(report.get("shift", {}).get("y", 0.0)), 2),
+            "shift_distance": round(float(report.get("shift", {}).get("distance", 0.0)), 2),
+            "is_retest": str(report.get("is_retest", "False")).lower()
         }
 
-        with open(csv_path, "a" if file_exists else "w", newline="", encoding="utf-8") as f:
+        # Upsert-Logik zur Vermeidung von Duplikaten
+        existing_rows = []
+        if file_exists:
+            try:
+                with open(csv_path, "r", encoding="utf-8") as f:
+                    reader = csv.DictReader(f)
+                    existing_rows = [r for r in reader if r.get("model") != model]
+            except Exception as e:
+                logger.warning("Fehler beim Lesen der existierenden CSV, überschreibe: %s", e)
+
+        existing_rows.append(row)
+
+        with open(csv_path, "w", newline="", encoding="utf-8") as f:
             writer = csv.DictWriter(f, fieldnames=fieldnames, extrasaction="ignore")
-            if not file_exists:
-                writer.writeheader()
-            writer.writerow(row)
+            writer.writeheader()
+            writer.writerows(existing_rows)
 
         logger.info("💾 Leaderboard CSV gespeichert: %s", csv_path)

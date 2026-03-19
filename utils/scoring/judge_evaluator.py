@@ -124,7 +124,7 @@ def generate_audit_log(
     if result.get("scoring_method") in ["llm_judge", "hybrid"]:
         judge_provider = result.get("llm_judge_provider_used", "unknown")
         judge_model = result.get("llm_judge_model_used", "unknown")
-        
+
         # Fetch module-level category scores that are logged to CSV
         cat_section = ""
         cat_scores = score.get("category_scores", {})
