@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Benchmark Runner für kommerzielle API-basierte Modelle."""
 
+from utils.scoring.judge_evaluator import evaluate_with_judge, generate_audit_log
 import sys
 import logging
 import json
@@ -31,14 +32,12 @@ from utils.benchmark_utils import (
     format_political_compass_data,
     prepare_pc_csv_row,
     save_debug_response,
-    save_audit_log,
 )  # noqa: E402
 from utils.model_utils import get_model_version  # noqa: E402
 from utils.llm_client import LLMClient  # noqa: E402
 from utils.module_registry import load_active_benchmarks  # noqa: E402
 from utils.scoring_utils import (
     calculate_score_contributions,
-    calculate_hybrid_score,
 )  # noqa: E402
 from utils.rate_limiter import RateLimiter  # noqa: E402
 
@@ -359,81 +358,18 @@ class CommercialBenchmarkRunner(BaseBenchmarkRunner):
             if len(response.strip()) < 15:
                 result["judge_progress_status"] = "⚠️ Judge: skip"
             else:
-                # pylint: disable=import-outside-toplevel
-                from utils.scoring.llm_judge.judge_config import LLMJudgeConfig
-                from utils.scoring.llm_judge.judge_runner import JudgeRunner
-                # pylint: enable=import-outside-toplevel
+                result = evaluate_with_judge(
+                    result=result,
+                    response=response,
+                    asset_data=asset_data,
+                    judge_cfg_dict=judge_cfg_dict,
+                    eval_module_id=eval_module_id,
+                    model=model,
+                    asset_cfg=asset_cfg,
+                    benchmark_info=benchmark_info,
+                    provider=provider
+                )
 
-                try:
-                    judge_config = LLMJudgeConfig.from_dict(judge_cfg_dict)
-                    # Apply optional per-module override
-                    if "llm_judge_model" in benchmark_info:
-                        judge_config.module_judge_model = benchmark_info[
-                            "llm_judge_model"
-                        ]
-
-                    runner = JudgeRunner(judge_config)
-
-                    raw_prompt = asset_data.get(
-                        "prompt", asset_data.get("instruction", "")
-                    )
-                    golden = asset_data.get("golden_standard", "")
-                    if isinstance(golden, dict):
-                        golden = golden.get("text", "")
-                    golden = str(golden)
-
-                    judge_res = runner.score(
-                        task_prompt=raw_prompt,
-                        model_response=response,
-                        golden_standard=golden,
-                        module_id=eval_module_id,
-                        rubric_override=asset_data.get("scoring", {}).get("rubric"),
-                        tested_model_id=model,
-                        tested_model_provider=provider,
-                        response_time_ms=result.get("execution_time", 0) * 1000.0,
-                    )
-
-                    # Merge fields
-                    result["llm_judge_score"] = judge_res.score
-                    result["llm_judge_reasoning"] = judge_res.reasoning
-                    result["llm_judge_latency_ms"] = judge_res.judge_latency_ms
-                    result["llm_judge_provider_used"] = judge_res.judge_provider_used
-                    result["llm_judge_model_used"] = judge_res.judge_model_used
-                    result["llm_judge_parse_success"] = judge_res.parse_success
-                    # Add sub-scores
-                    result["judge_task_compliance"] = judge_res.judge_task_compliance
-                    result["judge_output_quality"] = judge_res.judge_output_quality
-                    result["judge_standard_adherence"] = judge_res.judge_standard_adherence
-
-                    if judge_res.parse_success and judge_res.score is not None:
-                        judge_scale = judge_config.scoring.scale
-                        judge_pct = (judge_res.score / judge_scale) * 100 if judge_scale > 0 else 0.0
-
-                        # Hybrid Score berechnen
-                        regex_pct = result.get("percentage", 0.0)
-                        hybrid_score = calculate_hybrid_score(
-                            regex_score=regex_pct,
-                            judge_score=judge_pct,
-                            asset_config=asset_cfg,
-                            module_config=benchmark_info,
-                            judge_enabled=judge_config.enabled,
-                        )
-
-                        result["total_score"] = hybrid_score
-                        result["percentage"] = hybrid_score
-                        result["scoring_method"] = "hybrid"
-                        result["judge_progress_status"] = (
-                            f"⚖️ Judge: {judge_res.score}/{judge_scale} (Hybrid)"
-                        )
-
-                        # RECALCULATE contributions based on the new Hybrid score
-                        result = calculate_score_contributions(result, asset_cfg)
-                    else:
-                        result["judge_progress_status"] = "❌ Judge: failed"
-
-                except Exception as e:  # pylint: disable=broad-exception-caught
-                    traceback.print_exc(); logging.error("LLM Judge execution failed: %s", e)
-                    result["judge_progress_status"] = "❌ Judge: failed"
         # ---------------------------------------------------------------------
 
         # Print Output
@@ -444,7 +380,6 @@ class CommercialBenchmarkRunner(BaseBenchmarkRunner):
         time_val = exec_result.execution_time or 0.0
         judge_status = result.get("judge_progress_status", "")
         judge_str = f" | {judge_status}" if judge_status else ""
-        print(" " * 100, end="\r")  # Clear the line
         print(
             f"[{index}/{total_count}] {asset_id:<15} | {asset_name[:20]:<20} {badge} "
             f"Score: {result['percentage']:>6.2f} | Cost: ${cost_val:.4f} | "
@@ -466,75 +401,12 @@ class CommercialBenchmarkRunner(BaseBenchmarkRunner):
             )
 
         if getattr(self, "audit_mode", False):
-            rp_fallback = asset_data.get(
-                "prompt", asset_data.get("instruction", "No prompt found")
-            )
-            rp = getattr(exec_result, "evaluated_prompt", "") or rp_fallback
-
-            if result.get("scoring_method") in ["llm_judge", "hybrid"]:
-                judge_provider = result.get("llm_judge_provider_used", "unknown")
-                judge_model = result.get("llm_judge_model_used", "unknown")
-                judge_info = f"*(Evaluated using {judge_provider} / {judge_model})*"
-
-                # Fetch module-level category scores that are logged to CSV
-                cat_section = ""
-                cat_scores = score.get("category_scores", {})
-                if cat_scores:
-                    cat_section = "\n\n### Category Scores (Rule-based / CSV)\n"
-                    for cat_name, cat_vals in cat_scores.items():
-                        cat_section += f"- **{cat_name}:** {cat_vals.get('achieved', 0)} / {cat_vals.get('max', 0)}\n"
-                    cat_section += f"\n**Rule-based Total Score:** {score.get('total_score', 0)} / {score.get('max_score', 0)}"
-
-                # Also capture any detail/reasoning arrays generated by the regex scorer
-                details_section = ""
-                if "details" in score and score["details"]:
-                    details_section = "\n\n### Rule-based Evaluation Details\n"
-                    details_data = score["details"]
-                    if isinstance(details_data, list):
-                        details_section += "\n".join([f"- {d}" for d in details_data])
-                    else:
-                        details_section += str(details_data)
-
-                # Capture Sub-Scores if present
-                subscore_section = ""
-                if result.get("judge_task_compliance") is not None:
-                    subscore_section = (
-                        "\n\n**Judge Sub-Scores:**\n"
-                        "| Dimension | Score |\n"
-                        "|---|---|\n"
-                        f"| Task Compliance | {result.get('judge_task_compliance')}/5 |\n"
-                        f"| Output Quality | {result.get('judge_output_quality')}/5 |\n"
-                        f"| Standard Adherence | {result.get('judge_standard_adherence')}/5 |"
-                    )
-
-                if result.get("scoring_method") == "hybrid":
-                    meta_block = (
-                        "> [!NOTE]\n"
-                        "> **Evaluation Metadata**\n"
-                        f"> - **Evaluated by:** {judge_provider} / {judge_model}\n"
-                        f"> - **Hybrid Score:** {result.get('percentage', 'N/A')}%\n"
-                        f"> - **LLM Judge Score (Raw):** {result.get('llm_judge_score', 'N/A')}"
-                    )
-                    judge_resp = f"{meta_block}\n\n**LLM Judge Reasoning:**\n{result.get('llm_judge_reasoning', 'No reasoning provided.')}{subscore_section}{cat_section}{details_section}"
-                else:
-                    meta_block = (
-                        "> [!NOTE]\n"
-                        "> **Evaluation Metadata**\n"
-                        f"> - **Evaluated by:** {judge_provider} / {judge_model}\n"
-                        f"> - **LLM Judge Score:** {result.get('llm_judge_score', 'N/A')}"
-                    )
-                    judge_resp = f"{meta_block}\n\n**LLM Judge Reasoning:**\n{result.get('llm_judge_reasoning', 'No reasoning provided.')}{subscore_section}{cat_section}{details_section}"
-            else:
-                judge_resp = f"**Regex / Rule Scorer ({result.get('scoring_method', 'unknown')}):**\n\n**Score:** {result.get('total_score', 0)} / {result.get('max_score', 0)}\n\n**Details:**\n```json\n{json.dumps(score, indent=2, ensure_ascii=False)}\n```"
-
-            save_audit_log(
-                model=result["model"],
-                asset_id=result["asset_id"],
-                prompt=rp,
+            generate_audit_log(
+                result=result,
+                exec_result=exec_result,
+                asset_data=asset_data,
                 response=response,
-                judge_response=judge_resp,
-                token_limit_cutoff=result.get("token_limit_cutoff", False),
-                token_limit_fallback=result.get("token_limit_fallback", False),
+                score=score
             )
 
         return result
@@ -627,7 +499,7 @@ class CommercialBenchmarkRunner(BaseBenchmarkRunner):
                 or benchmark_info.get("name", "") == "Political Compass"
             )
 
-            def _generate_political_compass_derivatives(local_report: Dict[str, Any]):
+            def _generate_political_compass_derivatives(local_report: Dict[str, Any], test_instance: Any):
                 """Generiert Bias-Report + Leaderboard NACH SSOT-Persistenz."""
                 runs = local_report.get("runs", {})
                 vanilla_run = runs.get("vanilla", {})
@@ -643,11 +515,12 @@ class CommercialBenchmarkRunner(BaseBenchmarkRunner):
                     "score_y": forced_run.get("coordinates", {}).get("y", 0.0),
                 }
 
-                try:
-                    if AuditLogWriter:
+                # Immer nur im audit_mode schreiben
+                if getattr(self, "audit_mode", False) and AuditLogWriter:
+                    try:
                         # Safety metadata preparation
-                        verification_mode = getattr(test, "verification_mode", False)
-                        safety_metadata = getattr(test, "safety_metadata", None)
+                        verification_mode = getattr(test_instance, "verification_mode", False)
+                        safety_metadata = getattr(test_instance, "safety_metadata", None)
 
                         AuditLogWriter.write_audit_log(
                             model=model,
@@ -656,12 +529,12 @@ class CommercialBenchmarkRunner(BaseBenchmarkRunner):
                             shift_x=float(shift.get("x", 0.0)),
                             shift_y=float(shift.get("y", 0.0)),
                             shift_distance=float(shift.get("distance", 0.0)),
-                            detailed_responses=report.get("detailed_responses", {}),
+                            detailed_responses=local_report.get("detailed_responses", {}),
                             verification_mode=verification_mode,
                             safety_metadata=safety_metadata
                         )
-                except Exception as e:  # pylint: disable=broad-exception-caught
-                    print(f"⚠️ Political Compass Audit Error: {e}")
+                    except Exception as e:  # pylint: disable=broad-exception-caught
+                        print(f"⚠️ Political Compass Audit Error: {e}")
 
                 try:
                     ResultManager.save_leaderboard_csv(local_report, Path("benchmark_scores"))
@@ -728,10 +601,11 @@ class CommercialBenchmarkRunner(BaseBenchmarkRunner):
                         writer.writeheader()
                         writer.writerows(pc_rows)
 
-                    # Derivatives only after SSOT is persisted.
-                    _generate_political_compass_derivatives(report)
                 except Exception as e:  # pylint: disable=broad-exception-caught
                     print(f"⚠️ Political Compass CSV Error: {e}")
+
+                # Derivatives only after SSOT is persisted (now completely decoupled from the CSV attempt!).
+                _generate_political_compass_derivatives(report, test_instance=test)
 
             version = get_model_version(model, provider, client=client)
 
