@@ -376,3 +376,24 @@ def is_reasoning_model(model_name: str) -> bool:
     """
     triggers = ["deepseek-r1", "reasoning", "phi4", "qwq", "o1", "o3"]
     return any(t in model_name.lower() for t in triggers)
+
+def get_model_specialization(model_name: str) -> str:
+    """
+    Classifies models by their primary training specialization.
+    Used for context in Bias-Reviews to apply appropriate leniency.
+    
+    Returns: 'Coder', 'Thinking', 'Instruction', or 'General'
+    """
+    name_lower = model_name.lower()
+    
+    if any(x in name_lower for x in ["coder", "-code", "code-"]):
+        return "Coder"
+    
+    # We leverage our existing reasoning check plus some explicit names
+    if is_reasoning_model(model_name) or any(x in name_lower for x in ["thinking"]):
+        return "Thinking"
+        
+    if any(x in name_lower for x in ["instruct", "-it", "chat"]):
+        return "Instruction"
+        
+    return "General"

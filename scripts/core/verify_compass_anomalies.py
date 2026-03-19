@@ -95,8 +95,8 @@ def cluster_and_drop_outlier(results):
         avg_y = (results[0][1] + results[2][1]) / 2.0
         return (avg_x, avg_y)
 
-def run_verification(provider_filter=None, model_id=None):
-    anomalies = get_anomalies(provider_filter=provider_filter, model_id=model_id)
+def run_verification(provider_filter=None, model_id=None, threshold=1.0):
+    anomalies = get_anomalies(threshold=threshold, provider_filter=provider_filter, model_id=model_id)
     if not anomalies:
         print("No anomalous models found (Shift > 1.0).")
         return
@@ -275,5 +275,12 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--provider", default=None, choices=["all", "commercial", "local_ollama"])
     parser.add_argument("--model", default=None)
+    parser.add_argument("--threshold", type=float, default=1.0)
     args = parser.parse_args()
-    run_verification(provider_filter=args.provider, model_id=args.model)
+
+    try:
+        run_verification(provider_filter=args.provider, model_id=args.model, threshold=args.threshold)
+    except KeyboardInterrupt:
+        import sys
+        print("\n⛔  Abbruch durch Benutzer (Anomaly Verification).")
+        sys.exit(130)
