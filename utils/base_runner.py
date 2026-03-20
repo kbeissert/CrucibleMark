@@ -144,6 +144,7 @@ class BaseBenchmarkRunner:
             "token_limit_cutoff": getattr(exec_result, "token_limit_cutoff", False),
             "token_limit_fallback": getattr(exec_result, "token_limit_fallback", False),
             "token_limit_used": getattr(exec_result, "token_limit_used", None),
+            "thought_tag_compliance": getattr(exec_result, "thought_tag_compliance", None),
         }
 
         # Add category scores

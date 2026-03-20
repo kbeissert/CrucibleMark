@@ -75,6 +75,7 @@ class BenchmarkResult(BaseModel):
     judge_task_compliance: Optional[int] = Field(default=None, description="Task Compliance sub-score from LLM Judge")
     judge_output_quality: Optional[int] = Field(default=None, description="Output Quality sub-score from LLM Judge")
     judge_standard_adherence: Optional[int] = Field(default=None, description="Standard Adherence sub-score from LLM Judge")
+    thought_tag_compliance: Optional[float] = Field(default=None, description="Score for compliance with thinking tag constraints")
 
     # --- Identification ---
     model_version: str = Field(

@@ -111,6 +111,12 @@ class ReasoningLogicTest(BaseTest):
         result.primary_score = eval_result.get("score", eval_result.get("total_score"))
         result.tier = eval_result.get("tier", "Tier 1 (Undefined)")
         result.data = eval_result
+
+        if "<thought>" in result.raw_response.lower() or "</thought>" in result.raw_response.lower():
+            result.thought_tag_compliance = 1.0
+        else:
+            result.thought_tag_compliance = 0.0
+
         result.rendered_value = f"{result.primary_score} %" if result.primary_score is not None else "N/A"
 
         return result

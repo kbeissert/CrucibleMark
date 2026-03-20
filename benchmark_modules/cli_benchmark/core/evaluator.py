@@ -93,11 +93,17 @@ class CLIEvaluator:
         quality_score = (exact_score + safety_score + efficiency_score) / 3.0
 
         # Strict tool usage
-        tools_expected = task.get("tools", [])
+        metadata = task.get("metadata", {})
+        tools_expected = metadata.get("tools", task.get("tools", []))
         tools_found = sum(1 for t in tools_expected if t.lower() in command_text_lower)
-        tool_call_f1 = (
-            (tools_found / len(tools_expected)) * 100.0 if tools_expected else 100.0
-        )
+        tools_mode = metadata.get("tools_required_mode", "all")
+
+        if not tools_expected:
+            tool_call_f1 = 100.0
+        elif tools_mode == "one_of":
+            tool_call_f1 = 100.0 if tools_found > 0 else 0.0
+        else:
+            tool_call_f1 = (tools_found / len(tools_expected)) * 100.0
 
         if len(tools_expected) > 0 and tool_call_f1 < TOOL_PENALTY_THRESHOLD:
             quality_score *= TOOL_PENALTY_FACTOR

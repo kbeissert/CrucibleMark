@@ -2,6 +2,8 @@
 
 ## Ongoing
 - [ ] Phase 4: Finale E2E Systemtests und CI/CD Review
+- [DONE] Metakognitions-Prüfung (<thought>-Tags) in Modulen und CSV integrieren
+- [DONE] CLI-Benchmark auf Hybrid LLM-Judge umstellen
 - [DONE] LLM Judge: Umbau auf natives JSON-Output (`judge_parser.py` + Prompts)
 - [ ] LLM Judge: Batch-Mode (Phase 3.5)
 - [ ] Volldurchlauf aller lokalen Modelle → finales Leaderboard (43/43 Tests)

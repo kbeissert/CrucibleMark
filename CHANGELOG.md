@@ -4,6 +4,20 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [v3.1.0] - 2026-03-20
+
+### Added
+- **Reasoning Tokens & Metacognition:** Einführung der `<thought>`-Tag Metakognitions-Überprüfung. Das System trackt nun den `reasoning_tokens` Count und filtert die `<thought>` Blöcke vor der finalen LLM-Judge Auswertung restriktiver Modelle heraus.
+- **Dynamic Meta-Review Prompting:** Der `generate_review.py` Meta-Reviewer nutzt nicht länger einen Python-hardgecodeten Prompt, sondern liest seinen System-Prompt dynamisch und versionierbar aus der neuen Konfigurationsdatei `config/meta_reviewer_prompt.yaml` ein.
+
+### Changed
+- **CLI Hybrid Scoring Migration:** Das Modul `cli_benchmark` (`cli001` - `cli006`) wurde von der reinen Regex-Evaluierung auf ein hybrides `llm_judge`-Scoring umgestellt (inkl. Fallbacks, Penalty-Systemen und JSON-orientierter Aufbereitung der `functional_goal`s).
+- **Judge Context Expansion:** Das Token-Limit des LLM-Judges in `benchmark_config.yaml` wurde von 2048 auf 4096 Tokens erhöht, um zu verhindern, dass ausführliche Architekturbewertungen (z.B. in `reasoning_5e_001`) mitten in JSON-Strukturen abbrechen.
+- **Robust CSV Sync:** Der `--force`-Parameter und das Cross-Model-Resuming (`run_cross_model_benchmark.py`) überschreiben und integrieren bestehende CSVs nun intelligenter, ohne manuelle und fehleranfällige Löschvorgänge zu erfordern.
+
+### Fixed
+- **Judge Parse Fallbacks:** Bei korruptem Output (z. B. abgeschnittenes JSON) fängt `judge_parser.py` den Parse-Fehler ab, verweigert den Runtime-Crash und speichert stattdessen den rohen Debugging-Output unter `last_failed_raw.txt`.
+
 ## [v3.0.1] - 2026-03-19
 
 ### Changed
