@@ -1,10 +1,10 @@
 .PHONY: \
 	help install install-dev \
-	benchmark benchmark-silent political-compass political-compass-force political-compass-safe benchmark-political-compass audit-bias benchmark-cross-model benchmark-auto benchmark-auto-silent benchmark-human run-benchmark \
+	benchmark political-compass political-compass-safe benchmark-political-compass audit-bias benchmark-cross-model benchmark-auto benchmark-human run-benchmark \
 	review-model review-all review-bias-model review-bias-all leaderboard \
 	validate validate-single validate-structure test diff-results analyze-costs update-prices \
 	list-models judge-health list-modules create-module \
-	clean clean-sessions clean-csv clean-model clean-module clean-all clean-runs clean-runs-force consolidate-csv \
+	clean clean-sessions clean-csv clean-model clean-module clean-all clean-runs consolidate-csv \
 	backup
 
 # Python-Interpreter aus .venv verwenden
@@ -13,88 +13,55 @@ PYTHON := .venv/bin/python
 help:
 	@echo "CrucibleMark - Makefile Commands"
 	@echo ""
-	@echo "=== Installation ==="
-	@echo "  make install              Install runtime dependencies (User)"
-	@echo "  make install-dev          Install dev dependencies (Developer)"
+	@echo "=== Global Flags ==="
+	@echo "  MODULE=name   z.B. MODULE=cli_benchmark"
+	@echo "  MODEL=name    z.B. MODEL=qwen2.5:14b"
+	@echo "  FORCE=1       Erzwingt einen Neustart (ignoriert Cache/Scores)"
+	@echo "  SILENT=1      Überspringt Audit-Logs (nur Scores)"
 	@echo ""
 	@echo "=== Benchmarking ==="
-	@echo "  make benchmark            🕵️ Standard Benchmark (Audit-Logs + LLM-Editor-Protokolle)"
-	@echo "  make benchmark-silent     Silent Benchmark ohne Audit-Logs (Scores direkt in CSV/DB)"
-	@echo "  make benchmark-auto       🤖 Auto-Fill mit Audit-Protokollen (Standard)"
-	@echo "  make benchmark-auto-silent Auto-Fill ohne Audit-Protokolle"
-	@echo "  make benchmark-cross-model Single Module vs ALL LLMs inkl. Audit-Protokollen (MODULE=name)"
-	@echo "  make political-compass    Eigenständiger Political-Compass-Test (immer mit Audit-Protokollen)"
-	@echo "  make political-compass-force 🛑 Erzwingt kompletten Neustart des PCs (löscht Caches)"
-	@echo "  make political-compass-safe 🛡️  Startet die Anomalieprüfung (Triple-Run) für verrutschte Modelle"
-	@echo "  make benchmark-human      👤 Human Baseline Test (Political Compass)"
+	@echo "  make benchmark            🕵️ Standard Benchmark (Flags: SILENT, FORCE, MODEL, MODULE)"
+	@echo "  make benchmark-auto       🤖 Auto-Fill Benchmark (Flags: SILENT, FORCE)"
+	@echo "  make benchmark-cross-model 🚀 Module vs ALL LLMs (Flags: FORCE, MODULE)"
+	@echo "  make run-benchmark        Interactive Runner"
+	@echo ""
+	@echo "=== Political Compass ==="
+	@echo "  make political-compass    🐺 Eigenständiger PC-Test (immer mit Audit, Flags: FORCE)"
+	@echo "  make political-compass-safe 🛡️  Anomalieprüfung (Triple-Run)"
+	@echo "  make benchmark-human      👤 Human Baseline Test (PC)"
 	@echo ""
 	@echo "=== Reporting & Standards ==="
 	@echo "  make leaderboard          Generate Leaderboard CSV"
-	@echo "  make review-model         📰 Generate Review for a model (MODEL=name)"
+	@echo "  make review-model         📰 Generate Review (MODEL=name)"
 	@echo "  make review-all           📰 Generate Reviews for ALL models"
-	@echo "  make review-bias-model    ⚖️ Generate Bias-Review for a model (MODEL=name)"
+	@echo "  make review-bias-model    ⚖️ Generate Bias-Review (MODEL=name)"
 	@echo "  make review-bias-all      ⚖️ Generate Bias-Reviews for ALL models"
 	@echo ""
 	@echo "=== Validation & QA ==="
-	@echo "  make validate             Validate all test assets"
+	@echo "  make validate             Validate test assets"
 	@echo "  make validate-single      Validate single asset (ASSET=path)"
-	@echo "  make validate-structure   Check module directory structure"
-	@echo "  make test                 Run validation & unit tests"
-	@echo "  make diff-results         Compare two benchmark JSONs"
-	@echo "  make analyze-costs        Calculate token costs"
+	@echo "  make test                 Run tests"
+	@echo "  make diff-results         Compare runs"
+	@echo "  make analyze-costs        Calculate costs"
 	@echo ""
 	@echo "=== Tools & Maintenance ==="
-	@echo "  make list-models          List available Models"
-	@echo "  make judge-health         Check LLM Judge provider status [PROVIDER=name]"
-	@echo "  make list-modules         List available Modules"
-	@echo "  make create-module        🚀 Scaffold a new module"
-	@echo "  make update-prices        💱 Force-update LiteLLM token price cache"
-	@echo "  make clean                Clean caches/temp files"
-	@echo "  make clean-sessions       Delete temporary benchmark sessions"
-	@echo "  make clean-csv            Delete benchmark CSV files"
-	@echo "  make clean-model          Delete results for one model (MODEL=name)"
-	@echo "  make clean-module         Delete results for one module (MODULE=key)"
-	@echo "  make clean-runs           Keep only latest run snapshots"
-	@echo "  make clean-runs-force     Force cleanup of old run snapshots"
-	@echo "  make consolidate-csv      Consolidate CSV data if tool exists"
-	@echo "  make clean-all            Deep Clean (Caches + CSVs)"
-	@echo "  make backup               Create full backup"
-	@echo ""
+	@echo "  make list-models          List Models"
+	@echo "  make judge-health         Check Judges"
+	@echo "  make list-modules         List Modules"
+	@echo "  make create-module        🚀 Scaffold module"
 
-# === INSTALLATION ===
-
-install:
-	@if [ ! -d ".venv" ]; then \
-		echo "🌱 Creating missing Virtual Environment (.venv)..."; \
-		python3 -m venv .venv; \
-	fi
-	@echo "📦 Installing dependencies..."
-	$(PYTHON) scripts/dev/setup_env.py
-
-install-dev: install
-	@echo "🛠️ Installing development dependencies..."
-	$(PYTHON) -m pip install -r requirements-dev.txt
 
 # === BENCHMARKING ===
 
 benchmark:
-	@echo "🕵️  Starting Benchmark (Standard Audit Mode)..."
-	$(PYTHON) run_benchmark.py --audit $(if $(MODEL),--model "$(MODEL)") $(if $(MODULE),--module "$(MODULE)") $(if $(filter true,$(FORCE)),--force)
-	@$(MAKE) leaderboard
-
-benchmark-silent:
-	@echo "🚀 Starting Benchmark (Silent Mode, no audit logs)..."
-	$(PYTHON) run_benchmark.py $(if $(MODEL),--model "$(MODEL)") $(if $(MODULE),--module "$(MODULE)") $(if $(filter true,$(FORCE)),--force)
+	@echo "🕵️  Starting Benchmark ($(if $(SILENT),Silent Mode,Standard Audit Mode))..."
+	$(PYTHON) run_benchmark.py $(if $(SILENT),,--audit) $(if $(MODEL),--model "$(MODEL)") $(if $(MODULE),--module "$(MODULE)") $(if $(FORCE),--force)
 	@$(MAKE) leaderboard
 
 political-compass:
 	@echo "🐺 Starting standalone Political Compass benchmark (Audit Logs ON)..."
-	$(PYTHON) run_benchmark.py --module political_compass --audit $(if $(MODEL),--model "$(MODEL)") $(if $(filter true,$(FORCE)),--force)
+	$(PYTHON) run_benchmark.py --module political_compass --audit $(if $(MODEL),--model "$(MODEL)") $(if $(FORCE),--force)
 	@$(MAKE) leaderboard
-
-political-compass-force:
-	@echo "🛑 Forcing clean run (clearing checkpoints for selected model)..."
-	@$(MAKE) political-compass MODEL="$(MODEL)" FORCE=true
 
 political-compass-safe:
 	@echo "🛡️  Starting Anomaly Verification Protocol (Make Political Compass Safe Test)..."
@@ -110,15 +77,11 @@ audit-bias:
 
 benchmark-cross-model:
 	@echo "🚀 Starting Cross-Model Benchmark (with Audit Logs)..."
-	@$(PYTHON) scripts/core/run_cross_model_benchmark.py --audit $(if $(MODULE),--module $(MODULE))
+	@$(PYTHON) scripts/core/run_cross_model_benchmark.py --audit $(if $(MODULE),--module $(MODULE)) $(if $(FORCE),--force)
 
 benchmark-auto:
-	@echo "🤖 Starting Full Auto Benchmark (Smart Autofill + Audit Logs)..."
-	$(PYTHON) scripts/core/benchmark_auto.py --audit
-
-benchmark-auto-silent:
-	@echo "🤖 Starting Full Auto Benchmark (Smart Autofill, Silent Mode)..."
-	$(PYTHON) scripts/core/benchmark_auto.py
+	@echo "🤖 Starting Full Auto Benchmark (Smart Autofill $(if $(SILENT),Silent Mode,with Audit Logs))..."
+	$(PYTHON) scripts/core/benchmark_auto.py $(if $(SILENT),,--audit) $(if $(FORCE),--force)
 
 benchmark-human:
 	@echo "👤 Starting Human Baseline Test..."
@@ -248,13 +211,11 @@ clean-all: clean clean-csv
 	@echo "✨ All clean!"
 
 clean-runs:
+	@echo "🧹 Cleaning Old Run Directories ($(if $(FORCE),Forced,Dry Run))..."
 	@if [ -f "scripts/maintenance/cleanup_runs.py" ]; then \
-		$(PYTHON) scripts/maintenance/cleanup_runs.py --keep 1; \
-	fi
-
-clean-runs-force:
-	@if [ -f "scripts/maintenance/cleanup_runs.py" ]; then \
-		$(PYTHON) scripts/maintenance/cleanup_runs.py --keep 1 --force; \
+		$(PYTHON) scripts/maintenance/cleanup_runs.py --keep 1 $(if $(FORCE),--force); \
+	else \
+		echo "❌ cleanup script not found - skipping old run cleanup."; \
 	fi
 
 consolidate-csv:
