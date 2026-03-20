@@ -371,16 +371,6 @@ class CommercialBenchmarkRunner(BaseBenchmarkRunner):
             # Logik entfernt, die bei mode="test" automatisch speichert.
             # Rationale: "100%" should be static until manual update.
 
-        # Debug Auto-Save Logic (Ported from Local Runner)
-        if result["percentage"] < 30:
-            save_debug_response(
-                result["model"],
-                result["asset_id"],
-                response,
-                f"{result['total_score']}/{result['max_score']} ({result['percentage']}%)",
-                score.get("reasoning", "No explanation provided"),
-            )
-
         if getattr(self, "audit_mode", False):
             generate_audit_log(
                 result=result,
