@@ -172,38 +172,6 @@ def prepare_pc_csv_row(
     }
 
 
-def save_debug_response(
-    model: str,
-    asset_id: str,
-    response: str,
-    score: Any,
-    explanation: str,
-    base_dir: Path = Path("benchmark_scores/debug_responses"),
-) -> None:
-    """
-    Saves response to debug file for low scoring or problematic runs.
-    """
-    try:
-        base_dir.mkdir(exist_ok=True, parents=True)
-
-        # Sanitize filename
-        safe_model = str(model).replace(":", "_").replace("/", "_")
-        filename = f"{safe_model}_{asset_id}.txt"
-        filepath = base_dir / filename
-
-        with open(filepath, "w", encoding="utf-8") as f:
-            f.write(f"Model: {model}\n")
-            f.write(f"Asset: {asset_id}\n")
-            f.write(f"Score: {score}\n")
-            f.write(f"Explanation: {explanation}\n")
-            f.write("=" * 80 + "\n")
-            f.write("RESPONSE:\n")
-            f.write("=" * 80 + "\n")
-            f.write(str(response))
-    except OSError as e:
-        logger.warning("Failed to save debug response for %s: %s", asset_id, e)
-
-
 def save_audit_log(
     model: str,
     asset_id: str,

@@ -179,7 +179,6 @@ clean:
 	rm -rf outputs/runs/*
 	rm -rf outputs/comparisons/*
 	rm -rf outputs/audit_logs/*
-	rm -rf benchmark_scores/debug_responses/*
 	find . -type d -name __pycache__ -exec rm -rf {} +
 	find . -type f -name "*.pyc" -delete
 

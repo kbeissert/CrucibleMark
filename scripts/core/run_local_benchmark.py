@@ -28,7 +28,6 @@ from utils.benchmark_ui import TerminalUI
 from utils.benchmark_utils import (
     discover_assets,
     load_asset_yaml,
-    save_debug_response,
 )
 from utils.logging_config import setup_logging
 
@@ -61,8 +60,7 @@ class LocalBenchmarkRunner(BaseBenchmarkRunner):
 
     def __init__(
         self,
-        debug_responses: bool = False,
-        mode: BenchmarkMode = BenchmarkMode.PRODUCTION,
+            mode: BenchmarkMode = BenchmarkMode.PRODUCTION,
         audit_mode: bool = False,
     ):
         """Initialisiert Runner."""
@@ -77,9 +75,6 @@ class LocalBenchmarkRunner(BaseBenchmarkRunner):
         self.audit_mode = audit_mode
         self.commercial_csv = Path(
             self.validator.config.get("output", {}).get("commercial_csv", "benchmark_scores/commercial_models_benchmark.csv")
-        )
-        self.debug_responses = (
-            debug_responses or os.getenv("CRUCIBLE_DEBUG", "false").lower() == "true"
         )
 
         # Cache for Cold Start measurements to prevent redundant unloads
@@ -414,15 +409,6 @@ class LocalBenchmarkRunner(BaseBenchmarkRunner):
         if "tier" not in result:
             result["tier"] = "Tier 1 (Undefined)"
 
-        # Debug Auto-Save Logic
-        if result["percentage"] < 30 or getattr(self, "debug_responses", False):
-            save_debug_response(
-                result["model"],
-                result["asset_id"],
-                response_preview,
-                f"{result['total_score']}/{result['max_score']} ({result['percentage']}%)",
-                exec_result.data.get("reasoning", "No explanation provided"),
-            )
         return result
 
     def _create_standard_result_from_batch(
@@ -588,11 +574,6 @@ def main():
     """CLI Entry Point."""
     parser = argparse.ArgumentParser(description="CrucibleMark Local Benchmark Runner")
     parser.add_argument(
-        "--debug-responses",
-        action="store_true",
-        help="Save all responses to debug files",
-    )
-    parser.add_argument(
         "--dev",
         action="store_true",
         help="Run in DEV mode (Fast iteration, shorter pauses). Default is PRODUCTION.",
@@ -602,7 +583,7 @@ def main():
     # Determine Benchmark Mode
     mode = BenchmarkMode.DEV if args.dev else BenchmarkMode.PRODUCTION
 
-    runner = LocalBenchmarkRunner(debug_responses=args.debug_responses, mode=mode)
+    runner = LocalBenchmarkRunner(mode=mode)
     print(f"\n{'=' * 60}\n🚀 LOKALE MODELLE BENCHMARK\n{'=' * 60}")
     print(f"Modus: {mode.value.upper()} (Adaptive Pausen aktiviert)")
 

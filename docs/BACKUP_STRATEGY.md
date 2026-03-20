@@ -326,7 +326,6 @@ ______________________________________________________________________
 ### Was wird NICHT gesichert?
 
 - **Temporary Session Files:** `outputs/temp/session_*.json` (nur für Crash-Recovery)
-- **Debug Responses:** `benchmark_scores/debug_responses/` (optional, nur bei --debug Flag)
 - **Python Cache:** `__pycache__/`, `.pyc` Files
 
 **Grund:** Ephemeral Data, kann regeneriert werden.
