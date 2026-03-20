@@ -40,8 +40,8 @@ execution:
 
 scoring:
   fallback_weights:
-    regex: 0.80
-    judge: 0.20
+    regex: 0.00
+    judge: 1.00
 
 benchmarks:
 - id: cli001

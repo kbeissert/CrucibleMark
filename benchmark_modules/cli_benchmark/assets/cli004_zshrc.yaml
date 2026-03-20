@@ -17,11 +17,17 @@ golden:
   - 'rm '
   - .zshrc_temp
   max_steps: 10
+  functional_goal: Set an alias bm=ollama-benchmark-cli, persist it specifically to
+    ~/.zshrc, source the file, and test the alias with --help.
+  accept_equivalents:
+  - echo "alias bm=..." >> ~/.zshrc
+  - source ~/.zshrc
+  - bm --help
 scoring:
   accept_script: true
   core_commands: *id001
   bonus_criteria: []
-  method: rubric
+  method: llm_judge
 prompt: 'Task: Zshrc Alias & Source
 
   Description: Set alias bm=ollama-benchmark-cli, persist to ~/.zshrc (NOT ~/.zshrc_temp),

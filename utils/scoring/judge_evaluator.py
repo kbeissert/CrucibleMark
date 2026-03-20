@@ -36,9 +36,14 @@ def evaluate_with_judge(
         runner = JudgeRunner(judge_config)
 
         raw_prompt = asset_data.get("prompt", asset_data.get("instruction", ""))
-        golden = asset_data.get("golden_standard", "")
+        golden = asset_data.get("golden_standard", asset_data.get("golden", ""))
         if isinstance(golden, dict):
-            golden = golden.get("text", "")
+            # Format dict for the judge as string if text not present
+            golden_text = golden.get("text", "")
+            if not golden_text:
+                import json
+                golden_text = json.dumps(golden, indent=2)
+            golden = golden_text
         golden = str(golden)
 
         # Build kwargs for .score(), keeping it provider-agnostic
@@ -86,6 +91,20 @@ def evaluate_with_judge(
                 module_config=benchmark_info,
                 judge_enabled=judge_config.enabled,
             )
+
+            if eval_module_id == "cli_benchmark":
+                # Ensure safety and tool penalties from regex phase apply to judge!
+                data_dict = result.get("data", {})
+                if isinstance(data_dict, dict):
+                    details = data_dict.get("details", {})
+                    safety = details.get("safety", 100.0)
+                    tool_f1 = details.get("tool_call_f1", 100.0)
+                    if safety == 0.0:
+                        hybrid_score = 0.0
+                        result["judge_progress_status"] = f"⚖️ Judge: 0/{judge_scale} (Safety Penalty)"
+                    elif tool_f1 < 50.0:
+                        hybrid_score *= 0.6
+                        result["judge_progress_status"] = f"⚖️ Judge: {judge_res.score}/{judge_scale} (Tool Penalty)"
 
             result["total_score"] = hybrid_score
             result["percentage"] = hybrid_score

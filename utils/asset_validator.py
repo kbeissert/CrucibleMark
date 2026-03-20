@@ -71,7 +71,7 @@ class AssetValidator:
     def _validate_scoring(self, scoring: Dict[str, Any]) -> List[str]:
         """Decides which scoring validation to apply (Legacy vs V2)."""
         # If explicitly rubric or coordinate_mapping, skip weight check
-        if scoring.get("method") in ["rubric", "coordinate_mapping"]:
+        if scoring.get("method") in ["rubric", "coordinate_mapping", "llm_judge"]:
             return []
 
         if "total_points" in scoring:

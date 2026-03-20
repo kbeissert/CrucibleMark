@@ -41,6 +41,10 @@ _MODULE_DOMAIN: Dict[str, str] = {
         "Logical reasoning and problem-solving. You evaluate argument structure, "
         "step-by-step coherence, handling of edge cases, and the depth of causal analysis."
     ),
+    "cli_benchmark": (
+        "CLI and Shell scripting. You evaluate correctness, command line efficiency, "
+        "and adherence to requested tools while accepting semantically equivalent solutions."
+    ),
 }
 
 _DEFAULT_DOMAIN = (
