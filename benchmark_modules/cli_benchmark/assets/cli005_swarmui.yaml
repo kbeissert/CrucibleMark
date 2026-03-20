@@ -20,11 +20,16 @@ golden:
   - swarmui/swarmui
   - mcr.microsoft.com
   max_steps: 20
+  functional_goal: Deploy SwarmUI using Docker Compose with the specified image, listen
+    on 0.0.0.0:7801, and test it via curl.
+  accept_equivalents:
+  - docker-compose up
+  - docker run -p 7801:7801 ghcr.io...
 scoring:
   accept_script: true
   core_commands: *id001
   bonus_criteria: []
-  method: rubric
+  method: llm_judge
 prompt: 'Task: SwarmUI Docker Deployment
 
   Description: Deploy SwarmUI using Docker Compose with image ghcr.io/mcmonkeyprojects/swarmui:latest,

@@ -17,11 +17,17 @@ golden:
   - 'rm '
   - rmdir
   max_steps: 60
+  functional_goal: Clone the repository and display the contents of the README file.
+  accept_equivalents:
+  - cat README.md
+  - less README.md
+  - more README.md
+  - head README.md
 scoring:
   accept_script: true
   core_commands: *id001
   bonus_criteria: []
-  method: rubric
+  method: llm_judge
 prompt: 'Task: Repo Clone + Web Fetch
 
   Description: Clone https://github.com/bykologlu/ollama-benchmark-cli, read README

@@ -14,11 +14,18 @@ golden:
   banned_commands:
   - brew tap
   max_steps: 10
+  functional_goal: Package ollama-benchmark-cli must be installed via pip or brew,
+    and its version verified.
+  accept_equivalents:
+  - --version
+  - pip show
+  - pip list | grep
+  - conda list
 scoring:
   accept_script: true
   core_commands: *id001
   bonus_criteria: []
-  method: rubric
+  method: llm_judge
 prompt: 'Task: Library Install (pip/brew)
 
   Description: Install ollama-benchmark-cli via brew/pip, verify version

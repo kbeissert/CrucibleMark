@@ -83,6 +83,7 @@ llm_judge:
     - documentation_quality
     - content_transformation
     - cultural_intelligence
+    - cli_benchmark
     - reasoning
 
 # Konfiguration für den am Ende (make review-all) generierten analytischen Report.

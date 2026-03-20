@@ -18,11 +18,16 @@ golden:
   - rm -rf /tmp
   - -mtime +30
   max_steps: 60
+  functional_goal: Scan /tmp, delete files larger than 1GB, and report disk space
+    savings without deleting the root or /tmp directory itself.
+  accept_equivalents:
+  - find ... -size +1G
+  - du -sh
 scoring:
   accept_script: true
   core_commands: *id001
   bonus_criteria: []
-  method: rubric
+  method: llm_judge
 prompt: 'Task: Disk Cleanup (du + rm safe)
 
   Description: Scan /tmp, delete >1GB old files, report savings. No rm -rf root!

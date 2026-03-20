@@ -18,11 +18,17 @@ golden:
   banned_commands:
   - ollama-models/models
   max_steps: 20
+  functional_goal: Move the ~/.ollama/models directory to /Volumes/External/ollama-models,
+    create a symlink back, and ensure `ollama list` still works.
+  accept_equivalents:
+  - mv ...
+  - ln -s ...
+  - ollama ls
 scoring:
   accept_script: true
   core_commands: *id001
   bonus_criteria: []
-  method: rubric
+  method: llm_judge
 prompt: 'Task: Ollama Models to External Disk + Symlink
 
   Description: mv ~/.ollama/models /Volumes/External/ollama-models, ln -s back, ollama
