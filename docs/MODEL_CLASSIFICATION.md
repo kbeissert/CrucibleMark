@@ -336,7 +336,6 @@ ______________________________________________________________________
 1. **Badge als Schnell-Indikator nutzen:** Silver = Production-ready
 1. **Speed Class für Use-Case wählen:** Autocomplete = Fast, Deep-Work = Medium/Slow okay
 1. **Skill Profile beachten:** Brauchst du Code-Reviewer oder Content-Adapter?
-1. **Reasoning Score ernst nehmen:** < 30 = schwach bei komplexen Problemen
 
 ### DON'Ts ❌
 

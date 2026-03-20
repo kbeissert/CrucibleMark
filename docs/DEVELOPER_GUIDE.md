@@ -629,7 +629,6 @@ Debug-Tool:
 
 ```bash
 python scripts/run_local_benchmark.py --debug-responses
-# Prüfe: benchmark_scores/debug_responses/
 ```
 
 ______________________________________________________________________

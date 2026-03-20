@@ -117,33 +117,6 @@ def clean_checkpoints(model: str = None, module_key: str = None, dry_run: bool =
                     print(f"     ❌ Fehler beim Löschen: {e}")
 
 
-def clean_debug_responses(model: str = None, dry_run: bool = False):
-    """Löscht Debug-Response Textdateien für das Modell."""
-    if not model:
-        return
-
-    debug_dir = Path("benchmark_scores/debug_responses")
-    if not debug_dir.exists():
-        return
-
-    # Safe Model Name Logic (analog zu Dateinamen-Generierung)
-    # z.B. falcon2:11b -> falcon2_11b
-    safe_model = re.sub(r"[^a-zA-Z0-9]", "_", model)
-
-    # Suche Dateien, die mit dem Modellnamen beginnen
-    # debug responses heißen z.B. falcon2_11b_code_quality_002.txt
-    files_to_delete = list(debug_dir.glob(f"{safe_model}_*.txt"))
-
-    if files_to_delete:
-        print(f"🧹 Bereinige {len(files_to_delete)} Debug-Responses...")
-        for f in files_to_delete:
-            if not dry_run:
-                try:
-                    f.unlink()
-                except OSError as e:
-                    print(f"     ❌ Fehler beim Löschen von {f.name}: {e}")
-            else:
-                print(f"     (Dry Run) Würde löschen: {f.name}")
 
 
 def clean_csv(
@@ -230,7 +203,6 @@ def main():
 
     # Checkpoints und Debug-Files bereinigen
     clean_checkpoints(model=args.model, module_key=args.module, dry_run=args.dry_run)
-    clean_debug_responses(model=args.model, dry_run=args.dry_run)
 
     # Dateien definieren
     files = [

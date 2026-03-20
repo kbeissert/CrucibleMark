@@ -29,7 +29,6 @@ from utils.benchmark_utils import (
     select_from_list,
     discover_assets,
     load_asset_yaml,
-    save_debug_response,
 )  # noqa: E402
 from utils.model_utils import get_model_version  # noqa: E402
 from utils.module_registry import load_active_benchmarks  # noqa: E402

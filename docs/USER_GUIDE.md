@@ -325,12 +325,10 @@ python scripts/run_local_benchmark.py --debug-responses
 **Was passiert:**
 
 - Vollständige Modell-Antworten werden gespeichert
-- Pfad: `benchmark_scores/debug_responses/<model>_<asset>.txt`
 - Enthält: Score, Reasoning, ungekürzte Antwort
 
 **Automatisch aktiviert bei:**
 
-- Scores < 30% (Asset wird automatisch geloggt)
 
 ______________________________________________________________________
 
@@ -364,7 +362,6 @@ benchmark_scores/
 ├── commercial_models_benchmark.csv  # Rohdaten (API-Modelle)
 ├── benchmark_leaderboard.csv        # Aggregierte Rankings
 ├── political_compass_results.csv    # Spezial-Modul (Koordinaten)
-└── debug_responses/                 # Debug-Logs (optional)
 ```
 
 ______________________________________________________________________
