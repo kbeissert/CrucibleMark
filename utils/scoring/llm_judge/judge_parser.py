@@ -273,7 +273,7 @@ def _extract_sub_scores_legacy(text: str) -> Optional[dict]:
 
         for key in required_keys:
             val = data[key]
-            if not isinstance(val, int) or val < 1 or val > 5:
+            if not isinstance(val, int) or val < 0 or val > 5:
                 return None
 
         return {key: data[key] for key in required_keys}

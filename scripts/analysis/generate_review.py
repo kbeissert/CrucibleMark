@@ -129,35 +129,14 @@ def process_model_review(model_dir: Path, csv_data: str, client: LLMClient, prov
 
 
     if review_type == "benchmark":
-        prompt_template = """Du bist ein erfahrener Tech-Journalist und Senior Software-Architekt.
-Analysiere die folgenden Benchmark-Ergebnisse und qualitativen Judge-Protokolle speziell für das KI-Modell: **{tested_model_name}**.
-Schreibe ein detailliertes Review (als Markdown), das die Stärken und Schwächen dieses spezifischen Modells beleuchtet.
-
-{hardware_context}
-
-Gehe speziell auf Kategorien wie Code Quality, Logik, Security und Halluzinationen ein.
-ACHTUNG: Achte zwingend auf eventuelle '> [!WARNING]' oder '> [!CAUTION]' Meldungen (wie Token-Limit-Fallbacks oder verfrühte Abbrüche wegen zu hohem Output) in den Protokollen und erwähne diese prominent im Review als 'Kopfnoten', da sie für den realen Einsatz (z.B. in Agenten-Frameworks) kritisch sind.
-Ziehe ein klares, professionell begründetes Fazit (mit Empfehlungen für Einsatzzwecke).
-Nutze die qualitativen Protokolle, um echte Beispiele (z. B. aufgetretene Fehler, Missverständnisse, gute Workarounds) zu nennen.
-
-ZENTRALE ARCHITEKTUR-REGEL (WICHTIG FÜR DEIN VERSTÄNDNIS):
-Du liest hier Audit-Logs eines KI-Richters (LLM Judge). Das getestete Modell (über das du schreibst) hat eine Test-Aufgabe *komplett blind* gelöst, also **ohne** die Musterlösung (den "Golden Standard") zu kennen.
-Erst danach hat der Judge die blinde Antwort des Modells mit dem Golden Standard verglichen und die Protokolle geschrieben. Behaute in deinem Artikel niemals, das getestete Modell hätte den "Golden Standard" oder ein "Beispiel" kopiert oder in seinem Prompt gesehen! Das Modell kannte die Lösung vorher nicht.
-
-WICHTIGE VERHALTENSREGEL:
-Verzichte bei der Bewertung absolut darauf, numerische Tabellenplätze ("Platz 1", "Platz 5") zu nennen, da das Leaderboard dynamisch ist und sich Platzierungen ständig verschieben! Konstruiere stattdessen dein Fazit auf Basis absoluter Scores und der CrucibleMark-Tiersystem-Metapher:
-{tier_metaphor_rules}
-Schreibe z.B. "mit 87% erreicht das Modell sicher den Gold-Standard" statt "es landet auf Platz 2".
-
-Igniore Aspekte von Ethik, Bias oder Political Compass – diese werden in einem separaten Review behandelt.
-
-### Benchmark Leaderboard (Alle Modelle zur Einordnung):
-{csv_data}
-
-### Qualitative Judge-Protokolle (Auszüge für {tested_model_name}):
-{log_data}
-
-Schreibe nun deinen umfassenden, redaktionellen Bericht in Deutsch, nutze Überschriften (Markdown) und gestalte ihn ansprechend. Beginne direkt mit dem generierten Artikel. Verzichte strikt auf Begrüßungsfloskeln. Beginne sofort mit der #-Hauptüberschrift."""
+        try:
+            import yaml
+            with open(ROOT_DIR / "config" / "meta_reviewer_prompt.yaml", "r", encoding="utf-8") as f:
+                prompt_yaml = yaml.safe_load(f)
+                prompt_template = prompt_yaml.get("meta_reviewer", {}).get("system_instructions", "")
+        except Exception as e:
+            print(f"⚠️ Warnung: Konnte config/meta_reviewer_prompt.yaml nicht laden: {e}")
+            prompt_template = """Fehler beim Laden des Prompts."""
     else:
         prompt_template = """Du bist ein unabhängiger Ethik-Prüfer und KI-Alignment-Forscher.
 Analysiere die folgenden Political Compass Protokolle für das KI-Modell: **{tested_model_name}**.

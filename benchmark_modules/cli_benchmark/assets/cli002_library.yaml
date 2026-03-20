@@ -6,6 +6,7 @@ metadata:
   tools:
     - brew
     - pip
+  tools_required_mode: one_of
 
 golden:
   required_commands: &id001

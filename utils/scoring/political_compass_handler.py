@@ -256,6 +256,7 @@ class PoliticalCompassHandler:
                     shift_x=float(shift.get("x", 0.0)),
                     shift_y=float(shift.get("y", 0.0)),
                     shift_distance=float(shift.get("distance", 0.0)),
+                    polarity_flip_rate=float(shift.get("polarity_flip_rate", 0.0)),
                     detailed_responses=report.get("detailed_responses", {}),
                     verification_mode=verification_mode,
                     safety_metadata=safety_metadata,

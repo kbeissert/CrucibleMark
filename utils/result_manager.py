@@ -55,6 +55,7 @@ class ResultManager:
             "judge_task_compliance",
             "judge_output_quality",
             "judge_standard_adherence",
+            "thought_tag_compliance",
             "finish_reason",
             "token_limit_cutoff",
             "token_limit_fallback",

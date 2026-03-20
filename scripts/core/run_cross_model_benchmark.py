@@ -152,7 +152,9 @@ def get_local_models() -> List[Tuple[str, str, str]]:
     return models
 
 
-def run_benchmark(module: str, model_id: str, provider: str, audit: bool = False):
+def run_benchmark(
+    module: str, model_id: str, provider: str, audit: bool = False, force: bool = False
+):
     """
     Executes run_benchmark.py for a single model/module combo.
     """
@@ -175,6 +177,9 @@ def run_benchmark(module: str, model_id: str, provider: str, audit: bool = False
 
     if audit:
         cmd.append("--audit")
+
+    if force:
+        cmd.append("--force")
 
     try:
         # Stream output directly to console
@@ -268,6 +273,11 @@ def main():
         action="store_true",
         help="Aktiviert Audit-Logging (Prompt/Antwort/Judge-Protokolle) für jeden Lauf.",
     )
+    parser.add_argument(
+        "--force",
+        action="store_true",
+        help="Erzwingt einen neuen Durchlauf, auch wenn bereits Ergebnisse existieren.",
+    )
 
     args = parser.parse_args()
 
@@ -320,7 +330,9 @@ def main():
             f"[yellow]🚀 Starte Lauf {i + 1}/{len(all_models)}: {m_name}[/yellow]"
         )
 
-        success = run_benchmark(selected_module, m_id, p_type, audit=args.audit)
+        success = run_benchmark(
+            selected_module, m_id, p_type, audit=args.audit, force=args.force
+        )
 
         if success:
             results["success"].append(m_id)

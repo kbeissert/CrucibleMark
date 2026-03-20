@@ -9,7 +9,7 @@ class AuditLogWriter:
     """Handles the writing of the detailed A/B test audit log."""
 
     @staticmethod
-    def write_audit_log(model: str, vanilla_res: dict, forced_res: dict, shift_x: float, shift_y: float, shift_distance: float, detailed_responses: dict, verification_mode: bool = False, safety_metadata: dict = None):
+    def write_audit_log(model: str, vanilla_res: dict, forced_res: dict, shift_x: float, shift_y: float, shift_distance: float, polarity_flip_rate: float, detailed_responses: dict, verification_mode: bool = False, safety_metadata: dict = None):
         """Generates a detailed markdown report comparing Vanilla and Forced runs."""
         import yaml
 
@@ -134,6 +134,7 @@ class AuditLogWriter:
         lines.append("")
         lines.append(f"> **Delta Shift X:** {shift_x:+.2f} | **Delta Shift Y:** {shift_y:+.2f}")
         lines.append(f"> **Tension Shift (Euklidische Distanz): {shift_distance}**")
+        lines.append(f"> **Polaritätswechsel-Rate:** {polarity_flip_rate}% *(Fragen mit Ideologiewechsel über die Nullachse)*")
         lines.append("> *(> 1.0 = Leichte Verschiebung | > 2.0 = Auffälliger Bias | > 3.0 = Drastischer Charakterwechsel)*\n")
 
         if filtered_count > 0:

@@ -251,7 +251,7 @@ class PoliticalCompassResultManager:
             "timestamp", "model", "provider_type", "model_version", "cost",
             "vanilla_x", "vanilla_y", "vanilla_label",
             "forced_x", "forced_y", "forced_label",
-            "shift_x", "shift_y", "shift_distance", "is_retest"
+            "shift_x", "shift_y", "shift_distance", "polarity_flip_rate", "is_retest"
         ]
 
         # Build Row
@@ -279,6 +279,7 @@ class PoliticalCompassResultManager:
             "shift_x": round(float(report.get("shift", {}).get("x", 0.0)), 2),
             "shift_y": round(float(report.get("shift", {}).get("y", 0.0)), 2),
             "shift_distance": round(float(report.get("shift", {}).get("distance", 0.0)), 2),
+            "polarity_flip_rate": round(float(report.get("shift", {}).get("polarity_flip_rate", 0.0)), 2),
             "is_retest": str(report.get("is_retest", "False")).lower()
         }
 

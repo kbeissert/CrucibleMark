@@ -515,6 +515,22 @@ class PoliticalCompassTest(BaseTest):
         shift_y = round(f_y - v_y, 2)
         shift_distance = round(math.hypot(shift_x, shift_y), 2)
 
+        # Calculate Polarity Flip Rate (Option B: strict zero-axis crossing)
+        v_scores_by_id = {r.get("question_id"): r.get("eval_value", 0) for r in self.evaluator_vanilla.response_buffer}
+        f_scores_by_id = {r.get("question_id"): r.get("eval_value", 0) for r in self.evaluator_forced.response_buffer}
+
+        flip_count = 0
+        valid_flips_total = 0
+        for qid in valid_qids:
+            v_val = v_scores_by_id.get(qid, 0)
+            f_val = f_scores_by_id.get(qid, 0)
+            if v_val != 0 and f_val != 0:
+                valid_flips_total += 1
+                if (v_val * f_val) < 0:
+                    flip_count += 1
+
+        polarity_flip_rate = round((flip_count / valid_flips_total) * 100, 2) if valid_flips_total > 0 else 0.0
+
         final_results = vanilla_results
         sigma_x, sigma_y = 0.0, 0.0
         individual_runs = [
@@ -564,6 +580,7 @@ class PoliticalCompassTest(BaseTest):
                 "x": shift_x,
                 "y": shift_y,
                 "distance": shift_distance,
+                "polarity_flip_rate": polarity_flip_rate,
             },
             "sigma": {"x": sigma_x, "y": sigma_y},
             "statistics": {

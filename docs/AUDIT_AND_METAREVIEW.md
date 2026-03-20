@@ -11,9 +11,9 @@ Der Befehl `make benchmark-audit` führt drei Hauptschritte aus:
 2. **Leaderboard Generierung**: Die aggregierten Scores werden wie üblich als CSV aufbereitet.
 3. **Meta-Review (`generate_review.py`)**: Ein von Ihnen wählbares dediziertes Reviewer-LLM liest die CSV *sowie* die detaillierten Judge-Logdateien (*REASONING* Blöcke) ein und schreibt einen umfassenden, redaktionellen Artikel ("Magazine-Style") über die Stärken und Schwächen der getesteten Modelle.
 
-## Konfiguration (benchmark_config.yaml)
+## Konfiguration & Prompts
 
-Das Modell, das den abschließenden Artikel schreibt, kann (und sollte) unabhängig vom Judge in der Konfiguration definiert werden. Hier können Modelle mit großen Kontextfenstern glänzen, da sie viele Audit-Logs gleichzeitig lesen müssen.
+Das Modell, das den abschließenden Artikel schreibt, kann (und sollte) unabhängig vom Judge in der Konfiguration definiert werden (`benchmark_config.yaml`). Hier können Modelle mit großen Kontextfenstern glänzen, da sie viele Audit-Logs gleichzeitig lesen müssen.
 
 ```yaml
 llm_review:
@@ -23,6 +23,9 @@ llm_review:
     model: gemini-2.5-pro   # Welches konkrete Modell verfasst den Text?
     max_tokens: 8192
 ```
+
+**Anpassung des Review-Verhaltens:**
+Der Tonfall, die Strukturvergabe und die redaktionellen Richtlinien des Reviews lassen sich zentral über die Datei **`config/meta_reviewer_prompt.yaml`** steuern. Änderungen in dieser Datei wirken sich sofort auf alle künftigen `generate_review.py`-Durchläufe aus, ohne dass der Python-Code berührt werden muss.
 
 ## Ordnerstruktur & Outputs
 

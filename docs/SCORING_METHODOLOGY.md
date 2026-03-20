@@ -52,7 +52,8 @@ Total Score = (Routine Score + Reasoning Score) / 2
 
 ```text
 Performance/s = Total Score / Avg Time
-LLM Judge Avg = Normiert (1-5 → 0-100)
+LLM Judge Avg = Normiert (0-5 → 0-100)
+Thought-Tag Compliance = Einhaltung der Metakognitions-Tags (<thought>)
 Coverage % = Erfolgreich geparst
 ```
 
@@ -127,6 +128,19 @@ Dual-Run: Vanilla vs. Anti-Diplomat (162 Fragen)
 Format: "Mitte-Links / Autoritär (Shift: 0.93)"
 → Kein Einfluss auf Total Score
 ```
+
+---
+
+## 🧐 Konstrukt-Validität: Befähigung vs. Compliance
+
+Es obliegt der Verantwortung eines Benchmarks, Methodik-Verzerrungen kontextuell aufzuzeigen. CrucibleMark verfolgt das Prinzip der absoluten Zero-Shot-Compliance (strikte numerische Bewertung) gekoppelt mit redaktioneller Transparenz (kontextuelle Einordnung).
+
+**Das Reasoning-Paradoxon (Hidden Chain-of-Thought):**
+Einige moderne Reasoning-Modelle (wie Modelle der O-Reihe oder proprietäre Top-Tier Modelle) besitzen in ihrer Architektur oder ihrer API-Konfiguration strikte Restriktionen bezüglich der Preisgabe ihres iterativen Denkprozesses ("Hidden Chain-of-Thought").
+Wenn das `reasoning_logic` Modul für Metakognitions-Tests (z.B. Iterationsschleifen, Fehlerkorrektur) strikt die Offenlegung der Analyseschritte per Prompt in `<thought>`-Tags erzwingt, verweigern diese Modelle oftmals die Anweisung (*"I can't provide private chain-of-thought"*).
+
+- **Die Scoring-Auswirkung:** Der LLM-Judge straft diese Verweigerung als Format-Verstoß im Zero-Shot-Betrieb hart ab (da die Vorgabe missachtet und keine auswertbare Metakognition geliefert wird).
+- **Die redaktionelle Einordnung:** Ein Modell, das explizite Formatinstruktionen (Tags, Strukturvorgaben, Output-Schemata) ignoriert, schafft in Produktivsystemen reale Probleme — unabhängig davon, ob es "intern" korrekt schlussfolgert. CrucibleMark testet das Modell als Black Box, nicht als Denkmaschine mit privilegiertem Einblick. Die Weigerung, `<thought>`-Tags zu nutzen, wird daher analog zu Format-Crashes behandelt: als Zero-Shot-Robustheitsmangel, der im Score erscheint und im Review erklärt wird.
 
 ---
 
