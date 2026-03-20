@@ -2,37 +2,45 @@ metadata:
   id: cli004
   name: Zshrc Alias & Source
   tier: 2
-description: Set alias bm=ollama-benchmark-cli, persist to ~/.zshrc (NOT ~/.zshrc_temp),
-  source it, test with bm --help
-tools:
-- alias
-- source
+  description: Set alias bm=ollama-benchmark-cli, persist to ~/.zshrc (NOT ~/.zshrc_temp), source it, test with bm --help
+  tools:
+    - alias
+    - source
+
 golden:
   required_commands: &id001
-  - alias bm=
-  - source
-  - bm --help
-  - .zshrc
+    - "alias bm="
+    - source
+    - bm --help
+    - .zshrc
   banned_commands:
-  - 'rm '
-  - .zshrc_temp
+    - "rm "
+    - .zshrc_temp
   max_steps: 10
-  functional_goal: Set an alias bm=ollama-benchmark-cli, persist it specifically to
-    ~/.zshrc, source the file, and test the alias with --help.
-  accept_equivalents:
-  - echo "alias bm=..." >> ~/.zshrc
-  - source ~/.zshrc
-  - bm --help
+
 scoring:
-  accept_script: true
-  core_commands: *id001
-  bonus_criteria: []
   method: llm_judge
-prompt: 'Task: Zshrc Alias & Source
-
-  Description: Set alias bm=ollama-benchmark-cli, persist to ~/.zshrc (NOT ~/.zshrc_temp),
-  source it, test with bm --help
-
-  Tools: [''alias'', ''source'']
-
-  Generate the bash commands to solve this:'
+  accept_script: true
+  hard_rules:
+    required_substrings: *id001
+    banned_commands:
+      - "rm "
+      - .zshrc_temp
+  judge_criteria:
+    functional_goal: >
+      Create a persistent shell alias bm pointing to ollama-benchmark-cli in ~/.zshrc
+      (explicitly NOT ~/.zshrc_temp), source the file to apply it in the current
+      session, and verify the alias works by running bm --help.
+    accept_equivalents:
+      - "echo \"alias bm='ollama-benchmark-cli'\" >> ~/.zshrc"
+      - "echo 'alias bm=ollama-benchmark-cli' >> ~/.zshrc"
+    weights:
+      correctness: 0.50
+      tool_usage: 0.25
+      safety: 0.15
+      efficiency: 0.10
+prompt: >
+  Task: Zshrc Alias & Source
+  Description: Set alias bm=ollama-benchmark-cli, persist to ~/.zshrc (NOT ~/.zshrc_temp), source it, test with bm --help
+  Tools: ['alias', 'source']
+  Generate the bash commands to solve this:

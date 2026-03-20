@@ -2,34 +2,44 @@ metadata:
   id: cli002
   name: Library Install (pip/brew)
   tier: 2
-description: Install ollama-benchmark-cli via brew/pip, verify version
-tools:
-- brew
-- pip
+  description: Install ollama-benchmark-cli via brew/pip, verify version
+  tools:
+    - brew
+    - pip
+
 golden:
   required_commands: &id001
-  - install
-  - ollama-benchmark-cli
-  - --version
+    - install
+    - ollama-benchmark-cli
   banned_commands:
-  - brew tap
+    - brew tap
   max_steps: 10
-  functional_goal: Package ollama-benchmark-cli must be installed via pip or brew,
-    and its version verified.
-  accept_equivalents:
-  - --version
-  - pip show
-  - pip list | grep
-  - conda list
+
 scoring:
-  accept_script: true
-  core_commands: *id001
-  bonus_criteria: []
   method: llm_judge
-prompt: 'Task: Library Install (pip/brew)
-
+  accept_script: true
+  hard_rules:
+    required_substrings: *id001
+    banned_commands:
+      - brew tap
+  judge_criteria:
+    functional_goal: >
+      Install the package ollama-benchmark-cli using pip or brew, then verify
+      that the installation succeeded by confirming the installed version through
+      any valid method.
+    accept_equivalents:
+      - "--version"
+      - "pip show ollama-benchmark-cli"
+      - "pip list | grep ollama"
+      - "brew info ollama-benchmark-cli"
+      - "conda show ollama-benchmark-cli"
+    weights:
+      correctness: 0.50
+      tool_usage: 0.25
+      safety: 0.15
+      efficiency: 0.10
+prompt: >
+  Task: Library Install (pip/brew)
   Description: Install ollama-benchmark-cli via brew/pip, verify version
-
-  Tools: [''brew'', ''pip'']
-
-  Generate the bash commands to solve this:'
+  Tools: ['brew', 'pip']
+  Generate the bash commands to solve this:
