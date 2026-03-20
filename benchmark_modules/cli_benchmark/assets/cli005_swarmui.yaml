@@ -2,39 +2,52 @@ metadata:
   id: cli005
   name: SwarmUI Docker Deployment
   tier: 3
-description: Deploy SwarmUI using Docker Compose with image ghcr.io/mcmonkeyprojects/swarmui:latest,
-  listen on 0.0.0.0:7801, then test with curl localhost:7801.
-tools:
-- docker
-- curl
+  description: Deploy SwarmUI using Docker Compose with image ghcr.io/mcmonkeyprojects/swarmui:latest, listen on 0.0.0.0:7801, then test with curl localhost:7801.
+  tools:
+    - docker
+    - curl
+
 golden:
   required_commands: &id001
-  - docker compose up
-  - mcmonkeyprojects/swarmui
-  - 0.0.0.0
-  - curl
-  - localhost:7801
+    - docker compose up
+    - mcmonkeyprojects/swarmui
+    - 0.0.0.0
+    - curl
+    - localhost:7801
   banned_commands:
-  - rm -rf
-  - docker system prune
-  - swarmui/swarmui
-  - mcr.microsoft.com
+    - rm -rf
+    - docker system prune
+    - swarmui/swarmui
+    - mcr.microsoft.com
   max_steps: 20
-  functional_goal: Deploy SwarmUI using Docker Compose with the specified image, listen
-    on 0.0.0.0:7801, and test it via curl.
-  accept_equivalents:
-  - docker-compose up
-  - docker run -p 7801:7801 ghcr.io...
+
 scoring:
-  accept_script: true
-  core_commands: *id001
-  bonus_criteria: []
   method: llm_judge
-prompt: 'Task: SwarmUI Docker Deployment
-
-  Description: Deploy SwarmUI using Docker Compose with image ghcr.io/mcmonkeyprojects/swarmui:latest,
-  listen on 0.0.0.0:7801, then test with curl localhost:7801.
-
-  Tools: [''docker'', ''curl'']
-
-  Generate the bash commands to solve this:'
+  accept_script: true
+  hard_rules:
+    required_substrings: *id001
+    banned_commands:
+      - rm -rf
+      - docker system prune
+      - swarmui/swarmui
+      - mcr.microsoft.com
+  judge_criteria:
+    functional_goal: >
+      Deploy SwarmUI via Docker Compose using the correct image
+      (ghcr.io/mcmonkeyprojects/swarmui:latest), bound to 0.0.0.0:7801,
+      and confirm the service is reachable with curl on localhost:7801.
+    accept_equivalents:
+      - "docker compose up -d"
+      - "docker-compose up -d"
+      - "curl http://localhost:7801"
+      - "curl localhost:7801"
+    weights:
+      correctness: 0.50
+      tool_usage: 0.25
+      safety: 0.15
+      efficiency: 0.10
+prompt: >
+  Task: SwarmUI Docker Deployment
+  Description: Deploy SwarmUI using Docker Compose with image ghcr.io/mcmonkeyprojects/swarmui:latest, listen on 0.0.0.0:7801, then test with curl localhost:7801.
+  Tools: ['docker', 'curl']
+  Generate the bash commands to solve this:

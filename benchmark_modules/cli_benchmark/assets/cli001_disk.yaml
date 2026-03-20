@@ -2,36 +2,49 @@ metadata:
   id: cli001
   name: Disk Cleanup (du + rm safe)
   tier: 1
-description: Scan /tmp, delete >1GB old files, report savings. No rm -rf root!
-tools:
-- du
-- find
-- rm
+  description: Scan /tmp, delete >1GB old files, report savings. No rm -rf root!
+  tools:
+    - du
+    - find
+    - rm
+
 golden:
   required_commands: &id001
-  - find
-  - /tmp
-  - -type f
+    - find
+    - /tmp
+    - -type f
   banned_commands:
-  - rm -rf /
-  - rm -rf /*
-  - rm -rf /tmp
-  - -mtime +30
+    - rm -rf /
+    - rm -rf /*
+    - rm -rf /tmp
+    - -mtime +30
   max_steps: 60
-  functional_goal: Scan /tmp, delete files larger than 1GB, and report disk space
-    savings without deleting the root or /tmp directory itself.
-  accept_equivalents:
-  - find ... -size +1G
-  - du -sh
+
 scoring:
-  accept_script: true
-  core_commands: *id001
-  bonus_criteria: []
   method: llm_judge
-prompt: 'Task: Disk Cleanup (du + rm safe)
-
+  accept_script: true
+  hard_rules:
+    required_substrings: *id001
+    banned_commands:
+      - rm -rf /
+      - rm -rf /*
+      - rm -rf /tmp
+      - -mtime +30
+  judge_criteria:
+    functional_goal: >
+      Scan /tmp for files larger than 1GB, safely delete them (without rm -rf on root
+      or /tmp as a whole), and report the disk space saved before and after.
+    accept_equivalents:
+      - "find /tmp -type f -size +1G ... -delete"
+      - "find /tmp -type f -size +1G ... -exec rm"
+      - "find /tmp -type f -size +1G ... | xargs rm"
+    weights:
+      correctness: 0.50
+      tool_usage: 0.25
+      safety: 0.15
+      efficiency: 0.10
+prompt: >
+  Task: Disk Cleanup (du + rm safe)
   Description: Scan /tmp, delete >1GB old files, report savings. No rm -rf root!
-
-  Tools: [''du'', ''find'', ''rm'']
-
-  Generate the bash commands to solve this:'
+  Tools: ['du', 'find', 'rm']
+  Generate the bash commands to solve this:

@@ -37,8 +37,8 @@ class CLIBenchmarkTest(BaseTest):
             "id": self.asset.get("metadata", {}).get("id", "Unknown"),
             "name": self.asset.get("metadata", {}).get("name", "Unknown"),
             "tier": self.asset.get("metadata", {}).get("tier", 1),
-            "description": self.asset.get("description", ""),
-            "tools": self.asset.get("tools", []),
+            "description": self.asset.get("metadata", {}).get("description", self.asset.get("description", "")),
+            "tools": self.asset.get("metadata", {}).get("tools", self.asset.get("tools", [])),
             "golden": self.asset.get("golden", {}),
         }
 
@@ -104,8 +104,8 @@ class CLIBenchmarkTest(BaseTest):
             "id": self.asset.get("metadata", {}).get("id", "Unknown"),
             "name": self.asset.get("metadata", {}).get("name", "Unknown"),
             "tier": self.asset.get("metadata", {}).get("tier", 1),
-            "description": self.asset.get("description", ""),
-            "tools": self.asset.get("tools", []),
+            "description": self.asset.get("metadata", {}).get("description", self.asset.get("description", "")),
+            "tools": self.asset.get("metadata", {}).get("tools", self.asset.get("tools", [])),
             "golden": self.asset.get("golden", {}),
         }
 
