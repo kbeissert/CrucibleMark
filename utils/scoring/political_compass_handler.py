@@ -249,6 +249,11 @@ class PoliticalCompassHandler:
                 }
                 verification_mode = getattr(test_instance, "verification_mode", False)
                 safety_metadata = getattr(test_instance, "safety_metadata", None)
+
+                stats = report.get("statistics", {})
+                cost_val = stats.get("total_cost")
+                cost_str = f"${cost_val:.6f}" if cost_val is not None else None
+
                 PCAuditLogWriter.write_audit_log(
                     model=model,
                     vanilla_res=vanilla_for_audit,
@@ -260,6 +265,10 @@ class PoliticalCompassHandler:
                     detailed_responses=report.get("detailed_responses", {}),
                     verification_mode=verification_mode,
                     safety_metadata=safety_metadata,
+                    execution_time=stats.get("total_duration"),
+                    total_tokens=stats.get("total_tokens"),
+                    cost=cost_str,
+                    provider=provider_type,
                 )
             except Exception as e:
                 logger.error("Political Compass Audit Error: %s", e)

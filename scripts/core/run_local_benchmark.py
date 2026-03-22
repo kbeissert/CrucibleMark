@@ -511,6 +511,35 @@ class LocalBenchmarkRunner(BaseBenchmarkRunner):
                     f"   ✗ [{i}/{len(assets)}] {asset_name}: Abgebrochen - {str(e)[:50]}"
                 )
 
+        if self.audit_mode and results:
+            from utils.benchmark_utils import append_global_run_metrics
+            execution_times = []
+            timeout_count = 0
+            asset_ids = []
+
+            for res in results:
+                if res.get("type") == "system":
+                    continue
+                a_id = res.get("asset_id", "")
+                if a_id:
+                    asset_ids.append(a_id)
+                t_exe = res.get("execution_time", 0.0)
+                execution_times.append(t_exe)
+
+                # Als Timeout betrachten wir harte Errors ODER Überziehen des 120s Schwellenwerts
+                if res.get("status") == "error" or t_exe > 120.0:
+                    timeout_count += 1
+
+            if asset_ids:
+                append_global_run_metrics(
+                    model=model,
+                    asset_ids=asset_ids,
+                    execution_times=execution_times,
+                    timeout_count=timeout_count,
+                    total_tests=len(asset_ids),
+                    module_name=benchmark_info.get("name", "Unknown")
+                )
+
         return results
 
     def run_benchmark(

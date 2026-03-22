@@ -6,9 +6,15 @@ This product includes software developed by Kay Beißert.
 ================================================================================
 
 This project was developed with assistance from AI tools:
-- GitHub Copilot (Code completion & refactoring)
-- Perplexity AI (Architecture consulting & research)
-- Claude Sonnet (Documentation & code review)
+
+- GitHub Copilot (VS Code) – Code completion & refactoring
+- Google Gemini 3.1 Pro via GitHub Copilot – Python development & refactoring
+- Anthropic Claude Sonnet 4.5 via GitHub Copilot – Architecture & code review
+- Perplexity AI – Research, architecture consulting & documentation
+
+Benchmark evaluation pipeline:
+- LLM Judge: Anthropic Claude Haiku 4.5
+- Reviewer: Google Gemini 2.5 Pro
 
 ================================================================================
 
@@ -32,11 +38,7 @@ This software contains components from the following projects:
    Copyright 2019 Kenneth Reitz
    https://github.com/psf/requests
 
-5. Mistral AI Python Client (Apache 2.0)
-   Copyright 2023 Mistral AI
-   https://github.com/mistralai/client-python
-
-For a complete list of dependencies, see requirements.txt
+For a complete list of dependencies, see requirements.txt.
 
 ================================================================================
 

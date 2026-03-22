@@ -198,4 +198,9 @@ def generate_audit_log(
         judge_response=judge_resp,
         token_limit_cutoff=result.get("token_limit_cutoff", False),
         token_limit_fallback=result.get("token_limit_fallback", False),
+        execution_time=result.get("execution_time"),
+        tokens_used=result.get("tokens_used"),
+        tokens_per_second=result.get("tokens_per_second"),
+        cost=result.get("cost_usd"),
+        provider=result.get("provider"),
     )

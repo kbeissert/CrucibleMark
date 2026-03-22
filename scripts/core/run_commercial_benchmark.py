@@ -441,6 +441,35 @@ class CommercialBenchmarkRunner(BaseBenchmarkRunner):
             if res:
                 results.append(res)
 
+        # APPEND GLOBAL RUN METRICS TO AUDIT LOGS
+        from utils.benchmark_utils import append_global_run_metrics
+        execution_times = []
+        timeout_count = 0
+        asset_ids = []
+        for r in results:
+            asset_ids.append(r.get("asset_id", ""))
+
+            error_val = r.get("error")
+            is_timeout = (error_val is not None)
+
+            ex_val = r.get("execution_time")
+            if ex_val is not None:
+                execution_times.append(float(ex_val))
+                if float(ex_val) > 120.0:
+                    is_timeout = True
+
+            if is_timeout:
+                timeout_count += 1
+
+        append_global_run_metrics(
+            model=model,
+            asset_ids=asset_ids,
+            execution_times=execution_times,
+            timeout_count=timeout_count,
+            total_tests=len(results),
+            module_name=benchmark_info.get("name", "Unknown")
+        )
+
         return results
 
 

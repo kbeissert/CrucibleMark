@@ -181,6 +181,12 @@ def save_audit_log(
     base_dir: Path = Path("outputs/audit_logs"),
     token_limit_cutoff: bool = False,
     token_limit_fallback: bool = False,
+    execution_time: float = None,
+    tokens_used: int = None,
+    tokens_per_second: float = None,
+    cost: float = None,
+    provider: str = None,
+    **kwargs
 ) -> None:
     """
     Saves a comprehensive audit log for every test, containing prompt, response, and judge feedback.
@@ -197,7 +203,21 @@ def save_audit_log(
         with open(filepath, "w", encoding="utf-8") as f:
             f.write(f"# Audit Log: {asset_id}\n")
             f.write(f"> **Erstellt am:** {datetime.now().strftime('%d.%m.%Y, %H:%M:%S')}\n")
-            f.write(f"**Model:** {model}\n\n")
+            f.write(f"**Model:** {model}\n")
+            if provider:
+                f.write(f"**Provider:** {provider}\n")
+            if execution_time is not None:
+                f.write(f"**Execution Time:** {execution_time:.2f} s\n")
+            if tokens_used is not None:
+                f.write(f"**Tokens Used:** {tokens_used}\n")
+            if tokens_per_second is not None:
+                f.write(f"**Tokens/s:** {tokens_per_second:.2f}\n")
+            if cost is not None:
+                try:
+                    f.write(f"**Cost:** ${float(cost):.4f}\n")
+                except ValueError:
+                    f.write(f"**Cost:** ${cost}\n")
+            f.write("\n")
             if token_limit_fallback:
                 f.write("> [!WARNING]\n> Das Modell (bzw. die API) hat das initial angeforderte Token-Limit abgelehnt (zu groß für die Architektur). Das System ist dynamisch auf ein kleineres 4096-Token-Fallback gewechselt. Dies zeigt, dass dieses Modell mit großen Token-Anfragen oder Kontexten Probleme hat!\n\n")
 
@@ -233,3 +253,72 @@ def save_audit_log(
             f.write(f"{safe_judge}\n")
     except OSError as e:
         logger.warning("Failed to save audit log for %s: %s", asset_id, e)
+
+def calculate_timeout_metrics(execution_times: list[float], timeout_count: int, total_tests: int) -> dict:
+    """Berechnet globale P95-Antwortzeiten und kategorisiert die Timeout-Rate des aktuellen Modul-Durchlaufs."""
+    import statistics
+
+    p95 = 0.0
+    if execution_times:
+        valid_times = [t for t in execution_times if t is not None]
+        if len(valid_times) > 1:
+            try:
+                p95 = statistics.quantiles(valid_times, n=20)[18]
+            except statistics.StatisticsError:
+                p95 = max(valid_times)
+        elif len(valid_times) == 1:
+            p95 = valid_times[0]
+
+    rate = timeout_count / total_tests if total_tests > 0 else 0
+    if timeout_count == 0:
+        category = "✅ Stabil"
+    elif rate <= 0.07:
+        category = "⚠️ Sporadisch"
+    elif rate <= 0.35:
+        category = "🔴 Unzuverlässig"
+    else:
+        category = "❌ Nicht einsetzbar"
+
+    return {
+        "p95": round(p95, 2),
+        "timeout_count": timeout_count,
+        "total_tests": total_tests,
+        "ratio_category": category,
+        "rate": rate
+    }
+
+def append_global_run_metrics(model: str, asset_ids: list[str],
+                              execution_times: list[float],
+                              timeout_count: int,
+                              total_tests: int,
+                              module_name: str = "Unknown") -> None:
+    """Hängt die berechneten globalen Metriken an alle erzeugten Markdown-Logs eines Modul-Laufs an."""
+    from pathlib import Path
+    import re
+
+    model_safe = str(model).replace(":", "_").replace("/", "_")
+    out_dir = Path(f"outputs/audit_logs/{model_safe}")
+    metrics = calculate_timeout_metrics(execution_times, timeout_count, total_tests)
+
+    append_text = f"\n\n---\n\n### 📦 Modul-Metriken ({module_name})\n\n"
+    append_text += f"- **P95-Antwortzeit:** {metrics['p95']} s\n"
+    append_text += f"- **Timeout-Rate:** {metrics['timeout_count']}/{metrics['total_tests']} ({metrics['ratio_category']})\n"
+
+    for asset_id in asset_ids:
+        f_path = out_dir / f"{asset_id}.md"
+        if f_path.exists():
+            with open(f_path, "r+", encoding="utf-8") as f:
+                content = f.read()
+                # Execution Time anpassen, sodass P95 mit im Header steht
+                content = re.sub(
+                    r"(\*\*Execution Time:\*\* [\d.]+ s)",
+                    fr"\1 (Modul-P95: {metrics['p95']} s)",
+                    content,
+                    count=1
+                )
+                if append_text not in content:
+                    content += append_text
+
+                f.seek(0)
+                f.write(content)
+                f.truncate()
