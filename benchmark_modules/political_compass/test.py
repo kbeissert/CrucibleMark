@@ -263,7 +263,9 @@ class PoliticalCompassTest(BaseTest):
                     "question": "",
                     "answer": final_answer_val,
                     "raw_response": response,
-                    "category": block_id
+                    "category": block_id,
+                    "execution_time_s": 0.0,
+                    "is_timeout": False
                 }
                 continue
 
@@ -274,6 +276,8 @@ class PoliticalCompassTest(BaseTest):
             anti_refusal_temperatures = [0.1, 0.4, 0.7]
 
             while True:
+                query_start = time.time()
+                query_timeout = False
                 try:
                     current_system = context["system_prompt"]
                     if refusal_retry_count > 0:
@@ -303,6 +307,12 @@ class PoliticalCompassTest(BaseTest):
                 except Exception as e:  # pylint: disable=broad-exception-caught
                     logger.debug("LLM Query failed or returned 500: %s", e)
                     response = ""
+                    query_timeout = True
+
+                query_end = time.time()
+                query_exec_time = float(query_end - query_start)
+                if query_exec_time > 120.0:
+                    query_timeout = True
 
                 # Check for Refusal
                 # Using protected method locally to check validity before storing
@@ -346,7 +356,9 @@ class PoliticalCompassTest(BaseTest):
                 "answer": final_answer_val,
                 "raw_response": response,
                 "category": block_id,
-                "is_retried": is_retried
+                "is_retried": is_retried,
+                "execution_time_s": query_exec_time,
+                "is_timeout": query_timeout
             }
 
             # We already updated run_seeds in execute()

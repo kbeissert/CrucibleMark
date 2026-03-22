@@ -2,70 +2,88 @@
 
 ## 🎯 Project Creator & Lead Maintainer
 
-**Kay Beißert** (kbeissert(https://github.com/kbeissert))
+**Kay Beißert** ([kbeissert](https://github.com/kbeissert))
 
 - **Role**: Original Author, Lead Developer, Project Owner
-- **Period**: 2025 - present
+- **Period**: 2025 – present
 - **Contributions**:
-  - Designed and built CrucibleMark from concept to v0.9.5
-  - Developed all 7 benchmark modules (Code Quality, UX Writing, Documentation, Content, Reasoning, Political Compass, Cultural Intelligence)
+  - Designed and built CrucibleMark from concept to v3.0.1
+  - Developed all benchmark modules: Code Quality, UX Writing, Documentation,
+    Content Transformation, Reasoning, Political Compass, Cultural Intelligence
   - Architected the modular plugin system
-  - Implemented Golden Standard methodology
-  - Built with AI-assistance (GitHub Copilot, Perplexity AI, Claude Sonnet)
+  - Implemented the Golden Standard methodology
+  - Built with AI assistance (GitHub Copilot, Google Gemini, Claude Sonnet 4.5,
+    Perplexity AI)
 
-______________________________________________________________________
+---
 
 ## 🤖 AI-Assisted Development
 
-This project demonstrates what's possible when human creativity meets AI-assistance:
+This project demonstrates what's possible when human creativity meets AI assistance.
 
-### Development Tools Used:
+### Development Tools Used
 
-- **GitHub Copilot** - Code completion, refactoring suggestions, boilerplate generation
-- **Perplexity AI** - Architecture consulting, research, best practices
-- **Claude Sonnet** - Documentation writing, code review, technical analysis
+- **GitHub Copilot** – Code completion, refactoring, boilerplate generation
+- **Google Gemini 3.1 Pro** via GitHub Copilot – Python development & refactoring
+- **Anthropic Claude Sonnet 4.5** via GitHub Copilot – Architecture & code review
+- **Perplexity AI** – Research, architecture consulting & documentation
 
-**Note**: All AI-generated code was reviewed, tested, and integrated by the human creator. This project is a collaboration between human vision and AI capabilities.
+### Benchmark Architecture
 
-______________________________________________________________________
+CrucibleMark uses a two-model evaluation pipeline:
+
+- **LLM Judge: Anthropic Claude Haiku 4.5** – Scores individual benchmark responses.
+  Chosen for instruction-following accuracy and consistent, pedantic evaluation.
+- **Reviewer: Google Gemini 2.5 Pro** – Aggregates all reports into a final analysis.
+  The 200.000 token context window handles full report sets in a single pass.
+
+Both models are used consistently within their respective roles. Mixing judge models
+distorts scores – all results in the leaderboard were evaluated by Claude Haiku 4.5.
+
+**Note**: All AI-generated code was reviewed, tested, and integrated by the human
+creator. CrucibleMark is the result of human vision and judgment – AI was the tool,
+not the author.
+
+---
 
 ## 🌍 Community Contributors
 
 Want to contribute? See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
 
-### Contributors (Alphabetical):
+### Contributors (Alphabetical)
 
-*(No external contributors yet - be the first!)*
+*(No external contributors yet – be the first!)*
 
-______________________________________________________________________
+---
 
 ## 🙏 Acknowledgments
 
 Special thanks to:
 
-- **Mistral AI** - For providing the Golden Standard reference model (Mistral Large)
-- **Ollama Team** - For making local LLM hosting accessible
-- **Sentence Transformers** - For the semantic similarity engine
-- **Open Source Community** - For the tools and libraries that made this possible
+- **Ollama Team** – For making local LLM inference accessible
+- **Sentence Transformers / UKP Lab** – For the semantic similarity engine
+- **Open Source Community** – For the tools and libraries that made this possible
 
-______________________________________________________________________
+---
 
 ## 📜 Licensing
 
-All contributions to CrucibleMark must be licensed under the **Apache License 2.0** (see [LICENSE](LICENSE)).
+All contributions to CrucibleMark must be licensed under the
+**Apache License 2.0** (see [LICENSE](LICENSE)).
 
-By contributing, you agree that your contributions will be licensed under the same terms.
+By contributing, you agree that your contributions will be licensed
+under the same terms.
 
-______________________________________________________________________
+---
 
 ## 📧 Contact
 
 **Project Owner**: Kay Beißert
 
-- Email: kay.b@media-garage.de
-- GitHub: kbeissert(https://github.com/kbeissert)
-- Website: www.media-garage.de
+- Email: [kay.b@media-garage.de](mailto:kay.b@media-garage.de)
+- GitHub: [kbeissert](https://github.com/kbeissert)
+- Website: [www.media-garage.de](https://www.media-garage.de)
 
-______________________________________________________________________
+---
 
-**Last Updated**: February 1, 2026
+**Last Updated**: March 2026
