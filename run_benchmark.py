@@ -13,7 +13,6 @@ Usage:
 """
 
 import argparse
-import importlib.util
 import logging
 import subprocess
 import sys
@@ -21,8 +20,8 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Optional
 
-from utils.model_utils import (get_ollama_models_info, 
-    
+from utils.model_utils import (get_ollama_models_info,
+
     resolve_provider,
 )
 from utils.module_loader import load_test_class
@@ -49,10 +48,9 @@ DEFAULT_CONFIG_PATH = "benchmark_config.yaml"
 
 # Pre-import runners to fail fast on import errors
 try:
-    from scripts.core.run_local_benchmark import LocalBenchmarkRunner
-    from scripts.core.run_commercial_benchmark import CommercialBenchmarkRunner
+    from scripts.core.unified_runner import UnifiedBenchmarkRunner
 except ImportError as e:
-    logger.error("Error importing benchmark runners: %s", e)
+    logger.error("Error importing unified benchmark runners: %s", e)
     sys.exit(1)
 
 
@@ -300,22 +298,22 @@ class BenchmarkRunner:
         })
 
         if is_local:
-            local_runner = LocalBenchmarkRunner(audit_mode=audit_mode)
-            results = local_runner.run_benchmark(
-                model, benchmark_info, num_runs=num_runs
-            )
-            if results:
-                local_runner.save_results(results, "local")
-                local_runner.print_summary(results, model)
-                self._check_for_anomaly(mod_id, model, results)
-        else:
-            comm_runner = CommercialBenchmarkRunner(force=force, audit_mode=audit_mode)
-            results = comm_runner.run_benchmark(
+            runner = UnifiedBenchmarkRunner(audit_mode=audit_mode)
+            results = runner.run_benchmark(
                 provider, model, benchmark_info, num_runs=num_runs
             )
             if results:
-                comm_runner.save_results(results, "commercial")
-                comm_runner.print_summary(results, model)
+                runner.save_results(results, "local")
+                runner.print_summary(results, model)
+                self._check_for_anomaly(mod_id, model, results)
+        else:
+            runner = UnifiedBenchmarkRunner(force=force, audit_mode=audit_mode)
+            results = runner.run_benchmark(
+                provider, model, benchmark_info, num_runs=num_runs
+            )
+            if results:
+                runner.save_results(results, "commercial")
+                runner.print_summary(results, model)
                 self._check_for_anomaly(mod_id, model, results)
 
 

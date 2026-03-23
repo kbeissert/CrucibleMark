@@ -1,5 +1,5 @@
 ---
-mode: agent
+agent: agent
 description: "CrucibleMark: Markdown-Dateien und YAML-Prompts auf Typos, Formatierung und Konsistenz prüfen"
 ---
 

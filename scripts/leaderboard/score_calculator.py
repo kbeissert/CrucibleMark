@@ -467,7 +467,7 @@ def calculate_scores(
     # --- Assign Categories ---
     def get_category_name(asset_id: str) -> str:
         # Special Case: System Probes
-        if asset_id == "system_warmup_probe":
+        if asset_id in ("system_warmup_probe", "warmup_probe"):
             return "System"
 
         for mod_key, mod_data in modules_config.items():
@@ -499,7 +499,8 @@ def calculate_scores(
         result["expected_assets"].max() if "expected_assets" in result.columns else 0
     )
     result["is_complete"] = result["logical_count"] >= expected
-    result["Tests Run"] = result["logical_count"].astype(str) + "/" + str(expected)
+    # Mypy safely converts logical count to string through apply to avoid + Series warning
+    result["Tests Run"] = result["logical_count"].apply(lambda x: str(int(x)) + "/" + str(expected))
     if "expected_assets" in result.columns:
         result = result.drop(columns=["expected_assets"])
 

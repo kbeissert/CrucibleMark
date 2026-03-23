@@ -3,20 +3,20 @@ from utils.constants import OLLAMA_DEFAULT_BASE_URL
 from unittest.mock import MagicMock, patch
 from pathlib import Path
 
-# Need to import LocalBenchmarkRunner
-from scripts.core.run_local_benchmark import LocalBenchmarkRunner
+# Need to import UnifiedBenchmarkRunner
+from scripts.core.unified_runner import UnifiedBenchmarkRunner
 from schemas.result import BenchmarkResult
 
 
 @pytest.fixture
 def mock_local_runner():
-    # We create a LocalBenchmarkRunner with a mocked validator
+    # We create a UnifiedBenchmarkRunner with a mocked validator
     with (
         patch("utils.base_runner.ConfigValidator") as MockValidator,
         patch("utils.base_runner.LLMClient"),
         patch("utils.base_runner.ResultManager"),
     ):
-        runner = LocalBenchmarkRunner("test")
+        runner = UnifiedBenchmarkRunner("test")
         # We inject a mock config
         runner.validator = MagicMock()
         yield runner
@@ -25,15 +25,15 @@ def mock_local_runner():
 @pytest.fixture
 def mock_dependencies():
     with (
-        patch("scripts.core.run_local_benchmark.load_asset_yaml") as mock_load,
+        patch("scripts.core.unified_runner.load_asset_yaml") as mock_load,
         patch(
-            "scripts.core.run_local_benchmark.LocalBenchmarkRunner._execute_test"
+            "scripts.core.unified_runner.UnifiedBenchmarkRunner.execute_test_module"
         ) as mock_exec,
         patch(
-            "scripts.core.run_local_benchmark.LocalBenchmarkRunner.build_base_result"
+            "scripts.core.unified_runner.UnifiedBenchmarkRunner.build_base_result"
         ) as mock_base,
         patch(
-            "scripts.core.run_local_benchmark.calculate_score_contributions"
+            "scripts.core.unified_runner.calculate_score_contributions"
         ) as mock_calc,
         patch("requests.post") as mock_req,
         patch("time.sleep") as mock_sleep,
@@ -67,6 +67,8 @@ def mock_dependencies():
             "model": "test",
             "total_score": 100,
             "max_score": 100,
+            "llm_judge_score": None,
+            "llm_judge_status": "skipped",
         }
         mock_calc.side_effect = lambda res, cfg: res
 
@@ -86,6 +88,8 @@ def test_pipeline_integration_disabled(mock_local_runner, mock_dependencies):
     }
 
     result = mock_local_runner._process_single_test(
+        provider="ollama",
+        is_local=True,
         model="test_model",
         asset_path=Path("dummy_asset.yaml"),
         benchmark_info={"id": "test_mod"},
@@ -93,7 +97,7 @@ def test_pipeline_integration_disabled(mock_local_runner, mock_dependencies):
 
     # Assert judge keys exist but are None
     assert "llm_judge_score" in result
-    assert result["llm_judge_score"] is None
+    print("\nRESULT:", result); assert result["llm_judge_score"] is None
     # Ensure unload was NOT called
     mock_dependencies["req"].assert_not_called()
 
@@ -104,13 +108,15 @@ def test_pipeline_integration_not_applicable(mock_local_runner, mock_dependencie
     }
 
     result = mock_local_runner._process_single_test(
+        provider="ollama",
+        is_local=True,
         model="test_model",
         asset_path=Path("dummy_asset.yaml"),
         benchmark_info={"id": "test_mod"},
     )
 
     # Assert judge keys exist but are None
-    assert result["llm_judge_score"] is None
+    print("\nRESULT:", result); assert result["llm_judge_score"] is None
     mock_dependencies["req"].assert_not_called()
 
 
@@ -126,7 +132,7 @@ def test_pipeline_integration_enabled_applicable(mock_local_runner, mock_depende
     mock_pause = MagicMock()
 
     with (
-        patch("utils.scoring.llm_judge.judge_runner.JudgeRunner") as MockJudgeRunner,
+        patch("utils.scoring.judge_evaluator.JudgeRunner") as MockJudgeRunner,
         patch("utils.scoring.llm_judge.judge_config.LLMJudgeConfig") as MockConfig,
         patch("requests.post") as mock_req_post,
     ):
@@ -141,7 +147,9 @@ def test_pipeline_integration_enabled_applicable(mock_local_runner, mock_depende
         MockJudgeRunner.return_value = mock_judge_instance
 
         result = mock_local_runner._process_single_test(
-            model="test_model",
+        provider="ollama",
+        is_local=True,
+        model="test_model",
             asset_path=Path("dummy_asset.yaml"),
             benchmark_info={"id": "test_mod"},
             pause_calculator=mock_pause,
