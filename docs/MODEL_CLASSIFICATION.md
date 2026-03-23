@@ -147,7 +147,7 @@ ______________________________________________________________________
 
 ### Formel
 
-```
+```text
 Performance/s = Total Score ÷ Avg Time (s)
 ```
 
@@ -287,13 +287,13 @@ ______________________________________________________________________
 
 **Performance-Ratio Formel:**
 
-```
+```text
 Performance Ratio = (Local Model Score / Golden Standard Score) × 100
 ```
 
 **Beispiel:**
 
-```
+```text
 Ministral-3:14b: 77.6 Total Score
 Mistral Large: 78.8 Total Score
 → Performance Ratio = (77.6 / 78.8) × 100 = 98.5%

@@ -96,7 +96,7 @@ ______________________________________________________________________
 
 ### Verzeichnis-Struktur
 
-```
+```text
 benchmark_modules/
 └── your_module/
     ├── README.md              # Dokumentation (Template siehe unten)
@@ -200,11 +200,11 @@ benchmarks:
       reasoning: 0.8                   # 80% Reasoning
 ```
 
-# ====================================================================
+---
 
-# OUTPUT CONTRACT: BENCHMARK RESULT
+### OUTPUT CONTRACT: BENCHMARK RESULT
 
-# ====================================================================
+---
 
 Every module's Controller (test.py) must return a `BenchmarkResult` object.
 This strictly typed DTO ensures all modules provide compatible data for the Leaderboard.
@@ -417,7 +417,7 @@ ______________________________________________________________________
 
 ### Architektur-Prinzip: MVC
 
-```
+```text
 test.py (Controller)
    ↓ delegiert an
 core/evaluators.py (Model/Logic)

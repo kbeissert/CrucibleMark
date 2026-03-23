@@ -11,7 +11,7 @@
 
 > **Voraussetzung:** Installation abgeschlossen (`make install` ausgeführt).
 
-### Besonderheit für Windows/Linux mit NVIDIA GPU (CUDA)
+## Besonderheit für Windows/Linux mit NVIDIA GPU (CUDA)
 Damit der sogenannte "Semantic Mode" (der für das Text-Scoring die Similarity-Engine auf die Grafikkarte auslagert) rasend schnell läuft, sollte *vor* dem Ausführen von `make install` die native PyTorch-Variante für CUDA installiert werden, andernfalls nutzt PyTorch als Fallback stets die langsamere CPU.
 ```bash
 # Beispiel für CUDA 12.1 (Windows/Linux)
@@ -302,7 +302,7 @@ ______________________________________________________________________
 
 **Symptom:**
 
-```
+```text
 ❌ Error: 429 Too Many Requests
 ```
 
@@ -356,7 +356,7 @@ ______________________________________________________________________
 
 ### Wo werden Ergebnisse gespeichert?
 
-```
+```text
 benchmark_scores/
 ├── local_models_benchmark.csv       # Rohdaten (jeder einzelne Test)
 ├── commercial_models_benchmark.csv  # Rohdaten (API-Modelle)
@@ -416,7 +416,7 @@ make analyze-costs
 
 **Output:**
 
-```
+```text
 Estimated API costs:
 - Mistral Large: $12.50 (500 requests)
 - GPT-4: $28.00 (500 requests)

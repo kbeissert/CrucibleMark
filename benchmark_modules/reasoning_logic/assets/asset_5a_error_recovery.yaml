@@ -32,6 +32,7 @@ prompt: |
               # We want to skip invalid items and continue
 
       return True
+
   ```
 
 expected_output:
