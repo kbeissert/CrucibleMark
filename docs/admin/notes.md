@@ -16,6 +16,7 @@ Führe KEINE Änderungen durch. Fasse zusammen:
 Warte auf meine Bestätigung bevor du irgendwas änderst.
 
 ---
+
 ## SESSION COMMIT
 
 Aktualisiere das Projekt-Wissen. Qualität vor Vollständigkeit –
@@ -63,4 +64,3 @@ Sonst: nicht ändern.
 Bestätige mit: "Memory updated ✓"
 
 ---
-

@@ -40,6 +40,7 @@ prompt: |
   Finde und erkläre **ALLE** Design-Fehler. Priorisiere sie nach Schweregrad.
 
   **API Code (Flask):**
+
   ```python
   from flask import Flask, request, jsonify
 
@@ -97,6 +98,7 @@ prompt: |
   # Helper
   def send_notification(email, msg):
       print(f"Sending email to {email}: {msg}")
+
   ```
 
   ### Anforderungen an die Antwort:

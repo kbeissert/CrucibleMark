@@ -54,7 +54,7 @@ ______________________________________________________________________
 
 ## 🎯 Layer-Architektur
 
-```
+```text
 ┌─────────────────────────────────────────────────────┐
 │ Layer 1: Framework Core (Orchestration)            │
 │ - Benchmark Runner (run_benchmark.py)              │
@@ -153,7 +153,7 @@ Dies wird durch den **`SystemContextManager` (`utils/system_context.py`)** umges
 
 ### MVC-Pattern (Strict Separation)
 
-```
+```text
 ┌──────────────────────────────────────────────────────┐
 │ test.py (Controller)                                 │
 │ - LLM-Ausführung                                     │

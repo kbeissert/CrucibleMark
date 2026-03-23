@@ -67,19 +67,25 @@ prompt: |
   ## Installation
 
   Clone the repo:
+
   ```
   git clone https://github.com/company/ecommerce-platform.git
   cd ecommerce-platform
+
   ```
 
   Install dependencies:
+
   ```
   npm install
+
   ```
 
   Start the app:
+
   ```
   docker-compose up
+
   ```
 
   Open http://localhost:3000
@@ -87,16 +93,21 @@ prompt: |
   ## Configuration
 
   Create a .env file with:
+
   ```
   DATABASE_URL=postgresql://user:password@localhost:5432/ecommerce
+
   ```
 
   Run migrations:
+
   ```
   npm run migrate
+
   ```
 
   Done!
+
   ```
 
   ---

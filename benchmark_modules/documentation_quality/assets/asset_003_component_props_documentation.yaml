@@ -79,6 +79,7 @@ prompt: |
     width?: number | string;
     render?: (value: any, row: T) => React.ReactNode;
   }
+
   ```
 
   **Aktuelle Docs (README.md):**
@@ -103,7 +104,9 @@ prompt: |
     data={users}
     columns={columns}
   />
+
   ```
+
   ```
 
   ---

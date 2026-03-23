@@ -49,6 +49,7 @@ help:
 	@echo "  make judge-health         Check Judges"
 	@echo "  make list-modules         List Modules"
 	@echo "  make create-module        🚀 Scaffold module"
+	@echo "  make audit-markdown       📝 Audit & fix markdown/yaml files"
 
 
 # === BENCHMARKING ===
@@ -173,6 +174,10 @@ list-modules:
 
 create-module:
 	@$(PYTHON) scripts/dev/scaffold_module.py
+
+audit-markdown:
+	@echo "📝 Running Markdown & YAML Audit..."
+	@$(PYTHON) scripts/maintenance/audit_markdown.py $(if $(FIX),--fix)
 
 clean:
 	@echo "🧹 Cleaning caches and temporary files..."

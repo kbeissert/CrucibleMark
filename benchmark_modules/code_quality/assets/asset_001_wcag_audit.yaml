@@ -47,6 +47,7 @@ prompt: |
   Identifiziere **ALLE** Accessibility-Probleme. Priorisiere sie nach Schweregrad.
 
   **HTML-Komponente:**
+
   ```html
   <div class="product-card" onclick="window.location='/product/123'">
     <div class="badge">NEU</div>
@@ -80,13 +81,16 @@ prompt: |
 
     <a href="#details" style="color: blue;">Mehr</a>
   </div>
+
   ```
 
   **CSS-Kontext:**
+
   ```css
   .product-card { cursor: pointer; }
   /* Note: Focus styles removed because client didn't like the outline */
   /* :focus { outline: none; } */
+
   ```
 
   ### Anforderungen an die Antwort:

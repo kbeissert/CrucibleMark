@@ -37,6 +37,7 @@ prompt: |
   Identifiziere **ALLE** Performance-Probleme. Priorisiere sie nach Impact auf Core Web Vitals.
 
   **Code:**
+
   ```html
   <!DOCTYPE html>
   <html lang="de">
@@ -109,6 +110,7 @@ prompt: |
     </footer>
   </body>
   </html>
+
   ```
 
   ### Anforderungen an die Antwort:

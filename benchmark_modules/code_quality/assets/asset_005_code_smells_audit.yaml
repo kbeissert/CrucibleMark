@@ -37,6 +37,7 @@ prompt: |
   Identifiziere **ALLE** Code Smells. Priorisiere sie nach Schweregrad.
 
   **JavaScript-Code:**
+
   ```javascript
   // User Management Component (LEGACY CODE)
 
@@ -102,6 +103,7 @@ prompt: |
         return score;
     }
   }
+
   ```
 
   ### Anforderungen an die Antwort:

@@ -40,6 +40,7 @@ prompt: |
   Finde und erkläre **ALLE** Sicherheitslücken. Priorisiere sie nach Schweregrad (Critical/High/Medium).
 
   **PHP-Code:**
+
   ```php
   <?php
   // Legacy User System v1.0
@@ -139,6 +140,7 @@ prompt: |
       echo "Profile updated!";
   }
   ?>
+
   ```
 
   ### Anforderungen an die Antwort:

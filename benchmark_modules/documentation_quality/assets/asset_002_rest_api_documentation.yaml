@@ -73,6 +73,7 @@ prompt: |
     ],
     "customer_email": "string"
   }
+
   ```
 
   ## Response
@@ -82,6 +83,7 @@ prompt: |
     "order_id": "string",
     "status": "pending"
   }
+
   ```
 
   ## Status Codes
@@ -93,7 +95,9 @@ prompt: |
 
   ```bash
   curl -X POST https://api.example.com/api/v1/orders     -d '{"items": [{"product_id": "ABC123", "quantity": 2}]}'
+
   ```
+
   ```
 
   ---

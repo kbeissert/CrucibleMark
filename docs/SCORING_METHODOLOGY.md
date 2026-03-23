@@ -123,7 +123,7 @@ Es ist für ein Modell ungleich schwerer, über 6-7 grundverschiedene Diszipline
 
 > 📖 **Konzeptioneller Hintergrund:** Details zur Nutzung als "Diagnose-Sonde" gegen den inhärenten Bias der LLM "Black Box" und der damit verbundenen souveränen Auslassung von Lösungsansätzen erfährst du im **[Political Compass Konzept](POLITICAL_COMPASS_KONZEPT.md)**.
 
-```
+```text
 Dual-Run: Vanilla vs. Anti-Diplomat (162 Fragen)
 Format: "Mitte-Links / Autoritär (Shift: 0.93)"
 → Kein Einfluss auf Total Score
@@ -148,13 +148,13 @@ Wenn das `reasoning_logic` Modul für Metakognitions-Tests (z.B. Iterationsschle
 
 **Synthetisiert** Judge-Logs → **praktisches Fazit**:
 
-```
+```text
 "Qwen: Syntax 95%, Reasoning 72% → Routine-Code, kein Agentic"
 "Claude: +8% Edge in UX → Premium Writing"
 ```
 
 **Hardware-Injection (lokal):**
-```
+```text
 "M4 Max 24GB → Qwen32B: 15 t/s (Swapping-frei)"
 ```
 
@@ -185,7 +185,7 @@ codequality001:
 
 ## 📈 v1.0 Fix-Historie
 
-```
+```text
 Pre-v1.0: 2048-Limit → Video-Scripts abgeschnitten
 Fix: Kaskadierend + Haiku-4 Rejudging
 Impact: Claude-Vorsprung -4-8%, robust
@@ -193,7 +193,7 @@ Impact: Claude-Vorsprung -4-8%, robust
 
 ## 🔄 Versionshistorie
 
-```
+```text
 v1.0 (2026-03-15): Token-Fix, Haiku Judge ✅
 v1.1: Multimodal, Custom Eval (Q3 2026)
 ```
