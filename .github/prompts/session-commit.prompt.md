@@ -1,5 +1,5 @@
 ---
-mode: agent
+agent: agent
 description: "CrucibleMark: Memory Bank nach Session aktualisieren (Qualität vor Vollständigkeit)"
 ---
 

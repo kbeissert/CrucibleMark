@@ -174,10 +174,10 @@ class BaseBenchmarkRunner:
 
         # Separate Probe Result from Scoring
         probe_result = next(
-            (r for r in successful if r.get("asset_id") == "system_warmup_probe"), None
+            (r for r in successful if r.get("asset_id") in ("system_warmup_probe", "warmup_probe")), None
         )
         scoring_candidates = [
-            r for r in successful if r.get("asset_id") != "system_warmup_probe"
+            r for r in successful if r.get("asset_id") not in ("system_warmup_probe", "warmup_probe")
         ]
 
         if not scoring_candidates and not probe_result:
@@ -235,9 +235,9 @@ class BaseBenchmarkRunner:
             load_time = safe_float(probe_result.get("load_time", 0))
             print(f"   Cold Start:  {load_time:.2f}s (Initial Load)")
 
-        self._print_reference_comparison(successful)
-        self._print_best_worst(successful)
-        self._print_tiered_analysis(successful)
+        self._print_reference_comparison(scored_results)
+        self._print_best_worst(scored_results)
+        self._print_tiered_analysis(scored_results)
 
         if failed:
             print("\n❌ Fehlgeschlagen:")

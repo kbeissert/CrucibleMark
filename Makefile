@@ -1,7 +1,7 @@
 .PHONY: \
 	help install install-dev \
 	benchmark political-compass political-compass-safe benchmark-political-compass audit-bias benchmark-cross-model benchmark-auto benchmark-human run-benchmark \
-	review-model review-all review-bias-model review-bias-all leaderboard \
+	review leaderboard \
 	validate validate-single validate-structure test diff-results analyze-costs update-prices \
 	list-models judge-health list-modules create-module \
 	clean clean-sessions clean-csv clean-model clean-module clean-all clean-runs consolidate-csv \
@@ -26,16 +26,13 @@ help:
 	@echo "  make run-benchmark        Interactive Runner"
 	@echo ""
 	@echo "=== Political Compass ==="
-	@echo "  make political-compass    🐺 Eigenständiger PC-Test (immer mit Audit, Flags: FORCE)"
-	@echo "  make political-compass-safe 🛡️  Anomalieprüfung (Triple-Run)"
+	@echo "  make political-compass    🐺 Eigenständiger PC-Test (immer mit Audit, Opt. Flags: FORCE=1)"
+	@echo "  make political-compass-safe 🛡️  Sicherheits-/Anomalieprüfung (Triple-Run erzwingen)"
 	@echo "  make benchmark-human      👤 Human Baseline Test (PC)"
 	@echo ""
 	@echo "=== Reporting & Standards ==="
 	@echo "  make leaderboard          Generate Leaderboard CSV"
-	@echo "  make review-model         📰 Generate Review (MODEL=name)"
-	@echo "  make review-all           📰 Generate Reviews for ALL models"
-	@echo "  make review-bias-model    ⚖️ Generate Bias-Review (MODEL=name)"
-	@echo "  make review-bias-all      ⚖️ Generate Bias-Reviews for ALL models"
+	@echo "  make review               📰 Generate Review (Flags: MODEL=name, ALL=1, TYPE=bias)"
 	@echo ""
 	@echo "=== Validation & QA ==="
 	@echo "  make validate             Validate test assets"
@@ -50,6 +47,14 @@ help:
 	@echo "  make list-modules         List Modules"
 	@echo "  make create-module        🚀 Scaffold module"
 	@echo "  make audit-markdown       📝 Audit & fix markdown/yaml files"
+	@echo ""
+	@echo "=== Data Management & Cleanup ==="
+	@echo "  make backup               📦 Create full backup of runs and assets"
+	@echo "  make clean                🧹 Remove PyCache and build artifacts"
+	@echo "  make clean-csv            🗑️  Remove standard CSV results"
+	@echo "  make clean-sessions       🗑️  Remove debug session logs"
+	@echo "  make clean-model MODEL=x  🗑️  Remove results for specific model"
+	@echo "  make clean-all            🔥 Extreme Cleanup (Cache + CSVs)"
 
 
 # === BENCHMARKING ===
@@ -66,7 +71,7 @@ political-compass:
 
 political-compass-safe:
 	@echo "🛡️  Starting Anomaly Verification Protocol (Make Political Compass Safe Test)..."
-	$(PYTHON) scripts/core/verify_compass_anomalies.py
+	$(PYTHON) scripts/core/verify_compass_anomalies.py $(if $(MODEL),--model "$(MODEL)" --threshold 0.0)
 
 benchmark-political-compass:
 	@echo "⚠️  Deprecated alias: forwarding to political-compass"
@@ -93,29 +98,18 @@ run-benchmark:
 
 # === REPORTING & STANDARDS ===
 
-review-model:
-	@if [ -z "$(MODEL)" ]; then \
-		echo "❌ Fehler: Gib ein Modell an. Beispiel: make review-model MODEL=claude-haiku-4-5-20251001"; \
+review:
+	@if [ -n "$(ALL)" ]; then \
+		echo "📰 Generating $(if $(TYPE),$(TYPE),benchmark)-Reviews for ALL models..."; \
+		$(PYTHON) scripts/analysis/generate_review.py --all $(if $(TYPE),--type $(TYPE)); \
+	elif [ -n "$(MODEL)" ]; then \
+		echo "📰 Generating $(if $(TYPE),$(TYPE),benchmark)-Review for $(MODEL)..."; \
+		$(PYTHON) scripts/analysis/generate_review.py --model "$(MODEL)" $(if $(TYPE),--type $(TYPE)); \
+	else \
+		echo "❌ Fehler: Bitte gib MODEL=name oder ALL=1 an. Optional: TYPE=bias"; \
 		exit 1; \
 	fi
-	@echo "📰 Generating Review for $(MODEL)..."
-	$(PYTHON) scripts/analysis/generate_review.py --model "$(MODEL)"
 
-review-all:
-	@echo "📰 Generating Reviews for ALL models..."
-	$(PYTHON) scripts/analysis/generate_review.py --all
-
-review-bias-model:
-	@if [ -z "$(MODEL)" ]; then \
-		echo "❌ Fehler: Gib ein Modell an. Beispiel: make review-bias-model MODEL=claude-haiku-4-5-20251001"; \
-		exit 1; \
-	fi
-	@echo "📰 Generating Bias-Review for model: $(MODEL)"
-	$(PYTHON) scripts/analysis/generate_review.py --model "$(MODEL)" --type bias
-
-review-bias-all:
-	@echo "📰 Generating Bias-Reviews for ALL models..."
-	$(PYTHON) scripts/analysis/generate_review.py --all --type bias
 
 leaderboard:
 	@echo "📊 Generating Leaderboard..."
@@ -144,7 +138,7 @@ test: validate
 
 diff-results:
 	@echo "⚖️ Comparing Benchmark Results..."
-	@$(PYTHON) scripts/analysis/compare_baselines.py --help
+	$(PYTHON) scripts/analysis/compare_baselines.py $(if $(REF),--ref $(REF)) $(if $(TEST),--test $(TEST)) $(if $(THRESH),--threshold $(THRESH))
 
 analyze-costs:
 	@echo "💰 Analyzing Prompt Token Costs..."
@@ -180,47 +174,40 @@ audit-markdown:
 	@$(PYTHON) scripts/maintenance/audit_markdown.py $(if $(FIX),--fix)
 
 clean:
-	@echo "🧹 Cleaning caches and temporary files..."
-	rm -rf outputs/runs/*
-	rm -rf outputs/comparisons/*
-	rm -rf outputs/audit_logs/*
-	find . -type d -name __pycache__ -exec rm -rf {} +
-	find . -type f -name "*.pyc" -delete
+	@if [ -n "$(MODEL)" ] || [ -n "$(MODULE)" ] || [ -n "$(ALL)" ]; then \
+		$(PYTHON) scripts/maintenance/clean.py $(if $(MODEL),--model "$(MODEL)") $(if $(MODULE),--module "$(MODULE)") $(if $(ALL),--all); \
+	else \
+		$(PYTHON) scripts/maintenance/clean.py --cache; \
+	fi
 
 clean-sessions:
-	@echo "🧹 Cleaning temporary benchmark sessions..."
-	@rm -rf outputs/temp/session_*.json
+	@$(PYTHON) scripts/maintenance/clean.py --sessions
 
 clean-csv:
-	@echo "🗑️  Deleting ALL benchmark CSV files..."
-	rm -f benchmark_scores/*.csv
+	@$(PYTHON) scripts/maintenance/clean.py --csv
 
 clean-model:
 	@if [ -z "$(MODEL)" ]; then \
 		echo "❌ Use: make clean-model MODEL=name"; \
 		exit 1; \
 	fi
-	@echo "🧹 Deleting results for model: $(MODEL)"
-	$(PYTHON) scripts/maintenance/clean_results.py --model "$(MODEL)"
+	@$(PYTHON) scripts/maintenance/clean.py --model "$(MODEL)"
 
 clean-module:
 	@if [ -z "$(MODULE)" ]; then \
 		echo "❌ Use: make clean-module MODULE=key"; \
 		exit 1; \
 	fi
-	@echo "🧹 Deleting results for module: $(MODULE)"
-	$(PYTHON) scripts/maintenance/clean_results.py --module "$(MODULE)"
+	@$(PYTHON) scripts/maintenance/clean.py --module "$(MODULE)"
 
-clean-all: clean clean-csv
-	@echo "✨ All clean!"
+clean-all:
+	@$(PYTHON) scripts/maintenance/clean.py --all
 
 clean-runs:
-	@echo "🧹 Cleaning Old Run Directories ($(if $(FORCE),Forced,Dry Run))..."
-	@if [ -f "scripts/maintenance/cleanup_runs.py" ]; then \
-		$(PYTHON) scripts/maintenance/cleanup_runs.py --keep 1 $(if $(FORCE),--force); \
-	else \
-		echo "❌ cleanup script not found - skipping old run cleanup."; \
-	fi
+	@$(PYTHON) scripts/maintenance/clean.py --runs 1 $(if $(FORCE),--force)
+
+clean-wizard:
+	@$(PYTHON) scripts/maintenance/clean.py --interactive
 
 consolidate-csv:
 	@if [ -f "scripts/maintenance/consolidate_csv.py" ]; then \
@@ -230,8 +217,8 @@ consolidate-csv:
 backup:
 	@echo "💾 Creating full backup..."
 	@mkdir -p backups
-	@tar --exclude='__pycache__' --exclude='.DS_Store' -czf backups/cruciblemark_backup_$(shell date +%Y%m%d_%H%M%S).tar.gz benchmark_scores/ outputs/ benchmark_modules/ golden_standards/
+	@tar --exclude='__pycache__' --exclude='.DS_Store' -czf backups/cruciblemark_backup_$(shell date +%Y%m%d_%H%M%S).tar.gz benchmark_scores/ outputs/ benchmark_modules/
 	@echo "✅ Backup created."
-	@$(MAKE) clean-runs-force
+	@$(MAKE) clean-runs FORCE=1
 	@$(MAKE) consolidate-csv
 	@echo "✨ Backup chain complete."

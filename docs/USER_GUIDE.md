@@ -88,13 +88,13 @@ ______________________________________________________________________
 **Befehl:**
 
 ```bash
-make benchmark-single MODEL=qwen2.5:14b
+make benchmark MODEL=qwen2.5:14b
 ```
 
 **Optional: Nur ein Modul testen:**
 
 ```bash
-make benchmark-single MODEL=qwen2.5:14b MODULE=code_quality
+make benchmark MODEL=qwen2.5:14b MODULE=code_quality
 ```
 
 ______________________________________________________________________
@@ -161,9 +161,9 @@ Er generiert zu jedem getesteten Asset eine perfekt formatierte Markdown-Datei, 
 2. Die unverfälschte **Antwort** des bewerteten Modells.
 3. Die detaillierte Herleitung der Bewertung (inklusive Metadaten, Token-Limits und dem logischen Reasoning des LLM-Judges).
 
-Um den Modus zu aktivieren:
+Der Audit-Modus ist **standardmäßig aktiv**. Wenn du die Audit-Logs überspringen möchtest, kannst du die Protokollierung beim Benchmark-Start via `SILENT=1` Flag deaktivieren:
 ```bash
-make benchmark-audit
+make benchmark MODEL=modell_name SILENT=1
 ```
 Alle generierten Markdown-Files findest du im Ordner `outputs/audit_logs/`. Dieser Modus ist das ideale Werkzeug, wenn du nachvollziehen möchtest, *warum* ein Modell eine bestimmte Punktzahl bekommen hat, ohne dafür manuell im Terminal mitlesen zu müssen.
 
@@ -347,7 +347,7 @@ ______________________________________________________________________
 ollama restart
 
 # Kleineres Modell testen
-make benchmark-single MODEL=qwen2.5:7b
+make benchmark MODEL=qwen2.5:7b
 ```
 
 ______________________________________________________________________
@@ -476,7 +476,7 @@ ______________________________________________________________________
 make validate-structure
 
 # Assets prüfen (YAML-Schema)
-make validate-assets
+make validate
 ```
 
 ______________________________________________________________________
@@ -501,7 +501,7 @@ ______________________________________________________________________
 **Für Fortgeschrittene:**
 
 - Eigene Module erstellen (siehe `DEVELOPER_GUIDE.md`)
-- Golden Standard aktualisieren (`make generate-golden`)
+- Neues Modul initialisieren (`make create-module`)
 - Custom Scoring-Logik implementieren
 
 ______________________________________________________________________
@@ -535,7 +535,7 @@ metadata:
 ### 3. Test Locally
 
 ```bash
-make benchmark-single MODEL=your-test-model
+make benchmark MODEL=your-test-model
 ```
 
 ______________________________________________________________________
@@ -546,3 +546,160 @@ ______________________________________________________________________
 
 **Dokumenten-Version:** 3.0.0 (Rewrite Mar 2026)\
 **Kompatibel mit:** CrucibleMark v3.0.0+
+
+
+### C. Political Compass & Safety Tests
+
+Das `political_compass` Modul nutzt eine eigenständige Sicherheitsarchitektur und speichert nach jedem Block einen Zwischenstand (Checkpointing). Dies ist bei über 70 Fragen elementar.
+
+- **Standard-Lauf (Resume/Caching):**
+  ```bash
+  make political-compass MODEL=modell_name
+  ```
+  Setzt einen abgebrochenen PC-Run exakt dort fort, wo er aufgehört hat. Bereits gespeicherte Blöcke und finale Scores im Cache werden intelligent übersprungen und die noch fehlenden Fragen abgearbeitet.
+
+- **Kompletter Neustart (Forced-Run):**
+  ```bash
+  make political-compass MODEL=modell_name FORCE=1
+  ```
+  Erzwingt einen kompletten Neustart des Kompass-Tests. Sämtliche bisherigen Caches für dieses Modell werden verworfen und der volle Test (Vanilla + Forced Modus) wird von vorne begonnen.
+
+- **Anomalie- & Sicherheitsprüfung:**
+  ```bash
+  make political-compass-safe MODEL=modell_name
+  ```
+  Startet den ausgedehnten "Safe-Run" (Triple-Run). Hierbei muss das Modell den gesamten Testablauf zwingend drei Mal komplett asynchron durchlaufen. Die Pipeline mittelt die korrekten Vektoren und sortiert mutmaßlich halluzinierte Extreme aus, um auf weichen Vektor-Shifts eine stabile Grund-Ausrichtung zu validieren.
+
+- **Human Baseline:**
+  ```bash
+  make benchmark-human
+  ```
+  Startet das interaktive Terminal-Interface, in dem ein menschlicher Benutzer den CrucibleMark Political Compass Test beantworten kann, um als Referenzwert (`Human Baseline`) in den Auswertungen mit aufzutauchen.
+
+
+### C. Political Compass & Safety Tests
+
+Das `political_compass` Modul nutzt eine eigenständige Sicherheitsarchitektur und speichert nach jedem Block einen Zwischenstand (Checkpointing). Dies ist bei über 70 Fragen elementar.
+
+- **Standard-Lauf (Resume/Caching):**
+  ```bash
+  make political-compass MODEL=modell_name
+  ```
+  Setzt einen abgebrochenen PC-Run exakt dort fort, wo er aufgehört hat. Bereits gespeicherte Blöcke und finale Scores im Cache werden intelligent übersprungen und die noch fehlenden Fragen abgearbeitet.
+
+- **Kompletter Neustart (Forced-Run):**
+  ```bash
+  make political-compass MODEL=modell_name FORCE=1
+  ```
+  Erzwingt einen kompletten Neustart des Kompass-Tests. Sämtliche bisherigen Caches für dieses Modell werden verworfen und der volle Test (Vanilla + Forced Modus) wird von vorne begonnen.
+
+- **Anomalie- & Sicherheitsprüfung:**
+  ```bash
+  make political-compass-safe MODEL=modell_name
+  ```
+  Startet den ausgedehnten "Safe-Run" (Triple-Run). Hierbei muss das Modell den gesamten Testablauf zwingend drei Mal komplett asynchron durchlaufen. Die Pipeline mittelt die korrekten Vektoren und sortiert mutmaßlich halluzinierte Extreme aus, um auf weichen Vektor-Shifts eine stabile Grund-Ausrichtung zu validieren.
+
+- **Human Baseline:**
+  ```bash
+  make benchmark-human
+  ```
+  Startet das interaktive Terminal-Interface, in dem ein menschlicher Benutzer den CrucibleMark Political Compass Test beantworten kann, um als Referenzwert (`Human Baseline`) in den Auswertungen mit aufzutauchen.
+
+
+### C. Political Compass & Safety Tests
+
+Das `political_compass` Modul nutzt eine eigenständige Sicherheitsarchitektur und speichert nach jedem Block einen Zwischenstand (Checkpointing). Dies ist bei über 70 Fragen elementar.
+
+- **Standard-Lauf (Resume/Caching):**
+  ```bash
+  make political-compass MODEL=modell_name
+  ```
+  Setzt einen abgebrochenen PC-Run exakt dort fort, wo er aufgehört hat. Bereits gespeicherte Blöcke und finale Scores im Cache werden intelligent übersprungen und die noch fehlenden Fragen abgearbeitet.
+
+- **Kompletter Neustart (Forced-Run):**
+  ```bash
+  make political-compass MODEL=modell_name FORCE=1
+  ```
+  Erzwingt einen kompletten Neustart des Kompass-Tests. Sämtliche bisherigen Caches für dieses Modell werden verworfen und der volle Test (Vanilla + Forced Modus) wird von vorne begonnen.
+
+- **Anomalie- & Sicherheitsprüfung:**
+  ```bash
+  make political-compass-safe MODEL=modell_name
+  ```
+  Startet den ausgedehnten "Safe-Run" (Triple-Run). Hierbei muss das Modell den gesamten Testablauf zwingend drei Mal komplett asynchron durchlaufen. Die Pipeline mittelt die korrekten Vektoren und sortiert mutmaßlich halluzinierte Extreme aus, um auf weichen Vektor-Shifts eine stabile Grund-Ausrichtung zu validieren.
+
+- **Human Baseline:**
+  ```bash
+  make benchmark-human
+  ```
+  Startet das interaktive Terminal-Interface, in dem ein menschlicher Benutzer den CrucibleMark Political Compass Test beantworten kann, um als Referenzwert (`Human Baseline`) in den Auswertungen mit aufzutauchen.
+
+## D. Meta-Reviews (Magazin-Style) generieren
+
+CrucibleMark bietet ein Modul zur Erstellung von redaktionellen Zusammenfassungen, den Meta-Reviews.
+
+Die Erstellung wird über den konsolidierten Befehl `make review` gesteuert, der verschiedene Aufruf-Flags unterstützt:
+
+```bash
+# Review für ein konkretes Modell erstellen
+make review MODEL="meta-llama/Llama-3.1-8B-Instruct"
+
+# Reviews für ALLE kürzlich getesteten Modelle im Rutsch erstellen
+make review ALL=1
+
+# Speziellen Bias/Safety-Review für ein Modell erstellen
+make review MODEL="meta-llama/Llama-3.1-8B-Instruct" TYPE="bias"
+
+# Spezielle Bias/Safety-Reviews für ALLE Modelle erstellen
+make review ALL=1 TYPE="bias"
+```
+
+> **Hinweis:** Weitere Details zur Funktionsweise, Konfiguration und Anpassung des Meta-Reviewers findest du in [AUDIT_AND_METAREVIEW.md](AUDIT_AND_METAREVIEW.md).
+
+## E. Analysen & Modell-Vergleiche (Diff Results)
+
+Hast du zwei verschiedene Benchmark-Läufe, die du miteinander vergleichen möchtest? Das CrucibleMark Framework bietet ein iteratives Comparison-Tool:
+
+```bash
+make diff-results
+```
+
+Mit Start dieses Befehls öffnet sich ein interaktiver UI-Assistent im Terminal, der automatisch alle existierenden JSON-Resultate aus `outputs/runs/` sammelt und dir verschiedene Vergleichs-Modi anbietet:
+
+1. **Interner Vergleich:** Prüft, ob sich dasselbe Modell im Vergleich zu einem früheren Lauf verschlechtert hat (z. B. nach Anpassung des System-Prompts oder der Framework-Version). Das System schlägt dir automatisch den älteren Lauf als Referenz und den neueren als Test vor.
+2. **Modell-Vergleich:** Lässt zwei unterschiedliche Modelle direkt gegeneinander antreten (Referenz-Modell vs. Test-Modell). Auch hier wählt das System jeweils den neuesten Run der beiden gewählten Modelle.
+3. **Manuelle Auswahl:** Erlaubt dir, aus allen Dateien individuell und frei die Referenz- und die Test-Datei zu bestimmen.
+
+Alternativ kannst du für schnelle CLI-Automatisierung auch direkt Dateipfade mit optionalem Abweichungsschwellenwert (z.B. `--threshold 0.15` für $\ge 15\%$) via Makefile-Flags mitgeben:
+
+```bash
+make diff-results REF=outputs/runs/v1.json TEST=outputs/runs/v2.json THRESH=0.15
+```
+
+## F. Tooling & Maintenance Parameter
+
+CrucibleMark bietet ein umfangreiches Repertoire an Tools, um das Framework sauber und aktuell zu halten:
+
+### 1. Zusätzliche Benchmark- & Test-Aufrufe
+Neben den regulären `make benchmark` Befehlen existieren folgende Ergänzungen:
+- **`make run-benchmark`**: Öffnet einen rein interaktiven Terminal-Wizard zur geführten Modellauswahl.
+- **`make benchmark-cross-model MODULE=name`**: Evaluiert alle bekannten Modelle zwingend gegen *ein einziges* Modul (hilfreich bei der Modul-Entwicklung).
+- **`make test`**: Startet via `pytest` alle internen Unit-Tests des Frameworks.
+
+### 2. Systemgesundheit & Validierung
+- **`make judge-health`**: Führt Connectivity-Pings gegen die konfigurierten Provider (OpenAI, Anthropic, lokales Ollama) durch, um API-Keys zu testen.
+- **`make list-modules`**: Listet alle momentan aktivierten Benchmark-Kategorien auf.
+- **`make validate`** / **`make validate-single ASSET=pfad`**: Validiert das YAML-Schema der hinterlegten Tests.
+- **`make validate-structure`**: Testet, ob das Verzeichnis-Layout den Architekturvorgaben entspricht.
+- **`make audit-markdown`**: Durchsucht und bereinigt (mit optionalem Flag `FIX=1`) fehlerhafte Formatierungen (wie Trailing Whitespaces) in Dokumenten.
+
+### 3. Projekt-Hygiene & Cleanup-Befehle (Konsolidiert)
+
+Die Cleanup-Prozesse wurden in einem zentralen, interaktiven System zusammengefasst.
+
+- **`make clean-wizard`**: Startet den interaktiven Cleanup-Wizard im Terminal, über den du flexibel Caches, Runs oder Ergebnisse einzelner Modelle sicher und geführt bereinigen kannst. (Empfohlen)
+- **`make clean`**: Löscht Caches und temporäre Dateileichen (z.B. Python Bytecode, `__pycache__`, alte Reports, Audit-Logs). (Kann kombiniert werden mit Flags: `make clean MODEL=Name`, `make clean MODULE=Key`)
+- **`make clean-sessions`**: Löscht temporäre Session-Zwischenspeicher.
+- **`make clean-runs`**: Bereinigt ausufernde Run-Ordner und behält standardmäßig nur den 1 aktuellsten Run pro Modell. (`make clean-runs FORCE=1` überspringt Nachfragen).
+- **`make clean-csv`**: Löscht alle standardmäßig generierten Benchmark-CSV Dateien.
+- **`make clean-all`**: Radikal-Reset. Löscht zusätzlich zur Standard-Cache-Leerung **alle** bisherigen Benchmark-Run Ordner und CSV-Scores. DANGER.

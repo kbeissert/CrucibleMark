@@ -95,7 +95,8 @@ class PoliticalCompassHandler:
             config = getattr(test_instance, "config", {})
             threshold = float(config.get("anomaly_shift_threshold", 1.0))
             if shift_dist > threshold and not is_retest:
-                import subprocess, sys
+                import subprocess
+                import sys
                 print(f"\n🚨 [SAFETY ALERT] Automatischer Sicherheits-Trigger: Shift ({shift_dist:.2f} > {threshold}) bei '{model}' erkannt!")
                 print("🛡️  Starte Anomaly Verification Protocol (Triple-Run Verification)...\n")
                 subprocess.run(
@@ -248,11 +249,11 @@ class PoliticalCompassHandler:
                     "score_y": forced_run.get("coordinates", {}).get("y", 0.0),
                 }
                 verification_mode = getattr(test_instance, "verification_mode", False)
-                safety_metadata = getattr(test_instance, "safety_metadata", None)
+                safety_metadata = getattr(test_instance, "safety_metadata", {})
 
                 stats = report.get("statistics", {})
                 cost_val = stats.get("total_cost")
-                cost_str = f"${cost_val:.6f}" if cost_val is not None else None
+                cost_str = f"${cost_val:.6f}" if cost_val is not None else "0.0"
 
                 PCAuditLogWriter.write_audit_log(
                     model=model,

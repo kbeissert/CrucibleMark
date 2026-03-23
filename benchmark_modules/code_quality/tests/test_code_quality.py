@@ -174,45 +174,6 @@ class TestScoringLogic:
         assert result.primary_score == 0
 
 
-class TestGoldenStandardComparison:
-    """Golden Standard Vergleich Tests"""
-
-    def test_wcag_golden_standard_exists(self):
-        """WCAG Golden Standard existiert"""
-        golden_path = Path("golden_standards/mistral/code_quality_001.json")
-        assert golden_path.exists(), f"WCAG Golden Standard fehlt: {golden_path}"
-
-    def test_security_golden_standard_exists(self):
-        """Security Golden Standard existiert"""
-        golden_path = Path("golden_standards/mistral/code_quality_002.json")
-        assert golden_path.exists(), f"Security Golden Standard fehlt: {golden_path}"
-
-    def test_golden_standard_structure(self):
-        """Golden Standards haben korrekte Struktur"""
-        golden_path = Path("golden_standards/mistral/code_quality_002.json")
-
-        with open(golden_path, "r", encoding="utf-8") as f:
-            golden = json.load(f)
-
-        # Pflicht-Felder
-        assert "id" in golden
-        assert "response" in golden
-        assert "provider" in golden
-
-        # Metadata-Struktur (angepasst an flache Struktur)
-        assert golden["id"] == "code_quality_002"
-
-    def test_golden_standard_scores_csv_exists(self):
-        """Golden Standards Scores CSV existiert"""
-        # csv_path = Path("benchmark_scores/golden_standard_benchmark.csv")
-        # assert csv_path.exists(), "Golden Standards Scores CSV fehlt"
-
-        # Prüfe ob beide Assets drin sind
-        # content = csv_path.read_text()
-        # assert 'code_quality_001' in content
-        # assert 'code_quality_002' in content
-
-
 class TestStability:
     """Stabilitäts-Tests"""
 

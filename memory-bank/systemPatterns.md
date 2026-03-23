@@ -17,6 +17,9 @@
 - **Aktives Monitoring:** Bei der Weiterentwicklung wird strengstens auf die Länge und Komplexität der Skripte geachtet.
 - **Kapselung:** Erkennst du, dass ein Skript zum monolithischen "God-Script" mutiert, musst du umgehend logische Submodule auslagern. Funktionalitäten werden in kleine Module gekapselt und sauber in das Hauptskript eingebunden.
 
+## Runner-Konsolidierung
+- **Unified Runner:** Alle Benchmarks (Lokal & Kommerziell) laufen zentral über den `UnifiedBenchmarkRunner` (`scripts/core/unified_runner.py`). Keine getrennten Runner-Skripte mehr!
+
 ## Konfig-Hierarchie (SSOT)
 Global (`benchmark_config.yaml`) → Modul (`config.yaml`) → Runtime.
 Gilt für Generation-Parameter UND LLM Judge. Modul-Override gewinnt immer.

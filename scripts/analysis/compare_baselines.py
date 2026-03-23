@@ -148,10 +148,112 @@ def compare_standard_benchmark(
         print(f"\n{Colors.GREEN}✅ Results correspond to baseline.{Colors.ENDC}")
 
 
+def interactive_selection() -> tuple[str, str]:
+    """Provides an interactive CLI to select reference and test result files."""
+    from utils.benchmark_ui import TerminalUI
+    import re
+
+    runs_dir = ROOT_DIR / "outputs" / "runs"
+    if not runs_dir.exists():
+        print(f"{Colors.FAIL}Directory {runs_dir} not found.{Colors.ENDC}")
+        sys.exit(1)
+
+    files = list(runs_dir.glob("results_*.json"))
+    # Sort files from newest to oldest
+    files.sort(key=lambda x: x.stat().st_mtime, reverse=True)
+
+    if not files:
+        print(f"{Colors.FAIL}Keine Benchmark-Ergebnisse in {runs_dir} gefunden.{Colors.ENDC}")
+        sys.exit(1)
+
+    pattern = re.compile(r"results_(.*)_(\d{8}_\d{6})\.json")
+
+    models_to_files = {}
+    for f in files:
+        match = pattern.match(f.name)
+        if match:
+            model_name = match.group(1)
+            models_to_files.setdefault(model_name, []).append(f)
+
+    modes = [
+        ("Interner Vergleich", "Gleiches Modell - 2 verschiedene Läufe vergleichen"),
+        ("Modell-Vergleich", "Zwei verschiedene Modelle (jeweils letzter Lauf) vergleichen"),
+        ("Manuelle Auswahl", "Alle Dateien direkt als Liste anzeigen")
+    ]
+
+    selected_mode = TerminalUI.select_from_list(
+        modes,
+        lambda m: m,  # tuple displays header + description in TerminalUI
+        prompt="Was möchtest du vergleichen?",
+        title="Vergleichs-Modus wählen"
+    )
+
+    if not selected_mode:
+        print("Abbruch.")
+        sys.exit(0)
+
+    mode_name = selected_mode[0]
+
+    if mode_name == "Interner Vergleich":
+        model_list = sorted(list(models_to_files.keys()))
+        selected_model = TerminalUI.select_from_list(
+            model_list,
+            lambda x: f"{x} ({len(models_to_files[x])} Läufe vorhanden)",
+            prompt="Wähle das Modell:",
+            title="Modell-Auswahl"
+        )
+        if not selected_model: sys.exit(0)
+
+        runs = models_to_files[selected_model]
+        if len(runs) < 2:
+            print(f"{Colors.WARNING}Nicht genug Läufe für {selected_model} (Mindestens 2 benötigt).{Colors.ENDC}")
+            sys.exit(1)
+
+        print(f"\n{Colors.CYAN}--- SCHRITT 1: Referenz (Zumeist der ältere Lauf) ---{Colors.ENDC}")
+        ref_file = TerminalUI.select_from_list(runs, lambda x: x.name, prompt="Wähle Referenz-Lauf (Basis):")
+        if not ref_file: sys.exit(0)
+
+        print(f"\n{Colors.CYAN}--- SCHRITT 2: Test (Zumeist der neuere Lauf) ---{Colors.ENDC}")
+        test_file = TerminalUI.select_from_list(runs, lambda x: x.name, prompt="Wähle Test-Lauf (Neuer Wert):")
+        if not test_file: sys.exit(0)
+
+        return str(ref_file), str(test_file)
+
+    elif mode_name == "Modell-Vergleich":
+        model_list = sorted(list(models_to_files.keys()))
+        print(f"\n{Colors.CYAN}--- SCHRITT 1: Referenz-Modell (Zumeist das bekannte/kommerzielle Modell) ---{Colors.ENDC}")
+        ref_model = TerminalUI.select_from_list(model_list, lambda x: x, prompt="Wähle Referenz-Modell:")
+        if not ref_model: sys.exit(0)
+
+        print(f"\n{Colors.CYAN}--- SCHRITT 2: Test-Modell (Zumeist das neue/lokale Modell) ---{Colors.ENDC}")
+        test_model = TerminalUI.select_from_list(model_list, lambda x: x, prompt="Wähle Test-Modell:")
+        if not test_model: sys.exit(0)
+
+        ref_file = models_to_files[ref_model][0]
+        test_file = models_to_files[test_model][0]
+
+        print(f"\n{Colors.HEADER}Ausgewählte Dateien:{Colors.ENDC}")
+        print(f"Referenz ({ref_model}): {ref_file.name}")
+        print(f"Test ({test_model}):     {test_file.name}\n")
+
+        return str(ref_file), str(test_file)
+
+    else:
+        print(f"\n{Colors.CYAN}--- SCHRITT 1: Referenz-Datei ---{Colors.ENDC}")
+        ref_file = TerminalUI.select_from_list(files, lambda x: x.name, prompt="Wähle Referenz-Datei:")
+        if not ref_file: sys.exit(0)
+
+        print(f"\n{Colors.CYAN}--- SCHRITT 2: Test-Datei ---{Colors.ENDC}")
+        test_file = TerminalUI.select_from_list(files, lambda x: x.name, prompt="Wähle Test-Datei:")
+        if not test_file: sys.exit(0)
+
+        return str(ref_file), str(test_file)
+
+
 def main():
     parser = argparse.ArgumentParser(description="Compare Benchmark Results")
-    parser.add_argument("--ref", required=True, help="Reference JSON file")
-    parser.add_argument("--test", required=True, help="Test JSON file")
+    parser.add_argument("--ref", required=False, help="Reference JSON file")
+    parser.add_argument("--test", required=False, help="Test JSON file")
     parser.add_argument(
         "--threshold",
         type=float,
@@ -161,8 +263,16 @@ def main():
 
     args = parser.parse_args()
 
-    ref_data = load_json(args.ref)
-    test_data = load_json(args.test)  # Fixed: Using args.test instead of args.ref
+    ref_path = args.ref
+    test_path = args.test
+
+    if not ref_path or not test_path:
+        print(f"{Colors.HEADER}Interaktiver Baseline Comparator{Colors.ENDC}")
+        print("Starte Dateiauswahl (Nutzung via Kommandozeile mit --ref und --test weiterhin möglich)...\n")
+        ref_path, test_path = interactive_selection()
+
+    ref_data = load_json(ref_path)
+    test_data = load_json(test_path)
 
     # Detect Type
     is_pol_compass = isinstance(ref_data, dict) and "coordinates" in ref_data

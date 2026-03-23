@@ -1,5 +1,3 @@
-# Active Context
-
-- Abgeschlossen: Markdown-Parser des LLM-Judges durch spezifische ID-Anker (wie 7.2.001) in der Prompt-Config stabilisiert (Off-by-One Fehler behoben). Strikte Grammatik-Formatierung (Passiv) im Fazit erzwungen, um aktive Halluzinationen zu verhindern.
-- Nächster Schritt: Evaluation weiterer Modelle oder Finalisierung des Political Compass Release.
+- Abgeschlossen: Runner (`run_local_benchmark.py` & `run_commercial_benchmark.py`) zu einem zentralen `UnifiedBenchmarkRunner` konsolidiert. Codebase mit Fokus auf Typing (Pylance) und Linting (Pylint) gehärtet. Skript-Metadaten (.prompt.md) standardisiert.
+- Nächster Schritt: Finale Systemtests oder Start des nächsten Moduls gemäß Roadmap.
 - Offen/Risiko: Keine.

@@ -27,8 +27,8 @@ try:
     from dotenv import load_dotenv
 except ImportError:
     # pylint: disable=unused-argument
-    def load_dotenv():
-        pass
+    def load_dotenv(*args, **kwargs) -> bool:
+        return False
 
 
 # pylint: enable=import-error
@@ -42,13 +42,10 @@ sys.path.insert(0, str(ROOT_DIR))
 
 # Local imports
 # pylint: disable=import-error, wrong-import-position
-from scripts.core.run_local_benchmark import LocalBenchmarkRunner  # noqa: E402
-from scripts.core.run_commercial_benchmark import (
-    CommercialBenchmarkRunner,
-)  # noqa: E402
+from scripts.core.unified_runner import UnifiedBenchmarkRunner  # noqa: E402
 from scripts.core.generate_leaderboard import main as gen_leaderboard  # noqa: E402
 from utils.config_validator import ConfigValidator  # noqa: E402
-from utils.model_utils import is_model_suitable_for_benchmark  # noqa: E402
+from utils.model_utils import is_model_suitable_for_benchmark, get_ollama_models_info  # noqa: E402
 from utils.llm_client import LLMClient  # noqa: E402
 from utils.module_registry import get_active_modules  # noqa: E402
 
@@ -177,7 +174,7 @@ def _get_startable_assets(
     # Der Runner hat Methode zum Finden, aber wir brauchen den Pfad
     # Da Runner interne Methoden hat, rufen wir hier eine Hilfsfunktion nach
     # Aber wir können auch einfach globben, da wir den Pfad haben.
-    # Da LocalBenchmarkRunner assets_path als String/Path erwartet:
+    # Da UnifiedBenchmarkRunner assets_path als String/Path erwartet:
     asset_files = []
     p = Path(assets_path)
     if p.exists():
@@ -205,7 +202,7 @@ def _get_startable_assets(
 
 
 def _run_module_for_model(
-    runner: LocalBenchmarkRunner,
+    runner: UnifiedBenchmarkRunner,
     model: str,
     module: Dict[str, Any],
     existing_tests: Set[Tuple[str, str]],
@@ -214,7 +211,7 @@ def _run_module_for_model(
     assets_todo = _get_startable_assets(
         module=module, model=model, existing_tests=existing_tests
     )
-    # Note: assets_todo is calculated but currently the LocalBenchmarkRunner
+    # Note: assets_todo is calculated but currently the UnifiedBenchmarkRunner
     # runs ALL assets in the folder. So filtering here serves mainly for info logging
     # unless we patch the runner. The original code just logged.
 
@@ -230,7 +227,7 @@ def _run_module_for_model(
 
     try:
         # Pass filtered assets (assets_todo) to evita re-running existing tests
-        results = runner.run_benchmark(model, module, assets=assets_todo)
+        results = runner.run_benchmark(provider="ollama", model=model, benchmark_info=module, assets=assets_todo)
         if results:
             runner.save_results(results)
             # Modular behavior: Immediate trigger after save.
@@ -260,7 +257,7 @@ def run_local_batch(
         print("⏭️  Überspringe lokale Benchmarks, da Ollama nicht läuft.")
         return
 
-    runner = LocalBenchmarkRunner(audit_mode=audit_mode)
+    runner = UnifiedBenchmarkRunner(audit_mode=audit_mode)
 
     # Cache laden (bereits erledigte Tests)
     csv_path = Path("benchmark_scores/local_models_benchmark.csv")
@@ -268,7 +265,7 @@ def run_local_batch(
 
     # Modelle holen
     try:
-        all_models = runner.get_ollama_models()
+        all_models = [m["name"] for m in get_ollama_models_info()]
     except Exception as e:  # pylint: disable=broad-exception-caught
         print(f"❌ Fehler beim Laden der Modell-Liste: {e}")
         return
@@ -301,8 +298,9 @@ def run_commercial_batch(
     print("\n🏢  [2/2] KOMMERZIELLE MODELLE (API)")
     print(f"{'=' * 40}")
 
-    runner = CommercialBenchmarkRunner(audit_mode=audit_mode)
-    runner.mode = "test"
+    runner = UnifiedBenchmarkRunner(audit_mode=audit_mode)
+    from utils.adaptive_pause import BenchmarkMode
+    runner.mode = BenchmarkMode.DEV
     runner.force = False
 
     # Provider iterieren
@@ -398,7 +396,7 @@ def run_commercial_batch(
             print(f"   📊 Bench: {module['name']} ({len(assets_todo)} neue Tests) ...")
             try:
                 results = runner.run_benchmark(
-                    task["provider"], model_id, module, assets=assets_todo
+                    provider=task["provider"], model=model_id, benchmark_info=module, assets=assets_todo
                 )
                 if results:
                     runner.save_results(results)
@@ -502,10 +500,10 @@ def main():
             if aborted and df is not None:
                 print("\n📊 Kurzübersicht Leaderboard:")
                 if "Model Name" in df.columns and "Total Score" in df.columns:
-                    print("   {:<30} | {}".format("Modell", "Score"))
+                    print(f"   {'Modell':<30} | Score")
                     print("   " + "-" * 40)
                     for _, row in df.iterrows():
-                        print("   {:<30} | {}".format(str(row['Model Name'])[:30], row['Total Score']))
+                        print(f"   {str(row['Model Name'])[:30]:<30} | {row['Total Score']}")
                 else:
                     print(f"   (Header Fehler. Verfügbar: {', '.join(df.columns[:5])})")
 

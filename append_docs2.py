@@ -1,0 +1,10 @@
+with open("docs/USER_GUIDE.md", "a") as f:
+    f.write("\n## E. Analysen & Modell-Vergleiche (Diff Results)\n\n")
+    f.write("Hast du zwei verschiedene Benchmark-Läufe, die du miteinander vergleichen möchtest? Das CrucibleMark Framework bietet ein iteratives Comparison-Tool:\n\n")
+    f.write("```bash\nmake diff-results\n```\n\n")
+    f.write("Mit Start dieses Befehls öffnet sich ein UI-Assistent im Terminal, der automatisch alle existierenden JSON-Resultate aus `outputs/runs/` sammelt und dir verschiedene Vergleichs-Modi anbietet:\n\n")
+    f.write("1. **Interner Vergleich:** Prüft, ob sich dasselbe Modell im Vergleich zu einem früheren Lauf verschlechtert hat (z. B. nach Anpassung des System-Prompts oder der Framework-Version).\n")
+    f.write("2. **Modell-Vergleich:** Lässt zwei unterschiedliche Modelle direkt gegeneinander antreten (Referenz-Modell vs. Test-Modell).\n")
+    f.write("3. **Manuelle Auswahl:** Erlaubt dir, aus allen Dateien individuell die Referenz- und die Test-Datei zu bestimmen.\n\n")
+    f.write("Alternativ kannst du für schnelle CLI-Automatisierung auch direkt Dateipfade mit optionalem Abweichungsschwellenwert (z.B. `--threshold 0.15` für >=15%) via Flags mitgeben:\n\n")
+    f.write("```bash\nmake diff-results REF=outputs/runs/v1.json TEST=outputs/runs/v2.json THRESH=0.15\n```\n")

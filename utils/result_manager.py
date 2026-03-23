@@ -52,9 +52,9 @@ class ResultManager:
         schema_props = list(BenchmarkResult.model_fields.keys())
         end_metrics = [
             k for k in schema_props
-            if "compliance" in k 
-            or k.startswith("token_limit_") 
-            or k == "finish_reason" 
+            if "compliance" in k
+            or k.startswith("token_limit_")
+            or k == "finish_reason"
             or k.startswith("judge_")
         ]
 
