@@ -329,7 +329,7 @@ modules:
   # --- SONSTIGE / SPEZIAL-MODULE ---
   political_compass:
     path: "benchmark_modules/political_compass"
-    enabled: false          # Ermittelt die ideologische Ausrichtung (60+ Fragen)
+    enabled: true          # Ermittelt die ideologische Ausrichtung (60+ Fragen)
 
 # ============================================================
 # Leaderboard & Scoring Tiers

@@ -1,6 +1,6 @@
 # CrucibleMark 🚀
 
-[![Version](https://img.shields.io/badge/version-3.0.1-blue)](.)
+[![Version](https://img.shields.io/badge/version-3.1.0-blue)](.)
 [![Python](https://img.shields.io/badge/python-3.10%2B-blue)](.)
 [![License](https://img.shields.io/badge/license-MIT-green)](.)
 [![Status](https://img.shields.io/badge/status-production--ready-brightgreen)](.)
@@ -34,7 +34,7 @@ Die meisten Benchmarks fokussieren sich auf rein theoretische Prüfungen. Crucib
 * **Ausfallsicherheit & Checkpointing:** Verliert nie deinen Fortschritt! Durch stetiges Block-Level-Checkpointing kannst du bei Budget-Erschöpfung, API-Limits (Rate Limit, 429) oder Stromausfällen einfach abbrechen und später auf den Token genau dort weitermachen, wo du aufgehört hast.
 * **Erweiterte Refusal-Architektur:** Das Framework registriert eigenständig Zensur oder "I cannot answer this"-Verweigerungen, erhöht progressiv die Temperatur und streicht Hard-Refusals aus der Wertung (Tracking von KI-Überregulierung).
 * **Automatisierter Safety-Shift Test:** Bei starken Abweichungen in Verhaltensfiltern (z. B. auf dem Political Compass) triggert das System vollautomatisch einen verschärften Triple-Run Outlier-Check inklusive euklidischem Clustering.
-* **Umfassendes Audit-Logging:** Jede Frage, jeder Prompt, jede LLM-Entscheidung und die Standardabweichung (insb. bei Kulturkampf- vs. Ethik-Themen) wird in granularen Markdown-Reports transparent dokumentiert.
+* **Umfassendes Audit-Logging & automatisierte magazinartige Meta-Reviews:** Jede Frage, jeder Prompt, jede LLM-Entscheidung und die Standardabweichung wird in granularen Markdown-Reports transparent dokumentiert. Ein robust evaluierendes Meta-Review-LLM liest diese Logs im Nachgang zusammen mit technischen API-Limits (z.B. Context-Cuts) ein und verfasst fehler- und halluzinationsfreie Endberichte (mittels strengen Off-by-one Anchors und Grammatik-Restriktionen).
 
 ---
 
@@ -107,6 +107,6 @@ Tiefergehende Einblicke in die Methodik findest du im `docs/` Verzeichnis:
 
 - **Maintainer:** kbeissert
 - **Repository:** [github.com/kbeissert/cruciblemark](https://github.com/kbeissert/cruciblemark)
-- **Status:** ✅ Production-Ready (v3.0.0)
+- **Status:** ✅ Production-Ready (v3.1.0)
 
 *"Wir benchmarken die Fähigkeiten, die im echten Engineer-Alltag entscheidend sind, nicht nur die akademischen Standardwerte."*
