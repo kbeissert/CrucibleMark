@@ -337,7 +337,7 @@ class BenchmarkRunner:
 
                     if shift > 1.0:
                         print(f"\n⚠️ [ANOMALY DETECTED] Shift_Distance für {model} liegt bei {shift:.2f}.")
-                        print(f"🔄 Automatische Einleitung des Safety-Runs (Triple-Run Verification)...")
+                        print("🔄 Automatische Einleitung des Safety-Runs (Triple-Run Verification)...")
                         subprocess.run([sys.executable, "scripts/core/verify_compass_anomalies.py", "--model_id", model], check=False)
                         break
                 except Exception as e:
