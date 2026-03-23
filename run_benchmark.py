@@ -21,11 +21,13 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Optional
 
-from utils.model_utils import (
-    get_ollama_models_info,
+from utils.model_utils import (get_ollama_models_info, 
+    
     resolve_provider,
 )
 from utils.module_loader import load_test_class
+from utils.provider_selector import ProviderSelector
+from utils.provider_selector import ProviderSelector
 from utils.benchmark_utils import select_from_list
 from utils.similarity import SemanticSimilarity
 from utils.config_validator import ConfigValidator
@@ -154,161 +156,6 @@ class BenchmarkRunner:
 
         sys.exit(0)
 
-    def select_provider(self, provider_type: Optional[str] = None) -> tuple[str, str]:
-        """Interaktive Provider-Auswahl (commercial/local/cloud)."""
-        if provider_type and provider_type in ["commercial", "local", "cloud"]:
-            return self._select_provider_models(provider_type)
-
-        options = [
-            (
-                "commercial",
-                "Kommerzielle Modelle (API Provider) - Mistral, Claude, GPT",
-            ),
-            ("local", "Lokale Modelle (Ollama, LM Studio) - Offline"),
-            ("cloud", "Cloud Modelle (Ollama Proxy) - MiniMax, DeepSeek Cloud"),
-        ]
-
-        selected = select_from_list(
-            options,
-            display_func=lambda x: x[1],
-            prompt="Wähle Provider-Typ",
-            title="PROVIDER",
-        )
-
-        if selected:
-            # Shorten display for UX
-            short_name = selected[1].split(" - ")[0]
-            print(f"✓  {short_name}")
-            return self._select_provider_models(selected[0])
-
-        sys.exit(0)
-
-    def _select_provider_models(self, provider_type: str) -> tuple[str, str]:
-        """Wählt Provider und Modell basierend auf Typ."""
-        if provider_type == "commercial":
-            return self._select_commercial_model()
-        if provider_type == "cloud":
-            return self._select_cloud_model()
-        return self._select_local_model()
-
-    def _select_cloud_model(self) -> tuple[str, str]:
-        """Wählt ein Cloud-Modell über Ollama."""
-        print("\nLade Cloud-Modelle via Ollama...")
-
-        models = get_ollama_models_info()
-
-        # Filter for Cloud-Only models using SSOT function
-        from utils.model_utils import is_cloud_model
-
-        cloud_models = [m for m in models if is_cloud_model(m["name"], m["size_gb"])]
-
-        if not cloud_models:
-            print("\n⚠️  Keine Cloud-Modelle in Ollama gefunden.")
-            print("Hast du Modelle wie 'minimax-m2:cloud' geladen?")
-            sys.exit(1)
-
-        def display_model(m):
-            return (m["name"], f"Typ: Cloud Proxy | Aktualisiert: {m['modified']}")
-
-        selected = select_from_list(
-            cloud_models,
-            display_func=display_model,
-            prompt="Wähle ein Cloud-Modell",
-            title="CLOUD OLLAMA-MODELLE",
-        )
-
-        if selected:
-            print(f"✓ Ausgewählt: {selected['name']}")
-            return "ollama", selected["name"]
-
-        sys.exit(0)
-
-    def _select_commercial_model(self) -> tuple[str, str]:
-        """Wählt kommerzielles Modell (Mistral/Claude/GPT)."""
-        commercial_config = self.config.get("providers", {}).get("commercial", {})
-        models_flat = []
-
-        for provider_key, provider_data in commercial_config.items():
-            # Only include models from enabled providers
-            if not provider_data.get("enabled", False):
-                continue
-
-            for model in provider_data.get("models", []):
-                models_flat.append(
-                    {
-                        "provider": provider_key,
-                        "provider_name": provider_data["name"],
-                        "id": model["id"],
-                        "name": model["name"],
-                        "description": model["description"],
-                    }
-                )
-
-        def display_model(m):
-            return (
-                f"[{m['provider_name']}] {m['name']}",
-                f"{m['description']} (Model: {m['id']})",
-            )
-
-        selected = select_from_list(
-            models_flat,
-            display_func=display_model,
-            prompt="Wähle ein Modell",
-            title="KOMMERZIELLE MODELLE",
-        )
-
-        if selected:
-            print(f"✓ Ausgewählt: {selected['name']}")
-            return str(selected["provider"]), str(selected["id"])
-
-        sys.exit(0)
-
-    def _select_local_model(self) -> tuple[str, str]:
-        """Wählt lokales Ollama-Modell."""
-        print("\nLade verfügbare Modelle...")
-
-        models = get_ollama_models_info()
-
-        # Filter OUT cloud models for the local list to avoid confusion (using SSOT)
-        from utils.model_utils import is_cloud_model
-
-        local_models = [
-            m for m in models if not is_cloud_model(m["name"], m["size_gb"])
-        ]
-
-        if not local_models:
-            # Check if we should warn about installation
-            if importlib.util.find_spec("ollama") is None:
-                print("\n❌ Ollama Python-Bibliothek nicht installiert.")
-                print("Bitte installieren: pip install ollama")
-                sys.exit(1)
-
-            print(
-                "\n⚠️  Keine geeigneten lokalen Ollama-Modelle gefunden (oder Ollama läuft nicht)!"
-            )
-            print("Installiere Modelle mit: ollama pull qwen2.5-coder:7b")
-            print("Befehl zum Starten: ollama serve")
-            sys.exit(1)
-
-        def display_model(m):
-            return (
-                m["name"],
-                f"Größe: {m['size_gb']:.1f} GB | Aktualisiert: {m['modified']}",
-            )
-
-        selected = select_from_list(
-            local_models,
-            display_func=display_model,
-            prompt="Wähle ein Modell",
-            title="LOKALE OLLAMA-MODELLE",
-        )
-
-        if selected:
-            print(f"✓ Ausgewählt: {selected['name']}")
-            return "ollama", selected["name"]
-
-        sys.exit(0)
-
     def load_module(self, module_name: str, module_config: dict[str, Any]):
         """Lädt Test-Modul dynamisch."""
         module_path = Path(module_config["path"])
@@ -374,7 +221,7 @@ class BenchmarkRunner:
                 run_config.force = True
 
             # Interactive selection
-            provider, model_id = self.select_provider(run_config.provider_type)
+            provider, model_id = ProviderSelector(self.config).select_provider(run_config.provider_type)
             if not provider or not model_id:
                 print("\n❌ Provider or Model could not be determined.")
                 return
@@ -434,7 +281,12 @@ class BenchmarkRunner:
         # Load internal module config to get benchmarks/contributions
         internal_config = load_module_config(Path(module_config["path"]))
 
-        benchmark_info = {
+        # Erhalte alle Top-Level-Keys aus beiden Config-Ebenen
+        benchmark_info = internal_config.copy()
+        benchmark_info.update(module_config)
+
+        # Überschreibe/Setze die spezifischen Laufzeit-Werte für den Runner
+        benchmark_info.update({
             "id": mod_id,
             "name": module_config.get("name", mod_id),
             "path": f"{module_config['path']}/assets",
@@ -445,7 +297,7 @@ class BenchmarkRunner:
             "min_runs": module_config.get("min_runs", 1),
             "benchmarks": internal_config.get("benchmarks", []),
             "scoring": internal_config.get("scoring", {}),
-        }
+        })
 
         if is_local:
             local_runner = LocalBenchmarkRunner(audit_mode=audit_mode)

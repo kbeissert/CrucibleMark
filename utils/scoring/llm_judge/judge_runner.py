@@ -1,3 +1,5 @@
+from __future__ import annotations
+from utils.constants import MS_PER_SECOND
 """
 LLM Judge Runner — orchestration layer.
 
@@ -16,7 +18,6 @@ Provider selection is driven entirely by config; no branching on provider
 name happens here beyond the lazy-import factory.
 """
 
-from __future__ import annotations
 
 import logging
 import time
@@ -493,7 +494,7 @@ class JudgeRunner:
         provider_response, provider_used, model_used = self._call_with_fallback(
             system_prompt, user_prompt
         )
-        judge_latency_ms = (time.monotonic() - t_start) * 1000.0
+        judge_latency_ms = (time.monotonic() - t_start) * MS_PER_SECOND
 
         if provider_response is None:
             return JudgeResult(

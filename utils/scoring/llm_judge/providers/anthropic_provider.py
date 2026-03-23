@@ -1,3 +1,4 @@
+from utils.constants import MS_PER_SECOND
 """
 Anthropic provider for the LLM Judge.
 Uses the official anthropic Python SDK.
@@ -61,7 +62,7 @@ class AnthropicProvider(LLMJudgeProvider):
             system=system_prompt,
             messages=[{"role": "user", "content": user_prompt}],
         )
-        latency_ms = (time.monotonic() - start) * 1000.0
+        latency_ms = (time.monotonic() - start) * MS_PER_SECOND
         raw_text: str = message.content[0].text if message.content else ""
         logger.debug(
             "Anthropic judge response received (model=%s, latency=%.0f ms)",

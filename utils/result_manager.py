@@ -44,23 +44,41 @@ class ResultManager:
     def _get_updated_fieldnames(self, csv_path: Path, new_keys: set[str]) -> list[str]:
         """Liest existierende Header und fügt neue Spalten hinzu.
         Garantiert immer die Existenz der llm_judge_* Spalten am Ende."""
-        judge_fields = [
-            "llm_judge_score",
-            "llm_judge_reasoning",
-            "llm_judge_latency_ms",
-            "llm_judge_provider_used",
-            "llm_judge_model_used",
-            "llm_judge_parse_success",
-            "scoring_method",
-            "judge_task_compliance",
-            "judge_output_quality",
-            "judge_standard_adherence",
-            "thought_tag_compliance",
-            "finish_reason",
-            "token_limit_cutoff",
-            "token_limit_fallback",
-            "token_limit_used",
+        import dataclasses
+        from schemas.result import BenchmarkResult
+        from utils.scoring.llm_judge.judge_parser import JudgeResult
+
+        # 1. Metriken und Judge-Suffixe aus dem Pydantic Benchmark Schema extrahieren
+        schema_props = list(BenchmarkResult.model_fields.keys())
+        end_metrics = [
+            k for k in schema_props
+            if "compliance" in k 
+            or k.startswith("token_limit_") 
+            or k == "finish_reason" 
+            or k.startswith("judge_")
         ]
+
+        # 2. Spezifische flache Judge-Felder generieren (gemäß judge_evaluator.py)
+        calc_judge_fields = []
+        for f in dataclasses.fields(JudgeResult):
+            name = f.name
+            if name.startswith("judge_"):
+                if name not in end_metrics:
+                    calc_judge_fields.append(f"llm_{name}")
+            else:
+                calc_judge_fields.append(f"llm_judge_{name}")
+
+        combined_fields = calc_judge_fields + end_metrics
+        if "scoring_method" not in combined_fields:
+            combined_fields.append("scoring_method")
+
+        # 3. Deduplizieren und Reihenfolge in judge_fields festhalten
+        judge_fields = []
+        seen = set()
+        for field in combined_fields:
+            if field not in seen:
+                judge_fields.append(field)
+                seen.add(field)
 
         new_keys.update(judge_fields)
 

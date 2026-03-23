@@ -1,3 +1,4 @@
+from utils.constants import MS_PER_SECOND
 """
 OpenAI provider for the LLM Judge.
 Uses the official openai Python SDK.
@@ -63,7 +64,7 @@ class OpenAIProvider(LLMJudgeProvider):
                 {"role": "user", "content": user_prompt},
             ],
         )
-        latency_ms = (time.monotonic() - start) * 1000.0
+        latency_ms = (time.monotonic() - start) * MS_PER_SECOND
         raw_text: str = ""
         if response.choices:
             raw_text = response.choices[0].message.content or ""

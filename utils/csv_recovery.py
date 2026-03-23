@@ -2,6 +2,7 @@
 Utility module for recovering and parsing robust benchmark CSV data.
 Handles heuristic extraction of data from malformed LLM outputs.
 """
+from utils.constants import MAX_PERCENTAGE
 
 from typing import Any, Dict, List, Optional
 from pathlib import Path
@@ -19,7 +20,6 @@ KNOWN_MODELS = [
     "gemini",
 ]
 
-MAX_PERCENTAGE = 100
 MIN_FLOATS_FOR_GUESS = 3
 
 
