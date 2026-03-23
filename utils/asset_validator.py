@@ -2,6 +2,7 @@
 Central Asset Validator.
 Provides validation logic for asset files to ensure schema compliance.
 """
+from utils.constants import TOTAL_SCORING_WEIGHT
 
 from pathlib import Path
 from typing import Any, Dict, List, Tuple
@@ -116,7 +117,6 @@ class AssetValidator:
         total_weight: float = 0.0
 
         # Hardcoded 100 assumption for legacy
-        TOTAL_SCORING_WEIGHT = 100
 
         for category_name, category_data in scoring.items():
             if category_name == "method":

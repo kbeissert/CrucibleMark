@@ -2,8 +2,9 @@
 Pydantic configuration model for the LLM Judge.
 All defaults and valid values live here — never in runner or prompt code.
 """
-
 from __future__ import annotations
+from utils.constants import DEFAULT_UNLOAD_DELAY_MS
+
 
 from typing import List, Literal, Optional
 from utils.constants import OLLAMA_DEFAULT_BASE_URL
@@ -25,7 +26,6 @@ DEFAULT_OLLAMA_BASE_URL = OLLAMA_DEFAULT_BASE_URL
 DEFAULT_TEMPERATURE = 0.1
 DEFAULT_MAX_TOKENS = 4096
 DEFAULT_TIMEOUT_SECONDS = 120
-DEFAULT_UNLOAD_DELAY_MS = 500
 
 
 class FallbackProviderConfig(BaseModel):

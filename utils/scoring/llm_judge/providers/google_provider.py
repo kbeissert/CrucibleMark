@@ -1,3 +1,4 @@
+from utils.constants import MS_PER_SECOND
 """
 Google Gemini provider for the LLM Judge.
 Uses the google.generativeai SDK.
@@ -73,7 +74,7 @@ class GoogleProvider(LLMJudgeProvider):
             generation_config=generation_config
         )
 
-        latency_ms = (time.monotonic() - start) * 1000.0
+        latency_ms = (time.monotonic() - start) * MS_PER_SECOND
 
         raw_text: str = ""
         try:

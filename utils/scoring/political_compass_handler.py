@@ -59,7 +59,7 @@ class PoliticalCompassHandler:
         End-to-end processing of Political Compass outputs.
         Replaces the verbose procedural reporting in both local and commercial runners.
         """
-        if not PCResultManager:
+        if PCResultManager is None:
             logger.warning(
                 "PoliticalCompassResultManager could not be imported. Skipping PC outputs."
             )
@@ -237,7 +237,7 @@ class PoliticalCompassHandler:
         forced_run = runs.get("forced", {})
         shift = report.get("shift", {})
 
-        if audit_mode and PCAuditLogWriter:
+        if audit_mode and PCAuditLogWriter is not None:
             try:
                 vanilla_for_audit = {
                     "score_x": vanilla_run.get("coordinates", {}).get("x", 0.0),
@@ -273,7 +273,7 @@ class PoliticalCompassHandler:
             except Exception as e:
                 logger.error("Political Compass Audit Error: %s", e)
 
-        if PCResultManager:
+        if PCResultManager is not None:
             try:
                 PCResultManager.save_leaderboard_csv(report, Path("benchmark_scores"))
             except Exception as e:

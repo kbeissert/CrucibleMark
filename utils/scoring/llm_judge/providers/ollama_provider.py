@@ -4,6 +4,9 @@ Communicates with a local Ollama instance via its REST API.
 No API key required; configurable base_url.
 """
 
+from utils.constants import DEFAULT_UNLOAD_DELAY_MS
+from utils.constants import MS_PER_SECOND
+
 import logging
 import time
 from typing import Any, Optional
@@ -78,7 +81,7 @@ class OllamaProvider(LLMJudgeProvider):
         start = time.monotonic()
         assert requests_module is not None; response = requests_module.post(url, json=payload, timeout=self._timeout)
         response.raise_for_status()
-        latency_ms = (time.monotonic() - start) * 1000.0
+        latency_ms = (time.monotonic() - start) * MS_PER_SECOND
         data = response.json()
         raw_text: str = data.get("message", {}).get("content", "")
         logger.debug(
@@ -117,7 +120,7 @@ class OllamaProvider(LLMJudgeProvider):
             logger.warning("Ollama health check failed: %s", exc)
             return False
 
-    def unload_model(self, model_id: str, unload_delay_ms: int = 500) -> bool:
+    def unload_model(self, model_id: str, unload_delay_ms: int = DEFAULT_UNLOAD_DELAY_MS) -> bool:
         """
         Evict a model from Ollama's VRAM by setting keep_alive to 0.
 
@@ -157,7 +160,7 @@ class OllamaProvider(LLMJudgeProvider):
                 resp.status_code,
             )
             if unload_delay_ms > 0:
-                time.sleep(unload_delay_ms / 1000.0)
+                time.sleep(unload_delay_ms / MS_PER_SECOND)
             return True
         except Exception as exc:  # pylint: disable=broad-exception-caught
             logger.warning("Ollama unload failed for model '%s': %s", model_id, exc)

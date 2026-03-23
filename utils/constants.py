@@ -31,3 +31,11 @@ class Colors:
 
 # Provider Endpoints
 OLLAMA_DEFAULT_BASE_URL = "http://localhost:11434"
+MS_PER_SECOND = 1000.0
+
+# Legacy Scoring Constants
+TOTAL_SCORING_WEIGHT = 100
+MAX_PERCENTAGE = 100
+
+# Provider Constants
+DEFAULT_UNLOAD_DELAY_MS = 500

@@ -1,3 +1,4 @@
+from utils.constants import MS_PER_SECOND
 import logging
 import time
 import json
@@ -54,7 +55,7 @@ def evaluate_with_judge(
             "module_id": eval_module_id,
             "rubric_override": asset_data.get("scoring", {}).get("rubric"),
             "tested_model_id": model,
-            "response_time_ms": result.get("execution_time", 0) * 1000.0,
+            "response_time_ms": result.get("execution_time", 0) * MS_PER_SECOND,
         }
         if provider:
             kwargs["tested_model_provider"] = provider

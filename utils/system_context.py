@@ -53,3 +53,5 @@ REGELN FÜR DEIN REVIEW IN BEZUG AUF CLOUD-HARDWARE:
 1. Mache unbedingt für den Leser klar, dass es sich hier um ein "Cloud-Modell" / "Proxy-Modell" handelt, auch wenn es über Ollama angebunden wurde.
 2. Erwähne auf keinen Fall lokale Hardware (wie "Apple Silicon M4" oder VRAM-Swapping-Risiken). Das Modell lief nicht lokal auf der Hardware des Nutzers! Die t/s geben hier nur die Netzwerk-Latenz zum Cloud-Anbieter wieder.
 3. Behandle die ermittelte Geschwindigkeit (t/s) daher lediglich unter dem Aspekt der "Netzwerkanbindung" oder "Cloud-Latenz", nicht als Hardware-Leistungs-Indikator des lokalen Systems."""
+
+        return ""
