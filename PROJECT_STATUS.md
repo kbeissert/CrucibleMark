@@ -1,10 +1,20 @@
 # PROJECT_STATUS.md
 
-**Last Updated:** 2026-03-18 **Current Version:** 3.0.0 (Safety & Refusal Architecture) **Status:** ✅ Production-Ready
+**Last Updated:** 2026-03-23
+**Current Version:** 3.1.0 (Audit- & Meta-Review Generation)
+**Status:** ✅ Production-Ready
 
 ______________________________________________________________________
 
 ## 🎯 Executive Summary
+CrucibleMark v3.1.0 konzentriert sich auf die radikale Verbesserung des "LLM-as-a-Judge"-Flows und die Eliminierung von Judge-Halluzinationen in den finalen Audit- und Trend-Reports. Das Framework nutzt nun hochgradig kalibrierte Prompt-Mechaniken, um Markdown-Dokumente fehlerfrei zu parsen und Modellen keine menschlich-aktive Denkweise mehr anzudichten (Grammatik-Korrekturen und Passiv-Zwang).
+
+**Key Achievements (v3.1.0):**
+- ✅ **Meta-Reviewer Stabilisierung & Anchoring:** Der Off-by-One Fehler beim Einlesen langer Markdown-Audit-Logs durch den Judge (z.B. Gemini) wurde behoben. Strukturierte "ID-Anchor" (wie z.B. 7.2.001) wurden in der Prompt-Datei implementiert, damit das Modell auch bei hunderten Zeilen Log-Code fehlerfrei trackt.
+- ✅ **Grammar-Restrictions gegen aktive Halluzination:** Der Meta-Review-Prompt forciert nun striktes Passiv- und Objekt-Wording (z.B. verbietet Wörter wie "versucht", "scheitert", "weicht aus"), um insbesondere im Zusammenfassungs-Bereich (Fazit) zu verhindern, dass die Review-Modelle dem getesteten LLM eigenständigen menschlichen Willen oder Agenden andichten.
+- ✅ **Automatisierte Metadaten-Extraktion:** Laufzeit-Warnings (`⚠️ Anomaly Verification Protocol`), Hard-Refusal Raten und Token-Fallback Informationen werden per Regex in den Reports identifiziert und direkt als Kontext für den LLM-Judge bereitgestellt. Der Meta-Reviewer kann so architektonische Limits und Zensurunterschiede bei der finalen Bewertung optimal einordnen.
+
+**Previous Version (v3.0.0 Safety & Refusal Architecture):**
 CrucibleMark v3.0.0 stellt einen evolutionären Sprung in der Modellauswertung dar. Die Evaluierung von stark regulierten Modellen (z.B. Claude, Gemini) wurde durch eine neuartige **3-Tier Refusal Engine** massiv gehärtet. Das Framework ist nun in der Lage, Zensur-Blockaden proaktiv durch schrittweises "Progressive Temperature Scaling" und System-Injektionen zu durchbrechen.
 
 **Key Achievements (v3.0.0):**

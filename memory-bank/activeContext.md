@@ -1,5 +1,5 @@
 # Active Context
 
-- Abgeschlossen: Metakognitions-Prüfung (`<thought>`-Tags) implementiert, CLI-Scoring auf natives llm_judge überführt, Judge Parser-Fallbacks eingebaut und Meta-Review Prompting in YAML exportiert.
-- Nächster Schritt: Cross-Model-Runs für `reasoning_logic` und fehlende `code_quality`-Logs via `--force` erfolgreich abschließen, um alle neuen Leaderboard-Felder zu füllen.
-- Offen/Risiko: Tiefe API-Token-Limits können bei alten Modellen trotz 4096-Erhöhung große JSON-Scoring-Strukturen abbrechen.
+- Abgeschlossen: Markdown-Parser des LLM-Judges durch spezifische ID-Anker (wie 7.2.001) in der Prompt-Config stabilisiert (Off-by-One Fehler behoben). Strikte Grammatik-Formatierung (Passiv) im Fazit erzwungen, um aktive Halluzinationen zu verhindern.
+- Nächster Schritt: Evaluation weiterer Modelle oder Finalisierung des Political Compass Release.
+- Offen/Risiko: Keine.

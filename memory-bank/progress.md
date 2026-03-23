@@ -12,6 +12,7 @@
 
 ## Abgeschlossen (Meilensteine)
 - [DONE] Local/Commercial Model Versioning bereinigt (`latest` & `k.A.` Entries), Regex Parser in `model_utils.py` für O1/O3/Grok + korrekte Ollama-Hash-Auflösung von Local-Community Models implantiert.
+- [DONE] Off-by-one Parsing Bug & Grammatik Halluzinationen im LLM Judge (meta_reviewer_prompt.yaml) durch strukturelle Anker gelöst.
 - [DONE] Pydantic Validation Error in `BenchmarkResult` für `model_version` (`None` -> `"unknown"`) gefixt und Lazy-Import in `xai.py` ausgebessert.
 - [DONE] LLM Judge Bugfix (0% vs 20% Base-Score behoben, Skala korrigiert auf 0-5).
 - [DONE] Verwaisten Golden-Standard Ordner entfernt und Makefile-Cleans nachgezogen.

@@ -41,16 +41,6 @@ Das Framework wehrt sich aktiv gegen monolithische, überlange Skripte ("God-Scr
 - **Aktives Monitoring:** Bei Weiterentwicklungen wird die Skriptlänge/-komplexität überwacht. Wird ein Skript zum "God-Script", muss sofort gegengesteuert werden.
 - **Submodul-Kapselung:** Wachsende Skripte werden logisch zerlegt. Funktionalitäten werden in kleine, fokussierte Module gekapselt und in das Hauptskript importiert.
 
-### 🛑 Dritte Regel: Configuration-Driven & No Magic Numbers
-Das Projekt wird strikt über Konfigurationen gesteuert.
-- **Keine Magic Numbers:** Alle Zahlen, Formeln, Metriken und statischen Konstanten dürfen **niemals** hartkodiert im Code (Python-Skripte) stehen.
-- **Auslagerung:** Solche Werte werden in zentrale Konfigurationsdateien (YAML) ausgelagert und importiert.
-
-### 🛑 Vierte Regel: Anti-God-Script & Modularisierung
-Das Framework wehrt sich aktiv gegen monolithische, überlange Skripte ("God-Scripts").
-- **Aktives Monitoring:** Bei Weiterentwicklungen wird die Skriptlänge/-komplexität überwacht. Wird ein Skript zum "God-Script", muss sofort gegengesteuert werden.
-- **Submodul-Kapselung:** Wachsende Skripte werden logisch zerlegt. Funktionalitäten werden in kleine, fokussierte Module gekapselt und in das Hauptskript importiert.
-
 CrucibleMark folgt einer **Plugin-basierten Architektur**, bei der Benchmark-Module vom Core-Framework durch Konfigurations-Contracts entkoppelt sind.
 
 ### Design-Prinzipien
@@ -157,8 +147,7 @@ CrucibleMark verfolgt den Architektur-Ansatz, dass alle Auswertungen an das Hard
 Dies wird durch den **`SystemContextManager` (`utils/system_context.py`)** umgesetzt:
 - **T/s Berechnung:** Dieser berechnet zentral die `tokens_per_second` (T/s) für alle Benchmark-Runs (aus Execution-Time und Output-Tokenanzahl).
 - **Prompt-Injection:** Der Manager holt dynamische Rahmendaten über das Testsystem auf Basis des in der `benchmark_config.yaml` festgelegten `runner_environment` passend zum `run_type` (Local vs Commercial).
-- **"Prompt-as-Config":** System-Prompts für textgenerierende Pipeline-Funktionen (wie z.B. für den Meta-Reviewer) sind vollständig **ausgelagert (z.B. nach `config/meta_reviewer_prompt.yaml`)**. Der System-Code führt lediglich ein `.format()` aus und injiziert Hardware-Variablen und Logs der Ergebnisse in das YAML-Template.
-______________________________________________________________________
+- **"Prompt-as-Config":** System-Prompts für textgenerierende Pipeline-Funktionen (wie z.B. für den Meta-Reviewer) sind vollständig **ausgelagert (z.B. nach `config/meta_reviewer_prompt.yaml`)**. Der System-Code führt lediglich ein `.format()` aus und injiziert Hardware-Variablen und Logs der Ergebnisse in das YAML-Template.- **Data-Coupling & Regex-Integration:** Um Bewertungs-LLMs nicht blind raten zu lassen, injiziert das System Metadaten (wie Token-Limits, Loop-Errors oder ausgelöste Safety-Protokolle) via dedizierter Warnblöcke direkt in die auszuwertenden Markdown-Logs. Der Evaluierungs-Flow (Judge/Reviewer) parst diese Metadaten beim Einlesen über vordefinierte Regex-Muster oder ID-Anker (z.B. Off-by-one Protections wie "7.2.001"). Dies befähigt den Judge dazu, Modelle ganzheitlichinklusive technischer Flaws anstatt nur auf Basis der reinen Textausgaben zu bewerten. Und ein hartes Grammar-Enforcement im Prompt verhindert, dass Halluzinationen über einen aktiven Willen der KI-Modelle entstehen.______________________________________________________________________
 
 ## 📦 Layer 2: Benchmark Modules
 
