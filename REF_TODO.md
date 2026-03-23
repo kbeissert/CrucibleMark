@@ -2,6 +2,11 @@
 
 ## ✅ COMPLETED
 
+### Audit & Meta-Review Generation (v3.1.0)
+- [x] **Meta-Reviewer Anchoring:** Off-by-one Parsing Bugs behoben (via durchgängiger YAML ID-Anker).
+- [x] **Anti-Halluzinations-Schutz (Grammar Restriktionen):** Meta-Review-Prompt um harten Passiv-Zwang ergänzt, um Anthropomorphisierung im Fazit zu verhindern. 
+- [x] **Automatisierte Metadaten-Extraktion:** Regex-basiertes Herausfiltern von API-Limits, Endlosschleifen und Safety-Protokollen (Warnings) in den Audit-Logs für kontextsensitive Evaluierung.
+
 ### Architecture Hardening & Anti-Censorship (v3.0.0)
 - [x] **3-Tier Refusal Framework:** Intelligentes Abfangen von Hard-/Soft-Refusals und API-Timeouts.
 - [x] **Progressive Temperature Loop:** `while True`-Retry-Block im Execution-Layer mit schrittweisen Temperaturerhöhungen (0.1, 0.4, 0.7) als Safety-Bypass.
@@ -44,7 +49,6 @@ ______________________________________________________________________
 ## 🔄 IN PROGRESS
 
 ### Planned for Next Session
-- [ ] **LLM Judge: Native JSON Output**: Refactoring `judge_parser.py` and Prompts
 - [ ] **LLM Judge: Batch-Mode (Phase 3.5)**: Optimize token consumption by bunching requests
 - [ ] **Volldurchlauf aller lokalen Modelle**: Generierung eines echten finalen Leaderboards (43/43)
 - [ ] **Re-run Reasoning Logic**: Verfälschte 0-Punkte für lokale Modelle bereinigen.
