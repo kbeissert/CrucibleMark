@@ -16,13 +16,13 @@ import pytest
 from utils.constants import OLLAMA_DEFAULT_BASE_URL
 
 from utils.scoring.llm_judge.judge_config import (
-    FallbackProviderConfig,
     LLMJudgeConfig,
     ProviderConfig,
     ScoringConfig,
 )
 from utils.scoring.llm_judge.judge_handoff import PendingJudgeResult
 from utils.scoring.llm_judge.judge_runner import JudgeRunner, _should_unload
+from utils.scoring.exceptions import JudgeUnavailableError
 from utils.scoring.llm_judge.providers.base_provider import JudgeProviderResponse
 
 # ---------------------------------------------------------------------------
@@ -207,117 +207,6 @@ class TestShouldUnloadHelper:
 
 
 class TestProviderFallback:
-    """Fallback triggers on health_check=False or complete() exception."""
-
-    def test_fallback_triggers_on_health_check_false(self):
-        """When primary health_check() returns False, fallback is used."""
-        config = _make_config(provider_name="anthropic", with_fallback=True)
-        runner = JudgeRunner(config)
-
-        # Primary: health_check fails
-        primary = MagicMock()
-        primary.health_check.return_value = False
-        primary.complete.return_value = (
-            _make_provider_response()
-        )  # should not be called
-        _inject_provider(runner, primary)
-
-        # Fallback: works fine
-        fallback = MagicMock()
-        fallback.complete.return_value = _make_provider_response(
-            raw_text="REASONING: fallback used.\nSCORE: 3",
-            provider_name="ollama",
-        )
-        _inject_fallback(runner, fallback)
-
-        result = runner.score("task", "resp", "golden", "ux_writing")
-
-        primary.complete.assert_not_called()
-        fallback.complete.assert_called_once()
-        assert result.score == 3
-        assert result.judge_provider_used == "ollama"
-
-    def test_fallback_triggers_on_complete_exception(self):
-        """When primary complete() raises, fallback is used."""
-        config = _make_config(provider_name="anthropic", with_fallback=True)
-        runner = JudgeRunner(config)
-
-        primary = MagicMock()
-        primary.health_check.return_value = True
-        primary.complete.side_effect = ConnectionError("Network unreachable")
-        _inject_provider(runner, primary)
-
-        fallback = MagicMock()
-        fallback.complete.return_value = _make_provider_response(
-            raw_text="REASONING: fallback succeeded.\nSCORE: 4",
-            provider_name="ollama",
-        )
-        _inject_fallback(runner, fallback)
-
-        result = runner.score("task", "resp", "golden", "ux_writing")
-
-        fallback.complete.assert_called_once()
-        assert result.score == 4
-        assert result.judge_provider_used == "ollama"
-
-    def test_no_fallback_configured_returns_none_score(self):
-        """When no fallback is configured and primary fails, score=None is returned."""
-        config = _make_config(provider_name="anthropic", with_fallback=False)
-        runner = JudgeRunner(config)
-
-        primary = MagicMock()
-        primary.health_check.return_value = False
-        _inject_provider(runner, primary)
-
-        result = runner.score("task", "resp", "golden", "ux_writing")
-
-        assert result.score is None
-        assert result.parse_success is False
-
-    def test_primary_used_when_healthy(self):
-        """When primary is healthy, fallback is never invoked."""
-        config = _make_config(provider_name="anthropic", with_fallback=True)
-        runner = JudgeRunner(config)
-
-        primary = MagicMock()
-        primary.health_check.return_value = True
-        primary.complete.return_value = _make_provider_response(
-            raw_text="REASONING: primary ok.\nSCORE: 5"
-        )
-        _inject_provider(runner, primary)
-
-        fallback = MagicMock()
-        _inject_fallback(runner, fallback)
-
-        result = runner.score("task", "resp", "golden", "ux_writing")
-
-        fallback.complete.assert_not_called()
-        assert result.score == 5
-        assert result.judge_provider_used == "anthropic"
-
-
-class TestFallbackNotTriggeredOnParseError:
-    """Parse errors must NOT trigger the fallback provider."""
-
-    def test_parse_error_leaves_fallback_unused(self):
-        """
-        If complete() returns successfully but parsing fails,
-        the fallback must NOT be called.
-        """
-        config = _make_config(provider_name="anthropic", with_fallback=True)
-        runner = JudgeRunner(config)
-
-        primary = MagicMock()
-        primary.health_check.return_value = True
-        # Intentionally unparseable response
-        primary.complete.return_value = _make_provider_response(
-            raw_text="I cannot decide on a score today."
-        )
-        _inject_provider(runner, primary)
-
-        fallback = MagicMock()
-        _inject_fallback(runner, fallback)
-
         result = runner.score("task", "resp", "golden", "ux_writing")
 
         fallback.complete.assert_not_called()
@@ -471,3 +360,29 @@ class TestJudgeMetadataInResult:
         assert "judge_latency_ms" in d
         assert d["judge_latency_ms"] is not None
         assert "judge_provider_used" in d
+
+class TestJudgeRunnerExceptions:
+    """Tests strict fail-fast mode instead of fallback."""
+
+    def test_judge_raises_on_health_check_false(self):
+        config = _make_config(provider_name="anthropic")
+        runner = JudgeRunner(config)
+
+        primary = MagicMock()
+        primary.health_check.return_value = False
+        _inject_provider(runner, primary)
+
+        with pytest.raises(JudgeUnavailableError):
+            runner.score("task", "resp", "golden", "ux_writing")
+
+    def test_judge_raises_on_complete_exception(self):
+        config = _make_config(provider_name="anthropic")
+        runner = JudgeRunner(config)
+
+        primary = MagicMock()
+        primary.health_check.return_value = True
+        primary.complete.side_effect = ConnectionError("Network unreachable")
+        _inject_provider(runner, primary)
+
+        with pytest.raises(JudgeUnavailableError):
+            runner.score("task", "resp", "golden", "ux_writing")

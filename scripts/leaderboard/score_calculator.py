@@ -9,7 +9,7 @@ from typing import Any, Dict, Tuple
 import pandas as pd
 
 # Import constants and config logic
-from .config import ROOT_DIR
+from .config import ROOT_DIR, config
 
 # Ensure root dir in path for local imports
 if str(ROOT_DIR) not in sys.path:
@@ -317,20 +317,35 @@ def _aggregate_basic_stats(
     if "performance_ratio" in stats.columns:
         stats["performance_ratio"] = stats["performance_ratio"].fillna(0.0)
 
-    # 3. Judge Stats - From ALL runs
+    # 3. Judge Stats - From valid/applicable runs only
     if "llm_judge_score" in df.columns:
+        # Load applicable_modules from config
+        llm_judge_cfg = config.get("llm_judge", {})
+        applicable_modules = llm_judge_cfg.get("applicable_modules", [])
+
+        # Map module UUIDs to their category names
+        applicable_categories = set()
+        for mod_key, mod_data in modules_config.items():
+            if mod_key in applicable_modules:
+                name = mod_data.get("name", mod_key)
+                applicable_categories.add(name)
+
+        # Filter dataframe for coverage and mean computation
+        df_judge = df[df["category"].isin(applicable_categories)]
 
         def calc_coverage(x):
             return x.notna().sum() / len(x) if len(x) > 0 else 0.0
 
         judge_stats = (
-            df.groupby(["model", "model_version", "type"])["llm_judge_score"]
+            df_judge.groupby(["model", "model_version", "type"])["llm_judge_score"]
             .agg(llm_judge_avg="mean", judge_coverage=calc_coverage)
             .reset_index()
         )
         stats = pd.merge(
             stats, judge_stats, on=["model", "model_version", "type"], how="left"
         )
+        # Ensure we fill judge_coverage with 0.0 if not available for a model
+        stats["judge_coverage"] = stats["judge_coverage"].fillna(0.0)
     else:
         stats["llm_judge_avg"] = None
         stats["judge_coverage"] = 0.0
