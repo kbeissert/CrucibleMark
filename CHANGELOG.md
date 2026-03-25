@@ -55,6 +55,37 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 - **Pydantic Serialization Bug:** Ein hartnäckiger `AttributeError` im Anomaly Checker (`verify_compass_anomalies.py`) beim Nested-Parsing von `BenchmarkResult.get()` wurde durch nativ robustes `.raw_response` JSON-Loading behoben.
 - **Checkpointer Stability:** Aufgeklärte Architektur für das nahtlose Wiederaufsetzen von durch Token-Limits oder Budget-Caps abgebrochenen Testläufen.
 
+## [v2.5.0] - 2026-03-14
+
+### Added
+- **XAI / Grok Support:** Integration von XAI Grok Modellen inkl. API Pricing Tracking.
+- **Cascading Token Fallback:** Implementierung eines kaskadierenden Token-Fallback-Systems zur besseren Fehlerabfangung mit Verhaltens-Metadaten.
+
+### Changed
+- **Meta-Reviewer:** Verbesserung der Erkennung von System-Info-Blöcken durch den Meta-Reviewer.
+- **Anthropic Stabilität:** Das Timeout für den Anthropic-Client wurde auf 600s erhöht, um Abbrüche bei langen Generierungen zu vermeiden. Automatische Retry-Logs wurden im Konsolen-Output unterdrückt.
+
+### Removed
+- **Unused Pipeline Logic:** Die reine dynamische Golden Standard Validierungsausgabe sowie alte ungenutzte Pipelines (`refactor(core)`) wurden entfernt.
+
+## [v2.3.0] - 2026-03-12
+
+### Added
+- **Audit Mode (Robust):** Einführung eines vollumfänglichen Audit-Modus. Dieser protokolliert ausgeführte Prompts, LLM-Judge Fingerprinting, komplette Reasoning Trails sowie die Kategorie-Sub-Scores der Regex-Evaluationen.
+- **Google / Gemini Provider:** Native Unterstützung von Google Modellen für LLM-Judge Pipelines ergänzt.
+- **Hybrid Scoring Architecture:** Implementierung einer modular gewichteten Hybrid-Scoring Architektur (0.10 Regex / 0.90 Judge) für präzisere semantische Auswertungen.
+
+### Fixed
+- **LLM Judge Bugfixes:** Behebung von Routing-, Caching- und Parsing-Bugs im Judge sowie Schutz vor "Reasoning Truncation".
+
+## [v2.2.0] - 2026-03-08
+
+### Added
+- **CLI Benchmark Integration:** Das CLI v2 Benchmark wurde gehärtet (inkl. 6-Task YAML-Unterstützung) und nativ in die "Standard Base Test" Architektur integriert.
+
+### Fixed
+- **Ollama Token Limits:** Reduzierung der Token-Limits für lokale Reasoning-Modelle von 32k auf 8k, um "VRAM Swap" System-Freezes auf macOS Maschinen zu verhindern.
+
 ## [v2.1.1] - 2026-02-14
 
 ### Added
@@ -104,3 +135,25 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 - `reasoning_5e_001`: Good responses now score appropriately (was 15%)
 - `metacog_004`: Binary % reduced from 31% to ~20%
+
+## [v1.1.3] - 2026-02-11
+
+### Added
+- **Adaptive Pause System:** Implementierung eines adaptiven Pause-Systems für den Benchmark inkl. Dev Mode Unterstützung.
+- **Probe/Warm-up:** Separation von Load-Time Tracking und Warm-up Probes für genauere Statistik-Erfassungen.
+
+### Fixed
+- **Code Quality:** Stabilitätsverbesserungen im Code Quality Modul, speziell für kleinere Modelle. Kompatibilitätsfix für DeepSeek-R1.
+
+## [v1.1.0] - 2026-02-03
+
+### Changed
+- **Leaderboard V1.1 Overhaul:** Umstellung auf V1.1 Leaderboards mit neuen Aggregations-Metriken und Kosten-Analysen in USD/1K Tokens.
+- **Golden Standard:** Stabilisierung der Golden Standard Generation für die kommerziellen Modelle.
+
+## [v1.0.0] - 2026-02-03
+
+### Added
+- **Initial Production Release:** Einführung der Basis-Architektur (`run_commercial_benchmark`, `run_local_benchmark`).
+- **Political Compass:** Implementierung und Stabilisierung der v3.0 Political Compass Metriken inkl. Mock-Testing.
+- **Last-Hyphen-Rule:** Dynamische Asset-Gruppierung basierend auf der "Last-Hyphen-Rule" im Leaderboard.
