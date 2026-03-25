@@ -5,7 +5,6 @@ from .mistral import MistralClient
 from .openai import OpenAIClient
 from .google import GoogleClient
 from .xai import XAIClient
-
 __all__ = [
     "BaseProviderClient",
     "OllamaClient",

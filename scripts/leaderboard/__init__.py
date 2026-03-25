@@ -7,12 +7,9 @@ Usage:
     main()
 """
 
-try:
-    from pathlib import Path
-    import pandas as pd
-    import re
-except ImportError:
-    pass
+from pathlib import Path
+import pandas as pd
+import re
 
 # Import internal modules
 from .config import config
@@ -23,14 +20,11 @@ from .formatter import assign_rank_and_badges, print_leaderboard_table
 from .exporter import export_to_csv
 
 # pylint: disable=import-error
-try:
-    from utils.module_registry import (
-        get_active_modules,
-        get_module_test_count,
-    )  # noqa: E402
-    from utils.model_utils import format_version_hash_for_display  # noqa: E402
-except ImportError:
-    pass
+from utils.module_registry import (
+    get_active_modules,
+    get_module_test_count,
+)  # noqa: E402
+from utils.model_utils import format_version_hash_for_display  # noqa: E402
 # pylint: enable=import-error
 
 ROOT_DIR = Path(__file__).resolve().parent.parent.parent
@@ -138,7 +132,7 @@ def main(print_table: bool = True) -> Optional[pd.DataFrame]:
     df = load_benchmark_data()
     if df.empty:
         print("No data available for leaderboard.")
-        return
+        return None
 
     # 2. Prepare Configs
     # Build simplified module config map for scoring logic

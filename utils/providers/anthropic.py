@@ -2,56 +2,33 @@
 Provider-spezifische LLM Clients
 Getrennte Implementierungen für Ollama, Anthropic, Mistral
 """
-
-import os
 import time
 import logging
-from typing import Any, List, Optional, Callable, Dict
-
-from utils.ollama_config import CODING_BENCHMARK_OPTIONS, CREATIVE_BENCHMARK_OPTIONS
-from utils.constants import MAX_TOKENS_ANTHROPIC, DEFAULT_MISTRAL_MODEL
+from typing import Any, List, Optional, Callable
+from utils.constants import MAX_TOKENS_ANTHROPIC
 from utils.env_utils import get_required_env
-from utils.model_utils import is_reasoning_model
-
 # Optional Provider Imports
 try:
     pass
 except ImportError:
     ollama = None
-
 try:
     import anthropic
 except ImportError:
     anthropic = None
-
 try:
     pass
 except ImportError:
     Mistral = None
-
 try:
     pass
 except ImportError:
     OpenAI = None
-
-import warnings
-
-try:
-    with warnings.catch_warnings():
-        warnings.simplefilter("ignore")
-        pass
-except ImportError:
-    genai = None
-
 # Configure logging
 logger = logging.getLogger(__name__)
-
-
 from utils.providers.base import BaseProviderClient
-
 class AnthropicClient(BaseProviderClient):
     """Anthropic Claude Provider Client"""
-
     def __init__(self, config: dict[str, Any]):
         super().__init__(config)
         self._client = None
@@ -59,21 +36,18 @@ class AnthropicClient(BaseProviderClient):
         self.min_request_interval = self.config.get("anthropic", {}).get(
             "min_request_interval", 0.2
         )  # Default: 0.2s between requests
-
     @property
     def client(self):
         """Lazy-loaded Anthropic Client"""
         if self._client is None:
             if anthropic is None:
                 raise ImportError("Library 'anthropic' not installed.")
-
             api_key = get_required_env(
                 "ANTHROPIC_API_KEY", "ANTHROPIC_API_KEY environment variable not set"
             )
             # timeout raised to 600s because huge 8000+ token generations can easily take 3-5 minutes
             self._client = anthropic.Anthropic(api_key=api_key, timeout=600.0)
         return self._client
-
     def is_accessible(self) -> bool:
         """Prüft Zugang zu Anthropic API durch Test-Request."""
         try:
@@ -90,16 +64,11 @@ class AnthropicClient(BaseProviderClient):
         except Exception as e:
             logger.debug("Anthropic Access Check Failed: %s", e)
             return False
-
     def _resolve_model(self, model: str) -> str:
-        """Löst Modell-Name auf (Config-Fallback)"""
-        # Nur wenn kein Modell oder der generische Provider-Name übergeben wurde, Fallback nutzen.
-        if not model or model == "claude":
-            return self.config.get("anthropic", {}).get(
-                "model", "claude-3-5-sonnet-20241022"
-            )
+        """Stellt sicher, dass ein konkretes Modell übergeben wurde."""
+        if not model or model.lower() == "anthropic":
+            raise ValueError(f"No specific Anthropic model provided. Received: '{model}'. A concrete model name must be provided (e.g. 'claude-haiku-4-5-20251001').")
         return model
-
     def query(
         self,
         model: str,
@@ -115,26 +84,21 @@ class AnthropicClient(BaseProviderClient):
             sleep_time = self.min_request_interval - elapsed
             logger.debug(f"⏱️ Rate limit protection: sleeping {sleep_time:.1f}s")
             time.sleep(sleep_time)
-
         self.last_request_time = time.time()
-
         try:
             model = self._resolve_model(model)
-
             # Default to config, but override with kwargs if present
             max_tokens = kwargs.get("max_tokens")
             if not max_tokens:
                 max_tokens = self.config.get("anthropic", {}).get(
                     "max_tokens", MAX_TOKENS_ANTHROPIC
                 )
-
             # Note: Streaming not implemented yet for Anthropic in this wrapper
             func_kwargs = {
                 "model": model,
                 "temperature": temperature,
                 "messages": [{"role": "user", "content": prompt}],
             }
-
             response, used_max_tokens, fallback_triggered = self._execute_with_token_fallback(
                 func=self.client.messages.create,
                 token_param_name="max_tokens",
@@ -142,7 +106,6 @@ class AnthropicClient(BaseProviderClient):
                 error_keywords=["max_tokens"],
                 func_kwargs=func_kwargs
             )
-
             # Capture Metadata
             self.last_response_metadata = {
                 "model": response.model,
@@ -152,19 +115,16 @@ class AnthropicClient(BaseProviderClient):
                 "token_limit_fallback": fallback_triggered,
                 "token_limit_used": used_max_tokens,
             }
-
             if (
                 stream_handler
                 and response.content
                 and hasattr(response.content[0], "text")
             ):
                 stream_handler(response.content[0].text)
-
             return response.content[0].text
         except Exception:
             # Let RetryHandler handle logging
             raise
-
     def get_available_models(self) -> List[str]:
         """Listet verfügbare Claude-Modelle"""
         return [
@@ -172,5 +132,3 @@ class AnthropicClient(BaseProviderClient):
             "claude-opus-4-5-20251101",
             "claude-3-haiku-20240307",
         ]
-
-

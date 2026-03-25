@@ -48,13 +48,6 @@ class ProviderConfig(BaseModel):
             "before the judge model is loaded. Ignored for cloud providers."
         ),
     )
-    fallback: Optional[FallbackProviderConfig] = Field(
-        None,
-        description=(
-            "Optional fallback provider. When absent, a primary failure is "
-            "logged and the result carries score=None."
-        ),
-    )
 
 
 class ScoringConfig(BaseModel):
