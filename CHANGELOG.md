@@ -157,3 +157,43 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 - **Initial Production Release:** Einführung der Basis-Architektur (`run_commercial_benchmark`, `run_local_benchmark`).
 - **Political Compass:** Implementierung und Stabilisierung der v3.0 Political Compass Metriken inkl. Mock-Testing.
 - **Last-Hyphen-Rule:** Dynamische Asset-Gruppierung basierend auf der "Last-Hyphen-Rule" im Leaderboard.
+
+## [v0.9.8] - 2026-01-29
+
+### Added
+- **Drift Detection:** Einführung eines Drift Detection Systems.
+- **Checkpoint System:** Ein neues Checkpoint-System, um bei API-Ausfällen den Fortschritt zu sichern.
+
+## [v0.9.6] - 2026-01-28
+
+### Changed
+- **MVC Architecture:** Vollständige Migration auf die Core/MVC (Model-View-Controller) Architektur.
+
+### Fixed
+- **Stability:** Behebung von Benchmark-Stabilitätsproblemen, Infinite Loops und Pfadauflösungsfehlern.
+
+## [v0.9.5] - 2026-01-28
+
+### Added
+- **Cultural Intelligence:** Das Modul 5 (Cultural Intelligence) wurde finalisiert (neue Assets und gefestigtes Scoring).
+
+## [v0.9.0] - 2026-01-23
+
+### Changed
+- **Framework Refactoring Complete:** Abschluss des großen Refactorings; die neue `BaseBenchmarkRunner`-Architektur für kommerzielle und lokale Modelle wurde als Baseline etabliert.
+
+## [v0.5.0] - 2026-01-17
+
+### Added
+- **Gamification & Badges:** Einführung von gamifizierten Badges und Meta-Metriken ins Leaderboard.
+
+## [v0.3.0-beta] - 2025-12-28
+
+### Added
+- **Documentation Quality Modul:** Ein neues Modul wurde hinzugefügt zur Untersuchung der Dokumentationsqualität.
+- **Expert Difficulty:** Anpassung der UX-Writing Assets an ein 4-stufiges Schwierigkeitssystem (inkl. "Expert Level").
+
+## [v0.2.0-beta] - 2025-12-27
+
+### Added
+- **Initial Release:** Initialer Startpunkt von CrucibleMark (mit grundlegenden Benchmarks zu Security, API Design und Code Quality).
