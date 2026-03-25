@@ -92,6 +92,11 @@ def process_model_review(model_dir: Path, csv_data: str, client: LLMClient, prov
             system_info_match = re.search(r'> \[!(?:WARNING|CAUTION)\].*', content)
             system_info_text = f"\n\n{system_info_match.group(0)}" if system_info_match else ""
 
+            # Suche explizit nach harten Safety-Filter Blöcken, die in "2. Model Response" auftauchen
+            safety_filter_match = re.search(r'## 2\. Model.*?Error: Content blocked by safety filters\.', content, re.DOTALL)
+            if safety_filter_match:
+                system_info_text += "\n\n> ⚠️ **[SAFETY FILTER TRIGGERED]** The model refused to answer due to extreme safety filters."
+
             if is_bias_file:
                 extracted_logs.append(f"--- Datei: {md_file.name} ---\n{content}")
             elif judge_section_match:
