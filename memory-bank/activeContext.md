@@ -1,3 +1,3 @@
-- Abgeschlossen: Runner (`run_local_benchmark.py` & `run_commercial_benchmark.py`) zu einem zentralen `UnifiedBenchmarkRunner` konsolidiert. Codebase mit Fokus auf Typing (Pylance) und Linting (Pylint) gehärtet. Skript-Metadaten (.prompt.md) standardisiert.
-- Nächster Schritt: Finale Systemtests oder Start des nächsten Moduls gemäß Roadmap.
+- Abgeschlossen: Provider APIs (`utils/providers/*`) radikal auf strikte SSOT & "Fail-Fast"-Architektur (ohne versteckte Modell-Fallbacks) refaktoriert, Pylint 10.00/10 Score erreicht und Pylance-Stolpersteine im Google SDK behoben.
+- Nächster Schritt: Finale E2E Systemtests (Benchmark Run) durchführen, um sicherzustellen, dass die Fallback-Bereinigung keine Laufzeitfehler bei korrekter Konfiguration erzeugt.
 - Offen/Risiko: Keine.

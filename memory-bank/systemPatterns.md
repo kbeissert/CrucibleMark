@@ -6,6 +6,7 @@
 
 ## 🛑 ZWEITE ARCHITEKTUR-REGEL: Single Source of Truth (SSOT), DRY & SRP
 - **Logische Exklusivität:** Jede spezifische Funktionalität hat genau **ein** zuständiges Modul.
+- **Fail-Fast ohne Fallback:** Versteckte "Convenience Fallbacks" in internen Libraries oder API-Wrappern (z.B. ein leeres `"claude"` Model einfach auf `claude-3-5-sonnet` leiten) sind **strikt verboten**. Wenn Config-Parameter fehlen oder falsch sind, bricht das System hart ab (`ValueError`).
 - **Wiederverwendung vor Neuerfindung:** Wird eine Funktion anderswo gebraucht, wird das Modul importiert – niemals dupliziert.
 - **Erweiterung (Open/Closed):** Fehlt dem Modul eine Facette, wird es selbst intelligent erweitert.
 
