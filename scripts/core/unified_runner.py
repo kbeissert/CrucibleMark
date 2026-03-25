@@ -21,6 +21,7 @@ from utils.benchmark_utils import discover_assets, load_asset_yaml
 from utils.logging_config import setup_logging
 from utils.model_utils import get_model_version
 from utils.scoring.judge_evaluator import evaluate_with_judge, generate_audit_log
+from utils.scoring.exceptions import JudgeUnavailableError
 from utils.adaptive_pause import AdaptivePauseCalculator, BenchmarkMode
 from utils.rate_limiter import RateLimiter
 from utils.scoring_utils import calculate_score_contributions
@@ -185,7 +186,7 @@ class UnifiedBenchmarkRunner(BaseBenchmarkRunner):
                 return cached
 
         if not is_local and run_limiter:
-            run_limiter.wait_if_needed(provider)
+            run_limiter.wait_for_slot()
 
         start_time = time.time()
         try:
@@ -240,7 +241,7 @@ class UnifiedBenchmarkRunner(BaseBenchmarkRunner):
             judge_cfg_dict.get("applicable_modules") or []
         ):
             if len(response.strip()) < 15:
-                result["judge_progress_status"] = "⚠️ Judge: skip"
+                result["judge_progress_status"] = "⚠️ Judge: skip (zu kurz/abgelehnt)"
             else:
                 if is_local and pause_calculator:
                     pause_calculator.wait(
@@ -371,10 +372,6 @@ class UnifiedBenchmarkRunner(BaseBenchmarkRunner):
 
             except CostLimitExceededError as e:
                 print(f"\n❌ KOSTENLIMIT ERREICHT: {e}")
-                self._save_partial_results(results, is_local)
-                sys.exit(1)
-            except JudgeUnavailableError as e:
-                print(f"\n⛔ JUDGE UNAVAILABLE (API Error / Budget Limit): {e}\nBeende den Benchmark vorzeitig, um inkonsistente Scores zu vermeiden.")
                 self._save_partial_results(results, is_local)
                 sys.exit(1)
             except JudgeUnavailableError as e:

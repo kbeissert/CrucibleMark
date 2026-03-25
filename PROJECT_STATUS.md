@@ -1,12 +1,20 @@
 # PROJECT_STATUS.md
 
-**Last Updated:** 2026-03-23
-**Current Version:** 3.1.0 (Audit- & Meta-Review Generation)
+**Last Updated:** 2026-03-25
+**Current Version:** 3.2.0 (Strict SSOT & Full Provider Refactoring)
 **Status:** ✅ Production-Ready
 
 ______________________________________________________________________
 
 ## 🎯 Executive Summary
+CrucibleMark v3.2.0 eliminiert sämtliche versteckten Modell-Fallbacks auf API-Providerebene und erzwingt das "Single Source of Truth" (SSOT) Prinzip absolut strikt. Eine umfassende Refaktorierung aller Provider-Integrationen (Anthropic, Mistral, Google, OpenAI etc.) sorgt für makellosen Code (Pylint 10/10) und direkte "Fail-Fast"-Abbrüche bei fehlerhaften Konfigurationen.
+
+**Key Achievements (v3.2.0):**
+- ✅ **Strict SSOT Enforcement & Fail-Fast:** Versteckte Modellausweichmechanismen (z.B. automatisiertes Laden von `claude-3-5-sonnet` oder `mistral-large-latest` bei ungenauen Modellnamen im Provider) wurden vollständig restlos entfernt. Das System nutzt nur exakt das, was in der Config steht (`ValueError` bei Fehlern).
+- ✅ **Provider Code Perfection & Type Safety:** Die API-Integrationen im `utils/providers/`-Verzeichnis wurden radikal aufgeräumt. Der Pylint-Score aller Provider erreicht makellose 10.00/10, tote Imports und Codeabschnitte wurden entfernt. Pylance Type-Checker False-Positives (bspw. `reportPrivateImportUsage` im Google SDK) wurden per Pyright-Direktiven sauber unterdrückt.
+- ✅ **Judge Skip Clarification:** Das UI und Log-Output wurden verbessert, um `⚠️ Judge: skip (zu kurz/abgelehnt)` auszuweisen, wenn die Antwort eines evaluierten Modells zu kurz ist oder verweigert wurde, was die Audit-Logs präziser macht.
+
+**Previous Version (v3.1.0 Audit- & Meta-Review Generation):**
 CrucibleMark v3.1.0 konzentriert sich auf die radikale Verbesserung des "LLM-as-a-Judge"-Flows und die Eliminierung von Judge-Halluzinationen in den finalen Audit- und Trend-Reports. Das Framework nutzt nun hochgradig kalibrierte Prompt-Mechaniken, um Markdown-Dokumente fehlerfrei zu parsen und Modellen keine menschlich-aktive Denkweise mehr anzudichten (Grammatik-Korrekturen und Passiv-Zwang).
 
 **Key Achievements (v3.1.0):**

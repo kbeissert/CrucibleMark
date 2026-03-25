@@ -2,60 +2,35 @@
 Provider-spezifische LLM Clients
 Getrennte Implementierungen für Ollama, Anthropic, Mistral
 """
-
-import os
-import time
 import logging
 from typing import Any, List, Optional, Callable, Dict
-
 from utils.ollama_config import CODING_BENCHMARK_OPTIONS, CREATIVE_BENCHMARK_OPTIONS
-from utils.constants import MAX_TOKENS_ANTHROPIC, DEFAULT_MISTRAL_MODEL
-from utils.env_utils import get_required_env
 from utils.model_utils import is_reasoning_model
-
 # Optional Provider Imports
 try:
     import ollama
 except ImportError:
     ollama = None
-
 try:
     pass
 except ImportError:
     anthropic = None
-
 try:
     pass
 except ImportError:
     Mistral = None
-
 try:
     pass
 except ImportError:
     OpenAI = None
-
-import warnings
-
-try:
-    with warnings.catch_warnings():
-        warnings.simplefilter("ignore")
-        pass
-except ImportError:
-    genai = None
-
 # Configure logging
 logger = logging.getLogger(__name__)
-
-
 from utils.providers.base import BaseProviderClient
-
 class OllamaClient(BaseProviderClient):
     """Ollama Provider Client"""
-
     def __init__(self, config: Dict[str, Any]):
         super().__init__(config)
         self._client = None
-
     @property
     def client(self):
         """Lazy-loaded Ollama Client"""
@@ -64,7 +39,6 @@ class OllamaClient(BaseProviderClient):
                 raise ImportError("Library 'ollama' not installed. Please install it.")
             self._client = ollama
         return self._client
-
     def _get_options(self, model: str, temperature: float) -> Dict[str, Any]:
         """Konfiguriert Optionen basierend auf Temperatur und Modell-Typ."""
         # Select options based on temperature
@@ -72,10 +46,8 @@ class OllamaClient(BaseProviderClient):
             options = CREATIVE_BENCHMARK_OPTIONS.copy()
         else:
             options = CODING_BENCHMARK_OPTIONS.copy()
-
         # Ensure the requested temperature is actually used
         options["temperature"] = temperature
-
         # SPECIAL HANDLING for Reasoning Models (e.g. DeepSeek-R1)
         if is_reasoning_model(model):
             # Reduced to 8192 to prevent excessive unified memory swapping
@@ -87,9 +59,7 @@ class OllamaClient(BaseProviderClient):
                 "Boosting token limit for reasoning model '%s' to 8192 to prevent memory freezes",
                 model,
             )
-
         return options
-
     def _handle_streaming(
         self,
         model: str,
@@ -103,10 +73,8 @@ class OllamaClient(BaseProviderClient):
         if system_prompt:
             messages.append({"role": "system", "content": system_prompt})
         messages.append({"role": "user", "content": prompt})
-
         full_content = ""
         full_thinking = ""
-
         try:
             response = self.client.chat(
                 model=model,
@@ -114,7 +82,6 @@ class OllamaClient(BaseProviderClient):
                 options=options,
                 stream=True,
             )
-
             for chunk in response:
                 if chunk.get("done"):
                     # Extract metrics from final chunk
@@ -122,7 +89,6 @@ class OllamaClient(BaseProviderClient):
                     load_ns = chunk.get("load_duration") or 0
                     eval_ns = chunk.get("eval_duration") or 0
                     prompt_eval_ns = chunk.get("prompt_eval_duration") or 0
-
                     metrics = {
                         "total_duration": total_ns / 1e9,
                         "load_duration": load_ns / 1e9,
@@ -135,29 +101,24 @@ class OllamaClient(BaseProviderClient):
                     )
                     self.last_response_metadata = metrics
                     continue
-
                 msg = chunk.get("message", {})
                 # Handle diff response formats (dict vs object)
                 if isinstance(msg, dict):
                     val_content = msg.get("content", "")
                 else:
                     val_content = getattr(msg, "content", "")
-
                 # Try to extract thinking
                 val_thinking = ""
                 if hasattr(msg, "thinking"):
                     val_thinking = msg.thinking
                 elif isinstance(msg, dict):
                     val_thinking = msg.get("thinking", "")
-
                 if val_thinking:
                     stream_handler(val_thinking)
                     full_thinking += val_thinking
-
                 if val_content:
                     stream_handler(val_content)
                     full_content += val_content
-
         except Exception as e:
             # Emergency Recovery for Ollama Parser Errors (e.g. XML in JSON)
             # "error parsing tool call: raw='<thought>...'"
@@ -167,7 +128,6 @@ class OllamaClient(BaseProviderClient):
                 try:
                     # Extract content between raw=' and ', err=
                     import re
-
                     match = re.search(r"raw='(.*?)', err=", err_str, re.DOTALL)
                     if match:
                         recovered_content = match.group(1)
@@ -181,18 +141,14 @@ class OllamaClient(BaseProviderClient):
                         return full_content
                 except Exception as ex:
                     logger.error(f"Failed to recover from parser error: {ex}")
-
             # If not recoverable, re-raise
             raise e
-
         if not full_content and full_thinking:
             logger.debug(
                 "Ollama streaming returned thinking but no content. Using thinking as fallback."
             )
             return full_thinking
-
         return full_content
-
     def query(
         self,
         model: str,
@@ -210,14 +166,11 @@ class OllamaClient(BaseProviderClient):
                 "Model name '%s' contains spaces. This may cause 'model is required' errors in Ollama.",
                 model,
             )
-
         try:
             options = self._get_options(model, temperature)
-
             # Handle max_tokens override (Ollama uses num_predict)
             if "max_tokens" in kwargs:
                 options["num_predict"] = kwargs["max_tokens"]
-
             # 🟢 Allow Overrides from kwargs (Benchmark Module Config)
             # This allows modules to define specific params like repeat_penalty in their config.yaml
             allowed_overrides = [
@@ -231,17 +184,13 @@ class OllamaClient(BaseProviderClient):
             for key in allowed_overrides:
                 if key in kwargs:
                     options[key] = kwargs[key]
-
             # Prepare messages list
             messages = []
-
             # Check for system prompt in kwargs
             system_prompt = kwargs.get("system")
             if system_prompt:
                 messages.append({"role": "system", "content": system_prompt})
-
             messages.append({"role": "user", "content": prompt})
-
             # Force Streaming Mode to avoid "error parsing tool call" with reasoning models
             # that output XML <thought> tags which confuse Ollama's blocking parser.
             try:
@@ -261,7 +210,6 @@ class OllamaClient(BaseProviderClient):
         except Exception as e:
             logger.debug("Ollama query failed: %s", e)
             raise
-
     def get_available_models(self) -> List[str]:
         """Listet verfügbare Ollama-Modelle"""
         try:

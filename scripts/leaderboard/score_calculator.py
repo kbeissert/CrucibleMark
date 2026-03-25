@@ -474,10 +474,7 @@ def calculate_scores(
             2. Category stats (stats per module category)
     """
 
-    # pylint: disable=too-many-locals,too-many-statements
-    df_success = df[df["status"] == "success"].copy()
-    # --- Performance Ratio Calculation (Removed, using raw) ---
-    df_success["performance_ratio"] = df_success["percentage"]
+    df_all = df.copy()
 
     # --- Assign Categories ---
     def get_category_name(asset_id: str) -> str:
@@ -494,14 +491,19 @@ def calculate_scores(
                 return str(mod_data.get("name", mod_key))
         return "Other"
 
-    df_success["category"] = df_success["asset_id"].apply(get_category_name)
+    df_all["category"] = df_all["asset_id"].apply(get_category_name)
     # Filter "Other" but KEEP "System"
-    df_success = df_success[(df_success["category"] != "Other")]
+    df_all = df_all[(df_all["category"] != "Other")]
+
+    # pylint: disable=too-many-locals,too-many-statements
+    df_success = df_all[df_all["status"] == "success"].copy()
+    # --- Performance Ratio Calculation (Removed, using raw) ---
+    df_success["performance_ratio"] = df_success["percentage"]
 
     # --- Aggregation ---
     stats = _aggregate_basic_stats(df_success, modules_config)
     # Note: uses Full DF (incl non-scoring)
-    run_counts = _calculate_run_counts(df_success, modules_config)
+    run_counts = _calculate_run_counts(df_all, modules_config)
 
     # Merge Counts
     result = pd.merge(

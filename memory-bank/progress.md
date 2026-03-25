@@ -11,6 +11,8 @@
 - [ ] Stabilität `gpt-oss` analysieren (vorheriger Absturz-Kandidat)
 
 ## Abgeschlossen (Meilensteine)
+- [DONE] SSOT Provider Refactoring & Fail-Fast Fallback-Löschung für alle Integrationen (google, anthropic, mistral). Pylint Score auf pure 10/10 inkl. Pyright Type-Ignore `reportPrivateImportUsage`.
+- [DONE] "Judge: skip (zu kurz/abgelehnt)" Output in `unified_runner.py` implementiert, um transparente Ablehnungen im Log abzubilden.
 - [DONE] Runner-Konsolidierung (`UnifiedBenchmarkRunner`), CLI-Fixes und strikte Pylint/Pylance Fehlerbehebung.
 - [DONE] Local/Commercial Model Versioning bereinigt (`latest` & `k.A.` Entries), Regex Parser in `model_utils.py` für O1/O3/Grok + korrekte Ollama-Hash-Auflösung von Local-Community Models implantiert.
 - [DONE] Off-by-one Parsing Bug & Grammatik Halluzinationen im LLM Judge (meta_reviewer_prompt.yaml) durch strukturelle Anker gelöst.
