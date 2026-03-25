@@ -1,0 +1,2 @@
+class JudgeUnavailableError(Exception):
+    pass

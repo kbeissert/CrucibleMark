@@ -4,11 +4,26 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [v3.1.1] - 2026-03-25
+
+### Changed
+- **Strict Judge Fail-Fast Mechanism:** Der LLM Judge verzichtet nun komplett auf das inkonsistente und fehleranfällige "Fallback"-Muster (z.B. der automatische Wechsel auf lokale Modelle, wenn die Anthropic-API ausfällt oder das Budget erschöpft ist). Stattdessen wird nun eine `JudgeUnavailableError` Exception geworfen, die den Benchmark sofort pausiert und unvollständige Durchläufe verlässlich speichert, um Kosten zu schonen.
+- **Judge Coverage Calculation:** Die Formel für die "LLM Judge Coverage" im Leaderboard wurde repariert, sodass unbeurteilte Module (wie der "Political Compass") den Prozentwert nicht mehr künstlich senken. Der Wert wird im CSV nun sauber als echter Prozentwert formatiert (z.B. "100%").
+- **Codebase Maintenance & Refactoring:** Utils-Skripte wurden hinsichtlich "Magic Numbers" und Typisierungs-Warnungen überarbeitet. Veraltete Debug-Aufrufe (`save_debug_response`) und root-Skripte wurden aufgeräumt, sowie `make audit_markdown` in die Makefile-Toolchain integriert.
+
+### Fixed
+- **Meta-Review Prompt Formats:** Ein Off-by-One Bug wurde behoben und die Grammatik- bzw. Parsing-Regeln im externen Meta-Review-Prompt wurden verschärft.
+- **Political Compass Polarity:** Ein Fehler bei der Berechnung des Flips direkt auf der Null-Achse ("Zero-Axis Polarity Flip") wurde korrigiert.
+
+### Removed
+- **Fallback Configurations:** Alle `fallback` Knoten aus der `benchmark_config.yaml` sowie die zugrunde liegende `FallbackProviderConfig` innerhalb der Python-Infrastruktur wurden gelöscht.
+
 ## [v3.1.0] - 2026-03-20
 
 ### Added
 - **Reasoning Tokens & Metacognition:** Einführung der `<thought>`-Tag Metakognitions-Überprüfung. Das System trackt nun den `reasoning_tokens` Count und filtert die `<thought>` Blöcke vor der finalen LLM-Judge Auswertung restriktiver Modelle heraus.
 - **Dynamic Meta-Review Prompting:** Der `generate_review.py` Meta-Reviewer nutzt nicht länger einen Python-hardgecodeten Prompt, sondern liest seinen System-Prompt dynamisch und versionierbar aus der neuen Konfigurationsdatei `config/meta_reviewer_prompt.yaml` ein.
+- **Coder/Thinking Model Leniency:** Einführung einer Kulanzklausel (Leniency Clause) beim Bias-Review, um speziell trainierte Coder- oder Reasoning-Modelle vor ungerechtfertigten Penalties zu bewahren.
 
 ### Changed
 - **CLI Hybrid Scoring Migration:** Das Modul `cli_benchmark` (`cli001` - `cli006`) wurde von der reinen Regex-Evaluierung auf ein hybrides `llm_judge`-Scoring umgestellt (inkl. Fallbacks, Penalty-Systemen und JSON-orientierter Aufbereitung der `functional_goal`s).
@@ -17,6 +32,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ### Fixed
 - **Judge Parse Fallbacks:** Bei korruptem Output (z. B. abgeschnittenes JSON) fängt `judge_parser.py` den Parse-Fehler ab, verweigert den Runtime-Crash und speichert stattdessen den rohen Debugging-Output unter `last_failed_raw.txt`.
+- **Political Compass Anomaly Scan:** Ein Fehler in der Scoring-Logik wurde behoben, sodass nun bei einem Achsen-Shift `> 1` automatisch ein Anomalie-Scan ausgelöst wird (`auto-trigger anomaly scan on pc shift > 1`).
 
 ## [v3.0.1] - 2026-03-19
 

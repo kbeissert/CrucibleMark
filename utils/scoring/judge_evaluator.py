@@ -8,6 +8,8 @@ from typing import Dict, Any, Optional
 from utils.scoring.llm_judge.judge_config import LLMJudgeConfig
 from utils.scoring.llm_judge.judge_runner import JudgeRunner
 from utils.scoring_utils import calculate_hybrid_score, calculate_score_contributions
+from utils.scoring.exceptions import JudgeUnavailableError
+from utils.scoring.exceptions import JudgeUnavailableError
 from utils.benchmark_utils import save_audit_log
 
 def evaluate_with_judge(
@@ -119,6 +121,12 @@ def evaluate_with_judge(
         else:
             result["judge_progress_status"] = "❌ Judge: failed"
 
+    except JudgeUnavailableError:
+        # Re-raise so the runner can abort the benchmark fully
+        raise
+    except JudgeUnavailableError:
+        # Re-raise so the runner can abort the benchmark fully
+        raise
     except Exception as e:  # pylint: disable=broad-exception-caught
         traceback.print_exc()
         logging.error(f"LLM Judge execution failed: {e}")

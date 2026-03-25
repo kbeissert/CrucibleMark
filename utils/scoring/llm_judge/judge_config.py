@@ -28,29 +28,6 @@ DEFAULT_MAX_TOKENS = 4096
 DEFAULT_TIMEOUT_SECONDS = 120
 
 
-class FallbackProviderConfig(BaseModel):
-    """
-    Optional fallback provider used when the primary provider is unavailable.
-
-    Fallback triggers when:
-      - primary provider health_check() returns False, OR
-      - primary provider raises a connection/timeout exception during complete().
-
-    Parse errors do NOT trigger the fallback (that is a prompt problem, not a
-    provider problem).
-    """
-
-    name: ProviderName = Field(..., description="Fallback provider identifier.")
-    model: str = Field(..., description="Fallback model ID or tag.")
-    temperature: float = Field(DEFAULT_TEMPERATURE, ge=0.0, le=1.0)
-    max_tokens: int = Field(DEFAULT_MAX_TOKENS, gt=0)
-    timeout_seconds: int = Field(DEFAULT_TIMEOUT_SECONDS, gt=0)
-    base_url: Optional[str] = Field(
-        None,
-        description="Required for Ollama fallback (e.g. http://localhost:11434).",
-    )
-
-
 class ProviderConfig(BaseModel):
     """Configuration for the concrete LLM provider used for judging."""
 
@@ -120,7 +97,7 @@ class LLMJudgeConfig(BaseModel):
     )
     module_judge_model: Optional[str] = Field(
         None,
-        description="Optional module-specific override for the fallback judge model.",
+        description="Optional module-specific override for the primary judge model.",
     )
 
     @classmethod

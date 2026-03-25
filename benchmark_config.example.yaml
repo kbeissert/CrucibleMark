@@ -49,13 +49,6 @@ llm_judge:
     # model: gemini-2.5-pro
     # max_tokens: 8192
 
-    unload_delay_ms: 1500    # Puffer vor dem Laden des Fallback-Modells (vermeidet RAM-Race-Conditions in Ollama)
-
-    fallback:
-      name: ollama           # Fängt API-Ausfälle oder aufgebrauchtes Budget lokal ab
-      model: ministral-3:14b
-      max_tokens: 4096
-
   scoring:
     scale: 5                 # Generelle Punkteskala (1-5)
     require_reasoning: true  # Judge muss seine Bewertung zwingend vor dem JSON begründen (CoT)

@@ -164,7 +164,6 @@ def main(print_table: bool = True) -> Optional[pd.DataFrame]:
         "Reasoning Score",
         "Efficiency_Index",
         "LLM Judge Avg",
-        "LLM Judge Coverage",
     ]
     for col in cols_to_round:
         if col in leaderboard.columns:
@@ -231,6 +230,12 @@ def main(print_table: bool = True) -> Optional[pd.DataFrame]:
         return format_version_hash_for_display(version, model_type)
 
     leaderboard["Version"] = leaderboard.apply(format_version_display, axis=1)
+
+    # Convert LLM Judge Coverage to percentage string format
+    if "LLM Judge Coverage" in leaderboard.columns:
+        leaderboard["LLM Judge Coverage"] = pd.to_numeric(
+            leaderboard["LLM Judge Coverage"], errors="coerce"
+        ).apply(lambda x: f"{x * 100:.0f}%" if pd.notnull(x) else "0%")
 
     # 8. Export and Display
     export_to_csv(leaderboard, cat_cols)

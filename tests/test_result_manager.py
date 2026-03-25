@@ -109,7 +109,7 @@ def test_new_csv_preserves_judge_columns(temp_result_manager):
 def test_leaderboard_aggregation_with_partial_judge_data():
     df = pd.DataFrame(
         [
-            # Model 1 has full judge data
+            # Model 1 has full judge data for Scoring, and also a NoScore module run
             {
                 "model": "M1",
                 "model_version": "v1",
@@ -128,6 +128,16 @@ def test_leaderboard_aggregation_with_partial_judge_data():
                 "execution_time": 1.0,
                 "llm_judge_score": 5.0,
                 "asset_id": "a2",
+                "percentage": 100,
+            },
+            {
+                "model": "M1",
+                "model_version": "v1",
+                "type": "local",
+                "category": "Info_NoScore",
+                "execution_time": 1.0,
+                "llm_judge_score": None,
+                "asset_id": "i1",
                 "percentage": 100,
             },
             # Model 2 has partial judge data
@@ -166,10 +176,16 @@ def test_leaderboard_aggregation_with_partial_judge_data():
 
     # We can invoke _aggregate_basic_stats directly
     modules_config = {
-        "Scoring": {"enable_scoring": True, "name": "Scoring", "enabled": True}
+        "Scoring": {"enable_scoring": True, "name": "Scoring", "enabled": True},
+        "Info_NoScore": {"enable_scoring": False, "name": "Info_NoScore", "enabled": True}
     }
 
-    agg_df = _aggregate_basic_stats(df, modules_config)
+    # Patch config directly
+    import scripts.leaderboard.score_calculator as sc
+    from unittest.mock import patch
+    
+    with patch.dict(sc.config, {"llm_judge": {"applicable_modules": ["Scoring"]}}):
+        agg_df = _aggregate_basic_stats(df, modules_config)
 
     # Verify outputs
     m1_stats = agg_df[agg_df["model"] == "M1"].iloc[0]

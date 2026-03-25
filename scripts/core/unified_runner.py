@@ -373,6 +373,14 @@ class UnifiedBenchmarkRunner(BaseBenchmarkRunner):
                 print(f"\n❌ KOSTENLIMIT ERREICHT: {e}")
                 self._save_partial_results(results, is_local)
                 sys.exit(1)
+            except JudgeUnavailableError as e:
+                print(f"\n⛔ JUDGE UNAVAILABLE (API Error / Budget Limit): {e}\nBeende den Benchmark vorzeitig, um inkonsistente Scores zu vermeiden.")
+                self._save_partial_results(results, is_local)
+                sys.exit(1)
+            except JudgeUnavailableError as e:
+                print(f"\n⛔ JUDGE UNAVAILABLE (API Error / Budget Limit): {e}\nBeende den Benchmark vorzeitig, um inkonsistente Scores zu vermeiden.")
+                self._save_partial_results(results, is_local)
+                sys.exit(1)
             except KeyboardInterrupt:
                 print("\n⚠️  Benchmark vom Benutzer abgebrochen.")
                 self._save_partial_results(results, is_local)
