@@ -183,7 +183,7 @@ def test_leaderboard_aggregation_with_partial_judge_data():
     # Patch config directly
     import scripts.leaderboard.score_calculator as sc
     from unittest.mock import patch
-    
+
     with patch.dict(sc.config, {"llm_judge": {"applicable_modules": ["Scoring"]}}):
         agg_df = _aggregate_basic_stats(df, modules_config)
 
