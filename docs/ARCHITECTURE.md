@@ -1,14 +1,14 @@
-# CrucibleMark: System Architecture
+# CrucibleMark: System-Architektur
 
 **Zielgruppe:** Engineers, die den Framework-Core verstehen oder erweitern wollen.
 
-**Was Sie hier finden:**
+**Was du hier findest:**
 
 - Layer-basierte Architektur (Core → Modules → Scoring → Data)
 - MVC-Pattern & Design-Prinzipien
 - Provider-Abstraktion (Ollama, OpenAI, Mistral)
 - Datenfluss & Observability
-- Known Technical Debt & Roadmap
+- Known Technical Debt
 
 > **Siehe auch:** DEVELOPER_GUIDE.md (für Modul-Entwicklung)
 
@@ -21,34 +21,37 @@ ______________________________________________________________________
 Das gesamte CrucibleMark-Projekt folgt einer unumstößlichen Prämisse: der strikten Trennung der reinen Datenmessung (Measurement) von nachgelagerten Auswertungen (Publishing).
 
 1. **Measurement (Core Benchmark Loop):**
-   Der Kern der Benchmark-Orchestrierung (Runner) ist kompromisslos iterativ, ausfallsicher (`try...finally`) und minimalistisch konzipiert. Sein **einzigiges** Ziel ist die isolierte Ausführung der LLM-Tests, das Führen der Roh-/Audit-Logs und das fehler- und blockierungsfreie Generieren (und direkte Speichern) des Leaderboards nach jedem Durchlauf der Module. Es gibt keine Stauungen oder externe Abhängigkeiten, die diesen Prozess gefährden könnten.
+   Der Kern der Benchmark-Orchestrierung (Runner) ist kompromisslos iterativ, ausfallsicher (`try...finally`) und minimalistisch. Sein **einziges** Ziel: LLM-Tests isoliert ausführen, Roh-/Audit-Logs führen und nach jedem Modul-Durchlauf das Leaderboard fehler- und blockierungsfrei generieren und speichern. Keine externen Abhängigkeiten gefährden diesen Prozess.
+
 2. **Publishing (Downstream-Features):**
-   Zusätzliche redaktionelle oder bewertende Funktionen — wie zum Beispiel der KI-basierte **Meta-Reviewer** — sind vollständig vom Core-Runner entkoppelt. Sie agieren offline als eigenständige Prozesse und dürfen den iterativen Benchmark-Prozess niemals blockieren, verlangsamen oder durch Fehler (z.B. API-Ausfälle bei Meta-Auswertungen) abbrechen lassen.
+   Zusätzliche redaktionelle oder bewertende Funktionen – z. B. der KI-basierte **Meta-Reviewer** – sind vollständig vom Core-Runner entkoppelt. Sie laufen offline als eigenständige Prozesse und dürfen den iterativen Benchmark-Prozess niemals blockieren, verlangsamen oder durch Fehler abbrechen lassen.
 
 ### 🛑 Zweite Regel: Single Source of Truth (SSOT) & DRY (Don't Repeat Yourself)
 
-Jede logische Funktion (z.B. Test-Auswertung, Konfigurations-Parsing, Log-Schreiben) hat **genau einen festen Platz** in einem spezifischen Modul.
-- **Wiederverwendung vor Neuerfindung:** Wird eine etablierte Funktion an anderer Stelle benötigt, darf sie unter keinen Umständen neu geschrieben, dupliziert oder "schnell mal in ein Hilfsskript" (Wildwuchs) ausgelagert werden.
-- **Erweiterung (Open/Closed Principle):** Reicht die bestehende Funktionalität eines Moduls für einen neuen Use Case nicht aus, wird das ursprüngliche Modul selbst so abstrahiert, parametrisiert oder erweitert, dass es den neuen Fall *mit abdeckt*, ohne seine alte Funktion zu verlieren. Das Ursprungsmodul bleibt die alleinige fachliche Autorität.
+Jede logische Funktion hat **genau einen festen Platz** in einem spezifischen Modul.
+- **Wiederverwendung vor Neuerfindung:** Eine etablierte Funktion an anderer Stelle darf niemals neu geschrieben, dupliziert oder in ein Hilfsskript ausgelagert werden.
+- **Erweiterung (Open/Closed Principle):** Reicht die Funktionalität eines Moduls für einen neuen Use Case nicht aus, abstrahiert oder parametrisiert man das ursprüngliche Modul so, dass es den neuen Fall mitabdeckt, ohne die alte Funktion zu verlieren.
 
 ### 🛑 Dritte Regel: Configuration-Driven & No Magic Numbers
-Das Projekt wird strikt über Konfigurationen gesteuert.
-- **Keine Magic Numbers:** Alle Zahlen, Formeln, Metriken und statischen Konstanten dürfen **niemals** hartkodiert im Code (Python-Skripte) stehen.
-- **Auslagerung:** Solche Werte werden in zentrale Konfigurationsdateien (YAML) ausgelagert und importiert.
+
+Das Projekt läuft strikt über Konfigurationen.
+- **Keine Magic Numbers:** Alle Zahlen, Formeln, Metriken und statischen Konstanten bleiben außerhalb des Python-Codes.
+- **Auslagerung:** Diese Werte stehen in zentralen YAML-Konfigurationsdateien und werden dort importiert.
 
 ### 🛑 Vierte Regel: Anti-God-Script & Modularisierung
-Das Framework wehrt sich aktiv gegen monolithische, überlange Skripte ("God-Scripts").
-- **Aktives Monitoring:** Bei Weiterentwicklungen wird die Skriptlänge/-komplexität überwacht. Wird ein Skript zum "God-Script", muss sofort gegengesteuert werden.
-- **Submodul-Kapselung:** Wachsende Skripte werden logisch zerlegt. Funktionalitäten werden in kleine, fokussierte Module gekapselt und in das Hauptskript importiert.
+
+Das Framework wehrt sich aktiv gegen monolithische Skripte ("God-Scripts").
+- **Aktives Monitoring:** Bei Weiterentwicklungen überwacht man Skriptlänge und Komplexität. Droht ein God-Script, muss sofort gegengesteuert werden.
+- **Submodul-Kapselung:** Wachsende Skripte zerlegt man logisch. Funktionalitäten kapselt man in kleine, fokussierte Module und importiert sie ins Hauptskript.
 
 CrucibleMark folgt einer **Plugin-basierten Architektur**, bei der Benchmark-Module vom Core-Framework durch Konfigurations-Contracts entkoppelt sind.
 
 ### Design-Prinzipien
 
-1. **Config-First:** Alle Module werden via `benchmark_config.yaml` entdeckt (kein Hardcoding)
-1. **Provider-Agnostisch:** Module wissen nicht, ob sie Ollama oder GPT-4 testen
-1. **Stateless Runs:** Jeder Benchmark ist unabhängig (keine Cross-Run-Pollution)
-1. **Reproducibility:** Fixe Seeds + deterministische Prompts
+1. **Config-First:** Alle Module entdeckt das Framework via `benchmark_config.yaml` (kein Hardcoding)
+2. **Provider-Agnostisch:** Module wissen nicht, ob sie Ollama oder GPT-4 testen
+3. **Stateless Runs:** Jeder Benchmark ist unabhängig (keine Cross-Run-Pollution)
+4. **Reproducibility:** Fixe Seeds und deterministische Prompts
 
 ______________________________________________________________________
 
@@ -92,20 +95,20 @@ ______________________________________________________________________
 
 **Einstiegspunkt:** `make benchmark` → `scripts/core/run_local_benchmark.py`
 
-**Dual-Runner Strategy:** CrucibleMark trennt strikt zwischen lokalen und kommerziellen Laufzeitumgebungen, um faire Ergebnisse fÃ¼r jeden Kontext zu liefern.
+**Dual-Runner Strategy:** CrucibleMark trennt strikt zwischen lokalen und kommerziellen Laufzeitumgebungen, um faire Ergebnisse für jeden Kontext zu liefern.
 
 1. **Local Runner (`scripts/core/run_local_benchmark.py`):**
 
-   - **Ziel:** "User Experience Simulation" (Wie fühlte es sich an, lokal zu arbeiten?)
+   - **Ziel:** „User Experience Simulation" (Wie fühlt es sich lokal an?)
    - **Komponente:** `AdaptivePauseCalculator` (`utils/adaptive_pause.py`)
    - **Logik:** Pausiert zwischen Tests basierend auf Modellgröße (RAM Footprint), Output-Länge (Context Overhead) und voriger Ausführungszeit.
-   - **Modes:** `PRODUCTION` (15-30s Pausen für max. Stabilität) vs `DEV` (5-10s Pausen für schnelle Iteration).
+   - **Modi:** `PRODUCTION` (15–30 s Pausen für maximale Stabilität) vs. `DEV` (5–10 s Pausen für schnelle Iteration).
 
-1. **Commercial Runner (`scripts/core/run_commercial_benchmark.py`):**
+2. **Commercial Runner (`scripts/core/run_commercial_benchmark.py`):**
 
-   - **Ziel:** "Throughput & Reliability" (API-Stress-Test)
+   - **Ziel:** „Throughput & Reliability" (API-Stress-Test)
    - **Komponente:** `RateLimiter` (`utils/rate_limiter.py`)
-   - **Logik:** Respektiert Provider-Limitate (RPM), aber nutzt ansonsten minimale Pausen für maximalen Throughput.
+   - **Logik:** Respektiert Provider-Limits, nutzt aber ansonsten minimale Pausen für maximalen Throughput.
 
 **Verantwortlichkeiten (Shared Framework):**
 
@@ -131,23 +134,34 @@ class LLMClient:
         pass
 ```
 
-**Provider-Spezifische Quirks:**
+**Provider-Spezifische Eigenheiten:**
 
-| Provider | Auth | Token Limit | Streaming | Retry Logic | |----------|------|-------------|-----------|-------------| | Ollama | None (localhost) | Model-dependent (8K-128K) | ✅ Yes | N/A (local) | | OpenAI | Bearer token | 128K (GPT-4) | ✅ Yes | 429 → Exponential Backoff | | Mistral | API key | 32K | ❌ No | 500 → Retry 3x | | Anthropic | API key | 200K | ✅ Yes | 429 → Exponential Backoff | | Google | API key | 1M - 2M | ❌ No | SDK Handled |
+| Provider | Auth | Token Limit | Streaming | Retry Logic |
+|----------|------|-------------|-----------|-------------|
+| Ollama | Keine (localhost) | Modellabhängig (8K–128K) | ✅ | N/A (lokal) |
+| OpenAI | Bearer token | 128K (GPT-4) | ✅ | 429 → Exponential Backoff |
+| Mistral | API key | 32K | ❌ | 500 → 3× Retry |
+| Anthropic | API key | 200K | ✅ | 429 → Exponential Backoff |
+| Google | API key | 1M–2M | ❌ | SDK-seitig |
 
 **Globaler Token-Fallback-Wrapper:**
-Das Framework implementiert einen robusten Architekturansatz zur Bewältigung harter Output-Token-Limits, der zentral im `BaseProviderClient` über die Funktion `_execute_with_token_fallback` gesteuert wird.
-1. **Zentrale Kaskade:** Die Systemkonfiguration (`benchmark_config.yaml`) definiert eine globale Fallback-Kaskade (z.B. `[8192, 4096, 2048, 1024]`).
-2. **Dynamische Reduzierung:** Schlägt eine API-Anfrage wegen Limitüberschreitungen fehl, fängt der Wrapper die Exception ab (durch provider-spezifische Error-Keywords wie `"max_tokens"`) und probiert das nächstkleinere Limit transparent erneut.
-3. **Fast-Fail für Budget:** Bei Budget- oder Quota-Fehlern (`"402 payment required"`, `"insufficient_quota"`) greift ein *Fast-Fail*-Mechanismus ein, der sofort blockiert und teure Retrys verhindert.
-4. **Metadaten-Tracking:** Nach Abschluss protokolliert der Client in das `BenchmarkResult`-DTO, ob die Kaskade verwendet wurde (`token_limit_fallback`) und welches Limit endgültig galt (`token_limit_used`).
+Das Framework implementiert einen robusten Ansatz zur Bewältigung harter Output-Token-Limits, zentral im `BaseProviderClient` über `_execute_with_token_fallback`.
 
-### Hardware Context & "Prompt as Config"
-CrucibleMark verfolgt den Architektur-Ansatz, dass alle Auswertungen an das Hardware- oder Kosten-Umfeld gekoppelt sein sollten.
-Dies wird durch den **`SystemContextManager` (`utils/system_context.py`)** umgesetzt:
-- **T/s Berechnung:** Dieser berechnet zentral die `tokens_per_second` (T/s) für alle Benchmark-Runs (aus Execution-Time und Output-Tokenanzahl).
-- **Prompt-Injection:** Der Manager holt dynamische Rahmendaten über das Testsystem auf Basis des in der `benchmark_config.yaml` festgelegten `runner_environment` passend zum `run_type` (Local vs Commercial).
-- **"Prompt-as-Config":** System-Prompts für textgenerierende Pipeline-Funktionen (wie z.B. für den Meta-Reviewer) sind vollständig **ausgelagert (z.B. nach `config/meta_reviewer_prompt.yaml`)**. Der System-Code führt lediglich ein `.format()` aus und injiziert Hardware-Variablen und Logs der Ergebnisse in das YAML-Template.- **Data-Coupling & Regex-Integration:** Um Bewertungs-LLMs nicht blind raten zu lassen, injiziert das System Metadaten (wie Token-Limits, Loop-Errors oder ausgelöste Safety-Protokolle) via dedizierter Warnblöcke direkt in die auszuwertenden Markdown-Logs. Der Evaluierungs-Flow (Judge/Reviewer) parst diese Metadaten beim Einlesen über vordefinierte Regex-Muster oder ID-Anker (z.B. Off-by-one Protections wie "7.2.001"). Dies befähigt den Judge dazu, Modelle ganzheitlichinklusive technischer Flaws anstatt nur auf Basis der reinen Textausgaben zu bewerten. Und ein hartes Grammar-Enforcement im Prompt verhindert, dass Halluzinationen über einen aktiven Willen der KI-Modelle entstehen.______________________________________________________________________
+1. **Zentrale Kaskade:** Die Systemkonfiguration (`benchmark_config.yaml`) definiert eine globale Fallback-Kaskade (z. B. `[8192, 4096, 2048, 1024]`).
+2. **Dynamische Reduzierung:** Schlägt eine API-Anfrage wegen Limitüberschreitungen fehl, fängt der Wrapper die Exception ab und probiert das nächstkleinere Limit transparent erneut.
+3. **Fast-Fail für Budget:** Bei Budget- oder Quota-Fehlern (`"402 payment required"`, `"insufficient_quota"`) greift ein Fast-Fail-Mechanismus und verhindert teure Retries.
+4. **Metadaten-Tracking:** Nach Abschluss protokolliert der Client in das `BenchmarkResult`-DTO, ob die Kaskade aktiv war (`token_limit_fallback`) und welches Limit galt (`token_limit_used`).
+
+### Hardware Context & „Prompt as Config"
+
+CrucibleMark koppelt alle Auswertungen an das Hardware- oder Kosten-Umfeld. Der **`SystemContextManager` (`utils/system_context.py`)** setzt das um:
+
+- **T/s Berechnung:** Berechnet zentral die `tokens_per_second` für alle Benchmark-Runs.
+- **Prompt-Injection:** Holt dynamische Rahmendaten über das Testsystem basierend auf dem in `benchmark_config.yaml` festgelegten `runner_environment` passend zum `run_type` (Local vs. Commercial).
+- **„Prompt-as-Config":** System-Prompts für textgenerierende Pipeline-Funktionen (z. B. für den Meta-Reviewer) sind vollständig nach `config/meta_reviewer_prompt.yaml` ausgelagert. Der System-Code führt lediglich ein `.format()` aus und injiziert Hardware-Variablen und Ergebnislogs in das YAML-Template.
+- **Data-Coupling & Regex-Integration:** Das System injiziert Metadaten (Token-Limits, Loop-Errors, ausgelöste Safety-Protokolle) via Warnblöcke direkt in die auszuwertenden Markdown-Logs. Der Evaluierungs-Flow parst diese Metadaten über vordefinierte Regex-Muster oder ID-Anker (z. B. "7.2.001"). Das befähigt den Judge, Modelle ganzheitlich – einschließlich technischer Flaws – zu bewerten. Hartes Grammar-Enforcement im Prompt verhindert Halluzinationen über einen aktiven Willen der KI-Modelle.
+
+______________________________________________________________________
 
 ## 📦 Layer 2: Benchmark Modules
 
@@ -180,8 +194,8 @@ Dies wird durch den **`SystemContextManager` (`utils/system_context.py`)** umges
 **Warum diese Trennung?**
 
 1. **Testbarkeit:** Evaluators ohne LLM testbar (Unit-Tests)
-1. **Reproduzierbarkeit:** Scoring deterministisch
-1. **Modularität:** Scoring austauschbar (Regex → LLM-Judge)
+2. **Reproduzierbarkeit:** Scoring deterministisch
+3. **Modularität:** Scoring austauschbar (Regex → LLM-Judge)
 
 ______________________________________________________________________
 
@@ -190,13 +204,13 @@ ______________________________________________________________________
 **Ablauf:**
 
 1. Framework parst `benchmark_config.yaml`
-1. Filtert Module mit `enabled: true`
-1. Lädt `benchmark_modules/<module_id>/config.yaml`
-1. Importiert `test_class` dynamisch
-1. Instanziiert Test-Objekt
-1. Führt `execute()` aus
+2. Filtert Module mit `enabled: true`
+3. Lädt `benchmark_modules/<module_id>/config.yaml`
+4. Importiert `test_class` dynamisch
+5. Instanziiert Test-Objekt
+6. Führt `execute()` aus
 
-**Wichtig:** Ein Entwickler kann ein Modul hinzufügen, ohne Framework-Code zu ändern!
+**Wichtig:** Neue Module lassen sich hinzufügen, ohne Framework-Code zu ändern.
 
 ______________________________________________________________________
 
@@ -204,14 +218,14 @@ ______________________________________________________________________
 
 ### 1. Granular Rubric Scoring
 
-Genutzt für **Reasoning Modules** (Tier 1-2). Nutzt partielle Punktevergabe basierend auf Rubriken.
+Für **Reasoning Modules** (Tier 1–2). Nutzt partielle Punktevergabe basierend auf Rubriken.
 
-**Thresholds:**
+**Schwellenwerte:**
 
-- 80%+ matches: 100% credit
-- 60-79% matches: 75% credit
-- 40-59% matches: 50% credit
-- <40% matches: 0% credit
+- 80 %+ matches: 100 % credit
+- 60–79 % matches: 75 % credit
+- 40–59 % matches: 50 % credit
+- < 40 % matches: 0 % credit
 
 ```python
 RUBRICS = {
@@ -225,7 +239,7 @@ RUBRICS = {
 
 ### 2. Hybrid-Ansatz (Keyword + Semantic)
 
-Genutzt für **Standard Modules** (Code Quality, UX Writing).
+Für **Standard Modules** (Code Quality, UX Writing).
 
 ```python
 def hybrid_score(response: str, asset: Dict) -> float:
@@ -245,16 +259,27 @@ def hybrid_score(response: str, asset: Dict) -> float:
 **Semantic Similarity:**
 
 - **Model:** `sentence-transformers/all-MiniLM-L6-v2`
-- **Metric:** Cosine Similarity (0-1 → 0-100%)
+- **Metric:** Cosine Similarity (0–1 → 0–100 %)
 - **Threshold:** 0.78 (Standard), 0.55 (Expert Tier)
 
 ______________________________________________________________________
 
 ### Golden Standard Comparison
 
-**Konzept:** Alle Modelle werden gegen **Mistral Large** (123B) als Referenz verglichen, das Leaderboard basiert jedoch auf **Absoluten Standards**.
+Das Leaderboard basiert auf **statischen Golden Standards** (Design by Intention). Feste Tier-Schwellenwerte in `benchmark_config.yaml` (`scoring_tiers`) sorgen für konsistente Rankings. Seit Version 2.5 gibt es kein dynamisches Referenzmodell mehr. Das folgende Code-Snippet zeigt die Badge-Logik als Illustration – die tatsächlich gültigen Schwellenwerte stehen ausschließlich in der Config.
 
-**Absolute Standards:** Es gelten feste Hürden (z.B. >85% für Gold) für die Performance. Dadurch bleibt das Tier-Ranking konsistent, selbst wenn das hinterlegte Referenzmodell für die Berechnung der Semantik-Scores geupdatet wird.
+```python
+if total_score >= 85:
+    badge = "🏆 Gold"
+elif total_score >= 70:
+    badge = "🥈 Silver"
+elif total_score >= 55:
+    badge = "🥉 Bronze"
+else:
+    badge = "⚖️ Standard"
+```
+
+**Aktuelle Tier-Spezifikation:** Siehe [SCORING_METHODOLOGY.md](SCORING_METHODOLOGY.md).
 
 ## 📊 Layer 4: Data Persistence
 
@@ -287,7 +312,7 @@ else:
     badge = "⚖️ Standard"
 ```
 
-**Skill Profile Generation:** Zusätzlich erstellt das System ein Profil basierend auf Speed Class und Top-Modul (z.B. "Fast Code Reviewer").
+**Skill Profile Generation:** Das System erstellt ein Profil basierend auf Speed Class und Top-Modul (z. B. „Fast Code Reviewer").
 
 ______________________________________________________________________
 
@@ -296,8 +321,8 @@ ______________________________________________________________________
 **Workflow** (`make backup`):
 
 1. **Snapshot:** Archiv erstellen
-1. **Prune JSON-Logs:** Nur letzte 5 Runs behalten
-1. **CSV-Konsolidierung:** Nur neueste Zeile pro (Modell, Asset)
+2. **Prune JSON-Logs:** Nur letzte fünf Runs behalten
+3. **CSV-Konsolidierung:** Nur neueste Zeile pro (Modell, Asset)
 
 **Effekt:** CSV-Dateien bleiben < 5 MB
 
@@ -307,7 +332,7 @@ ______________________________________________________________________
 
 ## 🔍 Observability & Logging
 
-### "Silent Console, Noisy Log" Strategie
+### „Silent Console, Noisy Log" Strategie
 
 #### 1. Console (User-Facing)
 
@@ -316,7 +341,7 @@ print("✅ Code Quality: 85%")
 print("⏳ Testing Reasoning Module (2/7)...")
 ```
 
-**Gefiltert:** Warnings von Drittanbieter-Bibliotheken
+Warnings von Drittanbieter-Bibliotheken werden unterdrückt.
 
 ______________________________________________________________________
 
@@ -338,21 +363,21 @@ ______________________________________________________________________
 
 1. **Single-Module Isolation**
 
-   - **Annahme:** Framework funktioniert mit nur 1 aktivem Modul
-   - **Risiko:** Leaderboard könnte crashen
-   - **Test:** Config mit nur 1 Modul aktiv
+   - **Annahme:** Framework funktioniert mit nur einem aktiven Modul
+   - **Risiko:** Leaderboard könnte abstürzen
+   - **Test:** Config mit nur einem Modul aktiv
 
-1. **Column Pruning**
+2. **Column Pruning**
 
    - **Annahme:** Leaderboard löscht Spalten deaktivierter Module
    - **Risiko:** Zombie-Spalten
    - **Test:** Modul deaktivieren → Spalte weg?
 
-1. **Cache Orphans**
+3. **Cache Orphans**
 
    - **Annahme:** JSON-Files werden bei Modul-Löschung bereinigt
    - **Risiko:** Festplatten-Müll
-   - **Test:** Modul löschen → Prüfen
+   - **Test:** Modul löschen → prüfen
 
 ______________________________________________________________________
 
@@ -363,12 +388,12 @@ ______________________________________________________________________
    - **Problem:** 3+ Skripte parsen separat
    - **Fix:** Zentrales `core/config_manager.py`
 
-1. **Hardcoded Paths**
+2. **Hardcoded Paths**
 
    - **Problem:** Einige nutzen `results/` statt Config
    - **Fix:** Alle Pfade aus Config lesen
 
-1. **Inconsistent Error Handling**
+3. **Inconsistent Error Handling**
 
    - **Problem:** Ollama crasht, API retries
    - **Fix:** Einheitliche `ErrorHandler`-Klasse
@@ -382,51 +407,21 @@ ______________________________________________________________________
    - **Impact:** Medium
    - **Effort:** 2 Stunden
 
-1. **No Incremental Leaderboard**
+2. **No Incremental Leaderboard**
 
    - **Impact:** Low
    - **Effort:** 4 Stunden
 
-1. **No Diff Reports**
+3. **No Diff Reports**
 
    - **Impact:** High
    - **Effort:** 6 Stunden
 
 ______________________________________________________________________
 
-## 🗺️ Roadmap (Path to v1.0)
+## 🗺️ Roadmap
 
-### Phase 1: Stability
-
-**Ziel:** Framework-Contract validieren
-
-**Tasks:**
-
-- [ ] Single-Module-Test
-- [ ] Column-Pruning-Test
-- [ ] Cache-Cleanup-Test
-
-______________________________________________________________________
-
-### Phase 2: Code Hygiene
-
-**Ziel:** DRY-Prinzip durchsetzen
-
-**Tasks:**
-
-- [ ] Zentrales Config-Parsing
-- [ ] Type-Hints + Docstrings
-- [ ] Einheitliches Error-Handling
-
-______________________________________________________________________
-
-### Phase 3: LLM-as-a-Judge
-
-**Ziel:** Regex-Scoring durch LLM ersetzen
-
-**Design:** GPT-4o-mini als Judge
-
-**Backwards-Compatible:** Config-Flag `scoring_method`
+Die v1.x-Roadmap ist abgeschlossen. Die aktuelle Roadmap (Agentic Benchmarks, Multimodal, Web-UI, CI/CD) steht in [README.md](../README.md).
 
 ______________________________________________________________________
 
@@ -468,5 +463,5 @@ class LLMClientFactory:
 
 ______________________________________________________________________
 
-**Dokumenten-Version:** 3.0.1 (Rewrite Mar 2026)\
-**Kompatibel mit:** CrucibleMark v3.0.1+
+**Dokumenten-Version:** 3.1.0 (Überarbeitung März 2026)\
+**Kompatibel mit:** CrucibleMark v3.2.0+

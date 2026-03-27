@@ -1,23 +1,21 @@
-# CrucibleMark: Data Retention & Backup Strategy
+# CrucibleMark: Daten-Retention & Backup-Strategie
 
 **Zielgruppe:** Alle, die verstehen wollen, wie CrucibleMark mit Daten umgeht.
 
-**Was Sie hier finden:**
+**Was du hier findest:**
 
-- Philosophie: "Live vs History"
+- Philosophie: „Live vs. History"
 - Backup-Lifecycle (Snapshot → Prune → Consolidate)
 - Workflow-Implikationen
-- Technische Implementation
+- Technische Implementierung
 
 ______________________________________________________________________
 
-## 1. Philosophie & Purpose
+## 1. Philosophie & Zweck
 
-Die Architektur von CrucibleMark folgt einem spezifischen Leitprinzip bezüglich Daten-Langlebigkeit:
+CrucibleMark ist ein Werkzeug zum Vergleich von Modellen (Leaderboard) – kein Monitoring-Tool für Modell-Veränderungen über die Zeit.
 
-> **"Wir bauen hier ein Werkzeug zum Vergleich von Modellen (Leaderboard), kein Werkzeug zum Monitoring von Modell-Veränderungen über die Zeit."**
-
-Daher benötigen wir im **Live-System** (`benchmark_scores/*.csv`) keine Historie. Wir benötigen nur den **aktuellsten, validen Zustand** eines jeden Modells.
+Das **Live-System** (`benchmark_scores/*.csv`) braucht keine Historie. Es braucht den **aktuellsten, validen Zustand** eines jeden Modells.
 
 ______________________________________________________________________
 
@@ -25,26 +23,21 @@ ______________________________________________________________________
 
 **Static Weights:**
 
-- Lokale Modelle (z.B. `llama3:8b-q4_K_M`) sind statische Dateien
-- Ihre Performance ändert sich nicht über Zeit
+- Lokale Modelle (z. B. `llama3:8b-q4_K_M`) sind statische Dateien.
+- Ihre Performance ändert sich nicht über die Zeit.
 
 **Locked APIs:**
 
-- Kommerzielle Modelle sind an spezifische Versionen gepinnt (z.B. `gpt-4-0613`)
-- Gewährleistet Reproduzierbarkeit
+- Kommerzielle Modelle sind an spezifische Versionen gepinnt (z. B. `gpt-4-0613`).
+- Das gewährleistet Reproduzierbarkeit.
 
-**Fazit:**
-
-- Redundante historische Daten im aktiven Workspace blähen das System auf
-- Kein Mehrwert für den primären Use Case (Modell A vs Modell B vergleichen)
+Redundante historische Daten im aktiven Workspace blähen das System auf. Für den primären Use Case (Modell A vs. Modell B vergleichen) bieten sie keinen Mehrwert.
 
 ______________________________________________________________________
 
 ## 2. Der Backup-Lifecycle
 
-Um Daten-Sicherheit mit Workspace-Hygiene zu balancieren, implementiert CrucibleMark einen **"Snapshot & Prune"** Workflow.
-
-**Befehl:**
+Um Datensicherheit mit Workspace-Hygiene zu verbinden, implementiert CrucibleMark einen **„Snapshot & Prune"-Workflow**.
 
 ```bash
 make backup
@@ -52,9 +45,9 @@ make backup
 
 ______________________________________________________________________
 
-### Phase 1: The Archive (Immutable History)
+### Phase 1: The Archive (unveränderliche Historie)
 
-**Action:** Erstelle einen `.tar.gz` Snapshot des gesamten Workspace
+**Aktion:** Erstelle einen `.tar.gz`-Snapshot des gesamten Workspace.
 
 **Pfad:** `backups/cruciblemark_backup_YYYYMMDD_HHMMSS.tar.gz`
 
@@ -65,62 +58,51 @@ ______________________________________________________________________
 - Modul-Konfigurationen
 - Golden Standards
 
-**Regel:** Dies ist das **System of Record**.
-
-Wenn historische Analysen jemals benötigt werden (z.B. "Wie performte GPT-4 vor einem Jahr?"), werden sie aus diesen Archiven abgerufen.
+**Regel:** Dies ist das **System of Record**. Historische Analysen (z. B. „Wie performte GPT-4 vor einem Jahr?") kommen aus diesen Archiven.
 
 ______________________________________________________________________
 
 ### Phase 2: JSON-Cleanup (Hygiene)
 
-**Action:** Führe `scripts/cleanup_runs.py` aus
+**Aktion:** `scripts/cleanup_runs.py` ausführen.
 
 **Ziel:** `outputs/runs/**/*.json`
 
-**Regel:** Behalte nur die **letzten 5 Runs** pro Modell.
+**Regel:** Nur die **letzten fünf Runs** pro Modell behalten.
 
-**Warum:**
-
-- JSON-Logs enthalten vollständige Rohdaten (Prompts, Responses, Timestamps)
-- Sehr detailliert (mehrere MB pro Run)
-- Ältere Logs sind sicher im Archive (Phase 1) gespeichert
+JSON-Logs enthalten vollständige Rohdaten (Prompts, Responses, Timestamps) und sind sehr detailliert (mehrere MB pro Run). Ältere Logs liegen sicher im Archive aus Phase 1.
 
 ______________________________________________________________________
 
-### Phase 3: CSV-Konsolidierung (The "Latest Only" Rule)
+### Phase 3: CSV-Konsolidierung (The „Latest Only" Rule)
 
-**Action:** Führe `scripts/consolidate_csv.py` aus
+**Aktion:** `scripts/consolidate_csv.py` ausführen.
 
 **Ziel:** `benchmark_scores/*.csv`
 
 **Logik:**
 
-1. Lade kumulative CSV-Datei
-1. Sortiere nach Timestamp (neueste zuerst)
-1. Gruppiere nach eindeutigem Key: `(Model Name, Asset ID)`
-1. **Dedupliziere:** Behalte **nur den einzelnen neuesten Eintrag**
-1. Entferne alle älteren Duplikate
+1. Kumulative CSV-Datei laden
+2. Nach Timestamp sortieren (neueste zuerst)
+3. Nach eindeutigem Key gruppieren: `(Model Name, Asset ID)`
+4. **Deduplizieren:** Nur den einzelnen neuesten Eintrag behalten
+5. Alle älteren Duplikate entfernen
 
-**Resultat:**
-
-- CSV-Datei wird auf "kanonischen Zustand" zurückgesetzt
-- Enthält exakt **einen validen Score** pro Test-Case
+**Ergebnis:** Die CSV-Datei enthält exakt **einen validen Score** pro Test-Case.
 
 ______________________________________________________________________
 
 ## 3. Workflow-Implikationen
 
-### Continuous Benchmarking ("Rolling Updates")
+### Continuous Benchmarking („Rolling Updates")
 
 Weil CSV-Dateien auf den neuesten Stand konsolidiert werden:
 
-1. **Optimierung:** Bei `make benchmark-auto` nach einem Backup erkennt das System, dass die neuesten Testergebnisse in der CSV vorhanden sind
+1. **Optimierung:** Bei `make benchmark-auto` nach einem Backup erkennt das System, dass die neuesten Testergebnisse bereits in der CSV vorliegen.
+2. **Effizienz:** Es überspringt alle erfolgreich getesteten Assets.
+3. **Updates:** Es führt nur Tests für neue Modelle oder neue Assets aus.
 
-1. **Effizienz:** Es überspringt alle erfolgreich getesteten Assets
-
-1. **Updates:** Es führt nur Tests für *neue* Modelle oder *neue* Assets aus
-
-**Effekt:** Spart API-Kosten und Zeit.
+Das spart API-Kosten und Zeit.
 
 ______________________________________________________________________
 
@@ -128,7 +110,7 @@ ______________________________________________________________________
 
 Um einen Re-Run eines spezifischen Modells zu erzwingen, ohne die gesamte Historie zu löschen:
 
-1. **Lösche relevante Zeilen** aus der CSV manuell
+1. **Relevante Zeilen aus der CSV löschen:**
 
    ```bash
    # Alle Zeilen mit "qwen2.5:14b" entfernen
@@ -136,28 +118,26 @@ Um einen Re-Run eines spezifischen Modells zu erzwingen, ohne die gesamte Histor
    mv temp.csv local_models_benchmark.csv
    ```
 
-1. **Run Benchmark:**
+2. **Benchmark starten:**
 
    ```bash
    make benchmark-auto
    ```
 
-1. **System-Reaktion:**
+3. **System-Reaktion:**
 
-   - Sieht fehlenden Eintrag
+   - Erkennt fehlenden Eintrag
    - Führt Test neu aus
    - Fügt neues Ergebnis zur CSV hinzu
 
-1. **Nächstes Backup:**
+4. **Nächstes Backup:**
 
-   - Konsolidiert dies
-   - Entfernt ggf. ältere Einträge (falls vorher gesichert)
+   - Konsolidiert das Ergebnis
+   - Entfernt ggf. ältere Einträge
 
 ______________________________________________________________________
 
-## 4. Technische Implementation
-
-Die Strategie wird über das Makefile durchgesetzt:
+## 4. Technische Implementierung
 
 ```makefile
 backup:
@@ -207,8 +187,6 @@ ______________________________________________________________________
 
 #### `consolidate_csv.py`
 
-**Logik:**
-
 ```python
 import pandas as pd
 
@@ -236,29 +214,27 @@ ______________________________________________________________________
 ✅ **Empfohlen:**
 
 - Vor großen Batch-Runs (viele Modelle auf einmal)
-- Nach Hinzufügen neuer Module
+- Nach dem Hinzufügen neuer Module
 - Vor Config-Änderungen (neue Scoring-Logik)
-- Monatlich (als Routine)
+- Monatlich als Routine
 
 ❌ **Nicht nötig:**
 
 - Nach jedem einzelnen Benchmark
-- Bei kleinen Test-Runs (1-2 Modelle)
+- Bei kleinen Test-Runs (ein bis zwei Modelle)
 
 ______________________________________________________________________
 
 ### Backup-Rotation
 
-**Problem:** `backups/` Ordner wächst unbegrenzt.
-
-**Lösung:** Manuelle Rotation (empfohlen: 3-Monats-Regel)
+Das `backups/`-Verzeichnis wächst andernfalls unbegrenzt. Empfehlung: manuelle Rotation nach der 3-Monats-Regel.
 
 ```bash
 # Alte Backups (> 90 Tage) löschen
 find backups/ -name "*.tar.gz" -mtime +90 -delete
 ```
 
-**Automation (Optional):**
+**Automation (optional):**
 
 ```bash
 # In crontab eintragen (monatliches Backup)
@@ -267,19 +243,17 @@ find backups/ -name "*.tar.gz" -mtime +90 -delete
 
 ______________________________________________________________________
 
-## 6. Recovery-Szenarios
+## 6. Recovery-Szenarien
 
 ### Szenario 1: CSV korrupt
 
-**Problem:** CSV-Datei beschädigt (z.B. durch Skript-Crash)
-
-**Lösung:**
+**Problem:** CSV-Datei beschädigt (z. B. durch Skript-Crash).
 
 ```bash
 # Neuestes Backup extrahieren
 tar -xzf backups/cruciblemark_backup_YYYYMMDD.tar.gz
 
-# Nur CSV wiederherstellen (Rest beibehalten)
+# Nur CSV wiederherstellen
 cp benchmark_scores/local_models_benchmark.csv benchmark_scores/
 ```
 
@@ -287,22 +261,18 @@ ______________________________________________________________________
 
 ### Szenario 2: Falsches Scoring-Ergebnis
 
-**Problem:** Bug in Evaluator führte zu falschen Scores
-
-**Lösung:**
+**Problem:** Bug im Evaluator führte zu falschen Scores.
 
 1. Backup erstellen (aktuellen Zustand sichern)
-1. Evaluator fixen
-1. Betroffene Zeilen aus CSV löschen
-1. `make benchmark-auto` (Re-Run nur betroffener Tests)
+2. Evaluator fixen
+3. Betroffene Zeilen aus CSV löschen
+4. `make benchmark-auto` ausführen (Re-Run nur betroffener Tests)
 
 ______________________________________________________________________
 
 ### Szenario 3: Vollständiger Datenverlust
 
-**Problem:** Festplatten-Crash, alle lokalen Daten weg
-
-**Lösung:**
+**Problem:** Festplatten-Crash, alle lokalen Daten weg.
 
 ```bash
 # Neuestes Backup extrahieren
@@ -326,17 +296,15 @@ ______________________________________________________________________
 ### Was wird NICHT gesichert?
 
 - **Temporary Session Files:** `outputs/temp/session_*.json` (nur für Crash-Recovery)
-- **Python Cache:** `__pycache__/`, `.pyc` Files
+- **Python Cache:** `__pycache__/`, `.pyc`-Dateien
 
-**Grund:** Ephemeral Data, kann regeneriert werden.
+Diese Daten sind ephemeral und lassen sich regenerieren.
 
 ______________________________________________________________________
 
 ### Langzeit-Archivierung
 
 Für langfristige Aufbewahrung (> 1 Jahr):
-
-**Empfehlung:** Externes Backup
 
 ```bash
 # Cloud-Upload (Beispiel: AWS S3)
@@ -351,18 +319,10 @@ ______________________________________________________________________
 
 ## 🔗 Verwandte Dokumentation
 
-- **USER_GUIDE.md** – Befehle für Daten-Management (`make clean-model`, etc.)
+- **USER_GUIDE.md** – Befehle für Daten-Management (`make clean-model`, u. a.)
 - **ARCHITECTURE.md** – Data Persistence Layer (Layer 4)
 
 ______________________________________________________________________
 
-## 📜 Lizenz-Hinweis
-
-Die Backup-Skripte und Strategie sind Teil von CrucibleMark und unterliegen der **Apache License 2.0**.
-
-**Siehe:** `LICENSE` für Details.
-
-______________________________________________________________________
-
-**Dokumenten-Version:** 3.0.0 (Rewrite Mar 2026)\
+**Dokumenten-Version:** 3.1.0 (Überarbeitung März 2026)\
 **Kompatibel mit:** CrucibleMark v3.0.0+
