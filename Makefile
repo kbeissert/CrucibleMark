@@ -4,6 +4,7 @@
 	review leaderboard \
 	validate validate-single validate-structure test diff-results analyze-costs update-prices \
 	list-models judge-health list-modules create-module \
+	web-export web-export-dev \
 	clean clean-sessions clean-csv clean-model clean-module clean-all clean-runs consolidate-csv \
 	backup
 
@@ -47,6 +48,8 @@ help:
 	@echo "  make list-modules         List Modules"
 	@echo "  make create-module        🚀 Scaffold module"
 	@echo "  make audit-markdown       📝 Audit & fix markdown/yaml files"
+	@echo "  make web-export           🌐 Export data for Web-Frontend"
+	@echo "  make web-export-dev       🔗 Export data directly into Web repo"
 	@echo ""
 	@echo "=== Data Management & Cleanup ==="
 	@echo "  make backup               📦 Create full backup of runs and assets"
@@ -222,3 +225,15 @@ backup:
 	@$(MAKE) clean-runs FORCE=1
 	@$(MAKE) consolidate-csv
 	@echo "✨ Backup chain complete."
+
+# === WEB EXPORT ===
+
+web-export:
+	@echo "🌐 Starte Web Export..."
+	$(PYTHON) scripts/web_export.py $(if $(WEB_DATA_DIR),--output $(WEB_DATA_DIR),)
+	@echo "✅ Export abgeschlossen."
+
+web-export-dev:
+	@echo "🔗 Exportiere direkt ins 11ty-Projekt..."
+	$(PYTHON) scripts/web_export.py --output ../cruciblemark-web/src/_data/raw/
+	@echo "✅ Dev-Export abgeschlossen."

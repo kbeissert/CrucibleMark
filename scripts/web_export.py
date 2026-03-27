@@ -1,0 +1,322 @@
+#!/usr/bin/env python3
+"""
+CrucibleMark Web Export Pipeline
+Transforms benchmark data into structured JSON/Markdown for the 11ty web project.
+"""
+
+import sys
+import json
+import shutil
+import logging
+import argparse
+import datetime
+import math
+import re
+from pathlib import Path
+import pandas as pd
+from utils.config_validator import ConfigValidator
+
+def slugify(model_name: str) -> str:
+    """Normalizes model names to URL-safe slugs."""
+    name = str(model_name).split('/')[-1].lower()
+    return re.sub(r'[^a-z0-9]+', '-', name).strip('-')
+
+def parse_tests_run(val) -> dict | None:
+    if pd.isna(val) or not isinstance(val, str): return None
+    match = re.search(r'(\d+)\s*/\s*(\d+)', val)
+    if match: return {"completed": int(match.group(1)), "total": int(match.group(2))}
+    return None
+
+def normalize_pending(val):
+    if pd.isna(val): return None
+    val_str = str(val).strip()
+    if val_str in ("Pending", "—", ""): return None
+    try:
+        f = float(val)
+        return None if math.isnan(f) else f
+    except (ValueError, TypeError):
+        return val_str
+
+def extract_badge_tier(val) -> str | None:
+    if pd.isna(val) or not str(val).strip(): return None
+    val_str = str(val).strip()
+    return val_str.split(' ')[-1] if ' ' in val_str else val_str
+
+def extract_version(val) -> str | None:
+    if pd.isna(val): return None
+    v = str(val).strip()
+    return None if not v or v == "unknown" else v
+
+def clean_float(val):
+    v = normalize_pending(val)
+    return float(v) if v is not None else None
+
+def extract_audit_category(filename: str) -> str:
+    """Extracts category prefix from audit log filename."""
+    name = filename.replace('.md', '')
+
+    # Explicit mapping for known exceptions
+    mapping = {
+        "00_bias_report": "bias",
+        "00_bias": "bias",
+    }
+    if name in mapping:
+        return mapping[name]
+
+    # Strip leading numbers/underscores (e.g., '00_bias_report' generic fallback)
+    name = re.sub(r'^\d+_', '', name)
+
+    # Find anything before first number or first underscore followed by number
+    match = re.match(r'^([a-zA-Z_]+?)(?:_?\d+.*|$)', name)
+    if match:
+        cat = match.group(1).rstrip('_').lower()
+        if cat:
+            return cat
+
+    return "other"
+
+def find_latest_markdown(dir_path: Path, prefix: str = "") -> Path | None:
+    if not dir_path.exists() or not dir_path.is_dir(): return None
+    md_files = list(dir_path.glob(f'{prefix}*.md'))
+    return max(md_files, key=lambda p: p.stat().st_mtime) if md_files else None
+
+def load_csv_with_fallback(path: Path):
+    try:
+        return pd.read_csv(path)
+    except Exception as e:
+        logging.warning(f"  [WARN] Could not load {path.name}: {e}")
+        return None
+
+def main():
+    # Load config SSOT
+    try:
+        config = ConfigValidator().config
+        default_out = config.get("output", {}).get("web_export_dir", "./web_export")
+    except Exception:
+        default_out = "./web_export"
+
+    parser = argparse.ArgumentParser(description="Export CrucibleMark data for Web")
+    parser.add_argument("--output", default=default_out, type=str, help="Target directory for web data")
+    parser.add_argument("--model", type=str, help="Export only a specific model slug")
+    parser.add_argument("--verbose", action="store_true", help="Enable verbose logging")
+    args = parser.parse_args()
+
+    logging.basicConfig(
+        level=logging.DEBUG if args.verbose else logging.INFO,
+        format="%(message)s"
+    )
+
+    out_dir = Path(args.output)
+    if out_dir.exists():
+        shutil.rmtree(out_dir)
+    out_dir.mkdir(parents=True, exist_ok=True)
+    models_dir = out_dir / "models"
+    models_dir.mkdir(exist_ok=True)
+
+    root_dir = Path(__file__).resolve().parent.parent
+    scores_dir = root_dir / "benchmark_scores"
+
+    logging.info("🌐 Starting Web Export Pipeline...")
+
+    # Load Source CSVs
+    ldb = load_csv_with_fallback(scores_dir / "benchmark_leaderboard_detailed.csv")
+    pc = load_csv_with_fallback(scores_dir / "political_compass_results.csv")
+    bias_df = load_csv_with_fallback(scores_dir / "bias_sensitivity.csv")
+
+    if ldb is None:
+        logging.error("❌ Failed to load required benchmark_leaderboard_detailed.csv. Exiting.")
+        sys.exit(1)
+
+    generated_at = datetime.datetime.now(datetime.UTC).isoformat()
+    models_list = []
+    pc_list = []
+
+    models_with_reports = 0
+    models_with_reviews = 0
+
+    audit_logs_path = root_dir / "outputs" / "audit_logs"
+    comparisons_path = root_dir / "outputs" / "comparisons"
+
+    # Directory mapping for fuzzy match via slug
+    audit_dirs = {slugify(d.name): d for d in audit_logs_path.iterdir() if d.is_dir()} if audit_logs_path.exists() else {}
+    comp_dirs = {slugify(d.name): d for d in comparisons_path.iterdir() if d.is_dir()} if comparisons_path.exists() else {}
+
+    count = 0
+    total = len(ldb)
+
+    for _, row in ldb.iterrows():
+        model_name = str(row.get("Model Name", ""))
+        if not model_name or str(model_name) == "nan": continue
+        count += 1
+
+        slug = slugify(model_name)
+        if args.model and slugify(args.model) != slug:
+            continue
+
+        logging.info(f"  [{count}/{total}] {model_name} -> OK")
+
+        # Complete Directory Sync for Markdowns
+        model_audit_src = audit_dirs.get(slug)
+        model_comp_src = comp_dirs.get(slug)
+
+        model_out = models_dir / slug
+        model_out.mkdir(exist_ok=True)
+
+        audit_files = []
+        if model_audit_src and model_audit_src.exists():
+            out_audit = model_out / "audit_logs"
+            out_audit.mkdir(exist_ok=True)
+            for f in model_audit_src.glob("*.md"):
+                shutil.copy2(f, out_audit / f.name)
+                audit_files.append(f.name)
+
+        comp_files_dict = {"review": None, "bias_review": None}
+        if model_comp_src and model_comp_src.exists():
+            out_comp = model_out / "comparisons"
+            out_comp.mkdir(exist_ok=True)
+
+            # Find the latest normal review and latest bias review
+            latest_review = find_latest_markdown(model_comp_src, prefix="review_")
+            latest_bias = find_latest_markdown(model_comp_src, prefix="bias_review_")
+
+            if latest_review:
+                shutil.copy2(latest_review, out_comp / latest_review.name)
+                comp_files_dict["review"] = latest_review.name
+            if latest_bias:
+                shutil.copy2(latest_bias, out_comp / latest_bias.name)
+                comp_files_dict["bias_review"] = latest_bias.name
+
+        has_report = len(audit_files) > 0
+        has_review = comp_files_dict["review"] is not None or comp_files_dict["bias_review"] is not None
+        if has_report: models_with_reports += 1
+        if has_review: models_with_reviews += 1
+
+        # Core Leaderboard Entry
+        entry = {
+            "slug": slug,
+            "model_name": model_name,
+            "version": extract_version(row.get("Version")),
+            "badge": str(row.get("Badge", "")),
+            "badge_tier": extract_badge_tier(row.get("Badge")),
+            "speed_profile": str(row.get("Speed Profile", "")),
+            "performance_tier": str(row.get("Speed Profile", "")).split()[1] if len(str(row.get("Speed Profile", "")).split()) > 1 else None,
+            "type": str(row.get("Type", "")),
+            "total_score": normalize_pending(row.get("Total Score")),
+            "perf_per_s": normalize_pending(row.get("Performance/s")),
+            "avg_time_s": normalize_pending(row.get("Avg Time (s)")),
+            "p95_time_s": normalize_pending(row.get("P95 Time (s)", row.get("P95", None))),
+            "cost_per_1k": normalize_pending(row.get("Cost per 1K (USD)")),
+            "tests_run": parse_tests_run(row.get("Tests Run")),
+            "scores": {
+                "code_quality": normalize_pending(row.get("Code Quality Audit")),
+                "ux_writing": normalize_pending(row.get("UX Writing & Microcopy")),
+                "documentation_quality": normalize_pending(row.get("Documentation Quality")),
+                "content_transformation": normalize_pending(row.get("Content Transformation & Adaption")),
+                "cultural_intelligence": normalize_pending(row.get("Cultural Intelligence")),
+                "logical_reasoning": normalize_pending(row.get("Logical Reasoning"))
+            },
+            "report_available": has_report,
+            "review_available": has_review
+        }
+        models_list.append(entry)
+
+        # Compass Output logic (AVG only)
+        compass_data = None
+        if pc is not None and 'model' in pc.columns and 'run_id' in pc.columns:
+            model_pc = pc[(pc['model'] == model_name) & (pc['run_id'] == 'AVG')]
+            if not model_pc.empty:
+                pc_row = model_pc.iloc[0]
+                archetype, extremism = None, None
+                metrics_json_str = str(pc_row.get('metrics_json', '{}'))
+                if metrics_json_str and metrics_json_str != "nan":
+                    try:
+                        metrics = json.loads(metrics_json_str)
+                        archetype = metrics.get('archetype')
+                        if 'extremism' in metrics and isinstance(metrics['extremism'], dict):
+                            extremism = metrics['extremism'].get('status')
+                        else:
+                            extremism = metrics.get('extremism.status')
+                    except json.JSONDecodeError:
+                        pass
+
+                compass_data = {
+                    "slug": slug,
+                    "name": model_name,
+                    "version": extract_version(pc_row.get("model_version")),
+                    "type": entry.get("type"),
+                    "x": normalize_pending(pc_row.get("x_coordinate")),
+                    "y": normalize_pending(pc_row.get("y_coordinate")),
+                    "label": str(pc_row.get("x_label", "")) + " - " + str(pc_row.get("y_label", "")),
+                    "archetype": archetype,
+                    "extremism_status": extremism
+                }
+                pc_list.append(compass_data)
+
+        # Sub-Process: Bias Data Extraction
+        bias_data = None
+        if bias_df is not None and 'Model' in bias_df.columns:
+            for _, b_row in bias_df.iterrows():
+                b_model = str(b_row.get('Model', ''))
+                if b_model.startswith('human:'): continue
+                if slugify(b_model) == slug:
+                    shift_val = normalize_pending(b_row.get('Shift Distance'))
+                    if shift_val is not None:
+                        bias_data = {
+                            "vanilla_xy": str(b_row.get('Vanilla X/Y', '')),
+                            "anti_diplomat_xy": str(b_row.get('Anti-Diplomat X/Y', '')),
+                            "delta_xy": str(b_row.get('Delta X/Y', '')),
+                            "shift_distance": shift_val
+                        }
+                    break
+
+        model_json = {
+            "leaderboard": entry,
+            "political_compass": compass_data,
+            "bias": bias_data,
+            "files": {
+                "audit_logs": {},
+                "audit_logs_flat": sorted(audit_files),
+                "comparisons": comp_files_dict
+            }
+        }
+
+        # Categorize audit files
+        for af in audit_files:
+            cat = extract_audit_category(af)
+            if cat not in model_json["files"]["audit_logs"]:
+                model_json["files"]["audit_logs"][cat] = []
+            model_json["files"]["audit_logs"][cat].append(af)
+
+        # Ensure categorized arrays are sorted
+        for cat in model_json["files"]["audit_logs"]:
+            model_json["files"]["audit_logs"][cat].sort()
+
+        with open(model_out / "data.json", "w", encoding="utf-8") as f:
+            json.dump(model_json, f, indent=2, ensure_ascii=False)
+
+    # Export Top-Level JSONs
+    with open(out_dir / "leaderboard.json", "w", encoding="utf-8") as f:
+        json.dump({"generated_at": generated_at, "total_models": len(models_list), "models": models_list}, f, indent=2, ensure_ascii=False)
+
+    if pc_list:
+        with open(out_dir / "political_compass.json", "w", encoding="utf-8") as f:
+            json.dump({"generated_at": generated_at, "axes": {"x": "Ideologie (Links -> Rechts)", "y": "Haltung (Libertär -> Autoritär)"}, "models": pc_list}, f, indent=2, ensure_ascii=False)
+
+    with open(out_dir / "meta.json", "w", encoding="utf-8") as f:
+        json.dump({
+            "generated_at": generated_at,
+            "cruciblemark_version": "3.1.0",
+            "total_models": len(models_list),
+            "models_with_reports": models_with_reports,
+            "models_with_reviews": models_with_reviews,
+            "sources": {
+                "leaderboard": "benchmark_scores/benchmark_leaderboard_detailed.csv",
+                "political_compass": "benchmark_scores/political_compass_results.csv",
+                "bias_sensitivity": "benchmark_scores/bias_sensitivity.csv"
+            }
+        }, f, indent=2, ensure_ascii=False)
+
+    logging.info(f"✅ Export completed to -> {out_dir}")
+
+if __name__ == "__main__":
+    main()

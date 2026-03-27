@@ -58,3 +58,7 @@ Gilt für Generation-Parameter UND LLM Judge. Modul-Override gewinnt immer.
 - Keine zufälligen oder hash-basierten Generierungen von Modell-Verisonen für identische API-Aufrufe (wie zuvor im `ModelFingerprinter`).
 - Versionen werden zentral in `utils/model_utils.py` innerhalb der `get_model_version()`-Methode über Regex und statische Mappings (z.B. Regex für Datums-Stamps wie `2024-05-13`) verarbeitet.
 - Ollama-Modellversionen werden direkt als ID-Hash über den `ollama list` Shell-Call zur Laufzeit ermittelt und nativ an das Leaderboard durchgereicht.
+
+## Python Subprocesses & Virtual Environments
+- **Ausführung von Python-Skripten via `subprocess`**: Wenn innerhalb eines Python-Skripts (z. B. in Wartungs- oder CLI-Skripten) weitere Python-Prozesse aufgerufen werden, darf niemals hartkodiertes `"python"` als Befehl verwendet werden. Dies bricht oft aus dem aktiven Virtual Environment (`.venv`) aus.
+- Stattdessen immer `sys.executable` verwenden, um sicherzustellen, dass der neue Prozess denselben Interpreter und dieselbe Umgebung nutzt wie der aufrufende Prozess (z.B. `cmd = [sys.executable, "update_guide.py"]`).

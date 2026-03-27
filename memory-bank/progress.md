@@ -11,6 +11,7 @@
 - [ ] Stabilität `gpt-oss` analysieren (vorheriger Absturz-Kandidat)
 
 ## Abgeschlossen (Meilensteine)
+- [DONE] Web-Export Pipeline (`scripts/web_export.py`) als Bindeglied für unabhängiges 11ty Frontend-Projekt entwickelt. Konvertiert CSVs in hierarchisches JSON und dedupliziert Markdown-Logs für Templating-Engines. Konfigurierbarer Ausgabeordner etabliert (`output.web_export_dir`). Maintenance Skripte (`clean.py`) für Virtual Environments stabilisiert.
 - [DONE] SSOT Provider Refactoring & Fail-Fast Fallback-Löschung für alle Integrationen (google, anthropic, mistral). Pylint Score auf pure 10/10 inkl. Pyright Type-Ignore `reportPrivateImportUsage`.
 - [DONE] "Judge: skip (zu kurz/abgelehnt)" Output in `unified_runner.py` implementiert, um transparente Ablehnungen im Log abzubilden.
 - [DONE] Runner-Konsolidierung (`UnifiedBenchmarkRunner`), CLI-Fixes und strikte Pylint/Pylance Fehlerbehebung.

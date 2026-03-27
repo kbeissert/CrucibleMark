@@ -1,3 +1,5 @@
+- Abgeschlossen: Datenexport-Pipeline (`scripts/web_export.py`) als saubere Basis für das externe 11ty-Frontend-Projekt entwickelt. Die generierten JSON-Datenstrukturen und Markdown-Zuweisungen (z. B. dedupliziertes Review/Bias-Review) liegen nun automatisiert vor.
+- Abgeschlossen: Subprozess-Ausführungen in Maintenance-Skripten (`clean.py`) auf konsequente Nutzung von `sys.executable` (statt `"python"`) umgestellt, um Virtual Environment (`.venv`) Inkompatibilitäten beim Aufruf über das Makefile zu beheben.
 - Abgeschlossen: Provider APIs (`utils/providers/*`) radikal auf strikte SSOT & "Fail-Fast"-Architektur (ohne versteckte Modell-Fallbacks) refaktoriert, Pylint 10.00/10 Score erreicht und Pylance-Stolpersteine im Google SDK behoben.
-- Nächster Schritt: Finale E2E Systemtests (Benchmark Run) durchführen, um sicherzustellen, dass die Fallback-Bereinigung keine Laufzeitfehler bei korrekter Konfiguration erzeugt.
+- Nächster Schritt: Externe Frontend-Entwicklung (separates Web-Projekt starten). Im aktuellen Projekt: Finale E2E Systemtests (Benchmark Run) durchführen.
 - Offen/Risiko: Keine.

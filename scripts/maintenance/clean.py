@@ -58,7 +58,8 @@ def clean_all_csvs():
 
 def _run_clean_results(model: str | None = None, module: str | None = None):
     import subprocess
-    cmd = ["python", "scripts/maintenance/clean_results.py"]
+    import sys
+    cmd = [sys.executable, "scripts/maintenance/clean_results.py"]
     if model:
         cmd.extend(["--model", model])
     if module:
