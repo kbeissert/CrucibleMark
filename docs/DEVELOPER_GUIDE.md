@@ -1,8 +1,8 @@
 # Developer Guide: Extending CrucibleMark
 
-**Zielgruppe:** Entwickler, die neue Test-Module erstellen oder das Scoring-System erweitern wollen.
+**Zielgruppe:** Entwickelnde, die neue Test-Module erstellen oder das Scoring-System erweitern wollen.
 
-**Was Sie hier finden:**
+**Was du hier findest:**
 
 - Quick Start: Neues Modul in 15 Minuten
 - Asset-Format & YAML-Schema
@@ -16,22 +16,20 @@
 
 ## 🛑 WICHTIG: Die 4 Design-Gesetze von CrucibleMark
 
-Bevor du ein neues Modul schreibst oder bestehenden Code erweiterst, **musst** du die obersten Architekturregeln dieses Projekts respektieren. Sie sind als **unumstoessliche Gesetze** zu betrachten:
+Vor dem Schreiben eines neuen Moduls oder dem Erweitern von bestehendem Code **müssen** die obersten Architekturregeln dieses Projekts respektiert werden:
 
 1. **Strict Separation of Concerns:** Die Datenmessung (Benchmark Loop) ist heilig, autark und darf NIEMALS durch Publishing-Funktionen blockiert werden.
 2. **SSOT & DRY:** Jede Funktion hat **genau ein** Modul. Kein Code-Kopieren! Erweitere existierende Module (Open/Closed Principle).
-3. **No Magic Numbers:** Alles wird ueber YAML gesteuert (Config-First). Keine hartkodierten Paramter im Code.
-4. **Anti-God-Script:** Schuetze das System vor monolithischen Skripten. Nutze gezielte Submodul-Breakouts.
+3. **No Magic Numbers:** Alles läuft über YAML (Config-First). Keine hardkodierten Parameter im Code.
+4. **Anti-God-Script:** Schütze das System vor monolithischen Skripten. Nutze gezielte Submodul-Breakouts.
 
-> 📖 **Details zu diesen Regeln findest du zwingend unter:** [ARCHITECTURE.md](ARCHITECTURE.md)
+> 📖 **Details zu diesen Regeln:** [ARCHITECTURE.md](ARCHITECTURE.md)
 
 ---
 
-______________________________________________________________________
-
 ## ⚡ Quick Start: Neues Modul erstellen
 
-### Option 1: Generator (Empfohlen)
+### Option 1: Generator (empfohlen)
 
 ```bash
 make create-module
@@ -39,9 +37,9 @@ make create-module
 
 **Der Wizard fragt:**
 
-1. Modul-ID (z.B. `api_design`)
-1. Score Group (`routine`, `reasoning`, `info`)
-1. Anzeigename (z.B. "API Design Review")
+1. Modul-ID (z. B. `api_design`)
+2. Score Group (`routine`, `reasoning`, `info`)
+3. Anzeigename (z. B. "API Design Review")
 
 **Output:**
 
@@ -50,13 +48,13 @@ make create-module
 - `config.yaml` vorkonfiguriert
 - Dummy-Assets zum Testen
 
-**Zeit:** ~2 Minuten bis zum ersten Test-Run
+**Zeit:** ca. zwei Minuten bis zum ersten Test-Run
 
 ______________________________________________________________________
 
 ### 🚀 Development Loop & Testing
 
-Für schnelle Iterationen ohne lange Wartezeiten (Memory Recovery) nutzen Sie den **Dev-Modus**:
+Für schnelle Iterationen ohne lange Wartezeiten den **Dev-Modus** nutzen:
 
 ```bash
 # Startet Benchmark mit verkürzten Pausen (5-10s statt 20-30s)
@@ -70,7 +68,7 @@ python run_benchmark.py --dev --model ministral:8b
 ```
 
 **Adaptive Pausen:**
-Das Framework nutzt `utils/adaptive_pause.py`, um dynamische Erholungspausen einzulegen (wichtig für Mac M-Chips mit Unified Memory). Im Dev-Modus sind diese Pausen aggressiver verkürzt, was zu leicht verfälschter Performance führen kann, aber die Entwicklungszeit drastisch reduziert.
+Das Framework nutzt `utils/adaptive_pause.py` für dynamische Erholungspausen (wichtig für Mac M-Chips mit Unified Memory). Im Dev-Modus sind diese Pausen kürzer – das kann Performance-Messungen leicht verfälschen, reduziert aber die Entwicklungszeit erheblich.
 
 ______________________________________________________________________
 
@@ -121,20 +119,16 @@ CrucibleMark nutzt eine deterministische, provider-spezifische Versionsermittlun
 ### Aktuelle Regeln
 
 1. **Kommerzielle Modelle:**
+   Das Framework leitet Versionen über feste Regex-Muster und statische Mappings aus dem Modellnamen ab.
+   Beispiele: `claude-sonnet-4-6` → `4.6`, `gpt-4o` → `2024-05-13`, `mistral-large-latest` → `2411`.
 
-  - Versionen werden über feste Regex-Muster und statische Mappings aus dem Modellnamen abgeleitet.
-  - Beispiele: `claude-sonnet-4-6` -> `4.6`, `gpt-4o` -> `2024-05-13`, `mistral-large-latest` -> `2411`.
+2. **Lokale Ollama-Modelle:**
+   Versionen liest das Framework zur Laufzeit aus `ollama list`.
+   Es verwendet die tatsächliche Ollama-ID des installierten Modells (Hash/ID-Spalte). Für lokale Modelle ist die gespeicherte Version ausschließlich dieser Hash – das erkennt Silent Updates direkt am ID-Wechsel.
 
-1. **Lokale Ollama-Modelle:**
-
-  - Versionen werden zur Laufzeit aus `ollama list` gelesen.
-  - Verwendet wird die tatsächliche Ollama-ID des installierten Modells (Hash/ID-Spalte).
-  - Für lokale Modelle ist die gespeicherte Version ausschließlich dieser Hash, um Silent Updates direkt am ID-Wechsel zu erkennen.
-
-### Implementation
+### Implementierung
 
 Die SSOT liegt in `utils/model_utils.py` in `get_model_version(model_name, provider, client)`.
-Ein separates Fingerprinting-Modul wird nicht mehr verwendet.
 
 ______________________________________________________________________
 
@@ -142,11 +136,9 @@ ______________________________________________________________________
 
 ### SSOT Prinzip (Single Source of Truth)
 
-Die `config.yaml` ist in **zwei Bereiche** unterteilt:
+Die `config.yaml` gliedert sich in **zwei Bereiche**:
 
 #### 1. GLOBAL (Mandatory) – Framework-Contract
-
-Diese Blöcke sind **Pflicht** und werden vom Framework gelesen:
 
 ```yaml
 # ====================================================================
@@ -172,9 +164,6 @@ integration:
     columns:
       - id: "your_score"
       - label: "Your Score"
-    # (AVG(Routine) + AVG(Reasoning) / 2).
-    # Dieses Modul liefert seinen Score an die entsprechende Kategorie.
-
 
 execution:
   test_class: "YourModuleTest"         # Klassenname in test.py
@@ -206,10 +195,9 @@ benchmarks:
 
 ---
 
-Every module's Controller (test.py) must return a `BenchmarkResult` object.
-This strictly typed DTO ensures all modules provide compatible data for the Leaderboard.
+Jeder Controller (`test.py`) muss ein `BenchmarkResult`-Objekt zurückgeben. Dieses strikt typisierte DTO stellt sicher, dass alle Module kompatible Daten für das Leaderboard liefern.
 
-The Result Schema (`schemas/result.py`) now includes:
+Das Result Schema (`schemas/result.py`) enthält:
 
 ```python
 class BenchmarkResult(BaseModel):
@@ -224,7 +212,7 @@ class BenchmarkResult(BaseModel):
     # ...
 ```
 
-When implementing `execute()`, ensure you populate `load_time` if available via `llm_client.last_response_metadata["load_duration"]`.
+`load_time` lässt sich in `execute()` wie folgt befüllen:
 
 ```python
 # Example in your Controller (test.py)
@@ -260,14 +248,12 @@ class BenchmarkResult(BaseModel):
     meta: Dict[str, Any] = {}         # Context (timestamp, prompt_len)
 ```
 
-**Why strict typing?**
-Previous versions returned loose Dictionaries, leading to chaotic CSV columns (`score` vs `total_score` vs `result`). The `BenchmarkResult` class enforces a single standard.
+**Warum strikt typisiert?**
+Frühere Versionen gaben lose Dictionaries zurück. Das führte zu chaotischen CSV-Spalten (`score` vs. `total_score` vs. `result`). Die `BenchmarkResult`-Klasse erzwingt einen einzigen Standard.
 
 ______________________________________________________________________
 
 #### 2. LOKAL (Optional) – Modul-spezifische Config
-
-Beliebige eigene Blöcke für Ihre Scoring-Logik:
 
 ```yaml
 # ====================================================================
@@ -301,13 +287,13 @@ ______________________________________________________________________
 | Mode | Verhalten | Use Case |
 |------|-----------|----------|
 | **`standard`** | Framework lädt Assets einzeln, instanziiert Test pro Asset | Code Quality, UX Writing (isolierte Tests) |
-| **`batch`** | Framework übergibt alle Assets, Test kontrolliert Loop | Political Compass (3x Runs), Custom Aggregation |
+| **`batch`** | Framework übergibt alle Assets, Test kontrolliert Loop | Political Compass (3× Runs), Custom Aggregation |
 
 ______________________________________________________________________
 
 ### Kaskadierende Score-Contributions
 
-**Ab v1.1:** Das Framework berechnet den **Routine Score** und **Reasoning Score** automatisch als Durchschnitt der entsprechenden Module. Die Unterscheidung findet primär auf **Modul-Level** statt (Mapping via Config), aber granulare Contributions sind weiterhin unterstützt.
+Das Framework berechnet **Routine Score** und **Reasoning Score** automatisch als Durchschnitt der entsprechenden Module.
 
 1. **Asset-Level** (höchste Priorität):
 
@@ -317,19 +303,17 @@ ______________________________________________________________________
        reasoning: 1.0  # Ordnet dieses Asset dem Reasoning Score zu
    ```
 
-1. **Modul-Level** (Standard):
+2. **Modul-Level** (Standard):
    Definiert in `config.yaml` → `integration` → `default_contribution`.
 
-   - `routine: 1.0` → Zählt zum "Routine Score" (z.B. Documentation, UX)
-   - `reasoning: 1.0` → Zählt zum "Reasoning Score" (z.B. Logical Reasoning)
+   - `routine: 1.0` → Zählt zum „Routine Score" (z. B. Documentation, UX)
+   - `reasoning: 1.0` → Zählt zum „Reasoning Score" (z. B. Logical Reasoning)
 
-1. **Total Score Berechnung:**
+3. **Total Score Berechnung:**
 
    ```python
    Total Score = (Routine Score + Reasoning Score) / 2
    ```
-
-   Dies belohnt Spezialisten und verhindert, dass reine Routine-Modelle durch Masse (viele einfache Tests) den Score verzerren.
 
 ______________________________________________________________________
 
@@ -337,17 +321,10 @@ ______________________________________________________________________
 
 ### Namenskonvention & Gruppierung (Last-Hyphen-Rule)
 
-Das Framework ermittelt die Anzahl der Tests (für das Leaderboard) automatisch anhand der Dateinamen im `assets/` Ordner. Dabei unterscheiden wir zwischen **Einzeltests** und **Test-Gruppen** (z.B. ein Test mit mehreren Teilaufgaben).
+Das Framework ermittelt die Anzahl der Tests anhand der Dateinamen im `assets/`-Ordner. Die Logik basiert auf dem **letzten Bindestrich (`-`)**:
 
-**Das Schema:**
-`{Modul}_{OptionalerName}_{Gruppe}-{Variante}.yaml`
-
-Die Logik basiert auf dem **letzten Bindestrich (`-`)**:
-
-- Alles **vor** dem letzten Bindestrich (gefolgt von Ziffern) wird als **Gruppen-ID** gewertet.
-- Alles **danach** ist die Variante (z.B. Frage-Nummer) und wird nicht separat gezählt.
-
-**Beispiele:**
+- Alles **vor** dem letzten Bindestrich (gefolgt von Ziffern) gilt als **Gruppen-ID**.
+- Alles **danach** ist die Variante und zählt nicht separat.
 
 | Dateiname | Erkannte Gruppe | Zählt als... |
 |-----------|-----------------|--------------|
@@ -394,7 +371,7 @@ ______________________________________________________________________
 
 ### Info-Module (Structured Output)
 
-Für Module ohne Scoring (z.B. Political Compass):
+Für Module ohne Scoring (z. B. Political Compass):
 
 ```yaml
 meta:
@@ -425,11 +402,9 @@ core/evaluators.py (Model/Logic)
 core/constants.py (Config/Data)
 ```
 
-**Regel:** `test.py` darf **keine** Scoring-Logik enthalten! Es orchestriert nur den Aufruf und verpackt das Ergebnis in `BenchmarkResult`.
+**Regel:** `test.py` darf **keine** Scoring-Logik enthalten. Es orchestriert nur den Aufruf und verpackt das Ergebnis in `BenchmarkResult`.
 
 ### Der Controller (`test.py`)
-
-Implementation des `execute`-Contracts:
 
 ```python
 from schemas.result import BenchmarkResult
@@ -538,8 +513,6 @@ ______________________________________________________________________
 
 ### Automatische Spalten
 
-Diese Spalten werden vom Framework gefüllt:
-
 | Spalte | Typ | Quelle |
 |--------|-----|--------|
 | `asset_id` | String | Dateiname |
@@ -547,7 +520,7 @@ Diese Spalten werden vom Framework gefüllt:
 | `timestamp` | DateTime | System |
 | `execution_time` | Float | `BenchmarkResult.execution_time` |
 | `total_score` | Float | `BenchmarkResult.primary_score` |
-| `percentage` | Float | Normalisiert (0-100) |
+| `percentage` | Float | Normalisiert (0–100) |
 | `routine_contribution` | Float | config.yaml |
 | `reasoning_contribution` | Float | config.yaml |
 
@@ -556,8 +529,6 @@ ______________________________________________________________________
 ### Custom Spalten
 
 Das Framework schreibt automatisch die Werte aus `BenchmarkResult.data` in die CSV, sofern sie flach genug sind.
-
-In `test.py` (via Evaluator):
 
 ```python
 # Evaluator return
@@ -569,8 +540,6 @@ return {
     }
 }
 ```
-
-Die `BenchmarkResult`-Validierung stellt sicher, dass keine zu tief verschachtelten Objekte (max 5 Levels) zurückgegeben werden.
 
 ______________________________________________________________________
 
@@ -585,7 +554,7 @@ make validate-assets
 ### Modul-Isolations-Test
 
 ```bash
-# Nur Ihr Modul in benchmark_config.yaml aktivieren
+# Nur dein Modul in benchmark_config.yaml aktivieren
 make benchmark-single MODEL=qwen2.5:7b MODULE=your_module
 ```
 
@@ -593,7 +562,7 @@ make benchmark-single MODEL=qwen2.5:7b MODULE=your_module
 
 ```bash
 make leaderboard
-# Prüfen: Ist Ihre Spalte da? Werte korrekt?
+# Prüfen: Ist die Spalte da? Sind die Werte korrekt?
 ```
 
 ______________________________________________________________________
@@ -603,27 +572,27 @@ ______________________________________________________________________
 ### DO's ✅
 
 1. **MVC-Trennung:** test.py = Controller, evaluators.py = Logik
-1. **Determinismus:** Fixe Seeds, keine Random ohne Seed
-1. **Config-First:** Schwellenwerte in config.yaml
-1. **Dokumentation:** README.md nach Template
+2. **Determinismus:** Fixe Seeds, kein Random ohne Seed
+3. **Config-First:** Schwellenwerte in config.yaml
+4. **Dokumentation:** README.md nach Template
 
 ### DON'Ts ❌
 
 1. **Keine LLM-Calls in Evaluators**
-1. **Keine Modell-spezifischen Hacks** (Unfairer Boost)
-1. **Keine Silent Failures** (Exceptions loggen!)
+2. **Keine Modell-spezifischen Hacks** (unfairer Boost)
+3. **Keine Silent Failures** (Exceptions loggen!)
 
 ______________________________________________________________________
 
 ## 🆘 Troubleshooting
 
-### "Scores are always 0%"
+### „Scores are always 0%"
 
 Debug-Checklist:
 
-1. Nimmst du ein `BenchmarkResult` in `score_response()` an und retournierst es wieder?
-1. Überträgst du `score_dict["score"]` zu `result.primary_score` in `score_response()`?
-1. Keywords case-sensitive?
+1. Nimmt `score_response()` ein `BenchmarkResult` an und gibt es zurück?
+2. Wird `score_dict["score"]` zu `result.primary_score` übertragen?
+3. Keywords case-sensitive?
 
 Debug-Tool:
 
@@ -636,12 +605,10 @@ ______________________________________________________________________
 ## 📚 Weiterführende Ressourcen
 
 - **ARCHITECTURE.md** – System-Design & MVC-Patterns
-- **USER_GUIDE.md** – Wie Nutzer Module ausführen
+- **USER_GUIDE.md** – Wie Nutzende Module ausführen
 - **GOLDEN_STANDARDS.md** – Referenz-Methodik
 
 ______________________________________________________________________
 
-**Happy Coding! 🚀**
-
-**Dokumenten-Version:** 3.0.1 (Rewrite Mar 2026)\
-**Kompatibel mit:** CrucibleMark v3.0.1+
+**Dokumenten-Version:** 3.1.0 (Überarbeitung März 2026)\
+**Kompatibel mit:** CrucibleMark v3.2.0+

@@ -2,9 +2,9 @@
 
 **Zielgruppe:** Alle, die CrucibleMark nutzen wollen – ohne Code-Kenntnisse erforderlich.
 
-**Was Sie hier finden:**
+**Was du hier findest:**
 
-- Quick Start (3 Befehle bis zum ersten Ergebnis)
+- Quick Start (drei Befehle bis zum ersten Ergebnis)
 - Benchmark-Steuerung (Modus-Auswahl, Modell-Filter)
 - Auswertung & Leaderboard
 - Troubleshooting
@@ -12,7 +12,9 @@
 > **Voraussetzung:** Installation abgeschlossen (`make install` ausgeführt).
 
 ## Besonderheit für Windows/Linux mit NVIDIA GPU (CUDA)
-Damit der sogenannte "Semantic Mode" (der für das Text-Scoring die Similarity-Engine auf die Grafikkarte auslagert) rasend schnell läuft, sollte *vor* dem Ausführen von `make install` die native PyTorch-Variante für CUDA installiert werden, andernfalls nutzt PyTorch als Fallback stets die langsamere CPU.
+
+Für maximale Geschwindigkeit im Semantic Mode vor `make install` die native PyTorch-Variante für CUDA installieren, andernfalls nutzt PyTorch als Fallback die langsamere CPU.
+
 ```bash
 # Beispiel für CUDA 12.1 (Windows/Linux)
 pip3 install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu121
@@ -20,7 +22,7 @@ pip3 install torch torchvision torchaudio --index-url https://download.pytorch.o
 
 ______________________________________________________________________
 
-👉 **WICHTIG:** Bevor du blind loslegst, schau einmal in den [Setup-Guide (SETUP_GUIDE.md)](SETUP_GUIDE.md). Im Setup musst du z. B. deine API-Keys, Module und Hardware eintragen, die sonst einen Fehler produzieren!
+👉 **WICHTIG:** Bevor du loslegst, den [Setup-Guide (SETUP_GUIDE.md)](SETUP_GUIDE.md) lesen. Dort müssen API-Keys, Module und Hardware eingetragen werden, sonst kommt es zu Fehlern.
 
 ______________________________________________________________________
 
@@ -39,7 +41,7 @@ make benchmark-dev
 make leaderboard
 ```
 
-**Fertig!** Die Ergebnisse finden Sie in `benchmark_scores/benchmark_leaderboard.csv`.
+**Fertig.** Die Ergebnisse liegen in `benchmark_scores/benchmark_leaderboard.csv`.
 
 ______________________________________________________________________
 
@@ -55,20 +57,20 @@ make benchmark
 
 1. **Modus wählen:**
 
-   - **Single Model** – Testen Sie ein spezifisches Modell (z.B. nur Qwen 2.5)
-   - **Batch Mode** – Testen Sie alle verfügbaren Modelle auf einmal
+   - **Single Model** – ein spezifisches Modell testen (z. B. nur Qwen 2.5)
+   - **Batch Mode** – alle verfügbaren Modelle auf einmal testen
 
-1. **Modell auswählen:**
+2. **Modell auswählen:**
 
    - Liste aller lokalen (Ollama) und kommerziellen Modelle
-   - Mit Connectivity-Check (✅ verfügbar / ❌ offline)
+   - Mit Connectivity-Check (✅ verfügbar oder ❌ offline)
 
-1. **Module aktivieren:**
+3. **Module aktivieren:**
 
-   - Code Quality, UX Writing, Reasoning, etc.
-   - Oder "All" für vollständigen Test
+   - Code Quality, UX Writing, Reasoning, u. a.
+   - Oder „All" für vollständigen Test
 
-1. **Automatischer Start:**
+4. **Automatischer Start:**
 
    - Progress-Bar zeigt Fortschritt
    - Ergebnisse werden live in CSV geschrieben
@@ -83,9 +85,7 @@ ______________________________________________________________________
 
 - Schneller Test eines neuen Modells
 - Debugging (wenn ein Modell unerwartete Scores hat)
-- API-Kosten sparen (nur 1 Modell testen)
-
-**Befehl:**
+- API-Kosten sparen (nur ein Modell testen)
 
 ```bash
 make benchmark MODEL=qwen2.5:14b
@@ -105,15 +105,13 @@ ______________________________________________________________________
 
 - Leaderboard-Update (alle Modelle auf neuesten Stand bringen)
 - Vergleich zwischen lokalen und kommerziellen Modellen
-- Overnight-Run (dauert 2-6 Stunden je nach Anzahl)
-
-**Befehl:**
+- Overnight-Run (dauert zwei bis sechs Stunden je nach Anzahl)
 
 ```bash
 make benchmark-auto
 ```
 
-**Was ist "auto"?**
+**Was ist „auto"?**
 
 - **Smart Skipping:** Überspringt bereits getestete Assets
 - **Auto-Retry:** Führt fehlgeschlagene Tests erneut aus
@@ -125,17 +123,114 @@ make benchmark-auto
 python scripts/benchmark_auto.py --force
 ```
 
-⚠️ **Warnung:** Dies ignoriert vorherige Ergebnisse und kostet API-Credits!
+⚠️ **Warnung:** Ignoriert vorherige Ergebnisse und verbraucht API-Credits.
+
+______________________________________________________________________
+
+### C. Political Compass & Safety Tests
+
+Das `political_compass`-Modul nutzt eine eigenständige Sicherheitsarchitektur und speichert nach jedem Block einen Zwischenstand (Checkpointing). Das ist bei über 70 Fragen elementar.
+
+- **Standard-Lauf (Resume/Caching):**
+  ```bash
+  make political-compass MODEL=modell_name
+  ```
+  Setzt einen abgebrochenen Run exakt dort fort, wo er aufgehört hat. Bereits gespeicherte Blöcke überspringt das System.
+
+- **Kompletter Neustart (Forced-Run):**
+  ```bash
+  make political-compass MODEL=modell_name FORCE=1
+  ```
+  Verwirft sämtliche bisherigen Caches und startet den vollen Test (Vanilla und Forced Modus) von vorne.
+
+- **Anomalie- & Sicherheitsprüfung:**
+  ```bash
+  make political-compass-safe MODEL=modell_name
+  ```
+  Startet den ausgedehnten „Safe-Run" (Triple-Run). Das Modell durchläuft den Testablauf zwingend drei Mal. Die Pipeline mittelt die korrekten Vektoren und sortiert halluzinierte Extreme aus.
+
+- **Human Baseline:**
+  ```bash
+  make benchmark-human
+  ```
+  Startet das interaktive Terminal-Interface, in dem ein menschlicher Nutzender den Political Compass beantwortet und als Referenzwert (`Human Baseline`) in den Auswertungen erscheint.
+
+______________________________________________________________________
+
+### D. Meta-Reviews (Magazin-Style) generieren
+
+```bash
+# Review für ein konkretes Modell erstellen
+make review MODEL="meta-llama/Llama-3.1-8B-Instruct"
+
+# Reviews für ALLE kürzlich getesteten Modelle erstellen
+make review ALL=1
+
+# Speziellen Bias/Safety-Review für ein Modell erstellen
+make review MODEL="meta-llama/Llama-3.1-8B-Instruct" TYPE="bias"
+
+# Spezielle Bias/Safety-Reviews für ALLE Modelle erstellen
+make review ALL=1 TYPE="bias"
+```
+
+> Weitere Details: [AUDIT_AND_METAREVIEW.md](AUDIT_AND_METAREVIEW.md).
+
+______________________________________________________________________
+
+### E. Analysen & Modell-Vergleiche (Diff Results)
+
+```bash
+make diff-results
+```
+
+Der interaktive UI-Assistent sammelt alle existierenden JSON-Resultate aus `outputs/runs/` und bietet drei Vergleichs-Modi:
+
+1. **Interner Vergleich:** Prüft, ob sich dasselbe Modell gegenüber einem früheren Lauf verschlechtert hat.
+2. **Modell-Vergleich:** Zwei unterschiedliche Modelle direkt gegeneinander.
+3. **Manuelle Auswahl:** Referenz- und Test-Datei frei bestimmen.
+
+Alternativ direkt mit Dateipfaden:
+
+```bash
+make diff-results REF=outputs/runs/v1.json TEST=outputs/runs/v2.json THRESH=0.15
+```
+
+______________________________________________________________________
+
+### F. Tooling & Maintenance Parameter
+
+#### 1. Zusätzliche Benchmark- & Test-Aufrufe
+
+- **`make run-benchmark`**: Öffnet einen interaktiven Terminal-Wizard zur geführten Modellauswahl.
+- **`make benchmark-cross-model MODULE=name`**: Evaluiert alle bekannten Modelle gegen ein einziges Modul.
+- **`make test`**: Startet alle internen Unit-Tests des Frameworks via `pytest`.
+
+#### 2. Systemgesundheit & Validierung
+
+- **`make judge-health`**: Connectivity-Pings gegen konfigurierte Provider, um API-Keys zu testen.
+- **`make list-modules`**: Listet alle momentan aktivierten Benchmark-Kategorien auf.
+- **`make validate`** oder **`make validate-single ASSET=pfad`**: Validiert das YAML-Schema der hinterlegten Tests.
+- **`make validate-structure`**: Testet, ob das Verzeichnis-Layout den Architekturvorgaben entspricht.
+- **`make audit-markdown`**: Durchsucht und bereinigt (mit optionalem Flag `FIX=1`) fehlerhafte Formatierungen in Dokumenten.
+
+#### 3. Projekt-Hygiene & Cleanup-Befehle
+
+- **`make clean-wizard`**: Startet den interaktiven Cleanup-Wizard. (Empfohlen)
+- **`make clean`**: Löscht Caches und temporäre Dateileichen. (Kombinierbar mit Flags: `make clean MODEL=Name`, `make clean MODULE=Key`)
+- **`make clean-sessions`**: Löscht temporäre Session-Zwischenspeicher.
+- **`make clean-runs`**: Bereinigt Run-Ordner und behält standardmäßig nur den aktuellsten Run pro Modell. (`FORCE=1` überspringt Nachfragen)
+- **`make clean-csv`**: Löscht alle generierten Benchmark-CSV-Dateien.
+- **`make clean-all`**: Radikal-Reset. Löscht zusätzlich alle bisherigen Run-Ordner und CSV-Scores. **DANGER.**
 
 ______________________________________________________________________
 
 ## 📐 Scoring Explained (v1.1)
 
-CrucibleMark verwendet unterschiedliche Scoring-Mechanismen:
+CrucibleMark nutzt unterschiedliche Scoring-Mechanismen:
 
 ### 1. Granular Rubric Scoring (Reasoning)
 
-Für komplexe Evaluierungen nutzen wir den **LLM-Judge** und strukturierte Rubrics für faire Teilpunkte.
+Für komplexe Evaluierungen nutzt das Framework den **LLM-Judge** und strukturierte Rubrics für faire Teilpunkte.
 
 **Beispiel (Scheduling Paradox):**
 
@@ -146,71 +241,67 @@ Für komplexe Evaluierungen nutzen wir den **LLM-Judge** und strukturierte Rubri
 
 ### 2. Hybrid Scoring (General)
 
-Standard-Module nutzen eine Mischung aus **40% Keyword-Matching** und **60% Semantic Similarity** zum Gold Standard.
+Standard-Module nutzen eine Mischung aus **40 % Keyword-Matching** und **60 % Semantic Similarity** zum Gold Standard.
 
 > **ℹ️ Info zur Semantic Similarity:** CrucibleMark nutzt das lokale KI-Modell **`all-MiniLM-L6-v2`** (via `sentence-transformers`), um die inhaltliche Bedeutung der Antworten mit der Musterlösung zu vergleichen.
 >
-> - **Vorteil:** Antwortet das Modell korrekt, nutzt aber andere Worte als die Musterlösung, wird dies erkannt.
-> - **Setup:** Das Modell (~80MB) wird bei der Installation (`make install`) einmalig heruntergeladen und lokal gecached.
+> - **Vorteil:** Antwortet das Modell korrekt, aber mit anderen Worten als die Musterlösung, erkennt das System das.
+> - **Setup:** Das Modell (~80 MB) lädt `make install` einmalig herunter und cached es lokal.
 
 ### 3. Audit Logs & Protokolle
 
-Aus einem ursprünglichen Entwickler-Tool für das Debugging von Fehlern ist eine umfassende Protokoll-Engine herangewachsen. Der **Audit-Modus** bietet heute ein klares, lückenloses Verständnis der Benchmarks für Mensch und Maschine von der initialen Eingabe bis zur Auswertung.
-Er generiert zu jedem getesteten Asset eine perfekt formatierte Markdown-Datei, die streng strukturiert ist. Diese Dateien protokollieren exakt:
-1. Den vollständig evaluierten **Prompt**, der an das Modell geschickt wurde.
-2. Die unverfälschte **Antwort** des bewerteten Modells.
-3. Die detaillierte Herleitung der Bewertung (inklusive Metadaten, Token-Limits und dem logischen Reasoning des LLM-Judges).
+Der **Audit-Modus** bietet ein klares, lückenloses Verständnis der Benchmarks von der Eingabe bis zur Auswertung. Er generiert zu jedem getesteten Asset eine strukturierte Markdown-Datei mit:
 
-Der Audit-Modus ist **standardmäßig aktiv**. Wenn du die Audit-Logs überspringen möchtest, kannst du die Protokollierung beim Benchmark-Start via `SILENT=1` Flag deaktivieren:
+1. Dem vollständig evaluierten **Prompt**, der an das Modell ging.
+2. Der unverfälschten **Antwort** des bewerteten Modells.
+3. Der detaillierten Herleitung der Bewertung (inkl. Metadaten, Token-Limits und Judge-Reasoning).
+
+Der Audit-Modus ist **standardmäßig aktiv**. Zum Deaktivieren:
+
 ```bash
 make benchmark MODEL=modell_name SILENT=1
 ```
-Alle generierten Markdown-Files findest du im Ordner `outputs/audit_logs/`. Dieser Modus ist das ideale Werkzeug, wenn du nachvollziehen möchtest, *warum* ein Modell eine bestimmte Punktzahl bekommen hat, ohne dafür manuell im Terminal mitlesen zu müssen.
 
-### 4. Metadaten-Tracking (Token-Limits / "Kopfnoten")
+Alle Markdown-Files liegen in `outputs/audit_logs/`.
 
-Nicht jeder LLM-Provider kann beliebige Output-Längen realisieren. Erlaubt ein Asset bis zu `8192` Token und das Modell verweigert dies (z.B. OpenAI max_completion_tokens, Anthropic max_tokens), greift ein **kaskadierendes Fallback** im Framework. Es schraubt die Limitanforderung transparent nach unten (z.B. auf 4096, 2048 Token), bis das Modell antwortet.
+### 4. Metadaten-Tracking (Token-Limits / „Kopfnoten")
 
-- **Pro Asset Info**: Jeder Audit-Log und jede Testzeile im Dashboard weist den final verwendeten Token-Wert gesondert als Info-Feld aus. Es verfälscht nicht die Mathe-Note, ist aber entscheidend als "Kopfnote".
-- **LLM Judge**: Dem Judge wird diese Kaskade ausgeblendet, er bewertet isoliert den Output-String ohne Bias bezüglich der Konfiguration.
+Nicht jeder LLM-Provider erlaubt beliebige Output-Längen. Verweigert ein Modell ein Asset mit bis zu 8192 Token, greift ein **kaskadierendes Fallback** (z. B. auf 4096, dann 2048 Token).
 
-### 5. Editor-Auswertung für System-Integration (Wrappper)
+- **Pro Asset:** Jeder Audit-Log und jede Testzeile weist den final verwendeten Token-Wert als Info-Feld aus.
+- **LLM Judge:** Der Judge bewertet isoliert den Output-String ohne Bias bezüglich der Konfiguration.
 
-Diese Meta-Informationen spielen im finalen Editor-Bericht eine prominente Rolle. Bevor Entwickler ein hoch-scorendes Modell (wie *Mistral* oder eine *lokale Ollama-Variante*) in eigene Tools (wie **AnythingLLM** oder **WebUI-Wrapper**) einbinden, ist die Information zum Output-Ratio essentiell. Ein Modell mit perfektem Score, das aber im Framework auf 2048 Token "zugeschnürt" werden musste um nicht abzustürzen, eignet sich oft nicht z.B. als Document-Analysis-Agent. Diese "Kopfnoten" bewahren Administratoren in der Praxis vor unliebsamen "Generation Cutoffs" in eigenen Projekten.
+### 5. Editor-Auswertung für System-Integration (Wrapper)
+
+Diese Meta-Informationen spielen im finalen Editor-Bericht eine prominente Rolle. Ein Modell mit perfektem Score, das aber auf 2048 Token zugeschnürt werden musste, eignet sich oft nicht als Document-Analysis-Agent. Diese „Kopfnoten" schützen vor unliebsamen „Generation Cutoffs" in eigenen Projekten.
 
 ______________________________________________________________________
 
 ## 🏆 Leaderboard generieren
 
-Nach dem Benchmark-Run:
-
 ```bash
 make leaderboard
 ```
 
-Der Befehl generiert **zwei CSV-Dateien** im Ordner `benchmark_scores/`:
+Der Befehl generiert **zwei CSV-Dateien** in `benchmark_scores/`:
 
 1. **`benchmark_leaderboard.csv` (Standard / Compact)**
-   - Entwickelt für die tägliche Ansicht, Dashboards, Readmes und kurze Vergleiche.
-   - Zeigt nur die wichtigsten aggregierten Score-Säulen und Performance-Ratings an.
+   Für die tägliche Ansicht, Dashboards und kurze Vergleiche.
 2. **`benchmark_leaderboard_detailed.csv` (Detailed)**
-   - Entwickelt für tiefgreifende Architekturanalysen, System-Stabilität und Latenz-Audits.
-   - Enthält ungefilterte Metriken wie Langzeit-Ausreißer (`P95 Time`), `Max Time`, `Timeout Counts` und strikt getrennte Basis-Scorings (`Routine Score` & `Reasoning Score`), die in der Compact-Version im `Total Score` verdeckt zusammenfließen.
+   Für tiefgreifende Architekturanalysen und Latenz-Audits. Enthält Metriken wie `P95 Time`, `Max Time`, `Timeout Counts` sowie `Routine Score` und `Reasoning Score` separat.
 
 ### Was zeigen die Leaderboard Metriken?
 
-Das Leaderboard ist ein **Decision-Making Tool**, nicht nur ein Ranking. Es berücksichtigt immer nur den **letzten lokalen Run** pro Modell.
-
 | Metrik (Auszug) | Zu finden in | Bedeutung |
 |-----------------|--------------|-----------|
-| **Badge** | Beide | Qualitäts-Tier (🏆 Gold, 🥈 Silver, 🥉 Bronze, ⚖️ Standard) |
+| **Badge** | Beide | Qualitäts-Tier (💎 Platinum, 🏆 Gold, 🥈 Silver, 🥉 Bronze, ⚖️ Standard) |
 | **Speed Profile** | Beide | Mix aus Speed & Skill (z. B. ⚡ Real-Time DevOps) |
 | **Total Score** | Beide | 50/50 Gewichtung aus Routine & Reasoning |
-| **Routine Score** | Detailed | Leistung bei einfachen Tasks (Tippfehler, UX Text) |
-| **Reasoning Score** | Detailed | Leistung bei Logik-Rätseln & System-Architektur |
-| **P95 Time (s)** | Detailed | Latenz-Spitze: Dauer der langsamsten 5% der Requests |
+| **Routine Score** | Detailed | Leistung bei einfachen Tasks |
+| **Reasoning Score** | Detailed | Leistung bei Logik-Rätseln & Systemarchitektur |
+| **P95 Time (s)** | Detailed | Latenz-Spitze: Dauer der langsamsten 5 % der Requests |
 | **Max Time (s)** | Detailed | Dauer des extremsten Einzelausreißers |
-| **Timeout Count** | Detailed | Anzahl der erzwungenen Abbrüche (API / Lokaler Error) |
+| **Timeout Count** | Detailed | Anzahl der erzwungenen Abbrüche |
 
 ______________________________________________________________________
 
@@ -218,17 +309,29 @@ ______________________________________________________________________
 
 ### 1. Quality Tiers (Absolute Standards)
 
-| Badge | Score Hürde | Bedeutung | |-------|-------------|-----------| | 🏆 **Gold** | ≥ 85% | Elite, Production-Ready | | 🥈 **Silver** | ≥ 70% | Solide für die meisten Aufgaben | | 🥉 **Bronze** | ≥ 55% | OK für einfache Tasks | | ⚖️ **Standard** | < 55% | Needs Improvement |
+Die kanonischen Schwellenwerte stammen aus `benchmark_config.yaml` (`scoring_tiers`). Details: [SCORING_METHODOLOGY.md](SCORING_METHODOLOGY.md).
+
+| Badge | Score Hürde | Bedeutung |
+|-------|-------------|-----------|
+| 💎 **Platinum** | ≥ 95 % | SOTA Elite, nahezu perfekte Gesamtleistung |
+| 🏆 **Gold** | ≥ 80 % | Exzellent, konstant top über alle Disziplinen |
+| 🥈 **Silver** | ≥ 65 % | Production-ready, gute Balance |
+| 🥉 **Bronze** | ≥ 50 % | Akzeptable Leistung, klare Einschränkungen |
+| ⚖️ **Standard** | < 50 % | Eingeschränkt, nicht für komplexe Agenten |
 
 ### 2. Speed Classes
 
-| Klasse | Zeitlimit | Use Case | |--------|-----------|----------| | ⚡ **Fast** | < 40s | Autocomplete, Chat, Realtime | | ⏱️ **Medium** | 40s - 80s | Code Review, Doku, Interaktiv | | 🐢 **Slow** | > 80s | Batch Processing, Deep Analysis |
+| Klasse | Zeitlimit | Use Case |
+|--------|-----------|----------|
+| ⚡ **Fast** | < 40s | Autocomplete, Chat, Realtime |
+| ⏱️ **Medium** | 40s–80s | Code Review, Doku, Interaktiv |
+| 🐢 **Slow** | > 80s | Batch Processing, Deep Analysis |
 
 ### 3. Skill Profiles (Beispiele)
 
-- **Fast All-Rounder:** Schnell & gut in allem (z.B. Mistral Large)
-- **Fast Code Reviewer:** Spezialist für Code, sehr schnell (z.B. Qwen 2.5 Coder)
-- **Slow Deep Thinker:** Stark im Reasoning, aber langsam (z.B. Phi-4)
+- **Fast All-Rounder:** Schnell & gut in allem (z. B. Mistral Large)
+- **Fast Code Reviewer:** Spezialist für Code, sehr schnell (z. B. Qwen 2.5 Coder)
+- **Slow Deep Thinker:** Stark im Reasoning, aber langsam (z. B. Phi-4)
 
 ______________________________________________________________________
 
@@ -236,21 +339,13 @@ ______________________________________________________________________
 
 CrucibleMark unterscheidet präzise zwischen **Ladezeit** und **Ausführungszeit**:
 
-1. **Phase 1: Warm-up Probe (Kaltstart Messung)**
+1. **Phase 1: Warm-up Probe (Kaltstart-Messung)**
+   Vor jedem Benchmark sendet der Runner eine „Ping"-Anfrage (`system_warmup_probe`), um zu messen, wie lange das Modell braucht, um in den VRAM zu laden. Dieser Wert erscheint als `Initial Load` im Leaderboard, fließt aber **nicht** in die Durchschnitts-Geschwindigkeit ein.
 
-   - Vor jedem Benchmark sendet der Runner eine "Ping"-Anfrage (`system_warmup_probe`).
-   - **Ziel:** Messen, wie lange das Modell braucht, um von der Festplatte in den VRAM zu laden (Initial Load).
-   - Dieser Wert landet als `Initial Load` im Leaderboard, fließt aber **nicht** in die Durchschnitts-Geschwindigkeit ein.
+2. **Phase 2: Benchmark (Warmzustand)**
+   Die eigentlichen Tests laufen auf dem bereits geladenen Modell. **Execution Time** ist die reine Rechenzeit für die Antwortgenerierung.
 
-1. **Phase 2: Benchmark (Warmzustand)**
-
-   - Die eigentlichen Tests laufen auf dem bereits geladenen Modell.
-   - **Execution Time:** Die reine Rechenzeit für die Antwort-Generierung (ohne Lade-Latenz).
-   - Dies sorgt für faire Messergebnisse der Modell-Geschwindigkeit, unabhängig von der Hardware-Startzeit.
-
-> **Hinweis:** Bitte beachten Sie, dass es sich hierbei um **hardwareabhängige Momentaufnahmen** handelt. Die Werte (`Initial Load` & `Avg Speed`) evaluieren nicht das isolierte Modell, sondern das Zusammenspiel aus Modellarchitektur und der spezifischen Hardwareumgebung (RAM, GPU), auf der der Test ausgeführt wird.
-
-In den CSV-Ausgaben (`local_models_benchmark.csv`) befindet sich eine dedizierte Spalte `load_time`.
+> **Hinweis:** Diese Werte sind **hardwareabhängige Momentaufnahmen**. Sie evaluieren nicht das isolierte Modell, sondern das Zusammenspiel aus Modellarchitektur und der spezifischen Hardwareumgebung (RAM, GPU).
 
 ______________________________________________________________________
 
@@ -261,19 +356,14 @@ ______________________________________________________________________
 CrucibleMark speichert den Fortschritt automatisch:
 
 1. **Checkpoint erstellt:** Nach jedem abgeschlossenen Asset
-1. **Session-Datei:** `outputs/temp/session_<model>.json`
-1. **Auto-Resume:** Beim nächsten Start wird gefragt:
+2. **Session-Datei:** `outputs/temp/session_<model>.json`
+3. **Auto-Resume:** Beim nächsten Start kommt die Abfrage:
    ```
    🔄 Found existing session for qwen2.5:14b (45% complete).
    Resume? [Y/n]
    ```
 
-### Session-Verfallsdatum
-
-- **48 Stunden:** Sessions älter als 2 Tage werden verworfen
-- **Grund:** Verhindert versehentliches Fortsetzen veralteter Tests
-
-### Manuelle Session-Bereinigung
+Sessions älter als 48 Stunden werden verworfen, um versehentliches Fortsetzen veralteter Tests zu vermeiden.
 
 ```bash
 # Alle Sessions löschen (Fresh Start)
@@ -284,9 +374,7 @@ ______________________________________________________________________
 
 ## 🔍 Troubleshooting
 
-### Problem: "Model not found"
-
-**Lösung:**
+### Problem: „Model not found"
 
 ```bash
 # Prüfen, ob Modell verfügbar ist
@@ -298,49 +386,31 @@ ollama pull qwen2.5:14b
 
 ______________________________________________________________________
 
-### Problem: "API Rate Limit" (kommerzielle Modelle)
-
-**Symptom:**
+### Problem: „API Rate Limit" (kommerzielle Modelle)
 
 ```text
 ❌ Error: 429 Too Many Requests
 ```
 
-**Lösung:**
-
-- Warten Sie 60 Sekunden
-- CrucibleMark hat **automatisches Retry** mit Exponential Backoff
-- Bei wiederholten Fehlern: API-Key-Limit prüfen
+60 Sekunden warten. CrucibleMark hat **automatisches Retry** mit Exponential Backoff. Bei wiederholten Fehlern: API-Key-Limit prüfen.
 
 ______________________________________________________________________
 
-### Problem: Scores sind 0% (obwohl Antwort gut aussieht)
-
-**Debug-Modus aktivieren:**
+### Problem: Scores sind 0 % (obwohl Antwort gut aussieht)
 
 ```bash
 python scripts/run_local_benchmark.py --debug-responses
 ```
 
-**Was passiert:**
-
-- Vollständige Modell-Antworten werden gespeichert
-- Enthält: Score, Reasoning, ungekürzte Antwort
-
-**Automatisch aktiviert bei:**
-
-
 ______________________________________________________________________
 
-### Problem: Benchmark hängt bei "Generating response..."
+### Problem: Benchmark hängt bei „Generating response..."
 
 **Mögliche Ursachen:**
 
 1. **Ollama offline:** `ollama list` testen
-1. **Modell zu groß:** RAM voll (prüfen Sie `htop` / Task Manager)
-1. **API-Timeout:** Kommerzielle Modelle > 120s Response-Zeit
-
-**Lösung:**
+2. **Modell zu groß:** RAM voll (prüfen via `htop` oder Task Manager)
+3. **API-Timeout:** Kommerzielle Modelle > 120 s Response-Zeit
 
 ```bash
 # Ollama neustarten
@@ -368,13 +438,11 @@ ______________________________________________________________________
 
 ### Backup erstellen
 
-**Empfehlung:** Vor großen Änderungen (neue Module, Config-Updates):
-
 ```bash
 make backup
 ```
 
-**Was wird gesichert:**
+**Was gesichert wird:**
 
 - Alle CSV-Dateien
 - Konfigurationen
@@ -385,7 +453,7 @@ ______________________________________________________________________
 
 ### Daten bereinigen
 
-⚠️ **Vorsicht:** Diese Befehle löschen Daten unwiderruflich!
+⚠️ **Vorsicht:** Diese Befehle löschen Daten unwiderruflich.
 
 ```bash
 # Einzelnes Modell entfernen
@@ -397,12 +465,6 @@ make clean-module MODULE=ux_writing
 # Alles löschen (Komplett-Reset)
 make clean-csv
 ```
-
-**Wann nutzen?**
-
-- Fehlerhafter Test-Run (falsche Config)
-- Modell wurde neu trainiert
-- Modul-Assets wurden geändert (alte Scores nicht mehr vergleichbar)
 
 ______________________________________________________________________
 
@@ -437,15 +499,11 @@ ______________________________________________________________________
 
 ### Custom Module aktivieren/deaktivieren
 
-**Datei:** `benchmark_config.yaml`
-
 ```yaml
 modules:
   political_compass:
     enabled: false  # Modul überspringen
 ```
-
-Nach Änderung:
 
 ```bash
 make leaderboard  # Leaderboard neu generieren
@@ -456,10 +514,6 @@ ______________________________________________________________________
 ## 🆘 Hilfe & Support
 
 ### Logs prüfen
-
-**Konsole:** Zeigt nur wichtige Meldungen (User-freundlich)
-
-**Vollständiges Log:**
 
 ```bash
 tail -f logs/crucible.log
@@ -483,8 +537,7 @@ ______________________________________________________________________
 
 ### Community & Docs
 
-- **GitHub Issues:** [github.com/yourusername/cruciblemark/issues](https://github.com/yourusername/cruciblemark/issues)
-- **Discussions:** [github.com/yourusername/cruciblemark/discussions](https://github.com/yourusername/cruciblemark/discussions)
+- **GitHub Issues:** [github.com/kbeissert/cruciblemark/issues](https://github.com/kbeissert/cruciblemark/issues)
 - **Developer Guide:** Siehe `docs/DEVELOPER_GUIDE.md` (für Modul-Entwicklung)
 - **Architecture:** Siehe `docs/ARCHITECTURE.md` (für System-Design)
 
@@ -495,8 +548,8 @@ ______________________________________________________________________
 **Nach dem ersten Benchmark:**
 
 1. ✅ Leaderboard studieren (`benchmark_leaderboard.csv`)
-1. ✅ Badge-Kategorien verstehen (God Mode vs Daily Driver)
-1. ✅ Modell für Ihren Use Case wählen
+2. ✅ Badge-Kategorien verstehen (Platinum bis Standard)
+3. ✅ Modell für den eigenen Use Case wählen
 
 **Für Fortgeschrittene:**
 
@@ -540,166 +593,5 @@ make benchmark MODEL=your-test-model
 
 ______________________________________________________________________
 
-**Happy Benchmarking! 🚀**
-
-______________________________________________________________________
-
-**Dokumenten-Version:** 3.0.0 (Rewrite Mar 2026)\
-**Kompatibel mit:** CrucibleMark v3.0.0+
-
-
-### C. Political Compass & Safety Tests
-
-Das `political_compass` Modul nutzt eine eigenständige Sicherheitsarchitektur und speichert nach jedem Block einen Zwischenstand (Checkpointing). Dies ist bei über 70 Fragen elementar.
-
-- **Standard-Lauf (Resume/Caching):**
-  ```bash
-  make political-compass MODEL=modell_name
-  ```
-  Setzt einen abgebrochenen PC-Run exakt dort fort, wo er aufgehört hat. Bereits gespeicherte Blöcke und finale Scores im Cache werden intelligent übersprungen und die noch fehlenden Fragen abgearbeitet.
-
-- **Kompletter Neustart (Forced-Run):**
-  ```bash
-  make political-compass MODEL=modell_name FORCE=1
-  ```
-  Erzwingt einen kompletten Neustart des Kompass-Tests. Sämtliche bisherigen Caches für dieses Modell werden verworfen und der volle Test (Vanilla + Forced Modus) wird von vorne begonnen.
-
-- **Anomalie- & Sicherheitsprüfung:**
-  ```bash
-  make political-compass-safe MODEL=modell_name
-  ```
-  Startet den ausgedehnten "Safe-Run" (Triple-Run). Hierbei muss das Modell den gesamten Testablauf zwingend drei Mal komplett asynchron durchlaufen. Die Pipeline mittelt die korrekten Vektoren und sortiert mutmaßlich halluzinierte Extreme aus, um auf weichen Vektor-Shifts eine stabile Grund-Ausrichtung zu validieren.
-
-- **Human Baseline:**
-  ```bash
-  make benchmark-human
-  ```
-  Startet das interaktive Terminal-Interface, in dem ein menschlicher Benutzer den CrucibleMark Political Compass Test beantworten kann, um als Referenzwert (`Human Baseline`) in den Auswertungen mit aufzutauchen.
-
-
-### C. Political Compass & Safety Tests
-
-Das `political_compass` Modul nutzt eine eigenständige Sicherheitsarchitektur und speichert nach jedem Block einen Zwischenstand (Checkpointing). Dies ist bei über 70 Fragen elementar.
-
-- **Standard-Lauf (Resume/Caching):**
-  ```bash
-  make political-compass MODEL=modell_name
-  ```
-  Setzt einen abgebrochenen PC-Run exakt dort fort, wo er aufgehört hat. Bereits gespeicherte Blöcke und finale Scores im Cache werden intelligent übersprungen und die noch fehlenden Fragen abgearbeitet.
-
-- **Kompletter Neustart (Forced-Run):**
-  ```bash
-  make political-compass MODEL=modell_name FORCE=1
-  ```
-  Erzwingt einen kompletten Neustart des Kompass-Tests. Sämtliche bisherigen Caches für dieses Modell werden verworfen und der volle Test (Vanilla + Forced Modus) wird von vorne begonnen.
-
-- **Anomalie- & Sicherheitsprüfung:**
-  ```bash
-  make political-compass-safe MODEL=modell_name
-  ```
-  Startet den ausgedehnten "Safe-Run" (Triple-Run). Hierbei muss das Modell den gesamten Testablauf zwingend drei Mal komplett asynchron durchlaufen. Die Pipeline mittelt die korrekten Vektoren und sortiert mutmaßlich halluzinierte Extreme aus, um auf weichen Vektor-Shifts eine stabile Grund-Ausrichtung zu validieren.
-
-- **Human Baseline:**
-  ```bash
-  make benchmark-human
-  ```
-  Startet das interaktive Terminal-Interface, in dem ein menschlicher Benutzer den CrucibleMark Political Compass Test beantworten kann, um als Referenzwert (`Human Baseline`) in den Auswertungen mit aufzutauchen.
-
-
-### C. Political Compass & Safety Tests
-
-Das `political_compass` Modul nutzt eine eigenständige Sicherheitsarchitektur und speichert nach jedem Block einen Zwischenstand (Checkpointing). Dies ist bei über 70 Fragen elementar.
-
-- **Standard-Lauf (Resume/Caching):**
-  ```bash
-  make political-compass MODEL=modell_name
-  ```
-  Setzt einen abgebrochenen PC-Run exakt dort fort, wo er aufgehört hat. Bereits gespeicherte Blöcke und finale Scores im Cache werden intelligent übersprungen und die noch fehlenden Fragen abgearbeitet.
-
-- **Kompletter Neustart (Forced-Run):**
-  ```bash
-  make political-compass MODEL=modell_name FORCE=1
-  ```
-  Erzwingt einen kompletten Neustart des Kompass-Tests. Sämtliche bisherigen Caches für dieses Modell werden verworfen und der volle Test (Vanilla + Forced Modus) wird von vorne begonnen.
-
-- **Anomalie- & Sicherheitsprüfung:**
-  ```bash
-  make political-compass-safe MODEL=modell_name
-  ```
-  Startet den ausgedehnten "Safe-Run" (Triple-Run). Hierbei muss das Modell den gesamten Testablauf zwingend drei Mal komplett asynchron durchlaufen. Die Pipeline mittelt die korrekten Vektoren und sortiert mutmaßlich halluzinierte Extreme aus, um auf weichen Vektor-Shifts eine stabile Grund-Ausrichtung zu validieren.
-
-- **Human Baseline:**
-  ```bash
-  make benchmark-human
-  ```
-  Startet das interaktive Terminal-Interface, in dem ein menschlicher Benutzer den CrucibleMark Political Compass Test beantworten kann, um als Referenzwert (`Human Baseline`) in den Auswertungen mit aufzutauchen.
-
-## D. Meta-Reviews (Magazin-Style) generieren
-
-CrucibleMark bietet ein Modul zur Erstellung von redaktionellen Zusammenfassungen, den Meta-Reviews.
-
-Die Erstellung wird über den konsolidierten Befehl `make review` gesteuert, der verschiedene Aufruf-Flags unterstützt:
-
-```bash
-# Review für ein konkretes Modell erstellen
-make review MODEL="meta-llama/Llama-3.1-8B-Instruct"
-
-# Reviews für ALLE kürzlich getesteten Modelle im Rutsch erstellen
-make review ALL=1
-
-# Speziellen Bias/Safety-Review für ein Modell erstellen
-make review MODEL="meta-llama/Llama-3.1-8B-Instruct" TYPE="bias"
-
-# Spezielle Bias/Safety-Reviews für ALLE Modelle erstellen
-make review ALL=1 TYPE="bias"
-```
-
-> **Hinweis:** Weitere Details zur Funktionsweise, Konfiguration und Anpassung des Meta-Reviewers findest du in [AUDIT_AND_METAREVIEW.md](AUDIT_AND_METAREVIEW.md).
-
-## E. Analysen & Modell-Vergleiche (Diff Results)
-
-Hast du zwei verschiedene Benchmark-Läufe, die du miteinander vergleichen möchtest? Das CrucibleMark Framework bietet ein iteratives Comparison-Tool:
-
-```bash
-make diff-results
-```
-
-Mit Start dieses Befehls öffnet sich ein interaktiver UI-Assistent im Terminal, der automatisch alle existierenden JSON-Resultate aus `outputs/runs/` sammelt und dir verschiedene Vergleichs-Modi anbietet:
-
-1. **Interner Vergleich:** Prüft, ob sich dasselbe Modell im Vergleich zu einem früheren Lauf verschlechtert hat (z. B. nach Anpassung des System-Prompts oder der Framework-Version). Das System schlägt dir automatisch den älteren Lauf als Referenz und den neueren als Test vor.
-2. **Modell-Vergleich:** Lässt zwei unterschiedliche Modelle direkt gegeneinander antreten (Referenz-Modell vs. Test-Modell). Auch hier wählt das System jeweils den neuesten Run der beiden gewählten Modelle.
-3. **Manuelle Auswahl:** Erlaubt dir, aus allen Dateien individuell und frei die Referenz- und die Test-Datei zu bestimmen.
-
-Alternativ kannst du für schnelle CLI-Automatisierung auch direkt Dateipfade mit optionalem Abweichungsschwellenwert (z.B. `--threshold 0.15` für $\ge 15\%$) via Makefile-Flags mitgeben:
-
-```bash
-make diff-results REF=outputs/runs/v1.json TEST=outputs/runs/v2.json THRESH=0.15
-```
-
-## F. Tooling & Maintenance Parameter
-
-CrucibleMark bietet ein umfangreiches Repertoire an Tools, um das Framework sauber und aktuell zu halten:
-
-### 1. Zusätzliche Benchmark- & Test-Aufrufe
-Neben den regulären `make benchmark` Befehlen existieren folgende Ergänzungen:
-- **`make run-benchmark`**: Öffnet einen rein interaktiven Terminal-Wizard zur geführten Modellauswahl.
-- **`make benchmark-cross-model MODULE=name`**: Evaluiert alle bekannten Modelle zwingend gegen *ein einziges* Modul (hilfreich bei der Modul-Entwicklung).
-- **`make test`**: Startet via `pytest` alle internen Unit-Tests des Frameworks.
-
-### 2. Systemgesundheit & Validierung
-- **`make judge-health`**: Führt Connectivity-Pings gegen die konfigurierten Provider (OpenAI, Anthropic, lokales Ollama) durch, um API-Keys zu testen.
-- **`make list-modules`**: Listet alle momentan aktivierten Benchmark-Kategorien auf.
-- **`make validate`** / **`make validate-single ASSET=pfad`**: Validiert das YAML-Schema der hinterlegten Tests.
-- **`make validate-structure`**: Testet, ob das Verzeichnis-Layout den Architekturvorgaben entspricht.
-- **`make audit-markdown`**: Durchsucht und bereinigt (mit optionalem Flag `FIX=1`) fehlerhafte Formatierungen (wie Trailing Whitespaces) in Dokumenten.
-
-### 3. Projekt-Hygiene & Cleanup-Befehle (Konsolidiert)
-
-Die Cleanup-Prozesse wurden in einem zentralen, interaktiven System zusammengefasst.
-
-- **`make clean-wizard`**: Startet den interaktiven Cleanup-Wizard im Terminal, über den du flexibel Caches, Runs oder Ergebnisse einzelner Modelle sicher und geführt bereinigen kannst. (Empfohlen)
-- **`make clean`**: Löscht Caches und temporäre Dateileichen (z.B. Python Bytecode, `__pycache__`, alte Reports, Audit-Logs). (Kann kombiniert werden mit Flags: `make clean MODEL=Name`, `make clean MODULE=Key`)
-- **`make clean-sessions`**: Löscht temporäre Session-Zwischenspeicher.
-- **`make clean-runs`**: Bereinigt ausufernde Run-Ordner und behält standardmäßig nur den 1 aktuellsten Run pro Modell. (`make clean-runs FORCE=1` überspringt Nachfragen).
-- **`make clean-csv`**: Löscht alle standardmäßig generierten Benchmark-CSV Dateien.
-- **`make clean-all`**: Radikal-Reset. Löscht zusätzlich zur Standard-Cache-Leerung **alle** bisherigen Benchmark-Run Ordner und CSV-Scores. DANGER.
+**Dokumenten-Version:** 3.1.0 (Überarbeitung März 2026)\
+**Kompatibel mit:** CrucibleMark v3.2.0+

@@ -1,65 +1,67 @@
-# CrucibleMark Maintenance: Test Count & Aggregation
+# CrucibleMark: Maintenance & Fehlerbehebungen
 
 ## Leaderboard Numerator Fix (v2.2)
 
-**Date:** 2026-03-16
-**Status:** Resolved
+**Datum:** 2026-03-16
+**Status:** Behoben
 
-### Problem Description
+### Problembeschreibung
 
-Even after decoupling the Political Compass, the `Tests Run` fraction still showed an inflated numerator (e.g., "44/43"). This occurred because `scripts/leaderboard/score_calculator.py` iterated blindly over all unique categories present in the data to build the `logical_count` (numerator), without checking if `enable_scoring: false` was set in the module configs, inadvertently picking up Political Compass or System Probe test artifacts.
+Nach dem Entkoppeln des Political Compass zeigte der `Tests Run`-Zähler noch immer einen überhöhten Numerator (z. B. "44/43"). `scripts/leaderboard/score_calculator.py` iterierte blind über alle einzigartigen Kategorien im Datensatz, ohne zu prüfen, ob `enable_scoring: false` in den Modul-Configs gesetzt war. So erfasste der Calculator versehentlich Political Compass- oder System Probe-Artefakte.
 
-### Resolution
+### Lösung
 
-1. **Category Filtering:** Added a `counting_cats` Set to `_calculate_run_counts` in `score_calculator.py`. Only modules that actually yield a score (`enable_scoring: True`) or strictly declare a custom `display_test_count` are evaluated.
-2. **Docs Cleanup:** Purged leftover `display_test_count: 9` artifacts from module READMEs and Development Guides to prevent future confusion.
+1. **Category Filtering:** `_calculate_run_counts` in `score_calculator.py` erhielt ein `counting_cats`-Set. Nur Module mit aktivem Scoring (`enable_scoring: True`) oder explizitem `display_test_count` fließen in die Zählung ein.
+2. **Docs Cleanup:** Veraltete `display_test_count: 9`-Artefakte aus Modul-READMEs und Entwicklungsanleitungen entfernt.
 
 ***
 
 ## Political Compass Architecture Decoupling (v2.1)
 
-**Date:** 2026-03-14
-**Status:** Resolved
+**Datum:** 2026-03-14
+**Status:** Behoben
 
-### Problem Description
+### Problembeschreibung
 
-The logic that appended the Political Compass module into the main dataframes ('Ghost Rows') to register it as a "completed test" led to mathematically inaccurate UI metadata ("Test Runs: 165/156"). By having an informational-only ethical survey integrated inside the primary dataframe structure, the purity of the code-quality test counts and time-benchmarks was hindered.
+Die Logik, die das Political Compass Modul über "Ghost Rows" in die Haupt-DataFrames eintrug, führte zu mathematisch ungenauen UI-Metadaten ("Test Runs: 165/156"). Das Einbetten eines rein informativen ethischen Surveys in die primäre DataFramestruktur verfälschte Code-Quality-Test-Zähler und Zeitbenchmarks.
 
-### Resolution
+### Lösung
 
-1. **Full Decoupling:** Removed standard Data Loader ghost row injection routines (`scripts/leaderboard/data_loader.py`) for the PC module, and detached its config `display_test_count`.
-2. **Isolating Outputs:** Split outputs elegantly into "Wolf in Sheep's Clothing" logic—producing `benchmark_scores/political_compass_results.csv` (run records) & `benchmark_scores/political_compass_leaderboard.csv` (shift aggregations).
-3. **Post-Evaluation Stitching:** Altered the final steps of `generate_leaderboard.py` to extract only the Vanilla alignment tag and distance Shift string as a standalone right-aligned text column, ignoring `score_calculator.py`.
+1. **Full Decoupling:** Ghost-Row-Injektionsroutinen in `scripts/leaderboard/data_loader.py` für das PC-Modul entfernt. Die Config-Eigenschaft `display_test_count` des Moduls entkoppelt.
+2. **Isolating Outputs:** Ausgaben aufgeteilt in `benchmark_scores/political_compass_results.csv` (Run Records) und `benchmark_scores/political_compass_leaderboard.csv` (Shift-Aggregationen).
+3. **Post-Evaluation Stitching:** Die finalen Schritte von `generate_leaderboard.py` extrahieren nur den Vanilla Alignment Tag und den Shift-String als eigenständige rechtsbündige Textspalte, unabhängig vom `score_calculator.py`.
 
 ***
 
 ## Ghost Entries & Versioning Refactor
 
-**Date:** 2026-02-06
-**Status:** Resolved
+**Datum:** 2026-02-06
+**Status:** Behoben
 
-### Problem Description
+### Problembeschreibung
 
-The leaderboard showed duplicate entries for single models (e.g., "Claude Haiku"). One entry contained benchmark scores, while a second "Ghost Entry" contained only Political Compass results.
-**Root Cause:** Inconsistent version strings between the Benchmark Runner (`8717af19`) and the Political Compass Runner (`unknown`).
+Das Leaderboard zeigte Duplikat-Einträge für einzelne Modelle (z. B. "Claude Haiku"). Ein Eintrag enthielt Benchmark-Scores, ein zweiter "Ghost Entry" nur Political Compass-Ergebnisse.
+**Ursache:** Inkonsistente Versions-Strings zwischen Benchmark Runner (`8717af19`) und Political Compass Runner (`unknown`).
 
-### Resolution
+### Lösung
 
-1. **Centralization:** Version logic moved to `utils/model_utils.py` (`get_model_version`) as SSOT.
-1. **Deterministic Mapping:** Removed behavioral hash fingerprinting to prevent ghost duplicates.
-1. **Data Patch:** Merged split entries in CSVs and aligned historical cache entries.
-1. **Golden Standard Optimization:** Excluded Political Compass from Golden Standard generation (Methodology Update).
+1. **Centralization:** Versions-Logik nach `utils/model_utils.py` (`get_model_version`) als SSOT verschoben.
+2. **Deterministic Mapping:** Behavior-Hash-Fingerprinting entfernt, um Ghost-Duplikate zu verhindern.
+3. **Data Patch:** Split-Einträge in CSVs zusammengeführt und historische Cache-Einträge angeglichen.
+4. **Golden Standard Optimization:** Political Compass aus der Golden Standard-Generierung ausgeschlossen (Methodik-Update).
+
+***
 
 ## Aggregation Verification Report
 
-**Date:** 2026-02-04
-**Status:** Resolved
+**Datum:** 2026-02-04
+**Status:** Behoben
 
-### Summary of Findings
+### Befunde
 
-The leaderboard previously displayed "46/37 Tests Run". This discrepancy was caused by the `Political Compass` module contributing to the **Numerator** (Count of completed tests) via an explicit override (9 logical tests), but being excluded from the **Denominator** (Expected tests) because scoring was disabled (`enable_scoring: false`).
+Das Leaderboard zeigte zuvor "46/37 Tests Run". Die Diskrepanz entstand, weil das `Political Compass`-Modul über ein explizites Override (neun logische Tests) zum **Numerator** beitrug, aber wegen deaktiviertem Scoring (`enable_scoring: false`) aus dem **Denominator** ausgeschlossen blieb.
 
-### Verification Data
+### Verifikationsdaten
 
 ```python
 aggregation_report = {
@@ -85,39 +87,35 @@ aggregation_report = {
 }
 ```
 
-### Corrective Actions
+### Maßnahmen
 
-1. **Code Update:** Modified `scripts/leaderboard/score_calculator.py` to include modules in the "Expected Count" (Denominator) if they have an explicit `display_test_count`, even if scoring is disabled.
+1. **Code Update:** `scripts/leaderboard/score_calculator.py` bezieht jetzt Module mit explizitem `display_test_count` in den "Expected Count" (Denominator) ein, auch wenn Scoring deaktiviert ist.
+   - *Ergebnis:* Denominator stieg von 37 auf 46. Das Leaderboard zeigt nun "46/46".
 
-   - *Result:* Denominator increased from 37 to 46. Leaderboard will now show "46/46".
+2. **Duplicate Handling:** `data_loader.py` verarbeitet Mehrfach-Runs korrekt und wählt jeweils den neuesten Eintrag anhand des Timestamps.
+   - *Ergebnis:* Benchmarks sind beliebig oft wiederholbar. Das Leaderboard spiegelt stets den aktuellen Stand wider.
 
-1. **Duplicate Handling:** Verified that `data_loader.py` correctly handles multiple runs by selecting the latest entry based on timestamp.
-
-   - *Result:* Users can re-run benchmarks safely; the leaderboard always reflects the current state.
-
-### How to Reproduce
-
-Run the verification script:
+### Reproduktion
 
 ```bash
 python scripts/maintenance/verify_counts.py
 ```
 
-
 ***
 
 ## API Timeout & Nested Pydantic Serialization (v3.0.0)
 
-**Date:** 2026-03-18
-**Status:** Resolved
+**Datum:** 2026-03-18
+**Status:** Behoben
 
-### Problem Description
+### Problembeschreibung
 
-Two structural issues blocked the continuous evaluation of strict or censored models (like Gemini/Claude) inside the Political Compass:
-1.  **Refusal Stalling:** Models returning "Sorry, I can't answer this" triggered instant failure in metric parsing, crashing the batch evaluation sequence instead of trying varying permutations.
-2.  **Verify Anomalies Crashes:** Checking shift values natively crashed with `AttributeError`. It attempted to call `.get()` natively on the Pydantic schema return (`base_result.raw_response`), which is strictly stored as a JSON string, not a generic dict.
+Zwei strukturelle Probleme blockierten die kontinuierliche Evaluierung strikt zensierter Modelle (Gemini, Claude) im Political Compass:
 
-### Resolution
+1. **Refusal Stalling:** Modelle, die "Sorry, I can't answer this" zurückgaben, lösten einen sofortigen Fehler beim Metrik-Parsing aus. Das brach die Batch-Evaluierungssequenz ab, anstatt alternative Permutationen zu versuchen.
+2. **Verify Anomalies Crashes:** Das Prüfen von Shift-Werten erzeugte einen `AttributeError`. Der Code rief `.get()` nativ auf dem Pydantic-Schema-Return (`base_result.raw_response`) auf. Dieser ist strikt als JSON-String gespeichert, nicht als generisches Dict.
 
-1.  **3-Tier Refusal Loop:** We introduced a robust `while True` loop with progressive temperature checks (`0.1`, `0.4`, `0.7`) mapping hard limits inside the specific run execution (`_run_single_block` in `political_compass/test.py`). This systematically breaks censorship filters autonomously.
-2.  **Pydantic Deserialize:** Shifted all `raw_response` reads across verify scripts to `json.loads(str)` forcing dict compliance before accessing nested variables (Vanilla/Forced).
+### Lösung
+
+1. **3-Tier Refusal Loop:** Eine robuste `while True`-Schleife mit progressiven Temperatur-Checks (`0.1`, `0.4`, `0.7`) greift direkt in der Ausführungsschleife (`_run_single_block` in `political_compass/test.py`). Das System bricht Zensurfilter autonom auf.
+2. **Pydantic Deserialize:** Alle `raw_response`-Lesezugriffe in Verify-Skripten nutzen jetzt `json.loads(str)`, um Dict-Konformität vor dem Zugriff auf verschachtelte Variablen (Vanilla/Forced) sicherzustellen.

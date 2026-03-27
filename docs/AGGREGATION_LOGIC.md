@@ -1,32 +1,34 @@
-# CrucibleMark Aggregation & Counting Logic Report
+# CrucibleMark: Aggregation & Test-Zählung
 
-## 1. Test Count Discrepancy & Political Compass
+## 1. Test-Zählung & Political Compass
 
-**Update v2.1:** The "Political Compass" module has been **fully decoupled** from the main benchmark scoring and test counts.
+**Update v2.6:** Das Modul "Political Compass" ist vollständig vom Benchmark-Scoring und der Test-Zählung entkoppelt.
 
-### Previous Behavior (Pre-v2.1)
-The leaderboard previously showed a discrepancy (e.g., "46/37" tests run). This was because the Political Compass module injected "Ghost Rows" into the dataset to register as completed (adding `+9` to the numerator) without contributing to the score denominator. This caused mathematical confusion.
+### Verhalten vor v2.6
 
-### Current Behavior (v2.1+)
-The Political Compass is now strictly an informational metadata module:
-- It **does not** inject ghost rows into the main dataframes (`local_models_benchmark.csv` / `commercial_models_benchmark.csv`).
-- It **does not** artificially inflate the `Tests Run` counter (e.g. 44/43). The score calculator explicitly ignores non-scoring modules for both the numerator and the denominator, unless a `display_test_count` is defined.
-- It operates entirely autarkic, saving run records into `benchmark_scores/political_compass_results.csv` and aggregates into `benchmark_scores/political_compass_leaderboard.csv`.
-- The `generate_leaderboard.py` script simply checks the final `political_compass_leaderboard.csv` to append a simple `Political Bias` text column to the final display table, injecting purely informational tags without touching the core mathematics of the benchmark.
+Das Leaderboard zeigte eine Diskrepanz (z. B. "46/37"). Das Political Compass Modul injizierte "Ghost Rows" in den Datensatz, erhöhte damit den Numerator um +9 und leistete keinen Beitrag zum Score-Denominator. Das erzeugte mathematische Verwirrung.
+
+### Aktuelles Verhalten (v2.6+)
+
+Das Political Compass ist ein rein informatives Metadaten-Modul:
+- Es injiziert keine Ghost Rows in die Haupt-DataFrames (`local_models_benchmark.csv` und `commercial_models_benchmark.csv`).
+- Es verfälscht den `Tests Run`-Zähler nicht. Der Score Calculator ignoriert explizit alle nicht-wertenden Module für Zähler und Nenner, sofern kein `display_test_count` definiert ist.
+- Das Modul speichert Ergebnisse autark in `benchmark_scores/political_compass_results.csv` und aggregiert sie in `benchmark_scores/political_compass_leaderboard.csv`.
+- Das Skript `generate_leaderboard.py` liest `political_compass_leaderboard.csv` und ergänzt die finale Anzeige um eine informative `Political Bias`-Textspalte – ohne die Benchmark-Mathematik zu berühren.
 
 ______________________________________________________________________
 
-## 2. Duplicate Handling & Data Integrity
+## 2. Duplikate & Datenintegrität
 
-### Observation
+### Beobachtung
 
-The raw file `benchmark_scores/local_models_benchmark.csv` contains multiple entries for the same model and asset (e.g. 288 rows for ~38 assets).
+Die Rohdatei `benchmark_scores/local_models_benchmark.csv` enthält mehrere Einträge für dasselbe Modell und Asset (z. B. 288 Zeilen für ca. 38 Assets).
 
-### Logic Verification
+### Logik-Verifikation
 
-The system uses a **"Last-Win" Strategy** (Overwrite), not Averaging.
+Das System nutzt eine **„Last-Win"-Strategie** (Überschreiben, kein Mitteln).
 
-**Code Evidence (`scripts/leaderboard/data_loader.py`):**
+**Code-Beleg (`scripts/leaderboard/data_loader.py`):**
 
 ```python
 # Sort by timestamp to ensure 'last' is actually the most recent
@@ -36,31 +38,31 @@ df = df.sort_values("timestamp")
 df = df.drop_duplicates(subset=["model", "model_version", "type", "asset_id"], keep="last")
 ```
 
-### Conclusion
+### Fazit
 
-- **Data Integrity:** The leaderboard generation is **robust** against duplicates. It explicitly cleans the data before calculation.
-- **Stability Testing:** Running benchmarks multiple times is safe; the system will simply report the latest result for each asset.
-- **History:** The `csv` acts as a historical log. This is a feature, not a bug.
+- **Datenintegrität:** Die Leaderboard-Generierung bereinigt Duplikate explizit vor jeder Berechnung.
+- **Stabilitäts-Tests:** Mehrfach-Runs sind sicher. Das System zeigt stets das neueste Ergebnis pro Asset.
+- **Historie:** Die CSV dient als historisches Log. Das ist kein Bug, sondern ein Feature.
 
 ______________________________________________________________________
 
-## 3. Stability Score
+## 3. Stabilitäts-Score
 
-To ensure fair stability measurement across diverse tasks with naturally varying execution times (e.g., a fast translation vs. long documentation tasks), the system uses a **Category-Aware Variance** logic.
+Um faire Stabilitätsmessungen über inhärent unterschiedlich schnelle Aufgaben zu gewährleisten (z. B. schnelle Übersetzung vs. lange Dokumentationsaufgabe), nutzt das System eine **kategoriebewusste Varianz-Logik**.
 
-Stability is calculated based on the **Coefficient of Variation (CV)** *within* each category, and then those CVs are averaged.
+Die Stabilitätsberechnung basiert auf dem **Variationskoeffizient (VK)** innerhalb jeder Kategorie. Diese VKs werden anschließend gemittelt.
 
-1. **Calculate CV per Category**:
-   $CV\_{cat} = \\frac{\\sigma\_{cat}}{\\mu\_{cat}}$
-   (Standard Deviation divided by Mean for that category)
+1. **VK pro Kategorie berechnen:**
+   $VK\_{cat} = \\frac{\\sigma\_{cat}}{\\mu\_{cat}}$
+   (Standardabweichung dividiert durch Mittelwert der Kategorie)
 
-1. **Average Stability Score**:
-   $Score\_{stability} = \\frac{1}{N} \\sum CV\_{cat}$
+2. **Durchschnittlicher Stabilitäts-Score:**
+   $Score\_{stability} = \\frac{1}{N} \\sum VK\_{cat}$
 
-### Thresholds
+### Schwellenwerte
 
-- **< 0.35 (35%)**: **STABLE** (Normal variance)
-- **0.35 - 0.50 (35-50%)**: **MODERATE** (High natural variance or slight instability)
-- **> 0.50 (50%)**: **UNSTABLE** (Significant unpredictability)
+- **< 0,35 (35 %):** **STABLE** (normale Varianz)
+- **0,35–0,50 (35–50 %):** **MODERATE** (hohe natürliche Varianz oder leichte Instabilität)
+- **> 0,50 (50 %):** **UNSTABLE** (signifikante Unvorhersehbarkeit)
 
-This ensures that a model performing consistently strictly within its categories (e.g. always fast on translations, always slow on docs) receives a good stability score.
+Ein Modell, das innerhalb seiner Kategorien konsistent bleibt (z. B. immer schnell bei Übersetzungen, immer langsam bei Docs), erhält damit trotzdem einen guten Stabilitäts-Score.
