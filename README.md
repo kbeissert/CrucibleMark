@@ -1,15 +1,15 @@
 # CrucibleMark 🚀
 
-[![Version](https://img.shields.io/badge/version-3.1.0-blue)](.)
+[![Version](https://img.shields.io/badge/version-3.2.0-blue)](.)
 [![Python](https://img.shields.io/badge/python-3.10%2B-blue)](.)
 [![License](https://img.shields.io/badge/license-MIT-green)](.)
 [![Status](https://img.shields.io/badge/status-production--ready-brightgreen)](.)
 
 ## A Modular LLM Benchmark Framework for Product Engineers
 
-CrucibleMark ist ein umfassendes Benchmarking-Framework, das entwickelt wurde, um Large Language Models (LLMs) genau dort zu testen, wo es für Product Engineers am wichtigsten ist: Code-Qualität, UX-Schreiben, logisches Schlussfolgern (Reasoning) und der zugrundeliegende Bias (Political Compass Safety).
+Akademische Benchmarks wie MMLU messen, was Modelle wissen. CrucibleMark misst, was sie können – dort, wo es für Product Engineers zählt: Code-Qualität, UX-Schreiben, logisches Schlussfolgern und politischer Bias.
 
-Anstelle von starren akademischen Metriken (wie MMLU) misst CrucibleMark die echte Arbeitsqualität und die *Souveränität* eines Assistenten im produktiven Alltag.
+Anstatt starrer akademischer Metriken setzt CrucibleMark auf manuell verifizierte Golden Standards und ein kalibriertes LLM-Judge-System. Das Ergebnis ist keine Rangliste der beliebtesten Modelle. Es ist eine ehrliche Antwort auf die Frage: Wie souverän agiert dieses Modell im produktiven Alltag?
 
 ---
 
@@ -29,12 +29,12 @@ Die meisten Benchmarks fokussieren sich auf rein theoretische Prüfungen. Crucib
 
 ## 🚀 Key Features
 
-* **LLM-as-a-Judge Architektur:** Ein fortschrittliches Sub-System delegiert die semantische Bewertung der Antworten an hochperformante Judges (wie `gpt-4o` oder lokale Modelle).
-* **Multi-Provider Support:** Volle Unterstützung für lokale, datenschutzkonforme Ausführung via **Ollama**, sowie cloud-basierte kommerzielle Modelle (Mistral, Anthropic Claude, OpenAI, Google Gemini, xAI).
-* **Ausfallsicherheit & Checkpointing:** Verliert nie deinen Fortschritt! Durch stetiges Block-Level-Checkpointing kannst du bei Budget-Erschöpfung, API-Limits (Rate Limit, 429) oder Stromausfällen einfach abbrechen und später auf den Token genau dort weitermachen, wo du aufgehört hast.
-* **Erweiterte Refusal-Architektur:** Das Framework registriert eigenständig Zensur oder "I cannot answer this"-Verweigerungen, erhöht progressiv die Temperatur und streicht Hard-Refusals aus der Wertung (Tracking von KI-Überregulierung).
-* **Automatisierter Safety-Shift Test:** Bei starken Abweichungen in Verhaltensfiltern (z. B. auf dem Political Compass) triggert das System vollautomatisch einen verschärften Triple-Run Outlier-Check inklusive euklidischem Clustering.
-* **Umfassendes Audit-Logging & automatisierte magazinartige Meta-Reviews:** Jede Frage, jeder Prompt, jede LLM-Entscheidung und die Standardabweichung wird in granularen Markdown-Reports transparent dokumentiert. Ein robust evaluierendes Meta-Review-LLM liest diese Logs im Nachgang zusammen mit technischen API-Limits (z.B. Context-Cuts) ein und verfasst fehler- und halluzinationsfreie Endberichte (mittels strengen Off-by-one Anchors und Grammatik-Restriktionen).
+* **LLM-as-a-Judge Architektur:** Ein dediziertes Sub-System delegiert die semantische Bewertung der Antworten an hochperformante Judges (wie `claude-haiku-4.5` oder lokale Modelle).
+* **Multi-Provider Support:** Volle Unterstützung für lokale, datenschutzkonforme Ausführung via **Ollama** sowie cloud-basierte kommerzielle Modelle (Mistral, Anthropic Claude, OpenAI, Google Gemini, xAI).
+* **Ausfallsicherheit & Checkpointing:** Block-Level-Checkpointing sichert den Fortschritt bei Budget-Erschöpfung, Rate Limits (429) oder Verbindungsabbrüchen. Der Run setzt auf den Token genau dort weiter, wo er endete.
+* **Erweiterte Refusal-Architektur:** Das Framework erkennt Zensur und "I cannot answer this"-Verweigerungen eigenständig, erhöht progressiv die Temperatur und streicht Hard-Refusals aus der Wertung.
+* **Automatisierter Safety-Shift Test:** Bei starken Abweichungen in Verhaltensfiltern triggert das System vollautomatisch einen verschärften Triple-Run Outlier-Check inklusive euklidischem Clustering.
+* **Umfassendes Audit-Logging & Meta-Reviews:** Jede Frage, jeder Prompt und jede LLM-Entscheidung landet in granularen Markdown-Reports. Ein kalibriertes Meta-Review-LLM liest diese Logs zusammen mit technischen API-Limits ein und verfasst halluzinationsfreie Endberichte – gestützt auf strikte Off-by-one-Anker und Grammatikrestriktionen.
 
 ---
 
@@ -81,6 +81,18 @@ python run_benchmark.py --provider commercial --module political_compass --model
 make political-compass-safe
 ```
 
+### 🌐 Web Export Pipeline
+
+CrucibleMark enthält einen integrierten Export, der sämtliche Benchmark-Ergebnisse (CSVs) sowie Audit- und Review-Markdowns als aufbereitetes JSON-Datenmodell aggregiert. Die Ausgabe versorgt das externe Frontend-Projekt `cruciblemark-web` dynamisch mit Ergebnisdaten und generierten Metadaten.
+
+```bash
+# Basis-Export (schreibt in den lokalen Ordner ./web_export/)
+make web-export
+
+# Direkter Export ins Development-Frontend (11ty)
+make web-export-dev
+```
+
 ---
 
 ## 🗺️ Roadmap (Stand: Q1/Q2 2026)
@@ -107,6 +119,4 @@ Tiefergehende Einblicke in die Methodik findest du im `docs/` Verzeichnis:
 
 - **Maintainer:** kbeissert
 - **Repository:** [github.com/kbeissert/cruciblemark](https://github.com/kbeissert/cruciblemark)
-- **Status:** ✅ Production-Ready (v3.1.0)
-
-*"Wir benchmarken die Fähigkeiten, die im echten Engineer-Alltag entscheidend sind, nicht nur die akademischen Standardwerte."*
+- **Status:** ✅ Production-Ready (v3.2.0)

@@ -53,3 +53,6 @@ Thumbs.db
 config/.prices_cache.json
 _smoke_test.py
 benchmark_config.yaml
+
+# Web Export
+web_export/

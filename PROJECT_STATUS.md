@@ -7,23 +7,24 @@
 ______________________________________________________________________
 
 ## 🎯 Executive Summary
-CrucibleMark v3.2.0 eliminiert sämtliche versteckten Modell-Fallbacks auf API-Providerebene und erzwingt das "Single Source of Truth" (SSOT) Prinzip absolut strikt. Eine umfassende Refaktorierung aller Provider-Integrationen (Anthropic, Mistral, Google, OpenAI etc.) sorgt für makellosen Code (Pylint 10/10) und direkte "Fail-Fast"-Abbrüche bei fehlerhaften Konfigurationen.
+
+CrucibleMark v3.2.0 eliminiert sämtliche versteckten Modell-Fallbacks auf API-Providerebene und erzwingt das "Single Source of Truth" (SSOT)-Prinzip absolut strikt. Eine umfassende Refaktorierung aller Provider-Integrationen (Anthropic, Mistral, Google, OpenAI u. a.) liefert makellose Codequalität (Pylint 10/10). Fehlerhafte Konfigurationen lösen einen direkten "Fail-Fast"-Abbruch aus.
 
 **Key Achievements (v3.2.0):**
 - ✅ **Strict SSOT Enforcement & Fail-Fast:** Versteckte Modellausweichmechanismen (z.B. automatisiertes Laden von `claude-3-5-sonnet` oder `mistral-large-latest` bei ungenauen Modellnamen im Provider) wurden vollständig restlos entfernt. Das System nutzt nur exakt das, was in der Config steht (`ValueError` bei Fehlern).
 - ✅ **Provider Code Perfection & Type Safety:** Die API-Integrationen im `utils/providers/`-Verzeichnis wurden radikal aufgeräumt. Der Pylint-Score aller Provider erreicht makellose 10.00/10, tote Imports und Codeabschnitte wurden entfernt. Pylance Type-Checker False-Positives (bspw. `reportPrivateImportUsage` im Google SDK) wurden per Pyright-Direktiven sauber unterdrückt.
 - ✅ **Judge Skip Clarification:** Das UI und Log-Output wurden verbessert, um `⚠️ Judge: skip (zu kurz/abgelehnt)` auszuweisen, wenn die Antwort eines evaluierten Modells zu kurz ist oder verweigert wurde, was die Audit-Logs präziser macht.
 
-**Previous Version (v3.1.0 Audit- & Meta-Review Generation):**
-CrucibleMark v3.1.0 konzentriert sich auf die radikale Verbesserung des "LLM-as-a-Judge"-Flows und die Eliminierung von Judge-Halluzinationen in den finalen Audit- und Trend-Reports. Das Framework nutzt nun hochgradig kalibrierte Prompt-Mechaniken, um Markdown-Dokumente fehlerfrei zu parsen und Modellen keine menschlich-aktive Denkweise mehr anzudichten (Grammatik-Korrekturen und Passiv-Zwang).
+**Vorherige Version (v3.1.0 – Audit- & Meta-Review Generation):**
+CrucibleMark v3.1.0 verbessert den "LLM-as-a-Judge"-Flow radikal und eliminiert Judge-Halluzinationen in finalen Audit- und Trend-Reports. Hochgradig kalibrierte Prompt-Mechaniken sorgen für fehlerfreies Markdown-Parsing und verhindern, dass Modellen eine menschlich-aktive Denkweise angedichtet wird.
 
 **Key Achievements (v3.1.0):**
 - ✅ **Meta-Reviewer Stabilisierung & Anchoring:** Der Off-by-One Fehler beim Einlesen langer Markdown-Audit-Logs durch den Judge (z.B. Gemini) wurde behoben. Strukturierte "ID-Anchor" (wie z.B. 7.2.001) wurden in der Prompt-Datei implementiert, damit das Modell auch bei hunderten Zeilen Log-Code fehlerfrei trackt.
 - ✅ **Grammar-Restrictions gegen aktive Halluzination:** Der Meta-Review-Prompt forciert nun striktes Passiv- und Objekt-Wording (z.B. verbietet Wörter wie "versucht", "scheitert", "weicht aus"), um insbesondere im Zusammenfassungs-Bereich (Fazit) zu verhindern, dass die Review-Modelle dem getesteten LLM eigenständigen menschlichen Willen oder Agenden andichten.
 - ✅ **Automatisierte Metadaten-Extraktion:** Laufzeit-Warnings (`⚠️ Anomaly Verification Protocol`), Hard-Refusal Raten und Token-Fallback Informationen werden per Regex in den Reports identifiziert und direkt als Kontext für den LLM-Judge bereitgestellt. Der Meta-Reviewer kann so architektonische Limits und Zensurunterschiede bei der finalen Bewertung optimal einordnen.
 
-**Previous Version (v3.0.0 Safety & Refusal Architecture):**
-CrucibleMark v3.0.0 stellt einen evolutionären Sprung in der Modellauswertung dar. Die Evaluierung von stark regulierten Modellen (z.B. Claude, Gemini) wurde durch eine neuartige **3-Tier Refusal Engine** massiv gehärtet. Das Framework ist nun in der Lage, Zensur-Blockaden proaktiv durch schrittweises "Progressive Temperature Scaling" und System-Injektionen zu durchbrechen.
+**Vorherige Version (v3.0.0 – Safety & Refusal Architecture):**
+CrucibleMark v3.0.0 härtet die Evaluierung stark regulierter Modelle (z. B. Claude, Gemini) durch eine neuartige **3-Tier Refusal Engine**. Das Framework durchbricht Zensur-Blockaden proaktiv durch schrittweises "Progressive Temperature Scaling" und System-Injektionen.
 
 **Key Achievements (v3.0.0):**
 - ✅ **3-Tier Refusal Architecture:** CrucibleMark unterscheidet nahtlos zwischen temporären API-Timeouts, Soft-Refusals (Ausweich-Text) und Hard-Refusals und wiederholt Testblöcke bei Modellen, die sich bevormundend verhalten, völlig automatisch.
@@ -31,16 +32,16 @@ CrucibleMark v3.0.0 stellt einen evolutionären Sprung in der Modellauswertung d
 - ✅ **Pydantic Serialization Bugfix:** Abstürze beim Auswerten von verschachtelten Metriken (`Vanilla_X`/`Vanilla_Y`) in Verify-Skripten wurden behoben (Umstellung auf `json.loads(raw_response)`).
 - ✅ **Public Presentation Overhaul:** Reduktion der technischen Schuld durch das vollständige Neuschreiben der `README.md` und das Bereinigen veralteter Code-Artefakte.
 
-**Previous Version (v2.6.1 Stability & Context Handling):**
-CrucibleMark v2.6.1 führt wichtige Stabilitäts-Patches für die API-Kommunikation ein (inkl. Token-Loop-Halluzination Fallback für Modelle wie Gemini) und überarbeitet die Dokumentations-Struktur entlang der Konfigurations-Assets.
+**Vorherige Version (v2.6.1 – Stability & Context Handling):**
+CrucibleMark v2.6.1 bringt wichtige Stabilitäts-Patches für die API-Kommunikation (inkl. Token-Loop-Halluzinations-Fallback für Modelle wie Gemini) und überarbeitet die Dokumentationsstruktur entlang der Konfigurations-Assets.
 
 **Key Achievements (v2.6.1):**
 - ✅ **Halluzinations-Prävention:** Auto-Truncation in `llm_client.py` eingebaut, um "Token-Loops" (z.B. endlose Leerzeichen-Generierung) bei kommerziellen APIs (Gemini 2.5 Flash) abzufangen. Entsprechende Warn-Flags (`⚠️ SYSTEM INFO`) wurden zum Metareview-Audit-Log hinzugefügt.
 - ✅ **Dokumentations-Konsolidierung:** Die `README.md` Modulliste wurde an die logische Kategorisierung (Hard Skills, Core Metrics, Soft Skills, Sonstige) aus der `benchmark_config.yaml` angeglichen; die Aufzählung wurde von 6 auf alle 8 aktiven Module korrigiert.
 - ✅ **Cleanup:** Entfernung obsoleter Check-Skripte (`fix_test_file.py`, `mypy_out.txt`) und tiefere Modul-Refactorings für einen sauberen Root-Workspace.
 
-**Previous Version (v2.6.0 Metric Accuracy & Bias Prevention):**
-CrucibleMark v2.6.0 fokussiert sich auf höchste Metrik-Integrität und Bias-Prävention. Das Scoring-System wurde bereinigt, um mathematisch einwandfreie Metriken (z.B. saubere "Tests Run" Zähler) zu garantieren. Gleichzeitig wurde im Political Compass Modul ein Position/Token-Bias durch die Einführung von dynamischem Alpha-Mapping (Randomisierung der Antwortauswahl anstelle starrer A/B/C/D Muster) eliminiert, was die Authentizität der Modellauswertungen steigert. Zudem wurde die Dokumentation vollständig überholt und obsoletes Test-Count-Verhalten restlos verbannt.
+**Vorherige Version (v2.6.0 – Metric Accuracy & Bias Prevention):**
+CrucibleMark v2.6.0 garantiert mathematisch einwandfreie Metriken und beseitigt Position/Token-Bias im Political Compass Modul durch dynamisches Alpha-Mapping.
 
 **Key Achievements (v2.6.0):**
 - ✅ **Metrics Accuracy:** Behebung des Leaderboard-Numerator-Bugs (44/43 Tests Run), indem nicht-punktende Module (wie Political Compass) beim Parsing vollständig ignoriert werden.
@@ -48,32 +49,30 @@ CrucibleMark v2.6.0 fokussiert sich auf höchste Metrik-Integrität und Bias-Pr�
 - ✅ **Meta-Reviewer Tuning:** Prompt-Überarbeitung gegen Halluzinationen (verhindert, dass der Meta-Reviewer generative Argumentationen herbeifantasiert, wo nur Choice-Optionen gewählt wurden).
 - ✅ **Human Baseline Script:** `run_human_compass.py` umstrukturiert auf direkte Nummern-Eingaben für validierbare Human-Benchmarks.
 
-**Previous Version (v2.5.0):**
-CrucibleMark v2.5.0 schließt die SSOT-Migration ab, indem die alte, dynamische "Golden Standard Model" Pipeline vollständig entfernt wurde. Ab sofort existiert **ausschließlich eine statische "Design by Intention" Evaluierung** via LLM-Judge auf Basis der `asset.yaml`.
-Die Kernarchitektur für die automatisierte Auswertung freier Antworten wurde in v2.4.0 vollständig integriert, getestet und stabilisiert.
-Eine SSOT-basierte Konfiguration in `benchmark_config.yaml` sowie detaillierte `golden_standard` Blöcke in den Assets garantieren saubere Testdurchläufe ohne Fallstricke.
+**Vorherige Version (v2.5.0):**
+CrucibleMark v2.5.0 schließt die SSOT-Migration ab. Die alte, dynamische "Golden Standard Model"-Pipeline entfällt vollständig. Ab sofort gilt ausschließlich eine statische "Design by Intention"-Evaluierung via LLM-Judge auf Basis der `asset.yaml`.
 
 - ✅ **Architectural Deprecation:** Vollständiges Entfernen des `--mode golden_standard` in Kommandozeilen. Kein Referenz-Modell generiert mehr dynamische Responses für den Vergleich.
 - ✅ **Clean Runner Logic:** `run_commercial_benchmark.py` & `run_local_benchmark.py` verarbeiten nur noch den puren Test-Modus ohne komplexe Interaktionen.
 - ✅ **Leaderboard Isolation:** Evaluierung nutzt jetzt 1:1 die rohen Prozent-Werte des Intent-Judges; die fehleranfällige, relative Berechnungslogik (`performance_ratio`) zur Referenz wurde gelöscht.
 - ✅ **Validation Tools Cleanup:** Veraltete Analyse- und Validator-Skripte wie `validate_golden_standards.py` getilgt.
 
-**Previous Version (v2.4.1):**
+**Vorherige Version (v2.4.1):**
 - ✅ **Golden Standard Consolidation (SSOT):** 37 `golden_standard` Konfigurationen über alle YAML-Assets strukturell validiert. Die manuell verdichteten Standards fungieren nun offiziell als "Design by Intention" Ground Truth.
 - ✅ **Validation Tooling:** Einführung von `scripts/analysis/validate_golden_standards.py` zur LLM-basierten Validierung (Claude Haiku) von Aufgaben-Assets.
 - ✅ **Storage Cleanup:** Entfernung der obsoleten Roh-Referenz-Logs (`outputs/reference-logs/`), um den Fokus auf qualitätsgesicherte, manuelle Golden Standards zu legen und pedantische LLM-False-Positives zu vermeiden.
 
-**Previous Version (v2.4.0):**
+**Vorherige Version (v2.4.0):**
 - ✅ **Audit Mode Logging:** Vollständige Markdown-Protokollierung mit dynamischem `evaluated_prompt`, regelbasierten Category-Scores und LLM-Judge Reasoning.
 - ✅ **LLM Judge Pipeline:** Vollständige Integration von 4 Providern (Ollama, Anthropic, Mistral, OpenAI) mit automatischer Fallback-Chain.
 - ✅ **Bulletproof Parsing:** Robuster Regex-Parser, der auch Markdown-Ausreißer von Modellen (z.B. `### **SCORE:**`) sicher verarbeitet.
 - ✅ **Lifecycle Management:** Isolierte Lade/Entlade-Zyklen (Ollama) mit Delays für fehlerfreie VRAM-Freigabe, Timeout-Resilienz (120s).
 - ✅ **Leaderboard & Metric Stability:** Leaderboard Typ-Konvertierungen und Pydantic Validierungen gehärtet. 165+ Tests Passed.
 
-**Previous Version (v2.2.0):**
+**Vorherige Version (v2.2.0):**
 - LLM Judge Pipeline Kernarchitektur
 
-**Previous Version (v2.1.1):**
+**Vorherige Version (v2.1.1):**
 - Leaderboard & Aggregation Update
 - Pydantic Migration für Typ-Sicherheit
 - Political Compass Batch Mode
@@ -100,7 +99,7 @@ ______________________________________________________________________
 
 ## 🏗️ Framework Architecture Status
 
-### Core Components (v2.0) ✅
+### Core Components ✅
 
 #### 1. Module System
 
@@ -130,7 +129,7 @@ ______________________________________________________________________
 ✅ Absolute Standard Scoring (Gold/Silver/Bronze)
 ✅ Speed Classification (Fast/Medium/Slow)
 ✅ Automated Skill Profiling
-⚠️  LLM-as-Judge (planned for v1.5.0)
+✅ LLM-as-Judge (seit v2.4.0)
 ```
 
 #### 4. Output System
@@ -159,7 +158,14 @@ ______________________________________________________________________
 
 ### Framework-Level Metrics
 
-| Metric | Target | Achieved | Status | |--------|--------|----------|--------| | **Average Pylint Score** | 8.5/10 | 9.15/10 | ✅ Exceeded | | **Type Hints Coverage** | 90% | 100% (public APIs) | ✅ Exceeded | | **Docstring Coverage** | 90% | 100% (public methods) | ✅ Exceeded | | **Test Coverage** | 95% | ~60% (critical paths) | ⚠️ In Progress | | **Black Compliance** | 100% | 100% | ✅ Complete | | **isort Compliance** | 100% | 100% | ✅ Complete |
+| Metric | Target | Achieved | Status |
+|--------|--------|----------|--------|
+| **Average Pylint Score** | 8.5/10 | 9.15/10 | ✅ Exceeded |
+| **Type Hints Coverage** | 90% | 100% (public APIs) | ✅ Exceeded |
+| **Docstring Coverage** | 90% | 100% (public methods) | ✅ Exceeded |
+| **Test Coverage** | 95% | ~60% (critical paths) | ⚠️ In Progress |
+| **Black Compliance** | 100% | 100% | ✅ Complete |
+| **isort Compliance** | 100% | 100% | ✅ Complete |
 
 ### Module-Level Breakdown
 
@@ -175,166 +181,22 @@ ______________________________________________________________________
 - Content Transformation: 8.9/10
 - UX Writing & Microcopy: 8.8/10
 
-**Status:** All modules exceed industry-standard quality thresholds (8.0+).
+Alle Module überschreiten den Industry-Standard-Schwellenwert (8.0+).
 
 ______________________________________________________________________
 
-## ✅ Completed Milestones (v1.0.0)
+## ✅ Historische Meilensteine (v1.x)
 
-### Recent Improvements (v1.1.3) - February 9, 2026
+Die v1.x-Phase legte die Modul-Infrastruktur, den Provider-Abstraktions-Layer und das erste Scoring-System. Die wesentlichen Meilensteine in Kurzform:
 
-- [x] **Reasoning Model Support (DeepSeek-R1)**
-
-  - Increased warmup probe `max_tokens` from 2 to 50 tokens.
-  - Added direct `ollama` library import for force unload operations.
-  - Made warmup probe failure non-fatal with graceful fallback.
-  - Detection and special handling of Reasoning models via `is_reasoning_model()`.
-
-- [x] **Error Handling Improvements**
-
-  - Added threshold (>100 tokens) to truncation warning to prevent false positives.
-  - Improved error messages for warmup probe failures.
-  - None-safe metric extraction with `or 0` pattern modularized in `utils/providers/base.py`.
-
-- [x] **Code Quality Audit (7 Files)**
-
-  - Fixed indentation errors in `score_calculator.py` and `exporter.py`.
-  - Moved `re` import to top in `leaderboard/__init__.py`.
-  - Fixed variable redefinition in `run_benchmark.py`.
-  - Added missing `BenchmarkResult` fields in `code_quality/test.py` error handling.
-
-- [x] **Ollama Configuration**
-
-  - Increased `num_ctx` to 8192 in both CODING and CREATIVE modes (was: 2048).
-  - Force model unload via `ollama.generate(keep_alive=0)` for accurate Cold Start measurement.
-
-- [x] **Documentation Updates**
-
-  - Added hardware dependency note to `USER_GUIDE.md`.
-  - Added "Qualitative Indikatoren" section to `MODEL_CLASSIFICATION.md`.
-
-### Upcoming Features (v1.2.0)
-
-- [x] **Cold Start / Load Duration Metrics** ✅ (Completed in v1.1.3)
-  - Implementation of `load_duration` vs. `pure_execution_time` distinguishing.
-  - Integration into `OllamaClient` to capture VRAM loading times.
-  - Updates to `BenchmarkResult` schema to carry `load_time`.
-  - Automatic CSV column expansion for `load_time`.
-  - Force Unload via `ollama.generate(keep_alive=0)` for accurate measurement.
-- [ ] **LLM-as-Judge**
-  - Use stronger models (e.g., GPT-4) to grade weaker models.
-  - Implementation planned for v1.5.0 (Major Feature Release).
-
-### Infrastructure Refactoring (v1.1.2)
-
-- [x] **Versioning System Overhaul**
-
-  - Implementation of Dual-Version format (`{OFFICIAL_ID}-{BEHAVIORAL_HASH}`)
-  - Centralized logic in `utils/fingerprinting.py` (SSOT)
-  - Automatic detection of date-based versions via Regex
-  - Detection of "Silent Updates" via hash change
-
-- [x] **Leaderboard Integrity**
-
-  - Elimination of "Ghost Entries" (Duplicate rows)
-  - Improved CSV Aggregation Logic (`data_loader.py`)
-  - Retroactive fix for `Claude Haiku` split entries
-
-- [x] **Golden Standard Optimization**
-
-  - Exclusion of `Political Compass` (Bias vs Benchmark differentiation)
-  - Intelligent Cache Reuse for Golden Standard generation
-
-### Refactoring Phase (v0.9.5 → v1.0.0)
-
-#### Framework Refactoring
-
-- [x] **Module System Redesign**
-
-  - Modular architecture with BaseTest interface
-  - YAML-based configuration
-  - Asset-driven testing
-
-- [x] **Provider Unification**
-
-  - Single interface for all LLM providers
-  - Consistent error handling
-  - Mock provider for testing
-
-- [x] **Output Standardization**
-
-  - Unified CSV schema
-  - Leaderboard integration
-  - Checkpoint/resume system
-
-- [x] **Configuration Management**
-
-  - YAML configs per module
-  - Flexible execution modes
-  - Scoring customization
-
-#### Module Refactoring (All 6 Modules)
-
-- [x] **Code Quality Audit** → v2.0
-
-  - Refactored evaluators
-  - Added type hints & docstrings
-  - Pylint 9.2/10
-
-- [x] **UX Writing & Microcopy** → v2.0
-
-  - Tone analysis improvements
-  - Config standardization
-  - Pylint 8.8/10
-
-- [x] **Documentation Quality** → v2.0
-
-  - Completeness metrics
-  - Error handling
-  - Pylint 9.0/10
-
-- [x] **Content Transformation** → v2.0
-
-  - Hybrid scoring
-  - Asset reorganization
-  - Pylint 8.9/10
-
-- [x] **Cultural Intelligence** → v2.0
-
-  - Idiom evaluation
-  - Cultural context checks
-  - Pylint 9.1/10
-
-- [x] **Political Compass** → v3.0.1
-
-  - Batch execution mode
-  - Individual run tracking (RUN_1, RUN_2, RUN_3, AVG)
-  - Variance analysis (sigma)
-  - Leaderboard integration (2 columns)
-  - Pylint 9.85/10 (highest score)
-
-#### Documentation
-
-- [x] **Root README** → v1.0.0
-
-  - Complete feature overview
-  - Installation guide
-  - Quick start examples
-  - Module documentation
-  - Code quality badges
-
-- [x] **Module READMEs** (All 6)
-
-  - Feature descriptions
-  - Usage examples
-  - Configuration docs
-  - Output samples
-
-- [x] **Contributing Guidelines**
-
-  - Development setup
-  - Code standards
-  - PR process
+- Modulare Architektur mit BaseTest Interface, YAML-Konfiguration und Asset-Driven Testing
+- Unified Provider Interface für alle LLM-Anbieter, Mock-Provider für Tests
+- Unified CSV-Schema, Leaderboard, Checkpoint/Resume-System
+- Refaktorierung aller 6 Kernmodule auf Pylint 8.8–9.85/10
+- DeepSeek-R1 Reasoning Model Support (v1.1.3): `is_reasoning_model()`-Erkennung, erhöhter Warmup-Probe auf 50 Tokens
+- Versioning System Overhaul: Dual-Version-Format (`{OFFICIAL_ID}-{BEHAVIORAL_HASH}`), `utils/fingerprinting.py` als SSOT
+- Golden Standard Consolidation: 37 `golden_standard`-Konfigurationen über alle YAML-Assets validiert
+- LLM-as-Judge vollständig integriert (v2.4.0): 4 Provider, Fallback-Chain, Audit Mode Logging
 
 ______________________________________________________________________
 
@@ -351,412 +213,86 @@ ______________________________________________________________________
 - ⚠️ Unit tests incomplete (60% coverage)
 - ❌ CI/CD pipeline missing
 
-**Target (v1.0.1):**
+**Target:**
 
 - [ ] Unit tests 95%+ coverage
 - [ ] GitHub Actions CI/CD
 - [ ] Automated pylint checks
 - [ ] Performance benchmarks
 
-### 2. Scoring System Limitations
-
-**Status:** Pattern-based only (v1.0.0)
-
-**Current Limitations:**
-
-- Cannot evaluate subjective quality (e.g., "elegance" in code)
-- Limited nuance detection (tone subtlety)
-- No semantic understanding
-
-**Planned Solution (v1.5.0):**
-
-- [ ] LLM-as-Judge architecture
-- [ ] Hybrid scoring (pattern + LLM)
-- [ ] Rubric-based evaluation
-- [ ] Cost optimization (caching)
-
-### 3. User Interface
+### 2. User Interface
 
 **Status:** CLI-only
 
-**Planned (v1.1.0):**
+**Geplant:**
 
 - [ ] Web UI (basic dashboard)
 - [ ] Real-time progress visualization
 - [ ] Interactive result exploration
 
-### 4. API Access
-
-**Status:** Local execution only
-
-**Planned (v1.1.0):**
-
-- [ ] REST API for remote benchmarking
-- [ ] Queue management
-- [ ] Authentication
-
 ______________________________________________________________________
 
 ## 🗺️ Roadmap
 
-### v1.0.1 (February 2026) - Maintenance Release
-
-**Timeline:** 1-2 weeks\
-**Status:** Planning
-
-**Goals:**
-
-- [ ] Complete unit test coverage (60% → 95%)
-- [ ] Setup CI/CD pipeline (GitHub Actions)
-- [ ] Bug fixes from v1.0.0 feedback
-- [ ] Performance optimizations
-- [ ] Documentation improvements
-
-**Deliverables:**
-
-- Full test suite
-- Automated quality checks
-- Stable baseline for v1.1 development
-
-______________________________________________________________________
-
-### v1.1.1 (February 2026) - Reasoning Module & Hotfixes
-
-**Status:** ✅ Released
-
-**Features:**
-
-#### 1. Reasoning Module (Active)
-
-- Logic puzzles (River Crossing)
-- Paradox detection (Scheduling Paradox, Time Travel)
-- Metacognition tests (Self-Correction protocols)
-- Tiered difficulty (3 levels)
-
-#### 2. Infrastructure
-
-- Fixed imports in `schemas.result.BenchmarkResult`
-- Stabilized JSON handling in Content Transformation
-
-**(Older roadmap items shifted to v1.2.0)**
-
-______________________________________________________________________
-
-### v1.1.3 (February 9, 2026) - Reasoning Model Support & Stability
-
-**Status:** ✅ Released\
-**Timeline:** 1 day (Emergency Hotfix + Code Quality Audit)
-
-**Features:**
-
-#### 1. Reasoning Model Compatibility (DeepSeek-R1)
-
-- Increased warmup probe `max_tokens` to 50 (was: 2) to accommodate models with "thinking" phases.
-- Added direct `ollama` library import for low-level operations (force unload).
-- Made warmup probe failure non-fatal with graceful degradation.
-- Special handling for Reasoning models detected via `is_reasoning_model()`.
-
-#### 2. Error Handling & Robustness
-
-- **Truncation Warning Threshold:** Only warns if `num_predict > 100` (prevents false positives on warmup pings).
-- **None-Safe Metrics:** Fixed `NoneType` division crashes with `or 0` pattern.
-- **Improved Logging:** Changedforce unload errors from `warning` to `debug` level.
-
-#### 3. Code Quality Audit (7 Files)
-
-- **Indentation Fixes:** `score_calculator.py` (line 334), `exporter.py` (line 75).
-- **Import Optimization:** Moved `re` import to top in `leaderboard/__init__.py`.
-- **Variable Naming:** Fixed redefinition in `run_benchmark.py` (provider/model_id).
-- **Schema Compliance:** Added missing fields in `code_quality/test.py` error cases.
-
-#### 4. Ollama Configuration Updates
-
-- **Context Window:** Increased `num_ctx` to 8192 in both CODING and CREATIVE modes (was: 2048).
-- **Cold Start Probe:** Force model unload via `ollama.generate(keep_alive=0)` for accurate Load Time measurement.
-
-#### 5. Documentation Enhancements
-
-- **USER_GUIDE.md:** Added hardware dependency note (context window varies by RAM).
-- **MODEL_CLASSIFICATION.md:** Added "Qualitative Indikatoren" section (table generation as quality filter).
-
-**Impact:**
-
-- ✅ Framework ready for advanced model types (Reasoning, Long-Context).
-- ✅ Eliminated false positive warnings during warmup.
-- ✅ Improved code maintainability (cleaner imports, better error handling).
-- ✅ Accurate Cold Start measurement for performance profiling.
-
-______________________________________________________________________
-
-### v1.2.0 (Q2 2026) - Web UI & API
-
-**Timeline:** 6-8 weeks\
-**Status:** Planned
-
-**Features:**
-
-#### 1. Web UI (MVP)
-
-- Dashboard for results
-- Real-time progress tracking
-- Model comparison view
-- Basic visualization
-- **Effort:** 4-6 weeks
-
-#### 3. API Mode
-
-- REST API endpoints
-- Queue management
-- Authentication (API keys)
-- Rate limiting
-- **Effort:** 2-3 weeks
-
-**Deliverables:**
-
-- 7 total modules (6 existing + 1 new)
-- Basic web interface
-- Remote execution capability
-
-______________________________________________________________________
-
-### v1.5.0 (Q3 2026) - LLM-based Scoring ⭐
-
-**Timeline:** 4-6 weeks\
-**Status:** High Priority\
-**Impact:** Major feature (USP)
-
-**Why v1.5.0?**
-
-- Too large for minor release (v1.1)
-- Not fundamental enough for major (v2.0)
-- Signals "Enhanced Evaluation" milestone
-- Backward compatible (optional feature)
-
-**Features:**
-
-#### 1. LLM-as-Judge Architecture
-
-**Core Components:**
-
-- [ ] Abstract Scorer Interface
-- [ ] Pattern-based Scorer (refactored)
-- [ ] LLM-based Scorer (new)
-- [ ] Hybrid Scorer (combine both)
-
-**Effort:** 1-2 weeks
-
-#### 2. Rubric System
-
-- [ ] Rubric definitions (per module)
-- [ ] Prompt templates for evaluation
-- [ ] Confidence scoring
-- [ ] Multi-criteria assessment
-
-**Effort:** 1-2 weeks
-
-#### 3. Module Integration
-
-Implement LLM scoring for:
-
-- [ ] Code Quality (elegance, maintainability)
-- [ ] UX Writing (tone, empathy, clarity)
-- [ ] Documentation (completeness, readability)
-- [ ] Content Transformation (style matching)
-
-**Effort:** 2 weeks
-
-#### 4. Optimization & Validation
-
-- [ ] Cost optimization (caching, batching)
-- [ ] Human baseline study (gold standard)
-- [ ] Inter-LLM agreement analysis
-- [ ] Cost/accuracy tradeoff documentation
-
-**Effort:** 1-2 weeks
-
-**Deliverables:**
-
-- Hybrid scoring system (pattern + LLM)
-- 4 modules with LLM evaluation
-- Cost/accuracy analysis report
-- Updated documentation
-
-**Expected Impact:**
-
-- ✅ Differentiation from traditional benchmarks
-- ✅ More nuanced quality assessment
-- ✅ Better alignment with human judgment
-- ⚠️ Increased cost (mitigated by caching)
-
-______________________________________________________________________
-
-### v2.0.0 (Q4 2026) - Major Redesign
-
-**Timeline:** 8-12 weeks\
-**Status:** Planned
-
-**Features:**
-
-#### 1. Multimodal Support
-
-- Image + Text tasks
-- Vision-based benchmarks
-- OCR evaluation
-- Diagram understanding
-
-#### 2. Cloud Integration
-
-- AWS/GCP deployment
-- Distributed execution
-- Result aggregation
-- Scalability improvements
-
-#### 3. Adaptive Testing
-
-- Dynamic difficulty adjustment
-- Personalized benchmark paths
-- Skill gap analysis
-- Learning curve tracking
-
-#### 4. Team Collaboration
-
-- Shared leaderboards
-- Multi-user environments
-- Role-based access control
-- Team analytics
-
-**Deliverables:**
-
-- Cloud-native architecture
-- Multimodal capabilities
-- Enterprise features
-- Advanced analytics
-
-______________________________________________________________________
-
-## 📊 Version Timeline
-
-```
-v1.0.0 (Feb 2026)    ✅ RELEASED
-  ↓ 1-2 weeks
-v1.0.1 (Feb 2026)    🔄 IN PROGRESS (Testing + CI/CD)
-  ↓ 6-8 weeks
-v1.1.0 (Q2 2026)     📅 PLANNED (Reasoning + Web UI + API)
-  ↓ 4-6 weeks
-v1.5.0 (Q3 2026)     🔥 HIGH PRIORITY (LLM-based Scoring)
-  ↓ 8-12 weeks
-v2.0.0 (Q4 2026)     🚀 VISION (Multimodal + Cloud)
-```
+Die vollständige Roadmap steht in [README.md](README.md). Stand Q1/Q2 2026 konzentriert sich die Entwicklung auf:
+
+- [ ] **Agentic Workflow Benchmarks:** Native Tests für Multi-Step Tool-Usage (Welches Modell plant komplexe File-Edits am sichersten?).
+- [ ] **Visuelles Sub-System (Multimodal):** Integration visueller Benchmarks zur Architekturanalyse (UML-Diagramm lesen, UI designen).
+- [ ] **Web-UI / Dashboard:** Eine interaktive React- oder Streamlit-Umgebung zur Visualisierung der CSV-Output-Ergebnisse und Leaderboards.
+- [ ] **Erweiterung von CI/CD System-Hooks:** Automatische Integration für GitHub Actions, um KI-Akteure in Pull Requests zu prüfen.
 
 ______________________________________________________________________
 
 ## 🎯 Strategic Priorities
 
-### Immediate (Next 2 Weeks)
+### Kurzfristig
 
-1. **Complete unit tests** (60% → 95%)
-1. **Setup CI/CD** (GitHub Actions)
-1. **Release v1.0.1** (stable maintenance version)
+1. **Test Coverage abschließen** (60% → 95%)
+2. **CI/CD einrichten** (GitHub Actions)
+3. **E2E Systemtests** (Volldurchlauf aller lokalen Modelle, finales Leaderboard)
 
-### Short-term (Q2 2026)
+### Mittelfristig
 
-1. **Develop Reasoning Module** (new benchmark)
-1. **Build Web UI MVP** (basic dashboard)
-1. **Implement API Mode** (remote execution)
-
-### Mid-term (Q3 2026)
-
-1. **LLM-based Scoring System** ⭐ (major feature)
-1. **Human baseline study** (validation)
-1. **Cost optimization** (production-ready)
-
-### Long-term (Q4 2026)
-
-1. **Multimodal support** (image + text)
-1. **Cloud deployment** (scalability)
-1. **Enterprise features** (teams, analytics)
+1. **Externes Frontend starten** (`cruciblemark-web`, 11ty-basiert)
+2. **Agentic Workflow Benchmarks** (neue Testdimension)
+3. **Multimodal Support** (visuelle Benchmarks)
 
 ______________________________________________________________________
 
 ## 📈 Success Metrics
 
-### v1.0.0 Achievements
+### v3.2.0 Achievements
 
-- ✅ 6/6 modules production-ready
-- ✅ Average Pylint score 9.15/10 (target: 8.5)
-- ✅ 100% type hints on public APIs
-- ✅ 100% docstring coverage
-- ✅ Complete documentation
-
-### v1.0.1 Goals
-
-- Unit test coverage ≥ 95%
-- CI/CD pipeline operational
-- Zero critical bugs
-- Performance baseline established (Completed)
-- ✅ Leaderboard Refactoring (Absolute Scoring)
-- ✅ Speed Classes & Skill Profiles
-- ✅ Documentation Updates
-
-### v1.2.0 Goals (Next)
-
-### v1.1.0 Goals
-
-- 7 total modules
-- Web UI functional
-- API mode operational
-- User feedback: Positive
-
-### v1.5.0 Goals
-
-- LLM scoring implemented (4 modules)
-- Human-LLM agreement ≥ 80%
-- Cost per evaluation < $0.10
-- Documentation complete
+- ✅ 8/8 Module Production-Ready
+- ✅ Pylint Score Provider-Layer: 10.00/10
+- ✅ Average Pylint Score: 9.15/10 (Ziel: 8.5)
+- ✅ 100% Type Hints auf Public APIs
+- ✅ 100% Docstring Coverage
+- ✅ SSOT erzwungen, Fail-Fast aktiv, keine versteckten Fallbacks
 
 ______________________________________________________________________
 
 ## 🔬 Research & Development
 
-### Active Research Areas
+### Aktive Forschungsbereiche
 
-#### 1. LLM-as-Judge Methodology
+#### 1. Agentic Workflow Evaluation
 
-**Questions:**
+Welche Modelle planen komplexe Multi-Step Tool-Usage-Szenarien zuverlässig? Wie misst man Planungsqualität ohne Ground Truth? Die Antwort erfordert neue Asset-Formate und einen erweiterten Judge-Mechanismus.
 
-- Which LLM is best judge? (GPT-4o, Claude 3.5, Gemini?)
-- How to calibrate rubrics?
-- How to ensure consistency?
-- How to handle disagreements?
+**Status:** Konzeptphase
 
-**Status:** Literature review + pilot experiments
+#### 2. Multimodal Benchmarks
 
-#### 2. Human Baseline Study
+Visuelle Aufgaben (UML lesen, UI-Designs beurteilen) benötigen neue Asset-Formate und Judge-Mechanismen jenseits von Text-Matching.
 
-**Goals:**
-
-- Establish gold standard
-- Measure inter-rater reliability
-- Validate LLM judgments
-
-**Status:** Design phase
-
-#### 3. Cost Optimization
-
-**Strategies:**
-
-- Prompt compression
-- Response caching
-- Batch processing
-- Tier-based LLM selection
-
-**Status:** Experimentation
+**Status:** Design-Phase
 
 ______________________________________________________________________
 
 ## 🤝 Community & Contributions
 
-### Current Status
+### Aktueller Status
 
 - **Repository:** Public (GitHub)
 - **License:** MIT
@@ -764,7 +300,7 @@ ______________________________________________________________________
 - **Issues:** 0 open
 - **Pull Requests:** 0 open
 
-### Target (v1.1.0)
+### Ziel
 
 - [ ] First external contribution
 - [ ] Community feedback integration
@@ -777,8 +313,8 @@ ______________________________________________________________________
 
 ### Completed ✅
 
-- [x] Root README (v1.0.0)
-- [x] Module READMEs (6/6)
+- [x] Root README (v3.2.0)
+- [x] Module READMEs (8/8)
 - [x] Configuration docs
 - [x] Contributing guidelines
 - [x] REF_TODO.md (updated)
@@ -803,33 +339,15 @@ ______________________________________________________________________
 
 ### Technical Risks
 
-#### 1. LLM Scoring Reliability
-
-**Risk:** LLM judges may be inconsistent\
-**Mitigation:** Multi-model consensus + human validation\
-**Priority:** High
-
-#### 2. Cost Escalation
-
-**Risk:** LLM-as-Judge increases costs significantly\
-**Mitigation:** Caching, batching, tier selection\
-**Priority:** Medium
-
-#### 3. Test Coverage Gaps
+#### 1. Test Coverage Gaps
 
 **Risk:** Bugs in production due to low test coverage\
-**Mitigation:** v1.0.1 focus on unit tests\
+**Mitigation:** Fokus auf Unit Tests, GitHub Actions CI/CD\
 **Priority:** High
 
 ### Business Risks
 
-#### 1. Adoption
-
-**Risk:** Users prefer existing benchmarks (MMLU, HumanEval)\
-**Mitigation:** Focus on product engineer niche\
-**Priority:** Medium
-
-#### 2. Maintenance Burden
+#### 1. Maintenance Burden
 
 **Risk:** Single maintainer cannot sustain project\
 **Mitigation:** Community building, documentation\
@@ -847,32 +365,34 @@ ______________________________________________________________________
 
 ## 📝 Change Log Summary
 
-### v1.1.0 (2026-02-04) - Leaderboard Overhaul 🚀
+### v3.2.0 (2026-03-25) – Strict SSOT & Full Provider Refactoring
 
-**Major Changes:**
+- Alle versteckten Modell-Fallbacks auf Provider-Ebene entfernt
+- Pylint 10/10 für alle Provider-Integrationen (`utils/providers/`)
+- Pyright-Direktiven für Google SDK `reportPrivateImportUsage` False-Positives
+- "Judge: skip (zu kurz/abgelehnt)" im UI und Log-Output implementiert
 
-- **Absolute Scoring:** Gold (>85), Silver (>70), Bronze (>55) badges
-- **Speed Classes:** Fast (\<40s), Medium, Slow (>80s)
-- **Skill Profiles:** Auto-generated capability summaries
-- **New Metrics:** Performance/s and Cost per 1K
+### v3.1.0 – Audit- & Meta-Review Generation
 
-### v1.0.0 (2026-02-03) - Production Release 🎉
+- Off-by-One-Bug im Meta-Reviewer bei langen Markdown-Logs behoben
+- Strukturierte ID-Anker (z. B. 7.2.001) in `meta_reviewer_prompt.yaml`
+- Grammar-Restrictions gegen aktive Halluzination (Passiv- und Objekt-Wording)
+- Automatisierte Metadaten-Extraktion per Regex (Hard-Refusal Raten, Token-Fallbacks)
 
-**Major Changes:**
+### v3.0.0 – Safety & Refusal Architecture
 
-- Complete framework refactoring (v2.0)
-- All 6 modules production-ready (Pylint 8.8-9.85/10)
-- Unified provider interface
-- Standardized CSV output
-- Comprehensive documentation
+- 3-Tier Refusal Architecture (API-Timeout vs. Soft- vs. Hard-Refusal)
+- Progressive Temperature Scaling (`0.1 → 0.4 → 0.7`)
+- Pydantic Serialization Bugfix für verschachtelte Metriken
 
-**Breaking Changes:** None (new project)
+### v2.6.x – Stability, Metrics & Bias Prevention
 
-**Known Issues:**
-
-- Test coverage at 60% (target: 95% for v1.0.1)
-- No CI/CD pipeline yet
+- Token-Loop-Halluzination Fallback (Auto-Truncation, Gemini 2.5 Flash)
+- Leaderboard-Numerator-Bug behoben (44/43 → korrekt)
+- Alpha-Randomization gegen Position/Token-Bias in Multiple Choice
 
 ______________________________________________________________________
 
-**Document Version:** 2.1 **Last Updated:** 2026-02-04 **Next Review:** v1.2.0 Release (March 2026)
+**Document Version:** 3.0\
+**Last Updated:** 2026-03-25\
+**Next Review:** Web Frontend Release
