@@ -2,6 +2,11 @@
 
 ## ✅ COMPLETED
 
+### Fallbacks & Provider SSOT (v3.2.0)
+- [x] **Dynamic Provider SSOT:** Hardgecodete Kategorie-Definitionen in CLI und Leaderboard entfernt; zentral über `benchmark_config.yaml` (`utils/model_utils.py`) dynamisiert.
+- [x] **Open-Weights Cloud API Support:** Dedizierte Cloud-Infrastruktur für Open-Weights Modelle (z. B. via Groq) eingerichtet.
+- [x] **Local Cloud Removal:** Legacy-Kategorie "Local Cloud" im gesamten System (Scores, Meta-Reviews, DataFrames) sauber mit `Cloud (Open-Weights)` fusioniert.
+
 ### Audit & Meta-Review Generation (v3.1.0)
 - [x] **Meta-Reviewer Anchoring:** Off-by-one Parsing Bugs behoben (via durchgängiger YAML ID-Anker).
 - [x] **Anti-Halluzinations-Schutz (Grammar Restriktionen):** Meta-Review-Prompt um harten Passiv-Zwang ergänzt, um Anthropomorphisierung im Fazit zu verhindern.
@@ -113,4 +118,4 @@ ______________________________________________________________________
 
 ______________________________________________________________________
 
-**Last Updated:** 2026-03-18 **Version:** 3.0.0 (Safety Shift & Refusal Loop) **Next Milestone:** Agentic Workflow & Web-UI
+**Last Updated:** 2026-03-28 **Version:** 3.2.0 (Strict SSOT & Full Provider Refactoring) **Next Milestone:** Agentic Workflow & Web-UI

@@ -23,7 +23,7 @@ try:
 except ImportError:
     # Fallback if import fails (should match SSOT logic in model_utils.py)
     def get_model_category(
-        model_name: str, source_file: str = "local", size_gb: float | None = None
+        model_name: str, source_file: str = "local", size_gb: float | None = None, provider: str | None = None
     ) -> str:
         """Fallback categorization matching SSOT."""
         if source_file == "commercial":
@@ -98,9 +98,15 @@ def _process_csv(dfs: List[pd.DataFrame], filepath: Path, type_label: str) -> No
             if "model" in df_new.columns:
                 # Determine source context (local vs commercial CSV)
                 source_context = "commercial" if type_label == "Commercial" else "local"
-                df_new["type"] = df_new["model"].apply(
-                    lambda m: get_model_category(m, source_context)
-                )
+                if "provider" in df_new.columns:
+                    df_new["type"] = df_new.apply(
+                        lambda row: get_model_category(row["model"], source_context, provider=row.get("provider")),
+                        axis=1
+                    )
+                else:
+                    df_new["type"] = df_new["model"].apply(
+                        lambda m: get_model_category(m, source_context)
+                    )
             else:
                 df_new["type"] = type_label
             dfs.append(df_new)
@@ -152,7 +158,7 @@ def load_benchmark_data() -> pd.DataFrame:
             .astype(str)
             .str.replace(r"-\d{4}-\d{2}-\d{2}$", "", regex=True)
         )
-    
+
     # Also normalize model name to remove date suffixes
     if "model" in df.columns:
         df["model"] = (

@@ -117,6 +117,7 @@ providers:
     mistral:
       name: "Mistral AI"
       api_type: "mistral"
+      model_type: "proprietary_api"
       enabled: true
       env_var: "MISTRAL_API_KEY"
       models:
@@ -130,6 +131,7 @@ providers:
     anthropic:
       name: "Anthropic"
       api_type: "anthropic"
+      model_type: "proprietary_api"
       enabled: true
 
       # --- Token Limits ---
@@ -169,6 +171,7 @@ providers:
     openai:
       name: "OpenAI"
       api_type: "openai"
+      model_type: "proprietary_api"
       enabled: true
 
       env_var: "OPENAI_API_KEY"
@@ -202,6 +205,7 @@ providers:
     google:
       name: "Google Gemini"
       api_type: "google"
+      model_type: "proprietary_api"
       enabled: true
       # Der API-Key gehört NICHT hierher, sondern in die .env Datei oder .zshrc!
       # Beispiel .env: GOOGLE_API_KEY=AIzaSy...
@@ -229,6 +233,7 @@ providers:
     xai:
       name: "xAI (Grok)"
       api_type: "xai"
+      model_type: "proprietary_api"
       enabled: true  # Standardmäßig deaktiviert, Aktivierung via Config
       # Der API-Key gehört in die .env Datei!
       # Beispiel .env: XAI_API_KEY=xai-...
@@ -241,6 +246,29 @@ providers:
         - id: "grok-3-mini"
           name: "Grok 3 Mini"
           description: "Effizient & schnell"
+
+    groq:
+      name: "Groq Cloud"
+      api_type: "groq"
+      model_type: "open_weights_cloud"
+      enabled: true
+      # Der API-Key gehört in die .env Datei!
+      env_var: "GROQ_API_KEY"
+      models:
+        - id: "meta-llama/llama-4-scout-17b-16e-instruct"
+          name: "Llama 4 Scout (17B) Instruct"
+        - id: "llama-3.3-70b-versatile"
+          name: "Llama 3.3 (70B) Versatile"
+        - id: "llama-3.1-8b-instant"
+          name: "Llama 3.1 (8B) Instant"
+
+    ollama_cloud:
+      name: "Ollama (Cloud Proxies)"
+      api_type: "ollama"
+      model_type: "open_weights_cloud"
+      enabled: true
+      auto_discover: true
+      models_filter: "cloud" # Custom marker for UI/Discovery logic if needed
 
   local:
     # Globale Konfiguration für alle lokalen Ollama-Modelle
@@ -255,11 +283,12 @@ providers:
       # Default Generation Profile
       default_temperature: 0.1
 
-    ollama:
+    ollama_local:
       name: "Ollama (Local)"
       api_type: "ollama"
       # Modelle werden dynamisch von Ollama abgefragt
       auto_discover: true
+      models_filter: "local"
 
 # Output Configuration
 # --------------------

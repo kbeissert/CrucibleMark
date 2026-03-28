@@ -235,8 +235,6 @@ def _test_model_connectivity(
 
 def check_commercial(config: Dict[str, Any]) -> None:
     """Prüft kommerzielle Provider und deren Status durch echten API-Ping."""
-    print(f"\n{Colors.HEADER}=== Kommerzielle Modelle (API) ==={Colors.ENDC}")
-
     providers = config.get("providers", {}).get("commercial", {})
 
     if not providers:
@@ -254,7 +252,41 @@ def check_commercial(config: Dict[str, Any]) -> None:
         )
         return
 
-    # Header
+    # --- Cloud Modelle (Open-Weights, groq etc) ---
+    print(f"\n{Colors.HEADER}=== Cloud Modelle (Open-Weights) ==={Colors.ENDC}")
+    print(
+        f"{Colors.BOLD}{'PROVIDER':<15} {'MODEL':<30} {'STATUS':<6} {'MSG'}{Colors.ENDC}"
+    )
+    print("-" * 80)
+    has_open_cloud = False
+    for prov_key, prov_data in providers.items():
+        if not prov_data.get("enabled", False):
+            continue
+
+        # Nur explizite Open-Weights Cloud Modelle (wie Groq oder Ollama Cloud)
+        if prov_data.get("model_type") != "open_weights_cloud":
+            continue
+
+        has_open_cloud = True
+        prov_name = prov_data.get("name", prov_key)
+        env_var = prov_data.get("env_var", "")
+        api_key = os.getenv(env_var) if env_var else None
+
+        if not api_key and prov_key != "ollama_cloud":  # Ollama Cloud braucht meist keinen globalen Env-Key im klassischen Sinne
+            print(
+                f"{prov_name:<15} {'(All Models)':<30} "
+                f"{Colors.FAIL}MISS{Colors.ENDC}   Missing Env Var: {env_var}"
+            )
+            continue
+
+        for model in prov_data.get("models", []):
+            _test_model_connectivity(llm_client, model["id"], prov_key, prov_name)
+
+    if not has_open_cloud:
+        print("Keine Open-Weights Cloud-Modelle konfiguriert.")
+
+    # --- Echte Kommerzielle Modelle ---
+    print(f"\n{Colors.HEADER}=== Kommerzielle Modelle (API) ==={Colors.ENDC}")
     print(
         f"{Colors.BOLD}{'PROVIDER':<15} {'MODEL':<30} {'STATUS':<6} {'MSG'}{Colors.ENDC}"
     )
@@ -262,6 +294,10 @@ def check_commercial(config: Dict[str, Any]) -> None:
 
     for prov_key, prov_data in providers.items():
         if not prov_data.get("enabled", False):
+            continue
+
+        # Nur proprietäre APIs
+        if prov_data.get("model_type") != "proprietary_api":
             continue
 
         prov_name = prov_data.get("name", prov_key)

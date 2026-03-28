@@ -38,23 +38,53 @@ ______________________________________________________________________
 
 ## 🌐 Provider-Kategorien
 
-CrucibleMark unterscheidet drei Arten von Modell-Providern.
+CrucibleMark verwendet eine dynamische, zentrale Konfiguration (`benchmark_config.yaml`), um Provider und Kategorie-Zuordnungen als Single Source of Truth (SSOT) zu verwalten. Dies macht das System flexibel erweiterbar, ohne dass Hardcodings im Analyse-Code nötig sind.
 
-| Kategorie | Beschreibung | Beispiele | Charakteristik |
+Aktuell unterscheidet CrucibleMark drei wesentliche Arten von Modell-Kategorien:
+
+| Kategorie | Beschreibung | Beispiele / Provider | Charakteristik |
 |-----------|--------------|-----------|----------------|
-| **Commercial** | Cloud-basierte kommerzielle APIs | Claude (Anthropic), Gemini (Google), GPT (OpenAI), Mistral AI | Kosten pro Token, API-Keys erforderlich |
-| **Local** | Vollständig lokal ausgeführte Modelle | Qwen 2.5, DeepSeek-R1, Ministral-3 (via Ollama) | Keine Kosten, volle Privatsphäre |
-| **Local Cloud** | Cloud-Modelle über Ollama Proxy | MiniMax-M2, GPT-OSS (via Ollama Cloud) | Ollama leitet an Cloud-Dienste weiter, erkennbar am `:cloud`-Suffix |
+| **Commercial** | Cloud-basierte kommerzielle APIs | Anthropic, Google, OpenAI, Mistral | Proprietäre Modelle. Direkte Kosten pro Token, API-Keys erforderlich |
+| **Cloud (Open-Weights)** | Cloud-gehostete Open-Weights Modelle | Groq, Ollama (mit `:cloud`-Suffix) | Modelle, die über APIs (oder Proxies) laufen, aber offen (open-weights) sind. |
+| **Local** | Vollständig lokal ausgeführte Modelle | Ollama (lokal) | Ausführung auf eigener Hardware. Keine Provider-Kosten, volle Privatsphäre |
 
-### Erkennung (SSOT: `utils/model_utils.py::get_model_category()`)
+### Erkennung & Erweiterung (SSOT: `benchmark_config.yaml`)
 
-1. **Quelldatei:** Aus welcher CSV stammen die Daten?
-   - `commercial_models_benchmark.csv` → immer **Commercial**
-   - `local_models_benchmark.csv` → weiter zu Regel 2
+Die Kategorisierung wird zentral über `utils/model_utils.py::get_model_category()` gesteuert. Die Funktion liest die Einstellungen dynamisch aus der Datei `benchmark_config.yaml` aus:
 
-2. **Modellname:** Enthält der Name das Suffix `:cloud`?
-   - Ja (z. B. `minimax-m2:cloud`) → **Local Cloud**
-   - Nein (z. B. `ministral-3:14b`) → **Local**
+1. **Prüfung über Provider-Konfiguration (`benchmark_config.yaml`):**
+   Das System gleicht den in den Rohdaten hinterlegten Provider-Namen (`provider`) gegen die globalen Konfigurationsbäume (`providers.commercial`, `providers.open_weights_cloud`, `providers.local`) ab.
+   - Provider unter `providers.commercial` definiert (z. B. `anthropic`) → **Commercial**
+   - Provider unter `providers.open_weights_cloud` definiert (z. B. `groq`) → **Cloud (Open-Weights)**
+   - Provider unter `providers.local` definiert (z. B. `ollama`) → Prüfung nach Regel 2.
+
+2. **Zusatzprüfung für lokale Proxies (Ollama / Legacy-Modus):**
+   Wenn es sich um einen an sich lokalen Provider handelt, oder die Daten aus der lokalen CSV stammen, wird abschließend das Suffix des Modells inspiziert:
+   - Enthält der Name `:cloud` (z. B. `minimax-m2:cloud`) → **Cloud (Open-Weights)**
+   - Sonstiges Modell (z. B. `ministral-3:14b`) → **Local**
+
+#### 🛠️ Einen neuen Provider hinzufügen
+
+Damit du zukünftig einen neuen Model-Provider ergänzen kannst (z. B. einen weiteren Open-Weights Hoster), genügen wenige Handgriffe, da das System vollkommen dynamisch geparst wird:
+
+1. **Konfiguration anpassen:** Öffne `benchmark_config.yaml` (und synchronisiere es idealerweise auch im Template `benchmark_config.example.yaml`).
+2. **Provider eintragen:** Ergänze den String-Namen des Providers (z.B. `together_ai` oder `vllm`) im passenden Kategorien-Array in der Sektion `providers`:
+
+```yaml
+providers:
+  commercial:
+    - anthropic
+    - google
+    - openai
+    - mistral
+  open_weights_cloud:
+    - groq
+    # - together_ai  <-- Hier neuen Hoster ergänzen
+  local:
+    - ollama
+    # - vllm         <-- Hier neuen lokalen Runner ergänzen
+```
+3. Fertig! Ab dem nächsten Benchmark-, CLI- oder Leaderboard-Lauf überträgt sich die neue Provider-Einordnung fehlerfrei bis in die finalen Score-Tabellen und Metareviews des Judges.
 
 ______________________________________________________________________
 

@@ -55,10 +55,10 @@ pip install -r requirements.txt
 ```
 
 ### 2. Provider konfigurieren
-Kopiere die Konfigurations-Vorlagen und hinterlege deine API-Schlüssel:
+Kopiere die Konfigurations-Vorlagen und hinterlege deine API-Schlüssel **ausschließlich** in einer lokalen `.env` Datei.
+Aktiviere oder deaktiviere die gewünschten Provider in der zentralen Konfiguration (z. B. `providers.commercial` oder `providers.open_weights_cloud`):
 ```bash
 cp benchmark_config.example.yaml benchmark_config.yaml
-# Trage in benchmark_config.yaml deine API Keys für commercial_providers ein.
 ```
 
 ### 3. Benchmarks ausführen

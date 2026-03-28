@@ -1,11 +1,18 @@
 # Active Context
 
-**Last Updated:** 2026-03-27
-**Session:** Dokumentations-Überarbeitung (vollständig)
+**Last Updated:** 2026-03-28
+**Session:** Groq/Open-Weights Support & Provider SSOT (v3.2.0 finalization)
 
 ## Erledigte Aufgaben (diese Session)
 
-### Textüberarbeitung: README.md & PROJECT_STATUS.md
+### Provider Kategorien SSOT (v3.2.0 Refactoring)
+- **Generisches Fallback-System:** Veraltete und verwirrende Hardcodings für "Local Cloud" wurden aus Data Loadern, Utilities und Judge-Scripts entfernt.
+- **Neue Kategorie `Cloud (Open-Weights)`:** Modelle von Groq und Ollama-Cloud-Proxies (`:cloud`) werden nun präzise bewertet.
+- **Konfigurations-Driven:** Provider-Namen greifen nun konsequent auf `benchmark_config.yaml` zu.
+- **Fix:** Dataframe Cache-Blocking-Deadlock in `data_loader.py` gefixt (`_CACHED_CONFIG`). 
+- **Dokumentation:** `MODEL_CLASSIFICATION.md`, `SETUP_GUIDE.md`, `CHANGELOG.md`, `REF_TODO.md` sowie Haupt-README aktualisiert.
+
+### Textüberarbeitung (vorhergehende Session)
 - Version-Inkonsistenz behoben: README badge → v3.2.0 (war: v3.1.0)
 - Stil nach autor.md-Regeln: direkt, kein Passiv, max. 20 Wörter pro Satz
 - PROJECT_STATUS.md: Veraltete v1.x-Roadmap-Einträge bereinigt

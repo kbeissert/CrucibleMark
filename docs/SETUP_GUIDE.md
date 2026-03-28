@@ -23,10 +23,12 @@ Mit einer dedizierten Nvidia-Grafikkarte (`nvidia_rtx4090`) trägst du den Namen
 
 ## Schritt 2: Provider & API-Keys hinterlegen
 
-Die Benchmarks nutzen API-Schnittstellen, wenn du kommerzielle Modelle wie ChatGPT, Claude oder Gemini benchmarken möchtest. Du musst nicht jeden Provider aktivieren. Setze `enabled: false`, um unerwünschte Provider auszuschalten.
+Alle Provider und ihre Kategorien (Commercial, Open-Weights Cloud, Local) sind dynamisch als Single Source of Truth in der `benchmark_config.yaml` hinterlegt (unter der Sektion `providers`). Wenn du einen neuen Anbieter nutzen möchtest (z. B. `together_ai`), musst du diesen nur dort zur entsprechenden Kategorie hinzufügen. So werden die Provider auch fehlerfrei im Leaderboard klassifiziert (Details unter [MODEL_CLASSIFICATION.md](MODEL_CLASSIFICATION.md)).
 
-1. **Provider aktivieren:** In `benchmark_config.yaml` unter der Sektion `providers.commercial`.
-2. **API-Schlüssel:** Hinterlege deine API-Keys **nicht** in der YAML-Datei. Trage sie in deine lokale `.bashrc`, `.zshrc` oder direkt in eine `.env`-Datei im Hauptverzeichnis ein:
+Die Benchmarks nutzen API-Schnittstellen für kommerzielle Modelle oder Cloud-gehostete Open-Weights-Modelle. Du musst nicht jeden Provider aktivieren.
+
+1. **Provider einrichten:** In `benchmark_config.yaml` findest du die aktuellen Listen unter `providers.commercial`, `providers.open_weights_cloud` und `providers.local`. Passe dies nach deinen Bedürfnissen an.
+2. **API-Schlüssel:** Hinterlege deine API-Keys **nicht** in der YAML-Datei. Trage sie direkt in eine `.env`-Datei im Hauptverzeichnis ein:
 
 ```env
 # .env Datei im CrucibleMark-Hauptverzeichnis

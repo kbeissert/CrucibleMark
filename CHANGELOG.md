@@ -4,6 +4,20 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [v3.2.0] - 2026-03-28
+
+### Added
+- **Dynamic Provider SSOT:** Vollständiges Refactoring der Provider-Kategorisierung. Das System nutzt nun strikt die `benchmark_config.yaml` als Single Source of Truth für Model-Kategorien.
+- **Open-Weights Cloud Support:** Neue Kategorie `Cloud (Open-Weights)` hinzugefügt. Erlaubt die native Integration von Cloud-Hostern für Open-Source Modelle (z. B. Groq), welche automatisch im Leaderboard korrekt zugewiesen und bewertet werden.
+
+### Changed
+- **Kategorien Konsolidierung:** Der veraltete Begriff "Local Cloud" wurde aus dem Dashboard, dem Leaderboard und den Dokumentationen entfernt. Cloud-Proxies von Ollama (erkennbar am `:cloud` Suffix) werden jetzt präzise als `Cloud (Open-Weights)` gehandhabt.
+- **Meta-Review Context Injection:** Der Report Generator (`generate_review.py`) wurde aktualisiert und behandelt "Cloud (Open-Weights)" Modelle nun konsistent mit dem Hardware-Kontext `local_cloud`, um dem LLM Judge korrekte Annahmen über APIs und Hardware-Limits mitzuteilen.
+- **Leaderboard Rendering:** Pandas DataFrames im `data_loader.py` cachen nun die Konfigurations-Dictionaries (`model_utils.py::_CACHED_CONFIG`), um Blocking & Deadlocks durch iteratives YAML-Lesen über hunderte Rows zu verhindern.
+
+### Fixed
+- **Dokumentation:** Die Beschreibungen des Setup-Guides (`SETUP_GUIDE.md`) und der Klassifizierungsregeln (`MODEL_CLASSIFICATION.md`) wurden umfangreich bereinigt und reflektieren nun das neue 3-Kategorien-System (Commercial, Cloud (Open-Weights), Local).
+
 ## [v3.1.1] - 2026-03-25
 
 ### Changed

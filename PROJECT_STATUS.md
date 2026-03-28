@@ -1,6 +1,6 @@
 # PROJECT_STATUS.md
 
-**Last Updated:** 2026-03-25
+**Last Updated:** 2026-03-28
 **Current Version:** 3.2.0 (Strict SSOT & Full Provider Refactoring)
 **Status:** ✅ Production-Ready
 
@@ -8,12 +8,13 @@ ______________________________________________________________________
 
 ## 🎯 Executive Summary
 
-CrucibleMark v3.2.0 eliminiert sämtliche versteckten Modell-Fallbacks auf API-Providerebene und erzwingt das "Single Source of Truth" (SSOT)-Prinzip absolut strikt. Eine umfassende Refaktorierung aller Provider-Integrationen (Anthropic, Mistral, Google, OpenAI u. a.) liefert makellose Codequalität (Pylint 10/10). Fehlerhafte Konfigurationen lösen einen direkten "Fail-Fast"-Abbruch aus.
+CrucibleMark v3.2.0 eliminiert sämtliche versteckten Modell-Fallbacks auf API-Providerebene und erzwingt das "Single Source of Truth" (SSOT)-Prinzip absolut strikt über die `benchmark_config.yaml`. Eine umfassende Refaktorierung aller Provider-Integrationen (Anthropic, Mistral, Google, OpenAI, Groq u. a.) liefert makellose Codequalität. Fehlerhafte Konfigurationen lösen einen direkten "Fail-Fast"-Abbruch aus. Das Modell-Kategoriensystem (Commercial, Open-Weights, Local) greift nun vollständig dynamisch und durchzieht nahtlos Dashboard, Leaderboard und Metareviews.
 
 **Key Achievements (v3.2.0):**
-- ✅ **Strict SSOT Enforcement & Fail-Fast:** Versteckte Modellausweichmechanismen (z.B. automatisiertes Laden von `claude-3-5-sonnet` oder `mistral-large-latest` bei ungenauen Modellnamen im Provider) wurden vollständig restlos entfernt. Das System nutzt nur exakt das, was in der Config steht (`ValueError` bei Fehlern).
+- ✅ **Strict SSOT Enforcement & Fail-Fast:** Versteckte Modellausweichmechanismen (z.B. automatisiertes Laden von `claude-3-5-sonnet` oder `mistral-large-latest` bei ungenauen Modellnamen im Provider) wurden vollständig restlos entfernt. Das System nutzt nur exakt das, was in der Config steht (`ValueError` bei Fehlern). 
+- ✅ **Dynamic Provider & Category Rendering:** Die Zuweisung von Modell-Kategorien (Commercial, Cloud (Open-Weights), Local) wurde vollständig in die Konfiguration überführt. Der veraltete Begriff "Local Cloud" wurde aus UI und Analyse entfernt. "Open-Weights"-Provider wie Groq sind nun vollwertig integriert.
 - ✅ **Provider Code Perfection & Type Safety:** Die API-Integrationen im `utils/providers/`-Verzeichnis wurden radikal aufgeräumt. Der Pylint-Score aller Provider erreicht makellose 10.00/10, tote Imports und Codeabschnitte wurden entfernt. Pylance Type-Checker False-Positives (bspw. `reportPrivateImportUsage` im Google SDK) wurden per Pyright-Direktiven sauber unterdrückt.
-- ✅ **Judge Skip Clarification:** Das UI und Log-Output wurden verbessert, um `⚠️ Judge: skip (zu kurz/abgelehnt)` auszuweisen, wenn die Antwort eines evaluierten Modells zu kurz ist oder verweigert wurde, was die Audit-Logs präziser macht.
+- ✅ **Judge Skip Clarification & Meta-Context:** Das UI und Log-Output wurden verbessert, um `⚠️ Judge: skip (zu kurz/abgelehnt)` auszuweisen. Zudem erhält der Judge für "Cloud (Open-Weights)"-Modelle nun immer den korrekten Cloud-Hardwarekontext injiziert, um fehlerhafte Hardware-Bewertugen zu unterbinden.
 
 **Vorherige Version (v3.1.0 – Audit- & Meta-Review Generation):**
 CrucibleMark v3.1.0 verbessert den "LLM-as-a-Judge"-Flow radikal und eliminiert Judge-Halluzinationen in finalen Audit- und Trend-Reports. Hochgradig kalibrierte Prompt-Mechaniken sorgen für fehlerfreies Markdown-Parsing und verhindern, dass Modellen eine menschlich-aktive Denkweise angedichtet wird.

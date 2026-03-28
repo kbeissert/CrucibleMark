@@ -110,6 +110,16 @@ def get_model_version(model_name: str, provider: str = "ollama", client=None) ->
                 return f"{version}-mini"
             return version
         return "latest"
+    if "llama" in model_name.lower():
+        match = re.search(r"llama-?(\d+(?:\.\d+)?)-?(\d+b)?", model_name.lower())
+        if match:
+            version = match.group(1)
+            size = match.group(2)
+            if size:
+                return f"{version}-{size.upper()}"
+            return version
+        return "latest"
+
     if "lfm" in model_name:
         return "latest"
     if "o1" in model_name or "o3" in model_name:
@@ -327,7 +337,7 @@ def is_cloud_model(model_name: str, size_gb: Optional[float] = None) -> bool:
 
 
 def get_model_category(
-    model_name: str, source_file: str = "local", size_gb: Optional[float] = None
+    model_name: str, source_file: str = "local", size_gb: Optional[float] = None, provider: Optional[str] = None
 ) -> str:
     """
     Central SSOT for model categorization.
@@ -337,20 +347,31 @@ def get_model_category(
         model_name: Name of the model (e.g., 'ministral-3:14b', 'gpt-oss:120b-cloud')
         source_file: Source CSV file ('local' or 'commercial')
         size_gb: Optional model size in GB (for better cloud detection)
+        provider: Optional provider name (from config or CSV) to determine exact grouping
 
     Returns:
-        str: 'Commercial', 'Local', or 'Local Cloud'
-
-    Examples:
-        >>> get_model_category('ministral-3:14b', 'local')
-        'Local'
-        >>> get_model_category('minimax-m2:cloud', 'local')
-        'Local Cloud'
-        >>> get_model_category('gpt-oss:120b-cloud', 'local')
-        'Local Cloud'
-        >>> get_model_category('claude-sonnet-4', 'commercial')
-        'Commercial'
+        str: 'Commercial', 'Local', 'Cloud-Modelle (Open-Weights)' or 'Local Cloud'
     """
+    if provider:
+        try:
+            from utils.config_validator import ConfigValidator
+            config = ConfigValidator().config
+            commercial_providers = config.get("providers", {}).get("commercial", {})
+            if provider in commercial_providers:
+                m_type = commercial_providers[provider].get("model_type", "")
+                if m_type == "open_weights_cloud":
+                    return "Cloud (Open-Weights)"
+                elif m_type == "proprietary_api":
+                    return "Commercial"
+                elif m_type == "cloud":
+                    return "Local Cloud"
+        except Exception:
+            pass
+
+    # Wenn aus lokaler CSV und der Name "cloud" enthaelt, soll es offene Cloud-Modelle abbilden, vorausgesetzt wir matchen Ollama proxies:
+    if source_file == "local" and ("cloud" in model_name.lower() or (size_gb is not None and size_gb < 0.01)):
+        return "Cloud (Open-Weights)"
+
     # Rule 1: Commercial CSV → Always Commercial
     if source_file == "commercial":
         return "Commercial"
@@ -381,19 +402,19 @@ def get_model_specialization(model_name: str) -> str:
     """
     Classifies models by their primary training specialization.
     Used for context in Bias-Reviews to apply appropriate leniency.
-    
+
     Returns: 'Coder', 'Thinking', 'Instruction', or 'General'
     """
     name_lower = model_name.lower()
-    
+
     if any(x in name_lower for x in ["coder", "-code", "code-"]):
         return "Coder"
-    
+
     # We leverage our existing reasoning check plus some explicit names
     if is_reasoning_model(model_name) or any(x in name_lower for x in ["thinking"]):
         return "Thinking"
-        
+
     if any(x in name_lower for x in ["instruct", "-it", "chat"]):
         return "Instruction"
-        
+
     return "General"

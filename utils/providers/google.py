@@ -36,6 +36,8 @@ logger = logging.getLogger(__name__)
 from utils.providers.base import BaseProviderClient
 class GoogleClient(BaseProviderClient):
     """Google Gemini Provider Client"""
+    PROVIDER_NAMES = ["google"]
+
     def __init__(self, config: Dict[str, Any]):
         super().__init__(config)
         self.api_key = get_required_env("GOOGLE_API_KEY")

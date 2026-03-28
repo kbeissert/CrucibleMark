@@ -2,6 +2,7 @@
 
 ## Ongoing
 - [ ] Phase 4: Finale E2E Systemtests und CI/CD Review
+- [DONE] Kategorien-SSOT (v3.2.0): "Local Cloud" Deprecation und vollständige Migration auf "Cloud (Open-Weights)" (Groq, etc.) in Utilities, Leaderboard und Meta-Reviewer Logik.
 - [DONE] Metakognitions-Prüfung (<thought>-Tags) in Modulen und CSV integrieren
 - [DONE] CLI-Benchmark auf Hybrid LLM-Judge umstellen
 - [DONE] LLM Judge: Umbau auf natives JSON-Output (`judge_parser.py` + Prompts)

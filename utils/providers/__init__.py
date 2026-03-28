@@ -1,16 +1,12 @@
+import pkgutil
+import importlib
+from pathlib import Path
 from .base import BaseProviderClient
-from .ollama import OllamaClient
-from .anthropic import AnthropicClient
-from .mistral import MistralClient
-from .openai import OpenAIClient
-from .google import GoogleClient
-from .xai import XAIClient
-__all__ = [
-    "BaseProviderClient",
-    "OllamaClient",
-    "AnthropicClient",
-    "MistralClient",
-    "OpenAIClient",
-    "GoogleClient",
-    "XAIClient",
-]
+
+# Lade automatisch alle Provider-Module im aktuellen Verzeichnis
+package_dir = Path(__file__).resolve().parent
+for _, module_name, _ in pkgutil.iter_modules([str(package_dir)]):
+    if module_name != "base":
+        importlib.import_module(f".{module_name}", package="utils.providers")
+
+__all__ = ["BaseProviderClient"]

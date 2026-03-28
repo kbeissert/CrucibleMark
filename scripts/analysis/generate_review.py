@@ -141,7 +141,7 @@ def process_model_review(model_dir: Path, csv_data: str, client: LLMClient, prov
 
         if category == "Commercial":
             run_type = "commercial"
-        elif category == "Local Cloud":
+        elif category in ["Local Cloud", "Cloud (Open-Weights)"]:
             run_type = "local_cloud"
         else:
             run_type = "local"
