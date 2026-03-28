@@ -27,6 +27,8 @@ logger = logging.getLogger(__name__)
 from utils.providers.base import BaseProviderClient
 class MistralClient(BaseProviderClient):
     """Mistral AI Provider Client"""
+    PROVIDER_NAMES = ["mistral"]
+
     def __init__(self, config: dict[str, Any]):
         super().__init__(config)
         self._client = None

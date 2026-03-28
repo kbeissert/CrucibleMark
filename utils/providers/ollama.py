@@ -28,6 +28,8 @@ logger = logging.getLogger(__name__)
 from utils.providers.base import BaseProviderClient
 class OllamaClient(BaseProviderClient):
     """Ollama Provider Client"""
+    PROVIDER_NAMES = ["ollama", "ollama_local", "ollama_cloud"]
+
     def __init__(self, config: Dict[str, Any]):
         super().__init__(config)
         self._client = None

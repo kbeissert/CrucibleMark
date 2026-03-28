@@ -1,4 +1,16 @@
 providers:
+  groq:
+    meta-llama/llama-4-scout-17b-16e-instruct:
+      input_cost_per_1k: 0.00015   # $0.15 per 1M input tokens
+      output_cost_per_1k: 0.00025  # $0.25 per 1M output tokens
+    llama-3.3-70b-versatile:
+      input_cost_per_1k: 0.00059   # $0.59 per 1M input tokens
+      output_cost_per_1k: 0.00079  # $0.79 per 1M output tokens
+    llama-3.1-8b-instant:
+      input_cost_per_1k: 0.00005   # $0.05 per 1M input tokens
+      output_cost_per_1k: 0.00008  # $0.08 per 1M output tokens
+    daily_budget: 10.0 # Max $10/Tag total for Groq
+
   openai:
     gpt-5:
       input_cost_per_1k: 0.000625  # $0.625 per 1M input tokens

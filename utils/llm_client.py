@@ -9,14 +9,7 @@ from pathlib import Path
 from typing import Any, Callable, Dict, List, Optional
 import yaml  # pylint: disable=import-error
 
-from utils.providers import (
-    OllamaClient,
-    AnthropicClient,
-    MistralClient,
-    OpenAIClient,
-    XAIClient,
-    GoogleClient,
-)
+from utils.providers.base import BaseProviderClient
 from utils.retry_handler import RetryHandler
 from utils.llm_parser import LLMParser
 from utils.cost_tracker import CostTracker
@@ -25,6 +18,9 @@ from utils.constants import (
     DEFAULT_MAX_RETRIES,
     TOKEN_ESTIMATE_RATIO,
 )
+
+# Initialize global providers via import (autodiscovery)
+import utils.providers
 
 # Configure logging
 logger = logging.getLogger(__name__)
@@ -55,15 +51,10 @@ class LLMClient:
         # Performance tracking
         self.last_query_duration = 0.0
 
-        # Initialize provider clients
-        self.clients = {
-            "ollama": OllamaClient(self.config),
-            "anthropic": AnthropicClient(self.config),
-            "mistral": MistralClient(self.config),
-            "openai": OpenAIClient(self.config),
-            "google": GoogleClient(self.config),
-            "xai": XAIClient(self.config),
-        }
+        # Initialize provider clients based on dynamic registry
+        self.clients = {}
+        for name, cls in BaseProviderClient._registry.items():
+            self.clients[name] = cls(self.config)
 
         # Initialize retry handler
         self.retry_handler = RetryHandler(max_retries=DEFAULT_MAX_RETRIES)

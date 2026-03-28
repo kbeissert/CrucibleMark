@@ -25,6 +25,8 @@ logger = logging.getLogger(__name__)
 from utils.providers.base import BaseProviderClient
 class XAIClient(BaseProviderClient):
     """XAI Provider Client"""
+    PROVIDER_NAMES = ["xai"]
+
     def __init__(self, config: dict):
         super().__init__(config)
         self._client = None

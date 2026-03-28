@@ -8,6 +8,19 @@ from typing import Any, List, Optional, Callable
 logger = logging.getLogger(__name__)
 class BaseProviderClient:
     """Basis-Klasse für Provider-spezifische Clients"""
+
+    # Liste der logischen Provider-Namen, für die dieser Client verantwortlich ist (z.B. ["openai"])
+    PROVIDER_NAMES: List[str] = []
+
+    # Registry aller Clients
+    _registry: dict[str, type] = {}
+
+    def __init_subclass__(cls, **kwargs):
+        """Automatische Registrierung von Subklassen"""
+        super().__init_subclass__(**kwargs)
+        for name in getattr(cls, "PROVIDER_NAMES", []):
+            BaseProviderClient._registry[name] = cls
+
     def __init__(self, config: dict[str, Any]):
         self.config = config
         self.last_response_metadata = {}
