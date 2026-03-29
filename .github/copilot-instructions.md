@@ -25,6 +25,7 @@
   - *Judge Parser:* Muss Score-Varianten abfangen. Bei Parse-Fehler `parse_success=False` verwenden (niemals Exception schlucken).
   - *CSV-Felder:* Neue dynamische Spalten müssen in `result_manager.py` bei `_get_updated_fieldnames` explizit eingetragen werden.
   - *Modul-Config Propagation:* Neue Top-Level-Properties in `config.yaml` müssen manuell ins `benchmark_info`-Dict (in `run_benchmark.py`) übernommen werden.
+  - *Model Tags / Evaluation Context:* Neue Modell-Tags (in `model_utils.py`) müssen synchron in `meta_reviewer_prompt.yaml` und `judge_prompt_builder.py` dokumentiert werden, damit Judge und Meta-Reviewer die richtige Bewertungstoleranz anwenden.
   - *Audit-Log Extraction:* Regex-Parser in `generate_review.py` muss bei neuen Metadaten-Blöcken (z.B. `> [!WARNING]`) erweitert werden. Siehe [AUDIT_AND_METAREVIEW.md](docs/AUDIT_AND_METAREVIEW.md).
   - *Terminal Execution Limits:* Für sichere Datei-Ersetzungen File-Edit-Tools oder Python-Dateien statt Terminal-Befehle nutzen.
   - *Google SDK Typing:* Bei Pylance/Pyright False-Positives (z.B. `reportPrivateImportUsage`) im `google.generativeai` SDK `# pyright: reportPrivateImportUsage=false` am Header nutzen.
