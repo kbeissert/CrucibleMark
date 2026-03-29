@@ -399,7 +399,7 @@ def run_commercial_batch(
                     provider=task["provider"], model=model_id, benchmark_info=module, assets=assets_todo
                 )
                 if results:
-                    runner.save_results(results)
+                    runner.save_results(results, result_type="commercial")
                     # Modular behavior: Immediate trigger after save.
                     try:
                         gen_leaderboard(print_table=False)

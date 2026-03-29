@@ -387,6 +387,34 @@ class UnifiedBenchmarkRunner(BaseBenchmarkRunner):
                 print(f"   ❌ [{i}/{len(assets)}] {asset_name}: Abgebrochen - {str(e)}")
 
         # Global audit metrics
+        # ---------------------------------------------------------
+        # Terminal Summary Generation
+        # ---------------------------------------------------------
+        valid_results = [r for r in results if r.get("type") != "system" and r.get("status") != "error" and r.get("skip_reason") is None]
+        if valid_results:
+            avg_score = sum(r.get("semantic_score", r.get("accuracy_score", 0.0)) for r in valid_results) / len(valid_results)
+            avg_time = sum(r.get("execution_time", 0.0) for r in valid_results) / len(valid_results)
+            avg_tokens = sum(r.get("tokens_per_second", 0.0) for r in valid_results) / len(valid_results)
+            judge_scores = [r.get("judge_score") for r in valid_results if r.get("judge_score") is not None]
+
+            # The theoretical cost is generated dynamically per request from CostTracker (SSOT)
+            total_usd = sum(r.get("cost_usd", 0.0) for r in valid_results)
+            avg_usd = total_usd / len(valid_results)
+
+            summary = "\n   " + "="*70 + "\n"
+            summary += f"   🏁 DURCHSCHNITT: {avg_score:.1f}% | {avg_tokens:.0f} T/s | {avg_time:.1f}s"
+
+            if judge_scores:
+                avg_judge = sum(judge_scores) / len(judge_scores)
+                summary += f" | ⚖️ Judge: {avg_judge:.1f}/5"
+
+            if avg_usd > 0.0:
+                summary += f" | 💵 Ø ${avg_usd:.4f}"
+
+            summary += "\n   " + "="*70 + "\n"
+            print(summary)
+
+
         if self.audit_mode and results:
             from utils.benchmark_utils import append_global_run_metrics
 

@@ -106,12 +106,31 @@ def main():
         format="%(message)s"
     )
 
-    out_dir = Path(args.output)
-    if out_dir.exists():
-        shutil.rmtree(out_dir)
+    # -------------------------------------------------------------------------
+    # Safety guard: web_export darf nur innerhalb raw/ operieren
+    # -------------------------------------------------------------------------
+    out_dir = Path(args.output).resolve()
+    ALLOWED_SUBDIR = "raw"
+
+    if out_dir.name != ALLOWED_SUBDIR:
+        # Wenn der konfigurierte Pfad nicht auf raw/ endet,
+        # hänge raw/ automatisch an, um externe Daten zu schützen
+        out_dir = out_dir / ALLOWED_SUBDIR
+
+    # Explizite Whitelist: nur diese drei Top-Level-Files dürfen überschrieben werden
+    ALLOWED_FILES = {"leaderboard.json", "political_compass.json", "meta.json"}
+
+    # models/ ist der einzige Unterordner der gelöscht werden darf
+    ALLOWED_RMTREE = out_dir / "models"
+    assert ALLOWED_RMTREE == (out_dir / "models"), "Safety check failed: rmtree target is not models/"
+
     out_dir.mkdir(parents=True, exist_ok=True)
-    models_dir = out_dir / "models"
-    models_dir.mkdir(exist_ok=True)
+
+    # Modelle-Ordner separat neu generieren
+    if ALLOWED_RMTREE.exists():
+        shutil.rmtree(ALLOWED_RMTREE)
+    ALLOWED_RMTREE.mkdir(exist_ok=True)
+    models_dir = ALLOWED_RMTREE
 
     root_dir = Path(__file__).resolve().parent.parent
     scores_dir = root_dir / "benchmark_scores"

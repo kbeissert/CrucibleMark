@@ -11,10 +11,12 @@ from typing import Any, List, Optional
 import numpy as np  # pylint: disable=import-error
 
 try:
-    from sentence_transformers import SentenceTransformer
-    from sklearn.metrics.pairwise import cosine_similarity
+    import importlib.util
 
-    HAS_TRANSFORMERS = True
+    if importlib.util.find_spec("sentence_transformers") is not None:
+        HAS_TRANSFORMERS = True
+    else:
+        HAS_TRANSFORMERS = False
 except ImportError:
     HAS_TRANSFORMERS = False
 
@@ -55,6 +57,8 @@ class SemanticSimilarity:
 
         if cls._model is None:
             try:
+                from sentence_transformers import SentenceTransformer
+
                 print(
                     "⏳ Lade KI-Modell für semantische Vergleiche (kann beim ersten Mal dauern)..."
                 )
@@ -99,9 +103,14 @@ class SemanticSimilarity:
             return 0.0
 
         try:
+            from sklearn.metrics.pairwise import cosine_similarity
+
             embeddings = model.encode([text1, text2])
             similarity = cosine_similarity([embeddings[0]], [embeddings[1]])[0][0]
             return float(similarity)
+        except ImportError:
+            logger.error("Error: sklearn is required for cosine similarity.")
+            return 0.0
         except Exception as e:  # pylint: disable=broad-exception-caught
             logger.error("Error calculating similarity: %s", e)
             return 0.0
@@ -150,6 +159,8 @@ class SemanticSimilarity:
             return 0.0
 
         try:
+            from sklearn.metrics.pairwise import cosine_similarity
+
             query_embedding = model.encode([query])
             candidate_embeddings = model.encode(candidates)
 
