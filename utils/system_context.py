@@ -45,13 +45,13 @@ REGELN FÜR DEIN REVIEW IN BEZUG AUF CLOUD-HARDWARE:
 2. Erwähne auf keinen Fall lokale Hardware (z.B. "Apple Silicon M4" oder VRAM-Bezug). Das Modell lief nicht auf lokaler Hardware!
 3. Evaluiere die Geschwindigkeit (API-Latenz in t/s) primär in Relation zur Preis-Leistung (Preis pro 1M Token), der Latenz und der Stabilität der API."""
 
-        elif run_type == "local_cloud":
-            return """WICHTIGER KONTEXT ZUR PERFORMANCE (OLLAMA CLOUD / PROXY):
-Dieses Modell wurde über Ollama angebunden, aber es handelt sich um ein CLOUD-MODELL oder Proxy (es läuft nicht lokal berechnet, sondern die Rechenlast wird in eine Cloud ausgelagert, z.B. DeepSeek V3/R1 über einen Drittanbieter oder einen Cloud-Ollama-Endpoint).
+        elif run_type == "cloud_open_weights":
+            return """WICHTIGER KONTEXT ZUR PERFORMANCE (CLOUD OPEN-WEIGHTS / PROXY):
+Dieses Modell ist ein auf offenen Gewichten basierendes Modell (Open-Weights), das über einen Cloud-Anbieter (wie Groq, Hyperbolic) oder als API-Proxy läuft. Die Rechenlast wird vollständig in die Cloud ausgelagert.
 
 REGELN FÜR DEIN REVIEW IN BEZUG AUF CLOUD-HARDWARE:
-1. Mache unbedingt für den Leser klar, dass es sich hier um ein "Cloud-Modell" / "Proxy-Modell" handelt, auch wenn es über Ollama angebunden wurde.
-2. Erwähne auf keinen Fall lokale Hardware (wie "Apple Silicon M4" oder VRAM-Swapping-Risiken). Das Modell lief nicht lokal auf der Hardware des Nutzers! Die t/s geben hier nur die Netzwerk-Latenz zum Cloud-Anbieter wieder.
-3. Behandle die ermittelte Geschwindigkeit (t/s) daher lediglich unter dem Aspekt der "Netzwerkanbindung" oder "Cloud-Latenz", nicht als Hardware-Leistungs-Indikator des lokalen Systems."""
+1. Mache unbedingt für den Leser klar, dass es sich hier um ein "Cloud Open-Weights"-Modell handelt.
+2. Erwähne auf keinen Fall lokale Hardware (wie "Apple Silicon M4" oder VRAM-Swapping-Risiken). Das Modell lief nicht lokal auf der Hardware des Nutzers! Die t/s geben bei diesen Modellen meist die enorme Rechengeschwindigkeit hochoptimierter Cloud-Cluster (z.B. LPU bei Groq) plus Netzwerk-Latenz wieder.
+3. Behandle die ermittelte Geschwindigkeit (t/s) daher als Benchmark für den jeweiligen Cloud-Infrastruktur-Anbieter."""
 
         return ""

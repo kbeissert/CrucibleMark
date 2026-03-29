@@ -82,29 +82,40 @@ def check_ollama_status() -> bool:
 
 
 def get_existing_results(csv_path: Path, force: bool = False) -> Set[Tuple[str, str]]:
-    """Lädt Set von (Model, AssetID) für bereits existierende Tests."""
+    """Lädt Set von (Model, AssetID) für bereits existierende Tests über alle Provider-CSVs hinweg."""
     cache = set()
     if force:
         return cache  # Force Mode: Ignoriere existierende Ergebnisse
 
-    if csv_path.exists():
-        try:
-            df = pd.read_csv(csv_path)
-            # Relevante Spalten prüfen
-            required = {"model", "asset_id"}
-            if required.issubset(df.columns):
-                # Wir merken uns (Model, AssetID) als erledigt
-                for _, row in df.iterrows():
-                    # Wenn Status vorhanden, prüfen wir auf success
-                    # (Fehlgeschlagene Tests werden wiederholt)
-                    if "status" in df.columns:
-                        status = str(row.get("status", "")).lower()
-                        if status != "success":
-                            continue  # Skip failed tests (retry)
+    # Wir checken ab sofort ALLE Haupt-CSVs (3-CSV Architektur)
+    validator = ConfigValidator()
+    output_cfg = validator.config.get("output", {})
 
-                    cache.add((str(row["model"]), str(row["asset_id"])))
-        except Exception as e:  # pylint: disable=broad-exception-caught
-            print(f"⚠️ Warnung beim Lesen von {csv_path}: {e}")
+    csv_paths = [
+        Path(output_cfg.get("local_models_csv", "benchmark_scores/local_models_benchmark.csv")),
+        Path(output_cfg.get("cloud_models_csv", "benchmark_scores/cloud_models_benchmark.csv")),
+        Path(output_cfg.get("commercial_models_csv", "benchmark_scores/commercial_models_benchmark.csv"))
+    ]
+
+    for path in csv_paths:
+        if path.exists():
+            try:
+                df = pd.read_csv(path)
+                # Relevante Spalten prüfen
+                required = {"model", "asset_id"}
+                if required.issubset(df.columns):
+                    # Wir merken uns (Model, AssetID) als erledigt
+                    for _, row in df.iterrows():
+                        # Wenn Status vorhanden, prüfen wir auf success
+                        # (Fehlgeschlagene Tests werden wiederholt)
+                        if "status" in df.columns:
+                            status = str(row.get("status", "")).lower()
+                            if status != "success":
+                                continue  # Skip failed tests (retry)
+
+                        cache.add((str(row["model"]), str(row["asset_id"])))
+            except Exception as e:  # pylint: disable=broad-exception-caught
+                print(f"⚠️ Warnung beim Lesen von {path}: {e}")
 
     # Zusätzlich Batch-Mode CSVs (z.B. Political Compass) zur Vermeidung von Re-Runs einlesen
     pc_csv = Path("benchmark_scores/political_compass_leaderboard.csv")
@@ -260,7 +271,8 @@ def run_local_batch(
     runner = UnifiedBenchmarkRunner(audit_mode=audit_mode)
 
     # Cache laden (bereits erledigte Tests)
-    csv_path = Path("benchmark_scores/local_models_benchmark.csv")
+    validator = ConfigValidator()
+    csv_path = Path(validator.config.get("output", {}).get("local_models_csv", "benchmark_scores/local_models_benchmark.csv"))
     existing_tests = get_existing_results(csv_path, force=force)
 
     # Modelle holen
@@ -359,11 +371,13 @@ def run_commercial_batch(
         return
 
     # Cache laden (bereits erledigte Tests)
-    # Cache laden (bereits erledigte Tests)
-    comm_csv = Path("benchmark_scores/commercial_models_benchmark.csv")
-    existing_tests = get_existing_results(comm_csv, force=force)
+    comm_csv = Path(validator.config.get("output", {}).get("commercial_csv", "benchmark_scores/commercial_models_benchmark.csv"))
+    cloud_csv = Path(validator.config.get("output", {}).get("cloud_models_csv", "benchmark_scores/cloud_models_benchmark.csv"))
 
-    print(f"Ignoriere bereits vorhandene Ergebnisse ({len(existing_tests)} Einträge)\n")
+    existing_tests = get_existing_results(comm_csv, force=force)
+    existing_tests.update(get_existing_results(cloud_csv, force=force))
+
+    print(f"Ignoriere bereits vorhandene Ergebnisse ({len(existing_tests)} Einträge aus Commercial/Cloud)\n")
 
     # Flatten list of (provider, model_id, model_name)
     tasks = []
@@ -399,7 +413,7 @@ def run_commercial_batch(
                     provider=task["provider"], model=model_id, benchmark_info=module, assets=assets_todo
                 )
                 if results:
-                    runner.save_results(results, result_type="commercial")
+                    runner.save_results(results)
                     # Modular behavior: Immediate trigger after save.
                     try:
                         gen_leaderboard(print_table=False)

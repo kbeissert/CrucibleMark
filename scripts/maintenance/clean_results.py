@@ -207,6 +207,7 @@ def main():
     # Dateien definieren
     files = [
         Path("benchmark_scores/local_models_benchmark.csv"),
+        Path("benchmark_scores/cloud_models_benchmark.csv"),
         Path("benchmark_scores/commercial_models_benchmark.csv"),
         Path("benchmark_scores/political_compass_results.csv"),
     ]

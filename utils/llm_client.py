@@ -4,7 +4,6 @@ Unified Interface für Ollama und Anthropic Claude API
 """
 
 import logging
-import re
 from pathlib import Path
 from typing import Any, Callable, Dict, List, Optional
 import yaml  # pylint: disable=import-error
@@ -20,7 +19,7 @@ from utils.constants import (
 )
 
 # Initialize global providers via import (autodiscovery)
-import utils.providers
+import utils.providers  # pylint: disable=unused-import
 
 # Configure logging
 logger = logging.getLogger(__name__)
@@ -104,8 +103,6 @@ class LLMClient:
         if ollama_client and hasattr(ollama_client, "last_response_metadata"):
             return ollama_client.last_response_metadata.get("load_duration", 0.0)
         return 0.0
-
-    @property
 
     @property
     def last_pure_execution_time(self) -> float:

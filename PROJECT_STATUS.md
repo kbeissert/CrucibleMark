@@ -1,13 +1,20 @@
 # PROJECT_STATUS.md
 
 **Last Updated:** 2026-03-29
-**Current Version:** 3.2.1 (Performance & Data-Cache Bugfixes)
+**Current Version:** 3.2.2 (3-CSV Architecture & SSOT Completion)
 **Status:** ✅ Production-Ready
 
 ______________________________________________________________________
 
 ## 🎯 Executive Summary
 
+CrucibleMark v3.2.2 schließt die vollständige Single Source of Truth Separation ab, indem die alte 2-CSV Architektur durch eine logisch trennscharfe 3-CSV Architektur ersetzt wurde. Das Framework unterscheidet im Ausführungs- und Evaluierungskontext nun strukturell perfekt zwischen lokalen VRAM-Modellen, Commercial API-Modellen und den neuen Cloud Open-Weights Proxies.
+
+**Key Achievements (v3.2.2):**
+- ✅ **3-CSV Data Architecture:** Vollständige Abkehr vom fehleranfälligen "Local Cloud" Konstrukt in ein dediziertes `cloud_models_benchmark.csv` Logging.
+- ✅ **Meta-Review & LLM-Judge Context Fix:** Anpassung der generativen Injektion für "Cloud Open-Weights"-Modelle, sodass diese vom Evaluator nicht fälschlicherweise für "lokale Hardware-Limitierungen" penalisiert werden.
+
+**Vorherige Version (v3.2.1 – Performance & Cache Repair):**
 CrucibleMark v3.2.1 liefert tiefgreifende Performance-Optimierungen durch die Implementierung von Lazy-Loading für schwergewichtige ML-Module (wie `sentence_transformers` und `sklearn`), wodurch sich die Boot-Zeiten drastisch verkürzen. Zudem wurde nach der Architektur-Bereinigung auf den `UnifiedBenchmarkRunner` ein potenziell kritischer Cache/Routing-Fehler zwischen lokalen und kommerziellen Scores identifiziert und nachhaltig isoliert.
 
 **Key Achievements (v3.2.1):**

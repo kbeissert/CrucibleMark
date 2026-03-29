@@ -15,7 +15,7 @@ from utils.csv_recovery import get_csv_header_idx, parse_row_robust
 # pylint: enable=import-error
 
 # Import configuration and constants
-from .config import COMMERCIAL_CSV, LOCAL_CSV
+from .config import COMMERCIAL_CSV, LOCAL_CSV, CLOUD_CSV
 
 # pylint: disable=import-error
 try:
@@ -96,8 +96,14 @@ def _process_csv(dfs: List[pd.DataFrame], filepath: Path, type_label: str) -> No
             # SSOT: Centralized Model Categorization
             # Uses get_model_category() from model_utils.py as Single Source of Truth
             if "model" in df_new.columns:
-                # Determine source context (local vs commercial CSV)
-                source_context = "commercial" if type_label == "Commercial" else "local"
+                # Determine source context
+                if type_label == "Commercial":
+                    source_context = "commercial"
+                elif type_label == "Cloud (Open-Weights)":
+                    source_context = "cloud"
+                else:
+                    source_context = "local"
+
                 if "provider" in df_new.columns:
                     df_new["type"] = df_new.apply(
                         lambda row: get_model_category(row["model"], source_context, provider=row.get("provider")),
@@ -128,6 +134,7 @@ def load_benchmark_data() -> pd.DataFrame:
     dfs: List[pd.DataFrame] = []
 
     _process_csv(dfs, COMMERCIAL_CSV, "Commercial")
+    _process_csv(dfs, CLOUD_CSV, "Cloud (Open-Weights)")
     _process_csv(dfs, LOCAL_CSV, "Local")
 
     if not dfs:

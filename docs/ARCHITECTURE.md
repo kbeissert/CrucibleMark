@@ -93,22 +93,28 @@ ______________________________________________________________________
 
 ### Benchmark Orchestrator
 
-**Einstiegspunkt:** `make benchmark` → `scripts/core/run_local_benchmark.py`
+**Einstiegspunkt:** `make benchmark` / `make benchmark-auto` → `run_benchmark.py` / `scripts/core/benchmark_auto.py` → `scripts/core/unified_runner.py`
 
-**Dual-Runner Strategy:** CrucibleMark trennt strikt zwischen lokalen und kommerziellen Laufzeitumgebungen, um faire Ergebnisse für jeden Kontext zu liefern.
+**Unified-Runner Strategy:** CrucibleMark steuert lokale, Cloud-basierte Open-Weights und kommerzielle Laufzeitumgebungen über eine zentrale `UnifiedBenchmarkRunner` Klasse, wendet aber je nach Provider unterschiedliche Strategien an, um faire Ergebnisse zu liefern.
 
-1. **Local Runner (`scripts/core/run_local_benchmark.py`):**
+1. **Lokale & Cloud-Proxy Ausführung (Ollama / Provider):**
 
-   - **Ziel:** „User Experience Simulation" (Wie fühlt es sich lokal an?)
+   - **Ziel:** „User Experience Simulation" (Wie fühlt es sich lokal an?) bzw. „Proxy-Stabilität".
    - **Komponente:** `AdaptivePauseCalculator` (`utils/adaptive_pause.py`)
-   - **Logik:** Pausiert zwischen Tests basierend auf Modellgröße (RAM Footprint), Output-Länge (Context Overhead) und voriger Ausführungszeit.
+   - **Logik:** Pausiert bei lokalen Ausführungen zwischen Tests basierend auf Modellgröße (RAM Footprint), Output-Länge (Context Overhead) und voriger Ausführungszeit.
    - **Modi:** `PRODUCTION` (15–30 s Pausen für maximale Stabilität) vs. `DEV` (5–10 s Pausen für schnelle Iteration).
 
-2. **Commercial Runner (`scripts/core/run_commercial_benchmark.py`):**
+2. **Kommerzielle APIs / Cloud Open-Weights Ausführung:**
 
    - **Ziel:** „Throughput & Reliability" (API-Stress-Test)
    - **Komponente:** `RateLimiter` (`utils/rate_limiter.py`)
-   - **Logik:** Respektiert Provider-Limits, nutzt aber ansonsten minimale Pausen für maximalen Throughput.
+   - **Logik:** Respektiert spezifische Provider-Limits (RPM/TPM per `config/rate_limits.yaml`), nutzt aber ansonsten minimale Pausen für maximalen Durchsatz.
+
+**Speicherung & Trennung (3-CSV-Architektur):**
+Die Ergebnisse werden vom Runner durch den `ResultManager` (`utils/result_manager.py`) automatisch in eine von drei Quellen getrennt (Single Source of Truth Konzept):
+- `local_models_benchmark.csv` (Lokale VRAM Ausführungen)
+- `cloud_models_benchmark.csv` (API Proxies, Cloud Open-Weights, z.B. LPU inference)
+- `commercial_models_benchmark.csv` (Closed-Source Commercial APIs wie OpenAI)
 
 **Verantwortlichkeiten (Shared Framework):**
 

@@ -47,7 +47,12 @@ class UnifiedBenchmarkRunner(BaseBenchmarkRunner):
         # Load output configurations
         self.local_csv = Path(
             self.validator.config.get("output", {}).get(
-                "local_csv", "benchmark_scores/local_models_benchmark.csv"
+                "local_models_csv", "benchmark_scores/local_models_benchmark.csv"
+            )
+        )
+        self.cloud_csv = Path(
+            self.validator.config.get("output", {}).get(
+                "cloud_models_csv", "benchmark_scores/cloud_models_benchmark.csv"
             )
         )
         self.commercial_csv = Path(
@@ -61,6 +66,7 @@ class UnifiedBenchmarkRunner(BaseBenchmarkRunner):
         self.existing_commercial_benchmarks = self._load_existing_benchmarks(
             self.commercial_csv
         )
+        self.existing_cloud_benchmarks = self._load_existing_benchmarks(self.cloud_csv)
         self.existing_local_benchmarks = self._load_existing_benchmarks(self.local_csv)
 
     def _load_existing_benchmarks(
@@ -96,12 +102,16 @@ class UnifiedBenchmarkRunner(BaseBenchmarkRunner):
             logger.warning(f"Fehler beim Laden bestehender Benchmarks {csv_path}: {e}")
         return existing
 
-    def _get_existing(self, is_local: bool) -> Dict:
-        return (
-            self.existing_local_benchmarks
-            if is_local
-            else self.existing_commercial_benchmarks
-        )
+    def _get_existing(self, provider: str) -> Dict:
+        """Ermittelt das passende Cache-Dictionary basierend auf dem Provider."""
+        if provider == "ollama":
+            return self.existing_local_benchmarks
+
+        provider_config = self.validator.config.get("providers", {}).get("commercial", {}).get(provider, {})
+        if provider_config.get("model_type") == "open_weights_cloud":
+            return self.existing_cloud_benchmarks
+
+        return self.existing_commercial_benchmarks
 
     def _measure_cold_start(self, model: str) -> Optional[Dict[str, Any]]:
         if model in self.warmup_cache:
@@ -179,9 +189,10 @@ class UnifiedBenchmarkRunner(BaseBenchmarkRunner):
         # Skip logic for commercial
         if not is_local and not self.force:
             key = (model, asset_id)
-            if key in self.existing_commercial_benchmarks:
+            existing_cache = self._get_existing(provider)
+            if key in existing_cache:
                 print(f"   ⏭️  [{asset_id}] Wird übersprungen (Cache)")
-                cached = self.existing_commercial_benchmarks[key]
+                cached = existing_cache[key]
                 cached["cached"] = True
                 return cached
 
@@ -301,7 +312,7 @@ class UnifiedBenchmarkRunner(BaseBenchmarkRunner):
                 provider=provider,
                 num_runs=num_runs,
                 force=self.force,
-                existing_benchmarks=self._get_existing(is_local),
+                existing_benchmarks=self._get_existing(provider),
             )
 
         # Standard Run Loop
@@ -446,4 +457,4 @@ class UnifiedBenchmarkRunner(BaseBenchmarkRunner):
     def _save_partial_results(self, results: List[Dict[str, Any]], is_local: bool):
         if results:
             print("💾 Speichere bisherige Ergebnisse...")
-            self.save_results(results, "local" if is_local else "commercial")
+            self.save_results(results)
