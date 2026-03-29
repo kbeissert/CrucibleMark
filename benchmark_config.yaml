@@ -41,7 +41,7 @@ llm_judge:
     # ANTROPHIC
     name: anthropic          # PRIMARY: Claude Haiku (schnell, konsistent)
     model: claude-haiku-4-5-20251001
-    max_tokens: 4096         # Limit für Reasoning-Blöcke (erhöht auf 4096 für lange reasoning-Aufgaben wie 5e)
+    max_tokens: 8192         # Hohes Limit (8192), um Parsing-Fehler bei komplexen Modulen zu vermeiden
                              # (Wird bei älteren Modellen durch die Kaskade automatisch reguliert)
 
     # GOOGLE (Alternativ, aktuell kommentiert)

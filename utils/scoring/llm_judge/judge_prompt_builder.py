@@ -113,7 +113,12 @@ _RUBRIC_BY_SCALE: Dict[int, str] = {3: _RUBRIC_3, 5: _RUBRIC_5, 10: _RUBRIC_10}
 _SYSTEM_TEMPLATE = Template(
     "You are a senior evaluator specialising in $domain\n\n"
     "Your task is to score an AI-generated response on a $scale-point scale. "
-    "Be objective and precise. Do not reward verbosity over accuracy."
+    "Be objective and precise. Do not reward verbosity over accuracy.\n\n"
+    "### LENGTH & FOCUS CONSTRAINTS (CRITICAL) ###\n"
+    "- Keep your entire reasoning highly concise and strictly between 500 and 1000 words.\n"
+    "- You MUST NOT write exhaustive, line-by-line analyses. Focus only on the 3-5 most critical deviations or strengths that justify your score.\n"
+    "- You should use direct quotes from the model's output or the Golden Standard, but keep them extremely brief (max 1-2 lines per quote).\n"
+    "- Stop writing once the most critical points are made. Do not exceed the required word limits."
 )
 
 _USER_TEMPLATE = Template(

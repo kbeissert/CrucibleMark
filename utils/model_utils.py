@@ -297,6 +297,8 @@ def resolve_provider(model_name: str) -> tuple[str, str]:
         return "google", model_name
     if name_lower.startswith("grok-"):
         return "xai", model_name
+    if "/" in name_lower or name_lower.startswith(("qwen", "llama", "moonshot")):
+        return "groq", model_name
 
     # Default to local
     return "ollama", model_name
