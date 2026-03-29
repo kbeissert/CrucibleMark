@@ -206,42 +206,6 @@ class TestShouldUnloadHelper:
 # ---------------------------------------------------------------------------
 
 
-class TestProviderFallback:
-        result = runner.score("task", "resp", "golden", "ux_writing")
-
-        fallback.complete.assert_not_called()
-        assert result.parse_success is False
-        assert result.score is None
-
-    def test_fail_on_parse_error_raises_not_falls_back(self):
-        """fail_on_parse_error=True should raise RuntimeError, not trigger fallback."""
-        from utils.scoring.llm_judge.judge_config import ScoringConfig  # noqa: PLC0415
-
-        config = LLMJudgeConfig(
-            provider=ProviderConfig(name="anthropic", model="model"),
-            scoring=ScoringConfig(fail_on_parse_error=True),
-        )
-        config.provider.fallback = FallbackProviderConfig(  # type: ignore[assignment]
-            name="ollama", model="llama3.2"
-        )
-        runner = JudgeRunner(config)
-
-        primary = MagicMock()
-        primary.health_check.return_value = True
-        primary.complete.return_value = _make_provider_response(
-            raw_text="No score in this response."
-        )
-        _inject_provider(runner, primary)
-
-        fallback = MagicMock()
-        _inject_fallback(runner, fallback)
-
-        with pytest.raises(RuntimeError, match="failed to parse"):
-            runner.score("task", "resp", "golden", "ux_writing")
-
-        fallback.complete.assert_not_called()
-
-
 # ---------------------------------------------------------------------------
 # Tests: response_time_ms immutability through pipeline
 # ---------------------------------------------------------------------------

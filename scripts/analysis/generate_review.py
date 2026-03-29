@@ -20,7 +20,7 @@ if str(ROOT_DIR) not in sys.path:
     sys.path.insert(0, str(ROOT_DIR))
 
 from utils.llm_client import LLMClient
-from utils.model_utils import get_model_specialization
+from utils.model_utils import get_model_specialization, get_model_identity
 
 def load_config() -> dict:
     config_path = ROOT_DIR / "benchmark_config.yaml"
@@ -35,7 +35,7 @@ def get_model_metrics(model_name: str) -> dict:
         return {}
 
     def normalize(s):
-        return s.replace(":", "_").replace("-", "_").lower()
+        return s.replace(":", "_").replace("-", "_").replace("/", "_").lower()
 
     norm_target = normalize(model_name)
     try:
@@ -210,8 +210,14 @@ def process_model_review(model_dir: Path, csv_data: str, client: LLMClient, prov
 
     timeout_rate_str = f"{timeout_count}/{tests_run}" if timeout_count != "n/a" else "n/a"
 
+    # Extract model identity for display (display_name and tags for human-friendly output)
+    original_model_name = model_metrics.get("Model Name", tested_model_name)
+    identity = get_model_identity(original_model_name)
+
     template_vars = {
-        "tested_model_name": tested_model_name,
+        "tested_model_name": tested_model_name,  # raw ID für Audit-Trail
+        "display_model_name": identity["display_name"],  # "kimi-k2-instruct" (ohne Präfixe)
+        "model_tags": ", ".join(identity["tags"]),  # "Instruction, Abliterated"
         "hardware_context": hardware_context,
         "csv_data": csv_data,
         "log_data": log_data,

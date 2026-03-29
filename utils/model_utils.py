@@ -110,6 +110,11 @@ def get_model_version(model_name: str, provider: str = "ollama", client=None) ->
                 return f"{version}-mini"
             return version
         return "latest"
+    if "kimi" in model_name:
+        match = re.search(r"kimi-(k[\d\.]+)", model_name.lower())
+        if match:
+            return match.group(1)
+        return "latest"
     if "llama" in model_name.lower():
         match = re.search(r"llama-?(\d+(?:\.\d+)?)-?(\d+b)?", model_name.lower())
         if match:
@@ -400,23 +405,60 @@ def is_reasoning_model(model_name: str) -> bool:
     triggers = ["deepseek-r1", "reasoning", "phi4", "qwq", "o1", "o3"]
     return any(t in model_name.lower() for t in triggers)
 
+def get_model_identity(full_model_string: str) -> dict[str, Any]:
+    """
+    Parses a raw API model string and extracts friendly metadata for UI and Judge Context.
+    Strips provider repository paths while retaining technical suffixes.
+    Extracts tags based on model name substrings to provide additional context.
+
+    Returns:
+        dict: {
+            "raw": full_model_string,
+            "display_name": stripped_name,
+            "tags": list_of_tags
+        }
+    """
+    name_lower = full_model_string.lower()
+
+    # Extract identity by stripping everything before the last slash
+    display_name = full_model_string.rsplit('/', 1)[-1]
+
+    tags = []
+
+    # Specializations
+    if any(x in name_lower for x in ["coder", "-code", "code-"]):
+        tags.append("Coder")
+
+    if is_reasoning_model(full_model_string) or any(x in name_lower for x in ["thinking"]):
+        tags.append("Thinking")
+
+    if "abliterated" in name_lower:
+        tags.append("Uncensored-Abliterated")
+
+    if "dolphin" in name_lower or "uncensored" in name_lower or "hermes" in name_lower:
+        tags.append("Uncensored-Finetuned")
+
+    if any(x in name_lower for x in ["instruct", "-it", "chat"]):
+        tags.append("Instruct")
+
+    if any(x in name_lower for x in ["preview", "experimental", "-exp"]):
+        tags.append("Preview")
+
+    if not tags:
+        tags.append("General")
+
+    return {
+        "raw": full_model_string,
+        "display_name": display_name,
+        "tags": tags
+    }
+
 def get_model_specialization(model_name: str) -> str:
     """
     Classifies models by their primary training specialization.
     Used for context in Bias-Reviews to apply appropriate leniency.
 
-    Returns: 'Coder', 'Thinking', 'Instruction', or 'General'
+    Returns: Command separated string of specializations from get_model_identity
     """
-    name_lower = model_name.lower()
-
-    if any(x in name_lower for x in ["coder", "-code", "code-"]):
-        return "Coder"
-
-    # We leverage our existing reasoning check plus some explicit names
-    if is_reasoning_model(model_name) or any(x in name_lower for x in ["thinking"]):
-        return "Thinking"
-
-    if any(x in name_lower for x in ["instruct", "-it", "chat"]):
-        return "Instruction"
-
-    return "General"
+    identity = get_model_identity(model_name)
+    return ", ".join(identity["tags"])
