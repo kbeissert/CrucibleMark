@@ -62,7 +62,7 @@ class GroqClient(BaseProviderClient):
             # Schnelltest mit minimalem Timeout
             check_client = OpenAI(api_key=self.client.api_key, base_url="https://api.groq.com/openai/v1", max_retries=0)
             check_client.chat.completions.create(
-                model="llama3-8b-8192",  # Default model for check
+                model="llama-3.1-8b-instant",  # Default model for check
                 messages=[{"role": "user", "content": "Hi"}],
                 max_tokens=1,
             )

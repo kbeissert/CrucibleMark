@@ -2,16 +2,17 @@
 
 ## Ongoing
 - [ ] Phase 4: Finale E2E Systemtests und CI/CD Review
-- [DONE] Kategorien-SSOT (v3.2.0): "Local Cloud" Deprecation und vollständige Migration auf "Cloud (Open-Weights)" (Groq, etc.) in Utilities, Leaderboard und Meta-Reviewer Logik.
-- [DONE] Metakognitions-Prüfung (<thought>-Tags) in Modulen und CSV integrieren
-- [DONE] CLI-Benchmark auf Hybrid LLM-Judge umstellen
-- [DONE] LLM Judge: Umbau auf natives JSON-Output (`judge_parser.py` + Prompts)
 - [ ] LLM Judge: Batch-Mode (Phase 3.5)
 - [ ] Volldurchlauf aller lokalen Modelle → finales Leaderboard (43/43 Tests)
 - [ ] Re-run `reasoning_logic` für lokale Modelle (verfälschte 0-Punkte bereinigen)
 - [ ] Stabilität `gpt-oss` analysieren (vorheriger Absturz-Kandidat)
 
 ## Abgeschlossen (Meilensteine)
+- [DONE] Performance & Cache Repair (v3.2.1): Data-Routing in CSV-Logs stabilisiert (Fehlzuweisungen in lokale Tabellen behoben). Lazy Loading für Transformers eingeführt. Konsolen-Summary inklusive Kostenanzeige reanimiert. Groq Provider repariert.
+- [DONE] Kategorien-SSOT (v3.2.0): "Local Cloud" Deprecation und vollständige Migration auf "Cloud (Open-Weights)" (Groq, etc.) in Utilities, Leaderboard und Meta-Reviewer Logik.
+- [DONE] Metakognitions-Prüfung (<thought>-Tags) in Modulen und CSV integrieren
+- [DONE] CLI-Benchmark auf Hybrid LLM-Judge umstellen
+- [DONE] LLM Judge: Umbau auf natives JSON-Output (`judge_parser.py` + Prompts)
 - [DONE] Web-Export Pipeline (`scripts/web_export.py`) als Bindeglied für unabhängiges 11ty Frontend-Projekt entwickelt. Konvertiert CSVs in hierarchisches JSON und dedupliziert Markdown-Logs für Templating-Engines. Konfigurierbarer Ausgabeordner etabliert (`output.web_export_dir`). Maintenance Skripte (`clean.py`) für Virtual Environments stabilisiert.
 - [DONE] SSOT Provider Refactoring & Fail-Fast Fallback-Löschung für alle Integrationen (google, anthropic, mistral). Pylint Score auf pure 10/10 inkl. Pyright Type-Ignore `reportPrivateImportUsage`.
 - [DONE] "Judge: skip (zu kurz/abgelehnt)" Output in `unified_runner.py` implementiert, um transparente Ablehnungen im Log abzubilden.

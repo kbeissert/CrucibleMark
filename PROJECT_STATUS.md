@@ -1,17 +1,21 @@
 # PROJECT_STATUS.md
 
-**Last Updated:** 2026-03-28
-**Current Version:** 3.2.0 (Strict SSOT & Full Provider Refactoring)
+**Last Updated:** 2026-03-29
+**Current Version:** 3.2.1 (Performance & Data-Cache Bugfixes)
 **Status:** ✅ Production-Ready
 
 ______________________________________________________________________
 
 ## 🎯 Executive Summary
 
-CrucibleMark v3.2.0 eliminiert sämtliche versteckten Modell-Fallbacks auf API-Providerebene und erzwingt das "Single Source of Truth" (SSOT)-Prinzip absolut strikt über die `benchmark_config.yaml`. Eine umfassende Refaktorierung aller Provider-Integrationen (Anthropic, Mistral, Google, OpenAI, Groq u. a.) liefert makellose Codequalität. Fehlerhafte Konfigurationen lösen einen direkten "Fail-Fast"-Abbruch aus. Das Modell-Kategoriensystem (Commercial, Open-Weights, Local) greift nun vollständig dynamisch und durchzieht nahtlos Dashboard, Leaderboard und Metareviews.
+CrucibleMark v3.2.1 liefert tiefgreifende Performance-Optimierungen durch die Implementierung von Lazy-Loading für schwergewichtige ML-Module (wie `sentence_transformers` und `sklearn`), wodurch sich die Boot-Zeiten drastisch verkürzen. Zudem wurde nach der Architektur-Bereinigung auf den `UnifiedBenchmarkRunner` ein potenziell kritischer Cache/Routing-Fehler zwischen lokalen und kommerziellen Scores identifiziert und nachhaltig isoliert.
 
-**Key Achievements (v3.2.0):**
-- ✅ **Strict SSOT Enforcement & Fail-Fast:** Versteckte Modellausweichmechanismen (z.B. automatisiertes Laden von `claude-3-5-sonnet` oder `mistral-large-latest` bei ungenauen Modellnamen im Provider) wurden vollständig restlos entfernt. Das System nutzt nur exakt das, was in der Config steht (`ValueError` bei Fehlern). 
+**Key Achievements (v3.2.1):**
+- ✅ **Lazy Loading von Transformers:** Massiv beschleunigte Boot-Time durch inline Importe in mathematischen Scores (Cosine Similarity).
+- ✅ **API Connectivity Fix (Groq):** Der Deprecation-Status von `llama3-8b-8192` bei Groq wurde erkannt und der Test-Bouncer modernisiert, wodurch groq-Modelle wieder fehlerfrei zugelassen werden.
+- ✅ **Terminal Metrics Restore:** Laufzeit-Statistiken (Score, Tokendichte, Preise & Dauer) werden pro Modul nun wieder dynamisch als Summary im CLI konsolidiert ausgegeben (`base_runner`/`unified_runner`).
+- ✅ **Data-Routing Bugfix & Cache Repair:** Ein Fehler der UnifiedRunner, bei dem kommerzielle Ergebnisse fälschlicherweise den lokalen Logs zugeteilt wurden und der Resume/Autofill-Zyklus kollabierte, wurde hardcodiert behoben. Alle betroffenen Scores wurden duplikatfrei repariert und in ihr rechtmäßiges CSV-Target verschoben.
+- ✅ **Strict SSOT Enforcement & Fail-Fast (v3.2.0):** Versteckte Modellausweichmechanismen (z.B. automatisiertes Laden von `claude-3-5-sonnet` oder `mistral-large-latest` bei ungenauen Modellnamen im Provider) wurden vollständig restlos entfernt. Das System nutzt nur exakt das, was in der Config steht (`ValueError` bei Fehlern).
 - ✅ **Dynamic Provider & Category Rendering:** Die Zuweisung von Modell-Kategorien (Commercial, Cloud (Open-Weights), Local) wurde vollständig in die Konfiguration überführt. Der veraltete Begriff "Local Cloud" wurde aus UI und Analyse entfernt. "Open-Weights"-Provider wie Groq sind nun vollwertig integriert.
 - ✅ **Provider Code Perfection & Type Safety:** Die API-Integrationen im `utils/providers/`-Verzeichnis wurden radikal aufgeräumt. Der Pylint-Score aller Provider erreicht makellose 10.00/10, tote Imports und Codeabschnitte wurden entfernt. Pylance Type-Checker False-Positives (bspw. `reportPrivateImportUsage` im Google SDK) wurden per Pyright-Direktiven sauber unterdrückt.
 - ✅ **Judge Skip Clarification & Meta-Context:** Das UI und Log-Output wurden verbessert, um `⚠️ Judge: skip (zu kurz/abgelehnt)` auszuweisen. Zudem erhält der Judge für "Cloud (Open-Weights)"-Modelle nun immer den korrekten Cloud-Hardwarekontext injiziert, um fehlerhafte Hardware-Bewertugen zu unterbinden.

@@ -255,12 +255,33 @@ providers:
       # Der API-Key gehört in die .env Datei!
       env_var: "GROQ_API_KEY"
       models:
+        # --- AKTIVIERTE MODELLE ---
         - id: "meta-llama/llama-4-scout-17b-16e-instruct"
           name: "Llama 4 Scout (17B) Instruct"
         - id: "llama-3.3-70b-versatile"
           name: "Llama 3.3 (70B) Versatile"
-        - id: "llama-3.1-8b-instant"
-          name: "Llama 3.1 (8B) Instant"
+        # - id: "llama-3.1-8b-instant"
+        #   name: "Llama 3.1 (8B) Instant"
+        - id: "qwen/qwen3-32b"
+          name: "Qwen 3 (32B) via Groq"
+        #
+        # - id: "openai/gpt-oss-120b"
+        #   name: "GPT-OSS (120B) via Groq"
+        #
+        # - id: "openai/gpt-oss-20b"
+        #   name: "GPT-OSS (20B) via Groq"
+        #
+        # - id: "groq/compound"
+        #   name: "Groq Compound"
+        #
+        # - id: "groq/compound-mini"
+        #   name: "Groq Compound Mini"
+        #
+        - id: "moonshotai/kimi-k2-instruct"
+          name: "Kimi K2 Instruct via Groq"
+        #
+        # - id: "allam-2-7b"
+        #   name: "Allam 2 (7B) via Groq"
 
     ollama_cloud:
       name: "Ollama (Cloud Proxies)"
@@ -352,7 +373,7 @@ modules:
   # --- SONSTIGE / SPEZIAL-MODULE ---
   political_compass:
     path: "benchmark_modules/political_compass"
-    enabled: true          # Ermittelt die ideologische Ausrichtung (60+ Fragen)
+    enabled: false          # Ermittelt die ideologische Ausrichtung (60+ Fragen)
 
 # ============================================================
 # Leaderboard & Scoring Tiers

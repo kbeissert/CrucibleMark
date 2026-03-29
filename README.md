@@ -1,6 +1,6 @@
 # CrucibleMark 🚀
 
-[![Version](https://img.shields.io/badge/version-3.2.0-blue)](.)
+[![Version](https://img.shields.io/badge/version-3.2.1-blue)](.)
 [![Python](https://img.shields.io/badge/python-3.10%2B-blue)](.)
 [![License](https://img.shields.io/badge/license-MIT-green)](.)
 [![Status](https://img.shields.io/badge/status-production--ready-brightgreen)](.)
@@ -86,10 +86,10 @@ make political-compass-safe
 CrucibleMark enthält einen integrierten Export, der sämtliche Benchmark-Ergebnisse (CSVs) sowie Audit- und Review-Markdowns als aufbereitetes JSON-Datenmodell aggregiert. Die Ausgabe versorgt das externe Frontend-Projekt `cruciblemark-web` dynamisch mit Ergebnisdaten und generierten Metadaten.
 
 ```bash
-# Basis-Export (schreibt in den lokalen Ordner ./web_export/)
+# Basis-Export (schreibt standardmäßig sicher nach ./web_export/raw/)
 make web-export
 
-# Direkter Export ins Development-Frontend (11ty)
+# Direkter Export ins Development-Frontend (11ty, schreibt nach src/_data/raw/)
 make web-export-dev
 ```
 
