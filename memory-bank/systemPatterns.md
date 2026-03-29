@@ -59,6 +59,13 @@ Gilt für Generation-Parameter UND LLM Judge. Modul-Override gewinnt immer.
 - Versionen werden zentral in `utils/model_utils.py` innerhalb der `get_model_version()`-Methode über Regex und statische Mappings (z.B. Regex für Datums-Stamps wie `2024-05-13`) verarbeitet.
 - Ollama-Modellversionen werden direkt als ID-Hash über den `ollama list` Shell-Call zur Laufzeit ermittelt und nativ an das Leaderboard durchgereicht.
 
+## Model Environment & Architecture Tags
+- Um spezialisierte Modelle (z.B. Thinking, Coder, Uncensored) fair und im passenden Kontext bewerten zu können, wird über `utils/model_utils.py` dynamisch ein Satz an Architektur-Tags (`Instruct`, `Thinking`, `Uncensored-Abliterated`, etc.) generiert.
+- Diese Spezialisierungen müssen strikt "End-to-End" an alle Bewerter weitergereicht werden. Das bedeutet:
+  1. Der CLI-Runner listet sie.
+  2. Der `LLM-Judge` erhält sie als `tested_model_id` in seinen System-Prompt (via `judge_prompt_builder.py`), um z.B. bei Thinking-Modellen nicht wegen übermäßiger Erklärung ("Verbosity") Punktabzüge zu geben.
+  3. Der `Meta-Reviewer` erhält sie in seinen System-Prompt (`meta_reviewer_prompt.yaml`), um z.B. bei abliterated Modellen Kohärenz-Abbrüche auf die zerstörten Weights statt mangelnde Intelligenz zurückzuführen.
+
 ## Python Subprocesses & Virtual Environments
 - **Ausführung von Python-Skripten via `subprocess`**: Wenn innerhalb eines Python-Skripts (z. B. in Wartungs- oder CLI-Skripten) weitere Python-Prozesse aufgerufen werden, darf niemals hartkodiertes `"python"` als Befehl verwendet werden. Dies bricht oft aus dem aktiven Virtual Environment (`.venv`) aus.
 - Stattdessen immer `sys.executable` verwenden, um sicherzustellen, dass der neue Prozess denselben Interpreter und dieselbe Umgebung nutzt wie der aufrufende Prozess (z.B. `cmd = [sys.executable, "update_guide.py"]`).

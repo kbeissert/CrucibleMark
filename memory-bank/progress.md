@@ -8,6 +8,7 @@
 - [ ] Stabilität `gpt-oss` analysieren (vorheriger Absturz-Kandidat)
 
 ## Abgeschlossen (Meilensteine)
+- [DONE] Modell-Architektur-Tags (v3.2.x): Dynamische Tag-Extraktion (Thinking, Instruct, Preview, Uncensored) in model_utils.py implementiert und in LLM-Judge (`judge_prompt_builder.py`) sowie Meta-Reviewer verankert, um architektonische Eigenheiten fair in die Bewertung (z.B. Verbosity) einfließen zu lassen.
 - [DONE] Performance & Cache Repair (v3.2.1): Data-Routing in CSV-Logs stabilisiert (Fehlzuweisungen in lokale Tabellen behoben). Lazy Loading für Transformers eingeführt. Konsolen-Summary inklusive Kostenanzeige reanimiert. Groq Provider repariert.
 - [DONE] Kategorien-SSOT (v3.2.0): "Local Cloud" Deprecation und vollständige Migration auf "Cloud (Open-Weights)" (Groq, etc.) in Utilities, Leaderboard und Meta-Reviewer Logik.
 - [DONE] Metakognitions-Prüfung (<thought>-Tags) in Modulen und CSV integrieren
