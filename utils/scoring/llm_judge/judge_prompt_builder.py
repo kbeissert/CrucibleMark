@@ -16,6 +16,8 @@ import logging
 from string import Template
 from typing import Dict, Optional, Tuple
 
+from utils.model_utils import get_model_identity
+
 logger = logging.getLogger(__name__)
 
 # ---------------------------------------------------------------------------
@@ -161,6 +163,7 @@ def build_prompts(
     module_id: str,
     scale: int,
     rubric_override: Optional[str] = None,
+    tested_model_id: Optional[str] = None,
 ) -> Tuple[str, str]:
     """
     Build the (system_prompt, user_prompt) pair for the LLM Judge.
@@ -171,8 +174,9 @@ def build_prompts(
         golden_standard: The ideal reference output or rubric definition.
         module_id: Benchmark module identifier (used for role framing).
         scale: Numeric scoring scale (3, 5, or 10).
-        rubric_override: Optional explicit rubric text. When provided, the
-            generated generic rubric is replaced entirely.
+        rubric_override: Optional explicit rubric text.
+        tested_model_id: Model tag or identifier for the tested model. Used
+            to provide specialized evaluation context.
 
     Returns:
         Tuple of (system_prompt, user_prompt).
@@ -186,6 +190,22 @@ def build_prompts(
         )
 
     system_prompt = _SYSTEM_TEMPLATE.substitute(domain=domain, scale=scale)
+
+    if tested_model_id:
+        identity = get_model_identity(tested_model_id)
+        if identity.get("tags"):
+            tags_str = ", ".join(identity["tags"])
+            system_prompt += (
+                f"\n\n### EVALUATION CONTEXT ###\n"
+                f"The model being evaluated is tagged with: {tags_str}.\n"
+                "Take this into account when evaluating responses:\n"
+                "- **Coder**: May be excused for ignoring socio-political nuance or failing pure writing tasks, but must excel at logic.\n"
+                "- **Thinking / Reasoning**: Extremely long, thorough chain-of-thought answers are expected and should NOT be penalized for verbosity.\n"
+                "- **Instruct**: Focused on direct instruction following. Answers might be shorter and more direct; they lack deep reasoning steps.\n"
+                "- **Preview / Test**: Experimental phase. Minor formatting or minor coherence drops might be expected.\n"
+                "- **Uncensored-Abliterated**: Vector surgery might cause abrupt context termination, loop errors, or reasoning collapse.\n"
+                "- **Uncensored-Finetuned**: Safe architectural baseline but may show sampling instability under complex reasoning pressure."
+            )
 
     clean_response = model_response.strip()
     if not clean_response:
