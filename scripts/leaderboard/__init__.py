@@ -24,7 +24,7 @@ from utils.module_registry import (
     get_active_modules,
     get_module_test_count,
 )  # noqa: E402
-from utils.model_utils import format_version_hash_for_display  # noqa: E402
+from utils.model_utils import format_version_hash_for_display, get_model_identity  # noqa: E402
 # pylint: enable=import-error
 
 ROOT_DIR = Path(__file__).resolve().parent.parent.parent
@@ -198,6 +198,11 @@ def main(print_table: bool = True) -> Optional[pd.DataFrame]:
     # 7. Model Name & Version Formatting
     def clean_model_name(name):
         name = str(name).replace("*", "").strip()
+
+        # Use our new identity extractor to strip prefixes
+        identity = get_model_identity(name)
+        name = identity["display_name"]
+
         # Dates (YYYY-MM-DD or YYYYMMDD)
         name = re.sub(r"[-_]?\d{4}[-_]?\d{2}[-_]?\d{2}$", "", name)
         # Year or YearMonth (like mistral 2411)
