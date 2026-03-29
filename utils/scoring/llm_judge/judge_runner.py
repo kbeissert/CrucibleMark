@@ -362,6 +362,7 @@ class JudgeRunner:
             module_id=module_id,
             scale=scale,
             rubric_override=rubric_override,
+            tested_model_id=tested_model_id,
         )
 
         logger.debug(

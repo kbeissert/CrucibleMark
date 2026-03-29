@@ -310,8 +310,8 @@ def main() -> None:
             audit_logs_dict[cat].append(af)
 
         # Ensure categorized arrays are sorted
-        for cat in audit_logs_dict:
-            audit_logs_dict[cat].sort()
+        for cat, files in audit_logs_dict.items():
+            files.sort()
 
         with open(model_out / "data.json", "w", encoding="utf-8") as f:
             json.dump(model_json, f, indent=2, ensure_ascii=False)

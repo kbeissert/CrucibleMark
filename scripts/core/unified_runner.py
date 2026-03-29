@@ -19,7 +19,7 @@ class CostLimitExceededError(Exception):
 from utils.base_runner import BaseBenchmarkRunner
 from utils.benchmark_utils import discover_assets, load_asset_yaml
 from utils.logging_config import setup_logging
-from utils.model_utils import get_model_version
+from utils.model_utils import get_model_version, get_model_identity
 from utils.scoring.judge_evaluator import evaluate_with_judge, generate_audit_log
 from utils.scoring.exceptions import JudgeUnavailableError
 from utils.adaptive_pause import AdaptivePauseCalculator, BenchmarkMode
@@ -319,7 +319,10 @@ class UnifiedBenchmarkRunner(BaseBenchmarkRunner):
         print(
             f"\n{'=' * 60}\n📊 STARTE BENCHMARK: {benchmark_info.get('name', 'Unknown')}\n{'=' * 60}"
         )
-        print(f"Provider: {provider}\nModell:   {model}")
+        identity = get_model_identity(model)
+        display_name = identity["display_name"]
+        tags_str = ", ".join(identity["tags"])
+        print(f"Provider: {provider}\nModell:   {model} (Tags: [{tags_str}])")
 
         self.current_model_version = get_model_version(model, provider=provider)
 
