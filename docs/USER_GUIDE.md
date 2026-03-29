@@ -399,7 +399,7 @@ ______________________________________________________________________
 ### Problem: Scores sind 0 % (obwohl Antwort gut aussieht)
 
 ```bash
-python scripts/run_local_benchmark.py --debug-responses
+python run_benchmark.py --debug-responses
 ```
 
 ______________________________________________________________________
@@ -428,8 +428,9 @@ ______________________________________________________________________
 
 ```text
 benchmark_scores/
-├── local_models_benchmark.csv       # Rohdaten (jeder einzelne Test)
-├── commercial_models_benchmark.csv  # Rohdaten (API-Modelle)
+├── local_models_benchmark.csv       # Rohdaten (lokale Modelle)
+├── cloud_models_benchmark.csv       # Rohdaten (Cloud Open-Weights)
+├── commercial_models_benchmark.csv  # Rohdaten (Closed-Source API-Modelle)
 ├── benchmark_leaderboard.csv        # Aggregierte Rankings
 ├── political_compass_results.csv    # Spezial-Modul (Koordinaten)
 ```

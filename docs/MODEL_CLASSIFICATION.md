@@ -58,8 +58,8 @@ Die Kategorisierung wird zentral über `utils/model_utils.py::get_model_category
    - Provider unter `providers.open_weights_cloud` definiert (z. B. `groq`) → **Cloud (Open-Weights)**
    - Provider unter `providers.local` definiert (z. B. `ollama`) → Prüfung nach Regel 2.
 
-2. **Zusatzprüfung für lokale Proxies (Ollama / Legacy-Modus):**
-   Wenn es sich um einen an sich lokalen Provider handelt, oder die Daten aus der lokalen CSV stammen, wird abschließend das Suffix des Modells inspiziert:
+2. **Zusatzprüfung für Suffixe / Altlasten (Legacy-Modus):**
+   Wenn aus historischen Gründen ein Modell in der lokalen CSV liegt oder Provider und Suffix auf eine API hindeuten, wird abschließend das Suffix inspiziert:
    - Enthält der Name `:cloud` (z. B. `minimax-m2:cloud`) → **Cloud (Open-Weights)**
    - Sonstiges Modell (z. B. `ministral-3:14b`) → **Local**
 

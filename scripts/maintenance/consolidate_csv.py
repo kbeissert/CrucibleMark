@@ -22,6 +22,7 @@ import pandas as pd
 # Konfiguration
 CSV_FILES = [
     Path("benchmark_scores/local_models_benchmark.csv"),
+    Path("benchmark_scores/cloud_models_benchmark.csv"),
     Path("benchmark_scores/commercial_models_benchmark.csv"),
 ]
 

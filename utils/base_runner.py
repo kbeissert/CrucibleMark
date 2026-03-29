@@ -157,8 +157,6 @@ class BaseBenchmarkRunner:
         """Wird von den Kind-Klassen verwendet, um per ResultManager zu speichern."""
         if not results:
             return
-        if result_type is None:
-            result_type = "commercial" if "Commercial" in self.__class__.__name__ else "local"
 
         path = self.result_manager.save_results(results, result_type=result_type)
         if path:

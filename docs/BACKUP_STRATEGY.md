@@ -113,9 +113,9 @@ Um einen Re-Run eines spezifischen Modells zu erzwingen, ohne die gesamte Histor
 1. **Relevante Zeilen aus der CSV löschen:**
 
    ```bash
-   # Alle Zeilen mit "qwen2.5:14b" entfernen
-   grep -v "qwen2.5:14b" local_models_benchmark.csv > temp.csv
-   mv temp.csv local_models_benchmark.csv
+   # Alle Zeilen mit "qwen2.5:14b" entfernen (Beispiel für ein lokales Modell)
+   grep -v "qwen2.5:14b" benchmark_scores/local_models_benchmark.csv > temp.csv
+   mv temp.csv benchmark_scores/local_models_benchmark.csv
    ```
 
 2. **Benchmark starten:**
@@ -253,8 +253,8 @@ ______________________________________________________________________
 # Neuestes Backup extrahieren
 tar -xzf backups/cruciblemark_backup_YYYYMMDD.tar.gz
 
-# Nur CSV wiederherstellen
-cp benchmark_scores/local_models_benchmark.csv benchmark_scores/
+# Nur eine spezifische CSV wiederherstellen
+cp backups/backup_20240315_143022/local_models_benchmark.csv benchmark_scores/
 ```
 
 ______________________________________________________________________

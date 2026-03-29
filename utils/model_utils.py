@@ -368,8 +368,8 @@ def get_model_category(
         except Exception:
             pass
 
-    # Wenn aus lokaler CSV und der Name "cloud" enthaelt, soll es offene Cloud-Modelle abbilden, vorausgesetzt wir matchen Ollama proxies:
-    if source_file == "local" and ("cloud" in model_name.lower() or (size_gb is not None and size_gb < 0.01)):
+# Wenn neue cloud Datei oder aus lokaler CSV und der Name "cloud" enthaelt, soll es offene Cloud-Modelle abbilden
+    if source_file == "cloud" or (source_file == "local" and ("cloud" in model_name.lower() or (size_gb is not None and size_gb < 0.01))):
         return "Cloud (Open-Weights)"
 
     # Rule 1: Commercial CSV → Always Commercial
@@ -378,7 +378,7 @@ def get_model_category(
 
     # Rule 2: Local CSV → Check if it's a cloud proxy using canonical logic
     if is_cloud_model(model_name, size_gb):
-        return "Local Cloud"
+        return "Cloud (Open-Weights)"
 
     # Rule 3: Everything else from Local CSV → Local
     return "Local"

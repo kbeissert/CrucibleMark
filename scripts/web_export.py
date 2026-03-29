@@ -18,7 +18,7 @@ from utils.config_validator import ConfigValidator
 
 def slugify(model_name: str) -> str:
     """Normalizes model names to URL-safe slugs."""
-    name = str(model_name).split('/')[-1].lower()
+    name = str(model_name).rsplit('/', maxsplit=1)[-1].lower()
     return re.sub(r'[^a-z0-9]+', '-', name).strip('-')
 
 def parse_tests_run(val) -> dict | None:
@@ -40,7 +40,7 @@ def normalize_pending(val):
 def extract_badge_tier(val) -> str | None:
     if pd.isna(val) or not str(val).strip(): return None
     val_str = str(val).strip()
-    return val_str.split(' ')[-1] if ' ' in val_str else val_str
+    return val_str.rsplit(' ', maxsplit=1)[-1] if ' ' in val_str else val_str
 
 def extract_version(val) -> str | None:
     if pd.isna(val): return None
@@ -87,7 +87,7 @@ def load_csv_with_fallback(path: Path):
         logging.warning(f"  [WARN] Could not load {path.name}: {e}")
         return None
 
-def main():
+def main() -> None:
     # Load config SSOT
     try:
         config = ConfigValidator().config
@@ -189,7 +189,8 @@ def main():
                 shutil.copy2(f, out_audit / f.name)
                 audit_files.append(f.name)
 
-        comp_files_dict = {"review": None, "bias_review": None}
+        from typing import Dict, Optional
+        comp_files_dict: Dict[str, Optional[str]] = {"review": None, "bias_review": None}
         if model_comp_src and model_comp_src.exists():
             out_comp = model_out / "comparisons"
             out_comp.mkdir(exist_ok=True)
@@ -288,7 +289,8 @@ def main():
                         }
                     break
 
-        model_json = {
+        from typing import Any, Dict, List
+        model_json: Dict[str, Any] = {
             "leaderboard": entry,
             "political_compass": compass_data,
             "bias": bias_data,
@@ -300,15 +302,16 @@ def main():
         }
 
         # Categorize audit files
+        audit_logs_dict: Dict[str, List[str]] = model_json["files"]["audit_logs"] # type: ignore
         for af in audit_files:
             cat = extract_audit_category(af)
-            if cat not in model_json["files"]["audit_logs"]:
-                model_json["files"]["audit_logs"][cat] = []
-            model_json["files"]["audit_logs"][cat].append(af)
+            if cat not in audit_logs_dict:
+                audit_logs_dict[cat] = []
+            audit_logs_dict[cat].append(af)
 
         # Ensure categorized arrays are sorted
-        for cat in model_json["files"]["audit_logs"]:
-            model_json["files"]["audit_logs"][cat].sort()
+        for cat in audit_logs_dict:
+            audit_logs_dict[cat].sort()
 
         with open(model_out / "data.json", "w", encoding="utf-8") as f:
             json.dump(model_json, f, indent=2, ensure_ascii=False)

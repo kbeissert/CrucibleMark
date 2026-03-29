@@ -597,7 +597,7 @@ Debug-Checklist:
 Debug-Tool:
 
 ```bash
-python scripts/run_local_benchmark.py --debug-responses
+python run_benchmark.py --debug-responses
 ```
 
 ______________________________________________________________________

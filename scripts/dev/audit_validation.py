@@ -3,6 +3,7 @@ from pathlib import Path
 
 LEADERBOARD_CSV = "benchmark_scores/benchmark_leaderboard.csv"
 LOCAL_CSV = "benchmark_scores/local_models_benchmark.csv"
+CLOUD_CSV = "benchmark_scores/cloud_models_benchmark.csv"
 COMMERCIAL_CSV = "benchmark_scores/commercial_models_benchmark.csv"
 
 
@@ -55,6 +56,8 @@ def check_asset_saturation():
     dfs = []
     if Path(LOCAL_CSV).exists():
         dfs.append(pd.read_csv(LOCAL_CSV))
+    if Path(CLOUD_CSV).exists():
+        dfs.append(pd.read_csv(CLOUD_CSV))
     if Path(COMMERCIAL_CSV).exists():
         dfs.append(pd.read_csv(COMMERCIAL_CSV))
 

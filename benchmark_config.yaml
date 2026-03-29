@@ -316,6 +316,7 @@ providers:
 output:
   directory: "benchmark_scores"
   commercial_csv: "benchmark_scores/commercial_models_benchmark.csv"
+  cloud_models_csv: "benchmark_scores/cloud_models_benchmark.csv"
   local_models_csv: "benchmark_scores/local_models_benchmark.csv"
   leaderboard_csv: "benchmark_scores/benchmark_leaderboard.csv"
   web_export_dir: "../cruciblemark-web/src/_data/raw/"  # Zielverzeichnis für den Web-Export
@@ -373,7 +374,7 @@ modules:
   # --- SONSTIGE / SPEZIAL-MODULE ---
   political_compass:
     path: "benchmark_modules/political_compass"
-    enabled: false          # Ermittelt die ideologische Ausrichtung (60+ Fragen)
+    enabled: true          # Ermittelt die ideologische Ausrichtung (60+ Fragen)
 
 # ============================================================
 # Leaderboard & Scoring Tiers

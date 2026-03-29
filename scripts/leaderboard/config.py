@@ -35,6 +35,9 @@ SCORES_DIR = Path(output_config.get("directory", "benchmark_scores"))
 COMMERCIAL_CSV = Path(
     output_config.get("commercial_csv", SCORES_DIR / "commercial_models_benchmark.csv")
 )
+CLOUD_CSV = Path(
+    output_config.get("cloud_models_csv", SCORES_DIR / "cloud_models_benchmark.csv")
+)
 LOCAL_CSV = Path(
     output_config.get("local_models_csv", SCORES_DIR / "local_models_benchmark.csv")
 )

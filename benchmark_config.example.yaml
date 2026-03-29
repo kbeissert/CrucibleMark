@@ -259,6 +259,7 @@ providers:
 output:
   directory: "benchmark_scores"
   commercial_csv: "benchmark_scores/commercial_models_benchmark.csv"
+  cloud_models_csv: "benchmark_scores/cloud_models_benchmark.csv"
   local_models_csv: "benchmark_scores/local_models_benchmark.csv"
   leaderboard_csv: "benchmark_scores/benchmark_leaderboard.csv"
   streaming_output_commercial_providers: false  # false = keine live-response im Terminal

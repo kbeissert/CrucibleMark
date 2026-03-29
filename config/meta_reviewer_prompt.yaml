@@ -51,7 +51,7 @@ meta_reviewer:
 
     WICHTIG zu Timeouts: Dieses Modell ist im Leaderboard als **{model_provider_type}** klassifiziert. Nutze diese Klassifizierung für deine Schlussfolgerungen:
     * Typ **Local**: Die Timeouts deuten meist auf ein "Hardware-Ceiling" hin (Modell passt nicht auf die verfügbare GPU-Kapazität oder crasht den VRAM). Dies macht das Setup auf dieser Maschine **nicht einsetzbar**.
-    * Typ **Commercial** oder **Local Cloud**: Die Timeouts demonstrieren direkte **API-Instabilität**, Überlastung des Endpunkts oder Netzwerk-Probleme und stellen ein unkalkulierbares Reliability-Risiko für den Produktionseinsatz dar (es ist explizit KEIN VRAM-Zeiling deines Systems).
+    * Typ **Commercial** oder **Cloud (Open-Weights)**: Die Timeouts demonstrieren direkte **API-Instabilität**, Überlastung des Endpunkts oder Netzwerk-Probleme und stellen ein unkalkulierbares Reliability-Risiko für den Produktionseinsatz dar (es ist explizit KEIN VRAM-Zeiling deines Systems).
 
     ZENTRALE ARCHITEKTUR-REGEL (WICHTIG FÜR DEIN VERSTÄNDNIS):
     Du liest hier Audit-Logs eines KI-Richters (LLM Judge). Das getestete Modell (über das du schreibst) hat eine Test-Aufgabe *komplett blind* gelöst, also **ohne** die Musterlösung (den "Golden Standard") zu kennen.

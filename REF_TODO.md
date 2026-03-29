@@ -2,6 +2,10 @@
 
 ## ✅ COMPLETED
 
+### Data Architecture & Meta-Review (v3.2.2)
+- [x] **3-CSV Data Separation:** Migration der fehleranfälligen Fallbacks aus der 2-CSV Form auf exakte SSOT-Aufspaltung (`cloud_models_benchmark.csv`).
+- [x] **Context Injection Pipeline:** Meta-Reviewer Logik um das Modul `cloud_open_weights` ausgebaut, um Hardware-Fehlurteile bei API-Proxies zu verhindern.
+
 ### Performance & Cache Repair (v3.2.1)
 - [x] **Data-Routing Bugfix:** Behebung des kritischen Autofill-Fehlers im `UnifiedBenchmarkRunner` (kommerzielle Ergebnisse in `local_models_benchmark.csv`).
 - [x] **Datenbereinigung Log-Files:** Skriptbasierte und verlustfreie Überführung von 75 fehlgeleiteten Scores (`gpt-oss`, `llama-4-scout`) ins korrekte kommerzielle Logbuch.

@@ -40,3 +40,4 @@
 - [DONE] Erste echte Benchmark-Runs erfolgreich (Single Module + Cache-Validierung)
 - [DONE] Kritische Bugfixes: Namespace-Kollision (importlib), Parser-Cutoff
   (implicit_separator), is_complete()-Deadlock, Leaderboard-Asterisk Bug
+- [DONE] Architektur-Refactoring (v3.2.2): Übergang von 2-CSV auf 3-CSV Datenpersistenz (lokal, cloud, commercial) in `benchmark_config.yaml`, core result_manager logic und Leaderboard Aggregation.

@@ -7,7 +7,7 @@ import logging
 
 # Optional Provider Imports
 try:
-    from openai import OpenAI
+    from openai import OpenAI  # pylint: disable=unused-import
 except ImportError:
     OpenAI = None
 

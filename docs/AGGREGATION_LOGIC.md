@@ -11,7 +11,7 @@ Das Leaderboard zeigte eine Diskrepanz (z. B. "46/37"). Das Political Compass Mo
 ### Aktuelles Verhalten (v2.6+)
 
 Das Political Compass ist ein rein informatives Metadaten-Modul:
-- Es injiziert keine Ghost Rows in die Haupt-DataFrames (`local_models_benchmark.csv` und `commercial_models_benchmark.csv`).
+- Es injiziert keine Ghost Rows in die Haupt-DataFrames (`local_models_benchmark.csv`, `cloud_models_benchmark.csv` und `commercial_models_benchmark.csv`).
 - Es verfälscht den `Tests Run`-Zähler nicht. Der Score Calculator ignoriert explizit alle nicht-wertenden Module für Zähler und Nenner, sofern kein `display_test_count` definiert ist.
 - Das Modul speichert Ergebnisse autark in `benchmark_scores/political_compass_results.csv` und aggregiert sie in `benchmark_scores/political_compass_leaderboard.csv`.
 - Das Skript `generate_leaderboard.py` liest `political_compass_leaderboard.csv` und ergänzt die finale Anzeige um eine informative `Political Bias`-Textspalte – ohne die Benchmark-Mathematik zu berühren.

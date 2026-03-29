@@ -32,6 +32,9 @@ class ResultManager:
         if result_type == "local":
             key = "local_models_csv"
             default = "benchmark_scores/local_models_benchmark.csv"
+        elif result_type == "cloud":
+            key = "cloud_models_csv"
+            default = "benchmark_scores/cloud_models_benchmark.csv"
         elif result_type == "commercial":
             key = "commercial_csv"
             default = "benchmark_scores/commercial_models_benchmark.csv"
@@ -109,11 +112,29 @@ class ResultManager:
         return list(existing_keys) + normal_added + judge_added
 
     def save_results(
-        self, results: list[dict[str, Any]], result_type: str
+        self, results: list[dict[str, Any]], result_type: str = None
     ) -> Path | None:
         """Speichert Ergebnisse in die entsprechende CSV-Datei."""
         if not results:
             return None
+
+        # Automatisches Ermitteln des result_type anhand des ersten Eintrags, falls nicht explizit übergeben
+        if not result_type and results:
+            provider = results[0].get("provider", "unknown")
+            if provider == "ollama":
+                result_type = "local"
+            else:
+                # Prüfe in Config, ob es Cloud/Open-Weights ist
+                provider_config = self.config.get("providers", {}).get("commercial", {}).get(provider, {})
+                model_type = provider_config.get("model_type", "")
+                if model_type == "open_weights_cloud":
+                    result_type = "cloud"
+                else:
+                    result_type = "commercial"
+
+        # Fallback
+        if not result_type:
+            result_type = "commercial"
 
         csv_path = self._get_csv_path(result_type)
 
