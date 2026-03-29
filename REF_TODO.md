@@ -2,6 +2,13 @@
 
 ## ✅ COMPLETED
 
+### Performance & Cache Repair (v3.2.1)
+- [x] **Data-Routing Bugfix:** Behebung des kritischen Autofill-Fehlers im `UnifiedBenchmarkRunner` (kommerzielle Ergebnisse in `local_models_benchmark.csv`).
+- [x] **Datenbereinigung Log-Files:** Skriptbasierte und verlustfreie Überführung von 75 fehlgeleiteten Scores (`gpt-oss`, `llama-4-scout`) ins korrekte kommerzielle Logbuch.
+- [x] **Lazy Loading Implementation:** Startup-Beschleunigung durch On-Demand Import von `sentence_transformers`/`sklearn` in mathematischen Evaluationsbausteinen. 
+- [x] **Groq API Ping Bypass:** Anpassung des 1-Token-Ping-Modells zur Provider-Validierung auf `llama-3.1-8b-instant`, da alte Referenz durch Groq inaktiviert wurde.
+- [x] **CLI Terminal Metrics:** Output-Konsolidierung am Ende einzelner Module zur dynamischen Berechnung und Visualisierung von Durchschnittsscores, Dauer, Tokens und USD-Kosten.
+
 ### Fallbacks & Provider SSOT (v3.2.0)
 - [x] **Dynamic Provider SSOT:** Hardgecodete Kategorie-Definitionen in CLI und Leaderboard entfernt; zentral über `benchmark_config.yaml` (`utils/model_utils.py`) dynamisiert.
 - [x] **Open-Weights Cloud API Support:** Dedizierte Cloud-Infrastruktur für Open-Weights Modelle (z. B. via Groq) eingerichtet.
@@ -57,7 +64,7 @@ ______________________________________________________________________
 - [ ] **LLM Judge: Batch-Mode (Phase 3.5)**: Token-Verbrauch durch gebündelte Requests reduzieren.
 - [ ] **Volldurchlauf aller lokalen Modelle**: Generierung eines echten finalen Leaderboards (43/43).
 - [ ] **Re-run Reasoning Logic**: Verfälschte 0-Punkte für lokale Modelle bereinigen.
-- [ ] **Stabilitätsanalyse `gpt-oss`**: Vorherigen Absturzkandidat prüfen.
+- [x] **Stabilitätsanalyse `gpt-oss`**: (Erledigt) Problem identifiziert als reiner Output-Bug durch den falschen Routing-Pfad ins lokale CSV - Daten wurden migriert und Logik repariert.
 
 ### Testing Infrastructure
 - [ ] Unit tests für alle Module (aktuell ca. 60%)
@@ -118,4 +125,4 @@ ______________________________________________________________________
 
 ______________________________________________________________________
 
-**Last Updated:** 2026-03-28 **Version:** 3.2.0 (Strict SSOT & Full Provider Refactoring) **Next Milestone:** Agentic Workflow & Web-UI
+**Last Updated:** 2026-03-29 **Version:** 3.2.1 (Performance & Data-Cache Bugfixes) **Next Milestone:** Agentic Workflow & Web-UI
