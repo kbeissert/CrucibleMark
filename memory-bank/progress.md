@@ -6,6 +6,7 @@
 - [ ] LLM Judge: Batch-Mode (Phase 3.5)
 
 ## Abgeschlossen (Meilensteine)
+- [DONE] Audit Fixes & Scoring Integrity Patch (2026-04-07): Hard Constraints via YAML `constraints.max_expected_words`, progressive 3-Tier-Penalty, Language Mismatch Auto-Flag (`unified_runner.py`), uxwriting002 Two-Step Headers, Asset Hardening (WCAG 2.2 + Security), Docs. Commit 31615c5.
 - [DONE] Vollständiger CSV-Reset & Rubric-Cleanup (2026-04-06): Alle non-political_compass-Einträge aus 3 CSVs gelöscht (alte Rubric-Scores nicht mehr vergleichbar). Provider-Bug gefixt (Groq-Modelle mit `/` wurden als "commercial" statt "open_weights_cloud" klassifiziert). kimi-k2-instruct Doppeleintrag bereinigt (model_version-Feld).
 - [DONE] Modell-Architektur-Tags (v3.2.x): Dynamische Tag-Extraktion (Thinking, Instruct, Preview, Uncensored) in model_utils.py implementiert und in LLM-Judge (`judge_prompt_builder.py`) sowie Meta-Reviewer verankert, um architektonische Eigenheiten fair in die Bewertung (z.B. Verbosity) einfließen zu lassen.
 - [DONE] Performance & Cache Repair (v3.2.1): Data-Routing in CSV-Logs stabilisiert (Fehlzuweisungen in lokale Tabellen behoben). Lazy Loading für Transformers eingeführt. Konsolen-Summary inklusive Kostenanzeige reanimiert. Groq Provider repariert.
