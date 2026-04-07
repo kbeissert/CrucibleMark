@@ -95,6 +95,10 @@ class BaseBenchmarkRunner:
             if tlu is not None:
                 exec_result.token_limit_used = tlu
 
+            tps_eval = self.client.last_response_metadata.get("tps_eval")
+            if tps_eval is not None:
+                exec_result.tps_eval = tps_eval
+
         return test_instance, exec_result
 
     # pylint: disable=too-many-arguments, too-many-positional-arguments
@@ -122,6 +126,9 @@ class BaseBenchmarkRunner:
         if exec_result.execution_time > 0 and getattr(exec_result, "tokens_used", 0) > 0:
             tps = round(exec_result.tokens_used / exec_result.execution_time, 2)
 
+        # Native eval speed: eval_count / eval_duration from Ollama response (excludes prefill)
+        tps_eval = getattr(exec_result, "tps_eval", 0.0) or 0.0
+
         # Build dict from BenchmarkResult object + Scoring
         result = {
             "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
@@ -138,6 +145,7 @@ class BaseBenchmarkRunner:
             "execution_time": round(exec_result.execution_time, 4),
             "tokens_used": getattr(exec_result, "tokens_used", 0),
             "tokens_per_second": tps,
+            "tps_eval": tps_eval,
             "load_time": round(getattr(exec_result, "load_time", 0.0), 4),
             "response_length": len(exec_result.raw_response),
             "finish_reason": getattr(exec_result, "finish_reason", None),

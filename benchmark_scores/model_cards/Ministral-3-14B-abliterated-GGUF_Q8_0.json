@@ -1,0 +1,21 @@
+{
+  "model_id": "Ministral-3-14B-abliterated-GGUF:Q8_0",
+  "display_name": "Ministral 3 14B Abliterated",
+  "developer": "Community / chargoddard",
+  "origin_country": "France / Community",
+  "model_family": "Mistral",
+  "primary_focus": "reasoning",
+  "summary": "Dieses experimentelle Community-Modell basiert auf der Mistral-Architektur und wurde mittels 'Abliteration' erstellt, bei der gezielt Schichten entfernt werden. Der Fokus liegt auf der Verbesserung von logischem Denken und Effizienz. Es entstand aus dem Bestreben, durch unkonventionelle Modell-Kombinationen neue Leistungsgrenzen zu erreichen.",
+  "strengths": [
+    "Hohe Effizienz durch reduzierte Architektur",
+    "Starke Fähigkeiten im logischen Denken (Reasoning)",
+    "Gute Performance auf Consumer-Hardware (CPU/GPU)"
+  ],
+  "known_limitations": [
+    "Experimenteller Charakter kann zu unvorhersehbarem Verhalten oder Artefakten führen.",
+    "Das Entfernen von Layern kann zu Wissenslücken oder reduzierter Fakten-Treue führen."
+  ],
+  "judge_context_hint": "Bewerte dieses Modell als ein Community-Experiment, das auf maximale Reasoning-Leistung durch unkonventionelle Methoden abzielt, nicht als Allrounder.",
+  "unknown": false,
+  "generated_at": "2026-04-07T20:15:26.245076+00:00"
+}

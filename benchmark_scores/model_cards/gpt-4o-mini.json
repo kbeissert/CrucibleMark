@@ -1,0 +1,21 @@
+{
+  "model_id": "gpt-4o-mini",
+  "display_name": "GPT-4o mini",
+  "developer": "OpenAI",
+  "origin_country": "USA",
+  "model_family": "GPT",
+  "primary_focus": "general",
+  "summary": "GPT-4o mini ist ein von OpenAI (USA) entwickeltes, multimodales Sprachmodell. Es wurde als schnellere und kostengünstigere Alternative zu GPT-4o konzipiert, um eine breite Palette von allgemeinen Aufgaben effizient zu bewältigen. Seine Stärken liegen in der schnellen Text-, Bild- und Audioverarbeitung bei solider Leistung.",
+  "strengths": [
+    "Hohe Kosteneffizienz und Geschwindigkeit",
+    "Native multimodale Fähigkeiten (Text, Bild, Audio)",
+    "Starke allgemeine Leistung für alltägliche Aufgaben"
+  ],
+  "known_limitations": [
+    "Geringere Leistungsfähigkeit bei komplexen logischen Schlussfolgerungen im Vergleich zu Top-Modellen",
+    "Potenziell weniger präzise bei sehr spezifischen oder Nischenthemen"
+  ],
+  "judge_context_hint": "Bewerten Sie dieses Modell im Kontext seiner Rolle als schnelle, kosteneffiziente Alternative für allgemeine Aufgaben, nicht als direkten Konkurrenten für Spitzenmodelle in komplexem Reasoning.",
+  "unknown": false,
+  "generated_at": "2026-04-07T20:09:15.152464+00:00"
+}

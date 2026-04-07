@@ -1,0 +1,21 @@
+{
+  "model_id": "gpt-5.4-mini",
+  "display_name": "GPT-5.4 Mini (Hypothetisch)",
+  "developer": "OpenAI",
+  "origin_country": "USA",
+  "model_family": "GPT",
+  "primary_focus": "general",
+  "summary": "GPT-5.4 Mini ist ein hypothetisches Modell von OpenAI (USA), das als schnelle und kosteneffiziente Variante der GPT-5-Familie konzipiert wäre. Der Fokus läge auf allgemeiner Konversationsfähigkeit und Instruktionsbefolgung. Es wurde entwickelt, um leistungsstarke KI für Anwendungen mit geringerer Latenz zugänglich zu machen.",
+  "strengths": [
+    "Hohe Geschwindigkeit und geringe Latenz",
+    "Kosteneffizient im Betrieb für skalierbare Anwendungen",
+    "Starke Leistung bei allgemeinen, alltäglichen Aufgaben"
+  ],
+  "known_limitations": [
+    "Geringere Tiefe bei hochkomplexen logischen Schlussfolgerungen im Vergleich zu größeren Modellen",
+    "Kann bei Nischenthemen oder sehr spezifischen Fakten ungenauer sein"
+  ],
+  "judge_context_hint": "Bewerte dieses Modell primär nach seiner Effizienz und Leistung bei Standardaufgaben, nicht nach seiner Fähigkeit, die Grenzen komplexesten Reasonings zu verschieben.",
+  "unknown": true,
+  "generated_at": "2026-04-07T20:09:42.726042+00:00"
+}

@@ -1,0 +1,21 @@
+{
+  "model_id": "mistral-large-latest",
+  "display_name": "Mistral Large",
+  "developer": "Mistral AI",
+  "origin_country": "France",
+  "model_family": "Mistral",
+  "primary_focus": "reasoning",
+  "summary": "Mistral Large ist ein in Frankreich von Mistral AI entwickeltes Flaggschiff-Modell. Es wurde für komplexe, multilinguale Aufgaben mit erstklassigen Reasoning-Fähigkeiten trainiert. Seine Stärken liegen in der logischen Schlussfolgerung, dem Code-Verständnis und der nativen Beherrschung mehrerer Sprachen.",
+  "strengths": [
+    "Hervorragende Reasoning-Fähigkeiten bei komplexen Aufgaben",
+    "Native Unterstützung für mehrere Sprachen (EN, FR, DE, ES, IT)",
+    "Starke Leistung bei Code-Generierung und mathematischen Problemen"
+  ],
+  "known_limitations": [
+    "Kann wie alle LLMs sachliche Fehler (Halluzinationen) produzieren.",
+    "Trainingsdaten haben einen Cutoff-Punkt, Wissen über sehr neue Ereignisse ist begrenzt."
+  ],
+  "judge_context_hint": "Bewerte dieses Modell vor allem anhand seiner Fähigkeit, komplexe, mehrstufige logische Probleme in verschiedenen Sprachen zu lösen.",
+  "unknown": false,
+  "generated_at": "2026-04-07T20:06:59.111546+00:00"
+}

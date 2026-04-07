@@ -1,0 +1,21 @@
+{
+  "model_id": "gemma4:E4B",
+  "display_name": "Gemma 4 (E4B)",
+  "developer": "Google",
+  "origin_country": "USA",
+  "model_family": "Gemma",
+  "primary_focus": "general",
+  "summary": "Dieses Modell ist eine unbekannte Variante der Gemma-Familie von Google (USA). Als hypothetischer Nachfolger würde es voraussichtlich auf eine verbesserte allgemeine Leistungsfähigkeit und Effizienz abzielen. Erwartete Stärken lägen in logischem Denken und Sprachverständnis, um eine zugängliche und leistungsstarke KI bereitzustellen.",
+  "strengths": [
+    "Platzhalter: Verbesserte logische Schlussfolgerungen",
+    "Platzhalter: Hohe Effizienz bei Inferenz und Training",
+    "Platzhalter: Breites Allgemeinwissen und Sprachverständnis"
+  ],
+  "known_limitations": [
+    "Platzhalter: Kann sachlich falsche oder veraltete Informationen generieren.",
+    "Platzhalter: Spezifische Leistungsmerkmale und Bias sind unbekannt."
+  ],
+  "judge_context_hint": "Da dieses Modell nicht öffentlich dokumentiert ist, bewerte es als hypothetischen Allrounder der nächsten Gemma-Generation.",
+  "unknown": true,
+  "generated_at": "2026-04-07T20:14:37.570651+00:00"
+}

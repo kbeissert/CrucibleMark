@@ -1,0 +1,21 @@
+{
+  "model_id": "claude-opus-4-5",
+  "display_name": "Claude 4.5 Opus",
+  "developer": "Anthropic",
+  "origin_country": "USA",
+  "model_family": "Claude",
+  "primary_focus": "reasoning",
+  "summary": "Claude 4.5 Opus von Anthropic (USA) ist ein auf fortgeschrittenes Reasoning und Sicherheit optimiertes Modell. Es zeichnet sich durch nuancierte Analyse, das Verstehen langer Kontexte und kreative Textgenerierung aus. Entwickelt wurde es, um komplexe, mehrstufige Aufgaben zuverlässig zu lösen.",
+  "strengths": [
+    "Komplexe, mehrstufige Problemlösung und logisches Schließen",
+    "Analyse und Synthese von Informationen aus sehr langen Kontexten (über 200K Tokens)",
+    "Hohe Zuverlässigkeit und geringere Neigung zu Halluzinationen durch 'Constitutional AI'"
+  ],
+  "known_limitations": [
+    "Kann bei hochspezialisierten Nischenthemen oder Echtzeit-Informationen ungenau sein.",
+    "Trotz Sicherheits-Training können gelegentlich unerwünschte oder voreingenommene Antworten generiert werden."
+  ],
+  "judge_context_hint": "Bewerten Sie die Fähigkeit des Modells, komplexe Anweisungen nuanciert und sicher umzusetzen, anstatt nur die oberflächliche Korrektheit der Antwort zu prüfen.",
+  "unknown": true,
+  "generated_at": "2026-04-07T20:12:59.714690+00:00"
+}

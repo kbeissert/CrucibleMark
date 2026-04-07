@@ -1,0 +1,21 @@
+{
+  "model_id": "claude-opus-4-5-20251101",
+  "display_name": "Claude 4.5 Opus",
+  "developer": "Anthropic",
+  "origin_country": "USA",
+  "model_family": "Claude",
+  "primary_focus": "reasoning",
+  "summary": "Claude 4.5 Opus ist ein hypothetisches Modell von Anthropic (USA), das als Nachfolger der Claude-3.5-Serie konzipiert ist. Der Trainingsfokus liegt auf extrem komplexem Reasoning und der robusten Befolgung nuancierter Anweisungen. Es wurde entwickelt, um die Grenzen der KI-Fähigkeiten bei anspruchsvollen, mehrstufigen Aufgaben zu erweitern.",
+  "strengths": [
+    "Extrem komplexes, mehrstufiges Reasoning",
+    "Nuanciertes Verständnis von Kontext und Intention",
+    "Generierung von hochgradig kohärentem und kreativem Text"
+  ],
+  "known_limitations": [
+    "Potenzial für Fakten-Halluzinationen bei Nischenthemen",
+    "Hohe Latenz und Rechenkosten im Vergleich zu kleineren Modellen"
+  ],
+  "judge_context_hint": "Bewerte dieses hypothetische Modell basierend auf seiner angenommenen Fähigkeit, komplexe, mehrdeutige Probleme zu dekonstruieren und logisch stringente Lösungen zu entwickeln.",
+  "unknown": true,
+  "generated_at": "2026-04-07T20:08:13.102946+00:00"
+}

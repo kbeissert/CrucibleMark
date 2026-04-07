@@ -1,0 +1,21 @@
+{
+  "model_id": "qwen3:14b",
+  "display_name": "Qwen 3 14B",
+  "developer": "Alibaba Cloud",
+  "origin_country": "China",
+  "model_family": "Qwen",
+  "primary_focus": "general",
+  "summary": "Qwen 3 14B ist ein von Alibaba Cloud in China entwickeltes, vielseitiges Sprachmodell. Es wurde als leistungsstarke Open-Source-Alternative konzipiert und zeichnet sich durch exzellente mehrsprachige Fähigkeiten, starkes logisches Denken und fortgeschrittene Programmierkompetenzen aus, um eine breite Palette von Aufgaben zu bewältigen.",
+  "strengths": [
+    "Exzellente Mehrsprachigkeit über Englisch und Chinesisch hinaus",
+    "Starke Leistungen in den Bereichen Coding, Mathematik und logisches Denken",
+    "Unterstützung für lange Kontextfenster zur Verarbeitung umfangreicher Dokumente"
+  ],
+  "known_limitations": [
+    "Kann wie alle LLMs faktisch inkorrekte Informationen (Halluzinationen) generieren",
+    "Potenzielle kulturelle Voreingenommenheit, die die Trainingsdaten widerspiegelt"
+  ],
+  "judge_context_hint": "Beurteile dieses Modell als einen leistungsstarken Allrounder mit besonderem Augenmerk auf Mehrsprachigkeit und logischem Schlussfolgern.",
+  "unknown": false,
+  "generated_at": "2026-04-07T20:06:29.649250+00:00"
+}

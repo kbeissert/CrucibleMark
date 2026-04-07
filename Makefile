@@ -1,11 +1,11 @@
 .PHONY: \
 	help install install-dev \
 	benchmark political-compass political-compass-safe benchmark-political-compass audit-bias benchmark-cross-model benchmark-auto benchmark-human run-benchmark \
-	review leaderboard provider-stats \
+	review model-cards leaderboard provider-stats \
 	validate validate-single validate-structure test diff-results analyze-costs update-prices \
 	list-models judge-health list-modules create-module \
 	web-export web-export-dev \
-	clean clean-sessions clean-csv clean-model clean-module clean-all clean-runs consolidate-csv \
+	clean clean-sessions clean-csv clean-model clean-module clean-all clean-runs consolidate-csv prune-orphans \
 	backup
 
 # Python-Interpreter aus .venv verwenden
@@ -34,6 +34,7 @@ help:
 	@echo "=== Reporting & Standards ==="
 	@echo "  make leaderboard          Generate Leaderboard CSV"
 	@echo "  make review               📰 Generate Review (Flags: MODEL=name, ALL=1, TYPE=bias)"
+	@echo "  make model-cards          🃏 Model Cards generieren (Flags: MODEL=name, FORCE=1)"
 	@echo "  make provider-stats       📊 System-Latenzen analysieren (Ping vs. TTFB) und Provider-Review erstellen"
 	@echo ""
 	@echo "=== Validation & QA ==="
@@ -59,6 +60,7 @@ help:
 	@echo "  make clean-sessions       🗑️  Remove debug session logs"
 	@echo "  make clean-model MODEL=x  🗑️  Remove results for specific model"
 	@echo "  make clean-all            🔥 Extreme Cleanup (Cache + CSVs)"
+	@echo "  make prune-orphans        🧹 Verwaiste Reports löschen (Dry-Run; FORCE=1 zum echten Löschen)"
 
 
 # === BENCHMARKING ===
@@ -101,6 +103,15 @@ run-benchmark:
 	$(PYTHON) run_benchmark.py
 
 # === REPORTING & STANDARDS ===
+
+model-cards:
+	@if [ -n "$(MODEL)" ]; then \
+		echo "🃏 Generiere Model Card für $(MODEL)..."; \
+		$(PYTHON) scripts/analysis/generate_model_cards.py --model "$(MODEL)" $(if $(FORCE),--force) $(if $(FORMAT),--format $(FORMAT)); \
+	else \
+		echo "🃏 Generiere alle fehlenden Model Cards..."; \
+		$(PYTHON) scripts/analysis/generate_model_cards.py $(if $(FORCE),--force) $(if $(FORMAT),--format $(FORMAT)); \
+	fi
 
 provider-stats:
 	@echo "📊 Aggregating Provider Stats (Ping vs System Speed)..."
@@ -218,6 +229,15 @@ clean-runs:
 
 clean-wizard:
 	@$(PYTHON) scripts/maintenance/clean.py --interactive
+
+prune-orphans:
+	@if [ -n "$(FORCE)" ]; then \
+		echo "🧹 Lösche verwaiste Report-Verzeichnisse..."; \
+		$(PYTHON) scripts/maintenance/prune_orphaned_reports.py --delete --force; \
+	else \
+		echo "🔍 Verwaiste Report-Verzeichnisse (Dry-Run)..."; \
+		$(PYTHON) scripts/maintenance/prune_orphaned_reports.py; \
+	fi
 
 consolidate-csv:
 	@if [ -f "scripts/maintenance/consolidate_csv.py" ]; then \

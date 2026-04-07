@@ -1,0 +1,21 @@
+{
+  "model_id": "mistral-medium-latest",
+  "display_name": "Mistral Medium",
+  "developer": "Mistral AI",
+  "origin_country": "France",
+  "model_family": "Mistral",
+  "primary_focus": "general",
+  "summary": "Mistral Medium ist ein proprietäres Modell von Mistral AI aus Frankreich. Es wurde als leistungsstarke und kosteneffiziente Alternative zu führenden Modellen entwickelt. Seine Stärken liegen in komplexem Reasoning, mehrsprachiger Textverarbeitung und Code-Generierung, was es zu einem vielseitigen Allrounder für anspruchsvolle Aufgaben macht.",
+  "strengths": [
+    "Hohe Leistung bei komplexen logischen Schlussfolgerungen (Reasoning)",
+    "Starke mehrsprachige Fähigkeiten, insbesondere in europäischen Sprachen",
+    "Effiziente und qualitativ hochwertige Code-Generierung"
+  ],
+  "known_limitations": [
+    "Neigt wie alle LLMs zu Halluzinationen und kann faktisch falsche Informationen generieren.",
+    "Als proprietäres Modell mangelt es an Transparenz bezüglich der Trainingsdaten und Architektur."
+  ],
+  "judge_context_hint": "Bewerte das Modell als leistungsstarken Allrounder, der eine Balance zwischen komplexem Reasoning, mehrsprachiger Kompetenz und Effizienz anstrebt.",
+  "unknown": false,
+  "generated_at": "2026-04-07T20:07:12.544058+00:00"
+}

@@ -83,7 +83,9 @@ class UnifiedBenchmarkRunner(BaseBenchmarkRunner):
                 reader = csv.DictReader(f)
                 for row in reader:
                     status = str(row.get("status", "success")).lower()
-                    if status != "success":
+                    # Count completed tests regardless of status variant
+                    # (language_mismatch, verbose_outlier, truncated are valid completions)
+                    if status == "error":
                         continue
 
                     model_id = str(row.get("model", ""))
@@ -499,7 +501,10 @@ class UnifiedBenchmarkRunner(BaseBenchmarkRunner):
         # ---------------------------------------------------------
         valid_results = [r for r in results if r.get("type") != "system" and r.get("status") != "error" and r.get("skip_reason") is None]
         if valid_results:
-            avg_score = sum(r.get("semantic_score", r.get("accuracy_score", 0.0)) for r in valid_results) / len(valid_results)
+            # DEBUG: Temporär zur Diagnose des DURCHSCHNITT-Bugs
+            _pcts = [r.get("percentage") for r in valid_results]
+            logger.debug("DURCHSCHNITT DEBUG: valid_results=%d, pcts=%s", len(valid_results), _pcts)
+            avg_score = sum(float(p) if p is not None else 0.0 for p in _pcts) / len(valid_results)
             avg_time = sum(r.get("execution_time", 0.0) for r in valid_results) / len(valid_results)
 
             token_rates = [

@@ -73,6 +73,8 @@ meta_reviewer:
     WICHTIGE REGEL:
     Dies ist der BENCHMARK-Report (Fokus auf Code, Logik, Leistung). IGNORIERE alle Daten zum "Political Compass" (wie "Shift", "Autoritäre-Mitte", "Links", "Rechts") vollständig, selbst wenn sie versehentlich im CSV oder in den Logs unter "Political Bias" auftauchen! Diese Daten fließen in ein separates Bias-Review ein und haben in diesem Benchmark-Report absolut nichts zu suchen.
 
+    {model_card_context}
+
     ### Benchmark Leaderboard (Alle Modelle zur Einordnung):
     {csv_data}
 
@@ -176,16 +178,16 @@ provider_reviewer:
   system_instructions: |
     Du bist ein erfahrener Cloud-Architekt und System-Evaluator.
     Analysiere die vorliegenden Telemetrie- und Latenzdaten verschiedener KI-Provider. Wir haben einerseits historische Metriken aus realen Benchmark-Läufen ("Median t/s", "Median Avg Time (s)", "Cost per 1K") sowie einen aktiven Kaltstart-Test ("Active Ping TTFB (ms)").
-    
+
     Deine Aufgabe ist es, einen redaktionellen Markdown-Bericht zur "Provider Landscape & API Performance" zu verfassen.
     Erkläre den Unterschied zwischen theoretischem Ping (Netzwerk-Infrastruktur / Routing) und echter Response-Time unter Last (Rate-Limits, Retries, Processing-Overhead).
     Besprich explizit die Lücke zwischen schnellen Ping-Zeiten und langsamen Real-World-Ausführungen (z.B. bei Groq oder anderen Providern).
-    
+
     Verzichte auf Floskeln. Gliedere den Bericht in:
     1. Executive Summary
     2. Kaltstart vs. System-Speed (Was der Ping uns über die API Architektur sagt)
     3. Provider-Analyse (Gehe auf die spannendsten Anomalien und Spitzenreiter ein)
     4. Costs & Efficiency
-    
+
     Hier sind die CSV-Daten des Provider Leaderboards:
     {csv_data}
