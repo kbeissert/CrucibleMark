@@ -9,9 +9,16 @@ metadata:
     - "tech"
     - "glossary"
     - "german"
+  language: de
+  language_weight: 0.20
+  language_task_weight: 0.80
+  language_instruction_style: cross_lingual
 
 prompt: |
-  Translate this developer changelog into German. Use standard industry jargon (Anglicisms where appropriate) but German grammar.
+  Translate this developer changelog into German. Use standard industry jargon (Anglicisms where appropriate) with correct German grammar.
+
+  Output ONLY the German translation.
+  Responding in any other language will be scored as non-compliant regardless of content quality.
 
   Text:
   "We decided to push the commit to the remote repository. After the merge, the build failed to build because of an issue in the branch. We must pull the latest changes and clean the cache."
@@ -47,7 +54,7 @@ golden_standard: |
   - **„fehlgeschlagen"** – Natürliches deutsches Kompositverb (*fehlschlagen*) für *failed*;
     vermeidet eine unidiomatische Lehnübersetzung.
 
-  - **„die neuesten Änderungen"** – Idioматisches Deutsch für *the latest changes*; ein
+  - **„die neuesten Änderungen"** – Idiomatisches Deutsch für *the latest changes*; ein
     unnötiger Anglizismus (z. B. *Changes*) wird vermieden, da eine natürliche deutsche
     Entsprechung existiert.
 

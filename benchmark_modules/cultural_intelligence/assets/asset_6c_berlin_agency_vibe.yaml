@@ -9,11 +9,16 @@ metadata:
     - "creative"
     - "german"
     - "marketing"
+  language: de
+  language_weight: 0.20
+  language_task_weight: 0.80
+  language_instruction_style: cross_lingual
 
 prompt: |
   Rewrite this corporate text for a Berlin Agency intro ("Du"-tone).
-  Mission: Remove ALL corporate buzzwords and make it sound authentic German (Berlin style).
-  IMPORTANT: Output ONLY the rewritten German text. Do NOT repeat the original text or explain your changes.
+  Remove ALL corporate buzzwords. Output must sound authentic German (Berlin style).
+  Output ONLY the rewritten German text. Responding in any other language will be scored as non-compliant regardless of content quality.
+  Do NOT repeat the original text or explain your changes.
 
   Original:
   "We utilize a holistic ecosystem to drive synergy. Our paradigm-shift is a gamechanger. We take a deep-dive into next-level disruptive solutions to ensure 360-degree success."

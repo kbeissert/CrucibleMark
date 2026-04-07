@@ -9,11 +9,16 @@ metadata:
     - "hr"
     - "german"
     - "rewriting"
+  language: de
+  language_weight: 0.20
+  language_task_weight: 0.80
+  language_instruction_style: cross_lingual
 
 prompt: |
   Rewrite this toxic job ad snippet to be inclusive and professional in German.
   Task: Remove toxic terms and correct gender bias.
-  IMPORTANT: Output ONLY the rewritten German text. Do NOT repeat the original text or explain your changes.
+  Output ONLY the rewritten German text. Responding in any other language will be scored as non-compliant regardless of content quality.
+  Do NOT repeat the original text or explain your changes.
 
   Original Text:
   "We need a Ninja with Manpower! If you are a Craftsman who wants to kill the competition and dominate the market, join us. He must be a Work-hard-play-hard type. Don't be a guy who complains. We need manly courage."

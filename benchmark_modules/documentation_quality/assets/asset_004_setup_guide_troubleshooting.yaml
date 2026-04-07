@@ -298,10 +298,9 @@ prompt: "Analysiere die folgende Setup-Anleitung und bewerte sie nach **Develope
   \ mit:\n   - Prerequisites-Check mit Versionen\n   - Nummerierte Schritte mit Erfolgs-Validierung\n\
   \   - Troubleshooting-Section mit 5+ häufigen Fehlern\n   - OS-spezifische Hinweise\
   \ (Mac M1/M2, Linux, Windows WSL)\n4. **Begründe** deine Änderungen mit Onboarding-Prinzipien\n\
-  \nWICHTIG: Bitte liste zuerst explizit alle gefundenen Probleme auf (Schritt 1),\
-  \ bevor du die verbesserte Version erstellst.\nHINWEIS: Halte die einleitende Fehleranalyse\
-  \ kompakt und fasse dich bei der abstrakten Begründung am Ende extrem kurz, um keine\
-  \ Token zu verschwenden.\n"
+  \nWICHTIG: Liste zuerst explizit alle gefundenen Probleme auf (Schritt 1),\
+  \ bevor du die verbesserte Version erstellst.\nHINWEIS: Fehleranalyse und abschließende\
+  \ Begründung: extrem kurz.\n"
 scoring:
   error_detection:
     advanced_issues:

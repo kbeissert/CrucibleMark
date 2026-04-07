@@ -312,6 +312,10 @@ metadata:
   - progressive-disclosure
   - psychology
   version: 1.0.0
+  language: de
+  language_weight: 0.20
+  language_task_weight: 0.80
+  language_instruction_style: monolingual
 prompt: 'Optimiere den folgenden 3-Schritt-Onboarding-Flow.
 
 
@@ -320,13 +324,14 @@ prompt: 'Optimiere den folgenden 3-Schritt-Onboarding-Flow.
   {input_text}
 
 
-  WICHTIG: Bitte führe zuerst die ANALYSE durch (Schritt 1) und nenne explizit die
-  identifizierten Probleme, bevor du die Optimierung erstellst (Schritt 2). Halte
-  die Analyse kompakt (max. 5-7 Sätze, nenne mindestens 3 konkrete Probleme), um
-  das Token-Limit nicht zu sprengen.
+  **SPRACH-COMPLIANCE:** Antworte ausschließlich auf Deutsch. Eine Antwort in einer anderen Sprache wird unabhängig von der inhaltlichen Qualität als nicht-konform bewertet.
+
+  WICHTIG: Führe zuerst die ANALYSE durch (Schritt 1) und nenne explizit die
+  identifizierten Probleme, bevor du die Optimierung erstellst (Schritt 2). Analyse:
+  maximal 5–7 Sätze, mindestens 3 konkrete Probleme.
 
 
-  Erfülle dabei strikt die folgenden Anforderungen:
+  Anforderungen (strikt einhalten):
 
   {requirements}
 
