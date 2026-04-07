@@ -4,6 +4,25 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [v3.3.0] - 2026-04-07
+
+### Added
+- **Language Compliance Pipeline:** `judge_prompt_builder.py` erhält neue Parameter `required_language` und `language_weight`. Wenn ein Asset `language: de` definiert, wird dem Judge automatisch ein gewichteter LANGUAGE COMPLIANCE Block injiziert, der Sprachverstöße unter `task_compliance` penalisiert (Standard: 20 % des Gesamtscores).
+- **Language Metadata in Metacog-Assets:** `reasoning_logic` Assets `metacog_001–005` tragen nun `language: de` im Metadata-Block und ein explizites `Antworte auf Deutsch.`-Constraint im Prompt.
+- **Audit-Infrastruktur:** Neues Verzeichnis `docs/audits/` für operatives Audit-Logging. Erster Report: `AUDIT_2026-04-07_editorial.md`.
+
+### Changed
+- **Prompt Hardening (21 Assets, 30 Änderungen):** Systematisches Bereinigen aller AI-generierten Gemini-Artefakte aus 5 Modulen (`cultural_intelligence`, `ux_writing`, `content_transformation`, `documentation_quality`, `code_quality`):
+  - *Token-Limit-Leak entfernt (13 Treffer):* Interne Benchmark-Constraints (`um Token-Limits nicht zu überschreiten`) sind nicht Teil des Prompts — ersetzt durch direkte quantitative Schranken.
+  - *Höflichkeitsformeln entfernt (13 Treffer):* `Bitte` in imperativen WICHTIG/HINWEIS-Instruktionen gestrichen.
+  - *Pseudolabels entfernt (2 Treffer):* `Mission:` und `TASK:` Gemini-Strukturlabels aus `cultural_intelligence` entfernt.
+  - *Erfülle-Floskel ersetzt (5 Treffer):* `Erfülle dabei strikt die folgenden Anforderungen:` → `Anforderungen (strikt einhalten):`.
+- **judge_runner.py / judge_evaluator.py:** Forwarding von `required_language`/`language_weight` aus Asset-Config; `language_mismatch`-Flag-Extraktion aus Judge-Response.
+
+### Fixed
+- **Kyrillischer Unicode-Artefakt** in `asset_6a_german_tech_localization.yaml`: 3 cyrillische Zeichen (U+043C м, U+0430 а, U+0442 т) in `Idioматisches` durch korrekte lateinische Zeichen ersetzt.
+- **Golden Standard Grammatikfehler** in `asset_6e_german_idioms.yaml`: `ein negatives Entwicklung` → `eine negative Entwicklung`.
+
 ## [v3.2.0] - 2026-03-28
 
 ### Added

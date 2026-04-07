@@ -1,15 +1,25 @@
 # PROJECT_STATUS.md
 
 **Last Updated:** 2026-04-07
-**Current Version:** 3.2.2 (3-CSV Architecture & SSOT Completion)
-**Status:** ✅ Production-Ready (Scoring Integrity Patch in Progress)
+**Current Version:** 3.3.0 (Language Compliance + Prompt Hardening)
+**Status:** ✅ Production-Ready
 
 ______________________________________________________________________
 
 ## 🎯 Executive Summary
 
-> **Patch-Status 07.04.26:** Laufende Bugfix-Serie zur Herstellung einer stabilen, konsistenten Bewertungsgrundlage (keine Minor-Version). Betrifft: Loop Detection, Hard Constraint generisch + progressive Penalty, Language-Mismatch-Flag, Asset-Hardening (WCAG 2.2, Security Implicit Vulns), Two-Step Prompt Enforcement.
+CrucibleMark v3.3.0 führt eine sprachkonforme Evaluierungsebene ein und schließt eine systemweite redaktionelle Bereinigung aller YAML-Benchmark-Assets ab. Die Language-Compliance-Pipeline ermöglicht es, pro Asset eine Pflichtsprache zu definieren, die der LLM-Judge automatisch mit gewichteter Penalty-Logik bewertet. Gleichzeitig wurden in einem vollständigen Editorial Audit 30 Gemini-generierte Artefakte aus 21 Assets bereinigt und die Bewertungsgrundlage aller betroffenen Module reaktiviert.
 
+**Key Achievements (v3.3.0):**
+- ✅ **Language Compliance Pipeline:** `judge_prompt_builder.py` unterstützt `required_language` + `language_weight`; Judge-Rubrik wird automatisch um einen gewichteten Sprachkonformitäts-Block ergänzt (Standard: 20 % des Scores).
+- ✅ **Prompt Hardening (30 Fixes, 21 Assets):** Token-Limit-Leaks (13×), Höflichkeitsformeln (13×), Gemini-Pseudolabels (2×), Erfülle-Floskel (5×) vollständig aus 5 Modulen entfernt.
+- ✅ **Unicode-Artefakt-Fix:** 3 kyrillische Zeichen in `asset_6a` durch korrekte lateinische Entsprechungen ersetzt. Systemweiter Scan bestätigt alle übrigen 42 Assets clean.
+- ✅ **Golden Standard Korrektur:** Grammatikfehler in `asset_6e` (deutscher Artikel) behoben.
+- ✅ **Metacog Language Enforcement:** `reasoning_logic` metacog_001–005 mit `language: de` Metadaten und Deutsch-Constraint versehen.
+- ✅ **Audit-Infrastruktur:** Neues `docs/audits/`-Verzeichnis; erster Audit-Report archiviert.
+- ✅ **Stale Data Cleanup:** 492 obsolete Benchmark-Zeilen aus 3 CSVs für die 5 geänderten Module entfernt (werden beim nächsten Run neu befüllt).
+
+**Vorherige Version (v3.2.2 – 3-CSV Architecture & SSOT Completion):**
 CrucibleMark v3.2.2 schließt die vollständige Single Source of Truth Separation ab, indem die alte 2-CSV Architektur durch eine logisch trennscharfe 3-CSV Architektur ersetzt wurde. Das Framework unterscheidet im Ausführungs- und Evaluierungskontext nun strukturell perfekt zwischen lokalen VRAM-Modellen, Commercial API-Modellen und den neuen Cloud Open-Weights Proxies.
 
 **Key Achievements (v3.2.2):**
