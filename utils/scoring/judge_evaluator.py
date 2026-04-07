@@ -197,7 +197,14 @@ def generate_audit_log(
 
         judge_resp = f"{meta_block}\n\n**LLM Judge Reasoning:**\n{result.get('llm_judge_reasoning', 'No reasoning provided.')}{subscore_section}{cat_section}{details_section}"
     else:
-        judge_resp = f"**Regex / Rule Scorer ({result.get('scoring_method', 'unknown')}):**\n\n**Score:** {result.get('total_score', 0)} / {result.get('max_score', 0)}\n\n**Details:**\n```json\n{json.dumps(score, indent=2, ensure_ascii=False)}\n```"
+        details_str = ""
+        if "details" in score and score.get("details"):
+            if isinstance(score["details"], list):
+                details_str = "\n".join([str(d) for d in score["details"]])
+            else:
+                details_str = str(score["details"])
+
+        judge_resp = f"**Regex / Rule Scorer ({result.get('scoring_method', 'unknown')}):**\n\n**Score:** {result.get('total_score', 0)} / {result.get('max_score', 0)}\n\n**Details:**\n\n{details_str}\n\n**Raw JSON:**\n```json\n{json.dumps(score, indent=2, ensure_ascii=False)}\n```"
 
     save_audit_log(
         model=result["model"],

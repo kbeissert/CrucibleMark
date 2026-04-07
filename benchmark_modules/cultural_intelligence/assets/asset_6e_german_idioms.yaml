@@ -29,8 +29,8 @@ scoring:
   # Note: Actual logic remains in LegacyEvaluator._evaluate_german_idioms()
   criteria:
     weight: 100
-    description: "10-Point Idiom Translation Check (5 idioms, 2 points each)"
-    expected_idioms: ["went south", "outside the box", "game plan", "touch base", "get the ball rolling"]
+    description: "12-Point Idiom Translation Check (6 idioms, 2 points each)"
+    expected_idioms: ["went south", "outside the box", "game plan", "touch base", "get the ball rolling", "drop the ball"]
 
 expected_output: |
   "Das Projekt ging letzte Woche schief. Wir müssen kreativ denken und einen Plan entwickeln. Lass uns am Montag kurz sprechen, um die Sache ins Rollen zu bringen. Wir können uns hier keinen Fehler erlauben."

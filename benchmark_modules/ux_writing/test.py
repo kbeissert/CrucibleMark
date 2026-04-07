@@ -118,6 +118,31 @@ class UXWritingTest(BaseTest):
 
         total_score = scores.get("total", 0.0)
 
+        # HARD CONSTRAINT: Word Count (aus constraints.max_expected_words im Asset-YAML)
+        # Progressiv gestaffelte Penalty: >120% -> -20%, >200% -> -40%, >300% -> -60%
+        max_words = self.asset.get("constraints", {}).get("max_expected_words")
+        if max_words:
+            word_count = len(result.raw_response.split())
+            ratio = word_count / max_words
+            if ratio > 1.20:
+                if ratio <= 2.0:
+                    penalty_factor, tier_label = 0.20, "Mild Overshoot (>120%)"
+                elif ratio <= 3.0:
+                    penalty_factor, tier_label = 0.40, "Clear Violation (>200%)"
+                else:
+                    penalty_factor, tier_label = 0.60, "Constraint Ignored (>300%)"
+                penalty = total_score * penalty_factor
+                total_score = max(0.0, total_score - penalty)
+                constraint_note = (
+                    f"> [!WARNING]\n"
+                    f"> **[HARD CONSTRAINT VIOLATION – {tier_label}]** The model ignored the explicit word count limit of {max_words} words. "
+                    f"Word count detected: {word_count} ({ratio:.0%} of limit). An automatic {int(penalty_factor * 100)}% deduction (-{penalty:.2f} pts) has been applied."
+                )
+                if isinstance(details, list):
+                    details.append(constraint_note)
+                else:
+                    details = [str(details), constraint_note]
+
         # Format category scores for display
         category_scores = {}
         for key, value in scores.items():

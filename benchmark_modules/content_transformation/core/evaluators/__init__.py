@@ -143,6 +143,29 @@ class ContentTransformationEvaluator:
             details.extend(sq_details)
             total_achieved += sq_final_score
 
+        # HARD CONSTRAINT: Word Count (aus constraints.max_expected_words im Asset-YAML)
+        # Progressiv gestaffelte Penalty: >120% -> -20%, >200% -> -40%, >300% -> -60%
+        word_count = len(clean_response.split())
+        max_words = self.asset.get("constraints", {}).get("max_expected_words")
+        if max_words:
+            ratio = word_count / max_words
+            if ratio > 1.20:
+                if ratio <= 2.0:
+                    penalty_factor, tier_label = 0.20, "Mild Overshoot (>120%)"
+                elif ratio <= 3.0:
+                    penalty_factor, tier_label = 0.40, "Clear Violation (>200%)"
+                else:
+                    penalty_factor, tier_label = 0.60, "Constraint Ignored (>300%)"
+                penalty = total_achieved * penalty_factor
+                total_achieved = max(0, total_achieved - penalty)
+                penalty_detail = (
+                    f"> [!WARNING]\n"
+                    f"> **[HARD CONSTRAINT VIOLATION – {tier_label}]** The model ignored the explicit word count limit of {max_words} words. "
+                    f"Word count detected: {word_count} ({ratio:.0%} of limit). An automatic {int(penalty_factor * 100)}% deduction (-{penalty:.2f} pts) has been applied to the 'total_achieved' score."
+                )
+                details.append(penalty_detail)
+                violations.append("Exceeded Max Word Count")
+
         return {
             "status": "success",
             "total_score": round(total_achieved, 2),

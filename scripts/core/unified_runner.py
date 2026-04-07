@@ -113,6 +113,19 @@ class UnifiedBenchmarkRunner(BaseBenchmarkRunner):
 
         return self.existing_commercial_benchmarks
 
+    def _get_existing_for_model(self, provider: str, model: str) -> Dict:
+        """Wie _get_existing(), aber beachtet auch :cloud-Suffix bei Ollama-Proxies."""
+        if provider == "ollama":
+            if ":cloud" in model.lower() or model.lower().endswith("-cloud"):
+                return self.existing_cloud_benchmarks
+            return self.existing_local_benchmarks
+
+        provider_config = self.validator.config.get("providers", {}).get("commercial", {}).get(provider, {})
+        if provider_config.get("model_type") == "open_weights_cloud":
+            return self.existing_cloud_benchmarks
+
+        return self.existing_commercial_benchmarks
+
     def _measure_cold_start(self, model: str) -> Optional[Dict[str, Any]]:
         if model in self.warmup_cache:
             return None
@@ -186,10 +199,10 @@ class UnifiedBenchmarkRunner(BaseBenchmarkRunner):
 
         asset_id = asset_data.get("metadata", {}).get("id", asset_path.stem)
 
-        # Skip logic for commercial
-        if not is_local and not self.force:
+        # Skip logic: überspringen wenn bereits im Cache (respektiert --force)
+        if not self.force:
             key = (model, asset_id)
-            existing_cache = self._get_existing(provider)
+            existing_cache = self._get_existing_for_model(provider, model)
             if key in existing_cache:
                 print(f"   ⏭️  [{asset_id}] Wird übersprungen (Cache)")
                 cached = existing_cache[key]
@@ -213,11 +226,41 @@ class UnifiedBenchmarkRunner(BaseBenchmarkRunner):
         exec_result = test_instance.score_response(exec_result)
         score = exec_result.data
 
+        # Language Mismatch Detection (heuristisch – kein externer Dependency)
+        expected_lang = asset_data.get("metadata", {}).get("language", "")
+        if expected_lang and len(response.split()) > 50:
+            words_lower = response.lower().split()
+            de_markers = {"der", "die", "das", "und", "ist", "für", "nicht", "sie",
+                          "mit", "ein", "auf", "bei", "von", "zu", "im", "den",
+                          "des", "dem", "sich", "auch", "eine", "einer", "einem"}
+            en_markers = {"the", "and", "for", "with", "is", "are", "that", "this",
+                          "have", "been", "from", "will", "your", "you", "our",
+                          "their", "which", "also", "not", "all"}
+            de_count = sum(1 for w in words_lower if w in de_markers)
+            en_count = sum(1 for w in words_lower if w in en_markers)
+            detected_en = en_count > de_count * 2 and en_count > 8
+
+            if expected_lang == "de" and detected_en:
+                exec_result.data["language_mismatch"] = True
+                exec_result.data["detected_language"] = "en"
+                exec_result.data["violations"] = exec_result.data.get("violations", []) + ["Wrong Language (English instead of German)"]
+                if isinstance(exec_result.data.get("details"), list):
+                    exec_result.data["details"].append(
+                        "> [!WARNING]\n"
+                        "> **[LANGUAGE MISMATCH]** The model responded in English, but the task requires German (`expected_language: de`). "
+                        f"Language marker counts: DE={de_count}, EN={en_count}."
+                    )
+                score = exec_result.data
+                logger.warning("Language mismatch detected for %s / %s: EN response on DE task", model, asset_data.get("metadata", {}).get("id"))
+
         # Build base result
         result = self.build_base_result(model, asset_data, exec_result, provider)
         result["model_version"] = getattr(
             self, "current_model_version", get_model_version(model, provider=provider)
         )
+        if exec_result.data.get("language_mismatch"):
+            result["language_mismatch"] = True
+            result["status"] = "language_mismatch"
 
         # Token usage & Cost
         if hasattr(self.client, "last_token_usage"):
@@ -337,6 +380,14 @@ class UnifiedBenchmarkRunner(BaseBenchmarkRunner):
 
         print(f"Tests:    {len(assets)}\n{'=' * 60}\n")
 
+        # Generate a unique run_id for this benchmark pass (Fix 4: Baseline-Lock)
+        import hashlib
+        import time
+        run_timestamp = str(int(time.time()))
+        tasks_str = ",".join([a.name for a in assets])
+        run_id_str = f"{model}_{tasks_str}_{run_timestamp}"
+        run_id = hashlib.md5(run_id_str.encode()).hexdigest()[:12]
+
         results = []
         if warmup_result:
             results.append(warmup_result)
@@ -368,7 +419,46 @@ class UnifiedBenchmarkRunner(BaseBenchmarkRunner):
                     pause_calculator=pause_calculator,
                     run_limiter=run_limiter,
                 )
-                results.append(result)
+                # Assign run_id to link all results of this run (Fix 4: Baseline-Lock)
+                result["run_id"] = run_id
+
+                # Fix 2 (Truncation Detection): Konfigurierbare Schwellenwerte pro Modul
+                TRUNCATION_THRESHOLDS = {
+                    "documentation_quality": 1500,
+                    "ux_writing": 800,
+                }
+                module_id = benchmark_info.get("id", "")
+                threshold = TRUNCATION_THRESHOLDS.get(module_id)
+                if threshold:
+                    response_len = result.get("response_length")
+                    if response_len is None:
+                        response_len = result.get("metadata", {}).get("response_length", 0)
+                    if isinstance(response_len, str):
+                        try:
+                            response_len = int(response_len)
+                        except (ValueError, TypeError):
+                            response_len = 0
+                    if response_len and response_len > 0 and response_len < threshold and result.get("status") == "success":
+                        result["status"] = "truncated"
+                        result["truncation_note"] = f"Response below {threshold} chars for {module_id}"
+                        print(f"\n   ⚠️ Result marked as truncated (length: {response_len} < {threshold})")
+
+                # Verbose-Overflow-Check (per-Asset max_expected_length constraint)
+                _asset_data = load_asset_yaml(asset_path)
+                _max_expected = _asset_data.get("constraints", {}).get("max_expected_length")
+                if _max_expected and result.get("status") == "success":
+                    _overflow_len = result.get("response_length")
+                    if _overflow_len is None:
+                        _overflow_len = result.get("metadata", {}).get("response_length", 0)
+                    if isinstance(_overflow_len, str):
+                        try:
+                            _overflow_len = int(_overflow_len)
+                        except (ValueError, TypeError):
+                            _overflow_len = 0
+                    if _overflow_len and _overflow_len > _max_expected:
+                        result["status"] = "verbose_outlier"
+                        result["truncation_note"] = f"Response {_overflow_len} chars exceeds expected max {_max_expected}"
+                        print(f"\n   ⚠️ Result marked as verbose_outlier ({_overflow_len} > {_max_expected})")
 
                 # Print Status
                 status_icon = "❌" if result.get("status") == "error" else "✓"
@@ -383,6 +473,9 @@ class UnifiedBenchmarkRunner(BaseBenchmarkRunner):
                 print(
                     f"   {status_icon} [{i}/{len(assets)}] {asset_name}: {result.get('percentage', 0):.1f}% | {token_str} | {result.get('execution_time', 0):.1f}s{judge_str}"
                 )
+
+                if result:
+                    results.append(result)
 
             except CostLimitExceededError as e:
                 print(f"\n❌ KOSTENLIMIT ERREICHT: {e}")
@@ -408,7 +501,14 @@ class UnifiedBenchmarkRunner(BaseBenchmarkRunner):
         if valid_results:
             avg_score = sum(r.get("semantic_score", r.get("accuracy_score", 0.0)) for r in valid_results) / len(valid_results)
             avg_time = sum(r.get("execution_time", 0.0) for r in valid_results) / len(valid_results)
-            avg_tokens = sum(r.get("tokens_per_second", 0.0) for r in valid_results) / len(valid_results)
+
+            token_rates = [
+                float(r.get("tokens_per_second", 0.0))
+                for r in valid_results
+                if isinstance(r.get("tokens_per_second"), (int, float)) or (isinstance(r.get("tokens_per_second"), str) and str(r.get("tokens_per_second")).replace('.','',1).isdigit())
+            ]
+            avg_tokens = sum(token_rates) / len(token_rates) if token_rates else 0.0
+
             judge_scores = [r.get("judge_score") for r in valid_results if r.get("judge_score") is not None]
 
             # The theoretical cost is generated dynamically per request from CostTracker (SSOT)

@@ -118,7 +118,7 @@ def main() -> None:
         out_dir = out_dir / ALLOWED_SUBDIR
 
     # Explizite Whitelist: nur diese drei Top-Level-Files dürfen überschrieben werden
-    ALLOWED_FILES = {"leaderboard.json", "political_compass.json", "meta.json"}
+    ALLOWED_FILES = {"leaderboard.json", "political_compass.json", "meta.json", "provider_stats.json", "provider_landscape_review.md"}
 
     # models/ ist der einzige Unterordner der gelöscht werden darf
     ALLOWED_RMTREE = out_dir / "models"
@@ -141,6 +141,7 @@ def main() -> None:
     ldb = load_csv_with_fallback(scores_dir / "benchmark_leaderboard_detailed.csv")
     pc = load_csv_with_fallback(scores_dir / "political_compass_results.csv")
     bias_df = load_csv_with_fallback(scores_dir / "bias_sensitivity.csv")
+    provider_df = load_csv_with_fallback(scores_dir / "provider_leaderboard.csv")
 
     if ldb is None:
         logging.error("❌ Failed to load required benchmark_leaderboard_detailed.csv. Exiting.")
@@ -324,6 +325,19 @@ def main() -> None:
         with open(out_dir / "political_compass.json", "w", encoding="utf-8") as f:
             json.dump({"generated_at": generated_at, "axes": {"x": "Ideologie (Links -> Rechts)", "y": "Haltung (Libertär -> Autoritär)"}, "models": pc_list}, f, indent=2, ensure_ascii=False)
 
+
+    if provider_df is not None:
+        provider_list = []
+        for _, r in provider_df.iterrows():
+            provider_list.append({k: (clean_float(v) if k != "Provider" and k != "Active Ping TTFB (ms)" and k != "Models Tracked" else (v if k == "Provider" else str(v))) for k, v in r.items()})
+        with open(out_dir / "provider_stats.json", "w", encoding="utf-8") as f:
+            json.dump({"generated_at": generated_at, "providers": provider_list}, f, indent=2, ensure_ascii=False)
+            
+    # Also copy the markdown review if it exists
+    provider_md = comparisons_path / "provider_landscape_review.md"
+    if provider_md.exists():
+        shutil.copy2(provider_md, out_dir / "provider_landscape_review.md")
+        
     with open(out_dir / "meta.json", "w", encoding="utf-8") as f:
         json.dump({
             "generated_at": generated_at,

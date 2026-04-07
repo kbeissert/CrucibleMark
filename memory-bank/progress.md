@@ -1,13 +1,12 @@
 # Progress
 
 ## Ongoing
+- [ ] `make benchmark-auto` — alle (model, asset_id)-Slots füllen (0/42 non-compass Tests pro Modell)
 - [ ] Phase 4: Finale E2E Systemtests und CI/CD Review
 - [ ] LLM Judge: Batch-Mode (Phase 3.5)
-- [ ] Volldurchlauf aller lokalen Modelle → finales Leaderboard (43/43 Tests)
-- [ ] Re-run `reasoning_logic` für lokale Modelle (verfälschte 0-Punkte bereinigen)
-- [ ] Stabilität `gpt-oss` analysieren (vorheriger Absturz-Kandidat)
 
 ## Abgeschlossen (Meilensteine)
+- [DONE] Vollständiger CSV-Reset & Rubric-Cleanup (2026-04-06): Alle non-political_compass-Einträge aus 3 CSVs gelöscht (alte Rubric-Scores nicht mehr vergleichbar). Provider-Bug gefixt (Groq-Modelle mit `/` wurden als "commercial" statt "open_weights_cloud" klassifiziert). kimi-k2-instruct Doppeleintrag bereinigt (model_version-Feld).
 - [DONE] Modell-Architektur-Tags (v3.2.x): Dynamische Tag-Extraktion (Thinking, Instruct, Preview, Uncensored) in model_utils.py implementiert und in LLM-Judge (`judge_prompt_builder.py`) sowie Meta-Reviewer verankert, um architektonische Eigenheiten fair in die Bewertung (z.B. Verbosity) einfließen zu lassen.
 - [DONE] Performance & Cache Repair (v3.2.1): Data-Routing in CSV-Logs stabilisiert (Fehlzuweisungen in lokale Tabellen behoben). Lazy Loading für Transformers eingeführt. Konsolen-Summary inklusive Kostenanzeige reanimiert. Groq Provider repariert.
 - [DONE] Kategorien-SSOT (v3.2.0): "Local Cloud" Deprecation und vollständige Migration auf "Cloud (Open-Weights)" (Groq, etc.) in Utilities, Leaderboard und Meta-Reviewer Logik.

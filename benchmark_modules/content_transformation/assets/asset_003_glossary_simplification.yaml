@@ -97,6 +97,10 @@ prompt: |
 
   Erstelle die vollständige vereinfachte Glossar-Erklärung.
 
+constraints:
+  max_expected_words: 150
+  max_expected_words_note: "Erlaubt bis zu 160 Wörter (8% Toleranz). Alles darüber: 40% Abzug."
+
 scoring:
   total_points: 100
 

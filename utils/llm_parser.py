@@ -22,7 +22,15 @@ class LLMParser:
         if len(response_text) > 1000:
             response_text = re.sub(
                 r"(.)\1{500,}",
-                r"\1\n\n> [!CAUTION]\n> Das Framework hat eine Endlosschleife des Modells erkannt (extreme Zeichen-Wiederholung) und den defekten Textblock an dieser Stelle gekürzt.\n\n",
+                r"\1\n\n> [!ERROR]\n> **[GENERATION LOOP DETECTED]** Das Framework hat eine Endlosschleife des Modells erkannt (extreme Zeichen-Wiederholung) und den defekten Textblock an dieser Stelle gekürzt.\n\n",
+                response_text,
+                flags=re.DOTALL
+            )
+
+            # 1.1 Sanitize structural loops (sentences or code blocks repeating)
+            response_text = re.sub(
+                r"(.{50,})\1{10,}",
+                r"\1\n\n> [!ERROR]\n> **[GENERATION LOOP DETECTED]** Das Framework hat eine Endlosschleife des Modells erkannt (strukturelle Satz- oder Block-Wiederholung) und den defekten Textblock an dieser Stelle gekürzt.\n\n",
                 response_text,
                 flags=re.DOTALL
             )

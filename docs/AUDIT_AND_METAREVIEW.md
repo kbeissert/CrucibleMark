@@ -86,6 +86,19 @@ Der Audit-Log fungiert direkt als interaktiver Datenlayer für den Meta-Reviewer
 * `> [!CAUTION]` – **Endlosschleifen & Loop-Halluzination**
   Das Framework erkannte eine Endlosschleife des Modells (extreme Zeichen-Wiederholung, z. B. bei Gemini-Modellen) und kürzte den Text, um Token-Kosten und Abstürze zu vermeiden.
 
+* `> [!WARNING]` – **Hard Constraint Violation (Wortanzahl)**
+  Das Modell hat die im Asset definierte Wortanzahl-Obergrenze überschritten. Die Stufe des Verstoßes wird im Label ausgewiesen: `Mild Overshoot` (>120%), `Clear Violation` (>200%) oder `Constraint Ignored` (>300%). Ein automatischer Scoreabzug von 20–60% wird angewendet; der Abzug erscheint inklusive absoluter Punktzahl im Log, damit der Meta-Reviewer den Einfluss korrekt einordnen kann.
+  ```
+  > **[HARD CONSTRAINT VIOLATION – Constraint Ignored (>300%)]** ...
+  ```
+
+* `> [!WARNING]` – **Language Mismatch**
+  Das Modell hat eine Aufgabe, die explizit in Deutsch (`metadata.language: de`) gestellt war, auf Englisch beantwortet. Die Erkennung basiert auf einer heuristischen DE/EN-Marker-Frequenzanalyse. Es wird **kein Score-Abzug** angewendet; der Befund wird als separater `status=language_mismatch`-Flag und als WARNING-Block ins Log geschrieben, damit der Meta-Reviewer Instruction-Following und inhaltliche Qualität getrennt bewerten kann.
+  ```
+  > **[LANGUAGE MISMATCH]** The model responded in English, but the task requires
+  > German (`expected_language: de`). Language marker counts: DE=21, EN=66.
+  ```
+
 * `> ⚠️ **Anomaly Verification Protocol**` – **Political Compass Instabilität**
   Wenn das Framework bei einem Modell starke Sprünge im politischen Kompass feststellt, triggert es intern Retests. Diese Warnung meldet dem Meta-Reviewer, dass die Ergebnisse so erratisch waren, dass ein manueller Konsolidierungslauf nötig war – ein klares Signal für kritische Einordnung in Sachen Verlässlichkeit.
 

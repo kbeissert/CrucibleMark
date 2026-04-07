@@ -234,23 +234,83 @@ def select_benchmark_module(args_module: str = None) -> str:
         sys.exit(1)
 
 
-def gather_models(
-    skip_local: bool, skip_commercial: bool
-) -> List[Tuple[str, str, str]]:
-    """Sammelt alle zu testenden Modelle."""
+def select_model_category() -> str:
+    """Interaktive Auswahl der Modell-Kategorie."""
+    choices = [
+        ("0", "Alle Modelle (Lokal & Cloud)"),
+        ("1", "Kommerzielle Modelle (Proprietary API)"),
+        ("2", "Open-Weight Cloud-Modelle"),
+        ("3", "Open-Weight Lokale Modelle (Ollama)")
+    ]
+
+    rprint("\n[bold cyan]Wähle die Kategorie der zu testenden Modelle:[/bold cyan]")
+    for key, desc in choices:
+        rprint(f"  [bold yellow]{key}[/bold yellow]: {desc}")
+
+    while True:
+        try:
+            choice = input("\nAuswahl (0-3) [0]: ").strip()
+            if not choice:
+                return "0"
+            if choice in ["0", "1", "2", "3"]:
+                return choice
+            rprint("[red]Ungültige Auswahl. Bitte 0, 1, 2 oder 3 eingeben.[/red]")
+        except KeyboardInterrupt:
+            rprint("\n[yellow]Abgebrochen.[/yellow]")
+            import sys
+            sys.exit(0)
+
+
+def gather_models(category: str) -> List[Tuple[str, str, str]]:
+    """Sammelt alle zu testenden Modelle basierend auf der Kategorie."""
+    import yaml
     all_models = []
 
-    if not skip_commercial:
-        comm_models = get_commercial_models()
-        all_models.extend(comm_models)
-        rprint(f"[green]Gefunden: {len(comm_models)} kommerzielle Modelle.[/green]")
+    try:
+        with open("benchmark_config.yaml", "r", encoding="utf-8") as f:
+            config = yaml.safe_load(f)
+    except Exception as e:
+        logger.error("Fehler beim Laden der Konfiguration: %s", e)
+        return []
 
-    if not skip_local:
+    commercial = []
+    open_weight_cloud = []
+
+    providers = config.get("providers", {}).get("commercial", {})
+    for p_key, p_config in providers.items():
+        if p_config.get("enabled", False):
+            m_type = p_config.get("model_type", "proprietary_api")
+            for m in p_config.get("models", []):
+                model_tuple = (m["id"], m["name"], p_key)
+                if m_type == "open_weights_cloud":
+                    open_weight_cloud.append(model_tuple)
+                else:
+                    commercial.append(model_tuple)
+
+    local_models = []
+    if category in ["0", "2", "3"]:
         local_models = get_local_models()
+
+    if category == "0":
+        all_models.extend(commercial)
+        all_models.extend(open_weight_cloud)
         all_models.extend(local_models)
-        rprint(f"[green]Gefunden: {len(local_models)} lokale Modelle.[/green]")
+        rprint(f"[green]Gefunden: {len(commercial)} Kommerzielle, {len(open_weight_cloud)} Open-Weight Cloud, {len(local_models)} Lokale Modelle.[/green]")
+    elif category == "1":
+        all_models.extend(commercial)
+        rprint(f"[green]Gefunden: {len(commercial)} Kommerzielle Modelle.[/green]")
+    elif category == "2":
+        all_models.extend(open_weight_cloud)
+        cloud_local = [m for m in local_models if m[0].endswith(":cloud")]
+        all_models.extend(cloud_local)
+        rprint(f"[green]Gefunden: {len(open_weight_cloud) + len(cloud_local)} Open-Weight Cloud Modelle.[/green]")
+    elif category == "3":
+        pure_local = [m for m in local_models if not m[0].endswith(":cloud")]
+        all_models.extend(pure_local)
+        rprint(f"[green]Gefunden: {len(pure_local)} Lokale Modelle.[/green]")
 
     return all_models
+
 
 
 def main():
@@ -261,6 +321,10 @@ def main():
     parser.add_argument(
         "--module",
         help="ID of the module (e.g. content_transformation). If omitted, interactive selection is used.",
+    )
+    parser.add_argument(
+        "--model",
+        help="Run only one specific model (e.g. minimax-m2.7:cloud). Bypasses category prompt.",
     )
     parser.add_argument(
         "--skip-local", action="store_true", help="Skip local Ollama models"
@@ -278,15 +342,55 @@ def main():
         action="store_true",
         help="Erzwingt einen neuen Durchlauf, auch wenn bereits Ergebnisse existieren.",
     )
+    parser.add_argument(
+        "--force-rerun",
+        action="store_true",
+        help="Alias for --force",
+    )
 
     args = parser.parse_args()
 
+    if args.force_rerun:
+        args.force = True
+
     selected_module = select_benchmark_module(args.module)
 
-    console.rule(f"[bold blue]📊 Cross-Model Benchmark: {selected_module}")
+    if args.model:
+        # Determine provider automatically for this model
+        p_type = "local"
+        if not (args.model.startswith("ollama/") or ":cloud" in args.model or ":latest" in args.model or "-" in args.model):
+            # heuristic: if no common ollama trait, maybe commercial, but we'll try to find it
+            pass
+        # Pre-check: is this model known as open_weights_cloud in config? Then keep p_type = "local".
+        _known_cloud_model_ids: set[str] = set()
+        try:
+            with open("benchmark_config.yaml", "r", encoding="utf-8") as _f:
+                _cfg = yaml.safe_load(_f)
+            for _prov_conf in _cfg.get("providers", {}).get("commercial", {}).values():
+                if _prov_conf.get("model_type") == "open_weights_cloud":
+                    for _m in _prov_conf.get("models", []):
+                        if isinstance(_m, dict) and _m.get("id"):
+                            _known_cloud_model_ids.add(_m["id"])
+        except Exception:
+            pass
 
-    # 1. Gather Models
-    all_models = gather_models(args.skip_local, args.skip_commercial)
+        import requests
+        try:
+            from utils.constants import OLLAMA_DEFAULT_BASE_URL
+            resp = requests.get(f"{OLLAMA_DEFAULT_BASE_URL}/api/tags", timeout=2)
+            ollama_models = [m["name"] for m in resp.json().get("models", [])]
+            if args.model not in ollama_models and "/" in args.model and args.model not in _known_cloud_model_ids:
+                p_type = "commercial"
+        except Exception:
+            if args.model not in _known_cloud_model_ids and ("/" in args.model or args.model.startswith("gpt-") or args.model.startswith("claude-")):
+                p_type = "commercial"
+
+        # Output is (model_id, display_name, provider)
+        all_models = [(args.model, args.model, p_type)]
+        selected_category = "-1"
+    else:
+        selected_category = select_model_category()
+        all_models = gather_models(selected_category)
 
     if not all_models:
         rprint("[red]❌ Keine Modelle gefunden! Config und Ollama prüfen.[/red]")

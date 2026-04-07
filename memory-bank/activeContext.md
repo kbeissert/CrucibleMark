@@ -1,3 +1,3 @@
-- Abgeschlossen: Integration und End-to-End-Weitergabe von differenzierten Modell-Tags (Thinking, Instruct, Preview, Uncensored) an LLM-Judge und Meta-Reviewer.
-- Nächster Schritt: Anwendung der neuen Toleranzen für Coder, Thinker und Preview-Modelle in zukünftigen Benchmarks testen.
-- Offen/Risiko: keine
+- Abgeschlossen: Vollständiger CSV-Reset (nur political_compass-Daten behalten), Provider-Classification-Bug für Groq-Modelle mit `/` im ID gefixt, kimi-k2-instruct Doppeleintrag (model_version k.A. vs k2) bereinigt, Filesystem-Cleanup (One-Off-Skripte, outputs/temp, patch-Relikte), Pylint/Pylance-Fixes in generate_provider_stats.py und test_judge_runner_lifecycle.py.
+- Nächster Schritt: `make benchmark-auto` ausführen — füllt alle leeren (model, asset_id)-Slots mit neuen Rubric-Scores (political_compass wird übersprungen).
+- Offen/Risiko: Alle 3 CSVs sind clean (nur 9/11/21 political_compass-Zeilen) — benchmark-auto muss vollständig laufen, bevor Leaderboard aussagekräftig ist. Groq-Quota-Errors (429) möglich bei hoher Last.

@@ -71,6 +71,11 @@ class BenchmarkResult(BaseModel):
         description="The actual prompt that was sent to the model after evaluation/variable substitution",
     )
 
+    run_id: Optional[str] = Field(
+        default=None,
+        description="Unique identifier linking all tasks of a single model benchmark run",
+    )
+
     # --- Judge Sub-Scores ---
     judge_task_compliance: Optional[int] = Field(default=None, description="Task Compliance sub-score from LLM Judge")
     judge_output_quality: Optional[int] = Field(default=None, description="Output Quality sub-score from LLM Judge")

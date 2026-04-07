@@ -31,13 +31,14 @@ context: |
 prompt: |
   Analysiere den folgenden PHP-Code auf **Security-Vulnerabilities**.
 
-  Der Code enthält drei Kategorien von Fehlern:
+  Der Code enthält vier Kategorien von Fehlern:
   1. **Markierte Issues**: Bereits identifizierte Probleme (bestätige diese).
   2. **Offensichtliche Issues**: Standard OWASP-Fehler ohne Markierung.
   3. **Subtile Issues**: Logikfehler oder sprachspezifische Schwachstellen (PHP).
+  4. **Implizite Issues**: 5 verdeckte Vulnerabilities (z.B. Mail Header Injection, sekundäre Injections).
 
   ## Deine Aufgabe
-  Finde und erkläre **ALLE** Sicherheitslücken. Priorisiere sie nach Schweregrad (Critical/High/Medium).
+  Finde und erkläre **ALLE** Sicherheitslücken. Priorisiere sie nach Schweregrad (Critical/High/Medium). Gehe besonders auf die 5 impliziten Schwachstellen ein.
 
   **PHP-Code:**
 
@@ -288,12 +289,32 @@ scoring:
     # 4. Expert Issues (20 Punkte)
     expert_issues:
       - issue: "IDOR (Profile Update)"
-        points: 10
+        points: 4
         keywords: ["idor", "insecure direct object reference", "authorization check", "fremder zugriff"]
 
       - issue: "CSRF (Missing Tokens)"
-        points: 10
+        points: 4
         keywords: ["csrf", "cross-site request forgery", "csrf token", "anti-csrf"]
+
+      - issue: "Implizite Lücke 1: Mail Header Injection"
+        points: 3
+        keywords: ["mail header", "crlf", "spam", "header injection", "mail()", "email parameter"]
+
+      - issue: "Implizite Lücke 2: SQL Injection (Password Reset)"
+        points: 3
+        keywords: ["sql injection", "reset", "email", "'$email'", "password reset"]
+
+      - issue: "Implizite Lücke 3: SQL Injection (Admin Delete)"
+        points: 2
+        keywords: ["sql injection", "delete", "admin", "$uid", "delete from users"]
+
+      - issue: "Implizite Lücke 4: User Enumeration (Login)"
+        points: 2
+        keywords: ["enumeration", "invalid username or password", "existiert", "timing", "erraten"]
+
+      - issue: "Implizite Lücke 5: Unsafe Cookie (auth_user)"
+        points: 2
+        keywords: ["cookie", "auth_user", "forged", "spoofing", "manipulation", "signatur", "plaintext"]
 
   solution_quality:
     weight: 30

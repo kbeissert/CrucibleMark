@@ -230,7 +230,7 @@ from schemas.result import BenchmarkResult
 
 # The Object Schema
 class BenchmarkResult(BaseModel):
-    status: str = "success"           # success, error
+    status: str = "success"           # success | error | truncated | verbose_outlier | language_mismatch
     primary_score: Optional[float]    # 0.0 - 100.0 (ranking)
     rendered_value: str = "N/A"       # Display string ("85.5 %")
 
@@ -365,6 +365,21 @@ evaluation:
   min_length: 100
   max_length: 500
   required_format: "markdown"          # markdown, json, code, text
+
+# Hard Constraints (optional) ─────────────────────────────────────────
+# Werden NACH dem inhaltlichen Scoring ausgewertet. Ein Verstoß löst
+# eine automatische Penalty aus (unabhängig von der inhaltlichen Qualität).
+constraints:
+  max_expected_words: 150              # Wortanzahl-Obergrenze (progressiv)
+  # Penalty-Stufen: ≤120% kein Abzug | 121–200% −20% | 201–300% −40% | >300% −60%
+  # Trigger und Stufe werden als > [!WARNING] ins Audit-Log geschrieben.
+
+# Metadaten (optional, für Sprach-Constraint) ──────────────────────────
+metadata:
+  language: "de"                       # "de" → Language-Mismatch-Check aktiv
+  # Das Framework prüft per DE/EN-Marker-Heuristik, ob die Antwort
+  # in der Zielsprache verfasst ist. Bei EN-Antwort auf DE-Task:
+  # status = "language_mismatch" (kein Score-Abzug, separater Status-Flag).
 ```
 
 ______________________________________________________________________

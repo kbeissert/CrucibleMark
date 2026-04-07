@@ -66,6 +66,14 @@ Gilt für Generation-Parameter UND LLM Judge. Modul-Override gewinnt immer.
   2. Der `LLM-Judge` erhält sie als `tested_model_id` in seinen System-Prompt (via `judge_prompt_builder.py`), um z.B. bei Thinking-Modellen nicht wegen übermäßiger Erklärung ("Verbosity") Punktabzüge zu geben.
   3. Der `Meta-Reviewer` erhält sie in seinen System-Prompt (`meta_reviewer_prompt.yaml`), um z.B. bei abliterated Modellen Kohärenz-Abbrüche auf die zerstörten Weights statt mangelnde Intelligenz zurückzuführen.
 
+## Data Management & CSV Retesting Behavior (Consolidation)
+- **Logbestand & Überschreiben:** Die Datei `local_models_benchmark.csv` (und andere Benchmark-CSVs) fungieren zunächst als Append-Only-Log. Jeder Testdurchlauf hängt neue Zeilen an.
+- **Maintenance (Consolidate):** Am Ende eines `make benchmark` (oder beim Backup) läuft das Skript `scripts/maintenance/consolidate_csv.py`. Dieses Skript sortiert nach Zeitstempel und führt ein `drop_duplicates(subset=["model", "asset_id"], keep="first")` durch. **Konsequenz:** Alle älteren Testläufe für ein Modell+Asset werden restlos gelöscht. Ein "Retest" überschreibt somit permanent die alten Ergebnisse. Wenn Werte nach einem Lauf plötzlich abweichen, ist dies keine Systemfehlfunktion, sondern das korrekte Greifen der Konsolidierung.
+
+## Non-Determinism of Local Models
+- Auch bei niedrigen Temperatureinstellungen (z.B. `0.1` in der `benchmark_config.yaml`) verhalten sich lokale Open-Weight Modelle (wie via Ollama / `llama.cpp`) aufgrund von Floating-Point-Berechnungen und Multithreading nicht zu 100% deterministisch.
+- Leichte Abweichungen in der Formatierung einer Modell-Antwort (z. B. das Aufbrechen einer großen Tabelle in mehrere kleine) verändern den Textfluss derart, dass der LLM-Judge (z.B. Claude Haiku) zu abweichenden Bewertungen (z.B. bei der Fehlergewichtung / "Severity") gelangen kann. Dies erklärt Score-Schwankungen bei wiederholten Tests desselben Moduls und untermauert die Notwendigkeit der Durchschnittsbildung über 5 Assets.
+
 ## Python Subprocesses & Virtual Environments
 - **Ausführung von Python-Skripten via `subprocess`**: Wenn innerhalb eines Python-Skripts (z. B. in Wartungs- oder CLI-Skripten) weitere Python-Prozesse aufgerufen werden, darf niemals hartkodiertes `"python"` als Befehl verwendet werden. Dies bricht oft aus dem aktiven Virtual Environment (`.venv`) aus.
 - Stattdessen immer `sys.executable` verwenden, um sicherzustellen, dass der neue Prozess denselben Interpreter und dieselbe Umgebung nutzt wie der aufrufende Prozess (z.B. `cmd = [sys.executable, "update_guide.py"]`).
