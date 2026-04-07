@@ -2,6 +2,21 @@
 
 ## ✅ COMPLETED
 
+### Language Compliance & Prompt Hardening (v3.3.0 – 07.04.26)
+- [x] **Language Compliance Pipeline:** `judge_prompt_builder.py` um `required_language` / `language_weight` erweitert. Bei gesetztem Asset-Metadatum `language: de` wird dem Judge automatisch ein LANGUAGE COMPLIANCE Rubrik-Block injiziert (Standard 20 % Gewichtung; Sprachverstoß − 1,5 Punkte, Sprachmix −0,5 Punkte).
+- [x] **judge_runner.py Forwarding:** `required_language` und `language_weight` werden aus dem Asset-Config-Dict an `build_prompts()` weitergeleitet.
+- [x] **judge_evaluator.py:** `language_mismatch`-Flag wird aus der Judge-Response extrahiert und im Ergebnis-Dict protokolliert.
+- [x] **Metacog Language Enforcement:** `reasoning_logic` Assets `metacog_001–005` mit `language: de` Metadatum und explizitem Deutsch-Constraint (`Antworte auf Deutsch.`) versehen.
+- [x] **Editorial Audit (30 Fixes, 21 Assets):** Systemweite Bereinigung aller Gemini-Artefakte über 5 Module:
+  - Token-Limit-Leak entfernt aus 13 Prompts (ux_writing, content_transformation, documentation_quality, code_quality)
+  - Höflichkeitsformel `Bitte` aus 13 imperativen WICHTIG/HINWEIS-Blöcken gestrichen
+  - Gemini-Pseudolabels `Mission:` / `TASK:` aus cultural_intelligence entfernt
+  - `Erfülle dabei strikt die folgenden Anforderungen:` → `Anforderungen (strikt einhalten):` in 5 ux_writing Assets
+- [x] **Kyrillischer Unicode-Artefakt-Fix:** 3 cyrillische Zeichen (U+043C м, U+0430 а, U+0442 т) in `asset_6a_german_tech_localization.yaml` durch lateinische Entsprechungen ersetzt. Systemweiter Scan: alle 43 übrigen Assets clean.
+- [x] **Golden Standard Grammatikfehler:** `ein negatives Entwicklung` → `eine negative Entwicklung` in `asset_6e_german_idioms.yaml`.
+- [x] **Stale Data Cleanup:** 492 obsolete Benchmark-Zeilen für geänderte Module aus `local_models_benchmark.csv`, `cloud_models_benchmark.csv`, `commercial_models_benchmark.csv` entfernt.
+- [x] **Audit-Infrastruktur:** `docs/audits/`-Verzeichnis angelegt; `AUDIT_2026-04-07_editorial.md` archiviert.
+
 ### Audit Fixes & Scoring Integrity (v3.2.2 Patch – 07.04.26)
 - [x] **Loop Detection in `llm_parser.py`:** Strukturelle Endlosschleifen (>50 Zeichen, >10× Wiederholung) werden erkannt und mit `> [!ERROR]`-Block ins Audit-Log injiziert.
 - [x] **Regex Fix `generate_review.py`:** Multi-Line-Alert-Blöcke (`> [!WARNING]`) werden durch `re.DOTALL` korrekt erfasst.
@@ -138,4 +153,4 @@ ______________________________________________________________________
 
 ______________________________________________________________________
 
-**Last Updated:** 2026-03-29 **Version:** 3.2.1 (Performance & Data-Cache Bugfixes) **Next Milestone:** Agentic Workflow & Web-UI
+**Last Updated:** 2026-04-07 **Version:** 3.3.0 (Language Compliance & Prompt Hardening) **Next Milestone:** Volldurchlauf aller lokalen Modelle / Leaderboard Update

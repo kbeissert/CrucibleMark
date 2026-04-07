@@ -595,4 +595,4 @@ make benchmark MODEL=your-test-model
 ______________________________________________________________________
 
 **Dokumenten-Version:** 3.1.0 (Überarbeitung März 2026)\
-**Kompatibel mit:** CrucibleMark v3.2.0+
+**Kompatibel mit:** CrucibleMark v3.3.0+
