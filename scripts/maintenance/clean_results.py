@@ -116,8 +116,34 @@ def clean_checkpoints(model: str = None, module_key: str = None, dry_run: bool =
                 except OSError as e:
                     print(f"     ❌ Fehler beim Löschen: {e}")
 
+def clean_model_output_directories(model: str, dry_run: bool = False):
+    """Löscht modellspezifische Verzeichnisse aus outputs/ (audit_logs, comparisons, runs)."""
+    if not model:
+        return
 
+    # Gleiche Normalisierung wie in generate_review.py für die Verzeichnisnamen
+    model_norm = model.replace('/', '_').replace('-', '_').lower()
 
+    print(f"🧹 Suche Ausgabeverzeichnisse für Modell '{model}'...")
+
+    for category in ["audit_logs", "comparisons", "runs"]:
+        base_dir = Path(f"outputs/{category}")
+        if not base_dir.exists():
+            continue
+
+        for item in base_dir.iterdir():
+            if not item.is_dir() or item.name == ".gitkeep":
+                continue
+
+            item_norm = item.name.replace('/', '_').replace('-', '_').lower()
+            if item_norm == model_norm or item_norm.endswith(f"_{model_norm}"):
+                print(f"   - Lösche {category}/{item.name}")
+                if not dry_run:
+                    import shutil
+                    try:
+                        shutil.rmtree(item)
+                    except OSError as e:
+                        print(f"     ❌ Fehler beim Löschen von {item.name}: {e}")
 
 def clean_csv(
     file_path: Path,
@@ -203,6 +229,10 @@ def main():
 
     # Checkpoints und Debug-Files bereinigen
     clean_checkpoints(model=args.model, module_key=args.module, dry_run=args.dry_run)
+
+    # Modellspezifische Verzeichnisse löschen (falls Modell angegeben)
+    if args.model:
+        clean_model_output_directories(model=args.model, dry_run=args.dry_run)
 
     # Dateien definieren
     files = [

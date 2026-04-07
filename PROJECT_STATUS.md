@@ -1,12 +1,14 @@
 # PROJECT_STATUS.md
 
-**Last Updated:** 2026-03-29
+**Last Updated:** 2026-04-07
 **Current Version:** 3.2.2 (3-CSV Architecture & SSOT Completion)
-**Status:** ✅ Production-Ready
+**Status:** ✅ Production-Ready (Scoring Integrity Patch in Progress)
 
 ______________________________________________________________________
 
 ## 🎯 Executive Summary
+
+> **Patch-Status 07.04.26:** Laufende Bugfix-Serie zur Herstellung einer stabilen, konsistenten Bewertungsgrundlage (keine Minor-Version). Betrifft: Loop Detection, Hard Constraint generisch + progressive Penalty, Language-Mismatch-Flag, Asset-Hardening (WCAG 2.2, Security Implicit Vulns), Two-Step Prompt Enforcement.
 
 CrucibleMark v3.2.2 schließt die vollständige Single Source of Truth Separation ab, indem die alte 2-CSV Architektur durch eine logisch trennscharfe 3-CSV Architektur ersetzt wurde. Das Framework unterscheidet im Ausführungs- und Evaluierungskontext nun strukturell perfekt zwischen lokalen VRAM-Modellen, Commercial API-Modellen und den neuen Cloud Open-Weights Proxies.
 

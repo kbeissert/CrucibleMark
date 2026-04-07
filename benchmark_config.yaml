@@ -1,402 +1,255 @@
-# ============================================================
-# CrucibleMark - Benchmark Global Configuration
-# ============================================================
-# Struktur der Datei:
-# 1. Pipeline: LLM Judge & Meta-Reviewer (Editor)
-# 2. Golden Standard (Referenz-Modell)
-# 3. Default Generation Limits (Token Fallback)
-# 4. Provider & Modelle (Commercial & Local)
-# 5. Output-Konfiguration & Module
-#
-# Hinweis: API-Keys gehören NICHT hierher, sondern in die .env Datei!
-
-# ============================================================
-# Runner Environment (Hardware & System Context)
-# ============================================================
 runner_environment:
-  active_profile: "apple_silicon_m4"
-
+  active_profile: apple_silicon_m4
   profiles:
     apple_silicon_m4:
-      type: "local_unified"
-      description: "Apple Silicon M4, 24GB Unified Memory (Shared RAM/VRAM)"
-      compute_unit: "CPU/Metal"
+      type: local_unified
+      description: Apple Silicon M4, 24GB Unified Memory (Shared RAM/VRAM)
+      compute_unit: CPU/Metal
       ram_gb: 24
     nvidia_rtx4090:
-      type: "local_dedicated"
-      description: "NVIDIA RTX 4090, 24GB VRAM, 64GB System RAM"
-      compute_unit: "CUDA"
+      type: local_dedicated
+      description: NVIDIA RTX 4090, 24GB VRAM, 64GB System RAM
+      compute_unit: CUDA
       ram_gb: 64
-
-# ------------------------------------------------------------
-# 1. Pipeline: LLM Judge & Meta-Reviewer
-# ------------------------------------------------------------
-# Konfiguration für die KI-gestützte Auswertung offener Textantworten.
 llm_judge:
   enabled: true
-  mode: complement           # 'complement' (Ergänzung zu Regex-Score) oder 'replace' (nur Judge)
-
+  mode: complement
   provider:
-    # Hier wird das Modell für den kritischen Judging-Prozess definiert.
-    # ANTROPHIC
-    name: anthropic          # PRIMARY: Claude Haiku (schnell, konsistent)
+    name: anthropic
     model: claude-haiku-4-5-20251001
-    max_tokens: 8192         # Hohes Limit (8192), um Parsing-Fehler bei komplexen Modulen zu vermeiden
-                             # (Wird bei älteren Modellen durch die Kaskade automatisch reguliert)
-
-    # GOOGLE (Alternativ, aktuell kommentiert)
-    # name: google
-    # model: gemini-2.5-pro
-    # max_tokens: 1024
-
+    max_tokens: 8192
   scoring:
-    scale: 5                 # Generelle Punkteskala (0-5)
-    require_reasoning: true  # Judge muss seine Bewertung zwingend vor dem JSON begründen (CoT)
-    fail_on_parse_error: false # Erlaubt Nullpunkte bei kaputtem Format, statt den gesamten Lauf abzubrechen
-
+    scale: 5
+    require_reasoning: true
+    fail_on_parse_error: false
   sub_scores:
-    # Detaillierte Teilnoten-Kriterien für den Meta-Reviewer
     task_compliance:
-      label: "Task Compliance"
-      description: "Wurde die Aufgabe vollständig und korrekt erfüllt?"
+      label: Task Compliance
+      description: "Wurde die Aufgabe vollst\xE4ndig und korrekt erf\xFCllt?"
       scale: 5
     output_quality:
-      label: "Output Quality"
-      description: "Ist der Output klar, präzise und professionell?"
+      label: Output Quality
+      description: "Ist der Output klar, pr\xE4zise und professionell?"
       scale: 5
     standard_adherence:
-      label: "Standard Adherence"
-      description: "Werden Fach-Standards und Best Practices korrekt angewendet?"
+      label: Standard Adherence
+      description: Werden Fach-Standards und Best Practices korrekt angewendet?
       scale: 5
-
-  # In diesen Modulen wird der LLM-Judge (neben Regex) immer aktiv herangezogen:
   applicable_modules:
-    - code_quality
-    - ux_writing
-    - documentation_quality
-    - content_transformation
-    - cultural_intelligence
-    - cli_benchmark
-    - reasoning
-
-# Konfiguration für den am Ende (make review-all) generierten analytischen Report.
+  - code_quality
+  - ux_writing
+  - documentation_quality
+  - content_transformation
+  - cultural_intelligence
+  - cli_benchmark
+  - reasoning
 llm_review:
   enabled: true
   provider:
-    name: google             # Gemini 2.5 Pro ist sehr stark bei großen Kontexten & Zusammenfassungen
+    name: google
     model: gemini-2.5-pro
     max_tokens: 8192
-
-# ------------------------------------------------------------
-# 2. Global Generation Limits & Token Fallback
-# ------------------------------------------------------------
-# Fallback-Werte für alle Benchmarks.
-# Werden verwendet, wenn ein Modul (config.yaml) keine eigenen Werte definiert.
 defaults:
   generation:
-    temperature: 0.1         # Niedrige Temperatur für deterministischere Benchmarks
+    temperature: 0.1
     repeat_penalty: 1.1
     top_k: 40
     top_p: 0.9
     num_predict: 8192
-
-  # Globale Token-Kaskade "Fast Fail" für API-Provider.
-  # Vermeidet Abbrüche, indem das Limit beim ersten "Too large"-Fehler automatisch halbiert wird.
   token_limits:
     default_max: 8192
-    fallback_cascade: [4096, 2048, 1024]
-
-# ------------------------------------------------------------
-# 4. Provider & Modell-Register
-# ------------------------------------------------------------
-# Alle aktivierten Provider können für Tests (-provider) verwendet werden.
-
+    fallback_cascade:
+    - 4096
+    - 2048
+    - 1024
 providers:
-
   commercial:
     mistral:
-      name: "Mistral AI"
-      api_type: "mistral"
-      model_type: "proprietary_api"
+      name: Mistral AI
+      api_type: mistral
+      model_type: proprietary_api
       enabled: true
-      env_var: "MISTRAL_API_KEY"
+      env_var: MISTRAL_API_KEY
       models:
-        - id: "mistral-large-latest"
-          name: "Mistral Large (123B)"
-          description: "Beste Reasoning-Performance"
-        - id: "mistral-medium-latest"
-          name: "Mistral Medium"
-          description: "Ausgeglichenes Preis/Leistung"
-
+      - id: mistral-large-latest
+        name: Mistral Large (123B)
+        description: Beste Reasoning-Performance
+      - id: mistral-medium-latest
+        name: Mistral Medium
+        description: Ausgeglichenes Preis/Leistung
     anthropic:
-      name: "Anthropic"
-      api_type: "anthropic"
-      model_type: "proprietary_api"
+      name: Anthropic
+      api_type: anthropic
+      model_type: proprietary_api
       enabled: true
-
-      # --- Token Limits ---
-      # max_tokens: Standardmäßig 8192.
-      # fallback_max_tokens: Einige Modelle verweigern 8192 Token. Das System schaltet in dem Fall automatisch auf 4096 um.
-      # Diese Werte können in Zukunft erhöht werden, wenn Modelle größere Output-Fenster erlauben.
       max_tokens: 8192
       fallback_max_tokens: 4096
-
-      # Der API-Key gehört NICHT hierher, sondern in die .env Datei oder .zshrc!
-      # Tragen Sie hier nur den Namen der Variable ein.
-      # Beispiel .env: ANTHROPIC_API_KEY=sk-ant-...
-      env_var: "ANTHROPIC_API_KEY"
+      env_var: ANTHROPIC_API_KEY
       models:
-        # Claude 4.6 Series (Feb 2026 - Current Generation, API-verified)
-        - id: "claude-sonnet-4-6"
-          name: "Claude 4.6 Sonnet"
-          description: "Ausgewogene Performance & Kosten (Golden Standard)"
-        - id: "claude-opus-4-6"
-          name: "Claude 4.6 Opus"
-          description: "Höchste Intelligenz, erweitertes Reasoning"
-        # Claude 4.5 Series (2025 - Legacy)
-        - id: "claude-sonnet-4-5-20250929"
-          name: "Claude 4.5 Sonnet"
-          description: "Legacy: State of the Art (2025)"
-        - id: "claude-opus-4-5-20251101"
-          name: "Claude 4.5 Opus"
-          description: "Legacy: Höchste Qualität (2025)"
-        - id: "claude-haiku-4-5-20251001"
-          name: "Claude 4.5 Haiku"
-          description: "Legacy: High-Speed Intelligence (2025)"
-        # Claude 3 Series (Legacy - 2024)
-        - id: "claude-3-haiku-20240307"
-          name: "Claude 3 Haiku"
-          description: "Legacy: Efficiency Model (2024)"
-
+      - id: claude-sonnet-4-6
+        name: Claude 4.6 Sonnet
+        description: Ausgewogene Performance & Kosten (Golden Standard)
+      - id: claude-opus-4-6
+        name: Claude 4.6 Opus
+        description: "H\xF6chste Intelligenz, erweitertes Reasoning"
+      - id: claude-sonnet-4-5-20250929
+        name: Claude 4.5 Sonnet
+        description: 'Legacy: State of the Art (2025)'
+      - id: claude-opus-4-5-20251101
+        name: Claude 4.5 Opus
+        description: "Legacy: H\xF6chste Qualit\xE4t (2025)"
+      - id: claude-haiku-4-5-20251001
+        name: Claude 4.5 Haiku
+        description: 'Legacy: High-Speed Intelligence (2025)'
     openai:
-      name: "OpenAI"
-      api_type: "openai"
-      model_type: "proprietary_api"
+      name: OpenAI
+      api_type: openai
+      model_type: proprietary_api
       enabled: true
-
-      env_var: "OPENAI_API_KEY"
+      env_var: OPENAI_API_KEY
       models:
-        - id: "o1"
-          name: "o1"
-          description: "Reasoning Flagship"
-        - id: "gpt-4o"
-          name: "GPT-4o"
-          description: "Robust Omni Model"
-        - id: "gpt-4o-mini"
-          name: "GPT-4o Mini"
-          description: "Fast Omni Model"
-        - id: "gpt-5.4"
-          name: "GPT-5.4"
-          description: "Neuestes Modell (März 2026)"
-        - id: "gpt-5.4-mini"
-          name: "GPT-5.4 Mini"
-          description: "Schnell & effizient (März 2026)"
-        - id: "gpt-5"
-          name: "GPT-5"
-          description: "Optimierte Leistung (2026)"
-        - id: "gpt-5-mini"
-          name: "GPT-5 Mini"
-          description: "Schnell & kosteneffizient"
-        # Hinweis: o3-Modelle erfordern OpenAI Tier 1+
-        - id: "o3-mini"
-          name: "o3 Mini"
-          description: "Reasoning (Deep Thinking)"
-
+      - id: o1
+        name: o1
+        description: Reasoning Flagship
+      - id: gpt-4o
+        name: GPT-4o
+        description: Robust Omni Model
+      - id: gpt-4o-mini
+        name: GPT-4o Mini
+        description: Fast Omni Model
+      - id: gpt-5.4
+        name: GPT-5.4
+        description: "Neuestes Modell (M\xE4rz 2026)"
+      - id: gpt-5.4-mini
+        name: GPT-5.4 Mini
+        description: "Schnell & effizient (M\xE4rz 2026)"
+      - id: gpt-5
+        name: GPT-5
+        description: Optimierte Leistung (2026)
+      - id: gpt-5-mini
+        name: GPT-5 Mini
+        description: Schnell & kosteneffizient
     google:
-      name: "Google Gemini"
-      api_type: "google"
-      model_type: "proprietary_api"
+      name: Google Gemini
+      api_type: google
+      model_type: proprietary_api
       enabled: true
-      # Der API-Key gehört NICHT hierher, sondern in die .env Datei oder .zshrc!
-      # Beispiel .env: GOOGLE_API_KEY=AIzaSy...
-      env_var: "GOOGLE_API_KEY"
+      env_var: GOOGLE_API_KEY
       models:
-        # Gemini 3 Series (Feb 2026 - Neuste Generation, Preview)
-        - id: "gemini-3.1-pro-preview"
-          name: "Gemini 3.1 Pro"
-          description: "Leistungsstärkstes Modell, multimodales Reasoning (2026, Preview)"
-        - id: "gemini-3-flash-preview"
-          name: "Gemini 3 Flash"
-          description: "Frontier-Performance zu einem Bruchteil der Kosten (Preview)"
-        # Gemini 2.5 Series (Stabil)
-        - id: "gemini-2.5-pro"
-          name: "Gemini 2.5 Pro"
-          description: "Fortschrittlichstes stabiles Modell, Reasoning & Coding"
-        - id: "gemini-2.5-flash"
-          name: "Gemini 2.5 Flash"
-          description: "Bestes Preis-Leistungs-Modell, latenzarm"
-        - id: "gemini-2.5-flash-lite"
-          name: "Gemini 2.5 Flash-Lite"
-          description: "Schnellstes & kostengünstigstes Modell der 2.5-Familie"
-        # Hinweis: Gemini 2.0 Flash & Flash-Lite sind eingestellt (deprecated Feb 2026)
-
+      - id: gemini-3.1-pro-preview
+        name: Gemini 3.1 Pro
+        description: "Leistungsst\xE4rkstes Modell, multimodales Reasoning (2026,\
+          \ Preview)"
+      - id: gemini-3-flash-preview
+        name: Gemini 3 Flash
+        description: Frontier-Performance zu einem Bruchteil der Kosten (Preview)
+      - id: gemini-2.5-pro
+        name: Gemini 2.5 Pro
+        description: Fortschrittlichstes stabiles Modell, Reasoning & Coding
     xai:
-      name: "xAI (Grok)"
-      api_type: "xai"
-      model_type: "proprietary_api"
-      enabled: true  # Standardmäßig deaktiviert, Aktivierung via Config
-      # Der API-Key gehört in die .env Datei!
-      # Beispiel .env: XAI_API_KEY=xai-...
-      env_var: "XAI_API_KEY"
+      name: xAI (Grok)
+      api_type: xai
+      model_type: proprietary_api
+      enabled: true
+      env_var: XAI_API_KEY
       models:
-        # Grok 3 Series (Current Gen)
-        - id: "grok-3"
-          name: "Grok 3"
-          description: "Starkes Reasoning & Wissen"
-        - id: "grok-3-mini"
-          name: "Grok 3 Mini"
-          description: "Effizient & schnell"
-
+      - id: grok-3
+        name: Grok 3
+        description: Starkes Reasoning & Wissen
+      - id: grok-3-mini
+        name: Grok 3 Mini
+        description: Effizient & schnell
     groq:
-      name: "Groq Cloud"
-      api_type: "groq"
-      model_type: "open_weights_cloud"
+      name: Groq Cloud
+      api_type: groq
+      model_type: open_weights_cloud
       enabled: true
-      # Der API-Key gehört in die .env Datei!
-      env_var: "GROQ_API_KEY"
+      env_var: GROQ_API_KEY
       models:
-        # --- AKTIVIERTE MODELLE ---
-        - id: "meta-llama/llama-4-scout-17b-16e-instruct"
-          name: "Llama 4 Scout (17B) Instruct"
-        - id: "llama-3.3-70b-versatile"
-          name: "Llama 3.3 (70B) Versatile"
-        # - id: "llama-3.1-8b-instant"
-        #   name: "Llama 3.1 (8B) Instant"
-        - id: "qwen/qwen3-32b"
-          name: "Qwen 3 (32B) via Groq"
-        #
-        # - id: "openai/gpt-oss-120b"
-        #   name: "GPT-OSS (120B) via Groq"
-        #
-        # - id: "openai/gpt-oss-20b"
-        #   name: "GPT-OSS (20B) via Groq"
-        #
-        # - id: "groq/compound"
-        #   name: "Groq Compound"
-        #
-        # - id: "groq/compound-mini"
-        #   name: "Groq Compound Mini"
-        #
-        - id: "moonshotai/kimi-k2-instruct"
-          name: "Kimi K2 Instruct via Groq"
-        #
-        # - id: "allam-2-7b"
-        #   name: "Allam 2 (7B) via Groq"
-
+      - id: meta-llama/llama-4-scout-17b-16e-instruct
+        name: Llama 4 Scout (17B) Instruct
+      - id: llama-3.3-70b-versatile
+        name: Llama 3.3 (70B) Versatile
+      - id: qwen/qwen3-32b
+        name: Qwen 3 (32B) via Groq
+      - id: moonshotai/kimi-k2-instruct
+        name: Kimi K2 Instruct via Groq
     ollama_cloud:
-      name: "Ollama (Cloud Proxies)"
-      api_type: "ollama"
-      model_type: "open_weights_cloud"
+      name: Ollama (Cloud Proxies)
+      api_type: ollama
+      model_type: open_weights_cloud
       enabled: true
       auto_discover: true
-      models_filter: "cloud" # Custom marker for UI/Discovery logic if needed
-
+      models_filter: cloud
   local:
-    # Globale Konfiguration für alle lokalen Ollama-Modelle
-    # Hier definierst du Hardware-Limits deines Systems
     config:
-      # Context Window (RAM-abhängig):
-      # - 8192  (8k)  : Standard für 8GB RAM
-      # - 16384 (16k) : Empfohlen für 16GB RAM
-      # - 32768 (32k) : Empfohlen für 24GB+ RAM (und Reasoning Models)
       context_window: 32768
-
-      # Default Generation Profile
       default_temperature: 0.1
-
     ollama_local:
-      name: "Ollama (Local)"
-      api_type: "ollama"
-      # Modelle werden dynamisch von Ollama abgefragt
+      name: Ollama (Local)
+      api_type: ollama
       auto_discover: true
-      models_filter: "local"
-
-# Output Configuration
-# --------------------
+      models_filter: local
 output:
-  directory: "benchmark_scores"
-  commercial_csv: "benchmark_scores/commercial_models_benchmark.csv"
-  cloud_models_csv: "benchmark_scores/cloud_models_benchmark.csv"
-  local_models_csv: "benchmark_scores/local_models_benchmark.csv"
-  leaderboard_csv: "benchmark_scores/benchmark_leaderboard.csv"
-  web_export_dir: "../cruciblemark-web/src/_data/raw/"  # Zielverzeichnis für den Web-Export
-  streaming_output_commercial_providers: false  # false = keine live-response im Terminal
-
-# Logging Configuration
-# ---------------------
+  directory: benchmark_scores
+  commercial_csv: benchmark_scores/commercial_models_benchmark.csv
+  cloud_models_csv: benchmark_scores/cloud_models_benchmark.csv
+  local_models_csv: benchmark_scores/local_models_benchmark.csv
+  leaderboard_csv: benchmark_scores/benchmark_leaderboard.csv
+  web_export_dir: ../cruciblemark-web/src/_data/raw/
+  streaming_output_commercial_providers: false
 logging:
-  file_path: "logs/crucible.log"
-  console_level: "INFO"  # DEBUG, INFO, WARNING, ERROR
-  file_level: "DEBUG"    # DEBUG captures everything for troubleshooting
-
-
-# ============================================================
-# 5. Benchmarking-Module
-# ============================================================
-# Hier werden die einzelnen Benchmarking-Disziplinen (Module) aktiviert.
-# Du kannst spezifische Tests an- oder abschalten, um gezielt
-# bestimmte Fähigkeiten zu prüfen oder Zeit zu sparen.
-# Nicht benötigte Module setzt du einfach auf 'enabled: false'.
-
+  file_path: logs/crucible.log
+  console_level: INFO
+  file_level: DEBUG
 modules:
-
-  # --- HARD SKILLS: Coding & Skripting ---
   code_quality:
-    path: "benchmark_modules/code_quality"
-    enabled: true           # Testet sauberes, deterministisches Programmieren
-
+    path: benchmark_modules/code_quality
+    enabled: true
   cli_benchmark:
-    path: "benchmark_modules/cli_benchmark"
-    enabled: true           # Prüft Command-Line-Skripting (Bash, Terminal)
-
-  # --- CORE METRICS: Kognition & Logik ---
+    path: benchmark_modules/cli_benchmark
+    enabled: true
   reasoning:
-    path: "benchmark_modules/reasoning_logic"
-    enabled: true           # Kognitiver Stresstest (Logikrätsel, Chain-of-Thought)
-
-  # --- SOFT SKILLS: Ghostwriting & Kommunikation ---
+    path: benchmark_modules/reasoning_logic
+    enabled: true
   ux_writing:
-    path: "benchmark_modules/ux_writing"
-    enabled: true          # Testet UI-Texte, Microcopy & Benutzerführung
-
+    path: benchmark_modules/ux_writing
+    enabled: true
   documentation_quality:
-    path: "benchmark_modules/documentation_quality"
-    enabled: true          # Generierung von sauberem Markdown und API-Docs
-
+    path: benchmark_modules/documentation_quality
+    enabled: true
   content_transformation:
-    path: "benchmark_modules/content_transformation"
-    enabled: true          # Testet Stil-Adaption, Umschreiben und Tone of Voice
-
+    path: benchmark_modules/content_transformation
+    enabled: true
   cultural_intelligence:
-    path: "benchmark_modules/cultural_intelligence"
-    enabled: true          # Bewertet Empathie, kulturelle Nuancen und Tonalität
-
-  # --- SONSTIGE / SPEZIAL-MODULE ---
+    path: benchmark_modules/cultural_intelligence
+    enabled: true
   political_compass:
-    path: "benchmark_modules/political_compass"
-    enabled: true          # Ermittelt die ideologische Ausrichtung (60+ Fragen)
-
-# ============================================================
-# Leaderboard & Scoring Tiers
-# ============================================================
+    path: benchmark_modules/political_compass
+    enabled: false
 scoring_tiers:
   platinum:
     threshold: 95.0
-    badge: "💎 Platinum"
-    prompt_description: "- **Ab {threshold}% (Platin-Standard, SOTA Elite):** Absolute Spitzenliga."
+    badge: "\U0001F48E Platinum"
+    prompt_description: '- **Ab {threshold}% (Platin-Standard, SOTA Elite):** Absolute
+      Spitzenliga.'
   gold:
     threshold: 80.0
-    badge: "🏆 Gold"
-    prompt_description: "- **{threshold}% bis {next_threshold}% (Gold-Standard, Excellent/Good):** Hervorragende, verlässliche Modelle."
+    badge: "\U0001F3C6 Gold"
+    prompt_description: "- **{threshold}% bis {next_threshold}% (Gold-Standard, Excellent/Good):**\
+      \ Hervorragende, verl\xE4ssliche Modelle."
   silver:
     threshold: 65.0
-    badge: "🥈 Silver"
-    prompt_description: "- **{threshold}% bis {next_threshold}% (Silber-Standard, Adequate):** Sehr solide Basis. The model performs adequately."
+    badge: "\U0001F948 Silver"
+    prompt_description: '- **{threshold}% bis {next_threshold}% (Silber-Standard,
+      Adequate):** Sehr solide Basis. The model performs adequately.'
   bronze:
     threshold: 50.0
-    badge: "🥉 Bronze"
-    prompt_description: "- **{threshold}% bis {next_threshold}% (Bronze-Standard):** Akzeptable Leistung mit Einschränkungen."
+    badge: "\U0001F949 Bronze"
+    prompt_description: "- **{threshold}% bis {next_threshold}% (Bronze-Standard):**\
+      \ Akzeptable Leistung mit Einschr\xE4nkungen."
   standard:
     threshold: 0.0
-    badge: "⚖️ Standard"
-    prompt_description: "- **Unter {next_threshold}% (Standard/Fail):** Suboptimale Leistung, oft ungeeignet für komplexe Agenten-Aufgaben."
+    badge: "\u2696\uFE0F Standard"
+    prompt_description: "- **Unter {next_threshold}% (Standard/Fail):** Suboptimale\
+      \ Leistung, oft ungeeignet f\xFCr komplexe Agenten-Aufgaben."

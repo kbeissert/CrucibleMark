@@ -27,7 +27,14 @@ prompt: |
   Eingabe-Szenarien:
   {input_text}
 
-  WICHTIG: Bitte führe zuerst die ANALYSE durch (Schritt 1) und nenne explizit die identifizierten Probleme, bevor du die Optimierung erstellst (Schritt 2). Die vorangestellte Analyse sollte extrem kurz und prägnant sein (max. 3-4 Sätze), um Output-Token zu sparen.
+  **PFLICHTFORMAT – Halte diese Reihenfolge strikt ein:**
+
+  **[SCHRITT 1 – ANALYSE]**
+  Identifiziere die Probleme aller Labels in 3–4 Sätzen. Fasse dich extrem kurz.
+  Beginne erst mit Schritt 2, wenn Schritt 1 vollständig abgeschlossen ist.
+
+  **[SCHRITT 2 – OPTIMIERUNG]**
+  Erstelle die Markdown-Tabelle mit allen optimierten Labels.
 
   Erfülle dabei strikt die folgenden Anforderungen:
   {requirements}

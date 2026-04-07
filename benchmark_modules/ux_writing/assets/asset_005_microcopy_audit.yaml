@@ -94,6 +94,10 @@ testdata:
       explanation: "Bei Gesundheitsdaten ist 'Daten gehen verloren' zu schwach. Export anbieten oder Konsequenz klarer machen."
       keywords: ["export", "sichern", "unwiderruflich", "konsequenz"]
 
+constraints:
+  max_expected_words: 150
+  max_expected_words_note: "Die Analyse (Schritt 1) soll extrem kompakt bleiben (3-4 Sätze). Erlaubt bis zu 162 Wörter (8% Toleranz). Alles darüber: 40% Abzug."
+
 scoring:
   total_points: 100
 

@@ -125,6 +125,10 @@ prompt: |
 
   HINWEIS ZUR LÄNGE UND TOKEN-LIMITIERUNGEN: Halte die vorangestellte Analyse extrem kompakt (max. 3-4 Sätze). Stelle sicher, dass du das Skript inklusive "Troubleshooting", "Conclusion/CTA" und "Easter Egg" auf jeden Fall abschließt. Fasse dich an den richtigen Stellen präzise, um abrupte Abbrüche durch Output-Limits zu vermeiden!
 
+constraints:
+  max_expected_words: 600
+  max_expected_words_note: "Erlaubt bis zu 650 Wörter (8% Toleranz). Alles darüber: 40% Abzug."
+
 scoring:
   total_points: 100
 

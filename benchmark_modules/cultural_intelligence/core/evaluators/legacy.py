@@ -308,12 +308,32 @@ class LegacyEvaluator:
                 ),
                 2,
             ),
+            (
+                "drop the ball",
+                lambda t: any(
+                    x in t
+                    for x in [
+                        "ins klo greifen",
+                        "sich vertun",
+                        "bock schießen",
+                        "fehler machen",
+                        "versagt",
+                        "vermasselt",
+                        "patzer",
+                        "den ball fallen lassen",
+                        "leisten",
+                        "scheitern",
+                    ]
+                )
+                and "drop the ball" not in t,
+                2,
+            ),
         ]
         for idiom_name, check_fn, points in idiom_checks:
             if check_fn(text):
-                score += points / 10.0
+                score += points / 12.0
                 hits += 1
             else:
                 feedback.append(f"✗ {idiom_name}")
-        feedback.insert(0, f"Translated {hits}/5 Idioms")
+        feedback.insert(0, f"Translated {hits}/6 Idioms")
         return min(1.0, score), feedback

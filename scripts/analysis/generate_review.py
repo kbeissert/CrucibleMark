@@ -44,7 +44,7 @@ def get_model_metrics(model_name: str) -> dict:
             for row in reader:
                 csv_model = row.get("Model Name", "")
                 norm_csv = normalize(csv_model)
-                if norm_target == norm_csv or norm_target.startswith(f"{norm_csv}_"):
+                if norm_target == norm_csv or norm_target.startswith(f"{norm_csv}_") or norm_target.endswith(f"_{norm_csv}"):
                     return row
     except Exception:
         pass
@@ -89,7 +89,7 @@ def process_model_review(model_dir: Path, csv_data: str, client: LLMClient, prov
             judge_section_match = re.search(r'## 3\. Evaluation.*', content, re.DOTALL)
 
             # Suche nach System-Infos und Warnungen
-            system_info_match = re.search(r'> \[!(?:WARNING|CAUTION)\].*', content)
+            system_info_match = re.search(r'> \[!(?:WARNING|CAUTION|ERROR)\].*?(?=\n\n|$)', content, re.DOTALL)
             system_info_text = f"\n\n{system_info_match.group(0)}" if system_info_match else ""
 
             # Suche explizit nach harten Safety-Filter Blöcken, die in "2. Model Response" auftauchen
@@ -196,6 +196,9 @@ def process_model_review(model_dir: Path, csv_data: str, client: LLMClient, prov
             prompt_template = """Fehler beim Laden des Prompts."""
 
     model_metrics = get_model_metrics(tested_model_name)
+    if not model_metrics:
+        print(f"👻 Ghost Model erkannt oder keine Metriken für {tested_model_name} in 'benchmark_leaderboard_detailed.csv' gefunden, überspringe Review-Generierung.")
+        return
 
     def safe_round(val):
         try:
@@ -276,10 +279,10 @@ def main():
     parser = argparse.ArgumentParser(description="Generiert qualitative LLM-Reviews basierend auf den Audit-Logs.")
     parser.add_argument("-m", "--model", type=str, help="Generiere den Review nur für dieses spezifische Modell (z.B. claude-haiku-4-5-20251001)")
     parser.add_argument("-a", "--all", action="store_true", help="Generiere Reviews für alle Modelle mit gefundenen Audit-Logs")
-    parser.add_argument("-t", "--type", type=str, choices=["benchmark", "bias"], default="benchmark", help="Art des Reviews: 'benchmark' (standard) oder 'bias'")
+    parser.add_argument("-t", "--type", type=str, choices=["benchmark", "bias", "provider"], default="benchmark", help="Art des Reviews: 'benchmark' (standard), 'bias' oder 'provider'")
     args = parser.parse_args()
 
-    if not args.model and not args.all:
+    if not args.model and not args.all and args.type != "provider":
         print("❌ Bitte gib ein Modell an (-m <modell>) oder nutze --all für alle Modelle.")
         sys.exit(1)
 
@@ -305,6 +308,50 @@ def main():
     csv_data = ""
     if args.type == "benchmark":
         csv_data = collect_data()
+
+    if args.type == "provider":
+        print("📊 Lade Provider Leaderboard...")
+        csv_path = ROOT_DIR / "benchmark_scores" / "provider_leaderboard.csv"
+        if not csv_path.exists():
+            print("❌ provider_leaderboard.csv nicht gefunden. Bitte erst generate_provider_stats.py ausführen.")
+            return
+
+        with open(csv_path, "r", encoding="utf-8") as f:
+            csv_data = f.read()
+
+        with open(ROOT_DIR / "config/meta_reviewer_prompt.yaml", "r", encoding="utf-8") as f:
+            import yaml
+            prompt_config = yaml.safe_load(f)
+
+        prompt = prompt_config.get("provider_reviewer", {}).get("system_instructions", "")
+        if not prompt:
+            prompt = prompt_config.get("meta_reviewer", {}).get("provider_reviewer", {}).get("system_instructions", "")
+
+        if not prompt:
+            print("❌ Fehler: 'provider_reviewer' Prompt in config/meta_reviewer_prompt.yaml nicht gefunden.")
+            return
+
+        prompt = prompt.replace("{csv_data}", csv_data)
+
+        print("🧠 Generiere Provider Landscape Report (dies kann einen Moment dauern)...")
+        try:
+            response = client.query(
+                model=model_id,
+                prompt=prompt,
+                provider=provider,
+                temperature=0.7
+            )
+
+            out_file = ROOT_DIR / "outputs" / "comparisons" / "provider_landscape_review.md"
+            out_file.parent.mkdir(parents=True, exist_ok=True)
+            with open(out_file, "w", encoding="utf-8") as f:
+                f.write(response)
+
+            print(f"✅ Provider Review gespeichert unter: {out_file.relative_to(ROOT_DIR)}")
+            return
+        except Exception as e:
+            print(f"❌ Fehler bei der Generierung: {e}")
+            return
 
     audit_base_dir = ROOT_DIR / "outputs" / "audit_logs"
 

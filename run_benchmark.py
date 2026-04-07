@@ -298,7 +298,7 @@ class BenchmarkRunner:
         })
 
         if is_local:
-            runner = UnifiedBenchmarkRunner(audit_mode=audit_mode)
+            runner = UnifiedBenchmarkRunner(force=force, audit_mode=audit_mode)
             results = runner.run_benchmark(
                 provider, model, benchmark_info, num_runs=num_runs
             )

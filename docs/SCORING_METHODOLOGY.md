@@ -185,6 +185,62 @@ codequality001:
 
 ---
 
+## ⚠️ Hard Constraints & Automatische Penalties
+
+Bestimmte Tasks definieren harte Anforderungen, die unabhängig vom inhaltlichen Score bestraft werden. Die Constraints werden über das `constraints`-Feld im Asset-YAML gesteuert.
+
+### Wortanzahl-Constraint (`max_expected_words`)
+
+Aktiv für: `ct003` (150W), `ct004` (600W), `ux_writing_005` (150W).
+
+Die Penalty ist **progressiv gestaffelt** und nicht linear – ein leichtes Überschreiten (Rundungsfehler) wird mild bestraft, ein massives Ignorieren der Vorgabe hart:
+
+| Überschreitung (word\_count / max\_words) | Penalty | Tier-Label im Audit-Log |
+|---|---|---|
+| ≤ 120% | **0%** | – (Toleranzzone) |
+| 121–200% | **–20%** | Mild Overshoot (>120%) |
+| 201–300% | **–40%** | Clear Violation (>200%) |
+| > 300% | **–60%** | Constraint Ignored (>300%) |
+
+```yaml
+# In asset_XXX.yaml
+constraints:
+  max_expected_words: 150
+```
+
+Die Penalty wird auf den `total_achieved`-Score (CT-Evaluator) bzw. `total_score` (UX-Evaluator) angewendet, **nachdem** alle inhaltlichen Kriterien gewertet wurden. Eine 0 ist damit nicht möglich – inhaltliche Qualität bleibt unabhängig messbar.
+
+Im Audit-Log erscheint der Constraint-Trigger als:
+```
+> [!WARNING]
+> **[HARD CONSTRAINT VIOLATION – Constraint Ignored (>300%)]** The model ignored the
+> explicit word count limit of 150 words. Word count detected: 674 (449% of limit).
+> An automatic 60% deduction (-XX.XX pts) has been applied.
+```
+
+### Sprach-Mismatch (`language_mismatch`)
+
+Falls ein Asset `metadata.language: de` deklariert, prüft der `unified_runner.py` die Antwort des Modells nach `score_response()` per heuristischer DE/EN-Marker-Frequenz:
+
+- DE-Marker: `der`, `die`, `das`, `und`, `ist`, `mit`, `für`, u. a.
+- EN-Marker: `the`, `and`, `for`, `with`, `that`, `this`, `are`, u. a.
+
+**Trigger-Bedingung:** `en_count > de_count × 2` und `en_count > 8` (bei Antworten > 50 Wörter).
+
+Bei Auslösung wird `result["status"] = "language_mismatch"` gesetzt und ein `> [!WARNING] [LANGUAGE MISMATCH]`-Block ins Audit-Log geschrieben. Die Penalty ist **kein Score-Abzug**, sondern ein isolierter Status-Flag – ein Modell kann gleichzeitig `correct_length` und `language_mismatch` sein; beide Dimensionen werden getrennt erfasst.
+
+### Vollständige Status-Codes
+
+| Status | Beschreibung |
+|---|---|
+| `success` | Reibungsloser Lauf |
+| `error` | Technischer Fehler (API, Parse) |
+| `truncated` | Antwort kürzer als Mindestlänge – Modell hat abgebrochen |
+| `verbose_outlier` | Antwort massiv über Durchschnitt – mögliche Loop-Halluzination |
+| `language_mismatch` | Antwort in falscher Sprache (EN auf DE-Task) |
+
+---
+
 ## 📈 v1.0 Fix-Historie
 
 ```text

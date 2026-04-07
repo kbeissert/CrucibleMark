@@ -1,7 +1,7 @@
 .PHONY: \
 	help install install-dev \
 	benchmark political-compass political-compass-safe benchmark-political-compass audit-bias benchmark-cross-model benchmark-auto benchmark-human run-benchmark \
-	review leaderboard \
+	review leaderboard provider-stats \
 	validate validate-single validate-structure test diff-results analyze-costs update-prices \
 	list-models judge-health list-modules create-module \
 	web-export web-export-dev \
@@ -34,6 +34,7 @@ help:
 	@echo "=== Reporting & Standards ==="
 	@echo "  make leaderboard          Generate Leaderboard CSV"
 	@echo "  make review               📰 Generate Review (Flags: MODEL=name, ALL=1, TYPE=bias)"
+	@echo "  make provider-stats       📊 System-Latenzen analysieren (Ping vs. TTFB) und Provider-Review erstellen"
 	@echo ""
 	@echo "=== Validation & QA ==="
 	@echo "  make validate             Validate test assets"
@@ -100,6 +101,12 @@ run-benchmark:
 	$(PYTHON) run_benchmark.py
 
 # === REPORTING & STANDARDS ===
+
+provider-stats:
+	@echo "📊 Aggregating Provider Stats (Ping vs System Speed)..."
+	$(PYTHON) scripts/analysis/generate_provider_stats.py
+	@echo "📰 Generating Provider Landscape Review..."
+	$(PYTHON) scripts/analysis/generate_review.py -t provider
 
 review:
 	@if [ -n "$(ALL)" ]; then \

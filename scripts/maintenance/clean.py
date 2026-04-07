@@ -39,8 +39,11 @@ def clean_comparisons_and_audit():
         target_dir = ROOT_DIR / "outputs" / dir_name
         if target_dir.exists():
             for p in target_dir.iterdir():
-                if p.is_file() and p.name != ".gitkeep":
-                    p.unlink()
+                if p.name != ".gitkeep":
+                    if p.is_file():
+                        p.unlink()
+                    elif p.is_dir():
+                        shutil.rmtree(p)
     print("   -> Reports und Runs bereinigt.")
 
 def clean_all_csvs():

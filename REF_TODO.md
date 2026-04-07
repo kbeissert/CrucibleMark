@@ -2,6 +2,15 @@
 
 ## ✅ COMPLETED
 
+### Audit Fixes & Scoring Integrity (v3.2.2 Patch – 07.04.26)
+- [x] **Loop Detection in `llm_parser.py`:** Strukturelle Endlosschleifen (>50 Zeichen, >10× Wiederholung) werden erkannt und mit `> [!ERROR]`-Block ins Audit-Log injiziert.
+- [x] **Regex Fix `generate_review.py`:** Multi-Line-Alert-Blöcke (`> [!WARNING]`) werden durch `re.DOTALL` korrekt erfasst.
+- [x] **Hard Constraint generisch ausgerollt:** `constraints.max_expected_words` in YAML aktiviert für `ct003` (150W), `ct004` (600W) und `ux_writing_005` (150W). Constraint-Prüfung in beiden Evaluatoren (CT + UX) generisch per YAML-Read.
+- [x] **Progressive Penalty-Stufen:** Flat-40%-Abzug durch dreistufige Logik ersetzt: Toleranzzone ≤120%; >120%→−20%, >200%→−40%, >300%→−60% (`tier_label` im Audit-Log dokumentiert).
+- [x] **Language-Mismatch Auto-Flag:** Heuristische DE/EN Marker-Frequenzprüfung nach `score_response()` in `unified_runner.py`; setzt `status=language_mismatch` + `> [!WARNING]`-Block.
+- [x] **ux_writing_002 Two-Step Enforcement:** Prompt um explizite `[SCHRITT 1 – ANALYSE]` / `[SCHRITT 2 – OPTIMIERUNG]` Header ergänzt.
+- [x] **Code Quality Asset Hardening:** `asset_001_wcag_audit.yaml` um WCAG 2.2 Kriterien (Focus Not Obscured 2.4.11, Target Size 2.5.8) erweitert; `asset_002_security_audit.yaml` um 5 implizite Schwachstellen (Mail Header Injection, SQL Injection, User Enumeration, Unsafe Cookies) ergänzt.
+
 ### Data Architecture & Meta-Review (v3.2.2)
 - [x] **3-CSV Data Separation:** Migration der fehleranfälligen Fallbacks aus der 2-CSV Form auf exakte SSOT-Aufspaltung (`cloud_models_benchmark.csv`).
 - [x] **Context Injection Pipeline:** Meta-Reviewer Logik um das Modul `cloud_open_weights` ausgebaut, um Hardware-Fehlurteile bei API-Proxies zu verhindern.

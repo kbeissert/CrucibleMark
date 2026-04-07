@@ -32,26 +32,16 @@ from utils.scoring.llm_judge.providers.base_provider import JudgeProviderRespons
 
 def _make_config(
     provider_name: str = "anthropic",
-    with_fallback: bool = False,
-    fallback_name: str = "ollama",
     scale: int = 5,
 ) -> LLMJudgeConfig:
-    fallback = None
-    if with_fallback:
-        fallback = FallbackProviderConfig(
-            name=fallback_name,  # type: ignore[arg-type]
-            model="qwen2.5:14b",
-            base_url=OLLAMA_DEFAULT_BASE_URL,
-        )
     return LLMJudgeConfig(
         enabled=True,
         provider=ProviderConfig(
             name=provider_name,  # type: ignore[arg-type]
             model="judge-model",
             base_url=OLLAMA_DEFAULT_BASE_URL if provider_name == "ollama" else None,
-            fallback=fallback,
         ),
-        scoring=ScoringConfig(scale=scale),
+        scoring=ScoringConfig(scale=scale),  # type: ignore[call-arg]
     )
 
 
@@ -74,7 +64,7 @@ def _inject_provider(runner: JudgeRunner, mock: MagicMock) -> None:
 
 def _inject_fallback(runner: JudgeRunner, mock: MagicMock) -> None:
     """Directly inject a mock as the fallback provider."""
-    runner._fallback_provider = mock
+    runner._fallback_provider = mock  # type: ignore[attr-defined]
 
 
 # ---------------------------------------------------------------------------

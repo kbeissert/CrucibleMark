@@ -41,14 +41,18 @@ prompt: |
   1. **Markierte Issues**: TODOs oder Notizen im Code (bestätige diese).
   2. **Offensichtliche Issues**: Standard WCAG-Verstöße.
   3. **Subtile Issues**: Semantische Probleme, die Screen-Reader betreffen.
-  4. **Experten Issues**: Komplexe Anforderungen (Status Messages, Target Size).
+  4. **Experten Issues**: Komplexe WCAG 2.2 Anforderungen (Status Messages, Target Size, Focus Not Obscured).
 
   ## Deine Aufgabe
-  Identifiziere **ALLE** Accessibility-Probleme. Priorisiere sie nach Schweregrad.
+  Identifiziere **ALLE** Accessibility-Probleme. Priorisiere sie nach Schweregrad. Achte dabei explizit auf die neuen Kriterien aus WCAG 2.2.
 
   **HTML-Komponente:**
 
   ```html
+  <header style="position: sticky; top: 0; background: white; z-index: 100;">
+    <h1>Shop</h1>
+  </header>
+
   <div class="product-card" onclick="window.location='/product/123'">
     <div class="badge">NEU</div>
 
@@ -101,7 +105,7 @@ prompt: |
      - **Schweregrad**
      - **Lösung/Code-Snippet**
 
-  **HINWEIS:** Halte die Fehlerbeschreibungen und Lösungen in der Tabelle extrem kurz und präzise (maximal 1-2 Sätze pro Fehler), um Token-Limits nicht zu überschreiten.
+  **HINWEIS:** Halte Beschreibungen prägnant (2-3 Sätze inkl. Code-Snippet), und liste alle gefundenen Probleme vollständig auf.
 
 # ============================================================
 # Test-Daten (Issues zum Erkennen)
@@ -168,6 +172,11 @@ test_data:
       type: "expert"
       explanation: "Der 'Mehr' Link ist wahrscheinlich zu klein (< 24x24px) für Touch-Targets (WCAG 2.5.8)."
 
+    - issue: "Focus Not Obscured"
+      severity: "medium"
+      type: "expert"
+      explanation: "Der sticky Header kann das fokussierte Element verdecken (WCAG 2.4.11). Erfordert scroll-margin-top."
+
 # ============================================================
 # Scoring-Konfiguration
 # ============================================================
@@ -224,12 +233,16 @@ scoring:
     # 4. Expert Issues (15 Punkte)
     expert_issues:
       - issue: "Status Message (Live Region)"
-        points: 8
+        points: 5
         keywords: ["status", "role", "live region", "aria-live", "dynamisch", "verfügbarkeit"]
 
-      - issue: "Touch Target Size"
-        points: 7
-        keywords: ["touch", "target", "größe", "klickfläche", "24px", "44px", "mobil"]
+      - issue: "Touch Target Size (WCAG 2.2 2.5.8)"
+        points: 5
+        keywords: ["touch", "target", "größe", "klickfläche", "24px", "44px", "mobil", "2.5.8"]
+
+      - issue: "Focus Not Obscured (WCAG 2.2 2.4.11)"
+        points: 5
+        keywords: ["obscured", "sticky", "verdeckt", "scroll-margin", "focus", "fokus", "2.4.11"]
 
   solution_quality:
     weight: 30

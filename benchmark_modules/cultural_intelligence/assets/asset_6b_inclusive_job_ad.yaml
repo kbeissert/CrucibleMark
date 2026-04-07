@@ -18,6 +18,10 @@ prompt: |
   Original Text:
   "We need a Ninja with Manpower! If you are a Craftsman who wants to kill the competition and dominate the market, join us. He must be a Work-hard-play-hard type. Don't be a guy who complains. We need manly courage."
 
+constraints:
+  max_expected_length: 2500
+  max_expected_length_note: "Job posting rewrite, not explanation. >2500 chars = wrong format."
+
 scoring:
   criteria:
     weight: 100

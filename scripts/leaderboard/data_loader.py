@@ -104,6 +104,8 @@ def _process_csv(dfs: List[pd.DataFrame], filepath: Path, type_label: str) -> No
                 else:
                     source_context = "local"
 
+                df_new["source"] = source_context
+
                 if "provider" in df_new.columns:
                     df_new["type"] = df_new.apply(
                         lambda row: get_model_category(row["model"], source_context, provider=row.get("provider")),
@@ -142,6 +144,28 @@ def load_benchmark_data() -> pd.DataFrame:
         return pd.DataFrame()
 
     df = pd.concat(dfs, ignore_index=True)
+
+    # Bugfix: Enforce exact routing boundary!
+    # Cloud models must EXCLUSIVELY come from cloud_models_benchmark.csv
+    # Local models must EXCLUSIVELY come from local_models_benchmark.csv
+    # Commercial from commercial_models_benchmark.csv
+    valid_mask = (
+        ((df["type"] == "Commercial") & (df["source"] == "commercial")) |
+        ((df["type"] == "Cloud-Modelle (Open-Weights)") & (df["source"] == "cloud")) |
+        ((df["type"] == "Local") & (df["source"] == "local"))
+    )
+    # Behalte Backup-Kategorien wie 'Local Cloud' (falls sie existieren), oder ignoriere?
+    # Es ist robuster, einfach zu filtern:
+    df = df[
+        (df["type"] != "Cloud-Modelle (Open-Weights)") | (df["source"] == "cloud")
+    ]
+    df = df[
+        (df["type"] != "Local") | (df["source"] == "local")
+    ]
+    df = df[
+        (df["type"] != "Commercial") | (df["source"] == "commercial")
+    ]
+
     df["percentage"] = pd.to_numeric(df["percentage"], errors="coerce")
     df["execution_time"] = pd.to_numeric(df["execution_time"], errors="coerce")
     if "cost_usd" in df.columns:

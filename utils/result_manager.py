@@ -121,8 +121,13 @@ class ResultManager:
         # Automatisches Ermitteln des result_type anhand des ersten Eintrags, falls nicht explizit übergeben
         if not result_type and results:
             provider = results[0].get("provider", "unknown")
+            model_name = results[0].get("model", "")
+
             if provider == "ollama":
-                result_type = "local"
+                if ":cloud" in model_name.lower() or model_name.lower().endswith("-cloud"):
+                    result_type = "cloud"
+                else:
+                    result_type = "local"
             else:
                 # Prüfe in Config, ob es Cloud/Open-Weights ist
                 provider_config = self.config.get("providers", {}).get("commercial", {}).get(provider, {})
