@@ -1,9 +1,12 @@
 # Progress
 
 ## Ongoing
-- [ ] `make benchmark-auto` — alle (model, asset_id)-Slots füllen (0/42 non-compass Tests pro Modell)
+- [ ] `make benchmark-auto` — Re-run der 5 geänderten Module (cultural_intelligence, ux_writing, content_transformation, documentation_quality, code_quality)
 - [ ] Phase 4: Finale E2E Systemtests und CI/CD Review
 - [ ] LLM Judge: Batch-Mode (Phase 3.5)
+
+## Abgeschlossen (Meilensteine)
+- [DONE] v3.3.0 Language Compliance & Prompt Hardening (2026-04-07): Language Compliance Pipeline (judge_prompt_builder.py required_language/language_weight, metacog-Assets mit language:de), Editorial Audit 30 Fixes in 21 Assets (Token-Limit-Leaks, Höflichkeitsformeln, Pseudolabels, Unicode-Artefakt in asset_6a, GS-Grammatik asset_6e), 492 stale CSV-Zeilen bereinigt, Versionssynchro README/CHANGELOG/docs auf v3.3.0. Commits 404a670, 8c5eec3, d7e939b.
 
 ## Abgeschlossen (Meilensteine)
 - [DONE] Audit Fixes & Scoring Integrity Patch (2026-04-07): Hard Constraints via YAML `constraints.max_expected_words`, progressive 3-Tier-Penalty, Language Mismatch Auto-Flag (`unified_runner.py`), uxwriting002 Two-Step Headers, Asset Hardening (WCAG 2.2 + Security), Docs. Commit 31615c5.
