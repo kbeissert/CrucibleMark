@@ -66,6 +66,47 @@ def collect_data() -> str:
     with open(csv_path, "r", encoding="utf-8") as f:
         return f.read()
 
+def get_model_card_context(model_id: str) -> str:
+    """Liest die JSON-Karte eines Modells und gibt einen formatierten Kontext-String zurück."""
+    import json
+    import re
+
+    cards_dir = ROOT_DIR / "benchmark_scores" / "model_cards"
+    safe = re.sub(r"[:/.\\ ]", "_", model_id)
+    card_path = cards_dir / f"{safe}.json"
+
+    if not card_path.exists():
+        return ""
+
+    try:
+        with open(card_path, "r", encoding="utf-8") as f:
+            card = json.load(f)
+    except Exception:
+        return ""
+
+    if card.get("unknown"):
+        return ""
+
+    strengths = ", ".join(card.get("strengths", []))
+    limitations = ", ".join(card.get("known_limitations", []))
+    hint = card.get("judge_context_hint", "")
+
+    lines = [
+        f"### Model Card: {card.get('display_name', model_id)}",
+        f"- **Entwickler:** {card.get('developer', 'n/a')} ({card.get('origin_country', 'n/a')})",
+        f"- **Fokus:** {card.get('primary_focus', 'n/a')} | **Familie:** {card.get('model_family', 'n/a')}",
+        f"- **Zusammenfassung:** {card.get('summary', '')}",
+    ]
+    if strengths:
+        lines.append(f"- **Stärken:** {strengths}")
+    if limitations:
+        lines.append(f"- **Einschränkungen:** {limitations}")
+    if hint:
+        lines.append(f"- **Bewertungshinweis:** {hint}")
+
+    return "\n".join(lines)
+
+
 def process_model_review(model_dir: Path, csv_data: str, client: LLMClient, provider: str, model_id: str, review_type: str = "benchmark"):
     """Liest Audit-Logs für ein spezifisch getestetes LLM und generiert eine Review."""
     tested_model_name = model_dir.name
@@ -229,7 +270,8 @@ def process_model_review(model_dir: Path, csv_data: str, client: LLMClient, prov
         "model_p95_time": safe_round(model_metrics.get("P95 Time (s)")),
         "model_tokens_per_second": safe_round(model_metrics.get("Performance/s")),
         "model_timeout_rate": timeout_rate_str,
-        "model_provider_type": model_metrics.get("Type", "n/a")
+        "model_provider_type": model_metrics.get("Type", "n/a"),
+        "model_card_context": get_model_card_context(tested_model_name),
     }
 
     try:

@@ -1,0 +1,21 @@
+{
+  "model_id": "grok-3",
+  "display_name": "Grok 3",
+  "developer": "xAI",
+  "origin_country": "USA",
+  "model_family": "Grok",
+  "primary_focus": "reasoning",
+  "summary": "Grok-3 ist ein hypothetisches Modell von xAI aus den USA. Als Nachfolger von Grok-1.5 wird ein Fokus auf komplexes logisches Schließen und die Verarbeitung von Echtzeit-Informationen erwartet. Stärken könnten in der Problemlösung und im humorvollen, weniger zensierten Dialog liegen, um ein nützlicheres KI-Erlebnis zu schaffen.",
+  "strengths": [
+    "Verarbeitung von Echtzeit-Informationen aus dem X-Netzwerk",
+    "Erwartete Spitzenleistung bei Logik- und Mathematik-Benchmarks",
+    "Unkonventioneller, oft humorvoller und weniger gefilterter Antwortstil"
+  ],
+  "known_limitations": [
+    "Neigt möglicherweise zu kontroversen oder 'rebellischen' Aussagen.",
+    "Faktische Genauigkeit ist trotz Echtzeit-Datenzugriff nicht garantiert."
+  ],
+  "judge_context_hint": "Bewerte das Modell nicht nur auf Korrektheit, sondern auch auf seine Fähigkeit, komplexe Probleme mit unkonventionellen Ansätzen zu lösen.",
+  "unknown": true,
+  "generated_at": "2026-04-07T20:11:15.256013+00:00"
+}

@@ -1,0 +1,21 @@
+{
+  "model_id": "o1",
+  "display_name": "o1 (Unbekanntes Modell)",
+  "developer": "Nicht spezifiziert",
+  "origin_country": "Nicht spezifiziert",
+  "model_family": "Unbekannte Modell-Familie",
+  "primary_focus": "general",
+  "summary": "o1 ist ein Sprachmodell unbekannter Herkunft, dessen Entwickler und Trainingsdaten nicht öffentlich dokumentiert sind. Es wurde vermutlich als ein Allzweckmodell konzipiert, das grundlegende Anweisungen befolgen und kohärenten Text generieren kann. Seine Stärken liegen in allgemeinen Sprachaufgaben.",
+  "strengths": [
+    "Grundlegendes Textverständnis und -generierung",
+    "Befolgen einfacher, klar formulierter Anweisungen",
+    "Fähigkeit zur strukturierten Datenausgabe (z.B. Listen)"
+  ],
+  "known_limitations": [
+    "Neigt zu sachlichen Fehlern (Halluzinationen), da Trainingsdaten und -methoden unbekannt sind.",
+    "Begrenzte Fähigkeit zu komplexem logischem Schließen und mehrstufigen Aufgaben."
+  ],
+  "judge_context_hint": "Da Herkunft und Trainingsfokus dieses Modells unbekannt sind, bewerte primär die grundlegenden Sprachfähigkeiten und die direkte Befolgung von Anweisungen.",
+  "unknown": true,
+  "generated_at": "2026-04-07T20:08:50.453061+00:00"
+}

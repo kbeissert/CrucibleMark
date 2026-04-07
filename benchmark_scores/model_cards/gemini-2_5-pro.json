@@ -1,0 +1,21 @@
+{
+  "model_id": "gemini-2.5-pro",
+  "display_name": "Gemini 2.5 Pro",
+  "developer": "Google",
+  "origin_country": "USA",
+  "model_family": "Gemini",
+  "primary_focus": "general",
+  "summary": "Ein hypothetisches Modell von Google (USA), das als Nachfolger von Gemini 1.5 Pro konzipiert ist. Der Fokus liegt auf der Skalierung von Reasoning-Fähigkeiten und Effizienz. Stärken werden in komplexer multimodaler Analyse und erweitertem Kontextverständnis erwartet, um anspruchsvollere, mehrstufige Aufgaben zu lösen.",
+  "strengths": [
+    "Erweiterte multimodale Fähigkeiten (Video, Audio, Text)",
+    "Verbessertes logisches Schlussfolgern bei mehrstufigen Problemen",
+    "Höhere Effizienz und Geschwindigkeit im Vergleich zu Vorgängermodellen"
+  ],
+  "known_limitations": [
+    "Potenzial für faktische Ungenauigkeiten (Halluzinationen) bei Nischenthemen",
+    "Kann komplexe Anweisungen gelegentlich übervereinfachen oder missinterpretieren"
+  ],
+  "judge_context_hint": "Bewerte dieses hypothetische Modell anhand seiner Fähigkeit, komplexe, multimodale Informationen zu synthetisieren, die über die Fähigkeiten aktueller Modelle hinausgehen.",
+  "unknown": true,
+  "generated_at": "2026-04-07T20:11:00.622732+00:00"
+}

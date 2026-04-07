@@ -1,0 +1,21 @@
+{
+  "model_id": "gemini-3-flash-preview",
+  "display_name": "Gemini 3 Flash Preview",
+  "developer": "Google",
+  "origin_country": "USA",
+  "model_family": "Gemini",
+  "primary_focus": "general",
+  "summary": "Gemini 3 Flash Preview von Google (USA) ist ein multimodales Modell, das für maximale Geschwindigkeit und Effizienz optimiert wurde. Seine Stärken liegen in schnellen, kostengünstigen Antworten für Aufgaben wie Zusammenfassungen, Chatbots oder Datenextraktion. Es wurde für hochfrequente Anwendungen mit geringer Latenz entwickelt.",
+  "strengths": [
+    "Hohe Geschwindigkeit und geringe Latenz für schnelle Antworten",
+    "Kosteneffizienz bei hohem Anfragevolumen und Skalierung",
+    "Starke Leistung bei Zusammenfassungen, Chat und Datenextraktion"
+  ],
+  "known_limitations": [
+    "Geringere Tiefe bei sehr komplexem Reasoning im Vergleich zu größeren Modellen wie Gemini 3 Pro",
+    "Als Preview-Version können sich Fähigkeiten und API noch ändern"
+  ],
+  "judge_context_hint": "Bewerte dieses Modell primär nach seiner Geschwindigkeit und Effizienz bei allgemeinen Aufgaben, nicht nach seiner Fähigkeit zu tiefgreifendem, komplexem Reasoning.",
+  "unknown": false,
+  "generated_at": "2026-04-07T20:10:45.735331+00:00"
+}

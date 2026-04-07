@@ -5,6 +5,8 @@ Skript zum gezielten Löschen von Benchmark-Ergebnissen aus den CSV-Caches.
 Erlaubt das Entfernen bestimmter Modelle oder Module (Asset-Gruppen).
 """
 
+import csv
+import shutil
 import sys
 import argparse
 import logging
@@ -116,30 +118,34 @@ def clean_checkpoints(model: str = None, module_key: str = None, dry_run: bool =
                 except OSError as e:
                     print(f"     ❌ Fehler beim Löschen: {e}")
 
+def _norm_dir(s: str) -> str:
+    """Normalisiert Model-ID oder Verzeichnisname zum Vergleich.
+    Konvention: ':' und '/' → '_', Rest bleibt erhalten."""
+    return s.replace("/", "_").replace(":", "_").lower()
+
+
 def clean_model_output_directories(model: str, dry_run: bool = False):
     """Löscht modellspezifische Verzeichnisse aus outputs/ (audit_logs, comparisons, runs)."""
     if not model:
         return
 
-    # Gleiche Normalisierung wie in generate_review.py für die Verzeichnisnamen
-    model_norm = model.replace('/', '_').replace('-', '_').lower()
+    model_norm = _norm_dir(model)
 
     print(f"🧹 Suche Ausgabeverzeichnisse für Modell '{model}'...")
 
     for category in ["audit_logs", "comparisons", "runs"]:
-        base_dir = Path(f"outputs/{category}")
+        base_dir = ROOT_DIR / "outputs" / category
         if not base_dir.exists():
             continue
 
         for item in base_dir.iterdir():
-            if not item.is_dir() or item.name == ".gitkeep":
+            if not item.is_dir() or item.name in (".gitkeep", ".DS_Store"):
                 continue
 
-            item_norm = item.name.replace('/', '_').replace('-', '_').lower()
+            item_norm = _norm_dir(item.name)
             if item_norm == model_norm or item_norm.endswith(f"_{model_norm}"):
                 print(f"   - Lösche {category}/{item.name}")
                 if not dry_run:
-                    import shutil
                     try:
                         shutil.rmtree(item)
                     except OSError as e:
@@ -203,8 +209,63 @@ def main():
     parser.add_argument(
         "--dry-run", action="store_true", help="Zeigt nur an, was gelöscht würde."
     )
+    parser.add_argument(
+        "--prune-orphans",
+        action="store_true",
+        help="Findet und löscht verwaiste Report-Verzeichnisse (Modelle nicht mehr in Config/Leaderboard).",
+    )
+    parser.add_argument(
+        "--force",
+        action="store_true",
+        help="Ohne Nachfrage löschen (nur zusammen mit --prune-orphans wirksam).",
+    )
 
     args = parser.parse_args()
+
+    # Separater Modus: Verwaiste Reports aufräumen
+    if args.prune_orphans:
+        from scripts.maintenance.prune_orphaned_reports import (
+            find_orphaned_dirs,
+            load_known_model_ids,
+        )
+
+        dry_run = args.dry_run
+        known_ids = load_known_model_ids()
+        orphaned = find_orphaned_dirs(known_ids)
+
+        if not orphaned:
+            print("✅ Keine verwaisten Report-Verzeichnisse gefunden.")
+            return
+
+        mode_label = "[DRY RUN] " if dry_run else ""
+        print(f"\n{mode_label}Verwaiste Verzeichnisse:\n")
+        for d in orphaned:
+            size_kb = sum(f.stat().st_size for f in d.rglob("*") if f.is_file()) // 1024
+            print(f"  🗑️  {d.relative_to(ROOT_DIR)}  ({size_kb} KB)")
+        print(f"\nGesamt: {len(orphaned)} Verzeichnisse")
+
+        if dry_run:
+            print("\nℹ️  Dry-Run — mit --delete + --prune-orphans wirklich löschen.")
+            return
+
+        if not args.force:
+            confirm = input("⚠️  Alle löschen? [y/N]: ").strip().lower()
+            if confirm not in ("y", "yes", "j", "ja"):
+                print("❌ Abbruch.")
+                return
+
+        deleted = 0
+        errors = 0
+        for d in orphaned:
+            try:
+                shutil.rmtree(d)
+                print(f"   ✅ Gelöscht: {d.relative_to(ROOT_DIR)}")
+                deleted += 1
+            except OSError as e:
+                print(f"   ❌ Fehler bei {d.name}: {e}")
+                errors += 1
+        print(f"\n{'✅' if errors == 0 else '⚠️'} Fertig: {deleted} gelöscht, {errors} Fehler.")
+        return
 
     if not args.model and not args.module:
         print("❌ Bitte --model [NAME] oder --module [KEY] angeben.")

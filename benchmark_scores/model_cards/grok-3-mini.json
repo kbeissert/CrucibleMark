@@ -1,0 +1,21 @@
+{
+  "model_id": "grok-3-mini",
+  "display_name": "Grok 3 Mini",
+  "developer": "xAI",
+  "origin_country": "USA",
+  "model_family": "Grok",
+  "primary_focus": "general",
+  "summary": "Grok-3-mini ist ein von xAI in den USA entwickeltes Sprachmodell. Es ist auf Effizienz und allgemeine Anwendungsfälle mit einem Schwerpunkt auf logischem Denken und Mathematik optimiert. Seine Hauptstärke ist der Echtzeit-Zugriff auf Informationen über die Plattform X. Das Modell wurde als schnelle, ressourcenschonende Alternative für alltägliche Aufgaben konzipiert.",
+  "strengths": [
+    "Echtzeit-Informationszugriff über die Plattform X",
+    "Solide Fähigkeiten in Logik und Mathematik",
+    "Hohe Effizienz und schnelle Antwortzeiten für alltägliche Aufgaben"
+  ],
+  "known_limitations": [
+    "Geringere Tiefe bei sehr komplexen, mehrstufigen Aufgaben im Vergleich zu größeren Modellen",
+    "Potenzial für unkonventionelle oder kontroverse Antworten aufgrund der Trainingsphilosophie"
+  ],
+  "judge_context_hint": "Beurteilen Sie dieses Modell im Kontext seiner Rolle als schnelles, effizientes Allzweckmodell mit Echtzeit-Webzugriff, nicht als Spitzenmodell für tiefgreifende, komplexe Analysen.",
+  "unknown": false,
+  "generated_at": "2026-04-07T20:11:34.699826+00:00"
+}

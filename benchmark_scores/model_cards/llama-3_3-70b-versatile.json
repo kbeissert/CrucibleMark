@@ -1,0 +1,21 @@
+{
+  "model_id": "llama-3.3-70b-versatile",
+  "display_name": "Llama 3.3 70B Versatile",
+  "developer": "Meta",
+  "origin_country": "USA",
+  "model_family": "Llama",
+  "primary_focus": "general",
+  "summary": "Llama 3.3 70B Versatile ist ein von Meta in den USA entwickeltes Allzweckmodell. Es baut auf der Llama-3-Architektur auf und wurde für eine ausgewogene, vielseitige Leistung über verschiedene Domänen hinweg optimiert. Zu seinen Stärken zählen nuanciertes Sprachverständnis, logisches Schlussfolgern und das Befolgen komplexer Anweisungen.",
+  "strengths": [
+    "Hohe allgemeine Leistungsfähigkeit und Weltwissen",
+    "Starkes logisches Schlussfolgern und Befolgen von Anweisungen",
+    "Ausgewogene Fähigkeiten in Textgenerierung, Zusammenfassung und Dialog"
+  ],
+  "known_limitations": [
+    "Kann wie alle LLMs sachliche Fehler (Halluzinationen) generieren.",
+    "Wissen ist auf den Stand der Trainingsdaten begrenzt (Knowledge Cutoff)."
+  ],
+  "judge_context_hint": "Bewerte dieses Modell anhand seiner Fähigkeit, eine breite Palette von allgemeinen Aufgaben zuverlässig zu bewältigen, anstatt in einer Nische zu brillieren.",
+  "unknown": false,
+  "generated_at": "2026-04-07T20:12:07.342134+00:00"
+}

@@ -1,0 +1,21 @@
+{
+  "model_id": "claude-opus-4-6",
+  "display_name": "Claude 4.6 Opus",
+  "developer": "Anthropic",
+  "origin_country": "USA",
+  "model_family": "Claude",
+  "primary_focus": "general",
+  "summary": "Claude 4.6 Opus ist ein hypothetisches Modell von Anthropic (USA), das auf fortgeschrittenes logisches Schließen und komplexe Aufgabenbewältigung ausgelegt ist. Es baut auf der Claude-Architektur auf, um die Grenzen der KI-Sicherheit und -Fähigkeiten zu erweitern, mit Stärken in Analyse, nuancierter Texterstellung und der Verarbeitung langer Kontexte.",
+  "strengths": [
+    "Analyse komplexer, langer Dokumente",
+    "Fortgeschrittenes logisches Schließen und Problemlösung",
+    "Nuancierte und kontextbewusste Texterstellung"
+  ],
+  "known_limitations": [
+    "Potenzial für sachliche Ungenauigkeiten (Halluzinationen) bei Nischenthemen",
+    "Kann übermäßig vorsichtige oder ausweichende Antworten generieren (Over-Refusal)"
+  ],
+  "judge_context_hint": "Bewerte die Fähigkeit des Modells, komplexe Anweisungen über mehrere Schritte hinweg zu befolgen und dabei logische Konsistenz zu wahren.",
+  "unknown": true,
+  "generated_at": "2026-04-07T20:07:44.961459+00:00"
+}

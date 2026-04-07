@@ -1,0 +1,21 @@
+{
+  "model_id": "claude-haiku-4-5-20251001",
+  "display_name": "Claude 4.5 Haiku (Hypothetisch)",
+  "developer": "Anthropic",
+  "origin_country": "USA",
+  "model_family": "Claude",
+  "primary_focus": "general",
+  "summary": "Dieses hypothetische Modell von Anthropic (USA) ist als Nachfolger der Claude 3 Haiku-Reihe konzipiert. Der Trainings-Schwerpunkt liegt auf extremer Geschwindigkeit und Kosteneffizienz für allgemeine Aufgaben. Typische Stärken wären schnelle, präzise Antworten und die Skalierbarkeit für Echtzeitanwendungen.",
+  "strengths": [
+    "Extrem schnelle Inferenzzeiten für Echtzeit-Anwendungen",
+    "Hohe Kosteneffizienz bei großem Anfragevolumen",
+    "Solide Leistung bei allgemeinen Anweisungen und Zusammenfassungen"
+  ],
+  "known_limitations": [
+    "Weniger Tiefe bei komplexem, mehrstufigem Reasoning im Vergleich zu größeren Modellen",
+    "Potenziell höhere Anfälligkeit für Faktenfehler bei Nischenthemen"
+  ],
+  "judge_context_hint": "Bewerte dieses Modell primär nach seiner Geschwindigkeit und Effizienz bei der Erledigung von Standardaufgaben, nicht nach seiner Fähigkeit zu tiefgreifendem, komplexem Reasoning.",
+  "unknown": true,
+  "generated_at": "2026-04-07T20:08:28.046390+00:00"
+}

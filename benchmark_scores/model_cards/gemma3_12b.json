@@ -1,0 +1,21 @@
+{
+  "model_id": "gemma3:12b",
+  "display_name": "Gemma 3 12B",
+  "developer": "Google",
+  "origin_country": "USA",
+  "model_family": "Gemma",
+  "primary_focus": "general",
+  "summary": "Gemma 3 12B ist ein von Google (USA) entwickeltes, offenes Sprachmodell. Es wurde für eine ausgewogene, hochqualitative Leistung in Logik, Codierung und mehrsprachigen Aufgaben trainiert. Seine Stärken liegen in der effizienten Inferenz und starken Performance trotz kompakter Größe, um modernste KI-Fähigkeiten zugänglicher zu machen.",
+  "strengths": [
+    "Hohe Leistung in Logik- und Programmier-Benchmarks für seine Größenklasse.",
+    "Effiziente Architektur, die den Einsatz auf unterschiedlicher Hardware ermöglicht.",
+    "Starke mehrsprachige Fähigkeiten durch ein diverses Trainings-Set."
+  ],
+  "known_limitations": [
+    "Kann wie alle LLMs faktisch falsche Informationen generieren (Halluzinationen).",
+    "Kann in den Trainingsdaten vorhandene gesellschaftliche Vorurteile reproduzieren."
+  ],
+  "judge_context_hint": "Bewerte dieses Modell im Kontext seiner kompakten Größe und erwarte eine hohe Effizienz und starke Leistung in technischen und logischen Aufgaben.",
+  "unknown": false,
+  "generated_at": "2026-04-07T20:15:07.865643+00:00"
+}

@@ -1,0 +1,21 @@
+{
+  "model_id": "gpt-5.4",
+  "display_name": "GPT 5.4",
+  "developer": "OpenAI",
+  "origin_country": "USA",
+  "model_family": "GPT",
+  "primary_focus": "general",
+  "summary": "GPT-5.4 ist ein hypothetisches Modell von OpenAI (USA), das als Nachfolger der GPT-4-Reihe konzipiert ist. Der Fokus liegt auf allgemeiner Sprachkompetenz und komplexem logischem Denken. Zu den erwarteten Stärken gehören verbesserte Fakten- und Argumentationsketten. Es wurde entwickelt, um die Grenzen des maschinellen Verständnisses zu erweitern.",
+  "strengths": [
+    "Fortgeschrittenes logisches Schlussfolgern und Kausalitätsanalyse",
+    "Hohe Faktentreue und Reduzierung von Halluzinationen",
+    "Kontextverständnis über sehr lange Dokumente hinweg"
+  ],
+  "known_limitations": [
+    "Potenzielle Übernahme von Biases aus den Trainingsdaten",
+    "Hoher Rechenaufwand für Training und Inferenz"
+  ],
+  "judge_context_hint": "Bewerte dieses Modell primär anhand seiner Fähigkeit, komplexe, mehrstufige Anweisungen zu verstehen und logisch konsistente Argumentationsketten zu bilden.",
+  "unknown": true,
+  "generated_at": "2026-04-07T20:09:29.876277+00:00"
+}

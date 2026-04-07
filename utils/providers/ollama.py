@@ -91,16 +91,23 @@ class OllamaClient(BaseProviderClient):
                     load_ns = chunk.get("load_duration") or 0
                     eval_ns = chunk.get("eval_duration") or 0
                     prompt_eval_ns = chunk.get("prompt_eval_duration") or 0
+                    eval_count = chunk.get("eval_count") or 0
                     metrics = {
                         "total_duration": total_ns / 1e9,
                         "load_duration": load_ns / 1e9,
                         "eval_duration": eval_ns / 1e9,
                         "prompt_eval_duration": prompt_eval_ns / 1e9,
+                        "eval_count": eval_count,
                         "finish_reason": chunk.get("done_reason"),
                     }
                     metrics["pure_execution_time"] = (
                         metrics["total_duration"] - metrics["load_duration"]
                     )
+                    # Native generation speed: output tokens / pure eval time (excludes prefill)
+                    if eval_ns > 0 and eval_count > 0:
+                        metrics["tps_eval"] = round(eval_count / (eval_ns / 1e9), 2)
+                    else:
+                        metrics["tps_eval"] = 0.0
                     self.last_response_metadata = metrics
                     continue
                 msg = chunk.get("message", {})

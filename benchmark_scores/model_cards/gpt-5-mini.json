@@ -1,0 +1,21 @@
+{
+  "model_id": "gpt-5-mini",
+  "display_name": "GPT-5 Mini",
+  "developer": "OpenAI",
+  "origin_country": "USA",
+  "model_family": "GPT",
+  "primary_focus": "general",
+  "summary": "Das von OpenAI in den USA entwickelte gpt-5-mini ist ein hypothetisches, kleineres Allzweckmodell. Sein Trainings-Schwerpunkt liegt auf Effizienz und Geschwindigkeit, um eine solide Leistung bei allgemeinen Anweisungen und Dialogen zu bieten. Es wurde konzipiert, um fortschrittliche KI-Fähigkeiten für Anwendungen mit geringeren Latenz- und Hardwareanforderungen bereitzustellen.",
+  "strengths": [
+    "Hohe Effizienz und geringe Latenz",
+    "Geringere Betriebskosten im Vergleich zu größeren Modellen",
+    "Ausgewogene Leistung bei allgemeinen Sprachaufgaben"
+  ],
+  "known_limitations": [
+    "Geringere Tiefe bei hochkomplexen oder Nischenthemen",
+    "Neigt bei mehrstufigen, komplexen Logikketten eher zu Fehlern"
+  ],
+  "judge_context_hint": "Bewerten Sie dieses Modell im Kontext seiner angestrebten Größe und Effizienz, nicht im direkten Vergleich mit Spitzenmodellen der höchsten Leistungsklasse.",
+  "unknown": true,
+  "generated_at": "2026-04-07T20:10:17.543612+00:00"
+}
