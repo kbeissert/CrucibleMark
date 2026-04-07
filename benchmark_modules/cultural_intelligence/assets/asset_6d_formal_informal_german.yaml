@@ -13,7 +13,7 @@ metadata:
 prompt: |
   Rewrite this customer support email from formal (Sie) to informal (Du).
 
-  TASK: Convert all formal language to casual/friendly tone while keeping professional information intact.
+  Convert all formal language to casual/friendly tone. Keep all professional information intact.
   IMPORTANT: Output ONLY the rewritten German text. Do NOT explain your changes.
 
   Original Text:

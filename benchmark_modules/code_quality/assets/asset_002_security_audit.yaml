@@ -153,7 +153,7 @@ prompt: |
      - **Warum unsicher**: Kurze Erklärung.
      - **Fix**: Kurzer Code-Schnipsel oder Konzept.
 
-  **WICHTIG**: Formatiere deine Antwort als korrekte Markdown-Tabelle (mit `|`). Fass dich in den Erklärungen in der Tabelle extrem kurz (max. 1-2 Sätze pro Zeile) und vermeide lange Einleitungen oder Ausschweifungen, um Token-Limits zu respektieren.
+  **WICHTIG**: Formatiere deine Antwort als korrekte Markdown-Tabelle (mit `|`). Erklärungen in der Tabelle: extrem kurz (max. 1-2 Sätze pro Zeile), keine langen Einleitungen.
   Beispiel:
   | Vulnerability | Typ | Schweregrad | Warum unsicher | Fix |
   |---|---|---|---|---|

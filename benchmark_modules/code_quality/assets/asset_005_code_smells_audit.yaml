@@ -114,7 +114,7 @@ prompt: |
      - **Beschreibung**
      - **Refactoring** (z.B. Extract Class)
 
-  **HINWEIS:** Halte die Fehlerbeschreibungen und Refactoring-Ansätze in der Tabelle extrem kurz und präzise (maximal 1-2 Sätze pro Zeile), um Output-Token-Limits zu respektieren.
+  **HINWEIS:** Fehlerbeschreibungen und Refactoring-Ansätze in der Tabelle: extrem kurz und präzise (max. 1-2 Sätze pro Zeile).
 
 # ============================================================
 # Scoring-Konfiguration

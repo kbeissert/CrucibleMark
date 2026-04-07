@@ -44,7 +44,7 @@ prompt: |
 
   ## INPUT: CASE STUDY (Auszug, 400 Wörter)
 
-  WICHTIG: Bitte führe zuerst die ANALYSE durch (Schritt 1) und nenne explizit die fehlenden Elemente, bevor du die TRANSFORMATION erstellst. Halte die Analyse dabei extrem kurz und präzise (maximal 2-3 Sätze), um Token-Limits zu respektieren.
+  WICHTIG: Führe zuerst die ANALYSE durch (Schritt 1) und nenne explizit die fehlenden Elemente, bevor du die TRANSFORMATION erstellst. Analyse: maximal 2–3 Sätze.
 
   **Title:** How Company X Increased Conversion Rate by 47% with A/B Testing
 

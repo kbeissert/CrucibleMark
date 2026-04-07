@@ -402,11 +402,8 @@ prompt: "Analysiere die folgende API-Dokumentation und bewerte sie nach **API Do
   \ Fehlende Parameter, keine Error Responses\n   - **Medium**: Fehlende Beispiele,\
   \ unvollständige Descriptions\n   - **Low**: Fehlende Language-Bindings, keine OpenAPI-Spec\n\
   3. **Erstelle eine verbesserte API-Dokumentation** mit allen fehlenden Elementen\n\
-  4. **Begründe** deine Änderungen mit API-Design-Prinzipien\n\nWICHTIG: Bitte liste\
-  \ zuerst explizit alle gefundenen Probleme auf (Schritt 1), bevor du die verbesserte\
-  \ Version erstellst. Halte deine Problemauflistung (Schritt 1) und die Begründungen\
-  \ (Schritt 4) extrem kompakt und auf den Punkt gebracht, um Token-Limits für die\
-  \ finale verbesserte API-Dokumentation nicht zu gefährden.\n"
+  4. **Begründe** deine Änderungen mit API-Design-Prinzipien\n\nWICHTIG: Liste zuerst explizit alle gefundenen Probleme auf (Schritt 1), bevor du die verbesserte\
+  \ Version erstellst. Problemauflistung (Schritt 1) und Begründungen (Schritt 4): extrem kompakt.\n"
 scoring:
   error_detection:
     advanced_issues:

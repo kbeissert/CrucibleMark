@@ -40,7 +40,7 @@ prompt: |
 
   ## INPUT: BLOGPOST-AUSZUG (300 Wörter)
 
-  WICHTIG: Bitte führe zuerst die ANALYSE durch (Schritt 1) und nenne explizit die fehlenden Elemente, bevor du die TRANSFORMATION erstellst. Halte deine Analyse extrem kurz und kompakt (max. 2-3 Sätze), um Output-Längenbegrenzungen zu vermeiden.
+  WICHTIG: Führe zuerst die ANALYSE durch (Schritt 1) und nenne explizit die fehlenden Elemente, bevor du die TRANSFORMATION erstellst. Analyse: maximal 2–3 Sätze.
 
   **Title:** Why Async Communication Beats Meetings
 

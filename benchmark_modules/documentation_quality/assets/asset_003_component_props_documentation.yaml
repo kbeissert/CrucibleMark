@@ -123,7 +123,7 @@ prompt: |
   4. **Füge 2-3 realistische Code-Beispiele hinzu**
   5. **Begründe** deine Änderungen mit Component Library Prinzipien
 
-  WICHTIG: Bitte liste zuerst explizit alle gefundenen Probleme auf (Schritt 1), bevor du die verbesserte Version erstellst. Halte deine Problem-Aufzählung und die spätere Begründung extrem kurz und präzise, um Puffer für das finale Resultat und die Token-Limits zu bewahren.
+  WICHTIG: Liste zuerst explizit alle gefundenen Probleme auf (Schritt 1), bevor du die verbesserte Version erstellst. Problem-Aufzählung und spätere Begründung: extrem kurz und präzise.
 
 # ============================================================
 # Scoring Configuration

@@ -8,6 +8,10 @@ metadata:
   difficulty: tiered
   estimated_time_seconds: 200
   tags: [aria, screen-reader, a11y, semantic-labels, wcag]
+  language: de
+  language_weight: 0.20
+  language_task_weight: 0.80
+  language_instruction_style: monolingual
 
 context: |
   Du bist ein UX Writer mit Accessibility-Expertise.
@@ -22,9 +26,11 @@ prompt: |
   Eingabe-Elemente:
   {input_text}
 
-  WICHTIG: Bitte führe zuerst die ANALYSE durch (Schritt 1) und nenne explizit die identifizierten Probleme, bevor du die Optimierung erstellst (Schritt 2). Halte die Analyse extrem kurz und kompakt (max. 3-4 Sätze gesamt), um das Token-Limit nicht zu sprengen.
+  **SPRACH-COMPLIANCE:** Antworte ausschließlich auf Deutsch. Eine Antwort in einer anderen Sprache wird unabhängig von der inhaltlichen Qualität als nicht-konform bewertet.
 
-  Erfülle dabei strikt die folgenden Anforderungen:
+  WICHTIG: Führe zuerst die ANALYSE durch (Schritt 1) und nenne explizit die identifizierten Probleme, bevor du die Optimierung erstellst (Schritt 2). Analyse: maximal 3–4 Sätze.
+
+  Anforderungen (strikt einhalten):
   {requirements}
 
 requirements:

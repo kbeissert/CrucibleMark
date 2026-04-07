@@ -8,6 +8,10 @@ metadata:
   difficulty: tiered
   estimated_time_seconds: 180
   tags: [cta, button-labels, context, microcopy, conversion]
+  language: de
+  language_weight: 0.20
+  language_task_weight: 0.80
+  language_instruction_style: monolingual
 
 context: |
   Du bist ein Senior UX Writer, spezialisiert auf Conversion-Optimierung und Microcopy.
@@ -27,6 +31,8 @@ prompt: |
   Eingabe-Szenarien:
   {input_text}
 
+  **SPRACH-COMPLIANCE:** Antworte ausschließlich auf Deutsch. Eine Antwort in einer anderen Sprache wird unabhängig von der inhaltlichen Qualität als nicht-konform bewertet.
+
   **PFLICHTFORMAT – Halte diese Reihenfolge strikt ein:**
 
   **[SCHRITT 1 – ANALYSE]**
@@ -36,7 +42,7 @@ prompt: |
   **[SCHRITT 2 – OPTIMIERUNG]**
   Erstelle die Markdown-Tabelle mit allen optimierten Labels.
 
-  Erfülle dabei strikt die folgenden Anforderungen:
+  Anforderungen (strikt einhalten):
   {requirements}
 
 requirements:
