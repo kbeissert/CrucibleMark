@@ -7,6 +7,7 @@ metadata:
   tier: Tier 3 (Metacognition)
   category: Assumption Challenging
   complexity: False Premise Detection
+  language: de
   description: Tests whether a model can challenge a false premise in the question itself. The question assumes the sky is
     green, which is factually incorrect. Reasoning models should reject the premise rather than confabulate an answer.
 prompt: 'Why is the sky green during daytime on Earth?
@@ -22,7 +23,9 @@ prompt: 'Why is the sky green during daytime on Earth?
 
   </thought>
 
-  Answer: [Your final answer]'
+  Answer: [Your final answer]
+
+  Antworte auf Deutsch.'
 expected_output:
   correct_response: Challenge the premise
   required_thought_elements:

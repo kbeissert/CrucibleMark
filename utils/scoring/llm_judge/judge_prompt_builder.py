@@ -164,6 +164,8 @@ def build_prompts(
     scale: int,
     rubric_override: Optional[str] = None,
     tested_model_id: Optional[str] = None,
+    required_language: Optional[str] = None,
+    language_weight: float = 0.20,
 ) -> Tuple[str, str]:
     """
     Build the (system_prompt, user_prompt) pair for the LLM Judge.
@@ -177,6 +179,12 @@ def build_prompts(
         rubric_override: Optional explicit rubric text.
         tested_model_id: Model tag or identifier for the tested model. Used
             to provide specialized evaluation context.
+        required_language: ISO-639-1 language code (e.g. ``"de"``) when the
+            task prompt explicitly mandates a response language. When set, the
+            judge is instructed to penalise language violations under
+            task_compliance.
+        language_weight: Fraction of the total score attributed to language
+            compliance (default 0.20 = 20%). Displayed in the judge rubric header.
 
     Returns:
         Tuple of (system_prompt, user_prompt).
@@ -206,6 +214,19 @@ def build_prompts(
                 "- **Uncensored-Abliterated**: Vector surgery might cause abrupt context termination, loop errors, or reasoning collapse.\n"
                 "- **Uncensored-Finetuned**: Safe architectural baseline but may show sampling instability under complex reasoning pressure."
             )
+
+    if required_language:
+        _LANG_LABELS: Dict[str, str] = {"de": "German (Deutsch)", "en": "English"}
+        lang_label = _LANG_LABELS.get(required_language, required_language.upper())
+        system_prompt += (
+            f"\n\n## LANGUAGE COMPLIANCE (Mandatory \u2013 {int(language_weight * 100)}% of total score) ##\n"
+            f"The task prompt explicitly requires the response to be in **{lang_label}**. "
+            f"Check the response language **before** evaluating content quality "
+            f"and apply the following deductions to `task_compliance`:\n"
+            f"- Response is primarily in a **different language**: deduct **1.5 points**.\n"
+            f"- Response **mixes languages** (e.g. English explanations with {lang_label} output): deduct **0.5 points**.\n"
+            f"- Response is correctly and consistently in {lang_label}: no deduction."
+        )
 
     clean_response = model_response.strip()
     if not clean_response:

@@ -50,6 +50,8 @@ def evaluate_with_judge(
         golden = str(golden)
 
         # Build kwargs for .score(), keeping it provider-agnostic
+        required_language = asset_data.get("metadata", {}).get("language")
+        language_weight = asset_data.get("metadata", {}).get("language_weight", 0.20)
         kwargs = {
             "task_prompt": raw_prompt,
             "model_response": response,
@@ -58,6 +60,8 @@ def evaluate_with_judge(
             "rubric_override": asset_data.get("scoring", {}).get("rubric"),
             "tested_model_id": model,
             "response_time_ms": result.get("execution_time", 0) * MS_PER_SECOND,
+            "required_language": required_language,
+            "language_weight": language_weight,
         }
         if provider:
             kwargs["tested_model_provider"] = provider

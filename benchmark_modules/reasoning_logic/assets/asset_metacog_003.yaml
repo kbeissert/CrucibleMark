@@ -7,6 +7,7 @@ metadata:
   tier: Tier 3 (Metacognition)
   category: Alternative Exploration
   complexity: Multiple Valid Solutions
+  language: de
   description: Tests whether a model explores multiple approaches to a problem with ambiguity. The 'two doors' riddle has
     multiple valid solutions depending on assumptions. Reasoning models should explore alternatives and discuss trade-offs.
 prompt: 'You are in a room with two doors. One leads to certain death, the other to freedom. There are two guards: one always
@@ -26,7 +27,9 @@ prompt: 'You are in a room with two doors. One leads to certain death, the other
 
   </thought>
 
-  Answer: [Your final answer]'
+  Answer: [Your final answer]
+
+  Antworte auf Deutsch.'
 expected_output:
   valid_solutions:
   - 'Ask: "What would the other guard say is the safe door?" (then choose opposite)'
