@@ -7,6 +7,7 @@ metadata:
   tier: Tier 3 (Metacognition)
   category: Iterative Refinement
   complexity: Counter-Intuitive Probability
+  language: de
   description: Tests whether a model can iteratively refine its reasoning through a counter-intuitive problem. The Monty Hall
     problem's answer (switching is better) contradicts intuition. Reasoning models should explore initial instinct, reconsider,
     and arrive at correct conclusion.
@@ -29,7 +30,9 @@ prompt: 'You are on a game show. There are 3 doors: behind one is a car (prize),
 
   </thought>
 
-  Answer: [Your final answer]'
+  Answer: [Your final answer]
+
+  Antworte auf Deutsch.'
 expected_output:
   correct_answer: Switch to Door 2
   correct_reasoning:

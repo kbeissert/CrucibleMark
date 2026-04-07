@@ -7,6 +7,7 @@ metadata:
   tier: Tier 3 (Metacognition)
   category: Self-Correction
   complexity: Simple Logic with Linguistic Trap
+  language: de
   description: Tests whether a model can recognize and correct its own initial mistake. The phrasing 'all but 9 die' is designed
     to trigger the wrong instinct (17-9=8), but careful reading reveals that 9 sheep SURVIVE. Reasoning models should catch
     this error via self-correction.
@@ -23,7 +24,9 @@ prompt: 'A farmer has 17 sheep. All but 9 die. How many sheep are left?
 
   </thought>
 
-  Answer: [Your final answer]'
+  Answer: [Your final answer]
+
+  Antworte auf Deutsch.'
 expected_output:
   correct_answer: 9 sheep
   required_thought_elements:

@@ -7,6 +7,7 @@ metadata:
   tier: Tier 3 (Metacognition)
   category: Uncertainty Calibration
   complexity: Counter-Intuitive Statistics
+  language: de
   description: Tests whether a model can express appropriate confidence levels for counter-intuitive results. The birthday
     paradox (23 people → 50% chance of shared birthday) contradicts intuition. Reasoning models should acknowledge the counter-intuitive
     nature and express calibrated confidence.
@@ -27,7 +28,9 @@ prompt: 'In a room of 23 randomly selected people, what is the probability that 
 
   </thought>
 
-  Answer: [Your final answer and confidence level]'
+  Answer: [Your final answer and confidence level]
+
+  Antworte auf Deutsch.'
 expected_output:
   correct_answer: Approximately 50% (50.7%)
   correct_reasoning:

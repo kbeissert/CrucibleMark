@@ -313,6 +313,8 @@ class JudgeRunner:
         tested_model_id: Optional[str] = None,
         tested_model_provider: Optional[str] = None,
         response_time_ms: Optional[float] = None,
+        required_language: Optional[str] = None,
+        language_weight: float = 0.20,
     ) -> JudgeResult:
         """
         Evaluate a model response and return a structured JudgeResult.
@@ -363,6 +365,8 @@ class JudgeRunner:
             scale=scale,
             rubric_override=rubric_override,
             tested_model_id=tested_model_id,
+            required_language=required_language,
+            language_weight=language_weight,
         )
 
         logger.debug(
