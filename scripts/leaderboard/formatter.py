@@ -17,9 +17,9 @@ try:
 except Exception:
     _tiers = {}
 
-BADGE_PLATINUM_THRESHOLD = _tiers.get("platinum", {}).get("threshold", 90.0)
-BADGE_GOLD_THRESHOLD = _tiers.get("gold", {}).get("threshold", 75.0)
-BADGE_SILVER_THRESHOLD = _tiers.get("silver", {}).get("threshold", 60.0)
+BADGE_PLATINUM_THRESHOLD = _tiers.get("platinum", {}).get("threshold", 95.0)
+BADGE_GOLD_THRESHOLD = _tiers.get("gold", {}).get("threshold", 80.0)
+BADGE_SILVER_THRESHOLD = _tiers.get("silver", {}).get("threshold", 65.0)
 BADGE_BRONZE_THRESHOLD = _tiers.get("bronze", {}).get("threshold", 50.0)
 
 BADGE_PLATINUM_ICON = _tiers.get("platinum", {}).get("badge", "💎 Platinum")

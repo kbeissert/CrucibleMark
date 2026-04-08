@@ -2,6 +2,14 @@
 
 ## ✅ COMPLETED
 
+### Political Compass Integration Fix (v3.3.1 – 08.04.26)
+- [x] **io_manager.py: model_category-Feld:** `save_leaderboard_csv()` schreibt jetzt `model_category` (`local` / `cloud` / `commercial`) in die Leaderboard-CSV (nach `model`-Spalte); Routing-Logik analog `result_manager.py`.
+- [x] **io_manager.py: provider_type-Korrektur:** Ollama-gehostete Cloud-Modelle (`:cloud`-Suffix) erhalten `provider_type=cloud` statt `ollama`.
+- [x] **political_compass_handler.py Upsert:** `_update_local_pc_csv()` von append-only auf Upsert umgestellt — Parität zu `_update_commercial_pc_csv()`; eliminiert Duplikate bei Retry/Re-Run.
+- [x] **clean_results.py: PC Leaderboard-CSV:** `political_compass_leaderboard.csv` zur `files`-Liste hinzugefügt; defensiver `asset_id`-Guard in `clean_csv()` verhindert KeyError bei PC-CSVs.
+- [x] **CSV-Datenbereinigung:** `political_compass_leaderboard.csv` 66 → 56 Zeilen (Duplikate entfernt), `model_category` rückwirkend befüllt, `provider_type` für 8 Cloud-Modelle korrigiert.
+- [x] **local_models_benchmark.csv:** 6 historische Cloud-Modell-Einträge entfernt (495 → 489 Zeilen).
+
 ### Language Compliance & Prompt Hardening (v3.3.0 – 07.04.26)
 - [x] **Language Compliance Pipeline:** `judge_prompt_builder.py` um `required_language` / `language_weight` erweitert. Bei gesetztem Asset-Metadatum `language: de` wird dem Judge automatisch ein LANGUAGE COMPLIANCE Rubrik-Block injiziert (Standard 20 % Gewichtung; Sprachverstoß − 1,5 Punkte, Sprachmix −0,5 Punkte).
 - [x] **judge_runner.py Forwarding:** `required_language` und `language_weight` werden aus dem Asset-Config-Dict an `build_prompts()` weitergeleitet.

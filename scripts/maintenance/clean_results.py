@@ -171,7 +171,7 @@ def clean_csv(
             # Case-insensitive match für Modellname
             mask = mask & (df["model"] != model)
 
-        if asset_ids:
+        if asset_ids and "asset_id" in df.columns:
             # Filter rows where asset_id IS in the list (we want to keep those NOT in list)
             # So mask keeps rows where asset_id is NOT in asset_ids
             mask = mask & (~df["asset_id"].isin(asset_ids))
@@ -301,6 +301,7 @@ def main():
         Path("benchmark_scores/cloud_models_benchmark.csv"),
         Path("benchmark_scores/commercial_models_benchmark.csv"),
         Path("benchmark_scores/political_compass_results.csv"),
+        Path("benchmark_scores/political_compass_leaderboard.csv"),
     ]
 
     for f in files:

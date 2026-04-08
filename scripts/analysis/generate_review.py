@@ -214,7 +214,7 @@ def process_model_review(model_dir: Path, csv_data: str, client: LLMClient, prov
 
             tier_metaphor_rules = "\n".join(_tier_lines)
     except Exception:
-        tier_metaphor_rules = "- **Ab 90%:** Platin\n- **Ab 75%:** Gold\n- **Ab 60%:** Silber\n- **Ab 50%:** Bronze\n- **Unter 50%:** Standard"
+        tier_metaphor_rules = "- **Ab 95%:** Platin\n- **Ab 80% bis unter 95%:** Gold\n- **Ab 65% bis unter 80%:** Silber\n- **Ab 50% bis unter 65%:** Bronze\n- **Unter 50%:** Standard"
 
 
     if review_type == "benchmark":

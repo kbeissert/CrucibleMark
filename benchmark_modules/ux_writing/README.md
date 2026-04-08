@@ -1,290 +1,185 @@
-# UX Writing Module
+# UX Writing
 
-> **Technical Metadata**
->
-> - **ID:** `ux_writing`
-> - **Namespace:** `benchmark_modules.ux_writing`
-> - **Class:** `UXWritingTest` (inherits `BaseTest`)
-> - **Version:** v2.0.1 (Clean Architecture + Pylint Optimized)
-> - **Type:** Content Strategy & Microcopy
-> - **Quality Score:** 99/100 (A+)
-> - **Pylint Score:** 9.07/10
+> Bewertet, ob ein LLM Microcopy schreiben kann — präzise, handlungsleitend
+> und empathisch. Das Modul prüft fünf UX-Writing-Aufgaben mit realen
+> Interface-Szenarien aus E-Commerce, Enterprise und Health.
 
-______________________________________________________________________
+**Modul-ID:** `ux_writing` | **Klasse:** `UXWritingTest` | **Version:** 1.0.0
+**Assets:** 5 | **Sprache:** Deutsch (erzwungen) | **Scoring:** Hybrid (Regex + LLM-Judge)
 
-## 🔍 Module Overview
+---
 
-Dieses Modul prüft die Kompetenz von LLMs im Bereich **User Experience Writing**. Es bewertet präzise, handlungsleitende und empathische Microcopy für:
+## Warum dieses Modul?
 
-- **Error Messages** (Nutzerfreundliche Fehlermeldungen)
-- **Button Labels** (Kontextsensitive CTAs)
-- **Onboarding Flows** (Progressive Disclosure)
-- **Accessibility Labels** (ARIA/Screen Reader)
-- **Microcopy Audits** (Health & Safety-Critical Content)
+UX Writing ist eine der praktisch relevantesten Schreibdisziplinen für
+Software-Produkte: Fehlermeldungen, Button-Labels und Onboarding-Texte
+beeinflussen direkt die Nutzbarkeit eines Produkts. Viele LLMs produzieren
+grammatikalisch korrekte, aber für echte Nutzer unbrauchbare Texte —
+zu technisch, zu vage, ohne Handlungsaufforderung. Dieses Modul testet das
+in kontextspezifischen Szenarien mit echten Designproblemen als Input.
 
-______________________________________________________________________
+Alle Assets sind so konstruiert, dass sie einen **mehrstufigen Prozess** erfordern:
+Erst Analyse der Probleme, dann Lösung. Modelle, die direkt zur Lösung springen
+ohne Analyse, erhalten einen Punktabzug.
 
-## 🏗 Architecture (v2.0)
+**Language Compliance:** `language: de` für alle Assets.
+**Scoring:** `regex: 0.10 / judge: 0.90` — UX-Tonalität und Empathie lassen sich
+nicht zuverlässig per Keyword messen. Der LLM-Judge bewertet gegen definierte Rubriken.
 
-Version 2.0 führt eine **modulare Clean Architecture** ein:
+---
 
+## Scoring-Methodik
+
+Gewichtungsschema: **60/30/10**
+
+| Dimension | Gewicht | Beschreibung |
+|---|---|---|
+| **Fehler-Erkennung** | 60 % | Findet das Modell die UX-Probleme im Input? Gestaffelt: Labeled → Standard → Advanced → Expert |
+| **Lösungsqualität** | 30 % | Ist die vorgeschlagene Lösung tatsächlich besser? Ton, Struktur, Handlungsleitend |
+| **Formatierung** | 10 % | Korrekte Markdown-Tabellenstruktur mit allen geforderten Spalten |
+
+Score-Contribution im Leaderboard: `routine: 1.0 / reasoning: 0.0` (alle Assets).
+
+---
+
+## Test Assets
+
+### `ux_writing_001` — Error Messages
 ```
-benchmark_modules/ux_writing/
-├── test.py                          # Test Runner (orchestriert Execution & Scoring)
-├── core/
-│   ├── constants.py                 # Zentrale Konfiguration (Tiers, Thresholds, Ratios)
-│   ├── evaluators/                  # Modular Evaluator Package
-│   │   ├── __init__.py              # Public API Exports
-│   │   ├── base.py                  # Abstract Base + IssueEvaluator (Hybrid Matching)
-│   │   ├── keyword.py               # KeywordPresence/Absence Evaluators
-│   │   ├── structure.py             # Markdown Table & Structure Validation
-│   │   ├── validation.py            # Regex, Code, Length Validators
-│   │   └── factory.py               # EvaluatorFactory (Strategy Pattern)
-│   ├── models.py                    # Data Models (UXScenario, UXCriterion, etc.)
-│   ├── services.py                  # LLM Client Wrapper
-│   └── io_manager.py                # JSON/CSV Export & Reporting
-├── assets/                          # 5 YAML Test Scenarios
-│   ├── asset_001_error_messages.yaml
-│   ├── asset_002_button_labels.yaml
-│   ├── asset_003_onboarding_flow.yaml
-│   ├── asset_004_accessibility_labels.yaml
-│   └── asset_005_microcopy_audit.yaml
-└── tests/
-    ├── test_ux_writing.py           # Asset Loading Tests (3 tests)
-    ├── test_evaluators.py           # Unit Tests für alle Evaluators (15+ tests)
-    ├── test_issue_evaluator.py      # Hybrid Matching Tests (8+ tests)
-    └── test_yaml_consistency.py     # YAML Structure Validation (5+ tests)
+Typ:       Fehlermeldungs-Rewrite (technisch → nutzerfreundlich)
+Kontext:   Senior UX Writer für eine E-Commerce-Plattform.
+           Zielgruppe: Durchschnittliche Online-Käufer (kein Tech-Wissen).
+Input:     6 technische Fehlermeldungen (z. B. "Error: Database connection timeout
+           (code: ETIMEDOUT)", "Authentication failed: JWT token expired")
+Aufgabe:   Markdown-Tabelle: Original | Verbesserung | Begründung.
+           Analyse zuerst (3–4 Sätze), dann Tabelle.
+Anforderungen:
+  - Technischen Jargon vollständig entfernen (Error Codes, Variablennamen)
+  - Konkrete Handlungsanweisung in jeder Verbesserung
+  - Keine Schuldzuweisung ("Du hast falsch eingegeben" = Fehler)
+  - Jede Begründung nennt das angewendete UX-Prinzip
+  - Expert-Level: Erkennt Dead Ends und fehlende Empathie in Standardfloskeln
+Scoring:   Tiered Issue Detection (Labeled → Basic → Standard → Expert)
 ```
 
-______________________________________________________________________
+---
 
-## 🎯 Core Components
+### `ux_writing_002` — Button Labels
+```
+Typ:       CTA-Optimierung (Call-to-Action, kontext-sensitiv)
+Kontext:   UX Writer, spezialisiert auf Conversion-Optimierung.
+           6 Kontexte: E-Commerce, Newsletter, Enterprise SaaS,
+           Banking, Health App, Mobile Game.
+Input:     4 konkrete Szenarien mit problematischen Button-Labels
+           (z. B. "OK" bei €234,50 Checkout, 117-Zeichen-Newsletter-Button,
+            "Upload" für Vertragsupload, "Löschen" ohne Kontext)
+Aufgabe:   Zweistufig: [SCHRITT 1] Analyse der Schwächen (3–4 Sätze),
+           [SCHRITT 2] Markdown-Tabelle: Szenario | Original | Optimierung | Begründung.
+Anforderungen:
+  - MAXIMAL 25 Zeichen pro Label (Mobile-First-Constraint)
+  - Starkes aktives Verb am Anfang
+  - Tonalität exakt zum beschriebenen Kontext
+  - Expert-Level: Conversion-Hypothese begründen
+Scoring:   Tiered; 25-Zeichen-Constraint per Regex geprüft
+```
 
-### 1. **constants.py** – Zentrale Konfiguration
+---
 
-Alle Magic Numbers und Thresholds sind hier zentralisiert:
+### `ux_writing_003` — Onboarding Flow
+```
+Typ:       Onboarding-Überarbeitung (5-Schritt-Flow)
+Kontext:   Senior UX Writer für eine Projektmanagement-SaaS.
+           Feature "Automatische Workflows" soll für nicht-technische PM zugänglich sein.
+           Problematisch: Kognitive Überlastung, technischer Jargon (Trigger/Conditions/
+           Actions, IF/THEN, Task.Priority == 'Hoch').
+Aufgabe:   5-stufigen Onboarding-Text überarbeiten: Progressive Disclosure,
+           kein Tech-Jargon, klare Fortschrittsmarkierung.
+Scoring-Rubrik (4×25 Punkte):
+  1. Struktur-Compliance (alle geforderten Sections vorhanden)
+  2. Inhaltliche Vollständigkeit (Abdeckung aller Anforderungen)
+  3. Beispiel-Qualität (konkrete, logische Beispiele vs. generisches Blabla)
+  4. Ton/Sprache (Zielgruppe PM ohne Programmierkenntnisse)
+```
+
+---
+
+### `ux_writing_004` — Accessibility Labels
+```
+Typ:       ARIA-Label-Optimierung (Screen-Reader-Texte)
+Kontext:   UX Writer mit Accessibility-Expertise für Enterprise-Dashboard.
+           Zielgruppe: Screen-Reader-Nutzer (NVDA, JAWS, VoiceOver).
+Input:     6 UI-Elemente mit problematischen ARIA-Labels
+           (Icon-Button ohne Label, Filter-Dropdown mit technischem ID als Label,
+            Suchfeld mit redundantem Label, Dark-Mode-Toggle ohne Zustandsinfo,
+            Pagination ohne Kontext, Live-Ticker ohne aria-live)
+Anforderungen:
+  - Funktion beschreiben, nicht Aussehen ("Löschen" nicht "Mülleimer")
+  - Keine Redundanz (nicht "Button" im Label wiederholen)
+  - Zustandsinformationen wo nötig
+  - Expert: aria-pressed, aria-expanded, aria-live korrekt einsetzen
+Scoring:   required_ratio: 1.0 — WCAG-Konformität ist Pflicht, nicht Optional
+           (alle 6 Elemente müssen korrekt sein)
+```
+
+---
+
+### `ux_writing_005` — Microcopy Audit
+```
+Typ:       Umfassender Microcopy-Audit (Health App)
+Kontext:   Senior UX Writer, Medikamenten-Management-App.
+           Zielgruppe: Ältere Nutzer (60+), chronisch Kranke.
+           Tone of Voice: empathisch & beruhigend, klar & sicher, respektvoll.
+Input:     4 Screens mit problematischer Microcopy
+           (Dosierungs-Input mit Mehrdeutigkeit, alarmierende Push-Notification
+           "Medikament fällig!", Schuldzuweisung bei vergessener Einnahme,
+            Empty State ohne klare Handlungsanweisung)
+Anforderungen:
+  - Medizinische Angaben müssen absolut eindeutig sein
+  - Keine alarmierenden Begriffe ("fällig", "verpasst", "Warnung")
+  - Wortlimit: max. 150 Wörter pro Label
+  - Expert: terminologische Konsistenz über alle Screens prüfen
+Scoring:   Tiered; Wortlimit per Regex validiert
+```
+
+---
+
+## Technischer Aufbau
+
+Evaluatoren in `core/evaluators/`:
+
+| Klasse / Datei | Aufgabe |
+|---|---|
+| `EvaluatorFactory` (`factory.py`) | Dispatch: Kriteriumstyp → zuständiger Evaluator |
+| `KeywordEvaluator` (`keyword.py`) | `keyword_presence`, `keyword_absence` — Set-Lookup O(n) |
+| `StructureEvaluator` (`structure.py`) | `regex`, `code_block`, `markdown_table` |
+| `ValidationEvaluator` (`validation.py`) | `length_validation`, WCAG-Regex-Fallback |
+| `IssueEvaluator` (`base.py`) | String-Matching + semantische Ähnlichkeit (Sentence-Transformers) |
+
+Weitere Dienste: `services.py` (Aggregation), `io_manager.py` (YAML-Parsing),
+`models.py` (Dataclasses), `constants.py` (Thresholds).
+
+---
+
+## Konfiguration
+
+```yaml
+# config.yaml (Auszug)
+scoring:
+  fallback_weights:
+    regex: 0.10
+    judge: 0.90
+
+integration:
+  leaderboard:
+    columns:
+      - id: "ux_writing_score"
+        label: "UX Writing & Microcopy"
+        weight: 1.0
+```
 
 ```python
-# Tier Thresholds (für Scoring)
-TIER_S_THRESHOLD = 95.0  # Expert
-TIER_A_THRESHOLD = 85.0  # Professional
-TIER_B_THRESHOLD = 70.0  # Competent
-TIER_C_THRESHOLD = 50.0  # Novice
-
-# Evaluator Constraints
-MIN_SENTENCE_LENGTH = 15      # Für Semantic Similarity
-SIMILARITY_THRESHOLD = 0.78   # Embedding Match Score
-MAX_BUTTON_LENGTH = 50        # Mobile First Constraint
-MIN_TABLE_COLUMNS = 2         # Markdown Table Validation
-
-# Asset-Specific Tuning
-ASSET_REQUIRED_RATIOS = {
-    "ux_writing_003": 0.5,  # Onboarding (softer)
-    "ux_writing_004": 1.0,  # A11y (strict WCAG)
-    "ux_writing_005": 0.4,  # Health (empathy focus)
-}
-DEFAULT_REQUIRED_RATIO = 0.6
+# core/constants.py (Auszug)
+SIMILARITY_THRESHOLD = 0.78   # Sentence-Transformer Cosine-Ähnlichkeit
+WCAG_REQUIRED_RATIO = 1.0     # Asset 004: alle Kriterien müssen erfüllt sein
+BUTTON_LABEL_MAX_CHARS = 25   # Asset 002: Mobile-First-Constraint
 ```
-
-**Vorteil:** Änderungen an Schwellenwerten müssen nur an **einer Stelle** gemacht werden!
-
-______________________________________________________________________
-
-### 2. **evaluators/** – Modulare Scoring-Engine
-
-#### **base.py** – Fundament
-
-- `CriterionEvaluator` (Abstract Base Class): Interface für alle Evaluators
-- `IssueEvaluator`: **Hybrid Matching** (String + Semantic Similarity + WCAG Regex)
-
-**Besonderheit:** Erkennt WCAG-Nummern (`1.4.3`) automatisch via Regex, nutzt Embedding-Similarity als Fallback.
-
-#### **keyword.py** – Keyword-basierte Checks
-
-- `KeywordPresenceEvaluator`: Prüft, ob Required Keywords vorhanden sind
-- `KeywordAbsenceEvaluator`: Prüft, dass Forbidden Keywords fehlen (z.B. Jargon)
-
-#### **structure.py** – Format-Validierung
-
-- `MarkdownTableEvaluator`: Prüft Tabellen-Struktur (Zeilen, Spalten)
-- `StructureValidationEvaluator`: Prüft Required Elements (z.B. "Begründung"-Spalte)
-
-#### **validation.py** – Complex Checks
-
-- `RegexEvaluator`: Pattern Matching (z.B. WCAG-Nummern `\d\.\d\.\d`)
-- `CodeValidationEvaluator`: Code-Block-Erkennung (z.B. `aria-label`)
-- `LengthValidationEvaluator`: Button-Längen-Constraint (Mobile First)
-
-#### **factory.py** – Strategy Pattern
-
-Instanziiert den richtigen Evaluator basierend auf YAML `check_method`:
-
-```python
-EvaluatorFactory.get_evaluator("keyword_presence")
-# → KeywordPresenceEvaluator()
-```
-
-______________________________________________________________________
-
-### 3. **Scoring Logic** – Tiered Difficulty
-
-Alle Assets verwenden ein **60/30/10 Scoring-Schema**:
-
-| Category | Weight | Beschreibung | |----------|--------|--------------| | **Error Detection** | 60% | Issue-Erkennung (Labeled → Standard → Advanced → Expert) | | **Solution Quality** | 30% | Ton, Struktur, Clarity | | **Formatting** | 10% | Markdown, Spalten-Struktur |
-
-**Error Detection Tiers:**
-
-1. **Labeled Issues** (10 Punkte): Basics (z.B. "Kein Jargon")
-1. **Standard Issues** (20 Punkte): Intermediate (z.B. "Actionable Language")
-1. **Advanced Issues** (15 Punkte): Empathie & Ton
-1. **Expert Issues** (15 Punkte): Psychologie (z.B. Endowed Progress Effect)
-
-______________________________________________________________________
-
-## 📂 Available Assets
-
-| Asset ID | Name | Schwierigkeit | Besonderheit | Default Ratio | |----------|------|---------------|--------------|---------------| | **001** | Error Messages | Tiered | Jargon-Elimination, Call-to-Action | 0.6 | | **002** | Button Labels | Tiered | Length < 25 chars, Context-Aware CTAs | 0.6 | | **003** | Onboarding Flow | Tiered | Progressive Disclosure, Jargon-Free | 0.5 (softer) | | **004** | Accessibility (ARIA) | Tiered | WCAG-Konformität, Screen Reader | 1.0 (strict) | | **005** | Microcopy Audit | Tiered | Health Context, Safety-Critical | 0.4 (empathy) |
-
-______________________________________________________________________
-
-## 🧪 Testing
-
-### Test-Suite (28 Tests, ~80% Coverage)
-
-```bash
-# Alle Tests ausführen
-pytest benchmark_modules/ux_writing/tests/
-
-# Spezifische Test-Dateien
-pytest benchmark_modules/ux_writing/tests/test_evaluators.py -v
-pytest benchmark_modules/ux_writing/tests/test_issue_evaluator.py -v
-pytest benchmark_modules/ux_writing/tests/test_yaml_consistency.py -v
-```
-
-### Test-Coverage Breakdown
-
-| Test-Datei | Tests | Coverage | |------------|-------|----------| | `test_ux_writing.py` | 3 | Asset Loading | | `test_evaluators.py` | 15+ | Alle Evaluator-Klassen | | `test_issue_evaluator.py` | 8+ | Hybrid Matching (String + Semantic) | | `test_yaml_consistency.py` | 5+ | YAML-Struktur & Gewichte |
-
-**Alle Tests sind deterministisch** (keine LLM-Calls, nur String-Matching auf Fixtures).
-
-______________________________________________________________________
-
-## 📊 Quality Metrics
-
-| Metric | Value | Status | |--------|-------|--------| | **Overall Quality Score** | **99/100** | ✅ A+ | | **Pylint Score** | **9.07/10** | ✅ Excellent | | **Type-Hint Coverage** | **98%** | ✅ Near-Perfect | | **Test Coverage** | **~80%** | ✅ Production-Ready | | **Largest File** | **119 LOC** | ✅ (was 310) | | **Magic Numbers** | **0** | ✅ (was 8) | | **Tests Passing** | **28/28** | ✅ All Green |
-
-______________________________________________________________________
-
-## 🔄 Changelog
-
-### v2.0.1 (2026-02-02) – Pylint Optimization
-
-**Polish & Bug Fixes:**
-
-- 🐛 **Fixed critical duplicate method** in `IssueEvaluator` (was causing incorrect scoring)
-- 🐛 **Removed unreachable code** in `validation.py` (partial scoring now works)
-- ✨ Added module docstrings to all evaluators (95% coverage)
-- 🎨 Fixed PEP-8 violations (line length, indentation)
-- 🔧 Disabled `R0903` (too-few-public-methods) for Strategy Pattern classes
-- 📈 **Pylint Score: 8.24 → 9.07** (+10%)
-
-**Metrics Update:**
-
-- Quality Score: 98/100 → **99/100**
-- Type-Hint Coverage: 98% (unchanged)
-- Test Coverage: ~80% (unchanged)
-
-______________________________________________________________________
-
-### v2.0.0 (2026-02-01) – Major Refactoring
-
-**Breaking Changes:** None (API-compatible)
-
-**New Features:**
-
-- ✨ Created `core/constants.py` (all magic numbers centralized)
-- 🏗 Split `evaluators.py` → 6 modules (`base`, `keyword`, `structure`, `validation`, `factory`)
-- 🐛 Fixed YAML bugs in Asset 002/003:
-  - Asset 002: `Newsletter-Button` split into positive/negative checks
-  - Asset 003: `Tech-Jargon` consistency fixed (`inverse_match: true`)
-- 📝 Added `default_required_ratio` to all assets (transparent tuning)
-- 🧪 Expanded tests: **3 → 28 tests** (+833%)
-- 📚 Added Google-style docstrings (all public methods)
-
-**Metrics:**
-
-- Quality Score: 65/100 → **98/100** (+51%)
-- Largest File: 310 LOC → **119 LOC** (-68%)
-- Magic Numbers: 8 → **0** (-100%)
-- Type-Hint Coverage: 85% → **98%** (+15%)
-- Test Coverage: ~20% → **~80%** (+300%)
-
-______________________________________________________________________
-
-## 🚀 Usage Example
-
-```python
-from pathlib import Path
-from benchmark_modules.ux_writing.test import UXWritingTest
-from utils.llm_client import LLMClient
-
-# Load Asset
-asset_path = Path("benchmark_modules/ux_writing/assets/asset_001_error_messages.yaml")
-test = UXWritingTest(asset_path)
-
-# Execute Test
-llm_client = LLMClient()
-result = test.execute(
-    model="mistral-large",
-    llm_client=llm_client,
-    provider="ollama"
-)
-
-# Score Response
-scores = test.score_response(result["response"])
-
-print(f"Total Score: {scores['total_score']}/100")
-print(f"Tier: {scores['tier']}")
-# Output:
-# Total Score: 78.5/100
-# Tier: Tier B (Competent)
-```
-
-______________________________________________________________________
-
-## 🛠 Development
-
-### Code-Style
-
-- **Linter:** Pylint (Score: 9.07/10)
-- **Formatter:** Black (Line length: 100)
-- **Type-Checker:** mypy (98% coverage)
-
-### Pre-Commit Checks
-
-```bash
-# Run before commit
-pylint benchmark_modules/ux_writing/
-pytest benchmark_modules/ux_writing/tests/
-mypy benchmark_modules/ux_writing/ --strict
-```
-
-______________________________________________________________________
-
-## 📖 Further Reading
-
-- **Architecture Overview:** See `docs/CrucibleMark_Architecture_Overview.md`
-- **Data Format:** See `docs/DATA_FORMAT.md`
-- **Golden Standards:** See `docs/GOLDEN_STANDARDS.md`
-
-______________________________________________________________________
-
-## 📝 License & Maintainers
-
-**Maintainer:** CrucibleMark Core Team\
-**Status:** ✅ Production-Ready (v2.0.1)\
-**Last Updated:** 2026-02-02
-
-______________________________________________________________________
-
-**Questions?** Open an issue or contact the maintainers.

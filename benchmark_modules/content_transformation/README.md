@@ -1,470 +1,176 @@
-# Content Transformation Module
+# Content Transformation
 
-> **Technical Metadata**
->
-> - **ID:** `content_transformation`
-> - **Namespace:** `benchmark_modules.content_transformation`
-> - **Class:** `ContentTransformationTest` (inherits `BaseTest`)
-> - **Evaluator:** `ContentTransformationEvaluator` (Facade Pattern)
-> - **Version:** v2.0.0 (Clean Architecture - Modular Evaluators)
-> - **Type:** Creative Writing & Content Adaptation
-> - **Pylint Score:** 9.63/10
+> Bewertet, ob ein LLM Inhalte format- und zielgruppengerecht transformieren
+> kann — ohne den Kerninhalt zu verfälschen. Das Modul prüft sechs Szenarien
+> aus Marketing, technischem Schreiben und professioneller Kommunikation.
 
-______________________________________________________________________
+**Modul-ID:** `content_transformation` | **Klasse:** `ContentTransformationTest` | **Version:** 1.0.0
+**Assets:** 6 | **Sprache:** Deutsch (teilweise EN) | **Scoring:** Hybrid (Regex + LLM-Judge)
 
-## 🔍 Module Overview
+---
 
-This module tests LLMs' ability to **transform content across different formats, tones, and structures** while preserving core information. It evaluates creative adaptation skills essential for:
+## Warum dieses Modul?
 
-- **Marketing:** Landing pages, email campaigns, social media
-- **Technical Writing:** Glossary simplification, documentation
-- **Professional Communication:** Tone shifts (formal ↔ casual)
-- **Content Repurposing:** Blog → Thread, Video scripts
+Content Transformation ist mehr als Umschreiben. Jedes Zielformat hat eigene
+strukturelle und tonale Anforderungen, die ein Modell kennen und einhalten muss:
+Ein Twitter-Thread ohne Nummerierung ist falsches Format. Eine Landing Page ohne
+CTA ist eine verpasste Opportunity. Ein Incident Report mit durchschimmerndem
+Sarkasmus ist inakzeptabel in B2B-Kommunikation. Das Modul testet, ob Modelle
+diese Anforderungen ohne explizite Vorgabe erkennen und umsetzen.
 
-Unlike pure accuracy tests, this module measures **style consistency**, **format compliance**, and **audience-appropriate tone**.
+Assets 001–005 erzwingen `language: de`. Asset 006 ist auf Englisch
+(typischer Business-Kommunikationskontext in internationalen Teams).
+Wortlimit-Constraints (Assets 003, 004) sind harte Bewertungskriterien.
 
-______________________________________________________________________
+---
 
-## 🏗 Architecture (Core/MVC v2.0)
+## Scoring-Methodik
 
+Standard-Fallback: `regex: 0.20 / judge: 0.80`.
+
+| Dimension | Gewicht | Beschreibung |
+|---|---|---|
+| **Fehler-Erkennung** | 70 % | Erkennt das Modell die Transformations-Anforderungen? Gestaffelt: Labeled → Expert |
+| **Lösungsqualität** | 30 % | Kreativität, Format-Compliance, Actionability, Professionalität |
+
+Score-Contribution: `routine: 1.0 / reasoning: 0.0` (alle Assets).
+
+---
+
+## Test Assets
+
+### `content_transformation_001` — Landing Page Hero
 ```
-benchmark_modules/content_transformation/
-├── core/
-│   ├── evaluators/
-│   │   ├── __init__.py              # ContentTransformationEvaluator (Facade)
-│   │   ├── tiered_scoring.py        # Error Detection (Tiered Difficulty)
-│   │   ├── semantic_matcher.py      # Keyword + Semantic Similarity
-│   │   ├── content_quality.py       # Solution Quality Scoring
-│   │   ├── format_validator.py      # Format Checks (NEW in v2.0)
-│   │   └── tone_evaluator.py        # Tone/Formality Detection (NEW in v2.0)
-│   ├── constants.py                  # SEMANTIC_THRESHOLDS, FORMAT_SCHEMAS
-│   └── __init__.py
-├── assets/
-│   ├── landing_page.yaml
-│   ├── twitter_thread.yaml
-│   ├── glossar_simplification.yaml
-│   ├── video_script.yaml
-│   ├── email_newsletter.yaml
-│   └── sarcasm_shield.yaml
-├── tests/
-│   ├── __init__.py
-│   └── test_evaluators.py           # Integration Tests (6 test cases)
-├── test.py                           # Module Runner (Controller)
-├── config.yaml                       # Module Configuration
-└── README.md                         # This file
-```
-
-### Architecture Highlights
-
-- **Facade Pattern:** `ContentTransformationEvaluator` orchestrates specialized sub-evaluators
-- **Single Responsibility:** Each evaluator handles one concern (scoring, validation, tone)
-- **Modular Design:** Easy to extend with new validators (e.g., `SEOEvaluator`, `ReadabilityEvaluator`)
-- **Backward Compatible:** Maintains same interface as v1.0 (old code archived)
-
-______________________________________________________________________
-
-## 🧪 Scoring Logic
-
-The module uses a **multi-dimensional scoring system** with configurable weights:
-
-### 1. Error Detection (70 points)
-
-Tiered difficulty system via `TieredScoringEngine`:
-
-| Tier | Difficulty | Threshold | Example | |------|------------|-----------|---------| | **Labeled** | Easy | 40% keyword match | Explicitly marked issues (e.g., TODO) | | **Standard** | Medium | 40% keyword match | Common violations (grammar, consistency) | | **Advanced** | Hard | 35% keyword match | Subtle flaws (tone mismatch, missing CTA) | | **Expert** | Deep Reasoning | 20% keyword match + 55% semantic | Complex errors (brand voice, cultural sensitivity) |
-
-**Key Features:**
-
-- **Hybrid Matching:** Exact keywords + semantic similarity fallback
-- **Tier-Specific Thresholds:** Expert tier requires stricter validation (prevents false positives)
-- **Think-Tag Cleaning:** Removes `<think>...</think>` blocks from reasoning models (DeepSeek R1)
-
-### 2. Solution Quality (30 points)
-
-Evaluated by `ContentQualityEvaluator`:
-
-- **Creativity:** Engaging language, storytelling elements
-- **Format Compliance:** Correct structure (e.g., 1/5 thread numbering)
-- **Actionability:** Clear CTAs, next steps
-- **Professionalism:** Absence of slang/profanity (for formal content)
-
-### 3. Format Validation (NEW in v2.0)
-
-Asset-specific structure checks via `FormatValidator`:
-
-| Asset Type | Validation Rules | |------------|------------------| | **Twitter Thread** | Sequential numbering (1/5, 2/5), max 280 chars per tweet | | **JSON Export** | Valid syntax, required keys, schema compliance | | **Landing Page** | Headline, subheadline, CTA presence | | **Video Script** | Spoken style markers (short sentences, questions) |
-
-**Example:**
-
-```python
-is_valid, violations = FormatValidator.validate_twitter_thread(response, min_tweets=5)
-# Returns: (False, ['Missing tweet numbers: [2, 4]'])
+Typ:       Feature-Liste → konversionsorientierte Hero-Section
+Kontext:   Conversion Copywriter für B2B-SaaS "TaskFlow Pro".
+           Problem: Aktuelle TP ist feature-lastig, kein Nutzen kommuniziert.
+Input:     5 Feature-Bullet-Points (Unlimited Projects, Real-time Collaboration,
+           Analytics Dashboard, 99.9% Uptime SLA, SOC 2 Type II)
+Aufgabe:   Zweistufig: [1] Analyse (warum funktioniert Feature-Liste nicht?),
+           [2] Hero-Section erstellen.
+Anforderungen:
+  - Headline: Hauptnutzen emotional kommuniziert, keine reinen Features
+  - Subheadline: Erklärt wie das Produkt Headline einlöst
+  - CTA: Handlungsorientierter Button-Text (nicht "Submit")
+  - Social Proof/Trust-Element integriert (aus SLA/Security-Features)
+  - Risk Reversal integriert (z. B. No-Risk-Garantie)
+Scoring:   Format-Validierung (Sections vorhanden) + Judge für Conversion-Qualität
 ```
 
-### 4. Tone Evaluation (NEW in v2.0)
+---
 
-Measures stylistic consistency via `ToneEvaluator`:
-
-- **Formality Score:** 0.0 (casual) to 1.0 (formal)
-
-  - Detects formal markers: "hereby", "pursuant", "notwithstanding"
-  - Detects casual markers: "gonna", "wanna", "cool", "!"
-
-- **Professionalism Score:** 0.0 (unprofessional) to 1.0 (professional)
-
-  - Penalizes slang: "lol", "wtf", "stupid"
-  - Rewards professional language: "please", "thank you", "regarding"
-
-- **Spoken Style Detection:** For video scripts/podcasts
-
-  - Fillers: "um", "like", "you know"
-  - Direct address: "you", "we"
-  - Questions and contractions
-
-**Example:**
-
-```python
-formality = ToneEvaluator.measure_formality("Hey! This is gonna be awesome.")
-# Returns: 0.35 (casual)
-
-professionalism = ToneEvaluator.measure_professionalism("lol whatever")
-# Returns: 0.2 (unprofessional)
+### `content_transformation_002` — Twitter Thread
+```
+Typ:       Blog-Artikel → viraler Twitter-Thread (1/x-Format)
+Kontext:   Social Media Strategist, Tech-Startup-Kunden.
+           Blogpost "Why Async Communication Beats Meetings" hat schlechte
+           Social-Media-Performance trotz gutem Inhalt.
+Input:     300-Wörter-Ausschnitt des Blogposts
+Anforderungen:
+  - Sequenzielle Nummerierung: "1/5" bis "5/5" (strikt, per Regex geprüft)
+  - Max. 280 Zeichen pro Tweet
+  - Engagement-Hook im ersten Tweet
+  - Expert-Level: Open Loops (Cliffhanger), Engagement Question am Ende
+Scoring:   Nummerierung + Zeichenlimit per Regex; Virality-Potential per Judge
 ```
 
-______________________________________________________________________
+---
 
-## ⚙️ Configuration
-
-All tunable parameters are centralized in `core/constants.py`:
-
-### Semantic Thresholds
-
-```python
-SEMANTIC_THRESHOLDS = {
-    "labeled": 0.45,   # Generous (for compatibility)
-    "standard": 0.45,
-    "advanced": 0.50,  # Medium strictness
-    "expert": 0.55     # Strict (prevents false positives)
-}
+### `content_transformation_003` — Glossary Simplification
+```
+Typ:       Fachvokabular-Vereinfachung (Juristisch → Alltagssprache)
+Input:     Juristische Fachbegriffe (z. B. "Kontradiktorisches Verfahren",
+           "Dispositionsmaxime", "Rechtskraft")
+Aufgabe:   Je Begriff: vereinfachte Erklärung in max. X Wörtern
+           (Wortlimit ist Teil der Aufgabenstellung)
+Scoring:   Vereinfachung geprüft (keine Fachbegriffe im Output) +
+           Wortlimit per Regex validiert + inhaltliche Korrektheit per Judge
 ```
 
-**Use Case:** Adjust if models consistently fail semantic checks or get false positives.
+---
 
-### Format Schemas
-
-```python
-FORMAT_SCHEMAS = {
-    "twitter_thread": {
-        "pattern": r"^\d+/\d+",
-        "min_tweets": 3,
-        "max_chars_per_tweet": 280
-    },
-    "landing_page": {
-        "required_sections": ["headline", "subheadline", "cta"],
-        "max_headline_chars": 60
-    }
-}
+### `content_transformation_004` — Video Script Tutorial
+```
+Typ:       Tutorial → gesprochenes Video-Script
+Kontext:   Technisches Tutorial (schriftlich) soll zu
+           einem natürlich wirkenden Erklärfilm-Script werden.
+Anforderungen:
+  - Kurze Sätze (Sprechrhythmus)
+  - Direkte Ansprache (du/Sie je nach Kontext)
+  - Pausen-Markierungen (z. B. "[Pause]", "[Screenshot zeigen]")
+  - Konversationeller Ton, keine "Prosa-Blöcke"
+Scoring:   Strukturelle Markers per Regex + Ton-Analyse per Judge
 ```
 
-**Use Case:** Add new format types or adjust validation rules per asset.
+---
 
-### Scoring Weights
-
-```python
-DEFAULT_WEIGHTS = {
-    "error_detection": 0.70,  # 70% of total score
-    "solution_quality": 0.30  # 30% of total score
-}
+### `content_transformation_005` — Newsletter Adaptation
+```
+Typ:       Corporate-Text → Newsletter (engagierend, persönlich)
+Input:     Formeller Corporate-Fließtext
+Anforderungen:
+  - Betreffzeile vorhanden
+  - Persönliche Ansprache
+  - Klarer CTA
+  - Keine Passivsätze
+Scoring:   Struktur-Elemente per Regex + Ton per Judge
 ```
 
-**Override per asset** in `config.yaml`:
+---
+
+### `content_transformation_006` — Sarcasm Shield
+```
+Typ:       Sarkastische Slack-Nachricht → formeller Incident Report
+Kontext:   Communications Lead, schreibt Bericht für CTO.
+Input:     "Great job deploying on Friday, geniuses. The real-time database
+           is now as consistent as my horoscope. And the latency spikes are
+           so high I had time to make a coffee while waiting for the dashboard
+           to load. We need to rollback the 'optimization' before the customers
+           wake up."
+Aufgabe:
+  1. Sarkasmus und passiv-aggressiven Ton vollständig entfernen
+  2. Technische Fakten beibehalten
+  3. Metaphern korrekt interpretieren ("horoscope" = unzuverlässig/random)
+  4. Vollständig professionellen Ton
+Scoring:   Professionalismus-Score muss > 0.8 liegen.
+           Verbleibende sarkastische Elemente → Penalty.
+           Sachliche Fakten beibehalten → positive Bewertung.
+Sprache:   Englisch (asset-seitig; Kontext ist internationales Team)
+```
+
+---
+
+## Technischer Aufbau
+
+Sub-Evaluatoren in `core/evaluators/`:
+
+| Klasse / Datei | Aufgabe |
+|---|---|
+| `TieredScoringEngine` (`tiered_scoring.py`) | Labeled → Expert Hybrid-Matching |
+| `FormatValidator` (`format_validator.py`) | Twitter-Nummerierung, Landing-Page-Sections |
+| `ToneEvaluator` (`tone_evaluator.py`) | Formalitätsskala 0,0–1,0, Professionalismus-Score |
+| `ContentQualityEvaluator` (`content_quality.py`) | Kreativität, Actionability |
+| `SemanticMatcher` (`semantic_matcher.py`) | Sentence-Transformer-Fallback |
+
+---
+
+## Konfiguration
 
 ```yaml
-benchmarks:
-  - id: "content_transformation_003"
-    name: "Legal Glossary Simplification"
-    score_contribution:
-      routine: 0.7
-      reasoning: 0.3  # More weight on reasoning for complex tasks
+# config.yaml (Auszug)
+config:
+  categories:
+    structure_format:
+      weight: 0.25
+    content_quality:
+      weight: 0.35
+    tone_style:
+      weight: 0.25
+    solution_effectiveness:
+      weight: 0.15
+
+scoring:
+  fallback_weights:
+    regex: 0.20
+    judge: 0.80
 ```
-
-______________________________________________________________________
-
-## 📂 Available Assets
-
-| ID | Name | Tier | Format | Key Challenge | |----|------|------|--------|---------------| | **001** | Landing Page Hero | 1 | Marketing Copy | Conversion-focused writing | | **002** | Twitter Thread | 1 | Social Media | Sequential numbering, 280-char limit | | **003** | Legal Glossary Simplification | 2 | Technical → Layman | Simplification without losing accuracy | | **004** | Video Script Tutorial | 2 | Written → Spoken | Conversational tone, pacing | | **005** | Email Newsletter | 1 | Corporate → Engaging | Tone shift (formal → friendly) | | **006** | Sarcasm Shield | 2 | Defensive Writing | Professionalism under pressure |
-
-### Asset Details
-
-**Asset 001: Landing Page Hero Section**
-
-- **Input:** Product description (technical)
-- **Expected Output:** Headline (\<60 chars), subheadline, CTA
-- **Scoring:** Format validation (headline/CTA presence) + conversion keywords
-
-**Asset 002: Twitter Thread Adaptation**
-
-- **Input:** Long-form blog post
-- **Expected Output:** 5-tweet thread (1/5, 2/5, etc.)
-- **Scoring:** Thread structure validation + engagement metrics
-
-**Asset 003: Legal Glossary Simplification**
-
-- **Input:** Legal jargon (e.g., "notwithstanding")
-- **Expected Output:** Plain English explanation
-- **Scoring:** Readability + accuracy preservation
-
-**Asset 006: Sarcasm Shield (Incident Report)**
-
-- **Input:** Frustrated customer complaint (unprofessional tone)
-- **Expected Output:** Professional incident report
-- **Scoring:** Professionalism score (must be > 0.8), absence of slang
-
-______________________________________________________________________
-
-## 🚀 Usage Examples
-
-### Run Single Asset
-
-```bash
-cd benchmark_modules/content_transformation
-python test.py
-# Interactive mode: Select model and asset
-```
-
-### Programmatic Usage
-
-```python
-from benchmark_modules.content_transformation.test import ContentTransformationTest
-from utils.llm_client import LLMClient
-
-# Initialize
-client = LLMClient()
-test = ContentTransformationTest('content_transformation_002')  # Twitter Thread
-
-# Execute
-result = test.execute('qwen2.5-coder:7b', client)
-
-# Check score
-print(f"Total Score: {result['total_score']}/100")
-print(f"Formality: {result['metadata'].get('formality_score', 'N/A')}")
-```
-
-### Custom Validation
-
-```python
-from benchmark_modules.content_transformation.core.evaluators import (
-    FormatValidator,
-    ToneEvaluator
-)
-
-# Validate Twitter thread
-response = "1/3 First tweet\n2/3 Second\n3/3 Final"
-is_valid, violations = FormatValidator.validate_twitter_thread(response, min_tweets=3)
-
-# Measure tone
-formality = ToneEvaluator.measure_formality(response)
-professionalism = ToneEvaluator.measure_professionalism(response)
-```
-
-______________________________________________________________________
-
-## 🧪 Testing
-
-### Run Integration Tests
-
-```bash
-# All evaluator tests
-pytest benchmark_modules/content_transformation/tests/test_evaluators.py -v
-
-# Quick validation (no pytest required)
-python benchmark_modules/content_transformation/tests/test_evaluators.py
-```
-
-**Test Coverage:**
-
-- [x] FormatValidator: Twitter threads, JSON, landing pages
-- [x] ToneEvaluator: Formality, professionalism, spoken style
-- [x] TieredScoringEngine: Labeled → Expert tiers
-- [x] SemanticMatcher: Keyword + semantic fallback
-- [x] ContentQualityEvaluator: Solution quality scoring
-- [x] Integration: Full pipeline (6 test cases)
-
-**Current Status:** 6/6 tests passing ✅
-
-______________________________________________________________________
-
-## 📊 Performance & Quality Metrics
-
-| Metric | v1.0 | v2.0 | Improvement | |--------|------|------|-------------| | **LOC (evaluators.py)** | 400+ | ~50 (facade) | -87% | | **Files** | 1 monolithic | 6 specialized | +500% modularity | | **Pylint Score** | 7.5/10 | 9.63/10 | +28% | | **Test Coverage** | 0% | 80% | +80% | | **Maintainability** | Low | High | ✅ | | **Format Validation** | ❌ None | ✅ 3 validators | NEW | | **Tone Detection** | ❌ None | ✅ 3 metrics | NEW |
-
-______________________________________________________________________
-
-## 🔄 Migration Guide (v1.0 → v2.0)
-
-### Breaking Changes
-
-**None!** v2.0 maintains full backward compatibility via facade pattern.
-
-### What Changed
-
-1. **Internal Architecture:**
-
-   - Old: `evaluators.py` (400 LOC monolith)
-   - New: 6 specialized files in `core/evaluators/`
-
-1. **New Features:**
-
-   - `FormatValidator`: Structure checks (threads, JSON, landing pages)
-   - `ToneEvaluator`: Formality/professionalism detection
-
-1. **Configuration:**
-
-   - Hardcoded thresholds → `constants.py`
-   - Asset-specific schemas added
-
-### Migrating Custom Code
-
-If you extended `evaluators.py` in v1.0:
-
-```python
-# Old import (still works via facade)
-from benchmark_modules.content_transformation.core.evaluators import ContentTransformationEvaluator
-
-# New import (direct access to sub-evaluators)
-from benchmark_modules.content_transformation.core.evaluators import (
-    FormatValidator,
-    ToneEvaluator,
-    SemanticMatcher
-)
-```
-
-### Old Code Archive
-
-v1.0 code is preserved in `backups/content_transformation_evaluators_v1.py`.
-
-______________________________________________________________________
-
-## 🛠 Development
-
-### Adding New Evaluators
-
-1. Create new file in `core/evaluators/`:
-
-   ```python
-   # seo_evaluator.py
-   class SEOEvaluator:
-       @staticmethod
-       def check_meta_description(response: str) -> dict:
-           # Implementation
-           pass
-   ```
-
-1. Export in `core/evaluators/__init__.py`:
-
-   ```python
-   from .seo_evaluator import SEOEvaluator
-   __all__ = [..., "SEOEvaluator"]
-   ```
-
-1. Integrate in facade:
-
-   ```python
-   # In ContentTransformationEvaluator.score_response()
-   seo_score = SEOEvaluator.check_meta_description(response)
-   ```
-
-### Code Quality Standards
-
-- **Pylint:** Maintain score ≥ 9.0
-- **Docstrings:** All public methods must have docstrings
-- **Type Hints:** Use `typing` module for complex signatures
-- **Tests:** Add test cases to `tests/test_evaluators.py`
-
-______________________________________________________________________
-
-## 🐛 Troubleshooting
-
-### Issue: Semantic Similarity Always Fails
-
-**Symptom:** Expert tier always scores 0, even for correct answers.
-
-**Solution:** Lower `SEMANTIC_THRESHOLDS["expert"]` in `constants.py`:
-
-```python
-SEMANTIC_THRESHOLDS = {
-    "expert": 0.50  # Was 0.55
-}
-```
-
-### Issue: Format Validation Too Strict
-
-**Symptom:** Twitter threads fail even when structure looks correct.
-
-**Solution:** Check pattern in `FORMAT_SCHEMAS`:
-
-```python
-FORMAT_SCHEMAS = {
-    "twitter_thread": {
-        "pattern": r"\d+[/:]\d+"  # Allow "1:5" or "1/5"
-    }
-}
-```
-
-### Issue: Professionalism Score Too Low
-
-**Symptom:** Professional text scores 0.3 (expected > 0.5).
-
-**Solution:** Check if text contains slang words in `ToneEvaluator.CASUAL_WORDS`. Adjust penalty in `measure_professionalism()`.
-
-______________________________________________________________________
-
-## 📚 References
-
-- **UX Writing Module:** Similar architecture (reference implementation)
-- **Code Quality Module:** Tiered scoring pattern
-- **Semantic Similarity:** `utils/similarity.py` (sentence-transformers)
-- **Base Test:** `benchmark_modules/base_test.py` (parent class)
-
-______________________________________________________________________
-
-## 📝 Changelog
-
-### v2.0.0 (2026-02-02)
-
-**Features:**
-
-- ✨ Added `FormatValidator` for structure checks (threads, JSON, landing pages)
-- ✨ Added `ToneEvaluator` for formality/professionalism detection
-- ✨ Modular evaluator architecture (6 specialized files)
-- ✨ Integration test suite (6 test cases)
-
-**Improvements:**
-
-- 🚀 Pylint score: 7.5 → 9.63 (+28%)
-- 🚀 Reduced monolithic evaluator: 400 LOC → 50 LOC facade (-87%)
-- 🚀 Test coverage: 0% → 80%
-
-**Fixes:**
-
-- 🐛 Semantic threshold consistency (Expert tier validation)
-- 🐛 Think-tag cleaning for reasoning models (DeepSeek R1)
-- 🐛 Professionalism scoring too lenient (adjusted penalties)
-
-**Breaking Changes:**
-
-- None (backward compatible via facade)
-
-### v1.0.0 (2025-12-29)
-
-- Initial release
-- Basic error detection (tiered difficulty)
-- Solution quality scoring
-- 6 test assets (landing page, thread, glossary, video, newsletter, sarcasm)
-
-______________________________________________________________________
-
-**Version:** 2.0.0\
-**Author:** CrucibleMark Framework\
-**License:** MIT\
-**Last Updated:** 2026-02-02
