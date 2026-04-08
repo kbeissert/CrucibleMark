@@ -367,28 +367,28 @@ def get_model_category(
             if provider in commercial_providers:
                 m_type = commercial_providers[provider].get("model_type", "")
                 if m_type == "open_weights_cloud":
-                    return "Cloud (Open-Weights)"
+                    return "Open Weights (Cloud)"
                 elif m_type == "proprietary_api":
-                    return "Commercial"
+                    return "Proprietär"
                 elif m_type == "cloud":
-                    return "Local Cloud"
+                    return "Open Weights (Local)"
         except Exception:
             pass
 
 # Wenn neue cloud Datei oder aus lokaler CSV und der Name "cloud" enthaelt, soll es offene Cloud-Modelle abbilden
     if source_file == "cloud" or (source_file == "local" and ("cloud" in model_name.lower() or (size_gb is not None and size_gb < 0.01))):
-        return "Cloud (Open-Weights)"
+        return "Open Weights (Cloud)"
 
     # Rule 1: Commercial CSV → Always Commercial
     if source_file == "commercial":
-        return "Commercial"
+        return "Proprietär"
 
     # Rule 2: Local CSV → Check if it's a cloud proxy using canonical logic
     if is_cloud_model(model_name, size_gb):
-        return "Cloud (Open-Weights)"
+        return "Open Weights (Cloud)"
 
     # Rule 3: Everything else from Local CSV → Local
-    return "Local"
+    return "Open Weights (Local)"
 
 
 def is_reasoning_model(model_name: str) -> bool:

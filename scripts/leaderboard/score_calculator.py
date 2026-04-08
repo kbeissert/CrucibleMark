@@ -4,9 +4,10 @@ Calculates Routine vs Reasoning scores, aggregates stats, and classifies models.
 """
 
 import sys
-from typing import Any, Dict, Tuple
+from typing import Any, Dict, Optional, Tuple
 
 import pandas as pd
+import yaml
 
 # Import constants and config logic
 from .config import ROOT_DIR, config
@@ -16,6 +17,48 @@ if str(ROOT_DIR) not in sys.path:
     sys.path.insert(0, str(ROOT_DIR))
 
 # Removed unused imports from utils.module_registry as functionality is passed via config
+
+
+# ==============================================================================
+# 1b. PRICE LOOKUP (from cost_limits.yaml)
+# ==============================================================================
+
+def _build_price_lookup() -> Dict[str, float]:
+    """
+    Builds a flat {model_name: output_cost_per_1k} dict from config/cost_limits.yaml.
+    Only model entries with an 'output_cost_per_1k' key are included.
+    Non-model keys like 'daily_budget' are skipped automatically.
+    """
+    cost_limits_path = ROOT_DIR / "config" / "cost_limits.yaml"
+    try:
+        with open(cost_limits_path, encoding="utf-8") as f:
+            data = yaml.safe_load(f)
+    except (OSError, yaml.YAMLError):
+        return {}
+
+    lookup: Dict[str, float] = {}
+    providers = data.get("providers", {})
+    for _provider, models in providers.items():
+        if not isinstance(models, dict):
+            continue
+        for model_name, model_data in models.items():
+            if not isinstance(model_data, dict):
+                continue
+            price = model_data.get("output_cost_per_1k")
+            if isinstance(price, (int, float)):
+                lookup[model_name] = float(price)
+    return lookup
+
+_PRICE_LOOKUP: Optional[Dict[str, float]] = None
+
+
+def _get_price_lookup() -> Dict[str, float]:
+    """Returns cached price lookup dict (lazy init)."""
+    # pylint: disable=global-statement
+    global _PRICE_LOOKUP  # noqa: PLW0603
+    if _PRICE_LOOKUP is None:
+        _PRICE_LOOKUP = _build_price_lookup()
+    return _PRICE_LOOKUP
 
 
 # ==============================================================================
@@ -505,6 +548,13 @@ def calculate_scores(
     # Note: uses Full DF (incl non-scoring)
     run_counts = _calculate_run_counts(df_all, modules_config)
 
+    # scoring_df: only assets from modules with enable_scoring=True (same base as Total Score)
+    cat_to_scoring = {
+        mod_data.get("name", mod_key): mod_data.get("enable_scoring", True)
+        for mod_key, mod_data in modules_config.items()
+    }
+    scoring_df = df_success[df_success["category"].map(lambda c: cat_to_scoring.get(c, True))]
+
     # Merge Counts
     result = pd.merge(
         stats, run_counts, on=["model", "model_version", "type"], how="left"
@@ -529,6 +579,37 @@ def calculate_scores(
         .reset_index()
     )
     result = pd.merge(result, cat_stats, on=["model", "model_version"], how="left")
+
+    # --- Override tokens_used with scoring-only total ---
+    # _aggregate_basic_stats() sums tokens across ALL non-system rows (incl. Political Compass).
+    # Overwrite here with scoring-only sum so that Tokens Total has the same static base
+    # as Total Score — re-test runs (e.g. Political Compass retests) don't distort the value.
+    if "tokens_used" in scoring_df.columns and "tokens_used" in result.columns:
+        token_totals = (
+            scoring_df.groupby(["model", "model_version"])["tokens_used"]
+            .sum()
+            .reset_index()
+        )
+        result = result.drop(columns=["tokens_used"])
+        result = pd.merge(result, token_totals, on=["model", "model_version"], how="left")
+
+    # --- Token Stats per Module ---
+    # Uses scoring_df (same base as Total Score) to ensure a static, comparable
+    # token count. Political Compass and other non-scoring modules are excluded
+    # because they have variable re-test counts, which would distort cross-model
+    # comparisons.
+    if "tokens_used" in scoring_df.columns:
+        token_by_module = (
+            scoring_df.groupby(["model", "model_version", "category"])["tokens_used"]
+            .sum()
+            .unstack()
+            .reset_index()
+        )
+        token_by_module.columns = [
+            f"Tokens: {col}" if col not in ("model", "model_version") else col
+            for col in token_by_module.columns
+        ]
+        result = pd.merge(result, token_by_module, on=["model", "model_version"], how="left")
 
     # --- Routine vs Reasoning (v2.1: Granular Weights) ---
     # Calculates scores based on per-asset routine/reasoning split
@@ -576,48 +657,39 @@ def calculate_scores(
 
     result["Total Score"] = result.apply(calc_weighted_total, axis=1)
 
-    # Cost per 1K Tokens (Commercial Only)
-    # v3.0: Now calculates Cost per 1K TOKENS (USD), not per 1K Tests.
-    if "cost_usd" in result.columns and "tokens_used" in result.columns:
+    # Cost per 1K Output Tokens — from cost_limits.yaml (configured price).
+    # Uses the published output_cost_per_1k for each known model.
+    # Models without a configured price (e.g. local Ollama, unknown cloud proxies)
+    # receive None → shows as empty in the leaderboard.
+    price_lookup = _get_price_lookup()
 
-        def calc_cost_per_1k_tokens(row):
-            cost_total = row.get("cost_usd")
-            tokens_total = row.get("tokens_used")
+    def calc_cost_per_1k_tokens(row: pd.Series) -> Optional[float]:
+        # Match by model_version (e.g. "gpt-4o") or fall back to model column
+        model_ver = str(row.get("model_version", "") or "").strip()
+        model_name = str(row.get("model", "") or "").strip()
+        price = price_lookup.get(model_ver) or price_lookup.get(model_name)
+        return price  # None if not found → empty cell
 
-            # Safe Float Conversion
+    result["Cost per 1K (USD)"] = result.apply(calc_cost_per_1k_tokens, axis=1)
+
+    # Benchmark Cost (USD) — absolute cost for the full benchmark run.
+    # Formula: (Tokens Total / 1000) × Cost per 1K (USD)
+    # Only set when both inputs are available (known model price + recorded tokens).
+    # Models without a price entry (local, unknown proxies) remain empty.
+    if "tokens_used" in result.columns:
+        def calc_benchmark_cost(row: pd.Series) -> Optional[float]:
+            price = row.get("Cost per 1K (USD)")
+            tokens = row.get("tokens_used")
             try:
-                cost_total = float(cost_total) if pd.notna(cost_total) else 0.0
-                tokens_total = float(tokens_total) if pd.notna(tokens_total) else 0.0
-            except (ValueError, TypeError):
+                price_f = float(price)  # type: ignore[arg-type]
+                tokens_f = float(tokens)  # type: ignore[arg-type]
+            except (TypeError, ValueError):
                 return None
-
-            # Validation
-            if tokens_total == 0:
+            if pd.isna(price_f) or pd.isna(tokens_f) or tokens_f == 0:
                 return None
+            return round((tokens_f / 1000) * price_f, 4)
 
-            # Logic: Avoid confusing free models with missing data
-            if cost_total == 0 and str(row.get("type", "")).lower() != "commercial":
-                return None
-
-            # Calc: (Total Cost / Total Tokens) * 1000
-            # Result is in USD (e.g. 0.0050 for half a cent)
-            return round((cost_total / tokens_total) * 1000, 4)
-
-        result["Cost per 1K (USD)"] = result.apply(calc_cost_per_1k_tokens, axis=1)
-
-    # Fallback to old "Cost per 1K Tests" if tokens are missing (Legacy compat)
-    elif "cost_usd" in result.columns and "asset_id" in result.columns:
-
-        def calc_cost_per_1k_tests(row):
-            cost = row.get("cost_usd")
-            count = row.get("asset_id")
-            if pd.isna(cost) or pd.isna(count) or count == 0:
-                return None
-            if cost == 0 and str(row.get("type", "")).lower() != "commercial":
-                return None
-            return round((cost / count) * 1000, 2)
-
-        result["Cost per 1K (USD)"] = result.apply(calc_cost_per_1k_tests, axis=1)
+        result["Benchmark Cost (USD)"] = result.apply(calc_benchmark_cost, axis=1)
 
     # Efficiency Index
     result["Efficiency_Index"] = result.apply(
@@ -653,6 +725,7 @@ def calculate_scores(
             "type": "Type",
             "llm_judge_avg": "LLM Judge Avg",
             "judge_coverage": "LLM Judge Coverage",
+            "tokens_used": "Tokens Total",
         }
     )
 

@@ -19,7 +19,7 @@ sys.path.append(str(Path(__file__).parent.parent.parent))
 def map_model_to_provider(model_name: str, type_str: str) -> str:
     """Very simple heuristic to map a model name to its provider."""
     model_name = model_name.lower()
-    if type_str == "Local":
+    if type_str in ("Local", "Open Weights (Local)"):
         return "Ollama (Local)"
     if "claude" in model_name:
         return "Anthropic"
@@ -30,7 +30,7 @@ def map_model_to_provider(model_name: str, type_str: str) -> str:
     if "grok" in model_name:
         return "x.AI"
     if "mistral" in model_name or "ministral" in model_name or "pixtral" in model_name:
-        if type_str == "Commercial":
+        if type_str == "Proprietär":
             return "Mistral AI"
 
     # Models often on Groq in our config

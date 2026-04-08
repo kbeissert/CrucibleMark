@@ -77,7 +77,9 @@ class BaseBenchmarkRunner:
         test_instance = test_cls(asset_path)
 
         # Inject module token-budget as max_tokens API cap (fair comparability across providers)
-        _module_key = Path(benchmark_info.get("path", "")).name
+        # Use module_path.parent.name (e.g. "code_quality") not benchmark_info["path"].name
+        # which would be "assets" when path = "benchmark_modules/code_quality/assets"
+        _module_key = module_path.parent.name
         _token_budget: int | None = self.validator.config.get("token_budgets", {}).get(_module_key)
 
         # exec_result is now a BenchmarkResult object
@@ -89,16 +91,18 @@ class BaseBenchmarkRunner:
 
         # Inject finish_reason if available
         if hasattr(self.client, "last_response_metadata"):
+            # Check token_limit_fallback FIRST: a ctx_overflow (fallback=True) must prevent
+            # token_limit_cutoff from being set, even if finish_reason="length".
+            fb = self.client.last_response_metadata.get("token_limit_fallback")
+            if fb:
+                exec_result.token_limit_fallback = True
+
             fr = self.client.last_response_metadata.get("finish_reason")
             if fr:
                 exec_result.finish_reason = str(fr)
-                if str(fr).lower() in ["length", "max_tokens"]:
+                # Only mark as budget cutoff when NOT a ctx overflow (fallback already set above)
+                if str(fr).lower() in ["length", "max_tokens"] and not getattr(exec_result, "token_limit_fallback", False):
                     exec_result.token_limit_cutoff = True
-
-            fb = self.client.last_response_metadata.get("token_limit_fallback")
-            if fb:
-                # Add it to the model so the schema allows it
-                exec_result.token_limit_fallback = True
 
             tlu = self.client.last_response_metadata.get("token_limit_used")
             if tlu is not None:
@@ -135,8 +139,9 @@ class BaseBenchmarkRunner:
         if exec_result.execution_time > 0 and getattr(exec_result, "tokens_used", 0) > 0:
             tps = round(exec_result.tokens_used / exec_result.execution_time, 2)
 
-        # Native eval speed: eval_count / eval_duration from Ollama response (excludes prefill)
-        tps_eval = getattr(exec_result, "tps_eval", 0.0) or 0.0
+        # Native eval speed: eval_count / eval_duration from Ollama response (excludes prefill).
+        # Remains None when not available (cloud proxy, non-Ollama providers).
+        tps_eval = getattr(exec_result, "tps_eval", None)
 
         # Build dict from BenchmarkResult object + Scoring
         result = {

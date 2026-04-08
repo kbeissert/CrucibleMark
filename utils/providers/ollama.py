@@ -4,7 +4,7 @@ Getrennte Implementierungen für Ollama, Anthropic, Mistral
 """
 import logging
 from typing import Any, List, Optional, Callable, Dict
-from utils.ollama_config import CODING_BENCHMARK_OPTIONS, CREATIVE_BENCHMARK_OPTIONS
+from utils.ollama_config import CODING_BENCHMARK_OPTIONS, CREATIVE_BENCHMARK_OPTIONS, get_num_ctx_for_model
 from utils.model_utils import is_reasoning_model
 # Optional Provider Imports
 try:
@@ -50,6 +50,17 @@ class OllamaClient(BaseProviderClient):
             options = CODING_BENCHMARK_OPTIONS.copy()
         # Ensure the requested temperature is actually used
         options["temperature"] = temperature
+        # Apply per-model num_ctx override (e.g. mistral-nemo native 4096 limit).
+        # This makes the real context ceiling explicit so that a context overflow
+        # surfaces as token_limit_fallback=True rather than a silent truncation.
+        effective_ctx = get_num_ctx_for_model(model)
+        if effective_ctx != options.get("num_ctx"):
+            options["num_ctx"] = effective_ctx
+            logger.debug(
+                "Applying model-specific num_ctx=%d for '%s'",
+                effective_ctx,
+                model,
+            )
         # SPECIAL HANDLING for Reasoning Models (e.g. DeepSeek-R1)
         if is_reasoning_model(model):
             # Reduced to 8192 to prevent excessive unified memory swapping
@@ -92,22 +103,34 @@ class OllamaClient(BaseProviderClient):
                     eval_ns = chunk.get("eval_duration") or 0
                     prompt_eval_ns = chunk.get("prompt_eval_duration") or 0
                     eval_count = chunk.get("eval_count") or 0
+                    prompt_eval_count = chunk.get("prompt_eval_count") or 0
+                    done_reason = chunk.get("done_reason")
+                    num_predict = options.get("num_predict") or 0
+                    num_ctx = options.get("num_ctx") or 32768
+                    is_budget_length = done_reason == "length"
+                    # Heuristic: if prompt+output tokens fill ≥95% of num_ctx but finish_reason=length,
+                    # the real cause is a num_ctx overflow (context window exhausted),
+                    # not a budget hit. Document as fallback, not cutoff.
+                    ctx_overflow = is_budget_length and (prompt_eval_count + eval_count) >= num_ctx * 0.95
                     metrics = {
                         "total_duration": total_ns / 1e9,
                         "load_duration": load_ns / 1e9,
                         "eval_duration": eval_ns / 1e9,
                         "prompt_eval_duration": prompt_eval_ns / 1e9,
                         "eval_count": eval_count,
-                        "finish_reason": chunk.get("done_reason"),
+                        "finish_reason": done_reason,
+                        "token_limit_used": num_predict if is_budget_length and not ctx_overflow else None,
+                        "token_limit_fallback": ctx_overflow,
                     }
                     metrics["pure_execution_time"] = (
                         metrics["total_duration"] - metrics["load_duration"]
                     )
-                    # Native generation speed: output tokens / pure eval time (excludes prefill)
+                    # Native generation speed: output tokens / pure eval time (excludes prefill).
+                    # None when eval_duration is unavailable (e.g. Ollama cloud proxy).
                     if eval_ns > 0 and eval_count > 0:
                         metrics["tps_eval"] = round(eval_count / (eval_ns / 1e9), 2)
                     else:
-                        metrics["tps_eval"] = 0.0
+                        metrics["tps_eval"] = None
                     self.last_response_metadata = metrics
                     continue
                 msg = chunk.get("message", {})
@@ -177,9 +200,6 @@ class OllamaClient(BaseProviderClient):
             )
         try:
             options = self._get_options(model, temperature)
-            # Handle max_tokens override (Ollama uses num_predict)
-            if "max_tokens" in kwargs:
-                options["num_predict"] = kwargs["max_tokens"]
             # 🟢 Allow Overrides from kwargs (Benchmark Module Config)
             # This allows modules to define specific params like repeat_penalty in their config.yaml
             allowed_overrides = [
@@ -193,6 +213,11 @@ class OllamaClient(BaseProviderClient):
             for key in allowed_overrides:
                 if key in kwargs:
                     options[key] = kwargs[key]
+            # Handle max_tokens override (Ollama uses num_predict)
+            # Must apply AFTER allowed_overrides so the global token budget takes final precedence
+            # over module-level num_predict values from config.yaml
+            if "max_tokens" in kwargs:
+                options["num_predict"] = kwargs["max_tokens"]
             # Prepare messages list
             messages = []
             # Check for system prompt in kwargs

@@ -74,6 +74,31 @@ Thought-Tag Compliance = Einhaltung der Metakognitions-Tags (<thought>)
 Coverage % = Erfolgreich geparst
 ```
 
+### Token-Verbrauch im Leaderboard
+
+Ab v3.4.x enthält das Leaderboard zwei neue Spalten für den Token-Verbrauch:
+
+| Spalte | Wo | Beschreibung |
+|---|---|---|
+| `Tokens Total` | Compact + Detailed | Summe aller Output-Token über den gesamten Benchmark-Lauf |
+| `Tokens: <Modul>` | Detailed only | Summe der Output-Token pro Modul (z. B. `Tokens: Code Quality`) |
+
+> **Hinweis zur Datenbasis:** Beide Spalten verwenden ausschließlich Module mit `enable_scoring: true` — dieselbe Basis wie der Total Score. Module mit `enable_scoring: false` (z. B. Political Compass) werden ausgeschlossen, da deren Re-Test-Mengen variieren und ansonsten den Provider-Vergleich verzerren würden.
+
+**Warum Token-Verbrauch relevant ist:**
+
+Bei API-Schnittstellen wie OpenAI (Pay-per-Token) kostet jeder Output-Token Geld — GPT-4o liegt bei ~$15/1M Output-Token. Wenn ein Modell im Benchmark für dieselbe Aufgabe 8.000 statt 1.500 Token produziert, ist das ein **5× Kostenmultiplikator** im Produktionsbetrieb.
+
+Im Gegensatz dazu arbeiten ChatGPT Plus/Pro-Abos mit einer Flat-Rate, bei der der Token-Verbrauch für den Endnutzer nicht direkt sichtbar ist. **Wer KI-APIs kommerziell einsetzt, muss diesen Unterschied kennen.**
+
+Die `Tokens Total`-Spalte macht Token-Hunger direkt sichtbar und ergänzt `Cost per 1K (USD)` als zweite Kostendimension:
+- `Cost per 1K (USD)` zeigt den Preis pro 1.000 Token bei API-Modellen
+- `Tokens Total` zeigt, wie viele Token ein Modell für den Benchmark insgesamt verbraucht hat
+
+Kombiniert ergibt sich: **Token-hungrige Modelle sind bei API-Nutzung teurer**, auch wenn ihr Score vergleichbar ist.
+
+> **Grundannahme Token-Messung:** Die von der API gemeldeten `completion_tokens` entsprechen exakt den abgerechneten Tokens auf dem Provider-Dashboard. CrucibleMark trifft keine eigene Token-Zählung — es verlässt sich auf die Provider-Angabe. Kommerzielle Provider haben keinen Anreiz, Output-Tokens zu verschweigen, da diese direkt abgerechnet werden.
+
 ---
 
 ## 🎖️ Leaderboard Tiers & Akademische Metrik

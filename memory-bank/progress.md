@@ -1,7 +1,6 @@
 # Progress
 
 ## Ongoing
-- [ ] Git-Commit: v3.4.0 — Token-Budget-System + Verbosity-Transparenz + CSV-Cleanup + Doku
 - [ ] gpt-5.4-mini cultural_intel 108-Token-Anomalie: --force Re-Run prüfen
 - [ ] Backup-Dateien löschen: local_models_benchmark.csv.bak, political_compass_leaderboard.csv.bak, *.pre_retest_bak
 - [ ] `make benchmark-auto` — offene Benchmark-Slots (gpt-5: code_quality + cli; weitere commercial/cloud)
