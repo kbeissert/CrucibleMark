@@ -107,6 +107,143 @@ def get_model_card_context(model_id: str) -> str:
     return "\n".join(lines)
 
 
+def _build_token_efficiency_context(tested_model_name: str) -> str:
+    """Berechnet pro-Modul Token-Overhead dieses Modells vs. Fleet-Median.
+    Gibt einen formatierten Markdown-Block zurück, oder einen Hinweis wenn keine Daten vorliegen.
+    Module ohne Budget-Konfiguration (Reasoning, Metacog) werden explizit als 'exempt' markiert.
+    """
+    import csv
+    import statistics
+    from collections import defaultdict
+
+    cfg = load_config()
+    token_budgets: dict[str, int] = cfg.get("token_budgets", {})
+
+    # Modul aus asset_id ableiten
+    _MODULE_PREFIX_MAP: dict[str, str] = {
+        "cultural_intel": "cultural_intelligence",
+        "ux_writing": "ux_writing",
+        "content_transf": "content_transformation",
+        "documentation_quality": "documentation_quality",
+        "code_quality": "code_quality",
+        "cli": "cli_benchmark",
+        "reasoning_metacog": "__exempt__",
+        "reasoning": "__exempt__",
+    }
+
+    def _asset_to_module(asset_id: str) -> str | None:
+        for prefix, key in _MODULE_PREFIX_MAP.items():
+            if asset_id.startswith(prefix):
+                return key
+        return None
+
+    # Alle drei CSV-Quellen durchsuchen
+    csv_sources = [
+        ROOT_DIR / "benchmark_scores" / "local_models_benchmark.csv",
+        ROOT_DIR / "benchmark_scores" / "commercial_models_benchmark.csv",
+        ROOT_DIR / "benchmark_scores" / "cloud_models_benchmark.csv",
+    ]
+
+    def norm(s: str) -> str:
+        return s.replace(":", "_").replace("-", "_").replace("/", "_").lower()
+
+    norm_target = norm(tested_model_name)
+
+    # fleet_tokens[module_key] = list of avg_tokens per model
+    fleet_per_model: dict[str, dict[str, list[float]]] = defaultdict(lambda: defaultdict(list))
+
+    for src in csv_sources:
+        if not src.exists():
+            continue
+        try:
+            with open(src, "r", encoding="utf-8") as f:
+                reader = csv.DictReader(f)
+                for row in reader:
+                    asset_id = row.get("asset_id", "")
+                    model_name = row.get("model", "")
+                    try:
+                        tokens = float(row.get("tokens_used", "") or 0)
+                    except (ValueError, TypeError):
+                        tokens = 0.0
+                    if not asset_id or tokens <= 0:
+                        continue
+                    module_key = _asset_to_module(asset_id)
+                    if module_key is None:
+                        continue
+                    fleet_per_model[norm(model_name)][module_key].append(tokens)
+        except Exception:
+            continue
+
+    if not fleet_per_model:
+        return "*Keine Token-Daten in den Benchmark-CSVs vorhanden.*"
+
+    # Ziel-Modell finden
+    target_key: str | None = None
+    for key in fleet_per_model:
+        if key == norm_target or key.startswith(norm_target) or norm_target.startswith(key):
+            target_key = key
+            break
+
+    if target_key is None:
+        return f"*Kein CSV-Eintrag für `{tested_model_name}` gefunden — Token-Effizienz nicht berechenbar.*"
+
+    # Fleet-Median pro Modul berechnen
+    all_modules: set[str] = set()
+    for model_data in fleet_per_model.values():
+        all_modules.update(model_data.keys())
+
+    lines = ["### Token-Effizienz pro Modul\n"]
+    lines.append("| Modul | Dieses Modell (Ø) | Fleet-Median | Overhead | Budget | Status |")
+    lines.append("|-------|:---:|:---:|:---:|:---:|:---:|")
+
+    has_data = False
+    for module_key in sorted(all_modules):
+        target_vals = fleet_per_model[target_key].get(module_key, [])
+        if not target_vals:
+            continue
+        target_avg = round(statistics.mean(target_vals), 0)
+
+        fleet_all: list[float] = []
+        for model_data in fleet_per_model.values():
+            model_module_vals = model_data.get(module_key, [])
+            if model_module_vals:
+                fleet_all.append(statistics.mean(model_module_vals))
+
+        fleet_median = round(statistics.median(fleet_all), 0) if len(fleet_all) >= 2 else None
+
+        if module_key == "__exempt__":
+            status = "⚪ Exempt"
+            budget_str = "Exempt"
+            overhead_str = "–"
+        else:
+            budget = token_budgets.get(module_key)
+            budget_str = str(budget) if budget else "–"
+            if fleet_median and fleet_median > 0:
+                overhead = round(target_avg / fleet_median, 2)
+                overhead_str = f"{overhead}×"
+            else:
+                overhead_str = "n/a"
+                overhead = None
+
+            if budget is not None and target_avg > budget * 1.5:
+                ratio = round(target_avg / budget, 1)
+                status = f"🔴 Verbos ({ratio}× Budget)"
+            elif budget is not None and target_avg > budget:
+                status = "🟡 Erhöht"
+            else:
+                status = "🟢 OK"
+
+        fleet_str = str(int(fleet_median)) if fleet_median else "n/a"
+        display_name = module_key.replace("_", " ").replace("__", "").title() if module_key != "__exempt__" else "Reasoning / Metacog"
+        lines.append(f"| {display_name} | {int(target_avg)} | {fleet_str} | {overhead_str} | {budget_str} | {status} |")
+        has_data = True
+
+    if not has_data:
+        return f"*Keine Modul-Token-Daten für `{tested_model_name}` gefunden.*"
+
+    return "\n".join(lines)
+
+
 def process_model_review(model_dir: Path, csv_data: str, client: LLMClient, provider: str, model_id: str, review_type: str = "benchmark"):
     """Liest Audit-Logs für ein spezifisch getestetes LLM und generiert eine Review."""
     tested_model_name = model_dir.name
@@ -258,6 +395,9 @@ def process_model_review(model_dir: Path, csv_data: str, client: LLMClient, prov
     original_model_name = model_metrics.get("Model Name", tested_model_name)
     identity = get_model_identity(original_model_name)
 
+    # --- Token-Effizienz-Kontext berechnen ---
+    token_efficiency_context = _build_token_efficiency_context(tested_model_name)
+
     template_vars = {
         "tested_model_name": tested_model_name,  # raw ID für Audit-Trail
         "display_model_name": identity["display_name"],  # "kimi-k2-instruct" (ohne Präfixe)
@@ -272,6 +412,7 @@ def process_model_review(model_dir: Path, csv_data: str, client: LLMClient, prov
         "model_timeout_rate": timeout_rate_str,
         "model_provider_type": model_metrics.get("Type", "n/a"),
         "model_card_context": get_model_card_context(tested_model_name),
+        "token_efficiency_context": token_efficiency_context,
     }
 
     try:

@@ -48,6 +48,7 @@ class DocumentationTest(BaseTest):
             full_prompt = prompt
 
         provider = kwargs.get("provider")
+        extra_kwargs = {k: v for k, v in kwargs.items() if k != "provider"}
 
         # LLM Query
         start = time.time()
@@ -55,7 +56,7 @@ class DocumentationTest(BaseTest):
         try:
             # Use temperature 0.3 for Documentation Quality
             response = llm_client.query(
-                model, full_prompt, provider=provider, temperature=DEFAULT_TEMPERATURE
+                model, full_prompt, provider=provider, temperature=DEFAULT_TEMPERATURE, **extra_kwargs
             )
             # Use clean execution time if available, otherwise fallback to wall clock
             if (

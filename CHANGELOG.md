@@ -4,6 +4,26 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [v3.4.0] - 2026-04-08
+
+### Added
+- **Token-Budget-System:** `max_tokens`-Cap als direkter API-Parameter in `base_runner.py`. Lädt `token_budgets[module_key]` aus `benchmark_config.yaml` und übergibt das Limit nur wenn es gesetzt ist (`None` wird nicht an Provider-Clients weitergegeben). Gewährleistet faire, Provider-übergreifende Vergleichbarkeit.
+- **Token-Effizienz-Transparenz in Audit-Logs:** Neuer `[!NOTE]`-Header-Block in `benchmark_utils.py` macht Token-Effizienz-Anomalien sichtbar. Trigger: `token_limit_cutoff is True AND _budget is not None`. Bestehender `[!CAUTION]`-Block vor der Response bleibt unverändert.
+- **Token-Effizienz-Kontext in Meta-Reviewer-Reports:** Neue Template-Variable `{token_efficiency_context}` in `generate_review.py` injiziert modulspezifische Ø-Token-Werte des Modells vs. Gesamt-Median vor `{log_data}`. Neuer Diagnostik-Block "Token-Effizienz (Verbosity)" in `meta_reviewer_prompt.yaml` — der Reviewer schreibt einen Absatz wenn Ratio > 1.5× Median (Reasoning/Metacog ausgenommen).
+
+### Changed
+- **benchmark_config.yaml:** `token_budgets`-Werte auf 2× Modul-Median kalibriert: `cultural_intelligence: 500`, `ux_writing: 3500`, `content_transformation: 3500`, `documentation_quality: 6000`, `code_quality: 6000`.
+- **benchmark_utils.py:** Verbosity-Flag-Trigger auf `token_limit_cutoff` (API-`finish_reason`) umgestellt — kein berechneter Schwellenwert mehr.
+
+### Removed
+- **cli_benchmark** aus `token_budgets` entfernt — kein Output-Limit für CLI-Tasks (by design).
+
+### Deferred to v3.4.x
+- Score-Penalty für Token-Verbosity (separates Feature, keine Änderung an bestehenden Scores)
+- Leaderboard-Metriken `avg_tokens`, `token_efficiency_ratio`, `est_cost_per_1k_tasks` in `score_calculator.py` + `generate_leaderboard.py`
+
+---
+
 ## [v3.3.1] - 2026-04-08
 
 ### Fixed

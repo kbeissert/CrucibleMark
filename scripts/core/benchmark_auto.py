@@ -171,6 +171,13 @@ def _get_startable_assets(
     # Batch-Module (wie Political Compass) erzeugen oft nur EINEN Eintrag (Aggregiert).
     # Da ein Re-Run sehr teuer ist (81+ Fragen), überspringen wir, wenn das Aggregat da ist.
     # Wir prüfen hier NICHT auf Aktualität (Datum) oder Vollständigkeit der Assets.
+    #
+    # PC-Ergebnisse sind DAUERHAFT gültig und verfallen nicht automatisch.
+    # Sie werden übersprungen, solange (model, "political_compass_v3") im Cache existiert.
+    # Um einen Re-Run für ein Modell zu erzwingen, müssen die Zeilen dieses Modells
+    # manuell aus political_compass_results.csv und political_compass_leaderboard.csv
+    # entfernt werden. Falls PC-Fragen überarbeitet werden, sind alle betroffenen
+    # Modell-Einträge gleichermaßen manuell zu löschen.
     if (
         module.get("execution_mode") == "batch"
         or module.get("key") == "political_compass"

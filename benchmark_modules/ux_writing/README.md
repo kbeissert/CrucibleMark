@@ -183,3 +183,17 @@ SIMILARITY_THRESHOLD = 0.78   # Sentence-Transformer Cosine-Ähnlichkeit
 WCAG_REQUIRED_RATIO = 1.0     # Asset 004: alle Kriterien müssen erfüllt sein
 BUTTON_LABEL_MAX_CHARS = 25   # Asset 002: Mobile-First-Constraint
 ```
+
+---
+
+## Token-Budget
+
+Dieses Modul unterliegt dem **Token-Budget-System** (ab v3.4.0). Das Framework setzt einen direkten `max_tokens`-API-Parameter, um Provider-übergreifende Vergleichbarkeit sicherzustellen.
+
+```yaml
+# benchmark_config.yaml (Framework-Level)
+token_budgets:
+  ux_writing: 3500    # 2× Modul-Median
+```
+
+Schöpft ein Modell das Budget vollständig aus (`finish_reason: length`), injiziert das Framework einen `> [!NOTE]`-Block ins Audit-Log (`benchmark_utils.py`). Score-Penalties für strukturell übermäßige Verbosity sind für v3.4.x geplant.

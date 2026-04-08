@@ -41,11 +41,12 @@ class CulturalIntelligenceTest(BaseTest):
 
         full_prompt = f"{system_prompt}\n\n{prompt}"
         provider = kwargs.get("provider")
+        extra_kwargs = {k: v for k, v in kwargs.items() if k != "provider"}
 
         # Execute via client
         try:
             response_text = llm_client.query(
-                prompt=full_prompt, model=model, provider=provider, temperature=0.5
+                prompt=full_prompt, model=model, provider=provider, temperature=0.5, **extra_kwargs
             )
         except Exception as e:  # pylint: disable=broad-exception-caught
             response_text = f"Error executing model: {str(e)}"

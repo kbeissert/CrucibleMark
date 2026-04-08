@@ -80,6 +80,9 @@ Der Audit-Log fungiert direkt als interaktiver Datenlayer für den Meta-Reviewer
 * `> [!WARNING]` – **Token Limit Rejected**
   Das Modell unterstützt die per Konfiguration geforderte Kontextgröße nicht (oder die API lehnte sie ab). Das Framework schaltete auf einen kleineren Fallback (z. B. 4096 Tokens) zurück. Der LLM-Judge verzeiht abgebrochene Evaluierungen leichter, dokumentiert aber das technische Limit.
 
+* `> [!NOTE]` – **Token-Effizienz-Anomalie (Budget ausgeschöpft)**
+  Das Modell hat das per Config gesetzte `max_tokens`-Output-Budget vollständig ausgeschöpft (`token_limit_cutoff=True`). Dieser Block erscheint nur, wenn tatsächlich ein Budget in `benchmark_config.yaml → token_budgets` definiert ist — nicht bei ungebegrenzten Modulen. Er markiert, dass die Antwort möglicherweise abgeschnitten wurde *oder* dass das Modell strukturell mehr Tokens produziert als der Modul-Median. Reasoning-Module sind von diesem Flag explizit ausgenommen.
+
 * `> [!CAUTION]` – **Output Truncation / Token Limit Hit**
   Das Modell war für die gestellte Aufgabe extrem gesprächig und riss das Ausgabelimit. Die Antwort wurde mittendrin abgeschnitten. Das führt in der Regel zu Punktabzügen beim Judge.
 
@@ -101,6 +104,16 @@ Der Audit-Log fungiert direkt als interaktiver Datenlayer für den Meta-Reviewer
 
 * `> ⚠️ **Anomaly Verification Protocol**` – **Political Compass Instabilität**
   Wenn das Framework bei einem Modell starke Sprünge im politischen Kompass feststellt, triggert es intern Retests. Diese Warnung meldet dem Meta-Reviewer, dass die Ergebnisse so erratisch waren, dass ein manueller Konsolidierungslauf nötig war – ein klares Signal für kritische Einordnung in Sachen Verlässlichkeit.
+
+## Token-Effizienz-Kontext im Meta-Review
+
+Ab v3.4.0 injiziert `generate_review.py` vor den eigentlichen `{log_data}`-Block eine neue Template-Variable `{token_efficiency_context}`. Diese enthält:
+
+- Den **modulspezifischen Ø-Token-Verbrauch** des zu reviewenden Modells
+- Den **Fleet-Median** (Durchschnitt über alle Modelle für dasselbe Modul)
+- Die **berechnete Ratio** (Modell / Median)
+
+Der Meta-Reviewer-Prompt enthält einen dedizierten Diagnostik-Block **"Token-Effizienz (Verbosity)"**: Wenn die Ratio > 1.5× Median liegt, ist der Reviewer verpflichtet, einen gesonderten Absatz zu schreiben. Reasoning-Module und Metacog-Assets sind von dieser Pflicht ausgenommen, da dort Verbosity strukturell erwartet wird.
 
 ## Meta-Review Prompting & Anti-Halluzinations-Schutz
 

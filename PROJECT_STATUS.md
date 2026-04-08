@@ -1,16 +1,22 @@
 # PROJECT_STATUS.md
 
 **Last Updated:** 2026-04-08
-**Current Version:** 3.3.1 (Political Compass Integration Fix)
+**Current Version:** 3.4.0 (Token-Budget-System & Verbosity-Transparenz)
 **Status:** ✅ Production-Ready
 
 ______________________________________________________________________
 
 ## 🎯 Executive Summary
 
-CrucibleMark v3.3.1 schließt die vollständige Integration des Political Compass-Subsystems in den überarbeiteten Datenprozess ab. Das Refactoring aus v3.3.0 wurde nachgezogen: `model_category`-Feld im PC-Leaderboard-Schema, Cloud-Erkennung beim Schreiben, Upsert-Parität für lokale Modelle und die Berücksichtigung der PC-Leaderboard-CSV im Bereinigungsskript.
+CrucibleMark v3.4.0 führt ein datenbasiertes Token-Budget-System ein, das faire Provider-Vergleichbarkeit durch einen direkten `max_tokens`-API-Parameter sicherstellt. Ergänzend dazu liefern neue Transparenz-Schichten in Audit-Logs und Meta-Reviewer-Reports fundierte Einblicke in die Token-Effizienz von Modellen.
 
-**Key Achievements (v3.3.1):**
+**Key Achievements (v3.4.0):**
+- ✅ **Token-Budget-System:** `base_runner.py` liest `token_budgets[module_key]` aus `benchmark_config.yaml` und setzt `max_tokens` als direkten API-Parameter — nur wenn ein Budget definiert ist (`None` wird nicht weitergegeben). Reasoning-Module sind bewusst ausgenommen.
+- ✅ **Kalibrierte Budget-Werte:** `token_budgets` auf 2× Modul-Median gesetzt: `cultural_intelligence: 500`, `ux_writing: 3500`, `content_transformation: 3500`, `documentation_quality: 6000`, `code_quality: 6000`. `cli_benchmark` ohne Limit (entfernt).
+- ✅ **Token-Effizienz-Flag in Audit-Logs:** Neuer `[!NOTE]`-Block in `benchmark_utils.py` — Trigger: `token_limit_cutoff is True AND _budget is not None`.
+- ✅ **Token-Effizienz-Kontext in Meta-Reviews:** `generate_review.py` injiziert modulspezifische Ø-Token-Werte (Modell vs. Fleet-Median) via `{token_efficiency_context}`. `meta_reviewer_prompt.yaml` enthält neuen Diagnostik-Block für Ratio > 1.5× Median.
+
+**Vorherige Version (v3.3.1 – Political Compass Integration Fix):**
 - ✅ **Political Compass: model_category-Feld:** `io_manager.py` schreibt jetzt `model_category` (`local` / `cloud` / `commercial`) in die Leaderboard-CSV — analog zur bestehenden Logik in `result_manager.py`.
 - ✅ **Cloud-Erkennung bei PC-Write:** `provider_type` wird für Ollama-gehostete Cloud-Modelle (`:cloud`-Suffix) korrekt auf `cloud` gesetzt statt `ollama`.
 - ✅ **Upsert-Parität:** `political_compass_handler.py`'s `_update_local_pc_csv()` dedupliziert jetzt per Upsert (identisch zur kommerziellen Variante); kein append-only mehr.
