@@ -238,17 +238,17 @@ scoring_tiers:
   gold:
     threshold: 80.0
     badge: "\U0001F3C6 Gold"
-    prompt_description: "- **{threshold}% bis {next_threshold}% (Gold-Standard, Excellent/Good):**\
-      \ Hervorragende, verl\xE4ssliche Modelle."
+    prompt_description: "- **Ab {threshold}% bis unter {next_threshold}% (Gold-Standard,\
+      \ Excellent/Good):** Hervorragende, verl\xE4ssliche Modelle."
   silver:
     threshold: 65.0
     badge: "\U0001F948 Silver"
-    prompt_description: '- **{threshold}% bis {next_threshold}% (Silber-Standard,
+    prompt_description: '- **Ab {threshold}% bis unter {next_threshold}% (Silber-Standard,
       Adequate):** Sehr solide Basis. The model performs adequately.'
   bronze:
     threshold: 50.0
     badge: "\U0001F949 Bronze"
-    prompt_description: "- **{threshold}% bis {next_threshold}% (Bronze-Standard):**\
+    prompt_description: "- **Ab {threshold}% bis unter {next_threshold}% (Bronze-Standard):**\
       \ Akzeptable Leistung mit Einschr\xE4nkungen."
   standard:
     threshold: 0.0

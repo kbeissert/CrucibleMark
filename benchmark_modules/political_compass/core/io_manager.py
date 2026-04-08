@@ -248,7 +248,7 @@ class PoliticalCompassResultManager:
             output_dir.mkdir(parents=True, exist_ok=True)
 
         fieldnames = [
-            "timestamp", "model", "provider_type", "model_version", "cost",
+            "timestamp", "model", "model_category", "provider_type", "model_version", "cost",
             "vanilla_x", "vanilla_y", "vanilla_label",
             "forced_x", "forced_y", "forced_label",
             "shift_x", "shift_y", "shift_distance", "polarity_flip_rate", "is_retest"
@@ -256,6 +256,20 @@ class PoliticalCompassResultManager:
 
         # Build Row
         model = report.get("model", "unknown")
+        raw_provider = report.get("provider", "unknown")
+
+        # Determine model_category (local / cloud / commercial) — mirrors result_manager.py logic
+        if raw_provider == "ollama":
+            if ":cloud" in model.lower() or model.lower().endswith("-cloud"):
+                model_category = "cloud"
+                provider_type = "cloud"
+            else:
+                model_category = "local"
+                provider_type = raw_provider
+        else:
+            model_category = "commercial"
+            provider_type = raw_provider
+
         # Find explicit provider logic if passed down, empty otherwise. Provider logic will be extracted from the model's test call.
         ind_runs = report.get("individual_runs", [])
         v_run: Dict[str, Any] = next((r for r in ind_runs if r["type"] == "vanilla"), {})
@@ -264,7 +278,8 @@ class PoliticalCompassResultManager:
         row = {
             "timestamp": datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S"),
             "model": model,
-            "provider_type": report.get("provider", "unknown"),
+            "model_category": model_category,
+            "provider_type": provider_type,
             "model_version": report.get("model_version", ""),
             "cost": report.get("statistics", {}).get("total_cost", 0.0),
 

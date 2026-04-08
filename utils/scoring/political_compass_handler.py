@@ -110,7 +110,7 @@ class PoliticalCompassHandler:
     def _update_local_pc_csv(
         model: str, report: Dict[str, Any], model_version: str
     ) -> None:
-        """Original append-only logic for local runner."""
+        """Upsert logic for local runner (replaces previous entries for this model)."""
         pc_csv = Path("benchmark_scores/political_compass_results.csv")
         pc_csv.parent.mkdir(exist_ok=True, parents=True)
 
@@ -125,9 +125,9 @@ class PoliticalCompassHandler:
             "metrics_json",
             "timestamp",
         ]
-        file_exists = pc_csv.exists() and pc_csv.stat().st_size > 0
-        rows_to_write = []
         timestamp_str = datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%f")
+
+        rows_to_write = []
 
         if "individual_runs" in report:
             for i, run in enumerate(report["individual_runs"], 1):
@@ -175,11 +175,23 @@ class PoliticalCompassHandler:
             }
         )
 
-        with open(pc_csv, "a", encoding="utf-8", newline="") as f:
+        # Upsert: remove existing rows for this model, then append new rows
+        existing_rows = []
+        if pc_csv.exists() and pc_csv.stat().st_size > 0:
+            with open(pc_csv, "r", encoding="utf-8") as f:
+                reader = csv.DictReader(f)
+                existing_rows = [r for r in reader if r.get("model") != model]
+                if reader.fieldnames:
+                    for col in reader.fieldnames:
+                        if col not in fieldnames:
+                            fieldnames.append(col)
+
+        existing_rows.extend(rows_to_write)
+
+        with open(pc_csv, "w", encoding="utf-8", newline="") as f:
             writer = csv.DictWriter(f, fieldnames=fieldnames, extrasaction="ignore")
-            if not file_exists:
-                writer.writeheader()
-            writer.writerows(rows_to_write)
+            writer.writeheader()
+            writer.writerows(existing_rows)
 
     @staticmethod
     def _update_commercial_pc_csv(

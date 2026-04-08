@@ -1,420 +1,189 @@
-# Code Quality Module
+# Code Quality
 
-> **Technical Metadata**
->
-> - **ID:** `code_quality`
-> - **Namespace:** `benchmark_modules.code_quality`
-> - **Class:** `CodeQualityTest` (inherits `BaseTest`)
-> - **Evaluator:** `CodeQualityEvaluator`
-> - **Version:** v2.0.0 (Post-Refactoring - Production Ready)
-> - **Type:** Engineering & Static Analysis
-> - **Last Refactored:** 2026-02-01
+> Bewertet, ob ein LLM Code wirklich *versteht* — nicht nur syntaktisch liest.
+> Das Modul stellt fünf Code-Review-Aufgaben mit echter Fehlerdichte aus den
+> Bereichen Accessibility, Security, Performance, API-Design und Code-Wartbarkeit.
 
-______________________________________________________________________
+**Modul-ID:** `code_quality` | **Klasse:** `CodeQualityTest` | **Version:** 0.2.0-beta
+**Assets:** 5 | **Sprache:** Deutsch | **Scoring:** Hybrid (Regex + LLM-Judge)
 
-## 🔍 Module Overview
+---
 
-This module evaluates LLMs' ability to perform code reviews, identify bugs, and provide high-quality improvement suggestions. Special focus on **Deep Reasoning**: Can models distinguish between "working" and "secure/accessible" code?
+## Warum dieses Modul?
 
-**What makes this module unique:**
+Die entscheidende Frage ist: Unterscheidet das Modell zwischen „funktionierendem"
+und „richtigem" Code? Ein SQL-Query kann syntaktisch korrekt sein und trotzdem
+eine Injection-Lücke enthalten. Ein Button kann visuell sauber aussehen und
+trotzdem WCAG 2.2 verletzen. Diese Lücke — zwischen Code, der läuft, und Code,
+der korrekt ist — ist für reale Code-Reviews entscheidend.
 
-- Multi-tiered difficulty system (4 levels)
-- Supports reasoning models (DeepSeek R1, o1-style)
-- Hybrid scoring (keyword + semantic similarity)
-- Production-grade architecture (facade pattern)
+Alle Assets enthalten Fehler in vier Kategorien:
+- **Labeled**: Im Code als TODO/Kommentar markiert (offensichtlich)
+- **Standard**: Bekannte Fehler ohne Markierung (z. B. OWASP Top 10)
+- **Subtile**: Sprachspezifische oder logische Schwachstellen
+- **Expert**: Architektonische Probleme mit tiefem Framework-Verständnis
 
-______________________________________________________________________
+Nur Modelle, die alle vier Kategorien erkennen, erzielen den Maximal-Score.
 
-## 🏗 Architecture (Core/MVC + Facade Pattern)
+**Score-Contribution:** `routine: 0.0 / reasoning: 1.0` — Code-Review gilt
+ausschließlich als Reasoning-Aufgabe.
 
-This module follows the **Core/MVC** standard with a **4-file facade architecture**:
+---
 
-### Structure:
+## Scoring-Methodik
 
+Standard-Fallback: `regex: 0.15 / judge: 0.85`.
+Generation-Parameter: `temperature: 0.3, top_p: 0.9, num_predict: 8192`.
+
+| Dimension | Gewicht | Beschreibung |
+|---|---|---|
+| **Fehler-Erkennung** | 60 % | Wie viele der eingebetteten Probleme werden korrekt identifiziert? Gestaffelt nach Kategorie: Labeled (25 Pkt.) → Standard (25 Pkt.) → Advanced (25 Pkt.) → Expert (25 Pkt.). Bonuspunkte für Extra-Findings bis +10 Pkt. |
+| **Lösungsqualität** | 30 % | Sind vorgeschlagene Fixes korrekt und vollständig? Code-Validierung, semantische Ähnlichkeit zur Referenzlösung |
+| **Formatierung & Expertise** | 10 % | Markdown-Struktur, WCAG/OWASP-Referenzen, klare Erklärungen |
+
+---
+
+## Test Assets
+
+### `code_quality_001` — WCAG 2.2 Audit
 ```
-benchmark_modules/code_quality/
-├── test.py                      # Controller (LLM execution)
-├── config.yaml                  # Module configuration
-├── README.md                    # This file
-├── assets/                      # Test cases (5 assets)
-│   ├── code_quality_001_*.yaml
-│   ├── code_quality_002_*.yaml
-│   ├── code_quality_003_*.yaml
-│   ├── code_quality_004_*.yaml
-│   └── code_quality_005_*.yaml
-└── core/
-    ├── __init__.py              # Module exports
-    ├── constants.py             # Configuration constants
-    ├── evaluators.py            # Facade (orchestrates scoring)
-    ├── error_detection.py       # Error detection logic
-    ├── scoring_helpers.py       # Scoring methods (regex, semantic, etc.)
-    └── test_code_quality.py     # Unit tests
-```
-
-### Responsibilities:
-
-#### `test.py` (The Controller)
-
-- Entry point for benchmark execution
-- Handles LLM API calls (via `llm_client.query()`)
-- Measures execution time and token usage
-- Delegates scoring to `CodeQualityEvaluator`
-- **Fully typed** (Type-Hints: 100% coverage)
-
-**Key method:**
-
-```python
-def execute(model: str, llm_client: Any, provider: str = "ollama") -> Dict[str, Any]:
-    # Executes test and returns raw response + metadata
+Typ:       Accessibility Code Review (HTML/React)
+Kontext:   Senior Frontend Developer mit WCAG 2.2 Zertifizierung.
+           Review einer E-Commerce Produktkarten-Komponente,
+           die Screen-Reader- und Keyboard-Probleme verursacht.
+Input:     HTML-Komponente mit TODOs und versteckten ARIA-Fehlern.
+           (sticky header ohne focus management, onclick statt button,
+            fehlende alt-Texte, Badge ohne semantischen Kontext, u. v. m.)
+Abgedeckte WCAG-Kriterien:
+  - 1.1.1 Non-text Content (Alt-Texte)
+  - 1.3.1 Info and Relationships (Semantik)
+  - 2.1.1 Keyboard Accessible
+  - 2.4.3 Focus Order
+  - 2.4.11 Focus Not Obscured (NEU in 2.2)
+  - 2.5.8 Target Size Minimum (NEU in 2.2)
+  - 4.1.3 Status Messages
+Scoring:   Tiered Difficulty: Labeled (25) + Standard (30) + Advanced (25) + Expert (20)
 ```
 
-#### `core/evaluators.py` (The Facade)
+---
 
-- Main evaluator class (**140 lines** - lightweight!)
-- Orchestrates `ErrorDetector` and `ScoringHelpers`
-- Cleans reasoning tags (`<think>`, `<reasoning>`, `<scratch>`, `<internal>`)
-- Returns structured score dict
-
-**Key method:**
-
-```python
-def score_response(response: str) -> Dict[str, Any]:
-    # Returns: {status, total_score, category_scores, details, violations}
+### `code_quality_002` — Security Audit
+```
+Typ:       Security Code Review (PHP Legacy)
+Kontext:   Senior Security Engineer, Audit einer Legacy-PHP-Anwendung.
+           Code enthält markierte UND versteckte Sicherheitslücken.
+Input:     PHP-Code mit aktiviertem error_reporting (debug in prod),
+           SQL-Queries, Authentifizierungs-Logik, E-Mail-Versand, Cookies.
+Enthaltene Vulnerabilities:
+  Explizit markiert (bestätigen):
+    - SQL Injection (nicht parametrisierte Queries)
+    - XSS (unkontrollierte Echo-Ausgaben)
+  Implizit versteckt (eigenständig finden):
+    - Mail Header Injection
+    - User Enumeration (unterschiedliche Fehlermeldungen je Fehlertyp)
+    - Unsafe Cookie-Konfiguration (kein HttpOnly/Secure)
+    - Debug-Informationen in Production
+    - Password-Handling ohne Hashing
+Scoring:   Alle 7 Vulnerabilities müssen erkannt werden;
+           Critical/High/Medium-Priorisierung wird bewertet.
 ```
 
-#### `core/error_detection.py` (Error Detection Logic)
+---
 
-- Identifies WCAG/OWASP violations via keyword matching
-- Bonus point calculation for extra findings
-- **Optimized for performance:** O(n) via set-based lookup (40% faster than v1.0)
-
-**Key method:**
-
-```python
-def score_error_detection(response: str, response_lower: str, config: Dict) -> Tuple[float, List[str], List[str]]:
-    # Returns: (score, details, violations)
+### `code_quality_003` — Performance Audit
+```
+Typ:       Web Performance Review (HTML/JavaScript)
+Kontext:   Performance Engineer, E-Commerce-Produktseite mit schlechten
+           Core Web Vitals (LCP: 4.2s, CLS: 0.28).
+Input:     HTML/JS-Code mit Performance-Problemen auf 3 Ebenen.
+Enthaltene Probleme:
+  Markiert:
+    - Render-blocking Resources (synchrones CSS/JS im head)
+    - Fehlende Bildoptimierung (kein lazy loading, keine modernen Formate)
+  Standard:
+    - Zu große JavaScript-Bundles (kein Code-Splitting)
+    - Fehlende font-display Direktive
+  Subtil:
+    - JavaScript-basierende Layout Shifts (CLS durch dynamisches DOM)
+    - N+1-ähnliche API-Calls im Frontend-Rendering
+Scoring:   Priorisierung nach Core Web Vitals Impact (LCP/CLS/FID) wird bewertet.
 ```
 
-#### `core/scoring_helpers.py` (Scoring Methods)
+---
 
-- **Regex pattern matching** (`score_regex`)
-- **Keyword presence checks** (`score_keyword_presence`)
-- **Semantic similarity** via Sentence-Transformers (`score_semantic_similarity`)
-- **Code validation** - syntax checks (`score_code_validation`)
-- **Markdown table validation** (`score_markdown_table_validation`)
-
-All methods return `Tuple[float, str]` (score, detail_message).
-
-#### `core/constants.py` (Configuration)
-
-Single Source of Truth for all tunable parameters:
-
-- Temperature settings
-- Similarity thresholds
-- Reasoning tags
-- Error messages
-- Scoring categories
-
-______________________________________________________________________
-
-## 🧪 Scoring Logic
-
-Strictly deterministic scoring engine with multi-stage evaluation.
-
-### 1. Pre-Processing: Reasoning Tag Cleaning
-
-Supports **4 tag types** for reasoning models:
-
-- `<think>...</think>` (DeepSeek R1)
-- `<reasoning>...</reasoning>` (Custom models)
-- `<scratch>...</scratch>` (o1-style)
-- `<internal>...</internal>` (Experimental)
-
-**Why?** Reasoning models often hallucinate issues during internal brainstorming. We only score the final answer.
-
-### 2. Tiered Difficulty Scoring
-
-Dynamic difficulty levels defined in `assets/*.yaml`:
-
-| Tier | Difficulty | Example | Weight | |------|------------|---------|--------| | **Tier 1** | Labeled Issues (Easy) | Explicitly marked errors (`// TODO`, `// FIXME`) | Low | | **Tier 2** | Standard Issues (Medium) | Common OWASP/WCAG violations (SQL injection, missing ARIA) | Medium | | **Tier 3** | Advanced Issues (Hard) | Subtle logical flaws (race conditions, edge cases) | High | | **Tier 4** | Expert Issues (Deep Reasoning) | Architectural flaws requiring context (API design anti-patterns) | Very High |
-
-### 3. Scoring Dimensions (Total: 100 Points)
-
-| Category | Points | What's Evaluated | |----------|--------|------------------| | **Error Detection** | 60p | Finds specific anti-patterns or bugs via keyword/regex matching | | **Solution Quality** | 30p | Evaluates proposed fix (code validation, syntax correctness) | | **Formatting/Expertise** | 10p | Professional structure (Markdown, ARIA references, clear explanations) |
-
-**Scoring Formula:**
-
+### `code_quality_004` — REST API Design Audit
 ```
-Total Score = Error Detection Score + Solution Quality Score + Formatting Score
+Typ:       API-Design Review (Python/Flask)
+Kontext:   Senior Backend Engineer, Review eines Junior-Developer-Entwurfs.
+           Code ist funktionstüchtig, verletzt aber REST-Prinzipien.
+Input:     Flask-API-Endpunkte für ein Ressourcen-Management-System.
+Enthaltene Design-Fehler:
+  Markiert:
+    - Falsche HTTP-Methoden (POST statt PUT/DELETE)
+  Standard:
+    - Fehlende Status-Codes (alles 200er)
+    - Inkonsistente Ressourcen-Benennung (Verben in URLs)
+  Subtil:
+    - Fehlende Idempotenz bei Create-Operationen
+    - Keine API-Versionierung
+    - Sensible Daten in URL-Parametern statt Body/Header
+Scoring:   REST-Prinzipien-Kenntnis über reine Syntax-Checks hinaus bewertet.
 ```
 
-**Bonus Points:** Extra findings beyond requirements (max +10p)
+---
 
-______________________________________________________________________
-
-## ⚙️ Configuration & Tuning
-
-All tunable parameters are centralized in `core/constants.py`.
-
-### Execution Settings
-
-```python
-DEFAULT_TEMPERATURE = 0.1      # Low = deterministic output
-TOKEN_MULTIPLIER = 1.3         # Words → Tokens estimation (English)
+### `code_quality_005` — Code Smells Audit
+```
+Typ:       Code-Qualitäts-Review (JavaScript Legacy)
+Kontext:   Senior Developer, Code-Review einer Legacy-UserManager-Komponente.
+Input:     JavaScript-Klasse mit Wartbarkeitsproblemen auf 4 Ebenen.
+Enthaltene Smells:
+  Markiert (TODOs im Code):
+    - Long Method (einzelne Methode >100 Zeilen)
+    - Magic Numbers (hardcodierte Werte ohne Semantik)
+  Standard:
+    - God Object (eine Klasse verantwortlich für zu viel)
+    - Duplicate Code
+  Subtil:
+    - Feature Envy (Methoden operieren hauptsächlich auf fremden Daten)
+    - Excessive Coupling
+  Expert:
+    - Primitive Obsession
+    - Shotgun Surgery (Änderung eines Konzepts erfordert viele Dateianpassungen)
+Scoring:   Erkennungstiefe + Qualität der Refactoring-Vorschläge.
 ```
 
-### Scoring Thresholds
+---
 
-```python
-SIMILARITY_THRESHOLD = 0.78    # Semantic similarity cutoff (Cosine Distance)
-                               # Calibrated against Mistral Large Golden Standard
-                               # Lower = more lenient, Higher = stricter
+## Technischer Aufbau
 
-DEFAULT_MIN_TABLE_ROWS = 8     # Minimum rows for valid markdown tables
-DEFAULT_MIN_KEYWORDS = 3       # Minimum keywords required for detection
-MIN_SENTENCE_LENGTH = 20       # Minimum sentence length for quality checks
+Module in `core/`:
+
+| Datei | Funktion |
+|---|---|
+| `evaluators.py` | Facade: orchestriert alle Sub-Evaluatoren |
+| `error_detection.py` | Keyword- und Regex-basierte Fehlererkennung, Set-Lookup O(n) |
+| `scoring_helpers.py` | Semantic Similarity (Sentence-Transformers), Code-Validierung, Markdown-Prüfung |
+| `constants.py` | Similarity-Threshold: 0.78 (kalibriert gegen Mistral Large Golden Standard) |
+
+---
+
+## Konfiguration
+
+```yaml
+# config.yaml (Auszug)
+generation:
+  temperature: 0.3      # Niedrig: reproduzierbare analytische Antworten
+  num_predict: 8192     # Erhöht für lange Code-Review-Outputs
+
+scoring:
+  fallback_weights:
+    regex: 0.15
+    judge: 0.85
+
+integration:
+  leaderboard:
+    default_contribution:
+      routine: 0.0
+      reasoning: 1.0    # Zählt ausschließlich zum Reasoning-Score
 ```
-
-### Reasoning Model Support
-
-```python
-REASONING_TAGS = ["think", "reasoning", "scratch", "internal"]
-# Add new tags here if you encounter models with different reasoning tag formats
-```
-
-### Scoring Categories
-
-```python
-SCORING_CATEGORIES = ["solution_quality", "formatting", "expertise"]
-# These categories are evaluated for all assets
-```
-
-**Pro-Tip:**
-
-- If semantic checks are **too strict** → Lower `SIMILARITY_THRESHOLD` to 0.70
-- If semantic checks are **too lenient** → Increase to 0.85
-- Always test changes with `make benchmark-single MODEL=<model> MODULE=code_quality`
-
-______________________________________________________________________
-
-## 📂 Available Assets
-
-| ID | Name | Focus | Tier | Max Score | |----|------|-------|------|-----------| | **001** | WCAG Audit | Accessibility (Button implementation) | 1 | 100 | | **002** | Security Review | SQL Injection & XSS vulnerabilities | 2 | 100 | | **003** | Performance Audit | React Renders & DB Queries optimization | 3 | 100 | | **004** | REST API Design Audit | API Design Patterns & anti-patterns | 4 | 100 | | **005** | Code Smells Audit | Anti-Patterns & Technical Debt detection | 2 | 100 |
-
-**How to add new assets:** See `docs/DEVELOPER_GUIDE.md` for asset creation guidelines.
-
-______________________________________________________________________
-
-## 🚀 Performance Optimizations
-
-### Recent Improvements (v2.0.0 - Feb 2026)
-
-- ✅ **40% faster** error detection (O(n³) → O(n) via set-based lookup)
-- ✅ **60% smaller** evaluators.py (350 → 140 lines)
-- ✅ **7% faster** execution time on large assets
-- ✅ **100% type coverage** (full IDE support via Type-Hints)
-- ✅ **Zero memory leaks** (tested with 1000+ consecutive runs)
-
-### Benchmarks
-
-**Test Setup:** `qwen2.5:14b-instruct` on all 5 assets (Mac M4 Pro, 24GB RAM)
-
-| Metric | Value | |--------|-------| | Avg. execution time per asset | ~8.4s | | Avg. score (qwen2.5:14b) | 71.6% | | Memory usage (peak) | < 50 MB | | Tokens per second | ~25 t/s |
-
-**Comparison with v1.0.0:**
-
-- Execution time: **-7%** (from 9.0s to 8.4s avg)
-- Code size: **-51%** (evaluators.py: 11,189 → 5,427 chars)
-- Maintainability: **+400%** (4 focused files vs 1 monolith)
-
-______________________________________________________________________
-
-## 🧪 Testing
-
-Unit tests available in `core/test_code_quality.py` (**8,972 lines** of test coverage).
-
-### Test Coverage:
-
-- ✅ All scoring methods (`score_regex`, `score_keyword_presence`, etc.)
-- ✅ Edge cases (empty inputs, invalid patterns, malformed YAML)
-- ✅ Reasoning tag cleaning (all 4 tag types)
-- ✅ Error detection logic (bonus points, violations tracking)
-
-### Run Tests:
-
-```bash
-# Run all tests
-pytest benchmark_modules/code_quality/core/test_code_quality.py -v
-
-# Run specific test
-pytest benchmark_modules/code_quality/core/test_code_quality.py::test_clean_reasoning_tags -v
-
-# With coverage report
-pytest --cov=benchmark_modules.code_quality.core benchmark_modules/code_quality/core/test_code_quality.py
-```
-
-**Expected Coverage:** > 95%
-
-______________________________________________________________________
-
-## 🔧 Troubleshooting
-
-### Issue 1: Reasoning tags not removed
-
-**Symptom:** `<think>` blocks appear in scored output, leading to low scores
-
-**Diagnosis:**
-
-```python
-# Check if your model uses supported tags
-from benchmark_modules.code_quality.core.constants import REASONING_TAGS
-print(REASONING_TAGS)  # ['think', 'reasoning', 'scratch', 'internal']
-```
-
-**Fix:** Add your model's tag to `REASONING_TAGS` in `constants.py`:
-
-```python
-REASONING_TAGS = ["think", "reasoning", "scratch", "internal", "your_custom_tag"]
-```
-
-______________________________________________________________________
-
-### Issue 2: Semantic similarity too strict
-
-**Symptom:** Valid answers score 0 on semantic checks
-
-**Diagnosis:**
-
-```python
-# Check current threshold
-from benchmark_modules.code_quality.core.constants import SIMILARITY_THRESHOLD
-print(SIMILARITY_THRESHOLD)  # 0.78
-```
-
-**Fix:** Lower threshold in `constants.py`:
-
-```python
-SIMILARITY_THRESHOLD = 0.70  # More lenient (was 0.78)
-```
-
-**Test:**
-
-```bash
-make benchmark-single MODEL=qwen2.5:14b MODULE=code_quality
-```
-
-______________________________________________________________________
-
-### Issue 3: Import errors
-
-**Symptom:**
-
-```
-ModuleNotFoundError: No module named 'benchmark_modules.code_quality.core'
-```
-
-**Fix:** Ensure `core/__init__.py` exists and exports the evaluator:
-
-```python
-# core/__init__.py
-from .evaluators import CodeQualityEvaluator
-
-__all__ = ["CodeQualityEvaluator"]
-```
-
-______________________________________________________________________
-
-### Issue 4: Scores seem random
-
-**Symptom:** Same prompt yields different scores across runs
-
-**Diagnosis:** Check temperature setting
-
-```python
-from benchmark_modules.code_quality.core.constants import DEFAULT_TEMPERATURE
-print(DEFAULT_TEMPERATURE)  # Should be 0.1 (deterministic)
-```
-
-**Fix:** Lower temperature in `constants.py`:
-
-```python
-DEFAULT_TEMPERATURE = 0.05  # Even more deterministic
-```
-
-______________________________________________________________________
-
-## 📜 Changelog
-
-### v2.0.0 (2026-02-01) - Production Ready Refactoring
-
-**Breaking Changes:** None (fully backward compatible)
-
-**Features:**
-
-- Split `evaluators.py` into 4 focused modules (Facade pattern)
-- Added comprehensive type hints (100% coverage)
-- Standardized error handling (`status`/`error_message`/`error_type`)
-- Extended reasoning tag support (4 tag types)
-- Converted all docstrings to English (Google-style)
-- Eliminated magic strings (centralized in `constants.py`)
-
-**Performance:**
-
-- Optimized issue detection (~40% faster via set-based lookup)
-- Reduced evaluators.py from 350 → 140 lines (-60%)
-- Execution time -7% on large assets
-- Memory usage unchanged
-
-**Testing:**
-
-- Added unit tests (8.9k lines)
-- Edge cases covered (empty inputs, invalid patterns)
-
-**Fixes:**
-
-- Fixed regex bug in reasoning tag cleaning
-- Improved error messages (more descriptive)
-
-______________________________________________________________________
-
-### v1.0.0 (2026-01-26) - Clean Architecture
-
-**Features:**
-
-- Initial MVC refactoring
-- Separated evaluators from test runner
-- Introduced `constants.py` for configuration
-- Added semantic similarity scoring
-
-______________________________________________________________________
-
-## 🤝 Contributing
-
-**Before making changes:**
-
-1. Run existing tests: `pytest benchmark_modules/code_quality/core/test_code_quality.py`
-1. Check type hints: `mypy benchmark_modules/code_quality/`
-1. Format code: `black benchmark_modules/code_quality/`
-1. Lint: `flake8 benchmark_modules/code_quality/`
-
-**After changes:**
-
-1. Update this README if architecture changed
-1. Add tests for new features
-1. Update `CHANGELOG.md` in root directory
-1. Bump version in metadata (top of this file)
-
-______________________________________________________________________
-
-## 📚 Related Documentation
-
-- **DEVELOPER_GUIDE.md** – How to create new assets
-- **ARCHITECTURE.md** – Framework-level architecture
-- **GOLDEN_STANDARDS.md** – How scoring is calibrated
-- **USER_GUIDE.md** – Running benchmarks
-
-______________________________________________________________________
-
-**Maintained by:** CrucibleMark Team\
-**Last Updated:** 2026-02-01\
-**Status:** ✅ Production Ready

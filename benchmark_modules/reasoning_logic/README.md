@@ -1,350 +1,241 @@
-# CrucibleMark Module: Logical Reasoning (v3.0)
+# Reasoning & Logic
 
-> **Technical Metadata**
->
-> - **ID:** `reasoning_logic`
-> - **Namespace:** `benchmark_modules.reasoning_logic`
-> - **Class:** `ReasoningLogicTest`
-> - **Evaluator:** `ReasoningEvaluator` (Clean MVC Architecture)
-> - **Version:** v3.0.0 (Production-Ready Refactoring)
-> - **Type:** Cognitive, Logic Processing, Metacognition
-> - **Quality Score:** 92/100 (Grade A)
-> - **Architecture:** Clean MVC, Tier-based, Test-Driven
+> Bewertet, ob ein LLM wirklich denkt — oder nur plausibel klingt. Das Modul
+> prüft 11 Szenarien in drei Schwierigkeitsstufen: von klassischen Logik-Rätseln
+> über mehrstufige Kausalanalysen bis zu Metakognitions-Tests, in denen das
+> Modell seine eigene Unsicherheit korrekt einschätzen muss.
 
-______________________________________________________________________
+**Modul-ID:** `reasoning` (Leaderboard) | **Klasse:** `ReasoningLogicTest` | **Version:** 2.2.0
+**Assets:** 11 | **Sprache:** Deutsch (Tier 3 erzwungen) | **Scoring:** Hybrid (Regex + LLM-Judge)
 
-## 🎉 What's New in v3.0 (February 2026)
+---
 
-**Major Refactoring Completed:** The module has been completely restructured for production excellence.
+## Warum dieses Modul?
 
-### 🏆 Key Achievements
+Das entscheidende Designmerkmal: **Einige Aufgaben haben keine lösbare Antwort.**
+Ein Modell, dem man 3 einstündige Meetings in ein 2-Stunden-Fenster legen lassen
+will, muss die Unmöglichkeit erkennen und klar kommunizieren — nicht kreativ
+ausweichen oder eine falsche Lösung konstruieren. Dasselbe gilt für zirkuläre
+Abhängigkeiten. Modelle, die bei unmöglichen Aufgaben Lösungen behaupten, werden
+massiv abgestraft (Feasibility-Penalty).
 
-- ✅ **+53% Quality Improvement** (60→92/100, Grade C+→A)
-- ✅ **100% Type-Hint Coverage** (fully typed, mypy-clean)
-- ✅ **14 Comprehensive Unit Tests** (85% coverage, Ground Truth validated)
-- ✅ **Zero Magic Numbers** (all constants centralized)
-- ✅ **12x Regex Performance Boost** (optimized feasibility extraction)
-- ✅ **YAML Data Migration** (data-code separation)
-- ✅ **Zero Breaking Changes** (100% backward compatible)
+Das Modul implementiert Anti-Ceiling-Maßnahmen: Oberflächliche Antworten, die
+korrekt klingen aber keine echte Analyse enthalten, erzielen maximal 60 % —
+der Rest erfordert explizites Chain-of-Thought-Reasoning.
 
-### 📊 Code Quality Metrics
+---
 
-| Metric | Before | After | Improvement | |--------|--------|-------|-------------| | Overall Score | 60/100 | **92/100** | +53% | | Largest File | 450 lines | **\<180 lines** | -60% | | Type-Hints | 60% | **100%** | +67% | | Documentation | 60% | **95%** | +58% | | Tests | 0 | **14 tests** | NEW! | | Performance | O(N×12) | **O(N)** | 12x faster |
+## Scoring-Methodik
 
-______________________________________________________________________
+Standard-Fallback: `regex: 0.20 / judge: 0.80`. Asset 5A verwendet `0.30/0.70`.
+Score-Contribution: `routine: 0.0 / reasoning: 1.0` (alle Assets).
 
-## 🔍 Module Overview
-
-Das **Logical Reasoning** Modul ist eines der anspruchsvollsten Testfelder in CrucibleMark. Es evaluiert die Fähigkeit von LLMs, logische Schlüsse zu ziehen, Fehlschlüsse zu erkennen und komplexe Denkmuster (Reasoning Chains) aufzubauen.
-
-### Core Capabilities
-
-1. **Anti-Ceiling Measures**: Verhindert 100% Scores durch gehärtete Physics-Traps
-1. **Feasibility Awareness**: KI muss unmögliche/widersprüchliche Aufgaben erkennen
-1. **Tiered Evaluation**: Von Deduktion (Tier 1) bis Metakognition (Tier 3)
-1. **Robust Metrics**: LLM-gestütztes Scoring für objektive Bewertung
-
-______________________________________________________________________
-
-## 🏗 Architecture (v3.0)
-
-### Clean MVC Structure
+Der **Reasoning Complexity Index (RCI)** als Leaderboard-Metrik:
 
 ```
-benchmark_modules/reasoning_logic/
-├── assets/
-│   ├── reasoning_*.yaml              # 11 Test Assets (Tier 0-3)
-│   └── ground_truth/                 # YAML Ground Truth Data
-│       ├── metacog_001_sheep.yaml
-│       └── metacog_002_green_sky.yaml
-├── core/
-│   ├── constants/                    # Centralized Configuration
-│   │   ├── __init__.py              # Unified Exports
-│   │   ├── base.py                  # Module Metadata
-│   │   ├── thresholds.py            # Scoring Thresholds
-│   │   ├── tier1.py                 # Tier 1 Keywords
-│   │   ├── tier2.py                 # Tier 2 Patterns
-│   │   └── tier3.py                 # Tier 3 Configuration
-│   ├── scorers/                     # Modular Scoring Logic
-│   │   ├── standard.py              # Tier 0/1 Scorers (8 assets)
-│   │   ├── tier1_physics.py         # Physics Trap (5C)
-│   │   ├── tier2_systems.py         # Complex Chains (5B) + Deadlock (5D)
-│   │   ├── tier2_expert.py          # Expert Paradox (5E)
-│   │   └── tier3/                   # Metacognition Scorers
-│   │       ├── __init__.py
-│   │       ├── metacog_001_sheep.py
-│   │       ├── metacog_002_green_sky.py
-│   │       ├── metacog_003_two_doors.py
-│   │       ├── metacog_004_monty_hall.py
-│   │       └── metacog_005_birthday.py
-│   ├── evaluators.py                # Main Evaluator (Facade Pattern)
-│   ├── robust_metrics.py            # LLM-based Scoring Helpers
-│   ├── structure_analysis.py        # Thought Tag Parsing
-│   └── validation_dataset.py        # YAML Ground Truth Loader
-├── tests/
-│   ├── __init__.py
-│   └── test_reasoning_scorers.py    # 14 Comprehensive Tests
-├── test.py                          # Module Entry Point
-└── README.md                        # This File
+RCI = (Durchschnitt Tier 1+2 × 0,6) + (Durchschnitt Tier 3 × 0,4)
 ```
 
-### Design Patterns
+| RCI-Wert | Klassifikation |
+|---|---|
+| < 50 % | Non-Thinking Model |
+| 50–85 % | Thinking Model |
+| > 85 % | Deep Thinking Model |
 
-- **Facade Pattern**: `ReasoningEvaluator` provides unified interface
-- **Strategy Pattern**: Each scorer is interchangeable
-- **Single Responsibility**: Max 180 lines per file
-- **Type Safety**: 100% type-hint coverage
+**Feasibility-Extraktion** (Assets 5C, 5D): Automatischer O(n)-Single-Pass-Regex
+über 12+ Muster erkennt, ob das Modell die Unmöglichkeit korrekt kommuniziert.
+Schwellenwert: Feasibility-Score < 3.0 → Unmöglichkeit erkannt.
+Penalty-Multiplikator: Score × 0,3 wenn Unmöglichkeit nicht erkannt.
 
-______________________________________________________________________
+---
 
-## 🎯 Test Assets (11 Total)
+## Test Assets
 
-### 🔹 Tier 0: Sanity Check
+### TIER 1 — Deduktives Schließen
 
-- **reasoning_001_river**: Classic river crossing puzzle
+#### `reasoning_001_river` — River Crossing Puzzle
+```
+Typ:       Klassisches Constraint-Satisfaction-Rätsel
+Prompt:    Bauer muss Wolf, Ziege und Kohl über einen Fluss transportieren.
+           Boot fasst nur Bauer + 1 weiteres. Wolf frisst Ziege, Ziege frisst Kohl.
+Erwartete Antwort:
+  - Vollständige Lösung in 7 Schritten
+  - Explizite Begründung für jeden Schritt
+  - Chain-of-Thought sichtbar (nicht nur Ergebnis)
+Scoring:   regex: 0.10 / judge: 0.90 — Lösungsweg, nicht nur Resultat
+```
 
-### 🔹 Tier 1: Operational Logic (Deduktion)
+---
 
-- **reasoning_5a_error**: Debugging code logic
-- **reasoning_5c_physics**: Physics Trap (Mount Everest in box)
-  - **Hardening**: Bidirectional negation detection
-  - **Expected**: Refusal ("Impossible")
-  - **Scoring**: 0 points for workarounds (shrink ray, metaphors)
+### TIER 2 — Operationales Schließen (5A–5E)
 
-### 🔹 Tier 2: Systems Thinking (Analyse)
+#### `reasoning_5a_001` — Code Logic Debugging
+```
+Typ:       Bug-Identifikation in Python-Code (Endlosschleife)
+Prompt:    Python-Funktion mit verstecktem Loop-Bug wird gezeigt.
+Erwartete Antwort:
+  - Genaue Identifikation der fehlerhaften Zeile
+  - Kausalerklärung: Warum entsteht die Endlosschleife in diesem Kontext?
+  - Konkreter Fix mit Begründung
+Scoring:   regex: 0.30 / judge: 0.70 (hoher Regex-Anteil: Bug-Zeile per Keyword prüfbar)
+```
 
-- **reasoning_5b_complex**: Multi-step reasoning chains
-- **reasoning_5d_deadlock**: Circular dependencies detection
-  - **Expected**: Feasibility 0/10, "Unsolvable"
-  - **Scoring**: Regex-based feasibility extraction
-- **reasoning_5e_expert**: CAP-theorem style trade-offs
-  - **Scoring**: 3-dimensional (Analysis, Solution, Depth)
+#### `reasoning_5b_001` — Root Cause Analysis
+```
+Typ:       Mehrstufige technische Diagnose
+Prompt:    Dashboard lädt 5–10 Sekunden. Gegebene Datenpunkte:
+           API antwortet in 20ms / DB-CPU bei 99–100% / Netzwerklatenz normal.
+Erwartete Antwort:
+  - Korrekte Identifikation der Root Cause (DB, nicht API, nicht Netzwerk)
+  - Logische Ausschlusskette ("API ist schnell, also liegt es nicht am Code...")
+  - Lösungsvorschläge (Caching, Query-Optimierung, Indexierung)
+Scoring:   Chain-of-Thought-Qualität bewertet; Ergebnis allein reicht nicht
+```
 
-### 🔹 Tier 3: Metacognition (Selbstreflexion)
+#### `reasoning_5c_001` — The Scheduling Paradox ⚠️ Unmöglich
+```
+Typ:       Constraint Satisfaction — absichtlich unmöglich
+Prompt:    "Schedule 3 meetings of 1h each between 1:00 PM and 3:00 PM."
+           (3h Bedarf, 2h Fenster — keine valide Lösung existiert)
+Erwartete Antwort:
+  - Explizit: "Das ist nicht möglich"
+  - Mathematische Begründung: 3×1h > 2h verfügbares Fenster
+  - KEIN kreativer Workaround (z. B. "30-Minuten-Slots") — wird abgestraft!
+Feasibility-Extraktion:
+  - Modell-Feasibility-Score wird per Regex extrahiert
+  - Score < 3.0: Unmöglichkeit erkannt (+volle Punkte)
+  - Score > 6.0: Modell behauptet Lösung (Penalty × 0.3)
+```
 
-- **metacog_001_sheep**: Self-correction (17-9=? trap)
-- **metacog_002_green_sky**: Premise challenge (fake facts)
-- **metacog_003_two_doors**: Alternative exploration
-- **metacog_004_monty_hall**: Iterative refinement
-- **metacog_005_birthday**: Confidence calibration
+#### `reasoning_5d_001` — Circular Dependency ⚠️ Unmöglich
+```
+Typ:       Dependency-Analyse — zirkulär und unlösbar
+Prompt:    System mit zirkulären Abhängigkeiten (A→B→C→A),
+           Frage: Wie kann man das auflösen?
+Erwartete Antwort:
+  - Erkennung der Zirkularität
+  - Korrekte Klassifikation als architektonisches Problem, nicht operatives
+  - Lösungsvorschlag muss strukturelle Änderung beinhalten (kein Runtime-Hack)
+Feasibility-Extraktion: wie 5C — falsche Lösungsversprechen werden stark abgestraft
+```
 
-______________________________________________________________________
+#### `reasoning_5e_001` — Nested Paradox
+```
+Typ:       CAP-Theorem-ähnliche Trade-off-Analyse
+Prompt:    Dreidimensionaler Widerspruch: System muss gleichzeitig
+           konsistent, verfügbar UND partition-tolerant sein.
+Erwartete Antwort:
+  - Erkennung des Trade-offs (CAP-Theorem)
+  - Argumentierte Priorisierung (keine universell richtige Antwort möglich)
+  - Tiefe der Argumentation ist Scoring-Dimension
+Scoring-Dimensionen: Analyse-Tiefe (33%) + Lösungsqualität (33%) + Argumentationstiefe (33%)
+```
 
-## 📊 Scoring System
+---
 
-### Standardized Return Format
+### TIER 3 — Metakognition (Tier-3-Assets)
 
-All scorers return: `tuple[float, dict[str, float], list[str]]`
+*Alle Tier-3-Assets erzwingen `language: de`.
+ Antwort-Format: `<thought>` Chain-of-Thought sichtbar, dann finale Antwort.*
 
-- **float**: Total score (0-100)
-- **dict**: Score breakdown by dimension
-- **list**: Detailed reasoning strings
+#### `reasoning_metacog_001` — The Sheep Trap
+```
+Prompt:    "A farmer has 17 sheep. All but 9 die. How many sheep are left?"
+Trap:      "All but 9" löst Instinkt-Antwort 17-9=8 aus.
+           Korrekte Antwort: 9 (die 9 überleben).
+Erwartete Antwort:
+  - <thought>: Initiale Berechnung 17-9=8, dann Selbstkorrektur
+  - Finale Antwort: 9
+Scoring:   Selbstkorrektur-Keywords in <thought> gesucht:
+           "wait", "actually", "correction", "mistake"
+```
 
-### Reasoning Complexity Index (RCI)
+#### `reasoning_metacog_002` — Green Sky Premise
+```
+Prompt:    Aufgabe mit einer falsch formulierten Prämisse als Ausgangslage.
+           ("Der Himmel ist grün. Was folgt logisch daraus?")
+Erwartete Antwort:
+  - Prämisse anfechten statt akzeptieren
+  - Erklären, warum die Prämisse falsch ist
+  - Nicht einfach logisch weiterrechnen auf Basis einer Falschannahme
+Scoring:   Ground-Truth-Datensatz aus YAML geladen
+```
 
-Measures depth of thinking process:
+#### `reasoning_metacog_003` — The Two Doors
+```
+Typ:       Ambiguität erkennen und mehrere Interpretationen ausarbeiten
+Prompt:    Mehrdeutiges Szenario, das mehrere valide Lösungsansätze hat.
+Erwartete Antwort:
+  - Mindestens 2 valide Interpretationen explizit ausgearbeitet
+  - Keine willkürliche Auswahl einer einzelnen Interpretation
+Scoring:   Anzahl und Qualität der ausgearbeiteten Interpretationen
+```
+
+#### `reasoning_metacog_004` — The Monty Hall Problem
+```
+Typ:       Iterative Verfeinerung nach Feedback
+Ablauf:    Modell gibt erste Antwort → erhält korrigierendes Feedback →
+           muss Position neu bewerten
+Erwartete Antwort:
+  - Robustheit gegen korrektes Feedback: Position wird revidiert
+  - Keine sture Beibehaltung einer falschen Antwort
+Scoring:   Positionsänderung nach Feedback + mathematische Korrektheit
+```
+
+#### `reasoning_metacog_005` — The Birthday Paradox
+```
+Typ:       Uncertainty Calibration (statistische Schätzung)
+Prompt:    Statistische Frage mit kontraintuitiver Antwort.
+           (In einer Gruppe von 23 Personen: Wahrscheinlichkeit gemeinsamer Geburtstag?)
+Erwartete Antwort:
+  - Kalibriertes Konfidenz-Level: weder überconfident noch unnötig vage
+  - Korrekte Schätzung (~50%) mit Begründung
+  - Kommuniziert Unsicherheit angemessen
+Scoring:   Mathematische Korrektheit (Annäherung) + Kalibrierung des Konfidenz-Levels
+```
+
+---
+
+## Technischer Aufbau
+
+Strukturen in `core/`:
+
+| Datei | Zuständig für |
+|---|---|
+| `evaluators.py` | Facade: Dispatch auf Tier-Scorer |
+| `scorers/standard.py` | Tier 0/1 |
+| `scorers/tier1_physics.py` | Asset 5C (impossible task) |
+| `scorers/tier2_systems.py` | Assets 5B, 5D |
+| `scorers/tier2_expert.py` | Asset 5E |
+| `scorers/tier3/metacog_00[1-5].py` | Je ein Tier-3-Asset |
+| `robust_metrics.py` | Feasibility-Extraktion (12+ Regex-Patterns) |
+| `validation_dataset.py` | Ground-Truth YAML für metacog 001/002 |
+| `constants/thresholds.py` | Alle Schwellenwerte |
+
+---
+
+## Konfiguration
+
+```yaml
+# config.yaml (Auszug)
+metadata:
+  id: "reasoning"    # Leaderboard-ID (nicht "reasoning_logic"!)
+
+scoring:
+  fallback_weights:
+    regex: 0.20
+    judge: 0.80
+
+integration:
+  leaderboard:
+    default_contribution:
+      routine: 0.0
+      reasoning: 1.0
+```
 
 ```python
-RCI = (Avg_Tier1_2 * 0.6) + (Avg_Tier3 * 0.4)
+# core/constants/thresholds.py (Auszug)
+FEASIBILITY_IMPOSSIBLE_THRESHOLD = 3.0    # Unter diesem Score: Unmöglichkeit erkannt
+FEASIBILITY_PENALTY_MULTIPLIER = 0.3      # Score × 0.3 wenn Unmöglichkeit nicht erkannt
+RCI_TIER3_WEIGHT = 0.4                    # Tier-3-Gewichtung im RCI
 ```
-
-**Classification:**
-
-- `< 50%`: Non-Thinking Model
-- `50-85%`: Thinking Model
-- `> 85%`: Deep Thinking Model
-
-### Feasibility Extraction (Optimized in v3.0)
-
-**Performance:** O(N) single-pass regex (12x faster than v2.2)
-
-Automatic extraction of model's self-assessment:
-
-- Patterns: "Feasibility: 2/10", "0 out of 10", "**0/10**", etc.
-- Default: 7/10 (optimistic assumption)
-- Penalty: Massive score reduction if feasibility > threshold on impossible tasks
-
-______________________________________________________________________
-
-## 🚀 How to Run
-
-### Prerequisites
-
-```bash
-# Install dependencies
-pip install -r requirements.txt  # PyYAML, pandas, ollama, etc.
-```
-
-### Option 1: Interactive (Recommended)
-
-```bash
-python run_benchmark.py
-# Select: reasoning → local → your_model
-```
-
-### Option 2: CLI (Quick)
-
-```bash
-# Test all assets
-python run_benchmark.py --benchmark "Logical Reasoning" --model gemma2:9b
-
-# Test specific tier
-python benchmark_modules/reasoning_logic/test.py --model qwen2.5:32b
-```
-
-### Option 3: Programmatic
-
-```python
-from benchmark_modules.reasoning_logic.test import ReasoningLogicTest
-
-test = ReasoningLogicTest(
-    model_name="mistral-large-latest",
-    provider="mistral"
-)
-results = test.run()
-print(f"Overall: {results['overall_score']:.1f}%")
-print(f"RCI: {results['rci']:.1f}% ({results['rci_class']})")
-```
-
-______________________________________________________________________
-
-## 🧪 Testing (NEW in v3.0)
-
-### Run Unit Tests
-
-```bash
-# All 14 tests
-python -m unittest benchmark_modules/reasoning_logic/tests/test_reasoning_scorers.py
-
-# Specific test
-python -m unittest benchmark_modules.reasoning_logic.tests.test_reasoning_scorers.TestMetacogScorers.test_metacog_001_perfect_response
-```
-
-### Test Coverage
-
-- ✅ Ground Truth validation (2 assets)
-- ✅ Scorer execution (11 scorers)
-- ✅ Feasibility extraction (12 patterns)
-- ✅ Structure analysis (thought tags)
-- ✅ RCI calculation
-
-______________________________________________________________________
-
-## 📝 Development
-
-### Adding New Assets
-
-1. Create YAML file in `assets/reasoning_*.yaml`
-1. Add scorer function in appropriate `scorers/` file
-1. Register in `evaluators.py` dispatcher
-1. Add test case in `tests/test_reasoning_scorers.py`
-
-### Modifying Scoring Logic
-
-All constants are centralized in `core/constants/`:
-
-- **Scoring weights**: `thresholds.py` (e.g., `METACOG_001_SELF_CORRECTION = 40.0`)
-- **Keywords**: `tier1.py`, `tier2.py`, `tier3.py`
-- **Thresholds**: `thresholds.py` (e.g., `FEASIBILITY_HARD_LIMIT = 2`)
-
-### Code Style
-
-- **Type-Hints**: 100% coverage (use `from __future__ import annotations`)
-- **Docstrings**: Google-style for all public/helper functions
-- **Max File Size**: 200 lines (current max: 180)
-- **Testing**: Add test for every new scorer
-
-______________________________________________________________________
-
-## 📈 Performance Characteristics
-
-### Benchmarks (v3.0)
-
-- **Feasibility Extraction**: 0.5ms per response (12x faster than v2.2)
-- **Average Test Runtime**: ~30-60s for 11 assets (depends on model)
-- **Memory Usage**: \<50MB (YAML lazy loading)
-
-### Scalability
-
-- ✅ Supports 100+ concurrent evaluations
-- ✅ YAML caching (dynamic loader)
-- ✅ Compiled regex patterns (single compilation)
-
-______________________________________________________________________
-
-## 🐛 Known Issues & Limitations
-
-### Current Limitations
-
-1. **LLM-based Scoring**: Robust metrics require OpenAI API (fallback to heuristics)
-1. **Language**: Prompts are German (multilingual support planned)
-1. **Thought Tags**: Detection relies on `<think>` or `Answer:` separators
-
-### Roadmap
-
-- [ ] Add English prompts
-- [ ] Expand Ground Truth dataset (5→11 assets)
-- [ ] Add TASK-11: CI/CD integration
-- [ ] Performance profiling dashboard
-
-______________________________________________________________________
-
-## 📚 References
-
-### Documentation
-
-- **Architecture**: `ARCHITECTURE.md` (CrucibleMark root)
-- **Data Format**: `DATA_FORMAT.md`
-- **Adding Modules**: `ADDING_MODULES.md`
-- **User Guide**: `USER_GUIDE.md`
-
-### Related Modules
-
-- `code_quality`: Code audit benchmarks (88/100)
-- `political_bias`: Political compass evaluation
-- `ux_writing`: User experience text quality
-
-______________________________________________________________________
-
-## 📄 License & Attribution
-
-Part of **CrucibleMark** - A modular LLM benchmark framework.
-
-**Maintainer**: CrucibleMark Team\
-**Version**: v3.0.0 (February 2026)\
-**Status**: Production Ready ✅
-
-______________________________________________________________________
-
-## 🎯 Quick Reference
-
-### Common Commands
-
-```bash
-# Run full benchmark
-python run_benchmark.py --benchmark reasoning --model gemma2:9b
-
-# Run tests
-python -m unittest benchmark_modules/reasoning_logic/tests/test_reasoning_scorers.py
-
-# Interactive mode
-python run_benchmark.py
-
-# Check module status
-python benchmark_modules/reasoning_logic/test.py --help
-```
-
-### Key Files
-
-- **Entry Point**: `test.py`
-- **Main Logic**: `core/evaluators.py`
-- **Constants**: `core/constants/thresholds.py`
-- **Tests**: `tests/test_reasoning_scorers.py`
-- **Assets**: `assets/reasoning_*.yaml`
-
-______________________________________________________________________
-
-**Last Updated**: February 1, 2026, 11:05 PM CET\
-**Refactoring Completed**: 10/10 Tasks (100%)\
-**Quality Grade**: A (92/100)\
-**Status**: Production Ready 🚢

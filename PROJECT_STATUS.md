@@ -1,12 +1,24 @@
 # PROJECT_STATUS.md
 
-**Last Updated:** 2026-04-07
-**Current Version:** 3.3.0 (Language Compliance + Prompt Hardening)
+**Last Updated:** 2026-04-08
+**Current Version:** 3.3.1 (Political Compass Integration Fix)
 **Status:** ✅ Production-Ready
 
 ______________________________________________________________________
 
 ## 🎯 Executive Summary
+
+CrucibleMark v3.3.1 schließt die vollständige Integration des Political Compass-Subsystems in den überarbeiteten Datenprozess ab. Das Refactoring aus v3.3.0 wurde nachgezogen: `model_category`-Feld im PC-Leaderboard-Schema, Cloud-Erkennung beim Schreiben, Upsert-Parität für lokale Modelle und die Berücksichtigung der PC-Leaderboard-CSV im Bereinigungsskript.
+
+**Key Achievements (v3.3.1):**
+- ✅ **Political Compass: model_category-Feld:** `io_manager.py` schreibt jetzt `model_category` (`local` / `cloud` / `commercial`) in die Leaderboard-CSV — analog zur bestehenden Logik in `result_manager.py`.
+- ✅ **Cloud-Erkennung bei PC-Write:** `provider_type` wird für Ollama-gehostete Cloud-Modelle (`:cloud`-Suffix) korrekt auf `cloud` gesetzt statt `ollama`.
+- ✅ **Upsert-Parität:** `political_compass_handler.py`'s `_update_local_pc_csv()` dedupliziert jetzt per Upsert (identisch zur kommerziellen Variante); kein append-only mehr.
+- ✅ **clean_results.py vollständig:** `political_compass_leaderboard.csv` ist jetzt in der Dateiliste; defensiver `asset_id`-Guard verhindert KeyError bei PC-CSVs ohne diese Spalte.
+- ✅ **CSV-Datenbereinigung:** Leaderboard-CSV bereinigt: 66 → 56 Zeilen (Duplikate entfernt, letzter Eintrag behalten), `model_category` rückwirkend für alle 56 Einträge befüllt, `provider_type` für 8 Cloud-Modelle korrigiert.
+- ✅ **Anomalie-Cleanup:** 6 historische Cloud-Modell-Einträge aus `local_models_benchmark.csv` entfernt (495 → 489 Zeilen).
+
+**Vorherige Version (v3.3.0 – Language Compliance + Prompt Hardening):**
 
 CrucibleMark v3.3.0 führt eine sprachkonforme Evaluierungsebene ein und schließt eine systemweite redaktionelle Bereinigung aller YAML-Benchmark-Assets ab. Die Language-Compliance-Pipeline ermöglicht es, pro Asset eine Pflichtsprache zu definieren, die der LLM-Judge automatisch mit gewichteter Penalty-Logik bewertet. Gleichzeitig wurden in einem vollständigen Editorial Audit 30 Gemini-generierte Artefakte aus 21 Assets bereinigt und die Bewertungsgrundlage aller betroffenen Module reaktiviert.
 

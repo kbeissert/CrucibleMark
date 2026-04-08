@@ -4,6 +4,20 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [v3.3.1] - 2026-04-08
+
+### Fixed
+- **Political Compass: model_category-Feld** in `io_manager.py` ergänzt (`save_leaderboard_csv`): Die Leaderboard-CSV trägt jetzt `model_category` (`local` / `cloud` / `commercial`) — identische Routing-Logik wie `result_manager.py`.
+- **Political Compass: provider_type-Korrektur** für Ollama-gehostete Cloud-Modelle (`:cloud`-Suffix): Wert wird jetzt korrekt auf `cloud` gesetzt statt auf `ollama`.
+- **political_compass_handler.py:** `_update_local_pc_csv()` von append-only auf Upsert umgestellt — entfernt bestehende Einträge des Modells vor dem Schreiben (Parität zu `_update_commercial_pc_csv()`).
+- **clean_results.py:** `political_compass_leaderboard.csv` fehlte in der `files`-Liste; bei `--model xyz` blieb der PC-Leaderboard-Eintrag stehen. Außerdem defensiver `asset_id`-Guard in `clean_csv()` eingebaut (KeyError bei CSVs ohne `asset_id`-Spalte).
+- **CSV-Anomalie-Cleanup:** 6 historische Cloud-Modell-Einträge aus `local_models_benchmark.csv` entfernt (hatten `provider_type=ollama` + `:cloud`-Suffix, wurden aber vor dem `:cloud`-Routing-Fix in die falsche CSV geschrieben).
+
+### Changed
+- **political_compass_leaderboard.csv** einmalig bereinigt: 66 → 56 Zeilen (Duplikate), `model_category`-Spalte rückwirkend befüllt, `provider_type` für 8 Cloud-Modelle korrigiert.
+
+---
+
 ## [v3.3.0] - 2026-04-07
 
 ### Added

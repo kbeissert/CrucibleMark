@@ -393,13 +393,25 @@ def run_commercial_batch(
 
     print(f"Geplante Tasks: {len(tasks)} Modell-Kombinationen")
 
+    # Tracks providers that have been detected as quota-exhausted at runtime.
+    quota_exhausted_providers: Set[str] = set()
+
     for i, task in enumerate(tasks, 1):
-        full_name = f"{task['provider']}/{task['name']}"
+        prov_key = task["provider"]
+        full_name = f"{prov_key}/{task['name']}"
         model_id = task["id"]
+
+        if prov_key in quota_exhausted_providers:
+            print(f"\n⏭️  MOD [Comm {i}/{len(tasks)}]: {full_name} — Provider '{prov_key}' quota-erschöpft, überspringe.")
+            continue
 
         print(f"\n➡️  MOD [Comm {i}/{len(tasks)}]: {full_name}")
 
         for module in modules:
+            if prov_key in quota_exhausted_providers:
+                print(f"   ⏭️ Bench: {module['name']} (Provider quota-erschöpft, überspringe)")
+                continue
+
             # Filter assets
             assets_todo = _get_startable_assets(module, model_id, existing_tests)
 
@@ -410,9 +422,22 @@ def run_commercial_batch(
             print(f"   📊 Bench: {module['name']} ({len(assets_todo)} neue Tests) ...")
             try:
                 results = runner.run_benchmark(
-                    provider=task["provider"], model=model_id, benchmark_info=module, assets=assets_todo
+                    provider=prov_key, model=model_id, benchmark_info=module, assets=assets_todo
                 )
+                # Detect quota exhaustion via runner flag (Budget-/Quota-Fehler per-Test)
+                if runner.provider_quota_exhausted:
+                    print(f"   💸 Budget-/Quota-Fehler via Runner erkannt für Provider '{prov_key}'. Alle weiteren Modelle dieses Providers werden übersprungen.")
+                    quota_exhausted_providers.add(prov_key)
+                    runner.provider_quota_exhausted = False  # Reset für nächsten Provider
+
                 if results:
+                    # Fallback-Erkennung: alle Ergebnisse haben 0 Token und 0% Score
+                    all_zero_tokens = all(r.get("tokens_used", 0) == 0 for r in results)
+                    all_zero_scores = all(r.get("percentage", 0) == 0.0 for r in results)
+                    if all_zero_tokens and all_zero_scores and len(results) > 0 and prov_key not in quota_exhausted_providers:
+                        print(f"   💸 Quota-Erschöpfung (Fallback-Erkennung) für Provider '{prov_key}'. Alle weiteren Modelle dieses Providers werden übersprungen.")
+                        quota_exhausted_providers.add(prov_key)
+
                     runner.save_results(results)
                     # Modular behavior: Immediate trigger after save.
                     try:

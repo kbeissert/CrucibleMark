@@ -63,6 +63,8 @@ class UnifiedBenchmarkRunner(BaseBenchmarkRunner):
 
         # Cache und Laufzeit-Daten
         self.warmup_cache: set[str] = set()
+        # Gesetzt wenn ein Budget-/Quota-Fehler während eines Moduls erkannt wurde
+        self.provider_quota_exhausted: bool = False
         self.existing_commercial_benchmarks = self._load_existing_benchmarks(
             self.commercial_csv
         )
@@ -494,6 +496,15 @@ class UnifiedBenchmarkRunner(BaseBenchmarkRunner):
             except Exception as e:
                 print(" " * 80, end="\r")
                 print(f"   ❌ [{i}/{len(assets)}] {asset_name}: Abgebrochen - {str(e)}")
+                # Budget-/Quota-Fehler erkennen und Flag setzen
+                _BUDGET_KEYWORDS = [
+                    "quota", "budget", "billing", "credit", "insufficient_funds",
+                    "payment", "402 payment required", "exceeded your current quota",
+                    "budget limit exceeded",
+                ]
+                if any(kw in str(e).lower() for kw in _BUDGET_KEYWORDS):
+                    print(f"   💸 Budget-/Quota-Fehler erkannt für Provider. Setze Exhausted-Flag.")
+                    self.provider_quota_exhausted = True
 
         # Global audit metrics
         # ---------------------------------------------------------
