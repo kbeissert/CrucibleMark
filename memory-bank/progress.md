@@ -3,11 +3,14 @@
 ## Ongoing
 - [ ] gpt-5.4-mini cultural_intel 108-Token-Anomalie: --force Re-Run prüfen
 - [ ] Backup-Dateien löschen: local_models_benchmark.csv.bak, political_compass_leaderboard.csv.bak, *.pre_retest_bak
-- [ ] `make benchmark-auto` — offene Benchmark-Slots (gpt-5: code_quality + cli; weitere commercial/cloud)
+- [ ] `make benchmark-auto` — läuft: documentation_quality (45 Zeilen bereinigt) + metacog_004 (24 Zeilen bereinigt) werden neu berechnet. Danach make leaderboard.
 - [ ] Phase 4: Finale E2E Systemtests und CI/CD Review
 - [ ] LLM Judge: Batch-Mode (Phase 3.5)
 
 ## Abgeschlossen (Meilensteine)
+- [DONE] Scorer-Bugfix: metacog_004 Monty Hall (2026-04-09): `_has_correct_probability()` und `_has_switch_intent()` neu geschrieben mit EN+DE Regex, Float-Toleranz ±0.05, Dezimalformat. `iterative_refinement` von `"initial"/"first"` auf 30 bilinguale Rethinking-Phrasen umgebaut. `probability_analysis` prüft jetzt `thought OR answer`. Alle 24 stale CSV-Zeilen entfernt (local 8, cloud 3, commercial 13). Scorer-Ergebnis: 34–73% statt systematisch 0%.
+- [DONE] Scorer-Bugfix: documentation_quality max_score (2026-04-09): `test.py` `execute()` hatte `max_score=100.0` hardcoded, alle 5 Assets haben aber `total_points: 130`. Fix in `score_response()`: `result.max_score = score_dict.get("max_score", result.max_score)`. Alle 45 stale CSV-Zeilen entfernt (local 30, cloud 15). README-Scoring-Tabelle korrigiert (70/30% → 77/23% Rohpunkte). Fallstrick: `execute()` kennt `total_points` nicht — nur `score_response()` hat Zugriff auf den Evaluator-Output.
+- [DONE] v3.4.1 Token-Verbrauch im Leaderboard (2026-04-08): Tokens Total/per-Modul auf scoring_df-Basis (PC exkl.), Cost per 1K via cost_limits.yaml-Lookup (kein Typ-Hardcode), Benchmark Cost-Spalte, K-Formatierung, Spaltenreihenfolge. Commit 2bd951a.
 - [DONE] v3.4.0 Token-Budget & Verbosity-Transparenz (2026-04-08): max_tokens API-Cap in base_runner.py, [!NOTE]-Block in benchmark_utils.py, {token_efficiency_context} + Verbosity-Diagnostik in generate_review.py + meta_reviewer_prompt.yaml. Vollständige Doku-Aktualisierung (README, CHANGELOG, PROJECT_STATUS, REF_TODO, 3 docs/*.md, 6 Modul-READMEs). CSV-Cleanup (189 obsolete Zeilen, 11 Dateien, gpt-5-mini aus Config).
 - [DONE] Modul-READMEs v2 (2026-04-08): Alle 7 READMEs vollständig neu geschrieben mit per-Asset-Dokumentation, Transparenz-Sektionen und Scoring-Methodik-Tabellen für externe Entwickler.
 - [DONE] Political Compass Integration (2026-04-08): io_manager.py +model_category +cloud-provider_type-Erkennung; political_compass_handler.py append→upsert; clean_results.py +PC Leaderboard +asset_id-Guard; einmalige CSV-Bereinigung 66→56 Zeilen.

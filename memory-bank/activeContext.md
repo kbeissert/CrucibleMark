@@ -1,3 +1,3 @@
-- Abgeschlossen: v3.4.0 vollständig dokumentiert — Token-Budget-System (base_runner.py + benchmark_config.yaml), Verbosity-Transparenz in Audit-Logs (benchmark_utils.py [!NOTE]-Block) und Meta-Reviews (generate_review.py {token_efficiency_context} + meta_reviewer_prompt.yaml). Alle 4 Hauptdok-Dateien, 3 docs/*-Dateien und 6 Modul-READMEs aktualisiert. CSV-Cleanup (189 Zeilen entfernt, 11 Dateien gelöscht, gpt-5-mini aus Config entfernt).
-- Nächster Schritt: gpt-5.4-mini cultural_intel 108-Token-Anomalie prüfen (--force Re-Run).
-- Offen/Risiko: gpt-5.4-mini cultural_intel 108-Token-Anomalie — --force Re-Run noch ausstehend. Backup-Dateien (*.bak, *.pre_retest_bak) noch nicht gelöscht.
+- Abgeschlossen: Zwei Scorer-Bugfixes (2026-04-09). Siehe Details in progress.md.
+- Nächster Schritt: benchmark-auto läuft durch (documentation_quality + metacog_004 Neubewertung alle Modelle). Danach make leaderboard für finalen Stand.
+- Offen/Risiko: gpt-5.4-mini cultural_intel 108-Token-Anomalie noch ungeprüft. Backup-Dateien (*.bak) noch nicht gelöscht.

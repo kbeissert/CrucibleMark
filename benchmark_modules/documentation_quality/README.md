@@ -29,10 +29,11 @@ Zielgruppenangabe, fehlende API-Keywords für Discoverability).
 
 Standard-Fallback: `regex: 0.10 / judge: 0.90`.
 
-| Dimension | Gewicht | Beschreibung |
-|---|---|---|
-| **Fehler-Erkennung** | 70 % | Identifiziert das Modell, was fehlt oder falsch ist? Gestaffelt von offensichtlich bis Expert-Level |
-| **Lösungsqualität** | 30 % | Vollständigkeit, Korrektheit, Klarheit der geschriebenen Abschnitte |
+| Dimension | Rohpunkte | Anteil | Beschreibung |
+|---|---|---|---|
+| **Fehler-Erkennung** | 100 Pkt. | 77 % | Identifiziert das Modell, was fehlt oder falsch ist? Gestaffelt von offensichtlich bis Expert-Level |
+| **Lösungsqualität** | 30 Pkt. | 23 % | Vollständigkeit, Korrektheit, Klarheit der geschriebenen Abschnitte |
+| **Gesamt** | **130 Pkt.** | 100 % | Rohpunkt-Maximum; `percentage = (erreichte Punkte / 130) × 100` |
 
 Struktur-Validierung: Dokumenttyp-spezifische Schemata (`DOC_TYPE_SCHEMAS`) prüfen
 Heading-Hierarchie, Code-Block-Anzahl und Pflicht-Sections.
