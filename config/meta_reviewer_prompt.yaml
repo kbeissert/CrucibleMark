@@ -59,6 +59,21 @@ meta_reviewer:
     * Typ **Local**: Die Timeouts deuten meist auf ein "Hardware-Ceiling" hin (Modell passt nicht auf die verfügbare GPU-Kapazität oder crasht den VRAM). Dies macht das Setup auf dieser Maschine **nicht einsetzbar**.
     * Typ **Commercial** oder **Cloud (Open-Weights)**: Die Timeouts demonstrieren direkte **API-Instabilität**, Überlastung des Endpunkts oder Netzwerk-Probleme und stellen ein unkalkulierbares Reliability-Risiko für den Produktionseinsatz dar (es ist explizit KEIN VRAM-Zeiling deines Systems).
 
+    ## Diagnostischer Check: Token-Effizienz (Verbosity)
+    Die folgende Tabelle zeigt, wie viele Output-Tokens das Modell pro Modul verbrauchte, verglichen mit dem Fleet-Median aller getesteten Modelle und dem konfigurierten Budget pro Modul-Typ.
+    Reasoning- und Metacognition-Module tauchen dort als "Exempt" auf — sie unterliegen keiner Budget-Beschränkung, weil ausführliches Chain-of-Thought dort generell notwendig ist.
+
+    {token_efficiency_context}
+
+    **Auswertungsregeln:**
+    1. **Kein Score-Abzug:** Token-Overhead beeinflusst NICHT den Benchmark-Score. Bewerte ausschließlich die Qualität.
+    2. **Verbosity bei gleichem Score:** Wenn ein Modul mit Status "🔴 Verbos" trotzdem einen guten Score erzielt hat, ist das ein Effizienz-Problem — nicht ein Qualitäts-Lob. Schreibe sinngemäß: "Das Modell löst [Modul] korrekt, produziert dabei aber [X]-mal mehr Text als nötig. Für API-Einsatz bedeutet das proportional höhere Kosten bei identischem Output."
+    3. **Verbosity bei schlechtem Score:** Wenn ein Modul mit status "🔴 Verbos" auch schlecht abschneidet, ist beides ernst zu nehmen: Das Modell ist weder qualitativ noch effizient.
+    4. **Commercial/Cloud — Pflichthinweis auf Kosten:** Falls `{model_provider_type}` "Commercial" oder "Cloud" ist UND mindestens ein Modul den Status "🔴 Verbos" hat, füge zwingend einen separaten Abschnitt "API-Kostenprofil" ein mit dem konkreten Overhead-Faktor, z.B.: "Bei GPT-5 erzeugt jeder Cultural-Intelligence-Task ca. 3100 statt 600 Tokens — das entspricht einem API-Kostenfaktor von ~5× für diesen Task-Typ."
+    5. **Local-Modell:** Verbosity ist hier hauptsächlich ein Latenz-Indikator (mehr Tokens = länger). Weise darauf hin, wenn der Overhead signifikant ist.
+    6. **Wenn alle Module grün sind:** Erwähne die Effizienz als Stärke: "Das Modell verhält sich token-ökonomisch — kein Modul übersteigt den erwarteten Verbosity-Rahmen."
+    7. **Wenn keine Daten vorhanden:** Überspringen, kein Platzhalter im finalen Report sichtbar lassen.
+
     ZENTRALE ARCHITEKTUR-REGEL (WICHTIG FÜR DEIN VERSTÄNDNIS):
     Du liest hier Audit-Logs eines KI-Richters (LLM Judge). Das getestete Modell (über das du schreibst) hat eine Test-Aufgabe *komplett blind* gelöst, also **ohne** die Musterlösung (den "Golden Standard") zu kennen.
     Erst danach hat der Judge die blinde Antwort des Modells mit dem Golden Standard verglichen und die Protokolle geschrieben. Behaupte in deinem Artikel niemals, das getestete Modell hätte den "Golden Standard" oder ein "Beispiel" kopiert oder in seinem Prompt gesehen! Das Modell kannte die Lösung vorher nicht.

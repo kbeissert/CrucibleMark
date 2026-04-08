@@ -239,3 +239,9 @@ FEASIBILITY_IMPOSSIBLE_THRESHOLD = 3.0    # Unter diesem Score: Unmöglichkeit e
 FEASIBILITY_PENALTY_MULTIPLIER = 0.3      # Score × 0.3 wenn Unmöglichkeit nicht erkannt
 RCI_TIER3_WEIGHT = 0.4                    # Tier-3-Gewichtung im RCI
 ```
+
+---
+
+## Token-Budget
+
+**Kein Token-Budget** — `reasoning_logic` ist bewusst von `token_budgets` in `benchmark_config.yaml` ausgenommen (Eintrag `null` / nicht gesetzt). Reasoning-Module können systembedingt längere Intermediate-Thought-Chains produzieren; ein hartes Output-Limit würde diese Fähigkeit verfälschen und das Modul gegenüber Modellen mit kurzen, direkt-assertiven Antworten benachteiligen.

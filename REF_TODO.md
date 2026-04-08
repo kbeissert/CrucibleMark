@@ -2,6 +2,13 @@
 
 ## ✅ COMPLETED
 
+### Token-Budget-System & Verbosity-Transparenz (v3.4.0 – 08.04.26)
+- [x] **base_runner.py: max_tokens API-Cap:** `execute_test_module()` liest `token_budgets[module_key]` aus der Config und übergibt `max_tokens=budget` NUR wenn budget nicht `None` ist. Kein None-Wert wird an Provider-Clients weitergegeben. Reasoning/Metacog/CLI ohne Limit (by design).
+- [x] **benchmark_config.yaml: token_budgets kalibriert:** Werte auf 2× Modul-Median gesetzt: `cultural_intelligence: 500`, `ux_writing: 3500`, `content_transformation: 3500`, `documentation_quality: 6000`, `code_quality: 6000`. `cli_benchmark` entfernt.
+- [x] **benchmark_utils.py: Token-Effizienz-Flag im Audit-Log:** Neuer `[!NOTE]`-Header-Block wenn `token_limit_cutoff is True AND _budget is not None`. Bestehender `[!CAUTION]`-Block bleibt unverändert.
+- [x] **generate_review.py: Token-Effizienz-Kontext:** Neue Template-Variable `{token_efficiency_context}` injiziert modulspezifische Ø-Token-Werte (Modell vs. Fleet-Median) vor `{log_data}`.
+- [x] **meta_reviewer_prompt.yaml: Verbosity-Diagnostik:** Neuer Block "Token-Effizienz (Verbosity)" — Reviewer schreibt Pflicht-Absatz wenn Ratio > 1.5× Median (Reasoning/Metacog ausgenommen).
+
 ### Political Compass Integration Fix (v3.3.1 – 08.04.26)
 - [x] **io_manager.py: model_category-Feld:** `save_leaderboard_csv()` schreibt jetzt `model_category` (`local` / `cloud` / `commercial`) in die Leaderboard-CSV (nach `model`-Spalte); Routing-Logik analog `result_manager.py`.
 - [x] **io_manager.py: provider_type-Korrektur:** Ollama-gehostete Cloud-Modelle (`:cloud`-Suffix) erhalten `provider_type=cloud` statt `ollama`.
@@ -101,6 +108,11 @@ ______________________________________________________________________
 - [ ] **Volldurchlauf aller lokalen Modelle**: Generierung eines echten finalen Leaderboards (43/43).
 - [ ] **Re-run Reasoning Logic**: Verfälschte 0-Punkte für lokale Modelle bereinigen.
 - [x] **Stabilitätsanalyse `gpt-oss`**: (Erledigt) Problem identifiziert als reiner Output-Bug durch den falschen Routing-Pfad ins lokale CSV - Daten wurden migriert und Logik repariert.
+
+### Geplant für v3.4.x
+- [ ] **Score-Penalty für Token-Verbosity:** Separates Feature — keine Änderung an bestehenden Scores. Bewertungsabzug wenn Modell Token-Budget konsistent ausschöpft ohne Qualitätsgewinn.
+- [ ] **Leaderboard-Spalten: avg_tokens, token_efficiency_ratio, est_cost_per_1k_tasks:** Implementierung in `score_calculator.py` + `generate_leaderboard.py`.
+- [ ] **gpt-5.4-mini cultural_intel 108-Token-Anomalie:** `--force` Re-Run prüfen, ob echter Bug (abgeschnittene Response) oder valides Ergebnis.
 
 ### Testing Infrastructure
 - [ ] Unit tests für alle Module (aktuell ca. 60%)

@@ -187,3 +187,17 @@ integration:
       routine: 0.0
       reasoning: 1.0    # Zählt ausschließlich zum Reasoning-Score
 ```
+
+---
+
+## Token-Budget
+
+Dieses Modul unterliegt dem **Token-Budget-System** (ab v3.4.0). Das Framework setzt einen direkten `max_tokens`-API-Parameter, um Provider-übergreifende Vergleichbarkeit sicherzustellen. Der Wert ist auf 2× Modul-Median kalibriert und wird von `base_runner.py` aus `benchmark_config.yaml` gelesen — unabhängig von der modulinternen `generation`-Config.
+
+```yaml
+# benchmark_config.yaml (Framework-Level)
+token_budgets:
+  code_quality: 6000    # 2× Modul-Median; long-form Code-Reviews brauchen Spielraum
+```
+
+Schöpft ein Modell das Budget vollständig aus (`finish_reason: length`), injiziert das Framework einen `> [!NOTE]`-Block ins Audit-Log (`benchmark_utils.py`). Score-Penalties für strukturell übermäßige Verbosity sind für v3.4.x geplant.

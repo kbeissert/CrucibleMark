@@ -158,6 +158,9 @@ Das Framework implementiert einen robusten Ansatz zur Bewältigung harter Output
 3. **Fast-Fail für Budget:** Bei Budget- oder Quota-Fehlern (`"402 payment required"`, `"insufficient_quota"`) greift ein Fast-Fail-Mechanismus und verhindert teure Retries.
 4. **Metadaten-Tracking:** Nach Abschluss protokolliert der Client in das `BenchmarkResult`-DTO, ob die Kaskade aktiv war (`token_limit_fallback`) und welches Limit galt (`token_limit_used`).
 
+**Config-getriebener Output-Cap (Token-Budget-System, ab v3.4.0):**
+Ergänzend zum Fallback-Wrapper setzt `base_runner.py` über `execute_test_module()` für definierte Module einen direkten `max_tokens`-API-Parameter als fairen Vergleichbarkeits-Cap. Der Wert wird aus `benchmark_config.yaml → token_budgets[module_key]` gelesen und nur übergeben, wenn er nicht `None` ist. Reasoning-Module sind bewusst ausgenommen. Schöpft ein Modell das Budget aus, wird `token_limit_cutoff=True` im Result gesetzt und ein `[!NOTE]`-Block ins Audit-Log injiziert.
+
 ### Hardware Context & „Prompt as Config"
 
 CrucibleMark koppelt alle Auswertungen an das Hardware- oder Kosten-Umfeld. Der **`SystemContextManager` (`utils/system_context.py`)** setzt das um:

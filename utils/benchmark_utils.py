@@ -172,6 +172,39 @@ def prepare_pc_csv_row(
     }
 
 
+def _get_token_budget(asset_id: str) -> tuple[str | None, int | None]:
+    """Gibt (modul_key, token_budget) für eine asset_id zurück, oder (None, None) wenn kein Budget konfiguriert."""
+    # Modul aus asset_id ableiten (z.B. "cultural_intel_001" → "cultural_intelligence")
+    _MODULE_PREFIX_MAP = {
+        "cultural_intel": "cultural_intelligence",
+        "ux_writing": "ux_writing",
+        "content_transformation": "content_transformation",
+        "documentation_quality": "documentation_quality",
+        "code_quality": "code_quality",
+        "cli": "cli_benchmark",
+        # reasoning und reasoning_metacog absichtlich NICHT enthalten
+    }
+    module_key = None
+    for prefix, key in _MODULE_PREFIX_MAP.items():
+        if str(asset_id).startswith(prefix):
+            module_key = key
+            break
+
+    if module_key is None:
+        return None, None
+
+    try:
+        import yaml
+        from pathlib import Path as _Path
+        _config_path = _Path(__file__).resolve().parent.parent / "benchmark_config.yaml"
+        with open(_config_path, "r", encoding="utf-8") as f:
+            _cfg = yaml.safe_load(f)
+        budget = _cfg.get("token_budgets", {}).get(module_key)
+        return module_key, budget
+    except Exception:
+        return module_key, None
+
+
 def save_audit_log(
     model: str,
     asset_id: str,
@@ -220,6 +253,18 @@ def save_audit_log(
             f.write("\n")
             if token_limit_fallback:
                 f.write("> [!WARNING]\n> Das Modell (bzw. die API) hat das initial angeforderte Token-Limit abgelehnt (zu groß für die Architektur). Das System ist dynamisch auf ein kleineres 4096-Token-Fallback gewechselt. Dies zeigt, dass dieses Modell mit großen Token-Anfragen oder Kontexten Probleme hat!\n\n")
+
+            # Token-Budget-Flag: API hat das konfigurierte Output-Limit beschränkt
+            if token_limit_cutoff:
+                _module_key, _budget = _get_token_budget(str(asset_id))
+                if _budget is not None:
+                    f.write(
+                        f"> [!NOTE]\n"
+                        f"> **Token-Budget ausgeschöpft:** Das Modell hat das konfigurierte Output-Budget "
+                        f"für Modul `{_module_key}` ({_budget} Tokens) vollständig ausgeschöpft. "
+                        f"Die Antwort wurde durch dieses Limit beschränkt — der tatsächliche Output wäre länger gewesen. "
+                        f"Product Engineers: Dieser Task-Typ triggert systematisch das Output-Limit bei diesem Modell.\n\n"
+                    )
 
 
             import re

@@ -176,3 +176,17 @@ scoring:
     regex: 0.20
     judge: 0.80
 ```
+
+---
+
+## Token-Budget
+
+Dieses Modul unterliegt dem **Token-Budget-System** (ab v3.4.0). Das Framework setzt einen direkten `max_tokens`-API-Parameter, um Provider-übergreifende Vergleichbarkeit sicherzustellen.
+
+```yaml
+# benchmark_config.yaml (Framework-Level)
+token_budgets:
+  cultural_intelligence: 500    # 2× Modul-Median; bewusst eng — präzise Kulturanpassungen erfordern keine Romane
+```
+
+Das Budget von 500 Tokens ist das engste im gesamten Framework und spiegelt die erwartete Antwortlänge bei fokussierten Lokalisierungsaufgaben wider. Modelle, die dieses Budget regelmäßig ausschöpfen, werden durch den `> [!NOTE]`-Block im Audit-Log markiert. Die Token-Effizienz-Ratio fließt ab v3.4.0 in die Meta-Reviewer-Analyse ein.

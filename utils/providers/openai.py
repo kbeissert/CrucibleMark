@@ -92,9 +92,21 @@ class OpenAIClient(BaseProviderClient):
                 params["temperature"] = temperature
             token_param_name = "max_completion_tokens"  # OpenAI now universally prefers max_completion_tokens for newer models
             req_tokens = kwargs.get("max_tokens")
+            explicit_budget = req_tokens is not None  # True wenn ein Modul-Budget-Cap explizit gesetzt wurde
             if not req_tokens:
                 req_tokens = self.config.get("defaults", {}).get("generation", {}).get("num_predict", 8192)
-            if is_reasoning and req_tokens < 10000:
+            if is_reasoning and explicit_budget:
+                # Reasoning-Modelle (o1/o3/gpt-5): token_budgets_reasoning_models lesen (transparent im Config).
+                # Fallback: 5× das Standard-Budget wenn kein spezifischer Wert konfiguriert.
+                # Hintergrund: max_completion_tokens umfasst Thinking-Tokens + sichtbaren Output.
+                _reasoning_budgets = self.config.get("token_budgets_reasoning_models", {})
+                _module_key = kwargs.get("_module_key")  # Optional von base_runner injiziert
+                if _module_key and _module_key in _reasoning_budgets:
+                    initial_tokens_to_try = _reasoning_budgets[_module_key]
+                else:
+                    initial_tokens_to_try = req_tokens * 5
+            elif is_reasoning and req_tokens < 10000:
+                # Ohne explizites Budget: Reasoning-Modelle brauchen Platz für Chain-of-Thought
                 initial_tokens_to_try = 25000
             else:
                 initial_tokens_to_try = req_tokens

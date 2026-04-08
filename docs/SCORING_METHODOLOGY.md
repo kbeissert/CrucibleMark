@@ -40,6 +40,23 @@ Total Score = (Routine Score + Reasoning Score) / 2
 - Tracking: `token_limit_used`, `fallback_active` pro Asset
 ```
 
+### Token-Budget-System (Output-Cap für Vergleichbarkeit)
+
+Ab v3.4.0 setzt `base_runner.py` für definierte Module einen direkten `max_tokens`-API-Parameter, um Provider-übergreifende Vergleichbarkeit sicherzustellen. Das Budget wird aus `benchmark_config.yaml → token_budgets` gelesen — nur wenn ein Wert gesetzt ist (`None` wird nicht weitergegeben).
+
+```text
+Kalibrierte Werte (2× Modul-Median):
+  cultural_intelligence:   500 Tokens
+  ux_writing:             3500 Tokens
+  content_transformation: 3500 Tokens
+  documentation_quality:  6000 Tokens
+  code_quality:           6000 Tokens
+  cli_benchmark:          kein Limit (not set)
+  reasoning_logic:        kein Limit (by design)
+```
+
+Wenn ein Modell das Budget vollständig ausschöpft (`finish_reason: length`), wird `token_limit_cutoff=True` im `BenchmarkResult` gesetzt und ein `[!NOTE]`-Block ins Audit-Log injiziert.
+
 ### Zeitprofile (automatisch)
 
 | Profil | P95 | Badge |
@@ -159,6 +176,9 @@ Der Meta-Reviewer synthetisiert Judge-Logs zu einem praktischen Fazit:
 "M4 Max 24GB → Qwen32B: 15 t/s (Swapping-frei)"
 ```
 
+**Token-Effizienz-Kontext (ab v3.4.0):**
+Vor dem eigentlichen Log-Block erhält der Reviewer modulspezifische Verbosity-Metriken. Liegt die Ratio eines Modells > 1.5× Fleet-Median, ist ein dedizierter Diagnostik-Absatz im Report verpflichtend. Reasoning-Module sind ausgenommen.
+
 ---
 
 ## 🏆 Golden Standards
@@ -253,5 +273,6 @@ Impact: Claude-Vorsprung -4-8%, robust
 
 ```text
 v1.0 (2026-03-15): Token-Fix, Haiku Judge ✅
-v1.1: Multimodal, Custom Eval (Q3 2026)
+v3.4.0 (2026-04-08): Token-Budget-System (max_tokens API-Cap), Verbosity-Diagnostik in Audit-Logs und Meta-Reviews ✅
+v3.4.x (geplant): Score-Penalty für Token-Verbosity, Leaderboard-Metriken (avg_tokens, token_efficiency_ratio, est_cost_per_1k_tasks)
 ```

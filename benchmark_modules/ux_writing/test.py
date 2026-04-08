@@ -63,10 +63,11 @@ class UXWritingTest(BaseTest):
         """
         prompt = self.scenario.to_prompt()
         provider = kwargs.get("provider")
+        extra_kwargs = {k: v for k, v in kwargs.items() if k != "provider"}
 
         start_time = time.time()
         # Adapter for LLMClient.query(model, prompt, provider)
-        response = llm_client.query(model=model, prompt=prompt, provider=provider)
+        response = llm_client.query(model=model, prompt=prompt, provider=provider, **extra_kwargs)
 
         # Use clean execution time (excluding timeouts/retries) if available
         if (

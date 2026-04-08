@@ -174,3 +174,17 @@ scoring:
     regex: 0.20
     judge: 0.80
 ```
+
+---
+
+## Token-Budget
+
+Dieses Modul unterliegt dem **Token-Budget-System** (ab v3.4.0). Das Framework setzt einen direkten `max_tokens`-API-Parameter, um Provider-übergreifende Vergleichbarkeit sicherzustellen.
+
+```yaml
+# benchmark_config.yaml (Framework-Level)
+token_budgets:
+  content_transformation: 3500    # 2× Modul-Median
+```
+
+Schöpft ein Modell das Budget vollständig aus (`finish_reason: length`), injiziert das Framework einen `> [!NOTE]`-Block ins Audit-Log (`benchmark_utils.py`). Score-Penalties für strukturell übermäßige Verbosity sind für v3.4.x geplant.

@@ -44,6 +44,12 @@ Gilt für Generation-Parameter UND LLM Judge. Modul-Override gewinnt immer.
 - Gegen Token-Loop-Halluzinationen (z.B. endlose Leerzeichen-Repeats von Gemini 2.5 Flash) ist eine Regex-basierte Character-Sequence Validation im BaseClient implementiert, die den Test sofort markiert und abbricht.
 - Ergebnisse iterieren nicht die Score-Punkte, sondern notieren rein kontextuelle "Kopfnoten" (`token_limit_used` oder `⚠️ OUTPUT TRUNCATED/LOOP`) im Metric-Tracker. Diese fließen später über `generate_review.py` via Regex-Extraktion in die Meta-Reviewer Berichte ein.
 
+## Token-Budget-System (Output-Cap, ab v3.4.0)
+- **Orthogonal zum Fallback-System:** `benchmark_config.yaml → token_budgets[module_key]` definiert einen direkten `max_tokens`-API-Parameter pro Modul — kein Fehler-Handling, sondern ein proaktiver Cap für faire Vergleichbarkeit.
+- `base_runner.py → execute_test_module()` liest den Wert und übergibt ihn **nur wenn nicht `None`** — kein `None`-Wert darf an Provider-Clients weitergegeben werden.
+- Reasoning-Module (`reasoning_logic`, `cli_benchmark`) sind bewusst ausgenommen. Budgetierte Module: `cultural_intelligence: 500`, `ux_writing: 3500`, `content_transformation: 3500`, `documentation_quality: 6000`, `code_quality: 6000`.
+- `token_limit_cutoff=True` im BenchmarkResult → `[!NOTE]`-Block in Audit-Log (`benchmark_utils.py`). Trigger: `cutoff is True AND _budget is not None`.
+
 ## Neue Provider hinzufügen
 1. In `benchmark_config.yaml` unter `providers.commercial` oder `providers.local` eintragen
 2. Falls es ein API Provider ist: Neues Modul in `utils/providers/` anlegen (erbt von `BaseProviderClient`) und in `utils/providers/__init__.py` exportieren.

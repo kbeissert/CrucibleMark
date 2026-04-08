@@ -1,3 +1,3 @@
-- Abgeschlossen: Alle 7 Modul-READMEs neu geschrieben (155–241 Zeilen je Datei) — per Asset-Block mit Typ/Input/Anforderungen/Scoring, Transparenz-Sektion "Warum dieses Modul?", vollständige Scoring-Methodik-Tabellen. Dient als GitHub-Dokumentation für externe Entwickler zur Objektivitätsprüfung des Benchmarks.
-- Nächster Schritt: Git-Commit — Political Compass Integration + CSV-Anomalie-Cleanup + README-Erweiterungen zusammen committen.
-- Offen/Risiko: Backup-Dateien löschen (local_models_benchmark.csv.bak, political_compass_leaderboard.csv.bak, *.pre_retest_bak). `make benchmark-auto` — gpt-5 fehlt code_quality + cli.
+- Abgeschlossen: v3.4.0 vollständig dokumentiert — Token-Budget-System (base_runner.py + benchmark_config.yaml), Verbosity-Transparenz in Audit-Logs (benchmark_utils.py [!NOTE]-Block) und Meta-Reviews (generate_review.py {token_efficiency_context} + meta_reviewer_prompt.yaml). Alle 4 Hauptdok-Dateien, 3 docs/*-Dateien und 6 Modul-READMEs aktualisiert. CSV-Cleanup (189 Zeilen entfernt, 11 Dateien gelöscht, gpt-5-mini aus Config entfernt).
+- Nächster Schritt: Git-Commit für v3.4.0 — sämtliche Änderungen dieser Session zusammenfassen und pushen.
+- Offen/Risiko: gpt-5.4-mini cultural_intel 108-Token-Anomalie — --force Re-Run noch ausstehend. Backup-Dateien (*.bak, *.pre_retest_bak) noch nicht gelöscht.

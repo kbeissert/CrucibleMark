@@ -75,8 +75,17 @@ class BaseBenchmarkRunner:
             ) from e
 
         test_instance = test_cls(asset_path)
+
+        # Inject module token-budget as max_tokens API cap (fair comparability across providers)
+        _module_key = Path(benchmark_info.get("path", "")).name
+        _token_budget: int | None = self.validator.config.get("token_budgets", {}).get(_module_key)
+
         # exec_result is now a BenchmarkResult object
-        exec_result = test_instance.execute(model, self.client, provider=provider)
+        # _module_key wird mitübergeben damit openai.py das Reasoning-Budget per Modul nachschlagen kann
+        if _token_budget is not None:
+            exec_result = test_instance.execute(model, self.client, provider=provider, max_tokens=_token_budget, _module_key=_module_key)
+        else:
+            exec_result = test_instance.execute(model, self.client, provider=provider)
 
         # Inject finish_reason if available
         if hasattr(self.client, "last_response_metadata"):

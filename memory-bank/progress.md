@@ -1,17 +1,17 @@
 # Progress
 
 ## Ongoing
-- [ ] Git-Commit: Political Compass Integration + CSV-Anomalie-Cleanup + README-Erweiterungen
-- [ ] `make benchmark-auto` — Re-run der 5 geänderten Module + offene Slots (gpt-5: code_quality + cli; weitere commercial/cloud)
+- [ ] Git-Commit: v3.4.0 — Token-Budget-System + Verbosity-Transparenz + CSV-Cleanup + Doku
+- [ ] gpt-5.4-mini cultural_intel 108-Token-Anomalie: --force Re-Run prüfen
 - [ ] Backup-Dateien löschen: local_models_benchmark.csv.bak, political_compass_leaderboard.csv.bak, *.pre_retest_bak
+- [ ] `make benchmark-auto` — offene Benchmark-Slots (gpt-5: code_quality + cli; weitere commercial/cloud)
 - [ ] Phase 4: Finale E2E Systemtests und CI/CD Review
 - [ ] LLM Judge: Batch-Mode (Phase 3.5)
 
 ## Abgeschlossen (Meilensteine)
+- [DONE] v3.4.0 Token-Budget & Verbosity-Transparenz (2026-04-08): max_tokens API-Cap in base_runner.py, [!NOTE]-Block in benchmark_utils.py, {token_efficiency_context} + Verbosity-Diagnostik in generate_review.py + meta_reviewer_prompt.yaml. Vollständige Doku-Aktualisierung (README, CHANGELOG, PROJECT_STATUS, REF_TODO, 3 docs/*.md, 6 Modul-READMEs). CSV-Cleanup (189 obsolete Zeilen, 11 Dateien, gpt-5-mini aus Config).
 - [DONE] Modul-READMEs v2 (2026-04-08): Alle 7 READMEs vollständig neu geschrieben mit per-Asset-Dokumentation, Transparenz-Sektionen und Scoring-Methodik-Tabellen für externe Entwickler.
-
-## Abgeschlossen (Meilensteine)
-- [DONE] Political Compass Integration in aktualisierten Prozess (2026-04-08): io_manager.py +model_category +cloud-provider_type-Erkennung; political_compass_handler.py append→upsert; clean_results.py +PC Leaderboard +asset_id-Guard; einmalige CSV-Bereinigung 66→56 Zeilen.
+- [DONE] Political Compass Integration (2026-04-08): io_manager.py +model_category +cloud-provider_type-Erkennung; political_compass_handler.py append→upsert; clean_results.py +PC Leaderboard +asset_id-Guard; einmalige CSV-Bereinigung 66→56 Zeilen.
 - [DONE] CSV-Anomalie-Cleanup (2026-04-08): 6 Cloud-Modell-Einträge aus local_models_benchmark.csv entfernt (495→489); quota-exhaustion skip-Logik in benchmark_auto.py + unified_runner.py.
 - [DONE] v3.3.0 Language Compliance & Prompt Hardening (2026-04-07): Language Compliance Pipeline (judge_prompt_builder.py required_language/language_weight, metacog-Assets mit language:de), Editorial Audit 30 Fixes in 21 Assets (Token-Limit-Leaks, Höflichkeitsformeln, Pseudolabels, Unicode-Artefakt in asset_6a, GS-Grammatik asset_6e), 492 stale CSV-Zeilen bereinigt, Versionssynchro README/CHANGELOG/docs auf v3.3.0. Commits 404a670, 8c5eec3, d7e939b.
 

@@ -51,6 +51,7 @@ class ContentTransformationTest(BaseTest):
 
         # LLM Query
         start = time.time()
+        extra_kwargs = {k: v for k, v in kwargs.items() if k not in ("provider",)}
 
         try:
             # Use specific temperature for Content Transformation - needs creativity
@@ -59,6 +60,7 @@ class ContentTransformationTest(BaseTest):
                 full_prompt,
                 provider=provider,
                 temperature=DEFAULT_TEMPERATURE,
+                **extra_kwargs,
             )
 
             # Use clean execution time if available, otherwise fallback to wall clock
