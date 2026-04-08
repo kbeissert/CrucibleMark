@@ -317,9 +317,9 @@ def process_model_review(model_dir: Path, csv_data: str, client: LLMClient, prov
 
         category = get_model_category(tested_model_name, source_context)
 
-        if category == "Commercial":
+        if category == "Proprietär":
             run_type = "commercial"
-        elif category in ["Local Cloud", "Cloud (Open-Weights)"]:
+        elif category in ["Local Cloud", "Open Weights (Cloud)", "Cloud (Open-Weights)"]:
             run_type = "cloud_open_weights"
         else:
             run_type = "local"

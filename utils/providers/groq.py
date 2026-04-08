@@ -120,8 +120,8 @@ class GroqClient(BaseProviderClient):
                     "total_tokens": 0,
                     "prompt_tokens": 0,
                     "completion_tokens": 0,
-                    "max_tokens_used": used_max_tokens,
-                    "fallback_triggered": fallback_triggered
+                    "token_limit_used": used_max_tokens,
+                    "token_limit_fallback": fallback_triggered
                 }
                 return full_content
 
@@ -134,8 +134,9 @@ class GroqClient(BaseProviderClient):
                         "total_tokens": usage.total_tokens,
                         "prompt_tokens": usage.prompt_tokens,
                         "completion_tokens": usage.completion_tokens,
-                        "max_tokens_used": used_max_tokens,
-                        "fallback_triggered": fallback_triggered
+                        "token_limit_used": used_max_tokens,
+                        "token_limit_fallback": fallback_triggered,
+                        "finish_reason": response.choices[0].finish_reason if response.choices else None,
                     }
 
                 return result

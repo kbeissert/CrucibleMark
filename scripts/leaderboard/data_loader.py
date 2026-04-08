@@ -27,13 +27,13 @@ except ImportError:
     ) -> str:
         """Fallback categorization matching SSOT."""
         if source_file == "commercial":
-            return "Commercial"
+            return "Proprietär"
         model_lower = model_name.lower()
         if ":cloud" in model_lower or model_lower.endswith("-cloud"):
-            return "Local Cloud"
+            return "Open Weights (Cloud)"
         if size_gb is not None and size_gb < 0.01:
-            return "Local Cloud"
-        return "Local"
+            return "Open Weights (Cloud)"
+        return "Open Weights (Local)"
 
 
 # pylint: enable=import-error
@@ -97,9 +97,9 @@ def _process_csv(dfs: List[pd.DataFrame], filepath: Path, type_label: str) -> No
             # Uses get_model_category() from model_utils.py as Single Source of Truth
             if "model" in df_new.columns:
                 # Determine source context
-                if type_label == "Commercial":
+                if type_label == "Proprietär":
                     source_context = "commercial"
-                elif type_label == "Cloud (Open-Weights)":
+                elif type_label == "Open Weights (Cloud)":
                     source_context = "cloud"
                 else:
                     source_context = "local"
@@ -135,9 +135,9 @@ def load_benchmark_data() -> pd.DataFrame:
     """
     dfs: List[pd.DataFrame] = []
 
-    _process_csv(dfs, COMMERCIAL_CSV, "Commercial")
-    _process_csv(dfs, CLOUD_CSV, "Cloud (Open-Weights)")
-    _process_csv(dfs, LOCAL_CSV, "Local")
+    _process_csv(dfs, COMMERCIAL_CSV, "Proprietär")
+    _process_csv(dfs, CLOUD_CSV, "Open Weights (Cloud)")
+    _process_csv(dfs, LOCAL_CSV, "Open Weights (Local)")
 
     if not dfs:
         print("No benchmark data found.")
@@ -150,20 +150,20 @@ def load_benchmark_data() -> pd.DataFrame:
     # Local models must EXCLUSIVELY come from local_models_benchmark.csv
     # Commercial from commercial_models_benchmark.csv
     valid_mask = (
-        ((df["type"] == "Commercial") & (df["source"] == "commercial")) |
+        ((df["type"] == "Proprietär") & (df["source"] == "commercial")) |
         ((df["type"] == "Cloud-Modelle (Open-Weights)") & (df["source"] == "cloud")) |
-        ((df["type"] == "Local") & (df["source"] == "local"))
+        ((df["type"] == "Open Weights (Local)") & (df["source"] == "local"))
     )
     # Behalte Backup-Kategorien wie 'Local Cloud' (falls sie existieren), oder ignoriere?
     # Es ist robuster, einfach zu filtern:
     df = df[
-        (df["type"] != "Cloud-Modelle (Open-Weights)") | (df["source"] == "cloud")
+        (df["type"] != "Open Weights (Cloud)") | (df["source"] == "cloud")
     ]
     df = df[
-        (df["type"] != "Local") | (df["source"] == "local")
+        (df["type"] != "Open Weights (Local)") | (df["source"] == "local")
     ]
     df = df[
-        (df["type"] != "Commercial") | (df["source"] == "commercial")
+        (df["type"] != "Proprietär") | (df["source"] == "commercial")
     ]
 
     df["percentage"] = pd.to_numeric(df["percentage"], errors="coerce")

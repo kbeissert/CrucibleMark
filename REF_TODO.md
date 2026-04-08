@@ -2,6 +2,15 @@
 
 ## ✅ COMPLETED
 
+### Token-Verbrauch im Leaderboard (v3.4.1 – 08.04.26)
+- [x] **score_calculator.py: scoring_df im calculate_scores():** Lokale `scoring_df`-Variable aus `cat_to_scoring`-Map aufgebaut (analog zu `_aggregate_basic_stats()`), damit Token-Aggregation dieselbe Modul-Basis wie der Total Score nutzt.
+- [x] **score_calculator.py: Tokens Total Korrektur:** `tokens_used`-Summe aus `_aggregate_basic_stats()` (inkl. Political Compass) wird nach dem Merge überschrieben — neue Summe nur über `scoring_df` (enable_scoring=True). Verhindert Verzerrung durch variable PC-Retest-Mengen.
+- [x] **score_calculator.py: Tokens: \<Modul\>-Spalten:** `token_by_module`-Block unpivotiert Token-Summen pro `(model, model_version, category)` aus `scoring_df` und prefixiert Spalten mit `Tokens: `. Political Compass bleibt ausgeschlossen.
+- [x] **exporter.py: Compact-Leaderboard:** `Tokens Total` nach `Cost per 1K (USD)` eingefügt.
+- [x] **exporter.py: Detailed-Leaderboard:** `Tokens Total` + alle dynamischen `Tokens: <Modul>`-Spalten (alphabetisch sortiert) ergänzt.
+- [x] **README.md: Key Features:** Neuer Bullet-Punkt "Token-Verbrauch im Leaderboard" ergänzt.
+- [x] **docs/SCORING_METHODOLOGY.md: Dokumentation:** Neue Sektion "Token-Verbrauch im Leaderboard" mit Tabelle, Begründung und Kosten-Kontext (API vs. Flat-Rate) eingefügt.
+
 ### Token-Budget-System & Verbosity-Transparenz (v3.4.0 – 08.04.26)
 - [x] **base_runner.py: max_tokens API-Cap:** `execute_test_module()` liest `token_budgets[module_key]` aus der Config und übergibt `max_tokens=budget` NUR wenn budget nicht `None` ist. Kein None-Wert wird an Provider-Clients weitergegeben. Reasoning/Metacog/CLI ohne Limit (by design).
 - [x] **benchmark_config.yaml: token_budgets kalibriert:** Werte auf 2× Modul-Median gesetzt: `cultural_intelligence: 500`, `ux_writing: 3500`, `content_transformation: 3500`, `documentation_quality: 6000`, `code_quality: 6000`. `cli_benchmark` entfernt.

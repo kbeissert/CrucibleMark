@@ -37,6 +37,7 @@ Die meisten Benchmarks fokussieren sich auf rein theoretische Prüfungen. Crucib
 * **Automatisierter Safety-Shift Test:** Bei starken Abweichungen in Verhaltensfiltern triggert das System vollautomatisch einen verschärften Triple-Run Outlier-Check inklusive euklidischem Clustering.
 * **Umfassendes Audit-Logging & Meta-Reviews:** Jede Frage, jeder Prompt und jede LLM-Entscheidung landet in granularen Markdown-Reports. Ein kalibriertes Meta-Review-LLM liest diese Logs zusammen mit technischen API-Limits ein und verfasst halluzinationsfreie Endberichte – gestützt auf strikte Off-by-one-Anker und Grammatikrestriktionen.
 * **Token-Budget-System:** Für definierte Benchmark-Module (z. B. `cultural_intelligence`, `code_quality`) wird ein `max_tokens`-Cap als direkter API-Parameter gesetzt, um Provider-übergreifende Vergleichbarkeit herzustellen. Reasoning-Module (`reasoning_logic`) sind bewusst ausgenommen und laufen ohne Output-Limit. Die Budgets sind in `benchmark_config.yaml` unter `token_budgets` kalibrierbar.
+* **Token-Verbrauch im Leaderboard:** Beide Leaderboard-CSVs weisen `Tokens Total` aus — die kumulierte Output-Token-Summe über alle bewerteten Benchmark-Module (identische Basis wie der Total Score). Das Detailed-Leaderboard enthält zusätzlich eine Aufschlüsselung pro Modul (`Tokens: Code Quality`, `Tokens: UX Writing`, …). Für API-Nutzer (Pay-per-Token) ist dies die entscheidende zweite Kostendimension neben `Cost per 1K (USD)`.
 
 ---
 

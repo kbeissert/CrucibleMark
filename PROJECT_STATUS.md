@@ -1,12 +1,22 @@
 # PROJECT_STATUS.md
 
 **Last Updated:** 2026-04-08
-**Current Version:** 3.4.0 (Token-Budget-System & Verbosity-Transparenz)
+**Current Version:** 3.4.1 (Token-Verbrauch im Leaderboard)
 **Status:** ✅ Production-Ready
 
 ______________________________________________________________________
 
 ## 🎯 Executive Summary
+
+CrucibleMark v3.4.1 ergänzt das Leaderboard um transparente Token-Verbrauchsdaten. Beide Leaderboard-CSVs weisen jetzt `Tokens Total` aus — auf identischer Modul-Basis wie der Total Score (nur `enable_scoring: true`). Das Detailed-Leaderboard enthält zusätzlich eine Aufschlüsselung pro Modul. Damit ist Token-Hunger für API-Nutzer direkt messbar.
+
+**Key Achievements (v3.4.1):**
+- ✅ **Tokens Total (Compact + Detailed):** Kumulierte Output-Token-Summe über alle bewerteten Benchmark-Module. Basis: `scoring_df` (identisch mit Total Score) — Political Compass und Info-Module ausgeschlossen, da deren Re-Test-Mengen variieren und Provider-Vergleiche verzerren würden.
+- ✅ **Tokens: \<Modul\> (Detailed only):** Aufschlüsselung pro Modul als dynamische Spalten (`Tokens: Code Quality`, `Tokens: UX Writing`, …); alphabetisch sortiert, only scoring modules.
+- ✅ **Scoring-Only Basis:** `score_calculator.py` überschreibt nach dem Merge die `tokens_used`-Spalte aus `_aggregate_basic_stats()` mit einer expliziten `scoring_df`-Aggregation, sodass die Tokens-Summe exakt der gleichen Filterbasis folgt wie Routine Score und Reasoning Score.
+- ✅ **Dokumentiert:** `README.md` (Key Features), `REF_TODO.md` (Completed), `docs/SCORING_METHODOLOGY.md` (Sektion Token-Verbrauch im Leaderboard).
+
+**Vorherige Version (v3.4.0 – Token-Budget-System & Verbosity-Transparenz):**
 
 CrucibleMark v3.4.0 führt ein datenbasiertes Token-Budget-System ein, das faire Provider-Vergleichbarkeit durch einen direkten `max_tokens`-API-Parameter sicherstellt. Ergänzend dazu liefern neue Transparenz-Schichten in Audit-Logs und Meta-Reviewer-Reports fundierte Einblicke in die Token-Effizienz von Modellen.
 

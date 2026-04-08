@@ -297,8 +297,11 @@ Der Befehl generiert **zwei CSV-Dateien** in `benchmark_scores/`:
 | **Badge** | Beide | Qualitäts-Tier (💎 Platinum, 🏆 Gold, 🥈 Silver, 🥉 Bronze, ⚖️ Standard) |
 | **Speed Profile** | Beide | Mix aus Speed & Skill (z. B. ⚡ Real-Time DevOps) |
 | **Total Score** | Beide | 50/50 Gewichtung aus Routine & Reasoning |
+| **Tokens Total** | Beide | Kumulierte Output-Token über alle bewerteten Module (gleiche Basis wie Total Score) |
+| **Cost per 1K (USD)** | Beide | Hochgerechnete API-Kosten pro 1.000 Anfragen |
 | **Routine Score** | Detailed | Leistung bei einfachen Tasks |
 | **Reasoning Score** | Detailed | Leistung bei Logik-Rätseln & Systemarchitektur |
+| **Tokens: \<Modul\>** | Detailed | Output-Token pro Modul (z. B. `Tokens: Code Quality`, `Tokens: UX Writing`) |
 | **P95 Time (s)** | Detailed | Latenz-Spitze: Dauer der langsamsten 5 % der Requests |
 | **Max Time (s)** | Detailed | Dauer des extremsten Einzelausreißers |
 | **Timeout Count** | Detailed | Anzahl der erzwungenen Abbrüche |

@@ -11,6 +11,12 @@ import yaml
 ROOT_DIR = Path(__file__).parent.parent
 CONFIG_PATH = ROOT_DIR / "benchmark_config.yaml"
 
+# Hardcoded safety overrides for models with known native context limits.
+# YAML values can still override these defaults if needed.
+DEFAULT_MODEL_CONTEXT_OVERRIDES = {
+    "dolphin-mistral-nemo": 4096,
+}
+
 
 def _load_context_window():
     """Liest context_window sicher aus benchmark_config.yaml."""
@@ -28,6 +34,39 @@ def _load_context_window():
         pass  # Silent fallback
 
     return 8192  # Absoluter Fallback
+
+
+def _load_context_overrides() -> dict:
+    """Liest model_context_overrides aus benchmark_config.yaml."""
+    try:
+        if CONFIG_PATH.exists():
+            with open(CONFIG_PATH, "r", encoding="utf-8") as f:
+                data = yaml.safe_load(f)
+                yaml_overrides = (
+                    data.get("providers", {})
+                    .get("local", {})
+                    .get("config", {})
+                    .get("model_context_overrides", {})
+                )
+                merged_overrides = DEFAULT_MODEL_CONTEXT_OVERRIDES.copy()
+                merged_overrides.update(yaml_overrides)
+                return merged_overrides
+    except Exception:
+        pass
+    return DEFAULT_MODEL_CONTEXT_OVERRIDES.copy()
+
+
+def get_num_ctx_for_model(model: str) -> int:
+    """Gibt den effektiven num_ctx für ein Modell zurück.
+
+    Prüft zuerst modellspezifische Overrides (für Modelle mit eingeschränktem
+    nativem Kontext), fällt sonst auf den globalen OLLAMA_NUM_CTX zurück.
+    """
+    model_lower = model.lower()
+    for pattern, ctx in MODEL_CONTEXT_OVERRIDES.items():
+        if pattern.lower() in model_lower:
+            return int(ctx)
+    return OLLAMA_NUM_CTX
 
 
 def get_generation_defaults() -> dict:
@@ -53,6 +92,7 @@ def get_generation_defaults() -> dict:
 # OLLAMA DYNAMIC CONFIGURATION
 # ==============================================================================
 OLLAMA_NUM_CTX = _load_context_window()
+MODEL_CONTEXT_OVERRIDES = _load_context_overrides()
 GLOBAL_GEN_DEFAULTS = get_generation_defaults()
 
 # Benchmark-Options für Coding & Logik (temperature=0.1)
