@@ -10,6 +10,29 @@ import pandas as pd
 from .config import OUTPUT_CSV
 
 
+def _format_judge_stars(df: pd.DataFrame) -> pd.DataFrame:
+    """
+    Formats the 'LLM Judge Avg' column as '<value> ★' (e.g. '3.8 ★').
+    Preserves the 0–5 scale; the star symbol signals the alternative rating
+    dimension without conflating it with the percentage-based Total Score.
+    """
+    if "LLM Judge Avg" not in df.columns:
+        return df
+    df = df.copy()
+
+    def _fmt(val: object) -> object:
+        try:
+            n = float(val)  # type: ignore[arg-type]
+        except (TypeError, ValueError):
+            return val
+        if pd.isna(n):
+            return val
+        return f"{n:.1f} \u2605"
+
+    df["LLM Judge Avg"] = df["LLM Judge Avg"].apply(_fmt)
+    return df
+
+
 def _format_tokens_k(df: pd.DataFrame) -> pd.DataFrame:
     """
     Formats token columns for human readability in the CSV output.
@@ -90,6 +113,7 @@ def export_leaderboard_compact(leaderboard: pd.DataFrame, cat_cols: List[str]) -
     existing_cols = [c for c in final_cols if c in df_export.columns]
     df_export = df_export[existing_cols]
     df_export = _format_tokens_k(df_export)
+    df_export = _format_judge_stars(df_export)
 
     try:
         df_export.to_csv(OUTPUT_CSV, index=False)
@@ -159,6 +183,7 @@ def export_leaderboard_detailed(leaderboard: pd.DataFrame, cat_cols: List[str]) 
     existing_cols = [c for c in final_cols if c in df_export.columns]
     df_export = df_export[existing_cols]
     df_export = _format_tokens_k(df_export)
+    df_export = _format_judge_stars(df_export)
 
     try:
         df_export.to_csv(detailed_csv, index=False)

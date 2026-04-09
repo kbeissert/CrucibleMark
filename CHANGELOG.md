@@ -4,6 +4,20 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [v3.4.2] - 2026-04-09
+
+### Added
+- **`scripts/dev/sync_cost_limits.py`:** Neues Dev-Tool erkennt automatisch Modelle ohne Preiseintrag in `config/cost_limits.yaml`. Mit `--fix`-Flag werden `null`-Platzhalter (inkl. `# TODO: Preis nachtragen`-Kommentar) direkt in die YAML-Datei geschrieben — boundary-sicher (`providers:`-Block) und duplikatfrei.
+- **`make sync-cost-limits [FIX=1]`:** Neues Makefile-Target für den standardisierten Workflow beim Hinzufügen neuer Modelle.
+- **LLM Judge Avg Sterne-Format in `exporter.py`:** `LLM Judge Avg`-Spalte im Leaderboard wird jetzt als `3.8 ★` formatiert.
+- **Neue `cost_limits.yaml`-Sektionen:** `ollama_cloud` (deepseek-v3.2, minimax-m2.7, gpt-oss:120b), `google` (gemini-2.5-pro, gemini-3-flash-preview, gemini-3.1-pro-preview), korrigiertes `xai` (aus `settings:` in `providers:` verschoben).
+- **`docs/USER_GUIDE.md`:** Zwei neue Abschnitte dokumentieren `make sync-cost-limits` (F.2 Systemgesundheit + eigenständiger Workflow-Abschnitt).
+
+### Changed
+- **`config/cost_limits.yaml`:** Vollständige Preisabdeckung für alle 25 konfigurierten Modelle. Neu eingetragen (Quellen verifiziert 2026-04-09): `gpt-5.4` ($2.50/$15.00 per 1M), `gpt-5.4-mini` ($0.75/$4.50 per 1M), `o1` ($15/$60 per 1M), `gemini-2.5-pro` ($1.25/$10 per 1M), `gemini-3-flash-preview` ($0.50/$3.00 per 1M), `gemini-3.1-pro-preview` ($2.00/$12.00 per 1M), Groq-Ergänzungen (Qwen3-32B, Kimi K2), Claude Haiku 4.5 (key-fix).
+
+---
+
 ## [v3.4.0] - 2026-04-08
 
 ### Added

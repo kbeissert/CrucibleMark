@@ -2,7 +2,7 @@
 	help install install-dev \
 	benchmark political-compass political-compass-safe benchmark-political-compass audit-bias benchmark-cross-model benchmark-auto benchmark-human run-benchmark \
 	review model-cards leaderboard provider-stats \
-	validate validate-single validate-structure test diff-results analyze-costs update-prices \
+	validate validate-single validate-structure test diff-results analyze-costs update-prices sync-cost-limits \
 	list-models judge-health list-modules create-module \
 	web-export web-export-dev \
 	clean clean-sessions clean-csv clean-model clean-module clean-all clean-runs consolidate-csv prune-orphans \
@@ -169,6 +169,10 @@ analyze-costs:
 update-prices:
 	@echo "💱 Updating token pricing cache from LiteLLM Pricing DB..."
 	$(PYTHON) scripts/dev/update_prices.py
+
+sync-cost-limits:
+	@echo "🔍 Checking cost_limits.yaml gegen Modell-Konfiguration ..."
+	$(PYTHON) scripts/dev/sync_cost_limits.py $(if $(FIX),--fix)
 
 # === TOOLS & MAINTENANCE ===
 

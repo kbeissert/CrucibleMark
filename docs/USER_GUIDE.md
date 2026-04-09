@@ -212,6 +212,7 @@ ______________________________________________________________________
 - **`make validate`** oder **`make validate-single ASSET=pfad`**: Validiert das YAML-Schema der hinterlegten Tests.
 - **`make validate-structure`**: Testet, ob das Verzeichnis-Layout den Architekturvorgaben entspricht.
 - **`make audit-markdown`**: Durchsucht und bereinigt (mit optionalem Flag `FIX=1`) fehlerhafte Formatierungen in Dokumenten.
+- **`make sync-cost-limits`**: Prüft, ob alle konfigurierten Modelle einen Preiseintrag in `config/cost_limits.yaml` haben. Zeigt fehlende Modelle als Bericht. Mit Flag `FIX=1` werden Platzhalter (`null`) automatisch eingetragen — den eigentlichen Preis trägt man danach manuell nach.
 
 #### 3. Projekt-Hygiene & Cleanup-Befehle
 
@@ -298,7 +299,7 @@ Der Befehl generiert **zwei CSV-Dateien** in `benchmark_scores/`:
 | **Speed Profile** | Beide | Mix aus Speed & Skill (z. B. ⚡ Real-Time DevOps) |
 | **Total Score** | Beide | 50/50 Gewichtung aus Routine & Reasoning |
 | **Tokens Total** | Beide | Kumulierte Output-Token über alle bewerteten Module (gleiche Basis wie Total Score) |
-| **Cost per 1K (USD)** | Beide | Hochgerechnete API-Kosten pro 1.000 Anfragen |
+| **Cost per 1K (USD)** | Beide | Hochgerechnete API-Kosten pro 1.000 Anfragen. Bei Cloud Open-Weights-Modellen (z. B. Groq) wird der Paid-Tier-Preis nach Free-Tier-Ablauf zugrunde gelegt — als Referenz für den kommerziellen Produktionseinsatz. |
 | **Routine Score** | Detailed | Leistung bei einfachen Tasks |
 | **Reasoning Score** | Detailed | Leistung bei Logik-Rätseln & Systemarchitektur |
 | **Tokens: \<Modul\>** | Detailed | Output-Token pro Modul (z. B. `Tokens: Code Quality`, `Tokens: UX Writing`) |
@@ -473,6 +474,23 @@ make clean-csv
 ______________________________________________________________________
 
 ## 📈 Fortgeschrittene Nutzung
+
+### Preisliste mit konfigurierten Modellen abgleichen
+
+Wenn ein neues Modell in `benchmark_config.yaml` eingetragen wird, fehlt der Preiseintrag in `config/cost_limits.yaml` zunächst. Der folgende Befehl zeigt alle Modelle ohne Preis:
+
+```bash
+make sync-cost-limits
+```
+
+Mit `FIX=1` werden Platzhalter automatisch eingefügt — der eigentliche Preis wird danach manuell nachgetragen:
+
+```bash
+make sync-cost-limits FIX=1
+# → config/cost_limits.yaml öffnen, nach "# TODO: Preis nachtragen" suchen
+```
+
+______________________________________________________________________
 
 ### Kosten schätzen (vor Batch-Run)
 
