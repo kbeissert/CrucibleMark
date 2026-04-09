@@ -97,7 +97,21 @@ Die `Tokens Total`-Spalte macht Token-Hunger direkt sichtbar und ergänzt `Cost 
 
 Kombiniert ergibt sich: **Token-hungrige Modelle sind bei API-Nutzung teurer**, auch wenn ihr Score vergleichbar ist.
 
-> **Grundannahme Token-Messung:** Die von der API gemeldeten `completion_tokens` entsprechen exakt den abgerechneten Tokens auf dem Provider-Dashboard. CrucibleMark trifft keine eigene Token-Zählung — es verlässt sich auf die Provider-Angabe. Kommerzielle Provider haben keinen Anreiz, Output-Tokens zu verschweigen, da diese direkt abgerechnet werden.
+> **Hinweis zu Cloud Open-Weights Modellen (Groq, DeepSeek, MiniMax):** Für Modelle wie Llama,
+> Qwen oder Kimi K2, die direkt über die Groq-Cloud-API laufen, wird der **Paid-Tier-Preis**
+> hinterlegt — also der Preis, der bei kommerzieller API-Nutzung nach Ablauf des kostenlosen
+> Kontingents anfällt. CrucibleMark selbst nutzt den Free Tier von Groq. Die Kostenangaben
+> spiegeln daher den **potenziellen Produktionspreis** wider.
+>
+> **Ollama als Cloud-Proxy:** Im Benchmark sind einige Modelle mit dem `:cloud`-Tag versehen
+> (z. B. `deepseek-v3.2:cloud`, `minimax-m2.7:cloud`, `gpt-oss:120b-cloud`). Diese Modelle
+> laufen nicht lokal, sondern nutzen Ollama lediglich als Schnittstellen-Proxy zu den
+> jeweiligen Provider-APIs. Interessant dabei: `gpt-oss:120b-cloud` leitet Anfragen intern
+> über **Groq’s Inferenz-Infrastruktur** weiter — d. h. zwei scheinbar verschiedene
+> Anbieter teilen sich dieselbe Backend-Infrastruktur. Die hinterlegten Preise stammen jeweils
+> aus den Paid-Tier-Tarifen der tatsächlichen Provider-APIs (DeepSeek, MiniMax, Groq).
+
+> **Grundannahme Token-Messung:** Die von der API gemeldeten `completion_tokens` entsprechen exakt den abgerechneten Tokens auf dem Provider-Dashboard. CrucibleMark trifft keine eigene Token-Zählung — es verlässt sich auf die Provider-Angabe. Kommerzielle Provider haben keinen Anreiz, Output-Tokens zu verschweigen, da diese direkt abgerechnet werden. Lokale Modelle (Ollama) haben ebenfalls keinen Anreiz zur Verschleierung: Fehlerhafte Token-Zählungen würden durch Community-Tests und reproduzierbare Benchmarks schnell aufgedeckt und das Vertrauen in den Anbieter oder das Modell nachhaltig beschädigen.
 
 ---
 
@@ -299,5 +313,6 @@ Impact: Claude-Vorsprung -4-8%, robust
 ```text
 v1.0 (2026-03-15): Token-Fix, Haiku Judge ✅
 v3.4.0 (2026-04-08): Token-Budget-System (max_tokens API-Cap), Verbosity-Diagnostik in Audit-Logs und Meta-Reviews ✅
+v3.4.2 (2026-04-09): Vollständige Preis-Datenbasis in cost_limits.yaml; LLM Judge Avg als ★-Format im Leaderboard ✅
 v3.4.x (geplant): Score-Penalty für Token-Verbosity, Leaderboard-Metriken (avg_tokens, token_efficiency_ratio, est_cost_per_1k_tasks)
 ```

@@ -1,12 +1,23 @@
 # PROJECT_STATUS.md
 
-**Last Updated:** 2026-04-08
-**Current Version:** 3.4.1 (Token-Verbrauch im Leaderboard)
+**Last Updated:** 2026-04-09
+**Current Version:** 3.4.2 (Vollständige Modell-Preisliste & Sync-Tool)
 **Status:** ✅ Production-Ready
 
 ______________________________________________________________________
 
 ## 🎯 Executive Summary
+
+CrucibleMark v3.4.2 schließt die Preis-Datenbasis für alle konfigurierten Cloud- und Commercial-Modelle. Alle 25 Modelle haben jetzt verifizierte Preiseinträge in `config/cost_limits.yaml`. Ergänzend wurde ein neues Dev-Tool (`sync_cost_limits.py`) eingeführt, das Missing-Entries automatisch erkennt und Platzhalter scaffoldet. Das Leaderboard weist jetzt für alle Modelle `Cost per 1K (USD)` und `Benchmark Cost (USD)` aus.
+
+**Key Achievements (v3.4.2):**
+- ✅ **Vollständige Preisliste:** Alle Cloud-/Commercial-Modelle in `config/cost_limits.yaml` mit verifizierten Preisen (Quellen: openai.com/api/pricing, ai.google.dev/gemini-api/docs/pricing, Stand 2026-04-09). Neu eingetragen: `gpt-5.4`, `gpt-5.4-mini`, `gemini-3-flash-preview`, `gemini-3.1-pro-preview`, `o1`, `gemini-2.5-pro` sowie neue Provider-Sektionen (`ollama_cloud`, `google`, korrigiertes `xai`).
+- ✅ **LLM Judge Avg Sterne-Format:** `exporter.py` formatiert `LLM Judge Avg` jetzt als `3.8 ★` im Leaderboard.
+- ✅ **`sync_cost_limits.py`:** Neues Dev-Tool (`scripts/dev/`) prüft, ob alle konfigurierten Modelle einen Preiseintrag haben. `--fix`-Flag schreibt automatisch `null`-Platzhalter ein (mit `providers:`-Boundary, duplikatfrei).
+- ✅ **`make sync-cost-limits [FIX=1]`:** Makefile-Target für den täglichen Workflow — neues Modell hinzufügen, `make sync-cost-limits FIX=1`, Preis eintragen, `make leaderboard`.
+- ✅ **Dokumentiert:** `docs/USER_GUIDE.md` (F.2 Systemgesundheit + neuer Abschnitt "Preisliste abgleichen").
+
+**Vorherige Version (v3.4.1 – Token-Verbrauch im Leaderboard):**
 
 CrucibleMark v3.4.1 ergänzt das Leaderboard um transparente Token-Verbrauchsdaten. Beide Leaderboard-CSVs weisen jetzt `Tokens Total` aus — auf identischer Modul-Basis wie der Total Score (nur `enable_scoring: true`). Das Detailed-Leaderboard enthält zusätzlich eine Aufschlüsselung pro Modul. Damit ist Token-Hunger für API-Nutzer direkt messbar.
 

@@ -1,14 +1,36 @@
 providers:
+  # NOTE: Alle Preise beziehen sich auf den kostenpflichtigen Paid Tier (nach Ablauf
+  # des Free Tiers). Im Free Tier sind bei Groq bestimmte Tokens kostenlos enthalten.
+  # Ollama-Cloud-Modelle (:cloud-Tags) verbinden sich über Ollama-Proxies mit den APIs
+  # der jeweiligen Anbieter. Die Preise entsprechen dem Paid Tier der jeweiligen
+  # Provider-API und dienen als Referenz für den kommerziellen Produktionseinsatz.
+  ollama_cloud:
+    deepseek-v3.2:cloud:
+      input_cost_per_1k: 0.00028   # $0.28 per 1M input tokens (DeepSeek API, cache miss)
+      output_cost_per_1k: 0.00042  # $0.42 per 1M output tokens
+    minimax-m2.7:cloud:
+      input_cost_per_1k: 0.0003    # $0.30 per 1M input tokens (MiniMax API)
+      output_cost_per_1k: 0.0012   # $1.20 per 1M output tokens
+    gpt-oss:120b-cloud:
+      input_cost_per_1k: 0.00015   # $0.15 per 1M input tokens (Groq API)
+      output_cost_per_1k: 0.0006   # $0.60 per 1M output tokens
+
   groq:
     meta-llama/llama-4-scout-17b-16e-instruct:
-      input_cost_per_1k: 0.00015   # $0.15 per 1M input tokens
-      output_cost_per_1k: 0.00025  # $0.25 per 1M output tokens
+      input_cost_per_1k: 0.00011   # $0.11 per 1M input tokens
+      output_cost_per_1k: 0.00034  # $0.34 per 1M output tokens
     llama-3.3-70b-versatile:
       input_cost_per_1k: 0.00059   # $0.59 per 1M input tokens
       output_cost_per_1k: 0.00079  # $0.79 per 1M output tokens
     llama-3.1-8b-instant:
       input_cost_per_1k: 0.00005   # $0.05 per 1M input tokens
       output_cost_per_1k: 0.00008  # $0.08 per 1M output tokens
+    qwen/qwen3-32b:
+      input_cost_per_1k: 0.00029   # $0.29 per 1M input tokens
+      output_cost_per_1k: 0.00059  # $0.59 per 1M output tokens
+    moonshotai/kimi-k2-instruct:
+      input_cost_per_1k: 0.001     # $1.00 per 1M input tokens (uncached)
+      output_cost_per_1k: 0.003    # $3.00 per 1M output tokens
     daily_budget: 10.0 # Max $10/Tag total for Groq
 
   openai:
@@ -27,6 +49,15 @@ providers:
     gpt-4o-mini:
       input_cost_per_1k: 0.00015
       output_cost_per_1k: 0.0006
+    gpt-5.4:
+      input_cost_per_1k: 0.0025   # $2.50 per 1M input tokens (openai.com/api/pricing)
+      output_cost_per_1k: 0.015    # $15.00 per 1M output tokens
+    gpt-5.4-mini:
+      input_cost_per_1k: 0.00075  # $0.75 per 1M input tokens (openai.com/api/pricing)
+      output_cost_per_1k: 0.0045  # $4.50 per 1M output tokens
+    o1:
+      input_cost_per_1k: 0.015   # $15.00 per 1M input tokens
+      output_cost_per_1k: 0.06   # $60.00 per 1M output tokens
     daily_budget: 20.0 # Max $20/Tag total for OpenAI
 
   anthropic:
@@ -48,9 +79,9 @@ providers:
     claude-3-5-sonnet:
       input_cost_per_1k: 0.003
       output_cost_per_1k: 0.015
-    claude-3-haiku:
-      input_cost_per_1k: 0.00025
-      output_cost_per_1k: 0.00125
+    claude-haiku-4-5-20251001:
+      input_cost_per_1k: 0.001   # $1.00/MTok
+      output_cost_per_1k: 0.005  # $5.00/MTok
     daily_budget: 15.0 # Max $15/Tag total for Anthropic
 
   mistral:
@@ -68,6 +99,26 @@ providers:
       output_cost_per_1k: 0.0001  # $0.10/M
     daily_budget: 50.0 # Max $50/Tag total for Mistral
 
+  xai:
+    grok-3:
+      input_cost_per_1k: 0.005    # $5.00 per 1M input tokens
+      output_cost_per_1k: 0.015   # $15.00 per 1M output tokens
+    grok-3-mini:
+      input_cost_per_1k: 0.002    # $2.00 per 1M input tokens
+      output_cost_per_1k: 0.010   # $10.00 per 1M output tokens
+    daily_budget: 15.0 # Max $15/Tag total for XAI
+
+  google:
+    gemini-2.5-pro:
+      input_cost_per_1k: 0.00125  # $1.25 per 1M input tokens (≤200K context)
+      output_cost_per_1k: 0.010   # $10.00 per 1M output tokens
+    gemini-3-flash-preview:
+      input_cost_per_1k: 0.0005   # $0.50 per 1M input tokens (ai.google.dev/gemini-api/docs/pricing)
+      output_cost_per_1k: 0.003    # $3.00 per 1M output tokens
+    gemini-3.1-pro-preview:
+      input_cost_per_1k: 0.002    # $2.00 per 1M input tokens ≤200K ctx (ai.google.dev/gemini-api/docs/pricing)
+      output_cost_per_1k: 0.012   # $12.00 per 1M output tokens
+
 settings:
   budget_warning_threshold: 0.8
   currency: USD
@@ -79,12 +130,3 @@ settings:
   # Quelle für automatische Tokenpreis-Updates.
   # Standardmäßig die öffentlich gepflegte LiteLLM Pricing DB (BerriAI).
   pricing_source_url: "https://raw.githubusercontent.com/BerriAI/litellm/main/model_prices_and_context_window.json"
-
-  xai:
-    grok-3-mini:
-      input_cost_per_1k: 0.002
-      output_cost_per_1k: 0.010
-    grok-3:
-      input_cost_per_1k: 0.005
-      output_cost_per_1k: 0.015
-    daily_budget: 15.0 # Max $15/Tag total for XAI

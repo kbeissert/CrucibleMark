@@ -2,6 +2,13 @@
 
 ## ✅ COMPLETED
 
+### Vollständige Modell-Preisliste & Sync-Tool (v3.4.2 – 09.04.26)
+- [x] **config/cost_limits.yaml: Vollständige Preis-Datenbasis:** Alle 25 konfigurierten Cloud-/Commercial-Modelle haben jetzt verifizierte Preiseinträge. Neue Sektionen: `ollama_cloud`, `google`; `xai` aus `settings:` in `providers:` verschoben.
+- [x] **exporter.py: LLM Judge Avg Sterne-Format:** `_format_judge_stars()` formatiert den Wert als `3.8 ★` im Compact- und Detailed-Leaderboard.
+- [x] **scripts/dev/sync_cost_limits.py:** Neues Dev-Tool. Vergleicht konfigurierte Modelle gegen `cost_limits.yaml`, meldet Missing-Entries. `--fix` schreibt `null`-Platzhalter — boundary-sicher (`providers_start/end`) und duplikatfrei.
+- [x] **Makefile: `sync-cost-limits [FIX=1]`:** Neues Target für den standardisierten Pricing-Workflow.
+- [x] **docs/USER_GUIDE.md:** `make sync-cost-limits` in F.2 Systemgesundheit dokumentiert + eigenständiger Workflow-Abschnitt "Preisliste abgleichen" ergänzt.
+
 ### Token-Verbrauch im Leaderboard (v3.4.1 – 08.04.26)
 - [x] **score_calculator.py: scoring_df im calculate_scores():** Lokale `scoring_df`-Variable aus `cat_to_scoring`-Map aufgebaut (analog zu `_aggregate_basic_stats()`), damit Token-Aggregation dieselbe Modul-Basis wie der Total Score nutzt.
 - [x] **score_calculator.py: Tokens Total Korrektur:** `tokens_used`-Summe aus `_aggregate_basic_stats()` (inkl. Political Compass) wird nach dem Merge überschrieben — neue Summe nur über `scoring_df` (enable_scoring=True). Verhindert Verzerrung durch variable PC-Retest-Mengen.
