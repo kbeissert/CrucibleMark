@@ -4,6 +4,21 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [v3.4.3] - 2026-04-10
+
+### Added
+- **`module_weight`-Feld in allen Modul-`config.yaml`s:** Neues `integration.leaderboard.module_weight`-Key entkoppelt den Total-Score-Einfluss eines Moduls von seiner Asset-Anzahl. Default: Vollmodule `1.0`, CLI-Modul `0.5` (Supplement). Konfigurierbar pro Deployment ohne Code-Änderung.
+- **`_module_scale()` in `score_calculator.py`:** Hilfsfunktion berechnet den normierten Skalierungsfaktor pro Modul (`scale = module_weight / Σ active weights`). Alle 4 Contrib-Spalten werden vor der Aggregation skaliert. Fallback: fehlender `module_weight`-Wert → `scale = 1.0`.
+- **5 neue Ollama-Cloud-Modelle in `config/cost_limits.yaml`:** `deepseek-v3.1:671b-cloud` ($0.28/$0.42 per 1M), `qwen3.5:397b-cloud` ($0.60/$3.60 per 1M), `gemma4:31b-cloud` ($0.14/$0.40 per 1M), `kimi-k2.5:cloud` ($0.45/$2.25 per 1M), `glm-5:cloud` ($0.14/$0.40 per 1M).
+- **`docs/BENCHMARK_MODULES.md`:** Neuer Abschnitt "Designprinzip: Module als gleichwertige, geschlossene Tests" erklärt die Modulgewichtungs-Philosophie, den Einsatz von Einzel-Modul-Scores und den CLI-Sonderfall.
+- **`docs/SCORING_METHODOLOGY.md`:** Neue Sektion "Modulgewichtung (`module_weight`)" mit selbstnormierender Formel, Gewichts-Tabelle (alle 7 Module mit Einfluss-Prozenten) und Konfigurationshinweis.
+
+### Changed
+- **`scripts/leaderboard/__init__.py`:** `module_weight` aus `lb_config.get("module_weight")` ins `mod_entry`-Dict übernommen — stellt sicher, dass `score_calculator.py` den konfigurierten Wert jedes Moduls erhält.
+- **`docs/SCORING_METHODOLOGY.md`:** Formel von `(Routine Score + Reasoning Score) / 2` (veraltet) auf `Σ(ModuleScore × module_weight) / Σ(module_weight)` (korrekte selbstnormierende Variante) aktualisiert.
+
+---
+
 ## [v3.4.2] - 2026-04-09
 
 ### Added

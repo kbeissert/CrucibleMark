@@ -19,6 +19,7 @@ metadata:
 integration:
   leaderboard:
     enable_scoring: true
+    module_weight: 1.0  # Full evaluation dimension — contributes equally to total score.
     default_contribution:
       routine: 1.0
       reasoning: 0.0

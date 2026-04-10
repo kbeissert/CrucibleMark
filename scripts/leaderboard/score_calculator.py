@@ -151,10 +151,31 @@ def _calculate_group_scores(
             if "score_contribution" in b and "id" in b:
                 asset_contrib_map[b["id"]] = b["score_contribution"]
 
-    # DEBUG: Check map
-    # print(f"DEBUG: Asset Contrib Map Size: {len(asset_contrib_map)}")
-    # if 'code_quality_001' in asset_contrib_map:
-    #      print(f"DEBUG: code_quality_001 found in map: {asset_contrib_map['code_quality_001']}")
+    # 2b. Build module-weight scale factors (self-normalizing, Subset-safe)
+    # module_weight / sum_of_config_weights_in_that_module → scale per asset row.
+    # Falls module_weight=None (kein Eintrag), scale=1.0 (Rückwärtskompatibilität).
+    def _module_scale(mod_data: Dict[str, Any]) -> float:
+        module_weight = mod_data.get("module_weight")
+        if module_weight is None:
+            return 1.0
+        benchmarks = mod_data.get("benchmarks", [])
+        default_contrib = mod_data.get("default_contribution", {"routine": 0.0, "reasoning": 0.0})
+        default_sum = float(default_contrib.get("routine", 0.0)) + float(default_contrib.get("reasoning", 0.0))
+        config_weight_sum = 0.0
+        for b in benchmarks:
+            sc = b.get("score_contribution")
+            if sc:
+                config_weight_sum += float(sc.get("routine", 0.0)) + float(sc.get("reasoning", 0.0))
+            else:
+                config_weight_sum += default_sum
+        if config_weight_sum <= 0:
+            config_weight_sum = max(float(mod_data.get("assets_count", 1)) * max(default_sum, 1.0), 1.0)
+        return float(module_weight) / config_weight_sum
+
+    module_weight_scales: Dict[str, float] = {
+        cat_name: _module_scale(mod_data)
+        for cat_name, mod_data in cat_to_config.items()
+    }
 
     # 3. Apply Scoring
     contribs = df_calc.apply(
@@ -169,10 +190,13 @@ def _calculate_group_scores(
         df_calc["weight_routine"] = 0.0
         df_calc["weight_reasoning"] = 0.0
     else:
-        df_calc["final_routine"] = contribs[0]
-        df_calc["final_reasoning"] = contribs[1]
-        df_calc["weight_routine"] = contribs[2]
-        df_calc["weight_reasoning"] = contribs[3]
+        # Apply module-weight scaling so that module_weight controls relative influence,
+        # independent of asset count. Result stays 0–100 (self-normalizing via weighted avg).
+        scale = df_calc["category"].map(lambda c: module_weight_scales.get(c, 1.0))
+        df_calc["final_routine"] = contribs[0] * scale
+        df_calc["final_reasoning"] = contribs[1] * scale
+        df_calc["weight_routine"] = contribs[2] * scale
+        df_calc["weight_reasoning"] = contribs[3] * scale
 
     # 4. Aggregation: Sum / Sum of Weights
     scores = (

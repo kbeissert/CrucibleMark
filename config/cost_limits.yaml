@@ -5,15 +5,34 @@ providers:
   # der jeweiligen Anbieter. Die Preise entsprechen dem Paid Tier der jeweiligen
   # Provider-API und dienen als Referenz für den kommerziellen Produktionseinsatz.
   ollama_cloud:
+    deepseek-v3.1:671b-cloud:
+      input_cost_per_1k: 0.00028   # $0.28 per 1M input tokens (DeepSeek API, cache miss – V3.1 = gleicher Preis wie V3.2)
+      output_cost_per_1k: 0.00042  # $0.42 per 1M output tokens
     deepseek-v3.2:cloud:
       input_cost_per_1k: 0.00028   # $0.28 per 1M input tokens (DeepSeek API, cache miss)
       output_cost_per_1k: 0.00042  # $0.42 per 1M output tokens
     minimax-m2.7:cloud:
-      input_cost_per_1k: 0.0003    # $0.30 per 1M input tokens (MiniMax API)
+      input_cost_per_1k: 0.0003    # $0.30 per 1M input tokens (MiniMax API, Standard-Tier – M2.7-highspeed wäre $0.60)
       output_cost_per_1k: 0.0012   # $1.20 per 1M output tokens
+    gpt-oss:20b-cloud:
+      input_cost_per_1k: 0.000075  # $0.075 per 1M input tokens (Groq API) # KORRIGIERT: war $0.09 (3x zu hoch geschätzt)
+      output_cost_per_1k: 0.0003   # $0.30 per 1M output tokens             # KORRIGIERT: war $0.36
     gpt-oss:120b-cloud:
       input_cost_per_1k: 0.00015   # $0.15 per 1M input tokens (Groq API)
       output_cost_per_1k: 0.0006   # $0.60 per 1M output tokens
+    qwen3.5:397b-cloud:
+      input_cost_per_1k: 0.0006    # $0.60 per 1M input tokens (Alibaba/OpenRouter, Est. – Modell nicht in bekannten Preislisten)
+      output_cost_per_1k: 0.0036   # $3.60 per 1M output tokens
+    gemma4:31b-cloud:
+      input_cost_per_1k: 0.00014   # $0.14 per 1M input tokens (Google/Vertex AI)
+      output_cost_per_1k: 0.0004   # $0.40 per 1M output tokens
+    kimi-k2.5:cloud:
+      input_cost_per_1k: 0.0006    # $0.60 per 1M input tokens (Kimi K2 0905 via DeepInfra) # KORRIGIERT: war $0.45
+      output_cost_per_1k: 0.0025   # $2.50 per 1M output tokens                              # KORRIGIERT: war $2.25
+    glm-5:cloud:
+      input_cost_per_1k: 0.00014   # $0.14 per 1M input tokens (Zhipu AI, Est. – kein öffentlicher Preis verifizierbar)
+      output_cost_per_1k: 0.0004   # $0.40 per 1M output tokens
+
 
   groq:
     meta-llama/llama-4-scout-17b-16e-instruct:
@@ -33,6 +52,7 @@ providers:
       output_cost_per_1k: 0.003    # $3.00 per 1M output tokens
     daily_budget: 10.0 # Max $10/Tag total for Groq
 
+
   openai:
     gpt-5:
       input_cost_per_1k: 0.000625  # $0.625 per 1M input tokens
@@ -40,25 +60,29 @@ providers:
     gpt-5-mini:
       input_cost_per_1k: 0.000125  # $0.125 per 1M input tokens
       output_cost_per_1k: 0.001    # $1.00 per 1M output tokens
+    o4-mini:
+      input_cost_per_1k: 0.0011    # $1.10 per 1M input tokens (openai.com/api/pricing)
+      output_cost_per_1k: 0.0044   # $4.40 per 1M output tokens
     o3-mini:
       input_cost_per_1k: 0.0011    # (Est.) $1.10 per 1M input tokens
       output_cost_per_1k: 0.0044   # (Est.) $4.40 per 1M output tokens
     gpt-4o:
-      input_cost_per_1k: 0.0025  # Replaced legacy $5
-      output_cost_per_1k: 0.010  # Replaced legacy $15
+      input_cost_per_1k: 0.0025    # Replaced legacy $5
+      output_cost_per_1k: 0.010    # Replaced legacy $15
     gpt-4o-mini:
       input_cost_per_1k: 0.00015
       output_cost_per_1k: 0.0006
     gpt-5.4:
-      input_cost_per_1k: 0.0025   # $2.50 per 1M input tokens (openai.com/api/pricing)
+      input_cost_per_1k: 0.0025    # $2.50 per 1M input tokens (openai.com/api/pricing)
       output_cost_per_1k: 0.015    # $15.00 per 1M output tokens
     gpt-5.4-mini:
-      input_cost_per_1k: 0.00075  # $0.75 per 1M input tokens (openai.com/api/pricing)
-      output_cost_per_1k: 0.0045  # $4.50 per 1M output tokens
+      input_cost_per_1k: 0.00075   # $0.75 per 1M input tokens (openai.com/api/pricing)
+      output_cost_per_1k: 0.0045   # $4.50 per 1M output tokens
     o1:
-      input_cost_per_1k: 0.015   # $15.00 per 1M input tokens
-      output_cost_per_1k: 0.06   # $60.00 per 1M output tokens
+      input_cost_per_1k: 0.015     # $15.00 per 1M input tokens
+      output_cost_per_1k: 0.06     # $60.00 per 1M output tokens
     daily_budget: 20.0 # Max $20/Tag total for OpenAI
+
 
   anthropic:
     # Claude 4.6 (Feb 2026) - Preise verifiziert via LiteLLM/BerriAI pricing DB
@@ -80,11 +104,18 @@ providers:
       input_cost_per_1k: 0.003
       output_cost_per_1k: 0.015
     claude-haiku-4-5-20251001:
-      input_cost_per_1k: 0.001   # $1.00/MTok
-      output_cost_per_1k: 0.005  # $5.00/MTok
+      input_cost_per_1k: 0.001    # $1.00/MTok
+      output_cost_per_1k: 0.005   # $5.00/MTok
     daily_budget: 15.0 # Max $15/Tag total for Anthropic
 
+
   mistral:
+    codestral-latest:
+      input_cost_per_1k: 0.0003    # $0.30 per 1M input tokens (mistral.ai/technology/pricing)
+      output_cost_per_1k: 0.0009   # $0.90 per 1M output tokens
+    mistral-small-latest:
+      input_cost_per_1k: 0.0001    # $0.10 per 1M input tokens (mistral.ai/technology/pricing)
+      output_cost_per_1k: 0.0003   # $0.30 per 1M output tokens
     mistral-large-latest:
       input_cost_per_1k: 0.002
       output_cost_per_1k: 0.006
@@ -92,12 +123,13 @@ providers:
       input_cost_per_1k: 0.0027
       output_cost_per_1k: 0.0081
     ministral-8b:
-      input_cost_per_1k: 0.0001   # $0.10/M
-      output_cost_per_1k: 0.0003  # $0.30/M
+      input_cost_per_1k: 0.0001    # $0.10/M
+      output_cost_per_1k: 0.0003   # $0.30/M
     ministral-3b:
-      input_cost_per_1k: 0.00004  # $0.04/M
-      output_cost_per_1k: 0.0001  # $0.10/M
+      input_cost_per_1k: 0.00004   # $0.04/M
+      output_cost_per_1k: 0.0001   # $0.10/M
     daily_budget: 50.0 # Max $50/Tag total for Mistral
+
 
   xai:
     grok-3:
@@ -108,16 +140,21 @@ providers:
       output_cost_per_1k: 0.010   # $10.00 per 1M output tokens
     daily_budget: 15.0 # Max $15/Tag total for XAI
 
+
   google:
+    gemini-2.5-flash:
+      input_cost_per_1k: 0.000075  # $0.075 per 1M input tokens (≤128K context, ai.google.dev/gemini-api/docs/pricing)
+      output_cost_per_1k: 0.0003   # $0.30 per 1M output tokens
     gemini-2.5-pro:
-      input_cost_per_1k: 0.00125  # $1.25 per 1M input tokens (≤200K context)
-      output_cost_per_1k: 0.010   # $10.00 per 1M output tokens
+      input_cost_per_1k: 0.00125   # $1.25 per 1M input tokens (≤200K context)
+      output_cost_per_1k: 0.010    # $10.00 per 1M output tokens
     gemini-3-flash-preview:
-      input_cost_per_1k: 0.0005   # $0.50 per 1M input tokens (ai.google.dev/gemini-api/docs/pricing)
+      input_cost_per_1k: 0.0005    # $0.50 per 1M input tokens (ai.google.dev/gemini-api/docs/pricing)
       output_cost_per_1k: 0.003    # $3.00 per 1M output tokens
     gemini-3.1-pro-preview:
-      input_cost_per_1k: 0.002    # $2.00 per 1M input tokens ≤200K ctx (ai.google.dev/gemini-api/docs/pricing)
-      output_cost_per_1k: 0.012   # $12.00 per 1M output tokens
+      input_cost_per_1k: 0.002     # $2.00 per 1M input tokens ≤200K ctx (ai.google.dev/gemini-api/docs/pricing)
+      output_cost_per_1k: 0.012    # $12.00 per 1M output tokens
+
 
 settings:
   budget_warning_threshold: 0.8

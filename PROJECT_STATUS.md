@@ -1,23 +1,26 @@
 # PROJECT_STATUS.md
 
-**Last Updated:** 2026-04-09
-**Current Version:** 3.4.2 (Vollständige Modell-Preisliste & Sync-Tool)
+**Last Updated:** 2026-04-10
+**Current Version:** 3.4.3 (Module Weight System & Score-Fairness)
 **Status:** ✅ Production-Ready
 
 ______________________________________________________________________
 
 ## 🎯 Executive Summary
 
+CrucibleMark v3.4.3 führt ein **selbstnormalisierendes Modulgewichtungs-System** ein, das den Total Score von der Asset-Anzahl-basierten Zufallsgewichtung entkoppelt. Jedes Vollmodul fließt jetzt mit gleichem Gewicht (`module_weight: 1.0`) in den Gesamtscore ein – unabhängig davon, wie viele Assets in ihm liegen. Das CLI-Modul ist als leichtgewichtiges Supplement mit `module_weight: 0.5` eingestuft. Ergänzend wurde die `cost_limits.yaml` um 5 neue Ollama-Cloud-Modelle erweitert und die Benchmark-Dokumentation um die Modulgewichtungs-Philosophie ergänzt.
+
+**Key Achievements (v3.4.3):**
+- ✅ **`module_weight`-System:** Neues `integration.leaderboard.module_weight`-Feld in allen Modul-`config.yaml`s. Alle 6 Vollmodule: `1.0`. CLI: `0.5` (Supplement, kein vollwertiges Evaluierungsmodul).
+- ✅ **Selbstnormierende Formel:** `TotalScore = Σ(ModuleScore × module_weight) / Σ(module_weight)` — Ergebnis immer 0–100, unabhängig von aktiven Modul-Subsets oder gewählten Gewichtswerten.
+- ✅ **`_module_scale()` in `score_calculator.py`:** Hilfsfunktion berechnet `scale = module_weight / config_weight_sum` pro Modul. Alle 4 Contrib-Spalten werden vor der Aggregation skaliert.
+- ✅ **`scripts/leaderboard/__init__.py`:** `module_weight` wird aus `lb_config` gelesen und ins `mod_entry`-Dict propagiert (Fallback `None` → `scale = 1.0`).
+- ✅ **5 neue Ollama-Cloud-Modelle** in `cost_limits.yaml`: `deepseek-v3.1:671b-cloud`, `qwen3.5:397b-cloud`, `gemma4:31b-cloud`, `kimi-k2.5:cloud`, `glm-5:cloud`.
+- ✅ **Dokumentation:** `docs/BENCHMARK_MODULES.md` (Designprinzip "geschlossene Module, gleiche Gewichtung") und `docs/SCORING_METHODOLOGY.md` (Formel + Gewichts-Tabelle mit Default-Werten) aktualisiert.
+
+**Vorherige Version (v3.4.2 – Vollständige Modell-Preisliste & Sync-Tool):**
+
 CrucibleMark v3.4.2 schließt die Preis-Datenbasis für alle konfigurierten Cloud- und Commercial-Modelle. Alle 25 Modelle haben jetzt verifizierte Preiseinträge in `config/cost_limits.yaml`. Ergänzend wurde ein neues Dev-Tool (`sync_cost_limits.py`) eingeführt, das Missing-Entries automatisch erkennt und Platzhalter scaffoldet. Das Leaderboard weist jetzt für alle Modelle `Cost per 1K (USD)` und `Benchmark Cost (USD)` aus.
-
-**Key Achievements (v3.4.2):**
-- ✅ **Vollständige Preisliste:** Alle Cloud-/Commercial-Modelle in `config/cost_limits.yaml` mit verifizierten Preisen (Quellen: openai.com/api/pricing, ai.google.dev/gemini-api/docs/pricing, Stand 2026-04-09). Neu eingetragen: `gpt-5.4`, `gpt-5.4-mini`, `gemini-3-flash-preview`, `gemini-3.1-pro-preview`, `o1`, `gemini-2.5-pro` sowie neue Provider-Sektionen (`ollama_cloud`, `google`, korrigiertes `xai`).
-- ✅ **LLM Judge Avg Sterne-Format:** `exporter.py` formatiert `LLM Judge Avg` jetzt als `3.8 ★` im Leaderboard.
-- ✅ **`sync_cost_limits.py`:** Neues Dev-Tool (`scripts/dev/`) prüft, ob alle konfigurierten Modelle einen Preiseintrag haben. `--fix`-Flag schreibt automatisch `null`-Platzhalter ein (mit `providers:`-Boundary, duplikatfrei).
-- ✅ **`make sync-cost-limits [FIX=1]`:** Makefile-Target für den täglichen Workflow — neues Modell hinzufügen, `make sync-cost-limits FIX=1`, Preis eintragen, `make leaderboard`.
-- ✅ **Dokumentiert:** `docs/USER_GUIDE.md` (F.2 Systemgesundheit + neuer Abschnitt "Preisliste abgleichen").
-
-**Vorherige Version (v3.4.1 – Token-Verbrauch im Leaderboard):**
 
 CrucibleMark v3.4.1 ergänzt das Leaderboard um transparente Token-Verbrauchsdaten. Beide Leaderboard-CSVs weisen jetzt `Tokens Total` aus — auf identischer Modul-Basis wie der Total Score (nur `enable_scoring: true`). Das Detailed-Leaderboard enthält zusätzlich eine Aufschlüsselung pro Modul. Damit ist Token-Hunger für API-Nutzer direkt messbar.
 

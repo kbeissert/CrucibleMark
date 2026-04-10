@@ -5,6 +5,20 @@ CrucibleMark wurde entwickelt, um KI-Modelle nicht auf theoretisches Faktenwisse
 ## 🏆 Total Score (Gesamtwertung)
 Der Total Score ist das aggregierte Gesamtergebnis über alle bewerteten Module. Er ist besonders aussagekräftig, wenn ein einziges Generalist-Modell als universeller Assistent eingesetzt wird – typischerweise bei kommerziellen Abonnement-Modellen, die in diversen Szenarien verlässlich funktionieren müssen. Wer dagegen spezialisierte Modelle für konkrete Aufgaben oder Agenten-Pipelines einsetzt, findet in den Einzel-Modul-Scores die präzisere Entscheidungsgrundlage.
 
+### Designprinzip: Module als gleichwertige, geschlossene Tests
+
+Jedes Benchmark-Modul ist als **in sich geschlossene, vollständige Messung** einer Alltagsdimension konzipiert. Das bedeutet:
+
+- **Gleiche Gewichtung by default:** Jedes Vollmodul fließt mit dem gleichen Gewicht in den Total Score ein. Die interne Asset-Anzahl eines Moduls hat keinen Einfluss auf seinen Gesamtbeitrag — ein Modul mit 5 Assets und eines mit 11 Assets tragen gleichwertig bei.
+- **Jedes Modul ist für sich aussagekräftig:** Die Module können unabhängig voneinander ausgewertet werden. Wer ein Modell nur unter dem Aspekt _Code-Qualität_ oder _Reasoning_ bewerten will, erhält direkt den Einzel-Modul-Score — ohne den Total Score zu betrachten.
+- **Der Total Score ist ein Generalist-Filter:** Er beantwortet die Frage: *„Welches Modell ist im Durchschnitt aller Alltagsbereiche am stärksten?"* — nicht: *„Welches Modell ist in Bereich X das beste?"*
+
+### Konfigurierbare Gewichtung
+
+Die Modulgewichtung ist über `integration.leaderboard.module_weight` in der jeweiligen Modul-`config.yaml` einstellbar. Wer CrucibleMark z. B. für ein reines Developer-Setup betreibt, kann Code Quality und CLI Benchmark höher gewichten oder nicht relevante Module deaktivieren (`enabled: false` in `benchmark_config.yaml`). Der Score normalisiert sich automatisch auf die aktiven Module — das Ergebnis bleibt immer im Bereich 0–100.
+
+> **CLI Benchmark als Sonderfall:** Das CLI-Modul wurde bewusst als leichtgewichtiges Supplement konzipiert (kurze Syntax-Tests, kein tiefes Reasoning). Es trägt daher mit `module_weight: 0.5` nur halb so viel zum Total Score bei wie ein Vollmodul. Wer für Developer-Profile testet, kann diesen Wert auf `1.0` erhöhen.
+
 ## 💻 Code Quality (Code-Qualität)
 Dieses Modul prüft, ob eine KI als verlässlicher Code-Reviewer agieren kann. Es geht nicht darum, funktionierenden Code zu schreiben, sondern bestehenden Quelltext systematisch auf Sicherheitslücken (OWASP), Accessibility-Verstöße (WCAG) und Architekturprobleme zu analysieren. In vier Schwierigkeitsstufen – von offensichtlichen Bugs bis zu subtilen Race Conditions – testet das Modul, ob das Modell den Unterschied zwischen „funktioniert" und „ist production-ready" erkennt.
 
