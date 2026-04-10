@@ -192,18 +192,6 @@ def format_speed_profile(row: pd.Series) -> str:
     return profile
 
 
-def calculate_performance_per_second(total_score: float, avg_time: float) -> float:
-    """
-    Higher = better value (good score, fast response).
-    """
-    if pd.isna(avg_time) or avg_time <= 0:
-        return 0.0
-    if pd.isna(total_score):
-        return 0.0
-
-    return round(total_score / avg_time, 2)
-
-
 def assign_rank_and_badges(df: pd.DataFrame, cat_cols: Optional[list] = None) -> pd.DataFrame:
     """
     Vergibt Rank, Badges und Speed Profile.
@@ -234,13 +222,7 @@ def assign_rank_and_badges(df: pd.DataFrame, cat_cols: Optional[list] = None) ->
     # 4. Speed Profile (Merged Tier + Skill + Warnings)
     df["Speed Profile"] = df.apply(format_speed_profile, axis=1)
 
-    # 5. Efficiency Score (Total Score / Avg Time)
-    df["Efficiency Score"] = df.apply(
-        lambda row: calculate_performance_per_second(
-            row.get("Total Score"), row.get("Avg Task Duration (s)")
-        ),
-        axis=1,
-    )
+    # 5. Tokens/s already aggregated by score_calculator — no recalculation needed here
 
     # Ensure is_complete is boolean
     if "is_complete" in df.columns:
@@ -277,7 +259,7 @@ def print_leaderboard_table(leaderboard: pd.DataFrame) -> None:
         "Badge",
         "Speed Profile",
         "Total Score",
-        "Efficiency Score",
+        "Tokens/s",
         "Avg Task Duration (s)",
         # Note: Cost, specific scores, etc. hidden to fit width
         # But user requested Cost per 1K in text description, let's keep it if possible

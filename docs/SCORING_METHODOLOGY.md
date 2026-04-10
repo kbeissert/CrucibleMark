@@ -88,11 +88,14 @@ Wenn ein Modell das Budget vollständig ausschöpft (`finish_reason: length`), w
 ### Core Metriken
 
 ```text
-Efficiency Score = Total Score / Avg Time
+Tokens/s = mean(tokens_per_second) über alle Nicht-System-Assets
 LLM Judge Avg = Normiert (0-5 → 0-100)
 Thought-Tag Compliance = Einhaltung der Metakognitions-Tags (<thought>)
 Coverage % = Erfolgreich geparst
 ```
+
+> **Hinweis:** Der `Efficiency Score` (Total Score / Avg Time) wurde in v3.4.4 entfernt.
+> Drei saubere, unabhängige Dimensionen ersetzen ihn: `Total Score`, `Avg Task Duration (s)`, `Tokens/s`.
 
 ### Token-Verbrauch im Leaderboard
 

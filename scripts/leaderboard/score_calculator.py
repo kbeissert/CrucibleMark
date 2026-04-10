@@ -294,6 +294,8 @@ def _aggregate_basic_stats(
         base_aggs["cost_usd"] = "sum"
     if "tokens_used" in df_metrics.columns:
         base_aggs["tokens_used"] = "sum"
+    if "tokens_per_second" in df_metrics.columns:
+        base_aggs["tokens_per_second"] = "mean"
 
     stats_metrics = (
         df_metrics.groupby(["model", "model_version", "type"])
@@ -750,6 +752,7 @@ def calculate_scores(
             "llm_judge_avg": "LLM Judge Avg",
             "judge_coverage": "LLM Judge Coverage",
             "tokens_used": "Tokens Total",
+            "tokens_per_second": "Tokens/s",
         }
     )
 

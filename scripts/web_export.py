@@ -236,7 +236,7 @@ def main() -> None:
             "total_score": normalize_pending(row.get("Total Score")),
             "routine_score": normalize_pending(row.get("Routine Score")),
             "reasoning_score": normalize_pending(row.get("Reasoning Score")),
-            "efficiency_score": normalize_pending(row.get("Efficiency Score")),
+            "tokens_per_s": normalize_pending(row.get("Tokens/s")),
             "avg_task_duration_s": normalize_pending(row.get("Avg Task Duration (s)")),
             "p95_time_s": normalize_pending(row.get("P95 Time (s)", row.get("P95", None))),
             "max_time_s": normalize_pending(row.get("Max Time (s)")),

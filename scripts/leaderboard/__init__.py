@@ -158,6 +158,7 @@ def main(print_table: bool = True) -> Optional[pd.DataFrame]:
         "Routine Score",
         "Reasoning Score",
         "Efficiency_Index",
+        "Tokens/s",
         "LLM Judge Avg",
     ]
     for col in cols_to_round:
