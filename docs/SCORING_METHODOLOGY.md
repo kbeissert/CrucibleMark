@@ -25,8 +25,28 @@ Das Scoring kombiniert **harte Fakten (Regex)** mit **nuancierter Bewertung (LLM
 | **LLM Judge** | Nuancen | Bias | UX/Reasoning (30–50 %) |
 
 ```text
-Total Score = (Routine Score + Reasoning Score) / 2
+Total Score = Σ(ModuleScore × module_weight) / Σ(module_weight)
 ```
+
+### Modulgewichtung (`module_weight`)
+
+Ab v3.4.x wird der Total Score über ein **selbstnormalisierendes Gewichtungsschema** berechnet. Jedes Modul trägt mit seinem konfigurierten `module_weight` bei — unabhängig von der Anzahl seiner Assets. Das Ergebnis bleibt immer im Bereich 0–100, egal wie viele Module aktiv sind.
+
+**Default-Werte (alle aktiven Module):**
+
+| Modul | `module_weight` | Einfluss (Standard-Setup) |
+|---|---|---|
+| Code Quality Audit | 1.0 | ~14.9 % |
+| Logical Reasoning | 1.0 | ~14.9 % |
+| UX Writing & Microcopy | 1.0 | ~14.9 % |
+| Documentation Quality | 1.0 | ~14.9 % |
+| Content Transformation | 1.0 | ~14.9 % |
+| Cultural Intelligence | 1.0 | ~14.9 % |
+| CLI Badge | **0.5** | **~7.7 %** |
+
+CLI ist als leichtgewichtiges Supplement konzipiert (Syntax-Recall-Test, kein tiefes Reasoning) und erhält daher `0.5`. Alle anderen Module sind vollwertige, gleichgewichtete Alltagsdimensionen.
+
+**Konfiguration:** `module_weight` liegt in `benchmark_modules/<id>/config.yaml` unter `integration.leaderboard.module_weight`. Fehlt der Wert, greift Fallback `1.0` (Rückwärtskompatibilität). Der Wert ist rein relativ — er muss nicht zu einer festen Summe aufsummieren.
 
 ---
 
@@ -314,5 +334,6 @@ Impact: Claude-Vorsprung -4-8%, robust
 v1.0 (2026-03-15): Token-Fix, Haiku Judge ✅
 v3.4.0 (2026-04-08): Token-Budget-System (max_tokens API-Cap), Verbosity-Diagnostik in Audit-Logs und Meta-Reviews ✅
 v3.4.2 (2026-04-09): Vollständige Preis-Datenbasis in cost_limits.yaml; LLM Judge Avg als ★-Format im Leaderboard ✅
+v3.4.3 (2026-04-10): module_weight-System — selbstnormierende Modulgewichtung entkoppelt Total Score von Asset-Anzahl; CLI-Modul als Supplement (0.5) ✅
 v3.4.x (geplant): Score-Penalty für Token-Verbosity, Leaderboard-Metriken (avg_tokens, token_efficiency_ratio, est_cost_per_1k_tasks)
 ```

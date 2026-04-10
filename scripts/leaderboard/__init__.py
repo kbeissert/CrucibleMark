@@ -73,6 +73,7 @@ def _build_modules_config(full_config, registry_func=get_active_modules) -> dict
             "enabled": True,
             "enable_scoring": enable_scoring,
             "default_contribution": default_contrib,
+            "module_weight": lb_config.get("module_weight"),  # None = Fallback auf n_assets
             "assets_count": assets_count,
             "path": mod_path_val,
             "benchmarks": mod_int_config.get("benchmarks", []),

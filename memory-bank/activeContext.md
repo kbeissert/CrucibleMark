@@ -1,3 +1,3 @@
-- Abgeschlossen: Zwei Scorer-Bugfixes (2026-04-09). Siehe Details in progress.md.
-- Nächster Schritt: benchmark-auto läuft durch (documentation_quality + metacog_004 Neubewertung alle Modelle). Danach make leaderboard für finalen Stand.
-- Offen/Risiko: gpt-5.4-mini cultural_intel 108-Token-Anomalie noch ungeprüft. Backup-Dateien (*.bak) noch nicht gelöscht.
+- Abgeschlossen: v3.4.2 released + auf GitHub gepusht (2026-04-09). Alle 25 Modelle haben verifizierte Preiseinträge in cost_limits.yaml. sync_cost_limits.py als neues Dev-Tool eingeführt. LLM Judge Avg als ★-Format im Leaderboard. Alle Versionsdateien synchronisiert (README, PROJECT_STATUS, CHANGELOG, SCORING_METHODOLOGY, REF_TODO).
+- Nächster Schritt: gpt-5.4-mini cultural_intel 108-Token-Anomalie prüfen (--force Re-Run); Backup-Dateien (*.bak) löschen.
+- Offen/Risiko: keine kritischen Blocker.

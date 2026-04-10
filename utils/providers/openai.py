@@ -83,10 +83,10 @@ class OpenAIClient(BaseProviderClient):
                 "model": model,
                 "messages": [{"role": "user", "content": prompt}],
             }
-            # Reasoning models (o1, o3) and some newer minis often don't support temperature
+            # Reasoning models (o1, o3, o4) and some newer minis often don't support temperature
             # or have strict fixed values.
             is_reasoning = (
-                model.startswith("o1") or model.startswith("o3") or "gpt-5" in model
+                model.startswith("o1") or model.startswith("o3") or model.startswith("o4") or "gpt-5" in model
             )
             if not is_reasoning:
                 params["temperature"] = temperature

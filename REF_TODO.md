@@ -2,6 +2,14 @@
 
 ## ✅ COMPLETED
 
+### Module Weight System & Score-Fairness (v3.4.3 – 10.04.26)
+- [x] **`module_weight`-Feld in alle 7 Modul-`config.yaml`s:** Neues `integration.leaderboard.module_weight`-Key pro Modul. Vollmodule je `1.0`, CLI `0.5` (Supplement, kein vollwertiges Evaluierungsmodul). Direkter YAML-Hebel für kundenspezifische Gewichtung ohne Code-Änderung.
+- [x] **`score_calculator.py: _module_scale()`:** Hilfsfunktion berechnet `scale = module_weight / config_weight_sum` — self-normalizing, kein hardcodierter Kehrwert nötig. Alle 4 Contrib-Spalten (`final_routine`, `final_reasoning`, `weight_routine`, `weight_reasoning`) werden vor Aggregation mit `scale` multipliziert.
+- [x] **`scripts/leaderboard/__init__.py`:** `module_weight` aus `lb_config.get("module_weight")` ins `mod_entry`-Dict propagiert. `None`-Fallback → `scale = 1.0` (Rückwärtskompatibilität).
+- [x] **5 neue Ollama-Cloud-Modelle in `config/cost_limits.yaml`:** `deepseek-v3.1:671b-cloud` ($0.28/$0.42 per 1M Input/Output), `qwen3.5:397b-cloud`, `gemma4:31b-cloud`, `kimi-k2.5:cloud`, `glm-5:cloud`.
+- [x] **`docs/BENCHMARK_MODULES.md`:** Abschnitt "Designprinzip: Module als gleichwertige, geschlossene Tests" mit Erklärung der `module_weight`-Konfiguration und CLI-Sonderfall ergänzt.
+- [x] **`docs/SCORING_METHODOLOGY.md`:** Formel auf selbstnormierende Variante aktualisiert (`Σ(score × weight) / Σ(weight)`). Neue Sektion "Modulgewichtung" mit Default-Gewichtstabelle und Konfigurationshinweis.
+
 ### Vollständige Modell-Preisliste & Sync-Tool (v3.4.2 – 09.04.26)
 - [x] **config/cost_limits.yaml: Vollständige Preis-Datenbasis:** Alle 25 konfigurierten Cloud-/Commercial-Modelle haben jetzt verifizierte Preiseinträge. Neue Sektionen: `ollama_cloud`, `google`; `xai` aus `settings:` in `providers:` verschoben.
 - [x] **exporter.py: LLM Judge Avg Sterne-Format:** `_format_judge_stars()` formatiert den Wert als `3.8 ★` im Compact- und Detailed-Leaderboard.

@@ -24,6 +24,7 @@ generation:
 integration:
   leaderboard:
     enable_scoring: true
+    module_weight: 0.5  # Supplementary mini-module — lightweight CLI/tool-capability add-on, not a full evaluation dimension. Increase to 1.0 for CLI-focused configs.
     default_contribution:
       routine: 0.7
       reasoning: 0.3
