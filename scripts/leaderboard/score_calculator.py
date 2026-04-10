@@ -271,7 +271,7 @@ def _aggregate_basic_stats(
         return cat_to_scoring.get(cat, True)
 
     # Ensure numeric columns for aggregation (Fix: prevent string concatenation in sum)
-    cols_to_numeric = ["execution_time", "cost_usd", "tokens_used", "load_time"]
+    cols_to_numeric = ["execution_time", "cost_usd", "tokens_used", "tokens_per_second", "load_time"]
     for col in cols_to_numeric:
         if col in df.columns:
             df[col] = pd.to_numeric(df[col], errors="coerce").fillna(0)
@@ -286,7 +286,7 @@ def _aggregate_basic_stats(
     # - Load Time: Using ALL rows (System probe carries the Max Load Time)
 
     # A) Standard Metrics (without System Probe)
-    df_metrics = df[df["category"] != "System"]
+    df_metrics = df[df["category"] != "System"].copy()
 
     base_aggs = {"execution_time": "mean", "asset_id": "count"}
 
@@ -295,6 +295,9 @@ def _aggregate_basic_stats(
     if "tokens_used" in df_metrics.columns:
         base_aggs["tokens_used"] = "sum"
     if "tokens_per_second" in df_metrics.columns:
+        df_metrics["tokens_per_second"] = pd.to_numeric(
+            df_metrics["tokens_per_second"], errors="coerce"
+        )
         base_aggs["tokens_per_second"] = "mean"
 
     stats_metrics = (
