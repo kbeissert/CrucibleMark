@@ -73,7 +73,7 @@ def gather_historical_data():
             provider_stats[provider]["models"] += 1
 
             try:
-                perf = float(row.get("Efficiency Score", 0) or 0)
+                perf = float(row.get("Tokens/s", 0) or 0)
                 if perf > 0:
                     provider_stats[provider]["speeds_ts"].append(perf)
             except ValueError: pass

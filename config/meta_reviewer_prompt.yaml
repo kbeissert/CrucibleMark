@@ -83,7 +83,7 @@ meta_reviewer:
 
 
     Erwähne im Performance-Abschnitt explizit den **Speed Profile Badge** des Modells aus dem Leaderboard-CSV (z.B. `⚡ Real-Time DevOps Expert` oder `🕐 Batch Doc Writer`) und erkläre kurz, was dieser Badge über den typischen Anwendungsfall aussagt.
-    Zitiere dabei im Text ebenfalls den **Efficiency Score von {model_efficiency_score}** (Total Score ÷ Avg Time in Sekunden – misst Qualität relativ zur Antwortgeschwindigkeit; unabhängig davon, was Logs andeuten).
+    Zitiere dabei im Text ebenfalls die **Generierungsgeschwindigkeit ({model_tokens_per_s} Tokens/s)** des Modells aus dem Leaderboard (unabhängig davon, was Logs andeuten).
 
     WICHTIGE REGEL:
     Dies ist der BENCHMARK-Report (Fokus auf Code, Logik, Leistung). IGNORIERE alle Daten zum "Political Compass" (wie "Shift", "Autoritäre-Mitte", "Links", "Rechts") vollständig, selbst wenn sie versehentlich im CSV oder in den Logs unter "Political Bias" auftauchen! Diese Daten fließen in ein separates Bias-Review ein und haben in diesem Benchmark-Report absolut nichts zu suchen.

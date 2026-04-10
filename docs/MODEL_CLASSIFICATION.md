@@ -140,27 +140,15 @@ Skill Profiles beschreiben die **Stärken-Kombination** eines Modells basierend 
 
 ______________________________________________________________________
 
-## 📊 Efficiency Score = „Qualität pro Sekunde"
+## 📊 Tokens/s = „Technische Generierungsgeschwindigkeit"
 
 ```text
-Efficiency Score = Total Score ÷ Avg Task Duration (s)
+Tokens/s = Mittelwert der tokens_per_second über alle Nicht-System-Assets
 ```
 
-### Top-Performer (Efficiency)
-
-| Model | Total Score | Zeit | Efficiency Score | Bedeutung |
-|-------|-------------|------|---------------|-----------|
-| **Mistral Large** | 78,84 | 25,4s | **3,10** | Schnell & stark → Ideal für Echtzeit |
-| **Dolphin-Llama3** | 47,56 | 20,7s | **2,30** | Schnell, aber schwach → nur simple Tasks |
-| **Qwen 2.5:14b** | 70,29 | 32,4s | **2,17** | Guter Kompromiss |
-
-### Slow Thinkers (Quality über Speed)
-
-| Model | Total Score | Zeit | Efficiency Score | Bedeutung |
-|-------|-------------|------|---------------|-----------|
-| **Ministral-3:14b** | 77,63 | 167,95s | **0,46** | Langsam, aber Rang 3 → Batch-Jobs |
-| **Ministral-3:8b** | 75,19 | 106,0s | **0,71** | Mittellangsam, stark |
-| **Gemma3:12b** | 72,11 | 100,7s | **0,72** | Ähnlich wie Ministral-3:8b |
+> **Hinweis:** Der frühere „Efficiency Score" (Total Score ÷ Avg Task Duration) wurde in v3.4.4 entfernt.
+> Er kombinierte Qualität und Speed opak in einer Zahl und war neben `Cost per 1K (USD)` redundant.
+> Stattdessen drei saubere, unabhängige Dimensionen: `Total Score`, `Avg Task Duration (s)`, `Tokens/s`.
 
 ______________________________________________________________________
 
