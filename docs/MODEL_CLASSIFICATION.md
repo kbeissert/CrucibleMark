@@ -140,15 +140,15 @@ Skill Profiles beschreiben die **Stärken-Kombination** eines Modells basierend 
 
 ______________________________________________________________________
 
-## 📊 Performance/s = „Qualität pro Sekunde"
+## 📊 Efficiency Score = „Qualität pro Sekunde"
 
 ```text
-Performance/s = Total Score ÷ Avg Time (s)
+Efficiency Score = Total Score ÷ Avg Task Duration (s)
 ```
 
 ### Top-Performer (Efficiency)
 
-| Model | Total Score | Zeit | Performance/s | Bedeutung |
+| Model | Total Score | Zeit | Efficiency Score | Bedeutung |
 |-------|-------------|------|---------------|-----------|
 | **Mistral Large** | 78,84 | 25,4s | **3,10** | Schnell & stark → Ideal für Echtzeit |
 | **Dolphin-Llama3** | 47,56 | 20,7s | **2,30** | Schnell, aber schwach → nur simple Tasks |
@@ -156,7 +156,7 @@ Performance/s = Total Score ÷ Avg Time (s)
 
 ### Slow Thinkers (Quality über Speed)
 
-| Model | Total Score | Zeit | Performance/s | Bedeutung |
+| Model | Total Score | Zeit | Efficiency Score | Bedeutung |
 |-------|-------------|------|---------------|-----------|
 | **Ministral-3:14b** | 77,63 | 167,95s | **0,46** | Langsam, aber Rang 3 → Batch-Jobs |
 | **Ministral-3:8b** | 75,19 | 106,0s | **0,71** | Mittellangsam, stark |

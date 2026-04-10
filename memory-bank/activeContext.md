@@ -1,3 +1,3 @@
-- Abgeschlossen: v3.4.2 released + auf GitHub gepusht (2026-04-09). Alle 25 Modelle haben verifizierte Preiseinträge in cost_limits.yaml. sync_cost_limits.py als neues Dev-Tool eingeführt. LLM Judge Avg als ★-Format im Leaderboard. Alle Versionsdateien synchronisiert (README, PROJECT_STATUS, CHANGELOG, SCORING_METHODOLOGY, REF_TODO).
-- Nächster Schritt: gpt-5.4-mini cultural_intel 108-Token-Anomalie prüfen (--force Re-Run); Backup-Dateien (*.bak) löschen.
-- Offen/Risiko: keine kritischen Blocker.
+- Abgeschlossen: v3.4.3 released + committed (2026-04-10). module_weight-System eingeführt — selbstnormierende Modulgewichtung entkoppelt Total Score von Asset-Anzahl. Alle Vollmodule 1.0, CLI 0.5. 5 neue Ollama-Cloud-Modelle in cost_limits.yaml. Alle Versionsdateien + Docs synchronisiert.
+- Nächster Schritt: make benchmark-auto neu starten — letzter Run wurde mit Ctrl+C abgebrochen (Exit 130); neue Cloud-Modelle noch nicht benchmarked.
+- Offen/Risiko: gpt-5.4-mini cultural_intel 108-Token-Anomalie noch ungeprüft. Backup-Dateien (*.bak) noch nicht gelöscht.

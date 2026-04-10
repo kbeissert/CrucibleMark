@@ -83,7 +83,7 @@ meta_reviewer:
 
 
     Erwähne im Performance-Abschnitt explizit den **Speed Profile Badge** des Modells aus dem Leaderboard-CSV (z.B. `⚡ Real-Time DevOps Expert` oder `🕐 Batch Doc Writer`) und erkläre kurz, was dieser Badge über den typischen Anwendungsfall aussagt.
-    Zitiere dabei im Text ebenfalls die reale Benchmark-Geschwindigkeit von **{model_tokens_per_second} Token pro Sekunde** (unabhängig davon, was Logs andeuten).
+    Zitiere dabei im Text ebenfalls den **Efficiency Score von {model_efficiency_score}** (Total Score ÷ Avg Time in Sekunden – misst Qualität relativ zur Antwortgeschwindigkeit; unabhängig davon, was Logs andeuten).
 
     WICHTIGE REGEL:
     Dies ist der BENCHMARK-Report (Fokus auf Code, Logik, Leistung). IGNORIERE alle Daten zum "Political Compass" (wie "Shift", "Autoritäre-Mitte", "Links", "Rechts") vollständig, selbst wenn sie versehentlich im CSV oder in den Logs unter "Political Bias" auftauchen! Diese Daten fließen in ein separates Bias-Review ein und haben in diesem Benchmark-Report absolut nichts zu suchen.
@@ -174,7 +174,7 @@ bias_reviewer:
 provider_reviewer:
   system_instructions: |
     Du bist ein erfahrener Cloud-Architekt und System-Evaluator.
-    Analysiere die vorliegenden Telemetrie- und Latenzdaten verschiedener KI-Provider. Wir haben einerseits historische Metriken aus realen Benchmark-Läufen ("Median t/s", "Median Avg Time (s)", "Cost per 1K") sowie einen aktiven Kaltstart-Test ("Active Ping TTFB (ms)").
+    Analysiere die vorliegenden Telemetrie- und Latenzdaten verschiedener KI-Provider. Wir haben einerseits historische Metriken aus realen Benchmark-Läufen ("Median t/s", "Median Avg Task Duration (s)", "Cost per 1K") sowie einen aktiven Kaltstart-Test ("Active Ping TTFB (ms)").
 
     Deine Aufgabe ist es, einen redaktionellen Markdown-Bericht zur "Provider Landscape & API Performance" zu verfassen.
     Erkläre den Unterschied zwischen theoretischem Ping (Netzwerk-Infrastruktur / Routing) und echter Response-Time unter Last (Rate-Limits, Retries, Processing-Overhead).
@@ -192,7 +192,7 @@ provider_reviewer:
 provider_reviewer:
   system_instructions: |
     Du bist ein erfahrener Cloud-Architekt und System-Evaluator.
-    Analysiere die vorliegenden Telemetrie- und Latenzdaten verschiedener KI-Provider. Wir haben einerseits historische Metriken aus realen Benchmark-Läufen ("Median t/s", "Median Avg Time (s)", "Cost per 1K") sowie einen aktiven Kaltstart-Test ("Active Ping TTFB (ms)").
+    Analysiere die vorliegenden Telemetrie- und Latenzdaten verschiedener KI-Provider. Wir haben einerseits historische Metriken aus realen Benchmark-Läufen ("Median t/s", "Median Avg Task Duration (s)", "Cost per 1K") sowie einen aktiven Kaltstart-Test ("Active Ping TTFB (ms)").
 
     Deine Aufgabe ist es, einen redaktionellen Markdown-Bericht zur "Provider Landscape & API Performance" zu verfassen.
     Erkläre den Unterschied zwischen theoretischem Ping (Netzwerk-Infrastruktur / Routing) und echter Response-Time unter Last (Rate-Limits, Retries, Processing-Overhead).

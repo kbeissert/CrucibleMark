@@ -88,7 +88,7 @@ Wenn ein Modell das Budget vollständig ausschöpft (`finish_reason: length`), w
 ### Core Metriken
 
 ```text
-Performance/s = Total Score / Avg Time
+Efficiency Score = Total Score / Avg Time
 LLM Judge Avg = Normiert (0-5 → 0-100)
 Thought-Tag Compliance = Einhaltung der Metakognitions-Tags (<thought>)
 Coverage % = Erfolgreich geparst

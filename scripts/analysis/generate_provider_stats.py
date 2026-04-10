@@ -73,13 +73,13 @@ def gather_historical_data():
             provider_stats[provider]["models"] += 1
 
             try:
-                perf = float(row.get("Performance/s", 0) or 0)
+                perf = float(row.get("Efficiency Score", 0) or 0)
                 if perf > 0:
                     provider_stats[provider]["speeds_ts"].append(perf)
             except ValueError: pass
 
             try:
-                avg_t = float(row.get("Avg Time (s)", 0) or 0)
+                avg_t = float(row.get("Avg Task Duration (s)", 0) or 0)
                 if avg_t > 0:
                     provider_stats[provider]["avg_times"].append(avg_t)
             except ValueError: pass
@@ -96,7 +96,7 @@ def gather_historical_data():
         results[p] = {
             "Models Tracked": stats["models"],
             "Median t/s": round(median(stats["speeds_ts"]), 2) if stats["speeds_ts"] else 0.0,
-            "Median Avg Time (s)": round(median(stats["avg_times"]), 2) if stats["avg_times"] else 0.0,
+            "Median Avg Task Duration (s)": round(median(stats["avg_times"]), 2) if stats["avg_times"] else 0.0,
             "Cost per 1K (median $)": round(median(stats["costs"]), 4) if stats["costs"] else 0.0
         }
     return results
@@ -176,22 +176,22 @@ if __name__ == "__main__":
             "Provider": prov,
             "Models Tracked": stats["Models Tracked"],
             "Median t/s": stats["Median t/s"],
-            "Median Avg Time (s)": stats["Median Avg Time (s)"],
+            "Median Avg Task Duration (s)": stats["Median Avg Task Duration (s)"],
             "Cost per 1K (median $)": stats["Cost per 1K (median $)"],
             "Active Ping TTFB (ms)": pings.get(prov, "N/A")
         }
         combined.append(row)
 
     # Sort by Ping TTFB if available, else by Time
-    combined.sort(key=lambda x: (x["Active Ping TTFB (ms)"] if isinstance(x["Active Ping TTFB (ms)"], int) else 99999, x["Median Avg Time (s)"]))
+    combined.sort(key=lambda x: (x["Active Ping TTFB (ms)"] if isinstance(x["Active Ping TTFB (ms)"], int) else 99999, x["Median Avg Task Duration (s)"]))
 
     out_csv = Path("benchmark_scores/provider_leaderboard.csv")
     with open(out_csv, "w", newline="", encoding="utf-8") as f:
-        writer = csv.DictWriter(f, fieldnames=["Provider", "Models Tracked", "Median t/s", "Median Avg Time (s)", "Cost per 1K (median $)", "Active Ping TTFB (ms)"])
+        writer = csv.DictWriter(f, fieldnames=["Provider", "Models Tracked", "Median t/s", "Median Avg Task Duration (s)", "Cost per 1K (median $)", "Active Ping TTFB (ms)"])
         writer.writeheader()
         writer.writerows(combined)
 
     print(f"\nWritten provider stats to {out_csv}")
     print("\nPreview:")
     for c in combined:
-        print(f" - {c['Provider']:<20}: Ping={c['Active Ping TTFB (ms)']}ms, t/s={c['Median t/s']}, Avg Time={c['Median Avg Time (s)']}s")
+        print(f" - {c['Provider']:<20}: Ping={c['Active Ping TTFB (ms)']}ms, t/s={c['Median t/s']}, Avg Task Duration={c['Median Avg Task Duration (s)']}s")

@@ -225,8 +225,8 @@ def assign_rank_and_badges(df: pd.DataFrame, cat_cols: Optional[list] = None) ->
 
     # 2. Performance Tier (Calculated but not always displayed raw)
     # Using Avg Time column name safely
-    if "Avg Time (s)" in df.columns:
-        df["Performance Tier"] = df["Avg Time (s)"].apply(get_performance_tier)
+    if "Avg Task Duration (s)" in df.columns:
+        df["Performance Tier"] = df["Avg Task Duration (s)"].apply(get_performance_tier)
 
     # 3. Skill Profile (Role Only)
     df["Skill Profile"] = df.apply(lambda row: get_skill_role(row, cat_cols), axis=1)
@@ -234,10 +234,10 @@ def assign_rank_and_badges(df: pd.DataFrame, cat_cols: Optional[list] = None) ->
     # 4. Speed Profile (Merged Tier + Skill + Warnings)
     df["Speed Profile"] = df.apply(format_speed_profile, axis=1)
 
-    # 5. Performance per Second
-    df["Performance/s"] = df.apply(
+    # 5. Efficiency Score (Total Score / Avg Time)
+    df["Efficiency Score"] = df.apply(
         lambda row: calculate_performance_per_second(
-            row.get("Total Score"), row.get("Avg Time (s)")
+            row.get("Total Score"), row.get("Avg Task Duration (s)")
         ),
         axis=1,
     )
@@ -277,8 +277,8 @@ def print_leaderboard_table(leaderboard: pd.DataFrame) -> None:
         "Badge",
         "Speed Profile",
         "Total Score",
-        "Performance/s",
-        "Avg Time (s)",
+        "Efficiency Score",
+        "Avg Task Duration (s)",
         # Note: Cost, specific scores, etc. hidden to fit width
         # But user requested Cost per 1K in text description, let's keep it if possible
     ]

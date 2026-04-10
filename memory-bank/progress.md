@@ -1,12 +1,14 @@
 # Progress
 
 ## Ongoing
+- [ ] make benchmark-auto neu starten (Exit 130 beim letzten Run; neue Cloud-Modelle nicht benchmarked)
 - [ ] gpt-5.4-mini cultural_intel 108-Token-Anomalie: --force Re-Run prüfen
 - [ ] Backup-Dateien löschen: local_models_benchmark.csv.bak, political_compass_leaderboard.csv.bak, *.pre_retest_bak
 - [ ] Phase 4: Finale E2E Systemtests und CI/CD Review
 - [ ] LLM Judge: Batch-Mode (Phase 3.5)
 
 ## Abgeschlossen (Meilensteine)
+- [DONE] v3.4.3 Module Weight System & Score-Fairness (2026-04-10): module_weight in allen 7 Modul-config.yamls (Vollmodule 1.0, CLI 0.5). _module_scale() in score_calculator.py. Selbstnorm. Formel. 5 neue Ollama-Cloud-Modelle. Docs (BENCHMARK_MODULES.md + SCORING_METHODOLOGY.md) + alle Versionsdateien. Commit 48015dd.
 - [DONE] v3.4.2 Vollständige Preis-Datenbasis & Sync-Tool (2026-04-09): cost_limits.yaml alle 25 Modelle mit verifizierten Preisen (gpt-5.4, gpt-5.4-mini, o1, gemini-2.5-pro, gemini-3-flash-preview, gemini-3.1-pro-preview + Groq/ollama_cloud neu). sync_cost_limits.py als neues Dev-Tool (make sync-cost-limits [FIX=1]). LLM Judge Avg als ★-Format. USER_GUIDE.md dokumentiert. Commit 6b917f9.
 - [DONE] Scorer-Bugfix: metacog_004 Monty Hall (2026-04-09): `_has_correct_probability()` und `_has_switch_intent()` neu geschrieben mit EN+DE Regex, Float-Toleranz ±0.05, Dezimalformat. `iterative_refinement` von `"initial"/"first"` auf 30 bilinguale Rethinking-Phrasen umgebaut. `probability_analysis` prüft jetzt `thought OR answer`. Alle 24 stale CSV-Zeilen entfernt (local 8, cloud 3, commercial 13). Scorer-Ergebnis: 34–73% statt systematisch 0%.
 - [DONE] Scorer-Bugfix: documentation_quality max_score (2026-04-09): `test.py` `execute()` hatte `max_score=100.0` hardcoded, alle 5 Assets haben aber `total_points: 130`. Fix in `score_response()`: `result.max_score = score_dict.get("max_score", result.max_score)`. Alle 45 stale CSV-Zeilen entfernt (local 30, cloud 15). README-Scoring-Tabelle korrigiert (70/30% → 77/23% Rohpunkte). Fallstrick: `execute()` kennt `total_points` nicht — nur `score_response()` hat Zugriff auf den Evaluator-Output.

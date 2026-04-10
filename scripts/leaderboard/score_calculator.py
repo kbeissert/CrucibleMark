@@ -740,7 +740,7 @@ def calculate_scores(
         columns={
             "percentage": "Overall Score",
             "performance_ratio": "Performance Ratio",
-            "execution_time": "Avg Time (s)",
+            "execution_time": "Avg Task Duration (s)",
             "load_time": "Initial Load Time (s)",
             "Max_Time": "Max Time (s)",
             "P95_Time": "P95 Time (s)",
