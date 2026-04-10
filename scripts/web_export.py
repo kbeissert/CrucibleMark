@@ -223,18 +223,37 @@ def main() -> None:
             "performance_tier": str(row.get("Speed Profile", "")).split()[1] if len(str(row.get("Speed Profile", "")).split()) > 1 else None,
             "type": str(row.get("Type", "")),
             "total_score": normalize_pending(row.get("Total Score")),
-            "perf_per_s": normalize_pending(row.get("Performance/s")),
-            "avg_time_s": normalize_pending(row.get("Avg Time (s)")),
+            "routine_score": normalize_pending(row.get("Routine Score")),
+            "reasoning_score": normalize_pending(row.get("Reasoning Score")),
+            "efficiency_score": normalize_pending(row.get("Efficiency Score")),
+            "avg_task_duration_s": normalize_pending(row.get("Avg Task Duration (s)")),
             "p95_time_s": normalize_pending(row.get("P95 Time (s)", row.get("P95", None))),
+            "max_time_s": normalize_pending(row.get("Max Time (s)")),
+            "timeout_count": normalize_pending(row.get("Timeout Count")),
+            "tokens_total": normalize_pending(row.get("Tokens Total")),
             "cost_per_1k": normalize_pending(row.get("Cost per 1K (USD)")),
+            "benchmark_cost": normalize_pending(row.get("Benchmark Cost (USD)")),
+            "llm_judge_avg": normalize_pending(row.get("LLM Judge Avg")),
+            "llm_judge_coverage": normalize_pending(row.get("LLM Judge Coverage")),
             "tests_run": parse_tests_run(row.get("Tests Run")),
             "scores": {
                 "code_quality": normalize_pending(row.get("Code Quality Audit")),
+                "cli_benchmark": normalize_pending(row.get("CLI Badge")),
                 "ux_writing": normalize_pending(row.get("UX Writing & Microcopy")),
                 "documentation_quality": normalize_pending(row.get("Documentation Quality")),
                 "content_transformation": normalize_pending(row.get("Content Transformation & Adaption")),
                 "cultural_intelligence": normalize_pending(row.get("Cultural Intelligence")),
                 "logical_reasoning": normalize_pending(row.get("Logical Reasoning"))
+            },
+            "tokens_per_module": {
+                "code_quality": normalize_pending(row.get("Tokens: Code Quality Audit")),
+                "cli_benchmark": normalize_pending(row.get("Tokens: CLI Badge")),
+                "ux_writing": normalize_pending(row.get("Tokens: UX Writing & Microcopy")),
+                "documentation_quality": normalize_pending(row.get("Tokens: Documentation Quality")),
+                "content_transformation": normalize_pending(row.get("Tokens: Content Transformation & Adaption")),
+                "cultural_intelligence": normalize_pending(row.get("Tokens: Cultural Intelligence")),
+                "logical_reasoning": normalize_pending(row.get("Tokens: Logical Reasoning")),
+                "system": normalize_pending(row.get("Tokens: System"))
             },
             "report_available": has_report,
             "review_available": has_review
@@ -332,16 +351,16 @@ def main() -> None:
             provider_list.append({k: (clean_float(v) if k != "Provider" and k != "Active Ping TTFB (ms)" and k != "Models Tracked" else (v if k == "Provider" else str(v))) for k, v in r.items()})
         with open(out_dir / "provider_stats.json", "w", encoding="utf-8") as f:
             json.dump({"generated_at": generated_at, "providers": provider_list}, f, indent=2, ensure_ascii=False)
-            
+
     # Also copy the markdown review if it exists
     provider_md = comparisons_path / "provider_landscape_review.md"
     if provider_md.exists():
         shutil.copy2(provider_md, out_dir / "provider_landscape_review.md")
-        
+
     with open(out_dir / "meta.json", "w", encoding="utf-8") as f:
         json.dump({
             "generated_at": generated_at,
-            "cruciblemark_version": "3.1.0",
+            "cruciblemark_version": "3.4.3",
             "total_models": len(models_list),
             "models_with_reports": models_with_reports,
             "models_with_reviews": models_with_reviews,

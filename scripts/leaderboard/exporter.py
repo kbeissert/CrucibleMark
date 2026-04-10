@@ -82,8 +82,8 @@ def export_leaderboard_compact(leaderboard: pd.DataFrame, cat_cols: List[str]) -
         "Badge",
         "Speed Profile",  # Merged column
         "Total Score",
-        "Performance/s",
-        "Avg Time (s)",
+        "Efficiency Score",
+        "Avg Task Duration (s)",
         "Tokens Total",
         "Cost per 1K (USD)",
         "Benchmark Cost (USD)",
@@ -146,8 +146,8 @@ def export_leaderboard_detailed(leaderboard: pd.DataFrame, cat_cols: List[str]) 
         "Speed Profile",
         "Performance Tier",  # Keep raw tier for analysis
         "Total Score",
-        "Performance/s",
-        "Avg Time (s)",
+        "Efficiency Score",
+        "Avg Task Duration (s)",
         "Initial Load Time (s)",
         "P95 Time (s)",
         "Max Time (s)",

@@ -151,7 +151,7 @@ def main(print_table: bool = True) -> Optional[pd.DataFrame]:
         "Total Score",
         "Overall Score",
         "Performance Ratio",
-        "Avg Time (s)",
+        "Avg Task Duration (s)",
         "Initial Load Time (s)",
         "P95 Time (s)",
         "Max Time (s)",
