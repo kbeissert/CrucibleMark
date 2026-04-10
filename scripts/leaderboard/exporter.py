@@ -156,11 +156,18 @@ def export_leaderboard_detailed(leaderboard: pd.DataFrame, cat_cols: List[str]) 
         "Cost per 1K (USD)",
         "Benchmark Cost (USD)",
         "LLM Judge Avg",
+        "LLM Judge Avg (raw)",
         "LLM Judge Coverage",
         "Routine Score",
         "Reasoning Score",
         "Type",
     ]
+
+    # Preserve full-precision judge avg before star formatting
+    if "LLM Judge Avg" in df_export.columns:
+        df_export["LLM Judge Avg (raw)"] = pd.to_numeric(
+            df_export["LLM Judge Avg"], errors="coerce"
+        )
 
     final_cols = []
     for c in cols:

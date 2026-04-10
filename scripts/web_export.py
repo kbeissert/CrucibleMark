@@ -37,6 +37,17 @@ def normalize_pending(val):
     except (ValueError, TypeError):
         return val_str
 
+def parse_star_float(val) -> float | None:
+    """Parst '4.0 ★' oder '3.8 ★' zu einem float. Gibt None bei fehlenden Werten zurück."""
+    if pd.isna(val): return None
+    val_str = str(val).strip().replace('★', '').strip()
+    if val_str in ("Pending", "—", ""): return None
+    try:
+        f = float(val_str)
+        return None if math.isnan(f) else f
+    except (ValueError, TypeError):
+        return None
+
 def extract_badge_tier(val) -> str | None:
     if pd.isna(val) or not str(val).strip(): return None
     val_str = str(val).strip()
@@ -233,7 +244,7 @@ def main() -> None:
             "tokens_total": normalize_pending(row.get("Tokens Total")),
             "cost_per_1k": normalize_pending(row.get("Cost per 1K (USD)")),
             "benchmark_cost": normalize_pending(row.get("Benchmark Cost (USD)")),
-            "llm_judge_avg": normalize_pending(row.get("LLM Judge Avg")),
+            "llm_judge_avg": normalize_pending(row.get("LLM Judge Avg (raw)")) or parse_star_float(row.get("LLM Judge Avg")),
             "llm_judge_coverage": normalize_pending(row.get("LLM Judge Coverage")),
             "tests_run": parse_tests_run(row.get("Tests Run")),
             "scores": {
