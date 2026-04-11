@@ -6,6 +6,11 @@ import re
 import shutil
 import subprocess
 from typing import Any, Optional, TypeVar
+from utils.constants import (
+    MODEL_TYPE_OPEN_WEIGHTS_CLOUD,
+    TIMEOUT_OLLAMA_VERSION,
+    TIMEOUT_OLLAMA_LIST,
+)
 
 T = TypeVar("T")
 
@@ -46,7 +51,7 @@ def _get_local_model_hash_version(model_name: str) -> str:
             capture_output=True,
             text=True,
             check=True,
-            timeout=15,
+            timeout=TIMEOUT_OLLAMA_VERSION,
         )
     except (subprocess.CalledProcessError, OSError, subprocess.TimeoutExpired):
         return "k.A."
@@ -169,7 +174,7 @@ def get_ollama_model_info(model_name: str) -> dict[str, Any]:
             capture_output=True,
             text=True,
             check=True,
-            timeout=10,
+            timeout=TIMEOUT_OLLAMA_LIST,
         )
 
         for line in result.stdout.strip().split("\n")[1:]:
@@ -366,7 +371,7 @@ def get_model_category(
             commercial_providers = config.get("providers", {}).get("commercial", {})
             if provider in commercial_providers:
                 m_type = commercial_providers[provider].get("model_type", "")
-                if m_type == "open_weights_cloud":
+                if m_type == MODEL_TYPE_OPEN_WEIGHTS_CLOUD:
                     return "Open Weights (Cloud)"
                 elif m_type == "proprietary_api":
                     return "Proprietär"

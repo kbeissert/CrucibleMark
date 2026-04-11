@@ -4,6 +4,14 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [v3.4.4] - 2026-04-11
+
+### Changed
+- **`utils/constants.py` — Neue Konstanten (Regeln 2+3):** `MODEL_TYPE_OPEN_WEIGHTS_CLOUD`, `RESULT_TYPE_LOCAL/CLOUD/COMMERCIAL` und 7 Timeout-Konstanten (`TIMEOUT_OLLAMA_HEALTH/LIST_FAST/LIST/VERSION/WARMUP`, `TIMEOUT_HTTP_FETCH`, `TIMEOUT_ANTHROPIC_API`) als SSOT zentral definiert.
+- **Beseitigung von Magic Strings/Numbers in 8 Dateien:** `utils/result_manager.py`, `utils/model_utils.py`, `utils/providers/anthropic.py`, `utils/pricing_updater.py`, `scripts/core/benchmark_auto.py`, `scripts/core/unified_runner.py`, `scripts/core/run_cross_model_benchmark.py`, `scripts/tools/list_models.py` referenzieren alle Timeout- und Typ-Werte ausschließlich via `constants.py`.
+
+---
+
 ## [v3.4.3] - 2026-04-10
 
 ### Added

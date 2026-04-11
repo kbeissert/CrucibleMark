@@ -5,7 +5,7 @@ Getrennte Implementierungen für Ollama, Anthropic, Mistral
 import time
 import logging
 from typing import Any, List, Optional, Callable
-from utils.constants import MAX_TOKENS_ANTHROPIC
+from utils.constants import MAX_TOKENS_ANTHROPIC, TIMEOUT_ANTHROPIC_API
 from utils.env_utils import get_required_env
 # Optional Provider Imports
 try:
@@ -47,8 +47,8 @@ class AnthropicClient(BaseProviderClient):
             api_key = get_required_env(
                 "ANTHROPIC_API_KEY", "ANTHROPIC_API_KEY environment variable not set"
             )
-            # timeout raised to 600s because huge 8000+ token generations can easily take 3-5 minutes
-            self._client = anthropic.Anthropic(api_key=api_key, timeout=600.0)
+            # timeout raised because huge 8000+ token generations can easily take 3-5 minutes
+            self._client = anthropic.Anthropic(api_key=api_key, timeout=TIMEOUT_ANTHROPIC_API)
         return self._client
     def is_accessible(self) -> bool:
         """Prüft Zugang zu Anthropic API durch Test-Request."""
