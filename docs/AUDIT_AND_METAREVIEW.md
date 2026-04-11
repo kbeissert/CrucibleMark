@@ -1,5 +1,8 @@
 # CrucibleMark: Audit-Logs & Meta-Review Workflow
 
+**Zielgruppe:** Alle, die den Audit-Workflow und das Meta-Review-System verstehen wollen.
+**Inhalt:** Audit-Log-Struktur, Meta-Review-Generierung, Web-Export-Sanitierung, Model/Provider Cards, Sovereign Risk, Anti-Halluzinations-Schutz
+
 Aus einem ursprünglichen Dev-Tool für Systemfehler-Debugging ist ein zentrales analytisches Feature geworden. Die Audit-Logs bieten ein transparentes Verständnis der Benchmarks von der Eingabe bis zur Auswertung. Sie sind im Markdown-Format strukturiert, sodass Mensch und Maschine sie lückenlos parsen und nachvollziehen können.
 
 Der **Audit-Modus** generiert nicht nur messbare Scores. Er führt eine qualitative Tiefenanalyse der LLM-Antworten durch. Das Highlight am Ende jedes Laufs ist der automatisch erstellte **„Magazine-Style" Meta-Review**.

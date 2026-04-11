@@ -1,11 +1,11 @@
-# CrucibleMark 🚀
+# CrucibleMark
 
 [![Version](https://img.shields.io/badge/version-3.4.3-blue)](.)
 [![Python](https://img.shields.io/badge/python-3.10%2B-blue)](.)
 [![License](https://img.shields.io/badge/license-MIT-green)](.)
 [![Status](https://img.shields.io/badge/status-production--ready-brightgreen)](.)
 
-## A Modular LLM Benchmark Framework for Product Engineers
+## Ein modulares LLM-Benchmark-Framework für Product Engineers
 
 Akademische Benchmarks wie MMLU messen, was Modelle wissen. CrucibleMark misst, was sie können – dort, wo es für Product Engineers zählt: Code-Qualität, UX-Schreiben, logisches Schlussfolgern und politischer Bias.
 
@@ -13,9 +13,9 @@ Anstatt starrer akademischer Metriken setzt CrucibleMark auf manuell verifiziert
 
 ---
 
-## 🎯 Philosophie
+## Philosophie
 
-> 🛑 **WICHTIG (Für Entwickler):** Bevor du an diesem Code arbeitest, lies unbedingt die 4 unumstößlichen Design-Gesetze in [ARCHITECTURE.md](docs/ARCHITECTURE.md). (TL;DR: Keine God-Scripts, Keine Magic Numbers, DRY & Separation of Concerns).
+> 🛑 **Für Entwickler:** Vor dem Einstieg in den Code die 4 unumstößlichen Design-Gesetze in [ARCHITECTURE.md](docs/ARCHITECTURE.md) lesen. (TL;DR: Keine God-Scripts, Keine Magic Numbers, DRY & Separation of Concerns).
 
 Die meisten Benchmarks fokussieren sich auf rein theoretische Prüfungen. CrucibleMark testet die **gelebte Realität**:
 - ✅ **Code Quality:** Kann die KI Code wie ein Senior Engineer auditieren?
@@ -27,7 +27,7 @@ Die meisten Benchmarks fokussieren sich auf rein theoretische Prüfungen. Crucib
 
 ---
 
-## 🚀 Key Features
+## Features
 
 * **LLM-as-a-Judge Architektur:** Ein dediziertes Sub-System delegiert die semantische Bewertung der Antworten an hochperformante Judges (wie `claude-haiku-4.5` oder lokale Modelle).
 * **Multi-Provider Support:** Volle Unterstützung für lokale, datenschutzkonforme Ausführung via **Ollama** sowie cloud-basierte kommerzielle Modelle (Mistral, Anthropic Claude, OpenAI, Google Gemini, xAI).
@@ -41,7 +41,7 @@ Die meisten Benchmarks fokussieren sich auf rein theoretische Prüfungen. Crucib
 
 ---
 
-## 🛠 Installation & Quickstart
+## Installation & Quickstart
 
 ### Voraussetzungen
 - MacOS / Linux / Windows (WSL)
@@ -58,8 +58,8 @@ pip install -r requirements.txt
 ```
 
 ### 2. Provider konfigurieren
-Kopiere die Konfigurations-Vorlagen und hinterlege deine API-Schlüssel **ausschließlich** in einer lokalen `.env` Datei.
-Aktiviere oder deaktiviere die gewünschten Provider in der zentralen Konfiguration (z. B. `providers.commercial` oder `providers.open_weights_cloud`):
+Konfigurationsvorlagen kopieren und API-Schlüssel **ausschließlich** in einer lokalen `.env`-Datei hinterlegen.
+Provider nach Bedarf in der zentralen Konfiguration aktivieren oder deaktivieren (z. B. `providers.commercial` oder `providers.open_weights_cloud`):
 ```bash
 cp benchmark_config.example.yaml benchmark_config.yaml
 ```
@@ -84,7 +84,7 @@ python run_benchmark.py --provider commercial --module political_compass --model
 make political-compass-safe
 ```
 
-### 🌐 Web Export Pipeline
+### Web-Export-Pipeline
 
 CrucibleMark enthält eine integrierte Export-Pipeline (`scripts/web_export.py`), die sämtliche Benchmark-Ergebnisse als aufbereitetes Datenpaket für das externe Frontend-Projekt `cruciblemark-web` bereitstellt.
 
@@ -115,7 +115,7 @@ make web-export-dev
 
 ---
 
-## 🗺️ Roadmap (Stand: Q1/Q2 2026)
+## Roadmap (Stand: Q1/Q2 2026)
 
 Viele der einst geplanten Fundamental-Features (wie *Reasoning*, *Cultural Intelligence* und tiefe *Sicherheitsarchitekturen*) sind im Core implementiert. So geht es als Nächstes weiter:
 
@@ -126,7 +126,7 @@ Viele der einst geplanten Fundamental-Features (wie *Reasoning*, *Cultural Intel
 
 ---
 
-## 📂 Dokumentations-Hub
+## Dokumentations-Hub
 
 Tiefergehende Einblicke in die Methodik findest du im `docs/` Verzeichnis:
 - [Methodik & Political Compass Shift Concept](docs/POLITICAL_COMPASS_KONZEPT.md)
@@ -135,7 +135,7 @@ Tiefergehende Einblicke in die Methodik findest du im `docs/` Verzeichnis:
 
 ---
 
-## 📧 Kontakt & Maintainer
+## Kontakt & Maintainer
 
 - **Maintainer:** kbeissert
 - **Repository:** [github.com/kbeissert/cruciblemark](https://github.com/kbeissert/cruciblemark)

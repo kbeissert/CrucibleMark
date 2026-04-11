@@ -1,11 +1,13 @@
-# CrucibleMark Scoring Methodology v1.0
+# Scoring-Methodik
 
-**Baseline-Spezifikation** – Fix nach Tokenlimits (kaskadierend 8000/4000/2000) und Re-Runs (Claude/Mistral/Gemini, Haiku-4 Judge).
-*Eingefroren: 2026-03-15 19:02 CET*
+**Zielgruppe:** Entwickler und technisch versierte Nutzer, die verstehen wollen, wie CrucibleMark Scores berechnet und Modelle bewertet.
+**Inhalt:** Hybrid-Scoring-Architektur (Regex, Embeddings, LLM Judge), Modulgewichtung & Total Score, Leaderboard-Tiers, Token-Budget-System, Hard Constraints, LLM-Judge-Pipeline
+
+> **Hinweis:** Die Scoring-Baseline wurde am 2026-03-15 eingefroren (nach Token-Limit-Kalibrierung mit kaskadierenden Fallbacks 8000/4000/2000 und Re-Judging via Claude/Mistral/Gemini, Haiku-4 Judge). Spätere Ergänzungen (Token-Budget-System v3.4.0, Modulgewichtung v3.4.3) sind abwärtskompatibel.
 
 ---
 
-## 🎯 Philosophie
+## Philosophie
 
 > „Kein perfektes Scoring, aber robuste Checks & Balances"
 
@@ -16,7 +18,7 @@ Das Scoring kombiniert **harte Fakten (Regex)** mit **nuancierter Bewertung (LLM
 
 ---
 
-## 🏗️ Hybrid-Architektur (3 Pfeiler)
+## Hybrid-Architektur (3 Pfeiler)
 
 | Pfeiler | Stärken | Schwächen | Einsatz |
 | ------------ | ----------------- | ----------------- | ----------------- |
@@ -50,7 +52,7 @@ CLI ist als leichtgewichtiges Supplement konzipiert (Syntax-Recall-Test, kein ti
 
 ---
 
-## ⚙️ Technische Specs
+## Technische Spezifikationen
 
 ### Kaskadierende Token-Limits
 
@@ -138,7 +140,7 @@ Kombiniert ergibt sich: **Token-hungrige Modelle sind bei API-Nutzung teurer**, 
 
 ---
 
-## 🎖️ Leaderboard Tiers & Akademische Metrik
+## Leaderboard-Tiers & Bewertungsmetrik
 
 Um Noteninflation entgegenzuwirken und den „Universalien-Malus" korrekt abzubilden, nutzt CrucibleMark ein strenges, an angelsächsische und universitäre Notensysteme angelehntes Tiersystem mit asymmetrischen Leistungsstufen.
 
@@ -156,7 +158,7 @@ Um Noteninflation entgegenzuwirken und den „Universalien-Malus" korrekt abzubi
 
 ---
 
-## 👨‍⚖️ LLM Judge Pipeline
+## LLM-Judge-Pipeline
 
 ### Evaluator-Rangliste
 
@@ -183,7 +185,7 @@ Um Noteninflation entgegenzuwirken und den „Universalien-Malus" korrekt abzubi
 
 ---
 
-## 📊 Task-Matrix & Gewichtung
+## Task-Matrix & Gewichtung
 
 | Gruppe | Tasks | Evaluator | Gewicht |
 | ----------------- | ----------- | ------------------ | ------- |
@@ -198,7 +200,7 @@ Um Noteninflation entgegenzuwirken und den „Universalien-Malus" korrekt abzubi
 
 ---
 
-## 🧭 Political Compass (nur informativ)
+## Political Compass (nur informativ)
 
 > 📖 **Konzeptioneller Hintergrund:** Details zur Nutzung als „Diagnose-Sonde" gegen inhärenten Bias und souveräne Auslassung von Lösungsansätzen: [Political Compass Konzept](POLITICAL_COMPASS_KONZEPT.md).
 
@@ -210,7 +212,7 @@ Format: "Mitte-Links / Autoritär (Shift: 0.93)"
 
 ---
 
-## 🧐 Konstrukt-Validität: Befähigung vs. Compliance
+## Konstrukt-Validität: Befähigung vs. Compliance
 
 CrucibleMark verfolgt das Prinzip der absoluten Zero-Shot-Compliance (strikte numerische Bewertung) kombiniert mit redaktioneller Transparenz (kontextuelle Einordnung).
 
@@ -224,7 +226,7 @@ Wenn das `reasoning_logic`-Modul für Metakognitions-Tests die Offenlegung der A
 
 ---
 
-## ✍️ Meta-Reviewer (Editor-Modus)
+## Meta-Reviewer (Redaktionsmodus)
 
 Der Meta-Reviewer synthetisiert Judge-Logs zu einem praktischen Fazit:
 
@@ -243,7 +245,7 @@ Vor dem eigentlichen Log-Block erhält der Reviewer modulspezifische Verbosity-M
 
 ---
 
-## 🏆 Golden Standards
+## Golden Standards
 
 Jedes Asset definiert explizit:
 
@@ -257,7 +259,7 @@ codequality001:
 
 ---
 
-## 🔧 Fail-Safes
+## Fail-Safes
 
 | Szenario | Reaktion |
 |----------|----------|
@@ -267,7 +269,7 @@ codequality001:
 
 ---
 
-## ⚠️ Hard Constraints & Automatische Penalties
+## Hard Constraints & Automatische Penalties
 
 Bestimmte Tasks definieren harte Anforderungen, die unabhängig vom inhaltlichen Score bestraft werden. Die Constraints werden über das `constraints`-Feld im Asset-YAML gesteuert.
 
@@ -323,7 +325,7 @@ Bei Auslösung wird `result["status"] = "language_mismatch"` gesetzt und ein `> 
 
 ---
 
-## 📈 v1.0 Fix-Historie
+## v1.0 Fix-Historie
 
 ```text
 Pre-v1.0: 2048-Limit → Video-Scripts abgeschnitten
@@ -331,7 +333,7 @@ Fix: Kaskadierend + Haiku-4 Rejudging
 Impact: Claude-Vorsprung -4-8%, robust
 ```
 
-## 🔄 Versionshistorie
+## Versionshistorie
 
 ```text
 v1.0 (2026-03-15): Token-Fix, Haiku Judge ✅

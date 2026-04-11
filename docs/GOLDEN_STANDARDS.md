@@ -1,5 +1,8 @@
 # Golden Standards: Design by Intention
 
+**Zielgruppe:** Entwickler und Reviewer, die verstehen wollen, wie CrucibleMark Antworten bewertet.
+**Inhalt:** Design-by-Intention-Prinzip, Golden-Standard-Definition, Validierung via LLM-Judge
+
 CrucibleMark evaluiert LLM-Ausgaben gegen **statische Golden Standards**, die direkt in den `asset.yaml`-Dateien der Benchmark-Assets gepflegt werden.
 
 ## Prinzip
