@@ -1,12 +1,12 @@
 # PROJECT_STATUS.md
 
-**Last Updated:** 2026-04-10
+**Last Updated:** 2026-04-11
 **Current Version:** 3.4.3 (Module Weight System & Score-Fairness)
 **Status:** ✅ Production-Ready
 
-______________________________________________________________________
+---
 
-## 🎯 Executive Summary
+## Executive Summary
 
 CrucibleMark v3.4.3 führt ein **selbstnormalisierendes Modulgewichtungs-System** ein, das den Total Score von der Asset-Anzahl-basierten Zufallsgewichtung entkoppelt. Jedes Vollmodul fließt jetzt mit gleichem Gewicht (`module_weight: 1.0`) in den Gesamtscore ein – unabhängig davon, wie viele Assets in ihm liegen. Das CLI-Modul ist als leichtgewichtiges Supplement mit `module_weight: 0.5` eingestuft. Ergänzend wurde die `cost_limits.yaml` um 5 neue Ollama-Cloud-Modelle erweitert und die Benchmark-Dokumentation um die Modulgewichtungs-Philosophie ergänzt.
 
@@ -144,7 +144,7 @@ CrucibleMark v2.5.0 schließt die SSOT-Migration ab. Die alte, dynamische "Golde
 - Political Compass Batch Mode
 
 
-## 📊 Module Status Overview
+## Modul-Status
 
 ### Production-Ready Modules (8/8) ✅
 
@@ -161,9 +161,9 @@ CrucibleMark v2.5.0 schließt die SSOT-Migration ab. Die alte, dynamische "Golde
 
 **Average Code Quality:** 9.15/10 (Elite-Level) 🏆
 
-______________________________________________________________________
+---
 
-## 🏗️ Framework Architecture Status
+## Framework-Architektur-Status
 
 ### Core Components ✅
 
@@ -218,9 +218,9 @@ ______________________________________________________________________
 ✅ Provider-specific settings
 ```
 
-______________________________________________________________________
+---
 
-## 📈 Code Quality Metrics
+## Code-Qualitätsmetriken
 
 ### Framework-Level Metrics
 
@@ -249,9 +249,9 @@ ______________________________________________________________________
 
 Alle Module überschreiten den Industry-Standard-Schwellenwert (8.0+).
 
-______________________________________________________________________
+---
 
-## ✅ Historische Meilensteine (v1.x)
+## Historische Meilensteine (v1.x)
 
 Die v1.x-Phase legte die Modul-Infrastruktur, den Provider-Abstraktions-Layer und das erste Scoring-System. Die wesentlichen Meilensteine in Kurzform:
 
@@ -264,9 +264,9 @@ Die v1.x-Phase legte die Modul-Infrastruktur, den Provider-Abstraktions-Layer un
 - Golden Standard Consolidation: 37 `golden_standard`-Konfigurationen über alle YAML-Assets validiert
 - LLM-as-Judge vollständig integriert (v2.4.0): 4 Provider, Fallback-Chain, Audit Mode Logging
 
-______________________________________________________________________
+---
 
-## ⚠️ Known Gaps & Limitations
+## Bekannte Lücken & Einschränkungen
 
 ### 1. Testing Infrastructure
 
@@ -296,9 +296,7 @@ ______________________________________________________________________
 - [ ] Real-time progress visualization
 - [ ] Interactive result exploration
 
-______________________________________________________________________
-
-## 🗺️ Roadmap
+---
 
 Die vollständige Roadmap steht in [README.md](README.md). Stand Q1/Q2 2026 konzentriert sich die Entwicklung auf:
 
@@ -307,9 +305,9 @@ Die vollständige Roadmap steht in [README.md](README.md). Stand Q1/Q2 2026 konz
 - [ ] **Web-UI / Dashboard:** Eine interaktive React- oder Streamlit-Umgebung zur Visualisierung der CSV-Output-Ergebnisse und Leaderboards.
 - [ ] **Erweiterung von CI/CD System-Hooks:** Automatische Integration für GitHub Actions, um KI-Akteure in Pull Requests zu prüfen.
 
-______________________________________________________________________
+---
 
-## 🎯 Strategic Priorities
+## Strategische Prioritäten
 
 ### Kurzfristig
 
@@ -323,9 +321,9 @@ ______________________________________________________________________
 2. **Agentic Workflow Benchmarks** (neue Testdimension)
 3. **Multimodal Support** (visuelle Benchmarks)
 
-______________________________________________________________________
+---
 
-## 📈 Success Metrics
+## Erfolgsmetriken
 
 ### v3.2.0 Achievements
 
@@ -336,9 +334,9 @@ ______________________________________________________________________
 - ✅ 100% Docstring Coverage
 - ✅ SSOT erzwungen, Fail-Fast aktiv, keine versteckten Fallbacks
 
-______________________________________________________________________
+---
 
-## 🔬 Research & Development
+## Forschung & Entwicklung
 
 ### Aktive Forschungsbereiche
 
@@ -354,9 +352,9 @@ Visuelle Aufgaben (UML lesen, UI-Designs beurteilen) benötigen neue Asset-Forma
 
 **Status:** Design-Phase
 
-______________________________________________________________________
+---
 
-## 🤝 Community & Contributions
+## Community & Contributions
 
 ### Aktueller Status
 
@@ -373,37 +371,36 @@ ______________________________________________________________________
 - [ ] Issue tracking system
 - [ ] Contributor guidelines published
 
-______________________________________________________________________
+---
 
-## 📄 Documentation Status
+## Dokumentationsstatus
 
-### Completed ✅
+### Abgeschlossen
 
-- [x] Root README (v3.2.0)
+- [x] Root README (v3.4.3, redaktionell überarbeitet 11.04.26)
+- [x] docs/ (14 Dateien, redaktionell überarbeitet 11.04.26)
 - [x] Module READMEs (8/8)
 - [x] Configuration docs
 - [x] Contributing guidelines
-- [x] REF_TODO.md (updated)
-- [x] PROJECT_STATUS.md (this file)
+- [x] REF_TODO.md (auf aktuellem Stand 11.04.26)
+- [x] PROJECT_STATUS.md (dieses Dokument)
 
-### In Progress 🔄
+### In Bearbeitung
 
-- [ ] API reference docs
+- [ ] API-Referenz-Dokumentation
 - [ ] Architecture deep-dive
-- [ ] Tutorial series
+- [ ] Tutorial-Reihe
 
-### Planned 📅
+### Geplant
 
 - [ ] FAQ document
 - [ ] Troubleshooting guide
 - [ ] Video tutorials
 - [ ] Blog posts (use cases)
 
-______________________________________________________________________
+---
 
-## 🚨 Risk Assessment
-
-### Technical Risks
+## Risikoabschätzung
 
 #### 1. Test Coverage Gaps
 
@@ -419,17 +416,55 @@ ______________________________________________________________________
 **Mitigation:** Community building, documentation\
 **Priority:** Medium
 
-______________________________________________________________________
+---
 
-## 📞 Contact & Maintainer
+## Kontakt & Maintainer
 
 **Maintainer:** kbeissert\
 **Repository:** [github.com/kbeissert/cruciblemark](https://github.com/kbeissert/cruciblemark)\
 **Issues:** [GitHub Issues](https://github.com/kbeissert/cruciblemark/issues)
 
-______________________________________________________________________
+---
 
-## 📝 Change Log Summary
+## Changelog
+
+### Docs: Redaktionelle Überarbeitung (2026-04-11)
+
+- 14 Dokumentationsdateien einheitlich überarbeitet: Ansprache, Ton, Emoji-Verwendung
+- Einheitliche Intro-Blöcke (`**Zielgruppe:**` / `**Inhalt:**`), alle `______` → `---`
+
+### v3.4.3 (2026-04-10) – Module Weight System & Score-Fairness
+
+- `module_weight`-System: Vollmodule `1.0`, CLI `0.5`; selbstnormierende Formel
+- `_module_scale()` in `score_calculator.py`; 5 neue Ollama-Cloud-Modelle in `cost_limits.yaml`
+
+### v3.4.2 (2026-04-09) – Vollständige Modell-Preisliste & Sync-Tool
+
+- Alle 25 Modelle mit verifizierten Preiseinträgen; `sync_cost_limits.py` + `make sync-cost-limits`
+
+### v3.4.1 (2026-04-08) – Token-Verbrauch im Leaderboard
+
+- `Tokens Total` + `Tokens: <Modul>`-Spalten; Scoring-Only-Basis, PC ausgeschlossen
+
+### v3.4.0 (2026-04-08) – Token-Budget-System & Verbosity-Transparenz
+
+- `max_tokens`-API-Cap via `token_budgets`; `[!NOTE]`-Flag + Meta-Review-Kontext
+
+### v3.3.1 (2026-04-08) – Political Compass Integration Fix
+
+- `model_category`-Feld in Leaderboard-CSV; Upsert-Parität; CSV-Datenbereinigung
+
+### v3.3.0 (2026-04-07) – Language Compliance & Prompt Hardening
+
+- Language-Compliance-Pipeline; 30 Editorial Fixes in 21 Assets; Audit-Infrastruktur
+
+### v3.2.2 (2026-04-07) – 3-CSV Data Architecture
+
+- Dediziertes `cloud_models_benchmark.csv`; Meta-Review-Context-Fix für Cloud-Open-Weights
+
+### v3.2.1 – Performance & Cache Repair
+
+- Lazy Loading; Data-Routing-Bugfix; Groq API Connectivity Fix
 
 ### v3.2.0 (2026-03-25) – Strict SSOT & Full Provider Refactoring
 
@@ -457,8 +492,8 @@ ______________________________________________________________________
 - Leaderboard-Numerator-Bug behoben (44/43 → korrekt)
 - Alpha-Randomization gegen Position/Token-Bias in Multiple Choice
 
-______________________________________________________________________
+---
 
-**Document Version:** 3.0\
-**Last Updated:** 2026-03-25\
-**Next Review:** Web Frontend Release
+**Document Version:** 3.1\
+**Last Updated:** 2026-04-11\
+**Next Review:** v3.5.0 / Volldurchlauf Leaderboard
