@@ -39,8 +39,10 @@ logger = logging.getLogger(__name__)
 CARDS_DIR = ROOT_DIR / "benchmark_scores" / "model_cards"
 
 SYSTEM_PROMPT = (
-    "Du bist ein KI-Modell-Archivar. Erstelle eine präzise Model Card für das angegebene LLM. "
-    "Antworte ausschließlich als valides JSON-Objekt. Keine Erklärungen, kein Markdown drumherum."
+    "Du bist ein KI-Modell-Archivar mit Spezialisierung auf Datenschutz und KI-Regulierung. "
+    "Erstelle eine präzise, faktisch korrekte Model Card für das angegebene LLM. "
+    "Antworte ausschließlich als valides JSON-Objekt. Keine Erklärungen, kein Markdown drumherum. "
+    "Bei Unsicherheit über rechtliche Details: konservativ schätzen und 'unknown' verwenden."
 )
 
 USER_PROMPT_TEMPLATE = """Erstelle eine Model Card für: {model_id}
@@ -49,16 +51,31 @@ JSON-Schema (alle Felder Pflicht):
 {{
   "model_id": "{model_id}",
   "display_name": "Leserfreundlicher Name (z.B. 'Qwen 3 14B')",
-  "developer": "Organisation oder Unternehmen",
-  "origin_country": "Herkunftsland (z.B. 'China', 'USA', 'France')",
-  "model_family": "Modell-Familie (z.B. 'Qwen', 'Claude', 'Mistral')",
+  "developer": "Organisation oder Unternehmen (z.B. 'Alibaba Cloud', 'Anthropic', 'Mistral AI')",
+  "origin_country": "Herkunftsland des Entwicklers (z.B. 'China', 'USA', 'France')",
+  "developer_jurisdiction": "Rechtlicher Sitz des Unternehmens: 'CN' | 'US' | 'EU' | 'Unknown'",
+  "deployment_type": "Einen dieser Werte: 'cloud-only' | 'open-weights' | 'open-weights-cloud-available'. 'open-weights' = Gewichte öffentlich, lokal betreibbar. 'cloud-only' = nur über API/SaaS nutzbar.",
+  "local_deployment_possible": true,
+
+  "weights_provenance_risk": "Eines dieser Werte: 'high' | 'medium' | 'low'. NUR auf Basis der Weights-Herkunft, NICHT des Deployments. 'high' = Entwickler unterliegt chinesischem NSL oder vergleichbarer Sicherheitsgesetzgebung. 'medium' = US-Unternehmen (CLOUD Act nur bei API-Nutzung relevant). 'low' = EU-Entwickler oder kein staatlicher Zugriff auf Weights bekannt.",
+  "weights_provenance_risk_rationale": "1 Satz: Warum dieser Wert? Nur Weights-Herkunft, kein Deployment.",
+
+  "model_family": "Modell-Familie (z.B. 'Qwen', 'Claude', 'Mistral', 'Gemma')",
   "primary_focus": "Einen dieser Werte: 'reasoning' | 'coding' | 'instruction-following' | 'multilingual' | 'general' | 'creative'",
+
   "summary": "Exakt 280-320 Zeichen. Fließtext. Nennt: Herkunft, Trainings-Schwerpunkt, typische Stärken, und warum das Modell entwickelt wurde. Kein Marketing-Sprech.",
   "strengths": ["Stärke 1", "Stärke 2", "Stärke 3"],
   "known_limitations": ["Einschränkung 1", "Einschränkung 2"],
-  "judge_context_hint": "1 Satz für den Benchmark-Judge: Was muss er bei der Bewertung dieses Modells im Kopf haben?",
+  "judge_context_hint": "1 Satz für den Benchmark-Judge: Was muss er bei der Bewertung dieses Modells im Kopf haben? (Kein Datenschutz-Aspekt, nur Qualitäts-/Verhaltenshinweis)",
   "unknown": false
 }}
+
+Klassifikationsregeln für weights_provenance_risk:
+- Alibaba, DeepSeek, MiniMax, Zhipu, ByteDance, Moonshot, Baidu, Tencent → 'high' (NSL)
+- OpenAI, Anthropic, Google, Meta, Microsoft, x.AI → 'medium' (US-Unternehmen, CLOUD Act nur bei API)
+- Mistral AI, Aleph Alpha → 'low' (EU-Jurisdiktion)
+- Unbekannte Herkunft → 'medium' (konservativ)
+- Open-Weights-Modell ohne bekannten kommerziellen Hintergrund → 'low'
 
 Falls du das Modell nicht kennst, setze "unknown": true und befülle die anderen Felder mit sinnvollen Platzhaltern."""
 
@@ -125,8 +142,10 @@ def _validate_card(card: dict[str, Any], model_id: str) -> dict[str, Any]:
     """Prüft Pflichtfelder und Zeichenlänge von summary. Ergänzt fehlende Felder."""
     required = [
         "model_id", "display_name", "developer", "origin_country",
-        "model_family", "primary_focus", "summary", "strengths",
-        "known_limitations", "judge_context_hint",
+        "developer_jurisdiction", "deployment_type", "local_deployment_possible",
+        "weights_provenance_risk", "weights_provenance_risk_rationale",
+        "model_family", "primary_focus", "summary",
+        "strengths", "known_limitations", "judge_context_hint",
     ]
     for field in required:
         if field not in card:

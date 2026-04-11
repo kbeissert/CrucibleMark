@@ -27,7 +27,9 @@ benchmark_scores/*.json
 # Exception: Allow manually created snapshots or golden references in strict subfolders if needed
 !benchmark_scores/snapshots/
 !benchmark_scores/references/
-
+# Test Corpus — PRIVAT: Testprompts und Golden Standards nicht veröffentlichen
+# (Kontaminationsschutz: Labs scrapen öffentliche Repos für Pre-Training-Daten)
+benchmark_modules/**/assets/
 # Golden Standards (Must be committed as they are the source of truth)
 # Ensure we don't accidentally ignore json files inside specific validated folders
 !golden_standards/**/*.json
@@ -42,6 +44,9 @@ outputs/runs/*
 outputs/comparisons/*
 # Finally allow .gitkeep to preserve folder structure
 !outputs/**/.gitkeep
+
+# Modell-Reviews (öffentliches Produkt — in docs/reviews/ versioniert)
+# docs/reviews/ ist explizit NICHT ignoriert
 
 # IDE & OS
 .vscode/
