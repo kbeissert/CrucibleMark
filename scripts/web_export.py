@@ -184,9 +184,29 @@ def main() -> None:
     audit_logs_path = root_dir / "outputs" / "audit_logs"
     comparisons_path = root_dir / "docs" / "reviews"
 
-    # Directory mapping for fuzzy match via slug
+    # Directory mapping: internal model ID (dir name slug) -> Path
+    # The directory name is the SSOT; CSV display names may differ via provider prefix or version suffix.
     audit_dirs = {slugify(d.name): d for d in audit_logs_path.iterdir() if d.is_dir()} if audit_logs_path.exists() else {}
     comp_dirs = {slugify(d.name): d for d in comparisons_path.iterdir() if d.is_dir()} if comparisons_path.exists() else {}
+
+    def _resolve_dir(dirs: dict, csv_slug: str) -> "Path | None":
+        """Resolve CSV model slug to a local directory path.
+        Falls back to suffix-match (provider prefix) then prefix-match (version suffix)."""
+        if csv_slug in dirs:
+            return dirs[csv_slug]
+        # provider prefix: local dir slug ends with csv_slug (e.g. moonshotai-kimi-k2-instruct)
+        suffix_matches = [v for k, v in dirs.items() if k.endswith(csv_slug)]
+        if len(suffix_matches) == 1:
+            return suffix_matches[0]
+        if len(suffix_matches) > 1:
+            logging.warning(f"  [WARN] Ambiguous suffix match for '{csv_slug}': {[v.name for v in suffix_matches]}")
+        # version suffix: local dir slug starts with csv_slug (e.g. claude-haiku-4-5-20251001)
+        prefix_matches = [v for k, v in dirs.items() if k.startswith(csv_slug)]
+        if len(prefix_matches) == 1:
+            return prefix_matches[0]
+        if len(prefix_matches) > 1:
+            logging.warning(f"  [WARN] Ambiguous prefix match for '{csv_slug}': {[v.name for v in prefix_matches]}")
+        return None
 
     count = 0
     total = len(ldb)
@@ -203,8 +223,8 @@ def main() -> None:
         logging.info(f"  [{count}/{total}] {model_name} -> OK")
 
         # Complete Directory Sync for Markdowns
-        model_audit_src = audit_dirs.get(slug)
-        model_comp_src = comp_dirs.get(slug)
+        model_audit_src = _resolve_dir(audit_dirs, slug)
+        model_comp_src = _resolve_dir(comp_dirs, slug)
 
         model_out = models_dir / slug
         model_out.mkdir(exist_ok=True)
