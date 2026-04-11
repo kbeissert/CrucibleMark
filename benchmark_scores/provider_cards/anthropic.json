@@ -1,0 +1,45 @@
+{
+  "provider_id": "anthropic",
+  "display_name": "Anthropic",
+  "company": "Anthropic PBC",
+  "origin_country": "USA",
+  "headquarters": "San Francisco, CA, USA",
+  "founding_year": 2021,
+  "developer_jurisdiction": "US",
+  "pricing_model": "free-tier+pay-per-token",
+  "api_base_url": "https://api.anthropic.com",
+  "deployment": {
+    "cloud_act_exposure": true,
+    "applicable_law": "US (CLOUD Act)",
+    "data_residency": "USA",
+    "gdpr_dpa_available": true,
+    "eu_adequacy_decision": true,
+    "data_retention_days": 30,
+    "chinese_nsl_risk": "none"
+  },
+  "summary": "Anthropic wurde 2021 von ehemaligen OpenAI-Mitarbeitern gegründet und fokussiert sich auf KI-Sicherheitsforschung. Das Unternehmen ist bekannt für die Claude-Modellfamilie und den Constitutional-AI-Ansatz. Anthropic gilt als einer der führenden Anbieter im Bereich sicherer und zuverlässiger Large Language Models.",
+  "privacy_note": "Als US-amerikanisches Unternehmen unterliegt Anthropic dem CLOUD Act, wodurch US-Behörden unter bestimmten Voraussetzungen Zugriff auf verarbeitete Daten verlangen können. Für EU-Kunden sind SCCs und ein DPA verfügbar, jedoch verbleiben die Daten physisch in den USA.",
+  "strengths": [
+    "Starker Fokus auf KI-Sicherheit und Constitutional AI",
+    "Sehr große Kontextfenster (bis zu 200.000 Token bei Claude 3)",
+    "Hohe Qualität bei komplexen Reasoning- und Analyseaufgaben"
+  ],
+  "known_limitations": [
+    "Keine Bildgenerierung, ausschließlich Text- und Bildverständnis",
+    "Datenverarbeitung ausschließlich in den USA, kein EU-Hosting verfügbar"
+  ],
+  "notable_models": [
+    "Claude 3.5 Sonnet",
+    "Claude 3 Opus",
+    "Claude 3 Haiku"
+  ],
+  "unknown": false,
+  "stats": {
+    "models_tracked": 5,
+    "median_tokens_per_s": 43.22,
+    "median_avg_task_duration_s": 22.31,
+    "cost_per_1k_median_usd": 0.015,
+    "active_ping_ttfb_ms": 890
+  },
+  "generated_at": "2026-04-11T13:20:59.214524+00:00"
+}
