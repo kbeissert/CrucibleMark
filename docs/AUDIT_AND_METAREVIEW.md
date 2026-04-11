@@ -125,6 +125,23 @@ Der Audit-Log fungiert direkt als interaktiver Datenlayer für den Meta-Reviewer
 * `> ⚠️ **Anomaly Verification Protocol**` – **Political Compass Instabilität**
   Wenn das Framework bei einem Modell starke Sprünge im politischen Kompass feststellt, triggert es intern Retests. Diese Warnung meldet dem Meta-Reviewer, dass die Ergebnisse so erratisch waren, dass ein manueller Konsolidierungslauf nötig war – ein klares Signal für kritische Einordnung in Sachen Verlässlichkeit.
 
+## Model Cards & Provider Cards als Reviewer-Kontext
+
+Vor der eigentlichen Textgenerierung reichert `generate_review.py` den Prompt mit strukturierten Steckbriefen an:
+
+- **Model Card** (`benchmark_scores/model_cards/<model_id>.json`): Entwickler, Herkunftsland, primärer Fokus, bekannte Stärken/Schwächen, Judge Context Hint (z. B. präferierter Antwort-Stil) und ein Datenschutz-Profil (Weights-Provenance-Risk).
+- **Provider Card** (`benchmark_scores/provider_cards/<provider_id>.json`): Unternehmensdaten, Deployment-Typ, GDPR-DPA-Status, Datenspeicherort, Retentionsdauer und Sovereign Risk der API-Nutzung.
+
+Beide Cards fließen als `### Model Card`-Block in das Prompt-Template ein und steuern die **Sovereign-Risk-Berechnung** (`compute_sovereign_risk()`): Kombiniert aus Weights-Herkunft (Model Card) und Cloud-Act-Exposition des Providers (Provider Card) ergibt sich eine dreistufige Einschätzung (`low` / `medium` / `high`), die der Meta-Reviewer im Datenschutz-Abschnitt des Review-Artikels ausweist.
+
+Cards werden separat generiert und aktualisiert:
+
+```bash
+make model-cards          # alle fehlenden Model Cards generieren
+make model-cards FORCE=1  # alle neu generieren
+make provider-cards       # alle fehlenden Provider Cards generieren
+```
+
 ## Token-Effizienz-Kontext im Meta-Review
 
 Ab v3.4.0 injiziert `generate_review.py` vor den eigentlichen `{log_data}`-Block eine neue Template-Variable `{token_efficiency_context}`. Diese enthält:
