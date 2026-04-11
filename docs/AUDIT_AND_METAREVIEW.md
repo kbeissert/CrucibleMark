@@ -129,12 +129,42 @@ Der Audit-Log fungiert direkt als interaktiver Datenlayer für den Meta-Reviewer
 
 Vor der eigentlichen Textgenerierung reichert `generate_review.py` den Prompt mit strukturierten Steckbriefen an:
 
-- **Model Card** (`benchmark_scores/model_cards/<model_id>.json`): Entwickler, Herkunftsland, primärer Fokus, bekannte Stärken/Schwächen, Judge Context Hint (z. B. präferierter Antwort-Stil) und ein Datenschutz-Profil (Weights-Provenance-Risk).
-- **Provider Card** (`benchmark_scores/provider_cards/<provider_id>.json`): Unternehmensdaten, Deployment-Typ, GDPR-DPA-Status, Datenspeicherort, Retentionsdauer und Sovereign Risk der API-Nutzung.
+### Model Card (`benchmark_scores/model_cards/<model_id>.json`)
 
-Beide Cards fließen als `### Model Card`-Block in das Prompt-Template ein und steuern die **Sovereign-Risk-Berechnung** (`compute_sovereign_risk()`): Kombiniert aus Weights-Herkunft (Model Card) und Cloud-Act-Exposition des Providers (Provider Card) ergibt sich eine dreistufige Einschätzung (`low` / `medium` / `high`), die der Meta-Reviewer im Datenschutz-Abschnitt des Review-Artikels ausweist.
+| Feld | Beschreibung |
+|---|---|
+| `developer`, `origin_country`, `developer_jurisdiction` | Unternehmen und Rechtssitz (`CN` / `US` / `EU`) |
+| `deployment_type` | `cloud-only` / `open-weights` / `open-weights-cloud-available` |
+| `local_deployment_possible` | Ob die Gewichte lokal betrieben werden können |
+| `weights_provenance_risk` | `high` / `medium` / `low` — **nur** auf Basis der Weights-Herkunft: `high` = chinesisches NSL, `medium` = US-Unternehmen (CLOUD Act bei API), `low` = EU-Jurisdiktion |
+| `weights_provenance_risk_rationale` | 1-Satz-Begründung |
+| `primary_focus`, `strengths`, `known_limitations` | Qualitative Einordnung |
+| `judge_context_hint` | Verhaltenshinweis für den Judge (kein Datenschutz-Aspekt) |
 
-Cards werden separat generiert und aktualisiert:
+### Provider Card (`benchmark_scores/provider_cards/<provider_id>.json`)
+
+| Feld | Beschreibung |
+|---|---|
+| `deployment.cloud_act_exposure` | `true` = US-Unternehmen, US-Behörden können Datenzugriff verlangen |
+| `deployment.applicable_law` | Primär anwendbares Recht (`US (CLOUD Act)` / `EU (GDPR)` / `China (PIPL/CSL/DSL)`) |
+| `deployment.data_residency` | Wo API-Requests physisch verarbeitet werden |
+| `deployment.gdpr_dpa_available` | Gibt es ein Data Processing Agreement für EU-Kunden? |
+| `deployment.eu_adequacy_decision` | Angemessenheitsbeschluss oder SCCs vorhanden? |
+| `deployment.data_retention_days` | Retentionsdauer in Tagen (0 = keine Speicherung, -1 = unbekannt) |
+| `deployment.chinese_nsl_risk` | `none` / `low` / `high` — China-Jurisdiktion des Providers |
+| `privacy_note` | 1–2 Sätze explizit für europäische Nutzer: konkretes Deployment-Datenschutzrisiko bei API-Nutzung |
+
+### Sovereign Risk
+
+Aus Model Card (Weights-Herkunft) und Provider Card (Deployment-Jurisdiktion) berechnet `compute_sovereign_risk()` eine kombinierte dreistufige Einschätzung:
+
+- **`high`:** Chinesisches NSL anwendbar (Weights oder Provider)
+- **`medium`:** US CLOUD Act via API — mit oder ohne EU-Absicherung (SCCs/DPA)
+- **`low`:** EU-Jurisdiktion (DSGVO), kein staatlicher Zugriff auf Weights bekannt
+
+Diese Einschätzung erscheint im Datenschutz-Abschnitt jedes Review-Artikels und ermöglicht europäischen Akteuren eine direkte Compliance-Einordnung.
+
+### Generierung & Aktualisierung
 
 ```bash
 make model-cards          # alle fehlenden Model Cards generieren
