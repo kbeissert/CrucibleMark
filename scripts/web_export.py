@@ -21,6 +21,22 @@ def slugify(model_name: str) -> str:
     name = str(model_name).rsplit('/', maxsplit=1)[-1].lower()
     return re.sub(r'[^a-z0-9]+', '-', name).strip('-')
 
+def sanitize_audit_log(content: str) -> str:
+    """Removes Section 3 (LLM-Judge evaluation) from audit logs before web export.
+    Preserves header, prompt, model response, and Modul-Metriken block.
+    Handles two cases: section 3 followed by Modul-Metriken, or section 3 at EOF."""
+    # Case 1: Modul-Metriken block follows section 3
+    result = re.sub(
+        r'## 3\. Evaluation / LLM-Judge / Scorer.*?(?=\n---\n\n### 📦 Modul-Metriken)',
+        '', content, flags=re.DOTALL
+    )
+    # Case 2: section 3 runs to EOF (no Modul-Metriken block)
+    result = re.sub(
+        r'\n*## 3\. Evaluation / LLM-Judge / Scorer.*$',
+        '', result, flags=re.DOTALL
+    )
+    return result
+
 def parse_tests_run(val) -> dict | None:
     if pd.isna(val) or not isinstance(val, str): return None
     match = re.search(r'(\d+)\s*/\s*(\d+)', val)
@@ -166,7 +182,7 @@ def main() -> None:
     models_with_reviews = 0
 
     audit_logs_path = root_dir / "outputs" / "audit_logs"
-    comparisons_path = root_dir / "outputs" / "comparisons"
+    comparisons_path = root_dir / "docs" / "reviews"
 
     # Directory mapping for fuzzy match via slug
     audit_dirs = {slugify(d.name): d for d in audit_logs_path.iterdir() if d.is_dir()} if audit_logs_path.exists() else {}
@@ -198,7 +214,8 @@ def main() -> None:
             out_audit = model_out / "audit_logs"
             out_audit.mkdir(exist_ok=True)
             for f in model_audit_src.glob("*.md"):
-                shutil.copy2(f, out_audit / f.name)
+                sanitized = sanitize_audit_log(f.read_text(encoding="utf-8"))
+                (out_audit / f.name).write_text(sanitized, encoding="utf-8")
                 audit_files.append(f.name)
 
         from typing import Dict, Optional
