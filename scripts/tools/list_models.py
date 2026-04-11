@@ -30,7 +30,7 @@ sys.path.insert(0, str(ROOT_DIR))
 
 from utils.model_utils import is_model_suitable_for_benchmark  # noqa: E402
 from utils.llm_client import LLMClient  # noqa: E402
-from utils.constants import Colors  # noqa: E402
+from utils.constants import Colors, MODEL_TYPE_OPEN_WEIGHTS_CLOUD  # noqa: E402
 from utils.model_utils import is_cloud_model  # noqa: E402
 
 # pylint: enable=wrong-import-position, import-error
@@ -264,7 +264,7 @@ def check_commercial(config: Dict[str, Any]) -> None:
             continue
 
         # Nur explizite Open-Weights Cloud Modelle (wie Groq oder Ollama Cloud)
-        if prov_data.get("model_type") != "open_weights_cloud":
+        if prov_data.get("model_type") != MODEL_TYPE_OPEN_WEIGHTS_CLOUD:
             continue
 
         has_open_cloud = True

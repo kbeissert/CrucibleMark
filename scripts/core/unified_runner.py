@@ -9,7 +9,12 @@ from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
 
 import requests
-from utils.constants import OLLAMA_DEFAULT_BASE_URL
+from utils.constants import (
+    OLLAMA_DEFAULT_BASE_URL,
+    MODEL_TYPE_OPEN_WEIGHTS_CLOUD,
+    TIMEOUT_OLLAMA_LIST_FAST,
+    TIMEOUT_OLLAMA_WARMUP,
+)
 
 
 class CostLimitExceededError(Exception):
@@ -112,7 +117,7 @@ class UnifiedBenchmarkRunner(BaseBenchmarkRunner):
             return self.existing_local_benchmarks
 
         provider_config = self.validator.config.get("providers", {}).get("commercial", {}).get(provider, {})
-        if provider_config.get("model_type") == "open_weights_cloud":
+        if provider_config.get("model_type") == MODEL_TYPE_OPEN_WEIGHTS_CLOUD:
             return self.existing_cloud_benchmarks
 
         return self.existing_commercial_benchmarks
@@ -125,7 +130,7 @@ class UnifiedBenchmarkRunner(BaseBenchmarkRunner):
             return self.existing_local_benchmarks
 
         provider_config = self.validator.config.get("providers", {}).get("commercial", {}).get(provider, {})
-        if provider_config.get("model_type") == "open_weights_cloud":
+        if provider_config.get("model_type") == MODEL_TYPE_OPEN_WEIGHTS_CLOUD:
             return self.existing_cloud_benchmarks
 
         return self.existing_commercial_benchmarks
@@ -144,7 +149,7 @@ class UnifiedBenchmarkRunner(BaseBenchmarkRunner):
             requests.post(
                 f"{OLLAMA_DEFAULT_BASE_URL}/api/generate",
                 json={"model": model, "prompt": "Hi", "stream": False},
-                timeout=120,
+                timeout=TIMEOUT_OLLAMA_WARMUP,
             )
             ex_time = time.time() - start_time
             print(f"✓ Warmup abgeschlossen in {ex_time:.1f}s\n")
@@ -315,7 +320,7 @@ class UnifiedBenchmarkRunner(BaseBenchmarkRunner):
                         requests.post(
                             f"{OLLAMA_DEFAULT_BASE_URL}/api/generate",
                             json={"model": model, "keep_alive": 0},
-                            timeout=5,
+                            timeout=TIMEOUT_OLLAMA_LIST_FAST,
                         )
                     except Exception:
                         pass

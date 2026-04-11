@@ -24,6 +24,7 @@ from pathlib import Path
 from typing import Dict, Optional, Tuple
 from urllib.error import URLError
 from urllib.request import urlopen
+from utils.constants import TIMEOUT_HTTP_FETCH
 
 logger = logging.getLogger(__name__)
 
@@ -226,7 +227,7 @@ class PricingUpdater:
     def _fetch_and_cache(self) -> bool:
         url = _load_pricing_url()
         try:
-            with urlopen(url, timeout=10) as resp:
+            with urlopen(url, timeout=TIMEOUT_HTTP_FETCH) as resp:
                 raw: Dict = json.loads(resp.read().decode("utf-8"))
         except (URLError, OSError, Exception) as e:
             logger.warning("LiteLLM-Preisfetch fehlgeschlagen: %s", e)

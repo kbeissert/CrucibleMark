@@ -21,6 +21,7 @@ from typing import Any, List, Dict, Set, Tuple
 # Third-party imports
 # pylint: disable=import-error
 import yaml  # noqa: E402
+from utils.constants import TIMEOUT_OLLAMA_LIST_FAST  # noqa: E402
 import pandas as pd  # noqa: E402
 
 try:
@@ -66,7 +67,7 @@ def check_ollama_status() -> bool:
     try:
         # Pingen mit 'list'
         subprocess.run(
-            [ollama_path, "list"], capture_output=True, check=True, timeout=5
+            [ollama_path, "list"], capture_output=True, check=True, timeout=TIMEOUT_OLLAMA_LIST_FAST
         )
         return True
     except (

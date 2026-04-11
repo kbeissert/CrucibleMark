@@ -9,6 +9,12 @@ import logging
 from pathlib import Path
 from typing import Any
 from utils.config_validator import ConfigValidator
+from utils.constants import (
+    MODEL_TYPE_OPEN_WEIGHTS_CLOUD,
+    RESULT_TYPE_LOCAL,
+    RESULT_TYPE_CLOUD,
+    RESULT_TYPE_COMMERCIAL,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -29,13 +35,13 @@ class ResultManager:
         """Ermittelt den Pfad zur CSV-Datei basierend auf dem Typ."""
         # result_type: 'local', 'commercial', 'golden'
 
-        if result_type == "local":
+        if result_type == RESULT_TYPE_LOCAL:
             key = "local_models_csv"
             default = "benchmark_scores/local_models_benchmark.csv"
-        elif result_type == "cloud":
+        elif result_type == RESULT_TYPE_CLOUD:
             key = "cloud_models_csv"
             default = "benchmark_scores/cloud_models_benchmark.csv"
-        elif result_type == "commercial":
+        elif result_type == RESULT_TYPE_COMMERCIAL:
             key = "commercial_csv"
             default = "benchmark_scores/commercial_models_benchmark.csv"
         else:
@@ -125,21 +131,21 @@ class ResultManager:
 
             if provider == "ollama":
                 if ":cloud" in model_name.lower() or model_name.lower().endswith("-cloud"):
-                    result_type = "cloud"
+                    result_type = RESULT_TYPE_CLOUD
                 else:
-                    result_type = "local"
+                    result_type = RESULT_TYPE_LOCAL
             else:
                 # Prüfe in Config, ob es Cloud/Open-Weights ist
                 provider_config = self.config.get("providers", {}).get("commercial", {}).get(provider, {})
                 model_type = provider_config.get("model_type", "")
-                if model_type == "open_weights_cloud":
-                    result_type = "cloud"
+                if model_type == MODEL_TYPE_OPEN_WEIGHTS_CLOUD:
+                    result_type = RESULT_TYPE_CLOUD
                 else:
-                    result_type = "commercial"
+                    result_type = RESULT_TYPE_COMMERCIAL
 
         # Fallback
         if not result_type:
-            result_type = "commercial"
+            result_type = RESULT_TYPE_COMMERCIAL
 
         csv_path = self._get_csv_path(result_type)
 

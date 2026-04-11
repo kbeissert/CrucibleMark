@@ -31,6 +31,7 @@ ROOT_DIR = Path(__file__).parent.parent.parent
 sys.path.insert(0, str(ROOT_DIR))
 
 try:
+    from utils.constants import MODEL_TYPE_OPEN_WEIGHTS_CLOUD, TIMEOUT_OLLAMA_HEALTH  # noqa: E402
     from utils.model_utils import (
         get_ollama_models_info,
         get_commercial_models_from_config,
@@ -282,7 +283,7 @@ def gather_models(category: str) -> List[Tuple[str, str, str]]:
             m_type = p_config.get("model_type", "proprietary_api")
             for m in p_config.get("models", []):
                 model_tuple = (m["id"], m["name"], p_key)
-                if m_type == "open_weights_cloud":
+                if m_type == MODEL_TYPE_OPEN_WEIGHTS_CLOUD:
                     open_weight_cloud.append(model_tuple)
                 else:
                     commercial.append(model_tuple)
@@ -367,7 +368,7 @@ def main():
             with open("benchmark_config.yaml", "r", encoding="utf-8") as _f:
                 _cfg = yaml.safe_load(_f)
             for _prov_conf in _cfg.get("providers", {}).get("commercial", {}).values():
-                if _prov_conf.get("model_type") == "open_weights_cloud":
+                if _prov_conf.get("model_type") == MODEL_TYPE_OPEN_WEIGHTS_CLOUD:
                     for _m in _prov_conf.get("models", []):
                         if isinstance(_m, dict) and _m.get("id"):
                             _known_cloud_model_ids.add(_m["id"])
@@ -377,7 +378,7 @@ def main():
         import requests
         try:
             from utils.constants import OLLAMA_DEFAULT_BASE_URL
-            resp = requests.get(f"{OLLAMA_DEFAULT_BASE_URL}/api/tags", timeout=2)
+            resp = requests.get(f"{OLLAMA_DEFAULT_BASE_URL}/api/tags", timeout=TIMEOUT_OLLAMA_HEALTH)
             ollama_models = [m["name"] for m in resp.json().get("models", [])]
             if args.model not in ollama_models and "/" in args.model and args.model not in _known_cloud_model_ids:
                 p_type = "commercial"

@@ -16,6 +16,21 @@ QUALITY_OK = 55.0  # Checkmark badge (OK für einfache Tasks)
 MAX_TOKENS_ANTHROPIC = 8192
 DEFAULT_MISTRAL_MODEL = "mistral-large-latest"
 
+# Provider / Result Type Strings (SSOT – niemals hardcoden)
+MODEL_TYPE_OPEN_WEIGHTS_CLOUD = "open_weights_cloud"
+RESULT_TYPE_LOCAL = "local"
+RESULT_TYPE_CLOUD = "cloud"
+RESULT_TYPE_COMMERCIAL = "commercial"
+
+# Timeout-Werte (Sekunden)
+TIMEOUT_OLLAMA_HEALTH = 2       # Schneller Erreichbarkeits-Ping
+TIMEOUT_OLLAMA_LIST_FAST = 5    # 'ollama list' im Benchmark-Auto / Unload-Call
+TIMEOUT_OLLAMA_LIST = 10        # 'ollama list' für Modell-Metadaten
+TIMEOUT_OLLAMA_VERSION = 15     # 'ollama' version/show Abfrage
+TIMEOUT_OLLAMA_WARMUP = 120     # Cold-Start-Warmup (großes Modell)
+TIMEOUT_HTTP_FETCH = 10         # Allgemeine HTTP-Fetches (LiteLLM Pricing)
+TIMEOUT_ANTHROPIC_API = 600.0   # Anthropic SDK: 8000+-Token-Generierungen
+
 
 class Colors:
     """ANSI Colors for Terminal Output."""

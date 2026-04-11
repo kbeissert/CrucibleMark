@@ -1,7 +1,7 @@
 # PROJECT_STATUS.md
 
 **Last Updated:** 2026-04-11
-**Current Version:** 3.4.3 (Module Weight System & Score-Fairness)
+**Current Version:** 3.4.4 (Architecture Compliance — No Magic Numbers/Strings)
 **Status:** ✅ Production-Ready
 
 ---
