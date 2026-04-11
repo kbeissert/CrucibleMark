@@ -1,8 +1,9 @@
 # REF_TODO.md – Refactoring & Future Development
 
-## ✅ COMPLETED
+## Abgeschlossen
 
-### Module Weight System & Score-Fairness (v3.4.3 – 10.04.26)
+### Dokumentation: Redaktionelle Überarbeitung (11.04.26)
+- [x] **14 Dokumentationsdateien (README.md + docs/) einheitlich überarbeitet:** Ansprache (`du`/`dein`) → unpersönliches `man`/`sein`; alle Emojis aus Überschriften entfernt (nur 🛑 als Warnmarker behalten); alle englischen H1–H3 ins Deutsche übertragen; einheitliche Intro-Blöcke (`**Zielgruppe:**` / `**Inhalt:**` / `> **Voraussetzung:**`) ergänzt; alle `______`-Trennlinien → `---`.
 - [x] **`module_weight`-Feld in alle 7 Modul-`config.yaml`s:** Neues `integration.leaderboard.module_weight`-Key pro Modul. Vollmodule je `1.0`, CLI `0.5` (Supplement, kein vollwertiges Evaluierungsmodul). Direkter YAML-Hebel für kundenspezifische Gewichtung ohne Code-Änderung.
 - [x] **`score_calculator.py: _module_scale()`:** Hilfsfunktion berechnet `scale = module_weight / config_weight_sum` — self-normalizing, kein hardcodierter Kehrwert nötig. Alle 4 Contrib-Spalten (`final_routine`, `final_reasoning`, `weight_routine`, `weight_reasoning`) werden vor Aggregation mit `scale` multipliziert.
 - [x] **`scripts/leaderboard/__init__.py`:** `module_weight` aus `lb_config.get("module_weight")` ins `mod_entry`-Dict propagiert. `None`-Fallback → `scale = 1.0` (Rückwärtskompatibilität).
@@ -123,17 +124,16 @@
 - [x] Content Transformation → v2.0.1 (Fixed Logic)
 - [x] Cultural Intelligence → v2.0
 
-______________________________________________________________________
+---
 
-## 🔄 IN PROGRESS
+## In Bearbeitung
 
-### Planned for Next Session
+### Nächste Session
 - [ ] **LLM Judge: Batch-Mode (Phase 3.5)**: Token-Verbrauch durch gebündelte Requests reduzieren.
 - [ ] **Volldurchlauf aller lokalen Modelle**: Generierung eines echten finalen Leaderboards (43/43).
 - [ ] **Re-run Reasoning Logic**: Verfälschte 0-Punkte für lokale Modelle bereinigen.
-- [x] **Stabilitätsanalyse `gpt-oss`**: (Erledigt) Problem identifiziert als reiner Output-Bug durch den falschen Routing-Pfad ins lokale CSV - Daten wurden migriert und Logik repariert.
 
-### Geplant für v3.4.x
+### Offene Features (v3.5.x+)
 - [ ] **Score-Penalty für Token-Verbosity:** Separates Feature — keine Änderung an bestehenden Scores. Bewertungsabzug wenn Modell Token-Budget konsistent ausschöpft ohne Qualitätsgewinn.
 - [ ] **Leaderboard-Spalten: avg_tokens, token_efficiency_ratio, est_cost_per_1k_tasks:** Implementierung in `score_calculator.py` + `generate_leaderboard.py`.
 - [ ] **gpt-5.4-mini cultural_intel 108-Token-Anomalie:** `--force` Re-Run prüfen, ob echter Bug (abgeschnittene Response) oder valides Ergebnis.
@@ -144,9 +144,9 @@ ______________________________________________________________________
 - [ ] Performance Benchmarks
 - [ ] CI/CD Pipeline (GitHub Actions)
 
-______________________________________________________________________
+---
 
-## 📋 BACKLOG
+## Backlog
 
 ### Q3 und Q4 2026
 
@@ -183,9 +183,7 @@ ______________________________________________________________________
 - Adaptive Testing (Dynamic Difficulty)
 - Scheduled Continuous Benchmarking & Alerting
 
-______________________________________________________________________
-
-## 📊 Effort Estimation (Next Pipeline)
+---
 
 | Task | Priority | Effort | Status |
 |------|----------|--------|---------|
@@ -193,8 +191,8 @@ ______________________________________________________________________
 | **Volldurchlauf Leaderboard** | High | 1 week | Pending |
 | **Unit Tests & CI/CD** | Med | 2–3 weeks | Pending |
 | **Web UI / Analytics Dash.** | Low | 4–6 weeks | Backlog |
-| **Multimodal Support** | Low | 6–8 weeks | Backlog |
+| **Multimodal Support** | Low | 6–8 Wochen | Backlog |
 
-______________________________________________________________________
+---
 
-**Last Updated:** 2026-04-07 **Version:** 3.3.0 (Language Compliance & Prompt Hardening) **Next Milestone:** Volldurchlauf aller lokalen Modelle / Leaderboard Update
+**Last Updated:** 2026-04-11 **Version:** 3.4.3 (Module Weight System) **Nächster Meilenstein:** Volldurchlauf aller lokalen Modelle / Leaderboard-Update
