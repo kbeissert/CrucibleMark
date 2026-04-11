@@ -2,6 +2,11 @@
 
 ## Abgeschlossen
 
+### Architektur-Code-Review & Magic-String/Number-Elimination (v3.4.4 – 11.04.26)
+- [x] **`utils/constants.py` — 12 neue Konstanten:** `MODEL_TYPE_OPEN_WEIGHTS_CLOUD`, `RESULT_TYPE_LOCAL/CLOUD/COMMERCIAL`, `TIMEOUT_OLLAMA_HEALTH/LIST_FAST/LIST/VERSION/WARMUP`, `TIMEOUT_HTTP_FETCH`, `TIMEOUT_ANTHROPIC_API` als SSOT definiert.
+- [x] **Magic Strings/Numbers aus 8 Dateien eliminiert:** `result_manager.py`, `model_utils.py`, `providers/anthropic.py`, `pricing_updater.py`, `benchmark_auto.py`, `unified_runner.py`, `run_cross_model_benchmark.py`, `list_models.py` referenzieren alle Werte ausschließlich via `constants.py`.
+- [x] **Verifikation:** 163/163 pytest passed, mypy clean (9 Dateien). Commit 95f2055, Tag v3.4.4.
+
 ### Dokumentation: Redaktionelle Überarbeitung (11.04.26)
 - [x] **14 Dokumentationsdateien (README.md + docs/) einheitlich überarbeitet:** Ansprache (`du`/`dein`) → unpersönliches `man`/`sein`; alle Emojis aus Überschriften entfernt (nur 🛑 als Warnmarker behalten); alle englischen H1–H3 ins Deutsche übertragen; einheitliche Intro-Blöcke (`**Zielgruppe:**` / `**Inhalt:**` / `> **Voraussetzung:**`) ergänzt; alle `______`-Trennlinien → `---`.
 - [x] **`module_weight`-Feld in alle 7 Modul-`config.yaml`s:** Neues `integration.leaderboard.module_weight`-Key pro Modul. Vollmodule je `1.0`, CLI `0.5` (Supplement, kein vollwertiges Evaluierungsmodul). Direkter YAML-Hebel für kundenspezifische Gewichtung ohne Code-Änderung.
@@ -195,4 +200,4 @@
 
 ---
 
-**Last Updated:** 2026-04-11 **Version:** 3.4.3 (Module Weight System) **Nächster Meilenstein:** Volldurchlauf aller lokalen Modelle / Leaderboard-Update
+**Last Updated:** 2026-04-11 **Version:** 3.4.4 (Architecture Compliance — No Magic Numbers/Strings) **Nächster Meilenstein:** Volldurchlauf aller lokalen Modelle / Leaderboard-Update
