@@ -1,0 +1,26 @@
+{
+  "model_id": "gemini-2.5-pro",
+  "display_name": "Gemini 2.5 Pro",
+  "developer": "Google DeepMind",
+  "origin_country": "USA",
+  "developer_jurisdiction": "US",
+  "deployment_type": "cloud-only",
+  "local_deployment_possible": false,
+  "weights_provenance_risk": "medium",
+  "weights_provenance_risk_rationale": "Google DeepMind ist ein US-amerikanisches Unternehmen und unterliegt dem CLOUD Act; die Modellgewichte sind nicht öffentlich zugänglich, sodass ein staatlicher Zugriff auf Weights nicht bekannt ist.",
+  "model_family": "Gemini",
+  "primary_focus": "reasoning",
+  "summary": "Gemini 2.5 Pro ist Googles leistungsstärkstes Modell der Gemini-2.5-Generation, entwickelt für komplexes Schlussfolgern, Coding und multimodale Aufgaben. Es wurde trainiert, um in Benchmarks für Mathematik, Wissenschaft und Code-Generierung führend zu sein und lange Kontextfenster effizient zu verarbeiten.",
+  "strengths": [
+    "Herausragende Leistung bei komplexem mehrstufigem Reasoning und mathematischen Aufgaben",
+    "Sehr großes Kontextfenster (bis zu 1 Million Token) für die Verarbeitung langer Dokumente und Codebasen",
+    "Starke multimodale Fähigkeiten: verarbeitet Text, Bild, Audio und Video nativ"
+  ],
+  "known_limitations": [
+    "Ausschließlich über Google-Cloud-APIs verfügbar – kein lokaler Betrieb oder Open-Weights-Zugang möglich",
+    "Kann bei sehr spezifischen Nischenwissensgebieten oder aktuellen Ereignissen jenseits des Trainingsdatums halluzinieren"
+  ],
+  "judge_context_hint": "Das Modell neigt dazu, bei komplexen Reasoning-Aufgaben ausführliche Zwischenschritte zu produzieren; Antwortlänge und Detailtiefe können deutlich über dem Durchschnitt anderer Modelle liegen, was bei der Bewertung von Präzision vs. Ausführlichkeit berücksichtigt werden sollte.",
+  "unknown": false,
+  "generated_at": "2026-04-11T14:48:43.700684+00:00"
+}

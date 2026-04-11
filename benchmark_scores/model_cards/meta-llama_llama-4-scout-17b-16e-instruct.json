@@ -1,0 +1,26 @@
+{
+  "model_id": "meta-llama_llama-4-scout-17b-16e-instruct",
+  "display_name": "Llama 4 Scout 17B",
+  "developer": "Meta",
+  "origin_country": "USA",
+  "developer_jurisdiction": "US",
+  "deployment_type": "open-weights-cloud-available",
+  "local_deployment_possible": true,
+  "weights_provenance_risk": "medium",
+  "weights_provenance_risk_rationale": "Meta ist ein US-amerikanisches Unternehmen und unterliegt dem CLOUD Act, der jedoch primär bei API-Nutzung relevant ist; die Weights sind öffentlich verfügbar und lokal betreibbar.",
+  "model_family": "Llama 4",
+  "primary_focus": "general",
+  "summary": "Llama 4 Scout ist ein Mixture-of-Experts-Modell von Meta (USA) mit 17 Milliarden aktiven Parametern und 16 Experten. Es wurde für effiziente Instruction-Following-Aufgaben, multimodales Verständnis und breite Allgemeinsprachkompetenz entwickelt und bietet ein gutes Verhältnis aus Leistung und Rechenaufwand.",
+  "strengths": [
+    "Effiziente MoE-Architektur mit niedrigem Rechenaufwand bei hoher Modellkapazität",
+    "Starke Instruction-Following-Fähigkeiten über diverse Aufgabentypen hinweg",
+    "Multimodale Eingabeverarbeitung (Text und Bild)"
+  ],
+  "known_limitations": [
+    "Als Scout-Variante für Effizienz optimiert – bei komplexen Reasoning-Aufgaben schwächer als größere Frontier-Modelle",
+    "Multimodale Fähigkeiten noch nicht auf dem Niveau spezialisierter Vision-Language-Modelle"
+  ],
+  "judge_context_hint": "Das Modell ist auf Effizienz und breite Anwendbarkeit ausgelegt; bei tiefem mehrstufigem Schlussfolgern oder hochspezialisierten Fachdomänen sollte der Judge die Erwartungen entsprechend kalibrieren.",
+  "unknown": false,
+  "generated_at": "2026-04-11T15:01:38.874930+00:00"
+}

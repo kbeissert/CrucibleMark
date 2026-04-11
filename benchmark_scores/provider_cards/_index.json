@@ -1,5 +1,43 @@
 [
   {
+    "provider_id": "alibaba_cloud",
+    "display_name": "Alibaba Cloud",
+    "company": "Alibaba Cloud Intelligence Group (Aliyun Computing Co., Ltd.)",
+    "origin_country": "China",
+    "headquarters": "Hangzhou, Zhejiang, China",
+    "founding_year": 2009,
+    "developer_jurisdiction": "CN",
+    "pricing_model": "pay-per-token",
+    "api_base_url": "https://dashscope.aliyuncs.com",
+    "deployment": {
+      "cloud_act_exposure": false,
+      "applicable_law": "China (PIPL/CSL/DSL)",
+      "data_residency": "China (+ regionale Rechenzentren weltweit)",
+      "gdpr_dpa_available": true,
+      "eu_adequacy_decision": false,
+      "data_retention_days": -1,
+      "chinese_nsl_risk": "high"
+    },
+    "summary": "Alibaba Cloud ist der Cloud- und KI-Arm des chinesischen Technologiekonzerns Alibaba Group. Der Provider betreibt mit DashScope eine eigene KI-Inferenzplattform und ist vor allem für die Qwen-Modellfamilie bekannt. Alibaba Cloud zählt zu den größten Cloud-Anbietern Asiens und expandiert aktiv in internationale Märkte.",
+    "privacy_note": "API-Anfragen unterliegen chinesischem Recht (PIPL, CSL, DSL), das chinesischen Behörden weitreichende Datenzugriffsrechte einräumt. Für europäische Nutzer besteht ein erhebliches Drittlandtransfer-Risiko; SCCs sind zwar verfügbar, bieten jedoch keinen gleichwertigen Schutz wie ein EU-Angemessenheitsbeschluss.",
+    "strengths": [
+      "Leistungsstarke Qwen-Modellfamilie mit starker Mehrsprachigkeit (inkl. Chinesisch)",
+      "Breites Ökosystem: Text, Vision, Audio, Embedding und Code-Modelle über eine einheitliche API",
+      "Wettbewerbsfähige Preisgestaltung, besonders für asiatische Märkte"
+    ],
+    "known_limitations": [
+      "Hohes regulatorisches Risiko für EU-Nutzer durch chinesisches Datenschutz- und Sicherheitsrecht",
+      "Intransparente Datenaufbewahrungsfristen und eingeschränkte externe Auditierbarkeit"
+    ],
+    "notable_models": [
+      "Qwen2.5-Max",
+      "Qwen2.5-VL-72B-Instruct"
+    ],
+    "unknown": false,
+    "stats": {},
+    "generated_at": "2026-04-11T14:55:36.373755+00:00"
+  },
+  {
     "provider_id": "anthropic",
     "display_name": "Anthropic",
     "company": "Anthropic PBC",
@@ -43,5 +81,556 @@
       "active_ping_ttfb_ms": 890
     },
     "generated_at": "2026-04-11T13:20:59.214524+00:00"
+  },
+  {
+    "provider_id": "cognitive_computations_eric_hartford",
+    "display_name": "Cognitive Computations",
+    "company": "Cognitive Computations (Einzelperson / Eric Hartford)",
+    "origin_country": "USA",
+    "headquarters": "USA (genaue Stadt unbekannt)",
+    "founding_year": 2021,
+    "developer_jurisdiction": "US",
+    "pricing_model": "open-source-self-hosted",
+    "api_base_url": null,
+    "deployment": {
+      "cloud_act_exposure": false,
+      "applicable_law": "N/A (lokal only)",
+      "data_residency": "N/A (lokal only)",
+      "gdpr_dpa_available": false,
+      "eu_adequacy_decision": false,
+      "data_retention_days": 0,
+      "chinese_nsl_risk": "none"
+    },
+    "summary": "Cognitive Computations ist das Ein-Personen-Projekt von Eric Hartford, einem US-amerikanischen ML-Ingenieur. Bekannt für Fine-Tunes auf Basis öffentlicher Basismodelle (LLaMA, Mistral u.a.), insbesondere die 'Dolphin'-Reihe: ungefilterte, instruction-gefeintunte Modelle ohne systemseitige Alignment-Restriktionen. Modelle werden ausschließlich über Hugging Face veröffentlicht.",
+    "privacy_note": "Da Cognitive Computations ausschließlich Modell-Weights auf Hugging Face veröffentlicht und keinen eigenen Cloud-API-Dienst betreibt, entstehen bei lokaler Nutzung keinerlei Datenschutzrisiken durch den Provider. Europäische Nutzer verarbeiten Daten vollständig auf eigener Infrastruktur.",
+    "strengths": [
+      "Ungefilterte 'Dolphin'-Modelle ohne eingebaute Systemrestriktionen – nützlich für Forschung und kontrollierte Umgebungen",
+      "Breite Modellpalette: Fine-Tunes auf LLaMA 2/3, Mistral, Mixtral, Phi u.v.m.",
+      "Vollständig lokal betreibbar – keine Datenweitergabe an Dritte"
+    ],
+    "known_limitations": [
+      "Kein kommerzieller API-Dienst oder Support – rein community-getriebenes Einzelprojekt ohne SLA",
+      "Ungefilterte Modelle erfordern eigene Sicherheits- und Missbrauchskontrollen beim Betreiber"
+    ],
+    "notable_models": [
+      "dolphin-2.9-llama3-8b",
+      "dolphin-2.9.1-llama-3-70b",
+      "dolphin-mixtral-8x7b"
+    ],
+    "unknown": false,
+    "stats": {},
+    "generated_at": "2026-04-11T15:33:33.812484+00:00"
+  },
+  {
+    "provider_id": "deepseek",
+    "display_name": "DeepSeek",
+    "company": "DeepSeek (Hangzhou DeepSeek Artificial Intelligence Co., Ltd.)",
+    "origin_country": "China",
+    "headquarters": "Hangzhou, China",
+    "founding_year": 2023,
+    "developer_jurisdiction": "CN",
+    "pricing_model": "free-tier+pay-per-token",
+    "api_base_url": "https://api.deepseek.com",
+    "deployment": {
+      "cloud_act_exposure": false,
+      "applicable_law": "China (PIPL/CSL/DSL)",
+      "data_residency": "China",
+      "gdpr_dpa_available": false,
+      "eu_adequacy_decision": false,
+      "data_retention_days": -1,
+      "chinese_nsl_risk": "high"
+    },
+    "summary": "DeepSeek ist ein 2023 gegründetes chinesisches KI-Labor, das zur Quant-Hedgefonds-Gruppe High-Flyer gehört. Bekannt für leistungsstarke Open-Source-Modelle (DeepSeek-R1, V3) mit starker Reasoning-Fähigkeit zu sehr niedrigen Kosten. Gilt als ernsthafter Konkurrent zu GPT-4-Klasse-Modellen.",
+    "privacy_note": "API-Anfragen werden auf Servern in China verarbeitet und unterliegen chinesischem Recht (PIPL, CSL, DSL), das Behörden weitreichende Datenzugriffsrechte einräumt. Kein DSGVO-konformes DPA verfügbar; für europäische Unternehmen mit personenbezogenen Daten ist die API-Nutzung datenschutzrechtlich hochproblematisch.",
+    "strengths": [
+      "Sehr wettbewerbsfähige Reasoning-Leistung (R1) auf GPT-4o/o1-Niveau",
+      "Extrem niedrige API-Preise im Vergleich zu US-Anbietern",
+      "Modellgewichte open-source verfügbar (selbst hostbar)"
+    ],
+    "known_limitations": [
+      "Serverstandort China – hohes Datenschutzrisiko für EU-Nutzer, kein DSGVO-DPA",
+      "Zensur und inhaltliche Einschränkungen bei politisch sensiblen Themen (insb. China-Bezug)"
+    ],
+    "notable_models": [
+      "DeepSeek-R1",
+      "DeepSeek-V3"
+    ],
+    "unknown": false,
+    "stats": {},
+    "generated_at": "2026-04-11T14:50:25.383360+00:00"
+  },
+  {
+    "provider_id": "google_deepmind",
+    "display_name": "Google DeepMind",
+    "company": "Google LLC / DeepMind Technologies Limited",
+    "origin_country": "USA / UK",
+    "headquarters": "London, UK (DeepMind) / Mountain View, CA, USA (Google)",
+    "founding_year": 2023,
+    "developer_jurisdiction": "US",
+    "pricing_model": "free-tier+pay-per-token",
+    "api_base_url": "https://generativelanguage.googleapis.com",
+    "deployment": {
+      "cloud_act_exposure": true,
+      "applicable_law": "US (CLOUD Act)",
+      "data_residency": "USA",
+      "gdpr_dpa_available": true,
+      "eu_adequacy_decision": true,
+      "data_retention_days": 30,
+      "chinese_nsl_risk": "none"
+    },
+    "summary": "Google DeepMind entstand 2023 aus der Fusion von Google Brain und DeepMind. Der Provider ist bekannt für die Gemini-Modellfamilie sowie Forschungsdurchbrüche in RL und Bioinformatik (AlphaFold). API-Zugang erfolgt über Google AI Studio und Vertex AI. Starke Multimodal-Kompetenz.",
+    "privacy_note": "Da Google LLC ein US-amerikanisches Unternehmen ist, unterliegen API-Anfragen dem CLOUD Act. US-Behörden können unter bestimmten Voraussetzungen Zugriff auf verarbeitete Daten verlangen, auch wenn Google SCCs und ein DPA für EU-Kunden anbietet.",
+    "strengths": [
+      "Starke Multimodalität (Text, Bild, Audio, Video) durch die Gemini-Modellfamilie",
+      "Tiefe Integration in Google Cloud (Vertex AI) mit Enterprise-Features und Skalierbarkeit",
+      "Führende Forschungstiefe durch DeepMind-Erbe (AlphaFold, Reinforcement Learning)"
+    ],
+    "known_limitations": [
+      "API-Daten werden auf US-Infrastruktur verarbeitet – problematisch für datenschutzsensible EU-Anwendungsfälle",
+      "Komplexes Produktportfolio (AI Studio vs. Vertex AI) erschwert Einstieg und Kostenplanung"
+    ],
+    "notable_models": [
+      "Gemini 2.5 Pro",
+      "Gemini 2.5 Flash",
+      "Gemini 1.5 Pro"
+    ],
+    "unknown": false,
+    "stats": {},
+    "generated_at": "2026-04-11T14:39:20.424084+00:00"
+  },
+  {
+    "provider_id": "meta",
+    "display_name": "Meta AI",
+    "company": "Meta Platforms, Inc.",
+    "origin_country": "USA",
+    "headquarters": "Menlo Park, CA, USA",
+    "founding_year": 2004,
+    "developer_jurisdiction": "US",
+    "pricing_model": "open-source-self-hosted",
+    "api_base_url": "https://llama.meta.com",
+    "deployment": {
+      "cloud_act_exposure": true,
+      "applicable_law": "US (CLOUD Act)",
+      "data_residency": "USA",
+      "gdpr_dpa_available": false,
+      "eu_adequacy_decision": false,
+      "data_retention_days": -1,
+      "chinese_nsl_risk": "none"
+    },
+    "summary": "Meta Platforms ist der Mutterkonzern von Facebook, Instagram und WhatsApp. Im KI-Bereich ist Meta vor allem für die Llama-Modellfamilie bekannt, die als Open-Weight-Modelle veröffentlicht wird. Meta positioniert sich als Gegenpol zu proprietären Anbietern und fördert offene KI-Forschung.",
+    "privacy_note": "Meta betreibt keinen klassischen kommerziellen Inferenz-API-Dienst; Llama-Modelle werden typischerweise über Drittanbieter (z. B. AWS, Azure, Together AI) bereitgestellt, die jeweils eigene Datenschutzbedingungen haben. Bei direkter Nutzung von Meta-eigenen Diensten gilt US-Recht inkl. CLOUD Act, ohne belastbares DSGVO-DPA seitens Meta.",
+    "strengths": [
+      "Llama-Modelle als Open-Weight-Veröffentlichung – lokal oder auf eigener Infrastruktur betreibbar",
+      "Breite Ökosystem-Unterstützung durch zahlreiche Cloud- und Inference-Anbieter",
+      "Starke Forschungspräsenz und regelmäßige Veröffentlichung neuer Modellgenerationen"
+    ],
+    "known_limitations": [
+      "Kein eigener, vollwertiger kommerzieller API-Endpunkt mit SLA und DSGVO-Absicherung",
+      "Llama-Lizenz enthält Nutzungsbeschränkungen (z. B. ab 700 Mio. MAU gewerbliche Sonderlizenz erforderlich)"
+    ],
+    "notable_models": [
+      "Llama 3.3 70B",
+      "Llama 3.1 405B"
+    ],
+    "unknown": false,
+    "stats": {},
+    "generated_at": "2026-04-11T15:01:50.659303+00:00"
+  },
+  {
+    "provider_id": "minimax",
+    "display_name": "MiniMax",
+    "company": "MiniMax (上海稀宇科技有限公司)",
+    "origin_country": "China",
+    "headquarters": "Shanghai, China",
+    "founding_year": 2021,
+    "developer_jurisdiction": "CN",
+    "pricing_model": "free-tier+pay-per-token",
+    "api_base_url": "https://api.minimax.chat",
+    "deployment": {
+      "cloud_act_exposure": false,
+      "applicable_law": "China (PIPL/CSL/DSL)",
+      "data_residency": "China",
+      "gdpr_dpa_available": false,
+      "eu_adequacy_decision": false,
+      "data_retention_days": -1,
+      "chinese_nsl_risk": "high"
+    },
+    "summary": "MiniMax ist ein 2021 in Shanghai gegründetes chinesisches KI-Unternehmen, das multimodale Modelle für Text, Audio und Video entwickelt. Bekannt für die MiniMax-Text- und Abab-Modellreihe sowie Hailuo AI (Video). Positioniert als chinesische Alternative zu OpenAI mit starkem Fokus auf Sprach- und Multimodalität.",
+    "privacy_note": "API-Anfragen werden auf Servern in China verarbeitet und unterliegen chinesischem Recht (PIPL, CSL, DSL), das Behörden weitreichende Datenzugriffsrechte einräumt. Kein DSGVO-konformes DPA verfügbar; für europäische Nutzer mit personenbezogenen Daten ist dieser Provider nicht empfehlenswert.",
+    "strengths": [
+      "Starke multimodale Fähigkeiten (Text, Audio, Video in einem Ökosystem)",
+      "Wettbewerbsfähige Preisgestaltung mit großzügigem Free-Tier",
+      "Hailuo AI Video-Generierung mit hoher Qualität"
+    ],
+    "known_limitations": [
+      "Erhebliches Datenschutzrisiko für EU-Nutzer durch chinesische Rechtsprechung",
+      "Begrenzte internationale Transparenz zu Datenhaltung und Modelltraining"
+    ],
+    "notable_models": [
+      "MiniMax-Text-01",
+      "MiniMax-VL-01",
+      "abab6.5s"
+    ],
+    "unknown": false,
+    "stats": {},
+    "generated_at": "2026-04-11T15:28:18.203223+00:00"
+  },
+  {
+    "provider_id": "mistral_ai",
+    "display_name": "Mistral AI",
+    "company": "Mistral AI SAS",
+    "origin_country": "France",
+    "headquarters": "Paris, France",
+    "founding_year": 2023,
+    "developer_jurisdiction": "EU",
+    "pricing_model": "free-tier+pay-per-token",
+    "api_base_url": "https://api.mistral.ai",
+    "deployment": {
+      "cloud_act_exposure": false,
+      "applicable_law": "EU (GDPR)",
+      "data_residency": "EU",
+      "gdpr_dpa_available": true,
+      "eu_adequacy_decision": true,
+      "data_retention_days": 30,
+      "chinese_nsl_risk": "none"
+    },
+    "summary": "Mistral AI ist ein 2023 in Paris gegründetes KI-Unternehmen, das sich auf effiziente Open-Weight- und proprietäre Sprachmodelle spezialisiert hat. Bekannt für hohe Leistung bei kompakter Modellgröße. Positioniert sich als europäische Alternative zu US-Anbietern mit starkem Fokus auf Offenheit und Souveränität.",
+    "privacy_note": "Da Mistral AI ein französisches Unternehmen mit Datenhaltung in der EU ist, unterliegt die API-Nutzung vollständig der DSGVO. Ein DPA ist verfügbar; US-Behördenzugriff über den CLOUD Act ist nicht anwendbar.",
+    "strengths": [
+      "Europäischer Anbieter mit DSGVO-konformer Infrastruktur und EU-Datenhaltung",
+      "Viele Modelle als Open Weights verfügbar (z. B. Mistral 7B, Mixtral)",
+      "Sehr gutes Preis-Leistungs-Verhältnis bei Inferenz-Kosten"
+    ],
+    "known_limitations": [
+      "Kleineres Modell-Ökosystem und geringere Multimodalität im Vergleich zu OpenAI oder Google",
+      "Kontextfenster und Reasoning-Fähigkeiten der Spitzenmodelle noch hinter GPT-4o / Claude 3.5"
+    ],
+    "notable_models": [
+      "Mistral Large 2",
+      "Mixtral 8x22B",
+      "Codestral",
+      "Mistral 7B"
+    ],
+    "unknown": false,
+    "stats": {
+      "models_tracked": 3,
+      "median_tokens_per_s": 88.16,
+      "median_avg_task_duration_s": 10.01,
+      "cost_per_1k_median_usd": 0.006,
+      "active_ping_ttfb_ms": 454
+    },
+    "generated_at": "2026-04-11T15:08:53.672639+00:00"
+  },
+  {
+    "provider_id": "mistral_ai_base_model_mradermacher_gguf_conversion_abliteration",
+    "display_name": "Mistral AI + mradermacher (GGUF/Abliterated)",
+    "company": "Mistral AI SAS (Basismodell) / mradermacher (Hugging Face Community Contributor)",
+    "origin_country": "France / Germany (Community)",
+    "headquarters": "Paris, France (Mistral AI); privat/Community (mradermacher)",
+    "founding_year": 2023,
+    "developer_jurisdiction": "EU",
+    "pricing_model": "open-source-self-hosted",
+    "api_base_url": null,
+    "deployment": {
+      "cloud_act_exposure": false,
+      "applicable_law": "N/A (lokal only)",
+      "data_residency": "N/A (lokal only)",
+      "gdpr_dpa_available": false,
+      "eu_adequacy_decision": false,
+      "data_retention_days": 0,
+      "chinese_nsl_risk": "none"
+    },
+    "summary": "Mistral AI (Paris, 2023) entwickelt leistungsstarke Open-Weight-Sprachmodelle. mradermacher ist ein bekannter Hugging-Face-Community-Contributor, der Mistral-Modelle in GGUF konvertiert und teils abliteriert (Sicherheitsfilter entfernt) für lokale Nutzung via llama.cpp bereitstellt.",
+    "privacy_note": "Da diese Modelle ausschließlich lokal betrieben werden, findet keine Datenübertragung an externe Server statt. Es besteht kein API-seitiges Datenschutzrisiko – sämtliche Verarbeitung erfolgt auf der eigenen Infrastruktur des Nutzers.",
+    "strengths": [
+      "Vollständig lokale Ausführung – keine Daten verlassen das eigene System",
+      "GGUF-Format ermöglicht effiziente Nutzung auf Consumer-Hardware via llama.cpp, Ollama u.ä.",
+      "Abliterierte Varianten ohne eingebaute Inhaltsbeschränkungen für Forschungs- und Spezialeinsätze"
+    ],
+    "known_limitations": [
+      "Abliterierte Modelle haben Sicherheitsfilter entfernt – erhöhtes Risiko bei unkontrolliertem Einsatz oder Weitergabe",
+      "Community-Konvertierungen sind inoffiziell; keine Qualitäts- oder Sicherheitsgarantie durch Mistral AI selbst"
+    ],
+    "notable_models": [
+      "Mistral-7B-Instruct-v0.3 (GGUF, mradermacher)",
+      "Mistral-Small-3.1 Abliterated (GGUF, mradermacher)"
+    ],
+    "unknown": false,
+    "stats": {},
+    "generated_at": "2026-04-11T15:46:53.567370+00:00"
+  },
+  {
+    "provider_id": "moonshot_ai",
+    "display_name": "Moonshot AI",
+    "company": "Beijing Moonshot AI Technology Co., Ltd.",
+    "origin_country": "China",
+    "headquarters": "Beijing, China",
+    "founding_year": 2023,
+    "developer_jurisdiction": "CN",
+    "pricing_model": "free-tier+pay-per-token",
+    "api_base_url": "https://api.moonshot.cn",
+    "deployment": {
+      "cloud_act_exposure": false,
+      "applicable_law": "China (PIPL/CSL/DSL)",
+      "data_residency": "China",
+      "gdpr_dpa_available": false,
+      "eu_adequacy_decision": false,
+      "data_retention_days": -1,
+      "chinese_nsl_risk": "high"
+    },
+    "summary": "Moonshot AI ist ein 2023 gegründetes chinesisches KI-Startup mit Sitz in Peking. Das Unternehmen ist bekannt für sein Flaggschiff-Modell Kimi, das auf extrem lange Kontextfenster spezialisiert ist. Moonshot positioniert sich als Anbieter für Long-Context-Verarbeitung und richtet sich primär an den chinesischen Markt.",
+    "privacy_note": "API-Anfragen werden auf Servern in China verarbeitet und unterliegen chinesischem Recht (PIPL, CSL, DSL), einschließlich möglicher staatlicher Zugriffspflichten. Für europäische Nutzer besteht kein DSGVO-konformer Rahmen; ein Einsatz mit personenbezogenen Daten ist datenschutzrechtlich nicht vertretbar.",
+    "strengths": [
+      "Sehr großes Kontextfenster (bis zu 128K Token bei Kimi)",
+      "Spezialisierung auf Long-Document-Verarbeitung und -Analyse",
+      "Wettbewerbsfähige Preisgestaltung im chinesischen Markt"
+    ],
+    "known_limitations": [
+      "Hohes Datenschutzrisiko für europäische Nutzer durch chinesische Rechtslage und NSL-Exposition",
+      "Primär auf chinesischsprachige Anwendungsfälle und den chinesischen Markt ausgerichtet"
+    ],
+    "notable_models": [
+      "Kimi (moonshot-v1-128k)",
+      "moonshot-v1-8k"
+    ],
+    "unknown": false,
+    "stats": {},
+    "generated_at": "2026-04-11T15:35:17.843101+00:00"
+  },
+  {
+    "provider_id": "nous_research",
+    "display_name": "Nous Research",
+    "company": "Nous Research Inc.",
+    "origin_country": "USA",
+    "headquarters": "San Francisco, CA, USA",
+    "founding_year": 2023,
+    "developer_jurisdiction": "US",
+    "pricing_model": "open-source-self-hosted",
+    "api_base_url": null,
+    "deployment": {
+      "cloud_act_exposure": false,
+      "applicable_law": "N/A (lokal only)",
+      "data_residency": "N/A (lokal only)",
+      "gdpr_dpa_available": false,
+      "eu_adequacy_decision": false,
+      "data_retention_days": 0,
+      "chinese_nsl_risk": "none"
+    },
+    "summary": "Nous Research ist ein US-amerikanisches KI-Forschungskollektiv, das sich auf Fine-Tuning und Alignment offener Sprachmodelle spezialisiert hat. Bekannt für die Hermes- und Capybara-Modellreihen, die auf Basis von Llama und Mistral trainiert wurden. Positioniert sich als Community-getriebene Alternative zu kommerziellen Anbietern.",
+    "privacy_note": "Nous Research betreibt keine eigene Cloud-API; Modelle werden lokal oder über Drittanbieter (z. B. Together AI, Hugging Face) ausgeführt. Das Datenschutzrisiko hängt vollständig vom gewählten Inference-Anbieter ab, nicht von Nous Research selbst.",
+    "strengths": [
+      "Hochwertige Open-Source-Fine-Tunes auf Basis populärer Basismodelle (Llama, Mistral)",
+      "Starke Community-Einbindung und transparente Forschungskultur",
+      "Keine Cloud-Abhängigkeit – vollständige lokale Kontrolle über Daten möglich"
+    ],
+    "known_limitations": [
+      "Kein eigener Inference-Dienst oder offizielle API – Nutzer müssen selbst für Hosting sorgen",
+      "Kein kommerzieller Support, SLAs oder Enterprise-Verträge verfügbar"
+    ],
+    "notable_models": [
+      "Hermes-3-Llama-3.1-405B",
+      "Nous-Capybara-34B"
+    ],
+    "unknown": false,
+    "stats": {},
+    "generated_at": "2026-04-11T15:31:44.747664+00:00"
+  },
+  {
+    "provider_id": "nousresearch",
+    "display_name": "Nous Research",
+    "company": "Nous Research Inc.",
+    "origin_country": "USA",
+    "headquarters": "San Francisco, CA, USA",
+    "founding_year": 2022,
+    "developer_jurisdiction": "US",
+    "pricing_model": "open-source-self-hosted",
+    "api_base_url": null,
+    "deployment": {
+      "cloud_act_exposure": true,
+      "applicable_law": "US (CLOUD Act)",
+      "data_residency": "N/A (lokal only)",
+      "gdpr_dpa_available": false,
+      "eu_adequacy_decision": false,
+      "data_retention_days": 0,
+      "chinese_nsl_risk": "none"
+    },
+    "summary": "Nous Research ist ein US-amerikanisches KI-Forschungskollektiv, das sich auf Fine-Tuning und Alignment von Open-Source-Sprachmodellen spezialisiert hat. Bekannt für die Hermes- und Capybara-Modellreihen, die auf Basis von LLaMA und Mistral trainiert wurden und auf Hugging Face frei verfügbar sind.",
+    "privacy_note": "Da Nous Research primär Open-Source-Modelle veröffentlicht, die lokal betrieben werden, besteht bei Self-Hosting kein Cloud-Act-Risiko. Werden die Modelle über Drittanbieter-APIs (z. B. Together AI, Hugging Face Inference) genutzt, gelten die Datenschutzbedingungen des jeweiligen Hosters.",
+    "strengths": [
+      "Hochwertige Open-Source-Modelle frei verfügbar auf Hugging Face",
+      "Starke Community und aktive Forschung im Bereich Instruction-Tuning und Alignment",
+      "Modelle für lokalen Betrieb ohne Datenweitergabe an Dritte nutzbar"
+    ],
+    "known_limitations": [
+      "Kein eigener kommerzieller API-Endpunkt – Inferenz nur über Drittanbieter oder Self-Hosting",
+      "Kein formaler Enterprise-Support, keine SLAs oder DPA-Verträge"
+    ],
+    "notable_models": [
+      "Hermes-3-Llama-3.1-405B",
+      "Nous-Capybara-34B"
+    ],
+    "unknown": false,
+    "stats": {},
+    "generated_at": "2026-04-11T15:13:41.305183+00:00"
+  },
+  {
+    "provider_id": "openai",
+    "display_name": "OpenAI",
+    "company": "OpenAI, L.L.C.",
+    "origin_country": "USA",
+    "headquarters": "San Francisco, CA, USA",
+    "founding_year": 2015,
+    "developer_jurisdiction": "US",
+    "pricing_model": "free-tier+pay-per-token",
+    "api_base_url": "https://api.openai.com",
+    "deployment": {
+      "cloud_act_exposure": true,
+      "applicable_law": "US (CLOUD Act)",
+      "data_residency": "USA",
+      "gdpr_dpa_available": true,
+      "eu_adequacy_decision": true,
+      "data_retention_days": 30,
+      "chinese_nsl_risk": "none"
+    },
+    "summary": "OpenAI wurde 2015 als Non-Profit gegründet und ist heute als capped-profit-Unternehmen strukturiert. Der Anbieter gilt als Marktführer im Bereich großer Sprachmodelle und ist bekannt für die GPT-Reihe sowie ChatGPT. Microsoft hält eine strategische Beteiligung und stellt Rechenkapazitäten bereit.",
+    "privacy_note": "API-Anfragen werden auf US-amerikanischen Servern verarbeitet und unterliegen dem CLOUD Act, der US-Behörden Zugriff auf gespeicherte Daten ermöglichen kann. Obwohl ein DPA und SCCs für EU-Kunden verfügbar sind, verbleibt ein strukturelles Transferrisiko nach Art. 44 ff. DSGVO.",
+    "strengths": [
+      "Breites Modell-Portfolio von GPT-4o bis o3 für unterschiedliche Anforderungen",
+      "Ausgereifte, gut dokumentierte API mit umfangreichem Ökosystem und Tool-Support",
+      "Starke Multimodalität: Text, Bild, Audio und Code in einem einheitlichen API-Endpunkt"
+    ],
+    "known_limitations": [
+      "Vollständige Datenverarbeitung in den USA – kein EU-Hosting verfügbar",
+      "Vergleichsweise hohe Kosten bei Frontier-Modellen gegenüber neueren Wettbewerbern"
+    ],
+    "notable_models": [
+      "GPT-4o",
+      "o3",
+      "GPT-4.1"
+    ],
+    "unknown": false,
+    "stats": {
+      "models_tracked": 10,
+      "median_tokens_per_s": 55.65,
+      "median_avg_task_duration_s": 11.79,
+      "cost_per_1k_median_usd": 0.0044,
+      "active_ping_ttfb_ms": 711
+    },
+    "generated_at": "2026-04-11T14:36:02.502553+00:00"
+  },
+  {
+    "provider_id": "unknown_unverified",
+    "display_name": "Unknown / Unverified",
+    "company": "Unknown",
+    "origin_country": "Unknown",
+    "headquarters": "Unknown",
+    "founding_year": 0,
+    "developer_jurisdiction": "Unknown",
+    "pricing_model": "pay-per-token",
+    "api_base_url": null,
+    "deployment": {
+      "cloud_act_exposure": "false",
+      "applicable_law": "Unknown",
+      "data_residency": "Unknown",
+      "gdpr_dpa_available": "unknown",
+      "eu_adequacy_decision": "unknown",
+      "data_retention_days": -1,
+      "chinese_nsl_risk": "none"
+    },
+    "summary": "Dieser Provider konnte nicht eindeutig identifiziert oder verifiziert werden. Herkunft, Unternehmensstruktur, Rechtssitz und Datenschutzpraktiken sind unbekannt. Eine verlässliche Einschätzung zu Compliance, Datensicherheit oder Marktpositionierung ist ohne weitere Informationen nicht möglich.",
+    "privacy_note": "Da Herkunft und Rechtssitz dieses Providers unbekannt sind, lässt sich kein konkretes Datenschutzrisiko benennen – das Risiko ist jedoch als hoch einzustufen. Europäische Nutzer sollten keine personenbezogenen oder sensiblen Daten übermitteln, solange der Provider nicht verifiziert ist.",
+    "strengths": [
+      "Keine verifizierten Stärken bekannt",
+      "Möglicherweise spezialisierte Nischenfunktionen",
+      "Potenziell günstigere Preisgestaltung als etablierte Anbieter"
+    ],
+    "known_limitations": [
+      "Keine überprüfbaren Informationen zu Datenschutz, Compliance oder Rechtssitz verfügbar",
+      "Fehlende Transparenz macht eine Risikoabschätzung für professionellen oder regulierten Einsatz unmöglich"
+    ],
+    "notable_models": [
+      "Unbekannt",
+      "Nicht verifiziert"
+    ],
+    "unknown": true,
+    "stats": {},
+    "generated_at": "2026-04-11T14:52:26.114975+00:00"
+  },
+  {
+    "provider_id": "xai",
+    "display_name": "xAI",
+    "company": "xAI Corp.",
+    "origin_country": "USA",
+    "headquarters": "Palo Alto, CA, USA",
+    "founding_year": 2023,
+    "developer_jurisdiction": "US",
+    "pricing_model": "free-tier+pay-per-token",
+    "api_base_url": "https://api.x.ai",
+    "deployment": {
+      "cloud_act_exposure": true,
+      "applicable_law": "US (CLOUD Act)",
+      "data_residency": "USA",
+      "gdpr_dpa_available": false,
+      "eu_adequacy_decision": "unknown",
+      "data_retention_days": -1,
+      "chinese_nsl_risk": "none"
+    },
+    "summary": "xAI wurde 2023 von Elon Musk gegründet und positioniert sich als Gegenentwurf zu OpenAI mit Fokus auf 'maximale Wahrheitssuche'. Bekannt durch die Grok-Modellreihe, die eng mit der X-Plattform (ehem. Twitter) verknüpft ist. API-Zugang ist verfügbar, das Ökosystem ist jedoch noch jung.",
+    "privacy_note": "xAI ist ein US-amerikanisches Unternehmen und unterliegt dem CLOUD Act. Für europäische Nutzer besteht kein öffentlich dokumentierter DPA oder Standardvertragsklauseln, was den produktiven Einsatz im DSGVO-Kontext erheblich erschwert.",
+    "strengths": [
+      "Grok-Modelle mit Echtzeit-Zugang zu X/Twitter-Daten",
+      "Wettbewerbsfähige Reasoning-Fähigkeiten (Grok-3)",
+      "Großzügiges kostenloses Kontingent über die X-Plattform"
+    ],
+    "known_limitations": [
+      "Unklare DSGVO-Compliance und fehlender öffentlicher DPA für EU-Kunden",
+      "Kleineres Modell-Ökosystem und kürzere Track-Record im Vergleich zu OpenAI oder Anthropic"
+    ],
+    "notable_models": [
+      "Grok-3",
+      "Grok-2"
+    ],
+    "unknown": false,
+    "stats": {},
+    "generated_at": "2026-04-11T15:23:29.230912+00:00"
+  },
+  {
+    "provider_id": "zhipu_ai",
+    "display_name": "Zhipu AI",
+    "company": "Beijing Zhipu Huazhang Technology Co., Ltd.",
+    "origin_country": "China",
+    "headquarters": "Beijing, China",
+    "founding_year": 2019,
+    "developer_jurisdiction": "CN",
+    "pricing_model": "free-tier+pay-per-token",
+    "api_base_url": "https://open.bigmodel.cn",
+    "deployment": {
+      "cloud_act_exposure": false,
+      "applicable_law": "China (PIPL/CSL/DSL)",
+      "data_residency": "China",
+      "gdpr_dpa_available": false,
+      "eu_adequacy_decision": false,
+      "data_retention_days": -1,
+      "chinese_nsl_risk": "high"
+    },
+    "summary": "Zhipu AI ist ein 2019 aus der Tsinghua-Universität ausgegründetes chinesisches KI-Unternehmen. Es entwickelt die GLM-Modellfamilie (General Language Model) und positioniert sich als einer der führenden LLM-Anbieter Chinas. Bekannt für multimodale Fähigkeiten und starke Chinesisch-Kompetenz.",
+    "privacy_note": "API-Anfragen werden ausschließlich auf Servern in China verarbeitet und unterliegen chinesischem Recht (PIPL, CSL, DSL), das Behörden weitreichende Datenzugriffsrechte einräumt. Für europäische Nutzer besteht kein DSGVO-konformer Rahmen; ein Einsatz mit personenbezogenen Daten ist datenschutzrechtlich nicht vertretbar.",
+    "strengths": [
+      "Sehr starke Leistung bei chinesischsprachigen Aufgaben und Texten",
+      "Multimodale Modelle (Text, Bild, Video) unter einer einheitlichen API",
+      "Akademische Wurzeln an der Tsinghua-Universität mit starker Forschungsbasis"
+    ],
+    "known_limitations": [
+      "Keine DSGVO-konforme Datenverarbeitung – für EU-Unternehmen mit personenbezogenen Daten ungeeignet",
+      "Inhaltliche Zensur und politische Einschränkungen gemäß chinesischer Regulierung"
+    ],
+    "notable_models": [
+      "GLM-4",
+      "CogVideoX",
+      "CogView-3"
+    ],
+    "unknown": false,
+    "stats": {},
+    "generated_at": "2026-04-11T15:05:26.723720+00:00"
   }
 ]

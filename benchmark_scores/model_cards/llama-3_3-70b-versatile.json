@@ -1,0 +1,26 @@
+{
+  "model_id": "llama-3.3-70b-versatile",
+  "display_name": "Llama 3.3 70B Versatile",
+  "developer": "Meta",
+  "origin_country": "USA",
+  "developer_jurisdiction": "US",
+  "deployment_type": "open-weights-cloud-available",
+  "local_deployment_possible": true,
+  "weights_provenance_risk": "medium",
+  "weights_provenance_risk_rationale": "Meta ist ein US-amerikanisches Unternehmen und unterliegt dem CLOUD Act, jedoch sind die Modellgewichte öffentlich verfügbar und können ohne Cloud-Bindung lokal betrieben werden.",
+  "model_family": "Llama",
+  "primary_focus": "general",
+  "summary": "Llama 3.3 70B Versatile ist ein Open-Weights-Modell von Meta (USA), trainiert auf multilingualen und vielfältigen Textdaten. Es bietet starke Leistung bei Instruktionsbefolgung, Reasoning und Coding bei moderatem Ressourcenbedarf. Meta entwickelte es als leistungsstarke, frei nutzbare Alternative zu proprietären Modellen.",
+  "strengths": [
+    "Sehr gute Instruktionsbefolgung und Gesprächsführung dank RLHF-Feintuning",
+    "Starke Reasoning- und Coding-Fähigkeiten für ein 70B-Modell",
+    "Frei verfügbare Gewichte ermöglichen lokalen, datenschutzkonformen Betrieb"
+  ],
+  "known_limitations": [
+    "Kontextfenster (128k Token) kann bei sehr langen Dokumenten zu Qualitätseinbußen am Ende führen",
+    "Trotz Multilingual-Training deutlich stärker im Englischen als in anderen Sprachen"
+  ],
+  "judge_context_hint": "Das Modell neigt bei komplexen mehrstufigen Aufgaben gelegentlich dazu, Zwischenschritte zu überspringen oder Antworten zu verkürzen – Vollständigkeit der Argumentation sollte explizit bewertet werden.",
+  "unknown": false,
+  "generated_at": "2026-04-11T15:29:52.385255+00:00"
+}

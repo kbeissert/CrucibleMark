@@ -1,0 +1,39 @@
+{
+  "provider_id": "cognitive_computations_eric_hartford",
+  "display_name": "Cognitive Computations",
+  "company": "Cognitive Computations (Einzelperson / Eric Hartford)",
+  "origin_country": "USA",
+  "headquarters": "USA (genaue Stadt unbekannt)",
+  "founding_year": 2021,
+  "developer_jurisdiction": "US",
+  "pricing_model": "open-source-self-hosted",
+  "api_base_url": null,
+  "deployment": {
+    "cloud_act_exposure": false,
+    "applicable_law": "N/A (lokal only)",
+    "data_residency": "N/A (lokal only)",
+    "gdpr_dpa_available": false,
+    "eu_adequacy_decision": false,
+    "data_retention_days": 0,
+    "chinese_nsl_risk": "none"
+  },
+  "summary": "Cognitive Computations ist das Ein-Personen-Projekt von Eric Hartford, einem US-amerikanischen ML-Ingenieur. Bekannt für Fine-Tunes auf Basis öffentlicher Basismodelle (LLaMA, Mistral u.a.), insbesondere die 'Dolphin'-Reihe: ungefilterte, instruction-gefeintunte Modelle ohne systemseitige Alignment-Restriktionen. Modelle werden ausschließlich über Hugging Face veröffentlicht.",
+  "privacy_note": "Da Cognitive Computations ausschließlich Modell-Weights auf Hugging Face veröffentlicht und keinen eigenen Cloud-API-Dienst betreibt, entstehen bei lokaler Nutzung keinerlei Datenschutzrisiken durch den Provider. Europäische Nutzer verarbeiten Daten vollständig auf eigener Infrastruktur.",
+  "strengths": [
+    "Ungefilterte 'Dolphin'-Modelle ohne eingebaute Systemrestriktionen – nützlich für Forschung und kontrollierte Umgebungen",
+    "Breite Modellpalette: Fine-Tunes auf LLaMA 2/3, Mistral, Mixtral, Phi u.v.m.",
+    "Vollständig lokal betreibbar – keine Datenweitergabe an Dritte"
+  ],
+  "known_limitations": [
+    "Kein kommerzieller API-Dienst oder Support – rein community-getriebenes Einzelprojekt ohne SLA",
+    "Ungefilterte Modelle erfordern eigene Sicherheits- und Missbrauchskontrollen beim Betreiber"
+  ],
+  "notable_models": [
+    "dolphin-2.9-llama3-8b",
+    "dolphin-2.9.1-llama-3-70b",
+    "dolphin-mixtral-8x7b"
+  ],
+  "unknown": false,
+  "stats": {},
+  "generated_at": "2026-04-11T15:33:33.812484+00:00"
+}

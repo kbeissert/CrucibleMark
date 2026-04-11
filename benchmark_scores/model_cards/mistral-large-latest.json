@@ -1,0 +1,26 @@
+{
+  "model_id": "mistral-large-latest",
+  "display_name": "Mistral Large",
+  "developer": "Mistral AI",
+  "origin_country": "France",
+  "developer_jurisdiction": "EU",
+  "deployment_type": "cloud-only",
+  "local_deployment_possible": false,
+  "weights_provenance_risk": "low",
+  "weights_provenance_risk_rationale": "Mistral AI ist ein französisches Unternehmen mit Sitz in der EU und unterliegt der DSGVO, nicht dem US CLOUD Act oder vergleichbarer autoritärer Sicherheitsgesetzgebung.",
+  "model_family": "Mistral",
+  "primary_focus": "general",
+  "summary": "Mistral Large ist das Flaggschiff-Modell des französischen KI-Unternehmens Mistral AI. Es wurde für komplexe Reasoning-Aufgaben, mehrsprachige Nutzung und Instruction-Following entwickelt. Stärken liegen in Präzision, Codegenerierung und strukturierter Ausgabe. Ziel war ein leistungsstarkes europäisches Gegengewicht zu US-Modellen.",
+  "strengths": [
+    "Starke mehrsprachige Fähigkeiten, insbesondere für europäische Sprachen",
+    "Präzises Instruction-Following und strukturierte Ausgaben (z. B. JSON, Funktionsaufrufe)",
+    "Hohes Reasoning-Niveau bei komplexen Analyse- und Kodieraufgaben"
+  ],
+  "known_limitations": [
+    "Gewichte sind nicht öffentlich verfügbar, daher kein lokaler Betrieb oder Fine-Tuning möglich",
+    "Kontextfenster und Modalitäten sind im Vergleich zu einigen Konkurrenzmodellen begrenzt"
+  ],
+  "judge_context_hint": "Mistral Large neigt zu präzisen, knappen Antworten und kann bei offenen kreativen Aufgaben weniger ausschweifend sein als US-Modelle – Qualität und Direktheit sind Designziele.",
+  "unknown": false,
+  "generated_at": "2026-04-11T15:53:05.829726+00:00"
+}

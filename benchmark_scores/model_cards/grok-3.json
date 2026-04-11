@@ -1,0 +1,26 @@
+{
+  "model_id": "grok-3",
+  "display_name": "Grok 3",
+  "developer": "xAI",
+  "origin_country": "USA",
+  "developer_jurisdiction": "US",
+  "deployment_type": "cloud-only",
+  "local_deployment_possible": false,
+  "weights_provenance_risk": "medium",
+  "weights_provenance_risk_rationale": "xAI ist ein US-amerikanisches Unternehmen und unterliegt dem CLOUD Act, der staatlichen Zugriff auf Daten bei API-Nutzung ermöglichen kann, jedoch nicht auf lokal betriebene Weights.",
+  "model_family": "Grok",
+  "primary_focus": "reasoning",
+  "summary": "Grok 3 ist ein Large Language Model von xAI (Elon Musk, USA), trainiert mit Fokus auf starkes Reasoning, Mathematik und Coding. Es wurde als Konkurrenz zu GPT-4 und Claude entwickelt und zeichnet sich durch Echtzeit-Webzugriff sowie eine weniger restriktive Antwortpolitik aus.",
+  "strengths": [
+    "Starke Leistung bei mathematischen und logischen Reasoning-Aufgaben",
+    "Coding-Kompetenz auf hohem Niveau mit präzisen Erklärungen",
+    "Weniger restriktive Content-Policy ermöglicht offenere Diskussionen kontroverser Themen"
+  ],
+  "known_limitations": [
+    "Ausschließlich über die xAI-API bzw. die Grok-Plattform (X/Twitter) verfügbar, keine lokale Nutzung möglich",
+    "Trainingsdaten und genaue Modellarchitektur sind nicht vollständig öffentlich dokumentiert"
+  ],
+  "judge_context_hint": "Grok 3 neigt zu direkten, teils pointierten Antworten mit weniger Selbstzensur als vergleichbare Modelle – bei der Bewertung von Ton und Stil sollte dies als bewusstes Design-Merkmal berücksichtigt werden.",
+  "unknown": false,
+  "generated_at": "2026-04-11T15:51:34.415132+00:00"
+}

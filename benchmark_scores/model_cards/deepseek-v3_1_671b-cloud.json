@@ -1,0 +1,26 @@
+{
+  "model_id": "deepseek-v3.1_671b-cloud",
+  "display_name": "DeepSeek V3.1 671B",
+  "developer": "DeepSeek",
+  "origin_country": "China",
+  "developer_jurisdiction": "CN",
+  "deployment_type": "cloud-only",
+  "local_deployment_possible": false,
+  "weights_provenance_risk": "high",
+  "weights_provenance_risk_rationale": "DeepSeek ist ein chinesisches Unternehmen und unterliegt dem chinesischen National Security Law (NSL), das staatlichen Behörden Zugriff auf Daten und Modelle ermöglichen kann.",
+  "model_family": "DeepSeek",
+  "primary_focus": "general",
+  "summary": "DeepSeek V3.1 ist ein chinesisches Frontier-Modell mit 671 Milliarden Parametern, trainiert auf breiten mehrsprachigen Korpora mit Schwerpunkt auf Reasoning, Coding und Instruktionsbefolgung. Es wurde entwickelt, um westliche Spitzenmodelle in Leistung und Kosteneffizienz zu übertreffen.",
+  "strengths": [
+    "Sehr starke Leistung bei mathematischen und logischen Reasoning-Aufgaben",
+    "Hohe Qualität bei Code-Generierung und -Analyse über viele Programmiersprachen",
+    "Gute mehrsprachige Fähigkeiten, insbesondere Chinesisch und Englisch"
+  ],
+  "known_limitations": [
+    "Als Cloud-only-Variante keine lokale Ausführung möglich, vollständige Datenkontrolle nicht gewährleistet",
+    "Kann bei politisch sensiblen Themen mit Bezug zu China zensierte oder ausweichende Antworten liefern"
+  ],
+  "judge_context_hint": "Das Modell zeigt bei politisch oder gesellschaftlich sensiblen Themen mit China-Bezug systematische Antwortvermeidung oder Umlenkung, was Benchmark-Ergebnisse in solchen Kategorien verzerren kann.",
+  "unknown": false,
+  "generated_at": "2026-04-11T15:03:45.236513+00:00"
+}

@@ -1,0 +1,38 @@
+{
+  "provider_id": "nousresearch",
+  "display_name": "Nous Research",
+  "company": "Nous Research Inc.",
+  "origin_country": "USA",
+  "headquarters": "San Francisco, CA, USA",
+  "founding_year": 2022,
+  "developer_jurisdiction": "US",
+  "pricing_model": "open-source-self-hosted",
+  "api_base_url": null,
+  "deployment": {
+    "cloud_act_exposure": true,
+    "applicable_law": "US (CLOUD Act)",
+    "data_residency": "N/A (lokal only)",
+    "gdpr_dpa_available": false,
+    "eu_adequacy_decision": false,
+    "data_retention_days": 0,
+    "chinese_nsl_risk": "none"
+  },
+  "summary": "Nous Research ist ein US-amerikanisches KI-Forschungskollektiv, das sich auf Fine-Tuning und Alignment von Open-Source-Sprachmodellen spezialisiert hat. Bekannt für die Hermes- und Capybara-Modellreihen, die auf Basis von LLaMA und Mistral trainiert wurden und auf Hugging Face frei verfügbar sind.",
+  "privacy_note": "Da Nous Research primär Open-Source-Modelle veröffentlicht, die lokal betrieben werden, besteht bei Self-Hosting kein Cloud-Act-Risiko. Werden die Modelle über Drittanbieter-APIs (z. B. Together AI, Hugging Face Inference) genutzt, gelten die Datenschutzbedingungen des jeweiligen Hosters.",
+  "strengths": [
+    "Hochwertige Open-Source-Modelle frei verfügbar auf Hugging Face",
+    "Starke Community und aktive Forschung im Bereich Instruction-Tuning und Alignment",
+    "Modelle für lokalen Betrieb ohne Datenweitergabe an Dritte nutzbar"
+  ],
+  "known_limitations": [
+    "Kein eigener kommerzieller API-Endpunkt – Inferenz nur über Drittanbieter oder Self-Hosting",
+    "Kein formaler Enterprise-Support, keine SLAs oder DPA-Verträge"
+  ],
+  "notable_models": [
+    "Hermes-3-Llama-3.1-405B",
+    "Nous-Capybara-34B"
+  ],
+  "unknown": false,
+  "stats": {},
+  "generated_at": "2026-04-11T15:13:41.305183+00:00"
+}

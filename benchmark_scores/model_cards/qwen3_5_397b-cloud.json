@@ -1,0 +1,26 @@
+{
+  "model_id": "qwen3.5_397b-cloud",
+  "display_name": "Qwen 3.5 397B",
+  "developer": "Alibaba Cloud",
+  "origin_country": "China",
+  "developer_jurisdiction": "CN",
+  "deployment_type": "cloud-only",
+  "local_deployment_possible": false,
+  "weights_provenance_risk": "high",
+  "weights_provenance_risk_rationale": "Alibaba Cloud unterliegt als chinesisches Unternehmen dem chinesischen National Security Law (NSL), das staatliche Zugriffe auf Daten und Modellinfrastruktur ermöglichen kann.",
+  "model_family": "Qwen",
+  "primary_focus": "general",
+  "summary": "Qwen 3.5 397B ist ein großes Sprachmodell von Alibaba Cloud aus China. Es wurde für allgemeine Sprachverständnis- und Generierungsaufgaben trainiert, mit Stärken in Mehrsprachigkeit, Reasoning und Instruction-Following. Als Cloud-only-Modell ist es ausschließlich über Alibabas API-Infrastruktur verfügbar.",
+  "strengths": [
+    "Sehr hohe Kapazität durch 397 Milliarden Parameter für komplexe Aufgaben",
+    "Starke mehrsprachige Fähigkeiten, insbesondere für Chinesisch und Englisch",
+    "Gute Instruction-Following- und Reasoning-Leistung auf Niveau führender Frontier-Modelle"
+  ],
+  "known_limitations": [
+    "Ausschließlich als Cloud-Dienst verfügbar – keine lokale oder On-Premise-Nutzung möglich",
+    "Mögliche Zensur oder inhaltliche Einschränkungen bei politisch sensiblen Themen mit China-Bezug"
+  ],
+  "judge_context_hint": "Das Modell kann bei politisch oder kulturell sensiblen Themen mit China-Bezug inhaltlich eingeschränkte oder ausweichende Antworten liefern, was die Bewertung von Offenheit und Faktentreue beeinflussen kann.",
+  "unknown": false,
+  "generated_at": "2026-04-11T15:19:57.741145+00:00"
+}

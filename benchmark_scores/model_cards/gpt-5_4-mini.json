@@ -1,0 +1,26 @@
+{
+  "model_id": "gpt-5.4-mini",
+  "display_name": "GPT-5.4 Mini",
+  "developer": "OpenAI",
+  "origin_country": "USA",
+  "developer_jurisdiction": "US",
+  "deployment_type": "cloud-only",
+  "local_deployment_possible": false,
+  "weights_provenance_risk": "medium",
+  "weights_provenance_risk_rationale": "OpenAI ist ein US-amerikanisches Unternehmen und unterliegt dem CLOUD Act, jedoch ist das Modell nicht als Open-Weights verfügbar, sodass ein direkter Zugriff auf die Gewichte durch Dritte nicht besteht.",
+  "model_family": "GPT",
+  "primary_focus": "general",
+  "summary": "GPT-5.4 Mini ist ein kompaktes Modell von OpenAI (USA), das auf Effizienz und breite Einsetzbarkeit ausgelegt ist. Es kombiniert starke Instruktionsbefolgung mit niedrigen Latenz- und Kostenzielen und richtet sich an Anwendungsfälle, bei denen Geschwindigkeit und Skalierbarkeit Vorrang vor maximaler Modellgröße haben.",
+  "strengths": [
+    "Schnelle Inferenz bei geringem Ressourcenverbrauch",
+    "Solide Instruktionsbefolgung für alltägliche Aufgaben",
+    "Kosteneffizient für skalierbare API-Nutzung"
+  ],
+  "known_limitations": [
+    "Als 'Mini'-Variante voraussichtlich schwächer bei komplexem mehrstufigem Reasoning als größere GPT-5-Varianten",
+    "Keine öffentlich verfügbaren Gewichte, vollständige Abhängigkeit von OpenAI-Infrastruktur"
+  ],
+  "judge_context_hint": "Das Modell ist eine kompakte Variante der GPT-5-Familie und sollte primär an Aufgaben gemessen werden, die Effizienz und Instruktionstreue erfordern, nicht an Tiefenreasoning-Benchmarks, die auf Vollmodelle ausgelegt sind.",
+  "unknown": true,
+  "generated_at": "2026-04-11T15:07:05.958097+00:00"
+}

@@ -1,0 +1,26 @@
+{
+  "model_id": "o3-mini",
+  "display_name": "OpenAI o3-mini",
+  "developer": "OpenAI",
+  "origin_country": "USA",
+  "developer_jurisdiction": "US",
+  "deployment_type": "cloud-only",
+  "local_deployment_possible": false,
+  "weights_provenance_risk": "medium",
+  "weights_provenance_risk_rationale": "OpenAI ist ein US-amerikanisches Unternehmen und unterliegt dem CLOUD Act, der bei API-Nutzung staatlichen Zugriff ermöglichen kann; die Modellgewichte sind nicht öffentlich verfügbar.",
+  "model_family": "OpenAI o-series",
+  "primary_focus": "reasoning",
+  "summary": "o3-mini ist ein kompaktes Reasoning-Modell von OpenAI (USA), das auf mathematisches, wissenschaftliches und logisches Schlussfolgern optimiert wurde. Es bietet starke Chain-of-Thought-Fähigkeiten bei geringerer Latenz und niedrigeren Kosten als o3, eignet sich besonders für STEM-Aufgaben und strukturierte Problemlösung.",
+  "strengths": [
+    "Starke Leistung bei mathematischen und naturwissenschaftlichen Aufgaben (AIME, GPQA)",
+    "Effizientes Reasoning mit niedrigerer Latenz und geringeren Kosten im Vergleich zu o3",
+    "Zuverlässige mehrstufige logische Schlussfolgerungen und strukturierte Problemlösung"
+  ],
+  "known_limitations": [
+    "Schwächer bei kreativen, offenen oder stark kontextabhängigen Sprachaufgaben im Vergleich zu GPT-4o",
+    "Kein Zugriff auf Echtzeit-Informationen; Wissenstand auf Trainingsdaten begrenzt"
+  ],
+  "judge_context_hint": "o3-mini ist auf präzises Schlussfolgern optimiert und neigt dazu, Antworten strukturiert und schrittweise zu entwickeln – bei kreativen oder nuancierten Sprachaufgaben kann die Ausgabe trockener und weniger ausdrucksstark wirken als bei generalistischen Modellen.",
+  "unknown": false,
+  "generated_at": "2026-04-11T15:00:02.516224+00:00"
+}

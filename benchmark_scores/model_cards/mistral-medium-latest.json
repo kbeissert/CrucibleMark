@@ -1,0 +1,26 @@
+{
+  "model_id": "mistral-medium-latest",
+  "display_name": "Mistral Medium (Latest)",
+  "developer": "Mistral AI",
+  "origin_country": "France",
+  "developer_jurisdiction": "EU",
+  "deployment_type": "cloud-only",
+  "local_deployment_possible": false,
+  "weights_provenance_risk": "low",
+  "weights_provenance_risk_rationale": "Mistral AI ist ein französisches Unternehmen mit Sitz in der EU und unterliegt der DSGVO, nicht dem US CLOUD Act oder vergleichbarer autoritärer Sicherheitsgesetzgebung.",
+  "model_family": "Mistral",
+  "primary_focus": "general",
+  "summary": "Mistral Medium ist ein proprietäres Modell des französischen Unternehmens Mistral AI, entwickelt als leistungsstarke Mittelstufe zwischen kleinen und großen Modellen. Stärken liegen in mehrsprachiger Verarbeitung, Instruktionsbefolgung und ausgewogener Reasoning-Qualität bei moderaten Kosten.",
+  "strengths": [
+    "Starke mehrsprachige Fähigkeiten, insbesondere für europäische Sprachen",
+    "Gutes Preis-Leistungs-Verhältnis im mittleren Leistungssegment",
+    "Zuverlässige Instruktionsbefolgung bei komplexen Aufgaben"
+  ],
+  "known_limitations": [
+    "Gewichte nicht öffentlich verfügbar, daher kein lokaler Betrieb möglich",
+    "Kann bei hochspezialisierten STEM-Aufgaben hinter größeren Frontier-Modellen zurückbleiben"
+  ],
+  "judge_context_hint": "Mistral Medium positioniert sich als ausgewogenes Allround-Modell und neigt weniger zu übermäßig langen Antworten als einige Konkurrenten – Präzision und Kürze sind typische Verhaltensmerkmale.",
+  "unknown": false,
+  "generated_at": "2026-04-11T15:26:26.454946+00:00"
+}

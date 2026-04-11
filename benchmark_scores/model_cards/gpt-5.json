@@ -1,0 +1,26 @@
+{
+  "model_id": "gpt-5",
+  "display_name": "GPT-5",
+  "developer": "OpenAI",
+  "origin_country": "USA",
+  "developer_jurisdiction": "US",
+  "deployment_type": "cloud-only",
+  "local_deployment_possible": false,
+  "weights_provenance_risk": "medium",
+  "weights_provenance_risk_rationale": "OpenAI ist ein US-amerikanisches Unternehmen und unterliegt dem CLOUD Act, der bei API-Nutzung staatlichen Zugriff ermöglichen kann; die Modellgewichte sind nicht öffentlich verfügbar.",
+  "model_family": "GPT",
+  "primary_focus": "general",
+  "summary": "GPT-5 ist OpenAIs bislang leistungsstärkstes Sprachmodell aus den USA, trainiert auf umfangreichen multimodalen Daten. Es zeichnet sich durch starkes Reasoning, präzises Instruktionsfolgen und breite Allgemeinwissen-Abdeckung aus. Entwickelt, um komplexe Aufgaben über Domänen hinweg zuverlässig zu lösen.",
+  "strengths": [
+    "Sehr starke Reasoning- und Problemlösungsfähigkeiten über komplexe, mehrstufige Aufgaben",
+    "Hohe Instruktionstreue und konsistente Ausgabequalität auch bei langen Kontexten",
+    "Breite multimodale Fähigkeiten (Text, Bild, Code) in einem einzigen Modell"
+  ],
+  "known_limitations": [
+    "Ausschließlich über OpenAI-API verfügbar – kein lokaler Betrieb oder Gewichtszugang möglich",
+    "Wissensstand durch Trainings-Cutoff begrenzt; aktuelle Ereignisse erfordern externe Tools oder Retrieval"
+  ],
+  "judge_context_hint": "GPT-5 neigt dazu, bei ambigen Aufgaben sehr ausführliche und strukturierte Antworten zu produzieren – Kürze und Direktheit sollten bei der Bewertung explizit eingefordert und honoriert werden.",
+  "unknown": false,
+  "generated_at": "2026-04-11T15:41:46.428275+00:00"
+}

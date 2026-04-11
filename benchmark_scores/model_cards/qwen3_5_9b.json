@@ -1,0 +1,26 @@
+{
+  "model_id": "qwen3.5_9b",
+  "display_name": "Qwen 3.5 9B",
+  "developer": "Alibaba Cloud",
+  "origin_country": "China",
+  "developer_jurisdiction": "CN",
+  "deployment_type": "open-weights-cloud-available",
+  "local_deployment_possible": true,
+  "weights_provenance_risk": "high",
+  "weights_provenance_risk_rationale": "Alibaba Cloud unterliegt als chinesisches Unternehmen dem chinesischen National Security Law (NSL), das staatliche Zugriffe auf Daten und Modellgewichte rechtlich ermöglichen kann.",
+  "model_family": "Qwen",
+  "primary_focus": "general",
+  "summary": "Qwen 3.5 9B ist ein von Alibaba Cloud (China) entwickeltes Sprachmodell der Qwen-3.5-Serie. Es wurde auf mehrsprachige Instruktionsbefolgung, Reasoning und Coding optimiert. Stärken liegen in Effizienz bei mittlerer Modellgröße und starker Mehrsprachigkeit, insbesondere für Chinesisch und Englisch.",
+  "strengths": [
+    "Starke mehrsprachige Fähigkeiten, insbesondere Chinesisch und Englisch",
+    "Gutes Verhältnis von Modellgröße zu Leistung (9B-Parameter-Klasse)",
+    "Solide Instruktionsbefolgung und Reasoning-Fähigkeiten"
+  ],
+  "known_limitations": [
+    "Kann bei politisch sensiblen Themen mit Bezug zu China zensierte oder ausweichende Antworten liefern",
+    "Leistung bei sehr spezialisierten oder nischigen Fachdomänen hinter größeren Modellen zurück"
+  ],
+  "judge_context_hint": "Das Modell kann bei politisch oder kulturell sensiblen Themen mit China-Bezug systematisch ausweichen oder beschönigende Antworten produzieren – dies sollte bei der Bewertung von Neutralität und Faktentreue berücksichtigt werden.",
+  "unknown": false,
+  "generated_at": "2026-04-11T14:57:01.851082+00:00"
+}

@@ -1,0 +1,26 @@
+{
+  "model_id": "gemini-3.1-pro-preview",
+  "display_name": "Gemini 3.1 Pro Preview",
+  "developer": "Google DeepMind",
+  "origin_country": "USA",
+  "developer_jurisdiction": "US",
+  "deployment_type": "cloud-only",
+  "local_deployment_possible": false,
+  "weights_provenance_risk": "medium",
+  "weights_provenance_risk_rationale": "Google DeepMind ist ein US-amerikanisches Unternehmen und unterliegt dem CLOUD Act, der staatlichen Zugriff auf Daten bei API-Nutzung ermöglichen kann; die Modellgewichte selbst sind nicht öffentlich zugänglich.",
+  "model_family": "Gemini",
+  "primary_focus": "general",
+  "summary": "Gemini 3.1 Pro Preview ist ein multimodales Large Language Model von Google DeepMind (USA), trainiert auf breiten Text-, Code- und Multimodal-Daten. Es zielt auf starke Reasoning-, Coding- und Sprachverständnisfähigkeiten ab und dient als Vorschauversion für Entwickler vor dem stabilen Release.",
+  "strengths": [
+    "Starke multimodale Fähigkeiten (Text, Bild, Code)",
+    "Leistungsfähiges Reasoning und komplexe Instruktionsbefolgung",
+    "Breite Sprachunterstützung und kontextuelles Verständnis über lange Kontextfenster"
+  ],
+  "known_limitations": [
+    "Nur über Google Cloud API verfügbar, kein lokaler Betrieb möglich",
+    "Als Preview-Version potenziell instabil, mit möglichen Verhaltensänderungen bis zum stabilen Release"
+  ],
+  "judge_context_hint": "Das Modell befindet sich im Preview-Stadium und kann in Benchmarks leicht abweichendes oder inkonsistentes Verhalten gegenüber stabilen Releases zeigen; Ergebnisse sollten mit entsprechendem Vorbehalt bewertet werden.",
+  "unknown": true,
+  "generated_at": "2026-04-11T14:43:59.751623+00:00"
+}

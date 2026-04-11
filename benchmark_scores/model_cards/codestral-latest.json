@@ -1,0 +1,26 @@
+{
+  "model_id": "codestral-latest",
+  "display_name": "Codestral (Latest)",
+  "developer": "Mistral AI",
+  "origin_country": "France",
+  "developer_jurisdiction": "EU",
+  "deployment_type": "cloud-only",
+  "local_deployment_possible": false,
+  "weights_provenance_risk": "low",
+  "weights_provenance_risk_rationale": "Mistral AI ist ein französisches Unternehmen mit Sitz in der EU und unterliegt keiner Gesetzgebung, die staatlichen Zugriff auf Modellgewichte erzwingt.",
+  "model_family": "Mistral",
+  "primary_focus": "coding",
+  "summary": "Codestral ist ein auf Code-Generierung spezialisiertes Modell von Mistral AI (Frankreich). Es wurde trainiert, um Entwickler bei Autovervollständigung, Debugging und Code-Erklärung zu unterstützen. Stärken liegen in über 80 Programmiersprachen, Fill-in-the-Middle-Aufgaben und langen Kontextfenstern bis 32k Token.",
+  "strengths": [
+    "Spezialisiert auf Code-Generierung und -Vervollständigung in über 80 Programmiersprachen",
+    "Unterstützt Fill-in-the-Middle (FIM) für präzise Code-Einfügungen im bestehenden Kontext",
+    "Großes Kontextfenster (bis zu 32.000 Token) für umfangreiche Codebasen"
+  ],
+  "known_limitations": [
+    "Gewichte sind nicht öffentlich verfügbar, daher kein lokaler Betrieb möglich",
+    "Nicht für allgemeine Konversation oder nicht-technische Aufgaben optimiert"
+  ],
+  "judge_context_hint": "Codestral ist explizit auf Code-Aufgaben ausgerichtet; bei allgemeinen Sprach- oder Reasoning-Benchmarks außerhalb des Coding-Kontexts ist mit deutlich schwächerer Leistung zu rechnen.",
+  "unknown": false,
+  "generated_at": "2026-04-11T15:18:28.034754+00:00"
+}

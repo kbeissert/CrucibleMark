@@ -1,0 +1,26 @@
+{
+  "model_id": "ministral-3_14b",
+  "display_name": "Ministral 3B / 14B",
+  "developer": "Mistral AI",
+  "origin_country": "France",
+  "developer_jurisdiction": "EU",
+  "deployment_type": "open-weights-cloud-available",
+  "local_deployment_possible": true,
+  "weights_provenance_risk": "low",
+  "weights_provenance_risk_rationale": "Mistral AI ist ein französisches Unternehmen mit Sitz in der EU und unterliegt keiner vergleichbaren staatlichen Zugriffspflicht wie dem chinesischen NSL oder dem US CLOUD Act für lokal betriebene Weights.",
+  "model_family": "Mistral",
+  "primary_focus": "general",
+  "summary": "Ministral 3B und 14B sind kompakte Edge-Modelle von Mistral AI (Frankreich), optimiert für effiziente Inferenz auf ressourcenbeschränkter Hardware. Stärken liegen in schneller Antwortzeit, Instruction-Following und mehrsprachiger Verarbeitung. Entwickelt für lokale und On-Device-Szenarien mit gutem Qualitäts-Effizienz-Verhältnis.",
+  "strengths": [
+    "Sehr effiziente Inferenz auf Consumer-Hardware und Edge-Geräten",
+    "Solides Instruction-Following trotz geringer Modellgröße",
+    "Mehrsprachige Kompetenz, insbesondere für europäische Sprachen"
+  ],
+  "known_limitations": [
+    "Begrenzte Reasoning-Tiefe bei komplexen mehrstufigen Aufgaben im Vergleich zu größeren Modellen",
+    "Geringere Faktendichte und Wissensbasis gegenüber 70B+-Modellen"
+  ],
+  "judge_context_hint": "Das Modell ist auf Effizienz und Edge-Deployment ausgelegt – Antwortqualität sollte relativ zur Modellgröße bewertet werden, nicht absolut gegen Frontier-Modelle.",
+  "unknown": false,
+  "generated_at": "2026-04-11T15:08:44.657991+00:00"
+}

@@ -1,0 +1,26 @@
+{
+  "model_id": "gpt-oss_120b-cloud",
+  "display_name": "GPT OSS 120B Cloud",
+  "developer": "OpenAI",
+  "origin_country": "USA",
+  "developer_jurisdiction": "US",
+  "deployment_type": "cloud-only",
+  "local_deployment_possible": false,
+  "weights_provenance_risk": "medium",
+  "weights_provenance_risk_rationale": "OpenAI ist ein US-amerikanisches Unternehmen und unterliegt dem CLOUD Act, jedoch nicht dem chinesischen NSL; die Weights sind nicht öffentlich zugänglich.",
+  "model_family": "GPT",
+  "primary_focus": "general",
+  "summary": "GPT OSS 120B Cloud ist ein großes Sprachmodell von OpenAI, das ausschließlich über Cloud-API bereitgestellt wird. Es ist auf allgemeine Instruktionsbefolgung, Reasoning und Textgenerierung ausgerichtet und richtet sich an Entwickler, die skalierbare KI-Dienste ohne lokale Infrastruktur benötigen.",
+  "strengths": [
+    "Starke allgemeine Instruktionsbefolgung über breite Aufgabentypen hinweg",
+    "Hohe Skalierbarkeit durch Cloud-native Bereitstellung ohne lokalen Infrastrukturaufwand",
+    "Profitiert von OpenAIs umfangreichem RLHF- und Alignment-Training für zuverlässiges Verhalten"
+  ],
+  "known_limitations": [
+    "Keine lokale Ausführung möglich – vollständige Abhängigkeit von OpenAIs Cloud-Infrastruktur und Datenschutzbedingungen",
+    "Modelldetails, Trainingsarchitektur und Gewichte sind nicht öffentlich einsehbar, was unabhängige Audits erschwert"
+  ],
+  "judge_context_hint": "Das Modell ist auf sichere, instruktionstreue Ausgaben optimiert und kann bei kontroversen oder grenzwertigen Prompts stärker als andere Modelle zur Ablehnung oder Abschwächung neigen, was Benchmark-Ergebnisse in Kreativität oder Direktheit beeinflussen kann.",
+  "unknown": true,
+  "generated_at": "2026-04-11T14:35:51.726359+00:00"
+}

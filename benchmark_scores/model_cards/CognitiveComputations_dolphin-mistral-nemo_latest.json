@@ -1,0 +1,26 @@
+{
+  "model_id": "CognitiveComputations_dolphin-mistral-nemo_latest",
+  "display_name": "Dolphin Mistral NeMo",
+  "developer": "Cognitive Computations (Eric Hartford)",
+  "origin_country": "USA",
+  "developer_jurisdiction": "US",
+  "deployment_type": "open-weights",
+  "local_deployment_possible": true,
+  "weights_provenance_risk": "low",
+  "weights_provenance_risk_rationale": "Die Basisgewichte stammen von Mistral AI (EU-Jurisdiktion, Frankreich), und das Fine-Tuning wurde von Cognitive Computations als unabhängiges Open-Source-Projekt ohne bekannten kommerziellen oder staatlichen Hintergrund durchgeführt.",
+  "model_family": "Mistral",
+  "primary_focus": "instruction-following",
+  "summary": "Dolphin Mistral NeMo ist ein von Cognitive Computations feinabgestimmtes Mistral-NeMo-Modell, das auf unzensierten, vielseitigen Instruktionsdaten trainiert wurde. Ziel ist ein hilfreicher Assistent ohne eingebaute Inhaltsbeschränkungen, der komplexe Anweisungen präzise befolgt und offen auf heikle Themen eingeht.",
+  "strengths": [
+    "Sehr gehorsames Instruktions-Following ohne eingebaute Inhaltssperren",
+    "Gute Allround-Sprachfähigkeiten dank Mistral-NeMo-Basis (12B Parameter, 128k Kontext)",
+    "Lokal betreibbar und vollständig open-weights, geeignet für datenschutzsensible Umgebungen"
+  ],
+  "known_limitations": [
+    "Fehlende Sicherheitsfilter können zur Generierung schädlicher oder problematischer Inhalte führen",
+    "Kein spezialisiertes Reasoning- oder Coding-Training; schwächer als dedizierte Modelle in diesen Bereichen"
+  ],
+  "judge_context_hint": "Das Modell ist bewusst ohne Sicherheitsfilter trainiert und folgt Anweisungen sehr direkt – der Judge sollte Antwortqualität und Präzision bewerten, ohne Ablehnung von Anfragen als Stärke zu werten.",
+  "unknown": false,
+  "generated_at": "2026-04-11T15:33:17.802153+00:00"
+}

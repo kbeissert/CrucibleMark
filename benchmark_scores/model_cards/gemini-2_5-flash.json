@@ -1,0 +1,26 @@
+{
+  "model_id": "gemini-2.5-flash",
+  "display_name": "Gemini 2.5 Flash",
+  "developer": "Google DeepMind",
+  "origin_country": "USA",
+  "developer_jurisdiction": "US",
+  "deployment_type": "cloud-only",
+  "local_deployment_possible": false,
+  "weights_provenance_risk": "medium",
+  "weights_provenance_risk_rationale": "Google DeepMind ist ein US-amerikanisches Unternehmen und unterliegt dem CLOUD Act; die Modellgewichte sind nicht öffentlich zugänglich, sodass ein staatlicher Zugriff auf Weights-Ebene nicht bekannt ist.",
+  "model_family": "Gemini",
+  "primary_focus": "general",
+  "summary": "Gemini 2.5 Flash ist Googles effizientes Multimodal-Modell aus den USA, optimiert für schnelle Inferenz bei niedrigen Kosten. Stärken liegen in langen Kontextfenstern (1M Token), Bild- und Dokumentenverständnis sowie strukturiertem Reasoning – konzipiert als leistungsstarke, skalierbare Alternative zu größeren Modellen.",
+  "strengths": [
+    "Sehr langes Kontextfenster (bis zu 1 Million Token)",
+    "Starke multimodale Fähigkeiten (Text, Bild, Audio, Video, Code)",
+    "Hohes Preis-Leistungs-Verhältnis durch optimierte Inferenzgeschwindigkeit"
+  ],
+  "known_limitations": [
+    "Ausschließlich über Google-Cloud-APIs nutzbar, kein lokaler Betrieb möglich",
+    "Kann bei komplexen mehrstufigen Reasoning-Aufgaben hinter größeren Modellen (z. B. Gemini 2.5 Pro) zurückbleiben"
+  ],
+  "judge_context_hint": "Das Modell ist auf Effizienz und Geschwindigkeit ausgelegt und kann bei sehr langen oder hochkomplexen Reasoning-Ketten zugunsten von Schnelligkeit Tiefe opfern – Antworten sollten auf Vollständigkeit und Präzision geprüft werden.",
+  "unknown": false,
+  "generated_at": "2026-04-11T15:16:53.317148+00:00"
+}
