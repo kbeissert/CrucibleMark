@@ -1,13 +1,13 @@
-# User Guide: Benchmarking Workflow
+# Benutzerhandbuch: Benchmarking-Workflow
 
 **Zielgruppe:** Alle, die CrucibleMark nutzen wollen – ohne Code-Kenntnisse erforderlich.
 
-**Was du hier findest:**
+**Inhalt:**
 
 - Quick Start (drei Befehle bis zum ersten Ergebnis)
 - Benchmark-Steuerung (Modus-Auswahl, Modell-Filter)
 - Auswertung & Leaderboard
-- Troubleshooting
+- Fehlerbehebung
 
 > **Voraussetzung:** Installation abgeschlossen (`make install` ausgeführt).
 
@@ -20,13 +20,13 @@ Für maximale Geschwindigkeit im Semantic Mode vor `make install` die native PyT
 pip3 install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu121
 ```
 
-______________________________________________________________________
+---
 
-👉 **WICHTIG:** Bevor du loslegst, den [Setup-Guide (SETUP_GUIDE.md)](SETUP_GUIDE.md) lesen. Dort müssen API-Keys, Module und Hardware eingetragen werden, sonst kommt es zu Fehlern.
+🛑 **Vor dem ersten Start** den [Setup-Guide (SETUP_GUIDE.md)](SETUP_GUIDE.md) lesen. Dort müssen API-Keys, Module und Hardware eingetragen werden, sonst kommt es zu Fehlern.
 
-______________________________________________________________________
+---
 
-## ⚡ Quick Start (3 Befehle)
+## Quick Start (3 Befehle)
 
 ```bash
 # 1. Installation prüfen
@@ -43,9 +43,9 @@ make leaderboard
 
 **Fertig.** Die Ergebnisse liegen in `benchmark_scores/benchmark_leaderboard.csv`.
 
-______________________________________________________________________
+---
 
-## 🎮 Der Interaktive Wizard
+## Der Interaktive Wizard
 
 Der einfachste Weg, Benchmarks zu starten:
 
@@ -75,9 +75,9 @@ make benchmark
    - Progress-Bar zeigt Fortschritt
    - Ergebnisse werden live in CSV geschrieben
 
-______________________________________________________________________
+---
 
-## 🎯 Benchmark-Modi im Detail
+## Benchmark-Modi im Detail
 
 ### A. Single Model (Fokussiert)
 
@@ -97,9 +97,9 @@ make benchmark MODEL=qwen2.5:14b
 make benchmark MODEL=qwen2.5:14b MODULE=code_quality
 ```
 
-______________________________________________________________________
+---
 
-### B. Batch Mode (Vollständig)
+### B. Batch-Modus (Vollständig)
 
 **Wann nutzen?**
 
@@ -125,9 +125,9 @@ python scripts/benchmark_auto.py --force
 
 ⚠️ **Warnung:** Ignoriert vorherige Ergebnisse und verbraucht API-Credits.
 
-______________________________________________________________________
+---
 
-### C. Political Compass & Safety Tests
+### C. Political Compass & Safety-Tests
 
 Das `political_compass`-Modul nutzt eine eigenständige Sicherheitsarchitektur und speichert nach jedem Block einen Zwischenstand (Checkpointing). Das ist bei über 70 Fragen elementar.
 
@@ -153,9 +153,9 @@ Das `political_compass`-Modul nutzt eine eigenständige Sicherheitsarchitektur u
   ```bash
   make benchmark-human
   ```
-  Startet das interaktive Terminal-Interface, in dem ein menschlicher Nutzender den Political Compass beantwortet und als Referenzwert (`Human Baseline`) in den Auswertungen erscheint.
+  Startet das interaktive Terminal-Interface, in dem ein menschlicher Tester den Political Compass beantwortet und als Referenzwert (`Human Baseline`) in den Auswertungen erscheint.
 
-______________________________________________________________________
+---
 
 ### D. Meta-Reviews (Magazin-Style) generieren
 
@@ -184,7 +184,7 @@ Jeder generierten Review enthält einen **Datenschutz-Abschnitt** mit einer Sove
 
 > Weitere Details: [AUDIT_AND_METAREVIEW.md](AUDIT_AND_METAREVIEW.md).
 
-______________________________________________________________________
+---
 
 ### E. Analysen & Modell-Vergleiche (Diff Results)
 
@@ -204,9 +204,9 @@ Alternativ direkt mit Dateipfaden:
 make diff-results REF=outputs/runs/v1.json TEST=outputs/runs/v2.json THRESH=0.15
 ```
 
-______________________________________________________________________
+---
 
-### F. Tooling & Maintenance Parameter
+### F. Tooling & Wartung
 
 #### 1. Zusätzliche Benchmark- & Test-Aufrufe
 
@@ -232,9 +232,9 @@ ______________________________________________________________________
 - **`make clean-csv`**: Löscht alle generierten Benchmark-CSV-Dateien.
 - **`make clean-all`**: Radikal-Reset. Löscht zusätzlich alle bisherigen Run-Ordner und CSV-Scores. **DANGER.**
 
-______________________________________________________________________
+---
 
-## 📐 Scoring Explained (v1.1)
+## Scoring im Überblick (v1.1)
 
 CrucibleMark nutzt unterschiedliche Scoring-Mechanismen:
 
@@ -258,7 +258,7 @@ Standard-Module nutzen eine Mischung aus **40 % Keyword-Matching** und **60 % Se
 > - **Vorteil:** Antwortet das Modell korrekt, aber mit anderen Worten als die Musterlösung, erkennt das System das.
 > - **Setup:** Das Modell (~80 MB) lädt `make install` einmalig herunter und cached es lokal.
 
-### 3. Audit Logs & Protokolle
+### 3. Audit-Logs & Protokolle
 
 Der **Audit-Modus** bietet ein klares, lückenloses Verständnis der Benchmarks von der Eingabe bis zur Auswertung. Er generiert zu jedem getesteten Asset eine strukturierte Markdown-Datei mit:
 
@@ -285,9 +285,9 @@ Nicht jeder LLM-Provider erlaubt beliebige Output-Längen. Verweigert ein Modell
 
 Diese Meta-Informationen spielen im finalen Editor-Bericht eine prominente Rolle. Ein Modell mit perfektem Score, das aber auf 2048 Token zugeschnürt werden musste, eignet sich oft nicht als Document-Analysis-Agent. Diese „Kopfnoten" schützen vor unliebsamen „Generation Cutoffs" in eigenen Projekten.
 
-______________________________________________________________________
+---
 
-## 🏆 Leaderboard generieren
+## Leaderboard generieren
 
 ```bash
 make leaderboard
@@ -316,9 +316,9 @@ Der Befehl generiert **zwei CSV-Dateien** in `benchmark_scores/`:
 | **Max Time (s)** | Detailed | Dauer des extremsten Einzelausreißers |
 | **Timeout Count** | Detailed | Anzahl der erzwungenen Abbrüche |
 
-______________________________________________________________________
+---
 
-## 🏅 Badges & Klassen
+## Badges & Klassen
 
 ### 1. Quality Tiers (Absolute Standards)
 
@@ -346,9 +346,9 @@ Die kanonischen Schwellenwerte stammen aus `benchmark_config.yaml` (`scoring_tie
 - **Fast Code Reviewer:** Spezialist für Code, sehr schnell (z. B. Qwen 2.5 Coder)
 - **Slow Deep Thinker:** Stark im Reasoning, aber langsam (z. B. Phi-4)
 
-______________________________________________________________________
+---
 
-## ⏱️ Performance Metriken
+## Performance-Metriken
 
 CrucibleMark unterscheidet präzise zwischen **Ladezeit** und **Ausführungszeit**:
 
@@ -360,9 +360,9 @@ CrucibleMark unterscheidet präzise zwischen **Ladezeit** und **Ausführungszeit
 
 > **Hinweis:** Diese Werte sind **hardwareabhängige Momentaufnahmen**. Sie evaluieren nicht das isolierte Modell, sondern das Zusammenspiel aus Modellarchitektur und der spezifischen Hardwareumgebung (RAM, GPU).
 
-______________________________________________________________________
+---
 
-## 🛡️ Crash Recovery & Sessions
+## Crash Recovery & Sessions
 
 ### Was passiert bei Absturz?
 
@@ -383,9 +383,9 @@ Sessions älter als 48 Stunden werden verworfen, um versehentliches Fortsetzen v
 make clean-sessions
 ```
 
-______________________________________________________________________
+---
 
-## 🔍 Troubleshooting
+## Fehlerbehebung
 
 ### Problem: „Model not found"
 
@@ -397,7 +397,7 @@ make list-models
 ollama pull qwen2.5:14b
 ```
 
-______________________________________________________________________
+---
 
 ### Problem: „API Rate Limit" (kommerzielle Modelle)
 
@@ -407,7 +407,7 @@ ______________________________________________________________________
 
 60 Sekunden warten. CrucibleMark hat **automatisches Retry** mit Exponential Backoff. Bei wiederholten Fehlern: API-Key-Limit prüfen.
 
-______________________________________________________________________
+---
 
 ### Problem: Scores sind 0 % (obwohl Antwort gut aussieht)
 
@@ -415,7 +415,7 @@ ______________________________________________________________________
 python run_benchmark.py --debug-responses
 ```
 
-______________________________________________________________________
+---
 
 ### Problem: Benchmark hängt bei „Generating response..."
 
@@ -433,9 +433,9 @@ ollama restart
 make benchmark MODEL=qwen2.5:7b
 ```
 
-______________________________________________________________________
+---
 
-## 📊 Daten-Management
+## Daten-Management
 
 ### Wo werden Ergebnisse gespeichert?
 
@@ -448,7 +448,7 @@ benchmark_scores/
 ├── political_compass_results.csv    # Spezial-Modul (Koordinaten)
 ```
 
-______________________________________________________________________
+---
 
 ### Backup erstellen
 
@@ -463,7 +463,7 @@ make backup
 - Golden Standards
 - Archiviert als: `backups/cruciblemark_backup_YYYYMMDD.tar.gz`
 
-______________________________________________________________________
+---
 
 ### Daten bereinigen
 
@@ -480,9 +480,9 @@ make clean-module MODULE=ux_writing
 make clean-csv
 ```
 
-______________________________________________________________________
+---
 
-## 📈 Fortgeschrittene Nutzung
+## Fortgeschrittene Nutzung
 
 ### Preisliste mit konfigurierten Modellen abgleichen
 
@@ -499,7 +499,7 @@ make sync-cost-limits FIX=1
 # → config/cost_limits.yaml öffnen, nach "# TODO: Preis nachtragen" suchen
 ```
 
-______________________________________________________________________
+---
 
 ### Kosten schätzen (vor Batch-Run)
 
@@ -516,7 +516,7 @@ Estimated API costs:
 Total: $40.50
 ```
 
-______________________________________________________________________
+---
 
 ### Nur fehlgeschlagene Tests wiederholen
 
@@ -526,9 +526,9 @@ make benchmark-auto
 
 (Smart-Skip überspringt erfolgreiche Tests automatisch)
 
-______________________________________________________________________
+---
 
-### Custom Module aktivieren/deaktivieren
+### Custom-Module aktivieren/deaktivieren
 
 ```yaml
 modules:
@@ -540,9 +540,9 @@ modules:
 make leaderboard  # Leaderboard neu generieren
 ```
 
-______________________________________________________________________
+---
 
-## 🆘 Hilfe & Support
+## Hilfe & Support
 
 ### Logs prüfen
 
@@ -552,7 +552,7 @@ tail -f logs/crucible.log
 
 (Enthält alle technischen Details, Warnings, Tracebacks)
 
-______________________________________________________________________
+---
 
 ### Projekt validieren
 
@@ -564,7 +564,7 @@ make validate-structure
 make validate
 ```
 
-______________________________________________________________________
+---
 
 ### Community & Docs
 
@@ -572,9 +572,9 @@ ______________________________________________________________________
 - **Developer Guide:** Siehe `docs/DEVELOPER_GUIDE.md` (für Modul-Entwicklung)
 - **Architecture:** Siehe `docs/ARCHITECTURE.md` (für System-Design)
 
-______________________________________________________________________
+---
 
-## 🎓 Nächste Schritte
+## Nächste Schritte
 
 **Nach dem ersten Benchmark:**
 
@@ -588,13 +588,13 @@ ______________________________________________________________________
 - Neues Modul initialisieren (`make create-module`)
 - Custom Scoring-Logik implementieren
 
-______________________________________________________________________
+---
 
-## 🏗️ Creating New Tests (v3.0+)
+## Neue Tests erstellen (v3.0+)
 
-All new reasoning tests **must** use v3.0 rubric-based scoring. The legacy system is deprecated.
+Alle neuen Reasoning-Tests **müssen** das v3.0-Rubrik-Scoring verwenden. Das Legacy-System ist deprecated.
 
-### 1. Define Rubric in `evaluators.py`
+### 1. Rubrik in `evaluators.py` definieren
 
 ```python
 RUBRICS = {
@@ -609,20 +609,20 @@ RUBRICS = {
 }
 ```
 
-### 2. Set scoring_version in YAML Asset
+### 2. `scoring_version` im YAML-Asset setzen
 
 ```yaml
 metadata:
   scoring_version: 2.0
 ```
 
-### 3. Test Locally
+### 3. Lokal testen
 
 ```bash
 make benchmark MODEL=your-test-model
 ```
 
-______________________________________________________________________
+---
 
 **Dokumenten-Version:** 3.1.0 (Überarbeitung März 2026)\
 **Kompatibel mit:** CrucibleMark v3.4.3+

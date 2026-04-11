@@ -1,14 +1,14 @@
-# Developer Guide: Extending CrucibleMark
+# Entwicklerhandbuch: CrucibleMark erweitern
 
-**Zielgruppe:** Entwickelnde, die neue Test-Module erstellen oder das Scoring-System erweitern wollen.
+**Zielgruppe:** Entwickler, die neue Test-Module erstellen oder das Scoring-System erweitern wollen.
 
-**Was du hier findest:**
+**Inhalt:**
 
 - Quick Start: Neues Modul in 15 Minuten
 - Asset-Format & YAML-Schema
 - Scoring-Logik implementieren
 - CSV-Output & Leaderboard-Integration
-- Testing & Validation
+- Tests & Validierung
 
 > **Voraussetzung:** Grundkenntnisse in Python, YAML und Regex.
 
@@ -27,7 +27,7 @@ Vor dem Schreiben eines neuen Moduls oder dem Erweitern von bestehendem Code **m
 
 ---
 
-## ⚡ Quick Start: Neues Modul erstellen
+## Quick Start: Neues Modul erstellen
 
 ### Option 1: Generator (empfohlen)
 
@@ -50,9 +50,9 @@ make create-module
 
 **Zeit:** ca. zwei Minuten bis zum ersten Test-Run
 
-______________________________________________________________________
+---
 
-### 🚀 Development Loop & Testing
+### Development Loop & Testing
 
 Für schnelle Iterationen ohne lange Wartezeiten den **Dev-Modus** nutzen:
 
@@ -70,7 +70,7 @@ python run_benchmark.py --dev --model ministral:8b
 **Adaptive Pausen:**
 Das Framework nutzt `utils/adaptive_pause.py` für dynamische Erholungspausen (wichtig für Mac M-Chips mit Unified Memory). Im Dev-Modus sind diese Pausen kürzer – das kann Performance-Messungen leicht verfälschen, reduziert aber die Entwicklungszeit erheblich.
 
-______________________________________________________________________
+---
 
 ### Option 2: Manuell (für volle Kontrolle)
 
@@ -88,9 +88,9 @@ touch benchmark_modules/your_module/core/{__init__.py,evaluators.py,constants.py
 - `core/evaluators.py` – Scoring-Logik
 - `assets/*.yaml` – Test-Cases
 
-______________________________________________________________________
+---
 
-## 📁 Modul-Anatomie
+## Modul-Anatomie
 
 ### Verzeichnis-Struktur
 
@@ -110,9 +110,9 @@ benchmark_modules/
         └── constants.py       # Schwellenwerte, Regex-Patterns
 ```
 
-______________________________________________________________________
+---
 
-## 🏷️ Model Versioning
+## Modell-Versionierung
 
 CrucibleMark nutzt eine deterministische, provider-spezifische Versionsermittlung.
 
@@ -130,9 +130,9 @@ CrucibleMark nutzt eine deterministische, provider-spezifische Versionsermittlun
 
 Die SSOT liegt in `utils/model_utils.py` in `get_model_version(model_name, provider, client)`.
 
-______________________________________________________________________
+---
 
-## ⚙️ Konfiguration: `config.yaml`
+## Konfiguration: `config.yaml`
 
 ### SSOT Prinzip (Single Source of Truth)
 
@@ -251,7 +251,7 @@ class BenchmarkResult(BaseModel):
 **Warum strikt typisiert?**
 Frühere Versionen gaben lose Dictionaries zurück. Das führte zu chaotischen CSV-Spalten (`score` vs. `total_score` vs. `result`). Die `BenchmarkResult`-Klasse erzwingt einen einzigen Standard.
 
-______________________________________________________________________
+---
 
 #### 2. LOKAL (Optional) – Modul-spezifische Config
 
@@ -280,7 +280,7 @@ self.config = self.load_config()
 threshold = self.config['config']['keyword_threshold']
 ```
 
-______________________________________________________________________
+---
 
 ### Execution Modes
 
@@ -289,7 +289,7 @@ ______________________________________________________________________
 | **`standard`** | Framework lädt Assets einzeln, instanziiert Test pro Asset | Code Quality, UX Writing (isolierte Tests) |
 | **`batch`** | Framework übergibt alle Assets, Test kontrolliert Loop | Political Compass (3× Runs), Custom Aggregation |
 
-______________________________________________________________________
+---
 
 ### Kaskadierende Score-Contributions
 
@@ -315,9 +315,9 @@ Das Framework berechnet **Routine Score** und **Reasoning Score** automatisch al
    Total Score = (Routine Score + Reasoning Score) / 2
    ```
 
-______________________________________________________________________
+---
 
-## 📝 Asset-Format (YAML-Schema)
+## Asset-Format (YAML-Schema)
 
 ### Namenskonvention & Gruppierung (Last-Hyphen-Rule)
 
@@ -332,7 +332,7 @@ Das Framework ermittelt die Anzahl der Tests anhand der Dateinamen im `assets/`-
 | `pol_axis1-001.yaml` | `pol_axis1` | **1 Test** (zusammen mit -002) |
 | `pol_axis1-002.yaml` | `pol_axis1` | (Variante, zählt nicht extra) |
 
-______________________________________________________________________
+---
 
 ### Standard-Assets
 
@@ -382,7 +382,7 @@ metadata:
   # status = "language_mismatch" (kein Score-Abzug, separater Status-Flag).
 ```
 
-______________________________________________________________________
+---
 
 ### Info-Module (Structured Output)
 
@@ -403,9 +403,9 @@ evaluation:
     y_range: [-10, 10]                 # Soziale Achse
 ```
 
-______________________________________________________________________
+---
 
-## 🧠 Scoring-Logik implementieren
+## Scoring-Logik implementieren
 
 ### Architektur-Prinzip: MVC
 
@@ -451,7 +451,7 @@ def score_response(self, result: BenchmarkResult) -> BenchmarkResult:
     return result
 ```
 
-______________________________________________________________________
+---
 
 ### Beispiel: `core/evaluators.py`
 
@@ -522,9 +522,9 @@ class YourEvaluator:
             return (len(text) / min_len) * 100.0
 ```
 
-______________________________________________________________________
+---
 
-## 📊 CSV-Output & Leaderboard
+## CSV-Output & Leaderboard
 
 ### Automatische Spalten
 
@@ -539,7 +539,7 @@ ______________________________________________________________________
 | `routine_contribution` | Float | config.yaml |
 | `reasoning_contribution` | Float | config.yaml |
 
-______________________________________________________________________
+---
 
 ### Custom Spalten
 
@@ -556,9 +556,9 @@ return {
 }
 ```
 
-______________________________________________________________________
+---
 
-## 🧪 Testing & Validation
+## Tests & Validierung
 
 ### Asset-Schema prüfen
 
@@ -580,9 +580,9 @@ make leaderboard
 # Prüfen: Ist die Spalte da? Sind die Werte korrekt?
 ```
 
-______________________________________________________________________
+---
 
-## 📐 Best Practices
+## Best Practices
 
 ### DO's ✅
 
@@ -597,9 +597,9 @@ ______________________________________________________________________
 2. **Keine Modell-spezifischen Hacks** (unfairer Boost)
 3. **Keine Silent Failures** (Exceptions loggen!)
 
-______________________________________________________________________
+---
 
-## 🆘 Troubleshooting
+## Fehlerbehebung
 
 ### „Scores are always 0%"
 
@@ -615,15 +615,15 @@ Debug-Tool:
 python run_benchmark.py --debug-responses
 ```
 
-______________________________________________________________________
+---
 
-## 📚 Weiterführende Ressourcen
+## Weiterführende Ressourcen
 
 - **ARCHITECTURE.md** – System-Design & MVC-Patterns
 - **USER_GUIDE.md** – Wie Nutzende Module ausführen
 - **GOLDEN_STANDARDS.md** – Referenz-Methodik
 
-______________________________________________________________________
+---
 
 **Dokumenten-Version:** 3.1.0 (Überarbeitung März 2026)\
 **Kompatibel mit:** CrucibleMark v3.4.3+

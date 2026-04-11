@@ -1,5 +1,8 @@
 # CrucibleMark: Maintenance & Fehlerbehebungen
 
+**Zielgruppe:** Entwickler, die Änderungen am Scoring-System oder der Architektur nachvollziehen wollen.
+**Inhalt:** Changelog-Einträge für Bugfixes, Architektur-Entscheidungen und Verhaltensänderungen
+
 ## Leaderboard Numerator Fix (v2.2)
 
 **Datum:** 2026-03-16

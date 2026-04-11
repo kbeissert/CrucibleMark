@@ -2,14 +2,14 @@
 
 **Zielgruppe:** Alle, die verstehen wollen, wie CrucibleMark mit Daten umgeht.
 
-**Was du hier findest:**
+**Inhalt:**
 
 - Philosophie: „Live vs. History"
 - Backup-Lifecycle (Snapshot → Prune → Consolidate)
 - Workflow-Implikationen
 - Technische Implementierung
 
-______________________________________________________________________
+---
 
 ## 1. Philosophie & Zweck
 
@@ -17,7 +17,7 @@ CrucibleMark ist ein Werkzeug zum Vergleich von Modellen (Leaderboard) – kein 
 
 Das **Live-System** (`benchmark_scores/*.csv`) braucht keine Historie. Es braucht den **aktuellsten, validen Zustand** eines jeden Modells.
 
-______________________________________________________________________
+---
 
 ### Warum diese Unterscheidung wichtig ist
 
@@ -33,7 +33,7 @@ ______________________________________________________________________
 
 Redundante historische Daten im aktiven Workspace blähen das System auf. Für den primären Use Case (Modell A vs. Modell B vergleichen) bieten sie keinen Mehrwert.
 
-______________________________________________________________________
+---
 
 ## 2. Der Backup-Lifecycle
 
@@ -43,7 +43,7 @@ Um Datensicherheit mit Workspace-Hygiene zu verbinden, implementiert CrucibleMar
 make backup
 ```
 
-______________________________________________________________________
+---
 
 ### Phase 1: The Archive (unveränderliche Historie)
 
@@ -60,7 +60,7 @@ ______________________________________________________________________
 
 **Regel:** Dies ist das **System of Record**. Historische Analysen (z. B. „Wie performte GPT-4 vor einem Jahr?") kommen aus diesen Archiven.
 
-______________________________________________________________________
+---
 
 ### Phase 2: JSON-Cleanup (Hygiene)
 
@@ -72,7 +72,7 @@ ______________________________________________________________________
 
 JSON-Logs enthalten vollständige Rohdaten (Prompts, Responses, Timestamps) und sind sehr detailliert (mehrere MB pro Run). Ältere Logs liegen sicher im Archive aus Phase 1.
 
-______________________________________________________________________
+---
 
 ### Phase 3: CSV-Konsolidierung (The „Latest Only" Rule)
 
@@ -90,7 +90,7 @@ ______________________________________________________________________
 
 **Ergebnis:** Die CSV-Datei enthält exakt **einen validen Score** pro Test-Case.
 
-______________________________________________________________________
+---
 
 ## 3. Workflow-Implikationen
 
@@ -104,7 +104,7 @@ Weil CSV-Dateien auf den neuesten Stand konsolidiert werden:
 
 Das spart API-Kosten und Zeit.
 
-______________________________________________________________________
+---
 
 ### Manuelle Refreshes
 
@@ -135,7 +135,7 @@ Um einen Re-Run eines spezifischen Modells zu erzwingen, ohne die gesamte Histor
    - Konsolidiert das Ergebnis
    - Entfernt ggf. ältere Einträge
 
-______________________________________________________________________
+---
 
 ## 4. Technische Implementierung
 
@@ -160,7 +160,7 @@ backup:
     @echo "✅ Backup complete!"
 ```
 
-______________________________________________________________________
+---
 
 ### Skript-Details
 
@@ -183,7 +183,7 @@ for model_dir in Path('outputs/runs').iterdir():
             file.unlink()
 ```
 
-______________________________________________________________________
+---
 
 #### `consolidate_csv.py`
 
@@ -205,7 +205,7 @@ df_latest = df_sorted.drop_duplicates(
 df_latest.to_csv('benchmark_scores/local_models_benchmark.csv', index=False)
 ```
 
-______________________________________________________________________
+---
 
 ## 5. Best Practices
 
@@ -223,7 +223,7 @@ ______________________________________________________________________
 - Nach jedem einzelnen Benchmark
 - Bei kleinen Test-Runs (ein bis zwei Modelle)
 
-______________________________________________________________________
+---
 
 ### Backup-Rotation
 
@@ -241,7 +241,7 @@ find backups/ -name "*.tar.gz" -mtime +90 -delete
 0 0 1 * * cd /path/to/cruciblemark && make backup
 ```
 
-______________________________________________________________________
+---
 
 ## 6. Recovery-Szenarien
 
@@ -257,7 +257,7 @@ tar -xzf backups/cruciblemark_backup_YYYYMMDD.tar.gz
 cp backups/backup_20240315_143022/local_models_benchmark.csv benchmark_scores/
 ```
 
-______________________________________________________________________
+---
 
 ### Szenario 2: Falsches Scoring-Ergebnis
 
@@ -268,7 +268,7 @@ ______________________________________________________________________
 3. Betroffene Zeilen aus CSV löschen
 4. `make benchmark-auto` ausführen (Re-Run nur betroffener Tests)
 
-______________________________________________________________________
+---
 
 ### Szenario 3: Vollständiger Datenverlust
 
@@ -289,7 +289,7 @@ make install
 make leaderboard
 ```
 
-______________________________________________________________________
+---
 
 ## 7. Daten-Governance
 
@@ -300,7 +300,7 @@ ______________________________________________________________________
 
 Diese Daten sind ephemeral und lassen sich regenerieren.
 
-______________________________________________________________________
+---
 
 ### Langzeit-Archivierung
 
@@ -315,14 +315,14 @@ aws s3 cp backups/cruciblemark_backup_20260201.tar.gz \
 rsync -avz backups/ /mnt/external-drive/cruciblemark-backups/
 ```
 
-______________________________________________________________________
+---
 
-## 🔗 Verwandte Dokumentation
+## Verwandte Dokumentation
 
 - **USER_GUIDE.md** – Befehle für Daten-Management (`make clean-model`, u. a.)
 - **ARCHITECTURE.md** – Data Persistence Layer (Layer 4)
 
-______________________________________________________________________
+---
 
 **Dokumenten-Version:** 3.1.0 (Überarbeitung März 2026)\
 **Kompatibel mit:** CrucibleMark v3.4.3+

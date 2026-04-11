@@ -1,5 +1,8 @@
 # CrucibleMark: Aggregation & Test-Zählung
 
+**Zielgruppe:** Entwickler, die verstehen wollen, wie CrucibleMark Scores aggregiert und Tests zählt.
+**Inhalt:** Test-Zählung, Political-Compass-Entkopplung, Score-Berechnung
+
 ## 1. Test-Zählung & Political Compass
 
 **Update v2.6:** Das Modul "Political Compass" ist vollständig vom Benchmark-Scoring und der Test-Zählung entkoppelt.
@@ -16,7 +19,7 @@ Das Political Compass ist ein rein informatives Metadaten-Modul:
 - Das Modul speichert Ergebnisse autark in `benchmark_scores/political_compass_results.csv` und aggregiert sie in `benchmark_scores/political_compass_leaderboard.csv`.
 - Das Skript `generate_leaderboard.py` liest `political_compass_leaderboard.csv` und ergänzt die finale Anzeige um eine informative `Political Bias`-Textspalte – ohne die Benchmark-Mathematik zu berühren.
 
-______________________________________________________________________
+---
 
 ## 2. Duplikate & Datenintegrität
 
@@ -44,7 +47,7 @@ df = df.drop_duplicates(subset=["model", "model_version", "type", "asset_id"], k
 - **Stabilitäts-Tests:** Mehrfach-Runs sind sicher. Das System zeigt stets das neueste Ergebnis pro Asset.
 - **Historie:** Die CSV dient als historisches Log. Das ist kein Bug, sondern ein Feature.
 
-______________________________________________________________________
+---
 
 ## 3. Stabilitäts-Score
 

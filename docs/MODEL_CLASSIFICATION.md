@@ -1,18 +1,18 @@
-# Model Classification & Badge System
+# Modellklassifizierung & Badge-System
 
 **Zielgruppe:** Alle, die verstehen wollen, wie CrucibleMark Modelle klassifiziert und bewertet.
 
-**Was du hier findest:**
+**Inhalt:**
 
 - Badge-System (Standard, Bronze, Silver, Gold, Platinum)
-- Speed Classes (Fast, Medium, Slow)
-- Skill Profiles (automatische Kategorisierung)
-- Reasoning Score Interpretation
+- Speed-Klassen (Fast, Medium, Slow)
+- Skill-Profile (automatische Kategorisierung)
+- Reasoning-Score-Interpretation
 - Best Practices für neue Modelle
 
-______________________________________________________________________
+---
 
-## 🏅 Badge-System
+## Badge-System
 
 Badges reflektieren die **Gesamt-Performance** über alle Module hinweg. Die kanonischen Schwellenwerte stehen in `benchmark_config.yaml` (`scoring_tiers`) – die folgende Tabelle gibt den aktuellen Stand wieder. Detaillierte Begründung: [SCORING_METHODOLOGY.md](SCORING_METHODOLOGY.md).
 
@@ -34,9 +34,9 @@ Badges reflektieren die **Gesamt-Performance** über alle Module hinweg. Die kan
 - Bronze: ca. 4 (25 %)
 - Standard: 1 (6 %)
 
-______________________________________________________________________
+---
 
-## 🌐 Provider-Kategorien
+## Provider-Kategorien
 
 CrucibleMark verwendet eine dynamische, zentrale Konfiguration (`benchmark_config.yaml`), um Provider und Kategorie-Zuordnungen als Single Source of Truth (SSOT) zu verwalten. Dies macht das System flexibel erweiterbar, ohne dass Hardcodings im Analyse-Code nötig sind.
 
@@ -63,9 +63,9 @@ Die Kategorisierung wird zentral über `utils/model_utils.py::get_model_category
    - Enthält der Name `:cloud` (z. B. `minimax-m2:cloud`) → **Cloud (Open-Weights)**
    - Sonstiges Modell (z. B. `ministral-3:14b`) → **Local**
 
-#### 🛠️ Einen neuen Provider hinzufügen
+#### Einen neuen Provider hinzufügen
 
-Damit du zukünftig einen neuen Model-Provider ergänzen kannst (z. B. einen weiteren Open-Weights Hoster), genügen wenige Handgriffe, da das System vollkommen dynamisch geparst wird:
+Um einen neuen Model-Provider zu ergänzen (z. B. einen weiteren Open-Weights Hoster), genügen wenige Handgriffe, da das System vollkommen dynamisch geparst wird:
 
 1. **Konfiguration anpassen:** Öffne `benchmark_config.yaml` (und synchronisiere es idealerweise auch im Template `benchmark_config.example.yaml`).
 2. **Provider eintragen:** Ergänze den String-Namen des Providers (z.B. `together_ai` oder `vllm`) im passenden Kategorien-Array in der Sektion `providers`:
@@ -86,9 +86,9 @@ providers:
 ```
 3. Fertig! Ab dem nächsten Benchmark-, CLI- oder Leaderboard-Lauf überträgt sich die neue Provider-Einordnung fehlerfrei bis in die finalen Score-Tabellen und Metareviews des Judges.
 
-______________________________________________________________________
+---
 
-## ⚡ Speed Classes
+## Speed-Klassen
 
 Speed Classes kategorisieren Modelle nach ihrer **durchschnittlichen Inferenz-Zeit** über alle 37 Tests.
 
@@ -106,9 +106,9 @@ Speed Classes kategorisieren Modelle nach ihrer **durchschnittlichen Inferenz-Ze
 
 **Wichtig:** Speed ≠ Quality. Ministral-3:14b ist Slow, aber Rang 3 im Leaderboard.
 
-______________________________________________________________________
+---
 
-## 🎯 Skill Profiles
+## Skill-Profile
 
 Skill Profiles beschreiben die **Stärken-Kombination** eines Modells basierend auf Performance-Clustering.
 
@@ -138,9 +138,9 @@ Skill Profiles beschreiben die **Stärken-Kombination** eines Modells basierend 
 
 **Automatische Erkennung:** basiert auf Top-2-Kategorien und Speed Class.
 
-______________________________________________________________________
+---
 
-## 📊 Tokens/s = „Technische Generierungsgeschwindigkeit"
+## Tokens/s – Technische Generierungsgeschwindigkeit
 
 ```text
 Tokens/s = Mittelwert der tokens_per_second über alle Nicht-System-Assets
@@ -150,9 +150,9 @@ Tokens/s = Mittelwert der tokens_per_second über alle Nicht-System-Assets
 > Er kombinierte Qualität und Speed opak in einer Zahl und war neben `Cost per 1K (USD)` redundant.
 > Stattdessen drei saubere, unabhängige Dimensionen: `Total Score`, `Avg Task Duration (s)`, `Tokens/s`.
 
-______________________________________________________________________
+---
 
-## 📊 Reasoning Score Interpretation
+## Reasoning-Score-Interpretation
 
 Der **Reasoning Score** ist der härteste Test in CrucibleMark.
 
@@ -165,9 +165,9 @@ Der **Reasoning Score** ist der härteste Test in CrucibleMark.
 
 **Warum sind die Scores niedrig?** CrucibleMark misst **operatives Reasoning** (Deadlock-Detection, Root-Cause-Analyse), nicht Textvolumen. Selbst DeepSeek-R1 (Marketing: „Reasoning Model") erreicht nur **31,6** – das zeigt, dass Tier 2/3 wirklich schwer sind.
 
-______________________________________________________________________
+---
 
-## 🔍 Routine vs. Reasoning Score
+## Routine vs. Reasoning Score
 
 | Metrik | Misst | Gewichtung | Beispiel-Tasks |
 |--------|-------|------------|----------------|
@@ -176,9 +176,9 @@ ______________________________________________________________________
 
 Ministral-3:14b hat **41,3 Routine** (Rang 4) und **36,4 Reasoning** (Rang 1 lokal) – gut für Alltag und tiefes Denken.
 
-______________________________________________________________________
+---
 
-## 🛠️ Workflow: Neue Modelle hinzufügen
+## Workflow: Neue Modelle hinzufügen
 
 ### 1. Benchmark ausführen
 
@@ -200,9 +200,9 @@ Das System vergibt automatisch Badge, Speed Class und Skill Profile.
 
 Prüfen, ob Badge zur erwarteten Performance passt, Speed Class korrekt ist und Skill Profile Sinn macht.
 
-______________________________________________________________________
+---
 
-## 📈 Performance-Ratio & Vergleich mit Golden Standards
+## Performance-Ratio & Vergleich mit Golden Standards
 
 **Performance-Ratio Formel:**
 
@@ -227,9 +227,9 @@ Mistral Large: 78,8 Total Score
 
 Ministral-3:14b erreicht **98,5 %** von Mistral Large – fast identisch.
 
-______________________________________________________________________
+---
 
-## 🚧 Qualitative Indikatoren (Meta-Analyse)
+## Qualitative Indikatoren (Meta-Analyse)
 
 Neben numerischen Scores gibt es **binäre Ausschlusskriterien**, die oft nicht direkt im Score erscheinen, aber die Tauglichkeit für Automatisierungsprozesse massiv einschränken.
 
@@ -239,9 +239,9 @@ Neben numerischen Scores gibt es **binäre Ausschlusskriterien**, die oft nicht 
 
 Scheitert ein Modell daran, komplexe Markdown-Strukturen (wie Tabellen mit Pipes `|`) fehlerfrei zu generieren, zeigt das fundamentale Schwächen im Instruction Following. Ein Modell, das keine saubere Tabelle generieren kann, ist für professionelle Automatisierung (Reporting, Daten-Extraktion) ungeeignet.
 
-______________________________________________________________________
+---
 
-## 🎯 Best Practices
+## Best Practices
 
 ### DO's ✅
 
@@ -256,9 +256,9 @@ ______________________________________________________________________
 3. **Nicht nur Reasoning:** Ein Modell mit 40 Reasoning und 30 Routine ist unpraktisch
 4. **Nicht Commercial blind vertrauen:** Mistral Large liegt nur 1,2 Punkte über Ministral-3:14b (lokal)
 
-______________________________________________________________________
+---
 
-## 📊 Aktuelle Leaderboard-Highlights (Feb 2026)
+## Aktuelle Leaderboard-Highlights (Feb 2026)
 
 ### Top 5 Modelle
 
@@ -275,16 +275,16 @@ ______________________________________________________________________
 - **Schnellstes Production-Modell:** Qwen 2.5-Coder:7b (17,9s, Bronze)
 - **Bester Allrounder:** Cogito:14b (Balanced Specialist, 62,2s)
 
-______________________________________________________________________
+---
 
-## 🔗 Verwandte Dokumentation
+## Verwandte Dokumentation
 
 - **ARCHITECTURE.md** – Technische Details zu Modulen & Scoring
 - **USER_GUIDE.md** – Tests ausführen und interpretieren
 - **README.md** – Übersicht & Quick Start
 - **SCORING_METHODOLOGY.md** – Kanonische Tier-Schwellenwerte
 
-______________________________________________________________________
+---
 
 **Dokumenten-Version:** 2.1.0 (Überarbeitung März 2026)\
 **Kompatibel mit:** CrucibleMark v3.4.3+

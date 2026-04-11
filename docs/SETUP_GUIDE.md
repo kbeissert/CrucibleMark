@@ -1,8 +1,13 @@
-# Benchmark Configuration & Setup Guide
+# Konfiguration & Setup-Anleitung
 
-Diese Anleitung hilft dir, CrucibleMark nach der Installation exakt auf deine Hardware und deine Bedürfnisse (Provider, Module, Modelle) zuzuschneiden.
+**Zielgruppe:** Alle, die CrucibleMark erstmalig einrichten oder die zentrale Konfiguration anpassen wollen.
+**Inhalt:** Hardware-Profil, Provider & API-Keys, LLM-Judge-Konfiguration, Modul-Auswahl
 
-Nach `make install` kopiert das System die Vorlage `benchmark_config.example.yaml` automatisch zu `benchmark_config.yaml` – vorausgesetzt, sie existierte noch nicht. **Diese Datei ist der zentrale Steuerungshebel. Sie steht in `.gitignore` und landet nicht im Repository, damit deine API-Keys lokal sicher bleiben.**
+> **Voraussetzung:** Installation abgeschlossen (`make install` ausgeführt).
+
+Diese Anleitung beschreibt, wie CrucibleMark nach der Installation exakt auf die eigene Hardware und spezifische Anforderungen (Provider, Module, Modelle) zugeschnitten wird.
+
+Nach `make install` kopiert das System die Vorlage `benchmark_config.example.yaml` automatisch zu `benchmark_config.yaml` – vorausgesetzt, sie existierte noch nicht. **Diese Datei ist der zentrale Steuerungshebel. Sie steht in `.gitignore` und landet nicht im Repository, damit API-Keys lokal sicher bleiben.**
 
 Wenn eine Einstellung fehlt oder das System mit „Runtime Errors" abstürzt, liegt das meist an fehlenden API-Credits, zu kleinen Kontext-Fenstern oder falschen Provider-Aktivierungen. Gehe die folgenden vier Schritte durch.
 
@@ -10,25 +15,25 @@ Wenn eine Einstellung fehlt oder das System mit „Runtime Errors" abstürzt, li
 
 ## Schritt 1: Das Hardware-Profil aktivieren
 
-Nicht jede Maschine kann jeden lokalen Benchmark flüssig verarbeiten. In der Sektion `runner_environment` musst du dein primäres Hardware-Profil (`active_profile`) festlegen.
+Nicht jede Maschine kann jeden lokalen Benchmark flüssig verarbeiten. In der Sektion `runner_environment` wird das primäre Hardware-Profil (`active_profile`) festgelegt.
 
 ```yaml
 runner_environment:
   active_profile: "apple_silicon_m4"  # Ändere dies z. B. zu "nvidia_rtx4090"
 ```
 
-Mit einer dedizierten Nvidia-Grafikkarte (`nvidia_rtx4090`) trägst du den Namen exakt so ein, wie er unter `profiles:` in der YAML-Liste steht.
+Mit einer dedizierten Nvidia-Grafikkarte (`nvidia_rtx4090`) trägt man den Namen exakt so ein, wie er unter `profiles:` in der YAML-Liste steht.
 
 ---
 
 ## Schritt 2: Provider & API-Keys hinterlegen
 
-Alle Provider und ihre Kategorien (Commercial, Open-Weights Cloud, Local) sind dynamisch als Single Source of Truth in der `benchmark_config.yaml` hinterlegt (unter der Sektion `providers`). Wenn du einen neuen Anbieter nutzen möchtest (z. B. `together_ai`), musst du diesen nur dort zur entsprechenden Kategorie hinzufügen. So werden die Provider auch fehlerfrei im Leaderboard klassifiziert (Details unter [MODEL_CLASSIFICATION.md](MODEL_CLASSIFICATION.md)).
+Alle Provider und ihre Kategorien (Commercial, Open-Weights Cloud, Local) sind dynamisch als Single Source of Truth in der `benchmark_config.yaml` hinterlegt (unter der Sektion `providers`). Wer einen neuen Anbieter nutzen möchte (z. B. `together_ai`), fügt diesen nur dort zur entsprechenden Kategorie hinzu. So werden die Provider auch fehlerfrei im Leaderboard klassifiziert (Details unter [MODEL_CLASSIFICATION.md](MODEL_CLASSIFICATION.md)).
 
-Die Benchmarks nutzen API-Schnittstellen für kommerzielle Modelle oder Cloud-gehostete Open-Weights-Modelle. Du musst nicht jeden Provider aktivieren.
+Die Benchmarks nutzen API-Schnittstellen für kommerzielle Modelle oder Cloud-gehostete Open-Weights-Modelle. Nicht jeder Provider muss aktiviert werden.
 
-1. **Provider einrichten:** In `benchmark_config.yaml` findest du die aktuellen Listen unter `providers.commercial`, `providers.open_weights_cloud` und `providers.local`. Passe dies nach deinen Bedürfnissen an.
-2. **API-Schlüssel:** Hinterlege deine API-Keys **nicht** in der YAML-Datei. Trage sie direkt in eine `.env`-Datei im Hauptverzeichnis ein:
+1. **Provider einrichten:** Die aktuellen Listen finden sich in `benchmark_config.yaml` unter `providers.commercial`, `providers.open_weights_cloud` und `providers.local`. Die Listen werden nach Bedarf angepasst.
+2. **API-Schlüssel:** API-Keys werden **nicht** in der YAML-Datei hinterlegt. Sie werden direkt in eine `.env`-Datei im Hauptverzeichnis eingetragen:
 
 ```env
 # .env Datei im CrucibleMark-Hauptverzeichnis
@@ -43,7 +48,7 @@ MISTRAL_API_KEY=...
 
 Weil CrucibleMark textbasierte Soft-Skill-Vergleiche vornimmt, nutzt das System einen „Meta-Judge" – ein starkes externes Modell, das die Antworten der Kandidaten auswertet und Punkte vergibt.
 
-In der Sektion `llm_judge:` legst du fest, welcher Richter verwendet wird. **Anthropic** (mit `claude-haiku`-Modell) oder **Google** (mit `gemini-pro`) sind sehr empfehlenswert. Wer keinerlei API-Kosten generieren will, kann auch ein lokales Ollama-Modell als Judge angeben (z. B. `ministral-3:14b`). Das beansprucht jedoch erheblich mehr Zeit und Kontextfenster.
+In der Sektion `llm_judge:` wird festgelegt, welcher Richter verwendet wird. **Anthropic** (mit `claude-haiku`-Modell) oder **Google** (mit `gemini-pro`) sind sehr empfehlenswert. Wer keinerlei API-Kosten generieren will, kann auch ein lokales Ollama-Modell als Judge angeben (z. B. `ministral-3:14b`). Das beansprucht jedoch erheblich mehr Zeit und Kontextfenster.
 
 ```yaml
 llm_judge:
@@ -58,9 +63,9 @@ llm_judge:
 
 ## Schritt 4: Benchmarking-Module auswählen
 
-Nicht alle Test-Module sind für jeden Anwendungsfall relevant. Im Feld `modules` am Ende der `benchmark_config.yaml` legst du exakt fest, welche Eigenschaften du evaluieren möchtest.
+Nicht alle Test-Module sind für jeden Anwendungsfall relevant. Im Feld `modules` am Ende der `benchmark_config.yaml` wird exakt festgelegt, welche Eigenschaften evaluiert werden sollen.
 
-Für einen schnellen ersten Test empfiehlt sich, nur Code Quality (`coding`), CLI Benchmark (`cli_benchmark`) oder logisches Verständnis (`reasoning`) auf `enabled: true` zu lassen. Soft-Skills (UX-Writing, Cultural Intelligence u. a.) kannst du zunächst ausklammern.
+Für einen schnellen ersten Test empfiehlt sich, nur Code Quality (`coding`), CLI Benchmark (`cli_benchmark`) oder logisches Verständnis (`reasoning`) auf `enabled: true` zu lassen. Soft-Skills (UX-Writing, Cultural Intelligence u. a.) lassen sich zunächst ausklammern.
 
 | Disziplin | Typ | Ziel des Moduls |
 | :--- | :--- | :--- |
@@ -81,4 +86,4 @@ Für einen schnellen ersten Test empfiehlt sich, nur Code Quality (`coding`), CL
 
 Einzelne Module lassen sich auch dann via CLI aufrufen, wenn sie global deaktiviert sind: `make benchmark MODULE=code_quality`.
 
-Sobald du die Schritte eins bis vier nach der Installation angepasst hast, bist du bereit für den ersten Testlauf.
+Nach diesen vier Schritten ist die Konfiguration abgeschlossen und der erste Testlauf kann starten.

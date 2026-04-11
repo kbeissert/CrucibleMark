@@ -2,19 +2,19 @@
 
 **Zielgruppe:** Engineers, die den Framework-Core verstehen oder erweitern wollen.
 
-**Was du hier findest:**
+**Inhalt:**
 
 - Layer-basierte Architektur (Core → Modules → Scoring → Data)
 - MVC-Pattern & Design-Prinzipien
 - Provider-Abstraktion (Ollama, OpenAI, Mistral)
 - Datenfluss & Observability
-- Known Technical Debt
+- Bekannte technische Schulden
 
 > **Siehe auch:** DEVELOPER_GUIDE.md (für Modul-Entwicklung)
 
-______________________________________________________________________
+---
 
-## 🏗️ Architektur-Übersicht
+## Architektur-Übersicht
 
 ### 🛑 Oberste Regel: Strict Separation of Concerns (Measurement vs. Publishing)
 
@@ -53,9 +53,9 @@ CrucibleMark folgt einer **Plugin-basierten Architektur**, bei der Benchmark-Mod
 3. **Stateless Runs:** Jeder Benchmark ist unabhängig (keine Cross-Run-Pollution)
 4. **Reproducibility:** Fixe Seeds und deterministische Prompts
 
-______________________________________________________________________
+---
 
-## 🎯 Layer-Architektur
+## Layer-Architektur
 
 ```text
 ┌─────────────────────────────────────────────────────┐
@@ -96,9 +96,9 @@ ______________________________________________________________________
 └─────────────────────────────────────────────────────┘
 ```
 
-______________________________________________________________________
+---
 
-## 🎮 Layer 1: Framework Core
+## Layer 1: Framework Core
 
 ### Benchmark Orchestrator
 
@@ -134,7 +134,7 @@ Die Ergebnisse werden vom Runner durch den `ResultManager` (`utils/result_manage
 
 **Key Invariant:** Der Orchestrator kennt **keine Modul-Namen**. Alles läuft über Config-Discovery.
 
-______________________________________________________________________
+---
 
 ### Provider-Abstraktion
 
@@ -179,9 +179,9 @@ CrucibleMark koppelt alle Auswertungen an das Hardware- oder Kosten-Umfeld. Der 
 - **„Prompt-as-Config":** System-Prompts für textgenerierende Pipeline-Funktionen (z. B. für den Meta-Reviewer) sind vollständig nach `config/meta_reviewer_prompt.yaml` ausgelagert. Der System-Code führt lediglich ein `.format()` aus und injiziert Hardware-Variablen und Ergebnislogs in das YAML-Template.
 - **Data-Coupling & Regex-Integration:** Das System injiziert Metadaten (Token-Limits, Loop-Errors, ausgelöste Safety-Protokolle) via Warnblöcke direkt in die auszuwertenden Markdown-Logs. Der Evaluierungs-Flow parst diese Metadaten über vordefinierte Regex-Muster oder ID-Anker (z. B. "7.2.001"). Das befähigt den Judge, Modelle ganzheitlich – einschließlich technischer Flaws – zu bewerten. Hartes Grammar-Enforcement im Prompt verhindert Halluzinationen über einen aktiven Willen der KI-Modelle.
 
-______________________________________________________________________
+---
 
-## 📦 Layer 2: Benchmark Modules
+## Layer 2: Benchmark-Module
 
 ### MVC-Pattern (Strict Separation)
 
@@ -215,7 +215,7 @@ ______________________________________________________________________
 2. **Reproduzierbarkeit:** Scoring deterministisch
 3. **Modularität:** Scoring austauschbar (Regex → LLM-Judge)
 
-______________________________________________________________________
+---
 
 ### Modul-Discovery (Config-First)
 
@@ -230,9 +230,9 @@ ______________________________________________________________________
 
 **Wichtig:** Neue Module lassen sich hinzufügen, ohne Framework-Code zu ändern.
 
-______________________________________________________________________
+---
 
-## 🧮 Layer 3: Scoring Engine
+## Layer 3: Scoring Engine
 
 ### 1. Granular Rubric Scoring
 
@@ -280,7 +280,7 @@ def hybrid_score(response: str, asset: Dict) -> float:
 - **Metric:** Cosine Similarity (0–1 → 0–100 %)
 - **Threshold:** 0.78 (Standard), 0.55 (Expert Tier)
 
-______________________________________________________________________
+---
 
 ### Golden Standard Comparison
 
@@ -299,7 +299,7 @@ else:
 
 **Aktuelle Tier-Spezifikation:** Siehe [SCORING_METHODOLOGY.md](SCORING_METHODOLOGY.md).
 
-## 📊 Layer 4: Data Persistence
+## Layer 4: Datenpersistenz
 
 ### Leaderboard-Generation
 
@@ -332,7 +332,7 @@ else:
 
 **Skill Profile Generation:** Das System erstellt ein Profil basierend auf Speed Class und Top-Modul (z. B. „Fast Code Reviewer").
 
-______________________________________________________________________
+---
 
 ### Web Export Pipeline
 
@@ -363,7 +363,7 @@ Der Web Exporter ist ein eigenständiger Publishing-Schritt (Layer 4 Downstream)
 
 **Audit-Log-Sanitierung:** Vor dem Export werden die Audit-Logs bereinigt (`sanitize_audit_log()`). Entfernt wird Section 3 (Judge-Auswertung, Scores, Golden-Standard-Referenzen). Erhalten bleiben Header, Prompt, Modellantwort und Modul-Metriken. Die Judge-Bewertung fließt nicht direkt in den Export, sondern verdichtet in die Review-Artikel ein.
 
-______________________________________________________________________
+---
 
 ### Backup-Strategie (Snapshot & Prune)
 
@@ -377,9 +377,9 @@ ______________________________________________________________________
 
 **Siehe:** `docs/BACKUP_STRATEGY.md`
 
-______________________________________________________________________
+---
 
-## 🔍 Observability & Logging
+## Observability & Logging
 
 ### „Silent Console, Noisy Log" Strategie
 
@@ -392,7 +392,7 @@ print("⏳ Testing Reasoning Module (2/7)...")
 
 Warnings von Drittanbieter-Bibliotheken werden unterdrückt.
 
-______________________________________________________________________
+---
 
 #### 2. Log-Datei (Developer-Facing)
 
@@ -404,9 +404,9 @@ ______________________________________________________________________
 - Inkl. unterdrückter Warnings
 - Tracebacks bei Exceptions
 
-______________________________________________________________________
+---
 
-## 🔧 Known Technical Debt
+## Bekannte technische Schulden
 
 ### Kategorie: Untested Assumptions
 
@@ -428,7 +428,7 @@ ______________________________________________________________________
    - **Risiko:** Festplatten-Müll
    - **Test:** Modul löschen → prüfen
 
-______________________________________________________________________
+---
 
 ### Kategorie: Code Smells
 
@@ -447,7 +447,7 @@ ______________________________________________________________________
    - **Problem:** Ollama crasht, API retries
    - **Fix:** Einheitliche `ErrorHandler`-Klasse
 
-______________________________________________________________________
+---
 
 ### Kategorie: Missing Features
 
@@ -466,15 +466,15 @@ ______________________________________________________________________
    - **Impact:** High
    - **Effort:** 6 Stunden
 
-______________________________________________________________________
+---
 
-## 🗺️ Roadmap
+## Roadmap
 
 Die v1.x-Roadmap ist abgeschlossen. Die aktuelle Roadmap (Agentic Benchmarks, Multimodal, Web-UI, CI/CD) steht in [README.md](../README.md).
 
-______________________________________________________________________
+---
 
-## 📚 Appendix: Design-Patterns
+## Anhang: Design-Patterns
 
 ### 1. Strategy Pattern (Scoring)
 
@@ -484,7 +484,7 @@ class BaseEvaluator:
         raise NotImplementedError
 ```
 
-______________________________________________________________________
+---
 
 ### 2. Template Method Pattern (BaseTest)
 
@@ -497,7 +497,7 @@ class BaseTest:
         self.save_to_csv(result)
 ```
 
-______________________________________________________________________
+---
 
 ### 3. Factory Pattern (Provider)
 
@@ -510,7 +510,7 @@ class LLMClientFactory:
         # ...
 ```
 
-______________________________________________________________________
+---
 
-**Dokumenten-Version:** 3.1.0 (Überarbeitung März 2026)\
+**Dokumenten-Version:**** 3.1.0 (Überarbeitung März 2026)\
 **Kompatibel mit:** CrucibleMark v3.4.3+
