@@ -33,19 +33,22 @@ Das Skript `generate_review.py` iteriert nach dem Audit-Run über alle getestete
 
 ```text
 outputs/
-├── audit_logs/
-│   └── benchmark_scores_llm-judge-<JudgeModel>/
-│       ├── mistral-medium-latest/
-│       │   ├── code_quality_001.md
-│       │   └── ...
-│       └── claude-sonnet-4-6/
-│           └── ...
-└── comparisons/
+└── audit_logs/
+    ├── mistral-medium-latest/
+    │   ├── code_quality_001.md
+    │   └── ...
+    └── claude-sonnet-4-6/
+        └── ...
+
+docs/
+└── reviews/
     ├── mistral-medium-latest/
     │   └── review_20260313_140000.md     <-- fertiger Magazin-Artikel
     └── claude-sonnet-4-6/
         └── review_20260313_140500.md
 ```
+
+> **Hinweis:** `outputs/audit_logs/` ist in `.gitignore` ausgenommen und bleibt lokal. `docs/reviews/` wird im Repository versioniert und ist öffentlich einsehbar.
 
 ## Verwendung
 
@@ -55,7 +58,7 @@ outputs/
 make benchmark-audit MODEL="mistral-medium-latest"
 ```
 
-Dieser Befehl stoppt nicht bei der Score-Ermittlung, sondern schließt den Prozess automatisch mit dem generierten Redaktionsartikel in `outputs/comparisons/` ab.
+Dieser Befehl stoppt nicht bei der Score-Ermittlung, sondern schließt den Prozess automatisch mit dem generierten Redaktionsartikel in `docs/reviews/` ab.
 
 ### 2. Manueller Review-Trigger (rückwirkend)
 
@@ -66,6 +69,23 @@ Wenn bereits Audit-Logs im Ordner `/outputs/audit_logs/` vorliegen und nur der r
 ```
 
 Das Skript wählt automatisch den neuesten Lauf (nach Änderungsdatum sortiert) in `outputs/audit_logs/`.
+
+### 3. Web-Export
+
+Die Audit-Logs und Reviews lassen sich für das öffentliche Frontend aufbereiten:
+
+```bash
+make web-export
+```
+
+Beim Export werden alle Audit-Logs **sanitiert**: Die Judge-Auswertung (Section 3) wird entfernt. Öffentlich zugänglich sind damit nur:
+
+- **Header** (Modell, Provider, Laufzeit, Tokens, Kosten)
+- **Section 1 – Prompt / Fragestellung:** die exakte Anfrage, die das Benchmark-System an das getestete Modell gesendet hat
+- **Section 2 – Model Response:** die vollständige Antwort des getesteten Modells (inkl. technischer Warn-Blöcke wie `[!CAUTION]`)
+- **Modul-Metriken** (P95-Antwortzeit, Timeout-Rate)
+
+Die Judge-Bewertung (Scores, Golden-Standard-Referenzen, Rubriken) fließt nicht in den öffentlichen Audit-Log ein, sondern ausschließlich in den **Meta-Review** (`docs/reviews/`), wo sie redaktionell verdichtet und kontextualisiert wird.
 
 ## Warum ein Meta-Reviewer?
 

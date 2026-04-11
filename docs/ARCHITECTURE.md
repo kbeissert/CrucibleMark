@@ -85,6 +85,13 @@ ______________________________________________________________________
 │ - Leaderboard Generator (aggregation)              │
 │ - Backup System (snapshot + prune)                 │
 └─────────────────────────────────────────────────────┘
+                        ↓
+┌─────────────────────────────────────────────────────┐
+│ Layer 5: Publishing (Downstream, entkoppelt)        │
+│ - Meta-Reviewer (generate_review.py)               │
+│ - Web Export Pipeline (web_export.py)              │
+│ - Judge-Flow → verdichtet in Review-Artikel        │
+└─────────────────────────────────────────────────────┘
 ```
 
 ______________________________________________________________________
@@ -322,6 +329,35 @@ else:
 ```
 
 **Skill Profile Generation:** Das System erstellt ein Profil basierend auf Speed Class und Top-Modul (z. B. „Fast Code Reviewer").
+
+______________________________________________________________________
+
+### Web Export Pipeline
+
+**Einstiegspunkt:** `make web-export` → `scripts/web_export.py`
+
+Der Web Exporter ist ein eigenständiger Publishing-Schritt (Layer 4 Downstream), der vollständig vom Core-Benchmark-Loop entkoppelt ist. Er liest ausschließlich aus bereits generierten Artefakten und schreibt in das externe Frontend-Repository.
+
+**SSOT-Prinzip:** Die Leaderboard-CSV ist die einzige Datenquelle. Ein vollständiger Rebuild (`shutil.rmtree` auf `models/`) stellt sicher, dass der Export immer synchron mit dem Leaderboard ist — Modelle die nicht in der CSV stehen, erscheinen nicht im Export.
+
+**Verzeichnis-Auflösung (Fallback-Matcher):** Interne Modell-IDs (Ordnernamen in `outputs/audit_logs/`) weichen oft von den CSV-Anzeigenamen ab (Provider-Prefix wie `moonshotai_`, Versions-Suffix wie `-20251001`). Der Exporter löst das über einen gestuften Lookup: Exact Match → Suffix-Match (Provider-Prefix) → Prefix-Match (Versions-Suffix).
+
+**Export-Struktur:**
+
+```text
+<web_export_dir>/
+├── leaderboard.json              ← globale Rangliste (aus CSV)
+├── meta.json                     ← Export-Metadaten (Zeitstempel, Modellzahl)
+├── provider_landscape_review.md  ← Provider-Gesamtreview
+└── models/<model-slug>/
+    ├── data.json                 ← Scores + Modul-Details pro Modell
+    ├── comparisons/
+    │   └── review_<timestamp>.md ← Meta-Reviewer-Artikel (aus docs/reviews/)
+    └── audit_logs/
+        └── *.md                  ← sanitierte Einzellogs (ohne Judge-Sektion)
+```
+
+**Audit-Log-Sanitierung:** Vor dem Export werden die Audit-Logs bereinigt (`sanitize_audit_log()`). Entfernt wird Section 3 (Judge-Auswertung, Scores, Golden-Standard-Referenzen). Erhalten bleiben Header, Prompt, Modellantwort und Modul-Metriken. Die Judge-Bewertung fließt nicht direkt in den Export, sondern verdichtet in die Review-Artikel ein.
 
 ______________________________________________________________________
 

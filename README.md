@@ -86,10 +86,20 @@ make political-compass-safe
 
 ### 🌐 Web Export Pipeline
 
-CrucibleMark enthält einen integrierten Export, der sämtliche Benchmark-Ergebnisse (CSVs) sowie Audit- und Review-Markdowns als aufbereitetes JSON-Datenmodell aggregiert. Die Ausgabe versorgt das externe Frontend-Projekt `cruciblemark-web` dynamisch mit Ergebnisdaten und generierten Metadaten.
+CrucibleMark enthält eine integrierte Export-Pipeline (`scripts/web_export.py`), die sämtliche Benchmark-Ergebnisse als aufbereitetes Datenpaket für das externe Frontend-Projekt `cruciblemark-web` bereitstellt.
+
+**Was exportiert wird:**
+- `leaderboard.json` — globale Rangliste (Quelle: Leaderboard-CSV als SSOT)
+- `models/<slug>/data.json` — Scores und Modul-Details pro Modell
+- `models/<slug>/comparisons/` — redaktionelle Meta-Reviews (`docs/reviews/`)
+- `models/<slug>/audit_logs/` — **sanitierte** Einzeltest-Protokolle: Prompt (die Anfrage ans Modell), Modellantwort und Modul-Metriken
+
+Die Judge-Auswertung (Scores, Rubriken, Golden-Standard-Referenzen) wird vor dem Export entfernt. Sie fließt ausschließlich in die Meta-Review-Artikel ein, wo sie redaktionell verdichtet und kontextualisiert wird.
+
+**Vollständiger Rebuild:** Jeder Export-Lauf löscht `models/` komplett und baut alles neu auf — der Export ist damit immer synchron mit der Leaderboard-CSV.
 
 ```bash
-# Basis-Export (schreibt standardmäßig sicher nach ./web_export/raw/)
+# Export in konfigurierten Ausgabeordner (benchmark_config.yaml → output.web_export_dir)
 make web-export
 
 # Direkter Export ins Development-Frontend (11ty, schreibt nach src/_data/raw/)
