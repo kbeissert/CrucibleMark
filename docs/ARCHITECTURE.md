@@ -84,6 +84,8 @@ ______________________________________________________________________
 │ - CSV Writer (append-only logs)                    │
 │ - Leaderboard Generator (aggregation)              │
 │ - Backup System (snapshot + prune)                 │
+│ - Model Cards (benchmark_scores/model_cards/)      │
+│ - Provider Cards (benchmark_scores/provider_cards/)│
 └─────────────────────────────────────────────────────┘
                         ↓
 ┌─────────────────────────────────────────────────────┐
@@ -339,6 +341,8 @@ ______________________________________________________________________
 Der Web Exporter ist ein eigenständiger Publishing-Schritt (Layer 4 Downstream), der vollständig vom Core-Benchmark-Loop entkoppelt ist. Er liest ausschließlich aus bereits generierten Artefakten und schreibt in das externe Frontend-Repository.
 
 **SSOT-Prinzip:** Die Leaderboard-CSV ist die einzige Datenquelle. Ein vollständiger Rebuild (`shutil.rmtree` auf `models/`) stellt sicher, dass der Export immer synchron mit dem Leaderboard ist — Modelle die nicht in der CSV stehen, erscheinen nicht im Export.
+
+**Model Cards & Provider Cards:** Strukturierte JSON-Steckbriefe pro Modell (`benchmark_scores/model_cards/`) und pro Provider (`benchmark_scores/provider_cards/`), generiert via LLM (`make model-cards`, `make provider-cards`). Sie enthalten Entwickler, Herkunftsland, Stärken/Schwächen, Datenschutz-Metadaten und Sovereign-Risk-Einschätzung. Die Cards werden (a) als Kontext-Block in den Meta-Reviewer injiziert und (b) als eigenständige JSON-API für das Web-Frontend bereitgestellt.
 
 **Verzeichnis-Auflösung (Fallback-Matcher):** Interne Modell-IDs (Ordnernamen in `outputs/audit_logs/`) weichen oft von den CSV-Anzeigenamen ab (Provider-Prefix wie `moonshotai_`, Versions-Suffix wie `-20251001`). Der Exporter löst das über einen gestuften Lookup: Exact Match → Suffix-Match (Provider-Prefix) → Prefix-Match (Versions-Suffix).
 

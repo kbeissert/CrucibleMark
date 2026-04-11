@@ -88,6 +88,13 @@ make political-compass-safe
 
 CrucibleMark enthält eine integrierte Export-Pipeline (`scripts/web_export.py`), die sämtliche Benchmark-Ergebnisse als aufbereitetes Datenpaket für das externe Frontend-Projekt `cruciblemark-web` bereitstellt.
 
+**Model Cards & Provider Cards** sind strukturierte JSON-Steckbriefe, die per LLM generiert werden und Entwickler, Herkunftsland, Datenschutz-Metadaten und eine Sovereign-Risk-Einschätzung enthalten. Sie fließen als Kontext in den Meta-Reviewer ein und stehen dem Web-Frontend als eigenständige JSON-API zur Verfügung.
+
+```bash
+make model-cards      # Model Cards generieren (fehlende)
+make provider-cards   # Provider Cards generieren (fehlende)
+```
+
 **Was exportiert wird:**
 - `leaderboard.json` — globale Rangliste (Quelle: Leaderboard-CSV als SSOT)
 - `models/<slug>/data.json` — Scores und Modul-Details pro Modell
