@@ -30,6 +30,7 @@ benchmark_scores/*.json
 # Test Corpus — PRIVAT: Testprompts und Golden Standards nicht veröffentlichen
 # (Kontaminationsschutz: Labs scrapen öffentliche Repos für Pre-Training-Daten)
 benchmark_modules/**/assets/
+benchmark_modules/**/assets_v3_backup/
 # Golden Standards (Must be committed as they are the source of truth)
 # Ensure we don't accidentally ignore json files inside specific validated folders
 !golden_standards/**/*.json
