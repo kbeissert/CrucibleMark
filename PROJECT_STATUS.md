@@ -1,16 +1,30 @@
 # PROJECT_STATUS.md
 
 **Last Updated:** 2026-04-11
-**Current Version:** 3.4.4 (Architecture Compliance — No Magic Numbers/Strings)
+**Current Version:** 3.4.5 (Dokumentation: Redaktionelle Überarbeitung)
 **Status:** ✅ Production-Ready
 
 ---
 
 ## Executive Summary
 
-CrucibleMark v3.4.3 führt ein **selbstnormalisierendes Modulgewichtungs-System** ein, das den Total Score von der Asset-Anzahl-basierten Zufallsgewichtung entkoppelt. Jedes Vollmodul fließt jetzt mit gleichem Gewicht (`module_weight: 1.0`) in den Gesamtscore ein – unabhängig davon, wie viele Assets in ihm liegen. Das CLI-Modul ist als leichtgewichtiges Supplement mit `module_weight: 0.5` eingestuft. Ergänzend wurde die `cost_limits.yaml` um 5 neue Ollama-Cloud-Modelle erweitert und die Benchmark-Dokumentation um die Modulgewichtungs-Philosophie ergänzt.
+CrucibleMark v3.4.5 schließt die redaktionelle Überarbeitung aller 16 Projektdokumente ab. README.md, 13 docs/-Dateien, REF_TODO.md und PROJECT_STATUS.md wurden auf einheitlichen Ton, Ansprache und Struktur gebracht: unpersönliches `man`/`sein`, Emojis aus Überschriften entfernt, alle englischen Header ins Deutsche übertragen, Intro-Blöcke (`**Zielgruppe:**`/`**Inhalt:**`) ergänzt und alle `______`-Trennlinien in `---` umgewandelt. Kein funktionaler Code geändert.
 
-**Key Achievements (v3.4.3):**
+**Key Achievements (v3.4.5):**
+- ✅ **16 Dokumente einheitlich überarbeitet:** README.md + docs/ (13 Dateien) + REF_TODO.md + PROJECT_STATUS.md.
+- ✅ **Ansprache:** `du`/`dein`/`dich` durchgängig → unpersönliches `man`/`sein`/`sich`.
+- ✅ **Emojis:** Alle Emojis aus Überschriften entfernt — nur 🛑 als kritischer Warnmarker behalten.
+- ✅ **Header:** Alle englischen H1–H3 ins Deutsche übertragen (z. B. `# Developer Guide` → `# Entwicklerhandbuch`).
+- ✅ **Intro-Blöcke:** Einheitliches `**Zielgruppe:**` / `**Inhalt:**` / `> **Voraussetzung:**`-Format in allen Dateien ergänzt.
+- ✅ **Divider:** ~80+ `______`-Trennlinien systemweit → `---`.
+
+**Vorherige Version (v3.4.4 – Architecture Compliance: No Magic Numbers/Strings):**
+
+CrucibleMark v3.4.4 überführt alle Magic Numbers und Magic Strings in eine zentrale `constants.py` als SSOT. Hardcodierte Schwellenwerte, Spaltennamen und Provider-Strings wurden aus dem gesamten Codebase extrahiert und über importierbare Konstanten referenziert — kein funktionaler Verhaltensunterschied, aber deutlich reduzierte technische Schuld.
+
+**Vorherige Version (v3.4.3 – Module Weight System & Score-Fairness):**
+
+CrucibleMark v3.4.3 führt ein **selbstnormalisierendes Modulgewichtungs-System** ein, das den Total Score von der Asset-Anzahl-basierten Zufallsgewichtung entkoppelt. Jedes Vollmodul fließt jetzt mit gleichem Gewicht (`module_weight: 1.0`) in den Gesamtscore ein – unabhängig davon, wie viele Assets in ihm liegen. Das CLI-Modul ist als leichtgewichtiges Supplement mit `module_weight: 0.5` eingestuft. Ergänzend wurde die `cost_limits.yaml` um 5 neue Ollama-Cloud-Modelle erweitert und die Benchmark-Dokumentation um die Modulgewichtungs-Philosophie ergänzt.
 - ✅ **`module_weight`-System:** Neues `integration.leaderboard.module_weight`-Feld in allen Modul-`config.yaml`s. Alle 6 Vollmodule: `1.0`. CLI: `0.5` (Supplement, kein vollwertiges Evaluierungsmodul).
 - ✅ **Selbstnormierende Formel:** `TotalScore = Σ(ModuleScore × module_weight) / Σ(module_weight)` — Ergebnis immer 0–100, unabhängig von aktiven Modul-Subsets oder gewählten Gewichtswerten.
 - ✅ **`_module_scale()` in `score_calculator.py`:** Hilfsfunktion berechnet `scale = module_weight / config_weight_sum` pro Modul. Alle 4 Contrib-Spalten werden vor der Aggregation skaliert.
@@ -377,7 +391,7 @@ Visuelle Aufgaben (UML lesen, UI-Designs beurteilen) benötigen neue Asset-Forma
 
 ### Abgeschlossen
 
-- [x] Root README (v3.4.3, redaktionell überarbeitet 11.04.26)
+- [x] Root README (v3.4.5, redaktionell überarbeitet 11.04.26)
 - [x] docs/ (14 Dateien, redaktionell überarbeitet 11.04.26)
 - [x] Module READMEs (8/8)
 - [x] Configuration docs
@@ -428,10 +442,14 @@ Visuelle Aufgaben (UML lesen, UI-Designs beurteilen) benötigen neue Asset-Forma
 
 ## Changelog
 
-### Docs: Redaktionelle Überarbeitung (2026-04-11)
+### Docs: Redaktionelle Überarbeitung (2026-04-11) – v3.4.5
 
-- 14 Dokumentationsdateien einheitlich überarbeitet: Ansprache, Ton, Emoji-Verwendung
+- 16 Projektdokumente einheitlich überarbeitet: Ansprache, Ton, Emoji-Verwendung
 - Einheitliche Intro-Blöcke (`**Zielgruppe:**` / `**Inhalt:**`), alle `______` → `---`
+
+### v3.4.4 (2026-04-11) – Architecture Compliance: No Magic Numbers/Strings
+
+- Alle Magic Numbers/Strings in `constants.py` zentralisiert; kein Verhaltensunterschied
 
 ### v3.4.3 (2026-04-10) – Module Weight System & Score-Fairness
 
