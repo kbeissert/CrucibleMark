@@ -1,21 +1,26 @@
 {
   "model_id": "claude-haiku-4-5-20251001",
-  "display_name": "Claude 4.5 Haiku (Hypothetisch)",
+  "display_name": "Claude Haiku 4.5",
   "developer": "Anthropic",
   "origin_country": "USA",
+  "developer_jurisdiction": "US",
+  "deployment_type": "cloud-only",
+  "local_deployment_possible": false,
+  "weights_provenance_risk": "medium",
+  "weights_provenance_risk_rationale": "Anthropic ist ein US-amerikanisches Unternehmen und unterliegt dem CLOUD Act; die Modellgewichte sind nicht öffentlich zugänglich, aber als US-Unternehmen besteht ein theoretisches Behördenzugriffsrisiko.",
   "model_family": "Claude",
-  "primary_focus": "general",
-  "summary": "Dieses hypothetische Modell von Anthropic (USA) ist als Nachfolger der Claude 3 Haiku-Reihe konzipiert. Der Trainings-Schwerpunkt liegt auf extremer Geschwindigkeit und Kosteneffizienz für allgemeine Aufgaben. Typische Stärken wären schnelle, präzise Antworten und die Skalierbarkeit für Echtzeitanwendungen.",
+  "primary_focus": "instruction-following",
+  "summary": "Claude Haiku 4.5 ist Anthropics schnellstes und kompaktestes Modell der Claude-4-Generation, entwickelt für latenzarme, kosteneffiziente Anwendungen. Es wurde auf Präzision bei kurzen Aufgaben, Dialogführung und strukturierter Ausgabe optimiert und eignet sich besonders für Produktionsumgebungen mit hohem Durchsatz.",
   "strengths": [
-    "Extrem schnelle Inferenzzeiten für Echtzeit-Anwendungen",
-    "Hohe Kosteneffizienz bei großem Anfragevolumen",
-    "Solide Leistung bei allgemeinen Anweisungen und Zusammenfassungen"
+    "Sehr niedrige Latenz bei gleichzeitig hoher Antwortqualität für ein kompaktes Modell",
+    "Zuverlässiges Instruction-Following und strukturierte Ausgaben (z. B. JSON, Listen)",
+    "Kosteneffizient für skalierbare API-Integrationen und Echtzeit-Anwendungen"
   ],
   "known_limitations": [
-    "Weniger Tiefe bei komplexem, mehrstufigem Reasoning im Vergleich zu größeren Modellen",
-    "Potenziell höhere Anfälligkeit für Faktenfehler bei Nischenthemen"
+    "Schwächer als größere Claude-Modelle (z. B. Sonnet, Opus) bei komplexem mehrstufigem Reasoning",
+    "Begrenzte Tiefe bei sehr langen oder stark kontextabhängigen Analyseaufgaben"
   ],
-  "judge_context_hint": "Bewerte dieses Modell primär nach seiner Geschwindigkeit und Effizienz bei der Erledigung von Standardaufgaben, nicht nach seiner Fähigkeit zu tiefgreifendem, komplexem Reasoning.",
-  "unknown": true,
-  "generated_at": "2026-04-07T20:08:28.046390+00:00"
+  "judge_context_hint": "Das Modell ist auf Geschwindigkeit und Effizienz optimiert – bei komplexen Reasoning-Aufgaben sollte der Judge berücksichtigen, dass Haiku bewusst zugunsten von Latenz auf Tiefe verzichtet.",
+  "unknown": false,
+  "generated_at": "2026-04-11T13:20:46.974319+00:00"
 }

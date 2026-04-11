@@ -107,6 +107,319 @@ def get_model_card_context(model_id: str) -> str:
     return "\n".join(lines)
 
 
+def compute_sovereign_risk(model_card: dict, provider_card: dict | None) -> tuple[str, str]:
+    """Berechnet das kombinierte Sovereign-Risk zur Render-Zeit (Worst-Case-Prinzip).
+    Gibt (risk_level, rationale) zurück — niemals statisch gespeichert."""
+    RISK_ORDER = {"low": 0, "medium": 1, "high": 2}
+    risks: list[tuple[str, str]] = []
+
+    # Weights-Risiko aus Model Card
+    wprov = (model_card.get("weights_provenance_risk") or "").lower()
+    wprov_rationale = model_card.get("weights_provenance_risk_rationale", "")
+    if wprov in RISK_ORDER:
+        risks.append((wprov, f"Weights-Provenienz: {wprov_rationale or wprov}"))
+
+    if provider_card:
+        dep = provider_card.get("deployment", {})
+        cloud_act = dep.get("cloud_act_exposure", False)
+        applicable_law = dep.get("applicable_law", "Unknown")
+        nsl = (dep.get("chinese_nsl_risk") or "none").lower()
+
+        if nsl == "high":
+            risks.append(("high", f"Provider unterliegt chinesischem NSL ({provider_card.get('display_name', '')})"))
+        elif cloud_act:
+            eu_adequacy = dep.get("eu_adequacy_decision", False)
+            level = "medium" if eu_adequacy else "high"
+            risks.append((level, f"US CLOUD Act anwendbar via {provider_card.get('display_name', '')} ({'mit SCCs/DPA' if eu_adequacy else 'ohne EU-Absicherung'})"))
+        elif applicable_law == "EU (GDPR)":
+            risks.append(("low", f"EU-Jurisdiktion via {provider_card.get('display_name', '')} (DSGVO)"))
+        elif applicable_law == "N/A (lokal only)":
+            # Lokaler Betrieb: nur Weights-Risiko zählt
+            if wprov == "high":
+                risks.append(("medium", "Lokal betrieben – kein Datentransfer, aber Weights stammen von riskantem Entwickler"))
+            else:
+                risks.append(("low", "Vollständig lokal, kein Datentransfer"))
+    else:
+        # Kein Provider bekannt = Annahme lokal
+        if wprov == "high":
+            risks.append(("medium", "Kein Provider zugeordnet (vermutlich lokal) – Weights-Risiko bleibt"))
+        else:
+            risks.append(("low", "Kein Cloud-Provider zugeordnet"))
+
+    if not risks:
+        return ("medium", "Unbekannte Risikokombination")
+
+    best = max(risks, key=lambda r: RISK_ORDER.get(r[0], 0))
+    return best
+
+
+def get_provider_card_context(model_id: str) -> str:
+    """Ermittelt den Provider aus der Model Card, berechnet das kombinierte Sovereign Risk
+    zur Render-Zeit und gibt einen formatierten Kontext-String zurück."""
+    import json
+    import re
+
+    def safe_id(name: str) -> str:
+        s = name.lower()
+        s = re.sub(r"[^a-z0-9]+", "_", s)
+        return s.strip("_")
+
+    # Model Card laden
+    cards_dir = ROOT_DIR / "benchmark_scores" / "model_cards"
+    safe = re.sub(r"[:/.\\ ]", "_", model_id)
+    model_card_path = cards_dir / f"{safe}.json"
+
+    model_card: dict = {}
+    developer = None
+    if model_card_path.exists():
+        try:
+            with open(model_card_path, "r", encoding="utf-8") as f:
+                model_card = json.load(f)
+            developer = model_card.get("developer")
+        except Exception:
+            pass
+
+    # Provider Card laden (optional)
+    provider_card: dict | None = None
+    if developer:
+        provider_cards_dir = ROOT_DIR / "benchmark_scores" / "provider_cards"
+        provider_card_path = provider_cards_dir / f"{safe_id(developer)}.json"
+        if provider_card_path.exists():
+            try:
+                with open(provider_card_path, "r", encoding="utf-8") as f:
+                    loaded = json.load(f)
+                if not loaded.get("unknown"):
+                    provider_card = loaded
+            except Exception:
+                pass
+
+    if not model_card and not provider_card:
+        return ""
+
+    # Sovereign Risk zur Render-Zeit berechnen
+    risk_level, risk_rationale = compute_sovereign_risk(model_card, provider_card)
+
+    lines: list[str] = []
+
+    if provider_card:
+        dep = provider_card.get("deployment", {})
+        lines += [
+            f"### Provider Card: {provider_card.get('display_name', developer)}",
+            f"- **Unternehmen:** {provider_card.get('company', 'n/a')} | **Sitz:** {provider_card.get('headquarters', 'n/a')}",
+            f"- **Anwendbares Recht:** {dep.get('applicable_law', 'n/a')} | **Datenstandort:** {dep.get('data_residency', 'n/a')}",
+            f"- **GDPR DPA:** {dep.get('gdpr_dpa_available', 'unknown')} | **Datenspeicherung:** {dep.get('data_retention_days', 'unknown')} Tage",
+        ]
+        privacy_note = provider_card.get("privacy_note", "")
+        if privacy_note:
+            lines.append(f"- **Deployment-Datenschutz:** {privacy_note}")
+
+    # Kombiniertes Risiko (immer ausgeben, auch ohne Provider Card)
+    lines.append(f"- **Berechnetes Sovereign Risk (Model × Provider):** `{risk_level.upper()}` — {risk_rationale}")
+
+    if model_card:
+        wprov = model_card.get("weights_provenance_risk", "")
+        if wprov:
+            lines.append(f"- **Weights-Provenienz-Risiko:** `{wprov}` — {model_card.get('weights_provenance_risk_rationale', '')}")
+
+    return "\n".join(lines)
+
+
+# ---------------------------------------------------------------------------
+# Dependency pre-check: automatische Erzeugung fehlender Cards
+# ---------------------------------------------------------------------------
+
+# Bekannte Cloud-Provider-Präfixe (normalized, lowercase) → Provider-Anzeigename
+_CLOUD_PREFIX_TO_PROVIDER: dict[str, str] = {
+    "gpt-": "OpenAI",
+    "o1": "OpenAI",
+    "o3": "OpenAI",
+    "o4": "OpenAI",
+    "claude-": "Anthropic",
+    "gemini-": "Google",
+    "gemma": "Google",
+    "mistral": "Mistral AI",
+    "codestral": "Mistral AI",
+    "ministral": "Mistral AI",
+    "pixtral": "Mistral AI",
+    "grok-": "xAI",
+    "deepseek-": "DeepSeek",
+    "qwen": "Alibaba Cloud",
+    "kimi": "Moonshot AI",
+    "minimax": "MiniMax",
+    "llama": "Meta",
+}
+
+
+def _detect_provider(model_id: str) -> str | None:
+    """Schätzt den Cloud-Provider anhand des Modell-ID-Präfixes.
+
+    Gibt den Provider-Anzeigenamen zurück oder None wenn das Modell
+    wahrscheinlich lokal betrieben wird (kein bekanntes Cloud-Präfix).
+    """
+    normalized = model_id.lower()
+    for prefix, provider_name in _CLOUD_PREFIX_TO_PROVIDER.items():
+        stripped = prefix.rstrip("-")
+        if normalized.startswith(stripped):
+            return provider_name
+    return None
+
+
+def _load_card_module(script_name: str) -> object:
+    """Lädt ein Card-Generator-Modul sicher per Dateipfad (verhindert Namespace-Kollisionen)."""
+    import importlib.util
+
+    path = ROOT_DIR / "scripts" / "analysis" / f"{script_name}.py"
+    module_name = f"scripts_analysis_{script_name}"
+    spec = importlib.util.spec_from_file_location(module_name, path)
+    if spec is None or spec.loader is None:
+        raise ImportError(f"Modul {script_name}.py nicht unter {path} gefunden.")
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)  # type: ignore[union-attr]
+    return module
+
+
+def _ensure_model_card(
+    model_id: str,
+    client: "LLMClient",
+    card_provider: str,
+    card_model: str,
+    auto_mode: bool,
+    dry_run: bool,
+) -> "dict | None":
+    """Lädt die Model Card oder generiert sie bei Bedarf.
+
+    Rückgabewerte:
+        dict  — Mit Inhalt: vorhandene/neue Karte. Leer ({}): fehlend, aber dry_run-Modus.
+        None  — Benutzer hat übersprungen → Review-Schleife soll dieses Modell skippen.
+    """
+    import json
+    import re
+
+    cards_dir = ROOT_DIR / "benchmark_scores" / "model_cards"
+    safe = re.sub(r"[:/.\\ ]", "_", model_id)
+    card_path = cards_dir / f"{safe}.json"
+
+    if card_path.exists():
+        try:
+            with open(card_path, "r", encoding="utf-8") as f:
+                return json.load(f)
+        except Exception:
+            pass
+
+    # Karte fehlt
+    if dry_run:
+        print(f"  [FEHLEND] Model Card: {model_id}")
+        return {}  # leer, aber kein Skip-Signal
+
+    if not auto_mode:
+        if not sys.stdin.isatty():
+            print(f"  [WARNUNG] Model Card fehlt: {model_id} — kein interaktives Terminal, überspringe.")
+            return None
+        answer = input(f"  [FEHLEND] Model Card für '{model_id}' nicht gefunden. Jetzt generieren? [j/N] ").strip().lower()
+        if answer not in ("j", "ja", "y", "yes"):
+            print(f"  Überspringe {model_id}.")
+            return None
+
+    print(f"  Generiere Model Card für {model_id} ...")
+    mc_gen = _load_card_module("generate_model_cards")
+    card = mc_gen._generate_card(model_id, client, card_provider, card_model)  # type: ignore[attr-defined]
+    mc_gen._write_card(card)  # type: ignore[attr-defined]
+    mc_gen._rebuild_index()  # type: ignore[attr-defined]
+    print(f"  Model Card erstellt: {model_id}")
+    return card
+
+
+def _ensure_provider_card(
+    developer: "str | None",
+    client: "LLMClient",
+    card_provider: str,
+    card_model: str,
+    auto_mode: bool,
+    dry_run: bool,
+) -> "dict | None":
+    """Lädt die Provider Card oder generiert sie bei Bedarf.
+
+    Wenn developer None ist (lokales Modell ohne Cloud-Provider), wird sofort
+    ein leeres Dict zurückgegeben — das ist kein Fehlerfall.
+    Rückgabewerte: analog zu _ensure_model_card.
+    """
+    import json
+    import re
+
+    if not developer:
+        return {}  # kein Provider (lokales Modell) — ok
+
+    def safe_id(name: str) -> str:
+        s = name.lower()
+        s = re.sub(r"[^a-z0-9]+", "_", s)
+        return s.strip("_")
+
+    provider_id = safe_id(developer)
+    cards_dir = ROOT_DIR / "benchmark_scores" / "provider_cards"
+    card_path = cards_dir / f"{provider_id}.json"
+
+    if card_path.exists():
+        try:
+            with open(card_path, "r", encoding="utf-8") as f:
+                return json.load(f)
+        except Exception:
+            pass
+
+    # Karte fehlt
+    if dry_run:
+        print(f"  [FEHLEND] Provider Card: {developer}")
+        return {}
+
+    if not auto_mode:
+        if not sys.stdin.isatty():
+            print(f"  [WARNUNG] Provider Card fehlt: {developer} — kein interaktives Terminal, überspringe.")
+            return None
+        answer = input(f"  [FEHLEND] Provider Card für '{developer}' nicht gefunden. Jetzt generieren? [j/N] ").strip().lower()
+        if answer not in ("j", "ja", "y", "yes"):
+            print(f"  Überspringe Provider Card für {developer}.")
+            return None
+
+    print(f"  Generiere Provider Card für {developer} ...")
+    pc_gen = _load_card_module("generate_provider_cards")
+    all_stats: dict = pc_gen._load_stats_from_csv()  # type: ignore[attr-defined]
+    stats = all_stats.get(developer, {})
+    card = pc_gen._generate_card(developer, provider_id, stats, client, card_provider, card_model)  # type: ignore[attr-defined]
+    pc_gen._write_card(card)  # type: ignore[attr-defined]
+    pc_gen._rebuild_index()  # type: ignore[attr-defined]
+    print(f"  Provider Card erstellt: {developer}")
+    return card
+
+
+def _ensure_dependencies(
+    model_id: str,
+    client: "LLMClient",
+    card_provider: str,
+    card_model: str,
+    auto_mode: bool = False,
+    dry_run: bool = False,
+) -> "dict | None":
+    """Stellt sicher, dass Model Card und Provider Card vor der Review-Generierung vorhanden sind.
+
+    Rückgabewerte:
+        dict  — Fortfahren (kann leer sein, Inhalt wird aktuell nicht genutzt).
+        None  — Modell überspringen (Benutzer hat abgebrochen oder kein Terminal verfügbar).
+    """
+    model_card = _ensure_model_card(model_id, client, card_provider, card_model, auto_mode, dry_run)
+    if model_card is None:
+        return None
+
+    # Entwickler aus Karte lesen oder per Präfix schätzen (Fallback für dry_run / leere Karte)
+    developer: str | None = model_card.get("developer") if model_card else None
+    if not developer:
+        developer = _detect_provider(model_id)
+
+    provider_result = _ensure_provider_card(developer, client, card_provider, card_model, auto_mode, dry_run)
+    if provider_result is None:
+        return None
+
+    return {}  # Signal: Abhängigkeiten OK, Review kann starten
+
+
 def _build_token_efficiency_context(tested_model_name: str) -> str:
     """Berechnet pro-Modul Token-Overhead dieses Modells vs. Fleet-Median.
     Gibt einen formatierten Markdown-Block zurück, oder einen Hinweis wenn keine Daten vorliegen.
@@ -412,6 +725,7 @@ def process_model_review(model_dir: Path, csv_data: str, client: LLMClient, prov
         "model_timeout_rate": timeout_rate_str,
         "model_provider_type": model_metrics.get("Type", "n/a"),
         "model_card_context": get_model_card_context(tested_model_name),
+        "provider_card_context": get_provider_card_context(tested_model_name),
         "token_efficiency_context": token_efficiency_context,
     }
 
@@ -435,9 +749,9 @@ def process_model_review(model_dir: Path, csv_data: str, client: LLMClient, prov
         print(f"❌ Fehler bei der Generierung für {tested_model_name}: {e}")
         return
 
-    # Speichern in separatem Modell-Ordner
+    # Speichern in docs/reviews/ (öffentlich versioniert)
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    out_dir = ROOT_DIR / "outputs" / "comparisons" / tested_model_name
+    out_dir = ROOT_DIR / "docs" / "reviews" / tested_model_name
     out_dir.mkdir(parents=True, exist_ok=True)
 
     prefix = "bias_review" if review_type == "bias" else "review"
@@ -463,6 +777,8 @@ def main():
     parser.add_argument("-m", "--model", type=str, help="Generiere den Review nur für dieses spezifische Modell (z.B. claude-haiku-4-5-20251001)")
     parser.add_argument("-a", "--all", action="store_true", help="Generiere Reviews für alle Modelle mit gefundenen Audit-Logs")
     parser.add_argument("-t", "--type", type=str, choices=["benchmark", "bias", "provider"], default="benchmark", help="Art des Reviews: 'benchmark' (standard), 'bias' oder 'provider'")
+    parser.add_argument("--auto", action="store_true", help="Unbeaufsichtigt: fehlende Cards automatisch generieren ohne Rückfrage")
+    parser.add_argument("--dry-run", action="store_true", help="Zeigt fehlende Cards an, generiert aber nichts und erstellt keinen Review")
     args = parser.parse_args()
 
     if not args.model and not args.all and args.type != "provider":
@@ -525,7 +841,7 @@ def main():
                 temperature=0.7
             )
 
-            out_file = ROOT_DIR / "outputs" / "comparisons" / "provider_landscape_review.md"
+            out_file = ROOT_DIR / "docs" / "reviews" / "provider_landscape_review.md"
             out_file.parent.mkdir(parents=True, exist_ok=True)
             with open(out_file, "w", encoding="utf-8") as f:
                 f.write(response)
@@ -555,6 +871,19 @@ def main():
             if safe_target_model and subdir.name != safe_target_model:
                 continue
             found_models = True
+            if args.type == "benchmark":
+                dep_context = _ensure_dependencies(
+                    model_id=subdir.name,
+                    client=client,
+                    card_provider=provider,
+                    card_model=model_id,
+                    auto_mode=args.auto,
+                    dry_run=args.dry_run,
+                )
+                if dep_context is None:
+                    continue  # Benutzer hat übersprungen
+                if args.dry_run:
+                    continue  # Nur Bericht, kein Review
             process_model_review(subdir, csv_data, client, provider, model_id, args.type)
 
     if not found_models:
