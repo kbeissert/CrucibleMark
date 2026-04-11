@@ -94,7 +94,7 @@ Thought-Tag Compliance = Einhaltung der Metakognitions-Tags (<thought>)
 Coverage % = Erfolgreich geparst
 ```
 
-> **Hinweis:** Der `Efficiency Score` (Total Score / Avg Time) wurde in v3.4.4 entfernt.
+> **Hinweis:** Der `Efficiency Score` (Total Score / Avg Time) wurde in v3.4.3 entfernt.
 > Drei saubere, unabhängige Dimensionen ersetzen ihn: `Total Score`, `Avg Task Duration (s)`, `Tokens/s`.
 
 ### Token-Verbrauch im Leaderboard
