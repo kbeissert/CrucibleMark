@@ -1,0 +1,26 @@
+{
+  "model_id": "claude-opus-4-6",
+  "display_name": "Claude Opus 4.6",
+  "developer": "Anthropic",
+  "origin_country": "USA",
+  "developer_jurisdiction": "US",
+  "deployment_type": "cloud-only",
+  "local_deployment_possible": false,
+  "weights_provenance_risk": "medium",
+  "weights_provenance_risk_rationale": "Anthropic ist ein US-amerikanisches Unternehmen und unterliegt dem CLOUD Act, jedoch ist kein direkter staatlicher Zugriff auf die Modellgewichte bekannt, da diese nicht öffentlich verfügbar sind.",
+  "model_family": "Claude",
+  "primary_focus": "general",
+  "summary": "Claude Opus 4.6 ist ein Frontier-Modell von Anthropic (USA), entwickelt mit Fokus auf Sicherheit, Nuancierung und komplexes Reasoning. Es zeichnet sich durch starke Instruktionsbefolgung, differenziertes Schreiben und tiefes Kontextverständnis aus. Ziel war ein leistungsstarkes, zugleich zuverlässig steuerbares Allround-Modell.",
+  "strengths": [
+    "Sehr starkes Reasoning und mehrstufiges Problemlösen über lange Kontexte hinweg",
+    "Hohe Qualität bei nuanciertem, strukturiertem und kreativem Schreiben",
+    "Zuverlässige Instruktionsbefolgung mit konsistenter Tonalität und geringer Halluzinationsrate"
+  ],
+  "known_limitations": [
+    "Ausschließlich über Anthropics Cloud-API verfügbar, kein lokaler Betrieb möglich",
+    "Kann bei sehr spezifischen Fachdomänen (z. B. aktuelle Ereignisse nach Trainings-Cutoff) an Grenzen stoßen"
+  ],
+  "judge_context_hint": "Das Modell neigt zu besonders sorgfältig formulierten, ausgewogenen Antworten und vermeidet bewusst übermäßig assertive Aussagen – dies kann bei direkten Faktenfragen als Zögerlichkeit wirken, ist aber ein bewusstes Designmerkmal.",
+  "unknown": false,
+  "generated_at": "2026-04-11T14:33:58.133031+00:00"
+}

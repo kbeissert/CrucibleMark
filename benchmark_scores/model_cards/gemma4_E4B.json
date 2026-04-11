@@ -1,0 +1,26 @@
+{
+  "model_id": "gemma4_E4B",
+  "display_name": "Gemma 4 E4B",
+  "developer": "Google DeepMind",
+  "origin_country": "USA",
+  "developer_jurisdiction": "US",
+  "deployment_type": "open-weights-cloud-available",
+  "local_deployment_possible": true,
+  "weights_provenance_risk": "medium",
+  "weights_provenance_risk_rationale": "Google DeepMind ist ein US-amerikanisches Unternehmen und unterliegt dem CLOUD Act, jedoch ist das Risiko bei lokal betriebenen Open-Weights nur bei API-Nutzung relevant.",
+  "model_family": "Gemma",
+  "primary_focus": "general",
+  "summary": "Gemma 4 E4B ist ein kompaktes Mixture-of-Experts-Modell von Google DeepMind mit ca. 4 Milliarden aktiven Parametern. Es wurde für effiziente lokale Ausführung bei guter Allgemeinleistung entwickelt und eignet sich für Instruction-Following, leichte Reasoning-Aufgaben und ressourcenschonenden Einsatz auf Consumer-Hardware.",
+  "strengths": [
+    "Sehr geringer Ressourcenbedarf durch MoE-Architektur mit nur 4B aktiven Parametern",
+    "Gute Instruction-Following-Fähigkeiten für die Modellgröße",
+    "Lokal auf Consumer-Hardware (z. B. mit llama.cpp oder Ollama) betreibbar"
+  ],
+  "known_limitations": [
+    "Begrenzte Leistung bei komplexen mehrstufigen Reasoning-Aufgaben im Vergleich zu größeren Modellen",
+    "Kontextfenster und Wissensbasis kleiner als bei Full-Size-Varianten der Gemma-4-Familie"
+  ],
+  "judge_context_hint": "Das Modell ist eine kompakte MoE-Variante – bei komplexen Aufgaben sollte der Judge die strukturelle Tiefe der Antworten nicht mit größeren Vollmodellen vergleichen, sondern die Effizienz-Leistungs-Relation berücksichtigen.",
+  "unknown": false,
+  "generated_at": "2026-04-11T15:38:30.227747+00:00"
+}

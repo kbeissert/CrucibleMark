@@ -1,0 +1,26 @@
+{
+  "model_id": "qwen2.5-coder_7b",
+  "display_name": "Qwen 2.5 Coder 7B",
+  "developer": "Alibaba Cloud",
+  "origin_country": "China",
+  "developer_jurisdiction": "CN",
+  "deployment_type": "open-weights-cloud-available",
+  "local_deployment_possible": true,
+  "weights_provenance_risk": "high",
+  "weights_provenance_risk_rationale": "Alibaba Cloud unterliegt als chinesisches Unternehmen dem chinesischen National Security Law (NSL), das staatliche Zugriffe auf Daten und Modellentwicklung ermöglichen kann.",
+  "model_family": "Qwen",
+  "primary_focus": "coding",
+  "summary": "Qwen 2.5 Coder 7B ist ein von Alibaba Cloud (China) entwickeltes Open-Weights-Modell, spezialisiert auf Code-Generierung, -Vervollständigung und -Debugging. Es wurde auf umfangreichen Code-Korpora trainiert und unterstützt zahlreiche Programmiersprachen mit starker Leistung im 7B-Parameterbereich.",
+  "strengths": [
+    "Starke Code-Generierung und -Vervollständigung in gängigen Sprachen wie Python, Java, C++ und JavaScript",
+    "Effizientes Verhältnis von Modellgröße zu Leistung – lokal auf Consumer-Hardware betreibbar",
+    "Gute Fähigkeit zur Erklärung und zum Debugging von bestehendem Code"
+  ],
+  "known_limitations": [
+    "Schwächere Leistung bei sehr komplexen, mehrstufigen Architekturentscheidungen im Vergleich zu größeren Modellen",
+    "Kontextfenster und Reasoning-Tiefe begrenzt gegenüber 70B+-Modellen; kann bei langen Codebasen den Überblick verlieren"
+  ],
+  "judge_context_hint": "Das Modell ist auf Code-Aufgaben optimiert und zeigt dort überdurchschnittliche Leistung für seine Größenklasse, kann aber bei allgemeinen Reasoning- oder Nicht-Code-Aufgaben hinter generalistischen Modellen zurückbleiben.",
+  "unknown": false,
+  "generated_at": "2026-04-11T15:50:01.744107+00:00"
+}

@@ -1,0 +1,38 @@
+{
+  "provider_id": "nous_research",
+  "display_name": "Nous Research",
+  "company": "Nous Research Inc.",
+  "origin_country": "USA",
+  "headquarters": "San Francisco, CA, USA",
+  "founding_year": 2023,
+  "developer_jurisdiction": "US",
+  "pricing_model": "open-source-self-hosted",
+  "api_base_url": null,
+  "deployment": {
+    "cloud_act_exposure": false,
+    "applicable_law": "N/A (lokal only)",
+    "data_residency": "N/A (lokal only)",
+    "gdpr_dpa_available": false,
+    "eu_adequacy_decision": false,
+    "data_retention_days": 0,
+    "chinese_nsl_risk": "none"
+  },
+  "summary": "Nous Research ist ein US-amerikanisches KI-Forschungskollektiv, das sich auf Fine-Tuning und Alignment offener Sprachmodelle spezialisiert hat. Bekannt für die Hermes- und Capybara-Modellreihen, die auf Basis von Llama und Mistral trainiert wurden. Positioniert sich als Community-getriebene Alternative zu kommerziellen Anbietern.",
+  "privacy_note": "Nous Research betreibt keine eigene Cloud-API; Modelle werden lokal oder über Drittanbieter (z. B. Together AI, Hugging Face) ausgeführt. Das Datenschutzrisiko hängt vollständig vom gewählten Inference-Anbieter ab, nicht von Nous Research selbst.",
+  "strengths": [
+    "Hochwertige Open-Source-Fine-Tunes auf Basis populärer Basismodelle (Llama, Mistral)",
+    "Starke Community-Einbindung und transparente Forschungskultur",
+    "Keine Cloud-Abhängigkeit – vollständige lokale Kontrolle über Daten möglich"
+  ],
+  "known_limitations": [
+    "Kein eigener Inference-Dienst oder offizielle API – Nutzer müssen selbst für Hosting sorgen",
+    "Kein kommerzieller Support, SLAs oder Enterprise-Verträge verfügbar"
+  ],
+  "notable_models": [
+    "Hermes-3-Llama-3.1-405B",
+    "Nous-Capybara-34B"
+  ],
+  "unknown": false,
+  "stats": {},
+  "generated_at": "2026-04-11T15:31:44.747664+00:00"
+}

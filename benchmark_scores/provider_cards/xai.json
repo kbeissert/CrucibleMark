@@ -1,0 +1,38 @@
+{
+  "provider_id": "xai",
+  "display_name": "xAI",
+  "company": "xAI Corp.",
+  "origin_country": "USA",
+  "headquarters": "Palo Alto, CA, USA",
+  "founding_year": 2023,
+  "developer_jurisdiction": "US",
+  "pricing_model": "free-tier+pay-per-token",
+  "api_base_url": "https://api.x.ai",
+  "deployment": {
+    "cloud_act_exposure": true,
+    "applicable_law": "US (CLOUD Act)",
+    "data_residency": "USA",
+    "gdpr_dpa_available": false,
+    "eu_adequacy_decision": "unknown",
+    "data_retention_days": -1,
+    "chinese_nsl_risk": "none"
+  },
+  "summary": "xAI wurde 2023 von Elon Musk gegründet und positioniert sich als Gegenentwurf zu OpenAI mit Fokus auf 'maximale Wahrheitssuche'. Bekannt durch die Grok-Modellreihe, die eng mit der X-Plattform (ehem. Twitter) verknüpft ist. API-Zugang ist verfügbar, das Ökosystem ist jedoch noch jung.",
+  "privacy_note": "xAI ist ein US-amerikanisches Unternehmen und unterliegt dem CLOUD Act. Für europäische Nutzer besteht kein öffentlich dokumentierter DPA oder Standardvertragsklauseln, was den produktiven Einsatz im DSGVO-Kontext erheblich erschwert.",
+  "strengths": [
+    "Grok-Modelle mit Echtzeit-Zugang zu X/Twitter-Daten",
+    "Wettbewerbsfähige Reasoning-Fähigkeiten (Grok-3)",
+    "Großzügiges kostenloses Kontingent über die X-Plattform"
+  ],
+  "known_limitations": [
+    "Unklare DSGVO-Compliance und fehlender öffentlicher DPA für EU-Kunden",
+    "Kleineres Modell-Ökosystem und kürzere Track-Record im Vergleich zu OpenAI oder Anthropic"
+  ],
+  "notable_models": [
+    "Grok-3",
+    "Grok-2"
+  ],
+  "unknown": false,
+  "stats": {},
+  "generated_at": "2026-04-11T15:23:29.230912+00:00"
+}

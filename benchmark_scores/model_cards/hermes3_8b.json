@@ -1,0 +1,26 @@
+{
+  "model_id": "hermes3_8b",
+  "display_name": "Hermes 3 8B",
+  "developer": "Nous Research",
+  "origin_country": "USA",
+  "developer_jurisdiction": "US",
+  "deployment_type": "open-weights",
+  "local_deployment_possible": true,
+  "weights_provenance_risk": "low",
+  "weights_provenance_risk_rationale": "Nous Research ist eine unabhängige, community-getriebene Forschungsorganisation ohne bekannten kommerziellen Hintergrund oder staatliche Einflussnahme; die Weights sind öffentlich verfügbar.",
+  "model_family": "Hermes",
+  "primary_focus": "instruction-following",
+  "summary": "Hermes 3 8B ist ein von Nous Research feingetuntes Modell auf Basis von Meta Llama 3.1 8B. Es wurde auf einem kuratierten Instruction-Following-Datensatz trainiert, mit Fokus auf präzise Anweisungsbefolgung, Rollenspiel und strukturierte Ausgaben. Stärken liegen in Gesprächsqualität und Agentic-Tasks.",
+  "strengths": [
+    "Sehr gute Instruction-Following-Qualität für ein 8B-Modell",
+    "Stärken bei strukturierten Ausgaben (JSON, Funktionsaufrufe) und Agentic-Workflows",
+    "Gute Gesprächskohärenz und Rollenspiel-Fähigkeiten durch spezialisierten Fine-Tune-Datensatz"
+  ],
+  "known_limitations": [
+    "Basiert auf Llama 3.1 8B – bei komplexen Reasoning-Aufgaben deutlich schwächer als größere Modelle",
+    "Wissensbasis durch Llama-3.1-Cutoff begrenzt; kein natives Multimodal-Support"
+  ],
+  "judge_context_hint": "Das Modell ist ein Community-Fine-Tune und kann bei sehr formalen oder akademischen Aufgaben gelegentlich einen informelleren, gesprächsorientierten Ton bevorzugen als erwartet.",
+  "unknown": false,
+  "generated_at": "2026-04-11T15:31:29.359642+00:00"
+}

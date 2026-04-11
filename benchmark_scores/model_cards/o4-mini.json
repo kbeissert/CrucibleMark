@@ -1,0 +1,26 @@
+{
+  "model_id": "o4-mini",
+  "display_name": "o4-mini",
+  "developer": "OpenAI",
+  "origin_country": "USA",
+  "developer_jurisdiction": "US",
+  "deployment_type": "cloud-only",
+  "local_deployment_possible": false,
+  "weights_provenance_risk": "medium",
+  "weights_provenance_risk_rationale": "OpenAI ist ein US-amerikanisches Unternehmen und unterliegt dem CLOUD Act, der bei API-Nutzung staatliche Datenzugriffe ermöglichen kann; die Modellgewichte sind nicht öffentlich verfügbar.",
+  "model_family": "OpenAI o-series",
+  "primary_focus": "reasoning",
+  "summary": "o4-mini ist ein kompaktes Reasoning-Modell von OpenAI (USA), das auf mathematisches, wissenschaftliches und logisches Schlussfolgern optimiert wurde. Es bietet einen Großteil der Stärken des o4-Modells bei deutlich geringerer Latenz und niedrigeren Kosten – konzipiert für skalierbare Reasoning-Aufgaben in Produktivumgebungen.",
+  "strengths": [
+    "Starke Leistung bei mathematischen und wissenschaftlichen Aufgaben (STEM)",
+    "Deutlich schnellere Inferenz und geringere Kosten im Vergleich zu o3/o4",
+    "Zuverlässiges mehrstufiges logisches Schlussfolgern mit Chain-of-Thought"
+  ],
+  "known_limitations": [
+    "Kein Zugriff auf Echtzeit-Informationen ohne externe Tool-Integration",
+    "Gewichte nicht öffentlich – kein lokaler Betrieb oder Fine-Tuning möglich"
+  ],
+  "judge_context_hint": "Das Modell ist explizit auf Reasoning optimiert und neigt dazu, Antworten durch interne Denkschritte abzusichern – Bewertungen sollten die Qualität des Lösungswegs, nicht nur das Endergebnis berücksichtigen.",
+  "unknown": false,
+  "generated_at": "2026-04-11T14:53:51.104628+00:00"
+}

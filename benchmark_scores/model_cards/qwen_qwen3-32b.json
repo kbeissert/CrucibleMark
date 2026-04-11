@@ -1,0 +1,26 @@
+{
+  "model_id": "qwen_qwen3-32b",
+  "display_name": "Qwen 3 32B",
+  "developer": "Alibaba Cloud",
+  "origin_country": "China",
+  "developer_jurisdiction": "CN",
+  "deployment_type": "open-weights-cloud-available",
+  "local_deployment_possible": true,
+  "weights_provenance_risk": "high",
+  "weights_provenance_risk_rationale": "Alibaba Cloud unterliegt als chinesisches Unternehmen dem chinesischen National Security Law (NSL), das staatliche Zugriffe auf Daten und Modellentwicklung ermöglichen kann.",
+  "model_family": "Qwen",
+  "primary_focus": "general",
+  "summary": "Qwen 3 32B ist ein von Alibaba Cloud (China) entwickeltes Sprachmodell mit Schwerpunkt auf mehrsprachiger Instruktionsbefolgung, Reasoning und Coding. Es zeichnet sich durch starke Leistung in asiatischen Sprachen, mathematischen Aufgaben und Code-Generierung aus und wurde als leistungsstarke Open-Weights-Alternative zu proprietären Modellen konzipiert.",
+  "strengths": [
+    "Starke mehrsprachige Fähigkeiten, insbesondere in Chinesisch und Englisch",
+    "Gute Leistung bei mathematischem Reasoning und strukturierten Denkaufgaben",
+    "Als Open-Weights-Modell lokal betreibbar und anpassbar"
+  ],
+  "known_limitations": [
+    "Kann bei politisch sensiblen Themen mit Bezug zu China zensierte oder ausweichende Antworten liefern",
+    "Trotz 32B Parametern bei sehr komplexen mehrstufigen Reasoning-Aufgaben hinter größeren Frontier-Modellen"
+  ],
+  "judge_context_hint": "Das Modell kann bei politisch oder kulturell sensiblen Themen mit China-Bezug systematisch ausweichen oder beschönigende Antworten geben, was die Bewertung von Neutralität und Faktentreue beeinflussen kann.",
+  "unknown": false,
+  "generated_at": "2026-04-11T14:55:25.314100+00:00"
+}

@@ -1,0 +1,26 @@
+{
+  "model_id": "o1",
+  "display_name": "OpenAI o1",
+  "developer": "OpenAI",
+  "origin_country": "USA",
+  "developer_jurisdiction": "US",
+  "deployment_type": "cloud-only",
+  "local_deployment_possible": false,
+  "weights_provenance_risk": "medium",
+  "weights_provenance_risk_rationale": "OpenAI ist ein US-amerikanisches Unternehmen und unterliegt dem CLOUD Act, der behördlichen Zugriff auf Daten bei API-Nutzung ermöglichen kann, jedoch sind die Modellgewichte nicht öffentlich zugänglich.",
+  "model_family": "o1",
+  "primary_focus": "reasoning",
+  "summary": "OpenAI o1 ist ein US-amerikanisches Sprachmodell, das speziell für komplexes mehrstufiges Denken trainiert wurde. Es nutzt eine interne Chain-of-Thought-Technik vor der Antwortgenerierung. Stärken liegen in Mathematik, Logik und wissenschaftlichem Schlussfolgern. Ziel war ein Modell, das schwierige Aufgaben durch strukturiertes Nachdenken löst.",
+  "strengths": [
+    "Herausragende Leistung bei mathematischen und logischen Schlussfolgerungsaufgaben",
+    "Effektive Bearbeitung komplexer, mehrstufiger Problemstellungen durch interne Denkprozesse",
+    "Starke Ergebnisse in wissenschaftlichen und technischen Benchmarks (z. B. AIME, GPQA)"
+  ],
+  "known_limitations": [
+    "Keine öffentlich zugänglichen Modellgewichte – ausschließlich über OpenAI-API nutzbar",
+    "Längere Latenz durch interne Reasoning-Schritte, was es für Echtzeit-Anwendungen weniger geeignet macht"
+  ],
+  "judge_context_hint": "o1 denkt intern vor der Antwort nach (verdeckte Chain-of-Thought), was zu präziseren, aber teils längeren oder unerwarteten Antwortstrukturen führen kann – Bewertungen sollten die Qualität des Ergebnisses, nicht den Denkweg, priorisieren.",
+  "unknown": false,
+  "generated_at": "2026-04-11T15:44:56.182371+00:00"
+}

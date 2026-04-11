@@ -1,0 +1,26 @@
+{
+  "model_id": "gemma3_12b",
+  "display_name": "Gemma 3 12B",
+  "developer": "Google DeepMind",
+  "origin_country": "USA",
+  "developer_jurisdiction": "US",
+  "deployment_type": "open-weights-cloud-available",
+  "local_deployment_possible": true,
+  "weights_provenance_risk": "medium",
+  "weights_provenance_risk_rationale": "Google DeepMind ist ein US-amerikanisches Unternehmen und unterliegt dem CLOUD Act, jedoch sind die Gewichte öffentlich verfügbar und lokal betreibbar, sodass kein API-Zugriff erforderlich ist.",
+  "model_family": "Gemma",
+  "primary_focus": "general",
+  "summary": "Gemma 3 12B ist ein Open-Weights-Modell von Google DeepMind, trainiert auf multilingualen und multimodalen Daten. Es richtet sich an Entwickler, die leistungsfähige Sprachverarbeitung lokal betreiben wollen. Stärken liegen in Instruktionsbefolgung, Reasoning und Effizienz bei moderater Modellgröße.",
+  "strengths": [
+    "Starke Instruktionsbefolgung durch gezieltes Instruction-Tuning",
+    "Effizientes Verhältnis von Modellgröße zu Leistung, gut für lokale Deployments geeignet",
+    "Breite multilinguale Abdeckung und solide Reasoning-Fähigkeiten"
+  ],
+  "known_limitations": [
+    "Schwächere Leistung bei sehr komplexen mehrstufigen Reasoning-Aufgaben im Vergleich zu größeren Frontier-Modellen",
+    "Kontextfenster und Wissensbasis können bei spezialisierten Fachdomänen an Grenzen stoßen"
+  ],
+  "judge_context_hint": "Gemma 3 12B neigt bei ambigen Anfragen zu konservativen, sicherheitsorientierten Antworten und kann bei komplexen Aufgaben kürzer und weniger ausführlich antworten als größere Modelle.",
+  "unknown": false,
+  "generated_at": "2026-04-11T14:39:02.441348+00:00"
+}

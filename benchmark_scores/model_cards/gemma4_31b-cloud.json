@@ -1,0 +1,26 @@
+{
+  "model_id": "gemma4_31b-cloud",
+  "display_name": "Gemma 4 31B (Cloud)",
+  "developer": "Google DeepMind",
+  "origin_country": "USA",
+  "developer_jurisdiction": "US",
+  "deployment_type": "cloud-only",
+  "local_deployment_possible": false,
+  "weights_provenance_risk": "medium",
+  "weights_provenance_risk_rationale": "Google ist ein US-amerikanisches Unternehmen und unterliegt dem CLOUD Act, jedoch nicht dem chinesischen NSL; ein direkter staatlicher Zugriff auf die Modellgewichte ist nicht bekannt.",
+  "model_family": "Gemma",
+  "primary_focus": "general",
+  "summary": "Gemma 4 31B ist ein von Google DeepMind entwickeltes Sprachmodell der Gemma-4-Familie. Es wurde auf breiten Text- und Code-Korpora trainiert und zielt auf starke Allgemeinsprachfähigkeiten, Instruktionsbefolgung und multimodale Aufgaben. Die Cloud-Variante ist ausschließlich über Googles API-Infrastruktur nutzbar.",
+  "strengths": [
+    "Starke Instruktionsbefolgung durch RLHF-basiertes Finetuning",
+    "Gute Leistung bei Code-Generierung und strukturierten Aufgaben",
+    "Effiziente Skalierung durch Googles Gemma-Architektur mit breitem Aufgabenspektrum"
+  ],
+  "known_limitations": [
+    "Ausschließlich als Cloud-Dienst verfügbar – keine lokale oder On-Premise-Nutzung möglich",
+    "Genaue Trainingsdaten und Modellarchitektur sind nicht vollständig öffentlich dokumentiert"
+  ],
+  "judge_context_hint": "Das Modell ist auf breite Instruktionsbefolgung optimiert und kann bei sehr spezifischen Fachdomänen oder seltenen Sprachen hinter spezialisierten Modellen zurückbleiben.",
+  "unknown": false,
+  "generated_at": "2026-04-11T14:47:02.932550+00:00"
+}

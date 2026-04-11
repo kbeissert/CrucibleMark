@@ -1,0 +1,26 @@
+{
+  "model_id": "gemini-3-flash-preview",
+  "display_name": "Gemini 3 Flash Preview",
+  "developer": "Google DeepMind",
+  "origin_country": "USA",
+  "developer_jurisdiction": "US",
+  "deployment_type": "cloud-only",
+  "local_deployment_possible": false,
+  "weights_provenance_risk": "medium",
+  "weights_provenance_risk_rationale": "Google DeepMind ist ein US-amerikanisches Unternehmen und unterliegt dem CLOUD Act; die Modellgewichte sind nicht öffentlich zugänglich, sodass ein direkter Zugriff Dritter auf die Weights nicht bekannt ist.",
+  "model_family": "Gemini",
+  "primary_focus": "general",
+  "summary": "Gemini 3 Flash Preview ist Googles schnelles Multimodal-Modell der Gemini-3-Generation, entwickelt für latenzarme, kosteneffiziente Anwendungen. Es kombiniert starke Instruktionsbefolgung mit multimodalen Fähigkeiten und richtet sich an Entwickler, die hohe Durchsatzraten bei breiter Aufgabenabdeckung benötigen.",
+  "strengths": [
+    "Sehr niedrige Latenz bei hohem Anfragevolumen",
+    "Solide multimodale Fähigkeiten (Text, Bild, Code)",
+    "Breite Aufgabenabdeckung bei kompetitivem Preis-Leistungs-Verhältnis"
+  ],
+  "known_limitations": [
+    "Geringere Reasoning-Tiefe im Vergleich zu größeren Modellen der Gemini-Pro/Ultra-Linie",
+    "Keine lokale Ausführung möglich – vollständige Abhängigkeit von Googles Cloud-Infrastruktur"
+  ],
+  "judge_context_hint": "Das Modell ist auf Geschwindigkeit und Effizienz optimiert; bei komplexen mehrstufigen Reasoning-Aufgaben kann die Antwortqualität hinter schwergewichtigeren Modellen zurückbleiben.",
+  "unknown": true,
+  "generated_at": "2026-04-11T14:40:50.616161+00:00"
+}

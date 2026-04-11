@@ -1,0 +1,26 @@
+{
+  "model_id": "ministral-3_8b",
+  "display_name": "Ministral 3.8B",
+  "developer": "Mistral AI",
+  "origin_country": "France",
+  "developer_jurisdiction": "EU",
+  "deployment_type": "open-weights-cloud-available",
+  "local_deployment_possible": true,
+  "weights_provenance_risk": "low",
+  "weights_provenance_risk_rationale": "Mistral AI ist ein französisches Unternehmen mit Sitz in der EU und unterliegt keiner staatlichen Zugriffspflicht auf Modellgewichte vergleichbar dem chinesischen NSL oder dem US CLOUD Act für lokal betriebene Weights.",
+  "model_family": "Mistral",
+  "primary_focus": "instruction-following",
+  "summary": "Ministral 3.8B ist ein kompaktes Sprachmodell von Mistral AI (Frankreich), optimiert für effiziente Inferenz auf Edge-Geräten und lokaler Hardware. Es wurde trainiert, um Instruction-Following, Reasoning und mehrsprachige Aufgaben bei minimalem Ressourcenverbrauch zu ermöglichen. Besonders geeignet für latenzarme Anwendungen.",
+  "strengths": [
+    "Sehr geringer Ressourcenbedarf ermöglicht lokale Ausführung auf Consumer-Hardware",
+    "Gute Instruction-Following-Qualität für die Modellgröße",
+    "Mehrsprachige Kompetenz mit Schwerpunkt auf europäischen Sprachen"
+  ],
+  "known_limitations": [
+    "Begrenzte Kapazität für komplexes mehrstufiges Reasoning im Vergleich zu größeren Modellen",
+    "Geringere Faktendichte und Wissensbasis durch die kompakte Parameterzahl"
+  ],
+  "judge_context_hint": "Das Modell ist für seine Größe leistungsstark, zeigt aber bei komplexen Reasoning-Ketten oder langen Kontexten deutliche Qualitätseinbußen gegenüber größeren Modellen – Bewertungsmaßstäbe sollten die 3,8B-Parameterklasse berücksichtigen.",
+  "unknown": false,
+  "generated_at": "2026-04-11T15:10:23.172876+00:00"
+}

@@ -1,0 +1,26 @@
+{
+  "model_id": "qwen3_14b",
+  "display_name": "Qwen 3 14B",
+  "developer": "Alibaba Cloud",
+  "origin_country": "China",
+  "developer_jurisdiction": "CN",
+  "deployment_type": "open-weights-cloud-available",
+  "local_deployment_possible": true,
+  "weights_provenance_risk": "high",
+  "weights_provenance_risk_rationale": "Alibaba Cloud unterliegt als chinesisches Unternehmen dem chinesischen National Security Law (NSL), das staatliche Zugriffe auf Daten und Modellentwicklung ermöglichen kann.",
+  "model_family": "Qwen",
+  "primary_focus": "general",
+  "summary": "Qwen 3 14B ist ein Open-Weights-Modell von Alibaba Cloud (China) aus der Qwen-3-Serie. Es wurde auf mehrsprachigen und codeorientierten Daten trainiert und zeichnet sich durch starkes Reasoning, Instruktionsbefolgung und Mehrsprachigkeit aus. Ziel war ein leistungsstarkes, lokal betreibbares Modell mittlerer Größe.",
+  "strengths": [
+    "Starke mehrsprachige Fähigkeiten, insbesondere für Chinesisch und Englisch",
+    "Gute Reasoning- und Instruktionsbefolgungsleistung für die Modellgröße",
+    "Lokal betreibbar mit vergleichsweise geringem Hardwarebedarf (14B Parameter)"
+  ],
+  "known_limitations": [
+    "Kann bei komplexen, mehrstufigen Reasoning-Aufgaben hinter größeren Modellen zurückbleiben",
+    "Mögliche kulturelle oder politische Verzerrungen durch chinesische Trainingsdaten und Richtlinien"
+  ],
+  "judge_context_hint": "Das Modell neigt bei politisch oder kulturell sensiblen Themen mit China-Bezug zu ausweichenden oder zensierten Antworten, was die Bewertung von Offenheit und Faktentreue beeinflussen kann.",
+  "unknown": false,
+  "generated_at": "2026-04-11T15:11:53.372008+00:00"
+}

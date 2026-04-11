@@ -1,0 +1,26 @@
+{
+  "model_id": "gpt-5-mini",
+  "display_name": "GPT-5 Mini",
+  "developer": "OpenAI",
+  "origin_country": "USA",
+  "developer_jurisdiction": "US",
+  "deployment_type": "cloud-only",
+  "local_deployment_possible": false,
+  "weights_provenance_risk": "medium",
+  "weights_provenance_risk_rationale": "OpenAI ist ein US-amerikanisches Unternehmen und unterliegt dem CLOUD Act, wobei die Modellgewichte nicht öffentlich zugänglich sind und ein staatlicher Zugriff auf die Weights selbst nicht dokumentiert ist.",
+  "model_family": "GPT-5",
+  "primary_focus": "general",
+  "summary": "GPT-5 Mini ist ein kompaktes Modell von OpenAI aus den USA, das auf Effizienz bei alltäglichen Aufgaben ausgelegt ist. Es bietet starke Instruction-Following-Fähigkeiten und schnelle Antwortzeiten bei geringeren Kosten als das Vollmodell, gedacht für breite Anwendungsfälle mit begrenztem Rechenbudget.",
+  "strengths": [
+    "Kosteneffiziente Nutzung bei hohem Anfragevolumen",
+    "Schnelle Inferenz bei guter Antwortqualität für Standardaufgaben",
+    "Starkes Instruction-Following dank RLHF-Training"
+  ],
+  "known_limitations": [
+    "Geringere Leistung als das Vollmodell GPT-5 bei komplexen Reasoning-Aufgaben",
+    "Keine lokale Ausführung möglich, vollständige Abhängigkeit von OpenAI-Infrastruktur"
+  ],
+  "judge_context_hint": "GPT-5 Mini ist auf Effizienz optimiert und kann bei anspruchsvollen mehrstufigen Reasoning-Aufgaben hinter größeren Modellen zurückbleiben – Bewertungen sollten dies bei komplexen Benchmarks berücksichtigen.",
+  "unknown": true,
+  "generated_at": "2026-04-11T15:40:08.239745+00:00"
+}

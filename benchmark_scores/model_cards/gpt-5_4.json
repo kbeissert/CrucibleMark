@@ -1,0 +1,26 @@
+{
+  "model_id": "gpt-5.4",
+  "display_name": "GPT-5.4",
+  "developer": "OpenAI",
+  "origin_country": "USA",
+  "developer_jurisdiction": "US",
+  "deployment_type": "cloud-only",
+  "local_deployment_possible": false,
+  "weights_provenance_risk": "medium",
+  "weights_provenance_risk_rationale": "OpenAI ist ein US-amerikanisches Unternehmen und unterliegt dem CLOUD Act, der bei API-Nutzung staatlichen Zugriff ermöglichen kann; die Weights selbst sind nicht öffentlich zugänglich.",
+  "model_family": "GPT",
+  "primary_focus": "general",
+  "summary": "GPT-5.4 ist ein hypothetisches Modell von OpenAI (USA) aus der GPT-5-Familie. Als Weiterentwicklung früherer GPT-Generationen wäre es auf breite Instruktionsbefolgung, Reasoning und multimodale Aufgaben ausgerichtet. Dieses spezifische Modell ist zum aktuellen Wissensstand nicht öffentlich dokumentiert.",
+  "strengths": [
+    "Breite Allgemeinbildung und starke Instruktionsbefolgung auf Basis der GPT-Architektur",
+    "Voraussichtlich starke Reasoning- und Problemlösefähigkeiten als Weiterentwicklung der GPT-5-Linie",
+    "Umfangreiche Mehrsprachigkeit und kontextuelles Verständnis komplexer Anfragen"
+  ],
+  "known_limitations": [
+    "Modell ist zum aktuellen Wissensstand nicht öffentlich dokumentiert oder verifiziert – alle Angaben sind extrapoliert",
+    "Ausschließlich über OpenAI-API verfügbar, kein lokaler Betrieb möglich; Abhängigkeit von OpenAI-Infrastruktur und -Nutzungsbedingungen"
+  ],
+  "judge_context_hint": "Da GPT-5.4 kein öffentlich dokumentiertes Modell ist, sollten Benchmark-Ergebnisse mit Vorsicht interpretiert werden – es ist unklar, ob das Modell tatsächlich existiert oder ob es sich um eine interne oder zukünftige Variante handelt.",
+  "unknown": true,
+  "generated_at": "2026-04-11T14:37:33.314770+00:00"
+}

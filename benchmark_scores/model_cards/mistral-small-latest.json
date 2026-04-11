@@ -1,0 +1,26 @@
+{
+  "model_id": "mistral-small-latest",
+  "display_name": "Mistral Small (Latest)",
+  "developer": "Mistral AI",
+  "origin_country": "France",
+  "developer_jurisdiction": "EU",
+  "deployment_type": "open-weights-cloud-available",
+  "local_deployment_possible": true,
+  "weights_provenance_risk": "low",
+  "weights_provenance_risk_rationale": "Mistral AI ist ein französisches Unternehmen mit Sitz in der EU und unterliegt keiner staatlichen Zugriffspflicht auf Modellgewichte wie dem chinesischen NSL oder vergleichbaren Gesetzen.",
+  "model_family": "Mistral",
+  "primary_focus": "instruction-following",
+  "summary": "Mistral Small ist ein kompaktes Sprachmodell des französischen Unternehmens Mistral AI, entwickelt für effiziente Instruktionsbefolgung bei niedrigen Latenz- und Kostenanforderungen. Es eignet sich für Klassifikation, Zusammenfassung und einfache Dialogaufgaben, wo größere Modelle überdimensioniert wären.",
+  "strengths": [
+    "Sehr gute Kosten-Leistungs-Relation für einfache bis mittelschwere Aufgaben",
+    "Niedrige Inferenzlatenz, geeignet für produktive Echtzeit-Anwendungen",
+    "Mehrsprachige Grundkompetenz mit Schwerpunkt auf europäischen Sprachen"
+  ],
+  "known_limitations": [
+    "Schwächere Leistung bei komplexem mehrstufigem Reasoning im Vergleich zu größeren Modellen der Mistral-Familie",
+    "Begrenzte Tiefe bei spezialisierten Fachdomänen wie Recht, Medizin oder fortgeschrittener Mathematik"
+  ],
+  "judge_context_hint": "Das Modell ist auf Effizienz optimiert und kann bei komplexen Reasoning-Ketten oder langen Abhängigkeiten in der Aufgabenstellung an Konsistenz verlieren – Antwortqualität sollte besonders bei mehrstufigen Aufgaben kritisch geprüft werden.",
+  "unknown": false,
+  "generated_at": "2026-04-11T15:48:28.356699+00:00"
+}

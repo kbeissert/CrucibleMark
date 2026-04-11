@@ -1,0 +1,39 @@
+{
+  "provider_id": "minimax",
+  "display_name": "MiniMax",
+  "company": "MiniMax (上海稀宇科技有限公司)",
+  "origin_country": "China",
+  "headquarters": "Shanghai, China",
+  "founding_year": 2021,
+  "developer_jurisdiction": "CN",
+  "pricing_model": "free-tier+pay-per-token",
+  "api_base_url": "https://api.minimax.chat",
+  "deployment": {
+    "cloud_act_exposure": false,
+    "applicable_law": "China (PIPL/CSL/DSL)",
+    "data_residency": "China",
+    "gdpr_dpa_available": false,
+    "eu_adequacy_decision": false,
+    "data_retention_days": -1,
+    "chinese_nsl_risk": "high"
+  },
+  "summary": "MiniMax ist ein 2021 in Shanghai gegründetes chinesisches KI-Unternehmen, das multimodale Modelle für Text, Audio und Video entwickelt. Bekannt für die MiniMax-Text- und Abab-Modellreihe sowie Hailuo AI (Video). Positioniert als chinesische Alternative zu OpenAI mit starkem Fokus auf Sprach- und Multimodalität.",
+  "privacy_note": "API-Anfragen werden auf Servern in China verarbeitet und unterliegen chinesischem Recht (PIPL, CSL, DSL), das Behörden weitreichende Datenzugriffsrechte einräumt. Kein DSGVO-konformes DPA verfügbar; für europäische Nutzer mit personenbezogenen Daten ist dieser Provider nicht empfehlenswert.",
+  "strengths": [
+    "Starke multimodale Fähigkeiten (Text, Audio, Video in einem Ökosystem)",
+    "Wettbewerbsfähige Preisgestaltung mit großzügigem Free-Tier",
+    "Hailuo AI Video-Generierung mit hoher Qualität"
+  ],
+  "known_limitations": [
+    "Erhebliches Datenschutzrisiko für EU-Nutzer durch chinesische Rechtsprechung",
+    "Begrenzte internationale Transparenz zu Datenhaltung und Modelltraining"
+  ],
+  "notable_models": [
+    "MiniMax-Text-01",
+    "MiniMax-VL-01",
+    "abab6.5s"
+  ],
+  "unknown": false,
+  "stats": {},
+  "generated_at": "2026-04-11T15:28:18.203223+00:00"
+}

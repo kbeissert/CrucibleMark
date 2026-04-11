@@ -1,0 +1,26 @@
+{
+  "model_id": "gpt-4o-mini",
+  "display_name": "GPT-4o Mini",
+  "developer": "OpenAI",
+  "origin_country": "USA",
+  "developer_jurisdiction": "US",
+  "deployment_type": "cloud-only",
+  "local_deployment_possible": false,
+  "weights_provenance_risk": "medium",
+  "weights_provenance_risk_rationale": "OpenAI ist ein US-amerikanisches Unternehmen und unterliegt dem CLOUD Act, die Modellgewichte sind nicht öffentlich zugänglich und verbleiben unter OpenAIs Kontrolle.",
+  "model_family": "GPT-4o",
+  "primary_focus": "general",
+  "summary": "GPT-4o Mini ist ein kompaktes Modell von OpenAI (USA), das 2024 als kostengünstige Alternative zu GPT-4o erschien. Es kombiniert Text- und Bildverständnis, eignet sich für Alltagsaufgaben, Zusammenfassungen und einfache Reasoning-Aufgaben und zielt auf schnelle, skalierbare API-Nutzung ab.",
+  "strengths": [
+    "Sehr schnelle Inferenz bei niedrigen API-Kosten",
+    "Solide Instruction-Following-Fähigkeiten für alltägliche Aufgaben",
+    "Multimodal: verarbeitet sowohl Text als auch Bilder"
+  ],
+  "known_limitations": [
+    "Deutlich schwächer als GPT-4o bei komplexem Reasoning und mehrstufigen Aufgaben",
+    "Keine lokale Ausführung möglich, vollständige Abhängigkeit von OpenAIs Cloud-Infrastruktur"
+  ],
+  "judge_context_hint": "Das Modell ist auf Effizienz optimiert und kann bei komplexen, mehrstufigen oder nuancierten Aufgaben systematisch hinter größeren Modellen zurückbleiben – Bewertungen sollten dies bei anspruchsvollen Benchmarks berücksichtigen.",
+  "unknown": false,
+  "generated_at": "2026-04-11T15:43:17.768669+00:00"
+}

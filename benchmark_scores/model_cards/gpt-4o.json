@@ -1,0 +1,26 @@
+{
+  "model_id": "gpt-4o",
+  "display_name": "GPT-4o",
+  "developer": "OpenAI",
+  "origin_country": "USA",
+  "developer_jurisdiction": "US",
+  "deployment_type": "cloud-only",
+  "local_deployment_possible": false,
+  "weights_provenance_risk": "medium",
+  "weights_provenance_risk_rationale": "OpenAI ist ein US-amerikanisches Unternehmen und unterliegt dem CLOUD Act, jedoch sind die Modellgewichte nicht öffentlich zugänglich, sodass ein direkter staatlicher Zugriff auf die Weights nicht bekannt ist.",
+  "model_family": "GPT-4",
+  "primary_focus": "general",
+  "summary": "GPT-4o ist OpenAIs multimodales Flaggschiff-Modell (2024) mit nativem Text-, Bild- und Audio-Verständnis. Es wurde für niedrige Latenz und hohe Alltagstauglichkeit optimiert. Stärken liegen in Instruktionsbefolgung, Reasoning und mehrsprachiger Kommunikation.",
+  "strengths": [
+    "Starke multimodale Fähigkeiten (Text, Bild, Audio nativ integriert)",
+    "Sehr gute Instruktionsbefolgung und kontextsensitive Antworten",
+    "Niedrige Latenz bei hoher Ausgabequalität im Vergleich zu Vorgängermodellen"
+  ],
+  "known_limitations": [
+    "Keine öffentlichen Modellgewichte – vollständige Abhängigkeit von OpenAIs API-Infrastruktur",
+    "Wissens-Cutoff und gelegentliche Halluzinationen bei spezifischen Fakten oder aktuellen Ereignissen"
+  ],
+  "judge_context_hint": "GPT-4o neigt dazu, Antworten stilistisch zu glätten und Nuancen zu vereinfachen – bei komplexen Reasoning-Aufgaben auf Zwischenschritte und Begründungstiefe achten.",
+  "unknown": false,
+  "generated_at": "2026-04-11T14:58:36.805651+00:00"
+}
