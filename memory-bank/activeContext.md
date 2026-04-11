@@ -1,3 +1,3 @@
-- Abgeschlossen: v3.4.3 released + committed (2026-04-10). module_weight-System eingeführt — selbstnormierende Modulgewichtung entkoppelt Total Score von Asset-Anzahl. Alle Vollmodule 1.0, CLI 0.5. 5 neue Ollama-Cloud-Modelle in cost_limits.yaml. Alle Versionsdateien + Docs synchronisiert.
-- Nächster Schritt: make benchmark-auto neu starten — letzter Run wurde mit Ctrl+C abgebrochen (Exit 130); neue Cloud-Modelle noch nicht benchmarked.
-- Offen/Risiko: gpt-5.4-mini cultural_intel 108-Token-Anomalie noch ungeprüft. Backup-Dateien (*.bak) noch nicht gelöscht.
+- Abgeschlossen: v3.4.4 Architektur-Code-Review + Release (2026-04-11). Vollständiges Review aller Python-Dateien gegen 4 Architekturregeln. Befunde: 7× Magic String "open_weights_cloud", 8× Timeout-Magic-Numbers, Result-Typ-Strings hardcoded. Fix: 12 neue Konstanten in constants.py (MODEL_TYPE_OPEN_WEIGHTS_CLOUD, RESULT_TYPE_*, TIMEOUT_*); 8 Dateien aktualisiert. 163/163 pytest, mypy clean. Commit 95f2055, Tag v3.4.4.
+- Nächster Schritt: git push origin main --tags — dann make benchmark-auto für neue Cloud-Modelle (Exit-130-Run).
+- Offen/Risiko: gpt-5.4-mini cultural_intel 108-Token-Anomalie noch ungeprüft. Backup-Dateien (*.bak) bereits bereinigt.

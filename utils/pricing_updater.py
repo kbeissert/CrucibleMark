@@ -84,8 +84,8 @@ LITELLM_MODEL_MAP: Dict[str, str] = {
     # --- xAI (Grok) ---
     "grok-3": "xai/grok-3",
     "grok-3-mini": "xai/grok-3-mini",
-    
-    
+
+
     # --- Google Gemini ---
     "gemini-3.1-pro-preview": "gemini/gemini-3.1-pro-preview",
     "gemini-3-flash-preview": "gemini/gemini-3-flash-preview",
