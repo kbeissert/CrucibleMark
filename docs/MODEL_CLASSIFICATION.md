@@ -146,7 +146,7 @@ ______________________________________________________________________
 Tokens/s = Mittelwert der tokens_per_second über alle Nicht-System-Assets
 ```
 
-> **Hinweis:** Der frühere „Efficiency Score" (Total Score ÷ Avg Task Duration) wurde in v3.4.4 entfernt.
+> **Hinweis:** Der frühere „Efficiency Score" (Total Score ÷ Avg Task Duration) wurde in v3.4.3 entfernt.
 > Er kombinierte Qualität und Speed opak in einer Zahl und war neben `Cost per 1K (USD)` redundant.
 > Stattdessen drei saubere, unabhängige Dimensionen: `Total Score`, `Avg Task Duration (s)`, `Tokens/s`.
 
@@ -287,4 +287,4 @@ ______________________________________________________________________
 ______________________________________________________________________
 
 **Dokumenten-Version:** 2.1.0 (Überarbeitung März 2026)\
-**Kompatibel mit:** CrucibleMark v3.3.0+
+**Kompatibel mit:** CrucibleMark v3.4.3+
