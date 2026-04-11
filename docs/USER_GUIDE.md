@@ -173,6 +173,15 @@ make review MODEL="meta-llama/Llama-3.1-8B-Instruct" TYPE="bias"
 make review ALL=1 TYPE="bias"
 ```
 
+**Model Cards & Provider Cards** liefern dem Meta-Reviewer strukturierten Kontext zu Herkunft, Stärken und — besonders relevant für europäische Akteure — Datenschutzstandards:
+
+```bash
+make model-cards      # Model Cards generieren (Herkunft, Deployment-Typ, Weights-Provenance-Risk)
+make provider-cards   # Provider Cards generieren (CLOUD Act, GDPR DPA, Datenstandort, Retention)
+```
+
+Jeder generierten Review enthält einen **Datenschutz-Abschnitt** mit einer Sovereign-Risk-Einschätzung (`low` / `medium` / `high`), die aus Weights-Herkunft und Deployment-Jurisdiktion des Providers kombiniert wird. Das ermöglicht eine direkte Compliance-Einordnung ohne externen Rechercheaufwand.
+
 > Weitere Details: [AUDIT_AND_METAREVIEW.md](AUDIT_AND_METAREVIEW.md).
 
 ______________________________________________________________________
