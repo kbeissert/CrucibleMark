@@ -2,6 +2,11 @@
 
 ## Abgeschlossen
 
+### PC Skip-Logic Fix & Leaderboard-Bereinigung (v3.4.6 – 14.04.26)
+- [x] **`utils/base_runner.py` — PC Skip-Logic-Fallback:** `execute_batch_module()` liest `benchmark_scores/political_compass_leaderboard.csv` direkt, wenn Standard-CSV-Cache leer ist (Post-Reset-Szenario). Aktiviert nur für PC-Module via `PoliticalCompassHandler.is_political_compass()`. Graceful-Fallback bei `OSError`/`csv.Error`.
+- [x] **PC-Leaderboard-Bereinigung:** 11 Einträge mit korrupten Koordinaten (runde Ganzzahlwerte aus Verweigerungssession 23.03.2026) entfernt. Leaderboard: 31 → 20 verifizierte Einträge. Backup: `political_compass_leaderboard.bak_20260414_222150.csv`. 31 Modelle für Re-Run freigegeben.
+- [x] **`.github/copilot-instructions.md`:** Fallstrick „PC Skip-Logic Gap" dokumentiert.
+
 ### Architektur-Code-Review & Magic-String/Number-Elimination (v3.4.4 – 11.04.26)
 - [x] **`utils/constants.py` — 12 neue Konstanten:** `MODEL_TYPE_OPEN_WEIGHTS_CLOUD`, `RESULT_TYPE_LOCAL/CLOUD/COMMERCIAL`, `TIMEOUT_OLLAMA_HEALTH/LIST_FAST/LIST/VERSION/WARMUP`, `TIMEOUT_HTTP_FETCH`, `TIMEOUT_ANTHROPIC_API` als SSOT definiert.
 - [x] **Magic Strings/Numbers aus 8 Dateien eliminiert:** `result_manager.py`, `model_utils.py`, `providers/anthropic.py`, `pricing_updater.py`, `benchmark_auto.py`, `unified_runner.py`, `run_cross_model_benchmark.py`, `list_models.py` referenzieren alle Werte ausschließlich via `constants.py`.

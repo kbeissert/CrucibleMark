@@ -345,6 +345,24 @@ class BaseBenchmarkRunner:
                 print(f"⏩ Überspringe {benchmark_info.get('name', '')} (Batch-Modus; Bereits im Cache vorhanden)")
                 return [cached_res.copy()]
 
+        # Fallback-Check: political_compass_leaderboard.csv direkt prüfen.
+        # Die Standard-CSVs können nach einem Reset leer sein, während PC-Ergebnisse
+        # autark im Leaderboard fortbestehen. Verhindert teure Re-Runs via `make political-compass`.
+        if not force and PoliticalCompassHandler.is_political_compass(benchmark_info):
+            import csv as _csv
+            pc_leaderboard = Path("benchmark_scores/political_compass_leaderboard.csv")
+            if pc_leaderboard.exists():
+                try:
+                    with pc_leaderboard.open("r", encoding="utf-8") as _f:
+                        if any(row.get("model") == model for row in _csv.DictReader(_f)):
+                            print(
+                                f"⏩ Überspringe {benchmark_info.get('name', '')} "
+                                f"(PC-Leaderboard; {model} bereits bewertet)"
+                            )
+                            return []
+                except (OSError, _csv.Error):
+                    pass  # Bei Lesefehler: sicher durchlaufen und normal ausführen
+
         module_path = Path(str(benchmark_info.get("module_path", "")))
         test_file = module_path / "test.py"
         test_class_name = str(benchmark_info.get("test_class", ""))

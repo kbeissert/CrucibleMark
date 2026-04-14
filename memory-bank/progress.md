@@ -1,8 +1,9 @@
 # Progress
 
 ## Ongoing
-- [ ] make benchmark-auto neu starten (Exit 130 beim letzten Run; neue Cloud-Modelle nicht benchmarked)
+- [ ] make benchmark-auto starten: PC-Re-Run (31 Modelle ohne gültigen Eintrag) + offene Cloud-Modelle
 - [ ] gpt-5.4-mini cultural_intel 108-Token-Anomalie: --force Re-Run prüfen
+- [DONE] PC-Leaderboard Bereinigung: 11 Modelle mit korrupten Koordinaten entfernt (20 verifizierte Einträge verbleiben). Skip-Lücke in execute_batch_module() geschlossen.
 - [DONE] Backup-Dateien löschen: bereits bereinigt (keine *.bak mehr vorhanden)
 - [ ] Phase 4: Finale E2E Systemtests und CI/CD Review
 - [ ] LLM Judge: Batch-Mode (Phase 3.5)

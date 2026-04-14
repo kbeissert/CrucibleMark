@@ -29,6 +29,7 @@
   - *Audit-Log Extraction:* Regex-Parser in `generate_review.py` muss bei neuen Metadaten-Blöcken (z.B. `> [!WARNING]`) erweitert werden. Siehe [AUDIT_AND_METAREVIEW.md](docs/AUDIT_AND_METAREVIEW.md).
   - *Terminal Execution Limits:* Für sichere Datei-Ersetzungen File-Edit-Tools oder Python-Dateien statt Terminal-Befehle nutzen.
   - *Google SDK Typing:* Bei Pylance/Pyright False-Positives (z.B. `reportPrivateImportUsage`) im `google.generativeai` SDK `# pyright: reportPrivateImportUsage=false` am Header nutzen.
+  - *PC Skip-Logic Gap:* `execute_batch_module()` in `base_runner.py` prüft nur die 3 Standard-CSVs auf bereits vorhandene Ergebnisse — nach einem Leaderboard-Reset sind diese leer, die `political_compass_leaderboard.csv` aber nicht. Ohne expliziten Fallback auf `political_compass_leaderboard.csv` werden alle PC-Modelle fälschlich erneut gerunnt.
 
 ## Memory Bank (Dynamic Project Context)
 
