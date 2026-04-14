@@ -1,22 +1,23 @@
 # PROJECT_STATUS.md
 
-**Last Updated:** 2026-04-11
-**Current Version:** 3.4.5 (Dokumentation: Redaktionelle Überarbeitung)
+**Last Updated:** 2026-04-14
+**Current Version:** 3.4.6 (PC Skip-Logic Fix & Leaderboard-Bereinigung)
 **Status:** ✅ Production-Ready
 
 ---
 
 ## Executive Summary
 
-CrucibleMark v3.4.5 schließt die redaktionelle Überarbeitung aller 16 Projektdokumente ab. README.md, 13 docs/-Dateien, REF_TODO.md und PROJECT_STATUS.md wurden auf einheitlichen Ton, Ansprache und Struktur gebracht: unpersönliches `man`/`sein`, Emojis aus Überschriften entfernt, alle englischen Header ins Deutsche übertragen, Intro-Blöcke (`**Zielgruppe:**`/`**Inhalt:**`) ergänzt und alle `______`-Trennlinien in `---` umgewandelt. Kein funktionaler Code geändert.
+CrucibleMark v3.4.6 schließt eine kritische Datenlücke im Political-Compass-Modul. `execute_batch_module()` in `utils/base_runner.py` prüfte nach einem Leaderboard-Reset nur die 3 Standard-CSVs — diese waren leer, die `political_compass_leaderboard.csv` aber nicht. Ohne Fallback wurden alle bereits benchmarkten PC-Modelle fälschlich erneut gerunnt. Fix: expliziter direkter Lesecheck gegen die PC-Leaderboard-CSV. Ergänzend wurde das PC-Leaderboard von 31 auf 20 verifizierte Einträge bereinigt (11 Modelle mit korrupten Koordinaten aus fehlerhafter Session 23.03.2026 entfernt).
 
-**Key Achievements (v3.4.5):**
-- ✅ **16 Dokumente einheitlich überarbeitet:** README.md + docs/ (13 Dateien) + REF_TODO.md + PROJECT_STATUS.md.
-- ✅ **Ansprache:** `du`/`dein`/`dich` durchgängig → unpersönliches `man`/`sein`/`sich`.
-- ✅ **Emojis:** Alle Emojis aus Überschriften entfernt — nur 🛑 als kritischer Warnmarker behalten.
-- ✅ **Header:** Alle englischen H1–H3 ins Deutsche übertragen (z. B. `# Developer Guide` → `# Entwicklerhandbuch`).
-- ✅ **Intro-Blöcke:** Einheitliches `**Zielgruppe:**` / `**Inhalt:**` / `> **Voraussetzung:**`-Format in allen Dateien ergänzt.
-- ✅ **Divider:** ~80+ `______`-Trennlinien systemweit → `---`.
+**Key Achievements (v3.4.6):**
+- ✅ **PC Skip-Logic-Lücke geschlossen:** `execute_batch_module()` liest `political_compass_leaderboard.csv` direkt, wenn Standard-CSV-Cache leer ist. Aktiviert nur für PC-Module via `PoliticalCompassHandler.is_political_compass()`. Graceful-Fallback bei I/O-Fehlern.
+- ✅ **Leaderboard-Bereinigung:** 11 Einträge mit runden Ganzzahlwerten (Verweigerungsartefakte: z. B. `(0.0, 9.0)`) gelöscht. 20 verifizierte Einträge verbleiben. Backup gesichert.
+- ✅ **31 Modelle für PC-Re-Run freigegeben:** 20 bislang fehlende + 11 bereinigte Einträge.
+
+**Vorherige Version (v3.4.5 – Dokumentation: Redaktionelle Überarbeitung):**
+
+CrucibleMark v3.4.5 schließt die redaktionelle Überarbeitung aller 16 Projektdokumente ab. README.md, 13 docs/-Dateien, REF_TODO.md und PROJECT_STATUS.md wurden auf einheitlichen Ton, Ansprache und Struktur gebracht: unpersönliches `man`/`sein`, Emojis aus Überschriften entfernt, alle englischen Header ins Deutsche übertragen, Intro-Blöcke (`**Zielgruppe:**`/`**Inhalt:**`) ergänzt und alle `______`-Trennlinien in `---` umgewandelt. Kein funktionaler Code geändert.
 
 **Vorherige Version (v3.4.4 – Architecture Compliance: No Magic Numbers/Strings):**
 

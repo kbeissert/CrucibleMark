@@ -4,6 +4,23 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [v3.4.6] - 2026-04-14
+
+### Fixed
+- **`utils/base_runner.py` — PC Skip-Logic-Lücke geschlossen:** `execute_batch_module()` prüfte bei Political-Compass-Runs nur die 3 Standard-CSVs auf bereits vorhandene Ergebnisse. Nach einem Leaderboard-Reset (leere Standard-CSVs) wurden alle PC-Modelle fälschlich erneut gerunnt. Fix: Expliziter Fallback-Check gegen `benchmark_scores/political_compass_leaderboard.csv` — wird nur für PC-Module aktiviert (`PoliticalCompassHandler.is_political_compass()`). Graceful-Fallback bei `OSError`/`csv.Error`.
+
+### Data
+- **Political Compass Leaderboard-Bereinigung:** 11 Einträge mit korrupten Koordinaten (runde Null-Werte aus fehlerhafter Session 23.03.2026 — Verweigerungen produzierten Ganzzahlwerte wie `(0.0, 9.0)`) aus `political_compass_leaderboard.csv` entfernt. Leaderboard: 31 → 20 verifizierte Einträge. Betroffene Modelle für Re-Run freigegeben. Backup gesichert unter `political_compass_leaderboard.bak_20260414_222150.csv`.
+
+---
+
+## [v3.4.5] - 2026-04-11
+
+### Changed
+- **Redaktionelle Überarbeitung (16 Dateien):** README.md, 13 `docs/`-Dateien, REF_TODO.md und PROJECT_STATUS.md auf einheitlichen Ton gebracht: Ansprache `du`/`dein` → unpersönliches `man`/`sein`; Emojis aus Überschriften entfernt (nur `🛑` als kritischer Warnmarker behalten); alle englischen H1–H3 ins Deutsche übertragen; einheitliche Intro-Blöcke (`**Zielgruppe:**` / `**Inhalt:**` / `> **Voraussetzung:**`) in allen Dateien ergänzt; ~80 `______`-Trennlinien → `---`.
+
+---
+
 ## [v3.4.4] - 2026-04-11
 
 ### Changed
