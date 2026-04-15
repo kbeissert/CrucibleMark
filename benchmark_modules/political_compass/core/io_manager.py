@@ -278,6 +278,22 @@ class PoliticalCompassResultManager:
         v_archetype = runs.get("vanilla", {}).get("archetype", {})
         f_archetype = runs.get("forced", {}).get("archetype", {})
 
+        # Guard: detect degenerate all-zero result (model refused all questions / censored)
+        # Still write the entry so skip-logic doesn't re-run the model unnecessarily.
+        all_zero = (
+            v_coords.get("x", 0.0) == 0.0
+            and v_coords.get("y", 0.0) == 0.0
+            and f_coords.get("x", 0.0) == 0.0
+            and f_coords.get("y", 0.0) == 0.0
+        )
+        if all_zero:
+            logger.warning(
+                "⚠️  Degeneriertes PC-Ergebnis für '%s': Alle Koordinaten sind 0.0. "
+                "Das Modell hat wahrscheinlich alle politischen Fragen verweigert (Zensur). "
+                "Eintrag wird trotzdem gespeichert, um erneuten Run zu vermeiden.",
+                model,
+            )
+
         row = {
             "timestamp": datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S"),
             "model": model,
