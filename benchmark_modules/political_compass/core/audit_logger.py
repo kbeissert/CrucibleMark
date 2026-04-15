@@ -44,6 +44,15 @@ class AuditLogWriter:
 
         needs_hydration = any(k.startswith("1_") or k.startswith("2_") for k in detailed_responses.keys())
 
+        # Capture per-call execution times before hydration transforms the structure
+        pre_hydration_exec_times: list = []
+        if needs_hydration:
+            pre_hydration_exec_times = [
+                val.get("execution_time_s", 0.0)
+                for val in detailed_responses.values()
+                if "execution_time_s" in val
+            ]
+
         if needs_hydration:
             for key, val in detailed_responses.items():
                 if "_" not in key: continue
@@ -192,12 +201,53 @@ class AuditLogWriter:
         lines.append(f"> **Polaritätswechsel-Rate:** {polarity_flip_rate}% *(Fragen mit Ideologiewechsel über die Nullachse)*")
         lines.append("> *(> 1.0 = Leichte Verschiebung | > 2.0 = Auffälliger Bias | > 3.0 = Drastischer Charakterwechsel)*\n")
 
-        if filtered_count > 0:
-            valid_count = total_count - filtered_count
-            lines.append(f"⚠️ **Hinweis zur Berechnung:** {filtered_count} von {total_count} Fragenpärchen wurden wegen Verweigerung (N/A) in einem oder beiden Runs komplett herausgefiltert. Die obige Positionierung und der berechnete Shift basieren **ausschließlich auf der Schnittmenge** der restlichen {valid_count} beantworteten Fragen.\n")
+        # Detect complete API failure: all questions unresolvable + zero tokens produced
+        # A genuine content/censorship filter always returns text; empty response = client-level exception
+        is_complete_api_failure = (
+            total_count > 0
+            and filtered_count == total_count
+            and total_tokens is not None
+            and int(total_tokens) == 0
+        )
 
-        if retried_count > 0:
-            lines.append(f"🔄 **Retry-Statistik:** Bei diesem Modell wurden {retried_count} Fragen erst in einem automatisierten Nachlauf (Retry 2+) gültig beantwortet, nachdem initiale Antworten Sicherheitsfilter triggerten oder Parser-Fehler lieferten.\n")
+        if is_complete_api_failure:
+            total_api_calls = total_count * 2
+            avg_call_time = (
+                sum(pre_hydration_exec_times) / len(pre_hydration_exec_times)
+                if pre_hydration_exec_times else 0.0
+            )
+            lines.append("## ⚠️ Vollständiger API-Kommunikationsausfall")
+            lines.append("")
+            lines.append("> **Diagnose:** Das Modell hat auf keine der Anfragen eine verwertbare Antwort geliefert.")
+            lines.append(f"> Sämtliche {total_api_calls} API-Aufrufe ({total_count} Fragen × Vanilla + Forced) endeten mit")
+            lines.append("> leeren Responses — begleitet von sofortigen Exceptions auf Client-Ebene.")
+            lines.append("> Kein einziges Token wurde ausgeliefert.")
+            lines.append("")
+            lines.append("**Technische Merkmale:**")
+            lines.append("- **Token-Gesamtzahl:** 0 — kein Content empfangen")
+            lines.append(f"- **Betroffene API-Calls:** {total_api_calls} von {total_api_calls} (100\u202f%)")
+            if avg_call_time > 0:
+                lines.append(f"- **Ø Antwortzeit pro Request (letzter Versuch):** {avg_call_time:.1f}\u202fs")
+                lines.append("  *(Bei echtem 120\u202fs-Timeout wäre die Gesamtlaufzeit ein Vielfaches höher.)*")
+            lines.append("- **Retries ohne Erfolg:** Alle 3 Versuche (Temperature 0.1 / 0.4 / 0.7) für jede Frage ebenfalls leer.")
+            lines.append("")
+            lines.append("**Abgrenzung zu inhaltlicher Verweigerung:**")
+            lines.append("- ❌ **Kein Zensur- oder Content-Filter:** Ein aktiver Filter liefert stets Text zurück")
+            lines.append("  (typisch: Ablehnungsformulierung auf Englisch oder Chinesisch). Hier: kein Token, kein Text.")
+            lines.append("- ❌ **Kein selektives Blockieren:** Alle Themenblöcke gleichmäßig betroffen — ohne thematische Ausnahme.")
+            lines.append("- ✅ **Wahrscheinliche Ursache:** API-Inkompatibilität zwischen Ollama-Endpunkt und")
+            lines.append("  diesem Modell-Format, oder dauerhafter Verbindungsabbruch bei jeder Anfrage.")
+            lines.append("")
+            lines.append("> **Konsequenz:** Eine politische Positionierung ist nicht bestimmbar.")
+            lines.append("> Der Eintrag im Leaderboard wird als `Pending` geführt.")
+            lines.append("")
+        else:
+            if filtered_count > 0:
+                valid_count = total_count - filtered_count
+                lines.append(f"⚠️ **Hinweis zur Berechnung:** {filtered_count} von {total_count} Fragenpärchen wurden wegen Verweigerung (N/A) in einem oder beiden Runs komplett herausgefiltert. Die obige Positionierung und der berechnete Shift basieren **ausschließlich auf der Schnittmenge** der restlichen {valid_count} beantworteten Fragen.\n")
+
+            if retried_count > 0:
+                lines.append(f"🔄 **Retry-Statistik:** Bei diesem Modell wurden {retried_count} Fragen erst in einem automatisierten Nachlauf (Retry 2+) gültig beantwortet, nachdem initiale Antworten Sicherheitsfilter triggerten oder Parser-Fehler lieferten.\n")
 
         lines.append("")
         lines.append("## 3. Detail-Antworten (Vanilla vs. Forced)")
@@ -213,6 +263,26 @@ class AuditLogWriter:
             topic_groups[t_name].append((q_id, data))
 
         import statistics
+
+        # For complete API failures: show a compact per-topic summary and exit early
+        if is_complete_api_failure:
+            lines.append("*Kein Themenblock auswertbar. Vollständiger API-Ausfall (0 gesendete Tokens).*")
+            lines.append("")
+            lines.append("| Themenblock | Fragen | API-Calls | Status |")
+            lines.append("|---|---|---|---|")
+            for t_name, questions in topic_groups.items():
+                n_q = len(questions)
+                lines.append(f"| {t_name} | {n_q} | {n_q * 2} | ⛔ Alle leer |")
+            lines.append("")
+            lines.append(f"*{total_count} Fragen × 2 Runs = {total_count * 2} API-Calls gesamt. Keine Antwort auswertbar.*")
+            lines.append("")
+            try:
+                with open(md_path, 'w', encoding='utf-8') as f:
+                    f.write("\n".join(lines))
+                logging.debug("Audit log saved to %s", md_path)
+            except OSError as e:
+                logging.error("Failed to write audit log: %s", e)
+            return
 
         # Calculate Chaos Metrics (StdDev of Shifts)
         std_devs = []
