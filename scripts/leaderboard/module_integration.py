@@ -138,7 +138,12 @@ def _enrich_from_csv_source(
                 if template:
                     # Convert row to dict, ensure all values are strings for safe substitution
                     data = row.to_dict()
-                    return template.format(**data)
+                    rendered = template.format(**data)
+                    # Degenerate case: vanilla_label was empty (e.g. censored/refused PC run)
+                    # produces leading whitespace before "(Shift:" → treat as missing
+                    if rendered.strip().startswith("(Shift:"):
+                        return fallback
+                    return rendered
 
                 return ""
             except KeyError:
