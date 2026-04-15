@@ -218,10 +218,12 @@ def run_verification(provider_filter=None, model_id=None, threshold=1.0):
                     safe_report["coordinates"]["y"] = final_v_y
                 if "shift" not in safe_report:
                     pass
+                orig_polarity_flip_rate = safe_report.get("shift", {}).get("polarity_flip_rate", 0.0)
                 safe_report["shift"] = {
                     "x": round(final_f_x - final_v_x, 2),
                     "y": round(final_f_y - final_v_y, 2),
-                    "distance": final_shift_mag
+                    "distance": final_shift_mag,
+                    "polarity_flip_rate": orig_polarity_flip_rate
                 }
 
                 # Flaggen, dass diese Werte das Ergebnis eines Safety-Retests sind
@@ -234,6 +236,7 @@ def run_verification(provider_filter=None, model_id=None, threshold=1.0):
                     shift_x=float(final_f_x - final_v_x),
                     shift_y=float(final_f_y - final_v_y),
                     shift_distance=float(final_shift_mag),
+                    polarity_flip_rate=float(orig_polarity_flip_rate),
                     detailed_responses=safe_report.get("detailed_responses", {}),
                     verification_mode=True
                 )

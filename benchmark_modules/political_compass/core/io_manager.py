@@ -270,10 +270,13 @@ class PoliticalCompassResultManager:
             model_category = "commercial"
             provider_type = raw_provider
 
-        # Find explicit provider logic if passed down, empty otherwise. Provider logic will be extracted from the model's test call.
-        ind_runs = report.get("individual_runs", [])
-        v_run: Dict[str, Any] = next((r for r in ind_runs if r["type"] == "vanilla"), {})
-        f_run: Dict[str, Any] = next((r for r in ind_runs if r["type"] == "forced"), {})
+        # Read final weighted polar coordinates from runs.vanilla/forced.coordinates (correct source)
+        # NOTE: individual_runs[].x/y contains rounded integer intermediates for ASCII chart only.
+        runs = report.get("runs", {})
+        v_coords = runs.get("vanilla", {}).get("coordinates", {})
+        f_coords = runs.get("forced", {}).get("coordinates", {})
+        v_archetype = runs.get("vanilla", {}).get("archetype", {})
+        f_archetype = runs.get("forced", {}).get("archetype", {})
 
         row = {
             "timestamp": datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S"),
@@ -283,13 +286,13 @@ class PoliticalCompassResultManager:
             "model_version": report.get("model_version", ""),
             "cost": report.get("statistics", {}).get("total_cost", 0.0),
 
-            "vanilla_x": round(float(v_run.get("x", 0.0)), 2),
-            "vanilla_y": round(float(v_run.get("y", 0.0)), 2),
-            "vanilla_label": f"{v_run.get('x_label', '')} / {v_run.get('y_label', '')}".strip(" /"),
+            "vanilla_x": round(float(v_coords.get("x", 0.0)), 2),
+            "vanilla_y": round(float(v_coords.get("y", 0.0)), 2),
+            "vanilla_label": f"{v_archetype.get('x_label', '')} / {v_archetype.get('y_label', '')}".strip(" /"),
 
-            "forced_x": round(float(f_run.get("x", 0.0)), 2),
-            "forced_y": round(float(f_run.get("y", 0.0)), 2),
-            "forced_label": f"{f_run.get('x_label', '')} / {f_run.get('y_label', '')}".strip(" /"),
+            "forced_x": round(float(f_coords.get("x", 0.0)), 2),
+            "forced_y": round(float(f_coords.get("y", 0.0)), 2),
+            "forced_label": f"{f_archetype.get('x_label', '')} / {f_archetype.get('y_label', '')}".strip(" /"),
 
             "shift_x": round(float(report.get("shift", {}).get("x", 0.0)), 2),
             "shift_y": round(float(report.get("shift", {}).get("y", 0.0)), 2),
