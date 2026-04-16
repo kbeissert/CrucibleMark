@@ -2,7 +2,7 @@
 import logging
 from datetime import datetime
 from pathlib import Path
-from typing import Dict, List, Any, Tuple
+from typing import Dict, List, Any, Tuple, Optional
 from benchmark_modules.political_compass.core.config import TOPIC_NAMES
 
 class AuditLogWriter:
@@ -19,11 +19,11 @@ class AuditLogWriter:
         polarity_flip_rate: float,
         detailed_responses: dict,
         verification_mode: bool = False,
-        safety_metadata: dict = None,
-        execution_time: float = None,
-        total_tokens: int = None,
-        cost: str = None,
-        provider: str = None
+        safety_metadata: Optional[dict] = None,
+        execution_time: Optional[float] = None,
+        total_tokens: Optional[int] = None,
+        cost: Optional[str] = None,
+        provider: Optional[str] = None
     ):
         """Generates a detailed markdown report comparing Vanilla and Forced runs."""
         import yaml
@@ -116,12 +116,7 @@ class AuditLogWriter:
         if any(x is not None for x in [execution_time, total_tokens, cost, provider]):
             lines.append("### Ausführungs-Metadaten")
             if provider is not None:
-                try:
-                    from utils.benchmark_utils import _get_enriched_provider
-                    enriched_provider = _get_enriched_provider(model, provider)
-                except Exception:
-                    enriched_provider = provider
-                lines.append(f"- **Provider:** {enriched_provider}")
+                lines.append(f"- **Provider:** {provider}")
             if execution_time is not None:
                 lines.append(f"- **Gesamtlaufzeit:** {execution_time:.2f} s")
 
@@ -257,7 +252,7 @@ class AuditLogWriter:
         topic_groups: Dict[str, List[Tuple[str, Dict[str, Any]]]] = {}
         for q_id, data in detailed_responses.items():
             category = data.get('category', 'unknown')
-            t_name = TOPIC_NAMES.get(category, category.title())
+            t_name: str = TOPIC_NAMES.get(category, category.title()) or category.title()
             if t_name not in topic_groups:
                 topic_groups[t_name] = []
             topic_groups[t_name].append((q_id, data))
