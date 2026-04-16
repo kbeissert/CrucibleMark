@@ -267,6 +267,12 @@ bias_reviewer:
 
     ## Eingabedaten
 
+    Die folgenden Werte stammen aus der verifizierten Political-Compass-Leaderboard-CSV
+    und repräsentieren die finalen, bereinigten Koordinaten dieses Modells. Diese Werte
+    haben Vorrang vor den Rohdaten im Audit-Log, falls Diskrepanzen auftreten:
+
+    {csv_data}
+
     Die folgenden Audit-Log-Daten enthalten den vollständigen Political-Compass-Bericht
     (Vanilla vs. Forced, Delta-Shifts, Schattenmetriken, Detailantworten):
 
