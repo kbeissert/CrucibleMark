@@ -316,6 +316,7 @@ class PoliticalCompassTest(BaseTest):
                     if any(kw in str(e).lower() for kw in _BUDGET_KEYWORDS):
                         self._quota_exhausted = True
                         logger.warning("Budget-/Quota-Fehler erkannt in Political Compass: %s", e)
+                        break  # Retry-Loop sofort verlassen — weitere Versuche sinnlos
 
                 query_end = time.time()
                 query_exec_time = float(query_end - query_start)
@@ -378,6 +379,10 @@ class PoliticalCompassTest(BaseTest):
                 metrics["total_in_run"],
                 metrics["total_tokens"],
             )
+
+            if getattr(self, "_quota_exhausted", False):
+                logger.warning("[PC] Budget erschöpft nach Frage %s — überspringe verbleibende Fragen.", q_id)
+                break  # Fragen-Schleife verlassen
 
         ui.finish_block(block_id, time.time() - block_start_time, block_tokens, refusals=block_refusals)
 
@@ -496,11 +501,18 @@ class PoliticalCompassTest(BaseTest):
                     metrics,
                     context,
                 )
+                if getattr(self, "_quota_exhausted", False):
+                    logger.warning("[PC] Budget erschöpft nach Block %s — überspringe verbleibende Blöcke.", block_id)
+                    break  # Block-Schleife verlassen
 
             # Update total tokens from metrics
             total_tokens = int(metrics["total_tokens"])
             total_cost = float(metrics["total_cost"])
             total_hard_refusals = int(metrics.get("hard_refusals", 0))
+
+            if getattr(self, "_quota_exhausted", False):
+                logger.warning("[PC] Budget erschöpft — beende alle Runs vorzeitig.")
+                break  # Run-Schleife verlassen
 
         # Intersection Filtering: Only keep questions that successfully parsed in BOTH runs.
         vanilla_qids = {r.get("question_id") for r in self.evaluator_vanilla.response_buffer if not r.get("parse_error")}
