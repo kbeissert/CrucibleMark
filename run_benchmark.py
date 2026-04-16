@@ -330,7 +330,7 @@ class BenchmarkRunner:
         for r in results:
             if r.get("asset_id") == "political_compass":
                 try:
-                    raw = json.loads(r.get("raw_response", "{}"))
+                    raw = json.loads(r.get("raw_response") or "{}")
                     shift = float(raw.get("shift", {}).get("distance", 0.0))
 
                     if shift > 1.0:
