@@ -1,21 +1,23 @@
 # PROJECT_STATUS.md
 
-**Last Updated:** 2026-04-14
-**Current Version:** 3.4.6 (PC Skip-Logic Fix & Leaderboard-Bereinigung)
+**Last Updated:** 2026-04-16
+**Current Version:** 3.4.7 (PC Budget-Exhaustion-Guard & Daten-Hygiene)
 **Status:** ✅ Production-Ready
 
 ---
 
 ## Executive Summary
 
-CrucibleMark v3.4.6 schließt eine kritische Datenlücke im Political-Compass-Modul. `execute_batch_module()` in `utils/base_runner.py` prüfte nach einem Leaderboard-Reset nur die 3 Standard-CSVs — diese waren leer, die `political_compass_leaderboard.csv` aber nicht. Ohne Fallback wurden alle bereits benchmarkten PC-Modelle fälschlich erneut gerunnt. Fix: expliziter direkter Lesecheck gegen die PC-Leaderboard-CSV. Ergänzend wurde das PC-Leaderboard von 31 auf 20 verifizierte Einträge bereinigt (11 Modelle mit korrupten Koordinaten aus fehlerhafter Session 23.03.2026 entfernt).
+CrucibleMark v3.4.7 schließt die letzte verbleibende Sicherheitslücke im Political-Compass-Modul: Budget-Erschöpfung mitten in einem PC-Run wurde bisher lautlos verschluckt. `test.py` fing alle Exceptions mit `response = ""` ab — ohne Propagation. Das Modell wurde als erledigt markiert und korrupte All-Zero-Daten in das Leaderboard geschrieben. Fix: `test.py` setzt `self._quota_exhausted = True` bei Budget-/Quota-Keywords; `execute_batch_module()` in `utils/base_runner.py` prüft das Flag nach `execute()` und propagiert es als `self.provider_quota_exhausted`. Zusätzlich: `cost`-Spalte aus dem PC-Leaderboard entfernt (redundant, immer `0.0` für lokale Modelle), `bias_reviewer`-Prompt in `meta_reviewer_prompt.yaml` ergänzt und `inference_provider`-Feld in `web_export.py` hinzugefügt.
 
-**Key Achievements (v3.4.6):**
-- ✅ **PC Skip-Logic-Lücke geschlossen:** `execute_batch_module()` liest `political_compass_leaderboard.csv` direkt, wenn Standard-CSV-Cache leer ist. Aktiviert nur für PC-Module via `PoliticalCompassHandler.is_political_compass()`. Graceful-Fallback bei I/O-Fehlern.
-- ✅ **Leaderboard-Bereinigung:** 11 Einträge mit runden Ganzzahlwerten (Verweigerungsartefakte: z. B. `(0.0, 9.0)`) gelöscht. 20 verifizierte Einträge verbleiben. Backup gesichert.
-- ✅ **31 Modelle für PC-Re-Run freigegeben:** 20 bislang fehlende + 11 bereinigte Einträge.
+**Key Achievements (v3.4.7):**
+- ✅ **PC Budget-Exhaustion-Guard:** `test.py` erkennt Budget/Quota-Keywords in Exceptions und setzt `self._quota_exhausted = True`. `execute_batch_module()` propagiert dies als `provider_quota_exhausted`-Flag — identisches Verhalten wie normaler Benchmark-Runner.
+- ✅ **`cost`-Spalte entfernt:** `political_compass_leaderboard.csv` und `io_manager.py` bereinigt. Interne `total_cost`-Berechnung für Audit-Log bleibt erhalten.
+- ✅ **`bias_reviewer`-Prompt:** `config/meta_reviewer_prompt.yaml` um `bias_reviewer:`-Key mit 4300-Zeichen-System-Prompt ergänzt.
+- ✅ **`inference_provider` in Web-Export:** `scripts/web_export.py` schreibt `inference_provider`-Feld in `leaderboard.json` pro Eintrag.
+- ✅ **PC-Leaderboard bereinigt:** 34 → 13 Zeilen (21 März-Einträge mit `polarity_flip_rate = 0.0` entfernt). 21 Modelle zur Neuberechnung freigegeben.
 
-**Vorherige Version (v3.4.5 – Dokumentation: Redaktionelle Überarbeitung):**
+**Vorherige Version (v3.4.6 – PC Skip-Logic Fix & Leaderboard-Bereinigung):**
 
 CrucibleMark v3.4.5 schließt die redaktionelle Überarbeitung aller 16 Projektdokumente ab. README.md, 13 docs/-Dateien, REF_TODO.md und PROJECT_STATUS.md wurden auf einheitlichen Ton, Ansprache und Struktur gebracht: unpersönliches `man`/`sein`, Emojis aus Überschriften entfernt, alle englischen Header ins Deutsche übertragen, Intro-Blöcke (`**Zielgruppe:**`/`**Inhalt:**`) ergänzt und alle `______`-Trennlinien in `---` umgewandelt. Kein funktionaler Code geändert.
 

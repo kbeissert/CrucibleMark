@@ -400,6 +400,12 @@ class BaseBenchmarkRunner:
         # Execution
         result_wrapper = test.execute(model=model, llm_client=self.client, provider=provider)
 
+        # Propagate quota/budget exhaustion detected inside the module
+        if getattr(test, "_quota_exhausted", False):
+            print(f"   💸 Budget-/Quota-Fehler in Batch-Modul erkannt. Provider wird als erschöpft markiert.")
+            self.provider_quota_exhausted = True
+            return []
+
         try:
             report = json.loads(result_wrapper.raw_response)
         except (json.JSONDecodeError, TypeError) as e:
