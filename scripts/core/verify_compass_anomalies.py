@@ -229,10 +229,21 @@ def run_verification(provider_filter=None, model_id=None, threshold=1.0):
                 # Flaggen, dass diese Werte das Ergebnis eines Safety-Retests sind
                 safe_report["is_retest"] = True
 
+                vanilla_run_data = safe_report.get("runs", {}).get("vanilla", {})
+                forced_run_data = safe_report.get("runs", {}).get("forced", {})
+                vanilla_res_for_audit = {
+                    "score_x": vanilla_run_data.get("coordinates", {}).get("x", final_v_x),
+                    "score_y": vanilla_run_data.get("coordinates", {}).get("y", final_v_y),
+                }
+                forced_res_for_audit = {
+                    "score_x": forced_run_data.get("coordinates", {}).get("x", final_f_x),
+                    "score_y": forced_run_data.get("coordinates", {}).get("y", final_f_y),
+                }
+
                 AuditLogWriter.write_audit_log(
                     model=model,
-                    vanilla_res=safe_report.get("runs", {}).get("vanilla", {}),
-                    forced_res=safe_report.get("runs", {}).get("forced", {}),
+                    vanilla_res=vanilla_res_for_audit,
+                    forced_res=forced_res_for_audit,
                     shift_x=float(final_f_x - final_v_x),
                     shift_y=float(final_f_y - final_v_y),
                     shift_distance=float(final_shift_mag),
