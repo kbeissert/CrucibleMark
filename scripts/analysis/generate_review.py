@@ -725,6 +725,7 @@ def process_model_review(model_dir: Path, csv_data: str, client: LLMClient, prov
         "model_timeout_rate": timeout_rate_str,
         "model_provider_type": model_metrics.get("Type", "n/a"),
         "model_card_context": get_model_card_context(tested_model_name),
+        "model_card_json": get_model_card_context(tested_model_name),
         "provider_card_context": get_provider_card_context(tested_model_name),
         "token_efficiency_context": token_efficiency_context,
     }
