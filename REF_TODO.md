@@ -2,6 +2,14 @@
 
 ## Abgeschlossen
 
+### PC Budget-Exhaustion-Guard & Daten-Hygiene (v3.4.7 – 16.04.26)
+- [x] **`benchmark_modules/political_compass/test.py` — Budget-Exhaustion-Erkennung:** Exception-Handler im Query-Loop setzt `self._quota_exhausted = True` bei Budget/Quota-Keywords (`quota`, `budget`, `billing`, `credit`, `payment`, `insufficient_funds`, ...). Logger-Warning statt stiller Absorption.
+- [x] **`utils/base_runner.py` — Quota-Flag-Propagation:** `execute_batch_module()` prüft `getattr(test, "_quota_exhausted", False)` nach `test.execute()` und setzt `self.provider_quota_exhausted = True`. Gibt `[]` zurück — kein korruptes All-Zero-Ergebnis mehr im Leaderboard.
+- [x] **`benchmark_modules/political_compass/core/io_manager.py` — `cost`-Spalte entfernt:** `fieldnames`-Liste und `row`-Dict bereinigt. Interne `total_cost`-Berechnung in `test.py` für Audit-Log erhalten.
+- [x] **`config/meta_reviewer_prompt.yaml` — `bias_reviewer`-Prompt:** Neuer `bias_reviewer:`-Key mit 4300-Zeichen-System-Prompt für politische Bias-Analyse ergänzt.
+- [x] **`scripts/web_export.py` — `inference_provider`-Feld:** `leaderboard.json` enthält jetzt `inference_provider` pro Eintrag.
+- [x] **PC-Leaderboard bereinigt:** 34 → 13 Zeilen (21 März-Einträge mit `polarity_flip_rate = 0.0` entfernt). 21× `Political Bias` → `Pending` in `benchmark_leaderboard.csv`.
+
 ### PC Skip-Logic Fix & Leaderboard-Bereinigung (v3.4.6 – 14.04.26)
 - [x] **`utils/base_runner.py` — PC Skip-Logic-Fallback:** `execute_batch_module()` liest `benchmark_scores/political_compass_leaderboard.csv` direkt, wenn Standard-CSV-Cache leer ist (Post-Reset-Szenario). Aktiviert nur für PC-Module via `PoliticalCompassHandler.is_political_compass()`. Graceful-Fallback bei `OSError`/`csv.Error`.
 - [x] **PC-Leaderboard-Bereinigung:** 11 Einträge mit korrupten Koordinaten (runde Ganzzahlwerte aus Verweigerungssession 23.03.2026) entfernt. Leaderboard: 31 → 20 verifizierte Einträge. Backup: `political_compass_leaderboard.bak_20260414_222150.csv`. 31 Modelle für Re-Run freigegeben.

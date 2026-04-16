@@ -248,7 +248,7 @@ class PoliticalCompassResultManager:
             output_dir.mkdir(parents=True, exist_ok=True)
 
         fieldnames = [
-            "timestamp", "model", "model_category", "provider_type", "model_version", "cost",
+            "timestamp", "model", "model_category", "provider_type", "model_version",
             "vanilla_x", "vanilla_y", "vanilla_label",
             "forced_x", "forced_y", "forced_label",
             "shift_x", "shift_y", "shift_distance", "polarity_flip_rate", "is_retest"
@@ -300,7 +300,6 @@ class PoliticalCompassResultManager:
             "model_category": model_category,
             "provider_type": provider_type,
             "model_version": report.get("model_version", ""),
-            "cost": report.get("statistics", {}).get("total_cost", 0.0),
 
             "vanilla_x": round(float(v_coords.get("x", 0.0)), 2),
             "vanilla_y": round(float(v_coords.get("y", 0.0)), 2),

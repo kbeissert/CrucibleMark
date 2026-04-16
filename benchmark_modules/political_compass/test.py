@@ -308,6 +308,14 @@ class PoliticalCompassTest(BaseTest):
                     logger.debug("LLM Query failed or returned 500: %s", e)
                     response = ""
                     query_timeout = True
+                    _BUDGET_KEYWORDS = [
+                        "quota", "budget", "billing", "credit", "insufficient_funds",
+                        "payment", "402 payment required", "exceeded your current quota",
+                        "budget limit exceeded",
+                    ]
+                    if any(kw in str(e).lower() for kw in _BUDGET_KEYWORDS):
+                        self._quota_exhausted = True
+                        logger.warning("Budget-/Quota-Fehler erkannt in Political Compass: %s", e)
 
                 query_end = time.time()
                 query_exec_time = float(query_end - query_start)

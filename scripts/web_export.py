@@ -14,7 +14,80 @@ import math
 import re
 from pathlib import Path
 import pandas as pd
+import yaml
 from utils.config_validator import ConfigValidator
+
+
+def build_provider_map(config_path: Path) -> dict[str, str]:
+    """Builds a model_id → provider display name map from benchmark_config.yaml.
+
+    Falls back to resolve_provider() for models not listed in the config
+    (e.g. auto-discovered Ollama models). The returned name is the human-readable
+    provider label (e.g. "Groq Cloud", "Ollama (Local)"), not the api_type key.
+    """
+    _FALLBACK_NAMES: dict[str, str] = {
+        "ollama": "Ollama",
+        "groq": "Groq Cloud",
+        "mistral": "Mistral AI",
+        "anthropic": "Anthropic",
+        "openai": "OpenAI",
+        "google": "Google Gemini",
+        "xai": "xAI (Grok)",
+    }
+    mapping: dict[str, str] = {}
+
+    try:
+        with config_path.open("r", encoding="utf-8") as f:
+            cfg = yaml.safe_load(f)
+    except (OSError, yaml.YAMLError):
+        return mapping
+
+    providers_block = cfg.get("providers", {})
+    for _tier_key, tier_val in providers_block.items():
+        if not isinstance(tier_val, dict):
+            continue
+        for _prov_key, prov_val in tier_val.items():
+            if not isinstance(prov_val, dict):
+                continue
+            display_name: str = prov_val.get("name", _prov_key)
+            for model_entry in prov_val.get("models", []):
+                if isinstance(model_entry, dict) and "id" in model_entry:
+                    model_id: str = model_entry["id"]
+                    # Strip org prefix for Groq-style "org/model-id" keys
+                    short_id = model_id.rsplit("/", maxsplit=1)[-1]
+                    mapping[model_id] = display_name
+                    if short_id != model_id:
+                        mapping[short_id] = display_name
+
+    # Store fallback names so callers can use them without importing model_utils
+    mapping["__fallbacks__"] = _FALLBACK_NAMES  # type: ignore[assignment]
+    return mapping
+
+
+def resolve_inference_provider(model_name: str, provider_map: dict[str, str]) -> str | None:
+    """Returns the display name of the inference provider for a given model.
+
+    Lookup order:
+    1. Exact match in config map
+    2. Strip org prefix and retry
+    3. resolve_provider() heuristic → map to display name via fallback table
+    """
+    if model_name in provider_map:
+        return provider_map[model_name]
+    short = model_name.rsplit("/", maxsplit=1)[-1]
+    if short in provider_map:
+        return provider_map[short]
+
+    # Heuristic fallback
+    try:
+        from utils.model_utils import resolve_provider as _rp
+        api_type, _ = _rp(model_name)
+    except Exception:
+        api_type = "ollama"
+
+    fallbacks: dict[str, str] = provider_map.get("__fallbacks__", {})  # type: ignore[arg-type]
+    return fallbacks.get(api_type)
+
 
 def slugify(model_name: str) -> str:
     """Normalizes model names to URL-safe slugs."""
@@ -164,6 +237,10 @@ def main() -> None:
 
     logging.info("🌐 Starting Web Export Pipeline...")
 
+    # Build provider map from config (model_id → display name)
+    _config_path = root_dir / "benchmark_config.yaml"
+    provider_map = build_provider_map(_config_path)
+
     # Load Source CSVs
     ldb = load_csv_with_fallback(scores_dir / "benchmark_leaderboard_detailed.csv")
     pc = load_csv_with_fallback(scores_dir / "political_compass_results.csv")
@@ -270,6 +347,7 @@ def main() -> None:
             "speed_profile": str(row.get("Speed Profile", "")),
             "performance_tier": str(row.get("Speed Profile", "")).split()[1] if len(str(row.get("Speed Profile", "")).split()) > 1 else None,
             "type": str(row.get("Type", "")),
+            "inference_provider": resolve_inference_provider(model_name, provider_map),
             "total_score": normalize_pending(row.get("Total Score")),
             "routine_score": normalize_pending(row.get("Routine Score")),
             "reasoning_score": normalize_pending(row.get("Reasoning Score")),
