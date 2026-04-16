@@ -175,7 +175,7 @@ class BaseBenchmarkRunner:
 
         return result
 
-    def save_results(self, results: list, result_type: str = None) -> None:
+    def save_results(self, results: list, result_type: str | None = None) -> None:
         """Wird von den Kind-Klassen verwendet, um per ResultManager zu speichern."""
         if not results:
             return
@@ -328,7 +328,7 @@ class BaseBenchmarkRunner:
         provider: str,
         num_runs: int = 1,
         force: bool = False,
-        existing_benchmarks: dict = None
+        existing_benchmarks: dict | None = None
     ) -> list:
         """Führt Batch-Module (z.B. Political Compass) zentral aus."""
         import json
@@ -402,7 +402,7 @@ class BaseBenchmarkRunner:
 
         # Propagate quota/budget exhaustion detected inside the module
         if getattr(test, "_quota_exhausted", False):
-            print(f"   💸 Budget-/Quota-Fehler in Batch-Modul erkannt. Provider wird als erschöpft markiert.")
+            print("   💸 Budget-/Quota-Fehler in Batch-Modul erkannt. Provider wird als erschöpft markiert.")
             self.provider_quota_exhausted = True
             return []
 
