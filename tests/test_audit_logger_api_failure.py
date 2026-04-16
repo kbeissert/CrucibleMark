@@ -1,7 +1,6 @@
 """Tests for AuditLogWriter.write_audit_log() with complete API failure."""
 import sys
 import os
-from pathlib import Path
 from unittest.mock import patch
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))

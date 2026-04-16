@@ -118,7 +118,7 @@ class ResultManager:
         return list(existing_keys) + normal_added + judge_added
 
     def save_results(
-        self, results: list[dict[str, Any]], result_type: str = None
+        self, results: list[dict[str, Any]], result_type: str | None = None
     ) -> Path | None:
         """Speichert Ergebnisse in die entsprechende CSV-Datei."""
         if not results:
