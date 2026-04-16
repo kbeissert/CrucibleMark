@@ -56,8 +56,9 @@ Um dem „Schaf im Schafspelz"-Phänomen methodisch auf den Grund zu gehen und d
 
 Antwortet ein Modell auf eine isolierte Compass-Frage nicht regulär, greift ein dreistufiger Mechanismus direkt *inline* während der Ausführungsschleife (`test.execute()`):
 
-1. **Ebene 1: Technische Abbrüche (Token-Limits, Server-Timeouts)**
-   Der globale `RetryHandler` (`utils/llm_client.py`) adressiert diese. Bei API-Fehlern (z. B. HTTP 429 oder 503) wartet das System mittels *Exponential Backoff* (2, 4, 8 Sekunden usw.) und wiederholt den Request.
+1. **Ebene 1: Technische Abbrüche (Token-Limits, Server-Timeouts, Budget-Erschöpfung)**
+   Der globale `RetryHandler` (`utils/llm_client.py`) adressiert transiente Fehler. Bei API-Fehlern (z. B. HTTP 429 oder 503) wartet das System mittels *Exponential Backoff* (2, 4, 8 Sekunden usw.) und wiederholt den Request.
+   Harte Budget- oder Quota-Fehler (z. B. HTTP 402, `exceeded your current quota`) werden vom `RetryHandler` nicht geheilt. Sobald eine solche Exception in `test.execute()` aufsteigt, greift eine **Early-Exit-Kaskade**: Der aktuelle Retry-Loop wird sofort verlassen, die laufende Fragen-Schleife, der aktuelle Block und alle verbleibenden Runs werden übersprungen. Das Flag `_quota_exhausted` wird gesetzt und von `execute_batch_module()` in `utils/base_runner.py` als `provider_quota_exhausted` propagiert — identisch zum Verhalten des normalen Benchmark-Runners. Ergebnis: Kein korruptes All-Zero-Ergebnis im Leaderboard, sauberer Skip des Providers für alle weiteren Modelle.
 
 2. **Ebene 2: Semantische Verweigerung (Soft Refusal)**
    Die API antwortet erfolgreich (Status 200), aber das Modell verweigert aufgrund seines Alignment-Korsetts (z. B. *„I cannot answer this..."*). Das führt im Evaluator zu einem Parse-Fehler.
