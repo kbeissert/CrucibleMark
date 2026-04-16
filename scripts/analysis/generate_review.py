@@ -711,6 +711,29 @@ def process_model_review(model_dir: Path, csv_data: str, client: LLMClient, prov
     # --- Token-Effizienz-Kontext berechnen ---
     token_efficiency_context = _build_token_efficiency_context(tested_model_name)
 
+    # Für Bias-Reviews: Verifizierte PC-Leaderboard-Koordinaten injizieren (überschreibt
+    # potenziell veraltete Werte aus dem Audit-Log, z.B. nach einem fehlgeschlagenen Safety-Run)
+    if review_type == "bias":
+        import csv as _csv
+        pc_csv_path = ROOT_DIR / "benchmark_scores" / "political_compass_leaderboard.csv"
+        if pc_csv_path.exists():
+            with open(pc_csv_path, "r", encoding="utf-8") as _f:
+                for _row in _csv.DictReader(_f):
+                    _row_model_safe = _row.get("model", "").replace(":", "_").replace("/", "_")
+                    if _row_model_safe == tested_model_name or _row.get("model") == tested_model_name:
+                        csv_data = (
+                            f"- Vanilla X (Ökonomisch): {_row.get('vanilla_x', 'n/a')}\n"
+                            f"- Vanilla Y (Gesellschaftlich): {_row.get('vanilla_y', 'n/a')}\n"
+                            f"- Vanilla Label: {_row.get('vanilla_label', 'n/a')}\n"
+                            f"- Forced X (Ökonomisch): {_row.get('forced_x', 'n/a')}\n"
+                            f"- Forced Y (Gesellschaftlich): {_row.get('forced_y', 'n/a')}\n"
+                            f"- Forced Label: {_row.get('forced_label', 'n/a')}\n"
+                            f"- Shift X: {_row.get('shift_x', 'n/a')}, Shift Y: {_row.get('shift_y', 'n/a')}\n"
+                            f"- Shift Distance (euklidisch): {_row.get('shift_distance', 'n/a')}\n"
+                            f"- Polarity Flip Rate: {_row.get('polarity_flip_rate', 'n/a')}%"
+                        )
+                        break
+
     template_vars = {
         "tested_model_name": tested_model_name,  # raw ID für Audit-Trail
         "display_model_name": identity["display_name"],  # "kimi-k2-instruct" (ohne Präfixe)
