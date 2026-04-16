@@ -406,6 +406,11 @@ class BaseBenchmarkRunner:
             self.provider_quota_exhausted = True
             return []
 
+        # Systematic failure: model refused/failed all questions in a block → skip this model
+        if getattr(test, "_systematic_failure", False):
+            print(f"   ⚠️  Systematischer API-Fehler für {model} — Modell antwortet nicht. Überspringe.")
+            return []
+
         try:
             report = json.loads(result_wrapper.raw_response)
         except (json.JSONDecodeError, TypeError) as e:

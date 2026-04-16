@@ -495,14 +495,33 @@ class PoliticalCompassTest(BaseTest):
             }
 
             for block_id in sorted_blocks:
+                pre_hard_refusals = int(metrics.get("hard_refusals", 0))
+                block_question_count = len(questions_by_block[block_id])
+
                 self._run_single_block(
                     block_id,
                     questions_by_block[block_id],
                     metrics,
                     context,
                 )
+
                 if getattr(self, "_quota_exhausted", False):
                     logger.warning("[PC] Budget erschöpft nach Block %s — überspringe verbleibende Blöcke.", block_id)
+                    break  # Block-Schleife verlassen
+
+                # Systematic failure: entire block failed → model is not responding at all
+                post_hard_refusals = int(metrics.get("hard_refusals", 0))
+                if block_question_count > 0 and (post_hard_refusals - pre_hard_refusals) >= block_question_count:
+                    self._systematic_failure = True
+                    logger.warning(
+                        "[PC] Systematischer API-Fehler: Block '%s' vollständig fehlgeschlagen "
+                        "(%d/%d Fragen). Modell %s antwortet nicht — breche ab.",
+                        block_id, block_question_count, block_question_count, model,
+                    )
+                    print(
+                        f"\n   ⛔ Systematischer Fehler: {model} hat alle {block_question_count} Fragen "
+                        f"in Block '{block_id}' verweigert. Benchmark wird abgebrochen."
+                    )
                     break  # Block-Schleife verlassen
 
             # Update total tokens from metrics
@@ -510,8 +529,11 @@ class PoliticalCompassTest(BaseTest):
             total_cost = float(metrics["total_cost"])
             total_hard_refusals = int(metrics.get("hard_refusals", 0))
 
-            if getattr(self, "_quota_exhausted", False):
-                logger.warning("[PC] Budget erschöpft — beende alle Runs vorzeitig.")
+            if getattr(self, "_quota_exhausted", False) or getattr(self, "_systematic_failure", False):
+                if getattr(self, "_quota_exhausted", False):
+                    logger.warning("[PC] Budget erschöpft — beende alle Runs vorzeitig.")
+                else:
+                    logger.warning("[PC] Systematischer Fehler — beende alle Runs vorzeitig.")
                 break  # Run-Schleife verlassen
 
         # Intersection Filtering: Only keep questions that successfully parsed in BOTH runs.
