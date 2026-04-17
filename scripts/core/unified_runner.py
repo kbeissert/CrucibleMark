@@ -364,7 +364,7 @@ class UnifiedBenchmarkRunner(BaseBenchmarkRunner):
                 provider=provider,
                 num_runs=num_runs,
                 force=self.force,
-                existing_benchmarks=self._get_existing(provider),
+                existing_benchmarks=self._get_existing_for_model(provider, model),
             )
 
         # Standard Run Loop
