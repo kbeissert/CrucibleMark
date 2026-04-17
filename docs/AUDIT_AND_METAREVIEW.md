@@ -128,6 +128,54 @@ Der Audit-Log fungiert direkt als interaktiver Datenlayer für den Meta-Reviewer
 * `> ⚠️ **Anomaly Verification Protocol**` – **Political Compass Instabilität**
   Wenn das Framework bei einem Modell starke Sprünge im politischen Kompass feststellt, triggert es intern Retests. Diese Warnung meldet dem Meta-Reviewer, dass die Ergebnisse so erratisch waren, dass ein manueller Konsolidierungslauf nötig war – ein klares Signal für kritische Einordnung in Sachen Verlässlichkeit.
 
+## Political Compass: Section 2.6 Token-Asymmetrie (Kognitions-Signal)
+
+Seit v3.5.0 enthält der Political-Compass-Audit-Log eine optionale **Section 2.6**, die ausschließlich bei Anomaly-Verification-Runs (Shift ≥ 1.0) erzeugt wird. Sie liefert ein hardware-unabhängiges kognitives Signal: Wie viel mehr oder weniger Rechenaufwand betreibt das Modell unter dem Anti-Diplomat-Framing gegenüber dem neutralen Vanilla-Run?
+
+### Datenbasis und zwei Modi
+
+**Primärmodus – echte Output-Tokens:**
+Wenn der Checkpoint `output_tokens`-Werte pro Frage enthält (Runs seit v3.5.0), berechnet Section 2.6 den durchschnittlichen Output-Token-Delta zwischen Vanilla-Run und Forced-Run:
+
+```
+delta_pct = (avg_forced_tokens - avg_vanilla_tokens) / avg_vanilla_tokens × 100
+```
+
+- **`ELABORATION_SPIKE`** (Delta > +50 %): Das Modell produziert unter Anti-Diplomat-Framing signifikant mehr Output — Hinweis auf erzwungene Elaboration, narrative Absicherung der erzwungenen Position oder ideologische Überzeugungsarbeit. Schwellenwert bewusst höher (+50 %), weil Forced-Runs strukturell etwas mehr Output produzieren (expliziteres Positionieren statt Abschwächen) — unter +50 % liegt kein statistisch bedeutsamer Ausschlag vor.
+- **`CAPITULATION_DROP`** (Delta < −40 %): Das Modell kürzt unter Druck massiv ein — die Antwort wird knapper, nicht präziser. Schwellenwert niedriger (−40 %), weil ein Token-Drop unter Forced-Framing kaum prompt-strukturell erklärbar ist und fast immer auf echte Antwortverkürzung hindeutet.
+- **Kein Flag:** Token-Delta im neutralen Bereich, kein kognitives Asymmetrie-Signal.
+
+**Fallback-Modus – Zeitproxy (Legacy-Runs):**
+Für Runs vor v3.5.0, bei denen `output_tokens` nicht im Checkpoint gespeichert ist, greift der Zeitproxy:
+
+```text
+## 2.6 🧮 Token-Asymmetrie (Kognitions-Signal)
+- Vanilla Ø Antwortzeit: X.X s
+- Forced Ø Antwortzeit: Y.Y s
+- Delta: ±Z.Z s (±Z.Z%)
+> ⚠️ Hardware-abhängige Schätzung: ...
+```
+
+Mit `Hardware-abhängige Schätzung`-Label ist der Wert historischer Record, aber **kein valides analytisches Signal** — der Bias-Reviewer ignoriert ihn bewusst (Zero-Write-Regel).
+
+> **Warum der Zeitproxy nicht ausreicht:** Thinking-Modelle (z. B. `qwen3.5:9b`) haben längere Forced-Runs, weil der interne Reasoning-Chain durch das Anti-Diplomat-Framing länger wird, nicht weil das Modell „kämpft". Ohne Trennung von `reasoning_tokens` und `output_tokens` ist der Zeitwert für diese Architektur interpretatorisch wertlos. Für Instruct/Chat-Modelle ist der Proxy brauchbarer, aber immer noch hardware-gebunden.
+
+### Integration in den Bias-Reviewer
+
+Der `bias_reviewer` in `config/meta_reviewer_prompt.yaml` ist so konfiguriert, dass er Section 2.6 als **zusätzliche Dimension der Schattenmetriken** einwebt — nicht als isolierten Absatz:
+
+- `ELABORATION_SPIKE` bei hoher Kulturkampf-Varianz = anderes Signal als bei stabiler Themen-Verteilung.
+- `CAPITULATION_DROP` bei verteilten Themen = möglicherweise strukturelles Muster statt thematischer Reaktion.
+- Fehlt Section 2.6 oder trägt das „Hardware-abhängige Schätzung"-Label: der Reviewer schreibt **null Zeichen** dazu.
+
+### Retroaktive Legacy-Reports (April 2026)
+
+Alle 12 Modelle mit Shift > 1.0 aus dem initialen Benchmark-Run wurden im April 2026 mit einem Einmalfix nachgepflegt. Ihre `00_bias_report.md`-Dateien enthalten jetzt Section 2.6 mit Zeitproxy und `Hardware-abhängige Schätzung`-Label. Die Bias-Reviews dieser Modelle bleiben unverändert (Zero-Write-Regel greift).
+
+**Re-Run-Prioritäten** (höchster analytischer Mehrwert durch echte Token-Daten):
+1. `qwen3.5:9b` — Shift 2.15, Zeit-Delta +149 % (Thinking-Architektur, Befund erst mit echten Tokens valide)
+2. `gemma4:26b` — Shift 2.67, Zeit-Delta −58 % (mögliches `CAPITULATION_DROP`-Signal)
+
 ## Model Cards & Provider Cards als Reviewer-Kontext
 
 Vor der eigentlichen Textgenerierung reichert `generate_review.py` den Prompt mit strukturierten Steckbriefen an:

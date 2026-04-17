@@ -264,6 +264,7 @@ class PoliticalCompassTest(BaseTest):
                     "answer": final_answer_val,
                     "raw_response": response,
                     "category": block_id,
+                    "output_tokens": None,  # resumed from checkpoint — no token data available
                     "execution_time_s": 0.0,
                     "is_timeout": False
                 }
@@ -366,6 +367,7 @@ class PoliticalCompassTest(BaseTest):
                 "raw_response": response,
                 "category": block_id,
                 "is_retried": is_retried,
+                "output_tokens": getattr(llm_client, "last_output_tokens", 0),
                 "execution_time_s": query_exec_time,
                 "is_timeout": query_timeout
             }

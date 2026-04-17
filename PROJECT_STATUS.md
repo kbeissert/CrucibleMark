@@ -1,19 +1,31 @@
 # PROJECT_STATUS.md
 
-**Last Updated:** 2026-04-16
-**Current Version:** 3.4.7 (PC Budget-Exhaustion-Guard & Daten-Hygiene)
+**Last Updated:** 2026-04-17
+**Current Version:** 3.5.0 (PC Token-Asymmetrie / Kognitions-Signal)
 **Status:** ✅ Production-Ready
 
 ---
 
 ## Executive Summary
 
+CrucibleMark v3.5.0 führt mit der **Token-Asymmetrie-Analyse (Section 2.6)** eine neue analytische Dimension in den Political-Compass-Workflow ein. Das Framework misst jetzt nicht mehr nur *wo* ein Modell unter Anti-Diplomat-Druck driftet, sondern auch *wie viel kognitiven Aufwand* es dabei betreibt: `last_output_tokens` wird nach jedem API-Call in `llm_client.py` gespeichert und pro Frage in den PC-Checkpoint geschrieben. Bei Anomaly-Verification-Runs (Shift ≥ 1.0) erzeugt `audit_logger.py` daraus Section 2.6 mit `ELABORATION_SPIKE`- und `CAPITULATION_DROP`-Flags. Der `bias_reviewer`-Prompt wurde strukturell überarbeitet (Model Card vor Pflichtstruktur, Verzahnungs-Instruktion für Token-Befunde). Erste Version mit vollständigem kognitiven Fingerabdruck für PC-Anomalien.
+
+**Key Achievements (v3.5.0):**
+- ✅ **`utils/llm_client.py` — `last_output_tokens`:** Reset vor jedem API-Call, Setzen auf `eval_count` nach erfolgreichem Call. Liefert Output-Tokens pro Frage ohne Nachparsing.
+- ✅ **`benchmark_modules/political_compass/test.py` — `output_tokens` im Checkpoint:** Live-Paths schreiben tatsächliche Token-Zahl, Resume-Pfad schreibt explizit `None` (semantisch von `0` trennbar — verhindert falsche Coverage-Warnungen).
+- ✅ **`audit_logger.py` — Section 2.6 Token-Asymmetrie:** `ELABORATION_SPIKE` (Forced > +50 %), `CAPITULATION_DROP` (Forced < −40 %), Zeitproxy-Fallback mit Hardware-Schätzungs-Label, None-sicherer Filter, Coverage-Warnung bei partiellen Daten.
+- ✅ **`meta_reviewer_prompt.yaml` — Prompt-Architektur:** Model Card vor Pflichtstruktur verschoben; drei Leitfragen durch Einzel-Instruktion ersetzt; Section-2.6-Verzahnungs-Instruktion (Token-Befund als Dimension der Schattenmetriken, nicht isolierter Absatz); Upgrade-Pfad-Kommentar mit Re-Run-Prioritäten.
+- ✅ **Dokumentation:** `AUDIT_AND_METAREVIEW.md` um "Section 2.6 Token-Asymmetrie"-Abschnitt ergänzt; `POLITICAL_COMPASS_KONZEPT.md` um Kapitel 5 "Schattenmetriken: Internes Chaos und kognitive Fingerabdrücke" erweitert.
+- ✅ **12 Legacy-Audit-Logs retroaktiv nachgepflegt:** Alle Anomaly-Modelle mit Section 2.6 (Zeitproxy, `Hardware-abhängige Schätzung`) ergänzt. Reviewer ignoriert sie bewusst (Zero-Write-Regel), historischer Record vollständig.
+
+**Vorherige Version (v3.4.7 – PC Budget-Exhaustion-Guard & Daten-Hygiene):**
+
 CrucibleMark v3.4.7 schließt die letzte verbleibende Sicherheitslücke im Political-Compass-Modul: Budget-Erschöpfung mitten in einem PC-Run wurde bisher lautlos verschluckt. `test.py` fing alle Exceptions mit `response = ""` ab — ohne Propagation. Das Modell wurde als erledigt markiert und korrupte All-Zero-Daten in das Leaderboard geschrieben. Fix: `test.py` setzt `self._quota_exhausted = True` bei Budget-/Quota-Keywords; `execute_batch_module()` in `utils/base_runner.py` prüft das Flag nach `execute()` und propagiert es als `self.provider_quota_exhausted`. Zusätzlich: `cost`-Spalte aus dem PC-Leaderboard entfernt (redundant, immer `0.0` für lokale Modelle), `bias_reviewer`-Prompt in `meta_reviewer_prompt.yaml` ergänzt und `inference_provider`-Feld in `web_export.py` hinzugefügt.
 
 **Key Achievements (v3.4.7):**
 - ✅ **PC Budget-Exhaustion-Guard:** `test.py` erkennt Budget/Quota-Keywords in Exceptions und setzt `self._quota_exhausted = True`. `execute_batch_module()` propagiert dies als `provider_quota_exhausted`-Flag — identisches Verhalten wie normaler Benchmark-Runner.
 - ✅ **`cost`-Spalte entfernt:** `political_compass_leaderboard.csv` und `io_manager.py` bereinigt. Interne `total_cost`-Berechnung für Audit-Log bleibt erhalten.
-- ✅ **`bias_reviewer`-Prompt:** `config/meta_reviewer_prompt.yaml` um `bias_reviewer:`-Key mit 4300-Zeichen-System-Prompt ergänzt.
+- ✅ **`bias_reviewer`-Prompt:** `config/meta_reviewer_prompt.yaml` um `bias_reviewer:`-Key mit initialem System-Prompt ergänzt.
 - ✅ **`inference_provider` in Web-Export:** `scripts/web_export.py` schreibt `inference_provider`-Feld in `leaderboard.json` pro Eintrag.
 - ✅ **PC-Leaderboard bereinigt:** 34 → 13 Zeilen (21 März-Einträge mit `polarity_flip_rate = 0.0` entfernt). 21 Modelle zur Neuberechnung freigegeben.
 

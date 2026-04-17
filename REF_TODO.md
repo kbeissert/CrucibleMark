@@ -2,6 +2,15 @@
 
 ## Abgeschlossen
 
+### PC Token-Asymmetrie-Analyse & Bias-Reviewer-Restrukturierung (v3.5.0 – 17.04.26)
+- [x] **`utils/llm_client.py` — `last_output_tokens`:** `self.last_output_tokens = 0` vor jedem API-Call, `self.last_output_tokens = output_tokens` nach Kosten-Tracking (nur wenn Wert verfügbar). Liefert Output-Tokens (Ollama `eval_count`) ohne Nachparsing.
+- [x] **`benchmark_modules/political_compass/test.py` — `output_tokens` im Checkpoint:** Live-Pfad nutzt `getattr(llm_client, "last_output_tokens", 0)`; Resume-Pfad schreibt `None` — semantisch trennbar von echter Null.
+- [x] **`benchmark_modules/political_compass/core/audit_logger.py` — Section 2.6 Token-Asymmetrie:** Neuer Audit-Log-Abschnitt, nur bei `verification_mode=True`. Primär: echte `output_tokens` aus Checkpoint. Fallback: Zeitproxy mit `Hardware-abhängige Schätzung`-Label. Flags: `ELABORATION_SPIKE` (Forced > +50 %), `CAPITULATION_DROP` (Forced < −40 %). None-sicherer `(... or 0) > 0`-Filter, Coverage-Warnung bei partiellen Daten.
+- [x] **`config/meta_reviewer_prompt.yaml` — Prompt-Architektur:** `{model_card_context}` vor Pflichtstruktur verschoben (sequenzielles LLM-Lesen). Drei offene Leitfragen → eine präzise Einzel-Instruktion. Section-2.6-Verzahnungs-Instruktion: Token-Befund als Dimension der Schattenmetriken (nicht isolierter Absatz). YAML-Kommentar vor `bias_reviewer:` dokumentiert Legacy/Neu-Lauf-Unterschied und Re-Run-Prioritäten.
+- [x] **12 Legacy-Audit-Logs retroaktiv gepflegt:** Alle PC-Anomaly-Modelle (Shift > 1.0) aus initialem Run erhalten Section 2.6 mit Zeitproxy und `Hardware-abhängige Schätzung`-Label. Zero-Write-Regel greift — historischer Record vollständig.
+- [x] **`docs/AUDIT_AND_METAREVIEW.md`:** Neuer Abschnitt "Section 2.6 Token-Asymmetrie" mit Primär-/Fallback-Modus, Flag-Schwellenwerten, Thinking-Modell-Einschränkung, retroaktiver Legacy-Notiz.
+- [x] **`docs/POLITICAL_COMPASS_KONZEPT.md`:** Neues Kapitel 5 "Schattenmetriken" (Section 2.5 Standardabweichung, Section 2.6 Token-Asymmetrie, Flag-Tabelle, Kombinations-Interpretation).
+
 ### PC Budget-Exhaustion-Guard & Daten-Hygiene (v3.4.7 – 16.04.26)
 - [x] **`benchmark_modules/political_compass/test.py` — Budget-Exhaustion-Erkennung:** Exception-Handler im Query-Loop setzt `self._quota_exhausted = True` bei Budget/Quota-Keywords (`quota`, `budget`, `billing`, `credit`, `payment`, `insufficient_funds`, ...). Logger-Warning statt stiller Absorption.
 - [x] **`utils/base_runner.py` — Quota-Flag-Propagation:** `execute_batch_module()` prüft `getattr(test, "_quota_exhausted", False)` nach `test.execute()` und setzt `self.provider_quota_exhausted = True`. Gibt `[]` zurück — kein korruptes All-Zero-Ergebnis mehr im Leaderboard.
