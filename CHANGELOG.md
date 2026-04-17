@@ -4,6 +4,42 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [v3.5.0] - 2026-04-17
+
+### Added
+- **`utils/llm_client.py` — `last_output_tokens`-Feld:** `self.last_output_tokens` wird vor jedem API-Call auf `0` zurückgesetzt und nach erfolgreichem Call auf den tatsächlichen `eval_count` (Ollama) gesetzt. Liefert pro Frage-Anruf die exakten Output-Tokens ohne nachträgliches Parsing.
+- **`benchmark_modules/political_compass/test.py` — `output_tokens` im Checkpoint:** Live-Paths schreiben `getattr(llm_client, "last_output_tokens", 0)` ins `detailed_responses`-Dict. Resume-Pfad schreibt explizit `None` (kein Token-Datum verfügbar, semantisch von `0` trennbar).
+- **`benchmark_modules/political_compass/core/audit_logger.py` — Section 2.6 Token-Asymmetrie:** Neue optional Sektion im PC-Audit-Log, ausschließlich bei `verification_mode=True` (Shift ≥ 1.0). Berechnet `ELABORATION_SPIKE` (Forced > +50 % Output-Tokens) und `CAPITULATION_DROP` (Forced < −40 %) aus echten per-Frage-`output_tokens`. Fallback auf Antwortzeit-Proxy (mit `Hardware-abhängige Schätzung`-Label) bei Legacy-Runs ohne Token-Daten. None-sichere Filter (`or 0`-Guard). Coverage-Warnung bei partiellen Daten.
+- **`config/meta_reviewer_prompt.yaml` — `bias_reviewer` Section-2.6-Integration:** Reviewer-Prompt erweitert um Verzahnungs-Instruktion: Token-Asymmetrie-Befunde sollen als Dimension der Schattenmetriken (Section 2.5) eingewoben werden, nicht als isolierter Absatz. Zero-Write-Regel für Hardware-Schätzungen. Dokumentierter Upgrade-Pfad und Re-Run-Prioritäten als YAML-Kommentar.
+- **`config/meta_reviewer_prompt.yaml` — `bias_reviewer` Prompt-Architektur:** Model Card vor Pflichtstruktur verschoben (sequenzielles LLM-Lesen), drei offene Leitfragen durch eine präzise Einzel-Instruktion ersetzt.
+- **`docs/AUDIT_AND_METAREVIEW.md` — Section 2.6 dokumentiert:** Neuer Abschnitt "Political Compass: Section 2.6 Token-Asymmetrie" mit Flag-Schwellenwerten, Thinking-Modell-Einschränkung, Zero-Write-Regel und Nachweis der retroaktiven Legacy-Nachpflege.
+- **`docs/POLITICAL_COMPASS_KONZEPT.md` — Kapitel 5 Schattenmetriken:** Neues Kapitel "Schattenmetriken: Internes Chaos und kognitive Fingerabdrücke" erklärt Standardabweichung (Section 2.5), Token-Asymmetrie (Section 2.6), Flag-Tabelle, Kombinations-Interpretation und Thinking-Modell-Einschränkung.
+
+### Fixed
+- **`benchmark_modules/political_compass/test.py` — Resume-Pfad `None` statt `0`:** Resume-Checkpoints schrieben `output_tokens: 0`, was falsche „partiell-vollständige" Coverage-Meldungen in Section 2.6 verursachte. Fix: explizites `None` macht fehlende Token-Daten semantisch von tatsächlichen Null-Token trennbar.
+- **`benchmark_modules/political_compass/core/audit_logger.py` — None-sicherer Filter:** `token_pairs`-Filter verwendete `> 0`, was bei `None`-Werten einen `TypeError` verursachen konnte. Fix: `(... or 0) > 0`-Guard.
+
+### Data
+- **12 PC-Audit-Logs retroaktiv mit Section 2.6 (Zeitproxy) ergänzt:** Alle Modelle mit Shift > 1.0 aus dem initialen Benchmark-Run. Zeitproxy mit `Hardware-abhängige Schätzung`-Label — Reviewer-Zero-Write-Regel greift weiterhin. Auffälligste Werte: `qwen3.5:9b` +149 %, `gemma4:26b` −58 %.
+
+---
+
+## [v3.4.7] - 2026-04-16
+
+### Fixed
+- **`benchmark_modules/political_compass/test.py` — Budget-Exhaustion-Guard:** Exception-Handler im Query-Loop erkennt Budget/Quota-Keywords und setzt `self._quota_exhausted = True`. Verhindert lautloses Schlucken von Budget-Fehlern und das Schreiben korrupter All-Zero-Daten ins Leaderboard.
+- **`utils/base_runner.py` — Quota-Flag-Propagation:** `execute_batch_module()` prüft `getattr(test, "_quota_exhausted", False)` nach `execute()` und setzt `self.provider_quota_exhausted = True`. Gibt `[]` zurück — kein korruptes Ergebnis mehr.
+
+### Changed
+- **`benchmark_modules/political_compass/core/io_manager.py` — `cost`-Spalte entfernt:** Redundante Spalte (immer `0.0` für lokale Modelle) aus Leaderboard-CSV und `io_manager.py` entfernt. Interne `total_cost`-Berechnung für Audit-Log bleibt erhalten.
+- **`config/meta_reviewer_prompt.yaml` — `bias_reviewer`-Prompt:** Initialer `bias_reviewer:`-Key mit vollständigem System-Prompt für politische Bias-Analyse.
+- **`scripts/web_export.py` — `inference_provider`-Feld:** `leaderboard.json` enthält jetzt `inference_provider` pro Eintrag.
+
+### Data
+- **PC-Leaderboard bereinigt:** 34 → 13 Zeilen (21 März-Einträge mit `polarity_flip_rate = 0.0` entfernt). 21 Modelle zur Neuberechnung freigegeben.
+
+---
+
 ## [v3.4.6] - 2026-04-14
 
 ### Fixed

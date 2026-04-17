@@ -214,6 +214,7 @@ class LLMClient:
             return res
 
         # 3. Führe mit Retry-Logik aus
+        self.last_output_tokens = 0  # reset; set to actual value after successful query
         response_text = self.retry_handler.execute_with_retry(
             _call_provider, max_retries=max_retries
         )
@@ -242,6 +243,7 @@ class LLMClient:
             provider, model, input_tokens, output_tokens, call_type=call_type
         )
         self.last_request_cost = cost
+        self.last_output_tokens = output_tokens
         self.last_token_usage = input_tokens + output_tokens
 
         # Only log to file/logger, do not print to stdout which might clutter interactive CLI
