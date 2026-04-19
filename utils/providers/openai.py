@@ -95,6 +95,11 @@ class OpenAIClient(BaseProviderClient):
             explicit_budget = req_tokens is not None  # True wenn ein Modul-Budget-Cap explizit gesetzt wurde
             if not req_tokens:
                 req_tokens = self.config.get("defaults", {}).get("generation", {}).get("num_predict", 8192)
+            # Modellspezifische Token-Limits aus Config (z.B. gpt-4o: 4096)
+            _provider_cfg = self.config.get("providers", {}).get("commercial", {}).get("openai", {})
+            _model_limits = _provider_cfg.get("model_max_tokens", {})
+            if model in _model_limits:
+                req_tokens = min(req_tokens, _model_limits[model])
             if is_reasoning and explicit_budget:
                 # Reasoning-Modelle (o1/o3/gpt-5): token_budgets_reasoning_models lesen (transparent im Config).
                 # Fallback: 5× das Standard-Budget wenn kein spezifischer Wert konfiguriert.

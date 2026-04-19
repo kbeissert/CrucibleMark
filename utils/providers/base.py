@@ -105,6 +105,15 @@ class BaseProviderClient:
                     match_seconds = re.search(r'retry_delay\s*\{\s*seconds:\s*(\d+)\s*\}', err_str)
                     if match_seconds:
                         wait_seconds = int(match_seconds.group(1)) + 5
+                        # Schwellenwert: retry_delay > 300 s = Tages-Quota-Erschöpfung (z.B. Google
+                        # Daily Quota, Reset Mitternacht Pacific). Kein Warten — Fast-Fail wie Budget.
+                        if wait_seconds > 300:
+                            logger.error(
+                                "💸 Tages-Quota erschöpft (retry_delay=%ds > 300s Schwellenwert). "
+                                "Fast-Fail — kein %d-Stunden-Wait.",
+                                wait_seconds, wait_seconds // 3600,
+                            )
+                            raise Exception(f"exceeded your current quota (retry_delay={wait_seconds}s)")
                         logger.warning(f"⏳ Quota/Rate Limit erreicht! Warte {wait_seconds} Sekunden... (Versuch {rate_limit_attempts + 1}/{max_rate_limit_retries})")
                         import time
                         time.sleep(wait_seconds)
