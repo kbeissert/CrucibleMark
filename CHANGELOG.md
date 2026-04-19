@@ -24,6 +24,23 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ---
 
+## [v3.5.1] - 2026-04-19
+
+### Fixed
+- **`utils/providers/base.py` — Gemini Daily-Quota Fast-Fail:** `retry_delay`-Werte > 300 Sekunden (Google Tages-Quota-Erschöpfung, z. B. `retry_delay { seconds: 27331 }`) lösen jetzt Fast-Fail aus statt das System 7,6 Stunden zu blockieren. Die geworfene Exception enthält `exceeded your current quota` und wird vom bestehenden `budget_keywords`-Guard in `test.py` als `_quota_exhausted = True` behandelt — Checkpoint bleibt erhalten, nächster Provider wird normal weitergeführt.
+- **`config/rate_limits.yaml` — `max_retry_delay_seconds: 300`:** Schwellenwert dokumentiert.
+- **`benchmark_modules/political_compass/test.py` — `UnboundLocalError` bei Quota-Abbruch:** `query_exec_time = 0.0` als Default vor der `while True:`-Schleife eingefügt. Bei Quota-Fehlern brach `break` die Schleife ab bevor die Variable zugewiesen wurde — `UnboundLocalError` in der Ergebnis-Aggregation (Zeile ~371) war die Folge.
+- **`utils/providers/openai.py` — Modellspezifisches Token-Limit (gpt-4o, gpt-4o-mini):** Nach dem Standard-Token-Limit-Lookup wird jetzt `model_max_tokens` aus der Provider-Config ausgelesen und als hartes Obergrenze angewendet. Verhindert die bisher bei jedem Request ausgelöste Fallback-Warnung `⚠️ Token limit rejected. Retrying with fallback limit: 4096 tokens.`
+
+### Changed
+- **`benchmark_config.yaml` — `kimi-k2-instruct` Groq → Ollama Cloud:** `moonshotai/kimi-k2-instruct` aus dem Groq-Provider entfernt (Modell dort nicht mehr verfügbar). Ersetzt durch `kimi-k2.5:cloud` unter `ollama_cloud` (via `ollama pull kimi-k2.5:cloud`). Benchmark-Werte für `kimi-k2.5:cloud` bereits seit 2026-04-16 im PC-Leaderboard vorhanden.
+- **`benchmark_config.yaml` — `model_max_tokens`-Override (OpenAI):** Neuer Block `model_max_tokens: {gpt-4o: 4096, gpt-4o-mini: 4096}` im OpenAI-Provider-Abschnitt als konfigurierbare SSOT für modellspezifische Token-Obergrenzen.
+
+### Data
+- **7 neue PC-Leaderboard-Einträge:** gpt-5, gpt-5.4, gpt-5.4-mini, gpt-4o, gpt-4o-mini, meta-llama/llama-4-scout-17b-16e-instruct, qwen/qwen3-32b. PC-Leaderboard jetzt auf 48 Modellen (inkl. kimi-k2.5:cloud aus vorherigem Run).
+
+---
+
 ## [v3.4.7] - 2026-04-16
 
 ### Fixed

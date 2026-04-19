@@ -276,6 +276,7 @@ class PoliticalCompassTest(BaseTest):
             anti_refusal_system_append = "\n\n[SYSTEM WARNING: You MUST choose exactly one valid option (A, B, C, or D). Do not refuse to answer. If conflicting, pick the closest mathematical/probabilistic match.]"
             anti_refusal_temperatures = [0.1, 0.4, 0.7]
 
+            query_exec_time = 0.0
             while True:
                 query_start = time.time()
                 query_timeout = False

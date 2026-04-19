@@ -1,12 +1,23 @@
 # PROJECT_STATUS.md
 
-**Last Updated:** 2026-04-17
-**Current Version:** 3.5.0 (PC Token-Asymmetrie / Kognitions-Signal)
+**Last Updated:** 2026-04-19
+**Current Version:** 3.5.1 (Quota-Robustheit & PC-Leaderboard-Vervollständigung)
 **Status:** ✅ Production-Ready
 
 ---
 
 ## Executive Summary
+
+CrucibleMark v3.5.1 schließt drei Stabilitätslücken im Benchmark-Workflow und vervollständigt das PC-Leaderboard auf 48 Modelle. `UnboundLocalError` bei Quota-Abbruch in `test.py` behoben, modellspezifische Token-Limits für gpt-4o/gpt-4o-mini über `benchmark_config.yaml` konfigurierbar gemacht (Ende der Fallback-Warnungen), Gemini Daily-Quota Fast-Fail in `base.py` aktiv. `kimi-k2-instruct` von Groq (Modell dort entfernt) auf `kimi-k2.5:cloud` via Ollama Cloud migriert. 7 neue PC-Runs abgeschlossen (gpt-5, gpt-5.4, gpt-5.4-mini, gpt-4o, gpt-4o-mini, llama-4-scout, qwen3-32b).
+
+**Key Achievements (v3.5.1):**
+- ✅ **`test.py` — `UnboundLocalError` behoben:** `query_exec_time = 0.0` als Default vor der `while True:`-Schleife — verhindert Absturz bei Quota-Abbruch.
+- ✅ **`openai.py` — Modellspezifisches Token-Limit:** `model_max_tokens`-Lookup aus Config-Override — keine Fallback-Warnungen mehr bei gpt-4o/gpt-4o-mini.
+- ✅ **`base.py` — Gemini Daily-Quota Fast-Fail:** `retry_delay > 300s` löst sofort Fast-Fail aus statt 7,6h zu blockieren.
+- ✅ **PC-Leaderboard: 48 Modelle vollständig:** 7 neue Runs + kimi-k2.5:cloud (bereits seit 16.04. vorhanden).
+- ✅ **`benchmark_config.yaml` — kimi-k2 Groq → Ollama Cloud:** `kimi-k2.5:cloud` unter `ollama_cloud` eingetragen.
+
+**Vorherige Version (v3.5.0 – PC Token-Asymmetrie / Kognitions-Signal):**
 
 CrucibleMark v3.5.0 führt mit der **Token-Asymmetrie-Analyse (Section 2.6)** eine neue analytische Dimension in den Political-Compass-Workflow ein. Das Framework misst jetzt nicht mehr nur *wo* ein Modell unter Anti-Diplomat-Druck driftet, sondern auch *wie viel kognitiven Aufwand* es dabei betreibt: `last_output_tokens` wird nach jedem API-Call in `llm_client.py` gespeichert und pro Frage in den PC-Checkpoint geschrieben. Bei Anomaly-Verification-Runs (Shift ≥ 1.0) erzeugt `audit_logger.py` daraus Section 2.6 mit `ELABORATION_SPIKE`- und `CAPITULATION_DROP`-Flags. Der `bias_reviewer`-Prompt wurde strukturell überarbeitet (Model Card vor Pflichtstruktur, Verzahnungs-Instruktion für Token-Befunde). Erste Version mit vollständigem kognitiven Fingerabdruck für PC-Anomalien.
 

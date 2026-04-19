@@ -2,6 +2,10 @@
 
 ## Abgeschlossen
 
+### Gemini Daily-Quota Fast-Fail (v3.5.1 – 17.04.26)
+- [x] **`utils/providers/base.py` — `retry_delay`-Schwellenwert:** `retry_delay > 300 s` aus Gemini-API-Antwort gilt als Tages-Quota-Erschöpfung (Google Daily Quota, Reset Mitternacht Pacific). Statt 7,6 h zu schlafen: Fast-Fail mit `exceeded your current quota`-Exception → `_quota_exhausted = True` → sauberer Checkpoint-erhaltender Abbruch.
+- [x] **`config/rate_limits.yaml` — `max_retry_delay_seconds: 300`:** Schwellenwert als dokumentierter Config-Wert eingetragen.
+
 ### PC Token-Asymmetrie-Analyse & Bias-Reviewer-Restrukturierung (v3.5.0 – 17.04.26)
 - [x] **`utils/llm_client.py` — `last_output_tokens`:** `self.last_output_tokens = 0` vor jedem API-Call, `self.last_output_tokens = output_tokens` nach Kosten-Tracking (nur wenn Wert verfügbar). Liefert Output-Tokens (Ollama `eval_count`) ohne Nachparsing.
 - [x] **`benchmark_modules/political_compass/test.py` — `output_tokens` im Checkpoint:** Live-Pfad nutzt `getattr(llm_client, "last_output_tokens", 0)`; Resume-Pfad schreibt `None` — semantisch trennbar von echter Null.

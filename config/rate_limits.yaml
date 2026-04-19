@@ -3,6 +3,12 @@ default:
   concurrent_requests: 1
   tokens_per_minute: 20000
 
+# Maximale Wartezeit für einen retry_delay-Wert aus der API-Antwort (z.B. Gemini Quota).
+# Überschreitet der retry_delay diesen Schwellenwert, ist es keine transiente Rate-
+# Begrenzung mehr, sondern eine Tages-Quota-Erschöpfung (Google reset: Mitternacht Pacific).
+# In diesem Fall greift Fast-Fail statt Blockieren.
+max_retry_delay_seconds: 300
+
 anthropic:
   # Tier 1 Limits (Free/Low) are 5 RPM!
   # Tier 2 (Paid < $50) are 1000 RPM / 40k TPM

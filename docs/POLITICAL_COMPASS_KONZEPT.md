@@ -121,3 +121,25 @@ Zeigt ein Modell zwischen Vanilla und Forced einen heftigen Vektor-Sprung auf de
 - **Outlier-Dropping & Euklidisches Pairing:** Aus den drei Koordinaten-Sets pro Modus ermittelt die euklidische Längenberechnung das nächstliegende (ähnlichste) Paar. Dessen Mittelwert ergibt die tatsächliche Position des Modells. Das am weitesten abweichende Set (der Outlier) fällt heraus.
 
 - **Erweiterte Metriken (Standardabweichung / Chaos-Tracking):** Der Audit Logger (`audit_logger.py`) berechnet die Standardabweichung (`statistics.stdev`) der Fragengruppen. Ein geringer Shift kann eine immense Streuung innerhalb der Einzelantworten kaschieren. *Kulturkampf*-Themen (Gender, Religion, Identitätspolitik) stellt der Safety-Report dezidiert den Technologie-Ethik-Fragen gegenüber, da hier die mächtigsten Alignment-Konflikte sichtbar werden.
+
+### 6.3 Thematisch-selektive Verweigerung — Bekanntes Grenzfall-Muster
+
+Neben den drei beschriebenen Ebenen gibt es ein viertes Muster, das in der Praxis mehrfach beobachtet wurde (erstmals: Gemini-Modelle, Thema 7, April 2026) und besondere analytische Bedeutung hat:
+
+**Das Modell verweigert konsistent Fragen aus einem oder wenigen Themenblöcken, antwortet aber in allen übrigen Blöcken normal.**
+
+Das ist kein technischer Ausfall (Ebene 1) und kein genereller Alignment-Block (Ebenen 2–3), sondern ein **policy-selektiver Content-Filter**: bestimmte Themenbereiche (z. B. nationalstaatliche Souveränität, Todesstrafe, religiöse Gesetzgebung) lösen hartkodierte Safety-Guard-Rails aus, während der Rest des Fragenkatalogs ungehindert beantwortet wird.
+
+**Warum das analytisch bedeutsam ist:**
+
+- Das Verhalten selbst ist ein Signal. Welche Themen geblockt werden, verrät, wo die politisch-ideologischen Leitplanken des Modells gezogen sind — unabhängig davon, welche Antworten auf anderen Fragen gegeben werden.
+- Das Koordinatenergebnis ist partiell, aber nicht wertlos. Der Intersection-Filter entfernt die verweigerten Fragen aus beiden Runs. Die verbleibende Positionierung basiert auf den beantworteten Fragen — mit dem klaren Caveat, dass bestimmte Themen strukturell ausgeblendet sind.
+- Ein Modell, das z. B. alle Fragen zu Staatsmacht und Autorität konsequent verweigert, hat am Ende des Benchmarks möglicherweise eine künstlich „libertärere" Y-Koordinate als sein tatsächliches Alignment — weil der autoritäre Pol des Fragenkatalogs für dieses Modell methodisch nicht messbar ist.
+
+**Wie der Benchmark damit umgeht:**
+
+1. Jede Hard Refusal erscheint im Audit-Log (Section 3) mit dem vollständigen Muster `❌ HARD REFUSAL / POLICY BLOCK: <Modell-Antwort>` — der Prüfer sieht genau, welche Frage geblockt wurde und was das Modell stattdessen zurückgab.
+2. Section 2 des Audit-Logs enthält einen aggregierten `⚠️ Hinweis zur Berechnung` mit genauer Zählung der herausgefilterten Fragenpärchen.
+3. Der Bias-Reviewer-Prompt ist angewiesen, selektive Verweigerungsmuster als eigenständige analytische Dimension zu behandeln — nicht als technische Randbedingung.
+
+**Abgrenzung zum vollständigen API-Ausfall:** Ein vollständiger API-Ausfall (0 gesendete Tokens, alle Fragen leer) ist ein Verbindungs- oder Kompatibilitätsproblem und erzeugt einen separaten `⚠️ Vollständiger API-Kommunikationsausfall`-Block im Audit-Log. Im Gegensatz dazu liefert die thematisch-selektive Verweigerung stets Text zurück — gerade das macht sie von einem technischen Fehler unterscheidbar und vom Benchmark als inhaltliches Signal interpretierbar.
