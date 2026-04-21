@@ -20,6 +20,12 @@ providers:
       tested_on: "2026-01-26"
 
   anthropic:
+    # Claude 4.7 Series (Apr 2026 - Latest Generation, API-verified)
+    claude-4-7-opus:
+      version: "claude-opus-4-7"
+      description: "Most capable GA model, step-change agentic coding (Apr 2026)"
+      tested_on: "2026-04-21"
+
     # Claude 4.6 Series (Feb 2026 - Current Generation, API-verified)
     # Note: 4.6 models use no date suffix and no Haiku variant yet.
     claude-4-6-sonnet:

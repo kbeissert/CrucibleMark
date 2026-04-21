@@ -557,6 +557,45 @@ def _build_token_efficiency_context(tested_model_name: str) -> str:
     return "\n".join(lines)
 
 
+def _build_constraint_violations_summary(model_dir: Path) -> str:
+    """Scannt alle Audit-Logs eines Modells nach Hard-Constraint-Violations ([!WARNING] Blöcke)
+    und gibt eine strukturierte Zusammenfassung zurück.
+
+    Erkennt beide Schreibweisen aus dem Scoring-System:
+      Format A (Listenpräfix):  - > [!WARNING]\\n> ...
+      Format B (direkt):        > [!WARNING]\\n> ...
+    """
+    violations: list[tuple[str, str]] = []
+
+    # Matcht "- > [!WARNING]" (Listenpräfix) und "> [!WARNING]" (direkt)
+    warning_pattern = re.compile(
+        r'(?:-\s+)?> \[!WARNING\]\s*\n((?:> [^\n]*\n?)+)',
+        re.MULTILINE,
+    )
+
+    for md_file in sorted(model_dir.rglob("*.md")):
+        if md_file.name in ("00_bias_report.md", "pol_comp_report.md"):
+            continue
+        try:
+            content = md_file.read_text(encoding="utf-8")
+        except Exception:
+            continue
+
+        for match in warning_pattern.finditer(content):
+            body = re.sub(r"^> ?", "", match.group(1), flags=re.MULTILINE).strip()
+            violations.append((md_file.stem, body))
+
+    if not violations:
+        return ""
+
+    count = len(violations)
+    lines = [f"### Constraint-Violations-Summary ({count} erkannt)\n"]
+    for task_id, text in violations:
+        lines.append(f"- **[{task_id}]**: {text}")
+
+    return "\n".join(lines)
+
+
 def process_model_review(model_dir: Path, csv_data: str, client: LLMClient, provider: str, model_id: str, review_type: str = "benchmark"):
     """Liest Audit-Logs für ein spezifisch getestetes LLM und generiert eine Review."""
     tested_model_name = model_dir.name
@@ -711,6 +750,9 @@ def process_model_review(model_dir: Path, csv_data: str, client: LLMClient, prov
     # --- Token-Effizienz-Kontext berechnen ---
     token_efficiency_context = _build_token_efficiency_context(tested_model_name)
 
+    # --- Constraint-Violations-Summary über alle Audit-Logs aggregieren ---
+    constraint_violations_context = _build_constraint_violations_summary(model_dir) if review_type == "benchmark" else ""
+
     # Für Bias-Reviews: Verifizierte PC-Leaderboard-Koordinaten injizieren (überschreibt
     # potenziell veraltete Werte aus dem Audit-Log, z.B. nach einem fehlgeschlagenen Safety-Run)
     if review_type == "bias":
@@ -750,6 +792,7 @@ def process_model_review(model_dir: Path, csv_data: str, client: LLMClient, prov
         "model_card_context": get_model_card_context(tested_model_name),
         "provider_card_context": get_provider_card_context(tested_model_name),
         "token_efficiency_context": token_efficiency_context,
+        "constraint_violations_context": constraint_violations_context,
     }
 
     try:

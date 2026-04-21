@@ -5,7 +5,7 @@ Getrennte Implementierungen für Ollama, Anthropic, Mistral
 import time
 import logging
 from typing import Any, List, Optional, Callable
-from utils.constants import MAX_TOKENS_ANTHROPIC, TIMEOUT_ANTHROPIC_API
+from utils.constants import MAX_TOKENS_ANTHROPIC, TIMEOUT_ANTHROPIC_API, ANTHROPIC_NO_TEMPERATURE_MODELS
 from utils.env_utils import get_required_env
 # Optional Provider Imports
 try:
@@ -96,11 +96,12 @@ class AnthropicClient(BaseProviderClient):
                     "max_tokens", MAX_TOKENS_ANTHROPIC
                 )
             # Note: Streaming not implemented yet for Anthropic in this wrapper
-            func_kwargs = {
+            func_kwargs: dict[str, Any] = {
                 "model": model,
-                "temperature": temperature,
                 "messages": [{"role": "user", "content": prompt}],
             }
+            if model not in ANTHROPIC_NO_TEMPERATURE_MODELS:
+                func_kwargs["temperature"] = temperature
             response, used_max_tokens, fallback_triggered = self._execute_with_token_fallback(
                 func=self.client.messages.create,
                 token_param_name="max_tokens",
