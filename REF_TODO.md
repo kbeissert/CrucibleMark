@@ -1,6 +1,17 @@
 # REF_TODO.md – Refactoring & Future Development
 
+## Backlog (Phase 2)
+- [ ] **`content_transformation_005` — Body-Word-Parser:** `keyword_presence`-Check für 300-Wort-Limit des Email-Bodys durch echten Wort-Count ersetzen. Benötigt Section-Parser der Analyse-Teil von Newsletter-Body trennt. Aufwand: ~30 LOC in `__init__.py` + Issue-Umstellung in `asset_005_newsletter_adaptation.yaml`. Risiko: Modelle formatieren Body uneinheitlich — falsche Penalties bei ~20% der Antworten möglich. Wert: 2.4 Pkt. Nicht zeitkritisch.
+
 ## Abgeschlossen
+
+### Asset-Limit-Kalibrierung & Fleet-Audit (v3.5.3 – 21.04.26)
+- [x] **`ux_writing/assets/asset_005_microcopy_audit.yaml` — Limit-Kalibrierung:** `max_expected_words` 150 → 350 (P25 der Ist-Längen × 1.20 = 337, aufgerundet auf 350). Prompt-Text ergänzt: `"Maximale Länge: 350 Wörter gesamt (Analyse + Tabelle). Sei präzise – jeder Satz zählt."` — Modell war zuvor nie über das Limit informiert. 50/52 Modelle verletzten das alte Limit.
+- [x] **`content_transformation/assets/asset_003_glossary_simplification.yaml` — Limit-Kalibrierung:** `max_expected_words` 150 → 250 (P25 = 210 W × 1.20 = 252 → 250). Format-Hinweis `"Max 150 Wörter"` → `"Max 250 Wörter"` synchronisiert. 29/52 Modelle verletzten das alte Limit.
+- [x] **`content_transformation/assets/asset_004_video_script_tutorial.yaml` — Limit-Kalibrierung:** `max_expected_words` 600 → 900 (P25 = 789 W × 1.20 = 947 → 900). Format-Range `"400-600 Wörter"` → `"600-900 Wörter"` synchronisiert. Min-Ist aller 52 Modelle war 742 W.
+- [x] **156 CSV-Zeilen gelöscht:** ct_003/ct_004/ux_005-Einträge aus allen 3 Benchmark-CSVs (75 + 42 + 39). Trigger für automatischen Re-Run.
+- [x] **156 Audit-Log-Dateien gelöscht:** Alle `*/ux_writing_005.md`, `*/content_transformation_003.md`, `*/content_transformation_004.md` aus `outputs/audit_logs/`.
+- [x] **Fleet-Scan (52 Modelle × 37 Tasks):** Alle Tasks auf strukturelle Limit-Fehler analysiert. Befund: 3 isolierte Fehler (behoben). `ux_writing_003` (per-Step-Limit korrekt), `content_transformation_005` (abschnittsbezogenes Limit, `keyword_presence` begründeter Trade-off) und 34 bewusst limit-lose Tasks.
 
 ### Code-Qualität, Terminologie & Block-7.9-Dokumentation (v3.5.2 – 21.04.26)
 - [x] **`scripts/core/unified_runner.py` — Pylint W1309:** `f`-Prefix aus String ohne Interpolation entfernt (Zeile 511).

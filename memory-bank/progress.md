@@ -1,8 +1,11 @@
 # Progress
 
 ## Ongoing
+- [ ] Re-Run ct_003 / ct_004 / ux_005: 156 CSV-Zeilen + Audit-Logs gelöscht, Benchmark bereit (kein --force nötig)
+- [ ] Leaderboard-Rebuild + alle 52 Reviews neu generieren (nach Re-Run)
 - [ ] make benchmark-auto starten: PC-Re-Run (31 Modelle ohne gültigen Eintrag) + offene Cloud-Modelle
 - [ ] gpt-5.4-mini cultural_intel 108-Token-Anomalie: --force Re-Run prüfen
+- [ ] [BACKLOG] ct_005 Phase-2: Body-Word-Parser (Gesamtantwort-Split Analyse/Newsletter-Body, dann Wortanzahl-Check auf Body-Teil; 2.4 Pkt, fragile Extraktion — nicht zeitkritisch)
 - [DONE] PC-Leaderboard Bereinigung: 11 Modelle mit korrupten Koordinaten entfernt (20 verifizierte Einträge verbleiben). Skip-Lücke in execute_batch_module() geschlossen.
 - [DONE] Backup-Dateien löschen: bereits bereinigt (keine *.bak mehr vorhanden)
 - [ ] Phase 4: Finale E2E Systemtests und CI/CD Review

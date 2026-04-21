@@ -30,6 +30,7 @@
   - *Terminal Execution Limits:* Für sichere Datei-Ersetzungen File-Edit-Tools oder Python-Dateien statt Terminal-Befehle nutzen.
   - *Google SDK Typing:* Bei Pylance/Pyright False-Positives (z.B. `reportPrivateImportUsage`) im `google.generativeai` SDK `# pyright: reportPrivateImportUsage=false` am Header nutzen.
   - *PC Skip-Logic Gap:* `execute_batch_module()` in `base_runner.py` prüft nur die 3 Standard-CSVs auf bereits vorhandene Ergebnisse — nach einem Leaderboard-Reset sind diese leer, die `political_compass_leaderboard.csv` aber nicht. Ohne expliziten Fallback auf `political_compass_leaderboard.csv` werden alle PC-Modelle fälschlich erneut gerunnt.
+  - *max_expected_words gilt nur für Gesamtantworten:* Bei Assets wo das Limit nur einen Abschnitt der Antwort betrifft (z.B. Email-Body ≤300W, während Analyse-Teil zusätzlich erwartet wird), darf `max_expected_words` NICHT gesetzt werden — die Gesamtantwort überschreitet das Limit zwingend. Stattdessen `keyword_presence`-Check oder LLM-Judge verwenden.
 
 ## Memory Bank (Dynamic Project Context)
 

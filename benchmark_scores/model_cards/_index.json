@@ -104,6 +104,32 @@
     "generated_at": "2026-04-11T14:33:58.133031+00:00"
   },
   {
+    "model_id": "claude-opus-4-7",
+    "display_name": "Claude Opus 4.7",
+    "developer": "Anthropic",
+    "origin_country": "USA",
+    "developer_jurisdiction": "US",
+    "deployment_type": "cloud-only",
+    "local_deployment_possible": false,
+    "weights_provenance_risk": "medium",
+    "weights_provenance_risk_rationale": "Anthropic ist ein US-amerikanisches Unternehmen und unterliegt dem CLOUD Act, jedoch ist kein direkter staatlicher Zugriff auf die Modellgewichte bekannt, da diese nicht öffentlich verfügbar sind.",
+    "model_family": "Claude",
+    "primary_focus": "general",
+    "summary": "Claude Opus 4.7 ist ein Frontier-Modell von Anthropic (USA), trainiert mit starkem Fokus auf Sicherheit, Nuancierung und komplexes Reasoning. Es richtet sich an anspruchsvolle Analyse-, Schreib- und Coding-Aufgaben und soll zuverlässiges, kontrolliertes Verhalten auch in schwierigen Kontexten gewährleisten.",
+    "strengths": [
+      "Sehr starkes Reasoning und mehrstufiges Problemlösen über lange Kontexte",
+      "Hohe Instruktionstreue mit differenziertem, nuanciertem Sprachverständnis",
+      "Robustes Sicherheitsverhalten und konsistente Ablehnung schädlicher Anfragen"
+    ],
+    "known_limitations": [
+      "Ausschließlich über Anthropic-API verfügbar, kein lokaler Betrieb möglich",
+      "Kann bei sehr spezifischem Fachwissen oder aktuellen Ereignissen nach dem Trainings-Cutoff unzuverlässig werden"
+    ],
+    "judge_context_hint": "Das Modell neigt zu vorsichtigen, ausgewogenen Antworten und kann bei ambivalenten Anfragen eher absichern als direkt antworten – dies sollte nicht als Schwäche, sondern als bewusstes Designmerkmal gewertet werden.",
+    "unknown": false,
+    "generated_at": "2026-04-21T08:08:21.457928+00:00"
+  },
+  {
     "model_id": "claude-sonnet-4-5-20250929",
     "display_name": "Claude Sonnet 4.5",
     "developer": "Anthropic",
