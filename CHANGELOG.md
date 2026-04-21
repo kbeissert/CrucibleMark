@@ -4,6 +4,22 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [v3.5.3] - 2026-04-21
+
+### Fixed
+- **`benchmark_modules/ux_writing/assets/asset_005_microcopy_audit.yaml` — Limit-Kalibrierung:** `max_expected_words` 150 → 350 (datengetrieben: P25 der Ist-Längen × 1.20 = 337 → 350). Prompt-Text ergänzt um explizite Längenanweisung `"Maximale Länge: 350 Wörter gesamt"` — Modell war zuvor nie über das Limit informiert. 50/52 Modelle hatten das alte Limit verletzt (Min-Ist 255 W > Limit+Toleranz 162 W).
+- **`benchmark_modules/content_transformation/assets/asset_003_glossary_simplification.yaml` — Limit-Kalibrierung:** `max_expected_words` 150 → 250 (P25 = 210 W × 1.20 = 252 → 250). Format-Hinweis im Prompt synchronisiert (`Max 150 Wörter` → `Max 250 Wörter`). 29/52 Modelle hatten das alte Limit verletzt.
+- **`benchmark_modules/content_transformation/assets/asset_004_video_script_tutorial.yaml` — Limit-Kalibrierung:** `max_expected_words` 600 → 900 (P25 = 789 W × 1.20 = 947 → 900). Format-Range im Prompt synchronisiert (`400-600 Wörter` → `600-900 Wörter`). Min-Ist aller 52 Modelle war 742 W — das alte Limit war physisch unlösbar.
+
+### Data
+- **156 CSV-Zeilen gelöscht:** Alle Einträge der 3 betroffenen Tasks (`ux_writing_005`, `content_transformation_003`, `content_transformation_004`) aus `commercial_models_benchmark.csv`, `cloud_models_benchmark.csv` und `local_models_benchmark.csv` entfernt (75 + 42 + 39 Zeilen). Re-Run wird automatisch durch fehlende `(model, asset_id)`-Keys getriggert.
+- **156 Audit-Log-Dateien gelöscht:** Alle `*/ux_writing_005.md`, `*/content_transformation_003.md`, `*/content_transformation_004.md` aus `outputs/audit_logs/` entfernt. Neue Audit-Logs entstehen beim Re-Run.
+
+### Analysis
+- **Fleet-weiter Violation-Scan:** 52 Modelle × 37 Tasks systematisch auf strukturelle Kalibrierungsfehler analysiert. Befund: 3 isolierte Limit-Fehler (alle behoben). `content_transformation_005` als begründeter Design-Trade-off eingestuft (`keyword_presence`-Check für abschnittsbezogenes Limit korrekt — `max_expected_words` auf Gesamtantwort wäre methodisch falsch). Phase-2-Backlog angelegt.
+
+---
+
 ## [v3.5.2] - 2026-04-21
 
 ### Fixed

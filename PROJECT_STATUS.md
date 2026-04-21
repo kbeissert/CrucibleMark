@@ -1,24 +1,25 @@
 # PROJECT_STATUS.md
 
 **Last Updated:** 2026-04-21
-**Current Version:** 3.5.2 (Code-Qualität, Terminologie & Block-7.9-Dokumentation)
+**Current Version:** 3.5.3 (Asset-Limit-Kalibrierung & Fleet-Audit)
 **Status:** ✅ Production-Ready
 
 ---
 
 ## Executive Summary
 
+CrucibleMark v3.5.3 schließt einen fleet-weiten Audit der Benchmark-Prompts ab. Drei strukturelle Kalibrierungsfehler bei Word-Limits wurden datengetrieben behoben: Die Limits für `ux_writing_005`, `content_transformation_003` und `content_transformation_004` wurden auf P25 der tatsächlichen Antwortlängen × 1.20 angehoben. 156 veraltete CSV-Einträge und Audit-Logs wurden chirurgisch entfernt; der anstehende Re-Run befüllt sie mit methodisch integren Scores.
+
+**Key Achievements (v3.5.3):**
+- ✅ **`ux_writing/assets/asset_005_microcopy_audit.yaml` — Limit-Kalibrierung:** `max_expected_words` 150 → 350 (P25-basiert). Prompt-Längenhinweis ergänzt — 50/52 Modelle verletzten das alte Limit (Min-Ist 255 W > Limit+Toleranz 162 W).
+- ✅ **`content_transformation/assets/asset_003_glossary_simplification.yaml` — Limit-Kalibrierung:** `max_expected_words` 150 → 250. Prompt-Format-Hinweis synchronisiert. 29/52 Modelle verletzten das alte Limit.
+- ✅ **`content_transformation/assets/asset_004_video_script_tutorial.yaml` — Limit-Kalibrierung:** `max_expected_words` 600 → 900. Prompt-Range synchronisiert. Min-Ist aller 52 Modelle war 742 W — das alte Limit war physisch unlösbar.
+- ✅ **156 CSV-Zeilen + 156 Audit-Logs gelöscht:** Vorbereitung Re-Run für alle 52 Modelle (3 Tasks).
+- ✅ **Fleet-Scan dokumentiert:** `content_transformation_005` als begründeter Design-Trade-off eingestuft (abschnittsbezogenes Limit, kein `max_expected_words` korrekt).
+
+**Vorherige Version (v3.5.2 – Code-Qualität, Terminologie & Block-7.9-Dokumentation):**
+
 CrucibleMark v3.5.2 bereinigt Code-Qualitätsprobleme (Pylint W1309/W0719/C0206, Mypy annotation-unchecked) und vollendet die terminologische Umbenennung „Nationalistisch" → „Reaktionär" auf der X-Achsen-Skala des Political Compass. Die Dokumentation wird um Block 7.9 (Parolen-Extremismus-Sonde) erweitert, der bisher undokumentiert war.
-
-**Key Achievements (v3.5.2):**
-- ✅ **`scripts/core/unified_runner.py` — Pylint W1309:** `f`-Prefix aus String ohne Interpolation entfernt (Zeile 511).
-- ✅ **`utils/providers/base.py` — Pylint W0719:** `raise Exception(...)` → `raise RuntimeError(...)` für spezifischen Fehlertyp.
-- ✅ **`benchmark_modules/political_compass/core/audit_logger.py` — Pylint C0206:** Dict-Iteration via `.items()` statt Key-only-Loop. Beispieltext `repressiv-nationalistisch` → `repressiv-reaktionär`.
-- ✅ **`benchmark_modules/political_compass/core/evaluators.py` — Mypy annotation-unchecked:** `__init__(self)` → `__init__(self) -> None` in zwei Klassen (`ExtremismWatchdog` und zweite Klasse).
-- ✅ **`benchmark_modules/political_compass/config.yaml` — Skalen-Label:** `Nationalistisch` → `Reaktionär` (X-Achse, Range 4.4–7.4).
-- ✅ **`docs/POLITICAL_COMPASS_KONZEPT.md` — Block 7.9:** Neuer Abschnitt 7 „Die Parolen-Extremismus-Sonde" mit Konzept, Koordinatenformel (80/20-Gewichtung) und Interpretationshinweis.
-
-**Vorherige Version (v3.5.1 – Quota-Robustheit & PC-Leaderboard-Vervollständigung):**
 
 CrucibleMark v3.5.1 schließt drei Stabilitätslücken im Benchmark-Workflow und vervollständigt das PC-Leaderboard auf 48 Modelle. `UnboundLocalError` bei Quota-Abbruch in `test.py` behoben, modellspezifische Token-Limits für gpt-4o/gpt-4o-mini über `benchmark_config.yaml` konfigurierbar gemacht (Ende der Fallback-Warnungen), Gemini Daily-Quota Fast-Fail in `base.py` aktiv. `kimi-k2-instruct` von Groq (Modell dort entfernt) auf `kimi-k2.5:cloud` via Ollama Cloud migriert. 7 neue PC-Runs abgeschlossen (gpt-5, gpt-5.4, gpt-5.4-mini, gpt-4o, gpt-4o-mini, llama-4-scout, qwen3-32b).
 
