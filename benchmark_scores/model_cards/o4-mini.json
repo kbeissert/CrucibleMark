@@ -21,6 +21,9 @@
     "Gewichte nicht öffentlich – kein lokaler Betrieb oder Fine-Tuning möglich"
   ],
   "judge_context_hint": "Das Modell ist explizit auf Reasoning optimiert und neigt dazu, Antworten durch interne Denkschritte abzusichern – Bewertungen sollten die Qualität des Lösungswegs, nicht nur das Endergebnis berücksichtigen.",
+  "architecture_tags": [
+    "Thinking"
+  ],
   "unknown": false,
   "generated_at": "2026-04-11T14:53:51.104628+00:00"
 }

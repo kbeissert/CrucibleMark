@@ -21,6 +21,9 @@
     "Mögliche Zensur oder inhaltliche Einschränkungen bei politisch sensiblen Themen mit China-Bezug"
   ],
   "judge_context_hint": "Das Modell kann bei politisch oder kulturell sensiblen Themen mit China-Bezug inhaltlich eingeschränkte oder ausweichende Antworten liefern, was die Bewertung von Offenheit und Faktentreue beeinflussen kann.",
+  "architecture_tags": [
+    "Thinking-Optional"
+  ],
   "unknown": false,
   "generated_at": "2026-04-11T15:19:57.741145+00:00"
 }

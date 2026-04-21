@@ -21,6 +21,9 @@
     "Keine lokale Ausführung möglich, vollständige Abhängigkeit von OpenAIs Cloud-Infrastruktur"
   ],
   "judge_context_hint": "Das Modell ist auf Effizienz optimiert und kann bei komplexen, mehrstufigen oder nuancierten Aufgaben systematisch hinter größeren Modellen zurückbleiben – Bewertungen sollten dies bei anspruchsvollen Benchmarks berücksichtigen.",
+  "architecture_tags": [
+    "General"
+  ],
   "unknown": false,
   "generated_at": "2026-04-11T15:43:17.768669+00:00"
 }

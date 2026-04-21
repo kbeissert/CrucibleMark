@@ -31,13 +31,32 @@ meta_reviewer:
 
 
 
-    Analysiere als Erstes die Architektur-Kategorie (**{model_tags}**), in die wir das Modell (**{display_model_name}**) vorab eingestuft haben. Berücksichtige diese Einstufung in deiner finalen Bewertung (behandle sie NICHT als Namenszusatz des Modells im Text, sondern als von uns vergebene Metadaten). Achte hierbei gezielt auf folgende Besonderheiten:
+    Analysiere als Erstes die Architektur-Kategorie (**{model_tags}**), in die wir das Modell (**{display_model_name}**) vorab eingestuft haben. Berücksichtige diese Einstufung in deiner finalen Bewertung (behandle sie NICHT als Namenszusatz des Modells im Text, sondern als von uns vergebene Metadaten).
+
+    ### Vollständige Tag-Referenz (alle möglichen Kategorien im Überblick)
+    | Tag | Typische Modelle | Kerncharakter |
+    |---|---|---|
+    | `General` | GPT-4o, Claude Sonnet, Mistral Large | Standard-Allrounder ohne besondere Spezialisierung |
+    | `Coder` | DeepSeek Coder, CodeLlama, Qwen Coder | Primär für Code-Generierung trainiert |
+    | `Thinking` | DeepSeek R1, o1, o3, QwQ | Festes Chain-of-Thought, immer aktiv |
+    | `Thinking-Optional` | Qwen3, Gemini 2.5 Pro/Flash | Extended Thinking per API aktivierbar — hier: Standard-Modus (nicht aktiviert) |
+    | `Instruct` | Llama-Instruct, Gemma-it, Phi-chat | Optimiert auf direktes Instruction-Following, kurze präzise Antworten |
+    | `Preview` | Experimentelle Versionen | Beta-Phase, Leistungsschwankungen erwartet |
+    | `Uncensored-Abliterated` | Abliterated-Derivate | Zensur chirurgisch aus Gewichten entfernt — Risiko: Capability Collapse |
+    | `Uncensored-Finetuned` | Dolphin, Hermes | Zensur via Datensatz konditioniert, Architektur intakt |
+    | `Agentic-Orchestrator` | Claude Opus (alle Versionen) | Für Multi-Agent-Orchestrierung optimiert, nicht für direkte Format-Execution |
+
+    Tags sind kombinierbar (z.B. `Agentic-Orchestrator` kann mit `Thinking-Optional` kombiniert sein). Das aktuelle Modell trägt: **{model_tags}**
+
+    Achte hierbei gezielt auf folgende Besonderheiten für die zugewiesene Kategorie:
     - **Coder / Code**: Es ist verzeihlich, wenn ein spezialisiertes Code-Modell bei gesellschaftlich-philosophischen Fragen im Political Compass Schwächen zeigt oder abdriftet.
     - **Thinking / Reasoning**: Von Modellen mit umfassenden Denkprozessen ("Chain of Thought") werden längere, gut durchdachte Antworten erwartet. Längere Denkphasen oder ausschweifendere Erklärungen sind bei Logik-Aufgaben hier absolut gewollt und als Stärke zu werten.
     - **Instruct / Chat**: Diese Modelle sind fokussiert auf direktes "Instruction Following". Sie tendieren oft zu kürzeren, strikteren Antworten ohne ausufernde Erklärungen, da der Fokus auf rascher, ungelenkter Befehlsausführung liegt.
     - **Preview / Test**: Zeigt an, dass das Modell noch testweise oder experimentell ist. Geringere Leistungen können unter dem Vorbehalt erwähnt werden, dass es sich um eine frühe Version handelt, die sich wahrscheinlich noch verbessert.
     - **Uncensored-Abliterated**: (Zensur chirurgisch aus Gewichten geschnitten). Führt oft zu Vektor-Schäden, Capability Collapse, Abbruch mitten in der Aufgabe (zerstörte Synthese-Vektoren) oder massivem Qualitätsverlust in logik-intensiven Fragen, weil die Eingriffe die interne Modell-Konsistenz belasten. WICHTIG: Erwähne bei der Bewertung der Code- und DevOps-Fähigkeiten mildernd, dass dieser Bereich nicht zu den Kernaufgaben eines uncensored-Modells gehört (ihr Einsatzzweck liegt eher im freieren Content-Bereich abseits von Safety-Vorgaben).
     - **Uncensored-Finetuned**: (z.B. Dolphin, Hermes — Zensur via Datensatz konditioniert). Die Basis-Architektur ist intakt, jedoch treten oft Sampling-Instabilitäten in komplexen Tasks auf oder es fehlt die Basismodell-Qualität im Schreiben/Reasoning. Sie crashen nicht mechanisch, scheitern aber oft an Nuancen. Auch hier gilt: Beurteile Schwächen beim Coding/DevOps milder und weise darauf hin, dass ihr Fokus auf restriktionsfreier Content-Generierung und nicht auf Software-Entwicklung liegt.
+    - **Agentic-Orchestrator**: (z.B. Claude Opus — konzipiert als Orchestrator in Multi-Agent-Pipelines). Diese Modelle sind darauf ausgelegt, komplexe Aufgaben zu zerlegen und spezialisierte Sub-Agenten (z.B. für konkrete CLI-Befehle oder Formatierungsaufgaben) zu steuern, anstatt alle Subtasks selbst direkt auszuführen. Schwächen bei strikten Format-Aufgaben (z.B. exakte Shell-One-Liner, präzises Exact-Matching) sind daher milder zu bewerten — diese würden im realen Einsatz an einen Sub-Agenten delegiert. Stärken in Reasoning, Planung und strategischer Analyse sind dagegen als Kernkompetenz besonders zu würdigen. **Geschwindigkeit:** Agentic-Orchestrator-Modelle können trotz niedriger sichtbarer Token-Zahl langsamer sein, weil sie intern mehr Planungsschritte durchführen. Zudem unterstützen viele dieser Modelle optionales Extended Thinking (an-/abschaltbar je nach Aufgabe) — im CrucibleMark-Benchmark läuft jedes Modell im Standard-Modus ohne explizites Thinking-Budget, um Fairness zu gewährleisten. Die gemessene Geschwindigkeit entspricht also dem Out-of-the-Box-Einsatz. Falls ein solches Modell im Review deutlich langsamer ist als vergleichbare Modelle, erwähne dies als Charakteristikum des Architektur-Designs — nicht als Schwäche.
+    - **Thinking-Optional**: (z.B. Qwen3, Gemini 2.5 — Extended Thinking per API an-/abschaltbar). CrucibleMark testet alle Modelle im Standard-Modus ohne explizites Thinking-Budget. Das ist methodisch korrekt: der Benchmark misst das Out-of-the-Box-Verhalten, das einem typischen API-Nutzer ohne spezielle Konfiguration entspricht. Hinweis im Review: Erwähne, dass dieses Modell grundsätzlich Extended Thinking unterstützt, dieser Modus jedoch im Benchmark nicht aktiviert war. **Geschwindigkeit:** Thinking-Optional-Modelle können auch im Standard-Modus intern mehr Verarbeitungsschritte durchführen, was zu höherer Latenz führt als bei reinen Instruction-Modellen. Falls das Modell im Review deutlich langsamer ist, ist dies kein Fehler — sondern Ausdruck der Architekturtiefe. Verweise im Performance-Abschnitt auf diese Eigenschaft als sachliche Information für den Leser.
 
 
 

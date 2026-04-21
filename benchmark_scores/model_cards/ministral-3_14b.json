@@ -21,6 +21,9 @@
     "Geringere Faktendichte und Wissensbasis gegenüber 70B+-Modellen"
   ],
   "judge_context_hint": "Das Modell ist auf Effizienz und Edge-Deployment ausgelegt – Antwortqualität sollte relativ zur Modellgröße bewertet werden, nicht absolut gegen Frontier-Modelle.",
+  "architecture_tags": [
+    "General"
+  ],
   "unknown": false,
   "generated_at": "2026-04-11T15:08:44.657991+00:00"
 }

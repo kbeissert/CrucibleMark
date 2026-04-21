@@ -21,6 +21,9 @@
     "Trainingsdaten und genaue Modellarchitektur sind nicht vollständig öffentlich dokumentiert"
   ],
   "judge_context_hint": "Grok 3 neigt zu direkten, teils pointierten Antworten mit weniger Selbstzensur als vergleichbare Modelle – bei der Bewertung von Ton und Stil sollte dies als bewusstes Design-Merkmal berücksichtigt werden.",
+  "architecture_tags": [
+    "Thinking-Optional"
+  ],
   "unknown": false,
   "generated_at": "2026-04-11T15:51:34.415132+00:00"
 }

@@ -21,6 +21,9 @@
     "Kann bei komplexen mehrstufigen Reasoning-Aufgaben hinter größeren Modellen (z. B. Gemini 2.5 Pro) zurückbleiben"
   ],
   "judge_context_hint": "Das Modell ist auf Effizienz und Geschwindigkeit ausgelegt und kann bei sehr langen oder hochkomplexen Reasoning-Ketten zugunsten von Schnelligkeit Tiefe opfern – Antworten sollten auf Vollständigkeit und Präzision geprüft werden.",
+  "architecture_tags": [
+    "Thinking-Optional"
+  ],
   "unknown": false,
   "generated_at": "2026-04-11T15:16:53.317148+00:00"
 }

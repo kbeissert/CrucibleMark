@@ -21,6 +21,9 @@
     "Kein offiziell unterstütztes Modell – Qualität und Verhalten hängen von der Abliterations-Implementierung eines Drittanbieters ab"
   ],
   "judge_context_hint": "Das Modell wurde abliteriert, d.h. Refusal-Training wurde gezielt entfernt – der Judge sollte keine Compliance-Verweigerungen erwarten und Antwortqualität unabhängig von Themensensitivität bewerten.",
+  "architecture_tags": [
+    "Uncensored-Abliterated"
+  ],
   "unknown": false,
   "generated_at": "2026-04-11T15:46:34.286185+00:00"
 }

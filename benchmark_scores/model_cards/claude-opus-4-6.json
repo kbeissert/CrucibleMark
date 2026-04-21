@@ -21,6 +21,9 @@
     "Kann bei sehr spezifischen Fachdomänen (z. B. aktuelle Ereignisse nach Trainings-Cutoff) an Grenzen stoßen"
   ],
   "judge_context_hint": "Das Modell neigt zu besonders sorgfältig formulierten, ausgewogenen Antworten und vermeidet bewusst übermäßig assertive Aussagen – dies kann bei direkten Faktenfragen als Zögerlichkeit wirken, ist aber ein bewusstes Designmerkmal.",
+  "architecture_tags": [
+    "Agentic-Orchestrator"
+  ],
   "unknown": false,
   "generated_at": "2026-04-11T14:33:58.133031+00:00"
 }

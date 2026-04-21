@@ -21,6 +21,9 @@
     "Keine lokale Ausführung möglich – vollständige Abhängigkeit von Googles Cloud-Infrastruktur"
   ],
   "judge_context_hint": "Das Modell ist auf Geschwindigkeit und Effizienz optimiert; bei komplexen mehrstufigen Reasoning-Aufgaben kann die Antwortqualität hinter schwergewichtigeren Modellen zurückbleiben.",
+  "architecture_tags": [
+    "Preview"
+  ],
   "unknown": true,
   "generated_at": "2026-04-11T14:40:50.616161+00:00"
 }

@@ -44,6 +44,12 @@ Gilt für Generation-Parameter UND LLM Judge. Modul-Override gewinnt immer.
 - Gegen Token-Loop-Halluzinationen (z.B. endlose Leerzeichen-Repeats von Gemini 2.5 Flash) ist eine Regex-basierte Character-Sequence Validation im BaseClient implementiert, die den Test sofort markiert und abbricht.
 - Ergebnisse iterieren nicht die Score-Punkte, sondern notieren rein kontextuelle "Kopfnoten" (`token_limit_used` oder `⚠️ OUTPUT TRUNCATED/LOOP`) im Metric-Tracker. Diese fließen später über `generate_review.py` via Regex-Extraktion in die Meta-Reviewer Berichte ein.
 
+## Model Card `architecture_tags` als manueller Tag-Override
+- JSON-Cards in `benchmark_scores/model_cards/*.json` können ein `architecture_tags`-Feld führen (Array mit 1–n Tags aus dem definierten 9er-Set).
+- `generate_review.py` priorisiert diese Card-Tags gegenüber dem automatischen String-Matching in `get_model_identity()` — damit können Tags für Modelle gesetzt werden, die im Namen keinen Hinweis tragen (z.B. `o4-mini→Thinking`, `codestral→Coder`).
+- `model_utils.py` bleibt die SSOT für dynamisches Runtime-Matching (Judge, Runner); Cards sind nur für Review-Generierung relevant.
+- `generate_model_cards.py` füllt `architecture_tags` per LLM-Klassifikation; manuelle Nachkontrolle ist erwünscht.
+
 ## Token-Budget-System (Output-Cap, ab v3.4.0)
 - **Orthogonal zum Fallback-System:** `benchmark_config.yaml → token_budgets[module_key]` definiert einen direkten `max_tokens`-API-Parameter pro Modul — kein Fehler-Handling, sondern ein proaktiver Cap für faire Vergleichbarkeit.
 - `base_runner.py → execute_test_module()` liest den Wert und übergibt ihn **nur wenn nicht `None`** — kein `None`-Wert darf an Provider-Clients weitergegeben werden.

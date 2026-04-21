@@ -67,8 +67,22 @@ JSON-Schema (alle Felder Pflicht):
   "strengths": ["Stärke 1", "Stärke 2", "Stärke 3"],
   "known_limitations": ["Einschränkung 1", "Einschränkung 2"],
   "judge_context_hint": "1 Satz für den Benchmark-Judge: Was muss er bei der Bewertung dieses Modells im Kopf haben? (Kein Datenschutz-Aspekt, nur Qualitäts-/Verhaltenshinweis)",
+  "architecture_tags": ["General"],
   "unknown": false
 }}
+
+Verfügbare architecture_tags (ein oder mehrere, als JSON-Array):
+- "General" — Allround-Modell ohne besondere Spezialisierung (Default, wenn nichts anderes zutrifft)
+- "Coder" — Primär für Code-Generierung/Coding-Aufgaben trainiert (z.B. Codestral, DeepSeek-Coder)
+- "Thinking" — Festes Chain-of-Thought, immer aktiv (z.B. DeepSeek-R1, o1, o3, QwQ) — sichtbare <thinking>-Blöcke
+- "Thinking-Optional" — Extended Thinking per API an-/abschaltbar, Standard-Modus ist ohne Thinking (z.B. Qwen3, Gemini 2.5, Grok 3)
+- "Instruct" — Optimiert auf direktes Instruction-Following, kurze präzise Antworten (z.B. Llama-Instruct, Gemma-it)
+- "Preview" — Beta/experimentelle Version, Leistungsschwankungen erwartet
+- "Uncensored-Abliterated" — Zensur chirurgisch aus Gewichten entfernt
+- "Uncensored-Finetuned" — Zensur via Datensatz konditioniert (z.B. Dolphin, Hermes)
+- "Agentic-Orchestrator" — Für Multi-Agent-Orchestrierung optimiert, delegiert Subtasks (z.B. Claude Opus, Kimi K2)
+
+Wichtig: Setze architecture_tags NUR wenn du das Modell kennst. Bei Unsicherheit: ["General"].
 
 Klassifikationsregeln für weights_provenance_risk:
 - Alibaba, DeepSeek, MiniMax, Zhipu, ByteDance, Moonshot, Baidu, Tencent → 'high' (NSL)

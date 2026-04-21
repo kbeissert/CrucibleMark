@@ -21,6 +21,9 @@
     "Längere Latenz durch interne Reasoning-Schritte, was es für Echtzeit-Anwendungen weniger geeignet macht"
   ],
   "judge_context_hint": "o1 denkt intern vor der Antwort nach (verdeckte Chain-of-Thought), was zu präziseren, aber teils längeren oder unerwarteten Antwortstrukturen führen kann – Bewertungen sollten die Qualität des Ergebnisses, nicht den Denkweg, priorisieren.",
+  "architecture_tags": [
+    "Thinking"
+  ],
   "unknown": false,
   "generated_at": "2026-04-11T15:44:56.182371+00:00"
 }

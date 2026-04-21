@@ -21,6 +21,11 @@
     "Weniger etabliert im westlichen Benchmark-Ökosystem als vergleichbare US-Modelle"
   ],
   "judge_context_hint": "Das Modell kann bei politisch oder kulturell sensiblen Themen mit Bezug zu China zurückhaltend oder ausweichend antworten; Antwortqualität bei solchen Themen sollte gesondert bewertet werden.",
+  "architecture_tags": [
+    "Agentic-Orchestrator",
+    "Coder",
+    "Instruct"
+  ],
   "unknown": false,
   "generated_at": "2026-04-11T15:35:02.862567+00:00"
 }

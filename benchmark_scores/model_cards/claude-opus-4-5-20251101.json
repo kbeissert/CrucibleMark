@@ -21,6 +21,9 @@
     "Als größtes Modell der Opus-Reihe mit höherer Latenz und höheren Kosten verbunden"
   ],
   "judge_context_hint": "Das Modell neigt zu vorsichtigen, ausgewogenen Antworten und kann bei sehr direktiven oder grenzwertigen Anfragen stärker absichern als andere Modelle – dies sollte bei der Bewertung von Direktheit und Kürze berücksichtigt werden.",
+  "architecture_tags": [
+    "Agentic-Orchestrator"
+  ],
   "unknown": false,
   "generated_at": "2026-04-11T14:32:26.212808+00:00"
 }

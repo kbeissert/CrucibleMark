@@ -21,6 +21,9 @@
     "Wissensbasis durch Llama-3.1-Cutoff begrenzt; kein natives Multimodal-Support"
   ],
   "judge_context_hint": "Das Modell ist ein Community-Fine-Tune und kann bei sehr formalen oder akademischen Aufgaben gelegentlich einen informelleren, gesprächsorientierten Ton bevorzugen als erwartet.",
+  "architecture_tags": [
+    "Uncensored-Finetuned"
+  ],
   "unknown": false,
   "generated_at": "2026-04-11T15:31:29.359642+00:00"
 }

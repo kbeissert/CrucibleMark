@@ -21,6 +21,9 @@
     "Nicht für allgemeine Konversation oder nicht-technische Aufgaben optimiert"
   ],
   "judge_context_hint": "Codestral ist explizit auf Code-Aufgaben ausgerichtet; bei allgemeinen Sprach- oder Reasoning-Benchmarks außerhalb des Coding-Kontexts ist mit deutlich schwächerer Leistung zu rechnen.",
+  "architecture_tags": [
+    "Coder"
+  ],
   "unknown": false,
   "generated_at": "2026-04-11T15:18:28.034754+00:00"
 }
