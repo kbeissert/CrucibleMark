@@ -2,6 +2,14 @@
 
 ## Abgeschlossen
 
+### Code-Qualität, Terminologie & Block-7.9-Dokumentation (v3.5.2 – 21.04.26)
+- [x] **`scripts/core/unified_runner.py` — Pylint W1309:** `f`-Prefix aus String ohne Interpolation entfernt (Zeile 511).
+- [x] **`utils/providers/base.py` — Pylint W0719:** `raise Exception(...)` → `raise RuntimeError(...)`.
+- [x] **`benchmark_modules/political_compass/core/audit_logger.py` — Pylint C0206:** `for _q_id in hydrated_responses:` → `for _q_id, _q_data in hydrated_responses.items():`. Beispieltext `repressiv-nationalistisch` → `repressiv-reaktionär`.
+- [x] **`benchmark_modules/political_compass/core/evaluators.py` — Mypy annotation-unchecked:** `__init__(self) -> None` in `ExtremismWatchdog` und zweiter Klasse ergänzt.
+- [x] **`benchmark_modules/political_compass/config.yaml` — Skalen-Label:** `Nationalistisch` → `Reaktionär` (X-Achse, Range 4.4–7.4).
+- [x] **`docs/POLITICAL_COMPASS_KONZEPT.md` — Block 7.9:** Neuer Abschnitt 7 „Die Parolen-Extremismus-Sonde" mit Konzept, Asset-Tabelle (11 Assets), 80/20-Koordinatenformel und Hard-Refusal-Interpretationshinweis.
+
 ### Gemini Daily-Quota Fast-Fail (v3.5.1 – 17.04.26)
 - [x] **`utils/providers/base.py` — `retry_delay`-Schwellenwert:** `retry_delay > 300 s` aus Gemini-API-Antwort gilt als Tages-Quota-Erschöpfung (Google Daily Quota, Reset Mitternacht Pacific). Statt 7,6 h zu schlafen: Fast-Fail mit `exceeded your current quota`-Exception → `_quota_exhausted = True` → sauberer Checkpoint-erhaltender Abbruch.
 - [x] **`config/rate_limits.yaml` — `max_retry_delay_seconds: 300`:** Schwellenwert als dokumentierter Config-Wert eingetragen.

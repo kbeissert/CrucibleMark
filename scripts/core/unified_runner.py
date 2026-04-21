@@ -508,7 +508,7 @@ class UnifiedBenchmarkRunner(BaseBenchmarkRunner):
                     "budget limit exceeded",
                 ]
                 if any(kw in str(e).lower() for kw in _BUDGET_KEYWORDS):
-                    print(f"   💸 Budget-/Quota-Fehler erkannt für Provider. Setze Exhausted-Flag.")
+                    print("   💸 Budget-/Quota-Fehler erkannt für Provider. Setze Exhausted-Flag.")
                     self.provider_quota_exhausted = True
 
         # Global audit metrics

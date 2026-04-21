@@ -151,6 +151,50 @@ def clean_float(val):
     v = normalize_pending(val)
     return float(v) if v is not None else None
 
+
+_BLOCK_META: dict = {
+    "7.1": {"label": "Ökonomie & Verteilung",   "axis": "x"},
+    "7.2": {"label": "Arbeitswelt & Markt",      "axis": "x"},
+    "7.3": {"label": "Fiskalpolitik",            "axis": "x"},
+    "7.4": {"label": "Gesellschaft & Identität", "axis": "y"},
+    "7.5": {"label": "Religion & Kultur",        "axis": "y"},
+    "7.6": {"label": "Justiz & Ordnung",         "axis": "y"},
+    "7.7": {"label": "Außenpolitik",             "axis": "y"},
+    "7.8": {"label": "Technologie & Zukunft",    "axis": "y"},
+    "7.9": {"label": "Parolen-Kompass",          "axis": "both"},
+}
+
+
+def _build_block_scores(module_stats: dict) -> dict:
+    """Baut das blocks-Dict aus den module_stats (vanilla/forced) für political_compass.json."""
+    vanilla = module_stats.get("vanilla", {})
+    forced = module_stats.get("forced", {})
+    if not vanilla and not forced:
+        return {}
+    blocks = {}
+    for bid, meta in _BLOCK_META.items():
+        v = vanilla.get(bid, {})
+        f = forced.get(bid, {})
+        axis = meta["axis"]
+        if axis == "both":
+            blocks[bid] = {
+                "label": meta["label"],
+                "axis": "both",
+                "vanilla_x": round(v.get("x", 0.0), 2),
+                "vanilla_y": round(v.get("y", 0.0), 2),
+                "forced_x": round(f.get("x", 0.0), 2),
+                "forced_y": round(f.get("y", 0.0), 2),
+            }
+        else:
+            blocks[bid] = {
+                "label": meta["label"],
+                "axis": axis,
+                "vanilla": round(v.get(axis, 0.0), 2),
+                "forced": round(f.get(axis, 0.0), 2),
+            }
+    return blocks
+
+
 def extract_audit_category(filename: str) -> str:
     """Extracts category prefix from audit log filename."""
     name = filename.replace('.md', '')
@@ -244,12 +288,21 @@ def main() -> None:
     # Load Source CSVs
     ldb = load_csv_with_fallback(scores_dir / "benchmark_leaderboard_detailed.csv")
     pc = load_csv_with_fallback(scores_dir / "political_compass_results.csv")
+    pc_lb = load_csv_with_fallback(scores_dir / "political_compass_leaderboard.csv")
     bias_df = load_csv_with_fallback(scores_dir / "bias_sensitivity.csv")
     provider_df = load_csv_with_fallback(scores_dir / "provider_leaderboard.csv")
 
     if ldb is None:
         logging.error("❌ Failed to load required benchmark_leaderboard_detailed.csv. Exiting.")
         sys.exit(1)
+
+    # Build PC-Leaderboard lookup: model name -> row (vanilla/forced/shift fields)
+    pc_lb_map: dict = {}
+    if pc_lb is not None and 'model' in pc_lb.columns:
+        for _, _lb_row in pc_lb.iterrows():
+            _m = str(_lb_row.get('model', ''))
+            if _m and _m != 'nan':
+                pc_lb_map[_m] = _lb_row
 
     generated_at = datetime.datetime.now(datetime.UTC).isoformat()
     models_list = []
@@ -393,6 +446,7 @@ def main() -> None:
             if not model_pc.empty:
                 pc_row = model_pc.iloc[0]
                 archetype, extremism = None, None
+                metrics: dict = {}
                 metrics_json_str = str(pc_row.get('metrics_json', '{}'))
                 if metrics_json_str and metrics_json_str != "nan":
                     try:
@@ -405,6 +459,7 @@ def main() -> None:
                     except json.JSONDecodeError:
                         pass
 
+                _lb = pc_lb_map.get(model_name)
                 compass_data = {
                     "slug": slug,
                     "name": model_name,
@@ -413,8 +468,17 @@ def main() -> None:
                     "x": normalize_pending(pc_row.get("x_coordinate")),
                     "y": normalize_pending(pc_row.get("y_coordinate")),
                     "label": str(pc_row.get("x_label", "")) + " - " + str(pc_row.get("y_label", "")),
+                    "vanilla_x": normalize_pending(_lb.get("vanilla_x")) if _lb is not None else None,
+                    "vanilla_y": normalize_pending(_lb.get("vanilla_y")) if _lb is not None else None,
+                    "vanilla_label": str(_lb.get("vanilla_label", "")) if _lb is not None else None,
+                    "forced_x": normalize_pending(_lb.get("forced_x")) if _lb is not None else None,
+                    "forced_y": normalize_pending(_lb.get("forced_y")) if _lb is not None else None,
+                    "forced_label": str(_lb.get("forced_label", "")) if _lb is not None else None,
+                    "shift_distance": normalize_pending(_lb.get("shift_distance")) if _lb is not None else None,
+                    "polarity_flip_rate": normalize_pending(_lb.get("polarity_flip_rate")) if _lb is not None else None,
                     "archetype": archetype,
-                    "extremism_status": extremism
+                    "extremism_status": extremism,
+                    "blocks": _build_block_scores(metrics.get("module_stats", {}))
                 }
                 pc_list.append(compass_data)
 

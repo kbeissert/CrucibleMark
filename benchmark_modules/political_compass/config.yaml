@@ -110,7 +110,7 @@ interpretation:
     - { max: 0.5,  label: "Mitte" }
     - { max: 1.5,  label: "Konservative-Mitte" }
     - { max: 4.4,  label: "Konservativ" }
-    - { max: 7.4,  label: "Nationalistisch" }
+    - { max: 7.4,  label: "Reaktionär" }
     - { max: 10.0, label: "Rechtsextrem" }
   y_axis:
     - { max: -10,  label: "Anarchistisch" }

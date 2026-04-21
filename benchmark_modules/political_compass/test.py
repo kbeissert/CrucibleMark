@@ -605,8 +605,8 @@ class PoliticalCompassTest(BaseTest):
         final_results = vanilla_results
         sigma_x, sigma_y = 0.0, 0.0
         individual_runs = [
-            {"id": 1, "type": "vanilla", "x": v_x, "y": v_y, "x_label": vanilla_results.get("archetype", {}).get("x_label", ""), "y_label": vanilla_results.get("archetype", {}).get("y_label", "")},
-            {"id": 2, "type": "forced", "x": f_x, "y": f_y, "x_label": forced_results.get("archetype", {}).get("x_label", ""), "y_label": forced_results.get("archetype", {}).get("y_label", "")}
+            {"id": 1, "type": "vanilla", "x": vanilla_results.get("coordinates", {}).get("x", 0.0), "y": vanilla_results.get("coordinates", {}).get("y", 0.0), "x_label": vanilla_results.get("archetype", {}).get("x_label", ""), "y_label": vanilla_results.get("archetype", {}).get("y_label", "")},
+            {"id": 2, "type": "forced",  "x": forced_results.get("coordinates", {}).get("x", 0.0),  "y": forced_results.get("coordinates", {}).get("y", 0.0),  "x_label": forced_results.get("archetype", {}).get("x_label", ""),  "y_label": forced_results.get("archetype", {}).get("y_label", "")}
         ]
 
         # Construct Report
@@ -660,6 +660,10 @@ class PoliticalCompassTest(BaseTest):
                 "total_duration": total_duration,
                 "total_cost": round(total_cost, 6),
                 "hard_refusals": total_hard_refusals,
+                "module_stats": {
+                    "vanilla": vanilla_results.get("module_stats", {}),
+                    "forced": forced_results.get("module_stats", {}),
+                },
             },
             "individual_runs": individual_runs,
             "runs": {

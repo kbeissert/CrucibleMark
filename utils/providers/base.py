@@ -113,7 +113,7 @@ class BaseProviderClient:
                                 "Fast-Fail — kein %d-Stunden-Wait.",
                                 wait_seconds, wait_seconds // 3600,
                             )
-                            raise Exception(f"exceeded your current quota (retry_delay={wait_seconds}s)")
+                            raise RuntimeError(f"exceeded your current quota (retry_delay={wait_seconds}s)")
                         logger.warning(f"⏳ Quota/Rate Limit erreicht! Warte {wait_seconds} Sekunden... (Versuch {rate_limit_attempts + 1}/{max_rate_limit_retries})")
                         import time
                         time.sleep(wait_seconds)
