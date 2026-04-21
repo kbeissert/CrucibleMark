@@ -31,6 +31,12 @@ TIMEOUT_OLLAMA_WARMUP = 120     # Cold-Start-Warmup (großes Modell)
 TIMEOUT_HTTP_FETCH = 10         # Allgemeine HTTP-Fetches (LiteLLM Pricing)
 TIMEOUT_ANTHROPIC_API = 600.0   # Anthropic SDK: 8000+-Token-Generierungen
 
+# Anthropic-Modelle, die `temperature` nicht unterstützen (Adaptive Thinking)
+# Quelle: https://platform.claude.com/docs/en/docs/about-claude/models (Apr 2026)
+ANTHROPIC_NO_TEMPERATURE_MODELS: frozenset[str] = frozenset({
+    "claude-opus-4-7",
+})
+
 
 class Colors:
     """ANSI Colors for Terminal Output."""

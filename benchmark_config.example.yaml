@@ -144,6 +144,9 @@ providers:
       env_var: "ANTHROPIC_API_KEY"
       models:
         # Claude 4.6 Series (Feb 2026 - Current Generation, API-verified)
+        - id: "claude-opus-4-7"
+          name: "Claude 4.7 Opus"
+          description: "Most capable GA model, step-change agentic coding (Apr 2026)"
         - id: "claude-sonnet-4-6"
           name: "Claude 4.6 Sonnet"
           description: "Ausgewogene Performance & Kosten (Golden Standard)"

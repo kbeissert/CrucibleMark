@@ -87,6 +87,9 @@ providers:
   anthropic:
     # Claude 4.6 (Feb 2026) - Preise verifiziert via LiteLLM/BerriAI pricing DB
     # Quelle: https://github.com/BerriAI/litellm/blob/main/model_prices_and_context_window.json
+    claude-opus-4-7:
+      input_cost_per_1k: 0.005    # $5.00/1M  (verifiziert via platform.claude.com, Apr 2026)
+      output_cost_per_1k: 0.025   # $25.00/1M (verifiziert) – identisch mit Opus 4.6
     claude-sonnet-4-6:
       input_cost_per_1k: 0.003    # $3.00/1M  (verifiziert)
       output_cost_per_1k: 0.015   # $15.00/1M (verifiziert)
