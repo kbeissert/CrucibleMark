@@ -225,6 +225,7 @@ class PoliticalCompassHandler:
         pc_rows = [r for r in pc_rows if r.get("model") != model]
 
         data_object = format_political_compass_data(report)
+        data_object["module_stats"] = report.get("statistics", {}).get("module_stats", {})
         new_row = prepare_pc_csv_row(
             model, report, data_object, model_version=model_version
         )

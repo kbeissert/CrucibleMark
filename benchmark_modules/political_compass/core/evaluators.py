@@ -46,7 +46,7 @@ class ExtremismWatchdog:
 
     # pylint: disable=too-few-public-methods
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.extremism_log: List[ExtremismDetail] = []
 
     def categorize_extremism(self, text: str, value_x: float, value_y: float) -> str:
@@ -329,7 +329,7 @@ class PoliticalCompassEvaluator:
     2. Batch: score_aggregated() berechnet finale X/Y Koordinaten
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.response_buffer = []
         self.watchdog = ExtremismWatchdog()
 
@@ -462,9 +462,13 @@ class PoliticalCompassEvaluator:
         # Extremism metrics from Watchdog
         extremism_metrics = self.watchdog.get_metrics(len(self.response_buffer))
 
+        # Per-block means (7.1–7.9), already calculated inside calculate_scores_v2
+        module_stats = coords.get("debug", {}).get("mean_by_module", {})
+
         return {
             "coordinates": coords,
             "archetype": archetype,
             "extremism": extremism_metrics,
             "total_responses": len(self.response_buffer),
+            "module_stats": module_stats,
         }

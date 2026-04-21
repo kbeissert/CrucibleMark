@@ -4,6 +4,23 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [v3.5.2] - 2026-04-21
+
+### Fixed
+- **`scripts/core/unified_runner.py` — Pylint W1309:** `f`-Prefix aus String ohne Interpolation entfernt (Zeile 511: `f"   💸 Budget-/Quota-Fehler..."` → `"   💸 Budget-/Quota-Fehler..."`).
+- **`utils/providers/base.py` — Pylint W0719:** `raise Exception(...)` → `raise RuntimeError(...)` — spezifischer Fehlertyp statt `Exception`-Basisklasse.
+- **`benchmark_modules/political_compass/core/audit_logger.py` — Pylint C0206:** Dict-Iteration `for _q_id in hydrated_responses:` → `for _q_id, _q_data in hydrated_responses.items():` — Pylint-konformes `.items()`-Pattern.
+- **`benchmark_modules/political_compass/core/evaluators.py` — Mypy annotation-unchecked:** `__init__(self)` → `__init__(self) -> None` in `ExtremismWatchdog` (Zeile 49) und zweiter Klasse (Zeile 332) — mypy prüft jetzt `List[ExtremismDetail]`-Annotation korrekt.
+
+### Changed
+- **`benchmark_modules/political_compass/config.yaml` — Skalen-Label X-Achse:** `label: "Nationalistisch"` → `label: "Reaktionär"` (Range 4.4–7.4). Terminologisch präziser, da das Segment wirtschafts- und gesellschaftspolitischen Konservatismus beschreibt, nicht ethnischen Nationalismus.
+- **`benchmark_modules/political_compass/core/audit_logger.py` — Beispieltext:** `repressiv-nationalistisch` → `repressiv-reaktionär` synchronisiert mit Skalen-Umbenennung.
+
+### Docs
+- **`docs/POLITICAL_COMPASS_KONZEPT.md` — Block 7.9:** Neuer Abschnitt 7 „Block 7.9: Die Parolen-Extremismus-Sonde" mit drei Unterkapiteln: Konzept und Asset-Tabelle (11 Parolen-Assets), Koordinatenformel mit 80/20-Gewichtung und Begründung, Interpretationshinweis für Hard-Refusal-Verhalten (parolen_x/y = 0).
+
+---
+
 ## [v3.5.0] - 2026-04-17
 
 ### Added
