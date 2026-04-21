@@ -21,6 +21,9 @@
     "Kein spezialisiertes Reasoning- oder Coding-Training; schwächer als dedizierte Modelle in diesen Bereichen"
   ],
   "judge_context_hint": "Das Modell ist bewusst ohne Sicherheitsfilter trainiert und folgt Anweisungen sehr direkt – der Judge sollte Antwortqualität und Präzision bewerten, ohne Ablehnung von Anfragen als Stärke zu werten.",
+  "architecture_tags": [
+    "Uncensored-Finetuned"
+  ],
   "unknown": false,
   "generated_at": "2026-04-11T15:33:17.802153+00:00"
 }

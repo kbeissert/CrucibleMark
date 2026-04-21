@@ -21,6 +21,9 @@
     "Kontextfenster und Wissensbasis können bei spezialisierten Fachdomänen an Grenzen stoßen"
   ],
   "judge_context_hint": "Gemma 3 12B neigt bei ambigen Anfragen zu konservativen, sicherheitsorientierten Antworten und kann bei komplexen Aufgaben kürzer und weniger ausführlich antworten als größere Modelle.",
+  "architecture_tags": [
+    "General"
+  ],
   "unknown": false,
   "generated_at": "2026-04-11T14:39:02.441348+00:00"
 }

@@ -21,6 +21,9 @@
     "Feintuning-Daten von NousResearch sind nicht vollständig dokumentiert, was Bias-Analyse erschwert"
   ],
   "judge_context_hint": "Das Modell ist explizit auf präzises Instruction-Following und Agenten-Nutzung optimiert und neigt dazu, Anweisungen sehr wörtlich zu nehmen – kreative Abweichungen oder Eigeninitiative sind bewusst reduziert.",
+  "architecture_tags": [
+    "Uncensored-Finetuned"
+  ],
   "unknown": false,
   "generated_at": "2026-04-11T15:13:31.797577+00:00"
 }

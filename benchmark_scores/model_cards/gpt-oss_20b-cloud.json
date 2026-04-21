@@ -21,6 +21,9 @@
     "Ausschließlich als Cloud-Dienst verfügbar – keine lokale oder On-Premises-Nutzung möglich"
   ],
   "judge_context_hint": "Da Trainingsdetails, Benchmark-Ergebnisse und Modellarchitektur nicht öffentlich dokumentiert sind, sollten Bewertungen ausschließlich auf dem tatsächlich beobachteten Output basieren und keine Annahmen über bekannte Modell-Familien übertragen werden.",
+  "architecture_tags": [
+    "General"
+  ],
   "unknown": true,
   "generated_at": "2026-04-11T14:52:17.021800+00:00"
 }

@@ -21,6 +21,9 @@
     "Kontextfenster und Reasoning-Tiefe begrenzt gegenüber 70B+-Modellen; kann bei langen Codebasen den Überblick verlieren"
   ],
   "judge_context_hint": "Das Modell ist auf Code-Aufgaben optimiert und zeigt dort überdurchschnittliche Leistung für seine Größenklasse, kann aber bei allgemeinen Reasoning- oder Nicht-Code-Aufgaben hinter generalistischen Modellen zurückbleiben.",
+  "architecture_tags": [
+    "Coder"
+  ],
   "unknown": false,
   "generated_at": "2026-04-11T15:50:01.744107+00:00"
 }

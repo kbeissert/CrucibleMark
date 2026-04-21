@@ -747,6 +747,22 @@ def process_model_review(model_dir: Path, csv_data: str, client: LLMClient, prov
     original_model_name = model_metrics.get("Model Name", tested_model_name)
     identity = get_model_identity(original_model_name)
 
+    # Prefer architecture_tags from model card if available (overrides string-matching)
+    import re as _re
+    import json as _json
+    _cards_dir = ROOT_DIR / "benchmark_scores" / "model_cards"
+    _safe = _re.sub(r"[:/.\\ ]", "_", tested_model_name)
+    _card_path = _cards_dir / f"{_safe}.json"
+    if _card_path.exists():
+        try:
+            with open(_card_path, "r", encoding="utf-8") as _cf:
+                _card_data = _json.load(_cf)
+            _card_tags = _card_data.get("architecture_tags")
+            if _card_tags and isinstance(_card_tags, list) and len(_card_tags) > 0:
+                identity = {**identity, "tags": _card_tags}
+        except Exception:
+            pass
+
     # --- Token-Effizienz-Kontext berechnen ---
     token_efficiency_context = _build_token_efficiency_context(tested_model_name)
 

@@ -21,6 +21,9 @@
     "Als Mini-Variante bei komplexen, wissensintensiven oder kreativen Aufgaben schwächer als das vollständige Grok-3-Modell"
   ],
   "judge_context_hint": "Grok 3 Mini ist auf Reasoning optimiert und zeigt bei schrittweisen Denkaufgaben stärkere Leistung als bei freiem Kreativtext oder breitem Weltwissen.",
+  "architecture_tags": [
+    "Thinking-Optional"
+  ],
   "unknown": false,
   "generated_at": "2026-04-11T15:23:20.086290+00:00"
 }

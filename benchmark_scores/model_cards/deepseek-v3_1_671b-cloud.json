@@ -21,6 +21,9 @@
     "Kann bei politisch sensiblen Themen mit Bezug zu China zensierte oder ausweichende Antworten liefern"
   ],
   "judge_context_hint": "Das Modell zeigt bei politisch oder gesellschaftlich sensiblen Themen mit China-Bezug systematische Antwortvermeidung oder Umlenkung, was Benchmark-Ergebnisse in solchen Kategorien verzerren kann.",
+  "architecture_tags": [
+    "General"
+  ],
   "unknown": false,
   "generated_at": "2026-04-11T15:03:45.236513+00:00"
 }

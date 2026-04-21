@@ -212,7 +212,9 @@ def build_prompts(
                 "- **Instruct**: Focused on direct instruction following. Answers might be shorter and more direct; they lack deep reasoning steps.\n"
                 "- **Preview / Test**: Experimental phase. Minor formatting or minor coherence drops might be expected.\n"
                 "- **Uncensored-Abliterated**: Vector surgery might cause abrupt context termination, loop errors, or reasoning collapse.\n"
-                "- **Uncensored-Finetuned**: Safe architectural baseline but may show sampling instability under complex reasoning pressure."
+                "- **Uncensored-Finetuned**: Safe architectural baseline but may show sampling instability under complex reasoning pressure.\n"
+                "- **Agentic-Orchestrator**: This model is designed as an orchestrator in multi-agent pipelines (spawning sub-agents for concrete subtasks). It may underperform on strict single-turn format tasks (e.g. exact CLI one-liners) that would normally be delegated to a specialized sub-agent. Do not penalize orchestration-style verbosity or meta-level framing.\n"
+                "- **Thinking-Optional**: This model supports toggleable extended thinking (e.g. Qwen3, Gemini 2.5) but runs in standard mode here (no explicit thinking budget passed). Evaluate output quality only — do not penalize if the answer is thorough without visible chain-of-thought tags. Latency may be higher than comparable models due to internal planning steps even in standard mode."
             )
 
     if required_language:

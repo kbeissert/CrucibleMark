@@ -21,6 +21,9 @@
     "Kann bei sehr spezifischem Fachwissen oder aktuellen Ereignissen nach dem Trainings-Cutoff unzuverlässig werden"
   ],
   "judge_context_hint": "Das Modell neigt zu vorsichtigen, ausgewogenen Antworten und kann bei ambivalenten Anfragen eher absichern als direkt antworten – dies sollte nicht als Schwäche, sondern als bewusstes Designmerkmal gewertet werden.",
+  "architecture_tags": [
+    "Agentic-Orchestrator"
+  ],
   "unknown": false,
   "generated_at": "2026-04-21T08:08:21.457928+00:00"
 }

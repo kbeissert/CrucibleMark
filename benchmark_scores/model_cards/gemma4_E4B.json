@@ -21,6 +21,9 @@
     "Kontextfenster und Wissensbasis kleiner als bei Full-Size-Varianten der Gemma-4-Familie"
   ],
   "judge_context_hint": "Das Modell ist eine kompakte MoE-Variante – bei komplexen Aufgaben sollte der Judge die strukturelle Tiefe der Antworten nicht mit größeren Vollmodellen vergleichen, sondern die Effizienz-Leistungs-Relation berücksichtigen.",
+  "architecture_tags": [
+    "General"
+  ],
   "unknown": false,
   "generated_at": "2026-04-11T15:38:30.227747+00:00"
 }

@@ -21,6 +21,9 @@
     "Kann bei hochspezialisierten STEM-Aufgaben hinter größeren Frontier-Modellen zurückbleiben"
   ],
   "judge_context_hint": "Mistral Medium positioniert sich als ausgewogenes Allround-Modell und neigt weniger zu übermäßig langen Antworten als einige Konkurrenten – Präzision und Kürze sind typische Verhaltensmerkmale.",
+  "architecture_tags": [
+    "General"
+  ],
   "unknown": false,
   "generated_at": "2026-04-11T15:26:26.454946+00:00"
 }

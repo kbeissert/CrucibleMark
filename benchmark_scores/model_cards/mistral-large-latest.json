@@ -21,6 +21,9 @@
     "Kontextfenster und Modalitäten sind im Vergleich zu einigen Konkurrenzmodellen begrenzt"
   ],
   "judge_context_hint": "Mistral Large neigt zu präzisen, knappen Antworten und kann bei offenen kreativen Aufgaben weniger ausschweifend sein als US-Modelle – Qualität und Direktheit sind Designziele.",
+  "architecture_tags": [
+    "General"
+  ],
   "unknown": false,
   "generated_at": "2026-04-11T15:53:05.829726+00:00"
 }

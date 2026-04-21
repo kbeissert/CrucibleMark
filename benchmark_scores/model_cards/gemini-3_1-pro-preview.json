@@ -21,6 +21,9 @@
     "Als Preview-Version potenziell instabil, mit möglichen Verhaltensänderungen bis zum stabilen Release"
   ],
   "judge_context_hint": "Das Modell befindet sich im Preview-Stadium und kann in Benchmarks leicht abweichendes oder inkonsistentes Verhalten gegenüber stabilen Releases zeigen; Ergebnisse sollten mit entsprechendem Vorbehalt bewertet werden.",
+  "architecture_tags": [
+    "Preview"
+  ],
   "unknown": true,
   "generated_at": "2026-04-11T14:43:59.751623+00:00"
 }

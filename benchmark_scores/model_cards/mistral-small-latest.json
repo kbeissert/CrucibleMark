@@ -21,6 +21,9 @@
     "Begrenzte Tiefe bei spezialisierten Fachdomänen wie Recht, Medizin oder fortgeschrittener Mathematik"
   ],
   "judge_context_hint": "Das Modell ist auf Effizienz optimiert und kann bei komplexen Reasoning-Ketten oder langen Abhängigkeiten in der Aufgabenstellung an Konsistenz verlieren – Antwortqualität sollte besonders bei mehrstufigen Aufgaben kritisch geprüft werden.",
+  "architecture_tags": [
+    "General"
+  ],
   "unknown": false,
   "generated_at": "2026-04-11T15:48:28.356699+00:00"
 }

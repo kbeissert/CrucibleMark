@@ -21,6 +21,9 @@
     "Mögliche kulturelle oder politische Verzerrungen durch chinesische Trainingsdaten und Richtlinien"
   ],
   "judge_context_hint": "Das Modell neigt bei politisch oder kulturell sensiblen Themen mit China-Bezug zu ausweichenden oder zensierten Antworten, was die Bewertung von Offenheit und Faktentreue beeinflussen kann.",
+  "architecture_tags": [
+    "Thinking-Optional"
+  ],
   "unknown": false,
   "generated_at": "2026-04-11T15:11:53.372008+00:00"
 }

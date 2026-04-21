@@ -21,6 +21,9 @@
     "Detaillierte technische Spezifikationen und Trainingsdaten sind öffentlich kaum dokumentiert"
   ],
   "judge_context_hint": "Das Modell ist auf kommerzielle Dialoganwendungen optimiert und kann bei sehr technischen oder wissenschaftlichen Nischenthemen schwächer abschneiden als spezialisierte Reasoning-Modelle.",
+  "architecture_tags": [
+    "Thinking"
+  ],
   "unknown": false,
   "generated_at": "2026-04-11T15:28:06.905210+00:00"
 }

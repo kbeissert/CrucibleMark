@@ -21,6 +21,9 @@
     "Multimodale Fähigkeiten noch nicht auf dem Niveau spezialisierter Vision-Language-Modelle"
   ],
   "judge_context_hint": "Das Modell ist auf Effizienz und breite Anwendbarkeit ausgelegt; bei tiefem mehrstufigem Schlussfolgern oder hochspezialisierten Fachdomänen sollte der Judge die Erwartungen entsprechend kalibrieren.",
+  "architecture_tags": [
+    "Instruct"
+  ],
   "unknown": false,
   "generated_at": "2026-04-11T15:01:38.874930+00:00"
 }

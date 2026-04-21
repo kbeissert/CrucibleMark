@@ -21,6 +21,9 @@
     "Leistung bei sehr spezialisierten oder nischigen Fachdomänen hinter größeren Modellen zurück"
   ],
   "judge_context_hint": "Das Modell kann bei politisch oder kulturell sensiblen Themen mit China-Bezug systematisch ausweichen oder beschönigende Antworten produzieren – dies sollte bei der Bewertung von Neutralität und Faktentreue berücksichtigt werden.",
+  "architecture_tags": [
+    "Thinking-Optional"
+  ],
   "unknown": false,
   "generated_at": "2026-04-11T14:57:01.851082+00:00"
 }

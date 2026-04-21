@@ -21,6 +21,9 @@
     "Tendenz zu übermäßig langen Chain-of-Thought-Ausgaben, was Latenz und Token-Verbrauch erhöht"
   ],
   "judge_context_hint": "Das Modell gibt häufig ausführliche, explizite Denkschritte (Chain-of-Thought) aus, die bei der Bewertung von der eigentlichen Antwort getrennt betrachtet werden sollten.",
+  "architecture_tags": [
+    "Thinking"
+  ],
   "unknown": false,
   "generated_at": "2026-04-11T14:50:15.134531+00:00"
 }

@@ -21,6 +21,9 @@
     "Modelldetails, Trainingsarchitektur und Gewichte sind nicht öffentlich einsehbar, was unabhängige Audits erschwert"
   ],
   "judge_context_hint": "Das Modell ist auf sichere, instruktionstreue Ausgaben optimiert und kann bei kontroversen oder grenzwertigen Prompts stärker als andere Modelle zur Ablehnung oder Abschwächung neigen, was Benchmark-Ergebnisse in Kreativität oder Direktheit beeinflussen kann.",
+  "architecture_tags": [
+    "General"
+  ],
   "unknown": true,
   "generated_at": "2026-04-11T14:35:51.726359+00:00"
 }

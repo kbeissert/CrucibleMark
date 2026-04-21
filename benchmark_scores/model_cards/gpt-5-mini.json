@@ -21,6 +21,9 @@
     "Keine lokale Ausführung möglich, vollständige Abhängigkeit von OpenAI-Infrastruktur"
   ],
   "judge_context_hint": "GPT-5 Mini ist auf Effizienz optimiert und kann bei anspruchsvollen mehrstufigen Reasoning-Aufgaben hinter größeren Modellen zurückbleiben – Bewertungen sollten dies bei komplexen Benchmarks berücksichtigen.",
+  "architecture_tags": [
+    "General"
+  ],
   "unknown": true,
   "generated_at": "2026-04-11T15:40:08.239745+00:00"
 }

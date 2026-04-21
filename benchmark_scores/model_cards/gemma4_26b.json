@@ -21,6 +21,9 @@
     "Kann bei komplexen mehrstufigen Aufgaben an Konsistenz verlieren"
   ],
   "judge_context_hint": "Das Modell ist auf präzise Instruktionsbefolgung optimiert und tendiert zu knappen, strukturierten Antworten – bei offenen kreativen oder sehr langen Aufgaben kann die Ausgabequalität variieren.",
+  "architecture_tags": [
+    "General"
+  ],
   "unknown": true,
   "generated_at": "2026-04-11T14:45:32.328234+00:00"
 }

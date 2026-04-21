@@ -21,6 +21,9 @@
     "Trotz 32B Parametern bei sehr komplexen mehrstufigen Reasoning-Aufgaben hinter größeren Frontier-Modellen"
   ],
   "judge_context_hint": "Das Modell kann bei politisch oder kulturell sensiblen Themen mit China-Bezug systematisch ausweichen oder beschönigende Antworten geben, was die Bewertung von Neutralität und Faktentreue beeinflussen kann.",
+  "architecture_tags": [
+    "Thinking-Optional"
+  ],
   "unknown": false,
   "generated_at": "2026-04-11T14:55:25.314100+00:00"
 }

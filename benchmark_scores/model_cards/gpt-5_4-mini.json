@@ -21,6 +21,9 @@
     "Keine öffentlich verfügbaren Gewichte, vollständige Abhängigkeit von OpenAI-Infrastruktur"
   ],
   "judge_context_hint": "Das Modell ist eine kompakte Variante der GPT-5-Familie und sollte primär an Aufgaben gemessen werden, die Effizienz und Instruktionstreue erfordern, nicht an Tiefenreasoning-Benchmarks, die auf Vollmodelle ausgelegt sind.",
+  "architecture_tags": [
+    "General"
+  ],
   "unknown": true,
   "generated_at": "2026-04-11T15:07:05.958097+00:00"
 }

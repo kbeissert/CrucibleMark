@@ -21,6 +21,9 @@
     "Kein Zugriff auf Echtzeit-Informationen; Wissenstand auf Trainingsdaten begrenzt"
   ],
   "judge_context_hint": "o3-mini ist auf präzises Schlussfolgern optimiert und neigt dazu, Antworten strukturiert und schrittweise zu entwickeln – bei kreativen oder nuancierten Sprachaufgaben kann die Ausgabe trockener und weniger ausdrucksstark wirken als bei generalistischen Modellen.",
+  "architecture_tags": [
+    "Thinking"
+  ],
   "unknown": false,
   "generated_at": "2026-04-11T15:00:02.516224+00:00"
 }

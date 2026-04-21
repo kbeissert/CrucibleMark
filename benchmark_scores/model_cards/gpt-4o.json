@@ -21,6 +21,9 @@
     "Wissens-Cutoff und gelegentliche Halluzinationen bei spezifischen Fakten oder aktuellen Ereignissen"
   ],
   "judge_context_hint": "GPT-4o neigt dazu, Antworten stilistisch zu glätten und Nuancen zu vereinfachen – bei komplexen Reasoning-Aufgaben auf Zwischenschritte und Begründungstiefe achten.",
+  "architecture_tags": [
+    "General"
+  ],
   "unknown": false,
   "generated_at": "2026-04-11T14:58:36.805651+00:00"
 }

@@ -21,6 +21,9 @@
     "Wissensstand durch Trainings-Cutoff begrenzt; aktuelle Ereignisse erfordern externe Tools oder Retrieval"
   ],
   "judge_context_hint": "GPT-5 neigt dazu, bei ambigen Aufgaben sehr ausführliche und strukturierte Antworten zu produzieren – Kürze und Direktheit sollten bei der Bewertung explizit eingefordert und honoriert werden.",
+  "architecture_tags": [
+    "General"
+  ],
   "unknown": false,
   "generated_at": "2026-04-11T15:41:46.428275+00:00"
 }

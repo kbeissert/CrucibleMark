@@ -449,6 +449,14 @@ def get_model_identity(full_model_string: str) -> dict[str, Any]:
     if any(x in name_lower for x in ["preview", "experimental", "-exp"]):
         tags.append("Preview")
 
+    # Agentic Orchestrator: Claude Opus models are designed as multi-agent orchestrators
+    if "claude-opus" in name_lower:
+        tags.append("Agentic-Orchestrator")
+
+    # Thinking-Optional: Models that support toggleable extended thinking but run in standard mode
+    if any(x in name_lower for x in ["qwen3", "gemini-2.5"]):
+        tags.append("Thinking-Optional")
+
     if not tags:
         tags.append("General")
 
