@@ -3,7 +3,7 @@
 	benchmark political-compass political-compass-safe benchmark-cross-model benchmark-auto benchmark-human \
 	review reviews-auto reviews-check review-new model-cards provider-cards leaderboard provider-stats \
 	validate validate-single validate-structure test diff-results analyze-costs update-prices sync-cost-limits \
-	list-models judge-health list-modules create-module \
+	list-models judge-health list-modules \
 	probe-thinking probe-all-thinking \
 	web-export web-export-dev \
 	clean clean-sessions clean-csv clean-model clean-module clean-all clean-runs consolidate-csv prune-orphans clean-bak \
@@ -54,7 +54,6 @@ help:
 	@echo "  make list-models          List Models"
 	@echo "  make judge-health         Check Judges"
 	@echo "  make list-modules         List Modules"
-	@echo "  make create-module        Scaffold module"
 	@echo "  make audit-markdown       Audit & fix markdown/yaml files"
 	@echo "  make web-export           Export data for Web-Frontend"
 	@echo "  make web-export-dev       Export data directly into Web repo"
@@ -215,9 +214,6 @@ list-modules:
 	else \
 		$(PYTHON) -c "import yaml; config=yaml.safe_load(open('benchmark_config.yaml')); [print(f'  {i+1}. {k}: {v[\"name\"]}') for i, (k,v) in enumerate(config.get('modules', {}).items()) if v.get('enabled', True)]"; \
 	fi
-
-create-module:
-	@$(PYTHON) scripts/dev/scaffold_module.py
 
 audit-markdown:
 	@echo "Running Markdown & YAML Audit..."
