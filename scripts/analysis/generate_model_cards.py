@@ -32,7 +32,7 @@ if str(ROOT_DIR) not in sys.path:
     sys.path.insert(0, str(ROOT_DIR))
 
 from utils.llm_client import LLMClient
-from utils.model_utils import ThinkingProbeResult, probe_thinking_model
+from utils.model_utils import ThinkingProbeResult, get_model_size_class, probe_thinking_model
 
 logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
 logger = logging.getLogger(__name__)
@@ -132,6 +132,7 @@ def _create_minimal_card(
         "developer": "n/a",
         "architecture_tags": tags,
         "card_status": "minimal",
+        "size_class": get_model_size_class(model_id),
         "generated_at": datetime.now(timezone.utc).isoformat(),
     }
     card.update(_probe_fields_to_dict(probe))
@@ -273,6 +274,8 @@ def _generate_card(model_id: str, client: LLMClient, provider: str, model_name: 
     card = _validate_card(card, model_id)
     card["generated_at"] = datetime.now(timezone.utc).isoformat()
     card["card_status"] = "complete"
+    if "size_class" not in card:
+        card["size_class"] = get_model_size_class(model_id)
 
     # Probe-Felder aus bestehender Karte erhalten (z.B. bei --force)
     existing_path = CARDS_DIR / f"{_safe_name(model_id)}.json"
