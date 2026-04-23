@@ -25,5 +25,9 @@
     "General"
   ],
   "unknown": true,
-  "generated_at": "2026-04-11T15:40:08.239745+00:00"
+  "generated_at": "2026-04-11T15:40:08.239745+00:00",
+  "thinking_probe_detected": false,
+  "thinking_probe_evidence": "No CoT signals found (A: no think-tags, B: reasoning_tokens=0). Response length: 204 chars",
+  "thinking_probe_confidence": "low",
+  "thinking_probe_at": "2026-04-23T13:56:07.023022+00:00"
 }

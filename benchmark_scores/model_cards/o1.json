@@ -25,5 +25,10 @@
     "Thinking"
   ],
   "unknown": false,
-  "generated_at": "2026-04-11T15:44:56.182371+00:00"
+  "generated_at": "2026-04-11T15:44:56.182371+00:00",
+  "thinking_probe_detected": true,
+  "thinking_probe_evidence": "Manually confirmed: OpenAI o-series models use internal chain-of-thought reasoning. The API does not expose reasoning tokens or think-tags in the response body; automated probe cannot detect this. Token budget override is required.",
+  "thinking_probe_confidence": "high",
+  "thinking_probe_at": "2026-04-23T13:57:13.411729+00:00",
+  "thinking_probe_manual_override": true
 }
