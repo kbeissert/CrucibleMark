@@ -9,8 +9,8 @@ Der **Audit-Modus** generiert nicht nur messbare Scores. Er führt eine qualitat
 
 ## Übersicht
 
-Der Befehl `make benchmark-audit` führt drei Hauptschritte aus:
-1. **Benchmark-Durchlauf (`--audit`)**: Das System testet die Konfiguration wie gewohnt und sichert zusätzlich visuell aufbereitete Markdown-Protokolle (inkl. Prompt, Modellantwort und strukturierter LLM-Judge-Auswertung) im Ordner `outputs/audit_logs/`.
+Der Befehl `make benchmark` führt drei Hauptschritte aus:
+1. **Benchmark-Durchlauf (Audit immer aktiv)**: Das System testet die Konfiguration und sichert automatisch visuell aufbereitete Markdown-Protokolle (inkl. Prompt, Modellantwort und strukturierter LLM-Judge-Auswertung) im Ordner `outputs/audit_logs/`. Zum Deaktivieren: `--silent` (CLI) bzw. `SILENT=1` (Makefile).
 2. **Leaderboard-Generierung**: Die aggregierten Scores landen wie üblich als CSV.
 3. **Meta-Review (`generate_review.py`)**: Ein wählbares Reviewer-LLM liest die CSV sowie die detaillierten Judge-Logdateien (*REASONING*-Blöcke) ein und schreibt einen umfassenden redaktionellen Artikel über Stärken und Schwächen der getesteten Modelle.
 
