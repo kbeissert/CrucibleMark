@@ -1,29 +1,33 @@
 {
-  "model_id": "gemma4_31b-cloud",
-  "display_name": "Gemma 4 31B (Cloud)",
+  "model_id": "gemma4:31b-cloud",
+  "display_name": "Gemma 4 31B",
   "developer": "Google DeepMind",
   "origin_country": "USA",
   "developer_jurisdiction": "US",
   "deployment_type": "cloud-only",
   "local_deployment_possible": false,
   "weights_provenance_risk": "medium",
-  "weights_provenance_risk_rationale": "Google ist ein US-amerikanisches Unternehmen und unterliegt dem CLOUD Act, jedoch nicht dem chinesischen NSL; ein direkter staatlicher Zugriff auf die Modellgewichte ist nicht bekannt.",
+  "weights_provenance_risk_rationale": "Google DeepMind ist ein US-amerikanisches Unternehmen und unterliegt dem CLOUD Act, jedoch nicht dem chinesischen NSL; die Weights selbst sind nicht öffentlich verfügbar.",
   "model_family": "Gemma",
   "primary_focus": "general",
-  "summary": "Gemma 4 31B ist ein von Google DeepMind entwickeltes Sprachmodell der Gemma-4-Familie. Es wurde auf breiten Text- und Code-Korpora trainiert und zielt auf starke Allgemeinsprachfähigkeiten, Instruktionsbefolgung und multimodale Aufgaben. Die Cloud-Variante ist ausschließlich über Googles API-Infrastruktur nutzbar.",
+  "summary": "Gemma 4 31B ist ein Cloud-only-Modell von Google DeepMind aus der Gemma-4-Familie. Es wurde für allgemeine Instruktionsbefolgung, mehrsprachige Aufgaben und Reasoning entwickelt. Stärken liegen in präzisen Antworten, Codeverständnis und strukturiertem Denken auf Basis von Googles Forschungsinfrastruktur.",
   "strengths": [
-    "Starke Instruktionsbefolgung durch RLHF-basiertes Finetuning",
-    "Gute Leistung bei Code-Generierung und strukturierten Aufgaben",
-    "Effiziente Skalierung durch Googles Gemma-Architektur mit breitem Aufgabenspektrum"
+    "Starke Instruktionsbefolgung durch gezieltes RLHF-Training",
+    "Solide Mehrsprachigkeit dank Googles umfangreicher Trainingsdaten",
+    "Gutes Reasoning und strukturierte Antwortgenerierung bei mittlerer Modellgröße"
   ],
   "known_limitations": [
-    "Ausschließlich als Cloud-Dienst verfügbar – keine lokale oder On-Premise-Nutzung möglich",
-    "Genaue Trainingsdaten und Modellarchitektur sind nicht vollständig öffentlich dokumentiert"
+    "Nur über Cloud-API nutzbar, kein lokaler Betrieb möglich",
+    "Als neueres Modell mit begrenzter öffentlicher Benchmark-Dokumentation – Leistungsprofil noch nicht vollständig etabliert"
   ],
-  "judge_context_hint": "Das Modell ist auf breite Instruktionsbefolgung optimiert und kann bei sehr spezifischen Fachdomänen oder seltenen Sprachen hinter spezialisierten Modellen zurückbleiben.",
+  "judge_context_hint": "Das Modell ist ein Cloud-only-Vertreter der Gemma-4-Reihe von Google; bei der Bewertung sollte berücksichtigt werden, dass öffentliche Benchmarks für diese spezifische Variante möglicherweise noch spärlich sind und Antwortverhalten von der API-seitigen Systemkonfiguration abhängen kann.",
   "architecture_tags": [
-    "General"
+    "General",
+    "Instruct",
+    "Preview"
   ],
-  "unknown": false,
-  "generated_at": "2026-04-11T14:47:02.932550+00:00"
+  "unknown": true,
+  "generated_at": "2026-04-23T22:05:37.243642+00:00",
+  "card_status": "complete",
+  "size_class": "Workstation"
 }

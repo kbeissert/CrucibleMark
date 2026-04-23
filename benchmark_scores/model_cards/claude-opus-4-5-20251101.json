@@ -7,25 +7,28 @@
   "deployment_type": "cloud-only",
   "local_deployment_possible": false,
   "weights_provenance_risk": "medium",
-  "weights_provenance_risk_rationale": "Anthropic ist ein US-amerikanisches Unternehmen und unterliegt dem CLOUD Act, jedoch nicht dem chinesischen NSL; die Modellgewichte sind nicht öffentlich zugänglich.",
+  "weights_provenance_risk_rationale": "Anthropic ist ein US-amerikanisches Unternehmen und unterliegt dem CLOUD Act; die Modellgewichte sind nicht öffentlich zugänglich, aber bei API-Nutzung potenziell US-behördlichem Zugriff ausgesetzt.",
   "model_family": "Claude",
   "primary_focus": "general",
-  "summary": "Claude Opus 4.5 ist Anthropics leistungsstärkstes Modell der Opus-Linie (Stand November 2025), entwickelt für komplexe Reasoning-Aufgaben, nuanciertes Schreiben und mehrstufige Analysen. Stärken liegen in Instruktionstreue, Kontexttreue und sicherem, hilfreichem Verhalten gemäß Anthropics Constitutional-AI-Ansatz.",
+  "summary": "Claude Opus 4.5 von Anthropic (USA) ist das leistungsstärkste Modell der Claude-4-Generation, trainiert auf komplexes Reasoning, nuanciertes Schreiben und agentic Tasks. Es wurde entwickelt, um anspruchsvolle Mehrschritt-Aufgaben, wissenschaftliche Analyse und autonome Agenten-Workflows zuverlässig zu bewältigen.",
   "strengths": [
-    "Sehr starke Leistung bei komplexen, mehrstufigen Reasoning- und Analyseaufgaben",
-    "Hohe Instruktionstreue und präzises Befolgen detaillierter Nutzervorgaben",
-    "Nuanciertes, kohärentes Schreiben mit langen Kontextfenstern"
+    "Herausragende Leistung bei komplexen Reasoning- und Analyseaufgaben mit langen Kontexten",
+    "Optimiert für agentic Workflows und Multi-Step-Aufgaben mit hoher Zuverlässigkeit",
+    "Starke Fähigkeiten in nuanciertem, kohärentem Langform-Schreiben und Instruktionsbefolgung"
   ],
   "known_limitations": [
-    "Ausschließlich über Anthropics Cloud-API verfügbar, kein lokaler Betrieb möglich",
-    "Als größtes Modell der Opus-Reihe mit höherer Latenz und höheren Kosten verbunden"
+    "Nur über Anthropic API verfügbar, kein lokaler Betrieb möglich",
+    "Höhere Latenz und Kosten im Vergleich zu kleineren Claude-Modellen, was Echtzeit-Anwendungen einschränken kann"
   ],
-  "judge_context_hint": "Das Modell neigt zu vorsichtigen, ausgewogenen Antworten und kann bei sehr direktiven oder grenzwertigen Anfragen stärker absichern als andere Modelle – dies sollte bei der Bewertung von Direktheit und Kürze berücksichtigt werden.",
+  "judge_context_hint": "Claude Opus 4.5 neigt zu besonders ausführlichen und strukturierten Antworten; bei Kürze-Benchmarks kann dies zu Punktabzügen führen, obwohl die inhaltliche Qualität hoch ist.",
   "architecture_tags": [
+    "General",
     "Agentic-Orchestrator"
   ],
   "unknown": false,
-  "generated_at": "2026-04-11T14:32:26.212808+00:00",
+  "generated_at": "2026-04-23T21:59:26.788830+00:00",
+  "card_status": "complete",
+  "size_class": "Frontier",
   "thinking_probe_detected": false,
   "thinking_probe_evidence": "No CoT signals found (A: no think-tags, B: reasoning_tokens=0). Response length: 603 chars",
   "thinking_probe_confidence": "low",

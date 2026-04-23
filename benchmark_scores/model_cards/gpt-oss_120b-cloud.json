@@ -1,29 +1,31 @@
 {
-  "model_id": "gpt-oss_120b-cloud",
+  "model_id": "gpt-oss:120b-cloud",
   "display_name": "GPT OSS 120B Cloud",
-  "developer": "OpenAI",
-  "origin_country": "USA",
-  "developer_jurisdiction": "US",
+  "developer": "Unknown",
+  "origin_country": "Unknown",
+  "developer_jurisdiction": "Unknown",
   "deployment_type": "cloud-only",
   "local_deployment_possible": false,
   "weights_provenance_risk": "medium",
-  "weights_provenance_risk_rationale": "OpenAI ist ein US-amerikanisches Unternehmen und unterliegt dem CLOUD Act, jedoch nicht dem chinesischen NSL; die Weights sind nicht öffentlich zugänglich.",
-  "model_family": "GPT",
+  "weights_provenance_risk_rationale": "Herkunft und Entwickler des Modells sind unbekannt; konservative Einstufung als 'medium', da keine Informationen zur Weights-Provenienz vorliegen.",
+  "model_family": "GPT OSS",
   "primary_focus": "general",
-  "summary": "GPT OSS 120B Cloud ist ein großes Sprachmodell von OpenAI, das ausschließlich über Cloud-API bereitgestellt wird. Es ist auf allgemeine Instruktionsbefolgung, Reasoning und Textgenerierung ausgerichtet und richtet sich an Entwickler, die skalierbare KI-Dienste ohne lokale Infrastruktur benötigen.",
+  "summary": "GPT OSS 120B Cloud ist ein Modell unbekannter Herkunft mit 120 Milliarden Parametern, das ausschließlich über eine Cloud-API verfügbar ist. Trainings-Schwerpunkt, Stärken und Entwicklungsziel sind nicht öffentlich dokumentiert. Belastbare Aussagen zur Leistung sind ohne weitere Informationen nicht möglich.",
   "strengths": [
-    "Starke allgemeine Instruktionsbefolgung über breite Aufgabentypen hinweg",
-    "Hohe Skalierbarkeit durch Cloud-native Bereitstellung ohne lokalen Infrastrukturaufwand",
-    "Profitiert von OpenAIs umfangreichem RLHF- und Alignment-Training für zuverlässiges Verhalten"
+    "Große Parameteranzahl (120B) deutet auf potenziell hohe Kapazität für komplexe Aufgaben hin",
+    "Cloud-Deployment ermöglicht einfachen Zugang ohne lokale Infrastruktur",
+    "Unbekannte Spezialisierung lässt breites Einsatzspektrum offen"
   ],
   "known_limitations": [
-    "Keine lokale Ausführung möglich – vollständige Abhängigkeit von OpenAIs Cloud-Infrastruktur und Datenschutzbedingungen",
-    "Modelldetails, Trainingsarchitektur und Gewichte sind nicht öffentlich einsehbar, was unabhängige Audits erschwert"
+    "Herkunft, Trainingsdetails und Entwickler sind nicht öffentlich bekannt",
+    "Keine unabhängigen Benchmarks oder Evaluierungen verfügbar"
   ],
-  "judge_context_hint": "Das Modell ist auf sichere, instruktionstreue Ausgaben optimiert und kann bei kontroversen oder grenzwertigen Prompts stärker als andere Modelle zur Ablehnung oder Abschwächung neigen, was Benchmark-Ergebnisse in Kreativität oder Direktheit beeinflussen kann.",
+  "judge_context_hint": "Das Modell ist weitgehend undokumentiert – Bewertungsergebnisse sollten ohne Referenz-Baseline interpretiert werden, da Trainings-Schwerpunkt und Fähigkeitsprofil unbekannt sind.",
   "architecture_tags": [
     "General"
   ],
   "unknown": true,
-  "generated_at": "2026-04-11T14:35:51.726359+00:00"
+  "generated_at": "2026-04-23T22:05:27.589226+00:00",
+  "card_status": "complete",
+  "size_class": "Frontier"
 }

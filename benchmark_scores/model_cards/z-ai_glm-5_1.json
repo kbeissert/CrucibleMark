@@ -1,0 +1,32 @@
+{
+  "model_id": "z-ai/glm-5.1",
+  "display_name": "GLM 5.1",
+  "developer": "Zhipu AI",
+  "origin_country": "China",
+  "developer_jurisdiction": "CN",
+  "deployment_type": "open-weights-cloud-available",
+  "local_deployment_possible": true,
+  "weights_provenance_risk": "high",
+  "weights_provenance_risk_rationale": "Zhipu AI ist ein chinesisches Unternehmen und unterliegt dem chinesischen National Security Law (NSL), das staatlichen Zugriff auf Daten und Modelle ermöglichen kann.",
+  "model_family": "GLM",
+  "primary_focus": "general",
+  "summary": "GLM 5.1 ist ein Sprachmodell von Zhipu AI aus China, entwickelt als Weiterentwicklung der GLM-Reihe. Trainiert auf mehrsprachigen Daten mit Fokus auf Chinesisch und Englisch. Stärken liegen in Instruction-Following, Textverständnis und allgemeinen Aufgaben. Ziel ist ein leistungsfähiges Open-Weights-Modell für breite Anwendungsfälle.",
+  "strengths": [
+    "Starke Leistung in chinesisch- und englischsprachigen Aufgaben",
+    "Gutes Instruction-Following und Dialogverhalten",
+    "Open-Weights verfügbar, lokal deploybar"
+  ],
+  "known_limitations": [
+    "Detaillierte technische Spezifikationen und Trainingsdaten sind nicht vollständig öffentlich dokumentiert",
+    "Leistung bei spezialisierten westlichen Benchmarks kann hinter US-Modellen vergleichbarer Größe zurückbleiben"
+  ],
+  "judge_context_hint": "Das Modell stammt aus der GLM-Familie von Zhipu AI und kann bei chinesischsprachigen Aufgaben stärker abschneiden als bei rein englischen; kulturelle und sprachliche Nuancen im Chinesischen sollten positiv gewichtet werden.",
+  "architecture_tags": [
+    "General",
+    "Instruct"
+  ],
+  "unknown": true,
+  "generated_at": "2026-04-23T22:03:19.200573+00:00",
+  "card_status": "complete",
+  "size_class": "Frontier"
+}

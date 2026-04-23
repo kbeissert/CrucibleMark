@@ -1,0 +1,32 @@
+{
+  "model_id": "NousResearch_Hermes-4-14B-GGUF:Q4_K_M",
+  "display_name": "Hermes 4 14B",
+  "developer": "Nous Research",
+  "origin_country": "USA",
+  "developer_jurisdiction": "US",
+  "deployment_type": "open-weights",
+  "local_deployment_possible": true,
+  "weights_provenance_risk": "medium",
+  "weights_provenance_risk_rationale": "Nous Research ist ein US-amerikanisches Unternehmen und unterliegt dem CLOUD Act, der jedoch bei lokal betriebenen Open-Weights-Modellen ohne API-Nutzung praktisch nicht greift.",
+  "model_family": "Hermes",
+  "primary_focus": "instruction-following",
+  "summary": "Hermes 4 ist ein Instruction-Following-Modell von Nous Research (USA), feinabgestimmt auf einem kuratierten Datensatz für präzises Folgen von Anweisungen, Rollenspiel und agentenbasierte Aufgaben. Es kombiniert starke Gesprächsfähigkeit mit reduzierter Zensur durch gezieltes Fine-Tuning.",
+  "strengths": [
+    "Starkes Instruction-Following mit hoher Präzision bei komplexen Anweisungen",
+    "Für agentenbasierte und Tool-Use-Szenarien optimiert",
+    "Reduzierte Überrefusal durch gezieltes Uncensored-Fine-Tuning auf kuratierten Datensätzen"
+  ],
+  "known_limitations": [
+    "Als 14B-Modell bei sehr komplexen Mehrschritt-Reasoning-Aufgaben hinter größeren Modellen zurück",
+    "Q4_K_M-Quantisierung kann bei präzisen numerischen oder logischen Aufgaben zu leichten Qualitätseinbußen führen"
+  ],
+  "judge_context_hint": "Das Modell ist auf offenes Instruction-Following und Agenten-Szenarien ausgerichtet und neigt zu direkten, wenig eingeschränkten Antworten – Bewertungen sollten dies bei Compliance-orientierten Benchmarks berücksichtigen.",
+  "architecture_tags": [
+    "Instruct",
+    "Uncensored-Finetuned"
+  ],
+  "unknown": false,
+  "generated_at": "2026-04-23T22:08:46.451753+00:00",
+  "card_status": "complete",
+  "size_class": "Desktop"
+}

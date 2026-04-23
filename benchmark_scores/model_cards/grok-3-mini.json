@@ -7,25 +7,27 @@
   "deployment_type": "cloud-only",
   "local_deployment_possible": false,
   "weights_provenance_risk": "medium",
-  "weights_provenance_risk_rationale": "xAI ist ein US-amerikanisches Unternehmen und unterliegt dem CLOUD Act, jedoch ist kein öffentlicher Zugriff auf die Modellgewichte möglich, sodass das Risiko auf die API-Nutzung beschränkt bleibt.",
+  "weights_provenance_risk_rationale": "xAI ist ein US-amerikanisches Unternehmen und unterliegt dem CLOUD Act, jedoch ist kein direkter staatlicher Zugriff auf die Modellgewichte bekannt, da diese nicht öffentlich verfügbar sind.",
   "model_family": "Grok",
   "primary_focus": "reasoning",
-  "summary": "Grok 3 Mini ist ein kompaktes Reasoning-Modell von xAI (USA), entwickelt als effizientere Variante der Grok-3-Familie. Es wurde für logisches Schlussfolgern, Mathematik und strukturierte Problemlösung optimiert und ist ausschließlich über die xAI-API bzw. die X-Plattform verfügbar.",
+  "summary": "Grok 3 Mini ist ein kompaktes Reasoning-Modell von xAI (USA), entwickelt als effizientere Alternative zu Grok 3. Es wurde auf logisches Schlussfolgern, Mathematik und strukturierte Problemlösung optimiert und richtet sich an Nutzer, die starke Reasoning-Fähigkeiten bei geringerer Latenz und niedrigeren Kosten benötigen.",
   "strengths": [
-    "Starke Leistung bei mathematischen und logischen Reasoning-Aufgaben trotz kompakter Modellgröße",
-    "Effizientes Kosten-Leistungs-Verhältnis im Vergleich zu größeren Frontier-Modellen",
-    "Gute Instruktionsbefolgung bei strukturierten, mehrstufigen Aufgaben"
+    "Starke Leistung bei mathematischen und logischen Reasoning-Aufgaben",
+    "Geringere Latenz und Kosten im Vergleich zum vollständigen Grok-3-Modell",
+    "Unterstützt optionales Chain-of-Thought-Denken (Thinking-Modus per API aktivierbar)"
   ],
   "known_limitations": [
-    "Ausschließlich über xAI-Cloud verfügbar, kein lokaler Betrieb möglich",
-    "Als Mini-Variante bei komplexen, wissensintensiven oder kreativen Aufgaben schwächer als das vollständige Grok-3-Modell"
+    "Nur über die xAI-API bzw. Grok-Plattform nutzbar, keine lokale Ausführung möglich",
+    "Als kompaktes Modell bei sehr komplexen, wissensintensiven oder kreativen Aufgaben schwächer als das vollständige Grok-3-Modell"
   ],
-  "judge_context_hint": "Grok 3 Mini ist auf Reasoning optimiert und zeigt bei schrittweisen Denkaufgaben stärkere Leistung als bei freiem Kreativtext oder breitem Weltwissen.",
+  "judge_context_hint": "Grok 3 Mini kann im Thinking-Modus betrieben werden und liefert dann deutlich stärkere Reasoning-Ergebnisse; Benchmarks sollten den aktiven Modus (mit/ohne Thinking) explizit ausweisen.",
   "architecture_tags": [
     "Thinking-Optional"
   ],
   "unknown": false,
-  "generated_at": "2026-04-11T15:23:20.086290+00:00",
+  "generated_at": "2026-04-23T22:02:18.832167+00:00",
+  "card_status": "complete",
+  "size_class": "Frontier",
   "thinking_probe_detected": false,
   "thinking_probe_evidence": "No CoT signals found (A: no think-tags, B: reasoning_tokens=0). Response length: 786 chars",
   "thinking_probe_confidence": "low",

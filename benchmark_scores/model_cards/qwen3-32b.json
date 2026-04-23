@@ -1,0 +1,32 @@
+{
+  "model_id": "qwen3-32b",
+  "display_name": "Qwen 3 32B",
+  "developer": "Alibaba Cloud",
+  "origin_country": "China",
+  "developer_jurisdiction": "CN",
+  "deployment_type": "open-weights-cloud-available",
+  "local_deployment_possible": true,
+  "weights_provenance_risk": "high",
+  "weights_provenance_risk_rationale": "Alibaba Cloud unterliegt als chinesisches Unternehmen dem chinesischen National Security Law (NSL), das staatliche Zugriffe auf Daten und Modellentwicklung ermöglichen kann.",
+  "model_family": "Qwen",
+  "primary_focus": "general",
+  "summary": "Qwen 3 32B ist ein von Alibaba Cloud (China) entwickeltes Sprachmodell mit 32 Milliarden Parametern. Es wurde auf mehrsprachige Instruktionsbefolgung, Reasoning und Coding optimiert. Stärken liegen in asiatischen Sprachen, mathematischem Denken und optionalem Chain-of-Thought-Modus.",
+  "strengths": [
+    "Starke Mehrsprachigkeit, insbesondere für Chinesisch, Japanisch und weitere asiatische Sprachen",
+    "Optionales Thinking-Modus (Extended Chain-of-Thought) für komplexe Reasoning-Aufgaben schaltbar",
+    "Gute Leistung bei Mathematik, Coding und strukturierten Aufgaben im Verhältnis zur Modellgröße"
+  ],
+  "known_limitations": [
+    "Kann bei politisch sensiblen Themen mit Bezug zu China zensierte oder ausweichende Antworten produzieren",
+    "Thinking-Modus erhöht Latenz und Token-Verbrauch erheblich, was bei einfachen Aufgaben ineffizient ist"
+  ],
+  "judge_context_hint": "Das Modell verfügt über einen schaltbaren Thinking-Modus; bei aktiviertem Extended Thinking sind längere, strukturiertere Antworten zu erwarten – der Bewertungskontext sollte berücksichtigen, ob Thinking an- oder abgeschaltet war.",
+  "architecture_tags": [
+    "General",
+    "Thinking-Optional"
+  ],
+  "unknown": false,
+  "generated_at": "2026-04-23T22:07:53.956468+00:00",
+  "card_status": "complete",
+  "size_class": "Workstation"
+}

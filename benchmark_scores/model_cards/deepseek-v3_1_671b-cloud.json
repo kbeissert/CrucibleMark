@@ -1,29 +1,32 @@
 {
-  "model_id": "deepseek-v3.1_671b-cloud",
+  "model_id": "deepseek-v3.1:671b-cloud",
   "display_name": "DeepSeek V3.1 671B",
   "developer": "DeepSeek",
   "origin_country": "China",
   "developer_jurisdiction": "CN",
-  "deployment_type": "cloud-only",
-  "local_deployment_possible": false,
+  "deployment_type": "open-weights-cloud-available",
+  "local_deployment_possible": true,
   "weights_provenance_risk": "high",
-  "weights_provenance_risk_rationale": "DeepSeek ist ein chinesisches Unternehmen und unterliegt dem chinesischen National Security Law (NSL), das staatlichen Behörden Zugriff auf Daten und Modelle ermöglichen kann.",
+  "weights_provenance_risk_rationale": "DeepSeek ist ein chinesisches Unternehmen und unterliegt dem chinesischen National Security Law (NSL), das staatlichen Zugriff auf Daten und Modellentwicklung ermöglichen kann.",
   "model_family": "DeepSeek",
   "primary_focus": "general",
-  "summary": "DeepSeek V3.1 ist ein chinesisches Frontier-Modell mit 671 Milliarden Parametern, trainiert auf breiten mehrsprachigen Korpora mit Schwerpunkt auf Reasoning, Coding und Instruktionsbefolgung. Es wurde entwickelt, um westliche Spitzenmodelle in Leistung und Kosteneffizienz zu übertreffen.",
+  "summary": "DeepSeek V3.1 ist ein chinesisches 671-Milliarden-Parameter-Modell mit Mixture-of-Experts-Architektur. Es wurde auf breiten multilingualen Daten trainiert und glänzt bei Reasoning, Coding und Instruktionsbefolgung. Ziel war ein leistungsstarkes Open-Weights-Modell auf Augenhöhe mit proprietären Frontier-Modellen.",
   "strengths": [
-    "Sehr starke Leistung bei mathematischen und logischen Reasoning-Aufgaben",
-    "Hohe Qualität bei Code-Generierung und -Analyse über viele Programmiersprachen",
-    "Gute mehrsprachige Fähigkeiten, insbesondere Chinesisch und Englisch"
+    "Sehr starke Leistung bei Coding- und Mathematik-Aufgaben",
+    "Effiziente MoE-Architektur mit hoher Kapazität bei vergleichsweise geringem Inferenz-Aufwand",
+    "Gute mehrsprachige Fähigkeiten, insbesondere Englisch und Chinesisch"
   ],
   "known_limitations": [
-    "Als Cloud-only-Variante keine lokale Ausführung möglich, vollständige Datenkontrolle nicht gewährleistet",
-    "Kann bei politisch sensiblen Themen mit Bezug zu China zensierte oder ausweichende Antworten liefern"
+    "Kann bei politisch sensiblen Themen mit Bezug zu China zensierte oder ausweichende Antworten liefern",
+    "Lokaler Betrieb der vollen 671B-Variante erfordert erhebliche Hardware-Ressourcen (mehrere High-End-GPUs)"
   ],
-  "judge_context_hint": "Das Modell zeigt bei politisch oder gesellschaftlich sensiblen Themen mit China-Bezug systematische Antwortvermeidung oder Umlenkung, was Benchmark-Ergebnisse in solchen Kategorien verzerren kann.",
+  "judge_context_hint": "Das Modell kann bei bestimmten politisch oder kulturell sensiblen Themen mit China-Bezug ausweichen oder beschönigen – dies sollte bei der Bewertung von Neutralität und Faktentreue berücksichtigt werden.",
   "architecture_tags": [
-    "General"
+    "General",
+    "Instruct"
   ],
   "unknown": false,
-  "generated_at": "2026-04-11T15:03:45.236513+00:00"
+  "generated_at": "2026-04-23T22:05:48.261371+00:00",
+  "card_status": "complete",
+  "size_class": "Frontier"
 }

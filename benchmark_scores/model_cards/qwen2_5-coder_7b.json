@@ -1,5 +1,5 @@
 {
-  "model_id": "qwen2.5-coder_7b",
+  "model_id": "qwen2.5-coder:7b",
   "display_name": "Qwen 2.5 Coder 7B",
   "developer": "Alibaba Cloud",
   "origin_country": "China",
@@ -10,20 +10,22 @@
   "weights_provenance_risk_rationale": "Alibaba Cloud unterliegt als chinesisches Unternehmen dem chinesischen National Security Law (NSL), das staatliche Zugriffe auf Daten und Modellentwicklung ermöglichen kann.",
   "model_family": "Qwen",
   "primary_focus": "coding",
-  "summary": "Qwen 2.5 Coder 7B ist ein von Alibaba Cloud (China) entwickeltes Open-Weights-Modell, spezialisiert auf Code-Generierung, -Vervollständigung und -Debugging. Es wurde auf umfangreichen Code-Korpora trainiert und unterstützt zahlreiche Programmiersprachen mit starker Leistung im 7B-Parameterbereich.",
+  "summary": "Qwen 2.5 Coder 7B ist ein von Alibaba Cloud (China) entwickeltes Open-Weights-Modell, spezialisiert auf Code-Generierung, Debugging und technische Erklärungen. Es wurde auf umfangreichen Code-Corpora trainiert und bietet starke Leistung bei gängigen Programmiersprachen in kompakter 7B-Parametergröße.",
   "strengths": [
-    "Starke Code-Generierung und -Vervollständigung in gängigen Sprachen wie Python, Java, C++ und JavaScript",
-    "Effizientes Verhältnis von Modellgröße zu Leistung – lokal auf Consumer-Hardware betreibbar",
-    "Gute Fähigkeit zur Erklärung und zum Debugging von bestehendem Code"
+    "Starke Code-Generierung und Vervollständigung in gängigen Sprachen wie Python, JavaScript, Java und C++",
+    "Kompakte 7B-Größe ermöglicht effiziente lokale Ausführung auf Consumer-Hardware",
+    "Gutes Verständnis von Code-Kontext, Debugging-Aufgaben und technischen Erklärungen"
   ],
   "known_limitations": [
-    "Schwächere Leistung bei sehr komplexen, mehrstufigen Architekturentscheidungen im Vergleich zu größeren Modellen",
-    "Kontextfenster und Reasoning-Tiefe begrenzt gegenüber 70B+-Modellen; kann bei langen Codebasen den Überblick verlieren"
+    "Bei sehr komplexen, mehrstufigen Architekturentscheidungen oder großen Codebasen stoßen 7B-Modelle schnell an Kontextgrenzen",
+    "Nicht-technische oder kreative Aufgaben außerhalb des Coding-Bereichs werden deutlich schwächer abgedeckt als bei General-Purpose-Modellen"
   ],
-  "judge_context_hint": "Das Modell ist auf Code-Aufgaben optimiert und zeigt dort überdurchschnittliche Leistung für seine Größenklasse, kann aber bei allgemeinen Reasoning- oder Nicht-Code-Aufgaben hinter generalistischen Modellen zurückbleiben.",
+  "judge_context_hint": "Das Modell ist explizit auf Coding spezialisiert – bei Coding-Benchmarks sollte die Korrektheit und Ausführbarkeit des generierten Codes im Vordergrund stehen, nicht sprachliche Eleganz.",
   "architecture_tags": [
     "Coder"
   ],
   "unknown": false,
-  "generated_at": "2026-04-11T15:50:01.744107+00:00"
+  "generated_at": "2026-04-23T22:09:59.888435+00:00",
+  "card_status": "complete",
+  "size_class": "Edge"
 }

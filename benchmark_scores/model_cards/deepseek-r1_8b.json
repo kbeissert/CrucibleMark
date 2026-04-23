@@ -1,5 +1,5 @@
 {
-  "model_id": "deepseek-r1_8b",
+  "model_id": "deepseek-r1:8b",
   "display_name": "DeepSeek R1 8B",
   "developer": "DeepSeek",
   "origin_country": "China",
@@ -7,23 +7,25 @@
   "deployment_type": "open-weights-cloud-available",
   "local_deployment_possible": true,
   "weights_provenance_risk": "high",
-  "weights_provenance_risk_rationale": "DeepSeek ist ein chinesisches Unternehmen und unterliegt dem chinesischen National Intelligence Law (NSL), das staatliche Zugriffe auf Unternehmensdaten und -ressourcen ermöglichen kann.",
-  "model_family": "DeepSeek R1",
+  "weights_provenance_risk_rationale": "DeepSeek ist ein chinesisches Unternehmen und unterliegt dem chinesischen National Security Law (NSL), das staatlichen Zugriff auf Daten und Modelle ermöglichen kann.",
+  "model_family": "DeepSeek-R1",
   "primary_focus": "reasoning",
-  "summary": "DeepSeek R1 8B ist ein chinesisches Open-Weights-Reasoning-Modell mit 8 Milliarden Parametern, das durch Reinforcement Learning auf komplexes logisches Schlussfolgern, Mathematik und Coding optimiert wurde. Es ist eine destillierte Variante des größeren R1-Modells und lokal betreibbar.",
+  "summary": "DeepSeek R1 8B ist ein chinesisches Open-Weights-Reasoning-Modell von DeepSeek. Es wurde entwickelt, um durch sichtbares Chain-of-Thought-Denken komplexe Schlussfolgerungen, Mathematik und Logikaufgaben zu lösen. Stärken liegen in strukturiertem Denken und STEM-Aufgaben bei kompakter Modellgröße.",
   "strengths": [
-    "Starke Leistung bei mathematischen und logischen Reasoning-Aufgaben relativ zur Modellgröße",
-    "Open Weights ermöglichen lokalen Betrieb ohne Cloud-Abhängigkeit",
-    "Durch Destillation aus dem großen R1-Modell kompakte Größe bei guter Reasoning-Qualität"
+    "Sichtbares Chain-of-Thought-Reasoning mit <thinking>-Blöcken ermöglicht nachvollziehbare Lösungswege",
+    "Starke Leistung bei Mathematik, Logik und STEM-Aufgaben relativ zur Modellgröße",
+    "Lokal betreibbar auf Consumer-Hardware dank 8B-Parametergröße"
   ],
   "known_limitations": [
-    "Als destilliertes 8B-Modell deutlich schwächer als das Vollmodell R1 bei komplexen mehrstufigen Aufgaben",
-    "Tendenz zu übermäßig langen Chain-of-Thought-Ausgaben, was Latenz und Token-Verbrauch erhöht"
+    "Thinking-Prozess kann sehr ausführlich und langsam sein, was bei einfachen Aufgaben ineffizient ist",
+    "Zensur bei politisch sensiblen Themen mit China-Bezug (z.B. Tiananmen, Taiwan) ist im Modell verankert"
   ],
-  "judge_context_hint": "Das Modell gibt häufig ausführliche, explizite Denkschritte (Chain-of-Thought) aus, die bei der Bewertung von der eigentlichen Antwort getrennt betrachtet werden sollten.",
+  "judge_context_hint": "Das Modell gibt immer einen sichtbaren <thinking>-Block aus – bei der Bewertung sollte nur die finale Antwort nach dem Thinking-Block bewertet werden, nicht der Denkprozess selbst.",
   "architecture_tags": [
     "Thinking"
   ],
   "unknown": false,
-  "generated_at": "2026-04-11T14:50:15.134531+00:00"
+  "generated_at": "2026-04-23T22:09:16.638182+00:00",
+  "card_status": "complete",
+  "size_class": "Edge"
 }

@@ -7,25 +7,28 @@
   "deployment_type": "cloud-only",
   "local_deployment_possible": false,
   "weights_provenance_risk": "medium",
-  "weights_provenance_risk_rationale": "OpenAI ist ein US-amerikanisches Unternehmen und unterliegt dem CLOUD Act, wobei die Modellgewichte nicht öffentlich zugänglich sind und ein staatlicher Zugriff auf die Weights selbst nicht dokumentiert ist.",
+  "weights_provenance_risk_rationale": "OpenAI ist ein US-amerikanisches Unternehmen und unterliegt dem CLOUD Act, der bei API-Nutzung staatlichen Zugriff ermöglichen kann; die Gewichte selbst sind nicht öffentlich.",
   "model_family": "GPT-5",
   "primary_focus": "general",
-  "summary": "GPT-5 Mini ist ein kompaktes Modell von OpenAI aus den USA, das auf Effizienz bei alltäglichen Aufgaben ausgelegt ist. Es bietet starke Instruction-Following-Fähigkeiten und schnelle Antwortzeiten bei geringeren Kosten als das Vollmodell, gedacht für breite Anwendungsfälle mit begrenztem Rechenbudget.",
+  "summary": "GPT-5 Mini ist ein kompaktes Modell von OpenAI aus den USA, das auf effiziente Allround-Nutzung ausgelegt ist. Es bietet starke Instruction-Following-Fähigkeiten und schnelle Antwortzeiten bei reduziertem Ressourcenbedarf – konzipiert als kosteneffiziente Alternative zum vollständigen GPT-5.",
   "strengths": [
-    "Kosteneffiziente Nutzung bei hohem Anfragevolumen",
-    "Schnelle Inferenz bei guter Antwortqualität für Standardaufgaben",
-    "Starkes Instruction-Following dank RLHF-Training"
+    "Kosteneffiziente API-Nutzung bei guter Allgemeinleistung",
+    "Schnelle Inferenzzeiten durch kompakte Architektur",
+    "Solides Instruction-Following für alltägliche Aufgaben"
   ],
   "known_limitations": [
-    "Geringere Leistung als das Vollmodell GPT-5 bei komplexen Reasoning-Aufgaben",
+    "Geringere Reasoning-Tiefe und Kontextverarbeitungskapazität im Vergleich zum vollständigen GPT-5",
     "Keine lokale Ausführung möglich, vollständige Abhängigkeit von OpenAI-Infrastruktur"
   ],
-  "judge_context_hint": "GPT-5 Mini ist auf Effizienz optimiert und kann bei anspruchsvollen mehrstufigen Reasoning-Aufgaben hinter größeren Modellen zurückbleiben – Bewertungen sollten dies bei komplexen Benchmarks berücksichtigen.",
+  "judge_context_hint": "GPT-5 Mini ist ein komprimiertes Modell – bei komplexen mehrstufigen Reasoning-Aufgaben oder langen Kontexten kann die Leistung gegenüber größeren Modellen der GPT-5-Familie spürbar abfallen.",
   "architecture_tags": [
-    "General"
+    "General",
+    "Instruct"
   ],
   "unknown": true,
-  "generated_at": "2026-04-11T15:40:08.239745+00:00",
+  "generated_at": "2026-04-23T22:01:13.742602+00:00",
+  "card_status": "complete",
+  "size_class": "Frontier",
   "thinking_probe_detected": false,
   "thinking_probe_evidence": "No CoT signals found (A: no think-tags, B: reasoning_tokens=0). Response length: 204 chars",
   "thinking_probe_confidence": "low",
