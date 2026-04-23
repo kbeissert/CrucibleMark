@@ -176,8 +176,8 @@ def run_benchmark(
         "1",  # Default to 1 run for speed
     ]
 
-    if audit:
-        cmd.append("--audit")
+    if not audit:
+        cmd.append("--silent")
 
     if force:
         cmd.append("--force")
@@ -334,9 +334,10 @@ def main():
         "--skip-commercial", action="store_true", help="Skip commercial API models"
     )
     parser.add_argument(
-        "--audit",
-        action="store_true",
-        help="Aktiviert Audit-Logging (Prompt/Antwort/Judge-Protokolle) für jeden Lauf.",
+        "--silent",
+        action="store_false",
+        dest="audit",
+        help="Deaktiviert Audit-Logging. Standard: Audit ist aktiv.",
     )
     parser.add_argument(
         "--force",

@@ -473,9 +473,10 @@ def main():
         help="Kommagetrennte Liste von Modulen (Keys), die ausgeführt werden sollen (z.B. 'political_compass').",
     )
     parser.add_argument(
-        "--audit",
-        action="store_true",
-        help="Aktiviert Audit-Logging (Prompt/Antwort/Judge-Protokolle).",
+        "--silent",
+        action="store_false",
+        dest="audit",
+        help="Deaktiviert Audit-Logging. Standard: Audit ist aktiv.",
     )
     args = parser.parse_args()
 
@@ -484,8 +485,8 @@ def main():
     print("    Füllt automatisch fehlende Benchmarks auf.")
     if args.force:
         print("    ⚠️  FORCE MODE: Alle Tests laufen erneut!")
-    if args.audit:
-        print("    🕵️  AUDIT MODE: Protokolle werden erzeugt.")
+    if not args.audit:
+        print("    🔕  SILENT MODE: Audit-Protokolle deaktiviert.")
     if args.modules:
         print(f"    🎯 FOKUS: Nur Module '{args.modules}'")
     print(f"{'#' * 60}\n")
