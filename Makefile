@@ -6,7 +6,7 @@
 	list-models judge-health list-modules \
 	probe-thinking probe-all-thinking \
 	web-export web-export-dev \
-	clean clean-sessions clean-csv clean-model clean-module clean-all clean-runs consolidate-csv prune-orphans clean-bak \
+	clean clean-csv clean-model clean-module clean-all clean-runs consolidate-csv prune-orphans clean-bak \
 	backup
 
 # Python-Interpreter aus .venv verwenden
@@ -62,7 +62,6 @@ help:
 	@echo "  make backup               Create full backup of runs and assets"
 	@echo "  make clean                Remove PyCache and build artifacts"
 	@echo "  make clean-csv            Remove standard CSV results"
-	@echo "  make clean-sessions       Remove debug session logs"
 	@echo "  make clean-model MODEL=x  Remove results for specific model"
 	@echo "  make clean-all            Extreme Cleanup (Cache + CSVs)"
 	@echo "  make prune-orphans        Verwaiste Reports loeschen (Dry-Run; FORCE=1 zum echten Loeschen)"
@@ -225,9 +224,6 @@ clean:
 	else \
 		$(PYTHON) scripts/maintenance/clean.py --cache; \
 	fi
-
-clean-sessions:
-	@$(PYTHON) scripts/maintenance/clean.py --sessions
 
 clean-csv:
 	@$(PYTHON) scripts/maintenance/clean.py --csv
