@@ -4,6 +4,27 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [v3.5.6] - 2026-04-23
+
+### Added
+- **`schemas/result.py` — `reasoning_tokens`-Feld:** Neues `Optional[int]`-Feld in `BenchmarkResult` — wird als neue CSV-Spalte persistiert. Enthält die intern verbrauchten Reasoning-/Thinking-Tokens, die nicht im sichtbaren Output erscheinen.
+- **`utils/providers/openrouter.py` — Reasoning-Token-Extraktion:** `last_response_metadata` enthält jetzt `reasoning_tokens` aus `completion_tokens_details.reasoning_tokens` der OpenRouter-API.
+- **`utils/benchmark_utils.py` — Audit-Log `[!WARNING]`-Block:** Bei `reasoning_tokens > 0 AND token_limit_cutoff=True` wird ein Warnblock injiziert, der erklärt, dass Reasoning-Tokens das Output-Budget verdrängt haben. Token-Header zeigt `(davon N Reasoning-Tokens, die intern verbraucht wurden)`.
+- **`Makefile` — `clean-bak`-Target:** Neues Target entfernt `.bak_*`-Dateien aus `benchmark_scores/`. `backup`-Target erweitert um `docs/reviews/`, `docs/audits/`, `config/`, `memory-bank/` und excludet `.bak_*`.
+
+### Fixed
+- **`utils/model_utils.py` — `minimax-m2` als Reasoning-Trigger:** `is_reasoning_model()` erkennt jetzt `minimax/minimax-m2.7` (und alle `minimax-m2.*`-Varianten). OpenRouter-Provider setzt automatisch 5× Token-Budget (~40.000 statt 8.192 Tokens) — verhindert `finish_reason: length` mit leerem Output.
+
+### Data
+- **2 ungültige CSV-Zeilen gelöscht:** `minimax/minimax-m2.7` × `cli005` und `ux_writing_005` aus `cloud_models_benchmark.csv` — beide hatten `resp_len=0` durch Budget-Erschöpfung vor dem Fix. Re-Run automatisch bei nächstem Lauf.
+
+### Docs
+- **`docs/ARCHITECTURE.md`:** Provider-Tabelle um OpenRouter- und xAI-Zeile + `Besonderheiten`-Spalte erweitert. Neuer Abschnitt „OpenRouter: Reasoning-Token-Budget-Konflikt" nach Token-Cap-Beschreibung.
+- **`memory-bank/systemPatterns.md`:** Neuer Abschnitt „OpenRouter: Reasoning-Token-Budget-Konflikt" mit vollständiger Implementierungsreferenz.
+- **`.github/copilot-instructions.md`:** Fallstrick „OpenRouter Reasoning-Token-Budget" dokumentiert.
+
+---
+
 ## [v3.5.5] - 2026-04-22
 
 ### Changed

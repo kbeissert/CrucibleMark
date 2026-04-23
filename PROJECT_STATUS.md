@@ -1,21 +1,31 @@
 # PROJECT_STATUS.md
 
-**Last Updated:** 2026-04-21
-**Current Version:** 3.5.3 (Asset-Limit-Kalibrierung & Fleet-Audit)
+**Last Updated:** 2026-04-23
+**Current Version:** 3.5.6 (OpenRouter Reasoning-Token-Tracking)
 **Status:** ✅ Production-Ready
 
 ---
 
 ## Executive Summary
 
-CrucibleMark v3.5.3 schließt einen fleet-weiten Audit der Benchmark-Prompts ab. Drei strukturelle Kalibrierungsfehler bei Word-Limits wurden datengetrieben behoben: Die Limits für `ux_writing_005`, `content_transformation_003` und `content_transformation_004` wurden auf P25 der tatsächlichen Antwortlängen × 1.20 angehoben. 156 veraltete CSV-Einträge und Audit-Logs wurden chirurgisch entfernt; der anstehende Re-Run befüllt sie mit methodisch integren Scores.
+CrucibleMark v3.5.6 behebt ein kritisches Produktionsproblem mit OpenRouter-Reasoning-Modellen: `minimax/minimax-m2.7` lieferte auf `cli005` und `ux_writing_005` leeren Output (`finish_reason: length`), weil OpenRouter interne Reasoning-Tokens direkt gegen `max_tokens` verrechnet. Fix: `minimax-m2`-Trigger in `is_reasoning_model()` aktiviert automatisch ein 5×-Budget. Neue `reasoning_tokens`-CSV-Spalte und `[!WARNING]`-Block im Audit-Log machen den Mechanismus dauerhaft transparent.
 
-**Key Achievements (v3.5.3):**
-- ✅ **`ux_writing/assets/asset_005_microcopy_audit.yaml` — Limit-Kalibrierung:** `max_expected_words` 150 → 350 (P25-basiert). Prompt-Längenhinweis ergänzt — 50/52 Modelle verletzten das alte Limit (Min-Ist 255 W > Limit+Toleranz 162 W).
-- ✅ **`content_transformation/assets/asset_003_glossary_simplification.yaml` — Limit-Kalibrierung:** `max_expected_words` 150 → 250. Prompt-Format-Hinweis synchronisiert. 29/52 Modelle verletzten das alte Limit.
-- ✅ **`content_transformation/assets/asset_004_video_script_tutorial.yaml` — Limit-Kalibrierung:** `max_expected_words` 600 → 900. Prompt-Range synchronisiert. Min-Ist aller 52 Modelle war 742 W — das alte Limit war physisch unlösbar.
-- ✅ **156 CSV-Zeilen + 156 Audit-Logs gelöscht:** Vorbereitung Re-Run für alle 52 Modelle (3 Tasks).
-- ✅ **Fleet-Scan dokumentiert:** `content_transformation_005` als begründeter Design-Trade-off eingestuft (abschnittsbezogenes Limit, kein `max_expected_words` korrekt).
+**Key Achievements (v3.5.6):**
+- ✅ **`utils/model_utils.py` — `minimax-m2` Reasoning-Trigger:** `is_reasoning_model()` erkennt `minimax/minimax-m2.7` → OpenRouter-Provider setzt 5× Token-Budget (~40.000 statt 8.192 Tokens).
+- ✅ **`schemas/result.py` — `reasoning_tokens`:** Neues `Optional[int]`-Feld in `BenchmarkResult` — neue CSV-Spalte für interne Reasoning-Token-Verbräuche (OpenRouter).
+- ✅ **`utils/providers/openrouter.py` — Extraktion:** `completion_tokens_details.reasoning_tokens` aus API-Antwort → `last_response_metadata`.
+- ✅ **`utils/benchmark_utils.py` — `[!WARNING]`-Block:** Bei `reasoning_tokens > 0 AND token_limit_cutoff=True` erklärender Warnblock im Audit-Log; Token-Header zeigt `(davon N Reasoning-Tokens, die intern verbraucht wurden)`.
+- ✅ **2 ungültige CSV-Zeilen gelöscht:** `minimax/minimax-m2.7` × `cli005` + `ux_writing_005` (leerer Content durch Budget-Erschöpfung vor Fix). Re-Run automatisch.
+- ✅ **`Makefile` — `clean-bak` + erweitertes `backup`:** Neues `clean-bak`-Target; `backup` schließt `docs/reviews/`, `docs/audits/`, `config/`, `memory-bank/` ein und excludet `.bak_*`.
+- ✅ **Dokumentation:** Provider-Tabelle + Reasoning-Budget-Abschnitt in `docs/ARCHITECTURE.md`; `memory-bank/systemPatterns.md`; `.github/copilot-instructions.md`.
+
+**Vorherige Versionen (v3.5.4 – Nano-Tier / v3.5.5 – 6 Deployment-Tiers):**
+
+CrucibleMark v3.5.5 ersetzt das 2-Tier-Size-Class-System durch eine deployment-orientierte 6-Tier-Taxonomie (`Nano/Edge/Desktop/Workstation/Server/Frontier`). v3.5.4 führte die initiale `Nano (≤5B)`-Klassifikation mit `🔬`-Badge ein. Beide Versionen betreffen ausschließlich `utils/model_utils.py`, `MODEL_CLASSIFICATION.md` und das Leaderboard-System.
+
+**Vorherige Version (v3.5.3 – Asset-Limit-Kalibrierung & Fleet-Audit):**
+
+CrucibleMark v3.5.3 schließt einen fleet-weiten Audit der Benchmark-Prompts ab. Drei strukturelle Kalibrierungsfehler bei Word-Limits wurden datengetrieben behoben: Die Limits für `ux_writing_005`, `content_transformation_003` und `content_transformation_004` wurden auf P25 × 1.20 angehoben. 156 CSV-Einträge und Audit-Logs chirurgisch entfernt.
 
 **Vorherige Version (v3.5.2 – Code-Qualität, Terminologie & Block-7.9-Dokumentation):**
 

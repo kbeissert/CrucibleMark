@@ -151,13 +151,15 @@ class LLMClient:
 
 **Provider-Spezifische Eigenheiten:**
 
-| Provider | Auth | Token Limit | Streaming | Retry Logic |
-|----------|------|-------------|-----------|-------------|
-| Ollama | Keine (localhost) | Modellabhängig (8K–128K) | ✅ | N/A (lokal) |
-| OpenAI | Bearer token | 128K (GPT-4) | ✅ | 429 → Exponential Backoff |
-| Mistral | API key | 32K | ❌ | 500 → 3× Retry |
-| Anthropic | API key | 200K | ✅ | 429 → Exponential Backoff |
-| Google | API key | 1M–2M | ❌ | SDK-seitig |
+| Provider | Auth | Token Limit | Streaming | Retry Logic | Besonderheiten |
+|----------|------|-------------|-----------|-------------|----------------|
+| Ollama | Keine (localhost) | Modellabhängig (8K–128K) | ✅ | N/A (lokal) | `finish_reason` + `tps_eval` aus Ollama-Metadaten |
+| OpenAI | Bearer token | 128K (GPT-4) | ✅ | 429 → Exponential Backoff | — |
+| Mistral | API key | 32K | ❌ | 500 → 3× Retry | ThinkChunk-Handling für Magistral (Streaming-Artefakt) |
+| Anthropic | API key | 200K | ✅ | 429 → Exponential Backoff | `stop_reason` → normalisiert zu `finish_reason` |
+| Google | API key | 1M–2M | ❌ | SDK-seitig | `STOP` uppercase → normalisiert |
+| OpenRouter | Bearer token | Modellabhängig | ✅ | Im Wrapper | **Reasoning-Token-Budget** (siehe unten) |
+| xAI | Bearer token | Modellabhängig | ✅ | Im Wrapper | `finish_reason` aus Streaming-Chunks extrahiert |
 
 **Globaler Token-Fallback-Wrapper:**
 Das Framework implementiert einen robusten Ansatz zur Bewältigung harter Output-Token-Limits, zentral im `BaseProviderClient` über `_execute_with_token_fallback`.
@@ -169,6 +171,14 @@ Das Framework implementiert einen robusten Ansatz zur Bewältigung harter Output
 
 **Config-getriebener Output-Cap (Token-Budget-System, ab v3.4.0):**
 Ergänzend zum Fallback-Wrapper setzt `base_runner.py` über `execute_test_module()` für definierte Module einen direkten `max_tokens`-API-Parameter als fairen Vergleichbarkeits-Cap. Der Wert wird aus `benchmark_config.yaml → token_budgets[module_key]` gelesen und nur übergeben, wenn er nicht `None` ist. Reasoning-Module sind bewusst ausgenommen. Schöpft ein Modell das Budget aus, wird `token_limit_cutoff=True` im Result gesetzt und ein `[!NOTE]`-Block ins Audit-Log injiziert.
+
+**OpenRouter: Reasoning-Token-Budget-Konflikt (ab v3.5.x):**
+OpenRouter verrechnet bei Reasoning-Modellen (z. B. MiniMax M2, DeepSeek R1) die internen Denk-/Chain-of-Thought-Tokens direkt gegen das `max_tokens`-Budget. Das heißt: Ein Modell, das intern 7.500 Reasoning-Tokens verbraucht, hat bei `max_tokens=8192` nur noch ~692 Tokens für den sichtbaren Output — oder gar keine, wenn der Reasoning-Aufwand das Budget überschreitet. Das Framework löst das auf zwei Ebenen:
+
+1. **Budget-Multiplikator:** `is_reasoning_model()` in `utils/model_utils.py` erkennt bekannte Reasoning-Architekturen (Trigger-Strings: `deepseek-r1`, `reasoning`, `phi4`, `qwq`, `o1`, `o3`, `magistral`, `glm-5`, `minimax-m2`). Für diese Modelle multipliziert der OpenRouter-Provider das Token-Budget automatisch (Faktor 5× bei implizitem Budget, oder liest aus `token_budgets_reasoning_models` in der Config).
+2. **Transparenz:** Der OpenRouter-Provider extrahiert `completion_tokens_details.reasoning_tokens` aus der API-Antwort und speichert sie im `BenchmarkResult` (Feld `reasoning_tokens`). Bei gleichzeitigem `token_limit_cutoff=True` injiziert `benchmark_utils.py` einen `[!WARNING]`-Block ins Audit-Log mit Erklärung des Mechanismus.
+
+> **Wichtig für neue Provider:** Wenn ein Provider Reasoning-Modelle hostet, muss geprüft werden, ob er Reasoning-Tokens gegen `max_tokens` verrechnet. Falls ja, muss `is_reasoning_model()` um die betroffenen Modell-Name-Trigger erweitert werden.
 
 ### Hardware Context & „Prompt as Config"
 

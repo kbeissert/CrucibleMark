@@ -112,6 +112,10 @@ class BaseBenchmarkRunner:
             if tps_eval is not None:
                 exec_result.tps_eval = tps_eval
 
+            rt = self.client.last_response_metadata.get("reasoning_tokens")
+            if rt is not None:
+                exec_result.reasoning_tokens = rt
+
         return test_instance, exec_result
 
     # pylint: disable=too-many-arguments, too-many-positional-arguments
@@ -163,6 +167,7 @@ class BaseBenchmarkRunner:
             "load_time": round(getattr(exec_result, "load_time", 0.0), 4),
             "response_length": len(exec_result.raw_response),
             "finish_reason": getattr(exec_result, "finish_reason", None),
+            "reasoning_tokens": getattr(exec_result, "reasoning_tokens", None),
             "token_limit_cutoff": getattr(exec_result, "token_limit_cutoff", False),
             "token_limit_fallback": getattr(exec_result, "token_limit_fallback", False),
             "token_limit_used": getattr(exec_result, "token_limit_used", None),

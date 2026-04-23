@@ -5,6 +5,17 @@
 
 ## Abgeschlossen
 
+### OpenRouter Reasoning-Token-Tracking (v3.5.6 – 23.04.26)
+- [x] **`utils/model_utils.py` — `minimax-m2` Reasoning-Trigger:** `is_reasoning_model()` um `"minimax-m2"` ergänzt. OpenRouter-Provider setzt 5× Token-Budget (~40.000 Tokens) für alle `minimax-m2.*`-Varianten — verhindert `finish_reason: length` mit leerem Output.
+- [x] **`schemas/result.py` — `reasoning_tokens`-Feld:** Neues `Optional[int]`-Feld in `BenchmarkResult` zwischen `finish_reason` und `token_limit_cutoff`. Wird als neue CSV-Spalte persistiert.
+- [x] **`utils/providers/openrouter.py` — Extraktion:** `completion_tokens_details.reasoning_tokens` aus API-Response → `last_response_metadata["reasoning_tokens"]`.
+- [x] **`utils/base_runner.py` — Propagation:** `reasoning_tokens` aus `client.last_response_metadata` → `exec_result.reasoning_tokens` → Result-Dict.
+- [x] **`utils/benchmark_utils.py` — Audit-Log-Erweiterung:** Token-Header zeigt `(davon N Reasoning-Tokens, die intern verbraucht wurden)`. Neuer `[!WARNING]`-Block bei `reasoning_tokens > 0 AND token_limit_cutoff=True` mit Erklärung des Budget-Konflikts.
+- [x] **`utils/scoring/judge_evaluator.py` — Pass-through:** `reasoning_tokens=result.get("reasoning_tokens")` an `save_audit_log()` weitergegeben.
+- [x] **2 ungültige CSV-Zeilen gelöscht:** `minimax/minimax-m2.7` × `cli005` + `ux_writing_005` aus `cloud_models_benchmark.csv` (resp_len=0, finish_reason: length — Budget-Erschöpfung vor Fix).
+- [x] **`Makefile` — `clean-bak`-Target:** Entfernt `.bak_*`-Dateien aus `benchmark_scores/`. `backup`-Target um `docs/reviews/`, `docs/audits/`, `config/`, `memory-bank/` erweitert, `.bak_*` excludiert.
+- [x] **Dokumentation:** `docs/ARCHITECTURE.md` (Provider-Tabelle + Besonderheiten-Spalte + Reasoning-Budget-Abschnitt), `memory-bank/systemPatterns.md` (neuer Abschnitt), `.github/copilot-instructions.md` (Fallstrick).
+
 ### Asset-Limit-Kalibrierung & Fleet-Audit (v3.5.3 – 21.04.26)
 - [x] **`ux_writing/assets/asset_005_microcopy_audit.yaml` — Limit-Kalibrierung:** `max_expected_words` 150 → 350 (P25 der Ist-Längen × 1.20 = 337, aufgerundet auf 350). Prompt-Text ergänzt: `"Maximale Länge: 350 Wörter gesamt (Analyse + Tabelle). Sei präzise – jeder Satz zählt."` — Modell war zuvor nie über das Limit informiert. 50/52 Modelle verletzten das alte Limit.
 - [x] **`content_transformation/assets/asset_003_glossary_simplification.yaml` — Limit-Kalibrierung:** `max_expected_words` 150 → 250 (P25 = 210 W × 1.20 = 252 → 250). Format-Hinweis `"Max 150 Wörter"` → `"Max 250 Wörter"` synchronisiert. 29/52 Modelle verletzten das alte Limit.

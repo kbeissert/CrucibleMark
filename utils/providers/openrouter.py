@@ -150,6 +150,9 @@ class OpenRouterClient(BaseProviderClient):
 
                 usage = response.usage
                 if usage:
+                    reasoning_tokens: int | None = None
+                    if hasattr(usage, "completion_tokens_details") and usage.completion_tokens_details:
+                        reasoning_tokens = getattr(usage.completion_tokens_details, "reasoning_tokens", None)
                     self.last_response_metadata = {
                         "total_tokens": usage.total_tokens,
                         "prompt_tokens": usage.prompt_tokens,
@@ -157,6 +160,7 @@ class OpenRouterClient(BaseProviderClient):
                         "token_limit_used": used_max_tokens,
                         "token_limit_fallback": fallback_triggered,
                         "finish_reason": response.choices[0].finish_reason if response.choices else None,
+                        "reasoning_tokens": reasoning_tokens,
                     }
 
                 return result
