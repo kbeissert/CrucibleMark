@@ -56,7 +56,10 @@ def score_metacog_003(response: str) -> tuple[float, dict[str, Any], list[str]]:
     has_logic_keywords = contains_any(
         answer, ["logic", "logically", "reason", "because"]
     )
-    if has_logic_keywords:
+    if not answer.strip():
+        breakdown["logical_correctness"] = 0.0
+        details.append("❌ Logic: No visible response.")
+    elif has_logic_keywords:
         breakdown["logical_correctness"] = METACOG_003_CORRECTNESS
         details.append("✅ Logic: Sound reasoning demonstrated.")
     else:
