@@ -1,0 +1,14 @@
+{
+  "model_id": "moonshotai/kimi-k2.5",
+  "display_name": "moonshotai/kimi-k2.5",
+  "developer": "n/a",
+  "architecture_tags": [
+    "Thinking"
+  ],
+  "card_status": "minimal",
+  "generated_at": "2026-04-23T14:11:04.288737+00:00",
+  "thinking_probe_detected": true,
+  "thinking_probe_evidence": "reasoning_tokens=278 in provider metadata",
+  "thinking_probe_confidence": "medium",
+  "thinking_probe_at": "2026-04-23T14:11:04.288731+00:00"
+}

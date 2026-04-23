@@ -32,6 +32,7 @@ if str(ROOT_DIR) not in sys.path:
     sys.path.insert(0, str(ROOT_DIR))
 
 from utils.llm_client import LLMClient
+from utils.model_utils import ThinkingProbeResult, probe_thinking_model
 
 logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
 logger = logging.getLogger(__name__)
@@ -96,7 +97,45 @@ Falls du das Modell nicht kennst, setze "unknown": true und befülle die anderen
 
 def _safe_name(model_id: str) -> str:
     """Konvertiert eine Model-ID in einen sicheren Dateinamen."""
-    return re.sub(r"[:/.]", "_", model_id)
+    return re.sub(r"[:/.\ ]", "_", model_id)
+
+
+def _probe_fields_to_dict(
+    probe: ThinkingProbeResult,
+) -> dict[str, Any]:
+    """Wandelt ein ThinkingProbeResult in persistierbare Card-Felder um."""
+    return {
+        "thinking_probe_detected": probe.detected,
+        "thinking_probe_evidence": probe.evidence,
+        "thinking_probe_confidence": probe.confidence,
+        "thinking_probe_at": datetime.now(timezone.utc).isoformat(),
+    }
+
+
+def _create_minimal_card(
+    model_id: str,
+    provider_key: str,
+    config: dict[str, Any],
+) -> dict[str, Any]:
+    """
+    Erstellt eine Minimal-Card aus dem Thinking-Probe-Ergebnis.
+    Kein LLM-Call für Metadaten — nur empirische Probe-Daten.
+
+    Raises:
+        RuntimeError: wenn der Probe-API-Call fehlschlägt (Readiness-Gate).
+    """
+    probe = probe_thinking_model(model_id, provider_key, config)  # raises on failure
+    tags = ["Thinking"] if probe.detected else ["General"]
+    card: dict[str, Any] = {
+        "model_id": model_id,
+        "display_name": model_id,
+        "developer": "n/a",
+        "architecture_tags": tags,
+        "card_status": "minimal",
+        "generated_at": datetime.now(timezone.utc).isoformat(),
+    }
+    card.update(_probe_fields_to_dict(probe))
+    return card
 
 
 def _load_config() -> dict[str, Any]:
@@ -233,6 +272,24 @@ def _generate_card(model_id: str, client: LLMClient, provider: str, model_name: 
 
     card = _validate_card(card, model_id)
     card["generated_at"] = datetime.now(timezone.utc).isoformat()
+    card["card_status"] = "complete"
+
+    # Probe-Felder aus bestehender Karte erhalten (z.B. bei --force)
+    existing_path = CARDS_DIR / f"{_safe_name(model_id)}.json"
+    if existing_path.exists():
+        try:
+            existing = json.loads(existing_path.read_text(encoding="utf-8"))
+            for probe_field in (
+                "thinking_probe_detected",
+                "thinking_probe_evidence",
+                "thinking_probe_confidence",
+                "thinking_probe_at",
+            ):
+                if probe_field in existing and probe_field not in card:
+                    card[probe_field] = existing[probe_field]
+        except Exception:
+            pass  # Kein bestehender Card-State — kein Problem
+
     return card
 
 

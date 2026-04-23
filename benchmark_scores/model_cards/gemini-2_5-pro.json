@@ -25,5 +25,9 @@
     "Thinking-Optional"
   ],
   "unknown": false,
-  "generated_at": "2026-04-11T14:48:43.700684+00:00"
+  "generated_at": "2026-04-11T14:48:43.700684+00:00",
+  "thinking_probe_detected": false,
+  "thinking_probe_evidence": "No CoT signals found. Response length: 41 chars",
+  "thinking_probe_confidence": "low",
+  "thinking_probe_at": "2026-04-23T13:50:26.117380+00:00"
 }

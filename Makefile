@@ -4,6 +4,7 @@
 	review reviews-auto reviews-check review-new model-cards provider-cards leaderboard provider-stats \
 	validate validate-single validate-structure test diff-results analyze-costs update-prices sync-cost-limits \
 	list-models judge-health list-modules create-module \
+	probe-thinking probe-all-thinking \
 	web-export web-export-dev \
 	clean clean-sessions clean-csv clean-model clean-module clean-all clean-runs consolidate-csv prune-orphans clean-bak \
 	backup
@@ -40,6 +41,8 @@ help:
 	@echo "  make model-cards          Model Cards generieren (Flags: MODEL=name, FORCE=1)"
 	@echo "  make provider-cards       Provider Cards generieren (Flags: PROVIDER=name, FORCE=1)"
 	@echo "  make provider-stats       System-Latenzen analysieren (Ping vs. TTFB) und Provider-Review erstellen"
+	@echo "  make probe-thinking       Thinking-Probe fuer einzelnes Modell (MODEL=name, PROVIDER=key optional)"
+	@echo "  make probe-all-thinking   Thinking-Probe fuer alle Cards ohne Probe-Feld (retro-aktiv)"
 	@echo ""
 	@echo "=== Validation & QA ==="
 	@echo "  make validate             Validate test assets"
@@ -125,6 +128,14 @@ provider-cards:
 		echo "Generiere alle fehlenden Provider Cards..."; \
 		$(PYTHON) scripts/analysis/generate_provider_cards.py $(if $(FORCE),--force); \
 	fi
+
+probe-thinking:
+	@if [ -z "$(MODEL)" ]; then echo "Fehler: MODEL=<model-id> ist erforderlich."; exit 1; fi
+	$(PYTHON) scripts/tools/probe_thinking.py --model "$(MODEL)" $(if $(PROVIDER),--provider $(PROVIDER))
+
+probe-all-thinking:
+	@echo "Probe fuer alle Cards ohne Probe-Feld..."
+	$(PYTHON) scripts/tools/probe_thinking.py --missing
 
 provider-stats:
 	@echo "Aggregating Provider Stats (Ping vs System Speed)..."

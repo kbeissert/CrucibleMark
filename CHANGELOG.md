@@ -4,6 +4,42 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [v3.5.8] - 2026-07-17
+
+### Added
+- **`utils/model_utils.py` — `ThinkingProbeResult` Dataclass + `probe_thinking_model()`:** Neue empirische API-basierte Erkennung von Chain-of-Thought-Reasoning-Modellen. Zwei verlässliche Signale: A = `<think>`/`<thinking>`/`<thought>`-Tags im Response-Body (high confidence), B = `reasoning_tokens` > 0 in der Metadaten-Antwort (medium confidence). Probe-Ergebnis wird als `thinking_probe_detected`, `thinking_probe_confidence`, `thinking_probe_evidence` in der Model-Card persistiert.
+- **`utils/model_utils.py` — `is_reasoning_model_from_card()`:** Card-First-Lookup liest `thinking_probe_detected` aus der Model-Card-JSON. Unterstützt korrekte `_safe_name()`-Transformation (`:`, `/`, `.`, Leerzeichen → `_`) für zuverlässige Dateinamen-Auflösung. Gibt `None` zurück wenn keine Card/kein Feld vorhanden.
+- **`utils/model_utils.py` — `is_reasoning_model()` Card-First-Hierarchie:** Card-Lookup hat Vorrang vor String-Trigger-Heuristik. Neuer Trigger `"kimi-k2"` ergänzt. Verhindert Fehlklassifikation bei Modellen deren API-Verhalten nicht durch Namens-Patterns eindeutig erkennbar ist.
+- **`scripts/tools/probe_thinking.py`** (neues Skript): Standalone-CLI für einmalige und retroaktive Thinking-Probes. Modi: `--model <id>` (einzeln), `--missing` (alle Cards ohne Probe-Feld), `--all` (Force-Rescan). Provider-Inference: Config-Lookup → `/` im Model-ID → `openrouter` → sonst `ollama`. Batch-Modus bricht bei Einzelfehlern nicht ab.
+- **`scripts/analysis/generate_model_cards.py` — `_create_minimal_card()`:** Erstellt eine Minimal-Card (nur Probe-Felder + `card_status: "minimal"`) ohne LLM-Aufruf. Wird vom Card-First-Hook in `unified_runner.py` genutzt wenn noch keine Card existiert.
+- **`scripts/analysis/generate_model_cards.py` — `_probe_fields_to_dict()`:** Hilfsfunktion, die `ThinkingProbeResult` in persistierbare Card-Felder konvertiert.
+- **`scripts/core/unified_runner.py` — `_ensure_model_card()` Card-First-Hook:** Vor dem ersten Benchmark-Run jedes Modells wird automatisch geprüft ob eine Card mit `thinking_probe_detected`-Feld existiert. Fehlendes Feld → Probe → Card-Update. Keine Card → Probe → Minimal-Card-Erstellung. Bereits vorhandenes Feld → Skip. Probe-Fehler → `RuntimeError` (Benchmark-Abbruch).
+- **`Makefile` — `probe-thinking` + `probe-all-thinking`:** Neue Targets für manuelle Probe-Ausführung (`make probe-thinking MODEL=<id>`) und retroaktiven Batch-Scan aller Cards ohne Probe-Feld (`make probe-all-thinking`).
+- **OpenAI o-Modell-Cards — Manual Override:** `o1`, `o3-mini`, `o4-mini` haben `thinking_probe_detected: true` mit `thinking_probe_manual_override: true`, da OpenAI interne Reasoning-Tokens nicht im API-Response exponiert und die automatische Probe diese Modelle nicht erkennen kann.
+
+### Changed
+- **`utils/model_utils.py` — `is_reasoning_model()` Trigger:** `"kimi-k2"` zu den String-Triggers hinzugefügt.
+
+### Fixed
+- **`is_reasoning_model_from_card()` — `_safe_name()`-kompatible Dateinamen-Auflösung:** Vorheriger Lookup verwendete nur `replace('/', '_')` — Modelle mit `.` im Namen (z. B. `gemini-2.5-flash`) wurden nicht in `gemini-2_5-flash.json` aufgelöst, sodass die Card nie gefunden wurde und der String-Trigger `"gemini-2.5"` fälschlich `True` zurückgab. Fix: `re.sub(r'[:/.\ ]', '_', model_id)` — identisch mit `_safe_name()`.
+- **`probe_thinking_model()` — Signal-C-Entfernung (False-Positive-Fix):** Response-Length-Heuristik (Signal C: Antwortlänge > 5× Baseline) entfernt. Instruction-Following-Modelle (Claude, GPT, Codestral etc.) liefern auf den Probe-Prompt `"Show your reasoning"` verbose Antworten (700–1.300 Zeichen), was fälschlich `detected=True` ergab. Nur Signal A (think-Tags) und Signal B (reasoning_tokens) sind zuverlässige CoT-Indikatoren.
+- **`probe_thinking.py` — `_infer_provider()` Substring-Matching-Bug:** `p.rstrip("/") in model_id`-Prüfung schlug bei lokalen Modellen fehl (z. B. `"deepseek" in "deepseek-r1:8b"` → fälschlich `openrouter`). Fix: Eindeutige `/`-Präsenz-Heuristik — `/` im Model-ID → `openrouter`, sonst `ollama`.
+- **`probe_thinking.py` — Batch-Exit-Verhalten:** `sys.exit(1)` wird nur noch bei explizitem `--model`-Fehler ausgelöst. `--missing`/`--all`-Batch-Modi berichten Fehleranzahl und enden mit Exit Code 0.
+
+### Data
+- **`benchmark_scores/commercial_models_benchmark.csv`:** 18 ungültige `gemini-2.5-flash`-Zeilen gelöscht (falsches Token-Budget vor v3.5.7-Fix: `code_quality` ×5, `cultural_intelligence` ×5, `ux_writing` ×4, `documentation_quality` ×2, `content_transformation` ×2). Re-Run durchgeführt: alle 18 Tasks neu bewertet.
+- **`benchmark_scores/commercial_models_benchmark.csv`:** 3 ungültige `gemini-2.5-pro`-Zeilen gelöscht (Safety-Filter / Budget-Erschöpfung).
+- **`benchmark_scores/cloud_models_benchmark.csv`:** 3 ungültige `kimi-k2.5`-Zeilen gelöscht (`resp_len=0`: `cultural_intel_001`, `cultural_intel_002`, `ux_writing_002`). Re-Run durchgeführt.
+- **`benchmark_scores/model_cards/`:** 51 Model-Cards retroaktiv mit Thinking-Probe-Feldern versehen. 26 API-Modelle erfolgreich geprobt. 25 offline/nicht-installierte Ollama-Modelle schlagen gracefully fehl (kein Probe-Feld gesetzt). 1 neue Minimal-Card für `moonshotai/kimi-k2.5` via Card-First-Hook erstellt.
+
+### Docs
+- **`.github/copilot-instructions.md` — Neue Fallstricke dokumentiert:**
+  - `_safe_name()`-Transformation muss in allen Card-Lookup-Pfaden konsistent verwendet werden.
+  - Signal-C (Response-Length) ist kein zuverlässiger CoT-Indikator.
+  - `_infer_provider()` muss `/`-Präsenz-Heuristik verwenden statt Substring-Matching.
+
+---
+
 ## [v3.5.7] - 2026-04-23
 
 ### Added

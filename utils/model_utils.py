@@ -2,12 +2,17 @@
 Utility functions for model management and filtering.
 """
 
+import json
+import logging
 import re
 import shutil
 import subprocess
 import yaml
+from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Optional, TypeVar
+from typing import Any, Literal, Optional, TypeVar
+
+logger = logging.getLogger(__name__)
 from utils.constants import (
     MODEL_TYPE_OPEN_WEIGHTS_CLOUD,
     TIMEOUT_OLLAMA_VERSION,
@@ -451,10 +456,30 @@ def resolve_token_budget(
     return tokens, reasoning
 
 
+def is_reasoning_model_from_card(model_id: str) -> bool | None:
+    """
+    Reads `thinking_probe_detected` from an existing model card JSON.
+
+    Returns:
+        True/False if the field is set; None if no card exists or field is missing.
+    """
+    card_path = Path("benchmark_scores/model_cards") / f"{re.sub(r'[:/.\ ]', '_', model_id)}.json"
+    if not card_path.exists():
+        return None
+    try:
+        data = json.loads(card_path.read_text(encoding="utf-8"))
+        val = data.get("thinking_probe_detected")
+        if val is None:
+            return None
+        return bool(val)
+    except Exception:
+        return None
+
+
 def is_reasoning_model(model_name: str) -> bool:
     """
     Checks if the model is a reasoning model (Chain-of-Thought).
-    These models often require higher token limits or specific handling.
+    Card lookup takes priority over string triggers; falls back to heuristic triggers.
 
     Args:
         model_name: Name of the model
@@ -462,7 +487,10 @@ def is_reasoning_model(model_name: str) -> bool:
     Returns:
         bool: True if it is a reasoning model
     """
-    triggers = ["deepseek-r1", "reasoning", "phi4", "qwq", "o1", "o3", "magistral", "glm-5", "minimax-m2", "gemini-2.5"]
+    card_result = is_reasoning_model_from_card(model_name)
+    if card_result is not None:
+        return card_result
+    triggers = ["deepseek-r1", "reasoning", "phi4", "qwq", "o1", "o3", "magistral", "glm-5", "minimax-m2", "gemini-2.5", "kimi-k2"]
     return any(t in model_name.lower() for t in triggers)
 
 
@@ -575,3 +603,87 @@ def get_model_specialization(model_name: str) -> str:
     """
     identity = get_model_identity(model_name)
     return ", ".join(identity["tags"])
+
+
+# ---------------------------------------------------------------------------
+# Thinking Probe
+# ---------------------------------------------------------------------------
+
+_PROBE_PROMPT = (
+    "Solve step by step: A train travels 120 km in 1.5 hours. "
+    "What is its average speed in km/h? Show your reasoning."
+)
+_PROBE_MAX_TOKENS = 512
+_THINK_TAGS = ("<think>", "<thinking>", "<thought>")
+
+
+@dataclass
+class ThinkingProbeResult:
+    detected: bool
+    evidence: str
+    confidence: Literal["high", "medium", "low"]
+
+
+def probe_thinking_model(
+    model_id: str,
+    provider_key: str,
+    config: dict,
+) -> ThinkingProbeResult:
+    """
+    Sends a short reasoning prompt to the model and inspects the response for
+    Chain-of-Thought signals.
+
+    Signal hierarchy:
+      - high:   <think>/<thinking>/<thought> tags present in response
+      - medium: reasoning_tokens metadata > 0
+      - medium: response_length / 80 chars > 5 (suspiciously long for a simple calc)
+      - low:    no signal found
+
+    detected = True if confidence in ("high", "medium")
+
+    Raises:
+        RuntimeError: if the API call fails (used as readiness gate in Card-First hook)
+    """
+    from utils.llm_client import LLMClient  # local import to avoid circular deps
+
+    logger.info("[ThinkingProbe] Probing %s via %s …", model_id, provider_key)
+
+    client = LLMClient(config)
+    try:
+        raw = client.query(
+            model=model_id,
+            prompt=_PROBE_PROMPT,
+            provider=provider_key,
+            max_tokens=_PROBE_MAX_TOKENS,
+        )
+    except Exception as exc:
+        raise RuntimeError(
+            f"ThinkingProbe: API call failed for model '{model_id}': {exc}"
+        ) from exc
+
+    reasoning_tokens: int = int(
+        (client.last_response_metadata or {}).get("reasoning_tokens") or 0
+    )
+
+    # Signal A — explicit think-tags (high confidence)
+    if any(tag in raw.lower() for tag in _THINK_TAGS):
+        return ThinkingProbeResult(
+            detected=True,
+            evidence=f"Think-tag found in response (first 200 chars): {raw[:200]}",
+            confidence="high",
+        )
+
+    # Signal B — provider metadata reports reasoning tokens (medium)
+    if reasoning_tokens > 0:
+        return ThinkingProbeResult(
+            detected=True,
+            evidence=f"reasoning_tokens={reasoning_tokens} in provider metadata",
+            confidence="medium",
+        )
+
+    # No CoT signals detected
+    return ThinkingProbeResult(
+        detected=False,
+        evidence=f"No CoT signals found (A: no think-tags, B: reasoning_tokens=0). Response length: {len(raw)} chars",
+        confidence="low",
+    )

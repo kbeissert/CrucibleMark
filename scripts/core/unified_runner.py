@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Unified Benchmark Runner für lokale und kommerzielle Modelle."""
 
+import json
 import logging
 import sys
 import time
@@ -24,7 +25,7 @@ class CostLimitExceededError(Exception):
 from utils.base_runner import BaseBenchmarkRunner
 from utils.benchmark_utils import discover_assets, load_asset_yaml
 from utils.logging_config import setup_logging
-from utils.model_utils import get_model_version, get_model_identity
+from utils.model_utils import get_model_version, get_model_identity, probe_thinking_model
 from utils.scoring.judge_evaluator import evaluate_with_judge, generate_audit_log
 from utils.scoring.exceptions import JudgeUnavailableError
 from utils.adaptive_pause import AdaptivePauseCalculator, BenchmarkMode
@@ -70,11 +71,111 @@ class UnifiedBenchmarkRunner(BaseBenchmarkRunner):
         self.warmup_cache: set[str] = set()
         # Gesetzt wenn ein Budget-/Quota-Fehler während eines Moduls erkannt wurde
         self.provider_quota_exhausted: bool = False
+        self._probed_models: set[str] = set()  # Verhindert Doppel-Probes in einer Session
         self.existing_commercial_benchmarks = self._load_existing_benchmarks(
             self.commercial_csv
         )
         self.existing_cloud_benchmarks = self._load_existing_benchmarks(self.cloud_csv)
         self.existing_local_benchmarks = self._load_existing_benchmarks(self.local_csv)
+
+    def _ensure_model_card(self, model: str, provider: str) -> None:
+        """
+        Card-First-Hook: stellt sicher, dass eine Model Card mit Thinking-Probe-Ergebnis
+        vorhanden ist, bevor der erste Benchmark-Run startet.
+
+        Entscheidungsbaum:
+          1. Card vorhanden + thinking_probe_detected gesetzt  → direkt weiter
+          2. Card vorhanden, Feld fehlt                        → Probe, Card-Update
+          3. Keine Card                                        → Probe, Minimal-Card erstellen
+          4. Probe schlägt fehl                                → RuntimeError (Abbruch)
+        """
+        if model in self._probed_models:
+            return
+
+        cards_dir = Path("benchmark_scores/model_cards")
+        safe = model.replace("/", "_").replace(":", "_").replace(".", "_")
+        card_path = cards_dir / f"{safe}.json"
+
+        needs_probe = False
+        existing_card: Dict[str, Any] = {}
+        card_loaded = False
+
+        if card_path.exists():
+            try:
+                loaded: Dict[str, Any] = json.loads(card_path.read_text(encoding="utf-8"))
+                existing_card = loaded
+                card_loaded = True
+                if "thinking_probe_detected" not in loaded:
+                    needs_probe = True
+                    logger.info(
+                        "[Card-First] Card für '%s' hat kein Probe-Feld → Probe wird nachgeholt.",
+                        model,
+                    )
+                else:
+                    logger.debug(
+                        "[Card-First] '%s' hat vollständige Card (probe_detected=%s). Kein Probe nötig.",
+                        model,
+                        loaded["thinking_probe_detected"],
+                    )
+            except Exception as e:
+                logger.warning("[Card-First] Card für '%s' konnte nicht gelesen werden: %s", model, e)
+                needs_probe = True
+        else:
+            needs_probe = True
+            logger.info(
+                "[Card-First] Keine Card für '%s' gefunden → Erstelle Minimal-Card.",
+                model,
+            )
+
+        if not needs_probe:
+            self._probed_models.add(model)
+            return
+
+        # Probe ausführen (wirft RuntimeError bei API-Fehler)
+        print(f"🔍 Thinking-Probe für '{model}' …")
+        probe = probe_thinking_model(model, provider, self.validator.config)  # raises on failure
+        print(
+            f"   → detected={probe.detected} (confidence={probe.confidence})"
+        )
+
+        from datetime import datetime, timezone  # noqa: PLC0415
+
+        probe_fields = {
+            "thinking_probe_detected": probe.detected,
+            "thinking_probe_evidence": probe.evidence,
+            "thinking_probe_confidence": probe.confidence,
+            "thinking_probe_at": datetime.now(timezone.utc).isoformat(),
+        }
+
+        if card_loaded:
+            # Bestehende Card um Probe-Felder ergänzen
+            existing_card.update(probe_fields)
+            cards_dir.mkdir(parents=True, exist_ok=True)
+            card_path.write_text(
+                json.dumps(existing_card, ensure_ascii=False, indent=2),
+                encoding="utf-8",
+            )
+            logger.info("[Card-First] Probe-Felder in bestehende Card für '%s' eingefügt.", model)
+        else:
+            # Minimal-Card erstellen
+            tags = ["Thinking"] if probe.detected else ["General"]
+            minimal_card: dict = {
+                "model_id": model,
+                "display_name": model,
+                "developer": "n/a",
+                "architecture_tags": tags,
+                "card_status": "minimal",
+                "generated_at": datetime.now(timezone.utc).isoformat(),
+                **probe_fields,
+            }
+            cards_dir.mkdir(parents=True, exist_ok=True)
+            card_path.write_text(
+                json.dumps(minimal_card, ensure_ascii=False, indent=2),
+                encoding="utf-8",
+            )
+            logger.info("[Card-First] Minimal-Card für '%s' erstellt.", model)
+
+        self._probed_models.add(model)
 
     def _load_existing_benchmarks(
         self, csv_path: Path
@@ -369,6 +470,9 @@ class UnifiedBenchmarkRunner(BaseBenchmarkRunner):
                 force=self.force,
                 existing_benchmarks=self._get_existing_for_model(provider, model),
             )
+
+        # Card-First-Hook: Thinking-Probe vor erstem Run sicherstellen
+        self._ensure_model_card(model, provider)
 
         # Standard Run Loop
         print(
