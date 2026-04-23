@@ -184,7 +184,7 @@ Logik:
 **OpenRouter: Reasoning-Token-Budget-Konflikt (ab v3.5.x):**
 OpenRouter verrechnet bei Reasoning-Modellen (z. B. MiniMax M2, DeepSeek R1) die internen Denk-/Chain-of-Thought-Tokens direkt gegen das `max_tokens`-Budget. Das heißt: Ein Modell, das intern 7.500 Reasoning-Tokens verbraucht, hat bei `max_tokens=8192` nur noch ~692 Tokens für den sichtbaren Output — oder gar keine, wenn der Reasoning-Aufwand das Budget überschreitet. Das Framework löst das auf zwei Ebenen:
 
-1. **Budget-Multiplikator:** `is_reasoning_model()` in `utils/model_utils.py` erkennt bekannte Reasoning-Architekturen (Trigger-Strings: `deepseek-r1`, `reasoning`, `phi4`, `qwq`, `o1`, `o3`, `magistral`, `glm-5`, `minimax-m2`, `gemini-2.5`). Für diese Modelle setzt `resolve_token_budget()` das Budget automatisch auf den erhöhten Wert aus `token_budgets_reasoning_models` in der Config (oder Faktor 5× bei unbekanntem Modul-Key).
+1. **Budget-Multiplikator:** `is_reasoning_model()` in `utils/model_utils.py` erkennt bekannte Reasoning-Architekturen (Trigger-Strings: `deepseek-r1`, `reasoning`, `phi4`, `qwq`, `o1`, `o3`, `magistral`, `glm-5`, `minimax-m2`, `gemini-2.5`, `kimi-k2`). Ab v3.5.8 hat die **Card-First-Lookup** Vorrang: Wurde ein Modell via `ThinkingProbe` empirisch getestet, liefert `is_reasoning_model_from_card()` das validierte Ergebnis — unabhängig von String-Triggern. Für diese Modelle setzt `resolve_token_budget()` das Budget automatisch auf den erhöhten Wert aus `token_budgets_reasoning_models` in der Config (oder Faktor 5× bei unbekanntem Modul-Key).
 2. **Transparenz:** Der OpenRouter-Provider extrahiert `completion_tokens_details.reasoning_tokens` aus der API-Antwort und speichert sie im `BenchmarkResult` (Feld `reasoning_tokens`). Bei gleichzeitigem `token_limit_cutoff=True` injiziert `benchmark_utils.py` einen `[!WARNING]`-Block ins Audit-Log mit Erklärung des Mechanismus.
 
 > **Wichtig für neue Provider:** Wenn ein Provider Reasoning-Modelle hostet, muss geprüft werden, ob er Reasoning-Tokens gegen `max_tokens` verrechnet. Falls ja, muss `is_reasoning_model()` um die betroffenen Modell-Name-Trigger erweitert werden — `resolve_token_budget()` übernimmt dann automatisch die Budget-Anpassung für diesen und alle anderen Provider.
@@ -196,6 +196,32 @@ Wenn ein Modell eine Antwort von < 15 Zeichen liefert (Ablehnungs-Signal), setzt
 - `refusal_note` — Freitext-Begründung
 
 Alle drei Felder werden via `result_manager.py` als CSV-Spalten persistiert. Das unterscheidet eine aktive Ablehnung (Modell-Limitation) von einem ungetesteten Ergebnis.
+
+**ThinkingProbe & Card-First Workflow (ab v3.5.8):**
+Um `is_reasoning_model()` empirisch statt heuristisch zu fundieren, führt v3.5.8 eine API-basierte Laufzeit-Erkennung ein:
+
+1. **`probe_thinking_model(model_id, provider_key, config)`** in `utils/model_utils.py` sendet einen deterministischen Schritt-für-Schritt-Reasoning-Prompt an die Modell-API und wertet zwei Signale aus:
+   - **Signal A:** `<think>` / `<thinking>` / `<thought>`-Tags im Response-Body → `confidence=high`
+   - **Signal B:** `reasoning_tokens > 0` in der API-Metadaten-Antwort → `confidence=medium`
+   - Signal C (Response-Länge) ist **nicht implementiert** — Instruction-Following-Modelle produzieren auf Reasoning-Prompts ebenfalls lange Antworten (False-Positive-Quelle).
+
+2. **`ThinkingProbeResult`** (Dataclass): `detected: bool`, `evidence: str`, `confidence: Literal["high","medium","low"]`
+
+3. **`is_reasoning_model_from_card(model_id)`:** Liest `thinking_probe_detected` aus der JSON-Model-Card. Dateiname-Auflösung via `re.sub(r'[:/.\s]', '_', model_id)` — konsistent mit `_safe_name()` in `generate_model_cards.py`. Gibt `None` zurück wenn kein Eintrag vorhanden (kein False-Positive).
+
+4. **`is_reasoning_model()` Lookup-Hierarchie:**
+   1. Card-Lookup (`is_reasoning_model_from_card()`) — hat immer Vorrang
+   2. String-Trigger-Heuristik als Fallback
+
+5. **`_ensure_model_card()` Hook in `unified_runner.py`:** Vor dem ersten Benchmark-Run eines Modells:
+   - Card mit `thinking_probe_detected`-Feld → Skip
+   - Card ohne Feld → Probe → Feld in Card eintragen
+   - Keine Card → Probe → Minimal-Card erstellen (`card_status: "minimal"`)
+   - Probe-Fehler (API-Error) → `RuntimeError` (Benchmark-Abbruch)
+
+6. **`scripts/tools/probe_thinking.py`** (Standalone-CLI): Retroaktiver und On-Demand-Probe-Betrieb. Modi: `--model <id>`, `--missing` (Batch: alle Cards ohne Feld), `--all` (Force-Rescan). Provider-Inference: Config → `/` im ID → `openrouter` → sonst `ollama`. Batch-Modus bricht bei Einzelfehlern nicht ab.
+
+> **Wichtig:** API-Modelle, die Reasoning intern verbergen (z. B. OpenAI o-Series), können via Probe nicht erkannt werden — für diese Modelle wird `thinking_probe_detected: true` manuell mit `thinking_probe_manual_override: true` in der Card gesetzt.
 
 ### Hardware Context & „Prompt as Config"
 

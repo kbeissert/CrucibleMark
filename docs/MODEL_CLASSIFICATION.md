@@ -296,6 +296,74 @@ Scheitert ein Modell daran, komplexe Markdown-Strukturen (wie Tabellen mit Pipes
 
 ---
 
+## Reasoning-Erkennung: Card-First Workflow (ab v3.5.8)
+
+CrucibleMark erkennt Reasoning-Modelle seit v3.5.8 **empirisch statt nur heuristisch**. Das Token-Budget-System und der LLM-Judge bauen darauf auf.
+
+### ThinkingProbe
+
+`probe_thinking_model(model_id, provider_key, config)` in `utils/model_utils.py` sendet einen deterministischen Reasoning-Prompt an die API und wertet zwei Signale aus:
+
+| Signal | Erkennungsmerkmal | Konfidenz |
+|--------|-------------------|-----------|
+| A | `<think>` / `<thinking>` / `<thought>`-Tags im Response-Body | `high` |
+| B | `reasoning_tokens > 0` in der API-Metadaten-Antwort | `medium` |
+
+> **Wichtig:** Response-Länge ist kein zuverlässiges Signal (Instruction-Following-Modelle erzeugen auf Reasoning-Prompts ebenfalls lange Antworten). Signal C ist bewusst nicht implementiert.
+
+Das Ergebnis wird als JSON-Felder in die Model-Card (`benchmark_scores/model_cards/*.json`) geschrieben:
+
+```json
+{
+  "thinking_probe_detected": true,
+  "thinking_probe_evidence": "Signal A: <think> tags detected in response body",
+  "thinking_probe_confidence": "high",
+  "thinking_probe_manual_override": false
+}
+```
+
+**Sonderfall OpenAI o-Series:** o1, o3-mini, o4-mini verbergen Reasoning-Tokens intern vor der API. Für diese Modelle wird `thinking_probe_detected: true` manuell mit `thinking_probe_manual_override: true` gesetzt.
+
+### `is_reasoning_model()` Lookup-Hierarchie
+
+```
+1. is_reasoning_model_from_card(model_id)
+   └── Card vorhanden + thinking_probe_detected Feld → verwende Feld-Wert
+   └── Card fehlt oder Feld fehlt → None (kein False-Positive)
+
+2. String-Trigger-Heuristik (Fallback)
+   └── deepseek-r1, reasoning, phi4, qwq, o1, o3,
+       magistral, glm-5, minimax-m2, gemini-2.5, kimi-k2
+```
+
+Card-Lookup hat immer Vorrang. Bei Diskrepanz zwischen Card und Trigger-String gilt die Card.
+
+### Card-First-Hook beim Benchmark-Run
+
+`_ensure_model_card()` in `scripts/core/unified_runner.py` wird vor dem ersten Run eines Modells aufgerufen:
+
+- Card mit `thinking_probe_detected` → sofort weiter (kein API-Call)
+- Card ohne Feld → Probe ausführen → Feld eintragen
+- Keine Card → Probe ausführen → Minimal-Card erstellen (`card_status: "minimal"`)
+- Probe-Fehler → `RuntimeError` (Benchmark-Abbruch, kein stilles Überspringen)
+
+### Retroaktiver Probe (CLI)
+
+```bash
+# Einzelnes Modell
+make probe-thinking MODEL=gemini-2.5-flash
+
+# Alle Cards ohne thinking_probe_detected
+make probe-all-thinking
+
+# Direktaufruf mit Provider-Override
+.venv/bin/python scripts/tools/probe_thinking.py --model <model-id> --provider openrouter
+```
+
+`scripts/tools/probe_thinking.py` unterstützt zusätzlich `--missing` (Batch ohne bestehende Probes) und `--all` (Force-Rescan aller Cards).
+
+---
+
 ## Best Practices
 
 ### DO's ✅

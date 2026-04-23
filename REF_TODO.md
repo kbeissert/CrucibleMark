@@ -5,6 +5,23 @@
 
 ## Abgeschlossen
 
+### ThinkingProbe & Card-First Workflow (v3.5.8 – 23.04.26)
+- [x] **`utils/model_utils.py` — `ThinkingProbeResult` & `probe_thinking_model()`:** Dataclass mit `detected: bool`, `evidence: str`, `confidence: Literal["high","medium","low"]`. Signal A: `<think>`/`<thinking>`/`<thought>`-Tags in Response-Body. Signal B: `reasoning_tokens > 0` in API-Metadaten. Signal C (Response-Länge) bewusst nicht implementiert (False-Positive bei Instruction-Following-Modellen).
+- [x] **`utils/model_utils.py` — `is_reasoning_model_from_card()`:** Card-First-Lookup für `thinking_probe_detected`-Feld. Dateinamen via `re.sub(r'[:/.\s]', '_', model_id)` auflösen — konsistent mit `_safe_name()` in `generate_model_cards.py`. Gibt `None` bei fehlender Card oder fehlendem Feld zurück.
+- [x] **`utils/model_utils.py` — `is_reasoning_model()` Hierarchie:** Card-Lookup hat Vorrang. Neuer Trigger `kimi-k2` ergänzt.
+- [x] **`scripts/core/unified_runner.py` — `_ensure_model_card()`:** Vor erstem Run eines Modells: Card + Feld vorhanden → Skip; Feld fehlt → Probe → Feld schreiben; keine Card → Probe → Minimal-Card erstellen (`card_status: minimal`); Probe-Fehler → RuntimeError (kein stilles Skip).
+- [x] **`scripts/analysis/generate_model_cards.py` — `_create_minimal_card()`:** Erstellt Card ohne LLM-Aufruf mit `card_status: minimal`. `_generate_card()` setzt `card_status: complete` und bewahrt bestehende Probe-Felder bei `--force`.
+- [x] **`scripts/tools/probe_thinking.py`** (NEU): Standalone-CLI. `--model <id>`, `--missing` (Batch: alle ohne Feld), `--all` (Force-Rescan). `_infer_provider()`: Config-Lookup → `/` im ID → `openrouter` → sonst `ollama`. Batch-Modus bricht bei Einzelfehlern nicht ab (`sys.exit(1)` nur bei `--model`).
+- [x] **Makefile:** `probe-thinking` (`MODEL=<id>` required) + `probe-all-thinking` (`--missing`) als neue `.PHONY`-Targets.
+- [x] **Bugfix `is_reasoning_model_from_card()` — `_safe_name()`:** War `replace('/', '_')` → ist jetzt `re.sub(r'[:/.\s]', '_', model_id)`. Behebt: `gemini-2.5-flash` fand `gemini-2_5-flash.json` nicht.
+- [x] **Bugfix `probe_thinking.py` — `_infer_provider()`:** War Substring-Matching (`"deepseek" in model_id`) → ist jetzt `/`-Präsenz-Heuristik. Behebt: `deepseek-r1:8b` (lokal) wurde fälschlich via OpenRouter geprobt.
+- [x] **Bugfix Batch-Exit:** `sys.exit(1)` nur noch bei explizitem `--model`-Fehler. `--missing`/`--all` bricht bei Einzelfehlern nicht ab.
+- [x] **26 API-Model-Cards retroaktiv** via `make probe-all-thinking` mit Probe-Feldern versehen. 25 Offline-Ollama-Modelle: graceful failure.
+- [x] **o1/o3-mini/o4-mini:** Manuelle Overrides (`thinking_probe_detected: true`, `thinking_probe_manual_override: true`) — OpenAI exponiert Reasoning-Tokens nicht im API-Response.
+- [x] **`moonshotai/kimi-k2.5`:** Neue Minimal-Card via Card-First-Hook während Re-Run erstellt.
+- [x] **Re-Runs:** 18 `gemini-2.5-flash`-Zeilen in `commercial_models_benchmark.csv` (code_quality 5, cultural_intelligence 5, ux_writing 4, documentation_quality 2, content_transformation 2) + 3 Zeilen `gemini-2.5-pro` gelöscht. 3 `kimi-k2.5`-Zeilen in `cloud_models_benchmark.csv` gelöscht + re-run.
+- [x] **Dokumentation:** `CHANGELOG.md` v3.5.8, `docs/ARCHITECTURE.md`, `docs/DEVELOPER_GUIDE.md` (v3.2.0), `docs/MODEL_CLASSIFICATION.md`, `memory-bank/systemPatterns.md`, `memory-bank/activeContext.md`, `memory-bank/progress.md`, `.github/copilot-instructions.md` (3 neue Fallstricke: Signal-C-Verbot, `_safe_name()`-Konsistenz, `_infer_provider()`-`/`-Heuristik, OpenAI-o-Series-Override).
+
 ### SSoT Token-Budget, Gemini-2.5 Reasoning-Fix, Judge-Verbosity-Penalty, Refusal-Metadaten (v3.5.7 – 23.04.26)
 - [x] **`utils/model_utils.py` — `resolve_token_budget()`:** Zentrale SSoT-Funktion für Token-Budget-Berechnung. Gibt `(effektives_budget: int, is_reasoning: bool)` zurück. Alle drei Provider (`openai.py`, `openrouter.py`, `mistral.py`) delegieren dorthin. Behebt fehlende `elif is_reasoning and tokens < 10000: tokens = 25000`-Branch in `mistral.py`.
 - [x] **`benchmark_config.yaml` — `token_param_name` pro Provider:** Fünf Provider-Blöcke (`mistral`, `openai`, `groq`, `xai`, `openrouter`) mit `token_param_name: max_tokens` bzw. `max_completion_tokens`. Provider lesen via `_provider_cfg.get("token_param_name", "<fallback>")`.
