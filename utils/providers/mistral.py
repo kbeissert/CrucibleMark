@@ -112,11 +112,28 @@ class MistralClient(BaseProviderClient):
             # use _chunk_to_str() to normalize both cases.
             if isinstance(content, list):
                 def _chunk_to_str(val: object) -> str:
+                    """Normalize a chunk field to plain string.
+
+                    chunk.text / chunk.thinking can be:
+                    - str (normal case)
+                    - list[str] (some SDK versions)
+                    - list[chunk-like objects] (Magistral Small: thinking contains
+                      nested TextChunk objects with a .text attribute)
+                    Never fall back to repr(obj) — that would leak object strings
+                    into the scorer and cause false-positive keyword matches.
+                    """
                     if isinstance(val, str):
                         return val
                     if isinstance(val, list):
-                        return "".join(str(x) for x in val if x)
-                    return str(val) if val is not None else ""
+                        parts = []
+                        for x in val:
+                            if isinstance(x, str):
+                                parts.append(x)
+                            elif hasattr(x, "text") and isinstance(getattr(x, "text", None), str):
+                                parts.append(x.text)
+                            # deliberately skip unknown objects — no repr() fallback
+                        return "".join(parts)
+                    return ""
 
                 text_parts = [
                     _chunk_to_str(getattr(chunk, "text", None))
