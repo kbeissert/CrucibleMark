@@ -56,6 +56,14 @@ Gilt für Generation-Parameter UND LLM Judge. Modul-Override gewinnt immer.
 - Reasoning-Module (`reasoning_logic`, `cli_benchmark`) sind bewusst ausgenommen. Budgetierte Module: `cultural_intelligence: 500`, `ux_writing: 3500`, `content_transformation: 3500`, `documentation_quality: 6000`, `code_quality: 6000`.
 - `token_limit_cutoff=True` im BenchmarkResult → `[!NOTE]`-Block in Audit-Log (`benchmark_utils.py`). Trigger: `cutoff is True AND _budget is not None`.
 
+## OpenRouter: Reasoning-Token-Budget-Konflikt
+- OpenRouter verrechnet interne Reasoning-/Thinking-Tokens bei Reasoning-Modellen gegen `max_tokens`. Bei erschöpftem Budget ist `message.content = null`, `finish_reason = length`.
+- **Erkennung:** `is_reasoning_model()` in `utils/model_utils.py` — Trigger-Strings: `deepseek-r1`, `reasoning`, `phi4`, `qwq`, `o1`, `o3`, `magistral`, `glm-5`, `minimax-m2`.
+- **Fix:** `utils/providers/openrouter.py` multipliziert das Budget für erkannte Reasoning-Modelle automatisch (5× oder `token_budgets_reasoning_models` aus Config).
+- **Tracking:** `completion_tokens_details.reasoning_tokens` wird aus der API-Response extrahiert → `BenchmarkResult.reasoning_tokens` → neue CSV-Spalte.
+- **Audit-Log:** Bei `reasoning_tokens > 0 AND token_limit_cutoff=True` → `[!WARNING]`-Block mit Erklärung in `benchmark_utils.py`.
+- **Neue Modelle prüfen:** Bei Ergänzung von Reasoning-Modellen via OpenRouter immer kontrollieren, ob der Modellname einen Trigger in `is_reasoning_model()` trifft. Falls nicht → Trigger ergänzen.
+
 ## Neue Provider hinzufügen
 1. In `benchmark_config.yaml` unter `providers.commercial` oder `providers.local` eintragen
 2. Falls es ein API Provider ist: Neues Modul in `utils/providers/` anlegen (erbt von `BaseProviderClient`) und in `utils/providers/__init__.py` exportieren.

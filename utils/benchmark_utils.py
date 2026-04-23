@@ -219,6 +219,7 @@ def save_audit_log(
     tokens_per_second: float = None,
     cost: float = None,
     provider: str = None,
+    reasoning_tokens: int = None,
     **kwargs
 ) -> None:
     """
@@ -242,7 +243,10 @@ def save_audit_log(
             if execution_time is not None:
                 f.write(f"**Execution Time:** {execution_time:.2f} s\n")
             if tokens_used is not None:
-                f.write(f"**Tokens Used:** {tokens_used}\n")
+                f.write(f"**Tokens Used:** {tokens_used}")
+                if reasoning_tokens:
+                    f.write(f" _(davon {reasoning_tokens} Reasoning-Tokens, die intern verbraucht wurden)_")
+                f.write("\n")
             if tokens_per_second is not None:
                 f.write(f"**Tokens/s:** {tokens_per_second:.2f}\n")
             if cost is not None:
@@ -253,6 +257,18 @@ def save_audit_log(
             f.write("\n")
             if token_limit_fallback:
                 f.write("> [!WARNING]\n> Das Modell (bzw. die API) hat das initial angeforderte Token-Limit abgelehnt (zu groß für die Architektur). Das System ist dynamisch auf ein kleineres 4096-Token-Fallback gewechselt. Dies zeigt, dass dieses Modell mit großen Token-Anfragen oder Kontexten Probleme hat!\n\n")
+
+            # Reasoning-Token-Budget-Block: Reasoning-Tokens haben Output verdrängt
+            if reasoning_tokens and reasoning_tokens > 0 and token_limit_cutoff:
+                output_tokens = (tokens_used or 0) - reasoning_tokens
+                f.write(
+                    f"> [!WARNING]\n"
+                    f"> **Reasoning-Tokens haben Output-Budget verdrängt:** Dieses Reasoning-Modell hat {reasoning_tokens} Tokens intern "
+                    f"für Denk-/Chain-of-Thought-Prozesse verbraucht, die nicht im Output erscheinen. "
+                    f"Verbleibende Output-Tokens: {max(0, output_tokens)}. "
+                    f"Das Token-Budget wurde erschöpft bevor die vollständige Antwort generiert werden konnte. "
+                    f"Dies ist kein Fehler, sondern eine modellspezifische Eigenschaft von Reasoning-Modellen (z.B. MiniMax M2, DeepSeek R1).\n\n"
+                )
 
             # Token-Budget-Flag: API hat das konfigurierte Output-Limit beschränkt
             if token_limit_cutoff:

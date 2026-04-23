@@ -32,6 +32,7 @@
   - *Google SDK Typing:* Bei Pylance/Pyright False-Positives (z.B. `reportPrivateImportUsage`) im `google.generativeai` SDK `# pyright: reportPrivateImportUsage=false` am Header nutzen.
   - *PC Skip-Logic Gap:* `execute_batch_module()` in `base_runner.py` prüft nur die 3 Standard-CSVs auf bereits vorhandene Ergebnisse — nach einem Leaderboard-Reset sind diese leer, die `political_compass_leaderboard.csv` aber nicht. Ohne expliziten Fallback auf `political_compass_leaderboard.csv` werden alle PC-Modelle fälschlich erneut gerunnt.
   - *max_expected_words gilt nur für Gesamtantworten:* Bei Assets wo das Limit nur einen Abschnitt der Antwort betrifft (z.B. Email-Body ≤300W, während Analyse-Teil zusätzlich erwartet wird), darf `max_expected_words` NICHT gesetzt werden — die Gesamtantwort überschreitet das Limit zwingend. Stattdessen `keyword_presence`-Check oder LLM-Judge verwenden.
+  - *OpenRouter Reasoning-Token-Budget:* OpenRouter verrechnet interne Reasoning-/Thinking-Tokens (z.B. MiniMax M2, DeepSeek R1) direkt gegen `max_tokens`. Ist das Budget erschöpft, liefert die API `message.content = null` + `finish_reason: length`. Fix: Modell-Name-Trigger in `is_reasoning_model()` (`utils/model_utils.py`) eintragen → OpenRouter-Provider erhöht Budget automatisch. Bei neuen Reasoning-Modellen via OpenRouter **immer** prüfen, ob der Name einen bestehenden Trigger trifft.
 
 ## Memory Bank (Dynamic Project Context)
 

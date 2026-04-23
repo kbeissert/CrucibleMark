@@ -63,6 +63,7 @@ class BenchmarkResult(BaseModel):
     tps_eval: Optional[float] = Field(default=None, description="Native generation speed: eval_count / eval_duration from Ollama (excludes prefill). None if not available (e.g. cloud proxy).")
     cost_usd: float = Field(default=0.0, description="Estimated cost in USD")
     finish_reason: Optional[str] = Field(default=None, description="The reason the model stopped generating (e.g. length/max_tokens)")
+    reasoning_tokens: Optional[int] = Field(default=None, description="Reasoning/thinking tokens used internally by the model (not returned in content). Counted against max_tokens budget on OpenRouter.")
     token_limit_cutoff: bool = Field(default=False, description="Flag indicating if the response was cut off due to max_token limits")
     token_limit_fallback: bool = Field(default=False, description="Flag indicating if the system dynamically lowered the requested max_tokens to accommodate model constraints (e.g. 8192 -> 4096)")
     token_limit_used: Optional[int] = Field(default=None, description="The actual max_tokens value used for the successful generation (metadata/Kopfnote)")

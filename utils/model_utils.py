@@ -426,7 +426,7 @@ def is_reasoning_model(model_name: str) -> bool:
     Returns:
         bool: True if it is a reasoning model
     """
-    triggers = ["deepseek-r1", "reasoning", "phi4", "qwq", "o1", "o3", "magistral", "glm-5"]
+    triggers = ["deepseek-r1", "reasoning", "phi4", "qwq", "o1", "o3", "magistral", "glm-5", "minimax-m2"]
     return any(t in model_name.lower() for t in triggers)
 
 

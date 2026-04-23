@@ -1,6 +1,7 @@
 # Progress
 
 ## Ongoing
+- [ ] Re-Run minimax/minimax-m2.7: cli005 + ux_writing_005 (2 Zeilen gelöscht, Reasoning-Token-Fix aktiv — kein --force nötig)
 - [ ] Re-Run ct_003 / ct_004 / ux_005: 156 CSV-Zeilen + Audit-Logs gelöscht, Benchmark bereit (kein --force nötig)
 - [ ] Leaderboard-Rebuild + alle 52 Reviews neu generieren (nach Re-Run)
 - [ ] make benchmark-auto starten: PC-Re-Run (31 Modelle ohne gültigen Eintrag) + offene Cloud-Modelle

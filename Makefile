@@ -5,7 +5,7 @@
 	validate validate-single validate-structure test diff-results analyze-costs update-prices sync-cost-limits \
 	list-models judge-health list-modules create-module \
 	web-export web-export-dev \
-	clean clean-sessions clean-csv clean-model clean-module clean-all clean-runs consolidate-csv prune-orphans \
+	clean clean-sessions clean-csv clean-model clean-module clean-all clean-runs consolidate-csv prune-orphans clean-bak \
 	backup
 
 # Python-Interpreter aus .venv verwenden
@@ -274,13 +274,21 @@ consolidate-csv:
 		$(PYTHON) scripts/maintenance/consolidate_csv.py; \
 	fi
 
+clean-bak:
+	@echo "Entferne .bak_* Dateien aus benchmark_scores/..."
+	@find benchmark_scores/ -name "*.bak_*" -delete
+	@echo "   -> .bak_* Dateien entfernt."
+
 backup:
 	@echo "Creating full backup..."
 	@mkdir -p backups
-	@tar --exclude='__pycache__' --exclude='.DS_Store' -czf backups/cruciblemark_backup_$(shell date +%Y%m%d_%H%M%S).tar.gz benchmark_scores/ outputs/ benchmark_modules/
+	@tar --exclude='__pycache__' --exclude='.DS_Store' --exclude='*.bak_*' -czf backups/cruciblemark_backup_$(shell date +%Y%m%d_%H%M%S).tar.gz benchmark_scores/ outputs/ benchmark_modules/ docs/reviews/ docs/audits/ config/ memory-bank/
 	@echo "Backup created."
 	@$(MAKE) clean-runs FORCE=1
 	@$(MAKE) consolidate-csv
+	@$(MAKE) clean-bak
+	@$(MAKE) prune-orphans FORCE=1
+	@rm -rf outputs/temp/*
 	@echo "Backup chain complete."
 
 # === WEB EXPORT ===
