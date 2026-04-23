@@ -7,25 +7,28 @@
   "deployment_type": "cloud-only",
   "local_deployment_possible": false,
   "weights_provenance_risk": "medium",
-  "weights_provenance_risk_rationale": "Anthropic ist ein US-amerikanisches Unternehmen und unterliegt dem CLOUD Act, jedoch ist kein direkter staatlicher Zugriff auf die Modellgewichte bekannt, da diese nicht öffentlich verfügbar sind.",
+  "weights_provenance_risk_rationale": "Anthropic ist ein US-amerikanisches Unternehmen und unterliegt dem CLOUD Act, jedoch ist kein direkter staatlicher Zugriff auf die Modellgewichte bekannt.",
   "model_family": "Claude",
   "primary_focus": "general",
-  "summary": "Claude Opus 4.6 ist ein Frontier-Modell von Anthropic (USA), entwickelt mit Fokus auf Sicherheit, Nuancierung und komplexes Reasoning. Es zeichnet sich durch starke Instruktionsbefolgung, differenziertes Schreiben und tiefes Kontextverständnis aus. Ziel war ein leistungsstarkes, zugleich zuverlässig steuerbares Allround-Modell.",
+  "summary": "Claude Opus 4.6 ist Anthropics leistungsstärkstes Modell der Opus-Linie, entwickelt für komplexe Reasoning-, Analyse- und Kreativaufgaben. Es zeichnet sich durch tiefes Kontextverständnis, nuancierte Instruktionsbefolgung und hohe Zuverlässigkeit bei anspruchsvollen Aufgaben aus.",
   "strengths": [
-    "Sehr starkes Reasoning und mehrstufiges Problemlösen über lange Kontexte hinweg",
-    "Hohe Qualität bei nuanciertem, strukturiertem und kreativem Schreiben",
-    "Zuverlässige Instruktionsbefolgung mit konsistenter Tonalität und geringer Halluzinationsrate"
+    "Herausragende Leistung bei komplexen Reasoning- und Analyseaufgaben",
+    "Sehr hohes Kontextverständnis und Fähigkeit zur Nuancierung in langen Gesprächen",
+    "Stark optimiert für agentenbasierte Workflows und mehrstufige Aufgabenplanung"
   ],
   "known_limitations": [
-    "Ausschließlich über Anthropics Cloud-API verfügbar, kein lokaler Betrieb möglich",
-    "Kann bei sehr spezifischen Fachdomänen (z. B. aktuelle Ereignisse nach Trainings-Cutoff) an Grenzen stoßen"
+    "Nur über Anthropics Cloud-API verfügbar, kein lokaler Betrieb möglich",
+    "Höhere Latenz und Kosten im Vergleich zu kleineren Claude-Modellen (z.B. Haiku, Sonnet)"
   ],
-  "judge_context_hint": "Das Modell neigt zu besonders sorgfältig formulierten, ausgewogenen Antworten und vermeidet bewusst übermäßig assertive Aussagen – dies kann bei direkten Faktenfragen als Zögerlichkeit wirken, ist aber ein bewusstes Designmerkmal.",
+  "judge_context_hint": "Das Modell neigt zu ausführlichen, strukturierten Antworten und kann bei einfachen Aufgaben übermäßig detailliert antworten – Präzision und Kürze sollten explizit eingefordert werden.",
   "architecture_tags": [
+    "General",
     "Agentic-Orchestrator"
   ],
   "unknown": false,
-  "generated_at": "2026-04-11T14:33:58.133031+00:00",
+  "generated_at": "2026-04-23T21:59:06.526308+00:00",
+  "card_status": "complete",
+  "size_class": "Frontier",
   "thinking_probe_detected": false,
   "thinking_probe_evidence": "No CoT signals found. Response length: 379 chars",
   "thinking_probe_confidence": "low",

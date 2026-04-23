@@ -1,0 +1,31 @@
+{
+  "model_id": "claude-haiku-4-5",
+  "display_name": "Claude Haiku 4.5",
+  "developer": "Anthropic",
+  "origin_country": "USA",
+  "developer_jurisdiction": "US",
+  "deployment_type": "cloud-only",
+  "local_deployment_possible": false,
+  "weights_provenance_risk": "medium",
+  "weights_provenance_risk_rationale": "Anthropic ist ein US-amerikanisches Unternehmen und unterliegt dem CLOUD Act, jedoch nur bei API-Nutzung – die Modellgewichte sind nicht öffentlich zugänglich.",
+  "model_family": "Claude",
+  "primary_focus": "instruction-following",
+  "summary": "Claude Haiku 4.5 ist Anthropics schnellstes und kompaktestes Modell der Claude-4-Generation, entwickelt für latenzarme, kosteneffiziente Anwendungen. Es kombiniert starkes Instruction-Following mit hoher Verarbeitungsgeschwindigkeit und eignet sich besonders für Echtzeit-Interaktionen, Klassifikation und leichte Reasoning-Aufgaben.",
+  "strengths": [
+    "Sehr niedrige Latenz und hoher Durchsatz – ideal für Echtzeit- und Produktionsanwendungen",
+    "Kosteneffizient bei hohem Anfragevolumen im Vergleich zu größeren Claude-Modellen",
+    "Solides Instruction-Following und präzise Kurzantworten bei alltäglichen Aufgaben"
+  ],
+  "known_limitations": [
+    "Schwächer als Claude Sonnet oder Opus bei komplexen mehrstufigen Reasoning- und Analyseaufgaben",
+    "Begrenzte Tiefe bei langen, kontextreichen Dokumentenverarbeitungen oder anspruchsvollen kreativen Aufgaben"
+  ],
+  "judge_context_hint": "Haiku 4.5 ist auf Geschwindigkeit und Effizienz optimiert – bei komplexen Reasoning-Aufgaben oder langen Kontexten sollte der Judge die strukturelle Tiefe der Antworten kritisch prüfen, da das Modell zu Vereinfachungen neigen kann.",
+  "architecture_tags": [
+    "Instruct"
+  ],
+  "unknown": false,
+  "generated_at": "2026-04-23T22:04:32.944820+00:00",
+  "card_status": "complete",
+  "size_class": "Frontier"
+}

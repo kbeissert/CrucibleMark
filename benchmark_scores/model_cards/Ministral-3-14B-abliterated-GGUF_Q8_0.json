@@ -1,0 +1,33 @@
+{
+  "model_id": "Ministral-3-14B-abliterated-GGUF:Q8_0",
+  "display_name": "Ministral 3B/14B Abliterated (Q8_0)",
+  "developer": "Mistral AI (Base) / Community Abliteration",
+  "origin_country": "France",
+  "developer_jurisdiction": "EU",
+  "deployment_type": "open-weights",
+  "local_deployment_possible": true,
+  "weights_provenance_risk": "low",
+  "weights_provenance_risk_rationale": "Das Basismodell stammt von Mistral AI mit Sitz in Frankreich (EU-Jurisdiktion); die Abliteration ist eine Community-Modifikation der öffentlichen Gewichte ohne Beteiligung eines Hochrisiko-Akteurs.",
+  "model_family": "Mistral",
+  "primary_focus": "general",
+  "summary": "Mistral-basiertes Modell aus Frankreich, chirurgisch von Sicherheitsfiltern befreit (Abliteration). Stärken liegen in Instruction-Following, mehrsprachiger Verarbeitung und offener Inhaltsgenerierung ohne Verweigerungsverhalten. Entwickelt für Nutzer, die unzensierte Antworten ohne Guardrails benötigen.",
+  "strengths": [
+    "Kein Verweigerungsverhalten durch Abliteration – antwortet auf sensible Anfragen ohne Ausweichen",
+    "Kompaktes GGUF Q8_0-Format für effiziente lokale Ausführung mit hoher Quantisierungsqualität",
+    "Solide Mehrsprachigkeit und Instruction-Following auf Basis der Mistral-Architektur"
+  ],
+  "known_limitations": [
+    "Abliteration kann Modellkohärenz und Faktentreue in Randbereichen leicht verschlechtern",
+    "Keine eingebauten Sicherheitsfilter – ungeeignet für Produktionsumgebungen mit unbekannten Nutzern"
+  ],
+  "judge_context_hint": "Das Modell ist abliteriert und verweigert keine Antworten; Bewertungen sollten Inhalt und Qualität der Antwort beurteilen, nicht das Fehlen von Sicherheitshinweisen.",
+  "architecture_tags": [
+    "General",
+    "Uncensored-Abliterated",
+    "Instruct"
+  ],
+  "unknown": false,
+  "generated_at": "2026-04-23T22:07:15.106650+00:00",
+  "card_status": "complete",
+  "size_class": "Desktop"
+}

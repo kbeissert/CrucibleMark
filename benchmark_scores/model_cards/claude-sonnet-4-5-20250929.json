@@ -7,25 +7,28 @@
   "deployment_type": "cloud-only",
   "local_deployment_possible": false,
   "weights_provenance_risk": "medium",
-  "weights_provenance_risk_rationale": "Anthropic ist ein US-amerikanisches Unternehmen und unterliegt dem CLOUD Act, jedoch nicht dem chinesischen NSL; die Modellgewichte sind nicht öffentlich zugänglich.",
+  "weights_provenance_risk_rationale": "Anthropic ist ein US-amerikanisches Unternehmen und unterliegt dem CLOUD Act; die Modellgewichte sind nicht öffentlich zugänglich.",
   "model_family": "Claude",
   "primary_focus": "general",
-  "summary": "Claude Sonnet 4.5 ist ein Sprachmodell von Anthropic (USA), entwickelt für ausgewogene Leistung zwischen Geschwindigkeit und Qualität. Stärken liegen in präzisem Instruction-Following, nuanciertem Schreiben und sicherem Verhalten. Konzipiert als leistungsstarke Mittelklasse-Option der Claude-4-Generation.",
+  "summary": "Claude Sonnet 4.5 von Anthropic (USA) ist ein leistungsstarkes Allround-Modell der Claude-4-Generation, optimiert für komplexe Reasoning-Aufgaben, präzises Instruction-Following und agentenbasierte Workflows. Es kombiniert hohe Antwortqualität mit vertretbarer Latenz und richtet sich an anspruchsvolle Produktivanwendungen.",
   "strengths": [
-    "Starkes Instruction-Following mit hoher Präzision und Kontexttreue",
-    "Nuanciertes, stilsicheres Schreiben für komplexe Aufgaben",
-    "Robustes Sicherheitsverhalten und konsistente Ablehnung schädlicher Anfragen"
+    "Starkes Reasoning und mehrstufiges Problemlösen",
+    "Zuverlässiges Instruction-Following auch bei komplexen, langen Prompts",
+    "Gut geeignet für agentenbasierte und Tool-Use-Szenarien"
   ],
   "known_limitations": [
-    "Nur über Anthropic API verfügbar, kein lokaler Betrieb möglich",
-    "Kann bei sehr langen Kontexten oder hochspezialisierten Fachdomänen an Präzision verlieren"
+    "Nur über Anthropic-API verfügbar, kein lokaler Betrieb möglich",
+    "Wissenstand begrenzt auf Trainingsdaten-Cutoff; aktuelle Ereignisse erfordern externe Tools"
   ],
-  "judge_context_hint": "Das Modell neigt zu vorsichtigen, ausgewogenen Antworten und kann bei ambivalenten Anfragen eher absichern als direkt antworten – dies sollte bei der Bewertung von Direktheit und Entscheidungsfreude berücksichtigt werden.",
+  "judge_context_hint": "Das Modell neigt zu sorgfältig abgewogenen, ausführlichen Antworten und kann bei sehr kurzen Direktantworten leicht übererklären – Präzision und Vollständigkeit sind in der Regel hoch.",
   "architecture_tags": [
-    "General"
+    "General",
+    "Thinking-Optional"
   ],
   "unknown": false,
-  "generated_at": "2026-04-11T15:25:01.680246+00:00",
+  "generated_at": "2026-04-23T21:59:15.096468+00:00",
+  "card_status": "complete",
+  "size_class": "Frontier",
   "thinking_probe_detected": false,
   "thinking_probe_evidence": "No CoT signals found (A: no think-tags, B: reasoning_tokens=0). Response length: 700 chars",
   "thinking_probe_confidence": "low",

@@ -1,29 +1,32 @@
 {
-  "model_id": "deepseek-v3.2_cloud",
-  "display_name": "DeepSeek V3.2 (Cloud)",
+  "model_id": "deepseek-v3.2:cloud",
+  "display_name": "DeepSeek V3.2",
   "developer": "DeepSeek",
   "origin_country": "China",
   "developer_jurisdiction": "CN",
-  "deployment_type": "cloud-only",
-  "local_deployment_possible": false,
+  "deployment_type": "open-weights-cloud-available",
+  "local_deployment_possible": true,
   "weights_provenance_risk": "high",
   "weights_provenance_risk_rationale": "DeepSeek ist ein chinesisches Unternehmen und unterliegt dem chinesischen National Security Law (NSL), das staatlichen Zugriff auf Daten und Modelle ermöglichen kann.",
   "model_family": "DeepSeek",
   "primary_focus": "general",
-  "summary": "DeepSeek V3.2 ist ein großes Sprachmodell des chinesischen KI-Unternehmens DeepSeek. Es wurde auf breiten mehrsprachigen Korpora trainiert mit Schwerpunkt auf Reasoning, Coding und Instruktionsbefolgung. Das Modell zeichnet sich durch starke Leistung bei analytischen Aufgaben aus und wurde entwickelt, um mit führenden westlichen Frontier-Modellen zu konkurrieren.",
+  "summary": "DeepSeek V3.2 ist ein chinesisches Frontier-Modell von DeepSeek, trainiert auf breiten Wissens- und Reasoning-Aufgaben. Es zeichnet sich durch starke Coding-, Mathematik- und Sprachverständnisfähigkeiten aus und wurde entwickelt, um westliche Top-Modelle bei deutlich geringeren Trainingskosten zu erreichen.",
   "strengths": [
-    "Starke Leistung bei mathematischen und logischen Reasoning-Aufgaben",
-    "Hohe Qualität bei Code-Generierung und -Analyse",
-    "Gute mehrsprachige Fähigkeiten, insbesondere Chinesisch und Englisch"
+    "Starke Leistung bei Coding- und Mathematikaufgaben",
+    "Sehr gutes Preis-Leistungs-Verhältnis im Vergleich zu Konkurrenzmodellen",
+    "Breites Allgemeinwissen mit guter mehrsprachiger Kompetenz"
   ],
   "known_limitations": [
-    "Cloud-only-Deployment schränkt Datenkontrolle und lokale Nutzung ein",
-    "Mögliche Zensur oder Einschränkungen bei politisch sensiblen Themen gemäß chinesischer Regulierung"
+    "Unterliegt chinesischer Zensur bei politisch sensiblen Themen (z.B. Tiananmen, Taiwan)",
+    "Als V3.2 möglicherweise noch nicht vollständig dokumentiert – Architekturdetails gegenüber V3 unklar"
   ],
-  "judge_context_hint": "Das Modell kann bei politisch oder kulturell sensiblen Themen mit Bezug zu China eingeschränkte oder ausweichende Antworten liefern, was die Bewertung von Offenheit und Faktentreue beeinflussen kann.",
+  "judge_context_hint": "Das Modell kann bei politisch sensiblen Themen mit China-Bezug ausweichen oder verweigern; bei sachlichen und technischen Aufgaben ist die Leistung jedoch mit westlichen Top-Modellen vergleichbar.",
   "architecture_tags": [
-    "General"
+    "General",
+    "Coder"
   ],
   "unknown": false,
-  "generated_at": "2026-04-11T15:21:48.456199+00:00"
+  "generated_at": "2026-04-23T22:05:58.641837+00:00",
+  "card_status": "complete",
+  "size_class": "Frontier"
 }

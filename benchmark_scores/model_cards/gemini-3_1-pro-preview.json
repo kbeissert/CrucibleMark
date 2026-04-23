@@ -7,25 +7,29 @@
   "deployment_type": "cloud-only",
   "local_deployment_possible": false,
   "weights_provenance_risk": "medium",
-  "weights_provenance_risk_rationale": "Google DeepMind ist ein US-amerikanisches Unternehmen und unterliegt dem CLOUD Act, der staatlichen Zugriff auf Daten bei API-Nutzung ermöglichen kann; die Modellgewichte selbst sind nicht öffentlich zugänglich.",
+  "weights_provenance_risk_rationale": "Google DeepMind ist ein US-amerikanisches Unternehmen und unterliegt dem CLOUD Act, der staatlichen Zugriff auf Daten bei API-Nutzung ermöglichen kann, nicht jedoch auf die Weights selbst.",
   "model_family": "Gemini",
   "primary_focus": "general",
-  "summary": "Gemini 3.1 Pro Preview ist ein multimodales Large Language Model von Google DeepMind (USA), trainiert auf breiten Text-, Code- und Multimodal-Daten. Es zielt auf starke Reasoning-, Coding- und Sprachverständnisfähigkeiten ab und dient als Vorschauversion für Entwickler vor dem stabilen Release.",
+  "summary": "Gemini 3.1 Pro Preview ist ein experimentelles Großmodell von Google DeepMind (USA), trainiert auf multimodalen und mehrsprachigen Daten. Stärken liegen in komplexem Reasoning, langen Kontextfenstern und Code-Verständnis. Als Preview-Version sind Leistungsschwankungen zu erwarten.",
   "strengths": [
-    "Starke multimodale Fähigkeiten (Text, Bild, Code)",
-    "Leistungsfähiges Reasoning und komplexe Instruktionsbefolgung",
-    "Breite Sprachunterstützung und kontextuelles Verständnis über lange Kontextfenster"
+    "Starkes multimodales Verständnis (Text, Bild, Code)",
+    "Sehr großes Kontextfenster für lange Dokumente und Konversationen",
+    "Leistungsfähiges Reasoning und strukturiertes Problemlösen"
   ],
   "known_limitations": [
-    "Nur über Google Cloud API verfügbar, kein lokaler Betrieb möglich",
-    "Als Preview-Version potenziell instabil, mit möglichen Verhaltensänderungen bis zum stabilen Release"
+    "Preview-Status bedeutet instabile Leistung und mögliche API-Änderungen ohne Vorankündigung",
+    "Ausschließlich über Google Cloud / API nutzbar, keine lokale Ausführung möglich"
   ],
-  "judge_context_hint": "Das Modell befindet sich im Preview-Stadium und kann in Benchmarks leicht abweichendes oder inkonsistentes Verhalten gegenüber stabilen Releases zeigen; Ergebnisse sollten mit entsprechendem Vorbehalt bewertet werden.",
+  "judge_context_hint": "Als Preview-Modell kann Gemini 3.1 Pro inkonsistente Ausgabequalität zeigen; Antworten können zwischen Runs variieren und spiegeln nicht zwingend den finalen Produktionsstand wider.",
   "architecture_tags": [
+    "General",
+    "Thinking-Optional",
     "Preview"
   ],
   "unknown": true,
-  "generated_at": "2026-04-11T14:43:59.751623+00:00",
+  "generated_at": "2026-04-23T22:01:25.815655+00:00",
+  "card_status": "complete",
+  "size_class": "Frontier",
   "thinking_probe_detected": false,
   "thinking_probe_evidence": "No CoT signals found. Response length: 76 chars",
   "thinking_probe_confidence": "low",

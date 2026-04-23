@@ -7,25 +7,28 @@
   "deployment_type": "cloud-only",
   "local_deployment_possible": false,
   "weights_provenance_risk": "low",
-  "weights_provenance_risk_rationale": "Mistral AI ist ein französisches Unternehmen mit Sitz in der EU und unterliegt der DSGVO, nicht dem US CLOUD Act oder vergleichbarer autoritärer Sicherheitsgesetzgebung.",
+  "weights_provenance_risk_rationale": "Mistral AI ist ein französisches Unternehmen mit Sitz in der EU und unterliegt keiner staatlichen Zugriffspflicht auf Modellgewichte vergleichbar dem chinesischen NSL oder dem US CLOUD Act für Weights.",
   "model_family": "Mistral",
   "primary_focus": "general",
-  "summary": "Mistral Large ist das Flaggschiff-Modell des französischen KI-Unternehmens Mistral AI. Es wurde für komplexe Reasoning-Aufgaben, mehrsprachige Nutzung und Instruction-Following entwickelt. Stärken liegen in Präzision, Codegenerierung und strukturierter Ausgabe. Ziel war ein leistungsstarkes europäisches Gegengewicht zu US-Modellen.",
+  "summary": "Mistral Large ist das Flaggschiff-Modell des französischen KI-Unternehmens Mistral AI. Es wurde für komplexe Reasoning-, Analyse- und Mehrsprachigkeitsaufgaben entwickelt und zeichnet sich durch starke Instruktionsbefolgung, präzises Schlussfolgern und breite Sprachunterstützung aus.",
   "strengths": [
-    "Starke mehrsprachige Fähigkeiten, insbesondere für europäische Sprachen",
-    "Präzises Instruction-Following und strukturierte Ausgaben (z. B. JSON, Funktionsaufrufe)",
-    "Hohes Reasoning-Niveau bei komplexen Analyse- und Kodieraufgaben"
+    "Starkes mehrsprachiges Verständnis und Generierung (u. a. Englisch, Französisch, Deutsch, Spanisch, Italienisch)",
+    "Hohe Leistung bei komplexen Reasoning- und Analyseaufgaben",
+    "Zuverlässiges Instruction-Following mit präzisen, strukturierten Antworten"
   ],
   "known_limitations": [
-    "Gewichte sind nicht öffentlich verfügbar, daher kein lokaler Betrieb oder Fine-Tuning möglich",
-    "Kontextfenster und Modalitäten sind im Vergleich zu einigen Konkurrenzmodellen begrenzt"
+    "Gewichte nicht öffentlich verfügbar, daher kein lokaler Betrieb möglich",
+    "Bei sehr spezialisierten Coding-Aufgaben hinter dedizierten Code-Modellen wie Codestral zurück"
   ],
-  "judge_context_hint": "Mistral Large neigt zu präzisen, knappen Antworten und kann bei offenen kreativen Aufgaben weniger ausschweifend sein als US-Modelle – Qualität und Direktheit sind Designziele.",
+  "judge_context_hint": "Mistral Large neigt zu prägnanten, strukturierten Antworten und kann bei offenen kreativen Aufgaben etwas konservativer formulieren als US-amerikanische Konkurrenzmodelle.",
   "architecture_tags": [
-    "General"
+    "General",
+    "Instruct"
   ],
   "unknown": false,
-  "generated_at": "2026-04-11T15:53:05.829726+00:00",
+  "generated_at": "2026-04-23T21:57:50.399664+00:00",
+  "card_status": "complete",
+  "size_class": "Frontier",
   "thinking_probe_detected": false,
   "thinking_probe_evidence": "No CoT signals found (A: no think-tags, B: reasoning_tokens=0). Response length: 486 chars",
   "thinking_probe_confidence": "low",

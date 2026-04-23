@@ -1,0 +1,32 @@
+{
+  "model_id": "qwen2.5:3b",
+  "display_name": "Qwen 2.5 3B",
+  "developer": "Alibaba Cloud",
+  "origin_country": "China",
+  "developer_jurisdiction": "CN",
+  "deployment_type": "open-weights-cloud-available",
+  "local_deployment_possible": true,
+  "weights_provenance_risk": "high",
+  "weights_provenance_risk_rationale": "Alibaba Cloud unterliegt als chinesisches Unternehmen dem chinesischen National Security Law (NSL), das staatlichen Zugriff auf Daten und Modellentwicklung ermöglichen kann.",
+  "model_family": "Qwen",
+  "primary_focus": "general",
+  "summary": "Qwen 2.5 3B ist ein kompaktes Sprachmodell von Alibaba Cloud (China), trainiert auf einem breiten mehrsprachigen Datensatz mit Schwerpunkt auf Instruction-Following, Coding und Mathematik. Es richtet sich an ressourcenbeschränkte Umgebungen und lokale Deployments, wo ein gutes Leistungs-Effizienz-Verhältnis gefragt ist.",
+  "strengths": [
+    "Sehr geringer Ressourcenbedarf – lokal auf Consumer-Hardware betreibbar",
+    "Solide Mehrsprachigkeit, insbesondere Chinesisch und Englisch",
+    "Gute Leistung in Coding- und Mathematikaufgaben für die Modellgröße"
+  ],
+  "known_limitations": [
+    "Begrenzte Kontextlänge und Reasoning-Tiefe im Vergleich zu größeren Modellen der gleichen Familie",
+    "Kann bei komplexen Mehrstufenaufgaben oder langen Dokumenten an Kapazitätsgrenzen stoßen"
+  ],
+  "judge_context_hint": "Das Modell ist für seine Größe (3B Parameter) überdurchschnittlich leistungsfähig, sollte aber nicht an Maßstäben größerer Modelle gemessen werden – Antwortqualität und Instruktionstreue sind im 3B-Kontext zu bewerten.",
+  "architecture_tags": [
+    "General",
+    "Instruct"
+  ],
+  "unknown": false,
+  "generated_at": "2026-04-23T22:10:10.975574+00:00",
+  "card_status": "complete",
+  "size_class": "Nano"
+}

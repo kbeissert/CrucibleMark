@@ -7,25 +7,29 @@
   "deployment_type": "cloud-only",
   "local_deployment_possible": false,
   "weights_provenance_risk": "medium",
-  "weights_provenance_risk_rationale": "Google DeepMind ist ein US-amerikanisches Unternehmen und unterliegt dem CLOUD Act; die Modellgewichte sind nicht öffentlich zugänglich, sodass ein direkter Zugriff Dritter auf die Weights nicht bekannt ist.",
+  "weights_provenance_risk_rationale": "Google DeepMind ist ein US-amerikanisches Unternehmen und unterliegt dem CLOUD Act; die Modellgewichte sind nicht öffentlich zugänglich.",
   "model_family": "Gemini",
   "primary_focus": "general",
-  "summary": "Gemini 3 Flash Preview ist Googles schnelles Multimodal-Modell der Gemini-3-Generation, entwickelt für latenzarme, kosteneffiziente Anwendungen. Es kombiniert starke Instruktionsbefolgung mit multimodalen Fähigkeiten und richtet sich an Entwickler, die hohe Durchsatzraten bei breiter Aufgabenabdeckung benötigen.",
+  "summary": "Gemini 3 Flash Preview ist Googles schnelles Multimodal-Modell der dritten Generation, entwickelt für latenzarme, kosteneffiziente Anwendungen. Stärken liegen in schneller Verarbeitung langer Kontexte, multimodalen Eingaben und alltäglichen Reasoning-Aufgaben. Als Preview-Version ist die Leistung noch nicht final.",
   "strengths": [
-    "Sehr niedrige Latenz bei hohem Anfragevolumen",
-    "Solide multimodale Fähigkeiten (Text, Bild, Code)",
-    "Breite Aufgabenabdeckung bei kompetitivem Preis-Leistungs-Verhältnis"
+    "Sehr niedrige Latenz bei hohem Durchsatz, geeignet für Echtzeit-Anwendungen",
+    "Starke multimodale Fähigkeiten (Text, Bild, Audio, Video)",
+    "Effiziente Verarbeitung sehr langer Kontextfenster"
   ],
   "known_limitations": [
-    "Geringere Reasoning-Tiefe im Vergleich zu größeren Modellen der Gemini-Pro/Ultra-Linie",
-    "Keine lokale Ausführung möglich – vollständige Abhängigkeit von Googles Cloud-Infrastruktur"
+    "Preview-Status bedeutet Leistungsschwankungen und mögliche API-Instabilität",
+    "Schwächer als größere Gemini-Varianten bei komplexen mehrstufigen Reasoning-Aufgaben"
   ],
-  "judge_context_hint": "Das Modell ist auf Geschwindigkeit und Effizienz optimiert; bei komplexen mehrstufigen Reasoning-Aufgaben kann die Antwortqualität hinter schwergewichtigeren Modellen zurückbleiben.",
+  "judge_context_hint": "Das Modell ist eine experimentelle Preview-Version; Antwortqualität und Konsistenz können zwischen Aufrufen variieren, was bei der Bewertung berücksichtigt werden sollte.",
   "architecture_tags": [
+    "General",
+    "Thinking-Optional",
     "Preview"
   ],
-  "unknown": true,
-  "generated_at": "2026-04-11T14:40:50.616161+00:00",
+  "unknown": false,
+  "generated_at": "2026-04-23T22:01:35.418589+00:00",
+  "card_status": "complete",
+  "size_class": "Frontier",
   "thinking_probe_detected": false,
   "thinking_probe_evidence": "No CoT signals found (A: no think-tags, B: reasoning_tokens=0). Response length: 276 chars",
   "thinking_probe_confidence": "low",

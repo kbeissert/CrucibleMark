@@ -1,29 +1,32 @@
 {
-  "model_id": "hermes3_8b",
+  "model_id": "hermes3:8b",
   "display_name": "Hermes 3 8B",
   "developer": "Nous Research",
   "origin_country": "USA",
   "developer_jurisdiction": "US",
   "deployment_type": "open-weights",
   "local_deployment_possible": true,
-  "weights_provenance_risk": "low",
-  "weights_provenance_risk_rationale": "Nous Research ist eine unabhängige, community-getriebene Forschungsorganisation ohne bekannten kommerziellen Hintergrund oder staatliche Einflussnahme; die Weights sind öffentlich verfügbar.",
+  "weights_provenance_risk": "medium",
+  "weights_provenance_risk_rationale": "Nous Research ist ein US-amerikanisches Unternehmen, dessen Weights öffentlich verfügbar sind – CLOUD Act ist nur bei API-Nutzung relevant, nicht bei lokaler Ausführung.",
   "model_family": "Hermes",
   "primary_focus": "instruction-following",
-  "summary": "Hermes 3 8B ist ein von Nous Research feingetuntes Modell auf Basis von Meta Llama 3.1 8B. Es wurde auf einem kuratierten Instruction-Following-Datensatz trainiert, mit Fokus auf präzise Anweisungsbefolgung, Rollenspiel und strukturierte Ausgaben. Stärken liegen in Gesprächsqualität und Agentic-Tasks.",
+  "summary": "Hermes 3 8B ist ein von Nous Research feinabgestimmtes Modell auf Basis von Llama 3.1 8B. Es wurde auf einem kuratierten Datensatz für präzises Instruction-Following, Rollenspiel und agentenbasierte Aufgaben trainiert. Stärken liegen in langen Kontexten, Funktionsaufrufen und reduzierter Übervorsicht.",
   "strengths": [
-    "Sehr gute Instruction-Following-Qualität für ein 8B-Modell",
-    "Stärken bei strukturierten Ausgaben (JSON, Funktionsaufrufe) und Agentic-Workflows",
-    "Gute Gesprächskohärenz und Rollenspiel-Fähigkeiten durch spezialisierten Fine-Tune-Datensatz"
+    "Starkes Instruction-Following mit reduzierter Ablehnung harmloser Anfragen",
+    "Gute Leistung bei Funktionsaufrufen und strukturierten Ausgaben (JSON, Tool-Use)",
+    "Effektiv für Rollenspiel- und agentenbasierte Szenarien trotz kompakter 8B-Größe"
   ],
   "known_limitations": [
-    "Basiert auf Llama 3.1 8B – bei komplexen Reasoning-Aufgaben deutlich schwächer als größere Modelle",
-    "Wissensbasis durch Llama-3.1-Cutoff begrenzt; kein natives Multimodal-Support"
+    "Als Finetuning auf Llama 3.1 8B begrenzte Rohkapazität gegenüber größeren Modellen bei komplexem Reasoning",
+    "Reduzierte Sicherheitsfilter können bei sensiblen Themen zu unerwünschten Ausgaben führen"
   ],
-  "judge_context_hint": "Das Modell ist ein Community-Fine-Tune und kann bei sehr formalen oder akademischen Aufgaben gelegentlich einen informelleren, gesprächsorientierten Ton bevorzugen als erwartet.",
+  "judge_context_hint": "Hermes 3 ist ein Uncensored-Finetuning mit bewusst reduzierter Ablehnung – der Judge sollte Antwortqualität und Präzision bewerten, nicht das Fehlen von Sicherheitshinweisen als Schwäche werten.",
   "architecture_tags": [
+    "Instruct",
     "Uncensored-Finetuned"
   ],
   "unknown": false,
-  "generated_at": "2026-04-11T15:31:29.359642+00:00"
+  "generated_at": "2026-04-23T22:09:38.126269+00:00",
+  "card_status": "complete",
+  "size_class": "Edge"
 }

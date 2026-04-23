@@ -7,25 +7,28 @@
   "deployment_type": "cloud-only",
   "local_deployment_possible": false,
   "weights_provenance_risk": "medium",
-  "weights_provenance_risk_rationale": "xAI ist ein US-amerikanisches Unternehmen und unterliegt dem CLOUD Act, der staatlichen Zugriff auf Daten bei API-Nutzung ermöglichen kann, jedoch nicht auf lokal betriebene Weights.",
+  "weights_provenance_risk_rationale": "xAI ist ein US-amerikanisches Unternehmen und unterliegt dem CLOUD Act, jedoch ist dieser nur bei API-Nutzung relevant, nicht bei den Weights selbst.",
   "model_family": "Grok",
-  "primary_focus": "reasoning",
-  "summary": "Grok 3 ist ein Large Language Model von xAI (Elon Musk, USA), trainiert mit Fokus auf starkes Reasoning, Mathematik und Coding. Es wurde als Konkurrenz zu GPT-4 und Claude entwickelt und zeichnet sich durch Echtzeit-Webzugriff sowie eine weniger restriktive Antwortpolitik aus.",
+  "primary_focus": "general",
+  "summary": "Grok 3 ist das Flaggschiff-Modell von xAI (USA), trainiert auf einem großen Datensatz inklusive Echtzeit-X-Plattformdaten. Stärken liegen in Reasoning, Mathematik und aktuellem Weltwissen. Entwickelt als direkte Konkurrenz zu GPT-4 und Claude mit Fokus auf unzensierte, direkte Antworten.",
   "strengths": [
-    "Starke Leistung bei mathematischen und logischen Reasoning-Aufgaben",
-    "Coding-Kompetenz auf hohem Niveau mit präzisen Erklärungen",
-    "Weniger restriktive Content-Policy ermöglicht offenere Diskussionen kontroverser Themen"
+    "Starke Reasoning- und Mathematikfähigkeiten, insbesondere mit aktiviertem Thinking-Modus",
+    "Zugang zu aktuellen Informationen über X/Twitter-Datensatz und Echtzeit-Websuche",
+    "Hohe Leistung bei komplexen mehrstufigen Aufgaben und wissenschaftlichen Fragestellungen"
   ],
   "known_limitations": [
-    "Ausschließlich über die xAI-API bzw. die Grok-Plattform (X/Twitter) verfügbar, keine lokale Nutzung möglich",
-    "Trainingsdaten und genaue Modellarchitektur sind nicht vollständig öffentlich dokumentiert"
+    "Ausschließlich über xAI-API und Grok-Weboberfläche verfügbar, keine lokale Nutzung möglich",
+    "Gelegentlich übermäßig ausführliche Antworten; Qualität kann bei sehr spezifischen Nischenbereichen hinter spezialisierten Modellen zurückbleiben"
   ],
-  "judge_context_hint": "Grok 3 neigt zu direkten, teils pointierten Antworten mit weniger Selbstzensur als vergleichbare Modelle – bei der Bewertung von Ton und Stil sollte dies als bewusstes Design-Merkmal berücksichtigt werden.",
+  "judge_context_hint": "Grok 3 verfügt über einen optionalen Thinking-Modus (DeepSearch/Think), der bei aktivierter Nutzung die Antwortqualität bei Reasoning-Aufgaben deutlich steigert – Benchmarks sollten den genutzten Modus explizit dokumentieren.",
   "architecture_tags": [
+    "General",
     "Thinking-Optional"
   ],
   "unknown": false,
-  "generated_at": "2026-04-11T15:51:34.415132+00:00",
+  "generated_at": "2026-04-23T22:02:07.557912+00:00",
+  "card_status": "complete",
+  "size_class": "Frontier",
   "thinking_probe_detected": false,
   "thinking_probe_evidence": "No CoT signals found (A: no think-tags, B: reasoning_tokens=0). Response length: 1257 chars",
   "thinking_probe_confidence": "low",

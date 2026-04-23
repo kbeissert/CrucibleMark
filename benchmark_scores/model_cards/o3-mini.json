@@ -1,34 +1,35 @@
 {
   "model_id": "o3-mini",
-  "display_name": "OpenAI o3-mini",
+  "display_name": "o3-mini",
   "developer": "OpenAI",
   "origin_country": "USA",
   "developer_jurisdiction": "US",
   "deployment_type": "cloud-only",
   "local_deployment_possible": false,
   "weights_provenance_risk": "medium",
-  "weights_provenance_risk_rationale": "OpenAI ist ein US-amerikanisches Unternehmen und unterliegt dem CLOUD Act, der bei API-Nutzung staatlichen Zugriff ermöglichen kann; die Modellgewichte sind nicht öffentlich verfügbar.",
-  "model_family": "OpenAI o-series",
+  "weights_provenance_risk_rationale": "OpenAI ist ein US-amerikanisches Unternehmen und unterliegt dem CLOUD Act, jedoch sind die Modellgewichte nicht öffentlich zugänglich, sodass ein direkter Zugriff auf Weights nicht besteht.",
+  "model_family": "o3",
   "primary_focus": "reasoning",
-  "summary": "o3-mini ist ein kompaktes Reasoning-Modell von OpenAI (USA), das auf mathematisches, wissenschaftliches und logisches Schlussfolgern optimiert wurde. Es bietet starke Chain-of-Thought-Fähigkeiten bei geringerer Latenz und niedrigeren Kosten als o3, eignet sich besonders für STEM-Aufgaben und strukturierte Problemlösung.",
+  "summary": "o3-mini ist ein kompaktes Reasoning-Modell von OpenAI (USA), das auf STEM-Aufgaben, Mathematik und Coding spezialisiert ist. Es nutzt internes Chain-of-Thought und bietet drei Reasoning-Stufen (low/medium/high). Entwickelt als kosteneffiziente Alternative zu o3 für rechenintensive Denkaufgaben.",
   "strengths": [
-    "Starke Leistung bei mathematischen und naturwissenschaftlichen Aufgaben (AIME, GPQA)",
-    "Effizientes Reasoning mit niedrigerer Latenz und geringeren Kosten im Vergleich zu o3",
-    "Zuverlässige mehrstufige logische Schlussfolgerungen und strukturierte Problemlösung"
+    "Herausragende Leistung bei mathematischen und wissenschaftlichen Reasoning-Aufgaben",
+    "Drei einstellbare Reasoning-Intensitätsstufen (low, medium, high) für Kosten-Leistungs-Optimierung",
+    "Deutlich schneller und günstiger als o3 bei vergleichbarer Reasoning-Qualität in vielen Benchmarks"
   ],
   "known_limitations": [
-    "Schwächer bei kreativen, offenen oder stark kontextabhängigen Sprachaufgaben im Vergleich zu GPT-4o",
-    "Kein Zugriff auf Echtzeit-Informationen; Wissenstand auf Trainingsdaten begrenzt"
+    "Kein nativer Multimodal-Support (kein Bild-Input in der Basisversion)",
+    "Schwächer als größere Modelle bei kreativen, nuancierten Sprach- und Schreibaufgaben"
   ],
-  "judge_context_hint": "o3-mini ist auf präzises Schlussfolgern optimiert und neigt dazu, Antworten strukturiert und schrittweise zu entwickeln – bei kreativen oder nuancierten Sprachaufgaben kann die Ausgabe trockener und weniger ausdrucksstark wirken als bei generalistischen Modellen.",
+  "judge_context_hint": "o3-mini denkt intern via Chain-of-Thought, zeigt diesen Prozess aber nicht im Output – Antworten wirken direkt, sind aber das Ergebnis verdeckten Reasonings; die Reasoning-Stufe beeinflusst Antwortqualität und Latenz erheblich.",
   "architecture_tags": [
     "Thinking"
   ],
   "unknown": false,
-  "generated_at": "2026-04-11T15:00:02.516224+00:00",
+  "generated_at": "2026-04-23T21:59:59.335172+00:00",
+  "card_status": "complete",
+  "size_class": "Frontier",
   "thinking_probe_detected": true,
   "thinking_probe_evidence": "Manually confirmed: OpenAI o-series models use internal chain-of-thought reasoning. The API does not expose reasoning tokens or think-tags in the response body; automated probe cannot detect this. Token budget override is required.",
   "thinking_probe_confidence": "high",
-  "thinking_probe_at": "2026-04-23T13:57:17.516314+00:00",
-  "thinking_probe_manual_override": true
+  "thinking_probe_at": "2026-04-23T13:57:17.516314+00:00"
 }

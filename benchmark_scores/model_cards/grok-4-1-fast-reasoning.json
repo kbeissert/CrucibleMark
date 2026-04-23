@@ -1,0 +1,31 @@
+{
+  "model_id": "grok-4-1-fast-reasoning",
+  "display_name": "Grok 4.1 Fast Reasoning",
+  "developer": "xAI",
+  "origin_country": "USA",
+  "developer_jurisdiction": "US",
+  "deployment_type": "cloud-only",
+  "local_deployment_possible": false,
+  "weights_provenance_risk": "medium",
+  "weights_provenance_risk_rationale": "xAI ist ein US-amerikanisches Unternehmen und unterliegt dem CLOUD Act, jedoch nicht dem chinesischen NSL; Gewichte sind nicht öffentlich verfügbar.",
+  "model_family": "Grok",
+  "primary_focus": "reasoning",
+  "summary": "Grok 4.1 Fast Reasoning ist ein Reasoning-Modell von xAI (USA), das auf schnelle Chain-of-Thought-Inferenz ausgelegt ist. Es kombiniert strukturiertes Schlussfolgern mit reduzierter Latenz und richtet sich an Anwendungsfälle, die analytische Tiefe bei vertretbarer Antwortgeschwindigkeit erfordern.",
+  "strengths": [
+    "Schnelle Reasoning-Inferenz mit reduzierter Latenz gegenüber vollständigen Thinking-Modellen",
+    "Strukturiertes mehrstufiges Schlussfolgern bei mathematischen und logischen Aufgaben",
+    "Integration in das xAI-Ökosystem mit Echtzeit-Datenzugang über Grok-Plattform"
+  ],
+  "known_limitations": [
+    "Nur über xAI-API/Cloud verfügbar, kein lokaler Betrieb möglich",
+    "Als spezialisiertes Fast-Reasoning-Modell potenziell schwächer bei kreativen oder offenen Generierungsaufgaben als Vollmodelle"
+  ],
+  "judge_context_hint": "Das Modell ist auf schnelles Reasoning optimiert und kann zugunsten von Geschwindigkeit tiefere Denkschritte abkürzen – bei komplexen mehrstufigen Aufgaben auf Vollständigkeit der Argumentationskette achten.",
+  "architecture_tags": [
+    "Thinking"
+  ],
+  "unknown": false,
+  "generated_at": "2026-04-23T22:02:39.790266+00:00",
+  "card_status": "complete",
+  "size_class": "Frontier"
+}

@@ -1,0 +1,32 @@
+{
+  "model_id": "kimi-k2.5",
+  "display_name": "Kimi K2.5",
+  "developer": "Moonshot AI",
+  "origin_country": "China",
+  "developer_jurisdiction": "CN",
+  "deployment_type": "cloud-only",
+  "local_deployment_possible": false,
+  "weights_provenance_risk": "high",
+  "weights_provenance_risk_rationale": "Moonshot AI ist ein chinesisches Unternehmen und unterliegt dem chinesischen Nationalen Sicherheitsgesetz (NSL), das staatlichen Zugriff auf Daten und Modelle ermöglichen kann.",
+  "model_family": "Kimi",
+  "primary_focus": "reasoning",
+  "summary": "Kimi K2.5 ist ein Reasoning-Modell von Moonshot AI aus China, entwickelt für komplexe mehrstufige Schlussfolgerungen, mathematische Problemlösung und Long-Context-Verarbeitung. Es kombiniert starkes analytisches Denken mit breiter Sprachunterstützung und zielt auf anspruchsvolle Wissens- und Planungsaufgaben.",
+  "strengths": [
+    "Starke Leistung bei mehrstufigem logischem Schlussfolgern und mathematischen Aufgaben",
+    "Sehr langer Kontextfenster für die Verarbeitung umfangreicher Dokumente",
+    "Gute Mehrsprachigkeit mit besonderem Fokus auf Chinesisch und Englisch"
+  ],
+  "known_limitations": [
+    "Nur über Moonshot-API verfügbar, keine lokale Ausführung möglich",
+    "Verhalten bei politisch sensiblen Themen unterliegt chinesischen Zensurrichtlinien"
+  ],
+  "judge_context_hint": "Das Modell zeigt ausgeprägte Chain-of-Thought-Fähigkeiten, kann bei komplexen Reasoning-Aufgaben jedoch zu überlangen Zwischenschritten neigen; Antwortqualität bei westlich-kulturellen Referenzen kann variieren.",
+  "architecture_tags": [
+    "Thinking",
+    "Agentic-Orchestrator"
+  ],
+  "unknown": false,
+  "generated_at": "2026-04-23T22:04:52.517281+00:00",
+  "card_status": "complete",
+  "size_class": "Frontier"
+}

@@ -1,0 +1,31 @@
+{
+  "model_id": "z-ai/glm-5",
+  "display_name": "GLM-5",
+  "developer": "Zhipu AI",
+  "origin_country": "China",
+  "developer_jurisdiction": "CN",
+  "deployment_type": "open-weights-cloud-available",
+  "local_deployment_possible": true,
+  "weights_provenance_risk": "high",
+  "weights_provenance_risk_rationale": "Zhipu AI ist ein chinesisches Unternehmen und unterliegt dem chinesischen Nationalen Sicherheitsgesetz (NSL), das staatlichen Zugriff auf Daten und Modellgewichte ermöglichen kann.",
+  "model_family": "GLM",
+  "primary_focus": "general",
+  "summary": "GLM-5 ist ein chinesisches Large Language Model von Zhipu AI, entwickelt als Nachfolger der GLM-Reihe. Es wurde auf mehrsprachigen und chinesischsprachigen Daten trainiert, mit Stärken in Reasoning, Dialogführung und Instruktionsbefolgung. Ziel ist ein leistungsfähiges Allround-Modell für akademische und kommerzielle Anwendungen.",
+  "strengths": [
+    "Starke Leistung in chinesischsprachigen Aufgaben und Textverstehen",
+    "Solide Instruction-Following-Fähigkeiten in mehrsprachigen Szenarien",
+    "Gute Reasoning- und Dialogkompetenz auf Basis der weiterentwickelten GLM-Architektur"
+  ],
+  "known_limitations": [
+    "Detaillierte technische Spezifikationen und unabhängige Benchmarks sind öffentlich kaum verfügbar",
+    "Mögliche Einschränkungen bei politisch sensiblen Themen entsprechend chinesischer Regulierungsvorgaben"
+  ],
+  "judge_context_hint": "Das Modell stammt aus der GLM-Familie von Zhipu AI und kann bei englischsprachigen Benchmarks gegenüber chinesischsprachigen Aufgaben leicht schwächer abschneiden; zudem sind öffentliche Leistungsdaten zu GLM-5 noch begrenzt.",
+  "architecture_tags": [
+    "General"
+  ],
+  "unknown": true,
+  "generated_at": "2026-04-23T22:03:28.984456+00:00",
+  "card_status": "complete",
+  "size_class": "Frontier"
+}

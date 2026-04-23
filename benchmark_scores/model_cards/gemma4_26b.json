@@ -1,5 +1,5 @@
 {
-  "model_id": "gemma4_26b",
+  "model_id": "gemma4:26b",
   "display_name": "Gemma 4 26B",
   "developer": "Google DeepMind",
   "origin_country": "USA",
@@ -7,23 +7,26 @@
   "deployment_type": "open-weights-cloud-available",
   "local_deployment_possible": true,
   "weights_provenance_risk": "medium",
-  "weights_provenance_risk_rationale": "Google DeepMind ist ein US-amerikanisches Unternehmen und unterliegt dem CLOUD Act, jedoch ist der CLOUD Act primär bei API-Nutzung relevant; die Weights selbst sind öffentlich verfügbar und lokal betreibbar.",
+  "weights_provenance_risk_rationale": "Google DeepMind ist ein US-amerikanisches Unternehmen und unterliegt dem CLOUD Act, der staatlichen Zugriff auf Daten bei API-Nutzung ermöglichen kann, betrifft jedoch nicht die lokal betriebenen Gewichte direkt.",
   "model_family": "Gemma",
   "primary_focus": "general",
-  "summary": "Gemma 4 26B ist ein Open-Weights-Modell von Google DeepMind aus den USA, trainiert auf einem breiten Mix aus Text- und Code-Daten. Es richtet sich an Entwickler, die leistungsfähige Modelle lokal oder in eigener Infrastruktur betreiben wollen, mit Stärken in Instruktionsbefolgung, Mehrsprachigkeit und Reasoning.",
+  "summary": "Gemma 4 26B ist ein Open-Weights-Modell von Google DeepMind aus den USA. Es wurde als leistungsfähiges Allround-Modell für Instruction-Following, Reasoning und multilinguale Aufgaben entwickelt. Stärken liegen in effizienter lokaler Ausführung und solider Sprachverarbeitung bei moderatem Ressourcenbedarf.",
   "strengths": [
-    "Starke Instruktionsbefolgung durch gezieltes Instruction-Tuning",
-    "Effiziente Architektur ermöglicht lokalen Betrieb auf Consumer-Hardware",
-    "Solide Mehrsprachigkeit und Code-Verständnis"
+    "Effizient lokal betreibbar mit vergleichsweise geringem Hardwarebedarf für die Modellgröße",
+    "Solide Instruction-Following-Fähigkeiten durch gezieltes Fine-Tuning",
+    "Breite multilinguale Unterstützung und gute allgemeine Sprachverarbeitung"
   ],
   "known_limitations": [
-    "Geringere Kontextlänge und Reasoning-Tiefe im Vergleich zu deutlich größeren Frontier-Modellen",
-    "Kann bei komplexen mehrstufigen Aufgaben an Konsistenz verlieren"
+    "Schwächere Leistung bei komplexen mehrstufigen Reasoning-Aufgaben im Vergleich zu größeren Frontier-Modellen",
+    "Konservatives Sicherheitsfiltering kann bei legitimen Anfragen zu übermäßiger Ablehnung führen"
   ],
-  "judge_context_hint": "Das Modell ist auf präzise Instruktionsbefolgung optimiert und tendiert zu knappen, strukturierten Antworten – bei offenen kreativen oder sehr langen Aufgaben kann die Ausgabequalität variieren.",
+  "judge_context_hint": "Gemma 4 26B neigt zu konservativem, sicherheitsorientiertem Verhalten und kann bei ambivalenten Prompts kürzere oder ausweichende Antworten liefern – dies sollte bei der Bewertung von Vollständigkeit und Direktheit berücksichtigt werden.",
   "architecture_tags": [
-    "General"
+    "General",
+    "Instruct"
   ],
-  "unknown": true,
-  "generated_at": "2026-04-11T14:45:32.328234+00:00"
+  "unknown": false,
+  "generated_at": "2026-04-23T22:08:34.901086+00:00",
+  "card_status": "complete",
+  "size_class": "Workstation"
 }

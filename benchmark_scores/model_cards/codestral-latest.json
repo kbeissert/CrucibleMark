@@ -1,31 +1,33 @@
 {
   "model_id": "codestral-latest",
-  "display_name": "Codestral (Latest)",
+  "display_name": "Codestral",
   "developer": "Mistral AI",
   "origin_country": "France",
   "developer_jurisdiction": "EU",
   "deployment_type": "cloud-only",
   "local_deployment_possible": false,
   "weights_provenance_risk": "low",
-  "weights_provenance_risk_rationale": "Mistral AI ist ein französisches Unternehmen mit Sitz in der EU und unterliegt keiner Gesetzgebung, die staatlichen Zugriff auf Modellgewichte erzwingt.",
-  "model_family": "Mistral",
+  "weights_provenance_risk_rationale": "Mistral AI ist ein französisches Unternehmen mit Sitz in der EU und unterliegt keiner staatlichen Zugriffspflicht auf Modellgewichte wie dem US CLOUD Act oder dem chinesischen NSL.",
+  "model_family": "Codestral",
   "primary_focus": "coding",
-  "summary": "Codestral ist ein auf Code-Generierung spezialisiertes Modell von Mistral AI (Frankreich). Es wurde trainiert, um Entwickler bei Autovervollständigung, Debugging und Code-Erklärung zu unterstützen. Stärken liegen in über 80 Programmiersprachen, Fill-in-the-Middle-Aufgaben und langen Kontextfenstern bis 32k Token.",
+  "summary": "Codestral ist Mistral AIs spezialisiertes Code-Modell aus Frankreich, trainiert auf über 80 Programmiersprachen. Es glänzt bei Code-Vervollständigung, Debugging und Erklärungen. Entwickelt, um Entwickler mit schnellen, präzisen Code-Ausgaben zu unterstützen.",
   "strengths": [
-    "Spezialisiert auf Code-Generierung und -Vervollständigung in über 80 Programmiersprachen",
-    "Unterstützt Fill-in-the-Middle (FIM) für präzise Code-Einfügungen im bestehenden Kontext",
-    "Großes Kontextfenster (bis zu 32.000 Token) für umfangreiche Codebasen"
+    "Hervorragende Code-Vervollständigung und Fill-in-the-Middle (FIM) für viele Sprachen",
+    "Breite Sprachabdeckung mit über 80 Programmiersprachen inkl. Python, JS, Rust, Go",
+    "Schnelle Inferenz bei gleichzeitig hoher Code-Qualität dank optimierter Architektur"
   ],
   "known_limitations": [
-    "Gewichte sind nicht öffentlich verfügbar, daher kein lokaler Betrieb möglich",
-    "Nicht für allgemeine Konversation oder nicht-technische Aufgaben optimiert"
+    "Nur über Mistral-API verfügbar, keine öffentlichen Gewichte für lokalen Betrieb",
+    "Schwächer bei komplexen Reasoning-Aufgaben außerhalb des Code-Kontexts"
   ],
-  "judge_context_hint": "Codestral ist explizit auf Code-Aufgaben ausgerichtet; bei allgemeinen Sprach- oder Reasoning-Benchmarks außerhalb des Coding-Kontexts ist mit deutlich schwächerer Leistung zu rechnen.",
+  "judge_context_hint": "Codestral ist auf Code-Aufgaben spezialisiert und zeigt bei reinen Coding-Benchmarks überdurchschnittliche Leistung, kann aber bei allgemeinen Reasoning- oder Wissensfragen hinter Allround-Modellen zurückbleiben.",
   "architecture_tags": [
     "Coder"
   ],
   "unknown": false,
-  "generated_at": "2026-04-11T15:18:28.034754+00:00",
+  "generated_at": "2026-04-23T21:58:38.887763+00:00",
+  "card_status": "complete",
+  "size_class": "Frontier",
   "thinking_probe_detected": false,
   "thinking_probe_evidence": "No CoT signals found (A: no think-tags, B: reasoning_tokens=0). Response length: 819 chars",
   "thinking_probe_confidence": "low",

@@ -1,12 +1,34 @@
 {
   "model_id": "moonshotai/kimi-k2.5",
-  "display_name": "moonshotai/kimi-k2.5",
-  "developer": "n/a",
-  "architecture_tags": [
-    "Thinking"
+  "display_name": "Kimi K2.5",
+  "developer": "Moonshot AI",
+  "origin_country": "China",
+  "developer_jurisdiction": "CN",
+  "deployment_type": "open-weights-cloud-available",
+  "local_deployment_possible": true,
+  "weights_provenance_risk": "high",
+  "weights_provenance_risk_rationale": "Moonshot AI ist ein chinesisches Unternehmen und unterliegt dem chinesischen National Security Law (NSL), das staatliche Zugriffe auf Daten und Modellentwicklung ermöglichen kann.",
+  "model_family": "Kimi",
+  "primary_focus": "reasoning",
+  "summary": "Kimi K2.5 ist ein Reasoning-Modell von Moonshot AI aus China, trainiert auf komplexe mehrstufige Schlussfolgerungen, mathematische Probleme und agentenbasierte Aufgaben. Es kombiniert starkes Chain-of-Thought-Denken mit Coding- und Tool-Use-Fähigkeiten und richtet sich an anspruchsvolle analytische Anwendungsfälle.",
+  "strengths": [
+    "Starke mehrstufige Reasoning-Fähigkeiten bei Mathematik und Logik",
+    "Gute Performance bei agentenbasierten und Tool-Use-Szenarien",
+    "Solide Coding-Kompetenz kombiniert mit analytischem Denken"
   ],
-  "card_status": "minimal",
-  "generated_at": "2026-04-23T14:11:04.288737+00:00",
+  "known_limitations": [
+    "Thinking-Prozess erhöht Latenz und Token-Verbrauch erheblich",
+    "Mögliche Zensur oder Einschränkungen bei politisch sensiblen Themen mit China-Bezug"
+  ],
+  "judge_context_hint": "Das Modell nutzt aktives Chain-of-Thought-Reasoning – sichtbare Thinking-Blöcke sind Teil der Ausgabe und sollten bei der Bewertung von der eigentlichen Antwort getrennt betrachtet werden.",
+  "architecture_tags": [
+    "Thinking",
+    "Agentic-Orchestrator"
+  ],
+  "unknown": false,
+  "generated_at": "2026-04-23T22:03:53.704204+00:00",
+  "card_status": "complete",
+  "size_class": "Frontier",
   "thinking_probe_detected": true,
   "thinking_probe_evidence": "reasoning_tokens=278 in provider metadata",
   "thinking_probe_confidence": "medium",

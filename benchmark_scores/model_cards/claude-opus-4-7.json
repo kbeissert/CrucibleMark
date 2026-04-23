@@ -7,25 +7,29 @@
   "deployment_type": "cloud-only",
   "local_deployment_possible": false,
   "weights_provenance_risk": "medium",
-  "weights_provenance_risk_rationale": "Anthropic ist ein US-amerikanisches Unternehmen und unterliegt dem CLOUD Act, jedoch ist kein direkter staatlicher Zugriff auf die Modellgewichte bekannt, da diese nicht öffentlich verfügbar sind.",
+  "weights_provenance_risk_rationale": "Anthropic ist ein US-amerikanisches Unternehmen und unterliegt dem CLOUD Act, jedoch sind die Modellgewichte nicht öffentlich zugänglich und kein staatlicher Direktzugriff auf Weights bekannt.",
   "model_family": "Claude",
   "primary_focus": "general",
-  "summary": "Claude Opus 4.7 ist ein Frontier-Modell von Anthropic (USA), trainiert mit starkem Fokus auf Sicherheit, Nuancierung und komplexes Reasoning. Es richtet sich an anspruchsvolle Analyse-, Schreib- und Coding-Aufgaben und soll zuverlässiges, kontrolliertes Verhalten auch in schwierigen Kontexten gewährleisten.",
+  "summary": "Claude Opus 4.7 ist Anthropics leistungsstärkstes Modell der Claude-4-Generation, entwickelt in den USA mit Fokus auf komplexes Reasoning, nuanciertes Schreiben und agentic Tasks. Es kombiniert hohe Instruktionstreue mit starker Kontextverarbeitung und ist für anspruchsvolle Mehrschritt-Aufgaben ausgelegt.",
   "strengths": [
-    "Sehr starkes Reasoning und mehrstufiges Problemlösen über lange Kontexte",
-    "Hohe Instruktionstreue mit differenziertem, nuanciertem Sprachverständnis",
-    "Robustes Sicherheitsverhalten und konsistente Ablehnung schädlicher Anfragen"
+    "Sehr starkes Reasoning bei komplexen, mehrstufigen Aufgaben",
+    "Hohe Qualität bei langen, strukturierten Texten und nuanciertem Schreiben",
+    "Optimiert für agentic Workflows und Multi-Step-Orchestrierung"
   ],
   "known_limitations": [
-    "Ausschließlich über Anthropic-API verfügbar, kein lokaler Betrieb möglich",
-    "Kann bei sehr spezifischem Fachwissen oder aktuellen Ereignissen nach dem Trainings-Cutoff unzuverlässig werden"
+    "Nur über Anthropic API verfügbar, kein lokaler Betrieb möglich",
+    "Höhere Latenz und Kosten im Vergleich zu kleineren Claude-Modellen"
   ],
-  "judge_context_hint": "Das Modell neigt zu vorsichtigen, ausgewogenen Antworten und kann bei ambivalenten Anfragen eher absichern als direkt antworten – dies sollte nicht als Schwäche, sondern als bewusstes Designmerkmal gewertet werden.",
+  "judge_context_hint": "Claude Opus 4.7 neigt zu ausführlichen, gut strukturierten Antworten und kann bei einfachen Aufgaben übererklären – Präzision und Vollständigkeit sind Stärken, Kürze nicht immer.",
   "architecture_tags": [
-    "Agentic-Orchestrator"
+    "General",
+    "Agentic-Orchestrator",
+    "Thinking-Optional"
   ],
   "unknown": false,
-  "generated_at": "2026-04-21T08:08:21.457928+00:00",
+  "generated_at": "2026-04-23T21:58:49.240012+00:00",
+  "card_status": "complete",
+  "size_class": "Frontier",
   "thinking_probe_detected": false,
   "thinking_probe_evidence": "No CoT signals found (A: no think-tags, B: reasoning_tokens=0). Response length: 716 chars",
   "thinking_probe_confidence": "low",

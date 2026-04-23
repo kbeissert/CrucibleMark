@@ -1,31 +1,34 @@
 {
   "model_id": "mistral-small-latest",
-  "display_name": "Mistral Small (Latest)",
+  "display_name": "Mistral Small",
   "developer": "Mistral AI",
   "origin_country": "France",
   "developer_jurisdiction": "EU",
   "deployment_type": "open-weights-cloud-available",
   "local_deployment_possible": true,
   "weights_provenance_risk": "low",
-  "weights_provenance_risk_rationale": "Mistral AI ist ein französisches Unternehmen mit Sitz in der EU und unterliegt keiner staatlichen Zugriffspflicht auf Modellgewichte wie dem chinesischen NSL oder vergleichbaren Gesetzen.",
+  "weights_provenance_risk_rationale": "Mistral AI ist ein französisches Unternehmen mit Sitz in der EU und unterliegt keiner staatlichen Zugriffspflicht auf Modellgewichte vergleichbar dem chinesischen NSL oder dem US CLOUD Act.",
   "model_family": "Mistral",
-  "primary_focus": "instruction-following",
-  "summary": "Mistral Small ist ein kompaktes Sprachmodell des französischen Unternehmens Mistral AI, entwickelt für effiziente Instruktionsbefolgung bei niedrigen Latenz- und Kostenanforderungen. Es eignet sich für Klassifikation, Zusammenfassung und einfache Dialogaufgaben, wo größere Modelle überdimensioniert wären.",
+  "primary_focus": "general",
+  "summary": "Mistral Small ist ein kompaktes Allround-Modell des französischen Unternehmens Mistral AI, entwickelt für effiziente Inferenz bei niedrigen Kosten. Es bietet starkes Instruction-Following, solide mehrsprachige Fähigkeiten und gute Reasoning-Leistung für seine Größenklasse – konzipiert als leichtgewichtige Alternative zu größeren Frontier-Modellen.",
   "strengths": [
-    "Sehr gute Kosten-Leistungs-Relation für einfache bis mittelschwere Aufgaben",
-    "Niedrige Inferenzlatenz, geeignet für produktive Echtzeit-Anwendungen",
-    "Mehrsprachige Grundkompetenz mit Schwerpunkt auf europäischen Sprachen"
+    "Sehr gutes Preis-Leistungs-Verhältnis für alltägliche Aufgaben",
+    "Solide mehrsprachige Fähigkeiten, insbesondere für europäische Sprachen",
+    "Geringe Latenz und hoher Durchsatz durch kompakte Architektur"
   ],
   "known_limitations": [
-    "Schwächere Leistung bei komplexem mehrstufigem Reasoning im Vergleich zu größeren Modellen der Mistral-Familie",
-    "Begrenzte Tiefe bei spezialisierten Fachdomänen wie Recht, Medizin oder fortgeschrittener Mathematik"
+    "Schwächer als größere Modelle bei komplexem mehrstufigem Reasoning und langen Kontexten",
+    "Begrenzte Leistung bei hochspezialisierten Domänen wie fortgeschrittener Mathematik oder tiefem Coding"
   ],
-  "judge_context_hint": "Das Modell ist auf Effizienz optimiert und kann bei komplexen Reasoning-Ketten oder langen Abhängigkeiten in der Aufgabenstellung an Konsistenz verlieren – Antwortqualität sollte besonders bei mehrstufigen Aufgaben kritisch geprüft werden.",
+  "judge_context_hint": "Mistral Small ist auf Effizienz optimiert und kann bei komplexen Reasoning-Ketten oder sehr langen Kontexten früher an Grenzen stoßen als größere Modelle – Antworten sollten auf Vollständigkeit und Tiefe geprüft werden.",
   "architecture_tags": [
-    "General"
+    "General",
+    "Instruct"
   ],
   "unknown": false,
-  "generated_at": "2026-04-11T15:48:28.356699+00:00",
+  "generated_at": "2026-04-23T21:58:00.630114+00:00",
+  "card_status": "complete",
+  "size_class": "Frontier",
   "thinking_probe_detected": false,
   "thinking_probe_evidence": "No CoT signals found (A: no think-tags, B: reasoning_tokens=0). Response length: 528 chars",
   "thinking_probe_confidence": "low",

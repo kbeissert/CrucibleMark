@@ -1,0 +1,33 @@
+{
+  "model_id": "kimi-k2-instruct",
+  "display_name": "Kimi K2 Instruct",
+  "developer": "Moonshot AI",
+  "origin_country": "China",
+  "developer_jurisdiction": "CN",
+  "deployment_type": "open-weights-cloud-available",
+  "local_deployment_possible": true,
+  "weights_provenance_risk": "high",
+  "weights_provenance_risk_rationale": "Moonshot AI ist ein chinesisches Unternehmen und unterliegt dem chinesischen National Security Law (NSL), das staatlichen Zugriff auf Daten und Modellgewichte ermöglichen kann.",
+  "model_family": "Kimi",
+  "primary_focus": "general",
+  "summary": "Kimi K2 Instruct ist ein großes Mixture-of-Experts-Modell von Moonshot AI (China), trainiert auf starkes Instruction-Following, Agentic Tasks und Coding. Es wurde entwickelt, um komplexe mehrstufige Aufgaben, Tool-Use und autonome Agenten-Workflows zuverlässig zu bewältigen.",
+  "strengths": [
+    "Starke Leistung bei agentic und Tool-Use-Szenarien mit langen Kontexten",
+    "Hohe Coding-Kompetenz über mehrere Programmiersprachen hinweg",
+    "Effiziente MoE-Architektur mit großer Gesamtkapazität bei moderatem Rechenaufwand"
+  ],
+  "known_limitations": [
+    "Als chinesisches Modell können politisch sensible Themen zensiert oder ausgewichen werden",
+    "Sehr große Modellgröße erschwert lokales Deployment ohne spezialisierte Hardware erheblich"
+  ],
+  "judge_context_hint": "Kimi K2 Instruct ist auf Agentic-Workflows und Tool-Use optimiert und zeigt dort besondere Stärken; bei rein konversationellen oder kreativen Aufgaben kann die Leistung variieren.",
+  "architecture_tags": [
+    "Instruct",
+    "Agentic-Orchestrator",
+    "Coder"
+  ],
+  "unknown": false,
+  "generated_at": "2026-04-23T22:07:25.500346+00:00",
+  "card_status": "complete",
+  "size_class": "Frontier"
+}

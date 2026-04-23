@@ -7,25 +7,28 @@
   "deployment_type": "cloud-only",
   "local_deployment_possible": false,
   "weights_provenance_risk": "medium",
-  "weights_provenance_risk_rationale": "OpenAI ist ein US-amerikanisches Unternehmen und unterliegt dem CLOUD Act, jedoch ist das Modell nicht als Open-Weights verfügbar, sodass ein direkter Zugriff auf die Gewichte durch Dritte nicht besteht.",
+  "weights_provenance_risk_rationale": "OpenAI ist ein US-amerikanisches Unternehmen und unterliegt dem CLOUD Act, jedoch ist kein direkter staatlicher Zugriff auf die Modellgewichte bekannt.",
   "model_family": "GPT",
   "primary_focus": "general",
-  "summary": "GPT-5.4 Mini ist ein kompaktes Modell von OpenAI (USA), das auf Effizienz und breite Einsetzbarkeit ausgelegt ist. Es kombiniert starke Instruktionsbefolgung mit niedrigen Latenz- und Kostenzielen und richtet sich an Anwendungsfälle, bei denen Geschwindigkeit und Skalierbarkeit Vorrang vor maximaler Modellgröße haben.",
+  "summary": "GPT-5.4 Mini ist ein kompaktes Modell von OpenAI aus den USA, das auf effiziente Allround-Nutzung ausgelegt ist. Es kombiniert starke Instruction-Following-Fähigkeiten mit niedrigen Latenz- und Kostenprofilen und richtet sich an Entwickler, die GPT-5-Qualität ressourcenschonend einsetzen wollen.",
   "strengths": [
-    "Schnelle Inferenz bei geringem Ressourcenverbrauch",
-    "Solide Instruktionsbefolgung für alltägliche Aufgaben",
-    "Kosteneffizient für skalierbare API-Nutzung"
+    "Kosteneffiziente Alternative zu größeren GPT-5-Varianten bei vergleichbarer Antwortqualität für Standardaufgaben",
+    "Schnelle Inferenz mit geringer Latenz, geeignet für produktive Echtzeit-Anwendungen",
+    "Starkes Instruction-Following und strukturierte Ausgaben (JSON, Funktionsaufrufe)"
   ],
   "known_limitations": [
-    "Als 'Mini'-Variante voraussichtlich schwächer bei komplexem mehrstufigem Reasoning als größere GPT-5-Varianten",
-    "Keine öffentlich verfügbaren Gewichte, vollständige Abhängigkeit von OpenAI-Infrastruktur"
+    "Als 'Mini'-Variante bei komplexen Mehrschritt-Reasoning-Aufgaben schwächer als größere Modelle der GPT-5-Familie",
+    "Nur über OpenAI-API verfügbar, kein lokaler Betrieb oder Gewichtszugang möglich"
   ],
-  "judge_context_hint": "Das Modell ist eine kompakte Variante der GPT-5-Familie und sollte primär an Aufgaben gemessen werden, die Effizienz und Instruktionstreue erfordern, nicht an Tiefenreasoning-Benchmarks, die auf Vollmodelle ausgelegt sind.",
+  "judge_context_hint": "Das Modell ist auf Effizienz optimiert und kann bei sehr langen, komplexen Reasoning-Ketten oder tiefem Fachwissen hinter größeren Modellen zurückbleiben – Antwortqualität relativ zur Modellgröße bewerten.",
   "architecture_tags": [
-    "General"
+    "General",
+    "Instruct"
   ],
   "unknown": true,
-  "generated_at": "2026-04-11T15:07:05.958097+00:00",
+  "generated_at": "2026-04-23T22:00:53.480027+00:00",
+  "card_status": "complete",
+  "size_class": "Frontier",
   "thinking_probe_detected": false,
   "thinking_probe_evidence": "No CoT signals found (A: no think-tags, B: reasoning_tokens=0). Response length: 370 chars",
   "thinking_probe_confidence": "low",

@@ -1,29 +1,31 @@
 {
-  "model_id": "gpt-oss_20b-cloud",
-  "display_name": "GPT-OSS 20B Cloud",
-  "developer": "Unknown / Unverified",
+  "model_id": "gpt-oss:20b-cloud",
+  "display_name": "GPT OSS 20B Cloud",
+  "developer": "Unknown",
   "origin_country": "Unknown",
   "developer_jurisdiction": "Unknown",
   "deployment_type": "cloud-only",
   "local_deployment_possible": false,
   "weights_provenance_risk": "medium",
-  "weights_provenance_risk_rationale": "Herkunft und Entwickler sind unbekannt; konservative Einstufung als 'medium', da keine verifizierten Informationen zur Jurisdiktion oder Weights-Provenienz vorliegen.",
-  "model_family": "GPT-OSS",
+  "weights_provenance_risk_rationale": "Herkunft und Entwickler des Modells sind unbekannt; konservative Einstufung als 'medium', da keine Informationen zur Weights-Provenienz vorliegen.",
+  "model_family": "GPT OSS",
   "primary_focus": "general",
-  "summary": "GPT-OSS 20B Cloud ist ein Sprachmodell unbekannter Herkunft mit ca. 20 Milliarden Parametern, das ausschließlich über eine Cloud-API verfügbar ist. Trainings­schwerpunkt, Entwickler­organisation und Entstehungskontext sind nicht öffentlich dokumentiert. Stärken und Einschränkungen lassen sich daher nicht zuverlässig einordnen.",
+  "summary": "GPT OSS 20B Cloud ist ein Modell unbekannter Herkunft mit ca. 20 Milliarden Parametern, das ausschließlich über eine Cloud-API verfügbar ist. Trainingsschwerpunkt, Stärken und Entwicklungsziel sind nicht dokumentiert. Bewertungen basieren auf konservativen Annahmen.",
   "strengths": [
-    "Mittlere Modellgröße (20B) deutet auf gute Balance zwischen Leistung und Latenz hin",
+    "Mittlere Parametergröße (20B) deutet auf ausgewogenes Verhältnis von Leistung und Effizienz hin",
     "Cloud-Deployment ermöglicht einfache Integration ohne lokale Infrastruktur",
-    "Bezeichnung 'OSS' legt möglicherweise Open-Source-Orientierung im Trainingsansatz nahe"
+    "Unbekannte Spezialisierung lässt breites Einsatzspektrum offen"
   ],
   "known_limitations": [
-    "Herkunft, Trainingsdetails und Evaluierungsergebnisse sind nicht öffentlich verifizierbar",
-    "Ausschließlich als Cloud-Dienst verfügbar – keine lokale oder On-Premises-Nutzung möglich"
+    "Herkunft, Trainingsdetails und Entwickler sind vollständig unbekannt – keine Vertrauensbasis",
+    "Ausschließlich cloud-basiert, keine lokale Nutzung oder Gewichts-Inspektion möglich"
   ],
-  "judge_context_hint": "Da Trainingsdetails, Benchmark-Ergebnisse und Modellarchitektur nicht öffentlich dokumentiert sind, sollten Bewertungen ausschließlich auf dem tatsächlich beobachteten Output basieren und keine Annahmen über bekannte Modell-Familien übertragen werden.",
+  "judge_context_hint": "Das Modell ist in Herkunft und Trainingsdetails vollständig undokumentiert – Benchmark-Ergebnisse sollten mit besonderer Vorsicht interpretiert werden, da Verhalten und Fähigkeiten nicht aus bekannten Quellen ableitbar sind.",
   "architecture_tags": [
     "General"
   ],
   "unknown": true,
-  "generated_at": "2026-04-11T14:52:17.021800+00:00"
+  "generated_at": "2026-04-23T22:07:35.501956+00:00",
+  "card_status": "complete",
+  "size_class": "Workstation"
 }

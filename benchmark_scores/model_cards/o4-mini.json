@@ -7,28 +7,29 @@
   "deployment_type": "cloud-only",
   "local_deployment_possible": false,
   "weights_provenance_risk": "medium",
-  "weights_provenance_risk_rationale": "OpenAI ist ein US-amerikanisches Unternehmen und unterliegt dem CLOUD Act, der bei API-Nutzung staatliche Datenzugriffe ermöglichen kann; die Modellgewichte sind nicht öffentlich verfügbar.",
+  "weights_provenance_risk_rationale": "OpenAI ist ein US-amerikanisches Unternehmen und unterliegt dem CLOUD Act, jedoch sind die Modellgewichte nicht öffentlich zugänglich, sodass kein direktes Risiko durch Gewichts-Exfiltration besteht.",
   "model_family": "OpenAI o-series",
   "primary_focus": "reasoning",
-  "summary": "o4-mini ist ein kompaktes Reasoning-Modell von OpenAI (USA), das auf mathematisches, wissenschaftliches und logisches Schlussfolgern optimiert wurde. Es bietet einen Großteil der Stärken des o4-Modells bei deutlich geringerer Latenz und niedrigeren Kosten – konzipiert für skalierbare Reasoning-Aufgaben in Produktivumgebungen.",
+  "summary": "o4-mini ist ein kompaktes Reasoning-Modell von OpenAI (USA), das auf mathematisches, wissenschaftliches und logisches Schlussfolgern spezialisiert ist. Es bietet starke Chain-of-Thought-Fähigkeiten bei geringerer Latenz und niedrigeren Kosten als o3, und wurde als effiziente Alternative für anspruchsvolle Reasoning-Aufgaben entwickelt.",
   "strengths": [
-    "Starke Leistung bei mathematischen und wissenschaftlichen Aufgaben (STEM)",
-    "Deutlich schnellere Inferenz und geringere Kosten im Vergleich zu o3/o4",
-    "Zuverlässiges mehrstufiges logisches Schlussfolgern mit Chain-of-Thought"
+    "Herausragende Leistung bei Mathematik, Naturwissenschaften und formalem Schlussfolgern",
+    "Deutlich schneller und kostengünstiger als o3 bei vergleichbarer Reasoning-Qualität",
+    "Starke Coding-Fähigkeiten durch integriertes Chain-of-Thought-Training"
   ],
   "known_limitations": [
-    "Kein Zugriff auf Echtzeit-Informationen ohne externe Tool-Integration",
-    "Gewichte nicht öffentlich – kein lokaler Betrieb oder Fine-Tuning möglich"
+    "Kein Zugriff auf Modellgewichte – ausschließlich über OpenAI-API nutzbar",
+    "Kann bei kreativen, offenen oder nuancierten Sprachaufgaben hinter generalistischen Modellen zurückbleiben"
   ],
-  "judge_context_hint": "Das Modell ist explizit auf Reasoning optimiert und neigt dazu, Antworten durch interne Denkschritte abzusichern – Bewertungen sollten die Qualität des Lösungswegs, nicht nur das Endergebnis berücksichtigen.",
+  "judge_context_hint": "o4-mini denkt intern mit festem Chain-of-Thought und liefert oft präzise, strukturierte Antworten – bei Reasoning-Aufgaben ist die Ausgabe typischerweise sehr zuverlässig, bei offenen kreativen Aufgaben jedoch möglicherweise zu schematisch.",
   "architecture_tags": [
     "Thinking"
   ],
   "unknown": false,
-  "generated_at": "2026-04-11T14:53:51.104628+00:00",
+  "generated_at": "2026-04-23T21:59:48.373411+00:00",
+  "card_status": "complete",
+  "size_class": "Frontier",
   "thinking_probe_detected": true,
   "thinking_probe_evidence": "Manually confirmed: OpenAI o-series models use internal chain-of-thought reasoning. The API does not expose reasoning tokens or think-tags in the response body; automated probe cannot detect this. Token budget override is required.",
   "thinking_probe_confidence": "high",
-  "thinking_probe_at": "2026-04-23T13:57:24.143470+00:00",
-  "thinking_probe_manual_override": true
+  "thinking_probe_at": "2026-04-23T13:57:24.143470+00:00"
 }
