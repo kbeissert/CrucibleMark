@@ -539,6 +539,13 @@ class UnifiedBenchmarkRunner(BaseBenchmarkRunner):
                 result["run_id"] = run_id
 
                 # Fix 2 (Truncation Detection): Konfigurierbare Schwellenwerte pro Modul
+                # Safety-Block-Check: finish_reason=SAFETY → refusal_flag, nicht truncated
+                if result.get("finish_reason") == "SAFETY" and result.get("status") == "success":
+                    result["status"] = "refusal"
+                    result["refusal_flag"] = True
+                    result["refusal_type"] = "content_safety"
+                    result["refusal_note"] = "Response blocked by Gemini safety filters."
+
                 TRUNCATION_THRESHOLDS = {
                     "documentation_quality": 1500,
                     "ux_writing": 800,
