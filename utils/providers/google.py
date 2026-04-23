@@ -147,6 +147,7 @@ class GoogleClient(BaseProviderClient):
             except ValueError:
                 # Often happens if content was blocked
                 logger.warning(f"Gemini check blocked: {response.prompt_feedback}")
+                self.last_response_metadata["finish_reason"] = "SAFETY"
                 return "Error: Content blocked by safety filters."
         except Exception as e:
             logger.error(f"Google Gemini query failed: {e}")
