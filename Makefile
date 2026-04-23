@@ -1,6 +1,6 @@
 .PHONY: \
 	help install install-dev \
-	benchmark political-compass political-compass-safe benchmark-political-compass audit-bias benchmark-cross-model benchmark-auto benchmark-human run-benchmark \
+	benchmark political-compass political-compass-safe benchmark-cross-model benchmark-auto benchmark-human run-benchmark \
 	review reviews-auto reviews-check review-new model-cards provider-cards leaderboard provider-stats \
 	validate validate-single validate-structure test diff-results analyze-costs update-prices sync-cost-limits \
 	list-models judge-health list-modules create-module \
@@ -28,7 +28,7 @@ help:
 	@echo "  make run-benchmark        Interactive Runner"
 	@echo ""
 	@echo "=== Political Compass ==="
-	@echo "  make political-compass    Eigenstaendiger PC-Test (immer mit Audit, Opt. Flags: FORCE=1)"
+	@echo "  make political-compass    Eigenstaendiger PC-Test (Flags: MODEL=name, FORCE=1)"
 	@echo "  make political-compass-safe Sicherheits-/Anomaliepruefung (Triple-Run erzwingen)"
 	@echo "  make benchmark-human      Human Baseline Test (PC)"
 	@echo ""
@@ -86,16 +86,8 @@ political-compass-safe:
 	@echo "Starting Anomaly Verification Protocol (Make Political Compass Safe Test)..."
 	$(PYTHON) scripts/core/verify_compass_anomalies.py $(if $(MODEL),--model "$(MODEL)" --threshold 0.0)
 
-benchmark-political-compass:
-	@echo "Deprecated alias: forwarding to political-compass"
-	@$(MAKE) political-compass MODEL="$(MODEL)" FORCE="$(FORCE)"
-
-audit-bias:
-	@echo "Deprecated alias: forwarding to political-compass"
-	@$(MAKE) political-compass MODEL="$(MODEL)" FORCE="$(FORCE)"
-
 benchmark-cross-model:
-	@echo "Starting Cross-Model Benchmark (with Audit Logs)..."
+	@echo "Starting Cross-Model Benchmark..."
 	@$(PYTHON) scripts/core/run_cross_model_benchmark.py $(if $(MODULE),--module $(MODULE)) $(if $(FORCE),--force)
 
 benchmark-auto:
