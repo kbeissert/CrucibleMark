@@ -108,14 +108,23 @@ class MistralClient(BaseProviderClient):
             content = response.choices[0].message.content
             # Reasoning models (e.g. magistral) return a list of chunks
             # [ThinkChunk(...), TextChunk(...)]. Extract text and think parts separately.
+            # chunk.text / chunk.thinking can be str OR list[str] depending on SDK version —
+            # use _chunk_to_str() to normalize both cases.
             if isinstance(content, list):
+                def _chunk_to_str(val: object) -> str:
+                    if isinstance(val, str):
+                        return val
+                    if isinstance(val, list):
+                        return "".join(str(x) for x in val if x)
+                    return str(val) if val is not None else ""
+
                 text_parts = [
-                    chunk.text
+                    _chunk_to_str(getattr(chunk, "text", None))
                     for chunk in content
                     if getattr(chunk, "type", None) == "text"
                 ]
                 think_parts = [
-                    chunk.thinking
+                    _chunk_to_str(getattr(chunk, "thinking", None))
                     for chunk in content
                     if getattr(chunk, "type", None) == "thinking" and getattr(chunk, "thinking", None)
                 ]
