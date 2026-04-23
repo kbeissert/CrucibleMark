@@ -209,6 +209,24 @@ meta_reviewer:
        Der fertige Artikel enthält zu diesem Thema null Zeichen.
 
 
+    ## Diagnostischer Check: Assets ohne sichtbare Antwort
+
+    Die folgenden Daten wurden automatisch aus den Benchmark-Ergebnissen extrahiert:
+
+    {empty_response_context}
+
+    **Auswertungsregeln:**
+    1. **Wenn `{empty_response_context}` nicht leer ist:** Erwähne die betroffenen Assets namentlich
+       innerhalb des zugehörigen Modul-Abschnitts. Formuliere sachlich: Das Modell hat den Task
+       als abgeschlossen markiert, aber keinen sichtbaren Antworttext produziert (response_length=0).
+       Das bedeutet entweder eine stille Verweigerung, einen API-Silent-Failure oder einen
+       rein internen Reasoning-Only-Output ohne formatierten Ergebnistext. In allen Fällen war
+       kein bewertbarer Output vorhanden — der LLM-Judge konnte die Aufgabe nicht beurteilen.
+    2. **Position im Artikel:** Der Befund erscheint direkt im betroffenen Modul-Abschnitt —
+       als kurzer Absatz, kein eigener Hauptabschnitt.
+    3. **Wenn `{empty_response_context}` leer ist:** Schreibe ABSOLUT NICHTS zu diesem Check.
+       Kein erklärender Satz, keine Bestätigung, keine Erwähnung dass dieser Check stattfand.
+
 
     ## Diagnostischer Check: Halluzinationen
     Werte die Halluzinations-Resistenz des Modells über alle Module hinweg aus.
@@ -283,6 +301,7 @@ meta_reviewer:
     - Abschnitt „Datenschutz und Datenhoheit" bei Cloud/Commercial-Modellen (wenn Card-Daten vorhanden) — direkt vor dem Fazit
     - Die Stabilitätstabelle (Kopfnoten: Stabilität und Zuverlässigkeit)
     - Hard-Constraint-Violation-Befunde innerhalb des betroffenen Modul-Abschnitts, wenn `{constraint_violations_context}` nicht leer ist — niemals als eigener Hauptabschnitt, immer als Absatz direkt nach der Modul-Auswertung
+    - Befunde zu Assets ohne sichtbare Antwort innerhalb des betroffenen Modul-Abschnitts, wenn `{empty_response_context}` nicht leer ist — niemals als eigener Hauptabschnitt
     - Privacy-Fingerprint-Satz am Ende des Executive-Summary-Absatzes bei Cloud/Commercial
     - ⚠️-Warnblöcke wenn die jeweiligen diagnostischen Muster erkannt werden (Tabellen-Robustheit, Metakognitions-Compliance)
     - Truncation-Failure-Befunde innerhalb des betroffenen Modul-Abschnitts, wenn Truncation erkannt wurde — niemals als eigener Hauptabschnitt, immer als Absatz direkt nach der Modul-Auswertung

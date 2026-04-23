@@ -596,6 +596,56 @@ def _build_constraint_violations_summary(model_dir: Path) -> str:
     return "\n".join(lines)
 
 
+def _build_empty_response_context(model_name: str) -> str:
+    """Sucht in allen Benchmark-CSVs nach Assets mit response_length=0 und status=success.
+
+    Gibt eine strukturierte Zusammenfassung zurück, die der Meta-Reviewer als Metainfo
+    im Report verwenden kann. Leere Responses deuten auf Verweigerung oder Silent-Failure hin.
+    """
+    import csv as _csv
+
+    csv_files = [
+        ROOT_DIR / "benchmark_scores" / "commercial_models_benchmark.csv",
+        ROOT_DIR / "benchmark_scores" / "cloud_models_benchmark.csv",
+        ROOT_DIR / "benchmark_scores" / "local_models_benchmark.csv",
+    ]
+
+    empty_assets: list[tuple[str, str]] = []  # (asset_id, module)
+
+    for csv_path in csv_files:
+        if not csv_path.exists():
+            continue
+        try:
+            with open(csv_path, "r", encoding="utf-8") as f:
+                reader = _csv.DictReader(f)
+                for row in reader:
+                    if row.get("model") != model_name:
+                        continue
+                    if row.get("status") != "success":
+                        continue
+                    try:
+                        rlen = float(row.get("response_length", 1) or 1)
+                    except (ValueError, TypeError):
+                        continue
+                    if rlen == 0.0:
+                        asset_id = row.get("asset_id", "unknown")
+                        # Derive module name from asset_id prefix (e.g. "reasoning_metacog_001" → "reasoning")
+                        module = asset_id.split("_")[0] if "_" in asset_id else asset_id
+                        empty_assets.append((asset_id, module))
+        except Exception:
+            continue
+
+    if not empty_assets:
+        return ""
+
+    lines = [f"### Assets ohne sichtbare Antwort ({len(empty_assets)} erkannt)\n"]
+    lines.append("Das Modell hat die folgenden Tasks als `status=success` abgeschlossen, aber keinen sichtbaren Text produziert (`response_length=0`). Mögliche Ursachen: interner Reasoning-Only-Output, Sicherheitsfilter-Verweigerung (silent), oder API-Silent-Failure.\n")
+    for asset_id, module in empty_assets:
+        lines.append(f"- **[{asset_id}]** (Modul: {module})")
+
+    return "\n".join(lines)
+
+
 def process_model_review(model_dir: Path, csv_data: str, client: LLMClient, provider: str, model_id: str, review_type: str = "benchmark"):
     """Liest Audit-Logs für ein spezifisch getestetes LLM und generiert eine Review."""
     tested_model_name = model_dir.name
@@ -768,6 +818,7 @@ def process_model_review(model_dir: Path, csv_data: str, client: LLMClient, prov
 
     # --- Constraint-Violations-Summary über alle Audit-Logs aggregieren ---
     constraint_violations_context = _build_constraint_violations_summary(model_dir) if review_type == "benchmark" else ""
+    empty_response_context = _build_empty_response_context(tested_model_name) if review_type == "benchmark" else ""
 
     # Für Bias-Reviews: Verifizierte PC-Leaderboard-Koordinaten injizieren (überschreibt
     # potenziell veraltete Werte aus dem Audit-Log, z.B. nach einem fehlgeschlagenen Safety-Run)
@@ -810,6 +861,7 @@ def process_model_review(model_dir: Path, csv_data: str, client: LLMClient, prov
         "provider_card_context": get_provider_card_context(tested_model_name),
         "token_efficiency_context": token_efficiency_context,
         "constraint_violations_context": constraint_violations_context,
+        "empty_response_context": empty_response_context,
     }
 
     try:
