@@ -1,6 +1,6 @@
 .PHONY: \
 	help install install-dev \
-	benchmark political-compass political-compass-safe benchmark-cross-model benchmark-auto benchmark-human run-benchmark \
+	benchmark political-compass political-compass-safe benchmark-cross-model benchmark-auto benchmark-human \
 	review reviews-auto reviews-check review-new model-cards provider-cards leaderboard provider-stats \
 	validate validate-single validate-structure test diff-results analyze-costs update-prices sync-cost-limits \
 	list-models judge-health list-modules create-module \
@@ -25,7 +25,6 @@ help:
 	@echo "  make benchmark            Standard Benchmark (Flags: SILENT, FORCE, MODEL, MODULE)"
 	@echo "  make benchmark-auto       Auto-Fill Benchmark (Flags: SILENT, FORCE)"
 	@echo "  make benchmark-cross-model Module vs ALL LLMs (Flags: FORCE, MODULE)"
-	@echo "  make run-benchmark        Interactive Runner"
 	@echo ""
 	@echo "=== Political Compass ==="
 	@echo "  make political-compass    Eigenstaendiger PC-Test (Flags: MODEL=name, FORCE=1)"
@@ -97,9 +96,6 @@ benchmark-auto:
 benchmark-human:
 	@echo "Starting Human Baseline Test..."
 	$(PYTHON) scripts/tools/run_human_compass.py
-
-run-benchmark:
-	$(PYTHON) run_benchmark.py
 
 # === REPORTING & STANDARDS ===
 
