@@ -266,10 +266,12 @@ Der **Audit-Modus** bietet ein klares, lückenloses Verständnis der Benchmarks 
 2. Der unverfälschten **Antwort** des bewerteten Modells.
 3. Der detaillierten Herleitung der Bewertung (inkl. Metadaten, Token-Limits und Judge-Reasoning).
 
-Der Audit-Modus ist **standardmäßig aktiv**. Zum Deaktivieren:
+Die Audit-Logs sind **standardmäßig aktiv** und werden bei jedem Lauf geschrieben. Zum Deaktivieren (z. B. in Entwicklungs- oder Testläufen):
 
 ```bash
 make benchmark MODEL=modell_name SILENT=1
+# oder direkt:
+python run_benchmark.py --module code_quality --model modell_name --silent
 ```
 
 Alle Markdown-Files liegen in `outputs/audit_logs/`.
