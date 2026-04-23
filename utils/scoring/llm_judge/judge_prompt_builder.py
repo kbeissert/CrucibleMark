@@ -167,6 +167,7 @@ def build_prompts(
     required_language: Optional[str] = None,
     language_weight: float = 0.20,
     token_budget_context: Optional[Dict[str, int]] = None,
+    truncation_context: bool = False,
 ) -> Tuple[str, str]:
     """
     Build the (system_prompt, user_prompt) pair for the LLM Judge.
@@ -257,6 +258,15 @@ def build_prompts(
     clean_response = model_response.strip()
     if not clean_response:
         clean_response = "[ERROR: THE MODEL GENERATED AN EMPTY OR INVALID RESPONSE. SCORE MUST BE 1.]"
+
+    if truncation_context:
+        system_prompt += (
+            "\n\n### TRUNCATION NOTE ###\n"
+            "The model response below was cut off due to token budget limits. "
+            "Evaluate the **quality of the provided content independently of its completeness** — "
+            "do not penalize because the response is shorter than expected or ends abruptly. "
+            "Score what is present on its own merits."
+        )
 
     user_prompt = _USER_TEMPLATE.substitute(
         task_prompt=task_prompt.strip(),

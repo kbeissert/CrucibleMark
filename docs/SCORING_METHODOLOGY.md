@@ -79,6 +79,8 @@ Kalibrierte Werte (2× Modul-Median):
 
 Wenn ein Modell das Budget vollständig ausschöpft (`finish_reason: length`), wird `token_limit_cutoff=True` im `BenchmarkResult` gesetzt und ein `[!NOTE]`-Block ins Audit-Log injiziert.
 
+Ist das Modell **nicht** als Reasoning-Modell erkannt und sind keine `reasoning_tokens` in den API-Metadaten vorhanden, erscheint zusätzlich ein `[!WARNING]`-Block mit einer actionable Korrektursequenz (`make probe-thinking MODEL=<id>`). Das System führt in diesem Fall **keinen automatischen Retry** mit erhöhtem Budget durch — das würde Daten unter abweichenden Bedingungen erzeugen und die Vergleichbarkeit im Leaderboard untergraben. Stattdessen dokumentiert der Block die Diagnose und überlässt die Korrektur dem Maintainer (Probe → Card → Re-Run). Siehe [AUDIT_AND_METAREVIEW.md](AUDIT_AND_METAREVIEW.md).
+
 ### Zeitprofile (automatisch)
 
 | Profil | P95 | Badge |
@@ -323,6 +325,25 @@ Reasoning-Modelle (erkannt via `is_reasoning_model()` in `utils/model_utils.py`)
 - Kompakter, fokussierter Output ≈ Standard-Budget → kein Abzug
 
 Damit gilt dasselbe Qualitätsmaßstab für Reasoning- und Standard-Modelle, obwohl erstere intern mehr Tokens verbrauchen.
+
+### Thinking-Optional-Budget (ab v3.5.9)
+
+Modelle mit `architecture_tags: ["Thinking-Optional"]` in ihrer Model-Card (z.B. Gemini 2.5 Flash, Qwen3) aktivieren Thinking **adaptiv** ohne expliziten API-Parameter. Die internen Thinking-Tokens verbrauchen dasselbe `max_output_tokens`-Kontingent wie der sichtbare Output — mit Standard-Budget würden sie den sichtbaren Anteil auf wenige hundert Tokens reduzieren.
+
+`resolve_token_budget()` in `utils/model_utils.py` erkennt diesen Fall via `is_thinking_optional_from_card()` und gewährt automatisch das erhöhte Budget aus `token_budgets_reasoning_models`. Gilt ausschließlich bei `explicit_budget=True` (Module mit Budget-Cap); Module ohne Limit (`reasoning_logic`) sind nicht betroffen. Fallback: 2× Standard-Budget wenn kein `reasoning`-Eintrag existiert.
+
+```
+code_quality: 6.000 (Standard) → 12.000 (Thinking-Optional)
+ux_writing:   3.500 (Standard) →  8.000 (Thinking-Optional)
+```
+
+### Truncation-Aware Judge (ab v3.5.9)
+
+Wenn `token_limit_cutoff=True` gesetzt ist, informiert `judge_evaluator.py` den Judge explizit über die Truncation. `judge_prompt_builder.py` injiziert eine `TRUNCATION NOTE` in den System-Prompt:
+
+> *"The model response was cut off due to token budget limits. Evaluate content quality independently of completeness — do not penalize because the response is shorter than expected or ends abruptly."*
+
+Das stellt sicher, dass ein Judge nicht automatisch für Kürze abstraft — er bewertet den vorhandenen Inhalt auf voller Skala. Die Truncation selbst wird bereits durch `[!NOTE]`/`[!WARNING]`-Blöcke im Audit-Log dokumentiert und ist damit methodisch transparent, ohne den Score-Mechanismus zu verzerren.
 
 ### Refusal-Dokumentation (ab v3.5.7)
 
