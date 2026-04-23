@@ -118,6 +118,10 @@ class BaseBenchmarkRunner:
             if rt is not None:
                 exec_result.reasoning_tokens = rt
 
+            tc = self.client.last_response_metadata.get("think_content")
+            if tc is not None:
+                exec_result.think_content = tc
+
         return test_instance, exec_result
 
     # pylint: disable=too-many-arguments, too-many-positional-arguments
@@ -174,6 +178,7 @@ class BaseBenchmarkRunner:
             "token_limit_fallback": getattr(exec_result, "token_limit_fallback", False),
             "token_limit_used": getattr(exec_result, "token_limit_used", None),
             "thought_tag_compliance": getattr(exec_result, "thought_tag_compliance", None),
+            "think_content": getattr(exec_result, "think_content", None),
         }
 
         # Add category scores

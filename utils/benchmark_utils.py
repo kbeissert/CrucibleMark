@@ -220,6 +220,7 @@ def save_audit_log(
     cost: float = None,
     provider: str = None,
     reasoning_tokens: int = None,
+    think_content: str = None,
     **kwargs
 ) -> None:
     """
@@ -333,7 +334,14 @@ def save_audit_log(
                 f.write("> [!CAUTION]\n> Das Modell hat das maximale Token-Limit erreicht und die Antwort abgebrochen. Die folgende Antwort ist INKOMPLETT und zeigt an, dass das Modell für diese Aufgabe zu gesprächig (verbose) war.\n\n")
 
             safe_response = demote_headers_safe(str(response))
-            f.write(f"{safe_response}\n\n")
+            if safe_response.strip():
+                f.write(f"{safe_response}\n\n")
+            elif think_content:
+                f.write("> [!NOTE]\n> **Kein sichtbarer Output.** Das Modell hat ausschließlich intern (ThinkChunk) gearbeitet und keinen formatierten Antworttext produziert. Der Reasoning-Inhalt wird zur Information unten angezeigt — er geht nicht in die Wertung ein.\n\n")
+                safe_think = demote_headers_safe(str(think_content))
+                f.write(f"{safe_think}\n\n")
+            else:
+                f.write(f"{safe_response}\n\n")
 
             f.write("## 3. Evaluation / LLM-Judge / Scorer\n\n")
             safe_judge = demote_headers_safe(str(judge_response))

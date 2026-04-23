@@ -107,14 +107,23 @@ class MistralClient(BaseProviderClient):
             }
             content = response.choices[0].message.content
             # Reasoning models (e.g. magistral) return a list of chunks
-            # [ThinkChunk(...), TextChunk(...)]. Extract only the text parts.
+            # [ThinkChunk(...), TextChunk(...)]. Extract text and think parts separately.
             if isinstance(content, list):
                 text_parts = [
                     chunk.text
                     for chunk in content
                     if getattr(chunk, "type", None) == "text"
                 ]
+                think_parts = [
+                    chunk.thinking
+                    for chunk in content
+                    if getattr(chunk, "type", None) == "thinking" and getattr(chunk, "thinking", None)
+                ]
                 content = "".join(text_parts)
+                # If TextChunk is empty but ThinkChunk has content, store it as metadata
+                # so the audit log can surface it as informational context
+                if not content.strip() and think_parts:
+                    self.last_response_metadata["think_content"] = "".join(think_parts)
             if stream_handler and content:
                 stream_handler(content)
             return content
