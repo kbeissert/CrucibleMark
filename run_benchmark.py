@@ -64,7 +64,7 @@ class BenchmarkRunConfig:
     run_all: bool = False
     num_runs: int = 1
     force: bool = False
-    audit_mode: bool = False
+    audit_mode: bool = True
 
 
 class BenchmarkRunner:
@@ -259,7 +259,7 @@ class BenchmarkRunner:
         provider: str,
         num_runs: int = 1,
         force: bool = False,
-        audit_mode: bool = False,
+        audit_mode: bool = True,
     ):
         """Führt Benchmark aus (Lokal oder Kommerziell)."""
         is_local = provider == "ollama"
@@ -413,9 +413,10 @@ Beispiele:
     )
 
     parser.add_argument(
-        "--audit",
-        action="store_true",
-        help="Aktiviert den Audit-Modus (Gibt zu jedem Asset Prompt, Response und Judge Output als MD-Datei aus).",
+        "--silent",
+        action="store_false",
+        dest="audit_mode",
+        help="Deaktiviert den Audit-Modus (kein Prompt/Response/Judge-Log). Standard: Audit ist aktiv.",
     )
 
     args = parser.parse_args()
@@ -435,7 +436,7 @@ Beispiele:
             run_all=args.all,
             num_runs=args.multi_run,
             force=args.force,
-            audit_mode=args.audit,
+            audit_mode=args.audit_mode,
         )
         runner.run(config)
     except KeyboardInterrupt:

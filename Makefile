@@ -74,12 +74,12 @@ help:
 
 benchmark:
 	@echo "Starting Benchmark ($(if $(SILENT),Silent Mode,Standard Audit Mode))..."
-	$(PYTHON) run_benchmark.py $(if $(SILENT),,--audit) $(if $(MODEL),--model "$(MODEL)") $(if $(MODULE),--module "$(MODULE)") $(if $(FORCE),--force)
+	$(PYTHON) run_benchmark.py $(if $(SILENT),--silent,) $(if $(MODEL),--model "$(MODEL)") $(if $(MODULE),--module "$(MODULE)") $(if $(FORCE),--force)
 	@$(MAKE) leaderboard
 
 political-compass:
 	@echo "Starting standalone Political Compass benchmark (Audit Logs ON)..."
-	$(PYTHON) run_benchmark.py --module political_compass --audit $(if $(MODEL),--model "$(MODEL)") $(if $(FORCE),--force)
+	$(PYTHON) run_benchmark.py --module political_compass $(if $(MODEL),--model "$(MODEL)") $(if $(FORCE),--force)
 	@$(MAKE) leaderboard
 
 political-compass-safe:
@@ -96,11 +96,11 @@ audit-bias:
 
 benchmark-cross-model:
 	@echo "Starting Cross-Model Benchmark (with Audit Logs)..."
-	@$(PYTHON) scripts/core/run_cross_model_benchmark.py --audit $(if $(MODULE),--module $(MODULE)) $(if $(FORCE),--force)
+	@$(PYTHON) scripts/core/run_cross_model_benchmark.py $(if $(MODULE),--module $(MODULE)) $(if $(FORCE),--force)
 
 benchmark-auto:
 	@echo "Starting Full Auto Benchmark (Smart Autofill $(if $(SILENT),Silent Mode,with Audit Logs))..."
-	$(PYTHON) scripts/core/benchmark_auto.py $(if $(SILENT),,--audit) $(if $(FORCE),--force)
+	$(PYTHON) scripts/core/benchmark_auto.py $(if $(SILENT),--silent,) $(if $(FORCE),--force)
 
 benchmark-human:
 	@echo "Starting Human Baseline Test..."

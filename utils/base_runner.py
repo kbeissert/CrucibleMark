@@ -432,7 +432,7 @@ class BaseBenchmarkRunner:
                 report=report,
                 model_version=model_version,
                 test_instance=test,
-                audit_mode=getattr(self, "audit_mode", False),
+                audit_mode=getattr(self, "audit_mode", True),
                 provider_type=provider
             )
         else:

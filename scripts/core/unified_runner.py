@@ -42,7 +42,7 @@ class UnifiedBenchmarkRunner(BaseBenchmarkRunner):
     def __init__(
         self,
         force: bool = False,
-        audit_mode: bool = False,
+        audit_mode: bool = True,
         mode: BenchmarkMode = BenchmarkMode.PRODUCTION,
     ):
         super().__init__()
