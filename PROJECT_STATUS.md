@@ -1,12 +1,29 @@
 # PROJECT_STATUS.md
 
 **Last Updated:** 2026-04-23
-**Current Version:** 3.5.7 (SSoT Token-Budget, Gemini-2.5 Reasoning-Fix, Judge-Verbosity-Penalty, Refusal-Metadaten)
+**Current Version:** 3.5.8 (ThinkingProbe, Card-First Workflow, empirische Reasoning-Erkennung)
 **Status:** ✅ Production-Ready
 
 ---
 
 ## Executive Summary
+
+CrucibleMark v3.5.8 führt eine empirische Reasoning-Erkennung ein, die die bisherige rein heuristische String-Matching-Logik in `is_reasoning_model()` ablöst. Kernstück ist der **ThinkingProbe**: Ein deterministischer API-Call, der anhand von `<think>`-Tags (Signal A) und `reasoning_tokens > 0` (Signal B) validiert, ob ein Modell Chain-of-Thought produziert. Das Ergebnis wird in der JSON-Model-Card (`benchmark_scores/model_cards/`) persistiert. Der **Card-First-Hook** in `unified_runner.py` stellt sicher, dass jedes neue Modell automatisch geprobt wird, bevor es einen Benchmark-Run startet. `is_reasoning_model()` liest die Card zuerst — String-Trigger bleiben als Fallback erhalten. Drei Bugs wurden behoben: Signal C (Response-Länge) erzeugte False-Positives und wurde entfernt, `_infer_provider()` nutzte Substring-Matching statt `/`-Präsenz-Heuristik, und `is_reasoning_model_from_card()` verwendete `replace('/', '_')` statt der vollständigen `_safe_name()`-Transformation. (Commit e1e61f6, 33 Dateien, 738 Insertions)
+
+**Key Achievements (v3.5.8):**
+- ✅ **`utils/model_utils.py` — `ThinkingProbeResult` & `probe_thinking_model()`:** Neues Dataclass (`detected`, `evidence`, `confidence`). Signal A = `<think>`/`<thinking>`/`<thought>`-Tags (confidence=high), Signal B = `reasoning_tokens > 0` (confidence=medium). Signal C (Response-Länge) nicht implementiert — systematische False-Positive-Quelle bei Instruction-Following-Modellen.
+- ✅ **`utils/model_utils.py` — `is_reasoning_model_from_card()`:** Liest `thinking_probe_detected` aus JSON-Card. Dateinamen-Auflösung via `re.sub(r'[:/.\s]', '_', model_id)` (`_safe_name()`-Transformation). Gibt `None` zurück wenn Card oder Feld fehlt (kein False-Positive).
+- ✅ **`utils/model_utils.py` — `is_reasoning_model()` Card-First:** Card-Lookup hat Vorrang vor String-Trigger-Heuristik. Neuer Trigger `kimi-k2` ergänzt.
+- ✅ **`scripts/core/unified_runner.py` — `_ensure_model_card()`:** Hook vor erstem Benchmark-Run. Card mit Feld → Skip. Card ohne Feld → Probe → Feld schreiben. Keine Card → Probe → Minimal-Card erstellen. Probe-Fehler → RuntimeError.
+- ✅ **`scripts/analysis/generate_model_cards.py` — `_create_minimal_card()`:** Erstellt Card ohne LLM-Aufruf (`card_status: minimal`) — nur Probe-Felder.
+- ✅ **`scripts/tools/probe_thinking.py`** (NEU): Standalone-CLI für retroaktive und On-Demand-Probes. Modi: `--model <id>`, `--missing` (Batch), `--all` (Force-Rescan). Provider-Inference: Config → `/` im ID → `openrouter` → sonst `ollama`.
+- ✅ **Makefile:** `probe-thinking` (requires `MODEL=`) und `probe-all-thinking` als neue Targets.
+- ✅ **26 API-Model-Cards** mit Probe-Feldern versehen (retroaktiv via `make probe-all-thinking`). 25 Offline-Ollama-Modelle: graceful failure (kein Blocking).
+- ✅ **o1/o3-mini/o4-mini:** `thinking_probe_detected: true` + `thinking_probe_manual_override: true` — OpenAI verbirgt Reasoning-Tokens intern.
+- ✅ **Re-Runs:** 18 `gemini-2.5-flash`-Zeilen (5 Module) + 3 `kimi-k2.5`-Zeilen neu ausgeführt.
+- ✅ **Dokumentation:** `CHANGELOG.md`, `docs/ARCHITECTURE.md`, `docs/DEVELOPER_GUIDE.md`, `docs/MODEL_CLASSIFICATION.md`, `.github/copilot-instructions.md` (3 neue Fallstricke), `memory-bank/` vollständig aktualisiert.
+
+**Vorherige Version (v3.5.7 – SSoT Token-Budget, Gemini-2.5 Reasoning-Fix, Judge-Verbosity-Penalty, Refusal-Metadaten):**
 
 CrucibleMark v3.5.7 bringt vier zusammenhängende Verbesserungen: (1) Die Token-Budget-Logik für Reasoning-Modelle ist jetzt in `resolve_token_budget()` zentralisiert (SSoT) — alle drei Provider (`openai.py`, `openrouter.py`, `mistral.py`) delegieren dorthin statt Logik zu duplizieren. (2) `gemini-2.5-flash` und `gemini-2.5-pro` werden als Reasoning-Modelle erkannt und erhalten das erhöhte Token-Budget aus `token_budgets_reasoning_models` — behebt systematisch fehlerhafte 12–18%-Scores durch Thinking-Token-Budget-Erschöpfung. (3) Der LLM-Judge erhält bei Reasoning-Modellen einen `TOKEN BUDGET NOTE`-Block: sichtbarer Output > 2× Standard-Budget mit Padding → −1 Punkt `output_quality`. (4) Kurze Antworten (< 15 Zeichen) werden als `refusal_flag=True` dokumentiert — maschinell lesbar, CSV-persistiert, kein Re-Run.
 

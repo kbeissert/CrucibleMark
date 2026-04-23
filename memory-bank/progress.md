@@ -1,7 +1,8 @@
 # Progress
 
 ## Ongoing
-- [ ] Re-Run Gemini 2.5 Flash (UX Writing, Documentation Quality) mit neuem Reasoning-Budget-Fix
+- [DONE] Re-Run Gemini 2.5 Flash: 18 Zeilen (code_quality 5, cultural_intelligence 5, ux_writing 4, documentation_quality 2, content_transformation 2) erfolgreich re-runt.
+- [DONE] Re-Run Kimi K2.5: cultural_intel_001 (66%), cultural_intel_002 (66%), ux_writing_002 (60.5%) — minimal card erstellt.
 - [ ] Re-Run minimax/minimax-m2.7: cli005 + ux_writing_005 (2 Zeilen gelöscht, Reasoning-Token-Fix aktiv — kein --force nötig)
 - [ ] Re-Run ct_003 / ct_004 / ux_005: 156 CSV-Zeilen + Audit-Logs gelöscht, Benchmark bereit (kein --force nötig)
 - [ ] Leaderboard-Rebuild + alle 52 Reviews neu generieren (nach Re-Run)
@@ -14,6 +15,7 @@
 - [ ] LLM Judge: Batch-Mode (Phase 3.5)
 
 ## Abgeschlossen (Meilensteine)
+- [DONE] v3.5.8 (2026-04-25, Commit e1e61f6): ThinkingProbe-Infrastruktur (`probe_thinking_model()`, `ThinkingProbeResult`, `is_reasoning_model_from_card()`). Card-First-Workflow (`_ensure_model_card()` in `unified_runner.py`). Standalone-CLI `scripts/tools/probe_thinking.py` + Makefile-Targets `probe-thinking`/`probe-all-thinking`. 22 API-Model-Cards mit Probe-Feldern; o1/o3-mini/o4-mini mit manuellen Overrides. Bug-Fixes: Signal-C entfernt, `_infer_provider()` Substring-Matching → `/`-Heuristik, `is_reasoning_model_from_card()` `_safe_name()` fix, Batch-Exit-Verhalten. Gemini 2.5 Flash re-run 18 Zeilen (5 Module), Kimi K2.5 re-run 3 Zeilen. `kimi-k2` Reasoning-Trigger hinzugefügt. CHANGELOG.md + ARCHITECTURE.md + MODEL_CLASSIFICATION.md + systemPatterns.md + copilot-instructions.md vollständig aktualisiert.
 - [DONE] v3.5.7 (2026-04-23): SSoT `resolve_token_budget()` in `model_utils.py`, `token_param_name` pro Provider in Config, Gemini 2.5 Reasoning-Trigger, Judge-Verbosity-Penalty (`token_budget_context`), Refusal-Dokumentationsfelder (`refusal_flag/type/note`). Mistral `elif`-Branch-Bug behoben (war in openai/openrouter vorhanden, fehlte in mistral). CHANGELOG, ARCHITECTURE, SCORING_METHODOLOGY, copilot-instructions vollständig aktualisiert.
 - [DONE] v3.4.4 Architektur-Code-Review & Magic-String/Number-Elimination (2026-04-11): 163/163 pytest, mypy clean. 12 neue Konstanten in constants.py (MODEL_TYPE_OPEN_WEIGHTS_CLOUD, RESULT_TYPE_LOCAL/CLOUD/COMMERCIAL, 7 TIMEOUT_*). 8 Dateien bereinigt. Tag 95f2055.
 - [DONE] Redaktionelle Dokumentations-Überarbeitung (2026-04-11): 16 Dateien (README.md + docs/13 + REF_TODO + PROJECT_STATUS) — Ton, Ansprache, Emoji-Headings, Intro-Blöcke, Divider. Commits c17f814 + 4e7da0e.

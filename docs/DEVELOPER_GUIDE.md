@@ -112,6 +112,114 @@ benchmark_modules/
 
 ---
 
+## Reasoning-Modelle: ThinkingProbe & Card-First Workflow
+
+CrucibleMark erkennt ab v3.5.8 Reasoning-Modelle empirisch statt rein heuristisch. Diese Erkennung bestimmt das Token-Budget, die LLM-Judge-Bewertung und die Audit-Log-Ausgabe.
+
+### Wann wird der Probe ausgelöst?
+
+`_ensure_model_card()` in `scripts/core/unified_runner.py` wird **vor dem ersten Run** eines Modells aufgerufen:
+
+```
+┌────────────────────────────────────────────────────────┐
+│ Card vorhanden + thinking_probe_detected feld          │
+│ → Skip (kein API-Call)                                 │
+├────────────────────────────────────────────────────────┤
+│ Card vorhanden, aber Feld fehlt                        │
+│ → Probe → Feld in bestehende Card schreiben            │
+├────────────────────────────────────────────────────────┤
+│ Keine Card                                             │
+│ → Probe → Minimal-Card erstellen (card_status: minimal)│
+├────────────────────────────────────────────────────────┤
+│ Probe-Fehler (API nicht erreichbar)                    │
+│ → RuntimeError (Benchmark-Abbruch, kein stilles Skip)  │
+└────────────────────────────────────────────────────────┘
+```
+
+### Signale der ThinkingProbe
+
+`probe_thinking_model(model_id, provider_key, config)` in `utils/model_utils.py` schickt einen deterministischen Reasoning-Prompt (Zugproblem) und wertet aus:
+
+| Signal | Kriterium | Konfidenz |
+|--------|-----------|-----------|
+| A | `<think>` / `<thinking>` / `<thought>`-Tags im Response | `high` |
+| B | `reasoning_tokens > 0` in API-Metadaten | `medium` |
+
+> **Signal C (Response-Länge) existiert nicht** — Instruction-Following-Modelle produzieren auf Reasoning-Prompts ebenfalls lange Antworten. Response-Länge darf nicht als CoT-Indikator verwendet werden.
+
+Das Ergebnis landet als JSON in `benchmark_scores/model_cards/<model_id>.json`:
+
+```json
+{
+  "thinking_probe_detected": true,
+  "thinking_probe_evidence": "Signal A: <think> tags detected in response body",
+  "thinking_probe_confidence": "high",
+  "thinking_probe_manual_override": false
+}
+```
+
+### `is_reasoning_model()` Lookup-Hierarchie
+
+Die Funktion in `utils/model_utils.py` verwendet immer zuerst die Card:
+
+```
+1. is_reasoning_model_from_card(model_id)
+   ├── Card + Feld vorhanden → Feldwert zurückgeben
+   └── Fehlt Card oder Feld → None (kein False-Positive)
+
+2. String-Trigger-Heuristik (Fallback)
+   └── deepseek-r1, reasoning, phi4, qwq, o1, o3,
+       magistral, glm-5, minimax-m2, gemini-2.5, kimi-k2
+```
+
+### Retroaktiver Probe (CLI)
+
+Für bereits laufende Benchmark-Setups ohne Card-Felder:
+
+```bash
+# Einzelnes Modell
+make probe-thinking MODEL=gemini-2.5-flash
+
+# Alle Cards ohne thinking_probe_detected-Feld
+make probe-all-thinking
+
+# Direkter CLI-Aufruf mit Provider-Override
+.venv/bin/python scripts/tools/probe_thinking.py --model <model-id> --provider openrouter
+```
+
+`scripts/tools/probe_thinking.py` unterstützt zusätzlich `--missing` (Batch: nur Cards ohne Feld) und `--all` (Force-Rescan aller Cards).
+
+### Sonderfall: OpenAI o-Series (manueller Override)
+
+o1, o3-mini, o4-mini verbergen Reasoning-Tokens intern. Die API liefert keine `<think>`-Tags und keine `reasoning_tokens`. Der Probe gibt `detected=False` zurück — fälschlicherweise.
+
+Für diese Modelle wird die Card **manuell** gesetzt:
+
+```bash
+# benchmark_scores/model_cards/o1.json bearbeiten:
+{
+  "thinking_probe_detected": true,
+  "thinking_probe_manual_override": true
+}
+```
+
+**Neue Modelle ergänzen:** Wenn ein Anbieter Reasoning intern verbirgt, immer beide Felder manuell eintragen und `make probe-thinking MODEL=<id>` nicht als Quelle verwenden.
+
+### `_safe_name()` Konsistenz-Pflicht
+
+Alle Pfadauflösungen von Modell-IDs zu Card-Dateinamen müssen `re.sub(r'[:/.\ ]', '_', model_id)` verwenden. Einfaches `replace('/', '_')` reicht nicht:
+
+```python
+# Korrekt:
+_safe_name("gemini-2.5-flash")  # → "gemini-2_5-flash"  (.json)
+_safe_name("deepseek-r1:8b")    # → "deepseek-r1_8b"    (.json)
+
+# FALSCH — führt zu Lookup-Miss ohne Fehlermeldung:
+"gemini-2.5-flash".replace("/", "_")  # → "gemini-2.5-flash" (Datei existiert nicht)
+```
+
+---
+
 ## Modell-Versionierung
 
 CrucibleMark nutzt eine deterministische, provider-spezifische Versionsermittlung.
@@ -625,5 +733,5 @@ python run_benchmark.py --debug-responses
 
 ---
 
-**Dokumenten-Version:** 3.1.0 (Überarbeitung März 2026)\
-**Kompatibel mit:** CrucibleMark v3.4.3+
+**Dokumenten-Version:** 3.2.0 (Überarbeitung April 2026)\
+**Kompatibel mit:** CrucibleMark v3.5.8+

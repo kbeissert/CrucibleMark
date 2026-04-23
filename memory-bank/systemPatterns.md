@@ -56,9 +56,17 @@ Gilt für Generation-Parameter UND LLM Judge. Modul-Override gewinnt immer.
 - Reasoning-Module (`reasoning_logic`, `cli_benchmark`) sind bewusst ausgenommen. Budgetierte Module: `cultural_intelligence: 500`, `ux_writing: 3500`, `content_transformation: 3500`, `documentation_quality: 6000`, `code_quality: 6000`.
 - `token_limit_cutoff=True` im BenchmarkResult → `[!NOTE]`-Block in Audit-Log (`benchmark_utils.py`). Trigger: `cutoff is True AND _budget is not None`.
 
+## ThinkingProbe & Card-First Workflow (ab v3.5.8)
+- **Empirische Erkennung:** `probe_thinking_model()` testet per API-Call, ob ein Modell Chain-of-Thought produziert. Signal A = `<think>`/`<thinking>`/`<thought>`-Tags (confidence=high), Signal B = `reasoning_tokens > 0` in API-Metadaten (confidence=medium). Signal C (Response-Länge) ist **nicht** implementiert — zu viele False-Positives bei Instruction-Following-Modellen.
+- **`is_reasoning_model()` Hierarchie:** 1. `is_reasoning_model_from_card(model_id)` (Card-Lookup, immer Vorrang) → 2. String-Trigger als Fallback. Gibt `None` zurück wenn kein Card-Eintrag — kein False-Positive.
+- **`_safe_name()` Konsistenz:** Alle Card-Pfad-Auflösungen müssen `re.sub(r'[:/.\ ]', '_', model_id)` verwenden. `replace('/', '_')` allein reicht nicht (z.B. `gemini-2.5-flash` → `gemini-2_5-flash.json`).
+- **`_ensure_model_card()` Hook:** Wird in `unified_runner.py` vor dem ersten Run eines Modells aufgerufen. Prüft ob `thinking_probe_detected` in der Card vorhanden — falls nicht, führt Probe durch und schreibt Ergebnis. Fehlende Card → Minimal-Card erstellen. Probe-Fehler → RuntimeError (kein stilles Überspringen).
+- **Manual Override:** OpenAI o-Series (o1, o3-mini, o4-mini) verbergen Reasoning-Tokens intern. Card manuell mit `thinking_probe_detected: true, thinking_probe_manual_override: true` setzen.
+- **Retroaktiver Probe:** `make probe-all-thinking` → `scripts/tools/probe_thinking.py --missing`. Provider-Inference: Config-Lookup → `/` im model_id → `openrouter` → sonst `ollama`. Kein Substring-Matching (führt zu False-Routing bei lokalen Modell-Namen wie `deepseek-r1:8b`).
+
 ## OpenRouter: Reasoning-Token-Budget-Konflikt
 - OpenRouter verrechnet interne Reasoning-/Thinking-Tokens bei Reasoning-Modellen gegen `max_tokens`. Bei erschöpftem Budget ist `message.content = null`, `finish_reason = length`.
-- **Erkennung:** `is_reasoning_model()` in `utils/model_utils.py` — Trigger-Strings: `deepseek-r1`, `reasoning`, `phi4`, `qwq`, `o1`, `o3`, `magistral`, `glm-5`, `minimax-m2`.
+- **Erkennung:** `is_reasoning_model()` in `utils/model_utils.py` — ab v3.5.8 Card-First + Trigger-Strings: `deepseek-r1`, `reasoning`, `phi4`, `qwq`, `o1`, `o3`, `magistral`, `glm-5`, `minimax-m2`, `gemini-2.5`, `kimi-k2`.
 - **Fix:** `utils/providers/openrouter.py` multipliziert das Budget für erkannte Reasoning-Modelle automatisch (5× oder `token_budgets_reasoning_models` aus Config).
 - **Tracking:** `completion_tokens_details.reasoning_tokens` wird aus der API-Response extrahiert → `BenchmarkResult.reasoning_tokens` → neue CSV-Spalte.
 - **Audit-Log:** Bei `reasoning_tokens > 0 AND token_limit_cutoff=True` → `[!WARNING]`-Block mit Erklärung in `benchmark_utils.py`.
