@@ -397,6 +397,7 @@ def main() -> None:
             "version": extract_version(row.get("Version")),
             "badge": str(row.get("Badge", "")),
             "badge_tier": extract_badge_tier(row.get("Badge")),
+            "size_class": str(row.get("Size Class", "Frontier")),
             "speed_profile": str(row.get("Speed Profile", "")),
             "performance_tier": str(row.get("Speed Profile", "")).split()[1] if len(str(row.get("Speed Profile", "")).split()) > 1 else None,
             "type": str(row.get("Type", "")),

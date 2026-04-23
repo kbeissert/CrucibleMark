@@ -20,7 +20,7 @@ if str(ROOT_DIR) not in sys.path:
     sys.path.insert(0, str(ROOT_DIR))
 
 from utils.llm_client import LLMClient
-from utils.model_utils import get_model_specialization, get_model_identity
+from utils.model_utils import get_model_specialization, get_model_identity, get_model_size_class
 
 def load_config() -> dict:
     config_path = ROOT_DIR / "benchmark_config.yaml"
@@ -805,6 +805,7 @@ def process_model_review(model_dir: Path, csv_data: str, client: LLMClient, prov
         "model_tokens_per_s": safe_round(model_metrics.get("Tokens/s")),
         "model_timeout_rate": timeout_rate_str,
         "model_provider_type": model_metrics.get("Type", "n/a"),
+        "model_size_class": model_metrics.get("Size Class") or get_model_size_class(tested_model_name),
         "model_card_context": get_model_card_context(tested_model_name),
         "provider_card_context": get_provider_card_context(tested_model_name),
         "token_efficiency_context": token_efficiency_context,

@@ -19,7 +19,11 @@ meta_reviewer:
     - Keine akademische Steifheit, kein Werbesprech. Der Leser soll am Ende nicht nur Fakten kennen, sondern auch ein Bild vom Charakter dieses Modells haben.
     - Satzlänge folgt dem Inhalt, nicht einem Rhythmus-Ideal. Wer jeden Gedanken in einen Einzeiler presst, schreibt Schlagzeilen, keinen Magazintext. Absätze unter fünf Zeilen sind eine Obergrenze, kein Zielwert.
     - Gedankenstriche extrem sparsam einsetzen. Maximal ein bis zwei Gedankenstriche pro Abschnitt — nicht pro Absatz. Wer jeden zweiten Satz damit trennt, schreibt atemlos, nicht pointiert. Bevorzuge konsequent Nebensätze und Kommas. Gedankenstriche sind für den einzelnen, präzise gesetzten Ausreißer, nicht für Listenersatz oder rhythmische Pausen.
-    - Verwende keinerlei Emojis oder Icons — weder im Fließtext noch in Überschriften noch in Tabellen (keine ✅, ❌, 🔴, ⚡, 📊, 🔧 o.ä.). Dies gilt absolut und ohne Ausnahme für den redaktionellen Teil. Die einzige Ausnahme ist das ⚠️-Symbol in den explizit vorgeschriebenen Warnblöcken (Tabellen-Robustheit, Metakognitions-Compliance) — und auch dort nur dann, wenn das jeweilige negative Muster positiv erkannt wurde. Nie für grüne Befunde, nie spontan, nie als Bestätigung.
+    - Verwende keinerlei Emojis oder Icons — weder im Fließtext noch in Überschriften noch in Tabellen (keine ✅, ❌, 🔴, ⚡, 📊, 🔧 o.ä.). Dies gilt absolut und ohne Ausnahme für den redaktionellen Teil. Die einzige Ausnahme ist das ⚠️-Symbol in den explizit vorgeschriebenen Warnblöcken (Tabellen-Robustheit, Metakognitions-Compliance) — und auch dort nur dann, wenn das jeweilige negative Muster positiv erkannt wurde. Nie für grüne Befunde, nie spontan, nie als Bestätigung. Eine weitere Ausnahme gilt für wörtlich aus Audit-Logs zitierte Inhalte — dort kann ⚠️ als Bestandteil des zitierten Log-Texts erscheinen.
+
+
+    ## Grundprinzip: Magazintext, kein Audit-Report
+    Die folgenden Diagnostic Checks sind Recherchematerial — keine Gliederungsvorlage. Du webst ihre Befunde frei in die Erzählung ein. Die Reihenfolge der Diagnosen bestimmt nicht die Struktur des Artikels; der Fluss der Geschichte bestimmt, wo welcher Befund erscheint. Ausnahmen sind die am Ende der Instructions explizit als Pflicht markierten Strukturelemente. Alles andere folgt dem Lesefluss.
 
 
 
@@ -38,7 +42,7 @@ meta_reviewer:
     |---|---|---|
     | `General` | GPT-4o, Claude Sonnet, Mistral Large | Standard-Allrounder ohne besondere Spezialisierung |
     | `Coder` | DeepSeek Coder, CodeLlama, Qwen Coder | Primär für Code-Generierung trainiert |
-    | `Thinking` | DeepSeek R1, o1, o3, QwQ | Festes Chain-of-Thought, immer aktiv |
+    | `Thinking` | DeepSeek R1, o1, o3, QwQ, Magistral Medium/Small, GLM-5.x | Festes Chain-of-Thought, immer aktiv |
     | `Thinking-Optional` | Qwen3, Gemini 2.5 Pro/Flash | Extended Thinking per API aktivierbar — hier: Standard-Modus (nicht aktiviert) |
     | `Instruct` | Llama-Instruct, Gemma-it, Phi-chat | Optimiert auf direktes Instruction-Following, kurze präzise Antworten |
     | `Preview` | Experimentelle Versionen | Beta-Phase, Leistungsschwankungen erwartet |
@@ -49,7 +53,7 @@ meta_reviewer:
     Tags sind kombinierbar (z.B. `Agentic-Orchestrator` kann mit `Thinking-Optional` kombiniert sein). Das aktuelle Modell trägt: **{model_tags}**
 
     Achte hierbei gezielt auf folgende Besonderheiten für die zugewiesene Kategorie:
-    - **Coder / Code**: Es ist verzeihlich, wenn ein spezialisiertes Code-Modell bei gesellschaftlich-philosophischen Fragen im Political Compass Schwächen zeigt oder abdriftet.
+    - **Coder / Code**: Spezialisierte Code-Modelle sind primär auf technische Exekution trainiert — Schwächen in sprachlich-kreativen Modulen (UX Writing, Cultural Intelligence) sind als Architekturcharakteristikum zu werten, nicht als generelles Qualitätsproblem.
     - **Thinking / Reasoning**: Von Modellen mit umfassenden Denkprozessen ("Chain of Thought") werden längere, gut durchdachte Antworten erwartet. Längere Denkphasen oder ausschweifendere Erklärungen sind bei Logik-Aufgaben hier absolut gewollt und als Stärke zu werten.
     - **Instruct / Chat**: Diese Modelle sind fokussiert auf direktes "Instruction Following". Sie tendieren oft zu kürzeren, strikteren Antworten ohne ausufernde Erklärungen, da der Fokus auf rascher, ungelenkter Befehlsausführung liegt.
     - **Preview / Test**: Zeigt an, dass das Modell noch testweise oder experimentell ist. Geringere Leistungen können unter dem Vorbehalt erwähnt werden, dass es sich um eine frühe Version handelt, die sich wahrscheinlich noch verbessert.
@@ -116,9 +120,10 @@ meta_reviewer:
 
 
 
-    WICHTIG zu Timeouts: Dieses Modell ist im Leaderboard als **{model_provider_type}** klassifiziert. Nutze diese Klassifizierung für deine Schlussfolgerungen:
+    WICHTIG zu Timeouts: Dieses Modell ist im Leaderboard als **{model_provider_type}** klassifiziert und gehört zur Hardware-Klasse **{model_size_class}** (Deployment-Tier: Nano ≤4B / Edge 5–9B / Desktop 10–19B / Workstation 20–35B / Server 36–75B / Frontier = API-only oder >75B). Nutze diese Klassifizierung für deine Schlussfolgerungen:
     * Typ **Local**: Die Timeouts deuten meist auf ein "Hardware-Ceiling" hin (Modell passt nicht auf die verfügbare GPU-Kapazität oder crasht den VRAM). Dies macht das Setup auf dieser Maschine **nicht einsetzbar**.
     * Typ **Commercial** oder **Cloud (Open-Weights)**: Die Timeouts demonstrieren direkte **API-Instabilität**, Überlastung des Endpunkts oder Netzwerk-Probleme und stellen ein unkalkulierbares Reliability-Risiko für den Produktionseinsatz dar (es ist explizit KEIN VRAM-Zeiling deines Systems).
+    * Size Class **Nano** oder **Edge**: Strukturelle Schwächen beim Instruction-Following (mehrstufige Constraints, Format + Tonalität + Länge gleichzeitig) sind modellinherent und keine Fehlbedienung — weise explizit darauf hin und empfehle den Einsatz auf dem passenden Hardware-Tier (Edge Devices, Autocomplete, einfache Agenten-Tasks).
 
 
 
@@ -155,7 +160,7 @@ meta_reviewer:
     - **Position im Artikel:** Der Truncation-Befund erscheint innerhalb desselben Abschnitts, der das betroffene Modul bewertet — direkt nach der inhaltlichen Modul-Auswertung, als eigenständiger Absatz. Kein gesonderter Hauptabschnitt, kein Anhang.
     - **Absolutes Formulierungsverbot:** Verwende für ein Modul, in dem ein Truncation-Failure aufgetreten ist, unter keinen Umständen Formulierungen wie "zeigt eine sichere Hand", "liefert solide Arbeit", "überzeugt durchgehend", "arbeitet zuverlässig" oder semantisch äquivalente positive Pauschalurteile, die den Truncation-Failure unsichtbar machen. Auch wenn andere Tests des Moduls gut liefen, relativiert ein Truncation-Failure das Modul-Gesamturteil spürbar — das muss im Text sichtbar sein.
 
-    **Wenn kein Truncation-Failure erkannt wird:** Schreibe ABSOLUT NICHTS zu diesem Check. Kein erklärender Satz, keine Erwähnung dass dieser Check stattfand, keine "grüne" Zusammenfassung. Der fertige Artikel enthält zu diesem Thema null Zeichen.
+    **Wenn kein Truncation-Failure erkannt wird:** Schreibe ABSOLUT NICHTS zu diesem Check. Kein erklärender Satz, keine Erwähnung dass dieser Check stattfand, keine "grüne" Zusammenfassung. Der fertige Artikel enthält zu diesem Thema null Zeichen. Das Modul wird uneingeschränkt nach inhaltlicher Qualität bewertet.
 
 
 
@@ -271,13 +276,10 @@ meta_reviewer:
 
 
 
-    ## FINALER STIL-CHECK (vor dem Schreiben)
-    Alle obigen Diagnostic Checks sind deine Recherche-Grundlage — keine Gliederungsvorlage.
-    Der Artikel ist ein Magazintext, kein Audit-Report. Struktur folgt dem Fluss der Geschichte,
-    nicht der Reihenfolge der Diagnosen. Wer sich beim Lesen wie in einem Prüfprotokoll fühlt,
-    hat den falschen Text vor sich.
+    ## Pflichtstruktur-Referenz
+    Die folgenden Elemente sind strukturelle Pflicht — unabhängig vom freien Erzählfluss:
 
-    **AUSNAHMEN — diese Elemente sind strukturelle Pflicht, kein Optional:**
+    **Pflicht-Elemente:**
     - Abschnitt „Datenschutz und Datenhoheit" bei Cloud/Commercial-Modellen (wenn Card-Daten vorhanden) — direkt vor dem Fazit
     - Die Stabilitätstabelle (Kopfnoten: Stabilität und Zuverlässigkeit)
     - Hard-Constraint-Violation-Befunde innerhalb des betroffenen Modul-Abschnitts, wenn `{constraint_violations_context}` nicht leer ist — niemals als eigener Hauptabschnitt, immer als Absatz direkt nach der Modul-Auswertung

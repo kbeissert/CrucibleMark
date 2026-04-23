@@ -103,6 +103,15 @@ class MistralClient(BaseProviderClient):
                 "finish_reason": getattr(response.choices[0], "finish_reason", None) if response.choices else None,
             }
             content = response.choices[0].message.content
+            # Reasoning models (e.g. magistral) return a list of chunks
+            # [ThinkChunk(...), TextChunk(...)]. Extract only the text parts.
+            if isinstance(content, list):
+                text_parts = [
+                    chunk.text
+                    for chunk in content
+                    if getattr(chunk, "type", None) == "text"
+                ]
+                content = "".join(text_parts)
             if stream_handler and content:
                 stream_handler(content)
             return content

@@ -52,6 +52,8 @@ class AnthropicClient(BaseProviderClient):
         return self._client
     def is_accessible(self) -> bool:
         """Prüft Zugang zu Anthropic API durch Test-Request."""
+        if anthropic is None:
+            return False
         try:
             # Versuche minimale Generierung (Cheap & Fast) mit max_retries=0
             check_client = anthropic.Anthropic(

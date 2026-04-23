@@ -95,7 +95,7 @@ class ProviderSelector:
                         "provider_name": provider_data["name"],
                         "id": model["id"],
                         "name": model["name"],
-                        "description": model["description"],
+                        "description": model.get("description", ""),
                     }
                 )
 
