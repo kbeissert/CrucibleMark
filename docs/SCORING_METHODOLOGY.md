@@ -313,6 +313,29 @@ Falls ein Asset `metadata.language: de` deklariert, prüft der `unified_runner.p
 
 Bei Auslösung wird `result["status"] = "language_mismatch"` gesetzt und ein `> [!WARNING] [LANGUAGE MISMATCH]`-Block ins Audit-Log geschrieben. Die Penalty ist **kein Score-Abzug**, sondern ein isolierter Status-Flag – ein Modell kann gleichzeitig `correct_length` und `language_mismatch` sein; beide Dimensionen werden getrennt erfasst.
 
+### Judge-Verbosity-Penalty für Reasoning-Modelle (ab v3.5.7)
+
+Reasoning-Modelle (erkannt via `is_reasoning_model()` in `utils/model_utils.py`) erhalten ein erhöhtes Token-Budget (`token_budgets_reasoning_models`), um interne Chain-of-Thought-Tokens zu kompensieren. Der Judge bewertet ausschließlich den **sichtbaren Output** — das erhöhte Budget darf nicht zu einem längeren Response führen als die Aufgabe erfordert.
+
+**Mechanismus:** `judge_evaluator.py` injiziert automatisch `token_budget_context = {"standard": N, "elevated": M}` für Reasoning-Modelle. `judge_prompt_builder.py` fügt eine `TOKEN BUDGET NOTE` in den System-Prompt ein:
+
+- Sichtbarer Output > 2× Standard-Budget **und** Überschuss ist Padding/Wiederholung → **−1 Punkt von `output_quality`**
+- Kompakter, fokussierter Output ≈ Standard-Budget → kein Abzug
+
+Damit gilt dasselbe Qualitätsmaßstab für Reasoning- und Standard-Modelle, obwohl erstere intern mehr Tokens verbrauchen.
+
+### Refusal-Dokumentation (ab v3.5.7)
+
+Wenn eine Modellantwort über `unified_runner.py` als Ablehnung erkannt wird (Länge < 15 Zeichen), werden drei Felder gesetzt:
+
+| Feld | Wert | Bedeutung |
+|---|---|---|
+| `refusal_flag` | `True` | Maschinenlesbare Markierung |
+| `refusal_type` | `content_safety` | Klassifikation (erweiterbar) |
+| `refusal_note` | Freitext | Kontext für manuelle Analyse |
+
+Diese Felder unterscheiden eine **aktive Ablehnung** (Qualitätsmerkmal des Modells) von einem **ungetesteten Ergebnis** (technischer Fehler). Die Werte erscheinen als CSV-Spalten und werden in Audit-Logs sichtbar. Ein Refusal wird **nicht** als Re-Run-Kandidat behandelt — wenn 60+ andere Modelle denselben Asset lösen und ein Modell ihn ablehnt, ist das eine valide Qualitätsaussage.
+
 ### Vollständige Status-Codes
 
 | Status | Beschreibung |
@@ -340,5 +363,5 @@ v1.0 (2026-03-15): Token-Fix, Haiku Judge ✅
 v3.4.0 (2026-04-08): Token-Budget-System (max_tokens API-Cap), Verbosity-Diagnostik in Audit-Logs und Meta-Reviews ✅
 v3.4.2 (2026-04-09): Vollständige Preis-Datenbasis in cost_limits.yaml; LLM Judge Avg als ★-Format im Leaderboard ✅
 v3.4.3 (2026-04-10): module_weight-System — selbstnormierende Modulgewichtung entkoppelt Total Score von Asset-Anzahl; CLI-Modul als Supplement (0.5) ✅
-v3.4.x (geplant): Score-Penalty für Token-Verbosity, Leaderboard-Metriken (avg_tokens, token_efficiency_ratio, est_cost_per_1k_tasks)
+v3.5.7 (2026-04-23): SSoT resolve_token_budget(), gemini-2.5 Reasoning-Trigger, Judge-Verbosity-Penalty für Reasoning-Modelle, Refusal-Dokumentationsfelder ✅
 ```

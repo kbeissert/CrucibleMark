@@ -95,26 +95,13 @@ class OpenRouterClient(BaseProviderClient):
                 "temperature": temperature,
             }
 
-            from utils.model_utils import is_reasoning_model
-            is_reasoning = is_reasoning_model(model)
-
-            req_tokens = kwargs.get("max_tokens")
-            explicit_budget = req_tokens is not None
-            if not req_tokens:
-                req_tokens = self.config.get("defaults", {}).get("generation", {}).get("num_predict", 8192)
-
-            if is_reasoning and explicit_budget:
-                # Reasoning-Modelle: erhöhtes Budget lesen (Thinking-Tokens zählen gegen max_tokens).
-                _reasoning_budgets = self.config.get("token_budgets_reasoning_models", {})
-                _module_key = kwargs.get("_module_key")
-                if _module_key and _module_key in _reasoning_budgets:
-                    req_tokens = _reasoning_budgets[_module_key]
-                else:
-                    req_tokens = req_tokens * 5
-            elif is_reasoning and req_tokens < 10000:
-                req_tokens = 25000
-
-            params["max_tokens"] = req_tokens
+            from utils.model_utils import resolve_token_budget
+            _provider_cfg = self.config.get("providers", {}).get("commercial", {}).get("openrouter", {})
+            token_param_name = _provider_cfg.get("token_param_name", "max_tokens")
+            req_tokens, _ = resolve_token_budget(
+                model, kwargs.get("max_tokens"), self.config, kwargs.get("_module_key")
+            )
+            params[token_param_name] = req_tokens
 
             if stream_handler:
                 params["stream"] = True

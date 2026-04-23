@@ -1,6 +1,7 @@
 # Progress
 
 ## Ongoing
+- [ ] Re-Run Gemini 2.5 Flash (UX Writing, Documentation Quality) mit neuem Reasoning-Budget-Fix
 - [ ] Re-Run minimax/minimax-m2.7: cli005 + ux_writing_005 (2 Zeilen gelöscht, Reasoning-Token-Fix aktiv — kein --force nötig)
 - [ ] Re-Run ct_003 / ct_004 / ux_005: 156 CSV-Zeilen + Audit-Logs gelöscht, Benchmark bereit (kein --force nötig)
 - [ ] Leaderboard-Rebuild + alle 52 Reviews neu generieren (nach Re-Run)
@@ -13,6 +14,7 @@
 - [ ] LLM Judge: Batch-Mode (Phase 3.5)
 
 ## Abgeschlossen (Meilensteine)
+- [DONE] v3.5.7 (2026-04-23): SSoT `resolve_token_budget()` in `model_utils.py`, `token_param_name` pro Provider in Config, Gemini 2.5 Reasoning-Trigger, Judge-Verbosity-Penalty (`token_budget_context`), Refusal-Dokumentationsfelder (`refusal_flag/type/note`). Mistral `elif`-Branch-Bug behoben (war in openai/openrouter vorhanden, fehlte in mistral). CHANGELOG, ARCHITECTURE, SCORING_METHODOLOGY, copilot-instructions vollständig aktualisiert.
 - [DONE] v3.4.4 Architektur-Code-Review & Magic-String/Number-Elimination (2026-04-11): 163/163 pytest, mypy clean. 12 neue Konstanten in constants.py (MODEL_TYPE_OPEN_WEIGHTS_CLOUD, RESULT_TYPE_LOCAL/CLOUD/COMMERCIAL, 7 TIMEOUT_*). 8 Dateien bereinigt. Tag 95f2055.
 - [DONE] Redaktionelle Dokumentations-Überarbeitung (2026-04-11): 16 Dateien (README.md + docs/13 + REF_TODO + PROJECT_STATUS) — Ton, Ansprache, Emoji-Headings, Intro-Blöcke, Divider. Commits c17f814 + 4e7da0e.
 - [DONE] v3.4.3 Module Weight System & Score-Fairness (2026-04-10): module_weight in allen 7 Modul-config.yamls (Vollmodule 1.0, CLI 0.5). _module_scale() in score_calculator.py. Selbstnorm. Formel. 5 neue Ollama-Cloud-Modelle. Docs (BENCHMARK_MODULES.md + SCORING_METHODOLOGY.md) + alle Versionsdateien. Commit 48015dd.

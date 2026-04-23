@@ -415,6 +415,42 @@ def get_model_category(
     return "Open Weights (Local)"
 
 
+def resolve_token_budget(
+    model: str,
+    requested_max_tokens: int | None,
+    config: dict,
+    module_key: str | None = None,
+) -> tuple[int, bool]:
+    """
+    Berechnet das effektive Token-Budget für einen API-Request.
+
+    Reasoning-Modelle (z.B. magistral, o1, minimax-m2) verbrauchen interne
+    Thinking-Tokens gegen dasselbe max_tokens-Kontingent wie der sichtbare Output.
+    Diese Funktion ersetzt das Standard-Budget durch den erhöhten Wert aus
+    `token_budgets_reasoning_models` in benchmark_config.yaml.
+
+    Args:
+        model: Modell-ID (z.B. "magistral-medium-latest")
+        requested_max_tokens: Vom base_runner injiziertes Modul-Budget (kann None sein)
+        config: Vollständige benchmark_config (self.config im Provider)
+        module_key: Modul-Schlüssel aus base_runner (z.B. "cultural_intelligence")
+
+    Returns:
+        tuple[int, bool]: (effektives_budget, is_reasoning)
+    """
+    reasoning = is_reasoning_model(model)
+    explicit_budget = requested_max_tokens is not None
+    tokens: int = requested_max_tokens or config.get("defaults", {}).get("generation", {}).get("num_predict", 8192)
+
+    if reasoning and explicit_budget:
+        budgets = config.get("token_budgets_reasoning_models", {})
+        tokens = budgets[module_key] if (module_key and module_key in budgets) else tokens * 5
+    elif reasoning and tokens < 10000:
+        tokens = 25000
+
+    return tokens, reasoning
+
+
 def is_reasoning_model(model_name: str) -> bool:
     """
     Checks if the model is a reasoning model (Chain-of-Thought).
@@ -426,7 +462,7 @@ def is_reasoning_model(model_name: str) -> bool:
     Returns:
         bool: True if it is a reasoning model
     """
-    triggers = ["deepseek-r1", "reasoning", "phi4", "qwq", "o1", "o3", "magistral", "glm-5", "minimax-m2"]
+    triggers = ["deepseek-r1", "reasoning", "phi4", "qwq", "o1", "o3", "magistral", "glm-5", "minimax-m2", "gemini-2.5"]
     return any(t in model_name.lower() for t in triggers)
 
 

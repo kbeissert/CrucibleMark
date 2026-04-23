@@ -90,31 +90,17 @@ class OpenAIClient(BaseProviderClient):
             )
             if not is_reasoning:
                 params["temperature"] = temperature
-            token_param_name = "max_completion_tokens"  # OpenAI now universally prefers max_completion_tokens for newer models
-            req_tokens = kwargs.get("max_tokens")
-            explicit_budget = req_tokens is not None  # True wenn ein Modul-Budget-Cap explizit gesetzt wurde
-            if not req_tokens:
-                req_tokens = self.config.get("defaults", {}).get("generation", {}).get("num_predict", 8192)
-            # Modellspezifische Token-Limits aus Config (z.B. gpt-4o: 4096)
+            from utils.model_utils import resolve_token_budget
             _provider_cfg = self.config.get("providers", {}).get("commercial", {}).get("openai", {})
+            token_param_name = _provider_cfg.get("token_param_name", "max_completion_tokens")
+            # Modellspezifische Token-Limits aus Config (z.B. gpt-4o: 4096)
             _model_limits = _provider_cfg.get("model_max_tokens", {})
-            if model in _model_limits:
-                req_tokens = min(req_tokens, _model_limits[model])
-            if is_reasoning and explicit_budget:
-                # Reasoning-Modelle (o1/o3/gpt-5): token_budgets_reasoning_models lesen (transparent im Config).
-                # Fallback: 5× das Standard-Budget wenn kein spezifischer Wert konfiguriert.
-                # Hintergrund: max_completion_tokens umfasst Thinking-Tokens + sichtbaren Output.
-                _reasoning_budgets = self.config.get("token_budgets_reasoning_models", {})
-                _module_key = kwargs.get("_module_key")  # Optional von base_runner injiziert
-                if _module_key and _module_key in _reasoning_budgets:
-                    initial_tokens_to_try = _reasoning_budgets[_module_key]
-                else:
-                    initial_tokens_to_try = req_tokens * 5
-            elif is_reasoning and req_tokens < 10000:
-                # Ohne explizites Budget: Reasoning-Modelle brauchen Platz für Chain-of-Thought
-                initial_tokens_to_try = 25000
-            else:
-                initial_tokens_to_try = req_tokens
+            raw_requested: int | None = kwargs.get("max_tokens")
+            if raw_requested and model in _model_limits:
+                raw_requested = min(raw_requested, _model_limits[model])
+            initial_tokens_to_try, _ = resolve_token_budget(
+                model, raw_requested, self.config, kwargs.get("_module_key")
+            )
             if stream_handler:
                 params["stream"] = True
                 # Request usage info in stream (OpenAI feature)
