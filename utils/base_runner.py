@@ -13,6 +13,7 @@ from utils.config_validator import ConfigValidator
 from utils.result_manager import ResultManager
 from utils.module_loader import load_test_class
 from utils.constants import QUALITY_EXCELLENT, QUALITY_GOOD, QUALITY_OK
+from utils.model_utils import resolve_token_budget
 
 from schemas.result import BenchmarkResult
 
@@ -80,7 +81,8 @@ class BaseBenchmarkRunner:
         # Use module_path.parent.name (e.g. "code_quality") not benchmark_info["path"].name
         # which would be "assets" when path = "benchmark_modules/code_quality/assets"
         _module_key = module_path.parent.name
-        _token_budget: int | None = self.validator.config.get("token_budgets", {}).get(_module_key)
+        _raw_budget: int | None = self.validator.config.get("token_budgets", {}).get(_module_key)
+        _token_budget, _ = resolve_token_budget(model, _raw_budget, self.validator.config, _module_key)
 
         # exec_result is now a BenchmarkResult object
         # _module_key wird mitübergeben damit openai.py das Reasoning-Budget per Modul nachschlagen kann

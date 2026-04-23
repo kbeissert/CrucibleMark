@@ -282,6 +282,32 @@ def save_audit_log(
                         f"Product Engineers: Dieser Task-Typ triggert systematisch das Output-Limit bei diesem Modell.\n\n"
                     )
 
+                    # Unbekanntes Reasoning-Modell: actionable Hinweis für Maintainer
+                    _is_reasoning = False
+                    _is_thinking_optional = False
+                    try:
+                        from utils.model_utils import is_reasoning_model, is_thinking_optional_from_card
+                        _is_reasoning = is_reasoning_model(str(model))
+                        _is_thinking_optional = is_thinking_optional_from_card(str(model))
+                    except Exception:
+                        pass
+                    if not _is_reasoning and not reasoning_tokens and not _is_thinking_optional:
+                        f.write(
+                            f"> [!WARNING]\n"
+                            f"> **Mögliches Reasoning-Modell nicht erkannt:** `{model}` hat das Token-Budget "
+                            f"für Modul `{_module_key}` ({_budget} Tokens) vollständig ausgeschöpft, "
+                            f"ist aber weder als Reasoning-Modell klassifiziert noch wurden `reasoning_tokens > 0` "
+                            f"in den API-Metadaten gemeldet. Falls dieses Modell intern Chain-of-Thought betreibt "
+                            f"(Thinking-Tokens ohne sichtbare Tags), erklärt das den Budget-Engpass.\n"
+                            f"> \n"
+                            f"> **Empfohlene Aktion:**\n"
+                            f"> ```\n"
+                            f"> make probe-thinking MODEL={model}\n"
+                            f"> # Bei Bestätigung (detected=true):\n"
+                            f"> make run-model MODEL={model} --force\n"
+                            f"> ```\n\n"
+                        )
+
 
             import re
 
