@@ -4,6 +4,26 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [v3.5.7] - 2026-04-23
+
+### Added
+- **`utils/model_utils.py` — `resolve_token_budget()` SSoT-Hilfsfunktion:** Neue Funktion, die Token-Budget-Berechnung für alle Provider zentralisiert. Ersetzt die zuvor in `openai.py`, `openrouter.py` und `mistral.py` duplizierte inline-Logik. Gibt `(effektives_budget, is_reasoning)` zurück. Logik: Bei Reasoning-Modellen mit explizitem Budget → `token_budgets_reasoning_models[module_key]` aus Config (Fallback: ×5); ohne explizites Budget und < 10.000 Tokens → 25.000 Tokens fix.
+- **`benchmark_config.yaml` — `token_param_name` pro Provider:** Alle 5 kommerziellen Provider-Blöcke (`mistral`, `openai`, `groq`, `xai`, `openrouter`) haben jetzt ein explizites `token_param_name`-Feld (`max_tokens` oder `max_completion_tokens`). Providers lesen ihren Parametermamen aus der Config statt ihn hart zu kodieren.
+- **`utils/scoring/llm_judge/judge_prompt_builder.py` — `token_budget_context`-Parameter:** Neuer optionaler Parameter in `build_prompts()`. Bei Reasoning-Modellen erhält der Judge eine `TOKEN BUDGET NOTE`: standard- und elevated-Budget werden kommuniziert, und der Judge wird angewiesen, 1 Punkt von `output_quality` abzuziehen, wenn der sichtbare Output > 2× Standard-Budget beträgt und das Mehr reine Ausschweifung ist.
+- **`utils/scoring/judge_evaluator.py` — automatische Budget-Kontext-Injektion:** Bei Reasoning-Modellen werden `standard` und `elevated` Budget automatisch aus der Config gelesen und als `token_budget_context` an den Judge weitergegeben.
+- **`scripts/core/unified_runner.py` — Refusal-Metadaten:** Wenn eine Modellantwort kürzer als 15 Zeichen ist (Ablehnungs-Signal), werden drei neue Felder ins Result geschrieben: `refusal_flag: True`, `refusal_type: "content_safety"`, `refusal_note` mit Freitext-Begründung.
+- **`utils/result_manager.py` — Refusal-Felder in CSV-Schema:** `refusal_flag`, `refusal_type`, `refusal_note` in `_get_updated_fieldnames()` registriert — erscheinen ab sofort als CSV-Spalten in allen drei Benchmark-CSVs.
+
+### Changed
+- **`utils/model_utils.py` — `is_reasoning_model()` Trigger erweitert:** `"gemini-2.5"` ergänzt. `gemini-2.5-flash` und `gemini-2.5-pro` erhalten jetzt automatisch das erhöhte Token-Budget aus `token_budgets_reasoning_models` (ux_writing: 8.000, documentation_quality: 12.000 statt 500/6.000 Tokens). Behebt systematisch fehlerhafte 1/5-Judge-Scores durch Thinking-Token-Budget-Erschöpfung.
+- **`utils/providers/openai.py`**, **`openrouter.py`**, **`mistral.py`** — alle drei Provider-Implementierungen auf `resolve_token_budget()` umgestellt. `mistral.py` erhält damit den zuvor fehlenden `elif is_reasoning and tokens < 10000: tokens = 25000`-Branch (war in openai.py/openrouter.py bereits vorhanden).
+
+### Analysis & Methodology
+- **Refusal als Qualitätsmerkmal dokumentiert:** Modelle, die den *Input-Text* eines Rewriting-Tasks flaggen statt die Aufgabe auszuführen (z. B. Kimi K2.5 und GLM-5 bei `ci_6B Inclusive Job Ad`), versagen in echten UX-Writing-Workflows. Das neue `refusal_flag`-System macht dieses Versagen transparent — kein Re-Run, kein Asset-Fix. Der Benchmark ist durch 60+ Modelle validiert, die dieselben Assets lösen.
+- **Gemini Safety-Filter auf ux_002 (Banking-CTAs):** `gemini-2.5-pro` und `gemini-3.1-pro-preview` blockieren Button-Label-Formulierungen für Banking-Transaktionen (`5.000 € überweisen`) und irreversible Aktionen. Kein Benchmark-Bug — valides Qualitätsmerkmal, da alle anderen Modelle ux_002 normal lösen.
+
+---
+
 ## [v3.5.6] - 2026-04-23
 
 ### Added

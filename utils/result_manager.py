@@ -80,6 +80,10 @@ class ResultManager:
         combined_fields = calc_judge_fields + end_metrics
         if "scoring_method" not in combined_fields:
             combined_fields.append("scoring_method")
+        # Refusal-Metadaten (audit-empfohlen: dokumentiert Ablehnungen als Qualitätsmerkmal)
+        for _rf in ("refusal_flag", "refusal_type", "refusal_note"):
+            if _rf not in combined_fields:
+                combined_fields.append(_rf)
 
         # 3. Deduplizieren und Reihenfolge in judge_fields festhalten
         judge_fields = []

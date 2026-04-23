@@ -5,6 +5,17 @@
 
 ## Abgeschlossen
 
+### SSoT Token-Budget, Gemini-2.5 Reasoning-Fix, Judge-Verbosity-Penalty, Refusal-Metadaten (v3.5.7 – 23.04.26)
+- [x] **`utils/model_utils.py` — `resolve_token_budget()`:** Zentrale SSoT-Funktion für Token-Budget-Berechnung. Gibt `(effektives_budget: int, is_reasoning: bool)` zurück. Alle drei Provider (`openai.py`, `openrouter.py`, `mistral.py`) delegieren dorthin. Behebt fehlende `elif is_reasoning and tokens < 10000: tokens = 25000`-Branch in `mistral.py`.
+- [x] **`benchmark_config.yaml` — `token_param_name` pro Provider:** Fünf Provider-Blöcke (`mistral`, `openai`, `groq`, `xai`, `openrouter`) mit `token_param_name: max_tokens` bzw. `max_completion_tokens`. Provider lesen via `_provider_cfg.get("token_param_name", "<fallback>")`.
+- [x] **`utils/model_utils.py` — `gemini-2.5` Reasoning-Trigger:** `is_reasoning_model()` erkennt `gemini-2.5-flash`/`gemini-2.5-pro`. Elevated Budget: ux_writing 8.000 statt 500, documentation_quality 12.000 statt 6.000 Tokens. Behebt 12–18%-Scores durch Thinking-Token-Budget-Erschöpfung.
+- [x] **`utils/scoring/llm_judge/judge_prompt_builder.py` — `token_budget_context`:** Neuer Parameter `token_budget_context: Optional[Dict[str, int]]`. Injiziert `TOKEN BUDGET NOTE` in System-Prompt: sichtbarer Output > 2× Standard-Budget mit Padding/Wiederholung → −1 Punkt `output_quality`.
+- [x] **`utils/scoring/llm_judge/judge_runner.py` — Pass-through:** `token_budget_context`-Parameter zu `score()` ergänzt und an `build_prompts()` weitergegeben.
+- [x] **`utils/scoring/judge_evaluator.py` — Auto-Injektion:** Liest `standard`/`elevated`-Budget aus Config und setzt `kwargs["token_budget_context"]` automatisch für Reasoning-Modelle.
+- [x] **`scripts/core/unified_runner.py` — Refusal-Metadaten:** Antworten < 15 Zeichen setzen `refusal_flag=True`, `refusal_type="content_safety"`, `refusal_note` im Result.
+- [x] **`utils/result_manager.py` — CSV-Schema:** `refusal_flag`, `refusal_type`, `refusal_note` in `_get_updated_fieldnames()` als neue Pflicht-Spalten registriert.
+- [x] **Dokumentation:** `CHANGELOG.md` v3.5.7, `docs/ARCHITECTURE.md` (SSoT-Abschnitt, Refusal-Metadaten, Trigger-Liste), `docs/SCORING_METHODOLOGY.md` (Verbosity-Penalty, Refusal-Dokumentation), `.github/copilot-instructions.md` (3 neue Fallstricke), `memory-bank/`.
+
 ### OpenRouter Reasoning-Token-Tracking (v3.5.6 – 23.04.26)
 - [x] **`utils/model_utils.py` — `minimax-m2` Reasoning-Trigger:** `is_reasoning_model()` um `"minimax-m2"` ergänzt. OpenRouter-Provider setzt 5× Token-Budget (~40.000 Tokens) für alle `minimax-m2.*`-Varianten — verhindert `finish_reason: length` mit leerem Output.
 - [x] **`schemas/result.py` — `reasoning_tokens`-Feld:** Neues `Optional[int]`-Feld in `BenchmarkResult` zwischen `finish_reason` und `token_limit_cutoff`. Wird als neue CSV-Spalte persistiert.
@@ -256,4 +267,4 @@
 
 ---
 
-**Last Updated:** 2026-04-11 **Version:** 3.4.4 (Architecture Compliance — No Magic Numbers/Strings) **Nächster Meilenstein:** Volldurchlauf aller lokalen Modelle / Leaderboard-Update
+**Last Updated:** 2026-04-23 **Version:** 3.5.7 (SSoT Token-Budget, Gemini-2.5 Reasoning-Fix, Judge-Verbosity-Penalty, Refusal-Metadaten) **Nächster Meilenstein:** Re-Run Gemini 2.5 Flash (UX Writing, Documentation Quality) / Leaderboard-Update

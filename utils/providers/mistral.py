@@ -76,9 +76,12 @@ class MistralClient(BaseProviderClient):
         try:
             model = self._resolve_model(model)
             # Mistral supports max_tokens
-            max_tokens = kwargs.get("max_tokens")
-            if not max_tokens:
-                max_tokens = self.config.get("defaults", {}).get("generation", {}).get("num_predict", 8192)
+            from utils.model_utils import resolve_token_budget
+            _provider_cfg = self.config.get("providers", {}).get("commercial", {}).get("mistral", {})
+            token_param_name = _provider_cfg.get("token_param_name", "max_tokens")
+            max_tokens, _ = resolve_token_budget(
+                model, kwargs.get("max_tokens"), self.config, kwargs.get("_module_key")
+            )
             # Note: Streaming not implemented yet for Mistral in this wrapper
             func_kwargs = {
                 "model": model,

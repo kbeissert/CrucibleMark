@@ -63,6 +63,21 @@ def evaluate_with_judge(
             "required_language": required_language,
             "language_weight": language_weight,
         }
+
+        # Inject token budget context for reasoning models so the Judge can penalise
+        # unnecessary verbosity in the visible output (elevated budget = thinking tokens only).
+        from utils.model_utils import is_reasoning_model
+        if is_reasoning_model(model):
+            try:
+                from utils.config_validator import ConfigValidator
+                _cfg = ConfigValidator().config
+                _module_key = eval_module_id
+                _standard = _cfg.get("token_budgets", {}).get(_module_key)
+                _elevated = _cfg.get("token_budgets_reasoning_models", {}).get(_module_key)
+                if _standard and _elevated and _elevated > _standard:
+                    kwargs["token_budget_context"] = {"standard": _standard, "elevated": _elevated}
+            except Exception:
+                pass  # Non-critical — judge runs without budget context
         if provider:
             kwargs["tested_model_provider"] = provider
 

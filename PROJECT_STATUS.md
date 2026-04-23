@@ -1,25 +1,26 @@
 # PROJECT_STATUS.md
 
 **Last Updated:** 2026-04-23
-**Current Version:** 3.5.6 (OpenRouter Reasoning-Token-Tracking)
+**Current Version:** 3.5.7 (SSoT Token-Budget, Gemini-2.5 Reasoning-Fix, Judge-Verbosity-Penalty, Refusal-Metadaten)
 **Status:** ✅ Production-Ready
 
 ---
 
 ## Executive Summary
 
-CrucibleMark v3.5.6 behebt ein kritisches Produktionsproblem mit OpenRouter-Reasoning-Modellen: `minimax/minimax-m2.7` lieferte auf `cli005` und `ux_writing_005` leeren Output (`finish_reason: length`), weil OpenRouter interne Reasoning-Tokens direkt gegen `max_tokens` verrechnet. Fix: `minimax-m2`-Trigger in `is_reasoning_model()` aktiviert automatisch ein 5×-Budget. Neue `reasoning_tokens`-CSV-Spalte und `[!WARNING]`-Block im Audit-Log machen den Mechanismus dauerhaft transparent.
+CrucibleMark v3.5.7 bringt vier zusammenhängende Verbesserungen: (1) Die Token-Budget-Logik für Reasoning-Modelle ist jetzt in `resolve_token_budget()` zentralisiert (SSoT) — alle drei Provider (`openai.py`, `openrouter.py`, `mistral.py`) delegieren dorthin statt Logik zu duplizieren. (2) `gemini-2.5-flash` und `gemini-2.5-pro` werden als Reasoning-Modelle erkannt und erhalten das erhöhte Token-Budget aus `token_budgets_reasoning_models` — behebt systematisch fehlerhafte 12–18%-Scores durch Thinking-Token-Budget-Erschöpfung. (3) Der LLM-Judge erhält bei Reasoning-Modellen einen `TOKEN BUDGET NOTE`-Block: sichtbarer Output > 2× Standard-Budget mit Padding → −1 Punkt `output_quality`. (4) Kurze Antworten (< 15 Zeichen) werden als `refusal_flag=True` dokumentiert — maschinell lesbar, CSV-persistiert, kein Re-Run.
 
-**Key Achievements (v3.5.6):**
-- ✅ **`utils/model_utils.py` — `minimax-m2` Reasoning-Trigger:** `is_reasoning_model()` erkennt `minimax/minimax-m2.7` → OpenRouter-Provider setzt 5× Token-Budget (~40.000 statt 8.192 Tokens).
-- ✅ **`schemas/result.py` — `reasoning_tokens`:** Neues `Optional[int]`-Feld in `BenchmarkResult` — neue CSV-Spalte für interne Reasoning-Token-Verbräuche (OpenRouter).
-- ✅ **`utils/providers/openrouter.py` — Extraktion:** `completion_tokens_details.reasoning_tokens` aus API-Antwort → `last_response_metadata`.
-- ✅ **`utils/benchmark_utils.py` — `[!WARNING]`-Block:** Bei `reasoning_tokens > 0 AND token_limit_cutoff=True` erklärender Warnblock im Audit-Log; Token-Header zeigt `(davon N Reasoning-Tokens, die intern verbraucht wurden)`.
-- ✅ **2 ungültige CSV-Zeilen gelöscht:** `minimax/minimax-m2.7` × `cli005` + `ux_writing_005` (leerer Content durch Budget-Erschöpfung vor Fix). Re-Run automatisch.
-- ✅ **`Makefile` — `clean-bak` + erweitertes `backup`:** Neues `clean-bak`-Target; `backup` schließt `docs/reviews/`, `docs/audits/`, `config/`, `memory-bank/` ein und excludet `.bak_*`.
-- ✅ **Dokumentation:** Provider-Tabelle + Reasoning-Budget-Abschnitt in `docs/ARCHITECTURE.md`; `memory-bank/systemPatterns.md`; `.github/copilot-instructions.md`.
+**Key Achievements (v3.5.7):**
+- ✅ **`utils/model_utils.py` — `resolve_token_budget()` SSoT:** Zentrale Token-Budget-Funktion für alle Provider. Gibt `(effektives_budget, is_reasoning)` zurück. Behebt fehlende `elif`-Branch in `mistral.py` (war in `openai.py`/`openrouter.py` vorhanden).
+- ✅ **`benchmark_config.yaml` — `token_param_name` pro Provider:** `max_tokens` vs. `max_completion_tokens` für alle 5 kommerziellen Provider als Config-Key — kein Hardcoding mehr.
+- ✅ **`utils/model_utils.py` — `gemini-2.5` Reasoning-Trigger:** `is_reasoning_model()` erkennt jetzt `gemini-2.5-flash`/`gemini-2.5-pro`. Budget-Fix: ux_writing 8.000 statt 500 Tokens, documentation_quality 12.000 statt 6.000 Tokens.
+- ✅ **Judge-Verbosity-Penalty (`judge_prompt_builder.py` + `judge_runner.py` + `judge_evaluator.py`):** `token_budget_context = {"standard": N, "elevated": M}` wird für Reasoning-Modelle automatisch injiziert. Judge bewertet sichtbaren Output am Standard-Budget.
+- ✅ **Refusal-Metadaten (`unified_runner.py` + `result_manager.py`):** Drei neue CSV-Felder: `refusal_flag`, `refusal_type`, `refusal_note`. Unterscheidet aktive Ablehnung (Qualitätsmerkmal) von ungeproblematischen Fehlern.
+- ✅ **Dokumentation:** `CHANGELOG.md`, `docs/ARCHITECTURE.md`, `docs/SCORING_METHODOLOGY.md`, `.github/copilot-instructions.md` vollständig aktualisiert.
 
-**Vorherige Versionen (v3.5.4 – Nano-Tier / v3.5.5 – 6 Deployment-Tiers):**
+**Vorherige Versionen (v3.5.5 – 6 Deployment-Tiers / v3.5.6 – OpenRouter Reasoning-Token-Tracking):**
+
+CrucibleMark v3.5.6 behebt ein kritisches Produktionsproblem mit OpenRouter-Reasoning-Modellen: `minimax/minimax-m2.7` lieferte auf `cli005` und `ux_writing_005` leeren Output (`finish_reason: length`), weil OpenRouter interne Reasoning-Tokens direkt gegen `max_tokens` verrechnet. Fix: `minimax-m2`-Trigger in `is_reasoning_model()` aktiviert automatisch ein 5×-Budget. Neue `reasoning_tokens`-CSV-Spalte und `[!WARNING]`-Block im Audit-Log.
 
 CrucibleMark v3.5.5 ersetzt das 2-Tier-Size-Class-System durch eine deployment-orientierte 6-Tier-Taxonomie (`Nano/Edge/Desktop/Workstation/Server/Frontier`). v3.5.4 führte die initiale `Nano (≤5B)`-Klassifikation mit `🔬`-Badge ein. Beide Versionen betreffen ausschließlich `utils/model_utils.py`, `MODEL_CLASSIFICATION.md` und das Leaderboard-System.
 

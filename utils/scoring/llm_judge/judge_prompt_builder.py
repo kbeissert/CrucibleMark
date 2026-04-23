@@ -166,6 +166,7 @@ def build_prompts(
     tested_model_id: Optional[str] = None,
     required_language: Optional[str] = None,
     language_weight: float = 0.20,
+    token_budget_context: Optional[Dict[str, int]] = None,
 ) -> Tuple[str, str]:
     """
     Build the (system_prompt, user_prompt) pair for the LLM Judge.
@@ -185,6 +186,10 @@ def build_prompts(
             task_compliance.
         language_weight: Fraction of the total score attributed to language
             compliance (default 0.20 = 20%). Displayed in the judge rubric header.
+        token_budget_context: Optional dict with ``{"standard": int, "elevated": int}``
+            for reasoning models. When provided, the judge is instructed to deduct
+            from output_quality if the visible response is unnecessarily verbose
+            beyond the standard budget.
 
     Returns:
         Tuple of (system_prompt, user_prompt).
@@ -229,6 +234,25 @@ def build_prompts(
             f"- Response **mixes languages** (e.g. English explanations with {lang_label} output): deduct **0.5 points**.\n"
             f"- Response is correctly and consistently in {lang_label}: no deduction."
         )
+
+    if token_budget_context:
+        _tb_standard = token_budget_context.get("standard")
+        _tb_elevated = token_budget_context.get("elevated")
+        if _tb_standard and _tb_elevated:
+            system_prompt += (
+                f"\n\n### TOKEN BUDGET NOTE (VERBOSITY PENALTY) ###\n"
+                f"This is a reasoning model. An elevated token budget of **{_tb_elevated} tokens** "
+                f"was granted (standard for this module: {_tb_standard} tokens) to accommodate "
+                f"internal chain-of-thought / thinking tokens.\n"
+                f"The elevated budget exists for internal reasoning only — it must **not** produce "
+                f"a longer visible response than the task requires.\n"
+                f"Apply the following deduction to `output_quality`:\n"
+                f"- Visible response exceeds **{_tb_standard * 2} tokens** AND the excess is padding, "
+                f"repetition, or reformatting rather than substantive quality: "
+                f"**deduct 1 point from output_quality**.\n"
+                f"- Concise, focused response within approximately {_tb_standard} tokens that fully "
+                f"addresses the task: no deduction."
+            )
 
     clean_response = model_response.strip()
     if not clean_response:

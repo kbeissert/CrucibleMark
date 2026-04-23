@@ -305,6 +305,9 @@ class UnifiedBenchmarkRunner(BaseBenchmarkRunner):
         ):
             if len(response.strip()) < 15:
                 result["judge_progress_status"] = "⚠️ Judge: skip (zu kurz/abgelehnt)"
+                result["refusal_flag"] = True
+                result["refusal_type"] = "content_safety"
+                result["refusal_note"] = "Response too short (<15 chars) — likely a safety refusal or empty API response."
             else:
                 if is_local and pause_calculator:
                     pause_calculator.wait(
