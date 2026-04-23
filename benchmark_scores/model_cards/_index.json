@@ -8,20 +8,20 @@
     "deployment_type": "open-weights",
     "local_deployment_possible": true,
     "weights_provenance_risk": "low",
-    "weights_provenance_risk_rationale": "Die Basisgewichte stammen von Mistral AI (EU-Jurisdiktion, Frankreich), und das Fine-Tuning wurde von Cognitive Computations als unabhängiges Open-Source-Projekt ohne bekannten kommerziellen oder staatlichen Hintergrund durchgeführt.",
+    "weights_provenance_risk_rationale": "Die Basisgewichte stammen von Mistral AI (EU-Jurisdiktion, Frankreich), und das Fine-Tuning wurde von Cognitive Computations als unabh\u00e4ngiges Open-Source-Projekt ohne bekannten kommerziellen oder staatlichen Hintergrund durchgef\u00fchrt.",
     "model_family": "Mistral",
     "primary_focus": "instruction-following",
-    "summary": "Dolphin Mistral NeMo ist ein von Cognitive Computations feinabgestimmtes Mistral-NeMo-Modell, das auf unzensierten, vielseitigen Instruktionsdaten trainiert wurde. Ziel ist ein hilfreicher Assistent ohne eingebaute Inhaltsbeschränkungen, der komplexe Anweisungen präzise befolgt und offen auf heikle Themen eingeht.",
+    "summary": "Dolphin Mistral NeMo ist ein von Cognitive Computations feinabgestimmtes Mistral-NeMo-Modell, das auf unzensierten, vielseitigen Instruktionsdaten trainiert wurde. Ziel ist ein hilfreicher Assistent ohne eingebaute Inhaltsbeschr\u00e4nkungen, der komplexe Anweisungen pr\u00e4zise befolgt und offen auf heikle Themen eingeht.",
     "strengths": [
       "Sehr gehorsames Instruktions-Following ohne eingebaute Inhaltssperren",
-      "Gute Allround-Sprachfähigkeiten dank Mistral-NeMo-Basis (12B Parameter, 128k Kontext)",
-      "Lokal betreibbar und vollständig open-weights, geeignet für datenschutzsensible Umgebungen"
+      "Gute Allround-Sprachf\u00e4higkeiten dank Mistral-NeMo-Basis (12B Parameter, 128k Kontext)",
+      "Lokal betreibbar und vollst\u00e4ndig open-weights, geeignet f\u00fcr datenschutzsensible Umgebungen"
     ],
     "known_limitations": [
-      "Fehlende Sicherheitsfilter können zur Generierung schädlicher oder problematischer Inhalte führen",
-      "Kein spezialisiertes Reasoning- oder Coding-Training; schwächer als dedizierte Modelle in diesen Bereichen"
+      "Fehlende Sicherheitsfilter k\u00f6nnen zur Generierung sch\u00e4dlicher oder problematischer Inhalte f\u00fchren",
+      "Kein spezialisiertes Reasoning- oder Coding-Training; schw\u00e4cher als dedizierte Modelle in diesen Bereichen"
     ],
-    "judge_context_hint": "Das Modell ist bewusst ohne Sicherheitsfilter trainiert und folgt Anweisungen sehr direkt – der Judge sollte Antwortqualität und Präzision bewerten, ohne Ablehnung von Anfragen als Stärke zu werten.",
+    "judge_context_hint": "Das Modell ist bewusst ohne Sicherheitsfilter trainiert und folgt Anweisungen sehr direkt \u2013 der Judge sollte Antwortqualit\u00e4t und Pr\u00e4zision bewerten, ohne Ablehnung von Anfragen als St\u00e4rke zu werten.",
     "unknown": false,
     "generated_at": "2026-04-11T15:33:17.802153+00:00"
   },
@@ -34,20 +34,20 @@
     "deployment_type": "cloud-only",
     "local_deployment_possible": false,
     "weights_provenance_risk": "medium",
-    "weights_provenance_risk_rationale": "Anthropic ist ein US-amerikanisches Unternehmen und unterliegt dem CLOUD Act; die Modellgewichte sind nicht öffentlich zugänglich, aber als US-Unternehmen besteht ein theoretisches Behördenzugriffsrisiko.",
+    "weights_provenance_risk_rationale": "Anthropic ist ein US-amerikanisches Unternehmen und unterliegt dem CLOUD Act; die Modellgewichte sind nicht \u00f6ffentlich zug\u00e4nglich, aber als US-Unternehmen besteht ein theoretisches Beh\u00f6rdenzugriffsrisiko.",
     "model_family": "Claude",
     "primary_focus": "instruction-following",
-    "summary": "Claude Haiku 4.5 ist Anthropics schnellstes und kompaktestes Modell der Claude-4-Generation, entwickelt für latenzarme, kosteneffiziente Anwendungen. Es wurde auf Präzision bei kurzen Aufgaben, Dialogführung und strukturierter Ausgabe optimiert und eignet sich besonders für Produktionsumgebungen mit hohem Durchsatz.",
+    "summary": "Claude Haiku 4.5 ist Anthropics schnellstes und kompaktestes Modell der Claude-4-Generation, entwickelt f\u00fcr latenzarme, kosteneffiziente Anwendungen. Es wurde auf Pr\u00e4zision bei kurzen Aufgaben, Dialogf\u00fchrung und strukturierter Ausgabe optimiert und eignet sich besonders f\u00fcr Produktionsumgebungen mit hohem Durchsatz.",
     "strengths": [
-      "Sehr niedrige Latenz bei gleichzeitig hoher Antwortqualität für ein kompaktes Modell",
-      "Zuverlässiges Instruction-Following und strukturierte Ausgaben (z. B. JSON, Listen)",
-      "Kosteneffizient für skalierbare API-Integrationen und Echtzeit-Anwendungen"
+      "Sehr niedrige Latenz bei gleichzeitig hoher Antwortqualit\u00e4t f\u00fcr ein kompaktes Modell",
+      "Zuverl\u00e4ssiges Instruction-Following und strukturierte Ausgaben (z. B. JSON, Listen)",
+      "Kosteneffizient f\u00fcr skalierbare API-Integrationen und Echtzeit-Anwendungen"
     ],
     "known_limitations": [
-      "Schwächer als größere Claude-Modelle (z. B. Sonnet, Opus) bei komplexem mehrstufigem Reasoning",
-      "Begrenzte Tiefe bei sehr langen oder stark kontextabhängigen Analyseaufgaben"
+      "Schw\u00e4cher als gr\u00f6\u00dfere Claude-Modelle (z. B. Sonnet, Opus) bei komplexem mehrstufigem Reasoning",
+      "Begrenzte Tiefe bei sehr langen oder stark kontextabh\u00e4ngigen Analyseaufgaben"
     ],
-    "judge_context_hint": "Das Modell ist auf Geschwindigkeit und Effizienz optimiert – bei komplexen Reasoning-Aufgaben sollte der Judge berücksichtigen, dass Haiku bewusst zugunsten von Latenz auf Tiefe verzichtet.",
+    "judge_context_hint": "Das Modell ist auf Geschwindigkeit und Effizienz optimiert \u2013 bei komplexen Reasoning-Aufgaben sollte der Judge ber\u00fccksichtigen, dass Haiku bewusst zugunsten von Latenz auf Tiefe verzichtet.",
     "unknown": false,
     "generated_at": "2026-04-11T13:20:46.974319+00:00"
   },
@@ -60,20 +60,20 @@
     "deployment_type": "cloud-only",
     "local_deployment_possible": false,
     "weights_provenance_risk": "medium",
-    "weights_provenance_risk_rationale": "Anthropic ist ein US-amerikanisches Unternehmen und unterliegt dem CLOUD Act, jedoch nicht dem chinesischen NSL; die Modellgewichte sind nicht öffentlich zugänglich.",
+    "weights_provenance_risk_rationale": "Anthropic ist ein US-amerikanisches Unternehmen und unterliegt dem CLOUD Act, jedoch nicht dem chinesischen NSL; die Modellgewichte sind nicht \u00f6ffentlich zug\u00e4nglich.",
     "model_family": "Claude",
     "primary_focus": "general",
-    "summary": "Claude Opus 4.5 ist Anthropics leistungsstärkstes Modell der Opus-Linie (Stand November 2025), entwickelt für komplexe Reasoning-Aufgaben, nuanciertes Schreiben und mehrstufige Analysen. Stärken liegen in Instruktionstreue, Kontexttreue und sicherem, hilfreichem Verhalten gemäß Anthropics Constitutional-AI-Ansatz.",
+    "summary": "Claude Opus 4.5 ist Anthropics leistungsst\u00e4rkstes Modell der Opus-Linie (Stand November 2025), entwickelt f\u00fcr komplexe Reasoning-Aufgaben, nuanciertes Schreiben und mehrstufige Analysen. St\u00e4rken liegen in Instruktionstreue, Kontexttreue und sicherem, hilfreichem Verhalten gem\u00e4\u00df Anthropics Constitutional-AI-Ansatz.",
     "strengths": [
       "Sehr starke Leistung bei komplexen, mehrstufigen Reasoning- und Analyseaufgaben",
-      "Hohe Instruktionstreue und präzises Befolgen detaillierter Nutzervorgaben",
-      "Nuanciertes, kohärentes Schreiben mit langen Kontextfenstern"
+      "Hohe Instruktionstreue und pr\u00e4zises Befolgen detaillierter Nutzervorgaben",
+      "Nuanciertes, koh\u00e4rentes Schreiben mit langen Kontextfenstern"
     ],
     "known_limitations": [
-      "Ausschließlich über Anthropics Cloud-API verfügbar, kein lokaler Betrieb möglich",
-      "Als größtes Modell der Opus-Reihe mit höherer Latenz und höheren Kosten verbunden"
+      "Ausschlie\u00dflich \u00fcber Anthropics Cloud-API verf\u00fcgbar, kein lokaler Betrieb m\u00f6glich",
+      "Als gr\u00f6\u00dftes Modell der Opus-Reihe mit h\u00f6herer Latenz und h\u00f6heren Kosten verbunden"
     ],
-    "judge_context_hint": "Das Modell neigt zu vorsichtigen, ausgewogenen Antworten und kann bei sehr direktiven oder grenzwertigen Anfragen stärker absichern als andere Modelle – dies sollte bei der Bewertung von Direktheit und Kürze berücksichtigt werden.",
+    "judge_context_hint": "Das Modell neigt zu vorsichtigen, ausgewogenen Antworten und kann bei sehr direktiven oder grenzwertigen Anfragen st\u00e4rker absichern als andere Modelle \u2013 dies sollte bei der Bewertung von Direktheit und K\u00fcrze ber\u00fccksichtigt werden.",
     "unknown": false,
     "generated_at": "2026-04-11T14:32:26.212808+00:00"
   },
@@ -86,20 +86,20 @@
     "deployment_type": "cloud-only",
     "local_deployment_possible": false,
     "weights_provenance_risk": "medium",
-    "weights_provenance_risk_rationale": "Anthropic ist ein US-amerikanisches Unternehmen und unterliegt dem CLOUD Act, jedoch ist kein direkter staatlicher Zugriff auf die Modellgewichte bekannt, da diese nicht öffentlich verfügbar sind.",
+    "weights_provenance_risk_rationale": "Anthropic ist ein US-amerikanisches Unternehmen und unterliegt dem CLOUD Act, jedoch ist kein direkter staatlicher Zugriff auf die Modellgewichte bekannt, da diese nicht \u00f6ffentlich verf\u00fcgbar sind.",
     "model_family": "Claude",
     "primary_focus": "general",
-    "summary": "Claude Opus 4.6 ist ein Frontier-Modell von Anthropic (USA), entwickelt mit Fokus auf Sicherheit, Nuancierung und komplexes Reasoning. Es zeichnet sich durch starke Instruktionsbefolgung, differenziertes Schreiben und tiefes Kontextverständnis aus. Ziel war ein leistungsstarkes, zugleich zuverlässig steuerbares Allround-Modell.",
+    "summary": "Claude Opus 4.6 ist ein Frontier-Modell von Anthropic (USA), entwickelt mit Fokus auf Sicherheit, Nuancierung und komplexes Reasoning. Es zeichnet sich durch starke Instruktionsbefolgung, differenziertes Schreiben und tiefes Kontextverst\u00e4ndnis aus. Ziel war ein leistungsstarkes, zugleich zuverl\u00e4ssig steuerbares Allround-Modell.",
     "strengths": [
-      "Sehr starkes Reasoning und mehrstufiges Problemlösen über lange Kontexte hinweg",
-      "Hohe Qualität bei nuanciertem, strukturiertem und kreativem Schreiben",
-      "Zuverlässige Instruktionsbefolgung mit konsistenter Tonalität und geringer Halluzinationsrate"
+      "Sehr starkes Reasoning und mehrstufiges Probleml\u00f6sen \u00fcber lange Kontexte hinweg",
+      "Hohe Qualit\u00e4t bei nuanciertem, strukturiertem und kreativem Schreiben",
+      "Zuverl\u00e4ssige Instruktionsbefolgung mit konsistenter Tonalit\u00e4t und geringer Halluzinationsrate"
     ],
     "known_limitations": [
-      "Ausschließlich über Anthropics Cloud-API verfügbar, kein lokaler Betrieb möglich",
-      "Kann bei sehr spezifischen Fachdomänen (z. B. aktuelle Ereignisse nach Trainings-Cutoff) an Grenzen stoßen"
+      "Ausschlie\u00dflich \u00fcber Anthropics Cloud-API verf\u00fcgbar, kein lokaler Betrieb m\u00f6glich",
+      "Kann bei sehr spezifischen Fachdom\u00e4nen (z. B. aktuelle Ereignisse nach Trainings-Cutoff) an Grenzen sto\u00dfen"
     ],
-    "judge_context_hint": "Das Modell neigt zu besonders sorgfältig formulierten, ausgewogenen Antworten und vermeidet bewusst übermäßig assertive Aussagen – dies kann bei direkten Faktenfragen als Zögerlichkeit wirken, ist aber ein bewusstes Designmerkmal.",
+    "judge_context_hint": "Das Modell neigt zu besonders sorgf\u00e4ltig formulierten, ausgewogenen Antworten und vermeidet bewusst \u00fcberm\u00e4\u00dfig assertive Aussagen \u2013 dies kann bei direkten Faktenfragen als Z\u00f6gerlichkeit wirken, ist aber ein bewusstes Designmerkmal.",
     "unknown": false,
     "generated_at": "2026-04-11T14:33:58.133031+00:00"
   },
@@ -112,20 +112,20 @@
     "deployment_type": "cloud-only",
     "local_deployment_possible": false,
     "weights_provenance_risk": "medium",
-    "weights_provenance_risk_rationale": "Anthropic ist ein US-amerikanisches Unternehmen und unterliegt dem CLOUD Act, jedoch ist kein direkter staatlicher Zugriff auf die Modellgewichte bekannt, da diese nicht öffentlich verfügbar sind.",
+    "weights_provenance_risk_rationale": "Anthropic ist ein US-amerikanisches Unternehmen und unterliegt dem CLOUD Act, jedoch ist kein direkter staatlicher Zugriff auf die Modellgewichte bekannt, da diese nicht \u00f6ffentlich verf\u00fcgbar sind.",
     "model_family": "Claude",
     "primary_focus": "general",
-    "summary": "Claude Opus 4.7 ist ein Frontier-Modell von Anthropic (USA), trainiert mit starkem Fokus auf Sicherheit, Nuancierung und komplexes Reasoning. Es richtet sich an anspruchsvolle Analyse-, Schreib- und Coding-Aufgaben und soll zuverlässiges, kontrolliertes Verhalten auch in schwierigen Kontexten gewährleisten.",
+    "summary": "Claude Opus 4.7 ist ein Frontier-Modell von Anthropic (USA), trainiert mit starkem Fokus auf Sicherheit, Nuancierung und komplexes Reasoning. Es richtet sich an anspruchsvolle Analyse-, Schreib- und Coding-Aufgaben und soll zuverl\u00e4ssiges, kontrolliertes Verhalten auch in schwierigen Kontexten gew\u00e4hrleisten.",
     "strengths": [
-      "Sehr starkes Reasoning und mehrstufiges Problemlösen über lange Kontexte",
-      "Hohe Instruktionstreue mit differenziertem, nuanciertem Sprachverständnis",
-      "Robustes Sicherheitsverhalten und konsistente Ablehnung schädlicher Anfragen"
+      "Sehr starkes Reasoning und mehrstufiges Probleml\u00f6sen \u00fcber lange Kontexte",
+      "Hohe Instruktionstreue mit differenziertem, nuanciertem Sprachverst\u00e4ndnis",
+      "Robustes Sicherheitsverhalten und konsistente Ablehnung sch\u00e4dlicher Anfragen"
     ],
     "known_limitations": [
-      "Ausschließlich über Anthropic-API verfügbar, kein lokaler Betrieb möglich",
-      "Kann bei sehr spezifischem Fachwissen oder aktuellen Ereignissen nach dem Trainings-Cutoff unzuverlässig werden"
+      "Ausschlie\u00dflich \u00fcber Anthropic-API verf\u00fcgbar, kein lokaler Betrieb m\u00f6glich",
+      "Kann bei sehr spezifischem Fachwissen oder aktuellen Ereignissen nach dem Trainings-Cutoff unzuverl\u00e4ssig werden"
     ],
-    "judge_context_hint": "Das Modell neigt zu vorsichtigen, ausgewogenen Antworten und kann bei ambivalenten Anfragen eher absichern als direkt antworten – dies sollte nicht als Schwäche, sondern als bewusstes Designmerkmal gewertet werden.",
+    "judge_context_hint": "Das Modell neigt zu vorsichtigen, ausgewogenen Antworten und kann bei ambivalenten Anfragen eher absichern als direkt antworten \u2013 dies sollte nicht als Schw\u00e4che, sondern als bewusstes Designmerkmal gewertet werden.",
     "unknown": false,
     "generated_at": "2026-04-21T08:08:21.457928+00:00"
   },
@@ -138,20 +138,20 @@
     "deployment_type": "cloud-only",
     "local_deployment_possible": false,
     "weights_provenance_risk": "medium",
-    "weights_provenance_risk_rationale": "Anthropic ist ein US-amerikanisches Unternehmen und unterliegt dem CLOUD Act, jedoch nicht dem chinesischen NSL; die Modellgewichte sind nicht öffentlich zugänglich.",
+    "weights_provenance_risk_rationale": "Anthropic ist ein US-amerikanisches Unternehmen und unterliegt dem CLOUD Act, jedoch nicht dem chinesischen NSL; die Modellgewichte sind nicht \u00f6ffentlich zug\u00e4nglich.",
     "model_family": "Claude",
     "primary_focus": "general",
-    "summary": "Claude Sonnet 4.5 ist ein Sprachmodell von Anthropic (USA), entwickelt für ausgewogene Leistung zwischen Geschwindigkeit und Qualität. Stärken liegen in präzisem Instruction-Following, nuanciertem Schreiben und sicherem Verhalten. Konzipiert als leistungsstarke Mittelklasse-Option der Claude-4-Generation.",
+    "summary": "Claude Sonnet 4.5 ist ein Sprachmodell von Anthropic (USA), entwickelt f\u00fcr ausgewogene Leistung zwischen Geschwindigkeit und Qualit\u00e4t. St\u00e4rken liegen in pr\u00e4zisem Instruction-Following, nuanciertem Schreiben und sicherem Verhalten. Konzipiert als leistungsstarke Mittelklasse-Option der Claude-4-Generation.",
     "strengths": [
-      "Starkes Instruction-Following mit hoher Präzision und Kontexttreue",
-      "Nuanciertes, stilsicheres Schreiben für komplexe Aufgaben",
-      "Robustes Sicherheitsverhalten und konsistente Ablehnung schädlicher Anfragen"
+      "Starkes Instruction-Following mit hoher Pr\u00e4zision und Kontexttreue",
+      "Nuanciertes, stilsicheres Schreiben f\u00fcr komplexe Aufgaben",
+      "Robustes Sicherheitsverhalten und konsistente Ablehnung sch\u00e4dlicher Anfragen"
     ],
     "known_limitations": [
-      "Nur über Anthropic API verfügbar, kein lokaler Betrieb möglich",
-      "Kann bei sehr langen Kontexten oder hochspezialisierten Fachdomänen an Präzision verlieren"
+      "Nur \u00fcber Anthropic API verf\u00fcgbar, kein lokaler Betrieb m\u00f6glich",
+      "Kann bei sehr langen Kontexten oder hochspezialisierten Fachdom\u00e4nen an Pr\u00e4zision verlieren"
     ],
-    "judge_context_hint": "Das Modell neigt zu vorsichtigen, ausgewogenen Antworten und kann bei ambivalenten Anfragen eher absichern als direkt antworten – dies sollte bei der Bewertung von Direktheit und Entscheidungsfreude berücksichtigt werden.",
+    "judge_context_hint": "Das Modell neigt zu vorsichtigen, ausgewogenen Antworten und kann bei ambivalenten Anfragen eher absichern als direkt antworten \u2013 dies sollte bei der Bewertung von Direktheit und Entscheidungsfreude ber\u00fccksichtigt werden.",
     "unknown": false,
     "generated_at": "2026-04-11T15:25:01.680246+00:00"
   },
@@ -164,20 +164,20 @@
     "deployment_type": "cloud-only",
     "local_deployment_possible": false,
     "weights_provenance_risk": "medium",
-    "weights_provenance_risk_rationale": "Anthropic ist ein US-amerikanisches Unternehmen und unterliegt dem CLOUD Act, der behördlichen Zugriff auf Daten bei API-Nutzung ermöglichen kann; die Modellgewichte sind nicht öffentlich zugänglich.",
+    "weights_provenance_risk_rationale": "Anthropic ist ein US-amerikanisches Unternehmen und unterliegt dem CLOUD Act, der beh\u00f6rdlichen Zugriff auf Daten bei API-Nutzung erm\u00f6glichen kann; die Modellgewichte sind nicht \u00f6ffentlich zug\u00e4nglich.",
     "model_family": "Claude",
     "primary_focus": "general",
-    "summary": "Claude Sonnet 4.6 von Anthropic (USA) ist ein leistungsstarkes Allround-Modell der Claude-4-Generation, optimiert für komplexe Reasoning-Aufgaben, präzises Instruction-Following und nuancierte Textgenerierung. Es balanciert Geschwindigkeit und Qualität und richtet sich an anspruchsvolle Produktivanwendungen.",
+    "summary": "Claude Sonnet 4.6 von Anthropic (USA) ist ein leistungsstarkes Allround-Modell der Claude-4-Generation, optimiert f\u00fcr komplexe Reasoning-Aufgaben, pr\u00e4zises Instruction-Following und nuancierte Textgenerierung. Es balanciert Geschwindigkeit und Qualit\u00e4t und richtet sich an anspruchsvolle Produktivanwendungen.",
     "strengths": [
       "Starkes mehrstufiges Reasoning und analytisches Denken",
-      "Präzises und zuverlässiges Instruction-Following auch bei komplexen Anweisungen",
-      "Nuancierte, kohärente Textgenerierung mit geringem Halluzinationsrisiko"
+      "Pr\u00e4zises und zuverl\u00e4ssiges Instruction-Following auch bei komplexen Anweisungen",
+      "Nuancierte, koh\u00e4rente Textgenerierung mit geringem Halluzinationsrisiko"
     ],
     "known_limitations": [
-      "Nur über Anthropics Cloud-API verfügbar, kein lokaler Betrieb möglich",
+      "Nur \u00fcber Anthropics Cloud-API verf\u00fcgbar, kein lokaler Betrieb m\u00f6glich",
       "Wissensbasis auf Trainingsdaten-Cutoff begrenzt, kein Echtzeit-Internetzugriff ohne externe Tools"
     ],
-    "judge_context_hint": "Das Modell neigt zu besonders sorgfältigen, abgewogenen Antworten und kann bei sehr kurzen oder direktiven Prompts ausführlicher antworten als erwartet – Präzision und Vollständigkeit werden gegenüber Kürze priorisiert.",
+    "judge_context_hint": "Das Modell neigt zu besonders sorgf\u00e4ltigen, abgewogenen Antworten und kann bei sehr kurzen oder direktiven Prompts ausf\u00fchrlicher antworten als erwartet \u2013 Pr\u00e4zision und Vollst\u00e4ndigkeit werden gegen\u00fcber K\u00fcrze priorisiert.",
     "unknown": false,
     "generated_at": "2026-04-11T15:15:18.802821+00:00"
   },
@@ -190,20 +190,20 @@
     "deployment_type": "cloud-only",
     "local_deployment_possible": false,
     "weights_provenance_risk": "low",
-    "weights_provenance_risk_rationale": "Mistral AI ist ein französisches Unternehmen mit Sitz in der EU und unterliegt keiner Gesetzgebung, die staatlichen Zugriff auf Modellgewichte erzwingt.",
+    "weights_provenance_risk_rationale": "Mistral AI ist ein franz\u00f6sisches Unternehmen mit Sitz in der EU und unterliegt keiner Gesetzgebung, die staatlichen Zugriff auf Modellgewichte erzwingt.",
     "model_family": "Mistral",
     "primary_focus": "coding",
-    "summary": "Codestral ist ein auf Code-Generierung spezialisiertes Modell von Mistral AI (Frankreich). Es wurde trainiert, um Entwickler bei Autovervollständigung, Debugging und Code-Erklärung zu unterstützen. Stärken liegen in über 80 Programmiersprachen, Fill-in-the-Middle-Aufgaben und langen Kontextfenstern bis 32k Token.",
+    "summary": "Codestral ist ein auf Code-Generierung spezialisiertes Modell von Mistral AI (Frankreich). Es wurde trainiert, um Entwickler bei Autovervollst\u00e4ndigung, Debugging und Code-Erkl\u00e4rung zu unterst\u00fctzen. St\u00e4rken liegen in \u00fcber 80 Programmiersprachen, Fill-in-the-Middle-Aufgaben und langen Kontextfenstern bis 32k Token.",
     "strengths": [
-      "Spezialisiert auf Code-Generierung und -Vervollständigung in über 80 Programmiersprachen",
-      "Unterstützt Fill-in-the-Middle (FIM) für präzise Code-Einfügungen im bestehenden Kontext",
-      "Großes Kontextfenster (bis zu 32.000 Token) für umfangreiche Codebasen"
+      "Spezialisiert auf Code-Generierung und -Vervollst\u00e4ndigung in \u00fcber 80 Programmiersprachen",
+      "Unterst\u00fctzt Fill-in-the-Middle (FIM) f\u00fcr pr\u00e4zise Code-Einf\u00fcgungen im bestehenden Kontext",
+      "Gro\u00dfes Kontextfenster (bis zu 32.000 Token) f\u00fcr umfangreiche Codebasen"
     ],
     "known_limitations": [
-      "Gewichte sind nicht öffentlich verfügbar, daher kein lokaler Betrieb möglich",
-      "Nicht für allgemeine Konversation oder nicht-technische Aufgaben optimiert"
+      "Gewichte sind nicht \u00f6ffentlich verf\u00fcgbar, daher kein lokaler Betrieb m\u00f6glich",
+      "Nicht f\u00fcr allgemeine Konversation oder nicht-technische Aufgaben optimiert"
     ],
-    "judge_context_hint": "Codestral ist explizit auf Code-Aufgaben ausgerichtet; bei allgemeinen Sprach- oder Reasoning-Benchmarks außerhalb des Coding-Kontexts ist mit deutlich schwächerer Leistung zu rechnen.",
+    "judge_context_hint": "Codestral ist explizit auf Code-Aufgaben ausgerichtet; bei allgemeinen Sprach- oder Reasoning-Benchmarks au\u00dferhalb des Coding-Kontexts ist mit deutlich schw\u00e4cherer Leistung zu rechnen.",
     "unknown": false,
     "generated_at": "2026-04-11T15:18:28.034754+00:00"
   },
@@ -216,20 +216,20 @@
     "deployment_type": "open-weights-cloud-available",
     "local_deployment_possible": true,
     "weights_provenance_risk": "high",
-    "weights_provenance_risk_rationale": "DeepSeek ist ein chinesisches Unternehmen und unterliegt dem chinesischen National Intelligence Law (NSL), das staatliche Zugriffe auf Unternehmensdaten und -ressourcen ermöglichen kann.",
+    "weights_provenance_risk_rationale": "DeepSeek ist ein chinesisches Unternehmen und unterliegt dem chinesischen National Intelligence Law (NSL), das staatliche Zugriffe auf Unternehmensdaten und -ressourcen erm\u00f6glichen kann.",
     "model_family": "DeepSeek R1",
     "primary_focus": "reasoning",
-    "summary": "DeepSeek R1 8B ist ein chinesisches Open-Weights-Reasoning-Modell mit 8 Milliarden Parametern, das durch Reinforcement Learning auf komplexes logisches Schlussfolgern, Mathematik und Coding optimiert wurde. Es ist eine destillierte Variante des größeren R1-Modells und lokal betreibbar.",
+    "summary": "DeepSeek R1 8B ist ein chinesisches Open-Weights-Reasoning-Modell mit 8 Milliarden Parametern, das durch Reinforcement Learning auf komplexes logisches Schlussfolgern, Mathematik und Coding optimiert wurde. Es ist eine destillierte Variante des gr\u00f6\u00dferen R1-Modells und lokal betreibbar.",
     "strengths": [
-      "Starke Leistung bei mathematischen und logischen Reasoning-Aufgaben relativ zur Modellgröße",
-      "Open Weights ermöglichen lokalen Betrieb ohne Cloud-Abhängigkeit",
-      "Durch Destillation aus dem großen R1-Modell kompakte Größe bei guter Reasoning-Qualität"
+      "Starke Leistung bei mathematischen und logischen Reasoning-Aufgaben relativ zur Modellgr\u00f6\u00dfe",
+      "Open Weights erm\u00f6glichen lokalen Betrieb ohne Cloud-Abh\u00e4ngigkeit",
+      "Durch Destillation aus dem gro\u00dfen R1-Modell kompakte Gr\u00f6\u00dfe bei guter Reasoning-Qualit\u00e4t"
     ],
     "known_limitations": [
-      "Als destilliertes 8B-Modell deutlich schwächer als das Vollmodell R1 bei komplexen mehrstufigen Aufgaben",
-      "Tendenz zu übermäßig langen Chain-of-Thought-Ausgaben, was Latenz und Token-Verbrauch erhöht"
+      "Als destilliertes 8B-Modell deutlich schw\u00e4cher als das Vollmodell R1 bei komplexen mehrstufigen Aufgaben",
+      "Tendenz zu \u00fcberm\u00e4\u00dfig langen Chain-of-Thought-Ausgaben, was Latenz und Token-Verbrauch erh\u00f6ht"
     ],
-    "judge_context_hint": "Das Modell gibt häufig ausführliche, explizite Denkschritte (Chain-of-Thought) aus, die bei der Bewertung von der eigentlichen Antwort getrennt betrachtet werden sollten.",
+    "judge_context_hint": "Das Modell gibt h\u00e4ufig ausf\u00fchrliche, explizite Denkschritte (Chain-of-Thought) aus, die bei der Bewertung von der eigentlichen Antwort getrennt betrachtet werden sollten.",
     "unknown": false,
     "generated_at": "2026-04-11T14:50:15.134531+00:00"
   },
@@ -242,17 +242,17 @@
     "deployment_type": "cloud-only",
     "local_deployment_possible": false,
     "weights_provenance_risk": "high",
-    "weights_provenance_risk_rationale": "DeepSeek ist ein chinesisches Unternehmen und unterliegt dem chinesischen National Security Law (NSL), das staatlichen Behörden Zugriff auf Daten und Modelle ermöglichen kann.",
+    "weights_provenance_risk_rationale": "DeepSeek ist ein chinesisches Unternehmen und unterliegt dem chinesischen National Security Law (NSL), das staatlichen Beh\u00f6rden Zugriff auf Daten und Modelle erm\u00f6glichen kann.",
     "model_family": "DeepSeek",
     "primary_focus": "general",
-    "summary": "DeepSeek V3.1 ist ein chinesisches Frontier-Modell mit 671 Milliarden Parametern, trainiert auf breiten mehrsprachigen Korpora mit Schwerpunkt auf Reasoning, Coding und Instruktionsbefolgung. Es wurde entwickelt, um westliche Spitzenmodelle in Leistung und Kosteneffizienz zu übertreffen.",
+    "summary": "DeepSeek V3.1 ist ein chinesisches Frontier-Modell mit 671 Milliarden Parametern, trainiert auf breiten mehrsprachigen Korpora mit Schwerpunkt auf Reasoning, Coding und Instruktionsbefolgung. Es wurde entwickelt, um westliche Spitzenmodelle in Leistung und Kosteneffizienz zu \u00fcbertreffen.",
     "strengths": [
       "Sehr starke Leistung bei mathematischen und logischen Reasoning-Aufgaben",
-      "Hohe Qualität bei Code-Generierung und -Analyse über viele Programmiersprachen",
-      "Gute mehrsprachige Fähigkeiten, insbesondere Chinesisch und Englisch"
+      "Hohe Qualit\u00e4t bei Code-Generierung und -Analyse \u00fcber viele Programmiersprachen",
+      "Gute mehrsprachige F\u00e4higkeiten, insbesondere Chinesisch und Englisch"
     ],
     "known_limitations": [
-      "Als Cloud-only-Variante keine lokale Ausführung möglich, vollständige Datenkontrolle nicht gewährleistet",
+      "Als Cloud-only-Variante keine lokale Ausf\u00fchrung m\u00f6glich, vollst\u00e4ndige Datenkontrolle nicht gew\u00e4hrleistet",
       "Kann bei politisch sensiblen Themen mit Bezug zu China zensierte oder ausweichende Antworten liefern"
     ],
     "judge_context_hint": "Das Modell zeigt bei politisch oder gesellschaftlich sensiblen Themen mit China-Bezug systematische Antwortvermeidung oder Umlenkung, was Benchmark-Ergebnisse in solchen Kategorien verzerren kann.",
@@ -268,20 +268,20 @@
     "deployment_type": "cloud-only",
     "local_deployment_possible": false,
     "weights_provenance_risk": "high",
-    "weights_provenance_risk_rationale": "DeepSeek ist ein chinesisches Unternehmen und unterliegt dem chinesischen National Security Law (NSL), das staatlichen Zugriff auf Daten und Modelle ermöglichen kann.",
+    "weights_provenance_risk_rationale": "DeepSeek ist ein chinesisches Unternehmen und unterliegt dem chinesischen National Security Law (NSL), das staatlichen Zugriff auf Daten und Modelle erm\u00f6glichen kann.",
     "model_family": "DeepSeek",
     "primary_focus": "general",
-    "summary": "DeepSeek V3.2 ist ein großes Sprachmodell des chinesischen KI-Unternehmens DeepSeek. Es wurde auf breiten mehrsprachigen Korpora trainiert mit Schwerpunkt auf Reasoning, Coding und Instruktionsbefolgung. Das Modell zeichnet sich durch starke Leistung bei analytischen Aufgaben aus und wurde entwickelt, um mit führenden westlichen Frontier-Modellen zu konkurrieren.",
+    "summary": "DeepSeek V3.2 ist ein gro\u00dfes Sprachmodell des chinesischen KI-Unternehmens DeepSeek. Es wurde auf breiten mehrsprachigen Korpora trainiert mit Schwerpunkt auf Reasoning, Coding und Instruktionsbefolgung. Das Modell zeichnet sich durch starke Leistung bei analytischen Aufgaben aus und wurde entwickelt, um mit f\u00fchrenden westlichen Frontier-Modellen zu konkurrieren.",
     "strengths": [
       "Starke Leistung bei mathematischen und logischen Reasoning-Aufgaben",
-      "Hohe Qualität bei Code-Generierung und -Analyse",
-      "Gute mehrsprachige Fähigkeiten, insbesondere Chinesisch und Englisch"
+      "Hohe Qualit\u00e4t bei Code-Generierung und -Analyse",
+      "Gute mehrsprachige F\u00e4higkeiten, insbesondere Chinesisch und Englisch"
     ],
     "known_limitations": [
-      "Cloud-only-Deployment schränkt Datenkontrolle und lokale Nutzung ein",
-      "Mögliche Zensur oder Einschränkungen bei politisch sensiblen Themen gemäß chinesischer Regulierung"
+      "Cloud-only-Deployment schr\u00e4nkt Datenkontrolle und lokale Nutzung ein",
+      "M\u00f6gliche Zensur oder Einschr\u00e4nkungen bei politisch sensiblen Themen gem\u00e4\u00df chinesischer Regulierung"
     ],
-    "judge_context_hint": "Das Modell kann bei politisch oder kulturell sensiblen Themen mit Bezug zu China eingeschränkte oder ausweichende Antworten liefern, was die Bewertung von Offenheit und Faktentreue beeinflussen kann.",
+    "judge_context_hint": "Das Modell kann bei politisch oder kulturell sensiblen Themen mit Bezug zu China eingeschr\u00e4nkte oder ausweichende Antworten liefern, was die Bewertung von Offenheit und Faktentreue beeinflussen kann.",
     "unknown": false,
     "generated_at": "2026-04-11T15:21:48.456199+00:00"
   },
@@ -294,20 +294,20 @@
     "deployment_type": "cloud-only",
     "local_deployment_possible": false,
     "weights_provenance_risk": "medium",
-    "weights_provenance_risk_rationale": "Google DeepMind ist ein US-amerikanisches Unternehmen und unterliegt dem CLOUD Act; die Modellgewichte sind nicht öffentlich zugänglich, sodass ein staatlicher Zugriff auf Weights-Ebene nicht bekannt ist.",
+    "weights_provenance_risk_rationale": "Google DeepMind ist ein US-amerikanisches Unternehmen und unterliegt dem CLOUD Act; die Modellgewichte sind nicht \u00f6ffentlich zug\u00e4nglich, sodass ein staatlicher Zugriff auf Weights-Ebene nicht bekannt ist.",
     "model_family": "Gemini",
     "primary_focus": "general",
-    "summary": "Gemini 2.5 Flash ist Googles effizientes Multimodal-Modell aus den USA, optimiert für schnelle Inferenz bei niedrigen Kosten. Stärken liegen in langen Kontextfenstern (1M Token), Bild- und Dokumentenverständnis sowie strukturiertem Reasoning – konzipiert als leistungsstarke, skalierbare Alternative zu größeren Modellen.",
+    "summary": "Gemini 2.5 Flash ist Googles effizientes Multimodal-Modell aus den USA, optimiert f\u00fcr schnelle Inferenz bei niedrigen Kosten. St\u00e4rken liegen in langen Kontextfenstern (1M Token), Bild- und Dokumentenverst\u00e4ndnis sowie strukturiertem Reasoning \u2013 konzipiert als leistungsstarke, skalierbare Alternative zu gr\u00f6\u00dferen Modellen.",
     "strengths": [
       "Sehr langes Kontextfenster (bis zu 1 Million Token)",
-      "Starke multimodale Fähigkeiten (Text, Bild, Audio, Video, Code)",
-      "Hohes Preis-Leistungs-Verhältnis durch optimierte Inferenzgeschwindigkeit"
+      "Starke multimodale F\u00e4higkeiten (Text, Bild, Audio, Video, Code)",
+      "Hohes Preis-Leistungs-Verh\u00e4ltnis durch optimierte Inferenzgeschwindigkeit"
     ],
     "known_limitations": [
-      "Ausschließlich über Google-Cloud-APIs nutzbar, kein lokaler Betrieb möglich",
-      "Kann bei komplexen mehrstufigen Reasoning-Aufgaben hinter größeren Modellen (z. B. Gemini 2.5 Pro) zurückbleiben"
+      "Ausschlie\u00dflich \u00fcber Google-Cloud-APIs nutzbar, kein lokaler Betrieb m\u00f6glich",
+      "Kann bei komplexen mehrstufigen Reasoning-Aufgaben hinter gr\u00f6\u00dferen Modellen (z. B. Gemini 2.5 Pro) zur\u00fcckbleiben"
     ],
-    "judge_context_hint": "Das Modell ist auf Effizienz und Geschwindigkeit ausgelegt und kann bei sehr langen oder hochkomplexen Reasoning-Ketten zugunsten von Schnelligkeit Tiefe opfern – Antworten sollten auf Vollständigkeit und Präzision geprüft werden.",
+    "judge_context_hint": "Das Modell ist auf Effizienz und Geschwindigkeit ausgelegt und kann bei sehr langen oder hochkomplexen Reasoning-Ketten zugunsten von Schnelligkeit Tiefe opfern \u2013 Antworten sollten auf Vollst\u00e4ndigkeit und Pr\u00e4zision gepr\u00fcft werden.",
     "unknown": false,
     "generated_at": "2026-04-11T15:16:53.317148+00:00"
   },
@@ -320,20 +320,20 @@
     "deployment_type": "cloud-only",
     "local_deployment_possible": false,
     "weights_provenance_risk": "medium",
-    "weights_provenance_risk_rationale": "Google DeepMind ist ein US-amerikanisches Unternehmen und unterliegt dem CLOUD Act; die Modellgewichte sind nicht öffentlich zugänglich, sodass ein staatlicher Zugriff auf Weights nicht bekannt ist.",
+    "weights_provenance_risk_rationale": "Google DeepMind ist ein US-amerikanisches Unternehmen und unterliegt dem CLOUD Act; die Modellgewichte sind nicht \u00f6ffentlich zug\u00e4nglich, sodass ein staatlicher Zugriff auf Weights nicht bekannt ist.",
     "model_family": "Gemini",
     "primary_focus": "reasoning",
-    "summary": "Gemini 2.5 Pro ist Googles leistungsstärkstes Modell der Gemini-2.5-Generation, entwickelt für komplexes Schlussfolgern, Coding und multimodale Aufgaben. Es wurde trainiert, um in Benchmarks für Mathematik, Wissenschaft und Code-Generierung führend zu sein und lange Kontextfenster effizient zu verarbeiten.",
+    "summary": "Gemini 2.5 Pro ist Googles leistungsst\u00e4rkstes Modell der Gemini-2.5-Generation, entwickelt f\u00fcr komplexes Schlussfolgern, Coding und multimodale Aufgaben. Es wurde trainiert, um in Benchmarks f\u00fcr Mathematik, Wissenschaft und Code-Generierung f\u00fchrend zu sein und lange Kontextfenster effizient zu verarbeiten.",
     "strengths": [
       "Herausragende Leistung bei komplexem mehrstufigem Reasoning und mathematischen Aufgaben",
-      "Sehr großes Kontextfenster (bis zu 1 Million Token) für die Verarbeitung langer Dokumente und Codebasen",
-      "Starke multimodale Fähigkeiten: verarbeitet Text, Bild, Audio und Video nativ"
+      "Sehr gro\u00dfes Kontextfenster (bis zu 1 Million Token) f\u00fcr die Verarbeitung langer Dokumente und Codebasen",
+      "Starke multimodale F\u00e4higkeiten: verarbeitet Text, Bild, Audio und Video nativ"
     ],
     "known_limitations": [
-      "Ausschließlich über Google-Cloud-APIs verfügbar – kein lokaler Betrieb oder Open-Weights-Zugang möglich",
+      "Ausschlie\u00dflich \u00fcber Google-Cloud-APIs verf\u00fcgbar \u2013 kein lokaler Betrieb oder Open-Weights-Zugang m\u00f6glich",
       "Kann bei sehr spezifischen Nischenwissensgebieten oder aktuellen Ereignissen jenseits des Trainingsdatums halluzinieren"
     ],
-    "judge_context_hint": "Das Modell neigt dazu, bei komplexen Reasoning-Aufgaben ausführliche Zwischenschritte zu produzieren; Antwortlänge und Detailtiefe können deutlich über dem Durchschnitt anderer Modelle liegen, was bei der Bewertung von Präzision vs. Ausführlichkeit berücksichtigt werden sollte.",
+    "judge_context_hint": "Das Modell neigt dazu, bei komplexen Reasoning-Aufgaben ausf\u00fchrliche Zwischenschritte zu produzieren; Antwortl\u00e4nge und Detailtiefe k\u00f6nnen deutlich \u00fcber dem Durchschnitt anderer Modelle liegen, was bei der Bewertung von Pr\u00e4zision vs. Ausf\u00fchrlichkeit ber\u00fccksichtigt werden sollte.",
     "unknown": false,
     "generated_at": "2026-04-11T14:48:43.700684+00:00"
   },
@@ -346,20 +346,20 @@
     "deployment_type": "cloud-only",
     "local_deployment_possible": false,
     "weights_provenance_risk": "medium",
-    "weights_provenance_risk_rationale": "Google DeepMind ist ein US-amerikanisches Unternehmen und unterliegt dem CLOUD Act; die Modellgewichte sind nicht öffentlich zugänglich, sodass ein direkter Zugriff Dritter auf die Weights nicht bekannt ist.",
+    "weights_provenance_risk_rationale": "Google DeepMind ist ein US-amerikanisches Unternehmen und unterliegt dem CLOUD Act; die Modellgewichte sind nicht \u00f6ffentlich zug\u00e4nglich, sodass ein direkter Zugriff Dritter auf die Weights nicht bekannt ist.",
     "model_family": "Gemini",
     "primary_focus": "general",
-    "summary": "Gemini 3 Flash Preview ist Googles schnelles Multimodal-Modell der Gemini-3-Generation, entwickelt für latenzarme, kosteneffiziente Anwendungen. Es kombiniert starke Instruktionsbefolgung mit multimodalen Fähigkeiten und richtet sich an Entwickler, die hohe Durchsatzraten bei breiter Aufgabenabdeckung benötigen.",
+    "summary": "Gemini 3 Flash Preview ist Googles schnelles Multimodal-Modell der Gemini-3-Generation, entwickelt f\u00fcr latenzarme, kosteneffiziente Anwendungen. Es kombiniert starke Instruktionsbefolgung mit multimodalen F\u00e4higkeiten und richtet sich an Entwickler, die hohe Durchsatzraten bei breiter Aufgabenabdeckung ben\u00f6tigen.",
     "strengths": [
       "Sehr niedrige Latenz bei hohem Anfragevolumen",
-      "Solide multimodale Fähigkeiten (Text, Bild, Code)",
-      "Breite Aufgabenabdeckung bei kompetitivem Preis-Leistungs-Verhältnis"
+      "Solide multimodale F\u00e4higkeiten (Text, Bild, Code)",
+      "Breite Aufgabenabdeckung bei kompetitivem Preis-Leistungs-Verh\u00e4ltnis"
     ],
     "known_limitations": [
-      "Geringere Reasoning-Tiefe im Vergleich zu größeren Modellen der Gemini-Pro/Ultra-Linie",
-      "Keine lokale Ausführung möglich – vollständige Abhängigkeit von Googles Cloud-Infrastruktur"
+      "Geringere Reasoning-Tiefe im Vergleich zu gr\u00f6\u00dferen Modellen der Gemini-Pro/Ultra-Linie",
+      "Keine lokale Ausf\u00fchrung m\u00f6glich \u2013 vollst\u00e4ndige Abh\u00e4ngigkeit von Googles Cloud-Infrastruktur"
     ],
-    "judge_context_hint": "Das Modell ist auf Geschwindigkeit und Effizienz optimiert; bei komplexen mehrstufigen Reasoning-Aufgaben kann die Antwortqualität hinter schwergewichtigeren Modellen zurückbleiben.",
+    "judge_context_hint": "Das Modell ist auf Geschwindigkeit und Effizienz optimiert; bei komplexen mehrstufigen Reasoning-Aufgaben kann die Antwortqualit\u00e4t hinter schwergewichtigeren Modellen zur\u00fcckbleiben.",
     "unknown": true,
     "generated_at": "2026-04-11T14:40:50.616161+00:00"
   },
@@ -372,20 +372,20 @@
     "deployment_type": "cloud-only",
     "local_deployment_possible": false,
     "weights_provenance_risk": "medium",
-    "weights_provenance_risk_rationale": "Google DeepMind ist ein US-amerikanisches Unternehmen und unterliegt dem CLOUD Act, der staatlichen Zugriff auf Daten bei API-Nutzung ermöglichen kann; die Modellgewichte selbst sind nicht öffentlich zugänglich.",
+    "weights_provenance_risk_rationale": "Google DeepMind ist ein US-amerikanisches Unternehmen und unterliegt dem CLOUD Act, der staatlichen Zugriff auf Daten bei API-Nutzung erm\u00f6glichen kann; die Modellgewichte selbst sind nicht \u00f6ffentlich zug\u00e4nglich.",
     "model_family": "Gemini",
     "primary_focus": "general",
-    "summary": "Gemini 3.1 Pro Preview ist ein multimodales Large Language Model von Google DeepMind (USA), trainiert auf breiten Text-, Code- und Multimodal-Daten. Es zielt auf starke Reasoning-, Coding- und Sprachverständnisfähigkeiten ab und dient als Vorschauversion für Entwickler vor dem stabilen Release.",
+    "summary": "Gemini 3.1 Pro Preview ist ein multimodales Large Language Model von Google DeepMind (USA), trainiert auf breiten Text-, Code- und Multimodal-Daten. Es zielt auf starke Reasoning-, Coding- und Sprachverst\u00e4ndnisf\u00e4higkeiten ab und dient als Vorschauversion f\u00fcr Entwickler vor dem stabilen Release.",
     "strengths": [
-      "Starke multimodale Fähigkeiten (Text, Bild, Code)",
-      "Leistungsfähiges Reasoning und komplexe Instruktionsbefolgung",
-      "Breite Sprachunterstützung und kontextuelles Verständnis über lange Kontextfenster"
+      "Starke multimodale F\u00e4higkeiten (Text, Bild, Code)",
+      "Leistungsf\u00e4higes Reasoning und komplexe Instruktionsbefolgung",
+      "Breite Sprachunterst\u00fctzung und kontextuelles Verst\u00e4ndnis \u00fcber lange Kontextfenster"
     ],
     "known_limitations": [
-      "Nur über Google Cloud API verfügbar, kein lokaler Betrieb möglich",
-      "Als Preview-Version potenziell instabil, mit möglichen Verhaltensänderungen bis zum stabilen Release"
+      "Nur \u00fcber Google Cloud API verf\u00fcgbar, kein lokaler Betrieb m\u00f6glich",
+      "Als Preview-Version potenziell instabil, mit m\u00f6glichen Verhaltens\u00e4nderungen bis zum stabilen Release"
     ],
-    "judge_context_hint": "Das Modell befindet sich im Preview-Stadium und kann in Benchmarks leicht abweichendes oder inkonsistentes Verhalten gegenüber stabilen Releases zeigen; Ergebnisse sollten mit entsprechendem Vorbehalt bewertet werden.",
+    "judge_context_hint": "Das Modell befindet sich im Preview-Stadium und kann in Benchmarks leicht abweichendes oder inkonsistentes Verhalten gegen\u00fcber stabilen Releases zeigen; Ergebnisse sollten mit entsprechendem Vorbehalt bewertet werden.",
     "unknown": true,
     "generated_at": "2026-04-11T14:43:59.751623+00:00"
   },
@@ -398,20 +398,20 @@
     "deployment_type": "open-weights-cloud-available",
     "local_deployment_possible": true,
     "weights_provenance_risk": "medium",
-    "weights_provenance_risk_rationale": "Google DeepMind ist ein US-amerikanisches Unternehmen und unterliegt dem CLOUD Act, jedoch sind die Gewichte öffentlich verfügbar und lokal betreibbar, sodass kein API-Zugriff erforderlich ist.",
+    "weights_provenance_risk_rationale": "Google DeepMind ist ein US-amerikanisches Unternehmen und unterliegt dem CLOUD Act, jedoch sind die Gewichte \u00f6ffentlich verf\u00fcgbar und lokal betreibbar, sodass kein API-Zugriff erforderlich ist.",
     "model_family": "Gemma",
     "primary_focus": "general",
-    "summary": "Gemma 3 12B ist ein Open-Weights-Modell von Google DeepMind, trainiert auf multilingualen und multimodalen Daten. Es richtet sich an Entwickler, die leistungsfähige Sprachverarbeitung lokal betreiben wollen. Stärken liegen in Instruktionsbefolgung, Reasoning und Effizienz bei moderater Modellgröße.",
+    "summary": "Gemma 3 12B ist ein Open-Weights-Modell von Google DeepMind, trainiert auf multilingualen und multimodalen Daten. Es richtet sich an Entwickler, die leistungsf\u00e4hige Sprachverarbeitung lokal betreiben wollen. St\u00e4rken liegen in Instruktionsbefolgung, Reasoning und Effizienz bei moderater Modellgr\u00f6\u00dfe.",
     "strengths": [
       "Starke Instruktionsbefolgung durch gezieltes Instruction-Tuning",
-      "Effizientes Verhältnis von Modellgröße zu Leistung, gut für lokale Deployments geeignet",
-      "Breite multilinguale Abdeckung und solide Reasoning-Fähigkeiten"
+      "Effizientes Verh\u00e4ltnis von Modellgr\u00f6\u00dfe zu Leistung, gut f\u00fcr lokale Deployments geeignet",
+      "Breite multilinguale Abdeckung und solide Reasoning-F\u00e4higkeiten"
     ],
     "known_limitations": [
-      "Schwächere Leistung bei sehr komplexen mehrstufigen Reasoning-Aufgaben im Vergleich zu größeren Frontier-Modellen",
-      "Kontextfenster und Wissensbasis können bei spezialisierten Fachdomänen an Grenzen stoßen"
+      "Schw\u00e4chere Leistung bei sehr komplexen mehrstufigen Reasoning-Aufgaben im Vergleich zu gr\u00f6\u00dferen Frontier-Modellen",
+      "Kontextfenster und Wissensbasis k\u00f6nnen bei spezialisierten Fachdom\u00e4nen an Grenzen sto\u00dfen"
     ],
-    "judge_context_hint": "Gemma 3 12B neigt bei ambigen Anfragen zu konservativen, sicherheitsorientierten Antworten und kann bei komplexen Aufgaben kürzer und weniger ausführlich antworten als größere Modelle.",
+    "judge_context_hint": "Gemma 3 12B neigt bei ambigen Anfragen zu konservativen, sicherheitsorientierten Antworten und kann bei komplexen Aufgaben k\u00fcrzer und weniger ausf\u00fchrlich antworten als gr\u00f6\u00dfere Modelle.",
     "unknown": false,
     "generated_at": "2026-04-11T14:39:02.441348+00:00"
   },
@@ -424,20 +424,20 @@
     "deployment_type": "open-weights-cloud-available",
     "local_deployment_possible": true,
     "weights_provenance_risk": "medium",
-    "weights_provenance_risk_rationale": "Google DeepMind ist ein US-amerikanisches Unternehmen und unterliegt dem CLOUD Act, jedoch ist der CLOUD Act primär bei API-Nutzung relevant; die Weights selbst sind öffentlich verfügbar und lokal betreibbar.",
+    "weights_provenance_risk_rationale": "Google DeepMind ist ein US-amerikanisches Unternehmen und unterliegt dem CLOUD Act, jedoch ist der CLOUD Act prim\u00e4r bei API-Nutzung relevant; die Weights selbst sind \u00f6ffentlich verf\u00fcgbar und lokal betreibbar.",
     "model_family": "Gemma",
     "primary_focus": "general",
-    "summary": "Gemma 4 26B ist ein Open-Weights-Modell von Google DeepMind aus den USA, trainiert auf einem breiten Mix aus Text- und Code-Daten. Es richtet sich an Entwickler, die leistungsfähige Modelle lokal oder in eigener Infrastruktur betreiben wollen, mit Stärken in Instruktionsbefolgung, Mehrsprachigkeit und Reasoning.",
+    "summary": "Gemma 4 26B ist ein Open-Weights-Modell von Google DeepMind aus den USA, trainiert auf einem breiten Mix aus Text- und Code-Daten. Es richtet sich an Entwickler, die leistungsf\u00e4hige Modelle lokal oder in eigener Infrastruktur betreiben wollen, mit St\u00e4rken in Instruktionsbefolgung, Mehrsprachigkeit und Reasoning.",
     "strengths": [
       "Starke Instruktionsbefolgung durch gezieltes Instruction-Tuning",
-      "Effiziente Architektur ermöglicht lokalen Betrieb auf Consumer-Hardware",
-      "Solide Mehrsprachigkeit und Code-Verständnis"
+      "Effiziente Architektur erm\u00f6glicht lokalen Betrieb auf Consumer-Hardware",
+      "Solide Mehrsprachigkeit und Code-Verst\u00e4ndnis"
     ],
     "known_limitations": [
-      "Geringere Kontextlänge und Reasoning-Tiefe im Vergleich zu deutlich größeren Frontier-Modellen",
+      "Geringere Kontextl\u00e4nge und Reasoning-Tiefe im Vergleich zu deutlich gr\u00f6\u00dferen Frontier-Modellen",
       "Kann bei komplexen mehrstufigen Aufgaben an Konsistenz verlieren"
     ],
-    "judge_context_hint": "Das Modell ist auf präzise Instruktionsbefolgung optimiert und tendiert zu knappen, strukturierten Antworten – bei offenen kreativen oder sehr langen Aufgaben kann die Ausgabequalität variieren.",
+    "judge_context_hint": "Das Modell ist auf pr\u00e4zise Instruktionsbefolgung optimiert und tendiert zu knappen, strukturierten Antworten \u2013 bei offenen kreativen oder sehr langen Aufgaben kann die Ausgabequalit\u00e4t variieren.",
     "unknown": true,
     "generated_at": "2026-04-11T14:45:32.328234+00:00"
   },
@@ -453,17 +453,17 @@
     "weights_provenance_risk_rationale": "Google ist ein US-amerikanisches Unternehmen und unterliegt dem CLOUD Act, jedoch nicht dem chinesischen NSL; ein direkter staatlicher Zugriff auf die Modellgewichte ist nicht bekannt.",
     "model_family": "Gemma",
     "primary_focus": "general",
-    "summary": "Gemma 4 31B ist ein von Google DeepMind entwickeltes Sprachmodell der Gemma-4-Familie. Es wurde auf breiten Text- und Code-Korpora trainiert und zielt auf starke Allgemeinsprachfähigkeiten, Instruktionsbefolgung und multimodale Aufgaben. Die Cloud-Variante ist ausschließlich über Googles API-Infrastruktur nutzbar.",
+    "summary": "Gemma 4 31B ist ein von Google DeepMind entwickeltes Sprachmodell der Gemma-4-Familie. Es wurde auf breiten Text- und Code-Korpora trainiert und zielt auf starke Allgemeinsprachf\u00e4higkeiten, Instruktionsbefolgung und multimodale Aufgaben. Die Cloud-Variante ist ausschlie\u00dflich \u00fcber Googles API-Infrastruktur nutzbar.",
     "strengths": [
       "Starke Instruktionsbefolgung durch RLHF-basiertes Finetuning",
       "Gute Leistung bei Code-Generierung und strukturierten Aufgaben",
       "Effiziente Skalierung durch Googles Gemma-Architektur mit breitem Aufgabenspektrum"
     ],
     "known_limitations": [
-      "Ausschließlich als Cloud-Dienst verfügbar – keine lokale oder On-Premise-Nutzung möglich",
-      "Genaue Trainingsdaten und Modellarchitektur sind nicht vollständig öffentlich dokumentiert"
+      "Ausschlie\u00dflich als Cloud-Dienst verf\u00fcgbar \u2013 keine lokale oder On-Premise-Nutzung m\u00f6glich",
+      "Genaue Trainingsdaten und Modellarchitektur sind nicht vollst\u00e4ndig \u00f6ffentlich dokumentiert"
     ],
-    "judge_context_hint": "Das Modell ist auf breite Instruktionsbefolgung optimiert und kann bei sehr spezifischen Fachdomänen oder seltenen Sprachen hinter spezialisierten Modellen zurückbleiben.",
+    "judge_context_hint": "Das Modell ist auf breite Instruktionsbefolgung optimiert und kann bei sehr spezifischen Fachdom\u00e4nen oder seltenen Sprachen hinter spezialisierten Modellen zur\u00fcckbleiben.",
     "unknown": false,
     "generated_at": "2026-04-11T14:47:02.932550+00:00"
   },
@@ -479,45 +479,19 @@
     "weights_provenance_risk_rationale": "Google DeepMind ist ein US-amerikanisches Unternehmen und unterliegt dem CLOUD Act, jedoch ist das Risiko bei lokal betriebenen Open-Weights nur bei API-Nutzung relevant.",
     "model_family": "Gemma",
     "primary_focus": "general",
-    "summary": "Gemma 4 E4B ist ein kompaktes Mixture-of-Experts-Modell von Google DeepMind mit ca. 4 Milliarden aktiven Parametern. Es wurde für effiziente lokale Ausführung bei guter Allgemeinleistung entwickelt und eignet sich für Instruction-Following, leichte Reasoning-Aufgaben und ressourcenschonenden Einsatz auf Consumer-Hardware.",
+    "summary": "Gemma 4 E4B ist ein kompaktes Mixture-of-Experts-Modell von Google DeepMind mit ca. 4 Milliarden aktiven Parametern. Es wurde f\u00fcr effiziente lokale Ausf\u00fchrung bei guter Allgemeinleistung entwickelt und eignet sich f\u00fcr Instruction-Following, leichte Reasoning-Aufgaben und ressourcenschonenden Einsatz auf Consumer-Hardware.",
     "strengths": [
       "Sehr geringer Ressourcenbedarf durch MoE-Architektur mit nur 4B aktiven Parametern",
-      "Gute Instruction-Following-Fähigkeiten für die Modellgröße",
+      "Gute Instruction-Following-F\u00e4higkeiten f\u00fcr die Modellgr\u00f6\u00dfe",
       "Lokal auf Consumer-Hardware (z. B. mit llama.cpp oder Ollama) betreibbar"
     ],
     "known_limitations": [
-      "Begrenzte Leistung bei komplexen mehrstufigen Reasoning-Aufgaben im Vergleich zu größeren Modellen",
+      "Begrenzte Leistung bei komplexen mehrstufigen Reasoning-Aufgaben im Vergleich zu gr\u00f6\u00dferen Modellen",
       "Kontextfenster und Wissensbasis kleiner als bei Full-Size-Varianten der Gemma-4-Familie"
     ],
-    "judge_context_hint": "Das Modell ist eine kompakte MoE-Variante – bei komplexen Aufgaben sollte der Judge die strukturelle Tiefe der Antworten nicht mit größeren Vollmodellen vergleichen, sondern die Effizienz-Leistungs-Relation berücksichtigen.",
+    "judge_context_hint": "Das Modell ist eine kompakte MoE-Variante \u2013 bei komplexen Aufgaben sollte der Judge die strukturelle Tiefe der Antworten nicht mit gr\u00f6\u00dferen Vollmodellen vergleichen, sondern die Effizienz-Leistungs-Relation ber\u00fccksichtigen.",
     "unknown": false,
     "generated_at": "2026-04-11T15:38:30.227747+00:00"
-  },
-  {
-    "model_id": "glm-5.1_cloud",
-    "display_name": "GLM 5.1 (Cloud)",
-    "developer": "Zhipu AI",
-    "origin_country": "China",
-    "developer_jurisdiction": "CN",
-    "deployment_type": "cloud-only",
-    "local_deployment_possible": false,
-    "weights_provenance_risk": "high",
-    "weights_provenance_risk_rationale": "Zhipu AI ist ein chinesisches Unternehmen und unterliegt dem chinesischen Nationalen Sicherheitsgesetz (NSL), das staatlichen Zugriff auf Daten und Modelle ermöglichen kann.",
-    "model_family": "GLM",
-    "primary_focus": "general",
-    "summary": "GLM 5.1 ist ein großes Sprachmodell von Zhipu AI (China), entwickelt auf Basis der GLM-Architektur der Tsinghua-Universität. Schwerpunkte liegen auf mehrsprachiger Verarbeitung, Instruktionsbefolgung und allgemeinen Reasoning-Aufgaben. Es ist ausschließlich über die Zhipu-Cloud-API verfügbar.",
-    "strengths": [
-      "Starke Leistung bei chinesisch- und englischsprachigen Aufgaben",
-      "Gute Instruktionsbefolgung und Dialogfähigkeit",
-      "Solide Reasoning- und Textgenerierungsfähigkeiten"
-    ],
-    "known_limitations": [
-      "Ausschließlich als Cloud-API verfügbar, keine lokale Ausführung möglich",
-      "Mögliche Zensur oder inhaltliche Einschränkungen bei politisch sensiblen Themen gemäß chinesischer Regulierung"
-    ],
-    "judge_context_hint": "Das Modell kann bei politisch oder kulturell sensiblen Themen mit Bezug zu China inhaltlich eingeschränkt antworten; dies sollte bei der Bewertung offener Fragen berücksichtigt werden.",
-    "unknown": false,
-    "generated_at": "2026-04-13T21:35:13.114159+00:00"
   },
   {
     "model_id": "glm-5_cloud",
@@ -528,20 +502,20 @@
     "deployment_type": "cloud-only",
     "local_deployment_possible": false,
     "weights_provenance_risk": "high",
-    "weights_provenance_risk_rationale": "Zhipu AI ist ein chinesisches Unternehmen und unterliegt dem chinesischen Nationalen Sicherheitsgesetz (NSL), das staatlichen Zugriff auf Daten und Modelle ermöglichen kann.",
+    "weights_provenance_risk_rationale": "Zhipu AI ist ein chinesisches Unternehmen und unterliegt dem chinesischen Nationalen Sicherheitsgesetz (NSL), das staatlichen Zugriff auf Daten und Modelle erm\u00f6glichen kann.",
     "model_family": "GLM",
     "primary_focus": "general",
-    "summary": "GLM-5 ist ein großes Sprachmodell von Zhipu AI (China), entwickelt auf Basis der GLM-Architektur der Tsinghua University. Es zielt auf starke mehrsprachige Fähigkeiten, Reasoning und Instruktionsbefolgung ab und wird ausschließlich über die Zhipu-Cloud-API bereitgestellt.",
+    "summary": "GLM-5 ist ein gro\u00dfes Sprachmodell von Zhipu AI (China), entwickelt auf Basis der GLM-Architektur der Tsinghua University. Es zielt auf starke mehrsprachige F\u00e4higkeiten, Reasoning und Instruktionsbefolgung ab und wird ausschlie\u00dflich \u00fcber die Zhipu-Cloud-API bereitgestellt.",
     "strengths": [
       "Starke Leistung in chinesisch-englischen bilingualen Aufgaben",
-      "Gute Instruktionsbefolgung und Dialogfähigkeit",
-      "Solide Reasoning- und Textverständnisfähigkeiten"
+      "Gute Instruktionsbefolgung und Dialogf\u00e4higkeit",
+      "Solide Reasoning- und Textverst\u00e4ndnisf\u00e4higkeiten"
     ],
     "known_limitations": [
-      "Nur über Cloud-API verfügbar, keine lokale Ausführung möglich",
-      "Mögliche Zensur oder inhaltliche Einschränkungen bei politisch sensiblen Themen gemäß chinesischer Regulierung"
+      "Nur \u00fcber Cloud-API verf\u00fcgbar, keine lokale Ausf\u00fchrung m\u00f6glich",
+      "M\u00f6gliche Zensur oder inhaltliche Einschr\u00e4nkungen bei politisch sensiblen Themen gem\u00e4\u00df chinesischer Regulierung"
     ],
-    "judge_context_hint": "Das Modell kann bei politisch oder kulturell sensiblen Themen mit Bezug zu China inhaltlich eingeschränkte oder ausweichende Antworten liefern, was die Bewertung von Offenheit und Neutralität beeinflussen kann.",
+    "judge_context_hint": "Das Modell kann bei politisch oder kulturell sensiblen Themen mit Bezug zu China inhaltlich eingeschr\u00e4nkte oder ausweichende Antworten liefern, was die Bewertung von Offenheit und Neutralit\u00e4t beeinflussen kann.",
     "unknown": false,
     "generated_at": "2026-04-11T15:05:15.246464+00:00"
   },
@@ -554,20 +528,20 @@
     "deployment_type": "cloud-only",
     "local_deployment_possible": false,
     "weights_provenance_risk": "medium",
-    "weights_provenance_risk_rationale": "OpenAI ist ein US-amerikanisches Unternehmen und unterliegt dem CLOUD Act, die Modellgewichte sind nicht öffentlich zugänglich und verbleiben unter OpenAIs Kontrolle.",
+    "weights_provenance_risk_rationale": "OpenAI ist ein US-amerikanisches Unternehmen und unterliegt dem CLOUD Act, die Modellgewichte sind nicht \u00f6ffentlich zug\u00e4nglich und verbleiben unter OpenAIs Kontrolle.",
     "model_family": "GPT-4o",
     "primary_focus": "general",
-    "summary": "GPT-4o Mini ist ein kompaktes Modell von OpenAI (USA), das 2024 als kostengünstige Alternative zu GPT-4o erschien. Es kombiniert Text- und Bildverständnis, eignet sich für Alltagsaufgaben, Zusammenfassungen und einfache Reasoning-Aufgaben und zielt auf schnelle, skalierbare API-Nutzung ab.",
+    "summary": "GPT-4o Mini ist ein kompaktes Modell von OpenAI (USA), das 2024 als kosteng\u00fcnstige Alternative zu GPT-4o erschien. Es kombiniert Text- und Bildverst\u00e4ndnis, eignet sich f\u00fcr Alltagsaufgaben, Zusammenfassungen und einfache Reasoning-Aufgaben und zielt auf schnelle, skalierbare API-Nutzung ab.",
     "strengths": [
       "Sehr schnelle Inferenz bei niedrigen API-Kosten",
-      "Solide Instruction-Following-Fähigkeiten für alltägliche Aufgaben",
+      "Solide Instruction-Following-F\u00e4higkeiten f\u00fcr allt\u00e4gliche Aufgaben",
       "Multimodal: verarbeitet sowohl Text als auch Bilder"
     ],
     "known_limitations": [
-      "Deutlich schwächer als GPT-4o bei komplexem Reasoning und mehrstufigen Aufgaben",
-      "Keine lokale Ausführung möglich, vollständige Abhängigkeit von OpenAIs Cloud-Infrastruktur"
+      "Deutlich schw\u00e4cher als GPT-4o bei komplexem Reasoning und mehrstufigen Aufgaben",
+      "Keine lokale Ausf\u00fchrung m\u00f6glich, vollst\u00e4ndige Abh\u00e4ngigkeit von OpenAIs Cloud-Infrastruktur"
     ],
-    "judge_context_hint": "Das Modell ist auf Effizienz optimiert und kann bei komplexen, mehrstufigen oder nuancierten Aufgaben systematisch hinter größeren Modellen zurückbleiben – Bewertungen sollten dies bei anspruchsvollen Benchmarks berücksichtigen.",
+    "judge_context_hint": "Das Modell ist auf Effizienz optimiert und kann bei komplexen, mehrstufigen oder nuancierten Aufgaben systematisch hinter gr\u00f6\u00dferen Modellen zur\u00fcckbleiben \u2013 Bewertungen sollten dies bei anspruchsvollen Benchmarks ber\u00fccksichtigen.",
     "unknown": false,
     "generated_at": "2026-04-11T15:43:17.768669+00:00"
   },
@@ -580,20 +554,20 @@
     "deployment_type": "cloud-only",
     "local_deployment_possible": false,
     "weights_provenance_risk": "medium",
-    "weights_provenance_risk_rationale": "OpenAI ist ein US-amerikanisches Unternehmen und unterliegt dem CLOUD Act, jedoch sind die Modellgewichte nicht öffentlich zugänglich, sodass ein direkter staatlicher Zugriff auf die Weights nicht bekannt ist.",
+    "weights_provenance_risk_rationale": "OpenAI ist ein US-amerikanisches Unternehmen und unterliegt dem CLOUD Act, jedoch sind die Modellgewichte nicht \u00f6ffentlich zug\u00e4nglich, sodass ein direkter staatlicher Zugriff auf die Weights nicht bekannt ist.",
     "model_family": "GPT-4",
     "primary_focus": "general",
-    "summary": "GPT-4o ist OpenAIs multimodales Flaggschiff-Modell (2024) mit nativem Text-, Bild- und Audio-Verständnis. Es wurde für niedrige Latenz und hohe Alltagstauglichkeit optimiert. Stärken liegen in Instruktionsbefolgung, Reasoning und mehrsprachiger Kommunikation.",
+    "summary": "GPT-4o ist OpenAIs multimodales Flaggschiff-Modell (2024) mit nativem Text-, Bild- und Audio-Verst\u00e4ndnis. Es wurde f\u00fcr niedrige Latenz und hohe Alltagstauglichkeit optimiert. St\u00e4rken liegen in Instruktionsbefolgung, Reasoning und mehrsprachiger Kommunikation.",
     "strengths": [
-      "Starke multimodale Fähigkeiten (Text, Bild, Audio nativ integriert)",
+      "Starke multimodale F\u00e4higkeiten (Text, Bild, Audio nativ integriert)",
       "Sehr gute Instruktionsbefolgung und kontextsensitive Antworten",
-      "Niedrige Latenz bei hoher Ausgabequalität im Vergleich zu Vorgängermodellen"
+      "Niedrige Latenz bei hoher Ausgabequalit\u00e4t im Vergleich zu Vorg\u00e4ngermodellen"
     ],
     "known_limitations": [
-      "Keine öffentlichen Modellgewichte – vollständige Abhängigkeit von OpenAIs API-Infrastruktur",
+      "Keine \u00f6ffentlichen Modellgewichte \u2013 vollst\u00e4ndige Abh\u00e4ngigkeit von OpenAIs API-Infrastruktur",
       "Wissens-Cutoff und gelegentliche Halluzinationen bei spezifischen Fakten oder aktuellen Ereignissen"
     ],
-    "judge_context_hint": "GPT-4o neigt dazu, Antworten stilistisch zu glätten und Nuancen zu vereinfachen – bei komplexen Reasoning-Aufgaben auf Zwischenschritte und Begründungstiefe achten.",
+    "judge_context_hint": "GPT-4o neigt dazu, Antworten stilistisch zu gl\u00e4tten und Nuancen zu vereinfachen \u2013 bei komplexen Reasoning-Aufgaben auf Zwischenschritte und Begr\u00fcndungstiefe achten.",
     "unknown": false,
     "generated_at": "2026-04-11T14:58:36.805651+00:00"
   },
@@ -606,20 +580,20 @@
     "deployment_type": "cloud-only",
     "local_deployment_possible": false,
     "weights_provenance_risk": "medium",
-    "weights_provenance_risk_rationale": "OpenAI ist ein US-amerikanisches Unternehmen und unterliegt dem CLOUD Act, wobei die Modellgewichte nicht öffentlich zugänglich sind und ein staatlicher Zugriff auf die Weights selbst nicht dokumentiert ist.",
+    "weights_provenance_risk_rationale": "OpenAI ist ein US-amerikanisches Unternehmen und unterliegt dem CLOUD Act, wobei die Modellgewichte nicht \u00f6ffentlich zug\u00e4nglich sind und ein staatlicher Zugriff auf die Weights selbst nicht dokumentiert ist.",
     "model_family": "GPT-5",
     "primary_focus": "general",
-    "summary": "GPT-5 Mini ist ein kompaktes Modell von OpenAI aus den USA, das auf Effizienz bei alltäglichen Aufgaben ausgelegt ist. Es bietet starke Instruction-Following-Fähigkeiten und schnelle Antwortzeiten bei geringeren Kosten als das Vollmodell, gedacht für breite Anwendungsfälle mit begrenztem Rechenbudget.",
+    "summary": "GPT-5 Mini ist ein kompaktes Modell von OpenAI aus den USA, das auf Effizienz bei allt\u00e4glichen Aufgaben ausgelegt ist. Es bietet starke Instruction-Following-F\u00e4higkeiten und schnelle Antwortzeiten bei geringeren Kosten als das Vollmodell, gedacht f\u00fcr breite Anwendungsf\u00e4lle mit begrenztem Rechenbudget.",
     "strengths": [
       "Kosteneffiziente Nutzung bei hohem Anfragevolumen",
-      "Schnelle Inferenz bei guter Antwortqualität für Standardaufgaben",
+      "Schnelle Inferenz bei guter Antwortqualit\u00e4t f\u00fcr Standardaufgaben",
       "Starkes Instruction-Following dank RLHF-Training"
     ],
     "known_limitations": [
       "Geringere Leistung als das Vollmodell GPT-5 bei komplexen Reasoning-Aufgaben",
-      "Keine lokale Ausführung möglich, vollständige Abhängigkeit von OpenAI-Infrastruktur"
+      "Keine lokale Ausf\u00fchrung m\u00f6glich, vollst\u00e4ndige Abh\u00e4ngigkeit von OpenAI-Infrastruktur"
     ],
-    "judge_context_hint": "GPT-5 Mini ist auf Effizienz optimiert und kann bei anspruchsvollen mehrstufigen Reasoning-Aufgaben hinter größeren Modellen zurückbleiben – Bewertungen sollten dies bei komplexen Benchmarks berücksichtigen.",
+    "judge_context_hint": "GPT-5 Mini ist auf Effizienz optimiert und kann bei anspruchsvollen mehrstufigen Reasoning-Aufgaben hinter gr\u00f6\u00dferen Modellen zur\u00fcckbleiben \u2013 Bewertungen sollten dies bei komplexen Benchmarks ber\u00fccksichtigen.",
     "unknown": true,
     "generated_at": "2026-04-11T15:40:08.239745+00:00"
   },
@@ -632,20 +606,20 @@
     "deployment_type": "cloud-only",
     "local_deployment_possible": false,
     "weights_provenance_risk": "medium",
-    "weights_provenance_risk_rationale": "OpenAI ist ein US-amerikanisches Unternehmen und unterliegt dem CLOUD Act, der bei API-Nutzung staatlichen Zugriff ermöglichen kann; die Modellgewichte sind nicht öffentlich verfügbar.",
+    "weights_provenance_risk_rationale": "OpenAI ist ein US-amerikanisches Unternehmen und unterliegt dem CLOUD Act, der bei API-Nutzung staatlichen Zugriff erm\u00f6glichen kann; die Modellgewichte sind nicht \u00f6ffentlich verf\u00fcgbar.",
     "model_family": "GPT",
     "primary_focus": "general",
-    "summary": "GPT-5 ist OpenAIs bislang leistungsstärkstes Sprachmodell aus den USA, trainiert auf umfangreichen multimodalen Daten. Es zeichnet sich durch starkes Reasoning, präzises Instruktionsfolgen und breite Allgemeinwissen-Abdeckung aus. Entwickelt, um komplexe Aufgaben über Domänen hinweg zuverlässig zu lösen.",
+    "summary": "GPT-5 ist OpenAIs bislang leistungsst\u00e4rkstes Sprachmodell aus den USA, trainiert auf umfangreichen multimodalen Daten. Es zeichnet sich durch starkes Reasoning, pr\u00e4zises Instruktionsfolgen und breite Allgemeinwissen-Abdeckung aus. Entwickelt, um komplexe Aufgaben \u00fcber Dom\u00e4nen hinweg zuverl\u00e4ssig zu l\u00f6sen.",
     "strengths": [
-      "Sehr starke Reasoning- und Problemlösungsfähigkeiten über komplexe, mehrstufige Aufgaben",
-      "Hohe Instruktionstreue und konsistente Ausgabequalität auch bei langen Kontexten",
-      "Breite multimodale Fähigkeiten (Text, Bild, Code) in einem einzigen Modell"
+      "Sehr starke Reasoning- und Probleml\u00f6sungsf\u00e4higkeiten \u00fcber komplexe, mehrstufige Aufgaben",
+      "Hohe Instruktionstreue und konsistente Ausgabequalit\u00e4t auch bei langen Kontexten",
+      "Breite multimodale F\u00e4higkeiten (Text, Bild, Code) in einem einzigen Modell"
     ],
     "known_limitations": [
-      "Ausschließlich über OpenAI-API verfügbar – kein lokaler Betrieb oder Gewichtszugang möglich",
+      "Ausschlie\u00dflich \u00fcber OpenAI-API verf\u00fcgbar \u2013 kein lokaler Betrieb oder Gewichtszugang m\u00f6glich",
       "Wissensstand durch Trainings-Cutoff begrenzt; aktuelle Ereignisse erfordern externe Tools oder Retrieval"
     ],
-    "judge_context_hint": "GPT-5 neigt dazu, bei ambigen Aufgaben sehr ausführliche und strukturierte Antworten zu produzieren – Kürze und Direktheit sollten bei der Bewertung explizit eingefordert und honoriert werden.",
+    "judge_context_hint": "GPT-5 neigt dazu, bei ambigen Aufgaben sehr ausf\u00fchrliche und strukturierte Antworten zu produzieren \u2013 K\u00fcrze und Direktheit sollten bei der Bewertung explizit eingefordert und honoriert werden.",
     "unknown": false,
     "generated_at": "2026-04-11T15:41:46.428275+00:00"
   },
@@ -658,20 +632,20 @@
     "deployment_type": "cloud-only",
     "local_deployment_possible": false,
     "weights_provenance_risk": "medium",
-    "weights_provenance_risk_rationale": "OpenAI ist ein US-amerikanisches Unternehmen und unterliegt dem CLOUD Act, jedoch ist das Modell nicht als Open-Weights verfügbar, sodass ein direkter Zugriff auf die Gewichte durch Dritte nicht besteht.",
+    "weights_provenance_risk_rationale": "OpenAI ist ein US-amerikanisches Unternehmen und unterliegt dem CLOUD Act, jedoch ist das Modell nicht als Open-Weights verf\u00fcgbar, sodass ein direkter Zugriff auf die Gewichte durch Dritte nicht besteht.",
     "model_family": "GPT",
     "primary_focus": "general",
-    "summary": "GPT-5.4 Mini ist ein kompaktes Modell von OpenAI (USA), das auf Effizienz und breite Einsetzbarkeit ausgelegt ist. Es kombiniert starke Instruktionsbefolgung mit niedrigen Latenz- und Kostenzielen und richtet sich an Anwendungsfälle, bei denen Geschwindigkeit und Skalierbarkeit Vorrang vor maximaler Modellgröße haben.",
+    "summary": "GPT-5.4 Mini ist ein kompaktes Modell von OpenAI (USA), das auf Effizienz und breite Einsetzbarkeit ausgelegt ist. Es kombiniert starke Instruktionsbefolgung mit niedrigen Latenz- und Kostenzielen und richtet sich an Anwendungsf\u00e4lle, bei denen Geschwindigkeit und Skalierbarkeit Vorrang vor maximaler Modellgr\u00f6\u00dfe haben.",
     "strengths": [
       "Schnelle Inferenz bei geringem Ressourcenverbrauch",
-      "Solide Instruktionsbefolgung für alltägliche Aufgaben",
-      "Kosteneffizient für skalierbare API-Nutzung"
+      "Solide Instruktionsbefolgung f\u00fcr allt\u00e4gliche Aufgaben",
+      "Kosteneffizient f\u00fcr skalierbare API-Nutzung"
     ],
     "known_limitations": [
-      "Als 'Mini'-Variante voraussichtlich schwächer bei komplexem mehrstufigem Reasoning als größere GPT-5-Varianten",
-      "Keine öffentlich verfügbaren Gewichte, vollständige Abhängigkeit von OpenAI-Infrastruktur"
+      "Als 'Mini'-Variante voraussichtlich schw\u00e4cher bei komplexem mehrstufigem Reasoning als gr\u00f6\u00dfere GPT-5-Varianten",
+      "Keine \u00f6ffentlich verf\u00fcgbaren Gewichte, vollst\u00e4ndige Abh\u00e4ngigkeit von OpenAI-Infrastruktur"
     ],
-    "judge_context_hint": "Das Modell ist eine kompakte Variante der GPT-5-Familie und sollte primär an Aufgaben gemessen werden, die Effizienz und Instruktionstreue erfordern, nicht an Tiefenreasoning-Benchmarks, die auf Vollmodelle ausgelegt sind.",
+    "judge_context_hint": "Das Modell ist eine kompakte Variante der GPT-5-Familie und sollte prim\u00e4r an Aufgaben gemessen werden, die Effizienz und Instruktionstreue erfordern, nicht an Tiefenreasoning-Benchmarks, die auf Vollmodelle ausgelegt sind.",
     "unknown": true,
     "generated_at": "2026-04-11T15:07:05.958097+00:00"
   },
@@ -684,20 +658,20 @@
     "deployment_type": "cloud-only",
     "local_deployment_possible": false,
     "weights_provenance_risk": "medium",
-    "weights_provenance_risk_rationale": "OpenAI ist ein US-amerikanisches Unternehmen und unterliegt dem CLOUD Act, der bei API-Nutzung staatlichen Zugriff ermöglichen kann; die Weights selbst sind nicht öffentlich zugänglich.",
+    "weights_provenance_risk_rationale": "OpenAI ist ein US-amerikanisches Unternehmen und unterliegt dem CLOUD Act, der bei API-Nutzung staatlichen Zugriff erm\u00f6glichen kann; die Weights selbst sind nicht \u00f6ffentlich zug\u00e4nglich.",
     "model_family": "GPT",
     "primary_focus": "general",
-    "summary": "GPT-5.4 ist ein hypothetisches Modell von OpenAI (USA) aus der GPT-5-Familie. Als Weiterentwicklung früherer GPT-Generationen wäre es auf breite Instruktionsbefolgung, Reasoning und multimodale Aufgaben ausgerichtet. Dieses spezifische Modell ist zum aktuellen Wissensstand nicht öffentlich dokumentiert.",
+    "summary": "GPT-5.4 ist ein hypothetisches Modell von OpenAI (USA) aus der GPT-5-Familie. Als Weiterentwicklung fr\u00fcherer GPT-Generationen w\u00e4re es auf breite Instruktionsbefolgung, Reasoning und multimodale Aufgaben ausgerichtet. Dieses spezifische Modell ist zum aktuellen Wissensstand nicht \u00f6ffentlich dokumentiert.",
     "strengths": [
       "Breite Allgemeinbildung und starke Instruktionsbefolgung auf Basis der GPT-Architektur",
-      "Voraussichtlich starke Reasoning- und Problemlösefähigkeiten als Weiterentwicklung der GPT-5-Linie",
-      "Umfangreiche Mehrsprachigkeit und kontextuelles Verständnis komplexer Anfragen"
+      "Voraussichtlich starke Reasoning- und Probleml\u00f6sef\u00e4higkeiten als Weiterentwicklung der GPT-5-Linie",
+      "Umfangreiche Mehrsprachigkeit und kontextuelles Verst\u00e4ndnis komplexer Anfragen"
     ],
     "known_limitations": [
-      "Modell ist zum aktuellen Wissensstand nicht öffentlich dokumentiert oder verifiziert – alle Angaben sind extrapoliert",
-      "Ausschließlich über OpenAI-API verfügbar, kein lokaler Betrieb möglich; Abhängigkeit von OpenAI-Infrastruktur und -Nutzungsbedingungen"
+      "Modell ist zum aktuellen Wissensstand nicht \u00f6ffentlich dokumentiert oder verifiziert \u2013 alle Angaben sind extrapoliert",
+      "Ausschlie\u00dflich \u00fcber OpenAI-API verf\u00fcgbar, kein lokaler Betrieb m\u00f6glich; Abh\u00e4ngigkeit von OpenAI-Infrastruktur und -Nutzungsbedingungen"
     ],
-    "judge_context_hint": "Da GPT-5.4 kein öffentlich dokumentiertes Modell ist, sollten Benchmark-Ergebnisse mit Vorsicht interpretiert werden – es ist unklar, ob das Modell tatsächlich existiert oder ob es sich um eine interne oder zukünftige Variante handelt.",
+    "judge_context_hint": "Da GPT-5.4 kein \u00f6ffentlich dokumentiertes Modell ist, sollten Benchmark-Ergebnisse mit Vorsicht interpretiert werden \u2013 es ist unklar, ob das Modell tats\u00e4chlich existiert oder ob es sich um eine interne oder zuk\u00fcnftige Variante handelt.",
     "unknown": true,
     "generated_at": "2026-04-11T14:37:33.314770+00:00"
   },
@@ -710,20 +684,20 @@
     "deployment_type": "cloud-only",
     "local_deployment_possible": false,
     "weights_provenance_risk": "medium",
-    "weights_provenance_risk_rationale": "OpenAI ist ein US-amerikanisches Unternehmen und unterliegt dem CLOUD Act, jedoch nicht dem chinesischen NSL; die Weights sind nicht öffentlich zugänglich.",
+    "weights_provenance_risk_rationale": "OpenAI ist ein US-amerikanisches Unternehmen und unterliegt dem CLOUD Act, jedoch nicht dem chinesischen NSL; die Weights sind nicht \u00f6ffentlich zug\u00e4nglich.",
     "model_family": "GPT",
     "primary_focus": "general",
-    "summary": "GPT OSS 120B Cloud ist ein großes Sprachmodell von OpenAI, das ausschließlich über Cloud-API bereitgestellt wird. Es ist auf allgemeine Instruktionsbefolgung, Reasoning und Textgenerierung ausgerichtet und richtet sich an Entwickler, die skalierbare KI-Dienste ohne lokale Infrastruktur benötigen.",
+    "summary": "GPT OSS 120B Cloud ist ein gro\u00dfes Sprachmodell von OpenAI, das ausschlie\u00dflich \u00fcber Cloud-API bereitgestellt wird. Es ist auf allgemeine Instruktionsbefolgung, Reasoning und Textgenerierung ausgerichtet und richtet sich an Entwickler, die skalierbare KI-Dienste ohne lokale Infrastruktur ben\u00f6tigen.",
     "strengths": [
-      "Starke allgemeine Instruktionsbefolgung über breite Aufgabentypen hinweg",
+      "Starke allgemeine Instruktionsbefolgung \u00fcber breite Aufgabentypen hinweg",
       "Hohe Skalierbarkeit durch Cloud-native Bereitstellung ohne lokalen Infrastrukturaufwand",
-      "Profitiert von OpenAIs umfangreichem RLHF- und Alignment-Training für zuverlässiges Verhalten"
+      "Profitiert von OpenAIs umfangreichem RLHF- und Alignment-Training f\u00fcr zuverl\u00e4ssiges Verhalten"
     ],
     "known_limitations": [
-      "Keine lokale Ausführung möglich – vollständige Abhängigkeit von OpenAIs Cloud-Infrastruktur und Datenschutzbedingungen",
-      "Modelldetails, Trainingsarchitektur und Gewichte sind nicht öffentlich einsehbar, was unabhängige Audits erschwert"
+      "Keine lokale Ausf\u00fchrung m\u00f6glich \u2013 vollst\u00e4ndige Abh\u00e4ngigkeit von OpenAIs Cloud-Infrastruktur und Datenschutzbedingungen",
+      "Modelldetails, Trainingsarchitektur und Gewichte sind nicht \u00f6ffentlich einsehbar, was unabh\u00e4ngige Audits erschwert"
     ],
-    "judge_context_hint": "Das Modell ist auf sichere, instruktionstreue Ausgaben optimiert und kann bei kontroversen oder grenzwertigen Prompts stärker als andere Modelle zur Ablehnung oder Abschwächung neigen, was Benchmark-Ergebnisse in Kreativität oder Direktheit beeinflussen kann.",
+    "judge_context_hint": "Das Modell ist auf sichere, instruktionstreue Ausgaben optimiert und kann bei kontroversen oder grenzwertigen Prompts st\u00e4rker als andere Modelle zur Ablehnung oder Abschw\u00e4chung neigen, was Benchmark-Ergebnisse in Kreativit\u00e4t oder Direktheit beeinflussen kann.",
     "unknown": true,
     "generated_at": "2026-04-11T14:35:51.726359+00:00"
   },
@@ -739,17 +713,17 @@
     "weights_provenance_risk_rationale": "Herkunft und Entwickler sind unbekannt; konservative Einstufung als 'medium', da keine verifizierten Informationen zur Jurisdiktion oder Weights-Provenienz vorliegen.",
     "model_family": "GPT-OSS",
     "primary_focus": "general",
-    "summary": "GPT-OSS 20B Cloud ist ein Sprachmodell unbekannter Herkunft mit ca. 20 Milliarden Parametern, das ausschließlich über eine Cloud-API verfügbar ist. Trainings­schwerpunkt, Entwickler­organisation und Entstehungskontext sind nicht öffentlich dokumentiert. Stärken und Einschränkungen lassen sich daher nicht zuverlässig einordnen.",
+    "summary": "GPT-OSS 20B Cloud ist ein Sprachmodell unbekannter Herkunft mit ca. 20 Milliarden Parametern, das ausschlie\u00dflich \u00fcber eine Cloud-API verf\u00fcgbar ist. Trainings\u00adschwerpunkt, Entwickler\u00adorganisation und Entstehungskontext sind nicht \u00f6ffentlich dokumentiert. St\u00e4rken und Einschr\u00e4nkungen lassen sich daher nicht zuverl\u00e4ssig einordnen.",
     "strengths": [
-      "Mittlere Modellgröße (20B) deutet auf gute Balance zwischen Leistung und Latenz hin",
-      "Cloud-Deployment ermöglicht einfache Integration ohne lokale Infrastruktur",
-      "Bezeichnung 'OSS' legt möglicherweise Open-Source-Orientierung im Trainingsansatz nahe"
+      "Mittlere Modellgr\u00f6\u00dfe (20B) deutet auf gute Balance zwischen Leistung und Latenz hin",
+      "Cloud-Deployment erm\u00f6glicht einfache Integration ohne lokale Infrastruktur",
+      "Bezeichnung 'OSS' legt m\u00f6glicherweise Open-Source-Orientierung im Trainingsansatz nahe"
     ],
     "known_limitations": [
-      "Herkunft, Trainingsdetails und Evaluierungsergebnisse sind nicht öffentlich verifizierbar",
-      "Ausschließlich als Cloud-Dienst verfügbar – keine lokale oder On-Premises-Nutzung möglich"
+      "Herkunft, Trainingsdetails und Evaluierungsergebnisse sind nicht \u00f6ffentlich verifizierbar",
+      "Ausschlie\u00dflich als Cloud-Dienst verf\u00fcgbar \u2013 keine lokale oder On-Premises-Nutzung m\u00f6glich"
     ],
-    "judge_context_hint": "Da Trainingsdetails, Benchmark-Ergebnisse und Modellarchitektur nicht öffentlich dokumentiert sind, sollten Bewertungen ausschließlich auf dem tatsächlich beobachteten Output basieren und keine Annahmen über bekannte Modell-Familien übertragen werden.",
+    "judge_context_hint": "Da Trainingsdetails, Benchmark-Ergebnisse und Modellarchitektur nicht \u00f6ffentlich dokumentiert sind, sollten Bewertungen ausschlie\u00dflich auf dem tats\u00e4chlich beobachteten Output basieren und keine Annahmen \u00fcber bekannte Modell-Familien \u00fcbertragen werden.",
     "unknown": true,
     "generated_at": "2026-04-11T14:52:17.021800+00:00"
   },
@@ -762,20 +736,20 @@
     "deployment_type": "cloud-only",
     "local_deployment_possible": false,
     "weights_provenance_risk": "medium",
-    "weights_provenance_risk_rationale": "xAI ist ein US-amerikanisches Unternehmen und unterliegt dem CLOUD Act, jedoch ist kein öffentlicher Zugriff auf die Modellgewichte möglich, sodass das Risiko auf die API-Nutzung beschränkt bleibt.",
+    "weights_provenance_risk_rationale": "xAI ist ein US-amerikanisches Unternehmen und unterliegt dem CLOUD Act, jedoch ist kein \u00f6ffentlicher Zugriff auf die Modellgewichte m\u00f6glich, sodass das Risiko auf die API-Nutzung beschr\u00e4nkt bleibt.",
     "model_family": "Grok",
     "primary_focus": "reasoning",
-    "summary": "Grok 3 Mini ist ein kompaktes Reasoning-Modell von xAI (USA), entwickelt als effizientere Variante der Grok-3-Familie. Es wurde für logisches Schlussfolgern, Mathematik und strukturierte Problemlösung optimiert und ist ausschließlich über die xAI-API bzw. die X-Plattform verfügbar.",
+    "summary": "Grok 3 Mini ist ein kompaktes Reasoning-Modell von xAI (USA), entwickelt als effizientere Variante der Grok-3-Familie. Es wurde f\u00fcr logisches Schlussfolgern, Mathematik und strukturierte Probleml\u00f6sung optimiert und ist ausschlie\u00dflich \u00fcber die xAI-API bzw. die X-Plattform verf\u00fcgbar.",
     "strengths": [
-      "Starke Leistung bei mathematischen und logischen Reasoning-Aufgaben trotz kompakter Modellgröße",
-      "Effizientes Kosten-Leistungs-Verhältnis im Vergleich zu größeren Frontier-Modellen",
+      "Starke Leistung bei mathematischen und logischen Reasoning-Aufgaben trotz kompakter Modellgr\u00f6\u00dfe",
+      "Effizientes Kosten-Leistungs-Verh\u00e4ltnis im Vergleich zu gr\u00f6\u00dferen Frontier-Modellen",
       "Gute Instruktionsbefolgung bei strukturierten, mehrstufigen Aufgaben"
     ],
     "known_limitations": [
-      "Ausschließlich über xAI-Cloud verfügbar, kein lokaler Betrieb möglich",
-      "Als Mini-Variante bei komplexen, wissensintensiven oder kreativen Aufgaben schwächer als das vollständige Grok-3-Modell"
+      "Ausschlie\u00dflich \u00fcber xAI-Cloud verf\u00fcgbar, kein lokaler Betrieb m\u00f6glich",
+      "Als Mini-Variante bei komplexen, wissensintensiven oder kreativen Aufgaben schw\u00e4cher als das vollst\u00e4ndige Grok-3-Modell"
     ],
-    "judge_context_hint": "Grok 3 Mini ist auf Reasoning optimiert und zeigt bei schrittweisen Denkaufgaben stärkere Leistung als bei freiem Kreativtext oder breitem Weltwissen.",
+    "judge_context_hint": "Grok 3 Mini ist auf Reasoning optimiert und zeigt bei schrittweisen Denkaufgaben st\u00e4rkere Leistung als bei freiem Kreativtext oder breitem Weltwissen.",
     "unknown": false,
     "generated_at": "2026-04-11T15:23:20.086290+00:00"
   },
@@ -788,20 +762,20 @@
     "deployment_type": "cloud-only",
     "local_deployment_possible": false,
     "weights_provenance_risk": "medium",
-    "weights_provenance_risk_rationale": "xAI ist ein US-amerikanisches Unternehmen und unterliegt dem CLOUD Act, der staatlichen Zugriff auf Daten bei API-Nutzung ermöglichen kann, jedoch nicht auf lokal betriebene Weights.",
+    "weights_provenance_risk_rationale": "xAI ist ein US-amerikanisches Unternehmen und unterliegt dem CLOUD Act, der staatlichen Zugriff auf Daten bei API-Nutzung erm\u00f6glichen kann, jedoch nicht auf lokal betriebene Weights.",
     "model_family": "Grok",
     "primary_focus": "reasoning",
     "summary": "Grok 3 ist ein Large Language Model von xAI (Elon Musk, USA), trainiert mit Fokus auf starkes Reasoning, Mathematik und Coding. Es wurde als Konkurrenz zu GPT-4 und Claude entwickelt und zeichnet sich durch Echtzeit-Webzugriff sowie eine weniger restriktive Antwortpolitik aus.",
     "strengths": [
       "Starke Leistung bei mathematischen und logischen Reasoning-Aufgaben",
-      "Coding-Kompetenz auf hohem Niveau mit präzisen Erklärungen",
-      "Weniger restriktive Content-Policy ermöglicht offenere Diskussionen kontroverser Themen"
+      "Coding-Kompetenz auf hohem Niveau mit pr\u00e4zisen Erkl\u00e4rungen",
+      "Weniger restriktive Content-Policy erm\u00f6glicht offenere Diskussionen kontroverser Themen"
     ],
     "known_limitations": [
-      "Ausschließlich über die xAI-API bzw. die Grok-Plattform (X/Twitter) verfügbar, keine lokale Nutzung möglich",
-      "Trainingsdaten und genaue Modellarchitektur sind nicht vollständig öffentlich dokumentiert"
+      "Ausschlie\u00dflich \u00fcber die xAI-API bzw. die Grok-Plattform (X/Twitter) verf\u00fcgbar, keine lokale Nutzung m\u00f6glich",
+      "Trainingsdaten und genaue Modellarchitektur sind nicht vollst\u00e4ndig \u00f6ffentlich dokumentiert"
     ],
-    "judge_context_hint": "Grok 3 neigt zu direkten, teils pointierten Antworten mit weniger Selbstzensur als vergleichbare Modelle – bei der Bewertung von Ton und Stil sollte dies als bewusstes Design-Merkmal berücksichtigt werden.",
+    "judge_context_hint": "Grok 3 neigt zu direkten, teils pointierten Antworten mit weniger Selbstzensur als vergleichbare Modelle \u2013 bei der Bewertung von Ton und Stil sollte dies als bewusstes Design-Merkmal ber\u00fccksichtigt werden.",
     "unknown": false,
     "generated_at": "2026-04-11T15:51:34.415132+00:00"
   },
@@ -814,20 +788,20 @@
     "deployment_type": "open-weights",
     "local_deployment_possible": true,
     "weights_provenance_risk": "low",
-    "weights_provenance_risk_rationale": "Nous Research ist eine unabhängige, community-getriebene Forschungsorganisation ohne bekannten kommerziellen Hintergrund oder staatliche Einflussnahme; die Weights sind öffentlich verfügbar.",
+    "weights_provenance_risk_rationale": "Nous Research ist eine unabh\u00e4ngige, community-getriebene Forschungsorganisation ohne bekannten kommerziellen Hintergrund oder staatliche Einflussnahme; die Weights sind \u00f6ffentlich verf\u00fcgbar.",
     "model_family": "Hermes",
     "primary_focus": "instruction-following",
-    "summary": "Hermes 3 8B ist ein von Nous Research feingetuntes Modell auf Basis von Meta Llama 3.1 8B. Es wurde auf einem kuratierten Instruction-Following-Datensatz trainiert, mit Fokus auf präzise Anweisungsbefolgung, Rollenspiel und strukturierte Ausgaben. Stärken liegen in Gesprächsqualität und Agentic-Tasks.",
+    "summary": "Hermes 3 8B ist ein von Nous Research feingetuntes Modell auf Basis von Meta Llama 3.1 8B. Es wurde auf einem kuratierten Instruction-Following-Datensatz trainiert, mit Fokus auf pr\u00e4zise Anweisungsbefolgung, Rollenspiel und strukturierte Ausgaben. St\u00e4rken liegen in Gespr\u00e4chsqualit\u00e4t und Agentic-Tasks.",
     "strengths": [
-      "Sehr gute Instruction-Following-Qualität für ein 8B-Modell",
-      "Stärken bei strukturierten Ausgaben (JSON, Funktionsaufrufe) und Agentic-Workflows",
-      "Gute Gesprächskohärenz und Rollenspiel-Fähigkeiten durch spezialisierten Fine-Tune-Datensatz"
+      "Sehr gute Instruction-Following-Qualit\u00e4t f\u00fcr ein 8B-Modell",
+      "St\u00e4rken bei strukturierten Ausgaben (JSON, Funktionsaufrufe) und Agentic-Workflows",
+      "Gute Gespr\u00e4chskoh\u00e4renz und Rollenspiel-F\u00e4higkeiten durch spezialisierten Fine-Tune-Datensatz"
     ],
     "known_limitations": [
-      "Basiert auf Llama 3.1 8B – bei komplexen Reasoning-Aufgaben deutlich schwächer als größere Modelle",
+      "Basiert auf Llama 3.1 8B \u2013 bei komplexen Reasoning-Aufgaben deutlich schw\u00e4cher als gr\u00f6\u00dfere Modelle",
       "Wissensbasis durch Llama-3.1-Cutoff begrenzt; kein natives Multimodal-Support"
     ],
-    "judge_context_hint": "Das Modell ist ein Community-Fine-Tune und kann bei sehr formalen oder akademischen Aufgaben gelegentlich einen informelleren, gesprächsorientierten Ton bevorzugen als erwartet.",
+    "judge_context_hint": "Das Modell ist ein Community-Fine-Tune und kann bei sehr formalen oder akademischen Aufgaben gelegentlich einen informelleren, gespr\u00e4chsorientierten Ton bevorzugen als erwartet.",
     "unknown": false,
     "generated_at": "2026-04-11T15:31:29.359642+00:00"
   },
@@ -840,20 +814,20 @@
     "deployment_type": "open-weights",
     "local_deployment_possible": true,
     "weights_provenance_risk": "medium",
-    "weights_provenance_risk_rationale": "NousResearch ist ein US-amerikanisches Open-Source-Forschungskollektiv; die Weights sind öffentlich verfügbar, jedoch unterliegt das Unternehmen dem US-amerikanischen CLOUD Act.",
+    "weights_provenance_risk_rationale": "NousResearch ist ein US-amerikanisches Open-Source-Forschungskollektiv; die Weights sind \u00f6ffentlich verf\u00fcgbar, jedoch unterliegt das Unternehmen dem US-amerikanischen CLOUD Act.",
     "model_family": "Hermes",
     "primary_focus": "instruction-following",
-    "summary": "Hermes 4 14B ist ein von NousResearch (USA) feingetuntes Sprachmodell, das auf starkes Instruction-Following, strukturierte Ausgaben und Agenten-Workflows ausgelegt ist. Es basiert auf einem leistungsfähigen Basismodell und wurde durch RLHF und synthetische Daten auf präzise, hilfreiche Antworten optimiert. Die GGUF-Variante Q4_K_M ermöglicht effizienten lokalen Betrieb.",
+    "summary": "Hermes 4 14B ist ein von NousResearch (USA) feingetuntes Sprachmodell, das auf starkes Instruction-Following, strukturierte Ausgaben und Agenten-Workflows ausgelegt ist. Es basiert auf einem leistungsf\u00e4higen Basismodell und wurde durch RLHF und synthetische Daten auf pr\u00e4zise, hilfreiche Antworten optimiert. Die GGUF-Variante Q4_K_M erm\u00f6glicht effizienten lokalen Betrieb.",
     "strengths": [
-      "Sehr gutes Instruction-Following mit präziser Befolgung komplexer Anweisungen",
-      "Starke Unterstützung für strukturierte Ausgaben (JSON, Funktionsaufrufe, Agenten-Frameworks)",
+      "Sehr gutes Instruction-Following mit pr\u00e4ziser Befolgung komplexer Anweisungen",
+      "Starke Unterst\u00fctzung f\u00fcr strukturierte Ausgaben (JSON, Funktionsaufrufe, Agenten-Frameworks)",
       "Effizient lokal betreibbar durch quantisiertes GGUF-Format (Q4_K_M) mit geringem VRAM-Bedarf"
     ],
     "known_limitations": [
-      "Als 14B-Modell bei sehr komplexen Mehrschritt-Reasoning-Aufgaben schwächer als größere Modelle",
-      "Feintuning-Daten von NousResearch sind nicht vollständig dokumentiert, was Bias-Analyse erschwert"
+      "Als 14B-Modell bei sehr komplexen Mehrschritt-Reasoning-Aufgaben schw\u00e4cher als gr\u00f6\u00dfere Modelle",
+      "Feintuning-Daten von NousResearch sind nicht vollst\u00e4ndig dokumentiert, was Bias-Analyse erschwert"
     ],
-    "judge_context_hint": "Das Modell ist explizit auf präzises Instruction-Following und Agenten-Nutzung optimiert und neigt dazu, Anweisungen sehr wörtlich zu nehmen – kreative Abweichungen oder Eigeninitiative sind bewusst reduziert.",
+    "judge_context_hint": "Das Modell ist explizit auf pr\u00e4zises Instruction-Following und Agenten-Nutzung optimiert und neigt dazu, Anweisungen sehr w\u00f6rtlich zu nehmen \u2013 kreative Abweichungen oder Eigeninitiative sind bewusst reduziert.",
     "unknown": false,
     "generated_at": "2026-04-11T15:13:31.797577+00:00"
   },
@@ -866,20 +840,20 @@
     "deployment_type": "open-weights",
     "local_deployment_possible": true,
     "weights_provenance_risk": "low",
-    "weights_provenance_risk_rationale": "Das Basismodell stammt von Mistral AI mit Sitz in Frankreich (EU-Jurisdiktion); die GGUF-Konvertierung und Abliteration durch mradermacher ändert die Gewichts-Herkunft nicht.",
+    "weights_provenance_risk_rationale": "Das Basismodell stammt von Mistral AI mit Sitz in Frankreich (EU-Jurisdiktion); die GGUF-Konvertierung und Abliteration durch mradermacher \u00e4ndert die Gewichts-Herkunft nicht.",
     "model_family": "Mistral",
     "primary_focus": "instruction-following",
-    "summary": "Mistral-basiertes Modell in GGUF-Format (Q8_0), abliteriert durch mradermacher. Abliteration entfernt Refusal-Verhalten durch gezielte Gewichtsmanipulation. Geeignet für unzensierte Instruktionsausführung. Stärken liegen in Mehrsprachigkeit und kompakter Effizienz typischer Mistral-Architektur.",
+    "summary": "Mistral-basiertes Modell in GGUF-Format (Q8_0), abliteriert durch mradermacher. Abliteration entfernt Refusal-Verhalten durch gezielte Gewichtsmanipulation. Geeignet f\u00fcr unzensierte Instruktionsausf\u00fchrung. St\u00e4rken liegen in Mehrsprachigkeit und kompakter Effizienz typischer Mistral-Architektur.",
     "strengths": [
-      "Keine eingebauten Refusal-Mechanismen durch Abliteration – folgt Anweisungen ohne themenbasierte Verweigerung",
-      "Hohe Quantisierungsqualität (Q8_0) mit minimalem Qualitätsverlust gegenüber FP16",
+      "Keine eingebauten Refusal-Mechanismen durch Abliteration \u2013 folgt Anweisungen ohne themenbasierte Verweigerung",
+      "Hohe Quantisierungsqualit\u00e4t (Q8_0) mit minimalem Qualit\u00e4tsverlust gegen\u00fcber FP16",
       "Effizient lokal betreibbar dank GGUF-Format (llama.cpp-kompatibel)"
     ],
     "known_limitations": [
-      "Abliteration kann Sicherheitsfilter vollständig entfernen, was missbräuchliche Nutzung erleichtert und den Einsatz in produktiven Umgebungen einschränkt",
-      "Kein offiziell unterstütztes Modell – Qualität und Verhalten hängen von der Abliterations-Implementierung eines Drittanbieters ab"
+      "Abliteration kann Sicherheitsfilter vollst\u00e4ndig entfernen, was missbr\u00e4uchliche Nutzung erleichtert und den Einsatz in produktiven Umgebungen einschr\u00e4nkt",
+      "Kein offiziell unterst\u00fctztes Modell \u2013 Qualit\u00e4t und Verhalten h\u00e4ngen von der Abliterations-Implementierung eines Drittanbieters ab"
     ],
-    "judge_context_hint": "Das Modell wurde abliteriert, d.h. Refusal-Training wurde gezielt entfernt – der Judge sollte keine Compliance-Verweigerungen erwarten und Antwortqualität unabhängig von Themensensitivität bewerten.",
+    "judge_context_hint": "Das Modell wurde abliteriert, d.h. Refusal-Training wurde gezielt entfernt \u2013 der Judge sollte keine Compliance-Verweigerungen erwarten und Antwortqualit\u00e4t unabh\u00e4ngig von Themensensitivit\u00e4t bewerten.",
     "unknown": false,
     "generated_at": "2026-04-11T15:46:34.286185+00:00"
   },
@@ -892,20 +866,20 @@
     "deployment_type": "cloud-only",
     "local_deployment_possible": false,
     "weights_provenance_risk": "high",
-    "weights_provenance_risk_rationale": "Moonshot AI ist ein chinesisches Unternehmen und unterliegt dem chinesischen National Security Law (NSL), das staatliche Zugriffe auf Daten und Modelle ermöglichen kann.",
+    "weights_provenance_risk_rationale": "Moonshot AI ist ein chinesisches Unternehmen und unterliegt dem chinesischen National Security Law (NSL), das staatliche Zugriffe auf Daten und Modelle erm\u00f6glichen kann.",
     "model_family": "Kimi",
     "primary_focus": "reasoning",
-    "summary": "Kimi K2.5 ist ein Cloud-Modell von Moonshot AI aus China, entwickelt für komplexes Schlussfolgern, Long-Context-Verarbeitung und mehrsprachige Aufgaben. Es zeichnet sich durch starke Reasoning-Fähigkeiten und einen sehr großen Kontextfenster aus, konzipiert als leistungsstarker KI-Assistent für anspruchsvolle Analyse- und Wissensaufgaben.",
+    "summary": "Kimi K2.5 ist ein Cloud-Modell von Moonshot AI aus China, entwickelt f\u00fcr komplexes Schlussfolgern, Long-Context-Verarbeitung und mehrsprachige Aufgaben. Es zeichnet sich durch starke Reasoning-F\u00e4higkeiten und einen sehr gro\u00dfen Kontextfenster aus, konzipiert als leistungsstarker KI-Assistent f\u00fcr anspruchsvolle Analyse- und Wissensaufgaben.",
     "strengths": [
-      "Sehr großes Kontextfenster (bis zu 128K Token), geeignet für Long-Document-Analyse",
-      "Starke mehrsprachige Fähigkeiten, insbesondere Chinesisch und Englisch",
-      "Ausgeprägte Reasoning- und Schlussfolgerungskompetenz bei komplexen Aufgaben"
+      "Sehr gro\u00dfes Kontextfenster (bis zu 128K Token), geeignet f\u00fcr Long-Document-Analyse",
+      "Starke mehrsprachige F\u00e4higkeiten, insbesondere Chinesisch und Englisch",
+      "Ausgepr\u00e4gte Reasoning- und Schlussfolgerungskompetenz bei komplexen Aufgaben"
     ],
     "known_limitations": [
-      "Nur als Cloud-API verfügbar, keine lokale Ausführung möglich",
-      "Mögliche Zensur oder inhaltliche Einschränkungen bei politisch sensiblen Themen gemäß chinesischer Regulierung"
+      "Nur als Cloud-API verf\u00fcgbar, keine lokale Ausf\u00fchrung m\u00f6glich",
+      "M\u00f6gliche Zensur oder inhaltliche Einschr\u00e4nkungen bei politisch sensiblen Themen gem\u00e4\u00df chinesischer Regulierung"
     ],
-    "judge_context_hint": "Das Modell kann bei politisch oder kulturell sensiblen Themen mit Bezug zu China inhaltlich eingeschränkt oder gefiltert antworten, was die Bewertung von Offenheit und Neutralität beeinflussen kann.",
+    "judge_context_hint": "Das Modell kann bei politisch oder kulturell sensiblen Themen mit Bezug zu China inhaltlich eingeschr\u00e4nkt oder gefiltert antworten, was die Bewertung von Offenheit und Neutralit\u00e4t beeinflussen kann.",
     "unknown": false,
     "generated_at": "2026-04-11T15:36:50.795099+00:00"
   },
@@ -918,20 +892,20 @@
     "deployment_type": "open-weights-cloud-available",
     "local_deployment_possible": true,
     "weights_provenance_risk": "medium",
-    "weights_provenance_risk_rationale": "Meta ist ein US-amerikanisches Unternehmen und unterliegt dem CLOUD Act, jedoch sind die Modellgewichte öffentlich verfügbar und können ohne Cloud-Bindung lokal betrieben werden.",
+    "weights_provenance_risk_rationale": "Meta ist ein US-amerikanisches Unternehmen und unterliegt dem CLOUD Act, jedoch sind die Modellgewichte \u00f6ffentlich verf\u00fcgbar und k\u00f6nnen ohne Cloud-Bindung lokal betrieben werden.",
     "model_family": "Llama",
     "primary_focus": "general",
-    "summary": "Llama 3.3 70B Versatile ist ein Open-Weights-Modell von Meta (USA), trainiert auf multilingualen und vielfältigen Textdaten. Es bietet starke Leistung bei Instruktionsbefolgung, Reasoning und Coding bei moderatem Ressourcenbedarf. Meta entwickelte es als leistungsstarke, frei nutzbare Alternative zu proprietären Modellen.",
+    "summary": "Llama 3.3 70B Versatile ist ein Open-Weights-Modell von Meta (USA), trainiert auf multilingualen und vielf\u00e4ltigen Textdaten. Es bietet starke Leistung bei Instruktionsbefolgung, Reasoning und Coding bei moderatem Ressourcenbedarf. Meta entwickelte es als leistungsstarke, frei nutzbare Alternative zu propriet\u00e4ren Modellen.",
     "strengths": [
-      "Sehr gute Instruktionsbefolgung und Gesprächsführung dank RLHF-Feintuning",
-      "Starke Reasoning- und Coding-Fähigkeiten für ein 70B-Modell",
-      "Frei verfügbare Gewichte ermöglichen lokalen, datenschutzkonformen Betrieb"
+      "Sehr gute Instruktionsbefolgung und Gespr\u00e4chsf\u00fchrung dank RLHF-Feintuning",
+      "Starke Reasoning- und Coding-F\u00e4higkeiten f\u00fcr ein 70B-Modell",
+      "Frei verf\u00fcgbare Gewichte erm\u00f6glichen lokalen, datenschutzkonformen Betrieb"
     ],
     "known_limitations": [
-      "Kontextfenster (128k Token) kann bei sehr langen Dokumenten zu Qualitätseinbußen am Ende führen",
-      "Trotz Multilingual-Training deutlich stärker im Englischen als in anderen Sprachen"
+      "Kontextfenster (128k Token) kann bei sehr langen Dokumenten zu Qualit\u00e4tseinbu\u00dfen am Ende f\u00fchren",
+      "Trotz Multilingual-Training deutlich st\u00e4rker im Englischen als in anderen Sprachen"
     ],
-    "judge_context_hint": "Das Modell neigt bei komplexen mehrstufigen Aufgaben gelegentlich dazu, Zwischenschritte zu überspringen oder Antworten zu verkürzen – Vollständigkeit der Argumentation sollte explizit bewertet werden.",
+    "judge_context_hint": "Das Modell neigt bei komplexen mehrstufigen Aufgaben gelegentlich dazu, Zwischenschritte zu \u00fcberspringen oder Antworten zu verk\u00fcrzen \u2013 Vollst\u00e4ndigkeit der Argumentation sollte explizit bewertet werden.",
     "unknown": false,
     "generated_at": "2026-04-11T15:29:52.385255+00:00"
   },
@@ -944,20 +918,20 @@
     "deployment_type": "open-weights-cloud-available",
     "local_deployment_possible": true,
     "weights_provenance_risk": "medium",
-    "weights_provenance_risk_rationale": "Meta ist ein US-amerikanisches Unternehmen und unterliegt dem CLOUD Act, der jedoch primär bei API-Nutzung relevant ist; die Weights sind öffentlich verfügbar und lokal betreibbar.",
+    "weights_provenance_risk_rationale": "Meta ist ein US-amerikanisches Unternehmen und unterliegt dem CLOUD Act, der jedoch prim\u00e4r bei API-Nutzung relevant ist; die Weights sind \u00f6ffentlich verf\u00fcgbar und lokal betreibbar.",
     "model_family": "Llama 4",
     "primary_focus": "general",
-    "summary": "Llama 4 Scout ist ein Mixture-of-Experts-Modell von Meta (USA) mit 17 Milliarden aktiven Parametern und 16 Experten. Es wurde für effiziente Instruction-Following-Aufgaben, multimodales Verständnis und breite Allgemeinsprachkompetenz entwickelt und bietet ein gutes Verhältnis aus Leistung und Rechenaufwand.",
+    "summary": "Llama 4 Scout ist ein Mixture-of-Experts-Modell von Meta (USA) mit 17 Milliarden aktiven Parametern und 16 Experten. Es wurde f\u00fcr effiziente Instruction-Following-Aufgaben, multimodales Verst\u00e4ndnis und breite Allgemeinsprachkompetenz entwickelt und bietet ein gutes Verh\u00e4ltnis aus Leistung und Rechenaufwand.",
     "strengths": [
-      "Effiziente MoE-Architektur mit niedrigem Rechenaufwand bei hoher Modellkapazität",
-      "Starke Instruction-Following-Fähigkeiten über diverse Aufgabentypen hinweg",
+      "Effiziente MoE-Architektur mit niedrigem Rechenaufwand bei hoher Modellkapazit\u00e4t",
+      "Starke Instruction-Following-F\u00e4higkeiten \u00fcber diverse Aufgabentypen hinweg",
       "Multimodale Eingabeverarbeitung (Text und Bild)"
     ],
     "known_limitations": [
-      "Als Scout-Variante für Effizienz optimiert – bei komplexen Reasoning-Aufgaben schwächer als größere Frontier-Modelle",
-      "Multimodale Fähigkeiten noch nicht auf dem Niveau spezialisierter Vision-Language-Modelle"
+      "Als Scout-Variante f\u00fcr Effizienz optimiert \u2013 bei komplexen Reasoning-Aufgaben schw\u00e4cher als gr\u00f6\u00dfere Frontier-Modelle",
+      "Multimodale F\u00e4higkeiten noch nicht auf dem Niveau spezialisierter Vision-Language-Modelle"
     ],
-    "judge_context_hint": "Das Modell ist auf Effizienz und breite Anwendbarkeit ausgelegt; bei tiefem mehrstufigem Schlussfolgern oder hochspezialisierten Fachdomänen sollte der Judge die Erwartungen entsprechend kalibrieren.",
+    "judge_context_hint": "Das Modell ist auf Effizienz und breite Anwendbarkeit ausgelegt; bei tiefem mehrstufigem Schlussfolgern oder hochspezialisierten Fachdom\u00e4nen sollte der Judge die Erwartungen entsprechend kalibrieren.",
     "unknown": false,
     "generated_at": "2026-04-11T15:01:38.874930+00:00"
   },
@@ -970,20 +944,20 @@
     "deployment_type": "cloud-only",
     "local_deployment_possible": false,
     "weights_provenance_risk": "high",
-    "weights_provenance_risk_rationale": "MiniMax ist ein chinesisches Unternehmen und unterliegt dem chinesischen Nationalen Sicherheitsgesetz (NSL), das staatlichen Zugriff auf Daten und Modelle ermöglichen kann.",
+    "weights_provenance_risk_rationale": "MiniMax ist ein chinesisches Unternehmen und unterliegt dem chinesischen Nationalen Sicherheitsgesetz (NSL), das staatlichen Zugriff auf Daten und Modelle erm\u00f6glichen kann.",
     "model_family": "MiniMax M",
     "primary_focus": "general",
-    "summary": "MiniMax M2.7 ist ein chinesisches Cloud-Sprachmodell von MiniMax, entwickelt für allgemeine Sprach- und Dialogaufgaben. Es zielt auf starke multilinguale Fähigkeiten, kontextreiches Verstehen und kommerzielle Anwendungsfälle wie Chatbots und Content-Generierung ab.",
+    "summary": "MiniMax M2.7 ist ein chinesisches Cloud-Sprachmodell von MiniMax, entwickelt f\u00fcr allgemeine Sprach- und Dialogaufgaben. Es zielt auf starke multilinguale F\u00e4higkeiten, kontextreiches Verstehen und kommerzielle Anwendungsf\u00e4lle wie Chatbots und Content-Generierung ab.",
     "strengths": [
-      "Starke multilinguale Fähigkeiten, insbesondere für Chinesisch und Englisch",
-      "Gute Leistung bei langen Kontextfenstern und Dialogkontinuität",
-      "Optimiert für kommerzielle Anwendungsfälle wie Kundenservice und Content-Erstellung"
+      "Starke multilinguale F\u00e4higkeiten, insbesondere f\u00fcr Chinesisch und Englisch",
+      "Gute Leistung bei langen Kontextfenstern und Dialogkontinuit\u00e4t",
+      "Optimiert f\u00fcr kommerzielle Anwendungsf\u00e4lle wie Kundenservice und Content-Erstellung"
     ],
     "known_limitations": [
-      "Nur über Cloud-API verfügbar, keine lokale Ausführung möglich",
-      "Detaillierte technische Spezifikationen und Trainingsdaten sind öffentlich kaum dokumentiert"
+      "Nur \u00fcber Cloud-API verf\u00fcgbar, keine lokale Ausf\u00fchrung m\u00f6glich",
+      "Detaillierte technische Spezifikationen und Trainingsdaten sind \u00f6ffentlich kaum dokumentiert"
     ],
-    "judge_context_hint": "Das Modell ist auf kommerzielle Dialoganwendungen optimiert und kann bei sehr technischen oder wissenschaftlichen Nischenthemen schwächer abschneiden als spezialisierte Reasoning-Modelle.",
+    "judge_context_hint": "Das Modell ist auf kommerzielle Dialoganwendungen optimiert und kann bei sehr technischen oder wissenschaftlichen Nischenthemen schw\u00e4cher abschneiden als spezialisierte Reasoning-Modelle.",
     "unknown": false,
     "generated_at": "2026-04-11T15:28:06.905210+00:00"
   },
@@ -996,20 +970,20 @@
     "deployment_type": "open-weights-cloud-available",
     "local_deployment_possible": true,
     "weights_provenance_risk": "low",
-    "weights_provenance_risk_rationale": "Mistral AI ist ein französisches Unternehmen mit Sitz in der EU und unterliegt keiner vergleichbaren staatlichen Zugriffspflicht wie dem chinesischen NSL oder dem US CLOUD Act für lokal betriebene Weights.",
+    "weights_provenance_risk_rationale": "Mistral AI ist ein franz\u00f6sisches Unternehmen mit Sitz in der EU und unterliegt keiner vergleichbaren staatlichen Zugriffspflicht wie dem chinesischen NSL oder dem US CLOUD Act f\u00fcr lokal betriebene Weights.",
     "model_family": "Mistral",
     "primary_focus": "general",
-    "summary": "Ministral 3B und 14B sind kompakte Edge-Modelle von Mistral AI (Frankreich), optimiert für effiziente Inferenz auf ressourcenbeschränkter Hardware. Stärken liegen in schneller Antwortzeit, Instruction-Following und mehrsprachiger Verarbeitung. Entwickelt für lokale und On-Device-Szenarien mit gutem Qualitäts-Effizienz-Verhältnis.",
+    "summary": "Ministral 3B und 14B sind kompakte Edge-Modelle von Mistral AI (Frankreich), optimiert f\u00fcr effiziente Inferenz auf ressourcenbeschr\u00e4nkter Hardware. St\u00e4rken liegen in schneller Antwortzeit, Instruction-Following und mehrsprachiger Verarbeitung. Entwickelt f\u00fcr lokale und On-Device-Szenarien mit gutem Qualit\u00e4ts-Effizienz-Verh\u00e4ltnis.",
     "strengths": [
-      "Sehr effiziente Inferenz auf Consumer-Hardware und Edge-Geräten",
-      "Solides Instruction-Following trotz geringer Modellgröße",
-      "Mehrsprachige Kompetenz, insbesondere für europäische Sprachen"
+      "Sehr effiziente Inferenz auf Consumer-Hardware und Edge-Ger\u00e4ten",
+      "Solides Instruction-Following trotz geringer Modellgr\u00f6\u00dfe",
+      "Mehrsprachige Kompetenz, insbesondere f\u00fcr europ\u00e4ische Sprachen"
     ],
     "known_limitations": [
-      "Begrenzte Reasoning-Tiefe bei komplexen mehrstufigen Aufgaben im Vergleich zu größeren Modellen",
-      "Geringere Faktendichte und Wissensbasis gegenüber 70B+-Modellen"
+      "Begrenzte Reasoning-Tiefe bei komplexen mehrstufigen Aufgaben im Vergleich zu gr\u00f6\u00dferen Modellen",
+      "Geringere Faktendichte und Wissensbasis gegen\u00fcber 70B+-Modellen"
     ],
-    "judge_context_hint": "Das Modell ist auf Effizienz und Edge-Deployment ausgelegt – Antwortqualität sollte relativ zur Modellgröße bewertet werden, nicht absolut gegen Frontier-Modelle.",
+    "judge_context_hint": "Das Modell ist auf Effizienz und Edge-Deployment ausgelegt \u2013 Antwortqualit\u00e4t sollte relativ zur Modellgr\u00f6\u00dfe bewertet werden, nicht absolut gegen Frontier-Modelle.",
     "unknown": false,
     "generated_at": "2026-04-11T15:08:44.657991+00:00"
   },
@@ -1022,20 +996,20 @@
     "deployment_type": "open-weights-cloud-available",
     "local_deployment_possible": true,
     "weights_provenance_risk": "low",
-    "weights_provenance_risk_rationale": "Mistral AI ist ein französisches Unternehmen mit Sitz in der EU und unterliegt keiner staatlichen Zugriffspflicht auf Modellgewichte vergleichbar dem chinesischen NSL oder dem US CLOUD Act für lokal betriebene Weights.",
+    "weights_provenance_risk_rationale": "Mistral AI ist ein franz\u00f6sisches Unternehmen mit Sitz in der EU und unterliegt keiner staatlichen Zugriffspflicht auf Modellgewichte vergleichbar dem chinesischen NSL oder dem US CLOUD Act f\u00fcr lokal betriebene Weights.",
     "model_family": "Mistral",
     "primary_focus": "instruction-following",
-    "summary": "Ministral 3.8B ist ein kompaktes Sprachmodell von Mistral AI (Frankreich), optimiert für effiziente Inferenz auf Edge-Geräten und lokaler Hardware. Es wurde trainiert, um Instruction-Following, Reasoning und mehrsprachige Aufgaben bei minimalem Ressourcenverbrauch zu ermöglichen. Besonders geeignet für latenzarme Anwendungen.",
+    "summary": "Ministral 3.8B ist ein kompaktes Sprachmodell von Mistral AI (Frankreich), optimiert f\u00fcr effiziente Inferenz auf Edge-Ger\u00e4ten und lokaler Hardware. Es wurde trainiert, um Instruction-Following, Reasoning und mehrsprachige Aufgaben bei minimalem Ressourcenverbrauch zu erm\u00f6glichen. Besonders geeignet f\u00fcr latenzarme Anwendungen.",
     "strengths": [
-      "Sehr geringer Ressourcenbedarf ermöglicht lokale Ausführung auf Consumer-Hardware",
-      "Gute Instruction-Following-Qualität für die Modellgröße",
-      "Mehrsprachige Kompetenz mit Schwerpunkt auf europäischen Sprachen"
+      "Sehr geringer Ressourcenbedarf erm\u00f6glicht lokale Ausf\u00fchrung auf Consumer-Hardware",
+      "Gute Instruction-Following-Qualit\u00e4t f\u00fcr die Modellgr\u00f6\u00dfe",
+      "Mehrsprachige Kompetenz mit Schwerpunkt auf europ\u00e4ischen Sprachen"
     ],
     "known_limitations": [
-      "Begrenzte Kapazität für komplexes mehrstufiges Reasoning im Vergleich zu größeren Modellen",
+      "Begrenzte Kapazit\u00e4t f\u00fcr komplexes mehrstufiges Reasoning im Vergleich zu gr\u00f6\u00dferen Modellen",
       "Geringere Faktendichte und Wissensbasis durch die kompakte Parameterzahl"
     ],
-    "judge_context_hint": "Das Modell ist für seine Größe leistungsstark, zeigt aber bei komplexen Reasoning-Ketten oder langen Kontexten deutliche Qualitätseinbußen gegenüber größeren Modellen – Bewertungsmaßstäbe sollten die 3,8B-Parameterklasse berücksichtigen.",
+    "judge_context_hint": "Das Modell ist f\u00fcr seine Gr\u00f6\u00dfe leistungsstark, zeigt aber bei komplexen Reasoning-Ketten oder langen Kontexten deutliche Qualit\u00e4tseinbu\u00dfen gegen\u00fcber gr\u00f6\u00dferen Modellen \u2013 Bewertungsma\u00dfst\u00e4be sollten die 3,8B-Parameterklasse ber\u00fccksichtigen.",
     "unknown": false,
     "generated_at": "2026-04-11T15:10:23.172876+00:00"
   },
@@ -1048,20 +1022,20 @@
     "deployment_type": "cloud-only",
     "local_deployment_possible": false,
     "weights_provenance_risk": "low",
-    "weights_provenance_risk_rationale": "Mistral AI ist ein französisches Unternehmen mit Sitz in der EU und unterliegt der DSGVO, nicht dem US CLOUD Act oder vergleichbarer autoritärer Sicherheitsgesetzgebung.",
+    "weights_provenance_risk_rationale": "Mistral AI ist ein franz\u00f6sisches Unternehmen mit Sitz in der EU und unterliegt der DSGVO, nicht dem US CLOUD Act oder vergleichbarer autorit\u00e4rer Sicherheitsgesetzgebung.",
     "model_family": "Mistral",
     "primary_focus": "general",
-    "summary": "Mistral Large ist das Flaggschiff-Modell des französischen KI-Unternehmens Mistral AI. Es wurde für komplexe Reasoning-Aufgaben, mehrsprachige Nutzung und Instruction-Following entwickelt. Stärken liegen in Präzision, Codegenerierung und strukturierter Ausgabe. Ziel war ein leistungsstarkes europäisches Gegengewicht zu US-Modellen.",
+    "summary": "Mistral Large ist das Flaggschiff-Modell des franz\u00f6sischen KI-Unternehmens Mistral AI. Es wurde f\u00fcr komplexe Reasoning-Aufgaben, mehrsprachige Nutzung und Instruction-Following entwickelt. St\u00e4rken liegen in Pr\u00e4zision, Codegenerierung und strukturierter Ausgabe. Ziel war ein leistungsstarkes europ\u00e4isches Gegengewicht zu US-Modellen.",
     "strengths": [
-      "Starke mehrsprachige Fähigkeiten, insbesondere für europäische Sprachen",
-      "Präzises Instruction-Following und strukturierte Ausgaben (z. B. JSON, Funktionsaufrufe)",
+      "Starke mehrsprachige F\u00e4higkeiten, insbesondere f\u00fcr europ\u00e4ische Sprachen",
+      "Pr\u00e4zises Instruction-Following und strukturierte Ausgaben (z. B. JSON, Funktionsaufrufe)",
       "Hohes Reasoning-Niveau bei komplexen Analyse- und Kodieraufgaben"
     ],
     "known_limitations": [
-      "Gewichte sind nicht öffentlich verfügbar, daher kein lokaler Betrieb oder Fine-Tuning möglich",
-      "Kontextfenster und Modalitäten sind im Vergleich zu einigen Konkurrenzmodellen begrenzt"
+      "Gewichte sind nicht \u00f6ffentlich verf\u00fcgbar, daher kein lokaler Betrieb oder Fine-Tuning m\u00f6glich",
+      "Kontextfenster und Modalit\u00e4ten sind im Vergleich zu einigen Konkurrenzmodellen begrenzt"
     ],
-    "judge_context_hint": "Mistral Large neigt zu präzisen, knappen Antworten und kann bei offenen kreativen Aufgaben weniger ausschweifend sein als US-Modelle – Qualität und Direktheit sind Designziele.",
+    "judge_context_hint": "Mistral Large neigt zu pr\u00e4zisen, knappen Antworten und kann bei offenen kreativen Aufgaben weniger ausschweifend sein als US-Modelle \u2013 Qualit\u00e4t und Direktheit sind Designziele.",
     "unknown": false,
     "generated_at": "2026-04-11T15:53:05.829726+00:00"
   },
@@ -1074,20 +1048,20 @@
     "deployment_type": "cloud-only",
     "local_deployment_possible": false,
     "weights_provenance_risk": "low",
-    "weights_provenance_risk_rationale": "Mistral AI ist ein französisches Unternehmen mit Sitz in der EU und unterliegt der DSGVO, nicht dem US CLOUD Act oder vergleichbarer autoritärer Sicherheitsgesetzgebung.",
+    "weights_provenance_risk_rationale": "Mistral AI ist ein franz\u00f6sisches Unternehmen mit Sitz in der EU und unterliegt der DSGVO, nicht dem US CLOUD Act oder vergleichbarer autorit\u00e4rer Sicherheitsgesetzgebung.",
     "model_family": "Mistral",
     "primary_focus": "general",
-    "summary": "Mistral Medium ist ein proprietäres Modell des französischen Unternehmens Mistral AI, entwickelt als leistungsstarke Mittelstufe zwischen kleinen und großen Modellen. Stärken liegen in mehrsprachiger Verarbeitung, Instruktionsbefolgung und ausgewogener Reasoning-Qualität bei moderaten Kosten.",
+    "summary": "Mistral Medium ist ein propriet\u00e4res Modell des franz\u00f6sischen Unternehmens Mistral AI, entwickelt als leistungsstarke Mittelstufe zwischen kleinen und gro\u00dfen Modellen. St\u00e4rken liegen in mehrsprachiger Verarbeitung, Instruktionsbefolgung und ausgewogener Reasoning-Qualit\u00e4t bei moderaten Kosten.",
     "strengths": [
-      "Starke mehrsprachige Fähigkeiten, insbesondere für europäische Sprachen",
-      "Gutes Preis-Leistungs-Verhältnis im mittleren Leistungssegment",
-      "Zuverlässige Instruktionsbefolgung bei komplexen Aufgaben"
+      "Starke mehrsprachige F\u00e4higkeiten, insbesondere f\u00fcr europ\u00e4ische Sprachen",
+      "Gutes Preis-Leistungs-Verh\u00e4ltnis im mittleren Leistungssegment",
+      "Zuverl\u00e4ssige Instruktionsbefolgung bei komplexen Aufgaben"
     ],
     "known_limitations": [
-      "Gewichte nicht öffentlich verfügbar, daher kein lokaler Betrieb möglich",
-      "Kann bei hochspezialisierten STEM-Aufgaben hinter größeren Frontier-Modellen zurückbleiben"
+      "Gewichte nicht \u00f6ffentlich verf\u00fcgbar, daher kein lokaler Betrieb m\u00f6glich",
+      "Kann bei hochspezialisierten STEM-Aufgaben hinter gr\u00f6\u00dferen Frontier-Modellen zur\u00fcckbleiben"
     ],
-    "judge_context_hint": "Mistral Medium positioniert sich als ausgewogenes Allround-Modell und neigt weniger zu übermäßig langen Antworten als einige Konkurrenten – Präzision und Kürze sind typische Verhaltensmerkmale.",
+    "judge_context_hint": "Mistral Medium positioniert sich als ausgewogenes Allround-Modell und neigt weniger zu \u00fcberm\u00e4\u00dfig langen Antworten als einige Konkurrenten \u2013 Pr\u00e4zision und K\u00fcrze sind typische Verhaltensmerkmale.",
     "unknown": false,
     "generated_at": "2026-04-11T15:26:26.454946+00:00"
   },
@@ -1100,20 +1074,20 @@
     "deployment_type": "open-weights-cloud-available",
     "local_deployment_possible": true,
     "weights_provenance_risk": "low",
-    "weights_provenance_risk_rationale": "Mistral AI ist ein französisches Unternehmen mit Sitz in der EU und unterliegt keiner staatlichen Zugriffspflicht auf Modellgewichte wie dem chinesischen NSL oder vergleichbaren Gesetzen.",
+    "weights_provenance_risk_rationale": "Mistral AI ist ein franz\u00f6sisches Unternehmen mit Sitz in der EU und unterliegt keiner staatlichen Zugriffspflicht auf Modellgewichte wie dem chinesischen NSL oder vergleichbaren Gesetzen.",
     "model_family": "Mistral",
     "primary_focus": "instruction-following",
-    "summary": "Mistral Small ist ein kompaktes Sprachmodell des französischen Unternehmens Mistral AI, entwickelt für effiziente Instruktionsbefolgung bei niedrigen Latenz- und Kostenanforderungen. Es eignet sich für Klassifikation, Zusammenfassung und einfache Dialogaufgaben, wo größere Modelle überdimensioniert wären.",
+    "summary": "Mistral Small ist ein kompaktes Sprachmodell des franz\u00f6sischen Unternehmens Mistral AI, entwickelt f\u00fcr effiziente Instruktionsbefolgung bei niedrigen Latenz- und Kostenanforderungen. Es eignet sich f\u00fcr Klassifikation, Zusammenfassung und einfache Dialogaufgaben, wo gr\u00f6\u00dfere Modelle \u00fcberdimensioniert w\u00e4ren.",
     "strengths": [
-      "Sehr gute Kosten-Leistungs-Relation für einfache bis mittelschwere Aufgaben",
-      "Niedrige Inferenzlatenz, geeignet für produktive Echtzeit-Anwendungen",
-      "Mehrsprachige Grundkompetenz mit Schwerpunkt auf europäischen Sprachen"
+      "Sehr gute Kosten-Leistungs-Relation f\u00fcr einfache bis mittelschwere Aufgaben",
+      "Niedrige Inferenzlatenz, geeignet f\u00fcr produktive Echtzeit-Anwendungen",
+      "Mehrsprachige Grundkompetenz mit Schwerpunkt auf europ\u00e4ischen Sprachen"
     ],
     "known_limitations": [
-      "Schwächere Leistung bei komplexem mehrstufigem Reasoning im Vergleich zu größeren Modellen der Mistral-Familie",
-      "Begrenzte Tiefe bei spezialisierten Fachdomänen wie Recht, Medizin oder fortgeschrittener Mathematik"
+      "Schw\u00e4chere Leistung bei komplexem mehrstufigem Reasoning im Vergleich zu gr\u00f6\u00dferen Modellen der Mistral-Familie",
+      "Begrenzte Tiefe bei spezialisierten Fachdom\u00e4nen wie Recht, Medizin oder fortgeschrittener Mathematik"
     ],
-    "judge_context_hint": "Das Modell ist auf Effizienz optimiert und kann bei komplexen Reasoning-Ketten oder langen Abhängigkeiten in der Aufgabenstellung an Konsistenz verlieren – Antwortqualität sollte besonders bei mehrstufigen Aufgaben kritisch geprüft werden.",
+    "judge_context_hint": "Das Modell ist auf Effizienz optimiert und kann bei komplexen Reasoning-Ketten oder langen Abh\u00e4ngigkeiten in der Aufgabenstellung an Konsistenz verlieren \u2013 Antwortqualit\u00e4t sollte besonders bei mehrstufigen Aufgaben kritisch gepr\u00fcft werden.",
     "unknown": false,
     "generated_at": "2026-04-11T15:48:28.356699+00:00"
   },
@@ -1126,20 +1100,20 @@
     "deployment_type": "open-weights-cloud-available",
     "local_deployment_possible": true,
     "weights_provenance_risk": "high",
-    "weights_provenance_risk_rationale": "Moonshot AI ist ein chinesisches Unternehmen und unterliegt dem chinesischen National Security Law (NSL), das staatliche Zugriffe auf Daten und Modelle ermöglichen kann.",
+    "weights_provenance_risk_rationale": "Moonshot AI ist ein chinesisches Unternehmen und unterliegt dem chinesischen National Security Law (NSL), das staatliche Zugriffe auf Daten und Modelle erm\u00f6glichen kann.",
     "model_family": "Kimi",
     "primary_focus": "general",
-    "summary": "Kimi K2 Instruct ist ein großes Sprachmodell von Moonshot AI aus China, trainiert auf einem breiten Mix aus Code, Mathematik und allgemeinen Instruktionsdaten. Es zielt auf starke Reasoning- und Coding-Fähigkeiten bei gleichzeitig guter Mehrsprachigkeit, insbesondere Chinesisch und Englisch.",
+    "summary": "Kimi K2 Instruct ist ein gro\u00dfes Sprachmodell von Moonshot AI aus China, trainiert auf einem breiten Mix aus Code, Mathematik und allgemeinen Instruktionsdaten. Es zielt auf starke Reasoning- und Coding-F\u00e4higkeiten bei gleichzeitig guter Mehrsprachigkeit, insbesondere Chinesisch und Englisch.",
     "strengths": [
       "Starke Leistung bei Code-Generierung und mathematischem Reasoning",
       "Gute Mehrsprachigkeit mit besonderem Fokus auf Chinesisch und Englisch",
-      "Großes Kontextfenster für komplexe, mehrstufige Aufgaben"
+      "Gro\u00dfes Kontextfenster f\u00fcr komplexe, mehrstufige Aufgaben"
     ],
     "known_limitations": [
       "Unterliegt chinesischer Rechtsprechung, was Zensur und politisch sensible Themen beeinflussen kann",
-      "Weniger etabliert im westlichen Benchmark-Ökosystem als vergleichbare US-Modelle"
+      "Weniger etabliert im westlichen Benchmark-\u00d6kosystem als vergleichbare US-Modelle"
     ],
-    "judge_context_hint": "Das Modell kann bei politisch oder kulturell sensiblen Themen mit Bezug zu China zurückhaltend oder ausweichend antworten; Antwortqualität bei solchen Themen sollte gesondert bewertet werden.",
+    "judge_context_hint": "Das Modell kann bei politisch oder kulturell sensiblen Themen mit Bezug zu China zur\u00fcckhaltend oder ausweichend antworten; Antwortqualit\u00e4t bei solchen Themen sollte gesondert bewertet werden.",
     "unknown": false,
     "generated_at": "2026-04-11T15:35:02.862567+00:00"
   },
@@ -1152,20 +1126,20 @@
     "deployment_type": "cloud-only",
     "local_deployment_possible": false,
     "weights_provenance_risk": "medium",
-    "weights_provenance_risk_rationale": "OpenAI ist ein US-amerikanisches Unternehmen und unterliegt dem CLOUD Act, der behördlichen Zugriff auf Daten bei API-Nutzung ermöglichen kann, jedoch sind die Modellgewichte nicht öffentlich zugänglich.",
+    "weights_provenance_risk_rationale": "OpenAI ist ein US-amerikanisches Unternehmen und unterliegt dem CLOUD Act, der beh\u00f6rdlichen Zugriff auf Daten bei API-Nutzung erm\u00f6glichen kann, jedoch sind die Modellgewichte nicht \u00f6ffentlich zug\u00e4nglich.",
     "model_family": "o1",
     "primary_focus": "reasoning",
-    "summary": "OpenAI o1 ist ein US-amerikanisches Sprachmodell, das speziell für komplexes mehrstufiges Denken trainiert wurde. Es nutzt eine interne Chain-of-Thought-Technik vor der Antwortgenerierung. Stärken liegen in Mathematik, Logik und wissenschaftlichem Schlussfolgern. Ziel war ein Modell, das schwierige Aufgaben durch strukturiertes Nachdenken löst.",
+    "summary": "OpenAI o1 ist ein US-amerikanisches Sprachmodell, das speziell f\u00fcr komplexes mehrstufiges Denken trainiert wurde. Es nutzt eine interne Chain-of-Thought-Technik vor der Antwortgenerierung. St\u00e4rken liegen in Mathematik, Logik und wissenschaftlichem Schlussfolgern. Ziel war ein Modell, das schwierige Aufgaben durch strukturiertes Nachdenken l\u00f6st.",
     "strengths": [
       "Herausragende Leistung bei mathematischen und logischen Schlussfolgerungsaufgaben",
       "Effektive Bearbeitung komplexer, mehrstufiger Problemstellungen durch interne Denkprozesse",
       "Starke Ergebnisse in wissenschaftlichen und technischen Benchmarks (z. B. AIME, GPQA)"
     ],
     "known_limitations": [
-      "Keine öffentlich zugänglichen Modellgewichte – ausschließlich über OpenAI-API nutzbar",
-      "Längere Latenz durch interne Reasoning-Schritte, was es für Echtzeit-Anwendungen weniger geeignet macht"
+      "Keine \u00f6ffentlich zug\u00e4nglichen Modellgewichte \u2013 ausschlie\u00dflich \u00fcber OpenAI-API nutzbar",
+      "L\u00e4ngere Latenz durch interne Reasoning-Schritte, was es f\u00fcr Echtzeit-Anwendungen weniger geeignet macht"
     ],
-    "judge_context_hint": "o1 denkt intern vor der Antwort nach (verdeckte Chain-of-Thought), was zu präziseren, aber teils längeren oder unerwarteten Antwortstrukturen führen kann – Bewertungen sollten die Qualität des Ergebnisses, nicht den Denkweg, priorisieren.",
+    "judge_context_hint": "o1 denkt intern vor der Antwort nach (verdeckte Chain-of-Thought), was zu pr\u00e4ziseren, aber teils l\u00e4ngeren oder unerwarteten Antwortstrukturen f\u00fchren kann \u2013 Bewertungen sollten die Qualit\u00e4t des Ergebnisses, nicht den Denkweg, priorisieren.",
     "unknown": false,
     "generated_at": "2026-04-11T15:44:56.182371+00:00"
   },
@@ -1178,20 +1152,20 @@
     "deployment_type": "cloud-only",
     "local_deployment_possible": false,
     "weights_provenance_risk": "medium",
-    "weights_provenance_risk_rationale": "OpenAI ist ein US-amerikanisches Unternehmen und unterliegt dem CLOUD Act, der bei API-Nutzung staatlichen Zugriff ermöglichen kann; die Modellgewichte sind nicht öffentlich verfügbar.",
+    "weights_provenance_risk_rationale": "OpenAI ist ein US-amerikanisches Unternehmen und unterliegt dem CLOUD Act, der bei API-Nutzung staatlichen Zugriff erm\u00f6glichen kann; die Modellgewichte sind nicht \u00f6ffentlich verf\u00fcgbar.",
     "model_family": "OpenAI o-series",
     "primary_focus": "reasoning",
-    "summary": "o3-mini ist ein kompaktes Reasoning-Modell von OpenAI (USA), das auf mathematisches, wissenschaftliches und logisches Schlussfolgern optimiert wurde. Es bietet starke Chain-of-Thought-Fähigkeiten bei geringerer Latenz und niedrigeren Kosten als o3, eignet sich besonders für STEM-Aufgaben und strukturierte Problemlösung.",
+    "summary": "o3-mini ist ein kompaktes Reasoning-Modell von OpenAI (USA), das auf mathematisches, wissenschaftliches und logisches Schlussfolgern optimiert wurde. Es bietet starke Chain-of-Thought-F\u00e4higkeiten bei geringerer Latenz und niedrigeren Kosten als o3, eignet sich besonders f\u00fcr STEM-Aufgaben und strukturierte Probleml\u00f6sung.",
     "strengths": [
       "Starke Leistung bei mathematischen und naturwissenschaftlichen Aufgaben (AIME, GPQA)",
       "Effizientes Reasoning mit niedrigerer Latenz und geringeren Kosten im Vergleich zu o3",
-      "Zuverlässige mehrstufige logische Schlussfolgerungen und strukturierte Problemlösung"
+      "Zuverl\u00e4ssige mehrstufige logische Schlussfolgerungen und strukturierte Probleml\u00f6sung"
     ],
     "known_limitations": [
-      "Schwächer bei kreativen, offenen oder stark kontextabhängigen Sprachaufgaben im Vergleich zu GPT-4o",
+      "Schw\u00e4cher bei kreativen, offenen oder stark kontextabh\u00e4ngigen Sprachaufgaben im Vergleich zu GPT-4o",
       "Kein Zugriff auf Echtzeit-Informationen; Wissenstand auf Trainingsdaten begrenzt"
     ],
-    "judge_context_hint": "o3-mini ist auf präzises Schlussfolgern optimiert und neigt dazu, Antworten strukturiert und schrittweise zu entwickeln – bei kreativen oder nuancierten Sprachaufgaben kann die Ausgabe trockener und weniger ausdrucksstark wirken als bei generalistischen Modellen.",
+    "judge_context_hint": "o3-mini ist auf pr\u00e4zises Schlussfolgern optimiert und neigt dazu, Antworten strukturiert und schrittweise zu entwickeln \u2013 bei kreativen oder nuancierten Sprachaufgaben kann die Ausgabe trockener und weniger ausdrucksstark wirken als bei generalistischen Modellen.",
     "unknown": false,
     "generated_at": "2026-04-11T15:00:02.516224+00:00"
   },
@@ -1204,20 +1178,20 @@
     "deployment_type": "cloud-only",
     "local_deployment_possible": false,
     "weights_provenance_risk": "medium",
-    "weights_provenance_risk_rationale": "OpenAI ist ein US-amerikanisches Unternehmen und unterliegt dem CLOUD Act, der bei API-Nutzung staatliche Datenzugriffe ermöglichen kann; die Modellgewichte sind nicht öffentlich verfügbar.",
+    "weights_provenance_risk_rationale": "OpenAI ist ein US-amerikanisches Unternehmen und unterliegt dem CLOUD Act, der bei API-Nutzung staatliche Datenzugriffe erm\u00f6glichen kann; die Modellgewichte sind nicht \u00f6ffentlich verf\u00fcgbar.",
     "model_family": "OpenAI o-series",
     "primary_focus": "reasoning",
-    "summary": "o4-mini ist ein kompaktes Reasoning-Modell von OpenAI (USA), das auf mathematisches, wissenschaftliches und logisches Schlussfolgern optimiert wurde. Es bietet einen Großteil der Stärken des o4-Modells bei deutlich geringerer Latenz und niedrigeren Kosten – konzipiert für skalierbare Reasoning-Aufgaben in Produktivumgebungen.",
+    "summary": "o4-mini ist ein kompaktes Reasoning-Modell von OpenAI (USA), das auf mathematisches, wissenschaftliches und logisches Schlussfolgern optimiert wurde. Es bietet einen Gro\u00dfteil der St\u00e4rken des o4-Modells bei deutlich geringerer Latenz und niedrigeren Kosten \u2013 konzipiert f\u00fcr skalierbare Reasoning-Aufgaben in Produktivumgebungen.",
     "strengths": [
       "Starke Leistung bei mathematischen und wissenschaftlichen Aufgaben (STEM)",
       "Deutlich schnellere Inferenz und geringere Kosten im Vergleich zu o3/o4",
-      "Zuverlässiges mehrstufiges logisches Schlussfolgern mit Chain-of-Thought"
+      "Zuverl\u00e4ssiges mehrstufiges logisches Schlussfolgern mit Chain-of-Thought"
     ],
     "known_limitations": [
       "Kein Zugriff auf Echtzeit-Informationen ohne externe Tool-Integration",
-      "Gewichte nicht öffentlich – kein lokaler Betrieb oder Fine-Tuning möglich"
+      "Gewichte nicht \u00f6ffentlich \u2013 kein lokaler Betrieb oder Fine-Tuning m\u00f6glich"
     ],
-    "judge_context_hint": "Das Modell ist explizit auf Reasoning optimiert und neigt dazu, Antworten durch interne Denkschritte abzusichern – Bewertungen sollten die Qualität des Lösungswegs, nicht nur das Endergebnis berücksichtigen.",
+    "judge_context_hint": "Das Modell ist explizit auf Reasoning optimiert und neigt dazu, Antworten durch interne Denkschritte abzusichern \u2013 Bewertungen sollten die Qualit\u00e4t des L\u00f6sungswegs, nicht nur das Endergebnis ber\u00fccksichtigen.",
     "unknown": false,
     "generated_at": "2026-04-11T14:53:51.104628+00:00"
   },
@@ -1230,20 +1204,20 @@
     "deployment_type": "open-weights-cloud-available",
     "local_deployment_possible": true,
     "weights_provenance_risk": "high",
-    "weights_provenance_risk_rationale": "Alibaba Cloud unterliegt als chinesisches Unternehmen dem chinesischen National Security Law (NSL), das staatliche Zugriffe auf Daten und Modellentwicklung ermöglichen kann.",
+    "weights_provenance_risk_rationale": "Alibaba Cloud unterliegt als chinesisches Unternehmen dem chinesischen National Security Law (NSL), das staatliche Zugriffe auf Daten und Modellentwicklung erm\u00f6glichen kann.",
     "model_family": "Qwen",
     "primary_focus": "coding",
-    "summary": "Qwen 2.5 Coder 7B ist ein von Alibaba Cloud (China) entwickeltes Open-Weights-Modell, spezialisiert auf Code-Generierung, -Vervollständigung und -Debugging. Es wurde auf umfangreichen Code-Korpora trainiert und unterstützt zahlreiche Programmiersprachen mit starker Leistung im 7B-Parameterbereich.",
+    "summary": "Qwen 2.5 Coder 7B ist ein von Alibaba Cloud (China) entwickeltes Open-Weights-Modell, spezialisiert auf Code-Generierung, -Vervollst\u00e4ndigung und -Debugging. Es wurde auf umfangreichen Code-Korpora trainiert und unterst\u00fctzt zahlreiche Programmiersprachen mit starker Leistung im 7B-Parameterbereich.",
     "strengths": [
-      "Starke Code-Generierung und -Vervollständigung in gängigen Sprachen wie Python, Java, C++ und JavaScript",
-      "Effizientes Verhältnis von Modellgröße zu Leistung – lokal auf Consumer-Hardware betreibbar",
-      "Gute Fähigkeit zur Erklärung und zum Debugging von bestehendem Code"
+      "Starke Code-Generierung und -Vervollst\u00e4ndigung in g\u00e4ngigen Sprachen wie Python, Java, C++ und JavaScript",
+      "Effizientes Verh\u00e4ltnis von Modellgr\u00f6\u00dfe zu Leistung \u2013 lokal auf Consumer-Hardware betreibbar",
+      "Gute F\u00e4higkeit zur Erkl\u00e4rung und zum Debugging von bestehendem Code"
     ],
     "known_limitations": [
-      "Schwächere Leistung bei sehr komplexen, mehrstufigen Architekturentscheidungen im Vergleich zu größeren Modellen",
-      "Kontextfenster und Reasoning-Tiefe begrenzt gegenüber 70B+-Modellen; kann bei langen Codebasen den Überblick verlieren"
+      "Schw\u00e4chere Leistung bei sehr komplexen, mehrstufigen Architekturentscheidungen im Vergleich zu gr\u00f6\u00dferen Modellen",
+      "Kontextfenster und Reasoning-Tiefe begrenzt gegen\u00fcber 70B+-Modellen; kann bei langen Codebasen den \u00dcberblick verlieren"
     ],
-    "judge_context_hint": "Das Modell ist auf Code-Aufgaben optimiert und zeigt dort überdurchschnittliche Leistung für seine Größenklasse, kann aber bei allgemeinen Reasoning- oder Nicht-Code-Aufgaben hinter generalistischen Modellen zurückbleiben.",
+    "judge_context_hint": "Das Modell ist auf Code-Aufgaben optimiert und zeigt dort \u00fcberdurchschnittliche Leistung f\u00fcr seine Gr\u00f6\u00dfenklasse, kann aber bei allgemeinen Reasoning- oder Nicht-Code-Aufgaben hinter generalistischen Modellen zur\u00fcckbleiben.",
     "unknown": false,
     "generated_at": "2026-04-11T15:50:01.744107+00:00"
   },
@@ -1256,18 +1230,18 @@
     "deployment_type": "open-weights-cloud-available",
     "local_deployment_possible": true,
     "weights_provenance_risk": "high",
-    "weights_provenance_risk_rationale": "Alibaba Cloud unterliegt als chinesisches Unternehmen dem chinesischen National Security Law (NSL), das staatliche Zugriffe auf Daten und Modellentwicklung ermöglichen kann.",
+    "weights_provenance_risk_rationale": "Alibaba Cloud unterliegt als chinesisches Unternehmen dem chinesischen National Security Law (NSL), das staatliche Zugriffe auf Daten und Modellentwicklung erm\u00f6glichen kann.",
     "model_family": "Qwen",
     "primary_focus": "general",
-    "summary": "Qwen 3 14B ist ein Open-Weights-Modell von Alibaba Cloud (China) aus der Qwen-3-Serie. Es wurde auf mehrsprachigen und codeorientierten Daten trainiert und zeichnet sich durch starkes Reasoning, Instruktionsbefolgung und Mehrsprachigkeit aus. Ziel war ein leistungsstarkes, lokal betreibbares Modell mittlerer Größe.",
+    "summary": "Qwen 3 14B ist ein Open-Weights-Modell von Alibaba Cloud (China) aus der Qwen-3-Serie. Es wurde auf mehrsprachigen und codeorientierten Daten trainiert und zeichnet sich durch starkes Reasoning, Instruktionsbefolgung und Mehrsprachigkeit aus. Ziel war ein leistungsstarkes, lokal betreibbares Modell mittlerer Gr\u00f6\u00dfe.",
     "strengths": [
-      "Starke mehrsprachige Fähigkeiten, insbesondere für Chinesisch und Englisch",
-      "Gute Reasoning- und Instruktionsbefolgungsleistung für die Modellgröße",
+      "Starke mehrsprachige F\u00e4higkeiten, insbesondere f\u00fcr Chinesisch und Englisch",
+      "Gute Reasoning- und Instruktionsbefolgungsleistung f\u00fcr die Modellgr\u00f6\u00dfe",
       "Lokal betreibbar mit vergleichsweise geringem Hardwarebedarf (14B Parameter)"
     ],
     "known_limitations": [
-      "Kann bei komplexen, mehrstufigen Reasoning-Aufgaben hinter größeren Modellen zurückbleiben",
-      "Mögliche kulturelle oder politische Verzerrungen durch chinesische Trainingsdaten und Richtlinien"
+      "Kann bei komplexen, mehrstufigen Reasoning-Aufgaben hinter gr\u00f6\u00dferen Modellen zur\u00fcckbleiben",
+      "M\u00f6gliche kulturelle oder politische Verzerrungen durch chinesische Trainingsdaten und Richtlinien"
     ],
     "judge_context_hint": "Das Modell neigt bei politisch oder kulturell sensiblen Themen mit China-Bezug zu ausweichenden oder zensierten Antworten, was die Bewertung von Offenheit und Faktentreue beeinflussen kann.",
     "unknown": false,
@@ -1282,20 +1256,20 @@
     "deployment_type": "cloud-only",
     "local_deployment_possible": false,
     "weights_provenance_risk": "high",
-    "weights_provenance_risk_rationale": "Alibaba Cloud unterliegt als chinesisches Unternehmen dem chinesischen National Security Law (NSL), das staatliche Zugriffe auf Daten und Modellinfrastruktur ermöglichen kann.",
+    "weights_provenance_risk_rationale": "Alibaba Cloud unterliegt als chinesisches Unternehmen dem chinesischen National Security Law (NSL), das staatliche Zugriffe auf Daten und Modellinfrastruktur erm\u00f6glichen kann.",
     "model_family": "Qwen",
     "primary_focus": "general",
-    "summary": "Qwen 3.5 397B ist ein großes Sprachmodell von Alibaba Cloud aus China. Es wurde für allgemeine Sprachverständnis- und Generierungsaufgaben trainiert, mit Stärken in Mehrsprachigkeit, Reasoning und Instruction-Following. Als Cloud-only-Modell ist es ausschließlich über Alibabas API-Infrastruktur verfügbar.",
+    "summary": "Qwen 3.5 397B ist ein gro\u00dfes Sprachmodell von Alibaba Cloud aus China. Es wurde f\u00fcr allgemeine Sprachverst\u00e4ndnis- und Generierungsaufgaben trainiert, mit St\u00e4rken in Mehrsprachigkeit, Reasoning und Instruction-Following. Als Cloud-only-Modell ist es ausschlie\u00dflich \u00fcber Alibabas API-Infrastruktur verf\u00fcgbar.",
     "strengths": [
-      "Sehr hohe Kapazität durch 397 Milliarden Parameter für komplexe Aufgaben",
-      "Starke mehrsprachige Fähigkeiten, insbesondere für Chinesisch und Englisch",
-      "Gute Instruction-Following- und Reasoning-Leistung auf Niveau führender Frontier-Modelle"
+      "Sehr hohe Kapazit\u00e4t durch 397 Milliarden Parameter f\u00fcr komplexe Aufgaben",
+      "Starke mehrsprachige F\u00e4higkeiten, insbesondere f\u00fcr Chinesisch und Englisch",
+      "Gute Instruction-Following- und Reasoning-Leistung auf Niveau f\u00fchrender Frontier-Modelle"
     ],
     "known_limitations": [
-      "Ausschließlich als Cloud-Dienst verfügbar – keine lokale oder On-Premise-Nutzung möglich",
-      "Mögliche Zensur oder inhaltliche Einschränkungen bei politisch sensiblen Themen mit China-Bezug"
+      "Ausschlie\u00dflich als Cloud-Dienst verf\u00fcgbar \u2013 keine lokale oder On-Premise-Nutzung m\u00f6glich",
+      "M\u00f6gliche Zensur oder inhaltliche Einschr\u00e4nkungen bei politisch sensiblen Themen mit China-Bezug"
     ],
-    "judge_context_hint": "Das Modell kann bei politisch oder kulturell sensiblen Themen mit China-Bezug inhaltlich eingeschränkte oder ausweichende Antworten liefern, was die Bewertung von Offenheit und Faktentreue beeinflussen kann.",
+    "judge_context_hint": "Das Modell kann bei politisch oder kulturell sensiblen Themen mit China-Bezug inhaltlich eingeschr\u00e4nkte oder ausweichende Antworten liefern, was die Bewertung von Offenheit und Faktentreue beeinflussen kann.",
     "unknown": false,
     "generated_at": "2026-04-11T15:19:57.741145+00:00"
   },
@@ -1308,20 +1282,20 @@
     "deployment_type": "open-weights-cloud-available",
     "local_deployment_possible": true,
     "weights_provenance_risk": "high",
-    "weights_provenance_risk_rationale": "Alibaba Cloud unterliegt als chinesisches Unternehmen dem chinesischen National Security Law (NSL), das staatliche Zugriffe auf Daten und Modellgewichte rechtlich ermöglichen kann.",
+    "weights_provenance_risk_rationale": "Alibaba Cloud unterliegt als chinesisches Unternehmen dem chinesischen National Security Law (NSL), das staatliche Zugriffe auf Daten und Modellgewichte rechtlich erm\u00f6glichen kann.",
     "model_family": "Qwen",
     "primary_focus": "general",
-    "summary": "Qwen 3.5 9B ist ein von Alibaba Cloud (China) entwickeltes Sprachmodell der Qwen-3.5-Serie. Es wurde auf mehrsprachige Instruktionsbefolgung, Reasoning und Coding optimiert. Stärken liegen in Effizienz bei mittlerer Modellgröße und starker Mehrsprachigkeit, insbesondere für Chinesisch und Englisch.",
+    "summary": "Qwen 3.5 9B ist ein von Alibaba Cloud (China) entwickeltes Sprachmodell der Qwen-3.5-Serie. Es wurde auf mehrsprachige Instruktionsbefolgung, Reasoning und Coding optimiert. St\u00e4rken liegen in Effizienz bei mittlerer Modellgr\u00f6\u00dfe und starker Mehrsprachigkeit, insbesondere f\u00fcr Chinesisch und Englisch.",
     "strengths": [
-      "Starke mehrsprachige Fähigkeiten, insbesondere Chinesisch und Englisch",
-      "Gutes Verhältnis von Modellgröße zu Leistung (9B-Parameter-Klasse)",
-      "Solide Instruktionsbefolgung und Reasoning-Fähigkeiten"
+      "Starke mehrsprachige F\u00e4higkeiten, insbesondere Chinesisch und Englisch",
+      "Gutes Verh\u00e4ltnis von Modellgr\u00f6\u00dfe zu Leistung (9B-Parameter-Klasse)",
+      "Solide Instruktionsbefolgung und Reasoning-F\u00e4higkeiten"
     ],
     "known_limitations": [
       "Kann bei politisch sensiblen Themen mit Bezug zu China zensierte oder ausweichende Antworten liefern",
-      "Leistung bei sehr spezialisierten oder nischigen Fachdomänen hinter größeren Modellen zurück"
+      "Leistung bei sehr spezialisierten oder nischigen Fachdom\u00e4nen hinter gr\u00f6\u00dferen Modellen zur\u00fcck"
     ],
-    "judge_context_hint": "Das Modell kann bei politisch oder kulturell sensiblen Themen mit China-Bezug systematisch ausweichen oder beschönigende Antworten produzieren – dies sollte bei der Bewertung von Neutralität und Faktentreue berücksichtigt werden.",
+    "judge_context_hint": "Das Modell kann bei politisch oder kulturell sensiblen Themen mit China-Bezug systematisch ausweichen oder besch\u00f6nigende Antworten produzieren \u2013 dies sollte bei der Bewertung von Neutralit\u00e4t und Faktentreue ber\u00fccksichtigt werden.",
     "unknown": false,
     "generated_at": "2026-04-11T14:57:01.851082+00:00"
   },
@@ -1334,20 +1308,20 @@
     "deployment_type": "open-weights-cloud-available",
     "local_deployment_possible": true,
     "weights_provenance_risk": "high",
-    "weights_provenance_risk_rationale": "Alibaba Cloud unterliegt als chinesisches Unternehmen dem chinesischen National Security Law (NSL), das staatliche Zugriffe auf Daten und Modellentwicklung ermöglichen kann.",
+    "weights_provenance_risk_rationale": "Alibaba Cloud unterliegt als chinesisches Unternehmen dem chinesischen National Security Law (NSL), das staatliche Zugriffe auf Daten und Modellentwicklung erm\u00f6glichen kann.",
     "model_family": "Qwen",
     "primary_focus": "general",
-    "summary": "Qwen 3 32B ist ein von Alibaba Cloud (China) entwickeltes Sprachmodell mit Schwerpunkt auf mehrsprachiger Instruktionsbefolgung, Reasoning und Coding. Es zeichnet sich durch starke Leistung in asiatischen Sprachen, mathematischen Aufgaben und Code-Generierung aus und wurde als leistungsstarke Open-Weights-Alternative zu proprietären Modellen konzipiert.",
+    "summary": "Qwen 3 32B ist ein von Alibaba Cloud (China) entwickeltes Sprachmodell mit Schwerpunkt auf mehrsprachiger Instruktionsbefolgung, Reasoning und Coding. Es zeichnet sich durch starke Leistung in asiatischen Sprachen, mathematischen Aufgaben und Code-Generierung aus und wurde als leistungsstarke Open-Weights-Alternative zu propriet\u00e4ren Modellen konzipiert.",
     "strengths": [
-      "Starke mehrsprachige Fähigkeiten, insbesondere in Chinesisch und Englisch",
+      "Starke mehrsprachige F\u00e4higkeiten, insbesondere in Chinesisch und Englisch",
       "Gute Leistung bei mathematischem Reasoning und strukturierten Denkaufgaben",
       "Als Open-Weights-Modell lokal betreibbar und anpassbar"
     ],
     "known_limitations": [
       "Kann bei politisch sensiblen Themen mit Bezug zu China zensierte oder ausweichende Antworten liefern",
-      "Trotz 32B Parametern bei sehr komplexen mehrstufigen Reasoning-Aufgaben hinter größeren Frontier-Modellen"
+      "Trotz 32B Parametern bei sehr komplexen mehrstufigen Reasoning-Aufgaben hinter gr\u00f6\u00dferen Frontier-Modellen"
     ],
-    "judge_context_hint": "Das Modell kann bei politisch oder kulturell sensiblen Themen mit China-Bezug systematisch ausweichen oder beschönigende Antworten geben, was die Bewertung von Neutralität und Faktentreue beeinflussen kann.",
+    "judge_context_hint": "Das Modell kann bei politisch oder kulturell sensiblen Themen mit China-Bezug systematisch ausweichen oder besch\u00f6nigende Antworten geben, was die Bewertung von Neutralit\u00e4t und Faktentreue beeinflussen kann.",
     "unknown": false,
     "generated_at": "2026-04-11T14:55:25.314100+00:00"
   }

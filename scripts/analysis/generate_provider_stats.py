@@ -37,11 +37,19 @@ def map_model_to_provider(model_name: str, type_str: str) -> str:
     if model_name in ["llama-3.3-70b-versatile", "llama-4-scout-17b-16e-instruct", "deepseek-r1-distill-llama-70b", "llama3-70b-8192"]:
         return "Groq"
 
+    # OpenRouter-routed models
+    if "glm" in model_name or "z-ai" in model_name:
+        return "OpenRouter"
+    if "kimi" in model_name and "cloud" in type_str.lower():
+        return "OpenRouter"
+    if "minimax" in model_name:
+        return "OpenRouter"
+    if "moonshotai" in model_name:
+        return "OpenRouter"
+
     # Cloud models (often proxy via Ollama, DeepSeek API, MiniMax API, etc.)
     if "deepseek" in model_name and "cloud" in type_str.lower():
         return "DeepSeek API"
-    if "minimax" in model_name:
-        return "MiniMax API"
     if "qwen" in model_name and "cloud" in type_str.lower():
         return "Alibaba Cloud / DeepInv"
 

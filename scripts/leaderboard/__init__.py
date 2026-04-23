@@ -24,7 +24,7 @@ from utils.module_registry import (
     get_active_modules,
     get_module_test_count,
 )  # noqa: E402
-from utils.model_utils import format_version_hash_for_display, get_model_identity  # noqa: E402
+from utils.model_utils import format_version_hash_for_display, get_model_identity, get_model_size_class  # noqa: E402
 # pylint: enable=import-error
 
 ROOT_DIR = Path(__file__).resolve().parent.parent.parent
@@ -212,6 +212,9 @@ def main(print_table: bool = True) -> Optional[pd.DataFrame]:
         return name
 
     leaderboard["Model Name"] = leaderboard["model"].apply(clean_model_name)
+
+    # Size class: 'Nano (≤5B)' for models with ≤ 5B parameters (edge/autocomplete tier)
+    leaderboard["Size Class"] = leaderboard["model"].apply(get_model_size_class)
 
     def format_version_display(row):
         version = str(row.get("model_version", "k.A."))

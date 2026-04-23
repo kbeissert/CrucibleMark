@@ -208,7 +208,7 @@ def build_prompts(
                 f"The model being evaluated is tagged with: {tags_str}.\n"
                 "Take this into account when evaluating responses:\n"
                 "- **Coder**: May be excused for ignoring socio-political nuance or failing pure writing tasks, but must excel at logic.\n"
-                "- **Thinking / Reasoning**: Extremely long, thorough chain-of-thought answers are expected and should NOT be penalized for verbosity.\n"
+                "- **Thinking / Reasoning**: Extremely long, thorough chain-of-thought answers are expected and should NOT be penalized for verbosity. (e.g. o1, o3, DeepSeek R1, QwQ, Magistral, GLM-5.x — models with fixed internal Chain-of-Thought)\n"
                 "- **Instruct**: Focused on direct instruction following. Answers might be shorter and more direct; they lack deep reasoning steps.\n"
                 "- **Preview / Test**: Experimental phase. Minor formatting or minor coherence drops might be expected.\n"
                 "- **Uncensored-Abliterated**: Vector surgery might cause abrupt context termination, loop errors, or reasoning collapse.\n"

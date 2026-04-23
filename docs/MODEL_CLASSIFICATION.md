@@ -5,6 +5,7 @@
 **Inhalt:**
 
 - Badge-System (Standard, Bronze, Silver, Gold, Platinum)
+- Size-Class-System (Nano / Edge / Desktop / Workstation / Server / Frontier)
 - Speed-Klassen (Fast, Medium, Slow)
 - Skill-Profile (automatische Kategorisierung)
 - Reasoning-Score-Interpretation
@@ -33,6 +34,60 @@ Badges reflektieren die **Gesamt-Performance** über alle Module hinweg. Die kan
 - Silver: ca. 10 (63 %)
 - Bronze: ca. 4 (25 %)
 - Standard: 1 (6 %)
+
+---
+
+## Size-Class-System (Deployment-Tiers)
+
+CrucibleMark klassifiziert Modelle nach ihrer **Hardware-Deployment-Realität** — nicht nach abstrakten Capability-Scores. Die `Size Class`-Spalte im Leaderboard gibt an, auf welcher Hardware ein Modell praktisch einsetzbar ist.
+
+**Erkennung:** Regex auf Ollama-Style-Tags (z. B. `qwen3:4b`, `cogito:14b`). Modelle ohne Size-Tag (kommerzielle APIs, Cloud-Proxies) landen automatisch in `Frontier`.
+
+| Tier | Parameter | RAM (Q4) | Deployment-Realität |
+|---|---|---|---|
+| **Nano** | ≤ 4B | < 4 GB | Smartphone, Raspberry Pi, Autocomplete-only |
+| **Edge** | 5–9B | 4–8 GB | Jeder aktuelle Laptop, MacBook Air M-Series |
+| **Desktop** | 10B–19B | 8–14 GB | MacBook Pro, 14 GB Unified Memory |
+| **Workstation** | 20B–35B | 14–24 GB | M4 Pro/Max, RTX 4090, High-End Consumer |
+| **Server** | 36–75B | 24–48 GB | Mac Studio, Dedicated GPU-Node |
+| **Frontier** | API-only / > 75B | — | Cloud-only, keine lokale Deployment-Option |
+
+**Scope:** Alle Tiers durchlaufen exakt dieselben 44 Tasks mit derselben Bewertungsmethodik. Die Badge-Schwellen (Bronze, Silver, …) gelten unverändert — `Size Class` signalisiert ausschließlich die Hardwareanforderung, nicht eine separate Wertungsskala.
+
+### Methodologie: Warum diese Tier-Grenzen?
+
+Die Grenzen basieren auf dem **realen RAM-Bedarf bei Q4-Quantisierung** plus Betriebssystem-Overhead — nicht auf abstrakten Capability-Scores oder Marketingkategorien.
+
+**Nano (≤ 4B / < 4 GB)**
+Das ist die Grenze für Geräteklassen ohne dedizierten ML-Arbeitsspeicher. Auf Smartphones und Raspberry Pi sind 4 GB typischerweise das Maximum, das nach OS-Overhead noch für ein Modell übrig bleibt. Diese Modelle eignen sich für Autocomplete und Edge-Inferenz, nicht für komplexe Reasoning-Tasks.
+
+**Edge (5–9B / 4–8 GB)**
+Jeder aktuelle Consumer-Laptop mit mindestens 8 GB RAM kann ein 7B-Modell in Q4 flüssig betreiben (~4–5 GB). Das MacBook Air M-Series ist der Referenzpunkt: günstigste, am weitesten verbreitete Geräteklasse mit Unified Memory.
+
+**Desktop (10–19B / 8–14 GB)**
+Die obere RAM-Grenze liegt bewusst bei 14 GB statt 12 GB. Hintergrund: Q4-Quantisierung für 14B-Modelle benötigt realistisch 9–10 GB — auf einer 12-GB-GPU ist das machbar, aber auf einem Laptop (Unified Memory) fehlt danach Headroom für Betriebssystem und Anwendungen. 12 GB VRAM (diskret) ist eine andere Rechnung als 12 GB Unified Memory. Der Referenzpunkt „MacBook Pro mit 14 GB" ist deshalb treffender als eine GPU-Aussage.
+
+**Workstation (20–35B / 14–24 GB)**
+Der Tier beginnt bei 20B. Ein M4 Pro/Max mit 18 GB RAM ist eine **Betriebsgrenze**, keine Tier-Grenze — ein 20B-Modell gehört konzeptuell in Workstation, auch wenn es auf einem 18-GB-Gerät eng werden kann. Die Parametergrenze bei 35B reflektiert, dass 32B-Modelle (z. B. Qwen3:32b) auf einem RTX 4090 (24 GB) oder M4 Max (36–48 GB) noch lokal laufen.
+
+**Server (36–75B / 24–48 GB)**
+Hier beginnt die Klasse, die dedizierte Hardware voraussetzt: Mac Studio (64–192 GB Unified Memory) oder einen dedizierten GPU-Node mit ≥ 24 GB VRAM. Consumer-Hardware fällt aus. Die Grenze bei 75B ist hart, weil ein 70B-Modell in Q4 ~40–42 GB benötigt und damit auf einem Mac Studio mit 64 GB noch komfortabel läuft.
+
+**Frontier (API-only / > 75B)**
+Das primäre Kriterium ist **API-only**, nicht die Parameterzahl. Modelle wie Llama 3.1 405B laufen theoretisch lokal — auf Multi-GPU-Server-Rigs. Praktisch ist das keine Deployment-Option für Einzelpersonen oder kleine Teams. „API-only" kommuniziert die Realität direkter als eine Parameterschwelle. Frontier-Modelle (kommerzielle APIs, Cloud-Proxies) erhalten keinen Size-Tag und werden automatisch in diesen Tier eingestuft.
+
+**Badge-Marker:** Nano-Modelle (≤ 4B) erhalten einen `🔬`-Suffix am Badge (z. B. `🥉 Bronze 🔬`) — als visuelles Signal für den Floor-Tier. Edge-Modelle und größer erscheinen ohne Suffix.
+
+| Beispiel | Size Class | Erwarteter Badge-Bereich |
+|---------|-----------|--------------------------|
+| `qwen3:4b` | Nano | ⚖️ Standard 🔬 – 🥉 Bronze 🔬 |
+| `qwen2.5:3b` | Nano | ⚖️ Standard 🔬 |
+| `mistral:7b` | Edge | *(normales Badge)* |
+| `cogito:14b` | Desktop | *(normales Badge)* |
+| `ministral-3:14b` | Desktop | *(normales Badge)* |
+| `llama3.3:70b` | Server | *(normales Badge)* |
+| `claude-sonnet-4-6` | Frontier | *(normales Badge)* |
+| `gemini-2.5-pro` | Frontier | *(normales Badge)* |
 
 ---
 

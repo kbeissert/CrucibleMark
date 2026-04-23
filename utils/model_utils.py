@@ -5,6 +5,8 @@ Utility functions for model management and filtering.
 import re
 import shutil
 import subprocess
+import yaml
+from pathlib import Path
 from typing import Any, Optional, TypeVar
 from utils.constants import (
     MODEL_TYPE_OPEN_WEIGHTS_CLOUD,
@@ -83,6 +85,7 @@ def get_model_version(model_name: str, provider: str = "ollama", client=None) ->
     if "claude" in model_name:
         match = re.search(r"claude-\d+(?:-\w+)?-(202\d{5})", model_name)
         if match: return match.group(1)
+        if "-4-7" in model_name: return "4.7"
         if "-4-6" in model_name: return "4.6"
         if "-4-5" in model_name: return "4.5"
         if "3-5" in model_name: return "3.5"
@@ -107,12 +110,14 @@ def get_model_version(model_name: str, provider: str = "ollama", client=None) ->
         if "large" in model_name: return "2411"
         if "medium" in model_name: return "2312"
     if "grok" in model_name:
-        match = re.search(r"grok-([0-9.]+)(?:-([^/]+))?", model_name)
+        match = re.search(r"grok-([0-9]+(?:\.[0-9]+)?(?:-[0-9]+)?)(?:-([^/]+))?", model_name)
         if match:
             version = match.group(1)
-            suffix = match.group(2)
-            if suffix and "mini" in suffix:
+            suffix = match.group(2) or ""
+            if "mini" in suffix:
                 return f"{version}-mini"
+            if "reasoning" in suffix and "non-reasoning" not in suffix:
+                return f"{version}-reasoning"
             return version
         return "latest"
     if "kimi" in model_name:
@@ -290,12 +295,26 @@ def get_commercial_models_from_config(
 
 
 def resolve_provider(model_name: str) -> tuple[str, str]:
-    """Ermittelt Provider basierend auf Modell-Präfix."""
+    """Ermittelt Provider basierend auf benchmark_config.yaml (SSOT), Fallback: Modell-Präfix."""
 
     # Determine if likely Ollama (contains tag separator)
     if ":" in model_name:
         return "ollama", model_name
 
+    # SSOT: Lookup in benchmark_config.yaml
+    _config_path = Path("benchmark_config.yaml")
+    if _config_path.exists():
+        try:
+            with open(_config_path, encoding="utf-8") as _f:
+                _cfg = yaml.safe_load(_f)
+            for _prov_key, _prov_cfg in _cfg.get("providers", {}).get("commercial", {}).items():
+                for _m in _prov_cfg.get("models", []):
+                    if _m.get("id") == model_name:
+                        return _prov_key, model_name
+        except Exception:
+            pass
+
+    # Fallback: Präfix-Matching für nicht konfigurierte Modelle
     name_lower = model_name.lower()
     if name_lower.startswith(("mistral-", "open-mixtral", "ministral")):
         return "mistral", model_name
@@ -407,8 +426,53 @@ def is_reasoning_model(model_name: str) -> bool:
     Returns:
         bool: True if it is a reasoning model
     """
-    triggers = ["deepseek-r1", "reasoning", "phi4", "qwq", "o1", "o3"]
+    triggers = ["deepseek-r1", "reasoning", "phi4", "qwq", "o1", "o3", "magistral", "glm-5"]
     return any(t in model_name.lower() for t in triggers)
+
+
+def get_model_size_class(model_name: str) -> str:
+    """
+    Determines the hardware-deployment size class of a model based on its name tag.
+
+    Detects parameter count from Ollama-style tags (e.g. 'qwen3:4b', 'phi3.5:3.8b').
+    Tiers reflect real-world RAM requirements at Q4 quantization:
+
+        Nano        ≤ 4B    < 4 GB    Smartphone, Raspberry Pi, autocomplete-only
+        Edge        5–9B    4–8 GB    Any laptop, MacBook Air M-Series
+        Desktop     10–19B  8–14 GB   MacBook Pro, 14 GB Unified Memory
+        Workstation 20–35B  14–24 GB  M4 Pro/Max, RTX 4090, high-end consumer
+        Server      36–75B  24–48 GB  Mac Studio, dedicated GPU node
+        Frontier    >75B / API-only   Cloud-only, no practical local deployment
+
+    Models without a detectable size tag (commercial APIs, cloud proxies) are
+    classified as 'Frontier'.
+
+    Args:
+        model_name: Raw model name string (e.g. 'qwen3:4b', 'mistral-large-latest')
+
+    Returns:
+        One of: 'Nano', 'Edge', 'Desktop', 'Workstation', 'Server', 'Frontier'
+    """
+    match = re.search(r":e?(\d+(?:\.\d+)?)[bB]", model_name)
+    if match:
+        try:
+            param_b = float(match.group(1))
+            if param_b <= 4.0:
+                return "Nano"
+            if param_b <= 9.0:
+                return "Edge"
+            if param_b <= 19.0:
+                return "Desktop"
+            if param_b <= 35.0:
+                return "Workstation"
+            if param_b <= 75.0:
+                return "Server"
+            return "Frontier"
+        except ValueError:
+            pass
+    # No size tag → API-only or very large (commercial model, cloud proxy)
+    return "Frontier"
+
 
 def get_model_identity(full_model_string: str) -> dict[str, Any]:
     """

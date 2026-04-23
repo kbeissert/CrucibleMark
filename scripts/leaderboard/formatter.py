@@ -211,6 +211,12 @@ def assign_rank_and_badges(df: pd.DataFrame, cat_cols: Optional[list] = None) ->
     # 1. Badge Assignment
     df["Badge"] = df["Total Score"].apply(get_quality_badge)
 
+    # Append Nano marker for sub-4B models (smartphone/RPi floor tier)
+    if "Size Class" in df.columns:
+        df.loc[df["Size Class"] == "Nano", "Badge"] = (
+            df.loc[df["Size Class"] == "Nano", "Badge"] + " 🔬"
+        )
+
     # 2. Performance Tier (Calculated but not always displayed raw)
     # Using Avg Time column name safely
     if "Avg Task Duration (s)" in df.columns:
@@ -274,8 +280,14 @@ def print_leaderboard_table(leaderboard: pd.DataFrame) -> None:
 
     badges_order = [BADGE_PLATINUM_ICON, BADGE_GOLD_ICON, BADGE_SILVER_ICON, BADGE_BRONZE_ICON, BADGE_STANDARD_ICON]
 
+    # Also collect Nano-suffixed badges (e.g. "🥉 Bronze 🔬") so they appear in their group
+    nano_badges = {f"{b} 🔬" for b in badges_order}
+    all_badge_prefixes = {b: b for b in badges_order}
+
     for badge in badges_order:
-        group = leaderboard[leaderboard["Badge"] == badge]
+        # Match both the plain badge and its Nano variant
+        nano_badge = f"{badge} 🔬"
+        group = leaderboard[leaderboard["Badge"].isin([badge, nano_badge])]
         if not group.empty:
             print(f"=== {badge.upper()} ===")
             # Select only columns that exist

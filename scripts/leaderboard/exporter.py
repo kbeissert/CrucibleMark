@@ -89,6 +89,7 @@ def export_leaderboard_compact(leaderboard: pd.DataFrame, cat_cols: List[str]) -
         "Benchmark Cost (USD)",
         "LLM Judge Avg",
         "LLM Judge Coverage",
+        "Size Class",
         "Type",
     ]
 
@@ -160,6 +161,7 @@ def export_leaderboard_detailed(leaderboard: pd.DataFrame, cat_cols: List[str]) 
         "LLM Judge Coverage",
         "Routine Score",
         "Reasoning Score",
+        "Size Class",
         "Type",
     ]
 

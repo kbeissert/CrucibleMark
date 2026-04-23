@@ -55,7 +55,7 @@ _RE_REASONING_START = re.compile(
 class JudgeResult:
     """Structured output of the judge parser."""
 
-    score: Optional[int]
+    score: Optional[float]
     reasoning: str
     raw_response: str
     parse_success: bool
@@ -65,9 +65,9 @@ class JudgeResult:
     judge_model_used: Optional[str] = None
 
     # Sub-scores
-    judge_task_compliance: Optional[int] = None
-    judge_output_quality: Optional[int] = None
-    judge_standard_adherence: Optional[int] = None
+    judge_task_compliance: Optional[float] = None
+    judge_output_quality: Optional[float] = None
+    judge_standard_adherence: Optional[float] = None
 
 
 def parse(raw_response: str) -> JudgeResult:
@@ -93,9 +93,14 @@ def parse(raw_response: str) -> JudgeResult:
     sub_scores = None
 
     if json_data:
-        score = json_data.get("score")
-        if isinstance(score, int) or (isinstance(score, str) and score.isdigit()):
-            score = int(score)
+        raw_score = json_data.get("score")
+        if isinstance(raw_score, (int, float)):
+            score = float(raw_score)
+        elif isinstance(raw_score, str):
+            try:
+                score = float(raw_score)
+            except ValueError:
+                score = None
         else:
             score = None
 
@@ -273,9 +278,9 @@ def _extract_sub_scores_legacy(text: str) -> Optional[dict]:
 
         for key in required_keys:
             val = data[key]
-            if not isinstance(val, int) or val < 0 or val > 5:
+            if not isinstance(val, (int, float)) or val < 0 or val > 5:
                 return None
 
-        return {key: data[key] for key in required_keys}
+        return {key: float(data[key]) for key in required_keys}
     except json.JSONDecodeError:
         return None

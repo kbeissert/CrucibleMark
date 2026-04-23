@@ -4,6 +4,21 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [v3.5.5] - 2026-04-22
+
+### Changed
+- **Size-Class-System auf 6 Deployment-Tiers erweitert:** `get_model_size_class()` in `utils/model_utils.py` ersetzt das alte 2-Tier-System (`Nano (≤5B)` / `Standard`) durch eine deployment-orientierte 6-Tier-Taxonomie: `Nano` (≤ 4B, < 4 GB RAM), `Edge` (5–9B, 4–8 GB), `Desktop` (10–17B, 8–14 GB), `Workstation` (18–35B, 14–24 GB), `Server` (36–75B, 24–48 GB), `Frontier` (> 75B / API-only). Modelle ohne Größen-Tag (kommerzielle APIs, Cloud-Proxies) landen automatisch in `Frontier`. Badge-Marker `🔬` bleibt auf `Nano` beschränkt (≤ 4B, Floor-Tier). `MODEL_CLASSIFICATION.md` vollständig aktualisiert.
+
+---
+
+## [v3.5.4] - 2026-04-21
+
+### Added
+- **Nano/Edge-Tier:** Modelle mit ≤ 5B Parametern werden automatisch erkannt und im Leaderboard als `Nano (≤5B)` klassifiziert. Neue Spalte `Size Class` in Compact- und Detailed-CSV. Badge-Suffix `🔬` (z. B. `🥉 Bronze 🔬`) macht die Hardwareklasse auf einen Blick sichtbar, ohne Tier-Schwellen zu verändern. Web-Export propagiert `size_class`-Feld ins JSON. Erkennung via `get_model_size_class()` in `utils/model_utils.py` (Regex auf Ollama-Style-Tag, z. B. `qwen3:4b`, `phi3.5:3.8b`).
+- **Docs:** `MODEL_CLASSIFICATION.md` — neuer Abschnitt „Nano/Edge-Tier (≤ 5B Parameter)" mit Use-Cases, Erkennungslogik und Beispiel-Tabelle.
+
+---
+
 ## [v3.5.3] - 2026-04-21
 
 ### Fixed
