@@ -522,11 +522,33 @@ def is_reasoning_model(model_name: str) -> bool:
     return any(t in model_name.lower() for t in triggers)
 
 
+_SIZE_CLASS_VALID = {"Nano", "Edge", "Desktop", "Workstation", "Server", "Frontier"}
+
+
+def _param_b_to_size_class(param_b: float) -> str:
+    if param_b <= 4.0:
+        return "Nano"
+    if param_b <= 9.0:
+        return "Edge"
+    if param_b <= 19.0:
+        return "Desktop"
+    if param_b <= 35.0:
+        return "Workstation"
+    if param_b <= 75.0:
+        return "Server"
+    return "Frontier"
+
+
 def get_model_size_class(model_name: str) -> str:
     """
     Determines the hardware-deployment size class of a model based on its name tag.
 
-    Detects parameter count from Ollama-style tags (e.g. 'qwen3:4b', 'phi3.5:3.8b').
+    Priority:
+        1. Model-Card field ``size_class`` (single source of truth for overrides)
+        2. Ollama-style tag regex (e.g. 'qwen3:4b', 'phi3.5:3.8b', 'gemma4:E4B')
+        3. Dash/dot-separated size suffix (e.g. 'llama-3.3-70b', 'qwen3-32b')
+        4. Fallback: 'Frontier' (API-only or size unknown)
+
     Tiers reflect real-world RAM requirements at Q4 quantization:
 
         Nano        ≤ 4B    < 4 GB    Smartphone, Raspberry Pi, autocomplete-only
@@ -536,32 +558,39 @@ def get_model_size_class(model_name: str) -> str:
         Server      36–75B  24–48 GB  Mac Studio, dedicated GPU node
         Frontier    >75B / API-only   Cloud-only, no practical local deployment
 
-    Models without a detectable size tag (commercial APIs, cloud proxies) are
-    classified as 'Frontier'.
-
     Args:
         model_name: Raw model name string (e.g. 'qwen3:4b', 'mistral-large-latest')
 
     Returns:
         One of: 'Nano', 'Edge', 'Desktop', 'Workstation', 'Server', 'Frontier'
     """
-    match = re.search(r":e?(\d+(?:\.\d+)?)[bB]", model_name)
+    # 1. Model-Card override (SSoT for models whose name doesn't carry a clear size tag)
+    card_path = Path("benchmark_scores/model_cards") / f"{re.sub(r'[:/.\ ]', '_', model_name)}.json"
+    if card_path.exists():
+        try:
+            card = json.loads(card_path.read_text(encoding="utf-8"))
+            sc = card.get("size_class")
+            if isinstance(sc, str) and sc in _SIZE_CLASS_VALID:
+                return sc
+        except (json.JSONDecodeError, OSError):
+            pass
+
+    # 2. Ollama-style colon tag: 'model:e?<N>b' (case-insensitive for edge-prefix)
+    match = re.search(r":e?(\d+(?:\.\d+)?)[bB]", model_name, re.IGNORECASE)
     if match:
         try:
-            param_b = float(match.group(1))
-            if param_b <= 4.0:
-                return "Nano"
-            if param_b <= 9.0:
-                return "Edge"
-            if param_b <= 19.0:
-                return "Desktop"
-            if param_b <= 35.0:
-                return "Workstation"
-            if param_b <= 75.0:
-                return "Server"
-            return "Frontier"
+            return _param_b_to_size_class(float(match.group(1)))
         except ValueError:
             pass
+
+    # 3. Dash/dot-separated suffix: 'llama-3.3-70b', 'qwen3-32b', 'scout-17b-16e'
+    match = re.search(r"(?:[\-_\.])(\d+(?:\.\d+)?)[bB](?:[\-_\.]|$)", model_name, re.IGNORECASE)
+    if match:
+        try:
+            return _param_b_to_size_class(float(match.group(1)))
+        except ValueError:
+            pass
+
     # No size tag → API-only or very large (commercial model, cloud proxy)
     return "Frontier"
 
