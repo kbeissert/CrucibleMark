@@ -103,6 +103,15 @@ Der Audit-Log fungiert direkt als interaktiver Datenlayer für den Meta-Reviewer
 * `> [!WARNING]` – **Token Limit Rejected**
   Das Modell unterstützt die per Konfiguration geforderte Kontextgröße nicht (oder die API lehnte sie ab). Das Framework schaltete auf einen kleineren Fallback (z. B. 4096 Tokens) zurück. Der LLM-Judge verzeiht abgebrochene Evaluierungen leichter, dokumentiert aber das technische Limit.
 
+* `> [!WARNING]` – **Token-Budget-Engpass bei unbekanntem Reasoning-Modell (ab v3.5.8)**
+  Wenn ein Modell das konfigurierte Output-Budget vollständig ausschöpft (`token_limit_cutoff=True`), aber **nicht** als Reasoning-Modell klassifiziert ist und **keine** `reasoning_tokens > 0` in den API-Metadaten gemeldet werden, injiziert `benchmark_utils.py` diesen Block. Das Signal: Das Modell betreibt möglicherweise intern Chain-of-Thought (Thinking-Tokens ohne sichtbare Tags), was das Budget erschöpft. Der Block enthält eine direkt ausführbare Korrektursequenz:
+  ```
+  make probe-thinking MODEL=<model-id>
+  # Bei Bestätigung (detected=true):
+  make run-model MODEL=<model-id> --force
+  ```
+  > **Datenintegritäts-Invariante:** Das System führt bei diesem Trigger **keinen automatischen Retry** durch. Ein Re-Run unter anderen Budget-Bedingungen (Reasoning-Budget) wäre nicht mit dem Rest des Leaderboards vergleichbar. Die Korrektur läuft stattdessen über den Maintainer: Probe → Card aktualisieren → Re-Run mit `--force` unter korrekt gesetztem Budget.
+
 * `> [!NOTE]` – **Token-Effizienz-Anomalie (Budget ausgeschöpft)**
   Das Modell hat das per Config gesetzte `max_tokens`-Output-Budget vollständig ausgeschöpft (`token_limit_cutoff=True`). Dieser Block erscheint nur, wenn tatsächlich ein Budget in `benchmark_config.yaml → token_budgets` definiert ist — nicht bei ungebegrenzten Modulen. Er markiert, dass die Antwort möglicherweise abgeschnitten wurde *oder* dass das Modell strukturell mehr Tokens produziert als der Modul-Median. Reasoning-Module sind von diesem Flag explizit ausgenommen.
 

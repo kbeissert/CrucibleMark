@@ -81,6 +81,11 @@ def evaluate_with_judge(
         if provider:
             kwargs["tested_model_provider"] = provider
 
+        # Inform the Judge when the model response was truncated by the token budget.
+        # The Judge should evaluate content quality independently of completeness.
+        if result.get("token_limit_cutoff"):
+            kwargs["truncation_context"] = True
+
         judge_res = runner.score(**kwargs)
 
         # Merge fields

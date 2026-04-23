@@ -452,8 +452,36 @@ def resolve_token_budget(
         tokens = budgets[module_key] if (module_key and module_key in budgets) else tokens * 5
     elif reasoning and tokens < 10000:
         tokens = 25000
+    elif is_thinking_optional_from_card(model) and explicit_budget:
+        # Thinking-Optional models (e.g. Gemini 2.5 Flash, Qwen3) activate internal
+        # thinking adaptively and consume the same max_output_tokens quota.
+        # Grant the reasoning budget so visible output is not crowded out.
+        budgets = config.get("token_budgets_reasoning_models", {})
+        tokens = budgets[module_key] if (module_key and module_key in budgets) else tokens * 2
 
     return tokens, reasoning
+
+
+def is_thinking_optional_from_card(model_id: str) -> bool:
+    """
+    Returns True if the model card for *model_id* contains the tag
+    ``"Thinking-Optional"`` in its ``architecture_tags`` list.
+
+    Used by ``resolve_token_budget()`` to grant Thinking-Optional models the
+    elevated reasoning budget — their internal thinking tokens consume the same
+    ``max_output_tokens`` quota as the visible output.
+
+    Returns False if no card exists, the field is absent, or the tag is not set.
+    """
+    card_path = Path("benchmark_scores/model_cards") / f"{re.sub(r'[:/.\\  ]', '_', model_id)}.json"
+    if not card_path.exists():
+        return False
+    try:
+        data = json.loads(card_path.read_text(encoding="utf-8"))
+        tags = data.get("architecture_tags", [])
+        return "Thinking-Optional" in (tags or [])
+    except Exception:
+        return False
 
 
 def is_reasoning_model_from_card(model_id: str) -> bool | None:

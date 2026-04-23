@@ -118,11 +118,11 @@ class GoogleClient(BaseProviderClient):
                         stream_handler(text_chunk)
                         full_text += text_chunk
                     # Metadata Extraction (if available in chunk)
-                    if hasattr(chunk, "usage_metadata"):
-                        # Gemini usage is cumulative in last chunk usually
-                        # Convert proto to dict if needed, or use object
-                        # We just store it for now
-                        pass
+                    if hasattr(chunk, "usage_metadata") and chunk.usage_metadata:
+                        # thoughts_token_count is cumulative; last chunk holds final value.
+                        # Always overwrite (never add) to match OpenRouter pattern.
+                        thoughts = getattr(chunk.usage_metadata, "thoughts_token_count", None)
+                        self.last_response_metadata["reasoning_tokens"] = thoughts if thoughts else 0
                     if hasattr(chunk, "candidates") and chunk.candidates:
                         fr = chunk.candidates[0].finish_reason
                         if fr:
@@ -139,6 +139,9 @@ class GoogleClient(BaseProviderClient):
                 fr = response.candidates[0].finish_reason
                 if fr:
                     self.last_response_metadata["finish_reason"] = getattr(fr, "name", str(fr))
+            if hasattr(response, "usage_metadata") and response.usage_metadata:
+                thoughts = getattr(response.usage_metadata, "thoughts_token_count", None)
+                self.last_response_metadata["reasoning_tokens"] = thoughts if thoughts else 0
             try:
                 return response.text
             except ValueError:
