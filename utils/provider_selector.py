@@ -3,6 +3,7 @@ import importlib.util
 from typing import Optional
 
 from utils.benchmark_utils import select_from_list
+from utils.constants import MODEL_TYPE_OPEN_WEIGHTS_CLOUD
 from utils.model_utils import is_cloud_model, get_ollama_models_info
 
 
@@ -20,10 +21,10 @@ class ProviderSelector:
         options = [
             (
                 "commercial",
-                "Kommerzielle Modelle (API Provider) - Mistral, Claude, GPT",
+                "Kommerzielle Modelle (Proprietary API) - Anthropic, OpenAI, Google, Mistral, xAI",
             ),
+            ("cloud", "Cloud Modelle (Inference Proxy) - OpenRouter, Groq, Ollama Cloud"),
             ("local", "Lokale Modelle (Ollama, LM Studio) - Offline"),
-            ("cloud", "Cloud Modelle (Ollama Proxy) - MiniMax, DeepSeek Cloud"),
         ]
 
         selected = select_from_list(
@@ -50,42 +51,82 @@ class ProviderSelector:
         return self._select_local_model()
 
     def _select_cloud_model(self) -> tuple[str, str]:
-        """Wählt ein Cloud-Modell über Ollama."""
-        print("\nLade Cloud-Modelle via Ollama...")
+        """Wählt ein Cloud-Modell (OpenRouter, Groq oder Ollama Cloud Proxy)."""
+        commercial_config = self.config.get("providers", {}).get("commercial", {})
+        models_flat = []
 
-        models = get_ollama_models_info()
+        # 1. Cloud Inference Proxy Provider aus der Config (OpenRouter, Groq, etc.)
+        for provider_key, provider_data in commercial_config.items():
+            if not provider_data.get("enabled", False):
+                continue
+            if provider_data.get("model_type") != MODEL_TYPE_OPEN_WEIGHTS_CLOUD:
+                continue
+            for model in provider_data.get("models", []):
+                models_flat.append(
+                    {
+                        "provider": provider_key,
+                        "provider_name": provider_data.get("name", provider_key),
+                        "id": model["id"],
+                        "name": model["name"],
+                        "description": model.get("description", ""),
+                        "source": "config",
+                    }
+                )
 
-        cloud_models = [m for m in models if is_cloud_model(m["name"], m["size_gb"])]
+        # 2. Ollama Cloud-Proxy-Modelle (z.B. minimax-m2:cloud via Ollama)
+        try:
+            ollama_models = get_ollama_models_info()
+            for m in ollama_models:
+                if is_cloud_model(m["name"], m["size_gb"]):
+                    models_flat.append(
+                        {
+                            "provider": "ollama",
+                            "provider_name": "Ollama Cloud Proxy",
+                            "id": m["name"],
+                            "name": m["name"],
+                            "description": f"Aktualisiert: {m['modified']}",
+                            "source": "ollama",
+                        }
+                    )
+        except Exception:  # noqa: BLE001
+            pass
 
-        if not cloud_models:
-            print("\n⚠️  Keine Cloud-Modelle in Ollama gefunden.")
-            print("Hast du Modelle wie 'minimax-m2:cloud' geladen?")
+        if not models_flat:
+            print("\n⚠️  Keine Cloud-Modelle gefunden.")
+            print("Stelle sicher, dass OpenRouter/Groq in benchmark_config.yaml aktiviert sind")
+            print("oder lade Ollama Cloud-Proxy-Modelle (z.B. 'ollama pull minimax-m2:cloud').")
             sys.exit(1)
 
         def display_model(m):
-            return (m["name"], f"Typ: Cloud Proxy | Aktualisiert: {m['modified']}")
+            return (
+                f"[{m['provider_name']}] {m['name']}",
+                f"{m['description']} (Model: {m['id']})" if m["description"] else f"Model: {m['id']}",
+            )
 
         selected = select_from_list(
-            cloud_models,
+            models_flat,
             display_func=display_model,
             prompt="Wähle ein Cloud-Modell",
-            title="CLOUD OLLAMA-MODELLE",
+            title="CLOUD MODELLE",
         )
 
         if selected:
             print(f"✓ Ausgewählt: {selected['name']}")
-            return "ollama", selected["name"]
+            return str(selected["provider"]), str(selected["id"])
 
         sys.exit(0)
 
     def _select_commercial_model(self) -> tuple[str, str]:
-        """Wählt kommerzielles Modell (Mistral/Claude/GPT)."""
+        """Wählt kommerzielles Modell (Proprietary API: Anthropic/OpenAI/Google/Mistral/xAI)."""
         commercial_config = self.config.get("providers", {}).get("commercial", {})
         models_flat = []
 
         for provider_key, provider_data in commercial_config.items():
             # Only include models from enabled providers
             if not provider_data.get("enabled", False):
+                continue
+            # Nur proprietäre API-Provider (keine Cloud Inference Proxies)
+            if provider_data.get("model_type", "proprietary_api") != "proprietary_api":
                 continue
 
             for model in provider_data.get("models", []):
@@ -109,7 +150,7 @@ class ProviderSelector:
             models_flat,
             display_func=display_model,
             prompt="Wähle ein Modell",
-            title="KOMMERZIELLE MODELLE",
+            title="KOMMERZIELLE MODELLE (PROPRIETARY API)",
         )
 
         if selected:

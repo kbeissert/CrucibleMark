@@ -149,9 +149,14 @@ class CostTracker:
 
         model_config = provider_config.get(model)
         if not model_config:
-            for key in provider_config:
-                if key == "daily_budget":
-                    continue
+            # Längere Keys zuerst prüfen – verhindert Fehl-Matches bei Präfixen
+            # z.B. "kimi-k2.5-0127" darf nicht auf "kimi-k2" statt "kimi-k2.5" matchen
+            sorted_keys = sorted(
+                (k for k in provider_config if k != "daily_budget"),
+                key=len,
+                reverse=True,
+            )
+            for key in sorted_keys:
                 if model.startswith(key):
                     model_config = provider_config[key]
                     break

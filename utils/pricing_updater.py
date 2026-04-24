@@ -169,8 +169,10 @@ class PricingUpdater:
             return entry["input_cost_per_1k"], entry["output_cost_per_1k"]
 
         # 2. Prefix-Match (z.B. "claude-sonnet-4-6-xyz" trifft "claude-sonnet-4-6")
-        for key, val in self._prices.items():
+        # Längere Keys zuerst prüfen – verhindert Fehl-Matches bei Präfixen
+        for key in sorted(self._prices.keys(), key=len, reverse=True):
             if model_id.startswith(key):
+                val = self._prices[key]
                 return val["input_cost_per_1k"], val["output_cost_per_1k"]
         return None
 
