@@ -4,6 +4,29 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [v3.5.9] - 2026-04-24
+
+### Added
+- **`scripts/analysis/generate_review.py` — `empty_response_context`:** Neue Hilfsfunktion `_build_empty_response_context(model_name)` liest alle drei Benchmark-CSVs und identifiziert Assets, bei denen `response_length=0` + `status=success` vorliegt (lautlose Content-Policy-Verweigerungen). Die betroffenen Asset-IDs werden dem Meta-Reviewer als strukturierter Kontext-Block übergeben. Nur aktiv bei `review_type == "benchmark"`.
+- **`config/meta_reviewer_prompt.yaml` — `{empty_response_context}`-Platzhalter:** Neuer Block im System-Prompt nach `constraint_violations_context`. Der Meta-Reviewer ist angewiesen, leer gelieferte Assets namentlich im Modul-Abschnitt zu dokumentieren und sie nicht als technischen Fehler, sondern als Qualitätsmerkmal zu werten.
+- **`scripts/analysis/generate_model_cards.py` — automatisches `size_class`-Setzen:** `_generate_card()` und `_create_minimal_card()` rufen `get_model_size_class(model_id)` auf und schreiben das Ergebnis als `size_class`-Feld in jede neu generierte Card. Bestehende Cards mit vorhandenem Feld werden nicht überschrieben.
+
+### Changed
+- **`utils/model_utils.py` — `get_model_size_class()` Priority-Kaskade:** Funktion komplett überarbeitet. Neue 3-stufige Logik: (1) Card-Lookup — `size_class`-Feld aus der JSON-Model-Card (SSoT für Overrides); (2) Ollama-Colon-Tag — case-insensitive Regex auf `:<tag>` (z. B. `gemma4:E4B` → Nano); (3) Dash/Dot-Suffix — Regex auf Parameter-Zahl nach `-`/`.` im Modellnamen (z. B. `llama-3.3-70b` → Server, `qwen3-32b` → Workstation). Fallback: `"Frontier"`. Hilfsfunktionen: `_SIZE_CLASS_VALID: set`, `_param_b_to_size_class(param_b: float) -> str`.
+
+### Fixed
+- **`get_model_size_class()` — case-insensitive Colon-Tag-Regex:** Regex war case-sensitive, `gemma4:E4B` (`E` großgeschrieben) wurde als unbekannt behandelt. Fix: `re.IGNORECASE`-Flag.
+- **`benchmark_scores/model_cards/CognitiveComputations_dolphin-mistral-nemo_latest.json`** — `size_class: Desktop`: Card existierte unter falschem Slug `dolphin-mistral-nemo_latest.json`, der card-Lookup schlug daher fehl. Das korrekte Slug leitet sich aus dem rohen CSV-Wert `CognitiveComputations/dolphin-mistral-nemo:latest` ab (`re.sub(r'[:/.\s]', '_', …)` → `CognitiveComputations_dolphin-mistral-nemo_latest`). Beide Cards korrigiert.
+
+### Data
+- **`benchmark_scores/model_cards/`** — Manuelle `size_class`-Korrekturen: `hf_co_mradermacher_Ministral-3-14B-…` → Desktop, `hf_co_bartowski_NousResearch_Hermes-4-14B-…` → Desktop, `llama-3_3-70b-versatile` → Server, `meta-llama_llama-4-scout-17b-16e-instruct` → Desktop, `qwen_qwen3-32b` → Workstation, `gemma4_E4B` → Nano. 5 MISSING-Cards neu als Frontier angelegt (`glm-5_cloud`, `kimi-k2_5_cloud`, `minimax-m2_7_cloud`, `moonshotai_kimi-k2-instruct`, `CognitiveComputations_dolphin-mistral-nemo_latest`).
+- **Leaderboard-Ergebnis nach `make leaderboard`:** 7 Desktop (vorher 3), 4 Workstation, 1 Server, 5 Edge, 5 Nano, 40 Frontier.
+
+### Docs
+- **`.github/copilot-instructions.md` — neuer Fallstrick:** *`size_class` Card-Slug-Mismatch* — Card-Pfad wird aus dem **rohen model_id aus der CSV** berechnet, nicht aus dem Display-Namen. `CognitiveComputations/dolphin-mistral-nemo:latest` → `CognitiveComputations_dolphin-mistral-nemo_latest.json`. Bei Klassifikations-Fixes immer den CSV-Namen als Basis nehmen.
+
+---
+
 ## [v3.5.8] - 2026-07-17
 
 ### Added

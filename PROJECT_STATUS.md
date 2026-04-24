@@ -1,16 +1,27 @@
 # PROJECT_STATUS.md
 
-**Last Updated:** 2026-04-23
-**Current Version:** 3.5.8 (ThinkingProbe, Card-First Workflow, empirische Reasoning-Erkennung)
+**Last Updated:** 2026-04-24
+**Current Version:** 3.5.9 (size_class Card-Lookup, empty_response_context, Model-Card-Korrekturen)
 **Status:** ✅ Production-Ready
 
 ---
 
 ## Executive Summary
 
+CrucibleMark v3.5.9 verbessert die Datenqualität auf drei Ebenen: (1) Die **Size-Class-Klassifikation** ist jetzt Card-First: `get_model_size_class()` liest `size_class` zuerst aus der JSON-Model-Card (SSoT für Overrides), dann per Colon-Tag-Regex (Ollama) und zuletzt per Dash/Dot-Suffix-Regex auf dem Modellnamen. Das Leaderboard weist damit korrekt 7 Desktop-Modelle aus statt vorher 3. Neue Hilfsfunktionen: `_param_b_to_size_class()` und das Sentinel-Set `_SIZE_CLASS_VALID`. (2) **`empty_response_context`** im Report-Generator: `generate_review.py` erkennt Assets mit `response_length=0` (lautlose Content-Policy-Verweigerung) und liefert die betroffenen Asset-IDs als strukturierten Kontext an den Meta-Reviewer, der sie im jeweiligen Modul-Abschnitt des Reviews dokumentiert. (3) **`generate_model_cards.py`** setzt `size_class` automatisch beim Generieren jeder neuen Card. 6 fehlklassifizierte Model-Cards manuell korrigiert; Slug-Mismatch bei `CognitiveComputations/dolphin-mistral-nemo:latest` behoben. (5 Commits, aac7315…75c0cb1)
+
+**Key Achievements (v3.5.9):**
+- ✅ **`utils/model_utils.py` — `get_model_size_class()` Priority-Kaskade:** (1) Card-Lookup SSoT → (2) Ollama-Colon-Tag case-insensitive → (3) Dash/Dot-Suffix-Regex → Fallback `"Frontier"`. Hilfsfunktionen `_param_b_to_size_class()` + `_SIZE_CLASS_VALID`.
+- ✅ **`scripts/analysis/generate_review.py` — `_build_empty_response_context()`:** Liest alle 3 Benchmark-CSVs, filtert `response_length=0 + status=success`, liefert Asset-IDs als Kontext-Block. Nur aktiv für `review_type == "benchmark"`.
+- ✅ **`config/meta_reviewer_prompt.yaml` — `{empty_response_context}`:** Neuer Pflicht-Block nach `constraint_violations_context`. Lautlose Verweigerungen werden als Qualitätsmerkmal dokumentiert, nicht als technische Fehler.
+- ✅ **`scripts/analysis/generate_model_cards.py` — Auto-`size_class`:** Beide Pfade (`_generate_card()` + `_create_minimal_card()`) schreiben `size_class` via `get_model_size_class()`. Bestehende Felder werden nicht überschrieben.
+- ✅ **Model-Card-Korrekturen:** 6 Cards manuell mit korrektem `size_class` versehen (Desktop/Server/Workstation/Nano). Slug-Mismatch `dolphin-mistral-nemo` behoben: Card-Pfad basiert auf rohem CSV-Wert `CognitiveComputations/dolphin-mistral-nemo:latest` → `CognitiveComputations_dolphin-mistral-nemo_latest.json`.
+- ✅ **Leaderboard-Distribution:** Nano=5, Edge=5, Desktop=7, Workstation=4, Server=1, Frontier=40.
+
+**Vorherige Version (v3.5.8 – ThinkingProbe, Card-First Workflow, empirische Reasoning-Erkennung):**
+
 CrucibleMark v3.5.8 führt eine empirische Reasoning-Erkennung ein, die die bisherige rein heuristische String-Matching-Logik in `is_reasoning_model()` ablöst. Kernstück ist der **ThinkingProbe**: Ein deterministischer API-Call, der anhand von `<think>`-Tags (Signal A) und `reasoning_tokens > 0` (Signal B) validiert, ob ein Modell Chain-of-Thought produziert. Das Ergebnis wird in der JSON-Model-Card (`benchmark_scores/model_cards/`) persistiert. Der **Card-First-Hook** in `unified_runner.py` stellt sicher, dass jedes neue Modell automatisch geprobt wird, bevor es einen Benchmark-Run startet. `is_reasoning_model()` liest die Card zuerst — String-Trigger bleiben als Fallback erhalten. Drei Bugs wurden behoben: Signal C (Response-Länge) erzeugte False-Positives und wurde entfernt, `_infer_provider()` nutzte Substring-Matching statt `/`-Präsenz-Heuristik, und `is_reasoning_model_from_card()` verwendete `replace('/', '_')` statt der vollständigen `_safe_name()`-Transformation. (Commit e1e61f6, 33 Dateien, 738 Insertions)
 
-**Key Achievements (v3.5.8):**
 - ✅ **`utils/model_utils.py` — `ThinkingProbeResult` & `probe_thinking_model()`:** Neues Dataclass (`detected`, `evidence`, `confidence`). Signal A = `<think>`/`<thinking>`/`<thought>`-Tags (confidence=high), Signal B = `reasoning_tokens > 0` (confidence=medium). Signal C (Response-Länge) nicht implementiert — systematische False-Positive-Quelle bei Instruction-Following-Modellen.
 - ✅ **`utils/model_utils.py` — `is_reasoning_model_from_card()`:** Liest `thinking_probe_detected` aus JSON-Card. Dateinamen-Auflösung via `re.sub(r'[:/.\s]', '_', model_id)` (`_safe_name()`-Transformation). Gibt `None` zurück wenn Card oder Feld fehlt (kein False-Positive).
 - ✅ **`utils/model_utils.py` — `is_reasoning_model()` Card-First:** Card-Lookup hat Vorrang vor String-Trigger-Heuristik. Neuer Trigger `kimi-k2` ergänzt.
