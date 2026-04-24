@@ -5,6 +5,14 @@
 
 ## Abgeschlossen
 
+### size_class Card-Lookup, empty_response_context, Model-Card-Korrekturen (v3.5.9 – 24.04.26)
+- [x] **`utils/model_utils.py` — `get_model_size_class()` Priority-Kaskade:** (1) Card-Lookup SSoT → (2) Ollama-Colon-Tag case-insensitive → (3) Dash/Dot-Suffix-Regex → Fallback `"Frontier"`. Hilfsfunktionen `_param_b_to_size_class()` + `_SIZE_CLASS_VALID`. Leaderboard: Nano=5, Edge=5, Desktop=7, Workstation=4, Server=1, Frontier=40.
+- [x] **`scripts/analysis/generate_review.py` — `_build_empty_response_context()`:** Liest alle 3 Benchmark-CSVs, filtert `response_length=0 + status=success`, liefert Asset-IDs als Kontext-Block an Meta-Reviewer. Nur aktiv für `review_type == "benchmark"`.
+- [x] **`config/meta_reviewer_prompt.yaml` — `{empty_response_context}`:** Neuer Pflicht-Block nach `constraint_violations_context`. Lautlose Verweigerungen werden als Qualitätsmerkmal dokumentiert.
+- [x] **`scripts/analysis/generate_model_cards.py` — Auto-`size_class`:** Beide Pfade (`_generate_card()` + `_create_minimal_card()`) schreiben `size_class` via `get_model_size_class()`. Bestehende Felder werden nicht überschrieben.
+- [x] **Model-Card-Korrekturen:** 6 Cards manuell korrigiert (Desktop/Server/Workstation/Nano). Slug-Mismatch `CognitiveComputations/dolphin-mistral-nemo:latest` → `CognitiveComputations_dolphin-mistral-nemo_latest.json` behoben.
+- [x] **Dokumentation:** `README.md`, `PROJECT_STATUS.md`, `CHANGELOG.md`, `REF_TODO.md`, `scripts/web_export.py`, `memory-bank/`, `.github/copilot-instructions.md` (neuer Fallstrick: size_class Card-Slug-Mismatch) synchronisiert.
+
 ### ThinkingProbe & Card-First Workflow (v3.5.8 – 23.04.26)
 - [x] **`utils/model_utils.py` — `ThinkingProbeResult` & `probe_thinking_model()`:** Dataclass mit `detected: bool`, `evidence: str`, `confidence: Literal["high","medium","low"]`. Signal A: `<think>`/`<thinking>`/`<thought>`-Tags in Response-Body. Signal B: `reasoning_tokens > 0` in API-Metadaten. Signal C (Response-Länge) bewusst nicht implementiert (False-Positive bei Instruction-Following-Modellen).
 - [x] **`utils/model_utils.py` — `is_reasoning_model_from_card()`:** Card-First-Lookup für `thinking_probe_detected`-Feld. Dateinamen via `re.sub(r'[:/.\s]', '_', model_id)` auflösen — konsistent mit `_safe_name()` in `generate_model_cards.py`. Gibt `None` bei fehlender Card oder fehlendem Feld zurück.

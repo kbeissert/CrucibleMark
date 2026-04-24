@@ -551,7 +551,7 @@ def main() -> None:
     with open(out_dir / "meta.json", "w", encoding="utf-8") as f:
         json.dump({
             "generated_at": generated_at,
-            "cruciblemark_version": "3.4.3",
+            "cruciblemark_version": "3.5.9",
             "total_models": len(models_list),
             "models_with_reports": models_with_reports,
             "models_with_reviews": models_with_reviews,
