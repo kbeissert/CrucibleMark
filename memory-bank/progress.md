@@ -3,6 +3,10 @@
 ## Ongoing
 - [DONE] Re-Run Gemini 2.5 Flash: 18 Zeilen (code_quality 5, cultural_intelligence 5, ux_writing 4, documentation_quality 2, content_transformation 2) erfolgreich re-runt.
 - [DONE] Re-Run Kimi K2.5: cultural_intel_001 (66%), cultural_intel_002 (66%), ux_writing_002 (60.5%) — minimal card erstellt.
+- [DONE] size_class-System: Card-Lookup in get_model_size_class() (Priority 1), Dash/Dot-Suffix-Regex (Priority 3), 7 Desktop-Modelle korrekt, dolphin-Slug-Mismatch behoben
+- [DONE] empty_response_context im Report-Generator + meta_reviewer_prompt.yaml
+- [ ] Re-Run magistral-small: reasoning_logic, ux_writing, code_quality (FORCE=1)
+- [ ] Re-Run magistral-medium: reasoning_logic, ux_writing, documentation_quality (FORCE=1)
 - [ ] Re-Run minimax/minimax-m2.7: cli005 + ux_writing_005 (2 Zeilen gelöscht, Reasoning-Token-Fix aktiv — kein --force nötig)
 - [ ] Re-Run ct_003 / ct_004 / ux_005: 156 CSV-Zeilen + Audit-Logs gelöscht, Benchmark bereit (kein --force nötig)
 - [ ] Leaderboard-Rebuild + alle 52 Reviews neu generieren (nach Re-Run)

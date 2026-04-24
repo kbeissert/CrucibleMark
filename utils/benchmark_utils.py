@@ -214,13 +214,13 @@ def save_audit_log(
     base_dir: Path = Path("outputs/audit_logs"),
     token_limit_cutoff: bool = False,
     token_limit_fallback: bool = False,
-    execution_time: float = None,
-    tokens_used: int = None,
-    tokens_per_second: float = None,
-    cost: float = None,
-    provider: str = None,
-    reasoning_tokens: int = None,
-    think_content: str = None,
+    execution_time: Optional[float] = None,
+    tokens_used: Optional[int] = None,
+    tokens_per_second: Optional[float] = None,
+    cost: Optional[float] = None,
+    provider: Optional[str] = None,
+    reasoning_tokens: Optional[int] = None,
+    think_content: Optional[str] = None,
     **kwargs
 ) -> None:
     """
