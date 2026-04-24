@@ -16,7 +16,7 @@ import sys
 import logging
 import subprocess
 from pathlib import Path
-from typing import List, Tuple
+from typing import List, Optional, Tuple
 
 # pylint: disable=import-error
 import yaml
@@ -190,7 +190,7 @@ def run_benchmark(
         return False
 
 
-def select_benchmark_module(args_module: str = None) -> str:
+def select_benchmark_module(args_module: Optional[str] = None) -> str:
     """Interaktive Modulauswahl, falls kein Modul per CLI übergeben wurde."""
     if args_module:
         return args_module
@@ -314,7 +314,7 @@ def gather_models(category: str) -> List[Tuple[str, str, str]]:
 
 
 
-def main():
+def main() -> None:
     """Main execution flow for cross-model benchmark."""
     parser = argparse.ArgumentParser(
         description="Run a benchmark module against ALL models."
