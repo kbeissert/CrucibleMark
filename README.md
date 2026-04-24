@@ -1,6 +1,6 @@
 # CrucibleMark
 
-[![Version](https://img.shields.io/badge/version-3.5.8-blue)](.)
+[![Version](https://img.shields.io/badge/version-3.5.9-blue)](.)
 [![Python](https://img.shields.io/badge/python-3.10%2B-blue)](.)
 [![License](https://img.shields.io/badge/license-MIT-green)](.)
 [![Status](https://img.shields.io/badge/status-production--ready-brightgreen)](.)
@@ -39,6 +39,8 @@ Die meisten Benchmarks fokussieren sich auf rein theoretische Prüfungen. Crucib
 * **Token-Budget-System:** Für definierte Benchmark-Module (z. B. `cultural_intelligence`, `code_quality`) wird ein `max_tokens`-Cap als direkter API-Parameter gesetzt, um Provider-übergreifende Vergleichbarkeit herzustellen. Reasoning-Module (`reasoning_logic`) sind bewusst ausgenommen und laufen ohne Output-Limit. Die Budgets sind in `benchmark_config.yaml` unter `token_budgets` kalibrierbar.
 * **Token-Verbrauch im Leaderboard:** Beide Leaderboard-CSVs weisen `Tokens Total` aus — die kumulierte Output-Token-Summe über alle bewerteten Benchmark-Module (identische Basis wie der Total Score). Das Detailed-Leaderboard enthält zusätzlich eine Aufschlüsselung pro Modul (`Tokens: Code Quality`, `Tokens: UX Writing`, …). Für API-Nutzer (Pay-per-Token) ist dies die entscheidende zweite Kostendimension neben `Cost per 1K (USD)`.
 * **ThinkingProbe & Card-First Workflow:** CrucibleMark erkennt Reasoning-Modelle seit v3.5.8 empirisch statt rein heuristisch. Vor jedem Benchmark-Run prüft der Runner, ob für das Modell eine validierte Model Card mit `thinking_probe_detected`-Feld vorliegt. Fehlt das Feld, sendet das Framework einen deterministischen Reasoning-Probe-Prompt und wertet `<think>`-Tags (Signal A) und `reasoning_tokens > 0` (Signal B) aus. Das Ergebnis wird in der Model Card persistiert und dient ab sofort als primäre Quelle für `is_reasoning_model()` — String-Trigger bleiben als Fallback erhalten. Retroaktiver Batch-Scan via `make probe-all-thinking`.
+* **Size-Class-Klassifikation (Card-First):** `get_model_size_class()` nutzt eine 3-stufige Priority-Kaskade: (1) `size_class`-Feld der JSON-Model-Card (SSoT), (2) Ollama-Colon-Tag (z. B. `gemma4:E4B` → Nano), (3) Dash/Dot-Suffix-Regex auf den Modellnamen (z. B. `llama-3.3-70b` → Server). Fallback: Frontier. Das Leaderboard weist damit 6 Deployment-Tiers aus (Nano/Edge/Desktop/Workstation/Server/Frontier).
+* **Transparenz bei lautlosen Verweigerungen:** Meta-Reviews enthalten seit v3.5.9 einen `empty_response_context`-Block: Assets, bei denen ein Modell `response_length=0` liefert (lautlose Content-Policy-Ablehnung), werden namentlich im Modul-Abschnitt des Reviews dokumentiert.
 
 ---
 
@@ -140,4 +142,4 @@ Tiefergehende Einblicke in die Methodik findest du im `docs/` Verzeichnis:
 
 - **Maintainer:** kbeissert
 - **Repository:** [github.com/kbeissert/cruciblemark](https://github.com/kbeissert/cruciblemark)
-- **Status:** ✅ Production-Ready (v3.5.8)
+- **Status:** ✅ Production-Ready (v3.5.9)
