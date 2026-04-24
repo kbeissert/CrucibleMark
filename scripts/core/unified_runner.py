@@ -375,13 +375,13 @@ class UnifiedBenchmarkRunner(BaseBenchmarkRunner):
         # Token usage & Cost
         if hasattr(self.client, "last_token_usage"):
             result["tokens_used"] = self.client.last_token_usage
-            if not is_local and hasattr(self.client, "last_cost_usd"):
-                result["cost_usd"] = getattr(self.client, "last_cost_usd", 0.0)
+            if not is_local:
+                result["cost_usd"] = getattr(self.client, "last_request_cost", 0.0)
             else:
                 result["cost_usd"] = 0.0
         else:
             result["tokens_used"] = exec_result.tokens_used or 0
-            result["cost_usd"] = 0.0
+            result["cost_usd"] = getattr(self.client, "last_request_cost", 0.0) if not is_local else 0.0
 
         if is_local:
             result["golden_similarity"] = 0.0
