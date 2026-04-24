@@ -41,6 +41,8 @@ df = df.sort_values("timestamp")
 df = df.drop_duplicates(subset=["model", "model_version", "type", "asset_id"], keep="last")
 ```
 
+> **Wichtig:** Das Dedup-Subset verwendet `model_version` als **nackte Version** (z.B. `k2`, `4-mini`). Provider-Shortcodes wie `/OR` oder `/API` sind ausschließlich eine Anzeigetransformation im Leaderboard-Exporter und existieren niemals in den Quell-CSVs. Würde der Shortcode-Suffix in der CSV gespeichert, entstünden falsche Duplikate beim Versionswechsel zwischen Providern.
+
 ### Fazit
 
 - **Datenintegrität:** Die Leaderboard-Generierung bereinigt Duplikate explizit vor jeder Berechnung.

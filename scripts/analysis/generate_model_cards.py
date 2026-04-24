@@ -32,7 +32,14 @@ if str(ROOT_DIR) not in sys.path:
     sys.path.insert(0, str(ROOT_DIR))
 
 from utils.llm_client import LLMClient
-from utils.model_utils import ThinkingProbeResult, get_model_size_class, probe_thinking_model
+from utils.model_utils import (
+    ThinkingProbeResult,
+    _card_path,
+    _find_card,
+    _safe_name,
+    get_model_size_class,
+    probe_thinking_model,
+)
 
 logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
 logger = logging.getLogger(__name__)
@@ -95,11 +102,6 @@ Klassifikationsregeln für weights_provenance_risk:
 Falls du das Modell nicht kennst, setze "unknown": true und befülle die anderen Felder mit sinnvollen Platzhaltern."""
 
 
-def _safe_name(model_id: str) -> str:
-    """Konvertiert eine Model-ID in einen sicheren Dateinamen."""
-    return re.sub(r"[:/.\ ]", "_", model_id)
-
-
 def _probe_fields_to_dict(
     probe: ThinkingProbeResult,
 ) -> dict[str, Any]:
@@ -145,20 +147,33 @@ def _load_config() -> dict[str, Any]:
         return yaml.safe_load(f)
 
 
-def _collect_configured_model_ids(config: dict[str, Any]) -> list[str]:
+def _collect_configured_model_ids(
+    config: dict[str, Any],
+) -> tuple[list[str], dict[str, str]]:
     """
     Liest alle statisch konfigurierten Model-IDs aus benchmark_config.yaml.
     Auto-discover-Sektionen (ollama local/cloud) werden aus dem Leaderboard ergänzt.
+
+    Returns
+    -------
+    model_ids:
+        Geordnete Liste aller konfigurierten Modell-IDs.
+    model_providers:
+        Mapping model_id → provider_key (z.B. ``'ollama_local'``, ``'groq'``).
+        Modelle ohne expliziten Eintrag fehlen im Dict — gilt als ``None``
+        (API-Modell oder auto-discovered ohne Provider-Kontext).
     """
     ids: list[str] = []
+    providers: dict[str, str] = {}
 
     # Statische Provider-Sektionen unter providers.commercial
     commercial = config.get("providers", {}).get("commercial", {})
-    for provider_cfg in commercial.values():
+    for provider_key, provider_cfg in commercial.items():
         for model in provider_cfg.get("models", []):
             mid = model.get("id")
-            if mid:
+            if mid and mid not in ids:
                 ids.append(mid)
+                providers[mid] = provider_key
 
     # Dynamische Modelle (ollama local + cloud): aus Leaderboard lesen
     leaderboard_csv = ROOT_DIR / "benchmark_scores" / "benchmark_leaderboard.csv"
@@ -170,10 +185,14 @@ def _collect_configured_model_ids(config: dict[str, Any]) -> list[str]:
                     mid = row.get("Model Name", "").strip()
                     if mid and mid not in ids:
                         ids.append(mid)
+                        # Provider-Kontext aus Leaderboard-Zeile, falls vorhanden
+                        p = row.get("Provider", "").strip()
+                        if p:
+                            providers[mid] = p
         except Exception as e:
             logger.warning("Leaderboard konnte nicht gelesen werden: %s", e)
 
-    return ids
+    return ids, providers
 
 
 def _parse_json_from_response(response: str) -> dict[str, Any]:
@@ -278,7 +297,7 @@ def _generate_card(model_id: str, client: LLMClient, provider: str, model_name: 
         card["size_class"] = get_model_size_class(model_id)
 
     # Probe-Felder aus bestehender Karte erhalten (z.B. bei --force)
-    existing_path = CARDS_DIR / f"{_safe_name(model_id)}.json"
+    existing_path = _find_card(model_id)
     if existing_path.exists():
         try:
             existing = json.loads(existing_path.read_text(encoding="utf-8"))
@@ -296,10 +315,19 @@ def _generate_card(model_id: str, client: LLMClient, provider: str, model_name: 
     return card
 
 
-def _write_card(card: dict[str, Any]) -> Path:
-    """Schreibt eine einzelne JSON-Karte auf Disk."""
+def _write_card(card: dict[str, Any], model_provider: str | None = None) -> Path:
+    """Schreibt eine einzelne JSON-Karte auf Disk.
+
+    Parameters
+    ----------
+    card:
+        Fertig validierte Model Card als Dict.
+    model_provider:
+        Provider-Schlüssel des *benchmarkierten* Modells (nicht der Judge-Provider).
+        ``None`` → verhält sich wie bisher (kein Präfix).
+    """
     CARDS_DIR.mkdir(parents=True, exist_ok=True)
-    path = CARDS_DIR / f"{_safe_name(card['model_id'])}.json"
+    path = _card_path(card["model_id"], model_provider, for_write=True)
     with open(path, "w", encoding="utf-8") as f:
         json.dump(card, f, ensure_ascii=False, indent=2)
     return path
@@ -365,13 +393,35 @@ def generate(
     model_name: str,
     force: bool = False,
     output_format: str = "both",
+    model_providers: dict[str, str] | None = None,
 ) -> None:
-    """Hauptloop: generiert Karten für alle übergebenen Model-IDs."""
+    """Hauptloop: generiert Karten für alle übergebenen Model-IDs.
+
+    Parameters
+    ----------
+    model_ids:
+        Liste der zu generierenden Modell-IDs.
+    client:
+        Konfigurierter LLMClient (für den *Judge*-Provider).
+    provider:
+        Judge-Provider-Schlüssel (z.B. ``'google'``).
+    model_name:
+        Judge-Modell (z.B. ``'gemini-2.5-pro'``).
+    force:
+        Bestehende Karten überschreiben.
+    output_format:
+        ``'json'``, ``'markdown'`` oder ``'both'``.
+    model_providers:
+        Mapping model_id → Deployment-Provider-Schlüssel des *benchmarkierten* Modells.
+        Wird für provider-qualifizierte Dateinamen verwendet (z.B. ``LCL_llama3_4b.json``).
+        ``None`` → kein Präfix (backward-kompatibel).
+    """
     generated = 0
     skipped = 0
 
     for model_id in model_ids:
-        card_path = CARDS_DIR / f"{_safe_name(model_id)}.json"
+        model_provider = (model_providers or {}).get(model_id)
+        card_path = _card_path(model_id, model_provider)
 
         if card_path.exists() and not force:
             logger.info("Übersprungen (Cache): %s", model_id)
@@ -379,7 +429,7 @@ def generate(
             continue
 
         card = _generate_card(model_id, client, provider, model_name)
-        _write_card(card)
+        _write_card(card, model_provider=model_provider)
         generated += 1
         logger.info(
             "✅ Karte gespeichert: %s (unknown=%s, summary=%d Zeichen)",
@@ -436,8 +486,9 @@ def main() -> None:
 
     if args.model:
         model_ids = [args.model]
+        model_providers: dict[str, str] = {}
     else:
-        model_ids = _collect_configured_model_ids(config)
+        model_ids, model_providers = _collect_configured_model_ids(config)
         logger.info("%d Modelle aus Konfiguration geladen.", len(model_ids))
 
     generate(
@@ -447,6 +498,7 @@ def main() -> None:
         model_name=model_name,
         force=args.force,
         output_format=args.format,
+        model_providers=model_providers,
     )
 
 

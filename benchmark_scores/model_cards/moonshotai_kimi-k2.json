@@ -1,5 +1,6 @@
 {
   "model_id": "moonshotai/kimi-k2",
+  "model_version": "k2-0711",
   "display_name": "Kimi K2",
   "developer": "Moonshot AI",
   "origin_country": "China",
@@ -28,5 +29,9 @@
   "unknown": false,
   "generated_at": "2026-04-23T22:03:45.786481+00:00",
   "card_status": "complete",
-  "size_class": "Frontier"
+  "size_class": "Frontier",
+  "thinking_probe_detected": false,
+  "thinking_probe_evidence": "No CoT signals found (A: no think-tags, B: reasoning_tokens=0). Response length: 371 chars",
+  "thinking_probe_confidence": "low",
+  "thinking_probe_at": "2026-04-24T09:00:50.327648+00:00"
 }

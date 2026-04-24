@@ -205,38 +205,272 @@ Für diese Modelle wird die Card **manuell** gesetzt:
 
 **Neue Modelle ergänzen:** Wenn ein Anbieter Reasoning intern verbirgt, immer beide Felder manuell eintragen und `make probe-thinking MODEL=<id>` nicht als Quelle verwenden.
 
-### `_safe_name()` Konsistenz-Pflicht
+---
 
-Alle Pfadauflösungen von Modell-IDs zu Card-Dateinamen müssen `re.sub(r'[:/.\ ]', '_', model_id)` verwenden. Einfaches `replace('/', '_')` reicht nicht:
+## Modell-IDs, Card-Benennung & Versionierung
 
-```python
-# Korrekt:
-_safe_name("gemini-2.5-flash")  # → "gemini-2_5-flash"  (.json)
-_safe_name("deepseek-r1:8b")    # → "deepseek-r1_8b"    (.json)
+Dieser Abschnitt beschreibt das vollständige System: von der Konfiguration einer Modell-ID bis zur gespeicherten Model Card und dem Leaderboard-Eintrag.
 
-# FALSCH — führt zu Lookup-Miss ohne Fehlermeldung:
-"gemini-2.5-flash".replace("/", "_")  # → "gemini-2.5-flash" (Datei existiert nicht)
+---
+
+### Konzept: Was ist eine Modell-ID?
+
+Die **Modell-ID** ist die kanonische Kennung eines Modells — die genaue Zeichenfolge, die in der API-Anfrage verwendet wird. Sie ist die einzige Quelle der Wahrheit für:
+
+- den **Dateinamen der Model Card** (`benchmark_scores/model_cards/`)
+- die **CSV-Spalte `model`** in allen drei Benchmark-CSVs
+- den **Lookup** von Versionsinformationen und Reasoning-Flags
+
+**SSoT:** `benchmark_config.yaml` → `providers.<section>.<provider>.models[].id`
+
+#### Pinned IDs vs. Floating Aliases
+
+| Typ | Beispiel | Risiko |
+|---|---|---|
+| **Pinned (Checkpoint-Slug)** | `moonshotai/kimi-k2-0711` | Kein Risiko — Modell ändert sich nie |
+| **Floating Alias** | `mistral-large-latest` | Provider kann Silent Update durchführen |
+
+**Regel:** Wo ein Provider versionierte Slugs anbietet (typisch für OpenRouter: `model-YYYYMMDD`), **müssen** diese verwendet werden. Für Provider, die keine Versionskennung mitliefern (Anthropic, OpenAI, Google, Mistral Direct-API, Groq), ist die Floating-Alias-ID der korrekte Eintrag — die Card ist dann für „was dieser Provider unter diesem Alias gerade serviert" gültig. Solange der Alias nicht von anderen Providern genutzt wird, entsteht keine Kollision.
+
+---
+
+### Vom Config-Eintrag zur Card-Datei: Drei Naming-Regeln
+
+Die Funktion `_card_path(model_id, provider, for_write)` in `utils/model_utils.py` ist die einzige Stelle, die den Dateinamen einer Model Card berechnet. Sie implementiert drei Regeln:
+
+#### Regel 1: Namespaced IDs (enthalten `/`)
+
+Der Provider-Namespace ist bereits in der ID eingebettet. Kein Prefix nötig.
+
+```
+moonshotai/kimi-k2-0711   →   moonshotai_kimi-k2-0711.json
+z-ai/glm-5.1-20260406     →   z-ai_glm-5_1-20260406.json
+qwen/qwen3-32b            →   qwen_qwen3-32b.json
+meta-llama/llama-4-scout-17b-16e-instruct  →  meta-llama_llama-4-scout-17b-16e-instruct.json
+```
+
+Angewendet auf: OpenRouter-Modelle, namespaced Groq-Modelle, alle Modelle mit `/` in der ID.
+
+#### Regel 2: Direkte API-Provider (`API`-Shortcode)
+
+Proprietäre Modellnamen sind global eindeutig. Kein Prefix nötig.
+
+```
+claude-sonnet-4-6          →   claude-sonnet-4-6.json
+gpt-5                      →   gpt-5.json
+gemini-2.5-pro             →   gemini-2_5-pro.json
+mistral-large-latest       →   mistral-large-latest.json
+grok-3-mini                →   grok-3-mini.json
+```
+
+Angewendet auf: `anthropic`, `openai`, `google`, `xai`, `mistral` (alle mit Shortcode `API`).
+
+#### Regel 3: Nicht-namespaced + nicht-API → Provider-Prefix
+
+**Problem:** Die gleiche bare ID (`llama3.3:70b`) kann sowohl via Ollama als auch via Groq laufen. Ohne Prefix würden sich beide Cards gegenseitig überschreiben — ein **Ghost-Benchmark**: Die Card des einen Providers wird fälschlich für den anderen verwendet, Reasoning-Flags und size_class sind falsch.
+
+**Lösung:** Prefix mit Provider-Shortcode.
+
+```
+# via ollama_local (Shortcode: LCL)
+llama3.3:70b         →   LCL_llama3_3_70b.json
+
+# via groq (Shortcode: GR), nicht-namespaced
+llama-3.3-70b-versatile  →   GR_llama-3_3-70b-versatile.json
+```
+
+**Backward-Compat:** Bestehende Cards ohne Prefix (vor dieser Konvention angelegt) werden beim Read-Lookup als Fallback gefunden — `_card_path(for_write=False)` versucht zuerst `LCL_*`, fällt dann auf die unpräfixierte Datei zurück. Beim Schreiben (`for_write=True`) wird immer der präfixierte Pfad verwendet.
+
+#### Entscheidungsbaum
+
+```
+model_id
+   │
+   ├── enthält "/"?  ─── JA ──► safe_name(model_id).json          (Regel 1)
+   │
+   └── NEIN
+         │
+         ├── Provider-Shortcode == "API"?  ─── JA ──► safe_name(model_id).json  (Regel 2)
+         │
+         └── NEIN (LCL, GR)
+               │
+               └── for_write=True  ──► {SHORTCODE}_safe_name.json  (Regel 3, neu)
+               └── for_write=False ──► Prefixed? → Prefixed-Pfad
+                                       Sonst     → Unprefixed (Legacy-Fallback)
 ```
 
 ---
 
-## Modell-Versionierung
+### Helper-Funktionen als SSoT (`utils/model_utils.py`)
 
-CrucibleMark nutzt eine deterministische, provider-spezifische Versionsermittlung.
+Alle Card-Pfadoperationen **müssen** diese Funktionen verwenden. Inline `Path(...) / f"{re.sub(...)}.json"` ist verboten — es würde die Drei-Regeln-Logik umgehen.
 
-### Aktuelle Regeln
+```python
+from utils.model_utils import _safe_name, _card_path, _find_card, CARD_DIR
+```
 
-1. **Kommerzielle Modelle:**
-   Das Framework leitet Versionen über feste Regex-Muster und statische Mappings aus dem Modellnamen ab.
-   Beispiele: `claude-sonnet-4-6` → `4.6`, `gpt-4o` → `2024-05-13`, `mistral-large-latest` → `2411`.
+#### `_safe_name(model_id: str) → str`
 
-2. **Lokale Ollama-Modelle:**
-   Versionen liest das Framework zur Laufzeit aus `ollama list`.
-   Es verwendet die tatsächliche Ollama-ID des installierten Modells (Hash/ID-Spalte). Für lokale Modelle ist die gespeicherte Version ausschließlich dieser Hash – das erkennt Silent Updates direkt am ID-Wechsel.
+Kanonische Dateiname-Transformation. Ersetzt alle Zeichen aus `[:/.\ ]` durch `_`.
 
-### Implementierung
+```python
+_safe_name("gemini-2.5-flash")                 # → "gemini-2_5-flash"
+_safe_name("deepseek-r1:8b")                   # → "deepseek-r1_8b"
+_safe_name("moonshotai/kimi-k2-0711")          # → "moonshotai_kimi-k2-0711"
+_safe_name("z-ai/glm-5.1-20260406")            # → "z-ai_glm-5_1-20260406"
 
-Die SSOT liegt in `utils/model_utils.py` in `get_model_version(model_name, provider, client)`.
+# FALSCH — führt zu Lookup-Miss ohne Fehlermeldung:
+"gemini-2.5-flash".replace("/", "_")  # → "gemini-2.5-flash" (Punkt bleibt!)
+```
+
+#### `_card_path(model_id, provider=None, *, for_write=False) → Path`
+
+Berechnet den vollständigen Pfad der Card-Datei nach den Drei Regeln.
+
+```python
+# Regel 1: Namespaced
+_card_path("moonshotai/kimi-k2-0711")
+# → benchmark_scores/model_cards/moonshotai_kimi-k2-0711.json
+
+# Regel 2: API-Provider
+_card_path("claude-sonnet-4-6", "anthropic")
+# → benchmark_scores/model_cards/claude-sonnet-4-6.json
+
+# Regel 3: LCL — Read (Fallback auf Legacy)
+_card_path("llama3.3:70b", "ollama_local")
+# → benchmark_scores/model_cards/llama3_3_70b.json  (falls kein LCL_* existiert)
+
+# Regel 3: LCL — Write (immer Prefix)
+_card_path("llama3.3:70b", "ollama_local", for_write=True)
+# → benchmark_scores/model_cards/LCL_llama3_3_70b.json
+```
+
+> **Wann `for_write=True`?** Nur beim Anlegen oder Überschreiben einer Card — also in `_write_card()` in `generate_model_cards.py`. Alle Lookup-Funktionen (Probe, Reasoning-Check, Size-Class) verwenden `for_write=False` (Default).
+
+#### `_find_card(model_id: str) → Path`
+
+Findet eine bestehende Card ohne Kenntnis des Providers. Nützlich in Utility-Funktionen, die nur die model_id kennen.
+
+```python
+# Sucht: LCL_deepseek-r1_8b.json → dann deepseek-r1_8b.json (Legacy)
+path = _find_card("deepseek-r1:8b")
+if path.exists():
+    card = json.loads(path.read_text())
+```
+
+Lookup-Reihenfolge für nicht-namespaced IDs: `LCL_*` → `GR_*` → unpräfixiert (Legacy). OR-Modelle sind immer namespaced und landen direkt beim unpräfixierten Pfad.
+
+#### `CARD_DIR: Path`
+
+Konstante für das Card-Verzeichnis. Nie als `Path("benchmark_scores/model_cards")` inline schreiben.
+
+```python
+CARD_DIR  # → Path("benchmark_scores/model_cards")
+```
+
+---
+
+### Provider-Shortcodes
+
+Shortcodes sind an zwei Stellen synchron gepflegt:
+
+1. **`utils/model_utils.py`** → `_PROVIDER_SHORTCODES: dict[str, str]` + `get_provider_shortcode(provider)`
+2. **`benchmark_config.yaml`** → `providers.<section>.<provider>.short_code`
+
+| Shortcode | Bedeutung | Provider-Schlüssel |
+|---|---|---|
+| `API` | Proprietäre Direkt-API | `anthropic`, `openai`, `google`, `xai`, `mistral` |
+| `OR` | OpenRouter (Routing-Layer) | `openrouter` |
+| `GR` | Groq (Inferenz-Dienst) | `groq` |
+| `LCL` | Lokales Ollama-Modell | `ollama_local`, `ollama`, `local` |
+
+Der Shortcode erscheint im Leaderboard als Suffix der Versionsspalte (`k2/OR`, `4-mini/API`, `4760c3/LCL`).
+
+---
+
+### Versionsermittlung
+
+`get_model_version(model_name, provider, client)` in `utils/model_utils.py` liefert die **nackte Version** — ohne Provider-Suffix. Die Kombination mit dem Shortcode für die Anzeige übernimmt `scripts/leaderboard/exporter.py`.
+
+#### Lookup-Hierarchie (in dieser Reihenfolge)
+
+1. **Card-First:** `model_version`-Feld in der JSON-Card → hat immer Vorrang. Nützlich für manuelle Korrekturen oder Modelle mit ungewöhnlichen ID-Formaten.
+
+2. **Ollama-Hash (nur bei lokalen Providern):** `ollama list` → 7-stelliger Hex-Hash (z.B. `4760c3`). Erkennt Silent Updates sofort am Hash-Wechsel.
+
+3. **Regex/Mapping für kommerzielle APIs:**
+
+   | Familie | Beispiel-ID | Ergebnis |
+   |---|---|---|
+   | Anthropic | `claude-sonnet-4-6` | `4.6` |
+   | Anthropic (datiert) | `claude-haiku-4-5-20251001` | `20251001` |
+   | OpenAI | `gpt-4o` | `2024-05-13` |
+   | OpenAI o-Serie | `o4-mini` | `4-mini` |
+   | Mistral | `mistral-large-latest` | `2411` |
+   | Codestral/Magistral | `magistral-medium-latest` | `latest` |
+   | Google | `gemini-2.5-pro` | `2.5-pro` |
+   | xAI | `grok-3-mini` | `3-mini` |
+   | OpenRouter (namespaced) | `moonshotai/kimi-k2-0711` | `k2-0711` |
+   | OpenRouter (namespaced) | `z-ai/glm-5.1-20260406` | `5.1-20260406` |
+   | OpenRouter (namespaced) | `minimax/minimax-m2.7-20260318` | `m2.7-20260318` |
+   | Groq (namespaced) | `qwen/qwen3-32b` | `3-32B` |
+
+4. **Fallback:** `"latest"` wenn kein Muster greift.
+
+---
+
+### Vollständiger Prozess: Von der Config-ID zur Leaderboard-Zeile
+
+```
+benchmark_config.yaml
+  providers.commercial.openrouter.models[].id = "moonshotai/kimi-k2-0711"
+       │
+       │  Benchmark-Run
+       ▼
+cloud_models_benchmark.csv
+  model = "moonshotai/kimi-k2-0711"
+  version = "k2-0711"          ← get_model_version() → Regex → "k2-0711"
+  provider = "openrouter"
+       │
+       │  make leaderboard
+       ▼
+benchmark_leaderboard.csv
+  Model Name = "Kimi K2 Thinking"       ← display_name aus Model Card
+  Version    = "k2-0711/OR"             ← version + "/" + shortcode
+       │
+       │  _card_path("moonshotai/kimi-k2-0711", "openrouter")
+       ▼
+benchmark_scores/model_cards/moonshotai_kimi-k2-0711.json
+  → Regel 1: namespaced → kein Prefix
+  → Dateiname: moonshotai_kimi-k2-0711.json
+```
+
+---
+
+### Card-Generierung
+
+`scripts/analysis/generate_model_cards.py` liest alle konfigurierten Model-IDs aus `benchmark_config.yaml` (statisch) und aus `benchmark_leaderboard.csv` (dynamisch für Ollama-Modelle). Für jeden Eintrag:
+
+1. Berechne `_card_path(model_id, provider_key, for_write=True)` → kanonischer Pfad
+2. Falls Datei existiert und `--force` nicht gesetzt → überspringen
+3. LLM-generierte Card → `_write_card(card, model_provider=provider_key)`
+4. `_find_card(model_id)` überträgt bestehende Probe-Felder auf neue Card
+
+**Neue Modelle:** Kein manueller Schritt nötig. `make model-cards` erkennt neue Config-Einträge automatisch und legt Cards an.
+
+**Manuelle Stub-Card:** Für Modelle die noch nicht benchmarkt wurden (z.B. neue Config-Einträge), kann eine Minimal-Card mit `card_status: "stub"` manuell angelegt werden. Sie blockiert nicht den Benchmark und wird beim nächsten `make model-cards` zu einer vollständigen Card aufgewertet.
+
+---
+
+### Historische Daten: Migration
+
+Veraltete `k.A.`-Werte in Benchmark-CSVs können mit dem Migrations-Skript bereinigt werden:
+
+```bash
+.venv/bin/python scripts/maintenance/migrate_model_versions.py
+```
+
+Das Skript legt `.bak`-Backups aller drei Benchmark-CSVs an und füllt leere / `k.A.`-Versionswerte über `get_model_version()` nach.
 
 ---
 
@@ -349,7 +583,7 @@ class BenchmarkResult(BaseModel):
     raw_response: str                 # The full LLM output text
 
     # Identification
-    model_version: str                # e.g., "gpt-4-0613"
+    model_version: str                # Nackte Version, z.B. "4.6", "k2", "latest" (kein Shortcode-Suffix)
 
     # Deep Data
     data: Dict[str, Any] = {}         # Module-specific details metrics

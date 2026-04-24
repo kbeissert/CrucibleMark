@@ -21,6 +21,140 @@ from utils.constants import (
 
 T = TypeVar("T")
 
+# Provider short codes — mirrors benchmark_config.yaml → providers.<name>.short_code
+# This dict provides fast in-process lookup without YAML I/O on every call.
+_PROVIDER_SHORTCODES: dict[str, str] = {
+    # Proprietary direct APIs
+    "anthropic": "API",
+    "openai": "API",
+    "google": "API",
+    "xai": "API",
+    "mistral": "API",
+    # Cloud inference proxies
+    "openrouter": "OR",
+    "groq": "GR",
+    # Local runtime (Ollama, LM Studio, etc.)
+    "ollama": "LCL",
+    "ollama_local": "LCL",
+    "local": "LCL",
+}
+
+
+def get_provider_shortcode(provider: str) -> str:
+    """Returns the configured short code for a provider (e.g. 'openrouter' → 'OR').
+
+    SSoT: benchmark_config.yaml → providers.<name>.short_code.
+    Falls back to the provider name uppercased (max 4 chars) if not in the mapping.
+    """
+    return _PROVIDER_SHORTCODES.get(str(provider).lower().strip(), str(provider).upper()[:4])
+
+
+# ---------------------------------------------------------------------------
+# Card path helpers — SSoT for all model card filename operations
+# ---------------------------------------------------------------------------
+
+CARD_DIR = Path("benchmark_scores/model_cards")
+
+
+def _safe_name(model_id: str) -> str:
+    """Canonical filename-safe transformation for model IDs.
+
+    Replaces every character in ``[:/.\\  ]`` with an underscore.
+    SSoT — used by all card path helpers in this module and in generation scripts.
+    """
+    return re.sub(r"[:/.\ ]", "_", model_id)
+
+
+def _card_path(
+    model_id: str,
+    provider: str | None = None,
+    *,
+    for_write: bool = False,
+) -> Path:
+    """Returns the canonical Path for the model card of *model_id*.
+
+    Naming rules
+    ------------
+    1. **Namespaced IDs** (contain ``/``): ``safe_name.json``
+       The provider namespace is already embedded in the ID (e.g. ``moonshotai/kimi-k2-0711``).
+    2. **Commercial direct-API IDs** (shortcode == ``'API'``): ``safe_name.json``
+       Brand names are globally unique (``claude-sonnet-4-6``, ``gpt-5``, …).
+    3. **Non-namespaced + non-API** (``LCL``, ``GR``, …): ``{SHORTCODE}_safe_name.json``
+       These model IDs are *not* globally unique — the same bare name (e.g.
+       ``llama3.3:70b``) can be served by multiple providers.
+
+       - ``for_write=False`` (read/lookup): tries the prefixed path first; falls back
+         to the legacy unprefixed path for cards created before this convention.
+       - ``for_write=True`` (card creation): always returns the prefixed path so new
+         cards are stored at the canonical location.
+
+    Parameters
+    ----------
+    model_id:
+        The model identifier as stored in config / CSV.
+    provider:
+        Provider key (e.g. ``'ollama_local'``, ``'groq'``, ``'anthropic'``) or its
+        shortcode.  ``None`` → treated as API / no prefix (backward compatible).
+    for_write:
+        When ``True``, always returns the canonical (potentially prefixed) path even
+        if a legacy unprefixed file already exists — intended for card-generation code.
+    """
+    safe = _safe_name(model_id)
+
+    # Rule 1: namespaced IDs are globally unique — no prefix needed
+    if "/" in model_id:
+        return CARD_DIR / f"{safe}.json"
+
+    shortcode: str | None = None
+    if provider:
+        shortcode = get_provider_shortcode(provider)
+
+    # Rule 2: commercial API models or unknown provider → no prefix
+    if not shortcode or shortcode == "API":
+        return CARD_DIR / f"{safe}.json"
+
+    # Rule 3: non-namespaced, non-API → provider-prefixed
+    prefixed = CARD_DIR / f"{shortcode}_{safe}.json"
+    unprefixed = CARD_DIR / f"{safe}.json"
+
+    if for_write:
+        return prefixed  # new cards always go to the canonical prefixed location
+
+    # Read: prefer prefixed (new standard), fall back to legacy unprefixed
+    if prefixed.exists():
+        return prefixed
+    return unprefixed  # caller must check .exists()
+
+
+def _find_card(model_id: str) -> Path:
+    """Finds an existing model card for *model_id* without knowing the provider.
+
+    When a provider is not available at the call site (e.g. inside utility
+    functions that receive only the model name), this helper tries all possible
+    provider-prefixed variants in addition to the canonical unprefixed path.
+
+    Returns the first existing path found, or the unprefixed path (which may
+    not exist) as a sentinel — callers must always check ``.exists()``.
+
+    OR-models are always namespaced (contain ``/``) and use only the unprefixed
+    path; they are handled first as a fast-path.
+    """
+    safe = _safe_name(model_id)
+    unprefixed = CARD_DIR / f"{safe}.json"
+
+    # Namespaced IDs (OpenRouter, Groq namespaced, …) only ever use the unprefixed path
+    if "/" in model_id:
+        return unprefixed
+
+    # For non-namespaced IDs try all non-API shortcode prefixes.
+    # OR models are always namespaced, so only LCL and GR need checking.
+    for shortcode in ("LCL", "GR"):
+        candidate = CARD_DIR / f"{shortcode}_{safe}.json"
+        if candidate.exists():
+            return candidate
+
+    return unprefixed  # May or may not exist — caller checks
+
 
 def _extract_ollama_id(model_name: str, ollama_output: str) -> Optional[str]:
     """Extracts a model hash/ID from `ollama list` output for an exact model name match."""
@@ -78,6 +212,17 @@ def get_model_version(model_name: str, provider: str = "ollama", client=None) ->
     p_lower = str(provider).lower().strip()
     prefix = model_name.split("/")[0].lower() if "/" in model_name else ""
 
+    # Card-First: optional override via `model_version` field in model card
+    card_path = _card_path(model_name, provider)
+    if card_path.exists():
+        try:
+            card_data = json.loads(card_path.read_text(encoding="utf-8"))
+            card_version = card_data.get("model_version")
+            if card_version and str(card_version).strip():
+                return str(card_version).strip()
+        except Exception:
+            pass  # malformed card → fall through to regex logic
+
     # Attempt Local Ollama Logic if provider implies local, or no explicit provider is given
     is_local_attempt = (p_lower in {"ollama", "local"} or prefix in {"ollama", "local"} or p_lower == "ollama")
 
@@ -109,11 +254,15 @@ def get_model_version(model_name: str, provider: str = "ollama", client=None) ->
         if "flash" in model_name: return "2.5-flash"
         if "pro" in model_name: return "2.5-pro"
         return model_name.split("-")[-1]
-    if "mistral" in model_name or "pixtral" in model_name:
+    if "mistral" in model_name or "pixtral" in model_name or "codestral" in model_name or "magistral" in model_name:
+        # magistral is a distinct reasoning model family — don't match mistral version heuristics
+        if "magistral" in model_name:
+            return "latest"
         match = re.search(r"-(24\d{2})$", model_name)
         if match: return match.group(1)
         if "large" in model_name: return "2411"
         if "medium" in model_name: return "2312"
+        return "latest"  # covers -latest suffix (e.g. codestral-latest, magistral-small-latest)
     if "grok" in model_name:
         match = re.search(r"grok-([0-9]+(?:\.[0-9]+)?(?:-[0-9]+)?)(?:-([^/]+))?", model_name)
         if match:
@@ -126,7 +275,25 @@ def get_model_version(model_name: str, provider: str = "ollama", client=None) ->
             return version
         return "latest"
     if "kimi" in model_name:
-        match = re.search(r"kimi-(k[\d\.]+)", model_name.lower())
+        # Match kimi variants: k2, k2.5, k2-0905, k2-thinking, k2-instruct, k2-dev
+        match = re.search(r"kimi-(k[\d\.]+(?:-(?:\d{4}|thinking|instruct|dev))?)", model_name.lower())
+        if match:
+            return match.group(1)
+        return "latest"
+    if "qwen" in model_name.lower():
+        match = re.search(r"qwen(\d+(?:\.\d+)?)-?(\d+b)?", model_name.lower())
+        if match:
+            version = match.group(1)
+            size = match.group(2)
+            return f"{version}-{size.upper()}" if size else version
+        return "latest"
+    if "glm" in model_name.lower():
+        match = re.search(r"glm-(\d+(?:\.\d+)?(?:-[a-z]+)?)", model_name.lower())
+        if match:
+            return match.group(1)
+        return "latest"
+    if "minimax" in model_name.lower():
+        match = re.search(r"minimax-(m[\d\.]+)", model_name.lower())
         if match:
             return match.group(1)
         return "latest"
@@ -142,10 +309,12 @@ def get_model_version(model_name: str, provider: str = "ollama", client=None) ->
 
     if "lfm" in model_name:
         return "latest"
-    if "o1" in model_name or "o3" in model_name:
-        match = re.search(r"o[13](?:-[a-z]+)*-(\d{4}-\d{2}-\d{2})", model_name)
+    if "o4" in model_name or "o1" in model_name or "o3" in model_name:
+        match = re.search(r"o[134](?:-[a-z]+)*-(\d{4}-\d{2}-\d{2})", model_name)
         if match:
             return match.group(1)
+        if "o4-mini" in model_name: return "4-mini"
+        if "o4" in model_name: return "4"
         if "o3-mini" in model_name:
             return "2025-01-31"
         if model_name == "o1" or model_name.endswith("/o1"):
@@ -473,7 +642,7 @@ def is_thinking_optional_from_card(model_id: str) -> bool:
 
     Returns False if no card exists, the field is absent, or the tag is not set.
     """
-    card_path = Path("benchmark_scores/model_cards") / f"{re.sub(r'[:/.\\  ]', '_', model_id)}.json"
+    card_path = _find_card(model_id)
     if not card_path.exists():
         return False
     try:
@@ -491,7 +660,7 @@ def is_reasoning_model_from_card(model_id: str) -> bool | None:
     Returns:
         True/False if the field is set; None if no card exists or field is missing.
     """
-    card_path = Path("benchmark_scores/model_cards") / f"{re.sub(r'[:/.\ ]', '_', model_id)}.json"
+    card_path = _find_card(model_id)
     if not card_path.exists():
         return None
     try:
@@ -518,7 +687,7 @@ def is_reasoning_model(model_name: str) -> bool:
     card_result = is_reasoning_model_from_card(model_name)
     if card_result is not None:
         return card_result
-    triggers = ["deepseek-r1", "reasoning", "phi4", "qwq", "o1", "o3", "magistral", "glm-5", "minimax-m2", "gemini-2.5", "kimi-k2"]
+    triggers = ["deepseek-r1", "reasoning", "phi4", "qwq", "o1", "o3", "o4", "magistral", "glm-5", "minimax-m2", "gemini-2.5", "kimi-k2-thinking"]
     return any(t in model_name.lower() for t in triggers)
 
 
@@ -565,7 +734,7 @@ def get_model_size_class(model_name: str) -> str:
         One of: 'Nano', 'Edge', 'Desktop', 'Workstation', 'Server', 'Frontier'
     """
     # 1. Model-Card override (SSoT for models whose name doesn't carry a clear size tag)
-    card_path = Path("benchmark_scores/model_cards") / f"{re.sub(r'[:/.\ ]', '_', model_name)}.json"
+    card_path = _find_card(model_name)
     if card_path.exists():
         try:
             card = json.loads(card_path.read_text(encoding="utf-8"))
