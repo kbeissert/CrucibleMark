@@ -387,6 +387,68 @@ else:
 
 ---
 
+---
+
+### Model-ID-System & Card-Pfad-Architektur (v3.5.9)
+
+#### Modell-ID als primärer Schlüssel
+
+Jede Modell-ID ist der einzige Schlüssel, der Config, CSV und Model Card verbindet. Die ID kommt aus `benchmark_config.yaml → providers.<section>.<provider>.models[].id` und wird **unverändert** in alle drei Benchmark-CSVs geschrieben.
+
+Provider-IDs unterliegen zwei Regimes:
+
+| Regime | Beispiel | Handlungsregel |
+|---|---|---|
+| **Pinned Checkpoint-Slug** | `moonshotai/kimi-k2-0711` | Bevorzugt — Daten werden dem exakten Checkpoint zugeordnet |
+| **Floating Alias** | `mistral-large-latest` | Akzeptabel wenn Provider keine Versionskennung anbietet |
+
+#### Card-Pfad-Helfer als SSoT
+
+Alle Card-Pfadoperationen laufen durch drei Funktionen in `utils/model_utils.py`:
+
+```python
+CARD_DIR          # Path("benchmark_scores/model_cards") — nie inline
+_safe_name(id)    # re.sub(r'[:/.\  ]', '_', id) — kanonische Transformation
+_card_path(model_id, provider, for_write)  # Drei-Regeln-Lookup
+_find_card(model_id)                       # Provider-unbekannter Lookup
+```
+
+Die drei Naming-Regeln:
+
+1. **Namespaced IDs** (`/` enthalten): `safe_name.json` — Provider-Namespace ist eingebettet
+2. **Direct-API** (Shortcode `API`): `safe_name.json` — proprietäre Namen sind global eindeutig
+3. **Non-namespaced + non-API** (`LCL`, `GR`): `{SHORTCODE}_safe_name.json` — verhindert Card-Kollisionen wenn dasselbe Modell über mehrere Provider getestet wird (z.B. `llama3.3:70b` via Ollama *und* Groq)
+
+Backward-Compat: `_card_path(for_write=False)` fällt auf existierende Legacy-Cards ohne Prefix zurück.
+
+**Niemals inline** `Path("benchmark_scores/model_cards") / f"{re.sub(...)}.json"` schreiben — diese Inline-Konstruktionen kennen die Drei-Regeln-Logik nicht.
+
+#### Provider Shortcode System
+
+Jeder Leaderboard-Eintrag trägt eine kombinierte Versionskennung (`k2-0711/OR`, `4-mini/API`, `4760c3/LCL`).
+
+| Shortcode | Bedeutung | Provider-Schlüssel |
+|---|---|---|
+| `API` | Proprietäre Direkt-API | Anthropic, OpenAI, Google, xAI, Mistral |
+| `OR` | OpenRouter | `openrouter` |
+| `GR` | Groq | `groq` |
+| `LCL` | Lokales Ollama-Modell | `ollama_local` |
+
+SSoT: `_PROVIDER_SHORTCODES`-Dict in `utils/model_utils.py` + `short_code`-Feld pro Provider-Block in `benchmark_config.yaml` (beide müssen synchron gehalten werden).
+
+**Datenfluss:**
+
+1. Benchmark-CSVs speichern **nackte Version** (z.B. `k2-0711`, `4-mini`, `latest`) — kein Shortcode.
+2. `score_calculator.py` aggregiert via `groupby`; `provider`-Spalte geht dabei verloren.
+3. `scripts/leaderboard/__init__.py` re-attachiert `provider` nach `calculate_scores()` per pandas `mode()`-Merge.
+4. `scripts/leaderboard/exporter.py` erzeugt daraus:
+   - **Kompakt-CSV** (`benchmark_leaderboard.csv`): `Version` = kombinierter String (`k2-0711/OR`)
+   - **Detailliert-CSV** (`benchmark_leaderboard_detailed.csv`): `Version` + `Provider Code` als separate Spalten
+
+> **Vollständige Dokumentation des Modell-ID-Systems** (Naming-Regeln, Helper-API, Card-Generierungsprozess): [DEVELOPER_GUIDE.md — Modell-IDs, Card-Benennung & Versionierung](DEVELOPER_GUIDE.md)
+
+---
+
 ### Web Export Pipeline
 
 **Einstiegspunkt:** `make web-export` → `scripts/web_export.py`
@@ -565,5 +627,5 @@ class LLMClientFactory:
 
 ---
 
-**Dokumenten-Version:**** 3.1.0 (Überarbeitung März 2026)\
-**Kompatibel mit:** CrucibleMark v3.4.3+
+**Dokumenten-Version:** 3.5.9 (Überarbeitung April 2026)\
+**Kompatibel mit:** CrucibleMark v3.5.9+

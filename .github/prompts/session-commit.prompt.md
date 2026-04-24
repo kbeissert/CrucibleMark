@@ -6,23 +6,29 @@ description: "CrucibleMark: Memory Bank nach Session aktualisieren (Qualität vo
 Aktualisiere das Projekt-Wissen für CrucibleMark. **Qualität vor Vollständigkeit —
 lieber nichts schreiben als etwas Falsches oder Triviales.**
 
-## 0. Versionssynchro (immer zuerst, wenn eine neue Version vergeben wurde)
 
-Wurde in dieser Session eine neue Versionsnummer vergeben (erkennbar an einem neuen
-`[v3.x.y]`-Block im CHANGELOG oder an einem neuen Meilenstein in `progress.md`)?
-Dann **alle sieben Stellen synchron** auf die neue Versionsnummer bringen:
+## 0. Versionssynchro (immer zuerst ausführen)
+
+**Aktiv prüfen:** Durchsuche `CHANGELOG.md` nach dem neuesten `## [v`-Block und
+`memory-bank/progress.md` nach dem neuesten Meilenstein. Wurde dabei eine Version
+identifiziert, die noch **nicht** in allen sieben Stellen eingetragen ist?
+
+Wenn ja → alle sieben Stellen synchron auf die neue Versionsnummer bringen:
 
 | Datei | Stelle |
 |---|---|
 | `README.md` | Version-Badge `version-X.Y.Z` + Footer `Status: ✅ Production-Ready (vX.Y.Z)` |
 | `PROJECT_STATUS.md` | `**Current Version:**` + `**Last Updated:**` |
-| `CHANGELOG.md` | Neuer `## [vX.Y.Z] - DATUM`-Block ganz oben |
+| `CHANGELOG.md` | Neuer `## [vX.Y.Z] - YYYY-MM-DD`-Block ganz oben (ISO-Datum) |
 | `REF_TODO.md` | Neuer Abschnitt `### <Titel> (vX.Y.Z – DD.MM.YY)` unter "Abgeschlossen" |
-| `scripts/web_export.py` | `"cruciblemark_version": "X.Y.Z"` (Zeile ~554) |
+| `scripts/web_export.py` | String `"cruciblemark_version":` suchen und Wert anpassen |
 | `memory-bank/activeContext.md` | Versionsnennung im Abgeschlossen-Block |
-| `memory-bank/progress.md` | Neuer `[DONE] vX.Y.Z`-Meilenstein-Eintrag |
+| `memory-bank/progress.md` | Bestehenden Meilenstein als `[DONE] vX.Y.Z` markieren |
 
-Keine neue Version in dieser Session? → diesen Schritt überspringen.
+**Abschluss-Check:** Liste nach der Synchro explizit alle sieben Dateien mit ✅ oder ⏭️ (übersprungen) auf, bevor du weitermachst.
+
+Alle Stellen bereits aktuell? → Schritt überspringen, kurz bestätigen: *"Version bereits synchron."*
+
 
 ## Schreibfilter (vor jedem Eintrag prüfen)
 
@@ -44,21 +50,25 @@ Nur ergänzen wenn ein **neuer, nicht-offensichtlicher Fallstrick** aufgetreten 
 der noch nicht im Conventions-Abschnitt steht. Max. 1–2 Sätze, ein Satz pro Eintrag.
 Kein neuer Fallstrick? → Nicht anfassen.
 
+
 ## 2. `memory-bank/systemPatterns.md` — Architekturentscheidungen
 
 Nur ergänzen wenn heute eine **neue Architekturentscheidung** getroffen wurde
 oder ein bestehendes Pattern sich als falsch erwiesen hat.
 Kein struktureller Wandel? → Nicht anfassen.
 
+
 ## 3. `memory-bank/activeContext.md` — Aktueller Stand
 
-**Vollständig überschreiben** mit folgendem Schema:
+**Vollständig überschreiben** (vorheriger Inhalt wird ersetzt — stelle sicher,
+dass "Nächster Schritt" aus dem alten Stand nicht verloren geht, falls er noch relevant ist):
 
 ```
 - Abgeschlossen: [was — max. 2 Zeilen]
 - Nächster Schritt: [konkret, ein Satz]
 - Offen/Risiko: [was — oder "keine"]
 ```
+
 
 ## 4. `memory-bank/progress.md` — Nur aktueller Zustand
 
@@ -67,6 +77,7 @@ Kein struktureller Wandel? → Nicht anfassen.
 - Neue Tasks **nur** ergänzen wenn sie den nächsten logischen Schritt darstellen
 - Kein Changelog, keine Erklärungen — nur Status
 
+
 ## 5. `memory-bank/techContext.md` — Stack & Tools
 
 Nur anfassen bei **neuer Dependency**, geändertem Build-Befehl oder neuem Tool.
@@ -74,4 +85,5 @@ Sonst: nicht ändern.
 
 ---
 
-Bestätige abschließend mit: **"Memory updated ✓"**
+Bestätige abschließend mit: **"Memory updated ✓"** + einer einzeiligen Summary
+was geändert wurde (z.B. *"v3.5.0 sync: 7/7 ✅ | activeContext überschrieben | 1 neuer Task in progress.md"*).

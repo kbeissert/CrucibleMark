@@ -71,6 +71,9 @@ providers:
     moonshotai/kimi-k2.5:
       input_cost_per_1k: 0.00044   # $0.44/1M – BESTÄTIGT (Chutes provider)
       output_cost_per_1k: 0.002    # $2.00/1M – BESTÄTIGT
+    moonshotai/kimi-k2-thinking:
+      input_cost_per_1k: 0.00060   # $0.60/1M – BESTÄTIGT (openrouter.ai)
+      output_cost_per_1k: 0.0025   # $2.50/1M – BESTÄTIGT
     minimax/minimax-m2.7:
       input_cost_per_1k: 0.0003    # $0.30/1M – BESTÄTIGT (Fireworks/MiniMax provider)
       output_cost_per_1k: 0.0012   # $1.20/1M – BESTÄTIGT

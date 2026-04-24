@@ -5,6 +5,9 @@
 - [DONE] Re-Run Kimi K2.5: cultural_intel_001 (66%), cultural_intel_002 (66%), ux_writing_002 (60.5%) — minimal card erstellt.
 - [DONE] size_class-System: Card-Lookup in get_model_size_class() (Priority 1), Dash/Dot-Suffix-Regex (Priority 3), 7 Desktop-Modelle korrekt, dolphin-Slug-Mismatch behoben
 - [DONE] empty_response_context im Report-Generator + meta_reviewer_prompt.yaml
+- [DONE] Provider-aware Card-Naming: 3-Regeln-System (`_safe_name`, `_card_path`, `_find_card`, `CARD_DIR`). 17 Orphan-Cards gelöscht. DEVELOPER_GUIDE.md + ARCHITECTURE.md vollständig dokumentiert.
+- [DONE] kimi-k2 Config-Bereinigung: `moonshotai/kimi-k2` (OR, 0711-Alias) als finaler Eintrag. `moonshotai/kimi-k2-instruct` (Groq) als Vergleichsbasis im Datenbestand. Provider-Delta OR vs. Groq messbar.
+- [ ] moonshotai/kimi-k2-instruct (Groq) aus Config entfernen nach Providervergleich-Auswertung
 - [ ] Re-Run magistral-small: reasoning_logic, ux_writing, code_quality (FORCE=1)
 - [ ] Re-Run magistral-medium: reasoning_logic, ux_writing, documentation_quality (FORCE=1)
 - [ ] Re-Run minimax/minimax-m2.7: cli005 + ux_writing_005 (2 Zeilen gelöscht, Reasoning-Token-Fix aktiv — kein --force nötig)

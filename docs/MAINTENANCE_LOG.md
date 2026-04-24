@@ -3,6 +3,42 @@
 **Zielgruppe:** Entwickler, die Änderungen am Scoring-System oder der Architektur nachvollziehen wollen.
 **Inhalt:** Changelog-Einträge für Bugfixes, Architektur-Entscheidungen und Verhaltensänderungen
 
+## Provider Shortcode System & Versioning Overhaul (v3.5)
+
+**Datum:** 2026-07-15
+**Status:** Abgeschlossen
+
+### Problembeschreibung
+
+Das Leaderboard zeigte für viele Modelle `k.A.` als Versions-String (fehlende Behandlung neuer Modell-Familien wie Qwen, GLM, MiniMax, o4-Series, Kimi). Außerdem fehlte jede Information, über welchen Provider ein Modell getestet wurde — bei Modellen wie `kimi-k2`, die sowohl via OpenRouter als auch Groq laufen, war das Ergebnis ohne Provider-Kontext nicht interpretierbar.
+
+### Lösung
+
+1. **`_PROVIDER_SHORTCODES` + `get_provider_shortcode()` in `utils/model_utils.py`:**
+   Neues Mapping-Dict und neue Funktion für die Shortcodes `API` (proprietäre Direkt-APIs), `OR` (OpenRouter), `GR` (Groq), `LCL` (Ollama/Lokal).
+
+2. **`short_code`-Feld pro Provider in `benchmark_config.yaml`:**
+   Jeder Provider-Block trägt jetzt ein `short_code`-Feld. Beide Orte (Config + `model_utils.py`) müssen synchron gehalten werden.
+
+3. **Erweiterte Versionserkennung in `get_model_version()`:**
+   Neue Handler für `codestral`/`magistral` (mit Vorrang-Check für magistral, verhindert false `2312`-Match), `qwen`, `glm`, `minimax`, `o4`, erweiterte kimi-Regex für `-thinking`/`-instruct`-Suffixe.
+
+4. **Provider re-attach in `scripts/leaderboard/__init__.py`:**
+   `score_calculator.py` verliert die `provider`-Spalte beim `groupby`. Nach `calculate_scores()` wird sie per pandas `mode()`-Merge neu angehängt. Danach: `Provider Code`-Spalte via `get_provider_shortcode()`.
+
+5. **Kombinierte Anzeige in `scripts/leaderboard/exporter.py`:**
+   - Kompakt-CSV: `Version` = `k2/OR` (kombinierter String)
+   - Detailliert-CSV: `Version` + `Provider Code` als separate Spalten
+
+6. **CSV-Migration via `scripts/maintenance/migrate_model_versions.py`:**
+   Einmalig ausgeführt — hat alle `k.A.`/`unknown`/`""` Versionswerte in den drei Benchmark-CSVs rückwirkend befüllt (`.bak`-Backups wurden angelegt).
+
+### Hinweis für Entwickler
+
+Wird ein neues Modell hinzugefügt, das ein Provider-Shortcode-Lookup benötigt, **immer beide SSoT-Stellen aktualisieren**: `_PROVIDER_SHORTCODES` in `utils/model_utils.py` und das `short_code`-Feld in `benchmark_config.yaml`.
+
+***
+
 ## Leaderboard Numerator Fix (v2.2)
 
 **Datum:** 2026-03-16

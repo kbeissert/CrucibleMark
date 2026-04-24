@@ -67,6 +67,16 @@ def export_leaderboard_compact(leaderboard: pd.DataFrame, cat_cols: List[str]) -
     """
     df_export = leaderboard.copy()
 
+    # Compact display: combine 'Version' and 'Provider Code' into a single column (e.g. "k2/OR")
+    if "Provider Code" in df_export.columns and "Version" in df_export.columns:
+        def _combine_version_code(row: pd.Series) -> str:
+            ver = str(row["Version"])
+            code = str(row["Provider Code"])
+            if code and code not in ("k.A.", "nan", "") and ver not in ("k.A.", "nan", ""):
+                return f"{ver}/{code}"
+            return ver
+        df_export["Version"] = df_export.apply(_combine_version_code, axis=1)
+
     # Clean up Score columns
     if "Overall Score" in df_export.columns:
         if "Total Score" in df_export.columns:
@@ -143,6 +153,7 @@ def export_leaderboard_detailed(leaderboard: pd.DataFrame, cat_cols: List[str]) 
         "Rank",
         "Model Name",
         "Version",
+        "Provider Code",
         "Badge",
         "Speed Profile",
         "Performance Tier",  # Keep raw tier for analysis

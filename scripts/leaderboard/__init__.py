@@ -24,7 +24,7 @@ from utils.module_registry import (
     get_active_modules,
     get_module_test_count,
 )  # noqa: E402
-from utils.model_utils import format_version_hash_for_display, get_model_identity, get_model_size_class  # noqa: E402
+from utils.model_utils import format_version_hash_for_display, get_model_identity, get_model_size_class, get_provider_shortcode  # noqa: E402
 # pylint: enable=import-error
 
 ROOT_DIR = Path(__file__).resolve().parent.parent.parent
@@ -142,6 +142,18 @@ def main(print_table: bool = True) -> Optional[pd.DataFrame]:
     # 3. Calculate Scores & Stats
     leaderboard, _ = calculate_scores(df, modules_config)
 
+    # 3a. Re-attach provider column (lost during groupby aggregation in calculate_scores).
+    # Take the most frequent provider per model — handles cases where a model was run
+    # via multiple providers (keeps the dominant one for display).
+    if "provider" in df.columns and "provider" not in leaderboard.columns:
+        provider_map = (
+            df.groupby("model")["provider"]
+            .agg(lambda s: s.mode().iloc[0] if not s.mode().empty else "")
+            .reset_index()
+            .rename(columns={"provider": "provider"})
+        )
+        leaderboard = leaderboard.merge(provider_map, on="model", how="left")
+
     # 3b. Enrich with LLM Judge scores (no-op when column is absent)
     leaderboard = _enrich_with_llm_judge(leaderboard, df)
 
@@ -234,6 +246,12 @@ def main(print_table: bool = True) -> Optional[pd.DataFrame]:
         return format_version_hash_for_display(version, model_type)
 
     leaderboard["Version"] = leaderboard.apply(format_version_display, axis=1)
+
+    # Provider Code: derived from the raw 'provider' column carried through from CSV data
+    if "provider" in leaderboard.columns:
+        leaderboard["Provider Code"] = leaderboard["provider"].apply(get_provider_shortcode)
+    else:
+        leaderboard["Provider Code"] = "k.A."
 
     # Convert LLM Judge Coverage to percentage string format
     if "LLM Judge Coverage" in leaderboard.columns:
