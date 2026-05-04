@@ -1,15 +1,40 @@
 {
   "model_id": "grok-4.20-0309-reasoning",
-  "display_name": "grok-4.20-0309-reasoning",
-  "developer": "n/a",
-  "architecture_tags": [
-    "General"
+  "display_name": "Grok 4 Reasoning (März 2025)",
+  "developer": "xAI",
+  "origin_country": "USA",
+  "developer_jurisdiction": "US",
+  "deployment_type": "cloud-only",
+  "local_deployment_possible": false,
+  "weights_provenance_risk": "medium",
+  "weights_provenance_risk_rationale": "xAI ist ein US-amerikanisches Unternehmen und unterliegt dem CLOUD Act, jedoch nicht dem chinesischen NSL; Gewichte sind nicht öffentlich zugänglich.",
+  "model_family": "Grok",
+  "vendor": "xAI",
+  "primary_focus": "reasoning",
+  "summary": "Grok 4 Reasoning ist ein Chain-of-Thought-Modell von xAI (USA), entwickelt für komplexe analytische und mathematische Aufgaben. Es nutzt explizites Reasoning vor der Antwort, ist auf Präzision bei mehrstufigen Problemen ausgelegt und wird ausschließlich über die xAI-Cloud-API bereitgestellt.",
+  "strengths": [
+    "Starkes mehrstufiges Schlussfolgern bei Mathematik- und Logikaufgaben",
+    "Explizite Reasoning-Traces erhöhen Nachvollziehbarkeit der Antworten",
+    "Gute Performance bei wissenschaftlichen und technischen Fragestellungen"
   ],
-  "card_status": "minimal",
-  "generated_at": "2026-05-04T16:28:34.262492+00:00",
+  "known_limitations": [
+    "Ausschließlich über xAI-Cloud verfügbar, kein lokaler Betrieb möglich",
+    "Reasoning-Modus erhöht Latenz und Token-Verbrauch gegenüber Standard-Modellen"
+  ],
+  "judge_context_hint": "Das Modell gibt explizite Reasoning-Traces aus; der Judge sollte die finale Antwort nach dem Thinking-Block bewerten und nicht den Denkprozess selbst.",
+  "architecture_tags": [
+    "Thinking"
+  ],
+  "supports_tool_use": true,
+  "unknown": true,
+  "generated_at": "2026-05-04T17:57:09.223611+00:00",
+  "card_status": "complete",
+  "size_class": "Frontier",
   "thinking_probe_detected": false,
   "thinking_probe_evidence": "No CoT signals found (A: no think-tags, B: reasoning_tokens=0). Response length: 888 chars",
   "thinking_probe_confidence": "low",
   "thinking_probe_at": "2026-05-04T16:28:34.262487+00:00",
-  "vendor": "xAI"
+  "license": "Proprietary",
+  "license_url": null,
+  "commercial_use_allowed": true
 }

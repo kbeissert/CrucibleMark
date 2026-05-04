@@ -1,104 +1,5 @@
 [
   {
-    "model_id": "CognitiveComputations_dolphin-mistral-nemo_latest",
-    "display_name": "Dolphin Mistral NeMo",
-    "developer": "Cognitive Computations (Eric Hartford)",
-    "origin_country": "USA",
-    "developer_jurisdiction": "US",
-    "deployment_type": "open-weights",
-    "local_deployment_possible": true,
-    "weights_provenance_risk": "low",
-    "weights_provenance_risk_rationale": "Die Basisgewichte stammen von Mistral AI (EU-Jurisdiktion, Frankreich), und das Fine-Tuning wurde von Cognitive Computations als unabhängiges Open-Source-Projekt ohne bekannten kommerziellen oder staatlichen Hintergrund durchgeführt.",
-    "model_family": "Mistral",
-    "primary_focus": "instruction-following",
-    "summary": "Dolphin Mistral NeMo ist ein von Cognitive Computations feinabgestimmtes Mistral-NeMo-Modell, das auf unzensierten, vielseitigen Instruktionsdaten trainiert wurde. Ziel ist ein hilfreicher Assistent ohne eingebaute Inhaltsbeschränkungen, der komplexe Anweisungen präzise befolgt und offen auf heikle Themen eingeht.",
-    "strengths": [
-      "Sehr gehorsames Instruktions-Following ohne eingebaute Inhaltssperren",
-      "Gute Allround-Sprachfähigkeiten dank Mistral-NeMo-Basis (12B Parameter, 128k Kontext)",
-      "Lokal betreibbar und vollständig open-weights, geeignet für datenschutzsensible Umgebungen"
-    ],
-    "known_limitations": [
-      "Fehlende Sicherheitsfilter können zur Generierung schädlicher oder problematischer Inhalte führen",
-      "Kein spezialisiertes Reasoning- oder Coding-Training; schwächer als dedizierte Modelle in diesen Bereichen"
-    ],
-    "judge_context_hint": "Das Modell ist bewusst ohne Sicherheitsfilter trainiert und folgt Anweisungen sehr direkt – der Judge sollte Antwortqualität und Präzision bewerten, ohne Ablehnung von Anfragen als Stärke zu werten.",
-    "architecture_tags": [
-      "Uncensored-Finetuned"
-    ],
-    "unknown": false,
-    "generated_at": "2026-04-11T15:33:17.802153+00:00",
-    "size_class": "Desktop",
-    "thinking_probe_detected": false,
-    "thinking_probe_evidence": "No CoT signals found (A: no think-tags, B: reasoning_tokens=0). Response length: 653 chars",
-    "thinking_probe_confidence": "low",
-    "thinking_probe_at": "2026-04-25T08:23:38.632038+00:00"
-  },
-  {
-    "model_id": "Ministral-3-14B-abliterated-GGUF:Q8_0",
-    "display_name": "Ministral 3B/14B Abliterated (Q8_0)",
-    "developer": "Mistral AI (Base) / Community Abliteration",
-    "origin_country": "France",
-    "developer_jurisdiction": "EU",
-    "deployment_type": "open-weights",
-    "local_deployment_possible": true,
-    "weights_provenance_risk": "low",
-    "weights_provenance_risk_rationale": "Das Basismodell stammt von Mistral AI mit Sitz in Frankreich (EU-Jurisdiktion); die Abliteration ist eine Community-Modifikation der öffentlichen Gewichte ohne Beteiligung eines Hochrisiko-Akteurs.",
-    "model_family": "Mistral",
-    "primary_focus": "general",
-    "summary": "Mistral-basiertes Modell aus Frankreich, chirurgisch von Sicherheitsfiltern befreit (Abliteration). Stärken liegen in Instruction-Following, mehrsprachiger Verarbeitung und offener Inhaltsgenerierung ohne Verweigerungsverhalten. Entwickelt für Nutzer, die unzensierte Antworten ohne Guardrails benötigen.",
-    "strengths": [
-      "Kein Verweigerungsverhalten durch Abliteration – antwortet auf sensible Anfragen ohne Ausweichen",
-      "Kompaktes GGUF Q8_0-Format für effiziente lokale Ausführung mit hoher Quantisierungsqualität",
-      "Solide Mehrsprachigkeit und Instruction-Following auf Basis der Mistral-Architektur"
-    ],
-    "known_limitations": [
-      "Abliteration kann Modellkohärenz und Faktentreue in Randbereichen leicht verschlechtern",
-      "Keine eingebauten Sicherheitsfilter – ungeeignet für Produktionsumgebungen mit unbekannten Nutzern"
-    ],
-    "judge_context_hint": "Das Modell ist abliteriert und verweigert keine Antworten; Bewertungen sollten Inhalt und Qualität der Antwort beurteilen, nicht das Fehlen von Sicherheitshinweisen.",
-    "architecture_tags": [
-      "General",
-      "Uncensored-Abliterated",
-      "Instruct"
-    ],
-    "unknown": false,
-    "generated_at": "2026-04-23T22:07:15.106650+00:00",
-    "card_status": "complete",
-    "size_class": "Desktop"
-  },
-  {
-    "model_id": "NousResearch_Hermes-4-14B-GGUF:Q4_K_M",
-    "display_name": "Hermes 4 14B",
-    "developer": "Nous Research",
-    "origin_country": "USA",
-    "developer_jurisdiction": "US",
-    "deployment_type": "open-weights",
-    "local_deployment_possible": true,
-    "weights_provenance_risk": "medium",
-    "weights_provenance_risk_rationale": "Nous Research ist ein US-amerikanisches Unternehmen und unterliegt dem CLOUD Act, der jedoch bei lokal betriebenen Open-Weights-Modellen ohne API-Nutzung praktisch nicht greift.",
-    "model_family": "Hermes",
-    "primary_focus": "instruction-following",
-    "summary": "Hermes 4 ist ein Instruction-Following-Modell von Nous Research (USA), feinabgestimmt auf einem kuratierten Datensatz für präzises Folgen von Anweisungen, Rollenspiel und agentenbasierte Aufgaben. Es kombiniert starke Gesprächsfähigkeit mit reduzierter Zensur durch gezieltes Fine-Tuning.",
-    "strengths": [
-      "Starkes Instruction-Following mit hoher Präzision bei komplexen Anweisungen",
-      "Für agentenbasierte und Tool-Use-Szenarien optimiert",
-      "Reduzierte Überrefusal durch gezieltes Uncensored-Fine-Tuning auf kuratierten Datensätzen"
-    ],
-    "known_limitations": [
-      "Als 14B-Modell bei sehr komplexen Mehrschritt-Reasoning-Aufgaben hinter größeren Modellen zurück",
-      "Q4_K_M-Quantisierung kann bei präzisen numerischen oder logischen Aufgaben zu leichten Qualitätseinbußen führen"
-    ],
-    "judge_context_hint": "Das Modell ist auf offenes Instruction-Following und Agenten-Szenarien ausgerichtet und neigt zu direkten, wenig eingeschränkten Antworten – Bewertungen sollten dies bei Compliance-orientierten Benchmarks berücksichtigen.",
-    "architecture_tags": [
-      "Instruct",
-      "Uncensored-Finetuned"
-    ],
-    "unknown": false,
-    "generated_at": "2026-04-23T22:08:46.451753+00:00",
-    "card_status": "complete",
-    "size_class": "Desktop"
-  },
-  {
     "model_id": "claude-haiku-4-5-20251001",
     "display_name": "Claude Haiku 4.5",
     "developer": "Anthropic",
@@ -132,7 +33,12 @@
     "thinking_probe_detected": false,
     "thinking_probe_evidence": "No CoT signals found (A: no think-tags, B: reasoning_tokens=0). Response length: 590 chars",
     "thinking_probe_confidence": "low",
-    "thinking_probe_at": "2026-04-23T13:55:05.513501+00:00"
+    "thinking_probe_at": "2026-04-23T13:55:05.513501+00:00",
+    "supports_tool_use": true,
+    "license": "Proprietary",
+    "license_url": null,
+    "commercial_use_allowed": true,
+    "vendor": "Anthropic"
   },
   {
     "model_id": "claude-opus-4-5-20251101",
@@ -168,7 +74,12 @@
     "thinking_probe_detected": false,
     "thinking_probe_evidence": "No CoT signals found (A: no think-tags, B: reasoning_tokens=0). Response length: 603 chars",
     "thinking_probe_confidence": "low",
-    "thinking_probe_at": "2026-04-23T13:55:10.011508+00:00"
+    "thinking_probe_at": "2026-04-23T13:55:10.011508+00:00",
+    "supports_tool_use": true,
+    "license": "Proprietary",
+    "license_url": null,
+    "commercial_use_allowed": true,
+    "vendor": "Anthropic"
   },
   {
     "model_id": "claude-opus-4-6",
@@ -204,7 +115,12 @@
     "thinking_probe_detected": false,
     "thinking_probe_evidence": "No CoT signals found. Response length: 379 chars",
     "thinking_probe_confidence": "low",
-    "thinking_probe_at": "2026-04-23T13:49:49.092501+00:00"
+    "thinking_probe_at": "2026-04-23T13:49:49.092501+00:00",
+    "supports_tool_use": true,
+    "license": "Proprietary",
+    "license_url": null,
+    "commercial_use_allowed": true,
+    "vendor": "Anthropic"
   },
   {
     "model_id": "claude-opus-4-7",
@@ -241,7 +157,12 @@
     "thinking_probe_detected": false,
     "thinking_probe_evidence": "No CoT signals found (A: no think-tags, B: reasoning_tokens=0). Response length: 716 chars",
     "thinking_probe_confidence": "low",
-    "thinking_probe_at": "2026-04-23T13:55:14.315057+00:00"
+    "thinking_probe_at": "2026-04-23T13:55:14.315057+00:00",
+    "supports_tool_use": true,
+    "license": "Proprietary",
+    "license_url": null,
+    "commercial_use_allowed": true,
+    "vendor": "Anthropic"
   },
   {
     "model_id": "claude-sonnet-4-5-20250929",
@@ -277,7 +198,12 @@
     "thinking_probe_detected": false,
     "thinking_probe_evidence": "No CoT signals found (A: no think-tags, B: reasoning_tokens=0). Response length: 700 chars",
     "thinking_probe_confidence": "low",
-    "thinking_probe_at": "2026-04-23T13:55:19.126410+00:00"
+    "thinking_probe_at": "2026-04-23T13:55:19.126410+00:00",
+    "supports_tool_use": true,
+    "license": "Proprietary",
+    "license_url": null,
+    "commercial_use_allowed": true,
+    "vendor": "Anthropic"
   },
   {
     "model_id": "claude-sonnet-4-6",
@@ -313,7 +239,12 @@
     "thinking_probe_detected": false,
     "thinking_probe_evidence": "No CoT signals found (A: no think-tags, B: reasoning_tokens=0). Response length: 462 chars",
     "thinking_probe_confidence": "low",
-    "thinking_probe_at": "2026-04-23T13:55:22.702390+00:00"
+    "thinking_probe_at": "2026-04-23T13:55:22.702390+00:00",
+    "supports_tool_use": true,
+    "license": "Proprietary",
+    "license_url": null,
+    "commercial_use_allowed": true,
+    "vendor": "Anthropic"
   },
   {
     "model_id": "codestral-latest",
@@ -348,7 +279,12 @@
     "thinking_probe_detected": false,
     "thinking_probe_evidence": "No CoT signals found (A: no think-tags, B: reasoning_tokens=0). Response length: 819 chars",
     "thinking_probe_confidence": "low",
-    "thinking_probe_at": "2026-04-23T13:55:24.852904+00:00"
+    "thinking_probe_at": "2026-04-23T13:55:24.852904+00:00",
+    "supports_tool_use": true,
+    "license": "Mistral Codestral License",
+    "license_url": "https://mistral.ai/licenses/MCSL-0.1.md",
+    "commercial_use_allowed": null,
+    "vendor": "Mistral AI"
   },
   {
     "model_id": "deepseek-r1:8b",
@@ -383,7 +319,12 @@
     "thinking_probe_detected": false,
     "thinking_probe_evidence": "No CoT signals found (A: no think-tags, B: reasoning_tokens=0). Response length: 1332 chars",
     "thinking_probe_confidence": "low",
-    "thinking_probe_at": "2026-04-25T08:27:57.221518+00:00"
+    "thinking_probe_at": "2026-04-25T08:27:57.221518+00:00",
+    "supports_tool_use": false,
+    "license": "MIT",
+    "license_url": "https://opensource.org/licenses/MIT",
+    "commercial_use_allowed": true,
+    "vendor": "DeepSeek"
   },
   {
     "model_id": "deepseek-v3.1:671b-cloud",
@@ -419,7 +360,12 @@
     "thinking_probe_detected": false,
     "thinking_probe_evidence": "No CoT signals found (A: no think-tags, B: reasoning_tokens=0). Response length: 556 chars",
     "thinking_probe_confidence": "low",
-    "thinking_probe_at": "2026-05-01T10:46:34.460236+00:00"
+    "thinking_probe_at": "2026-05-01T10:46:34.460236+00:00",
+    "supports_tool_use": true,
+    "license": "DeepSeek License",
+    "license_url": "https://github.com/deepseek-ai/DeepSeek-V3/blob/main/LICENSE",
+    "commercial_use_allowed": null,
+    "vendor": "DeepSeek"
   },
   {
     "model_id": "deepseek-v3.2:cloud",
@@ -455,7 +401,50 @@
     "thinking_probe_detected": false,
     "thinking_probe_evidence": "No CoT signals found (A: no think-tags, B: reasoning_tokens=0). Response length: 420 chars",
     "thinking_probe_confidence": "low",
-    "thinking_probe_at": "2026-05-01T10:47:03.853585+00:00"
+    "thinking_probe_at": "2026-05-01T10:47:03.853585+00:00",
+    "supports_tool_use": true,
+    "license": "DeepSeek License",
+    "license_url": "https://github.com/deepseek-ai/DeepSeek-V3/blob/main/LICENSE",
+    "commercial_use_allowed": null,
+    "vendor": "DeepSeek"
+  },
+  {
+    "model_id": "deepseek/deepseek-v4-flash",
+    "display_name": "deepseek/deepseek-v4-flash",
+    "developer": "n/a",
+    "architecture_tags": [
+      "Thinking"
+    ],
+    "card_status": "minimal",
+    "generated_at": "2026-05-03T18:34:58.651272+00:00",
+    "thinking_probe_detected": true,
+    "thinking_probe_evidence": "reasoning_tokens=130 in provider metadata",
+    "thinking_probe_confidence": "medium",
+    "thinking_probe_at": "2026-05-03T18:34:58.651262+00:00",
+    "supports_tool_use": true,
+    "license": "DeepSeek License",
+    "license_url": "https://github.com/deepseek-ai/DeepSeek-V3/blob/main/LICENSE",
+    "commercial_use_allowed": null,
+    "vendor": "DeepSeek"
+  },
+  {
+    "model_id": "deepseek/deepseek-v4-pro",
+    "display_name": "deepseek/deepseek-v4-pro",
+    "developer": "n/a",
+    "architecture_tags": [
+      "Thinking"
+    ],
+    "card_status": "minimal",
+    "generated_at": "2026-05-03T19:31:34.837029+00:00",
+    "thinking_probe_detected": true,
+    "thinking_probe_evidence": "reasoning_tokens=88 in provider metadata",
+    "thinking_probe_confidence": "medium",
+    "thinking_probe_at": "2026-05-03T19:31:34.837023+00:00",
+    "supports_tool_use": true,
+    "license": "DeepSeek License",
+    "license_url": "https://github.com/deepseek-ai/DeepSeek-V3/blob/main/LICENSE",
+    "commercial_use_allowed": null,
+    "vendor": "DeepSeek"
   },
   {
     "model_id": "dolphin-mistral-nemo:latest",
@@ -487,7 +476,12 @@
     "unknown": false,
     "generated_at": "2026-04-23T22:09:50.928404+00:00",
     "card_status": "complete",
-    "size_class": "Desktop"
+    "size_class": "Desktop",
+    "supports_tool_use": false,
+    "license": "Apache-2.0",
+    "license_url": "https://www.apache.org/licenses/LICENSE-2.0",
+    "commercial_use_allowed": true,
+    "vendor": "Community"
   },
   {
     "model_id": "gemini-2.5-flash",
@@ -523,7 +517,12 @@
     "thinking_probe_detected": false,
     "thinking_probe_evidence": "No CoT signals found. Response length: 382 chars",
     "thinking_probe_confidence": "low",
-    "thinking_probe_at": "2026-04-23T13:50:20.420986+00:00"
+    "thinking_probe_at": "2026-04-23T13:50:20.420986+00:00",
+    "supports_tool_use": true,
+    "license": "Proprietary",
+    "license_url": null,
+    "commercial_use_allowed": true,
+    "vendor": "Google"
   },
   {
     "model_id": "gemini-2.5-pro",
@@ -560,7 +559,12 @@
     "thinking_probe_detected": false,
     "thinking_probe_evidence": "No CoT signals found. Response length: 41 chars",
     "thinking_probe_confidence": "low",
-    "thinking_probe_at": "2026-04-23T13:50:26.117380+00:00"
+    "thinking_probe_at": "2026-04-23T13:50:26.117380+00:00",
+    "supports_tool_use": true,
+    "license": "Proprietary",
+    "license_url": null,
+    "commercial_use_allowed": true,
+    "vendor": "Google"
   },
   {
     "model_id": "gemini-3-flash-preview",
@@ -597,7 +601,12 @@
     "thinking_probe_detected": false,
     "thinking_probe_evidence": "No CoT signals found (A: no think-tags, B: reasoning_tokens=0). Response length: 276 chars",
     "thinking_probe_confidence": "low",
-    "thinking_probe_at": "2026-04-23T13:55:36.823503+00:00"
+    "thinking_probe_at": "2026-04-23T13:55:36.823503+00:00",
+    "supports_tool_use": true,
+    "license": "Proprietary",
+    "license_url": null,
+    "commercial_use_allowed": true,
+    "vendor": "Google"
   },
   {
     "model_id": "gemini-3.1-pro-preview",
@@ -634,7 +643,12 @@
     "thinking_probe_detected": false,
     "thinking_probe_evidence": "No CoT signals found. Response length: 76 chars",
     "thinking_probe_confidence": "low",
-    "thinking_probe_at": "2026-04-23T13:50:38.445524+00:00"
+    "thinking_probe_at": "2026-04-23T13:50:38.445524+00:00",
+    "supports_tool_use": true,
+    "license": "Proprietary",
+    "license_url": null,
+    "commercial_use_allowed": true,
+    "vendor": "Google"
   },
   {
     "model_id": "gemma3:12b",
@@ -670,7 +684,12 @@
     "thinking_probe_detected": false,
     "thinking_probe_evidence": "No CoT signals found (A: no think-tags, B: reasoning_tokens=0). Response length: 526 chars",
     "thinking_probe_confidence": "low",
-    "thinking_probe_at": "2026-04-25T08:35:02.087425+00:00"
+    "thinking_probe_at": "2026-04-25T08:35:02.087425+00:00",
+    "supports_tool_use": true,
+    "license": "Google Gemma Terms of Use",
+    "license_url": "https://ai.google.dev/gemma/terms",
+    "commercial_use_allowed": null,
+    "vendor": "Google"
   },
   {
     "model_id": "gemma3:4b",
@@ -706,7 +725,12 @@
     "thinking_probe_detected": false,
     "thinking_probe_evidence": "No CoT signals found (A: no think-tags, B: reasoning_tokens=0). Response length: 684 chars",
     "thinking_probe_confidence": "low",
-    "thinking_probe_at": "2026-04-25T08:36:00.673936+00:00"
+    "thinking_probe_at": "2026-04-25T08:36:00.673936+00:00",
+    "supports_tool_use": true,
+    "license": "Google Gemma Terms of Use",
+    "license_url": "https://ai.google.dev/gemma/terms",
+    "commercial_use_allowed": null,
+    "vendor": "Google"
   },
   {
     "model_id": "gemma4:26b",
@@ -742,7 +766,12 @@
     "thinking_probe_detected": false,
     "thinking_probe_evidence": "No CoT signals found (A: no think-tags, B: reasoning_tokens=0). Response length: 682 chars",
     "thinking_probe_confidence": "low",
-    "thinking_probe_at": "2026-04-25T08:37:22.029242+00:00"
+    "thinking_probe_at": "2026-04-25T08:37:22.029242+00:00",
+    "supports_tool_use": true,
+    "license": "Google Gemma Terms of Use",
+    "license_url": "https://ai.google.dev/gemma/terms",
+    "commercial_use_allowed": null,
+    "vendor": "Google"
   },
   {
     "model_id": "gemma4:31b-cloud",
@@ -775,7 +804,12 @@
     "unknown": true,
     "generated_at": "2026-04-23T22:05:37.243642+00:00",
     "card_status": "complete",
-    "size_class": "Workstation"
+    "size_class": "Workstation",
+    "supports_tool_use": true,
+    "license": "Google Gemma Terms of Use",
+    "license_url": "https://ai.google.dev/gemma/terms",
+    "commercial_use_allowed": null,
+    "vendor": "Google"
   },
   {
     "model_id": "gemma4:E4B",
@@ -807,7 +841,12 @@
     "unknown": true,
     "generated_at": "2026-04-23T22:07:02.933740+00:00",
     "card_status": "complete",
-    "size_class": "Nano"
+    "size_class": "Nano",
+    "supports_tool_use": true,
+    "license": "Google Gemma Terms of Use",
+    "license_url": "https://ai.google.dev/gemma/terms",
+    "commercial_use_allowed": null,
+    "vendor": "Google"
   },
   {
     "model_id": "gemma4:e2b",
@@ -843,7 +882,12 @@
     "thinking_probe_detected": false,
     "thinking_probe_evidence": "No CoT signals found (A: no think-tags, B: reasoning_tokens=0). Response length: 349 chars",
     "thinking_probe_confidence": "low",
-    "thinking_probe_at": "2026-04-25T08:38:35.531224+00:00"
+    "thinking_probe_at": "2026-04-25T08:38:35.531224+00:00",
+    "supports_tool_use": true,
+    "license": "Google Gemma Terms of Use",
+    "license_url": "https://ai.google.dev/gemma/terms",
+    "commercial_use_allowed": null,
+    "vendor": "Google"
   },
   {
     "model_id": "gpt-4o-mini",
@@ -879,7 +923,12 @@
     "thinking_probe_detected": false,
     "thinking_probe_evidence": "No CoT signals found (A: no think-tags, B: reasoning_tokens=0). Response length: 939 chars",
     "thinking_probe_confidence": "low",
-    "thinking_probe_at": "2026-04-23T13:55:59.170160+00:00"
+    "thinking_probe_at": "2026-04-23T13:55:59.170160+00:00",
+    "supports_tool_use": true,
+    "license": "Proprietary",
+    "license_url": null,
+    "commercial_use_allowed": true,
+    "vendor": "OpenAI"
   },
   {
     "model_id": "gpt-4o",
@@ -915,7 +964,12 @@
     "thinking_probe_detected": false,
     "thinking_probe_evidence": "No CoT signals found (A: no think-tags, B: reasoning_tokens=0). Response length: 884 chars",
     "thinking_probe_confidence": "low",
-    "thinking_probe_at": "2026-04-23T13:56:01.823919+00:00"
+    "thinking_probe_at": "2026-04-23T13:56:01.823919+00:00",
+    "supports_tool_use": true,
+    "license": "Proprietary",
+    "license_url": null,
+    "commercial_use_allowed": true,
+    "vendor": "OpenAI"
   },
   {
     "model_id": "gpt-5-mini",
@@ -951,7 +1005,12 @@
     "thinking_probe_detected": false,
     "thinking_probe_evidence": "No CoT signals found (A: no think-tags, B: reasoning_tokens=0). Response length: 204 chars",
     "thinking_probe_confidence": "low",
-    "thinking_probe_at": "2026-04-23T13:56:07.023022+00:00"
+    "thinking_probe_at": "2026-04-23T13:56:07.023022+00:00",
+    "supports_tool_use": true,
+    "license": "Proprietary",
+    "license_url": null,
+    "commercial_use_allowed": true,
+    "vendor": "OpenAI"
   },
   {
     "model_id": "gpt-5",
@@ -987,7 +1046,12 @@
     "thinking_probe_detected": false,
     "thinking_probe_evidence": "No CoT signals found (A: no think-tags, B: reasoning_tokens=0). Response length: 165 chars",
     "thinking_probe_confidence": "low",
-    "thinking_probe_at": "2026-04-23T13:56:12.869367+00:00"
+    "thinking_probe_at": "2026-04-23T13:56:12.869367+00:00",
+    "supports_tool_use": true,
+    "license": "Proprietary",
+    "license_url": null,
+    "commercial_use_allowed": true,
+    "vendor": "OpenAI"
   },
   {
     "model_id": "gpt-5.4-mini",
@@ -1023,7 +1087,12 @@
     "thinking_probe_detected": false,
     "thinking_probe_evidence": "No CoT signals found (A: no think-tags, B: reasoning_tokens=0). Response length: 370 chars",
     "thinking_probe_confidence": "low",
-    "thinking_probe_at": "2026-04-23T13:56:14.135935+00:00"
+    "thinking_probe_at": "2026-04-23T13:56:14.135935+00:00",
+    "supports_tool_use": true,
+    "license": "Proprietary",
+    "license_url": null,
+    "commercial_use_allowed": true,
+    "vendor": "OpenAI"
   },
   {
     "model_id": "gpt-5.4",
@@ -1058,7 +1127,12 @@
     "thinking_probe_detected": false,
     "thinking_probe_evidence": "No CoT signals found (A: no think-tags, B: reasoning_tokens=0). Response length: 210 chars",
     "thinking_probe_confidence": "low",
-    "thinking_probe_at": "2026-04-23T13:56:16.163403+00:00"
+    "thinking_probe_at": "2026-04-23T13:56:16.163403+00:00",
+    "supports_tool_use": true,
+    "license": "Proprietary",
+    "license_url": null,
+    "commercial_use_allowed": true,
+    "vendor": "OpenAI"
   },
   {
     "model_id": "gpt-oss:120b-cloud",
@@ -1089,7 +1163,12 @@
     "unknown": true,
     "generated_at": "2026-04-23T22:05:27.589226+00:00",
     "card_status": "complete",
-    "size_class": "Frontier"
+    "size_class": "Frontier",
+    "supports_tool_use": true,
+    "license": "Proprietary",
+    "license_url": null,
+    "commercial_use_allowed": true,
+    "vendor": "OpenAI"
   },
   {
     "model_id": "gpt-oss:20b-cloud",
@@ -1124,7 +1203,12 @@
     "thinking_probe_detected": false,
     "thinking_probe_evidence": "No CoT signals found (A: no think-tags, B: reasoning_tokens=0). Response length: 695 chars",
     "thinking_probe_confidence": "low",
-    "thinking_probe_at": "2026-05-01T10:49:29.669564+00:00"
+    "thinking_probe_at": "2026-05-01T10:49:29.669564+00:00",
+    "supports_tool_use": true,
+    "license": "Proprietary",
+    "license_url": null,
+    "commercial_use_allowed": true,
+    "vendor": "OpenAI"
   },
   {
     "model_id": "grok-3-mini",
@@ -1159,7 +1243,12 @@
     "thinking_probe_detected": false,
     "thinking_probe_evidence": "No CoT signals found (A: no think-tags, B: reasoning_tokens=0). Response length: 786 chars",
     "thinking_probe_confidence": "low",
-    "thinking_probe_at": "2026-04-23T13:56:31.428124+00:00"
+    "thinking_probe_at": "2026-04-23T13:56:31.428124+00:00",
+    "supports_tool_use": true,
+    "license": "Proprietary",
+    "license_url": null,
+    "commercial_use_allowed": true,
+    "vendor": "xAI"
   },
   {
     "model_id": "grok-3",
@@ -1195,7 +1284,12 @@
     "thinking_probe_detected": false,
     "thinking_probe_evidence": "No CoT signals found (A: no think-tags, B: reasoning_tokens=0). Response length: 1257 chars",
     "thinking_probe_confidence": "low",
-    "thinking_probe_at": "2026-04-23T13:56:35.233760+00:00"
+    "thinking_probe_at": "2026-04-23T13:56:35.233760+00:00",
+    "supports_tool_use": true,
+    "license": "Proprietary",
+    "license_url": null,
+    "commercial_use_allowed": true,
+    "vendor": "xAI"
   },
   {
     "model_id": "grok-4-1-fast-reasoning",
@@ -1230,7 +1324,12 @@
     "thinking_probe_detected": false,
     "thinking_probe_evidence": "No CoT signals found (A: no think-tags, B: reasoning_tokens=0). Response length: 583 chars",
     "thinking_probe_confidence": "low",
-    "thinking_probe_at": "2026-04-25T09:31:24.484059+00:00"
+    "thinking_probe_at": "2026-04-25T09:31:24.484059+00:00",
+    "supports_tool_use": true,
+    "license": "Proprietary",
+    "license_url": null,
+    "commercial_use_allowed": true,
+    "vendor": "xAI"
   },
   {
     "model_id": "grok-4-fast-non-reasoning",
@@ -1266,7 +1365,102 @@
     "thinking_probe_detected": false,
     "thinking_probe_evidence": "No CoT signals found (A: no think-tags, B: reasoning_tokens=0). Response length: 819 chars",
     "thinking_probe_confidence": "low",
-    "thinking_probe_at": "2026-04-25T09:30:57.213970+00:00"
+    "thinking_probe_at": "2026-04-25T09:30:57.213970+00:00",
+    "supports_tool_use": true,
+    "license": "Proprietary",
+    "license_url": null,
+    "commercial_use_allowed": true,
+    "vendor": "xAI"
+  },
+  {
+    "model_id": "grok-4.20-0309-non-reasoning",
+    "display_name": "Grok 4 (Non-Reasoning)",
+    "developer": "xAI",
+    "origin_country": "USA",
+    "developer_jurisdiction": "US",
+    "deployment_type": "cloud-only",
+    "local_deployment_possible": false,
+    "weights_provenance_risk": "medium",
+    "weights_provenance_risk_rationale": "xAI ist ein US-amerikanisches Unternehmen und unterliegt dem CLOUD Act, jedoch nicht dem chinesischen NSL; die Weights sind nicht öffentlich zugänglich.",
+    "model_family": "Grok",
+    "vendor": "xAI",
+    "primary_focus": "general",
+    "summary": "Grok 4 (Non-Reasoning) ist ein Cloud-Modell von xAI (USA), das ohne aktiviertes Chain-of-Thought-Reasoning betrieben wird. Es ist auf schnelle, direkte Antworten ausgelegt und eignet sich für allgemeine Assistenzaufgaben, Textverarbeitung und Konversation mit niedrigerer Latenz als Reasoning-Varianten.",
+    "strengths": [
+      "Niedrige Latenz durch deaktiviertes Chain-of-Thought-Reasoning",
+      "Breite Allround-Fähigkeiten für Konversation und Textaufgaben",
+      "Unterstützung von Tool Use / Function Calling für Agentenanwendungen"
+    ],
+    "known_limitations": [
+      "Schwächere Leistung bei komplexen mehrstufigen Schlussfolgerungsaufgaben im Vergleich zur Reasoning-Variante",
+      "Nur über xAI-Cloud-API verfügbar, kein lokaler Betrieb möglich"
+    ],
+    "judge_context_hint": "Das Modell ist die Non-Reasoning-Variante von Grok 4 und liefert direkte Antworten ohne sichtbare Denkschritte; Bewertungen sollten die fehlende explizite Reasoning-Kette berücksichtigen.",
+    "architecture_tags": [
+      "General",
+      "Thinking-Optional"
+    ],
+    "supports_tool_use": true,
+    "unknown": true,
+    "generated_at": "2026-05-04T17:56:59.089113+00:00",
+    "card_status": "complete",
+    "size_class": "Frontier",
+    "thinking_probe_detected": false,
+    "thinking_probe_evidence": "No CoT signals found (A: no think-tags, B: reasoning_tokens=0). Response length: 554 chars",
+    "thinking_probe_confidence": "low",
+    "thinking_probe_at": "2026-05-04T15:39:39.697605+00:00"
+  },
+  {
+    "model_id": "grok-4.20-0309-reasoning",
+    "display_name": "Grok 4 Reasoning (März 2025)",
+    "developer": "xAI",
+    "origin_country": "USA",
+    "developer_jurisdiction": "US",
+    "deployment_type": "cloud-only",
+    "local_deployment_possible": false,
+    "weights_provenance_risk": "medium",
+    "weights_provenance_risk_rationale": "xAI ist ein US-amerikanisches Unternehmen und unterliegt dem CLOUD Act, jedoch nicht dem chinesischen NSL; Gewichte sind nicht öffentlich zugänglich.",
+    "model_family": "Grok",
+    "vendor": "xAI",
+    "primary_focus": "reasoning",
+    "summary": "Grok 4 Reasoning ist ein Chain-of-Thought-Modell von xAI (USA), entwickelt für komplexe analytische und mathematische Aufgaben. Es nutzt explizites Reasoning vor der Antwort, ist auf Präzision bei mehrstufigen Problemen ausgelegt und wird ausschließlich über die xAI-Cloud-API bereitgestellt.",
+    "strengths": [
+      "Starkes mehrstufiges Schlussfolgern bei Mathematik- und Logikaufgaben",
+      "Explizite Reasoning-Traces erhöhen Nachvollziehbarkeit der Antworten",
+      "Gute Performance bei wissenschaftlichen und technischen Fragestellungen"
+    ],
+    "known_limitations": [
+      "Ausschließlich über xAI-Cloud verfügbar, kein lokaler Betrieb möglich",
+      "Reasoning-Modus erhöht Latenz und Token-Verbrauch gegenüber Standard-Modellen"
+    ],
+    "judge_context_hint": "Das Modell gibt explizite Reasoning-Traces aus; der Judge sollte die finale Antwort nach dem Thinking-Block bewerten und nicht den Denkprozess selbst.",
+    "architecture_tags": [
+      "Thinking"
+    ],
+    "supports_tool_use": true,
+    "unknown": true,
+    "generated_at": "2026-05-04T17:57:09.223611+00:00",
+    "card_status": "complete",
+    "size_class": "Frontier",
+    "thinking_probe_detected": false,
+    "thinking_probe_evidence": "No CoT signals found (A: no think-tags, B: reasoning_tokens=0). Response length: 888 chars",
+    "thinking_probe_confidence": "low",
+    "thinking_probe_at": "2026-05-04T16:28:34.262487+00:00"
+  },
+  {
+    "model_id": "grok-4.3",
+    "display_name": "grok-4.3",
+    "developer": "n/a",
+    "architecture_tags": [
+      "General"
+    ],
+    "card_status": "minimal",
+    "generated_at": "2026-05-04T11:33:17.460689+00:00",
+    "thinking_probe_detected": false,
+    "thinking_probe_evidence": "No CoT signals found (A: no think-tags, B: reasoning_tokens=0). Response length: 511 chars",
+    "thinking_probe_confidence": "low",
+    "thinking_probe_at": "2026-05-04T11:33:17.460683+00:00",
+    "vendor": "xAI"
   },
   {
     "model_id": "hermes3:8b",
@@ -1298,7 +1492,12 @@
     "unknown": false,
     "generated_at": "2026-04-23T22:09:38.126269+00:00",
     "card_status": "complete",
-    "size_class": "Edge"
+    "size_class": "Edge",
+    "supports_tool_use": true,
+    "license": "Meta Llama Community License",
+    "license_url": "https://www.llama.com/llama3/license/",
+    "commercial_use_allowed": null,
+    "vendor": "NousResearch"
   },
   {
     "model_id": "hf.co_bartowski_NousResearch_Hermes-4-14B-GGUF_Q4_K_M",
@@ -1332,12 +1531,17 @@
     "thinking_probe_detected": false,
     "thinking_probe_evidence": "No CoT signals found (A: no think-tags, B: reasoning_tokens=0). Response length: 1597 chars",
     "thinking_probe_confidence": "low",
-    "thinking_probe_at": "2026-04-25T08:51:31.152266+00:00"
+    "thinking_probe_at": "2026-04-25T08:51:31.152266+00:00",
+    "supports_tool_use": true,
+    "license": "Apache-2.0",
+    "license_url": "https://www.apache.org/licenses/LICENSE-2.0",
+    "commercial_use_allowed": true,
+    "vendor": "NousResearch"
   },
   {
     "model_id": "hf.co_mradermacher_Ministral-3-14B-abliterated-GGUF_Q8_0",
-    "display_name": "Ministral 3B/14B Abliterated (Q8_0 GGUF)",
-    "developer": "Mistral AI (base model) / mradermacher (GGUF conversion & abliteration)",
+    "display_name": "Ministral-3-14B Abliterated (Q8_0 GGUF)",
+    "developer": "Mistral AI (base model) / jenerallee78 (norm-preserving biprojected abliteration) / mradermacher (GGUF conversion)",
     "origin_country": "France",
     "developer_jurisdiction": "EU",
     "deployment_type": "open-weights",
@@ -1346,15 +1550,16 @@
     "weights_provenance_risk_rationale": "Das Basismodell stammt von Mistral AI mit Sitz in Frankreich (EU-Jurisdiktion); die GGUF-Konvertierung und Abliteration durch mradermacher ändert die Gewichts-Herkunft nicht.",
     "model_family": "Mistral",
     "primary_focus": "instruction-following",
-    "summary": "Mistral-basiertes Modell in GGUF-Format (Q8_0), abliteriert durch mradermacher. Abliteration entfernt Refusal-Verhalten durch gezielte Gewichtsmanipulation. Geeignet für unzensierte Instruktionsausführung. Stärken liegen in Mehrsprachigkeit und kompakter Effizienz typischer Mistral-Architektur.",
+    "summary": "Abliterierte Version von mistralai/Ministral-3-14B-Instruct-2512 (Dezember 2025, ~14B Parameter). Abliterierung durch jenerallee78 mittels norm-preserving biprojected abliteration (grimjim/llm-abliteration): entfernt Refusal-Richtung aus den Gewichten ohne Qualitätsverlust. GGUF-Quantisierung Q8_0 durch mradermacher. Lizenz: Apache 2.0 (sowohl abliterierte Version als auch GGUF-Repo).",
     "strengths": [
       "Keine eingebauten Refusal-Mechanismen durch Abliteration – folgt Anweisungen ohne themenbasierte Verweigerung",
       "Hohe Quantisierungsqualität (Q8_0) mit minimalem Qualitätsverlust gegenüber FP16",
       "Effizient lokal betreibbar dank GGUF-Format (llama.cpp-kompatibel)"
     ],
     "known_limitations": [
-      "Abliteration kann Sicherheitsfilter vollständig entfernen, was missbräuchliche Nutzung erleichtert und den Einsatz in produktiven Umgebungen einschränkt",
-      "Kein offiziell unterstütztes Modell – Qualität und Verhalten hängen von der Abliterations-Implementierung eines Drittanbieters ab"
+      "Abliteration entfernt Content-Safety-Filter vollständig – missbräuchliche Nutzung wird erleichtert, Einsatz in produktiven Systemen erfordert eigene Sicherheitsebene",
+      "Kein offiziell unterstütztes Modell: zwei Drittanbieter-Schritte (Abliteration + GGUF-Quantisierung) – Qualität und Verhalten abhängig von Community-Implementierungen",
+      "Norm-preserving biprojected abliteration ist robuster als einfache abliteration, kann aber dennoch Wissenslücken oder Verhaltensänderungen in Randbereichen erzeugen"
     ],
     "judge_context_hint": "Das Modell wurde abliteriert, d.h. Refusal-Training wurde gezielt entfernt – der Judge sollte keine Compliance-Verweigerungen erwarten und Antwortqualität unabhängig von Themensensitivität bewerten.",
     "architecture_tags": [
@@ -1366,7 +1571,12 @@
     "thinking_probe_detected": false,
     "thinking_probe_evidence": "No CoT signals found (A: no think-tags, B: reasoning_tokens=0). Response length: 581 chars",
     "thinking_probe_confidence": "low",
-    "thinking_probe_at": "2026-05-02T13:23:01.540881+00:00"
+    "thinking_probe_at": "2026-05-02T13:23:01.540881+00:00",
+    "supports_tool_use": false,
+    "license": "Apache-2.0",
+    "license_url": "https://www.apache.org/licenses/LICENSE-2.0",
+    "commercial_use_allowed": true,
+    "vendor": "Community"
   },
   {
     "model_id": "llama-3.3-70b-versatile",
@@ -1402,7 +1612,12 @@
     "thinking_probe_detected": false,
     "thinking_probe_evidence": "No CoT signals found (A: no think-tags, B: reasoning_tokens=0). Response length: 426 chars",
     "thinking_probe_confidence": "low",
-    "thinking_probe_at": "2026-04-23T13:56:48.020175+00:00"
+    "thinking_probe_at": "2026-04-23T13:56:48.020175+00:00",
+    "supports_tool_use": true,
+    "license": "Meta Llama Community License",
+    "license_url": "https://www.llama.com/llama3/license/",
+    "commercial_use_allowed": null,
+    "vendor": "Meta"
   },
   {
     "model_id": "magistral-medium-latest",
@@ -1438,7 +1653,12 @@
     "thinking_probe_detected": false,
     "thinking_probe_evidence": "No CoT signals found (A: no think-tags, B: reasoning_tokens=0). Response length: 469 chars",
     "thinking_probe_confidence": "low",
-    "thinking_probe_at": "2026-04-23T18:08:27.324290+00:00"
+    "thinking_probe_at": "2026-04-23T18:08:27.324290+00:00",
+    "supports_tool_use": true,
+    "license": "Proprietary",
+    "license_url": null,
+    "commercial_use_allowed": true,
+    "vendor": "Mistral AI"
   },
   {
     "model_id": "magistral-small-latest",
@@ -1473,7 +1693,12 @@
     "thinking_probe_detected": false,
     "thinking_probe_evidence": "No CoT signals found (A: no think-tags, B: reasoning_tokens=0). Response length: 1079 chars",
     "thinking_probe_confidence": "low",
-    "thinking_probe_at": "2026-04-23T18:34:44.371582+00:00"
+    "thinking_probe_at": "2026-04-23T18:34:44.371582+00:00",
+    "supports_tool_use": true,
+    "license": "Proprietary",
+    "license_url": null,
+    "commercial_use_allowed": true,
+    "vendor": "Mistral AI"
   },
   {
     "model_id": "meta-llama/llama-4-scout-17b-16e-instruct",
@@ -1505,7 +1730,12 @@
     "unknown": false,
     "generated_at": "2026-04-23T22:02:51.147355+00:00",
     "card_status": "complete",
-    "size_class": "Desktop"
+    "size_class": "Desktop",
+    "supports_tool_use": true,
+    "license": "Meta Llama Community License",
+    "license_url": "https://www.llama.com/llama4/license/",
+    "commercial_use_allowed": null,
+    "vendor": "Meta"
   },
   {
     "model_id": "minimax/minimax-m2.7-20260318",
@@ -1537,38 +1767,12 @@
     "unknown": false,
     "generated_at": "2026-04-23T22:04:04.739773+00:00",
     "card_status": "complete",
-    "size_class": "Frontier"
-  },
-  {
-    "model_id": "minimax_minimax-m2.7",
-    "display_name": "MiniMax M2.7",
-    "developer": "MiniMax",
-    "origin_country": "China",
-    "developer_jurisdiction": "CN",
-    "deployment_type": "cloud-only",
-    "local_deployment_possible": false,
-    "weights_provenance_risk": "high",
-    "weights_provenance_risk_rationale": "MiniMax ist ein chinesisches Unternehmen und unterliegt dem chinesischen National Security Law (NSL), das staatlichen Zugriff auf Daten und Modelle ermöglichen kann.",
-    "model_family": "MiniMax",
-    "primary_focus": "general",
-    "summary": "MiniMax M2.7 ist ein chinesisches Sprachmodell von MiniMax, entwickelt für allgemeine Sprach- und Reasoning-Aufgaben. Es zielt auf starke Mehrsprachigkeit, Instruktionsbefolgung und Konversationsfähigkeit ab und positioniert sich als leistungsfähiges Allround-Modell im chinesischen KI-Ökosystem.",
-    "strengths": [
-      "Starke Mehrsprachigkeit mit besonderem Fokus auf Chinesisch und Englisch",
-      "Solide Instruktionsbefolgung für konversationelle und aufgabenorientierte Szenarien",
-      "Kompetitives Allround-Profil für Text-Generierung und Zusammenfassung"
-    ],
-    "known_limitations": [
-      "Gewichte nicht öffentlich verfügbar, daher keine lokale oder private Nutzung möglich",
-      "Begrenzte unabhängige Benchmarking-Daten verfügbar, Leistung in Nischen-Domänen schwer einschätzbar"
-    ],
-    "judge_context_hint": "Das Modell ist auf chinesisch-englische Konversation optimiert; bei rein englischen Reasoning-Benchmarks kann es gegenüber westlichen Modellen vergleichbarer Größe leicht zurückfallen.",
-    "architecture_tags": [
-      "General"
-    ],
-    "unknown": false,
-    "generated_at": "2026-05-01T13:40:21.838796+00:00",
-    "card_status": "complete",
-    "size_class": "Frontier"
+    "size_class": "Frontier",
+    "supports_tool_use": true,
+    "license": null,
+    "license_url": null,
+    "commercial_use_allowed": null,
+    "vendor": "MiniMax"
   },
   {
     "model_id": "ministral-3:14b",
@@ -1600,7 +1804,12 @@
     "unknown": false,
     "generated_at": "2026-04-23T22:05:06.507519+00:00",
     "card_status": "complete",
-    "size_class": "Desktop"
+    "size_class": "Desktop",
+    "supports_tool_use": true,
+    "license": "Mistral Research License",
+    "license_url": "https://mistral.ai/licenses/MRL-0.1.md",
+    "commercial_use_allowed": null,
+    "vendor": "Mistral AI"
   },
   {
     "model_id": "ministral-3:8b",
@@ -1632,7 +1841,12 @@
     "unknown": false,
     "generated_at": "2026-04-23T22:06:17.251492+00:00",
     "card_status": "complete",
-    "size_class": "Edge"
+    "size_class": "Edge",
+    "supports_tool_use": true,
+    "license": "Mistral Research License",
+    "license_url": "https://mistral.ai/licenses/MRL-0.1.md",
+    "commercial_use_allowed": null,
+    "vendor": "Mistral AI"
   },
   {
     "model_id": "mistral-large-latest",
@@ -1668,7 +1882,12 @@
     "thinking_probe_detected": false,
     "thinking_probe_evidence": "No CoT signals found (A: no think-tags, B: reasoning_tokens=0). Response length: 486 chars",
     "thinking_probe_confidence": "low",
-    "thinking_probe_at": "2026-04-23T13:57:02.810497+00:00"
+    "thinking_probe_at": "2026-04-23T13:57:02.810497+00:00",
+    "supports_tool_use": true,
+    "license": "Proprietary",
+    "license_url": null,
+    "commercial_use_allowed": true,
+    "vendor": "Mistral AI"
   },
   {
     "model_id": "mistral-medium-latest",
@@ -1704,7 +1923,12 @@
     "thinking_probe_detected": false,
     "thinking_probe_evidence": "No CoT signals found (A: no think-tags, B: reasoning_tokens=0). Response length: 519 chars",
     "thinking_probe_confidence": "low",
-    "thinking_probe_at": "2026-04-23T13:57:05.868894+00:00"
+    "thinking_probe_at": "2026-04-23T13:57:05.868894+00:00",
+    "supports_tool_use": true,
+    "license": "Proprietary",
+    "license_url": null,
+    "commercial_use_allowed": true,
+    "vendor": "Mistral AI"
   },
   {
     "model_id": "mistral-small-latest",
@@ -1740,7 +1964,12 @@
     "thinking_probe_detected": false,
     "thinking_probe_evidence": "No CoT signals found (A: no think-tags, B: reasoning_tokens=0). Response length: 528 chars",
     "thinking_probe_confidence": "low",
-    "thinking_probe_at": "2026-04-23T13:57:06.994344+00:00"
+    "thinking_probe_at": "2026-04-23T13:57:06.994344+00:00",
+    "supports_tool_use": true,
+    "license": "Apache-2.0",
+    "license_url": "https://www.apache.org/licenses/LICENSE-2.0",
+    "commercial_use_allowed": true,
+    "vendor": "Mistral AI"
   },
   {
     "model_id": "moonshotai/kimi-k2-thinking-20251106",
@@ -1780,7 +2009,12 @@
     "thinking_probe_detected": null,
     "thinking_probe_evidence": "Not yet probed — model not yet benchmarked",
     "thinking_probe_confidence": "none",
-    "thinking_probe_at": null
+    "thinking_probe_at": null,
+    "supports_tool_use": true,
+    "license": "Moonshot AI License",
+    "license_url": "https://huggingface.co/moonshotai/Kimi-K2-Instruct/blob/main/LICENSE",
+    "commercial_use_allowed": null,
+    "vendor": "Moonshot AI"
   },
   {
     "model_id": "moonshotai/kimi-k2",
@@ -1817,7 +2051,12 @@
     "thinking_probe_detected": false,
     "thinking_probe_evidence": "No CoT signals found (A: no think-tags, B: reasoning_tokens=0). Response length: 371 chars",
     "thinking_probe_confidence": "low",
-    "thinking_probe_at": "2026-04-24T09:00:50.327648+00:00"
+    "thinking_probe_at": "2026-04-24T09:00:50.327648+00:00",
+    "supports_tool_use": true,
+    "license": "Moonshot AI License",
+    "license_url": "https://huggingface.co/moonshotai/Kimi-K2-Instruct/blob/main/LICENSE",
+    "commercial_use_allowed": null,
+    "vendor": "Moonshot AI"
   },
   {
     "model_id": "moonshotai/kimi-k2.5-0127",
@@ -1853,39 +2092,12 @@
     "thinking_probe_detected": true,
     "thinking_probe_evidence": "reasoning_tokens=278 in provider metadata",
     "thinking_probe_confidence": "medium",
-    "thinking_probe_at": "2026-04-23T14:11:04.288731+00:00"
-  },
-  {
-    "model_id": "moonshotai_kimi-k2.5",
-    "display_name": "Kimi K2.5",
-    "developer": "Moonshot AI",
-    "origin_country": "China",
-    "developer_jurisdiction": "CN",
-    "deployment_type": "cloud-only",
-    "local_deployment_possible": false,
-    "weights_provenance_risk": "high",
-    "weights_provenance_risk_rationale": "Moonshot AI ist ein chinesisches Unternehmen und unterliegt dem chinesischen National Security Law (NSL), das staatlichen Zugriff auf Daten und Modelle ermöglichen kann.",
-    "model_family": "Kimi",
-    "primary_focus": "reasoning",
-    "summary": "Kimi K2.5 ist ein Reasoning-Modell von Moonshot AI aus China, entwickelt für komplexe mehrstufige Schlussfolgerungen, mathematische Aufgaben und Code-Analyse. Es kombiniert starkes logisches Denken mit langen Kontextfenstern und wurde als Weiterentwicklung der Kimi-Reihe für anspruchsvolle analytische Aufgaben konzipiert.",
-    "strengths": [
-      "Starke Leistung bei mehrstufigen Reasoning-Aufgaben und mathematischen Problemen",
-      "Unterstützung sehr langer Kontextfenster für umfangreiche Dokumentenanalyse",
-      "Gute Mehrsprachigkeit mit besonderem Fokus auf Chinesisch und Englisch"
-    ],
-    "known_limitations": [
-      "Nur über Moonshot-API verfügbar, keine lokale Ausführung möglich",
-      "Weniger transparent bezüglich Trainingsdaten und Modellarchitektur als Open-Weights-Alternativen"
-    ],
-    "judge_context_hint": "Kimi K2.5 ist auf Reasoning spezialisiert und kann bei komplexen Aufgaben interne Chain-of-Thought-Prozesse nutzen – Antworten können ausführlicher und strukturierter ausfallen als bei reinen Instruction-Following-Modellen.",
-    "architecture_tags": [
-      "Thinking",
-      "Agentic-Orchestrator"
-    ],
-    "unknown": false,
-    "generated_at": "2026-05-01T13:38:50.180648+00:00",
-    "card_status": "complete",
-    "size_class": "Frontier"
+    "thinking_probe_at": "2026-04-23T14:11:04.288731+00:00",
+    "supports_tool_use": true,
+    "license": "Moonshot AI License",
+    "license_url": "https://huggingface.co/moonshotai/Kimi-K2-Instruct/blob/main/LICENSE",
+    "commercial_use_allowed": null,
+    "vendor": "Moonshot AI"
   },
   {
     "model_id": "moonshotai/kimi-k2.6",
@@ -1917,7 +2129,16 @@
     "unknown": false,
     "generated_at": "2026-05-02T20:31:39.248362+00:00",
     "card_status": "complete",
-    "size_class": "Frontier"
+    "size_class": "Frontier",
+    "thinking_probe_detected": true,
+    "thinking_probe_evidence": "reasoning_tokens=204 in provider metadata",
+    "thinking_probe_confidence": "medium",
+    "thinking_probe_at": "2026-05-03T19:26:41.855429+00:00",
+    "supports_tool_use": true,
+    "license": "Moonshot AI License",
+    "license_url": "https://huggingface.co/moonshotai/Kimi-K2-Instruct/blob/main/LICENSE",
+    "commercial_use_allowed": null,
+    "vendor": "Moonshot AI"
   },
   {
     "model_id": "nousresearch/hermes-4-405b",
@@ -1953,7 +2174,12 @@
     "thinking_probe_detected": false,
     "thinking_probe_evidence": "No CoT signals found (A: no think-tags, B: reasoning_tokens=0). Response length: 612 chars",
     "thinking_probe_confidence": "low",
-    "thinking_probe_at": "2026-05-02T16:49:08.185081+00:00"
+    "thinking_probe_at": "2026-05-02T16:49:08.185081+00:00",
+    "supports_tool_use": true,
+    "license": "Meta Llama Community License",
+    "license_url": "https://www.llama.com/llama3/license/",
+    "commercial_use_allowed": null,
+    "vendor": "NousResearch"
   },
   {
     "model_id": "nousresearch/hermes-4-70b",
@@ -1989,7 +2215,12 @@
     "thinking_probe_detected": false,
     "thinking_probe_evidence": "No CoT signals found (A: no think-tags, B: reasoning_tokens=0). Response length: 445 chars",
     "thinking_probe_confidence": "low",
-    "thinking_probe_at": "2026-05-02T16:17:54.270019+00:00"
+    "thinking_probe_at": "2026-05-02T16:17:54.270019+00:00",
+    "supports_tool_use": true,
+    "license": "Meta Llama Community License",
+    "license_url": "https://www.llama.com/llama3/license/",
+    "commercial_use_allowed": null,
+    "vendor": "NousResearch"
   },
   {
     "model_id": "o1",
@@ -2024,7 +2255,12 @@
     "thinking_probe_detected": true,
     "thinking_probe_evidence": "Manually confirmed: OpenAI o-series models use internal chain-of-thought reasoning. The API does not expose reasoning tokens or think-tags in the response body; automated probe cannot detect this. Token budget override is required.",
     "thinking_probe_confidence": "high",
-    "thinking_probe_at": "2026-04-23T13:57:13.411729+00:00"
+    "thinking_probe_at": "2026-04-23T13:57:13.411729+00:00",
+    "supports_tool_use": true,
+    "license": "Proprietary",
+    "license_url": null,
+    "commercial_use_allowed": true,
+    "vendor": "OpenAI"
   },
   {
     "model_id": "o3-mini",
@@ -2059,7 +2295,12 @@
     "thinking_probe_detected": true,
     "thinking_probe_evidence": "Manually confirmed: OpenAI o-series models use internal chain-of-thought reasoning. The API does not expose reasoning tokens or think-tags in the response body; automated probe cannot detect this. Token budget override is required.",
     "thinking_probe_confidence": "high",
-    "thinking_probe_at": "2026-04-23T13:57:17.516314+00:00"
+    "thinking_probe_at": "2026-04-23T13:57:17.516314+00:00",
+    "supports_tool_use": true,
+    "license": "Proprietary",
+    "license_url": null,
+    "commercial_use_allowed": true,
+    "vendor": "OpenAI"
   },
   {
     "model_id": "o4-mini",
@@ -2094,7 +2335,12 @@
     "thinking_probe_detected": true,
     "thinking_probe_evidence": "Manually confirmed: OpenAI o-series models use internal chain-of-thought reasoning. The API does not expose reasoning tokens or think-tags in the response body; automated probe cannot detect this. Token budget override is required.",
     "thinking_probe_confidence": "high",
-    "thinking_probe_at": "2026-04-23T13:57:24.143470+00:00"
+    "thinking_probe_at": "2026-04-23T13:57:24.143470+00:00",
+    "supports_tool_use": true,
+    "license": "Proprietary",
+    "license_url": null,
+    "commercial_use_allowed": true,
+    "vendor": "OpenAI"
   },
   {
     "model_id": "qwen2.5-coder:7b",
@@ -2129,7 +2375,12 @@
     "thinking_probe_detected": false,
     "thinking_probe_evidence": "No CoT signals found (A: no think-tags, B: reasoning_tokens=0). Response length: 609 chars",
     "thinking_probe_confidence": "low",
-    "thinking_probe_at": "2026-04-25T09:20:47.385071+00:00"
+    "thinking_probe_at": "2026-04-25T09:20:47.385071+00:00",
+    "supports_tool_use": true,
+    "license": "Apache-2.0",
+    "license_url": "https://www.apache.org/licenses/LICENSE-2.0",
+    "commercial_use_allowed": true,
+    "vendor": "Alibaba"
   },
   {
     "model_id": "qwen2.5:3b",
@@ -2165,7 +2416,12 @@
     "thinking_probe_detected": false,
     "thinking_probe_evidence": "No CoT signals found (A: no think-tags, B: reasoning_tokens=0). Response length: 961 chars",
     "thinking_probe_confidence": "low",
-    "thinking_probe_at": "2026-04-25T09:21:17.181757+00:00"
+    "thinking_probe_at": "2026-04-25T09:21:17.181757+00:00",
+    "supports_tool_use": true,
+    "license": "Apache-2.0",
+    "license_url": "https://www.apache.org/licenses/LICENSE-2.0",
+    "commercial_use_allowed": true,
+    "vendor": "Alibaba"
   },
   {
     "model_id": "qwen3:14b",
@@ -2201,7 +2457,12 @@
     "thinking_probe_detected": false,
     "thinking_probe_evidence": "No CoT signals found (A: no think-tags, B: reasoning_tokens=0). Response length: 1746 chars",
     "thinking_probe_confidence": "low",
-    "thinking_probe_at": "2026-04-25T09:26:26.796058+00:00"
+    "thinking_probe_at": "2026-04-25T09:26:26.796058+00:00",
+    "supports_tool_use": true,
+    "license": "Apache-2.0",
+    "license_url": "https://www.apache.org/licenses/LICENSE-2.0",
+    "commercial_use_allowed": true,
+    "vendor": "Alibaba"
   },
   {
     "model_id": "qwen3:4b",
@@ -2237,7 +2498,12 @@
     "thinking_probe_detected": false,
     "thinking_probe_evidence": "No CoT signals found (A: no think-tags, B: reasoning_tokens=0). Response length: 105 chars",
     "thinking_probe_confidence": "low",
-    "thinking_probe_at": "2026-04-25T09:27:14.723242+00:00"
+    "thinking_probe_at": "2026-04-25T09:27:14.723242+00:00",
+    "supports_tool_use": true,
+    "license": "Apache-2.0",
+    "license_url": "https://www.apache.org/licenses/LICENSE-2.0",
+    "commercial_use_allowed": true,
+    "vendor": "Alibaba"
   },
   {
     "model_id": "qwen3.5:397b-cloud",
@@ -2273,7 +2539,12 @@
     "thinking_probe_detected": false,
     "thinking_probe_evidence": "No CoT signals found (A: no think-tags, B: reasoning_tokens=0). Response length: 1407 chars",
     "thinking_probe_confidence": "low",
-    "thinking_probe_at": "2026-05-01T10:51:29.799294+00:00"
+    "thinking_probe_at": "2026-05-01T10:51:29.799294+00:00",
+    "supports_tool_use": true,
+    "license": "Proprietary",
+    "license_url": null,
+    "commercial_use_allowed": true,
+    "vendor": "Alibaba"
   },
   {
     "model_id": "qwen3.5:9b",
@@ -2309,7 +2580,12 @@
     "thinking_probe_detected": false,
     "thinking_probe_evidence": "No CoT signals found (A: no think-tags, B: reasoning_tokens=0). Response length: 1582 chars",
     "thinking_probe_confidence": "low",
-    "thinking_probe_at": "2026-04-25T09:25:30.007908+00:00"
+    "thinking_probe_at": "2026-04-25T09:25:30.007908+00:00",
+    "supports_tool_use": true,
+    "license": "Apache-2.0",
+    "license_url": "https://www.apache.org/licenses/LICENSE-2.0",
+    "commercial_use_allowed": true,
+    "vendor": "Alibaba"
   },
   {
     "model_id": "qwen/qwen3-32b",
@@ -2345,7 +2621,12 @@
     "thinking_probe_detected": true,
     "thinking_probe_evidence": "Think-tag found in response (first 200 chars): <think>\nOkay, so I need to find the average speed of a train that travels 120 kilometers in 1.5 hours. Hmm, let me think. I remember that average speed is calculated by dividing the total distance by ",
     "thinking_probe_confidence": "high",
-    "thinking_probe_at": "2026-04-25T09:31:50.465081+00:00"
+    "thinking_probe_at": "2026-04-25T09:31:50.465081+00:00",
+    "supports_tool_use": true,
+    "license": "Apache-2.0",
+    "license_url": "https://www.apache.org/licenses/LICENSE-2.0",
+    "commercial_use_allowed": true,
+    "vendor": "Alibaba"
   },
   {
     "model_id": "z-ai/glm-4.6",
@@ -2381,7 +2662,12 @@
     "thinking_probe_detected": true,
     "thinking_probe_evidence": "reasoning_tokens=512 in provider metadata",
     "thinking_probe_confidence": "medium",
-    "thinking_probe_at": "2026-05-02T17:28:34.654933+00:00"
+    "thinking_probe_at": "2026-05-02T17:28:34.654933+00:00",
+    "supports_tool_use": true,
+    "license": "GLM-4 License",
+    "license_url": "https://huggingface.co/THUDM/glm-4-9b/blob/main/LICENSE",
+    "commercial_use_allowed": false,
+    "vendor": "Zhipu AI"
   },
   {
     "model_id": "z-ai/glm-4.7",
@@ -2417,7 +2703,12 @@
     "thinking_probe_detected": true,
     "thinking_probe_evidence": "reasoning_tokens=385 in provider metadata",
     "thinking_probe_confidence": "medium",
-    "thinking_probe_at": "2026-05-02T18:51:15.646745+00:00"
+    "thinking_probe_at": "2026-05-02T18:51:15.646745+00:00",
+    "supports_tool_use": true,
+    "license": "GLM-4 License",
+    "license_url": "https://huggingface.co/THUDM/glm-4-9b/blob/main/LICENSE",
+    "commercial_use_allowed": false,
+    "vendor": "Zhipu AI"
   },
   {
     "model_id": "z-ai/glm-5-20260211",
@@ -2425,10 +2716,10 @@
     "developer": "Zhipu AI",
     "origin_country": "China",
     "developer_jurisdiction": "CN",
-    "deployment_type": "open-weights-cloud-available",
-    "local_deployment_possible": true,
+    "deployment_type": "cloud-only",
+    "local_deployment_possible": false,
     "weights_provenance_risk": "high",
-    "weights_provenance_risk_rationale": "Zhipu AI ist ein chinesisches Unternehmen und unterliegt dem chinesischen Nationalen Sicherheitsgesetz (NSL), das staatlichen Zugriff auf Daten und Modellgewichte ermöglichen kann.",
+    "weights_provenance_risk_rationale": "Zhipu AI ist ein chinesisches Unternehmen und unterliegt dem chinesischen Nationalen Sicherheitsgesetz (NSL), das staatlichen Zugriff auf verarbeitete Daten ermöglichen kann. Die Modellgewichte sind nicht öffentlich zugänglich.",
     "model_family": "GLM",
     "primary_focus": "general",
     "summary": "GLM-5 ist ein chinesisches Large Language Model von Zhipu AI, entwickelt als Nachfolger der GLM-Reihe. Es wurde auf mehrsprachigen und chinesischsprachigen Daten trainiert, mit Stärken in Reasoning, Dialogführung und Instruktionsbefolgung. Ziel ist ein leistungsfähiges Allround-Modell für akademische und kommerzielle Anwendungen.",
@@ -2448,7 +2739,12 @@
     "unknown": true,
     "generated_at": "2026-04-23T22:03:28.984456+00:00",
     "card_status": "complete",
-    "size_class": "Frontier"
+    "size_class": "Frontier",
+    "supports_tool_use": true,
+    "license": "Proprietary",
+    "license_url": null,
+    "commercial_use_allowed": true,
+    "vendor": "Zhipu AI"
   },
   {
     "model_id": "z-ai/glm-5-turbo-20260315",
@@ -2480,69 +2776,12 @@
     "unknown": false,
     "generated_at": "2026-04-23T22:03:36.991556+00:00",
     "card_status": "complete",
-    "size_class": "Frontier"
-  },
-  {
-    "model_id": "z-ai_glm-5-turbo",
-    "display_name": "GLM-5 Turbo",
-    "developer": "Zhipu AI",
-    "origin_country": "China",
-    "developer_jurisdiction": "CN",
-    "deployment_type": "cloud-only",
-    "local_deployment_possible": false,
-    "weights_provenance_risk": "high",
-    "weights_provenance_risk_rationale": "Zhipu AI ist ein chinesisches Unternehmen und unterliegt dem chinesischen Nationalen Sicherheitsgesetz (NSL), das staatlichen Zugriff auf Daten und Modelle ermöglichen kann.",
-    "model_family": "GLM",
-    "primary_focus": "general",
-    "summary": "GLM-5 Turbo ist ein chinesisches Sprachmodell von Zhipu AI, entwickelt als schnelle, kosteneffiziente Variante der GLM-5-Familie. Trainiert auf mehrsprachigen Daten mit Fokus auf Chinesisch und Englisch, eignet es sich für Konversation, Textverarbeitung und leichte Reasoning-Aufgaben im API-Betrieb.",
-    "strengths": [
-      "Starke Leistung in chinesisch-sprachigen Aufgaben und Nuancen",
-      "Schnelle Inferenzgeschwindigkeit als Turbo-Variante",
-      "Gute Allround-Fähigkeiten für Konversation und Textgenerierung"
-    ],
-    "known_limitations": [
-      "Nur über Cloud-API verfügbar, keine lokale Ausführung möglich",
-      "Mögliche Zensur oder Einschränkungen bei politisch sensiblen Themen gemäß chinesischer Regulierung"
-    ],
-    "judge_context_hint": "Das Modell kann bei politisch oder kulturell sensiblen Themen mit Bezug zu China eingeschränkte oder ausweichende Antworten liefern; dies sollte bei der Bewertung von Offenheit und Vollständigkeit berücksichtigt werden.",
-    "architecture_tags": [
-      "General"
-    ],
-    "unknown": false,
-    "generated_at": "2026-05-01T13:44:57.143603+00:00",
-    "card_status": "complete",
-    "size_class": "Frontier"
-  },
-  {
-    "model_id": "z-ai_glm-5",
-    "display_name": "GLM-5",
-    "developer": "Zhipu AI",
-    "origin_country": "China",
-    "developer_jurisdiction": "CN",
-    "deployment_type": "cloud-only",
-    "local_deployment_possible": false,
-    "weights_provenance_risk": "high",
-    "weights_provenance_risk_rationale": "Zhipu AI ist ein chinesisches Unternehmen und unterliegt dem chinesischen Nationalen Sicherheitsgesetz (NSL), das staatlichen Zugriff auf Daten und Modelle ermöglichen kann.",
-    "model_family": "GLM",
-    "primary_focus": "general",
-    "summary": "GLM-5 ist ein Sprachmodell von Zhipu AI aus China, entwickelt auf Basis der GLM-Architektur. Es zielt auf starke mehrsprachige Fähigkeiten, insbesondere Chinesisch und Englisch, sowie auf allgemeines Instruction-Following und Reasoning. Typische Stärken liegen in Textverständnis, Dialogführung und strukturierter Ausgabe.",
-    "strengths": [
-      "Starke Leistung in Chinesisch und Englisch",
-      "Solides allgemeines Instruction-Following",
-      "Gute Dialogkohärenz über mehrere Gesprächsrunden"
-    ],
-    "known_limitations": [
-      "Begrenzte öffentliche Dokumentation zu Trainingsdetails und Benchmarks",
-      "Mögliche Zensur oder inhaltliche Einschränkungen bei politisch sensiblen Themen"
-    ],
-    "judge_context_hint": "Das Modell kann bei politisch oder kulturell sensiblen Themen mit Bezug zu China inhaltlich eingeschränkt reagieren; dies sollte bei der Bewertung offener Antwortqualität berücksichtigt werden.",
-    "architecture_tags": [
-      "General"
-    ],
-    "unknown": true,
-    "generated_at": "2026-05-01T13:20:18.688837+00:00",
-    "card_status": "complete",
-    "size_class": "Frontier"
+    "size_class": "Frontier",
+    "supports_tool_use": true,
+    "license": "Proprietary",
+    "license_url": null,
+    "commercial_use_allowed": true,
+    "vendor": "Zhipu AI"
   },
   {
     "model_id": "z-ai/glm-5.1-20260406",
@@ -2550,17 +2789,17 @@
     "developer": "Zhipu AI",
     "origin_country": "China",
     "developer_jurisdiction": "CN",
-    "deployment_type": "open-weights-cloud-available",
-    "local_deployment_possible": true,
+    "deployment_type": "cloud-only",
+    "local_deployment_possible": false,
     "weights_provenance_risk": "high",
-    "weights_provenance_risk_rationale": "Zhipu AI ist ein chinesisches Unternehmen und unterliegt dem chinesischen National Security Law (NSL), das staatlichen Zugriff auf Daten und Modelle ermöglichen kann.",
+    "weights_provenance_risk_rationale": "Zhipu AI ist ein chinesisches Unternehmen und unterliegt dem chinesischen National Security Law (NSL), das staatlichen Zugriff auf verarbeitete Daten ermöglichen kann. Die Modellgewichte sind nicht öffentlich zugänglich.",
     "model_family": "GLM",
     "primary_focus": "general",
-    "summary": "GLM 5.1 ist ein Sprachmodell von Zhipu AI aus China, entwickelt als Weiterentwicklung der GLM-Reihe. Trainiert auf mehrsprachigen Daten mit Fokus auf Chinesisch und Englisch. Stärken liegen in Instruction-Following, Textverständnis und allgemeinen Aufgaben. Ziel ist ein leistungsfähiges Open-Weights-Modell für breite Anwendungsfälle.",
+    "summary": "GLM 5.1 ist ein kommerzielles Sprachmodell von Zhipu AI aus China, entwickelt als Weiterentwicklung der GLM-Reihe. Trainiert auf mehrsprachigen Daten mit Fokus auf Chinesisch und Englisch. Stärken liegen in Instruction-Following, Textverständnis und allgemeinen Aufgaben. Zugang ausschließlich über die Z.ai API bzw. OpenRouter.",
     "strengths": [
       "Starke Leistung in chinesisch- und englischsprachigen Aufgaben",
       "Gutes Instruction-Following und Dialogverhalten",
-      "Open-Weights verfügbar, lokal deploybar"
+      "Verfügbar via OpenRouter für einfache API-Integration"
     ],
     "known_limitations": [
       "Detaillierte technische Spezifikationen und Trainingsdaten sind nicht vollständig öffentlich dokumentiert",
@@ -2578,38 +2817,11 @@
     "thinking_probe_detected": true,
     "thinking_probe_evidence": "reasoning_tokens=530 in provider metadata",
     "thinking_probe_confidence": "medium",
-    "thinking_probe_at": "2026-04-25T09:32:21.175051+00:00"
-  },
-  {
-    "model_id": "z-ai_glm-5.1",
-    "display_name": "GLM 5.1",
-    "developer": "Zhipu AI",
-    "origin_country": "China",
-    "developer_jurisdiction": "CN",
-    "deployment_type": "open-weights-cloud-available",
-    "local_deployment_possible": true,
-    "weights_provenance_risk": "high",
-    "weights_provenance_risk_rationale": "Zhipu AI ist ein chinesisches Unternehmen und unterliegt dem chinesischen Nationalen Sicherheitsgesetz (NSL), das staatlichen Zugriff auf Daten und Modellgewichte ermöglichen kann.",
-    "model_family": "GLM",
-    "primary_focus": "general",
-    "summary": "GLM 5.1 ist ein chinesisches Sprachmodell von Zhipu AI, entwickelt auf Basis der GLM-Architektur. Es wurde auf mehrsprachigen Daten mit Fokus auf Chinesisch und Englisch trainiert. Stärken liegen in Instruktionsbefolgung, Dialogfähigkeit und allgemeinen Reasoning-Aufgaben. Ziel ist ein leistungsfähiges Open-Weights-Modell für breite Anwendungsfälle.",
-    "strengths": [
-      "Starke Leistung in chinesisch- und englischsprachigen Aufgaben",
-      "Gute Instruktionsbefolgung und Dialogkompetenz",
-      "Open-Weights-Verfügbarkeit ermöglicht lokalen Betrieb"
-    ],
-    "known_limitations": [
-      "Leistung in weniger verbreiteten Sprachen deutlich schwächer als in Chinesisch/Englisch",
-      "Mögliche Zensur oder Einschränkungen bei politisch sensiblen Themen mit China-Bezug"
-    ],
-    "judge_context_hint": "Das Modell kann bei politisch sensiblen Themen mit China-Bezug ausweichen oder eingeschränkte Antworten liefern; dies sollte bei der Bewertung von Offenheit und Vollständigkeit berücksichtigt werden.",
-    "architecture_tags": [
-      "General",
-      "Instruct"
-    ],
-    "unknown": true,
-    "generated_at": "2026-05-01T12:46:48.722615+00:00",
-    "card_status": "complete",
-    "size_class": "Frontier"
+    "thinking_probe_at": "2026-04-25T09:32:21.175051+00:00",
+    "supports_tool_use": true,
+    "license": "Proprietary",
+    "license_url": null,
+    "commercial_use_allowed": true,
+    "vendor": "Zhipu AI"
   }
 ]

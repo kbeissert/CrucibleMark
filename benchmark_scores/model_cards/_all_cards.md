@@ -1,35 +1,5 @@
 # Model Cards – Alle Modelle
 
-### Dolphin Mistral NeMo
-**Entwickler:** Cognitive Computations (Eric Hartford) · **Herkunft:** USA · **Fokus:** instruction-following
-
-Dolphin Mistral NeMo ist ein von Cognitive Computations feinabgestimmtes Mistral-NeMo-Modell, das auf unzensierten, vielseitigen Instruktionsdaten trainiert wurde. Ziel ist ein hilfreicher Assistent ohne eingebaute Inhaltsbeschränkungen, der komplexe Anweisungen präzise befolgt und offen auf heikle Themen eingeht.
-
-**Stärken:** Sehr gehorsames Instruktions-Following ohne eingebaute Inhaltssperren · Gute Allround-Sprachfähigkeiten dank Mistral-NeMo-Basis (12B Parameter, 128k Kontext) · Lokal betreibbar und vollständig open-weights, geeignet für datenschutzsensible Umgebungen
-**Einschränkungen:** Fehlende Sicherheitsfilter können zur Generierung schädlicher oder problematischer Inhalte führen · Kein spezialisiertes Reasoning- oder Coding-Training; schwächer als dedizierte Modelle in diesen Bereichen
-
----
-
-### Ministral 3B/14B Abliterated (Q8_0)
-**Entwickler:** Mistral AI (Base) / Community Abliteration · **Herkunft:** France · **Fokus:** general
-
-Mistral-basiertes Modell aus Frankreich, chirurgisch von Sicherheitsfiltern befreit (Abliteration). Stärken liegen in Instruction-Following, mehrsprachiger Verarbeitung und offener Inhaltsgenerierung ohne Verweigerungsverhalten. Entwickelt für Nutzer, die unzensierte Antworten ohne Guardrails benötigen.
-
-**Stärken:** Kein Verweigerungsverhalten durch Abliteration – antwortet auf sensible Anfragen ohne Ausweichen · Kompaktes GGUF Q8_0-Format für effiziente lokale Ausführung mit hoher Quantisierungsqualität · Solide Mehrsprachigkeit und Instruction-Following auf Basis der Mistral-Architektur
-**Einschränkungen:** Abliteration kann Modellkohärenz und Faktentreue in Randbereichen leicht verschlechtern · Keine eingebauten Sicherheitsfilter – ungeeignet für Produktionsumgebungen mit unbekannten Nutzern
-
----
-
-### Hermes 4 14B
-**Entwickler:** Nous Research · **Herkunft:** USA · **Fokus:** instruction-following
-
-Hermes 4 ist ein Instruction-Following-Modell von Nous Research (USA), feinabgestimmt auf einem kuratierten Datensatz für präzises Folgen von Anweisungen, Rollenspiel und agentenbasierte Aufgaben. Es kombiniert starke Gesprächsfähigkeit mit reduzierter Zensur durch gezieltes Fine-Tuning.
-
-**Stärken:** Starkes Instruction-Following mit hoher Präzision bei komplexen Anweisungen · Für agentenbasierte und Tool-Use-Szenarien optimiert · Reduzierte Überrefusal durch gezieltes Uncensored-Fine-Tuning auf kuratierten Datensätzen
-**Einschränkungen:** Als 14B-Modell bei sehr komplexen Mehrschritt-Reasoning-Aufgaben hinter größeren Modellen zurück · Q4_K_M-Quantisierung kann bei präzisen numerischen oder logischen Aufgaben zu leichten Qualitätseinbußen führen
-
----
-
 ### Claude Haiku 4.5
 **Entwickler:** Anthropic · **Herkunft:** USA · **Fokus:** instruction-following
 
@@ -127,6 +97,22 @@ DeepSeek V3.2 ist ein chinesisches Frontier-Modell von DeepSeek, trainiert auf b
 
 **Stärken:** Starke Leistung bei Coding- und Mathematikaufgaben · Sehr gutes Preis-Leistungs-Verhältnis im Vergleich zu Konkurrenzmodellen · Breites Allgemeinwissen mit guter mehrsprachiger Kompetenz
 **Einschränkungen:** Unterliegt chinesischer Zensur bei politisch sensiblen Themen (z.B. Tiananmen, Taiwan) · Als V3.2 möglicherweise noch nicht vollständig dokumentiert – Architekturdetails gegenüber V3 unklar
+
+---
+
+### deepseek/deepseek-v4-flash
+**Entwickler:** n/a · **Herkunft:** n/a · **Fokus:** n/a
+
+
+
+
+---
+
+### deepseek/deepseek-v4-pro
+**Entwickler:** n/a · **Herkunft:** n/a · **Fokus:** n/a
+
+
+
 
 ---
 
@@ -280,6 +266,14 @@ Grok 4 Fast (Non-Reasoning) ist ein schnelles, cloud-basiertes Sprachmodell von 
 
 ---
 
+### grok-4.3
+**Entwickler:** n/a · **Herkunft:** n/a · **Fokus:** n/a
+
+
+
+
+---
+
 ### Hermes 3 8B
 **Entwickler:** Nous Research · **Herkunft:** USA · **Fokus:** instruction-following
 
@@ -300,13 +294,13 @@ Hermes 4 14B ist ein von NousResearch (USA) feingetuntes Sprachmodell, das auf s
 
 ---
 
-### Ministral 3B/14B Abliterated (Q8_0 GGUF)
-**Entwickler:** Mistral AI (base model) / mradermacher (GGUF conversion & abliteration) · **Herkunft:** France · **Fokus:** instruction-following
+### Ministral-3-14B Abliterated (Q8_0 GGUF)
+**Entwickler:** Mistral AI (base model) / jenerallee78 (norm-preserving biprojected abliteration) / mradermacher (GGUF conversion) · **Herkunft:** France · **Fokus:** instruction-following
 
-Mistral-basiertes Modell in GGUF-Format (Q8_0), abliteriert durch mradermacher. Abliteration entfernt Refusal-Verhalten durch gezielte Gewichtsmanipulation. Geeignet für unzensierte Instruktionsausführung. Stärken liegen in Mehrsprachigkeit und kompakter Effizienz typischer Mistral-Architektur.
+Abliterierte Version von mistralai/Ministral-3-14B-Instruct-2512 (Dezember 2025, ~14B Parameter). Abliterierung durch jenerallee78 mittels norm-preserving biprojected abliteration (grimjim/llm-abliteration): entfernt Refusal-Richtung aus den Gewichten ohne Qualitätsverlust. GGUF-Quantisierung Q8_0 durch mradermacher. Lizenz: Apache 2.0 (sowohl abliterierte Version als auch GGUF-Repo).
 
 **Stärken:** Keine eingebauten Refusal-Mechanismen durch Abliteration – folgt Anweisungen ohne themenbasierte Verweigerung · Hohe Quantisierungsqualität (Q8_0) mit minimalem Qualitätsverlust gegenüber FP16 · Effizient lokal betreibbar dank GGUF-Format (llama.cpp-kompatibel)
-**Einschränkungen:** Abliteration kann Sicherheitsfilter vollständig entfernen, was missbräuchliche Nutzung erleichtert und den Einsatz in produktiven Umgebungen einschränkt · Kein offiziell unterstütztes Modell – Qualität und Verhalten hängen von der Abliterations-Implementierung eines Drittanbieters ab
+**Einschränkungen:** Abliteration entfernt Content-Safety-Filter vollständig – missbräuchliche Nutzung wird erleichtert, Einsatz in produktiven Systemen erfordert eigene Sicherheitsebene · Kein offiziell unterstütztes Modell: zwei Drittanbieter-Schritte (Abliteration + GGUF-Quantisierung) – Qualität und Verhalten abhängig von Community-Implementierungen · Norm-preserving biprojected abliteration ist robuster als einfache abliteration, kann aber dennoch Wissenslücken oder Verhaltensänderungen in Randbereichen erzeugen
 
 ---
 
@@ -357,16 +351,6 @@ MiniMax M2.7 ist ein chinesisches Mixture-of-Experts-Modell mit 2,7 Billionen Ge
 
 **Stärken:** Sehr großes MoE-Modell mit hoher Parameterkapazität bei effizienter Inferenz · Starke Mehrsprachigkeit mit besonderem Fokus auf Chinesisch und Englisch · Langes Kontextfenster für umfangreiche Dokument- und Dialogverarbeitung
 **Einschränkungen:** Als chinesisches Modell potenziell eingeschränkte oder zensierte Antworten zu politisch sensiblen Themen · Sehr hohe Hardwareanforderungen für lokales Deployment aufgrund der Modellgröße
-
----
-
-### MiniMax M2.7
-**Entwickler:** MiniMax · **Herkunft:** China · **Fokus:** general
-
-MiniMax M2.7 ist ein chinesisches Sprachmodell von MiniMax, entwickelt für allgemeine Sprach- und Reasoning-Aufgaben. Es zielt auf starke Mehrsprachigkeit, Instruktionsbefolgung und Konversationsfähigkeit ab und positioniert sich als leistungsfähiges Allround-Modell im chinesischen KI-Ökosystem.
-
-**Stärken:** Starke Mehrsprachigkeit mit besonderem Fokus auf Chinesisch und Englisch · Solide Instruktionsbefolgung für konversationelle und aufgabenorientierte Szenarien · Kompetitives Allround-Profil für Text-Generierung und Zusammenfassung
-**Einschränkungen:** Gewichte nicht öffentlich verfügbar, daher keine lokale oder private Nutzung möglich · Begrenzte unabhängige Benchmarking-Daten verfügbar, Leistung in Nischen-Domänen schwer einschätzbar
 
 ---
 
@@ -447,16 +431,6 @@ Kimi K2.5 ist ein Reasoning-Modell von Moonshot AI aus China, trainiert auf komp
 
 **Stärken:** Starke mehrstufige Reasoning-Fähigkeiten bei Mathematik und Logik · Gute Performance bei agentenbasierten und Tool-Use-Szenarien · Solide Coding-Kompetenz kombiniert mit analytischem Denken
 **Einschränkungen:** Thinking-Prozess erhöht Latenz und Token-Verbrauch erheblich · Mögliche Zensur oder Einschränkungen bei politisch sensiblen Themen mit China-Bezug
-
----
-
-### Kimi K2.5
-**Entwickler:** Moonshot AI · **Herkunft:** China · **Fokus:** reasoning
-
-Kimi K2.5 ist ein Reasoning-Modell von Moonshot AI aus China, entwickelt für komplexe mehrstufige Schlussfolgerungen, mathematische Aufgaben und Code-Analyse. Es kombiniert starkes logisches Denken mit langen Kontextfenstern und wurde als Weiterentwicklung der Kimi-Reihe für anspruchsvolle analytische Aufgaben konzipiert.
-
-**Stärken:** Starke Leistung bei mehrstufigen Reasoning-Aufgaben und mathematischen Problemen · Unterstützung sehr langer Kontextfenster für umfangreiche Dokumentenanalyse · Gute Mehrsprachigkeit mit besonderem Fokus auf Chinesisch und Englisch
-**Einschränkungen:** Nur über Moonshot-API verfügbar, keine lokale Ausführung möglich · Weniger transparent bezüglich Trainingsdaten und Modellarchitektur als Open-Weights-Alternativen
 
 ---
 
@@ -617,15 +591,5 @@ GLM-5 Turbo ist ein Sprachmodell von Zhipu AI aus China, entwickelt als schnelle
 
 **Stärken:** Starke Leistung in chinesischer und englischer Sprache · Schnelle Inferenz als Turbo-Variante der GLM-5-Familie · Gute Instruktionsbefolgung bei alltäglichen und geschäftlichen Aufgaben
 **Einschränkungen:** Gewichte nicht öffentlich verfügbar, nur über API nutzbar · Mögliche Zensur oder Einschränkungen bei politisch sensiblen Themen gemäß chinesischer Regulierung
-
----
-
-### GLM-5 Turbo
-**Entwickler:** Zhipu AI · **Herkunft:** China · **Fokus:** general
-
-GLM-5 Turbo ist ein chinesisches Sprachmodell von Zhipu AI, entwickelt als schnelle, kosteneffiziente Variante der GLM-5-Familie. Trainiert auf mehrsprachigen Daten mit Fokus auf Chinesisch und Englisch, eignet es sich für Konversation, Textverarbeitung und leichte Reasoning-Aufgaben im API-Betrieb.
-
-**Stärken:** Starke Leistung in chinesisch-sprachigen Aufgaben und Nuancen · Schnelle Inferenzgeschwindigkeit als Turbo-Variante · Gute Allround-Fähigkeiten für Konversation und Textgenerierung
-**Einschränkungen:** Nur über Cloud-API verfügbar, keine lokale Ausführung möglich · Mögliche Zensur oder Einschränkungen bei politisch sensiblen Themen gemäß chinesischer Regulierung
 
 ---
