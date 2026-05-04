@@ -37,5 +37,8 @@
   "thinking_probe_evidence": "Not yet probed — model not yet benchmarked",
   "thinking_probe_confidence": "none",
   "thinking_probe_at": null,
-  "supports_tool_use": true
+  "supports_tool_use": true,
+  "license": "Moonshot AI License",
+  "license_url": "https://huggingface.co/moonshotai/Kimi-K2-Instruct/blob/main/LICENSE",
+  "commercial_use_allowed": null
 }

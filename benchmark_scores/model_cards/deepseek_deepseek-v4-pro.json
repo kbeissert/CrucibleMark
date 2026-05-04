@@ -11,5 +11,8 @@
   "thinking_probe_evidence": "reasoning_tokens=88 in provider metadata",
   "thinking_probe_confidence": "medium",
   "thinking_probe_at": "2026-05-03T19:31:34.837023+00:00",
-  "supports_tool_use": true
+  "supports_tool_use": true,
+  "license": "DeepSeek License",
+  "license_url": "https://github.com/deepseek-ai/DeepSeek-V3/blob/main/LICENSE",
+  "commercial_use_allowed": null
 }

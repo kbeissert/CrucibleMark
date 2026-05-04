@@ -4,17 +4,17 @@
   "developer": "Zhipu AI",
   "origin_country": "China",
   "developer_jurisdiction": "CN",
-  "deployment_type": "open-weights-cloud-available",
-  "local_deployment_possible": true,
+  "deployment_type": "cloud-only",
+  "local_deployment_possible": false,
   "weights_provenance_risk": "high",
-  "weights_provenance_risk_rationale": "Zhipu AI ist ein chinesisches Unternehmen und unterliegt dem chinesischen National Security Law (NSL), das staatlichen Zugriff auf Daten und Modelle ermöglichen kann.",
+  "weights_provenance_risk_rationale": "Zhipu AI ist ein chinesisches Unternehmen und unterliegt dem chinesischen National Security Law (NSL), das staatlichen Zugriff auf verarbeitete Daten ermöglichen kann. Die Modellgewichte sind nicht öffentlich zugänglich.",
   "model_family": "GLM",
   "primary_focus": "general",
-  "summary": "GLM 5.1 ist ein Sprachmodell von Zhipu AI aus China, entwickelt als Weiterentwicklung der GLM-Reihe. Trainiert auf mehrsprachigen Daten mit Fokus auf Chinesisch und Englisch. Stärken liegen in Instruction-Following, Textverständnis und allgemeinen Aufgaben. Ziel ist ein leistungsfähiges Open-Weights-Modell für breite Anwendungsfälle.",
+  "summary": "GLM 5.1 ist ein kommerzielles Sprachmodell von Zhipu AI aus China, entwickelt als Weiterentwicklung der GLM-Reihe. Trainiert auf mehrsprachigen Daten mit Fokus auf Chinesisch und Englisch. Stärken liegen in Instruction-Following, Textverständnis und allgemeinen Aufgaben. Zugang ausschließlich über die Z.ai API bzw. OpenRouter.",
   "strengths": [
     "Starke Leistung in chinesisch- und englischsprachigen Aufgaben",
     "Gutes Instruction-Following und Dialogverhalten",
-    "Open-Weights verfügbar, lokal deploybar"
+    "Verfügbar via OpenRouter für einfache API-Integration"
   ],
   "known_limitations": [
     "Detaillierte technische Spezifikationen und Trainingsdaten sind nicht vollständig öffentlich dokumentiert",
@@ -33,5 +33,8 @@
   "thinking_probe_evidence": "reasoning_tokens=530 in provider metadata",
   "thinking_probe_confidence": "medium",
   "thinking_probe_at": "2026-04-25T09:32:21.175051+00:00",
-  "supports_tool_use": true
+  "supports_tool_use": true,
+  "license": "Proprietary",
+  "license_url": null,
+  "commercial_use_allowed": true
 }

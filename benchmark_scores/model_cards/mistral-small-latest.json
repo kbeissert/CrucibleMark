@@ -33,5 +33,8 @@
   "thinking_probe_evidence": "No CoT signals found (A: no think-tags, B: reasoning_tokens=0). Response length: 528 chars",
   "thinking_probe_confidence": "low",
   "thinking_probe_at": "2026-04-23T13:57:06.994344+00:00",
-  "supports_tool_use": true
+  "supports_tool_use": true,
+  "license": "Apache-2.0",
+  "license_url": "https://www.apache.org/licenses/LICENSE-2.0",
+  "commercial_use_allowed": true
 }

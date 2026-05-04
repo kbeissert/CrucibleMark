@@ -29,5 +29,8 @@
   "generated_at": "2026-04-23T22:06:17.251492+00:00",
   "card_status": "complete",
   "size_class": "Edge",
-  "supports_tool_use": true
+  "supports_tool_use": true,
+  "license": "Mistral Research License",
+  "license_url": "https://mistral.ai/licenses/MRL-0.1.md",
+  "commercial_use_allowed": null
 }
