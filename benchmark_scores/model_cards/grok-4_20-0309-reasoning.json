@@ -36,5 +36,7 @@
   "thinking_probe_at": "2026-05-04T16:28:34.262487+00:00",
   "license": "Proprietary",
   "license_url": null,
-  "commercial_use_allowed": true
+  "commercial_use_allowed": true,
+  "thinking_probe_manual_override": true,
+  "thinking_probe_override_reason": "xAI API exposes no <think> tags or reasoning_tokens; internal CoT confirmed by model name and response patterns"
 }
