@@ -35,5 +35,6 @@
   "supports_tool_use": true,
   "license": "Mistral Codestral License",
   "license_url": "https://mistral.ai/licenses/MCSL-0.1.md",
-  "commercial_use_allowed": null
+  "commercial_use_allowed": null,
+  "vendor": "Mistral AI"
 }

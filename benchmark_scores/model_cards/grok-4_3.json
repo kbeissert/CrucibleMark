@@ -1,0 +1,15 @@
+{
+  "model_id": "grok-4.3",
+  "display_name": "grok-4.3",
+  "developer": "n/a",
+  "architecture_tags": [
+    "General"
+  ],
+  "card_status": "minimal",
+  "generated_at": "2026-05-04T11:33:17.460689+00:00",
+  "thinking_probe_detected": false,
+  "thinking_probe_evidence": "No CoT signals found (A: no think-tags, B: reasoning_tokens=0). Response length: 511 chars",
+  "thinking_probe_confidence": "low",
+  "thinking_probe_at": "2026-05-04T11:33:17.460683+00:00",
+  "vendor": "xAI"
+}

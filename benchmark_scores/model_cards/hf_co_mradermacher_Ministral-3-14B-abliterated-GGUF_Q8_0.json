@@ -35,5 +35,6 @@
   "supports_tool_use": false,
   "license": "Apache-2.0",
   "license_url": "https://www.apache.org/licenses/LICENSE-2.0",
-  "commercial_use_allowed": true
+  "commercial_use_allowed": true,
+  "vendor": "Community"
 }

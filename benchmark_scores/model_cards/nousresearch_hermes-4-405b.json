@@ -36,5 +36,6 @@
   "supports_tool_use": true,
   "license": "Meta Llama Community License",
   "license_url": "https://www.llama.com/llama3/license/",
-  "commercial_use_allowed": null
+  "commercial_use_allowed": null,
+  "vendor": "NousResearch"
 }
