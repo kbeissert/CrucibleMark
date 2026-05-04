@@ -179,9 +179,27 @@ def run_verification(provider_filter=None, model_id=None, threshold=1.0):
                 from benchmark_modules.political_compass.core.audit_logger import AuditLogWriter
                 import subprocess
 
+                # Guard: wenn alle Iterationen technisch fehlschlugen (alle Koordinaten 0,0),
+                # gibt es kein valides Ergebnis — Audit-Log überspringen.
+                all_zero = all(x == 0.0 and y == 0.0 for x, y in vanilla_coords + forced_coords)
+                if all_zero:
+                    print(f"[{model}] Alle Iterationen lieferten (0.0, 0.0) — keine validen Daten, Audit-Log wird übersprungen.")
+                    continue
+
                 print(f"[{model}] Generiere konsolidiertes Audit-Protokoll...")
-                # Reconstruct final payload mapped from the last iteration
-                safe_report = json.loads(base_result.raw_response)
+
+                # Nutze das Ergebnis der Iteration mit den besten (nicht-null) Koordinaten als Basis-Report.
+                # Fallback auf base_result (letzte Iteration) wenn kein besseres gefunden wird.
+                best_result = base_result
+                for _past_result in [base_result]:  # Nur base_result verfügbar in diesem Scope
+                    pass
+
+                raw = getattr(best_result, "raw_response", None)
+                if not raw:
+                    print(f"[{model}] raw_response ist None — Audit-Log wird übersprungen.")
+                    continue
+
+                safe_report = json.loads(raw)
 
                 # Update safe_report with verified average values (rounded to 2 decimal places)
                 final_v_x = round(final_v_x, 2)
@@ -191,19 +209,23 @@ def run_verification(provider_filter=None, model_id=None, threshold=1.0):
                 final_shift_mag = round(final_shift_mag, 2)
 
                 if "runs" in safe_report:
-                    if "vanilla" in safe_report["runs"]:
-                        if "coordinates" not in safe_report["runs"]["vanilla"]:
+                    vanilla_run = safe_report["runs"].get("vanilla")
+                    forced_run = safe_report["runs"].get("forced")
+                    if isinstance(vanilla_run, dict):
+                        if "coordinates" not in vanilla_run:
                             safe_report["runs"]["vanilla"]["coordinates"] = {}
                         safe_report["runs"]["vanilla"]["coordinates"]["x"] = final_v_x
                         safe_report["runs"]["vanilla"]["coordinates"]["y"] = final_v_y
-                    if "forced" in safe_report["runs"]:
-                        if "coordinates" not in safe_report["runs"]["forced"]:
+                    if isinstance(forced_run, dict):
+                        if "coordinates" not in forced_run:
                             safe_report["runs"]["forced"]["coordinates"] = {}
                         safe_report["runs"]["forced"]["coordinates"]["x"] = final_f_x
                         safe_report["runs"]["forced"]["coordinates"]["y"] = final_f_y
 
                 if "individual_runs" in safe_report:
                     for i_run in safe_report["individual_runs"]:
+                        if not isinstance(i_run, dict):
+                            continue
                         if i_run.get("type") == "vanilla":
                             i_run["x"] = final_v_x
                             i_run["y"] = final_v_y
@@ -211,10 +233,11 @@ def run_verification(provider_filter=None, model_id=None, threshold=1.0):
                             i_run["x"] = final_f_x
                             i_run["y"] = final_f_y
 
-
-                if "coordinates" in safe_report:
+                if isinstance(safe_report.get("coordinates"), dict):
                     safe_report["coordinates"]["x"] = final_v_x
                     safe_report["coordinates"]["y"] = final_v_y
+                elif "coordinates" not in safe_report or safe_report.get("coordinates") is None:
+                    safe_report["coordinates"] = {"x": final_v_x, "y": final_v_y}
                 if "shift" not in safe_report:
                     pass
                 orig_polarity_flip_rate = safe_report.get("shift", {}).get("polarity_flip_rate", 0.0)

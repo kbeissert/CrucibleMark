@@ -86,7 +86,8 @@ Gilt für Generation-Parameter UND LLM Judge. Modul-Override gewinnt immer.
 - Keine zufälligen oder hash-basierten Generierungen von Modell-Versionen (wie zuvor im `ModelFingerprinter`).
 - **Nackte Version in CSV:** Benchmark-CSVs speichern ausschließlich die nackte Version (z.B. `k2`, `4-mini`, `latest`). Shortcode-Suffixe existieren **nie** in Quelldaten.
 - **Shortcodes:** `API` (Anthropic/OpenAI/Google/xAI/Mistral), `OR` (OpenRouter), `GR` (Groq), `LCL` (Ollama/Lokal). Mapping-Konstante `_PROVIDER_SHORTCODES` in `utils/model_utils.py` + `short_code`-Feld pro Provider in `benchmark_config.yaml` — beide synchron halten.
-- **Anzeigelogik:** `scripts/leaderboard/exporter.py` kombiniert `Version` + `Provider Code` zu `k2/OR` (Kompakt) bzw. trennt sie (Detailliert).
+- **Anzeigelogik:** `scripts/leaderboard/exporter.py` kombiniert `Version` + `Provider Code` zu `k2/OR` (Kompakt) bzw. trennt sie (Detailliert). Die Detailed-CSV enthält zusätzlich `model_id` (rohe Config-ID) als SSOT-Feld für Downstream-Tools.
+- **`model_id` als SSOT für Web-Export:** `web_export.py` liest `model_id` aus der Detailed-CSV und leitet daraus den Verzeichnis-Slug ab (`model_id.replace('/', '_')` + `slugify`). Kein Raten aus dem Display-Namen. Zwei Fallbacks für Altdaten: (1) Date-Suffix strip, (2) Suffix-Match.
 - **Provider re-attach:** `score_calculator.py` verliert `provider` beim `groupby`. `scripts/leaderboard/__init__.py` hängt sie nach `calculate_scores()` via `mode()`-Merge wieder an.
 - **Versionsermittlung SSOT:** `get_model_version()` in `utils/model_utils.py` — unterstützte Familien: Anthropic, OpenAI, Mistral/Codestral/Magistral, Qwen, GLM, MiniMax, o4-Series, Kimi. Card-First-Lookup (optionaler Override via `model_version`-Feld in Model-Card). Ollama-Hashes via `ollama list` zur Laufzeit.
 - **Migration:** `scripts/maintenance/migrate_model_versions.py` zum Nachfüllen historischer `k.A.`-Werte (mit `.bak`-Backups).

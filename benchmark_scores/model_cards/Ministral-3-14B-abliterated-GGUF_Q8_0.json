@@ -29,5 +29,6 @@
   "unknown": false,
   "generated_at": "2026-04-23T22:07:15.106650+00:00",
   "card_status": "complete",
-  "size_class": "Desktop"
+  "size_class": "Desktop",
+  "supports_tool_use": false
 }

@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """
-Thinking-Probe Tool
-===================
-Führt empirische Chain-of-Thought-Erkennung für ein oder mehrere Modelle durch
+Reasoning-Erkennung (Thinking-Probe)
+=====================================
+Führt empirische Reasoning-Erkennung für ein oder mehrere Modelle durch
 und schreibt das Ergebnis direkt in die jeweilige Model Card.
 
 Verwendung:
@@ -145,7 +145,7 @@ def run_probe(
         except Exception:
             pass
 
-    logger.info("🔍 Probe: %s via %s …", model_id, provider_key)
+    logger.info("🔍 Reasoning-Erkennung: %s via %s …", model_id, provider_key)
     try:
         probe = probe_thinking_model(model_id, provider_key, config)
     except RuntimeError as e:
@@ -201,7 +201,7 @@ def _collect_missing_probe_models() -> list[str]:
 
 def main() -> None:
     parser = argparse.ArgumentParser(
-        description="Führt Thinking-Probes durch und aktualisiert Model Cards."
+        description="Führt Reasoning-Erkennung durch und aktualisiert Model Cards."
     )
     group = parser.add_mutually_exclusive_group(required=True)
     group.add_argument(

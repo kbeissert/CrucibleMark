@@ -104,7 +104,7 @@ make benchmark MODEL=qwen2.5:14b MODULE=code_quality
 **Wann nutzen?**
 
 - Leaderboard-Update (alle Modelle auf neuesten Stand bringen)
-- Vergleich zwischen lokalen und kommerziellen Modellen
+- Vergleich zwischen lokalen, Cloud-Open-Weights- und kommerziellen Closed-Source-Modellen
 - Overnight-Run (dauert zwei bis sechs Stunden je nach Anzahl)
 
 ```bash
@@ -300,7 +300,7 @@ Der Befehl generiert **zwei CSV-Dateien** in `benchmark_scores/`:
 1. **`benchmark_leaderboard.csv` (Standard / Compact)**
    Für die tägliche Ansicht, Dashboards und kurze Vergleiche.
 2. **`benchmark_leaderboard_detailed.csv` (Detailed)**
-   Für tiefgreifende Architekturanalysen und Latenz-Audits. Enthält Metriken wie `P95 Time`, `Max Time`, `Timeout Counts` sowie `Routine Score` und `Reasoning Score` separat.
+   Für tiefgreifende Architekturanalysen und Latenz-Audits. Enthält Metriken wie `P95 Time`, `Max Time`, `Timeout Counts` sowie `Routine Score` und `Reasoning Score` separat. Enthält außerdem `model_id` (rohe Config-ID, SSOT für den Web-Export).
 
 ### Was zeigen die Leaderboard Metriken?
 
@@ -313,6 +313,7 @@ Der Befehl generiert **zwei CSV-Dateien** in `benchmark_scores/`:
 | **Cost per 1K (USD)** | Beide | Hochgerechnete API-Kosten pro 1.000 Anfragen. Bei Cloud Open-Weights-Modellen (z. B. Groq) wird der Paid-Tier-Preis nach Free-Tier-Ablauf zugrunde gelegt — als Referenz für den kommerziellen Produktionseinsatz. |
 | **Routine Score** | Detailed | Leistung bei einfachen Tasks |
 | **Reasoning Score** | Detailed | Leistung bei Logik-Rätseln & Systemarchitektur |
+| **model_id** | Detailed | Rohe Config-ID (z. B. `moonshotai/kimi-k2-thinking-20251106`) — SSOT für Web-Export und Verzeichnis-Lookup |
 | **Tokens: \<Modul\>** | Detailed | Output-Token pro Modul (z. B. `Tokens: Code Quality`, `Tokens: UX Writing`) |
 | **P95 Time (s)** | Detailed | Latenz-Spitze: Dauer der langsamsten 5 % der Requests |
 | **Max Time (s)** | Detailed | Dauer des extremsten Einzelausreißers |

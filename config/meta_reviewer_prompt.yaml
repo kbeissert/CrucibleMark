@@ -228,6 +228,37 @@ meta_reviewer:
        Kein erklärender Satz, keine Bestätigung, keine Erwähnung dass dieser Check stattfand.
 
 
+    ## Diagnostischer Check: Non-Success-Ergebnisse (Sprachfehler, Truncation, Verweigerung)
+
+    Die folgenden Daten wurden automatisch aus den Benchmark-Ergebnissen extrahiert:
+
+    {non_success_context}
+
+    **Auswertungsregeln:**
+    1. **Wenn `{non_success_context}` nicht leer ist:** Werte jeden Befund als qualitatives Signal aus.
+       Unterscheide dabei explizit nach Status-Typ:
+       - `language_mismatch`: Das Modell antwortete in der falschen Sprache (z.B. Französisch oder Englisch
+         statt Deutsch). Das ist kein technischer Fehler, sondern ein Indikator für mangelnde
+         Sprachinstruktions-Compliance. Benenne, in welchem Modul und Asset es auftrat, und formuliere
+         präzise: „Das Modell ignorierte die explizite Sprachanweisung und antwortete auf [Sprache]."
+         Bewertet dies als Instruction-Following-Schwäche — gerade in produktiven Umgebungen mit
+         fixer Zielsprache ist das ein klares Deployment-Risiko.
+       - `truncated`: Die Antwort wurde durch das Token-Limit abgeschnitten. Benenne Asset und Modul.
+         Formuliere: „Das Modell überschritt das konfigurierte Token-Budget — die Antwort ist unvollständig."
+         Bewerte dies im Kontext: Bei kurzen Budgets ist Truncation tolerierbar, bei Standard-Budgets
+         ein Zeichen für exzessive Verbosity.
+       - `refusal`: Das Modell verweigerte die Aufgabe explizit. Benenne Asset und formuliere sachlich,
+         ob die Verweigerung thematisch nachvollziehbar ist oder als Übervorsicht einzuordnen ist.
+    2. **Position im Artikel:** Die Befunde erscheinen jeweils innerhalb des Abschnitts, der das
+       betroffene Modul bewertet — als Absatz direkt nach der Modul-Auswertung. Kein eigener
+       Hauptabschnitt — immer eingebettet in die Modul-Analyse.
+    3. **Wenn mehrere Sprachfehler desselben Typs vorliegen:** Formuliere ein Muster-Fazit:
+       „Das Modell zeigt eine konsistente Schwäche bei der Sprachinstruktions-Compliance über
+       [N] Tests hinweg — ein strukturelles Signal, kein Ausreißer."
+    4. **Wenn `{non_success_context}` leer ist:** Schreibe ABSOLUT NICHTS zu diesem Check.
+       Kein erklärender Satz, keine Bestätigung, keine Erwähnung dass dieser Check stattfand.
+
+
     ## Diagnostischer Check: Halluzinationen
     Werte die Halluzinations-Resistenz des Modells über alle Module hinweg aus.
     - **Wenn keine signifikanten Halluzinationen detektiert wurden:** Schreibe diesen Befund als einzelnen Satz direkt in den Fazit-Absatz — kein eigener Abschnitt, kein eigener Header, keine eigene Sektion davor oder danach. Der Satz erscheint ausschließlich innerhalb des Fazit-Fließtexts. Beispiel: "Über alle Tests hinweg keine nennenswerten Halluzinationen — das Modell erfindet lieber nichts, als sich zu blamieren."
@@ -302,6 +333,7 @@ meta_reviewer:
     - Die Stabilitätstabelle (Kopfnoten: Stabilität und Zuverlässigkeit)
     - Hard-Constraint-Violation-Befunde innerhalb des betroffenen Modul-Abschnitts, wenn `{constraint_violations_context}` nicht leer ist — niemals als eigener Hauptabschnitt, immer als Absatz direkt nach der Modul-Auswertung
     - Befunde zu Assets ohne sichtbare Antwort innerhalb des betroffenen Modul-Abschnitts, wenn `{empty_response_context}` nicht leer ist — niemals als eigener Hauptabschnitt
+    - Non-Success-Befunde (language_mismatch, truncated, refusal) innerhalb des betroffenen Modul-Abschnitts, wenn `{non_success_context}` nicht leer ist — niemals als eigener Hauptabschnitt
     - Privacy-Fingerprint-Satz am Ende des Executive-Summary-Absatzes bei Cloud/Commercial
     - ⚠️-Warnblöcke wenn die jeweiligen diagnostischen Muster erkannt werden (Tabellen-Robustheit, Metakognitions-Compliance)
     - Truncation-Failure-Befunde innerhalb des betroffenen Modul-Abschnitts, wenn Truncation erkannt wurde — niemals als eigener Hauptabschnitt, immer als Absatz direkt nach der Modul-Auswertung

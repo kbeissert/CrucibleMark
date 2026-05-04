@@ -100,7 +100,7 @@ Aktuell unterscheidet CrucibleMark drei wesentliche Arten von Modell-Kategorien:
 | Kategorie | Beschreibung | Beispiele / Provider | Charakteristik |
 |-----------|--------------|-----------|----------------|
 | **Commercial** | Cloud-basierte kommerzielle APIs | Anthropic, Google, OpenAI, Mistral | Proprietäre Modelle. Direkte Kosten pro Token, API-Keys erforderlich |
-| **Cloud (Open-Weights)** | Cloud-gehostete Open-Weights Modelle | Groq, Ollama (mit `:cloud`-Suffix) | Modelle, die über APIs (oder Proxies) laufen, aber offen (open-weights) sind. |
+| **Cloud (Open-Weights)** | Cloud-gehostete Open-Weights Modelle | Groq, Ollama (mit `:cloud`-Suffix) | Modelle, deren Gewichte öffentlich verfügbar sind (Open-Weights), die aber über Cloud-APIs oder Proxies ausgeführt werden — **nicht** lokal und **nicht** Open Source im Sinne offengelegter Trainingsdaten oder -code. |
 | **Local** | Vollständig lokal ausgeführte Modelle | Ollama (lokal) | Ausführung auf eigener Hardware. Keine Provider-Kosten, volle Privatsphäre |
 
 ### Erkennung & Erweiterung (SSOT: `benchmark_config.yaml`)
@@ -300,7 +300,7 @@ Scheitert ein Modell daran, komplexe Markdown-Strukturen (wie Tabellen mit Pipes
 
 CrucibleMark erkennt Reasoning-Modelle seit v3.5.8 **empirisch statt nur heuristisch**. Das Token-Budget-System und der LLM-Judge bauen darauf auf.
 
-### ThinkingProbe
+### Reasoning-Erkennung (ThinkingProbe)
 
 `probe_thinking_model(model_id, provider_key, config)` in `utils/model_utils.py` sendet einen deterministischen Reasoning-Prompt an die API und wertet zwei Signale aus:
 

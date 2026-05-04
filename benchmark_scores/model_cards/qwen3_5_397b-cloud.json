@@ -28,5 +28,10 @@
   "unknown": false,
   "generated_at": "2026-04-23T22:07:44.228805+00:00",
   "card_status": "complete",
-  "size_class": "Frontier"
+  "size_class": "Frontier",
+  "thinking_probe_detected": false,
+  "thinking_probe_evidence": "No CoT signals found (A: no think-tags, B: reasoning_tokens=0). Response length: 1407 chars",
+  "thinking_probe_confidence": "low",
+  "thinking_probe_at": "2026-05-01T10:51:29.799294+00:00",
+  "supports_tool_use": true
 }

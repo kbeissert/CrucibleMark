@@ -1,0 +1,32 @@
+{
+  "model_id": "minimax_minimax-m2.7",
+  "display_name": "MiniMax M2.7",
+  "developer": "MiniMax",
+  "origin_country": "China",
+  "developer_jurisdiction": "CN",
+  "deployment_type": "cloud-only",
+  "local_deployment_possible": false,
+  "weights_provenance_risk": "high",
+  "weights_provenance_risk_rationale": "MiniMax ist ein chinesisches Unternehmen und unterliegt dem chinesischen National Security Law (NSL), das staatlichen Zugriff auf Daten und Modelle ermöglichen kann.",
+  "model_family": "MiniMax",
+  "primary_focus": "general",
+  "summary": "MiniMax M2.7 ist ein chinesisches Sprachmodell von MiniMax, entwickelt für allgemeine Sprach- und Reasoning-Aufgaben. Es zielt auf starke Mehrsprachigkeit, Instruktionsbefolgung und Konversationsfähigkeit ab und positioniert sich als leistungsfähiges Allround-Modell im chinesischen KI-Ökosystem.",
+  "strengths": [
+    "Starke Mehrsprachigkeit mit besonderem Fokus auf Chinesisch und Englisch",
+    "Solide Instruktionsbefolgung für konversationelle und aufgabenorientierte Szenarien",
+    "Kompetitives Allround-Profil für Text-Generierung und Zusammenfassung"
+  ],
+  "known_limitations": [
+    "Gewichte nicht öffentlich verfügbar, daher keine lokale oder private Nutzung möglich",
+    "Begrenzte unabhängige Benchmarking-Daten verfügbar, Leistung in Nischen-Domänen schwer einschätzbar"
+  ],
+  "judge_context_hint": "Das Modell ist auf chinesisch-englische Konversation optimiert; bei rein englischen Reasoning-Benchmarks kann es gegenüber westlichen Modellen vergleichbarer Größe leicht zurückfallen.",
+  "architecture_tags": [
+    "General"
+  ],
+  "unknown": false,
+  "generated_at": "2026-05-01T13:40:21.838796+00:00",
+  "card_status": "complete",
+  "size_class": "Frontier",
+  "supports_tool_use": true
+}

@@ -28,5 +28,10 @@
   "unknown": false,
   "generated_at": "2026-04-23T22:03:10.589635+00:00",
   "card_status": "complete",
-  "size_class": "Workstation"
+  "size_class": "Workstation",
+  "thinking_probe_detected": true,
+  "thinking_probe_evidence": "Think-tag found in response (first 200 chars): <think>\nOkay, so I need to find the average speed of a train that travels 120 kilometers in 1.5 hours. Hmm, let me think. I remember that average speed is calculated by dividing the total distance by ",
+  "thinking_probe_confidence": "high",
+  "thinking_probe_at": "2026-04-25T09:31:50.465081+00:00",
+  "supports_tool_use": true
 }

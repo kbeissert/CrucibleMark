@@ -76,8 +76,16 @@ JSON-Schema (alle Felder Pflicht):
   "known_limitations": ["Einschränkung 1", "Einschränkung 2"],
   "judge_context_hint": "1 Satz für den Benchmark-Judge: Was muss er bei der Bewertung dieses Modells im Kopf haben? (Kein Datenschutz-Aspekt, nur Qualitäts-/Verhaltenshinweis)",
   "architecture_tags": ["General"],
+  "supports_tool_use": true,
   "unknown": false
 }}
+
+Feld supports_tool_use:
+- true  = Modell unterstützt Function Calling / Tool Use per API (kann als Agentenmotor eingesetzt werden)
+- false = Modell unterstützt keine Tool Calls (z.B. reine Basis-/Reasoning-Modelle ohne FC-Support, abliterierte Varianten)
+- null  = unbekannt / nicht verifiziert
+Faustregel: Aktuelle Cloud-Frontier-Modelle (Anthropic, OpenAI, Google, xAI, Mistral, Qwen 3+, Kimi K2, GLM 5+, Llama 3.3+) → true.
+Lokale uncensored/abliterated Varianten, DeepSeek-R1-Basis-Modelle → false.
 
 Verfügbare architecture_tags (ein oder mehrere, als JSON-Array):
 - "General" — Allround-Modell ohne besondere Spezialisierung (Default, wenn nichts anderes zutrifft)

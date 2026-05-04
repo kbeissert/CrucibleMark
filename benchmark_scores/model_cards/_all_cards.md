@@ -40,16 +40,6 @@ Claude Haiku 4.5 ist Anthropics schnellstes und kompaktestes Modell der Claude-4
 
 ---
 
-### Claude Haiku 4.5
-**Entwickler:** Anthropic · **Herkunft:** USA · **Fokus:** instruction-following
-
-Claude Haiku 4.5 ist Anthropics schnellstes und kompaktestes Modell der Claude-4-Generation, entwickelt für latenzarme, kosteneffiziente Anwendungen. Es kombiniert starkes Instruction-Following mit hoher Verarbeitungsgeschwindigkeit und eignet sich besonders für Echtzeit-Interaktionen, Klassifikation und leichte Reasoning-Aufgaben.
-
-**Stärken:** Sehr niedrige Latenz und hoher Durchsatz – ideal für Echtzeit- und Produktionsanwendungen · Kosteneffizient bei hohem Anfragevolumen im Vergleich zu größeren Claude-Modellen · Solides Instruction-Following und präzise Kurzantworten bei alltäglichen Aufgaben
-**Einschränkungen:** Schwächer als Claude Sonnet oder Opus bei komplexen mehrstufigen Reasoning- und Analyseaufgaben · Begrenzte Tiefe bei langen, kontextreichen Dokumentenverarbeitungen oder anspruchsvollen kreativen Aufgaben
-
----
-
 ### Claude Opus 4.5
 **Entwickler:** Anthropic · **Herkunft:** USA · **Fokus:** general
 
@@ -57,16 +47,6 @@ Claude Opus 4.5 von Anthropic (USA) ist das leistungsstärkste Modell der Claude
 
 **Stärken:** Herausragende Leistung bei komplexen Reasoning- und Analyseaufgaben mit langen Kontexten · Optimiert für agentic Workflows und Multi-Step-Aufgaben mit hoher Zuverlässigkeit · Starke Fähigkeiten in nuanciertem, kohärentem Langform-Schreiben und Instruktionsbefolgung
 **Einschränkungen:** Nur über Anthropic API verfügbar, kein lokaler Betrieb möglich · Höhere Latenz und Kosten im Vergleich zu kleineren Claude-Modellen, was Echtzeit-Anwendungen einschränken kann
-
----
-
-### Claude Opus 4.5
-**Entwickler:** Anthropic · **Herkunft:** USA · **Fokus:** general
-
-Claude Opus 4.5 ist Anthropics leistungsstärkstes Modell der Claude-4-Generation, entwickelt in den USA mit Fokus auf komplexes Reasoning, nuanciertes Schreiben und agentenbasierte Aufgaben. Es wurde für anspruchsvolle Analyse, mehrstufige Planung und präzises Instruction-Following konzipiert.
-
-**Stärken:** Herausragende Leistung bei komplexen Reasoning- und Analyseaufgaben · Stark in agentenbasierten Workflows und mehrstufiger Aufgabenplanung · Hohe Qualität bei nuanciertem, langem und kreativem Schreiben
-**Einschränkungen:** Nur über Anthropics Cloud-API verfügbar, kein lokaler Betrieb möglich · Höhere Latenz und Kosten im Vergleich zu kleineren Claude-Modellen
 
 ---
 
@@ -97,16 +77,6 @@ Claude Sonnet 4.5 von Anthropic (USA) ist ein leistungsstarkes Allround-Modell d
 
 **Stärken:** Starkes Reasoning und mehrstufiges Problemlösen · Zuverlässiges Instruction-Following auch bei komplexen, langen Prompts · Gut geeignet für agentenbasierte und Tool-Use-Szenarien
 **Einschränkungen:** Nur über Anthropic-API verfügbar, kein lokaler Betrieb möglich · Wissenstand begrenzt auf Trainingsdaten-Cutoff; aktuelle Ereignisse erfordern externe Tools
-
----
-
-### Claude Sonnet 4.5
-**Entwickler:** Anthropic · **Herkunft:** USA · **Fokus:** general
-
-Claude Sonnet 4.5 ist Anthropics aktuelles Mittelklasse-Modell der Claude-4-Generation, entwickelt für ausgewogene Leistung bei Alltagsaufgaben. Es kombiniert starkes Instruction-Following, präzises Schreiben und solide Coding-Fähigkeiten mit niedrigerer Latenz als Opus-Modelle.
-
-**Stärken:** Ausgewogenes Verhältnis aus Geschwindigkeit und Antwortqualität · Starkes Instruction-Following und präzise, strukturierte Textgenerierung · Zuverlässige Coding-Unterstützung und Analyse komplexer Dokumente
-**Einschränkungen:** Schwächer als Claude Opus 4 bei sehr komplexen Mehrschritt-Reasoning-Aufgaben · Kein lokaler Betrieb möglich, vollständige Abhängigkeit von Anthropics API
 
 ---
 
@@ -240,26 +210,6 @@ Gemma 4 2B ist ein kompaktes Open-Weights-Modell von Google DeepMind, trainiert 
 
 ---
 
-### GLM-5 Turbo
-**Entwickler:** Zhipu AI · **Herkunft:** China · **Fokus:** general
-
-GLM-5 Turbo ist ein schnelles, kosteneffizientes Sprachmodell von Zhipu AI (China), entwickelt auf Basis der GLM-Architektur. Es ist auf mehrsprachige Instruktionsbefolgung, Dialogführung und allgemeine Aufgaben ausgerichtet und dient als leichtgewichtige Alternative zu größeren GLM-Modellen für latenzarme Anwendungen.
-
-**Stärken:** Niedrige Latenz und hoher Durchsatz für produktive API-Nutzung · Gute Chinesisch-Englisch-Bilingualität mit Stärke in chinesischsprachigen Aufgaben · Kosteneffizient für einfache bis mittelschwere Instruction-Following-Aufgaben
-**Einschränkungen:** Nur über Zhipu-API verfügbar, keine lokale Ausführung möglich · Bei komplexen Reasoning-Aufgaben und langen Kontexten schwächer als größere Modelle der GLM-Familie
-
----
-
-### GLM-5 (Cloud)
-**Entwickler:** Zhipu AI · **Herkunft:** China · **Fokus:** general
-
-GLM-5 ist ein großes Sprachmodell von Zhipu AI (China), entwickelt auf Basis der GLM-Architektur der Tsinghua University. Es zielt auf starke mehrsprachige Fähigkeiten, Reasoning und Instruktionsbefolgung ab und wird ausschließlich über die Zhipu-Cloud-API bereitgestellt.
-
-**Stärken:** Starke Leistung in chinesisch-englischen bilingualen Aufgaben · Gute Instruktionsbefolgung und Dialogfähigkeit · Solide Reasoning- und Textverständnisfähigkeiten
-**Einschränkungen:** Nur über Cloud-API verfügbar, keine lokale Ausführung möglich · Mögliche Zensur oder inhaltliche Einschränkungen bei politisch sensiblen Themen gemäß chinesischer Regulierung
-
----
-
 ### GPT-4o Mini
 **Entwickler:** OpenAI · **Herkunft:** USA · **Fokus:** general
 
@@ -360,46 +310,6 @@ Mistral-basiertes Modell in GGUF-Format (Q8_0), abliteriert durch mradermacher. 
 
 ---
 
-### Kimi K2 Instruct
-**Entwickler:** Moonshot AI · **Herkunft:** China · **Fokus:** general
-
-Kimi K2 Instruct ist ein großes Mixture-of-Experts-Modell von Moonshot AI (China), trainiert auf starkes Instruction-Following, Agentic Tasks und Coding. Es wurde entwickelt, um komplexe mehrstufige Aufgaben, Tool-Use und autonome Agenten-Workflows zuverlässig zu bewältigen.
-
-**Stärken:** Starke Leistung bei agentic und Tool-Use-Szenarien mit langen Kontexten · Hohe Coding-Kompetenz über mehrere Programmiersprachen hinweg · Effiziente MoE-Architektur mit großer Gesamtkapazität bei moderatem Rechenaufwand
-**Einschränkungen:** Als chinesisches Modell können politisch sensible Themen zensiert oder ausgewichen werden · Sehr große Modellgröße erschwert lokales Deployment ohne spezialisierte Hardware erheblich
-
----
-
-### Kimi K2
-**Entwickler:** Moonshot AI · **Herkunft:** China · **Fokus:** general
-
-Kimi K2 ist ein großes Mixture-of-Experts-Modell von Moonshot AI (China) mit 1 Billion Parametern (32B aktiv). Es wurde für agentic Tasks, Tool-Use und komplexes Reasoning entwickelt und zeigt besondere Stärken bei Code, Mathematik und mehrstufigen Aufgaben mit langen Kontextfenstern.
-
-**Stärken:** Starke Leistung bei agentic und Tool-Use-Szenarien · Sehr großes Kontextfenster (bis zu 128K Token) · Wettbewerbsfähig bei Coding- und Mathematik-Benchmarks
-**Einschränkungen:** Mixture-of-Experts-Architektur erfordert erhebliche Hardware-Ressourcen für lokales Deployment · Mögliche Zensur oder Einschränkungen bei politisch sensiblen Themen mit China-Bezug
-
----
-
-### Kimi K2.5
-**Entwickler:** Moonshot AI · **Herkunft:** China · **Fokus:** reasoning
-
-Kimi K2.5 ist ein Reasoning-Modell von Moonshot AI aus China, entwickelt für komplexe mehrstufige Schlussfolgerungen, mathematische Problemlösung und Long-Context-Verarbeitung. Es kombiniert starkes analytisches Denken mit breiter Sprachunterstützung und zielt auf anspruchsvolle Wissens- und Planungsaufgaben.
-
-**Stärken:** Starke Leistung bei mehrstufigem logischem Schlussfolgern und mathematischen Aufgaben · Sehr langer Kontextfenster für die Verarbeitung umfangreicher Dokumente · Gute Mehrsprachigkeit mit besonderem Fokus auf Chinesisch und Englisch
-**Einschränkungen:** Nur über Moonshot-API verfügbar, keine lokale Ausführung möglich · Verhalten bei politisch sensiblen Themen unterliegt chinesischen Zensurrichtlinien
-
----
-
-### Kimi K2.5
-**Entwickler:** Moonshot AI · **Herkunft:** China · **Fokus:** reasoning
-
-Kimi K2.5 ist ein Cloud-Modell von Moonshot AI aus China, entwickelt für komplexes Schlussfolgern, Long-Context-Verarbeitung und mehrsprachige Aufgaben. Es zeichnet sich durch starke Reasoning-Fähigkeiten und einen sehr großen Kontextfenster aus, konzipiert als leistungsstarker KI-Assistent für anspruchsvolle Analyse- und Wissensaufgaben.
-
-**Stärken:** Sehr großes Kontextfenster (bis zu 128K Token), geeignet für Long-Document-Analyse · Starke mehrsprachige Fähigkeiten, insbesondere Chinesisch und Englisch · Ausgeprägte Reasoning- und Schlussfolgerungskompetenz bei komplexen Aufgaben
-**Einschränkungen:** Nur als Cloud-API verfügbar, keine lokale Ausführung möglich · Mögliche Zensur oder inhaltliche Einschränkungen bei politisch sensiblen Themen gemäß chinesischer Regulierung
-
----
-
 ### Llama 3.3 70B Versatile
 **Entwickler:** Meta · **Herkunft:** USA · **Fokus:** general
 
@@ -407,16 +317,6 @@ Llama 3.3 70B Versatile ist ein Open-Weights-Modell von Meta (USA), trainiert au
 
 **Stärken:** Starkes Instruction-Following über viele Aufgabentypen hinweg · Gute Reasoning- und Analysefähigkeiten für ein 70B-Modell · Frei verfügbare Gewichte ermöglichen lokalen, datenschutzkonformen Betrieb
 **Einschränkungen:** Kontextfenster und Langdokument-Verarbeitung schwächer als bei spezialisierten Modellen · Kann bei sehr komplexen mehrstufigen Reasoning-Aufgaben hinter dedizierten Thinking-Modellen zurückbleiben
-
----
-
-### Llama 4 Scout 17B 16E Instruct
-**Entwickler:** Meta · **Herkunft:** USA · **Fokus:** instruction-following
-
-Llama 4 Scout ist Metas erstes Mixture-of-Experts-Modell der Llama-4-Generation mit 17B aktiven Parametern bei 16 Experten. Es wurde auf breite Instruction-Following-Aufgaben optimiert, unterstützt multimodale Eingaben und zeichnet sich durch hohe Effizienz bei kompetitiver Leistung aus.
-
-**Stärken:** Effiziente MoE-Architektur mit nur 17B aktiven Parametern bei großer Gesamtkapazität · Multimodale Fähigkeiten (Text und Bild als Eingabe) · Sehr langer Kontextfenster-Support (bis zu 10M Token)
-**Einschränkungen:** Als MoE-Modell höherer Speicherbedarf für alle Expertengewichte beim lokalen Betrieb · Reasoning-Tiefe und Coding-Leistung hinter spezialisierten Modellen wie o3 oder DeepSeek-R1
 
 ---
 
@@ -453,30 +353,20 @@ Llama 4 Scout ist Metas erstes Mixture-of-Experts-Modell der Llama-4-Generation 
 ### MiniMax M2.7
 **Entwickler:** MiniMax · **Herkunft:** China · **Fokus:** general
 
-MiniMax M2.7 ist ein chinesisches Mixture-of-Experts-Modell mit 7 Milliarden aktiven Parametern. Es wurde auf breite Sprachverständnis- und Generierungsaufgaben trainiert und zeigt Stärken in mehrsprachigen Szenarien sowie bei langen Kontexten. Ziel war ein effizientes, kompaktes Modell für kommerzielle Anwendungen.
-
-**Stärken:** Effiziente MoE-Architektur mit geringem Rechenaufwand bei der Inferenz · Gute Leistung bei mehrsprachigen Aufgaben inklusive Chinesisch und Englisch · Unterstützung langer Kontextfenster für dokumentenbasierte Aufgaben
-**Einschränkungen:** Begrenzte öffentliche Dokumentation und Benchmarking-Daten verfügbar · Mögliche Zensur oder inhaltliche Einschränkungen bei politisch sensiblen Themen durch chinesische Regulierung
-
----
-
-### MiniMax M2.7
-**Entwickler:** MiniMax · **Herkunft:** China · **Fokus:** general
-
-MiniMax M2.7 ist ein chinesisches Cloud-Sprachmodell von MiniMax, entwickelt für allgemeine Sprach- und Dialogaufgaben. Es zielt auf starke multilinguale Fähigkeiten, kontextreiches Verstehen und kommerzielle Anwendungsfälle wie Chatbots und Content-Generierung ab.
-
-**Stärken:** Starke multilinguale Fähigkeiten, insbesondere für Chinesisch und Englisch · Gute Leistung bei langen Kontextfenstern und Dialogkontinuität · Optimiert für kommerzielle Anwendungsfälle wie Kundenservice und Content-Erstellung
-**Einschränkungen:** Nur über Cloud-API verfügbar, keine lokale Ausführung möglich · Detaillierte technische Spezifikationen und Trainingsdaten sind öffentlich kaum dokumentiert
-
----
-
-### MiniMax M2.7
-**Entwickler:** MiniMax · **Herkunft:** China · **Fokus:** general
-
 MiniMax M2.7 ist ein chinesisches Mixture-of-Experts-Modell mit 2,7 Billionen Gesamtparametern, entwickelt für starke Mehrsprachigkeit, langes Kontextverständnis und allgemeine Aufgaben. Es zielt auf wettbewerbsfähige Leistung bei Reasoning, Coding und Instruktionsbefolgung mit effizienter MoE-Architektur.
 
 **Stärken:** Sehr großes MoE-Modell mit hoher Parameterkapazität bei effizienter Inferenz · Starke Mehrsprachigkeit mit besonderem Fokus auf Chinesisch und Englisch · Langes Kontextfenster für umfangreiche Dokument- und Dialogverarbeitung
 **Einschränkungen:** Als chinesisches Modell potenziell eingeschränkte oder zensierte Antworten zu politisch sensiblen Themen · Sehr hohe Hardwareanforderungen für lokales Deployment aufgrund der Modellgröße
+
+---
+
+### MiniMax M2.7
+**Entwickler:** MiniMax · **Herkunft:** China · **Fokus:** general
+
+MiniMax M2.7 ist ein chinesisches Sprachmodell von MiniMax, entwickelt für allgemeine Sprach- und Reasoning-Aufgaben. Es zielt auf starke Mehrsprachigkeit, Instruktionsbefolgung und Konversationsfähigkeit ab und positioniert sich als leistungsfähiges Allround-Modell im chinesischen KI-Ökosystem.
+
+**Stärken:** Starke Mehrsprachigkeit mit besonderem Fokus auf Chinesisch und Englisch · Solide Instruktionsbefolgung für konversationelle und aufgabenorientierte Szenarien · Kompetitives Allround-Profil für Text-Generierung und Zusammenfassung
+**Einschränkungen:** Gewichte nicht öffentlich verfügbar, daher keine lokale oder private Nutzung möglich · Begrenzte unabhängige Benchmarking-Daten verfügbar, Leistung in Nischen-Domänen schwer einschätzbar
 
 ---
 
@@ -530,13 +420,13 @@ Mistral Small ist ein kompaktes Allround-Modell des französischen Unternehmens 
 
 ---
 
-### Kimi K2 Instruct
-**Entwickler:** Moonshot AI · **Herkunft:** China · **Fokus:** general
+### Kimi K2 Thinking
+**Entwickler:** Moonshot AI · **Herkunft:** China · **Fokus:** reasoning
 
-Kimi K2 Instruct ist ein großes Sprachmodell von Moonshot AI aus China, trainiert auf einem breiten Mix aus Code, Mathematik und allgemeinen Instruktionsdaten. Es zielt auf starke Reasoning- und Coding-Fähigkeiten bei gleichzeitig guter Mehrsprachigkeit, insbesondere Chinesisch und Englisch.
+Kimi K2 Thinking ist das erweiterte Reasoning-Modell in der Kimi-K2-Familie von Moonshot AI. Es basiert auf der K2-MoE-Architektur (1T Parameter) und wurde speziell für komplexe, mehrstufige Reasoning-Aufgaben, Mathematik und langfristige agentische Problemlösung optimiert.
 
-**Stärken:** Starke Leistung bei Code-Generierung und mathematischem Reasoning · Gute Mehrsprachigkeit mit besonderem Fokus auf Chinesisch und Englisch · Großes Kontextfenster für komplexe, mehrstufige Aufgaben
-**Einschränkungen:** Unterliegt chinesischer Rechtsprechung, was Zensur und politisch sensible Themen beeinflussen kann · Weniger etabliert im westlichen Benchmark-Ökosystem als vergleichbare US-Modelle
+**Stärken:** Integriertes Chain-of-Thought Reasoning (Thinking-Modus) · Starke Leistung bei mehrstufigen logischen Schlussfolgerungen · Besonders geeignet für komplexe Coding- und Planungsaufgaben · Unterstützt Tool-Use im Reasoning-Kontext
+**Einschränkungen:** Höherer Token-Verbrauch durch interne Reasoning-Tokens · Als sehr großes MoE-Modell hoher Ressourcenbedarf für lokales Deployment · Mögliche Einschränkungen bei politisch sensiblen Themen mit China-Bezug
 
 ---
 
@@ -557,6 +447,46 @@ Kimi K2.5 ist ein Reasoning-Modell von Moonshot AI aus China, trainiert auf komp
 
 **Stärken:** Starke mehrstufige Reasoning-Fähigkeiten bei Mathematik und Logik · Gute Performance bei agentenbasierten und Tool-Use-Szenarien · Solide Coding-Kompetenz kombiniert mit analytischem Denken
 **Einschränkungen:** Thinking-Prozess erhöht Latenz und Token-Verbrauch erheblich · Mögliche Zensur oder Einschränkungen bei politisch sensiblen Themen mit China-Bezug
+
+---
+
+### Kimi K2.5
+**Entwickler:** Moonshot AI · **Herkunft:** China · **Fokus:** reasoning
+
+Kimi K2.5 ist ein Reasoning-Modell von Moonshot AI aus China, entwickelt für komplexe mehrstufige Schlussfolgerungen, mathematische Aufgaben und Code-Analyse. Es kombiniert starkes logisches Denken mit langen Kontextfenstern und wurde als Weiterentwicklung der Kimi-Reihe für anspruchsvolle analytische Aufgaben konzipiert.
+
+**Stärken:** Starke Leistung bei mehrstufigen Reasoning-Aufgaben und mathematischen Problemen · Unterstützung sehr langer Kontextfenster für umfangreiche Dokumentenanalyse · Gute Mehrsprachigkeit mit besonderem Fokus auf Chinesisch und Englisch
+**Einschränkungen:** Nur über Moonshot-API verfügbar, keine lokale Ausführung möglich · Weniger transparent bezüglich Trainingsdaten und Modellarchitektur als Open-Weights-Alternativen
+
+---
+
+### Kimi K2.6
+**Entwickler:** Moonshot AI · **Herkunft:** China · **Fokus:** general
+
+Kimi K2.6 ist ein großes Sprachmodell von Moonshot AI aus China, trainiert auf breiten Wissens- und Reasoning-Aufgaben. Es zeichnet sich durch starke Agentic-Fähigkeiten, Werkzeugnutzung und mehrsprachige Kompetenz aus. Entwickelt als leistungsstarke Open-Weights-Alternative für komplexe Aufgaben.
+
+**Stärken:** Starke Agentic- und Tool-Use-Fähigkeiten für autonome Aufgabenbearbeitung · Gute Mehrsprachigkeit mit besonderer Stärke in Chinesisch und Englisch · Hohe Leistung bei Reasoning- und Coding-Aufgaben trotz Open-Weights-Verfügbarkeit
+**Einschränkungen:** Als chinesisches Modell potenziell eingeschränkt bei politisch sensiblen Themen mit China-Bezug · Sehr große Modellgröße erschwert lokales Deployment ohne spezialisierte Hardware erheblich
+
+---
+
+### Hermes 4 405B
+**Entwickler:** Nous Research · **Herkunft:** USA · **Fokus:** instruction-following
+
+Hermes 4 405B von Nous Research ist ein US-amerikanisches Open-Weights-Modell auf Basis von Llama 3.1 405B, feinabgestimmt auf präzises Instruction-Following, strukturierte Ausgaben und agentenbasierte Anwendungen. Es wurde entwickelt, um Zensurbeschränkungen zu reduzieren und Rollenspiel sowie komplexe Aufgaben zuverlässig zu unterstützen.
+
+**Stärken:** Sehr starkes Instruction-Following mit präziser Befolgung komplexer Anweisungen · Optimiert für strukturierte JSON-Ausgaben und Function-Calling in Agenten-Pipelines · Reduzierte Ablehnung von Anfragen durch gezieltes Uncensored-Finetuning
+**Einschränkungen:** Durch reduzierte Sicherheitsfilter erhöhtes Risiko für missbräuchliche Nutzung bei sensiblen Themen · Lokaler Betrieb des 405B-Modells erfordert erhebliche Hardware-Ressourcen (mehrere High-End-GPUs)
+
+---
+
+### Hermes 4 70B
+**Entwickler:** Nous Research · **Herkunft:** USA · **Fokus:** instruction-following
+
+Hermes 4 70B von Nous Research ist ein US-amerikanisches Open-Weights-Modell, das auf einem starken Basismodell (vermutlich Llama-3-70B) mit kuratiertem Instruction-Tuning-Datensatz trainiert wurde. Es zielt auf präzises Instruction-Following, strukturierte Ausgaben und reduzierte Zensur für professionelle und kreative Anwendungsfälle.
+
+**Stärken:** Starkes Instruction-Following mit präzisen, strukturierten Antworten · Reduzierte Überrefusal-Rate durch gezieltes Uncensored-Finetuning · Gute Leistung bei Rollenspiel, Agenten-Workflows und Function-Calling
+**Einschränkungen:** Als Fine-Tune eines Basismodells abhängig von dessen Wissensgrenzen und Trainingsdaten-Cutoff · 70B-Parametergröße erfordert erhebliche Hardware-Ressourcen für lokalen Betrieb
 
 ---
 
@@ -610,16 +540,6 @@ Qwen 2.5 3B ist ein kompaktes Sprachmodell von Alibaba Cloud (China), trainiert 
 
 ---
 
-### Qwen 3 32B
-**Entwickler:** Alibaba Cloud · **Herkunft:** China · **Fokus:** general
-
-Qwen 3 32B ist ein von Alibaba Cloud (China) entwickeltes Sprachmodell mit 32 Milliarden Parametern. Es wurde auf mehrsprachige Instruktionsbefolgung, Reasoning und Coding optimiert. Stärken liegen in asiatischen Sprachen, mathematischem Denken und optionalem Chain-of-Thought-Modus.
-
-**Stärken:** Starke Mehrsprachigkeit, insbesondere für Chinesisch, Japanisch und weitere asiatische Sprachen · Optionales Thinking-Modus (Extended Chain-of-Thought) für komplexe Reasoning-Aufgaben schaltbar · Gute Leistung bei Mathematik, Coding und strukturierten Aufgaben im Verhältnis zur Modellgröße
-**Einschränkungen:** Kann bei politisch sensiblen Themen mit Bezug zu China zensierte oder ausweichende Antworten produzieren · Thinking-Modus erhöht Latenz und Token-Verbrauch erheblich, was bei einfachen Aufgaben ineffizient ist
-
----
-
 ### Qwen 3 14B
 **Entwickler:** Alibaba Cloud · **Herkunft:** China · **Fokus:** general
 
@@ -670,6 +590,26 @@ Qwen 3 32B ist ein von Alibaba Cloud (China) entwickeltes Sprachmodell mit Stär
 
 ---
 
+### GLM 4.6
+**Entwickler:** Zhipu AI · **Herkunft:** China · **Fokus:** general
+
+GLM 4.6 ist ein Open-Weights-Modell von Zhipu AI (China), entwickelt als leistungsstarkes Allround-Modell mit Fokus auf mehrsprachige Fähigkeiten, insbesondere Chinesisch und Englisch. Stärken liegen in Instruktionsbefolgung, Textverständnis und Dialogkompetenz. Ziel ist ein konkurrenzfähiges, lokal betreibbares Modell.
+
+**Stärken:** Starke Chinesisch- und Englischkompetenz durch gezieltes mehrsprachiges Training · Gute Instruktionsbefolgung und Dialogfähigkeit · Open-Weights-Verfügbarkeit ermöglicht lokalen, datenschutzkonformen Betrieb
+**Einschränkungen:** Leistung in weniger verbreiteten Sprachen deutlich schwächer als in Chinesisch/Englisch · Kann bei politisch sensiblen Themen mit Bezug zu China eingeschränkte oder ausweichende Antworten liefern
+
+---
+
+### GLM-4.7
+**Entwickler:** Zhipu AI · **Herkunft:** China · **Fokus:** general
+
+GLM-4.7 ist ein chinesisches Open-Weights-Modell von Zhipu AI, entwickelt auf Basis der GLM-Architektur. Es wurde auf mehrsprachige Instruktionsbefolgung, Reasoning und allgemeine Aufgaben trainiert. Stärken liegen in Chinesisch-Englisch-Bilingualität und Dialogfähigkeit.
+
+**Stärken:** Starke Leistung in chinesisch-englischen bilingualen Aufgaben · Gute Instruktionsbefolgung für allgemeine Dialog- und Assistenzaufgaben · Open-Weights-Verfügbarkeit ermöglicht lokalen Betrieb ohne Cloud-Abhängigkeit
+**Einschränkungen:** Kann bei westlich-kulturellen Kontexten oder nicht-chinesischen Sprachen schwächer abschneiden als bei Chinesisch · Mögliche Zensur oder Zurückhaltung bei politisch sensiblen Themen mit Bezug zu China
+
+---
+
 ### GLM-5 Turbo
 **Entwickler:** Zhipu AI · **Herkunft:** China · **Fokus:** general
 
@@ -677,5 +617,15 @@ GLM-5 Turbo ist ein Sprachmodell von Zhipu AI aus China, entwickelt als schnelle
 
 **Stärken:** Starke Leistung in chinesischer und englischer Sprache · Schnelle Inferenz als Turbo-Variante der GLM-5-Familie · Gute Instruktionsbefolgung bei alltäglichen und geschäftlichen Aufgaben
 **Einschränkungen:** Gewichte nicht öffentlich verfügbar, nur über API nutzbar · Mögliche Zensur oder Einschränkungen bei politisch sensiblen Themen gemäß chinesischer Regulierung
+
+---
+
+### GLM-5 Turbo
+**Entwickler:** Zhipu AI · **Herkunft:** China · **Fokus:** general
+
+GLM-5 Turbo ist ein chinesisches Sprachmodell von Zhipu AI, entwickelt als schnelle, kosteneffiziente Variante der GLM-5-Familie. Trainiert auf mehrsprachigen Daten mit Fokus auf Chinesisch und Englisch, eignet es sich für Konversation, Textverarbeitung und leichte Reasoning-Aufgaben im API-Betrieb.
+
+**Stärken:** Starke Leistung in chinesisch-sprachigen Aufgaben und Nuancen · Schnelle Inferenzgeschwindigkeit als Turbo-Variante · Gute Allround-Fähigkeiten für Konversation und Textgenerierung
+**Einschränkungen:** Nur über Cloud-API verfügbar, keine lokale Ausführung möglich · Mögliche Zensur oder Einschränkungen bei politisch sensiblen Themen gemäß chinesischer Regulierung
 
 ---

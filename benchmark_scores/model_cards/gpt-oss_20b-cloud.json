@@ -27,5 +27,10 @@
   "unknown": true,
   "generated_at": "2026-04-23T22:07:35.501956+00:00",
   "card_status": "complete",
-  "size_class": "Workstation"
+  "size_class": "Workstation",
+  "thinking_probe_detected": false,
+  "thinking_probe_evidence": "No CoT signals found (A: no think-tags, B: reasoning_tokens=0). Response length: 695 chars",
+  "thinking_probe_confidence": "low",
+  "thinking_probe_at": "2026-05-01T10:49:29.669564+00:00",
+  "supports_tool_use": true
 }

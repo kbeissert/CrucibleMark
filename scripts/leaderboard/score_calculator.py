@@ -25,9 +25,10 @@ if str(ROOT_DIR) not in sys.path:
 
 def _build_price_lookup() -> Dict[str, float]:
     """
-    Builds a flat {model_name: output_cost_per_1k} dict from config/cost_limits.yaml.
+    Builds a flat {model_name: output_cost_per_1k} dict from cost_limits.yaml.
     Only model entries with an 'output_cost_per_1k' key are included.
     Non-model keys like 'daily_budget' are skipped automatically.
+    Keys are sorted longest-first so prefix matching is deterministic.
     """
     cost_limits_path = ROOT_DIR / "config" / "cost_limits.yaml"
     try:
@@ -48,6 +49,27 @@ def _build_price_lookup() -> Dict[str, float]:
             if isinstance(price, (int, float)):
                 lookup[model_name] = float(price)
     return lookup
+
+
+def _lookup_price(model_ver: str, model_name: str, lookup: Dict[str, float]) -> Optional[float]:
+    """
+    Resolves output_cost_per_1k for a model.
+
+    Match priority:
+      1. Exact match on model_version
+      2. Exact match on full model name (e.g. 'z-ai/glm-5-turbo-20260315')
+      3. Prefix match on full model name, longest key first
+         (e.g. 'z-ai/glm-5-turbo-20260315' → 'z-ai/glm-5-turbo')
+    """
+    if model_ver and model_ver in lookup:
+        return lookup[model_ver]
+    if model_name and model_name in lookup:
+        return lookup[model_name]
+    if model_name:
+        for key in sorted(lookup.keys(), key=len, reverse=True):
+            if model_name.startswith(key):
+                return lookup[key]
+    return None
 
 _PRICE_LOOKUP: Optional[Dict[str, float]] = None
 
@@ -693,18 +715,17 @@ def calculate_scores(
     price_lookup = _get_price_lookup()
 
     def calc_cost_per_1k_tokens(row: pd.Series) -> Optional[float]:
-        # Match by model_version (e.g. "gpt-4o") or fall back to model column
+        # Match by model_version, then full model name, then prefix (longest key first)
         model_ver = str(row.get("model_version", "") or "").strip()
         model_name = str(row.get("model", "") or "").strip()
-        price = price_lookup.get(model_ver) or price_lookup.get(model_name)
-        return price  # None if not found → empty cell
+        return _lookup_price(model_ver, model_name, price_lookup)
 
     result["Cost per 1K (USD)"] = result.apply(calc_cost_per_1k_tokens, axis=1)
 
     # Benchmark Cost (USD) — absolute cost for the full benchmark run.
-    # Formula: (Tokens Total / 1000) × Cost per 1K (USD)
-    # Only set when both inputs are available (known model price + recorded tokens).
-    # Models without a price entry (local, unknown proxies) remain empty.
+    # Primary:  (Tokens Total / 1000) × Cost per 1K (USD)  [known price in cost_limits.yaml]
+    # Fallback: cost_usd (sum from benchmark CSVs) — covers date-suffixed OpenRouter models
+    #           and any other model whose name doesn't match the price lookup exactly.
     if "tokens_used" in result.columns:
         def calc_benchmark_cost(row: pd.Series) -> Optional[float]:
             price = row.get("Cost per 1K (USD)")
@@ -713,10 +734,16 @@ def calculate_scores(
                 price_f = float(price)  # type: ignore[arg-type]
                 tokens_f = float(tokens)  # type: ignore[arg-type]
             except (TypeError, ValueError):
+                price_f = float("nan")
+                tokens_f = float("nan")
+            if not pd.isna(price_f) and not pd.isna(tokens_f) and tokens_f > 0:
+                return round((tokens_f / 1000) * price_f, 4)
+            # Fallback: use recorded cost_usd sum (covers OpenRouter + date-suffix models)
+            try:
+                fallback = float(row.get("cost_usd") or 0)  # type: ignore[arg-type]
+                return round(fallback, 4) if fallback > 0 else None
+            except (TypeError, ValueError):
                 return None
-            if pd.isna(price_f) or pd.isna(tokens_f) or tokens_f == 0:
-                return None
-            return round((tokens_f / 1000) * price_f, 4)
 
         result["Benchmark Cost (USD)"] = result.apply(calc_benchmark_cost, axis=1)
 

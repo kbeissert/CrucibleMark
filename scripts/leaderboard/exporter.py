@@ -149,9 +149,14 @@ def export_leaderboard_detailed(leaderboard: pd.DataFrame, cat_cols: List[str]) 
         if "Total Score" not in df_export.columns:
             df_export = df_export.rename(columns={"Overall Score": "Total Score"})
 
+    # Expose raw model ID as SSOT for downstream tools (web_export, dir lookups)
+    if "model" in df_export.columns:
+        df_export["model_id"] = df_export["model"]
+
     cols = [
         "Rank",
         "Model Name",
+        "model_id",
         "Version",
         "Provider Code",
         "Badge",

@@ -152,6 +152,75 @@ def clean_float(val):
     return float(v) if v is not None else None
 
 
+def load_model_card(model_name: str, root_dir: Path) -> dict | None:
+    """Loads the model card JSON for *model_name* using the same lookup logic as _find_card().
+
+    Replicates the 3-rule card-naming convention from utils/model_utils.py without
+    importing from there (avoids CWD dependency of the module-level CARD_DIR path).
+    """
+    card_dir = root_dir / "benchmark_scores" / "model_cards"
+    safe = re.sub(r"[:/.\ ]", "_", model_name)
+    unprefixed = card_dir / f"{safe}.json"
+
+    def _try_load(path: Path) -> dict | None:
+        try:
+            return json.loads(path.read_text(encoding="utf-8"))
+        except (json.JSONDecodeError, OSError):
+            return None
+
+    if "/" in model_name:
+        # Rule 1: namespaced IDs (org/model) — globally unique, no prefix
+        if unprefixed.exists():
+            return _try_load(unprefixed)
+        return None
+
+    # Rule 3: non-namespaced — try provider-prefixed variants first (LCL_, GR_)
+    for shortcode in ("LCL", "GR"):
+        candidate = card_dir / f"{shortcode}_{safe}.json"
+        if candidate.exists():
+            return _try_load(candidate)
+
+    # Rule 2: commercial API or legacy unprefixed card
+    if unprefixed.exists():
+        return _try_load(unprefixed)
+
+    # Fallback: versioned card names (e.g. "claude-sonnet-4-5-20250929.json" for "claude-sonnet-4-5")
+    versioned = sorted(card_dir.glob(f"{safe}-*.json"), key=lambda p: p.stat().st_mtime, reverse=True)
+    if versioned:
+        return _try_load(versioned[0])
+
+    # Fallback: leaderboard stores short display names (e.g. "kimi-k2.5") while cards are
+    # filed under the full namespaced model_id (e.g. "moonshotai/kimi-k2.5-0127").
+    # Match by stripping the org-prefix and date/version suffix from each card's model_id.
+    display_norm = model_name.lower()
+    for card_file in sorted(card_dir.glob("*.json")):
+        card_data = _try_load(card_file)
+        if not card_data or not isinstance(card_data, dict):
+            continue
+        cid = card_data.get("model_id", "")
+        # Strip org prefix (everything before first '/')
+        base = cid.split("/", 1)[1] if "/" in cid else cid
+        # Strip trailing date (-YYYYMMDD) or version (-NNNN) suffix
+        base = re.sub(r"-\d{4,8}$", "", base)
+        if base.lower() == display_norm:
+            return card_data
+
+    return None
+
+
+def _read_version(root_dir: Path) -> str:
+    """Reads project version from README.md badge line."""
+    try:
+        readme = root_dir / "README.md"
+        for line in readme.read_text(encoding="utf-8").splitlines()[:10]:
+            m = re.search(r"version-(\d+\.\d+\.\d+)-", line)
+            if m:
+                return m.group(1)
+    except OSError:
+        pass
+    return "unknown"
+
+
 _BLOCK_META: dict = {
     "7.1": {"label": "Ökonomie & Verteilung",   "axis": "x"},
     "7.2": {"label": "Arbeitswelt & Markt",      "axis": "x"},
@@ -297,12 +366,15 @@ def main() -> None:
         sys.exit(1)
 
     # Build PC-Leaderboard lookup: model name -> row (vanilla/forced/shift fields)
+    # Key by both exact name AND slugified name for fuzzy fallback
     pc_lb_map: dict = {}
+    pc_lb_slug_map: dict = {}
     if pc_lb is not None and 'model' in pc_lb.columns:
         for _, _lb_row in pc_lb.iterrows():
             _m = str(_lb_row.get('model', ''))
             if _m and _m != 'nan':
                 pc_lb_map[_m] = _lb_row
+                pc_lb_slug_map[slugify(_m)] = _lb_row
 
     generated_at = datetime.datetime.now(datetime.UTC).isoformat()
     models_list = []
@@ -319,23 +391,24 @@ def main() -> None:
     audit_dirs = {slugify(d.name): d for d in audit_logs_path.iterdir() if d.is_dir()} if audit_logs_path.exists() else {}
     comp_dirs = {slugify(d.name): d for d in comparisons_path.iterdir() if d.is_dir()} if comparisons_path.exists() else {}
 
-    def _resolve_dir(dirs: dict, csv_slug: str) -> "Path | None":
-        """Resolve CSV model slug to a local directory path.
-        Falls back to suffix-match (provider prefix) then prefix-match (version suffix)."""
-        if csv_slug in dirs:
-            return dirs[csv_slug]
-        # provider prefix: local dir slug ends with csv_slug (e.g. moonshotai-kimi-k2-instruct)
-        suffix_matches = [v for k, v in dirs.items() if k.endswith(csv_slug)]
-        if len(suffix_matches) == 1:
-            return suffix_matches[0]
-        if len(suffix_matches) > 1:
-            logging.warning(f"  [WARN] Ambiguous suffix match for '{csv_slug}': {[v.name for v in suffix_matches]}")
-        # version suffix: local dir slug starts with csv_slug (e.g. claude-haiku-4-5-20251001)
-        prefix_matches = [v for k, v in dirs.items() if k.startswith(csv_slug)]
-        if len(prefix_matches) == 1:
-            return prefix_matches[0]
-        if len(prefix_matches) > 1:
-            logging.warning(f"  [WARN] Ambiguous prefix match for '{csv_slug}': {[v.name for v in prefix_matches]}")
+    def _resolve_dir(dirs: dict, raw_slug: str) -> "Path | None":
+        """Resolve raw model-ID slug to a local directory path.
+
+        Primary: direct match via model_id slug (SSOT — same transform as benchmark_utils.py).
+        Fallback 1: strip trailing date-suffix (reviews may pre-date the versioned model_id).
+        Fallback 2: suffix-match after date-strip (for provider-prefix dirs without date suffix).
+        """
+        if raw_slug in dirs:
+            return dirs[raw_slug]
+        # Fallback 1: review dirs created before date-suffix was added to model_id
+        stripped = re.sub(r'-\d{4,8}$', '', raw_slug)
+        if stripped != raw_slug and stripped in dirs:
+            return dirs[stripped]
+        # Fallback 2: provider-prefix dir (e.g. z-ai_glm-5-turbo) matched via suffix
+        if stripped != raw_slug:
+            suffix_matches = [v for k, v in dirs.items() if k.endswith(stripped.split('-', 1)[-1] if '-' in stripped else stripped)]
+            if len(suffix_matches) == 1:
+                return suffix_matches[0]
         return None
 
     count = 0
@@ -352,9 +425,13 @@ def main() -> None:
 
         logging.info(f"  [{count}/{total}] {model_name} -> OK")
 
+        # SSOT: use raw model_id (same transform as benchmark_utils.py) for dir lookup
+        raw_model_id = str(row.get("model_id", "")).strip()
+        dir_slug = slugify(raw_model_id.replace("/", "_")) if raw_model_id and raw_model_id != "nan" else slug
+
         # Complete Directory Sync for Markdowns
-        model_audit_src = _resolve_dir(audit_dirs, slug)
-        model_comp_src = _resolve_dir(comp_dirs, slug)
+        model_audit_src = _resolve_dir(audit_dirs, dir_slug)
+        model_comp_src = _resolve_dir(comp_dirs, dir_slug)
 
         model_out = models_dir / slug
         model_out.mkdir(exist_ok=True)
@@ -390,6 +467,21 @@ def main() -> None:
         if has_report: models_with_reports += 1
         if has_review: models_with_reviews += 1
 
+        # Load model card (ThinkingProbe, architecture_tags, developer info, …)
+        card = load_model_card(model_name, root_dir)
+
+        # Derive thinking_mode from architecture_tags for frontend filtering:
+        # "thinking"  → always-on reasoning (DeepSeek-R1, o1/o3/o4, Magistral, Kimi K2 Thinking)
+        # "partial"   → optional reasoning / Thinking-Optional (Gemini 2.5, Claude 3.5+, Qwen3, …)
+        # "standard"  → no chain-of-thought (all other models)
+        _arch_tags: list = (card.get("architecture_tags") or []) if card else []
+        if "Thinking-Optional" in _arch_tags:
+            _thinking_mode = "partial"
+        elif "Thinking" in _arch_tags:
+            _thinking_mode = "thinking"
+        else:
+            _thinking_mode = "standard"
+
         # Core Leaderboard Entry
         entry = {
             "slug": slug,
@@ -399,9 +491,11 @@ def main() -> None:
             "badge_tier": extract_badge_tier(row.get("Badge")),
             "size_class": str(row.get("Size Class", "Frontier")),
             "speed_profile": str(row.get("Speed Profile", "")),
-            "performance_tier": str(row.get("Speed Profile", "")).split()[1] if len(str(row.get("Speed Profile", "")).split()) > 1 else None,
+            "performance_tier": str(row.get("Performance Tier", "")) or None,
             "type": str(row.get("Type", "")),
+            "thinking_mode": _thinking_mode,
             "inference_provider": resolve_inference_provider(model_name, provider_map),
+            "provider_code": str(row.get("Provider Code", "")) or None,
             "total_score": normalize_pending(row.get("Total Score")),
             "routine_score": normalize_pending(row.get("Routine Score")),
             "reasoning_score": normalize_pending(row.get("Reasoning Score")),
@@ -436,7 +530,25 @@ def main() -> None:
                 "system": normalize_pending(row.get("Tokens: System"))
             },
             "report_available": has_report,
-            "review_available": has_review
+            "review_available": has_review,
+            "model_card": {
+                "developer": card.get("developer"),
+                "origin_country": card.get("origin_country"),
+                "developer_jurisdiction": card.get("developer_jurisdiction"),
+                "deployment_type": card.get("deployment_type"),
+                "local_deployment_possible": card.get("local_deployment_possible"),
+                "weights_provenance_risk": card.get("weights_provenance_risk"),
+                "architecture_tags": card.get("architecture_tags"),
+                "supports_tool_use": card.get("supports_tool_use"),
+                "thinking_probe_detected": card.get("thinking_probe_detected"),
+                "thinking_probe_confidence": card.get("thinking_probe_confidence"),
+                "model_family": card.get("model_family"),
+                "primary_focus": card.get("primary_focus"),
+                "summary": card.get("summary"),
+                "strengths": card.get("strengths"),
+                "known_limitations": card.get("known_limitations"),
+                "card_status": card.get("card_status"),
+            } if card else None,
         }
         models_list.append(entry)
 
@@ -444,6 +556,16 @@ def main() -> None:
         compass_data = None
         if pc is not None and 'model' in pc.columns and 'run_id' in pc.columns:
             model_pc = pc[(pc['model'] == model_name) & (pc['run_id'] == 'AVG')]
+            if model_pc.empty:
+                # Slug-based fallback: strip provider prefix and version/date suffix
+                # e.g. "claude-sonnet-4-5-20250929" matches "claude-sonnet-4-5"
+                # e.g. "moonshotai/kimi-k2" matches "kimi-k2"
+                avg_rows = pc[pc['run_id'] == 'AVG']
+                for _pc_model in avg_rows['model'].unique():
+                    _pc_slug = slugify(str(_pc_model))
+                    if _pc_slug == slug or _pc_slug.endswith(f"-{slug}") or _pc_slug.startswith(f"{slug}-"):
+                        model_pc = avg_rows[avg_rows['model'] == _pc_model]
+                        break
             if not model_pc.empty:
                 pc_row = model_pc.iloc[0]
                 archetype, extremism = None, None
@@ -461,6 +583,8 @@ def main() -> None:
                         pass
 
                 _lb = pc_lb_map.get(model_name)
+                if _lb is None:
+                    _lb = pc_lb_slug_map.get(slug)
                 compass_data = {
                     "slug": slug,
                     "name": model_name,
@@ -476,7 +600,11 @@ def main() -> None:
                     "forced_y": normalize_pending(_lb.get("forced_y")) if _lb is not None else None,
                     "forced_label": str(_lb.get("forced_label", "")) if _lb is not None else None,
                     "shift_distance": normalize_pending(_lb.get("shift_distance")) if _lb is not None else None,
+                    "shift_x": normalize_pending(_lb.get("shift_x")) if _lb is not None else None,
+                    "shift_y": normalize_pending(_lb.get("shift_y")) if _lb is not None else None,
                     "polarity_flip_rate": normalize_pending(_lb.get("polarity_flip_rate")) if _lb is not None else None,
+                    "model_category": str(_lb.get("model_category", "")) if _lb is not None else None,
+                    "is_retest": bool(_lb.get("is_retest")) if _lb is not None and not pd.isna(_lb.get("is_retest", float("nan"))) else None,
                     "archetype": archetype,
                     "extremism_status": extremism,
                     "blocks": _build_block_scores(metrics.get("module_stats", {}))
@@ -551,7 +679,7 @@ def main() -> None:
     with open(out_dir / "meta.json", "w", encoding="utf-8") as f:
         json.dump({
             "generated_at": generated_at,
-            "cruciblemark_version": "3.5.9",
+            "cruciblemark_version": _read_version(root_dir),
             "total_models": len(models_list),
             "models_with_reports": models_with_reports,
             "models_with_reviews": models_with_reviews,

@@ -112,7 +112,7 @@ benchmark_modules/
 
 ---
 
-## Reasoning-Modelle: ThinkingProbe & Card-First Workflow
+## Reasoning-Modelle: Reasoning-Erkennung & Card-First Workflow
 
 CrucibleMark erkennt ab v3.5.8 Reasoning-Modelle empirisch statt rein heuristisch. Diese Erkennung bestimmt das Token-Budget, die LLM-Judge-Bewertung und die Audit-Log-Ausgabe.
 
@@ -131,12 +131,13 @@ CrucibleMark erkennt ab v3.5.8 Reasoning-Modelle empirisch statt rein heuristisc
 │ Keine Card                                             │
 │ → Probe → Minimal-Card erstellen (card_status: minimal)│
 ├────────────────────────────────────────────────────────┤
-│ Probe-Fehler (API nicht erreichbar)                    │
-│ → RuntimeError (Benchmark-Abbruch, kein stilles Skip)  │
+│ Probe-Fehler (429 / 403 / sonstiger API-Fehler)        │
+│ → ⚠️ Clean Warning, Modell in _probed_models (kein    │
+│   Retry), Benchmark läuft weiter                       │
 └────────────────────────────────────────────────────────┘
 ```
 
-### Signale der ThinkingProbe
+### Signale der Reasoning-Erkennung (ThinkingProbe)
 
 `probe_thinking_model(model_id, provider_key, config)` in `utils/model_utils.py` schickt einen deterministischen Reasoning-Prompt (Zugproblem) und wertet aus:
 

@@ -21,7 +21,7 @@
 Das gesamte CrucibleMark-Projekt folgt einer unumstößlichen Prämisse: der strikten Trennung der reinen Datenmessung (Measurement) von nachgelagerten Auswertungen (Publishing).
 
 1. **Measurement (Core Benchmark Loop):**
-   Der Kern der Benchmark-Orchestrierung (Runner) ist kompromisslos iterativ, ausfallsicher (`try...finally`) und minimalistisch. Sein **einziges** Ziel: LLM-Tests isoliert ausführen, Roh-/Audit-Logs führen und nach jedem Modul-Durchlauf das Leaderboard fehler- und blockierungsfrei generieren und speichern. Keine externen Abhängigkeiten gefährden diesen Prozess.
+   Der Kern der Benchmark-Orchestrierung (Runner) ist kompromisslos iterativ, ausfallsicher (`try...finally`) und minimalistisch. Sein **einziges** Ziel: LLM-Tests isoliert ausführen, Roh-/Audit-Logs führen und nach jedem Modell-Durchlauf (sobald mindestens ein neues Ergebnis gespeichert wurde) das Leaderboard fehler- und blockierungsfrei generieren und speichern. Keine externen Abhängigkeiten gefährden diesen Prozess.
 
 2. **Publishing (Downstream-Features):**
    Zusätzliche redaktionelle oder bewertende Funktionen – z. B. der KI-basierte **Meta-Reviewer** – sind vollständig vom Core-Runner entkoppelt. Sie laufen offline als eigenständige Prozesse und dürfen den iterativen Benchmark-Prozess niemals blockieren, verlangsamen oder durch Fehler abbrechen lassen.
@@ -121,9 +121,13 @@ CrucibleMark folgt einer **Plugin-basierten Architektur**, bei der Benchmark-Mod
 
 **Speicherung & Trennung (3-CSV-Architektur):**
 Die Ergebnisse werden vom Runner durch den `ResultManager` (`utils/result_manager.py`) automatisch in eine von drei Quellen getrennt (Single Source of Truth Konzept):
-- `local_models_benchmark.csv` (Lokale VRAM Ausführungen)
-- `cloud_models_benchmark.csv` (API Proxies, Cloud Open-Weights, z.B. LPU inference)
-- `commercial_models_benchmark.csv` (Closed-Source Commercial APIs wie OpenAI)
+- `local_models_benchmark.csv` (Lokale VRAM-Ausführungen auf Consumer-Hardware via Ollama)
+- `cloud_models_benchmark.csv` (Open-Weights-Modelle auf Cloud-/Server-Infrastruktur: OpenRouter, Groq LPU, Ollama Cloud-Proxies)
+- `commercial_models_benchmark.csv` (Closed-Source-Modelle, ausschließlich über proprietäre API verfügbar: OpenAI, Anthropic, Google, xAI, Mistral)
+
+> **Benchmark-Philosophie:** `cloud_models_benchmark.csv` enthält bewusst **keine** lokalen Modelle. Open-Weights-Modelle wie Kimi K2 oder Qwen 3 werden hier auf der Infrastruktur gemessen, auf der sie mit kommerziellen Modellen konkurrieren — Cloud-Server oder LPU-Cluster, nicht Desktop-VRAM. Die Kernfrage lautet: *Wie stark sind Open-Weights-Modelle auf gleichwertiger Infrastruktur im Vergleich zu Closed-Source-APIs?*
+>
+> **Terminologie:** „Open Weights" ≠ „Open Source". Open-Weights-Modelle (z. B. Llama, Kimi K2, Qwen) veröffentlichen ihre trainierten Gewichte unter permissiven Lizenzen (Apache 2.0 o. ä.), legen aber Trainingsdaten, Trainings-Code und vollständige Architektur-Details in der Regel **nicht** offen. Sie sind damit öffentlich nutzbar, aber nicht im klassischen Open-Source-Sinne inspizierbar. CrucibleMark adressiert genau diese Intransparenz: Durch Beleuchtung des Verhaltens aus mehreren Perspektiven (Code, Logik, Sprache, Kultur) entsteht eine empirische Einordnung, die sonst mangels Quelleinsicht nicht möglich wäre.
 
 **Verantwortlichkeiten (Shared Framework):**
 
@@ -148,6 +152,19 @@ class LLMClient:
     def is_accessible(self) -> bool:
         pass
 ```
+
+**`is_accessible()` — Typisierte Exception-Semantik:**
+Die Methode prüft vor jedem Provider-Run ob die API erreichbar und authentifiziert ist. Kritisch: **HTTP 404 (Model Not Found) bedeutet NICHT „kein Zugriff"** — die API ist erreichbar, nur das Test-Modell existiert nicht. Ein generischer `except Exception`-Handler würde 404 fälschlicherweise als Auth-Fehler werten und den Provider komplett überspringen.
+
+| Exception | Bedeutung | `is_accessible()` gibt zurück |
+|---|---|---|
+| `AuthenticationError` / `AuthError` | Ungültiger API-Key | `False` |
+| `PermissionDeniedError` / `403` | Budget erschöpft, IP-Block | `False` |
+| `NotFoundError` / `404` | Test-Modell nicht gefunden (API funktioniert) | `True` |
+| `RateLimitError` / `429` | Throttling (API erreichbar) | `True` |
+| Unbekannte Exception | Sicherheits-Fallback | `False` |
+
+Das Test-Modell für den Health-Check ist pro Provider konfiguriert. Anthropic: `claude-haiku-4-5-20251001`.
 
 **Provider-Spezifische Eigenheiten:**
 
@@ -184,7 +201,7 @@ Logik:
 **OpenRouter: Reasoning-Token-Budget-Konflikt (ab v3.5.x):**
 OpenRouter verrechnet bei Reasoning-Modellen (z. B. MiniMax M2, DeepSeek R1) die internen Denk-/Chain-of-Thought-Tokens direkt gegen das `max_tokens`-Budget. Das heißt: Ein Modell, das intern 7.500 Reasoning-Tokens verbraucht, hat bei `max_tokens=8192` nur noch ~692 Tokens für den sichtbaren Output — oder gar keine, wenn der Reasoning-Aufwand das Budget überschreitet. Das Framework löst das auf zwei Ebenen:
 
-1. **Budget-Multiplikator:** `is_reasoning_model()` in `utils/model_utils.py` erkennt bekannte Reasoning-Architekturen (Trigger-Strings: `deepseek-r1`, `reasoning`, `phi4`, `qwq`, `o1`, `o3`, `magistral`, `glm-5`, `minimax-m2`, `gemini-2.5`, `kimi-k2`). Ab v3.5.8 hat die **Card-First-Lookup** Vorrang: Wurde ein Modell via `ThinkingProbe` empirisch getestet, liefert `is_reasoning_model_from_card()` das validierte Ergebnis — unabhängig von String-Triggern. Für diese Modelle setzt `resolve_token_budget()` das Budget automatisch auf den erhöhten Wert aus `token_budgets_reasoning_models` in der Config (oder Faktor 5× bei unbekanntem Modul-Key).
+1. **Budget-Multiplikator:** `is_reasoning_model()` in `utils/model_utils.py` erkennt bekannte Reasoning-Architekturen (Trigger-Strings: `deepseek-r1`, `reasoning`, `phi4`, `qwq`, `o1`, `o3`, `magistral`, `glm-5`, `minimax-m2`, `gemini-2.5`, `kimi-k2`). Ab v3.5.8 hat die **Card-First-Lookup** Vorrang: Wurde ein Modell via Reasoning-Erkennung (ThinkingProbe) empirisch getestet, liefert `is_reasoning_model_from_card()` das validierte Ergebnis — unabhängig von String-Triggern. Für diese Modelle setzt `resolve_token_budget()` das Budget automatisch auf den erhöhten Wert aus `token_budgets_reasoning_models` in der Config (oder Faktor 5× bei unbekanntem Modul-Key).
 2. **Transparenz:** Der OpenRouter-Provider extrahiert `completion_tokens_details.reasoning_tokens` aus der API-Antwort und speichert sie im `BenchmarkResult` (Feld `reasoning_tokens`). Bei gleichzeitigem `token_limit_cutoff=True` injiziert `benchmark_utils.py` einen `[!WARNING]`-Block ins Audit-Log mit Erklärung des Mechanismus.
 
 > **Wichtig für neue Provider:** Wenn ein Provider Reasoning-Modelle hostet, muss geprüft werden, ob er Reasoning-Tokens gegen `max_tokens` verrechnet. Falls ja, muss `is_reasoning_model()` um die betroffenen Modell-Name-Trigger erweitert werden — `resolve_token_budget()` übernimmt dann automatisch die Budget-Anpassung für diesen und alle anderen Provider.
@@ -197,7 +214,7 @@ Wenn ein Modell eine Antwort von < 15 Zeichen liefert (Ablehnungs-Signal), setzt
 
 Alle drei Felder werden via `result_manager.py` als CSV-Spalten persistiert. Das unterscheidet eine aktive Ablehnung (Modell-Limitation) von einem ungetesteten Ergebnis.
 
-**ThinkingProbe & Card-First Workflow (ab v3.5.8):**
+**Reasoning-Erkennung (ThinkingProbe) & Card-First Workflow (ab v3.5.8):**
 Um `is_reasoning_model()` empirisch statt heuristisch zu fundieren, führt v3.5.8 eine API-basierte Laufzeit-Erkennung ein:
 
 1. **`probe_thinking_model(model_id, provider_key, config)`** in `utils/model_utils.py` sendet einen deterministischen Schritt-für-Schritt-Reasoning-Prompt an die Modell-API und wertet zwei Signale aus:
@@ -217,7 +234,9 @@ Um `is_reasoning_model()` empirisch statt heuristisch zu fundieren, führt v3.5.
    - Card mit `thinking_probe_detected`-Feld → Skip
    - Card ohne Feld → Probe → Feld in Card eintragen
    - Keine Card → Probe → Minimal-Card erstellen (`card_status: "minimal"`)
-   - Probe-Fehler (API-Error) → `RuntimeError` (Benchmark-Abbruch)
+   - Probe-Fehler 429 (Wochenlimit) → clean Warning, Modell in `_probed_models`, Benchmark läuft weiter
+   - Probe-Fehler 403 (Subscription) → clean Warning, Modell in `_probed_models`, Benchmark läuft weiter
+   - Probe-Fehler (sonstiger) → clean Warning, Modell in `_probed_models`, Benchmark läuft weiter
 
 6. **`scripts/tools/probe_thinking.py`** (Standalone-CLI): Retroaktiver und On-Demand-Probe-Betrieb. Modi: `--model <id>`, `--missing` (Batch: alle Cards ohne Feld), `--all` (Force-Rescan). Provider-Inference: Config → `/` im ID → `openrouter` → sonst `ollama`. Batch-Modus bricht bei Einzelfehlern nicht ab.
 
@@ -443,7 +462,7 @@ SSoT: `_PROVIDER_SHORTCODES`-Dict in `utils/model_utils.py` + `short_code`-Feld 
 3. `scripts/leaderboard/__init__.py` re-attachiert `provider` nach `calculate_scores()` per pandas `mode()`-Merge.
 4. `scripts/leaderboard/exporter.py` erzeugt daraus:
    - **Kompakt-CSV** (`benchmark_leaderboard.csv`): `Version` = kombinierter String (`k2-0711/OR`)
-   - **Detailliert-CSV** (`benchmark_leaderboard_detailed.csv`): `Version` + `Provider Code` als separate Spalten
+   - **Detailliert-CSV** (`benchmark_leaderboard_detailed.csv`): `Version` + `Provider Code` als separate Spalten + `model_id` (rohe Config-ID als SSOT für Downstream-Tools)
 
 > **Vollständige Dokumentation des Modell-ID-Systems** (Naming-Regeln, Helper-API, Card-Generierungsprozess): [DEVELOPER_GUIDE.md — Modell-IDs, Card-Benennung & Versionierung](DEVELOPER_GUIDE.md)
 
@@ -459,7 +478,7 @@ Der Web Exporter ist ein eigenständiger Publishing-Schritt (Layer 4 Downstream)
 
 **Model Cards & Provider Cards:** Strukturierte JSON-Steckbriefe pro Modell (`benchmark_scores/model_cards/`) und pro Provider (`benchmark_scores/provider_cards/`), generiert via LLM (`make model-cards`, `make provider-cards`). Sie enthalten Entwickler, Herkunftsland, Stärken/Schwächen, Datenschutz-Metadaten und Sovereign-Risk-Einschätzung. Die Cards werden (a) als Kontext-Block in den Meta-Reviewer injiziert und (b) als eigenständige JSON-API für das Web-Frontend bereitgestellt.
 
-**Verzeichnis-Auflösung (Fallback-Matcher):** Interne Modell-IDs (Ordnernamen in `outputs/audit_logs/`) weichen oft von den CSV-Anzeigenamen ab (Provider-Prefix wie `moonshotai_`, Versions-Suffix wie `-20251001`). Der Exporter löst das über einen gestuften Lookup: Exact Match → Suffix-Match (Provider-Prefix) → Prefix-Match (Versions-Suffix).
+**Verzeichnis-Auflösung (SSOT via `model_id`):** Audit-Log-Verzeichnisse und Review-Verzeichnisse werden nach `model_id.replace('/', '_')` benannt (identisch zu `benchmark_utils.py`). `web_export.py` liest die `model_id`-Spalte aus `benchmark_leaderboard_detailed.csv` und wendet dieselbe Transformation an — kein Raten aus dem Display-Namen mehr. Zwei explizite Fallbacks decken historische Daten ab: (1) Date-Suffix strip für Reviews, die vor der versioned model_id angelegt wurden; (2) Suffix-Match für Dirs ohne Provider-Präfix.
 
 **Export-Struktur:**
 

@@ -6,11 +6,11 @@ providers:
   # Provider-API und dienen als Referenz für den kommerziellen Produktionseinsatz.
   ollama_cloud:
     deepseek-v3.1:671b-cloud:
-      input_cost_per_1k: 0.00014   # KORRIGIERT: $0.14/1M (DeepSeek API cache miss, V3.2 = V3.1 Preis) – war $0.28
-      output_cost_per_1k: 0.00028  # KORRIGIERT: $0.28/1M – war $0.42
+      input_cost_per_1k: 0.00015   # KORRIGIERT: $0.15/1M (DeepSeek V3.1 API, cache miss) – war $0.14
+      output_cost_per_1k: 0.00075  # KORRIGIERT: $0.75/1M (DeepSeek V3.1 API) – war $0.28 (V3.0-Preis!)
     deepseek-v3.2:cloud:
-      input_cost_per_1k: 0.00014   # KORRIGIERT: $0.14/1M (DeepSeek API, cache miss) – war $0.28
-      output_cost_per_1k: 0.00028  # KORRIGIERT: $0.28/1M – war $0.42
+      input_cost_per_1k: 0.00028   # KORRIGIERT: $0.28/1M (DeepSeek V3.2 API, cache miss, ab Sep 2025) – war $0.14
+      output_cost_per_1k: 0.00042  # KORRIGIERT: $0.42/1M (DeepSeek V3.2 API) – war $0.28
     minimax-m2.7:cloud:
       input_cost_per_1k: 0.0003    # $0.30/1M – BESTÄTIGT (MiniMax API Standard-Tier)
       output_cost_per_1k: 0.0012   # $1.20/1M – BESTÄTIGT
@@ -74,9 +74,30 @@ providers:
     moonshotai/kimi-k2-thinking:
       input_cost_per_1k: 0.00060   # $0.60/1M – BESTÄTIGT (openrouter.ai)
       output_cost_per_1k: 0.0025   # $2.50/1M – BESTÄTIGT
+    moonshotai/kimi-k2.6:
+      input_cost_per_1k: 0.00074   # $0.74/1M – BESTÄTIGT (openrouter.ai)
+      output_cost_per_1k: 0.00349  # $3.49/1M – BESTÄTIGT
+    deepseek/deepseek-v4-flash:
+      input_cost_per_1k: 0.00014   # $0.14/1M – BESTÄTIGT (openrouter.ai, Apr 2026)
+      output_cost_per_1k: 0.00028  # $0.28/1M – BESTÄTIGT
+    deepseek/deepseek-v4-pro:
+      input_cost_per_1k: 0.000435  # $0.435/1M – BESTÄTIGT (openrouter.ai, Apr 2026)
+      output_cost_per_1k: 0.00087  # $0.87/1M – BESTÄTIGT
     minimax/minimax-m2.7:
       input_cost_per_1k: 0.0003    # $0.30/1M – BESTÄTIGT (Fireworks/MiniMax provider)
       output_cost_per_1k: 0.0012   # $1.20/1M – BESTÄTIGT
+    nousresearch/hermes-4-70b:
+      input_cost_per_1k: 0.00013   # $0.13/1M – BESTÄTIGT (openrouter.ai, Hermes 4 70B / Llama-3.1-70B-Basis)
+      output_cost_per_1k: 0.0004   # $0.40/1M – BESTÄTIGT
+    nousresearch/hermes-4-405b:
+      input_cost_per_1k: 0.001     # $1.00/1M – BESTÄTIGT (openrouter.ai, Hermes 4 405B / Llama-3.1-405B-Basis)
+      output_cost_per_1k: 0.003    # $3.00/1M – BESTÄTIGT
+    z-ai/glm-4.6:
+      input_cost_per_1k: 0.00039   # $0.39/1M – BESTÄTIGT (openrouter.ai)
+      output_cost_per_1k: 0.0019   # $1.90/1M – BESTÄTIGT
+    z-ai/glm-4.7:
+      input_cost_per_1k: 0.00038   # $0.38/1M – BESTÄTIGT (openrouter.ai)
+      output_cost_per_1k: 0.00174  # $1.74/1M – BESTÄTIGT
     daily_budget: 15.0
 
 
@@ -190,6 +211,15 @@ providers:
     grok-4-1-fast-non-reasoning:
       input_cost_per_1k: 0.0002    # $0.20/1M – BESTÄTIGT (x.ai/api Apr 2026, identisch fast-reasoning)
       output_cost_per_1k: 0.0005   # $0.50/1M – BESTÄTIGT
+    grok-4.3:
+      input_cost_per_1k: 0.00125   # $1.25/1M – BESTÄTIGT (docs.x.ai Mai 2026)
+      output_cost_per_1k: 0.0025   # $2.50/1M – BESTÄTIGT
+    grok-4.20-0309-non-reasoning:
+      input_cost_per_1k: 0.00125   # $1.25/1M – BESTÄTIGT (docs.x.ai, identisch reasoning-Variante)
+      output_cost_per_1k: 0.0025   # $2.50/1M – BESTÄTIGT
+    grok-4.20-0309-reasoning:
+      input_cost_per_1k: 0.00125   # $1.25/1M – BESTÄTIGT (docs.x.ai)
+      output_cost_per_1k: 0.0025   # $2.50/1M – BESTÄTIGT
     daily_budget: 15.0
 
 

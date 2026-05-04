@@ -1,0 +1,37 @@
+{
+  "model_id": "nousresearch/hermes-4-405b",
+  "display_name": "Hermes 4 405B",
+  "developer": "Nous Research",
+  "origin_country": "USA",
+  "developer_jurisdiction": "US",
+  "deployment_type": "open-weights",
+  "local_deployment_possible": true,
+  "weights_provenance_risk": "medium",
+  "weights_provenance_risk_rationale": "Nous Research ist ein US-amerikanisches Unternehmen und unterliegt dem CLOUD Act, jedoch sind die Gewichte öffentlich verfügbar und lokal betreibbar, sodass kein API-Zugriff durch Dritte erforderlich ist.",
+  "model_family": "Hermes",
+  "primary_focus": "instruction-following",
+  "summary": "Hermes 4 405B von Nous Research ist ein US-amerikanisches Open-Weights-Modell auf Basis von Llama 3.1 405B, feinabgestimmt auf präzises Instruction-Following, strukturierte Ausgaben und agentenbasierte Anwendungen. Es wurde entwickelt, um Zensurbeschränkungen zu reduzieren und Rollenspiel sowie komplexe Aufgaben zuverlässig zu unterstützen.",
+  "strengths": [
+    "Sehr starkes Instruction-Following mit präziser Befolgung komplexer Anweisungen",
+    "Optimiert für strukturierte JSON-Ausgaben und Function-Calling in Agenten-Pipelines",
+    "Reduzierte Ablehnung von Anfragen durch gezieltes Uncensored-Finetuning"
+  ],
+  "known_limitations": [
+    "Durch reduzierte Sicherheitsfilter erhöhtes Risiko für missbräuchliche Nutzung bei sensiblen Themen",
+    "Lokaler Betrieb des 405B-Modells erfordert erhebliche Hardware-Ressourcen (mehrere High-End-GPUs)"
+  ],
+  "judge_context_hint": "Das Modell ist auf Instruction-Following und strukturierte Ausgaben optimiert und neigt zu direkten, ungefilterten Antworten – Qualitätsbewertungen sollten Präzision und Formatkonformität besonders gewichten.",
+  "architecture_tags": [
+    "Instruct",
+    "Uncensored-Finetuned"
+  ],
+  "unknown": false,
+  "generated_at": "2026-05-02T16:10:18.822288+00:00",
+  "card_status": "complete",
+  "size_class": "Frontier",
+  "thinking_probe_detected": false,
+  "thinking_probe_evidence": "No CoT signals found (A: no think-tags, B: reasoning_tokens=0). Response length: 612 chars",
+  "thinking_probe_confidence": "low",
+  "thinking_probe_at": "2026-05-02T16:49:08.185081+00:00",
+  "supports_tool_use": true
+}

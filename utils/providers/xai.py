@@ -55,7 +55,7 @@ class XAIClient(BaseProviderClient):
     def is_accessible(self) -> bool:
         """Prüft Zugang zu XAI API."""
         try:
-            from openai import OpenAI
+            from openai import OpenAI, AuthenticationError, PermissionDeniedError, NotFoundError, RateLimitError
             check_client = OpenAI(api_key=self.client.api_key, base_url="https://api.x.ai/v1", max_retries=0)
             check_client.chat.completions.create(
                 model="grok-3-mini",
@@ -63,9 +63,20 @@ class XAIClient(BaseProviderClient):
                 max_tokens=1,
             )
             return True
+        except AuthenticationError as e:
+            logger.warning("XAI Access Check: Authentifizierung fehlgeschlagen: %s", e)
+            return False
+        except PermissionDeniedError as e:
+            logger.warning("XAI Access Check: Zugriff verweigert (Budget/Permissions): %s", e)
+            return False
+        except NotFoundError as e:
+            # Testmodell nicht gefunden, aber API selbst ist erreichbar
+            logger.warning("XAI Access Check: Testmodell nicht gefunden, API aber erreichbar: %s", e)
+            return True
+        except RateLimitError as e:
+            logger.warning("XAI Access Check: Rate Limit — API erreichbar: %s", e)
+            return True
         except Exception as e:
-            import logging
-            logger = logging.getLogger(__name__)
             logger.debug("XAI Access Check Failed: %s", e)
             return False
     def query(

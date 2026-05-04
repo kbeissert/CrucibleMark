@@ -26,7 +26,12 @@
       "Uncensored-Finetuned"
     ],
     "unknown": false,
-    "generated_at": "2026-04-11T15:33:17.802153+00:00"
+    "generated_at": "2026-04-11T15:33:17.802153+00:00",
+    "size_class": "Desktop",
+    "thinking_probe_detected": false,
+    "thinking_probe_evidence": "No CoT signals found (A: no think-tags, B: reasoning_tokens=0). Response length: 653 chars",
+    "thinking_probe_confidence": "low",
+    "thinking_probe_at": "2026-04-25T08:23:38.632038+00:00"
   },
   {
     "model_id": "Ministral-3-14B-abliterated-GGUF:Q8_0",
@@ -130,37 +135,6 @@
     "thinking_probe_at": "2026-04-23T13:55:05.513501+00:00"
   },
   {
-    "model_id": "claude-haiku-4-5",
-    "display_name": "Claude Haiku 4.5",
-    "developer": "Anthropic",
-    "origin_country": "USA",
-    "developer_jurisdiction": "US",
-    "deployment_type": "cloud-only",
-    "local_deployment_possible": false,
-    "weights_provenance_risk": "medium",
-    "weights_provenance_risk_rationale": "Anthropic ist ein US-amerikanisches Unternehmen und unterliegt dem CLOUD Act, jedoch nur bei API-Nutzung – die Modellgewichte sind nicht öffentlich zugänglich.",
-    "model_family": "Claude",
-    "primary_focus": "instruction-following",
-    "summary": "Claude Haiku 4.5 ist Anthropics schnellstes und kompaktestes Modell der Claude-4-Generation, entwickelt für latenzarme, kosteneffiziente Anwendungen. Es kombiniert starkes Instruction-Following mit hoher Verarbeitungsgeschwindigkeit und eignet sich besonders für Echtzeit-Interaktionen, Klassifikation und leichte Reasoning-Aufgaben.",
-    "strengths": [
-      "Sehr niedrige Latenz und hoher Durchsatz – ideal für Echtzeit- und Produktionsanwendungen",
-      "Kosteneffizient bei hohem Anfragevolumen im Vergleich zu größeren Claude-Modellen",
-      "Solides Instruction-Following und präzise Kurzantworten bei alltäglichen Aufgaben"
-    ],
-    "known_limitations": [
-      "Schwächer als Claude Sonnet oder Opus bei komplexen mehrstufigen Reasoning- und Analyseaufgaben",
-      "Begrenzte Tiefe bei langen, kontextreichen Dokumentenverarbeitungen oder anspruchsvollen kreativen Aufgaben"
-    ],
-    "judge_context_hint": "Haiku 4.5 ist auf Geschwindigkeit und Effizienz optimiert – bei komplexen Reasoning-Aufgaben oder langen Kontexten sollte der Judge die strukturelle Tiefe der Antworten kritisch prüfen, da das Modell zu Vereinfachungen neigen kann.",
-    "architecture_tags": [
-      "Instruct"
-    ],
-    "unknown": false,
-    "generated_at": "2026-04-23T22:04:32.944820+00:00",
-    "card_status": "complete",
-    "size_class": "Frontier"
-  },
-  {
     "model_id": "claude-opus-4-5-20251101",
     "display_name": "Claude Opus 4.5",
     "developer": "Anthropic",
@@ -195,39 +169,6 @@
     "thinking_probe_evidence": "No CoT signals found (A: no think-tags, B: reasoning_tokens=0). Response length: 603 chars",
     "thinking_probe_confidence": "low",
     "thinking_probe_at": "2026-04-23T13:55:10.011508+00:00"
-  },
-  {
-    "model_id": "claude-opus-4-5",
-    "display_name": "Claude Opus 4.5",
-    "developer": "Anthropic",
-    "origin_country": "USA",
-    "developer_jurisdiction": "US",
-    "deployment_type": "cloud-only",
-    "local_deployment_possible": false,
-    "weights_provenance_risk": "medium",
-    "weights_provenance_risk_rationale": "Anthropic ist ein US-amerikanisches Unternehmen und unterliegt dem CLOUD Act, jedoch nur bei API-Nutzung – die Modellgewichte sind nicht öffentlich zugänglich.",
-    "model_family": "Claude",
-    "primary_focus": "general",
-    "summary": "Claude Opus 4.5 ist Anthropics leistungsstärkstes Modell der Claude-4-Generation, entwickelt in den USA mit Fokus auf komplexes Reasoning, nuanciertes Schreiben und agentenbasierte Aufgaben. Es wurde für anspruchsvolle Analyse, mehrstufige Planung und präzises Instruction-Following konzipiert.",
-    "strengths": [
-      "Herausragende Leistung bei komplexen Reasoning- und Analyseaufgaben",
-      "Stark in agentenbasierten Workflows und mehrstufiger Aufgabenplanung",
-      "Hohe Qualität bei nuanciertem, langem und kreativem Schreiben"
-    ],
-    "known_limitations": [
-      "Nur über Anthropics Cloud-API verfügbar, kein lokaler Betrieb möglich",
-      "Höhere Latenz und Kosten im Vergleich zu kleineren Claude-Modellen"
-    ],
-    "judge_context_hint": "Claude Opus 4.5 neigt zu besonders ausführlichen und strukturierten Antworten – bei Bewertungen auf Präzision und Relevanz achten, nicht auf schiere Länge.",
-    "architecture_tags": [
-      "General",
-      "Agentic-Orchestrator",
-      "Thinking-Optional"
-    ],
-    "unknown": false,
-    "generated_at": "2026-04-23T22:04:23.685717+00:00",
-    "card_status": "complete",
-    "size_class": "Frontier"
   },
   {
     "model_id": "claude-opus-4-6",
@@ -339,38 +280,6 @@
     "thinking_probe_at": "2026-04-23T13:55:19.126410+00:00"
   },
   {
-    "model_id": "claude-sonnet-4-5",
-    "display_name": "Claude Sonnet 4.5",
-    "developer": "Anthropic",
-    "origin_country": "USA",
-    "developer_jurisdiction": "US",
-    "deployment_type": "cloud-only",
-    "local_deployment_possible": false,
-    "weights_provenance_risk": "medium",
-    "weights_provenance_risk_rationale": "Anthropic ist ein US-amerikanisches Unternehmen und unterliegt dem CLOUD Act; die Modellgewichte sind nicht öffentlich zugänglich.",
-    "model_family": "Claude",
-    "primary_focus": "general",
-    "summary": "Claude Sonnet 4.5 ist Anthropics aktuelles Mittelklasse-Modell der Claude-4-Generation, entwickelt für ausgewogene Leistung bei Alltagsaufgaben. Es kombiniert starkes Instruction-Following, präzises Schreiben und solide Coding-Fähigkeiten mit niedrigerer Latenz als Opus-Modelle.",
-    "strengths": [
-      "Ausgewogenes Verhältnis aus Geschwindigkeit und Antwortqualität",
-      "Starkes Instruction-Following und präzise, strukturierte Textgenerierung",
-      "Zuverlässige Coding-Unterstützung und Analyse komplexer Dokumente"
-    ],
-    "known_limitations": [
-      "Schwächer als Claude Opus 4 bei sehr komplexen Mehrschritt-Reasoning-Aufgaben",
-      "Kein lokaler Betrieb möglich, vollständige Abhängigkeit von Anthropics API"
-    ],
-    "judge_context_hint": "Das Modell neigt zu vorsichtig formulierten, ausgewogenen Antworten und vermeidet klare Positionierungen bei kontroversen Themen – dies kann bei direkten Meinungsfragen als Ausweichen wirken.",
-    "architecture_tags": [
-      "General",
-      "Instruct"
-    ],
-    "unknown": false,
-    "generated_at": "2026-04-23T22:04:15.163627+00:00",
-    "card_status": "complete",
-    "size_class": "Frontier"
-  },
-  {
     "model_id": "claude-sonnet-4-6",
     "display_name": "Claude Sonnet 4.6",
     "developer": "Anthropic",
@@ -470,7 +379,11 @@
     "unknown": false,
     "generated_at": "2026-04-23T22:09:16.638182+00:00",
     "card_status": "complete",
-    "size_class": "Edge"
+    "size_class": "Edge",
+    "thinking_probe_detected": false,
+    "thinking_probe_evidence": "No CoT signals found (A: no think-tags, B: reasoning_tokens=0). Response length: 1332 chars",
+    "thinking_probe_confidence": "low",
+    "thinking_probe_at": "2026-04-25T08:27:57.221518+00:00"
   },
   {
     "model_id": "deepseek-v3.1:671b-cloud",
@@ -502,7 +415,11 @@
     "unknown": false,
     "generated_at": "2026-04-23T22:05:48.261371+00:00",
     "card_status": "complete",
-    "size_class": "Frontier"
+    "size_class": "Frontier",
+    "thinking_probe_detected": false,
+    "thinking_probe_evidence": "No CoT signals found (A: no think-tags, B: reasoning_tokens=0). Response length: 556 chars",
+    "thinking_probe_confidence": "low",
+    "thinking_probe_at": "2026-05-01T10:46:34.460236+00:00"
   },
   {
     "model_id": "deepseek-v3.2:cloud",
@@ -534,7 +451,11 @@
     "unknown": false,
     "generated_at": "2026-04-23T22:05:58.641837+00:00",
     "card_status": "complete",
-    "size_class": "Frontier"
+    "size_class": "Frontier",
+    "thinking_probe_detected": false,
+    "thinking_probe_evidence": "No CoT signals found (A: no think-tags, B: reasoning_tokens=0). Response length: 420 chars",
+    "thinking_probe_confidence": "low",
+    "thinking_probe_at": "2026-05-01T10:47:03.853585+00:00"
   },
   {
     "model_id": "dolphin-mistral-nemo:latest",
@@ -566,7 +487,7 @@
     "unknown": false,
     "generated_at": "2026-04-23T22:09:50.928404+00:00",
     "card_status": "complete",
-    "size_class": "Frontier"
+    "size_class": "Desktop"
   },
   {
     "model_id": "gemini-2.5-flash",
@@ -745,7 +666,11 @@
     "unknown": false,
     "generated_at": "2026-04-23T22:06:47.375023+00:00",
     "card_status": "complete",
-    "size_class": "Desktop"
+    "size_class": "Desktop",
+    "thinking_probe_detected": false,
+    "thinking_probe_evidence": "No CoT signals found (A: no think-tags, B: reasoning_tokens=0). Response length: 526 chars",
+    "thinking_probe_confidence": "low",
+    "thinking_probe_at": "2026-04-25T08:35:02.087425+00:00"
   },
   {
     "model_id": "gemma3:4b",
@@ -777,7 +702,11 @@
     "unknown": false,
     "generated_at": "2026-04-23T22:08:57.925011+00:00",
     "card_status": "complete",
-    "size_class": "Nano"
+    "size_class": "Nano",
+    "thinking_probe_detected": false,
+    "thinking_probe_evidence": "No CoT signals found (A: no think-tags, B: reasoning_tokens=0). Response length: 684 chars",
+    "thinking_probe_confidence": "low",
+    "thinking_probe_at": "2026-04-25T08:36:00.673936+00:00"
   },
   {
     "model_id": "gemma4:26b",
@@ -809,7 +738,11 @@
     "unknown": false,
     "generated_at": "2026-04-23T22:08:34.901086+00:00",
     "card_status": "complete",
-    "size_class": "Workstation"
+    "size_class": "Workstation",
+    "thinking_probe_detected": false,
+    "thinking_probe_evidence": "No CoT signals found (A: no think-tags, B: reasoning_tokens=0). Response length: 682 chars",
+    "thinking_probe_confidence": "low",
+    "thinking_probe_at": "2026-04-25T08:37:22.029242+00:00"
   },
   {
     "model_id": "gemma4:31b-cloud",
@@ -906,131 +839,11 @@
     "unknown": false,
     "generated_at": "2026-04-23T22:08:02.344476+00:00",
     "card_status": "complete",
-    "size_class": "Nano"
-  },
-  {
-    "model_id": "glm-5-turbo",
-    "display_name": "GLM-5 Turbo",
-    "developer": "Zhipu AI",
-    "origin_country": "China",
-    "developer_jurisdiction": "CN",
-    "deployment_type": "cloud-only",
-    "local_deployment_possible": false,
-    "weights_provenance_risk": "high",
-    "weights_provenance_risk_rationale": "Zhipu AI ist ein chinesisches Unternehmen und unterliegt dem chinesischen National Security Law (NSL), das staatlichen Zugriff auf Daten und Modelle ermöglichen kann.",
-    "model_family": "GLM",
-    "primary_focus": "general",
-    "summary": "GLM-5 Turbo ist ein schnelles, kosteneffizientes Sprachmodell von Zhipu AI (China), entwickelt auf Basis der GLM-Architektur. Es ist auf mehrsprachige Instruktionsbefolgung, Dialogführung und allgemeine Aufgaben ausgerichtet und dient als leichtgewichtige Alternative zu größeren GLM-Modellen für latenzarme Anwendungen.",
-    "strengths": [
-      "Niedrige Latenz und hoher Durchsatz für produktive API-Nutzung",
-      "Gute Chinesisch-Englisch-Bilingualität mit Stärke in chinesischsprachigen Aufgaben",
-      "Kosteneffizient für einfache bis mittelschwere Instruction-Following-Aufgaben"
-    ],
-    "known_limitations": [
-      "Nur über Zhipu-API verfügbar, keine lokale Ausführung möglich",
-      "Bei komplexen Reasoning-Aufgaben und langen Kontexten schwächer als größere Modelle der GLM-Familie"
-    ],
-    "judge_context_hint": "Das Modell ist auf schnelle, kompakte Antworten optimiert und kann bei komplexen mehrstufigen Aufgaben oberflächlicher antworten als größere Modelle – Tiefe und Vollständigkeit sollten kritisch bewertet werden.",
-    "architecture_tags": [
-      "General",
-      "Instruct"
-    ],
-    "unknown": false,
-    "generated_at": "2026-04-23T22:04:41.672197+00:00",
-    "card_status": "complete",
-    "size_class": "Frontier"
-  },
-  {
-    "model_id": "glm-5",
-    "display_name": "GLM-5",
-    "developer": "Zhipu AI",
-    "origin_country": "China",
-    "developer_jurisdiction": "CN",
-    "deployment_type": "cloud-only",
-    "local_deployment_possible": false,
-    "weights_provenance_risk": "high",
-    "weights_provenance_risk_rationale": "Zhipu AI ist ein chinesisches Unternehmen und unterliegt dem chinesischen National Security Law (NSL), das staatlichen Zugriff auf Daten und Modelle ermöglichen kann.",
-    "model_family": "GLM",
-    "primary_focus": "general",
-    "summary": "GLM-5 ist ein Sprachmodell von Zhipu AI (China), entwickelt als Nachfolger der GLM-4-Serie. Es zielt auf starke mehrsprachige Fähigkeiten, insbesondere Chinesisch und Englisch, sowie auf Reasoning und Instruction-Following. Typische Stärken liegen in Dialogsystemen und komplexen Textaufgaben.",
-    "strengths": [
-      "Starke Leistung in Chinesisch und Englisch (bilinguale Kompetenz)",
-      "Gutes Instruction-Following für Dialog- und Assistenzaufgaben",
-      "Solide Reasoning-Fähigkeiten für komplexe Textverarbeitung"
-    ],
-    "known_limitations": [
-      "Keine öffentlich verfügbaren Modellgewichte – nur über API nutzbar",
-      "Begrenzte unabhängige Benchmarkdaten verfügbar, da Modell wenig dokumentiert ist"
-    ],
-    "judge_context_hint": "GLM-5 ist wenig öffentlich dokumentiert; Antworten können chinesischsprachige Nuancen bevorzugen und bei westlichen Kulturkontexten oder seltenen Sprachen schwächer abschneiden.",
-    "architecture_tags": [
-      "General"
-    ],
-    "unknown": true,
-    "generated_at": "2026-04-23T22:06:28.095568+00:00",
-    "card_status": "complete",
-    "size_class": "Frontier"
-  },
-  {
-    "model_id": "glm-5.1",
-    "display_name": "GLM 5.1",
-    "developer": "Zhipu AI",
-    "origin_country": "China",
-    "developer_jurisdiction": "CN",
-    "deployment_type": "cloud-only",
-    "local_deployment_possible": false,
-    "weights_provenance_risk": "high",
-    "weights_provenance_risk_rationale": "Zhipu AI ist ein chinesisches Unternehmen und unterliegt dem chinesischen Nationalen Sicherheitsgesetz (NSL), das staatlichen Zugriff auf Daten und Modelle ermöglichen kann.",
-    "model_family": "GLM",
-    "primary_focus": "general",
-    "summary": "GLM 5.1 ist ein Sprachmodell von Zhipu AI aus China, entwickelt auf Basis der GLM-Architektur. Es ist auf mehrsprachige Aufgaben, Instruktionsbefolgung und allgemeines Reasoning ausgerichtet. Stärken liegen in Chinesisch-Englisch-Verarbeitung und strukturierten Dialogaufgaben.",
-    "strengths": [
-      "Starke Leistung in chinesisch-englischen bilingualen Aufgaben",
-      "Gutes Instruction-Following für strukturierte Dialog- und Assistenzaufgaben",
-      "Solide Allround-Fähigkeiten in Reasoning und Textzusammenfassung"
-    ],
-    "known_limitations": [
-      "Gewichte nicht öffentlich verfügbar, nur über API nutzbar",
-      "Mögliche Zensur oder inhaltliche Einschränkungen bei politisch sensiblen Themen gemäß chinesischer Regulierung"
-    ],
-    "judge_context_hint": "Das Modell kann bei politisch oder kulturell sensiblen Themen mit Bezug zu China inhaltliche Einschränkungen zeigen; Antwortqualität in europäischen Sprachen kann hinter Chinesisch und Englisch zurückbleiben.",
-    "architecture_tags": [
-      "General",
-      "Instruct"
-    ],
-    "unknown": true,
-    "generated_at": "2026-04-23T22:05:17.737996+00:00",
-    "card_status": "complete",
-    "size_class": "Frontier"
-  },
-  {
-    "model_id": "glm-5_cloud",
-    "display_name": "GLM-5 (Cloud)",
-    "developer": "Zhipu AI",
-    "origin_country": "China",
-    "developer_jurisdiction": "CN",
-    "deployment_type": "cloud-only",
-    "local_deployment_possible": false,
-    "weights_provenance_risk": "high",
-    "weights_provenance_risk_rationale": "Zhipu AI ist ein chinesisches Unternehmen und unterliegt dem chinesischen Nationalen Sicherheitsgesetz (NSL), das staatlichen Zugriff auf Daten und Modelle ermöglichen kann.",
-    "model_family": "GLM",
-    "primary_focus": "general",
-    "summary": "GLM-5 ist ein großes Sprachmodell von Zhipu AI (China), entwickelt auf Basis der GLM-Architektur der Tsinghua University. Es zielt auf starke mehrsprachige Fähigkeiten, Reasoning und Instruktionsbefolgung ab und wird ausschließlich über die Zhipu-Cloud-API bereitgestellt.",
-    "strengths": [
-      "Starke Leistung in chinesisch-englischen bilingualen Aufgaben",
-      "Gute Instruktionsbefolgung und Dialogfähigkeit",
-      "Solide Reasoning- und Textverständnisfähigkeiten"
-    ],
-    "known_limitations": [
-      "Nur über Cloud-API verfügbar, keine lokale Ausführung möglich",
-      "Mögliche Zensur oder inhaltliche Einschränkungen bei politisch sensiblen Themen gemäß chinesischer Regulierung"
-    ],
-    "judge_context_hint": "Das Modell kann bei politisch oder kulturell sensiblen Themen mit Bezug zu China inhaltlich eingeschränkte oder ausweichende Antworten liefern, was die Bewertung von Offenheit und Neutralität beeinflussen kann.",
-    "architecture_tags": [
-      "General"
-    ],
-    "unknown": false,
-    "generated_at": "2026-04-11T15:05:15.246464+00:00"
+    "size_class": "Nano",
+    "thinking_probe_detected": false,
+    "thinking_probe_evidence": "No CoT signals found (A: no think-tags, B: reasoning_tokens=0). Response length: 349 chars",
+    "thinking_probe_confidence": "low",
+    "thinking_probe_at": "2026-04-25T08:38:35.531224+00:00"
   },
   {
     "model_id": "gpt-4o-mini",
@@ -1307,7 +1120,11 @@
     "unknown": true,
     "generated_at": "2026-04-23T22:07:35.501956+00:00",
     "card_status": "complete",
-    "size_class": "Workstation"
+    "size_class": "Workstation",
+    "thinking_probe_detected": false,
+    "thinking_probe_evidence": "No CoT signals found (A: no think-tags, B: reasoning_tokens=0). Response length: 695 chars",
+    "thinking_probe_confidence": "low",
+    "thinking_probe_at": "2026-05-01T10:49:29.669564+00:00"
   },
   {
     "model_id": "grok-3-mini",
@@ -1409,7 +1226,11 @@
     "unknown": false,
     "generated_at": "2026-04-23T22:02:39.790266+00:00",
     "card_status": "complete",
-    "size_class": "Frontier"
+    "size_class": "Frontier",
+    "thinking_probe_detected": false,
+    "thinking_probe_evidence": "No CoT signals found (A: no think-tags, B: reasoning_tokens=0). Response length: 583 chars",
+    "thinking_probe_confidence": "low",
+    "thinking_probe_at": "2026-04-25T09:31:24.484059+00:00"
   },
   {
     "model_id": "grok-4-fast-non-reasoning",
@@ -1441,7 +1262,11 @@
     "unknown": false,
     "generated_at": "2026-04-23T22:02:29.143945+00:00",
     "card_status": "complete",
-    "size_class": "Frontier"
+    "size_class": "Frontier",
+    "thinking_probe_detected": false,
+    "thinking_probe_evidence": "No CoT signals found (A: no think-tags, B: reasoning_tokens=0). Response length: 819 chars",
+    "thinking_probe_confidence": "low",
+    "thinking_probe_at": "2026-04-25T09:30:57.213970+00:00"
   },
   {
     "model_id": "hermes3:8b",
@@ -1503,7 +1328,11 @@
     ],
     "unknown": false,
     "generated_at": "2026-04-11T15:13:31.797577+00:00",
-    "size_class": "Desktop"
+    "size_class": "Desktop",
+    "thinking_probe_detected": false,
+    "thinking_probe_evidence": "No CoT signals found (A: no think-tags, B: reasoning_tokens=0). Response length: 1597 chars",
+    "thinking_probe_confidence": "low",
+    "thinking_probe_at": "2026-04-25T08:51:31.152266+00:00"
   },
   {
     "model_id": "hf.co_mradermacher_Ministral-3-14B-abliterated-GGUF_Q8_0",
@@ -1533,134 +1362,11 @@
     ],
     "unknown": false,
     "generated_at": "2026-04-11T15:46:34.286185+00:00",
-    "size_class": "Desktop"
-  },
-  {
-    "model_id": "kimi-k2-instruct",
-    "display_name": "Kimi K2 Instruct",
-    "developer": "Moonshot AI",
-    "origin_country": "China",
-    "developer_jurisdiction": "CN",
-    "deployment_type": "open-weights-cloud-available",
-    "local_deployment_possible": true,
-    "weights_provenance_risk": "high",
-    "weights_provenance_risk_rationale": "Moonshot AI ist ein chinesisches Unternehmen und unterliegt dem chinesischen National Security Law (NSL), das staatlichen Zugriff auf Daten und Modellgewichte ermöglichen kann.",
-    "model_family": "Kimi",
-    "primary_focus": "general",
-    "summary": "Kimi K2 Instruct ist ein großes Mixture-of-Experts-Modell von Moonshot AI (China), trainiert auf starkes Instruction-Following, Agentic Tasks und Coding. Es wurde entwickelt, um komplexe mehrstufige Aufgaben, Tool-Use und autonome Agenten-Workflows zuverlässig zu bewältigen.",
-    "strengths": [
-      "Starke Leistung bei agentic und Tool-Use-Szenarien mit langen Kontexten",
-      "Hohe Coding-Kompetenz über mehrere Programmiersprachen hinweg",
-      "Effiziente MoE-Architektur mit großer Gesamtkapazität bei moderatem Rechenaufwand"
-    ],
-    "known_limitations": [
-      "Als chinesisches Modell können politisch sensible Themen zensiert oder ausgewichen werden",
-      "Sehr große Modellgröße erschwert lokales Deployment ohne spezialisierte Hardware erheblich"
-    ],
-    "judge_context_hint": "Kimi K2 Instruct ist auf Agentic-Workflows und Tool-Use optimiert und zeigt dort besondere Stärken; bei rein konversationellen oder kreativen Aufgaben kann die Leistung variieren.",
-    "architecture_tags": [
-      "Instruct",
-      "Agentic-Orchestrator",
-      "Coder"
-    ],
-    "unknown": false,
-    "generated_at": "2026-04-23T22:07:25.500346+00:00",
-    "card_status": "complete",
-    "size_class": "Frontier"
-  },
-  {
-    "model_id": "kimi-k2",
-    "display_name": "Kimi K2",
-    "developer": "Moonshot AI",
-    "origin_country": "China",
-    "developer_jurisdiction": "CN",
-    "deployment_type": "open-weights-cloud-available",
-    "local_deployment_possible": true,
-    "weights_provenance_risk": "high",
-    "weights_provenance_risk_rationale": "Moonshot AI ist ein chinesisches Unternehmen und unterliegt dem chinesischen National Security Law (NSL), das staatlichen Zugriff auf Daten und Modellentwicklung ermöglichen kann.",
-    "model_family": "Kimi",
-    "primary_focus": "general",
-    "summary": "Kimi K2 ist ein großes Mixture-of-Experts-Modell von Moonshot AI (China) mit 1 Billion Parametern (32B aktiv). Es wurde für agentic Tasks, Tool-Use und komplexes Reasoning entwickelt und zeigt besondere Stärken bei Code, Mathematik und mehrstufigen Aufgaben mit langen Kontextfenstern.",
-    "strengths": [
-      "Starke Leistung bei agentic und Tool-Use-Szenarien",
-      "Sehr großes Kontextfenster (bis zu 128K Token)",
-      "Wettbewerbsfähig bei Coding- und Mathematik-Benchmarks"
-    ],
-    "known_limitations": [
-      "Mixture-of-Experts-Architektur erfordert erhebliche Hardware-Ressourcen für lokales Deployment",
-      "Mögliche Zensur oder Einschränkungen bei politisch sensiblen Themen mit China-Bezug"
-    ],
-    "judge_context_hint": "Kimi K2 ist auf agentic Workflows und Tool-Use optimiert – bei klassischen Instruction-Following-Tasks kann das Modell zu ausführlichen, mehrstufigen Antworten neigen, auch wenn eine direkte Antwort ausreichen würde.",
-    "architecture_tags": [
-      "General",
-      "Agentic-Orchestrator"
-    ],
-    "unknown": false,
-    "generated_at": "2026-04-23T22:06:36.683282+00:00",
-    "card_status": "complete",
-    "size_class": "Frontier"
-  },
-  {
-    "model_id": "kimi-k2.5",
-    "display_name": "Kimi K2.5",
-    "developer": "Moonshot AI",
-    "origin_country": "China",
-    "developer_jurisdiction": "CN",
-    "deployment_type": "cloud-only",
-    "local_deployment_possible": false,
-    "weights_provenance_risk": "high",
-    "weights_provenance_risk_rationale": "Moonshot AI ist ein chinesisches Unternehmen und unterliegt dem chinesischen Nationalen Sicherheitsgesetz (NSL), das staatlichen Zugriff auf Daten und Modelle ermöglichen kann.",
-    "model_family": "Kimi",
-    "primary_focus": "reasoning",
-    "summary": "Kimi K2.5 ist ein Reasoning-Modell von Moonshot AI aus China, entwickelt für komplexe mehrstufige Schlussfolgerungen, mathematische Problemlösung und Long-Context-Verarbeitung. Es kombiniert starkes analytisches Denken mit breiter Sprachunterstützung und zielt auf anspruchsvolle Wissens- und Planungsaufgaben.",
-    "strengths": [
-      "Starke Leistung bei mehrstufigem logischem Schlussfolgern und mathematischen Aufgaben",
-      "Sehr langer Kontextfenster für die Verarbeitung umfangreicher Dokumente",
-      "Gute Mehrsprachigkeit mit besonderem Fokus auf Chinesisch und Englisch"
-    ],
-    "known_limitations": [
-      "Nur über Moonshot-API verfügbar, keine lokale Ausführung möglich",
-      "Verhalten bei politisch sensiblen Themen unterliegt chinesischen Zensurrichtlinien"
-    ],
-    "judge_context_hint": "Das Modell zeigt ausgeprägte Chain-of-Thought-Fähigkeiten, kann bei komplexen Reasoning-Aufgaben jedoch zu überlangen Zwischenschritten neigen; Antwortqualität bei westlich-kulturellen Referenzen kann variieren.",
-    "architecture_tags": [
-      "Thinking",
-      "Agentic-Orchestrator"
-    ],
-    "unknown": false,
-    "generated_at": "2026-04-23T22:04:52.517281+00:00",
-    "card_status": "complete",
-    "size_class": "Frontier"
-  },
-  {
-    "model_id": "kimi-k2.5_cloud",
-    "display_name": "Kimi K2.5",
-    "developer": "Moonshot AI",
-    "origin_country": "China",
-    "developer_jurisdiction": "CN",
-    "deployment_type": "cloud-only",
-    "local_deployment_possible": false,
-    "weights_provenance_risk": "high",
-    "weights_provenance_risk_rationale": "Moonshot AI ist ein chinesisches Unternehmen und unterliegt dem chinesischen National Security Law (NSL), das staatliche Zugriffe auf Daten und Modelle ermöglichen kann.",
-    "model_family": "Kimi",
-    "primary_focus": "reasoning",
-    "summary": "Kimi K2.5 ist ein Cloud-Modell von Moonshot AI aus China, entwickelt für komplexes Schlussfolgern, Long-Context-Verarbeitung und mehrsprachige Aufgaben. Es zeichnet sich durch starke Reasoning-Fähigkeiten und einen sehr großen Kontextfenster aus, konzipiert als leistungsstarker KI-Assistent für anspruchsvolle Analyse- und Wissensaufgaben.",
-    "strengths": [
-      "Sehr großes Kontextfenster (bis zu 128K Token), geeignet für Long-Document-Analyse",
-      "Starke mehrsprachige Fähigkeiten, insbesondere Chinesisch und Englisch",
-      "Ausgeprägte Reasoning- und Schlussfolgerungskompetenz bei komplexen Aufgaben"
-    ],
-    "known_limitations": [
-      "Nur als Cloud-API verfügbar, keine lokale Ausführung möglich",
-      "Mögliche Zensur oder inhaltliche Einschränkungen bei politisch sensiblen Themen gemäß chinesischer Regulierung"
-    ],
-    "judge_context_hint": "Das Modell kann bei politisch oder kulturell sensiblen Themen mit Bezug zu China inhaltlich eingeschränkt oder gefiltert antworten, was die Bewertung von Offenheit und Neutralität beeinflussen kann.",
-    "architecture_tags": [
-      "Agentic-Orchestrator",
-      "Coder"
-    ],
-    "unknown": false,
-    "generated_at": "2026-04-11T15:36:50.795099+00:00"
+    "size_class": "Desktop",
+    "thinking_probe_detected": false,
+    "thinking_probe_evidence": "No CoT signals found (A: no think-tags, B: reasoning_tokens=0). Response length: 581 chars",
+    "thinking_probe_confidence": "low",
+    "thinking_probe_at": "2026-05-02T13:23:01.540881+00:00"
   },
   {
     "model_id": "llama-3.3-70b-versatile",
@@ -1697,38 +1403,6 @@
     "thinking_probe_evidence": "No CoT signals found (A: no think-tags, B: reasoning_tokens=0). Response length: 426 chars",
     "thinking_probe_confidence": "low",
     "thinking_probe_at": "2026-04-23T13:56:48.020175+00:00"
-  },
-  {
-    "model_id": "llama-4-scout-17b-16e-instruct",
-    "display_name": "Llama 4 Scout 17B 16E Instruct",
-    "developer": "Meta",
-    "origin_country": "USA",
-    "developer_jurisdiction": "US",
-    "deployment_type": "open-weights-cloud-available",
-    "local_deployment_possible": true,
-    "weights_provenance_risk": "medium",
-    "weights_provenance_risk_rationale": "Meta ist ein US-amerikanisches Unternehmen und unterliegt dem CLOUD Act, der staatlichen Zugriff auf Daten bei API-Nutzung ermöglicht, jedoch sind die Gewichte öffentlich verfügbar und lokal betreibbar.",
-    "model_family": "Llama",
-    "primary_focus": "instruction-following",
-    "summary": "Llama 4 Scout ist Metas erstes Mixture-of-Experts-Modell der Llama-4-Generation mit 17B aktiven Parametern bei 16 Experten. Es wurde auf breite Instruction-Following-Aufgaben optimiert, unterstützt multimodale Eingaben und zeichnet sich durch hohe Effizienz bei kompetitiver Leistung aus.",
-    "strengths": [
-      "Effiziente MoE-Architektur mit nur 17B aktiven Parametern bei großer Gesamtkapazität",
-      "Multimodale Fähigkeiten (Text und Bild als Eingabe)",
-      "Sehr langer Kontextfenster-Support (bis zu 10M Token)"
-    ],
-    "known_limitations": [
-      "Als MoE-Modell höherer Speicherbedarf für alle Expertengewichte beim lokalen Betrieb",
-      "Reasoning-Tiefe und Coding-Leistung hinter spezialisierten Modellen wie o3 oder DeepSeek-R1"
-    ],
-    "judge_context_hint": "Das Modell ist ein MoE-Instruct-Modell und neigt zu prägnanten, direkten Antworten; bei komplexen mehrstufigen Reasoning-Aufgaben kann die Tiefe gegenüber dedizierten Thinking-Modellen geringer ausfallen.",
-    "architecture_tags": [
-      "General",
-      "Instruct"
-    ],
-    "unknown": false,
-    "generated_at": "2026-04-23T22:08:13.615401+00:00",
-    "card_status": "complete",
-    "size_class": "Desktop"
   },
   {
     "model_id": "magistral-medium-latest",
@@ -1834,67 +1508,7 @@
     "size_class": "Desktop"
   },
   {
-    "model_id": "minimax-m2.7",
-    "display_name": "MiniMax M2.7",
-    "developer": "MiniMax",
-    "origin_country": "China",
-    "developer_jurisdiction": "CN",
-    "deployment_type": "open-weights-cloud-available",
-    "local_deployment_possible": true,
-    "weights_provenance_risk": "high",
-    "weights_provenance_risk_rationale": "MiniMax ist ein chinesisches Unternehmen und unterliegt dem chinesischen National Security Law (NSL), das staatlichen Zugriff auf Modellgewichte und Trainingsdaten ermöglichen kann.",
-    "model_family": "MiniMax",
-    "primary_focus": "general",
-    "summary": "MiniMax M2.7 ist ein chinesisches Mixture-of-Experts-Modell mit 7 Milliarden aktiven Parametern. Es wurde auf breite Sprachverständnis- und Generierungsaufgaben trainiert und zeigt Stärken in mehrsprachigen Szenarien sowie bei langen Kontexten. Ziel war ein effizientes, kompaktes Modell für kommerzielle Anwendungen.",
-    "strengths": [
-      "Effiziente MoE-Architektur mit geringem Rechenaufwand bei der Inferenz",
-      "Gute Leistung bei mehrsprachigen Aufgaben inklusive Chinesisch und Englisch",
-      "Unterstützung langer Kontextfenster für dokumentenbasierte Aufgaben"
-    ],
-    "known_limitations": [
-      "Begrenzte öffentliche Dokumentation und Benchmarking-Daten verfügbar",
-      "Mögliche Zensur oder inhaltliche Einschränkungen bei politisch sensiblen Themen durch chinesische Regulierung"
-    ],
-    "judge_context_hint": "Das Modell kann bei politisch oder kulturell sensiblen Themen mit Bezug zu China inhaltliche Einschränkungen zeigen; Antwortqualität bei komplexem Reasoning sollte kritisch geprüft werden.",
-    "architecture_tags": [
-      "General"
-    ],
-    "unknown": false,
-    "generated_at": "2026-04-23T22:06:08.848661+00:00",
-    "card_status": "complete",
-    "size_class": "Frontier"
-  },
-  {
-    "model_id": "minimax-m2.7_cloud",
-    "display_name": "MiniMax M2.7",
-    "developer": "MiniMax",
-    "origin_country": "China",
-    "developer_jurisdiction": "CN",
-    "deployment_type": "cloud-only",
-    "local_deployment_possible": false,
-    "weights_provenance_risk": "high",
-    "weights_provenance_risk_rationale": "MiniMax ist ein chinesisches Unternehmen und unterliegt dem chinesischen Nationalen Sicherheitsgesetz (NSL), das staatlichen Zugriff auf Daten und Modelle ermöglichen kann.",
-    "model_family": "MiniMax M",
-    "primary_focus": "general",
-    "summary": "MiniMax M2.7 ist ein chinesisches Cloud-Sprachmodell von MiniMax, entwickelt für allgemeine Sprach- und Dialogaufgaben. Es zielt auf starke multilinguale Fähigkeiten, kontextreiches Verstehen und kommerzielle Anwendungsfälle wie Chatbots und Content-Generierung ab.",
-    "strengths": [
-      "Starke multilinguale Fähigkeiten, insbesondere für Chinesisch und Englisch",
-      "Gute Leistung bei langen Kontextfenstern und Dialogkontinuität",
-      "Optimiert für kommerzielle Anwendungsfälle wie Kundenservice und Content-Erstellung"
-    ],
-    "known_limitations": [
-      "Nur über Cloud-API verfügbar, keine lokale Ausführung möglich",
-      "Detaillierte technische Spezifikationen und Trainingsdaten sind öffentlich kaum dokumentiert"
-    ],
-    "judge_context_hint": "Das Modell ist auf kommerzielle Dialoganwendungen optimiert und kann bei sehr technischen oder wissenschaftlichen Nischenthemen schwächer abschneiden als spezialisierte Reasoning-Modelle.",
-    "architecture_tags": [
-      "Thinking"
-    ],
-    "unknown": false,
-    "generated_at": "2026-04-11T15:28:06.905210+00:00"
-  },
-  {
-    "model_id": "minimax/minimax-m2.7",
+    "model_id": "minimax/minimax-m2.7-20260318",
     "display_name": "MiniMax M2.7",
     "developer": "MiniMax",
     "origin_country": "China",
@@ -1922,6 +1536,37 @@
     ],
     "unknown": false,
     "generated_at": "2026-04-23T22:04:04.739773+00:00",
+    "card_status": "complete",
+    "size_class": "Frontier"
+  },
+  {
+    "model_id": "minimax_minimax-m2.7",
+    "display_name": "MiniMax M2.7",
+    "developer": "MiniMax",
+    "origin_country": "China",
+    "developer_jurisdiction": "CN",
+    "deployment_type": "cloud-only",
+    "local_deployment_possible": false,
+    "weights_provenance_risk": "high",
+    "weights_provenance_risk_rationale": "MiniMax ist ein chinesisches Unternehmen und unterliegt dem chinesischen National Security Law (NSL), das staatlichen Zugriff auf Daten und Modelle ermöglichen kann.",
+    "model_family": "MiniMax",
+    "primary_focus": "general",
+    "summary": "MiniMax M2.7 ist ein chinesisches Sprachmodell von MiniMax, entwickelt für allgemeine Sprach- und Reasoning-Aufgaben. Es zielt auf starke Mehrsprachigkeit, Instruktionsbefolgung und Konversationsfähigkeit ab und positioniert sich als leistungsfähiges Allround-Modell im chinesischen KI-Ökosystem.",
+    "strengths": [
+      "Starke Mehrsprachigkeit mit besonderem Fokus auf Chinesisch und Englisch",
+      "Solide Instruktionsbefolgung für konversationelle und aufgabenorientierte Szenarien",
+      "Kompetitives Allround-Profil für Text-Generierung und Zusammenfassung"
+    ],
+    "known_limitations": [
+      "Gewichte nicht öffentlich verfügbar, daher keine lokale oder private Nutzung möglich",
+      "Begrenzte unabhängige Benchmarking-Daten verfügbar, Leistung in Nischen-Domänen schwer einschätzbar"
+    ],
+    "judge_context_hint": "Das Modell ist auf chinesisch-englische Konversation optimiert; bei rein englischen Reasoning-Benchmarks kann es gegenüber westlichen Modellen vergleichbarer Größe leicht zurückfallen.",
+    "architecture_tags": [
+      "General"
+    ],
+    "unknown": false,
+    "generated_at": "2026-05-01T13:40:21.838796+00:00",
     "card_status": "complete",
     "size_class": "Frontier"
   },
@@ -2098,38 +1743,48 @@
     "thinking_probe_at": "2026-04-23T13:57:06.994344+00:00"
   },
   {
-    "model_id": "moonshotai_kimi-k2-instruct",
-    "display_name": "Kimi K2 Instruct",
+    "model_id": "moonshotai/kimi-k2-thinking-20251106",
+    "model_version": "k2-thinking-20251106",
+    "display_name": "Kimi K2 Thinking",
     "developer": "Moonshot AI",
     "origin_country": "China",
     "developer_jurisdiction": "CN",
     "deployment_type": "open-weights-cloud-available",
     "local_deployment_possible": true,
     "weights_provenance_risk": "high",
-    "weights_provenance_risk_rationale": "Moonshot AI ist ein chinesisches Unternehmen und unterliegt dem chinesischen National Security Law (NSL), das staatliche Zugriffe auf Daten und Modelle ermöglichen kann.",
+    "weights_provenance_risk_rationale": "Moonshot AI ist ein chinesisches Unternehmen und unterliegt dem chinesischen National Security Law (NSL), das staatlichen Zugriff auf Daten und Modelle ermöglichen kann.",
     "model_family": "Kimi",
-    "primary_focus": "general",
-    "summary": "Kimi K2 Instruct ist ein großes Sprachmodell von Moonshot AI aus China, trainiert auf einem breiten Mix aus Code, Mathematik und allgemeinen Instruktionsdaten. Es zielt auf starke Reasoning- und Coding-Fähigkeiten bei gleichzeitig guter Mehrsprachigkeit, insbesondere Chinesisch und Englisch.",
+    "primary_focus": "reasoning",
+    "summary": "Kimi K2 Thinking ist das erweiterte Reasoning-Modell in der Kimi-K2-Familie von Moonshot AI. Es basiert auf der K2-MoE-Architektur (1T Parameter) und wurde speziell für komplexe, mehrstufige Reasoning-Aufgaben, Mathematik und langfristige agentische Problemlösung optimiert.",
     "strengths": [
-      "Starke Leistung bei Code-Generierung und mathematischem Reasoning",
-      "Gute Mehrsprachigkeit mit besonderem Fokus auf Chinesisch und Englisch",
-      "Großes Kontextfenster für komplexe, mehrstufige Aufgaben"
+      "Integriertes Chain-of-Thought Reasoning (Thinking-Modus)",
+      "Starke Leistung bei mehrstufigen logischen Schlussfolgerungen",
+      "Besonders geeignet für komplexe Coding- und Planungsaufgaben",
+      "Unterstützt Tool-Use im Reasoning-Kontext"
     ],
     "known_limitations": [
-      "Unterliegt chinesischer Rechtsprechung, was Zensur und politisch sensible Themen beeinflussen kann",
-      "Weniger etabliert im westlichen Benchmark-Ökosystem als vergleichbare US-Modelle"
+      "Höherer Token-Verbrauch durch interne Reasoning-Tokens",
+      "Als sehr großes MoE-Modell hoher Ressourcenbedarf für lokales Deployment",
+      "Mögliche Einschränkungen bei politisch sensiblen Themen mit China-Bezug"
     ],
-    "judge_context_hint": "Das Modell kann bei politisch oder kulturell sensiblen Themen mit Bezug zu China zurückhaltend oder ausweichend antworten; Antwortqualität bei solchen Themen sollte gesondert bewertet werden.",
+    "judge_context_hint": "Kimi K2 Thinking ist ein Reasoning-Modell mit internem CoT. Antworten können durch sichtbare oder unsichtbare Denkprozesse umfangreicher sein als bei Instruction-Only-Modellen.",
     "architecture_tags": [
+      "Thinking",
       "Agentic-Orchestrator",
-      "Coder",
-      "Instruct"
+      "Coder"
     ],
     "unknown": false,
-    "generated_at": "2026-04-11T15:35:02.862567+00:00"
+    "generated_at": "2026-04-24T10:34:25.015803+00:00",
+    "card_status": "stub",
+    "size_class": "Frontier",
+    "thinking_probe_detected": null,
+    "thinking_probe_evidence": "Not yet probed — model not yet benchmarked",
+    "thinking_probe_confidence": "none",
+    "thinking_probe_at": null
   },
   {
     "model_id": "moonshotai/kimi-k2",
+    "model_version": "k2-0711",
     "display_name": "Kimi K2",
     "developer": "Moonshot AI",
     "origin_country": "China",
@@ -2158,10 +1813,14 @@
     "unknown": false,
     "generated_at": "2026-04-23T22:03:45.786481+00:00",
     "card_status": "complete",
-    "size_class": "Frontier"
+    "size_class": "Frontier",
+    "thinking_probe_detected": false,
+    "thinking_probe_evidence": "No CoT signals found (A: no think-tags, B: reasoning_tokens=0). Response length: 371 chars",
+    "thinking_probe_confidence": "low",
+    "thinking_probe_at": "2026-04-24T09:00:50.327648+00:00"
   },
   {
-    "model_id": "moonshotai/kimi-k2.5",
+    "model_id": "moonshotai/kimi-k2.5-0127",
     "display_name": "Kimi K2.5",
     "developer": "Moonshot AI",
     "origin_country": "China",
@@ -2195,6 +1854,142 @@
     "thinking_probe_evidence": "reasoning_tokens=278 in provider metadata",
     "thinking_probe_confidence": "medium",
     "thinking_probe_at": "2026-04-23T14:11:04.288731+00:00"
+  },
+  {
+    "model_id": "moonshotai_kimi-k2.5",
+    "display_name": "Kimi K2.5",
+    "developer": "Moonshot AI",
+    "origin_country": "China",
+    "developer_jurisdiction": "CN",
+    "deployment_type": "cloud-only",
+    "local_deployment_possible": false,
+    "weights_provenance_risk": "high",
+    "weights_provenance_risk_rationale": "Moonshot AI ist ein chinesisches Unternehmen und unterliegt dem chinesischen National Security Law (NSL), das staatlichen Zugriff auf Daten und Modelle ermöglichen kann.",
+    "model_family": "Kimi",
+    "primary_focus": "reasoning",
+    "summary": "Kimi K2.5 ist ein Reasoning-Modell von Moonshot AI aus China, entwickelt für komplexe mehrstufige Schlussfolgerungen, mathematische Aufgaben und Code-Analyse. Es kombiniert starkes logisches Denken mit langen Kontextfenstern und wurde als Weiterentwicklung der Kimi-Reihe für anspruchsvolle analytische Aufgaben konzipiert.",
+    "strengths": [
+      "Starke Leistung bei mehrstufigen Reasoning-Aufgaben und mathematischen Problemen",
+      "Unterstützung sehr langer Kontextfenster für umfangreiche Dokumentenanalyse",
+      "Gute Mehrsprachigkeit mit besonderem Fokus auf Chinesisch und Englisch"
+    ],
+    "known_limitations": [
+      "Nur über Moonshot-API verfügbar, keine lokale Ausführung möglich",
+      "Weniger transparent bezüglich Trainingsdaten und Modellarchitektur als Open-Weights-Alternativen"
+    ],
+    "judge_context_hint": "Kimi K2.5 ist auf Reasoning spezialisiert und kann bei komplexen Aufgaben interne Chain-of-Thought-Prozesse nutzen – Antworten können ausführlicher und strukturierter ausfallen als bei reinen Instruction-Following-Modellen.",
+    "architecture_tags": [
+      "Thinking",
+      "Agentic-Orchestrator"
+    ],
+    "unknown": false,
+    "generated_at": "2026-05-01T13:38:50.180648+00:00",
+    "card_status": "complete",
+    "size_class": "Frontier"
+  },
+  {
+    "model_id": "moonshotai/kimi-k2.6",
+    "display_name": "Kimi K2.6",
+    "developer": "Moonshot AI",
+    "origin_country": "China",
+    "developer_jurisdiction": "CN",
+    "deployment_type": "open-weights-cloud-available",
+    "local_deployment_possible": true,
+    "weights_provenance_risk": "high",
+    "weights_provenance_risk_rationale": "Moonshot AI ist ein chinesisches Unternehmen und unterliegt dem chinesischen National Security Law (NSL), das staatlichen Zugriff auf Daten und Modellgewichte ermöglichen kann.",
+    "model_family": "Kimi",
+    "primary_focus": "general",
+    "summary": "Kimi K2.6 ist ein großes Sprachmodell von Moonshot AI aus China, trainiert auf breiten Wissens- und Reasoning-Aufgaben. Es zeichnet sich durch starke Agentic-Fähigkeiten, Werkzeugnutzung und mehrsprachige Kompetenz aus. Entwickelt als leistungsstarke Open-Weights-Alternative für komplexe Aufgaben.",
+    "strengths": [
+      "Starke Agentic- und Tool-Use-Fähigkeiten für autonome Aufgabenbearbeitung",
+      "Gute Mehrsprachigkeit mit besonderer Stärke in Chinesisch und Englisch",
+      "Hohe Leistung bei Reasoning- und Coding-Aufgaben trotz Open-Weights-Verfügbarkeit"
+    ],
+    "known_limitations": [
+      "Als chinesisches Modell potenziell eingeschränkt bei politisch sensiblen Themen mit China-Bezug",
+      "Sehr große Modellgröße erschwert lokales Deployment ohne spezialisierte Hardware erheblich"
+    ],
+    "judge_context_hint": "Kimi K2.6 ist auf Agentic-Workflows und Tool-Use optimiert – bei reinen Konversations- oder Kreativaufgaben kann die Antwortstruktur stärker aufgabenorientiert und weniger narrativ ausfallen als bei generalistischen Modellen.",
+    "architecture_tags": [
+      "Agentic-Orchestrator",
+      "Thinking-Optional"
+    ],
+    "unknown": false,
+    "generated_at": "2026-05-02T20:31:39.248362+00:00",
+    "card_status": "complete",
+    "size_class": "Frontier"
+  },
+  {
+    "model_id": "nousresearch/hermes-4-405b",
+    "display_name": "Hermes 4 405B",
+    "developer": "Nous Research",
+    "origin_country": "USA",
+    "developer_jurisdiction": "US",
+    "deployment_type": "open-weights",
+    "local_deployment_possible": true,
+    "weights_provenance_risk": "medium",
+    "weights_provenance_risk_rationale": "Nous Research ist ein US-amerikanisches Unternehmen und unterliegt dem CLOUD Act, jedoch sind die Gewichte öffentlich verfügbar und lokal betreibbar, sodass kein API-Zugriff durch Dritte erforderlich ist.",
+    "model_family": "Hermes",
+    "primary_focus": "instruction-following",
+    "summary": "Hermes 4 405B von Nous Research ist ein US-amerikanisches Open-Weights-Modell auf Basis von Llama 3.1 405B, feinabgestimmt auf präzises Instruction-Following, strukturierte Ausgaben und agentenbasierte Anwendungen. Es wurde entwickelt, um Zensurbeschränkungen zu reduzieren und Rollenspiel sowie komplexe Aufgaben zuverlässig zu unterstützen.",
+    "strengths": [
+      "Sehr starkes Instruction-Following mit präziser Befolgung komplexer Anweisungen",
+      "Optimiert für strukturierte JSON-Ausgaben und Function-Calling in Agenten-Pipelines",
+      "Reduzierte Ablehnung von Anfragen durch gezieltes Uncensored-Finetuning"
+    ],
+    "known_limitations": [
+      "Durch reduzierte Sicherheitsfilter erhöhtes Risiko für missbräuchliche Nutzung bei sensiblen Themen",
+      "Lokaler Betrieb des 405B-Modells erfordert erhebliche Hardware-Ressourcen (mehrere High-End-GPUs)"
+    ],
+    "judge_context_hint": "Das Modell ist auf Instruction-Following und strukturierte Ausgaben optimiert und neigt zu direkten, ungefilterten Antworten – Qualitätsbewertungen sollten Präzision und Formatkonformität besonders gewichten.",
+    "architecture_tags": [
+      "Instruct",
+      "Uncensored-Finetuned"
+    ],
+    "unknown": false,
+    "generated_at": "2026-05-02T16:10:18.822288+00:00",
+    "card_status": "complete",
+    "size_class": "Frontier",
+    "thinking_probe_detected": false,
+    "thinking_probe_evidence": "No CoT signals found (A: no think-tags, B: reasoning_tokens=0). Response length: 612 chars",
+    "thinking_probe_confidence": "low",
+    "thinking_probe_at": "2026-05-02T16:49:08.185081+00:00"
+  },
+  {
+    "model_id": "nousresearch/hermes-4-70b",
+    "display_name": "Hermes 4 70B",
+    "developer": "Nous Research",
+    "origin_country": "USA",
+    "developer_jurisdiction": "US",
+    "deployment_type": "open-weights",
+    "local_deployment_possible": true,
+    "weights_provenance_risk": "medium",
+    "weights_provenance_risk_rationale": "Nous Research ist ein US-amerikanisches Unternehmen und unterliegt dem CLOUD Act, jedoch sind die Gewichte öffentlich verfügbar und lokal betreibbar, sodass kein API-Zugriff durch Dritte erforderlich ist.",
+    "model_family": "Hermes",
+    "primary_focus": "instruction-following",
+    "summary": "Hermes 4 70B von Nous Research ist ein US-amerikanisches Open-Weights-Modell, das auf einem starken Basismodell (vermutlich Llama-3-70B) mit kuratiertem Instruction-Tuning-Datensatz trainiert wurde. Es zielt auf präzises Instruction-Following, strukturierte Ausgaben und reduzierte Zensur für professionelle und kreative Anwendungsfälle.",
+    "strengths": [
+      "Starkes Instruction-Following mit präzisen, strukturierten Antworten",
+      "Reduzierte Überrefusal-Rate durch gezieltes Uncensored-Finetuning",
+      "Gute Leistung bei Rollenspiel, Agenten-Workflows und Function-Calling"
+    ],
+    "known_limitations": [
+      "Als Fine-Tune eines Basismodells abhängig von dessen Wissensgrenzen und Trainingsdaten-Cutoff",
+      "70B-Parametergröße erfordert erhebliche Hardware-Ressourcen für lokalen Betrieb"
+    ],
+    "judge_context_hint": "Hermes 4 70B ist ein Uncensored-Finetuned-Modell – es antwortet direkter und mit weniger Ablehnung als Standard-Instruct-Modelle; Qualitätsbewertungen sollten dies als Feature, nicht als Fehler einordnen.",
+    "architecture_tags": [
+      "Instruct",
+      "Uncensored-Finetuned"
+    ],
+    "unknown": false,
+    "generated_at": "2026-05-02T16:10:08.164050+00:00",
+    "card_status": "complete",
+    "size_class": "Server",
+    "thinking_probe_detected": false,
+    "thinking_probe_evidence": "No CoT signals found (A: no think-tags, B: reasoning_tokens=0). Response length: 445 chars",
+    "thinking_probe_confidence": "low",
+    "thinking_probe_at": "2026-05-02T16:17:54.270019+00:00"
   },
   {
     "model_id": "o1",
@@ -2330,7 +2125,11 @@
     "unknown": false,
     "generated_at": "2026-04-23T22:09:59.888435+00:00",
     "card_status": "complete",
-    "size_class": "Edge"
+    "size_class": "Edge",
+    "thinking_probe_detected": false,
+    "thinking_probe_evidence": "No CoT signals found (A: no think-tags, B: reasoning_tokens=0). Response length: 609 chars",
+    "thinking_probe_confidence": "low",
+    "thinking_probe_at": "2026-04-25T09:20:47.385071+00:00"
   },
   {
     "model_id": "qwen2.5:3b",
@@ -2362,39 +2161,11 @@
     "unknown": false,
     "generated_at": "2026-04-23T22:10:10.975574+00:00",
     "card_status": "complete",
-    "size_class": "Nano"
-  },
-  {
-    "model_id": "qwen3-32b",
-    "display_name": "Qwen 3 32B",
-    "developer": "Alibaba Cloud",
-    "origin_country": "China",
-    "developer_jurisdiction": "CN",
-    "deployment_type": "open-weights-cloud-available",
-    "local_deployment_possible": true,
-    "weights_provenance_risk": "high",
-    "weights_provenance_risk_rationale": "Alibaba Cloud unterliegt als chinesisches Unternehmen dem chinesischen National Security Law (NSL), das staatliche Zugriffe auf Daten und Modellentwicklung ermöglichen kann.",
-    "model_family": "Qwen",
-    "primary_focus": "general",
-    "summary": "Qwen 3 32B ist ein von Alibaba Cloud (China) entwickeltes Sprachmodell mit 32 Milliarden Parametern. Es wurde auf mehrsprachige Instruktionsbefolgung, Reasoning und Coding optimiert. Stärken liegen in asiatischen Sprachen, mathematischem Denken und optionalem Chain-of-Thought-Modus.",
-    "strengths": [
-      "Starke Mehrsprachigkeit, insbesondere für Chinesisch, Japanisch und weitere asiatische Sprachen",
-      "Optionales Thinking-Modus (Extended Chain-of-Thought) für komplexe Reasoning-Aufgaben schaltbar",
-      "Gute Leistung bei Mathematik, Coding und strukturierten Aufgaben im Verhältnis zur Modellgröße"
-    ],
-    "known_limitations": [
-      "Kann bei politisch sensiblen Themen mit Bezug zu China zensierte oder ausweichende Antworten produzieren",
-      "Thinking-Modus erhöht Latenz und Token-Verbrauch erheblich, was bei einfachen Aufgaben ineffizient ist"
-    ],
-    "judge_context_hint": "Das Modell verfügt über einen schaltbaren Thinking-Modus; bei aktiviertem Extended Thinking sind längere, strukturiertere Antworten zu erwarten – der Bewertungskontext sollte berücksichtigen, ob Thinking an- oder abgeschaltet war.",
-    "architecture_tags": [
-      "General",
-      "Thinking-Optional"
-    ],
-    "unknown": false,
-    "generated_at": "2026-04-23T22:07:53.956468+00:00",
-    "card_status": "complete",
-    "size_class": "Workstation"
+    "size_class": "Nano",
+    "thinking_probe_detected": false,
+    "thinking_probe_evidence": "No CoT signals found (A: no think-tags, B: reasoning_tokens=0). Response length: 961 chars",
+    "thinking_probe_confidence": "low",
+    "thinking_probe_at": "2026-04-25T09:21:17.181757+00:00"
   },
   {
     "model_id": "qwen3:14b",
@@ -2426,7 +2197,11 @@
     "unknown": false,
     "generated_at": "2026-04-23T22:08:25.785509+00:00",
     "card_status": "complete",
-    "size_class": "Desktop"
+    "size_class": "Desktop",
+    "thinking_probe_detected": false,
+    "thinking_probe_evidence": "No CoT signals found (A: no think-tags, B: reasoning_tokens=0). Response length: 1746 chars",
+    "thinking_probe_confidence": "low",
+    "thinking_probe_at": "2026-04-25T09:26:26.796058+00:00"
   },
   {
     "model_id": "qwen3:4b",
@@ -2458,7 +2233,11 @@
     "unknown": false,
     "generated_at": "2026-04-23T22:09:26.769461+00:00",
     "card_status": "complete",
-    "size_class": "Nano"
+    "size_class": "Nano",
+    "thinking_probe_detected": false,
+    "thinking_probe_evidence": "No CoT signals found (A: no think-tags, B: reasoning_tokens=0). Response length: 105 chars",
+    "thinking_probe_confidence": "low",
+    "thinking_probe_at": "2026-04-25T09:27:14.723242+00:00"
   },
   {
     "model_id": "qwen3.5:397b-cloud",
@@ -2490,7 +2269,11 @@
     "unknown": false,
     "generated_at": "2026-04-23T22:07:44.228805+00:00",
     "card_status": "complete",
-    "size_class": "Frontier"
+    "size_class": "Frontier",
+    "thinking_probe_detected": false,
+    "thinking_probe_evidence": "No CoT signals found (A: no think-tags, B: reasoning_tokens=0). Response length: 1407 chars",
+    "thinking_probe_confidence": "low",
+    "thinking_probe_at": "2026-05-01T10:51:29.799294+00:00"
   },
   {
     "model_id": "qwen3.5:9b",
@@ -2522,7 +2305,11 @@
     "unknown": false,
     "generated_at": "2026-04-23T22:09:07.320486+00:00",
     "card_status": "complete",
-    "size_class": "Edge"
+    "size_class": "Edge",
+    "thinking_probe_detected": false,
+    "thinking_probe_evidence": "No CoT signals found (A: no think-tags, B: reasoning_tokens=0). Response length: 1582 chars",
+    "thinking_probe_confidence": "low",
+    "thinking_probe_at": "2026-04-25T09:25:30.007908+00:00"
   },
   {
     "model_id": "qwen/qwen3-32b",
@@ -2554,10 +2341,117 @@
     "unknown": false,
     "generated_at": "2026-04-23T22:03:10.589635+00:00",
     "card_status": "complete",
-    "size_class": "Workstation"
+    "size_class": "Workstation",
+    "thinking_probe_detected": true,
+    "thinking_probe_evidence": "Think-tag found in response (first 200 chars): <think>\nOkay, so I need to find the average speed of a train that travels 120 kilometers in 1.5 hours. Hmm, let me think. I remember that average speed is calculated by dividing the total distance by ",
+    "thinking_probe_confidence": "high",
+    "thinking_probe_at": "2026-04-25T09:31:50.465081+00:00"
   },
   {
-    "model_id": "z-ai/glm-5-turbo",
+    "model_id": "z-ai/glm-4.6",
+    "display_name": "GLM 4.6",
+    "developer": "Zhipu AI",
+    "origin_country": "China",
+    "developer_jurisdiction": "CN",
+    "deployment_type": "open-weights",
+    "local_deployment_possible": true,
+    "weights_provenance_risk": "high",
+    "weights_provenance_risk_rationale": "Zhipu AI ist ein chinesisches Unternehmen und unterliegt dem chinesischen Nationalen Sicherheitsgesetz (NSL), das staatlichen Zugriff auf Daten und Modellentwicklung ermöglichen kann.",
+    "model_family": "GLM",
+    "primary_focus": "general",
+    "summary": "GLM 4.6 ist ein Open-Weights-Modell von Zhipu AI (China), entwickelt als leistungsstarkes Allround-Modell mit Fokus auf mehrsprachige Fähigkeiten, insbesondere Chinesisch und Englisch. Stärken liegen in Instruktionsbefolgung, Textverständnis und Dialogkompetenz. Ziel ist ein konkurrenzfähiges, lokal betreibbares Modell.",
+    "strengths": [
+      "Starke Chinesisch- und Englischkompetenz durch gezieltes mehrsprachiges Training",
+      "Gute Instruktionsbefolgung und Dialogfähigkeit",
+      "Open-Weights-Verfügbarkeit ermöglicht lokalen, datenschutzkonformen Betrieb"
+    ],
+    "known_limitations": [
+      "Leistung in weniger verbreiteten Sprachen deutlich schwächer als in Chinesisch/Englisch",
+      "Kann bei politisch sensiblen Themen mit Bezug zu China eingeschränkte oder ausweichende Antworten liefern"
+    ],
+    "judge_context_hint": "Das Modell ist auf Chinesisch und Englisch optimiert – bei mehrsprachigen oder westlich geprägten Benchmarks kann die Leistung gegenüber chinesischsprachigen Aufgaben abfallen; kulturelle Referenzen sind häufig auf den chinesischen Kontext ausgerichtet.",
+    "architecture_tags": [
+      "General",
+      "Instruct"
+    ],
+    "unknown": false,
+    "generated_at": "2026-05-02T16:15:41.301702+00:00",
+    "card_status": "complete",
+    "size_class": "Frontier",
+    "thinking_probe_detected": true,
+    "thinking_probe_evidence": "reasoning_tokens=512 in provider metadata",
+    "thinking_probe_confidence": "medium",
+    "thinking_probe_at": "2026-05-02T17:28:34.654933+00:00"
+  },
+  {
+    "model_id": "z-ai/glm-4.7",
+    "display_name": "GLM-4.7",
+    "developer": "Zhipu AI",
+    "origin_country": "China",
+    "developer_jurisdiction": "CN",
+    "deployment_type": "open-weights-cloud-available",
+    "local_deployment_possible": true,
+    "weights_provenance_risk": "high",
+    "weights_provenance_risk_rationale": "Zhipu AI ist ein chinesisches Unternehmen und unterliegt dem chinesischen Nationalen Sicherheitsgesetz (NSL), das staatlichen Zugriff auf Daten und Modelle ermöglichen kann.",
+    "model_family": "GLM",
+    "primary_focus": "general",
+    "summary": "GLM-4.7 ist ein chinesisches Open-Weights-Modell von Zhipu AI, entwickelt auf Basis der GLM-Architektur. Es wurde auf mehrsprachige Instruktionsbefolgung, Reasoning und allgemeine Aufgaben trainiert. Stärken liegen in Chinesisch-Englisch-Bilingualität und Dialogfähigkeit.",
+    "strengths": [
+      "Starke Leistung in chinesisch-englischen bilingualen Aufgaben",
+      "Gute Instruktionsbefolgung für allgemeine Dialog- und Assistenzaufgaben",
+      "Open-Weights-Verfügbarkeit ermöglicht lokalen Betrieb ohne Cloud-Abhängigkeit"
+    ],
+    "known_limitations": [
+      "Kann bei westlich-kulturellen Kontexten oder nicht-chinesischen Sprachen schwächer abschneiden als bei Chinesisch",
+      "Mögliche Zensur oder Zurückhaltung bei politisch sensiblen Themen mit Bezug zu China"
+    ],
+    "judge_context_hint": "Das Modell ist primär auf chinesisch-englische Bilingualität optimiert; bei rein englischen Benchmarks kann die Leistung gegenüber westlichen Modellen vergleichbarer Größe leicht variieren.",
+    "architecture_tags": [
+      "General",
+      "Instruct"
+    ],
+    "unknown": false,
+    "generated_at": "2026-05-02T16:15:51.589754+00:00",
+    "card_status": "complete",
+    "size_class": "Frontier",
+    "thinking_probe_detected": true,
+    "thinking_probe_evidence": "reasoning_tokens=385 in provider metadata",
+    "thinking_probe_confidence": "medium",
+    "thinking_probe_at": "2026-05-02T18:51:15.646745+00:00"
+  },
+  {
+    "model_id": "z-ai/glm-5-20260211",
+    "display_name": "GLM-5",
+    "developer": "Zhipu AI",
+    "origin_country": "China",
+    "developer_jurisdiction": "CN",
+    "deployment_type": "open-weights-cloud-available",
+    "local_deployment_possible": true,
+    "weights_provenance_risk": "high",
+    "weights_provenance_risk_rationale": "Zhipu AI ist ein chinesisches Unternehmen und unterliegt dem chinesischen Nationalen Sicherheitsgesetz (NSL), das staatlichen Zugriff auf Daten und Modellgewichte ermöglichen kann.",
+    "model_family": "GLM",
+    "primary_focus": "general",
+    "summary": "GLM-5 ist ein chinesisches Large Language Model von Zhipu AI, entwickelt als Nachfolger der GLM-Reihe. Es wurde auf mehrsprachigen und chinesischsprachigen Daten trainiert, mit Stärken in Reasoning, Dialogführung und Instruktionsbefolgung. Ziel ist ein leistungsfähiges Allround-Modell für akademische und kommerzielle Anwendungen.",
+    "strengths": [
+      "Starke Leistung in chinesischsprachigen Aufgaben und Textverstehen",
+      "Solide Instruction-Following-Fähigkeiten in mehrsprachigen Szenarien",
+      "Gute Reasoning- und Dialogkompetenz auf Basis der weiterentwickelten GLM-Architektur"
+    ],
+    "known_limitations": [
+      "Detaillierte technische Spezifikationen und unabhängige Benchmarks sind öffentlich kaum verfügbar",
+      "Mögliche Einschränkungen bei politisch sensiblen Themen entsprechend chinesischer Regulierungsvorgaben"
+    ],
+    "judge_context_hint": "Das Modell stammt aus der GLM-Familie von Zhipu AI und kann bei englischsprachigen Benchmarks gegenüber chinesischsprachigen Aufgaben leicht schwächer abschneiden; zudem sind öffentliche Leistungsdaten zu GLM-5 noch begrenzt.",
+    "architecture_tags": [
+      "General"
+    ],
+    "unknown": true,
+    "generated_at": "2026-04-23T22:03:28.984456+00:00",
+    "card_status": "complete",
+    "size_class": "Frontier"
+  },
+  {
+    "model_id": "z-ai/glm-5-turbo-20260315",
     "display_name": "GLM-5 Turbo",
     "developer": "Zhipu AI",
     "origin_country": "China",
@@ -2589,38 +2483,69 @@
     "size_class": "Frontier"
   },
   {
-    "model_id": "z-ai/glm-5",
-    "display_name": "GLM-5",
+    "model_id": "z-ai_glm-5-turbo",
+    "display_name": "GLM-5 Turbo",
     "developer": "Zhipu AI",
     "origin_country": "China",
     "developer_jurisdiction": "CN",
-    "deployment_type": "open-weights-cloud-available",
-    "local_deployment_possible": true,
+    "deployment_type": "cloud-only",
+    "local_deployment_possible": false,
     "weights_provenance_risk": "high",
-    "weights_provenance_risk_rationale": "Zhipu AI ist ein chinesisches Unternehmen und unterliegt dem chinesischen Nationalen Sicherheitsgesetz (NSL), das staatlichen Zugriff auf Daten und Modellgewichte ermöglichen kann.",
+    "weights_provenance_risk_rationale": "Zhipu AI ist ein chinesisches Unternehmen und unterliegt dem chinesischen Nationalen Sicherheitsgesetz (NSL), das staatlichen Zugriff auf Daten und Modelle ermöglichen kann.",
     "model_family": "GLM",
     "primary_focus": "general",
-    "summary": "GLM-5 ist ein chinesisches Large Language Model von Zhipu AI, entwickelt als Nachfolger der GLM-Reihe. Es wurde auf mehrsprachigen und chinesischsprachigen Daten trainiert, mit Stärken in Reasoning, Dialogführung und Instruktionsbefolgung. Ziel ist ein leistungsfähiges Allround-Modell für akademische und kommerzielle Anwendungen.",
+    "summary": "GLM-5 Turbo ist ein chinesisches Sprachmodell von Zhipu AI, entwickelt als schnelle, kosteneffiziente Variante der GLM-5-Familie. Trainiert auf mehrsprachigen Daten mit Fokus auf Chinesisch und Englisch, eignet es sich für Konversation, Textverarbeitung und leichte Reasoning-Aufgaben im API-Betrieb.",
     "strengths": [
-      "Starke Leistung in chinesischsprachigen Aufgaben und Textverstehen",
-      "Solide Instruction-Following-Fähigkeiten in mehrsprachigen Szenarien",
-      "Gute Reasoning- und Dialogkompetenz auf Basis der weiterentwickelten GLM-Architektur"
+      "Starke Leistung in chinesisch-sprachigen Aufgaben und Nuancen",
+      "Schnelle Inferenzgeschwindigkeit als Turbo-Variante",
+      "Gute Allround-Fähigkeiten für Konversation und Textgenerierung"
     ],
     "known_limitations": [
-      "Detaillierte technische Spezifikationen und unabhängige Benchmarks sind öffentlich kaum verfügbar",
-      "Mögliche Einschränkungen bei politisch sensiblen Themen entsprechend chinesischer Regulierungsvorgaben"
+      "Nur über Cloud-API verfügbar, keine lokale Ausführung möglich",
+      "Mögliche Zensur oder Einschränkungen bei politisch sensiblen Themen gemäß chinesischer Regulierung"
     ],
-    "judge_context_hint": "Das Modell stammt aus der GLM-Familie von Zhipu AI und kann bei englischsprachigen Benchmarks gegenüber chinesischsprachigen Aufgaben leicht schwächer abschneiden; zudem sind öffentliche Leistungsdaten zu GLM-5 noch begrenzt.",
+    "judge_context_hint": "Das Modell kann bei politisch oder kulturell sensiblen Themen mit Bezug zu China eingeschränkte oder ausweichende Antworten liefern; dies sollte bei der Bewertung von Offenheit und Vollständigkeit berücksichtigt werden.",
     "architecture_tags": [
       "General"
     ],
-    "unknown": true,
-    "generated_at": "2026-04-23T22:03:28.984456+00:00",
+    "unknown": false,
+    "generated_at": "2026-05-01T13:44:57.143603+00:00",
     "card_status": "complete",
     "size_class": "Frontier"
   },
   {
-    "model_id": "z-ai/glm-5.1",
+    "model_id": "z-ai_glm-5",
+    "display_name": "GLM-5",
+    "developer": "Zhipu AI",
+    "origin_country": "China",
+    "developer_jurisdiction": "CN",
+    "deployment_type": "cloud-only",
+    "local_deployment_possible": false,
+    "weights_provenance_risk": "high",
+    "weights_provenance_risk_rationale": "Zhipu AI ist ein chinesisches Unternehmen und unterliegt dem chinesischen Nationalen Sicherheitsgesetz (NSL), das staatlichen Zugriff auf Daten und Modelle ermöglichen kann.",
+    "model_family": "GLM",
+    "primary_focus": "general",
+    "summary": "GLM-5 ist ein Sprachmodell von Zhipu AI aus China, entwickelt auf Basis der GLM-Architektur. Es zielt auf starke mehrsprachige Fähigkeiten, insbesondere Chinesisch und Englisch, sowie auf allgemeines Instruction-Following und Reasoning. Typische Stärken liegen in Textverständnis, Dialogführung und strukturierter Ausgabe.",
+    "strengths": [
+      "Starke Leistung in Chinesisch und Englisch",
+      "Solides allgemeines Instruction-Following",
+      "Gute Dialogkohärenz über mehrere Gesprächsrunden"
+    ],
+    "known_limitations": [
+      "Begrenzte öffentliche Dokumentation zu Trainingsdetails und Benchmarks",
+      "Mögliche Zensur oder inhaltliche Einschränkungen bei politisch sensiblen Themen"
+    ],
+    "judge_context_hint": "Das Modell kann bei politisch oder kulturell sensiblen Themen mit Bezug zu China inhaltlich eingeschränkt reagieren; dies sollte bei der Bewertung offener Antwortqualität berücksichtigt werden.",
+    "architecture_tags": [
+      "General"
+    ],
+    "unknown": true,
+    "generated_at": "2026-05-01T13:20:18.688837+00:00",
+    "card_status": "complete",
+    "size_class": "Frontier"
+  },
+  {
+    "model_id": "z-ai/glm-5.1-20260406",
     "display_name": "GLM 5.1",
     "developer": "Zhipu AI",
     "origin_country": "China",
@@ -2648,6 +2573,42 @@
     ],
     "unknown": true,
     "generated_at": "2026-04-23T22:03:19.200573+00:00",
+    "card_status": "complete",
+    "size_class": "Frontier",
+    "thinking_probe_detected": true,
+    "thinking_probe_evidence": "reasoning_tokens=530 in provider metadata",
+    "thinking_probe_confidence": "medium",
+    "thinking_probe_at": "2026-04-25T09:32:21.175051+00:00"
+  },
+  {
+    "model_id": "z-ai_glm-5.1",
+    "display_name": "GLM 5.1",
+    "developer": "Zhipu AI",
+    "origin_country": "China",
+    "developer_jurisdiction": "CN",
+    "deployment_type": "open-weights-cloud-available",
+    "local_deployment_possible": true,
+    "weights_provenance_risk": "high",
+    "weights_provenance_risk_rationale": "Zhipu AI ist ein chinesisches Unternehmen und unterliegt dem chinesischen Nationalen Sicherheitsgesetz (NSL), das staatlichen Zugriff auf Daten und Modellgewichte ermöglichen kann.",
+    "model_family": "GLM",
+    "primary_focus": "general",
+    "summary": "GLM 5.1 ist ein chinesisches Sprachmodell von Zhipu AI, entwickelt auf Basis der GLM-Architektur. Es wurde auf mehrsprachigen Daten mit Fokus auf Chinesisch und Englisch trainiert. Stärken liegen in Instruktionsbefolgung, Dialogfähigkeit und allgemeinen Reasoning-Aufgaben. Ziel ist ein leistungsfähiges Open-Weights-Modell für breite Anwendungsfälle.",
+    "strengths": [
+      "Starke Leistung in chinesisch- und englischsprachigen Aufgaben",
+      "Gute Instruktionsbefolgung und Dialogkompetenz",
+      "Open-Weights-Verfügbarkeit ermöglicht lokalen Betrieb"
+    ],
+    "known_limitations": [
+      "Leistung in weniger verbreiteten Sprachen deutlich schwächer als in Chinesisch/Englisch",
+      "Mögliche Zensur oder Einschränkungen bei politisch sensiblen Themen mit China-Bezug"
+    ],
+    "judge_context_hint": "Das Modell kann bei politisch sensiblen Themen mit China-Bezug ausweichen oder eingeschränkte Antworten liefern; dies sollte bei der Bewertung von Offenheit und Vollständigkeit berücksichtigt werden.",
+    "architecture_tags": [
+      "General",
+      "Instruct"
+    ],
+    "unknown": true,
+    "generated_at": "2026-05-01T12:46:48.722615+00:00",
     "card_status": "complete",
     "size_class": "Frontier"
   }

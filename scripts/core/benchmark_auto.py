@@ -106,13 +106,18 @@ def get_existing_results(csv_path: Path, force: bool = False) -> Set[Tuple[str, 
                 required = {"model", "asset_id"}
                 if required.issubset(df.columns):
                     # Wir merken uns (Model, AssetID) als erledigt
+                    # Status-Werte die als "abgeschlossen" gelten und NICHT wiederholt werden:
+                    # success            — reguläres Ergebnis
+                    # language_mismatch  — Modell hat bewusst in falscher Sprache geantwortet (valides Ergebnis)
+                    # truncated          — Antwort wurde abgeschnitten (valides, bewertetes Ergebnis)
+                    # refusal            — Modell hat die Aufgabe verweigert (refusal_flag, kein Re-Run)
+                    # Nur technische Fehler (error, api_error, timeout) werden wiederholt.
+                    COMPLETED_STATUSES = {"success", "language_mismatch", "truncated", "refusal"}
                     for _, row in df.iterrows():
-                        # Wenn Status vorhanden, prüfen wir auf success
-                        # (Fehlgeschlagene Tests werden wiederholt)
                         if "status" in df.columns:
                             status = str(row.get("status", "")).lower()
-                            if status != "success":
-                                continue  # Skip failed tests (retry)
+                            if status not in COMPLETED_STATUSES:
+                                continue  # Technischer Fehler – wiederholen
 
                         cache.add((str(row["model"]), str(row["asset_id"])))
             except Exception as e:  # pylint: disable=broad-exception-caught
@@ -225,8 +230,12 @@ def _run_module_for_model(
     model: str,
     module: Dict[str, Any],
     existing_tests: Set[Tuple[str, str]],
-) -> None:
-    """Führt ein einzelnes Modul für ein einzelnes Modell aus."""
+) -> bool:
+    """Führt ein einzelnes Modul für ein einzelnes Modell aus.
+
+    Returns:
+        True wenn neue Ergebnisse gespeichert wurden, False sonst.
+    """
     assets_todo = _get_startable_assets(
         module=module, model=model, existing_tests=existing_tests
     )
@@ -240,7 +249,7 @@ def _run_module_for_model(
         if module.get("key") == "political_compass":
             msg += " [Batch-Mode Skip]"
         print(msg)
-        return
+        return False
 
     print(f"   📊 Bench: {module['name']} ({len(assets_todo)} neue Tests) ...")
 
@@ -249,16 +258,13 @@ def _run_module_for_model(
         results = runner.run_benchmark(provider="ollama", model=model, benchmark_info=module, assets=assets_todo)
         if results:
             runner.save_results(results)
-            # Modular behavior: Immediate trigger after save.
-            try:
-                gen_leaderboard(print_table=False)
-            except Exception as e:
-                print(f"   ⚠️ Modular Leaderboard update failed: {e}")
+            return True
     except KeyboardInterrupt:
         print("\n⛔  Abbruch durch Benutzer.")
         sys.exit(1)
     except Exception as e:  # pylint: disable=broad-exception-caught
         print(f"   ❌ Fehler: {e}")
+    return False
 
 
 def run_local_batch(
@@ -303,9 +309,14 @@ def run_local_batch(
 
     for i, model in enumerate(suitable_models, 1):
         print(f"\n➡️  MOD [Lokal {i}/{len(suitable_models)}]: {model}")
+        had_new_results = False
         for module in modules:
-            # Fix call validation (pylint sometimes confused by dynamic args if passed wrong)
-            _run_module_for_model(runner, model, module, existing_tests)
+            had_new_results |= _run_module_for_model(runner, model, module, existing_tests)
+        if had_new_results:
+            try:
+                gen_leaderboard(print_table=False)
+            except Exception as e:  # pylint: disable=broad-exception-caught
+                print(f"   ⚠️ Leaderboard-Update fehlgeschlagen: {e}")
 
 
 def run_commercial_batch(
@@ -365,7 +376,7 @@ def run_commercial_batch(
                 print("✅ OK")
                 accessible_providers[k] = v
             else:
-                print("❌ Fehlgeschlagen (Kein Zugriff/Budget). Überspringe.")
+                print("❌ Fehlgeschlagen (Auth/Budget/Netzwerk). Überspringe. (Details: make logs)")
         else:
             print(
                 f"   ⚠️  Provider '{k}' hat keinen dedizierten Client. Überspringe Check."
@@ -414,6 +425,7 @@ def run_commercial_batch(
             continue
 
         print(f"\n➡️  MOD [Comm {i}/{len(tasks)}]: {full_name}")
+        had_new_results = False
 
         for module in modules:
             if prov_key in quota_exhausted_providers:
@@ -447,16 +459,18 @@ def run_commercial_batch(
                         quota_exhausted_providers.add(prov_key)
 
                     runner.save_results(results)
-                    # Modular behavior: Immediate trigger after save.
-                    try:
-                        gen_leaderboard(print_table=False)
-                    except Exception as e:
-                        print(f"   ⚠️ Modular Leaderboard update failed: {e}")
+                    had_new_results = True
             except KeyboardInterrupt:
                 print("\n⛔  Abbruch durch Benutzer.")
                 sys.exit(1)
             except Exception as e:  # pylint: disable=broad-exception-caught
                 print(f"   ❌ Fehler: {e}")
+
+        if had_new_results:
+            try:
+                gen_leaderboard(print_table=False)
+            except Exception as e:  # pylint: disable=broad-exception-caught
+                print(f"   ⚠️ Leaderboard-Update fehlgeschlagen: {e}")
 
 
 def main():

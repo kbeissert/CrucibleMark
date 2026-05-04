@@ -28,5 +28,6 @@
   "unknown": false,
   "generated_at": "2026-04-23T22:04:04.739773+00:00",
   "card_status": "complete",
-  "size_class": "Frontier"
+  "size_class": "Frontier",
+  "supports_tool_use": true
 }
