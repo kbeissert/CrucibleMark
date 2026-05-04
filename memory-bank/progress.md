@@ -7,7 +7,21 @@
 - [DONE] empty_response_context im Report-Generator + meta_reviewer_prompt.yaml
 - [DONE] Provider-aware Card-Naming: 3-Regeln-System (`_safe_name`, `_card_path`, `_find_card`, `CARD_DIR`). 17 Orphan-Cards gelöscht. DEVELOPER_GUIDE.md + ARCHITECTURE.md vollständig dokumentiert.
 - [DONE] kimi-k2 Config-Bereinigung: `moonshotai/kimi-k2` (OR, 0711-Alias) als finaler Eintrag. `moonshotai/kimi-k2-instruct` (Groq) als Vergleichsbasis im Datenbestand. Provider-Delta OR vs. Groq messbar.
+- [DONE] v3.6.1: Lizenz-Metadaten in allen Cards; hf.co-Card-Lookup-Fallback (`raw_model_id`); Abliterated-Card Apache-2.0 korrigiert.
+- [DONE] v3.6.2: `vendor`-Feld in allen 72 Cards (13 Werte, 0 ungemappt). Web-Export 71/71. Leaderboard-Detailed `Vendor`-Spalte. Prompt + Schema-Template dokumentiert. Commit `ecdff77`.
 - [ ] moonshotai/kimi-k2-instruct (Groq) aus Config entfernen nach Providervergleich-Auswertung
+- [ ] Re-Run magistral-small: reasoning_logic, ux_writing, code_quality (FORCE=1)
+- [ ] Re-Run magistral-medium: reasoning_logic, ux_writing, documentation_quality (FORCE=1)
+- [ ] Re-Run minimax/minimax-m2.7: cli005 + ux_writing_005 (2 Zeilen gelöscht, Reasoning-Token-Fix aktiv — kein --force nötig)
+- [ ] Re-Run ct_003 / ct_004 / ux_005: 156 CSV-Zeilen + Audit-Logs gelöscht, Benchmark bereit (kein --force nötig)
+- [ ] Leaderboard-Rebuild + alle 52 Reviews neu generieren (nach Re-Run)
+- [ ] make benchmark-auto starten: PC-Re-Run (31 Modelle ohne gültigen Eintrag) + offene Cloud-Modelle
+- [ ] gpt-5.4-mini cultural_intel 108-Token-Anomalie: --force Re-Run prüfen
+- [ ] [BACKLOG] ct_005 Phase-2: Body-Word-Parser (Gesamtantwort-Split Analyse/Newsletter-Body, dann Wortanzahl-Check auf Body-Teil; 2.4 Pkt, fragile Extraktion — nicht zeitkritisch)
+- [DONE] PC-Leaderboard Bereinigung: 11 Modelle mit korrupten Koordinaten entfernt (20 verifizierte Einträge verbleiben). Skip-Lücke in execute_batch_module() geschlossen.
+- [DONE] Backup-Dateien löschen: bereits bereinigt (keine *.bak mehr vorhanden)
+- [ ] Phase 4: Finale E2E Systemtests und CI/CD Review
+- [ ] LLM Judge: Batch-Mode (Phase 3.5)
 - [ ] Re-Run magistral-small: reasoning_logic, ux_writing, code_quality (FORCE=1)
 - [ ] Re-Run magistral-medium: reasoning_logic, ux_writing, documentation_quality (FORCE=1)
 - [ ] Re-Run minimax/minimax-m2.7: cli005 + ux_writing_005 (2 Zeilen gelöscht, Reasoning-Token-Fix aktiv — kein --force nötig)

@@ -1,12 +1,27 @@
 # PROJECT_STATUS.md
 
 **Last Updated:** 2026-05-04
-**Current Version:** 3.6.0 (model_id SSOT, benchmark-auto Fix, supports_tool_use, 3 Grok-Modelle)
+**Current Version:** 3.6.2 (`vendor`-Feld, Lizenz-Metadaten, hf.co-Card-Lookup-Bugfix)
 **Status:** ✅ Production-Ready
 
 ---
 
 ## Executive Summary
+
+CrucibleMark v3.6.2 führt das `vendor`-Feld als Filterdimension für den UI-Familienfilter ein. Alle 72 Model Cards wurden mit einem normalisierten Hersteller-Namen gepatcht (13 Werte, 0 ungemappte Modelle). `web_export.py` exportiert `vendor` als Top-Level-Feld (analog zu `size_class`), `benchmark_leaderboard_detailed.csv` enthält eine neue `Vendor`-Spalte. Zusätzlich (v3.6.1): Lizenz-Metadaten (`license`, `license_url`, `commercial_use_allowed`) in allen Cards; hf.co-Modell-Card-Lookup-Fallback in `web_export.py`; Abliterated-Card-Korrektur (Apache-2.0). (Commits `5241532`, `7551b31`, `ecdff77`)
+
+**Key Achievements (v3.6.2):**
+- ✅ **72 Model Cards — `vendor`-Feld:** 13 Werte; `scripts/dev/add_vendor_field.py` idempotent; 0 ungemappte Modelle.
+- ✅ **`scripts/web_export.py` — `vendor` Top-Level:** 71/71 Modelle mit `vendor` im Export.
+- ✅ **`scripts/leaderboard/exporter.py` — `Vendor`-Spalte:** Vor `Size Class` in `benchmark_leaderboard_detailed.csv`.
+- ✅ **`scripts/analysis/generate_model_cards.py` — `vendor` im Prompt:** Vollständige Werteliste für LLM-generierte Cards.
+- ✅ **`benchmark_modules/MODULE_SCHEMA_TEMPLATE.yaml`:** `vendor` mit Wertebereich dokumentiert.
+
+**Vorherige Version (v3.6.1 – Lizenz-Metadaten, hf.co-Lookup-Fix):**
+
+CrucibleMark v3.6.1 ergänzt Lizenz-Transparenz: Alle 69 Cards haben `license`, `license_url` und `commercial_use_allowed`; `web_export.py` gibt diese Felder im `model_card`-Subobject aus. Ein Lookup-Bug für hf.co-Modelle (CSV-Name ≠ Card-Dateiname) wurde durch einen Fallback auf `raw_model_id` behoben — 69/69 Modelle vollständig.
+
+**Vorherige Version (v3.6.0 – model_id SSOT, benchmark-auto Fix, supports_tool_use, 3 Grok-Modelle):**
 
 CrucibleMark v3.6.0 schließt drei strukturelle Lücken: (1) **`model_id`-SSOT im Web-Export:** `benchmark_leaderboard_detailed.csv` enthält jetzt eine `model_id`-Spalte (rohe Config-ID). `web_export.py` nutzt diese direkt für den Verzeichnis-Lookup — identische Transformation wie `benchmark_utils.py`. Zwei explizite Fallbacks decken historische Daten ab. 69/69 Modelle vollständig (Report + Review + PC). (2) **benchmark-auto Retry-Logik:** `language_mismatch`, `truncated` und `refusal` werden nicht mehr als technische Fehler retried (`COMPLETED_STATUSES`-Set). (3) **P95-Akkumulations-Bug:** Regex in `benchmark_utils.py` konsumiert bestehende Suffixe — 154 Audit-Logs bereinigt. Außerdem: `supports_tool_use`-Feld in alle 77 Model Cards migriert; 3 neue xAI-Modelle (grok-4.3, grok-4.20-0309-non/reasoning) in Config + Preisliste eingetragen. (1 Commit, c321f53)
 

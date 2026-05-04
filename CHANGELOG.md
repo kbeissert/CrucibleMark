@@ -4,6 +4,17 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [v3.6.2] - 2026-05-04
+
+### Added
+- **`vendor`-Feld in allen 72 Model Cards:** Normalisierter Hersteller-Name als neues Card-Pflichtfeld für den UI-Filter „Familie". 13 Werte: `Anthropic`, `OpenAI`, `Google`, `Mistral AI`, `xAI`, `DeepSeek`, `Meta`, `NousResearch`, `Zhipu AI`, `Moonshot AI`, `MiniMax`, `Alibaba`, `Community`. `Community` = abliterated/fine-tuned Derivate ohne eigenständigen Hersteller. Migrations-Script: `scripts/dev/add_vendor_field.py` (idempotent, 0 ungemappte Modelle).
+- **`scripts/web_export.py` — `vendor` als Top-Level-Feld:** `vendor` steht wie `size_class` und `badge` auf der Top-Level-Ebene des JSON-Eintrags (Filterkriterium, nicht Card-Detail). 71/71 Modelle mit `vendor` im Export.
+- **`scripts/leaderboard/exporter.py` — `Vendor`-Spalte:** Neue Spalte in `benchmark_leaderboard_detailed.csv` vor `Size Class`. Wert wird zur Export-Zeit aus der Model Card gelesen; kein zusätzlicher State in der Leaderboard-Pipeline.
+- **`scripts/analysis/generate_model_cards.py` — `vendor` im Prompt-Template:** Neues Feld im JSON-Schema mit vollständiger Werteliste für LLM-generierte Cards.
+- **`benchmark_modules/MODULE_SCHEMA_TEMPLATE.yaml` — `vendor` im Kommentarblock:** Alle 13 gültigen Werte + Verweis auf Migrations-Script dokumentiert.
+
+---
+
 ## [v3.6.1] - 2026-05-04
 
 ### Added
