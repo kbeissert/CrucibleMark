@@ -1,12 +1,25 @@
 # PROJECT_STATUS.md
 
-**Last Updated:** 2026-04-24
-**Current Version:** 3.5.9 (size_class Card-Lookup, empty_response_context, Model-Card-Korrekturen)
+**Last Updated:** 2026-05-04
+**Current Version:** 3.6.0 (model_id SSOT, benchmark-auto Fix, supports_tool_use, 3 Grok-Modelle)
 **Status:** ✅ Production-Ready
 
 ---
 
 ## Executive Summary
+
+CrucibleMark v3.6.0 schließt drei strukturelle Lücken: (1) **`model_id`-SSOT im Web-Export:** `benchmark_leaderboard_detailed.csv` enthält jetzt eine `model_id`-Spalte (rohe Config-ID). `web_export.py` nutzt diese direkt für den Verzeichnis-Lookup — identische Transformation wie `benchmark_utils.py`. Zwei explizite Fallbacks decken historische Daten ab. 69/69 Modelle vollständig (Report + Review + PC). (2) **benchmark-auto Retry-Logik:** `language_mismatch`, `truncated` und `refusal` werden nicht mehr als technische Fehler retried (`COMPLETED_STATUSES`-Set). (3) **P95-Akkumulations-Bug:** Regex in `benchmark_utils.py` konsumiert bestehende Suffixe — 154 Audit-Logs bereinigt. Außerdem: `supports_tool_use`-Feld in alle 77 Model Cards migriert; 3 neue xAI-Modelle (grok-4.3, grok-4.20-0309-non/reasoning) in Config + Preisliste eingetragen. (1 Commit, c321f53)
+
+**Key Achievements (v3.6.0):**
+- ✅ **`scripts/leaderboard/exporter.py` — `model_id`-Spalte:** Rohe Config-ID als SSOT in `benchmark_leaderboard_detailed.csv` exportiert.
+- ✅ **`scripts/web_export.py` — Dir-Lookup via `model_id`:** Kein Raten aus Display-Namen mehr. Fallback 1: Date-Suffix-Strip (historische Reviews ohne Versionssuffix). Fallback 2: Suffix-Match (Dirs ohne Provider-Präfix). Coverage: 69/69 ✅
+- ✅ **`scripts/core/benchmark_auto.py` — `COMPLETED_STATUSES`:** `{success, language_mismatch, truncated, refusal}` — nur echte technische Fehler werden wiederholt.
+- ✅ **`utils/benchmark_utils.py` — P95-Regex:** `r"(\*\*Execution Time:\*\* [\d.]+ s)(?:\s*\(Modul-P95: [\d.]+ s\))*"` — Akkumulation behoben. 154 Dateien bereinigt.
+- ✅ **`supports_tool_use`** in allen 77 Model Cards (72× true, 5× false). `generate_model_cards.py` + `generate_model_cards.py` Prompt aktualisiert.
+- ✅ **3 neue Grok-Modelle:** `grok-4.3`, `grok-4.20-0309-non-reasoning`, `grok-4.20-0309-reasoning` in `benchmark_config.yaml` + `config/cost_limits.yaml`.
+- ✅ **Docs:** `ARCHITECTURE.md`, `USER_GUIDE.md`, `systemPatterns.md` mit model_id-SSOT aktualisiert.
+
+**Vorherige Version (v3.5.9 – size_class Card-Lookup, empty_response_context, Model-Card-Korrekturen):**
 
 CrucibleMark v3.5.9 verbessert die Datenqualität auf drei Ebenen: (1) Die **Size-Class-Klassifikation** ist jetzt Card-First: `get_model_size_class()` liest `size_class` zuerst aus der JSON-Model-Card (SSoT für Overrides), dann per Colon-Tag-Regex (Ollama) und zuletzt per Dash/Dot-Suffix-Regex auf dem Modellnamen. Das Leaderboard weist damit korrekt 7 Desktop-Modelle aus statt vorher 3. Neue Hilfsfunktionen: `_param_b_to_size_class()` und das Sentinel-Set `_SIZE_CLASS_VALID`. (2) **`empty_response_context`** im Report-Generator: `generate_review.py` erkennt Assets mit `response_length=0` (lautlose Content-Policy-Verweigerung) und liefert die betroffenen Asset-IDs als strukturierten Kontext an den Meta-Reviewer, der sie im jeweiligen Modul-Abschnitt des Reviews dokumentiert. (3) **`generate_model_cards.py`** setzt `size_class` automatisch beim Generieren jeder neuen Card. 6 fehlklassifizierte Model-Cards manuell korrigiert; Slug-Mismatch bei `CognitiveComputations/dolphin-mistral-nemo:latest` behoben. (5 Commits, aac7315…75c0cb1)
 

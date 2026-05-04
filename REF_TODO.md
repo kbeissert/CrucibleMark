@@ -5,6 +5,15 @@
 
 ## Abgeschlossen
 
+### model_id SSOT, benchmark-auto Fix, supports_tool_use, 3 Grok-Modelle (v3.6.0 – 04.05.26)
+- [x] **`scripts/leaderboard/exporter.py` — `model_id`-Spalte:** Rohe Config-ID in `benchmark_leaderboard_detailed.csv` als SSOT.
+- [x] **`scripts/web_export.py` — Dir-Lookup via `model_id`:** Fallback 1: Date-Suffix-Strip. Fallback 2: Suffix-Match. 69/69 Coverage.
+- [x] **`scripts/core/benchmark_auto.py` — `COMPLETED_STATUSES`:** `language_mismatch`/`truncated`/`refusal` nicht mehr retried.
+- [x] **`utils/benchmark_utils.py` — P95-Akkumulation:** Regex-Fix. 154 Dateien bereinigt.
+- [x] **`supports_tool_use`** in 77 Model Cards migriert. Prompt-Dokumentation aktualisiert.
+- [x] **3 neue Grok-Modelle** in `benchmark_config.yaml` + `cost_limits.yaml`.
+- [x] **Docs:** `ARCHITECTURE.md`, `USER_GUIDE.md`, `systemPatterns.md`, `PROJECT_STATUS.md`, `CHANGELOG.md`, `README.md` synchronisiert.
+
 ### size_class Card-Lookup, empty_response_context, Model-Card-Korrekturen (v3.5.9 – 24.04.26)
 - [x] **`utils/model_utils.py` — `get_model_size_class()` Priority-Kaskade:** (1) Card-Lookup SSoT → (2) Ollama-Colon-Tag case-insensitive → (3) Dash/Dot-Suffix-Regex → Fallback `"Frontier"`. Hilfsfunktionen `_param_b_to_size_class()` + `_SIZE_CLASS_VALID`. Leaderboard: Nano=5, Edge=5, Desktop=7, Workstation=4, Server=1, Frontier=40.
 - [x] **`scripts/analysis/generate_review.py` — `_build_empty_response_context()`:** Liest alle 3 Benchmark-CSVs, filtert `response_length=0 + status=success`, liefert Asset-IDs als Kontext-Block an Meta-Reviewer. Nur aktiv für `review_type == "benchmark"`.

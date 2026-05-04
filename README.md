@@ -1,6 +1,6 @@
 # CrucibleMark
 
-[![Version](https://img.shields.io/badge/version-3.5.9-blue)](.)
+[![Version](https://img.shields.io/badge/version-3.6.0-blue)](.)
 [![Python](https://img.shields.io/badge/python-3.10%2B-blue)](.)
 [![License](https://img.shields.io/badge/license-MIT-green)](.)
 [![Status](https://img.shields.io/badge/status-production--ready-brightgreen)](.)
@@ -142,4 +142,4 @@ Tiefergehende Einblicke in die Methodik findest du im `docs/` Verzeichnis:
 
 - **Maintainer:** kbeissert
 - **Repository:** [github.com/kbeissert/cruciblemark](https://github.com/kbeissert/cruciblemark)
-- **Status:** ✅ Production-Ready (v3.5.9)
+- **Status:** ✅ Production-Ready (v3.6.0)

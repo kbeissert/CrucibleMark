@@ -4,6 +4,27 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [v3.6.0] - 2026-05-04
+
+### Added
+- **`scripts/leaderboard/exporter.py` — `model_id`-Spalte in Detailed-CSV:** Rohe Config-ID (z. B. `moonshotai/kimi-k2-thinking-20251106`) als neues SSOT-Feld in `benchmark_leaderboard_detailed.csv`. Downstream-Tools (insb. `web_export.py`) lesen diese Spalte direkt — kein Raten aus Display-Namen mehr.
+- **`benchmark_config.yaml` + `config/cost_limits.yaml` — 3 neue xAI-Modelle:** `grok-4.3`, `grok-4.20-0309-non-reasoning`, `grok-4.20-0309-reasoning` mit verifizierten Preisen ($1.25/$2.50 per 1M Tokens, docs.x.ai Mai 2026).
+- **`supports_tool_use`-Feld in allen 77 Model Cards:** Migrationsscript `scripts/dev/patch_tool_use.py` gepatcht alle bestehenden Cards (72× `true`, 5× `false`). `generate_model_cards.py`-Prompt dokumentiert das Feld inkl. Faustregel.
+
+### Changed
+- **`scripts/web_export.py` — Dir-Lookup via `model_id` (SSOT):** `_resolve_dir()` nutzt den `model_id`-Slug (`model_id.replace('/', '_')` + `slugify`) statt den transformierten Display-Namen. Zwei explizite Fallbacks für historische Daten: (1) Date-Suffix-Strip (`-\d{4,8}$`) für Reviews die vor Versionssuffix-Einführung angelegt wurden; (2) Suffix-Match für Dirs ohne Provider-Präfix. Coverage: 69/69 Modelle vollständig.
+- **`docs/ARCHITECTURE.md`, `docs/USER_GUIDE.md`, `memory-bank/systemPatterns.md`:** model_id-SSOT dokumentiert; Verzeichnis-Auflösungslogik beschrieben.
+
+### Fixed
+- **`scripts/core/benchmark_auto.py` — Retry-Logik:** `COMPLETED_STATUSES = {"success", "language_mismatch", "truncated", "refusal"}` — nur echte technische Fehler (`error`, `timeout` etc.) lösen einen Re-Run aus. Vorher wurden 89× `language_mismatch` + 8× `truncated` + 2× `refusal` bei jedem `benchmark-auto`-Lauf neu ausgeführt → neue Audit-mtime → kaskadierend 30 unnötige Reviews.
+- **`utils/benchmark_utils.py` — P95-Akkumulation:** Regex `r"(\*\*Execution Time:\*\* [\d.]+ s)(?:\s*\(Modul-P95: [\d.]+ s\))*"` konsumiert jetzt alle vorhandenen Suffixe bevor ein neuer geschrieben wird. 154 bestehende Audit-Log-Dateien bereinigt.
+
+### Data
+- 33 neue/aktualisierte Reviews (inkl. `deepseek-v4-flash`, `deepseek-v4-pro`, `kimi-k2.6`).
+- Neue Model Cards: `deepseek_deepseek-v4-flash`, `deepseek_deepseek-v4-pro`, `moonshotai_kimi-k2_5`, `moonshotai_kimi-k2_6`, `z-ai_glm-4_6`, `z-ai_glm-4_7`, `z-ai_glm-5`, `z-ai_glm-5_1`, `z-ai_glm-5-turbo`, `nousresearch_hermes-4-70b`, `nousresearch_hermes-4-405b`.
+
+---
+
 ## [v3.5.9] - 2026-04-24
 
 ### Added

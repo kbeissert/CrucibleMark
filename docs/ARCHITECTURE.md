@@ -646,5 +646,5 @@ class LLMClientFactory:
 
 ---
 
-**Dokumenten-Version:** 3.5.9 (Überarbeitung April 2026)\
-**Kompatibel mit:** CrucibleMark v3.5.9+
+**Dokumenten-Version:** 3.6.0 (Überarbeitung Mai 2026)\
+**Kompatibel mit:** CrucibleMark v3.6.0+
