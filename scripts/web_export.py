@@ -474,6 +474,8 @@ def main() -> None:
         if card is None and raw_model_id and raw_model_id != "nan":
             card = load_model_card(raw_model_id, root_dir)
 
+        vendor = card.get("vendor") if card else None
+
         # Derive thinking_mode from architecture_tags for frontend filtering:
         # "thinking"  → always-on reasoning (DeepSeek-R1, o1/o3/o4, Magistral, Kimi K2 Thinking)
         # "partial"   → optional reasoning / Thinking-Optional (Gemini 2.5, Claude 3.5+, Qwen3, …)
@@ -490,6 +492,7 @@ def main() -> None:
         entry = {
             "slug": slug,
             "model_name": model_name,
+            "vendor": vendor,
             "version": extract_version(row.get("Version")),
             "badge": str(row.get("Badge", "")),
             "badge_tier": extract_badge_tier(row.get("Badge")),

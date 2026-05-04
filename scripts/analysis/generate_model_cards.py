@@ -69,6 +69,7 @@ JSON-Schema (alle Felder Pflicht):
   "weights_provenance_risk_rationale": "1 Satz: Warum dieser Wert? Nur Weights-Herkunft, kein Deployment.",
 
   "model_family": "Modell-Familie (z.B. 'Qwen', 'Claude', 'Mistral', 'Gemma')",
+  "vendor": "Normalisierter Hersteller-Name für den UI-Filter 'Familie'. Einen dieser Werte: 'Anthropic' | 'OpenAI' | 'Google' | 'Mistral AI' | 'xAI' | 'DeepSeek' | 'Meta' | 'NousResearch' | 'Zhipu AI' | 'Moonshot AI' | 'MiniMax' | 'Alibaba' | 'Community'. Community = abliterated/fine-tuned Derivate ohne eigenen Hersteller.",
   "primary_focus": "Einen dieser Werte: 'reasoning' | 'coding' | 'instruction-following' | 'multilingual' | 'general' | 'creative'",
 
   "summary": "Exakt 280-320 Zeichen. Fließtext. Nennt: Herkunft, Trainings-Schwerpunkt, typische Stärken, und warum das Modell entwickelt wurde. Kein Marketing-Sprech.",

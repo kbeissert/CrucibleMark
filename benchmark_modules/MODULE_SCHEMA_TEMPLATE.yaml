@@ -28,6 +28,11 @@ metadata:
 #   license_url: "https://..."      # Link zur Lizenzdokumentation (null wenn unbekannt)
 #   commercial_use_allowed: true    # true = explizit erlaubt | false = verboten | null = eingeschränkt/unklar
 #   deployment_type: "open-weights" # open-weights | open-weights-cloud-available | cloud-only
+#   vendor: "Mistral AI"           # Normalisierter Hersteller für UI-Filter "Familie".
+#                                   # Werte: Anthropic | OpenAI | Google | Mistral AI | xAI |
+#                                   #        DeepSeek | Meta | NousResearch | Zhipu AI |
+#                                   #        Moonshot AI | MiniMax | Alibaba | Community
+#                                   # Migrations-Script: scripts/dev/add_vendor_field.py
 #   local_deployment_possible: true # Ob Selbst-Hosting technisch möglich ist
 
 integration:

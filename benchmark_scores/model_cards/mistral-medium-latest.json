@@ -36,5 +36,6 @@
   "supports_tool_use": true,
   "license": "Proprietary",
   "license_url": null,
-  "commercial_use_allowed": true
+  "commercial_use_allowed": true,
+  "vendor": "Mistral AI"
 }

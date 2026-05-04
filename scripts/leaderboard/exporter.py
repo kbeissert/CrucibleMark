@@ -153,6 +153,36 @@ def export_leaderboard_detailed(leaderboard: pd.DataFrame, cat_cols: List[str]) 
     if "model" in df_export.columns:
         df_export["model_id"] = df_export["model"]
 
+    # Vendor field: read from model card (SSoT) via model_id lookup
+    _cards_dir = OUTPUT_CSV.parent.parent / "benchmark_scores" / "model_cards"
+    _vendor_map: dict[str, str] = {}
+    if _cards_dir.exists():
+        import json as _json
+        import re as _re
+        for _cf in _cards_dir.glob("*.json"):
+            if _cf.name == "_index.json":
+                continue
+            try:
+                _cd = _json.loads(_cf.read_text(encoding="utf-8"))
+                _mid = _cd.get("model_id", "")
+                _v = _cd.get("vendor")
+                if _mid and _v:
+                    _vendor_map[_mid] = _v
+            except Exception:
+                pass
+
+    def _lookup_vendor(raw_mid: str) -> str:
+        if raw_mid in _vendor_map:
+            return _vendor_map[raw_mid]
+        # Fallback: strip date suffix
+        stripped = _re.sub(r"-\d{4,8}$", "", raw_mid)
+        return _vendor_map.get(stripped, "")
+
+    if "model_id" in df_export.columns:
+        df_export["Vendor"] = df_export["model_id"].apply(
+            lambda x: _lookup_vendor(str(x)) if pd.notna(x) else ""
+        )
+
     cols = [
         "Rank",
         "Model Name",
@@ -177,6 +207,7 @@ def export_leaderboard_detailed(leaderboard: pd.DataFrame, cat_cols: List[str]) 
         "LLM Judge Coverage",
         "Routine Score",
         "Reasoning Score",
+        "Vendor",
         "Size Class",
         "Type",
     ]
