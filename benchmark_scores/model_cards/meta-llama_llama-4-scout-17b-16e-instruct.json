@@ -29,5 +29,8 @@
   "generated_at": "2026-04-23T22:02:51.147355+00:00",
   "card_status": "complete",
   "size_class": "Desktop",
-  "supports_tool_use": true
+  "supports_tool_use": true,
+  "license": "Meta Llama Community License",
+  "license_url": "https://www.llama.com/llama4/license/",
+  "commercial_use_allowed": null
 }

@@ -4,6 +4,26 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [v3.6.1] - 2026-05-04
+
+### Added
+- **Lizenz-Metadaten in allen Model Cards:** Felder `license` (SPDX-ID), `license_url` und `commercial_use_allowed` (`true`/`false`/`null`) in alle 69 Model Cards eingetragen. `commercial_use_allowed: null` = skalenabhängig oder lizenzrechtlich unklar (Meta Llama, Gemma, Moonshot). Migrationsscript: `scripts/dev/add_license_fields.py`.
+- **`benchmark_modules/MODULE_SCHEMA_TEMPLATE.yaml` — `model_card`-Kommentarblock:** Doku der Lizenz-Felder mit SPDX-Konvention und Wertebereich von `commercial_use_allowed` direkt im Schema-Template.
+- **`README.md` — Kernziel-Absatz:** Explizite Formulierung des Benchmark-Kernziels: selbstgehostete Open-Weights-Modelle vs. proprietäre Cloud-Modelle, datenschutzkonforme Alternativen, und Lizenzfreiheit (Apache 2.0 / MIT vs. kommerzielle Beschränkungen).
+- **`docs/ARCHITECTURE.md` — Lizenz-Metadaten-Abschnitt:** Beschreibung der neuen Card-Felder und ihrer Rolle für den Deployment-Vergleich.
+
+### Changed
+- **`Makefile` — `backup`-Target:** `benchmark_config.yaml` ergänzt in der `tar`-Zeile. Die Datei ist in `.gitignore` und wurde bisher nicht gesichert — bei Workspace-Verlust wäre sie unwiederbringlich weg.
+- **GLM-5-Serie — `deployment_type` korrigiert:** `z-ai/glm-5-20260211`, `z-ai/glm-5-turbo-20260315`, `z-ai/glm-5.1-20260406` auf `cloud-only` gesetzt (Zhipu AI veröffentlicht für GLM-5 keine Gewichte; GLM-4.x bleibt korrekt `open-weights`).
+
+### Removed
+- **8 Duplikat-Model-Cards (alte Underscore-Konvention):** `z-ai_glm-5.json`, `z-ai_glm-5-turbo.json`, `z-ai_glm-5_1.json`, `moonshotai_kimi-k2_5.json`, `minimax_minimax-m2_7.json`, `CognitiveComputations_dolphin-mistral-nemo_latest.json`, `NousResearch_Hermes-4-14B-GGUF_Q4_K_M.json`, `Ministral-3-14B-abliterated-GGUF_Q8_0.json`. Aktive IDs verwenden die Slash-Konvention (`provider/model`) — versioned Cards (`-YYYYMMDD`) sind SSoT.
+
+### Data
+- `moonshotai/kimi-k2.6`: Benchmark-Run durchgeführt, Card aktualisiert.
+
+---
+
 ## [v3.6.0] - 2026-05-04
 
 ### Added

@@ -273,7 +273,7 @@ clean-bak:
 backup:
 	@echo "Creating full backup..."
 	@mkdir -p backups
-	@tar --exclude='__pycache__' --exclude='.DS_Store' --exclude='*.bak_*' -czf backups/cruciblemark_backup_$(shell date +%Y%m%d_%H%M%S).tar.gz benchmark_scores/ outputs/ benchmark_modules/ docs/reviews/ docs/audits/ config/ memory-bank/
+	@tar --exclude='__pycache__' --exclude='.DS_Store' --exclude='*.bak_*' -czf backups/cruciblemark_backup_$(shell date +%Y%m%d_%H%M%S).tar.gz benchmark_scores/ outputs/ benchmark_modules/ docs/reviews/ docs/audits/ config/ memory-bank/ benchmark_config.yaml
 	@echo "Backup created."
 	@$(MAKE) clean-runs FORCE=1
 	@$(MAKE) consolidate-csv

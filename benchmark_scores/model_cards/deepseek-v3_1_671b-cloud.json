@@ -33,5 +33,8 @@
   "thinking_probe_evidence": "No CoT signals found (A: no think-tags, B: reasoning_tokens=0). Response length: 556 chars",
   "thinking_probe_confidence": "low",
   "thinking_probe_at": "2026-05-01T10:46:34.460236+00:00",
-  "supports_tool_use": true
+  "supports_tool_use": true,
+  "license": "DeepSeek License",
+  "license_url": "https://github.com/deepseek-ai/DeepSeek-V3/blob/main/LICENSE",
+  "commercial_use_allowed": null
 }

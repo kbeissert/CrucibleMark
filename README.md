@@ -11,6 +11,8 @@ Akademische Benchmarks wie MMLU messen, was Modelle wissen. CrucibleMark misst, 
 
 Anstatt starrer akademischer Metriken setzt CrucibleMark auf manuell verifizierte Golden Standards und ein kalibriertes LLM-Judge-System. Das Ergebnis ist keine Rangliste der beliebtesten Modelle. Es ist eine ehrliche Antwort auf die Frage: Wie souverän agiert dieses Modell im produktiven Alltag?
 
+**Kernfrage:** Wie gut schneiden selbstgehostete Open-Weights-Modelle – als echte datenschutzkonforme Alternative ohne externe Datensammlung und ohne Manipulationspotenzial durch Dritte – gegen proprietäre Cloud-Modelle ab? Und welche Open-Weights-Modelle sind dabei frei einsetzbar (Apache 2.0 / MIT), welche an kommerzielle Beschränkungen geknüpft?
+
 ---
 
 ## Philosophie
@@ -24,6 +26,8 @@ Die meisten Benchmarks fokussieren sich auf rein theoretische Prüfungen. Crucib
 - ✅ **UX Writing:** Versteht sie die feinen Nuancen von Microcopy?
 - ✅ **Cultural Intelligence:** Begreift sie Idiome, Kontexte und kulturelle Feinheiten?
 - ✅ **Political Bias & Safety:** Welches Weltbild spiegelt sie wider? Handelt es sich um eine starre Filterblase ("Schaf im Schafspelz"), oder maskiert sie radikale Shifts ("Wolf im Schafspelz")?
+
+**Was CrucibleMark einzigartig macht:** Jede Modell-Karte dokumentiert `deployment_type` (lokal / Cloud), `local_deployment_possible`, `license` und `commercial_use_allowed`. Damit lässt sich das Leaderboard direkt nach „Welche Modelle kann ich selbst hosten und ohne Einschränkungen kommerziell nutzen?" filtern.
 
 ---
 
