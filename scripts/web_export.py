@@ -548,6 +548,9 @@ def main() -> None:
                 "strengths": card.get("strengths"),
                 "known_limitations": card.get("known_limitations"),
                 "card_status": card.get("card_status"),
+                "license": card.get("license"),
+                "license_url": card.get("license_url"),
+                "commercial_use_allowed": card.get("commercial_use_allowed"),
             } if card else None,
         }
         models_list.append(entry)
