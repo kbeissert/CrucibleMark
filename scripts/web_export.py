@@ -468,7 +468,11 @@ def main() -> None:
         if has_review: models_with_reviews += 1
 
         # Load model card (ThinkingProbe, architecture_tags, developer info, …)
+        # Fallback: hf.co-Modelle haben im CSV nur den Kurznamen (ohne "hf.co/org/" Präfix)
+        # aber der Card-Dateiname enthält das vollständige Präfix → raw_model_id probieren
         card = load_model_card(model_name, root_dir)
+        if card is None and raw_model_id and raw_model_id != "nan":
+            card = load_model_card(raw_model_id, root_dir)
 
         # Derive thinking_mode from architecture_tags for frontend filtering:
         # "thinking"  → always-on reasoning (DeepSeek-R1, o1/o3/o4, Magistral, Kimi K2 Thinking)
