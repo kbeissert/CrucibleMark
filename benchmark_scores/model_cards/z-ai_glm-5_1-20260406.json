@@ -28,5 +28,10 @@
   "unknown": true,
   "generated_at": "2026-04-23T22:03:19.200573+00:00",
   "card_status": "complete",
-  "size_class": "Frontier"
+  "size_class": "Frontier",
+  "thinking_probe_detected": true,
+  "thinking_probe_evidence": "reasoning_tokens=530 in provider metadata",
+  "thinking_probe_confidence": "medium",
+  "thinking_probe_at": "2026-04-25T09:32:21.175051+00:00",
+  "supports_tool_use": true
 }

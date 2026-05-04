@@ -28,5 +28,6 @@
   "unknown": false,
   "generated_at": "2026-04-23T22:08:46.451753+00:00",
   "card_status": "complete",
-  "size_class": "Desktop"
+  "size_class": "Desktop",
+  "supports_tool_use": true
 }

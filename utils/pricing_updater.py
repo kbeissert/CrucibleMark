@@ -92,6 +92,9 @@ LITELLM_MODEL_MAP: Dict[str, str] = {
     "gemini-2.5-pro": "gemini/gemini-2.5-pro",
     "gemini-2.5-flash": "gemini/gemini-2.5-flash",
     "gemini-2.5-flash-lite": "gemini/gemini-2.5-flash-lite",
+    # --- Z.ai GLM (via OpenRouter) ---
+    "z-ai/glm-4.6": "openrouter/z-ai/glm-4.6",
+    "z-ai/glm-4.7": "openrouter/z-ai/glm-4.7",
 }
 
 

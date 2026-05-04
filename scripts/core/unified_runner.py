@@ -87,7 +87,8 @@ class UnifiedBenchmarkRunner(BaseBenchmarkRunner):
           1. Card vorhanden + thinking_probe_detected gesetzt  → direkt weiter
           2. Card vorhanden, Feld fehlt                        → Probe, Card-Update
           3. Keine Card                                        → Probe, Minimal-Card erstellen
-          4. Probe schlägt fehl                                → RuntimeError (Abbruch)
+          4. Probe-Fehler 429/403                             → clean Warning, Modell in _probed_models, Benchmark läuft weiter
+          5. Probe-Fehler (sonstiger)                         → clean Warning, Modell in _probed_models, Benchmark läuft weiter
         """
         if model in self._probed_models:
             return
@@ -132,8 +133,20 @@ class UnifiedBenchmarkRunner(BaseBenchmarkRunner):
             return
 
         # Probe ausführen (wirft RuntimeError bei API-Fehler)
-        print(f"🔍 Thinking-Probe für '{model}' …")
-        probe = probe_thinking_model(model, provider, self.validator.config)  # raises on failure
+        print(f"🔍 Reasoning-Erkennung für '{model}' …")
+        try:
+            probe = probe_thinking_model(model, provider, self.validator.config)
+        except RuntimeError as probe_err:
+            err_str = str(probe_err)
+            if "429" in err_str or "usage limit" in err_str or "rate limit" in err_str.lower():
+                print(f"   ⚠️  Wochenlimit erschöpft — Reasoning-Erkennung übersprungen, Benchmark läuft weiter.")
+            elif "403" in err_str or "subscription" in err_str.lower():
+                print(f"   ⚠️  Subscription erforderlich — Reasoning-Erkennung übersprungen, Benchmark läuft weiter.")
+            else:
+                print(f"   ⚠️  Reasoning-Erkennung fehlgeschlagen — Benchmark läuft weiter.")
+            logger.warning("[Card-First] ThinkingProbe für '%s' übersprungen: %s", model, probe_err)
+            self._probed_models.add(model)
+            return
         print(
             f"   → detected={probe.detected} (confidence={probe.confidence})"
         )

@@ -249,7 +249,16 @@ def main(print_table: bool = True) -> Optional[pd.DataFrame]:
 
     # Provider Code: derived from the raw 'provider' column carried through from CSV data
     if "provider" in leaderboard.columns:
-        leaderboard["Provider Code"] = leaderboard["provider"].apply(get_provider_shortcode)
+        from utils.model_utils import is_cloud_model as _is_cloud_model
+
+        def _provider_code(row: pd.Series) -> str:
+            code = get_provider_shortcode(str(row.get("provider", "")))
+            # Ollama acting as cloud proxy → use CLD instead of LCL
+            if code == "LCL" and _is_cloud_model(str(row.get("model", ""))):
+                return "CLD"
+            return code
+
+        leaderboard["Provider Code"] = leaderboard.apply(_provider_code, axis=1)
     else:
         leaderboard["Provider Code"] = "k.A."
 

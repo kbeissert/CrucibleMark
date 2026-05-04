@@ -1,0 +1,38 @@
+{
+  "provider_id": "unknown",
+  "display_name": "Unknown",
+  "company": "Unknown",
+  "origin_country": "Unknown",
+  "headquarters": "Unknown",
+  "founding_year": 0,
+  "developer_jurisdiction": "Unknown",
+  "pricing_model": "pay-per-token",
+  "api_base_url": null,
+  "deployment": {
+    "cloud_act_exposure": "false",
+    "applicable_law": "Unknown",
+    "data_residency": "Unknown",
+    "gdpr_dpa_available": "unknown",
+    "eu_adequacy_decision": "unknown",
+    "data_retention_days": -1,
+    "chinese_nsl_risk": "none"
+  },
+  "summary": "Zu diesem Provider liegen keine gesicherten Informationen vor. Herkunft, Unternehmensstruktur, Geschäftsmodell und Datenschutzpraktiken sind unbekannt. Eine verlässliche Einschätzung hinsichtlich Compliance, Datenschutz oder technischer Leistungsfähigkeit ist derzeit nicht möglich.",
+  "privacy_note": "Da keine Informationen über Unternehmensstruktur, Rechtsgrundlage oder Datenverarbeitung vorliegen, ist das Datenschutzrisiko bei API-Nutzung nicht einschätzbar. Europäische Nutzer sollten diesen Provider bis zur Klärung nicht für personenbezogene Daten verwenden.",
+  "strengths": [
+    "Keine gesicherten Informationen verfügbar",
+    "Keine gesicherten Informationen verfügbar",
+    "Keine gesicherten Informationen verfügbar"
+  ],
+  "known_limitations": [
+    "Keine gesicherten Informationen verfügbar",
+    "Keine gesicherten Informationen verfügbar"
+  ],
+  "notable_models": [
+    "Unbekannt",
+    "Unbekannt"
+  ],
+  "unknown": true,
+  "stats": {},
+  "generated_at": "2026-05-01T11:29:57.111098+00:00"
+}

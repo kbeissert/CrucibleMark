@@ -29,5 +29,6 @@
   "unknown": true,
   "generated_at": "2026-04-23T22:05:37.243642+00:00",
   "card_status": "complete",
-  "size_class": "Workstation"
+  "size_class": "Workstation",
+  "supports_tool_use": true
 }

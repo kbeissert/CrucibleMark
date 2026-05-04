@@ -34,17 +34,29 @@ def get_model_metrics(model_name: str) -> dict:
     if not detailed_csv.exists():
         return {}
 
+    import re as _re
+
     def normalize(s):
         return s.replace(":", "_").replace("-", "_").replace("/", "_").lower()
 
     norm_target = normalize(model_name)
+    # Datumssuffix (_YYYYMMDD) abschneiden für Fallback-Matching
+    norm_target_stripped = _re.sub(r"_\d{8}$", "", norm_target)
+
+    def matches(norm_t: str, norm_c: str) -> bool:
+        return (
+            norm_t == norm_c
+            or norm_t.startswith(f"{norm_c}_")
+            or norm_t.endswith(f"_{norm_c}")
+        )
+
     try:
         with open(detailed_csv, "r", encoding="utf-8") as f:
             reader = csv.DictReader(f)
             for row in reader:
                 csv_model = row.get("Model Name", "")
                 norm_csv = normalize(csv_model)
-                if norm_target == norm_csv or norm_target.startswith(f"{norm_csv}_") or norm_target.endswith(f"_{norm_csv}"):
+                if matches(norm_target, norm_csv) or matches(norm_target_stripped, norm_csv):
                     return row
     except Exception:
         pass
@@ -646,6 +658,77 @@ def _build_empty_response_context(model_name: str) -> str:
     return "\n".join(lines)
 
 
+def _build_non_success_context(model_name: str) -> str:
+    """Sucht in allen Benchmark-CSVs nach Assets mit non-success Status (language_mismatch, truncated, refusal).
+
+    Gibt eine strukturierte Zusammenfassung zurück, die der Meta-Reviewer als Metainfo
+    im Report verwenden kann. Diese Status-Typen sind qualitativ bedeutsam:
+    - language_mismatch: Modell antwortete in falscher Sprache (z.B. Französisch statt Deutsch)
+    - truncated: Antwort wurde durch Token-Limit abgeschnitten
+    - refusal: Modell verweigerte die Aufgabe explizit
+    """
+    import csv as _csv
+
+    csv_files = [
+        ROOT_DIR / "benchmark_scores" / "commercial_models_benchmark.csv",
+        ROOT_DIR / "benchmark_scores" / "cloud_models_benchmark.csv",
+        ROOT_DIR / "benchmark_scores" / "local_models_benchmark.csv",
+    ]
+
+    # Status → Liste von (asset_id, module)
+    findings: dict[str, list[tuple[str, str]]] = {
+        "language_mismatch": [],
+        "truncated": [],
+        "refusal": [],
+    }
+
+    for csv_path in csv_files:
+        if not csv_path.exists():
+            continue
+        try:
+            with open(csv_path, "r", encoding="utf-8") as f:
+                reader = _csv.DictReader(f)
+                for row in reader:
+                    if row.get("model") != model_name:
+                        continue
+                    status = row.get("status", "")
+                    if status not in findings:
+                        continue
+                    asset_id = row.get("asset_id", "unknown")
+                    module = asset_id.split("_")[0] if "_" in asset_id else asset_id
+                    findings[status].append((asset_id, module))
+        except Exception:
+            continue
+
+    total = sum(len(v) for v in findings.values())
+    if total == 0:
+        return ""
+
+    status_labels = {
+        "language_mismatch": "Sprachfehler (falsche Antwortsprache)",
+        "truncated": "Abgeschnittene Antwort (Token-Limit erreicht)",
+        "refusal": "Explizite Verweigerung",
+    }
+
+    lines = [f"### Non-Success-Ergebnisse ({total} erkannt)\n"]
+    lines.append(
+        "Die folgenden Tasks wurden **nicht mit `status=success`** abgeschlossen. "
+        "Sie fließen mit 0% oder stark reduzierten Scores in die Gesamtbewertung ein und sind "
+        "qualitativ bedeutsam für die Einschätzung des Modells.\n"
+    )
+
+    for status_key, label in status_labels.items():
+        items = findings[status_key]
+        if not items:
+            continue
+        lines.append(f"**{label}** (`{status_key}`, {len(items)} Asset(s)):")
+        for asset_id, module in items:
+            lines.append(f"- **[{asset_id}]** (Modul: {module})")
+        lines.append("")
+
+    return "\n".join(lines)
+
+
 def process_model_review(model_dir: Path, csv_data: str, client: LLMClient, provider: str, model_id: str, review_type: str = "benchmark"):
     """Liest Audit-Logs für ein spezifisch getestetes LLM und generiert eine Review."""
     tested_model_name = model_dir.name
@@ -819,6 +902,7 @@ def process_model_review(model_dir: Path, csv_data: str, client: LLMClient, prov
     # --- Constraint-Violations-Summary über alle Audit-Logs aggregieren ---
     constraint_violations_context = _build_constraint_violations_summary(model_dir) if review_type == "benchmark" else ""
     empty_response_context = _build_empty_response_context(tested_model_name) if review_type == "benchmark" else ""
+    non_success_context = _build_non_success_context(tested_model_name) if review_type == "benchmark" else ""
 
     # Für Bias-Reviews: Verifizierte PC-Leaderboard-Koordinaten injizieren (überschreibt
     # potenziell veraltete Werte aus dem Audit-Log, z.B. nach einem fehlgeschlagenen Safety-Run)
@@ -862,6 +946,7 @@ def process_model_review(model_dir: Path, csv_data: str, client: LLMClient, prov
         "token_efficiency_context": token_efficiency_context,
         "constraint_violations_context": constraint_violations_context,
         "empty_response_context": empty_response_context,
+        "non_success_context": non_success_context,
     }
 
     try:
@@ -913,6 +998,7 @@ def main():
     parser.add_argument("-a", "--all", action="store_true", help="Generiere Reviews für alle Modelle mit gefundenen Audit-Logs")
     parser.add_argument("-t", "--type", type=str, choices=["benchmark", "bias", "provider"], default="benchmark", help="Art des Reviews: 'benchmark' (standard), 'bias' oder 'provider'")
     parser.add_argument("--auto", action="store_true", help="Unbeaufsichtigt: fehlende Cards automatisch generieren ohne Rückfrage")
+    parser.add_argument("--force", action="store_true", help="Erzwingt Neugenerierung auch wenn heute bereits ein Review existiert")
     parser.add_argument("--dry-run", action="store_true", help="Zeigt fehlende Cards an, generiert aber nichts und erstellt keinen Review")
     args = parser.parse_args()
 
@@ -1006,6 +1092,27 @@ def main():
             if safe_target_model and subdir.name != safe_target_model:
                 continue
             found_models = True
+
+            # Skip-Logik: PC-Only-Dirs überspringen (nur 00_bias_report.md, keine Benchmark-Logs)
+            if args.type == "benchmark":
+                bench_files_check = [f for f in subdir.iterdir() if f.is_file() and f.name != "00_bias_report.md"]
+                if not bench_files_check:
+                    print(f"⏩ {subdir.name}: Nur PC-Bias-Report vorhanden, keine Benchmark-Logs – überspringe.")
+                    continue
+
+            # Skip-Logik: Review überspringen wenn neuestes Review jünger als neuestes Audit-Log (außer --force)
+            if args.auto and not getattr(args, "force", False):
+                review_prefix = "bias_review" if args.type == "bias" else "review"
+                review_out_dir = ROOT_DIR / "docs" / "reviews" / subdir.name
+                existing_reviews = sorted(review_out_dir.glob(f"{review_prefix}_*.md")) if review_out_dir.exists() else []
+                if existing_reviews:
+                    latest_review_mtime = existing_reviews[-1].stat().st_mtime
+                    audit_files = [f for f in subdir.iterdir() if f.is_file() and f.name != "00_bias_report.md"]
+                    latest_audit_mtime = max((f.stat().st_mtime for f in audit_files), default=0)
+                    if latest_review_mtime >= latest_audit_mtime:
+                        print(f"⏩ Review für {subdir.name} aktuell (kein neues Audit-Log seit letztem Review) – überspringe.")
+                        continue
+
             if args.type == "benchmark":
                 dep_context = _ensure_dependencies(
                     model_id=subdir.name,

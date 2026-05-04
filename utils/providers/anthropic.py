@@ -55,15 +55,27 @@ class AnthropicClient(BaseProviderClient):
         if anthropic is None:
             return False
         try:
-            # Versuche minimale Generierung (Cheap & Fast) mit max_retries=0
             check_client = anthropic.Anthropic(
                 api_key=self.client.api_key, max_retries=0
             )
             check_client.messages.create(
-                model="claude-3-haiku-20240307",  # Günstigstes Modell für Test
+                model="claude-haiku-4-5-20251001",
                 max_tokens=1,
                 messages=[{"role": "user", "content": "Hi"}],
             )
+            return True
+        except anthropic.AuthenticationError as e:
+            logger.warning("Anthropic Access Check: Authentifizierung fehlgeschlagen: %s", e)
+            return False
+        except anthropic.PermissionDeniedError as e:
+            logger.warning("Anthropic Access Check: Zugriff verweigert (Budget/Permissions): %s", e)
+            return False
+        except anthropic.NotFoundError as e:
+            # Testmodell nicht gefunden, aber API selbst ist erreichbar
+            logger.warning("Anthropic Access Check: Testmodell nicht gefunden, API aber erreichbar: %s", e)
+            return True
+        except anthropic.RateLimitError as e:
+            logger.warning("Anthropic Access Check: Rate Limit — API erreichbar: %s", e)
             return True
         except Exception as e:
             logger.debug("Anthropic Access Check Failed: %s", e)

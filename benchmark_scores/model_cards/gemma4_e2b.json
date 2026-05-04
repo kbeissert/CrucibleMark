@@ -28,5 +28,10 @@
   "unknown": false,
   "generated_at": "2026-04-23T22:08:02.344476+00:00",
   "card_status": "complete",
-  "size_class": "Nano"
+  "size_class": "Nano",
+  "thinking_probe_detected": false,
+  "thinking_probe_evidence": "No CoT signals found (A: no think-tags, B: reasoning_tokens=0). Response length: 349 chars",
+  "thinking_probe_confidence": "low",
+  "thinking_probe_at": "2026-04-25T08:38:35.531224+00:00",
+  "supports_tool_use": true
 }

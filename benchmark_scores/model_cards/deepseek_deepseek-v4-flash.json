@@ -1,0 +1,15 @@
+{
+  "model_id": "deepseek/deepseek-v4-flash",
+  "display_name": "deepseek/deepseek-v4-flash",
+  "developer": "n/a",
+  "architecture_tags": [
+    "Thinking"
+  ],
+  "card_status": "minimal",
+  "generated_at": "2026-05-03T18:34:58.651272+00:00",
+  "thinking_probe_detected": true,
+  "thinking_probe_evidence": "reasoning_tokens=130 in provider metadata",
+  "thinking_probe_confidence": "medium",
+  "thinking_probe_at": "2026-05-03T18:34:58.651262+00:00",
+  "supports_tool_use": true
+}

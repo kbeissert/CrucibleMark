@@ -63,15 +63,25 @@ make benchmark-audit MODEL="mistral-medium-latest"
 
 Dieser Befehl stoppt nicht bei der Score-Ermittlung, sondern schließt den Prozess automatisch mit dem generierten Redaktionsartikel in `docs/reviews/` ab.
 
-### 2. Manueller Review-Trigger (rückwirkend)
-
-Wenn bereits Audit-Logs im Ordner `/outputs/audit_logs/` vorliegen und nur der redaktionelle Review-Prozess nachträglich laufen soll:
+### 2. Automatischer Batch-Review (`reviews-auto`)
 
 ```bash
-.venv/bin/python scripts/analysis/generate_review.py
+make reviews-auto
 ```
 
-Das Skript wählt automatisch den neuesten Lauf (nach Änderungsdatum sortiert) in `outputs/audit_logs/`.
+Iteriert über alle Modelle in `outputs/audit_logs/` und generiert fehlende oder veraltete Reviews. **Skip-Logik (mtime-basiert):** Ein Review wird übersprungen, wenn das neueste Review-File jünger oder gleich alt ist wie das neueste Audit-Log — d.h. seit dem letzten Review wurde kein neuer Benchmark-Run durchgeführt. Sobald `benchmark-auto` neue Audit-Logs schreibt, erkennt `reviews-auto` die Lücke und generiert automatisch nach.
+
+```bash
+make reviews-auto FORCE=1   # Skip-Logik deaktivieren, alle Reviews neu generieren
+```
+
+### 3. Manueller Review-Trigger (Einzelmodell)
+
+Wenn für ein spezifisches Modell ein Review nachträglich ausgelöst werden soll:
+
+```bash
+.venv/bin/python scripts/analysis/generate_review.py --model <model-id>
+```
 
 ### 3. Web-Export
 
@@ -231,6 +241,21 @@ make model-cards          # alle fehlenden Model Cards generieren
 make model-cards FORCE=1  # alle neu generieren
 make provider-cards       # alle fehlenden Provider Cards generieren
 ```
+
+## Non-Success-Kontext im Meta-Review (`{non_success_context}`)
+
+Ab v3.6.0 injiziert `generate_review.py` eine Template-Variable `{non_success_context}` in den Meta-Reviewer-Prompt. Sie enthält eine strukturierte Übersicht aller nicht-erfolgreichen Ergebnisse des Modells über alle drei Benchmark-CSVs:
+
+| Status | Bedeutung | Review-Anweisung |
+|---|---|---|
+| `language_mismatch` | Antwort in falscher Sprache | Instruction-Following-Schwäche benennen, Deployment-Risiko einschätzen |
+| `truncated` | Token-Budget überschritten | Verbosity-Signal, Cutoff-Konsequenz auf Qualität bewerten |
+| `refusal` | Modell hat Task verweigert | Sachliche Compliance-Einschätzung, kein Moralisieren |
+| *(leer)* | Keine non-success Einträge | Absolut nichts schreiben |
+
+Die Variable wird von `_build_non_success_context(model_name)` befüllt. Ist kein Eintrag vorhanden, bleibt sie leer und der Reviewer erhält keinen entsprechenden Block.
+
+> **Hinweis:** `language_mismatch` auf Assets mit englischsprachigem Input-Material ist kein Asset-Defekt. Wenn andere Modelle denselben Asset korrekt auf Deutsch beantworten, ist das betroffene Modell das Problem — nicht der Asset.
 
 ## Token-Effizienz-Kontext im Meta-Review
 

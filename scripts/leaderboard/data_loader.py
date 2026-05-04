@@ -163,7 +163,7 @@ def load_benchmark_data() -> pd.DataFrame:
         (df["type"] != "Open Weights (Local)") | (df["source"] == "local")
     ]
     df = df[
-        (df["type"] != "Proprietär") | (df["source"] == "commercial")
+        (df["type"] != "Proprietär") | (df["source"].isin(["commercial", "cloud"]))
     ]
 
     df["percentage"] = pd.to_numeric(df["percentage"], errors="coerce")

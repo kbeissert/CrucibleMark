@@ -28,5 +28,6 @@
   "unknown": true,
   "generated_at": "2026-04-23T22:07:02.933740+00:00",
   "card_status": "complete",
-  "size_class": "Nano"
+  "size_class": "Nano",
+  "supports_tool_use": true
 }

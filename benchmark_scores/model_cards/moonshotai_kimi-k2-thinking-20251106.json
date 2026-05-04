@@ -25,7 +25,7 @@
   ],
   "judge_context_hint": "Kimi K2 Thinking ist ein Reasoning-Modell mit internem CoT. Antworten können durch sichtbare oder unsichtbare Denkprozesse umfangreicher sein als bei Instruction-Only-Modellen.",
   "architecture_tags": [
-    "Thinking-Optional",
+    "Thinking",
     "Agentic-Orchestrator",
     "Coder"
   ],
@@ -36,5 +36,6 @@
   "thinking_probe_detected": null,
   "thinking_probe_evidence": "Not yet probed — model not yet benchmarked",
   "thinking_probe_confidence": "none",
-  "thinking_probe_at": null
+  "thinking_probe_at": null,
+  "supports_tool_use": true
 }

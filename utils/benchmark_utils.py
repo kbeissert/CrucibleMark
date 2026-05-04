@@ -404,9 +404,11 @@ def append_global_run_metrics(model: str, asset_ids: list[str],
         if f_path.exists():
             with open(f_path, "r+", encoding="utf-8") as f:
                 content = f.read()
-                # Execution Time anpassen, sodass P95 mit im Header steht
+                # Execution Time anpassen, sodass P95 mit im Header steht.
+                # Guard: bereits vorhandene (Modul-P95: ...) Suffixe konsumieren,
+                # damit bei Re-Runs keine Akkumulation entsteht.
                 content = re.sub(
-                    r"(\*\*Execution Time:\*\* [\d.]+ s)",
+                    r"(\*\*Execution Time:\*\* [\d.]+ s)(?:\s*\(Modul-P95: [\d.]+ s\))*",
                     fr"\1 (Modul-P95: {metrics['p95']} s)",
                     content,
                     count=1

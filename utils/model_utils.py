@@ -37,6 +37,8 @@ _PROVIDER_SHORTCODES: dict[str, str] = {
     "ollama": "LCL",
     "ollama_local": "LCL",
     "local": "LCL",
+    # Ollama as cloud proxy (e.g. qwen3.5:397b-cloud via remote Ollama endpoint)
+    "ollama_cloud": "CLD",
 }
 
 
@@ -563,7 +565,17 @@ def get_model_category(
             config = ConfigValidator().config
             commercial_providers = config.get("providers", {}).get("commercial", {})
             if provider in commercial_providers:
-                m_type = commercial_providers[provider].get("model_type", "")
+                provider_config = commercial_providers[provider]
+                m_type = provider_config.get("model_type", "")
+
+                # Per-model override: check if this specific model has a model_type set
+                for model_entry in provider_config.get("models", []):
+                    if isinstance(model_entry, dict) and model_entry.get("id") == model_name:
+                        override = model_entry.get("model_type")
+                        if override:
+                            m_type = override
+                        break
+
                 if m_type == MODEL_TYPE_OPEN_WEIGHTS_CLOUD:
                     return "Open Weights (Cloud)"
                 elif m_type == "proprietary_api":
