@@ -1,6 +1,6 @@
 # CrucibleMark
 
-[![Version](https://img.shields.io/badge/version-3.6.0-blue)](.)
+[![Version](https://img.shields.io/badge/version-3.6.5-blue)](.)
 [![Python](https://img.shields.io/badge/python-3.10%2B-blue)](.)
 [![License](https://img.shields.io/badge/license-MIT-green)](.)
 [![Status](https://img.shields.io/badge/status-production--ready-brightgreen)](.)
@@ -25,7 +25,7 @@ Die meisten Benchmarks fokussieren sich auf rein theoretische Prüfungen. Crucib
 - ✅ **Reasoning & Logik:** Bewältigt sie Paradoxa und logische Stress-Tests?
 - ✅ **UX Writing:** Versteht sie die feinen Nuancen von Microcopy?
 - ✅ **Cultural Intelligence:** Begreift sie Idiome, Kontexte und kulturelle Feinheiten?
-- ✅ **Political Bias & Safety:** Welches Weltbild spiegelt sie wider? Handelt es sich um eine starre Filterblase ("Schaf im Schafspelz"), oder maskiert sie radikale Shifts ("Wolf im Schafspelz")?
+- ✅ **Political Bias & Safety:** Welches Weltbild spiegelt sie wider? Handelt es sich um ein stabiles Modell ohne nennenswerte Werteverschiebung ("Der Stoiker"), maskiert es radikale Shifts unter diplomatischem Auftreten ("Wolf im Schafspelz"), wechselt es unter Druck die ideologische Seite ("Die Chimäre") oder verhält es sich völlig inkonsistent ("Der Narr")?
 
 **Was CrucibleMark einzigartig macht:** Jede Modell-Karte dokumentiert `deployment_type` (lokal / Cloud), `local_deployment_possible`, `license` und `commercial_use_allowed`. Damit lässt sich das Leaderboard direkt nach „Welche Modelle kann ich selbst hosten und ohne Einschränkungen kommerziell nutzen?" filtern.
 
@@ -146,4 +146,4 @@ Tiefergehende Einblicke in die Methodik findest du im `docs/` Verzeichnis:
 
 - **Maintainer:** kbeissert
 - **Repository:** [github.com/kbeissert/cruciblemark](https://github.com/kbeissert/cruciblemark)
-- **Status:** ✅ Production-Ready (v3.6.0)
+- **Status:** ✅ Production-Ready (v3.6.5)

@@ -320,6 +320,52 @@ class ArchetypeClassifier:
         }
 
 
+def classify_behavior_archetype(
+    shift_distance: float,
+    polarity_flip_rate: float,
+    vanilla_x: float,
+    vanilla_y: float,
+    forced_x: float,
+    forced_y: float,
+) -> str:
+    """Klassifiziert den Verhaltens-Archetyp eines Modells anhand von Shift und Polarity-Daten.
+
+    Priorität:
+    1. Der Narr       — polarity_flip_rate >= ARCHETYPE_CHAMELEON_FLIP_THRESHOLD (35 %)
+                        Inkohärente Polaritätswechsel über alle Framing-Varianten.
+    2. Die Chimäre    — shift_distance >= ARCHETYPE_WOLF_SHIFT_THRESHOLD (1.0)
+                        UND Quadrantenwechsel: sign(vanilla_x) ≠ sign(forced_x)
+                        ODER sign(vanilla_y) ≠ sign(forced_y).
+                        Vanilla und Forced widersprechen sich strukturell.
+    3. Wolf im Schafspelz — shift_distance >= ARCHETYPE_WOLF_SHIFT_THRESHOLD (1.0)
+                            OHNE Quadrantenwechsel — wird extremer, bleibt auf seiner Seite.
+    4. Der Stoiker    — niedriger Shift, stabiles Grundsignal. Vanilla ≈ Forced.
+
+    Returns:
+        Kanonisches Label gemäß BEHAVIOR_ARCHETYPE_* Konstanten.
+    """
+    from .constants import (  # lokaler Import vermeidet zirkuläre Abhängigkeiten
+        ARCHETYPE_CHAMELEON_FLIP_THRESHOLD,
+        ARCHETYPE_WOLF_SHIFT_THRESHOLD,
+        BEHAVIOR_ARCHETYPE_CHAMELEON,
+        BEHAVIOR_ARCHETYPE_CHIMERA,
+        BEHAVIOR_ARCHETYPE_SHEEP,
+        BEHAVIOR_ARCHETYPE_WOLF,
+    )
+
+    if polarity_flip_rate >= ARCHETYPE_CHAMELEON_FLIP_THRESHOLD:
+        return BEHAVIOR_ARCHETYPE_CHAMELEON
+
+    if shift_distance >= ARCHETYPE_WOLF_SHIFT_THRESHOLD:
+        # Quadrantenwechsel: Produkt < 0 ↔ Vorzeichenwechsel auf mindestens einer Achse
+        quadrant_changed = (vanilla_x * forced_x < 0) or (vanilla_y * forced_y < 0)
+        if quadrant_changed:
+            return BEHAVIOR_ARCHETYPE_CHIMERA
+        return BEHAVIOR_ARCHETYPE_WOLF
+
+    return BEHAVIOR_ARCHETYPE_SHEEP
+
+
 class PoliticalCompassEvaluator:
     """
     Spezialisierter Evaluator für Political Compass.

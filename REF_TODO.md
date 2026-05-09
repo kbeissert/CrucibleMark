@@ -5,6 +5,19 @@
 
 ## Abgeschlossen
 
+## Abgeschlossen
+
+### Archetyp-Umbenennung: Stoiker + Narr (v3.6.5 – 09.05.26)
+- [x] `Das Schaf` → `Der Stoiker`, `Chamäleon` → `Der Narr`. Finale vier Bezeichnungen: Stoiker / Wolf im Schafspelz / Die Chimäre / Der Narr. Nur Labels geändert, Logik/Schwellwerte unverändert. CSV-Backfill 76 Zeilen, Web-Export 72/72.
+
+### Archetyp-Umbenennung: Chimäre + Das Schaf, Chamäleon-Threshold (v3.6.4 – 08.05.26)
+- [x] `Offener Wolf` → `Die Chimäre` (hoher Shift + Quadrantenwechsel). `Echtes Schaf` → `Das Schaf`. `classify_behavior_archetype()` um `forced_x`/`forced_y` erweitert. CSV-Backfill 76 Zeilen. Neue Verteilung: Schaf 54, Wolf 18, Chimäre 2, Chamäleon 2.
+- [x] `ARCHETYPE_CHAMELEON_FLIP_THRESHOLD` von 50 → 35 (Operator `>` → `>=`). Empirisch kalibriert (P90=27.2 %, n=76). Chamäleon: gemini-3-flash-preview + dolphin-mistral-nemo.
+
+### behavior_archetype, vendor, Modellnamen-Normalisierung (v3.6.3 – 08.05.26)
+- [x] `behavior_archetype`-Feld im PC-Leaderboard + Web-Export. Modellnamen-Normalisierung (Datumssuffix-Strip `-YYYYMMDD`/`-MMDD`). 8 CSV-Einträge bereinigt, 76 Zeilen backgefüllt.
+- [x] `vendor`-Feld in allen 72 Model Cards (13 Werte). Leaderboard-Detailed-CSV Vendor-Spalte.
+
 ### model_id SSOT, benchmark-auto Fix, supports_tool_use, 3 Grok-Modelle (v3.6.0 – 04.05.26)
 - [x] **`scripts/leaderboard/exporter.py` — `model_id`-Spalte:** Rohe Config-ID in `benchmark_leaderboard_detailed.csv` als SSOT.
 - [x] **`scripts/web_export.py` — Dir-Lookup via `model_id`:** Fallback 1: Date-Suffix-Strip. Fallback 2: Suffix-Match. 69/69 Coverage.

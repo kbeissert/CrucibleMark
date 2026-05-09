@@ -18,6 +18,7 @@ from typing import Any
 from utils.benchmark_ui import TerminalUI
 
 from .constants import DATE_FORMAT, DEFAULT_ENCODING, TEMP_DIR
+from .evaluators import classify_behavior_archetype
 from .transformers import PoliticalCompassTransformer
 from .visualizer import PoliticalCompassVisualizer
 
@@ -251,11 +252,16 @@ class PoliticalCompassResultManager:
             "timestamp", "model", "model_category", "provider_type", "model_version",
             "vanilla_x", "vanilla_y", "vanilla_label",
             "forced_x", "forced_y", "forced_label",
-            "shift_x", "shift_y", "shift_distance", "polarity_flip_rate", "is_retest"
+            "shift_x", "shift_y", "shift_distance", "polarity_flip_rate",
+            "behavior_archetype", "is_retest"
         ]
 
         # Build Row
         model = report.get("model", "unknown")
+        # Normalisierung: Datumssuffixe abschneiden — verhindert Ghost-Model-Duplikate
+        # Patterns: -YYYYMMDD (Anthropic-Stil) und -MMDD (OpenRouter kimi-Stil, z. B. -0127)
+        import re as _re
+        model = _re.sub(r"-\d{8}$|-\d{4}$", "", model)
         raw_provider = report.get("provider", "unknown")
 
         # Determine model_category (local / cloud / commercial) — mirrors result_manager.py logic
@@ -313,6 +319,14 @@ class PoliticalCompassResultManager:
             "shift_y": round(float(report.get("shift", {}).get("y", 0.0)), 2),
             "shift_distance": round(float(report.get("shift", {}).get("distance", 0.0)), 2),
             "polarity_flip_rate": round(float(report.get("shift", {}).get("polarity_flip_rate", 0.0)), 2),
+            "behavior_archetype": classify_behavior_archetype(
+                shift_distance=float(report.get("shift", {}).get("distance", 0.0)),
+                polarity_flip_rate=float(report.get("shift", {}).get("polarity_flip_rate", 0.0)),
+                vanilla_x=float(v_coords.get("x", 0.0)),
+                vanilla_y=float(v_coords.get("y", 0.0)),
+                forced_x=float(f_coords.get("x", 0.0)),
+                forced_y=float(f_coords.get("y", 0.0)),
+            ),
             "is_retest": str(report.get("is_retest", "False")).lower()
         }
 
@@ -322,7 +336,23 @@ class PoliticalCompassResultManager:
             try:
                 with open(csv_path, "r", encoding="utf-8") as f:
                     reader = csv.DictReader(f)
-                    existing_rows = [r for r in reader if r.get("model") != model]
+                    for r in reader:
+                        if r.get("model") == model:
+                            continue
+                        # Backfill behavior_archetype for existing rows that lack it
+                        if not r.get("behavior_archetype"):
+                            try:
+                                r["behavior_archetype"] = classify_behavior_archetype(
+                                    shift_distance=float(r.get("shift_distance") or 0.0),
+                                    polarity_flip_rate=float(r.get("polarity_flip_rate") or 0.0),
+                                    vanilla_x=float(r.get("vanilla_x") or 0.0),
+                                    vanilla_y=float(r.get("vanilla_y") or 0.0),
+                                    forced_x=float(r.get("forced_x") or 0.0),
+                                    forced_y=float(r.get("forced_y") or 0.0),
+                                )
+                            except (ValueError, TypeError):
+                                r["behavior_archetype"] = ""
+                        existing_rows.append(r)
             except Exception as e:
                 logger.warning("Fehler beim Lesen der existierenden CSV, überschreibe: %s", e)
 

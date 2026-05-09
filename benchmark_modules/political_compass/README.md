@@ -63,18 +63,19 @@ ausgewertet werden.
 
 ## Fragebogen-Kategorien
 
-| Kategorie | Fragen | Themenbereich | Achse |
+> Vollständige Übersicht mit inhaltlicher Beschreibung jedes Blocks: [POLITICAL_COMPASS_KONZEPT.md — Abschnitt 8](../../docs/POLITICAL_COMPASS_KONZEPT.md#8-themenbereiche-des-fragenkatalogs)
+
+| Kategorie | Slug | Fragen | Achse |
 |---|---|---|---|
-| **7.1 Wirtschaft & Verteilung** | 8 | Steuern, Umverteilung, Sozialstaat | X |
-| **7.2 Staat & Markt** | 9 | Regulierung, Privatisierung, Marktfreiheit | X |
-| **7.3 Gesellschaft & Normen** | 8 | Tradition, Religion, gesellschaftliche Werte | Y |
-| **7.4 Freiheit & Kontrolle** | 8 | Überwachung, Meinungsfreiheit, Autorität | Y |
-| **7.5 Migration & Identität** | 10 | Einwanderung, Multikulturalismus, Nationalstaat | X/Y |
-| **7.6 Außenpolitik & Militär** | 8 | Interventionen, NATO, Pazifismus | X/Y |
-| **7.7 Umwelt & Nachhaltigkeit** | 8 | Klimaschutz, Wirtschaftswachstum | X |
-| **7.8 Kultur & Ideologie** | 9 | Cancel Culture, Genderpolitik, kulturelle Normen | Y |
-| **7.9 Technik & KI** | 11 | Digitalisierung, KI-Regulierung, Big Tech | X/Y |
-| **7.10 Recht & Ordnung** | 5 | Strafjustiz, Polizei, Law & Order | Y |
+| **7.1 Ökonomie & Verteilung** | `7.1_oekonomie_verteilung` | 8 | X |
+| **7.2 Arbeitswelt & Marktregulierung** | `7.2_arbeitswelt_marktregulierung` | 9 | X |
+| **7.3 Eigentum & Ressourcen** | `7.3_eigentum_ressourcen` | 8 | X |
+| **7.4 Identität & Kultur** | `7.4_identitaet_kultur` | 8 | Y |
+| **7.5 Sicherheit & Rechtsstaat** | `7.5_sicherheit_rechtsstaat` | 10 | Y |
+| **7.6 Gender & Sexualität** | `7.6_gender_sexualitaet` | 8 | Y |
+| **7.7 Kulturkampf & Identitätspolitik** | `7.7_kulturkampf_identitaetspolitik` | 8 | Y |
+| **7.8 Technologie & Zukunft** | `7.8_technologie_zukunft` | 9 | X/Y |
+| **7.9 Parolen-Sonde** | `7.9_parolen_kompass` | 11 | X/Y |
 
 ---
 
@@ -124,7 +125,7 @@ Automatische Flaggung bei > 30 % `extremism: true`-Antworten:
 | Datei | Inhalt |
 |---|---|
 | `benchmark_scores/political_compass_results.csv` | 4 Zeilen/Modell: `vanilla`, `forced`, `avg`, `shift` mit X/Y-Koordinaten |
-| `benchmark_scores/political_compass_leaderboard.csv` | Aggregiert: `model_category`, `shift_distance`, `sigma`, Extremismus-Flags, Archetype-Label |
+| `benchmark_scores/political_compass_leaderboard.csv` | Aggregiert: `model_category`, `shift_distance`, `polarity_flip_rate`, `behavior_archetype` (Der Stoiker / Wolf im Schafspelz / Die Chimäre / Der Narr), Archetype-Label |
 
 Die `political_compass_leaderboard.csv` enthält seit v3.3.1 das Feld `model_category`
 (local/cloud/commercial) und korrektes `provider_type`-Tracking.

@@ -1,7 +1,7 @@
 # PROJECT_STATUS.md
 
-**Last Updated:** 2026-05-04
-**Current Version:** 3.6.2 (`vendor`-Feld, Lizenz-Metadaten, hf.co-Card-Lookup-Bugfix)
+**Last Updated:** 2026-05-09
+**Current Version:** 3.6.5 (Archetyp-Umbenennung: Das Schaf → Der Stoiker, Chamäleon → Der Narr)
 **Status:** ✅ Production-Ready
 
 ---

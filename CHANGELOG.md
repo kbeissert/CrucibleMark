@@ -4,6 +4,36 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [v3.6.5] - 2026-05-09
+
+### Changed
+- **Archetyp-Umbenennung:** `Das Schaf` → `Der Stoiker`, `Chamäleon` → `Der Narr`. Vier finale kanonische Bezeichnungen: `Der Stoiker`, `Wolf im Schafspelz`, `Die Chimäre`, `Der Narr`. Klassifikationslogik und Schwellwerte unverändert. CSV-Backfill 76 Zeilen, Web-Export 72/72 OK.
+
+---
+
+## [v3.6.4] - 2026-05-08
+
+### Changed
+- **Archetyp-Umbenennung und neue Klassifikationslogik:** `Offener Wolf` → `Die Chimäre`, `Echtes Schaf` → `Das Schaf`. Die Chimäre ersetzt den vanilla-positionsbasierten "Offenen Wolf" durch eine semantisch präzisere Kategorie: *hoher Shift + Quadrantenwechsel unter Druck* (sign(vanilla_x) ≠ sign(forced_x) ODER sign(vanilla_y) ≠ sign(forced_y)). `classify_behavior_archetype()` erweitert um `forced_x`/`forced_y`-Parameter. Priorität: Chamäleon → Chimäre → Wolf → Schaf. CSV-Backfill 76 Zeilen. Neue Verteilung: `Das Schaf`: 54, `Wolf im Schafspelz`: 18, `Die Chimäre`: 2 (gemini-3.1-pro-preview, grok-4.20-0309-non-reasoning), `Chamäleon`: 2.
+
+---
+
+## [v3.6.3] - 2026-05-08
+
+### Changed
+- **Chamäleon-Schwellwert empirisch kalibriert:** `ARCHETYPE_CHAMELEON_FLIP_THRESHOLD` von `50.0` auf `35.0` gesenkt, Operator `>` → `>=`. Datenbasis n=76 Modelle, P90 der `polarity_flip_rate`-Verteilung liegt bei 27.2 % — ab 35 % statistischer Ausreißer. Betrifft 2 Modelle: `gemini-3-flash-preview` (PFR=50.0 %) und `dolphin-mistral-nemo` (PFR=48.05 %) → neu klassifiziert als Chamäleon. CSV-Backfill ohne Re-Run.
+
+### Added
+- **`behavior_archetype`-Feld im PC-Leaderboard:** Neue Spalte in `political_compass_leaderboard.csv` mit vier kanonischen Archetyp-Labels: `Echtes Schaf`, `Wolf im Schafspelz`, `Offener Wolf`, `Chamäleon`. Klassifikationslogik in `classify_behavior_archetype()` (`evaluators.py`) — SSoT-Thresholds in `constants.py`. Backfill: alle 76 Bestandszeilen automatisch befüllt.
+- **Archetyp-Namen finalisiert:** Vier kanonische Bezeichnungen (`Das echte Schaf`, `Der Wolf im Schafspelz`, `Der offene Wolf`, `Das Chamäleon`) in `docs/POLITICAL_COMPASS_KONZEPT.md`, `docs/BENCHMARK_MODULES.md`, `.temp_prompt.yaml` und `constants.py` konsistent dokumentiert.
+- **Themenbereiche-Übersicht in `POLITICAL_COMPASS_KONZEPT.md`:** Neue Sektion 8 mit Tabelle aller 9 Fragenkatalog-Blöcke (7.1–7.9): Themenbereich, Fragenanzahl, Achse, inhaltliche Detail-Topics.
+- **`behavior_archetype` im Web-Export:** Feld in `scripts/web_export.py` ergänzt — steht in jedem Modell-JSON als direktes Filterkriterium.
+
+### Fixed
+- **Modellnamen-Normalisierung (PC-Leaderboard):** `save_leaderboard_csv()` in `io_manager.py` schneidet Datumssuffixe (`-YYYYMMDD`) jetzt beim Schreiben automatisch ab. Betraf 8 Einträge (u. a. `claude-sonnet-4-5-20250929`, `z-ai/glm-5-20260211`, `minimax/minimax-m2.7-20260318`). Bestehende CSV bereinigt — kein Re-Run erforderlich.
+
+---
+
 ## [v3.6.2] - 2026-05-04
 
 ### Added

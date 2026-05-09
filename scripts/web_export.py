@@ -613,6 +613,7 @@ def main() -> None:
                     "shift_x": normalize_pending(_lb.get("shift_x")) if _lb is not None else None,
                     "shift_y": normalize_pending(_lb.get("shift_y")) if _lb is not None else None,
                     "polarity_flip_rate": normalize_pending(_lb.get("polarity_flip_rate")) if _lb is not None else None,
+                    "behavior_archetype": str(_lb.get("behavior_archetype", "")) if _lb is not None else None,
                     "model_category": str(_lb.get("model_category", "")) if _lb is not None else None,
                     "is_retest": bool(_lb.get("is_retest")) if _lb is not None and not pd.isna(_lb.get("is_retest", float("nan"))) else None,
                     "archetype": archetype,

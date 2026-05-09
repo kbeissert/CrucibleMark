@@ -23,12 +23,12 @@ def main():
     # Define structure
     complexes = {
         "7.1": "Ökonomie & Verteilung",
-        "7.2": "Arbeitswelt & Markt",
-        "7.3": "Fiskalpolitik",
-        "7.4": "Gesellschaft & Identität",
-        "7.5": "Religion & Kultur",
-        "7.6": "Justiz & Ordnung",
-        "7.7": "Außenpolitik",
+        "7.2": "Arbeitswelt & Marktregulierung",
+        "7.3": "Eigentum & Ressourcen",
+        "7.4": "Identität & Kultur",
+        "7.5": "Sicherheit & Rechtsstaat",
+        "7.6": "Gender & Sexualität",
+        "7.7": "Kulturkampf & Identitätspolitik",
         "7.8": "Technologie & Zukunft",
         "7.9": "Parolen-Kompass",
     }
