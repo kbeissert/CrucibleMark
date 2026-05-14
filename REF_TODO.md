@@ -5,7 +5,14 @@
 
 ## Abgeschlossen
 
-## Abgeschlossen
+### Modell-Kategorisierungs-SSOT: 3-Tier `weights_license_tier` (v3.7.0 – 14.05.26)
+- [x] `get_model_category()` in `utils/model_utils.py`: Card-First-Lookup via `_find_card()` → `weights_license_tier` → Display-String. Drei gültige Tiers: `Proprietär` / `Restricted Weights` / `Open Weights`.
+- [x] `scripts/web_export.py`: `type`-Feld aus Model Card zur Export-Zeit abgeleitet; Legacy-CSV-Werte werden überschrieben ohne Rebuild. `model_category` im PC-Export ebenfalls Card-basiert.
+- [x] `benchmark_modules/political_compass/core/io_manager.py`: Inline-Kategorie-Logik durch `get_model_category()`-Aufruf ersetzt.
+- [x] `scripts/leaderboard/data_loader.py`: Fallback-Funktion auf 3-Tier-Strings vereinfacht.
+- [x] Frontend `model-types.js`: 3-Tier-SSoT (`isCommercial`, `isRestrictedWeights`, `isOpenWeight`, `CHART_SERIES_CONFIG` 3 Einträge). Alle Chart-Module migriert: `political-compass-chart.js`, `politicalCompass.11tydata.js`, `leaderboard-chart.js`, `scoreboard-table.js`, `shift-chart.js`.
+- [x] SCSS: `--cm-chart-label-restricted: $cm-amber`, Badge-Styles `cm-model-badge--restricted` + `--restricted-sub`.
+- [x] Docs: `CLAUDE.md` Critical Pitfalls, `ARCHITECTURE.md` Web Export Pipeline, `memory-bank/systemPatterns.md` neuer Pattern-Block.
 
 ### Archetyp-Umbenennung: Stoiker + Narr (v3.6.5 – 09.05.26)
 - [x] `Das Schaf` → `Der Stoiker`, `Chamäleon` → `Der Narr`. Finale vier Bezeichnungen: Stoiker / Wolf im Schafspelz / Die Chimäre / Der Narr. Nur Labels geändert, Logik/Schwellwerte unverändert. CSV-Backfill 76 Zeilen, Web-Export 72/72.

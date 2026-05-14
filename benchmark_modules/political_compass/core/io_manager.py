@@ -264,17 +264,17 @@ class PoliticalCompassResultManager:
         model = _re.sub(r"-\d{8}$|-\d{4}$", "", model)
         raw_provider = report.get("provider", "unknown")
 
-        # Determine model_category (local / cloud / commercial) — mirrors result_manager.py logic
-        if raw_provider == "ollama":
-            if ":cloud" in model.lower() or model.lower().endswith("-cloud"):
-                model_category = "cloud"
-                provider_type = "cloud"
+        # Determine model_category — use get_model_category() SSOT (card-first)
+        try:
+            from utils.model_utils import get_model_category as _gmc
+            model_category = _gmc(model, source_file=("commercial" if raw_provider != "ollama" else "local"), provider=raw_provider)
+        except Exception:
+            # Inline fallback
+            if raw_provider == "ollama":
+                model_category = "Open Weights"
             else:
-                model_category = "local"
-                provider_type = raw_provider
-        else:
-            model_category = "commercial"
-            provider_type = raw_provider
+                model_category = "Proprietär"
+        provider_type = raw_provider
 
         # Read final weighted polar coordinates from runs.vanilla/forced.coordinates (correct source)
         # NOTE: individual_runs[].x/y contains rounded integer intermediates for ASCII chart only.

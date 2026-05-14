@@ -1,37 +1,38 @@
 {
-  "model_id": "meta-llama/llama-4-scout-17b-16e-instruct",
-  "display_name": "Llama 4 Scout 17B",
-  "developer": "Meta",
-  "origin_country": "USA",
-  "developer_jurisdiction": "US",
-  "deployment_type": "open-weights-cloud-available",
-  "local_deployment_possible": true,
-  "weights_provenance_risk": "medium",
-  "weights_provenance_risk_rationale": "Meta ist ein US-amerikanisches Unternehmen und unterliegt dem CLOUD Act, der staatlichen Zugriff auf Daten bei API-Nutzung ermöglicht, jedoch sind die Gewichte öffentlich verfügbar und lokal betreibbar.",
-  "model_family": "Llama",
-  "primary_focus": "general",
-  "summary": "Llama 4 Scout ist Metas erstes Mixture-of-Experts-Modell der Llama-4-Generation mit 17B aktiven Parametern und 16 Experten. Es wurde für effizientes Instruction-Following, multimodale Eingaben und langen Kontext (10M Token) entwickelt und übertrifft vergleichbare Open-Weights-Modelle in Reasoning und Sprachverständnis.",
-  "strengths": [
-    "Extrem langer Kontextfenster von bis zu 10 Millionen Tokens",
-    "Effiziente MoE-Architektur: hohe Leistung bei vergleichsweise geringem Rechenaufwand",
-    "Multimodale Fähigkeiten (Text und Bild als Eingabe)"
-  ],
-  "known_limitations": [
-    "Als MoE-Modell höherer Speicherbedarf für alle Expertengewichte trotz geringer aktiver Parameter",
-    "Multimodale Ausgabe (Bildgenerierung) nicht unterstützt – nur Textausgabe"
-  ],
-  "judge_context_hint": "Das Modell nutzt eine Mixture-of-Experts-Architektur und kann bei sehr langen Kontexten stark punkten, zeigt aber bei kurzen, präzisen Aufgaben gelegentlich ausschweifendere Antworten als reine Dense-Modelle.",
-  "architecture_tags": [
-    "General",
-    "Instruct"
-  ],
-  "unknown": false,
-  "generated_at": "2026-04-23T22:02:51.147355+00:00",
-  "card_status": "complete",
-  "size_class": "Desktop",
-  "supports_tool_use": true,
-  "license": "Meta Llama Community License",
-  "license_url": "https://www.llama.com/llama4/license/",
-  "commercial_use_allowed": null,
-  "vendor": "Meta"
+    "model_id": "meta-llama/llama-4-scout-17b-16e-instruct",
+    "display_name": "Llama 4 Scout 17B",
+    "developer": "Meta",
+    "origin_country": "USA",
+    "developer_jurisdiction": "US",
+    "deployment_type": "open-weights-cloud-available",
+    "local_deployment_possible": true,
+    "weights_provenance_risk": "medium",
+    "weights_provenance_risk_rationale": "Meta ist ein US-amerikanisches Unternehmen und unterliegt dem CLOUD Act, der staatlichen Zugriff auf Daten bei API-Nutzung ermöglicht, jedoch sind die Gewichte öffentlich verfügbar und lokal betreibbar.",
+    "model_family": "Llama",
+    "primary_focus": "general",
+    "summary": "Llama 4 Scout ist Metas erstes Mixture-of-Experts-Modell der Llama-4-Generation mit 17B aktiven Parametern und 16 Experten. Es wurde für effizientes Instruction-Following, multimodale Eingaben und langen Kontext (10M Token) entwickelt und übertrifft vergleichbare Open-Weights-Modelle in Reasoning und Sprachverständnis.",
+    "strengths": [
+        "Extrem langer Kontextfenster von bis zu 10 Millionen Tokens",
+        "Effiziente MoE-Architektur: hohe Leistung bei vergleichsweise geringem Rechenaufwand",
+        "Multimodale Fähigkeiten (Text und Bild als Eingabe)"
+    ],
+    "known_limitations": [
+        "Als MoE-Modell höherer Speicherbedarf für alle Expertengewichte trotz geringer aktiver Parameter",
+        "Multimodale Ausgabe (Bildgenerierung) nicht unterstützt – nur Textausgabe"
+    ],
+    "judge_context_hint": "Das Modell nutzt eine Mixture-of-Experts-Architektur und kann bei sehr langen Kontexten stark punkten, zeigt aber bei kurzen, präzisen Aufgaben gelegentlich ausschweifendere Antworten als reine Dense-Modelle.",
+    "architecture_tags": [
+        "General",
+        "Instruct"
+    ],
+    "unknown": false,
+    "generated_at": "2026-04-23T22:02:51.147355+00:00",
+    "card_status": "complete",
+    "size_class": "Desktop",
+    "supports_tool_use": true,
+    "license": "Meta Llama Community License",
+    "license_url": "https://www.llama.com/llama4/license/",
+    "commercial_use_allowed": null,
+    "vendor": "Meta",
+    "weights_license_tier": "restricted-weights"
 }

@@ -1,39 +1,40 @@
 {
-  "model_id": "hf.co_bartowski_NousResearch_Hermes-4-14B-GGUF_Q4_K_M",
-  "display_name": "Hermes 4 14B (Q4_K_M GGUF)",
-  "developer": "NousResearch",
-  "origin_country": "USA",
-  "developer_jurisdiction": "US",
-  "deployment_type": "open-weights",
-  "local_deployment_possible": true,
-  "weights_provenance_risk": "medium",
-  "weights_provenance_risk_rationale": "NousResearch ist ein US-amerikanisches Open-Source-Forschungskollektiv; die Weights sind öffentlich verfügbar, jedoch unterliegt das Unternehmen dem US-amerikanischen CLOUD Act.",
-  "model_family": "Hermes",
-  "primary_focus": "instruction-following",
-  "summary": "Hermes 4 14B ist ein von NousResearch (USA) feingetuntes Sprachmodell, das auf starkes Instruction-Following, strukturierte Ausgaben und Agenten-Workflows ausgelegt ist. Es basiert auf einem leistungsfähigen Basismodell und wurde durch RLHF und synthetische Daten auf präzise, hilfreiche Antworten optimiert. Die GGUF-Variante Q4_K_M ermöglicht effizienten lokalen Betrieb.",
-  "strengths": [
-    "Sehr gutes Instruction-Following mit präziser Befolgung komplexer Anweisungen",
-    "Starke Unterstützung für strukturierte Ausgaben (JSON, Funktionsaufrufe, Agenten-Frameworks)",
-    "Effizient lokal betreibbar durch quantisiertes GGUF-Format (Q4_K_M) mit geringem VRAM-Bedarf"
-  ],
-  "known_limitations": [
-    "Als 14B-Modell bei sehr komplexen Mehrschritt-Reasoning-Aufgaben schwächer als größere Modelle",
-    "Feintuning-Daten von NousResearch sind nicht vollständig dokumentiert, was Bias-Analyse erschwert"
-  ],
-  "judge_context_hint": "Das Modell ist explizit auf präzises Instruction-Following und Agenten-Nutzung optimiert und neigt dazu, Anweisungen sehr wörtlich zu nehmen – kreative Abweichungen oder Eigeninitiative sind bewusst reduziert.",
-  "architecture_tags": [
-    "Uncensored-Finetuned"
-  ],
-  "unknown": false,
-  "generated_at": "2026-04-11T15:13:31.797577+00:00",
-  "size_class": "Desktop",
-  "thinking_probe_detected": false,
-  "thinking_probe_evidence": "No CoT signals found (A: no think-tags, B: reasoning_tokens=0). Response length: 1597 chars",
-  "thinking_probe_confidence": "low",
-  "thinking_probe_at": "2026-04-25T08:51:31.152266+00:00",
-  "supports_tool_use": true,
-  "license": "Apache-2.0",
-  "license_url": "https://www.apache.org/licenses/LICENSE-2.0",
-  "commercial_use_allowed": true,
-  "vendor": "NousResearch"
+    "model_id": "hf.co_bartowski_NousResearch_Hermes-4-14B-GGUF_Q4_K_M",
+    "display_name": "Hermes 4 14B (Q4_K_M GGUF)",
+    "developer": "NousResearch",
+    "origin_country": "USA",
+    "developer_jurisdiction": "US",
+    "deployment_type": "open-weights",
+    "local_deployment_possible": true,
+    "weights_provenance_risk": "medium",
+    "weights_provenance_risk_rationale": "NousResearch ist ein US-amerikanisches Open-Source-Forschungskollektiv; die Weights sind öffentlich verfügbar, jedoch unterliegt das Unternehmen dem US-amerikanischen CLOUD Act.",
+    "model_family": "Hermes",
+    "primary_focus": "instruction-following",
+    "summary": "Hermes 4 14B ist ein von NousResearch (USA) feingetuntes Sprachmodell, das auf starkes Instruction-Following, strukturierte Ausgaben und Agenten-Workflows ausgelegt ist. Es basiert auf einem leistungsfähigen Basismodell und wurde durch RLHF und synthetische Daten auf präzise, hilfreiche Antworten optimiert. Die GGUF-Variante Q4_K_M ermöglicht effizienten lokalen Betrieb.",
+    "strengths": [
+        "Sehr gutes Instruction-Following mit präziser Befolgung komplexer Anweisungen",
+        "Starke Unterstützung für strukturierte Ausgaben (JSON, Funktionsaufrufe, Agenten-Frameworks)",
+        "Effizient lokal betreibbar durch quantisiertes GGUF-Format (Q4_K_M) mit geringem VRAM-Bedarf"
+    ],
+    "known_limitations": [
+        "Als 14B-Modell bei sehr komplexen Mehrschritt-Reasoning-Aufgaben schwächer als größere Modelle",
+        "Feintuning-Daten von NousResearch sind nicht vollständig dokumentiert, was Bias-Analyse erschwert"
+    ],
+    "judge_context_hint": "Das Modell ist explizit auf präzises Instruction-Following und Agenten-Nutzung optimiert und neigt dazu, Anweisungen sehr wörtlich zu nehmen – kreative Abweichungen oder Eigeninitiative sind bewusst reduziert.",
+    "architecture_tags": [
+        "Uncensored-Finetuned"
+    ],
+    "unknown": false,
+    "generated_at": "2026-04-11T15:13:31.797577+00:00",
+    "size_class": "Desktop",
+    "thinking_probe_detected": false,
+    "thinking_probe_evidence": "No CoT signals found (A: no think-tags, B: reasoning_tokens=0). Response length: 1597 chars",
+    "thinking_probe_confidence": "low",
+    "thinking_probe_at": "2026-04-25T08:51:31.152266+00:00",
+    "supports_tool_use": true,
+    "license": "Apache-2.0",
+    "license_url": "https://www.apache.org/licenses/LICENSE-2.0",
+    "commercial_use_allowed": true,
+    "vendor": "NousResearch",
+    "weights_license_tier": "open-weights"
 }

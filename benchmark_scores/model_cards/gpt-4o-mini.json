@@ -1,41 +1,42 @@
 {
-  "model_id": "gpt-4o-mini",
-  "display_name": "GPT-4o Mini",
-  "developer": "OpenAI",
-  "origin_country": "USA",
-  "developer_jurisdiction": "US",
-  "deployment_type": "cloud-only",
-  "local_deployment_possible": false,
-  "weights_provenance_risk": "medium",
-  "weights_provenance_risk_rationale": "OpenAI ist ein US-amerikanisches Unternehmen, dessen Modellgewichte nicht öffentlich sind und dem CLOUD Act unterliegen, der behördlichen Zugriff auf Daten bei API-Nutzung ermöglichen kann.",
-  "model_family": "GPT-4o",
-  "primary_focus": "general",
-  "summary": "GPT-4o Mini ist ein kompaktes Modell von OpenAI (USA), das auf Effizienz und breite Einsetzbarkeit ausgelegt ist. Es bietet starke Instruction-Following-Fähigkeiten, solide Mehrsprachigkeit und gute Reasoning-Leistung bei deutlich niedrigeren Kosten als GPT-4o – gedacht als leistungsfähige Standardlösung für alltägliche Aufgaben.",
-  "strengths": [
-    "Sehr kosteneffizient bei guter Antwortqualität für Standardaufgaben",
-    "Schnelle Inferenz mit niedrigen Latenzen, geeignet für Echtzeit-Anwendungen",
-    "Solides Instruction-Following und Mehrsprachigkeit über viele Sprachen hinweg"
-  ],
-  "known_limitations": [
-    "Deutlich schwächer als GPT-4o bei komplexen Reasoning-, Mathematik- und Coding-Aufgaben",
-    "Kein lokaler Betrieb möglich – vollständige Abhängigkeit von OpenAIs Cloud-Infrastruktur"
-  ],
-  "judge_context_hint": "GPT-4o Mini ist auf Effizienz optimiert und kann bei komplexen mehrstufigen Aufgaben oder tiefem Reasoning hinter größeren Modellen zurückbleiben – Antworten sollten auf Vollständigkeit und Präzision geprüft werden.",
-  "architecture_tags": [
-    "General",
-    "Instruct"
-  ],
-  "unknown": false,
-  "generated_at": "2026-04-23T22:00:27.476216+00:00",
-  "card_status": "complete",
-  "size_class": "Frontier",
-  "thinking_probe_detected": false,
-  "thinking_probe_evidence": "No CoT signals found (A: no think-tags, B: reasoning_tokens=0). Response length: 939 chars",
-  "thinking_probe_confidence": "low",
-  "thinking_probe_at": "2026-04-23T13:55:59.170160+00:00",
-  "supports_tool_use": true,
-  "license": "Proprietary",
-  "license_url": null,
-  "commercial_use_allowed": true,
-  "vendor": "OpenAI"
+    "model_id": "gpt-4o-mini",
+    "display_name": "GPT-4o Mini",
+    "developer": "OpenAI",
+    "origin_country": "USA",
+    "developer_jurisdiction": "US",
+    "deployment_type": "cloud-only",
+    "local_deployment_possible": false,
+    "weights_provenance_risk": "medium",
+    "weights_provenance_risk_rationale": "OpenAI ist ein US-amerikanisches Unternehmen, dessen Modellgewichte nicht öffentlich sind und dem CLOUD Act unterliegen, der behördlichen Zugriff auf Daten bei API-Nutzung ermöglichen kann.",
+    "model_family": "GPT-4o",
+    "primary_focus": "general",
+    "summary": "GPT-4o Mini ist ein kompaktes Modell von OpenAI (USA), das auf Effizienz und breite Einsetzbarkeit ausgelegt ist. Es bietet starke Instruction-Following-Fähigkeiten, solide Mehrsprachigkeit und gute Reasoning-Leistung bei deutlich niedrigeren Kosten als GPT-4o – gedacht als leistungsfähige Standardlösung für alltägliche Aufgaben.",
+    "strengths": [
+        "Sehr kosteneffizient bei guter Antwortqualität für Standardaufgaben",
+        "Schnelle Inferenz mit niedrigen Latenzen, geeignet für Echtzeit-Anwendungen",
+        "Solides Instruction-Following und Mehrsprachigkeit über viele Sprachen hinweg"
+    ],
+    "known_limitations": [
+        "Deutlich schwächer als GPT-4o bei komplexen Reasoning-, Mathematik- und Coding-Aufgaben",
+        "Kein lokaler Betrieb möglich – vollständige Abhängigkeit von OpenAIs Cloud-Infrastruktur"
+    ],
+    "judge_context_hint": "GPT-4o Mini ist auf Effizienz optimiert und kann bei komplexen mehrstufigen Aufgaben oder tiefem Reasoning hinter größeren Modellen zurückbleiben – Antworten sollten auf Vollständigkeit und Präzision geprüft werden.",
+    "architecture_tags": [
+        "General",
+        "Instruct"
+    ],
+    "unknown": false,
+    "generated_at": "2026-04-23T22:00:27.476216+00:00",
+    "card_status": "complete",
+    "size_class": "Frontier",
+    "thinking_probe_detected": false,
+    "thinking_probe_evidence": "No CoT signals found (A: no think-tags, B: reasoning_tokens=0). Response length: 939 chars",
+    "thinking_probe_confidence": "low",
+    "thinking_probe_at": "2026-04-23T13:55:59.170160+00:00",
+    "supports_tool_use": true,
+    "license": "Proprietary",
+    "license_url": null,
+    "commercial_use_allowed": true,
+    "vendor": "OpenAI",
+    "weights_license_tier": "proprietary"
 }

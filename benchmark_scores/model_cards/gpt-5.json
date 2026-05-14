@@ -1,41 +1,42 @@
 {
-  "model_id": "gpt-5",
-  "display_name": "GPT-5",
-  "developer": "OpenAI",
-  "origin_country": "USA",
-  "developer_jurisdiction": "US",
-  "deployment_type": "cloud-only",
-  "local_deployment_possible": false,
-  "weights_provenance_risk": "medium",
-  "weights_provenance_risk_rationale": "OpenAI ist ein US-amerikanisches Unternehmen und unterliegt dem CLOUD Act, der staatlichen Zugriff auf Daten bei API-Nutzung ermöglichen kann, jedoch sind die Modellgewichte nicht öffentlich zugänglich.",
-  "model_family": "GPT",
-  "primary_focus": "general",
-  "summary": "GPT-5 ist OpenAIs Flaggschiff-Modell aus den USA, trainiert auf breiten multimodalen Datensätzen mit Fokus auf Reasoning, Instruktionsbefolgung und komplexe Aufgaben. Es vereint starke Sprachkompetenz, Code- und Analysefähigkeiten und soll menschliche Expertise in vielen Domänen erreichen oder übertreffen.",
-  "strengths": [
-    "Sehr starkes Reasoning und mehrstufiges Problemlösen über diverse Domänen hinweg",
-    "Hohe Instruktionstreue und konsistente Qualität bei komplexen, langen Aufgaben",
-    "Breite multimodale Fähigkeiten (Text, Bild, Code, Daten)"
-  ],
-  "known_limitations": [
-    "Ausschließlich über OpenAI-API verfügbar, keine lokale Ausführung oder Gewichtszugang möglich",
-    "Genaue Architektur, Trainingsdetails und Parameterzahl sind nicht öffentlich dokumentiert"
-  ],
-  "judge_context_hint": "GPT-5 neigt zu sehr ausführlichen, strukturierten Antworten und kann bei einfachen Aufgaben zur Überformulierung tendieren – Präzision und Kürze sollten explizit eingefordert werden.",
-  "architecture_tags": [
-    "General",
-    "Thinking-Optional"
-  ],
-  "unknown": false,
-  "generated_at": "2026-04-23T22:01:02.536809+00:00",
-  "card_status": "complete",
-  "size_class": "Frontier",
-  "thinking_probe_detected": false,
-  "thinking_probe_evidence": "No CoT signals found (A: no think-tags, B: reasoning_tokens=0). Response length: 165 chars",
-  "thinking_probe_confidence": "low",
-  "thinking_probe_at": "2026-04-23T13:56:12.869367+00:00",
-  "supports_tool_use": true,
-  "license": "Proprietary",
-  "license_url": null,
-  "commercial_use_allowed": true,
-  "vendor": "OpenAI"
+    "model_id": "gpt-5",
+    "display_name": "GPT-5",
+    "developer": "OpenAI",
+    "origin_country": "USA",
+    "developer_jurisdiction": "US",
+    "deployment_type": "cloud-only",
+    "local_deployment_possible": false,
+    "weights_provenance_risk": "medium",
+    "weights_provenance_risk_rationale": "OpenAI ist ein US-amerikanisches Unternehmen und unterliegt dem CLOUD Act, der staatlichen Zugriff auf Daten bei API-Nutzung ermöglichen kann, jedoch sind die Modellgewichte nicht öffentlich zugänglich.",
+    "model_family": "GPT",
+    "primary_focus": "general",
+    "summary": "GPT-5 ist OpenAIs Flaggschiff-Modell aus den USA, trainiert auf breiten multimodalen Datensätzen mit Fokus auf Reasoning, Instruktionsbefolgung und komplexe Aufgaben. Es vereint starke Sprachkompetenz, Code- und Analysefähigkeiten und soll menschliche Expertise in vielen Domänen erreichen oder übertreffen.",
+    "strengths": [
+        "Sehr starkes Reasoning und mehrstufiges Problemlösen über diverse Domänen hinweg",
+        "Hohe Instruktionstreue und konsistente Qualität bei komplexen, langen Aufgaben",
+        "Breite multimodale Fähigkeiten (Text, Bild, Code, Daten)"
+    ],
+    "known_limitations": [
+        "Ausschließlich über OpenAI-API verfügbar, keine lokale Ausführung oder Gewichtszugang möglich",
+        "Genaue Architektur, Trainingsdetails und Parameterzahl sind nicht öffentlich dokumentiert"
+    ],
+    "judge_context_hint": "GPT-5 neigt zu sehr ausführlichen, strukturierten Antworten und kann bei einfachen Aufgaben zur Überformulierung tendieren – Präzision und Kürze sollten explizit eingefordert werden.",
+    "architecture_tags": [
+        "General",
+        "Thinking-Optional"
+    ],
+    "unknown": false,
+    "generated_at": "2026-04-23T22:01:02.536809+00:00",
+    "card_status": "complete",
+    "size_class": "Frontier",
+    "thinking_probe_detected": false,
+    "thinking_probe_evidence": "No CoT signals found (A: no think-tags, B: reasoning_tokens=0). Response length: 165 chars",
+    "thinking_probe_confidence": "low",
+    "thinking_probe_at": "2026-04-23T13:56:12.869367+00:00",
+    "supports_tool_use": true,
+    "license": "Proprietary",
+    "license_url": null,
+    "commercial_use_allowed": true,
+    "vendor": "OpenAI",
+    "weights_license_tier": "proprietary"
 }

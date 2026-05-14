@@ -474,9 +474,26 @@ SSoT: `_PROVIDER_SHORTCODES`-Dict in `utils/model_utils.py` + `short_code`-Feld 
 
 Der Web Exporter ist ein eigenständiger Publishing-Schritt (Layer 4 Downstream), der vollständig vom Core-Benchmark-Loop entkoppelt ist. Er liest ausschließlich aus bereits generierten Artefakten und schreibt in das externe Frontend-Repository.
 
-**SSOT-Prinzip:** Die Leaderboard-CSV ist die einzige Datenquelle. Ein vollständiger Rebuild (`shutil.rmtree` auf `models/`) stellt sicher, dass der Export immer synchron mit dem Leaderboard ist — Modelle die nicht in der CSV stehen, erscheinen nicht im Export.
+**SSOT-Prinzip:** Die Leaderboard-CSV ist die primäre Datenquelle für Scores und Metadaten. Ein vollständiger Rebuild (`shutil.rmtree` auf `models/`) stellt sicher, dass der Export immer synchron mit dem Leaderboard ist — Modelle die nicht in der CSV stehen, erscheinen nicht im Export.
 
 **Model Cards & Provider Cards:** Strukturierte JSON-Steckbriefe pro Modell (`benchmark_scores/model_cards/`) und pro Provider (`benchmark_scores/provider_cards/`), generiert via LLM (`make model-cards`, `make provider-cards`). Sie enthalten Entwickler, Herkunftsland, Stärken/Schwächen, Datenschutz-Metadaten und Sovereign-Risk-Einschätzung. Die Cards werden (a) als Kontext-Block in den Meta-Reviewer injiziert und (b) als eigenständige JSON-API für das Web-Frontend bereitgestellt.
+
+**🛑 SSOT Modell-Kategorisierung (`weights_license_tier`):**
+Die Anzeige-Kategorie eines Modells wird **ausschließlich** aus dem Feld `weights_license_tier` der Model Card abgeleitet — nicht aus der Leaderboard-CSV-Spalte `Type`, nicht aus der Herkunft der Benchmark-CSV und nicht aus Heuristiken über Modellnamen.
+
+```
+Model Card (weights_license_tier)  →  get_model_category()  →  Display-String
+──────────────────────────────────────────────────────────────────────────────
+"proprietary"       →  "Proprietär"         (API-only, Gewichte nicht öffentlich)
+"restricted-weights"→  "Restricted Weights" (Gewichte verfügbar, Lizenz eingeschränkt)
+"open-weights"      →  "Open Weights"        (frei, Apache 2.0 / MIT o. ä.)
+```
+
+Die Funktion `get_model_category()` in `utils/model_utils.py` ist der einzige Einstiegspunkt. Sie versucht zuerst den Card-Lookup — fällt sie zurück auf Config-Heuristiken (kein Card-Feld vorhanden), liefert sie ebenfalls einen der drei obigen Strings. Niemand darf diese Strings hardcodieren oder selbst ableiten.
+
+`web_export.py` überschreibt das `type`-Feld im Export zur Laufzeit aus der Model Card, so dass auch ältere Leaderboard-CSV-Zeilen (die noch alte Strings wie `"Open Weights (Cloud)"` enthalten können) sofort die korrekten Werte liefern — ohne CSV-Rebuild.
+
+**Verbotene Altstrings (seit v3.7.0 abgelöst):** `"Open Weights (Cloud)"`, `"Open Weights (Local)"`, `"Commercial"`, `"Local"`, `"cloud"`, `"local"` als Kategorie-Display-Strings dürfen nicht mehr vergeben werden. Sie können in historischen CSVs noch vorkommen — das Frontend behandelt sie via Legacy-Fallback.
 
 **Lizenz-Metadaten (Kernziel des Benchmarks):** Jede Model Card enthält `license`, `license_url` und `commercial_use_allowed`. Diese Felder beantworten die Kernfrage von CrucibleMark: Wie gut schlagen sich selbstgehostete Open-Weights-Modelle als datenschutzkonforme, manipulationsfreie Alternative gegen proprietäre Cloud-Modelle — und welche davon sind frei einsetzbar (`commercial_use_allowed: true`, z. B. Apache 2.0 / MIT) versus Open-Weights mit eingeschränkten Lizenzen (Meta Community License, GLM-4 License) oder reinen Cloud-Diensten (`Proprietary`)? `commercial_use_allowed: null` markiert Modelle mit skalenabhängigen oder unklaren Bedingungen.
 

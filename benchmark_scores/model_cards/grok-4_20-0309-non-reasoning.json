@@ -1,41 +1,42 @@
 {
-  "model_id": "grok-4.20-0309-non-reasoning",
-  "display_name": "Grok 4 (Non-Reasoning)",
-  "developer": "xAI",
-  "origin_country": "USA",
-  "developer_jurisdiction": "US",
-  "deployment_type": "cloud-only",
-  "local_deployment_possible": false,
-  "weights_provenance_risk": "medium",
-  "weights_provenance_risk_rationale": "xAI ist ein US-amerikanisches Unternehmen und unterliegt dem CLOUD Act, jedoch nicht dem chinesischen NSL; die Weights sind nicht öffentlich zugänglich.",
-  "model_family": "Grok",
-  "vendor": "xAI",
-  "primary_focus": "general",
-  "summary": "Grok 4 (Non-Reasoning) ist ein Cloud-Modell von xAI (USA), das ohne aktiviertes Chain-of-Thought-Reasoning betrieben wird. Es ist auf schnelle, direkte Antworten ausgelegt und eignet sich für allgemeine Assistenzaufgaben, Textverarbeitung und Konversation mit niedrigerer Latenz als Reasoning-Varianten.",
-  "strengths": [
-    "Niedrige Latenz durch deaktiviertes Chain-of-Thought-Reasoning",
-    "Breite Allround-Fähigkeiten für Konversation und Textaufgaben",
-    "Unterstützung von Tool Use / Function Calling für Agentenanwendungen"
-  ],
-  "known_limitations": [
-    "Schwächere Leistung bei komplexen mehrstufigen Schlussfolgerungsaufgaben im Vergleich zur Reasoning-Variante",
-    "Nur über xAI-Cloud-API verfügbar, kein lokaler Betrieb möglich"
-  ],
-  "judge_context_hint": "Das Modell ist die Non-Reasoning-Variante von Grok 4 und liefert direkte Antworten ohne sichtbare Denkschritte; Bewertungen sollten die fehlende explizite Reasoning-Kette berücksichtigen.",
-  "architecture_tags": [
-    "General",
-    "Thinking-Optional"
-  ],
-  "supports_tool_use": true,
-  "unknown": true,
-  "generated_at": "2026-05-04T17:56:59.089113+00:00",
-  "card_status": "complete",
-  "size_class": "Frontier",
-  "thinking_probe_detected": false,
-  "thinking_probe_evidence": "No CoT signals found (A: no think-tags, B: reasoning_tokens=0). Response length: 554 chars",
-  "thinking_probe_confidence": "low",
-  "thinking_probe_at": "2026-05-04T15:39:39.697605+00:00",
-  "license": "Proprietary",
-  "license_url": null,
-  "commercial_use_allowed": true
+    "model_id": "grok-4.20-0309-non-reasoning",
+    "display_name": "Grok 4 (Non-Reasoning)",
+    "developer": "xAI",
+    "origin_country": "USA",
+    "developer_jurisdiction": "US",
+    "deployment_type": "cloud-only",
+    "local_deployment_possible": false,
+    "weights_provenance_risk": "medium",
+    "weights_provenance_risk_rationale": "xAI ist ein US-amerikanisches Unternehmen und unterliegt dem CLOUD Act, jedoch nicht dem chinesischen NSL; die Weights sind nicht öffentlich zugänglich.",
+    "model_family": "Grok",
+    "vendor": "xAI",
+    "primary_focus": "general",
+    "summary": "Grok 4 (Non-Reasoning) ist ein Cloud-Modell von xAI (USA), das ohne aktiviertes Chain-of-Thought-Reasoning betrieben wird. Es ist auf schnelle, direkte Antworten ausgelegt und eignet sich für allgemeine Assistenzaufgaben, Textverarbeitung und Konversation mit niedrigerer Latenz als Reasoning-Varianten.",
+    "strengths": [
+        "Niedrige Latenz durch deaktiviertes Chain-of-Thought-Reasoning",
+        "Breite Allround-Fähigkeiten für Konversation und Textaufgaben",
+        "Unterstützung von Tool Use / Function Calling für Agentenanwendungen"
+    ],
+    "known_limitations": [
+        "Schwächere Leistung bei komplexen mehrstufigen Schlussfolgerungsaufgaben im Vergleich zur Reasoning-Variante",
+        "Nur über xAI-Cloud-API verfügbar, kein lokaler Betrieb möglich"
+    ],
+    "judge_context_hint": "Das Modell ist die Non-Reasoning-Variante von Grok 4 und liefert direkte Antworten ohne sichtbare Denkschritte; Bewertungen sollten die fehlende explizite Reasoning-Kette berücksichtigen.",
+    "architecture_tags": [
+        "General",
+        "Thinking-Optional"
+    ],
+    "supports_tool_use": true,
+    "unknown": true,
+    "generated_at": "2026-05-04T17:56:59.089113+00:00",
+    "card_status": "complete",
+    "size_class": "Frontier",
+    "thinking_probe_detected": false,
+    "thinking_probe_evidence": "No CoT signals found (A: no think-tags, B: reasoning_tokens=0). Response length: 554 chars",
+    "thinking_probe_confidence": "low",
+    "thinking_probe_at": "2026-05-04T15:39:39.697605+00:00",
+    "license": "Proprietary",
+    "license_url": null,
+    "commercial_use_allowed": true,
+    "weights_license_tier": "proprietary"
 }

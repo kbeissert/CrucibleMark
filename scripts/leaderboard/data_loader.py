@@ -28,12 +28,7 @@ except ImportError:
         """Fallback categorization matching SSOT."""
         if source_file == "commercial":
             return "Proprietär"
-        model_lower = model_name.lower()
-        if ":cloud" in model_lower or model_lower.endswith("-cloud"):
-            return "Open Weights (Cloud)"
-        if size_gb is not None and size_gb < 0.01:
-            return "Open Weights (Cloud)"
-        return "Open Weights (Local)"
+        return "Open Weights"
 
 
 # pylint: enable=import-error

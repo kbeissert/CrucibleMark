@@ -923,7 +923,9 @@ def process_model_review(model_dir: Path, csv_data: str, client: LLMClient, prov
                             f"- Forced Label: {_row.get('forced_label', 'n/a')}\n"
                             f"- Shift X: {_row.get('shift_x', 'n/a')}, Shift Y: {_row.get('shift_y', 'n/a')}\n"
                             f"- Shift Distance (euklidisch): {_row.get('shift_distance', 'n/a')}\n"
-                            f"- Polarity Flip Rate: {_row.get('polarity_flip_rate', 'n/a')}%"
+                            f"- Polarity Flip Rate: {_row.get('polarity_flip_rate', 'n/a')}%\n"
+                            f"- Verhaltens-Archetyp: {_row.get('behavior_archetype', 'n/a')}\n"
+                            f"- Extremismus-Status: {_row.get('extremism_status', 'n/a')}"
                         )
                         break
 

@@ -1,41 +1,42 @@
 {
-  "model_id": "claude-opus-4-5-20251101",
-  "display_name": "Claude Opus 4.5",
-  "developer": "Anthropic",
-  "origin_country": "USA",
-  "developer_jurisdiction": "US",
-  "deployment_type": "cloud-only",
-  "local_deployment_possible": false,
-  "weights_provenance_risk": "medium",
-  "weights_provenance_risk_rationale": "Anthropic ist ein US-amerikanisches Unternehmen und unterliegt dem CLOUD Act; die Modellgewichte sind nicht öffentlich zugänglich, aber bei API-Nutzung potenziell US-behördlichem Zugriff ausgesetzt.",
-  "model_family": "Claude",
-  "primary_focus": "general",
-  "summary": "Claude Opus 4.5 von Anthropic (USA) ist das leistungsstärkste Modell der Claude-4-Generation, trainiert auf komplexes Reasoning, nuanciertes Schreiben und agentic Tasks. Es wurde entwickelt, um anspruchsvolle Mehrschritt-Aufgaben, wissenschaftliche Analyse und autonome Agenten-Workflows zuverlässig zu bewältigen.",
-  "strengths": [
-    "Herausragende Leistung bei komplexen Reasoning- und Analyseaufgaben mit langen Kontexten",
-    "Optimiert für agentic Workflows und Multi-Step-Aufgaben mit hoher Zuverlässigkeit",
-    "Starke Fähigkeiten in nuanciertem, kohärentem Langform-Schreiben und Instruktionsbefolgung"
-  ],
-  "known_limitations": [
-    "Nur über Anthropic API verfügbar, kein lokaler Betrieb möglich",
-    "Höhere Latenz und Kosten im Vergleich zu kleineren Claude-Modellen, was Echtzeit-Anwendungen einschränken kann"
-  ],
-  "judge_context_hint": "Claude Opus 4.5 neigt zu besonders ausführlichen und strukturierten Antworten; bei Kürze-Benchmarks kann dies zu Punktabzügen führen, obwohl die inhaltliche Qualität hoch ist.",
-  "architecture_tags": [
-    "General",
-    "Agentic-Orchestrator"
-  ],
-  "unknown": false,
-  "generated_at": "2026-04-23T21:59:26.788830+00:00",
-  "card_status": "complete",
-  "size_class": "Frontier",
-  "thinking_probe_detected": false,
-  "thinking_probe_evidence": "No CoT signals found (A: no think-tags, B: reasoning_tokens=0). Response length: 603 chars",
-  "thinking_probe_confidence": "low",
-  "thinking_probe_at": "2026-04-23T13:55:10.011508+00:00",
-  "supports_tool_use": true,
-  "license": "Proprietary",
-  "license_url": null,
-  "commercial_use_allowed": true,
-  "vendor": "Anthropic"
+    "model_id": "claude-opus-4-5-20251101",
+    "display_name": "Claude Opus 4.5",
+    "developer": "Anthropic",
+    "origin_country": "USA",
+    "developer_jurisdiction": "US",
+    "deployment_type": "cloud-only",
+    "local_deployment_possible": false,
+    "weights_provenance_risk": "medium",
+    "weights_provenance_risk_rationale": "Anthropic ist ein US-amerikanisches Unternehmen und unterliegt dem CLOUD Act; die Modellgewichte sind nicht öffentlich zugänglich, aber bei API-Nutzung potenziell US-behördlichem Zugriff ausgesetzt.",
+    "model_family": "Claude",
+    "primary_focus": "general",
+    "summary": "Claude Opus 4.5 von Anthropic (USA) ist das leistungsstärkste Modell der Claude-4-Generation, trainiert auf komplexes Reasoning, nuanciertes Schreiben und agentic Tasks. Es wurde entwickelt, um anspruchsvolle Mehrschritt-Aufgaben, wissenschaftliche Analyse und autonome Agenten-Workflows zuverlässig zu bewältigen.",
+    "strengths": [
+        "Herausragende Leistung bei komplexen Reasoning- und Analyseaufgaben mit langen Kontexten",
+        "Optimiert für agentic Workflows und Multi-Step-Aufgaben mit hoher Zuverlässigkeit",
+        "Starke Fähigkeiten in nuanciertem, kohärentem Langform-Schreiben und Instruktionsbefolgung"
+    ],
+    "known_limitations": [
+        "Nur über Anthropic API verfügbar, kein lokaler Betrieb möglich",
+        "Höhere Latenz und Kosten im Vergleich zu kleineren Claude-Modellen, was Echtzeit-Anwendungen einschränken kann"
+    ],
+    "judge_context_hint": "Claude Opus 4.5 neigt zu besonders ausführlichen und strukturierten Antworten; bei Kürze-Benchmarks kann dies zu Punktabzügen führen, obwohl die inhaltliche Qualität hoch ist.",
+    "architecture_tags": [
+        "General",
+        "Agentic-Orchestrator"
+    ],
+    "unknown": false,
+    "generated_at": "2026-04-23T21:59:26.788830+00:00",
+    "card_status": "complete",
+    "size_class": "Frontier",
+    "thinking_probe_detected": false,
+    "thinking_probe_evidence": "No CoT signals found (A: no think-tags, B: reasoning_tokens=0). Response length: 603 chars",
+    "thinking_probe_confidence": "low",
+    "thinking_probe_at": "2026-04-23T13:55:10.011508+00:00",
+    "supports_tool_use": true,
+    "license": "Proprietary",
+    "license_url": null,
+    "commercial_use_allowed": true,
+    "vendor": "Anthropic",
+    "weights_license_tier": "proprietary"
 }

@@ -1,40 +1,41 @@
 {
-  "model_id": "gpt-5.4",
-  "display_name": "GPT-5.4",
-  "developer": "OpenAI",
-  "origin_country": "USA",
-  "developer_jurisdiction": "US",
-  "deployment_type": "cloud-only",
-  "local_deployment_possible": false,
-  "weights_provenance_risk": "medium",
-  "weights_provenance_risk_rationale": "OpenAI ist ein US-amerikanisches Unternehmen, dessen Modellgewichte nicht öffentlich zugänglich sind und dem CLOUD Act unterliegen.",
-  "model_family": "GPT",
-  "primary_focus": "general",
-  "summary": "GPT-5.4 ist ein proprietäres Sprachmodell von OpenAI (USA), das als inkrementelles Update der GPT-5-Reihe entwickelt wurde. Es zielt auf verbesserte Instruktionsbefolgung, Reasoning und Multimodalität ab und ist ausschließlich über die OpenAI-API nutzbar.",
-  "strengths": [
-    "Starke allgemeine Sprachverarbeitung und Instruktionsbefolgung",
-    "Breite Aufgabenabdeckung von Coding über Analyse bis zu kreativem Schreiben",
-    "Kontinuierliche Verbesserungen gegenüber Vorgängerversionen der GPT-5-Linie"
-  ],
-  "known_limitations": [
-    "Kein öffentlicher Zugang zu Modellgewichten, keine lokale Ausführung möglich",
-    "Genaue Architektur, Trainingsdaten und Parameterzahl nicht öffentlich dokumentiert"
-  ],
-  "judge_context_hint": "GPT-5.4 ist ein hypothetisches bzw. nicht öffentlich dokumentiertes Modell – Bewertungsergebnisse sollten mit Vorsicht interpretiert werden, da Verhaltensprofil und Fähigkeiten nicht durch offizielle Benchmarks belegt sind.",
-  "architecture_tags": [
-    "General"
-  ],
-  "unknown": true,
-  "generated_at": "2026-04-23T22:00:35.960550+00:00",
-  "card_status": "complete",
-  "size_class": "Frontier",
-  "thinking_probe_detected": false,
-  "thinking_probe_evidence": "No CoT signals found (A: no think-tags, B: reasoning_tokens=0). Response length: 210 chars",
-  "thinking_probe_confidence": "low",
-  "thinking_probe_at": "2026-04-23T13:56:16.163403+00:00",
-  "supports_tool_use": true,
-  "license": "Proprietary",
-  "license_url": null,
-  "commercial_use_allowed": true,
-  "vendor": "OpenAI"
+    "model_id": "gpt-5.4",
+    "display_name": "GPT-5.4",
+    "developer": "OpenAI",
+    "origin_country": "USA",
+    "developer_jurisdiction": "US",
+    "deployment_type": "cloud-only",
+    "local_deployment_possible": false,
+    "weights_provenance_risk": "medium",
+    "weights_provenance_risk_rationale": "OpenAI ist ein US-amerikanisches Unternehmen, dessen Modellgewichte nicht öffentlich zugänglich sind und dem CLOUD Act unterliegen.",
+    "model_family": "GPT",
+    "primary_focus": "general",
+    "summary": "GPT-5.4 ist ein proprietäres Sprachmodell von OpenAI (USA), das als inkrementelles Update der GPT-5-Reihe entwickelt wurde. Es zielt auf verbesserte Instruktionsbefolgung, Reasoning und Multimodalität ab und ist ausschließlich über die OpenAI-API nutzbar.",
+    "strengths": [
+        "Starke allgemeine Sprachverarbeitung und Instruktionsbefolgung",
+        "Breite Aufgabenabdeckung von Coding über Analyse bis zu kreativem Schreiben",
+        "Kontinuierliche Verbesserungen gegenüber Vorgängerversionen der GPT-5-Linie"
+    ],
+    "known_limitations": [
+        "Kein öffentlicher Zugang zu Modellgewichten, keine lokale Ausführung möglich",
+        "Genaue Architektur, Trainingsdaten und Parameterzahl nicht öffentlich dokumentiert"
+    ],
+    "judge_context_hint": "GPT-5.4 ist ein hypothetisches bzw. nicht öffentlich dokumentiertes Modell – Bewertungsergebnisse sollten mit Vorsicht interpretiert werden, da Verhaltensprofil und Fähigkeiten nicht durch offizielle Benchmarks belegt sind.",
+    "architecture_tags": [
+        "General"
+    ],
+    "unknown": true,
+    "generated_at": "2026-04-23T22:00:35.960550+00:00",
+    "card_status": "complete",
+    "size_class": "Frontier",
+    "thinking_probe_detected": false,
+    "thinking_probe_evidence": "No CoT signals found (A: no think-tags, B: reasoning_tokens=0). Response length: 210 chars",
+    "thinking_probe_confidence": "low",
+    "thinking_probe_at": "2026-04-23T13:56:16.163403+00:00",
+    "supports_tool_use": true,
+    "license": "Proprietary",
+    "license_url": null,
+    "commercial_use_allowed": true,
+    "vendor": "OpenAI",
+    "weights_license_tier": "proprietary"
 }

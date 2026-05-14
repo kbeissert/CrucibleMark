@@ -1,12 +1,30 @@
 # PROJECT_STATUS.md
 
-**Last Updated:** 2026-05-09
-**Current Version:** 3.6.5 (Archetyp-Umbenennung: Das Schaf → Der Stoiker, Chamäleon → Der Narr)
+**Last Updated:** 2026-05-14
+**Current Version:** 3.7.0 (Modell-Kategorisierungs-SSOT: 3-Tier `weights_license_tier` als einzige Quelle)
 **Status:** ✅ Production-Ready
 
 ---
 
 ## Executive Summary
+
+CrucibleMark v3.7.0 konsolidiert die Modell-Kategorisierung auf eine Single Source of Truth: Das Feld `weights_license_tier` in den Model Cards ist ab sofort die einzige Quelle für die Anzeige-Kategorie eines Modells. Die bisherige Zweiteilung `Open Weights (Cloud)` / `Open Weights (Local)` entfällt zugunsten von drei klar semantisch getrennten Tiers. Backend (`get_model_category()`, `web_export.py`, `io_manager.py`, `data_loader.py`) und Frontend (`model-types.js`, alle Chart-Module, politicalCompass.11tydata.js) wurden synchronisiert. Die Architekturegel ist in `CLAUDE.md`, `ARCHITECTURE.md` und `systemPatterns.md` dokumentiert.
+
+**Key Achievements (v3.7.0):**
+- ✅ **`utils/model_utils.py` — `get_model_category()` Card-First:** `_find_card()` → `weights_license_tier` → Display-String. Drei gültige Werte: `Proprietär` / `Restricted Weights` / `Open Weights`.
+- ✅ **`scripts/web_export.py` — Type-Override aus Card:** `type`-Feld wird zur Export-Zeit aus Model Card abgeleitet; kein CSV-Rebuild nötig. Auch `model_category` im PC-Export Card-basiert.
+- ✅ **`benchmark_modules/political_compass/core/io_manager.py`:** Nutzt `get_model_category()` statt eigenständiger Inline-Logik.
+- ✅ **`scripts/leaderboard/data_loader.py`:** Fallback-Funktion auf 3-Tier-Strings reduziert.
+- ✅ **Frontend SSOT `model-types.js`:** 3 Tiers, `isRestrictedWeights`, `CHART_SERIES_CONFIG` 3 Einträge.
+- ✅ **Alle Chart-Module aktualisiert:** `political-compass-chart.js`, `politicalCompass.11tydata.js`, `leaderboard-chart.js`, `scoreboard-table.js`, `shift-chart.js`.
+- ✅ **SCSS:** `--cm-chart-label-restricted: $cm-amber`, `cm-model-badge--restricted` + `--restricted-sub`.
+- ✅ **Web-Export 72/72 OK.** Verifikation: `['Open Weights', 'Proprietär', 'Restricted Weights']` in beiden Exports.
+
+**Vorherige Version (v3.6.5 – Archetyp-Umbenennung: Stoiker + Narr):**
+
+CrucibleMark v3.6.5 benennt zwei Archetypen um: `Das Schaf` → `Der Stoiker`, `Chamäleon` → `Der Narr`. Finale vier Labels: Stoiker / Wolf im Schafspelz / Die Chimäre / Der Narr. Nur Labels geändert, Klassifikationslogik und Schwellwerte unverändert. CSV-Backfill 76 Zeilen, Web-Export 72/72.
+
+**Vorherige Version (v3.6.2 – `vendor`-Feld in Model Cards):**
 
 CrucibleMark v3.6.2 führt das `vendor`-Feld als Filterdimension für den UI-Familienfilter ein. Alle 72 Model Cards wurden mit einem normalisierten Hersteller-Namen gepatcht (13 Werte, 0 ungemappte Modelle). `web_export.py` exportiert `vendor` als Top-Level-Feld (analog zu `size_class`), `benchmark_leaderboard_detailed.csv` enthält eine neue `Vendor`-Spalte. Zusätzlich (v3.6.1): Lizenz-Metadaten (`license`, `license_url`, `commercial_use_allowed`) in allen Cards; hf.co-Modell-Card-Lookup-Fallback in `web_export.py`; Abliterated-Card-Korrektur (Apache-2.0). (Commits `5241532`, `7551b31`, `ecdff77`)
 

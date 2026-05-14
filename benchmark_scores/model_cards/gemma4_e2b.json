@@ -1,41 +1,42 @@
 {
-  "model_id": "gemma4:e2b",
-  "display_name": "Gemma 4 2B",
-  "developer": "Google DeepMind",
-  "origin_country": "USA",
-  "developer_jurisdiction": "US",
-  "deployment_type": "open-weights-cloud-available",
-  "local_deployment_possible": true,
-  "weights_provenance_risk": "medium",
-  "weights_provenance_risk_rationale": "Google DeepMind ist ein US-amerikanisches Unternehmen und unterliegt dem CLOUD Act, der staatlichen Zugriff auf Daten bei API-Nutzung ermöglichen kann, betrifft jedoch nicht die lokal betriebenen Gewichte.",
-  "model_family": "Gemma",
-  "primary_focus": "general",
-  "summary": "Gemma 4 2B ist ein kompaktes Open-Weights-Modell von Google DeepMind, trainiert auf allgemeinen Sprachaufgaben mit Fokus auf Effizienz und lokale Nutzbarkeit. Es eignet sich für Instruction-Following, einfache Textgenerierung und Edge-Deployments, wo Ressourcen begrenzt sind.",
-  "strengths": [
-    "Sehr geringer Ressourcenbedarf, ideal für lokale und Edge-Deployments",
-    "Solide Instruction-Following-Fähigkeiten für ein 2B-Modell",
-    "Open-Weights ermöglichen vollständige lokale Kontrolle und Anpassung"
-  ],
-  "known_limitations": [
-    "Begrenzte Reasoning-Tiefe und Kontextverarbeitung aufgrund der geringen Modellgröße",
-    "Schwächer bei komplexen mehrschrittigen Aufgaben, Mathematik und Code im Vergleich zu größeren Modellen"
-  ],
-  "judge_context_hint": "Bei der Bewertung berücksichtigen, dass es sich um ein 2B-Modell handelt – Antwortqualität und Reasoning-Tiefe sind mit größenklassengerechten Erwartungen zu messen, nicht mit Frontier-Modellen zu vergleichen.",
-  "architecture_tags": [
-    "General",
-    "Instruct"
-  ],
-  "unknown": false,
-  "generated_at": "2026-04-23T22:08:02.344476+00:00",
-  "card_status": "complete",
-  "size_class": "Nano",
-  "thinking_probe_detected": false,
-  "thinking_probe_evidence": "No CoT signals found (A: no think-tags, B: reasoning_tokens=0). Response length: 349 chars",
-  "thinking_probe_confidence": "low",
-  "thinking_probe_at": "2026-04-25T08:38:35.531224+00:00",
-  "supports_tool_use": true,
-  "license": "Google Gemma Terms of Use",
-  "license_url": "https://ai.google.dev/gemma/terms",
-  "commercial_use_allowed": null,
-  "vendor": "Google"
+    "model_id": "gemma4:e2b",
+    "display_name": "Gemma 4 2B",
+    "developer": "Google DeepMind",
+    "origin_country": "USA",
+    "developer_jurisdiction": "US",
+    "deployment_type": "open-weights-cloud-available",
+    "local_deployment_possible": true,
+    "weights_provenance_risk": "medium",
+    "weights_provenance_risk_rationale": "Google DeepMind ist ein US-amerikanisches Unternehmen und unterliegt dem CLOUD Act, der staatlichen Zugriff auf Daten bei API-Nutzung ermöglichen kann, betrifft jedoch nicht die lokal betriebenen Gewichte.",
+    "model_family": "Gemma",
+    "primary_focus": "general",
+    "summary": "Gemma 4 2B ist ein kompaktes Open-Weights-Modell von Google DeepMind, trainiert auf allgemeinen Sprachaufgaben mit Fokus auf Effizienz und lokale Nutzbarkeit. Es eignet sich für Instruction-Following, einfache Textgenerierung und Edge-Deployments, wo Ressourcen begrenzt sind.",
+    "strengths": [
+        "Sehr geringer Ressourcenbedarf, ideal für lokale und Edge-Deployments",
+        "Solide Instruction-Following-Fähigkeiten für ein 2B-Modell",
+        "Open-Weights ermöglichen vollständige lokale Kontrolle und Anpassung"
+    ],
+    "known_limitations": [
+        "Begrenzte Reasoning-Tiefe und Kontextverarbeitung aufgrund der geringen Modellgröße",
+        "Schwächer bei komplexen mehrschrittigen Aufgaben, Mathematik und Code im Vergleich zu größeren Modellen"
+    ],
+    "judge_context_hint": "Bei der Bewertung berücksichtigen, dass es sich um ein 2B-Modell handelt – Antwortqualität und Reasoning-Tiefe sind mit größenklassengerechten Erwartungen zu messen, nicht mit Frontier-Modellen zu vergleichen.",
+    "architecture_tags": [
+        "General",
+        "Instruct"
+    ],
+    "unknown": false,
+    "generated_at": "2026-04-23T22:08:02.344476+00:00",
+    "card_status": "complete",
+    "size_class": "Nano",
+    "thinking_probe_detected": false,
+    "thinking_probe_evidence": "No CoT signals found (A: no think-tags, B: reasoning_tokens=0). Response length: 349 chars",
+    "thinking_probe_confidence": "low",
+    "thinking_probe_at": "2026-04-25T08:38:35.531224+00:00",
+    "supports_tool_use": true,
+    "license": "Google Gemma Terms of Use",
+    "license_url": "https://ai.google.dev/gemma/terms",
+    "commercial_use_allowed": null,
+    "vendor": "Google",
+    "weights_license_tier": "restricted-weights"
 }

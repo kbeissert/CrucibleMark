@@ -1,37 +1,38 @@
 {
-  "model_id": "z-ai/glm-5-turbo-20260315",
-  "display_name": "GLM-5 Turbo",
-  "developer": "Zhipu AI",
-  "origin_country": "China",
-  "developer_jurisdiction": "CN",
-  "deployment_type": "cloud-only",
-  "local_deployment_possible": false,
-  "weights_provenance_risk": "high",
-  "weights_provenance_risk_rationale": "Zhipu AI ist ein chinesisches Unternehmen und unterliegt dem chinesischen National Security Law (NSL), das staatlichen Zugriff auf Daten und Modelle ermöglichen kann.",
-  "model_family": "GLM",
-  "primary_focus": "general",
-  "summary": "GLM-5 Turbo ist ein Sprachmodell von Zhipu AI aus China, entwickelt als schnelle, effiziente Variante der GLM-5-Familie. Es ist auf mehrsprachige Instruktionsbefolgung und allgemeine Aufgaben ausgerichtet, mit Stärken in Chinesisch und Englisch sowie bei strukturierten Antworten.",
-  "strengths": [
-    "Starke Leistung in chinesischer und englischer Sprache",
-    "Schnelle Inferenz als Turbo-Variante der GLM-5-Familie",
-    "Gute Instruktionsbefolgung bei alltäglichen und geschäftlichen Aufgaben"
-  ],
-  "known_limitations": [
-    "Gewichte nicht öffentlich verfügbar, nur über API nutzbar",
-    "Mögliche Zensur oder Einschränkungen bei politisch sensiblen Themen gemäß chinesischer Regulierung"
-  ],
-  "judge_context_hint": "Das Modell kann bei politisch oder kulturell sensiblen Themen mit Bezug zu China eingeschränkte oder ausweichende Antworten liefern; dies sollte bei der Bewertung von Offenheit und Vollständigkeit berücksichtigt werden.",
-  "architecture_tags": [
-    "General",
-    "Instruct"
-  ],
-  "unknown": false,
-  "generated_at": "2026-04-23T22:03:36.991556+00:00",
-  "card_status": "complete",
-  "size_class": "Frontier",
-  "supports_tool_use": true,
-  "license": "Proprietary",
-  "license_url": null,
-  "commercial_use_allowed": true,
-  "vendor": "Zhipu AI"
+    "model_id": "z-ai/glm-5-turbo-20260315",
+    "display_name": "GLM-5 Turbo",
+    "developer": "Zhipu AI",
+    "origin_country": "China",
+    "developer_jurisdiction": "CN",
+    "deployment_type": "cloud-only",
+    "local_deployment_possible": false,
+    "weights_provenance_risk": "high",
+    "weights_provenance_risk_rationale": "Zhipu AI ist ein chinesisches Unternehmen und unterliegt dem chinesischen National Security Law (NSL), das staatlichen Zugriff auf Daten und Modelle ermöglichen kann.",
+    "model_family": "GLM",
+    "primary_focus": "general",
+    "summary": "GLM-5 Turbo ist ein Sprachmodell von Zhipu AI aus China, entwickelt als schnelle, effiziente Variante der GLM-5-Familie. Es ist auf mehrsprachige Instruktionsbefolgung und allgemeine Aufgaben ausgerichtet, mit Stärken in Chinesisch und Englisch sowie bei strukturierten Antworten.",
+    "strengths": [
+        "Starke Leistung in chinesischer und englischer Sprache",
+        "Schnelle Inferenz als Turbo-Variante der GLM-5-Familie",
+        "Gute Instruktionsbefolgung bei alltäglichen und geschäftlichen Aufgaben"
+    ],
+    "known_limitations": [
+        "Gewichte nicht öffentlich verfügbar, nur über API nutzbar",
+        "Mögliche Zensur oder Einschränkungen bei politisch sensiblen Themen gemäß chinesischer Regulierung"
+    ],
+    "judge_context_hint": "Das Modell kann bei politisch oder kulturell sensiblen Themen mit Bezug zu China eingeschränkte oder ausweichende Antworten liefern; dies sollte bei der Bewertung von Offenheit und Vollständigkeit berücksichtigt werden.",
+    "architecture_tags": [
+        "General",
+        "Instruct"
+    ],
+    "unknown": false,
+    "generated_at": "2026-04-23T22:03:36.991556+00:00",
+    "card_status": "complete",
+    "size_class": "Frontier",
+    "supports_tool_use": true,
+    "license": "Proprietary",
+    "license_url": null,
+    "commercial_use_allowed": true,
+    "vendor": "Zhipu AI",
+    "weights_license_tier": "proprietary"
 }

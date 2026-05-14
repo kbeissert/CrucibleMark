@@ -488,6 +488,16 @@ def main() -> None:
         else:
             _thinking_mode = "standard"
 
+        # SSOT: derive display type from model card weights_license_tier;
+        # fall back to CSV "Type" column for models without a card.
+        _TIER_MAP = {
+            "proprietary": "Proprietär",
+            "restricted-weights": "Restricted Weights",
+            "open-weights": "Open Weights",
+        }
+        _card_tier = card.get("weights_license_tier") if card else None
+        _type = _TIER_MAP.get(_card_tier) or str(row.get("Type", ""))
+
         # Core Leaderboard Entry
         entry = {
             "slug": slug,
@@ -499,8 +509,10 @@ def main() -> None:
             "size_class": str(row.get("Size Class", "Frontier")),
             "speed_profile": str(row.get("Speed Profile", "")),
             "performance_tier": str(row.get("Performance Tier", "")) or None,
-            "type": str(row.get("Type", "")),
+            "type": _type,
             "thinking_mode": _thinking_mode,
+            "deployment_type": card.get("deployment_type") if card else None,
+            "weights_license_tier": card.get("weights_license_tier") if card else None,
             "inference_provider": resolve_inference_provider(model_name, provider_map),
             "provider_code": str(row.get("Provider Code", "")) or None,
             "total_score": normalize_pending(row.get("Total Score")),
@@ -558,6 +570,7 @@ def main() -> None:
                 "license": card.get("license"),
                 "license_url": card.get("license_url"),
                 "commercial_use_allowed": card.get("commercial_use_allowed"),
+                "weights_license_tier": card.get("weights_license_tier"),
             } if card else None,
         }
         models_list.append(entry)
@@ -614,7 +627,7 @@ def main() -> None:
                     "shift_y": normalize_pending(_lb.get("shift_y")) if _lb is not None else None,
                     "polarity_flip_rate": normalize_pending(_lb.get("polarity_flip_rate")) if _lb is not None else None,
                     "behavior_archetype": str(_lb.get("behavior_archetype", "")) if _lb is not None else None,
-                    "model_category": str(_lb.get("model_category", "")) if _lb is not None else None,
+                    "model_category": _type,
                     "is_retest": bool(_lb.get("is_retest")) if _lb is not None and not pd.isna(_lb.get("is_retest", float("nan"))) else None,
                     "archetype": archetype,
                     "extremism_status": extremism,

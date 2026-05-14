@@ -1,40 +1,41 @@
 {
-  "model_id": "o4-mini",
-  "display_name": "o4-mini",
-  "developer": "OpenAI",
-  "origin_country": "USA",
-  "developer_jurisdiction": "US",
-  "deployment_type": "cloud-only",
-  "local_deployment_possible": false,
-  "weights_provenance_risk": "medium",
-  "weights_provenance_risk_rationale": "OpenAI ist ein US-amerikanisches Unternehmen und unterliegt dem CLOUD Act, jedoch sind die Modellgewichte nicht öffentlich zugänglich, sodass kein direktes Risiko durch Gewichts-Exfiltration besteht.",
-  "model_family": "OpenAI o-series",
-  "primary_focus": "reasoning",
-  "summary": "o4-mini ist ein kompaktes Reasoning-Modell von OpenAI (USA), das auf mathematisches, wissenschaftliches und logisches Schlussfolgern spezialisiert ist. Es bietet starke Chain-of-Thought-Fähigkeiten bei geringerer Latenz und niedrigeren Kosten als o3, und wurde als effiziente Alternative für anspruchsvolle Reasoning-Aufgaben entwickelt.",
-  "strengths": [
-    "Herausragende Leistung bei Mathematik, Naturwissenschaften und formalem Schlussfolgern",
-    "Deutlich schneller und kostengünstiger als o3 bei vergleichbarer Reasoning-Qualität",
-    "Starke Coding-Fähigkeiten durch integriertes Chain-of-Thought-Training"
-  ],
-  "known_limitations": [
-    "Kein Zugriff auf Modellgewichte – ausschließlich über OpenAI-API nutzbar",
-    "Kann bei kreativen, offenen oder nuancierten Sprachaufgaben hinter generalistischen Modellen zurückbleiben"
-  ],
-  "judge_context_hint": "o4-mini denkt intern mit festem Chain-of-Thought und liefert oft präzise, strukturierte Antworten – bei Reasoning-Aufgaben ist die Ausgabe typischerweise sehr zuverlässig, bei offenen kreativen Aufgaben jedoch möglicherweise zu schematisch.",
-  "architecture_tags": [
-    "Thinking"
-  ],
-  "unknown": false,
-  "generated_at": "2026-04-23T21:59:48.373411+00:00",
-  "card_status": "complete",
-  "size_class": "Frontier",
-  "thinking_probe_detected": true,
-  "thinking_probe_evidence": "Manually confirmed: OpenAI o-series models use internal chain-of-thought reasoning. The API does not expose reasoning tokens or think-tags in the response body; automated probe cannot detect this. Token budget override is required.",
-  "thinking_probe_confidence": "high",
-  "thinking_probe_at": "2026-04-23T13:57:24.143470+00:00",
-  "supports_tool_use": true,
-  "license": "Proprietary",
-  "license_url": null,
-  "commercial_use_allowed": true,
-  "vendor": "OpenAI"
+    "model_id": "o4-mini",
+    "display_name": "o4-mini",
+    "developer": "OpenAI",
+    "origin_country": "USA",
+    "developer_jurisdiction": "US",
+    "deployment_type": "cloud-only",
+    "local_deployment_possible": false,
+    "weights_provenance_risk": "medium",
+    "weights_provenance_risk_rationale": "OpenAI ist ein US-amerikanisches Unternehmen und unterliegt dem CLOUD Act, jedoch sind die Modellgewichte nicht öffentlich zugänglich, sodass kein direktes Risiko durch Gewichts-Exfiltration besteht.",
+    "model_family": "OpenAI o-series",
+    "primary_focus": "reasoning",
+    "summary": "o4-mini ist ein kompaktes Reasoning-Modell von OpenAI (USA), das auf mathematisches, wissenschaftliches und logisches Schlussfolgern spezialisiert ist. Es bietet starke Chain-of-Thought-Fähigkeiten bei geringerer Latenz und niedrigeren Kosten als o3, und wurde als effiziente Alternative für anspruchsvolle Reasoning-Aufgaben entwickelt.",
+    "strengths": [
+        "Herausragende Leistung bei Mathematik, Naturwissenschaften und formalem Schlussfolgern",
+        "Deutlich schneller und kostengünstiger als o3 bei vergleichbarer Reasoning-Qualität",
+        "Starke Coding-Fähigkeiten durch integriertes Chain-of-Thought-Training"
+    ],
+    "known_limitations": [
+        "Kein Zugriff auf Modellgewichte – ausschließlich über OpenAI-API nutzbar",
+        "Kann bei kreativen, offenen oder nuancierten Sprachaufgaben hinter generalistischen Modellen zurückbleiben"
+    ],
+    "judge_context_hint": "o4-mini denkt intern mit festem Chain-of-Thought und liefert oft präzise, strukturierte Antworten – bei Reasoning-Aufgaben ist die Ausgabe typischerweise sehr zuverlässig, bei offenen kreativen Aufgaben jedoch möglicherweise zu schematisch.",
+    "architecture_tags": [
+        "Thinking"
+    ],
+    "unknown": false,
+    "generated_at": "2026-04-23T21:59:48.373411+00:00",
+    "card_status": "complete",
+    "size_class": "Frontier",
+    "thinking_probe_detected": true,
+    "thinking_probe_evidence": "Manually confirmed: OpenAI o-series models use internal chain-of-thought reasoning. The API does not expose reasoning tokens or think-tags in the response body; automated probe cannot detect this. Token budget override is required.",
+    "thinking_probe_confidence": "high",
+    "thinking_probe_at": "2026-04-23T13:57:24.143470+00:00",
+    "supports_tool_use": true,
+    "license": "Proprietary",
+    "license_url": null,
+    "commercial_use_allowed": true,
+    "vendor": "OpenAI",
+    "weights_license_tier": "proprietary"
 }

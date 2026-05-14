@@ -1,41 +1,42 @@
 {
-  "model_id": "qwen3.5:397b-cloud",
-  "display_name": "Qwen 3.5 397B",
-  "developer": "Alibaba Cloud",
-  "origin_country": "China",
-  "developer_jurisdiction": "CN",
-  "deployment_type": "cloud-only",
-  "local_deployment_possible": false,
-  "weights_provenance_risk": "high",
-  "weights_provenance_risk_rationale": "Alibaba Cloud unterliegt als chinesisches Unternehmen dem chinesischen National Security Law (NSL), das staatliche Zugriffe auf Daten und Modellentwicklung ermöglichen kann.",
-  "model_family": "Qwen",
-  "primary_focus": "general",
-  "summary": "Qwen 3.5 397B ist ein großes Sprachmodell von Alibaba Cloud aus China. Es wurde für allgemeine Sprachverständnis- und Reasoning-Aufgaben entwickelt, mit Stärken in Mehrsprachigkeit, Instruktionsbefolgung und komplexen Analysen. Als Cloud-only-Variante ist es ausschließlich über API nutzbar.",
-  "strengths": [
-    "Sehr hohe Kapazität durch 397B Parameter für komplexe Reasoning-Aufgaben",
-    "Starke Mehrsprachigkeit, insbesondere Chinesisch und Englisch",
-    "Robustes Instruction-Following bei langen und strukturierten Prompts"
-  ],
-  "known_limitations": [
-    "Ausschließlich als Cloud-Dienst verfügbar, keine lokale Ausführung möglich",
-    "Mögliche Zensur oder Einschränkungen bei politisch sensiblen Themen mit China-Bezug"
-  ],
-  "judge_context_hint": "Bei der Bewertung beachten, dass das Modell bei politisch oder kulturell sensiblen Themen mit China-Bezug möglicherweise eingeschränkte oder ausweichende Antworten liefert, was die Benchmark-Ergebnisse in diesen Kategorien verzerren kann.",
-  "architecture_tags": [
-    "Thinking-Optional",
-    "General"
-  ],
-  "unknown": false,
-  "generated_at": "2026-04-23T22:07:44.228805+00:00",
-  "card_status": "complete",
-  "size_class": "Frontier",
-  "thinking_probe_detected": false,
-  "thinking_probe_evidence": "No CoT signals found (A: no think-tags, B: reasoning_tokens=0). Response length: 1407 chars",
-  "thinking_probe_confidence": "low",
-  "thinking_probe_at": "2026-05-01T10:51:29.799294+00:00",
-  "supports_tool_use": true,
-  "license": "Proprietary",
-  "license_url": null,
-  "commercial_use_allowed": true,
-  "vendor": "Alibaba"
+    "model_id": "qwen3.5:397b-cloud",
+    "display_name": "Qwen 3.5 397B",
+    "developer": "Alibaba Cloud",
+    "origin_country": "China",
+    "developer_jurisdiction": "CN",
+    "deployment_type": "open-weights-cloud-available",
+    "local_deployment_possible": false,
+    "weights_provenance_risk": "high",
+    "weights_provenance_risk_rationale": "Alibaba Cloud unterliegt als chinesisches Unternehmen dem chinesischen National Security Law (NSL), das staatliche Zugriffe auf Daten und Modellentwicklung ermöglichen kann.",
+    "model_family": "Qwen",
+    "primary_focus": "general",
+    "summary": "Qwen 3.5 397B ist ein großes Sprachmodell von Alibaba Cloud aus China. Es wurde für allgemeine Sprachverständnis- und Reasoning-Aufgaben entwickelt, mit Stärken in Mehrsprachigkeit, Instruktionsbefolgung und komplexen Analysen. Als Cloud-only-Variante ist es ausschließlich über API nutzbar.",
+    "strengths": [
+        "Sehr hohe Kapazität durch 397B Parameter für komplexe Reasoning-Aufgaben",
+        "Starke Mehrsprachigkeit, insbesondere Chinesisch und Englisch",
+        "Robustes Instruction-Following bei langen und strukturierten Prompts"
+    ],
+    "known_limitations": [
+        "Ausschließlich als Cloud-Dienst verfügbar, keine lokale Ausführung möglich",
+        "Mögliche Zensur oder Einschränkungen bei politisch sensiblen Themen mit China-Bezug"
+    ],
+    "judge_context_hint": "Bei der Bewertung beachten, dass das Modell bei politisch oder kulturell sensiblen Themen mit China-Bezug möglicherweise eingeschränkte oder ausweichende Antworten liefert, was die Benchmark-Ergebnisse in diesen Kategorien verzerren kann.",
+    "architecture_tags": [
+        "Thinking-Optional",
+        "General"
+    ],
+    "unknown": false,
+    "generated_at": "2026-04-23T22:07:44.228805+00:00",
+    "card_status": "complete",
+    "size_class": "Frontier",
+    "thinking_probe_detected": false,
+    "thinking_probe_evidence": "No CoT signals found (A: no think-tags, B: reasoning_tokens=0). Response length: 1407 chars",
+    "thinking_probe_confidence": "low",
+    "thinking_probe_at": "2026-05-01T10:51:29.799294+00:00",
+    "supports_tool_use": true,
+    "license": "Apache-2.0",
+    "license_url": null,
+    "commercial_use_allowed": true,
+    "vendor": "Alibaba",
+    "weights_license_tier": "open-weights"
 }

@@ -1,40 +1,41 @@
 {
-  "model_id": "codestral-latest",
-  "display_name": "Codestral",
-  "developer": "Mistral AI",
-  "origin_country": "France",
-  "developer_jurisdiction": "EU",
-  "deployment_type": "cloud-only",
-  "local_deployment_possible": false,
-  "weights_provenance_risk": "low",
-  "weights_provenance_risk_rationale": "Mistral AI ist ein französisches Unternehmen mit Sitz in der EU und unterliegt keiner staatlichen Zugriffspflicht auf Modellgewichte wie dem US CLOUD Act oder dem chinesischen NSL.",
-  "model_family": "Codestral",
-  "primary_focus": "coding",
-  "summary": "Codestral ist Mistral AIs spezialisiertes Code-Modell aus Frankreich, trainiert auf über 80 Programmiersprachen. Es glänzt bei Code-Vervollständigung, Debugging und Erklärungen. Entwickelt, um Entwickler mit schnellen, präzisen Code-Ausgaben zu unterstützen.",
-  "strengths": [
-    "Hervorragende Code-Vervollständigung und Fill-in-the-Middle (FIM) für viele Sprachen",
-    "Breite Sprachabdeckung mit über 80 Programmiersprachen inkl. Python, JS, Rust, Go",
-    "Schnelle Inferenz bei gleichzeitig hoher Code-Qualität dank optimierter Architektur"
-  ],
-  "known_limitations": [
-    "Nur über Mistral-API verfügbar, keine öffentlichen Gewichte für lokalen Betrieb",
-    "Schwächer bei komplexen Reasoning-Aufgaben außerhalb des Code-Kontexts"
-  ],
-  "judge_context_hint": "Codestral ist auf Code-Aufgaben spezialisiert und zeigt bei reinen Coding-Benchmarks überdurchschnittliche Leistung, kann aber bei allgemeinen Reasoning- oder Wissensfragen hinter Allround-Modellen zurückbleiben.",
-  "architecture_tags": [
-    "Coder"
-  ],
-  "unknown": false,
-  "generated_at": "2026-04-23T21:58:38.887763+00:00",
-  "card_status": "complete",
-  "size_class": "Frontier",
-  "thinking_probe_detected": false,
-  "thinking_probe_evidence": "No CoT signals found (A: no think-tags, B: reasoning_tokens=0). Response length: 819 chars",
-  "thinking_probe_confidence": "low",
-  "thinking_probe_at": "2026-04-23T13:55:24.852904+00:00",
-  "supports_tool_use": true,
-  "license": "Mistral Codestral License",
-  "license_url": "https://mistral.ai/licenses/MCSL-0.1.md",
-  "commercial_use_allowed": null,
-  "vendor": "Mistral AI"
+    "model_id": "codestral-latest",
+    "display_name": "Codestral",
+    "developer": "Mistral AI",
+    "origin_country": "France",
+    "developer_jurisdiction": "EU",
+    "deployment_type": "open-weights-cloud-available",
+    "local_deployment_possible": false,
+    "weights_provenance_risk": "low",
+    "weights_provenance_risk_rationale": "Mistral AI ist ein französisches Unternehmen mit Sitz in der EU und unterliegt keiner staatlichen Zugriffspflicht auf Modellgewichte wie dem US CLOUD Act oder dem chinesischen NSL.",
+    "model_family": "Codestral",
+    "primary_focus": "coding",
+    "summary": "Codestral ist Mistral AIs spezialisiertes Code-Modell aus Frankreich, trainiert auf über 80 Programmiersprachen. Es glänzt bei Code-Vervollständigung, Debugging und Erklärungen. Entwickelt, um Entwickler mit schnellen, präzisen Code-Ausgaben zu unterstützen.",
+    "strengths": [
+        "Hervorragende Code-Vervollständigung und Fill-in-the-Middle (FIM) für viele Sprachen",
+        "Breite Sprachabdeckung mit über 80 Programmiersprachen inkl. Python, JS, Rust, Go",
+        "Schnelle Inferenz bei gleichzeitig hoher Code-Qualität dank optimierter Architektur"
+    ],
+    "known_limitations": [
+        "Nur über Mistral-API verfügbar, keine öffentlichen Gewichte für lokalen Betrieb",
+        "Schwächer bei komplexen Reasoning-Aufgaben außerhalb des Code-Kontexts"
+    ],
+    "judge_context_hint": "Codestral ist auf Code-Aufgaben spezialisiert und zeigt bei reinen Coding-Benchmarks überdurchschnittliche Leistung, kann aber bei allgemeinen Reasoning- oder Wissensfragen hinter Allround-Modellen zurückbleiben.",
+    "architecture_tags": [
+        "Coder"
+    ],
+    "unknown": false,
+    "generated_at": "2026-04-23T21:58:38.887763+00:00",
+    "card_status": "complete",
+    "size_class": "Frontier",
+    "thinking_probe_detected": false,
+    "thinking_probe_evidence": "No CoT signals found (A: no think-tags, B: reasoning_tokens=0). Response length: 819 chars",
+    "thinking_probe_confidence": "low",
+    "thinking_probe_at": "2026-04-23T13:55:24.852904+00:00",
+    "supports_tool_use": true,
+    "license": "Mistral Codestral License",
+    "license_url": "https://mistral.ai/licenses/MCSL-0.1.md",
+    "commercial_use_allowed": false,
+    "vendor": "Mistral AI",
+    "weights_license_tier": "restricted-weights"
 }

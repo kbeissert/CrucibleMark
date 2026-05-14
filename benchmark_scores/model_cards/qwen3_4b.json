@@ -1,41 +1,42 @@
 {
-  "model_id": "qwen3:4b",
-  "display_name": "Qwen 3 4B",
-  "developer": "Alibaba Cloud",
-  "origin_country": "China",
-  "developer_jurisdiction": "CN",
-  "deployment_type": "open-weights-cloud-available",
-  "local_deployment_possible": true,
-  "weights_provenance_risk": "high",
-  "weights_provenance_risk_rationale": "Alibaba Cloud unterliegt als chinesisches Unternehmen dem chinesischen National Security Law (NSL), das staatliche Zugriffe auf Daten und Modellentwicklung ermöglichen kann.",
-  "model_family": "Qwen",
-  "primary_focus": "general",
-  "summary": "Qwen 3 4B ist ein kompaktes Sprachmodell von Alibaba Cloud (China) aus der Qwen-3-Serie. Es wurde auf mehrsprachigen Daten mit Fokus auf Instruction-Following, Reasoning und Code trainiert. Stärken liegen in effizienter lokaler Ausführung und optionalem Chain-of-Thought-Denken bei geringem Ressourcenbedarf.",
-  "strengths": [
-    "Optionales Thinking-Modus (Chain-of-Thought an-/abschaltbar) für komplexere Aufgaben",
-    "Sehr ressourceneffizient – lokal auf Consumer-Hardware betreibbar",
-    "Solide Mehrsprachigkeit, besonders Chinesisch und Englisch"
-  ],
-  "known_limitations": [
-    "Als 4B-Modell bei komplexen Reasoning- und Wissensaufgaben deutlich schwächer als größere Modelle",
-    "Kann bei sensiblen oder politisch heiklen Themen mit China-Bezug zensierte oder ausweichende Antworten liefern"
-  ],
-  "judge_context_hint": "Das Modell verfügt über einen schaltbaren Thinking-Modus – bei aktiviertem Thinking sind sichtbare Reasoning-Blöcke zu erwarten; die Antwortqualität kann je nach Modus stark variieren.",
-  "architecture_tags": [
-    "General",
-    "Thinking-Optional"
-  ],
-  "unknown": false,
-  "generated_at": "2026-04-23T22:09:26.769461+00:00",
-  "card_status": "complete",
-  "size_class": "Nano",
-  "thinking_probe_detected": false,
-  "thinking_probe_evidence": "No CoT signals found (A: no think-tags, B: reasoning_tokens=0). Response length: 105 chars",
-  "thinking_probe_confidence": "low",
-  "thinking_probe_at": "2026-04-25T09:27:14.723242+00:00",
-  "supports_tool_use": true,
-  "license": "Apache-2.0",
-  "license_url": "https://www.apache.org/licenses/LICENSE-2.0",
-  "commercial_use_allowed": true,
-  "vendor": "Alibaba"
+    "model_id": "qwen3:4b",
+    "display_name": "Qwen 3 4B",
+    "developer": "Alibaba Cloud",
+    "origin_country": "China",
+    "developer_jurisdiction": "CN",
+    "deployment_type": "open-weights-cloud-available",
+    "local_deployment_possible": true,
+    "weights_provenance_risk": "high",
+    "weights_provenance_risk_rationale": "Alibaba Cloud unterliegt als chinesisches Unternehmen dem chinesischen National Security Law (NSL), das staatliche Zugriffe auf Daten und Modellentwicklung ermöglichen kann.",
+    "model_family": "Qwen",
+    "primary_focus": "general",
+    "summary": "Qwen 3 4B ist ein kompaktes Sprachmodell von Alibaba Cloud (China) aus der Qwen-3-Serie. Es wurde auf mehrsprachigen Daten mit Fokus auf Instruction-Following, Reasoning und Code trainiert. Stärken liegen in effizienter lokaler Ausführung und optionalem Chain-of-Thought-Denken bei geringem Ressourcenbedarf.",
+    "strengths": [
+        "Optionales Thinking-Modus (Chain-of-Thought an-/abschaltbar) für komplexere Aufgaben",
+        "Sehr ressourceneffizient – lokal auf Consumer-Hardware betreibbar",
+        "Solide Mehrsprachigkeit, besonders Chinesisch und Englisch"
+    ],
+    "known_limitations": [
+        "Als 4B-Modell bei komplexen Reasoning- und Wissensaufgaben deutlich schwächer als größere Modelle",
+        "Kann bei sensiblen oder politisch heiklen Themen mit China-Bezug zensierte oder ausweichende Antworten liefern"
+    ],
+    "judge_context_hint": "Das Modell verfügt über einen schaltbaren Thinking-Modus – bei aktiviertem Thinking sind sichtbare Reasoning-Blöcke zu erwarten; die Antwortqualität kann je nach Modus stark variieren.",
+    "architecture_tags": [
+        "General",
+        "Thinking-Optional"
+    ],
+    "unknown": false,
+    "generated_at": "2026-04-23T22:09:26.769461+00:00",
+    "card_status": "complete",
+    "size_class": "Nano",
+    "thinking_probe_detected": false,
+    "thinking_probe_evidence": "No CoT signals found (A: no think-tags, B: reasoning_tokens=0). Response length: 105 chars",
+    "thinking_probe_confidence": "low",
+    "thinking_probe_at": "2026-04-25T09:27:14.723242+00:00",
+    "supports_tool_use": true,
+    "license": "Apache-2.0",
+    "license_url": "https://www.apache.org/licenses/LICENSE-2.0",
+    "commercial_use_allowed": true,
+    "vendor": "Alibaba",
+    "weights_license_tier": "open-weights"
 }

@@ -1,41 +1,42 @@
 {
-  "model_id": "gpt-5-mini",
-  "display_name": "GPT-5 Mini",
-  "developer": "OpenAI",
-  "origin_country": "USA",
-  "developer_jurisdiction": "US",
-  "deployment_type": "cloud-only",
-  "local_deployment_possible": false,
-  "weights_provenance_risk": "medium",
-  "weights_provenance_risk_rationale": "OpenAI ist ein US-amerikanisches Unternehmen und unterliegt dem CLOUD Act, der bei API-Nutzung staatlichen Zugriff ermöglichen kann; die Gewichte selbst sind nicht öffentlich.",
-  "model_family": "GPT-5",
-  "primary_focus": "general",
-  "summary": "GPT-5 Mini ist ein kompaktes Modell von OpenAI aus den USA, das auf effiziente Allround-Nutzung ausgelegt ist. Es bietet starke Instruction-Following-Fähigkeiten und schnelle Antwortzeiten bei reduziertem Ressourcenbedarf – konzipiert als kosteneffiziente Alternative zum vollständigen GPT-5.",
-  "strengths": [
-    "Kosteneffiziente API-Nutzung bei guter Allgemeinleistung",
-    "Schnelle Inferenzzeiten durch kompakte Architektur",
-    "Solides Instruction-Following für alltägliche Aufgaben"
-  ],
-  "known_limitations": [
-    "Geringere Reasoning-Tiefe und Kontextverarbeitungskapazität im Vergleich zum vollständigen GPT-5",
-    "Keine lokale Ausführung möglich, vollständige Abhängigkeit von OpenAI-Infrastruktur"
-  ],
-  "judge_context_hint": "GPT-5 Mini ist ein komprimiertes Modell – bei komplexen mehrstufigen Reasoning-Aufgaben oder langen Kontexten kann die Leistung gegenüber größeren Modellen der GPT-5-Familie spürbar abfallen.",
-  "architecture_tags": [
-    "General",
-    "Instruct"
-  ],
-  "unknown": true,
-  "generated_at": "2026-04-23T22:01:13.742602+00:00",
-  "card_status": "complete",
-  "size_class": "Frontier",
-  "thinking_probe_detected": false,
-  "thinking_probe_evidence": "No CoT signals found (A: no think-tags, B: reasoning_tokens=0). Response length: 204 chars",
-  "thinking_probe_confidence": "low",
-  "thinking_probe_at": "2026-04-23T13:56:07.023022+00:00",
-  "supports_tool_use": true,
-  "license": "Proprietary",
-  "license_url": null,
-  "commercial_use_allowed": true,
-  "vendor": "OpenAI"
+    "model_id": "gpt-5-mini",
+    "display_name": "GPT-5 Mini",
+    "developer": "OpenAI",
+    "origin_country": "USA",
+    "developer_jurisdiction": "US",
+    "deployment_type": "cloud-only",
+    "local_deployment_possible": false,
+    "weights_provenance_risk": "medium",
+    "weights_provenance_risk_rationale": "OpenAI ist ein US-amerikanisches Unternehmen und unterliegt dem CLOUD Act, der bei API-Nutzung staatlichen Zugriff ermöglichen kann; die Gewichte selbst sind nicht öffentlich.",
+    "model_family": "GPT-5",
+    "primary_focus": "general",
+    "summary": "GPT-5 Mini ist ein kompaktes Modell von OpenAI aus den USA, das auf effiziente Allround-Nutzung ausgelegt ist. Es bietet starke Instruction-Following-Fähigkeiten und schnelle Antwortzeiten bei reduziertem Ressourcenbedarf – konzipiert als kosteneffiziente Alternative zum vollständigen GPT-5.",
+    "strengths": [
+        "Kosteneffiziente API-Nutzung bei guter Allgemeinleistung",
+        "Schnelle Inferenzzeiten durch kompakte Architektur",
+        "Solides Instruction-Following für alltägliche Aufgaben"
+    ],
+    "known_limitations": [
+        "Geringere Reasoning-Tiefe und Kontextverarbeitungskapazität im Vergleich zum vollständigen GPT-5",
+        "Keine lokale Ausführung möglich, vollständige Abhängigkeit von OpenAI-Infrastruktur"
+    ],
+    "judge_context_hint": "GPT-5 Mini ist ein komprimiertes Modell – bei komplexen mehrstufigen Reasoning-Aufgaben oder langen Kontexten kann die Leistung gegenüber größeren Modellen der GPT-5-Familie spürbar abfallen.",
+    "architecture_tags": [
+        "General",
+        "Instruct"
+    ],
+    "unknown": true,
+    "generated_at": "2026-04-23T22:01:13.742602+00:00",
+    "card_status": "complete",
+    "size_class": "Frontier",
+    "thinking_probe_detected": false,
+    "thinking_probe_evidence": "No CoT signals found (A: no think-tags, B: reasoning_tokens=0). Response length: 204 chars",
+    "thinking_probe_confidence": "low",
+    "thinking_probe_at": "2026-04-23T13:56:07.023022+00:00",
+    "supports_tool_use": true,
+    "license": "Proprietary",
+    "license_url": null,
+    "commercial_use_allowed": true,
+    "vendor": "OpenAI",
+    "weights_license_tier": "proprietary"
 }

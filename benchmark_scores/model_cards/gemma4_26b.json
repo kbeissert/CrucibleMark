@@ -1,41 +1,42 @@
 {
-  "model_id": "gemma4:26b",
-  "display_name": "Gemma 4 26B",
-  "developer": "Google DeepMind",
-  "origin_country": "USA",
-  "developer_jurisdiction": "US",
-  "deployment_type": "open-weights-cloud-available",
-  "local_deployment_possible": true,
-  "weights_provenance_risk": "medium",
-  "weights_provenance_risk_rationale": "Google DeepMind ist ein US-amerikanisches Unternehmen und unterliegt dem CLOUD Act, der staatlichen Zugriff auf Daten bei API-Nutzung ermöglichen kann, betrifft jedoch nicht die lokal betriebenen Gewichte direkt.",
-  "model_family": "Gemma",
-  "primary_focus": "general",
-  "summary": "Gemma 4 26B ist ein Open-Weights-Modell von Google DeepMind aus den USA. Es wurde als leistungsfähiges Allround-Modell für Instruction-Following, Reasoning und multilinguale Aufgaben entwickelt. Stärken liegen in effizienter lokaler Ausführung und solider Sprachverarbeitung bei moderatem Ressourcenbedarf.",
-  "strengths": [
-    "Effizient lokal betreibbar mit vergleichsweise geringem Hardwarebedarf für die Modellgröße",
-    "Solide Instruction-Following-Fähigkeiten durch gezieltes Fine-Tuning",
-    "Breite multilinguale Unterstützung und gute allgemeine Sprachverarbeitung"
-  ],
-  "known_limitations": [
-    "Schwächere Leistung bei komplexen mehrstufigen Reasoning-Aufgaben im Vergleich zu größeren Frontier-Modellen",
-    "Konservatives Sicherheitsfiltering kann bei legitimen Anfragen zu übermäßiger Ablehnung führen"
-  ],
-  "judge_context_hint": "Gemma 4 26B neigt zu konservativem, sicherheitsorientiertem Verhalten und kann bei ambivalenten Prompts kürzere oder ausweichende Antworten liefern – dies sollte bei der Bewertung von Vollständigkeit und Direktheit berücksichtigt werden.",
-  "architecture_tags": [
-    "General",
-    "Instruct"
-  ],
-  "unknown": false,
-  "generated_at": "2026-04-23T22:08:34.901086+00:00",
-  "card_status": "complete",
-  "size_class": "Workstation",
-  "thinking_probe_detected": false,
-  "thinking_probe_evidence": "No CoT signals found (A: no think-tags, B: reasoning_tokens=0). Response length: 682 chars",
-  "thinking_probe_confidence": "low",
-  "thinking_probe_at": "2026-04-25T08:37:22.029242+00:00",
-  "supports_tool_use": true,
-  "license": "Google Gemma Terms of Use",
-  "license_url": "https://ai.google.dev/gemma/terms",
-  "commercial_use_allowed": null,
-  "vendor": "Google"
+    "model_id": "gemma4:26b",
+    "display_name": "Gemma 4 26B",
+    "developer": "Google DeepMind",
+    "origin_country": "USA",
+    "developer_jurisdiction": "US",
+    "deployment_type": "open-weights-cloud-available",
+    "local_deployment_possible": true,
+    "weights_provenance_risk": "medium",
+    "weights_provenance_risk_rationale": "Google DeepMind ist ein US-amerikanisches Unternehmen und unterliegt dem CLOUD Act, der staatlichen Zugriff auf Daten bei API-Nutzung ermöglichen kann, betrifft jedoch nicht die lokal betriebenen Gewichte direkt.",
+    "model_family": "Gemma",
+    "primary_focus": "general",
+    "summary": "Gemma 4 26B ist ein Open-Weights-Modell von Google DeepMind aus den USA. Es wurde als leistungsfähiges Allround-Modell für Instruction-Following, Reasoning und multilinguale Aufgaben entwickelt. Stärken liegen in effizienter lokaler Ausführung und solider Sprachverarbeitung bei moderatem Ressourcenbedarf.",
+    "strengths": [
+        "Effizient lokal betreibbar mit vergleichsweise geringem Hardwarebedarf für die Modellgröße",
+        "Solide Instruction-Following-Fähigkeiten durch gezieltes Fine-Tuning",
+        "Breite multilinguale Unterstützung und gute allgemeine Sprachverarbeitung"
+    ],
+    "known_limitations": [
+        "Schwächere Leistung bei komplexen mehrstufigen Reasoning-Aufgaben im Vergleich zu größeren Frontier-Modellen",
+        "Konservatives Sicherheitsfiltering kann bei legitimen Anfragen zu übermäßiger Ablehnung führen"
+    ],
+    "judge_context_hint": "Gemma 4 26B neigt zu konservativem, sicherheitsorientiertem Verhalten und kann bei ambivalenten Prompts kürzere oder ausweichende Antworten liefern – dies sollte bei der Bewertung von Vollständigkeit und Direktheit berücksichtigt werden.",
+    "architecture_tags": [
+        "General",
+        "Instruct"
+    ],
+    "unknown": false,
+    "generated_at": "2026-04-23T22:08:34.901086+00:00",
+    "card_status": "complete",
+    "size_class": "Workstation",
+    "thinking_probe_detected": false,
+    "thinking_probe_evidence": "No CoT signals found (A: no think-tags, B: reasoning_tokens=0). Response length: 682 chars",
+    "thinking_probe_confidence": "low",
+    "thinking_probe_at": "2026-04-25T08:37:22.029242+00:00",
+    "supports_tool_use": true,
+    "license": "Google Gemma Terms of Use",
+    "license_url": "https://ai.google.dev/gemma/terms",
+    "commercial_use_allowed": null,
+    "vendor": "Google",
+    "weights_license_tier": "restricted-weights"
 }

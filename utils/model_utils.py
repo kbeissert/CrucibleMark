@@ -548,7 +548,8 @@ def get_model_category(
 ) -> str:
     """
     Central SSOT for model categorization.
-    Determines whether a model is Commercial, Local, or Local Cloud.
+    Returns one of three display strings based on weights_license_tier in model card (primary)
+    or config/source heuristics (fallback).
 
     Args:
         model_name: Name of the model (e.g., 'ministral-3:14b', 'gpt-oss:120b-cloud')
@@ -557,8 +558,25 @@ def get_model_category(
         provider: Optional provider name (from config or CSV) to determine exact grouping
 
     Returns:
-        str: 'Commercial', 'Local', 'Cloud-Modelle (Open-Weights)' or 'Local Cloud'
+        str: 'Proprietär' | 'Restricted Weights' | 'Open Weights'
     """
+    # SSOT: Model card weights_license_tier has priority over all heuristics
+    _TIER_MAP = {
+        "proprietary": "Proprietär",
+        "restricted-weights": "Restricted Weights",
+        "open-weights": "Open Weights",
+    }
+    try:
+        import json as _json
+        card_path = _find_card(model_name)
+        if card_path.exists():
+            card_data = _json.loads(card_path.read_text(encoding="utf-8"))
+            tier = card_data.get("weights_license_tier")
+            if tier and tier in _TIER_MAP:
+                return _TIER_MAP[tier]
+    except Exception:
+        pass
+
     if provider:
         try:
             from utils.config_validator import ConfigValidator
@@ -577,28 +595,28 @@ def get_model_category(
                         break
 
                 if m_type == MODEL_TYPE_OPEN_WEIGHTS_CLOUD:
-                    return "Open Weights (Cloud)"
+                    return "Open Weights"
                 elif m_type == "proprietary_api":
                     return "Proprietär"
                 elif m_type == "cloud":
-                    return "Open Weights (Local)"
+                    return "Open Weights"
         except Exception:
             pass
 
-# Wenn neue cloud Datei oder aus lokaler CSV und der Name "cloud" enthaelt, soll es offene Cloud-Modelle abbilden
+    # Fallback: derive from source_file / model_name heuristics (no card available)
     if source_file == "cloud" or (source_file == "local" and ("cloud" in model_name.lower() or (size_gb is not None and size_gb < 0.01))):
-        return "Open Weights (Cloud)"
+        return "Open Weights"
 
-    # Rule 1: Commercial CSV → Always Commercial
+    # Rule 1: Commercial CSV → Always Proprietär
     if source_file == "commercial":
         return "Proprietär"
 
-    # Rule 2: Local CSV → Check if it's a cloud proxy using canonical logic
+    # Rule 2: Local CSV → cloud proxy check
     if is_cloud_model(model_name, size_gb):
-        return "Open Weights (Cloud)"
+        return "Open Weights"
 
-    # Rule 3: Everything else from Local CSV → Local
-    return "Open Weights (Local)"
+    # Rule 3: Everything else from Local CSV → Open Weights
+    return "Open Weights"
 
 
 def resolve_token_budget(
