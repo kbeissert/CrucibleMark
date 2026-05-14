@@ -492,6 +492,8 @@ def _build_token_efficiency_context(tested_model_name: str) -> str:
                         tokens = 0.0
                     if not asset_id or tokens <= 0:
                         continue
+                    if asset_id.startswith("political_compass"):
+                        continue
                     module_key = _asset_to_module(asset_id)
                     if module_key is None:
                         continue
@@ -635,12 +637,14 @@ def _build_empty_response_context(model_name: str) -> str:
                         continue
                     if row.get("status") != "success":
                         continue
+                    asset_id = row.get("asset_id", "unknown")
+                    if asset_id.startswith("political_compass"):
+                        continue
                     try:
                         rlen = float(row.get("response_length", 1) or 1)
                     except (ValueError, TypeError):
                         continue
                     if rlen == 0.0:
-                        asset_id = row.get("asset_id", "unknown")
                         # Derive module name from asset_id prefix (e.g. "reasoning_metacog_001" → "reasoning")
                         module = asset_id.split("_")[0] if "_" in asset_id else asset_id
                         empty_assets.append((asset_id, module))
@@ -695,6 +699,8 @@ def _build_non_success_context(model_name: str) -> str:
                     if status not in findings:
                         continue
                     asset_id = row.get("asset_id", "unknown")
+                    if asset_id.startswith("political_compass"):
+                        continue
                     module = asset_id.split("_")[0] if "_" in asset_id else asset_id
                     findings[status].append((asset_id, module))
         except Exception:
