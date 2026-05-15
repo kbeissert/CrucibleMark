@@ -1,42 +1,43 @@
 {
-    "model_id": "qwen3:14b",
-    "display_name": "Qwen 3 14B",
-    "developer": "Alibaba Cloud",
-    "origin_country": "China",
-    "developer_jurisdiction": "CN",
-    "deployment_type": "open-weights-cloud-available",
-    "local_deployment_possible": true,
-    "weights_provenance_risk": "high",
-    "weights_provenance_risk_rationale": "Alibaba Cloud unterliegt als chinesisches Unternehmen dem chinesischen National Security Law (NSL), das staatliche Zugriffe auf Daten und Modellentwicklung ermöglichen kann.",
-    "model_family": "Qwen",
-    "primary_focus": "general",
-    "summary": "Qwen 3 14B ist ein von Alibaba Cloud (China) entwickeltes Sprachmodell mit 14 Milliarden Parametern. Es wurde auf mehrsprachigen Daten trainiert und zeichnet sich durch starkes Reasoning, Instruction-Following und Coding aus. Optional aktivierbares Chain-of-Thought ermöglicht tiefere Denkprozesse bei komplexen Aufgaben.",
-    "strengths": [
-        "Optionales Chain-of-Thought (Thinking-Modus) für komplexe Reasoning-Aufgaben zuschaltbar",
-        "Starke mehrsprachige Fähigkeiten, insbesondere für Chinesisch und Englisch",
-        "Gute Balance zwischen Modellgröße und Leistung – lokal auf Consumer-Hardware betreibbar"
-    ],
-    "known_limitations": [
-        "Kann in sensiblen politischen Themen mit Bezug zu China zensierte oder ausweichende Antworten liefern",
-        "Thinking-Modus erhöht Latenz und Token-Verbrauch deutlich, was bei einfachen Aufgaben ineffizient ist"
-    ],
-    "judge_context_hint": "Das Modell verfügt über einen optionalen Thinking-Modus – bei aktiviertem Thinking sind sichtbare Reasoning-Blöcke zu erwarten; die finale Antwort sollte separat bewertet werden.",
-    "architecture_tags": [
-        "General",
-        "Thinking-Optional"
-    ],
-    "unknown": false,
-    "generated_at": "2026-04-23T22:08:25.785509+00:00",
-    "card_status": "complete",
-    "size_class": "Desktop",
-    "thinking_probe_detected": false,
-    "thinking_probe_evidence": "No CoT signals found (A: no think-tags, B: reasoning_tokens=0). Response length: 1746 chars",
-    "thinking_probe_confidence": "low",
-    "thinking_probe_at": "2026-04-25T09:26:26.796058+00:00",
-    "supports_tool_use": true,
-    "license": "Apache-2.0",
-    "license_url": "https://www.apache.org/licenses/LICENSE-2.0",
-    "commercial_use_allowed": true,
-    "vendor": "Alibaba",
-    "weights_license_tier": "open-weights"
+  "model_id": "qwen3:14b",
+  "display_name": "Qwen 3 14B",
+  "developer": "Alibaba Cloud",
+  "origin_country": "China",
+  "developer_jurisdiction": "CN",
+  "deployment_type": "open-weights-cloud-available",
+  "local_deployment_possible": true,
+  "weights_provenance_risk": "high",
+  "weights_provenance_risk_rationale": "Alibaba Cloud unterliegt als chinesisches Unternehmen dem chinesischen National Security Law (NSL), das staatliche Zugriffe auf Daten und Modellentwicklung ermöglichen kann.",
+  "model_family": "Qwen",
+  "primary_focus": "general",
+  "summary": "Qwen 3 14B ist ein von Alibaba Cloud (China) entwickeltes Sprachmodell mit 14 Milliarden Parametern. Es wurde auf mehrsprachigen Daten trainiert und zeichnet sich durch starkes Reasoning, Instruction-Following und Coding aus. Optional aktivierbares Chain-of-Thought ermöglicht tiefere Denkprozesse bei komplexen Aufgaben.",
+  "strengths": [
+    "Optionales Chain-of-Thought (Thinking-Modus) für komplexe Reasoning-Aufgaben zuschaltbar",
+    "Starke mehrsprachige Fähigkeiten, insbesondere für Chinesisch und Englisch",
+    "Gute Balance zwischen Modellgröße und Leistung – lokal auf Consumer-Hardware betreibbar"
+  ],
+  "known_limitations": [
+    "Kann in sensiblen politischen Themen mit Bezug zu China zensierte oder ausweichende Antworten liefern",
+    "Thinking-Modus erhöht Latenz und Token-Verbrauch deutlich, was bei einfachen Aufgaben ineffizient ist"
+  ],
+  "judge_context_hint": "Das Modell verfügt über einen optionalen Thinking-Modus – bei aktiviertem Thinking sind sichtbare Reasoning-Blöcke zu erwarten; die finale Antwort sollte separat bewertet werden.",
+  "architecture_tags": [
+    "General",
+    "Thinking-Optional"
+  ],
+  "unknown": false,
+  "generated_at": "2026-04-23T22:08:25.785509+00:00",
+  "card_status": "complete",
+  "size_class": "Desktop",
+  "thinking_probe_detected": false,
+  "thinking_probe_evidence": "No CoT signals found (A: no think-tags, B: reasoning_tokens=0). Response length: 1746 chars",
+  "thinking_probe_confidence": "low",
+  "thinking_probe_at": "2026-04-25T09:26:26.796058+00:00",
+  "supports_tool_use": true,
+  "license": "Apache-2.0",
+  "license_url": "https://www.apache.org/licenses/LICENSE-2.0",
+  "commercial_use_allowed": true,
+  "vendor": "Alibaba",
+  "weights_license_tier": "open-weights",
+  "model_version": "3"
 }

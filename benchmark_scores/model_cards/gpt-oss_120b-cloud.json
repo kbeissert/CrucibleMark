@@ -1,37 +1,38 @@
 {
-    "model_id": "gpt-oss:120b-cloud",
-    "display_name": "GPT OSS 120B Cloud",
-    "developer": "Unknown",
-    "origin_country": "Unknown",
-    "developer_jurisdiction": "Unknown",
-    "deployment_type": "open-weights-cloud-available",
-    "local_deployment_possible": false,
-    "weights_provenance_risk": "medium",
-    "weights_provenance_risk_rationale": "Herkunft und Entwickler des Modells sind unbekannt; konservative Einstufung als 'medium', da keine Informationen zur Weights-Provenienz vorliegen.",
-    "model_family": "GPT OSS",
-    "primary_focus": "general",
-    "summary": "GPT OSS 120B Cloud ist ein Modell unbekannter Herkunft mit 120 Milliarden Parametern, das ausschließlich über eine Cloud-API verfügbar ist. Trainings-Schwerpunkt, Stärken und Entwicklungsziel sind nicht öffentlich dokumentiert. Belastbare Aussagen zur Leistung sind ohne weitere Informationen nicht möglich.",
-    "strengths": [
-        "Große Parameteranzahl (120B) deutet auf potenziell hohe Kapazität für komplexe Aufgaben hin",
-        "Cloud-Deployment ermöglicht einfachen Zugang ohne lokale Infrastruktur",
-        "Unbekannte Spezialisierung lässt breites Einsatzspektrum offen"
-    ],
-    "known_limitations": [
-        "Herkunft, Trainingsdetails und Entwickler sind nicht öffentlich bekannt",
-        "Keine unabhängigen Benchmarks oder Evaluierungen verfügbar"
-    ],
-    "judge_context_hint": "Das Modell ist weitgehend undokumentiert – Bewertungsergebnisse sollten ohne Referenz-Baseline interpretiert werden, da Trainings-Schwerpunkt und Fähigkeitsprofil unbekannt sind.",
-    "architecture_tags": [
-        "General"
-    ],
-    "unknown": true,
-    "generated_at": "2026-04-23T22:05:27.589226+00:00",
-    "card_status": "complete",
-    "size_class": "Frontier",
-    "supports_tool_use": true,
-    "license": "MIT",
-    "license_url": null,
-    "commercial_use_allowed": true,
-    "vendor": "OpenAI",
-    "weights_license_tier": "open-weights"
+  "model_id": "gpt-oss:120b-cloud",
+  "display_name": "GPT OSS 120B Cloud",
+  "developer": "Unknown",
+  "origin_country": "Unknown",
+  "developer_jurisdiction": "Unknown",
+  "deployment_type": "open-weights-cloud-available",
+  "local_deployment_possible": false,
+  "weights_provenance_risk": "medium",
+  "weights_provenance_risk_rationale": "Herkunft und Entwickler des Modells sind unbekannt; konservative Einstufung als 'medium', da keine Informationen zur Weights-Provenienz vorliegen.",
+  "model_family": "GPT OSS",
+  "primary_focus": "general",
+  "summary": "GPT OSS 120B Cloud ist ein Modell unbekannter Herkunft mit 120 Milliarden Parametern, das ausschließlich über eine Cloud-API verfügbar ist. Trainings-Schwerpunkt, Stärken und Entwicklungsziel sind nicht öffentlich dokumentiert. Belastbare Aussagen zur Leistung sind ohne weitere Informationen nicht möglich.",
+  "strengths": [
+    "Große Parameteranzahl (120B) deutet auf potenziell hohe Kapazität für komplexe Aufgaben hin",
+    "Cloud-Deployment ermöglicht einfachen Zugang ohne lokale Infrastruktur",
+    "Unbekannte Spezialisierung lässt breites Einsatzspektrum offen"
+  ],
+  "known_limitations": [
+    "Herkunft, Trainingsdetails und Entwickler sind nicht öffentlich bekannt",
+    "Keine unabhängigen Benchmarks oder Evaluierungen verfügbar"
+  ],
+  "judge_context_hint": "Das Modell ist weitgehend undokumentiert – Bewertungsergebnisse sollten ohne Referenz-Baseline interpretiert werden, da Trainings-Schwerpunkt und Fähigkeitsprofil unbekannt sind.",
+  "architecture_tags": [
+    "General"
+  ],
+  "unknown": true,
+  "generated_at": "2026-04-23T22:05:27.589226+00:00",
+  "card_status": "complete",
+  "size_class": "Frontier",
+  "supports_tool_use": true,
+  "license": "MIT",
+  "license_url": null,
+  "commercial_use_allowed": true,
+  "vendor": "OpenAI",
+  "weights_license_tier": "open-weights",
+  "model_version": "latest"
 }

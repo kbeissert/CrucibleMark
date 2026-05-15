@@ -1,42 +1,42 @@
 {
-    "model_id": "deepseek-v3.1:671b-cloud",
-    "display_name": "DeepSeek V3.1 671B",
-    "developer": "DeepSeek",
-    "origin_country": "China",
-    "developer_jurisdiction": "CN",
-    "deployment_type": "open-weights-cloud-available",
-    "local_deployment_possible": true,
-    "weights_provenance_risk": "high",
-    "weights_provenance_risk_rationale": "DeepSeek ist ein chinesisches Unternehmen und unterliegt dem chinesischen National Security Law (NSL), das staatlichen Zugriff auf Daten und Modellentwicklung ermöglichen kann.",
-    "model_family": "DeepSeek",
-    "primary_focus": "general",
-    "summary": "DeepSeek V3.1 ist ein chinesisches 671-Milliarden-Parameter-Modell mit Mixture-of-Experts-Architektur. Es wurde auf breiten multilingualen Daten trainiert und glänzt bei Reasoning, Coding und Instruktionsbefolgung. Ziel war ein leistungsstarkes Open-Weights-Modell auf Augenhöhe mit proprietären Frontier-Modellen.",
-    "strengths": [
-        "Sehr starke Leistung bei Coding- und Mathematik-Aufgaben",
-        "Effiziente MoE-Architektur mit hoher Kapazität bei vergleichsweise geringem Inferenz-Aufwand",
-        "Gute mehrsprachige Fähigkeiten, insbesondere Englisch und Chinesisch"
-    ],
-    "known_limitations": [
-        "Kann bei politisch sensiblen Themen mit Bezug zu China zensierte oder ausweichende Antworten liefern",
-        "Lokaler Betrieb der vollen 671B-Variante erfordert erhebliche Hardware-Ressourcen (mehrere High-End-GPUs)"
-    ],
-    "judge_context_hint": "Das Modell kann bei bestimmten politisch oder kulturell sensiblen Themen mit China-Bezug ausweichen oder beschönigen – dies sollte bei der Bewertung von Neutralität und Faktentreue berücksichtigt werden.",
-    "architecture_tags": [
-        "General",
-        "Instruct"
-    ],
-    "unknown": false,
-    "generated_at": "2026-04-23T22:05:48.261371+00:00",
-    "card_status": "complete",
-    "size_class": "Frontier",
-    "thinking_probe_detected": false,
-    "thinking_probe_evidence": "No CoT signals found (A: no think-tags, B: reasoning_tokens=0). Response length: 556 chars",
-    "thinking_probe_confidence": "low",
-    "thinking_probe_at": "2026-05-01T10:46:34.460236+00:00",
-    "supports_tool_use": true,
-    "license": "DeepSeek License",
-    "license_url": "https://github.com/deepseek-ai/DeepSeek-V3/blob/main/LICENSE",
-    "commercial_use_allowed": null,
-    "vendor": "DeepSeek",
-    "weights_license_tier": "restricted-weights"
+  "model_id": "deepseek-v3.1:671b-cloud",
+  "display_name": "DeepSeek V3.1 671B",
+  "developer": "DeepSeek",
+  "origin_country": "China",
+  "developer_jurisdiction": "CN",
+  "deployment_type": "open-weights-cloud-available",
+  "local_deployment_possible": true,
+  "weights_provenance_risk": "high",
+  "weights_provenance_risk_rationale": "DeepSeek ist ein chinesisches Unternehmen und unterliegt dem chinesischen National Security Law (NSL), das staatlichen Zugriff auf Daten und Modellentwicklung ermöglichen kann.",
+  "model_family": "DeepSeek",
+  "primary_focus": "general",
+  "summary": "DeepSeek V3.1 ist ein chinesisches 671-Milliarden-Parameter-Modell mit Mixture-of-Experts-Architektur. Es wurde auf breiten multilingualen Daten trainiert und glänzt bei Reasoning, Coding und Instruktionsbefolgung. Ziel war ein leistungsstarkes Open-Weights-Modell auf Augenhöhe mit proprietären Frontier-Modellen.",
+  "strengths": [
+    "Sehr starke Leistung bei Coding- und Mathematik-Aufgaben",
+    "Effiziente MoE-Architektur mit hoher Kapazität bei vergleichsweise geringem Inferenz-Aufwand",
+    "Gute mehrsprachige Fähigkeiten, insbesondere Englisch und Chinesisch"
+  ],
+  "known_limitations": [
+    "Kann bei politisch sensiblen Themen mit Bezug zu China zensierte oder ausweichende Antworten liefern",
+    "Lokaler Betrieb der vollen 671B-Variante erfordert erhebliche Hardware-Ressourcen (mehrere High-End-GPUs)"
+  ],
+  "judge_context_hint": "Das Modell kann bei bestimmten politisch oder kulturell sensiblen Themen mit China-Bezug ausweichen oder beschönigen – dies sollte bei der Bewertung von Neutralität und Faktentreue berücksichtigt werden.",
+  "architecture_tags": [
+    "General",
+    "Instruct"
+  ],
+  "unknown": false,
+  "generated_at": "2026-04-23T22:05:48.261371+00:00",
+  "card_status": "complete",
+  "size_class": "Frontier",
+  "thinking_probe_detected": false,
+  "thinking_probe_evidence": "No CoT signals found (A: no think-tags, B: reasoning_tokens=0). Response length: 556 chars",
+  "thinking_probe_confidence": "low",
+  "thinking_probe_at": "2026-05-01T10:46:34.460236+00:00",
+  "supports_tool_use": true,
+  "license": "DeepSeek License",
+  "license_url": "https://github.com/deepseek-ai/DeepSeek-V3/blob/main/LICENSE",
+  "commercial_use_allowed": null,
+  "vendor": "DeepSeek",
+  "weights_license_tier": "open-weights"
 }

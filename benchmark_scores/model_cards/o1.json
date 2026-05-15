@@ -1,41 +1,42 @@
 {
-    "model_id": "o1",
-    "display_name": "OpenAI o1",
-    "developer": "OpenAI",
-    "origin_country": "USA",
-    "developer_jurisdiction": "US",
-    "deployment_type": "cloud-only",
-    "local_deployment_possible": false,
-    "weights_provenance_risk": "medium",
-    "weights_provenance_risk_rationale": "OpenAI ist ein US-amerikanisches Unternehmen und unterliegt dem CLOUD Act, der staatlichen Zugriff auf Daten bei API-Nutzung ermöglichen kann, jedoch sind die Modellgewichte nicht öffentlich zugänglich.",
-    "model_family": "o1",
-    "primary_focus": "reasoning",
-    "summary": "OpenAI o1 ist ein US-amerikanisches Reasoning-Modell, das durch reinforcement learning auf verlängertes internes Denken trainiert wurde. Es glänzt bei komplexer Mathematik, Logik und wissenschaftlichen Aufgaben. Entwickelt, um menschliches Schritt-für-Schritt-Denken zu imitieren und schwierige Probleme zuverlässiger zu lösen.",
-    "strengths": [
-        "Herausragende Leistung bei komplexen mathematischen und logischen Aufgaben",
-        "Robustes mehrstufiges Schlussfolgern durch internes Chain-of-Thought",
-        "Starke Leistung bei wissenschaftlichen und programmiertechnischen Problemstellungen"
-    ],
-    "known_limitations": [
-        "Deutlich langsamer und teurer als GPT-4o durch internen Reasoning-Overhead",
-        "Kein Zugriff auf Echtzeit-Informationen; Wissenstand auf Trainings-Cutoff begrenzt"
-    ],
-    "judge_context_hint": "o1 denkt intern länger nach und liefert oft präzisere, aber auch ausführlichere Antworten – bei einfachen Aufgaben kann es zur Überanalyse neigen.",
-    "architecture_tags": [
-        "Thinking"
-    ],
-    "unknown": false,
-    "generated_at": "2026-04-23T22:00:07.922620+00:00",
-    "card_status": "complete",
-    "size_class": "Frontier",
-    "thinking_probe_detected": true,
-    "thinking_probe_evidence": "Manually confirmed: OpenAI o-series models use internal chain-of-thought reasoning. The API does not expose reasoning tokens or think-tags in the response body; automated probe cannot detect this. Token budget override is required.",
-    "thinking_probe_confidence": "high",
-    "thinking_probe_at": "2026-04-23T13:57:13.411729+00:00",
-    "supports_tool_use": true,
-    "license": "Proprietary",
-    "license_url": null,
-    "commercial_use_allowed": true,
-    "vendor": "OpenAI",
-    "weights_license_tier": "proprietary"
+  "model_id": "o1",
+  "display_name": "OpenAI o1",
+  "developer": "OpenAI",
+  "origin_country": "USA",
+  "developer_jurisdiction": "US",
+  "deployment_type": "cloud-only",
+  "local_deployment_possible": false,
+  "weights_provenance_risk": "medium",
+  "weights_provenance_risk_rationale": "OpenAI ist ein US-amerikanisches Unternehmen und unterliegt dem CLOUD Act, der staatlichen Zugriff auf Daten bei API-Nutzung ermöglichen kann, jedoch sind die Modellgewichte nicht öffentlich zugänglich.",
+  "model_family": "o1",
+  "primary_focus": "reasoning",
+  "summary": "OpenAI o1 ist ein US-amerikanisches Reasoning-Modell, das durch reinforcement learning auf verlängertes internes Denken trainiert wurde. Es glänzt bei komplexer Mathematik, Logik und wissenschaftlichen Aufgaben. Entwickelt, um menschliches Schritt-für-Schritt-Denken zu imitieren und schwierige Probleme zuverlässiger zu lösen.",
+  "strengths": [
+    "Herausragende Leistung bei komplexen mathematischen und logischen Aufgaben",
+    "Robustes mehrstufiges Schlussfolgern durch internes Chain-of-Thought",
+    "Starke Leistung bei wissenschaftlichen und programmiertechnischen Problemstellungen"
+  ],
+  "known_limitations": [
+    "Deutlich langsamer und teurer als GPT-4o durch internen Reasoning-Overhead",
+    "Kein Zugriff auf Echtzeit-Informationen; Wissenstand auf Trainings-Cutoff begrenzt"
+  ],
+  "judge_context_hint": "o1 denkt intern länger nach und liefert oft präzisere, aber auch ausführlichere Antworten – bei einfachen Aufgaben kann es zur Überanalyse neigen.",
+  "architecture_tags": [
+    "Thinking"
+  ],
+  "unknown": false,
+  "generated_at": "2026-04-23T22:00:07.922620+00:00",
+  "card_status": "complete",
+  "size_class": "Frontier",
+  "thinking_probe_detected": true,
+  "thinking_probe_evidence": "Manually confirmed: OpenAI o-series models use internal chain-of-thought reasoning. The API does not expose reasoning tokens or think-tags in the response body; automated probe cannot detect this. Token budget override is required.",
+  "thinking_probe_confidence": "high",
+  "thinking_probe_at": "2026-04-23T13:57:13.411729+00:00",
+  "supports_tool_use": true,
+  "license": "Proprietary",
+  "license_url": null,
+  "commercial_use_allowed": true,
+  "vendor": "OpenAI",
+  "weights_license_tier": "proprietary",
+  "model_version": "2024-12-17"
 }

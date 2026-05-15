@@ -1,43 +1,44 @@
 {
-    "model_id": "gemini-3.1-pro-preview",
-    "display_name": "Gemini 3.1 Pro Preview",
-    "developer": "Google DeepMind",
-    "origin_country": "USA",
-    "developer_jurisdiction": "US",
-    "deployment_type": "cloud-only",
-    "local_deployment_possible": false,
-    "weights_provenance_risk": "medium",
-    "weights_provenance_risk_rationale": "Google DeepMind ist ein US-amerikanisches Unternehmen und unterliegt dem CLOUD Act, der staatlichen Zugriff auf Daten bei API-Nutzung ermöglichen kann, nicht jedoch auf die Weights selbst.",
-    "model_family": "Gemini",
-    "primary_focus": "general",
-    "summary": "Gemini 3.1 Pro Preview ist ein experimentelles Großmodell von Google DeepMind (USA), trainiert auf multimodalen und mehrsprachigen Daten. Stärken liegen in komplexem Reasoning, langen Kontextfenstern und Code-Verständnis. Als Preview-Version sind Leistungsschwankungen zu erwarten.",
-    "strengths": [
-        "Starkes multimodales Verständnis (Text, Bild, Code)",
-        "Sehr großes Kontextfenster für lange Dokumente und Konversationen",
-        "Leistungsfähiges Reasoning und strukturiertes Problemlösen"
-    ],
-    "known_limitations": [
-        "Preview-Status bedeutet instabile Leistung und mögliche API-Änderungen ohne Vorankündigung",
-        "Ausschließlich über Google Cloud / API nutzbar, keine lokale Ausführung möglich"
-    ],
-    "judge_context_hint": "Als Preview-Modell kann Gemini 3.1 Pro inkonsistente Ausgabequalität zeigen; Antworten können zwischen Runs variieren und spiegeln nicht zwingend den finalen Produktionsstand wider.",
-    "architecture_tags": [
-        "General",
-        "Thinking-Optional",
-        "Preview"
-    ],
-    "unknown": true,
-    "generated_at": "2026-04-23T22:01:25.815655+00:00",
-    "card_status": "complete",
-    "size_class": "Frontier",
-    "thinking_probe_detected": false,
-    "thinking_probe_evidence": "No CoT signals found. Response length: 76 chars",
-    "thinking_probe_confidence": "low",
-    "thinking_probe_at": "2026-04-23T13:50:38.445524+00:00",
-    "supports_tool_use": true,
-    "license": "Proprietary",
-    "license_url": null,
-    "commercial_use_allowed": true,
-    "vendor": "Google",
-    "weights_license_tier": "proprietary"
+  "model_id": "gemini-3.1-pro-preview",
+  "display_name": "Gemini 3.1 Pro Preview",
+  "developer": "Google DeepMind",
+  "origin_country": "USA",
+  "developer_jurisdiction": "US",
+  "deployment_type": "cloud-only",
+  "local_deployment_possible": false,
+  "weights_provenance_risk": "medium",
+  "weights_provenance_risk_rationale": "Google DeepMind ist ein US-amerikanisches Unternehmen und unterliegt dem CLOUD Act, der staatlichen Zugriff auf Daten bei API-Nutzung ermöglichen kann, nicht jedoch auf die Weights selbst.",
+  "model_family": "Gemini",
+  "primary_focus": "general",
+  "summary": "Gemini 3.1 Pro Preview ist ein experimentelles Großmodell von Google DeepMind (USA), trainiert auf multimodalen und mehrsprachigen Daten. Stärken liegen in komplexem Reasoning, langen Kontextfenstern und Code-Verständnis. Als Preview-Version sind Leistungsschwankungen zu erwarten.",
+  "strengths": [
+    "Starkes multimodales Verständnis (Text, Bild, Code)",
+    "Sehr großes Kontextfenster für lange Dokumente und Konversationen",
+    "Leistungsfähiges Reasoning und strukturiertes Problemlösen"
+  ],
+  "known_limitations": [
+    "Preview-Status bedeutet instabile Leistung und mögliche API-Änderungen ohne Vorankündigung",
+    "Ausschließlich über Google Cloud / API nutzbar, keine lokale Ausführung möglich"
+  ],
+  "judge_context_hint": "Als Preview-Modell kann Gemini 3.1 Pro inkonsistente Ausgabequalität zeigen; Antworten können zwischen Runs variieren und spiegeln nicht zwingend den finalen Produktionsstand wider.",
+  "architecture_tags": [
+    "General",
+    "Thinking-Optional",
+    "Preview"
+  ],
+  "unknown": true,
+  "generated_at": "2026-04-23T22:01:25.815655+00:00",
+  "card_status": "complete",
+  "size_class": "Frontier",
+  "thinking_probe_detected": false,
+  "thinking_probe_evidence": "No CoT signals found. Response length: 76 chars",
+  "thinking_probe_confidence": "low",
+  "thinking_probe_at": "2026-04-23T13:50:38.445524+00:00",
+  "supports_tool_use": true,
+  "license": "Proprietary",
+  "license_url": null,
+  "commercial_use_allowed": true,
+  "vendor": "Google",
+  "weights_license_tier": "proprietary",
+  "model_version": "3.1-pro-preview"
 }

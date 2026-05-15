@@ -1,38 +1,39 @@
 {
-    "model_id": "ministral-3:14b",
-    "display_name": "Ministral 3B 14B",
-    "developer": "Mistral AI",
-    "origin_country": "France",
-    "developer_jurisdiction": "EU",
-    "deployment_type": "open-weights-cloud-available",
-    "local_deployment_possible": true,
-    "weights_provenance_risk": "low",
-    "weights_provenance_risk_rationale": "Mistral AI ist ein französisches Unternehmen mit Sitz in der EU und unterliegt keiner vergleichbaren staatlichen Zugriffspflicht wie dem chinesischen NSL oder dem US CLOUD Act für lokal betriebene Gewichte.",
-    "model_family": "Mistral",
-    "primary_focus": "general",
-    "summary": "Ministral 3B von Mistral AI (Frankreich) ist ein kompaktes Edge-Modell, das für effiziente lokale Ausführung auf ressourcenbeschränkter Hardware optimiert wurde. Es kombiniert starkes Instruction-Following mit niedrigem Speicherbedarf und eignet sich für On-Device-Inferenz, eingebettete Systeme und latenzarme Anwendungen.",
-    "strengths": [
-        "Sehr geringer Speicher- und Rechenaufwand bei akzeptabler Antwortqualität",
-        "Gut geeignet für Edge- und On-Device-Deployment ohne Cloud-Abhängigkeit",
-        "Solides Instruction-Following für ein Modell dieser Größenklasse"
-    ],
-    "known_limitations": [
-        "Deutlich schwächere Reasoning- und Wissenstiefe im Vergleich zu größeren Modellen",
-        "Begrenzte Kontextfenstergröße und reduzierte Mehrsprachigkeitsleistung gegenüber größeren Mistral-Varianten"
-    ],
-    "judge_context_hint": "Das Modell ist primär für Edge-Szenarien konzipiert – Bewertungsmaßstab sollte die Größenklasse (3B) berücksichtigen, nicht absolute Frontier-Modell-Leistung.",
-    "architecture_tags": [
-        "General",
-        "Instruct"
-    ],
-    "unknown": false,
-    "generated_at": "2026-04-23T22:05:06.507519+00:00",
-    "card_status": "complete",
-    "size_class": "Desktop",
-    "supports_tool_use": true,
-    "license": "Mistral Research License",
-    "license_url": "https://mistral.ai/licenses/MRL-0.1.md",
-    "commercial_use_allowed": null,
-    "vendor": "Mistral AI",
-    "weights_license_tier": "restricted-weights"
+  "model_id": "ministral-3:14b",
+  "display_name": "Ministral 3B 14B",
+  "developer": "Mistral AI",
+  "origin_country": "France",
+  "developer_jurisdiction": "EU",
+  "deployment_type": "open-weights-cloud-available",
+  "local_deployment_possible": true,
+  "weights_provenance_risk": "low",
+  "weights_provenance_risk_rationale": "Mistral AI ist ein französisches Unternehmen mit Sitz in der EU und unterliegt keiner vergleichbaren staatlichen Zugriffspflicht wie dem chinesischen NSL oder dem US CLOUD Act für lokal betriebene Gewichte.",
+  "model_family": "Mistral",
+  "primary_focus": "general",
+  "summary": "Ministral 3B von Mistral AI (Frankreich) ist ein kompaktes Edge-Modell, das für effiziente lokale Ausführung auf ressourcenbeschränkter Hardware optimiert wurde. Es kombiniert starkes Instruction-Following mit niedrigem Speicherbedarf und eignet sich für On-Device-Inferenz, eingebettete Systeme und latenzarme Anwendungen.",
+  "strengths": [
+    "Sehr geringer Speicher- und Rechenaufwand bei akzeptabler Antwortqualität",
+    "Gut geeignet für Edge- und On-Device-Deployment ohne Cloud-Abhängigkeit",
+    "Solides Instruction-Following für ein Modell dieser Größenklasse"
+  ],
+  "known_limitations": [
+    "Deutlich schwächere Reasoning- und Wissenstiefe im Vergleich zu größeren Modellen",
+    "Begrenzte Kontextfenstergröße und reduzierte Mehrsprachigkeitsleistung gegenüber größeren Mistral-Varianten"
+  ],
+  "judge_context_hint": "Das Modell ist primär für Edge-Szenarien konzipiert – Bewertungsmaßstab sollte die Größenklasse (3B) berücksichtigen, nicht absolute Frontier-Modell-Leistung.",
+  "architecture_tags": [
+    "General",
+    "Instruct"
+  ],
+  "unknown": false,
+  "generated_at": "2026-04-23T22:05:06.507519+00:00",
+  "card_status": "complete",
+  "size_class": "Desktop",
+  "supports_tool_use": true,
+  "license": "Mistral Research License",
+  "license_url": "https://mistral.ai/licenses/MRL-0.1.md",
+  "commercial_use_allowed": null,
+  "vendor": "Mistral AI",
+  "weights_license_tier": "restricted-weights",
+  "model_version": "4760c35aeb9d"
 }

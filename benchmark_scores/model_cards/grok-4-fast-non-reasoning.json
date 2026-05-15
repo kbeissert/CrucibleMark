@@ -1,42 +1,43 @@
 {
-    "model_id": "grok-4-fast-non-reasoning",
-    "display_name": "Grok 4 Fast (Non-Reasoning)",
-    "developer": "xAI",
-    "origin_country": "USA",
-    "developer_jurisdiction": "US",
-    "deployment_type": "cloud-only",
-    "local_deployment_possible": false,
-    "weights_provenance_risk": "medium",
-    "weights_provenance_risk_rationale": "xAI ist ein US-amerikanisches Unternehmen, das dem CLOUD Act unterliegt, jedoch nur bei API-Nutzung relevant; die Modellgewichte sind nicht öffentlich zugänglich.",
-    "model_family": "Grok",
-    "primary_focus": "general",
-    "summary": "Grok 4 Fast (Non-Reasoning) ist ein schnelles, cloud-basiertes Sprachmodell von xAI (USA), entwickelt für latenzarme Anwendungen ohne aktivierten Chain-of-Thought-Modus. Stärken liegen in schnellen Antwortzeiten, allgemeinem Instruction-Following und der Integration in das X-Ökosystem.",
-    "strengths": [
-        "Sehr niedrige Latenz durch optimierten Fast-Inference-Modus",
-        "Starkes allgemeines Instruction-Following ohne Reasoning-Overhead",
-        "Integration in das X/Twitter-Ökosystem mit Echtzeit-Datenzugang"
-    ],
-    "known_limitations": [
-        "Kein Chain-of-Thought verfügbar – schwächere Leistung bei komplexen mehrstufigen Reasoning-Aufgaben",
-        "Ausschließlich über xAI-Cloud-API nutzbar, keine lokale Ausführung möglich"
-    ],
-    "judge_context_hint": "Das Modell ist explizit ohne Reasoning-Modus konfiguriert – Antworten sind direkter und kürzer, aber bei komplexen logischen Aufgaben weniger tiefgründig als die Reasoning-Variante.",
-    "architecture_tags": [
-        "General",
-        "Instruct"
-    ],
-    "unknown": false,
-    "generated_at": "2026-04-23T22:02:29.143945+00:00",
-    "card_status": "complete",
-    "size_class": "Frontier",
-    "thinking_probe_detected": false,
-    "thinking_probe_evidence": "No CoT signals found (A: no think-tags, B: reasoning_tokens=0). Response length: 819 chars",
-    "thinking_probe_confidence": "low",
-    "thinking_probe_at": "2026-04-25T09:30:57.213970+00:00",
-    "supports_tool_use": true,
-    "license": "Proprietary",
-    "license_url": null,
-    "commercial_use_allowed": true,
-    "vendor": "xAI",
-    "weights_license_tier": "proprietary"
+  "model_id": "grok-4-fast-non-reasoning",
+  "display_name": "Grok 4 Fast (Non-Reasoning)",
+  "developer": "xAI",
+  "origin_country": "USA",
+  "developer_jurisdiction": "US",
+  "deployment_type": "cloud-only",
+  "local_deployment_possible": false,
+  "weights_provenance_risk": "medium",
+  "weights_provenance_risk_rationale": "xAI ist ein US-amerikanisches Unternehmen, das dem CLOUD Act unterliegt, jedoch nur bei API-Nutzung relevant; die Modellgewichte sind nicht öffentlich zugänglich.",
+  "model_family": "Grok",
+  "primary_focus": "general",
+  "summary": "Grok 4 Fast (Non-Reasoning) ist ein schnelles, cloud-basiertes Sprachmodell von xAI (USA), entwickelt für latenzarme Anwendungen ohne aktivierten Chain-of-Thought-Modus. Stärken liegen in schnellen Antwortzeiten, allgemeinem Instruction-Following und der Integration in das X-Ökosystem.",
+  "strengths": [
+    "Sehr niedrige Latenz durch optimierten Fast-Inference-Modus",
+    "Starkes allgemeines Instruction-Following ohne Reasoning-Overhead",
+    "Integration in das X/Twitter-Ökosystem mit Echtzeit-Datenzugang"
+  ],
+  "known_limitations": [
+    "Kein Chain-of-Thought verfügbar – schwächere Leistung bei komplexen mehrstufigen Reasoning-Aufgaben",
+    "Ausschließlich über xAI-Cloud-API nutzbar, keine lokale Ausführung möglich"
+  ],
+  "judge_context_hint": "Das Modell ist explizit ohne Reasoning-Modus konfiguriert – Antworten sind direkter und kürzer, aber bei komplexen logischen Aufgaben weniger tiefgründig als die Reasoning-Variante.",
+  "architecture_tags": [
+    "General",
+    "Instruct"
+  ],
+  "unknown": false,
+  "generated_at": "2026-04-23T22:02:29.143945+00:00",
+  "card_status": "complete",
+  "size_class": "Frontier",
+  "thinking_probe_detected": false,
+  "thinking_probe_evidence": "No CoT signals found (A: no think-tags, B: reasoning_tokens=0). Response length: 819 chars",
+  "thinking_probe_confidence": "low",
+  "thinking_probe_at": "2026-04-25T09:30:57.213970+00:00",
+  "supports_tool_use": true,
+  "license": "Proprietary",
+  "license_url": null,
+  "commercial_use_allowed": true,
+  "vendor": "xAI",
+  "weights_license_tier": "proprietary",
+  "model_version": "4"
 }

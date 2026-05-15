@@ -1,41 +1,42 @@
 {
-    "model_id": "gpt-oss:20b-cloud",
-    "display_name": "GPT OSS 20B Cloud",
-    "developer": "Unknown",
-    "origin_country": "Unknown",
-    "developer_jurisdiction": "Unknown",
-    "deployment_type": "open-weights-cloud-available",
-    "local_deployment_possible": false,
-    "weights_provenance_risk": "medium",
-    "weights_provenance_risk_rationale": "Herkunft und Entwickler des Modells sind unbekannt; konservative Einstufung als 'medium', da keine Informationen zur Weights-Provenienz vorliegen.",
-    "model_family": "GPT OSS",
-    "primary_focus": "general",
-    "summary": "GPT OSS 20B Cloud ist ein Modell unbekannter Herkunft mit ca. 20 Milliarden Parametern, das ausschließlich über eine Cloud-API verfügbar ist. Trainingsschwerpunkt, Stärken und Entwicklungsziel sind nicht dokumentiert. Bewertungen basieren auf konservativen Annahmen.",
-    "strengths": [
-        "Mittlere Parametergröße (20B) deutet auf ausgewogenes Verhältnis von Leistung und Effizienz hin",
-        "Cloud-Deployment ermöglicht einfache Integration ohne lokale Infrastruktur",
-        "Unbekannte Spezialisierung lässt breites Einsatzspektrum offen"
-    ],
-    "known_limitations": [
-        "Herkunft, Trainingsdetails und Entwickler sind vollständig unbekannt – keine Vertrauensbasis",
-        "Ausschließlich cloud-basiert, keine lokale Nutzung oder Gewichts-Inspektion möglich"
-    ],
-    "judge_context_hint": "Das Modell ist in Herkunft und Trainingsdetails vollständig undokumentiert – Benchmark-Ergebnisse sollten mit besonderer Vorsicht interpretiert werden, da Verhalten und Fähigkeiten nicht aus bekannten Quellen ableitbar sind.",
-    "architecture_tags": [
-        "General"
-    ],
-    "unknown": true,
-    "generated_at": "2026-04-23T22:07:35.501956+00:00",
-    "card_status": "complete",
-    "size_class": "Workstation",
-    "thinking_probe_detected": false,
-    "thinking_probe_evidence": "No CoT signals found (A: no think-tags, B: reasoning_tokens=0). Response length: 695 chars",
-    "thinking_probe_confidence": "low",
-    "thinking_probe_at": "2026-05-01T10:49:29.669564+00:00",
-    "supports_tool_use": true,
-    "license": "MIT",
-    "license_url": null,
-    "commercial_use_allowed": true,
-    "vendor": "OpenAI",
-    "weights_license_tier": "open-weights"
+  "model_id": "gpt-oss:20b-cloud",
+  "display_name": "GPT OSS 20B Cloud",
+  "developer": "Unknown",
+  "origin_country": "Unknown",
+  "developer_jurisdiction": "Unknown",
+  "deployment_type": "open-weights-cloud-available",
+  "local_deployment_possible": false,
+  "weights_provenance_risk": "medium",
+  "weights_provenance_risk_rationale": "Herkunft und Entwickler des Modells sind unbekannt; konservative Einstufung als 'medium', da keine Informationen zur Weights-Provenienz vorliegen.",
+  "model_family": "GPT OSS",
+  "primary_focus": "general",
+  "summary": "GPT OSS 20B Cloud ist ein Modell unbekannter Herkunft mit ca. 20 Milliarden Parametern, das ausschließlich über eine Cloud-API verfügbar ist. Trainingsschwerpunkt, Stärken und Entwicklungsziel sind nicht dokumentiert. Bewertungen basieren auf konservativen Annahmen.",
+  "strengths": [
+    "Mittlere Parametergröße (20B) deutet auf ausgewogenes Verhältnis von Leistung und Effizienz hin",
+    "Cloud-Deployment ermöglicht einfache Integration ohne lokale Infrastruktur",
+    "Unbekannte Spezialisierung lässt breites Einsatzspektrum offen"
+  ],
+  "known_limitations": [
+    "Herkunft, Trainingsdetails und Entwickler sind vollständig unbekannt – keine Vertrauensbasis",
+    "Ausschließlich cloud-basiert, keine lokale Nutzung oder Gewichts-Inspektion möglich"
+  ],
+  "judge_context_hint": "Das Modell ist in Herkunft und Trainingsdetails vollständig undokumentiert – Benchmark-Ergebnisse sollten mit besonderer Vorsicht interpretiert werden, da Verhalten und Fähigkeiten nicht aus bekannten Quellen ableitbar sind.",
+  "architecture_tags": [
+    "General"
+  ],
+  "unknown": true,
+  "generated_at": "2026-04-23T22:07:35.501956+00:00",
+  "card_status": "complete",
+  "size_class": "Workstation",
+  "thinking_probe_detected": false,
+  "thinking_probe_evidence": "No CoT signals found (A: no think-tags, B: reasoning_tokens=0). Response length: 695 chars",
+  "thinking_probe_confidence": "low",
+  "thinking_probe_at": "2026-05-01T10:49:29.669564+00:00",
+  "supports_tool_use": true,
+  "license": "MIT",
+  "license_url": null,
+  "commercial_use_allowed": true,
+  "vendor": "OpenAI",
+  "weights_license_tier": "open-weights",
+  "model_version": "latest"
 }

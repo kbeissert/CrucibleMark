@@ -1,41 +1,42 @@
 {
-    "model_id": "qwen2.5-coder:7b",
-    "display_name": "Qwen 2.5 Coder 7B",
-    "developer": "Alibaba Cloud",
-    "origin_country": "China",
-    "developer_jurisdiction": "CN",
-    "deployment_type": "open-weights-cloud-available",
-    "local_deployment_possible": true,
-    "weights_provenance_risk": "high",
-    "weights_provenance_risk_rationale": "Alibaba Cloud unterliegt als chinesisches Unternehmen dem chinesischen National Security Law (NSL), das staatliche Zugriffe auf Daten und Modellentwicklung ermöglichen kann.",
-    "model_family": "Qwen",
-    "primary_focus": "coding",
-    "summary": "Qwen 2.5 Coder 7B ist ein von Alibaba Cloud (China) entwickeltes Open-Weights-Modell, spezialisiert auf Code-Generierung, Debugging und technische Erklärungen. Es wurde auf umfangreichen Code-Corpora trainiert und bietet starke Leistung bei gängigen Programmiersprachen in kompakter 7B-Parametergröße.",
-    "strengths": [
-        "Starke Code-Generierung und Vervollständigung in gängigen Sprachen wie Python, JavaScript, Java und C++",
-        "Kompakte 7B-Größe ermöglicht effiziente lokale Ausführung auf Consumer-Hardware",
-        "Gutes Verständnis von Code-Kontext, Debugging-Aufgaben und technischen Erklärungen"
-    ],
-    "known_limitations": [
-        "Bei sehr komplexen, mehrstufigen Architekturentscheidungen oder großen Codebasen stoßen 7B-Modelle schnell an Kontextgrenzen",
-        "Nicht-technische oder kreative Aufgaben außerhalb des Coding-Bereichs werden deutlich schwächer abgedeckt als bei General-Purpose-Modellen"
-    ],
-    "judge_context_hint": "Das Modell ist explizit auf Coding spezialisiert – bei Coding-Benchmarks sollte die Korrektheit und Ausführbarkeit des generierten Codes im Vordergrund stehen, nicht sprachliche Eleganz.",
-    "architecture_tags": [
-        "Coder"
-    ],
-    "unknown": false,
-    "generated_at": "2026-04-23T22:09:59.888435+00:00",
-    "card_status": "complete",
-    "size_class": "Edge",
-    "thinking_probe_detected": false,
-    "thinking_probe_evidence": "No CoT signals found (A: no think-tags, B: reasoning_tokens=0). Response length: 609 chars",
-    "thinking_probe_confidence": "low",
-    "thinking_probe_at": "2026-04-25T09:20:47.385071+00:00",
-    "supports_tool_use": true,
-    "license": "Apache-2.0",
-    "license_url": "https://www.apache.org/licenses/LICENSE-2.0",
-    "commercial_use_allowed": true,
-    "vendor": "Alibaba",
-    "weights_license_tier": "open-weights"
+  "model_id": "qwen2.5-coder:7b",
+  "display_name": "Qwen 2.5 Coder 7B",
+  "developer": "Alibaba Cloud",
+  "origin_country": "China",
+  "developer_jurisdiction": "CN",
+  "deployment_type": "open-weights-cloud-available",
+  "local_deployment_possible": true,
+  "weights_provenance_risk": "high",
+  "weights_provenance_risk_rationale": "Alibaba Cloud unterliegt als chinesisches Unternehmen dem chinesischen National Security Law (NSL), das staatliche Zugriffe auf Daten und Modellentwicklung ermöglichen kann.",
+  "model_family": "Qwen",
+  "primary_focus": "coding",
+  "summary": "Qwen 2.5 Coder 7B ist ein von Alibaba Cloud (China) entwickeltes Open-Weights-Modell, spezialisiert auf Code-Generierung, Debugging und technische Erklärungen. Es wurde auf umfangreichen Code-Corpora trainiert und bietet starke Leistung bei gängigen Programmiersprachen in kompakter 7B-Parametergröße.",
+  "strengths": [
+    "Starke Code-Generierung und Vervollständigung in gängigen Sprachen wie Python, JavaScript, Java und C++",
+    "Kompakte 7B-Größe ermöglicht effiziente lokale Ausführung auf Consumer-Hardware",
+    "Gutes Verständnis von Code-Kontext, Debugging-Aufgaben und technischen Erklärungen"
+  ],
+  "known_limitations": [
+    "Bei sehr komplexen, mehrstufigen Architekturentscheidungen oder großen Codebasen stoßen 7B-Modelle schnell an Kontextgrenzen",
+    "Nicht-technische oder kreative Aufgaben außerhalb des Coding-Bereichs werden deutlich schwächer abgedeckt als bei General-Purpose-Modellen"
+  ],
+  "judge_context_hint": "Das Modell ist explizit auf Coding spezialisiert – bei Coding-Benchmarks sollte die Korrektheit und Ausführbarkeit des generierten Codes im Vordergrund stehen, nicht sprachliche Eleganz.",
+  "architecture_tags": [
+    "Coder"
+  ],
+  "unknown": false,
+  "generated_at": "2026-04-23T22:09:59.888435+00:00",
+  "card_status": "complete",
+  "size_class": "Edge",
+  "thinking_probe_detected": false,
+  "thinking_probe_evidence": "No CoT signals found (A: no think-tags, B: reasoning_tokens=0). Response length: 609 chars",
+  "thinking_probe_confidence": "low",
+  "thinking_probe_at": "2026-04-25T09:20:47.385071+00:00",
+  "supports_tool_use": true,
+  "license": "Apache-2.0",
+  "license_url": "https://www.apache.org/licenses/LICENSE-2.0",
+  "commercial_use_allowed": true,
+  "vendor": "Alibaba",
+  "weights_license_tier": "open-weights",
+  "model_version": "2.5"
 }

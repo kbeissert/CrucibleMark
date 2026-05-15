@@ -1,21 +1,21 @@
 {
-    "model_id": "deepseek/deepseek-v4-pro",
-    "display_name": "deepseek/deepseek-v4-pro",
-    "developer": "n/a",
-    "architecture_tags": [
-        "Thinking"
-    ],
-    "card_status": "minimal",
-    "generated_at": "2026-05-03T19:31:34.837029+00:00",
-    "thinking_probe_detected": true,
-    "thinking_probe_evidence": "reasoning_tokens=88 in provider metadata",
-    "thinking_probe_confidence": "medium",
-    "thinking_probe_at": "2026-05-03T19:31:34.837023+00:00",
-    "supports_tool_use": true,
-    "license": "DeepSeek License",
-    "license_url": "https://github.com/deepseek-ai/DeepSeek-V3/blob/main/LICENSE",
-    "commercial_use_allowed": null,
-    "vendor": "DeepSeek",
-    "deployment_type": "open-weights-cloud-available",
-    "weights_license_tier": "restricted-weights"
+  "model_id": "deepseek/deepseek-v4-pro",
+  "display_name": "deepseek/deepseek-v4-pro",
+  "developer": "n/a",
+  "architecture_tags": [
+    "Thinking"
+  ],
+  "card_status": "minimal",
+  "generated_at": "2026-05-03T19:31:34.837029+00:00",
+  "thinking_probe_detected": true,
+  "thinking_probe_evidence": "reasoning_tokens=88 in provider metadata",
+  "thinking_probe_confidence": "medium",
+  "thinking_probe_at": "2026-05-03T19:31:34.837023+00:00",
+  "supports_tool_use": true,
+  "license": "DeepSeek License",
+  "license_url": "https://github.com/deepseek-ai/DeepSeek-V3/blob/main/LICENSE",
+  "commercial_use_allowed": null,
+  "vendor": "DeepSeek",
+  "deployment_type": "open-weights-cloud-available",
+  "weights_license_tier": "open-weights"
 }

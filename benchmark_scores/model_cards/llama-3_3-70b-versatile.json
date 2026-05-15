@@ -1,42 +1,43 @@
 {
-    "model_id": "llama-3.3-70b-versatile",
-    "display_name": "Llama 3.3 70B Versatile",
-    "developer": "Meta",
-    "origin_country": "USA",
-    "developer_jurisdiction": "US",
-    "deployment_type": "open-weights-cloud-available",
-    "local_deployment_possible": true,
-    "weights_provenance_risk": "medium",
-    "weights_provenance_risk_rationale": "Meta ist ein US-amerikanisches Unternehmen und unterliegt dem CLOUD Act, jedoch sind die Gewichte öffentlich verfügbar und lokal betreibbar, sodass kein API-Zugriff auf Trainingsdaten oder Anfragen besteht.",
-    "model_family": "Llama",
-    "primary_focus": "general",
-    "summary": "Llama 3.3 70B Versatile ist ein Open-Weights-Modell von Meta (USA), trainiert auf mehrsprachigen und vielfältigen Textdaten. Es überzeugt durch starkes Instruction-Following, solide Reasoning-Fähigkeiten und breite Aufgabenabdeckung. Meta entwickelte es als leistungsstarke, frei nutzbare Alternative zu proprietären Modellen.",
-    "strengths": [
-        "Starkes Instruction-Following über viele Aufgabentypen hinweg",
-        "Gute Reasoning- und Analysefähigkeiten für ein 70B-Modell",
-        "Frei verfügbare Gewichte ermöglichen lokalen, datenschutzkonformen Betrieb"
-    ],
-    "known_limitations": [
-        "Kontextfenster und Langdokument-Verarbeitung schwächer als bei spezialisierten Modellen",
-        "Kann bei sehr komplexen mehrstufigen Reasoning-Aufgaben hinter dedizierten Thinking-Modellen zurückbleiben"
-    ],
-    "judge_context_hint": "Das Modell ist auf breite Vielseitigkeit ausgelegt und liefert solide, ausgewogene Antworten – bei hochspezialisierten Aufgaben (z. B. tiefes mathematisches Reasoning) sollte der Judge die Erwartungen entsprechend kalibrieren.",
-    "architecture_tags": [
-        "General",
-        "Instruct"
-    ],
-    "unknown": false,
-    "generated_at": "2026-04-23T22:03:02.103122+00:00",
-    "card_status": "complete",
-    "size_class": "Server",
-    "thinking_probe_detected": false,
-    "thinking_probe_evidence": "No CoT signals found (A: no think-tags, B: reasoning_tokens=0). Response length: 426 chars",
-    "thinking_probe_confidence": "low",
-    "thinking_probe_at": "2026-04-23T13:56:48.020175+00:00",
-    "supports_tool_use": true,
-    "license": "Meta Llama Community License",
-    "license_url": "https://www.llama.com/llama3/license/",
-    "commercial_use_allowed": null,
-    "vendor": "Meta",
-    "weights_license_tier": "restricted-weights"
+  "model_id": "llama-3.3-70b-versatile",
+  "display_name": "Llama 3.3 70B Versatile",
+  "developer": "Meta",
+  "origin_country": "USA",
+  "developer_jurisdiction": "US",
+  "deployment_type": "open-weights-cloud-available",
+  "local_deployment_possible": true,
+  "weights_provenance_risk": "medium",
+  "weights_provenance_risk_rationale": "Meta ist ein US-amerikanisches Unternehmen und unterliegt dem CLOUD Act, jedoch sind die Gewichte öffentlich verfügbar und lokal betreibbar, sodass kein API-Zugriff auf Trainingsdaten oder Anfragen besteht.",
+  "model_family": "Llama",
+  "primary_focus": "general",
+  "summary": "Llama 3.3 70B Versatile ist ein Open-Weights-Modell von Meta (USA), trainiert auf mehrsprachigen und vielfältigen Textdaten. Es überzeugt durch starkes Instruction-Following, solide Reasoning-Fähigkeiten und breite Aufgabenabdeckung. Meta entwickelte es als leistungsstarke, frei nutzbare Alternative zu proprietären Modellen.",
+  "strengths": [
+    "Starkes Instruction-Following über viele Aufgabentypen hinweg",
+    "Gute Reasoning- und Analysefähigkeiten für ein 70B-Modell",
+    "Frei verfügbare Gewichte ermöglichen lokalen, datenschutzkonformen Betrieb"
+  ],
+  "known_limitations": [
+    "Kontextfenster und Langdokument-Verarbeitung schwächer als bei spezialisierten Modellen",
+    "Kann bei sehr komplexen mehrstufigen Reasoning-Aufgaben hinter dedizierten Thinking-Modellen zurückbleiben"
+  ],
+  "judge_context_hint": "Das Modell ist auf breite Vielseitigkeit ausgelegt und liefert solide, ausgewogene Antworten – bei hochspezialisierten Aufgaben (z. B. tiefes mathematisches Reasoning) sollte der Judge die Erwartungen entsprechend kalibrieren.",
+  "architecture_tags": [
+    "General",
+    "Instruct"
+  ],
+  "unknown": false,
+  "generated_at": "2026-04-23T22:03:02.103122+00:00",
+  "card_status": "complete",
+  "size_class": "Server",
+  "thinking_probe_detected": false,
+  "thinking_probe_evidence": "No CoT signals found (A: no think-tags, B: reasoning_tokens=0). Response length: 426 chars",
+  "thinking_probe_confidence": "low",
+  "thinking_probe_at": "2026-04-23T13:56:48.020175+00:00",
+  "supports_tool_use": true,
+  "license": "Meta Llama Community License",
+  "license_url": "https://www.llama.com/llama3/license/",
+  "commercial_use_allowed": null,
+  "vendor": "Meta",
+  "weights_license_tier": "restricted-weights",
+  "model_version": "3.3-70B"
 }

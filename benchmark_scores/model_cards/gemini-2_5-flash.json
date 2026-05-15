@@ -1,42 +1,43 @@
 {
-    "model_id": "gemini-2.5-flash",
-    "display_name": "Gemini 2.5 Flash",
-    "developer": "Google DeepMind",
-    "origin_country": "USA",
-    "developer_jurisdiction": "US",
-    "deployment_type": "cloud-only",
-    "local_deployment_possible": false,
-    "weights_provenance_risk": "medium",
-    "weights_provenance_risk_rationale": "Google DeepMind ist ein US-amerikanisches Unternehmen und unterliegt dem CLOUD Act, die Modellgewichte sind nicht öffentlich zugänglich.",
-    "model_family": "Gemini",
-    "primary_focus": "general",
-    "summary": "Gemini 2.5 Flash ist Googles effizientes Multimodal-Modell der 2.5-Generation, entwickelt für schnelle, kosteneffektive Inferenz bei hoher Qualität. Stärken liegen in Reasoning, Code, langen Kontextfenstern (1M Token) und multimodaler Verarbeitung. Zielt auf skalierbare Produktionsanwendungen.",
-    "strengths": [
-        "Sehr großes Kontextfenster von bis zu 1 Million Token",
-        "Optionales Chain-of-Thought-Reasoning (Thinking-Modus) per API aktivierbar",
-        "Starke multimodale Fähigkeiten (Text, Bild, Audio, Video, Code)"
-    ],
-    "known_limitations": [
-        "Nur über Google-Cloud-API nutzbar, keine lokale Ausführung möglich",
-        "Wie alle Flash-Varianten qualitativ unterhalb des schwereren Gemini 2.5 Pro bei komplexen Reasoning-Aufgaben"
-    ],
-    "judge_context_hint": "Das Modell kann im Thinking-Modus deutlich stärker abschneiden als im Standard-Modus – beim Benchmarking sollte der aktive Modus explizit dokumentiert werden.",
-    "architecture_tags": [
-        "General",
-        "Thinking-Optional"
-    ],
-    "unknown": false,
-    "generated_at": "2026-04-23T22:01:44.605898+00:00",
-    "card_status": "complete",
-    "size_class": "Frontier",
-    "thinking_probe_detected": false,
-    "thinking_probe_evidence": "No CoT signals found. Response length: 382 chars",
-    "thinking_probe_confidence": "low",
-    "thinking_probe_at": "2026-04-23T13:50:20.420986+00:00",
-    "supports_tool_use": true,
-    "license": "Proprietary",
-    "license_url": null,
-    "commercial_use_allowed": true,
-    "vendor": "Google",
-    "weights_license_tier": "proprietary"
+  "model_id": "gemini-2.5-flash",
+  "display_name": "Gemini 2.5 Flash",
+  "developer": "Google DeepMind",
+  "origin_country": "USA",
+  "developer_jurisdiction": "US",
+  "deployment_type": "cloud-only",
+  "local_deployment_possible": false,
+  "weights_provenance_risk": "medium",
+  "weights_provenance_risk_rationale": "Google DeepMind ist ein US-amerikanisches Unternehmen und unterliegt dem CLOUD Act, die Modellgewichte sind nicht öffentlich zugänglich.",
+  "model_family": "Gemini",
+  "primary_focus": "general",
+  "summary": "Gemini 2.5 Flash ist Googles effizientes Multimodal-Modell der 2.5-Generation, entwickelt für schnelle, kosteneffektive Inferenz bei hoher Qualität. Stärken liegen in Reasoning, Code, langen Kontextfenstern (1M Token) und multimodaler Verarbeitung. Zielt auf skalierbare Produktionsanwendungen.",
+  "strengths": [
+    "Sehr großes Kontextfenster von bis zu 1 Million Token",
+    "Optionales Chain-of-Thought-Reasoning (Thinking-Modus) per API aktivierbar",
+    "Starke multimodale Fähigkeiten (Text, Bild, Audio, Video, Code)"
+  ],
+  "known_limitations": [
+    "Nur über Google-Cloud-API nutzbar, keine lokale Ausführung möglich",
+    "Wie alle Flash-Varianten qualitativ unterhalb des schwereren Gemini 2.5 Pro bei komplexen Reasoning-Aufgaben"
+  ],
+  "judge_context_hint": "Das Modell kann im Thinking-Modus deutlich stärker abschneiden als im Standard-Modus – beim Benchmarking sollte der aktive Modus explizit dokumentiert werden.",
+  "architecture_tags": [
+    "General",
+    "Thinking-Optional"
+  ],
+  "unknown": false,
+  "generated_at": "2026-04-23T22:01:44.605898+00:00",
+  "card_status": "complete",
+  "size_class": "Frontier",
+  "thinking_probe_detected": false,
+  "thinking_probe_evidence": "No CoT signals found. Response length: 382 chars",
+  "thinking_probe_confidence": "low",
+  "thinking_probe_at": "2026-04-23T13:50:20.420986+00:00",
+  "supports_tool_use": true,
+  "license": "Proprietary",
+  "license_url": null,
+  "commercial_use_allowed": true,
+  "vendor": "Google",
+  "weights_license_tier": "proprietary",
+  "model_version": "2.5-flash"
 }

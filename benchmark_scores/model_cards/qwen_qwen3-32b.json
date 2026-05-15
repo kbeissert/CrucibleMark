@@ -1,42 +1,43 @@
 {
-    "model_id": "qwen/qwen3-32b",
-    "display_name": "Qwen 3 32B",
-    "developer": "Alibaba Cloud",
-    "origin_country": "China",
-    "developer_jurisdiction": "CN",
-    "deployment_type": "open-weights-cloud-available",
-    "local_deployment_possible": true,
-    "weights_provenance_risk": "high",
-    "weights_provenance_risk_rationale": "Alibaba Cloud unterliegt als chinesisches Unternehmen dem chinesischen National Security Law (NSL), das staatliche Zugriffe auf Daten und Modellentwicklung ermöglichen kann.",
-    "model_family": "Qwen",
-    "primary_focus": "general",
-    "summary": "Qwen 3 32B ist ein von Alibaba Cloud (China) entwickeltes Sprachmodell mit Stärken in Mehrsprachigkeit, Reasoning und Instruction-Following. Es unterstützt optionales Chain-of-Thought-Denken und wurde für breite Anwendungsfälle von Code bis Analyse konzipiert.",
-    "strengths": [
-        "Starke mehrsprachige Fähigkeiten, insbesondere für Chinesisch und Englisch",
-        "Optionales Thinking-Modus ermöglicht tieferes Reasoning bei komplexen Aufgaben",
-        "Gute Balance zwischen Modellgröße und Leistung für lokales Deployment"
-    ],
-    "known_limitations": [
-        "Kann bei politisch sensiblen Themen mit Bezug zu China zensierte oder ausweichende Antworten liefern",
-        "Thinking-Modus erhöht Latenz und Token-Verbrauch deutlich"
-    ],
-    "judge_context_hint": "Das Modell verfügt über einen schaltbaren Thinking-Modus – bei aktiviertem Extended Thinking sind längere, strukturiertere Antworten zu erwarten; der Bewertungskontext sollte berücksichtigen, ob Thinking an- oder abgeschaltet war.",
-    "architecture_tags": [
-        "General",
-        "Thinking-Optional"
-    ],
-    "unknown": false,
-    "generated_at": "2026-04-23T22:03:10.589635+00:00",
-    "card_status": "complete",
-    "size_class": "Workstation",
-    "thinking_probe_detected": true,
-    "thinking_probe_evidence": "Think-tag found in response (first 200 chars): <think>\nOkay, so I need to find the average speed of a train that travels 120 kilometers in 1.5 hours. Hmm, let me think. I remember that average speed is calculated by dividing the total distance by ",
-    "thinking_probe_confidence": "high",
-    "thinking_probe_at": "2026-04-25T09:31:50.465081+00:00",
-    "supports_tool_use": true,
-    "license": "Apache-2.0",
-    "license_url": "https://www.apache.org/licenses/LICENSE-2.0",
-    "commercial_use_allowed": true,
-    "vendor": "Alibaba",
-    "weights_license_tier": "open-weights"
+  "model_id": "qwen/qwen3-32b",
+  "display_name": "Qwen 3 32B",
+  "developer": "Alibaba Cloud",
+  "origin_country": "China",
+  "developer_jurisdiction": "CN",
+  "deployment_type": "open-weights-cloud-available",
+  "local_deployment_possible": true,
+  "weights_provenance_risk": "high",
+  "weights_provenance_risk_rationale": "Alibaba Cloud unterliegt als chinesisches Unternehmen dem chinesischen National Security Law (NSL), das staatliche Zugriffe auf Daten und Modellentwicklung ermöglichen kann.",
+  "model_family": "Qwen",
+  "primary_focus": "general",
+  "summary": "Qwen 3 32B ist ein von Alibaba Cloud (China) entwickeltes Sprachmodell mit Stärken in Mehrsprachigkeit, Reasoning und Instruction-Following. Es unterstützt optionales Chain-of-Thought-Denken und wurde für breite Anwendungsfälle von Code bis Analyse konzipiert.",
+  "strengths": [
+    "Starke mehrsprachige Fähigkeiten, insbesondere für Chinesisch und Englisch",
+    "Optionales Thinking-Modus ermöglicht tieferes Reasoning bei komplexen Aufgaben",
+    "Gute Balance zwischen Modellgröße und Leistung für lokales Deployment"
+  ],
+  "known_limitations": [
+    "Kann bei politisch sensiblen Themen mit Bezug zu China zensierte oder ausweichende Antworten liefern",
+    "Thinking-Modus erhöht Latenz und Token-Verbrauch deutlich"
+  ],
+  "judge_context_hint": "Das Modell verfügt über einen schaltbaren Thinking-Modus – bei aktiviertem Extended Thinking sind längere, strukturiertere Antworten zu erwarten; der Bewertungskontext sollte berücksichtigen, ob Thinking an- oder abgeschaltet war.",
+  "architecture_tags": [
+    "General",
+    "Thinking-Optional"
+  ],
+  "unknown": false,
+  "generated_at": "2026-04-23T22:03:10.589635+00:00",
+  "card_status": "complete",
+  "size_class": "Workstation",
+  "thinking_probe_detected": true,
+  "thinking_probe_evidence": "Think-tag found in response (first 200 chars): <think>\nOkay, so I need to find the average speed of a train that travels 120 kilometers in 1.5 hours. Hmm, let me think. I remember that average speed is calculated by dividing the total distance by ",
+  "thinking_probe_confidence": "high",
+  "thinking_probe_at": "2026-04-25T09:31:50.465081+00:00",
+  "supports_tool_use": true,
+  "license": "Apache-2.0",
+  "license_url": "https://www.apache.org/licenses/LICENSE-2.0",
+  "commercial_use_allowed": true,
+  "vendor": "Alibaba",
+  "weights_license_tier": "open-weights",
+  "model_version": "3-32B"
 }

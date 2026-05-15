@@ -1,43 +1,44 @@
 {
-    "model_id": "gemini-2.5-pro",
-    "display_name": "Gemini 2.5 Pro",
-    "developer": "Google DeepMind",
-    "origin_country": "USA",
-    "developer_jurisdiction": "US",
-    "deployment_type": "cloud-only",
-    "local_deployment_possible": false,
-    "weights_provenance_risk": "medium",
-    "weights_provenance_risk_rationale": "Google ist ein US-amerikanisches Unternehmen und unterliegt dem CLOUD Act; die Modellgewichte sind nicht öffentlich zugänglich, sodass ein direkter Zugriff auf Weights nicht besteht.",
-    "model_family": "Gemini",
-    "primary_focus": "reasoning",
-    "summary": "Gemini 2.5 Pro ist Googles leistungsstärkstes Reasoning-Modell (Stand 2025), entwickelt für komplexe Analyse-, Coding- und Mehrschritt-Aufgaben. Es unterstützt sehr lange Kontextfenster (bis 1 M Token), optionales Chain-of-Thought und erzielt Spitzenwerte in Mathematik- und Science-Benchmarks.",
-    "strengths": [
-        "Sehr starkes mathematisches und wissenschaftliches Reasoning mit optionalem Extended Thinking",
-        "Extrem großes Kontextfenster (bis zu 1 Million Token) für Dokumentenanalyse und lange Konversationen",
-        "Herausragende Coding-Fähigkeiten inkl. komplexer Multi-File-Projekte und Debugging"
-    ],
-    "known_limitations": [
-        "Ausschließlich über Google-Cloud-API verfügbar, keine lokale Ausführung möglich",
-        "Latenz im Thinking-Modus deutlich erhöht; bei einfachen Aufgaben oft überdimensioniert"
-    ],
-    "judge_context_hint": "Das Modell aktiviert im Thinking-Modus ausführliche interne Überlegungen, die die Antwortqualität bei komplexen Aufgaben stark verbessern, bei einfachen Prompts aber zu Overreasoning und unnötiger Ausführlichkeit führen können.",
-    "architecture_tags": [
-        "General",
-        "Thinking-Optional",
-        "Agentic-Orchestrator"
-    ],
-    "unknown": false,
-    "generated_at": "2026-04-23T22:01:57.694473+00:00",
-    "card_status": "complete",
-    "size_class": "Frontier",
-    "thinking_probe_detected": false,
-    "thinking_probe_evidence": "No CoT signals found. Response length: 41 chars",
-    "thinking_probe_confidence": "low",
-    "thinking_probe_at": "2026-04-23T13:50:26.117380+00:00",
-    "supports_tool_use": true,
-    "license": "Proprietary",
-    "license_url": null,
-    "commercial_use_allowed": true,
-    "vendor": "Google",
-    "weights_license_tier": "proprietary"
+  "model_id": "gemini-2.5-pro",
+  "display_name": "Gemini 2.5 Pro",
+  "developer": "Google DeepMind",
+  "origin_country": "USA",
+  "developer_jurisdiction": "US",
+  "deployment_type": "cloud-only",
+  "local_deployment_possible": false,
+  "weights_provenance_risk": "medium",
+  "weights_provenance_risk_rationale": "Google ist ein US-amerikanisches Unternehmen und unterliegt dem CLOUD Act; die Modellgewichte sind nicht öffentlich zugänglich, sodass ein direkter Zugriff auf Weights nicht besteht.",
+  "model_family": "Gemini",
+  "primary_focus": "reasoning",
+  "summary": "Gemini 2.5 Pro ist Googles leistungsstärkstes Reasoning-Modell (Stand 2025), entwickelt für komplexe Analyse-, Coding- und Mehrschritt-Aufgaben. Es unterstützt sehr lange Kontextfenster (bis 1 M Token), optionales Chain-of-Thought und erzielt Spitzenwerte in Mathematik- und Science-Benchmarks.",
+  "strengths": [
+    "Sehr starkes mathematisches und wissenschaftliches Reasoning mit optionalem Extended Thinking",
+    "Extrem großes Kontextfenster (bis zu 1 Million Token) für Dokumentenanalyse und lange Konversationen",
+    "Herausragende Coding-Fähigkeiten inkl. komplexer Multi-File-Projekte und Debugging"
+  ],
+  "known_limitations": [
+    "Ausschließlich über Google-Cloud-API verfügbar, keine lokale Ausführung möglich",
+    "Latenz im Thinking-Modus deutlich erhöht; bei einfachen Aufgaben oft überdimensioniert"
+  ],
+  "judge_context_hint": "Das Modell aktiviert im Thinking-Modus ausführliche interne Überlegungen, die die Antwortqualität bei komplexen Aufgaben stark verbessern, bei einfachen Prompts aber zu Overreasoning und unnötiger Ausführlichkeit führen können.",
+  "architecture_tags": [
+    "General",
+    "Thinking-Optional",
+    "Agentic-Orchestrator"
+  ],
+  "unknown": false,
+  "generated_at": "2026-04-23T22:01:57.694473+00:00",
+  "card_status": "complete",
+  "size_class": "Frontier",
+  "thinking_probe_detected": false,
+  "thinking_probe_evidence": "No CoT signals found. Response length: 41 chars",
+  "thinking_probe_confidence": "low",
+  "thinking_probe_at": "2026-04-23T13:50:26.117380+00:00",
+  "supports_tool_use": true,
+  "license": "Proprietary",
+  "license_url": null,
+  "commercial_use_allowed": true,
+  "vendor": "Google",
+  "weights_license_tier": "proprietary",
+  "model_version": "2.5-pro"
 }

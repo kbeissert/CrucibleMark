@@ -1,0 +1,43 @@
+{
+  "model_id": "mistral-medium-latest",
+  "display_name": "Mistral Medium",
+  "developer": "Mistral AI",
+  "origin_country": "France",
+  "developer_jurisdiction": "EU",
+  "deployment_type": "api-only",
+  "local_deployment_possible": false,
+  "weights_provenance_risk": "low",
+  "weights_provenance_risk_rationale": "Mistral AI ist ein französisches Unternehmen mit Sitz in der EU und unterliegt keiner staatlichen Zugriffspflicht auf Modellgewichte wie dem US CLOUD Act oder dem chinesischen NSL.",
+  "model_family": "Mistral",
+  "primary_focus": "general",
+  "summary": "Mistral Medium ist ein proprietäres Cloud-Modell des französischen Unternehmens Mistral AI, positioniert zwischen den leichten und den Frontier-Modellen der Produktlinie. Es zielt auf starke allgemeine Sprachverarbeitung, Instruktionsbefolgung und mehrsprachige Aufgaben ab, mit besonderem Fokus auf europäische Nutzungsszenarien.",
+  "strengths": [
+    "Gute Balance zwischen Leistung und Kosten im mittleren Preissegment",
+    "Solide mehrsprachige Fähigkeiten, insbesondere für europäische Sprachen",
+    "Zuverlässiges Instruction-Following für strukturierte Aufgaben und Geschäftsanwendungen"
+  ],
+  "known_limitations": [
+    "Gewichte nicht öffentlich verfügbar, kein lokaler Betrieb möglich",
+    "Geringere Reasoning-Tiefe im Vergleich zu Frontier-Modellen wie Mistral Large oder GPT-4-Klasse"
+  ],
+  "judge_context_hint": "Mistral Medium ist ein Mittelklasse-Modell – bei komplexen mehrstufigen Reasoning-Aufgaben oder sehr langen Kontexten kann die Leistung gegenüber größeren Frontier-Modellen spürbar abfallen. (Hinweis: mistral-medium-latest ist ein beweglicher Alias; getestete Version war 2312 ohne öffentliche Gewichte.)",
+  "architecture_tags": [
+    "General",
+    "Instruct"
+  ],
+  "unknown": false,
+  "generated_at": "2026-04-23T21:58:09.428713+00:00",
+  "card_status": "complete",
+  "size_class": "Frontier",
+  "thinking_probe_detected": false,
+  "thinking_probe_evidence": "No CoT signals found (A: no think-tags, B: reasoning_tokens=0). Response length: 519 chars",
+  "thinking_probe_confidence": "low",
+  "thinking_probe_at": "2026-04-23T13:57:05.868894+00:00",
+  "supports_tool_use": true,
+  "license": null,
+  "license_url": null,
+  "commercial_use_allowed": true,
+  "vendor": "Mistral AI",
+  "weights_license_tier": "proprietary",
+  "model_version": "2312"
+}

@@ -1,38 +1,39 @@
 {
-    "model_id": "gemma4:E4B",
-    "display_name": "Gemma 4 E4B",
-    "developer": "Google DeepMind",
-    "origin_country": "USA",
-    "developer_jurisdiction": "US",
-    "deployment_type": "open-weights",
-    "local_deployment_possible": true,
-    "weights_provenance_risk": "medium",
-    "weights_provenance_risk_rationale": "Google DeepMind ist ein US-amerikanisches Unternehmen und unterliegt dem CLOUD Act, jedoch ist der CLOUD Act bei lokal betriebenen Open-Weights-Modellen nicht direkt anwendbar.",
-    "model_family": "Gemma",
-    "primary_focus": "general",
-    "summary": "Gemma 4 E4B ist ein Open-Weights-Modell von Google DeepMind mit ca. 4 Milliarden aktiven Parametern in einer Mixture-of-Experts-Architektur. Es ist auf allgemeine Instruction-Following-Aufgaben ausgerichtet und bietet starke Effizienz bei geringem Ressourcenbedarf für lokale Deployments.",
-    "strengths": [
-        "Sehr ressourceneffizient durch MoE-Architektur mit wenigen aktiven Parametern",
-        "Lokal auf Consumer-Hardware betreibbar",
-        "Solides Instruction-Following für alltägliche Aufgaben"
-    ],
-    "known_limitations": [
-        "Begrenzte Kapazität bei komplexen Reasoning- oder Mehrschritt-Aufgaben im Vergleich zu größeren Modellen",
-        "Spezifische Modellvariante 'E4B' ist wenig dokumentiert, Leistungscharakteristik kann von Standard-Gemma-4-Varianten abweichen"
-    ],
-    "judge_context_hint": "Das Modell ist eine kompakte MoE-Variante der Gemma-4-Familie – Antwortqualität und Tiefe sind entsprechend der geringen aktiven Parameterzahl einzuordnen, nicht mit Vollmodellen gleicher Gesamtparameterzahl zu vergleichen.",
-    "architecture_tags": [
-        "General",
-        "Instruct"
-    ],
-    "unknown": true,
-    "generated_at": "2026-04-23T22:07:02.933740+00:00",
-    "card_status": "complete",
-    "size_class": "Nano",
-    "supports_tool_use": true,
-    "license": "Google Gemma Terms of Use",
-    "license_url": "https://ai.google.dev/gemma/terms",
-    "commercial_use_allowed": null,
-    "vendor": "Google",
-    "weights_license_tier": "restricted-weights"
+  "model_id": "gemma4:E4B",
+  "display_name": "Gemma 4 E4B",
+  "developer": "Google DeepMind",
+  "origin_country": "USA",
+  "developer_jurisdiction": "US",
+  "deployment_type": "open-weights",
+  "local_deployment_possible": true,
+  "weights_provenance_risk": "medium",
+  "weights_provenance_risk_rationale": "Google DeepMind ist ein US-amerikanisches Unternehmen und unterliegt dem CLOUD Act, jedoch ist der CLOUD Act bei lokal betriebenen Open-Weights-Modellen nicht direkt anwendbar.",
+  "model_family": "Gemma",
+  "primary_focus": "general",
+  "summary": "Gemma 4 E4B ist ein Open-Weights-Modell von Google DeepMind mit ca. 4 Milliarden aktiven Parametern in einer Mixture-of-Experts-Architektur. Es ist auf allgemeine Instruction-Following-Aufgaben ausgerichtet und bietet starke Effizienz bei geringem Ressourcenbedarf für lokale Deployments.",
+  "strengths": [
+    "Sehr ressourceneffizient durch MoE-Architektur mit wenigen aktiven Parametern",
+    "Lokal auf Consumer-Hardware betreibbar",
+    "Solides Instruction-Following für alltägliche Aufgaben"
+  ],
+  "known_limitations": [
+    "Begrenzte Kapazität bei komplexen Reasoning- oder Mehrschritt-Aufgaben im Vergleich zu größeren Modellen",
+    "Spezifische Modellvariante 'E4B' ist wenig dokumentiert, Leistungscharakteristik kann von Standard-Gemma-4-Varianten abweichen"
+  ],
+  "judge_context_hint": "Das Modell ist eine kompakte MoE-Variante der Gemma-4-Familie – Antwortqualität und Tiefe sind entsprechend der geringen aktiven Parameterzahl einzuordnen, nicht mit Vollmodellen gleicher Gesamtparameterzahl zu vergleichen.",
+  "architecture_tags": [
+    "General",
+    "Instruct"
+  ],
+  "unknown": true,
+  "generated_at": "2026-04-23T22:07:02.933740+00:00",
+  "card_status": "complete",
+  "size_class": "Nano",
+  "supports_tool_use": true,
+  "license": "Google Gemma Terms of Use",
+  "license_url": "https://ai.google.dev/gemma/terms",
+  "commercial_use_allowed": null,
+  "vendor": "Google",
+  "weights_license_tier": "restricted-weights",
+  "model_version": "c6eb396dbd59"
 }

@@ -1,0 +1,43 @@
+{
+  "model_id": "mistral-large-latest",
+  "display_name": "Mistral Large",
+  "developer": "Mistral AI",
+  "origin_country": "France",
+  "developer_jurisdiction": "EU",
+  "deployment_type": "open-weights-cloud-available",
+  "local_deployment_possible": true,
+  "weights_provenance_risk": "low",
+  "weights_provenance_risk_rationale": "Mistral AI ist ein französisches Unternehmen mit Sitz in der EU und unterliegt keiner staatlichen Zugriffspflicht auf Modellgewichte vergleichbar dem chinesischen NSL oder dem US CLOUD Act für Weights.",
+  "model_family": "Mistral",
+  "primary_focus": "general",
+  "summary": "Mistral Large ist das Flaggschiff-Modell des französischen KI-Unternehmens Mistral AI. Es wurde für komplexe Reasoning-, Analyse- und Mehrsprachigkeitsaufgaben entwickelt und zeichnet sich durch starke Instruktionsbefolgung, präzises Schlussfolgern und breite Sprachunterstützung aus.",
+  "strengths": [
+    "Starkes mehrsprachiges Verständnis und Generierung (u. a. Englisch, Französisch, Deutsch, Spanisch, Italienisch)",
+    "Hohe Leistung bei komplexen Reasoning- und Analyseaufgaben",
+    "Zuverlässiges Instruction-Following mit präzisen, strukturierten Antworten"
+  ],
+  "known_limitations": [
+    "Gewichte unter Mistral Research License (MRL) — nicht-kommerzieller Betrieb; für kommerzielle Nutzung ist ein Mistral-API-Vertrag erforderlich",
+    "Bei sehr spezialisierten Coding-Aufgaben hinter dedizierten Code-Modellen wie Codestral zurück"
+  ],
+  "judge_context_hint": "Mistral Large neigt zu prägnanten, strukturierten Antworten und kann bei offenen kreativen Aufgaben etwas konservativer formulieren als US-amerikanische Konkurrenzmodelle.",
+  "architecture_tags": [
+    "General",
+    "Instruct"
+  ],
+  "unknown": false,
+  "generated_at": "2026-04-23T21:57:50.399664+00:00",
+  "card_status": "complete",
+  "size_class": "Frontier",
+  "thinking_probe_detected": false,
+  "thinking_probe_evidence": "No CoT signals found (A: no think-tags, B: reasoning_tokens=0). Response length: 486 chars",
+  "thinking_probe_confidence": "low",
+  "thinking_probe_at": "2026-04-23T13:57:02.810497+00:00",
+  "supports_tool_use": true,
+  "license": "Mistral Research License",
+  "license_url": null,
+  "commercial_use_allowed": false,
+  "vendor": "Mistral AI",
+  "weights_license_tier": "open-weights",
+  "model_version": "3"
+}

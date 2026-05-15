@@ -1,42 +1,42 @@
 {
-    "model_id": "deepseek-v3.2:cloud",
-    "display_name": "DeepSeek V3.2",
-    "developer": "DeepSeek",
-    "origin_country": "China",
-    "developer_jurisdiction": "CN",
-    "deployment_type": "open-weights-cloud-available",
-    "local_deployment_possible": true,
-    "weights_provenance_risk": "high",
-    "weights_provenance_risk_rationale": "DeepSeek ist ein chinesisches Unternehmen und unterliegt dem chinesischen National Security Law (NSL), das staatlichen Zugriff auf Daten und Modelle ermöglichen kann.",
-    "model_family": "DeepSeek",
-    "primary_focus": "general",
-    "summary": "DeepSeek V3.2 ist ein chinesisches Frontier-Modell von DeepSeek, trainiert auf breiten Wissens- und Reasoning-Aufgaben. Es zeichnet sich durch starke Coding-, Mathematik- und Sprachverständnisfähigkeiten aus und wurde entwickelt, um westliche Top-Modelle bei deutlich geringeren Trainingskosten zu erreichen.",
-    "strengths": [
-        "Starke Leistung bei Coding- und Mathematikaufgaben",
-        "Sehr gutes Preis-Leistungs-Verhältnis im Vergleich zu Konkurrenzmodellen",
-        "Breites Allgemeinwissen mit guter mehrsprachiger Kompetenz"
-    ],
-    "known_limitations": [
-        "Unterliegt chinesischer Zensur bei politisch sensiblen Themen (z.B. Tiananmen, Taiwan)",
-        "Als V3.2 möglicherweise noch nicht vollständig dokumentiert – Architekturdetails gegenüber V3 unklar"
-    ],
-    "judge_context_hint": "Das Modell kann bei politisch sensiblen Themen mit China-Bezug ausweichen oder verweigern; bei sachlichen und technischen Aufgaben ist die Leistung jedoch mit westlichen Top-Modellen vergleichbar.",
-    "architecture_tags": [
-        "General",
-        "Coder"
-    ],
-    "unknown": false,
-    "generated_at": "2026-04-23T22:05:58.641837+00:00",
-    "card_status": "complete",
-    "size_class": "Frontier",
-    "thinking_probe_detected": false,
-    "thinking_probe_evidence": "No CoT signals found (A: no think-tags, B: reasoning_tokens=0). Response length: 420 chars",
-    "thinking_probe_confidence": "low",
-    "thinking_probe_at": "2026-05-01T10:47:03.853585+00:00",
-    "supports_tool_use": true,
-    "license": "DeepSeek License",
-    "license_url": "https://github.com/deepseek-ai/DeepSeek-V3/blob/main/LICENSE",
-    "commercial_use_allowed": null,
-    "vendor": "DeepSeek",
-    "weights_license_tier": "restricted-weights"
+  "model_id": "deepseek-v3.2:cloud",
+  "display_name": "DeepSeek V3.2",
+  "developer": "DeepSeek",
+  "origin_country": "China",
+  "developer_jurisdiction": "CN",
+  "deployment_type": "open-weights-cloud-available",
+  "local_deployment_possible": true,
+  "weights_provenance_risk": "high",
+  "weights_provenance_risk_rationale": "DeepSeek ist ein chinesisches Unternehmen und unterliegt dem chinesischen National Security Law (NSL), das staatlichen Zugriff auf Daten und Modelle ermöglichen kann.",
+  "model_family": "DeepSeek",
+  "primary_focus": "general",
+  "summary": "DeepSeek V3.2 ist ein chinesisches Frontier-Modell von DeepSeek, trainiert auf breiten Wissens- und Reasoning-Aufgaben. Es zeichnet sich durch starke Coding-, Mathematik- und Sprachverständnisfähigkeiten aus und wurde entwickelt, um westliche Top-Modelle bei deutlich geringeren Trainingskosten zu erreichen.",
+  "strengths": [
+    "Starke Leistung bei Coding- und Mathematikaufgaben",
+    "Sehr gutes Preis-Leistungs-Verhältnis im Vergleich zu Konkurrenzmodellen",
+    "Breites Allgemeinwissen mit guter mehrsprachiger Kompetenz"
+  ],
+  "known_limitations": [
+    "Unterliegt chinesischer Zensur bei politisch sensiblen Themen (z.B. Tiananmen, Taiwan)",
+    "Als V3.2 möglicherweise noch nicht vollständig dokumentiert – Architekturdetails gegenüber V3 unklar"
+  ],
+  "judge_context_hint": "Das Modell kann bei politisch sensiblen Themen mit China-Bezug ausweichen oder verweigern; bei sachlichen und technischen Aufgaben ist die Leistung jedoch mit westlichen Top-Modellen vergleichbar.",
+  "architecture_tags": [
+    "General",
+    "Coder"
+  ],
+  "unknown": false,
+  "generated_at": "2026-04-23T22:05:58.641837+00:00",
+  "card_status": "complete",
+  "size_class": "Frontier",
+  "thinking_probe_detected": false,
+  "thinking_probe_evidence": "No CoT signals found (A: no think-tags, B: reasoning_tokens=0). Response length: 420 chars",
+  "thinking_probe_confidence": "low",
+  "thinking_probe_at": "2026-05-01T10:47:03.853585+00:00",
+  "supports_tool_use": true,
+  "license": "DeepSeek License",
+  "license_url": "https://github.com/deepseek-ai/DeepSeek-V3/blob/main/LICENSE",
+  "commercial_use_allowed": null,
+  "vendor": "DeepSeek",
+  "weights_license_tier": "open-weights"
 }

@@ -1,43 +1,44 @@
 {
-    "model_id": "gemini-3-flash-preview",
-    "display_name": "Gemini 3 Flash Preview",
-    "developer": "Google DeepMind",
-    "origin_country": "USA",
-    "developer_jurisdiction": "US",
-    "deployment_type": "cloud-only",
-    "local_deployment_possible": false,
-    "weights_provenance_risk": "medium",
-    "weights_provenance_risk_rationale": "Google DeepMind ist ein US-amerikanisches Unternehmen und unterliegt dem CLOUD Act; die Modellgewichte sind nicht öffentlich zugänglich.",
-    "model_family": "Gemini",
-    "primary_focus": "general",
-    "summary": "Gemini 3 Flash Preview ist Googles schnelles Multimodal-Modell der dritten Generation, entwickelt für latenzarme, kosteneffiziente Anwendungen. Stärken liegen in schneller Verarbeitung langer Kontexte, multimodalen Eingaben und alltäglichen Reasoning-Aufgaben. Als Preview-Version ist die Leistung noch nicht final.",
-    "strengths": [
-        "Sehr niedrige Latenz bei hohem Durchsatz, geeignet für Echtzeit-Anwendungen",
-        "Starke multimodale Fähigkeiten (Text, Bild, Audio, Video)",
-        "Effiziente Verarbeitung sehr langer Kontextfenster"
-    ],
-    "known_limitations": [
-        "Preview-Status bedeutet Leistungsschwankungen und mögliche API-Instabilität",
-        "Schwächer als größere Gemini-Varianten bei komplexen mehrstufigen Reasoning-Aufgaben"
-    ],
-    "judge_context_hint": "Das Modell ist eine experimentelle Preview-Version; Antwortqualität und Konsistenz können zwischen Aufrufen variieren, was bei der Bewertung berücksichtigt werden sollte.",
-    "architecture_tags": [
-        "General",
-        "Thinking-Optional",
-        "Preview"
-    ],
-    "unknown": false,
-    "generated_at": "2026-04-23T22:01:35.418589+00:00",
-    "card_status": "complete",
-    "size_class": "Frontier",
-    "thinking_probe_detected": false,
-    "thinking_probe_evidence": "No CoT signals found (A: no think-tags, B: reasoning_tokens=0). Response length: 276 chars",
-    "thinking_probe_confidence": "low",
-    "thinking_probe_at": "2026-04-23T13:55:36.823503+00:00",
-    "supports_tool_use": true,
-    "license": "Proprietary",
-    "license_url": null,
-    "commercial_use_allowed": true,
-    "vendor": "Google",
-    "weights_license_tier": "proprietary"
+  "model_id": "gemini-3-flash-preview",
+  "display_name": "Gemini 3 Flash Preview",
+  "developer": "Google DeepMind",
+  "origin_country": "USA",
+  "developer_jurisdiction": "US",
+  "deployment_type": "cloud-only",
+  "local_deployment_possible": false,
+  "weights_provenance_risk": "medium",
+  "weights_provenance_risk_rationale": "Google DeepMind ist ein US-amerikanisches Unternehmen und unterliegt dem CLOUD Act; die Modellgewichte sind nicht öffentlich zugänglich.",
+  "model_family": "Gemini",
+  "primary_focus": "general",
+  "summary": "Gemini 3 Flash Preview ist Googles schnelles Multimodal-Modell der dritten Generation, entwickelt für latenzarme, kosteneffiziente Anwendungen. Stärken liegen in schneller Verarbeitung langer Kontexte, multimodalen Eingaben und alltäglichen Reasoning-Aufgaben. Als Preview-Version ist die Leistung noch nicht final.",
+  "strengths": [
+    "Sehr niedrige Latenz bei hohem Durchsatz, geeignet für Echtzeit-Anwendungen",
+    "Starke multimodale Fähigkeiten (Text, Bild, Audio, Video)",
+    "Effiziente Verarbeitung sehr langer Kontextfenster"
+  ],
+  "known_limitations": [
+    "Preview-Status bedeutet Leistungsschwankungen und mögliche API-Instabilität",
+    "Schwächer als größere Gemini-Varianten bei komplexen mehrstufigen Reasoning-Aufgaben"
+  ],
+  "judge_context_hint": "Das Modell ist eine experimentelle Preview-Version; Antwortqualität und Konsistenz können zwischen Aufrufen variieren, was bei der Bewertung berücksichtigt werden sollte.",
+  "architecture_tags": [
+    "General",
+    "Thinking-Optional",
+    "Preview"
+  ],
+  "unknown": false,
+  "generated_at": "2026-04-23T22:01:35.418589+00:00",
+  "card_status": "complete",
+  "size_class": "Frontier",
+  "thinking_probe_detected": false,
+  "thinking_probe_evidence": "No CoT signals found (A: no think-tags, B: reasoning_tokens=0). Response length: 276 chars",
+  "thinking_probe_confidence": "low",
+  "thinking_probe_at": "2026-04-23T13:55:36.823503+00:00",
+  "supports_tool_use": true,
+  "license": "Proprietary",
+  "license_url": null,
+  "commercial_use_allowed": true,
+  "vendor": "Google",
+  "weights_license_tier": "proprietary",
+  "model_version": "3-flash-preview"
 }

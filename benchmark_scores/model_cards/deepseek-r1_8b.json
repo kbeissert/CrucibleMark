@@ -1,41 +1,42 @@
 {
-    "model_id": "deepseek-r1:8b",
-    "display_name": "DeepSeek R1 8B",
-    "developer": "DeepSeek",
-    "origin_country": "China",
-    "developer_jurisdiction": "CN",
-    "deployment_type": "open-weights-cloud-available",
-    "local_deployment_possible": true,
-    "weights_provenance_risk": "high",
-    "weights_provenance_risk_rationale": "DeepSeek ist ein chinesisches Unternehmen und unterliegt dem chinesischen National Security Law (NSL), das staatlichen Zugriff auf Daten und Modelle ermöglichen kann.",
-    "model_family": "DeepSeek-R1",
-    "primary_focus": "reasoning",
-    "summary": "DeepSeek R1 8B ist ein chinesisches Open-Weights-Reasoning-Modell von DeepSeek. Es wurde entwickelt, um durch sichtbares Chain-of-Thought-Denken komplexe Schlussfolgerungen, Mathematik und Logikaufgaben zu lösen. Stärken liegen in strukturiertem Denken und STEM-Aufgaben bei kompakter Modellgröße.",
-    "strengths": [
-        "Sichtbares Chain-of-Thought-Reasoning mit <thinking>-Blöcken ermöglicht nachvollziehbare Lösungswege",
-        "Starke Leistung bei Mathematik, Logik und STEM-Aufgaben relativ zur Modellgröße",
-        "Lokal betreibbar auf Consumer-Hardware dank 8B-Parametergröße"
-    ],
-    "known_limitations": [
-        "Thinking-Prozess kann sehr ausführlich und langsam sein, was bei einfachen Aufgaben ineffizient ist",
-        "Zensur bei politisch sensiblen Themen mit China-Bezug (z.B. Tiananmen, Taiwan) ist im Modell verankert"
-    ],
-    "judge_context_hint": "Das Modell gibt immer einen sichtbaren <thinking>-Block aus – bei der Bewertung sollte nur die finale Antwort nach dem Thinking-Block bewertet werden, nicht der Denkprozess selbst.",
-    "architecture_tags": [
-        "Thinking"
-    ],
-    "unknown": false,
-    "generated_at": "2026-04-23T22:09:16.638182+00:00",
-    "card_status": "complete",
-    "size_class": "Edge",
-    "thinking_probe_detected": false,
-    "thinking_probe_evidence": "No CoT signals found (A: no think-tags, B: reasoning_tokens=0). Response length: 1332 chars",
-    "thinking_probe_confidence": "low",
-    "thinking_probe_at": "2026-04-25T08:27:57.221518+00:00",
-    "supports_tool_use": false,
-    "license": "MIT",
-    "license_url": "https://opensource.org/licenses/MIT",
-    "commercial_use_allowed": true,
-    "vendor": "DeepSeek",
-    "weights_license_tier": "open-weights"
+  "model_id": "deepseek-r1:8b",
+  "display_name": "DeepSeek R1 8B",
+  "developer": "DeepSeek",
+  "origin_country": "China",
+  "developer_jurisdiction": "CN",
+  "deployment_type": "open-weights-cloud-available",
+  "local_deployment_possible": true,
+  "weights_provenance_risk": "high",
+  "weights_provenance_risk_rationale": "DeepSeek ist ein chinesisches Unternehmen und unterliegt dem chinesischen National Security Law (NSL), das staatlichen Zugriff auf Daten und Modelle ermöglichen kann.",
+  "model_family": "DeepSeek-R1",
+  "primary_focus": "reasoning",
+  "summary": "DeepSeek R1 8B ist ein chinesisches Open-Weights-Reasoning-Modell von DeepSeek. Es wurde entwickelt, um durch sichtbares Chain-of-Thought-Denken komplexe Schlussfolgerungen, Mathematik und Logikaufgaben zu lösen. Stärken liegen in strukturiertem Denken und STEM-Aufgaben bei kompakter Modellgröße.",
+  "strengths": [
+    "Sichtbares Chain-of-Thought-Reasoning mit <thinking>-Blöcken ermöglicht nachvollziehbare Lösungswege",
+    "Starke Leistung bei Mathematik, Logik und STEM-Aufgaben relativ zur Modellgröße",
+    "Lokal betreibbar auf Consumer-Hardware dank 8B-Parametergröße"
+  ],
+  "known_limitations": [
+    "Thinking-Prozess kann sehr ausführlich und langsam sein, was bei einfachen Aufgaben ineffizient ist",
+    "Zensur bei politisch sensiblen Themen mit China-Bezug (z.B. Tiananmen, Taiwan) ist im Modell verankert"
+  ],
+  "judge_context_hint": "Das Modell gibt immer einen sichtbaren <thinking>-Block aus – bei der Bewertung sollte nur die finale Antwort nach dem Thinking-Block bewertet werden, nicht der Denkprozess selbst.",
+  "architecture_tags": [
+    "Thinking"
+  ],
+  "unknown": false,
+  "generated_at": "2026-04-23T22:09:16.638182+00:00",
+  "card_status": "complete",
+  "size_class": "Edge",
+  "thinking_probe_detected": false,
+  "thinking_probe_evidence": "No CoT signals found (A: no think-tags, B: reasoning_tokens=0). Response length: 1332 chars",
+  "thinking_probe_confidence": "low",
+  "thinking_probe_at": "2026-04-25T08:27:57.221518+00:00",
+  "supports_tool_use": false,
+  "license": "MIT",
+  "license_url": "https://opensource.org/licenses/MIT",
+  "commercial_use_allowed": true,
+  "vendor": "DeepSeek",
+  "weights_license_tier": "open-weights",
+  "model_version": "6995872bfe4c"
 }

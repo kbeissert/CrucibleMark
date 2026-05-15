@@ -1,42 +1,43 @@
 {
-    "model_id": "claude-haiku-4-5-20251001",
-    "display_name": "Claude Haiku 4.5",
-    "developer": "Anthropic",
-    "origin_country": "USA",
-    "developer_jurisdiction": "US",
-    "deployment_type": "cloud-only",
-    "local_deployment_possible": false,
-    "weights_provenance_risk": "medium",
-    "weights_provenance_risk_rationale": "Anthropic ist ein US-amerikanisches Unternehmen und unterliegt dem CLOUD Act, jedoch sind die Modellgewichte nicht öffentlich zugänglich und ein staatlicher Zugriff auf die Weights selbst ist nicht bekannt.",
-    "model_family": "Claude",
-    "primary_focus": "instruction-following",
-    "summary": "Claude Haiku 4.5 ist Anthropics schnellstes und kompaktestes Modell der Claude-4-Generation, entwickelt für latenzarme, kosteneffiziente Anwendungen. Es kombiniert starkes Instruction-Following mit verbesserter Reasoning-Fähigkeit und eignet sich besonders für Echtzeit-Interaktionen, Klassifikation und leichtgewichtige Agenten-Aufgaben.",
-    "strengths": [
-        "Sehr niedrige Latenz und hoher Durchsatz für Echtzeit-Anwendungen",
-        "Kosteneffizient bei hohem Anfragevolumen",
-        "Solides Instruction-Following und präzise Kurzantworten"
-    ],
-    "known_limitations": [
-        "Geringere Tiefe bei komplexen mehrstufigen Reasoning-Aufgaben im Vergleich zu Claude Sonnet oder Opus",
-        "Eingeschränkte Leistung bei sehr langen, kontextintensiven Dokumentenanalysen"
-    ],
-    "judge_context_hint": "Haiku 4.5 ist auf Geschwindigkeit und Effizienz optimiert – bei komplexen Reasoning-Aufgaben oder langen Kontexten kann die Antwortqualität hinter größeren Claude-Modellen zurückbleiben.",
-    "architecture_tags": [
-        "General",
-        "Instruct"
-    ],
-    "unknown": false,
-    "generated_at": "2026-04-23T21:59:37.123523+00:00",
-    "card_status": "complete",
-    "size_class": "Frontier",
-    "thinking_probe_detected": false,
-    "thinking_probe_evidence": "No CoT signals found (A: no think-tags, B: reasoning_tokens=0). Response length: 590 chars",
-    "thinking_probe_confidence": "low",
-    "thinking_probe_at": "2026-04-23T13:55:05.513501+00:00",
-    "supports_tool_use": true,
-    "license": "Proprietary",
-    "license_url": null,
-    "commercial_use_allowed": true,
-    "vendor": "Anthropic",
-    "weights_license_tier": "proprietary"
+  "model_id": "claude-haiku-4-5-20251001",
+  "display_name": "Claude Haiku 4.5",
+  "developer": "Anthropic",
+  "origin_country": "USA",
+  "developer_jurisdiction": "US",
+  "deployment_type": "cloud-only",
+  "local_deployment_possible": false,
+  "weights_provenance_risk": "medium",
+  "weights_provenance_risk_rationale": "Anthropic ist ein US-amerikanisches Unternehmen und unterliegt dem CLOUD Act, jedoch sind die Modellgewichte nicht öffentlich zugänglich und ein staatlicher Zugriff auf die Weights selbst ist nicht bekannt.",
+  "model_family": "Claude",
+  "primary_focus": "instruction-following",
+  "summary": "Claude Haiku 4.5 ist Anthropics schnellstes und kompaktestes Modell der Claude-4-Generation, entwickelt für latenzarme, kosteneffiziente Anwendungen. Es kombiniert starkes Instruction-Following mit verbesserter Reasoning-Fähigkeit und eignet sich besonders für Echtzeit-Interaktionen, Klassifikation und leichtgewichtige Agenten-Aufgaben.",
+  "strengths": [
+    "Sehr niedrige Latenz und hoher Durchsatz für Echtzeit-Anwendungen",
+    "Kosteneffizient bei hohem Anfragevolumen",
+    "Solides Instruction-Following und präzise Kurzantworten"
+  ],
+  "known_limitations": [
+    "Geringere Tiefe bei komplexen mehrstufigen Reasoning-Aufgaben im Vergleich zu Claude Sonnet oder Opus",
+    "Eingeschränkte Leistung bei sehr langen, kontextintensiven Dokumentenanalysen"
+  ],
+  "judge_context_hint": "Haiku 4.5 ist auf Geschwindigkeit und Effizienz optimiert – bei komplexen Reasoning-Aufgaben oder langen Kontexten kann die Antwortqualität hinter größeren Claude-Modellen zurückbleiben.",
+  "architecture_tags": [
+    "General",
+    "Instruct"
+  ],
+  "unknown": false,
+  "generated_at": "2026-04-23T21:59:37.123523+00:00",
+  "card_status": "complete",
+  "size_class": "Frontier",
+  "thinking_probe_detected": false,
+  "thinking_probe_evidence": "No CoT signals found (A: no think-tags, B: reasoning_tokens=0). Response length: 590 chars",
+  "thinking_probe_confidence": "low",
+  "thinking_probe_at": "2026-04-23T13:55:05.513501+00:00",
+  "supports_tool_use": true,
+  "license": "Proprietary",
+  "license_url": null,
+  "commercial_use_allowed": true,
+  "vendor": "Anthropic",
+  "weights_license_tier": "proprietary",
+  "model_version": "4.5"
 }
