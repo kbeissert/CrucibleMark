@@ -218,7 +218,7 @@ Dieser Abschnitt beschreibt das vollständige System: von der Konfiguration eine
 
 Die **Modell-ID** ist die kanonische Kennung eines Modells — die genaue Zeichenfolge, die in der API-Anfrage verwendet wird. Sie ist die einzige Quelle der Wahrheit für:
 
-- den **Dateinamen der Model Card** (`benchmark_scores/model_cards/`)
+- den **Dateinamen der Model Card** (`benchmark_scores/model_cards/`) — bei `-latest`-Aliases mit bekannter Version weicht der Dateiname vom Alias ab (z. B. `mistral-large-latest` → `mistral-large-3.json`); `model_id` *in der Card* bleibt immer der API-Alias
 - die **CSV-Spalte `model`** in allen drei Benchmark-CSVs
 - den **Lookup** von Versionsinformationen und Reasoning-Flags
 
@@ -229,15 +229,36 @@ Die **Modell-ID** ist die kanonische Kennung eines Modells — die genaue Zeiche
 | Typ | Beispiel | Risiko |
 |---|---|---|
 | **Pinned (Checkpoint-Slug)** | `moonshotai/kimi-k2-0711` | Kein Risiko — Modell ändert sich nie |
-| **Floating Alias** | `mistral-large-latest` | Provider kann Silent Update durchführen |
+| **Floating Alias** | `mistral-large-latest` | Provider kann Silent Update durchführen — Card wird unter versionsspezifischem Namen gespeichert |
 
-**Regel:** Wo ein Provider versionierte Slugs anbietet (typisch für OpenRouter: `model-YYYYMMDD`), **müssen** diese verwendet werden. Für Provider, die keine Versionskennung mitliefern (Anthropic, OpenAI, Google, Mistral Direct-API, Groq), ist die Floating-Alias-ID der korrekte Eintrag — die Card ist dann für „was dieser Provider unter diesem Alias gerade serviert" gültig. Solange der Alias nicht von anderen Providern genutzt wird, entsteht keine Kollision.
+**Regel:** Wo ein Provider versionierte Slugs anbietet (typisch für OpenRouter: `model-YYYYMMDD`), **müssen** diese verwendet werden. Für Provider, die keine Versionskennung mitliefern (Anthropic, OpenAI, Google, Mistral Direct-API, Groq), ist die Floating-Alias-ID der korrekte Eintrag in Config und CSV — die Card hingegen wird unter `{base}-{version}.json` gespeichert, sobald die Version bekannt ist. Ist die Version (noch) nicht bekannt, bleibt der Alias als Dateiname (`codestral-latest.json`). Solange der Alias nicht von anderen Providern genutzt wird, entsteht keine Kollision.
 
 ---
 
-### Vom Config-Eintrag zur Card-Datei: Drei Naming-Regeln
+### Vom Config-Eintrag zur Card-Datei: Vier Naming-Regeln
 
-Die Funktion `_card_path(model_id, provider, for_write)` in `utils/model_utils.py` ist die einzige Stelle, die den Dateinamen einer Model Card berechnet. Sie implementiert drei Regeln:
+Die Funktion `_card_path(model_id, provider, *, for_write, resolved_version)` in `utils/model_utils.py` ist die einzige Stelle, die den Dateinamen einer Model Card berechnet. Sie implementiert vier Regeln — Regel 4 hat die höchste Priorität und wird vor allen anderen geprüft:
+
+#### Regel 4 (höchste Priorität): `-latest`-Aliases → versionsspezifischer Dateiname
+
+**Problem:** Floating Aliases wie `mistral-large-latest` sind *volatile* — derselbe Alias zeigt nach einem Provider-Update auf eine neue Modellversion. Eine Card unter dem Alias-Namen würde veraltete Metadaten für das neue Modell liefern (falsche Reasoning-Flags, falsche Kategorisierung).
+
+**Lösung:** Ist die konkrete Modellversion bekannt (`resolved_version` ≠ stale), setzt sich der Dateiname aus Basis-Name + Version zusammen:
+
+```
+mistral-large-latest  + version="3"    →   mistral-large-3.json
+mistral-medium-latest + version="2312" →   mistral-medium-2312.json
+mistral-small-latest  + version="3"    →   mistral-small-3.json
+codestral-latest      + version=stale  →   codestral-latest.json   (Fallback auf Regel 2)
+```
+
+**Stale-Versionen** (deaktivieren Regel 4): `"latest"`, `"unknown"`, `"k.A."`, `""`.
+
+**Wichtig:** Die `model_id` *in der Card* bleibt immer der API-Alias — sie wird für API-Calls und CSV-Lookups verwendet. Nur der Dateiname ist versionsspezifisch.
+
+Angewendet auf: alle Modell-IDs die auf `-latest` oder `:latest` enden, wenn `get_model_version()` einen nicht-stalen Wert liefert.
+
+---
 
 #### Regel 1: Namespaced IDs (enthalten `/`)
 
@@ -260,11 +281,11 @@ Proprietäre Modellnamen sind global eindeutig. Kein Prefix nötig.
 claude-sonnet-4-6          →   claude-sonnet-4-6.json
 gpt-5                      →   gpt-5.json
 gemini-2.5-pro             →   gemini-2_5-pro.json
-mistral-large-latest       →   mistral-large-latest.json
+codestral-latest           →   codestral-latest.json   (version unbekannt → Alias bleibt)
 grok-3-mini                →   grok-3-mini.json
 ```
 
-Angewendet auf: `anthropic`, `openai`, `google`, `xai`, `mistral` (alle mit Shortcode `API`).
+Angewendet auf: `anthropic`, `openai`, `google`, `xai`, `mistral` (alle mit Shortcode `API`) — sofern nicht Regel 4 greift (bekannte Version bei `-latest`-Alias).
 
 #### Regel 3: Nicht-namespaced + nicht-API → Provider-Prefix
 
@@ -285,9 +306,12 @@ llama-3.3-70b-versatile  →   GR_llama-3_3-70b-versatile.json
 #### Entscheidungsbaum
 
 ```
-model_id
+model_id  +  resolved_version
    │
-   ├── enthält "/"?  ─── JA ──► safe_name(model_id).json          (Regel 1)
+   ├── -latest/‌:latest Alias + resolved_version ≠ stale?
+   │        └── JA ──► {safe_name(base)}-{version}.json              (Regel 4)
+   │
+   ├── enthält "/"?  ─── JA ──► safe_name(model_id).json             (Regel 1)
    │
    └── NEIN
          │
@@ -295,7 +319,7 @@ model_id
          │
          └── NEIN (LCL, GR)
                │
-               └── for_write=True  ──► {SHORTCODE}_safe_name.json  (Regel 3, neu)
+               └── for_write=True  ──► {SHORTCODE}_safe_name.json    (Regel 3)
                └── for_write=False ──► Prefixed? → Prefixed-Pfad
                                        Sonst     → Unprefixed (Legacy-Fallback)
 ```
@@ -304,7 +328,7 @@ model_id
 
 ### Helper-Funktionen als SSoT (`utils/model_utils.py`)
 
-Alle Card-Pfadoperationen **müssen** diese Funktionen verwenden. Inline `Path(...) / f"{re.sub(...)}.json"` ist verboten — es würde die Drei-Regeln-Logik umgehen.
+Alle Card-Pfadoperationen **müssen** diese Funktionen verwenden. Inline `Path(...) / f"{re.sub(...)}.json"` ist verboten — es würde die Vier-Regeln-Logik umgehen.
 
 ```python
 from utils.model_utils import _safe_name, _card_path, _find_card, CARD_DIR
@@ -324,11 +348,19 @@ _safe_name("z-ai/glm-5.1-20260406")            # → "z-ai_glm-5_1-20260406"
 "gemini-2.5-flash".replace("/", "_")  # → "gemini-2.5-flash" (Punkt bleibt!)
 ```
 
-#### `_card_path(model_id, provider=None, *, for_write=False) → Path`
+#### `_card_path(model_id, provider=None, *, for_write=False, resolved_version=None) → Path`
 
-Berechnet den vollständigen Pfad der Card-Datei nach den Drei Regeln.
+Berechnet den vollständigen Pfad der Card-Datei nach den Vier Regeln.
 
 ```python
+# Regel 4: -latest Alias mit bekannter Version → versionsspezifischer Dateiname
+_card_path("mistral-large-latest", "mistral", for_write=True, resolved_version="3")
+# → benchmark_scores/model_cards/mistral-large-3.json
+
+# Regel 4: version ist stale → Fallback auf Regel 2 (Alias bleibt)
+_card_path("codestral-latest", "mistral", for_write=True, resolved_version="latest")
+# → benchmark_scores/model_cards/codestral-latest.json
+
 # Regel 1: Namespaced
 _card_path("moonshotai/kimi-k2-0711")
 # → benchmark_scores/model_cards/moonshotai_kimi-k2-0711.json
@@ -346,20 +378,30 @@ _card_path("llama3.3:70b", "ollama_local", for_write=True)
 # → benchmark_scores/model_cards/LCL_llama3_3_70b.json
 ```
 
-> **Wann `for_write=True`?** Nur beim Anlegen oder Überschreiben einer Card — also in `_write_card()` in `generate_model_cards.py`. Alle Lookup-Funktionen (Probe, Reasoning-Check, Size-Class) verwenden `for_write=False` (Default).
+> **Wann `for_write=True`?** Nur beim Anlegen oder Überschreiben einer Card — also in `_write_card()` in `generate_model_cards.py`, das `resolved_version` automatisch aus dem `model_version`-Feld der Card befüllt. Alle Lookup-Funktionen verwenden `for_write=False` (Default).
 
 #### `_find_card(model_id: str) → Path`
 
 Findet eine bestehende Card ohne Kenntnis des Providers. Nützlich in Utility-Funktionen, die nur die model_id kennen.
 
 ```python
-# Sucht: LCL_deepseek-r1_8b.json → dann deepseek-r1_8b.json (Legacy)
+# Nicht-namespaced (LCL/GR): LCL_deepseek-r1_8b.json → dann deepseek-r1_8b.json (Legacy)
 path = _find_card("deepseek-r1:8b")
 if path.exists():
     card = json.loads(path.read_text())
+
+# -latest Alias: Fallback 3 — findet versionsspezifische Card via get_model_version()
+path = _find_card("mistral-large-latest")
+# → mistral-large-3.json  (wenn get_model_version("mistral-large-latest") == "3")
 ```
 
-Lookup-Reihenfolge für nicht-namespaced IDs: `LCL_*` → `GR_*` → unpräfixiert (Legacy). OR-Modelle sind immer namespaced und landen direkt beim unpräfixierten Pfad.
+Lookup-Reihenfolge (vier Schritte):
+1. **Namespaced IDs** (`/` im model_id) → direkt `safe_name.json`
+2. **Prefixed Kandidaten** (`LCL_*`, `GR_*`) — erster existierender Treffer
+3. **Unpräfixierter Pfad** (Legacy-Fallback) — existiert evtl. nicht
+4. **`-latest` Version-Fallback** — ruft `get_model_version(model_id, provider="api")` auf und sucht `{base}-{version}.json`; Rückfall auf unpräfixierten Pfad wenn version stale
+
+Rückgabewert ist immer ein `Path` — Aufrufer müssen `.exists()` prüfen.
 
 #### `CARD_DIR: Path`
 
