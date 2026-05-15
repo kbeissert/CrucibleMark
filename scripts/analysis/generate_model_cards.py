@@ -36,7 +36,6 @@ from utils.model_utils import (
     ThinkingProbeResult,
     _card_path,
     _find_card,
-    _safe_name,
     get_model_size_class,
     probe_thinking_model,
 )

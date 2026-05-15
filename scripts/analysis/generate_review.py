@@ -20,7 +20,7 @@ if str(ROOT_DIR) not in sys.path:
     sys.path.insert(0, str(ROOT_DIR))
 
 from utils.llm_client import LLMClient
-from utils.model_utils import get_model_specialization, get_model_identity, get_model_size_class
+from utils.model_utils import get_model_specialization, get_model_identity, get_model_size_class, _find_card
 
 def load_config() -> dict:
     config_path = ROOT_DIR / "benchmark_config.yaml"
@@ -81,11 +81,8 @@ def collect_data() -> str:
 def get_model_card_context(model_id: str) -> str:
     """Liest die JSON-Karte eines Modells und gibt einen formatierten Kontext-String zurück."""
     import json
-    import re
 
-    cards_dir = ROOT_DIR / "benchmark_scores" / "model_cards"
-    safe = re.sub(r"[:/.\\ ]", "_", model_id)
-    card_path = cards_dir / f"{safe}.json"
+    card_path = _find_card(model_id)
 
     if not card_path.exists():
         return ""
@@ -177,9 +174,7 @@ def get_provider_card_context(model_id: str) -> str:
         return s.strip("_")
 
     # Model Card laden
-    cards_dir = ROOT_DIR / "benchmark_scores" / "model_cards"
-    safe = re.sub(r"[:/.\\ ]", "_", model_id)
-    model_card_path = cards_dir / f"{safe}.json"
+    model_card_path = _find_card(model_id)
 
     model_card: dict = {}
     developer = None
@@ -305,11 +300,8 @@ def _ensure_model_card(
         None  — Benutzer hat übersprungen → Review-Schleife soll dieses Modell skippen.
     """
     import json
-    import re
 
-    cards_dir = ROOT_DIR / "benchmark_scores" / "model_cards"
-    safe = re.sub(r"[:/.\\ ]", "_", model_id)
-    card_path = cards_dir / f"{safe}.json"
+    card_path = _find_card(model_id)
 
     if card_path.exists():
         try:
@@ -889,9 +881,7 @@ def process_model_review(model_dir: Path, csv_data: str, client: LLMClient, prov
     # Prefer architecture_tags from model card if available (overrides string-matching)
     import re as _re
     import json as _json
-    _cards_dir = ROOT_DIR / "benchmark_scores" / "model_cards"
-    _safe = _re.sub(r"[:/.\\ ]", "_", tested_model_name)
-    _card_path = _cards_dir / f"{_safe}.json"
+    _card_path = _find_card(tested_model_name)
     if _card_path.exists():
         try:
             with open(_card_path, "r", encoding="utf-8") as _cf:
