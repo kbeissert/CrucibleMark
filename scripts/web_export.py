@@ -25,15 +25,6 @@ def build_provider_map(config_path: Path) -> dict[str, str]:
     (e.g. auto-discovered Ollama models). The returned name is the human-readable
     provider label (e.g. "Groq Cloud", "Ollama (Local)"), not the api_type key.
     """
-    _FALLBACK_NAMES: dict[str, str] = {
-        "ollama": "Ollama",
-        "groq": "Groq Cloud",
-        "mistral": "Mistral AI",
-        "anthropic": "Anthropic",
-        "openai": "OpenAI",
-        "google": "Google Gemini",
-        "xai": "xAI (Grok)",
-    }
     mapping: dict[str, str] = {}
 
     try:
@@ -43,13 +34,18 @@ def build_provider_map(config_path: Path) -> dict[str, str]:
         return mapping
 
     providers_block = cfg.get("providers", {})
+    # Build fallback map from config provider names (SSOT — no hardcoded strings)
+    _fallbacks: dict[str, str] = {}
     for _tier_key, tier_val in providers_block.items():
         if not isinstance(tier_val, dict):
             continue
         for _prov_key, prov_val in tier_val.items():
             if not isinstance(prov_val, dict):
                 continue
-            display_name: str = prov_val.get("name", _prov_key)
+            if "name" not in prov_val:
+                continue  # Skip config/settings sub-blocks (e.g. local.config)
+            display_name: str = prov_val["name"]
+            _fallbacks[_prov_key] = display_name
             for model_entry in prov_val.get("models", []):
                 if isinstance(model_entry, dict) and "id" in model_entry:
                     model_id: str = model_entry["id"]
@@ -59,8 +55,12 @@ def build_provider_map(config_path: Path) -> dict[str, str]:
                     if short_id != model_id:
                         mapping[short_id] = display_name
 
+    # resolve_provider() returns "ollama" for all local models — alias to ollama_local name
+    if "ollama" not in _fallbacks:
+        _fallbacks["ollama"] = _fallbacks.get("ollama_local", "Ollama")
+
     # Store fallback names so callers can use them without importing model_utils
-    mapping["__fallbacks__"] = _FALLBACK_NAMES  # type: ignore[assignment]
+    mapping["__fallbacks__"] = _fallbacks  # type: ignore[assignment]
     return mapping
 
 
