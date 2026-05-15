@@ -29,7 +29,7 @@ def _format_judge_stars(df: pd.DataFrame) -> pd.DataFrame:
             return val
         return f"{n:.1f} \u2605"
 
-    df["LLM Judge Avg"] = df["LLM Judge Avg"].apply(_fmt)
+    df["LLM Judge Avg"] = df["LLM Judge Avg"].apply(_fmt)  # type: ignore[call-overload]
     return df
 
 
@@ -56,7 +56,7 @@ def _format_tokens_k(df: pd.DataFrame) -> pd.DataFrame:
             if n >= 1000:
                 return f"{n / 1000:.1f}K"
             return str(int(n))
-        df[col] = df[col].apply(_fmt)
+        df[col] = df[col].apply(_fmt)  # type: ignore[call-overload]
     return df
 
 
@@ -156,9 +156,9 @@ def export_leaderboard_detailed(leaderboard: pd.DataFrame, cat_cols: List[str]) 
     # Vendor field: read from model card (SSoT) via model_id lookup
     _cards_dir = OUTPUT_CSV.parent.parent / "benchmark_scores" / "model_cards"
     _vendor_map: dict[str, str] = {}
+    import json as _json
+    import re as _re
     if _cards_dir.exists():
-        import json as _json
-        import re as _re
         for _cf in _cards_dir.glob("*.json"):
             if _cf.name == "_index.json":
                 continue
