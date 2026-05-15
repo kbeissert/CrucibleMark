@@ -189,6 +189,24 @@ def load_model_card(model_name: str, root_dir: Path) -> dict | None:
     if versioned:
         return _try_load(versioned[0])
 
+    # Fallback: version-specific card for -latest aliases
+    # e.g. model_name="mistral-large-latest" → tries "mistral-large-3.json"
+    if model_name.endswith("-latest") or model_name.endswith(":latest"):
+        try:
+            from utils.model_utils import get_model_version as _gmv  # local import: avoids circular deps
+            _ver = _gmv(model_name, provider="api")
+        except ImportError:
+            _ver = None
+        _stale = {"latest", "unknown", "k.A.", ""}
+        if _ver and _ver.strip() not in _stale:
+            _base = re.sub(r"[:-]latest$", "", model_name)
+            _safe_b = re.sub(r"[:/.\\  ]", "_", _base)
+            _versioned = card_dir / f"{_safe_b}-{_ver.strip()}.json"
+            if _versioned.exists():
+                _result = _try_load(_versioned)
+                if _result:
+                    return _result
+
     # Fallback: leaderboard stores short display names (e.g. "kimi-k2.5") while cards are
     # filed under the full namespaced model_id (e.g. "moonshotai/kimi-k2.5-0127").
     # Match by stripping the org-prefix and date/version suffix from each card's model_id.
@@ -409,6 +427,17 @@ def main() -> None:
             suffix_matches = [v for k, v in dirs.items() if k.endswith(stripped.split('-', 1)[-1] if '-' in stripped else stripped)]
             if len(suffix_matches) == 1:
                 return suffix_matches[0]
+        # Fallback 3: -latest alias → versioned folder (e.g. "mistral-large-latest" → "mistral-large-3")
+        if raw_slug.endswith("-latest") or raw_slug.endswith(":latest"):
+            try:
+                from utils.model_utils import get_model_version as _gmv
+                _ver = _gmv(raw_slug, provider="api")
+            except ImportError:
+                _ver = None
+            if _ver and _ver.strip() not in {"latest", "unknown", "k.A.", ""}:
+                _vslug = re.sub(r"[:-]latest$", f"-{_ver.strip()}", raw_slug)
+                if _vslug in dirs:
+                    return dirs[_vslug]
         return None
 
     count = 0
@@ -499,11 +528,14 @@ def main() -> None:
         _type = _TIER_MAP.get(_card_tier) or str(row.get("Type", ""))
 
         # Core Leaderboard Entry
+        # Version SSOT: Card-First (model_version field), fallback to leaderboard CSV "Version"
+        _card_version = extract_version(card.get("model_version")) if card else None
+        _csv_version = extract_version(row.get("Version"))
         entry = {
             "slug": slug,
             "model_name": model_name,
             "vendor": vendor,
-            "version": extract_version(row.get("Version")),
+            "version": _card_version or _csv_version,
             "badge": str(row.get("Badge", "")),
             "badge_tier": extract_badge_tier(row.get("Badge")),
             "size_class": str(row.get("Size Class", "Frontier")),

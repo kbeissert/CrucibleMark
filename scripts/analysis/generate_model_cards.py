@@ -336,7 +336,10 @@ def _write_card(card: dict[str, Any], model_provider: str | None = None) -> Path
         ``None`` → verhält sich wie bisher (kein Präfix).
     """
     CARDS_DIR.mkdir(parents=True, exist_ok=True)
-    path = _card_path(card["model_id"], model_provider, for_write=True)
+    _ver = str(card.get("model_version") or "").strip()
+    _stale = {"latest", "unknown", "k.A.", ""}
+    resolved_ver = _ver if _ver not in _stale else None
+    path = _card_path(card["model_id"], model_provider, for_write=True, resolved_version=resolved_ver)
     with open(path, "w", encoding="utf-8") as f:
         json.dump(card, f, ensure_ascii=False, indent=2)
     return path

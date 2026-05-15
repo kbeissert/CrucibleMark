@@ -67,11 +67,15 @@ def _safe_name(model_id: str) -> str:
     return re.sub(r"[:/.\ ]", "_", model_id)
 
 
+_STALE_VERSIONS: frozenset[str] = frozenset({"latest", "unknown", "k.A.", ""})
+
+
 def _card_path(
     model_id: str,
     provider: str | None = None,
     *,
     for_write: bool = False,
+    resolved_version: str | None = None,
 ) -> Path:
     """Returns the canonical Path for the model card of *model_id*.
 
@@ -100,7 +104,20 @@ def _card_path(
     for_write:
         When ``True``, always returns the canonical (potentially prefixed) path even
         if a legacy unprefixed file already exists — intended for card-generation code.
+    resolved_version:
+        When provided and the model_id ends with ``-latest`` or ``:latest``, the card
+        is stored/looked up under ``{base}-{resolved_version}.json`` instead of the
+        alias filename.  Ignored when version is stale (``'latest'``, ``'unknown'``, …).
     """
+    # Version-specific filename for -latest aliases when version is resolved
+    if (
+        resolved_version
+        and resolved_version.strip() not in _STALE_VERSIONS
+        and (model_id.endswith("-latest") or model_id.endswith(":latest"))
+    ):
+        base = re.sub(r"[:-]latest$", "", model_id)
+        return CARD_DIR / f"{_safe_name(base)}-{resolved_version.strip()}.json"
+
     safe = _safe_name(model_id)
 
     # Rule 1: namespaced IDs are globally unique — no prefix needed
@@ -154,6 +171,16 @@ def _find_card(model_id: str) -> Path:
         candidate = CARD_DIR / f"{shortcode}_{safe}.json"
         if candidate.exists():
             return candidate
+
+    # Version-aware fallback: card was renamed from alias to version-specific file
+    # e.g. "mistral-large-latest" → "mistral-large-3.json"
+    if model_id.endswith("-latest") or model_id.endswith(":latest"):
+        ver = get_model_version(model_id, provider="api")
+        if ver and ver.strip() not in _STALE_VERSIONS:
+            base = re.sub(r"[:-]latest$", "", model_id)
+            versioned = CARD_DIR / f"{_safe_name(base)}-{ver.strip()}.json"
+            if versioned.exists():
+                return versioned
 
     return unprefixed  # May or may not exist — caller checks
 
@@ -262,7 +289,8 @@ def get_model_version(model_name: str, provider: str = "ollama", client=None) ->
             return "latest"
         match = re.search(r"-(24\d{2})$", model_name)
         if match: return match.group(1)
-        if "large" in model_name: return "2411"
+        if "large" in model_name: return "3"   # mistral-large-latest → Mistral Large 3 (open-weights)
+        if "small" in model_name: return "3"   # mistral-small-latest → Mistral Small 3 (open-weights)
         if "medium" in model_name: return "2312"
         return "latest"  # covers -latest suffix (e.g. codestral-latest, magistral-small-latest)
     if "grok" in model_name:
