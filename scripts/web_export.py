@@ -311,6 +311,57 @@ def find_latest_markdown(dir_path: Path, prefix: str = "") -> Path | None:
     md_files = list(dir_path.glob(f'{prefix}*.md'))
     return max(md_files, key=lambda p: p.stat().st_mtime) if md_files else None
 
+
+import re as _re_global
+
+def _review_date_range(dir_path: Path, prefix: str = "review_") -> tuple[str | None, str | None]:
+    """
+    Returns (published_at, updated_at) as ISO-8601 date strings (YYYY-MM-DD)
+    derived from review filenames matching review_YYYYMMDD_HHMMSS.md.
+    published_at = oldest file, updated_at = newest file.
+    Returns (None, None) if no files found or no parseable date in filename.
+    """
+    if not dir_path or not dir_path.exists():
+        return None, None
+    dates: list[str] = []
+    for f in dir_path.glob(f"{prefix}*.md"):
+        m = _re_global.search(r"_(\d{8})_", f.name)
+        if m:
+            raw = m.group(1)
+            dates.append(f"{raw[:4]}-{raw[4:6]}-{raw[6:8]}")
+    if not dates:
+        return None, None
+    dates.sort()
+    return dates[0], dates[-1]
+
+
+def _build_benchmark_run_dates(runs_dir: Path) -> dict[str, str]:
+    """
+    Builds model_id → earliest benchmark_run_at (ISO date YYYY-MM-DD) from
+    outputs/runs/results_*_YYYYMMDD_HHMMSS.json.
+    Each JSON must have a 'model' field with the raw model_id.
+    """
+    import json as _j
+    result: dict[str, str] = {}
+    if not runs_dir.exists():
+        return result
+    for f in runs_dir.glob("results_*.json"):
+        m = _re_global.search(r"_(\d{8})_\d{6}\.json$", f.name)
+        if not m:
+            continue
+        raw = m.group(1)
+        date_str = f"{raw[:4]}-{raw[4:6]}-{raw[6:8]}"
+        try:
+            data = _j.loads(f.read_text(encoding="utf-8"))
+            mid: str = data.get("model", "") if isinstance(data, dict) else ""
+            if not mid:
+                continue
+            if mid not in result or date_str < result[mid]:
+                result[mid] = date_str
+        except Exception:
+            pass
+    return result
+
 def load_csv_with_fallback(path: Path):
     try:
         return pd.read_csv(path)
@@ -404,6 +455,9 @@ def main() -> None:
     audit_logs_path = root_dir / "outputs" / "audit_logs"
     comparisons_path = root_dir / "docs" / "reviews"
 
+    # Build benchmark_run_at map: model_id → earliest run date from outputs/runs/
+    _benchmark_run_map = _build_benchmark_run_dates(root_dir / "outputs" / "runs")
+
     # Directory mapping: internal model ID (dir name slug) -> Path
     # The directory name is the SSOT; CSV display names may differ via provider prefix or version suffix.
     audit_dirs = {slugify(d.name): d for d in audit_logs_path.iterdir() if d.is_dir()} if audit_logs_path.exists() else {}
@@ -493,6 +547,7 @@ def main() -> None:
 
         has_report = len(audit_files) > 0
         has_review = comp_files_dict["review"] is not None or comp_files_dict["bias_review"] is not None
+        review_published_at, review_updated_at = _review_date_range(model_comp_src) if model_comp_src else (None, None)
         if has_report: models_with_reports += 1
         if has_review: models_with_reviews += 1
 
@@ -582,6 +637,9 @@ def main() -> None:
             },
             "report_available": has_report,
             "review_available": has_review,
+            "benchmark_run_at": _benchmark_run_map.get(model_name) or _benchmark_run_map.get(raw_model_id),
+            "report_published_at": review_published_at,
+            "report_updated_at": review_updated_at if review_updated_at != review_published_at else None,
             "model_card": {
                 "developer": card.get("developer"),
                 "origin_country": card.get("origin_country"),
