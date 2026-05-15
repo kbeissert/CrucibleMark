@@ -4,7 +4,7 @@
     "developer": "Mistral AI",
     "origin_country": "France",
     "developer_jurisdiction": "EU",
-    "deployment_type": "open-weights-cloud-available",
+    "deployment_type": "api-only",
     "local_deployment_possible": false,
     "weights_provenance_risk": "low",
     "weights_provenance_risk_rationale": "Mistral AI ist ein französisches Unternehmen mit Sitz in der EU und unterliegt keiner staatlichen Zugriffspflicht auf Modellgewichte wie dem US CLOUD Act oder dem chinesischen NSL.",
@@ -20,7 +20,7 @@
         "Gewichte nicht öffentlich verfügbar, kein lokaler Betrieb möglich",
         "Geringere Reasoning-Tiefe im Vergleich zu Frontier-Modellen wie Mistral Large oder GPT-4-Klasse"
     ],
-    "judge_context_hint": "Mistral Medium ist ein Mittelklasse-Modell – bei komplexen mehrstufigen Reasoning-Aufgaben oder sehr langen Kontexten kann die Leistung gegenüber größeren Frontier-Modellen spürbar abfallen.",
+    "judge_context_hint": "Mistral Medium ist ein Mittelklasse-Modell – bei komplexen mehrstufigen Reasoning-Aufgaben oder sehr langen Kontexten kann die Leistung gegenüber größeren Frontier-Modellen spürbar abfallen. (Hinweis: mistral-medium-latest ist ein beweglicher Alias; getestete Version war 2312 ohne öffentliche Gewichte.)",
     "architecture_tags": [
         "General",
         "Instruct"
@@ -34,9 +34,9 @@
     "thinking_probe_confidence": "low",
     "thinking_probe_at": "2026-04-23T13:57:05.868894+00:00",
     "supports_tool_use": true,
-    "license": "Apache-2.0",
+    "license": null,
     "license_url": null,
     "commercial_use_allowed": true,
     "vendor": "Mistral AI",
-    "weights_license_tier": "open-weights"
+    "weights_license_tier": "proprietary"
 }

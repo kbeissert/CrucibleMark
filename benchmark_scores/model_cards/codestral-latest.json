@@ -5,7 +5,7 @@
     "origin_country": "France",
     "developer_jurisdiction": "EU",
     "deployment_type": "open-weights-cloud-available",
-    "local_deployment_possible": false,
+    "local_deployment_possible": true,
     "weights_provenance_risk": "low",
     "weights_provenance_risk_rationale": "Mistral AI ist ein französisches Unternehmen mit Sitz in der EU und unterliegt keiner staatlichen Zugriffspflicht auf Modellgewichte wie dem US CLOUD Act oder dem chinesischen NSL.",
     "model_family": "Codestral",
@@ -17,7 +17,7 @@
         "Schnelle Inferenz bei gleichzeitig hoher Code-Qualität dank optimierter Architektur"
     ],
     "known_limitations": [
-        "Nur über Mistral-API verfügbar, keine öffentlichen Gewichte für lokalen Betrieb",
+        "Gewichte unter Mistral Non-Production License (MNPL) — kein kommerzieller Einsatz ohne Mistral-Vertrag; lokaler Betrieb für Research/Entwicklung möglich",
         "Schwächer bei komplexen Reasoning-Aufgaben außerhalb des Code-Kontexts"
     ],
     "judge_context_hint": "Codestral ist auf Code-Aufgaben spezialisiert und zeigt bei reinen Coding-Benchmarks überdurchschnittliche Leistung, kann aber bei allgemeinen Reasoning- oder Wissensfragen hinter Allround-Modellen zurückbleiben.",

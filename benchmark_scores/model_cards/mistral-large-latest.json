@@ -5,7 +5,7 @@
     "origin_country": "France",
     "developer_jurisdiction": "EU",
     "deployment_type": "open-weights-cloud-available",
-    "local_deployment_possible": false,
+    "local_deployment_possible": true,
     "weights_provenance_risk": "low",
     "weights_provenance_risk_rationale": "Mistral AI ist ein französisches Unternehmen mit Sitz in der EU und unterliegt keiner staatlichen Zugriffspflicht auf Modellgewichte vergleichbar dem chinesischen NSL oder dem US CLOUD Act für Weights.",
     "model_family": "Mistral",
@@ -17,7 +17,7 @@
         "Zuverlässiges Instruction-Following mit präzisen, strukturierten Antworten"
     ],
     "known_limitations": [
-        "Gewichte nicht öffentlich verfügbar, daher kein lokaler Betrieb möglich",
+        "Gewichte unter Mistral Research License (MRL) — nicht-kommerzieller Betrieb; für kommerzielle Nutzung ist ein Mistral-API-Vertrag erforderlich",
         "Bei sehr spezialisierten Coding-Aufgaben hinter dedizierten Code-Modellen wie Codestral zurück"
     ],
     "judge_context_hint": "Mistral Large neigt zu prägnanten, strukturierten Antworten und kann bei offenen kreativen Aufgaben etwas konservativer formulieren als US-amerikanische Konkurrenzmodelle.",
