@@ -4,6 +4,19 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [v3.7.1] - 2026-05-15
+
+### Fixed
+- **`scripts/analysis/generate_review.py`:** 4 Stellen mit naiver `cards_dir / f"{re.sub(...)}.json"` Pfadkonstruktion → `_find_card(model_id)` ersetzt (SSOT inkl. `-latest`-Alias-Fallback). Überflüssige lokale `import re` entfernt.
+- **`scripts/analysis/generate_model_cards.py`:** Unused `_safe_name` Import entfernt (Pylint W0611).
+- **`scripts/web_export.py` — `build_provider_map()`:** Hardcoded `_FALLBACK_NAMES`-Dict durch dynamisches Config-Lesen aus `benchmark_config.yaml` ersetzt. Guard `"name" not in prov_val: continue` verhindert, dass Settings-Blöcke (z.B. `providers.local.config`) als Fake-Provider in `__fallbacks__` landen.
+- **`scripts/leaderboard/exporter.py`:** `# type: ignore[call-overload]` für beide pandas-`Series.apply(_fmt)`-Aufrufe (Pylance `reportCallIssue`). `import re as _re` vor den `if _cards_dir.exists():`-Block verschoben (Pylint E0606 `possibly-used-before-assignment`).
+
+### Docs
+- **`docs/ARCHITECTURE.md`:** `is_reasoning_model_from_card()` Dateiname-Auflösung korrekt als `_find_card()` dokumentiert (war noch `re.sub`-Beschreibung vor der Migration).
+
+---
+
 ## [v3.6.5] - 2026-05-09
 
 ### Changed

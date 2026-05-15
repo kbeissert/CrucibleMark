@@ -1,16 +1,28 @@
 # PROJECT_STATUS.md
 
-**Last Updated:** 2026-05-14
-**Current Version:** 3.7.0 (Modell-Kategorisierungs-SSOT: 3-Tier `weights_license_tier` als einzige Quelle)
+**Last Updated:** 2026-05-15
+**Current Version:** 3.7.1 (Code-Quality & Bug-Fix Release: `_find_card()` SSOT in Review-Scripts, Provider-Displaynamen aus Config, Exporter-Lint-Fixes)
 **Status:** ✅ Production-Ready
 
 ---
 
 ## Executive Summary
 
-CrucibleMark v3.7.0 konsolidiert die Modell-Kategorisierung auf eine Single Source of Truth: Das Feld `weights_license_tier` in den Model Cards ist ab sofort die einzige Quelle für die Anzeige-Kategorie eines Modells. Die bisherige Zweiteilung `Open Weights (Cloud)` / `Open Weights (Local)` entfällt zugunsten von drei klar semantisch getrennten Tiers. Backend (`get_model_category()`, `web_export.py`, `io_manager.py`, `data_loader.py`) und Frontend (`model-types.js`, alle Chart-Module, politicalCompass.11tydata.js) wurden synchronisiert. Die Architekturegel ist in `CLAUDE.md`, `ARCHITECTURE.md` und `systemPatterns.md` dokumentiert.
+CrucibleMark v3.7.1 schließt vier strukturelle Lücken, die nach der Card-Naming-Migration (v3.6) zurückgeblieben waren:
 
-**Key Achievements (v3.7.0):**
+1. **`generate_review.py`** nutzte an 4 Stellen noch naive `cards_dir / f"{re.sub(...)}.json"` Pfadkonstruktionen statt `_find_card()` — betraf u.a. den `-latest`-Alias-Lookup (z.B. `mistral-large-latest` → `mistral-large-3.json`).
+2. **`build_provider_map()`** in `web_export.py` hatte einen hardcodierten `_FALLBACK_NAMES`-Dict mit 7 Provider-Displaynamen — jetzt dynamisch aus `benchmark_config.yaml` gelesen. Guard verhindert, dass Config-Blöcke (`providers.local.config`) als Fake-Provider gelten.
+3. **`exporter.py`** hatte zwei Pylance-/Pylint-Warnungen: `apply`-Overload-Mismatch und `_re` potentially-unbound.
+4. **`ARCHITECTURE.md`** dokumentierte `is_reasoning_model_from_card()` noch mit der alten `re.sub`-Methode statt `_find_card()`.
+
+**Key Achievements (v3.7.1):**
+- ✅ **`scripts/analysis/generate_review.py`:** 4 × `_find_card()` statt naiver Pfadkonstruktion. Lokale `import re` entfernt.
+- ✅ **`scripts/analysis/generate_model_cards.py`:** Unused `_safe_name` Import entfernt (Pylint W0611).
+- ✅ **`scripts/web_export.py` — `build_provider_map()`:** `_FALLBACK_NAMES` durch Config-Lesung ersetzt; `"name" not in prov_val`-Guard.
+- ✅ **`scripts/leaderboard/exporter.py`:** `# type: ignore[call-overload]` für beide `apply(_fmt)`-Aufrufe; `import re as _re` vor `if`-Block.
+- ✅ **`docs/ARCHITECTURE.md`:** `is_reasoning_model_from_card()` Lookup korrekt als `_find_card()` dokumentiert.
+
+**Vorherige Version (v3.7.0 – Modell-Kategorisierungs-SSOT: 3-Tier `weights_license_tier` als einzige Quelle):**
 - ✅ **`utils/model_utils.py` — `get_model_category()` Card-First:** `_find_card()` → `weights_license_tier` → Display-String. Drei gültige Werte: `Proprietär` / `Restricted Weights` / `Open Weights`.
 - ✅ **`scripts/web_export.py` — Type-Override aus Card:** `type`-Feld wird zur Export-Zeit aus Model Card abgeleitet; kein CSV-Rebuild nötig. Auch `model_category` im PC-Export Card-basiert.
 - ✅ **`benchmark_modules/political_compass/core/io_manager.py`:** Nutzt `get_model_category()` statt eigenständiger Inline-Logik.

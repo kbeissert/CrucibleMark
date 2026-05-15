@@ -5,6 +5,13 @@
 
 ## Abgeschlossen
 
+### Code-Quality & Bug-Fix: `_find_card()` SSOT, Provider-Config-Lesung, Exporter-Lint (v3.7.1 – 15.05.26)
+- [x] `scripts/analysis/generate_review.py`: 4 × naive `cards_dir / f"{re.sub(...)}.json"` → `_find_card(model_id)`. Lokale `import re` entfernt.
+- [x] `scripts/analysis/generate_model_cards.py`: Unused `_safe_name` Import entfernt (Pylint W0611).
+- [x] `scripts/web_export.py` — `build_provider_map()`: `_FALLBACK_NAMES`-Hardcode durch dynamisches Lesen aus `benchmark_config.yaml` ersetzt. Guard `"name" not in prov_val` schützt vor Settings-Blöcken als Fake-Provider.
+- [x] `scripts/leaderboard/exporter.py`: `# type: ignore[call-overload]` für pandas `apply`-Overloads. `import re as _re` vor `if`-Block (Pylint E0606).
+- [x] `docs/ARCHITECTURE.md`: `is_reasoning_model_from_card()` Lookup auf `_find_card()` aktualisiert.
+
 ### Modell-Kategorisierungs-SSOT: 3-Tier `weights_license_tier` (v3.7.0 – 14.05.26)
 - [x] `get_model_category()` in `utils/model_utils.py`: Card-First-Lookup via `_find_card()` → `weights_license_tier` → Display-String. Drei gültige Tiers: `Proprietär` / `Restricted Weights` / `Open Weights`.
 - [x] `scripts/web_export.py`: `type`-Feld aus Model Card zur Export-Zeit abgeleitet; Legacy-CSV-Werte werden überschrieben ohne Rebuild. `model_category` im PC-Export ebenfalls Card-basiert.

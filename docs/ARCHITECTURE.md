@@ -224,7 +224,7 @@ Um `is_reasoning_model()` empirisch statt heuristisch zu fundieren, führt v3.5.
 
 2. **`ThinkingProbeResult`** (Dataclass): `detected: bool`, `evidence: str`, `confidence: Literal["high","medium","low"]`
 
-3. **`is_reasoning_model_from_card(model_id)`:** Liest `thinking_probe_detected` aus der JSON-Model-Card. Dateiname-Auflösung via `re.sub(r'[:/.\s]', '_', model_id)` — konsistent mit `_safe_name()` in `generate_model_cards.py`. Gibt `None` zurück wenn kein Eintrag vorhanden (kein False-Positive).
+3. **`is_reasoning_model_from_card(model_id)`:** Liest `thinking_probe_detected` aus der JSON-Model-Card. Dateiname-Auflösung via `_find_card(model_id)` (SSOT — inkl. `-latest`-Alias-Fallback). Gibt `None` zurück wenn kein Eintrag vorhanden (kein False-Positive).
 
 4. **`is_reasoning_model()` Lookup-Hierarchie:**
    1. Card-Lookup (`is_reasoning_model_from_card()`) — hat immer Vorrang
