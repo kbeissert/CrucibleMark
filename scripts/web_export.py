@@ -640,6 +640,11 @@ def main() -> None:
             "benchmark_run_at": _benchmark_run_map.get(model_name) or _benchmark_run_map.get(raw_model_id),
             "report_published_at": review_published_at,
             "report_updated_at": review_updated_at if review_updated_at != review_published_at else None,
+            "last_activity_at": max(filter(None, [
+                _benchmark_run_map.get(model_name) or _benchmark_run_map.get(raw_model_id),
+                review_published_at,
+                review_updated_at if review_updated_at != review_published_at else None,
+            ]), default=None),
             "model_card": {
                 "developer": card.get("developer"),
                 "origin_country": card.get("origin_country"),
