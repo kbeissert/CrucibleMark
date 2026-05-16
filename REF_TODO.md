@@ -5,6 +5,11 @@
 
 ## Abgeschlossen
 
+### Web-Export Date Fields: benchmark_run_at, report_published_at, last_activity_at (v3.7.2 – 16.05.26)
+- [x] `scripts/web_export.py`: `_build_benchmark_run_dates()` liest `outputs/runs/results_*_YYYYMMDD_*.json`, extrahiert Datum aus Dateiname + `model`-Feld aus JSON → `model_id → earliest_date` Map.
+- [x] `scripts/web_export.py`: `_review_date_range()` parst `review_YYYYMMDD_*.md` Dateinamen → `(published_at, updated_at)`. Kein mtime — Filename ist SSOT.
+- [x] 4 neue Felder im `leaderboard`-Block: `benchmark_run_at`, `report_published_at`, `report_updated_at` (null wenn = published_at), `last_activity_at` (max aller Datumssignale).
+
 ### Code-Quality & Bug-Fix: `_find_card()` SSOT, Provider-Config-Lesung, Exporter-Lint (v3.7.1 – 15.05.26)
 - [x] `scripts/analysis/generate_review.py`: 4 × naive `cards_dir / f"{re.sub(...)}.json"` → `_find_card(model_id)`. Lokale `import re` entfernt.
 - [x] `scripts/analysis/generate_model_cards.py`: Unused `_safe_name` Import entfernt (Pylint W0611).

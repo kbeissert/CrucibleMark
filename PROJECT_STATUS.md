@@ -1,7 +1,7 @@
 # PROJECT_STATUS.md
 
-**Last Updated:** 2026-05-15
-**Current Version:** 3.7.1 (Code-Quality & Bug-Fix Release: `_find_card()` SSOT in Review-Scripts, Provider-Displaynamen aus Config, Exporter-Lint-Fixes)
+**Last Updated:** 2026-05-16
+**Current Version:** 3.7.2 (Web-Export Date Fields: `benchmark_run_at`, `report_published_at`, `report_updated_at`, `last_activity_at`)
 **Status:** ✅ Production-Ready
 
 ---

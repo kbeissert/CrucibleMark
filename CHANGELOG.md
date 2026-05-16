@@ -4,6 +4,19 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [v3.7.2] - 2026-05-16
+
+### Added
+- **`scripts/web_export.py` — 4 Datumsfelder im `leaderboard`-Block** jedes per-Modell-`data.json`:
+  - `benchmark_run_at`: Frühestes PC-Run-Datum aus `outputs/runs/results_*_YYYYMMDD_*.json` (liest `model`-Feld aus JSON → model_id-Map). Abgedeckt: 72/72 Modelle.
+  - `report_published_at`: Ältestes `review_YYYYMMDD_*.md` in `docs/reviews/{model}/` (Filename-Parsing, kein mtime).
+  - `report_updated_at`: Neuestes Review-Datum — `null` wenn identisch mit `published_at`.
+  - `last_activity_at`: `max()` der drei vorgenannten Felder (neuestes Signal pro Modell).
+- **`_review_date_range(dir_path, prefix)`**: Hilfsfunktion, extrahiert `(published_at, updated_at)` aus Review-Dateinamen.
+- **`_build_benchmark_run_dates(runs_dir)`**: Baut `model_id → earliest_date` Map aus allen `outputs/runs/results_*.json`.
+
+---
+
 ## [v3.7.1] - 2026-05-15
 
 ### Fixed
