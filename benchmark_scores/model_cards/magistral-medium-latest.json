@@ -10,7 +10,7 @@
   "weights_provenance_risk_rationale": "Mistral AI ist ein französisches Unternehmen mit Sitz in der EU und unterliegt keiner vergleichbaren staatlichen Zugriffspflicht wie dem chinesischen NSL oder dem US CLOUD Act für Modellgewichte.",
   "model_family": "Magistral",
   "primary_focus": "reasoning",
-  "summary": "Magistral Medium ist Mistral AIs erstes dediziertes Reasoning-Modell, entwickelt in Frankreich. Es wurde für komplexe mehrstufige Schlussfolgerungen, mathematische Aufgaben und strukturiertes Denken trainiert. Stärken liegen in logischer Analyse, präzisen Antworten und mehrsprachigem Reasoning, insbesondere auf Europäisch.",
+  "summary": "Magistral Medium ist Mistral AIs dediziertes Reasoning-Modell aus Frankreich – entwickelt für komplexes, mehrstufiges Schlussfolgern, Mathematik und strukturiertes Denken. Es ist über die Mistral-API verfügbar; die Weights sind unter Apache-2.0 frei zugänglich.",
   "strengths": [
     "Starkes mehrstufiges Reasoning und logische Schlussfolgerungen",
     "Solide mathematische und analytische Fähigkeiten",

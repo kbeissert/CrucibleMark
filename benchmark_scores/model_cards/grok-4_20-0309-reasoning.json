@@ -11,7 +11,7 @@
   "model_family": "Grok",
   "vendor": "xAI",
   "primary_focus": "reasoning",
-  "summary": "Grok 4 Reasoning ist ein Chain-of-Thought-Modell von xAI (USA), entwickelt für komplexe analytische und mathematische Aufgaben. Es nutzt explizites Reasoning vor der Antwort, ist auf Präzision bei mehrstufigen Problemen ausgelegt und wird ausschließlich über die xAI-Cloud-API bereitgestellt.",
+  "summary": "Grok 4 (2025-03-09, reasoning) ist die Reasoning-Variante der Grok-4-Generation von xAI aus den USA – mit aktivem Chain-of-Thought für komplexe mehrstufige Aufgaben. Das Modell ist ausschließlich über die xAI-API verfügbar.",
   "strengths": [
     "Starkes mehrstufiges Schlussfolgern bei Mathematik- und Logikaufgaben",
     "Explizite Reasoning-Traces erhöhen Nachvollziehbarkeit der Antworten",

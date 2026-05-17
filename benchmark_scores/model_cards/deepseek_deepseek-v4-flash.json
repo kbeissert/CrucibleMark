@@ -7,10 +7,10 @@
   "deployment_type": "open-weights-cloud-available",
   "local_deployment_possible": false,
   "weights_provenance_risk": "high",
-  "weights_provenance_risk_rationale": "DeepSeek ist ein chinesisches Unternehmen und unterliegt dem chinesischen National Security Law (NSL), das staatlichen Zugriff auf Daten und Modelle ermöglichen kann.",
+  "weights_provenance_risk_rationale": "DeepSeek ist ein chinesisches Unternehmen und unterliegt dem chinesischen National Security Law (NSL), das staatlichen Zugriff auf Daten und Modelle ermöglichen kann. Das BSI hat am 04.02.2025 explizit vor dem Einsatz des DeepSeek-Cloud-Dienstes gewarnt: Nutzerdaten werden auf chinesischen Servern gespeichert; eine Nutzung für dienstliche oder sensible Daten wird nicht empfohlen. Für den Cloud-API-Betrieb gilt diese Warnung uneingeschränkt.",
   "model_family": "DeepSeek-V4",
   "primary_focus": "reasoning",
-  "summary": "DeepSeek V4 Flash ist die schnelle Reasoning-Variante der DeepSeek V4-Modellfamilie, verfügbar über Cloud-Provider wie OpenRouter. Das Modell setzt auf Chain-of-Thought-Reasoning über reasoning_tokens und liefert im Flash-Tier niedrigere Latenz bei reduzierter Modellgröße gegenüber dem Pro-Pendant.",
+  "summary": "DeepSeek V4 Flash ist die schnelle Reasoning-Variante der DeepSeek V4-Familie aus China – mit internem Chain-of-Thought und Open-Weights-Lizenz. Das Modell ist über Cloud-Provider kostengünstig verfügbar. Chinesische Herkunft und das nationale Sicherheitsgesetz (NSL) sind bei der Einschätzung des Datenrisikos zu berücksichtigen.",
   "strengths": [
     "Schnelle Inferenz dank optimierter Flash-Architektur bei gleichzeitigem Reasoning-Support",
     "Kosteneffiziente Alternative zu DeepSeek V4 Pro für Aufgaben mit moderatem Komplexitätsgrad",

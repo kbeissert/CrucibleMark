@@ -7,10 +7,10 @@
   "deployment_type": "open-weights-cloud-available",
   "local_deployment_possible": true,
   "weights_provenance_risk": "high",
-  "weights_provenance_risk_rationale": "Alibaba Cloud unterliegt als chinesisches Unternehmen dem chinesischen National Security Law (NSL), das staatliche Zugriffe auf Daten und Modellentwicklung ermöglichen kann.",
+  "weights_provenance_risk_rationale": "Alibaba Cloud (Tongyi Qwen-Team) ist ein chinesisches Unternehmen und unterliegt dem chinesischen National Security Law (NSL). Das BSI hat im Februar 2025 vor chinesischen KI-Cloud-Diensten gewarnt (BSI-Referenz: Warnung DeepSeek, 04.02.2025); bei lokalem Betrieb der Open-Weights-Variante ohne Datenübertragung nach China ist das cloud-spezifische Risikoszenario reduziert.",
   "model_family": "Qwen",
   "primary_focus": "coding",
-  "summary": "Qwen 2.5 Coder 7B ist ein von Alibaba Cloud (China) entwickeltes Open-Weights-Modell, spezialisiert auf Code-Generierung, Debugging und technische Erklärungen. Es wurde auf umfangreichen Code-Corpora trainiert und bietet starke Leistung bei gängigen Programmiersprachen in kompakter 7B-Parametergröße.",
+  "summary": "Qwen 2.5 Coder 7B ist ein spezialisiertes Code-Modell von Alibaba aus China mit Open-Weights-Lizenz. Es lässt sich lokal betreiben und ist über Cloud-Provider verfügbar. Chinesische Herkunft und das nationale Sicherheitsgesetz (NSL) sind bei der Einschätzung des Datenrisikos zu berücksichtigen.",
   "strengths": [
     "Starke Code-Generierung und Vervollständigung in gängigen Sprachen wie Python, JavaScript, Java und C++",
     "Kompakte 7B-Größe ermöglicht effiziente lokale Ausführung auf Consumer-Hardware",

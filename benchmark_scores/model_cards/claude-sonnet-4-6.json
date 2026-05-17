@@ -10,7 +10,7 @@
   "weights_provenance_risk_rationale": "Anthropic ist ein US-amerikanisches Unternehmen und unterliegt dem CLOUD Act; die Modellgewichte sind nicht öffentlich zugänglich.",
   "model_family": "Claude",
   "primary_focus": "general",
-  "summary": "Claude Sonnet 4.6 von Anthropic (USA) ist ein leistungsstarkes Allround-Modell der Claude-4-Generation, optimiert für komplexe Reasoning-Aufgaben, präzises Instruction-Following und nuanciertes Schreiben. Es kombiniert hohe Antwortqualität mit vertretbarer Latenz und richtet sich an anspruchsvolle Produktiv-Anwendungen.",
+  "summary": "Claude Sonnet 4.6 ist Anthropics vielseitiges Mittelklasse-Modell der Claude-4-Generation – abgestimmt auf ein ausgewogenes Verhältnis aus Antwortqualität, Geschwindigkeit und Kosten. Es eignet sich für komplexe Instruction-Following-Aufgaben, Textgenerierung und analytische Anwendungen. Verfügbar ausschließlich über die Anthropic-API.",
   "strengths": [
     "Starkes analytisches Reasoning und strukturiertes Problemlösen",
     "Präzises und nuanciertes Instruction-Following auch bei komplexen Vorgaben",

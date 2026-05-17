@@ -10,7 +10,7 @@
   "weights_provenance_risk_rationale": "Google DeepMind ist ein US-amerikanisches Unternehmen und unterliegt dem CLOUD Act; die Modellgewichte sind nicht öffentlich zugänglich.",
   "model_family": "Gemini",
   "primary_focus": "general",
-  "summary": "Gemini 3 Flash Preview ist Googles schnelles Multimodal-Modell der dritten Generation, entwickelt für latenzarme, kosteneffiziente Anwendungen. Stärken liegen in schneller Verarbeitung langer Kontexte, multimodalen Eingaben und alltäglichen Reasoning-Aufgaben. Als Preview-Version ist die Leistung noch nicht final.",
+  "summary": "Gemini 3 Flash Preview ist Googles schnelles Multimodal-Modell der dritten Generation in einer experimentellen Vorschauversion – ausgelegt auf niedrige Latenz und kosteneffiziente Verarbeitung langer Kontexte. Verfügbar ausschließlich über die Google-API.",
   "strengths": [
     "Sehr niedrige Latenz bei hohem Durchsatz, geeignet für Echtzeit-Anwendungen",
     "Starke multimodale Fähigkeiten (Text, Bild, Audio, Video)",

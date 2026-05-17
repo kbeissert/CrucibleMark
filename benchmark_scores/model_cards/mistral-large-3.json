@@ -10,7 +10,7 @@
   "weights_provenance_risk_rationale": "Mistral AI ist ein französisches Unternehmen mit Sitz in der EU und unterliegt keiner staatlichen Zugriffspflicht auf Modellgewichte vergleichbar dem chinesischen NSL oder dem US CLOUD Act für Weights.",
   "model_family": "Mistral",
   "primary_focus": "general",
-  "summary": "Mistral Large ist das Flaggschiff-Modell des französischen KI-Unternehmens Mistral AI. Es wurde für komplexe Reasoning-, Analyse- und Mehrsprachigkeitsaufgaben entwickelt und zeichnet sich durch starke Instruktionsbefolgung, präzises Schlussfolgern und breite Sprachunterstützung aus.",
+  "summary": "Mistral Large ist das Flaggschiff-Modell von Mistral AI aus Frankreich – entwickelt für komplexes Reasoning, Analyse und mehrsprachige Aufgaben. Es lässt sich lokal betreiben und ist über die Mistral-API verfügbar.",
   "strengths": [
     "Starkes mehrsprachiges Verständnis und Generierung (u. a. Englisch, Französisch, Deutsch, Spanisch, Italienisch)",
     "Hohe Leistung bei komplexen Reasoning- und Analyseaufgaben",

@@ -10,7 +10,7 @@
   "weights_provenance_risk_rationale": "Mistral AI ist ein französisches Unternehmen mit Sitz in der EU und unterliegt keiner staatlichen Zugriffspflicht auf Modellgewichte wie dem US CLOUD Act oder dem chinesischen NSL.",
   "model_family": "Codestral",
   "primary_focus": "coding",
-  "summary": "Codestral ist Mistral AIs spezialisiertes Code-Modell aus Frankreich, trainiert auf über 80 Programmiersprachen. Es glänzt bei Code-Vervollständigung, Debugging und Erklärungen. Entwickelt, um Entwickler mit schnellen, präzisen Code-Ausgaben zu unterstützen.",
+  "summary": "Codestral ist Mistral AIs spezialisiertes Code-Modell aus Frankreich – trainiert auf über 80 Programmiersprachen und ausgelegt auf Code-Vervollständigung, Debugging und Code-Erklärungen. Es lässt sich lokal betreiben und ist über die Mistral-API verfügbar.",
   "strengths": [
     "Hervorragende Code-Vervollständigung und Fill-in-the-Middle (FIM) für viele Sprachen",
     "Breite Sprachabdeckung mit über 80 Programmiersprachen inkl. Python, JS, Rust, Go",

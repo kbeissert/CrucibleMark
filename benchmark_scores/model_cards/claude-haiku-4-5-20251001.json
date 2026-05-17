@@ -10,7 +10,7 @@
   "weights_provenance_risk_rationale": "Anthropic ist ein US-amerikanisches Unternehmen und unterliegt dem CLOUD Act, jedoch sind die Modellgewichte nicht öffentlich zugänglich und ein staatlicher Zugriff auf die Weights selbst ist nicht bekannt.",
   "model_family": "Claude",
   "primary_focus": "instruction-following",
-  "summary": "Claude Haiku 4.5 ist Anthropics schnellstes und kompaktestes Modell der Claude-4-Generation, entwickelt für latenzarme, kosteneffiziente Anwendungen. Es kombiniert starkes Instruction-Following mit verbesserter Reasoning-Fähigkeit und eignet sich besonders für Echtzeit-Interaktionen, Klassifikation und leichtgewichtige Agenten-Aufgaben.",
+  "summary": "Claude Haiku 4.5 ist Anthropics kompaktes Schnellmodell der vierten Claude-Generation – ausgelegt für latenzarme, kosteneffiziente Anwendungen wie Echtzeit-Interaktionen, Klassifikation und einfache Agenten-Aufgaben. Das Modell ist ausschließlich über die Anthropic-API verfügbar und eignet sich besonders für Teams, die hohen Durchsatz bei überschaubaren Kosten benötigen.",
   "strengths": [
     "Sehr niedrige Latenz und hoher Durchsatz für Echtzeit-Anwendungen",
     "Kosteneffizient bei hohem Anfragevolumen",

@@ -10,7 +10,7 @@
   "weights_provenance_risk_rationale": "Anthropic ist ein US-amerikanisches Unternehmen und unterliegt dem CLOUD Act, jedoch sind die Modellgewichte nicht öffentlich zugänglich und kein staatlicher Direktzugriff auf Weights bekannt.",
   "model_family": "Claude",
   "primary_focus": "general",
-  "summary": "Claude Opus 4.7 ist Anthropics leistungsstärkstes Modell der Claude-4-Generation, entwickelt in den USA mit Fokus auf komplexes Reasoning, nuanciertes Schreiben und agentic Tasks. Es kombiniert hohe Instruktionstreue mit starker Kontextverarbeitung und ist für anspruchsvolle Mehrschritt-Aufgaben ausgelegt.",
+  "summary": "Claude Opus 4.7 ist Anthropics stärkstes Modell der vierten Claude-Generation – konzipiert für anspruchsvolles Reasoning, strukturiertes Schreiben und mehrstufige Agenten-Aufgaben. Optional lässt sich erweitertes Denken aktivieren. Das Modell ist ausschließlich über die Anthropic-API verfügbar.",
   "strengths": [
     "Sehr starkes Reasoning bei komplexen, mehrstufigen Aufgaben",
     "Hohe Qualität bei langen, strukturierten Texten und nuanciertem Schreiben",

@@ -10,7 +10,7 @@
   "weights_provenance_risk_rationale": "Nous Research ist ein US-amerikanisches Unternehmen und unterliegt dem CLOUD Act, jedoch sind die Gewichte öffentlich verfügbar und lokal betreibbar, sodass kein API-Zugriff durch Dritte erforderlich ist.",
   "model_family": "Hermes",
   "primary_focus": "instruction-following",
-  "summary": "Hermes 4 70B von Nous Research ist ein US-amerikanisches Open-Weights-Modell, das auf einem starken Basismodell (vermutlich Llama-3-70B) mit kuratiertem Instruction-Tuning-Datensatz trainiert wurde. Es zielt auf präzises Instruction-Following, strukturierte Ausgaben und reduzierte Zensur für professionelle und kreative Anwendungsfälle.",
+  "summary": "Hermes 4 70B ist ein Open-Weights-Modell von Nous Research aus den USA, basierend auf Llama-4 und feinabgestimmt für agentische Aufgaben und starkes Instruction-Following. Die Weights sind frei verfügbar und das Modell ist über Cloud-Provider nutzbar.",
   "strengths": [
     "Starkes Instruction-Following mit präzisen, strukturierten Antworten",
     "Reduzierte Überrefusal-Rate durch gezieltes Uncensored-Finetuning",

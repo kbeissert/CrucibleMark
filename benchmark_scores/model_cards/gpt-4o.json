@@ -10,7 +10,7 @@
   "weights_provenance_risk_rationale": "OpenAI ist ein US-amerikanisches Unternehmen, dessen Modellgewichte nicht öffentlich sind und dem CLOUD Act unterliegen, jedoch kein staatlich mandatierter Zugriff wie beim chinesischen NSL bekannt ist.",
   "model_family": "GPT-4",
   "primary_focus": "general",
-  "summary": "GPT-4o ist OpenAIs multimodales Flaggschiff-Modell (USA, 2024), das Text, Bild und Audio nativ verarbeitet. Es wurde für schnelle, kosteneffiziente Allround-Leistung entwickelt und überzeugt durch starkes Instruction-Following, Reasoning und natürliche Gesprächsführung über Modalitäten hinweg.",
+  "summary": "GPT-4o ist OpenAIs multimodales Allround-Modell – ausgelegt auf schnelle, kosteneffiziente Nutzung über Text, Bild und Code hinweg. Es ist ausschließlich über die OpenAI-API verfügbar und eignet sich für ein breites Spektrum produktiver Anwendungen, von Analyse und Coding bis hin zu natürlicher Gesprächsführung.",
   "strengths": [
     "Native Multimodalität: verarbeitet Text, Bild und Audio in einem einzigen Modell",
     "Starkes Instruction-Following mit präzisen, kontextbewussten Antworten",

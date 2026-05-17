@@ -10,7 +10,7 @@
   "weights_provenance_risk_rationale": "OpenAI ist ein US-amerikanisches Unternehmen und unterliegt dem CLOUD Act, der staatlichen Zugriff auf Daten bei API-Nutzung ermöglichen kann, jedoch sind die Modellgewichte nicht öffentlich zugänglich.",
   "model_family": "o1",
   "primary_focus": "reasoning",
-  "summary": "OpenAI o1 ist ein US-amerikanisches Reasoning-Modell, das durch reinforcement learning auf verlängertes internes Denken trainiert wurde. Es glänzt bei komplexer Mathematik, Logik und wissenschaftlichen Aufgaben. Entwickelt, um menschliches Schritt-für-Schritt-Denken zu imitieren und schwierige Probleme zuverlässiger zu lösen.",
+  "summary": "OpenAI o1 ist OpenAIs erstes dediziertes Reasoning-Modell – trainiert auf internem Chain-of-Thought und ausgelegt auf komplexe Mathematik-, Logik- und Wissenschaftsaufgaben. Es ist ausschließlich über die OpenAI-API verfügbar und eignet sich besonders dort, wo gründliches mehrstufiges Schlussfolgern wichtiger ist als niedrige Latenz.",
   "strengths": [
     "Herausragende Leistung bei komplexen mathematischen und logischen Aufgaben",
     "Robustes mehrstufiges Schlussfolgern durch internes Chain-of-Thought",

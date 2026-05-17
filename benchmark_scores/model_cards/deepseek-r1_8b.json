@@ -7,10 +7,10 @@
   "deployment_type": "open-weights-cloud-available",
   "local_deployment_possible": true,
   "weights_provenance_risk": "high",
-  "weights_provenance_risk_rationale": "DeepSeek ist ein chinesisches Unternehmen und unterliegt dem chinesischen National Security Law (NSL), das staatlichen Zugriff auf Daten und Modelle ermöglichen kann.",
+  "weights_provenance_risk_rationale": "DeepSeek ist ein chinesisches Unternehmen und unterliegt dem chinesischen National Security Law (NSL). Das BSI hat am 04.02.2025 vor der Cloud-Nutzung von DeepSeek gewarnt; da dieses Modell primär lokal betrieben wird und keine Daten an chinesische Server überträgt, greift das BSI-Risikoszenario für Cloud-Dienste nicht direkt – das Herkunftsrisiko bleibt aber auf mittlerem Niveau.",
   "model_family": "DeepSeek-R1",
   "primary_focus": "reasoning",
-  "summary": "DeepSeek R1 8B ist ein chinesisches Open-Weights-Reasoning-Modell von DeepSeek. Es wurde entwickelt, um durch sichtbares Chain-of-Thought-Denken komplexe Schlussfolgerungen, Mathematik und Logikaufgaben zu lösen. Stärken liegen in strukturiertem Denken und STEM-Aufgaben bei kompakter Modellgröße.",
+  "summary": "DeepSeek R1 8B ist ein kompaktes Open-Weights-Reasoning-Modell von DeepSeek aus China, das lokal betreibbar und über Cloud-Provider verfügbar ist. Es nutzt sichtbares Chain-of-Thought-Reasoning und eignet sich für strukturierte Denkaufgaben und STEM-Probleme auf ressourcenarmer Hardware.",
   "strengths": [
     "Sichtbares Chain-of-Thought-Reasoning mit <thinking>-Blöcken ermöglicht nachvollziehbare Lösungswege",
     "Starke Leistung bei Mathematik, Logik und STEM-Aufgaben relativ zur Modellgröße",

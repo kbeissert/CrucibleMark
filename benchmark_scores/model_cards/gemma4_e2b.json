@@ -10,7 +10,7 @@
   "weights_provenance_risk_rationale": "Google DeepMind ist ein US-amerikanisches Unternehmen und unterliegt dem CLOUD Act, der staatlichen Zugriff auf Daten bei API-Nutzung ermöglichen kann, betrifft jedoch nicht die lokal betriebenen Gewichte.",
   "model_family": "Gemma",
   "primary_focus": "general",
-  "summary": "Gemma 4 2B ist ein kompaktes Open-Weights-Modell von Google DeepMind, trainiert auf allgemeinen Sprachaufgaben mit Fokus auf Effizienz und lokale Nutzbarkeit. Es eignet sich für Instruction-Following, einfache Textgenerierung und Edge-Deployments, wo Ressourcen begrenzt sind.",
+  "summary": "Gemma 4 2B ist ein sehr kompaktes Open-Weights-Modell von Google DeepMind (Google Gemma Lizenz) – konzipiert für Instruction-Following und leichtgewichtige Textaufgaben auf ressourcenarmer Hardware. Es lässt sich lokal betreiben und ist über Cloud-Provider verfügbar.",
   "strengths": [
     "Sehr geringer Ressourcenbedarf, ideal für lokale und Edge-Deployments",
     "Solide Instruction-Following-Fähigkeiten für ein 2B-Modell",

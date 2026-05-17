@@ -10,16 +10,16 @@
   "weights_provenance_risk_rationale": "xAI ist ein US-amerikanisches Unternehmen und unterliegt dem CLOUD Act, jedoch ist dieser nur bei API-Nutzung relevant, nicht bei den Weights selbst.",
   "model_family": "Grok-4",
   "primary_focus": "general",
-  "summary": "Grok 4.3 ist ein nicht-reasonendes Mittelklasse-Modell der Grok-4-Familie von xAI. Es ist f\u00fcr allgemeine Aufgaben ohne aktivierten Thinking-Modus optimiert und positioniert sich als schnellere, kosteneffizientere Alternative zum Grok 4-Flaggschiff.",
+  "summary": "Grok 4.3 ist eine Variante der Grok-4-Generation von xAI aus den USA – konzipiert für anspruchsvolles Reasoning und allgemeine Aufgaben. Das Modell ist ausschließlich über die xAI-API verfügbar; genaue Architektur- und Trainingsdetails sind nicht vollständig öffentlich dokumentiert.",
   "strengths": [
-    "Schnelle Inferenz ohne Reasoning-Overhead bei guter Antwortqualit\u00e4t f\u00fcr Standardaufgaben",
-    "Zugang zu aktuellen Informationen \u00fcber X/Twitter-Datensatz und Echtzeit-Websuche",
-    "Niedrigere Kosten gegen\u00fcber dem vollst\u00e4ndigen Grok-4-Modell"
+    "Schnelle Inferenz ohne Reasoning-Overhead bei guter Antwortqualität für Standardaufgaben",
+    "Zugang zu aktuellen Informationen über X/Twitter-Datensatz und Echtzeit-Websuche",
+    "Niedrigere Kosten gegenüber dem vollständigen Grok-4-Modell"
   ],
   "known_limitations": [
     "Kein nativer Reasoning-Modus (Thinking-Probe: kein CoT erkannt)",
-    "Ausschlie\u00dflich \u00fcber xAI-API verf\u00fcgbar, keine lokale Nutzung m\u00f6glich",
-    "Leistung hinter Thinking-f\u00e4higen Grok-4-Varianten bei komplexen Reasoning-Aufgaben"
+    "Ausschließlich über xAI-API verfügbar, keine lokale Nutzung möglich",
+    "Leistung hinter Thinking-fähigen Grok-4-Varianten bei komplexen Reasoning-Aufgaben"
   ],
   "judge_context_hint": "Grok 4.3 nutzt keinen Thinking-Modus. Antworten sollten direkt bewertet werden.",
   "architecture_tags": [

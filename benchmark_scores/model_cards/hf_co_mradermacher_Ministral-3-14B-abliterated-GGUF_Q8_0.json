@@ -10,7 +10,7 @@
   "weights_provenance_risk_rationale": "Das Basismodell stammt von Mistral AI mit Sitz in Frankreich (EU-Jurisdiktion); die GGUF-Konvertierung und Abliteration durch mradermacher ändert die Gewichts-Herkunft nicht.",
   "model_family": "Mistral",
   "primary_focus": "instruction-following",
-  "summary": "Abliterierte Version von mistralai/Ministral-3-14B-Instruct-2512 (Dezember 2025, ~14B Parameter). Abliterierung durch jenerallee78 mittels norm-preserving biprojected abliteration (grimjim/llm-abliteration): entfernt Refusal-Richtung aus den Gewichten ohne Qualitätsverlust. GGUF-Quantisierung Q8_0 durch mradermacher. Lizenz: Apache 2.0 (sowohl abliterierte Version als auch GGUF-Repo).",
+  "summary": "Ministral-3-14B Abliterated ist ein Community-Finetuning des Mistral AI Ministral-14B-Basismodells, bei dem das Refusal-Training gezielt entfernt wurde (Abliteration). Es liegt als GGUF-Quantisierung (Q8_0) vor und ist ausschließlich lokal betreibbar – geeignet für Entwickler und Forscher, die ein ungefiltertes Modell benötigen.",
   "strengths": [
     "Keine eingebauten Refusal-Mechanismen durch Abliteration – folgt Anweisungen ohne themenbasierte Verweigerung",
     "Hohe Quantisierungsqualität (Q8_0) mit minimalem Qualitätsverlust gegenüber FP16",

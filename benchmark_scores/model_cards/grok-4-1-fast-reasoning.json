@@ -10,7 +10,7 @@
   "weights_provenance_risk_rationale": "xAI ist ein US-amerikanisches Unternehmen und unterliegt dem CLOUD Act, jedoch nicht dem chinesischen NSL; Gewichte sind nicht öffentlich verfügbar.",
   "model_family": "Grok",
   "primary_focus": "reasoning",
-  "summary": "Grok 4.1 Fast Reasoning ist ein Reasoning-Modell von xAI (USA), das auf schnelle Chain-of-Thought-Inferenz ausgelegt ist. Es kombiniert strukturiertes Schlussfolgern mit reduzierter Latenz und richtet sich an Anwendungsfälle, die analytische Tiefe bei vertretbarer Antwortgeschwindigkeit erfordern.",
+  "summary": "Grok 4-1 Fast Reasoning ist xAIs schnelle Reasoning-Variante aus den USA – ausgelegt auf kompaktes Chain-of-Thought mit niedrigerer Latenz. Das Modell ist ausschließlich über die xAI-API verfügbar.",
   "strengths": [
     "Schnelle Reasoning-Inferenz mit reduzierter Latenz gegenüber vollständigen Thinking-Modellen",
     "Strukturiertes mehrstufiges Schlussfolgern bei mathematischen und logischen Aufgaben",

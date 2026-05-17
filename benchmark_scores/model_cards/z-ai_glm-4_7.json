@@ -7,10 +7,10 @@
   "deployment_type": "open-weights-cloud-available",
   "local_deployment_possible": true,
   "weights_provenance_risk": "high",
-  "weights_provenance_risk_rationale": "Zhipu AI ist ein chinesisches Unternehmen und unterliegt dem chinesischen Nationalen Sicherheitsgesetz (NSL), das staatlichen Zugriff auf Daten und Modelle ermöglichen kann.",
+  "weights_provenance_risk_rationale": "Zhipu AI ist ein chinesisches Unternehmen und unterliegt dem chinesischen National Security Law (NSL), das staatlichen Zugriff auf Daten ermöglichen kann. Das BSI hat im Februar 2025 explizit vor der Nutzung chinesischer KI-Cloud-Dienste gewarnt (BSI-Referenz: Warnung DeepSeek, 04.02.2025); diese Risikoeinschätzung gilt analog für alle chinesischen Cloud-KI-Anbieter, die Nutzerdaten auf chinesischen Servern verarbeiten.",
   "model_family": "GLM",
   "primary_focus": "general",
-  "summary": "GLM-4.7 ist ein chinesisches Open-Weights-Modell von Zhipu AI, entwickelt auf Basis der GLM-Architektur. Es wurde auf mehrsprachige Instruktionsbefolgung, Reasoning und allgemeine Aufgaben trainiert. Stärken liegen in Chinesisch-Englisch-Bilingualität und Dialogfähigkeit.",
+  "summary": "GLM-4.7 ist ein iteratives Update der GLM-4-Reihe von Zhipu AI (Z-AI) aus China – ausgelegt auf allgemeine Sprach- und Reasoning-Aufgaben. Das Modell ist über Cloud-Provider verfügbar. Chinesische Herkunft und das nationale Sicherheitsgesetz (NSL) sind bei der Einschätzung des Datenrisikos zu berücksichtigen.",
   "strengths": [
     "Starke Leistung in chinesisch-englischen bilingualen Aufgaben",
     "Gute Instruktionsbefolgung für allgemeine Dialog- und Assistenzaufgaben",

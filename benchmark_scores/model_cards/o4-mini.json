@@ -10,7 +10,7 @@
   "weights_provenance_risk_rationale": "OpenAI ist ein US-amerikanisches Unternehmen und unterliegt dem CLOUD Act, jedoch sind die Modellgewichte nicht öffentlich zugänglich, sodass kein direktes Risiko durch Gewichts-Exfiltration besteht.",
   "model_family": "OpenAI o-series",
   "primary_focus": "reasoning",
-  "summary": "o4-mini ist ein kompaktes Reasoning-Modell von OpenAI (USA), das auf mathematisches, wissenschaftliches und logisches Schlussfolgern spezialisiert ist. Es bietet starke Chain-of-Thought-Fähigkeiten bei geringerer Latenz und niedrigeren Kosten als o3, und wurde als effiziente Alternative für anspruchsvolle Reasoning-Aufgaben entwickelt.",
+  "summary": "o4-mini ist OpenAIs kompaktes Reasoning-Modell mit internem Chain-of-Thought, ausgelegt auf mathematisches, wissenschaftliches und logisches Schlussfolgern. Es ist ausschließlich über die OpenAI-API verfügbar und bietet starke Reasoning-Qualität bei geringerer Latenz und niedrigeren Kosten als größere Modelle der o-Series.",
   "strengths": [
     "Herausragende Leistung bei Mathematik, Naturwissenschaften und formalem Schlussfolgern",
     "Deutlich schneller und kostengünstiger als o3 bei vergleichbarer Reasoning-Qualität",

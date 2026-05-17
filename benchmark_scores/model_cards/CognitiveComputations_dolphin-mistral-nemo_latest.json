@@ -10,7 +10,7 @@
   "weights_provenance_risk_rationale": "Die Basisgewichte stammen von Mistral AI (EU-Jurisdiktion, Frankreich); der Dolphin-Finetuning-Datensatz wurde von Eric Hartford ohne kommerziellen Unternehmenshintergrund veröffentlicht.",
   "model_family": "Mistral",
   "primary_focus": "instruction-following",
-  "summary": "Dolphin Mistral NeMo ist ein uncensored Finetuning des Mistral-NeMo-12B-Basismodells durch Eric Hartford. Ziel war ein gehorsames, zensurfreies Assistenzmodell für Entwickler und Forscher. Stärken liegen in offener Instruktionsbefolgung, Rollenspiel und kreativen Aufgaben ohne inhaltliche Einschränkungen.",
+  "summary": "Dolphin Mistral NeMo ist ein Community-Finetuning des Mistral-NeMo-12B-Basismodells durch Cognitive Computations, bei dem Sicherheitsfilter gezielt entfernt wurden. Es ist ausschließlich lokal betreibbar und richtet sich an Entwickler und Forscher, die ein Modell ohne eingebaute Inhaltsbeschränkungen benötigen.",
   "strengths": [
     "Sehr hohe Instruktionstreue ohne eingebaute Inhaltsbeschränkungen",
     "Gute Leistung bei kreativen und rollenspielbezogenen Aufgaben",

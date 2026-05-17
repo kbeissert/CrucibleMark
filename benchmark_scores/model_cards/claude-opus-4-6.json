@@ -10,7 +10,7 @@
   "weights_provenance_risk_rationale": "Anthropic ist ein US-amerikanisches Unternehmen und unterliegt dem CLOUD Act, jedoch ist kein direkter staatlicher Zugriff auf die Modellgewichte bekannt.",
   "model_family": "Claude",
   "primary_focus": "general",
-  "summary": "Claude Opus 4.6 ist Anthropics leistungsstärkstes Modell der Opus-Linie, entwickelt für komplexe Reasoning-, Analyse- und Kreativaufgaben. Es zeichnet sich durch tiefes Kontextverständnis, nuancierte Instruktionsbefolgung und hohe Zuverlässigkeit bei anspruchsvollen Aufgaben aus.",
+  "summary": "Claude Opus 4.6 ist Anthropics Flaggschiff der Opus-Linie – ausgelegt auf komplexes Reasoning, nuancierte Analyse und mehrstufige Agenten-Workflows. Es ist ausschließlich über die Anthropic-API verfügbar und richtet sich an Anwendungen, bei denen Tiefe und Zuverlässigkeit wichtiger sind als niedrige Latenz.",
   "strengths": [
     "Herausragende Leistung bei komplexen Reasoning- und Analyseaufgaben",
     "Sehr hohes Kontextverständnis und Fähigkeit zur Nuancierung in langen Gesprächen",

@@ -10,7 +10,7 @@
   "weights_provenance_risk_rationale": "Google DeepMind ist ein US-amerikanisches Unternehmen und unterliegt dem CLOUD Act, jedoch ist der CLOUD Act bei lokal betriebenen Open-Weights-Modellen nicht direkt anwendbar.",
   "model_family": "Gemma",
   "primary_focus": "general",
-  "summary": "Gemma 4 E4B ist ein Open-Weights-Modell von Google DeepMind mit ca. 4 Milliarden aktiven Parametern in einer Mixture-of-Experts-Architektur. Es ist auf allgemeine Instruction-Following-Aufgaben ausgerichtet und bietet starke Effizienz bei geringem Ressourcenbedarf für lokale Deployments.",
+  "summary": "Gemma 4 E4B ist eine kompakte Mixture-of-Experts-Variante der Gemma-4-Familie von Google DeepMind (Google Gemma Lizenz). Mit etwa 4 Milliarden aktiven Parametern ist es auf effiziente lokale Ausführung ausgelegt und eignet sich für alltägliche Instruction-Following-Aufgaben.",
   "strengths": [
     "Sehr ressourceneffizient durch MoE-Architektur mit wenigen aktiven Parametern",
     "Lokal auf Consumer-Hardware betreibbar",

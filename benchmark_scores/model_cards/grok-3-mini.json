@@ -10,7 +10,7 @@
   "weights_provenance_risk_rationale": "xAI ist ein US-amerikanisches Unternehmen und unterliegt dem CLOUD Act, jedoch ist kein direkter staatlicher Zugriff auf die Modellgewichte bekannt, da diese nicht öffentlich verfügbar sind.",
   "model_family": "Grok",
   "primary_focus": "reasoning",
-  "summary": "Grok 3 Mini ist ein kompaktes Reasoning-Modell von xAI (USA), entwickelt als effizientere Alternative zu Grok 3. Es wurde auf logisches Schlussfolgern, Mathematik und strukturierte Problemlösung optimiert und richtet sich an Nutzer, die starke Reasoning-Fähigkeiten bei geringerer Latenz und niedrigeren Kosten benötigen.",
+  "summary": "Grok 3 Mini ist xAIs kompaktes Reasoning-Modell aus den USA – ausgelegt auf logisches Schlussfolgern und Mathematik mit niedrigerer Latenz. Optionales Chain-of-Thought-Reasoning ist aktivierbar. Das Modell ist ausschließlich über die xAI-API verfügbar.",
   "strengths": [
     "Starke Leistung bei mathematischen und logischen Reasoning-Aufgaben",
     "Geringere Latenz und Kosten im Vergleich zum vollständigen Grok-3-Modell",

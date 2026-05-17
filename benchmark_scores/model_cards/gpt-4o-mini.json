@@ -10,7 +10,7 @@
   "weights_provenance_risk_rationale": "OpenAI ist ein US-amerikanisches Unternehmen, dessen Modellgewichte nicht öffentlich sind und dem CLOUD Act unterliegen, der behördlichen Zugriff auf Daten bei API-Nutzung ermöglichen kann.",
   "model_family": "GPT-4o",
   "primary_focus": "general",
-  "summary": "GPT-4o Mini ist ein kompaktes Modell von OpenAI (USA), das auf Effizienz und breite Einsetzbarkeit ausgelegt ist. Es bietet starke Instruction-Following-Fähigkeiten, solide Mehrsprachigkeit und gute Reasoning-Leistung bei deutlich niedrigeren Kosten als GPT-4o – gedacht als leistungsfähige Standardlösung für alltägliche Aufgaben.",
+  "summary": "GPT-4o Mini ist OpenAIs kompaktes Einstiegsmodell der GPT-4o-Familie – ausgelegt auf niedrige Kosten und schnelle Antwortzeiten. Es ist ausschließlich über die OpenAI-API verfügbar und eignet sich für alltägliche Aufgaben wie Klassifikation, einfache Textgenerierung und kosteneffiziente Automatisierungen.",
   "strengths": [
     "Sehr kosteneffizient bei guter Antwortqualität für Standardaufgaben",
     "Schnelle Inferenz mit niedrigen Latenzen, geeignet für Echtzeit-Anwendungen",

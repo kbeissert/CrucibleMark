@@ -10,7 +10,7 @@
   "weights_provenance_risk_rationale": "xAI ist ein US-amerikanisches Unternehmen, das dem CLOUD Act unterliegt, jedoch nur bei API-Nutzung relevant; die Modellgewichte sind nicht öffentlich zugänglich.",
   "model_family": "Grok",
   "primary_focus": "general",
-  "summary": "Grok 4 Fast (Non-Reasoning) ist ein schnelles, cloud-basiertes Sprachmodell von xAI (USA), entwickelt für latenzarme Anwendungen ohne aktivierten Chain-of-Thought-Modus. Stärken liegen in schnellen Antwortzeiten, allgemeinem Instruction-Following und der Integration in das X-Ökosystem.",
+  "summary": "Grok 4 Fast Non-Reasoning ist xAIs schnelle Variante der Grok-4-Generation ohne dediziertes Chain-of-Thought – ausgelegt auf niedrige Latenz und direkte Antworten. Das Modell ist ausschließlich über die xAI-API verfügbar.",
   "strengths": [
     "Sehr niedrige Latenz durch optimierten Fast-Inference-Modus",
     "Starkes allgemeines Instruction-Following ohne Reasoning-Overhead",

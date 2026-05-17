@@ -10,7 +10,7 @@
   "weights_provenance_risk_rationale": "OpenAI ist ein US-amerikanisches Unternehmen, dessen Modellgewichte nicht öffentlich zugänglich sind und dem CLOUD Act unterliegen.",
   "model_family": "GPT",
   "primary_focus": "general",
-  "summary": "GPT-5.4 ist ein proprietäres Sprachmodell von OpenAI (USA), das als inkrementelles Update der GPT-5-Reihe entwickelt wurde. Es zielt auf verbesserte Instruktionsbefolgung, Reasoning und Multimodalität ab und ist ausschließlich über die OpenAI-API nutzbar.",
+  "summary": "GPT-5.4 ist ein proprietäres Modell von OpenAI aus der GPT-5-Reihe – ein iteratives Update mit Fokus auf Instruktionsbefolgung, Reasoning und strukturierte Ausgaben. Es ist ausschließlich über die OpenAI-API verfügbar; genaue Architektur- und Trainingsdetails sind nicht öffentlich dokumentiert.",
   "strengths": [
     "Starke allgemeine Sprachverarbeitung und Instruktionsbefolgung",
     "Breite Aufgabenabdeckung von Coding über Analyse bis zu kreativem Schreiben",

@@ -10,7 +10,7 @@
   "weights_provenance_risk_rationale": "OpenAI ist ein US-amerikanisches Unternehmen und unterliegt dem CLOUD Act, der bei API-Nutzung staatlichen Zugriff ermöglichen kann; die Gewichte selbst sind nicht öffentlich.",
   "model_family": "GPT-5",
   "primary_focus": "general",
-  "summary": "GPT-5 Mini ist ein kompaktes Modell von OpenAI aus den USA, das auf effiziente Allround-Nutzung ausgelegt ist. Es bietet starke Instruction-Following-Fähigkeiten und schnelle Antwortzeiten bei reduziertem Ressourcenbedarf – konzipiert als kosteneffiziente Alternative zum vollständigen GPT-5.",
+  "summary": "GPT-5 Mini ist OpenAIs kompaktes Modell der GPT-5-Familie – konzipiert als kosteneffiziente Alternative zum vollständigen GPT-5. Es ist ausschließlich über die OpenAI-API verfügbar und richtet sich an Anwendungen, die GPT-5-Qualität bei reduziertem Ressourceneinsatz benötigen.",
   "strengths": [
     "Kosteneffiziente API-Nutzung bei guter Allgemeinleistung",
     "Schnelle Inferenzzeiten durch kompakte Architektur",

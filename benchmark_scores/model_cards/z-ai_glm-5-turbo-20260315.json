@@ -7,10 +7,10 @@
   "deployment_type": "cloud-only",
   "local_deployment_possible": false,
   "weights_provenance_risk": "high",
-  "weights_provenance_risk_rationale": "Zhipu AI ist ein chinesisches Unternehmen und unterliegt dem chinesischen National Security Law (NSL), das staatlichen Zugriff auf Daten und Modelle ermöglichen kann.",
+  "weights_provenance_risk_rationale": "Zhipu AI ist ein chinesisches Unternehmen und unterliegt dem chinesischen National Security Law (NSL), das staatlichen Zugriff auf Daten ermöglichen kann. Das BSI hat im Februar 2025 explizit vor der Nutzung chinesischer KI-Cloud-Dienste gewarnt (BSI-Referenz: Warnung DeepSeek, 04.02.2025); diese Risikoeinschätzung gilt analog für alle chinesischen Cloud-KI-Anbieter, die Nutzerdaten auf chinesischen Servern verarbeiten.",
   "model_family": "GLM",
   "primary_focus": "general",
-  "summary": "GLM-5 Turbo ist ein Sprachmodell von Zhipu AI aus China, entwickelt als schnelle, effiziente Variante der GLM-5-Familie. Es ist auf mehrsprachige Instruktionsbefolgung und allgemeine Aufgaben ausgerichtet, mit Stärken in Chinesisch und Englisch sowie bei strukturierten Antworten.",
+  "summary": "GLM-5 Turbo ist Zhipu AIs (Z-AI) schnelle Variante des GLM-5-Modells aus China – ausgelegt auf kosteneffiziente Inferenz bei niedrigerer Latenz. Das Modell ist über Cloud-Provider verfügbar. Chinesische Herkunft und das nationale Sicherheitsgesetz (NSL) sind bei der Einschätzung des Datenrisikos zu berücksichtigen.",
   "strengths": [
     "Starke Leistung in chinesischer und englischer Sprache",
     "Schnelle Inferenz als Turbo-Variante der GLM-5-Familie",

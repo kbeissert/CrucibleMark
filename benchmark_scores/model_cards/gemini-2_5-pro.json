@@ -10,7 +10,7 @@
   "weights_provenance_risk_rationale": "Google ist ein US-amerikanisches Unternehmen und unterliegt dem CLOUD Act; die Modellgewichte sind nicht öffentlich zugänglich, sodass ein direkter Zugriff auf Weights nicht besteht.",
   "model_family": "Gemini",
   "primary_focus": "reasoning",
-  "summary": "Gemini 2.5 Pro ist Googles leistungsstärkstes Reasoning-Modell (Stand 2025), entwickelt für komplexe Analyse-, Coding- und Mehrschritt-Aufgaben. Es unterstützt sehr lange Kontextfenster (bis 1 M Token), optionales Chain-of-Thought und erzielt Spitzenwerte in Mathematik- und Science-Benchmarks.",
+  "summary": "Gemini 2.5 Pro ist Googles leistungsstärkstes Modell der 2.5-Generation – ausgelegt auf komplexes Reasoning, Coding und Analyse mit sehr langen Kontextfenstern. Optionales Chain-of-Thought-Reasoning lässt sich per API aktivieren. Verfügbar ausschließlich über die Google-API.",
   "strengths": [
     "Sehr starkes mathematisches und wissenschaftliches Reasoning mit optionalem Extended Thinking",
     "Extrem großes Kontextfenster (bis zu 1 Million Token) für Dokumentenanalyse und lange Konversationen",

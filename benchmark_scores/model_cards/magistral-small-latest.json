@@ -10,7 +10,7 @@
   "weights_provenance_risk_rationale": "Mistral AI ist ein französisches Unternehmen mit Sitz in der EU und unterliegt keiner vergleichbaren staatlichen Zugriffspflicht wie dem chinesischen NSL oder dem US CLOUD Act für Modellgewichte.",
   "model_family": "Magistral",
   "primary_focus": "reasoning",
-  "summary": "Magistral Small ist Mistral AIs kompaktes Reasoning-Modell aus Frankreich, entwickelt für strukturiertes Schlussfolgern und komplexe Aufgaben mit niedrigerer Latenz. Es kombiniert Chain-of-Thought-Fähigkeiten mit der Effizienz eines kleineren Modells und richtet sich an Anwendungsfälle, die schnelles, nachvollziehbares Denken erfordern.",
+  "summary": "Magistral Small ist Mistral AIs kompaktes Reasoning-Modell aus Frankreich – ausgelegt auf strukturiertes Schlussfolgern mit niedrigerer Latenz. Es ist über die Mistral-API verfügbar; die Weights sind unter Apache-2.0 frei zugänglich.",
   "strengths": [
     "Strukturiertes mehrstufiges Schlussfolgern (Chain-of-Thought)",
     "Geringere Latenz und Kosten im Vergleich zu größeren Reasoning-Modellen",

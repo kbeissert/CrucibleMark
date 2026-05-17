@@ -10,7 +10,7 @@
   "weights_provenance_risk_rationale": "Mistral AI ist ein französisches Unternehmen mit Sitz in der EU und unterliegt keiner vergleichbaren staatlichen Zugriffspflicht wie dem chinesischen NSL oder dem US CLOUD Act für lokal betriebene Gewichte.",
   "model_family": "Mistral",
   "primary_focus": "general",
-  "summary": "Ministral 3B von Mistral AI (Frankreich) ist ein kompaktes Edge-Modell, das für effiziente lokale Ausführung auf ressourcenbeschränkter Hardware optimiert wurde. Es kombiniert starkes Instruction-Following mit niedrigem Speicherbedarf und eignet sich für On-Device-Inferenz, eingebettete Systeme und latenzarme Anwendungen.",
+  "summary": "Ministral 14B ist ein Open-Weights-Modell von Mistral AI aus Frankreich – konzipiert für effiziente lokale Ausführung bei gutem Instruction-Following. Es lässt sich lokal betreiben und ist über Cloud-Provider verfügbar.",
   "strengths": [
     "Sehr geringer Speicher- und Rechenaufwand bei akzeptabler Antwortqualität",
     "Gut geeignet für Edge- und On-Device-Deployment ohne Cloud-Abhängigkeit",

@@ -10,7 +10,7 @@
   "weights_provenance_risk_rationale": "Mistral AI ist ein französisches Unternehmen mit Sitz in der EU und unterliegt keiner staatlichen Zugriffspflicht auf Modellgewichte wie dem US CLOUD Act oder dem chinesischen NSL.",
   "model_family": "Mistral",
   "primary_focus": "general",
-  "summary": "Mistral Medium ist ein proprietäres Cloud-Modell des französischen Unternehmens Mistral AI, positioniert zwischen den leichten und den Frontier-Modellen der Produktlinie. Es zielt auf starke allgemeine Sprachverarbeitung, Instruktionsbefolgung und mehrsprachige Aufgaben ab, mit besonderem Fokus auf europäische Nutzungsszenarien.",
+  "summary": "Mistral Medium ist ein Cloud-API-Modell von Mistral AI aus Frankreich – positioniert als ausgewogene Mittelklasse-Option zwischen effizienten und Frontier-Modellen. Verfügbar ausschließlich über die Mistral-API.",
   "strengths": [
     "Gute Balance zwischen Leistung und Kosten im mittleren Preissegment",
     "Solide mehrsprachige Fähigkeiten, insbesondere für europäische Sprachen",

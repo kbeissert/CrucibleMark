@@ -10,7 +10,7 @@
   "weights_provenance_risk_rationale": "Google DeepMind ist ein US-amerikanisches Unternehmen und unterliegt dem CLOUD Act, jedoch nicht dem chinesischen NSL; die Weights selbst sind nicht öffentlich verfügbar.",
   "model_family": "Gemma",
   "primary_focus": "general",
-  "summary": "Gemma 4 31B ist ein Cloud-only-Modell von Google DeepMind aus der Gemma-4-Familie. Es wurde für allgemeine Instruktionsbefolgung, mehrsprachige Aufgaben und Reasoning entwickelt. Stärken liegen in präzisen Antworten, Codeverständnis und strukturiertem Denken auf Basis von Googles Forschungsinfrastruktur.",
+  "summary": "Gemma 4 31B ist ein Cloud-Modell von Google DeepMind (Google Gemma Lizenz) der vierten Generation – ausgelegt auf allgemeine Instruktionsbefolgung und Reasoning. Es ist ausschließlich über Cloud-Provider nutzbar; die Weights sind nicht öffentlich zugänglich.",
   "strengths": [
     "Starke Instruktionsbefolgung durch gezieltes RLHF-Training",
     "Solide Mehrsprachigkeit dank Googles umfangreicher Trainingsdaten",

@@ -10,7 +10,7 @@
   "weights_provenance_risk_rationale": "Google DeepMind ist ein US-amerikanisches Unternehmen und unterliegt dem CLOUD Act, der staatlichen Zugriff auf Daten bei API-Nutzung ermöglichen kann, nicht jedoch auf die Weights selbst.",
   "model_family": "Gemini",
   "primary_focus": "general",
-  "summary": "Gemini 3.1 Pro Preview ist ein experimentelles Großmodell von Google DeepMind (USA), trainiert auf multimodalen und mehrsprachigen Daten. Stärken liegen in komplexem Reasoning, langen Kontextfenstern und Code-Verständnis. Als Preview-Version sind Leistungsschwankungen zu erwarten.",
+  "summary": "Gemini 3.1 Pro Preview ist eine experimentelle Vorschauversion von Google DeepMind – konzipiert für multimodale Aufgaben, langes Kontextverständnis und komplexes Reasoning. Als Preview unterliegt das Modell noch laufenden Anpassungen. Verfügbar ausschließlich über die Google-API.",
   "strengths": [
     "Starkes multimodales Verständnis (Text, Bild, Code)",
     "Sehr großes Kontextfenster für lange Dokumente und Konversationen",

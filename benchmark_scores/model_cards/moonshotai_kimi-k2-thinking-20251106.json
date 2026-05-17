@@ -8,10 +8,10 @@
   "deployment_type": "open-weights-cloud-available",
   "local_deployment_possible": true,
   "weights_provenance_risk": "high",
-  "weights_provenance_risk_rationale": "Moonshot AI ist ein chinesisches Unternehmen und unterliegt dem chinesischen National Security Law (NSL), das staatlichen Zugriff auf Daten und Modelle ermöglichen kann.",
+  "weights_provenance_risk_rationale": "Moonshot AI ist ein chinesisches Unternehmen und unterliegt dem chinesischen National Security Law (NSL), das staatlichen Zugriff auf Daten ermöglichen kann. Das BSI hat im Februar 2025 explizit vor der Nutzung chinesischer KI-Cloud-Dienste gewarnt (BSI-Referenz: Warnung DeepSeek, 04.02.2025); diese Risikoeinschätzung gilt analog für alle chinesischen Cloud-KI-Anbieter, die Nutzerdaten auf chinesischen Servern verarbeiten.",
   "model_family": "Kimi",
   "primary_focus": "reasoning",
-  "summary": "Kimi K2 Thinking ist das erweiterte Reasoning-Modell in der Kimi-K2-Familie von Moonshot AI. Es basiert auf der K2-MoE-Architektur (1T Parameter) und wurde speziell für komplexe, mehrstufige Reasoning-Aufgaben, Mathematik und langfristige agentische Problemlösung optimiert.",
+  "summary": "Kimi K2 Thinking ist die Reasoning-Variante der Kimi-K2-Familie von Moonshot AI aus China – mit internem Chain-of-Thought für komplexe Denkaufgaben. Es ist über Cloud-Provider verfügbar. Chinesische Herkunft und das nationale Sicherheitsgesetz (NSL) sind bei der Einschätzung des Datenrisikos zu berücksichtigen.",
   "strengths": [
     "Integriertes Chain-of-Thought Reasoning (Thinking-Modus)",
     "Starke Leistung bei mehrstufigen logischen Schlussfolgerungen",

@@ -10,7 +10,7 @@
   "weights_provenance_risk_rationale": "Mistral AI ist ein französisches Unternehmen mit Sitz in der EU und unterliegt keiner staatlichen Zugriffspflicht auf Modellgewichte vergleichbar dem chinesischen NSL oder dem US CLOUD Act.",
   "model_family": "Mistral",
   "primary_focus": "general",
-  "summary": "Mistral Small ist ein kompaktes Allround-Modell des französischen Unternehmens Mistral AI, entwickelt für effiziente Inferenz bei niedrigen Kosten. Es bietet starkes Instruction-Following, solide mehrsprachige Fähigkeiten und gute Reasoning-Leistung für seine Größenklasse – konzipiert als leichtgewichtige Alternative zu größeren Frontier-Modellen.",
+  "summary": "Mistral Small ist ein kompaktes Allround-Modell von Mistral AI aus Frankreich (Apache-2.0-Lizenz) – ausgelegt auf effiziente Inferenz bei niedrigen Kosten. Es lässt sich lokal betreiben und ist über Cloud-Provider verfügbar.",
   "strengths": [
     "Sehr gutes Preis-Leistungs-Verhältnis für alltägliche Aufgaben",
     "Solide mehrsprachige Fähigkeiten, insbesondere für europäische Sprachen",

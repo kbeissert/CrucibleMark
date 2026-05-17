@@ -10,7 +10,7 @@
   "weights_provenance_risk_rationale": "Google DeepMind ist ein US-amerikanisches Unternehmen und unterliegt dem CLOUD Act, der staatlichen Zugriff auf Daten bei API-Nutzung ermöglichen kann, betrifft jedoch nicht die lokal betriebenen Gewichte direkt.",
   "model_family": "Gemma",
   "primary_focus": "general",
-  "summary": "Gemma 4 26B ist ein Open-Weights-Modell von Google DeepMind aus den USA. Es wurde als leistungsfähiges Allround-Modell für Instruction-Following, Reasoning und multilinguale Aufgaben entwickelt. Stärken liegen in effizienter lokaler Ausführung und solider Sprachverarbeitung bei moderatem Ressourcenbedarf.",
+  "summary": "Gemma 4 26B ist ein Open-Weights-Modell von Google DeepMind (Google Gemma Lizenz) der vierten Generation, das lokal betrieben oder über Cloud-Provider genutzt werden kann. Es eignet sich für anspruchsvollere Instruction-Following- und Reasoning-Aufgaben bei moderatem Hardwarebedarf.",
   "strengths": [
     "Effizient lokal betreibbar mit vergleichsweise geringem Hardwarebedarf für die Modellgröße",
     "Solide Instruction-Following-Fähigkeiten durch gezieltes Fine-Tuning",
