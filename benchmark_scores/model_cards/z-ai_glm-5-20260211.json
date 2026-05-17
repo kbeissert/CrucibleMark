@@ -34,5 +34,10 @@
   "commercial_use_allowed": true,
   "vendor": "Zhipu AI",
   "weights_license_tier": "proprietary",
-  "model_version": "5"
+  "model_version": "5",
+  "thinking_probe_detected": false,
+  "thinking_probe_confidence": "medium",
+  "thinking_probe_evidence": "Manual override: GLM-5 standard model without dedicated reasoning/thinking architecture.",
+  "thinking_probe_manual_override": true,
+  "thinking_probe_at": "2026-05-16T18:49:05.342822+00:00"
 }

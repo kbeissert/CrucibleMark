@@ -36,7 +36,7 @@
   "supports_tool_use": true,
   "license": "Moonshot AI License",
   "license_url": "https://huggingface.co/moonshotai/Kimi-K2-Instruct/blob/main/LICENSE",
-  "commercial_use_allowed": null,
+  "commercial_use_allowed": true,
   "vendor": "Moonshot AI",
   "weights_license_tier": "open-weights",
   "model_version": "k2.6"

@@ -1,12 +1,34 @@
 {
   "model_id": "deepseek/deepseek-v4-flash",
-  "display_name": "deepseek/deepseek-v4-flash",
-  "developer": "n/a",
+  "display_name": "DeepSeek V4 Flash",
+  "developer": "DeepSeek",
+  "origin_country": "China",
+  "developer_jurisdiction": "CN",
+  "deployment_type": "open-weights-cloud-available",
+  "local_deployment_possible": false,
+  "weights_provenance_risk": "high",
+  "weights_provenance_risk_rationale": "DeepSeek ist ein chinesisches Unternehmen und unterliegt dem chinesischen National Security Law (NSL), das staatlichen Zugriff auf Daten und Modelle ermöglichen kann.",
+  "model_family": "DeepSeek-V4",
+  "primary_focus": "reasoning",
+  "summary": "DeepSeek V4 Flash ist die schnelle Reasoning-Variante der DeepSeek V4-Modellfamilie, verfügbar über Cloud-Provider wie OpenRouter. Das Modell setzt auf Chain-of-Thought-Reasoning über reasoning_tokens und liefert im Flash-Tier niedrigere Latenz bei reduzierter Modellgröße gegenüber dem Pro-Pendant.",
+  "strengths": [
+    "Schnelle Inferenz dank optimierter Flash-Architektur bei gleichzeitigem Reasoning-Support",
+    "Kosteneffiziente Alternative zu DeepSeek V4 Pro für Aufgaben mit moderatem Komplexitätsgrad",
+    "Gute Mehrsprachigkeit und Code-Verständnis aus der DeepSeek-Modellfamilie"
+  ],
+  "known_limitations": [
+    "Ausschließlich über Cloud-API verfügbar, kein lokaler Betrieb möglich",
+    "Chinesische Herkunft birgt potenzielle Zensur bei politisch sensiblen Themen mit China-Bezug",
+    "Reasoning-Qualität liegt unter dem größeren Pro-Modell der selben Familie"
+  ],
+  "judge_context_hint": "Das Modell gibt Reasoning über interne reasoning_tokens aus. Bei der Bewertung sollte nur der finale Output-Text bewertet werden.",
   "architecture_tags": [
     "Thinking"
   ],
-  "card_status": "minimal",
+  "unknown": false,
   "generated_at": "2026-05-03T18:34:58.651272+00:00",
+  "card_status": "complete",
+  "size_class": "Frontier",
   "thinking_probe_detected": true,
   "thinking_probe_evidence": "reasoning_tokens=130 in provider metadata",
   "thinking_probe_confidence": "medium",
@@ -14,8 +36,8 @@
   "supports_tool_use": true,
   "license": "DeepSeek License",
   "license_url": "https://github.com/deepseek-ai/DeepSeek-V3/blob/main/LICENSE",
-  "commercial_use_allowed": null,
+  "commercial_use_allowed": true,
   "vendor": "DeepSeek",
-  "deployment_type": "open-weights-cloud-available",
-  "weights_license_tier": "open-weights"
+  "weights_license_tier": "open-weights",
+  "model_version": "v4-flash"
 }

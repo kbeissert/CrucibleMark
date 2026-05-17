@@ -163,6 +163,14 @@ def _find_card(model_id: str) -> Path:
 
     # Namespaced IDs (OpenRouter, Groq namespaced, …) only ever use the unprefixed path
     if "/" in model_id:
+        if unprefixed.exists():
+            return unprefixed
+        # Glob fallback for date-suffixed cards (e.g. z-ai_glm-5-20260211.json).
+        # Only matches suffixes that start with a digit to avoid collisions with
+        # sibling models that share a common prefix (e.g. glm-5 vs glm-5-turbo).
+        candidates = sorted(CARD_DIR.glob(f"{safe}-[0-9]*.json"))
+        if candidates:
+            return candidates[-1]  # most recent when multiple versions exist
         return unprefixed
 
     # For non-namespaced IDs try all non-API shortcode prefixes.
@@ -181,6 +189,12 @@ def _find_card(model_id: str) -> Path:
             versioned = CARD_DIR / f"{_safe_name(base)}-{ver.strip()}.json"
             if versioned.exists():
                 return versioned
+
+    # Glob fallback for non-namespaced IDs with date-suffix (e.g. claude-haiku-4-5-20251001.json)
+    if not unprefixed.exists():
+        candidates = sorted(CARD_DIR.glob(f"{safe}-[0-9]*.json"))
+        if candidates:
+            return candidates[-1]
 
     return unprefixed  # May or may not exist — caller checks
 

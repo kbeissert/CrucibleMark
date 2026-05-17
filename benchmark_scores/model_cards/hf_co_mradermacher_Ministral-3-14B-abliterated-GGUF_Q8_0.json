@@ -1,41 +1,43 @@
 {
-    "model_id": "hf.co_mradermacher_Ministral-3-14B-abliterated-GGUF_Q8_0",
-    "display_name": "Ministral-3-14B Abliterated (Q8_0 GGUF)",
-    "developer": "Mistral AI (base model) / jenerallee78 (norm-preserving biprojected abliteration) / mradermacher (GGUF conversion)",
-    "origin_country": "France",
-    "developer_jurisdiction": "EU",
-    "deployment_type": "open-weights",
-    "local_deployment_possible": true,
-    "weights_provenance_risk": "low",
-    "weights_provenance_risk_rationale": "Das Basismodell stammt von Mistral AI mit Sitz in Frankreich (EU-Jurisdiktion); die GGUF-Konvertierung und Abliteration durch mradermacher ändert die Gewichts-Herkunft nicht.",
-    "model_family": "Mistral",
-    "primary_focus": "instruction-following",
-    "summary": "Abliterierte Version von mistralai/Ministral-3-14B-Instruct-2512 (Dezember 2025, ~14B Parameter). Abliterierung durch jenerallee78 mittels norm-preserving biprojected abliteration (grimjim/llm-abliteration): entfernt Refusal-Richtung aus den Gewichten ohne Qualitätsverlust. GGUF-Quantisierung Q8_0 durch mradermacher. Lizenz: Apache 2.0 (sowohl abliterierte Version als auch GGUF-Repo).",
-    "strengths": [
-        "Keine eingebauten Refusal-Mechanismen durch Abliteration – folgt Anweisungen ohne themenbasierte Verweigerung",
-        "Hohe Quantisierungsqualität (Q8_0) mit minimalem Qualitätsverlust gegenüber FP16",
-        "Effizient lokal betreibbar dank GGUF-Format (llama.cpp-kompatibel)"
-    ],
-    "known_limitations": [
-        "Abliteration entfernt Content-Safety-Filter vollständig – missbräuchliche Nutzung wird erleichtert, Einsatz in produktiven Systemen erfordert eigene Sicherheitsebene",
-        "Kein offiziell unterstütztes Modell: zwei Drittanbieter-Schritte (Abliteration + GGUF-Quantisierung) – Qualität und Verhalten abhängig von Community-Implementierungen",
-        "Norm-preserving biprojected abliteration ist robuster als einfache abliteration, kann aber dennoch Wissenslücken oder Verhaltensänderungen in Randbereichen erzeugen"
-    ],
-    "judge_context_hint": "Das Modell wurde abliteriert, d.h. Refusal-Training wurde gezielt entfernt – der Judge sollte keine Compliance-Verweigerungen erwarten und Antwortqualität unabhängig von Themensensitivität bewerten.",
-    "architecture_tags": [
-        "Uncensored-Abliterated"
-    ],
-    "unknown": false,
-    "generated_at": "2026-04-11T15:46:34.286185+00:00",
-    "size_class": "Desktop",
-    "thinking_probe_detected": false,
-    "thinking_probe_evidence": "No CoT signals found (A: no think-tags, B: reasoning_tokens=0). Response length: 581 chars",
-    "thinking_probe_confidence": "low",
-    "thinking_probe_at": "2026-05-02T13:23:01.540881+00:00",
-    "supports_tool_use": false,
-    "license": "Apache-2.0",
-    "license_url": "https://www.apache.org/licenses/LICENSE-2.0",
-    "commercial_use_allowed": true,
-    "vendor": "Community",
-    "weights_license_tier": "open-weights"
+  "model_id": "hf.co_mradermacher_Ministral-3-14B-abliterated-GGUF_Q8_0",
+  "display_name": "Ministral-3-14B Abliterated (Q8_0 GGUF)",
+  "developer": "Mistral AI (base model) / jenerallee78 (norm-preserving biprojected abliteration) / mradermacher (GGUF conversion)",
+  "origin_country": "France",
+  "developer_jurisdiction": "EU",
+  "deployment_type": "open-weights",
+  "local_deployment_possible": true,
+  "weights_provenance_risk": "low",
+  "weights_provenance_risk_rationale": "Das Basismodell stammt von Mistral AI mit Sitz in Frankreich (EU-Jurisdiktion); die GGUF-Konvertierung und Abliteration durch mradermacher ändert die Gewichts-Herkunft nicht.",
+  "model_family": "Mistral",
+  "primary_focus": "instruction-following",
+  "summary": "Abliterierte Version von mistralai/Ministral-3-14B-Instruct-2512 (Dezember 2025, ~14B Parameter). Abliterierung durch jenerallee78 mittels norm-preserving biprojected abliteration (grimjim/llm-abliteration): entfernt Refusal-Richtung aus den Gewichten ohne Qualitätsverlust. GGUF-Quantisierung Q8_0 durch mradermacher. Lizenz: Apache 2.0 (sowohl abliterierte Version als auch GGUF-Repo).",
+  "strengths": [
+    "Keine eingebauten Refusal-Mechanismen durch Abliteration – folgt Anweisungen ohne themenbasierte Verweigerung",
+    "Hohe Quantisierungsqualität (Q8_0) mit minimalem Qualitätsverlust gegenüber FP16",
+    "Effizient lokal betreibbar dank GGUF-Format (llama.cpp-kompatibel)"
+  ],
+  "known_limitations": [
+    "Abliteration entfernt Content-Safety-Filter vollständig – missbräuchliche Nutzung wird erleichtert, Einsatz in produktiven Systemen erfordert eigene Sicherheitsebene",
+    "Kein offiziell unterstütztes Modell: zwei Drittanbieter-Schritte (Abliteration + GGUF-Quantisierung) – Qualität und Verhalten abhängig von Community-Implementierungen",
+    "Norm-preserving biprojected abliteration ist robuster als einfache abliteration, kann aber dennoch Wissenslücken oder Verhaltensänderungen in Randbereichen erzeugen"
+  ],
+  "judge_context_hint": "Das Modell wurde abliteriert, d.h. Refusal-Training wurde gezielt entfernt – der Judge sollte keine Compliance-Verweigerungen erwarten und Antwortqualität unabhängig von Themensensitivität bewerten.",
+  "architecture_tags": [
+    "Uncensored-Abliterated"
+  ],
+  "unknown": false,
+  "generated_at": "2026-04-11T15:46:34.286185+00:00",
+  "size_class": "Desktop",
+  "thinking_probe_detected": false,
+  "thinking_probe_evidence": "No CoT signals found (A: no think-tags, B: reasoning_tokens=0). Response length: 581 chars",
+  "thinking_probe_confidence": "low",
+  "thinking_probe_at": "2026-05-02T13:23:01.540881+00:00",
+  "supports_tool_use": false,
+  "license": "Apache-2.0",
+  "license_url": "https://www.apache.org/licenses/LICENSE-2.0",
+  "commercial_use_allowed": true,
+  "vendor": "Community",
+  "weights_license_tier": "open-weights",
+  "model_version": "14b-abliterated-Q8_0",
+  "card_status": "complete"
 }

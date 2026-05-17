@@ -1,38 +1,48 @@
 {
   "model_id": "gpt-oss:120b-cloud",
   "display_name": "GPT OSS 120B Cloud",
-  "developer": "Unknown",
-  "origin_country": "Unknown",
-  "developer_jurisdiction": "Unknown",
+  "developer": "OpenAI",
+  "origin_country": "USA",
+  "developer_jurisdiction": "USA",
   "deployment_type": "open-weights-cloud-available",
-  "local_deployment_possible": false,
-  "weights_provenance_risk": "medium",
-  "weights_provenance_risk_rationale": "Herkunft und Entwickler des Modells sind unbekannt; konservative Einstufung als 'medium', da keine Informationen zur Weights-Provenienz vorliegen.",
+  "local_deployment_possible": true,
+  "weights_provenance_risk": "low",
+  "weights_provenance_risk_rationale": "Modell von OpenAI (USA), veröffentlicht unter Apache 2.0. Herkunft und Entwickler klar dokumentiert; Weights öffentlich auf HuggingFace verfügbar.",
   "model_family": "GPT OSS",
-  "primary_focus": "general",
-  "summary": "GPT OSS 120B Cloud ist ein Modell unbekannter Herkunft mit 120 Milliarden Parametern, das ausschließlich über eine Cloud-API verfügbar ist. Trainings-Schwerpunkt, Stärken und Entwicklungsziel sind nicht öffentlich dokumentiert. Belastbare Aussagen zur Leistung sind ohne weitere Informationen nicht möglich.",
+  "primary_focus": "reasoning",
+  "summary": "GPT OSS 120B ist OpenAIs erste Open-Weights-Modellserie, veröffentlicht im August 2025 unter Apache-2.0-Lizenz. Das Modell ist eine Mixture-of-Experts-Architektur mit 117 Milliarden Parametern (5,1B aktive Parameter) und läuft auf einer einzelnen 80-GB-GPU (H100 / MI300X). Schwerpunkte liegen auf leistungsstarkem Reasoning, agentischen Aufgaben und Entwickleranwendungen. Reasoning-Intensität ist über System-Prompts konfigurierbar (low / medium / high). Vollständiger Chain-of-Thought-Zugriff, Fine-Tuning und native Tool-Use (Function Calling, Web Browsing, Python-Ausführung) werden unterstützt.",
   "strengths": [
-    "Große Parameteranzahl (120B) deutet auf potenziell hohe Kapazität für komplexe Aufgaben hin",
-    "Cloud-Deployment ermöglicht einfachen Zugang ohne lokale Infrastruktur",
-    "Unbekannte Spezialisierung lässt breites Einsatzspektrum offen"
+    "MoE-Architektur: 117B Gesamtparameter, nur 5,1B aktiv — effiziente Inferenz auf einer H100",
+    "Konfigurierbare Reasoning-Intensität (low / medium / high) über System-Prompt",
+    "Voller Chain-of-Thought-Zugriff für Debugging und nachvollziehbare Entscheidungen",
+    "Native agentic Capabilities: Function Calling, Web Browsing, Python Code Execution, Structured Outputs",
+    "Apache-2.0-Lizenz: kommerzielle Nutzung und Fine-Tuning ohne Einschränkungen",
+    "Fine-Tuning auf einer einzelnen H100 möglich; Ollama-Support für lokalen Betrieb"
   ],
   "known_limitations": [
-    "Herkunft, Trainingsdetails und Entwickler sind nicht öffentlich bekannt",
-    "Keine unabhängigen Benchmarks oder Evaluierungen verfügbar"
+    "Harmony Response Format zwingend erforderlich — ohne korrekte Template-Anwendung degradierte Outputs",
+    "Chain-of-Thought ist nicht für Endnutzer gedacht und sollte intern bleiben",
+    "MXFP4-Quantisierung der MoE-Weights kann bei sehr präzisen numerischen Aufgaben marginale Qualitätseinbußen verursachen"
   ],
-  "judge_context_hint": "Das Modell ist weitgehend undokumentiert – Bewertungsergebnisse sollten ohne Referenz-Baseline interpretiert werden, da Trainings-Schwerpunkt und Fähigkeitsprofil unbekannt sind.",
+  "judge_context_hint": "GPT-OSS 120B ist OpenAIs erstes Open-Weights-Modell mit Fokus auf Reasoning und agentischen Aufgaben. Reasoning-Tiefe ist über System-Prompts steuerbar; Bewertungsergebnisse können je nach gesetztem Reasoning-Level variieren.",
   "architecture_tags": [
-    "General"
+    "MoE",
+    "Thinking-Optional",
+    "Agentic"
   ],
-  "unknown": true,
   "generated_at": "2026-04-23T22:05:27.589226+00:00",
   "card_status": "complete",
   "size_class": "Frontier",
   "supports_tool_use": true,
-  "license": "MIT",
-  "license_url": null,
+  "license": "Apache-2.0",
+  "license_url": "https://huggingface.co/openai/gpt-oss-120b",
   "commercial_use_allowed": true,
   "vendor": "OpenAI",
   "weights_license_tier": "open-weights",
-  "model_version": "latest"
+  "model_version": "latest",
+  "thinking_probe_detected": false,
+  "thinking_probe_evidence": "Manual override: GPT-OSS 120B unterstützt konfigurierbare Reasoning-Intensität via System-Prompt (kein dedizierter Thinking-Token-Stream), daher Thinking-Optional.",
+  "thinking_probe_confidence": "medium",
+  "thinking_probe_manual_override": true,
+  "thinking_probe_at": "2026-05-16T18:47:56.692725+00:00"
 }

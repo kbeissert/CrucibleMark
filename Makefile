@@ -146,6 +146,10 @@ reviews-auto:
 	@echo "Generiere Reviews fuer alle Modelle (fehlende Cards werden automatisch erstellt)..."
 	$(PYTHON) scripts/analysis/generate_review.py --all --auto
 
+reviews-bias-auto:
+	@echo "Generiere PC-Bias-Reviews fuer alle Modelle mit 00_bias_report.md..."
+	$(PYTHON) scripts/analysis/generate_review.py --all --auto --type bias
+
 reviews-check:
 	@echo "Pruefe Abhaengigkeiten (Cards) fuer alle Modell-Reviews (kein Schreiben)..."
 	$(PYTHON) scripts/analysis/generate_review.py --all --dry-run

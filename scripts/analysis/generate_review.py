@@ -772,6 +772,26 @@ def process_model_review(model_dir: Path, csv_data: str, client: LLMClient, prov
         print(f"⚠️ Keine zutreffenden Logs gefunden für {tested_model_name} im Modus {review_type}, überspringe.")
         return
 
+    # Bias-Reviews benötigen eine vollständige Model Card (developer, origin_country, developer_jurisdiction).
+    # Ohne diese Felder würde der LLM-Judge einen Disclaimer über fehlende Jurisdiktions-Infos ausgeben.
+    if review_type == "bias":
+        _bias_card_path = _find_card(tested_model_name)
+        if not _bias_card_path.exists():
+            print(f"⚠️ Keine Model Card für {tested_model_name} — Bias-Review wird übersprungen.")
+            return
+        try:
+            import json as _jcard
+            with open(_bias_card_path, "r", encoding="utf-8") as _cf:
+                _bias_card = _jcard.load(_cf)
+            _required = {"developer", "origin_country", "developer_jurisdiction"}
+            _missing = {k for k in _required if not _bias_card.get(k)}
+            if _missing:
+                print(f"⚠️ Model Card für {tested_model_name} fehlt Felder {_missing} — Bias-Review wird übersprungen.")
+                return
+        except Exception:
+            print(f"⚠️ Model Card für {tested_model_name} nicht lesbar — Bias-Review wird übersprungen.")
+            return
+
     log_data = "\n\n".join(extracted_logs)
 
     max_log_chars = 30000
@@ -857,6 +877,21 @@ def process_model_review(model_dir: Path, csv_data: str, client: LLMClient, prov
             prompt_template = """Fehler beim Laden des Prompts."""
 
     model_metrics = get_model_metrics(tested_model_name)
+    if not model_metrics:
+        # Fallback: Model Card enthält oft den aktuellen API-Alias als model_id (z.B. mistral-large-3 → mistral-large-latest)
+        import json as _jmeta
+        _alias_card = _find_card(tested_model_name)
+        if _alias_card.exists():
+            try:
+                with open(_alias_card, "r", encoding="utf-8") as _acf:
+                    _alias_card_data = _jmeta.load(_acf)
+                _alias_model_id = _alias_card_data.get("model_id")
+                if _alias_model_id and _alias_model_id != tested_model_name:
+                    model_metrics = get_model_metrics(_alias_model_id)
+                    if model_metrics:
+                        print(f"ℹ️ Alias-Auflösung: {tested_model_name} → {_alias_model_id}")
+            except Exception:
+                pass
     if not model_metrics:
         print(f"👻 Ghost Model erkannt oder keine Metriken für {tested_model_name} in 'benchmark_leaderboard_detailed.csv' gefunden, überspringe Review-Generierung.")
         return

@@ -32,8 +32,12 @@
   "supports_tool_use": true,
   "license": "Mistral Research License",
   "license_url": "https://mistral.ai/licenses/MRL-0.1.md",
-  "commercial_use_allowed": null,
+  "commercial_use_allowed": false,
   "vendor": "Mistral AI",
   "weights_license_tier": "restricted-weights",
-  "model_version": "1922accd5827"
+  "model_version": "1922accd5827",
+  "thinking_probe_detected": false,
+  "thinking_probe_evidence": "No CoT signals found (A: no think-tags, B: reasoning_tokens=0). Response length: 523 chars",
+  "thinking_probe_confidence": "low",
+  "thinking_probe_at": "2026-05-16T18:47:23.095509+00:00"
 }

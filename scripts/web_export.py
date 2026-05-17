@@ -506,8 +506,6 @@ def main() -> None:
         if args.model and slugify(args.model) != slug:
             continue
 
-        logging.info(f"  [{count}/{total}] {model_name} -> OK")
-
         # SSOT: use raw model_id (same transform as benchmark_utils.py) for dir lookup
         raw_model_id = str(row.get("model_id", "")).strip()
         dir_slug = slugify(raw_model_id.replace("/", "_")) if raw_model_id and raw_model_id != "nan" else slug
@@ -516,6 +514,21 @@ def main() -> None:
         model_audit_src = _resolve_dir(audit_dirs, dir_slug)
         model_comp_src = _resolve_dir(comp_dirs, dir_slug)
 
+        # Rule: PC-only models (no benchmark data) are excluded from export entirely.
+        # A model has benchmark data if its audit dir contains non-PC files OR the
+        # CSV carries a benchmark score. Models with only a 00_bias_report.md are skipped.
+        _audit_has_benchmark = (
+            model_audit_src is not None
+            and model_audit_src.exists()
+            and any(f.name != "00_bias_report.md" for f in model_audit_src.glob("*.md"))
+        )
+        _csv_total = str(row.get("Total Score", "")).strip()
+        _csv_has_benchmark = _csv_total not in ("", "Pending", "—", "nan") and not pd.isna(row.get("Total Score", float("nan")))
+        if not _audit_has_benchmark and not _csv_has_benchmark:
+            logging.debug(f"  [{count}/{total}] {model_name} -> SKIP (nur PC-Daten, kein Benchmark)")
+            continue
+
+        logging.info(f"  [{count}/{total}] {model_name} -> OK")
         model_out = models_dir / slug
         model_out.mkdir(exist_ok=True)
 
@@ -580,7 +593,7 @@ def main() -> None:
             "open-weights": "Open Weights",
         }
         _card_tier = card.get("weights_license_tier") if card else None
-        _type = _TIER_MAP.get(_card_tier) or str(row.get("Type", ""))
+        _type = (_TIER_MAP.get(_card_tier) if _card_tier else None) or str(row.get("Type", ""))
 
         # Core Leaderboard Entry
         # Version SSOT: Card-First (model_version field), fallback to leaderboard CSV "Version"

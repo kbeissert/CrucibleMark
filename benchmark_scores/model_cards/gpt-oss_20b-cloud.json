@@ -1,30 +1,34 @@
 {
   "model_id": "gpt-oss:20b-cloud",
   "display_name": "GPT OSS 20B Cloud",
-  "developer": "Unknown",
-  "origin_country": "Unknown",
-  "developer_jurisdiction": "Unknown",
+  "developer": "OpenAI",
+  "origin_country": "USA",
+  "developer_jurisdiction": "USA",
   "deployment_type": "open-weights-cloud-available",
-  "local_deployment_possible": false,
-  "weights_provenance_risk": "medium",
-  "weights_provenance_risk_rationale": "Herkunft und Entwickler des Modells sind unbekannt; konservative Einstufung als 'medium', da keine Informationen zur Weights-Provenienz vorliegen.",
+  "local_deployment_possible": true,
+  "weights_provenance_risk": "low",
+  "weights_provenance_risk_rationale": "Modell von OpenAI (USA), veröffentlicht unter Apache 2.0. Herkunft und Entwickler klar dokumentiert; Weights öffentlich auf HuggingFace verfügbar.",
   "model_family": "GPT OSS",
-  "primary_focus": "general",
-  "summary": "GPT OSS 20B Cloud ist ein Modell unbekannter Herkunft mit ca. 20 Milliarden Parametern, das ausschließlich über eine Cloud-API verfügbar ist. Trainingsschwerpunkt, Stärken und Entwicklungsziel sind nicht dokumentiert. Bewertungen basieren auf konservativen Annahmen.",
+  "primary_focus": "reasoning",
+  "summary": "GPT OSS 20B ist das kleinere Modell aus OpenAIs erster Open-Weights-Modellserie (August 2025, Apache-2.0-Lizenz). Mit 21 Milliarden Gesamtparametern (3,6B aktiv, MoE-Architektur) ist es auf niedrige Latenz und lokalen Betrieb optimiert — es läuft innerhalb von 16 GB RAM. Wie das größere 120B-Modell unterstützt es konfigurierbare Reasoning-Intensität, native Tool-Use und vollständigen Chain-of-Thought-Zugriff. Ideal für Edge-Deployments, spezialisierte Fine-Tunes und latenzempfindliche Anwendungen.",
   "strengths": [
-    "Mittlere Parametergröße (20B) deutet auf ausgewogenes Verhältnis von Leistung und Effizienz hin",
-    "Cloud-Deployment ermöglicht einfache Integration ohne lokale Infrastruktur",
-    "Unbekannte Spezialisierung lässt breites Einsatzspektrum offen"
+    "Sehr effizienter MoE-Betrieb: 21B Parameter, nur 3,6B aktiv — läuft in 16 GB RAM",
+    "Konfigurierbare Reasoning-Intensität (low / medium / high) über System-Prompt",
+    "Fine-Tuning auch auf Consumer-Hardware möglich",
+    "Native agentic Capabilities: Function Calling, Web Browsing, Python Code Execution",
+    "Apache-2.0-Lizenz: kommerzielle Nutzung ohne Einschränkungen",
+    "Ollama-Support: einfacher lokaler Betrieb mit `ollama pull gpt-oss:20b`"
   ],
   "known_limitations": [
-    "Herkunft, Trainingsdetails und Entwickler sind vollständig unbekannt – keine Vertrauensbasis",
-    "Ausschließlich cloud-basiert, keine lokale Nutzung oder Gewichts-Inspektion möglich"
+    "Harmony Response Format zwingend erforderlich — ohne korrekte Template-Anwendung degradierte Outputs",
+    "Geringere Reasoning-Kapazität als das 120B-Modell bei komplexen mehrstufigen Aufgaben"
   ],
-  "judge_context_hint": "Das Modell ist in Herkunft und Trainingsdetails vollständig undokumentiert – Benchmark-Ergebnisse sollten mit besonderer Vorsicht interpretiert werden, da Verhalten und Fähigkeiten nicht aus bekannten Quellen ableitbar sind.",
+  "judge_context_hint": "GPT-OSS 20B ist OpenAIs kleineres Open-Weights-Modell, optimiert für niedrige Latenz und lokalen Betrieb. Reasoning-Tiefe ist steuerbar; bei komplexen Aufgaben ggf. schwächer als das 120B-Pendant.",
   "architecture_tags": [
-    "General"
+    "MoE",
+    "Thinking-Optional",
+    "Agentic"
   ],
-  "unknown": true,
   "generated_at": "2026-04-23T22:07:35.501956+00:00",
   "card_status": "complete",
   "size_class": "Workstation",
@@ -33,8 +37,8 @@
   "thinking_probe_confidence": "low",
   "thinking_probe_at": "2026-05-01T10:49:29.669564+00:00",
   "supports_tool_use": true,
-  "license": "MIT",
-  "license_url": null,
+  "license": "Apache-2.0",
+  "license_url": "https://huggingface.co/openai/gpt-oss-20b",
   "commercial_use_allowed": true,
   "vendor": "OpenAI",
   "weights_license_tier": "open-weights",
