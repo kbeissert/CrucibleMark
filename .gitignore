@@ -60,5 +60,19 @@ config/.prices_cache.json
 _smoke_test.py
 benchmark_config.yaml
 
+# Judge-Prompt — nicht öffentlich (Kontaminationsschutz)
+config/meta_reviewer_prompt.yaml
+
+# Memory Bank — interne Projektplanung, nicht öffentlich
+memory-bank/
+
+# Debug-Artefakte
+.temp_prompt.yaml
+last_failed_raw.txt
+
+# Lokale AI-Assistent-Konfiguration
+.clinerules/
+.prompts/
+
 # Web Export
 web_export/
