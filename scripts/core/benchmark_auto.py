@@ -189,9 +189,14 @@ def _get_startable_assets(
         or module.get("key") == "political_compass"
     ):
         batch_id = "political_compass_v3"
-        if (model, batch_id) in existing_tests:
-            # Optional: Man könnte hier loggen, dass geskippt wird.
-            # Da dies für jedes Modell passiert, halten wir es still oder loggen einmalig außen.
+        # save_leaderboard_csv() strips OpenRouter date suffixes when writing the PC leaderboard:
+        # -YYYYMMDD (8-digit) and -MMDD with valid months 01-12 (e.g. -0127 for Jan 27).
+        # Version suffixes like -2503 / -2411 are intentionally NOT stripped.
+        # Normalize identically so the cache lookup matches dated config aliases.
+        import re as _re_auto
+        model_normalized = _re_auto.sub(r"-\d{8}$", "", model)
+        model_normalized = _re_auto.sub(r"-(0[1-9]|1[0-2])\d{2}$", "", model_normalized)
+        if (model, batch_id) in existing_tests or (model_normalized, batch_id) in existing_tests:
             return []
     # -------------------------------------------------------
 

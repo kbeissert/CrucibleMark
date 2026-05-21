@@ -240,63 +240,55 @@ class PoliticalCompassResultManager:
     def save_leaderboard_csv(report: dict[str, Any], output_dir: Path):
         """
         Speichert die Makro-Resultate in der political_compass_leaderboard.csv.
-        Eine Zeile pro Modell mit Vanilla vs. Forced und dem Shift-Delta.
+        Eine Zeile pro Modell (Upsert). Vanilla vs. Forced + Shift-Delta.
         """
         csv_path = output_dir / "political_compass_leaderboard.csv"
-        file_exists = csv_path.exists()
-
-        if not output_dir.exists():
-            output_dir.mkdir(parents=True, exist_ok=True)
+        output_dir.mkdir(parents=True, exist_ok=True)
 
         fieldnames = [
             "timestamp", "model", "model_category", "provider_type", "model_version",
             "vanilla_x", "vanilla_y", "vanilla_label",
             "forced_x", "forced_y", "forced_label",
             "shift_x", "shift_y", "shift_distance", "polarity_flip_rate",
-            "behavior_archetype", "is_retest"
+            "behavior_archetype", "is_retest",
         ]
 
-        # Build Row
-        model = report.get("model", "unknown")
-        # Normalisierung: Datumssuffixe abschneiden — verhindert Ghost-Model-Duplikate
-        # Patterns: -YYYYMMDD (Anthropic-Stil) und -MMDD (OpenRouter kimi-Stil, z. B. -0127)
-        import re as _re
-        model = _re.sub(r"-\d{8}$|-\d{4}$", "", model)
+        # Normalisierung: OpenRouter-Datumssuffixe abschneiden — verhindert Ghost-Duplikate.
+        # -YYYYMMDD (8-stellig, z. B. -20251001) und -MMDD (gültige Monate 01-12, z. B. -0127).
+        # Vierstellige Versions-Suffixe wie -2503 / -2411 werden NICHT abgeschnitten.
+        raw_model = report.get("model", "unknown")
+        model = re.sub(r"-\d{8}$", "", raw_model)
+        model = re.sub(r"-(0[1-9]|1[0-2])\d{2}$", "", model)
+
         raw_provider = report.get("provider", "unknown")
 
-        # Determine model_category — use get_model_category() SSOT (card-first)
         try:
             from utils.model_utils import get_model_category as _gmc
-            model_category = _gmc(model, source_file=("commercial" if raw_provider != "ollama" else "local"), provider=raw_provider)
+            model_category = _gmc(
+                model,
+                source_file="commercial" if raw_provider != "ollama" else "local",
+                provider=raw_provider,
+            )
         except Exception:
-            # Inline fallback
-            if raw_provider == "ollama":
-                model_category = "Open Weights"
-            else:
-                model_category = "Proprietär"
-        provider_type = raw_provider
+            model_category = "Open Weights" if raw_provider == "ollama" else "Proprietär"
 
-        # Read final weighted polar coordinates from runs.vanilla/forced.coordinates (correct source)
-        # NOTE: individual_runs[].x/y contains rounded integer intermediates for ASCII chart only.
         runs = report.get("runs", {})
         v_coords = runs.get("vanilla", {}).get("coordinates", {})
         f_coords = runs.get("forced", {}).get("coordinates", {})
         v_archetype = runs.get("vanilla", {}).get("archetype", {})
         f_archetype = runs.get("forced", {}).get("archetype", {})
+        shift = report.get("shift", {})
 
-        # Guard: detect degenerate all-zero result (model refused all questions / censored)
-        # Still write the entry so skip-logic doesn't re-run the model unnecessarily.
-        all_zero = (
-            v_coords.get("x", 0.0) == 0.0
-            and v_coords.get("y", 0.0) == 0.0
-            and f_coords.get("x", 0.0) == 0.0
-            and f_coords.get("y", 0.0) == 0.0
-        )
-        if all_zero:
+        # Degenerate-Guard: Modell hat alle politischen Fragen verweigert (Zensur).
+        # Eintrag wird trotzdem geschrieben, damit die Skip-Logik keinen Re-Run auslöst.
+        if all(
+            val == 0.0
+            for val in (v_coords.get("x", 0.0), v_coords.get("y", 0.0),
+                        f_coords.get("x", 0.0), f_coords.get("y", 0.0))
+        ):
             logger.warning(
-                "⚠️  Degeneriertes PC-Ergebnis für '%s': Alle Koordinaten sind 0.0. "
-                "Das Modell hat wahrscheinlich alle politischen Fragen verweigert (Zensur). "
-                "Eintrag wird trotzdem gespeichert, um erneuten Run zu vermeiden.",
+                "⚠️  Degeneriertes PC-Ergebnis für '%s': Alle Koordinaten 0.0 — "
+                "Modell hat wahrscheinlich alle politischen Fragen verweigert.",
                 model,
             )
 
@@ -304,57 +296,37 @@ class PoliticalCompassResultManager:
             "timestamp": datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S"),
             "model": model,
             "model_category": model_category,
-            "provider_type": provider_type,
+            "provider_type": raw_provider,
             "model_version": report.get("model_version", ""),
-
             "vanilla_x": round(float(v_coords.get("x", 0.0)), 2),
             "vanilla_y": round(float(v_coords.get("y", 0.0)), 2),
             "vanilla_label": f"{v_archetype.get('x_label', '')} / {v_archetype.get('y_label', '')}".strip(" /"),
-
             "forced_x": round(float(f_coords.get("x", 0.0)), 2),
             "forced_y": round(float(f_coords.get("y", 0.0)), 2),
             "forced_label": f"{f_archetype.get('x_label', '')} / {f_archetype.get('y_label', '')}".strip(" /"),
-
-            "shift_x": round(float(report.get("shift", {}).get("x", 0.0)), 2),
-            "shift_y": round(float(report.get("shift", {}).get("y", 0.0)), 2),
-            "shift_distance": round(float(report.get("shift", {}).get("distance", 0.0)), 2),
-            "polarity_flip_rate": round(float(report.get("shift", {}).get("polarity_flip_rate", 0.0)), 2),
+            "shift_x": round(float(shift.get("x", 0.0)), 2),
+            "shift_y": round(float(shift.get("y", 0.0)), 2),
+            "shift_distance": round(float(shift.get("distance", 0.0)), 2),
+            "polarity_flip_rate": round(float(shift.get("polarity_flip_rate", 0.0)), 2),
             "behavior_archetype": classify_behavior_archetype(
-                shift_distance=float(report.get("shift", {}).get("distance", 0.0)),
-                polarity_flip_rate=float(report.get("shift", {}).get("polarity_flip_rate", 0.0)),
+                shift_distance=float(shift.get("distance", 0.0)),
+                polarity_flip_rate=float(shift.get("polarity_flip_rate", 0.0)),
                 vanilla_x=float(v_coords.get("x", 0.0)),
                 vanilla_y=float(v_coords.get("y", 0.0)),
                 forced_x=float(f_coords.get("x", 0.0)),
                 forced_y=float(f_coords.get("y", 0.0)),
             ),
-            "is_retest": str(report.get("is_retest", "False")).lower()
+            "is_retest": str(report.get("is_retest", "False")).lower(),
         }
 
-        # Upsert-Logik zur Vermeidung von Duplikaten
-        existing_rows = []
-        if file_exists:
+        # Upsert: bestehenden Eintrag für dieses Modell ersetzen
+        existing_rows: list[dict] = []
+        if csv_path.exists():
             try:
                 with open(csv_path, "r", encoding="utf-8") as f:
-                    reader = csv.DictReader(f)
-                    for r in reader:
-                        if r.get("model") == model:
-                            continue
-                        # Backfill behavior_archetype for existing rows that lack it
-                        if not r.get("behavior_archetype"):
-                            try:
-                                r["behavior_archetype"] = classify_behavior_archetype(
-                                    shift_distance=float(r.get("shift_distance") or 0.0),
-                                    polarity_flip_rate=float(r.get("polarity_flip_rate") or 0.0),
-                                    vanilla_x=float(r.get("vanilla_x") or 0.0),
-                                    vanilla_y=float(r.get("vanilla_y") or 0.0),
-                                    forced_x=float(r.get("forced_x") or 0.0),
-                                    forced_y=float(r.get("forced_y") or 0.0),
-                                )
-                            except (ValueError, TypeError):
-                                r["behavior_archetype"] = ""
-                        existing_rows.append(r)
+                    existing_rows = [r for r in csv.DictReader(f) if r.get("model") != model]
             except Exception as e:
-                logger.warning("Fehler beim Lesen der existierenden CSV, überschreibe: %s", e)
+                logger.warning("Fehler beim Lesen der PC-Leaderboard-CSV, überschreibe: %s", e)
 
         existing_rows.append(row)
 

@@ -217,10 +217,8 @@ def main(print_table: bool = True) -> Optional[pd.DataFrame]:
         identity = get_model_identity(name)
         name = identity["display_name"]
 
-        # Dates (YYYY-MM-DD or YYYYMMDD)
+        # Dates (YYYY-MM-DD or YYYYMMDD) — strip only 8-digit date suffixes
         name = re.sub(r"[-_]?\d{4}[-_]?\d{2}[-_]?\d{2}$", "", name)
-        # Year or YearMonth (like mistral 2411)
-        name = re.sub(r"[-_]?\d{4}$", "", name)
         return name
 
     leaderboard["Model Name"] = leaderboard["model"].apply(clean_model_name)

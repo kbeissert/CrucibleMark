@@ -199,6 +199,30 @@ def _enrich_from_csv_source(
                 if (label + "_fallback") in result.columns:
                     result = result.drop(columns=[label + "_fallback"])
 
+        # C) Normalized Fallback: strip date suffixes from both sides, then match on model only.
+        # Handles dated benchmark aliases (e.g. claude-sonnet-4-5-20250929) vs normalized
+        # PC-leaderboard IDs (e.g. claude-sonnet-4-5). Same pattern as save_leaderboard_csv():
+        # -YYYYMMDD (8-digit) and -MMDD with valid months 01-12 (e.g. -0127).
+        import re as _re_norm  # noqa: PLC0415
+        missing_mask = result[label].isna()
+        if missing_mask.any():
+            def _normalize_model(m: str) -> str:
+                m = _re_norm.sub(r"-\d{8}$", "", str(m))
+                m = _re_norm.sub(r"-(0[1-9]|1[0-2])\d{2}$", "", m)
+                return m
+
+            norm_source = source_df[["model", label]].copy()
+            norm_source["_model_norm"] = norm_source["model"].apply(_normalize_model)
+            norm_source = norm_source.drop_duplicates(subset=["_model_norm"], keep="last")
+            norm_source = norm_source[["_model_norm", label]].rename(
+                columns={label: label + "_norm"}
+            )
+
+            result["_model_norm"] = result["model"].apply(_normalize_model)
+            result = result.merge(norm_source, on="_model_norm", how="left")
+            result[label] = result[label].fillna(result[label + "_norm"])
+            result = result.drop(columns=["_model_norm", label + "_norm"], errors="ignore")
+
         # Fill Missing
         fallback = source_config.get("missing_value", "Pending")
         result[label] = result[label].fillna(fallback)

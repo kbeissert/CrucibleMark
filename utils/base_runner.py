@@ -362,16 +362,24 @@ class BaseBenchmarkRunner:
         # autark im Leaderboard fortbestehen. Verhindert teure Re-Runs via `make political-compass`.
         if not force and PoliticalCompassHandler.is_political_compass(benchmark_info):
             import csv as _csv
+            import re as _re_pc
             pc_leaderboard = Path("benchmark_scores/political_compass_leaderboard.csv")
             if pc_leaderboard.exists():
                 try:
+                    # save_leaderboard_csv() strips OpenRouter date suffixes:
+                    # -YYYYMMDD (8-digit) and -MMDD with valid months 01-12 (e.g. -0127).
+                    # Version suffixes like -2503 / -2411 are intentionally NOT stripped.
+                    # Normalize identically so the lookup matches dated config aliases.
+                    model_normalized = _re_pc.sub(r"-\d{8}$", "", model)
+                    model_normalized = _re_pc.sub(r"-(0[1-9]|1[0-2])\d{2}$", "", model_normalized)
                     with pc_leaderboard.open("r", encoding="utf-8") as _f:
-                        if any(row.get("model") == model for row in _csv.DictReader(_f)):
-                            print(
-                                f"⏩ Überspringe {benchmark_info.get('name', '')} "
-                                f"(PC-Leaderboard; {model} bereits bewertet)"
-                            )
-                            return []
+                        pc_models = {row.get("model") for row in _csv.DictReader(_f)}
+                    if model in pc_models or model_normalized in pc_models:
+                        print(
+                            f"⏩ Überspringe {benchmark_info.get('name', '')} "
+                            f"(PC-Leaderboard; {model} bereits bewertet)"
+                        )
+                        return []
                 except (OSError, _csv.Error):
                     pass  # Bei Lesefehler: sicher durchlaufen und normal ausführen
 
