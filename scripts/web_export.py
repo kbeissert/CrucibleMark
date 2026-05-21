@@ -13,6 +13,7 @@ import datetime
 import math
 import re
 from pathlib import Path
+from typing import Any, Optional
 import pandas as pd
 import yaml
 from utils.config_validator import ConfigValidator
@@ -152,6 +153,37 @@ def clean_float(val):
     return float(v) if v is not None else None
 
 
+# Emoji-Bereinigung: entfernt alle Unicode-Emoji-Zeichen aus String-Werten.
+# Wird rekursiv auf alle exportierten JSON-Datenstrukturen angewendet.
+# Begründung: Die Website nutzt eigene Icon-Sets — Emojis im JSON-Payload
+# sind redundant und können Frontend-Rendering-Probleme verursachen.
+_EMOJI_RE = re.compile(
+    "["
+    "\U00002300-\U000027BF"  # Diverse technische/sonstige Symbole, Dingbats
+    "\U00002600-\U000026FF"  # Verschiedene Symbole (Sonne, Wolke, Uhren …)
+    "\U00002700-\U000027BF"  # Dingbats-Block
+    "\U0001F300-\U0001F5FF"  # Sonstige Symbole & Piktogramme
+    "\U0001F600-\U0001F64F"  # Emoticons
+    "\U0001F680-\U0001F6FF"  # Transport & Karten-Symbole
+    "\U0001F700-\U0001F77F"  # Alchemistische Symbole
+    "\U0001F900-\U0001FAFF"  # Ergänzende Symbole
+    "\U0001FA00-\U0001FA9F"  # Schachsymbole & weitere
+    "]",
+    flags=re.UNICODE,
+)
+
+def _strip_emojis(obj):
+    """Entfernt Emojis rekursiv aus dicts, lists und strings."""
+    if isinstance(obj, str):
+        cleaned = _EMOJI_RE.sub("", obj).strip()
+        return cleaned
+    if isinstance(obj, dict):
+        return {k: _strip_emojis(v) for k, v in obj.items()}
+    if isinstance(obj, list):
+        return [_strip_emojis(item) for item in obj]
+    return obj
+
+
 def load_model_card(model_name: str, root_dir: Path) -> dict | None:
     """Loads the model card JSON for *model_name* using the same lookup logic as _find_card().
 
@@ -222,6 +254,14 @@ def load_model_card(model_name: str, root_dir: Path) -> dict | None:
         base = re.sub(r"-\d{4,8}$", "", base)
         if base.lower() == display_norm:
             return card_data
+
+    # Fallback: hf.co / HuggingFace GGUF models — short name without org/repo prefix.
+    # The card is stored as "hf_co_<org>_<safe>.json"; model_name is just "<safe>".
+    # Try any card file whose suffix matches the safe model name.
+    for candidate in card_dir.glob(f"*_{safe}.json"):
+        result = _try_load(candidate)
+        if result:
+            return result
 
     return None
 
@@ -306,13 +346,19 @@ def extract_audit_category(filename: str) -> str:
 
     return "other"
 
+# Model type mapping: weights_license_tier → display string (SSOT: get_model_category())
+_TIER_MAP: dict[str, str] = {
+    "proprietary": "Proprietär",
+    "restricted-weights": "Restricted Weights",
+    "open-weights": "Open Weights",
+}
+
+
 def find_latest_markdown(dir_path: Path, prefix: str = "") -> Path | None:
     if not dir_path.exists() or not dir_path.is_dir(): return None
     md_files = list(dir_path.glob(f'{prefix}*.md'))
     return max(md_files, key=lambda p: p.stat().st_mtime) if md_files else None
 
-
-import re as _re_global
 
 def _review_date_range(dir_path: Path, prefix: str = "review_") -> tuple[str | None, str | None]:
     """
@@ -325,7 +371,7 @@ def _review_date_range(dir_path: Path, prefix: str = "review_") -> tuple[str | N
         return None, None
     dates: list[str] = []
     for f in dir_path.glob(f"{prefix}*.md"):
-        m = _re_global.search(r"_(\d{8})_", f.name)
+        m = re.search(r"_(\d{8})_", f.name)
         if m:
             raw = m.group(1)
             dates.append(f"{raw[:4]}-{raw[4:6]}-{raw[6:8]}")
@@ -341,33 +387,400 @@ def _build_benchmark_run_dates(runs_dir: Path) -> dict[str, str]:
     outputs/runs/results_*_YYYYMMDD_HHMMSS.json.
     Each JSON must have a 'model' field with the raw model_id.
     """
-    import json as _j
     result: dict[str, str] = {}
     if not runs_dir.exists():
         return result
     for f in runs_dir.glob("results_*.json"):
-        m = _re_global.search(r"_(\d{8})_\d{6}\.json$", f.name)
+        m = re.search(r"_(\d{8})_\d{6}\.json$", f.name)
         if not m:
             continue
         raw = m.group(1)
         date_str = f"{raw[:4]}-{raw[4:6]}-{raw[6:8]}"
         try:
-            data = _j.loads(f.read_text(encoding="utf-8"))
+            data = json.loads(f.read_text(encoding="utf-8"))
             mid: str = data.get("model", "") if isinstance(data, dict) else ""
             if not mid:
                 continue
             if mid not in result or date_str < result[mid]:
                 result[mid] = date_str
-        except Exception:
+        except (json.JSONDecodeError, OSError):
             pass
     return result
 
-def load_csv_with_fallback(path: Path):
+def load_csv_with_fallback(path: Path) -> "pd.DataFrame | None":
     try:
         return pd.read_csv(path)
-    except Exception as e:
+    except (OSError, pd.errors.ParserError) as e:
         logging.warning(f"  [WARN] Could not load {path.name}: {e}")
         return None
+
+
+def _resolve_dir(dirs: dict[str, Path], raw_slug: str) -> Path | None:
+    """Resolve a model-ID slug to a local directory path.
+
+    Primary: direct match (SSOT — same transform as benchmark_utils.py).
+    Fallback 1: strip trailing date-suffix (reviews may pre-date the versioned model_id).
+    Fallback 2: suffix-match after date-strip (for provider-prefix dirs without date suffix).
+    Fallback 3: -latest alias → versioned folder (e.g. "mistral-large-latest" → "mistral-large-3").
+    """
+    if raw_slug in dirs:
+        return dirs[raw_slug]
+    stripped = re.sub(r'-\d{4,8}$', '', raw_slug)
+    if stripped != raw_slug and stripped in dirs:
+        return dirs[stripped]
+    if stripped != raw_slug:
+        suffix_key = stripped.split('-', 1)[-1] if '-' in stripped else stripped
+        suffix_matches = [v for k, v in dirs.items() if k.endswith(suffix_key)]
+        if len(suffix_matches) == 1:
+            return suffix_matches[0]
+    if raw_slug.endswith("-latest") or raw_slug.endswith(":latest"):
+        try:
+            from utils.model_utils import get_model_version as _gmv
+            _ver = _gmv(raw_slug, provider="api")
+        except ImportError:
+            _ver = None
+        if _ver and _ver.strip() not in {"latest", "unknown", "k.A.", ""}:
+            _vslug = re.sub(r"[:-]latest$", f"-{_ver.strip()}", raw_slug)
+            if _vslug in dirs:
+                return dirs[_vslug]
+    return None
+
+
+def _setup_output_dirs(args: argparse.Namespace) -> tuple[Path, Path, Path]:
+    """Sets up and validates output directories.
+
+    Safety: only the models/ subdirectory of out_dir may be deleted.
+    Returns (out_dir, models_dir, root_dir).
+    """
+    out_dir = Path(args.output).resolve()
+    # Ensure we always write into a raw/ subdirectory (safety guard)
+    if out_dir.name != "raw":
+        out_dir = out_dir / "raw"
+    models_dir = out_dir / "models"
+    assert models_dir == (out_dir / "models"), "Safety check failed: rmtree target is not models/"
+    out_dir.mkdir(parents=True, exist_ok=True)
+    if models_dir.exists():
+        shutil.rmtree(models_dir)
+    models_dir.mkdir(exist_ok=True)
+    root_dir = Path(__file__).resolve().parent.parent
+    return out_dir, models_dir, root_dir
+
+
+def _load_sources(scores_dir: Path) -> tuple[
+    "pd.DataFrame | None",
+    "pd.DataFrame | None",
+    "pd.DataFrame | None",
+    "pd.DataFrame | None",
+]:
+    """Loads all source CSVs. Returns (ldb, pc, pc_lb, provider_df)."""
+    return (
+        load_csv_with_fallback(scores_dir / "benchmark_leaderboard_detailed.csv"),
+        load_csv_with_fallback(scores_dir / "political_compass_results.csv"),
+        load_csv_with_fallback(scores_dir / "political_compass_leaderboard.csv"),
+        load_csv_with_fallback(scores_dir / "provider_leaderboard.csv"),
+    )
+
+
+def _build_pc_lookups(
+    pc_lb: "pd.DataFrame | None",
+) -> tuple[dict, dict]:
+    """Builds model-name → PC-leaderboard-row dicts (exact name + slug-keyed)."""
+    pc_lb_map: dict = {}
+    pc_lb_slug_map: dict = {}
+    if pc_lb is not None and "model" in pc_lb.columns:
+        for _, _row in pc_lb.iterrows():
+            m = str(_row.get("model", ""))
+            if m and m != "nan":
+                pc_lb_map[m] = _row
+                pc_lb_slug_map[slugify(m)] = _row
+    return pc_lb_map, pc_lb_slug_map
+
+
+def _export_model_files(
+    model_out: Path,
+    audit_src: Path | None,
+    comp_src: Path | None,
+) -> tuple[list[str], dict[str, Optional[str]]]:
+    """Copies audit logs and comparison markdown files for one model.
+
+    Returns (audit_files, comp_files_dict).
+    """
+    audit_files: list[str] = []
+    if audit_src and audit_src.exists():
+        out_audit = model_out / "audit_logs"
+        out_audit.mkdir(exist_ok=True)
+        for f in audit_src.glob("*.md"):
+            sanitized = sanitize_audit_log(f.read_text(encoding="utf-8"))
+            (out_audit / f.name).write_text(sanitized, encoding="utf-8")
+            audit_files.append(f.name)
+
+    comp_files_dict: dict[str, Optional[str]] = {"review": None, "bias_review": None}
+    if comp_src and comp_src.exists():
+        out_comp = model_out / "comparisons"
+        out_comp.mkdir(exist_ok=True)
+        latest_review = find_latest_markdown(comp_src, prefix="review_")
+        latest_bias = find_latest_markdown(comp_src, prefix="bias_review_")
+        if latest_review:
+            shutil.copy2(latest_review, out_comp / latest_review.name)
+            comp_files_dict["review"] = latest_review.name
+        if latest_bias:
+            shutil.copy2(latest_bias, out_comp / latest_bias.name)
+            comp_files_dict["bias_review"] = latest_bias.name
+
+    return audit_files, comp_files_dict
+
+
+def _build_leaderboard_entry(
+    row: "pd.Series",
+    card: dict | None,
+    slug: str,
+    vendor: str | None,
+    thinking_mode: str,
+    model_type: str,
+    has_report: bool,
+    has_review: bool,
+    review_published_at: str | None,
+    review_updated_at: str | None,
+    benchmark_run_at: str | None,
+    inference_provider: str | None,
+) -> dict[str, Any]:
+    """Builds the leaderboard entry dict for a single model."""
+    _card_version = extract_version(card.get("model_version")) if card else None
+    _csv_version = extract_version(row.get("Version"))
+    return {
+        "slug": slug,
+        "model_name": str(row.get("Model Name", "")),
+        "vendor": vendor,
+        "version": _card_version or _csv_version,
+        "badge": str(row.get("Badge", "")),
+        "badge_tier": extract_badge_tier(row.get("Badge")),
+        "size_class": str(row.get("Size Class", "Frontier")),
+        "speed_profile": str(row.get("Speed Profile", "")),
+        "performance_tier": str(row.get("Performance Tier", "")) or None,
+        "type": model_type,
+        "thinking_mode": thinking_mode,
+        "deployment_type": card.get("deployment_type") if card else None,
+        "weights_license_tier": card.get("weights_license_tier") if card else None,
+        "inference_provider": inference_provider,
+        "provider_code": str(row.get("Provider Code", "")) or None,
+        "total_score": normalize_pending(row.get("Total Score")),
+        "routine_score": normalize_pending(row.get("Routine Score")),
+        "reasoning_score": normalize_pending(row.get("Reasoning Score")),
+        "tokens_per_s": normalize_pending(row.get("Tokens/s")),
+        "avg_task_duration_s": normalize_pending(row.get("Avg Task Duration (s)")),
+        "p95_time_s": normalize_pending(row.get("P95 Time (s)", row.get("P95", None))),
+        "max_time_s": normalize_pending(row.get("Max Time (s)")),
+        "timeout_count": normalize_pending(row.get("Timeout Count")),
+        "tokens_total": normalize_pending(row.get("Tokens Total")),
+        "cost_per_1k": normalize_pending(row.get("Cost per 1K (USD)")),
+        "benchmark_cost": normalize_pending(row.get("Benchmark Cost (USD)")),
+        "llm_judge_avg": normalize_pending(row.get("LLM Judge Avg (raw)")) or parse_star_float(row.get("LLM Judge Avg")),
+        "llm_judge_coverage": normalize_pending(row.get("LLM Judge Coverage")),
+        "tests_run": parse_tests_run(row.get("Tests Run")),
+        "scores": {
+            "code_quality": normalize_pending(row.get("Code Quality Audit")),
+            "cli_benchmark": normalize_pending(row.get("CLI Badge")),
+            "ux_writing": normalize_pending(row.get("UX Writing & Microcopy")),
+            "documentation_quality": normalize_pending(row.get("Documentation Quality")),
+            "content_transformation": normalize_pending(row.get("Content Transformation & Adaption")),
+            "cultural_intelligence": normalize_pending(row.get("Cultural Intelligence")),
+            "logical_reasoning": normalize_pending(row.get("Logical Reasoning")),
+        },
+        "tokens_per_module": {
+            "code_quality": normalize_pending(row.get("Tokens: Code Quality Audit")),
+            "cli_benchmark": normalize_pending(row.get("Tokens: CLI Badge")),
+            "ux_writing": normalize_pending(row.get("Tokens: UX Writing & Microcopy")),
+            "documentation_quality": normalize_pending(row.get("Tokens: Documentation Quality")),
+            "content_transformation": normalize_pending(row.get("Tokens: Content Transformation & Adaption")),
+            "cultural_intelligence": normalize_pending(row.get("Tokens: Cultural Intelligence")),
+            "logical_reasoning": normalize_pending(row.get("Tokens: Logical Reasoning")),
+            "system": normalize_pending(row.get("Tokens: System")),
+        },
+        "report_available": has_report,
+        "review_available": has_review,
+        "benchmark_run_at": benchmark_run_at,
+        "report_published_at": review_published_at,
+        "report_updated_at": review_updated_at if review_updated_at != review_published_at else None,
+        "last_activity_at": max(filter(None, [
+            benchmark_run_at,
+            review_published_at,
+            review_updated_at if review_updated_at != review_published_at else None,
+        ]), default=None),
+        "model_card": {
+            "display_name": card.get("display_name"),
+            "developer": card.get("developer"),
+            "origin_country": card.get("origin_country"),
+            "developer_jurisdiction": card.get("developer_jurisdiction"),
+            "deployment_type": card.get("deployment_type"),
+            "local_deployment_possible": card.get("local_deployment_possible"),
+            "weights_provenance_risk": card.get("weights_provenance_risk"),
+            "architecture_tags": card.get("architecture_tags"),
+            "supports_tool_use": card.get("supports_tool_use"),
+            "thinking_probe_detected": card.get("thinking_probe_detected"),
+            "thinking_probe_confidence": card.get("thinking_probe_confidence"),
+            "model_family": card.get("model_family"),
+            "primary_focus": card.get("primary_focus"),
+            "summary": card.get("summary"),
+            "strengths": card.get("strengths"),
+            "known_limitations": card.get("known_limitations"),
+            "card_status": card.get("card_status"),
+            "license": card.get("license"),
+            "license_url": card.get("license_url"),
+            "commercial_use_allowed": card.get("commercial_use_allowed"),
+            "weights_license_tier": card.get("weights_license_tier"),
+        } if card else None,
+    }
+
+
+def _lookup_pc_row(
+    model_name: str,
+    slug: str,
+    pc: "pd.DataFrame",
+) -> "pd.Series | None":
+    """Returns the AVG row for a model from political_compass_results.csv.
+
+    Tries exact match first, then slug-based fallback for dated/prefixed IDs
+    (e.g. "claude-sonnet-4-5-20250929" → "claude-sonnet-4-5").
+    """
+    avg_rows = pc[pc["run_id"] == "AVG"]
+    exact = avg_rows[avg_rows["model"] == model_name]
+    if not exact.empty:
+        return exact.iloc[0]
+    for _pc_model in avg_rows["model"].unique():
+        _pc_slug = slugify(str(_pc_model))
+        if _pc_slug == slug or _pc_slug.endswith(f"-{slug}") or _pc_slug.startswith(f"{slug}-"):
+            rows = avg_rows[avg_rows["model"] == _pc_model]
+            if not rows.empty:
+                return rows.iloc[0]
+    return None
+
+
+def _build_compass_entry(
+    pc_row: "pd.Series",
+    lb_row: "pd.Series | None",
+    slug: str,
+    model_name: str,
+    model_type: str,
+) -> dict[str, Any]:
+    """Builds the political_compass entry dict for a single model."""
+    archetype: str | None = None
+    extremism: str | None = None
+    metrics: dict = {}
+    metrics_json_str = str(pc_row.get("metrics_json", "{}"))
+    if metrics_json_str and metrics_json_str != "nan":
+        try:
+            metrics = json.loads(metrics_json_str)
+            archetype = metrics.get("archetype")
+            if "extremism" in metrics and isinstance(metrics["extremism"], dict):
+                extremism = metrics["extremism"].get("status")
+            else:
+                extremism = metrics.get("extremism.status")
+        except json.JSONDecodeError:
+            pass
+
+    def _lb_num(key: str) -> float | None:
+        return normalize_pending(lb_row.get(key)) if lb_row is not None else None
+
+    def _lb_str(key: str) -> str | None:
+        return str(lb_row.get(key, "")) if lb_row is not None else None
+
+    return {
+        "slug": slug,
+        "name": model_name,
+        "version": extract_version(pc_row.get("model_version")),
+        "type": model_type,
+        "x": normalize_pending(pc_row.get("x_coordinate")),
+        "y": normalize_pending(pc_row.get("y_coordinate")),
+        "label": str(pc_row.get("x_label", "")) + " - " + str(pc_row.get("y_label", "")),
+        "vanilla_x": _lb_num("vanilla_x"),
+        "vanilla_y": _lb_num("vanilla_y"),
+        "vanilla_label": _lb_str("vanilla_label"),
+        "forced_x": _lb_num("forced_x"),
+        "forced_y": _lb_num("forced_y"),
+        "forced_label": _lb_str("forced_label"),
+        "shift_distance": _lb_num("shift_distance"),
+        "shift_x": _lb_num("shift_x"),
+        "shift_y": _lb_num("shift_y"),
+        "polarity_flip_rate": _lb_num("polarity_flip_rate"),
+        "behavior_archetype": _lb_str("behavior_archetype"),
+        "model_category": model_type,
+        "is_retest": (
+            bool(lb_row.get("is_retest"))
+            if lb_row is not None and not pd.isna(lb_row.get("is_retest", float("nan")))
+            else None
+        ),
+        "archetype": archetype,
+        "extremism_status": extremism,
+        "blocks": _build_block_scores(metrics.get("module_stats", {})),
+    }
+
+
+def _write_top_level_outputs(
+    out_dir: Path,
+    generated_at: str,
+    models_list: list[dict[str, Any]],
+    pc_list: list[dict[str, Any]],
+    provider_df: "pd.DataFrame | None",
+    root_dir: Path,
+    comparisons_path: Path,
+    models_with_reports: int,
+    models_with_reviews: int,
+) -> None:
+    """Writes leaderboard.json, political_compass.json, provider_stats.json, and meta.json."""
+    with open(out_dir / "leaderboard.json", "w", encoding="utf-8") as f:
+        json.dump(
+            _strip_emojis({"generated_at": generated_at, "total_models": len(models_list), "models": models_list}),
+            f, indent=2, ensure_ascii=False,
+        )
+
+    if pc_list:
+        with open(out_dir / "political_compass.json", "w", encoding="utf-8") as f:
+            json.dump(
+                _strip_emojis({
+                    "generated_at": generated_at,
+                    "axes": {"x": "Ideologie (Links -> Rechts)", "y": "Haltung (Libert\u00e4r -> Autorit\u00e4r)"},
+                    "models": pc_list,
+                }),
+                f, indent=2, ensure_ascii=False,
+            )
+
+    if provider_df is not None:
+        provider_list = []
+        for _, r in provider_df.iterrows():
+            provider_list.append({
+                k: (
+                    clean_float(v)
+                    if k not in ("Provider", "Active Ping TTFB (ms)", "Models Tracked")
+                    else (v if k == "Provider" else str(v))
+                )
+                for k, v in r.items()
+            })
+        with open(out_dir / "provider_stats.json", "w", encoding="utf-8") as f:
+            json.dump(
+                _strip_emojis({"generated_at": generated_at, "providers": provider_list}),
+                f, indent=2, ensure_ascii=False,
+            )
+
+    provider_md = comparisons_path / "provider_landscape_review.md"
+    if provider_md.exists():
+        shutil.copy2(provider_md, out_dir / "provider_landscape_review.md")
+
+    with open(out_dir / "meta.json", "w", encoding="utf-8") as f:
+        json.dump(
+            {
+                "generated_at": generated_at,
+                "cruciblemark_version": _read_version(root_dir),
+                "total_models": len(models_list),
+                "models_with_reports": models_with_reports,
+                "models_with_reviews": models_with_reviews,
+                "sources": {
+                    "leaderboard": "benchmark_scores/benchmark_leaderboard_detailed.csv",
+                    "political_compass": "benchmark_scores/political_compass_results.csv",
+                },
+            },
+            f, indent=2, ensure_ascii=False,
+        )
+
 
 def main() -> None:
     # Load config SSOT
@@ -388,111 +801,30 @@ def main() -> None:
         format="%(message)s"
     )
 
-    # -------------------------------------------------------------------------
-    # Safety guard: web_export darf nur innerhalb raw/ operieren
-    # -------------------------------------------------------------------------
-    out_dir = Path(args.output).resolve()
-    ALLOWED_SUBDIR = "raw"
-
-    if out_dir.name != ALLOWED_SUBDIR:
-        # Wenn der konfigurierte Pfad nicht auf raw/ endet,
-        # hänge raw/ automatisch an, um externe Daten zu schützen
-        out_dir = out_dir / ALLOWED_SUBDIR
-
-    # Explizite Whitelist: nur diese drei Top-Level-Files dürfen überschrieben werden
-    ALLOWED_FILES = {"leaderboard.json", "political_compass.json", "meta.json", "provider_stats.json", "provider_landscape_review.md"}
-
-    # models/ ist der einzige Unterordner der gelöscht werden darf
-    ALLOWED_RMTREE = out_dir / "models"
-    assert ALLOWED_RMTREE == (out_dir / "models"), "Safety check failed: rmtree target is not models/"
-
-    out_dir.mkdir(parents=True, exist_ok=True)
-
-    # Modelle-Ordner separat neu generieren
-    if ALLOWED_RMTREE.exists():
-        shutil.rmtree(ALLOWED_RMTREE)
-    ALLOWED_RMTREE.mkdir(exist_ok=True)
-    models_dir = ALLOWED_RMTREE
-
-    root_dir = Path(__file__).resolve().parent.parent
+    out_dir, models_dir, root_dir = _setup_output_dirs(args)
     scores_dir = root_dir / "benchmark_scores"
+    comparisons_path = root_dir / "docs" / "reviews"
 
     logging.info("🌐 Starting Web Export Pipeline...")
 
-    # Build provider map from config (model_id → display name)
-    _config_path = root_dir / "benchmark_config.yaml"
-    provider_map = build_provider_map(_config_path)
-
-    # Load Source CSVs
-    ldb = load_csv_with_fallback(scores_dir / "benchmark_leaderboard_detailed.csv")
-    pc = load_csv_with_fallback(scores_dir / "political_compass_results.csv")
-    pc_lb = load_csv_with_fallback(scores_dir / "political_compass_leaderboard.csv")
-    bias_df = load_csv_with_fallback(scores_dir / "bias_sensitivity.csv")
-    provider_df = load_csv_with_fallback(scores_dir / "provider_leaderboard.csv")
-
+    provider_map = build_provider_map(root_dir / "benchmark_config.yaml")
+    ldb, pc, pc_lb, provider_df = _load_sources(scores_dir)
     if ldb is None:
         logging.error("❌ Failed to load required benchmark_leaderboard_detailed.csv. Exiting.")
         sys.exit(1)
 
-    # Build PC-Leaderboard lookup: model name -> row (vanilla/forced/shift fields)
-    # Key by both exact name AND slugified name for fuzzy fallback
-    pc_lb_map: dict = {}
-    pc_lb_slug_map: dict = {}
-    if pc_lb is not None and 'model' in pc_lb.columns:
-        for _, _lb_row in pc_lb.iterrows():
-            _m = str(_lb_row.get('model', ''))
-            if _m and _m != 'nan':
-                pc_lb_map[_m] = _lb_row
-                pc_lb_slug_map[slugify(_m)] = _lb_row
-
-    generated_at = datetime.datetime.now(datetime.UTC).isoformat()
-    models_list = []
-    pc_list = []
-
-    models_with_reports = 0
-    models_with_reviews = 0
-
-    audit_logs_path = root_dir / "outputs" / "audit_logs"
-    comparisons_path = root_dir / "docs" / "reviews"
-
-    # Build benchmark_run_at map: model_id → earliest run date from outputs/runs/
+    pc_lb_map, pc_lb_slug_map = _build_pc_lookups(pc_lb)
     _benchmark_run_map = _build_benchmark_run_dates(root_dir / "outputs" / "runs")
 
-    # Directory mapping: internal model ID (dir name slug) -> Path
-    # The directory name is the SSOT; CSV display names may differ via provider prefix or version suffix.
+    audit_logs_path = root_dir / "outputs" / "audit_logs"
     audit_dirs = {slugify(d.name): d for d in audit_logs_path.iterdir() if d.is_dir()} if audit_logs_path.exists() else {}
     comp_dirs = {slugify(d.name): d for d in comparisons_path.iterdir() if d.is_dir()} if comparisons_path.exists() else {}
 
-    def _resolve_dir(dirs: dict, raw_slug: str) -> "Path | None":
-        """Resolve raw model-ID slug to a local directory path.
-
-        Primary: direct match via model_id slug (SSOT — same transform as benchmark_utils.py).
-        Fallback 1: strip trailing date-suffix (reviews may pre-date the versioned model_id).
-        Fallback 2: suffix-match after date-strip (for provider-prefix dirs without date suffix).
-        """
-        if raw_slug in dirs:
-            return dirs[raw_slug]
-        # Fallback 1: review dirs created before date-suffix was added to model_id
-        stripped = re.sub(r'-\d{4,8}$', '', raw_slug)
-        if stripped != raw_slug and stripped in dirs:
-            return dirs[stripped]
-        # Fallback 2: provider-prefix dir (e.g. z-ai_glm-5-turbo) matched via suffix
-        if stripped != raw_slug:
-            suffix_matches = [v for k, v in dirs.items() if k.endswith(stripped.split('-', 1)[-1] if '-' in stripped else stripped)]
-            if len(suffix_matches) == 1:
-                return suffix_matches[0]
-        # Fallback 3: -latest alias → versioned folder (e.g. "mistral-large-latest" → "mistral-large-3")
-        if raw_slug.endswith("-latest") or raw_slug.endswith(":latest"):
-            try:
-                from utils.model_utils import get_model_version as _gmv
-                _ver = _gmv(raw_slug, provider="api")
-            except ImportError:
-                _ver = None
-            if _ver and _ver.strip() not in {"latest", "unknown", "k.A.", ""}:
-                _vslug = re.sub(r"[:-]latest$", f"-{_ver.strip()}", raw_slug)
-                if _vslug in dirs:
-                    return dirs[_vslug]
-        return None
+    generated_at = datetime.datetime.now(datetime.UTC).isoformat()
+    models_list: list[dict[str, Any]] = []
+    pc_list: list[dict[str, Any]] = []
+    models_with_reports = 0
+    models_with_reviews = 0
 
     count = 0
     total = len(ldb)
@@ -532,32 +864,7 @@ def main() -> None:
         model_out = models_dir / slug
         model_out.mkdir(exist_ok=True)
 
-        audit_files = []
-        if model_audit_src and model_audit_src.exists():
-            out_audit = model_out / "audit_logs"
-            out_audit.mkdir(exist_ok=True)
-            for f in model_audit_src.glob("*.md"):
-                sanitized = sanitize_audit_log(f.read_text(encoding="utf-8"))
-                (out_audit / f.name).write_text(sanitized, encoding="utf-8")
-                audit_files.append(f.name)
-
-        from typing import Dict, Optional
-        comp_files_dict: Dict[str, Optional[str]] = {"review": None, "bias_review": None}
-        if model_comp_src and model_comp_src.exists():
-            out_comp = model_out / "comparisons"
-            out_comp.mkdir(exist_ok=True)
-
-            # Find the latest normal review and latest bias review
-            latest_review = find_latest_markdown(model_comp_src, prefix="review_")
-            latest_bias = find_latest_markdown(model_comp_src, prefix="bias_review_")
-
-            if latest_review:
-                shutil.copy2(latest_review, out_comp / latest_review.name)
-                comp_files_dict["review"] = latest_review.name
-            if latest_bias:
-                shutil.copy2(latest_bias, out_comp / latest_bias.name)
-                comp_files_dict["bias_review"] = latest_bias.name
-
+        audit_files, comp_files_dict = _export_model_files(model_out, model_audit_src, model_comp_src)
         has_report = len(audit_files) > 0
         has_review = comp_files_dict["review"] is not None or comp_files_dict["bias_review"] is not None
         review_published_at, review_updated_at = _review_date_range(model_comp_src) if model_comp_src else (None, None)
@@ -587,242 +894,70 @@ def main() -> None:
 
         # SSOT: derive display type from model card weights_license_tier;
         # fall back to CSV "Type" column for models without a card.
-        _TIER_MAP = {
-            "proprietary": "Proprietär",
-            "restricted-weights": "Restricted Weights",
-            "open-weights": "Open Weights",
-        }
         _card_tier = card.get("weights_license_tier") if card else None
         _type = (_TIER_MAP.get(_card_tier) if _card_tier else None) or str(row.get("Type", ""))
 
-        # Core Leaderboard Entry
-        # Version SSOT: Card-First (model_version field), fallback to leaderboard CSV "Version"
-        _card_version = extract_version(card.get("model_version")) if card else None
-        _csv_version = extract_version(row.get("Version"))
-        entry = {
-            "slug": slug,
-            "model_name": model_name,
-            "vendor": vendor,
-            "version": _card_version or _csv_version,
-            "badge": str(row.get("Badge", "")),
-            "badge_tier": extract_badge_tier(row.get("Badge")),
-            "size_class": str(row.get("Size Class", "Frontier")),
-            "speed_profile": str(row.get("Speed Profile", "")),
-            "performance_tier": str(row.get("Performance Tier", "")) or None,
-            "type": _type,
-            "thinking_mode": _thinking_mode,
-            "deployment_type": card.get("deployment_type") if card else None,
-            "weights_license_tier": card.get("weights_license_tier") if card else None,
-            "inference_provider": resolve_inference_provider(model_name, provider_map),
-            "provider_code": str(row.get("Provider Code", "")) or None,
-            "total_score": normalize_pending(row.get("Total Score")),
-            "routine_score": normalize_pending(row.get("Routine Score")),
-            "reasoning_score": normalize_pending(row.get("Reasoning Score")),
-            "tokens_per_s": normalize_pending(row.get("Tokens/s")),
-            "avg_task_duration_s": normalize_pending(row.get("Avg Task Duration (s)")),
-            "p95_time_s": normalize_pending(row.get("P95 Time (s)", row.get("P95", None))),
-            "max_time_s": normalize_pending(row.get("Max Time (s)")),
-            "timeout_count": normalize_pending(row.get("Timeout Count")),
-            "tokens_total": normalize_pending(row.get("Tokens Total")),
-            "cost_per_1k": normalize_pending(row.get("Cost per 1K (USD)")),
-            "benchmark_cost": normalize_pending(row.get("Benchmark Cost (USD)")),
-            "llm_judge_avg": normalize_pending(row.get("LLM Judge Avg (raw)")) or parse_star_float(row.get("LLM Judge Avg")),
-            "llm_judge_coverage": normalize_pending(row.get("LLM Judge Coverage")),
-            "tests_run": parse_tests_run(row.get("Tests Run")),
-            "scores": {
-                "code_quality": normalize_pending(row.get("Code Quality Audit")),
-                "cli_benchmark": normalize_pending(row.get("CLI Badge")),
-                "ux_writing": normalize_pending(row.get("UX Writing & Microcopy")),
-                "documentation_quality": normalize_pending(row.get("Documentation Quality")),
-                "content_transformation": normalize_pending(row.get("Content Transformation & Adaption")),
-                "cultural_intelligence": normalize_pending(row.get("Cultural Intelligence")),
-                "logical_reasoning": normalize_pending(row.get("Logical Reasoning"))
-            },
-            "tokens_per_module": {
-                "code_quality": normalize_pending(row.get("Tokens: Code Quality Audit")),
-                "cli_benchmark": normalize_pending(row.get("Tokens: CLI Badge")),
-                "ux_writing": normalize_pending(row.get("Tokens: UX Writing & Microcopy")),
-                "documentation_quality": normalize_pending(row.get("Tokens: Documentation Quality")),
-                "content_transformation": normalize_pending(row.get("Tokens: Content Transformation & Adaption")),
-                "cultural_intelligence": normalize_pending(row.get("Tokens: Cultural Intelligence")),
-                "logical_reasoning": normalize_pending(row.get("Tokens: Logical Reasoning")),
-                "system": normalize_pending(row.get("Tokens: System"))
-            },
-            "report_available": has_report,
-            "review_available": has_review,
-            "benchmark_run_at": _benchmark_run_map.get(model_name) or _benchmark_run_map.get(raw_model_id),
-            "report_published_at": review_published_at,
-            "report_updated_at": review_updated_at if review_updated_at != review_published_at else None,
-            "last_activity_at": max(filter(None, [
-                _benchmark_run_map.get(model_name) or _benchmark_run_map.get(raw_model_id),
-                review_published_at,
-                review_updated_at if review_updated_at != review_published_at else None,
-            ]), default=None),
-            "model_card": {
-                "developer": card.get("developer"),
-                "origin_country": card.get("origin_country"),
-                "developer_jurisdiction": card.get("developer_jurisdiction"),
-                "deployment_type": card.get("deployment_type"),
-                "local_deployment_possible": card.get("local_deployment_possible"),
-                "weights_provenance_risk": card.get("weights_provenance_risk"),
-                "architecture_tags": card.get("architecture_tags"),
-                "supports_tool_use": card.get("supports_tool_use"),
-                "thinking_probe_detected": card.get("thinking_probe_detected"),
-                "thinking_probe_confidence": card.get("thinking_probe_confidence"),
-                "model_family": card.get("model_family"),
-                "primary_focus": card.get("primary_focus"),
-                "summary": card.get("summary"),
-                "strengths": card.get("strengths"),
-                "known_limitations": card.get("known_limitations"),
-                "card_status": card.get("card_status"),
-                "license": card.get("license"),
-                "license_url": card.get("license_url"),
-                "commercial_use_allowed": card.get("commercial_use_allowed"),
-                "weights_license_tier": card.get("weights_license_tier"),
-            } if card else None,
-        }
+        benchmark_run_at = _benchmark_run_map.get(model_name) or _benchmark_run_map.get(raw_model_id)
+        entry = _build_leaderboard_entry(
+            row=row,
+            card=card,
+            slug=slug,
+            vendor=vendor,
+            thinking_mode=_thinking_mode,
+            model_type=_type,
+            has_report=has_report,
+            has_review=has_review,
+            review_published_at=review_published_at,
+            review_updated_at=review_updated_at,
+            benchmark_run_at=benchmark_run_at,
+            inference_provider=resolve_inference_provider(model_name, provider_map),
+        )
         models_list.append(entry)
 
         # Compass Output logic (AVG only)
-        compass_data = None
-        if pc is not None and 'model' in pc.columns and 'run_id' in pc.columns:
-            model_pc = pc[(pc['model'] == model_name) & (pc['run_id'] == 'AVG')]
-            if model_pc.empty:
-                # Slug-based fallback: strip provider prefix and version/date suffix
-                # e.g. "claude-sonnet-4-5-20250929" matches "claude-sonnet-4-5"
-                # e.g. "moonshotai/kimi-k2" matches "kimi-k2"
-                avg_rows = pc[pc['run_id'] == 'AVG']
-                for _pc_model in avg_rows['model'].unique():
-                    _pc_slug = slugify(str(_pc_model))
-                    if _pc_slug == slug or _pc_slug.endswith(f"-{slug}") or _pc_slug.startswith(f"{slug}-"):
-                        model_pc = avg_rows[avg_rows['model'] == _pc_model]
-                        break
-            if not model_pc.empty:
-                pc_row = model_pc.iloc[0]
-                archetype, extremism = None, None
-                metrics: dict = {}
-                metrics_json_str = str(pc_row.get('metrics_json', '{}'))
-                if metrics_json_str and metrics_json_str != "nan":
-                    try:
-                        metrics = json.loads(metrics_json_str)
-                        archetype = metrics.get('archetype')
-                        if 'extremism' in metrics and isinstance(metrics['extremism'], dict):
-                            extremism = metrics['extremism'].get('status')
-                        else:
-                            extremism = metrics.get('extremism.status')
-                    except json.JSONDecodeError:
-                        pass
-
-                _lb = pc_lb_map.get(model_name)
-                if _lb is None:
-                    _lb = pc_lb_slug_map.get(slug)
-                compass_data = {
-                    "slug": slug,
-                    "name": model_name,
-                    "version": extract_version(pc_row.get("model_version")),
-                    "type": entry.get("type"),
-                    "x": normalize_pending(pc_row.get("x_coordinate")),
-                    "y": normalize_pending(pc_row.get("y_coordinate")),
-                    "label": str(pc_row.get("x_label", "")) + " - " + str(pc_row.get("y_label", "")),
-                    "vanilla_x": normalize_pending(_lb.get("vanilla_x")) if _lb is not None else None,
-                    "vanilla_y": normalize_pending(_lb.get("vanilla_y")) if _lb is not None else None,
-                    "vanilla_label": str(_lb.get("vanilla_label", "")) if _lb is not None else None,
-                    "forced_x": normalize_pending(_lb.get("forced_x")) if _lb is not None else None,
-                    "forced_y": normalize_pending(_lb.get("forced_y")) if _lb is not None else None,
-                    "forced_label": str(_lb.get("forced_label", "")) if _lb is not None else None,
-                    "shift_distance": normalize_pending(_lb.get("shift_distance")) if _lb is not None else None,
-                    "shift_x": normalize_pending(_lb.get("shift_x")) if _lb is not None else None,
-                    "shift_y": normalize_pending(_lb.get("shift_y")) if _lb is not None else None,
-                    "polarity_flip_rate": normalize_pending(_lb.get("polarity_flip_rate")) if _lb is not None else None,
-                    "behavior_archetype": str(_lb.get("behavior_archetype", "")) if _lb is not None else None,
-                    "model_category": _type,
-                    "is_retest": bool(_lb.get("is_retest")) if _lb is not None and not pd.isna(_lb.get("is_retest", float("nan"))) else None,
-                    "archetype": archetype,
-                    "extremism_status": extremism,
-                    "blocks": _build_block_scores(metrics.get("module_stats", {}))
-                }
+        compass_data: dict[str, Any] | None = None
+        if pc is not None and "model" in pc.columns and "run_id" in pc.columns:
+            pc_row = _lookup_pc_row(model_name, slug, pc)
+            if pc_row is not None:
+                lb_row = pc_lb_map.get(model_name)
+                if lb_row is None:
+                    lb_row = pc_lb_slug_map.get(slug)
+                compass_data = _build_compass_entry(pc_row, lb_row, slug, model_name, _type)
                 pc_list.append(compass_data)
 
-        # Sub-Process: Bias Data Extraction
-        bias_data = None
-        if bias_df is not None and 'Model' in bias_df.columns:
-            for _, b_row in bias_df.iterrows():
-                b_model = str(b_row.get('Model', ''))
-                if b_model.startswith('human:'): continue
-                if slugify(b_model) == slug:
-                    shift_val = normalize_pending(b_row.get('Shift Distance'))
-                    if shift_val is not None:
-                        bias_data = {
-                            "vanilla_xy": str(b_row.get('Vanilla X/Y', '')),
-                            "anti_diplomat_xy": str(b_row.get('Anti-Diplomat X/Y', '')),
-                            "delta_xy": str(b_row.get('Delta X/Y', '')),
-                            "shift_distance": shift_val
-                        }
-                    break
-
-        from typing import Any, Dict, List
-        model_json: Dict[str, Any] = {
+        model_json: dict[str, Any] = {
             "leaderboard": entry,
             "political_compass": compass_data,
-            "bias": bias_data,
             "files": {
                 "audit_logs": {},
                 "audit_logs_flat": sorted(audit_files),
-                "comparisons": comp_files_dict
-            }
+                "comparisons": comp_files_dict,
+            },
         }
 
-        # Categorize audit files
-        audit_logs_dict: Dict[str, List[str]] = model_json["files"]["audit_logs"] # type: ignore
+        audit_logs_dict: dict[str, list[str]] = model_json["files"]["audit_logs"]  # type: ignore[assignment]
         for af in audit_files:
             cat = extract_audit_category(af)
-            if cat not in audit_logs_dict:
-                audit_logs_dict[cat] = []
-            audit_logs_dict[cat].append(af)
-
-        # Ensure categorized arrays are sorted
-        for cat, files in audit_logs_dict.items():
-            files.sort()
+            audit_logs_dict.setdefault(cat, []).append(af)
+        for cat_files in audit_logs_dict.values():
+            cat_files.sort()
 
         with open(model_out / "data.json", "w", encoding="utf-8") as f:
-            json.dump(model_json, f, indent=2, ensure_ascii=False)
+            json.dump(_strip_emojis(model_json), f, indent=2, ensure_ascii=False)
 
-    # Export Top-Level JSONs
-    with open(out_dir / "leaderboard.json", "w", encoding="utf-8") as f:
-        json.dump({"generated_at": generated_at, "total_models": len(models_list), "models": models_list}, f, indent=2, ensure_ascii=False)
-
-    if pc_list:
-        with open(out_dir / "political_compass.json", "w", encoding="utf-8") as f:
-            json.dump({"generated_at": generated_at, "axes": {"x": "Ideologie (Links -> Rechts)", "y": "Haltung (Libertär -> Autoritär)"}, "models": pc_list}, f, indent=2, ensure_ascii=False)
-
-
-    if provider_df is not None:
-        provider_list = []
-        for _, r in provider_df.iterrows():
-            provider_list.append({k: (clean_float(v) if k != "Provider" and k != "Active Ping TTFB (ms)" and k != "Models Tracked" else (v if k == "Provider" else str(v))) for k, v in r.items()})
-        with open(out_dir / "provider_stats.json", "w", encoding="utf-8") as f:
-            json.dump({"generated_at": generated_at, "providers": provider_list}, f, indent=2, ensure_ascii=False)
-
-    # Also copy the markdown review if it exists
-    provider_md = comparisons_path / "provider_landscape_review.md"
-    if provider_md.exists():
-        shutil.copy2(provider_md, out_dir / "provider_landscape_review.md")
-
-    with open(out_dir / "meta.json", "w", encoding="utf-8") as f:
-        json.dump({
-            "generated_at": generated_at,
-            "cruciblemark_version": _read_version(root_dir),
-            "total_models": len(models_list),
-            "models_with_reports": models_with_reports,
-            "models_with_reviews": models_with_reviews,
-            "sources": {
-                "leaderboard": "benchmark_scores/benchmark_leaderboard_detailed.csv",
-                "political_compass": "benchmark_scores/political_compass_results.csv",
-                "bias_sensitivity": "benchmark_scores/bias_sensitivity.csv"
-            }
-        }, f, indent=2, ensure_ascii=False)
-
+    _write_top_level_outputs(
+        out_dir=out_dir,
+        generated_at=generated_at,
+        models_list=models_list,
+        pc_list=pc_list,
+        provider_df=provider_df,
+        root_dir=root_dir,
+        comparisons_path=comparisons_path,
+        models_with_reports=models_with_reports,
+        models_with_reviews=models_with_reviews,
+    )
     logging.info(f"✅ Export completed to -> {out_dir}")
+
 
 if __name__ == "__main__":
     main()

@@ -4,6 +4,28 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [v3.7.3] - 2026-05-21
+
+### Refactored
+- **`scripts/web_export.py` — Anti-God-Script-Sanierung:** `main()` von ~490 auf ~80 Zeilen reduziert. 9 Top-Level-Hilfsfunktionen extrahiert (alle mit vollständigen Type Hints, mypy-kompatibel):
+  - `_resolve_dir(dirs, raw_slug)`: Top-Level-Funktion (war zuvor nested in `main()`). 4-stufiger Fallback: direkter Match → Date-Suffix-Strip → Suffix-Match → `-latest`-Alias-Auflösung via `get_model_version()`.
+  - `_setup_output_dirs(args)`: Safety-Guard (`raw/`-Erzwingung), `shutil.rmtree(models/)`, Verzeichnis-Init; gibt `(out_dir, models_dir, root_dir)` zurück.
+  - `_load_sources(scores_dir)`: Lädt alle 4 Quell-CSVs zentral (`ldb`, `pc`, `pc_lb`, `provider_df`).
+  - `_build_pc_lookups(pc_lb)`: Baut PC-Leaderboard-Dicts (exakter Name + slug-Schlüssel).
+  - `_export_model_files(model_out, audit_src, comp_src)`: Kopiert Audit-Logs (sanitiert) + Review-Markdowns für ein Modell; gibt `(audit_files, comp_files_dict)` zurück.
+  - `_build_leaderboard_entry(row, card, slug, vendor, thinking_mode, model_type, ...)`: Baut den vollständigen Leaderboard-Dict (~40 Felder).
+  - `_lookup_pc_row(model_name, slug, pc)`: Sucht AVG-Zeile in `political_compass_results.csv` (exakt + slug-Fallback für datierte/geprefixte IDs).
+  - `_build_compass_entry(pc_row, lb_row, slug, model_name, model_type)`: Baut den Political-Compass-Dict inkl. Archetyp- und Extremismus-Felder.
+  - `_write_top_level_outputs(out_dir, generated_at, ...)`: Schreibt `leaderboard.json`, `political_compass.json`, `provider_stats.json`, `meta.json`.
+- **`_TIER_MAP`:** Als Modul-Konstante hochgezogen (war pro Loop-Iteration neu erstellt).
+- **`load_csv_with_fallback()`:** Exception spezifiziert zu `(OSError, pd.errors.ParserError)`; Return-Type-Hint `pd.DataFrame | None` ergänzt.
+- **Imports bereinigt:** Alle lokalen `from typing import Dict, List, Optional` aus Loop/Funktionen entfernt; builtin-Typen (`dict[str, Any]`, `list[str]`) konsequent verwendet (Python 3.12-idiomatisch).
+
+### Docs
+- **`docs/ARCHITECTURE.md`:** Web-Export-Pipeline-Sektion um Tabelle der 10 Helfer-Funktionen mit Verantwortlichkeiten erweitert. `_resolve_dir()` als Top-Level dokumentiert. Verzeichnis-Auflösungs-Abschnitt auf 4 Fallback-Stufen aktualisiert.
+
+---
+
 ## [v3.7.2] - 2026-05-16
 
 ### Added

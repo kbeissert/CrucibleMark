@@ -476,6 +476,24 @@ Der Web Exporter ist ein eigenständiger Publishing-Schritt (Layer 4 Downstream)
 
 **SSOT-Prinzip:** Die Leaderboard-CSV ist die primäre Datenquelle für Scores und Metadaten. Ein vollständiger Rebuild (`shutil.rmtree` auf `models/`) stellt sicher, dass der Export immer synchron mit dem Leaderboard ist — Modelle die nicht in der CSV stehen, erscheinen nicht im Export.
 
+**Interne Architektur — Anti-God-Script (ab v3.7.3):**
+`main()` ist ein schlanker Orchestrator (~80 Zeilen). Alle fachlichen Blöcke sind in 10 Top-Level-Hilfsfunktionen ausgelagert (alle mit vollständigen Type Hints, mypy-kompatibel):
+
+| Funktion | Verantwortung |
+|---|---|
+| `load_csv_with_fallback(path)` | Lädt CSV sicher; gibt `None` bei Fehler statt Exception |
+| `_resolve_dir(dirs, raw_slug)` | Löst model-ID-Slug → Verzeichnispfad (4-stufiger Fallback) |
+| `_setup_output_dirs(args)` | Safety-Guard + `shutil.rmtree(models/)` + Verzeichnis-Init |
+| `_load_sources(scores_dir)` | Lädt alle 4 Quell-CSVs zentral |
+| `_build_pc_lookups(pc_lb)` | Baut PC-Leaderboard-Dicts (model_name + slug-Schlüssel) |
+| `_export_model_files(model_out, audit_src, comp_src)` | Kopiert Audit-Logs + Review-Markdowns für ein Modell |
+| `_build_leaderboard_entry(row, card, ...)` | Baut den vollständigen Leaderboard-Dict (~40 Felder) |
+| `_lookup_pc_row(model_name, slug, pc)` | Sucht AVG-Zeile in PC-Resultaten (exakt + slug-Fallback) |
+| `_build_compass_entry(pc_row, lb_row, ...)` | Baut den Political-Compass-Dict inkl. Archetyp-Felder |
+| `_write_top_level_outputs(...)` | Schreibt `leaderboard.json`, `political_compass.json`, `provider_stats.json`, `meta.json` |
+
+`_TIER_MAP` (Kategorien-String-Mapping) ist Modul-Konstante — kein Loop-Overhead mehr.
+
 **Model Cards & Provider Cards:** Strukturierte JSON-Steckbriefe pro Modell (`benchmark_scores/model_cards/`) und pro Provider (`benchmark_scores/provider_cards/`), generiert via LLM (`make model-cards`, `make provider-cards`). Sie enthalten Entwickler, Herkunftsland, Stärken/Schwächen, Datenschutz-Metadaten und Sovereign-Risk-Einschätzung. Die Cards werden (a) als Kontext-Block in den Meta-Reviewer injiziert und (b) als eigenständige JSON-API für das Web-Frontend bereitgestellt.
 
 **🛑 SSOT Modell-Kategorisierung (`weights_license_tier`):**
@@ -497,7 +515,7 @@ Die Funktion `get_model_category()` in `utils/model_utils.py` ist der einzige Ei
 
 **Lizenz-Metadaten (Kernziel des Benchmarks):** Jede Model Card enthält `license`, `license_url` und `commercial_use_allowed`. Diese Felder beantworten die Kernfrage von CrucibleMark: Wie gut schlagen sich selbstgehostete Open-Weights-Modelle als datenschutzkonforme, manipulationsfreie Alternative gegen proprietäre Cloud-Modelle — und welche davon sind frei einsetzbar (`commercial_use_allowed: true`, z. B. Apache 2.0 / MIT) versus Open-Weights mit eingeschränkten Lizenzen (Meta Community License, GLM-4 License) oder reinen Cloud-Diensten (`Proprietary`)? `commercial_use_allowed: null` markiert Modelle mit skalenabhängigen oder unklaren Bedingungen.
 
-**Verzeichnis-Auflösung (SSOT via `model_id`):** Audit-Log-Verzeichnisse und Review-Verzeichnisse werden nach `model_id.replace('/', '_')` benannt (identisch zu `benchmark_utils.py`). `web_export.py` liest die `model_id`-Spalte aus `benchmark_leaderboard_detailed.csv` und wendet dieselbe Transformation an — kein Raten aus dem Display-Namen mehr. Zwei explizite Fallbacks decken historische Daten ab: (1) Date-Suffix strip für Reviews, die vor der versioned model_id angelegt wurden; (2) Suffix-Match für Dirs ohne Provider-Präfix.
+**Verzeichnis-Auflösung (SSOT via `model_id`):** Audit-Log-Verzeichnisse und Review-Verzeichnisse werden nach `model_id.replace('/', '_')` benannt (identisch zu `benchmark_utils.py`). `web_export.py` liest die `model_id`-Spalte aus `benchmark_leaderboard_detailed.csv` und wendet dieselbe Transformation an — kein Raten aus dem Display-Namen mehr. Die Auflösung ist in `_resolve_dir(dirs, raw_slug)` (Top-Level, seit v3.7.3) zentralisiert und implementiert vier Fallback-Stufen: (1) Direkter Match (SSOT), (2) Date-Suffix-Strip für Reviews, die vor der versioned model_id angelegt wurden, (3) Suffix-Match für Dirs ohne Provider-Präfix, (4) `-latest`-Alias-Auflösung über `get_model_version()` aus `model_utils.py`.
 
 **Export-Struktur:**
 
