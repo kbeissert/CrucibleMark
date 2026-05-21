@@ -1949,7 +1949,7 @@
     "model_version": "1922accd5827"
   },
   {
-    "model_id": "mistral-large-latest",
+    "model_id": "mistral-large-2411",
     "display_name": "Mistral Large",
     "developer": "Mistral AI",
     "origin_country": "France",
@@ -1992,7 +1992,7 @@
     "model_version": "3"
   },
   {
-    "model_id": "mistral-medium-latest",
+    "model_id": "mistral-medium-2312",
     "display_name": "Mistral Medium",
     "developer": "Mistral AI",
     "origin_country": "France",
@@ -2013,7 +2013,7 @@
       "Gewichte nicht öffentlich verfügbar, kein lokaler Betrieb möglich",
       "Geringere Reasoning-Tiefe im Vergleich zu Frontier-Modellen wie Mistral Large oder GPT-4-Klasse"
     ],
-    "judge_context_hint": "Mistral Medium ist ein Mittelklasse-Modell – bei komplexen mehrstufigen Reasoning-Aufgaben oder sehr langen Kontexten kann die Leistung gegenüber größeren Frontier-Modellen spürbar abfallen. (Hinweis: mistral-medium-latest ist ein beweglicher Alias; getestete Version war 2312 ohne öffentliche Gewichte.)",
+    "judge_context_hint": "Mistral Medium ist ein Mittelklasse-Modell – bei komplexen mehrstufigen Reasoning-Aufgaben oder sehr langen Kontexten kann die Leistung gegenüber größeren Frontier-Modellen spürbar abfallen. (Hinweis: mistral-medium-2312 ist ein beweglicher Alias; getestete Version war 2312 ohne öffentliche Gewichte.)",
     "architecture_tags": [
       "General",
       "Instruct"
@@ -2035,7 +2035,7 @@
     "model_version": "2312"
   },
   {
-    "model_id": "mistral-small-latest",
+    "model_id": "mistral-small-2503",
     "display_name": "Mistral Small",
     "developer": "Mistral AI",
     "origin_country": "France",

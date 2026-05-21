@@ -1,0 +1,44 @@
+{
+  "model_id": "mistral-small-2603",
+  "display_name": "Mistral Small 4",
+  "developer": "Mistral AI",
+  "origin_country": "France",
+  "developer_jurisdiction": "EU",
+  "deployment_type": "open-weights-cloud-available",
+  "local_deployment_possible": true,
+  "weights_provenance_risk": "low",
+  "weights_provenance_risk_rationale": "Mistral AI ist ein französisches Unternehmen mit Sitz in der EU und unterliegt keiner staatlichen Zugriffspflicht auf Modellgewichte vergleichbar dem chinesischen NSL oder dem US CLOUD Act.",
+  "model_family": "Mistral",
+  "primary_focus": "general",
+  "summary": "Mistral Small 4 (März 2026, 24B) ist das aktuelle kompakte Open-Weights-Modell von Mistral AI aus Frankreich (Apache-2.0-Lizenz). Nachfolger von Mistral Small 3.1 mit verbesserter Instruction-Following-Qualität und Effizienz. Lokal betreibbar und über die Mistral-API verfügbar.",
+  "strengths": [
+    "Open Weights (Apache-2.0) – lokal betreibbar ohne Nutzungseinschränkungen",
+    "Verbesserte Instruction-Following-Qualität gegenüber Small 3.1",
+    "Sehr gutes Preis-Leistungs-Verhältnis für alltägliche und agentic Aufgaben",
+    "EU-Entwicklung: kein US CLOUD Act- oder chinesisches NSL-Risiko für Gewichte"
+  ],
+  "known_limitations": [
+    "Schwächer als größere Modelle bei komplexem mehrstufigem Reasoning und langen Kontexten",
+    "Begrenzte Leistung bei hochspezialisierten Domänen wie fortgeschrittener Mathematik"
+  ],
+  "judge_context_hint": "Mistral Small 4 ist auf Effizienz optimiert und kann bei komplexen Reasoning-Ketten oder sehr langen Kontexten früher an Grenzen stoßen als größere Modelle.",
+  "architecture_tags": [
+    "General",
+    "Instruct"
+  ],
+  "unknown": false,
+  "generated_at": "2026-05-21T00:00:00.000000+00:00",
+  "card_status": "complete",
+  "size_class": "Frontier",
+  "thinking_probe_detected": false,
+  "thinking_probe_evidence": "Not yet probed.",
+  "thinking_probe_confidence": "low",
+  "thinking_probe_at": null,
+  "supports_tool_use": true,
+  "license": "Apache-2.0",
+  "license_url": "https://www.apache.org/licenses/LICENSE-2.0",
+  "commercial_use_allowed": true,
+  "vendor": "Mistral AI",
+  "weights_license_tier": "open-weights",
+  "model_version": "4"
+}

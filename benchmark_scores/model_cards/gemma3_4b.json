@@ -10,7 +10,7 @@
   "weights_provenance_risk_rationale": "Google DeepMind ist ein US-amerikanisches Unternehmen und unterliegt dem CLOUD Act, der staatlichen Zugriff auf Daten bei API-Nutzung ermöglichen kann, jedoch sind die Weights öffentlich verfügbar und lokal betreibbar.",
   "model_family": "Gemma",
   "primary_focus": "general",
-  "summary": "Gemma 3 4B ist ein kompaktes Open-Weights-Modell von Google DeepMind (Google Gemma Lizenz), das lokal auf Consumer-Hardware betreibbar ist und über verschiedene Cloud-Provider genutzt werden kann. Es eignet sich für Instruction-Following, einfache Textaufgaben und Szenarien, die lokale Datenkontrolle erfordern.",
+  "summary": "Gemma 3 4B ist ein kompaktes Modell von Google DeepMind mit öffentlich verfügbaren Gewichten (Google Gemma Terms of Use), das lokal auf Consumer-Hardware betreibbar ist und über verschiedene Cloud-Provider genutzt werden kann. Es eignet sich für Instruction-Following, einfache Textaufgaben und Szenarien, die lokale Datenkontrolle erfordern.",
   "strengths": [
     "Sehr geringer Ressourcenbedarf – läuft auf Consumer-Hardware und mobilen Geräten",
     "Solides Instruction-Following für ein 4B-Modell",

@@ -10,7 +10,7 @@
   "weights_provenance_risk_rationale": "Nous Research ist ein US-amerikanisches Unternehmen, dessen Weights öffentlich verfügbar sind – CLOUD Act ist nur bei API-Nutzung relevant, nicht bei lokaler Ausführung.",
   "model_family": "Hermes",
   "primary_focus": "instruction-following",
-  "summary": "Hermes 3 8B ist ein Open-Weights-Modell von Nous Research aus den USA, das lokal betreibbar und über Cloud-Provider verfügbar ist. Es basiert auf dem Llama-3-Basismodell und wurde für starkes Instruction-Following und agentische Aufgaben feinabgestimmt.",
+  "summary": "Hermes 3 8B ist ein Modell von Nous Research mit öffentlich verfügbaren Gewichten (Meta Llama Community License) aus den USA, das lokal betreibbar und über Cloud-Provider verfügbar ist. Es basiert auf dem Llama-3-Basismodell und wurde für starkes Instruction-Following und agentische Aufgaben feinabgestimmt.",
   "strengths": [
     "Starkes Instruction-Following mit reduzierter Ablehnung harmloser Anfragen",
     "Gute Leistung bei Funktionsaufrufen und strukturierten Ausgaben (JSON, Tool-Use)",

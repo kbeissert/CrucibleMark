@@ -10,7 +10,7 @@
   "weights_provenance_risk_rationale": "Nous Research ist ein US-amerikanisches Unternehmen und unterliegt dem CLOUD Act, jedoch sind die Gewichte öffentlich verfügbar und lokal betreibbar, sodass kein API-Zugriff durch Dritte erforderlich ist.",
   "model_family": "Hermes",
   "primary_focus": "instruction-following",
-  "summary": "Hermes 4 405B ist Nous Researchs großes Open-Weights-Modell aus den USA – für anspruchsvolles Instruction-Following und agentische Aufgaben optimiert. Die Weights sind frei verfügbar und das Modell ist über Cloud-Provider nutzbar; für den lokalen Betrieb wird erhebliche Server-Hardware benötigt.",
+  "summary": "Hermes 4 405B ist Nous Researchs großes Modell mit öffentlich verfügbaren Gewichten (Meta Llama Community License) aus den USA – für anspruchsvolles Instruction-Following und agentische Aufgaben optimiert. Es ist über Cloud-Provider nutzbar; für den lokalen Betrieb wird erhebliche Server-Hardware benötigt.",
   "strengths": [
     "Sehr starkes Instruction-Following mit präziser Befolgung komplexer Anweisungen",
     "Optimiert für strukturierte JSON-Ausgaben und Function-Calling in Agenten-Pipelines",

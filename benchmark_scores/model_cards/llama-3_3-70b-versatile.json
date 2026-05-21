@@ -10,7 +10,7 @@
   "weights_provenance_risk_rationale": "Meta ist ein US-amerikanisches Unternehmen und unterliegt dem CLOUD Act, jedoch sind die Gewichte öffentlich verfügbar und lokal betreibbar, sodass kein API-Zugriff auf Trainingsdaten oder Anfragen besteht.",
   "model_family": "Llama",
   "primary_focus": "general",
-  "summary": "Llama 3.3 70B Versatile ist Metas Open-Weights-Modell mit 70 Milliarden Parametern der Llama-3.3-Generation aus den USA. Die Weights sind frei verfügbar (Llama-Lizenz) und das Modell ist über Cloud-Provider kostengünstig nutzbar; für den lokalen Betrieb wird leistungsstarke Hardware benötigt.",
+  "summary": "Llama 3.3 70B Versatile ist Metas Modell mit öffentlich verfügbaren Gewichten (Meta Llama Community License) und 70 Milliarden Parametern der Llama-3.3-Generation aus den USA. Es ist über Cloud-Provider kostengünstig nutzbar; für den lokalen Betrieb wird leistungsstarke Hardware benötigt.",
   "strengths": [
     "Starkes Instruction-Following über viele Aufgabentypen hinweg",
     "Gute Reasoning- und Analysefähigkeiten für ein 70B-Modell",

@@ -1,6 +1,6 @@
 {
-  "model_id": "mistral-medium-latest",
-  "display_name": "Mistral Medium",
+  "model_id": "mistral-medium-2312",
+  "display_name": "Mistral Medium 1.0",
   "developer": "Mistral AI",
   "origin_country": "France",
   "developer_jurisdiction": "EU",
@@ -10,7 +10,7 @@
   "weights_provenance_risk_rationale": "Mistral AI ist ein französisches Unternehmen mit Sitz in der EU und unterliegt keiner staatlichen Zugriffspflicht auf Modellgewichte wie dem US CLOUD Act oder dem chinesischen NSL.",
   "model_family": "Mistral",
   "primary_focus": "general",
-  "summary": "Mistral Medium ist ein Cloud-API-Modell von Mistral AI aus Frankreich – positioniert als ausgewogene Mittelklasse-Option zwischen effizienten und Frontier-Modellen. Verfügbar ausschließlich über die Mistral-API.",
+  "summary": "Mistral Medium 1.0 (Dezember 2023) war Mistral AIs erste proprietäre Mittelklasse-API ohne öffentliche Gewichte – Legacy-Modell, abgelöst durch Mistral Medium 3.5. Historische Benchmark-Daten unter API-ID mistral-medium-2312.",
   "strengths": [
     "Gute Balance zwischen Leistung und Kosten im mittleren Preissegment",
     "Solide mehrsprachige Fähigkeiten, insbesondere für europäische Sprachen",
@@ -18,9 +18,10 @@
   ],
   "known_limitations": [
     "Gewichte nicht öffentlich verfügbar, kein lokaler Betrieb möglich",
+    "Legacy/Deprecated – durch Mistral Medium 3.5 abgelöst (April 2026)",
     "Geringere Reasoning-Tiefe im Vergleich zu Frontier-Modellen wie Mistral Large oder GPT-4-Klasse"
   ],
-  "judge_context_hint": "Mistral Medium ist ein Mittelklasse-Modell – bei komplexen mehrstufigen Reasoning-Aufgaben oder sehr langen Kontexten kann die Leistung gegenüber größeren Frontier-Modellen spürbar abfallen. (Hinweis: mistral-medium-latest ist ein beweglicher Alias; getestete Version war 2312 ohne öffentliche Gewichte.)",
+  "judge_context_hint": "Mistral Medium 1.0 (2312) ist das Legacy-Mittelklasse-Modell von Mistral – bei komplexen mehrstufigen Reasoning-Aufgaben oder sehr langen Kontexten kann die Leistung gegenüber größeren Frontier-Modellen spürbar abfallen.",
   "architecture_tags": [
     "General",
     "Instruct"
