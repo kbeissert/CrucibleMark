@@ -2,7 +2,7 @@
 	help install install-dev \
 	benchmark political-compass political-compass-safe benchmark-cross-model benchmark-auto benchmark-human \
 	review reviews-auto reviews-check review-new model-cards provider-cards leaderboard provider-stats \
-	validate validate-single validate-structure test diff-results analyze-costs update-prices sync-cost-limits \
+	validate validate-single validate-structure validate-cards test diff-results analyze-costs update-prices sync-cost-limits \
 	list-models judge-health list-modules \
 	probe-thinking probe-all-thinking \
 	web-export web-export-dev \
@@ -179,6 +179,10 @@ validate-single:
 validate-structure:
 	@echo "Checking Module Structure..."
 	$(PYTHON) scripts/tools/validate_structure.py
+
+validate-cards:
+	@echo "Checking Model Card consistency (tier, summary, commercial)..."
+	$(PYTHON) scripts/dev/validate_model_cards.py
 
 test: validate
 	@echo "Running Unit Tests..."
