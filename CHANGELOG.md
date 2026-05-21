@@ -4,6 +4,17 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [v3.7.4] - 2026-05-21
+
+### Refactored
+- **`utils/model_utils.py` — `_find_card()` parametrisiert:** Neuer optionaler Parameter `card_dir: Path | None = None`. Callers können die Card-Verzeichnis-Auflösung überschreiben (z.B. `web_export.py` mit absolutem Root-Pfad). Rückwärtskompatibel — `None` greift auf Modul-Konstante `CARD_DIR` zurück.
+- **`utils/model_utils.py` — `WEIGHTS_TIER_DISPLAY` exportiert:** Tier-Mapping-Dict aus lokalem `_TIER_MAP` in `get_model_category()` als öffentliche Modul-Konstante hochgezogen. Kein Duplikat mehr in `web_export.py`.
+- **`scripts/web_export.py` — `load_model_card()` auf ~40 Zeilen reduziert:** Delegiert Kern-Pfad-Lookup an `_find_card(card_dir=card_dir)` (SSoT). Zwei web-spezifische Fallbacks (Display-Name-Vollscan, hf.co-Suffix-Match) bleiben erhalten.
+- **`scripts/web_export.py` — `_BLOCK_META` externalisiert:** Hardcodiertes Python-Dict entfernt. Neue Funktion `_load_pc_block_meta(config_path)` liest Block-Metadaten aus `benchmark_modules/political_compass/config.yaml` (Fallback: statisches Dict). `_build_block_scores()` und `_build_compass_entry()` erhalten `block_meta` als expliziten Parameter.
+- **`benchmark_modules/political_compass/config.yaml` — `blocks:`-Sektion:** 9 Block-Einträge (ID, Label, Achse) als YAML-Konfiguration aufgenommen — SSoT für Web Export.
+
+---
+
 ## [v3.7.3] - 2026-05-21
 
 ### Refactored

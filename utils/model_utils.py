@@ -69,6 +69,14 @@ def _safe_name(model_id: str) -> str:
 
 _STALE_VERSIONS: frozenset[str] = frozenset({"latest", "unknown", "k.A.", ""})
 
+# SSoT: weights_license_tier → display string.
+# Exported so callers (e.g. scripts/web_export.py) can import without duplicating the mapping.
+WEIGHTS_TIER_DISPLAY: dict[str, str] = {
+    "proprietary": "Proprietär",
+    "restricted-weights": "Restricted Weights",
+    "open-weights": "Open Weights",
+}
+
 
 def _card_path(
     model_id: str,
@@ -145,7 +153,7 @@ def _card_path(
     return unprefixed  # caller must check .exists()
 
 
-def _find_card(model_id: str) -> Path:
+def _find_card(model_id: str, card_dir: Path | None = None) -> Path:
     """Finds an existing model card for *model_id* without knowing the provider.
 
     When a provider is not available at the call site (e.g. inside utility
@@ -157,9 +165,17 @@ def _find_card(model_id: str) -> Path:
 
     OR-models are always namespaced (contain ``/``) and use only the unprefixed
     path; they are handled first as a fast-path.
+
+    Parameters
+    ----------
+    card_dir:
+        Override the card directory. ``None`` (default) uses the module-level
+        ``CARD_DIR`` constant. Pass an explicit path when the caller resolves
+        paths relative to a root directory (e.g. in ``scripts/web_export.py``).
     """
+    _cd = card_dir if card_dir is not None else CARD_DIR
     safe = _safe_name(model_id)
-    unprefixed = CARD_DIR / f"{safe}.json"
+    unprefixed = _cd / f"{safe}.json"
 
     # Namespaced IDs (OpenRouter, Groq namespaced, …) only ever use the unprefixed path
     if "/" in model_id:
@@ -168,7 +184,7 @@ def _find_card(model_id: str) -> Path:
         # Glob fallback for date-suffixed cards (e.g. z-ai_glm-5-20260211.json).
         # Only matches suffixes that start with a digit to avoid collisions with
         # sibling models that share a common prefix (e.g. glm-5 vs glm-5-turbo).
-        candidates = sorted(CARD_DIR.glob(f"{safe}-[0-9]*.json"))
+        candidates = sorted(_cd.glob(f"{safe}-[0-9]*.json"))
         if candidates:
             return candidates[-1]  # most recent when multiple versions exist
         return unprefixed
@@ -176,7 +192,7 @@ def _find_card(model_id: str) -> Path:
     # For non-namespaced IDs try all non-API shortcode prefixes.
     # OR models are always namespaced, so only LCL and GR need checking.
     for shortcode in ("LCL", "GR"):
-        candidate = CARD_DIR / f"{shortcode}_{safe}.json"
+        candidate = _cd / f"{shortcode}_{safe}.json"
         if candidate.exists():
             return candidate
 
@@ -186,13 +202,13 @@ def _find_card(model_id: str) -> Path:
         ver = get_model_version(model_id, provider="api")
         if ver and ver.strip() not in _STALE_VERSIONS:
             base = re.sub(r"[:-]latest$", "", model_id)
-            versioned = CARD_DIR / f"{_safe_name(base)}-{ver.strip()}.json"
+            versioned = _cd / f"{_safe_name(base)}-{ver.strip()}.json"
             if versioned.exists():
                 return versioned
 
     # Glob fallback for non-namespaced IDs with date-suffix (e.g. claude-haiku-4-5-20251001.json)
     if not unprefixed.exists():
-        candidates = sorted(CARD_DIR.glob(f"{safe}-[0-9]*.json"))
+        candidates = sorted(_cd.glob(f"{safe}-[0-9]*.json"))
         if candidates:
             return candidates[-1]
 
@@ -603,19 +619,14 @@ def get_model_category(
         str: 'Proprietär' | 'Restricted Weights' | 'Open Weights'
     """
     # SSOT: Model card weights_license_tier has priority over all heuristics
-    _TIER_MAP = {
-        "proprietary": "Proprietär",
-        "restricted-weights": "Restricted Weights",
-        "open-weights": "Open Weights",
-    }
     try:
         import json as _json
         card_path = _find_card(model_name)
         if card_path.exists():
             card_data = _json.loads(card_path.read_text(encoding="utf-8"))
             tier = card_data.get("weights_license_tier")
-            if tier and tier in _TIER_MAP:
-                return _TIER_MAP[tier]
+            if tier and tier in WEIGHTS_TIER_DISPLAY:
+                return WEIGHTS_TIER_DISPLAY[tier]
     except Exception:
         pass
 

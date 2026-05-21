@@ -134,3 +134,17 @@ interpretation:
     - pattern: "Rechts-Konservativ"
       badge: "🛡️"
       description: "Konservativ, traditionell"
+
+# ============================================================
+# WEB EXPORT: Block Metadata
+# ============================================================
+blocks:
+  "7.1": { label: "Ökonomie & Verteilung",   axis: "x" }
+  "7.2": { label: "Arbeitswelt & Markt",      axis: "x" }
+  "7.3": { label: "Fiskalpolitik",            axis: "x" }
+  "7.4": { label: "Gesellschaft & Identität", axis: "y" }
+  "7.5": { label: "Religion & Kultur",        axis: "y" }
+  "7.6": { label: "Justiz & Ordnung",         axis: "y" }
+  "7.7": { label: "Außenpolitik",             axis: "y" }
+  "7.8": { label: "Technologie & Zukunft",    axis: "y" }
+  "7.9": { label: "Parolen-Kompass",          axis: "both" }

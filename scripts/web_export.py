@@ -17,6 +17,7 @@ from typing import Any, Optional
 import pandas as pd
 import yaml
 from utils.config_validator import ConfigValidator
+from utils.model_utils import _find_card, WEIGHTS_TIER_DISPLAY
 
 
 def build_provider_map(config_path: Path) -> dict[str, str]:
@@ -185,14 +186,13 @@ def _strip_emojis(obj):
 
 
 def load_model_card(model_name: str, root_dir: Path) -> dict | None:
-    """Loads the model card JSON for *model_name* using the same lookup logic as _find_card().
+    """Loads the model card JSON for *model_name*.
 
-    Replicates the 3-rule card-naming convention from utils/model_utils.py without
-    importing from there (avoids CWD dependency of the module-level CARD_DIR path).
+    Uses _find_card() (SSoT in utils/model_utils.py) for core 3-rule path
+    resolution, then applies web-export-specific fallbacks for display-name
+    vs. model_id mismatches (e.g. "kimi-k2.5" → "moonshotai/kimi-k2.5-0127").
     """
     card_dir = root_dir / "benchmark_scores" / "model_cards"
-    safe = re.sub(r"[:/.\ ]", "_", model_name)
-    unprefixed = card_dir / f"{safe}.json"
 
     def _try_load(path: Path) -> dict | None:
         try:
@@ -200,64 +200,28 @@ def load_model_card(model_name: str, root_dir: Path) -> dict | None:
         except (json.JSONDecodeError, OSError):
             return None
 
-    if "/" in model_name:
-        # Rule 1: namespaced IDs (org/model) — globally unique, no prefix
-        if unprefixed.exists():
-            return _try_load(unprefixed)
-        return None
+    # Core 3-rule lookup via SSoT (_find_card with explicit card_dir override)
+    path = _find_card(model_name, card_dir=card_dir)
+    if path.exists():
+        return _try_load(path)
 
-    # Rule 3: non-namespaced — try provider-prefixed variants first (LCL_, GR_)
-    for shortcode in ("LCL", "GR"):
-        candidate = card_dir / f"{shortcode}_{safe}.json"
-        if candidate.exists():
-            return _try_load(candidate)
-
-    # Rule 2: commercial API or legacy unprefixed card
-    if unprefixed.exists():
-        return _try_load(unprefixed)
-
-    # Fallback: versioned card names (e.g. "claude-sonnet-4-5-20250929.json" for "claude-sonnet-4-5")
-    versioned = sorted(card_dir.glob(f"{safe}-*.json"), key=lambda p: p.stat().st_mtime, reverse=True)
-    if versioned:
-        return _try_load(versioned[0])
-
-    # Fallback: version-specific card for -latest aliases
-    # e.g. model_name="mistral-large-latest" → tries "mistral-large-3.json"
-    if model_name.endswith("-latest") or model_name.endswith(":latest"):
-        try:
-            from utils.model_utils import get_model_version as _gmv  # local import: avoids circular deps
-            _ver = _gmv(model_name, provider="api")
-        except ImportError:
-            _ver = None
-        _stale = {"latest", "unknown", "k.A.", ""}
-        if _ver and _ver.strip() not in _stale:
-            _base = re.sub(r"[:-]latest$", "", model_name)
-            _safe_b = re.sub(r"[:/.\\  ]", "_", _base)
-            _versioned = card_dir / f"{_safe_b}-{_ver.strip()}.json"
-            if _versioned.exists():
-                _result = _try_load(_versioned)
-                if _result:
-                    return _result
-
-    # Fallback: leaderboard stores short display names (e.g. "kimi-k2.5") while cards are
-    # filed under the full namespaced model_id (e.g. "moonshotai/kimi-k2.5-0127").
-    # Match by stripping the org-prefix and date/version suffix from each card's model_id.
+    # Web-export fallback: leaderboard uses display names (e.g. "kimi-k2.5") while cards
+    # are filed under the full namespaced model_id (e.g. "moonshotai/kimi-k2.5-0127").
+    # Full directory scan matching stripped model_id.
+    safe = re.sub(r"[:/.\ ]", "_", model_name)
     display_norm = model_name.lower()
     for card_file in sorted(card_dir.glob("*.json")):
         card_data = _try_load(card_file)
         if not card_data or not isinstance(card_data, dict):
             continue
         cid = card_data.get("model_id", "")
-        # Strip org prefix (everything before first '/')
         base = cid.split("/", 1)[1] if "/" in cid else cid
-        # Strip trailing date (-YYYYMMDD) or version (-NNNN) suffix
         base = re.sub(r"-\d{4,8}$", "", base)
         if base.lower() == display_norm:
             return card_data
 
-    # Fallback: hf.co / HuggingFace GGUF models — short name without org/repo prefix.
-    # The card is stored as "hf_co_<org>_<safe>.json"; model_name is just "<safe>".
-    # Try any card file whose suffix matches the safe model name.
+    # Web-export fallback: hf.co / HuggingFace GGUF — card is "hf_co_<org>_<safe>.json"
+    # while model_name is just "<safe>".
     for candidate in card_dir.glob(f"*_{safe}.json"):
         result = _try_load(candidate)
         if result:
@@ -279,27 +243,40 @@ def _read_version(root_dir: Path) -> str:
     return "unknown"
 
 
-_BLOCK_META: dict = {
-    "7.1": {"label": "Ökonomie & Verteilung",   "axis": "x"},
-    "7.2": {"label": "Arbeitswelt & Markt",      "axis": "x"},
-    "7.3": {"label": "Fiskalpolitik",            "axis": "x"},
-    "7.4": {"label": "Gesellschaft & Identität", "axis": "y"},
-    "7.5": {"label": "Religion & Kultur",        "axis": "y"},
-    "7.6": {"label": "Justiz & Ordnung",         "axis": "y"},
-    "7.7": {"label": "Außenpolitik",             "axis": "y"},
-    "7.8": {"label": "Technologie & Zukunft",    "axis": "y"},
-    "7.9": {"label": "Parolen-Kompass",          "axis": "both"},
-}
+def _load_pc_block_meta(config_path: Path) -> dict:
+    """Loads Political Compass block metadata from config.yaml.
+
+    Falls back to a static dict if the config is unavailable or missing the blocks key.
+    """
+    _fallback: dict = {
+        "7.1": {"label": "Ökonomie & Verteilung",   "axis": "x"},
+        "7.2": {"label": "Arbeitswelt & Markt",      "axis": "x"},
+        "7.3": {"label": "Fiskalpolitik",            "axis": "x"},
+        "7.4": {"label": "Gesellschaft & Identität", "axis": "y"},
+        "7.5": {"label": "Religion & Kultur",        "axis": "y"},
+        "7.6": {"label": "Justiz & Ordnung",         "axis": "y"},
+        "7.7": {"label": "Außenpolitik",             "axis": "y"},
+        "7.8": {"label": "Technologie & Zukunft",    "axis": "y"},
+        "7.9": {"label": "Parolen-Kompass",          "axis": "both"},
+    }
+    try:
+        data = yaml.safe_load(config_path.read_text(encoding="utf-8"))
+        blocks = data.get("blocks", {})
+        if blocks:
+            return {str(k): v for k, v in blocks.items()}
+    except (OSError, yaml.YAMLError):
+        pass
+    return _fallback
 
 
-def _build_block_scores(module_stats: dict) -> dict:
+def _build_block_scores(module_stats: dict, block_meta: dict) -> dict:
     """Baut das blocks-Dict aus den module_stats (vanilla/forced) für political_compass.json."""
     vanilla = module_stats.get("vanilla", {})
     forced = module_stats.get("forced", {})
     if not vanilla and not forced:
         return {}
     blocks = {}
-    for bid, meta in _BLOCK_META.items():
+    for bid, meta in block_meta.items():
         v = vanilla.get(bid, {})
         f = forced.get(bid, {})
         axis = meta["axis"]
@@ -345,14 +322,6 @@ def extract_audit_category(filename: str) -> str:
             return cat
 
     return "other"
-
-# Model type mapping: weights_license_tier → display string (SSOT: get_model_category())
-_TIER_MAP: dict[str, str] = {
-    "proprietary": "Proprietär",
-    "restricted-weights": "Restricted Weights",
-    "open-weights": "Open Weights",
-}
-
 
 def find_latest_markdown(dir_path: Path, prefix: str = "") -> Path | None:
     if not dir_path.exists() or not dir_path.is_dir(): return None
@@ -661,6 +630,7 @@ def _build_compass_entry(
     slug: str,
     model_name: str,
     model_type: str,
+    block_meta: dict,
 ) -> dict[str, Any]:
     """Builds the political_compass entry dict for a single model."""
     archetype: str | None = None
@@ -711,7 +681,7 @@ def _build_compass_entry(
         ),
         "archetype": archetype,
         "extremism_status": extremism,
-        "blocks": _build_block_scores(metrics.get("module_stats", {})),
+        "blocks": _build_block_scores(metrics.get("module_stats", {}), block_meta),
     }
 
 
@@ -814,6 +784,7 @@ def main() -> None:
         sys.exit(1)
 
     pc_lb_map, pc_lb_slug_map = _build_pc_lookups(pc_lb)
+    block_meta = _load_pc_block_meta(root_dir / "benchmark_modules" / "political_compass" / "config.yaml")
     _benchmark_run_map = _build_benchmark_run_dates(root_dir / "outputs" / "runs")
 
     audit_logs_path = root_dir / "outputs" / "audit_logs"
@@ -895,7 +866,7 @@ def main() -> None:
         # SSOT: derive display type from model card weights_license_tier;
         # fall back to CSV "Type" column for models without a card.
         _card_tier = card.get("weights_license_tier") if card else None
-        _type = (_TIER_MAP.get(_card_tier) if _card_tier else None) or str(row.get("Type", ""))
+        _type = (WEIGHTS_TIER_DISPLAY.get(_card_tier) if _card_tier else None) or str(row.get("Type", ""))
 
         benchmark_run_at = _benchmark_run_map.get(model_name) or _benchmark_run_map.get(raw_model_id)
         entry = _build_leaderboard_entry(
@@ -922,7 +893,7 @@ def main() -> None:
                 lb_row = pc_lb_map.get(model_name)
                 if lb_row is None:
                     lb_row = pc_lb_slug_map.get(slug)
-                compass_data = _build_compass_entry(pc_row, lb_row, slug, model_name, _type)
+                compass_data = _build_compass_entry(pc_row, lb_row, slug, model_name, _type, block_meta)
                 pc_list.append(compass_data)
 
         model_json: dict[str, Any] = {

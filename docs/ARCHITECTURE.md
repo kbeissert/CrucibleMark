@@ -429,7 +429,8 @@ Alle Card-Pfadoperationen laufen durch drei Funktionen in `utils/model_utils.py`
 CARD_DIR          # Path("benchmark_scores/model_cards") — nie inline
 _safe_name(id)    # re.sub(r'[:/.\  ]', '_', id) — kanonische Transformation
 _card_path(model_id, provider, for_write)  # Drei-Regeln-Lookup
-_find_card(model_id)                       # Provider-unbekannter Lookup
+_find_card(model_id, card_dir=None)        # Provider-unbekannter Lookup; card_dir für externe Pfade
+WEIGHTS_TIER_DISPLAY                       # Tier → Display-String (SSoT, importierbar)
 ```
 
 Die drei Naming-Regeln:
@@ -486,13 +487,14 @@ Der Web Exporter ist ein eigenständiger Publishing-Schritt (Layer 4 Downstream)
 | `_setup_output_dirs(args)` | Safety-Guard + `shutil.rmtree(models/)` + Verzeichnis-Init |
 | `_load_sources(scores_dir)` | Lädt alle 4 Quell-CSVs zentral |
 | `_build_pc_lookups(pc_lb)` | Baut PC-Leaderboard-Dicts (model_name + slug-Schlüssel) |
+| `_load_pc_block_meta(config_path)` | Lädt Block-Metadaten aus `political_compass/config.yaml` (Fallback: statisches Dict) |
 | `_export_model_files(model_out, audit_src, comp_src)` | Kopiert Audit-Logs + Review-Markdowns für ein Modell |
 | `_build_leaderboard_entry(row, card, ...)` | Baut den vollständigen Leaderboard-Dict (~40 Felder) |
 | `_lookup_pc_row(model_name, slug, pc)` | Sucht AVG-Zeile in PC-Resultaten (exakt + slug-Fallback) |
-| `_build_compass_entry(pc_row, lb_row, ...)` | Baut den Political-Compass-Dict inkl. Archetyp-Felder |
+| `_build_compass_entry(pc_row, lb_row, ..., block_meta)` | Baut den Political-Compass-Dict inkl. Archetyp-Felder |
 | `_write_top_level_outputs(...)` | Schreibt `leaderboard.json`, `political_compass.json`, `provider_stats.json`, `meta.json` |
 
-`_TIER_MAP` (Kategorien-String-Mapping) ist Modul-Konstante — kein Loop-Overhead mehr.
+`WEIGHTS_TIER_DISPLAY` (Tier-String-Mapping) ist als öffentliche Konstante aus `utils/model_utils.py` importiert — `web_export.py` führt kein Duplikat mehr. `load_model_card()` delegiert die Card-Pfad-Auflösung an `_find_card(card_dir=card_dir)` (SSoT) und behält nur die zwei web-spezifischen Fallbacks (Display-Name-Vollscan, hf.co-Suffix-Match). Block-Metadaten für den Political Compass kommen via `_load_pc_block_meta()` aus `benchmark_modules/political_compass/config.yaml` (Fallback: statisches Dict) — kein hardcodiertes Python-Dict mehr.
 
 **Model Cards & Provider Cards:** Strukturierte JSON-Steckbriefe pro Modell (`benchmark_scores/model_cards/`) und pro Provider (`benchmark_scores/provider_cards/`), generiert via LLM (`make model-cards`, `make provider-cards`). Sie enthalten Entwickler, Herkunftsland, Stärken/Schwächen, Datenschutz-Metadaten und Sovereign-Risk-Einschätzung. Die Cards werden (a) als Kontext-Block in den Meta-Reviewer injiziert und (b) als eigenständige JSON-API für das Web-Frontend bereitgestellt.
 
