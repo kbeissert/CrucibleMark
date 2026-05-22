@@ -1,20 +1,25 @@
 """
 sync_cost_limits.py
 -------------------
-Gleicht config/cost_limits.yaml mit den Modellen aus benchmark_config.yaml
+Gleicht die Preis-Konfiguration mit den Modellen aus benchmark_config.yaml
 und den Benchmark-CSVs ab.
 
+Preisquelle (Priorität):
+  1. Model Card JSON (benchmark_scores/model_cards/*.json) — input_price_per_1m
+  2. cost_limits.yaml providers.*.{model} — input_cost_per_1k (Legacy-Fallback)
+
 Ohne Flag: Bericht, welche Modelle keinen Preiseintrag haben.
-Mit --fix:  Platzhalter (null) für fehlende Modelle in cost_limits.yaml eintragen.
+Mit --fix:  Platzhalter (null) in cost_limits.yaml eintragen als temporärer
+            Fallback, bis eine vollständige Model Card angelegt wird.
 
 Verwendung:
     make sync-cost-limits           # Nur Bericht
-    make sync-cost-limits FIX=1     # Platzhalter schreiben
+    make sync-cost-limits FIX=1     # Platzhalter in cost_limits.yaml schreiben
 """
 
 import argparse
 import csv
-import sys
+import json
 from pathlib import Path
 from typing import Dict, Optional, Set
 
@@ -24,6 +29,7 @@ ROOT = Path(__file__).resolve().parents[2]
 BENCHMARK_CONFIG = ROOT / "benchmark_config.yaml"
 COST_LIMITS = ROOT / "config" / "cost_limits.yaml"
 SCORES_DIR = ROOT / "benchmark_scores"
+CARD_DIR = SCORES_DIR / "model_cards"
 
 CSV_FILES = [
     SCORES_DIR / "commercial_models_benchmark.csv",
@@ -61,9 +67,9 @@ def load_config_models() -> Dict[str, Set[str]]:
         # auto_discover-Provider haben keine expliziten IDs → überspringen
         if provider_data.get("auto_discover"):
             continue
-        section = PROVIDER_SECTION_MAP.get(provider_key, provider_key)
+        section = PROVIDER_SECTION_MAP.get(str(provider_key), str(provider_key))
         for m in provider_data.get("models", []):
-            model_id = m.get("id") if isinstance(m, dict) else str(m)
+            model_id = (m.get("id") or "") if isinstance(m, dict) else str(m)
             if model_id:
                 result.setdefault(section, set()).add(model_id)
 
@@ -98,22 +104,52 @@ def load_csv_models() -> Dict[str, Set[str]]:
 
 def load_configured_models() -> Dict[str, Set[str]]:
     """
-    Liest alle bereits konfigurierten Modell-IDs aus cost_limits.yaml.
-    Nur Einträge mit input_cost_per_1k oder output_cost_per_1k werden gezählt.
+    Sammelt alle Modell-IDs, für die bereits ein Preis konfiguriert ist.
+
+    Reihenfolge:
+      1. Model Card JSON mit gesetztem input_price_per_1m-Feld (primäre SSoT).
+         Der section_key wird über PROVIDER_SECTION_MAP aus dem 'provider'-Feld
+         der Card ermittelt, sofern vorhanden; andernfalls als 'unknown' markiert.
+      2. cost_limits.yaml providers.*.{model} mit input_cost_per_1k (Legacy).
+
     Gibt {section_key: {model_id, ...}} zurück.
     """
-    with open(COST_LIMITS, encoding="utf-8") as f:
-        data = yaml.safe_load(f)
-
     result: Dict[str, Set[str]] = {}
-    for section, models in data.get("providers", {}).items():
-        if not isinstance(models, dict):
+
+    # 1. Model Cards (primäre SSoT)
+    for card_path in CARD_DIR.glob("*.json"):
+        try:
+            with open(card_path, encoding="utf-8") as f:
+                card = json.load(f)
+        except (OSError, json.JSONDecodeError):
             continue
-        for model_id, model_data in models.items():
-            if isinstance(model_data, dict) and (
-                "input_cost_per_1k" in model_data or "output_cost_per_1k" in model_data
-            ):
-                result.setdefault(section, set()).add(model_id)
+        if not isinstance(card, dict):
+            continue
+        model_id = card.get("model_id")
+        if not model_id:
+            continue
+        if not isinstance(card.get("input_price_per_1m"), (int, float)):
+            continue
+        # Abbildung auf section_key via provider-Feld der Card
+        card_provider = (card.get("provider") or "").lower()
+        section = PROVIDER_SECTION_MAP.get(card_provider, card_provider or "unknown")
+        result.setdefault(section, set()).add(model_id)
+
+    # 2. cost_limits.yaml Legacy-Fallback (für Modelle ohne Card)
+    try:
+        with open(COST_LIMITS, encoding="utf-8") as f:
+            data = yaml.safe_load(f)
+        for section, models in data.get("providers", {}).items():
+            if not isinstance(models, dict):
+                continue
+            for model_id, model_data in models.items():
+                if isinstance(model_data, dict) and (
+                    "input_cost_per_1k" in model_data or "output_cost_per_1k" in model_data
+                ):
+                    result.setdefault(section, set()).add(model_id)
+    except (OSError, yaml.YAMLError):
+        pass
+
     return result
 
 
@@ -123,8 +159,9 @@ def find_missing(
     configured: Dict[str, Set[str]],
 ) -> Dict[str, Set[str]]:
     """
-    Gibt {section: {model_ids}} zurück, die in config/CSV stehen, aber nicht in cost_limits.yaml.
-    Modelle mit null-Preisen werden als "nicht konfiguriert" betrachtet, da sie keinen echten Preis haben.
+    Gibt {section: {model_ids}} zurück, die in config/CSV stehen, aber keinen Preis haben.
+    Der Vergleich erfolgt section-agnostisch: eine Model-ID gilt als konfiguriert,
+    sobald sie in irgendeiner Card oder YAML-Sektion einen Preiseintrag hat.
     """
     combined: Dict[str, Set[str]] = {}
     for section, ids in config_models.items():
@@ -132,10 +169,14 @@ def find_missing(
     for section, ids in csv_models.items():
         combined.setdefault(section, set()).update(ids)
 
+    # Flat-Set aller konfigurierten Model-IDs (über alle Sektionen hinweg)
+    configured_flat: Set[str] = set()
+    for ids in configured.values():
+        configured_flat.update(ids)
+
     missing: Dict[str, Set[str]] = {}
     for section, ids in combined.items():
-        already = configured.get(section, set())
-        diff = ids - already
+        diff = ids - configured_flat
         if diff:
             missing[section] = diff
     return missing
@@ -210,8 +251,8 @@ def insert_placeholders(missing: Dict[str, Set[str]]) -> int:
         for model_id in sorted(model_ids):
             new_lines.extend([
                 f"    {model_id}:\n",
-                f"      input_cost_per_1k: null  # TODO: Preis nachtragen\n",
-                f"      output_cost_per_1k: null  # TODO: Preis nachtragen\n",
+                "      input_cost_per_1k: null  # TODO: Preis nachtragen\n",
+                "      output_cost_per_1k: null  # TODO: Preis nachtragen\n",
             ])
             total_inserted += 1
             print(f"  ✅ [{section}] {model_id} → Platzhalter eingetragen")
@@ -225,8 +266,8 @@ def insert_placeholders(missing: Dict[str, Set[str]]) -> int:
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description="Sync cost_limits.yaml mit Modell-Konfiguration")
-    parser.add_argument("--fix", action="store_true", help="Platzhalter in cost_limits.yaml eintragen")
+    parser = argparse.ArgumentParser(description="Sync Preis-Konfiguration mit Modell-Konfiguration")
+    parser.add_argument("--fix", action="store_true", help="Platzhalter in cost_limits.yaml eintragen (Legacy-Fallback bis eine Card angelegt wird)")
     args = parser.parse_args()
 
     config_models = load_config_models()
@@ -246,18 +287,18 @@ def main() -> None:
     missing_count = sum(len(ids) for ids in missing.values())
 
     print("━" * 52)
-    print("🔍 CrucibleMark – Cost Limits Sync")
+    print("🔍 CrucibleMark – Preis-Sync (Cards + cost_limits.yaml)")
     print("━" * 52)
-    print(f"  Modelle in Config / CSVs:   {all_model_count}")
-    print(f"  Preise in cost_limits.yaml: {configured_count}")
-    print(f"  Fehlende Preiseinträge:     {missing_count}")
+    print(f"  Modelle in Config / CSVs:         {all_model_count}")
+    print(f"  Preise konfiguriert (Card/YAML):  {configured_count}")
+    print(f"  Fehlende Preiseinträge:           {missing_count}")
     print()
 
     if not missing:
-        print("✅ Alle bekannten Modelle haben einen Preiseintrag.")
+        print("✅ Alle bekannten Modelle haben einen Preiseintrag (Card oder cost_limits.yaml).")
         return
 
-    print("Fehlende Modelle (Key = Wert der 'model'-Spalte in CSV):")
+    print("Fehlende Modelle (kein input_price_per_1m in Card, kein input_cost_per_1k in cost_limits.yaml):")
     for section in sorted(missing):
         for model_id in sorted(missing[section]):
             print(f"  [{section:<15}]  {model_id}")
@@ -265,9 +306,10 @@ def main() -> None:
     print()
     if args.fix:
         print("💾 Schreibe Platzhalter in config/cost_limits.yaml …")
+        print("   ⚠️  Empfehlung: Model Card anlegen statt Platzhalter in YAML.")
         count = insert_placeholders(missing)
         print()
-        print(f"  {count} Platzhalter eingetragen.")
+        print(f"  {count} Platzhalter eingetragen. Bitte migrate_prices_to_cards.py nutzen sobald Cards vorhanden.")
         print("  ⚠️  Bitte Preise manuell nachtragen: config/cost_limits.yaml")
         print("     (Suche nach '# TODO: Preis nachtragen')")
     else:

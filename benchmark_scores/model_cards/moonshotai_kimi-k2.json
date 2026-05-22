@@ -39,5 +39,7 @@
   "license_url": "https://huggingface.co/moonshotai/Kimi-K2-Instruct/blob/main/LICENSE",
   "commercial_use_allowed": true,
   "vendor": "Moonshot AI",
-  "weights_license_tier": "open-weights"
+  "weights_license_tier": "open-weights",
+  "input_price_per_1m": 0.57,
+  "output_price_per_1m": 2.3
 }

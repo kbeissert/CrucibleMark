@@ -40,5 +40,7 @@
   "thinking_probe_confidence": "medium",
   "thinking_probe_evidence": "Manual override: GLM-5-Turbo is a fast chat model without reasoning/thinking capabilities.",
   "thinking_probe_manual_override": true,
-  "thinking_probe_at": "2026-05-16T18:49:05.342822+00:00"
+  "thinking_probe_at": "2026-05-16T18:49:05.342822+00:00",
+  "input_price_per_1m": 1.2,
+  "output_price_per_1m": 4.0
 }

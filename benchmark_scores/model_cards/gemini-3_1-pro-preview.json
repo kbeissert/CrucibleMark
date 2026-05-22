@@ -40,5 +40,7 @@
   "commercial_use_allowed": true,
   "vendor": "Google",
   "weights_license_tier": "proprietary",
-  "model_version": "3.1-pro-preview"
+  "model_version": "3.1-pro-preview",
+  "input_price_per_1m": 2.0,
+  "output_price_per_1m": 12.0
 }

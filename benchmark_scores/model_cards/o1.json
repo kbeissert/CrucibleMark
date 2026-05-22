@@ -38,5 +38,7 @@
   "commercial_use_allowed": true,
   "vendor": "OpenAI",
   "weights_license_tier": "proprietary",
-  "model_version": "2024-12-17"
+  "model_version": "2024-12-17",
+  "input_price_per_1m": 15.0,
+  "output_price_per_1m": 60.0
 }

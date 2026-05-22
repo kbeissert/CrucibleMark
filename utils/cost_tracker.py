@@ -128,9 +128,9 @@ class CostTracker:
 
         Lookup-Reihenfolge:
           1. LiteLLM Preis-Cache (automatisch aktuell gehalten, 7-Tage-TTL)
-          2. cost_limits.yaml (Fallback für manuell gepflegte / noch nicht in
-             LiteLLM enthaltene Modelle wie gpt-5, sowie Budget-Limits)
-          3. Lokale Modelle / unbekannte Provider → 0.0
+          2. Model Card JSON (benchmark_scores/model_cards/*.json)
+          3. cost_limits.yaml (Legacy-Fallback für Modelle ohne Card)
+          4. Lokale Modelle / unbekannte Provider → 0.0
         """
         # 1. LiteLLM Preis-Cache
         cached = self.pricing_updater.get_price(model)
@@ -142,7 +142,27 @@ class CostTracker:
                 6,
             )
 
-        # 2. cost_limits.yaml (manuelle Overrides / unbekannte Modelle)
+        # 2. Model Card (SSoT für alle migrierten Modelle)
+        try:
+            from utils.model_utils import _find_card  # lazy import – avoids circular
+            import json as _json
+
+            card_path = _find_card(model)
+            if card_path.exists():
+                with open(card_path, encoding="utf-8") as f:
+                    card = _json.load(f)
+                in_per_m = card.get("input_price_per_1m")
+                out_per_m = card.get("output_price_per_1m")
+                if isinstance(in_per_m, (int, float)) and isinstance(out_per_m, (int, float)):
+                    return round(
+                        (input_tokens / 1_000_000) * float(in_per_m)
+                        + (output_tokens / 1_000_000) * float(out_per_m),
+                        6,
+                    )
+        except Exception:
+            pass
+
+        # 3. cost_limits.yaml (Legacy-Fallback für Modelle ohne Card)
         provider_config = self.config.get("providers", {}).get(provider)
         if not provider_config:
             return 0.0  # Lokales oder unbekanntes Modell
@@ -163,7 +183,7 @@ class CostTracker:
 
         if not model_config:
             logging.getLogger(__name__).debug(
-                "Kein Preis für Modell '%s' (%s) in Cache oder cost_limits.yaml.",
+                "Kein Preis für Modell '%s' (%s) in LiteLLM-Cache, Model Card oder cost_limits.yaml.",
                 model,
                 provider,
             )

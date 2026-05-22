@@ -40,5 +40,7 @@
   "thinking_probe_manual_override": true,
   "thinking_probe_override_reason": "xAI API exposes no <think> tags or reasoning_tokens; internal CoT confirmed by model name and response patterns",
   "weights_license_tier": "proprietary",
-  "model_version": "4.20-0309-reasoning"
+  "model_version": "4.20-0309-reasoning",
+  "input_price_per_1m": 1.25,
+  "output_price_per_1m": 2.5
 }

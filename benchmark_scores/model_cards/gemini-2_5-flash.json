@@ -39,5 +39,7 @@
   "commercial_use_allowed": true,
   "vendor": "Google",
   "weights_license_tier": "proprietary",
-  "model_version": "2.5-flash"
+  "model_version": "2.5-flash",
+  "input_price_per_1m": 0.075,
+  "output_price_per_1m": 0.3
 }

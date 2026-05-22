@@ -39,5 +39,7 @@
   "commercial_use_allowed": true,
   "vendor": "DeepSeek",
   "weights_license_tier": "open-weights",
-  "model_version": "v3.2"
+  "model_version": "v3.2",
+  "input_price_per_1m": 0.28,
+  "output_price_per_1m": 0.42
 }

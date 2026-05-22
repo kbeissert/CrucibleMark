@@ -39,5 +39,7 @@
   "thinking_probe_detected": false,
   "thinking_probe_evidence": "No CoT signals found (A: no think-tags, B: reasoning_tokens=0). Response length: 603 chars",
   "thinking_probe_confidence": "low",
-  "thinking_probe_at": "2026-05-16T18:47:31.122316+00:00"
+  "thinking_probe_at": "2026-05-16T18:47:31.122316+00:00",
+  "input_price_per_1m": 0.11,
+  "output_price_per_1m": 0.34
 }

@@ -39,5 +39,7 @@
   "commercial_use_allowed": true,
   "vendor": "Anthropic",
   "weights_license_tier": "proprietary",
-  "model_version": "4.6"
+  "model_version": "4.6",
+  "input_price_per_1m": 5.0,
+  "output_price_per_1m": 25.0
 }

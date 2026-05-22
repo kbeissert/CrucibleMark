@@ -38,5 +38,7 @@
   "commercial_use_allowed": true,
   "vendor": "xAI",
   "weights_license_tier": "proprietary",
-  "model_version": "4-1-reasoning"
+  "model_version": "4-1-reasoning",
+  "input_price_per_1m": 0.2,
+  "output_price_per_1m": 0.5
 }

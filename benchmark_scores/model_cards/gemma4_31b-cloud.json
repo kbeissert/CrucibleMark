@@ -41,5 +41,7 @@
   "thinking_probe_confidence": "medium",
   "thinking_probe_manual_override": true,
   "thinking_probe_at": "2026-05-16T18:47:56.692725+00:00",
-  "model_version": "31b-cloud"
+  "model_version": "31b-cloud",
+  "input_price_per_1m": 0.14,
+  "output_price_per_1m": 0.4
 }

@@ -39,5 +39,7 @@
   "commercial_use_allowed": true,
   "vendor": "Moonshot AI",
   "weights_license_tier": "open-weights",
-  "model_version": "k2.5-0127"
+  "model_version": "k2.5-0127",
+  "input_price_per_1m": 0.44,
+  "output_price_per_1m": 2.0
 }

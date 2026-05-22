@@ -41,5 +41,8 @@
   "commercial_use_allowed": true,
   "vendor": "Mistral AI",
   "weights_license_tier": "open-weights",
-  "model_version": "3.1"
+  "model_version": "3.1",
+  "input_price_per_1m": 0.10,
+  "output_price_per_1m": 0.30,
+  "context_window": 131072
 }

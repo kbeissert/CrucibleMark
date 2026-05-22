@@ -20,34 +20,55 @@ if str(ROOT_DIR) not in sys.path:
 
 
 # ==============================================================================
-# 1b. PRICE LOOKUP (from cost_limits.yaml)
+# 1b. PRICE LOOKUP (from model cards, cost_limits.yaml as legacy fallback)
 # ==============================================================================
 
 def _build_price_lookup() -> Dict[str, float]:
     """
-    Builds a flat {model_name: output_cost_per_1k} dict from cost_limits.yaml.
-    Only model entries with an 'output_cost_per_1k' key are included.
-    Non-model keys like 'daily_budget' are skipped automatically.
-    Keys are sorted longest-first so prefix matching is deterministic.
+    Builds a flat {model_id: output_cost_per_1k} dict.
+
+    Primary source: model card JSON files (benchmark_scores/model_cards/*.json).
+    Legacy fallback: cost_limits.yaml entries for models without a card yet.
+    Card prices take precedence; cost_limits.yaml is only used for models
+    not yet covered by a card (e.g. cloud proxies, uncommon models).
     """
+    import json as _json
+
+    card_dir = ROOT_DIR / "benchmark_scores" / "model_cards"
+    lookup: Dict[str, float] = {}
+
+    # 1. Model cards (primary SSoT)
+    for card_path in card_dir.glob("*.json"):
+        try:
+            with open(card_path, encoding="utf-8") as f:
+                card = _json.load(f)
+            if not isinstance(card, dict):
+                continue
+            model_id = card.get("model_id")
+            price_per_m = card.get("output_price_per_1m")
+            if model_id and isinstance(price_per_m, (int, float)):
+                lookup[model_id] = float(price_per_m) / 1000.0
+        except (OSError, _json.JSONDecodeError):
+            continue
+
+    # 2. cost_limits.yaml legacy fallback (models not yet in a card)
     cost_limits_path = ROOT_DIR / "config" / "cost_limits.yaml"
     try:
         with open(cost_limits_path, encoding="utf-8") as f:
             data = yaml.safe_load(f)
-    except (OSError, yaml.YAMLError):
-        return {}
-
-    lookup: Dict[str, float] = {}
-    providers = data.get("providers", {})
-    for _provider, models in providers.items():
-        if not isinstance(models, dict):
-            continue
-        for model_name, model_data in models.items():
-            if not isinstance(model_data, dict):
+        providers = data.get("providers", {})
+        for _provider, models in providers.items():
+            if not isinstance(models, dict):
                 continue
-            price = model_data.get("output_cost_per_1k")
-            if isinstance(price, (int, float)):
-                lookup[model_name] = float(price)
+            for model_name, model_data in models.items():
+                if not isinstance(model_data, dict):
+                    continue
+                price = model_data.get("output_cost_per_1k")
+                if isinstance(price, (int, float)) and model_name not in lookup:
+                    lookup[model_name] = float(price)
+    except (OSError, yaml.YAMLError):
+        pass
+
     return lookup
 
 
@@ -708,9 +729,9 @@ def calculate_scores(
 
     result["Total Score"] = result.apply(calc_weighted_total, axis=1)
 
-    # Cost per 1K Output Tokens — from cost_limits.yaml (configured price).
-    # Uses the published output_cost_per_1k for each known model.
-    # Models without a configured price (e.g. local Ollama, unknown cloud proxies)
+    # Cost per 1K Output Tokens — from model cards (cost_limits.yaml as legacy fallback).
+    # Uses the published output_price_per_1m for each known model, converted to per-1K.
+    # Models without a card price (e.g. local Ollama, unknown cloud proxies)
     # receive None → shows as empty in the leaderboard.
     price_lookup = _get_price_lookup()
 
@@ -723,7 +744,7 @@ def calculate_scores(
     result["Cost per 1K (USD)"] = result.apply(calc_cost_per_1k_tokens, axis=1)
 
     # Benchmark Cost (USD) — absolute cost for the full benchmark run.
-    # Primary:  (Tokens Total / 1000) × Cost per 1K (USD)  [known price in cost_limits.yaml]
+    # Primary:  (Tokens Total / 1000) × Cost per 1K (USD)  [known price from model card or cost_limits.yaml]
     # Fallback: cost_usd (sum from benchmark CSVs) — covers date-suffixed OpenRouter models
     #           and any other model whose name doesn't match the price lookup exactly.
     if "tokens_used" in result.columns:

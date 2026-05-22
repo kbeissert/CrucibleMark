@@ -44,5 +44,7 @@
   "thinking_probe_evidence": "Manual override: GPT-OSS 120B unterstützt konfigurierbare Reasoning-Intensität via System-Prompt (kein dedizierter Thinking-Token-Stream), daher Thinking-Optional.",
   "thinking_probe_confidence": "medium",
   "thinking_probe_manual_override": true,
-  "thinking_probe_at": "2026-05-16T18:47:56.692725+00:00"
+  "thinking_probe_at": "2026-05-16T18:47:56.692725+00:00",
+  "input_price_per_1m": 0.15,
+  "output_price_per_1m": 0.6
 }

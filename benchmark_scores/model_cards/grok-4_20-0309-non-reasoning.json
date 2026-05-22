@@ -39,5 +39,7 @@
   "license_url": null,
   "commercial_use_allowed": true,
   "weights_license_tier": "proprietary",
-  "model_version": "4.20-0309"
+  "model_version": "4.20-0309",
+  "input_price_per_1m": 1.25,
+  "output_price_per_1m": 2.5
 }

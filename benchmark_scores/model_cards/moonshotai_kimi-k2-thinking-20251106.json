@@ -43,5 +43,7 @@
   "commercial_use_allowed": true,
   "vendor": "Moonshot AI",
   "weights_license_tier": "open-weights",
-  "thinking_probe_manual_override": true
+  "thinking_probe_manual_override": true,
+  "input_price_per_1m": 0.6,
+  "output_price_per_1m": 2.5
 }
