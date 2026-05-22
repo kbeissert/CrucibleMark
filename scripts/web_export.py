@@ -14,6 +14,13 @@ import math
 import re
 from pathlib import Path
 from typing import Any, Optional
+
+# Setup import path so that 'utils' and other root-level packages are importable
+# regardless of how the script is invoked (make, direct call, IDE).
+_ROOT_DIR = Path(__file__).resolve().parent.parent
+if str(_ROOT_DIR) not in sys.path:
+    sys.path.insert(0, str(_ROOT_DIR))
+
 import pandas as pd
 import yaml
 from utils.config_validator import ConfigValidator
@@ -516,14 +523,16 @@ def _build_leaderboard_entry(
     """Builds the leaderboard entry dict for a single model."""
     _card_version = extract_version(card.get("model_version")) if card else None
     _csv_version = extract_version(row.get("Version"))
+    _raw_model_id = str(row.get("model_id", "")).strip()
     return {
         "slug": slug,
+        "model_id": (card.get("model_id") if card else None) or (_raw_model_id or None),
         "model_name": str(row.get("Model Name", "")),
         "vendor": vendor,
         "version": _card_version or _csv_version,
         "badge": str(row.get("Badge", "")),
         "badge_tier": extract_badge_tier(row.get("Badge")),
-        "size_class": str(row.get("Size Class", "Frontier")),
+        "size_class": (card.get("size_class") if card else None) or str(row.get("Size Class", "Frontier")),
         "speed_profile": str(row.get("Speed Profile", "")),
         "performance_tier": str(row.get("Performance Tier", "")) or None,
         "type": model_type,
@@ -602,6 +611,13 @@ def _build_leaderboard_entry(
             "license_url": card.get("license_url"),
             "commercial_use_allowed": card.get("commercial_use_allowed"),
             "weights_license_tier": card.get("weights_license_tier"),
+            "weights_provenance_risk_rationale": card.get("weights_provenance_risk_rationale"),
+            "vendor": card.get("vendor"),
+            "input_price_per_1m": card.get("input_price_per_1m"),
+            "output_price_per_1m": card.get("output_price_per_1m"),
+            "thinking_probe_evidence": card.get("thinking_probe_evidence"),
+            "thinking_probe_manual_override": card.get("thinking_probe_manual_override"),
+            "thinking_probe_at": card.get("thinking_probe_at"),
         } if card else None,
     }
 
@@ -816,11 +832,31 @@ def main() -> None:
 
         # SSOT: use raw model_id (same transform as benchmark_utils.py) for dir lookup
         raw_model_id = str(row.get("model_id", "")).strip()
-        dir_slug = slugify(raw_model_id.replace("/", "_")) if raw_model_id and raw_model_id != "nan" else slug
+        dir_slug = slugify(raw_model_id.replace("/", "_").replace(":", "_")) if raw_model_id and raw_model_id != "nan" else slug
+
+        # Load model card early — needed for heritage_ids dir fallback below.
+        # Try raw API ID first (direct _find_card hit), fall back to display name.
+        if raw_model_id and raw_model_id != "nan":
+            card = load_model_card(raw_model_id, root_dir)
+            if card is None:
+                card = load_model_card(model_name, root_dir)
+        else:
+            card = load_model_card(model_name, root_dir)
 
         # Complete Directory Sync for Markdowns
         model_audit_src = _resolve_dir(audit_dirs, dir_slug)
         model_comp_src = _resolve_dir(comp_dirs, dir_slug)
+
+        # Heritage-Fallback: wenn primäre Dir-Auflösung fehlschlägt, heritage_ids aus der Card prüfen
+        if card:
+            for _h_id in card.get("heritage_ids", []):
+                _h_slug = slugify(_h_id.replace(":", "_").replace("/", "_"))
+                if model_audit_src is None:
+                    model_audit_src = _resolve_dir(audit_dirs, _h_slug)
+                if model_comp_src is None:
+                    model_comp_src = _resolve_dir(comp_dirs, _h_slug)
+                if model_audit_src is not None and model_comp_src is not None:
+                    break
 
         # Rule: PC-only models (no benchmark data) are excluded from export entirely.
         # A model has benchmark data if its audit dir contains non-PC files OR the
@@ -846,13 +882,6 @@ def main() -> None:
         review_published_at, review_updated_at = _review_date_range(model_comp_src) if model_comp_src else (None, None)
         if has_report: models_with_reports += 1
         if has_review: models_with_reviews += 1
-
-        # Load model card (ThinkingProbe, architecture_tags, developer info, …)
-        # Fallback: hf.co-Modelle haben im CSV nur den Kurznamen (ohne "hf.co/org/" Präfix)
-        # aber der Card-Dateiname enthält das vollständige Präfix → raw_model_id probieren
-        card = load_model_card(model_name, root_dir)
-        if card is None and raw_model_id and raw_model_id != "nan":
-            card = load_model_card(raw_model_id, root_dir)
 
         vendor = card.get("vendor") if card else None
 
