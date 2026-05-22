@@ -1,26 +1,41 @@
 # PROJECT_STATUS.md
 
-**Last Updated:** 2026-05-16
-**Current Version:** 3.7.2 (Web-Export Date Fields: `benchmark_run_at`, `report_published_at`, `report_updated_at`, `last_activity_at`)
+**Last Updated:** 2026-05-22
+**Current Version:** 3.7.5 (Pricing SSoT Migration: `input_price_per_1m` / `output_price_per_1m` in Model Cards; 4 neue Cards; 3 neue Reviews)
 **Status:** ✅ Production-Ready
 
 ---
 
 ## Executive Summary
 
-CrucibleMark v3.7.1 schließt vier strukturelle Lücken, die nach der Card-Naming-Migration (v3.6) zurückgeblieben waren:
+CrucibleMark v3.7.5 schließt die Pricing-Architektur: Preise werden nicht mehr zentral in `config/cost_limits.yaml` gepflegt, sondern als `input_price_per_1m` / `output_price_per_1m` (USD/1M Tokens) direkt in den Model Cards hinterlegt. `score_calculator.py` und `cost_tracker.py` lesen Cards als primäre Quelle; `cost_limits.yaml` bleibt als Legacy-Fallback für Modelle ohne Card erhalten.
 
-1. **`generate_review.py`** nutzte an 4 Stellen noch naive `cards_dir / f"{re.sub(...)}.json"` Pfadkonstruktionen statt `_find_card()` — betraf u.a. den `-latest`-Alias-Lookup (z.B. `mistral-large-latest` → `mistral-large-3.json`).
-2. **`build_provider_map()`** in `web_export.py` hatte einen hardcodierten `_FALLBACK_NAMES`-Dict mit 7 Provider-Displaynamen — jetzt dynamisch aus `benchmark_config.yaml` gelesen. Guard verhindert, dass Config-Blöcke (`providers.local.config`) als Fake-Provider gelten.
-3. **`exporter.py`** hatte zwei Pylance-/Pylint-Warnungen: `apply`-Overload-Mismatch und `_re` potentially-unbound.
-4. **`ARCHITECTURE.md`** dokumentierte `is_reasoning_model_from_card()` noch mit der alten `re.sub`-Methode statt `_find_card()`.
+1. **Pricing SSoT in Model Cards:** Alle 53 API-Model-Cards wurden mit Preisfeldern befüllt (Migration via `scripts/dev/migrate_prices_to_cards.py`, einmalig, für Audit erhalten).
+2. **`cost_limits.yaml` bereinigt:** Von ~25 Modelleinträgen auf 6 Legacy-Einträge reduziert (nur Modelle ohne Card: MiniMax Cloud Proxy, Kimi-K2.5 Cloud, GLM-5 Cloud, Llama-3.1-8B, Kimi-K2-Instruct, Groq Daily Budget).
+3. **`score_calculator.py` — `_build_price_lookup()`:** Card-First-Lookup; `cost_limits.yaml` als Fallback für kartenlose Modelle.
+4. **`cost_tracker.py` — `calculate_cost()`:** 3-Tier-Kaskade: LiteLLM → Model Card → `cost_limits.yaml` Legacy.
+5. **4 neue Model Cards:** `mistral-medium-3-5` (EU, Modified MIT, 256k, multimodal), `mistral-small-2603` / Mistral Small 4 (24B, Apache-2.0), `qwen/qwen3.6-plus`, `qwen/qwen3.7-max` (CN, proprietary, BSI-Risiko: high).
+6. **Card-Renames:** `mistral-medium-3_5.json` → `mistral-medium-3-5.json`, `mistral-small-4.json` → `mistral-small-2603.json`.
+7. **3 neue Reviews:** `docs/reviews/mistral-medium-3-5/`, `docs/reviews/mistral-small-2603/`, `docs/reviews/qwen2.5vl_7b/` (Benchmark + Bias Review, 2026-05-21).
 
-**Key Achievements (v3.7.1):**
-- ✅ **`scripts/analysis/generate_review.py`:** 4 × `_find_card()` statt naiver Pfadkonstruktion. Lokale `import re` entfernt.
-- ✅ **`scripts/analysis/generate_model_cards.py`:** Unused `_safe_name` Import entfernt (Pylint W0611).
-- ✅ **`scripts/web_export.py` — `build_provider_map()`:** `_FALLBACK_NAMES` durch Config-Lesung ersetzt; `"name" not in prov_val`-Guard.
-- ✅ **`scripts/leaderboard/exporter.py`:** `# type: ignore[call-overload]` für beide `apply(_fmt)`-Aufrufe; `import re as _re` vor `if`-Block.
-- ✅ **`docs/ARCHITECTURE.md`:** `is_reasoning_model_from_card()` Lookup korrekt als `_find_card()` dokumentiert.
+**Key Achievements (v3.7.5):**
+- ✅ **53 Model Cards** — `input_price_per_1m` + `output_price_per_1m` migriert (USD/1M Tokens).
+- ✅ **`config/cost_limits.yaml`** — auf 6 Legacy-Einträge bereinigt.
+- ✅ **`scripts/leaderboard/score_calculator.py` — `_build_price_lookup()`:** Card-First-Lookup; Legacy-Fallback für kartenlose Modelle.
+- ✅ **`utils/cost_tracker.py` — `calculate_cost()`:** 3-Tier LiteLLM → Card → Legacy.
+- ✅ **`scripts/dev/sync_cost_limits.py`:** Card-First-SSoT; `--fix` schreibt Legacy-Platzhalter nur bei fehlender Card.
+- ✅ **`scripts/dev/migrate_prices_to_cards.py`** (NEU): One-Time-Migrationsskript `cost_per_1k` → `per_1m`. Für Audit erhalten.
+- ✅ **4 neue Model Cards + Card-Renames** (Mistral Medium 3.5, Mistral Small 2603, Qwen 3.6+, Qwen 3.7 Max).
+- ✅ **3 neue Reviews** (mistral-medium-3-5, mistral-small-2603, qwen2.5vl_7b).
+- ✅ **Docs:** `USER_GUIDE.md`, `ARCHITECTURE.md`, `SCORING_METHODOLOGY.md` auf card-first Pricing aktualisiert.
+
+**Vorherige Version (v3.7.3–v3.7.4 – Architektur-Compliance & Anti-God-Script-Sanierung):**
+- ✅ **v3.7.4** — `_find_card(card_dir)` parametrisiert (SSoT). `WEIGHTS_TIER_DISPLAY` als exportierte Konstante aus `model_utils.py` (kein Duplikat in `web_export.py`). `_BLOCK_META` → `political_compass/config.yaml` + `_load_pc_block_meta()` (No Magic Numbers). 74/74 Export, 6/6 Tests.
+- ✅ **v3.7.3** — `scripts/web_export.py` Anti-God-Script: `main()` von ~490 auf ~80 Zeilen. 9 Top-Level-Hilfsfunktionen extrahiert. `load_csv_with_fallback()` Exception spezifiziert. `ARCHITECTURE.md` aktualisiert.
+
+**Vorherige Version (v3.7.1–v3.7.2 – Bug-Fixes & Web-Export Date Fields):**
+- ✅ **v3.7.2** — `scripts/web_export.py`: 4 Datumsfelder (`benchmark_run_at`, `report_published_at`, `report_updated_at`, `last_activity_at`). `_review_date_range()` + `_build_benchmark_run_dates()`.
+- ✅ **v3.7.1** — `generate_review.py` 4× `_find_card()`. `build_provider_map()` Config-Lesung. `exporter.py` Pylance-Fixes. `ARCHITECTURE.md` Doku-Fix.
 
 **Vorherige Version (v3.7.0 – Modell-Kategorisierungs-SSOT: 3-Tier `weights_license_tier` als einzige Quelle):**
 - ✅ **`utils/model_utils.py` — `get_model_category()` Card-First:** `_find_card()` → `weights_license_tier` → Display-String. Drei gültige Werte: `Proprietär` / `Restricted Weights` / `Open Weights`.

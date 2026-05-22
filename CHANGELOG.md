@@ -4,6 +4,28 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [v3.7.5] - 2026-05-22
+
+### Added
+- **`benchmark_scores/model_cards/*.json` — Preisfelder:** `input_price_per_1m` und `output_price_per_1m` (USD pro 1 Million Tokens) in alle 53 API-Model-Cards migriert. Model Cards sind die primäre Preisquelle (SSoT) für das gesamte Framework.
+- **`scripts/dev/migrate_prices_to_cards.py`:** One-Time-Migrationsskript — konvertiert `input_cost_per_1k` / `output_cost_per_1k` aus `cost_limits.yaml` (×1000) in `per_1m`-Felder der Cards. Für Audit-Zwecke erhalten.
+- **4 neue Model Cards:** `mistral-medium-3-5` (EU, Modified MIT, 256k, multimodal), `mistral-small-2603` / Mistral Small 4 (24B, Apache-2.0), `qwen/qwen3.6-plus`, `qwen/qwen3.7-max` (CN, proprietary, BSI-Risiko: high).
+- **Reviews:** Benchmark + Bias Reviews für `mistral-medium-3-5`, `mistral-small-2603`, `qwen2.5vl_7b` in `docs/reviews/`.
+
+### Changed
+- **`config/cost_limits.yaml`:** Von ~25 Modelleinträgen auf 6 Legacy-Einträge reduziert (nur Modelle ohne eigene Card: MiniMax Cloud Proxy, Kimi-K2.5 Cloud, GLM-5 Cloud, Llama-3.1-8B, Kimi-K2-Instruct, Groq Daily Budget). Alle anderen Modelle sind über ihre Card bepreist.
+- **`scripts/leaderboard/score_calculator.py` — `_build_price_lookup()`:** Card-First-Lookup: liest `output_price_per_1m` aus Model Cards; `cost_limits.yaml` als Legacy-Fallback für Modelle ohne Card.
+- **`utils/cost_tracker.py` — `calculate_cost()`:** 3-stufige Kaskade: (1) LiteLLM-Cache, (2) Model Card JSON (`input_price_per_1m` / `output_price_per_1m`), (3) `cost_limits.yaml` Legacy-Fallback.
+- **`scripts/dev/sync_cost_limits.py`:** Versteht card-first SSoT; `--fix` schreibt Platzhalter in `cost_limits.yaml` nur als temporären Fallback bis eine vollständige Card existiert. Typ-Korrekturen: `str(provider_key)`, `m.get("id") or ""`.
+- **Card-Renames:** `mistral-medium-3_5.json` → `mistral-medium-3-5.json`, `mistral-small-4.json` → `mistral-small-2603.json` (korrekte Naming-Convention: Dash-Separator, versioniert).
+
+### Docs
+- **`docs/USER_GUIDE.md`:** `make sync-cost-limits`-Beschreibung auf card-first SSoT aktualisiert. "Preisliste abgleichen"-Sektion zeigt jetzt Card-JSON als primären Weg.
+- **`docs/ARCHITECTURE.md`:** Model-Cards-Beschreibung um Preisfelder (`input_price_per_1m`, `output_price_per_1m`) und Konsumenten (`score_calculator.py`, `cost_tracker.py`) erweitert.
+- **`docs/SCORING_METHODOLOGY.md`:** v3.7.5-Eintrag in Versionshistorie ergänzt.
+
+---
+
 ## [v3.7.4] - 2026-05-21
 
 ### Refactored

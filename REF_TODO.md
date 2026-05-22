@@ -5,6 +5,30 @@
 
 ## Abgeschlossen
 
+### Pricing SSoT Migration: Model Cards als primäre Preisquelle (v3.7.5 – 22.05.26)
+- [x] `benchmark_scores/model_cards/*.json`: `input_price_per_1m` + `output_price_per_1m` (USD/1M Tokens) in alle 53 API-Cards migriert. Konvertierung: `per_1k × 1000`. Model Card = primäre Preisquelle für das Framework.
+- [x] `config/cost_limits.yaml`: Von ~25 Modelleinträgen auf 6 Legacy-Einträge reduziert (nur Modelle ohne Card: MiniMax Cloud, Kimi-K2.5 Cloud, GLM-5 Cloud, Llama-3.1-8B, Kimi-K2-Instruct, Groq Daily Budget).
+- [x] `scripts/leaderboard/score_calculator.py` — `_build_price_lookup()`: Card-First-Lookup; liest `output_price_per_1m` aus Model Card JSONs. `cost_limits.yaml` als Legacy-Fallback für kartenlose Modelle.
+- [x] `utils/cost_tracker.py` — `calculate_cost()`: 3-Tier-Kaskade: LiteLLM → Model Card → `cost_limits.yaml` Legacy.
+- [x] `scripts/dev/sync_cost_limits.py`: Card-First-SSoT; `--fix` schreibt Platzhalter nur für Modelle ohne Card.
+- [x] `scripts/dev/migrate_prices_to_cards.py` (NEU): One-Time-Migrationsskript für Audit. `_card_path()`-SSoT, regex für `-latest`-Aliases und Datumssuffixe.
+- [x] Neue Cards: `mistral-medium-3-5` (EU, Modified MIT, 256k), `mistral-small-2603` / Mistral Small 4 (24B, Apache-2.0), `qwen/qwen3.6-plus`, `qwen/qwen3.7-max` (CN, proprietary, BSI-Risiko: high). Card-Renames: `mistral-medium-3_5` → `mistral-medium-3-5`, `mistral-small-4` → `mistral-small-2603`.
+- [x] 3 neue Reviews: `docs/reviews/mistral-medium-3-5/`, `docs/reviews/mistral-small-2603/`, `docs/reviews/qwen2.5vl_7b/`.
+- [x] Docs: `USER_GUIDE.md`, `ARCHITECTURE.md`, `SCORING_METHODOLOGY.md` auf card-first Pricing aktualisiert.
+
+### Architektur-Compliance-Refactoring: `_find_card()`, `WEIGHTS_TIER_DISPLAY`, `_BLOCK_META` (v3.7.4 – 21.05.26)
+- [x] `utils/model_utils.py` — `_find_card(card_dir)`: Neuer optionaler Parameter `card_dir: Path | None = None`. Rückwärtskompatibel; `None` greift auf `CARD_DIR`-Konstante zurück.
+- [x] `utils/model_utils.py` — `WEIGHTS_TIER_DISPLAY`: Tier-Mapping als öffentliche Konstante exportiert. Kein Duplikat mehr in `web_export.py`.
+- [x] `scripts/web_export.py` — `load_model_card()`: Delegiert Pfad-Lookup an `_find_card(card_dir=card_dir)` (SSoT). ~40 Zeilen.
+- [x] `scripts/web_export.py` — `_BLOCK_META`: Hardcodiertes Dict entfernt. `_load_pc_block_meta(config_path)` liest Block-Metadaten aus `benchmark_modules/political_compass/config.yaml`.
+- [x] `benchmark_modules/political_compass/config.yaml`: `blocks:`-Sektion (9 Block-Einträge: ID, Label, Achse) als YAML-SSoT aufgenommen.
+
+### Anti-God-Script-Sanierung: `scripts/web_export.py` (v3.7.3 – 21.05.26)
+- [x] `main()` von ~490 auf ~80 Zeilen reduziert. 9 Top-Level-Hilfsfunktionen extrahiert (vollständige Type Hints, mypy-kompatibel).
+- [x] `_resolve_dir()`, `_setup_output_dirs()`, `_load_sources()`, `_build_pc_lookups()`, `_export_model_files()` extrahiert.
+- [x] `_build_leaderboard_entry()`, `_lookup_pc_row()`, `_build_compass_entry()`, `_write_top_level_outputs()` extrahiert.
+- [x] `load_csv_with_fallback()`: Exception-Handling spezifiziert (`OSError | pd.errors.ParserError`). `ARCHITECTURE.md` aktualisiert.
+
 ### Web-Export Date Fields: benchmark_run_at, report_published_at, last_activity_at (v3.7.2 – 16.05.26)
 - [x] `scripts/web_export.py`: `_build_benchmark_run_dates()` liest `outputs/runs/results_*_YYYYMMDD_*.json`, extrahiert Datum aus Dateiname + `model`-Feld aus JSON → `model_id → earliest_date` Map.
 - [x] `scripts/web_export.py`: `_review_date_range()` parst `review_YYYYMMDD_*.md` Dateinamen → `(published_at, updated_at)`. Kein mtime — Filename ist SSOT.
