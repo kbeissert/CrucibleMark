@@ -385,4 +385,5 @@ v3.4.0 (2026-04-08): Token-Budget-System (max_tokens API-Cap), Verbosity-Diagnos
 v3.4.2 (2026-04-09): Vollständige Preis-Datenbasis in cost_limits.yaml; LLM Judge Avg als ★-Format im Leaderboard ✅
 v3.4.3 (2026-04-10): module_weight-System — selbstnormierende Modulgewichtung entkoppelt Total Score von Asset-Anzahl; CLI-Modul als Supplement (0.5) ✅
 v3.5.7 (2026-04-23): SSoT resolve_token_budget(), gemini-2.5 Reasoning-Trigger, Judge-Verbosity-Penalty für Reasoning-Modelle, Refusal-Dokumentationsfelder ✅
+v3.7.5 (2026-05-22): Pricing SSoT Migration — Preise von cost_limits.yaml in Model Cards verlagert (input_price_per_1m / output_price_per_1m, per 1M Tokens). score_calculator.py und cost_tracker.py lesen Cards als primäre Preisquelle; cost_limits.yaml als Legacy-Fallback für Modelle ohne Card ✅
 ```

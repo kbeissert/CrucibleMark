@@ -221,7 +221,7 @@ make diff-results REF=outputs/runs/v1.json TEST=outputs/runs/v2.json THRESH=0.15
 - **`make validate`** oder **`make validate-single ASSET=pfad`**: Validiert das YAML-Schema der hinterlegten Tests.
 - **`make validate-structure`**: Testet, ob das Verzeichnis-Layout den Architekturvorgaben entspricht.
 - **`make audit-markdown`**: Durchsucht und bereinigt (mit optionalem Flag `FIX=1`) fehlerhafte Formatierungen in Dokumenten.
-- **`make sync-cost-limits`**: Prüft, ob alle konfigurierten Modelle einen Preiseintrag in `config/cost_limits.yaml` haben. Zeigt fehlende Modelle als Bericht. Mit Flag `FIX=1` werden Platzhalter (`null`) automatisch eingetragen — den eigentlichen Preis trägt man danach manuell nach.
+- **`make sync-cost-limits`**: Prüft, ob alle konfigurierten Modelle einen Preiseintrag haben — primär in der jeweiligen Model Card (`benchmark_scores/model_cards/*.json`, Felder `input_price_per_1m` / `output_price_per_1m`), Fallback: `config/cost_limits.yaml` (Legacy). Zeigt fehlende Modelle als Bericht. Mit Flag `FIX=1` werden Platzhalter in `cost_limits.yaml` eingetragen als temporärer Fallback, bis eine vollständige Model Card angelegt wird.
 
 #### 3. Projekt-Hygiene & Cleanup-Befehle
 
@@ -489,13 +489,25 @@ make clean-csv
 
 ### Preisliste mit konfigurierten Modellen abgleichen
 
-Wenn ein neues Modell in `benchmark_config.yaml` eingetragen wird, fehlt der Preiseintrag in `config/cost_limits.yaml` zunächst. Der folgende Befehl zeigt alle Modelle ohne Preis:
+Preise sind seit v3.7.5 in den **Model Cards** (`benchmark_scores/model_cards/*.json`) gespeichert — als `input_price_per_1m` und `output_price_per_1m` (je USD pro 1 Million Tokens). `config/cost_limits.yaml` dient nur noch als Legacy-Fallback für Modelle ohne eigene Card.
+
+Der folgende Befehl zeigt alle Modelle ohne Preis (Card + Legacy-Fallback):
 
 ```bash
 make sync-cost-limits
 ```
 
-Mit `FIX=1` werden Platzhalter automatisch eingefügt — der eigentliche Preis wird danach manuell nachgetragen:
+Für ein neues Modell die Card um die Preisfelder ergänzen:
+
+```json
+// benchmark_scores/model_cards/<model-id>.json
+{
+  "input_price_per_1m":  1.0,
+  "output_price_per_1m": 5.0
+}
+```
+
+Alternativ (temporärer Legacy-Fallback, bis eine vollständige Card existiert):
 
 ```bash
 make sync-cost-limits FIX=1
