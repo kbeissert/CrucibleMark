@@ -12,13 +12,34 @@
   "weights_license_tier": "open-weights",
   "license": "Apache 2.0",
   "commercial_use_allowed": true,
-  "size_class": "Desktop",
+  "size_class": "Edge",
   "deployment_type": "local-only",
   "local_deployment_possible": true,
-  "card_status": "minimal",
+  "card_status": "complete",
   "generated_at": "2026-05-21T15:17:42.530329+00:00",
   "thinking_probe_detected": false,
   "thinking_probe_evidence": "No CoT signals found (A: no think-tags, B: reasoning_tokens=0). Response length: 810 chars",
   "thinking_probe_confidence": "low",
-  "thinking_probe_at": "2026-05-21T15:17:42.530125+00:00"
+  "thinking_probe_at": "2026-05-21T15:17:42.530125+00:00",
+  "use_case_primary": "vision-language",
+  "parameter_architecture": "dense",
+  "params_total_b": 7.0,
+  "context_window_k": 32,
+  "knowledge_cutoff": "2024-09",
+  "summary": "Qwen 2.5 VL 7B ist ein kompaktes Vision-Language-Modell (VLM) von Alibaba Cloud. Es kombiniert starke Bildverstehensfähigkeiten — inklusive OCR, Dokumentanalyse und Chart-Interpretation — mit soliden Sprachfähigkeiten auf 7B-Parameterbasis. Als Open-Weights-Modell (Apache 2.0) ist es lokal deploybar und eignet sich für multimodale Anwendungen auf Consumer-Hardware.",
+  "strengths": [
+    "Hochwertige Vision-Language-Fähigkeiten: Bildanalyse, OCR, Charts, Dokumente",
+    "Kompakte Größe mit guter Leistung für Edge-Hardware",
+    "Apache 2.0 Lizenz — freie kommerzielle Nutzung",
+    "Lokal betreibbar ohne API-Kosten"
+  ],
+  "limitations": [
+    "CrucibleMark-Benchmark testet nur Text — multimodale Stärken werden nicht erfasst",
+    "Reine Textleistung liegt unter vergleichbaren Text-only-Modellen gleicher Größe",
+    "Kontextfenster (32K) begrenzt für lange Dokumente"
+  ],
+  "judge_context_hint": "Das Modell ist primär ein Vision-Language-Modell. Die Benchmark-Ergebnisse spiegeln nur die Textkomponente wider. Der Reviewer muss diesen Umstand explizit benennen und die Ergebnisse entsprechend einordnen — Direktvergleiche mit reinen Sprachmodellen sind methodisch eingeschränkt.",
+  "primary_focus": "vision-language",
+  "input_price_per_1m": 0.0,
+  "output_price_per_1m": 0.0
 }

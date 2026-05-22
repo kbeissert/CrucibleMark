@@ -42,5 +42,10 @@
   "weights_license_tier": "proprietary",
   "model_version": "4.7",
   "input_price_per_1m": 5.0,
-  "output_price_per_1m": 25.0
+  "output_price_per_1m": 25.0,
+  "use_case_primary": "agentic",
+  "parameter_architecture": "dense",
+  "params_total_b": null,
+  "context_window_k": 200,
+  "knowledge_cutoff": "2025-01"
 }

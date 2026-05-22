@@ -5,6 +5,19 @@
 
 ## Abgeschlossen
 
+### Model Card Klassifikations-System & Reviewer-Prompt-Überarbeitung (v3.8.0 – 22.05.26)
+- [x] **`benchmark_scores/model_cards/*.json`** — `use_case_primary` (`generalist`/`coding`/`reasoning`/`vision-language`/`agentic`), `parameter_architecture` (`dense`/`moe`), `context_window_k` (Kilotoken), `knowledge_cutoff` (`YYYY-MM`) als Pflichtfelder in alle ~77 Cards migriert.
+- [x] **`config/classification_taxonomy.json`** (NEU) — SSoT für Taxonomy mit `label`, `description` und `reviewer_guidance` pro Wert. Zwei Sektionen: `use_case` (5 Werte) + `size_class` (6 Werte).
+- [x] **`scripts/dev/migrate_use_case_primary.py`** (NEU) — Idempotentes Migrationsskript mit `--dry-run`-Support. Zuweisung nach Prioritätskaskade: `primary_focus=coding` → `"coding"`, Vision/Multimodal-Tags → `"vision-language"`, Thinking-Tags → `"reasoning"`, Agentic-Tag → `"agentic"`, sonst `"generalist"`. Thinking-Optional bleibt `"generalist"`.
+- [x] **`scripts/dev/migrate_context_fields.py`** (NEU) — Idempotentes Migrationsskript für `context_window_k` + `knowledge_cutoff`. Liest Werte aus `benchmark_config.yaml`-Beschreibungsfeldern oder setzt sinnvolle Defaults.
+- [x] **`utils/model_utils.py` — `get_use_case_primary()`** — Neue Hilfsfunktion. `card_data`-Parameter optional. Fallback immer `"generalist"` — kein None, kein Exception.
+- [x] **`scripts/analysis/generate_review.py` — `_format_classification_context()`** — Rendert `classification_taxonomy.json` als Markdown-Tabellen. Hebt `use_case_primary` und `size_class` des aktuellen Modells mit `▶` hervor. Injektion als `{use_case_classification_context}` nach Modell-Identitäts-Block.
+- [x] **`config/meta_reviewer_prompt.yaml`** — 3 neue Prompt-Regeln: (1) Gedankenstrich max 2–3 im gesamten Artikel, (2) Fachbegriffe im Kontext erklären (Zielgruppe: Nicht-Experten, nicht ML-Ingenieure), (3) keine internen Test-IDs im Review-Text — Modulbeschreibung stattdessen. Test-ID-Referenzen aus allen Diagnostik-Blöcken entfernt.
+- [x] **Reviewer-Wettbewerb** — Claude Sonnet 4.6 / Gemini 3.1 Pro / GPT-5.4 auf identischen Grok-3-Rohdaten. Ergebnis: GPT-5.4 gewinnt (1 Gedankenstrich gesamt, stärkste Zugänglichkeit, "Löschzug nach Lackfarbe"-Metapher). Claude bleibt Standard in `benchmark_config.yaml`. Gemini: zu kurz, fehlende Pflichtstruktur.
+- [x] **`benchmark_config.yaml` — `llm_review`** — `max_tokens` von 8192 auf 32768 erhöht (Rohdaten pro Modell: 25–35k Wörter). Reviewer-Komparativen auskommentiert (Claude/Gemini/GPT-5.4).
+- [x] **`docs/blog_entwurf_reviewer_experiment.md`** (NEU) — Blog-Entwurf für cruciblemark.com/magazine: Zufälls-qwen2.5vl-Benchmark → SSOT-Problem → 3-Säulen-Card-Überarbeitung → Reviewer-Wettbewerb → 3 Erkenntnisse. Zielgruppe Nicht-Experten, Fachbegriffe erklärt.
+- [x] **Docs:** `docs/MODEL_CLASSIFICATION.md` v3.0.0 (neue Sektionen use_case_primary, parameter_architecture, context_window_k). `docs/AUDIT_AND_METAREVIEW.md` (Card-Felltabelle, neue Prompt-Regeln, use_case_classification_context). `docs/DEVELOPER_GUIDE.md` (Model Card Schema Pflichtfelder, Migrationsskripte, `get_use_case_primary()`). `memory-bank/activeContext.md` + `progress.md` aktualisiert.
+
 ### Pricing SSoT Migration: Model Cards als primäre Preisquelle (v3.7.5 – 22.05.26)
 - [x] `benchmark_scores/model_cards/*.json`: `input_price_per_1m` + `output_price_per_1m` (USD/1M Tokens) in alle 53 API-Cards migriert. Konvertierung: `per_1k × 1000`. Model Card = primäre Preisquelle für das Framework.
 - [x] `config/cost_limits.yaml`: Von ~25 Modelleinträgen auf 6 Legacy-Einträge reduziert (nur Modelle ohne Card: MiniMax Cloud, Kimi-K2.5 Cloud, GLM-5 Cloud, Llama-3.1-8B, Kimi-K2-Instruct, Groq Daily Budget).
@@ -357,4 +370,4 @@
 
 ---
 
-**Last Updated:** 2026-04-23 **Version:** 3.5.7 (SSoT Token-Budget, Gemini-2.5 Reasoning-Fix, Judge-Verbosity-Penalty, Refusal-Metadaten) **Nächster Meilenstein:** Re-Run Gemini 2.5 Flash (UX Writing, Documentation Quality) / Leaderboard-Update
+**Last Updated:** 2026-05-22 **Version:** 3.8.0 (Model Card Klassifikations-System, Reviewer-Prompt-Überarbeitung, Dokumentationssynchronisation) **Nächster Meilenstein:** benchmark-auto PC-Re-Run + offene Cloud-Modelle

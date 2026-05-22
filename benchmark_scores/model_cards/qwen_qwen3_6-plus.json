@@ -46,8 +46,13 @@
   "model_version": "3.6-plus",
   "context_window": 1000000,
   "max_output_tokens": 65536,
-  "input_price_per_1m": 0.50,
-  "output_price_per_1m": 3.00,
-  "input_price_per_1m_above_256k": 2.00,
-  "output_price_per_1m_above_256k": 6.00
+  "input_price_per_1m": 0.5,
+  "output_price_per_1m": 3.0,
+  "input_price_per_1m_above_256k": 2.0,
+  "output_price_per_1m_above_256k": 6.0,
+  "use_case_primary": "agentic",
+  "parameter_architecture": "hybrid",
+  "params_total_b": null,
+  "context_window_k": null,
+  "knowledge_cutoff": null
 }

@@ -40,5 +40,10 @@
   "thinking_probe_confidence": "high",
   "thinking_probe_manual_override": true,
   "thinking_probe_at": "2026-05-16T18:47:56.692725+00:00",
-  "model_version": "8b"
+  "model_version": "8b",
+  "use_case_primary": "generalist",
+  "parameter_architecture": "dense",
+  "params_total_b": 8.0,
+  "context_window_k": 128,
+  "knowledge_cutoff": null
 }

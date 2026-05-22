@@ -35,6 +35,7 @@ TIMEOUT_ANTHROPIC_API = 600.0   # Anthropic SDK: 8000+-Token-Generierungen
 # Quelle: https://platform.claude.com/docs/en/docs/about-claude/models (Apr 2026)
 ANTHROPIC_NO_TEMPERATURE_MODELS: frozenset[str] = frozenset({
     "claude-opus-4-7",
+    "claude-sonnet-4-6",
 })
 
 

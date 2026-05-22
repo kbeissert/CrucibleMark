@@ -1,33 +1,39 @@
 # PROJECT_STATUS.md
 
 **Last Updated:** 2026-05-22
-**Current Version:** 3.7.5 (Pricing SSoT Migration: `input_price_per_1m` / `output_price_per_1m` in Model Cards; 4 neue Cards; 3 neue Reviews)
+**Current Version:** 3.8.0 (Model Card Klassifikations-System: `use_case_primary`, `parameter_architecture`, `context_window_k`, `knowledge_cutoff`; Reviewer-Prompt-Regeln; vollständige Dokumentationssynchronisation)
 **Status:** ✅ Production-Ready
 
 ---
 
 ## Executive Summary
 
-CrucibleMark v3.7.5 schließt die Pricing-Architektur: Preise werden nicht mehr zentral in `config/cost_limits.yaml` gepflegt, sondern als `input_price_per_1m` / `output_price_per_1m` (USD/1M Tokens) direkt in den Model Cards hinterlegt. `score_calculator.py` und `cost_tracker.py` lesen Cards als primäre Quelle; `cost_limits.yaml` bleibt als Legacy-Fallback für Modelle ohne Card erhalten.
+CrucibleMark v3.8.0 führt ein vollständiges Modell-Klassifikations-System ein. Spezialisierte Modelle (Vision-Language, Coding, Reasoning, Agentic) werden jetzt mit einem kontrollierten Vokabular in der Model Card erfasst und der Reviewer erhält diesen Kontext automatisch als Prompt-Injection — so bewertet er ein VL-Modell nie am selben Maßstab wie einen Generalisten.
 
-1. **Pricing SSoT in Model Cards:** Alle 53 API-Model-Cards wurden mit Preisfeldern befüllt (Migration via `scripts/dev/migrate_prices_to_cards.py`, einmalig, für Audit erhalten).
-2. **`cost_limits.yaml` bereinigt:** Von ~25 Modelleinträgen auf 6 Legacy-Einträge reduziert (nur Modelle ohne Card: MiniMax Cloud Proxy, Kimi-K2.5 Cloud, GLM-5 Cloud, Llama-3.1-8B, Kimi-K2-Instruct, Groq Daily Budget).
-3. **`score_calculator.py` — `_build_price_lookup()`:** Card-First-Lookup; `cost_limits.yaml` als Fallback für kartenlose Modelle.
-4. **`cost_tracker.py` — `calculate_cost()`:** 3-Tier-Kaskade: LiteLLM → Model Card → `cost_limits.yaml` Legacy.
-5. **4 neue Model Cards:** `mistral-medium-3-5` (EU, Modified MIT, 256k, multimodal), `mistral-small-2603` / Mistral Small 4 (24B, Apache-2.0), `qwen/qwen3.6-plus`, `qwen/qwen3.7-max` (CN, proprietary, BSI-Risiko: high).
-6. **Card-Renames:** `mistral-medium-3_5.json` → `mistral-medium-3-5.json`, `mistral-small-4.json` → `mistral-small-2603.json`.
-7. **3 neue Reviews:** `docs/reviews/mistral-medium-3-5/`, `docs/reviews/mistral-small-2603/`, `docs/reviews/qwen2.5vl_7b/` (Benchmark + Bias Review, 2026-05-21).
+1. **`use_case_primary` als Pflichtfeld:** Kontrolliertes Vokabular: `generalist` / `coding` / `reasoning` / `vision-language` / `agentic`. Auslöser: zufällig mitgelaufenes `qwen2.5vl`-Modell (für SwarmUI/Bildgenerierung konfiguriert) enthüllte fehlende Einordnungsebene im Reviewer-Prompt.
+2. **`parameter_architecture` (dense/moe):** MoE-Modelle werden korrekt am `params_active_b`-Wert bewertet, nicht an der Gesamtparameterzahl. Verhindert Äpfel-Birnen-Vergleiche.
+3. **`context_window_k` + `knowledge_cutoff`:** Kontextfenster (in K-Token) und Trainingsdaten-Stichtag als Pflichtfelder in allen Cards.
+4. **`config/classification_taxonomy.json` (SSoT):** Canonical Taxonomy für `use_case` und `size_class` — inklusive `reviewer_guidance` pro Wert. Einmalig laden, überall referenzieren.
+5. **`{use_case_classification_context}` Prompt-Injection:** `generate_review.py` rendert volle Taxonomy + Hervorhebung des aktuellen Modells und injiziert sie in `meta_reviewer_prompt.yaml`.
+6. **`get_use_case_primary()` in `model_utils.py`:** Neue Hilfsfunktion mit Fallback `"generalist"` — SSoT für alle Konsumenten.
+7. **Drei neue Reviewer-Prompt-Regeln:** Gedankenstrich max 2–3 im gesamten Artikel, Fachbegriffe im Kontext erklären (Zielgruppe: Nicht-Experten), keine internen Test-IDs im Review-Text.
+8. **Reviewer-Wettbewerb:** Claude Sonnet 4.6 / Gemini 3.1 Pro / GPT-5.4 auf identischen Grok-3-Daten — GPT-5.4 gewinnt (stärkste redaktionelle Stimme), Claude Sonnet 4.6 bleibt Standard (Strukturtreue + analytische Tiefe).
+9. **Migrationsskripte:** `migrate_use_case_primary.py`, `migrate_context_fields.py` — idempotent, `--dry-run`-Support.
+10. **Dokumentationssynchronisation:** `MODEL_CLASSIFICATION.md` v3.0.0, `AUDIT_AND_METAREVIEW.md`, `DEVELOPER_GUIDE.md`, `memory-bank/` vollständig aktualisiert.
 
-**Key Achievements (v3.7.5):**
-- ✅ **53 Model Cards** — `input_price_per_1m` + `output_price_per_1m` migriert (USD/1M Tokens).
-- ✅ **`config/cost_limits.yaml`** — auf 6 Legacy-Einträge bereinigt.
-- ✅ **`scripts/leaderboard/score_calculator.py` — `_build_price_lookup()`:** Card-First-Lookup; Legacy-Fallback für kartenlose Modelle.
-- ✅ **`utils/cost_tracker.py` — `calculate_cost()`:** 3-Tier LiteLLM → Card → Legacy.
-- ✅ **`scripts/dev/sync_cost_limits.py`:** Card-First-SSoT; `--fix` schreibt Legacy-Platzhalter nur bei fehlender Card.
-- ✅ **`scripts/dev/migrate_prices_to_cards.py`** (NEU): One-Time-Migrationsskript `cost_per_1k` → `per_1m`. Für Audit erhalten.
-- ✅ **4 neue Model Cards + Card-Renames** (Mistral Medium 3.5, Mistral Small 2603, Qwen 3.6+, Qwen 3.7 Max).
-- ✅ **3 neue Reviews** (mistral-medium-3-5, mistral-small-2603, qwen2.5vl_7b).
-- ✅ **Docs:** `USER_GUIDE.md`, `ARCHITECTURE.md`, `SCORING_METHODOLOGY.md` auf card-first Pricing aktualisiert.
+**Key Achievements (v3.8.0):**
+- ✅ **~77 Model Cards** — `use_case_primary`, `parameter_architecture`, `context_window_k`, `knowledge_cutoff` migriert.
+- ✅ **`config/classification_taxonomy.json`** — SSoT für Taxonomy + `reviewer_guidance` pro Wert (use_case 5 Werte, size_class 6 Werte).
+- ✅ **`scripts/analysis/generate_review.py` — `_format_classification_context()`:** Taxonomy-Injection als `{use_case_classification_context}` mit Modell-Hervorhebung.
+- ✅ **`utils/model_utils.py` — `get_use_case_primary()`:** Neue Hilfsfunktion, Fallback `"generalist"`.
+- ✅ **`config/meta_reviewer_prompt.yaml`** — 3 neue Regeln: Gedankenstrich, Fachbegriff-Zugänglichkeit, keine Test-IDs.
+- ✅ **Migrationsskripte:** `scripts/dev/migrate_use_case_primary.py`, `scripts/dev/migrate_context_fields.py`.
+- ✅ **Blogpost-Entwurf:** `docs/blog_entwurf_reviewer_experiment.md` — für cruciblemark.com/magazine.
+- ✅ **Docs:** `MODEL_CLASSIFICATION.md` v3.0.0, `AUDIT_AND_METAREVIEW.md`, `DEVELOPER_GUIDE.md` synchronisiert.
+
+**Vorherige Version (v3.7.5 – Pricing SSoT Migration: Model Cards als primäre Preisquelle):**
+
+CrucibleMark v3.7.5 schließt die Pricing-Architektur: Preise werden nicht mehr zentral in `config/cost_limits.yaml` gepflegt, sondern als `input_price_per_1m` / `output_price_per_1m` (USD/1M Tokens) direkt in den Model Cards hinterlegt. 53 API-Model-Cards migriert. `cost_limits.yaml` auf 6 Legacy-Einträge reduziert. 4 neue Cards, 3 neue Reviews.
 
 **Vorherige Version (v3.7.3–v3.7.4 – Architektur-Compliance & Anti-God-Script-Sanierung):**
 - ✅ **v3.7.4** — `_find_card(card_dir)` parametrisiert (SSoT). `WEIGHTS_TIER_DISPLAY` als exportierte Konstante aus `model_utils.py` (kein Duplikat in `web_export.py`). `_BLOCK_META` → `political_compass/config.yaml` + `_load_pc_block_meta()` (No Magic Numbers). 74/74 Export, 6/6 Tests.
@@ -542,12 +548,12 @@ Visuelle Aufgaben (UML lesen, UI-Designs beurteilen) benötigen neue Asset-Forma
 
 ### Abgeschlossen
 
-- [x] Root README (v3.4.5, redaktionell überarbeitet 11.04.26)
-- [x] docs/ (14 Dateien, redaktionell überarbeitet 11.04.26)
+- [x] Root README (v3.8.0, aktualisiert 22.05.26)
+- [x] docs/ (14 Dateien, zuletzt synchronisiert 22.05.26)
 - [x] Module READMEs (8/8)
 - [x] Configuration docs
 - [x] Contributing guidelines
-- [x] REF_TODO.md (auf aktuellem Stand 11.04.26)
+- [x] REF_TODO.md (auf aktuellem Stand 22.05.26)
 - [x] PROJECT_STATUS.md (dieses Dokument)
 
 ### In Bearbeitung
@@ -663,6 +669,6 @@ Visuelle Aufgaben (UML lesen, UI-Designs beurteilen) benötigen neue Asset-Forma
 
 ---
 
-**Document Version:** 3.1\
-**Last Updated:** 2026-04-11\
-**Next Review:** v3.5.0 / Volldurchlauf Leaderboard
+**Document Version:** 3.2\
+**Last Updated:** 2026-05-22\
+**Next Review:** v3.9.0 / Nächster Feature-Meilenstein

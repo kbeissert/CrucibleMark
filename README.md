@@ -1,6 +1,6 @@
 # CrucibleMark
 
-[![Version](https://img.shields.io/badge/version-3.7.5-blue)](.)
+[![Version](https://img.shields.io/badge/version-3.8.0-blue)](.)
 [![Python](https://img.shields.io/badge/python-3.10%2B-blue)](.)
 [![License](https://img.shields.io/badge/license-MIT-green)](.)
 [![Status](https://img.shields.io/badge/status-production--ready-brightgreen)](.)
@@ -33,7 +33,7 @@ Die meisten Benchmarks fokussieren sich auf rein theoretische Prüfungen. Crucib
 
 ## Features
 
-* **LLM-as-a-Judge Architektur:** Ein dediziertes Sub-System delegiert die semantische Bewertung der Antworten an hochperformante Judges (wie `claude-haiku-4.5` oder lokale Modelle).
+* **LLM-as-a-Judge Architektur:** Ein dediziertes Sub-System delegiert die semantische Bewertung der Antworten an hochperformante Judges (wie Claude Haiku oder lokale Modelle).
 * **Multi-Provider Support:** Volle Unterstützung für lokale, datenschutzkonforme Ausführung via **Ollama** sowie cloud-basierte kommerzielle Modelle (Mistral, Anthropic Claude, OpenAI, Google Gemini, xAI).
 * **SSOT 3-CSV Data Architecture:** Isolierte Logik und trennscharfes Logging von Local VRAM, Cloud Open-Weights Proxies und kommerziellen API-Modellen.
 * **Ausfallsicherheit & Checkpointing:** Block-Level-Checkpointing sichert den Fortschritt bei Budget-Erschöpfung, Rate Limits (429) oder Verbindungsabbrüchen. Der Run setzt auf den Token genau dort weiter, wo er endete.
@@ -45,6 +45,7 @@ Die meisten Benchmarks fokussieren sich auf rein theoretische Prüfungen. Crucib
 * **ThinkingProbe & Card-First Workflow:** CrucibleMark erkennt Reasoning-Modelle seit v3.5.8 empirisch statt rein heuristisch. Vor jedem Benchmark-Run prüft der Runner, ob für das Modell eine validierte Model Card mit `thinking_probe_detected`-Feld vorliegt. Fehlt das Feld, sendet das Framework einen deterministischen Reasoning-Probe-Prompt und wertet `<think>`-Tags (Signal A) und `reasoning_tokens > 0` (Signal B) aus. Das Ergebnis wird in der Model Card persistiert und dient ab sofort als primäre Quelle für `is_reasoning_model()` — String-Trigger bleiben als Fallback erhalten. Retroaktiver Batch-Scan via `make probe-all-thinking`.
 * **Size-Class-Klassifikation (Card-First):** `get_model_size_class()` nutzt eine 3-stufige Priority-Kaskade: (1) `size_class`-Feld der JSON-Model-Card (SSoT), (2) Ollama-Colon-Tag (z. B. `gemma4:E4B` → Nano), (3) Dash/Dot-Suffix-Regex auf den Modellnamen (z. B. `llama-3.3-70b` → Server). Fallback: Frontier. Das Leaderboard weist damit 6 Deployment-Tiers aus (Nano/Edge/Desktop/Workstation/Server/Frontier).
 * **Transparenz bei lautlosen Verweigerungen:** Meta-Reviews enthalten seit v3.5.9 einen `empty_response_context`-Block: Assets, bei denen ein Modell `response_length=0` liefert (lautlose Content-Policy-Ablehnung), werden namentlich im Modul-Abschnitt des Reviews dokumentiert.
+* **Use-Case-Klassifikation & Reviewer-Kontext (v3.8.0):** Jede Model Card trägt das Pflichtfeld `use_case_primary` (Werte: `generalist`, `coding`, `reasoning`, `vision-language`, `agentic`). Ergänzt durch `parameter_architecture` (dense/moe), `context_window_k` und `knowledge_cutoff`. Die Taxonomy aller erlaubten Werte liegt in `config/classification_taxonomy.json` (SSoT). Beim Generieren eines Reviews injiziert `generate_review.py` die vollständige Taxonomy inklusive modellspezifischer Hervorhebung als `{use_case_classification_context}` in den Reviewer-Prompt — so bewertet der Reviewer ein Vision-Language-Modell nicht am selben Maßstab wie einen Generalisten.
 
 ---
 
@@ -146,4 +147,4 @@ Tiefergehende Einblicke in die Methodik findest du im `docs/` Verzeichnis:
 
 - **Maintainer:** kbeissert
 - **Repository:** [github.com/kbeissert/cruciblemark](https://github.com/kbeissert/cruciblemark)
-- **Status:** ✅ Production-Ready (v3.7.5)
+- **Status:** ✅ Production-Ready (v3.8.0)

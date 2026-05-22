@@ -41,5 +41,11 @@
   "thinking_probe_confidence": "low",
   "thinking_probe_at": "2026-05-16T18:47:31.122316+00:00",
   "input_price_per_1m": 0.11,
-  "output_price_per_1m": 0.34
+  "output_price_per_1m": 0.34,
+  "use_case_primary": "vision-language",
+  "parameter_architecture": "moe",
+  "params_total_b": 109.0,
+  "params_active_b": 17.0,
+  "context_window_k": 10000,
+  "knowledge_cutoff": null
 }

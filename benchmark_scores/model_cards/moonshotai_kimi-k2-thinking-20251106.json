@@ -45,5 +45,11 @@
   "weights_license_tier": "open-weights",
   "thinking_probe_manual_override": true,
   "input_price_per_1m": 0.6,
-  "output_price_per_1m": 2.5
+  "output_price_per_1m": 2.5,
+  "use_case_primary": "reasoning",
+  "parameter_architecture": "moe",
+  "params_total_b": 1000.0,
+  "params_active_b": 32.0,
+  "context_window_k": 128,
+  "knowledge_cutoff": null
 }

@@ -1,0 +1,92 @@
+{
+  "use_case": {
+    "description": "Primärer Optimierungsschwerpunkt des Modells – editorial kuratiert, nicht auto-generiert. Fallback: 'generalist'.",
+    "field_name": "use_case_primary",
+    "fallback": "generalist",
+    "values": {
+      "generalist": {
+        "label": "Generalist",
+        "description": "Allround-Modell ohne spezifischen Optimierungsschwerpunkt. Für breite Aufgabenklassen ausgelegt.",
+        "reviewer_guidance": "Beurteile das Modell anhand der vollen Aufgabenbreite. Stärken in Teilbereichen (z.B. Code oder Reasoning) sind positiv zu vermerken, aber nicht die Erwartungsbasis."
+      },
+      "coding": {
+        "label": "Coding",
+        "description": "Für Code-Generierung, -Vervollständigung oder -Debugging spezialisiert. Trainings- und Architektur-Optimierung auf Programmiersprachenstruktur.",
+        "reviewer_guidance": "Coding-Stärken sind erwartbar. Schwächen bei allgemeinen Reasoning- oder Kreativaufgaben sind akzeptabel und sollten nicht übergewichtet werden."
+      },
+      "reasoning": {
+        "label": "Reasoning / Deep Thinking",
+        "description": "Auf mehrstufiges Schlussfolgern optimiert, typischerweise mit Chain-of-Thought (sichtbar oder intern). Thinking ist der primäre Zweck, nicht ein optionales Feature.",
+        "reviewer_guidance": "Tiefes Reasoning und längere Antwortzeiten sind erwartbar und positiv zu werten. Bewerte Antwortqualität über Antwortgeschwindigkeit."
+      },
+      "vision-language": {
+        "label": "Vision-Language (VL)",
+        "description": "Multimodales Modell, primär für visuelle Eingaben (Bilder) in Kombination mit Text optimiert.",
+        "reviewer_guidance": "Dieses Modell ist NICHT direkt mit reinen Sprachmodellen vergleichbar. Text-only Benchmark-Ergebnisse zeigen nur einen Teilaspekt der Modellkompetenz. Benenne diesen Umstand explizit im Review."
+      },
+      "agentic": {
+        "label": "Agentic / Orchestration",
+        "description": "Für mehrstufige Aufgabenplanung, Tool-Use und Multi-Agent-Koordination optimiert.",
+        "reviewer_guidance": "Penalisiere nicht fehlende Direktantworten bei Aufgaben, die typischerweise Tool-Nutzung erfordern. Bewerte Planungs- und Strukturierungsfähigkeit besonders."
+      }
+    }
+  },
+  "size_class": {
+    "description": "Deployment-Hardware-Tier des Modells – leitet sich aus Parameteranzahl oder API-Only-Status ab.",
+    "field_name": "size_class",
+    "values": {
+      "Nano": {
+        "label": "Nano (≤4B Parameter)",
+        "description": "Kleinstmodelle für Embedded/Mobile-Einsatz. Sehr geringer Speicherbedarf.",
+        "reviewer_guidance": "Maßstab ist Kompetenz relativ zur Parameterzahl. Tiefes Reasoning oder breites Weltwissen sind strukturell nicht zu erwarten."
+      },
+      "Edge": {
+        "label": "Edge (5–9B Parameter)",
+        "description": "Consumer-GPU-Klasse. Läuft auf Standard-Laptops (z.B. MacBook M-Serie, RTX 3060).",
+        "reviewer_guidance": "Gutes Preis-Leistungs-Verhältnis ist die Messlatte. Vergleiche primär mit anderen Edge-Modellen, nicht mit Frontier."
+      },
+      "Desktop": {
+        "label": "Desktop (10–22B Parameter)",
+        "description": "Gehobene Consumer-Hardware oder kleine Workstations. Gute Balance aus Leistung und Ressourcenverbrauch.",
+        "reviewer_guidance": "Solide Allround-Leistung ist erwartbar. Schwächen gegenüber 70B+ Modellen sind strukturbedingt."
+      },
+      "Workstation": {
+        "label": "Workstation (23–35B Parameter)",
+        "description": "Professionelle Workstations oder dedizierte GPU-Server.",
+        "reviewer_guidance": "Gehobene Leistung auf breiter Aufgabenbasis. Direkter Vergleich mit Cloud-Modellen mid-tier ist legitim."
+      },
+      "Server": {
+        "label": "Server (36–75B Parameter)",
+        "description": "Multi-GPU-Server oder High-End-Cloud-Instanzen. Hoher Ressourcenbedarf.",
+        "reviewer_guidance": "Benchmark-Ergebnisse sollten mit Frontier-Modellen konkurrieren. Deutliche Schwächen sind kritisch zu benennen."
+      },
+      "Frontier": {
+        "label": "Frontier (>75B / API-Only)",
+        "description": "Größte verfügbare Modelle oder proprietäre Cloud-Modelle ohne bekannte Parameterzahl.",
+        "reviewer_guidance": "Höchste Erwartungen. Dies ist die Referenzklasse des Benchmarks. Vergleiche mit anderen Frontier-Modellen sind der primäre Bewertungsrahmen."
+      }
+    }
+  },
+  "parameter_architecture": {
+    "description": "Strukturprinzip der Modellparameter – bestimmt, wie viele Parameter pro Inferenzschritt aktiv sind.",
+    "field_name": "parameter_architecture",
+    "fallback": "dense",
+    "values": {
+      "dense": {
+        "label": "Dense",
+        "description": "Klassischer Transformer: alle Parameter sind bei jeder Inferenz vollständig aktiv. Gesamtparameter = aktive Parameter.",
+        "reviewer_guidance": "Die Parameteranzahl entspricht vollständig der Modellkapazität. Erwartungen direkt an size_class und params_total_b kalibrieren."
+      },
+      "moe": {
+        "label": "Mixture of Experts (MoE)",
+        "description": "Nur ein Subset der Gewichte (Experten) ist pro Token aktiv. params_active_b << params_total_b. Typisch: 2–8 von N Experten aktiv.",
+        "reviewer_guidance": "Das Modell hat WENIGER aktive Kapazität als die Gesamtparameterzahl suggeriert. params_active_b ist der relevante Vergleichswert für Leistungserwartungen. Die Stärke liegt in Spezialisierung und Effizienz, nicht in roher Kapazität."
+      },
+      "hybrid": {
+        "label": "Hybrid / Novel Architecture",
+        "description": "Nicht-klassische Parameterverteilung: z.B. Per-Layer Embeddings (PLE wie Gemma 4 E-Varianten), State Space Models (SSM/Mamba), lineare Attention oder andere Innovationen. params_active_b kann angegeben werden.",
+        "reviewer_guidance": "Architektur weicht vom klassischen Dense-Transformer ab. params_active_b (falls vorhanden) ist der relevante Kapazitäts-Anhaltspunkt. Berücksichtige, dass neue Architekturen andere Stärken/Schwächen-Profile haben können als klassische Transformer."
+      }
+    }
+  }
+}

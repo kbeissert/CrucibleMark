@@ -41,5 +41,10 @@
   "weights_license_tier": "open-weights",
   "model_version": "v4-pro",
   "input_price_per_1m": 0.435,
-  "output_price_per_1m": 0.87
+  "output_price_per_1m": 0.87,
+  "use_case_primary": "reasoning",
+  "parameter_architecture": "moe",
+  "params_total_b": null,
+  "context_window_k": null,
+  "knowledge_cutoff": null
 }

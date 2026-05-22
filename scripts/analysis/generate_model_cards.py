@@ -71,6 +71,15 @@ JSON-Schema (alle Felder Pflicht):
   "vendor": "Normalisierter Hersteller-Name für den UI-Filter 'Familie'. Einen dieser Werte: 'Anthropic' | 'OpenAI' | 'Google' | 'Mistral AI' | 'xAI' | 'DeepSeek' | 'Meta' | 'NousResearch' | 'Zhipu AI' | 'Moonshot AI' | 'MiniMax' | 'Alibaba' | 'Community'. Community = abliterated/fine-tuned Derivate ohne eigenen Hersteller.",
   "primary_focus": "Einen dieser Werte: 'reasoning' | 'coding' | 'instruction-following' | 'multilingual' | 'general' | 'creative'",
 
+  "use_case_primary": "Primärer Optimierungsschwerpunkt — PFLICHTFELD. Einen dieser Werte: 'generalist' | 'coding' | 'reasoning' | 'vision-language' | 'agentic'. Fallback wenn unklar: 'generalist'. Abgrenzung: 'reasoning' nur wenn Thinking der primäre Zweck ist (DeepSeek-R1, o1, Magistral) — nicht für Modelle mit optionalem Thinking. 'agentic' für Multi-Agent-Orchestratoren (Claude Opus, Kimi K2). 'vision-language' für VL-Modelle (Qwen VL, LLaVA). 'coding' für reine Code-Modelle (Codestral, DeepSeek-Coder). Sonst: 'generalist'.",
+
+  "parameter_architecture": "Strukturprinzip der Parameter — PFLICHTFELD. Einen dieser Werte: 'dense' | 'moe' | 'hybrid'. 'dense' = klassischer Transformer, alle Parameter pro Inferenz aktiv. 'moe' = Mixture of Experts, nur Subset aktiv (z.B. Mixtral, DeepSeek V3, Kimi-K2, Qwen-MoE-Varianten). 'hybrid' = PLE / SSM / andere nicht-klassische Ansätze (z.B. Gemma 4 E-Varianten). Fallback: 'dense'.",
+  "params_total_b": "Gesamtparameter in Milliarden als Zahl (z.B. 7.0, 671.0). null wenn unbekannt.",
+  "params_active_b": "Aktive Parameter pro Inferenzschritt in Milliarden — NUR für moe/hybrid ausfüllen. null für dense oder wenn unbekannt.",
+
+  "context_window_k": "Kontextfenster in Tausend Tokens als ganze Zahl (z.B. 128 für 128K, 1000 für 1M, 200 für 200K). null wenn offiziell nicht bekannt.",
+  "knowledge_cutoff": "Trainings-Datenschnitt als String 'YYYY-MM' (z.B. '2025-01'). null wenn nicht öffentlich bekannt.",
+
   "summary": "Exakt 280-320 Zeichen. Fließtext. Nennt: Herkunft, Trainings-Schwerpunkt, typische Stärken, und warum das Modell entwickelt wurde. Kein Marketing-Sprech.",
   "strengths": ["Stärke 1", "Stärke 2", "Stärke 3"],
   "known_limitations": ["Einschränkung 1", "Einschränkung 2"],
@@ -227,11 +236,29 @@ def _validate_card(card: dict[str, Any], model_id: str) -> dict[str, Any]:
         "weights_provenance_risk", "weights_provenance_risk_rationale",
         "model_family", "primary_focus", "summary",
         "strengths", "known_limitations", "judge_context_hint",
+        "use_case_primary", "parameter_architecture",
     ]
+    _valid_use_cases = {"generalist", "coding", "reasoning", "vision-language", "agentic"}
+    _valid_param_arch = {"dense", "moe", "hybrid"}
     for field in required:
         if field not in card:
-            logger.warning("Feld '%s' fehlt in Karte für %s — wird mit Platzhalter befüllt.", field, model_id)
-            card[field] = "n/a" if isinstance(card.get(field, ""), str) else []
+            default = "generalist" if field == "use_case_primary" else "dense" if field == "parameter_architecture" else "n/a" if isinstance(card.get(field, ""), str) else []
+            logger.warning("Feld '%s' fehlt in Karte für %s — wird mit '%s' befüllt.", field, model_id, default)
+            card[field] = default
+
+    if card.get("use_case_primary") not in _valid_use_cases:
+        logger.warning(
+            "use_case_primary='%s' für %s ist kein gültiger Wert — auf 'generalist' zurückgesetzt.",
+            card.get("use_case_primary"), model_id,
+        )
+        card["use_case_primary"] = "generalist"
+
+    if card.get("parameter_architecture") not in _valid_param_arch:
+        logger.warning(
+            "parameter_architecture='%s' für %s ist kein gültiger Wert — auf 'dense' zurückgesetzt.",
+            card.get("parameter_architecture"), model_id,
+        )
+        card["parameter_architecture"] = "dense"
 
     # summary Länge prüfen (nur warnen, nicht abbrechen)
     summary_len = len(card.get("summary", ""))

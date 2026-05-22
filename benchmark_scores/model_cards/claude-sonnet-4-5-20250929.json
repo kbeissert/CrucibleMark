@@ -28,7 +28,7 @@
   "unknown": false,
   "generated_at": "2026-04-23T21:59:15.096468+00:00",
   "card_status": "complete",
-  "size_class": "Frontier",
+  "size_class": "Server",
   "thinking_probe_detected": false,
   "thinking_probe_evidence": "No CoT signals found (A: no think-tags, B: reasoning_tokens=0). Response length: 700 chars",
   "thinking_probe_confidence": "low",
@@ -41,5 +41,10 @@
   "weights_license_tier": "proprietary",
   "model_version": "4.5",
   "input_price_per_1m": 3.0,
-  "output_price_per_1m": 15.0
+  "output_price_per_1m": 15.0,
+  "use_case_primary": "generalist",
+  "parameter_architecture": "dense",
+  "params_total_b": null,
+  "context_window_k": 200,
+  "knowledge_cutoff": "2025-01"
 }

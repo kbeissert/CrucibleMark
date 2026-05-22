@@ -46,5 +46,10 @@
   "thinking_probe_manual_override": true,
   "thinking_probe_at": "2026-05-16T18:47:56.692725+00:00",
   "input_price_per_1m": 0.15,
-  "output_price_per_1m": 0.6
+  "output_price_per_1m": 0.6,
+  "use_case_primary": "generalist",
+  "parameter_architecture": "dense",
+  "params_total_b": 120.0,
+  "context_window_k": null,
+  "knowledge_cutoff": null
 }

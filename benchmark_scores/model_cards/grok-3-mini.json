@@ -27,7 +27,7 @@
   "unknown": false,
   "generated_at": "2026-04-23T22:02:18.832167+00:00",
   "card_status": "complete",
-  "size_class": "Frontier",
+  "size_class": "Workstation",
   "thinking_probe_detected": false,
   "thinking_probe_evidence": "No CoT signals found (A: no think-tags, B: reasoning_tokens=0). Response length: 786 chars",
   "thinking_probe_confidence": "low",
@@ -40,5 +40,10 @@
   "weights_license_tier": "proprietary",
   "model_version": "3-mini",
   "input_price_per_1m": 2.0,
-  "output_price_per_1m": 10.0
+  "output_price_per_1m": 10.0,
+  "use_case_primary": "reasoning",
+  "parameter_architecture": "dense",
+  "params_total_b": null,
+  "context_window_k": 131,
+  "knowledge_cutoff": null
 }

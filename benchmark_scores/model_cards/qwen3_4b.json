@@ -39,5 +39,10 @@
   "commercial_use_allowed": true,
   "vendor": "Alibaba",
   "weights_license_tier": "open-weights",
-  "model_version": "3"
+  "model_version": "3",
+  "use_case_primary": "generalist",
+  "parameter_architecture": "dense",
+  "params_total_b": 4.0,
+  "context_window_k": 32,
+  "knowledge_cutoff": null
 }

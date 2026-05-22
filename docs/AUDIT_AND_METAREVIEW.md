@@ -22,10 +22,14 @@ Das Modell, das den abschließenden Artikel verfasst, lässt sich unabhängig vo
 llm_review:
   enabled: true
   provider:
-    name: google            # Welcher Provider für das Redaktions-Modell?
-    model: gemini-2.5-pro   # Welches konkrete Modell verfasst den Text?
-    max_tokens: 8192
+    name: anthropic          # Welcher Provider für das Redaktions-Modell?
+    model: claude-sonnet-4-6 # Welches konkrete Modell verfasst den Text?
+    max_tokens: 32768        # Erhöht auf 32768 — Rohdaten pro Modell umfassen 25–35k Wörter
 ```
+
+**Warum `max_tokens: 32768`?** Die Audit-Logs eines vollständig getesteten Modells summieren sich auf 25.000–35.000 Wörter Rohdaten. Der Reviewer benötigt genug Output-Budget, um daraus einen vollständigen Artikel zu generieren, ohne durch ein zu kleines Token-Limit abgeschnitten zu werden.
+
+**Reviewer-Auswahl:** In einem Drei-Wege-Vergleich (Claude Sonnet 4.6, Gemini 3.1 Pro, GPT-5.4) auf identischen Grok-3-Daten zeigte GPT-5.4 die stärkste redaktionelle Stimme und Zugänglichkeit. Claude Sonnet 4.6 bleibt als Standard konfiguriert wegen zuverlässiger Strukturtreue und analytischer Tiefe. Der Wechsel auf einen anderen Reviewer ist jederzeit über `benchmark_config.yaml` möglich — der Prompt ist provider-unabhängig.
 
 **Anpassung des Review-Verhaltens:**
 Tonfall, Strukturvorgaben und redaktionelle Richtlinien des Reviews lassen sich zentral über **`config/meta_reviewer_prompt.yaml`** steuern. Änderungen dort wirken sofort auf alle künftigen `generate_review.py`-Durchläufe – ohne Python-Code anzufassen.
@@ -208,7 +212,11 @@ Vor der eigentlichen Textgenerierung reichert `generate_review.py` den Prompt mi
 | `local_deployment_possible` | Ob die Gewichte lokal betrieben werden können |
 | `weights_provenance_risk` | `high` / `medium` / `low` — **nur** auf Basis der Weights-Herkunft: `high` = chinesisches NSL, `medium` = US-Unternehmen (CLOUD Act bei API), `low` = EU-Jurisdiktion |
 | `weights_provenance_risk_rationale` | 1-Satz-Begründung |
-| `primary_focus`, `strengths`, `known_limitations` | Qualitative Einordnung |
+| `use_case_primary` | Primärer Einsatzzweck: `generalist` / `coding` / `reasoning` / `vision-language` / `agentic` — steuert den Bewertungsrahmen im Reviewer-Prompt |
+| `parameter_architecture` | `dense` (alle Parameter aktiv) oder `moe` (Mixture of Experts — nur Teilnetzwerke aktiv) |
+| `context_window_k` | Maximales Kontextfenster in Kilotoken (z. B. `128` = 128k Tokens) |
+| `knowledge_cutoff` | Wissensstand des Modells als ISO-Datum (`YYYY-MM`) — danach liegende Ereignisse sind dem Modell unbekannt |
+| `primary_focus`, `strengths`, `known_limitations` | Qualitative Einordnung (Freitext-Legacy) |
 | `judge_context_hint` | Verhaltenshinweis für den Judge (kein Datenschutz-Aspekt) |
 
 ### Provider Card (`benchmark_scores/provider_cards/<provider_id>.json`)
@@ -269,10 +277,31 @@ Der Meta-Reviewer-Prompt enthält einen dedizierten Diagnostik-Block **"Token-Ef
 
 ## Meta-Review Prompting & Anti-Halluzinations-Schutz
 
-Um zu verhindern, dass Modelle (wie Gemini oder Claude als „Judge") bei der redaktionellen Bewertung aus der Rolle fallen, gibt es spezielle Mechanismen in `config/meta_reviewer_prompt.yaml`:
+Um zu verhindern, dass Modelle bei der redaktionellen Bewertung aus der Rolle fallen, gibt es spezielle Mechanismen in `config/meta_reviewer_prompt.yaml`:
 
 1. **Strukturelle ID-Anker (Off-by-One-Schutz):**
    Um sicherzustellen, dass der LLM-Reviewer beim Parsen großer Markdown-Logs nicht den Faden verliert und Antworten falschen Fragen zuordnet, enthält der Prompt feste Beispiele und Marker (z. B. "7.2.001" für Gewerkschaften). Anhand dieser Anker synchronisiert sich der Judge beim Lesen selbst.
 
 2. **Grammatikrestriktionen & Active-Hallucination-Block:**
    Reviewer-LLMs tendieren dazu, dem getesteten Modell eine menschliche Agenda zuzuschreiben (z. B. „Das Modell versucht hier auszuweichen"). Um dieses Framing zu unterbinden, erzwingt die Prompt-Anweisung eine streng wissenschaftliche, objektspezifische oder im Passiv gehaltene Grammatik. Im **Fazit** darf dem getesteten System keinerlei aktiver Wille zugeschrieben werden. Formulierungen wie „Die gewählte Option offenbart..." oder „Es wird präferiert..." sind zwingend vorgegeben.
+
+3. **Gedankenstrich-Restriktion:**
+   Maximal 2–3 Gedankenstriche im gesamten Review-Artikel (nicht pro Abschnitt). Gedankenstriche gehören zu den häufigsten Stilsignalen von Sprachmodellen — ein echter Magazin-Redakteur setzt sie selten. Diese Restriktion zwingt den Reviewer zu vollständigeren Satzstrukturen anstatt ausweichender Parenthesen.
+
+4. **Fachbegriff-Zugänglichkeit:**
+   Die primäre Leserschaft sind Menschen, die sich der KI-Assistenz annähern — keine ML-Ingenieure. Unvermeidliche Fachbegriffe müssen im Kontext knapp erklärt oder durch verständliche Umschreibungen ersetzt werden. Beispiel: Statt „P95-Latenz von 60 Sekunden" → „In fünf Prozent aller Anfragen wartete der Nutzer eine Minute oder länger." Der Jargon darf erscheinen; die Kernaussage muss ohne ihn lesbar bleiben.
+
+5. **Keine internen Test-IDs:**
+   Interne Bezeichner wie `content_transformation_004` oder `reasoning_metacog_001` sind für externe Leser unsichtbar und kontextfrei. Der Reviewer darf sie nicht im Artikeltext verwenden. Statt „In content_transformation_004 überschritt..." → „In einer Aufgabe im Bereich Content Transformation überschritt...". Die Beschreibung des Aufgabentyps genügt.
+
+## Use-Case-Klassifikations-Kontext im Reviewer-Prompt (`{use_case_classification_context}`)
+
+Ab v3.8 injiziert `generate_review.py` eine Template-Variable `{use_case_classification_context}` direkt nach dem Modell-Identitäts-Block. Sie enthält:
+
+- Die vollständige Taxonomy-Tabelle für `use_case_primary` (alle 5 Werte mit Beschreibung und `reviewer_guidance`)
+- Die vollständige Taxonomy-Tabelle für `size_class` (alle 6 Werte mit Beschreibung und `reviewer_guidance`)
+- Hervorhebung des aktuellen Modells: `▶ DIESES MODELL: use_case_primary = "vision-language" | size_class = "Desktop"`
+
+Die Taxonomy-Daten kommen aus `config/classification_taxonomy.json` (SSoT). Der Block wird von `_format_classification_context()` in `generate_review.py` gerendert.
+
+**Zweck:** Ohne diesen Kontext bewertet ein Reviewer ein VL-Modell (Vision-Language) am selben Maßstab wie einen Generalisten — auch wenn es ausschließlich Textaufgaben erhalten hat. Die Injektioin gibt dem Reviewer das Wissen, den Bewertungsrahmen explizit anzupassen und den strukturellen Nachteil im Review zu benennen.

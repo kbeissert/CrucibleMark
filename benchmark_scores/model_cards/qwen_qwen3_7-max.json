@@ -45,6 +45,11 @@
   "model_version": "3.7-max",
   "context_window": 1000000,
   "max_output_tokens": 65536,
-  "input_price_per_1m": 2.50,
-  "output_price_per_1m": 7.50
+  "input_price_per_1m": 2.5,
+  "output_price_per_1m": 7.5,
+  "use_case_primary": "agentic",
+  "parameter_architecture": "moe",
+  "params_total_b": null,
+  "context_window_k": null,
+  "knowledge_cutoff": null
 }

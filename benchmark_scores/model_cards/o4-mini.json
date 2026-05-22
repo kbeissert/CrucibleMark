@@ -27,7 +27,7 @@
   "unknown": false,
   "generated_at": "2026-04-23T21:59:48.373411+00:00",
   "card_status": "complete",
-  "size_class": "Frontier",
+  "size_class": "Workstation",
   "thinking_probe_detected": true,
   "thinking_probe_evidence": "Manually confirmed: OpenAI o-series models use internal chain-of-thought reasoning. The API does not expose reasoning tokens or think-tags in the response body; automated probe cannot detect this. Token budget override is required.",
   "thinking_probe_confidence": "high",
@@ -40,5 +40,10 @@
   "weights_license_tier": "proprietary",
   "model_version": "4-mini",
   "input_price_per_1m": 1.1,
-  "output_price_per_1m": 4.4
+  "output_price_per_1m": 4.4,
+  "use_case_primary": "reasoning",
+  "parameter_architecture": "dense",
+  "params_total_b": null,
+  "context_window_k": null,
+  "knowledge_cutoff": null
 }

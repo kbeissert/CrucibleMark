@@ -43,5 +43,10 @@
   "thinking_probe_at": "2026-05-16T18:47:56.692725+00:00",
   "model_version": "31b-cloud",
   "input_price_per_1m": 0.14,
-  "output_price_per_1m": 0.4
+  "output_price_per_1m": 0.4,
+  "use_case_primary": "generalist",
+  "parameter_architecture": "dense",
+  "params_total_b": 31.0,
+  "context_window_k": 128,
+  "knowledge_cutoff": null
 }

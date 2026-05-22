@@ -672,6 +672,32 @@ def get_model_category(
     return "Open Weights"
 
 
+def get_use_case_primary(model_id: str, card_data: dict | None = None) -> str:
+    """
+    Returns use_case_primary for a model, with 'generalist' as fallback.
+
+    Args:
+        model_id: Model identifier (used to locate card if card_data not provided)
+        card_data: Pre-loaded card dict; if None, card is loaded from disk
+
+    Returns:
+        str: one of 'generalist' | 'coding' | 'reasoning' | 'vision-language' | 'agentic'
+    """
+    if card_data is not None:
+        return card_data.get("use_case_primary", "generalist")
+
+    try:
+        import json as _json
+        card_path = _find_card(model_id)
+        if card_path.exists():
+            card = _json.loads(card_path.read_text(encoding="utf-8"))
+            return card.get("use_case_primary", "generalist")
+    except Exception:
+        pass
+
+    return "generalist"
+
+
 def resolve_token_budget(
     model: str,
     requested_max_tokens: int | None,
@@ -782,7 +808,7 @@ def _param_b_to_size_class(param_b: float) -> str:
         return "Nano"
     if param_b <= 9.0:
         return "Edge"
-    if param_b <= 19.0:
+    if param_b <= 22.0:
         return "Desktop"
     if param_b <= 35.0:
         return "Workstation"
@@ -805,7 +831,7 @@ def get_model_size_class(model_name: str) -> str:
 
         Nano        ≤ 4B    < 4 GB    Smartphone, Raspberry Pi, autocomplete-only
         Edge        5–9B    4–8 GB    Any laptop, MacBook Air M-Series
-        Desktop     10–19B  8–14 GB   MacBook Pro, 14 GB Unified Memory
+        Desktop     10–22B  8–16 GB   MacBook Pro, 14–36 GB Unified Memory
         Workstation 20–35B  14–24 GB  M4 Pro/Max, RTX 4090, high-end consumer
         Server      36–75B  24–48 GB  Mac Studio, dedicated GPU node
         Frontier    >75B / API-only   Cloud-only, no practical local deployment

@@ -411,6 +411,16 @@ Konstante für das Card-Verzeichnis. Nie als `Path("benchmark_scores/model_cards
 CARD_DIR  # → Path("benchmark_scores/model_cards")
 ```
 
+#### `get_use_case_primary(model_id: str, card_data: dict | None = None) → str`
+
+Liefert `use_case_primary` aus der Card mit Fallback `"generalist"`. Niemals direkt `.get("use_case_primary")` ohne Fallback aufrufen.
+
+```python
+get_use_case_primary("qwen2.5vl:7b")          # → "vision-language"
+get_use_case_primary("codestral-latest")       # → "coding"
+get_use_case_primary("unknown-model")          # → "generalist" (Fallback)
+```
+
 ---
 
 ### Provider-Shortcodes
@@ -517,7 +527,40 @@ Das Skript legt `.bak`-Backups aller drei Benchmark-CSVs an und füllt leere / `
 
 ---
 
-## Konfiguration: `config.yaml`
+### Model Card Schema — Pflichtfelder
+
+Jede Model Card JSON muss folgende Felder enthalten. Cards mit `card_status: "stub"` dürfen vorläufige Werte haben; das vollständige Schema wird bei `make model-cards` von `generate_model_cards.py` erzwungen.
+
+| Feld | Typ | Werte / Format | Beschreibung |
+|---|---|---|---|
+| `use_case_primary` | string | `generalist` / `coding` / `reasoning` / `vision-language` / `agentic` | Primärer Optimierungsschwerpunkt — steuert den Reviewer-Bewertungsrahmen |
+| `parameter_architecture` | string | `dense` / `moe` | Dense = alle Parameter aktiv; MoE = nur Teilnetzwerke aktiv. Bei MoE ist `params_active_b` (nicht `params_total_b`) der relevante Vergleichswert |
+| `context_window_k` | integer | z. B. `128` | Maximales Kontextfenster in Kilotoken |
+| `knowledge_cutoff` | string | `YYYY-MM` | Trainingsdaten-Stichtag — Ereignisse danach sind dem Modell unbekannt |
+| `size_class` | string | `Nano` / `Edge` / `Desktop` / `Workstation` / `Server` / `Frontier` | Hardware-Tier — abgeleitet aus Parameteranzahl oder API-Only-Status |
+| `weights_license_tier` | string | z. B. `proprietary_api` / `open_weights` | Bestimmt die Kategorie-Anzeige im Leaderboard via `get_model_category()` |
+
+**Taxonomy-SSoT:** Die erlaubten Werte für `use_case_primary` und `size_class` (inkl. `reviewer_guidance` pro Wert) liegen in `config/classification_taxonomy.json`. Dieses File wird von `generate_review.py` beim Start eingelesen und als `{use_case_classification_context}` in den Reviewer-Prompt injiziert.
+
+**Hilfsfunktion:** `get_use_case_primary(model_id, card_data=None)` in `utils/model_utils.py` liefert den `use_case_primary`-Wert mit Fallback `"generalist"` — niemals direkt `card_data.get(...)` ohne Fallback aufrufen.
+
+### Migration: Neue Card-Felder nachpflegen
+
+Wenn neue Pflichtfelder eingeführt werden, stehen dedizierte Migrationsskripte bereit:
+
+```bash
+# use_case_primary in alle bestehenden Cards eintragen
+python scripts/dev/migrate_use_case_primary.py --dry-run   # Vorschau
+python scripts/dev/migrate_use_case_primary.py             # Ausführen
+
+# context_window_k und knowledge_cutoff nachpflegen
+python scripts/dev/migrate_context_fields.py --dry-run
+python scripts/dev/migrate_context_fields.py
+```
+
+Die Skripte überspringen Cards, die das Feld bereits haben, und geben einen tabellarischen Report aus (Modell | Assigned Value | Basis der Zuweisung).
+
+
 
 ### SSOT Prinzip (Single Source of Truth)
 

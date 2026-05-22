@@ -48,7 +48,12 @@ class AnthropicClient(BaseProviderClient):
                 "ANTHROPIC_API_KEY", "ANTHROPIC_API_KEY environment variable not set"
             )
             # timeout raised because huge 8000+ token generations can easily take 3-5 minutes
-            self._client = anthropic.Anthropic(api_key=api_key, timeout=TIMEOUT_ANTHROPIC_API)
+            # base_url explicitly set to bypass VS Code / OpenRouter proxy (ANTHROPIC_BASE_URL env var)
+            self._client = anthropic.Anthropic(
+                api_key=api_key,
+                timeout=TIMEOUT_ANTHROPIC_API,
+                base_url="https://api.anthropic.com",
+            )
         return self._client
     def is_accessible(self) -> bool:
         """Prüft Zugang zu Anthropic API durch Test-Request."""
@@ -56,7 +61,9 @@ class AnthropicClient(BaseProviderClient):
             return False
         try:
             check_client = anthropic.Anthropic(
-                api_key=self.client.api_key, max_retries=0
+                api_key=self.client.api_key,
+                max_retries=0,
+                base_url="https://api.anthropic.com",
             )
             check_client.messages.create(
                 model="claude-haiku-4-5-20251001",
@@ -132,13 +139,15 @@ class AnthropicClient(BaseProviderClient):
                 "token_limit_fallback": fallback_triggered,
                 "token_limit_used": used_max_tokens,
             }
-            if (
-                stream_handler
-                and response.content
-                and hasattr(response.content[0], "text")
-            ):
-                stream_handler(response.content[0].text)
-            return response.content[0].text
+            stop_reason = getattr(response, "stop_reason", None)
+            if stop_reason == "refusal":
+                logger.warning("Anthropic API refusal for model %s", model)
+                return ""
+            text_blocks = [b for b in response.content if hasattr(b, "text") and b.type == "text"]
+            text = text_blocks[0].text if text_blocks else ""
+            if stream_handler and text:
+                stream_handler(text)
+            return text
         except Exception:
             # Let RetryHandler handle logging
             raise

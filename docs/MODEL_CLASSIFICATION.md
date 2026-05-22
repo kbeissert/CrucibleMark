@@ -6,6 +6,8 @@
 
 - Badge-System (Standard, Bronze, Silver, Gold, Platinum)
 - Size-Class-System (Nano / Edge / Desktop / Workstation / Server / Frontier)
+- **Use-Case-Klassifizierung (`use_case_primary`)** — neu ab v3.8
+- **Parameter-Architektur (`parameter_architecture`)** — Dense vs. MoE
 - Speed-Klassen (Fast, Medium, Slow)
 - Skill-Profile (automatische Kategorisierung)
 - Reasoning-Score-Interpretation
@@ -143,7 +145,66 @@ providers:
 
 ---
 
-## Speed-Klassen
+## Use-Case-Klassifizierung (`use_case_primary`)
+
+Ab v3.8 trägt jede Model Card ein Pflichtfeld `use_case_primary`. Es beschreibt den **primären Optimierungsschwerpunkt** eines Modells — editorial kuratiert, nicht automatisch abgeleitet. Die Klassifizierung steuert den Bewertungsrahmen des Meta-Reviewers: Ein Vision-Language-Modell, das einen reinen Textbenchmark absolviert, soll anders eingeordnet werden als ein Frontier-Generalist in derselben Situation.
+
+Die erlaubten Werte sind in `config/classification_taxonomy.json` kanonisch definiert. Der Meta-Reviewer erhält die vollständige Taxonomy als Kontext und ist verpflichtet, seinen Bewertungsrahmen explizit daran auszurichten.
+
+| Wert | Label | Bedeutung | Reviewer-Guidance |
+|---|---|---|---|
+| `generalist` | Generalist | Allround-Modell ohne spezifischen Optimierungsschwerpunkt | Volle Aufgabenbreite als Maßstab. Teilbereichs-Stärken positiv vermerken, nicht als Erwartungsbasis. |
+| `coding` | Coding | Für Code-Generierung, -Vervollständigung oder -Debugging spezialisiert | Coding-Stärken sind erwartbar. Schwächen bei kreativen/sprachlichen Aufgaben sind akzeptabel. |
+| `reasoning` | Reasoning / Deep Thinking | Auf mehrstufiges Schlussfolgern optimiert (Chain-of-Thought, sichtbar oder intern) | Tiefes Reasoning und längere Antwortzeiten sind positiv zu werten. Qualität über Geschwindigkeit. |
+| `vision-language` | Vision-Language (VL) | Multimodales Modell, primär für visuelle Eingaben optimiert | Text-only-Ergebnisse zeigen nur einen Teilaspekt. Der Reviewer muss diesen Umstand explizit benennen. |
+| `agentic` | Agentic / Orchestration | Für mehrstufige Aufgabenplanung, Tool-Use und Multi-Agent-Koordination optimiert | Schwächen bei Direktantworten nicht übergewichten. Planungs- und Strukturierungsfähigkeit besonders werten. |
+
+**Fallback:** Wenn unklar, lautet der Wert `"generalist"`.
+
+**Validierung:** `scripts/dev/validate_model_cards.py` prüft, ob `use_case_primary` vorhanden ist und einen gültigen Wert enthält. Eine Warnung (kein Fehler) wird ausgegeben, wenn `architecture_tags` `["Vision", "Multimodal"]` enthält, `use_case_primary` aber nicht `"vision-language"` ist.
+
+**Migration:** `scripts/dev/migrate_use_case_primary.py` weist allen Cards ohne das Feld automatisch einen Wert zu (Priorität: `primary_focus` → `architecture_tags` → Fallback `"generalist"`). Mit `--dry-run` lässt sich die Zuweisung vorab prüfen.
+
+---
+
+## Parameter-Architektur (`parameter_architecture`)
+
+Neben der Anzahl der Parameter ist die **Architektur** entscheidend für faire Vergleiche:
+
+| Wert | Bedeutung | Benchmarking-Konsequenz |
+|---|---|---|
+| `dense` | Alle Parameter bei jeder Anfrage aktiv | `params_total_b` = tatsächliche Rechenlast |
+| `moe` | Mixture of Experts: nur ein Bruchteil der Parameter aktiv | `params_active_b` ist die relevante Vergleichsgröße, nicht `params_total_b` |
+
+Ein MoE-Modell mit 400B Gesamtparametern und 80B aktiven Parametern verhält sich rechnerisch wie ein Dense-Modell mit ~80B. Der Meta-Reviewer ist angewiesen, bei MoE-Modellen explizit auf `params_active_b` zu kalibrieren.
+
+**Felder in der Model Card:**
+```json
+{
+  "parameter_architecture": "moe",
+  "params_total_b": 400.0,
+  "params_active_b": 80.0
+}
+```
+
+Für Dense-Modelle ist `params_active_b` identisch mit `params_total_b` (oder leer).
+
+---
+
+## Kontext-Metadaten (`context_window_k`, `knowledge_cutoff`)
+
+Zwei weitere Pflichtfelder ergänzen die Klassifizierung:
+
+| Feld | Typ | Bedeutung |
+|---|---|---|
+| `context_window_k` | Zahl | Maximales Kontextfenster in Tausend Token (z. B. `128` für 128k) |
+| `knowledge_cutoff` | String | Wissensstand des Modells, z. B. `"2024-12"` |
+
+Der Meta-Reviewer nutzt `knowledge_cutoff`, um bei Modellen mit veralteter Wissensbasis strukturell einzuordnen, warum bestimmte Aufgaben möglicherweise nicht auf dem Stand der Technik beantwortet werden. Diese Schwäche ist keine Qualitätsschwäche, sondern eine Architektureigenschaft.
+
+**Migration:** `scripts/dev/migrate_context_fields.py` hat alle bestehenden Cards (77 Modelle) mit diesen Feldern ausgestattet. Werte werden aus der Model Card selbst oder aus `benchmark_config.yaml` abgeleitet.
+
+---
 
 Speed Classes kategorisieren Modelle nach ihrer **durchschnittlichen Inferenz-Zeit** über alle 37 Tests.
 
@@ -409,5 +470,5 @@ make probe-all-thinking
 
 ---
 
-**Dokumenten-Version:** 2.1.0 (Überarbeitung März 2026)\
-**Kompatibel mit:** CrucibleMark v3.4.3+
+**Dokumenten-Version:** 3.0.0 (Überarbeitung Mai 2026)\
+**Kompatibel mit:** CrucibleMark v3.8+

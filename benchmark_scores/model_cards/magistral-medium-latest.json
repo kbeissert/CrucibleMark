@@ -28,7 +28,7 @@
   "unknown": false,
   "generated_at": "2026-04-23T21:58:18.227125+00:00",
   "card_status": "complete",
-  "size_class": "Frontier",
+  "size_class": "Server",
   "thinking_probe_detected": false,
   "thinking_probe_evidence": "No CoT signals found (A: no think-tags, B: reasoning_tokens=0). Response length: 469 chars",
   "thinking_probe_confidence": "low",
@@ -39,5 +39,10 @@
   "commercial_use_allowed": true,
   "vendor": "Mistral AI",
   "weights_license_tier": "open-weights",
-  "model_version": "latest"
+  "model_version": "latest",
+  "use_case_primary": "reasoning",
+  "parameter_architecture": "dense",
+  "params_total_b": null,
+  "context_window_k": null,
+  "knowledge_cutoff": null
 }

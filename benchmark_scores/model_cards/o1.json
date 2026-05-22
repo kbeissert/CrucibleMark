@@ -40,5 +40,10 @@
   "weights_license_tier": "proprietary",
   "model_version": "2024-12-17",
   "input_price_per_1m": 15.0,
-  "output_price_per_1m": 60.0
+  "output_price_per_1m": 60.0,
+  "use_case_primary": "reasoning",
+  "parameter_architecture": "dense",
+  "params_total_b": null,
+  "context_window_k": 200,
+  "knowledge_cutoff": null
 }

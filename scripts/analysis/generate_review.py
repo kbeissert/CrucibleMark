@@ -20,12 +20,91 @@ if str(ROOT_DIR) not in sys.path:
     sys.path.insert(0, str(ROOT_DIR))
 
 from utils.llm_client import LLMClient
-from utils.model_utils import get_model_specialization, get_model_identity, get_model_size_class, _find_card
+from utils.model_utils import get_model_specialization, get_model_identity, get_model_size_class, _find_card, get_use_case_primary
 
 def load_config() -> dict:
     config_path = ROOT_DIR / "benchmark_config.yaml"
     with open(config_path, "r", encoding="utf-8") as f:
         return yaml.safe_load(f)
+
+
+def _load_classification_taxonomy() -> dict:
+    """Loads classification_taxonomy.json once; returns empty dict on failure."""
+    import json as _json
+    path = ROOT_DIR / "config" / "classification_taxonomy.json"
+    try:
+        return _json.loads(path.read_text(encoding="utf-8"))
+    except Exception:
+        return {}
+
+
+def _get_card_field(model_id: str, field: str, default: str = "") -> str:
+    """Read a single string field from the model card; returns default on any failure."""
+    import json as _json
+    try:
+        card_path = _find_card(model_id)
+        if card_path.exists():
+            card = _json.loads(card_path.read_text(encoding="utf-8"))
+            val = card.get(field)
+            if isinstance(val, str) and val:
+                return val
+    except Exception:
+        pass
+    return default
+
+
+def _format_classification_context(use_case: str, size_class: str, param_arch: str, taxonomy: dict) -> str:
+    """
+    Renders the full taxonomy as Markdown tables with the model's specific values highlighted.
+    All three classification pillars are included for full reviewer context.
+    """
+    lines: list[str] = []
+
+    use_case_def = taxonomy.get("use_case", {})
+    size_class_def = taxonomy.get("size_class", {})
+    param_arch_def = taxonomy.get("parameter_architecture", {})
+
+    # Use Case table
+    lines.append("#### Use-Case-Klassifikation (Optimierungsschwerpunkt)")
+    lines.append("")
+    lines.append("| Marker | Use Case | Beschreibung | Reviewer-Hinweis |")
+    lines.append("|---|---|---|---|")
+    for key, entry in use_case_def.get("values", {}).items():
+        marker = "▶ **DIESES MODELL**" if key == use_case else ""
+        label = f"**{entry['label']}**" if key == use_case else entry["label"]
+        lines.append(f"| {marker} | {label} | {entry['description']} | {entry['reviewer_guidance']} |")
+
+    lines.append("")
+
+    # Size Class table
+    lines.append("#### Size-Class-Klassifikation (Hardware-Tier)")
+    lines.append("")
+    lines.append("| Marker | Size Class | Beschreibung | Reviewer-Hinweis |")
+    lines.append("|---|---|---|---|")
+    for key, entry in size_class_def.get("values", {}).items():
+        marker = "▶ **DIESES MODELL**" if key == size_class else ""
+        label = f"**{entry['label']}**" if key == size_class else entry["label"]
+        lines.append(f"| {marker} | {label} | {entry['description']} | {entry['reviewer_guidance']} |")
+
+    lines.append("")
+
+    # Parameter Architecture table
+    lines.append("#### Parameter-Architektur (Strukturprinzip)")
+    lines.append("")
+    lines.append("| Marker | Architektur | Beschreibung | Reviewer-Hinweis |")
+    lines.append("|---|---|---|---|")
+    for key, entry in param_arch_def.get("values", {}).items():
+        marker = "▶ **DIESES MODELL**" if key == param_arch else ""
+        label = f"**{entry['label']}**" if key == param_arch else entry["label"]
+        lines.append(f"| {marker} | {label} | {entry['description']} | {entry['reviewer_guidance']} |")
+
+    lines.append("")
+    lines.append(
+        f"**Einordnung dieses Modells:** `use_case_primary = {use_case}` | "
+        f"`size_class = {size_class}` | `parameter_architecture = {param_arch}`"
+    )
+
+    return "\n".join(lines)
 
 
 def get_model_metrics(model_name: str) -> dict:
@@ -100,12 +179,45 @@ def get_model_card_context(model_id: str) -> str:
     limitations = ", ".join(card.get("known_limitations", []))
     hint = card.get("judge_context_hint", "")
 
+    # Parameter info
+    arch = card.get("parameter_architecture", "")
+    total_b = card.get("params_total_b")
+    active_b = card.get("params_active_b")
+    if total_b and active_b:
+        params_str = f"{total_b}B total / {active_b}B aktiv ({arch})"
+    elif total_b:
+        params_str = f"{total_b}B ({arch})" if arch else f"{total_b}B"
+    elif arch:
+        params_str = arch
+    else:
+        params_str = "unbekannt"
+
+    # Context window + knowledge cutoff
+    ctx_k = card.get("context_window_k")
+    cutoff = card.get("knowledge_cutoff")
+
+    # Pricing
+    price_in = card.get("input_price_per_1m")
+    price_out = card.get("output_price_per_1m")
+    price_str = f"${price_in}/1M input, ${price_out}/1M output" if price_in and price_out else None
+
     lines = [
         f"### Model Card: {card.get('display_name', model_id)}",
         f"- **Entwickler:** {card.get('developer', 'n/a')} ({card.get('origin_country', 'n/a')})",
-        f"- **Fokus:** {card.get('primary_focus', 'n/a')} | **Familie:** {card.get('model_family', 'n/a')}",
-        f"- **Zusammenfassung:** {card.get('summary', '')}",
+        f"- **Use Case:** {card.get('use_case_primary', 'n/a')} | "
+        f"**Size Class:** {card.get('size_class', 'n/a')} | "
+        f"**Parameter:** {params_str}",
     ]
+    if ctx_k:
+        lines.append(f"- **Kontextfenster:** {ctx_k}K Tokens")
+    if cutoff:
+        lines.append(f"- **Trainings-Cutoff:** {cutoff}")
+    if price_str:
+        lines.append(f"- **Preis:** {price_str}")
+    lines.append(f"- **Familie:** {card.get('model_family', 'n/a')} | "
+                 f"**Lizenz:** {card.get('weights_license_tier', 'n/a')} | "
+                 f"**Deployment:** {card.get('deployment_type', 'n/a')}")
+    lines.append(f"- **Zusammenfassung:** {card.get('summary', '')}")
     if strengths:
         lines.append(f"- **Stärken:** {strengths}")
     if limitations:
@@ -727,7 +839,7 @@ def _build_non_success_context(model_name: str) -> str:
     return "\n".join(lines)
 
 
-def process_model_review(model_dir: Path, csv_data: str, client: LLMClient, provider: str, model_id: str, review_type: str = "benchmark"):
+def process_model_review(model_dir: Path, csv_data: str, client: LLMClient, provider: str, model_id: str, review_type: str = "benchmark", max_tokens: int = 8192):
     """Liest Audit-Logs für ein spezifisch getestetes LLM und generiert eine Review."""
     tested_model_name = model_dir.name
     print(f"\n📥 Sammle Logs für Modell: {tested_model_name} (Typ: {review_type})...")
@@ -960,6 +1072,11 @@ def process_model_review(model_dir: Path, csv_data: str, client: LLMClient, prov
                         )
                         break
 
+    _taxonomy = _load_classification_taxonomy()
+    _use_case = get_use_case_primary(tested_model_name)
+    _size_class = model_metrics.get("Size Class") or get_model_size_class(tested_model_name)
+    _param_arch = _get_card_field(tested_model_name, "parameter_architecture", "dense")
+
     template_vars = {
         "tested_model_name": tested_model_name,  # raw ID für Audit-Trail
         "display_model_name": identity["display_name"],  # "kimi-k2-instruct" (ohne Präfixe)
@@ -973,13 +1090,14 @@ def process_model_review(model_dir: Path, csv_data: str, client: LLMClient, prov
         "model_tokens_per_s": safe_round(model_metrics.get("Tokens/s")),
         "model_timeout_rate": timeout_rate_str,
         "model_provider_type": model_metrics.get("Type", "n/a"),
-        "model_size_class": model_metrics.get("Size Class") or get_model_size_class(tested_model_name),
+        "model_size_class": _size_class,
         "model_card_context": get_model_card_context(tested_model_name),
         "provider_card_context": get_provider_card_context(tested_model_name),
         "token_efficiency_context": token_efficiency_context,
         "constraint_violations_context": constraint_violations_context,
         "empty_response_context": empty_response_context,
         "non_success_context": non_success_context,
+        "use_case_classification_context": _format_classification_context(_use_case, _size_class, _param_arch, _taxonomy),
     }
 
     try:
@@ -996,7 +1114,8 @@ def process_model_review(model_dir: Path, csv_data: str, client: LLMClient, prov
             model=model_id,
             prompt=prompt,
             provider=provider,
-            temperature=0.7 # Ein bisschen Kreativität für einen Artikel
+            temperature=0.7, # Ein bisschen Kreativität für einen Artikel
+            max_tokens=max_tokens,
         )
     except Exception as e:
         print(f"❌ Fehler bei der Generierung für {tested_model_name}: {e}")
@@ -1049,6 +1168,7 @@ def main():
     review_config = config.get("llm_review", {}).get("provider", {})
     provider = review_config.get("name", "google")
     model_id = review_config.get("model", "gemini-2.5-pro")
+    review_max_tokens = review_config.get("max_tokens", 8192)
 
     # Falls die neue Config block fälschlicherweise nicht gefunden wird (Fallback)
     if not provider or not model_id:
@@ -1159,7 +1279,7 @@ def main():
                     continue  # Benutzer hat übersprungen
                 if args.dry_run:
                     continue  # Nur Bericht, kein Review
-            process_model_review(subdir, csv_data, client, provider, model_id, args.type)
+            process_model_review(subdir, csv_data, client, provider, model_id, args.type, review_max_tokens)
 
     if not found_models:
         print("⚠️ Keine Audit-Logs für das spezifizierte Modell gefunden.")

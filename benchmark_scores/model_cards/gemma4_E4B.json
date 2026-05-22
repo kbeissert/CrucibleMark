@@ -10,7 +10,7 @@
   "weights_provenance_risk_rationale": "Google DeepMind ist ein US-amerikanisches Unternehmen und unterliegt dem CLOUD Act, jedoch ist der CLOUD Act bei lokal betriebenen Open-Weights-Modellen nicht direkt anwendbar.",
   "model_family": "Gemma",
   "primary_focus": "general",
-  "summary": "Gemma 4 E4B ist eine kompakte Mixture-of-Experts-Variante der Gemma-4-Familie von Google DeepMind (Google Gemma Lizenz). Mit etwa 4 Milliarden aktiven Parametern ist es auf effiziente lokale Ausführung ausgelegt und eignet sich für alltägliche Instruction-Following-Aufgaben.",
+  "summary": "Gemma 4 E4B ist eine Edge-optimierte Variante der Gemma-4-Familie von Google DeepMind (Google Gemma Lizenz). Das \"E\" steht für \"Effective\" – mit ca. 4,5 Milliarden aktiven Parametern bei insgesamt 8 Milliarden Gesamtparametern (PLE-Architektur mit Per-Layer Embeddings). Der RAM-Footprint beträgt ca. 9,6 GB, was dem Edge-Tier entspricht, nicht dem Nano-Bereich. Geeignet für Instruction-Following-Aufgaben auf Consumer-Hardware mit ausreichend Arbeitsspeicher.",
   "strengths": [
     "Sehr ressourceneffizient durch MoE-Architektur mit wenigen aktiven Parametern",
     "Lokal auf Consumer-Hardware betreibbar",
@@ -28,7 +28,7 @@
   "unknown": true,
   "generated_at": "2026-04-23T22:07:02.933740+00:00",
   "card_status": "complete",
-  "size_class": "Nano",
+  "size_class": "Edge",
   "supports_tool_use": true,
   "license": "Google Gemma Terms of Use",
   "license_url": "https://ai.google.dev/gemma/terms",
@@ -39,5 +39,11 @@
   "thinking_probe_detected": false,
   "thinking_probe_evidence": "No CoT signals found (A: no think-tags, B: reasoning_tokens=0). Response length: 601 chars",
   "thinking_probe_confidence": "low",
-  "thinking_probe_at": "2026-05-16T18:46:42.535796+00:00"
+  "thinking_probe_at": "2026-05-16T18:46:42.535796+00:00",
+  "use_case_primary": "generalist",
+  "parameter_architecture": "hybrid",
+  "params_total_b": 8.0,
+  "params_active_b": 4.5,
+  "context_window_k": 128,
+  "knowledge_cutoff": null
 }

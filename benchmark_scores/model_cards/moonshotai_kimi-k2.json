@@ -41,5 +41,11 @@
   "vendor": "Moonshot AI",
   "weights_license_tier": "open-weights",
   "input_price_per_1m": 0.57,
-  "output_price_per_1m": 2.3
+  "output_price_per_1m": 2.3,
+  "use_case_primary": "agentic",
+  "parameter_architecture": "moe",
+  "params_total_b": 1000.0,
+  "params_active_b": 32.0,
+  "context_window_k": 128,
+  "knowledge_cutoff": null
 }

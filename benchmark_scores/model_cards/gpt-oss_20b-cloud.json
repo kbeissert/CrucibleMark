@@ -44,5 +44,10 @@
   "weights_license_tier": "open-weights",
   "model_version": "latest",
   "input_price_per_1m": 0.075,
-  "output_price_per_1m": 0.3
+  "output_price_per_1m": 0.3,
+  "use_case_primary": "generalist",
+  "parameter_architecture": "dense",
+  "params_total_b": 20.0,
+  "context_window_k": null,
+  "knowledge_cutoff": null
 }

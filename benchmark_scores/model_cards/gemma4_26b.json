@@ -39,5 +39,10 @@
   "commercial_use_allowed": true,
   "vendor": "Google",
   "weights_license_tier": "restricted-weights",
-  "model_version": "26b"
+  "model_version": "26b",
+  "use_case_primary": "generalist",
+  "parameter_architecture": "dense",
+  "params_total_b": 27.0,
+  "context_window_k": 128,
+  "knowledge_cutoff": null
 }
