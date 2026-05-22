@@ -62,6 +62,21 @@ def load_known_model_ids() -> set[str]:
         except Exception as e:
             print(f"⚠️  benchmark_leaderboard.csv konnte nicht gelesen werden: {e}")
 
+    # Detailed leaderboard carries raw API model IDs (with namespace/date, e.g.
+    # "moonshotai/kimi-k2.5-0127"). The compact leaderboard only has the display
+    # name ("kimi-k2.5-0127"), which does NOT match namespace-prefixed audit dirs.
+    detailed_csv = ROOT_DIR / "benchmark_scores" / "benchmark_leaderboard_detailed.csv"
+    if detailed_csv.exists():
+        try:
+            with open(detailed_csv, encoding="utf-8") as f:
+                reader = csv.DictReader(f)
+                for row in reader:
+                    mid = row.get("model_id", "").strip()
+                    if mid and mid.lower() != "nan":
+                        known.add(mid)
+        except Exception as e:
+            print(f"⚠️  benchmark_leaderboard_detailed.csv konnte nicht gelesen werden: {e}")
+
     return known
 
 

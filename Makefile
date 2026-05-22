@@ -6,7 +6,7 @@
 	list-models judge-health list-modules \
 	probe-thinking probe-all-thinking \
 	web-export web-export-dev \
-	clean clean-csv clean-model clean-module clean-all clean-runs consolidate-csv prune-orphans clean-bak \
+	clean clean-csv clean-model clean-module clean-all clean-runs consolidate-csv prune-orphans clean-bak clean-reviews \
 	backup
 
 # Python-Interpreter aus .venv verwenden
@@ -144,7 +144,7 @@ review:
 
 reviews-auto:
 	@echo "Generiere Reviews fuer alle Modelle (fehlende Cards werden automatisch erstellt)..."
-	$(PYTHON) scripts/analysis/generate_review.py --all --auto
+	$(PYTHON) scripts/analysis/generate_review.py --all --auto $(if $(FORCE),--force)
 
 reviews-bias-auto:
 	@echo "Generiere PC-Bias-Reviews fuer alle Modelle mit 00_bias_report.md..."
@@ -278,6 +278,15 @@ clean-bak:
 	@find benchmark_scores/ -name "*.bak_*" -delete
 	@echo "   -> .bak_* Dateien entfernt."
 
+clean-reviews:
+	@if [ -n "$(FORCE)" ]; then \
+		echo "Bereinige alte Reviews (behalte je 1 pro Modell)..."; \
+		$(PYTHON) scripts/maintenance/cleanup_reviews.py --delete --force; \
+	else \
+		echo "Alte Reviews (Dry-Run)..."; \
+		$(PYTHON) scripts/maintenance/cleanup_reviews.py; \
+	fi
+
 backup:
 	@echo "Creating full backup..."
 	@mkdir -p backups
@@ -286,6 +295,7 @@ backup:
 	@$(MAKE) clean-runs FORCE=1
 	@$(MAKE) consolidate-csv
 	@$(MAKE) clean-bak
+	@$(MAKE) clean-reviews FORCE=1
 	@$(MAKE) prune-orphans FORCE=1
 	@rm -rf outputs/temp/*
 	@echo "Backup chain complete."

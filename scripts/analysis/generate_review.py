@@ -202,7 +202,7 @@ def get_model_card_context(model_id: str) -> str:
     price_str = f"${price_in}/1M input, ${price_out}/1M output" if price_in and price_out else None
 
     lines = [
-        f"### Model Card: {card.get('display_name', model_id)}",
+        f"### Modell-Info: {card.get('display_name', model_id)}",
         f"- **Entwickler:** {card.get('developer', 'n/a')} ({card.get('origin_country', 'n/a')})",
         f"- **Use Case:** {card.get('use_case_primary', 'n/a')} | "
         f"**Size Class:** {card.get('size_class', 'n/a')} | "
@@ -1036,6 +1036,9 @@ def process_model_review(model_dir: Path, csv_data: str, client: LLMClient, prov
             _card_tags = _card_data.get("architecture_tags")
             if _card_tags and isinstance(_card_tags, list) and len(_card_tags) > 0:
                 identity = {**identity, "tags": _card_tags}
+            _card_display_name = _card_data.get("display_name")
+            if _card_display_name:
+                identity = {**identity, "display_name": _card_display_name}
         except Exception:
             pass
 
@@ -1239,12 +1242,29 @@ def main():
     # Safe model name for comparison (matching benchmark_utils.py)
     safe_target_model = args.model.replace(":", "_").replace("/", "_") if args.model else None
 
+    # Build set of configured safe IDs for orphan-dir detection
+    _configured_safe_ids: set[str] = set()
+    try:
+        _cfg = load_config()
+        for _p in list(_cfg.get("providers", {}).get("commercial", {}).values()) + list(_cfg.get("providers", {}).get("local", {}).values()):
+            for _m in _p.get("models", []):
+                _configured_safe_ids.add(_m["id"].replace(":", "_").replace("/", "_"))
+    except Exception:
+        pass
+
     # Iteriere über die Modell-Ordner (z.B. mistral-medium-latest) im Audit-Root
     for subdir in audit_base_dir.iterdir():
         if subdir.is_dir() and subdir.name != ".DS_Store":
             if safe_target_model and subdir.name != safe_target_model:
                 continue
             found_models = True
+
+            # Warn when a dir name doesn't match any configured model ID (likely an undated alias orphan)
+            if _configured_safe_ids and subdir.name not in _configured_safe_ids:
+                import re as _re
+                _is_dated_variant = bool(_re.search(r"-\d{8}$|-\d{6}$", subdir.name))
+                if not _is_dated_variant:
+                    print(f"⚠️  Verzeichnis '{subdir.name}' entspricht keiner konfigurierten Modell-ID — mögliches Duplikat einer datierten Version. Bitte prüfen.")
 
             # Skip-Logik: PC-Only-Dirs überspringen (nur 00_bias_report.md, keine Benchmark-Logs)
             if args.type == "benchmark":

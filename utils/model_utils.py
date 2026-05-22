@@ -186,6 +186,8 @@ def _find_card(model_id: str, card_dir: Path | None = None) -> Path:
         # sibling models that share a common prefix (e.g. glm-5 vs glm-5-turbo).
         candidates = sorted(_cd.glob(f"{safe}-[0-9]*.json"))
         if candidates:
+            import logging as _logging
+            _logging.debug("_find_card: glob fallback matched '%s' for input '%s'", candidates[-1].name, model_id)
             return candidates[-1]  # most recent when multiple versions exist
         return unprefixed
 
@@ -210,6 +212,8 @@ def _find_card(model_id: str, card_dir: Path | None = None) -> Path:
     if not unprefixed.exists():
         candidates = sorted(_cd.glob(f"{safe}-[0-9]*.json"))
         if candidates:
+            import logging as _logging
+            _logging.debug("_find_card: glob fallback matched '%s' for input '%s'", candidates[-1].name, model_id)
             return candidates[-1]
 
     return unprefixed  # May or may not exist — caller checks
