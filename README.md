@@ -96,7 +96,7 @@ make political-compass-safe
 
 CrucibleMark enthält eine integrierte Export-Pipeline (`scripts/web_export.py`), die sämtliche Benchmark-Ergebnisse als aufbereitetes Datenpaket für das externe Frontend-Projekt `cruciblemark-web` bereitstellt.
 
-**Model Cards & Provider Cards** sind strukturierte JSON-Steckbriefe, die per LLM generiert werden und Entwickler, Herkunftsland, Datenschutz-Metadaten und eine Sovereign-Risk-Einschätzung enthalten. Sie fließen als Kontext in den Meta-Reviewer ein und stehen dem Web-Frontend als eigenständige JSON-API zur Verfügung.
+**Model Cards & Provider Cards** sind strukturierte JSON-Steckbriefe, die per LLM generiert werden und Entwickler, Herkunftsland, Datenschutz-Metadaten, Sovereign-Risk-Einschätzung sowie Preisinformationen enthalten. Sie sind die **Single Source of Truth** für Pricing (`input_price_per_1m` / `output_price_per_1m`), Modell-Kategorie (`weights_license_tier`) und Thinking-Probe-Status. `cost_limits.yaml` ist ein Legacy-Fallback für die wenigen Modelle ohne Card — dort nichts Neues eintragen.
 
 ```bash
 make model-cards      # Model Cards generieren (fehlende)
@@ -119,6 +119,14 @@ make web-export
 
 # Direkter Export ins Development-Frontend (11ty, schreibt nach src/_data/raw/)
 make web-export-dev
+```
+
+> **Web-Export ist nicht automatisch mit `make leaderboard` verknüpft.** Er wird manuell ausgelöst, wenn das Leaderboard vollständig und bereit für die Veröffentlichung ist.
+
+**Modell vollständig entfernen:**
+```bash
+make clean-model MODEL="mistral-large-2411"       # CSV-Zeilen, Audit-Logs, Reviews, Model Card
+make clean-model MODEL="mistral-large-2411" DRY=1 # Vorschau (kein Löschen)
 ```
 
 ---

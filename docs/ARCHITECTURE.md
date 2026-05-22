@@ -489,7 +489,7 @@ Der Web Exporter ist ein eigenständiger Publishing-Schritt (Layer 4 Downstream)
 | `_build_pc_lookups(pc_lb)` | Baut PC-Leaderboard-Dicts (model_name + slug-Schlüssel) |
 | `_load_pc_block_meta(config_path)` | Lädt Block-Metadaten aus `political_compass/config.yaml` (Fallback: statisches Dict) |
 | `_export_model_files(model_out, audit_src, comp_src)` | Kopiert Audit-Logs + Review-Markdowns für ein Modell |
-| `_build_leaderboard_entry(row, card, ...)` | Baut den vollständigen Leaderboard-Dict (~40 Felder) |
+| `_build_leaderboard_entry(row, card, ...)` | Baut den vollständigen Leaderboard-Dict (~45 Felder); top-level `model_id` aus Card; `size_class` Card-prioritär; `model_card`-Objekt mit 33 Feldern (inkl. Pricing, `weights_license_tier`, `thinking_probe_*`, `heritage_ids`) |
 | `_lookup_pc_row(model_name, slug, pc)` | Sucht AVG-Zeile in PC-Resultaten (exakt + slug-Fallback) |
 | `_build_compass_entry(pc_row, lb_row, ..., block_meta)` | Baut den Political-Compass-Dict inkl. Archetyp-Felder |
 | `_write_top_level_outputs(...)` | Schreibt `leaderboard.json`, `political_compass.json`, `provider_stats.json`, `meta.json` |
@@ -497,6 +497,8 @@ Der Web Exporter ist ein eigenständiger Publishing-Schritt (Layer 4 Downstream)
 `WEIGHTS_TIER_DISPLAY` (Tier-String-Mapping) ist als öffentliche Konstante aus `utils/model_utils.py` importiert — `web_export.py` führt kein Duplikat mehr. `load_model_card()` delegiert die Card-Pfad-Auflösung an `_find_card(card_dir=card_dir)` (SSoT) und behält nur die zwei web-spezifischen Fallbacks (Display-Name-Vollscan, hf.co-Suffix-Match). Block-Metadaten für den Political Compass kommen via `_load_pc_block_meta()` aus `benchmark_modules/political_compass/config.yaml` (Fallback: statisches Dict) — kein hardcodiertes Python-Dict mehr.
 
 **Model Cards & Provider Cards:** Strukturierte JSON-Steckbriefe pro Modell (`benchmark_scores/model_cards/`) und pro Provider (`benchmark_scores/provider_cards/`), generiert via LLM (`make model-cards`, `make provider-cards`). Sie enthalten Entwickler, Herkunftsland, Stärken/Schwächen, Datenschutz-Metadaten, Sovereign-Risk-Einschätzung sowie **Preisinformationen** (`input_price_per_1m`, `output_price_per_1m` — USD pro 1M Tokens) als primäre Preisquelle (SSoT, ab v3.7.5). Die Cards werden (a) als Kontext-Block in den Meta-Reviewer injiziert, (b) als eigenständige JSON-API für das Web-Frontend bereitgestellt und (c) von `score_calculator.py` und `cost_tracker.py` für die Kostenberechnung gelesen.
+
+`make clean-model --model <ID>` entfernt seit v3.8.1 automatisch alle Spuren eines Modells: CSV-Zeilen, `outputs/audit_logs/<dir>/`, `outputs/comparisons/<dir>/`, `outputs/runs/<dir>/`, `docs/reviews/<dir>/` **und** die Model Card JSON (`benchmark_scores/model_cards/<card>.json`). Kein manueller Aufräumschritt mehr nötig.
 
 **🛑 SSOT Modell-Kategorisierung (`weights_license_tier`):**
 Die Anzeige-Kategorie eines Modells wird **ausschließlich** aus dem Feld `weights_license_tier` der Model Card abgeleitet — nicht aus der Leaderboard-CSV-Spalte `Type`, nicht aus der Herkunft der Benchmark-CSV und nicht aus Heuristiken über Modellnamen.
@@ -545,6 +547,8 @@ Die Funktion `get_model_category()` in `utils/model_utils.py` ist der einzige Ei
 1. **Snapshot:** Archiv erstellen
 2. **Prune JSON-Logs:** Nur letzte fünf Runs behalten
 3. **CSV-Konsolidierung:** Nur neueste Zeile pro (Modell, Asset)
+4. **Clean Reviews:** Verwaiste Review-Verzeichnisse entfernen (`make clean-reviews`)
+5. **Prune Orphans:** Audit-Log-Verzeichnisse ohne Leaderboard-Eintrag bereinigen (`make clean-model --prune-orphans`)
 
 **Effekt:** CSV-Dateien bleiben < 5 MB
 
@@ -685,5 +689,5 @@ class LLMClientFactory:
 
 ---
 
-**Dokumenten-Version:** 3.6.0 (Überarbeitung Mai 2026)\
-**Kompatibel mit:** CrucibleMark v3.6.0+
+**Dokumenten-Version:** 3.8.1 (Überarbeitung Mai 2026)\
+**Kompatibel mit:** CrucibleMark v3.8.0+

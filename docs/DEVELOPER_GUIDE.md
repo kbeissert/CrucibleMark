@@ -531,18 +531,67 @@ Das Skript legt `.bak`-Backups aller drei Benchmark-CSVs an und füllt leere / `
 
 Jede Model Card JSON muss folgende Felder enthalten. Cards mit `card_status: "stub"` dürfen vorläufige Werte haben; das vollständige Schema wird bei `make model-cards` von `generate_model_cards.py` erzwungen.
 
+#### Kern-Identität
+
+| Feld | Typ | Beschreibung |
+|---|---|---|
+| `model_id` | string | Kanonische API-ID (z. B. `"mistral-large-2411"`, `"hf.co/bartowski/NousResearch_Hermes-4-14B-GGUF:Q4_K_M"`) — SSoT für alle Lookups |
+| `display_name` | string | Anzeigename im Frontend |
+| `vendor` | string | API-Anbieter (z. B. `"Mistral AI"`, `"OpenAI"`) |
+| `card_status` | string | `"stub"` / `"complete"` — steuert Vollständigkeits-Guards |
+| `heritage_ids` | list[string] | Frühere Model-IDs / Alias-Namen, unter denen Review-Dirs abgelegt wurden. Web-Exporter fällt bei fehlender primärer Dir auf diese zurück. |
+
+#### Architektur & Deployment
+
 | Feld | Typ | Werte / Format | Beschreibung |
 |---|---|---|---|
-| `use_case_primary` | string | `generalist` / `coding` / `reasoning` / `vision-language` / `agentic` | Primärer Optimierungsschwerpunkt — steuert den Reviewer-Bewertungsrahmen |
-| `parameter_architecture` | string | `dense` / `moe` | Dense = alle Parameter aktiv; MoE = nur Teilnetzwerke aktiv. Bei MoE ist `params_active_b` (nicht `params_total_b`) der relevante Vergleichswert |
+| `parameter_architecture` | string | `dense` / `moe` | Dense = alle Parameter aktiv; MoE = nur Teilnetzwerke aktiv |
+| `params_total_b` | float | z. B. `14.0` | Gesamtparameter in Milliarden |
+| `params_active_b` | float | z. B. `3.5` | Aktive Parameter (MoE); bei MoE ist dies der relevante Vergleichswert |
 | `context_window_k` | integer | z. B. `128` | Maximales Kontextfenster in Kilotoken |
-| `knowledge_cutoff` | string | `YYYY-MM` | Trainingsdaten-Stichtag — Ereignisse danach sind dem Modell unbekannt |
+| `knowledge_cutoff` | string | `YYYY-MM` | Trainingsdaten-Stichtag |
 | `size_class` | string | `Nano` / `Edge` / `Desktop` / `Workstation` / `Server` / `Frontier` | Hardware-Tier — abgeleitet aus Parameteranzahl oder API-Only-Status |
-| `weights_license_tier` | string | z. B. `proprietary_api` / `open_weights` | Bestimmt die Kategorie-Anzeige im Leaderboard via `get_model_category()` |
+| `deployment_type` | string | `api_only` / `local_weights` | Ob das Modell lokal deploybar ist |
+| `supports_tool_use` | boolean | `true` / `false` | Function-Calling-Unterstützung |
+| `use_case_primary` | string | `generalist` / `coding` / `reasoning` / `vision-language` / `agentic` | Steuert den Reviewer-Bewertungsrahmen |
+
+#### Lizenz & Kategorisierung
+
+| Feld | Typ | Beschreibung |
+|---|---|---|
+| `weights_license_tier` | string | `proprietary` / `restricted-weights` / `open-weights` — Bestimmt die Kategorie-Anzeige via `get_model_category()` |
+| `license` | string | SPDX-ID oder Kurzname (z. B. `"Apache-2.0"`, `"Meta Community License"`) |
+| `license_url` | string | URL zur Volllizenz |
+| `commercial_use_allowed` | boolean / null | `true` = frei kommerziell nutzbar; `false` = verboten; `null` = skalenabhängig / unklar |
+| `weights_provenance_risk_rationale` | string | Begründung für Lizenz-/Herkunftsrisiken (z. B. CNKI-Verbindungen, dual-use) |
+
+#### Pricing (SSoT)
+
+| Feld | Typ | Beschreibung |
+|---|---|---|
+| `input_price_per_1m` | float | Preis pro 1M Input-Tokens in USD |
+| `output_price_per_1m` | float | Preis pro 1M Output-Tokens in USD |
+
+**Wichtig:** Preise gehören ausschließlich in die Model Card. `cost_limits.yaml` ist Legacy-Fallback für die wenigen Modelle ohne Card — dort nichts Neues eintragen.
+
+#### Thinking Probe
+
+| Feld | Typ | Beschreibung |
+|---|---|---|
+| `thinking_probe_capable` | boolean | Ob das Modell Chain-of-Thought-Denken zeigt |
+| `thinking_probe_evidence` | string | Erklärung der Evidenz (Signal A / B) |
+| `thinking_probe_manual_override` | boolean | `true` wenn Wert manuell gesetzt (z. B. OpenAI o-Series ohne `reasoning_tokens`) |
+| `thinking_probe_at` | string | ISO-Timestamp des letzten Probe-Runs |
+
+**Signals:** Signal A = `<think>`-Tags in Antwort, Signal B = `reasoning_tokens > 0`. Response-Länge ist kein Signal (ThinkingProbe Signal-C-Verbot, siehe CLAUDE.md).
+
+---
 
 **Taxonomy-SSoT:** Die erlaubten Werte für `use_case_primary` und `size_class` (inkl. `reviewer_guidance` pro Wert) liegen in `config/classification_taxonomy.json`. Dieses File wird von `generate_review.py` beim Start eingelesen und als `{use_case_classification_context}` in den Reviewer-Prompt injiziert.
 
-**Hilfsfunktion:** `get_use_case_primary(model_id, card_data=None)` in `utils/model_utils.py` liefert den `use_case_primary`-Wert mit Fallback `"generalist"` — niemals direkt `card_data.get(...)` ohne Fallback aufrufen.
+**Hilfsfunktionen:**
+- `get_use_case_primary(model_id, card_data=None)` → `use_case_primary` mit Fallback `"generalist"`
+- `get_model_category(model_id, card_data=None)` → **einziger** Einstiegspunkt für Display-Kategorie-Strings; liefert `"Proprietär"` / `"Restricted Weights"` / `"Open Weights"` — niemals selbst ableiten oder hardcoden
 
 ### Migration: Neue Card-Felder nachpflegen
 
@@ -560,7 +609,22 @@ python scripts/dev/migrate_context_fields.py
 
 Die Skripte überspringen Cards, die das Feld bereits haben, und geben einen tabellarischen Report aus (Modell | Assigned Value | Basis der Zuweisung).
 
+### Modell vollständig entfernen
 
+`make clean-model MODEL=<id>` (via `scripts/maintenance/clean_results.py`) entfernt seit v3.8.1 alle Spuren eines Modells in einem einzigen Schritt:
+
+- CSV-Zeilen aus allen Benchmark- und PC-CSVs
+- `outputs/audit_logs/<dir>/`, `outputs/comparisons/<dir>/`, `outputs/runs/<dir>/`
+- `docs/reviews/<dir>/`
+- Model Card JSON (`benchmark_scores/model_cards/<card>.json`)
+- Political-Compass-Session-Checkpoint (`outputs/temp/session_*.json`)
+
+```bash
+make clean-model MODEL="mistral-large-2411"       # Löschen
+make clean-model MODEL="mistral-large-2411" DRY=1 # Vorschau
+```
+
+Verwaiste Verzeichnisse (kein Leaderboard-Eintrag mehr, aber Dir noch vorhanden) lassen sich mit `make clean-model PRUNE_ORPHANS=1` aufspüren und entfernen.
 
 ### SSOT Prinzip (Single Source of Truth)
 
@@ -1053,5 +1117,5 @@ python run_benchmark.py --debug-responses
 
 ---
 
-**Dokumenten-Version:** 3.2.0 (Überarbeitung April 2026)\
-**Kompatibel mit:** CrucibleMark v3.5.8+
+**Dokumenten-Version:** 3.8.1 (Überarbeitung Mai 2026)\
+**Kompatibel mit:** CrucibleMark v3.8.0+
