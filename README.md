@@ -146,4 +146,4 @@ Tiefergehende Einblicke in die Methodik findest du im `docs/` Verzeichnis:
 
 - **Maintainer:** kbeissert
 - **Repository:** [github.com/kbeissert/cruciblemark](https://github.com/kbeissert/cruciblemark)
-- **Status:** ✅ Production-Ready (v3.7.2)
+- **Status:** ✅ Production-Ready (v3.7.5)
