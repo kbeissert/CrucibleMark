@@ -125,7 +125,8 @@ def _norm_dir(s: str) -> str:
 
 
 def clean_model_output_directories(model: str, dry_run: bool = False):
-    """Löscht modellspezifische Verzeichnisse aus outputs/ (audit_logs, comparisons, runs)."""
+    """Löscht modellspezifische Verzeichnisse aus outputs/ (audit_logs, comparisons, runs)
+    und docs/reviews/."""
     if not model:
         return
 
@@ -150,6 +151,41 @@ def clean_model_output_directories(model: str, dry_run: bool = False):
                         shutil.rmtree(item)
                     except OSError as e:
                         print(f"     ❌ Fehler beim Löschen von {item.name}: {e}")
+
+    reviews_dir = ROOT_DIR / "docs" / "reviews"
+    if reviews_dir.exists():
+        for item in reviews_dir.iterdir():
+            if not item.is_dir() or item.name in (".gitkeep", ".DS_Store"):
+                continue
+            item_norm = _norm_dir(item.name)
+            if item_norm == model_norm or item_norm.endswith(f"_{model_norm}"):
+                print(f"   - Lösche docs/reviews/{item.name}")
+                if not dry_run:
+                    try:
+                        shutil.rmtree(item)
+                    except OSError as e:
+                        print(f"     ❌ Fehler beim Löschen von {item.name}: {e}")
+
+
+def clean_model_card(model: str, dry_run: bool = False):
+    """Löscht die Model Card JSON für das angegebene Modell."""
+    if not model:
+        return
+    try:
+        from utils.model_utils import _find_card
+        card_path = _find_card(model).resolve()
+        if card_path.exists():
+            try:
+                display = card_path.relative_to(ROOT_DIR)
+            except ValueError:
+                display = card_path
+            print(f"   - Lösche model_card: {display}")
+            if not dry_run:
+                card_path.unlink()
+        else:
+            print(f"   - model_card: keine Card für '{model}' gefunden.")
+    except Exception as e:
+        print(f"   ⚠️ Fehler bei Card-Suche: {e}")
 
 def clean_csv(
     file_path: Path,
@@ -294,6 +330,7 @@ def main():
     # Modellspezifische Verzeichnisse löschen (falls Modell angegeben)
     if args.model:
         clean_model_output_directories(model=args.model, dry_run=args.dry_run)
+        clean_model_card(model=args.model, dry_run=args.dry_run)
 
     # Dateien definieren
     files = [
