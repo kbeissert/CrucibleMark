@@ -1,0 +1,87 @@
+
+============================================================
+🚀 CRUCIBLE MARK - BENCHMARK RUNNER
+============================================================
+
+>>> Running Module: Tool Use & Assistenz
+
+============================================================
+🌐 STARTE KOMMERZIELLEN BENCHMARK
+============================================================
+Modul: Tool Use & Assistenz
+Modell: claude-sonnet-4-6
+Provider: ANTHROPIC
+Runs: 1
+Force: No
+Audit Mode: Enabled
+============================================================
+
+
+============================================================
+📊 STARTE BENCHMARK: Tool Use & Assistenz
+============================================================
+Provider: anthropic
+Modell:   claude-sonnet-4-6 (Tags: [General])
+Tests:    3
+============================================================
+
+   ⏳ [1/3] Tooluse001: Test läuft...   ⏭️  [tooluse001] Wird übersprungen (Cache)
+                                                                                   ✓ [1/3] Tooluse001: 90.0% | 1291.0 T | 24.4s
+   ⏳ [2/3] Tooluse002: Test läuft...   ⏭️  [tooluse002] Wird übersprungen (Cache)
+                                                                                   ✓ [2/3] Tooluse002: 50.0% | 1260.0 T | 32.1s
+   ⏳ [3/3] Tooluse003: Test läuft...Generating Leaderboard with Metrics...
+Compact Leaderboard saved to: benchmark_scores/benchmark_leaderboard.csv
+Detailed Leaderboard saved to: benchmark_scores/benchmark_leaderboard_detailed.csv
+   ⏭️  [tooluse003] Wird übersprungen (Cache)
+                                                                                   ✓ [3/3] Tooluse003: 70.0% | 455.0 T | 15.2s
+
+   ======================================================================
+   🏁 DURCHSCHNITT: 70.0% | 74 T/s | 23.9s | 💵 Ø $0.0114
+   ======================================================================
+
+
+💾 Ergebnisse gespeichert in: benchmark_scores/commercial_models_benchmark.csv (Upsert: 3 neu/updated)
+
+💾 Ergebnisse gespeichert: benchmark_scores/commercial_models_benchmark.csv
+
+✅ Modul abgeschlossen: claude-sonnet-4-6
+Tests: 3 (3 ✅, 0 ❌)
+
+📊 Durchschnitt (erfolgreiche Tests des Moduls):
+   Dein Modell: 70.00/100 (70.00%) ⭐
+   Avg Speed:   23.9s (Execution)
+   Modul Kosten: $0.0343
+   Remaining Budget: $14.40
+
+🏆 Beste Tests:
+   EU Lizenzrecherche Meta Llama      : 90.00% 🏆
+   Tool Failure Handling              : 70.00% ⭐
+   HTTP Fetch & Extract               : 50.00% 📉
+
+⚠️  Schwächste Tests:
+   EU Lizenzrecherche Meta Llama      : 90.00% 🏆
+   Tool Failure Handling              : 70.00% ⭐
+   HTTP Fetch & Extract               : 50.00% 📉
+============================================================
+
+📊 Aktualisiere Leaderboard...
+══════════════════════════════════════════════════════
+  Tool Use Benchmark — Batch Run
+  Provider: custom  |  MCP: live  |  MCP-Neustart pro Modell
+  Modelle: 1
+══════════════════════════════════════════════════════
+
+  ↻ MCP-Neustart vor [1/1]...
+
+[1/1] Claude Sonnet 4.6
+
+══════════════════════════════════════════════════════
+  Tool Use Benchmark — Batch Run Complete
+══════════════════════════════════════════════════════
+  Models found (supports_tool_use):     1
+  Provider filter:                  custom
+  Successful:                           1
+  Failed/Skipped:                       0
+══════════════════════════════════════════════════════
+
+  Next: make tooluse-leaderboard

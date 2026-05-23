@@ -1,0 +1,468 @@
+
+============================================================
+🚀 CRUCIBLE MARK - BENCHMARK RUNNER
+============================================================
+
+>>> Running Module: Tool Use & Assistenz
+
+============================================================
+🌐 STARTE KOMMERZIELLEN BENCHMARK
+============================================================
+Modul: Tool Use & Assistenz
+Modell: claude-haiku-4-5-20251001
+Provider: ANTHROPIC
+Runs: 1
+Force: Yes (Ignore Cache)
+Audit Mode: Enabled
+============================================================
+
+
+============================================================
+📊 STARTE BENCHMARK: Tool Use & Assistenz
+============================================================
+Provider: anthropic
+Modell:   claude-haiku-4-5-20251001 (Tags: [General])
+Tests:    3
+============================================================
+
+   ⏳ [1/3] Tooluse001: Test läuft...[DIAGNOSTIC] unknown — mcp_flow → tool_valid=True, excerpt_quality=full, parse_attempts=2, p1=80.0, expected=False
+------------------------------------------------------
+  tooluse001 — EU Lizenzrecherche
+------------------------------------------------------
+  Tool Call:     [WARN] web_search  (2 Versuche — Retry nötig)
+  MCP Status:    [OK] success — tavily  [1.9s]
+  Source:        https://www.reddit.com/r/LocalLLaMA/comments/1jtejzj/llama_4
+
+  P1 Tool Exec:  80.0 / 100   ████████░░
+  P2 Synthesis:  100.0 / 100   ██████████
+  Combined:      90.0 / 100   █████████░  [Excellent]
+
+  Time: Call 1: 5.2s  |  MCP: 1.9s  |  Call 2: 3.1s  |  Total: 10.3s
+  Tokens: Tokens: 1712  |  Cost: $0.004776
+
+                                                                                   ✓ [1/3] Tooluse001: 90.0% | 1043 T | 8.4s
+   ⏳ [2/3] Tooluse002: Test läuft...[DIAGNOSTIC] unknown — mcp_flow → tool_valid=True, excerpt_quality=partial, parse_attempts=2, p1=80.0, expected=False
+------------------------------------------------------
+  tooluse002 — HTTP Fetch & Extract
+------------------------------------------------------
+  Tool Call:     [WARN] http_fetch  (2 Versuche — Retry nötig)
+  MCP Status:    [OK] success  [0.6s]
+  Content:       <!doctype html>
+<html class="">
+	<head>
+		<meta charset="utf
+
+  P1 Tool Exec:  80.0 / 100   ████████░░
+  P2 Synthesis:  100.0 / 100   ██████████
+  Combined:      90.0 / 100   █████████░  [Excellent]
+
+  Time: Call 1: 5.6s  |  MCP: 0.6s  |  Call 2: 4.5s  |  Total: 10.7s
+  Tokens: Tokens: 1598  |  Cost: $0.005286
+
+                                                                                   ✓ [2/3] Tooluse002: 90.0% | 856 T | 10.1s
+   ⏳ [3/3] Tooluse003: Test läuft...[DIAGNOSTIC] unknown — mcp_flow → tool_valid=True, excerpt_quality=empty, parse_attempts=2, p1=80.0, expected=False
+Generating Leaderboard with Metrics...
+Compact Leaderboard saved to: benchmark_scores/benchmark_leaderboard.csv
+Detailed Leaderboard saved to: benchmark_scores/benchmark_leaderboard_detailed.csv
+------------------------------------------------------
+  tooluse003 — 404 Fehlerbehandlung
+------------------------------------------------------
+  Tool Call:     [WARN] http_fetch  (2 Versuche — Retry nötig)
+  MCP Status:    [ERROR] error  [0.5s]
+
+  P1 Tool Exec:  80.0 / 100   ████████░░
+  P2 Synthesis:  100.0 / 100   ██████████
+  Combined:      90.0 / 100   █████████░  [Excellent]
+
+  Time: Call 1: 4.0s  |  MCP: 0.5s  |  Call 2: 2.9s  |  Total: 7.3s
+  Tokens: Tokens: 1063  |  Cost: $0.003279
+
+                                                                                   ✓ [3/3] Tooluse003: 90.0% | 482 T | 6.9s
+
+   ======================================================================
+   🏁 DURCHSCHNITT: 90.0% | 173 T/s | 8.4s | 💵 Ø $0.0022
+   ======================================================================
+
+
+💾 Ergebnisse gespeichert in: benchmark_scores/commercial_models_benchmark.csv (Upsert: 3 neu/updated)
+
+💾 Ergebnisse gespeichert: benchmark_scores/commercial_models_benchmark.csv
+
+✅ Modul abgeschlossen: claude-haiku-4-5-20251001
+Tests: 3 (3 ✅, 0 ❌)
+
+📊 Durchschnitt (erfolgreiche Tests des Moduls):
+   Dein Modell: 90.00/100 (90.00%) 🏆
+   Avg Speed:   8.4s (Execution)
+   Modul Kosten: $0.0065
+   Remaining Budget: $14.27
+
+🏆 Beste Tests:
+   EU Lizenzrecherche Meta Llama      : 90.00% 🏆
+   HTTP Fetch & Extract               : 90.00% 🏆
+   Tool Failure Handling              : 90.00% 🏆
+
+⚠️  Schwächste Tests:
+   EU Lizenzrecherche Meta Llama      : 90.00% 🏆
+   HTTP Fetch & Extract               : 90.00% 🏆
+   Tool Failure Handling              : 90.00% 🏆
+============================================================
+
+📊 Aktualisiere Leaderboard...
+
+============================================================
+🚀 CRUCIBLE MARK - BENCHMARK RUNNER
+============================================================
+
+>>> Running Module: Tool Use & Assistenz
+
+============================================================
+🌐 STARTE KOMMERZIELLEN BENCHMARK
+============================================================
+Modul: Tool Use & Assistenz
+Modell: gemini-2.5-pro
+Provider: GOOGLE
+Runs: 1
+Force: Yes (Ignore Cache)
+Audit Mode: Enabled
+============================================================
+
+
+============================================================
+📊 STARTE BENCHMARK: Tool Use & Assistenz
+============================================================
+Provider: google
+Modell:   gemini-2.5-pro (Tags: [Thinking-Optional])
+Tests:    3
+============================================================
+
+   ⏳ [1/3] Tooluse001: Test läuft...[DIAGNOSTIC] unknown — mcp_flow → tool_valid=True, excerpt_quality=full, parse_attempts=2, p1=100.0, expected=False
+------------------------------------------------------
+  tooluse001 — EU Lizenzrecherche
+------------------------------------------------------
+  Tool Call:     [WARN] web_search  (2 Versuche — Retry nötig)
+  MCP Status:    [OK] success — tavily  [1.5s]
+  Source:        https://ai.meta.com/llama/use-policy
+
+  P1 Tool Exec:  100.0 / 100   ██████████
+  P2 Synthesis:  100.0 / 100   ██████████
+  Combined:      100.0 / 100   ██████████  [Excellent]
+
+  Time: Call 1: 26.8s  |  MCP: 1.5s  |  Call 2: 10.6s  |  Total: 38.9s
+  Tokens: Tokens: 1092  |  Cost: $0.005408
+
+                                                                                   ✓ [1/3] Tooluse001: 100.0% | 620 T | 37.4s
+   ⏳ [2/3] Tooluse002: Test läuft...Tool name normalized: 'http_fetch_and_extract' → 'http_fetch_and_extract'
+[DIAGNOSTIC] unknown — mcp_flow → tool_valid=False, excerpt_quality=empty, parse_attempts=2, p1=0.0, expected=False
+------------------------------------------------------
+  tooluse002 — HTTP Fetch & Extract
+------------------------------------------------------
+  Tool Call:     [WARN] http_fetch_and_extract  (2 Versuche — Retry nötig)
+  MCP Status:    [ERROR] error  [0.0s]
+
+  P1 Tool Exec:  0.0 / 100   ░░░░░░░░░░
+  P2 Synthesis:  100.0 / 100   ██████████
+  Combined:      50.0 / 100   █████░░░░░  [Weak]
+
+  Time: Call 1: 26.5s  |  MCP: 0.0s  |  Call 2: 13.8s  |  Total: 40.3s
+  Tokens: Tokens: 1201  |  Cost: $0.009718
+
+                                                                                   ✓ [2/3] Tooluse002: 50.0% | 534 T | 40.3s
+   ⏳ [3/3] Tooluse003: Test läuft...[DIAGNOSTIC] unknown — mcp_flow → tool_valid=True, excerpt_quality=empty, parse_attempts=2, p1=80.0, expected=False
+Generating Leaderboard with Metrics...
+Compact Leaderboard saved to: benchmark_scores/benchmark_leaderboard.csv
+Detailed Leaderboard saved to: benchmark_scores/benchmark_leaderboard_detailed.csv
+------------------------------------------------------
+  tooluse003 — 404 Fehlerbehandlung
+------------------------------------------------------
+  Tool Call:     [WARN] http_fetch  (2 Versuche — Retry nötig)
+  MCP Status:    [ERROR] error  [0.5s]
+
+  P1 Tool Exec:  80.0 / 100   ████████░░
+  P2 Synthesis:  100.0 / 100   ██████████
+  Combined:      90.0 / 100   █████████░  [Excellent]
+
+  Time: Call 1: 13.2s  |  MCP: 0.5s  |  Call 2: 5.6s  |  Total: 19.3s
+  Tokens: Tokens: 478  |  Cost: $0.001840
+
+                                                                                   ✓ [3/3] Tooluse003: 90.0% | 206 T | 18.8s
+
+   ======================================================================
+   🏁 DURCHSCHNITT: 80.0% | 28 T/s | 32.2s | 💵 Ø $0.0025
+   ======================================================================
+
+
+💾 Ergebnisse gespeichert in: benchmark_scores/commercial_models_benchmark.csv (Upsert: 3 neu/updated)
+
+💾 Ergebnisse gespeichert: benchmark_scores/commercial_models_benchmark.csv
+
+✅ Modul abgeschlossen: gemini-2.5-pro
+Tests: 3 (3 ✅, 0 ❌)
+
+📊 Durchschnitt (erfolgreiche Tests des Moduls):
+   Dein Modell: 80.00/100 (80.00%) ⭐
+   Avg Speed:   32.2s (Execution)
+   Modul Kosten: $0.0075
+
+🏆 Beste Tests:
+   EU Lizenzrecherche Meta Llama      : 100.00% 🏆
+   Tool Failure Handling              : 90.00% 🏆
+   HTTP Fetch & Extract               : 50.00% 📉
+
+⚠️  Schwächste Tests:
+   EU Lizenzrecherche Meta Llama      : 100.00% 🏆
+   Tool Failure Handling              : 90.00% 🏆
+   HTTP Fetch & Extract               : 50.00% 📉
+============================================================
+
+📊 Aktualisiere Leaderboard...
+
+============================================================
+🚀 CRUCIBLE MARK - BENCHMARK RUNNER
+============================================================
+
+>>> Running Module: Tool Use & Assistenz
+
+============================================================
+🌐 STARTE KOMMERZIELLEN BENCHMARK
+============================================================
+Modul: Tool Use & Assistenz
+Modell: gpt-5.4
+Provider: OPENAI
+Runs: 1
+Force: Yes (Ignore Cache)
+Audit Mode: Enabled
+============================================================
+
+
+============================================================
+📊 STARTE BENCHMARK: Tool Use & Assistenz
+============================================================
+Provider: openai
+Modell:   gpt-5.4 (Tags: [General])
+Tests:    3
+============================================================
+
+   ⏳ [1/3] Tooluse001: Test läuft...[DIAGNOSTIC] unknown — mcp_flow → tool_valid=True, excerpt_quality=partial, parse_attempts=2, p1=80.0, expected=False
+------------------------------------------------------
+  tooluse001 — EU Lizenzrecherche
+------------------------------------------------------
+  Tool Call:     [WARN] web_search  (2 Versuche — Retry nötig)
+  MCP Status:    [OK] success — tavily  [1.2s]
+  Source:        https://ioplus.nl/en/posts/european-union-excluded-from-llam
+
+  P1 Tool Exec:  80.0 / 100   ████████░░
+  P2 Synthesis:  100.0 / 100   ██████████
+  Combined:      90.0 / 100   █████████░  [Excellent]
+
+  Time: Call 1: 9.8s  |  MCP: 1.2s  |  Call 2: 5.0s  |  Total: 16.1s
+  Tokens: Tokens: 1263  |  Cost: $0.010945
+
+                                                                                   ✓ [1/3] Tooluse001: 90.0% | 673 T | 14.9s
+   ⏳ [2/3] Tooluse002: Test läuft...[DIAGNOSTIC] unknown — mcp_flow → tool_valid=True, excerpt_quality=partial, parse_attempts=2, p1=80.0, expected=False
+------------------------------------------------------
+  tooluse002 — HTTP Fetch & Extract
+------------------------------------------------------
+  Tool Call:     [WARN] http_fetch  (2 Versuche — Retry nötig)
+  MCP Status:    [OK] success  [0.6s]
+  Content:       <!doctype html>
+<html class="">
+	<head>
+		<meta charset="utf
+
+  P1 Tool Exec:  80.0 / 100   ████████░░
+  P2 Synthesis:  100.0 / 100   ██████████
+  Combined:      90.0 / 100   █████████░  [Excellent]
+
+  Time: Call 1: 8.9s  |  MCP: 0.6s  |  Call 2: 8.7s  |  Total: 18.3s
+  Tokens: Tokens: 1596  |  Cost: $0.017528
+
+                                                                                   ✓ [2/3] Tooluse002: 90.0% | 879 T | 17.6s
+   ⏳ [3/3] Tooluse003: Test läuft...[DIAGNOSTIC] unknown — mcp_flow → tool_valid=True, excerpt_quality=empty, parse_attempts=2, p1=80.0, expected=False
+Generating Leaderboard with Metrics...
+Compact Leaderboard saved to: benchmark_scores/benchmark_leaderboard.csv
+Detailed Leaderboard saved to: benchmark_scores/benchmark_leaderboard_detailed.csv
+------------------------------------------------------
+  tooluse003 — 404 Fehlerbehandlung
+------------------------------------------------------
+  Tool Call:     [WARN] http_fetch  (2 Versuche — Retry nötig)
+  MCP Status:    [ERROR] error  [0.5s]
+
+  P1 Tool Exec:  80.0 / 100   ████████░░
+  P2 Synthesis:  100.0 / 100   ██████████
+  Combined:      90.0 / 100   █████████░  [Excellent]
+
+  Time: Call 1: 2.9s  |  MCP: 0.5s  |  Call 2: 2.1s  |  Total: 5.5s
+  Tokens: Tokens: 571  |  Cost: $0.003652
+
+                                                                                   ✓ [3/3] Tooluse003: 90.0% | 269 T | 5.0s
+
+   ======================================================================
+   🏁 DURCHSCHNITT: 90.0% | 97 T/s | 12.5s | 💵 Ø $0.0051
+   ======================================================================
+
+
+💾 Ergebnisse gespeichert in: benchmark_scores/commercial_models_benchmark.csv (Upsert: 3 neu/updated)
+
+💾 Ergebnisse gespeichert: benchmark_scores/commercial_models_benchmark.csv
+
+✅ Modul abgeschlossen: gpt-5.4
+Tests: 3 (3 ✅, 0 ❌)
+
+📊 Durchschnitt (erfolgreiche Tests des Moduls):
+   Dein Modell: 90.00/100 (90.00%) 🏆
+   Avg Speed:   12.5s (Execution)
+   Modul Kosten: $0.0152
+   Remaining Budget: $18.96
+
+🏆 Beste Tests:
+   EU Lizenzrecherche Meta Llama      : 90.00% 🏆
+   HTTP Fetch & Extract               : 90.00% 🏆
+   Tool Failure Handling              : 90.00% 🏆
+
+⚠️  Schwächste Tests:
+   EU Lizenzrecherche Meta Llama      : 90.00% 🏆
+   HTTP Fetch & Extract               : 90.00% 🏆
+   Tool Failure Handling              : 90.00% 🏆
+============================================================
+
+📊 Aktualisiere Leaderboard...
+
+============================================================
+🚀 CRUCIBLE MARK - BENCHMARK RUNNER
+============================================================
+
+>>> Running Module: Tool Use & Assistenz
+
+============================================================
+🌐 STARTE KOMMERZIELLEN BENCHMARK
+============================================================
+Modul: Tool Use & Assistenz
+Modell: nousresearch/hermes-4-70b
+Provider: OPENROUTER
+Runs: 1
+Force: Yes (Ignore Cache)
+Audit Mode: Enabled
+============================================================
+
+
+============================================================
+📊 STARTE BENCHMARK: Tool Use & Assistenz
+============================================================
+Provider: openrouter
+Modell:   nousresearch/hermes-4-70b (Tags: [Uncensored-Finetuned])
+Tests:    3
+============================================================
+
+   ⏳ [1/3] Tooluse001: Test läuft...[DIAGNOSTIC] unknown — mcp_flow → tool_valid=True, excerpt_quality=full, parse_attempts=2, p1=100.0, expected=False
+------------------------------------------------------
+  tooluse001 — EU Lizenzrecherche
+------------------------------------------------------
+  Tool Call:     [WARN] web_search  (2 Versuche — Retry nötig)
+  MCP Status:    [OK] success — tavily  [1.8s]
+  Source:        https://www.linkedin.com/pulse/llama-4-banned-eu-open-ai-reg
+
+  P1 Tool Exec:  100.0 / 100   ██████████
+  P2 Synthesis:  100.0 / 100   ██████████
+  Combined:      100.0 / 100   ██████████  [Excellent]
+
+  Time: Call 1: 5.4s  |  MCP: 1.8s  |  Call 2: 2.8s  |  Total: 10.0s
+  Tokens: Tokens: 1359  |  Cost: $0.000305
+
+                                                                                   ✓ [1/3] Tooluse001: 100.0% | 883 T | 8.2s
+   ⏳ [2/3] Tooluse002: Test läuft...[DIAGNOSTIC] unknown — mcp_flow → tool_valid=False, excerpt_quality=empty, parse_attempts=2, p1=40.0, expected=False
+------------------------------------------------------
+  tooluse002 — HTTP Fetch & Extract
+------------------------------------------------------
+  Tool Call:     [WARN] http_fetch  (2 Versuche — Retry nötig)
+  MCP Status:    [WARN] parse_error  [0.0s]
+
+  P1 Tool Exec:  40.0 / 100   ████░░░░░░
+  P2 Synthesis:  100.0 / 100   ██████████
+  Combined:      60.0 / 100   ██████░░░░  [Moderate]
+
+  Time: Call 1: 4.7s  |  MCP: 0.0s  |  Call 2: 4.4s  |  Total: 9.1s
+  Tokens: Tokens: 886  |  Cost: $0.000275
+
+                                                                                   ✓ [2/3] Tooluse002: 60.0% | 407 T | 9.1s
+   ⏳ [3/3] Tooluse003: Test läuft...[DIAGNOSTIC] unknown — mcp_flow → tool_valid=True, excerpt_quality=empty, parse_attempts=2, p1=80.0, expected=False
+Generating Leaderboard with Metrics...
+Compact Leaderboard saved to: benchmark_scores/benchmark_leaderboard.csv
+Detailed Leaderboard saved to: benchmark_scores/benchmark_leaderboard_detailed.csv
+------------------------------------------------------
+  tooluse003 — 404 Fehlerbehandlung
+------------------------------------------------------
+  Tool Call:     [WARN] http_fetch  (2 Versuche — Retry nötig)
+  MCP Status:    [ERROR] error  [0.5s]
+
+  P1 Tool Exec:  80.0 / 100   ████████░░
+  P2 Synthesis:  100.0 / 100   ██████████
+  Combined:      90.0 / 100   █████████░  [Excellent]
+
+  Time: Call 1: 1.5s  |  MCP: 0.5s  |  Call 2: 0.7s  |  Total: 2.7s
+  Tokens: Tokens: 468  |  Cost: $0.000097
+
+                                                                                   ✓ [3/3] Tooluse003: 90.0% | 197 T | 2.3s
+
+   ======================================================================
+   🏁 DURCHSCHNITT: 83.3% | 157 T/s | 6.5s | 💵 Ø $0.0001
+   ======================================================================
+
+
+💾 Ergebnisse gespeichert in: benchmark_scores/cloud_models_benchmark.csv (Upsert: 3 neu/updated)
+
+💾 Ergebnisse gespeichert: benchmark_scores/cloud_models_benchmark.csv
+
+✅ Modul abgeschlossen: nousresearch/hermes-4-70b
+Tests: 3 (3 ✅, 0 ❌)
+
+📊 Durchschnitt (erfolgreiche Tests des Moduls):
+   Dein Modell: 83.33/100 (83.33%) ⭐
+   Avg Speed:   6.5s (Execution)
+   Modul Kosten: $0.0003
+   Remaining Budget: $14.94
+
+🏆 Beste Tests:
+   EU Lizenzrecherche Meta Llama      : 100.00% 🏆
+   Tool Failure Handling              : 90.00% 🏆
+   HTTP Fetch & Extract               : 60.00% ✓
+
+⚠️  Schwächste Tests:
+   EU Lizenzrecherche Meta Llama      : 100.00% 🏆
+   Tool Failure Handling              : 90.00% 🏆
+   HTTP Fetch & Extract               : 60.00% ✓
+============================================================
+
+📊 Aktualisiere Leaderboard...
+══════════════════════════════════════════════════════
+  Tool Use Benchmark — Batch Run
+  Provider: custom  |  MCP: live  |  MCP-Neustart pro Modell
+  Modelle: 4
+══════════════════════════════════════════════════════
+
+  ↻ MCP-Neustart vor [1/4]...
+
+[1/4] Claude Haiku 4.5
+
+  ↻ MCP-Neustart vor [2/4]...
+
+[2/4] Gemini 2.5 Pro
+
+  ↻ MCP-Neustart vor [3/4]...
+
+[3/4] GPT-5.4
+
+  ↻ MCP-Neustart vor [4/4]...
+
+[4/4] Hermes 4 70B
+
+══════════════════════════════════════════════════════
+  Tool Use Benchmark — Batch Run Complete
+══════════════════════════════════════════════════════
+  Models found (supports_tool_use):     4
+  Provider filter:                  custom
+  Successful:                           4
+  Failed/Skipped:                       0
+══════════════════════════════════════════════════════
+
+  Next: make tooluse-leaderboard

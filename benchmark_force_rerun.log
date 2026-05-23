@@ -1,0 +1,131 @@
+
+============================================================
+🚀 CRUCIBLE MARK - BENCHMARK RUNNER
+============================================================
+
+>>> Running Module: Tool Use & Assistenz
+
+============================================================
+🌐 STARTE KOMMERZIELLEN BENCHMARK
+============================================================
+Modul: Tool Use & Assistenz
+Modell: claude-sonnet-4-6
+Provider: ANTHROPIC
+Runs: 1
+Force: Yes (Ignore Cache)
+Audit Mode: Enabled
+============================================================
+
+
+============================================================
+📊 STARTE BENCHMARK: Tool Use & Assistenz
+============================================================
+Provider: anthropic
+Modell:   claude-sonnet-4-6 (Tags: [General])
+Tests:    3
+============================================================
+
+   ⏳ [1/3] Tooluse001: Test läuft...[DIAGNOSTIC] unknown — mcp_flow → tool_valid=True, excerpt_quality=full, parse_attempts=2, p1=100.0, expected=False
+------------------------------------------------------
+  tooluse001 — EU Lizenzrecherche
+------------------------------------------------------
+  Tool Call:     [WARN] web_search  (2 Versuche — Retry nötig)
+  MCP Status:    [OK] success — tavily  [1.3s]
+  Source:        https://basebox.ai/blog/under-what-conditions-can-meta-s-lla
+
+  P1 Tool Exec:  100.0 / 100   ██████████
+  P2 Synthesis:  100.0 / 100   ██████████
+  Combined:      100.0 / 100   ██████████  [Excellent]
+
+  Time: Call 1: 13.3s  |  MCP: 1.3s  |  Call 2: 10.7s  |  Total: 25.4s
+  Tokens: Tokens: 2144  |  Cost: $0.020292
+
+                                                                                   ✓ [1/3] Tooluse001: 100.0% | 1352 T | 24.0s
+   ⏳ [2/3] Tooluse002: Test läuft...[DIAGNOSTIC] unknown — mcp_flow → tool_valid=True, excerpt_quality=partial, parse_attempts=2, p1=80.0, expected=False
+------------------------------------------------------
+  tooluse002 — HTTP Fetch & Extract
+------------------------------------------------------
+  Tool Call:     [WARN] http_fetch  (2 Versuche — Retry nötig)
+  MCP Status:    [OK] success  [0.6s]
+  Content:       <!doctype html>
+<html class="">
+	<head>
+		<meta charset="utf
+
+  P1 Tool Exec:  80.0 / 100   ████████░░
+  P2 Synthesis:  100.0 / 100   ██████████
+  Combined:      90.0 / 100   █████████░  [Excellent]
+
+  Time: Call 1: 14.3s  |  MCP: 0.6s  |  Call 2: 20.4s  |  Total: 35.3s
+  Tokens: Tokens: 2506  |  Cost: $0.029538
+
+                                                                                   ✓ [2/3] Tooluse002: 90.0% | 1568 T | 34.6s
+   ⏳ [3/3] Tooluse003: Test läuft...[DIAGNOSTIC] unknown — mcp_flow → tool_valid=False, excerpt_quality=empty, parse_attempts=2, p1=80.0, expected=False
+Generating Leaderboard with Metrics...
+Compact Leaderboard saved to: benchmark_scores/benchmark_leaderboard.csv
+Detailed Leaderboard saved to: benchmark_scores/benchmark_leaderboard_detailed.csv
+------------------------------------------------------
+  tooluse003 — 404 Fehlerbehandlung
+------------------------------------------------------
+  Tool Call:     [WARN] http_fetch  (2 Versuche — Retry nötig)
+  MCP Status:    [ERROR] error  [0.5s]
+
+  P1 Tool Exec:  80.0 / 100   ████████░░
+  P2 Synthesis:  100.0 / 100   ██████████
+  Combined:      60.0 / 100   ██████░░░░  [Moderate]
+
+  Time: Call 1: 9.9s  |  MCP: 0.5s  |  Call 2: 5.8s  |  Total: 16.2s
+  Tokens: Tokens: 1121  |  Cost: $0.010695
+
+                                                                                   ✓ [3/3] Tooluse003: 60.0% | 524 T | 15.8s
+
+   ======================================================================
+   🏁 DURCHSCHNITT: 83.3% | 78 T/s | 24.8s | 💵 Ø $0.0117
+   ======================================================================
+
+
+💾 Ergebnisse gespeichert in: benchmark_scores/commercial_models_benchmark.csv (Upsert: 3 neu/updated)
+
+💾 Ergebnisse gespeichert: benchmark_scores/commercial_models_benchmark.csv
+
+✅ Modul abgeschlossen: claude-sonnet-4-6
+Tests: 3 (3 ✅, 0 ❌)
+
+📊 Durchschnitt (erfolgreiche Tests des Moduls):
+   Dein Modell: 83.33/100 (83.33%) ⭐
+   Avg Speed:   24.8s (Execution)
+   Modul Kosten: $0.0350
+   Remaining Budget: $14.34
+
+🏆 Beste Tests:
+   EU Lizenzrecherche Meta Llama      : 100.00% 🏆
+   HTTP Fetch & Extract               : 90.00% 🏆
+   Tool Failure Handling              : 60.00% ✓
+
+⚠️  Schwächste Tests:
+   EU Lizenzrecherche Meta Llama      : 100.00% 🏆
+   HTTP Fetch & Extract               : 90.00% 🏆
+   Tool Failure Handling              : 60.00% ✓
+============================================================
+
+📊 Aktualisiere Leaderboard...
+══════════════════════════════════════════════════════
+  Tool Use Benchmark — Batch Run
+  Provider: custom  |  MCP: live  |  MCP-Neustart pro Modell
+  Modelle: 1
+══════════════════════════════════════════════════════
+
+  ↻ MCP-Neustart vor [1/1]...
+
+[1/1] Claude Sonnet 4.6
+
+══════════════════════════════════════════════════════
+  Tool Use Benchmark — Batch Run Complete
+══════════════════════════════════════════════════════
+  Models found (supports_tool_use):     1
+  Provider filter:                  custom
+  Successful:                           1
+  Failed/Skipped:                       0
+══════════════════════════════════════════════════════
+
+  Next: make tooluse-leaderboard
