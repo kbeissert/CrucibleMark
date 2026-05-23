@@ -10,17 +10,17 @@
   "weights_provenance_risk_rationale": "Google DeepMind ist ein US-amerikanisches Unternehmen und unterliegt dem CLOUD Act, jedoch ist der CLOUD Act bei lokal betriebenen Open-Weights-Modellen nicht direkt anwendbar.",
   "model_family": "Gemma",
   "primary_focus": "general",
-  "summary": "Gemma 4 E4B ist eine Edge-optimierte Variante der Gemma-4-Familie von Google DeepMind (Google Gemma Lizenz). Das \"E\" steht für \"Effective\" – mit ca. 4,5 Milliarden aktiven Parametern bei insgesamt 8 Milliarden Gesamtparametern (PLE-Architektur mit Per-Layer Embeddings). Der RAM-Footprint beträgt ca. 9,6 GB, was dem Edge-Tier entspricht, nicht dem Nano-Bereich. Geeignet für Instruction-Following-Aufgaben auf Consumer-Hardware mit ausreichend Arbeitsspeicher.",
+  "summary": "Gemma 4 E4B ist eine Desktop-optimierte Variante der Gemma-4-Familie von Google DeepMind (Google Gemma Lizenz). Das \"E\" steht für \"Effective\" – mit ca. 4,5 Milliarden aktiven Parametern bei insgesamt 8 Milliarden Gesamtparametern (dichte Architektur mit PLE: Per-Layer Embeddings). Der RAM-Footprint beträgt ca. 9,6 GB, was dem Desktop-Tier entspricht. Geeignet für Instruction-Following-Aufgaben auf lokaler Hardware mit 12+ GB RAM.",
   "strengths": [
-    "Sehr ressourceneffizient durch MoE-Architektur mit wenigen aktiven Parametern",
-    "Lokal auf Consumer-Hardware betreibbar",
+    "Sehr ressourceneffizient durch PLE-Architektur (nur 4,5B aktive Parameter pro Forward Pass bei 8B Gesamtparametern)",
+    "Lokal auf Desktop-Hardware mit ~12GB RAM betreibbar",
     "Solides Instruction-Following für alltägliche Aufgaben"
   ],
   "known_limitations": [
     "Begrenzte Kapazität bei komplexen Reasoning- oder Mehrschritt-Aufgaben im Vergleich zu größeren Modellen",
     "Spezifische Modellvariante 'E4B' ist wenig dokumentiert, Leistungscharakteristik kann von Standard-Gemma-4-Varianten abweichen"
   ],
-  "judge_context_hint": "Das Modell ist eine kompakte MoE-Variante der Gemma-4-Familie – Antwortqualität und Tiefe sind entsprechend der geringen aktiven Parameterzahl einzuordnen, nicht mit Vollmodellen gleicher Gesamtparameterzahl zu vergleichen.",
+  "judge_context_hint": "Das Modell ist eine dichte Variante mit PLE-Architektur – nur 4,5B Parameter sind pro Forward Pass aktiv. Antwortqualität sollte mit 8B-Modellen verglichen werden (nicht mit dem nominalen \"4B Effective\"), da alle 8B Parameter in RAM geladen sind.",
   "architecture_tags": [
     "General",
     "Instruct"
@@ -28,7 +28,7 @@
   "unknown": true,
   "generated_at": "2026-04-23T22:07:02.933740+00:00",
   "card_status": "complete",
-  "size_class": "Edge",
+  "size_class": "Desktop",
   "supports_tool_use": true,
   "license": "Google Gemma Terms of Use",
   "license_url": "https://ai.google.dev/gemma/terms",
