@@ -7,8 +7,8 @@
   "deployment_type": "open-weights-cloud-available",
   "local_deployment_possible": true,
   "weights_provenance_risk": "medium",
-  "weights_provenance_risk_rationale": "Meta ist ein US-amerikanisches Unternehmen und unterliegt dem CLOUD Act, der staatlichen Zugriff auf Daten bei API-Nutzung ermöglicht, jedoch sind die Gewichte öffentlich verfügbar und lokal betreibbar.",
-  "model_family": "Llama",
+"weights_provenance_risk_rationale": "Meta ist ein US-amerikanisches Unternehmen und unterliegt dem CLOUD Act, der staatlichen Zugriff auf Daten bei API-Nutzung ermöglicht, jedoch sind die Gewichte öffentlich verfügbar und lokal betreibbar. **ACHTUNG: EU-Einschränkung:** Aufgrund der Lizenzierung (kein Apache 2.0) und des regulatorischen Rahmens des EU AI Act ist die kommerzielle Nutzung in der EU für EU-Bürger/Entitäten nicht gestattet, da Meta die vollständige Offenlegung der Trainingsdaten verweigert.",
+"model_family": "Llama",
   "primary_focus": "general",
   "summary": "Llama 4 Scout ist Metas offenes Multimodal-Modell der vierten Llama-Generation aus den USA – ausgelegt auf allgemeine Sprachaufgaben und Bildverständnis. Die Weights sind frei verfügbar und das Modell ist über Cloud-Provider nutzbar.",
   "strengths": [
