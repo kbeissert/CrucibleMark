@@ -1,0 +1,25 @@
+server:
+  host: localhost
+  port: 8765
+  mode: mock               # mock | live — default ist mock
+
+web_search:
+  provider: tavily             # tavily | duckduckgo — tavily ist primärer Provider
+  fallback_provider: duckduckgo
+  max_results: 3
+  timeout_seconds: 10
+  api_key_env: TAVILY_API_KEY  # Name der Env-Variable — Key selbst nie hier eintragen
+  search_depth: basic          # basic | advanced
+
+http_fetch:
+  timeout_seconds: 8
+  max_chars: 500
+  whitelist:               # Nur diese Domains dürfen gefetcht werden
+    - llama.meta.com
+    - huggingface.co
+    - raw.githubusercontent.com
+    - httpbin.org           # für 404-Test-Asset (tooluse003)
+
+logging:
+  log_file: logs/mcp_server.log
+  log_level: INFO

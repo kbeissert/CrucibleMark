@@ -1,0 +1,47 @@
+"""
+ToolUse Module — Constants (SSOT)
+Key names only — no hardcoded values. All thresholds live in config.yaml.
+"""
+
+# Config key names
+PHASE1_WEIGHT_KEY = "phase1_weight"
+PHASE2_WEIGHT_KEY = "phase2_weight"
+HALLUCINATION_PENALTY_KEY = "hallucination_penalty"
+TOOL_CALL_BONUS_KEY = "tool_call_bonus"
+SEMANTIC_THRESHOLD_KEY = "semantic_threshold"
+KEYWORD_THRESHOLD_KEY = "keyword_threshold"
+
+# Result field names
+FIELD_P1_SCORE = "p1_score"
+FIELD_P2_SCORE = "p2_score"
+FIELD_COMBINED_SCORE = "combined_score"
+FIELD_TOOL_CALLED = "tool_called"
+FIELD_HALLUCINATION_FLAG = "hallucination_flag"
+
+# Phase identifiers
+PHASE_TOOL_EXECUTION = "phase1"
+PHASE_SYNTHESIS = "phase2"
+
+# Tool type identifiers (must match config.yaml tool_type values)
+TOOL_WEB_SEARCH = "web_search"
+TOOL_HTTP_FETCH = "http_fetch"
+
+# Audit log markers (used in build_audit_block output)
+AUDIT_HALLUCINATION_FAIL = "!WARNING HALLUCINATION HARD FAIL"
+AUDIT_SANDBOX_VIOLATION = "!WARNING SANDBOX VIOLATION"
+AUDIT_MCP_UNAVAILABLE = "!ERROR MCP_UNAVAILABLE"
+
+# CSV output (Reihenfolge = Reihenfolge in CSV — SSOT)
+CSV_COLUMNS = [
+    "model", "display_name", "vendor", "sizeclass", "deployment_type", "model_version",
+    "timestamp", "mcp_mode",
+    "p1_score", "p2_score", "combined_score",
+    "tool_call_valid", "tool_call_attempts", "parse_error_flag", "hallucination_flag",
+    "call1_time_s", "mcp_latency_s", "call2_time_s", "total_time_s",
+    "call1_tokens", "call2_tokens", "total_tokens",
+    "cost_usd",
+    "assets_run", "assets_error",
+    "fleet_group", "sovereignty_gap",
+]
+
+CSV_PATH = "benchmark_scores/tooluse_leaderboard.csv"

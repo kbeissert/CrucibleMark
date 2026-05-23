@@ -1,6 +1,6 @@
 # CrucibleMark
 
-[![Version](https://img.shields.io/badge/version-3.9.0-blue)](.)
+[![Version](https://img.shields.io/badge/version-3.10.0-blue)](.)
 [![Python](https://img.shields.io/badge/python-3.10%2B-blue)](.)
 [![License](https://img.shields.io/badge/license-MIT-green)](.)
 [![Status](https://img.shields.io/badge/status-production--ready-brightgreen)](.)
@@ -26,6 +26,7 @@ Die meisten Benchmarks fokussieren sich auf rein theoretische Prüfungen. Crucib
 - ✅ **UX Writing:** Versteht sie die feinen Nuancen von Microcopy?
 - ✅ **Cultural Intelligence:** Begreift sie Idiome, Kontexte und kulturelle Feinheiten?
 - ✅ **Political Bias & Safety:** Welches Weltbild spiegelt sie wider? Handelt es sich um ein stabiles Modell ohne nennenswerte Werteverschiebung ("Der Stoiker"), maskiert es radikale Shifts unter diplomatischem Auftreten ("Wolf im Schafspelz"), wechselt es unter Druck die ideologische Seite ("Die Chimäre") oder verhält es sich völlig inkonsistent ("Der Narr")?
+- ✅ **Tool Use & Function Calling:** Ruft das Modell externe Tools (Web-Suche, HTTP-Fetch) tatsächlich auf — oder halluziniert es Ergebnisse? Kritischer Infrastrukturtest für Agenten-Pipelines: Modelle, die nach einem 404-Fehler trotzdem Inhalte liefern, scheiden für autonome Workflows aus.
 
 **Was CrucibleMark einzigartig macht:** Jede Modell-Karte dokumentiert `deployment_type` (lokal / Cloud), `local_deployment_possible`, `license` und `commercial_use_allowed`. Damit lässt sich das Leaderboard direkt nach „Welche Modelle kann ich selbst hosten und ohne Einschränkungen kommerziell nutzen?" filtern.
 

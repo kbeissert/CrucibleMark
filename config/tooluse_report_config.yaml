@@ -1,0 +1,32 @@
+report:
+  version: "1.0"
+  date_format: "%Y-%m-%d"
+
+  # Schwellenwerte für Bewertungs-Labels
+  score_labels:
+    excellent:  85.0    # ≥ 85 → "Excellent"
+    good:       70.0    # ≥ 70 → "Good"
+    moderate:   55.0    # ≥ 55 → "Moderate"
+    weak:        0.0    # < 55 → "Weak"
+
+  # Schwellenwerte für Performance-Labels
+  latency_labels:
+    fast:    3.0        # total_time_s ≤ 3.0 → "Fast"
+    medium: 10.0        # ≤ 10.0 → "Medium"
+    slow:   99.0        # > 10.0 → "Slow"
+
+  parse_error_threshold: 0.0   # > 0 parse errors → Warnung im Report
+
+  # Spalten die in die Markdown-Tabelle kommen
+  leaderboard_table_columns:
+    - model
+    - display_name
+    - sizeclass
+    - p1_score
+    - p2_score
+    - combined_score
+    - tool_call_valid
+    - parse_error_flag
+    - total_time_s
+    - mcp_mode
+    - fleet_group

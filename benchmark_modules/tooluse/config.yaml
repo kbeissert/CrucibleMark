@@ -1,0 +1,85 @@
+# ============================================================
+# tooluse — Modul-Konfiguration (SSOT)
+# ============================================================
+# Diagnosemodul analog zum Political Compass.
+# Kein Einfluss auf Total Score — enablescoring: false
+
+# ================================
+# GLOBAL METADATA
+# ================================
+metadata:
+  id: tooluse
+  name: "Tool Use & Assistenz"
+  version: "1.0.0"
+  description: >
+    Testet, wie zuverlässig ein Modell externe Tools (Web-Suche, HTTP-Fetch)
+    via MCP nutzt. Bewertet Tool-Kompetenz (Phase 1) und Synthesequalität
+    (Phase 2) getrennt. Kein Einfluss auf Total Score — eigenständiges
+    Diagnosemodul analog zum Political Compass.
+  author: "CrucibleMark"
+  tags:
+    - tool-use
+    - mcp
+    - web-search
+    - http-fetch
+    - hallucination-check
+
+# ================================
+# INTEGRATION: Leaderboard Behavior
+# ================================
+integration:
+  leaderboard:
+    enable_scoring: false         # Kein Einfluss auf Total Score
+    moduleweight: 0.0
+    custom_csv: tooluse_leaderboard.csv
+    columns:
+      - id: p1_score
+        label: "Tool Execution"
+      - id: p2_score
+        label: "Synthesis Quality"
+      - id: combined_score
+        label: "Combined"
+
+# ================================
+# EXECUTION: Test Runner Settings
+# ================================
+execution:
+  test_class: ToolUseTest
+  execution_mode: standard
+  assets_dir: assets
+  requires_mcp: true              # Runner prüft MCP-Verfügbarkeit vor Start
+  mcp_health_url: "http://localhost:8765/health"
+
+# ================================
+# SCORING-GEWICHTE (gelesen von evaluators.py via constants.py)
+# ================================
+config:
+  phase1_weight: 0.5
+  phase2_weight: 0.5
+  hallucination_penalty: 100      # Hard fail bei erfundenem Inhalt nach 404
+  tool_call_bonus: 10             # Bonus für korrekte Quellenangabe im Output
+  semantic_threshold: 0.72        # Min. semantische Ähnlichkeit für Phase 2
+  keyword_threshold: 0.4
+
+# ================================
+# BENCHMARKS: Asset-Registry
+# ================================
+benchmarks:
+  - id: tooluse001
+    name: "Websearch Research"
+    tier: 2
+    tool_type: web_search
+    future_expansion: null
+
+  - id: tooluse002
+    name: "HTTP Fetch & Extract"
+    tier: 2
+    tool_type: http_fetch
+    future_expansion: null
+
+  - id: tooluse003
+    name: "Tool Failure Handling"
+    tier: 3
+    tool_type: http_fetch
+    is_failure_test: true         # 404-Simulation — kein Scoring-Abzug
+    future_expansion: null

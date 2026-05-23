@@ -5,6 +5,21 @@
 
 ## Abgeschlossen
 
+### Tool Use & Function Calling Benchmark-Modul (v3.10.0 – 23.05.26)
+- [x] **`benchmark_modules/tooluse/`** — Vollständige Implementierung: `ToolUseTest` (erbt `BaseTest`), `ToolUseEvaluator` (Phase 1 Tool Execution + Phase 2 Synthesis Quality), `ToolUseIOManager` (Leaderboard CSV + Terminal-Summary), `constants.py`. Zwei-Phasen-Scoring: 50/50, Hallucination Penalty −100, Tool Call Bonus +10.
+- [x] **`cruciblemark-mcp/server.py`** — FastAPI-basierter MCP-Server Port 8765. Mock-Modus (deterministisch) + Live-Modus (Tavily → DuckDuckGo). Health-Endpoint `/health`.
+- [x] **`scripts/core/tooluse_exporter.py`** — `ToolUseExporter`: `finalize_model()` (Buffer-Pfad), `aggregate_from_benchmark_csvs()` (Produktionspfad), `calculate_sovereignty_gap()` (Formel: `local_avg − all_avg`), `get_summary()`. `_LOCAL_DEPLOYMENT_TYPES = {"localweights", "open-weights-cloud-available"}`. `get_fleet_group()`.
+- [x] **`scripts/tools/tooluse_leaderboard.py`** — Leaderboard-CLI mit Sovereignty Gap, Fleet Averages, Performance-Metriken.
+- [x] **`scripts/analysis/generate_tooluse_report.py`** — Markdown-Reports pro Modell + Fleet Summary.
+- [x] **`scripts/run_tooluse_benchmark.py`** — Batch-Runner mit interaktivem Wizard (Provider → Modell/Alle). MCP-Neustart pro Modell (`_restart_mcp()`). `--no-restart-mcp` als Opt-out. Timeout 300s pro Modell.
+- [x] **`utils/mcp_health.py`** — MCP-Health-Check-Utility.
+- [x] **Makefile** — 6 neue Targets. `mcp-start` idempotent (curl Health-Check). `mcp-stop` stale-PID-sicher (`kill ... 2>/dev/null || true`).
+- [x] **Bug-Fixes:** Sovereignty Gap Vorzeichen (`local − all`). `tool_call_attempts` max statt sum (beide Aggregationspfade). GPT OSS 20B `supports_tool_use: false` (nicht installiert). Card-Key-Namen snake_case. `get_fleet_group()` akzeptiert `open-weights-cloud-available`.
+- [x] **`print_run_summary_from_row()`** in `ToolUseIOManager` — feuert in Live-Runs aus `aggregate_from_benchmark_csvs()` (nicht nur im Buffer-Pfad).
+- [x] **Model Card** `hf_co_bartowski_NousResearch_Hermes-4-14B-GGUF_Q4_K_M.json` — Pflichtfelder ergänzt (`display_name`, `size_class`, `deployment_type`, `model_version`, `vendor`).
+- [x] **Dokumentation:** `docs/TOOLUSE_MODULE.md` (450 Zeilen, 14 Abschnitte), `benchmark_modules/tooluse/README.md` (Komplettrewrite), `docs/BENCHMARK_MODULES.md` (Tool Use Abschnitt), `benchmark_modules/tooluse/SCORING_STATUS.md`.
+- [x] **Tests:** 212/212 grün. `test_calculate_sovereignty_gap` auf korrektes Vorzeichen aktualisiert.
+
 ### Architektur-Compliance-Refactoring: Provider-Registry, LanguageValidator, God-Script-Zerlegung (v3.9.0 – 23.05.26)
 - [x] `utils/language_validator.py` (NEU) — `LanguageValidator`-Klasse kapselt DE/EN-Marker-basierten Mismatch-Check. Konstanten in `utils/constants.py` (`LANGUAGE_MIN_WORDS`, `LANGUAGE_EN_DE_RATIO`, `LANGUAGE_EN_MIN_COUNT`, `LANGUAGE_DE_MARKERS`, `LANGUAGE_EN_MARKERS`).
 - [x] `scripts/core/unified_runner.py` — Inline-Language-Detection → `LanguageValidator`-Delegation. `120.0` → `TIMEOUT_DEFAULT`, `100` → `DEFAULT_MAX_SCORE`, lokales `TRUNCATION_THRESHOLDS`-Dict → importierte Konstante.

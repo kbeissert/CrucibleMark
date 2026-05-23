@@ -2,10 +2,13 @@
 	help install install-dev \
 	benchmark political-compass political-compass-safe benchmark-cross-model benchmark-auto benchmark-human \
 	review reviews-auto reviews-check review-new model-cards model-card provider-cards leaderboard provider-stats \
-	validate validate-single validate-structure validate-cards test diff-results analyze-costs update-prices sync-cost-limits \
+	validate validate-single validate-assets validate-structure validate-cards test diff-results analyze-costs update-prices sync-cost-limits \
 	list-models judge-health list-modules \
 	probe-thinking probe-all-thinking \
 	web-export web-export-dev \
+	mcp-start mcp-stop mcp-health mcp-mock \
+	tooluse-leaderboard tooluse-run tooluse-report tooluse-report-summary tooluse-report-json \
+	benchmark-tooluse benchmark-tooluse-local benchmark-tooluse-force \
 	clean clean-csv clean-model clean-module clean-all clean-runs consolidate-csv prune-orphans clean-bak clean-reviews \
 	backup
 
@@ -25,6 +28,12 @@ help:
 	@echo "  make benchmark            Standard Benchmark (Flags: SILENT, FORCE, MODEL, MODULE)"
 	@echo "  make benchmark-auto       Auto-Fill Benchmark (Flags: SILENT, FORCE)"
 	@echo "  make benchmark-cross-model Module vs ALL LLMs (Flags: FORCE, MODULE)"
+	@echo ""
+	@echo "=== Tool Use ==="
+	@echo "  make benchmark-tooluse    Tool Use Benchmark — Wizard oder direkt"
+	@echo "                            (Flags: MODEL=name, PROVIDER=key, MCP_MODE=live/mock, FORCE=1, SILENT=1)"
+	@echo "  make benchmark-tooluse-local  Nur lokale Ollama-Modelle"
+	@echo "  make benchmark-tooluse-force  Alle Modelle (Cache ignorieren)"
 	@echo ""
 	@echo "=== Political Compass ==="
 	@echo "  make political-compass    Eigenstaendiger PC-Test (Flags: MODEL=name, FORCE=1)"
@@ -165,6 +174,13 @@ validate:
 	@echo "Validating all modules..."
 	$(PYTHON) scripts/tools/validate_assets.py --all
 
+validate-assets:
+	@if [ -z "$(MODULE)" ]; then \
+		echo "Error: MODULE variable not set (e.g. make validate-assets MODULE=tooluse)"; \
+		exit 1; \
+	fi
+	$(PYTHON) scripts/tools/validate_assets.py benchmark_modules/$(MODULE)/assets
+
 validate-single:
 	@if [ -z "$(ASSET)" ]; then \
 		echo "Error: ASSET variable not set"; \
@@ -295,6 +311,80 @@ backup:
 	@$(MAKE) prune-orphans FORCE=1
 	@rm -rf outputs/temp/*
 	@echo "Backup chain complete."
+
+# === MCP SERVER ===
+
+mcp-start:
+	@echo "Starting CrucibleMark MCP Server (mode=$(or $(MODE),mock))..."
+	@if curl -s http://localhost:8765/health > /dev/null 2>&1; then \
+		echo "  MCP Server already running — skipped."; \
+	else \
+		{ [ -f "$$HOME/.api_keys" ] && . "$$HOME/.api_keys" || true; $(PYTHON) cruciblemark-mcp/server.py --mode $(or $(MODE),mock); } & \
+	fi
+
+mcp-stop:
+	@if [ -f .mcp.pid ]; then \
+		kill $$(cat .mcp.pid) 2>/dev/null || true; \
+		rm -f .mcp.pid; \
+		echo "MCP Server stopped."; \
+	else \
+		echo "No .mcp.pid found — server may not be running."; \
+	fi
+
+mcp-health:
+	@curl -s http://localhost:8765/health | $(PYTHON) -m json.tool
+
+mcp-mock:
+	@$(MAKE) mcp-start MODE=mock
+
+# === TOOL USE LEADERBOARD ===
+
+tooluse-leaderboard:
+	@echo "Calculating Tool Use Leaderboard..."
+	$(PYTHON) scripts/tools/tooluse_leaderboard.py
+
+tooluse-run:
+	@echo "Running Tool Use Benchmark (requires MCP)..."
+	$(MAKE) mcp-start MODE=$(or $(MCP_MODE),mock)
+	sleep 1.5
+	$(PYTHON) run_benchmark.py --module tooluse $(if $(MODEL),--model "$(MODEL)")
+	$(MAKE) mcp-stop
+	$(MAKE) tooluse-leaderboard
+
+tooluse-report:
+	@echo "Generating Tool Use Reports..."
+	$(PYTHON) scripts/analysis/generate_tooluse_report.py $(if $(MODEL),--model "$(MODEL)")
+
+tooluse-report-summary:
+	@echo "Generating Tool Use Fleet Summary..."
+	$(PYTHON) scripts/analysis/generate_tooluse_report.py --summary-only
+
+tooluse-report-json:
+	@echo "Generating Tool Use JSON Web Export..."
+	$(PYTHON) scripts/analysis/generate_tooluse_report.py --json-only $(if $(MODEL),--model "$(MODEL)")
+
+# === TOOL USE BENCHMARK (WIZARD / BATCH) ===
+
+benchmark-tooluse:
+	@echo "Starting Tool Use Benchmark (MCP: $(or $(MCP_MODE),live))..."
+	@$(MAKE) mcp-start MODE=$(or $(MCP_MODE),live)
+	@sleep 1.5
+	$(PYTHON) scripts/run_tooluse_benchmark.py \
+		$(if $(MODEL),--model "$(MODEL)") \
+		$(if $(ALL),--all) \
+		$(if $(PROVIDER),--provider "$(PROVIDER)") \
+		$(if $(FORCE),--force) \
+		$(if $(SILENT),--silent) \
+		--mcp-mode $(or $(MCP_MODE),live)
+	@$(MAKE) mcp-stop
+	@$(MAKE) tooluse-leaderboard
+	@$(MAKE) tooluse-report-summary
+
+benchmark-tooluse-local:
+	@$(MAKE) benchmark-tooluse PROVIDER=ollama
+
+benchmark-tooluse-force:
+	@$(MAKE) benchmark-tooluse FORCE=1
 
 # === WEB EXPORT ===
 

@@ -1,27 +1,31 @@
 # PROJECT_STATUS.md
 
 **Last Updated:** 2026-05-23
-**Current Version:** 3.9.0 (Architektur-Compliance-Refactoring: Provider-Registry, LanguageValidator, God-Script-Zerlegung, Pylint 9.99/10)
+**Current Version:** 3.10.0 (Tool Use & Function Calling Benchmark-Modul: MCP-Server, Zwei-Phasen-Scoring, Sovereignty Gap, Batch-Runner)
 **Status:** ✅ Production-Ready
 
 ---
 
 ## Executive Summary
 
+CrucibleMark v3.10.0 führt das Tool Use Benchmark-Modul als vollständig implementiertes Diagnosemodul ein. Es misst, ob LLMs externe Tools (Web-Suche, HTTP-Fetch) via MCP tatsächlich aufrufen oder Ergebnisse halluzinieren — kritisch für Agenten-Pipelines. Ein eigener MCP-Server (`cruciblemark-mcp/`) liefert deterministischen Mock- und Live-Modus. Der Batch-Runner (`scripts/run_tooluse_benchmark.py`) mit interaktivem Wizard verarbeitet alle tool-fähigen Modelle mit MCP-Neustart zwischen Modellen für faire Vergleichsbedingungen. Das Modul fließt nicht in den Total Score ein.
+
+**Key Achievements (v3.10.0):**
+- ✅ **`benchmark_modules/tooluse/`** (VOLLSTÄNDIG) — `ToolUseTest`, `ToolUseEvaluator`, `ToolUseIOManager`, `constants.py`. Zwei-Phasen-Scoring: P1 (Tool Execution 50%) + P2 (Synthesis Quality 50%). Hallucination Penalty −100, Tool Call Bonus +10.
+- ✅ **`cruciblemark-mcp/server.py`** (NEU) — FastAPI-basierter MCP-Server auf Port 8765. Mock-Modus (deterministisch, kein Internet) + Live-Modus (Tavily → DuckDuckGo Fallback). Health-Endpoint für Runner-Checks.
+- ✅ **`scripts/core/tooluse_exporter.py`** (NEU) — `ToolUseExporter`: Aggregation aus Benchmark-CSVs, Leaderboard-Upsert, Sovereignty-Gap-Berechnung, `get_summary()`. Fleet-Gruppen: `local_sovereign` vs. `full_fleet`.
+- ✅ **`scripts/tools/tooluse_leaderboard.py`** (NEU) — Leaderboard-CLI mit Sovereignty-Gap-Anzeige, Fleet-Averages, Performance-Metriken (Latenz, Tokens, Parse-Error-Rate).
+- ✅ **`scripts/analysis/generate_tooluse_report.py`** (NEU) — Markdown-Reports pro Modell + Fleet Summary.
+- ✅ **`scripts/run_tooluse_benchmark.py`** (NEU) — Batch-Runner mit interaktivem Wizard (Provider → Modell/Alle). MCP-Neustart pro Modell (Fairness). `--no-restart-mcp` als Opt-out. Timeout 300s pro Modell, kein Abbruch bei Einzelfehlern.
+- ✅ **`utils/mcp_health.py`** (NEU) — MCP-Health-Check-Utility für Runner-Vorbedingung.
+- ✅ **Makefile** — 6 neue Targets: `benchmark-tooluse`, `benchmark-tooluse-local`, `benchmark-tooluse-force`, `tooluse-leaderboard`, `tooluse-report`, `tooluse-report-summary`. `mcp-start` idempotent (Health-Check vor Start). `mcp-stop` stall-PID-sicher.
+- ✅ **3 Assets** (`tooluse001`–`tooluse003`): Websearch Research, HTTP Fetch & Extract, Tool Failure Handling (404-Simulation).
+- ✅ **Bug-Fixes:** Sovereignty-Gap-Vorzeichen (`local - all`, nicht `all - local`). `tool_call_attempts` max statt sum. GPT OSS 20B Card deaktiviert (nicht in Ollama installiert). Card-Key-Namen (snake_case) in Exporter korrigiert. `get_fleet_group()` akzeptiert `open-weights-cloud-available`.
+- ✅ **Dokumentation:** `docs/TOOLUSE_MODULE.md` (450 Zeilen, 14 Abschnitte), `benchmark_modules/tooluse/README.md` (Komplettrewrite), `docs/BENCHMARK_MODULES.md` (Tool Use Abschnitt), `benchmark_modules/tooluse/SCORING_STATUS.md` (Vorläufige-Scores-Vorbehalt).
+- ✅ **212/212 Tests grün.**
+
+**Vorherige Version (v3.9.0 – Architektur-Compliance-Refactoring: Provider-Registry, LanguageValidator, God-Script-Zerlegung, Pylint 9.99/10):**
 CrucibleMark v3.9.0 führt ein vollständiges Architektur-Compliance-Refactoring durch. 7 zentrale Dateien werden auf PILIN ≥ 9 gebracht — ohne Funktionalitäts- oder Scoring-Änderungen. `LanguageValidator` kapselt die Spracherkennung, `judge_runner.py` nutzt eine `_PROVIDER_MODULES`-Registry statt If-Ketten, `generate_review.py` wird von 1309 auf ~200 Zeilen reduziert (→ `scripts/analysis/review/`-Package). Alle Magic Numbers durch zentrale Konstanten ersetzt. 12 unused variables (Ruff F841) entfernt, 185 Issues auto-gefixt. Pylint Score: 9.37 → 9.99/10.
-
-**Key Achievements (v3.9.0):**
-- ✅ **`utils/language_validator.py`** (NEU) — `LanguageValidator`-Klasse kapselt DE/EN-Marker-basierten Mismatch-Check aus `unified_runner.py`.
-- ✅ **`utils/scoring/llm_judge/judge_runner.py`** — 5-Branch-Provider-If-Chain → `_PROVIDER_MODULES`-Registry + `importlib.import_module()`. `_ENV_KEY_MAP`-Dict statt If-Chain für API-Key-Validierung.
-- ✅ **`scripts/core/unified_runner.py`** — Inline-Language-Detection → `LanguageValidator`-Delegation. Magic Numbers (`120.0`, `100`, lokales Dict) → zentrale Konstanten (`TIMEOUT_DEFAULT`, `DEFAULT_MAX_SCORE`, `TRUNCATION_THRESHOLDS`).
-- ✅ **`benchmark_modules/political_compass/test.py`** — Alle Magic Numbers durch `PC_*`-Konstanten aus `core/constants.py` ersetzt.
-- ✅ **`scripts/analysis/review/`** (NEU) — Package mit `metrics.py`, `risk_calculator.py`, `token_efficiency.py`, `audit_scanner.py`. `generate_review.py`: 1309 → ~200 Zeilen.
-- ✅ **`benchmark_modules/reasoning_logic/core/constants/rubrics.py`** (NEU) — `RUBRICS` + `DIMENSION_SCORE_THRESHOLDS` aus `evaluators.py` extrahiert.
-- ✅ **Bug:** `utils/providers/mistral.py` — `token_param_name` wurde in `_execute_with_token_fallback()` ignoriert. Behoben.
-- ✅ **Ruff** — F401/F541 auto-fix (185 Issues), F841 manual (12 unused vars). **Pylint Score: 9.99/10.**
-
-**Vorherige Version (v3.8.2 – Model Card Template Generator):**
-CrucibleMark v3.8.2 schließt die Umstellung der Model Cards auf ein vollständig manuell gepflegtes System ab. Der bisherige LLM-basierte Auto-Generator wird durch einen schlanken Template-Generator ersetzt: `make model-cards MODEL=<id>` legt ein JSON mit allen Pflichtfeldern als `"TODO"`-Platzhalter an — kein API-Call, keine externe Abhängigkeit. Das redaktionelle Befüllen bleibt bewusst manueller Schritt.
 
 
 CrucibleMark v3.7.5 schließt die Pricing-Architektur: Preise werden nicht mehr zentral in `config/cost_limits.yaml` gepflegt, sondern als `input_price_per_1m` / `output_price_per_1m` (USD/1M Tokens) direkt in den Model Cards hinterlegt. 53 API-Model-Cards migriert. `cost_limits.yaml` auf 6 Legacy-Einträge reduziert. 4 neue Cards, 3 neue Reviews.
