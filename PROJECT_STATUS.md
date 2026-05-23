@@ -1,28 +1,25 @@
 # PROJECT_STATUS.md
 
-**Last Updated:** 2026-05-23
-**Current Version:** 3.10.0 (Tool Use & Function Calling Benchmark-Modul: MCP-Server, Zwei-Phasen-Scoring, Sovereignty Gap, Batch-Runner)
+**Last Updated:** 2026-05-24
+**Current Version:** 3.11.0 (Tool Use Golden Standard v1.2.0: Kalibrierungsrunde 1, 12 Modelle, finalisierte P2-Scores)
 **Status:** ✅ Production-Ready
 
 ---
 
 ## Executive Summary
 
-CrucibleMark v3.10.0 führt das Tool Use Benchmark-Modul als vollständig implementiertes Diagnosemodul ein. Es misst, ob LLMs externe Tools (Web-Suche, HTTP-Fetch) via MCP tatsächlich aufrufen oder Ergebnisse halluzinieren — kritisch für Agenten-Pipelines. Ein eigener MCP-Server (`cruciblemark-mcp/`) liefert deterministischen Mock- und Live-Modus. Der Batch-Runner (`scripts/run_tooluse_benchmark.py`) mit interaktivem Wizard verarbeitet alle tool-fähigen Modelle mit MCP-Neustart zwischen Modellen für faire Vergleichsbedingungen. Das Modul fließt nicht in den Total Score ein.
+CrucibleMark v3.11.0 schließt die Kalibrierungsrunde 1 des Tool Use Benchmark-Moduls ab. Golden Standard v1.2.0 ist finalisiert: Alle drei Assets (tooluse001–003) haben manuell validierte Referenzantworten und Bewertungsrubrik. Kalibrierungsrun mit 12 Modellen liefert stabile, vergleichbare P2-Scores (Spread: 57.8–70.3). P1-Scoring wurde um Content-Quality-Check für `http_fetch`-Assets erweitert (max 100 statt 80). 17 Tests grün.
 
-**Key Achievements (v3.10.0):**
-- ✅ **`benchmark_modules/tooluse/`** (VOLLSTÄNDIG) — `ToolUseTest`, `ToolUseEvaluator`, `ToolUseIOManager`, `constants.py`. Zwei-Phasen-Scoring: P1 (Tool Execution 50%) + P2 (Synthesis Quality 50%). Hallucination Penalty −100, Tool Call Bonus +10.
-- ✅ **`cruciblemark-mcp/server.py`** (NEU) — FastAPI-basierter MCP-Server auf Port 8765. Mock-Modus (deterministisch, kein Internet) + Live-Modus (Tavily → DuckDuckGo Fallback). Health-Endpoint für Runner-Checks.
-- ✅ **`scripts/core/tooluse_exporter.py`** (NEU) — `ToolUseExporter`: Aggregation aus Benchmark-CSVs, Leaderboard-Upsert, Sovereignty-Gap-Berechnung, `get_summary()`. Fleet-Gruppen: `local_sovereign` vs. `full_fleet`.
-- ✅ **`scripts/tools/tooluse_leaderboard.py`** (NEU) — Leaderboard-CLI mit Sovereignty-Gap-Anzeige, Fleet-Averages, Performance-Metriken (Latenz, Tokens, Parse-Error-Rate).
-- ✅ **`scripts/analysis/generate_tooluse_report.py`** (NEU) — Markdown-Reports pro Modell + Fleet Summary.
-- ✅ **`scripts/run_tooluse_benchmark.py`** (NEU) — Batch-Runner mit interaktivem Wizard (Provider → Modell/Alle). MCP-Neustart pro Modell (Fairness). `--no-restart-mcp` als Opt-out. Timeout 300s pro Modell, kein Abbruch bei Einzelfehlern.
-- ✅ **`utils/mcp_health.py`** (NEU) — MCP-Health-Check-Utility für Runner-Vorbedingung.
-- ✅ **Makefile** — 6 neue Targets: `benchmark-tooluse`, `benchmark-tooluse-local`, `benchmark-tooluse-force`, `tooluse-leaderboard`, `tooluse-report`, `tooluse-report-summary`. `mcp-start` idempotent (Health-Check vor Start). `mcp-stop` stall-PID-sicher.
-- ✅ **3 Assets** (`tooluse001`–`tooluse003`): Websearch Research, HTTP Fetch & Extract, Tool Failure Handling (404-Simulation).
-- ✅ **Bug-Fixes:** Sovereignty-Gap-Vorzeichen (`local - all`, nicht `all - local`). `tool_call_attempts` max statt sum. GPT OSS 20B Card deaktiviert (nicht in Ollama installiert). Card-Key-Namen (snake_case) in Exporter korrigiert. `get_fleet_group()` akzeptiert `open-weights-cloud-available`.
-- ✅ **Dokumentation:** `docs/TOOLUSE_MODULE.md` (450 Zeilen, 14 Abschnitte), `benchmark_modules/tooluse/README.md` (Komplettrewrite), `docs/BENCHMARK_MODULES.md` (Tool Use Abschnitt), `benchmark_modules/tooluse/SCORING_STATUS.md` (Vorläufige-Scores-Vorbehalt).
-- ✅ **212/212 Tests grün.**
+**Key Achievements (v3.11.0):**
+- ✅ **Golden Standard v1.2.0 finalisiert** — tooluse001: multimodal/text-Differenzierung; tooluse002: Seiten-Extraktion vs. Trainings-Vorwissen; tooluse003: Erste-Person-Fehlerformat. Alle Assets in `evaluation.phase2`-Struktur (SSoT).
+- ✅ **P1 Content-Quality-Check** — `http_fetch` Non-Failure: +20 Punkte wenn `content_excerpt ≥ 100` Zeichen. P1-Maximum für tooluse002 jetzt 100.
+- ✅ **`http_fetch_and_extract` Alias** — Gemini-Tool-Name normalisiert in `tool_adapter_audit.py`, kein falscher Tool-Fail mehr.
+- ✅ **Kalibrierungsergebnisse (12 Modelle):** Sonnet 4.6 top (80.0), Gemini 3 Flash Untergrenze (71.4), P2-Spread 12.5 Punkte.
+- ✅ **17/17 Tests grün** — 2 neue Tests für Content-Quality-Stufen.
+- ✅ **Dokumentation vollständig aktualisiert:** SCORING_STATUS.md, CALIBRATION_LOG.md, SCORING_RUBRIC.md, JUDGE_CHECKLIST.md, README.md, CHANGELOG.md.
+
+**Vorherige Version (v3.10.0 – Tool Use Benchmark-Modul Launch):**
+CrucibleMark v3.10.0 führt das Tool Use Benchmark-Modul als vollständig implementiertes Diagnosemodul ein. Es misst, ob LLMs externe Tools (Web-Suche, HTTP-Fetch) via MCP tatsächlich aufrufen oder Ergebnisse halluzinieren — kritisch für Agenten-Pipelines. Ein eigener MCP-Server (`cruciblemark-mcp/`) liefert deterministischen Mock- und Live-Modus. Der Batch-Runner (`scripts/run_tooluse_benchmark.py`) mit interaktivem Wizard verarbeitet alle tool-fähigen Modelle mit MCP-Neustart zwischen Modellen für faire Vergleichsbedingungen. Das Modul fließt nicht in den Total Score ein.
 
 **Vorherige Version (v3.9.0 – Architektur-Compliance-Refactoring: Provider-Registry, LanguageValidator, God-Script-Zerlegung, Pylint 9.99/10):**
 CrucibleMark v3.9.0 führt ein vollständiges Architektur-Compliance-Refactoring durch. 7 zentrale Dateien werden auf PILIN ≥ 9 gebracht — ohne Funktionalitäts- oder Scoring-Änderungen. `LanguageValidator` kapselt die Spracherkennung, `judge_runner.py` nutzt eine `_PROVIDER_MODULES`-Registry statt If-Ketten, `generate_review.py` wird von 1309 auf ~200 Zeilen reduziert (→ `scripts/analysis/review/`-Package). Alle Magic Numbers durch zentrale Konstanten ersetzt. 12 unused variables (Ruff F841) entfernt, 185 Issues auto-gefixt. Pylint Score: 9.37 → 9.99/10.

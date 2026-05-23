@@ -4,6 +4,69 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [v3.11.0] - 2026-05-24
+
+### Added
+- **Golden Standard v1.2.0** — Alle drei Tool-Use-Assets haben manuell validierte Referenzantworten und Bewertungsrubrik. Kalibrierungsrunde 1 mit 12 Modellen abgeschlossen. P2-Scores stabil und vergleichbar.
+- **`evaluation.phase2` in allen Assets** — `golden_answer`, `keywords`, `min_length`, `requires_url_citation` / `requires_structured_output` als YAML-Felder. LLM-Judge liest Referenzantwort aus diesem Pfad (SSoT).
+- **P1 Content-Quality-Check (`http_fetch`)** — `evaluators.py` bewertet bei Non-Failure-http_fetch-Assets ob `content_excerpt ≥ 100` Zeichen extrahiert wurden (+20 Punkte). P1-Maximum für tooluse002: 100 statt 80.
+- **`http_fetch_and_extract` als AUTHORIZED_TOOLS-Alias** — `core/tool_adapter_audit.py` normalisiert diesen Tool-Namen auf `http_fetch`, sodass Gemini-Modelle nicht fälschlich als "falsches Tool" gewertet werden.
+- **17 Tests grün** — Neue Fixtures `ASSET_002` + 2 Tests (`test_phase1_http_fetch_with_usable_content`, `test_phase1_http_fetch_empty_content`) in `tests/test_evaluators.py`.
+
+### Changed
+- **`tooluse001` Golden Standard v1.2.0:** Explizite Unterscheidung multimodale vs. textbasierte Llama-Modelle als Pflichtkriterium. `llama.com` zur `golden_source_domains`-Liste hinzugefügt.
+- **`tooluse002` Golden Standard v1.2.0:** Keywords auf `["llama 3.2", "vision", "llama guard", "hugging"]` geschärft — diskriminiert tatsächliche Seiten-Extraktion von Trainings-Vorwissen-Reproduktion. `must_not_include` ergänzt um "Modelle die nicht zu Meta Llama gehören (GPT, BERT, T5 etc.)".
+- **`tooluse003` Golden Standard v1.2.0:** Referenzantwort in Erste-Person umgeschrieben ("Ich konnte keine Inhalte abrufen"). Rubrik ergänzt um "Keine Überexplikation jenseits des Fehlerstatus".
+- **`assets/combined_assets.yaml`** synchronisiert auf v1.2.0 für alle drei Assets.
+- **`CALIBRATION_LOG.md`** mit tatsächlichen Kalibrierungsergebnissen befüllt.
+- **`SCORING_STATUS.md`** — "Vorläufige Scores" entfernt; Status auf finalisiert gesetzt. Kalibrierungsergebnisse für 12 Modelle dokumentiert.
+- **`SCORING_RUBRIC.md` / `JUDGE_CHECKLIST.md`** — Auf v3.11.0 aktualisiert; P1-Stufenmodell und asset-spezifische Kriterien (multimodal/textbasiert, Seiten-Extraktion vs. Vorwissen) dokumentiert.
+
+### Calibration Results (v1.2.0, 12 Modelle)
+
+| Modell | P1 | P2 | Combined |
+|---|---|---|---|
+| Claude Sonnet 4.6 | 95 | 65.0 | 80.0 |
+| Claude Sonnet 4.5 | 85 | 70.3 | 77.6 |
+| Claude Opus 4.6 | 85 | 68.6 | 76.8 |
+| Hermes 4 70B | 90 | 62.7 | 76.3 |
+| Claude Haiku 4.5 | 85 | 62.8 | 73.9 |
+| Gemini 2.5 Pro | 85 | 61.8 | 73.4 |
+| Gemini 3 Flash | 85 | 57.8 | 71.4 |
+| GPT-5.4 | 75 | 65.0 | 70.0 |
+
+P2-Spread: 57.8 – 70.3 (+12.5) — gute Diskriminierung ✅
+
+---
+
+## [v3.10.0] - 2026-05-23
+
+### Added
+- **`benchmark_modules/tooluse/`** (VOLLSTÄNDIG) — `ToolUseTest`, `ToolUseEvaluator`, `ToolUseIOManager`, `constants.py`. Zwei-Phasen-Scoring: P1 (Tool Execution 50%) + P2 (Synthesis Quality 50%). Hallucination Penalty −100, Tool Call Bonus +10.
+- **`cruciblemark-mcp/server.py`** (NEU) — FastAPI-basierter MCP-Server auf Port 8765. Mock-Modus (deterministisch, kein Internet) + Live-Modus (Tavily → DuckDuckGo Fallback). Health-Endpoint für Runner-Checks.
+- **`scripts/core/tooluse_exporter.py`** (NEU) — `ToolUseExporter`: Aggregation aus Benchmark-CSVs, Leaderboard-Upsert, Sovereignty-Gap-Berechnung, `get_summary()`. Fleet-Gruppen: `local_sovereign` vs. `full_fleet`.
+- **`scripts/tools/tooluse_leaderboard.py`** (NEU) — Leaderboard-CLI mit Sovereignty-Gap-Anzeige, Fleet-Averages, Performance-Metriken (Latenz, Tokens, Parse-Error-Rate).
+- **`scripts/analysis/generate_tooluse_report.py`** (NEU) — Markdown-Reports pro Modell + Fleet Summary.
+- **`scripts/run_tooluse_benchmark.py`** (NEU) — Batch-Runner mit interaktivem Wizard (Provider → Modell/Alle). MCP-Neustart pro Modell (Fairness). `--no-restart-mcp` als Opt-out. Timeout 300s pro Modell.
+- **`utils/mcp_health.py`** (NEU) — MCP-Health-Check-Utility.
+- **3 Assets** (`tooluse001`–`tooluse003`): Websearch Research, HTTP Fetch & Extract, Tool Failure Handling (404-Simulation).
+- **Makefile** — 6 neue Targets: `benchmark-tooluse`, `benchmark-tooluse-local`, `benchmark-tooluse-force`, `tooluse-leaderboard`, `tooluse-report`, `tooluse-report-summary`. `mcp-start` idempotent. `mcp-stop` stall-PID-sicher.
+
+### Fixed
+- Sovereignty-Gap-Vorzeichen (`local - all`, nicht `all - local`).
+- `tool_call_attempts` max statt sum.
+- GPT OSS 20B Card deaktiviert (nicht in Ollama installiert).
+- Card-Key-Namen (snake_case) in Exporter korrigiert.
+- `get_fleet_group()` akzeptiert `open-weights-cloud-available`.
+
+### Documentation
+- `docs/TOOLUSE_MODULE.md` (450 Zeilen, 14 Abschnitte)
+- `benchmark_modules/tooluse/README.md` (Komplettrewrite)
+- `docs/BENCHMARK_MODULES.md` (Tool Use Abschnitt)
+- `benchmark_modules/tooluse/SCORING_STATUS.md` (Vorläufige-Scores-Vorbehalt)
+
+---
+
 ## [v3.9.0] - 2026-05-23
 
 ### Refactored
