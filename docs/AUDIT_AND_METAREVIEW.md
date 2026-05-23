@@ -245,9 +245,9 @@ Diese Einschätzung erscheint im Datenschutz-Abschnitt jedes Review-Artikels und
 ### Generierung & Aktualisierung
 
 ```bash
-make model-cards          # alle fehlenden Model Cards generieren
-make model-cards FORCE=1  # alle neu generieren
-make provider-cards       # alle fehlenden Provider Cards generieren
+make model-cards MODEL=<id>           # neues Card-Template anlegen (dann manuell befüllen)
+make model-cards MODEL=<id> FORCE=1   # bestehendes Template überschreiben
+make provider-cards                   # alle fehlenden Provider Cards generieren
 ```
 
 ## Non-Success-Kontext im Meta-Review (`{non_success_context}`)

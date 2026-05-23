@@ -4,6 +4,16 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [v3.8.2] - 2026-05-23
+
+### Changed
+- **`scripts/analysis/generate_model_cards.py`** — vollständig ersetzt. LLM-basierter Auto-Generator entfernt; neuer schlanker Template-Generator ohne API-Call. `make model-cards MODEL=<id>` legt JSON mit allen Pflichtfeldern als `"TODO"`-Platzhalter an. `size_class` wird automatisch über `get_model_size_class()` berechnet. `_index.json` wird nach jeder Card aktualisiert.
+- **`Makefile` — `model-cards`-Target:** Vereinfacht auf Template-Generator-Aufruf. Neuer `--provider`-Parameter für lokale Modelle (Provider-Präfix im Dateinamen). Alias `model-card` (Singular) als `.PHONY`-Target ergänzt.
+- **Docs:** `DEVELOPER_GUIDE.md` (Card-Generierung-Sektion, `for_write`-Hinweis, Schema-Beschreibung), `AUDIT_AND_METAREVIEW.md`, `USER_GUIDE.md`, `README.md` auf neues manuelles Card-Konzept aktualisiert.
+
+### Removed
+- LLM-Prompts, `LLMClient`-Abhängigkeit, Config-Loading und Batch-Loop aus `generate_model_cards.py` entfernt.
+
 ## [v3.7.5] - 2026-05-22
 
 ### Added

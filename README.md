@@ -1,6 +1,6 @@
 # CrucibleMark
 
-[![Version](https://img.shields.io/badge/version-3.8.0-blue)](.)
+[![Version](https://img.shields.io/badge/version-3.8.2-blue)](.)
 [![Python](https://img.shields.io/badge/python-3.10%2B-blue)](.)
 [![License](https://img.shields.io/badge/license-MIT-green)](.)
 [![Status](https://img.shields.io/badge/status-production--ready-brightgreen)](.)
@@ -96,10 +96,10 @@ make political-compass-safe
 
 CrucibleMark enthält eine integrierte Export-Pipeline (`scripts/web_export.py`), die sämtliche Benchmark-Ergebnisse als aufbereitetes Datenpaket für das externe Frontend-Projekt `cruciblemark-web` bereitstellt.
 
-**Model Cards & Provider Cards** sind strukturierte JSON-Steckbriefe, die per LLM generiert werden und Entwickler, Herkunftsland, Datenschutz-Metadaten, Sovereign-Risk-Einschätzung sowie Preisinformationen enthalten. Sie sind die **Single Source of Truth** für Pricing (`input_price_per_1m` / `output_price_per_1m`), Modell-Kategorie (`weights_license_tier`) und Thinking-Probe-Status. `cost_limits.yaml` ist ein Legacy-Fallback für die wenigen Modelle ohne Card — dort nichts Neues eintragen.
+**Model Cards & Provider Cards** sind strukturierte JSON-Steckbriefe mit Entwickler, Herkunftsland, Datenschutz-Metadaten, Sovereign-Risk-Einschätzung sowie Preisinformationen. Sie werden **manuell gepflegt** — `make model-cards` erstellt ein Template, das dann redaktionell befüllt wird. Model Cards sind die **Single Source of Truth** für Pricing (`input_price_per_1m` / `output_price_per_1m`), Modell-Kategorie (`weights_license_tier`) und Thinking-Probe-Status. `cost_limits.yaml` ist ein Legacy-Fallback für die wenigen Modelle ohne Card — dort nichts Neues eintragen.
 
 ```bash
-make model-cards      # Model Cards generieren (fehlende)
+make model-cards MODEL=<id>  # Neues Model Card Template anlegen (dann manuell befüllen)
 make provider-cards   # Provider Cards generieren (fehlende)
 ```
 
@@ -155,4 +155,4 @@ Tiefergehende Einblicke in die Methodik findest du im `docs/` Verzeichnis:
 
 - **Maintainer:** kbeissert
 - **Repository:** [github.com/kbeissert/cruciblemark](https://github.com/kbeissert/cruciblemark)
-- **Status:** ✅ Production-Ready (v3.8.0)
+- **Status:** ✅ Production-Ready (v3.8.2)

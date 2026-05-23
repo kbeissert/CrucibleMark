@@ -378,7 +378,7 @@ _card_path("llama3.3:70b", "ollama_local", for_write=True)
 # → benchmark_scores/model_cards/LCL_llama3_3_70b.json
 ```
 
-> **Wann `for_write=True`?** Nur beim Anlegen oder Überschreiben einer Card — also in `_write_card()` in `generate_model_cards.py`, das `resolved_version` automatisch aus dem `model_version`-Feld der Card befüllt. Alle Lookup-Funktionen verwenden `for_write=False` (Default).
+> **Wann `for_write=True`?** Nur beim Anlegen oder Überschreiben einer Card — also im Template-Generator `generate_model_cards.py`. Alle Lookup-Funktionen verwenden `for_write=False` (Default).
 
 #### `_find_card(model_id: str) → Path`
 
@@ -502,16 +502,20 @@ benchmark_scores/model_cards/moonshotai_kimi-k2-0711.json
 
 ### Card-Generierung
 
-`scripts/analysis/generate_model_cards.py` liest alle konfigurierten Model-IDs aus `benchmark_config.yaml` (statisch) und aus `benchmark_leaderboard.csv` (dynamisch für Ollama-Modelle). Für jeden Eintrag:
+`scripts/analysis/generate_model_cards.py` erstellt ein leeres Template für eine neue Model Card — ohne LLM-Call, ohne API-Zugriff. Es ist der Einstiegspunkt für jede neue Modellaufnahme.
+
+```bash
+make model-cards MODEL=claude-opus-4-7              # Card-Template anlegen
+make model-card  MODEL=qwen3:14b PROVIDER=ollama_local  # mit Provider-Präfix (LCL_*)
+make model-cards                                    # interaktive Eingabe
+```
 
 1. Berechne `_card_path(model_id, provider_key, for_write=True)` → kanonischer Pfad
-2. Falls Datei existiert und `--force` nicht gesetzt → überspringen
-3. LLM-generierte Card → `_write_card(card, model_provider=provider_key)`
-4. `_find_card(model_id)` überträgt bestehende Probe-Felder auf neue Card
+2. Falls Datei existiert und `--force` nicht gesetzt → Fehler (kein versehentliches Überschreiben)
+3. Template mit allen Pflichtfeldern als `"TODO"`-Platzhalter + automatisch berechnetem `size_class` schreiben
+4. `_index.json` neu aufbauen
 
-**Neue Modelle:** Kein manueller Schritt nötig. `make model-cards` erkennt neue Config-Einträge automatisch und legt Cards an.
-
-**Manuelle Stub-Card:** Für Modelle die noch nicht benchmarkt wurden (z.B. neue Config-Einträge), kann eine Minimal-Card mit `card_status: "stub"` manuell angelegt werden. Sie blockiert nicht den Benchmark und wird beim nächsten `make model-cards` zu einer vollständigen Card aufgewertet.
+**Nach der Template-Erstellung:** Alle `"TODO"`-Felder manuell befüllen, dann `card_status` auf `"complete"` setzen. Der Thinking-Probe-Workflow (`make probe-thinking MODEL=...`) ergänzt die `thinking_probe_*`-Felder automatisch vor dem ersten Benchmark-Run.
 
 ---
 
@@ -529,7 +533,7 @@ Das Skript legt `.bak`-Backups aller drei Benchmark-CSVs an und füllt leere / `
 
 ### Model Card Schema — Pflichtfelder
 
-Jede Model Card JSON muss folgende Felder enthalten. Cards mit `card_status: "stub"` dürfen vorläufige Werte haben; das vollständige Schema wird bei `make model-cards` von `generate_model_cards.py` erzwungen.
+Jede Model Card JSON muss folgende Felder enthalten. Cards mit `card_status: "draft"` sind manuell erstellte Templates (via `make model-cards`) und dürfen `"TODO"`-Platzhalter enthalten. `card_status: "complete"` signalisiert, dass alle Pflichtfelder befüllt sind.
 
 #### Kern-Identität
 
@@ -1118,4 +1122,4 @@ python run_benchmark.py --debug-responses
 ---
 
 **Dokumenten-Version:** 3.8.1 (Überarbeitung Mai 2026)\
-**Kompatibel mit:** CrucibleMark v3.8.0+
+**Kompatibel mit:** CrucibleMark v3.8.2+

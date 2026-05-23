@@ -1,7 +1,7 @@
 .PHONY: \
 	help install install-dev \
 	benchmark political-compass political-compass-safe benchmark-cross-model benchmark-auto benchmark-human \
-	review reviews-auto reviews-check review-new model-cards provider-cards leaderboard provider-stats \
+	review reviews-auto reviews-check review-new model-cards model-card provider-cards leaderboard provider-stats \
 	validate validate-single validate-structure validate-cards test diff-results analyze-costs update-prices sync-cost-limits \
 	list-models judge-health list-modules \
 	probe-thinking probe-all-thinking \
@@ -37,7 +37,7 @@ help:
 	@echo "  make reviews-auto         Reviews fuer alle Modelle (generiert fehlende Cards automatisch)"
 	@echo "  make reviews-check        Zeigt fehlende Cards (kein Review, kein Schreiben)"
 	@echo "  make review-new           Einzelnen Review generieren mit Auto-Card (MODEL=name erforderlich)"
-	@echo "  make model-cards          Model Cards generieren (Flags: MODEL=name, FORCE=1)"
+	@echo "  make model-cards          Neues Model Card Template anlegen (MODEL=name erforderlich, PROVIDER=key optional)"
 	@echo "  make provider-cards       Provider Cards generieren (Flags: PROVIDER=name, FORCE=1)"
 	@echo "  make provider-stats       System-Latenzen analysieren (Ping vs. TTFB) und Provider-Review erstellen"
 	@echo "  make probe-thinking       Thinking-Probe fuer einzelnes Modell (MODEL=name, PROVIDER=key optional)"
@@ -98,13 +98,9 @@ benchmark-human:
 # === REPORTING & STANDARDS ===
 
 model-cards:
-	@if [ -n "$(MODEL)" ]; then \
-		echo "Generiere Model Card fuer $(MODEL)..."; \
-		$(PYTHON) scripts/analysis/generate_model_cards.py --model "$(MODEL)" $(if $(FORCE),--force) $(if $(FORMAT),--format $(FORMAT)); \
-	else \
-		echo "Generiere alle fehlenden Model Cards..."; \
-		$(PYTHON) scripts/analysis/generate_model_cards.py $(if $(FORCE),--force) $(if $(FORMAT),--format $(FORMAT)); \
-	fi
+	$(PYTHON) scripts/analysis/generate_model_cards.py $(if $(MODEL),--model "$(MODEL)") $(if $(PROVIDER),--provider "$(PROVIDER)") $(if $(FORCE),--force)
+
+model-card: model-cards
 
 provider-cards:
 	@if [ -n "$(PROVIDER)" ]; then \

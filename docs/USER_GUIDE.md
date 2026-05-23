@@ -176,7 +176,7 @@ make review ALL=1 TYPE="bias"
 **Model Cards & Provider Cards** liefern dem Meta-Reviewer strukturierten Kontext zu Herkunft, Stärken und — besonders relevant für europäische Akteure — Datenschutzstandards:
 
 ```bash
-make model-cards      # Model Cards generieren (Herkunft, Deployment-Typ, Weights-Provenance-Risk)
+make model-cards MODEL=<id>  # Neues Model Card Template anlegen (dann manuell befüllen)
 make provider-cards   # Provider Cards generieren (CLOUD Act, GDPR DPA, Datenstandort, Retention)
 ```
 

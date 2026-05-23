@@ -1,37 +1,23 @@
 # PROJECT_STATUS.md
 
-**Last Updated:** 2026-05-22
-**Current Version:** 3.8.0 (Model Card Klassifikations-System: `use_case_primary`, `parameter_architecture`, `context_window_k`, `knowledge_cutoff`; Reviewer-Prompt-Regeln; vollständige Dokumentationssynchronisation)
+**Last Updated:** 2026-05-23
+**Current Version:** 3.8.2 (Model Card Template Generator: `make model-cards` erstellt manuell befüllbare Templates statt LLM-generierter Cards)
 **Status:** ✅ Production-Ready
 
 ---
 
 ## Executive Summary
 
-CrucibleMark v3.8.0 führt ein vollständiges Modell-Klassifikations-System ein. Spezialisierte Modelle (Vision-Language, Coding, Reasoning, Agentic) werden jetzt mit einem kontrollierten Vokabular in der Model Card erfasst und der Reviewer erhält diesen Kontext automatisch als Prompt-Injection — so bewertet er ein VL-Modell nie am selben Maßstab wie einen Generalisten.
+CrucibleMark v3.8.2 schließt die Umstellung der Model Cards auf ein vollständig manuell gepflegtes System ab. Der bisherige LLM-basierte Auto-Generator wird durch einen schlanken Template-Generator ersetzt: `make model-cards MODEL=<id>` legt ein JSON mit allen Pflichtfeldern als `"TODO"`-Platzhalter an — kein API-Call, keine externe Abhängigkeit. Das redaktionelle Befüllen bleibt bewusst manueller Schritt.
 
-1. **`use_case_primary` als Pflichtfeld:** Kontrolliertes Vokabular: `generalist` / `coding` / `reasoning` / `vision-language` / `agentic`. Auslöser: zufällig mitgelaufenes `qwen2.5vl`-Modell (für SwarmUI/Bildgenerierung konfiguriert) enthüllte fehlende Einordnungsebene im Reviewer-Prompt.
-2. **`parameter_architecture` (dense/moe):** MoE-Modelle werden korrekt am `params_active_b`-Wert bewertet, nicht an der Gesamtparameterzahl. Verhindert Äpfel-Birnen-Vergleiche.
-3. **`context_window_k` + `knowledge_cutoff`:** Kontextfenster (in K-Token) und Trainingsdaten-Stichtag als Pflichtfelder in allen Cards.
-4. **`config/classification_taxonomy.json` (SSoT):** Canonical Taxonomy für `use_case` und `size_class` — inklusive `reviewer_guidance` pro Wert. Einmalig laden, überall referenzieren.
-5. **`{use_case_classification_context}` Prompt-Injection:** `generate_review.py` rendert volle Taxonomy + Hervorhebung des aktuellen Modells und injiziert sie in `meta_reviewer_prompt.yaml`.
-6. **`get_use_case_primary()` in `model_utils.py`:** Neue Hilfsfunktion mit Fallback `"generalist"` — SSoT für alle Konsumenten.
-7. **Drei neue Reviewer-Prompt-Regeln:** Gedankenstrich max 2–3 im gesamten Artikel, Fachbegriffe im Kontext erklären (Zielgruppe: Nicht-Experten), keine internen Test-IDs im Review-Text.
-8. **Reviewer-Wettbewerb:** Claude Sonnet 4.6 / Gemini 3.1 Pro / GPT-5.4 auf identischen Grok-3-Daten — GPT-5.4 gewinnt (stärkste redaktionelle Stimme), Claude Sonnet 4.6 bleibt Standard (Strukturtreue + analytische Tiefe).
-9. **Migrationsskripte:** `migrate_use_case_primary.py`, `migrate_context_fields.py` — idempotent, `--dry-run`-Support.
-10. **Dokumentationssynchronisation:** `MODEL_CLASSIFICATION.md` v3.0.0, `AUDIT_AND_METAREVIEW.md`, `DEVELOPER_GUIDE.md`, `memory-bank/` vollständig aktualisiert.
+**Key Achievements (v3.8.2):**
+- ✅ **`scripts/analysis/generate_model_cards.py`** — vollständig ersetzt: LLM-Call entfernt, Template-Generator implementiert.
+- ✅ **`make model-cards MODEL=<id>`** — erstellt `card_status: "draft"`-Template mit allen Pflichtfeldern.
+- ✅ **`make model-card`** — Singular-Alias ergänzt.
+- ✅ **Docs:** `DEVELOPER_GUIDE.md`, `AUDIT_AND_METAREVIEW.md`, `USER_GUIDE.md`, `README.md` auf neues Konzept aktualisiert.
 
-**Key Achievements (v3.8.0):**
-- ✅ **~77 Model Cards** — `use_case_primary`, `parameter_architecture`, `context_window_k`, `knowledge_cutoff` migriert.
-- ✅ **`config/classification_taxonomy.json`** — SSoT für Taxonomy + `reviewer_guidance` pro Wert (use_case 5 Werte, size_class 6 Werte).
-- ✅ **`scripts/analysis/generate_review.py` — `_format_classification_context()`:** Taxonomy-Injection als `{use_case_classification_context}` mit Modell-Hervorhebung.
-- ✅ **`utils/model_utils.py` — `get_use_case_primary()`:** Neue Hilfsfunktion, Fallback `"generalist"`.
-- ✅ **`config/meta_reviewer_prompt.yaml`** — 3 neue Regeln: Gedankenstrich, Fachbegriff-Zugänglichkeit, keine Test-IDs.
-- ✅ **Migrationsskripte:** `scripts/dev/migrate_use_case_primary.py`, `scripts/dev/migrate_context_fields.py`.
-- ✅ **Blogpost-Entwurf:** `docs/blog_entwurf_reviewer_experiment.md` — für cruciblemark.com/magazine.
-- ✅ **Docs:** `MODEL_CLASSIFICATION.md` v3.0.0, `AUDIT_AND_METAREVIEW.md`, `DEVELOPER_GUIDE.md` synchronisiert.
+**Vorherige Version (v3.8.0/v3.8.1 – Model Card Klassifikations-System + Web-Export Erweiterung):**
 
-**Vorherige Version (v3.7.5 – Pricing SSoT Migration: Model Cards als primäre Preisquelle):**
 
 CrucibleMark v3.7.5 schließt die Pricing-Architektur: Preise werden nicht mehr zentral in `config/cost_limits.yaml` gepflegt, sondern als `input_price_per_1m` / `output_price_per_1m` (USD/1M Tokens) direkt in den Model Cards hinterlegt. 53 API-Model-Cards migriert. `cost_limits.yaml` auf 6 Legacy-Einträge reduziert. 4 neue Cards, 3 neue Reviews.
 

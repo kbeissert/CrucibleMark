@@ -5,6 +5,11 @@
 
 ## Abgeschlossen
 
+### Model Card Template Generator (v3.8.2 – 23.05.26)
+- [x] **`scripts/analysis/generate_model_cards.py`** — LLM-basierter Auto-Generator ersetzt durch schlanken Template-Generator. Kein API-Call, kein Config-Laden. `make model-cards MODEL=<id>` → JSON mit allen Pflichtfeldern als `"TODO"`, `size_class` automatisch berechnet, `_index.json` aktualisiert.
+- [x] **`Makefile`** — Target `model-cards` vereinfacht. Alias `model-card` (Singular) ergänzt. `--provider`-Flag für lokale Modelle.
+- [x] **Docs:** `DEVELOPER_GUIDE.md` (Card-Generierung-Sektion), `AUDIT_AND_METAREVIEW.md`, `USER_GUIDE.md`, `README.md` aktualisiert. Alle Versionsnummern → v3.8.2.
+
 ### Model Card Klassifikations-System & Reviewer-Prompt-Überarbeitung (v3.8.0 – 22.05.26)
 - [x] **`benchmark_scores/model_cards/*.json`** — `use_case_primary` (`generalist`/`coding`/`reasoning`/`vision-language`/`agentic`), `parameter_architecture` (`dense`/`moe`), `context_window_k` (Kilotoken), `knowledge_cutoff` (`YYYY-MM`) als Pflichtfelder in alle ~77 Cards migriert.
 - [x] **`config/classification_taxonomy.json`** (NEU) — SSoT für Taxonomy mit `label`, `description` und `reviewer_guidance` pro Wert. Zwei Sektionen: `use_case` (5 Werte) + `size_class` (6 Werte).
