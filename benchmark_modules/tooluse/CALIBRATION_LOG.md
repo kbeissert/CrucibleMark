@@ -126,7 +126,7 @@ Model 12: codestral-latest ✅
 | Kalibriertes Leaderboard | `benchmark_scores/tooluse_leaderboard.csv` | Aktueller Stand (v1.2.0) |
 | Pre-calibration | `_calibration_archive/tooluse_leaderboard_pre_calibration_v3100.csv` | Historischer Vergleich |
 | Asset-Definitionen | `assets/tooluse00{1,2,3}.yaml` | Golden Standard v1.2.0 (SSoT) |
-| Combined Assets | `assets/combined_assets.yaml` | Synced zu v1.2.0 |
+| Combined Assets | `combined_assets.yaml` | Synced zu v1.2.0 |
 
 **Calibration Complete:** 2026-05-24  
 **Golden Standard Version:** v1.2.0  
