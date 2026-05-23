@@ -1,6 +1,6 @@
 # tooluse — Tool Use & Function Calling
 
-> Diagnosemodul | Kein Einfluss auf Total Score | `enable_scoring: false`
+> Diagnosemodul | Kein Einfluss auf Total Score | `enable_scoring: false` | Golden Standard v1.2.0 ✅
 
 ---
 
@@ -13,10 +13,10 @@
 | `core/evaluators.py` — Zwei-Phasen-Scoring | Fertig |
 | `core/io_manager.py` — Leaderboard + Terminal-Output | Fertig |
 | `core/constants.py` — Key-Namen-SSoT | Fertig |
-| Assets 001–003 | Fertig |
+| Assets 001–003 (Golden Standard v1.2.0) | Fertig ✅ |
 | MCP Server (`cruciblemark-mcp/`) | Fertig |
 | Batch-Runner (`scripts/run_tooluse_benchmark.py`) | Fertig |
-| Leaderboard (`tooluse_leaderboard.csv`) | Fertig |
+| Leaderboard (`tooluse_leaderboard.csv`) | Fertig — 12 Modelle kalibriert |
 
 ---
 
@@ -75,6 +75,8 @@ benchmark_modules/tooluse/
 | Phase 1 — Tool Execution | 50 % | Hat das Modell das korrekte Tool aufgerufen? |
 | Phase 2 — Synthesis Quality | 50 % | Ist die Antwort faktisch korrekt und quellenbasiert? |
 
+- **P1-Stufen:** 0 (kein Aufruf) → 20 (falsches Tool) → 40 (Fehler-Status) → 80 (korrekt) → 100 (korrekt + nutzbarer Content ≥ 100 Zeichen, nur `http_fetch` Non-Failure)
+- **P2-Bewertung:** LLM-Judge gegen Golden Standard — Faktizität (0.5), Halluzinationsrisiko (0.25), Unsicherheitsbehandlung (0.25)
 - **Hallucination Penalty:** −100 Punkte bei erfundenem Inhalt nach 404-Fehler
 - **Tool Call Bonus:** +10 Punkte bei korrekter Quellenangabe im Output
 - **Retry Tracking:** Mehrfach-Aufrufe desselben Tools werden als Unsicherheit gewertet
@@ -97,15 +99,18 @@ config:
 
 ### tooluse001 — Websearch Research (Tier 2)
 Aufgabe: EU-Lizenzbeschränkungen für Meta Llama recherchieren.
-Erfolgskriterium: `web_search` aufgerufen + Antwort enthält URL-Zitat.
+Erfolgskriterium: `web_search` aufgerufen + Antwort enthält URL-Zitat + Unterscheidung multimodale vs. textbasierte Modelle.
+Golden Standard: v1.2.0 — Llama 4 / Llama 3.2 Vision (multimodal, EU-beschränkt) vs. Llama 3.1/3.2 (textbasiert, ohne Einschränkung).
 
 ### tooluse002 — HTTP Fetch & Extract (Tier 2)
 Aufgabe: HuggingFace-Seite abrufen, Modellnamen extrahieren.
-Erfolgskriterium: `http_fetch` mit korrekter URL aufgerufen + ≥ 3 Modellnamen im Output.
+Erfolgskriterium: `http_fetch` mit korrekter URL aufgerufen + ≥ 3 Modellnamen vom tatsächlichen Seiten-Inhalt im Output.
+Golden Standard: v1.2.0 — Llama 3.2 (Text), Llama 3.2 Vision, Llama Guard. Reproduktion von Trainings-Vorwissen (Llama 4, Code Llama) wird penalisiert.
 
 ### tooluse003 — Tool Failure Handling (Tier 3)
 Aufgabe: Nicht existierende URL abrufen, Fehler korrekt kommunizieren.
-Erfolgskriterium: Kein halluzinierter Inhalt (`is_failure_test: true`).
+Erfolgskriterium: Kein halluzinierter Inhalt (`is_failure_test: true`). Jede Aussage über Seiteninhalte = automatischer Fail.
+Golden Standard: v1.2.0 — Erste-Person-Formulierung, Tool-Fehlerzuordnung, keine Überexplikation.
 
 ---
 
