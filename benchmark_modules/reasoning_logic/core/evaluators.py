@@ -12,12 +12,14 @@ from typing import Any, cast
 import warnings
 
 from .constants import (
+    DIMENSION_SCORE_THRESHOLDS,
     FEASIBILITY_DEFAULT_OPTIMISTIC,
     MAX_SCORE,
     OUTPUT_QUALITY_WEIGHT,
     RCI_THRESHOLD_BASIC_THINKING,
     RCI_THRESHOLD_NON_THINKING,
     RCI_THRESHOLD_THINKING,
+    RUBRICS,
     THOUGHT_QUALITY_WEIGHT,
     TIER_MAPPING,
 )
@@ -54,211 +56,8 @@ def emit_legacy_warning(asset_id: str, deprecation_version: str = "v3.0") -> Non
 
 # ============================================================================
 # NEW GRANULAR SCORING RUBRICS (v2.0)
+# RUBRICS and DIMENSION_SCORE_THRESHOLDS live in constants/rubrics.py (SSoT)
 # ============================================================================
-
-RUBRICS = {
-    "reasoning_5a_001": {
-        "error_detection": {
-            "weight": 40,
-            "description": "Identifies the infinite loop",
-            "keywords": [
-                r"infinite.*loop",
-                r"hangs?",
-                r"freez",
-                r"forever",
-                r"current_index",
-                r"not.*increment",
-            ],
-        },
-        "root_cause_analysis": {
-            "weight": 30,
-            "description": "Locates the bug (increment inside if-block)",
-            "keywords": [r"inside.*if", r"indentation", r"scope", r"else.*block"],
-        },
-        "solution_quality": {
-            "weight": 30,
-            "description": "Proposes correct fix and alternatives",
-            "keywords": [
-                r"\+= 1",
-                r"increment",
-                r"outside",
-                r"move.*line",
-                r"alternative",
-                r"cleaner",
-                r"continue",
-                r"skip",
-            ],
-        },
-    },
-    "reasoning_5c_001": {
-        "problem_recognition": {
-            "weight": 20,
-            "description": "Identifies constraints (3 meetings, 2 time slots)",
-            "keywords": [
-                r"three.*meetings",
-                r"two.*hours",
-                r"impossible",
-                r"deficit",
-                r"2.*hour.*3.*hour",
-            ],
-        },
-        "logical_analysis": {
-            "weight": 25,
-            "description": "Explains WHY it's impossible",
-            "keywords": [
-                r"fit",
-                r"insufficient",
-                r"duration",
-                r"conflict",
-                r"mathematically",
-                r"pigeonhole",
-            ],
-        },
-        "appropriate_refusal": {
-            "weight": 40,
-            "description": "Refuses invalid request instead of forcing solution",
-            "keywords": [
-                r"cannot",
-                r"impossible",
-                r"unable",
-                r"not feasible",
-                r"refuse",
-                r"no way",
-            ],
-        },
-        "alternative_proposal": {
-            "weight": 15,
-            "description": "Suggests workarounds",
-            "keywords": [
-                r"alternative",
-                r"reschedule",
-                r"overlap",
-                r"shorten",
-                r"extend",
-                r"remove",
-            ],
-        },
-    },
-    "reasoning_5b_001": {
-        "problem_identification": {
-            "weight": 20,
-            "description": "Identifies the root cause domain",
-            "keywords": ["database", "query", "cpu", "slow"],
-        },
-        "cross_domain_analysis": {
-            "weight": 30,
-            "description": "Traces issue across layers",
-            "keywords": ["root", "cause", "underlying", "layer"],
-        },
-        "solution_quality": {
-            "weight": 30,
-            "description": "Proposes correct fix",
-            "keywords": ["index", "cache", "optimize", "performance"],
-        },
-        "reasoning_depth": {
-            "weight": 20,
-            "description": "Explains WHY solution works",
-            "keywords": ["reduce", "improve", "faster", "efficient"],
-        },
-    },
-    "reasoning_5d_001": {
-        "deadlock_recognition": {
-            "weight": 30,
-            "description": "Identifies circular dependency",
-            "keywords": [
-                "deadlock",
-                "circular",
-                "cycle",
-                "mutual wait",
-                "circular dependency",
-            ],
-        },
-        "resource_identification": {
-            "weight": 25,
-            "description": "Names the conflicting resources (locks, threads)",
-            "keywords": ["lock", "thread", "resource", "process", "mutex", "monitor"],
-        },
-        "causality_explanation": {
-            "weight": 25,
-            "description": "Explains HOW deadlock forms",
-            "keywords": ["holds", "waits for", "depends on", "blocked", "waiting for"],
-        },
-        "solution_proposal": {
-            "weight": 20,
-            "description": "Suggests fix (timeout, ordering, detection)",
-            "keywords": [
-                "timeout",
-                "order",
-                "priority",
-                "detect",
-                "break cycle",
-                "ordering",
-            ],
-        },
-    },
-    "reasoning_5e_001": {
-        "paradox_recognition": {
-            "weight": 25,
-            "description": "Identifies the inherent conflict in requirements",
-            "keywords": [
-                "paradox",
-                "contradiction",
-                "impossible",
-                "conflict",
-                "requirement",
-            ],
-        },
-        "architecture_design": {
-            "weight": 30,
-            "description": "Proposes a 3-phase or async architecture",
-            "keywords": ["phase", "transaction", "commit", "async", "manager", "queue"],
-        },
-        "tradeoff_analysis": {
-            "weight": 25,
-            "description": "Analyzes impacts of relaxing constraints",
-            "keywords": ["tradeoff", "impact", "relax", "requirement", "consequence"],
-        },
-        "feasibility_assessment": {
-            "weight": 20,
-            "description": "Assesses feasibility of the solution",
-            "keywords": ["feasible", "possible", "scale", "assessment", "rating"],
-        },
-    },
-    "reasoning_metacog_004": {
-        "iterative_refinement": {
-            "weight": 20,
-            "description": "Shows internal thought process",
-            "keywords": [r"<thought>", r"initially", r"at first", r"reconsider"],
-        },
-        "problem_understanding": {
-            "weight": 20,
-            "description": "Understands the Monty Hall setup",
-            "keywords": [r"door", r"goat", r"car", r"host", r"monty"],
-        },
-        "probability_calculation": {
-            "weight": 30,
-            "description": "Correctly calculates probabilities",
-            "keywords": [r"1/3", r"2/3", r"0\.66", r"66%", r"33%", r"0\.33"],
-        },
-        "switch_recommendation": {
-            "weight": 20,
-            "description": "Recommends switching doors",
-            "keywords": [r"switch", r"higher.*chance", r"maximize", r"advantage"],
-        },
-        "explanation_quality": {
-            "weight": 10,
-            "description": "Explains the reasoning",
-            "keywords": [
-                r"reveal",
-                r"information",
-                r"update",
-                r"\|.*\|",
-                r"table",
-                r"scenario",
-            ],
-        },
-    },
-}
 
 
 def calculate_dimension_score(
@@ -268,30 +67,14 @@ def calculate_dimension_score(
     if not keywords:
         return 0.0
 
-    # Switch to Regex counting
-    matches = 0
-    for pattern in keywords:
-        if re.search(pattern, response, re.IGNORECASE):
-            matches += 1
-
+    matches = sum(
+        1 for pattern in keywords if re.search(pattern, response, re.IGNORECASE)
+    )
     match_ratio = matches / len(keywords)
 
-    # v2.2 RegEx Robustness (Claude/Opus Fix)
-    # 1. High Saturation (Most patterns matched)
-    if match_ratio >= 0.70:
-        return float(max_weight)
-
-    # 2. Good Saturation
-    if match_ratio >= 0.45:
-        return float(max_weight * 0.80)
-
-    # 3. Minimum Viable
-    if match_ratio >= 0.20:
-        return float(max_weight * 0.50)
-
-    # 4. Fallback: Single match
-    if matches >= 1:
-        return float(max_weight * 0.25)
+    for threshold, multiplier in DIMENSION_SCORE_THRESHOLDS:
+        if match_ratio >= threshold:
+            return float(max_weight * multiplier)
 
     return 0.0
 
@@ -354,47 +137,19 @@ class ReasoningEvaluator:
             version = 1.0
 
         if version >= 2.0 or self.asset["metadata"]["id"] in RUBRICS:
-            # Use new rubrics
-            def wrapper_5a(
-                text: str, *_args: Any
-            ) -> tuple[float, dict[str, float], list[str]]:
-                return score_granular_rubric(text, "reasoning_5a_001")
+            # v2.0: build rubric-wrapper scorers from the RUBRICS registry
+            def _make_rubric_wrapper(rubric_id: str) -> Any:
+                def wrapper(text: str, *_args: Any) -> tuple[float, dict[str, float], list[str]]:
+                    return score_granular_rubric(text, rubric_id)
+                return wrapper
 
-            def wrapper_5c(
-                text: str, *_args: Any
-            ) -> tuple[float, dict[str, float], list[str]]:
-                return score_granular_rubric(text, "reasoning_5c_001")
-
-            def wrapper_5b(
-                text: str, *_args: Any
-            ) -> tuple[float, dict[str, float], list[str]]:
-                return score_granular_rubric(text, "reasoning_5b_001")
-
-            def wrapper_5d(
-                text: str, *_args: Any
-            ) -> tuple[float, dict[str, float], list[str]]:
-                # 5d requires feasibility extraction by default logic, but granular rubric just needs text
-                # We ignore args (feasibility) if passed, or use it if rubric needs it?
-                # Current 5d rubric uses only keywords.
-                return score_granular_rubric(text, "reasoning_5d_001")
-
-            def wrapper_5e(
-                text: str, *_args: Any
-            ) -> tuple[float, dict[str, float], list[str]]:
-                # 5e previously used specialized scorer. Now uses granular rubric (v2.1)
-                return score_granular_rubric(text, "reasoning_5e_001")
-
-            def wrapper_metacog_004(
-                text: str, *_args: Any
-            ) -> tuple[float, dict[str, float], list[str]]:
-                return score_granular_rubric(text, "reasoning_metacog_004")
-
-            self._scorers["reasoning_5a_001"] = wrapper_5a
-            self._scorers["reasoning_5c_001"] = wrapper_5c
-            self._scorers["reasoning_5b_001"] = wrapper_5b
-            self._scorers["reasoning_5d_001"] = wrapper_5d
-            self._scorers["reasoning_5e_001"] = wrapper_5e  # Enable v2.1 for 5e
-            self._scorers["reasoning_metacog_004"] = wrapper_metacog_004
+            rubric_ids = [
+                "reasoning_5a_001", "reasoning_5c_001", "reasoning_5b_001",
+                "reasoning_5d_001", "reasoning_5e_001", "reasoning_metacog_004",
+            ]
+            for rid in rubric_ids:
+                if rid in RUBRICS:
+                    self._scorers[rid] = _make_rubric_wrapper(rid)
         else:
             # Uses Legacy Scorers
             emit_legacy_warning(self.asset["metadata"]["id"])

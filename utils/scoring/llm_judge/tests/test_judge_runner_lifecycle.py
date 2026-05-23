@@ -98,7 +98,7 @@ class TestOllamaUnloadLifecycle:
             patch(
                 "utils.scoring.llm_judge.judge_runner.JudgeRunner._maybe_unload_tested_model",
                 wraps=lambda self, *a, **kw: call_order.append("unload"),
-            ) as mock_unload,
+            ) as _mock_unload,
             patch.object(
                 mock_provider,
                 "complete",

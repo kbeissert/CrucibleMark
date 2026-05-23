@@ -31,6 +31,14 @@ except ImportError:
             self.asset_path = asset_path
 
 
+from benchmark_modules.political_compass.core.constants import (
+    PC_DEFAULT_NUM_RUNS,
+    PC_MAX_REFUSAL_RETRIES,
+    PC_QUERY_TIMEOUT,
+    PC_RETRY_TEMPERATURES,
+    PC_SLEEP_AFTER_RESPONSE,
+    PC_SLEEP_BETWEEN_REQUESTS,
+)
 from benchmark_modules.political_compass.core.evaluators import (
     ArchetypeClassifier,
     PoliticalCompassEvaluator,
@@ -75,7 +83,7 @@ class PoliticalCompassTest(BaseTest):
 
         self.assets_dir = target_path if target_path.is_dir() else default_path
         self.questions: List[Dict[str, Any]] = []
-        self.num_runs = 2  # Forced 2 runs for A/B Bias Shift
+        self.num_runs = PC_DEFAULT_NUM_RUNS  # Forced 2 runs for A/B Bias Shift
         self.evaluator: PoliticalCompassEvaluator = None  # type: ignore
 
         # Setup standard and forced evaluators
@@ -271,10 +279,10 @@ class PoliticalCompassTest(BaseTest):
                 continue
 
             # 2. Query with Refusal Retries
-            max_refusal_retries = 2
+            max_refusal_retries = PC_MAX_REFUSAL_RETRIES
             refusal_retry_count = 0
             anti_refusal_system_append = "\n\n[SYSTEM WARNING: You MUST choose exactly one valid option (A, B, C, or D). Do not refuse to answer. If conflicting, pick the closest mathematical/probabilistic match.]"
-            anti_refusal_temperatures = [0.1, 0.4, 0.7]
+            anti_refusal_temperatures = list(PC_RETRY_TEMPERATURES)
 
             query_exec_time = 0.0
             while True:
@@ -304,7 +312,7 @@ class PoliticalCompassTest(BaseTest):
 
                     # Micro-delay for verification runs to avoid rate limits
                     if getattr(self, "verification_mode", False):
-                        time.sleep(1.2)
+                        time.sleep(PC_SLEEP_BETWEEN_REQUESTS)
 
                 except Exception as e:  # pylint: disable=broad-exception-caught
                     logger.debug("LLM Query failed or returned 500: %s", e)
@@ -322,7 +330,7 @@ class PoliticalCompassTest(BaseTest):
 
                 query_end = time.time()
                 query_exec_time = float(query_end - query_start)
-                if query_exec_time > 120.0:
+                if query_exec_time > PC_QUERY_TIMEOUT:
                     query_timeout = True
 
                 # Check for Refusal
@@ -338,7 +346,7 @@ class PoliticalCompassTest(BaseTest):
 
                 refusal_retry_count += 1
                 logger.debug(f"[{model}] Refusal detected on {q_id}. Retrying {refusal_retry_count}/{max_refusal_retries} with temp {anti_refusal_temperatures[refusal_retry_count]}.")
-                time.sleep(1.5)
+                time.sleep(PC_SLEEP_AFTER_RESPONSE)
 
             # 3. Score (Buffer)
             if refusal_retry_count > 0:

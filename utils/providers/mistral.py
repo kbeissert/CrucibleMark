@@ -91,7 +91,7 @@ class MistralClient(BaseProviderClient):
             }
             response, used_max_tokens, fallback_triggered = self._execute_with_token_fallback(
                 func=self.client.chat.complete,
-                token_param_name="max_tokens",
+                token_param_name=token_param_name,
                 initial_max_tokens=max_tokens,
                 error_keywords=["maximum context length", "max_tokens", "too large"],
                 func_kwargs=func_kwargs

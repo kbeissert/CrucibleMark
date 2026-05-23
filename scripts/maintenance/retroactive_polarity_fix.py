@@ -39,7 +39,7 @@ for i, row in enumerate(rows):
     possible_jsons = list(runs_dir.rglob(f"results_{model_slug}*.json"))
     if not possible_jsons:
         # Fallback for old folder struct
-        possible_jsons = list(runs_dir.rglob(f"*/results.json")) # too broad if not careful, better try exact
+        possible_jsons = list(runs_dir.rglob("*/results.json")) # too broad if not careful, better try exact
         possible_jsons = [p for p in runs_dir.rglob("results.json") if model.replace(':', '_').replace('/', '_') in str(p)]
 
     if not possible_jsons:

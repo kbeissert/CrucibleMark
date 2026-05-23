@@ -140,17 +140,7 @@ def load_benchmark_data() -> pd.DataFrame:
 
     df = pd.concat(dfs, ignore_index=True)
 
-    # Bugfix: Enforce exact routing boundary!
-    # Cloud models must EXCLUSIVELY come from cloud_models_benchmark.csv
-    # Local models must EXCLUSIVELY come from local_models_benchmark.csv
-    # Commercial from commercial_models_benchmark.csv
-    valid_mask = (
-        ((df["type"] == "Proprietär") & (df["source"] == "commercial")) |
-        ((df["type"] == "Cloud-Modelle (Open-Weights)") & (df["source"] == "cloud")) |
-        ((df["type"] == "Open Weights (Local)") & (df["source"] == "local"))
-    )
-    # Behalte Backup-Kategorien wie 'Local Cloud' (falls sie existieren), oder ignoriere?
-    # Es ist robuster, einfach zu filtern:
+    # Enforce exact routing boundary: each model type maps to exactly one source CSV.
     df = df[
         (df["type"] != "Open Weights (Cloud)") | (df["source"] == "cloud")
     ]

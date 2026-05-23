@@ -5,7 +5,6 @@ Testet: Asset Loading, Scoring-Logik, Golden Standard Comparison, Stabilität
 """
 
 import pytest
-import json
 import yaml
 from pathlib import Path
 import sys

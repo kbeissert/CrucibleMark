@@ -806,19 +806,22 @@ def is_reasoning_model(model_name: str) -> bool:
 
 _SIZE_CLASS_VALID = {"Nano", "Edge", "Desktop", "Workstation", "Server", "Frontier"}
 
+# Parameter-to-size-class mapping (upper bound in billions, class name).
+# Reflects real-world RAM requirements at Q4 quantization; order matters (smallest first).
+_SIZE_CLASS_THRESHOLDS: tuple[tuple[float, str], ...] = (
+    (4.0, "Nano"),
+    (9.0, "Edge"),
+    (22.0, "Desktop"),
+    (35.0, "Workstation"),
+    (75.0, "Server"),
+)
+
 
 def _param_b_to_size_class(param_b: float) -> str:
-    if param_b <= 4.0:
-        return "Nano"
-    if param_b <= 9.0:
-        return "Edge"
-    if param_b <= 22.0:
-        return "Desktop"
-    if param_b <= 35.0:
-        return "Workstation"
-    if param_b <= 75.0:
-        return "Server"
-    return "Frontier"
+    return next(
+        (cls for threshold, cls in _SIZE_CLASS_THRESHOLDS if param_b <= threshold),
+        "Frontier",
+    )
 
 
 def get_model_size_class(model_name: str) -> str:

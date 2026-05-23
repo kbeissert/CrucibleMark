@@ -19,7 +19,6 @@ from utils.constants import (
 )
 
 # Initialize global providers via import (autodiscovery)
-import utils.providers  # pylint: disable=unused-import
 
 # Configure logging
 logger = logging.getLogger(__name__)

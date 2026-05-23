@@ -11,11 +11,17 @@ from typing import Any, Dict, List, Optional, Tuple
 
 import requests
 from utils.constants import (
+    DEFAULT_MAX_SCORE,
     OLLAMA_DEFAULT_BASE_URL,
     MODEL_TYPE_OPEN_WEIGHTS_CLOUD,
+    TIMEOUT_DEFAULT,
     TIMEOUT_OLLAMA_LIST_FAST,
     TIMEOUT_OLLAMA_WARMUP,
+    TRUNCATION_THRESHOLDS,
 )
+from utils.language_validator import LanguageValidator
+
+_language_validator = LanguageValidator()
 
 
 class CostLimitExceededError(Exception):
@@ -139,11 +145,11 @@ class UnifiedBenchmarkRunner(BaseBenchmarkRunner):
         except RuntimeError as probe_err:
             err_str = str(probe_err)
             if "429" in err_str or "usage limit" in err_str or "rate limit" in err_str.lower():
-                print(f"   ⚠️  Wochenlimit erschöpft — Reasoning-Erkennung übersprungen, Benchmark läuft weiter.")
+                print("   ⚠️  Wochenlimit erschöpft — Reasoning-Erkennung übersprungen, Benchmark läuft weiter.")
             elif "403" in err_str or "subscription" in err_str.lower():
-                print(f"   ⚠️  Subscription erforderlich — Reasoning-Erkennung übersprungen, Benchmark läuft weiter.")
+                print("   ⚠️  Subscription erforderlich — Reasoning-Erkennung übersprungen, Benchmark läuft weiter.")
             else:
-                print(f"   ⚠️  Reasoning-Erkennung fehlgeschlagen — Benchmark läuft weiter.")
+                print("   ⚠️  Reasoning-Erkennung fehlgeschlagen — Benchmark läuft weiter.")
             logger.warning("[Card-First] ThinkingProbe für '%s' übersprungen: %s", model, probe_err)
             self._probed_models.add(model)
             return
@@ -279,7 +285,7 @@ class UnifiedBenchmarkRunner(BaseBenchmarkRunner):
                 "type": "system",
                 "total_score": 0,
                 "percentage": 0,
-                "max_score": 100,  # Fixed max_score
+                "max_score": DEFAULT_MAX_SCORE,
                 "tier": "System",
                 "execution_time": round(ex_time, 1),
                 "golden_similarity": 0,
@@ -349,32 +355,23 @@ class UnifiedBenchmarkRunner(BaseBenchmarkRunner):
         exec_result = test_instance.score_response(exec_result)
         score = exec_result.data
 
-        # Language Mismatch Detection (heuristisch – kein externer Dependency)
+        # Language Mismatch Detection
         expected_lang = asset_data.get("metadata", {}).get("language", "")
-        if expected_lang and len(response.split()) > 50:
-            words_lower = response.lower().split()
-            de_markers = {"der", "die", "das", "und", "ist", "für", "nicht", "sie",
-                          "mit", "ein", "auf", "bei", "von", "zu", "im", "den",
-                          "des", "dem", "sich", "auch", "eine", "einer", "einem"}
-            en_markers = {"the", "and", "for", "with", "is", "are", "that", "this",
-                          "have", "been", "from", "will", "your", "you", "our",
-                          "their", "which", "also", "not", "all"}
-            de_count = sum(1 for w in words_lower if w in de_markers)
-            en_count = sum(1 for w in words_lower if w in en_markers)
-            detected_en = en_count > de_count * 2 and en_count > 8
-
-            if expected_lang == "de" and detected_en:
-                exec_result.data["language_mismatch"] = True
-                exec_result.data["detected_language"] = "en"
-                exec_result.data["violations"] = exec_result.data.get("violations", []) + ["Wrong Language (English instead of German)"]
-                if isinstance(exec_result.data.get("details"), list):
-                    exec_result.data["details"].append(
-                        "> [!WARNING]\n"
-                        "> **[LANGUAGE MISMATCH]** The model responded in English, but the task requires German (`expected_language: de`). "
-                        f"Language marker counts: DE={de_count}, EN={en_count}."
-                    )
-                score = exec_result.data
-                logger.warning("Language mismatch detected for %s / %s: EN response on DE task", model, asset_data.get("metadata", {}).get("id"))
+        mismatch = _language_validator.detect_mismatch(response, expected_lang)
+        if mismatch:
+            de_count = mismatch["de_marker_count"]
+            en_count = mismatch["en_marker_count"]
+            exec_result.data["language_mismatch"] = True
+            exec_result.data["detected_language"] = mismatch["detected_language"]
+            exec_result.data["violations"] = exec_result.data.get("violations", []) + ["Wrong Language (English instead of German)"]
+            if isinstance(exec_result.data.get("details"), list):
+                exec_result.data["details"].append(
+                    "> [!WARNING]\n"
+                    "> **[LANGUAGE MISMATCH]** The model responded in English, but the task requires German (`expected_language: de`). "
+                    f"Language marker counts: DE={de_count}, EN={en_count}."
+                )
+            score = exec_result.data
+            logger.warning("Language mismatch detected for %s / %s: EN response on DE task", model, asset_data.get("metadata", {}).get("id"))
 
         # Build base result
         result = self.build_base_result(model, asset_data, exec_result, provider)
@@ -492,7 +489,6 @@ class UnifiedBenchmarkRunner(BaseBenchmarkRunner):
             f"\n{'=' * 60}\n📊 STARTE BENCHMARK: {benchmark_info.get('name', 'Unknown')}\n{'=' * 60}"
         )
         identity = get_model_identity(model)
-        display_name = identity["display_name"]
         tags_str = ", ".join(identity["tags"])
         print(f"Provider: {provider}\nModell:   {model} (Tags: [{tags_str}])")
 
@@ -559,10 +555,6 @@ class UnifiedBenchmarkRunner(BaseBenchmarkRunner):
                     result["refusal_type"] = "content_safety"
                     result["refusal_note"] = "Response blocked by Gemini safety filters."
 
-                TRUNCATION_THRESHOLDS = {
-                    "documentation_quality": 1500,
-                    "ux_writing": 800,
-                }
                 module_id = benchmark_info.get("id", "")
                 threshold = TRUNCATION_THRESHOLDS.get(module_id)
                 if threshold:
@@ -691,7 +683,7 @@ class UnifiedBenchmarkRunner(BaseBenchmarkRunner):
                     asset_ids.append(a_id)
                 t_exe = res.get("execution_time", 0.0)
                 execution_times.append(t_exe)
-                if res.get("status") == "error" or t_exe > 120.0:
+                if res.get("status") == "error" or t_exe > TIMEOUT_DEFAULT:
                     timeout_count += 1
             if asset_ids:
                 append_global_run_metrics(

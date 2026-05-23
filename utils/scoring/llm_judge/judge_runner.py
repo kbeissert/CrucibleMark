@@ -19,7 +19,9 @@ name happens here beyond the lazy-import factory.
 """
 
 
+import importlib
 import logging
+import os
 import time
 from typing import Any, Dict, Optional
 
@@ -34,13 +36,26 @@ logger = logging.getLogger(__name__)
 
 
 # ---------------------------------------------------------------------------
-# Provider factory helpers
+# Provider registry — maps provider name to (relative_module_path, class_name)
 # ---------------------------------------------------------------------------
+
+_PROVIDER_MODULES: dict[str, tuple[str, str]] = {
+    "anthropic": ("providers.anthropic_provider", "AnthropicProvider"),
+    "google":    ("providers.google_provider",    "GoogleProvider"),
+    "mistral":   ("providers.mistral_provider",   "MistralProvider"),
+    "openai":    ("providers.openai_provider",    "OpenAIProvider"),
+    "ollama":    ("providers.ollama_provider",    "OllamaProvider"),
+}
+
+_ENV_KEY_MAP: dict[str, str] = {
+    "anthropic": "ANTHROPIC_API_KEY",
+    "google": "GOOGLE_API_KEY",
+}
 
 
 def _build_provider(config: LLMJudgeConfig) -> LLMJudgeProvider:
     """
-    Instantiate the primary provider from config.
+    Instantiate the primary provider from config via registry lookup.
 
     Args:
         config: Validated LLMJudgeConfig.
@@ -61,37 +76,18 @@ def _build_provider(config: LLMJudgeConfig) -> LLMJudgeProvider:
         "max_tokens": prov_cfg.max_tokens,
         "timeout_seconds": prov_cfg.timeout_seconds,
     }
-
-    if prov_cfg.name == "anthropic":
-        from .providers.anthropic_provider import AnthropicProvider
-
-        return AnthropicProvider(**kwargs)
-
-    if prov_cfg.name == "google":
-        from .providers.google_provider import GoogleProvider
-
-        return GoogleProvider(**kwargs)
-
-    if prov_cfg.name == "mistral":
-        from .providers.mistral_provider import MistralProvider
-
-        return MistralProvider(**kwargs)
-
-    if prov_cfg.name == "openai":
-        from .providers.openai_provider import OpenAIProvider
-
-        return OpenAIProvider(**kwargs)
-
     if prov_cfg.name == "ollama":
-        from .providers.ollama_provider import OllamaProvider
+        kwargs["base_url"] = prov_cfg.base_url or OLLAMA_DEFAULT_BASE_URL
 
-        base_url = prov_cfg.base_url or OLLAMA_DEFAULT_BASE_URL
-        return OllamaProvider(**kwargs, base_url=base_url)
-
-    raise ValueError(
-        f"Unknown LLM Judge provider: '{prov_cfg.name}'. "
-        "Valid values: anthropic, mistral, openai, ollama, google."
-    )
+    entry = _PROVIDER_MODULES.get(prov_cfg.name)
+    if not entry:
+        raise ValueError(
+            f"Unknown LLM Judge provider: '{prov_cfg.name}'. "
+            "Valid values: anthropic, mistral, openai, ollama, google."
+        )
+    module_path, class_name = entry
+    mod = importlib.import_module(f".{module_path}", package=__package__)
+    return getattr(mod, class_name)(**kwargs)
 
 
 
@@ -277,12 +273,9 @@ class JudgeRunner:
             else self._config.provider.model
         )
 
-        import os
-        if primary_name == "anthropic" and not os.getenv("ANTHROPIC_API_KEY"):
-            raise JudgeUnavailableError(f"ANTHROPIC_API_KEY not found. Skipping primary provider '{primary_name}'.")
-        elif primary_name == "google" and not os.getenv("GOOGLE_API_KEY"):
-            raise JudgeUnavailableError(f"GOOGLE_API_KEY not found. Skipping primary provider '{primary_name}'.")
-
+        if env_key := _ENV_KEY_MAP.get(primary_name):
+            if not os.getenv(env_key):
+                raise JudgeUnavailableError(f"{env_key} not found. Skipping primary provider '{primary_name}'.")
         try:
             if not self.provider.health_check():
                 raise JudgeUnavailableError(f"LLM Judge: primary provider '{primary_name}' health_check() returned False.")

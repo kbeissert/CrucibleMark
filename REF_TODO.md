@@ -5,7 +5,18 @@
 
 ## Abgeschlossen
 
-### Model Card Template Generator (v3.8.2 – 23.05.26)
+### Architektur-Compliance-Refactoring: Provider-Registry, LanguageValidator, God-Script-Zerlegung (v3.9.0 – 23.05.26)
+- [x] `utils/language_validator.py` (NEU) — `LanguageValidator`-Klasse kapselt DE/EN-Marker-basierten Mismatch-Check. Konstanten in `utils/constants.py` (`LANGUAGE_MIN_WORDS`, `LANGUAGE_EN_DE_RATIO`, `LANGUAGE_EN_MIN_COUNT`, `LANGUAGE_DE_MARKERS`, `LANGUAGE_EN_MARKERS`).
+- [x] `scripts/core/unified_runner.py` — Inline-Language-Detection → `LanguageValidator`-Delegation. `120.0` → `TIMEOUT_DEFAULT`, `100` → `DEFAULT_MAX_SCORE`, lokales `TRUNCATION_THRESHOLDS`-Dict → importierte Konstante.
+- [x] `benchmark_modules/political_compass/test.py` — Magic Numbers durch `PC_*`-Konstanten aus `core/constants.py` ersetzt (`PC_DEFAULT_NUM_RUNS`, `PC_MAX_REFUSAL_RETRIES`, `PC_RETRY_TEMPERATURES`, `PC_SLEEP_BETWEEN_REQUESTS`, `PC_SLEEP_AFTER_RESPONSE`, `PC_QUERY_TIMEOUT`).
+- [x] `utils/scoring/llm_judge/judge_runner.py` — 5-Branch-Provider-If-Chain → `_PROVIDER_MODULES`-Registry + `importlib.import_module()`. `_ENV_KEY_MAP`-Dict statt If-Chain für API-Key-Validierung.
+- [x] `scripts/analysis/review/` (NEU) — Package mit `metrics.py`, `risk_calculator.py`, `token_efficiency.py`, `audit_scanner.py`. `generate_review.py`: 1309 → ~200 Zeilen.
+- [x] `benchmark_modules/reasoning_logic/core/constants/rubrics.py` (NEU) — `RUBRICS` + `DIMENSION_SCORE_THRESHOLDS` extrahiert aus `evaluators.py`.
+- [x] `utils/model_utils.py` — `_param_b_to_size_class()` If-Kette → `_SIZE_CLASS_THRESHOLDS`-Tupel-Konstante.
+- [x] **Bug:** `utils/providers/mistral.py` — `token_param_name` wurde in `_execute_with_token_fallback()` ignoriert (hardcoded `"max_tokens"`). Behoben.
+- [x] **Ruff** — F401/F541 auto-fix (185 Issues), F841 manual (12 unused vars). Pylint Score: 9.37 → 9.99/10.
+
+
 - [x] **`scripts/analysis/generate_model_cards.py`** — LLM-basierter Auto-Generator ersetzt durch schlanken Template-Generator. Kein API-Call, kein Config-Laden. `make model-cards MODEL=<id>` → JSON mit allen Pflichtfeldern als `"TODO"`, `size_class` automatisch berechnet, `_index.json` aktualisiert.
 - [x] **`Makefile`** — Target `model-cards` vereinfacht. Alias `model-card` (Singular) ergänzt. `--provider`-Flag für lokale Modelle.
 - [x] **Docs:** `DEVELOPER_GUIDE.md` (Card-Generierung-Sektion), `AUDIT_AND_METAREVIEW.md`, `USER_GUIDE.md`, `README.md` aktualisiert. Alle Versionsnummern → v3.8.2.

@@ -45,7 +45,6 @@ class CLIEvaluator:
 
         golden = task.get("golden", {})
         scoring = task.get("scoring", {})
-        accept_script = scoring.get("accept_script", False)
         required = scoring.get("core_commands", golden.get("required_commands", []))
         banned = golden.get("banned_commands", [])
         max_steps = golden.get("max_steps", 5)

@@ -7,6 +7,10 @@ DEFAULT_TEMPERATURE = 0.3
 DEFAULT_MAX_RETRIES = 3
 TOKEN_ESTIMATE_RATIO = 4
 
+# Scoring
+DEFAULT_MAX_SCORE = 100
+TOKEN_VERBOSITY_BUDGET_MULTIPLIER = 1.5  # flag models that use >1.5× their token budget
+
 # Quality Thresholds (Percentage)
 QUALITY_EXCELLENT = 85.0  # Trophy badge (Weltklasse)
 QUALITY_GOOD = 70.0  # Star badge (Sehr gut / Brauchbar)
@@ -23,6 +27,7 @@ RESULT_TYPE_CLOUD = "cloud"
 RESULT_TYPE_COMMERCIAL = "commercial"
 
 # Timeout-Werte (Sekunden)
+TIMEOUT_DEFAULT = 120.0             # Standardmäßiger Request-Timeout
 TIMEOUT_OLLAMA_HEALTH = 2       # Schneller Erreichbarkeits-Ping
 TIMEOUT_OLLAMA_LIST_FAST = 5    # 'ollama list' im Benchmark-Auto / Unload-Call
 TIMEOUT_OLLAMA_LIST = 10        # 'ollama list' für Modell-Metadaten
@@ -61,3 +66,24 @@ MAX_PERCENTAGE = 100
 
 # Provider Constants
 DEFAULT_UNLOAD_DELAY_MS = 500
+
+# Language detection (used in unified_runner._process_single_test)
+LANGUAGE_MIN_WORDS = 50
+LANGUAGE_EN_DE_RATIO = 2    # EN count must be >2× DE count to trigger mismatch
+LANGUAGE_EN_MIN_COUNT = 8   # Minimum EN marker count to trigger mismatch
+LANGUAGE_DE_MARKERS: frozenset[str] = frozenset({
+    "der", "die", "das", "und", "ist", "für", "nicht", "sie",
+    "mit", "ein", "auf", "bei", "von", "zu", "im", "den",
+    "des", "dem", "sich", "auch", "eine", "einer", "einem",
+})
+LANGUAGE_EN_MARKERS: frozenset[str] = frozenset({
+    "the", "and", "for", "with", "is", "are", "that", "this",
+    "have", "been", "from", "will", "your", "you", "our",
+    "their", "which", "also", "not", "all",
+})
+
+# Truncation detection thresholds per module (used in unified_runner)
+TRUNCATION_THRESHOLDS: dict[str, int] = {
+    "documentation_quality": 1500,
+    "ux_writing": 800,
+}

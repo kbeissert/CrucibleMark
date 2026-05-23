@@ -1,22 +1,27 @@
 # PROJECT_STATUS.md
 
 **Last Updated:** 2026-05-23
-**Current Version:** 3.8.2 (Model Card Template Generator: `make model-cards` erstellt manuell befüllbare Templates statt LLM-generierter Cards)
+**Current Version:** 3.9.0 (Architektur-Compliance-Refactoring: Provider-Registry, LanguageValidator, God-Script-Zerlegung, Pylint 9.99/10)
 **Status:** ✅ Production-Ready
 
 ---
 
 ## Executive Summary
 
+CrucibleMark v3.9.0 führt ein vollständiges Architektur-Compliance-Refactoring durch. 7 zentrale Dateien werden auf PILIN ≥ 9 gebracht — ohne Funktionalitäts- oder Scoring-Änderungen. `LanguageValidator` kapselt die Spracherkennung, `judge_runner.py` nutzt eine `_PROVIDER_MODULES`-Registry statt If-Ketten, `generate_review.py` wird von 1309 auf ~200 Zeilen reduziert (→ `scripts/analysis/review/`-Package). Alle Magic Numbers durch zentrale Konstanten ersetzt. 12 unused variables (Ruff F841) entfernt, 185 Issues auto-gefixt. Pylint Score: 9.37 → 9.99/10.
+
+**Key Achievements (v3.9.0):**
+- ✅ **`utils/language_validator.py`** (NEU) — `LanguageValidator`-Klasse kapselt DE/EN-Marker-basierten Mismatch-Check aus `unified_runner.py`.
+- ✅ **`utils/scoring/llm_judge/judge_runner.py`** — 5-Branch-Provider-If-Chain → `_PROVIDER_MODULES`-Registry + `importlib.import_module()`. `_ENV_KEY_MAP`-Dict statt If-Chain für API-Key-Validierung.
+- ✅ **`scripts/core/unified_runner.py`** — Inline-Language-Detection → `LanguageValidator`-Delegation. Magic Numbers (`120.0`, `100`, lokales Dict) → zentrale Konstanten (`TIMEOUT_DEFAULT`, `DEFAULT_MAX_SCORE`, `TRUNCATION_THRESHOLDS`).
+- ✅ **`benchmark_modules/political_compass/test.py`** — Alle Magic Numbers durch `PC_*`-Konstanten aus `core/constants.py` ersetzt.
+- ✅ **`scripts/analysis/review/`** (NEU) — Package mit `metrics.py`, `risk_calculator.py`, `token_efficiency.py`, `audit_scanner.py`. `generate_review.py`: 1309 → ~200 Zeilen.
+- ✅ **`benchmark_modules/reasoning_logic/core/constants/rubrics.py`** (NEU) — `RUBRICS` + `DIMENSION_SCORE_THRESHOLDS` aus `evaluators.py` extrahiert.
+- ✅ **Bug:** `utils/providers/mistral.py` — `token_param_name` wurde in `_execute_with_token_fallback()` ignoriert. Behoben.
+- ✅ **Ruff** — F401/F541 auto-fix (185 Issues), F841 manual (12 unused vars). **Pylint Score: 9.99/10.**
+
+**Vorherige Version (v3.8.2 – Model Card Template Generator):**
 CrucibleMark v3.8.2 schließt die Umstellung der Model Cards auf ein vollständig manuell gepflegtes System ab. Der bisherige LLM-basierte Auto-Generator wird durch einen schlanken Template-Generator ersetzt: `make model-cards MODEL=<id>` legt ein JSON mit allen Pflichtfeldern als `"TODO"`-Platzhalter an — kein API-Call, keine externe Abhängigkeit. Das redaktionelle Befüllen bleibt bewusst manueller Schritt.
-
-**Key Achievements (v3.8.2):**
-- ✅ **`scripts/analysis/generate_model_cards.py`** — vollständig ersetzt: LLM-Call entfernt, Template-Generator implementiert.
-- ✅ **`make model-cards MODEL=<id>`** — erstellt `card_status: "draft"`-Template mit allen Pflichtfeldern.
-- ✅ **`make model-card`** — Singular-Alias ergänzt.
-- ✅ **Docs:** `DEVELOPER_GUIDE.md`, `AUDIT_AND_METAREVIEW.md`, `USER_GUIDE.md`, `README.md` auf neues Konzept aktualisiert.
-
-**Vorherige Version (v3.8.0/v3.8.1 – Model Card Klassifikations-System + Web-Export Erweiterung):**
 
 
 CrucibleMark v3.7.5 schließt die Pricing-Architektur: Preise werden nicht mehr zentral in `config/cost_limits.yaml` gepflegt, sondern als `input_price_per_1m` / `output_price_per_1m` (USD/1M Tokens) direkt in den Model Cards hinterlegt. 53 API-Model-Cards migriert. `cost_limits.yaml` auf 6 Legacy-Einträge reduziert. 4 neue Cards, 3 neue Reviews.

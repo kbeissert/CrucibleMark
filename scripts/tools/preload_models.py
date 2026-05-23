@@ -19,7 +19,7 @@ def preload_similarity_model():
         print("   (This prevents timeouts during benchmark execution)")
 
         # This triggers the download
-        model = SentenceTransformer("all-MiniLM-L6-v2")
+        _ = SentenceTransformer("all-MiniLM-L6-v2")
 
         print("✅ Model downloaded successfully (Cached).")
         return True

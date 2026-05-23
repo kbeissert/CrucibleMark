@@ -1,6 +1,6 @@
 # CrucibleMark
 
-[![Version](https://img.shields.io/badge/version-3.8.2-blue)](.)
+[![Version](https://img.shields.io/badge/version-3.9.0-blue)](.)
 [![Python](https://img.shields.io/badge/python-3.10%2B-blue)](.)
 [![License](https://img.shields.io/badge/license-MIT-green)](.)
 [![Status](https://img.shields.io/badge/status-production--ready-brightgreen)](.)

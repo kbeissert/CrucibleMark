@@ -12,7 +12,7 @@ from schemas.result import BenchmarkResult
 def mock_local_runner():
     # We create a UnifiedBenchmarkRunner with a mocked validator
     with (
-        patch("utils.base_runner.ConfigValidator") as MockValidator,
+        patch("utils.base_runner.ConfigValidator") as _MockValidator,
         patch("utils.base_runner.LLMClient"),
         patch("utils.base_runner.ResultManager"),
     ):
@@ -133,7 +133,7 @@ def test_pipeline_integration_enabled_applicable(mock_local_runner, mock_depende
 
     with (
         patch("utils.scoring.judge_evaluator.JudgeRunner") as MockJudgeRunner,
-        patch("utils.scoring.llm_judge.judge_config.LLMJudgeConfig") as MockConfig,
+        patch("utils.scoring.llm_judge.judge_config.LLMJudgeConfig") as _MockConfig,
         patch("requests.post") as mock_req_post,
     ):
         mock_judge_instance = MagicMock()

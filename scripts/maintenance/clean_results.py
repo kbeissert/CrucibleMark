@@ -5,7 +5,6 @@ Skript zum gezielten Löschen von Benchmark-Ergebnissen aus den CSV-Caches.
 Erlaubt das Entfernen bestimmter Modelle oder Module (Asset-Gruppen).
 """
 
-import csv
 import shutil
 import sys
 import argparse

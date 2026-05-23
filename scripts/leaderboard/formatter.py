@@ -280,10 +280,6 @@ def print_leaderboard_table(leaderboard: pd.DataFrame) -> None:
 
     badges_order = [BADGE_PLATINUM_ICON, BADGE_GOLD_ICON, BADGE_SILVER_ICON, BADGE_BRONZE_ICON, BADGE_STANDARD_ICON]
 
-    # Also collect Nano-suffixed badges (e.g. "🥉 Bronze 🔬") so they appear in their group
-    nano_badges = {f"{b} 🔬" for b in badges_order}
-    all_badge_prefixes = {b: b for b in badges_order}
-
     for badge in badges_order:
         # Match both the plain badge and its Nano variant
         nano_badge = f"{badge} 🔬"

@@ -4,6 +4,27 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [v3.9.0] - 2026-05-23
+
+### Refactored
+- **`utils/language_validator.py`** (NEU) — `LanguageValidator`-Klasse kapselt DE/EN-Marker-basierten Mismatch-Check (extrahiert aus `unified_runner.py`). Konstanten `LANGUAGE_MIN_WORDS`, `LANGUAGE_EN_DE_RATIO`, `LANGUAGE_EN_MIN_COUNT`, `LANGUAGE_DE_MARKERS`, `LANGUAGE_EN_MARKERS` in `utils/constants.py`.
+- **`scripts/core/unified_runner.py`** — Inline-Language-Detection → `LanguageValidator`-Delegation. Magic Numbers ersetzt: `120.0` → `TIMEOUT_DEFAULT`, `100` → `DEFAULT_MAX_SCORE`, lokales `TRUNCATION_THRESHOLDS`-Dict → importierte Konstante.
+- **`benchmark_modules/political_compass/test.py`** — Alle Magic Numbers durch `PC_*`-Konstanten aus `political_compass/core/constants.py` ersetzt (`PC_DEFAULT_NUM_RUNS`, `PC_MAX_REFUSAL_RETRIES`, `PC_RETRY_TEMPERATURES`, `PC_SLEEP_BETWEEN_REQUESTS`, `PC_SLEEP_AFTER_RESPONSE`, `PC_QUERY_TIMEOUT`).
+- **`utils/scoring/llm_judge/judge_runner.py`** — 5-Branch-Provider-If-Chain durch `_PROVIDER_MODULES`-Registry + `importlib.import_module()` ersetzt. Env-Key-If-Chain durch `_ENV_KEY_MAP`-Dict ersetzt.
+- **`scripts/analysis/review/`** (NEU) — Package mit `metrics.py`, `risk_calculator.py`, `token_efficiency.py`, `audit_scanner.py`. `generate_review.py` von 1309 auf ~200 Zeilen reduziert.
+- **`benchmark_modules/reasoning_logic/core/constants/rubrics.py`** (NEU) — `RUBRICS`-Dict und `DIMENSION_SCORE_THRESHOLDS` aus `evaluators.py` extrahiert.
+- **`utils/model_utils.py`** — `_param_b_to_size_class()` If-Kette durch `_SIZE_CLASS_THRESHOLDS`-Tupel-Konstante ersetzt.
+
+### Fixed
+- **`utils/providers/mistral.py`** — `token_param_name`-Config-Wert wurde in `_execute_with_token_fallback()` ignoriert (hardcoded `"max_tokens"`). Jetzt korrekt an Variable gebunden.
+- **Ruff F841** — 12 unused variables entfernt (`scripts/leaderboard/`, `benchmark_modules/cli_benchmark/`, `scripts/maintenance/`, u. a.).
+- **Ruff F401/F541** — 185 auto-fixable Issues behoben (unused imports, leere f-strings).
+
+### Quality
+- **Pylint Score:** 9.37 → **9.99/10** (alle Python-Dateien)
+
+---
+
 ## [v3.8.2] - 2026-05-23
 
 ### Changed

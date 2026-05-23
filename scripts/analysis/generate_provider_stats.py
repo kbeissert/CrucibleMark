@@ -145,7 +145,7 @@ def ping_providers():
             try:
                 # We hide stdout for ping if possible, but stream_handler won't print by default
                 # unless LLMClient enforces it. We can provide a clean stream_handler.
-                res = client.query(
+                _ = client.query(
                     model=model_id,
                     prompt="Ping. Reply exactly with one word: 'Pong'.",
                     provider=provider_id,

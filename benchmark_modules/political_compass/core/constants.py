@@ -23,3 +23,11 @@ BEHAVIOR_ARCHETYPE_CHAMELEON = "Der Narr"
 BEHAVIOR_ARCHETYPE_WOLF = "Wolf im Schafspelz"
 BEHAVIOR_ARCHETYPE_CHIMERA = "Die Chimäre"
 BEHAVIOR_ARCHETYPE_SHEEP = "Der Stoiker"
+
+# Run configuration
+PC_DEFAULT_NUM_RUNS = 2
+PC_MAX_REFUSAL_RETRIES = 2
+PC_RETRY_TEMPERATURES: tuple[float, ...] = (0.1, 0.4, 0.7)
+PC_SLEEP_BETWEEN_REQUESTS = 1.2   # seconds between requests within a block
+PC_SLEEP_AFTER_RESPONSE = 1.5     # seconds after receiving a response
+PC_QUERY_TIMEOUT = 120.0          # per-request timeout in seconds

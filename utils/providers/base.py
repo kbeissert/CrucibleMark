@@ -2,7 +2,6 @@
 Provider-spezifische LLM Clients
 Getrennte Implementierungen für Ollama, Anthropic, Mistral
 """
-import time
 import logging
 from typing import Any, List, Optional, Callable
 logger = logging.getLogger(__name__)
