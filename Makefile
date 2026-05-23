@@ -371,6 +371,7 @@ benchmark-tooluse:
 	@sleep 1.5
 	$(PYTHON) scripts/run_tooluse_benchmark.py \
 		$(if $(MODEL),--model "$(MODEL)") \
+		$(if $(MODELS),--models "$(MODELS)") \
 		$(if $(ALL),--all) \
 		$(if $(PROVIDER),--provider "$(PROVIDER)") \
 		$(if $(FORCE),--force) \

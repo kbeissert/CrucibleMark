@@ -23,6 +23,9 @@ _ROOT = Path(__file__).resolve().parents[1]
 if str(_ROOT) not in sys.path:
     sys.path.insert(0, str(_ROOT))
 
+from scripts.core.tooluse_exporter import ToolUseExporter
+from utils.config_validator import ConfigValidator
+
 CARD_DIR = _ROOT / "benchmark_scores" / "model_cards"
 TIMEOUT_PER_MODEL = 300  # 5 Minuten
 MCP_STARTUP_WAIT = 1.5   # Sekunden nach mcp-start
@@ -164,7 +167,19 @@ def _run_batch(
             print(f"    - {m}")
     print(_SEP)
     print()
-    print("  Next: make tooluse-leaderboard")
+
+    # Leaderboard automatisch aktualisieren
+    try:
+        config = ConfigValidator().config
+        exporter = ToolUseExporter(config)
+        written = exporter.aggregate_from_benchmark_csvs()
+        if written > 0:
+            exporter.calculate_sovereignty_gap()
+            print(f"  Leaderboard aktualisiert: {written} Modell(e) → tooluse_leaderboard.csv")
+        else:
+            print("  Leaderboard: keine tooluse-Ergebnisse in Benchmark-CSVs gefunden.")
+    except Exception as exc:
+        print(f"  [WARN] Leaderboard-Update fehlgeschlagen: {exc}")
 
 
 # ---------------------------------------------------------------------------
@@ -258,6 +273,7 @@ def main() -> None:
 
     parser = argparse.ArgumentParser(description="Tool Use Benchmark Runner")
     parser.add_argument("--model", type=str, help="Einzelnes Modell direkt ausführen")
+    parser.add_argument("--models", type=str, help="Komma-liste von Modell-IDs (z.B. model1,model2,model3)")
     parser.add_argument("--all", action="store_true", help="Batch: alle tool-fähigen Modelle")
     parser.add_argument(
         "--provider",
@@ -278,6 +294,19 @@ def main() -> None:
     if args.model:
         ok = _run_model(args.model, force=args.force, silent=args.silent)
         sys.exit(0 if ok else 1)
+
+    elif args.models:
+        wanted_ids = {m.strip() for m in args.models.split(",")}
+        all_models = get_tool_use_models("all")
+        models = [(mid, dname) for mid, dname in all_models if mid in wanted_ids]
+        if not models:
+            print(f"Keine Modelle gefunden aus: {args.models}")
+            sys.exit(1)
+        _run_batch(
+            models, "custom",
+            force=args.force, silent=args.silent,
+            mcp_mode=args.mcp_mode, restart_mcp=args.restart_mcp,
+        )
 
     elif args.all or args.provider != "all":
         models = get_tool_use_models(args.provider)

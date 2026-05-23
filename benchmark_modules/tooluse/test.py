@@ -40,8 +40,10 @@ from benchmark_modules.tooluse.core.constants import (
     TOOL_HTTP_FETCH,
     TOOL_WEB_SEARCH,
 )
+from benchmark_modules.tooluse.core.diagnostics import PipelineDiagnostician
 from benchmark_modules.tooluse.core.evaluators import ToolUseEvaluator
 from benchmark_modules.tooluse.core.io_manager import ToolUseIOManager
+from benchmark_modules.tooluse.core.tool_adapter_audit import ToolAdapterAudit
 from utils.mcp_health import check_mcp_health, mcp_base_url
 from utils.module_registry import load_module_config
 
@@ -196,8 +198,15 @@ class ToolUseTest(BaseTest):
         tool_parameters: Dict[str, Any] = {}
 
         if tool_call_dict:
-            tool_name = tool_call_dict.get("name", tool_available)
+            raw_tool_name = tool_call_dict.get("name", tool_available)
+            normalized_name, is_anomaly = ToolAdapterAudit.normalize_tool_name(raw_tool_name)
+            tool_name = normalized_name
             tool_parameters = tool_call_dict.get("parameters", {})
+
+            if is_anomaly:
+                logger.warning(
+                    f"Tool name normalized: '{raw_tool_name}' → '{normalized_name}'"
+                )
         else:
             # Both attempts failed — proceed to synthesis with parse_error transcript
             tool_transcript: Dict[str, Any] = {
@@ -266,14 +275,52 @@ class ToolUseTest(BaseTest):
 
         tool_transcript: Dict[str, Any] = result.data.get("tool_transcript", {})
         model_output: str = result.raw_response
+        tool_call_parsed: Dict[str, Any] = result.data.get("tool_call_parsed", {})
 
         p1 = evaluator.score_phase1(tool_transcript, self.asset)
         p2 = evaluator.score_phase2(model_output, tool_transcript, self.asset)
-        combined = evaluator.combined_score(p1, p2)
+
+        # Determine if tool call was valid (used for combined score guardrail)
+        # For failure tests the expected outcome is an error — status check is inverted
+        is_failure_test = self.asset.get("is_failure_test", False)
+        if is_failure_test:
+            tool_call_valid = p1 >= 40.0
+        else:
+            tool_call_valid = tool_transcript.get("status") == "success" and p1 >= 40.0
+
+        combined = evaluator.combined_score(p1, p2, tool_call_valid=tool_call_valid)
 
         audit = evaluator.build_audit_block_with_output(
             p1, p2, combined, tool_transcript, self.asset, model_output
         )
+
+        # Pipeline diagnostics (instrument MCP/Parser/Search quality)
+        diag = PipelineDiagnostician.build_diagnostic(
+            asset_id=self.asset.get("metadata", {}).get("id", "unknown"),
+            model_id=result.meta.get("model_id", "unknown"),
+            scenario="mcp_flow",  # Always actual flow; reference/stub tested separately
+            tool_call_valid=tool_call_valid,
+            tool_transcript=tool_transcript,
+            raw_response=result.data.get("response_1", ""),
+            cleaned_response=result.data.get("response_1", ""),
+            parse_attempts=result.data.get("tool_call_attempts", 1),
+            p1_score=p1,
+            p2_score=p2,
+            combined_score=combined,
+            json_error=None,
+        )
+        PipelineDiagnostician.log_diagnostic(diag)
+
+        # Tool adapter audit (diagnose tool-name/format anomalies)
+        tool_adapter_audit = None
+        if p1 == 0.0:  # Hard fail — worth auditing
+            tool_adapter_audit = ToolAdapterAudit.diagnose_p1_zero_case(
+                tool_call_parsed, tool_transcript, self.asset, p1
+            )
+            ToolAdapterAudit.log_audit(
+                tool_adapter_audit,
+                context=f"{self.asset.get('metadata', {}).get('id')} — p1=0"
+            )
 
         result.primary_score = combined
         result.rendered_value = f"{combined:.1f}"
@@ -284,6 +331,16 @@ class ToolUseTest(BaseTest):
         result.data[FIELD_HALLUCINATION_FLAG] = (
             p2 == 0.0 and self.asset.get("is_failure_test", False)
         )
+        result.data["pipeline_diagnostic"] = {
+            "asset_id": diag.asset_id,
+            "scenario": diag.scenario,
+            "tool_call_valid": diag.tool_call_valid,
+            "output_quality": diag.output_metrics.excerpt_quality,
+            "parse_attempts": diag.parse_metrics.parse_attempts,
+            "is_expected": diag.is_expected,
+        }
+        if tool_adapter_audit:
+            result.data["tool_adapter_audit"] = tool_adapter_audit
         ToolUseIOManager.print_asset_result(result, self.asset)
         return result
 

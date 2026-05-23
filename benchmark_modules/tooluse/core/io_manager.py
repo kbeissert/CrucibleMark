@@ -6,8 +6,10 @@ No rich, no tqdm — stdlib only for display.
 
 from __future__ import annotations
 
+import json
 import re
 import sys
+from datetime import datetime
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
@@ -24,8 +26,8 @@ _ASSET_NAMES: Dict[str, str] = {
     "tooluse003": "404 Fehlerbehandlung",
 }
 
-_SEP_THIN = "─" * 54
-_SEP_THICK = "═" * 54
+_SEP_THIN = "-" * 54
+_SEP_THICK = "=" * 54
 
 
 # ---------------------------------------------------------------------------
@@ -42,8 +44,34 @@ def _red(t: str) -> str:    return _c("91", t)
 
 
 # ---------------------------------------------------------------------------
-# Config / threshold helpers
+# Logging — JSON metrics file
 # ---------------------------------------------------------------------------
+
+def _log_metrics_to_json(model_id: str, row: Dict[str, Any]) -> None:
+    """Write model metrics to tooluse_metrics.jsonl for monitoring & debugging."""
+    log_file = _ROOT / "outputs" / "tooluse_metrics.jsonl"
+    log_file.parent.mkdir(parents=True, exist_ok=True)
+
+    try:
+        metric = {
+            "timestamp": datetime.now().isoformat(),
+            "model_id": model_id,
+            "combined_score": float(row.get("combined_score") or 0),
+            "p1_score": float(row.get("p1_score") or 0),
+            "p2_score": float(row.get("p2_score") or 0),
+            "parse_error_rate": float(row.get("parse_error_rate") or 0),
+            "tool_call_valid": str(row.get("tool_call_valid", "")).lower() == "true",
+            "hallucination_flag": str(row.get("hallucination_flag", "")).lower() == "true",
+            "total_tokens": int(row.get("total_tokens") or 0),
+            "cost_usd": float(row.get("cost_usd") or 0),
+            "fleet_group": row.get("fleet_group", "unknown"),
+        }
+        with log_file.open("a", encoding="utf-8") as f:
+            f.write(json.dumps(metric, ensure_ascii=False) + "\n")
+    except Exception as exc:
+        sys.stderr.write(f"[Logging Error] Could not write metrics: {exc}\n")
+
+
 
 def _load_score_thresholds() -> Dict[str, float]:
     try:
@@ -73,12 +101,12 @@ def _score_label(score: float) -> str:
 def _deployment_rec(avg_combined: float, halluc_count: int) -> str:
     th = _load_score_thresholds()
     if halluc_count > 0:
-        return "❌ Nicht empfohlen — Halluzination erkannt"
+        return "[NOT_RECOMMENDED] — Halluzination erkannt"
     if avg_combined >= th.get("good", 70.0):
-        return "✅ Geeignet für MCP-Produktionseinsatz"
+        return "[PRODUCTION] Suitable for MCP production"
     if avg_combined >= th.get("moderate", 55.0):
-        return "⚠ Bedingt geeignet — Synthesequalität prüfen"
-    return "❌ Nicht empfohlen — Tool-Use-Kompetenz unzureichend"
+        return "[CAUTION] Conditionally suitable — Synthesequalität prüfen"
+    return "[NOT_RECOMMENDED] — Tool-Use-Kompetenz unzureichend"
 
 
 # ---------------------------------------------------------------------------
@@ -113,7 +141,7 @@ class ToolUseIOManager:
 
         # ── MCP unavailable ──────────────────────────────────────────────
         if result.data.get("audit_marker") == AUDIT_MCP_UNAVAILABLE:
-            lines.append(f"  {_red('❌ MCP Server nicht erreichbar — Asset übersprungen')}")
+            lines.append(f"  {_red('[ERROR] MCP Server nicht erreichbar — Asset übersprungen')}")
             lines.append("")
             out = "\n".join(lines)
             print(out)
@@ -129,20 +157,20 @@ class ToolUseIOManager:
 
         # ── Tool call line ───────────────────────────────────────────────
         if parse_error:
-            tc_icon = _yellow("⚠")
+            tc_icon = _yellow("[WARN]")
             retry_note = f"({attempts} Versuche — Retry nötig)"
         else:
-            tc_icon = _green("✅")
+            tc_icon = _green("[OK]")
             retry_note = f"({attempts} Versuch)"
         lines.append(f"  Tool Call:     {tc_icon} {tool_name}  {retry_note}")
 
         # ── MCP status line ──────────────────────────────────────────────
         if mcp_status == "success":
-            mcp_icon = _green("✅")
+            mcp_icon = _green("[OK]")
         elif mcp_status == "error":
-            mcp_icon = _red("❌")
+            mcp_icon = _red("[ERROR]")
         else:
-            mcp_icon = _yellow("⚠")
+            mcp_icon = _yellow("[WARN]")
         provider_part = f" — {mcp_provider}" if mcp_provider else ""
         lines.append(f"  MCP Status:    {mcp_icon} {mcp_status}{provider_part}  [{mcp_latency:.1f}s]")
 
@@ -170,7 +198,7 @@ class ToolUseIOManager:
                 m = re.search(r'(?:hallucin|halluzi)[^:]*[:\-]\s*(.{5,50})', audit, re.IGNORECASE)
                 if m:
                     pattern_hint = f' — Pattern: "{m.group(1).strip()}"'
-            lines.append(f"  {_red('⚠  HALLUZINATION erkannt' + pattern_hint)}")
+            lines.append(f"  {_red('[HALLUCINATION] erkannt' + pattern_hint)}")
             lines.append(f"  P2 Synthesis:   {p2:.1f} / 100   {cls._bar(p2)}  [Hard Fail]")
         else:
             lines.append(f"  P2 Synthesis:  {p2:.1f} / 100   {cls._bar(p2)}")
@@ -188,9 +216,9 @@ class ToolUseIOManager:
         cost: float = float(result.data.get("cost_usd") or 0)
 
         lines.append(
-            f"  ⏱  Call 1: {c1:.1f}s  |  MCP: {mcp_l:.1f}s  |  Call 2: {c2:.1f}s  |  Total: {total:.1f}s"
+            f"  Time: Call 1: {c1:.1f}s  |  MCP: {mcp_l:.1f}s  |  Call 2: {c2:.1f}s  |  Total: {total:.1f}s"
         )
-        lines.append(f"  🔤  Tokens: {tokens}  |  Cost: ${cost:.6f}")
+        lines.append(f"  Tokens: Tokens: {tokens}  |  Cost: ${cost:.6f}")
         lines.append("")
 
         out = "\n".join(lines)
@@ -209,7 +237,7 @@ class ToolUseIOManager:
         assets_run = int(row.get("assets_run") or 0)
         assets_error = int(row.get("assets_error") or 0)
         assets_ok = assets_run - assets_error
-        ok_icon = _green("✅") if assets_error == 0 else _red("❌")
+        ok_icon = _green("[OK]") if assets_error == 0 else _red("[ERR]")
         lines.append(f"  Assets:        {assets_ok}/{assets_run} {ok_icon}  ({assets_error} Fehler)")
 
         mcp_mode = str(row.get("mcp_mode") or "n/a")
@@ -243,11 +271,11 @@ class ToolUseIOManager:
         total_cost = _flt("cost_usd")
 
         lines.append(
-            f"  ⏱  Ø Call 1:  {avg_c1:.1f}s  |  Ø MCP: {avg_mcp_l:.1f}s  |  Ø Call 2: {avg_c2:.1f}s"
+            f"  Call 1: {avg_c1:.1f}s | MCP: {avg_mcp_l:.1f}s | Call 2: {avg_c2:.1f}s"
         )
-        lines.append(f"  ⏱  Total Run: {total_time:.1f}s  ({assets_ok} Assets)")
+        lines.append(f"  Total: {total_time:.1f}s ({assets_ok} Assets)")
         tok_str = f"{total_tokens:,}".replace(",", ".")
-        lines.append(f"  🔤  Tokens:   {tok_str}  |  Cost: ${total_cost:.6f}")
+        lines.append(f"  Tokens: {tok_str} | Cost: ${total_cost:.6f}")
         lines.append("")
 
         tool_call_valid = str(row.get("tool_call_valid", "true")).lower() == "true"
@@ -258,11 +286,11 @@ class ToolUseIOManager:
         except (ValueError, TypeError):
             retries = 0
 
-        v_icon = _green("✅") if tool_call_valid else _yellow("⚠")
+        v_icon = _green("[OK]") if tool_call_valid else _yellow("[WARN]")
         valid_count = assets_ok if tool_call_valid else 0
-        lines.append(f"  Tool Calls:    {v_icon} {valid_count}/{assets_ok} valide  ({retries} Retries)")
+        lines.append(f"  Tool Calls: {v_icon} {valid_count}/{assets_ok} valid ({retries} retries)")
 
-        h_str = _green("✅ Keine") if not hallucination else _red("⚠ 1+ erkannt")
+        h_str = _green("[NO]") if not hallucination else _red("[YES]")
         lines.append(f"  Hallucination: {h_str}")
         lines.append("")
 
@@ -272,6 +300,11 @@ class ToolUseIOManager:
         lines.append(_SEP_THICK)
 
         out = "\n".join(lines)
+        # Log metrics to JSON file for monitoring
+        try:
+            ToolUseIOManager._log_metrics_to_json(model_id, row)
+        except Exception:
+            pass  # Logging failure should not interrupt output
         print(out)
         return out
 
@@ -293,7 +326,7 @@ class ToolUseIOManager:
 
         successful = [r for r in results if r.status != "error"]
         n_failed = len(results) - len(successful)
-        ok_icon = _green("✅") if n_failed == 0 else _red("❌")
+        ok_icon = _green("[OK]") if n_failed == 0 else _red("[ERR]")
         lines.append(f"  Assets:        {len(successful)}/{len(results)} {ok_icon}  ({n_failed} Fehler)")
 
         # MCP mode from first result with a known provider
@@ -337,11 +370,11 @@ class ToolUseIOManager:
         total_cost = sum(float(r.data.get("cost_usd") or 0) for r in successful)
 
         lines.append(
-            f"  ⏱  Ø Call 1:  {avg_c1:.1f}s  |  Ø MCP: {avg_mcp:.1f}s  |  Ø Call 2: {avg_c2:.1f}s"
+            f"  Time: Ø Call 1: {avg_c1:.1f}s  |  Ø MCP: {avg_mcp:.1f}s  |  Ø Call 2: {avg_c2:.1f}s"
         )
-        lines.append(f"  ⏱  Total Run: {total_time:.1f}s  ({len(successful)} Assets)")
+        lines.append(f"  Time: Total Run: {total_time:.1f}s  ({len(successful)} Assets)")
         tok_str = f"{total_tokens:,}".replace(",", ".")
-        lines.append(f"  🔤  Tokens:   {tok_str}  |  Cost: ${total_cost:.6f}")
+        lines.append(f"  Tokens: Tokens: {tok_str}  |  Cost: ${total_cost:.6f}")
         lines.append("")
 
         # ── Reliability ──────────────────────────────────────────────────
@@ -357,7 +390,7 @@ class ToolUseIOManager:
             1 for r in successful if bool(r.data.get("hallucination_flag", False))
         )
 
-        v_icon = _green("✅") if valid_count == len(successful) else _yellow("⚠")
+        v_icon = _green("[OK]") if valid_count == len(successful) else _yellow("[WARN]")
         lines.append(f"  Tool Calls:    {v_icon} {valid_count}/{len(successful)} valide  ({retries} Retries)")
 
         h_str = _green("✅ Keine") if halluc_count == 0 else _red(f"⚠ {halluc_count} erkannt")
@@ -369,5 +402,10 @@ class ToolUseIOManager:
         lines.append(_SEP_THICK)
 
         out = "\n".join(lines)
+        # Log metrics to JSON file for monitoring
+        try:
+            ToolUseIOManager._log_metrics_to_json(model_id, row)
+        except Exception:
+            pass  # Logging failure should not interrupt output
         print(out)
         return out

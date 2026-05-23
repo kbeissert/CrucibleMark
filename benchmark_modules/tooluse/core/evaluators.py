@@ -105,8 +105,10 @@ class ToolUseEvaluator:
                 if status_code == expected_code:
                     score += 40.0
 
-        # 3. Relevant source domain identified? (20 pts — web_search only)
-        # http_fetch: domain criterion not applicable — no pts added (not neutral)
+        # 3. Source quality (20 pts)
+        # web_search: relevant domain in results
+        # http_fetch (success): usable content extracted (≥100 chars)
+        # http_fetch (failure): not applicable — no pts added
         if expected_tool == TOOL_WEB_SEARCH:
             golden_domains = phase1.get("golden_source_domains", [])
             if golden_domains:
@@ -120,6 +122,10 @@ class ToolUseEvaluator:
                     score += 20.0
             else:
                 # No golden domains configured → neutral (20 pts)
+                score += 20.0
+        elif expected_tool == TOOL_HTTP_FETCH and not is_failure_test:
+            content = tool_transcript.get("content_excerpt") or ""
+            if len(str(content).strip()) >= 100:
                 score += 20.0
 
         return min(score, 100.0)
@@ -218,10 +224,45 @@ class ToolUseEvaluator:
     # Combined Score
     # ------------------------------------------------------------------
 
-    def combined_score(self, p1: float, p2: float) -> float:
-        w1 = self.config.get(PHASE1_WEIGHT_KEY, 0.5)
-        w2 = self.config.get(PHASE2_WEIGHT_KEY, 0.5)
-        return round(p1 * w1 + p2 * w2, 2)
+    def combined_score(self, p1: float, p2: float, tool_call_valid: bool = True) -> float:
+        """
+        Berechnet Combined Score mit Safety-Guardrail für Phase 1 Fehler.
+
+        Schwellenmodell:
+        - tool_call_valid=False oder p1=0: hard cap at 60 (Tool komplett fehlgeschlagen)
+        - p1 < 40: -10 Malus (Tool aufgerufen, aber Status/Domain falsch)
+        - p1 < 60: -3 Malus (Tool mäßig erfolgreich)
+        - p1 >= 60: kein Malus
+
+        Args:
+            p1: Phase 1 Score (Tool Execution, 0-100)
+            p2: Phase 2 Score (Synthesis Quality, 0-100)
+            tool_call_valid: Ob Tool erfolgreich aufgerufen wurde
+
+        Returns:
+            Combined Score mit angewandtem Guardrail (0-100)
+        """
+        w1 = self.config.get(PHASE1_WEIGHT_KEY, 0.4)
+        w2 = self.config.get(PHASE2_WEIGHT_KEY, 0.6)
+        base_combined = p1 * w1 + p2 * w2
+
+        # Hard fail: Tool nicht aufgerufen oder komplett gescheitert
+        if not tool_call_valid or p1 == 0.0:
+            result = min(base_combined, 60.0)
+            logger.debug(f"combined_score: hard fail (tool_call_valid={tool_call_valid}, p1={p1:.1f}) → {result:.2f}")
+            return round(result, 2)
+
+        # Gestaffelte Malus für schwache Execution
+        malus = 0.0
+        if p1 < 40.0:
+            malus = 10.0
+            logger.debug(f"combined_score: p1={p1:.1f} < 40 → -10 Malus")
+        elif p1 < 60.0:
+            malus = 3.0
+            logger.debug(f"combined_score: p1={p1:.1f} < 60 → -3 Malus")
+
+        result = max(base_combined - malus, 0.0)
+        return round(result, 2)
 
     # ------------------------------------------------------------------
     # Audit Block

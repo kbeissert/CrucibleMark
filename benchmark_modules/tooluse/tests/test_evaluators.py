@@ -72,6 +72,30 @@ ASSET_003 = {
 }
 
 
+ASSET_002 = {
+    "is_failure_test": False,
+    "evaluation": {
+        "phase1": {
+            "expected_tool": "http_fetch",
+            "expected_status_code": 200,
+        },
+        "phase2": {
+            "keywords": ["llama 4", "code llama", "llama guard", "lizenz", "hugging"],
+            "golden_answer": (
+                "Auf der Meta-Llama-Seite bei Hugging Face werden mehrere Modellfamilien aufgeführt. "
+                "Dazu gehören Llama 4 als aktuelle multimodale Familie, Llama 3.2 für textbasierte "
+                "Modelle sowie Code Llama für Programmieraufgaben. Llama Guard dient der "
+                "Sicherheitsklassifikation. Die Modelle sind nur nach Akzeptanz der "
+                "Lizenzbedingungen zugänglich."
+            ),
+            "requires_structured_output": True,
+            "min_length": 40,
+        },
+    },
+    "forbidden_patterns": [],
+}
+
+
 @pytest.fixture
 def evaluator():
     return ToolUseEvaluator(BASE_CONFIG)
@@ -187,12 +211,58 @@ def test_phase2_good_keywords_and_semantics(evaluator):
 
 
 # ---------------------------------------------------------------------------
-# Test 8: combined_score — weighting correct
+# Test 8: combined_score — weighting correct (normal case, tool_call_valid=True)
 # ---------------------------------------------------------------------------
 
 def test_combined_score_weighting(evaluator):
-    result = evaluator.combined_score(80.0, 60.0)
+    # Normal case: p1=80, p2=60, weights 0.5/0.5 → 80*0.5 + 60*0.5 = 70
+    result = evaluator.combined_score(80.0, 60.0, tool_call_valid=True)
     assert result == 70.0
+
+
+# Test 8b: combined_score — hard fail when tool_call_valid=False
+# ---------------------------------------------------------------------------
+
+def test_combined_score_hard_fail_tool_invalid(evaluator):
+    # Hard fail: tool_call_valid=False → capped at 60 regardless of p2
+    result = evaluator.combined_score(40.0, 100.0, tool_call_valid=False)
+    assert result == 60.0
+
+
+# Test 8c: combined_score — hard fail when p1=0
+# ---------------------------------------------------------------------------
+
+def test_combined_score_hard_fail_p1_zero(evaluator):
+    # Hard fail: p1=0 → base=50 (0*0.5 + 100*0.5), capped at 60 → 50
+    result = evaluator.combined_score(0.0, 100.0, tool_call_valid=True)
+    assert result == 50.0
+
+
+# Test 8d: combined_score — malus when p1 < 40
+# ---------------------------------------------------------------------------
+
+def test_combined_score_malus_p1_below_40(evaluator):
+    # p1=30, p2=100, tool_call_valid=True → base 30*0.5 + 100*0.5 = 65 - 10 = 55
+    result = evaluator.combined_score(30.0, 100.0, tool_call_valid=True)
+    assert result == 55.0
+
+
+# Test 8e: combined_score — malus when p1 < 60 (but >= 40)
+# ---------------------------------------------------------------------------
+
+def test_combined_score_malus_p1_below_60(evaluator):
+    # p1=50, p2=100, tool_call_valid=True → base 50*0.5 + 100*0.5 = 75 - 3 = 72
+    result = evaluator.combined_score(50.0, 100.0, tool_call_valid=True)
+    assert result == 72.0
+
+
+# Test 8f: combined_score — no malus when p1 >= 60
+# ---------------------------------------------------------------------------
+
+def test_combined_score_no_malus_p1_above_60(evaluator):
+    # p1=70, p2=80, tool_call_valid=True → base 70*0.5 + 80*0.5 = 75 + 0 = 75
+    result = evaluator.combined_score(70.0, 80.0, tool_call_valid=True)
+    assert result == 75.0
 
 
 # ---------------------------------------------------------------------------
@@ -222,7 +292,41 @@ def test_build_audit_block_required_fields(evaluator):
 
 
 # ---------------------------------------------------------------------------
-# Test 10: min_length penalty
+# Test 10: http_fetch P1 — usable content → 100 pts
+# ---------------------------------------------------------------------------
+
+def test_phase1_http_fetch_with_usable_content(evaluator):
+    # tool type correct (40) + status 200 (40) + content ≥100 chars (20) = 100
+    transcript = {
+        "tool_type_called": "http_fetch",
+        "status": "success",
+        "status_code": 200,
+        "content_excerpt": "A" * 150,
+        "provider": "mock",
+    }
+    score = evaluator.score_phase1(transcript, ASSET_002)
+    assert score == 100.0
+
+
+# ---------------------------------------------------------------------------
+# Test 11: http_fetch P1 — empty content → 80 pts
+# ---------------------------------------------------------------------------
+
+def test_phase1_http_fetch_empty_content(evaluator):
+    # tool type correct (40) + status 200 (40) + content too short (0) = 80
+    transcript = {
+        "tool_type_called": "http_fetch",
+        "status": "success",
+        "status_code": 200,
+        "content_excerpt": None,
+        "provider": "mock",
+    }
+    score = evaluator.score_phase1(transcript, ASSET_002)
+    assert score == 80.0
+
+
+# ---------------------------------------------------------------------------
+# Test 13: min_length penalty
 # ---------------------------------------------------------------------------
 
 def test_phase2_min_length_penalty(evaluator):
