@@ -83,3 +83,15 @@ benchmarks:
     tool_type: http_fetch
     is_failure_test: true         # 404-Simulation — kein Scoring-Abzug
     future_expansion: null
+
+  - id: tooluse004
+    name: "Tool Selection (web_search)"
+    tier: 2
+    tool_type: web_search
+    future_expansion: null
+
+  - id: tooluse005
+    name: "URL Construction (http_fetch)"
+    tier: 2
+    tool_type: http_fetch
+    future_expansion: null
