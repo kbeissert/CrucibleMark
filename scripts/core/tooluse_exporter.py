@@ -1,5 +1,4 @@
-"""
-ToolUse Leaderboard Exporter — CrucibleMark
+"""ToolUse Leaderboard Exporter — CrucibleMark
 Writes tooluse_leaderboard.csv from BenchmarkResult objects.
 Buffer/finalize pattern: export_result() buffers per-asset data,
 finalize_model() aggregates and writes one row per model.
@@ -14,18 +13,20 @@ import json
 import logging
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any
 
-from schemas.result import BenchmarkResult
 from benchmark_modules.tooluse.core.constants import (
     CSV_COLUMNS,
-    CSV_PATH as _CSV_PATH_STR,
-    FIELD_P1_SCORE,
-    FIELD_P2_SCORE,
     FIELD_COMBINED_SCORE,
     FIELD_HALLUCINATION_FLAG,
+    FIELD_P1_SCORE,
+    FIELD_P2_SCORE,
+)
+from benchmark_modules.tooluse.core.constants import (
+    CSV_PATH as _CSV_PATH_STR,
 )
 from benchmark_modules.tooluse.core.io_manager import ToolUseIOManager
+from schemas.result import BenchmarkResult
 
 logger = logging.getLogger(__name__)
 
@@ -34,8 +35,7 @@ _LOCAL_DEPLOYMENT_TYPES = {"localweights", "open-weights-cloud-available"}
 
 
 def get_fleet_group(sizeclass: str, deployment_type: str) -> str:
-    """
-    local_sovereign: open-weights or localweights deployment + not Frontier
+    """local_sovereign: open-weights or localweights deployment + not Frontier
     full_fleet: Frontier, apionly, restricted-weights, etc.
     """
     if deployment_type in _LOCAL_DEPLOYMENT_TYPES and sizeclass != "Frontier":
@@ -44,16 +44,15 @@ def get_fleet_group(sizeclass: str, deployment_type: str) -> str:
 
 
 class ToolUseExporter:
-    """
-    Writes benchmark/scores/tooluse_leaderboard.csv from BenchmarkResult objects.
+    """Writes benchmark/scores/tooluse_leaderboard.csv from BenchmarkResult objects.
     Upsert on model_id — no duplicates, always fresh data per model.
     """
 
     CSV_PATH: Path = Path(_CSV_PATH_STR)
 
-    def __init__(self, config: Dict[str, Any]) -> None:
+    def __init__(self, config: dict[str, Any]) -> None:
         self.config = config
-        self._buffer: Dict[str, List[BenchmarkResult]] = {}
+        self._buffer: dict[str, list[BenchmarkResult]] = {}
 
     # ------------------------------------------------------------------
     # Public API
@@ -76,13 +75,13 @@ class ToolUseExporter:
         deployment_type: str = card.get("deployment_type") or "apionly"
         model_version: str = card.get("model_version") or "unknown"
 
-        p1_scores: List[float] = []
-        p2_scores: List[float] = []
-        combined_scores: List[float] = []
-        call1_times: List[float] = []
-        mcp_latencies: List[float] = []
-        call2_times: List[float] = []
-        total_times: List[float] = []
+        p1_scores: list[float] = []
+        p2_scores: list[float] = []
+        combined_scores: list[float] = []
+        call1_times: list[float] = []
+        mcp_latencies: list[float] = []
+        call2_times: list[float] = []
+        total_times: list[float] = []
         call1_tokens_sum = 0
         call2_tokens_sum = 0
         cost_usd_sum = 0.0
@@ -153,7 +152,7 @@ class ToolUseExporter:
                 except (ValueError, TypeError):
                     pass
 
-            # Tokens (sum)
+            # Tokens (sum)  # noqa: ERA001
             try:
                 call1_tokens_sum += int(data.get("call1_tokens", 0))
             except (ValueError, TypeError):
@@ -163,7 +162,7 @@ class ToolUseExporter:
             except (ValueError, TypeError):
                 pass
 
-            # Cost (sum)
+            # Cost (sum)  # noqa: ERA001
             try:
                 cost_usd_sum += float(data.get("cost_usd", 0.0))
             except (ValueError, TypeError):
@@ -177,10 +176,10 @@ class ToolUseExporter:
 
         fleet_group = get_fleet_group(sizeclass, deployment_type)
 
-        def _mean(lst: List[float]) -> Optional[float]:
+        def _mean(lst: list[float]) -> float | None:
             return sum(lst) / len(lst) if lst else None
 
-        row: Dict[str, Any] = {
+        row: dict[str, Any] = {
             "model": model_id,
             "display_name": display_name,
             "vendor": vendor,
@@ -213,9 +212,8 @@ class ToolUseExporter:
         self._upsert_row(row, model_id)
         ToolUseIOManager.print_run_summary(results, model_id)
 
-    def calculate_sovereignty_gap(self) -> Optional[float]:
-        """
-        Calculates avg_all - avg_local_sovereign and writes the value
+    def calculate_sovereignty_gap(self) -> float | None:
+        """Calculates avg_all - avg_local_sovereign and writes the value
         into every row's sovereignty_gap column. Returns None if < 2 rows
         have valid combined_score values.
         """
@@ -223,8 +221,8 @@ class ToolUseExporter:
         if len(rows) < 2:
             return None
 
-        scores_all: List[float] = []
-        scores_local: List[float] = []
+        scores_all: list[float] = []
+        scores_local: list[float] = []
         for row in rows:
             try:
                 score = float(row.get("combined_score", ""))
@@ -248,9 +246,8 @@ class ToolUseExporter:
 
         return gap
 
-    def get_summary(self) -> Dict[str, Any]:
-        """
-        Returns summary statistics across all rows.
+    def get_summary(self) -> dict[str, Any]:
+        """Returns summary statistics across all rows.
         Core keys: total_models, local_sovereign_count, full_fleet_count,
                    fleet_avg_local, fleet_avg_all, sovereignty_gap,
                    top_local_model, top_overall_model
@@ -287,10 +284,9 @@ class ToolUseExporter:
 
     def aggregate_from_benchmark_csvs(
         self,
-        csv_paths: Optional[List[Path]] = None,
+        csv_paths: list[Path] | None = None,
     ) -> int:
-        """
-        Reads per-asset tooluse rows from the main benchmark CSVs, aggregates
+        """Reads per-asset tooluse rows from the main benchmark CSVs, aggregates
         by model, and writes one row per model to tooluse_leaderboard.csv.
 
         Returns the number of model rows written.
@@ -303,7 +299,7 @@ class ToolUseExporter:
             ]
 
         # model_id → list of per-asset row dicts
-        per_model: Dict[str, List[Dict[str, Any]]] = {}
+        per_model: dict[str, list[dict[str, Any]]] = {}
 
         for csv_path in csv_paths:
             if not csv_path.exists():
@@ -330,8 +326,8 @@ class ToolUseExporter:
         return written
 
     def _aggregate_asset_rows(
-        self, model_id: str, rows: List[Dict[str, Any]]
-    ) -> Dict[str, Any]:
+        self, model_id: str, rows: list[dict[str, Any]],
+    ) -> dict[str, Any]:
         """Build one leaderboard row from per-asset CSV rows for the same model."""
         card = _load_card_data(model_id) or {}
         display_name = card.get("display_name") or model_id
@@ -340,13 +336,13 @@ class ToolUseExporter:
         deployment_type = card.get("deployment_type") or "apionly"
         model_version = card.get("model_version") or "unknown"
 
-        p1_scores: List[float] = []
-        p2_scores: List[float] = []
-        combined_scores: List[float] = []
-        call1_times: List[float] = []
-        mcp_latencies: List[float] = []
-        call2_times: List[float] = []
-        total_times: List[float] = []
+        p1_scores: list[float] = []
+        p2_scores: list[float] = []
+        combined_scores: list[float] = []
+        call1_times: list[float] = []
+        mcp_latencies: list[float] = []
+        call2_times: list[float] = []
+        total_times: list[float] = []
         call1_tokens_sum = 0
         call2_tokens_sum = 0
         cost_usd_sum = 0.0
@@ -364,7 +360,7 @@ class ToolUseExporter:
                 tool_call_valid_all = False
 
             # Parse scores from score_contributions column (Python repr dict)
-            data_dict: Dict[str, Any] = {}
+            data_dict: dict[str, Any] = {}
             raw_data = row.get("score_contributions", "")
             if raw_data:
                 try:
@@ -442,7 +438,7 @@ class ToolUseExporter:
 
         fleet_group = get_fleet_group(sizeclass, deployment_type)
 
-        def _mean(lst: List[float]) -> Optional[float]:
+        def _mean(lst: list[float]) -> float | None:
             return sum(lst) / len(lst) if lst else None
 
         return {
@@ -479,13 +475,13 @@ class ToolUseExporter:
     # Private helpers
     # ------------------------------------------------------------------
 
-    def _upsert_row(self, new_row: Dict[str, Any], model_id: str) -> None:
+    def _upsert_row(self, new_row: dict[str, Any], model_id: str) -> None:
         self.CSV_PATH.parent.mkdir(parents=True, exist_ok=True)
         existing = self._read_rows()
         filtered = [r for r in existing if r.get("model") != model_id]
         self._write_rows(filtered + [new_row])
 
-    def _read_rows(self) -> List[Dict[str, Any]]:
+    def _read_rows(self) -> list[dict[str, Any]]:
         if not self.CSV_PATH.exists() or self.CSV_PATH.stat().st_size == 0:
             return []
         try:
@@ -495,7 +491,7 @@ class ToolUseExporter:
             logger.warning("Could not read %s: %s", self.CSV_PATH, exc)
             return []
 
-    def _write_rows(self, rows: List[Dict[str, Any]]) -> None:
+    def _write_rows(self, rows: list[dict[str, Any]]) -> None:
         with self.CSV_PATH.open("w", newline="", encoding="utf-8") as f:
             writer = csv.DictWriter(f, fieldnames=CSV_COLUMNS, extrasaction="ignore")
             writer.writeheader()
@@ -515,7 +511,7 @@ def _fmt_score(val: Any) -> str:
         return ""
 
 
-def _avg_combined(rows: List[Dict[str, Any]]) -> Optional[float]:
+def _avg_combined(rows: list[dict[str, Any]]) -> float | None:
     scores = []
     for row in rows:
         try:
@@ -525,8 +521,8 @@ def _avg_combined(rows: List[Dict[str, Any]]) -> Optional[float]:
     return round(sum(scores) / len(scores), 2) if scores else None
 
 
-def _top_model(rows: List[Dict[str, Any]]) -> Optional[str]:
-    best_model: Optional[str] = None
+def _top_model(rows: list[dict[str, Any]]) -> str | None:
+    best_model: str | None = None
     best_score = -1.0
     for row in rows:
         try:
@@ -539,7 +535,7 @@ def _top_model(rows: List[Dict[str, Any]]) -> Optional[str]:
     return best_model
 
 
-def _avg_float_col(rows: List[Dict[str, Any]], col: str) -> Optional[float]:
+def _avg_float_col(rows: list[dict[str, Any]], col: str) -> float | None:
     vals = []
     for row in rows:
         try:
@@ -551,7 +547,7 @@ def _avg_float_col(rows: List[Dict[str, Any]], col: str) -> Optional[float]:
     return round(sum(vals) / len(vals), 2) if vals else None
 
 
-def _sum_int_col(rows: List[Dict[str, Any]], col: str) -> int:
+def _sum_int_col(rows: list[dict[str, Any]], col: str) -> int:
     total = 0
     for row in rows:
         try:
@@ -561,20 +557,22 @@ def _sum_int_col(rows: List[Dict[str, Any]], col: str) -> int:
     return total
 
 
-def _parse_error_rate(rows: List[Dict[str, Any]]) -> Optional[float]:
+def _parse_error_rate(rows: list[dict[str, Any]]) -> float | None:
     if not rows:
         return None
     errors = sum(1 for r in rows if r.get("parse_error_flag") == "true")
     return round(errors / len(rows) * 100, 1)
 
 
-def _load_card_data(model_id: str) -> Optional[Dict[str, Any]]:
+def _load_card_data(model_id: str) -> dict[str, Any] | None:
     """Load model card JSON via _find_card. Returns None if not found."""
     try:
-        from utils.model_utils import _find_card  # pylint: disable=import-outside-toplevel
+        from utils.model_utils import (
+            _find_card,  # pylint: disable=import-outside-toplevel
+        )
         card_path = _find_card(model_id)
         if card_path.exists():
             return json.loads(card_path.read_text(encoding="utf-8"))
-    except Exception as exc:  # pylint: disable=broad-exception-caught
+    except Exception as exc:  # noqa: BLE001 — card loading boundary (card may not exist)
         logger.debug("Could not load card for %s: %s", model_id, exc)
     return None

@@ -1,5 +1,4 @@
-"""
-Tests for CrucibleMark MCP Server.
+"""Tests for CrucibleMark MCP Server.
 
 Covers all 9 scenarios:
   1. Health-Check

@@ -46,7 +46,7 @@ class WebSearchTool:
                 "status": result["status"],
                 "provider": result.get("provider", self._provider),
                 "query": query,
-            })
+            }),
         )
         return result
 
@@ -59,7 +59,7 @@ class WebSearchTool:
         return self._duckduckgo_search(query, max_results, request_id, timestamp)
 
     def _tavily_search(
-        self, query: str, max_results: int, api_key: str, request_id: str, timestamp: str
+        self, query: str, max_results: int, api_key: str, request_id: str, timestamp: str,
     ) -> dict:
         payload = json.dumps({
             "api_key": api_key,
@@ -78,8 +78,8 @@ class WebSearchTool:
         try:
             with urllib_request.urlopen(req, timeout=self._timeout) as resp:
                 data = json.loads(resp.read().decode())
-        except Exception as exc:
-            logger.error("Tavily search failed: %s", exc)
+        except Exception:
+            logger.exception("Tavily search failed")
             return {
                 "status": "error",
                 "results": [],
@@ -105,7 +105,7 @@ class WebSearchTool:
         }
 
     def _duckduckgo_search(
-        self, query: str, max_results: int, request_id: str, timestamp: str
+        self, query: str, max_results: int, request_id: str, timestamp: str,
     ) -> dict:
         params = urlencode({
             "q": query,
@@ -120,8 +120,8 @@ class WebSearchTool:
         try:
             with urllib_request.urlopen(req, timeout=self._timeout) as resp:
                 data = json.loads(resp.read().decode())
-        except Exception as exc:
-            logger.error("DuckDuckGo search failed: %s", exc)
+        except Exception:
+            logger.exception("DuckDuckGo search failed")
             return {
                 "status": "error",
                 "results": [],

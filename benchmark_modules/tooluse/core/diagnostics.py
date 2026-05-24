@@ -1,5 +1,4 @@
-"""
-ToolUse Pipeline Diagnostics — Instrument MCP/Parser/Search quality.
+"""ToolUse Pipeline Diagnostics — Instrument MCP/Parser/Search quality.
 
 Drei Szenarien zur Fehlerquelle-Trennung:
 1. MCP-Flow (normal): Full pipeline mit Tavily + MCP
@@ -13,8 +12,8 @@ from __future__ import annotations
 
 import json
 import logging
-from dataclasses import dataclass, asdict
-from typing import Any, Dict, Optional
+from dataclasses import asdict, dataclass
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
@@ -22,6 +21,7 @@ logger = logging.getLogger(__name__)
 @dataclass
 class ToolOutputMetrics:
     """Metrics für Tool-Output-Qualität."""
+
     total_bytes: int
     snippet_count: int
     avg_snippet_len: float
@@ -33,18 +33,20 @@ class ToolOutputMetrics:
 @dataclass
 class ParseMetrics:
     """Metrics für JSON-Parse-Prozess."""
+
     parse_attempts: int
     parse_success: bool
     first_attempt_success: bool
     raw_length: int
     cleaned_length: int
     contains_tool_call: bool
-    json_error: Optional[str]
+    json_error: str | None
 
 
 @dataclass
 class PipelineDiagnostic:
     """Gesamte Diagnose für einen Benchmark-Run."""
+
     asset_id: str
     model_id: str
     scenario: str  # "mcp_flow", "reference_output", "stub_direct"
@@ -61,7 +63,7 @@ class PipelineDiagnostician:
     """Diagnostiziert ob Fehler in Pipeline oder Modell."""
 
     @staticmethod
-    def measure_tool_output(tool_transcript: Dict[str, Any]) -> ToolOutputMetrics:
+    def measure_tool_output(tool_transcript: dict[str, Any]) -> ToolOutputMetrics:
         """Quantifiziere Tool-Output-Qualität."""
         results = tool_transcript.get("results") or []
         result_count = len(results)
@@ -113,7 +115,7 @@ class PipelineDiagnostician:
         cleaned_response: str,
         parse_success: bool,
         parse_attempts: int,
-        json_error: Optional[str] = None,
+        json_error: str | None = None,
     ) -> ParseMetrics:
         """Quantifiziere JSON-Parse-Qualität."""
         return ParseMetrics(
@@ -132,14 +134,14 @@ class PipelineDiagnostician:
         model_id: str,
         scenario: str,
         tool_call_valid: bool,
-        tool_transcript: Dict[str, Any],
+        tool_transcript: dict[str, Any],
         raw_response: str,
         cleaned_response: str,
         parse_attempts: int,
         p1_score: float,
         p2_score: float,
         combined_score: float,
-        json_error: Optional[str] = None,
+        json_error: str | None = None,
     ) -> PipelineDiagnostic:
         """Baue vollständige Pipeline-Diagnose."""
         output_metrics = PipelineDiagnostician.measure_tool_output(tool_transcript)

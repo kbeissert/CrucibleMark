@@ -1,5 +1,4 @@
-"""
-Tests for benchmark_modules/tooluse/core/io_manager.py (ToolUseIOManager).
+"""Tests for benchmark_modules/tooluse/core/io_manager.py (ToolUseIOManager).
 """
 
 import sys
@@ -9,10 +8,9 @@ _PROJECT_ROOT = Path(__file__).resolve().parents[3]
 if str(_PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(_PROJECT_ROOT))
 
-from schemas.result import BenchmarkResult
-from benchmark_modules.tooluse.core.io_manager import ToolUseIOManager
 from benchmark_modules.tooluse.core.constants import AUDIT_MCP_UNAVAILABLE
-
+from benchmark_modules.tooluse.core.io_manager import ToolUseIOManager
+from schemas.result import BenchmarkResult
 
 # ---------------------------------------------------------------------------
 # Shared helpers
@@ -117,7 +115,7 @@ def test_print_asset_result_hallucination():
         },
     )
     output = ToolUseIOManager.print_asset_result(result, _ASSET)
-    assert "HALLUZINATION" in output
+    assert "HALLUCINATION" in output
 
 
 # ---------------------------------------------------------------------------

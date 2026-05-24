@@ -1,5 +1,4 @@
-"""
-ToolUse Terminal I/O Manager — CrucibleMark
+"""ToolUse Terminal I/O Manager — CrucibleMark
 Handles all console output for the tooluse benchmark module.
 No rich, no tqdm — stdlib only for display.
 """
@@ -7,20 +6,23 @@ No rich, no tqdm — stdlib only for display.
 from __future__ import annotations
 
 import json
+import logging
 import re
 import sys
-from datetime import datetime
+from datetime import datetime, timezone
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any
+
+import yaml
 
 _ROOT = Path(__file__).resolve().parents[3]
 if str(_ROOT) not in sys.path:
     sys.path.insert(0, str(_ROOT))
 
-from schemas.result import BenchmarkResult  # noqa: E402
-from benchmark_modules.tooluse.core.constants import AUDIT_MCP_UNAVAILABLE  # noqa: E402
+from benchmark_modules.tooluse.core.constants import AUDIT_MCP_UNAVAILABLE
+from schemas.result import BenchmarkResult
 
-_ASSET_NAMES: Dict[str, str] = {
+_ASSET_NAMES: dict[str, str] = {
     "tooluse001": "EU Lizenzrecherche",
     "tooluse002": "HTTP Fetch & Extract",
     "tooluse003": "404 Fehlerbehandlung",
@@ -47,14 +49,14 @@ def _red(t: str) -> str:    return _c("91", t)
 # Logging — JSON metrics file
 # ---------------------------------------------------------------------------
 
-def _log_metrics_to_json(model_id: str, row: Dict[str, Any]) -> None:
+def _log_metrics_to_json(model_id: str, row: dict[str, Any]) -> None:
     """Write model metrics to tooluse_metrics.jsonl for monitoring & debugging."""
     log_file = _ROOT / "outputs" / "tooluse_metrics.jsonl"
     log_file.parent.mkdir(parents=True, exist_ok=True)
 
     try:
         metric = {
-            "timestamp": datetime.now().isoformat(),
+            "timestamp": datetime.now(timezone.utc).isoformat(),
             "model_id": model_id,
             "combined_score": float(row.get("combined_score") or 0),
             "p1_score": float(row.get("p1_score") or 0),
@@ -68,23 +70,27 @@ def _log_metrics_to_json(model_id: str, row: Dict[str, Any]) -> None:
         }
         with log_file.open("a", encoding="utf-8") as f:
             f.write(json.dumps(metric, ensure_ascii=False) + "\n")
-    except Exception as exc:
+    except Exception as exc:  # noqa: BLE001 — filesystem/json boundary
         sys.stderr.write(f"[Logging Error] Could not write metrics: {exc}\n")
 
 
 
-def _load_score_thresholds() -> Dict[str, float]:
+_THRESHOLDS_DEFAULTS: dict[str, float] = {"excellent": 85.0, "good": 70.0, "moderate": 55.0, "weak": 0.0}
+
+
+def _load_score_thresholds() -> dict[str, float]:
     try:
-        import yaml
         data = yaml.safe_load(
-            (_ROOT / "config" / "tooluse_report_config.yaml").read_text(encoding="utf-8")
+            (_ROOT / "config" / "tooluse_report_config.yaml").read_text(encoding="utf-8"),
         ) or {}
         labels = data.get("report", {}).get("score_labels", {})
         if labels:
             return labels
-    except Exception:
+    except FileNotFoundError:
         pass
-    return {"excellent": 85.0, "good": 70.0, "moderate": 55.0, "weak": 0.0}
+    except Exception:  # noqa: BLE001 — yaml/filesystem boundary
+        logging.warning("Could not load score thresholds from config", exc_info=True)
+    return _THRESHOLDS_DEFAULTS
 
 
 def _score_label(score: float) -> str:
@@ -123,17 +129,17 @@ class ToolUseIOManager:
         return "█" * filled + "░" * (width - filled)
 
     @classmethod
-    def print_asset_result(cls, result: BenchmarkResult, asset: Dict[str, Any]) -> str:
+    def print_asset_result(cls, result: BenchmarkResult, asset: dict[str, Any]) -> str:
         """Print per-asset result block. Returns the printed string (ANSI-free in tests)."""
         asset_id: str = (
             result.data.get("asset_id")
             or asset.get("metadata", {}).get("id", "unknown")
         )
         asset_name: str = _ASSET_NAMES.get(
-            asset_id, asset.get("metadata", {}).get("name", asset_id)
+            asset_id, asset.get("metadata", {}).get("name", asset_id),
         )
 
-        lines: List[str] = [
+        lines: list[str] = [
             _SEP_THIN,
             f"  {asset_id} — {asset_name}",
             _SEP_THIN,
@@ -144,10 +150,10 @@ class ToolUseIOManager:
             lines.append(f"  {_red('[ERROR] MCP Server nicht erreichbar — Asset übersprungen')}")
             lines.append("")
             out = "\n".join(lines)
-            print(out)
+            print(out)  # noqa: T201 — intentional terminal UI output
             return out
 
-        transcript: Dict[str, Any] = result.data.get("tool_transcript", {})
+        transcript: dict[str, Any] = result.data.get("tool_transcript", {})
         tool_name: str = transcript.get("tool_type_called", "unknown")
         mcp_status: str = transcript.get("status", "unknown")
         mcp_provider: str = transcript.get("provider", "")
@@ -195,7 +201,7 @@ class ToolUseIOManager:
             pattern_hint = ""
             audit: str = str(result.data.get("audit_block") or "")
             if audit:
-                m = re.search(r'(?:hallucin|halluzi)[^:]*[:\-]\s*(.{5,50})', audit, re.IGNORECASE)
+                m = re.search(r"(?:hallucin|halluzi)[^:]*[:\-]\s*(.{5,50})", audit, re.IGNORECASE)
                 if m:
                     pattern_hint = f' — Pattern: "{m.group(1).strip()}"'
             lines.append(f"  {_red('[HALLUCINATION] erkannt' + pattern_hint)}")
@@ -216,19 +222,19 @@ class ToolUseIOManager:
         cost: float = float(result.data.get("cost_usd") or 0)
 
         lines.append(
-            f"  Time: Call 1: {c1:.1f}s  |  MCP: {mcp_l:.1f}s  |  Call 2: {c2:.1f}s  |  Total: {total:.1f}s"
+            f"  Time: Call 1: {c1:.1f}s  |  MCP: {mcp_l:.1f}s  |  Call 2: {c2:.1f}s  |  Total: {total:.1f}s",
         )
         lines.append(f"  Tokens: Tokens: {tokens}  |  Cost: ${cost:.6f}")
         lines.append("")
 
         out = "\n".join(lines)
-        print(out)
+        print(out)  # noqa: T201 — intentional terminal UI output
         return out
 
     @classmethod
-    def print_run_summary_from_row(cls, row: Dict[str, Any], model_id: str) -> str:
+    def print_run_summary_from_row(cls, row: dict[str, Any], model_id: str) -> str:
         """Print run summary from an aggregated leaderboard row dict. Returns the printed string."""
-        lines: List[str] = [
+        lines: list[str] = [
             _SEP_THICK,
             f"  Tool Use Benchmark — {model_id}",
             _SEP_THICK,
@@ -271,7 +277,7 @@ class ToolUseIOManager:
         total_cost = _flt("cost_usd")
 
         lines.append(
-            f"  Call 1: {avg_c1:.1f}s | MCP: {avg_mcp_l:.1f}s | Call 2: {avg_c2:.1f}s"
+            f"  Call 1: {avg_c1:.1f}s | MCP: {avg_mcp_l:.1f}s | Call 2: {avg_c2:.1f}s",
         )
         lines.append(f"  Total: {total_time:.1f}s ({assets_ok} Assets)")
         tok_str = f"{total_tokens:,}".replace(",", ".")
@@ -300,18 +306,17 @@ class ToolUseIOManager:
         lines.append(_SEP_THICK)
 
         out = "\n".join(lines)
-        # Log metrics to JSON file for monitoring
         try:
-            ToolUseIOManager._log_metrics_to_json(model_id, row)
-        except Exception:
-            pass  # Logging failure should not interrupt output
-        print(out)
+            _log_metrics_to_json(model_id, row)
+        except Exception:  # noqa: BLE001 — metrics logging must never crash the benchmark
+            logging.debug("Metrics logging failed (non-critical)", exc_info=True)
+        print(out)  # noqa: T201 — intentional terminal UI output
         return out
 
     @classmethod
-    def print_run_summary(cls, results: List[BenchmarkResult], model_id: str) -> str:
+    def print_run_summary(cls, results: list[BenchmarkResult], model_id: str) -> str:
         """Print run summary after all assets complete. Returns the printed string."""
-        lines: List[str] = [
+        lines: list[str] = [
             _SEP_THICK,
             f"  Tool Use Benchmark — {model_id}",
             _SEP_THICK,
@@ -321,7 +326,7 @@ class ToolUseIOManager:
             lines.append("  Keine Ergebnisse.")
             lines.append(_SEP_THICK)
             out = "\n".join(lines)
-            print(out)
+            print(out)  # noqa: T201 — intentional terminal UI output
             return out
 
         successful = [r for r in results if r.status != "error"]
@@ -370,7 +375,7 @@ class ToolUseIOManager:
         total_cost = sum(float(r.data.get("cost_usd") or 0) for r in successful)
 
         lines.append(
-            f"  Time: Ø Call 1: {avg_c1:.1f}s  |  Ø MCP: {avg_mcp:.1f}s  |  Ø Call 2: {avg_c2:.1f}s"
+            f"  Time: Ø Call 1: {avg_c1:.1f}s  |  Ø MCP: {avg_mcp:.1f}s  |  Ø Call 2: {avg_c2:.1f}s",
         )
         lines.append(f"  Time: Total Run: {total_time:.1f}s  ({len(successful)} Assets)")
         tok_str = f"{total_tokens:,}".replace(",", ".")
@@ -402,10 +407,5 @@ class ToolUseIOManager:
         lines.append(_SEP_THICK)
 
         out = "\n".join(lines)
-        # Log metrics to JSON file for monitoring
-        try:
-            ToolUseIOManager._log_metrics_to_json(model_id, row)
-        except Exception:
-            pass  # Logging failure should not interrupt output
-        print(out)
+        print(out)  # noqa: T201 — intentional terminal UI output
         return out

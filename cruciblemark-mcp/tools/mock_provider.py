@@ -29,7 +29,7 @@ _FIXTURE_SEARCH: dict[str, list[dict]] = {
             "title": "OpenAI Evals — GitHub",
             "excerpt": "A framework for evaluating OpenAI models and an open-source registry of evals.",
         },
-    ]
+    ],
 }
 
 _FIXTURE_FETCH: dict[str, tuple[int, str]] = {

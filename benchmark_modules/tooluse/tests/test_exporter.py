@@ -1,5 +1,4 @@
-"""
-Tests for scripts/core/tooluse_exporter.py (ToolUseExporter).
+"""Tests for scripts/core/tooluse_exporter.py (ToolUseExporter).
 """
 
 import csv
@@ -12,10 +11,10 @@ if str(_PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(_PROJECT_ROOT))
 
 import pytest
+
+from benchmark_modules.tooluse.core.constants import CSV_COLUMNS
 from schemas.result import BenchmarkResult
 from scripts.core.tooluse_exporter import ToolUseExporter, get_fleet_group
-from benchmark_modules.tooluse.core.constants import CSV_COLUMNS
-
 
 # ---------------------------------------------------------------------------
 # Shared helpers
@@ -108,17 +107,16 @@ def test_fleet_group_full_fleet():
 # ---------------------------------------------------------------------------
 
 def test_calculate_sovereignty_gap(tmp_path):
-    """
-    modelA: combined=80, local_sovereign
+    """modelA: combined=80, local_sovereign
     modelB: combined=90, full_fleet
     avg_all=85, avg_local=80 → gap = local - all = -5.0 (cloud leads)
     """
     exporter = _make_exporter(tmp_path)
     rows = [
-        {col: "" for col in CSV_COLUMNS} | {
+        dict.fromkeys(CSV_COLUMNS, "") | {
             "model": "modelA", "combined_score": "80.00", "fleet_group": "local_sovereign",
         },
-        {col: "" for col in CSV_COLUMNS} | {
+        dict.fromkeys(CSV_COLUMNS, "") | {
             "model": "modelB", "combined_score": "90.00", "fleet_group": "full_fleet",
         },
     ]
@@ -135,7 +133,7 @@ def test_calculate_sovereignty_gap(tmp_path):
 def test_calculate_sovereignty_gap_too_few(tmp_path):
     exporter = _make_exporter(tmp_path)
     rows = [
-        {col: "" for col in CSV_COLUMNS} | {
+        dict.fromkeys(CSV_COLUMNS, "") | {
             "model": "modelA", "combined_score": "80.00", "fleet_group": "local_sovereign",
         },
     ]
@@ -289,7 +287,7 @@ def test_finalize_tool_call_valid_one_false(tmp_path):
         exporter.export_result(_success_result(), "m5")
         exporter.export_result(
             _success_result(
-                tool_transcript={"status": "parse_error", "provider": "mock"}
+                tool_transcript={"status": "parse_error", "provider": "mock"},
             ),
             "m5",
         )

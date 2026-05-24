@@ -1,26 +1,24 @@
-"""
-Tests for ToolUseTest Controller and utils/mcp_health.py.
+"""Tests for ToolUseTest Controller and utils/mcp_health.py.
 """
 
 import json
 import sys
 from pathlib import Path
-from typing import Any
 from unittest.mock import MagicMock, patch
 
 _PROJECT_ROOT = Path(__file__).resolve().parents[3]
 if str(_PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(_PROJECT_ROOT))
 
-import pytest
-from schemas.result import BenchmarkResult
-from benchmark_modules.tooluse.test import ToolUseTest
+
 from benchmark_modules.tooluse.core.constants import (
     AUDIT_MCP_UNAVAILABLE,
+    FIELD_HALLUCINATION_FLAG,
     FIELD_P1_SCORE,
     FIELD_P2_SCORE,
-    FIELD_HALLUCINATION_FLAG,
 )
+from benchmark_modules.tooluse.test import ToolUseTest
+from schemas.result import BenchmarkResult
 
 # ---------------------------------------------------------------------------
 # Asset paths (real files used so BaseTest._load_asset() runs normally)

@@ -1,5 +1,4 @@
-"""
-ToolUse Test Controller (v1.1)
+"""ToolUse Test Controller (v1.1)
 ==============================
 Zwei-Schritt-Flow:
   execute()       → MCP-Call + Modell-Call → BenchmarkResult (kein Scoring)
@@ -15,12 +14,11 @@ from __future__ import annotations
 import json
 import logging
 import re
-import sys
 import time
 import urllib.error
 import urllib.request
 from pathlib import Path
-from typing import Any, Dict, Optional
+from typing import Any
 
 from schemas.result import BenchmarkResult
 
@@ -53,7 +51,7 @@ logger = logging.getLogger(__name__)
 # Tool schemas injected into the system prompt
 # ---------------------------------------------------------------------------
 
-TOOL_SCHEMA_WEB_SEARCH: Dict[str, Any] = {
+TOOL_SCHEMA_WEB_SEARCH: dict[str, Any] = {
     "name": "web_search",
     "description": "Sucht im Web nach aktuellen Informationen.",
     "parameters": {
@@ -69,7 +67,7 @@ TOOL_SCHEMA_WEB_SEARCH: Dict[str, Any] = {
     },
 }
 
-TOOL_SCHEMA_HTTP_FETCH: Dict[str, Any] = {
+TOOL_SCHEMA_HTTP_FETCH: dict[str, Any] = {
     "name": "http_fetch",
     "description": "Lädt den Inhalt einer URL.",
     "parameters": {
@@ -85,7 +83,7 @@ TOOL_SCHEMA_HTTP_FETCH: Dict[str, Any] = {
     },
 }
 
-_TOOL_SCHEMAS: Dict[str, Dict[str, Any]] = {
+_TOOL_SCHEMAS: dict[str, dict[str, Any]] = {
     TOOL_WEB_SEARCH: TOOL_SCHEMA_WEB_SEARCH,
     TOOL_HTTP_FETCH: TOOL_SCHEMA_HTTP_FETCH,
 }
@@ -115,8 +113,7 @@ RETRY_PROMPT = (
 
 
 class ToolUseTest(BaseTest):
-    """
-    Controller für das tooluse Benchmark-Modul.
+    """Controller für das tooluse Benchmark-Modul.
     Orchestriert: MCP-Health → Tool-Schema-Injection → Erster Modell-Call →
     MCP-Tool-Call → Zweiter Modell-Call (Synthese) → Scoring.
     """
@@ -126,7 +123,7 @@ class ToolUseTest(BaseTest):
         self.config = load_module_config(Path(__file__).parent)
 
     # ------------------------------------------------------------------
-    # Public: execute
+    # Public: execute  # noqa: ERA001
     # ------------------------------------------------------------------
 
     def execute(self, model: str, llm_client: Any, **kwargs: Any) -> BenchmarkResult:
@@ -155,7 +152,7 @@ class ToolUseTest(BaseTest):
         task_prompt: str = self.asset.get("prompt", "")
 
         system_prompt = SYSTEM_PROMPT_TEMPLATE.format(
-            tool_schema_json=json.dumps(schema, ensure_ascii=False, indent=2)
+            tool_schema_json=json.dumps(schema, ensure_ascii=False, indent=2),
         )
 
         # 3. First model call (with optional retry on parse failure)
@@ -195,7 +192,7 @@ class ToolUseTest(BaseTest):
         call1_time = time.time() - call1_start
 
         tool_name: str = tool_available
-        tool_parameters: Dict[str, Any] = {}
+        tool_parameters: dict[str, Any] = {}
 
         if tool_call_dict:
             raw_tool_name = tool_call_dict.get("name", tool_available)
@@ -205,11 +202,11 @@ class ToolUseTest(BaseTest):
 
             if is_anomaly:
                 logger.warning(
-                    f"Tool name normalized: '{raw_tool_name}' → '{normalized_name}'"
+                    "Tool name normalized: '%s' → '%s'", raw_tool_name, normalized_name,
                 )
         else:
             # Both attempts failed — proceed to synthesis with parse_error transcript
-            tool_transcript: Dict[str, Any] = {
+            tool_transcript: dict[str, Any] = {
                 "status": "parse_error",
                 "error": "Model did not produce valid tool call",
                 "raw_response": response_1,
@@ -219,7 +216,7 @@ class ToolUseTest(BaseTest):
             call2_start = time.time()
             response_2 = _run_synthesis(
                 llm_client, model, provider, tool_name, tool_transcript,
-                task_prompt, kwargs
+                task_prompt, kwargs,
             )
             call2_time = time.time() - call2_start
             call2_tokens: int = getattr(llm_client, "last_token_usage", 0) or 0
@@ -245,7 +242,7 @@ class ToolUseTest(BaseTest):
         call2_start = time.time()
         response_2 = _run_synthesis(
             llm_client, model, provider, tool_name, tool_transcript,
-            task_prompt, kwargs
+            task_prompt, kwargs,
         )
         call2_time = time.time() - call2_start
         call2_tokens = getattr(llm_client, "last_token_usage", 0) or 0
@@ -266,16 +263,16 @@ class ToolUseTest(BaseTest):
         )
 
     # ------------------------------------------------------------------
-    # Public: score_response
+    # Public: score_response  # noqa: ERA001
     # ------------------------------------------------------------------
 
     def score_response(self, result: BenchmarkResult) -> BenchmarkResult:
         """Scoring via ToolUseEvaluator. Kein Netzaufruf."""
         evaluator = ToolUseEvaluator(self.config.get("config", {}))
 
-        tool_transcript: Dict[str, Any] = result.data.get("tool_transcript", {})
+        tool_transcript: dict[str, Any] = result.data.get("tool_transcript", {})
         model_output: str = result.raw_response
-        tool_call_parsed: Dict[str, Any] = result.data.get("tool_call_parsed", {})
+        tool_call_parsed: dict[str, Any] = result.data.get("tool_call_parsed", {})
 
         p1 = evaluator.score_phase1(tool_transcript, self.asset)
         p2 = evaluator.score_phase2(model_output, tool_transcript, self.asset)
@@ -291,7 +288,7 @@ class ToolUseTest(BaseTest):
         combined = evaluator.combined_score(p1, p2, tool_call_valid=tool_call_valid)
 
         audit = evaluator.build_audit_block_with_output(
-            p1, p2, combined, tool_transcript, self.asset, model_output
+            p1, p2, combined, tool_transcript, self.asset, model_output,
         )
 
         # Pipeline diagnostics (instrument MCP/Parser/Search quality)
@@ -315,11 +312,11 @@ class ToolUseTest(BaseTest):
         tool_adapter_audit = None
         if p1 == 0.0:  # Hard fail — worth auditing
             tool_adapter_audit = ToolAdapterAudit.diagnose_p1_zero_case(
-                tool_call_parsed, tool_transcript, self.asset, p1
+                tool_call_parsed, tool_transcript, self.asset, p1,
             )
             ToolAdapterAudit.log_audit(
                 tool_adapter_audit,
-                context=f"{self.asset.get('metadata', {}).get('id')} — p1=0"
+                context=f"{self.asset.get('metadata', {}).get('id')} — p1=0",
             )
 
         result.primary_score = combined
@@ -355,9 +352,8 @@ _TOOL_CALL_RE = re.compile(
 )
 
 
-def _parse_tool_call(text: str) -> tuple[Optional[Dict[str, Any]], Optional[str]]:
-    """
-    Extracts {"tool_call": {...}} from model output.
+def _parse_tool_call(text: str) -> tuple[dict[str, Any] | None, str | None]:
+    """Extracts {"tool_call": {...}} from model output.
     JSON may be embedded in markdown code blocks or prose.
     Returns (tool_call_dict, None) on success, (None, error_string) on failure.
     """
@@ -366,7 +362,7 @@ def _parse_tool_call(text: str) -> tuple[Optional[Dict[str, Any]], Optional[str]
     stripped = stripped.replace("```", "")
 
     # Try to find any JSON object containing "tool_call"
-    candidates = re.findall(r'\{[^{}]*(?:\{[^{}]*\}[^{}]*)?\}', stripped, re.DOTALL)
+    candidates = re.findall(r"\{[^{}]*(?:\{[^{}]*\}[^{}]*)?\}", stripped, re.DOTALL)
     for candidate in candidates:
         try:
             parsed = json.loads(candidate)
@@ -398,7 +394,7 @@ def _parse_tool_call(text: str) -> tuple[Optional[Dict[str, Any]], Optional[str]
     return None, "No valid tool_call JSON found"
 
 
-def _call_mcp_tool(base_url: str, tool_name: str, params: Dict[str, Any]) -> Dict[str, Any]:
+def _call_mcp_tool(base_url: str, tool_name: str, params: dict[str, Any]) -> dict[str, Any]:
     """POST to MCP server. Returns transcript dict. Never raises."""
     endpoint = f"{base_url}/tools/{tool_name}"
     body = json.dumps(params).encode("utf-8")
@@ -415,18 +411,18 @@ def _call_mcp_tool(base_url: str, tool_name: str, params: Dict[str, Any]) -> Dic
         return {"status": "error", "status_code": exc.code, "error": str(exc)}
     except urllib.error.URLError as exc:
         return {"status": "error", "status_code": None, "error": str(exc.reason)}
-    except Exception as exc:  # pylint: disable=broad-exception-caught
+    except Exception as exc:  # noqa: BLE001 — pylint: disable=broad-exception-caught
         return {"status": "error", "status_code": None, "error": str(exc)}
 
 
 def _run_synthesis(
     llm_client: Any,
     model: str,
-    provider: Optional[str],
+    provider: str | None,
     tool_name: str,
-    tool_transcript: Dict[str, Any],
+    tool_transcript: dict[str, Any],
     task_prompt: str,
-    kwargs: Dict[str, Any],
+    kwargs: dict[str, Any],
 ) -> str:
     followup = FOLLOWUP_PROMPT_TEMPLATE.format(
         tool_name=tool_name,
@@ -444,10 +440,10 @@ def _run_synthesis(
 def _build_result(
     response_2: str,
     execution_time: float,
-    tool_transcript: Dict[str, Any],
-    tool_call_dict: Optional[Dict[str, Any]],
+    tool_transcript: dict[str, Any],
+    tool_call_dict: dict[str, Any] | None,
     response_1: str,
-    asset: Dict[str, Any],
+    asset: dict[str, Any],
     llm_client: Any = None,
     call1_time_s: float = 0.0,
     mcp_latency_s: float = 0.0,

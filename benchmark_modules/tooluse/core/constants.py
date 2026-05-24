@@ -1,5 +1,4 @@
-"""
-ToolUse Module — Constants (SSOT)
+"""ToolUse Module — Constants (SSOT)
 Key names only — no hardcoded values. All thresholds live in config.yaml.
 """
 

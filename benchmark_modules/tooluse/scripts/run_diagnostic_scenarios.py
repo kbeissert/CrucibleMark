@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
-"""
-Diagnostic Scenario Runner — A/B-Test für Pipeline-Fehlerquellen.
+"""Diagnostic Scenario Runner — A/B-Test für Pipeline-Fehlerquellen.
 
 Führt ein Modell über 3 Szenarien:
 1. MCP-Flow (normal)
@@ -20,28 +19,29 @@ import json
 import logging
 import sys
 from pathlib import Path
-from typing import Any, Dict, List
+from typing import Any
 
 _PROJECT_ROOT = Path(__file__).resolve().parents[3]
 if str(_PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(_PROJECT_ROOT))
 
-from benchmark_modules.tooluse.core.diagnostics import (
-    PipelineDiagnostician,
-    PipelineDiagnostic,
-)
-from benchmark_modules.tooluse.core.evaluators import ToolUseEvaluator
 from benchmark_modules.tooluse.DIAGNOSTIC_SCENARIOS import (
     create_diagnostic_transcript,
     scenario_descriptions,
 )
+
+from benchmark_modules.tooluse.core.diagnostics import (
+    PipelineDiagnostic,
+    PipelineDiagnostician,
+)
+from benchmark_modules.tooluse.core.evaluators import ToolUseEvaluator
 from utils.module_registry import load_module_config
 
 logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
 logger = logging.getLogger(__name__)
 
 
-def load_asset(asset_id: str) -> Dict[str, Any]:
+def load_asset(asset_id: str) -> dict[str, Any]:
     """Load asset YAML."""
     asset_path = (
         _PROJECT_ROOT
@@ -63,7 +63,7 @@ def run_diagnostic_scenario(
     asset_id: str,
     scenario: str,
     evaluator: ToolUseEvaluator,
-    asset: Dict[str, Any],
+    asset: dict[str, Any],
 ) -> PipelineDiagnostic:
     """Run a single diagnostic scenario."""
     # Create tool transcript for scenario
@@ -103,7 +103,7 @@ def run_diagnostic_scenario(
 
 
 def generate_report(
-    diagnostics: List[PipelineDiagnostic],
+    diagnostics: list[PipelineDiagnostic],
     model_id: str,
 ) -> str:
     """Generate diagnostic report markdown."""
@@ -119,7 +119,7 @@ def generate_report(
     ]
 
     # Group by asset
-    by_asset: Dict[str, Dict[str, PipelineDiagnostic]] = {}
+    by_asset: dict[str, dict[str, PipelineDiagnostic]] = {}
     for diag in diagnostics:
         if diag.asset_id not in by_asset:
             by_asset[diag.asset_id] = {}
@@ -149,7 +149,7 @@ def generate_report(
 
         lines.append(
             f"| {asset_id} | {mcp.p1_score:.1f} | {ref.p1_score:.1f} | "
-            f"{stub.p1_score:.1f} | {gap_mcp_ref:.1f} | {issue} |"
+            f"{stub.p1_score:.1f} | {gap_mcp_ref:.1f} | {issue} |",
         )
 
     lines += [
@@ -177,7 +177,7 @@ def generate_report(
     ]
 
     for diag in sorted(
-        diagnostics, key=lambda d: (d.asset_id, d.scenario)
+        diagnostics, key=lambda d: (d.asset_id, d.scenario),
     ):
         lines.append(f"### {diag.asset_id} — {diag.scenario}")
         lines.append(json.dumps(
@@ -198,7 +198,7 @@ def generate_report(
 
 def main():
     parser = argparse.ArgumentParser(
-        description="Run Tool Use diagnostic scenarios"
+        description="Run Tool Use diagnostic scenarios",
     )
     parser.add_argument(
         "--model",
@@ -227,24 +227,24 @@ def main():
     evaluator = ToolUseEvaluator(config)
 
     # Run diagnostics
-    diagnostics: List[PipelineDiagnostic] = []
+    diagnostics: list[PipelineDiagnostic] = []
 
     for asset_id in args.assets:
         try:
             asset = load_asset(asset_id)
         except FileNotFoundError as e:
-            logger.error(str(e))
+            logger.exception("Asset not found: %s", e)
             continue
 
         for scenario in ["mcp_flow", "reference_output", "stub_direct"]:
-            logger.info(f"Running {asset_id} — {scenario}...")
+            logger.info("Running %s — %s...", asset_id, scenario)
             diag = run_diagnostic_scenario(
-                args.model, asset_id, scenario, evaluator, asset
+                args.model, asset_id, scenario, evaluator, asset,
             )
             diagnostics.append(diag)
             logger.info(
-                f"  P1={diag.p1_score:.1f}, P2={diag.p2_score:.1f}, "
-                f"Combined={diag.combined_score:.1f}"
+                "  P1=%.1f, P2=%.1f, Combined=%.1f",
+                diag.p1_score, diag.p2_score, diag.combined_score,
             )
 
     # Generate report
@@ -253,7 +253,7 @@ def main():
     # Save and print
     output_path = Path(args.output)
     output_path.write_text(report, encoding="utf-8")
-    logger.info(f"Report saved to {output_path}")
+    logger.info("Report saved to %s", output_path)
 
     print("\n" + report)
 

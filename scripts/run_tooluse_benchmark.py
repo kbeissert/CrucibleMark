@@ -1,5 +1,4 @@
-"""
-Tool Use Benchmark Runner — CrucibleMark
+"""Tool Use Benchmark Runner — CrucibleMark
 =========================================
 Interactive wizard (no flags) oder direkte Ausführung (Flags).
 
@@ -17,7 +16,7 @@ import subprocess
 import sys
 import time
 from pathlib import Path
-from typing import Any, Dict, List, Tuple
+from typing import Any
 
 _ROOT = Path(__file__).resolve().parents[1]
 if str(_ROOT) not in sys.path:
@@ -56,22 +55,24 @@ def _restart_mcp(mode: str = "live") -> None:
 # ---------------------------------------------------------------------------
 
 def _classify_provider(model_id: str) -> str:
-    from utils.model_utils import resolve_provider  # pylint: disable=import-outside-toplevel
+    from utils.model_utils import (
+        resolve_provider,  # pylint: disable=import-outside-toplevel
+    )
     try:
         provider_key, _ = resolve_provider(model_id)
         return provider_key
-    except Exception:  # pylint: disable=broad-exception-caught
+    except Exception:  # noqa: BLE001 — pylint: disable=broad-exception-caught
         if ":" in model_id or model_id.startswith("hf.co/"):
             return "ollama"
         return "unknown"
 
 
-def _load_all_tool_use_cards() -> List[Tuple[str, str, str]]:
+def _load_all_tool_use_cards() -> list[tuple[str, str, str]]:
     """(model_id, display_name, provider) für alle Cards mit supports_tool_use: true."""
     results = []
     for card_path in sorted(CARD_DIR.glob("*.json")):
         try:
-            card: Dict[str, Any] = json.loads(card_path.read_text(encoding="utf-8"))
+            card: dict[str, Any] = json.loads(card_path.read_text(encoding="utf-8"))
         except (json.JSONDecodeError, OSError):
             continue
         if not isinstance(card, dict):
@@ -87,7 +88,7 @@ def _load_all_tool_use_cards() -> List[Tuple[str, str, str]]:
     return results
 
 
-def get_tool_use_models(provider_filter: str = "all") -> List[Tuple[str, str]]:
+def get_tool_use_models(provider_filter: str = "all") -> list[tuple[str, str]]:
     """Gibt (model_id, display_name) gefiltert nach Provider zurück."""
     all_cards = _load_all_tool_use_cards()
     if provider_filter == "all":
@@ -116,7 +117,7 @@ def _run_model(model_id: str, force: bool = False, silent: bool = False) -> bool
     except subprocess.TimeoutExpired:
         print(f"  [TIMEOUT] exceeded {TIMEOUT_PER_MODEL}s")
         return False
-    except Exception as exc:  # pylint: disable=broad-exception-caught
+    except Exception as exc:  # noqa: BLE001 — pylint: disable=broad-exception-caught
         print(f"  [ERROR] {exc}")
         return False
 
@@ -126,7 +127,7 @@ def _run_model(model_id: str, force: bool = False, silent: bool = False) -> bool
 # ---------------------------------------------------------------------------
 
 def _run_batch(
-    models: List[Tuple[str, str]],
+    models: list[tuple[str, str]],
     provider_label: str,
     force: bool,
     silent: bool,
@@ -140,8 +141,8 @@ def _run_batch(
     print(f"  Modelle: {len(models)}")
     print(_SEP)
 
-    success: List[str] = []
-    failed: List[str] = []
+    success: list[str] = []
+    failed: list[str] = []
 
     for i, (model_id, display_name) in enumerate(models, 1):
         if restart_mcp:
@@ -178,8 +179,8 @@ def _run_batch(
             print(f"  Leaderboard aktualisiert: {written} Modell(e) → tooluse_leaderboard.csv")
         else:
             print("  Leaderboard: keine tooluse-Ergebnisse in Benchmark-CSVs gefunden.")
-    except Exception as exc:
-        print(f"  [WARN] Leaderboard-Update fehlgeschlagen: {exc}")
+    except Exception as exc:  # noqa: BLE001 — leaderboard update must not crash CLI
+        print(f"  [WARN] Leaderboard-Update fehlgeschlagen: {exc}")  # noqa: T201
 
 
 # ---------------------------------------------------------------------------
@@ -202,7 +203,7 @@ def _interactive_wizard(force: bool, silent: bool, mcp_mode: str, restart_mcp: b
         return
 
     # Group by provider
-    by_provider: Dict[str, List[Tuple[str, str]]] = {}
+    by_provider: dict[str, list[tuple[str, str]]] = {}
     for model_id, display_name, provider in all_cards:
         by_provider.setdefault(provider, []).append((model_id, display_name))
 

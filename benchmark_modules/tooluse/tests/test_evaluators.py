@@ -1,5 +1,4 @@
-"""
-Tests for ToolUseEvaluator — Phase 1, Phase 2, combined_score, build_audit_block.
+"""Tests for ToolUseEvaluator — Phase 1, Phase 2, combined_score, build_audit_block.
 """
 
 import sys
@@ -10,6 +9,7 @@ if str(_PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(_PROJECT_ROOT))
 
 import pytest
+
 from benchmark_modules.tooluse.core.evaluators import ToolUseEvaluator
 
 # ---------------------------------------------------------------------------

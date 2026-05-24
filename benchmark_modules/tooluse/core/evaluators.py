@@ -1,5 +1,4 @@
-"""
-ToolUse Module — Evaluators (v1.0)
+"""ToolUse Module — Evaluators (v1.0)
 Zwei-Phasen-Scoring: Phase 1 (Tool Execution) + Phase 2 (Synthesis Quality).
 
 Architektur-Invariante:
@@ -13,16 +12,13 @@ from __future__ import annotations
 
 import logging
 import re
-from typing import Any, Dict, Optional
+from typing import Any
 
 from utils.similarity import SemanticSimilarity
 
 from .constants import (
     AUDIT_HALLUCINATION_FAIL,
     AUDIT_SANDBOX_VIOLATION,
-    FIELD_COMBINED_SCORE,
-    FIELD_P1_SCORE,
-    FIELD_P2_SCORE,
     KEYWORD_THRESHOLD_KEY,
     PHASE1_WEIGHT_KEY,
     PHASE2_WEIGHT_KEY,
@@ -41,16 +37,14 @@ _LIST_ITEM_RE = re.compile(
 
 
 class ToolUseEvaluator:
-    """
-    Scores tool transcripts and model outputs across two phases.
+    """Scores tool transcripts and model outputs across two phases.
 
     Phase 1 — Tool Execution: did the model actually call the right tool correctly?
     Phase 2 — Synthesis Quality: is the produced text accurate, sourced, and complete?
     """
 
-    def __init__(self, config: Dict[str, Any]) -> None:
-        """
-        config = content of config.yaml['config'] section.
+    def __init__(self, config: dict[str, Any]) -> None:
+        """config = content of config.yaml['config'] section.
         All thresholds are read from here via constants.py key names.
         """
         self.config = config
@@ -61,8 +55,8 @@ class ToolUseEvaluator:
 
     def score_phase1(
         self,
-        tool_transcript: Dict[str, Any],
-        asset: Dict[str, Any],
+        tool_transcript: dict[str, Any],
+        asset: dict[str, Any],
     ) -> float:
         """Score the MCP tool call. Returns 0–100."""
         # Hard fail: sandbox/whitelist violation
@@ -137,8 +131,8 @@ class ToolUseEvaluator:
     def score_phase2(
         self,
         model_output: str,
-        tool_transcript: Dict[str, Any],
-        asset: Dict[str, Any],
+        tool_transcript: dict[str, Any],
+        asset: dict[str, Any],
     ) -> float:
         """Score the model's generated text. Returns 0–100."""
         is_failure_test = asset.get("is_failure_test", False)
@@ -176,7 +170,7 @@ class ToolUseEvaluator:
         semantic_score = 0.0
         if golden_answer and model_output.strip():
             similarity = SemanticSimilarity.calculate_similarity(
-                model_output, golden_answer
+                model_output, golden_answer,
             )
             semantic_threshold = self.config.get(SEMANTIC_THRESHOLD_KEY, 0.72)
             if similarity >= semantic_threshold:
@@ -225,8 +219,7 @@ class ToolUseEvaluator:
     # ------------------------------------------------------------------
 
     def combined_score(self, p1: float, p2: float, tool_call_valid: bool = True) -> float:
-        """
-        Berechnet Combined Score mit Safety-Guardrail für Phase 1 Fehler.
+        """Berechnet Combined Score mit Safety-Guardrail für Phase 1 Fehler.
 
         Schwellenmodell:
         - tool_call_valid=False oder p1=0: hard cap at 60 (Tool komplett fehlgeschlagen)
@@ -249,17 +242,20 @@ class ToolUseEvaluator:
         # Hard fail: Tool nicht aufgerufen oder komplett gescheitert
         if not tool_call_valid or p1 == 0.0:
             result = min(base_combined, 60.0)
-            logger.debug(f"combined_score: hard fail (tool_call_valid={tool_call_valid}, p1={p1:.1f}) → {result:.2f}")
+            logger.debug(
+                "combined_score: hard fail (tool_call_valid=%s, p1=%.1f) → %.2f",
+                tool_call_valid, p1, result,
+            )
             return round(result, 2)
 
         # Gestaffelte Malus für schwache Execution
         malus = 0.0
         if p1 < 40.0:
             malus = 10.0
-            logger.debug(f"combined_score: p1={p1:.1f} < 40 → -10 Malus")
+            logger.debug("combined_score: p1=%.1f < 40 → -10 Malus", p1)
         elif p1 < 60.0:
             malus = 3.0
-            logger.debug(f"combined_score: p1={p1:.1f} < 60 → -3 Malus")
+            logger.debug("combined_score: p1=%.1f < 60 → -3 Malus", p1)
 
         result = max(base_combined - malus, 0.0)
         return round(result, 2)
@@ -273,13 +269,12 @@ class ToolUseEvaluator:
         p1: float,
         p2: float,
         combined: float,
-        tool_transcript: Dict[str, Any],
-        asset: Dict[str, Any],
+        tool_transcript: dict[str, Any],
+        asset: dict[str, Any],
     ) -> str:
         """Build a CrucibleMark-format audit log block."""
         evaluation = asset.get("evaluation", {})
         phase1 = evaluation.get("phase1", {})
-        phase2 = evaluation.get("phase2", {})
         is_failure_test = asset.get("is_failure_test", False)
 
         tool_type = phase1.get("expected_tool", "unknown")
@@ -337,8 +332,8 @@ class ToolUseEvaluator:
         p1: float,
         p2: float,
         combined: float,
-        tool_transcript: Dict[str, Any],
-        asset: Dict[str, Any],
+        tool_transcript: dict[str, Any],
+        asset: dict[str, Any],
         model_output: str = "",
     ) -> str:
         """Variant that accepts model_output for accurate hallucination pattern reporting."""
@@ -397,14 +392,14 @@ class ToolUseEvaluator:
 # Private helpers (module-level, not part of public API)
 # ------------------------------------------------------------------
 
-def _first_result_url(transcript: Dict[str, Any]) -> Optional[str]:
+def _first_result_url(transcript: dict[str, Any]) -> str | None:
     results = transcript.get("results") or []
     if results and isinstance(results[0], dict):
         return results[0].get("url")
     return None
 
 
-def _get_excerpt(transcript: Dict[str, Any]) -> str:
+def _get_excerpt(transcript: dict[str, Any]) -> str:
     raw = transcript.get("content_excerpt")
     if raw:
         return str(raw)[:200]

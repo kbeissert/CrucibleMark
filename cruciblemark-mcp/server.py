@@ -47,7 +47,7 @@ def _make_handler(config: dict, mode: str) -> type:
     http_fetch = HttpFetchTool(config, mode)
 
     class MCPHandler(BaseHTTPRequestHandler):
-        def log_message(self, format: str, *args: object) -> None:  # noqa: A002
+        def log_message(self, format: str, *args: object) -> None:
             pass  # suppress default access log; structured logging is done in tools
 
         def _send_json(self, data: dict, status: int = 200) -> None:
@@ -62,13 +62,13 @@ def _make_handler(config: dict, mode: str) -> type:
             length = int(self.headers.get("Content-Length", 0))
             return json.loads(self.rfile.read(length)) if length else {}
 
-        def do_GET(self) -> None:  # noqa: N802
+        def do_GET(self) -> None:
             if self.path == "/health":
                 self._send_json({"status": "ok", "mode": mode, "version": VERSION})
             else:
                 self._send_json({"error": "not found"}, 404)
 
-        def do_POST(self) -> None:  # noqa: N802
+        def do_POST(self) -> None:
             body = self._read_json_body()
             if self.path == "/tools/web_search":
                 result = web_search.search(

@@ -1,5 +1,4 @@
-"""
-Tool Use Report Generator — CrucibleMark
+"""Tool Use Report Generator — CrucibleMark
 Reads tooluse_leaderboard.csv + per-asset benchmark CSVs,
 produces Markdown reports and JSON web-export data.
 No LLM calls, no MCP calls.
@@ -17,7 +16,7 @@ import re
 import sys
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 import pandas as pd
 import yaml
@@ -29,7 +28,7 @@ if str(_ROOT) not in sys.path:
 logger = logging.getLogger(__name__)
 
 # Asset names — SSOT for display
-_ASSET_NAMES: Dict[str, str] = {
+_ASSET_NAMES: dict[str, str] = {
     "tooluse001": "EU Lizenzrecherche",
     "tooluse002": "HTTP Fetch & Extract",
     "tooluse003": "404 Fehlerbehandlung",
@@ -46,7 +45,7 @@ _BENCHMARK_CSVS = [
 # Module-level rule-based helpers
 # ---------------------------------------------------------------------------
 
-def _safe_float(val: Any) -> Optional[float]:
+def _safe_float(val: Any) -> float | None:
     if val is None or (isinstance(val, float) and math.isnan(val)):
         return None
     try:
@@ -70,7 +69,7 @@ def _slugify(model_name: str) -> str:
     return re.sub(r"[^a-z0-9]+", "-", name).strip("-")
 
 
-def _score_label(score: float, thresholds: Dict[str, float]) -> str:
+def _score_label(score: float, thresholds: dict[str, float]) -> str:
     if score >= thresholds.get("excellent", 85.0):
         return "Excellent"
     if score >= thresholds.get("good", 70.0):
@@ -80,8 +79,8 @@ def _score_label(score: float, thresholds: Dict[str, float]) -> str:
     return "Weak"
 
 
-def _build_strengths(row: Dict[str, Any], asset_details: List[Dict[str, Any]]) -> List[str]:
-    strengths: List[str] = []
+def _build_strengths(row: dict[str, Any], asset_details: list[dict[str, Any]]) -> list[str]:
+    strengths: list[str] = []
     p1 = _safe_float(row.get("p1_score", ""))
     p2 = _safe_float(row.get("p2_score", ""))
     tool_call_valid = str(row.get("tool_call_valid", "false")).lower() == "true"
@@ -105,8 +104,8 @@ def _build_strengths(row: Dict[str, Any], asset_details: List[Dict[str, Any]]) -
     return strengths
 
 
-def _build_weaknesses(row: Dict[str, Any]) -> List[str]:
-    weaknesses: List[str] = []
+def _build_weaknesses(row: dict[str, Any]) -> list[str]:
+    weaknesses: list[str] = []
     p2 = _safe_float(row.get("p2_score", ""))
     parse_error = str(row.get("parse_error_flag", "false")).lower() == "true"
     hallucination = str(row.get("hallucination_flag", "false")).lower() == "true"
@@ -127,7 +126,7 @@ def _build_weaknesses(row: Dict[str, Any]) -> List[str]:
     return weaknesses
 
 
-def _build_deployment_recommendation(row: Dict[str, Any]) -> str:
+def _build_deployment_recommendation(row: dict[str, Any]) -> str:
     combined = _safe_float(row.get("combined_score", ""))
     hallucination = str(row.get("hallucination_flag", "false")).lower() == "true"
 
@@ -147,15 +146,14 @@ def _build_deployment_recommendation(row: Dict[str, Any]) -> str:
 # ---------------------------------------------------------------------------
 
 class ToolUseReportGenerator:
-    """
-    Reads tooluse_leaderboard.csv and per-asset benchmark CSVs.
+    """Reads tooluse_leaderboard.csv and per-asset benchmark CSVs.
     Produces per-model Markdown + JSON and a fleet summary.
     No LLM calls, no MCP calls.
     """
 
-    def __init__(self, config: Dict[str, Any]) -> None:
+    def __init__(self, config: dict[str, Any]) -> None:
         self.config = config
-        self.report_cfg: Dict[str, Any] = config.get("report", {})
+        self.report_cfg: dict[str, Any] = config.get("report", {})
         self.root = _ROOT
 
     # ------------------------------------------------------------------
@@ -169,13 +167,13 @@ class ToolUseReportGenerator:
             return pd.DataFrame()
         try:
             return pd.read_csv(csv_path, dtype=str).fillna("")
-        except Exception as exc:
+        except Exception as exc:  # noqa: BLE001 — csv read boundary
             logger.warning("Could not read leaderboard: %s", exc)
             return pd.DataFrame()
 
-    def load_asset_details(self, model_id: str) -> List[Dict[str, Any]]:
+    def load_asset_details(self, model_id: str) -> list[dict[str, Any]]:
         """Load per-asset rows for model_id from the 3 main benchmark CSVs."""
-        results: List[Dict[str, Any]] = []
+        results: list[dict[str, Any]] = []
         for csv_name in _BENCHMARK_CSVS:
             csv_path = self.root / csv_name
             if not csv_path.exists():
@@ -187,7 +185,7 @@ class ToolUseReportGenerator:
                             continue
                         if row.get("model", "") != model_id:
                             continue
-                        data_dict: Dict[str, Any] = {}
+                        data_dict: dict[str, Any] = {}
                         raw = row.get("score_contributions", "")
                         if raw:
                             try:
@@ -220,13 +218,13 @@ class ToolUseReportGenerator:
             return "Medium"
         return "Slow"
 
-    def _build_strengths(self, row: Dict[str, Any], asset_details: List[Dict[str, Any]]) -> List[str]:
+    def _build_strengths(self, row: dict[str, Any], asset_details: list[dict[str, Any]]) -> list[str]:
         return _build_strengths(row, asset_details)
 
-    def _build_weaknesses(self, row: Dict[str, Any]) -> List[str]:
+    def _build_weaknesses(self, row: dict[str, Any]) -> list[str]:
         return _build_weaknesses(row)
 
-    def _build_deployment_recommendation(self, row: Dict[str, Any]) -> str:
+    def _build_deployment_recommendation(self, row: dict[str, Any]) -> str:
         return _build_deployment_recommendation(row)
 
     # ------------------------------------------------------------------
@@ -263,12 +261,12 @@ class ToolUseReportGenerator:
         parse_error = row.get("parse_error_flag", "false")
         hallucination = row.get("hallucination_flag", "false")
 
-        lines: List[str] = []
+        lines: list[str] = []
         lines.append(f"# Tool Use Review — {display_name}")
         lines.append(
             f"**Generated:** {date_str} | "
             f"**MCP Mode:** {row.get('mcp_mode', 'n/a')} | "
-            f"**Assets Run:** {row.get('assets_run', 'n/a')}"
+            f"**Assets Run:** {row.get('assets_run', 'n/a')}",
         )
         lines.append("")
 
@@ -403,7 +401,7 @@ class ToolUseReportGenerator:
         date_str = datetime.now().strftime(self.report_cfg.get("date_format", "%Y-%m-%d"))
         total_models = len(df)
 
-        lines: List[str] = []
+        lines: list[str] = []
         lines.append("# CrucibleMark Tool Use — Fleet Summary")
         lines.append(f"**Generated:** {date_str} | **Models Evaluated:** {total_models}")
         lines.append("")
@@ -415,7 +413,7 @@ class ToolUseReportGenerator:
         # Leaderboard table (sorted by combined_score desc)
         score_labels = self.report_cfg.get("score_labels", {})
 
-        def _tier(row: Dict[str, Any]) -> str:
+        def _tier(row: dict[str, Any]) -> str:
             cs = _safe_float(row.get("combined_score", "")) or 0.0
             return _score_label(cs, score_labels)
 
@@ -425,7 +423,7 @@ class ToolUseReportGenerator:
 
         sorted_df = df.copy()
         sorted_df["_cs_sort"] = sorted_df["combined_score"].apply(
-            lambda v: _safe_float(v) or -1.0
+            lambda v: _safe_float(v) or -1.0,
         )
         sorted_df = sorted_df.sort_values("_cs_sort", ascending=False)
 
@@ -489,7 +487,7 @@ class ToolUseReportGenerator:
             times = [v for v in times if v is not None]
             tokens = [_safe_int(r.get("total_tokens", 0)) for r in rows_dicts]
 
-            def _stats(lst: List[float]) -> str:
+            def _stats(lst: list[float]) -> str:
                 if not lst:
                     return "n/a | n/a | n/a"
                 return f"{sum(lst)/len(lst):.2f} | {min(lst):.2f} | {max(lst):.2f}"
@@ -530,10 +528,10 @@ class ToolUseReportGenerator:
 
         return "\n".join(lines)
 
-    def generate_web_json(self, model_id: str) -> Dict[str, Any]:
+    def generate_web_json(self, model_id: str) -> dict[str, Any]:
         """Build tooluse_data.json dict for web export."""
         df = self.load_leaderboard()
-        row: Dict[str, Any] = {}
+        row: dict[str, Any] = {}
         if not df.empty and "model" in df.columns:
             matching = df[df["model"] == model_id]
             if not matching.empty:
@@ -545,7 +543,7 @@ class ToolUseReportGenerator:
         combined = _safe_float(row.get("combined_score", "")) or 0.0
         score_labels = self.report_cfg.get("score_labels", {})
 
-        assets_out: List[Dict[str, Any]] = []
+        assets_out: list[dict[str, Any]] = []
         for a in asset_details:
             d = a.get("data", {})
             tc = d.get("tool_transcript") or {}
@@ -649,11 +647,11 @@ class ToolUseReportGenerator:
 # Config loader
 # ---------------------------------------------------------------------------
 
-def _load_config() -> Dict[str, Any]:
+def _load_config() -> dict[str, Any]:
     config_path = _ROOT / "config" / "tooluse_report_config.yaml"
     try:
         return yaml.safe_load(config_path.read_text(encoding="utf-8")) or {}
-    except Exception as exc:
+    except Exception as exc:  # noqa: BLE001 — yaml/filesystem boundary
         logger.warning("Could not load report config: %s", exc)
         return {}
 
@@ -685,7 +683,7 @@ def main() -> None:
             print(f"Fleet Summary (empty): {path}")
         return
 
-    models: List[str] = (
+    models: list[str] = (
         [args.model] if args.model else list(df["model"].dropna().unique())
     )
 

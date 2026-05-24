@@ -1,5 +1,4 @@
-"""
-Tool Adapter Audit — Diagnose Tool-Name und Call-Format Mismatches.
+"""Tool Adapter Audit — Diagnose Tool-Name und Call-Format Mismatches.
 
 Problem bei tooluse002 & Claude Sonnet 4.6:
 - Model returned: {"tool_call": {"name": "fetch", ...}}
@@ -18,7 +17,7 @@ from __future__ import annotations
 
 import json
 import logging
-from typing import Any, Dict, Optional, Tuple
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
@@ -39,9 +38,8 @@ class ToolAdapterAudit:
     """Audit Tool-Adapter layer for name/format mismatches."""
 
     @staticmethod
-    def normalize_tool_name(raw_name: str) -> Tuple[str, bool]:
-        """
-        Normalize raw tool name from model to canonical form.
+    def normalize_tool_name(raw_name: str) -> tuple[str, bool]:
+        """Normalize raw tool name from model to canonical form.
 
         Returns: (canonical_name, is_anomaly)
         - is_anomaly = True if raw_name needed normalization
@@ -57,9 +55,8 @@ class ToolAdapterAudit:
         return raw_lower, True
 
     @staticmethod
-    def validate_tool_call(tool_call: Dict[str, Any]) -> Dict[str, Any]:
-        """
-        Validate and normalize tool call structure.
+    def validate_tool_call(tool_call: dict[str, Any]) -> dict[str, Any]:
+        """Validate and normalize tool call structure.
 
         Returns audit dict with findings.
         """
@@ -83,7 +80,7 @@ class ToolAdapterAudit:
 
         # Normalize name
         canonical, is_anomaly = ToolAdapterAudit.normalize_tool_name(
-            tool_call.get("name")
+            tool_call.get("name"),
         )
         audit["canonical_name"] = canonical
         audit["is_anomaly"] = is_anomaly
@@ -108,10 +105,9 @@ class ToolAdapterAudit:
     @staticmethod
     def audit_mcp_routing(
         tool_name: str,
-        tool_transcript: Dict[str, Any],
-    ) -> Dict[str, Any]:
-        """
-        Audit MCP routing layer.
+        tool_transcript: dict[str, Any],
+    ) -> dict[str, Any]:
+        """Audit MCP routing layer.
 
         Checks if tool_transcript indicates routing anomalies.
         """
@@ -129,14 +125,14 @@ class ToolAdapterAudit:
             source = tool_transcript.get("source_url")
             if source is None or source == "n/a":
                 audit["anomalies"].append(
-                    f"source_url missing (expected for successful {tool_name})"
+                    f"source_url missing (expected for successful {tool_name})",
                 )
 
         if tool_transcript.get("status") == "error" and not tool_transcript.get(
-            "error"
+            "error",
         ):
             audit["anomalies"].append(
-                "error status but no error message in transcript"
+                "error status but no error message in transcript",
             )
 
         # Check for empty results
@@ -148,13 +144,12 @@ class ToolAdapterAudit:
 
     @staticmethod
     def diagnose_p1_zero_case(
-        tool_call_dict: Optional[Dict[str, Any]],
-        tool_transcript: Dict[str, Any],
-        asset: Dict[str, Any],
+        tool_call_dict: dict[str, Any] | None,
+        tool_transcript: dict[str, Any],
+        asset: dict[str, Any],
         p1_score: float,
-    ) -> Dict[str, Any]:
-        """
-        Diagnose why P1 = 0.0 occurred.
+    ) -> dict[str, Any]:
+        """Diagnose why P1 = 0.0 occurred.
 
         Returns diagnostic findings.
         """
@@ -180,7 +175,7 @@ class ToolAdapterAudit:
         if "tool_type_called" in tool_transcript:
             tool_name = tool_transcript["tool_type_called"]
             routing_audit = ToolAdapterAudit.audit_mcp_routing(
-                tool_name, tool_transcript
+                tool_name, tool_transcript,
             )
             diagnosis["audit_details"]["mcp_routing"] = routing_audit
 
@@ -207,7 +202,7 @@ class ToolAdapterAudit:
         return diagnosis
 
     @staticmethod
-    def log_audit(audit: Dict[str, Any], context: str = "") -> None:
+    def log_audit(audit: dict[str, Any], context: str = "") -> None:
         """Log audit findings."""
         msg = f"[TOOL_ADAPTER_AUDIT] {context} — {json.dumps(audit, ensure_ascii=False)}"
         if audit.get("anomalies") or audit.get("is_anomaly"):

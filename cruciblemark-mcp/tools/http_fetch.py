@@ -48,7 +48,7 @@ class HttpFetchTool:
                     "tool_type": "http_fetch",
                     "status": "blocked",
                     "url": url,
-                })
+                }),
             )
             return result
 
@@ -67,7 +67,7 @@ class HttpFetchTool:
                 "status": result["status"],
                 "status_code": result.get("status_code"),
                 "url": url,
-            })
+            }),
         )
         return result
 
@@ -93,8 +93,8 @@ class HttpFetchTool:
                 "request_id": request_id,
                 "timestamp": timestamp,
             }
-        except Exception as exc:
-            logger.error("http_fetch live request failed: %s", exc)
+        except Exception:
+            logger.exception("http_fetch live request failed")
             return {
                 "status": "error",
                 "status_code": None,
