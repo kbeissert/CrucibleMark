@@ -32,16 +32,18 @@ except ImportError:
 from benchmark_modules.tooluse.core.constants import (
     AUDIT_MCP_UNAVAILABLE,
     FIELD_COMBINED_SCORE,
+    FIELD_CONTENT_VERIFICATION,
     FIELD_HALLUCINATION_FLAG,
     FIELD_P1_SCORE,
     FIELD_P2_SCORE,
+    FIELD_TOOL_CONTENT_STATE,
     TOOL_HTTP_FETCH,
     TOOL_WEB_SEARCH,
 )
 from benchmark_modules.tooluse.core.diagnostics import PipelineDiagnostician
 from benchmark_modules.tooluse.core.evaluators import ToolUseEvaluator
 from benchmark_modules.tooluse.core.io_manager import ToolUseIOManager
-from benchmark_modules.tooluse.core.tool_adapter_audit import ToolAdapterAudit
+from benchmark_modules.tooluse.core.tool_adapter_audit import ToolAdapterAudit, _load_scoring_caps
 from utils.mcp_health import check_mcp_health, mcp_base_url
 from utils.module_registry import load_module_config
 
@@ -275,7 +277,13 @@ class ToolUseTest(BaseTest):
         tool_call_parsed: dict[str, Any] = result.data.get("tool_call_parsed", {})
 
         p1 = evaluator.score_phase1(tool_transcript, self.asset)
-        p2 = evaluator.score_phase2(model_output, tool_transcript, self.asset)
+        p2_raw = evaluator.score_phase2(model_output, tool_transcript, self.asset)
+
+        # Content Verification Gate — kapselt P2 basierend auf Content-State
+        caps = _load_scoring_caps()
+        p2, cv_block = ToolAdapterAudit.run_content_verification(
+            tool_transcript, model_output, self.asset, p1, p2_raw, caps,
+        )
 
         # Determine if tool call was valid (used for combined score guardrail)
         # For failure tests the expected outcome is an error — status check is inverted
@@ -328,6 +336,8 @@ class ToolUseTest(BaseTest):
         result.data[FIELD_HALLUCINATION_FLAG] = (
             p2 == 0.0 and self.asset.get("is_failure_test", False)
         )
+        result.data[FIELD_CONTENT_VERIFICATION] = cv_block
+        result.data[FIELD_TOOL_CONTENT_STATE] = cv_block["state"]
         result.data["pipeline_diagnostic"] = {
             "asset_id": diag.asset_id,
             "scenario": diag.scenario,

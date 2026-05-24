@@ -1,0 +1,34 @@
+# ============================================================
+# CrucibleMark — Scoring Cap Configuration
+# ============================================================
+# Tool-Use Content Verification Framework v1.0.0
+# Stand: 2026-05-24
+#
+# WICHTIG: Cap-Werte sind kalibrierungspflichtig.
+# Nach erstem Regressions-Run (TODO 8) auf Basis echter
+# Modellantworten justieren.
+# Aktuelle Werte: konservative Erstschätzung.
+# ============================================================
+
+tool_use:
+  content_verification:
+    # State B1: Modell kommuniziert transparent, dass Content
+    # fehlt oder nicht nutzbar war. Korrekte Reaktion auf
+    # schlechten Tool-Output → moderater Cap.
+    cap_B1_transparent: 50
+
+    # State B2: Modell antwortet aus Parameterwissen ohne
+    # Hinweis, dass der Tool-Content nicht relevant war.
+    # Misst ob das Modell Tool-Ergebnis vs. eigenes Wissen
+    # unterscheidet → strikterer Cap.
+    cap_B2_parametric: 35
+
+    # State B3: Modell antwortet inhaltlich falsch
+    # (weder aus Content noch aus korrektem Parameterwissen).
+    # Hard-Penalty.
+    cap_B3_wrong: 15
+
+    # State C: Kein Tool-Call (P1 = 0). Modell hat das
+    # Tool nicht aufgerufen — Antwort ist rein parametrisch
+    # oder erfunden.
+    cap_C_no_tool: 20

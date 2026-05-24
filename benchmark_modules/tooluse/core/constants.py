@@ -17,6 +17,24 @@ FIELD_COMBINED_SCORE = "combined_score"
 FIELD_TOOL_CALLED = "tool_called"
 FIELD_HALLUCINATION_FLAG = "hallucination_flag"
 
+# Content Verification result field names
+FIELD_CONTENT_VERIFICATION = "content_verification"
+FIELD_TOOL_CONTENT_STATE = "tool_content_state"
+
+# Content Verification config keys (gelesen aus config/scoring.yaml)
+CV_CAP_B1_KEY = "cap_B1_transparent"
+CV_CAP_B2_KEY = "cap_B2_parametric"
+CV_CAP_B3_KEY = "cap_B3_wrong"
+CV_CAP_C_KEY = "cap_C_no_tool"
+
+# Default caps — Fallback wenn config/scoring.yaml nicht vorhanden
+CV_CAP_DEFAULTS: dict[str, int] = {
+    CV_CAP_B1_KEY: 50,
+    CV_CAP_B2_KEY: 35,
+    CV_CAP_B3_KEY: 15,
+    CV_CAP_C_KEY: 20,
+}
+
 # Phase identifiers
 PHASE_TOOL_EXECUTION = "phase1"
 PHASE_SYNTHESIS = "phase2"

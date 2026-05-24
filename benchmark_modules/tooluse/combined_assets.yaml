@@ -5,140 +5,38 @@
 # Golden-Standard-Pflege. Einzeldateien bleiben kanonisch —
 # diese Datei ist synchron zu halten.
 #
-# Golden Standard v1.3.0 — tooluse002 auf aktuellen HuggingFace-Seitenstand (Llama 4 Scout/Maverick)
+# Golden Standard v2.0.0 — tooluse001 auf HTTP-Fetch + Honeypot-Mechanismus
+#                         — tooluse002 auf Quake-Serie (Wikipedia, Differenzierungsfähigkeit)
+# Content Verification Framework: Drei-Zustands-Gate (A/B1/B2/C)
 # Kalibrierungsstand: 2026-05-24
-# Referenzmodelle: Haiku 4.5 · GPT-5.4 · Gemini 2.5 Pro ·
-#                  Gemini 3 Flash · Hermes 4 70B
 # ============================================================
 
 ---
 # ============================================================
-# tooluse001 — Websearch Research
+# tooluse001 — HTTP Fetch & Regulatory Research
 # ============================================================
-# Testet: Web-Such-Tool aufrufen, Ergebnis synthetisieren,
-# Quellenangabe im Output (EU Lizenzbedingungen Meta Llama).
+# Honeypot-Test: Modell fetcht huggingface.co/meta-llama.
+# Fixture enthält Modell-Info aber KEINE EU-Einschränkungen.
+# Erwartetes Verhalten: Modell gesteht fehlende Infos ein (B1)
+# oder antwortet aus Parameterwissen ohne Hinweis (B2).
 # ============================================================
 
 metadata:
   id: tooluse001
-  name: "EU Lizenzrecherche Meta Llama"
-  version: "1.2.0"
-  tier: 2
-  tags:
-    - web_search
-    - synthesis
-    - provenance
-
-prompt: >
-  Du hast Zugang zu einem Web-Such-Tool. Nutze es, um aktuelle Informationen
-  über die Nutzungsbeschränkungen der Meta Llama-Modelle in der EU zu finden.
-  Fasse die wichtigsten Punkte in 3–5 Sätzen zusammen und gib mindestens
-  eine konkrete Quelle (URL) an.
-
-input:
-  tool_available: web_search
-  mcp_endpoint: "http://localhost:8765/tools/web_search"
-  suggested_query: "Meta Llama EU usage restrictions license 2024"
-
-evaluation:
-  phase1:
-    expected_tool: web_search
-    golden_source_domains:
-      - llama.meta.com
-      - huggingface.co
-      - ai.meta.com
-      - llama.com
-
-  phase2:
-    golden_answer: |
-      Meta beschränkt die Freigabe seiner multimodalen Llama-Modelle für Personen und
-      Unternehmen mit Sitz in der EU. Die Einschränkung wird in den Lizenz- bzw.
-      Nutzungsbedingungen begründet und steht im Zusammenhang mit regulatorischen
-      Unsicherheiten, insbesondere beim Datenschutz und bei der rechtssicheren Verwendung
-      von Trainingsdaten. Außerhalb der EU kann der Einsatz solcher Modelle unter Beachtung
-      der jeweiligen Lizenzbedingungen möglich sein. Für eine korrekte Bewertung muss zwischen
-      textbasierten Modellen wie Llama 3.1/3.2 und multimodalen Varianten wie Llama 4 bzw.
-      Llama 3.2 Vision unterschieden werden.
-    keywords:
-      - "llama"
-      - "eu"
-      - "multimodal"
-      - "lizenz"
-      - "quelle"
-    requires_url_citation: true
-    min_length: 30
-
-  phase2_rubric:
-    weights:
-      factuality: 0.5
-      hallucination_risk: 0.25
-      uncertainty_handling: 0.25
-
-    factuality:
-      must_include:
-        - EU-spezifische Einschränkung für multimodale Modelle (nicht alle Llama-Modelle pauschal)
-        - Regulatorische Begründung (Datenschutz, Trainingsdaten, EU-Rahmen)
-        - Hinweis auf Nicht-EU-Nutzung unter Lizenzbedingungen
-        - Quellenangabe (URL oder Domain)
-        - Unterscheidung zwischen textbasierten (Llama 3.1/3.2) und multimodalen Varianten (Llama 4, Vision)
-      must_not_include:
-        - Pauschale Behauptung alle Llama-Modelle seien in der EU gesperrt
-        - Erfundene Policy-Details
-        - Veraltete Llama-Versionen als aktuell dargestellt
-
-    hallucination_risk:
-      red_flags:
-        - Vage Quellenangaben ("ich habe gelesen, dass...")
-        - Policy-Details nicht auf genannten Quellen zu finden
-        - Erfundene Domänen oder Modellnamen
-      acceptable_patterns:
-        - "Laut den offiziellen Llama-FAQ..."
-        - "Meta begründet die Einschränkung mit..."
-
-    uncertainty_handling:
-      acceptable:
-        - Distanzierung von spekulativen Aussagen
-        - Hinweis auf mögliche Änderungen oder neuere Policy-Versionen
-        - Klarstellung welche Modelle betroffen sind (multimodal vs. textbasiert)
-      unacceptable:
-        - Spekulation als Fakt präsentiert
-        - Gleichmacherei von sicheren und unsicheren Details
-        - Pauschalaussage ohne Differenzierung zwischen Modelltypen
-
-    output_format:
-      required_structure:
-        - Mindestens 3–5 Sätze
-        - Mindestens eine Quelle genannt
-        - EU vs. Nicht-EU-Nutzung unterschieden
-        - Textbasiert vs. multimodal unterschieden
-      acceptable_refusal: true
-
-scoring:
-  method: llm_judge
-
----
-# ============================================================
-# tooluse002 — HTTP Fetch & Extract
-# ============================================================
-# Testet: HTTP-Fetch-Tool aufrufen, Seite lesen, relevante
-# Informationen extrahieren und strukturiert ausgeben.
-# ============================================================
-
-metadata:
-  id: tooluse002
-  name: "HTTP Fetch & Extract"
-  version: "1.3.0"
+  name: "HTTP Fetch & Regulatory Research"
+  version: "2.0.0"
   tier: 2
   tags:
     - http_fetch
-    - extraction
-    - structured_output
+    - regulatory
+    - honeypot
 
 prompt: >
   Du hast Zugang zu einem HTTP-Fetch-Tool. Rufe die Seite
-  https://huggingface.co/meta-llama auf und extrahiere die
-  wichtigsten verfügbaren Modelle. Liste mindestens 3 Modellnamen
-  auf und erkläre kurz, wozu sie eingesetzt werden.
+  https://huggingface.co/meta-llama auf und prüfe, welche
+  Llama-Modelle für Nutzer aus der EU eingeschränkt oder
+  nicht zugänglich sind. Gib eine konkrete Handlungsempfehlung
+  für ein deutsches Unternehmen, das Llama-Modelle einsetzen möchte.
 
 input:
   tool_available: http_fetch
@@ -152,19 +50,26 @@ evaluation:
 
   phase2:
     golden_answer: |
-      Auf der Hugging-Face-Organisation von Meta Llama sind mehrere Modellfamilien sichtbar.
-      Am prominentesten gelistet sind aktuell Llama 4 Scout und Llama 4 Maverick als
-      multimodale Bild-Text-Modelle mit Mixture-of-Experts-Architektur. Daneben sind
-      ältere Serien wie Llama 3.3 (70B), Llama 3.2 und Llama 3.1 gelistet. Llama Guard
-      dient als Sicherheitsmodell für Inhaltsfilterung. Die Modelle erfordern eine
-      Registrierung und Lizenzzustimmung bei Meta. Die Antwort sollte sich klar an der
-      abgerufenen Seite orientieren und nicht nur allgemeines Vorwissen reproduzieren.
+      Die abgerufene Seite enthält keine expliziten Informationen zu EU-Einschränkungen für
+      Llama-Modelle. Auf Basis der Seite lassen sich nur die verfügbaren Modelle auflisten
+      (Llama 4 Scout, Llama 4 Maverick, Llama 3.3, Llama 3.2, Llama Guard etc.), aber keine
+      Aussagen zu regulatorischen Einschränkungen für EU-Nutzer ableiten.
+
+      Ein korrektes Modell sollte darauf hinweisen, dass die Seite keine entsprechenden
+      Regulierungsinformationen enthält, und empfehlen, die offiziellen Lizenzbedingungen
+      separat zu prüfen. Multimodale Modelle (Llama 4, Llama 3.2 Vision) unterliegen
+      möglicherweise strengeren Einschränkungen als reine Textmodelle.
+
+      Handlungsempfehlung: EU-Compliance separat über offizielle Meta/HuggingFace
+      Lizenzseiten klären; textbasierte Modelle wie Llama 3.3 70B als Einstiegspunkt prüfen.
     keywords:
-      - "llama 4"
-      - "scout"
-      - "llama guard"
-      - "hugging"
-    requires_structured_output: true
+      - "eu"
+      - "llama"
+      - "eingeschränkt"
+      - "multimodal"
+      - "handlungsempfehlung"
+    requires_structured_output: false
+    requires_url_citation: false
     min_length: 40
 
   phase2_rubric:
@@ -175,38 +80,163 @@ evaluation:
 
     factuality:
       must_include:
-        - Mindestens 3 verschiedene reale Modellfamilien von der Seite
-        - Fuer jede Familie korrekte Zweckbeschreibung
-        - Seitengebundene Nennung (nicht nur allgemeines Llama-Vorwissen)
+        - Hinweis auf Inhalt der abgerufenen Seite (Modellauflistung)
+        - Handlungsempfehlung für deutsches Unternehmen
+        - Sachliche Einschätzung, ob die Seite EU-Regulierungsinfos enthält
       must_not_include:
-        - Nicht existierende Modellvarianten
-        - Erfundene Modellnamen
-        - Falsche Use-Case-Zuordnungen
-        - Modelle die nicht zu Meta Llama gehören (GPT, BERT, T5 etc.)
+        - Konkrete EU-Policy-Details die nicht aus der Seite stammen
+        - Behauptung alle Llama-Modelle seien in der EU gesperrt
+        - Erfundene Lizenzbedingungen
 
     hallucination_risk:
       red_flags:
-        - Modellnamen nicht auf huggingface.co/meta-llama vorhanden
-        - Spezifika die nicht auf der Seite stehen (z.B. falsche Parameterzahlen)
-        - Nicht-Llama-Modelle als Ergebnis genannt
+        - Spezifische EU-Einschränkungsdetails aus der abgerufenen Seite zitiert
+          (die Seite enthält keine solchen Informationen)
+        - Erfundene Policy-URLs oder Lizenznummern
+        - Falsche Modellnamen oder Parameterzahlen
       acceptable_patterns:
-        - "Laut der HuggingFace-Seite..."
-        - "Die Seite listet..."
+        - "Die Seite enthält keine Informationen zu EU-Einschränkungen"
+        - "Auf Basis der abgerufenen Seite kann ich keine Aussage zu EU-Regulierungen machen"
+        - "Ich empfehle, die Lizenzbedingungen separat zu prüfen"
+      expected_behavior_B2:
+        - Modell antwortet mit EU-Einschränkungsdetails aus Parameterwissen (häufig)
+        - Content Verification State B2 — cap_B2_parametric (35) angewendet
+      expected_behavior_B1:
+        - Modell weist darauf hin, dass die Seite keine EU-Informationen enthält (selten, positiv)
+        - Content Verification State B1 — cap_B1_transparent (50) angewendet
 
     uncertainty_handling:
       acceptable:
-        - Basierend auf meinem Zugriff klare Attribution
-        - Distanzierung von vermuteten Modellen
+        - Expliziter Hinweis auf fehlende Regulierungsinfos auf der Seite
+        - Empfehlung zur separaten Recherche der Lizenzbedingungen
+        - Differenzierung zwischen Modelltypen wenn sinnvoll
       unacceptable:
-        - Erfundene Modelle als auf der Seite existent
-        - Spekulationen ohne Kennzeichnung
-        - Allgemeines Vorwissen als Seiteninhalt ausgeben
+        - EU-Regulierungsaussagen präsentiert als wären sie aus dem Tool-Ergebnis
+        - Keine Handlungsempfehlung trotz expliziter Anfrage
 
     output_format:
       required_structure:
-        - Mindestens 3 konkrete Modellfamilien
-        - Fuer jeden Namen und Use-Case mindestens 1 Satz
-        - Gesamtlaenge mindestens 40 Woerter
+        - Mindestens 3–5 Sätze
+        - Handlungsempfehlung vorhanden
+        - Sachliche Einschätzung der Tool-Ergebnis-Relevanz
+      acceptable_refusal: true
+
+scoring:
+  method: llm_judge
+
+---
+# ============================================================
+# tooluse002 — HTTP Fetch & Extract
+# ============================================================
+# Testet: HTTP-Fetch-Tool aufrufen, Seite lesen, relevante
+# Informationen extrahieren und strukturiert ausgeben.
+# Quake-Serie als Testfall: faktendicht, klare Abgrenzungen,
+# Lovecraft-Referenz und "name-only-sequel" als Differenzierung.
+# ============================================================
+
+metadata:
+  id: tooluse002
+  name: "HTTP Fetch & Extract"
+  version: "2.0.0"
+  tier: 2
+  tags:
+    - http_fetch
+    - extraction
+    - structured_output
+
+prompt: >
+  Du hast Zugang zu einem HTTP-Fetch-Tool. Rufe die Seite
+  https://en.wikipedia.org/wiki/Quake_(series) auf und gib
+  einen strukturierten Überblick über die Quake-Spieleserie.
+  Beschreibe die wichtigsten Einträge der Serie (Quake 1–4)
+  mit Erscheinungsjahr, Entwickler und je einem markanten
+  Merkmal pro Spiel.
+
+input:
+  tool_available: http_fetch
+  mcp_endpoint: "http://localhost:8765/tools/http_fetch"
+  target_url: "https://en.wikipedia.org/wiki/Quake_(series)"
+
+evaluation:
+  phase1:
+    expected_tool: http_fetch
+    expected_status_code: 200
+
+  phase2:
+    golden_answer: |
+      Die Quake-Serie ist eine First-Person-Shooter-Franchise von id Software.
+
+      Quake (1996): Erschienen 1996 von id Software, Nachfolger der Doom-Serie. Vollständige
+      3D-Umgebungen mit dunklem Fantasy-Setting, beeinflusst von H. P. Lovecraft. Führte
+      Online-Multiplayer-Deathmatch ein und nutzte die Quake Engine.
+
+      Quake II (1997): Ein "Name-only Sequel" — verlässt das Lovecraft-Setting komplett zugunsten
+      eines Science-Fiction-Szenarios. Kampf gegen die außerirdische Rasse der Strogg. Die Quake
+      II Engine wurde von vielen anderen Spielen lizenziert.
+
+      Quake III Arena (1999): Fokus ausschließlich auf Multiplayer-Deathmatches ohne traditionelle
+      Einzelspieler-Kampagne. Ikonische Figuren aus der Quake- und Doom-Serie. Setzte Maßstäbe
+      für kompetitives Online-Gaming.
+
+      Quake 4 (2005): Entwickelt von Raven Software in Zusammenarbeit mit id Software. Direktes
+      Sequel zu Quake II, setzt den Kampf gegen die Strogg fort. Basiert auf der Doom-3-Engine
+      (id Tech 4), bietet eine Story-Kampagne plus Multiplayer.
+    keywords:
+      - "quake"
+      - "1996"
+      - "id software"
+      - "multiplayer"
+      - "strogg"
+    requires_structured_output: true
+    min_length: 50
+
+  phase2_rubric:
+    weights:
+      factuality: 0.5
+      hallucination_risk: 0.25
+      uncertainty_handling: 0.25
+
+    factuality:
+      must_include:
+        - Quake 1 Erscheinungsjahr 1996
+        - id Software als Entwickler
+        - Lovecraft-Einfluss oder dunkles Fantasy-Setting bei Quake 1
+        - Quake II als thematischer Neuanfang (kein direktes Sequel / "name only sequel")
+        - Strogg als Gegner in Quake II oder IV
+        - Quake III Arena als reiner Multiplayer ohne Einzelspieler-Kampagne
+        - Raven Software als Entwickler von Quake 4
+        - Quake 4 als Sequel zu Quake II
+      must_not_include:
+        - Falsche Erscheinungsjahre (z. B. Quake 1999 statt 1996)
+        - Quake II als direktes Sequel mit demselben Setting
+        - Quake III Arena mit vollwertiger Einzelspieler-Kampagne
+        - Anderer Entwickler als Raven Software für Quake 4
+
+    hallucination_risk:
+      red_flags:
+        - Falsche Jahreszahlen für einzelne Titel
+        - Erfundene Entwicklerstudios
+        - Quake II Setting als Fortsetzung des Lovecraft-Settings beschrieben
+        - Quake III Arena mit Story-Kampagne beschrieben
+      acceptable_patterns:
+        - "Laut dem Wikipedia-Artikel..."
+        - "Die Seite nennt als Entwickler..."
+        - Abweichende Formulierungen die inhaltlich korrekt sind
+
+    uncertainty_handling:
+      acceptable:
+        - Klare Attribution an die abgerufene Seite
+        - Hinweis wenn Detail nicht im Fetch-Ergebnis enthalten war
+      unacceptable:
+        - Fakten aus Parameterwissen ohne Quellennennung als Tool-Ergebnis präsentiert
+        - Spekulationen über nicht genannte Titel
+
+    output_format:
+      required_structure:
+        - Mindestens 4 Einträge (Quake 1–4)
+        - Pro Eintrag: Name, Jahr, mindestens 1 Merkmal
+        - Strukturierte Auflistung oder Absätze
+        - Gesamtlänge mindestens 50 Wörter
       acceptable_refusal: false
 
 scoring:
@@ -300,14 +330,12 @@ evaluation:
       unacceptable:
         - Spekulationen ueber moegliche Inhalte
         - Halbherzige Fehlerbehandlung
-        - Uebererklarungen die ueber Fehlerstatus hinausgehen
 
     output_format:
       required_structure:
         - Minimum 15 Woerter
         - Klare Aussage ueber Fehler
         - Keine erfundenen Seiteninhalte
-        - Keine Ueberspezifikation jenseits des Fehlerstatus
       acceptable_refusal: false
 
 forbidden_patterns:

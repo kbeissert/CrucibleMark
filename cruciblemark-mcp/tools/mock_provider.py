@@ -82,6 +82,42 @@ Commercial use is permitted under the respective license terms.
         "# OpenAI Evals\nEvals is a framework for evaluating LLMs and an open-source registry.",
     ),
     "https://httpbin.org/get": (200, '{"args": {}, "headers": {}, "url": "https://httpbin.org/get"}'),
+    "https://en.wikipedia.org/wiki/Quake_(series)": (
+        200,
+        """Quake (series) — Wikipedia
+
+The Quake series is a franchise of first-person shooter video games developed by id Software.
+
+Quake (1996)
+Quake is a first-person shooter released in 1996 by id Software. It is the successor to the Doom series
+and marked a significant shift to full 3D environments. The game features a dark fantasy setting heavily
+influenced by the works of H. P. Lovecraft, combining science fiction elements with gothic horror.
+Quake introduced online multiplayer deathmatches and is considered a landmark in multiplayer gaming.
+It uses the Quake engine, which was later licensed to many other developers.
+
+Quake II (1997)
+Quake II, released in 1997 by id Software, is a name-only sequel to the original Quake. It abandoned
+the dark fantasy and Lovecraftian themes of its predecessor entirely, introducing a new science fiction
+setting in which humanity fights against an alien race called the Strogg. Quake II features a connected
+single-player campaign and remains influential for its multiplayer modes and the Quake II engine,
+which powered dozens of games.
+
+Quake III Arena (1999)
+Quake III Arena, released in 1999 by id Software, focused exclusively on multiplayer combat and
+contains no traditional single-player campaign. It pitted iconic characters from the Quake and Doom
+series in arena-style deathmatches. The game's netcode and physics engine set the standard for
+competitive online shooters. A single-player mode exists only as bot matches.
+
+Quake 4 (2005)
+Quake 4 was released in 2005 and developed by Raven Software in collaboration with id Software.
+It serves as a direct sequel to Quake II, continuing the war against the Strogg. Quake 4 features
+a story-driven single-player campaign alongside multiplayer modes based on Quake III Arena's gameplay.
+It was developed on the Doom 3 engine (id Tech 4).
+
+The Quake series has sold tens of millions of copies worldwide and is considered foundational to
+the first-person shooter genre, particularly in establishing competitive online multiplayer gaming.
+""",
+    ),
 }
 
 

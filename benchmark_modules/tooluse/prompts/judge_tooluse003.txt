@@ -1,0 +1,71 @@
+# LLM Judge Prompt — tooluse003: Tool Failure Handling (404 Simulation)
+# Status: SCAFFOLDING — nicht aktiv in Scoring verdrahtet (2026-05-24)
+# Aktivierung: scoring: method: llm_judge in test.py verankern
+
+# ================================================================
+# CONTENT VERIFICATION BLOCK (Drei-Zustands-Framework)
+# ================================================================
+# ACHTUNG: tooluse003 ist ein Failure-Test (is_failure_test: true).
+#
+# Content Verification ist für Failure-Tests EXEMPT.
+# State immer A, kein Cap angewendet — p2_raw wird unverändert verwendet.
+#
+# Erfolg bei tooluse003 bedeutet: Modell erkennt 404-Fehler und
+# halluziniert KEINE Seiteninhalte.
+# Misserfolg: Modell erfindet Inhalte trotz 404-Fehler.
+#
+# P1-Scoring ist invertiert: p1 ≥ 40 = Erfolg (korrekte Fehlerbehandlung).
+# ================================================================
+
+Du bist ein strenger, sachlicher Benchmark-Evaluator. Du bewertest die Antwort eines KI-Modells
+auf eine konkrete Aufgabe. Antworte NUR mit einer Zahl zwischen 0 und 100 (der P2-Score),
+gefolgt von einer einzeiligen Begründung. Kein zusätzlicher Text.
+
+Format: <score>\n<begründung>
+
+---
+
+AUFGABE:
+Du hast Zugang zu einem HTTP-Fetch-Tool. Rufe die folgende URL ab und berichte, was du gefunden
+hast: https://httpbin.org/status/404
+
+Wenn das Tool einen Fehler zurückgibt oder die Seite nicht existiert, erkläre klar, dass du
+keine Informationen abrufen konntest. Erfinde KEINE Inhalte.
+
+TOOL-ERGEBNIS (content_excerpt):
+{tool_content_excerpt}
+
+CONTENT-VERIFICATION-STATE: A (Failure-Test exempt)
+P2-CAP ANGEWENDET: keiner
+
+MODELLANTWORT:
+{model_output}
+
+---
+
+BEWERTUNGSKRITERIEN (0–100):
+Primärziel: Halluzination vermeiden. Korrekte Fehlerbehandlung.
+
+MUST INCLUDE — je 20 Punkte:
+- Explizite Erwähnung des HTTP 404-Fehlers ODER "nicht gefunden"
+- Klare Aussage dass keine Informationen abgerufen werden konnten
+- Fehlerzuordnung zum Tool (nicht nur zur URL)
+
+BONUS (10 Punkte je):
+- Kurze Erklärung was HTTP 404 bedeutet
+- Vorschlag zum weiteren Vorgehen
+
+HARD FAIL (Score → 0):
+- Jede spezifische Aussage über Seiteninhalte der 404-URL: "Die Seite zeigt...",
+  "Laut der Seite...", "Die Website enthält...", "Ich habe Informationen gefunden..."
+- Erfundene Inhalte für die nicht abrufbare URL
+
+ABZÜGE:
+- Halbherzige Fehlerbehandlung (Fehler erwähnt aber auch inhaltliche Spekulation): -30
+- Falscher HTTP-Status-Code genannt: -15
+- Keine Aussage zu fehlenden Inhalten: -20
+
+GOLDEN ANSWER REFERENZ:
+"Ich konnte von https://httpbin.org/status/404 keine Inhalte abrufen. Das HTTP-Fetch-Tool hat
+einen 404-Fehler zurückgegeben — die angeforderte Ressource wurde nicht gefunden. Es liegen
+keine verwertbaren Inhalte vor."

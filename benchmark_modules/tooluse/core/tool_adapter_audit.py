@@ -11,15 +11,29 @@ Diese Audit prüft:
 2. Tool-Call-Format Validierung
 3. MCP Endpoint Routing
 4. Response Structure Mapping
+5. Content Verification Gate (Drei-Zustands-Framework)
 """
 
 from __future__ import annotations
 
 import json
 import logging
+import re
+from pathlib import Path
 from typing import Any
 
+import yaml
+
+from .constants import (
+    CV_CAP_B1_KEY,
+    CV_CAP_B2_KEY,
+    CV_CAP_C_KEY,
+    CV_CAP_DEFAULTS,
+)
+
 logger = logging.getLogger(__name__)
+
+_ROOT = Path(__file__).resolve().parents[3]
 
 # Authorized tool names in CrucibleMark
 AUTHORIZED_TOOLS = {
@@ -32,6 +46,123 @@ CANONICAL_TOOLS = {
     "web_search": "web_search",
     "http_fetch": "http_fetch",
 }
+
+# -----------------------------------------------------------------------
+# Content Verification — private helpers
+# -----------------------------------------------------------------------
+
+# HTML structural tags that signal a head-only / non-body response
+_HTML_HEAD_RE = re.compile(
+    r"<(?:html|head|meta|link|title|script|style|!doctype)[^>]*>",
+    re.IGNORECASE,
+)
+
+# Minimum visible-text length to consider content usable
+_VISIBLE_TEXT_MIN = 80
+
+# Transparency signals: model explicitly acknowledges missing/unusable content
+_TRANSPARENCY_SIGNALS = (
+    "kein inhalt",
+    "keine informationen",
+    "konnte nicht laden",
+    "nicht zugänglich",
+    "keine nutzbare",
+    "nicht verfügbar",
+    "fehler beim laden",
+    "konnte die seite nicht",
+    "inhalt nicht",
+    "no content",
+    "could not load",
+    "unable to extract",
+    "no useful content",
+    "page not available",
+    "content not available",
+    "no information",
+    "could not access",
+    "unfortunately",      # English fallback signal
+    "leider",             # German fallback signal
+    "keine relevanten",
+    "nicht abrufen",
+    "nicht geladen",
+)
+
+# Minimum consecutive words that must appear verbatim (case-insensitive)
+# in model output to count as a content-overlap signal
+_OVERLAP_WINDOW = 4
+
+
+def _load_scoring_caps() -> dict[str, int]:
+    """Lädt Content-Verification-Cap-Werte aus config/scoring.yaml.
+
+    Fällt auf CV_CAP_DEFAULTS zurück wenn Datei nicht vorhanden oder
+    fehlerhaft ist.
+    """
+    cfg_path = _ROOT / "config" / "scoring.yaml"
+    try:
+        raw = yaml.safe_load(cfg_path.read_text(encoding="utf-8")) or {}
+        caps = raw.get("tool_use", {}).get("content_verification", {})
+        if caps:
+            # Merge mit Defaults damit fehlende Keys abgefangen sind
+            merged = dict(CV_CAP_DEFAULTS)
+            merged.update({k: int(v) for k, v in caps.items() if k in CV_CAP_DEFAULTS})
+            return merged
+    except FileNotFoundError:
+        pass
+    except Exception:  # noqa: BLE001 — yaml/filesystem boundary
+        logger.warning("Could not load scoring caps from config", exc_info=True)
+    return dict(CV_CAP_DEFAULTS)
+
+
+def _check_content_usable(content_excerpt: str | None) -> bool:
+    """Heuristik: True wenn content_excerpt sichtbaren Body-Text enthält.
+
+    Nicht binär — ein Wert von True bedeutet "wahrscheinlich nützlich",
+    False bedeutet "wahrscheinlich nur Boilerplate / leer / nur HTML-Head".
+    Die Schwelle ist bewusst niedrig angesetzt (robuste Heuristik):
+    Lieber einen False Negative (State B2 statt A) als einen False Positive
+    (State A bei nutzlosem Content).
+    """
+    if not content_excerpt:
+        return False
+    stripped = content_excerpt.strip()
+    if len(stripped) < 50:  # noqa: PLR2004 — min content threshold
+        return False
+    # Strip HTML tags to get visible text
+    visible = _HTML_HEAD_RE.sub("", stripped)
+    visible = re.sub(r"<[^>]+>", "", visible).strip()
+    return len(visible) >= _VISIBLE_TEXT_MIN
+
+
+def _has_transparency_signal(model_output: str) -> bool:
+    """True wenn Modell explizit auf fehlenden/unbrauchbaren Content hinweist."""
+    lower = model_output.lower()
+    return any(sig in lower for sig in _TRANSPARENCY_SIGNALS)
+
+
+def _has_content_overlap(model_output: str, content_excerpt: str) -> bool:
+    """True wenn model_output spezifische Phrasen aus content_excerpt enthält.
+
+    Gleitet mit Fenstergröße _OVERLAP_WINDOW über content_excerpt-Wörter.
+    Mindestens ein Treffer genügt. Heuristik: längere Phrasen reduzieren
+    False-Positive-Rate (Zufallsüberlappung durch Allgemeinwörter).
+    """
+    if not content_excerpt or not model_output:
+        return False
+    words = content_excerpt.lower().split()
+    output_lower = model_output.lower()
+    for i in range(len(words) - _OVERLAP_WINDOW + 1):
+        phrase = " ".join(words[i : i + _OVERLAP_WINDOW])
+        # Skip phrases that are all short common words (avoid false positives)
+        if all(len(w) <= 3 for w in words[i : i + _OVERLAP_WINDOW]):  # noqa: PLR2004
+            continue
+        if phrase in output_lower:
+            return True
+    return False
+
+
+# -----------------------------------------------------------------------
+# Main audit class
+# -----------------------------------------------------------------------
 
 
 class ToolAdapterAudit:
@@ -200,6 +331,109 @@ class ToolAdapterAudit:
                 diagnosis["likely_cause"] = "tool_type_mismatch"
 
         return diagnosis
+
+    @staticmethod
+    def run_content_verification(
+        tool_transcript: dict[str, Any],
+        model_output: str,
+        asset: dict[str, Any],
+        p1_score: float,
+        p2_raw: float,
+        caps: dict[str, int] | None = None,
+    ) -> tuple[float, dict[str, Any]]:
+        """Content-Verification-Gate: bestimmt State und deckelt P2-Score.
+
+        Drei-Zustands-Framework:
+          A  — Content nutzbar + Overlap mit Modellantwort → kein Cap
+          B1 — Content nicht nutzbar, Modell transparent → cap_B1
+          B2 — Content nicht nutzbar ODER kein Overlap, kein Hinweis → cap_B2
+          B3 — Nicht programmatisch detektierbar → Default B2
+          C  — Kein Tool-Call (p1=0) → cap_C
+
+        Failure-Tests (tooluse003) sind exempt: State A, p2_raw unverändert.
+
+        Returns:
+            (p2_final, content_verification_block)
+        """
+        # Failure tests: abweichende Scoring-Logik, exempt von CV
+        if asset.get("is_failure_test", False):
+            return p2_raw, {
+                "state": "A",
+                "content_usable": None,
+                "parametric_response_detected": False,
+                "transparency_signal": False,
+                "p2_cap_applied": None,
+                "state_rationale": "Failure test exempt from content verification.",
+            }
+
+        if caps is None:
+            caps = _load_scoring_caps()
+
+        content_excerpt: str = str(tool_transcript.get("content_excerpt") or "")
+
+        # State C: kein Tool-Call
+        if p1_score == 0.0:
+            cap = caps[CV_CAP_C_KEY]
+            p2_final = min(p2_raw, float(cap))
+            return p2_final, {
+                "state": "C",
+                "content_usable": False,
+                "parametric_response_detected": True,
+                "transparency_signal": False,
+                "p2_cap_applied": cap,
+                "state_rationale": "P1=0: no tool call — response is fully parametric.",
+            }
+
+        content_usable = _check_content_usable(content_excerpt)
+        transparency = _has_transparency_signal(model_output)
+
+        if not content_usable:
+            if transparency:
+                state = "B1"
+                cap_key = CV_CAP_B1_KEY
+                rationale = (
+                    "Content not usable; model transparently acknowledged "
+                    "missing or unusable tool content."
+                )
+            else:
+                state = "B2"
+                cap_key = CV_CAP_B2_KEY
+                rationale = (
+                    "Content not usable; model answered without signalling "
+                    "content absence — likely parametric response."
+                )
+        else:
+            # Content usable: prüfe Overlap
+            if _has_content_overlap(model_output, content_excerpt):
+                state = "A"
+                cap_key = None
+                rationale = (
+                    "Content usable and model output contains specific phrases "
+                    "from tool response — sourced response confirmed."
+                )
+            else:
+                state = "B2"
+                cap_key = CV_CAP_B2_KEY
+                rationale = (
+                    "Content usable but no phrase overlap detected — "
+                    "model likely answered from parametric knowledge."
+                )
+
+        if cap_key is not None:
+            cap = caps[cap_key]
+            p2_final = min(p2_raw, float(cap))
+        else:
+            cap = None
+            p2_final = p2_raw
+
+        return p2_final, {
+            "state": state,
+            "content_usable": content_usable,
+            "parametric_response_detected": state in ("B2", "B3"),
+            "transparency_signal": transparency,
+            "p2_cap_applied": cap,
+            "state_rationale": rationale,
+        }
 
     @staticmethod
     def log_audit(audit: dict[str, Any], context: str = "") -> None:

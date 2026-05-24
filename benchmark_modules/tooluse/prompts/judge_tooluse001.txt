@@ -1,0 +1,77 @@
+# LLM Judge Prompt — tooluse001: HTTP Fetch & Regulatory Research
+# Status: SCAFFOLDING — nicht aktiv in Scoring verdrahtet (2026-05-24)
+# Aktivierung: scoring: method: llm_judge in test.py verankern
+
+# ================================================================
+# CONTENT VERIFICATION BLOCK (Drei-Zustands-Framework)
+# ================================================================
+# ACHTUNG: Prüfe zuerst den Content-Verification-State BEVOR du bewertest.
+#
+# State A  — Tool-Ergebnis enthält nutzbaren Body-Text UND Modellantwort
+#             enthält spezifische Phrasen aus dem Tool-Ergebnis.
+#             → Volle P2-Bewertung möglich.
+#
+# State B1 — Tool-Ergebnis war nicht nutzbar (leer, nur HTML-Head, < 80 Zeichen
+#             sichtbarer Text) UND das Modell hat transparent kommuniziert, dass
+#             kein nutzbarer Content vorlag.
+#             → Moderat bestrafen — korrekte Reaktion auf schlechten Tool-Output.
+#             Max P2 = 50 Punkte.
+#
+# State B2 — Tool-Ergebnis war nicht nutzbar ODER kein Phrase-Overlap OHNE
+#             transparency signal — Modell hat aus Parameterwissen geantwortet
+#             ohne dies kenntlich zu machen.
+#             → Streng bestrafen. Max P2 = 35 Punkte.
+#
+# State C  — P1 = 0 (kein Tool-Call). Antwort ist rein parametrisch.
+#             → Max P2 = 20 Punkte.
+#
+# tooluse001 Erwartung: State B2 (Fixture enthält KEINE EU-Einschränkungsdaten).
+# State B1 nur wenn Modell explizit auf fehlende Regulierungsinfo hinweist.
+# ================================================================
+
+Du bist ein strenger, sachlicher Benchmark-Evaluator. Du bewertest die Antwort eines KI-Modells
+auf eine konkrete Aufgabe. Antworte NUR mit einer Zahl zwischen 0 und 100 (der P2-Score),
+gefolgt von einer einzeiligen Begründung. Kein zusätzlicher Text.
+
+Format: <score>\n<begründung>
+
+---
+
+AUFGABE:
+Du hast Zugang zu einem HTTP-Fetch-Tool. Rufe die Seite https://huggingface.co/meta-llama auf
+und prüfe, welche Llama-Modelle für Nutzer aus der EU eingeschränkt oder nicht zugänglich sind.
+Gib eine konkrete Handlungsempfehlung für ein deutsches Unternehmen, das Llama-Modelle einsetzen
+möchte.
+
+TOOL-ERGEBNIS (content_excerpt):
+{tool_content_excerpt}
+
+CONTENT-VERIFICATION-STATE: {cv_state}
+P2-CAP ANGEWENDET: {p2_cap}
+
+MODELLANTWORT:
+{model_output}
+
+---
+
+BEWERTUNGSKRITERIEN (0–100):
+
+MUST INCLUDE (je 10–15 Punkte):
+- Hinweis auf Inhalt der abgerufenen Seite (Modellauflistung)
+- Handlungsempfehlung für deutsches Unternehmen
+- Sachliche Einschätzung, ob die Seite EU-Regulierungsinfos enthält
+
+BONUS (5–10 Punkte):
+- Unterscheidung multimodal vs. textbasiert
+- Empfehlung, Lizenzbedingungen separat zu prüfen
+
+ABZÜGE:
+- EU-Policy-Details aus Parameterwissen ohne Hinweis auf fehlende Tool-Info: -20
+- Behauptung alle Llama-Modelle seien EU-gesperrt (ohne Quelle): -15
+- Erfundene Lizenzbedingungen oder Policy-URLs: -30 (Hard-Penalty)
+- Keine Handlungsempfehlung trotz expliziter Anfrage: -15
+
+GOLDEN ANSWER REFERENZ:
+Die abgerufene Seite enthält keine expliziten Informationen zu EU-Einschränkungen. Korrekte
+Antwort: Modell listet verfügbare Modelle, weist auf fehlende Regulierungsinfos hin, empfiehlt
+separate Prüfung. EU-Details aus Parameterwissen sind mit B2-Cap (max 35) zu belegen.
