@@ -27,6 +27,7 @@ from benchmark_modules.tooluse.core.constants import (
 )
 from benchmark_modules.tooluse.core.io_manager import ToolUseIOManager
 from schemas.result import BenchmarkResult
+from utils.model_utils import normalize_model_id
 
 logger = logging.getLogger(__name__)
 
@@ -309,7 +310,7 @@ class ToolUseExporter:
                     for row in csv.DictReader(f):
                         if not str(row.get("asset_id", "")).startswith("tooluse"):
                             continue
-                        model_id = row.get("model", "")
+                        model_id = normalize_model_id(row.get("model", ""))
                         if not model_id:
                             continue
                         per_model.setdefault(model_id, []).append(row)
@@ -478,7 +479,7 @@ class ToolUseExporter:
     def _upsert_row(self, new_row: dict[str, Any], model_id: str) -> None:
         self.CSV_PATH.parent.mkdir(parents=True, exist_ok=True)
         existing = self._read_rows()
-        filtered = [r for r in existing if r.get("model") != model_id]
+        filtered = [r for r in existing if normalize_model_id(r.get("model", "")) != model_id]
         self._write_rows(filtered + [new_row])
 
     def _read_rows(self) -> list[dict[str, Any]]:

@@ -57,14 +57,32 @@ def get_provider_shortcode(provider: str) -> str:
 
 CARD_DIR = Path("benchmark_scores/model_cards")
 
+# Matches Ollama's HuggingFace registry prefix: hf.co/AUTHOR/model:tag
+_HF_OLLAMA_RE = re.compile(r"^hf\.co/[^/]+/(.+)$")
+
+
+def normalize_model_id(model_id: str) -> str:
+    """Strip Ollama HuggingFace registry prefix for stable canonical IDs.
+
+    hf.co/bartowski/NousResearch_Hermes-4-14B-GGUF:Q4_K_M
+        → NousResearch_Hermes-4-14B-GGUF:Q4_K_M
+
+    All other model IDs are returned unchanged. This keeps filesystem paths,
+    CSV rows, and card filenames consistent regardless of whether the full
+    Ollama hf.co/AUTHOR/ prefix was used at invocation time.
+    """
+    m = _HF_OLLAMA_RE.match(model_id)
+    return m.group(1) if m else model_id
+
 
 def _safe_name(model_id: str) -> str:
     """Canonical filename-safe transformation for model IDs.
 
-    Replaces every character in ``[:/.\\  ]`` with an underscore.
+    Normalizes HuggingFace Ollama IDs first (strips hf.co/AUTHOR/ prefix),
+    then replaces every character in ``[:/.\\  ]`` with an underscore.
     SSoT — used by all card path helpers in this module and in generation scripts.
     """
-    return re.sub(r"[:/.\ ]", "_", model_id)
+    return re.sub(r"[:/.\ ]", "_", normalize_model_id(model_id))
 
 
 _STALE_VERSIONS: frozenset[str] = frozenset({"latest", "unknown", "k.A.", ""})

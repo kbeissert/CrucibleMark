@@ -4,7 +4,7 @@
   "developer": "NousResearch",
   "origin_country": "USA",
   "developer_jurisdiction": "US",
-  "deployment_type": "open-weights",
+  "deployment_type": "open-weights-cloud-available",
   "local_deployment_possible": true,
   "weights_provenance_risk": "medium",
   "weights_provenance_risk_rationale": "NousResearch ist ein US-amerikanisches Open-Source-Forschungskollektiv; die Weights sind öffentlich verfügbar, jedoch unterliegt das Unternehmen dem US-amerikanischen CLOUD Act.",

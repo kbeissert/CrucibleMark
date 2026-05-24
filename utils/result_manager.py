@@ -15,6 +15,7 @@ from utils.constants import (
     RESULT_TYPE_CLOUD,
     RESULT_TYPE_COMMERCIAL,
 )
+from utils.model_utils import normalize_model_id
 
 logger = logging.getLogger(__name__)
 
@@ -127,6 +128,11 @@ class ResultManager:
         """Speichert Ergebnisse in die entsprechende CSV-Datei."""
         if not results:
             return None
+
+        # Normalize hf.co/AUTHOR/ prefixed Ollama model IDs before any storage
+        for r in results:
+            if "model" in r:
+                r["model"] = normalize_model_id(r["model"])
 
         # Automatisches Ermitteln des result_type anhand des ersten Eintrags, falls nicht explizit übergeben
         if not result_type and results:
