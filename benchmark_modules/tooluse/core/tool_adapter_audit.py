@@ -35,10 +35,13 @@ logger = logging.getLogger(__name__)
 
 _ROOT = Path(__file__).resolve().parents[3]
 
-# Authorized tool names in CrucibleMark
+# Authorized tool names in CrucibleMark — exact match only (no aliases).
+# Models must use the canonical name from the tool schema. Aliases were removed
+# because schema-compliance is a measured capability: a model calling "fetch"
+# instead of "http_fetch" failed to follow the given JSON schema → wrong tool → P1=20.
 AUTHORIZED_TOOLS = {
-    "web_search": ["web_search", "search", "websearch", "web-such-tool", "web_such_tool"],
-    "http_fetch": ["http_fetch", "fetch", "http", "fetch_url", "get_url", "http_fetch_and_extract", "fetch_http", "http-fetch-tool", "http_fetch_tool"],
+    "web_search": ["web_search"],
+    "http_fetch": ["http_fetch"],
 }
 
 # Canonical tool names (what we expect)
@@ -79,11 +82,22 @@ _TRANSPARENCY_SIGNALS = (
     "content not available",
     "no information",
     "could not access",
-    "unfortunately",      # English fallback signal
-    "leider",             # German fallback signal
+    "unfortunately",          # English fallback signal
+    "leider",                 # German fallback signal
     "keine relevanten",
     "nicht abrufen",
     "nicht geladen",
+    # Model explicitly falls back to parametric knowledge (specific compound phrases only)
+    "meinem trainingswissen",             # "based on my training knowledge"
+    "meinem wissensstand",                # "as of my knowledge cutoff"
+    "nur metadaten",                      # "only metadata" — tool returned no usable body content
+    "mit meinem trainingswissen",         # "combining with my training knowledge"
+    "mit meinem wissensstand",            # "combining with my knowledge base"
+    "my training knowledge",              # English equivalent
+    "my training data",                   # English equivalent
+    "as of my knowledge",                 # English equivalent
+    "based on my training",               # English equivalent
+    "supplement with my",                 # English: "supplement with my [training] knowledge"
 )
 
 # Minimum consecutive words that must appear verbatim (case-insensitive)
@@ -370,6 +384,13 @@ class ToolAdapterAudit:
             caps = _load_scoring_caps()
 
         content_excerpt: str = str(tool_transcript.get("content_excerpt") or "")
+        if not content_excerpt:
+            # web_search stores results in results[], not content_excerpt
+            results = tool_transcript.get("results") or []
+            if results and isinstance(results[0], dict):
+                content_excerpt = str(
+                    results[0].get("excerpt") or results[0].get("content", "")
+                )
 
         # State C: kein Tool-Call
         if p1_score == 0.0:
