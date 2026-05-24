@@ -24,8 +24,8 @@ logger = logging.getLogger(__name__)
 
 # Authorized tool names in CrucibleMark
 AUTHORIZED_TOOLS = {
-    "web_search": ["web_search", "search", "websearch"],
-    "http_fetch": ["http_fetch", "fetch", "http", "fetch_url", "get_url", "http_fetch_and_extract"],
+    "web_search": ["web_search", "search", "websearch", "web-such-tool", "web_such_tool"],
+    "http_fetch": ["http_fetch", "fetch", "http", "fetch_url", "get_url", "http_fetch_and_extract", "fetch_http", "http-fetch-tool", "http_fetch_tool"],
 }
 
 # Canonical tool names (what we expect)
