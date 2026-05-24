@@ -19,6 +19,7 @@ http_fetch:
     - huggingface.co
     - raw.githubusercontent.com
     - httpbin.org           # für 404-Test-Asset (tooluse003)
+    - en.wikipedia.org      # für tooluse002 (Quake-Serie)
 
 logging:
   log_file: logs/mcp_server.log

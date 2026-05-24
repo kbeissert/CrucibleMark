@@ -31,7 +31,7 @@ class CostLimitExceededError(Exception):
 from utils.base_runner import BaseBenchmarkRunner
 from utils.benchmark_utils import discover_assets, load_asset_yaml
 from utils.logging_config import setup_logging
-from utils.model_utils import get_model_version, get_model_identity, probe_thinking_model
+from utils.model_utils import get_model_version, get_model_identity, probe_thinking_model, _find_card
 from utils.scoring.judge_evaluator import evaluate_with_judge, generate_audit_log
 from utils.scoring.exceptions import JudgeUnavailableError
 from utils.adaptive_pause import AdaptivePauseCalculator, BenchmarkMode
@@ -84,7 +84,7 @@ class UnifiedBenchmarkRunner(BaseBenchmarkRunner):
         self.existing_cloud_benchmarks = self._load_existing_benchmarks(self.cloud_csv)
         self.existing_local_benchmarks = self._load_existing_benchmarks(self.local_csv)
 
-    def _ensure_model_card(self, model: str, provider: str) -> None:
+    def _ensure_model_card(self, model: str, provider: str) -> str:
         """
         Card-First-Hook: stellt sicher, dass eine Model Card mit Thinking-Probe-Ergebnis
         vorhanden ist, bevor der erste Benchmark-Run startet.
@@ -95,23 +95,32 @@ class UnifiedBenchmarkRunner(BaseBenchmarkRunner):
           3. Keine Card                                        → Probe, Minimal-Card erstellen
           4. Probe-Fehler 429/403                             → clean Warning, Modell in _probed_models, Benchmark läuft weiter
           5. Probe-Fehler (sonstiger)                         → clean Warning, Modell in _probed_models, Benchmark läuft weiter
+
+        Returns the canonical model_id (resolved via _find_card glob fallback if needed).
         """
         if model in self._probed_models:
-            return
+            return model
 
         cards_dir = Path("benchmark_scores/model_cards")
-        safe = model.replace("/", "_").replace(":", "_").replace(".", "_")
-        card_path = cards_dir / f"{safe}.json"
+        # Use _find_card() which has a glob fallback: "claude-haiku-4-5" → "claude-haiku-4-5-20251001.json"
+        found_path = _find_card(model)
+        if found_path is not None and found_path.exists():
+            card_path = found_path
+        else:
+            safe = model.replace("/", "_").replace(":", "_").replace(".", "_")
+            card_path = cards_dir / f"{safe}.json"
 
         needs_probe = False
         existing_card: Dict[str, Any] = {}
         card_loaded = False
+        canonical_model = model  # resolved to card's model_id when card is found
 
         if card_path.exists():
             try:
                 loaded: Dict[str, Any] = json.loads(card_path.read_text(encoding="utf-8"))
                 existing_card = loaded
                 card_loaded = True
+                canonical_model = loaded.get("model_id") or model
                 if "thinking_probe_detected" not in loaded:
                     needs_probe = True
                     logger.info(
@@ -123,6 +132,11 @@ class UnifiedBenchmarkRunner(BaseBenchmarkRunner):
                         "[Card-First] '%s' hat vollständige Card (probe_detected=%s). Kein Probe nötig.",
                         model,
                         loaded["thinking_probe_detected"],
+                    )
+                if canonical_model != model:
+                    logger.info(
+                        "[Card-First] Alias '%s' → canonical '%s' (via card glob fallback).",
+                        model, canonical_model,
                     )
             except Exception as e:
                 logger.warning("[Card-First] Card für '%s' konnte nicht gelesen werden: %s", model, e)
@@ -136,7 +150,7 @@ class UnifiedBenchmarkRunner(BaseBenchmarkRunner):
 
         if not needs_probe:
             self._probed_models.add(model)
-            return
+            return canonical_model
 
         # Probe ausführen (wirft RuntimeError bei API-Fehler)
         print(f"🔍 Reasoning-Erkennung für '{model}' …")
@@ -152,7 +166,7 @@ class UnifiedBenchmarkRunner(BaseBenchmarkRunner):
                 print("   ⚠️  Reasoning-Erkennung fehlgeschlagen — Benchmark läuft weiter.")
             logger.warning("[Card-First] ThinkingProbe für '%s' übersprungen: %s", model, probe_err)
             self._probed_models.add(model)
-            return
+            return canonical_model
         print(
             f"   → detected={probe.detected} (confidence={probe.confidence})"
         )
@@ -195,6 +209,7 @@ class UnifiedBenchmarkRunner(BaseBenchmarkRunner):
             logger.info("[Card-First] Minimal-Card für '%s' erstellt.", model)
 
         self._probed_models.add(model)
+        return canonical_model
 
     def _load_existing_benchmarks(
         self, csv_path: Path
@@ -482,7 +497,8 @@ class UnifiedBenchmarkRunner(BaseBenchmarkRunner):
             )
 
         # Card-First-Hook: Thinking-Probe vor erstem Run sicherstellen
-        self._ensure_model_card(model, provider)
+        # Returns canonical model_id (e.g. alias "claude-haiku-4-5" → "claude-haiku-4-5-20251001")
+        model = self._ensure_model_card(model, provider)
 
         # Standard Run Loop
         print(
