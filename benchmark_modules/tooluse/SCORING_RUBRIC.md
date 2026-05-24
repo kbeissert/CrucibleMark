@@ -1,14 +1,14 @@
 # Tool Use Benchmark — Unified Scoring Standard
 
-**Version:** 3.11.0 (Finalisiert — Golden Standard v1.2.0)  
-**Status:** Kalibriert und produktionsbereit  
+**Version:** 3.12.0 (5-Asset-Erweiterung — Phase A + Phase B)  
+**Status:** Phase B kalibriert (v1.2.0) | Phase A Kalibrierung ausstehend  
 **Last Updated:** 2026-05-24
 
 ---
 
 ## Overview
 
-Alle drei Tool Use Assets nutzen ein einheitliches, kompaktes Scoring-Framework:
+Alle fünf Tool Use Assets nutzen ein einheitliches, kompaktes Scoring-Framework:
 
 ```yaml
 golden_answer: [Referenzantwort der Auditors]
@@ -92,9 +92,11 @@ combined = (p1 * 0.4) + (p2 * 0.6)
 | Falsches Tool aufgerufen | 20 |
 | Richtiges Tool, Fehler-Status (non-200) oder leerer Content | 40 |
 | Richtiges Tool + korrekter Status | 80 |
-| Richtiges Tool + korrekter Status + Content ≥ 100 Zeichen¹ | 100 |
+| Richtiges Tool + korrekter Status + Content ≥ 100 Zeichen (`http_fetch`)¹ | 100 |
+| Richtiges Tool + `web_search` + `golden_source_domains`-Treffer | 100 |
+| Richtiges Tool + `web_search` ohne `golden_source_domains` (neutral) | 100 |
 
-¹ Nur für `http_fetch` Non-Failure-Tests. Bei Failure-Tests (`is_failure_test: true`) und `web_search` gilt max P1=80.
+¹ Content-Prüfung nur für `http_fetch` non-failure-tests. Bei `is_failure_test: true` ist source quality nicht anwendbar — max. P1=80.
 
 **Guardrail Thresholds:**
 
@@ -147,6 +149,46 @@ combined = (p1 * 0.4) + (p2 * 0.6)
 
 ---
 
+## Phase A — Tool Intelligence: Asset-Profile
+
+### tooluse004: Tool Selection (web_search)
+**Testdimension:** Wählt das Modell `web_search` für eine Recherche-Aufgabe, wenn keine URL gegeben ist?
+
+**P1-Spread (primär):**
+- `web_search` korrekt → P1=100 (Mock: `_default`-Fixture enthält `huggingface.co`-URL → `golden_source_domains`-Treffer)
+- `http_fetch` (falscher Typ) → P1=0
+- Kein Tool-Call → P1=0
+
+**Common Fails (P1):**
+- Modell versucht `http_fetch` mit einer erfundenen Recherche-URL
+- Modell antwortet ohne Tool-Call aus Parameterwissen
+
+**Common Fails (P2):**
+- Spezifische Benchmark-Scores oder Modell-Rankings ohne Basis im Tool-Ergebnis
+- Keine Synthese aus den abgerufenen Suchergebnissen
+
+**Hinweis für den Judge:** Mock liefert HuggingFace-Leaderboard, Llama und OpenAI Evals als Ergebnisse — kein EU AI Act-Content. Modelle im State B2 (parametrische Antwort über LLM-Rankings ohne Tool-Basis) werden auf cap_B2=35 gedeckelt.
+
+### tooluse005: URL Construction (http_fetch)
+**Testdimension:** Kann das Modell die korrekte Wikipedia-URL aus eigenem Wissen ableiten?
+
+**P1-Spread (primär):**
+- `https://en.wikipedia.org/wiki/Python_(programming_language)` → registriertes Fixture, 1047 Zeichen → P1=100
+- Andere Wikipedia-URL (z.B. `/wiki/Python`) → nicht registriert, ~55 Zeichen < 100 → P1=80
+- Nicht-whitegelistete Domain (z.B. `python.org`, `docs.python.org`) → geblockt → P1=0
+- `web_search` statt `http_fetch` → falscher Typ → P1=0
+
+**Common Fails (P1):**
+- Modell ruft `python.org` oder andere nicht-whitegelistete Domains auf
+- Modell wählt `web_search` statt direkten Wikipedia-Fetch
+- Wikipedia-URL ohne Disambiguierungssuffix (`_(programming_language)`)
+
+**Common Fails (P2):**
+- Python-Features aus Parameterwissen ohne Bezug auf den abgerufenen Artikel
+- Falsches Erscheinungsjahr (Python 1991 ist korrekt, andere Jahre = Fail)
+
+---
+
 ## Integration
 
 ### Judge Input
@@ -163,6 +205,6 @@ combined = (p1 * 0.4) + (p2 * 0.6)
 
 ## References
 
-- Asset definitions: `benchmark_modules/tooluse/assets/tooluse00{1,2,3}.yaml`
+- Asset definitions: `benchmark_modules/tooluse/assets/tooluse00{1,2,3,4,5}.yaml`
 - Judge implementation: `benchmark_modules/tooluse/core/judge_handler.py` (TBD)
 - Quick reference: `JUDGE_CHECKLIST.md`

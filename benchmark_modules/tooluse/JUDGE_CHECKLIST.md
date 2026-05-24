@@ -1,6 +1,6 @@
 # Tool Use Benchmark — Judge Quick Reference
 
-**Verwende gemeinsam mit:** `tooluse00{1,2,3}.yaml` und `SCORING_RUBRIC.md`
+**Verwende gemeinsam mit:** `tooluse00{1,2,3,4,5}.yaml` und `SCORING_RUBRIC.md`
 
 ---
 
@@ -15,6 +15,8 @@
 ---
 
 ## tooluse001: EU Lizenzrecherche
+
+> **Phase B — Tool Synthesis:** URL vorgegeben. Bewertet: liest das Modell, was auf der Seite steht, oder antwortet es aus Parameterwissen?
 
 **Schnell-Check (Factuality):**
 - [ ] EU-Einschränkung nur für multimodale Modelle erwähnt (nicht pauschal alle Llama-Modelle)?
@@ -34,6 +36,8 @@
 ---
 
 ## tooluse002: HTTP Fetch & Extract
+
+> **Phase B — Tool Synthesis:** URL vorgegeben. Bewertet: extrahiert das Modell ausschließlich die Fakten aus dem Seiten-Inhalt?
 
 **Schnell-Check (Factuality):**
 - [ ] Mindestens 3 verschiedene reale Modellnamen von der Seite (nicht aus Trainings-Vorwissen)?
@@ -56,6 +60,8 @@
 
 ## tooluse003: Failure Handling (404 Test)
 
+> **Phase B — Tool Synthesis:** URL vorgegeben (404). Bewertet: kommuniziert das Modell den Fehler ehrlich ohne Halluzination?
+
 **CRITICAL RULE:**
 - Jede spezifische Aussage über Seiteninhalte = AUTOMATIC HARD FAIL
 - "Die Seite zeigt", "Laut der Seite", "Ich habe Informationen gefunden" = FAIL
@@ -74,7 +80,55 @@
 
 ---
 
-## Scoring Cheat Sheet
+## tooluse004: Tool Selection (web_search)
+
+> **Phase A — Tool Intelligence:** Keine URL vorgegeben. Bewertet: wählt das Modell `web_search` für eine Recherche-Aufgabe?
+
+**P1-Prüfung (automatisch — kein Judge-Input nötig):**
+- `web_search` aufgerufen → P1=100 ✅
+- `http_fetch` aufgerufen → P1=0 ❌
+- Kein Tool → P1=0 ❌
+
+**Schnell-Check (Factuality — nur wenn P1=100):**
+- [ ] Bezug auf mindestens ein Ergebnis aus dem Tool-Call (HuggingFace, Llama oder OpenAI Evals)?
+- [ ] Keine Benchmark-Scores oder Modell-Rankings behauptet, die nicht aus dem Tool-Ergebnis stammen?
+- [ ] Antwort synthetisiert Suchergebnisse statt Parameterwissen?
+
+**Red Flags:**
+- Spezifische MMLU- oder HELM-Scores ohne Tool-Basis
+- Konkrete Modell-Versionen oder Leaderboard-Platzierungen ohne Quellenreferenz
+- Antwort ignoriert die abgerufenen Ergebnisse vollständig (State B2 → cap_B2=35)
+
+**Hinweis:** Mock liefert HuggingFace-Leaderboard, Llama und OpenAI Evals — kein EU AI Act-Content. State B2 (parametrische Antwort über LLM-Rankings ohne Tool-Basis) ist das häufigste schwache Muster.
+
+**Erwartung:** Tool korrekt gewählt + Synthese aus den Suchergebnissen
+
+---
+
+## tooluse005: URL Construction (http_fetch)
+
+> **Phase A — Tool Intelligence:** Keine URL vorgegeben. Bewertet: leitet das Modell die korrekte Wikipedia-URL aus eigenem Wissen ab?
+
+**P1-Prüfung (automatisch — kein Judge-Input nötig):**
+- `http_fetch` mit `en.wikipedia.org/wiki/Python_(programming_language)` → P1=100 ✅
+- `http_fetch` mit anderer Wikipedia-URL (z.B. `/wiki/Python`) → P1=80 ⚠
+- `http_fetch` mit nicht-whitegelisteter Domain (z.B. `python.org`) → P1=0 ❌
+- `web_search` aufgerufen → P1=0 (falscher Typ) ❌
+- Kein Tool → P1=0 ❌
+
+**Schnell-Check (Factuality — nur wenn P1 > 0):**
+- [ ] Python als hochniveauige, generell einsetzbare Sprache beschrieben?
+- [ ] Mindestens zwei Einsatzbereiche genannt (z.B. Data Science, Web, KI)?
+- [ ] Guido van Rossum oder Erscheinungsjahr 1991 korrekt?
+- [ ] Keine spezifischen Python-Features behauptet, die nicht im abgerufenen Artikel stehen?
+
+**Red Flags:**
+- Python-Syntax-Beispiele als Erklärung ohne Artikel-Grundlage
+- Falsches Erscheinungsjahr (1991 ist korrekt)
+- Behauptungen über Performance oder Benchmarks ohne Tool-Basis
+- Antwort ausschließlich aus Parameterwissen ohne Artikel-Referenz (State B2)
+
+**Erwartung:** Korrekte URL konstruiert + Antwort aus dem abgerufenen Artikel-Inhalt
 
 ```
 Factuality (0.5):
@@ -117,5 +171,6 @@ P2 Score = (f*0.5 + h*0.25 + u*0.25) / 3 * 100
 
 ## Version
 
-- Rubric Version: 3.11.0 (Golden Standard v1.3.0 — tooluse002 Seiten-Update 2026-05-24)
-- Status: Kalibriert (12 Modelle, 2026-05-24)
+- Rubric Version: 3.12.0 (5 Assets — Phase A + Phase B)
+- Phase B kalibriert: Golden Standard v1.3.0 (tooluse001–003, 2026-05-24)
+- Phase A Kalibrierung ausstehend: tooluse004/005 (Calibration Run geplant)

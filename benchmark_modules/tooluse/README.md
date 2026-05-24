@@ -13,10 +13,11 @@
 | `core/evaluators.py` — Zwei-Phasen-Scoring | Fertig |
 | `core/io_manager.py` — Leaderboard + Terminal-Output | Fertig |
 | `core/constants.py` — Key-Namen-SSoT | Fertig |
-| Assets 001–003 (Golden Standard v1.2.0) | Fertig ✅ |
+| Assets 001–003 — Phase B: Tool Synthesis (Golden Standard v1.2.0) | Fertig ✅ |
+| Assets 004–005 — Phase A: Tool Intelligence (Kalibrierung ausstehend) | Implementiert, kalibriert wird noch |
 | MCP Server (`cruciblemark-mcp/`) | Fertig |
 | Batch-Runner (`scripts/run_tooluse_benchmark.py`) | Fertig |
-| Leaderboard (`tooluse_leaderboard.csv`) | Fertig — 12 Modelle kalibriert |
+| Leaderboard (`tooluse_leaderboard.csv`) | Fertig — 41 Modelle |
 
 ---
 
@@ -61,10 +62,47 @@ benchmark_modules/tooluse/
 │   ├── io_manager.py    # ToolUseIOManager: Leaderboard CSV + Terminal-Output
 │   └── constants.py     # Key-Namen-Konstanten (keine hardcodierten Werte)
 └── assets/
-    ├── tooluse001.yaml  # Websearch Research (Tier 2)
-    ├── tooluse002.yaml  # HTTP Fetch & Extract (Tier 2)
-    └── tooluse003.yaml  # Tool Failure Handling / 404-Simulation (Tier 3)
+    ├── tooluse001.yaml  # Phase B: Tool Synthesis — Honeypot (Tier 2)
+    ├── tooluse002.yaml  # Phase B: Tool Synthesis — Structured Extraction (Tier 2)
+    ├── tooluse003.yaml  # Phase B: Tool Synthesis — Failure Handling / 404 (Tier 3)
+    ├── tooluse004.yaml  # Phase A: Tool Intelligence — Tool Selection (Tier 2)
+    └── tooluse005.yaml  # Phase A: Tool Intelligence — URL Construction (Tier 2)
 ```
+
+---
+
+## Asset-Architektur: Zwei Phasen
+
+Die fünf Assets messen zwei konzeptionell getrennte Dimensionen der Tool-Use-Kompetenz.
+Die Phasennummern beschreiben die **Messachse**, nicht die Reihenfolge im Lauf — alle Assets
+werden im selben Durchlauf ausgeführt.
+
+### Phase A — Tool Intelligence (tooluse004, tooluse005)
+
+> Trifft das Modell eigenständig die richtigen Tool-Entscheidungen?
+
+Diese Assets geben dem Modell **keine URL** und **kein explizites Tool-Signal** im Prompt.
+Das Modell muss aus dem Aufgabenkontext heraus entscheiden:
+- **welches Tool** es verwenden soll (web_search vs. http_fetch),
+- **mit welchem Parameter** (URL oder Suchanfrage).
+
+Phase-A-Assets sind der primäre **P1-Differenziator**: Modelle, die hier falsch entscheiden
+(falscher Tool-Typ, nicht-whitegelistete Domain, kein Tool-Call), fallen deutlich unter das
+P1-Ceiling. Kommerzielle Modelle und gut trainierte Open-Weights-Modelle entscheiden meistens
+korrekt; schwächere Ollama-Modelle scheitern hier häufig.
+
+### Phase B — Tool Synthesis (tooluse001, tooluse002, tooluse003)
+
+> Verarbeitet das Modell das Tool-Ergebnis korrekt, ehrlich und quellentreu?
+
+Diese Assets geben dem Modell **die URL direkt im Prompt** und lassen es das Tool aufrufen.
+Der Fokus liegt auf dem, was das Modell mit dem Ergebnis macht:
+- Erkennt es, dass der abgerufene Inhalt die Frage nicht beantwortet?
+- Extrahiert es nur das, was tatsächlich auf der Seite steht?
+- Kommuniziert es einen Tool-Fehler (404) ehrlich, ohne zu halluzinieren?
+
+Phase-B-Assets sind der primäre **P2-Differenziator**: Alle Modelle, die das Tool korrekt
+aufrufen, erhalten denselben P1-Score — die Spreizung entsteht erst im Synthesis-Score.
 
 ---
 
@@ -72,23 +110,30 @@ benchmark_modules/tooluse/
 
 | Phase | Gewicht | Messung |
 |---|---|---|
-| Phase 1 — Tool Execution | 50 % | Hat das Modell das korrekte Tool aufgerufen? |
+| Phase 1 — Tool Execution | 50 % | Hat das Modell das korrekte Tool mit korrektem Parameter aufgerufen? |
 | Phase 2 — Synthesis Quality | 50 % | Ist die Antwort faktisch korrekt und quellenbasiert? |
 
-- **P1-Stufen:** 0 (kein Aufruf) → 20 (falsches Tool) → 40 (Fehler-Status) → 80 (korrekt) → 100 (korrekt + nutzbarer Content ≥ 100 Zeichen, nur `http_fetch` Non-Failure)
-- **P2-Bewertung:** LLM-Judge gegen Golden Standard — Faktizität (0.5), Halluzinationsrisiko (0.25), Unsicherheitsbehandlung (0.25)
-- **Hallucination Penalty:** −100 Punkte bei erfundenem Inhalt nach 404-Fehler
-- **Tool Call Bonus:** +10 Punkte bei korrekter Quellenangabe im Output
-- **Retry Tracking:** Mehrfach-Aufrufe desselben Tools werden als Unsicherheit gewertet
+**P1-Stufen:**
 
-Alle Schwellenwerte in `config.yaml`:
+| Bedingung | P1 |
+|---|---|
+| Kein Tool-Aufruf | 0 |
+| Tool geblockt (Whitelist-Verletzung) | 0 |
+| Richtiges Tool + Fehler-Status (non-200) oder Content < 100 Zeichen | 80 |
+| Richtiges Tool + 200 + Content ≥ 100 Zeichen (http_fetch) | 100 |
+| Richtiges Tool + web_search + golden_source_domains-Treffer | 100 |
+| Richtiges Tool + web_search + kein golden_source_domains konfiguriert | 100 |
+| Failure-Test (`is_failure_test: true`) — max. P1 | 80 |
+
+- **P2-Bewertung:** LLM-Judge gegen Golden Standard — Faktizität (0.5), Halluzinationsrisiko (0.25), Unsicherheitsbehandlung (0.25)
+- **Content Verification:** 4 States — A (kein Cap), B1 (transparent, cap 50), B2 (parametrisch, cap 35), C (kein Tool-Call, cap 20)
+
+Alle Schwellenwerte in `config/scoring.yaml` und `config.yaml`:
 
 ```yaml
 config:
   phase1_weight: 0.5
   phase2_weight: 0.5
-  hallucination_penalty: 100
-  tool_call_bonus: 10
   semantic_threshold: 0.72
   keyword_threshold: 0.4
 ```
@@ -97,20 +142,41 @@ config:
 
 ## Assets
 
-### tooluse001 — Websearch Research (Tier 2)
-Aufgabe: EU-Lizenzbeschränkungen für Meta Llama recherchieren.
-Erfolgskriterium: `web_search` aufgerufen + Antwort enthält URL-Zitat + Unterscheidung multimodale vs. textbasierte Modelle.
-Golden Standard: v1.2.0 — Llama 4 / Llama 3.2 Vision (multimodal, EU-beschränkt) vs. Llama 3.1/3.2 (textbasiert, ohne Einschränkung).
+### Phase A — Tool Intelligence
 
-### tooluse002 — HTTP Fetch & Extract (Tier 2)
-Aufgabe: HuggingFace-Seite abrufen, Modellnamen extrahieren.
-Erfolgskriterium: `http_fetch` mit korrekter URL aufgerufen + ≥ 3 Modellnamen vom tatsächlichen Seiten-Inhalt im Output.
-Golden Standard: v1.2.0 — Llama 3.2 (Text), Llama 3.2 Vision, Llama Guard. Reproduktion von Trainings-Vorwissen (Llama 4, Code Llama) wird penalisiert.
+#### tooluse004 — Tool Selection (Tier 2)
+**Dimension:** Wählt das Modell den richtigen Tool-Typ, wenn keine URL vorgegeben ist?
+**Aufgabe:** Open-Source-LLM-Rankings recherchieren — nur Thema gegeben, keine URL, kein Hinweis auf Tool.
+**Erfolgskriterium P1:** `web_search` korrekt aufgerufen; Mock-Fixture enthält `huggingface.co`-Ergebnis → `golden_source_domains`-Treffer → P1=100.
+**Spread:** `web_search` → P1=100; falscher Tool-Typ → P1=0; kein Tool → P1=0.
 
-### tooluse003 — Tool Failure Handling (Tier 3)
-Aufgabe: Nicht existierende URL abrufen, Fehler korrekt kommunizieren.
-Erfolgskriterium: Kein halluzinierter Inhalt (`is_failure_test: true`). Jede Aussage über Seiteninhalte = automatischer Fail.
-Golden Standard: v1.2.0 — Erste-Person-Formulierung, Tool-Fehlerzuordnung, keine Überexplikation.
+#### tooluse005 — URL Construction (Tier 2)
+**Dimension:** Kann das Modell die korrekte URL aus eigenem Wissen ableiten und `http_fetch` aufrufen?
+**Aufgabe:** Wikipedia-Seite über Python (Programmiersprache) abrufen — nur Thema gegeben, keine URL.
+**Erfolgskriterium P1:** `http_fetch` mit exakter URL `https://en.wikipedia.org/wiki/Python_(programming_language)` (registriertes Fixture, 1047 Zeichen) → P1=100.
+**Spread:** Exakte URL → P1=100; whitegelistete Domain, anderer Pfad → P1=80 (Content ~55 Zeichen < 100); nicht-whitegelistete Domain → P1=0 (geblockt).
+
+---
+
+### Phase B — Tool Synthesis
+
+#### tooluse001 — Honeypot / Adversarial Synthesis (Tier 2)
+**Dimension:** Liest das Modell tatsächlich, was auf der Seite steht — oder antwortet es aus Parameterwissen?
+**Aufgabe:** `https://huggingface.co/meta-llama` abrufen und EU-Einschränkungen für Llama-Modelle prüfen.
+**Honeypot:** Die Seite enthält keine EU-Informationen. Ein korrekt reagierendes Modell kommuniziert den fehlenden Inhalt; ein haluziniertes antwortet mit Policy-Details aus dem Trainings-Vorwissen.
+**Golden Standard v1.2.0:** Hinweis auf fehlende Regulierungsinfos + Differenzierung multimodal vs. textbasiert + Empfehlung zur externen Recherche.
+
+#### tooluse002 — Structured Extraction (Tier 2)
+**Dimension:** Extrahiert das Modell ausschließlich die Fakten aus dem abgerufenen Inhalt — ohne Trainings-Vorwissen einzumischen?
+**Aufgabe:** `https://en.wikipedia.org/wiki/Quake_(series)` abrufen und strukturierten Überblick über Quake 1–4 erstellen.
+**Kritisch:** Korrekte Zuordnung der Entwickler (Raven Software für Quake 4), Lovecraft-Referenz, "Name-Only-Sequel"-Charakterisierung von Quake II.
+**Golden Standard v1.2.0:** Alle vier Haupttitel mit Erscheinungsjahr, Entwickler und einem markanten Merkmal.
+
+#### tooluse003 — Failure Handling / 404 (Tier 3)
+**Dimension:** Kommuniziert das Modell einen Tool-Fehler ehrlich, ohne Inhalte zu erfinden?
+**Aufgabe:** URL mit garantiertem 404-Response abrufen.
+**Hard Rule:** Jede spezifische Aussage über Seiteninhalte = automatischer Hard Fail.
+**Golden Standard v1.2.0:** Fehler dem Tool zuordnen, keine Spekulation, keine erfundenen Inhalte.
 
 ---
 
@@ -126,6 +192,8 @@ Das Modul benötigt den CrucibleMark MCP Server auf `localhost:8765`.
 | Health | `make mcp-health` | Gibt Server-Status zurück |
 | Stop | `make mcp-stop` | Stoppt und entfernt PID-File |
 
+**Mock-Whitelist** (http_fetch): `llama.meta.com`, `huggingface.co`, `raw.githubusercontent.com`, `httpbin.org`, `en.wikipedia.org` — nicht-whitegelistete Domains werden geblockt (P1=0).
+
 `mcp-start` ist idempotent — startet nicht neu, wenn der Server bereits läuft.
 
 ---
@@ -134,9 +202,11 @@ Das Modul benötigt den CrucibleMark MCP Server auf `localhost:8765`.
 
 Das Modul schreibt in `benchmark_scores/tooluse_leaderboard.csv` (eigene CSV, unabhängig von `leaderboard.csv`).
 
-Kennzahlen pro Modell: `p1_score`, `p2_score`, `combined_score`, `tool_call_valid`, `hallucination_flag`, `mcp_latency_s`, `total_tokens`, `cost_usd`.
+Kennzahlen pro Modell: `p1_score`, `p2_score`, `combined_score`, `tool_call_valid`, `retry_required`, `hallucination_flag`, `mcp_latency_s`, `total_tokens`, `cost_usd`.
 
-**Sovereignty Gap:** Zeigt den Durchschnitts-Score-Abstand zwischen Cloud-Modellen (full_fleet) und lokal deploybaren Open-Weights-Modellen (local_sovereign). Klassifizierung basiert auf `deployment_type` und `size_class` aus der Model Card.
+**retry_required:** Kommerzielle Modelle sind auf ihr natives API-Tool-Format trainiert. Im CrucibleMark-Custom-JSON-Schema benötigen sie oft einen zweiten Versuch. Lokale Ollama-Modelle beherrschen das Custom-Format häufig im ersten Anlauf. `retry_required` ist ein Produktionssignal für den Cline/MCP-Stack-Einsatz, kein Qualitätsstrafmaß.
+
+**Sovereignty Gap:** Zeigt den Durchschnitts-Score-Abstand zwischen Cloud-Modellen (`full_fleet`) und lokal deploybaren Open-Weights-Modellen (`local_sovereign`). Klassifizierung basiert auf `deployment_type` und `size_class` aus der Model Card.
 
 ```bash
 make tooluse-leaderboard    # CSV neu berechnen + Gap ausgeben

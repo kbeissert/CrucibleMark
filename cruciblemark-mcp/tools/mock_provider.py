@@ -82,6 +82,33 @@ Commercial use is permitted under the respective license terms.
         "# OpenAI Evals\nEvals is a framework for evaluating LLMs and an open-source registry.",
     ),
     "https://httpbin.org/get": (200, '{"args": {}, "headers": {}, "url": "https://httpbin.org/get"}'),
+    "https://en.wikipedia.org/wiki/Python_(programming_language)": (
+        200,
+        """Python (programming language) — Wikipedia
+
+Python is a high-level, general-purpose programming language. Its design philosophy
+emphasizes code readability through the use of significant indentation.
+
+Python is dynamically typed and garbage-collected. It supports multiple programming
+paradigms, including structured, object-oriented, and functional programming.
+
+Created by Guido van Rossum and first released in 1991, Python consistently ranks
+among the most popular programming languages worldwide.
+
+Key features:
+- Readable, clean syntax with significant whitespace
+- Dynamic typing and duck typing
+- Extensive standard library ("batteries included")
+- Large ecosystem of third-party packages via PyPI
+- Interpreted language with an interactive REPL
+- Multi-paradigm: procedural, object-oriented, functional
+- Cross-platform compatibility
+
+Python is widely used in web development, data science, artificial intelligence,
+scientific computing, and automation. Python 3 is the current major version;
+Python 2 reached end-of-life in January 2020.
+""",
+    ),
     "https://en.wikipedia.org/wiki/Quake_(series)": (
         200,
         """Quake (series) — Wikipedia
