@@ -9,6 +9,7 @@ def _now() -> str:
 
 
 def new_request_id() -> str:
+    """Return a new UUID4 string for request tracking."""
     return str(uuid.uuid4())
 
 
@@ -85,6 +86,7 @@ Commercial use is permitted under the respective license terms.
 
 
 def mock_web_search(query: str, max_results: int, provider: str) -> dict:
+    """Return a deterministic fixture response for web_search (mock mode)."""
     key = query.lower()
     results = _FIXTURE_SEARCH.get(key, _FIXTURE_SEARCH["_default"])
     return {
@@ -97,6 +99,7 @@ def mock_web_search(query: str, max_results: int, provider: str) -> dict:
 
 
 def mock_http_fetch(url: str, max_chars: int) -> dict:
+    """Return a deterministic fixture response for http_fetch (mock mode)."""
     timestamp = _now()
 
     # 404 simulation — any URL containing /status/404

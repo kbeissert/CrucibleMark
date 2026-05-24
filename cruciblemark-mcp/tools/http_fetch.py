@@ -17,6 +17,8 @@ def _now() -> str:
 
 
 class HttpFetchTool:
+    """Fetches URL content with whitelist enforcement in mock or live mode."""
+
     def __init__(self, config: dict, mode: str) -> None:
         cfg = config["http_fetch"]
         self._mode = mode
@@ -29,6 +31,7 @@ class HttpFetchTool:
         return any(host == domain or host.endswith(f".{domain}") for domain in self._whitelist)
 
     def fetch(self, url: str, max_chars: int) -> dict:
+        """Fetch URL content, enforcing whitelist. Returns structured result dict."""
         request_id = new_request_id()
         timestamp = _now()
 
@@ -74,7 +77,7 @@ class HttpFetchTool:
     def _live_fetch(self, url: str, max_chars: int, request_id: str, timestamp: str) -> dict:
         req = urllib_request.Request(url, headers={"User-Agent": "CrucibleMark/1.0"})
         try:
-            with urllib_request.urlopen(req, timeout=self._timeout) as resp:
+            with urllib_request.urlopen(req, timeout=self._timeout) as resp:  # noqa: S310
                 content = resp.read().decode("utf-8", errors="replace")[:max_chars]
                 return {
                     "status": "success",

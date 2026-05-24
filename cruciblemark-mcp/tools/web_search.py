@@ -11,12 +11,17 @@ from tools.mock_provider import mock_web_search, new_request_id
 
 logger = logging.getLogger(__name__)
 
+_EXCERPT_MAX_CHARS = 300
+_TITLE_MAX_CHARS = 80
+
 
 def _now() -> str:
     return datetime.now(timezone.utc).isoformat()
 
 
 class WebSearchTool:
+    """Executes web searches via Tavily (primary) or DuckDuckGo (fallback)."""
+
     def __init__(self, config: dict, mode: str) -> None:
         cfg = config["web_search"]
         self._mode = mode
@@ -28,6 +33,7 @@ class WebSearchTool:
         self._search_depth: str = cfg.get("search_depth", "basic")
 
     def search(self, query: str, max_results: int) -> dict:
+        """Run a search query and return structured results dict."""
         request_id = new_request_id()
         timestamp = _now()
 
@@ -76,7 +82,7 @@ class WebSearchTool:
             method="POST",
         )
         try:
-            with urllib_request.urlopen(req, timeout=self._timeout) as resp:
+            with urllib_request.urlopen(req, timeout=self._timeout) as resp:  # noqa: S310
                 data = json.loads(resp.read().decode())
         except Exception:
             logger.exception("Tavily search failed")
@@ -92,7 +98,7 @@ class WebSearchTool:
             {
                 "url": item.get("url", ""),
                 "title": item.get("title", ""),
-                "excerpt": item.get("content", "")[:300],
+                "excerpt": item.get("content", "")[:_EXCERPT_MAX_CHARS],
             }
             for item in data.get("results", [])[:max_results]
         ]
@@ -118,7 +124,7 @@ class WebSearchTool:
             headers={"User-Agent": "CrucibleMark/1.0"},
         )
         try:
-            with urllib_request.urlopen(req, timeout=self._timeout) as resp:
+            with urllib_request.urlopen(req, timeout=self._timeout) as resp:  # noqa: S310
                 data = json.loads(resp.read().decode())
         except Exception:
             logger.exception("DuckDuckGo search failed")
@@ -137,8 +143,8 @@ class WebSearchTool:
             text: str = item["Text"]
             results.append({
                 "url": item["FirstURL"],
-                "title": text[:80],
-                "excerpt": text[:300],
+                "title": text[:_TITLE_MAX_CHARS],
+                "excerpt": text[:_EXCERPT_MAX_CHARS],
             })
             if len(results) >= max_results:
                 break

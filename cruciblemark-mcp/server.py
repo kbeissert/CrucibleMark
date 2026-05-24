@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# ruff: noqa: EXE001
 """CrucibleMark MCP Server — minimal HTTP transport for tooluse benchmark module."""
 
 import argparse
@@ -9,6 +10,8 @@ import signal
 import sys
 from http.server import BaseHTTPRequestHandler, HTTPServer
 from pathlib import Path
+
+import yaml
 
 sys.path.insert(0, str(Path(__file__).parent))
 
@@ -21,9 +24,8 @@ _PROJECT_ROOT = Path(__file__).parent.parent
 
 
 def _load_config(path: Path) -> dict:
-    import yaml
-
-    with open(path) as f:
+    """Load YAML config from path."""
+    with path.open() as f:
         return yaml.safe_load(f)
 
 
@@ -43,11 +45,13 @@ def _setup_logging(config: dict) -> None:
 
 
 def _make_handler(config: dict, mode: str) -> type:
+    """Build and return the MCPHandler class with config and mode bound via closure."""
     web_search = WebSearchTool(config, mode)
     http_fetch = HttpFetchTool(config, mode)
 
     class MCPHandler(BaseHTTPRequestHandler):
-        def log_message(self, format: str, *args: object) -> None:
+        """HTTP request handler for MCP tool endpoints."""
+        def log_message(self, format: str, *args: object) -> None:  # noqa: A002  # pylint: disable=redefined-builtin
             pass  # suppress default access log; structured logging is done in tools
 
         def _send_json(self, data: dict, status: int = 200) -> None:
@@ -63,12 +67,14 @@ def _make_handler(config: dict, mode: str) -> type:
             return json.loads(self.rfile.read(length)) if length else {}
 
         def do_GET(self) -> None:
+            """Handle GET /health."""
             if self.path == "/health":
                 self._send_json({"status": "ok", "mode": mode, "version": VERSION})
             else:
                 self._send_json({"error": "not found"}, 404)
 
         def do_POST(self) -> None:
+            """Handle POST /tools/web_search and /tools/http_fetch."""
             body = self._read_json_body()
             if self.path == "/tools/web_search":
                 result = web_search.search(
@@ -89,6 +95,7 @@ def _make_handler(config: dict, mode: str) -> type:
 
 
 def main() -> None:
+    """Parse CLI args, load config, and start the MCP HTTP server."""
     parser = argparse.ArgumentParser(description="CrucibleMark MCP Server")
     parser.add_argument("--mode", choices=["mock", "live"], default=None)
     parser.add_argument("--port", type=int, default=None)
@@ -106,7 +113,7 @@ def main() -> None:
     pid_file = _PROJECT_ROOT / ".mcp.pid"
     pid_file.write_text(str(os.getpid()))
 
-    def _cleanup(signum: int, frame: object) -> None:
+    def _cleanup(_signum: int, _frame: object) -> None:
         if pid_file.exists():
             pid_file.unlink()
         sys.exit(0)

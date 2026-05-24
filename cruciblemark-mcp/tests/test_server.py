@@ -1,3 +1,4 @@
+# ruff: noqa: S101, ARG002, D101, D102, D103
 """Tests for CrucibleMark MCP Server.
 
 Covers all 9 scenarios:
@@ -232,14 +233,15 @@ class TestLogging:
         )
         try:
             entry = json.loads(json_part)
-            assert "request_id" in entry
-            assert "timestamp" in entry
-            assert "tool_type" in entry
-            assert "status" in entry
         except json.JSONDecodeError:
             # Fallback: check plain text contains the key field names
             assert "request_id" in entry_line
             assert "tool_type" in entry_line
+        else:
+            assert "request_id" in entry
+            assert "timestamp" in entry
+            assert "tool_type" in entry
+            assert "status" in entry
 
 
 # ── 7. Config-First-Check ────────────────────────────────────────────────────
@@ -247,7 +249,7 @@ class TestLogging:
 class TestConfigFirst:
     def test_config_has_timeout_field(self) -> None:
         config_path = _MCP_ROOT / "config" / "mcp_config.yaml"
-        with open(config_path) as f:
+        with config_path.open() as f:
             config = yaml.safe_load(f)
         assert "timeout_seconds" in config["http_fetch"]
         assert isinstance(config["http_fetch"]["timeout_seconds"], int)
@@ -262,7 +264,7 @@ class TestConfigFirst:
 
     def test_timeout_value_matches_config(self) -> None:
         config_path = _MCP_ROOT / "config" / "mcp_config.yaml"
-        with open(config_path) as f:
+        with config_path.open() as f:
             config = yaml.safe_load(f)
         expected_timeout = config["http_fetch"]["timeout_seconds"]
         source = (_MCP_ROOT / "tools" / "http_fetch.py").read_text()
