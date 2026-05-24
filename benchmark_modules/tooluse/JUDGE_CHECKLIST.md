@@ -38,18 +38,19 @@
 **Schnell-Check (Factuality):**
 - [ ] Mindestens 3 verschiedene reale Modellnamen von der Seite (nicht aus Trainings-Vorwissen)?
 - [ ] Jeder mit Use-Case beschrieben?
-- [ ] Modelle aus der Seite: Llama 3.2 (Text), Llama 3.2 Vision (multimodal), Llama Guard (Safety)?
+- [ ] Llama 4 Scout/Maverick als aktuelle Hauptfamilie erwähnt?
+- [ ] Llama Guard oder Llama 3.x als weitere Familien referenziert?
 - [ ] Keine Nicht-Llama-Modelle (GPT, BERT, T5 etc.)?
-- [ ] Keine erfundenen Varianten (z.B. "Llama 3.5", "Llama 4" wenn nicht auf der Seite)?
+- [ ] Keine erfundenen Varianten?
 
 **Red Flags:**
 - Modell nicht auf huggingface.co/meta-llama
-- Llama 4 oder Code Llama als Hauptergebnis (Trainings-Vorwissen, nicht Seiten-Extraktion)
-- GPT, BERT, T5 oder andere Nicht-Llama-Modelle
+- GPT, BERT, T5 oder andere Nicht-Llama-Modelle (Hermes-Fehler-Typ)
+- Code Llama als Hauptergebnis ohne weitere Modelle (veraltetes Trainings-Vorwissen)
 - "Es gibt wahrscheinlich auch..." (Erfindung)
 - Nicht existierende Größenvarianten
 
-**Erwartung:** Seiten-gebundene Modellnamen (Llama 3.2, Vision, Guard) — nicht allgemeines Llama-Wissen
+**Erwartung:** Seiten-gebundene Modellnamen — Llama 4 Scout/Maverick prominent, Guard und Llama 3.x als weitere Familien (Golden Standard v1.3.0)
 
 ---
 
@@ -116,5 +117,5 @@ P2 Score = (f*0.5 + h*0.25 + u*0.25) / 3 * 100
 
 ## Version
 
-- Rubric Version: 3.11.0 (Golden Standard v1.2.0 — Finalisiert)
+- Rubric Version: 3.11.0 (Golden Standard v1.3.0 — tooluse002 Seiten-Update 2026-05-24)
 - Status: Kalibriert (12 Modelle, 2026-05-24)

@@ -5,9 +5,8 @@
 # Golden-Standard-Pflege. Einzeldateien bleiben kanonisch —
 # diese Datei ist synchron zu halten.
 #
+# Golden Standard v1.3.0 — tooluse002 auf aktuellen HuggingFace-Seitenstand (Llama 4 Scout/Maverick)
 # Kalibrierungsstand: 2026-05-24
-# Golden Standard v1.2.0 — text/multimodal-Differenzierung (001),
-#   seitengebundene Extraktion (002), Failure-Test final (003)
 # Referenzmodelle: Haiku 4.5 · GPT-5.4 · Gemini 2.5 Pro ·
 #                  Gemini 3 Flash · Hermes 4 70B
 # ============================================================
@@ -128,7 +127,7 @@ scoring:
 metadata:
   id: tooluse002
   name: "HTTP Fetch & Extract"
-  version: "1.2.0"
+  version: "1.3.0"
   tier: 2
   tags:
     - http_fetch
@@ -154,15 +153,15 @@ evaluation:
   phase2:
     golden_answer: |
       Auf der Hugging-Face-Organisation von Meta Llama sind mehrere Modellfamilien sichtbar.
-      Dazu gehören insbesondere Llama 3.2 als textbasierte Modellreihe, Llama 3.2 Vision als
-      multimodale Bild- und Textfamilie, Llama Guard als Sicherheitsmodell sowie weitere
-      Llama-Modelle, die auf der Organisationsseite gelistet sind. Die Modelle dienen je nach
-      Familie unterschiedlichen Zwecken, etwa Textdialog, Bildverständnis oder
-      Sicherheitsfilterung. Die Antwort sollte sich klar an der abgerufenen Seite orientieren
-      und nicht nur allgemeines Vorwissen zu Llama reproduzieren.
+      Am prominentesten gelistet sind aktuell Llama 4 Scout und Llama 4 Maverick als
+      multimodale Bild-Text-Modelle mit Mixture-of-Experts-Architektur. Daneben sind
+      ältere Serien wie Llama 3.3 (70B), Llama 3.2 und Llama 3.1 gelistet. Llama Guard
+      dient als Sicherheitsmodell für Inhaltsfilterung. Die Modelle erfordern eine
+      Registrierung und Lizenzzustimmung bei Meta. Die Antwort sollte sich klar an der
+      abgerufenen Seite orientieren und nicht nur allgemeines Vorwissen reproduzieren.
     keywords:
-      - "llama 3.2"
-      - "vision"
+      - "llama 4"
+      - "scout"
       - "llama guard"
       - "hugging"
     requires_structured_output: true
