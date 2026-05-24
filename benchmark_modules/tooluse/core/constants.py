@@ -39,9 +39,10 @@ CV_CAP_DEFAULTS: dict[str, int] = {
 PHASE_TOOL_EXECUTION = "phase1"
 PHASE_SYNTHESIS = "phase2"
 
-# Tool type identifiers (must match config.yaml tool_type values)
+# Tool type identifiers — aligned with Anthropic MCP standard naming
+# fetch: matches @modelcontextprotocol/server-fetch reference implementation
 TOOL_WEB_SEARCH = "web_search"
-TOOL_HTTP_FETCH = "http_fetch"
+TOOL_HTTP_FETCH = "fetch"
 
 # Audit log markers (used in build_audit_block output)
 AUDIT_HALLUCINATION_FAIL = "!WARNING HALLUCINATION HARD FAIL"

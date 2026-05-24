@@ -181,7 +181,7 @@ def test_score_response_failure_test_hallucination():
         raw_response="Die Seite zeigt ausführliche Inhalte über HuggingFace-Modelle.",
         data={
             "tool_transcript": {
-                "tool_type_called": "http_fetch",
+                "tool_type_called": "fetch",
                 "status": "error",
                 "status_code": 404,
                 "content_excerpt": None,
@@ -189,7 +189,7 @@ def test_score_response_failure_test_hallucination():
                 "request_id": "test-003",
                 "timestamp": "2026-05-23T10:00:00Z",
             },
-            "response_1": '{"tool_call": {"name": "http_fetch", "parameters": {}}}',
+            "response_1": '{"tool_call": {"name": "fetch", "parameters": {}}}',
             "asset_id": "tooluse003",
         },
     )

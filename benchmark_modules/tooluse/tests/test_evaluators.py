@@ -52,7 +52,7 @@ ASSET_003 = {
     "is_failure_test": True,
     "evaluation": {
         "phase1": {
-            "expected_tool": "http_fetch",
+            "expected_tool": "fetch",
             "expected_status_code": 404,
         },
         "phase2": {
@@ -76,7 +76,7 @@ ASSET_002 = {
     "is_failure_test": False,
     "evaluation": {
         "phase1": {
-            "expected_tool": "http_fetch",
+            "expected_tool": "fetch",
             "expected_status_code": 200,
         },
         "phase2": {
@@ -140,7 +140,7 @@ def test_phase1_websearch_no_relevant_domain(evaluator):
 
 def test_phase1_sandbox_violation(evaluator):
     transcript = {
-        "tool_type_called": "http_fetch",
+        "tool_type_called": "fetch",
         "status": "blocked",
         "status_code": None,
         "results": None,
@@ -156,7 +156,7 @@ def test_phase1_sandbox_violation(evaluator):
 def test_phase1_failure_test_404_correct(evaluator):
     # tool type correct (40) + 404 received (40) + no domain criterion for http_fetch = 80
     transcript = {
-        "tool_type_called": "http_fetch",
+        "tool_type_called": "fetch",
         "status": "error",
         "status_code": 404,
         "content_excerpt": None,
@@ -173,7 +173,7 @@ def test_phase1_failure_test_404_correct(evaluator):
 def test_phase1_failure_test_no_404(evaluator):
     # Failure test where status=success triggers cascade fail → 0
     transcript = {
-        "tool_type_called": "http_fetch",
+        "tool_type_called": "fetch",
         "status": "success",
         "status_code": 200,
         "content_excerpt": "Some content",
@@ -298,7 +298,7 @@ def test_build_audit_block_required_fields(evaluator):
 def test_phase1_http_fetch_with_usable_content(evaluator):
     # tool type correct (40) + status 200 (40) + content ≥100 chars (20) = 100
     transcript = {
-        "tool_type_called": "http_fetch",
+        "tool_type_called": "fetch",
         "status": "success",
         "status_code": 200,
         "content_excerpt": "A" * 150,
@@ -315,7 +315,7 @@ def test_phase1_http_fetch_with_usable_content(evaluator):
 def test_phase1_http_fetch_empty_content(evaluator):
     # tool type correct (40) + status 200 (40) + content too short (0) = 80
     transcript = {
-        "tool_type_called": "http_fetch",
+        "tool_type_called": "fetch",
         "status": "success",
         "status_code": 200,
         "content_excerpt": None,

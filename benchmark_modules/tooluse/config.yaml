@@ -74,13 +74,13 @@ benchmarks:
   - id: tooluse002
     name: "HTTP Fetch & Extract"
     tier: 2
-    tool_type: http_fetch
+    tool_type: fetch
     future_expansion: null
 
   - id: tooluse003
     name: "Tool Failure Handling"
     tier: 3
-    tool_type: http_fetch
+    tool_type: fetch
     is_failure_test: true         # 404-Simulation — kein Scoring-Abzug
     future_expansion: null
 
@@ -91,7 +91,7 @@ benchmarks:
     future_expansion: null
 
   - id: tooluse005
-    name: "URL Construction (http_fetch)"
+    name: "URL Construction (fetch)"
     tier: 2
-    tool_type: http_fetch
+    tool_type: fetch
     future_expansion: null

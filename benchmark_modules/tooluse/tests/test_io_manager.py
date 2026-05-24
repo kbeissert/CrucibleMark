@@ -109,7 +109,7 @@ def test_print_asset_result_hallucination():
         p2_score=0.0,
         combined_score=40.0,
         tool_transcript={
-            "tool_type_called": "http_fetch",
+            "tool_type_called": "fetch",
             "status": "error",
             "provider": "mock",
         },

@@ -74,7 +74,7 @@ def _make_handler(config: dict, mode: str) -> type:
                 self._send_json({"error": "not found"}, 404)
 
         def do_POST(self) -> None:
-            """Handle POST /tools/web_search and /tools/http_fetch."""
+            """Handle POST /tools/web_search and /tools/fetch."""
             body = self._read_json_body()
             if self.path == "/tools/web_search":
                 result = web_search.search(
@@ -82,7 +82,7 @@ def _make_handler(config: dict, mode: str) -> type:
                     max_results=body.get("max_results", config["web_search"]["max_results"]),
                 )
                 self._send_json(result)
-            elif self.path == "/tools/http_fetch":
+            elif self.path == "/tools/fetch":
                 result = http_fetch.fetch(
                     url=body.get("url", ""),
                     max_chars=body.get("max_chars", config["http_fetch"]["max_chars"]),

@@ -1,13 +1,12 @@
 """Tool Adapter Audit — Diagnose Tool-Name und Call-Format Mismatches.
 
-Problem bei tooluse002 & Claude Sonnet 4.6:
+Problem bei tooluse002 & Claude Sonnet 4.6 (vor MCP-Standard-Alignment):
 - Model returned: {"tool_call": {"name": "fetch", ...}}
-- Expected: {"tool_call": {"name": "http_fetch", ...}}
-- MCP routed to: /tools/fetch (wrong endpoint)
-- Result: p1 = 0.0 (hard fail)
+- Expected: {"tool_call": {"name": "fetch", ...}}  ← jetzt korrekt (MCP Standard)
+- MCP routes to: /tools/fetch
 
 Diese Audit prüft:
-1. Tool-Name Normalisierung (fetch → http_fetch)
+1. Tool-Name Validierung (MCP-Standard: fetch, web_search)
 2. Tool-Call-Format Validierung
 3. MCP Endpoint Routing
 4. Response Structure Mapping
@@ -35,19 +34,17 @@ logger = logging.getLogger(__name__)
 
 _ROOT = Path(__file__).resolve().parents[3]
 
-# Authorized tool names in CrucibleMark — exact match only (no aliases).
-# Models must use the canonical name from the tool schema. Aliases were removed
-# because schema-compliance is a measured capability: a model calling "fetch"
-# instead of "http_fetch" failed to follow the given JSON schema → wrong tool → P1=20.
+# Authorized tool names — aligned with Anthropic MCP standard.
+# fetch: matches @modelcontextprotocol/server-fetch reference implementation.
 AUTHORIZED_TOOLS = {
     "web_search": ["web_search"],
-    "http_fetch": ["http_fetch"],
+    "fetch": ["fetch"],
 }
 
 # Canonical tool names (what we expect)
 CANONICAL_TOOLS = {
     "web_search": "web_search",
-    "http_fetch": "http_fetch",
+    "fetch": "fetch",
 }
 
 # -----------------------------------------------------------------------

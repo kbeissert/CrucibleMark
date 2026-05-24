@@ -70,7 +70,7 @@ TOOL_SCHEMA_WEB_SEARCH: dict[str, Any] = {
 }
 
 TOOL_SCHEMA_HTTP_FETCH: dict[str, Any] = {
-    "name": "http_fetch",
+    "name": "fetch",
     "description": "Lädt den Inhalt einer URL.",
     "parameters": {
         "url": {

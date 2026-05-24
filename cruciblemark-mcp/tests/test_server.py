@@ -141,7 +141,7 @@ class TestWebSearch:
 
 class TestHttpFetchSuccess:
     def test_whitelisted_url_returns_200(self, mcp_server: subprocess.Popen) -> None:
-        result = _post("/tools/http_fetch", {
+        result = _post("/tools/fetch", {
             "url": "https://huggingface.co/",
             "max_chars": 500,
         })
@@ -149,7 +149,7 @@ class TestHttpFetchSuccess:
         assert result["status_code"] == 200
 
     def test_content_excerpt_not_empty(self, mcp_server: subprocess.Popen) -> None:
-        result = _post("/tools/http_fetch", {
+        result = _post("/tools/fetch", {
             "url": "https://huggingface.co/",
             "max_chars": 500,
         })
@@ -160,7 +160,7 @@ class TestHttpFetchSuccess:
 
 class TestHttpFetch404:
     def test_404_url_returns_error_status(self, mcp_server: subprocess.Popen) -> None:
-        result = _post("/tools/http_fetch", {
+        result = _post("/tools/fetch", {
             "url": "https://httpbin.org/status/404",
             "max_chars": 500,
         })
@@ -168,7 +168,7 @@ class TestHttpFetch404:
         assert result["status_code"] == 404
 
     def test_404_content_excerpt_is_empty(self, mcp_server: subprocess.Popen) -> None:
-        result = _post("/tools/http_fetch", {
+        result = _post("/tools/fetch", {
             "url": "https://httpbin.org/status/404",
             "max_chars": 500,
         })
@@ -180,14 +180,14 @@ class TestHttpFetch404:
 
 class TestWhitelist:
     def test_blocked_returns_blocked_status(self, mcp_server: subprocess.Popen) -> None:
-        result = _post("/tools/http_fetch", {
+        result = _post("/tools/fetch", {
             "url": "https://example-not-allowed.com/page",
             "max_chars": 500,
         })
         assert result["status"] == "blocked"
 
     def test_blocked_status_code_is_null(self, mcp_server: subprocess.Popen) -> None:
-        result = _post("/tools/http_fetch", {
+        result = _post("/tools/fetch", {
             "url": "https://example-not-allowed.com/page",
             "max_chars": 500,
         })
@@ -195,7 +195,7 @@ class TestWhitelist:
 
     def test_google_is_blocked(self, mcp_server: subprocess.Popen) -> None:
         # Confirms whitelist is not permissive
-        result = _post("/tools/http_fetch", {"url": "https://google.com/", "max_chars": 100})
+        result = _post("/tools/fetch", {"url": "https://google.com/", "max_chars": 100})
         assert result["status"] == "blocked"
 
 
@@ -214,7 +214,7 @@ class TestLogging:
         assert request_id in log_path.read_text()
 
     def test_log_entry_has_required_fields(self, mcp_server: subprocess.Popen) -> None:
-        result = _post("/tools/http_fetch", {
+        result = _post("/tools/fetch", {
             "url": "https://huggingface.co/",
             "max_chars": 100,
         })
