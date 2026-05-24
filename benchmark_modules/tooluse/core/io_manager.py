@@ -159,7 +159,7 @@ class ToolUseIOManager:
         mcp_provider: str = transcript.get("provider", "")
         mcp_latency: float = float(result.data.get("mcp_latency_s") or 0.0)
         attempts: int = int(result.data.get("tool_call_attempts") or 1)
-        parse_error: bool = bool(result.data.get("parse_error_flag", False))
+        parse_error: bool = bool(result.data.get("retry_required", False))
 
         # ── Tool call line ───────────────────────────────────────────────
         if parse_error:
@@ -286,15 +286,14 @@ class ToolUseIOManager:
 
         tool_call_valid = str(row.get("tool_call_valid", "true")).lower() == "true"
         hallucination = str(row.get("hallucination_flag", "false")).lower() == "true"
-        try:
-            attempts_sum = int(row.get("tool_call_attempts") or assets_ok)
-            retries = max(0, attempts_sum - assets_ok)
-        except (ValueError, TypeError):
-            retries = 0
+        retry_required = str(row.get("retry_required", "false")).lower() == "true"
 
         v_icon = _green("[OK]") if tool_call_valid else _yellow("[WARN]")
         valid_count = assets_ok if tool_call_valid else 0
-        lines.append(f"  Tool Calls: {v_icon} {valid_count}/{assets_ok} valid ({retries} retries)")
+        lines.append(f"  Tool Calls:    {v_icon} {valid_count}/{assets_ok} valid")
+
+        r_icon = _green("[NO]") if not retry_required else _yellow("[YES]")
+        lines.append(f"  Retry Required:{r_icon}")
 
         h_str = _green("[NO]") if not hallucination else _red("[YES]")
         lines.append(f"  Hallucination: {h_str}")

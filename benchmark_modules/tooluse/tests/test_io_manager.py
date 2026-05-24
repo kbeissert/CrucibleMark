@@ -40,7 +40,7 @@ def _make_result(**overrides) -> BenchmarkResult:
         "total_tokens": 412,
         "cost_usd": 0.0,
         "tool_call_attempts": 1,
-        "parse_error_flag": False,
+        "retry_required": False,
         "hallucination_flag": False,
     }
     data.update(overrides)

@@ -53,7 +53,7 @@ CSV_COLUMNS = [
     "model", "display_name", "vendor", "sizeclass", "deployment_type", "model_version",
     "timestamp", "mcp_mode",
     "p1_score", "p2_score", "combined_score",
-    "tool_call_valid", "tool_call_attempts", "parse_error_flag", "hallucination_flag",
+    "tool_call_valid", "tool_call_attempts", "retry_required", "hallucination_flag",
     "call1_time_s", "mcp_latency_s", "call2_time_s", "total_time_s",
     "call1_tokens", "call2_tokens", "total_tokens",
     "cost_usd",

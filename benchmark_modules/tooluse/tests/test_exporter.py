@@ -42,7 +42,7 @@ def _success_result(**data_overrides) -> BenchmarkResult:
         "total_tokens": 100,
         "cost_usd": 0.001,
         "tool_call_attempts": 1,
-        "parse_error_flag": False,
+        "retry_required": False,
     }
     data.update(data_overrides)
     return BenchmarkResult(status="success", raw_response="ok", data=data)
@@ -244,20 +244,20 @@ def test_finalize_total_time_sum(tmp_path):
 
 
 # ---------------------------------------------------------------------------
-# Test 13: parse_error_flag = True if any asset had a parse error
+# Test 13: retry_required = True if any asset needed a retry
 # ---------------------------------------------------------------------------
 
 def test_finalize_parse_error_flag_any(tmp_path):
-    """parse_error_flag=True if any asset had it, even if others did not."""
+    """retry_required=True if any asset had it, even if others did not."""
     exporter = _make_exporter(tmp_path)
     with patch("scripts.core.tooluse_exporter._load_card_data", return_value={}):
-        exporter.export_result(_success_result(parse_error_flag=False), "m3")
-        exporter.export_result(_success_result(parse_error_flag=True), "m3")
-        exporter.export_result(_success_result(parse_error_flag=False), "m3")
+        exporter.export_result(_success_result(retry_required=False), "m3")
+        exporter.export_result(_success_result(retry_required=True), "m3")
+        exporter.export_result(_success_result(retry_required=False), "m3")
         exporter.finalize_model("m3")
 
     rows = _read_rows(exporter.CSV_PATH)
-    assert rows[0]["parse_error_flag"] == "true"
+    assert rows[0]["retry_required"] == "true"
 
 
 # ---------------------------------------------------------------------------

@@ -25,6 +25,8 @@ _ROOT = Path(__file__).resolve().parents[2]
 if str(_ROOT) not in sys.path:
     sys.path.insert(0, str(_ROOT))
 
+from benchmark_modules.tooluse.core.methodology_notes import get_applicable_notes  # noqa: E402
+
 logger = logging.getLogger(__name__)
 
 # Asset names — SSOT for display
@@ -107,7 +109,7 @@ def _build_strengths(row: dict[str, Any], asset_details: list[dict[str, Any]]) -
 def _build_weaknesses(row: dict[str, Any]) -> list[str]:
     weaknesses: list[str] = []
     p2 = _safe_float(row.get("p2_score", ""))
-    parse_error = str(row.get("parse_error_flag", "false")).lower() == "true"
+    parse_error = str(row.get("retry_required", "false")).lower() == "true"
     hallucination = str(row.get("hallucination_flag", "false")).lower() == "true"
     total_time = _safe_float(row.get("total_time_s", ""))
     call1_tokens = _safe_int(row.get("call1_tokens", 0))
@@ -258,7 +260,7 @@ class ToolUseReportGenerator:
         cost_str = row.get("cost_usd") or "0.0"
         tool_call_valid = row.get("tool_call_valid", "false")
         attempts = row.get("tool_call_attempts", "1")
-        parse_error = row.get("parse_error_flag", "false")
+        parse_error = row.get("retry_required", "false")
         hallucination = row.get("hallucination_flag", "false")
 
         lines: list[str] = []
@@ -390,6 +392,22 @@ class ToolUseReportGenerator:
         lines.append("")
         lines.append(f"**Deployment Recommendation:** {recommendation}")
         lines.append("")
+
+        # Methodology notes — deterministic context annotations for reviewers
+        methodology_notes = get_applicable_notes(row)
+        if methodology_notes:
+            lines.append("## Methodologische Anmerkungen")
+            lines.append("")
+            lines.append(
+                "_Die folgenden Hinweise wurden automatisch aus den Benchmark-Daten abgeleitet._"
+                " _Sie erläutern strukturelle Benchmark-Bedingungen und sollen Reviewern_"
+                " _helfen, Scores korrekt zu interpretieren._"
+            )
+            lines.append("")
+            for note in methodology_notes:
+                lines.append(note.render_markdown())
+                lines.append("")
+
         lines.append("---")
         lines.append("*CrucibleMark Tool Use Module v1.0 — Statischer Report*")
 
@@ -506,13 +524,29 @@ class ToolUseReportGenerator:
         # Reliability overview
         total = len(df)
         valid_count = int(df.get("tool_call_valid", pd.Series()).apply(lambda v: str(v).lower() == "true").sum()) if "tool_call_valid" in df.columns else 0
-        parse_count = int(df.get("parse_error_flag", pd.Series()).apply(lambda v: str(v).lower() == "true").sum()) if "parse_error_flag" in df.columns else 0
+        parse_count = int(df.get("retry_required", pd.Series()).apply(lambda v: str(v).lower() == "true").sum()) if "retry_required" in df.columns else 0
         halluc_count = int(df.get("hallucination_flag", pd.Series()).apply(lambda v: str(v).lower() == "true").sum()) if "hallucination_flag" in df.columns else 0
 
         lines.append("## Reliability Overview")
         lines.append(f"- Models with valid tool calls: {valid_count}/{total}")
-        lines.append(f"- Models with parse errors: {parse_count}/{total}")
+        lines.append(f"- Models requiring MCP-format retry: {parse_count}/{total}")
         lines.append(f"- Models with hallucination flag: {halluc_count}/{total}")
+        lines.append("")
+
+        # Methodology notes — fleet-level summary of triggered annotations
+        lines.append("## Methodologische Anmerkungen (Fleet)")
+        lines.append("")
+        fleet_note_counts: dict[str, int] = {}
+        for _, r in sorted_df.iterrows():
+            for note in get_applicable_notes(r.to_dict()):
+                fleet_note_counts[note.tag] = fleet_note_counts.get(note.tag, 0) + 1
+        if fleet_note_counts:
+            lines.append("| Annotation | Modelle betroffen |")
+            lines.append("|---|---|")
+            for tag, count in sorted(fleet_note_counts.items(), key=lambda x: -x[1]):
+                lines.append(f"| `{tag}` | {count}/{total} |")
+        else:
+            lines.append("_Keine methodologischen Anmerkungen ausgelöst._")
         lines.append("")
 
         # Deployment recommendations
@@ -594,7 +628,7 @@ class ToolUseReportGenerator:
             "reliability": {
                 "tool_call_valid": str(row.get("tool_call_valid", "false")).lower() == "true",
                 "tool_call_attempts": _safe_int(row.get("tool_call_attempts", 1)),
-                "parse_error_flag": str(row.get("parse_error_flag", "false")).lower() == "true",
+                "retry_required": str(row.get("retry_required", "false")).lower() == "true",
                 "hallucination_flag": str(row.get("hallucination_flag", "false")).lower() == "true",
             },
             "fleet_group": row.get("fleet_group", ""),

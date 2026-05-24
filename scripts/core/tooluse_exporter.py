@@ -101,7 +101,7 @@ class ToolUseExporter:
                     tool_call_attempts_max = max(tool_call_attempts_max, int(result.data.get("tool_call_attempts", 0)))
                 except (ValueError, TypeError):
                     pass
-                if result.data.get("parse_error_flag"):
+                if result.data.get("retry_required") or result.data.get("parse_error_flag"):
                     parse_error_any = True
                 continue
 
@@ -130,7 +130,7 @@ class ToolUseExporter:
 
             if data.get(FIELD_HALLUCINATION_FLAG):
                 hallucination_any = True
-            if data.get("parse_error_flag"):
+            if data.get("retry_required") or data.get("parse_error_flag"):
                 parse_error_any = True
 
             # Timing (per-call → mean; total → sum)
@@ -193,7 +193,7 @@ class ToolUseExporter:
             "combined_score": _fmt_score(_mean(combined_scores)),
             "tool_call_valid": str(tool_call_valid_all).lower(),
             "tool_call_attempts": tool_call_attempts_max,
-            "parse_error_flag": str(parse_error_any).lower(),
+            "retry_required": str(parse_error_any).lower(),
             "hallucination_flag": str(hallucination_any).lower(),
             "call1_time_s": _fmt_score(_mean(call1_times)),
             "mcp_latency_s": _fmt_score(_mean(mcp_latencies)),
@@ -429,7 +429,7 @@ class ToolUseExporter:
             except (ValueError, TypeError):
                 pass
 
-            if data_dict.get("parse_error_flag"):
+            if data_dict.get("retry_required") or data_dict.get("parse_error_flag"):
                 parse_error_any = True
             try:
                 tool_call_attempts_max = max(tool_call_attempts_max, int(data_dict.get("tool_call_attempts", 1)))
@@ -455,7 +455,7 @@ class ToolUseExporter:
             "combined_score": _fmt_score(_mean(combined_scores)),
             "tool_call_valid": str(tool_call_valid_all).lower(),
             "tool_call_attempts": tool_call_attempts_max,
-            "parse_error_flag": str(parse_error_any).lower(),
+            "retry_required": str(parse_error_any).lower(),
             "hallucination_flag": str(hallucination_any).lower(),
             "call1_time_s": _fmt_score(_mean(call1_times)),
             "mcp_latency_s": _fmt_score(_mean(mcp_latencies)),
@@ -560,7 +560,7 @@ def _sum_int_col(rows: list[dict[str, Any]], col: str) -> int:
 def _parse_error_rate(rows: list[dict[str, Any]]) -> float | None:
     if not rows:
         return None
-    errors = sum(1 for r in rows if r.get("parse_error_flag") == "true")
+    errors = sum(1 for r in rows if r.get("retry_required") == "true")
     return round(errors / len(rows) * 100, 1)
 
 

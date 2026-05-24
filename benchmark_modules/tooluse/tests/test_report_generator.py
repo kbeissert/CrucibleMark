@@ -82,7 +82,7 @@ def _default_row(model="test-model", **overrides) -> dict:
         "combined_score": "77.50",
         "tool_call_valid": "true",
         "tool_call_attempts": "1",
-        "parse_error_flag": "false",
+        "retry_required": "false",
         "hallucination_flag": "false",
         "call1_time_s": "1.20",
         "mcp_latency_s": "0.30",
@@ -174,7 +174,7 @@ def test_build_strengths_valid_tool_call():
 def test_build_weaknesses_low_p2():
     row = {
         "p2_score": "45.0",
-        "parse_error_flag": "false",
+        "retry_required": "false",
         "hallucination_flag": "false",
         "total_time_s": "5.0",
         "call1_tokens": "50",
@@ -190,7 +190,7 @@ def test_build_weaknesses_low_p2():
 def test_build_weaknesses_hallucination():
     row = {
         "p2_score": "70.0",
-        "parse_error_flag": "false",
+        "retry_required": "false",
         "hallucination_flag": "true",
         "total_time_s": "5.0",
         "call1_tokens": "50",

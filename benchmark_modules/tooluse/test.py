@@ -491,7 +491,7 @@ def _build_result(
             "total_tokens": call1_tokens + call2_tokens,
             "cost_usd": cost_usd,
             "tool_call_attempts": tool_call_attempts,
-            "parse_error_flag": parse_error_flag,
+            "retry_required": parse_error_flag,
         },
     )
 
