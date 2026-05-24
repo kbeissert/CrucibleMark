@@ -13,9 +13,34 @@ Der Server löst das durch:
 - **Fairness** — alle Modelle erhalten dieselben Inputs und dieselbe Infrastruktur
 - **Audit-Fähigkeit** — jeder Tool-Call wird mit `request_id`, Timestamp, Provider und Status geloggt
 
+## 2. Voraussetzungen
+
 ---
 
-## 2. Voraussetzungen
+## Design-Prinzip: MCP-Standard-Konformität
+
+Die Tool-Namen dieses Servers orientieren sich am offiziellen **Model Context Protocol (MCP)**,
+das von Anthropic definiert und als Open Standard veröffentlicht wurde
+([modelcontextprotocol.io](https://modelcontextprotocol.io)).
+
+**Warum ist das relevant für den Benchmark?**
+
+CrucibleMark misst, wie zuverlässig Modelle Tools in realen MCP-Umgebungen einsetzen können —
+nicht ob sie mit projektinternen Namenskonventionen umgehen können. Ein Modell, das `fetch`
+aufruft, demonstriert MCP-Kompetenz. Würde der Benchmark ein nicht-standardkonformes
+`http_fetch` erzwingen, bestraft er Modelle dafür, dass sie den Standard korrekt kennen.
+
+**Konkrete Entscheidungen daraus:**
+
+| Tool | Name in diesem Server | Begründung |
+|---|---|---|
+| HTTP-Fetch | `fetch` | Entspricht `@modelcontextprotocol/server-fetch` (Anthropic-Referenzimplementierung) |
+| Web-Suche | `web_search` | Weit verbreiteter, deskriptiver Name — kein einheitlicher MCP-Standard für Search-Tools |
+
+Das Prinzip gilt für alle künftigen Tool-Erweiterungen: Tool-Namen richten sich nach dem
+MCP-Standard oder, wo kein Standard existiert, nach dem de-facto-Konsens in der MCP-Ökosystem.
+
+---
 
 - **Python 3.12** (identisch mit dem CrucibleMark-Hauptprojekt)
 - **PyYAML** — bereits in `requirements.txt` enthalten (`pyyaml>=6.0`)
@@ -153,7 +178,7 @@ logging:
 
 ---
 
-### `POST /tools/http_fetch`
+### `POST /tools/fetch`
 
 **Request:**
 ```json

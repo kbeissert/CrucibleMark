@@ -86,7 +86,7 @@ config/
 
 | Komponente | Zweck | Pflicht |
 |---|---|---|
-| MCP Server (`localhost:8765`) | Tool-Ausführung (web_search, http_fetch) | ja |
+| MCP Server (`localhost:8765`) | Tool-Ausführung (web_search, fetch) | ja |
 | Tavily API (`TAVILY_API_KEY`) | Web-Suche im Live-Modus | nein (Fallback vorhanden) |
 | Ollama / Provider-API | LLM-Ausführung | ja |
 
@@ -106,7 +106,7 @@ LLM-Client
     │
     ▼
 [2] Tool Schema Injection
-    → Passendes Schema (web_search / http_fetch) aus _TOOL_SCHEMAS
+    → Passendes Schema (web_search / fetch) aus _TOOL_SCHEMAS
     → SYSTEM_PROMPT_TEMPLATE: Instruiert LLM zur JSON-Antwort
     │
     ▼
@@ -174,16 +174,21 @@ Der Server schreibt seine PID in `.mcp.pid`. `make mcp-stop` liest diese Datei u
 |---|---|---|
 | GET | `/health` | Health Check — gibt `{"status": "ok", "mode": "...", "version": "..."}` |
 | POST | `/tools/web_search` | Web-Suche. Body: `{"query": "...", "max_results": 3}` |
-| POST | `/tools/http_fetch` | HTTP-Fetch. Body: `{"url": "...", "max_chars": 500}` |
+| POST | `/tools/fetch` | HTTP-Fetch. Body: `{"url": "...", "max_chars": 500}` |
 
-### Modi
+### MCP-Standard-Konformität
+
+Die Tool-Namen folgen dem offiziellen **Model Context Protocol**, das von Anthropic als Open
+Standard veröffentlicht wurde. `fetch` entspricht der Referenzimplementierung
+`@modelcontextprotocol/server-fetch`. So misst der Benchmark MCP-Kompetenz, nicht Compliance
+mit projektinternen Namenskonventionen — Näheres in `cruciblemark-mcp/README.md`.
 
 | Modus | Verhalten |
 |---|---|
 | `live` | Echte Tavily-API-Aufrufe; Fallback auf DuckDuckGo bei fehlendem Key |
 | `mock` | Deterministisch; gibt vordefinierte Mock-Daten zurück |
 
-### Domain-Whitelist (http_fetch)
+### Domain-Whitelist (fetch)
 
 Erlaubte Domains werden in `cruciblemark-mcp/config/mcp_config.yaml` konfiguriert. Neue Test-URLs benötigen einen Eintrag in der Whitelist.
 
@@ -260,17 +265,17 @@ expected_keywords: [EU, Llama, Meta, Lizenz, ...]
 ### tooluse002 — HTTP Fetch & Extract (Tier 2)
 
 ```yaml
-tool_available: http_fetch
+tool_available: fetch
 prompt: "Rufe diese Seite ab und extrahiere alle verfügbaren Modellnamen: ..."
 expected_keywords: [model, llm, bert, gpt, ...]
 ```
 
-**Ziel:** Modell ruft `http_fetch` mit korrekter URL auf, nennt ≥ 3 Modellnamen.
+**Ziel:** Modell ruft `fetch` mit korrekter URL auf, nennt ≥ 3 Modellnamen.
 
 ### tooluse003 — Tool Failure Handling (Tier 3)
 
 ```yaml
-tool_available: http_fetch
+tool_available: fetch
 is_failure_test: true
 prompt: "Rufe https://example.com/nonexistent-page-404 ab ..."
 ```
@@ -642,7 +647,7 @@ prompt: |
   Deine Aufgabe für das LLM
 
 input:
-  tool_available: web_search   # oder: http_fetch
+  tool_available: web_search   # oder: fetch
 
 expected_output:
   keywords:
@@ -657,7 +662,7 @@ is_failure_test: false   # true = Tool soll fehlschlagen, Modell soll keinen Inh
 ### Schritte
 
 1. Asset-Datei nach `benchmark_modules/tooluse/assets/tooluse00X.yaml` schreiben
-2. Bei `http_fetch`: Ziel-Domain in `cruciblemark-mcp/config/mcp_config.yaml` → Whitelist eintragen
+2. Bei `fetch`: Ziel-Domain in `cruciblemark-mcp/config/mcp_config.yaml` → Whitelist eintragen
 3. Validieren: `make validate-assets MODULE=tooluse`
 4. Test-Run: `make benchmark-tooluse MODEL=<modell>`
 5. `_ASSET_NAMES` in `benchmark_modules/tooluse/core/io_manager.py` ergänzen
