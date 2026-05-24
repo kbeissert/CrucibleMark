@@ -89,9 +89,9 @@ class PipelineDiagnostician:
             r.get("url") for r in results if isinstance(r, dict)
         )
 
-        if total_bytes > 500:
+        if total_bytes > 2000:
             excerpt_quality = "full"
-        elif total_bytes > 200:
+        elif total_bytes > 500:
             excerpt_quality = "partial"
         elif total_bytes > 50:
             excerpt_quality = "minimal"

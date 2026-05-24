@@ -34,6 +34,47 @@ _FIXTURE_SEARCH: dict[str, list[dict]] = {
 
 _FIXTURE_FETCH: dict[str, tuple[int, str]] = {
     "https://huggingface.co/": (200, "Hugging Face – The AI community building the future."),
+    "https://huggingface.co/meta-llama": (
+        200,
+        """Meta Llama – Hugging Face Organization
+
+Models by Meta Llama (huggingface.co/meta-llama)
+
+Llama 4 Scout
+  Model: Llama-4-Scout-17B-16E-Instruct
+  Type:  Image-Text to Text | 17B parameters | 16 experts (MoE)
+  Meta's latest multimodal model combining vision and language.
+  Requires a Meta license agreement to download and use.
+
+Llama 4 Maverick
+  Model: Llama-4-Maverick-17B-128E-Instruct
+  Type:  Image-Text to Text | 17B parameters | 128 experts (MoE)
+  Larger expert variant of Llama 4 for complex multimodal tasks.
+
+Llama 3.3 70B Instruct
+  Model: Llama-3.3-70B-Instruct
+  Type:  Text to Text | 70B parameters
+  High-performance text model; most downloaded in the Llama 3.x series.
+
+Llama 3.2 Vision 11B Instruct
+  Model: Llama-3.2-11B-Vision-Instruct
+  Type:  Image-Text to Text | 11B parameters
+  Multimodal model supporting image and text inputs.
+
+Llama Guard 4
+  Model: Llama-Guard-4-12B
+  Type:  Image-Text to Text | 12B parameters | Safety model
+  Content moderation and safety filtering for AI applications.
+
+Llama 3.1 8B Instruct
+  Model: Meta-Llama-3.1-8B-Instruct
+  Type:  Text to Text | 8B parameters
+  Compact, widely deployed base model for text generation.
+
+All Llama models require acceptance of Meta's Llama license.
+Commercial use is permitted under the respective license terms.
+""",
+    ),
     "https://llama.meta.com/": (200, "Llama is Meta's open foundation and fine-tuned chat models."),
     "https://raw.githubusercontent.com/openai/evals/main/README.md": (
         200,

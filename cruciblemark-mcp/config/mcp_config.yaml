@@ -13,7 +13,7 @@ web_search:
 
 http_fetch:
   timeout_seconds: 8
-  max_chars: 500
+  max_chars: 8000
   whitelist:               # Nur diese Domains dürfen gefetcht werden
     - llama.meta.com
     - huggingface.co
