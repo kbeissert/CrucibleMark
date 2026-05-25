@@ -46,8 +46,82 @@ from benchmark_modules.tooluse.core.io_manager import ToolUseIOManager
 from benchmark_modules.tooluse.core.tool_adapter_audit import ToolAdapterAudit, _load_scoring_caps
 from utils.mcp_health import check_mcp_health, mcp_base_url
 from utils.module_registry import load_module_config
+from utils.scoring.llm_judge.judge_config import LLMJudgeConfig
+from utils.scoring.llm_judge.judge_runner import JudgeRunner
+from utils.scoring.exceptions import JudgeUnavailableError
 
 logger = logging.getLogger(__name__)
+
+
+# ---------------------------------------------------------------------------
+# Judge rubric helper
+# ---------------------------------------------------------------------------
+
+def _build_rubric_override(phase2_rubric: dict[str, Any]) -> str | None:
+    """Converts a phase2_rubric YAML dict into a structured rubric_override string.
+
+    Returns None when the dict is empty or yields no content.
+    The output replaces the generic scale rubric in the judge user prompt.
+    Score-level definitions (1–5) remain in the judge system prompt and are
+    not repeated here.
+    """
+    if not phase2_rubric:
+        return None
+
+    lines: list[str] = ["## Asset-Specific Evaluation Criteria"]
+
+    weights = phase2_rubric.get("weights")
+    if weights:
+        lines.append("\n### Scoring Weights")
+        for dim, w in weights.items():
+            pct = round(float(w) * 100) if float(w) <= 1.0 else int(w)
+            lines.append(f"- {dim.replace('_', ' ').title()}: {pct}%")
+
+    for rubric_key, section_label in (
+        ("factuality", "Factuality"),
+        ("hallucination_risk", "Hallucination Risk"),
+        ("uncertainty_handling", "Uncertainty Handling"),
+        ("language_consistency", "Language Consistency"),
+    ):
+        section = phase2_rubric.get(rubric_key, {})
+        if not section:
+            continue
+
+        # Language consistency: emit target language in the section header
+        if rubric_key == "language_consistency" and section.get("target_language"):
+            lang = section["target_language"].upper()
+            lines.append(f"\n### {section_label} (Target Language: {lang})")
+        else:
+            # Header is implicit — emitted per sub-section below
+            pass
+
+        must_include = section.get("must_include") or []
+        must_not_include = section.get("must_not_include") or []
+        red_flags = section.get("red_flags") or []
+        acceptable = section.get("acceptable_patterns") or section.get("acceptable") or []
+        unacceptable = section.get("unacceptable") or []
+        scoring_note = section.get("scoring_note") or ""
+
+        if must_include:
+            lines.append(f"\n### Must Include ({section_label})")
+            lines.extend(f"- {item}" for item in must_include)
+        if must_not_include:
+            lines.append(f"\n### Must NOT Include ({section_label})")
+            lines.extend(f"- {item}" for item in must_not_include)
+        if red_flags:
+            lines.append(f"\n### {section_label} Red Flags (trigger hallucination_detected: true)")
+            lines.extend(f"- {flag}" for flag in red_flags)
+        if acceptable:
+            lines.append(f"\n### Acceptable Patterns ({section_label})")
+            lines.extend(f"- {p}" for p in acceptable)
+        if unacceptable:
+            lines.append(f"\n### NOT Acceptable ({section_label})")
+            lines.extend(f"- {item}" for item in unacceptable)
+        if scoring_note:
+            lines.append(f"\n> **{section_label} Note:** {scoring_note.strip()}")
+
+    result = "\n".join(lines)
+    return result if len(result) > len("## Asset-Specific Evaluation Criteria") else None
 
 # ---------------------------------------------------------------------------
 # Tool schemas injected into the system prompt
@@ -102,7 +176,7 @@ SYSTEM_PROMPT_TEMPLATE = (
 
 FOLLOWUP_PROMPT_TEMPLATE = (
     "Tool-Ergebnis ({tool_name}):\n"
-    "{tool_result_json}\n\n"
+    "{tool_content}\n\n"
     "{original_task}"
 )
 
@@ -279,11 +353,72 @@ class ToolUseTest(BaseTest):
         p1 = evaluator.score_phase1(tool_transcript, self.asset)
         p2_raw = evaluator.score_phase2(model_output, tool_transcript, self.asset)
 
-        # Content Verification Gate — kapselt P2 basierend auf Content-State
+        # Content Verification Gate — computes CV state (caps only for B1 and C now)
         caps = _load_scoring_caps()
-        p2, cv_block = ToolAdapterAudit.run_content_verification(
+        p2_cv, cv_block = ToolAdapterAudit.run_content_verification(
             tool_transcript, model_output, self.asset, p1, p2_raw, caps,
         )
+
+        # Derive tool_content for judge: full tool text or search excerpts
+        tool_content: str | None = None
+        tool_content_quality = cv_block.get("state", "A")
+        _tc_raw = tool_transcript.get("content")
+        if isinstance(_tc_raw, list) and _tc_raw:
+            tool_content = _tc_raw[0].get("text") if isinstance(_tc_raw[0], dict) else None
+        if not tool_content:
+            # web_search: build content from results list
+            _results = tool_transcript.get("results") or []
+            if _results:
+                tool_content = "\n\n".join(
+                    f"{r.get('title', '')}\n{r.get('url', '')}\n{r.get('excerpt', '')}"
+                    for r in _results if isinstance(r, dict)
+                ) or None
+
+        # LLM Judge: replace rule-based P2 with judge score when judge is available
+        judge_result = None
+        p2 = p2_cv  # fallback to CV-gated rule-based score
+        hallucination_detected: bool = False
+        try:
+            from utils.config_validator import ConfigValidator
+            _global_cfg = ConfigValidator().config
+            judge_cfg_dict = _global_cfg.get("llm_judge", {})
+            if judge_cfg_dict and judge_cfg_dict.get("enabled", False):
+                judge_config = LLMJudgeConfig.from_dict(judge_cfg_dict)
+                runner = JudgeRunner(judge_config)
+                task_prompt_str: str = self.asset.get("prompt", "")
+                golden_answer: str = (
+                    self.asset.get("evaluation", {})
+                    .get("phase2", {})
+                    .get("golden_answer", "")
+                )
+                phase2_rubric = (
+                    self.asset.get("evaluation", {}).get("phase2_rubric")
+                )
+                rubric_text = _build_rubric_override(phase2_rubric) if phase2_rubric else None
+                judge_result = runner.score(
+                    task_prompt=task_prompt_str,
+                    model_response=model_output,
+                    golden_standard=golden_answer,
+                    module_id="tooluse",
+                    tested_model_id=result.meta.get("model_id"),
+                    tested_model_provider=result.meta.get("provider"),
+                    tool_content=tool_content,
+                    tool_content_quality=tool_content_quality,
+                    rubric_override=rubric_text,
+                )
+                if judge_result.parse_success and judge_result.score is not None:
+                    scale = judge_config.scoring.scale
+                    p2 = round((judge_result.score / scale) * 100.0, 2)
+                    p2 = min(p2, 100.0)
+                if judge_result.hallucination_detected is not None:
+                    hallucination_detected = judge_result.hallucination_detected
+        except (JudgeUnavailableError, Exception):
+            logger.debug("LLM Judge unavailable for tooluse; using rule-based P2", exc_info=True)
+
+        # Hallucination cap — config-first, aus scoring.yaml tool_use.hallucination.cap_hard
+        if hallucination_detected and judge_result is not None:
+            hal_cap = float(ToolAdapterAudit.load_hallucination_cap())
+            p2 = min(p2, hal_cap)
 
         # Determine if tool call was valid (used for combined score guardrail)
         # For failure tests the expected outcome is an error — status check is inverted
@@ -334,7 +469,7 @@ class ToolUseTest(BaseTest):
         result.data[FIELD_COMBINED_SCORE] = combined
         result.data["audit_block"] = audit
         result.data[FIELD_HALLUCINATION_FLAG] = (
-            p2 == 0.0 and self.asset.get("is_failure_test", False)
+            hallucination_detected or (p2 == 0.0 and self.asset.get("is_failure_test", False))
         )
         result.data[FIELD_CONTENT_VERIFICATION] = cv_block
         result.data[FIELD_TOOL_CONTENT_STATE] = cv_block["state"]
@@ -348,6 +483,16 @@ class ToolUseTest(BaseTest):
         }
         if tool_adapter_audit:
             result.data["tool_adapter_audit"] = tool_adapter_audit
+        if judge_result is not None:
+            result.data["llm_judge"] = {
+                "score": judge_result.score,
+                "parse_success": judge_result.parse_success,
+                "hallucination_detected": judge_result.hallucination_detected,
+                "content_grounding": judge_result.judge_content_grounding,
+                "provider": judge_result.judge_provider_used,
+                "model": judge_result.judge_model_used,
+                "latency_ms": judge_result.judge_latency_ms,
+            }
         ToolUseIOManager.print_asset_result(result, self.asset)
         return result
 
@@ -425,6 +570,47 @@ def _call_mcp_tool(base_url: str, tool_name: str, params: dict[str, Any]) -> dic
         return {"status": "error", "status_code": None, "error": str(exc)}
 
 
+def _extract_tool_content(transcript: dict[str, Any]) -> str:
+    """Extract clean text content from MCP transcript.
+
+    Priority order:
+    1. content[0].text  — standard MCP agent format
+    2. results[]        — web_search structured results (formatted as readable text)
+    3. content_excerpt  — legacy fallback (may be raw HTML in live mode)
+    4. Error summary    — if tool failed
+    """
+    content_list = transcript.get("content")
+    if content_list and isinstance(content_list, list):
+        for item in content_list:
+            if isinstance(item, dict) and item.get("type") == "text":
+                text = item.get("text", "").strip()
+                if text:
+                    return text
+
+    results = transcript.get("results")
+    if results and isinstance(results, list):
+        parts = []
+        for r in results:
+            if not isinstance(r, dict):
+                continue
+            title = r.get("title", "")
+            url = r.get("url", "")
+            excerpt = r.get("excerpt") or r.get("content", "")
+            line = "\n".join(filter(None, [title, url, excerpt]))
+            if line.strip():
+                parts.append(line.strip())
+        if parts:
+            return "\n\n".join(parts)
+
+    excerpt = transcript.get("content_excerpt")
+    if excerpt:
+        return str(excerpt)
+
+    status = transcript.get("status", "unknown")
+    error = transcript.get("error", "")
+    return f"[Tool status: {status}]" + (f" — {error}" if error else "")
+
+
 def _run_synthesis(
     llm_client: Any,
     model: str,
@@ -436,7 +622,7 @@ def _run_synthesis(
 ) -> str:
     followup = FOLLOWUP_PROMPT_TEMPLATE.format(
         tool_name=tool_name,
-        tool_result_json=json.dumps(tool_transcript, ensure_ascii=False, indent=2),
+        tool_content=_extract_tool_content(tool_transcript),
         original_task=task_prompt,
     )
     return llm_client.query(

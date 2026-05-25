@@ -32,3 +32,9 @@ tool_use:
     # Tool nicht aufgerufen — Antwort ist rein parametrisch
     # oder erfunden.
     cap_C_no_tool: 20
+
+  hallucination:
+    # Judge hat hallucination_detected: true zurückgegeben.
+    # P2 wird auf diesen Wert gekappt — unabhängig vom Judge-Score.
+    # Gilt nur wenn der Judge tatsächlich läuft (nicht im Fallback-Modus).
+    cap_hard: 20

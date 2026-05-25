@@ -68,6 +68,9 @@ class JudgeResult:
     judge_task_compliance: Optional[float] = None
     judge_output_quality: Optional[float] = None
     judge_standard_adherence: Optional[float] = None
+    judge_content_grounding: Optional[float] = None
+    # Tool-use grounding fields (populated when tool_content was passed to the judge)
+    hallucination_detected: Optional[bool] = None
 
 
 def parse(raw_response: str) -> JudgeResult:
@@ -116,6 +119,15 @@ def parse(raw_response: str) -> JudgeResult:
     judge_task_compliance = sub_scores.get("task_compliance") if sub_scores else None
     judge_output_quality = sub_scores.get("output_quality") if sub_scores else None
     judge_standard_adherence = sub_scores.get("standard_adherence") if sub_scores else None
+    judge_content_grounding = sub_scores.get("content_grounding") if sub_scores else None
+
+    hallucination_detected: Optional[bool] = None
+    if json_data and "hallucination_detected" in json_data:
+        raw_hall = json_data["hallucination_detected"]
+        if isinstance(raw_hall, bool):
+            hallucination_detected = raw_hall
+        elif isinstance(raw_hall, str):
+            hallucination_detected = raw_hall.lower() in ("true", "yes", "1")
 
     if score is None:
         logger.warning(
@@ -133,6 +145,8 @@ def parse(raw_response: str) -> JudgeResult:
             judge_task_compliance=judge_task_compliance,
             judge_output_quality=judge_output_quality,
             judge_standard_adherence=judge_standard_adherence,
+            judge_content_grounding=judge_content_grounding,
+            hallucination_detected=hallucination_detected,
         )
 
     return JudgeResult(
@@ -143,6 +157,8 @@ def parse(raw_response: str) -> JudgeResult:
         judge_task_compliance=judge_task_compliance,
         judge_output_quality=judge_output_quality,
         judge_standard_adherence=judge_standard_adherence,
+        judge_content_grounding=judge_content_grounding,
+        hallucination_detected=hallucination_detected,
     )
 
 
@@ -281,6 +297,12 @@ def _extract_sub_scores_legacy(text: str) -> Optional[dict]:
             if not isinstance(val, (int, float)) or val < 0 or val > 5:
                 return None
 
-        return {key: float(data[key]) for key in required_keys}
+        result = {key: float(data[key]) for key in required_keys}
+        # Optional content_grounding (tooluse-specific)
+        if "content_grounding" in data:
+            val = data["content_grounding"]
+            if isinstance(val, (int, float)) and 0 <= val <= 5:
+                result["content_grounding"] = float(val)
+        return result
     except json.JSONDecodeError:
         return None

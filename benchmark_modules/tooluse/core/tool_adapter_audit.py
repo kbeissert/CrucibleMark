@@ -28,6 +28,8 @@ from .constants import (
     CV_CAP_B2_KEY,
     CV_CAP_C_KEY,
     CV_CAP_DEFAULTS,
+    HALLUCINATION_CAP_KEY,
+    HALLUCINATION_CAP_DEFAULT,
 )
 
 logger = logging.getLogger(__name__)
@@ -37,7 +39,7 @@ _ROOT = Path(__file__).resolve().parents[3]
 # Authorized tool names — aligned with Anthropic MCP standard.
 # fetch: matches @modelcontextprotocol/server-fetch reference implementation.
 AUTHORIZED_TOOLS = {
-    "web_search": ["web_search"],
+    "web_search": ["web_search", "web.search"],
     "fetch": ["fetch"],
 }
 
@@ -98,8 +100,11 @@ _TRANSPARENCY_SIGNALS = (
 )
 
 # Minimum consecutive words that must appear verbatim (case-insensitive)
-# in model output to count as a content-overlap signal
-_OVERLAP_WINDOW = 4
+# in model output to count as a content-overlap signal.
+# Window=3: captures short proper nouns ("Open LLM Leaderboard", "Guido van Rossum")
+# that a German-language response won't paraphrase. Window=4 was too strict —
+# all fixture identifiers in tooluse004/005 are ≤3 words, causing false B2 on real sourced responses.
+_OVERLAP_WINDOW = 3
 
 
 def _load_scoring_caps() -> dict[str, int]:
@@ -156,17 +161,32 @@ def _has_content_overlap(model_output: str, content_excerpt: str) -> bool:
     Gleitet mit Fenstergröße _OVERLAP_WINDOW über content_excerpt-Wörter.
     Mindestens ein Treffer genügt. Heuristik: längere Phrasen reduzieren
     False-Positive-Rate (Zufallsüberlappung durch Allgemeinwörter).
+
+    Interpunktion wird vor dem Vergleich normalisiert damit Cross-Language-
+    Matches funktionieren (z.B. englische Fixture "Arena," vs. deutschen
+    Output "Arena"). Fallback: einzelne Eigenname/Jahres-Tokens (≥4 Zeichen,
+    alphanumerisch) gegen Modell-Output prüfen.
     """
     if not content_excerpt or not model_output:
         return False
-    words = content_excerpt.lower().split()
-    output_lower = model_output.lower()
+    clean = _HTML_HEAD_RE.sub("", content_excerpt)
+    clean = re.sub(r"<[^>]+>", "", clean)
+    # Normalize punctuation so "arena," == "arena"
+    clean_norm = re.sub(r"[^\w\s]", " ", clean)
+    words = clean_norm.lower().split()
+    output_lower = re.sub(r"[^\w\s]", " ", model_output.lower())
     for i in range(len(words) - _OVERLAP_WINDOW + 1):
         phrase = " ".join(words[i : i + _OVERLAP_WINDOW])
         # Skip phrases that are all short common words (avoid false positives)
         if all(len(w) <= 3 for w in words[i : i + _OVERLAP_WINDOW]):  # noqa: PLR2004
             continue
         if phrase in output_lower:
+            return True
+    # Fallback: single key tokens — proper nouns (≥5 chars, starts uppercase)
+    # and 4-digit years are language-invariant
+    key_tokens = re.findall(r'\b([A-Z][a-zA-Z]{4,}|\d{4})\b', clean)
+    for token in set(key_tokens):
+        if token.lower() in output_lower:
             return True
     return False
 
@@ -178,6 +198,27 @@ def _has_content_overlap(model_output: str, content_excerpt: str) -> bool:
 
 class ToolAdapterAudit:
     """Audit Tool-Adapter layer for name/format mismatches."""
+
+    @staticmethod
+    def load_hallucination_cap() -> int:
+        """Lädt cap_hard aus config/scoring.yaml tool_use.hallucination.
+
+        Fällt auf HALLUCINATION_CAP_DEFAULT zurück wenn Datei fehlt oder
+        Schlüssel nicht definiert ist.
+        """
+        cfg_path = _ROOT / "config" / "scoring.yaml"
+        try:
+            raw = yaml.safe_load(cfg_path.read_text(encoding="utf-8")) or {}
+            cap = raw.get("tool_use", {}).get("hallucination", {}).get(
+                HALLUCINATION_CAP_KEY
+            )
+            if cap is not None:
+                return int(cap)
+        except FileNotFoundError:
+            pass
+        except Exception:  # noqa: BLE001 — yaml/filesystem boundary
+            logger.warning("Could not load hallucination cap from config", exc_info=True)
+        return HALLUCINATION_CAP_DEFAULT
 
     @staticmethod
     def normalize_tool_name(raw_name: str) -> tuple[str, bool]:
@@ -352,14 +393,14 @@ class ToolAdapterAudit:
         p2_raw: float,
         caps: dict[str, int] | None = None,
     ) -> tuple[float, dict[str, Any]]:
-        """Content-Verification-Gate: bestimmt State und deckelt P2-Score.
+        """Content-Verification-Gate: bestimmt State, kapselt P2-Score nur für B1 und C.
 
         Drei-Zustands-Framework:
           A  — Content nutzbar + Overlap mit Modellantwort → kein Cap
-          B1 — Content nicht nutzbar, Modell transparent → cap_B1
-          B2 — Content nicht nutzbar ODER kein Overlap, kein Hinweis → cap_B2
-          B3 — Nicht programmatisch detektierbar → Default B2
-          C  — Kein Tool-Call (p1=0) → cap_C
+          B1 — Content nicht nutzbar, Modell transparent → cap_B1 (moderate Deckelung)
+          B2 — Content nicht nutzbar ODER kein Overlap, kein Hinweis → kein Cap
+               (B2 wird an den Judge als Kontext übergeben; der Judge bewertet selbst)
+          C  — Kein Tool-Call (p1=0) → cap_C (harter Abzug)
 
         Failure-Tests (tooluse003) sind exempt: State A, p2_raw unverändert.
 
@@ -372,6 +413,7 @@ class ToolAdapterAudit:
                 "state": "A",
                 "content_usable": None,
                 "parametric_response_detected": False,
+                "tool_result_ignored": False,
                 "transparency_signal": False,
                 "p2_cap_applied": None,
                 "state_rationale": "Failure test exempt from content verification.",
@@ -397,6 +439,7 @@ class ToolAdapterAudit:
                 "state": "C",
                 "content_usable": False,
                 "parametric_response_detected": True,
+                "tool_result_ignored": False,
                 "transparency_signal": False,
                 "p2_cap_applied": cap,
                 "state_rationale": "P1=0: no tool call — response is fully parametric.",
@@ -415,10 +458,10 @@ class ToolAdapterAudit:
                 )
             else:
                 state = "B2"
-                cap_key = CV_CAP_B2_KEY
+                cap_key = None  # B2 cap removed — judge evaluates grounding directly
                 rationale = (
                     "Content not usable; model answered without signalling "
-                    "content absence — likely parametric response."
+                    "content absence — judge will assess content grounding."
                 )
         else:
             # Content usable: prüfe Overlap
@@ -431,10 +474,10 @@ class ToolAdapterAudit:
                 )
             else:
                 state = "B2"
-                cap_key = CV_CAP_B2_KEY
+                cap_key = None  # B2 cap removed — judge evaluates grounding directly
                 rationale = (
                     "Content usable but no phrase overlap detected — "
-                    "model likely answered from parametric knowledge."
+                    "judge will assess whether response is grounded or parametric."
                 )
 
         if cap_key is not None:
@@ -444,10 +487,16 @@ class ToolAdapterAudit:
             cap = None
             p2_final = p2_raw
 
+        # tool_result_ignored: usable content returned by tool, but model
+        # response shows no phrase overlap → model likely answered from
+        # training rather than the fetched content.
+        tool_result_ignored = bool(content_usable and state == "B2")
+
         return p2_final, {
             "state": state,
             "content_usable": content_usable,
             "parametric_response_detected": state in ("B2", "B3"),
+            "tool_result_ignored": tool_result_ignored,
             "transparency_signal": transparency,
             "p2_cap_applied": cap,
             "state_rationale": rationale,

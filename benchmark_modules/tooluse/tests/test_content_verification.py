@@ -46,9 +46,9 @@ _HTML_HEAD_ONLY = "<html><head><title>403 Forbidden</title><meta charset='utf-8'
 # ---------------------------------------------------------------------------
 
 def test_state_a_overlap_confirmed():
-    """State A: content usable AND 4-word match in model output → no cap."""
+    """State A: content usable AND 3-word verbatim match in model output → no cap."""
     transcript = {"content_excerpt": _QUAKE_EXCERPT}
-    # "Quake series is a franchise of" — exact 4-word window from excerpt
+    # "quake series is" — exact 3-word window from excerpt, verbatim in output
     output = (
         "Basierend auf der Seite: Die Quake series is a franchise of first-person shooters "
         "von id Software, erschienen ab 1996."
@@ -98,18 +98,23 @@ def test_state_b1_english_transparency_signal():
 # ---------------------------------------------------------------------------
 
 def test_state_b2_no_overlap_despite_usable_content():
-    """State B2: content usable but model answered from parametric knowledge → cap=35."""
+    """State B2: content usable but model output has NO key tokens from excerpt → cap=35.
+
+    Simuliert ein Modell das den Tool-Call ignoriert und stattdessen eine
+    allgemeine thematisch-ähnliche Antwort gibt — ohne Namen, Jahre oder
+    spezifische Begriffe aus dem Inhalt.
+    """
     transcript = {"content_excerpt": _QUAKE_EXCERPT}
-    # Correct content, but phrased differently — no 4-word match with excerpt
-    output = "Quake erschien 1996 und wurde von id Software entwickelt. Es ist ein wichtiger Shooter."
+    # Generic gaming answer with no names/years/tokens from the excerpt
+    output = "Dieser Shooter gehört zu den bekanntesten seiner Zeit und hat viele Nachfolger hervorgebracht."
     p2_final, cv = ToolAdapterAudit.run_content_verification(
         transcript, output, _ASSET_NORMAL, p1_score=100.0, p2_raw=80.0, caps=_CAPS
     )
     assert cv["state"] == "B2"
     assert cv["parametric_response_detected"] is True
     assert cv["transparency_signal"] is False
-    assert cv["p2_cap_applied"] == 35
-    assert p2_final == 35.0
+    assert cv["p2_cap_applied"] is None  # B2 cap removed — judge evaluates grounding
+    assert p2_final == 80.0  # p2_raw returned unchanged
 
 
 # ---------------------------------------------------------------------------

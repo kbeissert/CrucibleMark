@@ -35,6 +35,10 @@ CV_CAP_DEFAULTS: dict[str, int] = {
     CV_CAP_C_KEY: 20,
 }
 
+# Hallucination cap — config key und Fallback-Default
+HALLUCINATION_CAP_KEY = "cap_hard"
+HALLUCINATION_CAP_DEFAULT = 20
+
 # Phase identifiers
 PHASE_TOOL_EXECUTION = "phase1"
 PHASE_SYNTHESIS = "phase2"

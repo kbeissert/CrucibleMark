@@ -47,6 +47,13 @@ _MODULE_DOMAIN: Dict[str, str] = {
         "CLI and Shell scripting. You evaluate correctness, command line efficiency, "
         "and adherence to requested tools while accepting semantically equivalent solutions."
     ),
+    "tooluse": (
+        "Tool Use and content grounding evaluation. You assess whether an AI model "
+        "correctly used the provided tool result and accurately summarised its content. "
+        "Your primary focus is: (1) did the model base its answer on the tool result, "
+        "(2) did it fabricate facts not present in the tool data, and (3) is it transparent "
+        "when the tool result is incomplete or irrelevant to the question."
+    ),
 }
 
 _DEFAULT_DOMAIN = (
@@ -168,6 +175,8 @@ def build_prompts(
     language_weight: float = 0.20,
     token_budget_context: Optional[Dict[str, int]] = None,
     truncation_context: bool = False,
+    tool_content: Optional[str] = None,
+    tool_content_quality: Optional[str] = None,
 ) -> Tuple[str, str]:
     """
     Build the (system_prompt, user_prompt) pair for the LLM Judge.
@@ -275,4 +284,51 @@ def build_prompts(
         rubric=rubric,
         scale=scale,
     )
+
+    if tool_content:
+        quality_note = f" [content quality: {tool_content_quality}]" if tool_content_quality else ""
+        tool_section = (
+            f"### TOOL RESULT (actual content returned by the tool){quality_note}\n"
+            f"{tool_content.strip()}\n\n"
+        )
+        user_prompt = tool_section + user_prompt
+        # Replace JSON schema to include content_grounding and hallucination_detected
+        old_schema = (
+            '```json\n'
+            '{\n'
+            f'  "score": <0-{scale}>,\n'
+            '  "sub_scores": {\n'
+            '    "task_compliance": <0-5>,\n'
+            '    "output_quality": <0-5>,\n'
+            '    "standard_adherence": <0-5>\n'
+            '  }\n'
+            '}\n'
+            '```'
+        )
+        new_schema = (
+            '```json\n'
+            '{\n'
+            f'  "score": <0-{scale}>,\n'
+            '  "sub_scores": {\n'
+            '    "task_compliance": <0-5>,\n'
+            '    "output_quality": <0-5>,\n'
+            '    "standard_adherence": <0-5>,\n'
+            '    "content_grounding": <0-5>\n'
+            '  },\n'
+            '  "hallucination_detected": <true|false>\n'
+            '}\n'
+            '```'
+        )
+        user_prompt = user_prompt.replace(old_schema, new_schema)
+        system_prompt += (
+            "\n\n### CONTENT GROUNDING (tool_content provided) ###\n"
+            "A TOOL RESULT section is included above the task prompt. Use it to assess grounding:\n"
+            "- **content_grounding** (0-5): How well does the model's answer draw on the tool result?\n"
+            "  0 = entirely fabricated / ignores tool result; 5 = fully grounded in tool content.\n"
+            "- **hallucination_detected** (true/false): Set true if the response asserts specific facts\n"
+            "  that are NOT present in the tool result AND are not general common knowledge.\n"
+            "  Note: if tool content quality is 'navigation_only' or 'error', the model cannot be\n"
+            "  expected to ground its response — evaluate transparency behaviour instead."
+        )
+
     return system_prompt, user_prompt

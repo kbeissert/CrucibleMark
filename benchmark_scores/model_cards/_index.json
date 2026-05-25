@@ -1,6 +1,6 @@
 [
   {
-    "model_id": "NousResearch_Hermes-4-14B-GGUF:Q4_K_M",
+    "model_id": "hf.co/bartowski/NousResearch_Hermes-4-14B-GGUF:Q4_K_M",
     "display_name": "Hermes 4 14B (Q4_K_M GGUF)",
     "developer": "NousResearch",
     "origin_country": "USA",

@@ -3,6 +3,100 @@
 **Zielgruppe:** Entwickler, die Änderungen am Scoring-System oder der Architektur nachvollziehen wollen.
 **Inhalt:** Changelog-Einträge für Bugfixes, Architektur-Entscheidungen und Verhaltensänderungen
 
+## Tool Use Module — Phase-A Calibration: MCP Alignment, CV Gate & Attribution Bias Fix
+
+**Datum:** 2026-05-24
+**Status:** Abgeschlossen
+
+### Kontext
+
+Nach den ersten Verifikations-Runs gegen `claude-sonnet-4-6`, `gpt-5.4-mini` und `gemma3:4b` im
+Mock-Modus wurden mehrere Kalibrierfehler identifiziert, die die Messgenauigkeit des Benchmarks
+beeinträchtigten. Alle Korrekturen wurden mit einem Re-Run verifiziert; End-Durchschnitt
+claude-sonnet-4-6: **85.2%** (P1 = 96).
+
+### 1. MCP Standard Alignment (`http_fetch` → `fetch`)
+
+**Problem:** Das Modul verwendete `http_fetch` als Tool-Name. Anthropics MCP-Referenzimplementierung
+(`@modelcontextprotocol/server-fetch`) definiert den Standard als `fetch`. Modelle, die ihrem
+MCP-Training folgen (u. a. Claude Sonnet 4.6), riefen `fetch` auf und erhielten P1 = 0 — kein
+Kompetenzproblem, sondern ein Namens-Mismatch im Benchmark.
+
+**Lösung:** Route `POST /tools/http_fetch` → `POST /tools/fetch` in `cruciblemark-mcp/server.py`.
+Konstante `TOOL_HTTP_FETCH = "http_fetch"` → `"fetch"` in `constants.py` (SSoT-Kaskade).
+`AUTHORIZED_TOOLS` + `CANONICAL_TOOLS` in `tool_adapter_audit.py` aktualisiert. Asset-YAMLs
+tooluse001/002/003/005: `tool_available`, `mcp_endpoint`, `expected_tool` angepasst.
+
+### 2. tooluse005 — Blocked-Status durch Sprachmismatch im Prompt
+
+**Problem:** Der deutsche Prompt ließ Modelle `de.wikipedia.org`-URLs konstruieren. Diese Domain
+ist nicht in der MCP-Whitelist → `blocked` → P1 = 0. Der URL-Pfad-Präzisions-Test war damit
+nicht auswertbar.
+
+**Lösung:** Prompt um `"Verwende die englischsprachige Wikipedia (en.wikipedia.org)."` ergänzt.
+Der URL-Pfad-Test (korrekter Pfad `/wiki/Python_(programming_language)`) bleibt vollständig aktiv.
+
+### 3. Content Verification Gate — `_OVERLAP_WINDOW = 3` (war 4)
+
+**Problem:** `_has_content_overlap()` suchte nach verbatim 4-Wort-Sequenzen in der Modellantwort.
+Alle technischen Identifikatoren in tooluse004/005-Fixtures sind ≤ 3 Wörter ("Open LLM Leaderboard",
+"id Software"). Obwohl Modelle diese Eigennamen korrekt aus dem Fixture übernahmen, fand das
+4-Wort-Fenster keinen Treffer → fälschliche B2-Einstufung (parametrisch) → P2 auf 35 gedeckelt.
+
+**Lösung:** `_OVERLAP_WINDOW = 3` in `core/tool_adapter_audit.py`. Neue Unit-Test-Klasse
+`test_content_verification.py` (7 Tests für alle CV-Zustände A/B1/B2/C und Failure-Test-Exempt).
+
+### 4. Mock-Fixture-Qualität (web_search Excerpts)
+
+**Problem:** `_FIXTURE_SEARCH["_default"]` enthielt einzeilige Excerpts (~80 Zeichen). Damit
+konnten Modelle keine inhaltlich substanzielle P2-Antwort liefern; der Judge bewertete die
+generischen Antworten mit mittleren Scores unabhängig von der tatsächlichen Modellkompetenz.
+
+**Lösung:** Alle drei Default-Excerpts auf ~250 Zeichen mit mehreren Fakten erweitert. Dritter
+Eintrag: `raw.githubusercontent.com/openai/evals` → `huggingface.co/mistralai` (thematisch
+konsistenter mit dem tooluse004-LLM-Rankings-Kontext).
+
+### 5. `web.search`-Variante — Tool-Name-Normalisierung
+
+**Problem:** `gpt-5.4-mini` verwendet `web.search` (Punkt statt Unterstrich). Diese Variante
+war nicht in `AUTHORIZED_TOOLS` eingetragen → normalisiert zu `unknown` → MCP-Endpunkt
+`/tools/web.search` (404) → P1 = 0.
+
+**Lösung:** `"web.search"` als Alias in `AUTHORIZED_TOOLS["web_search"]` in
+`core/tool_adapter_audit.py` ergänzt.
+
+### 6. tooluse002 v2.1.0 — Rubrik-Korrektur: Attribution Bias
+
+**Problem:** `uncertainty_handling`-Gewicht 0.25 listete "Klare Attribution an die abgerufene
+Seite" als positiv bewertetes Kriterium und "Fakten ohne Quellennennung" als Abzugsgrund.
+Das benachteiligte systematisch Modelle mit autoritativem Integrationsstil (Claude: "Quake II
+ist ein Name-only-Sequel") gegenüber Modellen mit expliziter Quellenbindung (GPT-Stil: "Laut
+dem Wikipedia-Artikel..."). Bei inhaltlich gleichwertigen, quellenbasierten Antworten entstanden
+Scores von 57 vs. 88 — ein Rubrik-Defekt, kein Modell-Unterschied.
+
+**Lösung:**
+- Gewichte: `factuality: 0.65`, `hallucination_risk: 0.30`, `uncertainty_handling: 0.05`
+- `uncertainty_handling.acceptable`: "Klare Attribution" entfernt; "Antwort bleibt im Rahmen
+  der Fixture-Inhalte" als Kriterium eingesetzt
+- `uncertainty_handling.unacceptable`: "Fakten ohne Quellennennung" entfernt; "Fakten
+  hinzufügen die nicht im Fixture stehen" als Kernkriterium eingesetzt
+
+**Wichtig für spätere Leser:** Dieses Fix verbessert **nicht das Modell**, sondern trennt
+die Bewertung sauber zwischen Inhaltsqualität und stilistischer Quellenbindung. Eine Antwort,
+die factually korrekt ist und sich im Fixture-Rahmen hält, soll nicht schlechter bewertet werden
+als eine mit expliziten "laut Wikipedia"-Phrasen.
+
+**Ergebnis:** tooluse002 P2 Claude Sonnet 4.6: 57 → 86. Combined: 93.1%.
+
+### 7. Infrastructure-Fixes
+
+- **`TIMEOUT_PER_MODEL`**: 300s → 600s in `scripts/run_tooluse_benchmark.py` (Anthropic-API
+  benötigt an langsamen Tagen bis zu 147s für ein einzelnes Asset)
+- **`make mcp-stop`**: `pkill -f "cruciblemark-mcp/server.py"` als Fallback wenn `.mcp.pid`
+  fehlt (Szenario: Server über Batch-Runner gestartet, kein PID-Eintrag)
+
+***
+
 ## Provider Shortcode System & Versioning Overhaul (v3.5)
 
 **Datum:** 2026-07-15

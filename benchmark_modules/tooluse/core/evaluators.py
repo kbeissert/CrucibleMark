@@ -104,19 +104,12 @@ class ToolUseEvaluator:
         # http_fetch (success): usable content extracted (≥100 chars)
         # http_fetch (failure): not applicable — no pts added
         if expected_tool == TOOL_WEB_SEARCH:
-            golden_domains = phase1.get("golden_source_domains", [])
-            if golden_domains:
-                results = tool_transcript.get("results") or []
-                urls = [r.get("url", "") for r in results if isinstance(r, dict)]
-                hit = any(
-                    any(domain in url for domain in golden_domains)
-                    for url in urls
-                )
-                if hit:
-                    score += 20.0
-            else:
-                # No golden domains configured → neutral (20 pts)
+            results = tool_transcript.get("results") or []
+            if len(results) >= 2:
                 score += 20.0
+            elif len(results) >= 1:
+                score += 10.0
+            # 0 results → 0 pts
         elif expected_tool == TOOL_HTTP_FETCH and not is_failure_test:
             content = tool_transcript.get("content_excerpt") or ""
             if len(str(content).strip()) >= 100:

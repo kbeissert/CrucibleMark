@@ -26,7 +26,7 @@ from scripts.core.tooluse_exporter import ToolUseExporter
 from utils.config_validator import ConfigValidator
 
 CARD_DIR = _ROOT / "benchmark_scores" / "model_cards"
-TIMEOUT_PER_MODEL = 300  # 5 Minuten
+TIMEOUT_PER_MODEL = 600  # 10 Minuten (Anthropic slow-day headroom)
 MCP_STARTUP_WAIT = 1.5   # Sekunden nach mcp-start
 
 _SEP = "═" * 54
@@ -41,11 +41,11 @@ def _restart_mcp(mode: str = "live") -> None:
     """Stop current MCP server and start a fresh one. ~1.5s overhead."""
     subprocess.run(
         ["make", "mcp-stop"],
-        cwd=str(_ROOT), capture_output=True, check=False,
+        cwd=str(_ROOT), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, check=False,
     )
     subprocess.run(
         ["make", "mcp-start", f"MODE={mode}"],
-        cwd=str(_ROOT), capture_output=True, check=False,
+        cwd=str(_ROOT), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, check=False,
     )
     time.sleep(MCP_STARTUP_WAIT)
 

@@ -328,7 +328,8 @@ mcp-stop:
 		rm -f .mcp.pid; \
 		echo "MCP Server stopped."; \
 	else \
-		echo "No .mcp.pid found — server may not be running."; \
+		pkill -f "cruciblemark-mcp/server.py" 2>/dev/null || true; \
+		echo "MCP Server stopped (pkill fallback)."; \
 	fi
 
 mcp-health:
@@ -370,7 +371,7 @@ benchmark-tooluse:
 	@$(MAKE) mcp-stop
 	@$(MAKE) mcp-start MODE=$(or $(MCP_MODE),live)
 	@sleep 1.5
-	$(PYTHON) scripts/run_tooluse_benchmark.py \
+	@$(PYTHON) scripts/run_tooluse_benchmark.py \
 		$(if $(MODEL),--model "$(MODEL)") \
 		$(if $(MODELS),--models "$(MODELS)") \
 		$(if $(ALL),--all) \

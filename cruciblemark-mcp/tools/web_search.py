@@ -19,6 +19,14 @@ def _now() -> str:
     return datetime.now(timezone.utc).isoformat()
 
 
+def _format_results(query: str, results: list[dict]) -> str:
+    """Format search results as human-readable text matching the MCP content standard."""
+    body = "\n\n".join(
+        f"{r['title']}\n{r['url']}\n{r['excerpt']}" for r in results
+    )
+    return f"Search results for '{query}':\n\n{body}"
+
+
 class WebSearchTool:
     """Executes web searches via Tavily (primary) or DuckDuckGo (fallback)."""
 
@@ -89,6 +97,8 @@ class WebSearchTool:
             return {
                 "status": "error",
                 "results": [],
+                "content": [{"type": "text", "text": f"Error searching for '{query}'"}],
+                "isError": True,
                 "request_id": request_id,
                 "provider": "tavily",
                 "timestamp": timestamp,
@@ -105,6 +115,8 @@ class WebSearchTool:
         return {
             "status": "success",
             "results": results,
+            "content": [{"type": "text", "text": _format_results(query, results)}],
+            "isError": False,
             "request_id": request_id,
             "provider": "tavily",
             "timestamp": timestamp,
@@ -131,6 +143,8 @@ class WebSearchTool:
             return {
                 "status": "error",
                 "results": [],
+                "content": [{"type": "text", "text": f"Error searching for '{query}'"}],
+                "isError": True,
                 "request_id": request_id,
                 "provider": "duckduckgo",
                 "timestamp": timestamp,
@@ -152,6 +166,8 @@ class WebSearchTool:
         return {
             "status": "success",
             "results": results,
+            "content": [{"type": "text", "text": _format_results(query, results)}],
+            "isError": False,
             "request_id": request_id,
             "provider": "duckduckgo",
             "timestamp": timestamp,

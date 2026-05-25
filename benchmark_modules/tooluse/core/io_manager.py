@@ -185,7 +185,10 @@ class ToolUseIOManager:
         if results_list and isinstance(results_list, list) and results_list[0].get("url"):
             lines.append(f"  Source:        {results_list[0]['url'][:60]}")
         elif transcript.get("content_excerpt"):
-            lines.append(f"  Content:       {str(transcript['content_excerpt'])[:60]}")
+            raw = str(transcript["content_excerpt"])
+            visible = re.sub(r"<[^>]+>", "", raw).strip()
+            display = visible[:60] if visible else f"[HTML, {len(raw)} Zeichen]"
+            lines.append(f"  Content:       {display}")
 
         lines.append("")
 

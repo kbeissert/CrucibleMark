@@ -16,19 +16,34 @@ def new_request_id() -> str:
 _FIXTURE_SEARCH: dict[str, list[dict]] = {
     "_default": [
         {
-            "url": "https://huggingface.co/blog/open-llm-leaderboard",
+            "url": "https://huggingface.co/spaces/open-llm-leaderboard/open_llm_leaderboard",
             "title": "Open LLM Leaderboard — HuggingFace",
-            "excerpt": "The Open LLM Leaderboard tracks and evaluates open-source large language models across benchmarks.",
+            "excerpt": (
+                "The Open LLM Leaderboard evaluates open-source large language models on standardized "
+                "benchmarks including MMLU, HellaSwag, ARC, and TruthfulQA. Currently top-ranked "
+                "open-weight models include Llama 3.1 405B, Qwen2.5 72B, and Mistral Large. "
+                "All evaluated models are freely downloadable from HuggingFace."
+            ),
         },
         {
             "url": "https://llama.meta.com/",
             "title": "Llama — Meta AI",
-            "excerpt": "Meta's Llama is a family of large language models available for research and commercial use.",
+            "excerpt": (
+                "Meta's Llama 3 family — Llama 3.1 (8B, 70B, 405B) and Llama 3.2 (multimodal, 1B–90B) "
+                "— ranks among the best open-source models on standard benchmarks. Available on "
+                "HuggingFace and via Meta's download page under the Llama community license, "
+                "which permits commercial use for most organizations."
+            ),
         },
         {
-            "url": "https://raw.githubusercontent.com/openai/evals/main/README.md",
-            "title": "OpenAI Evals — GitHub",
-            "excerpt": "A framework for evaluating OpenAI models and an open-source registry of evals.",
+            "url": "https://huggingface.co/mistralai",
+            "title": "Mistral AI — HuggingFace",
+            "excerpt": (
+                "Mistral AI offers a range of open-weight models: Mistral 7B, Mixtral 8x7B (MoE), "
+                "and Mistral Large. These models are available on HuggingFace under the Apache 2.0 "
+                "license and consistently place in the top tier of open-source LLM benchmarks, "
+                "particularly for instruction-following and coding tasks."
+            ),
         },
     ],
 }
@@ -37,43 +52,34 @@ _FIXTURE_FETCH: dict[str, tuple[int, str]] = {
     "https://huggingface.co/": (200, "Hugging Face – The AI community building the future."),
     "https://huggingface.co/meta-llama": (
         200,
-        """Meta Llama – Hugging Face Organization
+        """meta-llama/Llama-4-Scout-17B-16E-Instruct
+Image-Text-to-Text • Updated • 409k • 1.29k
+meta-llama/Llama-4-Scout-17B-16E
+Image-Text-to-Text • Updated • 13.2k • 244
+meta-llama/Llama-4-Maverick-17B-128E-Instruct
+Image-Text-to-Text • 402B • Updated • 37.7k • 487
+meta-llama/Llama-4-Maverick-17B-128E-Instruct-FP8
+Image-Text-to-Text • 402B • Updated • 117k • 168
 
-Models by Meta Llama (huggingface.co/meta-llama)
+The Llama Family
+From Meta
+Welcome to the official Hugging Face organization for Llama, Llama Guard, and Prompt Guard models from Meta!
+In order to access models here, please visit a repo of one of the three families and accept the license terms and acceptable use policy. Requests are processed hourly.
 
-Llama 4 Scout
-  Model: Llama-4-Scout-17B-16E-Instruct
-  Type:  Image-Text to Text | 17B parameters | 16 experts (MoE)
-  Meta's latest multimodal model combining vision and language.
-  Requires a Meta license agreement to download and use.
+Current:
+Llama 4: The Llama 4 collection of models are natively multimodal AI models that enable text and multimodal experiences. These models leverage a mixture-of-experts architecture to offer industry-leading performance in text and image understanding.
+These Llama 4 models mark the beginning of a new era for the Llama ecosystem. We are launching two efficient models in the Llama 4 series, Llama 4 Scout, a 17 billion parameter model with 16 experts, and Llama 4 Maverick, a 17 billion parameter model with 128 experts.
 
-Llama 4 Maverick
-  Model: Llama-4-Maverick-17B-128E-Instruct
-  Type:  Image-Text to Text | 17B parameters | 128 experts (MoE)
-  Larger expert variant of Llama 4 for complex multimodal tasks.
+History:
+- Llama 3.3: The Llama 3.3 is a text only instruct-tuned model in 70B size (text in/text out).
+- Llama 3.2: The Llama 3.2 collection of multilingual large language models (LLMs) is a collection of pretrained and instruction-tuned generative models in 1B and 3B sizes (text in/text out).
+- Llama 3.2 Vision: The Llama 3.2-Vision collection of multimodal large language models (LLMs) is a collection of pretrained and instruction-tuned image reasoning generative models in 11B and 90B sizes (text + images in / text out)
+- Llama 3.1: a collection of pretrained and fine-tuned text models with sizes ranging from 8 billion to 405 billion parameters pre-trained on ~15 trillion tokens.
+- Llama 2: a collection of pretrained and fine-tuned text models ranging in scale from 7 billion to 70 billion parameters.
+- Code Llama: a collection of code-specialized versions of Llama 2.
+- Llama Guard: a 8B Llama 3 safeguard model for classifying LLM inputs and responses.
 
-Llama 3.3 70B Instruct
-  Model: Llama-3.3-70B-Instruct
-  Type:  Text to Text | 70B parameters
-  High-performance text model; most downloaded in the Llama 3.x series.
-
-Llama 3.2 Vision 11B Instruct
-  Model: Llama-3.2-11B-Vision-Instruct
-  Type:  Image-Text to Text | 11B parameters
-  Multimodal model supporting image and text inputs.
-
-Llama Guard 4
-  Model: Llama-Guard-4-12B
-  Type:  Image-Text to Text | 12B parameters | Safety model
-  Content moderation and safety filtering for AI applications.
-
-Llama 3.1 8B Instruct
-  Model: Meta-Llama-3.1-8B-Instruct
-  Type:  Text to Text | 8B parameters
-  Compact, widely deployed base model for text generation.
-
-All Llama models require acceptance of Meta's Llama license.
-Commercial use is permitted under the respective license terms.
+Learn more about the models at https://ai.meta.com/llama/
 """,
     ),
     "https://llama.meta.com/": (200, "Llama is Meta's open foundation and fine-tuned chat models."),
@@ -152,9 +158,15 @@ def mock_web_search(query: str, max_results: int, provider: str) -> dict:
     """Return a deterministic fixture response for web_search (mock mode)."""
     key = query.lower()
     results = _FIXTURE_SEARCH.get(key, _FIXTURE_SEARCH["_default"])
+    selected = results[:max_results]
+    content_text = f"Search results for '{query}':\n\n" + "\n\n".join(
+        f"{r['title']}\n{r['url']}\n{r['excerpt']}" for r in selected
+    )
     return {
         "status": "success",
-        "results": results[:max_results],
+        "results": selected,
+        "content": [{"type": "text", "text": content_text}],
+        "isError": False,
         "request_id": new_request_id(),
         "provider": provider,
         "timestamp": _now(),
@@ -167,20 +179,27 @@ def mock_http_fetch(url: str, max_chars: int) -> dict:
 
     # 404 simulation — any URL containing /status/404
     if "/status/404" in url or url.endswith("/404"):
+        error_text = f"Error fetching {url}: HTTP 404 Not Found"
         return {
             "status": "error",
             "status_code": 404,
             "content_excerpt": None,
+            "content": [{"type": "text", "text": error_text}],
+            "isError": True,
             "source_url": url,
             "request_id": new_request_id(),
             "timestamp": timestamp,
         }
 
     status_code, content = _FIXTURE_FETCH.get(url, (200, f"Mock content for {url}"))
+    text = content[:max_chars]
+    content_text = f"Contents of {url}:\n{text}"
     return {
         "status": "success",
         "status_code": status_code,
-        "content_excerpt": content[:max_chars],
+        "content_excerpt": text,
+        "content": [{"type": "text", "text": content_text}],
+        "isError": False,
         "source_url": url,
         "request_id": new_request_id(),
         "timestamp": timestamp,

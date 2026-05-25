@@ -15,6 +15,7 @@
 | `core/constants.py` — Key-Namen-SSoT | Fertig |
 | Assets 001–003 — Phase B: Tool Synthesis (Golden Standard v1.2.0) | Fertig ✅ |
 | Assets 004–005 — Phase A: Tool Intelligence (Kalibrierung ausstehend) | Implementiert, kalibriert wird noch |
+| Asset 006 — Phase C: Multilingual Synthesis (v1.0.0) | Implementiert ✅ |
 | MCP Server (`cruciblemark-mcp/`) | Fertig |
 | Batch-Runner (`scripts/run_tooluse_benchmark.py`) | Fertig |
 | Leaderboard (`tooluse_leaderboard.csv`) | Fertig — 41 Modelle |
@@ -66,14 +67,15 @@ benchmark_modules/tooluse/
     ├── tooluse002.yaml  # Phase B: Tool Synthesis — Structured Extraction (Tier 2)
     ├── tooluse003.yaml  # Phase B: Tool Synthesis — Failure Handling / 404 (Tier 3)
     ├── tooluse004.yaml  # Phase A: Tool Intelligence — Tool Selection (Tier 2)
-    └── tooluse005.yaml  # Phase A: Tool Intelligence — URL Construction (Tier 2)
+    ├── tooluse005.yaml  # Phase A: Tool Intelligence — URL Construction (Tier 2)
+    └── tooluse006.yaml  # Phase C: Multilingual Synthesis — German Output (Tier 2)
 ```
 
 ---
 
-## Asset-Architektur: Zwei Phasen
+## Asset-Architektur: Drei Phasen
 
-Die fünf Assets messen zwei konzeptionell getrennte Dimensionen der Tool-Use-Kompetenz.
+Die sechs Assets messen drei konzeptionell getrennte Dimensionen der Tool-Use-Kompetenz.
 Die Phasennummern beschreiben die **Messachse**, nicht die Reihenfolge im Lauf — alle Assets
 werden im selben Durchlauf ausgeführt.
 
@@ -177,6 +179,18 @@ config:
 **Aufgabe:** URL mit garantiertem 404-Response abrufen.
 **Hard Rule:** Jede spezifische Aussage über Seiteninhalte = automatischer Hard Fail.
 **Golden Standard v1.2.0:** Fehler dem Tool zuordnen, keine Spekulation, keine erfundenen Inhalte.
+
+---
+
+### Phase C — Multilingual Synthesis
+
+#### tooluse006 — Multilingual Search & German Synthesis (Tier 2)
+**Dimension:** Recherchiert das Modell mehrsprachige Quellen und synthetisiert die Ergebnisse konsistent auf Deutsch?
+**Aufgabe:** Internationale Stimmungen zur europäisch-amerikanischen Handelsentwicklung recherchieren — vier Zielräume (Europa, USA, arabischer Raum, BRICS), Antwort auf Deutsch.
+**Spread-Achsen:** Antwortsprache (Deutsch vs. Sprachmix) · Cross-lingual Synthesis (mehrere Sprachräume verarbeitet?) · Quelle-zu-Output-Kohärenz.
+**Erfolgskriterium P1:** `web_search` korrekt aufgerufen.
+**Erfolgskriterium P2:** Deutsche Synthese mit ≥3 Zielräumen, keine Rohübernahmen in anderen Sprachen.
+**Halluzinationsrisiko:** Erfundene Quellen oder falsche regionale Positionierungen; Antwort überwiegend nicht auf Deutsch.
 
 ---
 

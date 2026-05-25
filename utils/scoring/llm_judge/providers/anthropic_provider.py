@@ -63,7 +63,9 @@ class AnthropicProvider(LLMJudgeProvider):
             messages=[{"role": "user", "content": user_prompt}],
         )
         latency_ms = (time.monotonic() - start) * MS_PER_SECOND
-        raw_text: str = message.content[0].text if message.content else ""
+        raw_text: str = "".join(
+            block.text for block in message.content if hasattr(block, "text")
+        ) if message.content else ""
         logger.debug(
             "Anthropic judge response received (model=%s, latency=%.0f ms)",
             self._model,

@@ -310,6 +310,8 @@ class JudgeRunner:
         language_weight: float = 0.20,
         token_budget_context: Optional[dict] = None,
         truncation_context: bool = False,
+        tool_content: Optional[str] = None,
+        tool_content_quality: Optional[str] = None,
     ) -> JudgeResult:
         """
         Evaluate a model response and return a structured JudgeResult.
@@ -364,6 +366,8 @@ class JudgeRunner:
             language_weight=language_weight,
             token_budget_context=token_budget_context,
             truncation_context=truncation_context,
+            tool_content=tool_content,
+            tool_content_quality=tool_content_quality,
         )
 
         logger.debug(

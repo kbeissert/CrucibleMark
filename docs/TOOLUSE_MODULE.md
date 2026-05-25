@@ -2,7 +2,7 @@
 
 > **Modul-Typ:** Diagnosemodul — kein Einfluss auf den Total Score  
 > **Voraussetzung:** CrucibleMark MCP Server läuft auf `localhost:8765`  
-> **Verfügbare Assets:** 3 (tooluse001–003)  
+> **Verfügbare Assets:** 5 (tooluse001–005)  
 > **Getestete Modelle (Fleet):** Alle Modelle mit `supports_tool_use: true` in der Model Card
 
 ---
@@ -46,12 +46,16 @@ benchmark_modules/tooluse/
 ├── core/
 │   ├── constants.py               # Key-Namen-Konstanten (keine hardcodierten Werte)
 │   ├── evaluators.py              # ToolUseEvaluator (Phase 1 + Phase 2)
-│   └── io_manager.py              # Terminal-Ausgabe (ToolUseIOManager)
+│   ├── io_manager.py              # Terminal-Ausgabe (ToolUseIOManager)
+│   └── tool_adapter_audit.py      # CV Gate, Tool-Name-Normalisierung, MCP-Routing-Audit
 ├── assets/
-│   ├── tooluse001.yaml            # Web Search Research
-│   ├── tooluse002.yaml            # HTTP Fetch & Extract
-│   └── tooluse003.yaml            # Tool Failure Handling (404)
+│   ├── tooluse001.yaml            # Web Search — EU Lizenzrecherche
+│   ├── tooluse002.yaml            # HTTP Fetch & Extract (Quake-Serie)
+│   ├── tooluse003.yaml            # Tool Failure Handling (404)
+│   ├── tooluse004.yaml            # Web Search — Tool-Type Decision (LLM Rankings)
+│   └── tooluse005.yaml            # HTTP Fetch — URL Construction (Python Wikipedia)
 └── tests/
+    ├── test_content_verification.py  # CV Gate (State A/B1/B2/C, failure-test exempt)
     ├── test_controller.py         # Tests für test.py
     ├── test_evaluators.py         # Tests für evaluators.py
     ├── test_exporter.py           # Tests für tooluse_exporter.py
@@ -166,7 +170,7 @@ make mcp-health
 make mcp-stop
 ```
 
-Der Server schreibt seine PID in `.mcp.pid`. `make mcp-stop` liest diese Datei und beendet den Prozess sauber. Wenn der Prozess bereits gestoppt ist, wird die veraltete PID-Datei trotzdem gelöscht (kein Make-Fehler).
+Der Server schreibt seine PID in `.mcp.pid`. `make mcp-stop` liest diese Datei und beendet den Prozess sauber. Ist die PID-Datei nicht vorhanden (z. B. wenn der Server über den Batch-Runner gestartet wurde), greift ein `pkill -f "cruciblemark-mcp/server.py"`-Fallback.
 
 ### Endpunkte
 
@@ -248,6 +252,31 @@ Score-Labels (aus `config/tooluse_report_config.yaml`):
 | ≥ 55 | Moderate |
 | < 55 | Weak |
 
+### Content Verification Gate
+
+`ToolAdapterAudit.run_content_verification()` (`core/tool_adapter_audit.py`) begrenzt den
+P2-Score wenn die Modellantwort nicht nachweislich auf dem Tool-Ergebnis basiert:
+
+| Zustand | Kriterium | P2-Cap |
+|---|---|---|
+| **A** | Content nutzbar + Phrasen-Overlap bestätigt | kein Cap |
+| **B1** | Content nicht nutzbar; Modell kommuniziert das transparent | 50 |
+| **B2** | Content nicht nutzbar **oder** kein Overlap; kein Hinweis | 35 |
+| **C** | P1 = 0 (kein Tool-Call) | 20 |
+
+Cap-Werte konfigurierbar in `config/scoring.yaml` → `tool_use.content_verification`.
+
+**Phrasen-Overlap:** `_has_content_overlap()` gleitet mit einem 3-Wort-Fenster (`_OVERLAP_WINDOW = 3`)
+über den `content_excerpt`. Fenster von 3 Wörtern fangen kurze Eigennamen ("id Software",
+"Open LLM Leaderboard") ab, die in deutschen Modellantworten verbatim erscheinen.
+
+**Transparency Signals:** `_has_transparency_signal()` erkennt explizite Hinweise auf
+fehlenden Content — "leider", "konnte nicht laden", "no content", "based on my training data"
+u. a. (vollständige Liste in `_TRANSPARENCY_SIGNALS`).
+
+**Failure-Tests** (`is_failure_test: true`) sind exempt — immer State A, da kein Content
+erwartet wird.
+
 ---
 
 ## 6. Test-Assets
@@ -257,20 +286,26 @@ Score-Labels (aus `config/tooluse_report_config.yaml`):
 ```yaml
 tool_available: web_search
 prompt: "Welche EU-Nutzungsbeschränkungen gelten für Meta Llama? ..."
-expected_keywords: [EU, Llama, Meta, Lizenz, ...]
 ```
 
-**Ziel:** Modell ruft `web_search` auf, zitiert eine URL in der Antwort.
+**Ziel:** Modell ruft `web_search` auf und synthetisiert Lizenz- und Nutzungsrestriktionen
+für Meta Llama aus den zurückgegebenen Ergebnissen.
 
-### tooluse002 — HTTP Fetch & Extract (Tier 2)
+### tooluse002 — HTTP Fetch & Extract (Tier 2, v2.1.0)
 
 ```yaml
 tool_available: fetch
-prompt: "Rufe diese Seite ab und extrahiere alle verfügbaren Modellnamen: ..."
-expected_keywords: [model, llm, bert, gpt, ...]
+target_url: "https://en.wikipedia.org/wiki/Quake_(series)"
+requires_structured_output: true
 ```
 
-**Ziel:** Modell ruft `fetch` mit korrekter URL auf, nennt ≥ 3 Modellnamen.
+**Ziel:** Modell ruft `fetch` mit der vorgegebenen URL auf und gibt einen strukturierten
+Überblick über Quake 1–4 (Jahr, Entwickler, markantes Merkmal pro Titel).
+
+**Rubrik-Hinweis (v2.1.0):** `uncertainty_handling`-Gewicht wurde auf 0.05 reduziert.
+Attribution an die Quelle ist kein Bewertungskriterium mehr — nur Inhaltsgenauigkeit
+und Verbleiben im Fixture-Rahmen. Siehe [MAINTENANCE_LOG.md](MAINTENANCE_LOG.md) für
+die Begründung (Attribution Bias Fix).
 
 ### tooluse003 — Tool Failure Handling (Tier 3)
 
@@ -280,7 +315,32 @@ is_failure_test: true
 prompt: "Rufe https://example.com/nonexistent-page-404 ab ..."
 ```
 
-**Ziel:** Tool liefert 404-Fehler zurück. Modell kommuniziert den Fehler — ohne zu halluzinieren. Phase 2 = Hard Fail bei halluziniertem Inhalt.
+**Ziel:** Tool liefert 404-Fehler zurück. Modell kommuniziert den Fehler transparent —
+ohne Inhalte zu halluzinieren. Phase 2 = Hard Fail bei halluziniertem Inhalt.
+
+### tooluse004 — Web Search & Tool-Type Decision (Tier 2)
+
+```yaml
+tool_available: web_search
+prompt: "Welche Open-Source-LLMs führen aktuell die Leaderboards an? ..."
+```
+
+**Ziel:** Modell erkennt, dass die Aufgabe eine Web-Suche erfordert (keine URL vorgegeben),
+wählt `web_search` statt `fetch`, und synthetisiert die Suchergebnisse korrekt.
+Dimension: Tool-Intelligence — richtiges Tool für den Aufgabentyp.
+
+### tooluse005 — HTTP Fetch & URL-Konstruktion (Tier 2)
+
+```yaml
+tool_available: fetch
+prompt: "Rufe die Wikipedia-Seite über Python auf ... Verwende en.wikipedia.org."
+```
+
+**Ziel:** Modell konstruiert die korrekte Wikipedia-URL
+(`https://en.wikipedia.org/wiki/Python_(programming_language)`) aus eigenem Wissen und
+ruft `fetch` damit auf. Exakte URL → registrierte Fixture, voller Content. Falsche URL →
+"Mock content for …" (~55 Zeichen) → source_quality 0 → P1-Abzug.
+Dimension: URL-Präzision.
 
 ---
 
@@ -618,13 +678,14 @@ Der Batch Runner scannt alle JSON-Dateien in `benchmark_scores/model_cards/` und
 .venv/bin/python -m pytest benchmark_modules/tooluse/tests/test_report_generator.py
 ```
 
-**Aktuelle Test-Abdeckung:** 53 Tests, alle grün.
+**Aktuelle Test-Abdeckung:** 67 Tests, alle grün.
 
 | Test-Datei | Tests | Was wird getestet |
 |---|---|---|
-| `test_controller.py` | 8 | `ToolUseTest.execute()` + `score_response()` |
-| `test_evaluators.py` | 10 | Phase 1 + Phase 2 Scoring, Hallucination Detection |
-| `test_exporter.py` | 14 | CSV-Upsert, Aggregation, Sovereignty Gap |
+| `test_content_verification.py` | 7 | CV Gate (State A/B1/B2/C), failure-test exempt, cap-Nichterhöhung |
+| `test_controller.py` | 6 | `ToolUseTest.execute()` + `score_response()` |
+| `test_evaluators.py` | 17 | Phase 1 + Phase 2 Scoring, Hallucination Detection |
+| `test_exporter.py` | 16 | CSV-Upsert, Aggregation, Sovereignty Gap |
 | `test_io_manager.py` | 8 | Terminal-Ausgabe, `_bar()`, MCP-Unavailable-Block |
 | `test_report_generator.py` | 13 | Report-Sektionen, Score-Labels, JSON-Struktur |
 

@@ -95,3 +95,10 @@ benchmarks:
     tier: 2
     tool_type: fetch
     future_expansion: null
+
+  - id: tooluse006
+    name: "Multilingual Search & German Synthesis"
+    tier: 2
+    tool_type: web_search
+    language: de
+    future_expansion: null

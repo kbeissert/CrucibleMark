@@ -369,6 +369,96 @@ Diese Felder unterscheiden eine **aktive Ablehnung** (Qualitätsmerkmal des Mode
 
 ---
 
+---
+
+## Tool-Use-Modul (Tier 2)
+
+Das Tool-Use-Modul bewertet, ob ein Modell externe Tools korrekt aufruft und die abgerufenen Inhalte tatsächlich als Grundlage seiner Antwort nutzt. Es verwendet eine eigenständige Zwei-Phasen-Architektur, die vom generischen Hybrid-Scoring der anderen Module unabhängig ist.
+
+### Zwei-Phasen-Scoring
+
+```
+Combined Score = phase1_weight × P1 + phase2_weight × P2
+```
+
+| Phase | Inhalt | Gewicht (Standard) |
+|-------|--------|--------------------|
+| P1 — Tool Execution | Korrekte Tool-Wahl, Parametrisierung, HTTP-Statuscode | 40 % |
+| P2 — Synthesis | Inhaltliche Qualität, Halluzinationskontrolle, Content Grounding | 60 % |
+
+P2 wird durch den LLM-Judge (geführt mit `phase2_rubric`) bewertet und anschließend durch zwei unabhängige Cap-Mechanismen nach oben begrenzt.
+
+### Content-Verification-Framework
+
+Bevor der Judge-Score als P2 übernommen wird, bestimmt das Content-Verification-Gate den **State** des Tool-Ergebnisses und wendet ggf. einen Cap an.
+
+| State | Bedingung | P2-Cap | Bedeutung |
+|-------|-----------|--------|-----------|
+| **A** | Content nutzbar + Phrasen-Overlap im Output | keiner | Modell hat Tool-Ergebnis verarbeitet |
+| **B1** | Content nicht nutzbar, Modell signalisiert Fehler transparent | 50 | Korrekte Reaktion auf schlechten Tool-Output |
+| **B2** | Content nicht nutzbar oder kein Overlap, kein Transparency-Signal | keiner | Judge bewertet Content-Grounding direkt |
+| **C** | Kein Tool-Call (P1 = 0) | 20 | Antwort ist vollständig parametrisch |
+
+State A wird durch `_has_content_overlap()` bestätigt: Das System gleitet mit Fenstergröße 3 über den abgerufenen Text und sucht nach Phrasen-Matches im Modell-Output. Failure-Tests (`is_failure_test: true`) sind vom Framework ausgenommen und erhalten immer State A.
+
+**`tool_result_ignored`-Flag:** Ein Boolean, der gesetzt wird wenn `content_usable=True` und `state="B2"`. Er signalisiert, dass das Tool nutzbare Inhalte zurückgegeben hat, der Modell-Output aber keine nachweisbare Überlappung zeigt — das Modell hat die Tool-Antwort wahrscheinlich ignoriert und aus Trainingswissen geantwortet. Dieser Fall unterscheidet sich fundamental von State B1 (schlechter Content, aber transparentes Verhalten) und ist diagnostisch relevant für Product Engineers, die agentic Tool-Use bewerten: nicht jede Halluzination entsteht aus Unwissen, manche aus fehlender Verarbeitung vorhandener Tool-Ergebnisse.
+
+### Halluzinations-Cap (config-first)
+
+Unabhängig vom Content-Verification-State greift nach dem Judge-Call ein separater Hard-Cap:
+
+```
+if hallucination_detected:
+    p2 = min(p2, cap_hard)
+```
+
+Der Cap-Wert wird ausschließlich aus `config/scoring.yaml → tool_use.hallucination.cap_hard` gelesen (Default-Fallback: 20). Eine Magic Number im Code ist explizit verboten.
+
+Beide Cap-Mechanismen (CV-State und Halluzinations-Cap) können unabhängig voneinander greifen:
+- Nur CV-Cap: Content-Problem ohne judge-seitig erkannte Halluzination (z. B. State B1)
+- Nur Halluzinations-Cap: Content usable (State A), aber Judge identifiziert trotzdem falsche Fakten
+- Beide: seltener, aber möglich — liefert dann den niedrigeren der beiden Caps
+
+### `phase2_rubric`-Verdrahtung
+
+Jedes Asset kann eine `phase2_rubric`-Sektion im YAML definieren:
+
+```yaml
+phase2_rubric:
+  weights:
+    factuality: 0.65
+    hallucination_risk: 0.30
+    uncertainty_handling: 0.05
+  factuality:
+    must_include: [...]
+    must_not_include: [...]
+  hallucination_risk:
+    red_flags: [...]
+    acceptable_patterns: [...]
+  uncertainty_handling:
+    acceptable: [...]
+    unacceptable: [...]
+```
+
+Die Funktion `_build_rubric_override()` in `test.py` konvertiert dieses Dict zu strukturiertem Text und übergibt ihn als `rubric_override` an `judge_runner.score()`. Der Judge-Prompt-Builder ersetzt damit den generischen Rubric-Block im User-Prompt vollständig durch asset-spezifische Kriterien. Sections die leer sind werden ausgelassen; Weights werden als Prozentangaben dargestellt.
+
+Ohne `phase2_rubric` im Asset-YAML fällt der Judge auf seinen generischen Bewertungsrahmen zurück — kein Fehler, aber keine asset-spezifische Differenzierung.
+
+### Cap-Konfiguration (`config/scoring.yaml`)
+
+```yaml
+tool_use:
+  content_verification:
+    cap_B1_transparent: 50
+    cap_B2_parametric: 35   # aktuell nicht aktiv (B2-Cap entfernt)
+    cap_B3_wrong:       15   # reserviert
+    cap_C_no_tool:      20
+  hallucination:
+    cap_hard: 20
+```
+
+---
+
 ## v1.0 Fix-Historie
 
 ```text
@@ -386,4 +476,5 @@ v3.4.2 (2026-04-09): Vollständige Preis-Datenbasis in cost_limits.yaml; LLM Jud
 v3.4.3 (2026-04-10): module_weight-System — selbstnormierende Modulgewichtung entkoppelt Total Score von Asset-Anzahl; CLI-Modul als Supplement (0.5) ✅
 v3.5.7 (2026-04-23): SSoT resolve_token_budget(), gemini-2.5 Reasoning-Trigger, Judge-Verbosity-Penalty für Reasoning-Modelle, Refusal-Dokumentationsfelder ✅
 v3.7.5 (2026-05-22): Pricing SSoT Migration — Preise von cost_limits.yaml in Model Cards verlagert (input_price_per_1m / output_price_per_1m, per 1M Tokens). score_calculator.py und cost_tracker.py lesen Cards als primäre Preisquelle; cost_limits.yaml als Legacy-Fallback für Modelle ohne Card ✅
+v3.10.0 (2026-05-25): Tool-Use-Modul Tier-2 — Content-Verification-Framework (States A/B1/B2/C), config-first Halluzinations-Cap, phase2_rubric-Verdrahtung via rubric_override, tool_result_ignored-Flag als neue Diagnose-Dimension ✅
 ```

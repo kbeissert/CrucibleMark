@@ -106,11 +106,15 @@ def evaluator():
 # ---------------------------------------------------------------------------
 
 def test_phase1_websearch_correct_domain(evaluator):
+    # tool type correct (40) + results ≥1 → 40pts result + 2 results → 20pts source = 100
     transcript = {
         "tool_type_called": "web_search",
         "status": "success",
         "status_code": 200,
-        "results": [{"url": "https://llama.meta.com/docs/eu-usage", "excerpt": "EU policy..."}],
+        "results": [
+            {"url": "https://llama.meta.com/docs/eu-usage", "excerpt": "EU policy..."},
+            {"url": "https://huggingface.co/meta-llama", "excerpt": "Llama models"},
+        ],
         "provider": "tavily",
     }
     score = evaluator.score_phase1(transcript, ASSET_001)
@@ -122,7 +126,7 @@ def test_phase1_websearch_correct_domain(evaluator):
 # ---------------------------------------------------------------------------
 
 def test_phase1_websearch_no_relevant_domain(evaluator):
-    # tool type correct (40) + results present (40) + domain miss (0) = 80
+    # tool type correct (40) + results present (40) + only 1 result → 10pts source = 90
     transcript = {
         "tool_type_called": "web_search",
         "status": "success",
@@ -131,7 +135,7 @@ def test_phase1_websearch_no_relevant_domain(evaluator):
         "provider": "duckduckgo",
     }
     score = evaluator.score_phase1(transcript, ASSET_001)
-    assert score == 80.0
+    assert score == 90.0
 
 
 # ---------------------------------------------------------------------------
