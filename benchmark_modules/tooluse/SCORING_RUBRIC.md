@@ -112,6 +112,25 @@ combined = (p1 * 0.4) + (p2 * 0.6)
 - Combined score is guarded to prevent weak execution from being masked by excellent synthesis
 - Tiered penalties reflect severity: hard execution failures (p1 < 40) get -10; moderate issues (p1 < 60) get -3
 
+---
+
+## Hallucination Cap (Zweistufenregel)
+
+Wenn der LLM-Judge `hallucination_detected: true` zurückgibt, wird **P2 gekappt** — unabhängig vom ursprünglichen Judge-Score. Die Schwere der Halluzination bestimmt den Cap anhand des konvertierten P2-Scores **vor** der Kappung:
+
+| P2 vor Cap | Klassifikation | Cap |
+|---|---|---|
+| ≤ 40 | **Fabrication** — vollständige Erfindung, ganzer Themenblock | `cap_hard = 15` |
+| > 40 | **Milde Halluzination** — partielle Fabrication, einzelne Details | `cap_moderate = 35` |
+
+**Schwellenwert:** `threshold_severe = 40` (konfigurierbar in `config/scoring.yaml`)
+
+**Rationale:**
+- Ein niedriger Judge-Score (0–2 / 5) mit `hallucination_detected` signalisiert vollständige Fabrication — das Modell hat ganze Themenblöcke erfunden
+- Ein hoher Judge-Score (3–4 / 5) mit `hallucination_detected` bedeutet, die Antwort war überwiegend korrekt, enthält aber fabricierte Details
+- Beide Fälle sollen sichtbar unter dem „brauchbaren" Bereich (> 50) bleiben, aber Fabrication fällt deutlich tiefer als partielle Halluzination
+- Die Kappung gilt nur im Judge-Modus (nicht im Fallback-Modus)
+
 **Calibration Examples (v3.11.0 — 2026-05-24):**
 - Claude Sonnet 4.6: P1=95, P2=65.0 → combined=79.98
 - Claude Sonnet 4.5: P1=85, P2=70.3 → combined=77.63

@@ -1,6 +1,0 @@
-model,display_name,vendor,sizeclass,deployment_type,model_version,timestamp,mcp_mode,p1_score,p2_score,combined_score,tool_call_valid,tool_call_attempts,parse_error_flag,hallucination_flag,call1_time_s,mcp_latency_s,call2_time_s,total_time_s,call1_tokens,call2_tokens,total_tokens,cost_usd,assets_run,assets_error,fleet_group,sovereignty_gap
-nousresearch/hermes-4-70b,Hermes 4 70B,NousResearch,Server,open-weights,70b,2026-05-23T21:59:42Z,live,80.00,100.00,90.00,true,2,true,false,3.62,0.79,1.57,17.94,1177,1203,2380,0.000561,3,0,full_fleet,
-gemini-2.5-pro,Gemini 2.5 Pro,Google,Frontier,cloud-only,2.5-pro,2026-05-23T21:59:42Z,live,80.00,100.00,90.00,true,2,true,false,23.54,0.99,9.19,101.16,1515,1433,2948,0.017231,3,0,full_fleet,
-gemini-3-flash-preview,Gemini 3 Flash Preview,Google,Server,cloud-only,3-flash-preview,2026-05-23T21:59:42Z,live,80.00,100.00,90.00,true,2,true,false,10.05,1.10,4.62,47.32,1424,1600,3024,0.005512,3,0,full_fleet,
-gpt-5.4,GPT-5.4,OpenAI,Frontier,cloud-only,5.4,2026-05-23T21:59:42Z,mock,66.67,100.00,80.00,false,2,true,false,6.56,0.43,4.91,35.69,1564,1506,3070,0.030400,3,0,full_fleet,
-claude-haiku-4-5-20251001,Claude Haiku 4.5,Anthropic,Desktop,cloud-only,4.5,2026-05-23T21:59:42Z,live,80.00,100.00,90.00,true,2,true,false,5.46,0.72,3.49,38.66,2720,3328,6048,0.018140,4,0,full_fleet,

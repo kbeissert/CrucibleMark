@@ -35,9 +35,13 @@ CV_CAP_DEFAULTS: dict[str, int] = {
     CV_CAP_C_KEY: 20,
 }
 
-# Hallucination cap — config key und Fallback-Default
-HALLUCINATION_CAP_KEY = "cap_hard"
-HALLUCINATION_CAP_DEFAULT = 20
+# Hallucination cap — config keys und Fallback-Defaults (zweistufig)
+HALLUCINATION_CAP_KEY = "cap_hard"           # Fabrication (P2 <= threshold)
+HALLUCINATION_CAP_MODERATE_KEY = "cap_moderate"  # Milde Halluzination (P2 > threshold)
+HALLUCINATION_THRESHOLD_SEVERE_KEY = "threshold_severe"  # Trennwert
+HALLUCINATION_CAP_DEFAULT = 15               # Fallback für cap_hard
+HALLUCINATION_CAP_MODERATE_DEFAULT = 35      # Fallback für cap_moderate
+HALLUCINATION_THRESHOLD_SEVERE_DEFAULT = 40  # Fallback für threshold_severe
 
 # Phase identifiers
 PHASE_TOOL_EXECUTION = "phase1"

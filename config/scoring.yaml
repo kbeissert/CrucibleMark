@@ -34,7 +34,10 @@ tool_use:
     cap_C_no_tool: 20
 
   hallucination:
-    # Judge hat hallucination_detected: true zurückgegeben.
-    # P2 wird auf diesen Wert gekappt — unabhängig vom Judge-Score.
-    # Gilt nur wenn der Judge tatsächlich läuft (nicht im Fallback-Modus).
-    cap_hard: 20
+    # Zweistufige P2-Kappung bei hallucination_detected: true (Judge-Modus).
+    # Schwere wird am konvertierten P2-Score vor der Kappung abgelesen:
+    #   P2 <= threshold_severe → vollständige Fabrication → cap_hard
+    #   P2 >  threshold_severe → partielle / milde Halluzination → cap_moderate
+    cap_hard: 15            # Fabrication: P2 <= threshold_severe (0–40)
+    cap_moderate: 35        # Milde Halluzination: P2 > threshold_severe (>40)
+    threshold_severe: 40    # Trennwert (P2-Punkte, 0–100)

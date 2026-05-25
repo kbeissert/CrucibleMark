@@ -125,8 +125,9 @@ class ToolUseExporter:
             transcript = data.get("tool_transcript") or {}
             if transcript.get("status") in ("parse_error", "blocked", None, ""):
                 tool_call_valid_all = False
-            provider_val = transcript.get("provider") or "mock"
-            if provider_val != "mock":
+            # mcp_mode: live wenn der MCP-Server tatsächlich aufgerufen wurde
+            # (mcp_latency_s > 0), unabhängig vom Tool-Typ (web_search/fetch).
+            if (data.get("mcp_latency_s") or 0) > 0:
                 mcp_mode = "live"
 
             if data.get(FIELD_HALLUCINATION_FLAG):
@@ -404,8 +405,9 @@ class ToolUseExporter:
             transcript = data_dict.get("tool_transcript") or {}
             if transcript.get("status") in ("parse_error", "blocked", None, ""):
                 tool_call_valid_all = False
-            provider_val = transcript.get("provider", "mock")
-            if provider_val and provider_val != "mock":
+            # mcp_mode: live wenn der MCP-Server tatsächlich aufgerufen wurde
+            # (mcp_latency_s > 0), unabhängig vom Tool-Typ (web_search/fetch).
+            if (data_dict.get("mcp_latency_s") or 0) > 0:
                 mcp_mode = "live"
 
             # Performance metrics

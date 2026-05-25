@@ -14,7 +14,7 @@
 | `core/io_manager.py` — Leaderboard + Terminal-Output | Fertig |
 | `core/constants.py` — Key-Namen-SSoT | Fertig |
 | Assets 001–003 — Phase B: Tool Synthesis (Golden Standard v1.2.0) | Fertig ✅ |
-| Assets 004–005 — Phase A: Tool Intelligence (Kalibrierung ausstehend) | Implementiert, kalibriert wird noch |
+| Assets 004–005 — Phase A: Tool Intelligence | Kalibriert ✅ |
 | Asset 006 — Phase C: Multilingual Synthesis (v1.0.0) | Implementiert ✅ |
 | MCP Server (`cruciblemark-mcp/`) | Fertig |
 | Batch-Runner (`scripts/run_tooluse_benchmark.py`) | Fertig |
@@ -24,7 +24,13 @@
 
 ## Zweck
 
-Misst, ob ein LLM externe Tools (Web-Suche, HTTP-Fetch) via MCP tatsächlich aufruft — anstatt Ergebnisse zu halluzinieren. Ein Modell, das nie ein Tool aufruft, aber Antworten erfindet, bekommt dieselbe Hallucination Penalty wie in einem Faktentest. Das Modul ist als eigenständiges Diagnosewerkzeug konzipiert (analog zum Political Compass) und fließt nicht in den Total Score ein.
+ToolUse ist ein **Diagnose-Benchmark für die Toolfähigkeit von LLMs** — nicht für allgemeine Agentenintelligenz oder Multi-Agenten-Orchestrierung. Es prüft, ob ein Modell externe Tools (Web-Suche, HTTP-Fetch) via MCP tatsächlich aufruft, das passende Tool für die Aufgabe auswählt und aus dem Tool-Ergebnis eine nachvollziehbare, quellennahe Antwort synthetisiert. Ein Modell, das nie ein Tool aufruft, aber Antworten erfindet, bekommt dieselbe Hallucination Penalty wie in einem Faktentest.
+
+**Was ToolUse misst:** Praktische Nutzbarkeit von lokal betreibbaren oder cloudbasierten Open-Weight-Modellen in realen, toolgestützten Arbeitsabläufen — bei Recherche, Extraktion, Fehlerbehandlung und sprachlicher Synthese. Die sechs Assets testen jeweils eine klar abgrenzbare Einzelfähigkeit: Tool-Aufruf, Tool-Auswahl, URL-Inferenz, Fehlertoleranz und deutschsprachige Synthese aus mehrsprachigen Quellen. Damit kann ein kleineres, schnelles Modell hier sehr gut abschneiden — nicht weil es „intelligenter" ist, sondern weil es die konkreten Aufgaben zuverlässig mit Tool-Nutzung erfüllt.
+
+**Was ToolUse nicht misst:** Komplexe Multi-Step-Agentenplanung, Koordination mehrerer spezialisierter Agenten oder die Fähigkeit, längere Tool-Ketten autonom zu orchestrieren.
+
+Das Modul ist als eigenständiges Diagnosewerkzeug konzipiert (analog zum Political Compass) und fließt nicht in den Total Score ein.
 
 ---
 

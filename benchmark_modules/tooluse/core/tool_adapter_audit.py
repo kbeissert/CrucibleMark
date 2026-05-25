@@ -25,11 +25,14 @@ import yaml
 
 from .constants import (
     CV_CAP_B1_KEY,
-    CV_CAP_B2_KEY,
     CV_CAP_C_KEY,
     CV_CAP_DEFAULTS,
-    HALLUCINATION_CAP_KEY,
     HALLUCINATION_CAP_DEFAULT,
+    HALLUCINATION_CAP_KEY,
+    HALLUCINATION_CAP_MODERATE_DEFAULT,
+    HALLUCINATION_CAP_MODERATE_KEY,
+    HALLUCINATION_THRESHOLD_SEVERE_DEFAULT,
+    HALLUCINATION_THRESHOLD_SEVERE_KEY,
 )
 
 logger = logging.getLogger(__name__)
@@ -38,9 +41,10 @@ _ROOT = Path(__file__).resolve().parents[3]
 
 # Authorized tool names — aligned with Anthropic MCP standard.
 # fetch: matches @modelcontextprotocol/server-fetch reference implementation.
+# fetch variants: models fine-tuned on different MCP servers may use alternative names.
 AUTHORIZED_TOOLS = {
-    "web_search": ["web_search", "web.search"],
-    "fetch": ["fetch"],
+    "web_search": ["web_search", "web.search", "search"],
+    "fetch": ["fetch", "http_fetch", "fetch_url", "get_url", "web_fetch", "url_fetch", "read_url"],
 }
 
 # Canonical tool names (what we expect)
@@ -204,7 +208,7 @@ class ToolAdapterAudit:
         """Lädt cap_hard aus config/scoring.yaml tool_use.hallucination.
 
         Fällt auf HALLUCINATION_CAP_DEFAULT zurück wenn Datei fehlt oder
-        Schlüssel nicht definiert ist.
+        Schlüssel nicht definiert ist. Für einfache Fälle ohne P2-Kontext.
         """
         cfg_path = _ROOT / "config" / "scoring.yaml"
         try:
@@ -219,6 +223,47 @@ class ToolAdapterAudit:
         except Exception:  # noqa: BLE001 — yaml/filesystem boundary
             logger.warning("Could not load hallucination cap from config", exc_info=True)
         return HALLUCINATION_CAP_DEFAULT
+
+    @staticmethod
+    def load_hallucination_cap_tiered(p2_before_cap: float) -> int:
+        """Zweistufige Halluzinations-Kappung basierend auf Judge-P2-Score.
+
+        Entscheidungslogik:
+          p2_before_cap <= threshold_severe → cap_hard   (Fabrication)
+          p2_before_cap >  threshold_severe → cap_moderate (milde Halluzination)
+
+        Alle Schwellenwerte kommen aus config/scoring.yaml.
+        Fallback auf Konstanten wenn Datei fehlt.
+        """
+        cfg_path = _ROOT / "config" / "scoring.yaml"
+        cap_hard = HALLUCINATION_CAP_DEFAULT
+        cap_moderate = HALLUCINATION_CAP_MODERATE_DEFAULT
+        threshold = HALLUCINATION_THRESHOLD_SEVERE_DEFAULT
+        try:
+            raw = yaml.safe_load(cfg_path.read_text(encoding="utf-8")) or {}
+            hal_cfg = raw.get("tool_use", {}).get("hallucination", {})
+            if hal_cfg.get(HALLUCINATION_CAP_KEY) is not None:
+                cap_hard = int(hal_cfg[HALLUCINATION_CAP_KEY])
+            if hal_cfg.get(HALLUCINATION_CAP_MODERATE_KEY) is not None:
+                cap_moderate = int(hal_cfg[HALLUCINATION_CAP_MODERATE_KEY])
+            if hal_cfg.get(HALLUCINATION_THRESHOLD_SEVERE_KEY) is not None:
+                threshold = float(hal_cfg[HALLUCINATION_THRESHOLD_SEVERE_KEY])
+        except FileNotFoundError:
+            pass
+        except Exception:  # noqa: BLE001 — yaml/filesystem boundary
+            logger.warning("Could not load tiered hallucination caps from config", exc_info=True)
+
+        if p2_before_cap <= threshold:
+            logger.debug(
+                "hallucination cap: p2=%.1f <= threshold=%.1f → cap_hard=%d (fabrication)",
+                p2_before_cap, threshold, cap_hard,
+            )
+            return cap_hard
+        logger.debug(
+            "hallucination cap: p2=%.1f > threshold=%.1f → cap_moderate=%d (mild)",
+            p2_before_cap, threshold, cap_moderate,
+        )
+        return cap_moderate
 
     @staticmethod
     def normalize_tool_name(raw_name: str) -> tuple[str, bool]:
@@ -263,7 +308,7 @@ class ToolAdapterAudit:
 
         # Normalize name
         canonical, is_anomaly = ToolAdapterAudit.normalize_tool_name(
-            tool_call.get("name"),
+            tool_call.get("name") or "unknown",
         )
         audit["canonical_name"] = canonical
         audit["is_anomaly"] = is_anomaly
@@ -336,7 +381,7 @@ class ToolAdapterAudit:
 
         Returns diagnostic findings.
         """
-        diagnosis = {
+        diagnosis: dict[str, Any] = {
             "p1_score": p1_score,
             "is_hard_fail": p1_score == 0.0,
             "likely_cause": "unknown",

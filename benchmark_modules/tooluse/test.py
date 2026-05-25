@@ -78,10 +78,13 @@ def _build_rubric_override(phase2_rubric: dict[str, Any]) -> str | None:
             lines.append(f"- {dim.replace('_', ' ').title()}: {pct}%")
 
     for rubric_key, section_label in (
+        ("tool_usage", "Tool Usage"),
         ("factuality", "Factuality"),
         ("hallucination_risk", "Hallucination Risk"),
         ("uncertainty_handling", "Uncertainty Handling"),
+        ("url_precision", "URL Precision"),
         ("language_consistency", "Language Consistency"),
+        ("search_strategy", "Search Strategy"),
     ):
         section = phase2_rubric.get(rubric_key, {})
         if not section:
@@ -154,7 +157,7 @@ TOOL_SCHEMA_HTTP_FETCH: dict[str, Any] = {
         "max_chars": {
             "type": "integer",
             "description": "Maximale Zeichenanzahl des Ergebnisses",
-            "default": 500,
+            "default": 3000,
         },
     },
 }
@@ -429,9 +432,10 @@ class ToolUseTest(BaseTest):
             logger.warning("LLM Judge unavailable for tooluse; using rule-based P2", exc_info=True)
             result.data["judge_fallback"] = True
 
-        # Hallucination cap — config-first, aus scoring.yaml tool_use.hallucination.cap_hard
+        # Hallucination cap — zweistufig: Schwere bestimmt sich am P2 vor der Kappung.
+        # P2 <= threshold_severe → cap_hard (Fabrication); > threshold → cap_moderate (mild).
         if hallucination_detected and judge_result is not None:
-            hal_cap = float(ToolAdapterAudit.load_hallucination_cap())
+            hal_cap = float(ToolAdapterAudit.load_hallucination_cap_tiered(p2))
             p2 = min(p2, hal_cap)
 
         # Determine if tool call was valid (used for combined score guardrail)
@@ -568,18 +572,29 @@ def _parse_tool_call(text: str) -> tuple[dict[str, Any] | None, str | None]:
 
 
 def _call_mcp_tool(base_url: str, tool_name: str, params: dict[str, Any]) -> dict[str, Any]:
-    """POST to MCP server. Returns transcript dict. Never raises."""
-    endpoint = f"{base_url}/tools/{tool_name}"
-    body = json.dumps(params).encode("utf-8")
+    """POST JSON-RPC 2.0 tools/call to MCP server. Returns transcript dict. Never raises."""
+    body = json.dumps({
+        "jsonrpc": "2.0",
+        "id": 1,
+        "method": "tools/call",
+        "params": {
+            "name": tool_name,
+            "arguments": params,
+        },
+    }).encode("utf-8")
     req = urllib.request.Request(
-        endpoint,
+        base_url,
         data=body,
         method="POST",
         headers={"Content-Type": "application/json"},
     )
     try:
         with urllib.request.urlopen(req, timeout=15) as resp:
-            return json.loads(resp.read().decode("utf-8"))
+            rpc_response = json.loads(resp.read().decode("utf-8"))
+        if "error" in rpc_response:
+            err = rpc_response["error"]
+            return {"status": "error", "status_code": err.get("code"), "error": err.get("message", "JSON-RPC error")}
+        return rpc_response.get("result", {})
     except urllib.error.HTTPError as exc:
         return {"status": "error", "status_code": exc.code, "error": str(exc)}
     except urllib.error.URLError as exc:
