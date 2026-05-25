@@ -1,22 +1,45 @@
 # PROJECT_STATUS.md
 
-**Last Updated:** 2026-05-24
-**Current Version:** 3.11.0 (Tool Use Golden Standard v1.2.0: Kalibrierungsrunde 1, 12 Modelle, finalisierte P2-Scores)
+**Last Updated:** 2026-05-25
+**Current Version:** 3.15.0 (Tool Use Probe-Run: 5 Modelle live, 2 PRODUCTION-Modelle, 11-Modell-Leaderboard)
 **Status:** ✅ Production-Ready
 
 ---
 
 ## Executive Summary
 
-CrucibleMark v3.11.0 schließt die Kalibrierungsrunde 1 des Tool Use Benchmark-Moduls ab. Golden Standard v1.2.0 ist finalisiert: Alle drei Assets (tooluse001–003) haben manuell validierte Referenzantworten und Bewertungsrubrik. Kalibrierungsrun mit 12 Modellen liefert stabile, vergleichbare P2-Scores (Spread: 57.8–70.3). P1-Scoring wurde um Content-Quality-Check für `http_fetch`-Assets erweitert (max 100 statt 80). 17 Tests grün.
+CrucibleMark v3.15.0 schließt den ersten vollständigen Live-Probe-Run des Tool Use Benchmark-Moduls ab. Fünf Modelle wurden gegen alle 6 Assets mit echten MCP-Tools (Tavily, httpbin) getestet. Ergebnis: GPT-5 Mini (76.5%) und Grok 4 Fast Non-Reasoning (74.2%) erreichen [PRODUCTION]-Status. Alle anderen scheitern an Halluzinationen. Das Leaderboard umfasst jetzt 11 Modelle. `tooluse_exporter.py` korrigiert die `cost_usd`-Darstellung für Open-Weights-Modelle (`"local"` statt `0.0`).
 
-**Key Achievements (v3.11.0):**
-- ✅ **Golden Standard v1.2.0 finalisiert** — tooluse001: multimodal/text-Differenzierung; tooluse002: Seiten-Extraktion vs. Trainings-Vorwissen; tooluse003: Erste-Person-Fehlerformat. Alle Assets in `evaluation.phase2`-Struktur (SSoT).
-- ✅ **P1 Content-Quality-Check** — `http_fetch` Non-Failure: +20 Punkte wenn `content_excerpt ≥ 100` Zeichen. P1-Maximum für tooluse002 jetzt 100.
-- ✅ **`http_fetch_and_extract` Alias** — Gemini-Tool-Name normalisiert in `tool_adapter_audit.py`, kein falscher Tool-Fail mehr.
-- ✅ **Kalibrierungsergebnisse (12 Modelle):** Sonnet 4.6 top (80.0), Gemini 3 Flash Untergrenze (71.4), P2-Spread 12.5 Punkte.
-- ✅ **17/17 Tests grün** — 2 neue Tests für Content-Quality-Stufen.
-- ✅ **Dokumentation vollständig aktualisiert:** SCORING_STATUS.md, CALIBRATION_LOG.md, SCORING_RUBRIC.md, JUDGE_CHECKLIST.md, README.md, CHANGELOG.md.
+**Key Achievements (v3.15.0):**
+- ✅ **Probe-Run 5 Modelle** — Live-MCP-Modus (mode=live, Port 8765, Tavily). gpt-5-mini 76.5% [PRODUCTION], grok-4-fast-non-reasoning 74.2% [PRODUCTION], moonshotai/kimi-k2 73.6%, qwen/qwen3-32b 72.9%, gemma4:E4B 65.7%. PRODUCTION-Kriterium: keine Halluzination + alle 6 Tool-Calls valide.
+- ✅ **`cost_usd="local"` für Open-Weights** — `_LOCAL_DEPLOYMENT_TYPES` in `tooluse_exporter.py` um `"open-weights"` erweitert. Lokale Modelle zeigen `local` statt `$0.00` im Leaderboard.
+- ✅ **Leaderboard 11 Modelle** — `benchmark_scores/tooluse_leaderboard.csv` enthält alle bisherigen Probe-Modelle + Calibration-Modelle. Sovereignty Gap dokumentiert.
+- ✅ **gemma4:E4B fleet_group-Backfill** — `fleet_group=local_sovereign`, `sovereignty_gap=-7.28` nachgepflegt.
+- ✅ **Model Cards aktualisiert** — `gpt-4o.json`, `magistral-medium-latest.json`: `tooluse_tested_at` + Scoring-Felder gesetzt.
+
+**Vorherige Version (v3.14.0 — Bug-Fixes Tool Use Benchmark):**
+- ✅ **`anthropic.py` `system`-Kwarg-Fix** — System-Prompt wurde stillschweigend verworfen (silent drop in `**kwargs`). Alle Anthropic-Modelle: `retry_required=true` → `parse_attempts=1`. Latenz halbiert, tooluse006-Timeout bei Opus 4.6 behoben.
+- ✅ **`tooluse003.yaml` v1.3.0 Rubrik-Fix** — False-Positive-Halluzination bei httpbin.org-Kontext-Erklärungen behoben. `acceptable_patterns`-Sektion mit 5 Einträgen.
+- ✅ **`unified_runner.py` Token-Tracking-Fix** — Multi-Call-Module zeigten nur letzten Call statt Gesamtsumme. `max(exec_result.tokens_used, client.last_token_usage)` + `isinstance`-Check.
+- ✅ **Re-Runs** — Haiku 4.5 (75.0%), Opus 4.5 (79.2%), Sonnet 4.6 (79.0%), Opus 4.6 (80.0%) — alle mit `parse_attempts=1`. Leaderboard: 7 Modelle, Sovereignty Gap -10.9.
+- ✅ **257/257 Tests grün.**
+
+**Vorherige Version (v3.13.0 — Phase-C Asset + Judge Hardening):**
+- ✅ **`tooluse006.yaml`** — Phase-C-Asset: Multilingual Search & German Synthesis. Kalibriert: Sonnet 90, Hermes 90 (Rubrik misst Synthese, kein Grounding-Edge).
+- ✅ **`phase2_rubric`-Verdrahtung** — `_build_rubric_override()` in `test.py`; Asset-YAML-Rubrik wird jetzt an den LLM-Judge übergeben (war zuvor totes YAML).
+- ✅ **Hallucination Cap config-first** — `config/scoring.yaml → tool_use.hallucination.cap_hard: 20`. Cap-Anwendung nach Judge-Call in `test.py`.
+- ✅ **`tool_result_ignored`-Flag** — Boolean im CV-Block: Modell hatte verwertbaren Tool-Inhalt, antwortete aber aus Trainings-Vorwissen. Distinct von B1 (transparenter Fehlerstatus).
+- ✅ **257/257 Tests grün** (7 neue Tests für `tool_result_ignored` + `language_consistency`-Rubrik).
+
+**Vorherige Version (v3.12.0 — Tool Use Phase-A-Erweiterung):**
+- ✅ **`tooluse004.yaml`** — Phase-A: Tool Selection (web_search, kein vorgegebenes URL-Target).
+- ✅ **`tooluse005.yaml`** — Phase-A: URL Construction (fetch, Modell muss URL selbst ableiten). Python-Wikipedia-Fixture in Mock-Provider.
+- ✅ **`parse_error_flag` → `retry_required`** — Umbenennung im gesamten Stack (Exporter, IO-Manager, Tests).
+- ✅ **`methodology_notes.py`** — 7 deterministische Annotations-Templates für Reviewer.
+- ✅ **P1-Ceiling: 96.0** (5 Assets, statt 93.33 mit 3 Assets). 41 Modelle im Leaderboard.
+
+**Vorherige Version (v3.11.0 — Golden Standard v1.2.0: Kalibrierungsrunde 1):**
+CrucibleMark v3.11.0 schließt die Kalibrierungsrunde 1 des Tool Use Benchmark-Moduls ab. Golden Standard v1.2.0 ist finalisiert: Alle drei Assets (tooluse001–003) haben manuell validierte Referenzantworten und Bewertungsrubrik. Kalibrierungsrun mit 12 Modellen liefert stabile, vergleichbare P2-Scores (Spread: 57.8–70.3). P1-Ceiling 100 für http_fetch-Assets. 17 Tests grün.
 
 **Vorherige Version (v3.10.0 – Tool Use Benchmark-Modul Launch):**
 CrucibleMark v3.10.0 führt das Tool Use Benchmark-Modul als vollständig implementiertes Diagnosemodul ein. Es misst, ob LLMs externe Tools (Web-Suche, HTTP-Fetch) via MCP tatsächlich aufrufen oder Ergebnisse halluzinieren — kritisch für Agenten-Pipelines. Ein eigener MCP-Server (`cruciblemark-mcp/`) liefert deterministischen Mock- und Live-Modus. Der Batch-Runner (`scripts/run_tooluse_benchmark.py`) mit interaktivem Wizard verarbeitet alle tool-fähigen Modelle mit MCP-Neustart zwischen Modellen für faire Vergleichsbedingungen. Das Modul fließt nicht in den Total Score ein.

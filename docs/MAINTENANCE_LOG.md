@@ -5,6 +5,81 @@
 
 ---
 
+## v3.15.0 — Tool Use Probe-Run 5 Modelle (2026-05-25)
+
+**Status:** Abgeschlossen
+
+### 1. `tooluse_exporter.py` — `cost_usd="local"` für Open-Weights
+
+`_LOCAL_DEPLOYMENT_TYPES` enthielt `{"localweights", "open-weights-cloud-available"}`.
+Modelle mit `deployment_type: "open-weights"` (lokal via Ollama, z. B. gemma4:E4B) wurden
+numerisch als `0.0` ausgewiesen — korrekt mathematisch, aber semantisch irreführend.
+
+**Fix:** `"open-weights"` als dritten Typ in `_LOCAL_DEPLOYMENT_TYPES` aufgenommen.
+`cost_usd`-Spalte im Leaderboard zeigt jetzt `"local"` für alle lokalen Deployment-Typen.
+
+### 2. Probe-Run Ergebnisse (5 Modelle, mode=live)
+
+Live-Benchmark gegen echte MCP-Tools (Tavily web_search + httpbin http_fetch):
+
+| Modell | Combined | P1 | P2 | Halluz. | Empfehlung |
+|---|---|---|---|---|---|
+| gpt-5-mini | 76.5% | 90.0 | 63.3 | Nein | [PRODUCTION] |
+| grok-4-fast-non-reasoning | 74.2% | 86.7 | 63.3 | Nein | [PRODUCTION] |
+| moonshotai/kimi-k2 | 73.6% | 89.2 | 58.3 | Ja (2×) | [NOT_RECOMMENDED] |
+| qwen/qwen3-32b | 72.9% | 90.0 | 58.3 | Ja (2×) | [NOT_RECOMMENDED] |
+| gemma4:E4B | 65.7% | 86.7 | 45.8 | Ja (1×) | [NOT_RECOMMENDED] |
+
+PRODUCTION-Kriterium: keine Halluzination + alle 6 Tool-Calls valide.
+Leaderboard: 11 Modelle (inkl. Calibration-Run-Modelle).
+
+### 3. gemma4:E4B fleet_group-Backfill
+
+`fleet_group` war nicht gesetzt — Bug aus früherer Session. Manuell backfilled:
+`fleet_group=local_sovereign`, `sovereignty_gap=-7.28` (local_avg 65.7 − all_avg 73.0).
+
+---
+
+## v3.14.0 — Bug-Fixes Tool Use Benchmark (2026-05-25)
+
+**Status:** Abgeschlossen
+
+### 1. `utils/providers/anthropic.py` — `system`-Kwarg Silent Drop
+
+**Problem:** `system`-Parameter in `call_with_retry(**kwargs)` wurde nicht aus `**kwargs`
+extrahiert, sondern blind weitergereicht. Anthropic-API ignoriert unbekannte Kwargs — der
+System-Prompt wurde bei jedem Call verworfen. Konsequenz: Judge ohne Kontext, alle
+Anthropic-Modelle mit `retry_required=true` (2 Parse-Versuche statt 1), Latenz verdoppelt,
+tooluse006 bei Opus 4.6 in Timeout.
+
+**Fix:** `func_kwargs["system"] = kwargs.get("system")` vor dem Temperature-Check eingefügt.
+Re-Runs (--force): Haiku 4.5 = 75.0%, Opus 4.5 = 79.2%, Sonnet 4.6 = 79.0%,
+Opus 4.6 = 80.0% — alle mit `parse_attempts=1`.
+
+### 2. `tooluse003.yaml` v1.3.0 — Rubrik False-Positive für httpbin.org-Kontext
+
+**Problem:** `uncertainty_handling.unacceptable` enthielt keine `acceptable_patterns`.
+Modelle, die korrekt den httpbin.org-Testkontext erläuterten (z. B. "httpbin.org ist ein
+HTTP-Test-Service, der bewusst 404 zurückgibt"), erhielten `hallucination_detected=true`.
+
+**Fix:** `acceptable_patterns`-Sektion mit 5 erlaubten Erklärungstypen:
+- httpbin.org als HTTP-Test-Service
+- Intentionale 404 für Debugging-Zwecke
+- Kein echter Ressourcenfehler
+- Testumgebung-Kontext
+- Simulations-/Diagnosezweck
+
+### 3. `scripts/core/unified_runner.py` — Token/Cost-Tracking für Multi-Call-Module
+
+**Problem:** `last_token_usage` speicherte nur den letzten API-Call. Tool-Use-Assets
+bestehen aus zwei LLM-Calls (Tool-Call + Synthesis). Audit-Log-Header zeigte z. B.
+3165 statt 11683 Token.
+
+**Fix:** `max(exec_result.tokens_used, client.last_token_usage)` — nimmt den höheren Wert.
+`isinstance`-Check verhindert `MagicMock`-Vergleichsfehler in Unit-Tests.
+
+---
+
 ## v3.13.0 — Phase-C Asset + Judge Hardening (2026-05-25)
 
 **Status:** Abgeschlossen

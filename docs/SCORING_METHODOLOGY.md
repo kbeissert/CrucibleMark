@@ -476,5 +476,10 @@ v3.4.2 (2026-04-09): Vollständige Preis-Datenbasis in cost_limits.yaml; LLM Jud
 v3.4.3 (2026-04-10): module_weight-System — selbstnormierende Modulgewichtung entkoppelt Total Score von Asset-Anzahl; CLI-Modul als Supplement (0.5) ✅
 v3.5.7 (2026-04-23): SSoT resolve_token_budget(), gemini-2.5 Reasoning-Trigger, Judge-Verbosity-Penalty für Reasoning-Modelle, Refusal-Dokumentationsfelder ✅
 v3.7.5 (2026-05-22): Pricing SSoT Migration — Preise von cost_limits.yaml in Model Cards verlagert (input_price_per_1m / output_price_per_1m, per 1M Tokens). score_calculator.py und cost_tracker.py lesen Cards als primäre Preisquelle; cost_limits.yaml als Legacy-Fallback für Modelle ohne Card ✅
-v3.10.0 (2026-05-25): Tool-Use-Modul Tier-2 — Content-Verification-Framework (States A/B1/B2/C), config-first Halluzinations-Cap, phase2_rubric-Verdrahtung via rubric_override, tool_result_ignored-Flag als neue Diagnose-Dimension ✅
+v3.10.0 (2026-05-23): Tool-Use-Modul Launch — Zwei-Phasen-Scoring (P1 Tool Execution + P2 Synthesis), Hallucination Penalty, Sovereignty Gap, Fleet-Gruppen ✅
+v3.11.0 (2026-05-24): Golden Standard v1.2.0 — manuelle Referenzantworten + Bewertungsrubrik für tooluse001–003; P1-Content-Quality-Check für http_fetch-Assets; Kalibrierungsrunde 1 (12 Modelle) ✅
+v3.12.0 (2026-05-24): Phase-A-Assets (tooluse004 Tool Selection, tooluse005 URL Construction); parse_error_flag → retry_required; methodology_notes.py; P1-Ceiling 96.0 ✅
+v3.13.0 (2026-05-25): Phase-C tooluse006 (Multilingual Synthesis); phase2_rubric-Verdrahtung via rubric_override; config-first Halluzinations-Cap (scoring.yaml cap_hard=20); tool_result_ignored-Flag (content_usable=True + state=B2) ✅
+v3.14.0 (2026-05-25): anthropic.py system-Kwarg-Fix (Silent Drop → alle Anthropic-Modelle retry_required=false); tooluse003 Rubrik-False-Positive behoben; unified_runner.py Token-Tracking Multi-Call-Fix ✅
+v3.15.0 (2026-05-25): Probe-Run 5 Modelle live (mode=live, Tavily); cost_usd="local" für open-weights Deployment-Typ; Leaderboard 11 Modelle; PRODUCTION: gpt-5-mini (76.5%), grok-4-fast (74.2%) ✅
 ```

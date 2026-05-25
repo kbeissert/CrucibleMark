@@ -4,6 +4,73 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [v3.15.0] - 2026-05-25
+
+### Added
+- **Tool Use Probe-Run — 5 Modelle live** — Erster vollständiger 6-Asset-Durchlauf im `mode=live` gegen echte MCP-Tools (Tavily web_search + http_fetch). Getestete Modelle: gpt-5-mini (76.5% — [PRODUCTION]), grok-4-fast-non-reasoning (74.2% — [PRODUCTION]), moonshotai/kimi-k2 (73.6%), qwen/qwen3-32b (72.9%), gemma4:E4B (65.7%). PRODUCTION-Kriterium: keine Halluzination + alle 6 Tool-Calls valide. Leaderboard auf 11 Modelle erweitert.
+
+### Changed
+- **`scripts/core/tooluse_exporter.py` — `cost_usd="local"`** — `_LOCAL_DEPLOYMENT_TYPES` um `"open-weights"` erweitert. Modelle mit diesem `deployment_type` erhalten `cost_usd="local"` im Leaderboard statt `0.0` (numerisch). Verhindert Fehlinterpretation als "kostenlos via API".
+- **`benchmark_scores/model_cards/gemma4:E4B`** — `fleet_group=local_sovereign`, `sovereignty_gap=-7.28` backfilled. War durch einen Bug nicht gesetzt worden.
+- **Model Cards `gpt-4o.json`, `magistral-medium-latest.json`** — `tooluse_tested_at` und Scoring-Felder aus Re-Runs gesetzt.
+
+---
+
+## [v3.14.0] - 2026-05-25
+
+### Fixed
+- **`utils/providers/anthropic.py` — `system`-Kwarg-Bug** — `system`-Feld wurde aus `**kwargs` nicht explizit extrahiert und beim API-Call stillschweigend verworfen. Alle Anthropic-Modelle benötigten 2 Parse-Versuche statt 1 (`retry_required=true`), Latenz verdoppelt, tooluse006 lief bei Opus 4.6 in Timeout. Fix: `func_kwargs["system"] = kwargs.get("system")` vor Temperature-Check. Re-Runs (--force): Haiku 4.5=75.0, Opus 4.5=79.2, Sonnet 4.6=79.0, Opus 4.6=80.0 — alle `parse_attempts=1`.
+- **`benchmark_modules/tooluse/assets/tooluse003.yaml` v1.3.0 — Rubrik False-Positive** — `uncertainty_handling.unacceptable` hatte keine `acceptable_patterns` für httpbin.org-Kontext-Erklärungen. Judge erkannte korrekte HTTP-Status-Erklärungen als Halluzination. Fix: `acceptable_patterns`-Sektion mit 5 explizit erlaubten Erklärungstypen.
+- **`scripts/core/unified_runner.py` — Token/Cost-Tracking** — `last_token_usage` (nur letzter API-Call) durch `max(exec_result.tokens_used, client.last_token_usage)` ersetzt. Multi-Call-Module (z. B. Tool Use mit zwei LLM-Calls) zeigten nur Tokens des letzten Calls im Audit-Log-Header statt der Gesamtsumme. `isinstance`-Check verhindert `MagicMock`-Vergleichsfehler in Tests.
+
+### Test Coverage
+- 257/257 Tests grün nach allen Fixes.
+
+---
+
+## [v3.13.0] - 2026-05-25
+
+### Added
+- **`tooluse006.yaml` — Phase C: Multilingual Search & German Synthesis** — Sechstes Asset: Modell recherchiert via `web_search` internationale Handelsperspektiven und synthetisiert auf Deutsch — auch bei englischsprachigen Search-Results. Dimension: Sprachübergreifende Synthese. Kalibrierung: Sonnet 90/100, Hermes 90/100 nach Rubrik-Fix.
+- **`phase2_rubric`-Verdrahtung** — `_build_rubric_override()` in `benchmark_modules/tooluse/test.py` serialisiert Asset-YAML-Rubrik zu strukturiertem Text → `rubric_override`-Parameter in `runner.score()`. Rubrik war zuvor totes YAML — Judge ignorierte es.
+- **Hallucination Cap config-first** — `config/scoring.yaml → tool_use.hallucination.cap_hard: 20`. `ToolAdapterAudit.load_hallucination_cap()` liest Cap aus Config (Default 20 bei Fehler). `test.py`: nach Judge-Call `if hallucination_detected: p2 = min(p2, float(hal_cap))`.
+- **`tool_result_ignored`-Flag im CV-Block** — Boolean: `true` wenn `content_usable=True` + `state="B2"`. Semantik: Modell hatte verwertbaren Tool-Inhalt, antwortete aber trotzdem aus Trainings-Vorwissen. Distinct von B1 (Modell war transparent über die Lücke).
+
+### Fixed
+- **`tooluse002`-Rubrik False-Positive** — `uncertainty_handling.unacceptable` enthielt "Fakten hinzufügen die nicht im Fixture stehen". Korrigiert auf "faktisch falsche Angaben" — korrekte Parameterwissen-Ergänzungen sind explizit erlaubt.
+
+### Documentation
+- `docs/SCORING_METHODOLOGY.md` — vollständige Tool-Use-Sektion (Content-Verification-Framework, config-first Halluzinations-Cap, rubric_override)
+- `docs/TOOLUSE_MODULE.md` — 6 Assets, 257 Tests, Phase-C-Sektion, `tool_result_ignored`-Beschreibung
+- `docs/MAINTENANCE_LOG.md` — v3.13.0 Eintrag
+
+### Test Coverage
+- 257/257 Tests grün (7 neue Tests für `tool_result_ignored` + `language_consistency`-Rubrik).
+
+---
+
+## [v3.12.0] - 2026-05-24
+
+### Added
+- **`tooluse004.yaml` — Tool Selection (Phase A)** — Viertes Asset: `web_search` zu einem Thema ohne vorgegebene URL. Dimension: Tool-Intelligenz (Modell muss selbst entscheiden, welches Tool für die Aufgabe geeignet ist). Topic: LLM-Leaderboard-Ranking auf Hugging Face.
+- **`tooluse005.yaml` — URL Construction (Phase A)** — Fünftes Asset: `fetch` auf eine konstruierte URL. Modell muss `en.wikipedia.org`-URL korrekt ableiten und abrufen. Python-Wikipedia-Mock-Fixture (1047 chars) in `cruciblemark-mcp/tools/mock_provider.py` ergänzt.
+- **`methodology_notes.py`** — 7 deterministische Annotations-Templates für den Reviewer. Verhindert generische Hinweise ("Modell hatte Schwierigkeiten") und erzwingt präzise, asset-spezifische Diagnosen.
+
+### Changed
+- **`parse_error_flag` → `retry_required`** — Umbenennung im gesamten Stack: `ToolUseIOManager`, `ToolUseExporter`, `tooluse_leaderboard.py`, alle Tests. Semantisch präziser: beschreibt nicht den Fehler, sondern die Konsequenz (Parse-Retry notwendig).
+- **P1-Ceiling nach Erweiterung** — `(100+100+80+100+100)/5 = 96.0` (statt 93.33 mit 3 Assets). Phase-A-Assets erreichen volle 100 P1 bei korrektem Tool-Call.
+
+### Documentation
+- `README.md` — Phase-A/B-Framework erklärt (Tool-Intelligence vs. Tool-Synthesis)
+- `docs/BENCHMARK_MODULES.md` — Tool-Use Phase-A-Abschnitt mit tooluse004/005
+- `benchmark_modules/tooluse/SCORING_RUBRIC.md` v3.12.0 — P1-Tabelle korrigiert, Phase-A/B-Profile
+- `benchmark_modules/tooluse/JUDGE_CHECKLIST.md` v3.12.0 — tooluse004/005-Sektionen
+
+### Test Coverage
+- 41 Modelle im Leaderboard nach Phase-A-Integration. Alle Tests grün.
+
+---
+
 ## [v3.11.0] - 2026-05-24
 
 ### Added

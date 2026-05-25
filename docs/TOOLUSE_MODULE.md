@@ -575,7 +575,7 @@ report:
   Combined:      69.6  ███████░░░  [Moderate]
 
   ⏱  Ø Call 1:  1.1s  |  Ø MCP: 0.9s  |  Ø Call 2: 4.5s
-  ⏱  Total Run: 19.4s  (3 Assets)
+  ⏱  Total Run: 57.2s  (6 Assets)
   🔤  Tokens:   1.941  |  Cost: $0.000000
 
   Tool Calls:    ✅ 3/3 valide  (0 Retries)

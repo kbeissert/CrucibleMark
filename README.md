@@ -1,6 +1,6 @@
 # CrucibleMark
 
-[![Version](https://img.shields.io/badge/version-3.13.0-blue)](.)
+[![Version](https://img.shields.io/badge/version-3.15.0-blue)](.)
 [![Python](https://img.shields.io/badge/python-3.10%2B-blue)](.)
 [![License](https://img.shields.io/badge/license-MIT-green)](.)
 [![Status](https://img.shields.io/badge/status-production--ready-brightgreen)](.)
@@ -136,7 +136,7 @@ make clean-model MODEL="mistral-large-2411" DRY=1 # Vorschau (kein Löschen)
 
 Viele der einst geplanten Fundamental-Features (wie *Reasoning*, *Cultural Intelligence* und tiefe *Sicherheitsarchitekturen*) sind im Core implementiert. So geht es als Nächstes weiter:
 
-- [ ] **Agentic Workflow Benchmarks:** Native Tests für Multi-Step Tool-Usage (Welches Modell plant komplexe File-Edits am sichersten?).
+- [x] **Agentic Workflow Benchmarks / Tool Use:** Native Tests für Multi-Step Tool-Usage — vollständig implementiert als `tooluse`-Modul (v3.10.0+). 6 Assets, Live-MCP-Modus, PRODUCTION/NOT_RECOMMENDED-Klassifikation.
 - [ ] **Visuelles Sub-System (Multimodal):** Integration visueller Benchmarks zur Architekturanalyse (UML-Diagramm lesen, UI designen).
 - [ ] **Web-UI / Dashboard:** Eine interaktive React- oder Streamlit-Umgebung zur Visualisierung der CSV-Output-Ergebnisse und Leaderboards.
 - [ ] **Erweiterung von CI/CD System-Hooks:** Automatische Integration für GitHub Actions, um KI-Akteure in Pull Requests zu prüfen.
@@ -156,4 +156,4 @@ Tiefergehende Einblicke in die Methodik findest du im `docs/` Verzeichnis:
 
 - **Maintainer:** kbeissert
 - **Repository:** [github.com/kbeissert/cruciblemark](https://github.com/kbeissert/cruciblemark)
-- **Status:** ✅ Production-Ready (v3.8.2)
+- **Status:** ✅ Production-Ready (v3.15.0)
