@@ -24,6 +24,7 @@ _backup_old/
 # Benchmark Results (Ignore volatile/generated files)
 benchmark_scores/*.csv
 benchmark_scores/*.json
+benchmark_scores/reports/
 # Exception: Allow manually created snapshots or golden references in strict subfolders if needed
 !benchmark_scores/snapshots/
 !benchmark_scores/references/
