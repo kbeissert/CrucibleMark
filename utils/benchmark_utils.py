@@ -12,6 +12,8 @@ from typing import Any, Optional, TypeVar
 
 import yaml
 
+from utils.model_utils import normalize_model_id
+
 T = TypeVar("T")
 
 logger = logging.getLogger(__name__)
@@ -228,7 +230,7 @@ def save_audit_log(
     """
     try:
         # Create subdirectories for the model
-        safe_model = str(model).replace(":", "_").replace("/", "_")
+        safe_model = normalize_model_id(str(model)).replace(":", "_").replace("/", "_")
         model_dir = base_dir / safe_model
         model_dir.mkdir(exist_ok=True, parents=True)
 
@@ -391,7 +393,7 @@ def append_global_run_metrics(model: str, asset_ids: list[str],
     from pathlib import Path
     import re
 
-    model_safe = str(model).replace(":", "_").replace("/", "_")
+    model_safe = normalize_model_id(str(model)).replace(":", "_").replace("/", "_")
     out_dir = Path(f"outputs/audit_logs/{model_safe}")
     metrics = calculate_timeout_metrics(execution_times, timeout_count, total_tests)
 

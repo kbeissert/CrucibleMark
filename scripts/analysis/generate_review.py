@@ -31,6 +31,7 @@ from utils.model_utils import (
     get_model_size_class,
     get_model_specialization,
     get_use_case_primary,
+    normalize_model_id,
 )
 from scripts.analysis.review import (
     build_constraint_violations_summary,
@@ -553,7 +554,7 @@ def main() -> None:
     print("📁 Durchsuche Audit-Logs nach Modellen...")
     found_models = False
 
-    safe_target_model = args.model.replace(":", "_").replace("/", "_") if args.model else None
+    safe_target_model = normalize_model_id(args.model).replace(":", "_").replace("/", "_") if args.model else None
 
     _configured_safe_ids: set[str] = set()
     try:
