@@ -117,6 +117,49 @@ def clean_checkpoints(model: str = None, module_key: str = None, dry_run: bool =
                 except OSError as e:
                     print(f"     ❌ Fehler beim Löschen: {e}")
 
+def clean_tooluse_metrics_jsonl(model: str | None = None, dry_run: bool = False) -> None:
+    """Bereinigt outputs/tooluse_metrics.jsonl.
+
+    model=None  → gesamte Datei leeren (z.B. bei --module tooluse).
+    model=<id>  → nur Einträge für dieses Modell entfernen (Feld: model_id).
+    """
+    import json  # pylint: disable=import-outside-toplevel
+
+    jsonl_path = ROOT_DIR / "outputs" / "tooluse_metrics.jsonl"
+    if not jsonl_path.exists():
+        return
+
+    raw_lines = jsonl_path.read_text(encoding="utf-8").splitlines()
+    initial_count = sum(1 for l in raw_lines if l.strip())
+
+    if model is None:
+        kept: list[str] = []
+    else:
+        kept = []
+        for line in raw_lines:
+            stripped = line.strip()
+            if not stripped:
+                continue
+            try:
+                entry = json.loads(stripped)
+                if entry.get("model_id") != model:
+                    kept.append(stripped)
+            except json.JSONDecodeError:
+                kept.append(stripped)  # fehlerhafte Zeilen behalten
+
+    removed_count = initial_count - len(kept)
+    if removed_count > 0:
+        print(f"   - tooluse_metrics.jsonl: {removed_count} Einträge entfernen...")
+        if not dry_run:
+            content = "\n".join(kept) + ("\n" if kept else "")
+            jsonl_path.write_text(content, encoding="utf-8")
+            print("     ✅ Gespeichert.")
+        else:
+            print("     (Dry Run - keine Änderung)")
+    else:
+        print("   - tooluse_metrics.jsonl: Keine passenden Einträge gefunden.")
+
+
 def _norm_dir(s: str) -> str:
     """Normalisiert Model-ID oder Verzeichnisname zum Vergleich.
     Konvention: ':' und '/' → '_', Rest bleibt erhalten."""
@@ -338,10 +381,28 @@ def main():
         Path("benchmark_scores/commercial_models_benchmark.csv"),
         Path("benchmark_scores/political_compass_results.csv"),
         Path("benchmark_scores/political_compass_leaderboard.csv"),
+        Path("benchmark_scores/tooluse_leaderboard.csv"),
     ]
 
     for f in files:
         clean_csv(f, model=args.model, asset_ids=target_assets, dry_run=args.dry_run)
+
+    # tooluse_metrics.jsonl: model-basiert oder komplett (bei --module tooluse)
+    if args.model:
+        clean_tooluse_metrics_jsonl(model=args.model, dry_run=args.dry_run)
+    elif args.module == "tooluse":
+        # tooluse-Leaderboard auf Header reduzieren (alle Zeilen gehören zum Modul)
+        lb_path = Path("benchmark_scores/tooluse_leaderboard.csv")
+        if lb_path.exists():
+            import pandas as pd  # pylint: disable=import-outside-toplevel
+            header_df = pd.read_csv(lb_path).iloc[0:0]  # nur Header, keine Zeilen
+            print(f"   - tooluse_leaderboard.csv: komplette Bereinigung ({len(pd.read_csv(lb_path))} Zeilen) ...")
+            if not args.dry_run:
+                header_df.to_csv(lb_path, index=False)
+                print("     ✅ Gespeichert.")
+            else:
+                print("     (Dry Run - keine Änderung)")
+        clean_tooluse_metrics_jsonl(model=None, dry_run=args.dry_run)
 
     # Leaderboard Update triggern, wenn nicht dry run
     if not args.dry_run:

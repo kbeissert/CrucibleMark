@@ -1,5 +1,6 @@
 from typing import Optional
 import logging
+import logging.handlers
 import sys
 import yaml
 from pathlib import Path
@@ -15,6 +16,8 @@ def _load_logging_config():
         "file_path": "logs/crucible.log",
         "console_level": "INFO",
         "file_level": "DEBUG",
+        "rotation_max_bytes": 10_485_760,  # 10 MB
+        "rotation_backup_count": 5,
     }
     try:
         if CONFIG_PATH.exists():
@@ -66,8 +69,13 @@ def setup_logging(log_file: Optional[Path] = None):
     )
     console_format = logging.Formatter("%(message)s")
 
-    # 1. File Handler (Detailliert, speichert Warnungen/Errors von Libraries)
-    file_handler = logging.FileHandler(log_file, encoding="utf-8", mode="a")
+    # 1. File Handler — RotatingFileHandler (max 10 MB, 5 Backups = max. 50 MB gesamt)
+    max_bytes = int(config.get("rotation_max_bytes", 10_485_760))
+    backup_count = int(config.get("rotation_backup_count", 5))
+    file_handler = logging.handlers.RotatingFileHandler(
+        log_file, maxBytes=max_bytes, backupCount=backup_count,
+        encoding="utf-8",
+    )
     file_handler.setLevel(file_level)
     file_handler.setFormatter(file_format)
     root_logger.addHandler(file_handler)

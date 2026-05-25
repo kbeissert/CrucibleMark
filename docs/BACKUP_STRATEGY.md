@@ -187,22 +187,20 @@ for model_dir in Path('outputs/runs').iterdir():
 
 #### `consolidate_csv.py`
 
+Verarbeitet alle Benchmark- und Leaderboard-CSVs. Schlüsselspalten je nach Dateiart:
+
+| Datei | Deduplizierungs-Schlüssel |
+|---|---|
+| `*_models_benchmark.csv` (3×) | `model` + `asset_id` |
+| `tooluse_leaderboard.csv` | `model` |
+
 ```python
-import pandas as pd
-
-df = pd.read_csv('benchmark_scores/local_models_benchmark.csv')
-
-# Sortiere nach Timestamp (neueste zuerst)
+# Benchmark-CSVs: neueste Zeile pro (Modell, Asset) behalten
 df_sorted = df.sort_values('timestamp', ascending=False)
+df_latest = df_sorted.drop_duplicates(subset=['model', 'asset_id'], keep='first')
 
-# Behalte nur neueste Zeile pro (Model, Asset)
-df_latest = df_sorted.drop_duplicates(
-    subset=['model', 'asset_id'],
-    keep='first'
-)
-
-# Überschreibe Original
-df_latest.to_csv('benchmark_scores/local_models_benchmark.csv', index=False)
+# tooluse_leaderboard.csv: neueste Zeile pro Modell behalten
+df_latest = df_sorted.drop_duplicates(subset=['model'], keep='first')
 ```
 
 ---
