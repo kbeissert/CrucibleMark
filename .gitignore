@@ -70,6 +70,9 @@ memory-bank/
 .temp_prompt.yaml
 last_failed_raw.txt
 
+# Internes Refactoring-Backlog — nicht öffentlich
+REF_TODO.md
+
 # Lokale AI-Assistent-Konfiguration
 .clinerules/
 .prompts/

@@ -136,96 +136,183 @@ logging:
 
 ---
 
-## 6. Tool-Referenz
+## 6. Protokoll: JSON-RPC 2.0
 
-### `POST /tools/web_search`
+Der Server implementiert das **Model Context Protocol (MCP)** über JSON-RPC 2.0. Er verhält
+sich protokollidentisch zu einem echten MCP-Server wie Claude Desktop oder der VS Code
+MCP-Extension — inklusive `initialize`-Handshake, `tools/list` und `tools/call`. Das ist
+kein benutzerdefiniertes REST-API, sondern der offizielle Standard.
 
-**Request:**
+Alle Requests gehen an einen einzigen POST-Endpunkt (`http://localhost:8765/`).
+Der Health-Check bleibt als `GET /health` für interne Nutzung erhalten.
+
+### Unterstützte JSON-RPC Methoden
+
+| Methode | Beschreibung |
+|---|---|
+| `initialize` | Verbindungsaufbau; gibt `protocolVersion`, `capabilities`, `serverInfo` zurück |
+| `notifications/initialized` | Client-Bestätigung nach `initialize` — keine Antwort nötig (204) |
+| `tools/list` | Gibt die Tool-Definitionen mit `inputSchema` zurück |
+| `tools/call` | Führt ein Tool aus; `params.name` + `params.arguments` |
+
+Unbekannte Methoden und Tools antworten mit dem JSON-RPC Standardfehler:
+```json
+{"jsonrpc": "2.0", "id": 1, "error": {"code": -32601, "message": "Method not found: xyz"}}
+```
+
+### Beispiel-Kommunikation
+
+```bash
+# Tool-Liste abfragen
+curl -s -X POST http://localhost:8765/ \
+  -H 'Content-Type: application/json' \
+  -d '{"jsonrpc":"2.0","id":1,"method":"tools/list","params":{}}'
+
+# web_search ausführen
+curl -s -X POST http://localhost:8765/ \
+  -H 'Content-Type: application/json' \
+  -d '{"jsonrpc":"2.0","id":2,"method":"tools/call",
+       "params":{"name":"web_search","arguments":{"query":"llm benchmarks","max_results":3}}}'
+
+# fetch ausführen
+curl -s -X POST http://localhost:8765/ \
+  -H 'Content-Type: application/json' \
+  -d '{"jsonrpc":"2.0","id":3,"method":"tools/call",
+       "params":{"name":"fetch","arguments":{"url":"https://huggingface.co/","max_length":2000}}}'
+```
+
+---
+
+## 7. Tool-Referenz
+
+Die Tool-Definitionen orientieren sich am Anthropic MCP-Standard. `fetch` ist
+**1:1 identisch** mit `@modelcontextprotocol/server-fetch` (Referenzimplementierung) —
+inklusive Parameternamen. Modelle, die mit echten MCP-Servern trainiert wurden, kennen
+exakt diese Parameter.
+
+### `web_search`
+
+**Request-Parameter** (`params.arguments`):
 ```json
 {
-  "query": "string",
+  "query": "string (Pflicht)",
   "max_results": 3
 }
 ```
 
-**Response (success):**
+**Result** (im Feld `result` des JSON-RPC Response):
 ```json
 {
   "status": "success",
   "results": [
-    {
-      "url": "https://...",
-      "title": "string",
-      "excerpt": "string (max 300 Zeichen)"
-    }
+    {"url": "https://...", "title": "string", "excerpt": "string (max 300 Zeichen)"}
   ],
+  "content": [{"type": "text", "text": "Ergebnis 1: ..."}],
+  "isError": false,
   "request_id": "uuid-v4",
-  "provider": "duckduckgo",
+  "provider": "tavily",
   "timestamp": "2024-01-01T00:00:00+00:00"
-}
-```
-
-**Response (error):**
-```json
-{
-  "status": "error",
-  "results": [],
-  "request_id": "uuid-v4",
-  "provider": "duckduckgo",
-  "timestamp": "..."
 }
 ```
 
 ---
 
-### `POST /tools/fetch`
+### `fetch`
 
-**Request:**
-```json
-{
-  "url": "https://huggingface.co/",
-  "max_chars": 500
-}
-```
+`fetch` entspricht der offiziellen Anthropic-Referenzimplementierung
+`@modelcontextprotocol/server-fetch`. Die Parameternamen sind identisch — Modelle, die
+mit Claude Desktop oder der VS Code MCP-Extension trainiert wurden, senden exakt
+diese Felder.
 
-**Response (success):**
+**Request-Parameter** (`params.arguments`):
+
+| Parameter | Typ | Pflicht | Default | Beschreibung |
+|---|---|---|---|---|
+| `url` | string | ✓ | — | Ziel-URL |
+| `max_length` | integer | — | 5000 | Max. Zeichen im Content |
+| `start_index` | integer | — | 0 | Startposition (Pagination für große Seiten) |
+| `raw` | boolean | — | false | Rohen HTML-Content statt aufbereitetem Text |
+
+**Result**:
 ```json
 {
   "status": "success",
   "status_code": 200,
-  "content_excerpt": "string (max max_chars Zeichen)",
+  "content_excerpt": "string (max 200 Zeichen Vorschau)",
+  "content": [{"type": "text", "text": "Vollständiger extrahierter Text..."}],
+  "isError": false,
   "source_url": "https://...",
   "request_id": "uuid-v4",
-  "timestamp": "..."
+  "timestamp": "2024-01-01T00:00:00+00:00"
 }
 ```
 
 **Fehlerstatus:**
 
-| `status`  | `status_code` | Bedeutung                                 |
-|-----------|---------------|-------------------------------------------|
-| `success` | 200           | Inhalt erfolgreich abgerufen              |
-| `error`   | 404, 403, ... | HTTP-Fehler vom Ziel-Server               |
-| `blocked` | `null`        | Domain nicht in Whitelist — kein Netzaufruf |
-
-Bei `error` und `blocked` ist `content_excerpt` immer `null`.
+| `status` | `status_code` | Bedeutung |
+|---|---|---|
+| `success` | 200 | Inhalt erfolgreich abgerufen |
+| `error` | 404, 403, ... | HTTP-Fehler vom Ziel-Server |
+| `blocked` | `null` | Domain nicht in Whitelist — kein Netzaufruf |
 
 ---
 
 ### `GET /health`
 
-**Response:**
 ```json
-{
-  "status": "ok",
-  "mode": "mock",
-  "version": "1.0.0"
-}
+{"status": "ok", "mode": "mock", "version": "1.0.0"}
 ```
 
 ---
 
-## 7. Whitelist-Policy
+## 8. Tool-Name-Normalisierung
+
+Modelle, die auf unterschiedlichen MCP-Umgebungen fine-getuned wurden, können alternative
+Tool-Namen verwenden (z. B. `http_fetch` statt `fetch`). Der Benchmark normalisiert bekannte
+Varianten automatisch in `benchmark_modules/tooluse/core/tool_adapter_audit.py` und markiert
+sie als `is_anomaly = True` im Audit-Log — statt in einem `parse_error` zu enden.
+
+| Kanonischer Name | Akzeptierte Varianten |
+|---|---|
+| `web_search` | `web_search`, `web.search`, `search` |
+| `fetch` | `fetch`, `http_fetch`, `fetch_url`, `get_url`, `web_fetch`, `url_fetch`, `read_url` |
+
+Ein Modell, das `http_fetch` aufruft, läuft korrekt durch — mit `is_anomaly`-Flag.
+Ein völlig unbekannter Name (z. B. `tavily_search`) landet in einem `parse_error` — das
+ist ein valides Benchmark-Signal für fehlende Tool-Conformance.
+
+---
+
+## 9. Idle-Timeout: Auto-Shutdown bei Inaktivität
+
+Der Server beendet sich automatisch, wenn er für eine konfigurierbare Zeitspanne keine
+Anfragen erhalten hat — analog zu Ollamas Modell-Unloading nach Inaktivität. Das verhindert
+verwaiste Hintergrundprozesse und offene Ports nach Benchmark-Runs.
+
+**Verhalten:**
+- Jede eingehende Anfrage (Health-Check, `tools/list`, `tools/call`) setzt den Timer zurück
+- Watchdog-Thread prüft alle `idle_timeout / 5` Sekunden (mind. 2 s, max. 30 s)
+- Bei Ablauf: sauberes `server.shutdown()` → PID-File wird gelöscht → Port freigegeben
+- Benchmark-Runs laufen durch: `_call_mcp_tool()` schickt bei jedem Asset eine Anfrage
+
+**Konfiguration:**
+
+```yaml
+# cruciblemark-mcp/config/mcp_config.yaml
+server:
+  idle_timeout_seconds: 300  # 5 Minuten (Standard)
+  # 0 = deaktiviert — Server läuft bis manueller Stop
+```
+
+```bash
+# CLI-Override (hat Vorrang vor YAML)
+.venv/bin/python cruciblemark-mcp/server.py --idle-timeout 600   # 10 Minuten
+.venv/bin/python cruciblemark-mcp/server.py --idle-timeout 0     # deaktiviert
+```
+
+---
+
+## 10. Whitelist-Policy
 
 Die Whitelist in `mcp_config.yaml` definiert, welche Domains über `http_fetch` erreichbar sind. Jede Anfrage an eine nicht gelistete Domain wird sofort mit `status: "blocked"` abgelehnt, ohne Netzaufruf.
 
@@ -243,31 +330,31 @@ Die Whitelist in `mcp_config.yaml` definiert, welche Domains über `http_fetch` 
 
 ---
 
-## 8. Logging
+## 11. Logging
 
 Jeder Tool-Call schreibt einen JSON-Eintrag in `logs/mcp_server.log` (relativ zum Projekt-Root).
 
 **Format:**
 ```
-2024-01-01T12:00:00 INFO {"request_id": "...", "timestamp": "...", "tool_type": "web_search", "status": "success", "provider": "duckduckgo", "query": "..."}
+2024-01-01T12:00:00 INFO {"request_id": "...", "timestamp": "...", "tool_type": "web_search", "status": "success", "provider": "tavily", "query": "..."}
 ```
 
 **Felder:**
 
-| Feld         | Beschreibung                              |
-|--------------|-------------------------------------------|
-| `request_id` | UUID-v4, eindeutig pro Call               |
-| `timestamp`  | ISO8601 UTC                               |
-| `tool_type`  | `web_search` oder `http_fetch`            |
-| `status`     | `success`, `error` oder `blocked`         |
-| `provider`   | Aktiver Such-Provider (nur web_search)    |
-| `url`        | Ziel-URL (nur http_fetch)                 |
+| Feld | Beschreibung |
+|---|---|
+| `request_id` | UUID-v4, eindeutig pro Call |
+| `timestamp` | ISO8601 UTC |
+| `tool_type` | `web_search` oder `fetch` |
+| `status` | `success`, `error` oder `blocked` |
+| `provider` | Aktiver Such-Provider (nur web_search) |
+| `url` | Ziel-URL (nur fetch) |
 
 Die `request_id` ist identisch im Server-Log und in der JSON-Response — das verknüpft Benchmark-Audit-Logs mit Server-Logs.
 
 ---
 
-## 9. Abgrenzung (Scope Fence)
+## 12. Abgrenzung (Scope Fence)
 
 Der Server ist ein reines Transport-Werkzeug. Explizit **nicht** Teil seines Scopes:
 
@@ -281,26 +368,35 @@ Der Server ist ein reines Transport-Werkzeug. Explizit **nicht** Teil seines Sco
 
 ---
 
-## 10. Integration mit dem `tooluse`-Modul
+## 13. Integration mit dem `tooluse`-Modul
 
-Das `tooluse`-Benchmark-Modul startet den MCP-Server vor einem Benchmark-Run und kommuniziert mit ihm über HTTP auf `localhost:8765`.
+`scripts/run_tooluse_benchmark.py` (aufgerufen via `make benchmark-tooluse`) verwaltet
+den MCP-Server-Lifecycle **vollständig automatisch** — kein manuelles `mcp-start`/`mcp-stop`
+nötig.
 
-**Typischer Ablauf:**
+**Automatischer Ablauf:**
 
 ```bash
-# 1. Server starten (im Hintergrund)
-make mcp-start
-
-# 2. Health-Check
-make mcp-health
-
-# 3. Benchmark mit tooluse-Modul
-make benchmark MODULE=tooluse
-
-# 4. Server stoppen
-make mcp-stop
+# Einziger Befehl — MCP Start/Stop ist eingebettet
+make benchmark-tooluse
+make benchmark-tooluse MODEL=gemma3:4b
+make benchmark-tooluse MCP_MODE=mock FORCE=1
 ```
 
-Der Benchmark-Runner übergibt die Server-URL an das `tooluse`-Modul via `benchmark_config.yaml` (Schlüssel: `modules.tooluse.mcp_server_url`). Das Modul sendet die Tool-Calls des Modells an den Server und wertet die Responses in `core/evaluators.py` aus.
+**Lifecycle im Detail:**
+1. Script prüft ob Server bereits läuft (`/health`)
+2. Falls nicht: `_start_mcp_for_run(mode)` startet ihn und setzt ein internes Flag
+3. Benchmark läuft durch
+4. `atexit`-Handler ruft `_stop_mcp_if_managed()` auf — egal ob normaler Exit oder Exception
+5. Ctrl+C (`KeyboardInterrupt`): laufender Subprocess wird via `SIGTERM` beendet,
+   MCP Server wird gestoppt, Exit-Code 130
+
+**Ist der Server bereits manuell gestartet**, wird er **nicht** automatisch gestoppt
+(Flag bleibt `False`). Der Idle-Timeout übernimmt als Fallback.
+
+`mcp-start` / `mcp-stop` direkt verwenden nur für:
+- Entwicklung / manuelle Tests
+- `make tooluse-run` (Legacy-Target, ohne Wizard)
+- CI-Pipelines mit explizitem Lifecycle-Management
 
 Detaillierte Integration: `docs/DEVELOPER_GUIDE.md` → Abschnitt "tooluse-Modul".

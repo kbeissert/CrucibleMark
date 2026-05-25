@@ -11,7 +11,10 @@ Modi:
 
 from __future__ import annotations
 
+import atexit
 import json
+import os
+import signal
 import subprocess
 import sys
 import threading
@@ -34,6 +37,7 @@ _MCP_HEALTH_URL = "http://localhost:8765/health"
 
 _SEP = "═" * 54
 _SEP_THIN = "─" * 54
+_mcp_managed: list[bool] = [False]  # True wenn dieser Prozess den Server gestartet hat
 
 
 # ---------------------------------------------------------------------------
@@ -95,6 +99,38 @@ def _restart_mcp(mode: str = "live") -> None:
             print("  [WARN] MCP server did not start after restart")
 
 
+def _start_mcp_for_run(mode: str) -> None:
+    """Startet den MCP-Server für diesen Benchmark-Run.
+
+    Falls der Server bereits läuft (manuell gestartet), wird er nicht angefasst
+    und _mcp_managed bleibt False (kein Auto-Stop am Ende).
+    """
+    if _mcp_is_up():
+        print(f"  MCP Server läuft bereits — bestehende Instanz wird genutzt (mode={mode})")
+        return
+    print(f"  Starte MCP Server (mode={mode})...")
+    _restart_mcp(mode)
+    if _mcp_is_up():
+        _mcp_managed[0] = True
+        print("  MCP Server bereit.")
+    else:
+        print("  [WARN] MCP Server konnte nicht gestartet werden — Benchmark läuft trotzdem.")
+
+
+def _stop_mcp_if_managed() -> None:
+    """Beendet den MCP-Server, falls dieser Prozess ihn gestartet hat."""
+    if not _mcp_managed[0]:
+        return
+    _mcp_managed[0] = False  # Idempotenz: verhindert Doppel-Stop
+    try:
+        subprocess.run(
+            ["make", "mcp-stop"],
+            cwd=str(_ROOT), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, check=False,
+        )
+    except Exception:  # noqa: BLE001
+        pass
+
+
 # ---------------------------------------------------------------------------
 # Card loading + provider classification
 # ---------------------------------------------------------------------------
@@ -152,9 +188,6 @@ def _run_model(model_id: str, force: bool = False, silent: bool = False) -> bool
     Watchdog: kills process group if no stdout for INACTIVITY_TIMEOUT seconds.
     Hard cap: kills after TIMEOUT_PER_MODEL seconds regardless.
     """
-    import os
-    import signal
-
     cmd = [sys.executable, "run_benchmark.py", "--module", "tooluse", "--model", model_id]
     if force:
         cmd.append("--force")
@@ -202,7 +235,15 @@ def _run_model(model_id: str, force: bool = False, silent: bool = False) -> bool
         for line in proc.stdout:  # type: ignore[union-attr]
             last_output_time[0] = time.monotonic()
             print(line, end="", flush=True)
-    except Exception:
+    except KeyboardInterrupt:
+        # Ctrl+C: Subprocess läuft in eigenem Session → muss explizit beendet werden
+        try:
+            os.killpg(os.getpgid(proc.pid), signal.SIGTERM)
+        except Exception:  # noqa: BLE001
+            proc.terminate()
+        proc.wait()
+        raise
+    except Exception:  # noqa: BLE001
         pass
 
     # ── Wait for process exit (hard cap) ─────────────────────────────────────
@@ -212,10 +253,17 @@ def _run_model(model_id: str, force: bool = False, silent: bool = False) -> bool
         print(f"  [TIMEOUT] exceeded {TIMEOUT_PER_MODEL}s — killing process group")
         try:
             os.killpg(os.getpgid(proc.pid), signal.SIGKILL)
-        except Exception:
+        except Exception:  # noqa: BLE001
             proc.kill()
         proc.wait()
         return False
+    except KeyboardInterrupt:
+        try:
+            os.killpg(os.getpgid(proc.pid), signal.SIGKILL)
+        except Exception:  # noqa: BLE001
+            proc.kill()
+        proc.wait()
+        raise
 
     if watchdog_triggered[0]:
         return False
@@ -411,39 +459,49 @@ def main() -> None:
     )
     args = parser.parse_args()
 
-    if args.model:
-        ok = _run_model(args.model, force=args.force, silent=args.silent)
-        sys.exit(0 if ok else 1)
+    # MCP Server starten (falls nicht bereits aktiv) + Cleanup bei Abbruch sicherstellen
+    _start_mcp_for_run(args.mcp_mode)
+    atexit.register(_stop_mcp_if_managed)
 
-    elif args.models:
-        wanted_ids = {m.strip() for m in args.models.split(",")}
-        all_models = get_tool_use_models("all")
-        models = [(mid, dname) for mid, dname in all_models if mid in wanted_ids]
-        if not models:
-            print(f"Keine Modelle gefunden aus: {args.models}")
-            sys.exit(1)
-        _run_batch(
-            models, "custom",
-            force=args.force, silent=args.silent,
-            mcp_mode=args.mcp_mode, restart_mcp=args.restart_mcp,
-        )
+    try:
+        if args.model:
+            ok = _run_model(args.model, force=args.force, silent=args.silent)
+            sys.exit(0 if ok else 1)
 
-    elif args.all or args.provider != "all":
-        models = get_tool_use_models(args.provider)
-        if not models:
-            print(f"Keine Modelle gefunden (supports_tool_use: true, provider: {args.provider})")
-            sys.exit(0)
-        _run_batch(
-            models, args.provider,
-            force=args.force, silent=args.silent,
-            mcp_mode=args.mcp_mode, restart_mcp=args.restart_mcp,
-        )
+        elif args.models:
+            wanted_ids = {m.strip() for m in args.models.split(",")}
+            all_models = get_tool_use_models("all")
+            models = [(mid, dname) for mid, dname in all_models if mid in wanted_ids]
+            if not models:
+                print(f"Keine Modelle gefunden aus: {args.models}")
+                sys.exit(1)
+            _run_batch(
+                models, "custom",
+                force=args.force, silent=args.silent,
+                mcp_mode=args.mcp_mode, restart_mcp=args.restart_mcp,
+            )
 
-    else:
-        _interactive_wizard(
-            force=args.force, silent=args.silent,
-            mcp_mode=args.mcp_mode, restart_mcp=args.restart_mcp,
-        )
+        elif args.all or args.provider != "all":
+            models = get_tool_use_models(args.provider)
+            if not models:
+                print(f"Keine Modelle gefunden (supports_tool_use: true, provider: {args.provider})")
+                sys.exit(0)
+            _run_batch(
+                models, args.provider,
+                force=args.force, silent=args.silent,
+                mcp_mode=args.mcp_mode, restart_mcp=args.restart_mcp,
+            )
+
+        else:
+            _interactive_wizard(
+                force=args.force, silent=args.silent,
+                mcp_mode=args.mcp_mode, restart_mcp=args.restart_mcp,
+            )
+
+    except KeyboardInterrupt:
+        print("\n\n  Benchmark abgebrochen (Ctrl+C). MCP Server wird beendet...")
+        _stop_mcp_if_managed()
+        sys.exit(130)
 
 
 if __name__ == "__main__":

@@ -368,9 +368,6 @@ tooluse-report-json:
 
 benchmark-tooluse:
 	@echo "Starting Tool Use Benchmark (MCP: $(or $(MCP_MODE),live))..."
-	@$(MAKE) mcp-stop
-	@$(MAKE) mcp-start MODE=$(or $(MCP_MODE),live)
-	@sleep 1.5
 	@$(PYTHON) scripts/run_tooluse_benchmark.py \
 		$(if $(MODEL),--model "$(MODEL)") \
 		$(if $(MODELS),--models "$(MODELS)") \
@@ -379,7 +376,6 @@ benchmark-tooluse:
 		$(if $(FORCE),--force) \
 		$(if $(SILENT),--silent) \
 		--mcp-mode $(or $(MCP_MODE),live)
-	@$(MAKE) mcp-stop
 	@$(MAKE) tooluse-leaderboard
 	@$(MAKE) tooluse-report-summary
 

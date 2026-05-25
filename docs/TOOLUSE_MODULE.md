@@ -1,8 +1,8 @@
 # ToolUse-Modul: Technische Referenz
 
-> **Modul-Typ:** Diagnosemodul — kein Einfluss auf den Total Score  
-> **Voraussetzung:** CrucibleMark MCP Server läuft auf `localhost:8765`  
-> **Verfügbare Assets:** 6 (tooluse001–006)  
+> **Modul-Typ:** Diagnosemodul — kein Einfluss auf den Total Score
+> **Voraussetzung:** CrucibleMark MCP Server läuft auf `localhost:8765`
+> **Verfügbare Assets:** 6 (tooluse001–006)
 > **Getestete Modelle (Fleet):** Alle Modelle mit `supports_tool_use: true` in der Model Card
 
 ---
@@ -28,12 +28,22 @@
 
 ## 1. Überblick
 
-Das ToolUse-Modul prüft, ob ein LLM externe Tools (Web-Suche, HTTP-Fetch) via MCP tatsächlich aufruft — statt Ergebnisse zu halluzinieren. Es misst zwei Dimensionen:
+Das ToolUse-Modul ist ein **Diagnose-Benchmark für die Toolfähigkeit von LLMs** — nicht für allgemeine Agentenintelligenz oder Multi-Agenten-Orchestrierung. Es prüft, ob ein Modell externe Tools (Web-Suche, HTTP-Fetch) via MCP tatsächlich aufruft, das passende Tool für die Aufgabe selbst auswählt und aus dem Tool-Ergebnis eine nachvollziehbare, quellennahe Antwort synthetisiert. Es misst zwei Phasen:
 
 - **Phase 1 — Tool Execution:** Hat das Modell das richtige Tool mit sinnvollen Parametern aufgerufen?
 - **Phase 2 — Synthesis Quality:** Ist die erzeugte Antwort faktisch korrekt und quellenbasiert?
 
 Das Modul ist als eigenständiges Diagnoseinstrument konzipiert (analog zum Political Compass) und fließt nicht in den Total Score ein. Es hat eine eigene Leaderboard-CSV (`tooluse_leaderboard.csv`) mit einem **Sovereignty Gap** — dem Leistungsunterschied zwischen lokal betriebenen Open-Weights-Modellen und Cloud-Modellen.
+
+### Was ToolUse misst — und was nicht
+
+ToolUse misst **Tool-Kompetenz**: die praktische Fähigkeit von Modellen, MCP-Tools korrekt aufzurufen, Ergebnisse zu grunden und sprachlich sauber zu synthetisieren. Das Modul vergleicht explizit lokale Open-Weights-Modelle mit Cloud-Modellen — gemessen wird, wer MCP-Tools zuverlässiger einsetzt und Ergebnisse besser aufbereitet, nicht wer die bessere Allround-Intelligenz hat. **Nicht Teil des Scopes:** Multi-Agenten-Orchestrierung, Task-Planung über mehrere Schritte oder Koordination spezialisierter Agenten.
+
+Die sechs Assets decken bewusst unterschiedliche Failure Modes ab: fehlerfreie Tool-Ausführung (001, 004), Fehlerbehandlung bei HTTP-Fehlern (003), URL-Inferenz und Grounding-Qualität (002, 005), deutschsprachige Synthese aus mehrsprachigen Quellen (006) und Query-Strategie-Dekompositon (006).
+
+**Nicht Teil des Scopes:** Multi-Step-Agentenplanung, Koordination mehrerer spezialisierter Agenten oder die Fähigkeit, längere Tool-Ketten autonom zu orchestrieren. Ein kleineres, schnelles Modell kann in diesem Benchmark sehr gut abschneiden — nicht weil es „intelligenter" im allgemeinen Sinne ist, sondern weil es die konkrete Aufgabe zuverlässig mit Tool-Nutzung erfüllt.
+
+Der Benchmark beantwortet die Frage: Ist dieses Modell toolfähig genug, um in einem realistischen Arbeitskontext — etwa mit MCP-Erweiterung in VS Code — zu recherchieren, zu extrahieren und Inhalte nutzbar aufzubereiten? Die weitergehende Frage nach Multi-Agent-Kontrolle oder Workflow-Orchestrierung ist bewusst nicht Teil des Scopes.
 
 ---
 
@@ -123,10 +133,10 @@ LLM-Client
     │   └─ Erneuter Parse-Fehler → Weiter mit leerer Tool-Transcript
     │
     ▼
-[4] MCP Tool-Call
-    → POST http://localhost:8765/tools/{tool_name}
-    → Body: JSON mit Tool-Parametern
-    → Antwort: Tool-Transcript (status, results/content, provider, latency)
+[4] MCP Tool-Call (JSON-RPC 2.0)
+    → POST http://localhost:8765/ (single endpoint)
+    → Body: {"jsonrpc":"2.0","id":1,"method":"tools/call","params":{"name":"...","arguments":{...}}}
+    → Antwort: {"jsonrpc":"2.0","id":1,"result":{status, content, provider, latency}}
     │
     ▼
 [5] Zweiter Modell-Call (Synthese)
@@ -147,7 +157,7 @@ LLM-Client
     → Terminal-Ausgabe pro Asset
 ```
 
-**Trennung von Ausführung und Scoring** ist eine Architektur-Invariante:  
+**Trennung von Ausführung und Scoring** ist eine Architektur-Invariante:
 `execute()` enthält keine Scoring-Logik. `score_response()` enthält keine Netzaufrufe.
 
 ---
@@ -155,6 +165,10 @@ LLM-Client
 ## 4. MCP Server
 
 ### Setup
+
+`make benchmark-tooluse` verwaltet den Server-Lifecycle **automatisch** — kein manuelles
+Start/Stop nötig. Für Entwicklung und manuelle Tests stehen die Make-Targets direkt
+zur Verfügung:
 
 ```bash
 # Live-Modus (echte API-Calls: Tavily → DuckDuckGo Fallback)
@@ -171,27 +185,109 @@ make mcp-health
 make mcp-stop
 ```
 
-Der Server schreibt seine PID in `.mcp.pid`. `make mcp-stop` liest diese Datei und beendet den Prozess sauber. Ist die PID-Datei nicht vorhanden (z. B. wenn der Server über den Batch-Runner gestartet wurde), greift ein `pkill -f "cruciblemark-mcp/server.py"`-Fallback.
+Der Server schreibt seine PID in `.mcp.pid`. `make mcp-stop` liest diese Datei und beendet
+den Prozess sauber. Ist die PID-Datei nicht vorhanden, greift ein
+`pkill -f "cruciblemark-mcp/server.py"`-Fallback.
 
-### Endpunkte
+**Automatischer Lifecycle via `benchmark-tooluse`:**
+`scripts/run_tooluse_benchmark.py` startet den Server beim Ausführen, registriert einen
+`atexit`-Handler für sauberes Herunterfahren und fängt Ctrl+C ab (Subprocess + MCP
+werden terminiert, Exit-Code 130). Falls der Server bereits manuell läuft, wird er
+nicht automatisch gestoppt.
 
-| Methode | Pfad | Beschreibung |
-|---|---|---|
-| GET | `/health` | Health Check — gibt `{"status": "ok", "mode": "...", "version": "..."}` |
-| POST | `/tools/web_search` | Web-Suche. Body: `{"query": "...", "max_results": 3}` |
-| POST | `/tools/fetch` | HTTP-Fetch. Body: `{"url": "...", "max_chars": 500}` |
+### Protokoll: JSON-RPC 2.0
 
-### MCP-Standard-Konformität
+Der Server implementiert das **Model Context Protocol (MCP)** über JSON-RPC 2.0 — dasselbe
+Protokoll und dieselben Tool-Definitionen, die ein echter MCP-Server (z. B. Claude Desktop,
+VS Code MCP-Extension) verwenden würde. Damit misst der Benchmark MCP-Kompetenz im Sinne
+echter Deployments, nicht projektinterne API-Conventions.
 
-Die Tool-Namen folgen dem offiziellen **Model Context Protocol**, das von Anthropic als Open
-Standard veröffentlicht wurde. `fetch` entspricht der Referenzimplementierung
-`@modelcontextprotocol/server-fetch`. So misst der Benchmark MCP-Kompetenz, nicht Compliance
-mit projektinternen Namenskonventionen — Näheres in `cruciblemark-mcp/README.md`.
+**Kommunikationsschema:**
+
+```
+# Tool-Call
+POST http://localhost:8765/
+{"jsonrpc": "2.0", "id": 1, "method": "tools/call",
+ "params": {"name": "web_search", "arguments": {"query": "...", "max_results": 3}}}
+
+# Tool-Liste abfragen
+POST http://localhost:8765/
+{"jsonrpc": "2.0", "id": 1, "method": "tools/list", "params": {}}
+
+# Verbindungsaufbau
+POST http://localhost:8765/
+{"jsonrpc": "2.0", "id": 0, "method": "initialize",
+ "params": {"protocolVersion": "2024-11-05"}}
+
+# Health Check (GET bleibt für interne Nutzung)
+GET http://localhost:8765/health
+```
+
+### Verfügbare Tools
+
+Die Tool-Definitionen entsprechen dem Anthropic MCP-Standard. `fetch` ist 1:1 identisch mit
+`@modelcontextprotocol/server-fetch` (Referenzimplementierung).
+
+**`web_search`**
+
+| Parameter | Typ | Pflicht | Default | Beschreibung |
+|---|---|---|---|---|
+| `query` | string | ✓ | — | Suchanfrage |
+| `max_results` | integer | — | 5 | Maximale Ergebnisanzahl |
+
+**`fetch`** — identisch mit `@modelcontextprotocol/server-fetch`
+
+| Parameter | Typ | Pflicht | Default | Beschreibung |
+|---|---|---|---|---|
+| `url` | string | ✓ | — | Ziel-URL |
+| `max_length` | integer | — | 5000 | Max. Zeichen im Ergebnis |
+| `start_index` | integer | — | 0 | Startposition im Content (Pagination) |
+| `raw` | boolean | — | false | Rohen HTML-Content statt Markdown zurückgeben |
+
+### Tool-Name-Normalisierung
+
+Modelle, die auf unterschiedlichen MCP-Umgebungen fine-getuned wurden, können alternative
+Tool-Namen verwenden. Der Benchmark normalisiert bekannte Varianten automatisch und
+markiert sie als `is_anomaly = True` im Audit-Log — statt in einem `parse_error` zu landen:
+
+| Kanonischer Name | Akzeptierte Varianten |
+|---|---|
+| `web_search` | `web_search`, `web.search`, `search` |
+| `fetch` | `fetch`, `http_fetch`, `fetch_url`, `get_url`, `web_fetch`, `url_fetch`, `read_url` |
+
+### Modi
 
 | Modus | Verhalten |
 |---|---|
 | `live` | Echte Tavily-API-Aufrufe; Fallback auf DuckDuckGo bei fehlendem Key |
-| `mock` | Deterministisch; gibt vordefinierte Mock-Daten zurück |
+| `mock` | Deterministisch; gibt vordefinierte Fixture-Responses zurück — kein Netzaufruf |
+
+Mock- und Live-Modus sind **protokollidentisch** — beide nutzen JSON-RPC 2.0, beide geben
+`content: [{"type": "text", "text": "..."}]` + `isError` zurück. Der einzige Unterschied
+ist die Datenquelle (Fixtures vs. echte APIs).
+
+### Idle-Timeout: Auto-Shutdown bei Inaktivität
+
+Der Server beendet sich automatisch nach einer konfigurierbaren Inaktivitätszeit. Das
+verhindert verwaiste Hintergrundprozesse und offene Ports nach Benchmark-Runs.
+
+```yaml
+# cruciblemark-mcp/config/mcp_config.yaml
+server:
+  idle_timeout_seconds: 300  # 5 Minuten (0 = deaktiviert)
+```
+
+```bash
+# CLI-Override (z. B. für CI: längerer Timeout)
+make mcp-start MODE=live ARGS="--idle-timeout 600"
+
+# Auto-Shutdown deaktivieren
+.venv/bin/python cruciblemark-mcp/server.py --idle-timeout 0
+```
+
+Jede eingehende Anfrage (Health-Check, `tools/list`, `tools/call`) setzt den Timer zurück.
+Der Watchdog-Thread prüft alle `idle_timeout / 5` Sekunden (mind. 2 s, max. 30 s). Bei
+Ablauf: sauberes `server.shutdown()` → PID-File wird gelöscht → Port freigegeben.
 
 ### Domain-Whitelist (fetch)
 
@@ -235,7 +331,7 @@ Bewertet die Qualität der synthetisierten Antwort:
 - **Keyword-Matching** (Threshold: 0.4) — Enthält die Antwort die erwarteten Schlüsselbegriffe?
 - **Quellenangabe** — URL oder Quelle im Output → `+tool_call_bonus` (10 Punkte)
 
-**Hallucination Hard Fail:**  
+**Hallucination Hard Fail:**
 Bei `is_failure_test: true` (Tool schlägt fehl, z. B. 404) und trotzdem inhaltlicher Antwort des Modells → Phase 2 = 0.0, `hallucination_flag = True`.
 
 ### Combined Score
