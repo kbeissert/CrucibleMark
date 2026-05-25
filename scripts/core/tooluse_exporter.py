@@ -25,7 +25,7 @@ from benchmark_modules.tooluse.core.constants import (
 from benchmark_modules.tooluse.core.constants import (
     CSV_PATH as _CSV_PATH_STR,
 )
-from benchmark_modules.tooluse.core.io_manager import ToolUseIOManager
+from benchmark_modules.tooluse.core.io_manager import ToolUseIOManager, _log_metrics_to_json
 from schemas.result import BenchmarkResult
 from utils.model_utils import normalize_model_id
 
@@ -212,6 +212,10 @@ class ToolUseExporter:
         }
 
         self._upsert_row(row, model_id)
+        try:
+            _log_metrics_to_json(model_id, row)
+        except Exception:  # noqa: BLE001 — metrics logging must never crash the benchmark
+            logger.debug("Metrics logging failed (non-critical)", exc_info=True)
         ToolUseIOManager.print_run_summary(results, model_id)
 
     def calculate_sovereignty_gap(self) -> float | None:

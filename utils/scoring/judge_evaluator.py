@@ -226,6 +226,14 @@ def generate_audit_log(
 
         judge_resp = f"**Regex / Rule Scorer ({result.get('scoring_method', 'unknown')}):**\n\n**Score:** {result.get('total_score', 0)} / {result.get('max_score', 0)}\n\n**Details:**\n\n{details_str}\n\n**Raw JSON:**\n```json\n{json.dumps(score, indent=2, ensure_ascii=False)}\n```"
 
+    # Module-specific anomaly callouts (e.g. tooluse hallucination / parse error).
+    # These are prepended so generate_review.py can extract them via its
+    # r"> \[!(?:WARNING|CAUTION|ERROR)\].*?(?=\n\n|$)" regex.
+    callouts: list[str] = score.get("anomaly_callouts") or []
+    if callouts:
+        callout_prefix = "\n\n".join(callouts) + "\n\n"
+        judge_resp = callout_prefix + judge_resp
+
     save_audit_log(
         model=result["model"],
         asset_id=result["asset_id"],

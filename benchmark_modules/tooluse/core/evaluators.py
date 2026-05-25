@@ -86,8 +86,16 @@ class ToolUseEvaluator:
         # 2. Call result as expected? (40 pts)
         if expected_tool == TOOL_WEB_SEARCH:
             results = tool_transcript.get("results") or []
+            call_status = tool_transcript.get("status", "")
             if len(results) >= 1:
                 score += 40.0
+            elif call_status == "success":
+                # Empty result set despite a successful MCP call: the search
+                # backend returned nothing (infrastructure issue, not model
+                # fault). Award call-execution points so the model is not
+                # penalised for an external API edge case.
+                score += 40.0
+                logger.debug("Phase 1: web_search status=success but result_count=0 — empty_result state, awarding call-execution pts")
         elif expected_tool == TOOL_HTTP_FETCH:
             status_code = tool_transcript.get("status_code")
             if is_failure_test:

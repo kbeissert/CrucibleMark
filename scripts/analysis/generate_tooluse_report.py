@@ -300,11 +300,64 @@ class ToolUseReportGenerator:
         lines.append(f"- **Hallucination Flag:** {hallucination}")
         lines.append("")
 
+        # Anomaly callouts — must use GitHub Alert syntax for generate_review.py regex pickup
+        # Count assets with hard parse-error (tool call never parsed, not just retried)
+        parse_error_asset_ids = [
+            a["asset_id"] for a in asset_details
+            if (a.get("data", {}).get("tool_transcript") or {}).get("status") in ("parse_error", "blocked")
+        ]
+        tool_call_valid_bool = str(tool_call_valid).lower() == "true"
+
         if str(hallucination).lower() == "true":
-            lines.append("> ⚠ **WARNUNG:** Halluzination erkannt — Modell hat falsche Inhalte bei 404-Test generiert.")
+            lines.append("> [!WARNING]")
+            lines.append("> **Halluzination erkannt — Hard Fail:** Das Modell hat auf mindestens einem Asset Inhalte")
+            lines.append("> generiert, die nicht aus dem abgerufenen Tool-Ergebnis stammen, sondern erfunden wurden")
+            lines.append("> (`hallucination_flag: true`). Für content-kritische Produktions-Tasks (Recherche,")
+            lines.append("> Dokumentenzusammenfassung, faktenbasierte Berichte) ist dieses Verhalten ein")
+            lines.append("> disqualifizierendes Signal. Der Score unterschätzt möglicherweise das Risiko.")
             lines.append("")
+
         if str(parse_error).lower() == "true":
-            lines.append("> ⚠ **Hinweis:** Parse-Fehler aufgetreten — Retry-Logik wurde aktiviert.")
+            if not tool_call_valid_bool and len(parse_error_asset_ids) >= 2:
+                lines.append("> [!CAUTION]")
+                lines.append("> **Proprietäres Tool-Call-Format:** Das Modell erzeugt statt des CrucibleMark-Custom-JSON-Schemas")
+                lines.append("> ein natives, modellspezifisches Tool-Call-Format (z. B. `{\"tool_call\": {\"name\": ...,")
+                lines.append("> \"parameters\": ...}}`), das vom MCP-Stack nicht geparst werden kann. Im Benchmark-Kontext")
+                lines.append(f"> ist das Modell auf {len(parse_error_asset_ids)}/6 Assets nicht MCP-kompatibel (betroffen:")
+                lines.append(f"> {', '.join(parse_error_asset_ids)}). Über die native Modell-API (SDK-Level) ist das Modell")
+                lines.append("> vollständig tool-use-fähig — das Problem ist ein Benchmark-Artefakt.")
+                lines.append("")
+            else:
+                lines.append("> [!NOTE]")
+                lines.append("> **Retry erforderlich:** Das Modell benötigte auf mindestens einem Asset einen zweiten")
+                lines.append("> Versuch, um einen validen Tool-Call im CrucibleMark-Custom-JSON-Schema zu erzeugen")
+                lines.append("> (`retry_required: true`). P1 misst das Ergebnis nach erfolgtem Tool-Call — der Retry")
+                lines.append("> erhöht Token-Verbrauch und Latenz, beeinflusst aber P1 nicht direkt.")
+                lines.append("")
+
+        # Synthesis Gap: strong P1 but very weak P2
+        if p1 >= 70.0 and p2 < 35.0:
+            _gap = p1 - p2
+            lines.append("> [!CAUTION]")
+            lines.append(f"> **Synthesis-Gap erkannt ({_gap:.0f} Punkte):** Das Modell führt Tool-Calls zuverlässig")
+            lines.append(f"> aus (P1={p1:.1f}), kann die abgerufenen Ergebnisse aber nicht in eine kohärente")
+            lines.append(f"> Antwort übersetzen (P2={p2:.1f}). In produktiven Agentic-Workflows reicht ein valider")
+            lines.append("> Tool-Call allein nicht aus — die Synthesequalität ist der eigentliche Bottleneck.")
+            lines.append("")
+
+        # Judge Fallback: P2 scores are less reliable
+        judge_fallback_assets = [
+            a["asset_id"] for a in asset_details
+            if a.get("data", {}).get("judge_fallback")
+        ]
+        if judge_fallback_assets:
+            lines.append("> [!NOTE]")
+            lines.append("> **LLM-Judge nicht verfügbar — P2 aus Regellogik:** Für dieses Modell konnte der")
+            lines.append("> LLM-Judge auf mindestens einem Asset nicht erreicht werden. P2-Scores wurden durch")
+            lines.append("> die regelbasierte Fallback-Logik ermittelt, die Nuancen in Synthesequalität und")
+            lines.append("> Content-Grounding weniger präzise erfasst als ein LLM-Judge.")
+            lines.append(f"> Betroffen: {', '.join(judge_fallback_assets)}. P2-Vergleiche mit anderen Modellen")
+            lines.append("> sollten mit Vorbehalt interpretiert werden.")
             lines.append("")
 
         # Asset Breakdown
@@ -321,7 +374,17 @@ class ToolUseReportGenerator:
                 a_combined = _safe_float(d.get("combined_score", "")) or 0.0
                 tc = d.get("tool_transcript") or {}
                 tc_valid = "✓" if tc.get("status") not in ("parse_error", "blocked", None, "") else "✗"
-                notes = "Halluzination erkannt" if d.get("hallucination_flag") else ""
+                _notes_parts = []
+                if d.get("hallucination_flag"):
+                    _notes_parts.append("⚠ Halluzination")
+                if tc.get("status") == "parse_error":
+                    _notes_parts.append("✗ Parse-Fehler")
+                _cv = (d.get("content_verification") or {}).get("state", "")
+                if _cv == "C":
+                    _notes_parts.append("✗ Kein Tool-Call")
+                elif (d.get("content_verification") or {}).get("tool_result_ignored"):
+                    _notes_parts.append("B2: Tool ignoriert")
+                notes = ", ".join(_notes_parts)
                 lines.append(f"| {asset_id} | {asset_name} | {a_p1:.1f} | {a_p2:.1f} | {a_combined:.1f} | {tc_valid} | {notes} |")
             else:
                 lines.append(f"| {asset_id} | {asset_name} | — | — | — | — | Nicht ausgeführt |")

@@ -308,10 +308,6 @@ class ToolUseIOManager:
         lines.append(_SEP_THICK)
 
         out = "\n".join(lines)
-        try:
-            _log_metrics_to_json(model_id, row)
-        except Exception:  # noqa: BLE001 — metrics logging must never crash the benchmark
-            logging.debug("Metrics logging failed (non-critical)", exc_info=True)
         print(out)  # noqa: T201 — intentional terminal UI output
         return out
 

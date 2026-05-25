@@ -515,6 +515,51 @@ class ToolUseTest(BaseTest):
                 "model": judge_result.judge_model_used,
                 "latency_ms": judge_result.judge_latency_ms,
             }
+
+        # Anomaly callouts for per-asset audit logs.
+        # generate_audit_log() will prepend these as GitHub Alert blocks so
+        # generate_review.py can pick them up via its regex.
+        _callouts: list[str] = []
+        if hallucination_detected:
+            _callouts.append(
+                "> [!WARNING]\n"
+                "> **Halluzination erkannt:** Das Modell hat auf diesem Asset Inhalte generiert, die\n"
+                "> nicht aus dem abgerufenen Tool-Ergebnis stammen, sondern erfunden wurden.\n"
+                "> P2-Score wurde durch Halluzinations-Cap begrenzt. Für content-kritische Tasks\n"
+                "> (Recherche, Faktenberichte) ist dieses Verhalten ein disqualifizierendes Signal."
+            )
+        if tool_transcript.get("status") == "parse_error":
+            _callouts.append(
+                "> [!CAUTION]\n"
+                "> **Parse-Fehler beim Tool-Call:** Das Modell hat auf diesem Asset keinen auswertbaren\n"
+                "> MCP-Tool-Call erzeugt. Mögliche Ursache: Das Modell verwendet ein proprietäres\n"
+                "> natives Tool-Format statt des CrucibleMark-Custom-JSON-Schemas (z. B.\n"
+                "> `{\"tool_call\": {\"name\": ..., \"parameters\": ...}}` statt `{\"name\": ..., \"input\": ...}`).\n"
+                "> Über die native API (SDK-Level) ist das Modell vollständig tool-use-fähig."
+            )
+        # State C: model completely ignored tool-use instruction
+        if cv_block.get("state") == "C":
+            _callouts.append(
+                "> [!ERROR]\n"
+                "> **Kein Tool-Call — vollständig parametrische Antwort:** Das Modell hat die\n"
+                "> Tool-Use-Instruktion auf diesem Asset ignoriert und stattdessen ausschließlich\n"
+                "> aus Trainingswissen geantwortet (Content-Verification-State C, P1=0).\n"
+                "> P2 ist auf max. 20 Punkte gekappt. Für agentic Workflows, die den aktiven\n"
+                "> Tool-Einsatz voraussetzen, ist dieses Modell auf diesem Aufgabentyp nicht geeignet."
+            )
+        # State B2 with usable content: model got good data but answered from training knowledge
+        if cv_block.get("tool_result_ignored") and not hallucination_detected:
+            _callouts.append(
+                "> [!CAUTION]\n"
+                "> **Tool-Ergebnis ignoriert:** Das MCP-Tool lieferte verwertbaren Content, aber das\n"
+                "> Modell antwortete ohne erkennbaren Bezug zum abgerufenen Inhalt\n"
+                "> (Content-Verification-State B2, `tool_result_ignored: true`). Die Antwort stammt\n"
+                "> vermutlich aus Trainingswissen statt aus den Tool-Ergebnissen. Subtiler als\n"
+                "> Halluzination: Der Output kann inhaltlich korrekt wirken, ist aber nicht gegrounded."
+            )
+        if _callouts:
+            result.data["anomaly_callouts"] = _callouts
+
         ToolUseIOManager.print_asset_result(result, self.asset)
         return result
 

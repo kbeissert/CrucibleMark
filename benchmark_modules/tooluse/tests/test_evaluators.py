@@ -139,6 +139,22 @@ def test_phase1_websearch_no_relevant_domain(evaluator):
 
 
 # ---------------------------------------------------------------------------
+# Test 2b: phase1 — web_search, status=success but 0 results → 80 pts (empty_result state)
+# ---------------------------------------------------------------------------
+
+def test_phase1_websearch_empty_result_state(evaluator):
+    # tool type correct (40) + status=success/0 results → call-execution pts (40) + source quality 0 = 80
+    transcript = {
+        "tool_type_called": "web_search",
+        "status": "success",
+        "results": [],
+        "provider": "tavily",
+    }
+    score = evaluator.score_phase1(transcript, ASSET_001)
+    assert score == 80.0
+
+
+# ---------------------------------------------------------------------------
 # Test 3: phase1 — sandbox violation → hard fail 0
 # ---------------------------------------------------------------------------
 
@@ -308,7 +324,7 @@ def test_phase1_http_fetch_with_usable_content(evaluator):
         "content_excerpt": "A" * 150,
         "provider": "mock",
     }
-    score = evaluator.score_phase1(transcript, ASSET_002)
+    score = evaluator.score_phase1(transcript, ASSET_002, excerpt_quality="full")
     assert score == 100.0
 
 
