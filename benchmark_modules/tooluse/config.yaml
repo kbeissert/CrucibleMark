@@ -10,7 +10,7 @@
 metadata:
   id: tooluse
   name: "Tool Use & Assistenz"
-  version: "1.0.0"
+  version: "1.3.0"
   description: >
     Testet, wie zuverlässig ein Modell externe Tools (Web-Suche, HTTP-Fetch)
     via MCP nutzt. Bewertet Tool-Kompetenz (Phase 1) und Synthesequalität

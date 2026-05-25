@@ -3,6 +3,75 @@
 **Zielgruppe:** Entwickler, die Änderungen am Scoring-System oder der Architektur nachvollziehen wollen.
 **Inhalt:** Changelog-Einträge für Bugfixes, Architektur-Entscheidungen und Verhaltensänderungen
 
+---
+
+## v3.13.0 — Phase-C Asset + Judge Hardening (2026-05-25)
+
+**Status:** Abgeschlossen
+
+### 1. tooluse006 — Phase-C: Multilingual Search & German Synthesis
+
+Neues Asset, das eine dritte Bewertungsdimension einführt: **sprachübergreifende Synthese**.
+Das Modell recherchiert internationale Handelsperspektiven via `web_search` und muss die
+Ergebnisse ausschließlich auf Deutsch zusammenfassen — auch wenn die Suchergebnisse
+englischsprachig oder spärlich sind.
+
+**Kalibrierung:** Sonnet-Probe-Run lieferte P2=40 (2/5 vom Judge) bei objektiv hochwertiger
+Antwort. Ursache: `factuality.must_not_include`-Regel "Detailzahlen ohne Tool-Grundlage"
+feuerte auf korrekte Kontextfakten. Rubrik korrigiert auf Unterscheidung erfundener vs.
+faktisch korrekter Ergänzungen; BEWERTUNGSANWEISUNG um Hinweis auf sparse Search-Results
+erweitert. Nach Kalibrierung: Sonnet 90, Hermes 90 (Phase C misst Synthese, kein Grounding-Edge).
+
+### 2. phase2_rubric — Verdrahtung mit LLM-Judge
+
+`phase2_rubric` in Asset-YAMLs war totes YAML — nirgends gelesen, Judge bekam nur den
+generischen System-Prompt. `_build_rubric_override()` in `test.py` serialisiert das
+YAML-Dict zu strukturiertem Text und übergibt es als `rubric_override` an `runner.score()`.
+Unterstützte Sektionen: `factuality`, `hallucination_risk`, `uncertainty_handling`,
+`language_consistency` (inkl. `target_language`-Header, `scoring_note`).
+
+### 3. Hallucination Cap — Config-First
+
+`hallucination_detected: true` vom Judge hatte keine Score-Wirkung. Fix:
+
+- `config/scoring.yaml` → `tool_use.hallucination.cap_hard: 20`
+- `constants.py` → `HALLUCINATION_CAP_KEY`, `HALLUCINATION_CAP_DEFAULT`
+- `tool_adapter_audit.py` → `load_hallucination_cap()` liest Config, gibt Default 20 bei Fehler
+- `test.py` → nach Judge-Call: `if hallucination_detected: p2 = min(p2, float(hal_cap))`
+
+### 4. `tool_result_ignored` — Neues CV-Diagnose-Flag
+
+Neues Boolean im Content-Verification-Block. Wird `true` wenn:
+- `content_usable = True` (Tool hat verwertbaren Inhalt geliefert)
+- `state = "B2"` (keine Phrase-Überlappung zwischen Tool-Response und Modellantwort)
+
+Semantik: Modell hatte nutzbaren Tool-Inhalt, hat aber trotzdem aus dem Trainings-Vorwissen
+geantwortet. Distinct von B1 (Modell war transparent über die Lücke).
+
+### 5. tooluse002-Rubrik — False-Positive-Fix
+
+`uncertainty_handling.unacceptable` enthielt "Fakten hinzufügen die nicht im Fixture stehen".
+Sonnet ergänzte korrekte Quake-Fakten (Lovecraft-Setting, Metacritic-Scores) → Judge feuerte
+`hallucination_detected: true` → Cap auf 20. Rubrik korrigiert: Unakzeptabel sind nur
+**faktisch falsche** Angaben, nicht korrekte Ergänzungen aus Parameterwissen.
+
+### Probe-Run Ergebnisse (claude-sonnet-4-6 vs. Hermes 4 14B Q4_K_M)
+
+| Asset | Sonnet | Hermes |
+|---|---|---|
+| tooluse001 (Honeypot) | 60 | 60 |
+| tooluse002 (Extract) | 90 | 60 |
+| tooluse003 (404) | 70 | 40 |
+| tooluse004 (Tool Selection) | 60 | 60 |
+| tooluse005 (URL Construction) | 100 | 90 |
+| tooluse006 (Multilingual) | 90 | 90 |
+| **Avg** | **78.3** | **66.7** |
+
+14-Punkte Spread zwischen Sonnet und Hermes — jeweils auf konkrete Content-Grounding-Fehler
+bei Hermes zurückführbar (tooluse002: QuakeWorld-Fehlzuschreibung; tooluse003: erfundenes JSON
+für 404-Response; tooluse004: Tool-Ergebnis ignoriert, aus 2024er Trainingsdaten geantwortet).
+
+
 ## Tool Use Module — Phase-A Calibration: MCP Alignment, CV Gate & Attribution Bias Fix
 
 **Datum:** 2026-05-24

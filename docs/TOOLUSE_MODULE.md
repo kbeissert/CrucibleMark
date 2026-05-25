@@ -2,7 +2,7 @@
 
 > **Modul-Typ:** Diagnosemodul — kein Einfluss auf den Total Score  
 > **Voraussetzung:** CrucibleMark MCP Server läuft auf `localhost:8765`  
-> **Verfügbare Assets:** 5 (tooluse001–005)  
+> **Verfügbare Assets:** 6 (tooluse001–006)  
 > **Getestete Modelle (Fleet):** Alle Modelle mit `supports_tool_use: true` in der Model Card
 
 ---
@@ -53,7 +53,8 @@ benchmark_modules/tooluse/
 │   ├── tooluse002.yaml            # HTTP Fetch & Extract (Quake-Serie)
 │   ├── tooluse003.yaml            # Tool Failure Handling (404)
 │   ├── tooluse004.yaml            # Web Search — Tool-Type Decision (LLM Rankings)
-│   └── tooluse005.yaml            # HTTP Fetch — URL Construction (Python Wikipedia)
+│   ├── tooluse005.yaml            # HTTP Fetch — URL Construction (Python Wikipedia)
+│   └── tooluse006.yaml            # Web Search — Multilingual Synthesis (German output)
 └── tests/
     ├── test_content_verification.py  # CV Gate (State A/B1/B2/C, failure-test exempt)
     ├── test_controller.py         # Tests für test.py
@@ -341,6 +342,21 @@ prompt: "Rufe die Wikipedia-Seite über Python auf ... Verwende en.wikipedia.org
 ruft `fetch` damit auf. Exakte URL → registrierte Fixture, voller Content. Falsche URL →
 "Mock content for …" (~55 Zeichen) → source_quality 0 → P1-Abzug.
 Dimension: URL-Präzision.
+
+### tooluse006 — Multilingual Search & German Synthesis (Tier 2)
+
+```yaml
+tool_available: web_search
+language: de
+prompt: "Recherchiere die internationalen Stimmungen zur europäisch-amerikanischen
+  Handelsentwicklung ... antworte ausschließlich auf Deutsch."
+```
+
+**Ziel:** Modell ruft `web_search` auf, verarbeitet typischerweise spärliche Suchergebnisse
+(1–3 EU-zentrierte Treffer) und synthetisiert eine kohärente deutsche Analyse aller vier
+Zielräume (Europa, USA, arabischer Raum, BRICS). Korrekte Ergänzung bekannten Kontexts
+ist explizit erlaubt — „Parameterwissen" nur negativ wenn das Tool komplett ignoriert wird.
+Dimension: Phase C — Multilingual Synthesis.
 
 ---
 
@@ -678,7 +694,7 @@ Der Batch Runner scannt alle JSON-Dateien in `benchmark_scores/model_cards/` und
 .venv/bin/python -m pytest benchmark_modules/tooluse/tests/test_report_generator.py
 ```
 
-**Aktuelle Test-Abdeckung:** 67 Tests, alle grün.
+**Aktuelle Test-Abdeckung:** 257 Tests, alle grün.
 
 | Test-Datei | Tests | Was wird getestet |
 |---|---|---|
