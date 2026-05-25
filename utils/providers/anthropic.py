@@ -121,6 +121,9 @@ class AnthropicClient(BaseProviderClient):
                 "model": model,
                 "messages": [{"role": "user", "content": prompt}],
             }
+            system = kwargs.get("system")
+            if system:
+                func_kwargs["system"] = system
             if model not in ANTHROPIC_NO_TEMPERATURE_MODELS:
                 func_kwargs["temperature"] = temperature
             response, used_max_tokens, fallback_triggered = self._execute_with_token_fallback(

@@ -312,12 +312,13 @@ class UnifiedBenchmarkRunner(BaseBenchmarkRunner):
             logger.warning(f"Warmup fehlgeschlagen: {e}")
             return None
 
-    def _create_error_result(self, asset_id: str, error_message: str) -> Dict[str, Any]:
+    def _create_error_result(self, asset_id: str, error_message: str, model: str = "") -> Dict[str, Any]:
         return {
             "status": "error",
             "error_message": error_message,
             "asset_id": asset_id,
             "asset_name": asset_id,
+            "model": model,
             "percentage": 0,
             "tier": "Tier 1",
             "execution_time": 0,
@@ -338,7 +339,7 @@ class UnifiedBenchmarkRunner(BaseBenchmarkRunner):
         asset_data = load_asset_yaml(asset_path)
         if not asset_data:
             return self._create_error_result(
-                asset_path.stem, "Empty/Invalid Asset File"
+                asset_path.stem, "Empty/Invalid Asset File", model=model
             )
 
         asset_id = asset_data.get("metadata", {}).get("id", asset_path.stem)
@@ -364,7 +365,7 @@ class UnifiedBenchmarkRunner(BaseBenchmarkRunner):
             if not getattr(exec_result, "execution_time", None):
                 exec_result.execution_time = time.time() - start_time
         except Exception as e:
-            return self._create_error_result(asset_path.stem, str(e))
+            return self._create_error_result(asset_path.stem, str(e), model=model)
 
         response = exec_result.raw_response
         exec_result = test_instance.score_response(exec_result)
@@ -398,15 +399,19 @@ class UnifiedBenchmarkRunner(BaseBenchmarkRunner):
             result["status"] = "language_mismatch"
 
         # Token usage & Cost
-        if hasattr(self.client, "last_token_usage"):
-            result["tokens_used"] = self.client.last_token_usage
-            if not is_local:
-                result["cost_usd"] = getattr(self.client, "last_request_cost", 0.0)
-            else:
-                result["cost_usd"] = 0.0
+        # Prefer exec_result.tokens_used when the module explicitly tracks multi-call totals
+        # (e.g. tooluse makes 2 LLM calls; last_token_usage only reflects the final call).
+        _module_tokens: int = exec_result.tokens_used or 0
+        _raw_client_tokens = getattr(self.client, "last_token_usage", 0)
+        _client_tokens: int = _raw_client_tokens if isinstance(_raw_client_tokens, int) else 0
+        result["tokens_used"] = _module_tokens if _module_tokens > _client_tokens else _client_tokens
+        if not is_local:
+            _module_cost: float = exec_result.cost_usd or 0.0
+            _raw_client_cost = getattr(self.client, "last_request_cost", 0.0)
+            _client_cost: float = _raw_client_cost if isinstance(_raw_client_cost, (int, float)) else 0.0
+            result["cost_usd"] = _module_cost if _module_cost > _client_cost else _client_cost
         else:
-            result["tokens_used"] = exec_result.tokens_used or 0
-            result["cost_usd"] = getattr(self.client, "last_request_cost", 0.0) if not is_local else 0.0
+            result["cost_usd"] = 0.0
 
         if is_local:
             result["golden_similarity"] = 0.0

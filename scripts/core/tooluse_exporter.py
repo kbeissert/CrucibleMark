@@ -374,9 +374,19 @@ class ToolUseExporter:
                     p1_scores.append(float(data_dict["p1_score"]))
                 except (ValueError, TypeError):
                     pass
+            elif row.get("p1_score"):
+                try:
+                    p1_scores.append(float(row["p1_score"]))
+                except (ValueError, TypeError):
+                    pass
             if data_dict.get("p2_score") is not None:
                 try:
                     p2_scores.append(float(data_dict["p2_score"]))
+                except (ValueError, TypeError):
+                    pass
+            elif row.get("p2_score"):
+                try:
+                    p2_scores.append(float(row["p2_score"]))
                 except (ValueError, TypeError):
                     pass
 

@@ -83,7 +83,11 @@ class GoogleClient(BaseProviderClient):
             if "top_k" in kwargs:
                 generation_config.top_k = kwargs["top_k"]
             # Initialize Model
-            gemini_model = genai.GenerativeModel(model_name=model)
+            _system = kwargs.get("system")
+            gemini_model = genai.GenerativeModel(
+                model_name=model,
+                **({"system_instruction": _system} if _system else {}),
+            )
             initial_max_tokens = kwargs.get("max_tokens", self.config.get("defaults", {}).get("generation", {}).get("num_predict", 8192))
             def _google_generator(max_tokens, **gen_kwargs):
                 generation_config.max_output_tokens = max_tokens

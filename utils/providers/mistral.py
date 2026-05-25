@@ -83,9 +83,12 @@ class MistralClient(BaseProviderClient):
                 model, kwargs.get("max_tokens"), self.config, kwargs.get("_module_key")
             )
             # Note: Streaming not implemented yet for Mistral in this wrapper
+            _system = kwargs.get("system")
             func_kwargs = {
                 "model": model,
-                "messages": [{"role": "user", "content": prompt}],
+                "messages": (
+                    [{"role": "system", "content": _system}] if _system else []
+                ) + [{"role": "user", "content": prompt}],
                 "temperature": temperature,
                 "random_seed": 42,
             }

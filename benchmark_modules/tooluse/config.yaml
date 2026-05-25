@@ -60,21 +60,30 @@ config:
   tool_call_bonus: 10             # Bonus für korrekte Quellenangabe im Output
   semantic_threshold: 0.72        # Min. semantische Ähnlichkeit für Phase 2
   keyword_threshold: 0.4
+  parse_retry_penalty: 5          # P1 Abzug wenn parse_attempts >= 2
+  # P2 component weight defaults (overridden per-asset by phase2_rubric.weights in asset YAML)
+  p2_weight_factuality: 0.50      # → semantic similarity component
+  p2_weight_hallucination_risk: 0.30  # → keyword coverage component
+  p2_weight_uncertainty_handling: 0.20  # → structural requirements component
 
 # ================================
 # BENCHMARKS: Asset-Registry
 # ================================
 benchmarks:
   - id: tooluse001
-    name: "Websearch Research"
+    name: "Llama 4 EU License Research (Honeypot)"
     tier: 2
     tool_type: web_search
+    phase1_weight: 0.40   # EU-Regulierung: Synthesequalität wichtiger als Tool-Execution
+    phase2_weight: 0.60
     future_expansion: null
 
   - id: tooluse002
     name: "HTTP Fetch & Extract"
     tier: 2
     tool_type: fetch
+    phase1_weight: 0.50
+    phase2_weight: 0.50
     future_expansion: null
 
   - id: tooluse003
@@ -82,18 +91,24 @@ benchmarks:
     tier: 3
     tool_type: fetch
     is_failure_test: true         # 404-Simulation — kein Scoring-Abzug
+    phase1_weight: 0.65   # 404-Failure: Tool-Execution-Robustheit ist Kerntest
+    phase2_weight: 0.35
     future_expansion: null
 
   - id: tooluse004
     name: "Tool Selection (web_search)"
     tier: 2
     tool_type: web_search
+    phase1_weight: 0.55   # Tool-Entscheidung (web_search vs fetch) im Fokus
+    phase2_weight: 0.45
     future_expansion: null
 
   - id: tooluse005
     name: "URL Construction (fetch)"
     tier: 2
     tool_type: fetch
+    phase1_weight: 0.50
+    phase2_weight: 0.50
     future_expansion: null
 
   - id: tooluse006
@@ -101,4 +116,6 @@ benchmarks:
     tier: 2
     tool_type: web_search
     language: de
+    phase1_weight: 0.50
+    phase2_weight: 0.50
     future_expansion: null

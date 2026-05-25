@@ -91,9 +91,12 @@ class XAIClient(BaseProviderClient):
         try:
             import logging
             logger = logging.getLogger(__name__)
+            _system = kwargs.get("system")
             params = {
                 "model": model,
-                "messages": [{"role": "user", "content": prompt}],
+                "messages": (
+                    [{"role": "system", "content": _system}] if _system else []
+                ) + [{"role": "user", "content": prompt}],
                 "temperature": temperature,
             }
             req_tokens = kwargs.get("max_tokens")

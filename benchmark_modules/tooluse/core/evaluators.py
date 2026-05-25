@@ -57,6 +57,8 @@ class ToolUseEvaluator:
         self,
         tool_transcript: dict[str, Any],
         asset: dict[str, Any],
+        excerpt_quality: str = "empty",
+        parse_attempts: int = 1,
     ) -> float:
         """Score the MCP tool call. Returns 0–100."""
         # Hard fail: sandbox/whitelist violation
@@ -101,7 +103,7 @@ class ToolUseEvaluator:
 
         # 3. Source quality (20 pts)
         # web_search: relevant domain in results
-        # http_fetch (success): usable content extracted (≥100 chars)
+        # http_fetch (success): excerpt_quality signal (full=20, partial=12, minimal=6, empty=0)
         # http_fetch (failure): not applicable — no pts added
         if expected_tool == TOOL_WEB_SEARCH:
             results = tool_transcript.get("results") or []
@@ -111,9 +113,14 @@ class ToolUseEvaluator:
                 score += 10.0
             # 0 results → 0 pts
         elif expected_tool == TOOL_HTTP_FETCH and not is_failure_test:
-            content = tool_transcript.get("content_excerpt") or ""
-            if len(str(content).strip()) >= 100:
-                score += 20.0
+            _quality_map = {"full": 20, "partial": 12, "minimal": 6, "empty": 0}
+            score += _quality_map.get(excerpt_quality, 0)
+
+        # 4. parse_attempts penalty
+        retry_penalty = float(self.config.get("parse_retry_penalty", 5))
+        if parse_attempts >= 2:
+            score = max(score - retry_penalty, 0.0)
+            logger.debug("Phase 1: parse_attempts=%d → -%.1f penalty", parse_attempts, retry_penalty)
 
         return min(score, 100.0)
 
@@ -141,63 +148,84 @@ class ToolUseEvaluator:
                     logger.debug("Phase 2: hallucination hard fail — pattern '%s'", pattern)
                     return 0.0
 
-        score = 0.0
+        # Per-asset weights from phase2_rubric.weights; fallback to config defaults
+        rubric_weights = evaluation.get("phase2_rubric", {}).get("weights", {})
+        _default_fact = self.config.get("p2_weight_factuality", 0.50)
+        _default_hall = self.config.get("p2_weight_hallucination_risk", 0.30)
+        _default_uncert = self.config.get("p2_weight_uncertainty_handling", 0.20)
 
-        # 2. Keyword score (30 pts)
+        # factuality → semantic component
+        w_fact = float(rubric_weights.get("factuality", _default_fact))
+        # hallucination_risk → keyword component
+        w_hall = float(rubric_weights.get("hallucination_risk", _default_hall))
+        # uncertainty_handling / url_precision / language_consistency → structural component
+        # sum all remaining (non-factuality, non-hallucination_risk) dimensions
+        w_struct = sum(
+            float(v) for k, v in rubric_weights.items()
+            if k not in ("factuality", "hallucination_risk")
+        ) if rubric_weights else _default_uncert
+
+        total_w = w_fact + w_hall + w_struct
+        if total_w <= 0.0:
+            total_w = 1.0
+
+        # 2. Keyword score (0–100 raw, scaled by w_hall)
         keywords: list = phase2.get("keywords", [])
-        keyword_score = 0.0
+        keyword_raw = 0.0
         if keywords:
             output_lower = model_output.lower()
             found = sum(1 for kw in keywords if str(kw).lower() in output_lower)
             ratio = found / len(keywords)
             threshold = self.config.get(KEYWORD_THRESHOLD_KEY, 0.4)
             if ratio >= threshold:
-                keyword_score = ratio * 30.0
-            # Below threshold → 0 pts for this component
+                keyword_raw = ratio * 100.0
+            # Below threshold → 0
         else:
-            keyword_score = 30.0  # no keywords defined → neutral
-        score += keyword_score
+            keyword_raw = 100.0  # no keywords defined → neutral
 
-        # 3. Semantic score (50 pts)
+        # 3. Semantic score (0–100 raw, scaled by w_fact)
         golden_answer: str = phase2.get("golden_answer", "")
-        semantic_score = 0.0
+        semantic_raw = 0.0
         if golden_answer and model_output.strip():
             similarity = SemanticSimilarity.calculate_similarity(
                 model_output, golden_answer,
             )
             semantic_threshold = self.config.get(SEMANTIC_THRESHOLD_KEY, 0.72)
             if similarity >= semantic_threshold:
-                semantic_score = similarity * 50.0
+                semantic_raw = similarity * 100.0
             else:
                 # Below threshold: half value (no hard zero)
-                semantic_score = similarity * 25.0
+                semantic_raw = similarity * 50.0
         else:
-            semantic_score = 50.0  # no golden answer → neutral
-        score += semantic_score
+            semantic_raw = 100.0  # no golden answer → neutral
 
-        # 4. Structural requirements (20 pts)
+        # 4. Structural requirements (0–100 raw, scaled by w_struct)
         requires_url = phase2.get("requires_url_citation", False)
         requires_structured = phase2.get("requires_structured_output", False)
 
         if requires_url or requires_structured:
-            structural_score = 0.0
+            structural_raw = 0.0
             if requires_url:
                 if "http" in model_output.lower():
-                    structural_score += 10.0
+                    structural_raw += 50.0
             else:
-                structural_score += 10.0  # not required → neutral
+                structural_raw += 50.0  # not required → neutral
 
             if requires_structured:
                 list_items = _LIST_ITEM_RE.findall(model_output)
                 if len(list_items) >= 3:
-                    structural_score += 10.0
+                    structural_raw += 50.0
             else:
-                structural_score += 10.0  # not required → neutral
+                structural_raw += 50.0  # not required → neutral
         else:
-            # Neither declared → neutral 20 pts
-            structural_score = 20.0
+            structural_raw = 100.0  # neither declared → neutral
 
-        score += structural_score
+        # Weighted combination (normalized)
+        score = (
+            semantic_raw * w_fact
+            + keyword_raw * w_hall
+            + structural_raw * w_struct
+        ) / total_w
 
         # 5. min_length penalty (20% penalty on total after all other scoring)
         min_length = phase2.get("min_length", 0)
@@ -211,7 +239,14 @@ class ToolUseEvaluator:
     # Combined Score
     # ------------------------------------------------------------------
 
-    def combined_score(self, p1: float, p2: float, tool_call_valid: bool = True) -> float:
+    def combined_score(
+        self,
+        p1: float,
+        p2: float,
+        tool_call_valid: bool = True,
+        asset_id: str = "",
+        benchmarks_config: list[dict[str, Any]] | None = None,
+    ) -> float:
         """Berechnet Combined Score mit Safety-Guardrail für Phase 1 Fehler.
 
         Schwellenmodell:
@@ -224,12 +259,23 @@ class ToolUseEvaluator:
             p1: Phase 1 Score (Tool Execution, 0-100)
             p2: Phase 2 Score (Synthesis Quality, 0-100)
             tool_call_valid: Ob Tool erfolgreich aufgerufen wurde
+            asset_id: Optional asset ID for per-asset weight lookup
+            benchmarks_config: Optional list of benchmark dicts from config.yaml
 
         Returns:
             Combined Score mit angewandtem Guardrail (0-100)
         """
-        w1 = self.config.get(PHASE1_WEIGHT_KEY, 0.4)
-        w2 = self.config.get(PHASE2_WEIGHT_KEY, 0.6)
+        global_w1 = self.config.get(PHASE1_WEIGHT_KEY, 0.4)
+        global_w2 = self.config.get(PHASE2_WEIGHT_KEY, 0.6)
+
+        # Per-asset override from config.yaml benchmarks section
+        if asset_id and benchmarks_config:
+            asset_cfg = next((b for b in benchmarks_config if b.get("id") == asset_id), {})
+            w1 = float(asset_cfg.get("phase1_weight", global_w1))
+            w2 = float(asset_cfg.get("phase2_weight", global_w2))
+        else:
+            w1, w2 = global_w1, global_w2
+
         base_combined = p1 * w1 + p2 * w2
 
         # Hard fail: Tool nicht aufgerufen oder komplett gescheitert

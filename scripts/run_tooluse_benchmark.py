@@ -14,7 +14,9 @@ from __future__ import annotations
 import json
 import subprocess
 import sys
+import threading
 import time
+import urllib.request
 from pathlib import Path
 from typing import Any
 
@@ -27,7 +29,8 @@ from utils.config_validator import ConfigValidator
 
 CARD_DIR = _ROOT / "benchmark_scores" / "model_cards"
 TIMEOUT_PER_MODEL = 600  # 10 Minuten (Anthropic slow-day headroom)
-MCP_STARTUP_WAIT = 1.5   # Sekunden nach mcp-start
+INACTIVITY_TIMEOUT = 180  # 3 Minuten ohne Output → Watchdog kills hung process
+_MCP_HEALTH_URL = "http://localhost:8765/health"
 
 _SEP = "═" * 54
 _SEP_THIN = "─" * 54
@@ -37,17 +40,59 @@ _SEP_THIN = "─" * 54
 # MCP lifecycle
 # ---------------------------------------------------------------------------
 
+def _mcp_is_up() -> bool:
+    """True if MCP health endpoint responds within 0.5s."""
+    try:
+        urllib.request.urlopen(_MCP_HEALTH_URL, timeout=0.5)
+        return True
+    except Exception:
+        return False
+
+
+def _wait_mcp_down(timeout: float = 3.0) -> None:
+    """Block until port 8765 stops responding, then force-kill if needed."""
+    deadline = time.time() + timeout
+    while time.time() < deadline:
+        if not _mcp_is_up():
+            return
+        time.sleep(0.2)
+    # Still up after timeout — force kill
+    subprocess.run(
+        ["pkill", "-9", "-f", "cruciblemark-mcp/server.py"],
+        check=False, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
+    )
+    time.sleep(0.3)
+
+
+def _wait_mcp_up(timeout: float = 8.0) -> bool:
+    """Poll until server is ready. Returns True on success."""
+    deadline = time.time() + timeout
+    while time.time() < deadline:
+        if _mcp_is_up():
+            return True
+        time.sleep(0.3)
+    return False
+
+
 def _restart_mcp(mode: str = "live") -> None:
-    """Stop current MCP server and start a fresh one. ~1.5s overhead."""
+    """Stop current MCP server and start a fresh one with verified readiness."""
     subprocess.run(
         ["make", "mcp-stop"],
         cwd=str(_ROOT), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, check=False,
     )
+    _wait_mcp_down(timeout=3.0)  # ensure port is free before starting new server
     subprocess.run(
         ["make", "mcp-start", f"MODE={mode}"],
         cwd=str(_ROOT), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, check=False,
     )
-    time.sleep(MCP_STARTUP_WAIT)
+    if not _wait_mcp_up(timeout=8.0):
+        # Retry once
+        subprocess.run(
+            ["make", "mcp-start", f"MODE={mode}"],
+            cwd=str(_ROOT), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, check=False,
+        )
+        if not _wait_mcp_up(timeout=5.0):
+            print("  [WARN] MCP server did not start after restart")
 
 
 # ---------------------------------------------------------------------------
@@ -102,24 +147,84 @@ def get_tool_use_models(provider_filter: str = "all") -> list[tuple[str, str]]:
 # ---------------------------------------------------------------------------
 
 def _run_model(model_id: str, force: bool = False, silent: bool = False) -> bool:
-    """Führt run_benchmark.py --module tooluse --model <id> aus. True = Erfolg."""
+    """Führt run_benchmark.py --module tooluse --model <id> aus. True = Erfolg.
+
+    Watchdog: kills process group if no stdout for INACTIVITY_TIMEOUT seconds.
+    Hard cap: kills after TIMEOUT_PER_MODEL seconds regardless.
+    """
+    import os
+    import signal
+
     cmd = [sys.executable, "run_benchmark.py", "--module", "tooluse", "--model", model_id]
     if force:
         cmd.append("--force")
     if silent:
         cmd.append("--silent")
+
     try:
-        subprocess.run(cmd, check=True, timeout=TIMEOUT_PER_MODEL)
-        return True
-    except subprocess.CalledProcessError as exc:
-        print(f"  [FAIL] exit code {exc.returncode}")
+        proc = subprocess.Popen(
+            cmd,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.STDOUT,
+            text=True,
+            bufsize=1,
+            start_new_session=True,
+        )
+    except Exception as exc:  # noqa: BLE001
+        print(f"  [ERROR] failed to start process: {exc}")
         return False
+
+    # ── Watchdog state ────────────────────────────────────────────────────────
+    last_output_time: list[float] = [time.monotonic()]
+    watchdog_triggered: list[bool] = [False]
+
+    def _watchdog() -> None:
+        while proc.poll() is None:
+            time.sleep(5)
+            elapsed = time.monotonic() - last_output_time[0]
+            if elapsed >= INACTIVITY_TIMEOUT:
+                watchdog_triggered[0] = True
+                print(
+                    f"  [WATCHDOG] no output for {elapsed:.0f}s — "
+                    f"model appears hung, killing process group"
+                )
+                try:
+                    os.killpg(os.getpgid(proc.pid), signal.SIGKILL)
+                except Exception:
+                    proc.kill()
+                return
+
+    wt = threading.Thread(target=_watchdog, daemon=True)
+    wt.start()
+
+    # ── Stream stdout to console ──────────────────────────────────────────────
+    try:
+        for line in proc.stdout:  # type: ignore[union-attr]
+            last_output_time[0] = time.monotonic()
+            print(line, end="", flush=True)
+    except Exception:
+        pass
+
+    # ── Wait for process exit (hard cap) ─────────────────────────────────────
+    try:
+        proc.wait(timeout=TIMEOUT_PER_MODEL)
     except subprocess.TimeoutExpired:
-        print(f"  [TIMEOUT] exceeded {TIMEOUT_PER_MODEL}s")
+        print(f"  [TIMEOUT] exceeded {TIMEOUT_PER_MODEL}s — killing process group")
+        try:
+            os.killpg(os.getpgid(proc.pid), signal.SIGKILL)
+        except Exception:
+            proc.kill()
+        proc.wait()
         return False
-    except Exception as exc:  # noqa: BLE001 — pylint: disable=broad-exception-caught
-        print(f"  [ERROR] {exc}")
+
+    if watchdog_triggered[0]:
         return False
+
+    if proc.returncode != 0:
+        print(f"  [FAIL] exit code {proc.returncode}")
+        return False
+
+    return True
 
 
 # ---------------------------------------------------------------------------
@@ -145,14 +250,28 @@ def _run_batch(
     failed: list[str] = []
 
     for i, (model_id, display_name) in enumerate(models, 1):
+        # MCP health-gated restart: only restart if server is down or explicitly requested
         if restart_mcp:
-            print(f"\n  ↻ MCP-Neustart vor [{i}/{len(models)}]...")
-            _restart_mcp(mcp_mode)
+            if not _mcp_is_up():
+                print(f"\n  ↻ MCP nicht erreichbar — Neustart vor [{i}/{len(models)}]...")
+                _restart_mcp(mcp_mode)
+            # else: server is healthy, skip restart
         print(f"\n[{i}/{len(models)}] {display_name}")
         if _run_model(model_id, force=force, silent=silent):
             success.append(model_id)
         else:
             failed.append(model_id)
+
+        # Mid-run leaderboard update (every 5 models or at end)
+        if i % 5 == 0 or i == len(models):
+            try:
+                config = ConfigValidator().config
+                exporter = ToolUseExporter(config)
+                written = exporter.aggregate_from_benchmark_csvs()
+                if written > 0:
+                    print(f"  ↻ Leaderboard zwischenstand: {written} Modell(e) | {i}/{len(models)} abgeschlossen")
+            except Exception:  # noqa: BLE001
+                pass
 
     print(f"\n{_SEP}")
     print("  Tool Use Benchmark — Batch Run Complete")

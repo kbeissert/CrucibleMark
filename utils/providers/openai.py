@@ -79,9 +79,12 @@ class OpenAIClient(BaseProviderClient):
     ) -> str:
         """Query OpenAI API"""
         try:
+            _system = kwargs.get("system")
             params = {
                 "model": model,
-                "messages": [{"role": "user", "content": prompt}],
+                "messages": (
+                    [{"role": "system", "content": _system}] if _system else []
+                ) + [{"role": "user", "content": prompt}],
             }
             # Reasoning models (o1, o3, o4) and some newer minis often don't support temperature
             # or have strict fixed values.

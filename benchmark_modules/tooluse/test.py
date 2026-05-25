@@ -187,6 +187,12 @@ RETRY_PROMPT = (
     "Aufgabe: {task_prompt}"
 )
 
+SYNTHESIS_SYSTEM_PROMPT = (
+    "Du bist ein präziser Assistent.\n"
+    "Beantworte die Aufgabe ausschließlich auf Basis des bereitgestellten Tool-Ergebnisses.\n"
+    "Erfinde keine Inhalte die nicht aus dem Tool-Ergebnis stammen."
+)
+
 
 class ToolUseTest(BaseTest):
     """Controller für das tooluse Benchmark-Modul.
@@ -350,7 +356,14 @@ class ToolUseTest(BaseTest):
         model_output: str = result.raw_response
         tool_call_parsed: dict[str, Any] = result.data.get("tool_call_parsed", {})
 
-        p1 = evaluator.score_phase1(tool_transcript, self.asset)
+        excerpt_quality: str = tool_transcript.get("excerpt_quality", "empty")
+        parse_attempts: int = result.data.get("tool_call_attempts", result.data.get("parse_attempts", 1))
+
+        p1 = evaluator.score_phase1(
+            tool_transcript, self.asset,
+            excerpt_quality=excerpt_quality,
+            parse_attempts=parse_attempts,
+        )
         p2_raw = evaluator.score_phase2(model_output, tool_transcript, self.asset)
 
         # Content Verification Gate — computes CV state (caps only for B1 and C now)
@@ -413,7 +426,8 @@ class ToolUseTest(BaseTest):
                 if judge_result.hallucination_detected is not None:
                     hallucination_detected = judge_result.hallucination_detected
         except (JudgeUnavailableError, Exception):
-            logger.debug("LLM Judge unavailable for tooluse; using rule-based P2", exc_info=True)
+            logger.warning("LLM Judge unavailable for tooluse; using rule-based P2", exc_info=True)
+            result.data["judge_fallback"] = True
 
         # Hallucination cap — config-first, aus scoring.yaml tool_use.hallucination.cap_hard
         if hallucination_detected and judge_result is not None:
@@ -428,7 +442,11 @@ class ToolUseTest(BaseTest):
         else:
             tool_call_valid = tool_transcript.get("status") == "success" and p1 >= 40.0
 
-        combined = evaluator.combined_score(p1, p2, tool_call_valid=tool_call_valid)
+        combined = evaluator.combined_score(
+            p1, p2, tool_call_valid=tool_call_valid,
+            asset_id=self.asset.get("metadata", {}).get("id", ""),
+            benchmarks_config=self.config.get("benchmarks", []),
+        )
 
         audit = evaluator.build_audit_block_with_output(
             p1, p2, combined, tool_transcript, self.asset, model_output,
@@ -619,6 +637,7 @@ def _run_synthesis(
     tool_transcript: dict[str, Any],
     task_prompt: str,
     kwargs: dict[str, Any],
+    system_prompt: str = SYNTHESIS_SYSTEM_PROMPT,
 ) -> str:
     followup = FOLLOWUP_PROMPT_TEMPLATE.format(
         tool_name=tool_name,
@@ -628,6 +647,7 @@ def _run_synthesis(
     return llm_client.query(
         model=model,
         prompt=followup,
+        system=system_prompt,
         provider=provider,
         **{k: v for k, v in kwargs.items() if k != "provider"},
     ) or ""
