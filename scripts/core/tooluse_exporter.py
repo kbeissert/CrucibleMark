@@ -27,12 +27,12 @@ from benchmark_modules.tooluse.core.constants import (
 )
 from benchmark_modules.tooluse.core.io_manager import ToolUseIOManager, _log_metrics_to_json
 from schemas.result import BenchmarkResult
-from utils.model_utils import normalize_model_id
+from utils.model_utils import normalize_model_id, update_model_card_tooluse_fields
 
 logger = logging.getLogger(__name__)
 
 
-_LOCAL_DEPLOYMENT_TYPES = {"localweights", "open-weights-cloud-available"}
+_LOCAL_DEPLOYMENT_TYPES = {"open-weights", "localweights", "open-weights-cloud-available"}
 
 
 def get_fleet_group(sizeclass: str, deployment_type: str) -> str:
@@ -204,7 +204,7 @@ class ToolUseExporter:
             "call1_tokens": call1_tokens_sum,
             "call2_tokens": call2_tokens_sum,
             "total_tokens": call1_tokens_sum + call2_tokens_sum,
-            "cost_usd": f"{cost_usd_sum:.6f}" if cost_usd_sum else "",
+            "cost_usd": f"{cost_usd_sum:.6f}" if cost_usd_sum else ("local" if deployment_type == "open-weights" else ""),
             "assets_run": len(results),
             "assets_error": assets_error,
             "fleet_group": fleet_group,
@@ -216,6 +216,20 @@ class ToolUseExporter:
             _log_metrics_to_json(model_id, row)
         except Exception:  # noqa: BLE001 — metrics logging must never crash the benchmark
             logger.debug("Metrics logging failed (non-critical)", exc_info=True)
+
+        # Model Card Update: Tooluse-Ergebnisse zurückschreiben
+        # supports_tool_use = True wenn der mittlere P1-Score > 0 ist
+        # (d.h. das Modell hat mindestens in einem Asset einen Tool-Call gemacht).
+        card_supports_tool_use = bool(p1_scores and (sum(p1_scores) / len(p1_scores)) > 0)
+        try:
+            update_model_card_tooluse_fields(
+                model_id=model_id,
+                supports_tool_use=card_supports_tool_use,
+                tested_at=timestamp,
+            )
+        except Exception:  # noqa: BLE001 — Card-Update darf den Benchmark nie crashen
+            logger.debug("Model Card tooluse update failed (non-critical)", exc_info=True)
+
         ToolUseIOManager.print_run_summary(results, model_id)
 
     def calculate_sovereignty_gap(self) -> float | None:
@@ -481,7 +495,7 @@ class ToolUseExporter:
             "call1_tokens": call1_tokens_sum,
             "call2_tokens": call2_tokens_sum,
             "total_tokens": call1_tokens_sum + call2_tokens_sum,
-            "cost_usd": f"{cost_usd_sum:.6f}" if cost_usd_sum else "",
+            "cost_usd": f"{cost_usd_sum:.6f}" if cost_usd_sum else ("local" if deployment_type == "open-weights" else ""),
             "assets_run": len(rows),
             "assets_error": assets_error,
             "fleet_group": fleet_group,

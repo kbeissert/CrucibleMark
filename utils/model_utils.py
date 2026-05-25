@@ -759,6 +759,13 @@ def resolve_token_budget(
         budgets = config.get("token_budgets_reasoning_models", {})
         tokens = budgets[module_key] if (module_key and module_key in budgets) else tokens * 2
 
+    # Model-Card-Cap: Wenn die Card ein explizites max_output_tokens definiert,
+    # wird das Budget darauf begrenzt. So können modellspezifische API-Limits
+    # (z.B. gpt-4o-2024-05-13 akzeptiert max. 4096) ohne Fallback-Retry gesetzt werden.
+    card_cap = _read_max_output_tokens_from_card(model)
+    if card_cap is not None:
+        tokens = min(tokens, card_cap)
+
     return tokens, reasoning
 
 
@@ -781,6 +788,69 @@ def is_thinking_optional_from_card(model_id: str) -> bool:
         tags = data.get("architecture_tags", [])
         return "Thinking-Optional" in (tags or [])
     except Exception:
+        return False
+
+
+def _read_max_output_tokens_from_card(model_id: str) -> int | None:
+    """
+    Liest ``max_output_tokens`` aus der Model Card.
+
+    Gibt den Wert zurück, wenn er als positive Ganzzahl in der Card vorhanden ist,
+    sonst None. Wird von ``resolve_token_budget()`` als harte Obergrenze verwendet,
+    damit modellspezifische API-Limits (z.B. gpt-4o-2024-05-13: max 4096) direkt
+    im ersten Request gesetzt werden und der Fallback-Retry entfällt.
+    """
+    card_path = _find_card(model_id)
+    if not card_path.exists():
+        return None
+    try:
+        data = json.loads(card_path.read_text(encoding="utf-8"))
+        val = data.get("max_output_tokens")
+        if isinstance(val, int) and val > 0:
+            return val
+    except Exception:
+        pass
+    return None
+
+
+def update_model_card_tooluse_fields(
+    model_id: str,
+    supports_tool_use: bool,
+    tested_at: str,
+) -> bool:
+    """Schreibt Tooluse-Benchmark-Ergebnisse direkt in die Model Card.
+
+    Wird von ``tooluse_exporter.finalize_model()`` nach jedem erfolgreichen
+    Benchmark-Run aufgerufen, damit die Card immer den aktuellen verifizierten
+    Stand widerspiegelt.
+
+    Felder, die aktualisiert werden:
+    - ``supports_tool_use``: True/False, abgeleitet aus dem mittleren P1-Score
+    - ``tooluse_tested_at``: ISO-8601-Timestamp des letzten Benchmark-Runs
+
+    Das Feld ``tooluse_tested_at`` dient als Marker dafür, dass der Wert aus
+    einem tatsächlichen Benchmark-Run stammt (nicht manuell gesetzt wurde).
+    Cards ohne dieses Feld gelten als "noch nicht getestet per Benchmark".
+
+    Returns:
+        True wenn die Card erfolgreich aktualisiert wurde, False bei Fehler.
+    """
+    card_path = _find_card(model_id)
+    if not card_path.exists():
+        logger.debug("update_model_card_tooluse_fields: Keine Card gefunden für '%s'", model_id)
+        return False
+    try:
+        data = json.loads(card_path.read_text(encoding="utf-8"))
+        data["supports_tool_use"] = supports_tool_use
+        data["tooluse_tested_at"] = tested_at
+        card_path.write_text(json.dumps(data, ensure_ascii=False, indent=2), encoding="utf-8")
+        logger.debug(
+            "Model Card aktualisiert: %s → supports_tool_use=%s, tooluse_tested_at=%s",
+            model_id, supports_tool_use, tested_at,
+        )
+        return True
+    except Exception:
+        logger.warning("Konnte Model Card nicht aktualisieren für '%s'", model_id, exc_info=True)
         return False
 
 
