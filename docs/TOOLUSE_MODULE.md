@@ -470,6 +470,8 @@ module:
 execution:
   requires_mcp: true
   mcp_health_url: "http://localhost:8765/health"
+  skip_if_card_false: "supports_tool_use"
+  delegate_script: "scripts/run_tooluse_benchmark.py"  # benchmark-auto delegiert vollständig hierher
 
 config:
   phase1_weight: 0.5

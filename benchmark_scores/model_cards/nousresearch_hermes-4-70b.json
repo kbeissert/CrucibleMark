@@ -39,7 +39,7 @@
   "commercial_use_allowed": true,
   "vendor": "NousResearch",
   "weights_license_tier": "restricted-weights",
-  "model_version": "70b",
+  "model_version": "k.A.",
   "input_price_per_1m": 0.13,
   "output_price_per_1m": 0.4,
   "use_case_primary": "generalist",

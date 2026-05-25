@@ -82,6 +82,17 @@ def check_ollama_status() -> bool:
         return False
 
 
+
+def _strip_hf_prefix(model_id: str) -> str:
+    """Normalisiert HF-URL-Präfix: 'hf.co/user/ModelName:tag' → 'ModelName:tag'.
+
+    Ollama listet HF-Modelle manchmal mit vollem Pfad, die CSV speichert nur den
+    letzten Bestandteil — beide Formen müssen im Cache-Lookup als identisch gelten.
+    """
+    import re as _re_hf
+    return _re_hf.sub(r'^hf\.co/[^/]+/', '', model_id)
+
+
 def get_existing_results(csv_path: Path, force: bool = False) -> Set[Tuple[str, str]]:
     """Lädt Set von (Model, AssetID) für bereits existierende Tests über alle Provider-CSVs hinweg."""
     cache = set()
@@ -119,7 +130,14 @@ def get_existing_results(csv_path: Path, force: bool = False) -> Set[Tuple[str, 
                             if status not in COMPLETED_STATUSES:
                                 continue  # Technischer Fehler – wiederholen
 
-                        cache.add((str(row["model"]), str(row["asset_id"])))
+                        model_str = str(row["model"])
+                        asset_str = str(row["asset_id"])
+                        cache.add((model_str, asset_str))
+                        # Auch normalisierte Form ohne HF-Präfix speichern, damit
+                        # 'hf.co/bartowski/X' und 'X' als dieselben Ergebnisse gelten.
+                        stripped = _strip_hf_prefix(model_str)
+                        if stripped != model_str:
+                            cache.add((stripped, asset_str))
             except Exception as e:  # pylint: disable=broad-exception-caught
                 print(f"⚠️ Warnung beim Lesen von {path}: {e}")
 
@@ -130,7 +148,11 @@ def get_existing_results(csv_path: Path, force: bool = False) -> Set[Tuple[str, 
             df_pc = pd.read_csv(pc_csv)
             if "model" in df_pc.columns:
                 for _, row in df_pc.iterrows():
-                    cache.add((str(row["model"]), "political_compass_v3"))
+                    model_str = str(row["model"])
+                    cache.add((model_str, "political_compass_v3"))
+                    stripped = _strip_hf_prefix(model_str)
+                    if stripped != model_str:
+                        cache.add((stripped, "political_compass_v3"))
         except Exception as e:
             print(f"⚠️ Warnung beim Lesen von {pc_csv}: {e}")
 
@@ -160,6 +182,10 @@ def get_all_modules(validator: ConfigValidator) -> List[Dict[str, Any]]:
                     "execution_mode", mod.get("execution_mode", "standard")
                 ),
                 "min_runs": execution.get("min_runs", mod.get("min_runs", 1)),
+                "requires_mcp": execution.get("requires_mcp", False),
+                "skip_if_card_false": execution.get("skip_if_card_false"),
+                "delegate_script": execution.get("delegate_script"),
+                "delegate_extra_args": execution.get("delegate_extra_args", []) or [],
             }
         )
     return modules
@@ -171,6 +197,23 @@ def _get_startable_assets(
     """Ermittelt Asset-Pfade, die für dieses Modell noch nicht getestet wurden."""
     assets_path = module["path"]
 
+    # -------------------------------------------------------
+    # CARD-BASED SKIP (skip_if_card_false)
+    # -------------------------------------------------------
+    # Wenn die Model Card einen Key mit Wert False trägt, wird das Modul
+    # für dieses Modell komplett übersprungen — kein Re-Run nötig.
+    # Beispiel: supports_tool_use: false → Tooluse-Assets werden nicht ausgeführt.
+    skip_card_key = module.get("skip_if_card_false")
+    if skip_card_key:
+        import json as _json
+        from utils.model_utils import _find_card as _fc
+        _card_dir = ROOT_DIR / "benchmark_scores" / "model_cards"
+        _card_path = _fc(model, card_dir=_card_dir)
+        if _card_path.exists():
+            _card = _json.loads(_card_path.read_text())
+            if _card.get(skip_card_key) is False:
+                print(f"   ⏩ Bench: {module['name']} ({skip_card_key}=false in Card — übersprungen)")
+                return []
     # -------------------------------------------------------
     # SPECIAL HANDLING FOR BATCH MODULES (e.g. Political Compass)
     # -------------------------------------------------------
@@ -196,7 +239,12 @@ def _get_startable_assets(
         import re as _re_auto
         model_normalized = _re_auto.sub(r"-\d{8}$", "", model)
         model_normalized = _re_auto.sub(r"-(0[1-9]|1[0-2])\d{2}$", "", model_normalized)
-        if (model, batch_id) in existing_tests or (model_normalized, batch_id) in existing_tests:
+        model_hf_stripped = _strip_hf_prefix(model)
+        if (
+            (model, batch_id) in existing_tests
+            or (model_normalized, batch_id) in existing_tests
+            or (model_hf_stripped, batch_id) in existing_tests
+        ):
             return []
     # -------------------------------------------------------
 
@@ -219,7 +267,8 @@ def _get_startable_assets(
                 data = yaml.safe_load(f)
                 asset_id = data.get("metadata", {}).get("id")
 
-            if (model, asset_id) in existing_tests:
+            model_hf_stripped = _strip_hf_prefix(model)
+            if (model, asset_id) in existing_tests or (model_hf_stripped, asset_id) in existing_tests:
                 continue
 
             assets_todo.append(asset_f)
@@ -230,13 +279,44 @@ def _get_startable_assets(
     return assets_todo
 
 
+def _run_delegate_for_model(
+    module: Dict[str, Any],
+    model: str,
+    force: bool = False,
+    audit: bool = True,
+    mcp_mode: str = "live",
+) -> bool:
+    """Delegiert die Ausführung eines Moduls an das zuständige Fachscript.
+
+    Das Fachscript verantwortet seinen eigenen Lifecycle (inkl. MCP falls nötig).
+    Returns True wenn der Prozess erfolgreich beendet wurde (rc == 0).
+    """
+    script = ROOT_DIR / module["delegate_script"]
+    extra = list(module.get("delegate_extra_args", []) or [])
+    cmd = [sys.executable, str(script)] + extra + ["--model", model]
+    if force:
+        cmd.append("--force")
+    if not audit:
+        cmd.append("--silent")
+    if module.get("requires_mcp"):
+        cmd += ["--mcp-mode", mcp_mode]
+    result = subprocess.run(cmd, cwd=str(ROOT_DIR), check=False)
+    return result.returncode == 0
+
+
 def _run_module_for_model(
     runner: UnifiedBenchmarkRunner,
     model: str,
     module: Dict[str, Any],
     existing_tests: Set[Tuple[str, str]],
+    force: bool = False,
+    audit: bool = True,
+    mcp_mode: str = "live",
 ) -> bool:
     """Führt ein einzelnes Modul für ein einzelnes Modell aus.
+
+    Wenn das Modul einen `delegate_script`-Key definiert, wird die Ausführung
+    vollständig an dieses Fachscript delegiert (SSOT für Lifecycle-Logik).
 
     Returns:
         True wenn neue Ergebnisse gespeichert wurden, False sonst.
@@ -244,12 +324,8 @@ def _run_module_for_model(
     assets_todo = _get_startable_assets(
         module=module, model=model, existing_tests=existing_tests
     )
-    # Note: assets_todo is calculated but currently the UnifiedBenchmarkRunner
-    # runs ALL assets in the folder. So filtering here serves mainly for info logging
-    # unless we patch the runner. The original code just logged.
 
     if not assets_todo:
-        # If we calculate that everything is done, we could skip calling the runner.
         msg = f"   ✓ Bench: {module['name']} (Alle Tests bereits vorhanden)"
         if module.get("key") == "political_compass":
             msg += " [Batch-Mode Skip]"
@@ -258,8 +334,10 @@ def _run_module_for_model(
 
     print(f"   📊 Bench: {module['name']} ({len(assets_todo)} neue Tests) ...")
 
+    if module.get("delegate_script"):
+        return _run_delegate_for_model(module, model, force=force, audit=audit, mcp_mode=mcp_mode)
+
     try:
-        # Pass filtered assets (assets_todo) to evita re-running existing tests
         results = runner.run_benchmark(provider="ollama", model=model, benchmark_info=module, assets=assets_todo)
         if results:
             runner.save_results(results)
@@ -277,6 +355,7 @@ def run_local_batch(
     validator: ConfigValidator,
     force: bool = False,
     audit_mode: bool = False,
+    mcp_mode: str = "live",
 ) -> None:
     """Batch-Run für alle lokalen Ollama-Modelle."""
     # pylint: disable=unused-argument
@@ -312,16 +391,23 @@ def run_local_batch(
     print(f"Liste: {', '.join(suitable_models)}\n")
     print(f"Ignoriere bereits vorhandene Ergebnisse in: {csv_path}\n")
 
-    for i, model in enumerate(suitable_models, 1):
-        print(f"\n➡️  MOD [Lokal {i}/{len(suitable_models)}]: {model}")
-        had_new_results = False
-        for module in modules:
-            had_new_results |= _run_module_for_model(runner, model, module, existing_tests)
-        if had_new_results:
-            try:
-                gen_leaderboard(print_table=False)
-            except Exception as e:  # pylint: disable=broad-exception-caught
-                print(f"   ⚠️ Leaderboard-Update fehlgeschlagen: {e}")
+    try:
+        for i, model in enumerate(suitable_models, 1):
+            print(f"\n➡️  MOD [Lokal {i}/{len(suitable_models)}]: {model}")
+            had_new_results = False
+            for module in modules:
+                had_new_results |= _run_module_for_model(
+                    runner, model, module, existing_tests,
+                    force=force, audit=audit_mode, mcp_mode=mcp_mode,
+                )
+            if had_new_results:
+                try:
+                    gen_leaderboard(print_table=False)
+                except Exception as e:  # pylint: disable=broad-exception-caught
+                    print(f"   ⚠️ Leaderboard-Update fehlgeschlagen: {e}")
+    except KeyboardInterrupt:
+        print("\n⛔  Abbruch durch Benutzer.")
+        sys.exit(1)
 
 
 def run_commercial_batch(
@@ -329,6 +415,7 @@ def run_commercial_batch(
     validator: ConfigValidator,
     force: bool = False,
     audit_mode: bool = False,
+    mcp_mode: str = "live",
 ) -> None:
     """Batch-Run für alle konfigurierten kommerziellen Modelle."""
     print("\n🏢  [2/2] KOMMERZIELLE MODELLE (API)")
@@ -445,6 +532,15 @@ def run_commercial_batch(
                 continue
 
             print(f"   📊 Bench: {module['name']} ({len(assets_todo)} neue Tests) ...")
+
+            if module.get("delegate_script"):
+                ok = _run_delegate_for_model(
+                    module, model_id, force=force, audit=audit_mode, mcp_mode=mcp_mode
+                )
+                if ok:
+                    had_new_results = True
+                continue
+
             try:
                 results = runner.run_benchmark(
                     provider=prov_key, model=model_id, benchmark_info=module, assets=assets_todo
@@ -497,6 +593,12 @@ def main():
         dest="audit",
         help="Deaktiviert Audit-Logging. Standard: Audit ist aktiv.",
     )
+    parser.add_argument(
+        "--mcp-mode",
+        default="live",
+        choices=["live", "mock"],
+        help="MCP-Server-Modus für Module mit requires_mcp: true (default: live).",
+    )
     args = parser.parse_args()
 
     print(f"{'#' * 60}")
@@ -542,7 +644,7 @@ def main():
     try:
         # 1. Lokale Modelle
         try:
-            run_local_batch(modules, validator, force=args.force, audit_mode=args.audit)
+            run_local_batch(modules, validator, force=args.force, audit_mode=args.audit, mcp_mode=args.mcp_mode)
         except (KeyboardInterrupt, SystemExit):
             print("\n⛔  Abbruch durch Benutzer (Lokale Modelle).")
             aborted = True
@@ -551,7 +653,7 @@ def main():
         if not aborted:
             try:
                 run_commercial_batch(
-                    modules, validator, force=args.force, audit_mode=args.audit
+                    modules, validator, force=args.force, audit_mode=args.audit, mcp_mode=args.mcp_mode
                 )
             except (KeyboardInterrupt, SystemExit):
                 print("\n⛔  Abbruch durch Benutzer (Kommerzielle Modelle).")

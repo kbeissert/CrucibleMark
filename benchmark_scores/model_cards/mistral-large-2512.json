@@ -1,0 +1,14 @@
+{
+  "model_id": "mistral-large-2512",
+  "display_name": "mistral-large-2512",
+  "developer": "n/a",
+  "architecture_tags": [
+    "General"
+  ],
+  "card_status": "minimal",
+  "generated_at": "2026-05-25T22:13:48.102060+00:00",
+  "thinking_probe_detected": false,
+  "thinking_probe_evidence": "No CoT signals found (A: no think-tags, B: reasoning_tokens=0). Response length: 486 chars",
+  "thinking_probe_confidence": "low",
+  "thinking_probe_at": "2026-05-25T22:13:48.102043+00:00"
+}

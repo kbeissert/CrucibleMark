@@ -98,7 +98,7 @@ benchmark-cross-model:
 
 benchmark-auto:
 	@echo "Starting Full Auto Benchmark (Smart Autofill $(if $(SILENT),Silent Mode,with Audit Logs))..."
-	$(PYTHON) scripts/core/benchmark_auto.py $(if $(SILENT),--silent,) $(if $(FORCE),--force)
+	$(PYTHON) scripts/core/benchmark_auto.py $(if $(SILENT),--silent,) $(if $(FORCE),--force) $(if $(MCP_MODE),--mcp-mode $(MCP_MODE))
 
 benchmark-human:
 	@echo "Starting Human Baseline Test..."

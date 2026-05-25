@@ -75,6 +75,8 @@ execution:
   min_runs: 2
   assets_dir: "assets"
   group_assets_by_pattern: '^political_compass_7\.(\d)-'
+  delegate_script: "run_benchmark.py"        # benchmark-auto delegiert an dieses Script
+  delegate_extra_args: ["--module", "political_compass"]  # Zusätzliche CLI-Argumente für das Delegate-Script
 
 # ================================
 # AGGREGATION: Data Visualisation

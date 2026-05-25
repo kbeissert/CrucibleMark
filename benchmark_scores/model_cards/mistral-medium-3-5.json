@@ -43,7 +43,7 @@
   "commercial_use_allowed": true,
   "vendor": "Mistral AI",
   "weights_license_tier": "open-weights",
-  "model_version": "3.5",
+  "model_version": "2312",
   "use_case_primary": "generalist",
   "parameter_architecture": "dense",
   "params_total_b": null,

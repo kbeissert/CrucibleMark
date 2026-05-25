@@ -69,6 +69,12 @@ def _enrich_from_csv_source(
 
         def safe_format(row):
             try:
+                # Guard: not-capable check
+                not_capable_col = source_config.get("not_capable_column")
+                if not_capable_col and not_capable_col in row.index:
+                    if str(row[not_capable_col]).lower() in ("false", "0", "no", "n"):
+                        return source_config.get("not_capable_value", "n/a")
+
                 # Option A: JSON Object Access (Structured Data)
                 # Check for either metadata_json (Standard v2) or metrics_json (Legacy)
                 json_col = None
@@ -226,6 +232,26 @@ def _enrich_from_csv_source(
         # Fill Missing
         fallback = source_config.get("missing_value", "Pending")
         result[label] = result[label].fillna(fallback)
+
+        # Model-card-based not-capable check (for models absent from source CSV)
+        not_capable_card_key = source_config.get("not_capable_card_key")
+        not_capable_value = source_config.get("not_capable_value", "n/a")
+        if not_capable_card_key:
+            import json as _json_card  # noqa: PLC0415
+            from utils.model_utils import _find_card  # noqa: PLC0415
+            card_dir = ROOT_DIR / "benchmark_scores" / "model_cards"
+            fallback_mask = result[label] == fallback
+            if fallback_mask.any():
+                for idx in result[fallback_mask].index:
+                    model_id = str(result.at[idx, "model"])
+                    card_path = _find_card(model_id, card_dir=card_dir)
+                    if card_path.exists():
+                        try:
+                            card = _json_card.loads(card_path.read_text())
+                            if card.get(not_capable_card_key) is False:
+                                result.at[idx, label] = not_capable_value
+                        except Exception:  # pylint: disable=broad-exception-caught
+                            pass
 
     except Exception as e:  # pylint: disable=broad-exception-caught
         print(f"Generic CSV Merge Error ({filename}): {e}")

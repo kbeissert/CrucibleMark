@@ -151,6 +151,10 @@ def load_benchmark_data() -> pd.DataFrame:
         (df["type"] != "Proprietär") | (df["source"].isin(["commercial", "cloud"]))
     ]
 
+    # Drop spurious header-repetition rows (CSV written with header twice)
+    if "model" in df.columns:
+        df = df[df["model"] != "model"]
+
     df["percentage"] = pd.to_numeric(df["percentage"], errors="coerce")
     df["execution_time"] = pd.to_numeric(df["execution_time"], errors="coerce")
     if "cost_usd" in df.columns:
@@ -192,45 +196,32 @@ def load_benchmark_data() -> pd.DataFrame:
             subset=["model", "model_version", "asset_id"], keep="last"
         )
 
-    # --- VERSION ALIASING/MERGING ---
-    # Fix mismatches where some entries use date-strings and others use hashes for the same model.
-    # We prefer alphanumeric hashes over pure numeric date-strings if both exist for a model.
+    # --- MODEL CARD VERSION NORMALIZATION (SSoT) ---
+    # The model card is the single source of truth for model_version.
+    # Override whatever version string the API returned at runtime with the
+    # canonical value from the card. This prevents partial runs under a new
+    # API version string from creating spurious duplicate leaderboard entries.
     if "model" in df.columns and "model_version" in df.columns:
-        pairs = df[["model", "model_version"]].drop_duplicates()
-        m_counts = pairs["model"].value_counts()
-        multi_ver_models = m_counts[m_counts > 1].index
+        import json as _json_card  # noqa: PLC0415
+        from utils.model_utils import _find_card as _find_model_card  # noqa: PLC0415
+        _card_dir = Path(__file__).resolve().parents[2] / "benchmark_scores" / "model_cards"
 
-        version_map = {}
-        for m in multi_ver_models:
-            vers = pairs[pairs["model"] == m]["model_version"].tolist()
-            # Heuristic: Prefer version with letters (e.g. hash) over pure numeric (e.g. date)
-            # Exclude 'unknown'/'none' from being considered a valid "alpha" version (target)
-            alphas = [
-                v
-                for v in vers
-                if any(c.isalpha() for c in str(v))
-                and str(v).lower() not in ["unknown", "none", "nan", ""]
-            ]
+        card_version_map: dict = {}
+        for model_id in df["model"].unique():
+            card_path = _find_model_card(str(model_id), card_dir=_card_dir)
+            if card_path.exists():
+                try:
+                    card = _json_card.loads(card_path.read_text(encoding="utf-8"))
+                    if isinstance(card, dict):
+                        v = card.get("model_version")
+                        if v and str(v).strip():
+                            card_version_map[str(model_id)] = str(v).strip()
+                except Exception:  # pylint: disable=broad-exception-caught
+                    pass
 
-            # If we have exactly one 'alpha' version and other 'numeric' versions, map all to alpha.
-            # If multiple alpha versions exist, we assume they are distinct releases and do NOT merge.
-            if len(alphas) == 1:
-                best_v = alphas[0]
-                for v in vers:
-                    if v != best_v:
-                        # Only merge if the other version is purely numeric (date-like) or shorter/generic
-                        if str(v).replace("-", "").isdigit() or v in [
-                            "unknown",
-                            "None",
-                        ]:
-                            version_map[(m, v)] = best_v
-
-        if version_map:
-            # print(f"Merging alias versions: {version_map}")
+        if card_version_map:
             df["model_version"] = df.apply(
-                lambda row: version_map.get(
-                    (row["model"], row["model_version"]), row["model_version"]
-                ),
+                lambda row: card_version_map.get(str(row["model"]), row["model_version"]),
                 axis=1,
             )
 
