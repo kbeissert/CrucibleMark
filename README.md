@@ -100,7 +100,7 @@ make political-compass-safe
 
 CrucibleMark enthält eine integrierte Export-Pipeline (`scripts/web_export.py`), die sämtliche Benchmark-Ergebnisse als aufbereitetes Datenpaket für das externe Frontend-Projekt `cruciblemark-web` bereitstellt.
 
-**Model Cards & Provider Cards** sind strukturierte JSON-Steckbriefe mit Entwickler, Herkunftsland, Datenschutz-Metadaten, Sovereign-Risk-Einschätzung sowie Preisinformationen. Sie werden **manuell gepflegt** — `make model-cards` erstellt ein Template, das dann redaktionell befüllt wird. Model Cards sind die **Single Source of Truth** für Pricing (`input_price_per_1m` / `output_price_per_1m`), Modell-Kategorie (`weights_license_tier`) und Thinking-Probe-Status. `cost_limits.yaml` ist ein Legacy-Fallback für die wenigen Modelle ohne Card — dort nichts Neues eintragen.
+**Model Cards & Provider Cards** sind strukturierte JSON-Steckbriefe mit Entwickler, Herkunftsland, Datenschutz-Metadaten, Sovereign-Risk-Einschätzung sowie Preisinformationen. Sie werden **manuell gepflegt** — `make model-cards` erstellt ein Template, das dann redaktionell befüllt wird. Model Cards sind die **Single Source of Truth** für Pricing (`input_price_per_1m` / `output_price_per_1m`), Modell-Kategorie (`weights_license_tier`) und Thinking-Probe-Status.
 
 ```bash
 make model-cards MODEL=<id>  # Neues Model Card Template anlegen (dann manuell befüllen)

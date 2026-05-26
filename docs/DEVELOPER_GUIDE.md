@@ -576,7 +576,7 @@ Jede Model Card JSON muss folgende Felder enthalten. Cards mit `card_status: "dr
 | `input_price_per_1m` | float | Preis pro 1M Input-Tokens in USD |
 | `output_price_per_1m` | float | Preis pro 1M Output-Tokens in USD |
 
-**Wichtig:** Preise gehören ausschließlich in die Model Card. `cost_limits.yaml` ist Legacy-Fallback für die wenigen Modelle ohne Card — dort nichts Neues eintragen.
+**Wichtig:** Preise gehören ausschließlich in die Model Card.
 
 #### Thinking Probe
 

@@ -4,6 +4,19 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [v3.15.1] - 2026-05-26
+
+### Removed
+- **Daily Budget Enforcement komplett entfernt** — `CostTracker.check_budget()`, `get_daily_spend()`, `get_remaining_budget()` und `warning_threshold` gelöscht. `config/cost_limits.yaml` (enthielt nur noch tägl. Budget-Limits) gelöscht. Budget-Vorab-Check in `llm_client.py` entfernt. "Remaining Budget"-Anzeige in `base_runner.py` entfernt. `CostLimitExceededError`-Klasse und Exception-Handler in `unified_runner.py` entfernt.
+
+### Changed
+- **`utils/cost_tracker.py`:** Schlanker konstruktor — kein YAML-Config-Loading mehr. `cost_log_file` ist jetzt hardcodiert (`outputs/cost_log.csv`). `calculate_cost()` ist 1-stufig: Model Card JSON → Warning-Log + `return 0.0`. Kosten-Tracking (`track_request()`, `get_spend_breakdown()`) vollständig erhalten.
+
+### Docs
+- **`CLAUDE.md`**, **`README.md`**, **`docs/USER_GUIDE.md`**, **`docs/DEVELOPER_GUIDE.md`:** Alle Referenzen auf `cost_limits.yaml` als Legacy-Fallback und auf tägliche Budget-Limits entfernt. Pricing-SSoT-Hinweis zeigt jetzt direkt auf Model Card JSON.
+
+---
+
 ## [v3.15.0] - 2026-05-25
 
 ### Added
