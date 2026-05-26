@@ -5,7 +5,6 @@ from pathlib import Path
 from datetime import datetime
 from typing import Dict, Any, Optional
 
-from utils.pricing_updater import PricingUpdater, DEFAULT_TTL_DAYS
 
 
 class CostTracker:
@@ -29,14 +28,6 @@ class CostTracker:
         )
         self._init_csv()
         self._migrate_csv_add_call_type()
-
-        # Preise bei Bedarf aus LiteLLM Pricing DB aktualisieren.
-        # TTL kann in cost_limits.yaml unter settings.pricing_ttl_days überschrieben werden.
-        ttl_days = self.config.get("settings", {}).get(
-            "pricing_ttl_days", DEFAULT_TTL_DAYS
-        )
-        self.pricing_updater = PricingUpdater()
-        self.pricing_updater.ensure_fresh(ttl_days=ttl_days)
 
     def _load_config(self) -> Dict[str, Any]:
         """Lädt die Kosten-Konfiguration."""
@@ -127,22 +118,11 @@ class CostTracker:
         Berechnet die Kosten für einen Request.
 
         Lookup-Reihenfolge:
-          1. LiteLLM Preis-Cache (automatisch aktuell gehalten, 7-Tage-TTL)
-          2. Model Card JSON (benchmark_scores/model_cards/*.json)
-          3. cost_limits.yaml (Legacy-Fallback für Modelle ohne Card)
-          4. Lokale Modelle / unbekannte Provider → 0.0
+          1. Model Card JSON (benchmark_scores/model_cards/*.json) — SSoT
+          2. cost_limits.yaml (Legacy-Fallback für Modelle ohne Card)
+          3. Kein Preis gefunden → Warning-Log, return 0.0
         """
-        # 1. LiteLLM Preis-Cache
-        cached = self.pricing_updater.get_price(model)
-        if cached is not None:
-            input_price, output_price = cached
-            return round(
-                (input_tokens / 1000) * input_price
-                + (output_tokens / 1000) * output_price,
-                6,
-            )
-
-        # 2. Model Card (SSoT für alle migrierten Modelle)
+        # 1. Model Card (SSoT)
         try:
             from utils.model_utils import _find_card  # lazy import – avoids circular
             import json as _json
@@ -162,7 +142,7 @@ class CostTracker:
         except Exception:
             pass
 
-        # 3. cost_limits.yaml (Legacy-Fallback für Modelle ohne Card)
+        # 2. cost_limits.yaml (Legacy-Fallback für Modelle ohne Card)
         provider_config = self.config.get("providers", {}).get(provider)
         if not provider_config:
             return 0.0  # Lokales oder unbekanntes Modell
@@ -182,8 +162,8 @@ class CostTracker:
                     break
 
         if not model_config:
-            logging.getLogger(__name__).debug(
-                "Kein Preis für Modell '%s' (%s) in LiteLLM-Cache, Model Card oder cost_limits.yaml.",
+            logging.getLogger(__name__).warning(
+                "Kein Preis für Modell '%s' (%s): keine Model Card und kein Eintrag in cost_limits.yaml. Kosten werden mit 0.0 geloggt.",
                 model,
                 provider,
             )
