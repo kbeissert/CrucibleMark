@@ -533,7 +533,7 @@ Das Skript legt `.bak`-Backups aller drei Benchmark-CSVs an und füllt leere / `
 
 ### Model Card Schema — Pflichtfelder
 
-Jede Model Card JSON muss folgende Felder enthalten. Cards mit `card_status: "draft"` sind manuell erstellte Templates (via `make model-cards`) und dürfen `"TODO"`-Platzhalter enthalten. `card_status: "complete"` signalisiert, dass alle Pflichtfelder befüllt sind.
+Jede Model Card JSON muss folgende Felder enthalten. Cards mit `card_status: "draft"` sind manuell erstellte Templates (via `make model-card`) und dürfen `"TODO"`-Platzhalter enthalten. `card_status: "minimal"` kennzeichnet automatisch durch den ThinkingProbe-Hook angelegte Minimal-Cards (nur Probe-Felder befüllt). `card_status: "complete"` signalisiert, dass alle Pflichtfelder befüllt sind.
 
 #### Kern-Identität
 
@@ -542,7 +542,7 @@ Jede Model Card JSON muss folgende Felder enthalten. Cards mit `card_status: "dr
 | `model_id` | string | Kanonische API-ID (z. B. `"mistral-large-2411"`, `"hf.co/bartowski/NousResearch_Hermes-4-14B-GGUF:Q4_K_M"`) — SSoT für alle Lookups |
 | `display_name` | string | Anzeigename im Frontend |
 | `vendor` | string | API-Anbieter (z. B. `"Mistral AI"`, `"OpenAI"`) |
-| `card_status` | string | `"stub"` / `"complete"` — steuert Vollständigkeits-Guards |
+| `card_status` | string | `"draft"` / `"minimal"` / `"complete"` — steuert Vollständigkeits-Guards |
 | `heritage_ids` | list[string] | Frühere Model-IDs / Alias-Namen, unter denen Review-Dirs abgelegt wurden. Web-Exporter fällt bei fehlender primärer Dir auf diese zurück. |
 
 #### Architektur & Deployment

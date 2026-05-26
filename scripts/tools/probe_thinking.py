@@ -33,6 +33,7 @@ ROOT_DIR = Path(__file__).resolve().parent.parent.parent
 if str(ROOT_DIR) not in sys.path:
     sys.path.insert(0, str(ROOT_DIR))
 
+from utils.card_utils import ensure_card
 from utils.model_utils import ThinkingProbeResult, probe_thinking_model
 
 logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
@@ -82,29 +83,21 @@ def _write_probe_to_card(
     model_id: str,
     probe: ThinkingProbeResult,
 ) -> Path:
-    """Schreibt Probe-Ergebnis in bestehende Card oder erstellt Minimal-Card."""
-    safe = model_id.replace("/", "_").replace(":", "_").replace(".", "_")
-    card_path = CARDS_DIR / f"{safe}.json"
-    CARDS_DIR.mkdir(parents=True, exist_ok=True)
+    """Schreibt Probe-Ergebnis in Card (vollständige Struktur wird sichergestellt)."""
+    # Vollständige Card-Struktur anlegen/ergänzen (keine Minimal-Card mehr)
+    card_path = ensure_card(model_id)
 
     probe_fields = _probe_fields_to_dict(probe)
 
-    if card_path.exists():
-        try:
-            card: dict[str, Any] = json.loads(card_path.read_text(encoding="utf-8"))
-        except Exception:
-            card = {"model_id": model_id}
-    else:
-        card = {
-            "model_id": model_id,
-            "display_name": model_id,
-            "developer": "n/a",
-            "architecture_tags": ["Thinking"] if probe.detected else ["General"],
-            "card_status": "minimal",
-            "generated_at": datetime.now(timezone.utc).isoformat(),
-        }
-
+    card: dict[str, Any] = json.loads(card_path.read_text(encoding="utf-8"))
     card.update(probe_fields)
+
+    # Thinking-Tag in architecture_tags setzen wenn erkannt und noch nicht vorhanden
+    if probe.detected:
+        tags: list[str] = card.get("architecture_tags") or []
+        if "Thinking" not in tags:
+            card["architecture_tags"] = ["Thinking"] + [t for t in tags if t != "General"]
+
     card_path.write_text(json.dumps(card, ensure_ascii=False, indent=2), encoding="utf-8")
     return card_path
 

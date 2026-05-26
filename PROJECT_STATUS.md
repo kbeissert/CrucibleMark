@@ -1,19 +1,26 @@
 # PROJECT_STATUS.md
 
-**Last Updated:** 2026-05-25
-**Current Version:** 3.15.0 (Tool Use Probe-Run: 5 Modelle live, 2 PRODUCTION-Modelle, 11-Modell-Leaderboard)
+**Last Updated:** 2026-05-26
+**Current Version:** 3.15.1 (4 Frontier Model Cards complete + Dokumentations-Update)
 **Status:** ✅ Production-Ready
 
 ---
 
 ## Executive Summary
 
-CrucibleMark v3.15.0 schließt den ersten vollständigen Live-Probe-Run des Tool Use Benchmark-Moduls ab. Fünf Modelle wurden gegen alle 6 Assets mit echten MCP-Tools (Tavily, httpbin) getestet. Ergebnis: GPT-5 Mini (76.5%) und Grok 4 Fast Non-Reasoning (74.2%) erreichen [PRODUCTION]-Status. Alle anderen scheitern an Halluzinationen. Das Leaderboard umfasst jetzt 11 Modelle. `tooluse_exporter.py` korrigiert die `cost_usd`-Darstellung für Open-Weights-Modelle (`"local"` statt `0.0`).
+CrucibleMark v3.15.1 schließt die Model-Card-Erfassung für vier neue Frontier-Modelle ab: Mistral Large 3 (`mistral-large-2512`), Devstral 2 (`devstral-2512`), GPT-5.5 (`gpt-5.5`) und Gemini 3.5 Flash (`gemini-3.5-flash`). Alle vier Cards sind auf `card_status: "complete"` gesetzt und im Leaderboard (43/43 Module) bestätigt. Ergänzend wurde die Kerndokumentation um zwei lange fehlende Abschnitte erweitert: der delegate_script-Mechanismus (PC + Tool Use als Sub-Runner) und der Model-Card-Lifecycle (`draft` / `minimal` / `complete`) sind jetzt in `ARCHITECTURE.md` und `DEVELOPER_GUIDE.md` korrekt beschrieben.
 
-**Key Achievements (v3.15.0):**
-- ✅ **Probe-Run 5 Modelle** — Live-MCP-Modus (mode=live, Port 8765, Tavily). gpt-5-mini 76.5% [PRODUCTION], grok-4-fast-non-reasoning 74.2% [PRODUCTION], moonshotai/kimi-k2 73.6%, qwen/qwen3-32b 72.9%, gemma4:E4B 65.7%. PRODUCTION-Kriterium: keine Halluzination + alle 6 Tool-Calls valide.
-- ✅ **`cost_usd="local"` für Open-Weights** — `_LOCAL_DEPLOYMENT_TYPES` in `tooluse_exporter.py` um `"open-weights"` erweitert. Lokale Modelle zeigen `local` statt `$0.00` im Leaderboard.
-- ✅ **Leaderboard 11 Modelle** — `benchmark_scores/tooluse_leaderboard.csv` enthält alle bisherigen Probe-Modelle + Calibration-Modelle. Sovereignty Gap dokumentiert.
+**Key Achievements (v3.15.1):**
+- ✅ **`mistral-large-2512.json`** — Mistral Large 3, MoE 675B/41B aktiv, Apache 2.0, context 262K, input $0.50/1M, output $1.50/1M.
+- ✅ **`devstral-2512.json`** — Devstral 2, Dense 123B, Modified MIT (restricted-weights), context 256K, input $0.40/1M, output $2.00/1M.
+- ✅ **`gpt-5_5.json`** — GPT-5.5, Proprietär, context 1050K, knowledge_cutoff 2026-04, input $5.00/1M, output $30.00/1M.
+- ✅ **`gemini-3_5-flash.json`** — Gemini 3.5 Flash, Proprietär, context 1049K, knowledge_cutoff 2025-01, input $1.50/1M, output $9.00/1M.
+- ✅ **Dokumentation** — `ARCHITECTURE.md`: delegate_script + Model-Card-Lifecycle. `DEVELOPER_GUIDE.md`: card_status-Tabelle korrigiert. `README.md`: `make benchmark-auto` ergänzt.
+
+**Vorherige Version (v3.15.0 — Tool Use Probe-Run: 5 Modelle live, 2 PRODUCTION-Modelle, 11-Modell-Leaderboard):**
+- ✅ **Probe-Run 5 Modelle** — Live-MCP-Modus (mode=live, Port 8765, Tavily). gpt-5-mini 76.5% [PRODUCTION], grok-4-fast-non-reasoning 74.2% [PRODUCTION], moonshotai/kimi-k2 73.6%, qwen/qwen3-32b 72.9%, gemma4:E4B 65.7%.
+- ✅ **`cost_usd="local"` für Open-Weights** — `_LOCAL_DEPLOYMENT_TYPES` in `tooluse_exporter.py` um `"open-weights"` erweitert.
+- ✅ **Leaderboard 11 Modelle** — `benchmark_scores/tooluse_leaderboard.csv`. Sovereignty Gap dokumentiert.
 - ✅ **gemma4:E4B fleet_group-Backfill** — `fleet_group=local_sovereign`, `sovereignty_gap=-7.28` nachgepflegt.
 - ✅ **Model Cards aktualisiert** — `gpt-4o.json`, `magistral-medium-latest.json`: `tooluse_tested_at` + Scoring-Felder gesetzt.
 

@@ -129,11 +129,33 @@ Die Ergebnisse werden vom Runner durch den `ResultManager` (`utils/result_manage
 >
 > **Terminologie:** „Open Weights" ≠ „Open Source". Open-Weights-Modelle (z. B. Llama, Kimi K2, Qwen) veröffentlichen ihre trainierten Gewichte unter permissiven Lizenzen (Apache 2.0 o. ä.), legen aber Trainingsdaten, Trainings-Code und vollständige Architektur-Details in der Regel **nicht** offen. Sie sind damit öffentlich nutzbar, aber nicht im klassischen Open-Source-Sinne inspizierbar. CrucibleMark adressiert genau diese Intransparenz: Durch Beleuchtung des Verhaltens aus mehreren Perspektiven (Code, Logik, Sprache, Kultur) entsteht eine empirische Einordnung, die sonst mangels Quelleinsicht nicht möglich wäre.
 
+**Delegate-Script-Mechanismus (spezialisierte Sub-Runner):**
+
+Nicht alle Benchmark-Module laufen über den `UnifiedBenchmarkRunner`. Module mit komplexen, eigenständigen Execution-Anforderungen können in `benchmark_config.yaml` unter `execution.delegate_script` ein dediziertes Sub-Runner-Skript registrieren. `benchmark_auto.py` erkennt diesen Key und delegiert die gesamte Ausführung für dieses Modul per `subprocess.run()` an das Skript — statt `UnifiedBenchmarkRunner` zu instanziieren.
+
+```yaml
+# benchmark_config.yaml — Beispiel
+tooluse:
+  execution:
+    execution_mode: delegate
+    delegate_script: scripts/run_tooluse_benchmark.py
+    delegate_extra_args: ["--audit"]
+```
+
+Aktuell genutzte Delegate-Module:
+
+| Modul | Sub-Runner | Besonderheit |
+|---|---|---|
+| `political_compass` | `scripts/core/run_cross_model_benchmark.py --module political_compass` | Batch-Modus: 81+ Fragen pro Modell, eigene CSV-Architektur (`political_compass_results.csv`, `political_compass_leaderboard.csv`) |
+| `tooluse` | `scripts/run_tooluse_benchmark.py` | Benötigt aktiven MCP-Server; Zwei-Phasen-Scoring; eigene Leaderboard-CSV |
+
+**Skip-Logik für Delegate-Module:** `benchmark_auto.py` prüft vor dem Delegate-Aufruf anhand der jeweiligen Leaderboard-CSV (z. B. `political_compass_leaderboard.csv`), ob ein Modell bereits getestet wurde. Das vermeidet teure Re-Runs ohne `--force`.
+
 **Verantwortlichkeiten (Shared Framework):**
 
 - Config-Parsing
 - Modul-Discovery (nur aktive Module laden)
-- Execution-Flow
+- Execution-Flow (Standard via `UnifiedBenchmarkRunner`, spezialisiert via `delegate_script`)
 - Provider-Abstraktion
 
 **Key Invariant:** Der Orchestrator kennt **keine Modul-Namen**. Alles läuft über Config-Discovery.
@@ -496,7 +518,9 @@ Der Web Exporter ist ein eigenständiger Publishing-Schritt (Layer 4 Downstream)
 
 `WEIGHTS_TIER_DISPLAY` (Tier-String-Mapping) ist als öffentliche Konstante aus `utils/model_utils.py` importiert — `web_export.py` führt kein Duplikat mehr. `load_model_card()` delegiert die Card-Pfad-Auflösung an `_find_card(card_dir=card_dir)` (SSoT) und behält nur die zwei web-spezifischen Fallbacks (Display-Name-Vollscan, hf.co-Suffix-Match). Block-Metadaten für den Political Compass kommen via `_load_pc_block_meta()` aus `benchmark_modules/political_compass/config.yaml` (Fallback: statisches Dict) — kein hardcodiertes Python-Dict mehr.
 
-**Model Cards & Provider Cards:** Strukturierte JSON-Steckbriefe pro Modell (`benchmark_scores/model_cards/`) und pro Provider (`benchmark_scores/provider_cards/`), generiert via LLM (`make model-cards`, `make provider-cards`). Sie enthalten Entwickler, Herkunftsland, Stärken/Schwächen, Datenschutz-Metadaten, Sovereign-Risk-Einschätzung sowie **Preisinformationen** (`input_price_per_1m`, `output_price_per_1m` — USD pro 1M Tokens) als primäre Preisquelle (SSoT, ab v3.7.5). Die Cards werden (a) als Kontext-Block in den Meta-Reviewer injiziert, (b) als eigenständige JSON-API für das Web-Frontend bereitgestellt und (c) von `score_calculator.py` und `cost_tracker.py` für die Kostenberechnung gelesen.
+**Model Cards & Provider Cards:** Strukturierte JSON-Steckbriefe pro Modell (`benchmark_scores/model_cards/`) und pro Provider (`benchmark_scores/provider_cards/`). Sie enthalten Entwickler, Herkunftsland, Stärken/Schwächen, Datenschutz-Metadaten, Sovereign-Risk-Einschätzung sowie **Preisinformationen** (`input_price_per_1m`, `output_price_per_1m` — USD pro 1M Tokens) als primäre Preisquelle (SSoT, ab v3.7.5). Die Cards werden (a) als Kontext-Block in den Meta-Reviewer injiziert, (b) als eigenständige JSON-API für das Web-Frontend bereitgestellt und (c) von `score_calculator.py` und `cost_tracker.py` für die Kostenberechnung gelesen.
+
+**Model Card Lifecycle (`card_status`):** Cards werden durch einen schlanken Template-Generator ohne API-Call erstellt (`make model-card MODEL=<id>` → `scripts/analysis/generate_model_cards.py`). Das erzeugte Template enthält alle Pflichtfelder mit `"TODO"`-Platzhaltern und `card_status: "draft"`. Nach manueller Recherche und Befüllung wird `card_status` auf `"complete"` gesetzt. Minimal-Cards, die der ThinkingProbe-Hook automatisch anlegt, erhalten `card_status: "minimal"` — diese brauchen keine manuelle Vervollständigung für den Benchmark-Betrieb, sind aber für den Web-Export unvollständig.
 
 `make clean-model --model <ID>` entfernt seit v3.8.1 automatisch alle Spuren eines Modells: CSV-Zeilen, `outputs/audit_logs/<dir>/`, `outputs/comparisons/<dir>/`, `outputs/runs/<dir>/`, `docs/reviews/<dir>/` **und** die Model Card JSON (`benchmark_scores/model_cards/<card>.json`). Kein manueller Aufräumschritt mehr nötig.
 

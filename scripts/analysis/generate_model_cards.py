@@ -5,69 +5,32 @@ Model Card Template Generator
 Erstellt ein leeres Template für eine neue Model Card.
 Alle Felder sind mit Platzhaltern vorbelegt — manuelle Befüllung erforderlich.
 
+Feldstruktur-SSoT: ``utils/card_utils.py`` (``ensure_card()``).
+
 Verwendung:
     python scripts/analysis/generate_model_cards.py --model claude-opus-4-7
     python scripts/analysis/generate_model_cards.py --model qwen3:14b --provider ollama_local
     python scripts/analysis/generate_model_cards.py  # interaktive Eingabe
 """
 
-import argparse
 import json
 import logging
 import sys
-from datetime import datetime, timezone
 from pathlib import Path
+
+import argparse
 
 ROOT_DIR = Path(__file__).resolve().parent.parent.parent
 if str(ROOT_DIR) not in sys.path:
     sys.path.insert(0, str(ROOT_DIR))
 
-from utils.model_utils import _card_path, get_model_size_class
+from utils.card_utils import ensure_card
+from utils.model_utils import _card_path
 
 logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
 logger = logging.getLogger(__name__)
 
 CARDS_DIR = ROOT_DIR / "benchmark_scores" / "model_cards"
-
-
-def _build_template(model_id: str) -> dict:
-    return {
-        "model_id": model_id,
-        "display_name": "TODO",
-        "developer": "TODO",
-        "origin_country": "TODO",
-        "developer_jurisdiction": "TODO",
-        "deployment_type": "TODO",
-        "local_deployment_possible": None,
-        "weights_provenance_risk": "TODO",
-        "weights_provenance_risk_rationale": "TODO",
-        "model_family": "TODO",
-        "vendor": "TODO",
-        "primary_focus": "TODO",
-        "use_case_primary": "generalist",
-        "parameter_architecture": "dense",
-        "params_total_b": None,
-        "params_active_b": None,
-        "context_window_k": None,
-        "knowledge_cutoff": None,
-        "summary": "TODO",
-        "strengths": ["TODO"],
-        "known_limitations": ["TODO"],
-        "judge_context_hint": "TODO",
-        "architecture_tags": ["General"],
-        "supports_tool_use": None,
-        "license": "TODO",
-        "license_url": None,
-        "commercial_use_allowed": None,
-        "weights_license_tier": "TODO",
-        "model_version": None,
-        "input_price_per_1m": None,
-        "output_price_per_1m": None,
-        "unknown": False,
-        "card_status": "draft",
-        "size_class": get_model_size_class(model_id),
-        "generated_at": datetime.now(timezone.utc).isoformat(),
-    }
 
 
 def _rebuild_index() -> None:
@@ -112,14 +75,15 @@ def main() -> None:
         logger.error("Card existiert bereits: %s — nutze --force zum Überschreiben.", path.name)
         sys.exit(1)
 
-    CARDS_DIR.mkdir(parents=True, exist_ok=True)
-    card = _build_template(model_id)
-    with open(path, "w", encoding="utf-8") as f:
-        json.dump(card, f, ensure_ascii=False, indent=2)
+    # Bei --force: bestehende Card entfernen, damit ensure_card ein frisches Template anlegt
+    if args.force and path.exists():
+        path.unlink()
+        logger.info("Bestehende Card gelöscht (--force): %s", path.name)
 
-    logger.info("Template erstellt: %s", path)
+    result_path = ensure_card(model_id, card_path=path)
+    logger.info("Template erstellt: %s", result_path)
     _rebuild_index()
-    print(f"\nTemplate angelegt: {path}")
+    print(f"\nTemplate angelegt: {result_path}")
     print("Alle 'TODO'-Felder manuell befüllen, dann card_status auf 'complete' setzen.")
 
 

@@ -5,6 +5,7 @@
 	validate validate-single validate-assets validate-structure validate-cards test diff-results analyze-costs update-prices sync-cost-limits \
 	list-models judge-health list-modules \
 	probe-thinking probe-all-thinking \
+	ensure-card ensure-cards \
 	web-export web-export-dev \
 	mcp-start mcp-stop mcp-health mcp-mock \
 	tooluse-leaderboard tooluse-run tooluse-report tooluse-report-summary tooluse-report-json \
@@ -46,7 +47,9 @@ help:
 	@echo "  make reviews-auto         Reviews fuer alle Modelle (generiert fehlende Cards automatisch)"
 	@echo "  make reviews-check        Zeigt fehlende Cards (kein Review, kein Schreiben)"
 	@echo "  make review-new           Einzelnen Review generieren mit Auto-Card (MODEL=name erforderlich)"
-	@echo "  make model-cards          Neues Model Card Template anlegen (MODEL=name erforderlich, PROVIDER=key optional)"
+	@echo "  make model-cards          Neues Model Card Template anlegen (MODEL=name erforderlich, PROVIDER=key optional)
+	@echo "  make ensure-card          Fehlende Felder in einer Card ergänzen (MODEL=name erforderlich)"
+	@echo "  make ensure-cards         Fehlende Felder in ALLEN Cards ergänzen (--missing: nur lückenhafte)""
 	@echo "  make provider-cards       Provider Cards generieren (Flags: PROVIDER=name, FORCE=1)"
 	@echo "  make provider-stats       System-Latenzen analysieren (Ping vs. TTFB) und Provider-Review erstellen"
 	@echo "  make probe-thinking       Thinking-Probe fuer einzelnes Modell (MODEL=name, PROVIDER=key optional)"
@@ -110,6 +113,13 @@ model-cards:
 	$(PYTHON) scripts/analysis/generate_model_cards.py $(if $(MODEL),--model "$(MODEL)") $(if $(PROVIDER),--provider "$(PROVIDER)") $(if $(FORCE),--force)
 
 model-card: model-cards
+
+ensure-card:
+	@if [ -z "$(MODEL)" ]; then echo "Fehler: MODEL=<model-id> ist erforderlich."; exit 1; fi
+	$(PYTHON) scripts/dev/ensure_card_structure.py --model "$(MODEL)" $(if $(DRY),--dry-run)
+
+ensure-cards:
+	$(PYTHON) scripts/dev/ensure_card_structure.py --missing $(if $(ALL),--all) $(if $(DRY),--dry-run)
 
 provider-cards:
 	@if [ -n "$(PROVIDER)" ]; then \

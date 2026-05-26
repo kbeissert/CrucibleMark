@@ -77,6 +77,9 @@ cp benchmark_config.example.yaml benchmark_config.yaml
 CrucibleMark bietet native Kommandos und ein CLI, um exakte Tests durchzuführen:
 
 ```bash
+# Vollautomatischer Batch-Run (alle aktivierten Module, alle konfigurierten Modelle):
+make benchmark-auto
+
 # Geführtes UI und interaktive Modulauswahl:
 python run_benchmark.py
 

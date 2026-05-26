@@ -31,6 +31,7 @@ class CostLimitExceededError(Exception):
 from utils.base_runner import BaseBenchmarkRunner
 from utils.benchmark_utils import discover_assets, load_asset_yaml
 from utils.logging_config import setup_logging
+from utils.card_utils import ensure_card
 from utils.model_utils import get_model_version, get_model_identity, probe_thinking_model, _find_card
 from utils.scoring.judge_evaluator import evaluate_with_judge, generate_audit_log
 from utils.scoring.exceptions import JudgeUnavailableError
@@ -144,7 +145,7 @@ class UnifiedBenchmarkRunner(BaseBenchmarkRunner):
         else:
             needs_probe = True
             logger.info(
-                "[Card-First] Keine Card für '%s' gefunden → Erstelle Minimal-Card.",
+                "[Card-First] Keine Card für '%s' gefunden → wird nach Probe angelegt.",
                 model,
             )
 
@@ -180,33 +181,21 @@ class UnifiedBenchmarkRunner(BaseBenchmarkRunner):
             "thinking_probe_at": datetime.now(timezone.utc).isoformat(),
         }
 
-        if card_loaded:
-            # Bestehende Card um Probe-Felder ergänzen
-            existing_card.update(probe_fields)
-            cards_dir.mkdir(parents=True, exist_ok=True)
-            card_path.write_text(
-                json.dumps(existing_card, ensure_ascii=False, indent=2),
-                encoding="utf-8",
-            )
-            logger.info("[Card-First] Probe-Felder in bestehende Card für '%s' eingefügt.", model)
-        else:
-            # Minimal-Card erstellen
-            tags = ["Thinking"] if probe.detected else ["General"]
-            minimal_card: dict = {
-                "model_id": model,
-                "display_name": model,
-                "developer": "n/a",
-                "architecture_tags": tags,
-                "card_status": "minimal",
-                "generated_at": datetime.now(timezone.utc).isoformat(),
-                **probe_fields,
-            }
-            cards_dir.mkdir(parents=True, exist_ok=True)
-            card_path.write_text(
-                json.dumps(minimal_card, ensure_ascii=False, indent=2),
-                encoding="utf-8",
-            )
-            logger.info("[Card-First] Minimal-Card für '%s' erstellt.", model)
+        # Vollständige Struktur sicherstellen (neue oder bestehende Card)
+        card_path = ensure_card(model, card_path=card_path if card_loaded else None)
+
+        # Card laden und Probe-Felder eintragen
+        card_content: dict = json.loads(card_path.read_text(encoding="utf-8"))
+        card_content.update(probe_fields)
+        if probe.detected:
+            tags: list = card_content.get("architecture_tags") or []
+            if "Thinking" not in tags:
+                card_content["architecture_tags"] = ["Thinking"] + [t for t in tags if t != "General"]
+        card_path.write_text(
+            json.dumps(card_content, ensure_ascii=False, indent=2),
+            encoding="utf-8",
+        )
+        logger.info("[Card-First] Probe-Felder in Card für '%s' eingetragen.", model)
 
         self._probed_models.add(model)
         return canonical_model
