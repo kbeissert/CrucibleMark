@@ -1,47 +1,22 @@
 import csv
-import yaml
 import logging
 from pathlib import Path
 from datetime import datetime
-from typing import Dict, Any, Optional
+from typing import Dict, Optional
 
 
 
 class CostTracker:
-    """
-    Verfolgt Token-Kosten für kommerzielle APIs und setzt Budget-Limits durch.
-    Singleton-Pattern per Modul.
-    """
+    """Verfolgt Token-Kosten für kommerzielle APIs."""
 
-    def __init__(self, config_path: str = "config/cost_limits.yaml"):
-        self.config_path = Path(config_path)
-        self.config = self._load_config()
-        self.cost_log_file = Path(
-            self.config.get("settings", {}).get("cost_log_file", "outputs/cost_log.csv")
-        )
+    def __init__(self):
+        self.cost_log_file = Path("outputs/cost_log.csv")
 
         # Ensure outputs directory exists
         self.cost_log_file.parent.mkdir(parents=True, exist_ok=True)
 
-        self.warning_threshold = self.config.get("settings", {}).get(
-            "budget_warning_threshold", 0.8
-        )
         self._init_csv()
         self._migrate_csv_add_call_type()
-
-    def _load_config(self) -> Dict[str, Any]:
-        """Lädt die Kosten-Konfiguration."""
-        if not self.config_path.exists():
-            logging.warning(
-                f"Cost config not found at {self.config_path}. Using empty config."
-            )
-            return {}
-        try:
-            with open(self.config_path, "r", encoding="utf-8") as f:
-                return yaml.safe_load(f) or {}
-        except Exception as e:
-            logging.error(f"Error loading cost config: {e}")
-            return {}
 
     def _init_csv(self):
         """Initialisiert die CSV-Logdatei, falls sie nicht existiert."""
@@ -119,8 +94,7 @@ class CostTracker:
 
         Lookup-Reihenfolge:
           1. Model Card JSON (benchmark_scores/model_cards/*.json) — SSoT
-          2. cost_limits.yaml (Legacy-Fallback für Modelle ohne Card)
-          3. Kein Preis gefunden → Warning-Log, return 0.0
+          2. Kein Preis gefunden → Warning-Log, return 0.0
         """
         # 1. Model Card (SSoT)
         try:
@@ -142,96 +116,12 @@ class CostTracker:
         except Exception:
             pass
 
-        # 2. cost_limits.yaml (Legacy-Fallback für Modelle ohne Card)
-        provider_config = self.config.get("providers", {}).get(provider)
-        if not provider_config:
-            return 0.0  # Lokales oder unbekanntes Modell
-
-        model_config = provider_config.get(model)
-        if not model_config:
-            # Längere Keys zuerst prüfen – verhindert Fehl-Matches bei Präfixen
-            # z.B. "kimi-k2.5-0127" darf nicht auf "kimi-k2" statt "kimi-k2.5" matchen
-            sorted_keys = sorted(
-                (k for k in provider_config if k != "daily_budget"),
-                key=len,
-                reverse=True,
-            )
-            for key in sorted_keys:
-                if model.startswith(key):
-                    model_config = provider_config[key]
-                    break
-
-        if not model_config:
-            logging.getLogger(__name__).warning(
-                "Kein Preis für Modell '%s' (%s): keine Model Card und kein Eintrag in cost_limits.yaml. Kosten werden mit 0.0 geloggt.",
-                model,
-                provider,
-            )
-            return 0.0
-
-        input_price = model_config.get("input_cost_per_1k", 0.0)
-        output_price = model_config.get("output_cost_per_1k", 0.0)
-        return round(
-            (input_tokens / 1000) * input_price + (output_tokens / 1000) * output_price,
-            6,
+        logging.getLogger(__name__).warning(
+            "Kein Preis für Modell '%s' (%s): keine Model Card. Kosten werden mit 0.0 geloggt.",
+            model,
+            provider,
         )
-
-    def get_daily_spend(self, provider: str) -> float:
-        """Berechnet die heutigen Ausgaben für einen Provider."""
-        if not self.cost_log_file.exists():
-            return 0.0
-
-        today = datetime.now().strftime("%Y-%m-%d")
-        total_spend = 0.0
-
-        try:
-            with open(self.cost_log_file, "r", encoding="utf-8") as f:
-                reader = csv.DictReader(f)
-                for row in reader:
-                    if row["date"] == today and row["provider"] == provider:
-                        try:
-                            total_spend += float(row["cost_usd"])
-                        except ValueError:
-                            pass
-        except Exception as e:
-            logging.error(f"Error reading cost log: {e}")
-
-        return total_spend
-
-    def check_budget(self, provider: str) -> tuple[bool, str]:
-        """
-        Prüft, ob das Budget für den Provider erschöpft ist.
-        Returns: (is_allowed, warning_message)
-        """
-        provider_config = self.config.get("providers", {}).get(provider, {})
-        daily_budget = provider_config.get("daily_budget")
-
-        if daily_budget is None:
-            return True, ""
-
-        current_spend = self.get_daily_spend(provider)
-
-        if current_spend >= daily_budget:
-            msg = f"⛔️ DAILY BUDGET EXCEEDED for {provider}. Spent: ${current_spend:.4f} / Limit: ${daily_budget:.2f}"
-            logging.error(msg)
-            return False, msg
-
-        if current_spend >= daily_budget * self.warning_threshold:
-            msg = f"⚠️ Budget warning for {provider}: ${current_spend:.4f} / ${daily_budget:.2f} ({int((current_spend / daily_budget) * 100)}%)"
-            return True, msg
-
-        return True, ""
-
-    def get_remaining_budget(self, provider: str) -> Optional[float]:
-        """Gibt das verbleibende Budget für den Provider zurück."""
-        provider_config = self.config.get("providers", {}).get(provider, {})
-        daily_budget = provider_config.get("daily_budget")
-
-        if daily_budget is None:
-            return None
-
-        current_spend = self.get_daily_spend(provider)
-        return max(0.0, daily_budget - current_spend)
+        return 0.0
 
     def track_request(
         self,

@@ -24,10 +24,6 @@ from utils.language_validator import LanguageValidator
 _language_validator = LanguageValidator()
 
 
-class CostLimitExceededError(Exception):
-    """Raised when the cost limit is exceeded."""
-
-
 from utils.base_runner import BaseBenchmarkRunner
 from utils.benchmark_utils import discover_assets, load_asset_yaml
 from utils.logging_config import setup_logging
@@ -615,10 +611,6 @@ class UnifiedBenchmarkRunner(BaseBenchmarkRunner):
                 if result:
                     results.append(result)
 
-            except CostLimitExceededError as e:
-                print(f"\n❌ KOSTENLIMIT ERREICHT: {e}")
-                self._save_partial_results(results, is_local)
-                sys.exit(1)
             except JudgeUnavailableError as e:
                 print(f"\n⛔ JUDGE UNAVAILABLE (API Error / Budget Limit): {e}\nBeende den Benchmark vorzeitig, um inkonsistente Scores zu vermeiden.")
                 self._save_partial_results(results, is_local)

@@ -137,20 +137,8 @@ class LLMClient:
            Response-Text
 
         Raises:
-           ValueError: Bei unbekanntem Provider oder Budget-Explosion
            Exception: Bei fehlgeschlagener Query nach Retries
         """
-        # 1. Budget Vorab-Check
-        if provider in ["anthropic", "mistral"]:
-            is_allowed, warning = self.cost_tracker.check_budget(provider)
-            if warning:
-                print(f"\n💰 {warning}")
-
-            if not is_allowed:
-                raise ValueError(
-                    f"Aborting Query: Budget limit exceeded for {provider}."
-                )
-
         if provider not in self.clients:
             valid_providers = list(self.clients.keys())
             logger.error(

@@ -257,11 +257,6 @@ class BaseBenchmarkRunner:
         total_cost = sum(safe_float(r.get("cost_usd")) for r in results)
         if total_cost > 0:
             print(f"   Modul Kosten: ${total_cost:.4f}")
-            provider = results[0].get("provider", "unknown")
-            if hasattr(self.client, "cost_tracker"):
-                remaining = self.client.cost_tracker.get_remaining_budget(provider)
-                if remaining is not None:
-                    print(f"   Remaining Budget: ${remaining:.2f}")
 
         if probe_result:
             load_time = safe_float(probe_result.get("load_time", 0))
