@@ -1,65 +1,25 @@
 providers:
-  # Legacy-Preise für Modelle ohne eigene Model Card.
-  # Alle anderen Modell-Preise befinden sich in benchmark_scores/model_cards/*.json.
-  # Sobald eine vollständige Model Card angelegt wird, kann der Eintrag hier entfernt werden.
+  # Preise gehören ausschließlich in benchmark_scores/model_cards/*.json (SSoT).
+  # Diese Datei enthält nur noch Budget-Limits pro Provider.
 
-  ollama_cloud:
-    minimax-m2.7:cloud:
-      input_cost_per_1k: 0.0003    # $0.30/1M – BESTÄTIGT (MiniMax API Standard-Tier)
-      output_cost_per_1k: 0.0012   # $1.20/1M – BESTÄTIGT
-    kimi-k2.5:cloud:
-      input_cost_per_1k: 0.0006    # $0.60/1M – BESTÄTIGT (DeepInfra)
-      output_cost_per_1k: 0.0025   # $2.50/1M – BESTÄTIGT
-    glm-5:cloud:
-      input_cost_per_1k: 0.00014   # $0.14/1M – Est. (Zhipu AI, kein öffentlicher Preis verifizierbar)
-      output_cost_per_1k: 0.0004   # $0.40/1M – Est.
-
+  ollama_cloud: {}
 
   groq:
-    llama-3.1-8b-instant:
-      input_cost_per_1k: 0.00005   # $0.05/1M – BESTÄTIGT
-      output_cost_per_1k: 0.00008  # $0.08/1M – BESTÄTIGT
-    moonshotai/kimi-k2-instruct:
-      input_cost_per_1k: 0.001     # $1.00/1M (uncached) – BESTÄTIGT
-      output_cost_per_1k: 0.003    # $3.00/1M – BESTÄTIGT
     daily_budget: 10.0
-
 
   openrouter:
     daily_budget: 15.0
 
-
   openai:
     daily_budget: 20.0
 
-
   anthropic:
-    claude-3-5-sonnet:
-      input_cost_per_1k: 0.003     # $3.00/1M – BESTÄTIGT
-      output_cost_per_1k: 0.015    # $15.00/1M – BESTÄTIGT
     daily_budget: 15.0
 
-
   mistral:
-    ministral-8b:
-      input_cost_per_1k: 0.0001    # $0.10/1M – BESTÄTIGT
-      output_cost_per_1k: 0.0001   # $0.10/1M – BESTÄTIGT
-    ministral-3b:
-      input_cost_per_1k: 0.00004   # $0.04/1M – BESTÄTIGT
-      output_cost_per_1k: 0.0001   # $0.10/1M – BESTÄTIGT
     daily_budget: 50.0
 
-
   xai:
-    grok-4:
-      input_cost_per_1k: 0.003     # $3.00/1M – BESTÄTIGT (verifiziert pricepertoken.com Apr 2026)
-      output_cost_per_1k: 0.015    # $15.00/1M – BESTÄTIGT
-    grok-4-fast:
-      input_cost_per_1k: 0.001     # $1.00/1M – BESTÄTIGT (verifiziert pricepertoken.com Apr 2026)
-      output_cost_per_1k: 0.005    # $5.00/1M – BESTÄTIGT
-    grok-4-1-fast-non-reasoning:
-      input_cost_per_1k: 0.0002    # $0.20/1M – BESTÄTIGT (x.ai/api Apr 2026)
-      output_cost_per_1k: 0.0005   # $0.50/1M – BESTÄTIGT
     daily_budget: 15.0
 
 
