@@ -1,16 +1,24 @@
 # PROJECT_STATUS.md
 
 **Last Updated:** 2026-05-26
-**Current Version:** 3.15.1 (4 Frontier Model Cards complete + Dokumentations-Update)
+**Current Version:** 4.0.0 — Tool Use Module & Architecture Overhaul
 **Status:** ✅ Production-Ready
 
 ---
 
 ## Executive Summary
 
-CrucibleMark v3.15.1 schließt die Model-Card-Erfassung für vier neue Frontier-Modelle ab: Mistral Large 3 (`mistral-large-2512`), Devstral 2 (`devstral-2512`), GPT-5.5 (`gpt-5.5`) und Gemini 3.5 Flash (`gemini-3.5-flash`). Alle vier Cards sind auf `card_status: "complete"` gesetzt und im Leaderboard (43/43 Module) bestätigt. Ergänzend wurde die Kerndokumentation um zwei lange fehlende Abschnitte erweitert: der delegate_script-Mechanismus (PC + Tool Use als Sub-Runner) und der Model-Card-Lifecycle (`draft` / `minimal` / `complete`) sind jetzt in `ARCHITECTURE.md` und `DEVELOPER_GUIDE.md` korrekt beschrieben.
+CrucibleMark v4.0.0 markiert den ersten öffentlichen Release nach der abgeschlossenen Tool-Use-Phase und einer vollständigen Architektur-Migration. Der Sprung von v3.9 auf v4.0 reflektiert zwei fundamentale Paradigmenwechsel: das erste agentic Benchmark-Modul (Live-MCP-Integration, echte externe Tools) und die Ablösung des Legacy-Pricing-Systems durch Model Cards als alleinige Source of Truth.
 
-**Key Achievements (v3.15.1):**
+**Key Achievements (v4.0.0 / v3.10.0 → v3.15.1):**
+- ✅ **Tool Use Benchmark Module** — 6 Assets in 3 Phasen (Tool Selection, Content Synthesis, Multilingual), Live-MCP-Integration (Tavily `web_search` + `http_fetch`), Content Verification Framework mit Halluzinations-Cap, 257 Tests. Erste Production-Runs: gpt-5-mini 76.5 % [PRODUCTION], grok-4-fast 74.2 % [PRODUCTION], kimi-k2 73.6 %, qwen3-32b 72.9 %.
+- ✅ **Model Cards als Pricing-SSoT** — Vollständige Pipeline-Migration: `score_calculator.py`, `cost_tracker.py` und Web-Export lesen Preise ausschließlich aus `benchmark_scores/model_cards/*.json`. LiteLLM aus Pricing-Pfad entfernt.
+- ✅ **Budget-Enforcement entfernt** — `cost_limits.yaml` gelöscht, `CostLimitExceededError` entfernt, Architektur vereinfacht.
+- ✅ **Token-Budget-Berechnung zentralisiert** — `resolve_token_budget()` als SSoT für alle Provider.
+- ✅ **257/257 Tests grün** — Ruff + Pylint 10.00/10.
+- ✅ **Vollständige Model Card Coverage** — 4 neue Frontier-Cards: Mistral Large 3, Devstral 2, GPT-5.5, Gemini 3.5 Flash.
+
+**Vorherige Version (v3.15.1 — 4 Frontier Model Cards complete + Dokumentations-Update):**
 - ✅ **`mistral-large-2512.json`** — Mistral Large 3, MoE 675B/41B aktiv, Apache 2.0, context 262K, input $0.50/1M, output $1.50/1M.
 - ✅ **`devstral-2512.json`** — Devstral 2, Dense 123B, Modified MIT (restricted-weights), context 256K, input $0.40/1M, output $2.00/1M.
 - ✅ **`gpt-5_5.json`** — GPT-5.5, Proprietär, context 1050K, knowledge_cutoff 2026-04, input $5.00/1M, output $30.00/1M.

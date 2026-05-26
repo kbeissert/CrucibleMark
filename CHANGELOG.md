@@ -4,6 +4,21 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [v4.0.0] - 2026-05-26
+
+**Erster öffentlicher Release nach abgeschlossener Tool-Use-Phase und vollständiger Architektur-Migration.**
+
+### Highlights
+- **Tool Use Benchmark Module** — Erstes agentic Benchmark-Modul: 6 Assets in 3 Phasen (Tool Selection, Content Synthesis, Multilingual), Live-MCP-Integration (Tavily `web_search` + `http_fetch`), Content Verification Framework mit Halluzinations-Cap, 257 Tests. Erste Production-Runs: gpt-5-mini 76.5 %, grok-4-fast 74.2 %, kimi-k2 73.6 %.
+- **Model Cards als Pricing-SSoT** — Vollständige Pipeline-Migration. LiteLLM aus Pricing-Pfad entfernt.
+- **Architektur-Bereinigung** — Budget-Enforcement entfernt, `cost_limits.yaml` gelöscht, `resolve_token_budget()` als SSoT.
+- **257/257 Tests grün** — Ruff + Pylint 10.00/10.
+
+### Details
+Vollständige Einzelversionen: v3.10.0 → v3.15.1 (siehe unten).
+
+---
+
 ## [v3.15.1] - 2026-05-26
 
 ### Removed
