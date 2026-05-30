@@ -1,7 +1,7 @@
 # PROJECT_STATUS.md
 
-**Last Updated:** 2026-05-26
-**Current Version:** 4.0.0 — Tool Use Module & Architecture Overhaul
+**Last Updated:** 2026-05-30
+**Current Version:** 4.1.0 — llamacpp Expansion & Bug Fixes
 **Status:** ✅ Production-Ready
 
 ---

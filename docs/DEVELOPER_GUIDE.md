@@ -190,21 +190,28 @@ make probe-all-thinking
 
 `scripts/tools/probe_thinking.py` unterstützt zusätzlich `--missing` (Batch: nur Cards ohne Feld) und `--all` (Force-Rescan aller Cards).
 
-### Sonderfall: OpenAI o-Series (manueller Override)
+### Sonderfall: Modelle mit manuellem Override
+
+Zwei Modellklassen können via Standard-Probe nicht korrekt erkannt werden:
+
+#### OpenAI o-Series
 
 o1, o3-mini, o4-mini verbergen Reasoning-Tokens intern. Die API liefert keine `<think>`-Tags und keine `reasoning_tokens`. Der Probe gibt `detected=False` zurück — fälschlicherweise.
 
-Für diese Modelle wird die Card **manuell** gesetzt:
+#### llama.cpp-Modelle mit nativem Thinking (z. B. Gemma-4 E4B)
 
-```bash
-# benchmark_scores/model_cards/o1.json bearbeiten:
+Manche llama.cpp-Modelle geben Reasoning-Inhalte im API-Response-Feld `reasoning_content` zurück — **nicht** im Standard-`content`-Feld. Das `content`-Feld ist bei diesen Modellen oft leer wenn das Thinking-Budget erschöpft ist. Der Standard-Probe schlägt fehl (kein `<think>`-Tag, `reasoning_tokens` fehlt in Standard-Metadaten). `llamacpp.py` extrahiert `reasoning_content` explizit und setzt `reasoning_tokens = completion_tokens` im Metadaten-Dict.
+
+Für beide Klassen wird die Card **manuell** gesetzt:
+
+```json
 {
   "thinking_probe_detected": true,
   "thinking_probe_manual_override": true
 }
 ```
 
-**Neue Modelle ergänzen:** Wenn ein Anbieter Reasoning intern verbirgt, immer beide Felder manuell eintragen und `make probe-thinking MODEL=<id>` nicht als Quelle verwenden.
+> **Neue Modelle ergänzen:** Wenn ein Anbieter oder lokaler Provider Reasoning intern verbirgt oder in einem provider-spezifischen Feld übergibt, immer beide Felder manuell eintragen und `make probe-thinking MODEL=<id>` nicht als Quelle verwenden.
 
 ---
 
@@ -222,7 +229,9 @@ Die **Modell-ID** ist die kanonische Kennung eines Modells — die genaue Zeiche
 - die **CSV-Spalte `model`** in allen drei Benchmark-CSVs
 - den **Lookup** von Versionsinformationen und Reasoning-Flags
 
-**SSoT:** `benchmark_config.yaml` → `providers.<section>.<provider>.models[].id`
+**SSoT:** `config/provider_config.yaml` → `providers.<section>.<provider>.models[].id`
+
+> **Duplikat-Schutz:** `ConfigValidator` iteriert beim Start über alle explizit gelisteten Modell-IDs in `config/provider_config.yaml`. Taucht eine ID in mehr als einem Provider auf, wird `WARNING: Duplikat-Modell-ID '<id>': bereits registriert unter '<section>/<provider>', Eintrag unter '<section>/<provider>' wird ignoriert.` geloggt. Der erste Eintrag gewinnt (First-Win). `auto_discover`-Provider (Ollama) werden vom Check ausgenommen, da deren IDs erst zur Laufzeit bekannt sind.
 
 #### Pinned IDs vs. Floating Aliases
 
@@ -428,7 +437,7 @@ get_use_case_primary("unknown-model")          # → "generalist" (Fallback)
 Shortcodes sind an zwei Stellen synchron gepflegt:
 
 1. **`utils/model_utils.py`** → `_PROVIDER_SHORTCODES: dict[str, str]` + `get_provider_shortcode(provider)`
-2. **`benchmark_config.yaml`** → `providers.<section>.<provider>.short_code`
+2. **`config/provider_config.yaml`** → `providers.<section>.<provider>.short_code`
 
 | Shortcode | Bedeutung | Provider-Schlüssel |
 |---|---|---|
@@ -436,6 +445,7 @@ Shortcodes sind an zwei Stellen synchron gepflegt:
 | `OR` | OpenRouter (Routing-Layer) | `openrouter` |
 | `GR` | Groq (Inferenz-Dienst) | `groq` |
 | `LCL` | Lokales Ollama-Modell | `ollama_local`, `ollama`, `local` |
+| `LCL` | Lokales llama.cpp-Modell | `llamacpp` |
 
 Der Shortcode erscheint im Leaderboard als Suffix der Versionsspalte (`k2/OR`, `4-mini/API`, `4760c3/LCL`).
 
@@ -448,6 +458,13 @@ Der Shortcode erscheint im Leaderboard als Suffix der Versionsspalte (`k2/OR`, `
 #### Lookup-Hierarchie (in dieser Reihenfolge)
 
 1. **Card-First:** `model_version`-Feld in der JSON-Card → hat immer Vorrang. Nützlich für manuelle Korrekturen oder Modelle mit ungewöhnlichen ID-Formaten.
+
+   **Konvention für `model_version` in lokalen GGUF-Cards:**
+   Das Feld beschreibt **Quantisierungsstufe und Format** — nicht die Download-Plattform.
+   - `"Q4_K_M (GGUF)"` → Quantisierungsstufe + Format
+   - `"GGUF (E4B)"` → Format + Architekturvariante bei unbenannter Quant-Stufe
+   - **Nicht** in `model_version`: `"Hugging Face"`, `"Ollama Hub"`, `"local"` — das ist die Download-Plattform, nicht die Version.
+   Die Download-Plattform gehört in das separate Feld `weights_source` (z. B. `"Hugging Face"`, `"Ollama Hub"`, `"official"`).
 
 2. **Ollama-Hash (nur bei lokalen Providern):** `ollama list` → 7-stelliger Hex-Hash (z.B. `4760c3`). Erkennt Silent Updates sofort am Hash-Wechsel.
 
@@ -475,7 +492,7 @@ Der Shortcode erscheint im Leaderboard als Suffix der Versionsspalte (`k2/OR`, `
 ### Vollständiger Prozess: Von der Config-ID zur Leaderboard-Zeile
 
 ```
-benchmark_config.yaml
+config/provider_config.yaml
   providers.commercial.openrouter.models[].id = "moonshotai/kimi-k2-0711"
        │
        │  Benchmark-Run

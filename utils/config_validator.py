@@ -20,31 +20,89 @@ load_dotenv()
 # Configure logging
 logger = logging.getLogger(__name__)
 
+# Provider-Config liegt im config/-Verzeichnis (relativ zum Projekt-Root)
+PROVIDER_CONFIG_PATH = Path("config/provider_config.yaml")
+
 
 class ConfigValidator:
-    """Validiert benchmark_config.yaml."""
+    """Validiert benchmark_config.yaml und merged provider_config.yaml."""
 
     def __init__(self, config_path: str = "benchmark_config.yaml"):
         """Initialisiert Validator.
 
         Args:
-            config_path: Pfad zur Config-Datei
+            config_path: Pfad zur Benchmark-Config (ohne providers-Block)
         """
         self.config_path = Path(config_path)
+        self.provider_config_path = PROVIDER_CONFIG_PATH
         self.config = self._load_config()
 
     def _load_config(self) -> dict[str, Any]:
-        """Lädt Config-Datei."""
+        """Lädt benchmark_config.yaml, merged provider_config.yaml und prüft auf Duplikat-IDs."""
         if not self.config_path.exists():
             logger.error("Config file not found: %s", self.config_path)
             raise FileNotFoundError(f"Config nicht gefunden: {self.config_path}")
 
         try:
             with open(self.config_path, encoding="utf-8") as f:
-                return yaml.safe_load(f) or {}
+                config: dict[str, Any] = yaml.safe_load(f) or {}
         except (OSError, yaml.YAMLError) as e:
             logger.error("Failed to load config: %s", e)
             raise
+
+        # Provider-Config einblenden (SCSS-Partial-Prinzip)
+        if self.provider_config_path.exists():
+            try:
+                with open(self.provider_config_path, encoding="utf-8") as f:
+                    provider_data: dict[str, Any] = yaml.safe_load(f) or {}
+                providers = provider_data.get("providers")
+                if providers:
+                    config["providers"] = providers
+                    self._check_duplicate_model_ids(providers)
+            except (OSError, yaml.YAMLError) as e:
+                logger.error("Failed to load provider_config.yaml: %s", e)
+                raise
+        else:
+            logger.warning(
+                "provider_config.yaml nicht gefunden (%s) — kein Provider geladen.",
+                self.provider_config_path,
+            )
+
+        return config
+
+    def _check_duplicate_model_ids(self, providers: dict[str, Any]) -> None:
+        """Prüft alle expliziten Modell-IDs auf Duplikate über alle Provider hinweg.
+
+        Duplikate werden als WARNING geloggt. Der erste Eintrag gewinnt (First-Win).
+        auto_discover-Provider (Ollama) werden übersprungen.
+        """
+        seen: dict[str, str] = {}  # model_id → "section/provider_key"
+
+        for section_key, section in providers.items():
+            if not isinstance(section, dict):
+                continue
+            for prov_key, prov_cfg in section.items():
+                if not isinstance(prov_cfg, dict):
+                    continue
+                if prov_cfg.get("auto_discover"):
+                    continue
+                for model in prov_cfg.get("models", []):
+                    if not isinstance(model, dict):
+                        continue
+                    mid = model.get("id")
+                    if not mid:
+                        continue
+                    location = f"{section_key}/{prov_key}"
+                    if mid in seen:
+                        logger.warning(
+                            "Duplikat-Modell-ID '%s': bereits registriert unter '%s', "
+                            "Eintrag unter '%s' wird ignoriert.",
+                            mid,
+                            seen[mid],
+                            location,
+                        )
+                    else:
+                        seen[mid] = location
 
 
     def get_provider_config(self, provider_key: str) -> Optional[dict[str, Any]]:

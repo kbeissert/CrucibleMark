@@ -24,7 +24,7 @@ class ProviderSelector:
                 "Kommerzielle Modelle (Proprietary API) - Anthropic, OpenAI, Google, Mistral, xAI",
             ),
             ("cloud", "Cloud Modelle (Inference Proxy) - OpenRouter, Groq, Ollama Cloud"),
-            ("local", "Lokale Modelle (Ollama, LM Studio) - Offline"),
+            ("local", "Lokale Modelle (llama.cpp / Ollama) - Offline"),
         ]
 
         selected = select_from_list(
@@ -160,24 +160,94 @@ class ProviderSelector:
         sys.exit(0)
 
     def _select_local_model(self) -> tuple[str, str]:
-        """Wählt lokales Ollama-Modell."""
-        print("\nLade verfügbare Modelle...")
+        """Wählt lokales Modell — nur aus aktivierten Providern (enabled: true in Config)."""
+        print("\nLade verfügbare lokale Modelle...")
 
+        local_cfg = self.config.get("providers", {}).get("local", {})
+        llamacpp_cfg = local_cfg.get("llamacpp", {})
+        ollama_cfg = local_cfg.get("ollama_local", {})
+        use_llamacpp = llamacpp_cfg.get("enabled", False)
+        use_ollama = ollama_cfg.get("enabled", False)
+
+        if use_llamacpp:
+            return self._select_llamacpp_model(llamacpp_cfg)
+        if use_ollama:
+            return self._select_ollama_model()
+        print("\n❌ Kein lokaler Provider aktiv. Bitte 'enabled: true' in benchmark_config.yaml setzen.")
+        print("   providers.local.ollama_local.enabled oder providers.local.llamacpp.enabled")
+        sys.exit(1)
+
+    def _select_llamacpp_model(self, llamacpp_cfg: dict) -> tuple[str, str]:
+        """Wählt Modell aus der llama.cpp-Konfiguration."""
+        config_models = [
+            {
+                "provider": "llamacpp",
+                "id": m.get("id", ""),
+                "name": m.get("name", m.get("id", "")),
+                "description": m.get("description", ""),
+                "file": m.get("file", ""),
+            }
+            for m in llamacpp_cfg.get("models", [])
+            if m.get("id")
+        ]
+
+        # Ergänze Live-Modelle vom Server (falls er läuft)
+        live_ids = set()
+        try:
+            from openai import OpenAI
+            import httpx
+
+            _client = OpenAI(
+                base_url=llamacpp_cfg.get("base_url", "http://127.0.0.1:1235/v1"),
+                api_key=llamacpp_cfg.get("api_key", "sk-local"),
+                timeout=httpx.Timeout(connect=3.0, read=5.0, write=5.0, pool=5.0),
+            )
+            resp = _client.models.list()
+            live_ids = {m.id for m in resp.data}
+            # Füge Live-Modelle hinzu, die nicht in der Config stehen
+            config_ids = {m["id"] for m in config_models}
+            for mid in live_ids - config_ids:
+                config_models.append(
+                    {"provider": "llamacpp", "id": mid, "name": mid, "description": "Live vom Server", "file": ""}
+                )
+        except Exception:
+            pass
+
+        if not config_models:
+            print("\n⚠️  Keine llama.cpp-Modelle in benchmark_config.yaml konfiguriert.")
+            print("Ergänze Modelle unter providers.local.llamacpp.models")
+            sys.exit(1)
+
+        def display_model(m):
+            live_tag = " [Server aktiv]" if m["id"] in live_ids else ""
+            desc = m["description"] or m["file"] or ""
+            return (f"{m['name']}{live_tag}", f"ID: {m['id']}  {desc}".strip())
+
+        selected = select_from_list(
+            config_models,
+            display_func=display_model,
+            prompt="Wähle ein Modell",
+            title="LOKALE MODELLE (llama.cpp)",
+        )
+
+        if selected:
+            print(f"✓ Ausgewählt: {selected['name']}")
+            return "llamacpp", str(selected["id"])
+
+        sys.exit(0)
+
+    def _select_ollama_model(self) -> tuple[str, str]:
+        """Wählt lokales Ollama-Modell (Fallback wenn llama.cpp nicht aktiv ist)."""
         models = get_ollama_models_info()
-
-        # Filter OUT cloud models for the local list to avoid confusion (using SSOT)
         local_models = [m for m in models if not is_cloud_model(m["name"], m["size_gb"])]
 
         if not local_models:
-            # Check if we should warn about installation
             if importlib.util.find_spec("ollama") is None:
                 print("\n❌ Ollama Python-Bibliothek nicht installiert.")
                 print("Bitte installieren: pip install ollama")
                 sys.exit(1)
 
-            print(
-                "\n⚠️  Keine geeigneten lokalen Ollama-Modelle gefunden (oder Ollama läuft nicht)!"
-            )
+            print("\n⚠️  Keine geeigneten lokalen Ollama-Modelle gefunden (oder Ollama läuft nicht)!")
             print("Installiere Modelle mit: ollama pull qwen2.5-coder:7b")
             print("Befehl zum Starten: ollama serve")
             sys.exit(1)

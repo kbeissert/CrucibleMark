@@ -48,8 +48,8 @@ CrucibleMark folgt einer **Plugin-basierten Architektur**, bei der Benchmark-Mod
 
 ### Design-Prinzipien
 
-1. **Config-First:** Alle Module entdeckt das Framework via `benchmark_config.yaml` (kein Hardcoding)
-2. **Provider-Agnostisch:** Module wissen nicht, ob sie Ollama oder GPT-4 testen
+1. **Config-First:** Alle Module entdeckt das Framework via `benchmark_config.yaml` und `config/provider_config.yaml` (kein Hardcoding)
+2. **Provider-Agnostisch:** Module wissen nicht, ob sie Ollama, llama.cpp oder GPT-4 testen
 3. **Stateless Runs:** Jeder Benchmark ist unabhängig (keine Cross-Run-Pollution)
 4. **Reproducibility:** Fixe Seeds und deterministische Prompts
 
@@ -61,8 +61,11 @@ CrucibleMark folgt einer **Plugin-basierten Architektur**, bei der Benchmark-Mod
 ┌─────────────────────────────────────────────────────┐
 │ Layer 1: Framework Core (Orchestration)            │
 │ - Benchmark Runner (run_benchmark.py)              │
-│ - Config Manager (benchmark_config.yaml)           │
-│ - Provider Abstraction (Ollama, OpenAI, Mistral)   │
+│ - Config Manager (benchmark_config.yaml +          │
+│   config/provider_config.yaml, gemergt via         │
+│   ConfigValidator)                                 │
+│ - Provider Abstraction (Ollama, llama.cpp, OpenAI, │
+│   Mistral, …)                                      │
 └─────────────────────────────────────────────────────┘
                         ↓
 ┌─────────────────────────────────────────────────────┐
@@ -241,7 +244,7 @@ Um `is_reasoning_model()` empirisch statt heuristisch zu fundieren, führt v3.5.
 
 1. **`probe_thinking_model(model_id, provider_key, config)`** in `utils/model_utils.py` sendet einen deterministischen Schritt-für-Schritt-Reasoning-Prompt an die Modell-API und wertet zwei Signale aus:
    - **Signal A:** `<think>` / `<thinking>` / `<thought>`-Tags im Response-Body → `confidence=high`
-   - **Signal B:** `reasoning_tokens > 0` in der API-Metadaten-Antwort → `confidence=medium`
+   - **Signal B:** `reasoning_tokens > 0` in der API-Metadaten-Antwort → `confidence=medium`. **Sonderfall llama.cpp:** Modelle, die Reasoning über das Feld `reasoning_content` in der API-Response zurückgeben (z. B. Gemma-4 E4B), werden vom Standard-Probe nicht erkannt — `llamacpp.py` extrahiert dieses Feld explizit und setzt `reasoning_tokens = completion_tokens` intern. Diese Modelle benötigen `thinking_probe_manual_override: true` in der Model Card.
    - Signal C (Response-Länge) ist **nicht implementiert** — Instruction-Following-Modelle produzieren auf Reasoning-Prompts ebenfalls lange Antworten (False-Positive-Quelle).
 
 2. **`ThinkingProbeResult`** (Dataclass): `detected: bool`, `evidence: str`, `confidence: Literal["high","medium","low"]`
@@ -262,7 +265,7 @@ Um `is_reasoning_model()` empirisch statt heuristisch zu fundieren, führt v3.5.
 
 6. **`scripts/tools/probe_thinking.py`** (Standalone-CLI): Retroaktiver und On-Demand-Probe-Betrieb. Modi: `--model <id>`, `--missing` (Batch: alle Cards ohne Feld), `--all` (Force-Rescan). Provider-Inference: Config → `/` im ID → `openrouter` → sonst `ollama`. Batch-Modus bricht bei Einzelfehlern nicht ab.
 
-> **Wichtig:** API-Modelle, die Reasoning intern verbergen (z. B. OpenAI o-Series), können via Probe nicht erkannt werden — für diese Modelle wird `thinking_probe_detected: true` manuell mit `thinking_probe_manual_override: true` in der Card gesetzt.
+> **Wichtig:** Zwei Modellklassen können via Probe nicht erkannt werden und benötigen manuellen Override: (1) **OpenAI o-Series** (o1/o3-mini/o4-mini) — verbergen Reasoning intern, liefern keine `reasoning_tokens`. (2) **llama.cpp-Modelle mit `reasoning_content`-Feld** (z. B. Gemma-4 E4B) — Reasoning landet in einem separaten API-Response-Feld, das der Standard-Probe nicht auswertet. Für beide Klassen gilt: `thinking_probe_detected: true` + `thinking_probe_manual_override: true` manuell in der Card setzen.
 
 ### Hardware Context & „Prompt as Config"
 
@@ -434,7 +437,12 @@ else:
 
 #### Modell-ID als primärer Schlüssel
 
-Jede Modell-ID ist der einzige Schlüssel, der Config, CSV und Model Card verbindet. Die ID kommt aus `benchmark_config.yaml → providers.<section>.<provider>.models[].id` und wird **unverändert** in alle drei Benchmark-CSVs geschrieben.
+Jede Modell-ID ist der einzige Schlüssel, der Config, CSV und Model Card verbindet. Die ID kommt aus `config/provider_config.yaml → providers.<section>.<provider>.models[].id` und wird **unverändert** in alle drei Benchmark-CSVs geschrieben.
+
+> **Duplikat-Schutz:** `ConfigValidator` prüft beim Laden alle expliziten Modell-IDs über alle Provider hinweg. Taucht eine ID mehrfach auf, wird eine `WARNING` geloggt; der erste Eintrag gewinnt (First-Win). `auto_discover`-Provider (Ollama) werden vom Check ausgenommen.
+
+**`resolve_provider(model_id)` — SSoT für Provider-Inference:**
+`utils/model_utils.py` durchsucht beim Auflösen eines Provider-Keys **beide** Config-Dateien der Reihe nach: zuerst `benchmark_config.yaml`, dann `config/provider_config.yaml`. Damit werden auch Modelle, die nur in `provider_config.yaml` konfiguriert sind (z. B. llamacpp-Modelle), korrekt ihrem Provider zugeordnet — ohne manuelle Doppel-Eintragung in `benchmark_config.yaml`.
 
 Provider-IDs unterliegen zwei Regimes:
 
@@ -475,8 +483,9 @@ Jeder Leaderboard-Eintrag trägt eine kombinierte Versionskennung (`k2-0711/OR`,
 | `OR` | OpenRouter | `openrouter` |
 | `GR` | Groq | `groq` |
 | `LCL` | Lokales Ollama-Modell | `ollama_local` |
+| `LCL` | Lokales llama.cpp-Modell | `llamacpp` |
 
-SSoT: `_PROVIDER_SHORTCODES`-Dict in `utils/model_utils.py` + `short_code`-Feld pro Provider-Block in `benchmark_config.yaml` (beide müssen synchron gehalten werden).
+SSoT: `_PROVIDER_SHORTCODES`-Dict in `utils/model_utils.py` + `short_code`-Feld pro Provider-Block in `config/provider_config.yaml` (beide müssen synchron gehalten werden).
 
 **Datenfluss:**
 

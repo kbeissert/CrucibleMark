@@ -4,6 +4,24 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [v4.1.0] - 2026-05-30
+
+**llamacpp-Erweiterung, Bug-Fixes und Modul-Aktivierung.**
+
+### Fixed
+- **Double-Start-Bug (llamacpp.py)** — `_query_active_model()` erkennt laufendes Modell per `/v1/models`-API; verhindert Server-Neustart wenn korrektes Modell bereits läuft.
+- **Duplicate-Runner-Bug (benchmark_auto.py)** — Zweite `UnifiedBenchmarkRunner`-Instanziierung entfernt; `lcpp_client` zeigte auf veraltete Instanz und ignorierte laufenden Server.
+
+### Added
+- **gemma-3-12b-it-q8** — Neues lokales Modell (Q8_0-GGUF) in `provider_config.yaml` + vollständige Model Card.
+- **3 Module aktiviert** — `code_quality`, `reasoning_logic`, `documentation_quality` in `benchmark_config.yaml` standardmäßig aktiv.
+
+### Changed
+- **Model Card Schema** — `model_version` enthält nur noch Format/Quant-Stufe (z.B. `Q4_K_M (GGUF)`). Plattform-Info ausgelagert in neues Feld `weights_source`.
+- **Docs** — `ARCHITECTURE.md`, `DEVELOPER_GUIDE.md`, `SETUP_GUIDE.md`, `CLAUDE.md`: llamacpp Server-Management, `reasoning_content`-Sonderfall (Gemma-4 Native Thinking), `_infer_provider()`-Heuristik-Pitfall.
+
+---
+
 ## [v4.0.0] - 2026-05-26
 
 **Erster öffentlicher Release nach abgeschlossener Tool-Use-Phase und vollständiger Architektur-Migration.**

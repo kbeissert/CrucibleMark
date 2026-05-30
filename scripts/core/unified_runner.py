@@ -433,8 +433,8 @@ class UnifiedBenchmarkRunner(BaseBenchmarkRunner):
                         }
                     )
 
-                # Unload local model before judge to free VRAM
-                if is_local:
+                # Unload local model before judge to free VRAM (Ollama-specific)
+                if is_local and provider == "ollama":
                     try:
                         requests.post(
                             f"{OLLAMA_DEFAULT_BASE_URL}/api/generate",
@@ -474,7 +474,7 @@ class UnifiedBenchmarkRunner(BaseBenchmarkRunner):
         num_runs: int = 1,
         assets: Optional[List[Path]] = None,
     ) -> List[Dict[str, Any]]:
-        is_local = provider == "ollama"
+        is_local = provider in ("ollama", "llamacpp", "llama_cpp", "llamacpp_local")
 
         if benchmark_info.get("execution_mode") == "batch":
             return self.execute_batch_module(
@@ -501,7 +501,7 @@ class UnifiedBenchmarkRunner(BaseBenchmarkRunner):
         self.current_model_version = get_model_version(model, provider=provider)
 
         warmup_result = None
-        if is_local:
+        if provider == "ollama":
             warmup_result = self._measure_cold_start(model)
             if warmup_result:
                 warmup_result["model_version"] = self.current_model_version

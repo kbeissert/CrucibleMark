@@ -1,0 +1,293 @@
+# Provider-Konfiguration — wird von ConfigValidator in benchmark_config.yaml eingeblendet.
+# Modell-IDs müssen exakt der jeweiligen Anbieter-API entsprechen.
+# Duplikate (gleiche id in mehreren Providern) → WARNING beim Start, zweiter Eintrag wird ignoriert.
+
+providers:
+  # ── Proprietäre APIs (Kosten per Token) ───────────────────────────────────────
+  commercial:
+    mistral:
+      name: Mistral AI
+      short_code: API
+      api_type: mistral
+      token_param_name: max_tokens
+      model_type: proprietary_api
+      enabled: true
+      env_var: MISTRAL_API_KEY
+      models:
+      - id: mistral-medium-3-5
+        name: Mistral Medium 3.5
+      - id: mistral-small-2603
+        name: Mistral Small 4 (24B)
+      - id: mistral-large-2512
+        name: Mistral Large 3 (675B)
+      - id: devstral-2512
+        name: Devstral 2
+      - id: magistral-medium-latest
+        name: Magistral Medium 1.2
+      - id: magistral-small-latest
+        name: Magistral Small 1.2
+      - id: codestral-latest
+        name: Codestral
+      - id: mistral-small-2503
+        name: Mistral Small 3.1 (24B)
+      - id: mistral-large-2411
+        name: Mistral Large 2.1 (123B)
+
+    anthropic:
+      name: Anthropic
+      short_code: API
+      api_type: anthropic
+      model_type: proprietary_api
+      enabled: true
+      max_tokens: 8192
+      fallback_max_tokens: 4096
+      env_var: ANTHROPIC_API_KEY
+      models:
+      - id: claude-opus-4-7
+        name: Claude Opus 4.7
+      - id: claude-opus-4-6
+        name: Claude Opus 4.6
+      - id: claude-sonnet-4-6
+        name: Claude Sonnet 4.6
+      - id: claude-opus-4-5-20251101
+        name: Claude Opus 4.5
+      - id: claude-haiku-4-5-20251001
+        name: Claude Haiku 4.5
+      - id: claude-sonnet-4-5-20250929
+        name: Claude Sonnet 4.5
+
+    openai:
+      name: OpenAI
+      short_code: API
+      api_type: openai
+      token_param_name: max_completion_tokens
+      model_type: proprietary_api
+      enabled: true
+      env_var: OPENAI_API_KEY
+      model_max_tokens:
+        gpt-4o: 4096
+        gpt-4o-mini: 4096
+      models:
+      - id: gpt-5.5
+        name: GPT-5.5
+      - id: gpt-5.4
+        name: GPT-5.4
+      - id: gpt-5.4-mini
+        name: GPT-5.4 Mini
+      - id: o4-mini
+        name: o4-mini
+      - id: gpt-5
+        name: GPT-5
+      - id: gpt-5-mini
+        name: GPT-5 Mini
+      - id: o3-mini
+        name: o3-mini
+      - id: o1
+        name: o1
+      - id: gpt-4o-mini
+        name: GPT-4o Mini
+      - id: gpt-4o
+        name: GPT-4o
+
+    google:
+      name: Google Gemini
+      short_code: API
+      api_type: google
+      model_type: proprietary_api
+      enabled: true
+      env_var: GOOGLE_API_KEY
+      models:
+      - id: gemini-3.5-flash
+        name: Gemini 3.5 Flash
+      - id: gemini-3.1-pro-preview
+        name: Gemini 3.1 Pro (Preview)
+      - id: gemini-3-flash-preview
+        name: Gemini 3 Flash (Preview)
+      - id: gemini-2.5-flash
+        name: Gemini 2.5 Flash
+      - id: gemini-2.5-pro
+        name: Gemini 2.5 Pro
+
+    xai:
+      name: xAI (Grok)
+      short_code: API
+      api_type: xai
+      token_param_name: max_completion_tokens
+      model_type: proprietary_api
+      enabled: true
+      env_var: XAI_API_KEY
+      models:
+      - id: grok-4.20-0309-reasoning
+        name: Grok 4.20 Reasoning (0309)
+      - id: grok-4.20-0309-non-reasoning
+        name: Grok 4.20 Non-Reasoning (0309)
+      - id: grok-4.3
+        name: Grok 4.3
+      - id: grok-4-1-fast-reasoning
+        name: Grok 4.1 Fast Reasoning
+      - id: grok-4-fast-non-reasoning
+        name: Grok 4 Fast
+      - id: grok-3
+        name: Grok 3
+      - id: grok-3-mini
+        name: Grok 3 Mini
+
+    groq:
+      name: Groq Cloud
+      short_code: GR
+      api_type: groq
+      token_param_name: max_completion_tokens
+      model_type: open_weights_cloud
+      enabled: true
+      env_var: GROQ_API_KEY
+      models:
+      # OpenAI GPT OSS — bei Bedarf aktivieren
+      # - id: openai/gpt-oss-120b
+      #   name: OpenAI GPT OSS 120B via Groq
+      # - id: openai/gpt-oss-20b
+      #   name: OpenAI GPT OSS 20B via Groq
+
+      # Meta
+      - id: meta-llama/llama-4-scout-17b-16e-instruct
+        name: Llama 4 Scout (17B) Instruct
+      - id: llama-3.3-70b-versatile
+        name: Llama 3.3 (70B) Versatile
+
+      # Qwen (Alibaba)
+      - id: qwen/qwen3-32b
+        name: Qwen 3 (32B) via Groq
+
+    openrouter:
+      name: OpenRouter
+      short_code: OR
+      api_type: openrouter
+      token_param_name: max_tokens
+      model_type: open_weights_cloud
+      enabled: true
+      env_var: OPENROUTER_API_KEY
+      models:
+      # Z.ai (GLM) — neueste zuerst
+      - id: z-ai/glm-5.1-20260406
+        name: GLM 5.1-20260406 (Z.ai) via OpenRouter
+        model_type: proprietary_api  # Proprietäres Modell, Gewichte nicht öffentlich
+      - id: z-ai/glm-5-turbo-20260315
+        name: GLM 5 Turbo-20260315 (Z.ai) via OpenRouter
+        model_type: proprietary_api  # Proprietäres Modell, Gewichte nicht öffentlich
+      - id: z-ai/glm-5-20260211
+        name: GLM 5-20260211 (Z.ai) via OpenRouter
+        model_type: proprietary_api  # Proprietäres Modell, Gewichte nicht öffentlich
+      - id: z-ai/glm-4.7
+        name: GLM 4.7 (Z.ai) via OpenRouter
+      - id: z-ai/glm-4.6
+        name: GLM 4.6 (Z.ai) via OpenRouter
+
+      # Moonshot AI (Kimi) — neueste zuerst
+      - id: moonshotai/kimi-k2.6
+        name: Kimi K2.6 via OpenRouter
+      - id: moonshotai/kimi-k2.5-0127
+        name: Kimi K2.5-0127 via OpenRouter
+      - id: moonshotai/kimi-k2-thinking-20251106
+        name: Kimi K2 Thinking-20251106 via OpenRouter
+      - id: moonshotai/kimi-k2
+        name: Kimi K2 0711 via OpenRouter
+
+      # DeepSeek — neueste zuerst
+      - id: deepseek/deepseek-v4-pro
+        name: DeepSeek V4 Pro via OpenRouter
+      - id: deepseek/deepseek-v4-flash
+        name: DeepSeek V4 Flash via OpenRouter
+
+      # MiniMax
+      - id: minimax/minimax-m2.7-20260318
+        name: MiniMax M2.7-20260318 via OpenRouter
+
+      # NousResearch (Hermes)
+      - id: nousresearch/hermes-4-405b
+        name: Hermes 4 405B via OpenRouter
+      - id: nousresearch/hermes-4-70b
+        name: Hermes 4 70B via OpenRouter
+
+      # Qwen (Alibaba) — neueste zuerst
+      # - id: qwen/qwen3.7-max:free
+      #   name: Qwen 3.7 Max (Free) via OpenRouter
+      #   model_type: proprietary_api  # Proprietäres Modell, Gewichte nicht öffentlich
+      # - id: qwen/qwen3.6-plus:free
+      #   name: Qwen 3.6 Plus (Free) via OpenRouter
+      #   model_type: proprietary_api  # Proprietäres Modell, Gewichte nicht öffentlich
+
+    ollama_cloud:
+      name: Ollama (Cloud Proxies)
+      api_type: ollama
+      model_type: open_weights_cloud
+      enabled: false  # Paywall – via OpenRouter abgedeckt
+      auto_discover: true
+      models_filter: cloud
+      models: []
+
+  # ── Lokale Modelle (Ollama + llama.cpp) ───────────────────────────────────────
+  local:
+    config:
+      context_window: 32768
+      default_temperature: 0.1
+      # Models that cannot use the global context_window due to native architecture limits.
+      # Ollama silently falls back to the model's native context if VRAM is insufficient —
+      # setting the real limit here makes the constraint explicit and surfaces it as
+      # token_limit_fallback=True in CSV/audit logs instead of a silent truncation.
+      model_context_overrides:
+        # Mistral-Nemo architecture: native 4096-token context window
+        "mistral-nemo": 4096
+        "dolphin-mistral-nemo": 4096
+
+    ollama_local:
+      name: Ollama (Local)
+      short_code: LCL
+      api_type: ollama
+      enabled: true
+      auto_discover: true
+      models_filter: local
+
+    # llama.cpp: Lokaler Inferenz-Server (OpenAI-kompatible API).
+    # Jedes Modell muss explizit eingetragen werden — kein auto_discover.
+    # Der Provider löst model_file → GGUF-Pfad auf und startet/swappt den Server
+    # automatisch beim Modellwechsel. Der Server wird mit --alias <id> gestartet,
+    # damit der API-Aufruf denselben model-Bezeichner wie die Config verwendet.
+    #
+    # Pflichtfelder pro Modell:
+    #   id         — Bezeichner für API-Call, CSV und Leaderboard (frei wählbar)
+    #   name       — Anzeigename im Wizard
+    #   model_file — GGUF-Dateiname relativ zu model_dir (nur für Server-Start via llamacpp.py,
+    #                nicht für API-Kommunikation — dort gilt ausschließlich die id)
+    #
+    # Optionale Felder (nur eintragen wenn vom Default abweichend):
+    #   context_length — --ctx-size in Tokens, Default: providers.local.config.context_window (32768)
+    #   n_gpu_layers   — --n-gpu-layers, Default: 99 (vollständiges GPU-Offloading)
+    #
+    # Beschreibung/Metadaten → Model Card JSON (benchmark_scores/model_cards/)
+    llamacpp:
+      name: Llama.cpp (Local)
+      short_code: LCL
+      api_type: llamacpp
+      model_type: open_weights_local
+      enabled: true
+      base_url: "http://127.0.0.1:1235/v1"
+      api_key: "sk-local"
+      model_dir: ~/ai/lms/gguf
+      token_param_name: max_tokens
+      server_start_cmd: ~/ai/llama.cpp/build/bin/llama-server
+      server_stop_cmd: pkill -f llama-server
+      server_log: ~/ai/llama-lab-server.log
+      threads: 10
+      parallel: 4
+      models:
+      - id: gemma-3-12b-it
+        name: Gemma 3 12B Instruct Q4_K_M (GGUF)
+        model_file: gemma-3-12b-it-Q4_K_M.gguf
+        n_gpu_layers: 99
+      - id: gemma-3-12b-it-q8
+        name: Gemma 3 12B Instruct Q8_0 (GGUF)
+        model_file: google_gemma-3-12b-it-Q8_0.gguf
+        n_gpu_layers: 99
+      - id: gemma-4-e4b
+        name: Gemma 4 E4B (GGUF)
+        model_file: gemma-4-E4B.gguf
+        n_gpu_layers: 99

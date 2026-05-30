@@ -37,6 +37,10 @@ _PROVIDER_SHORTCODES: dict[str, str] = {
     "ollama": "LCL",
     "ollama_local": "LCL",
     "local": "LCL",
+    # llama.cpp local inference server (OpenAI-compatible)
+    "llamacpp": "LCL",
+    "llama_cpp": "LCL",
+    "llamacpp_local": "LCL",
     # Ollama as cloud proxy (e.g. qwen3.5:397b-cloud via remote Ollama endpoint)
     "ollama_cloud": "CLD",
 }
@@ -557,16 +561,33 @@ def resolve_provider(model_name: str) -> tuple[str, str]:
     if ":" in model_name:
         return "ollama", model_name
 
-    # SSOT: Lookup in benchmark_config.yaml
-    _config_path = Path("benchmark_config.yaml")
-    if _config_path.exists():
+    # SSOT: Lookup in benchmark_config.yaml AND config/provider_config.yaml (merged)
+    _config_paths = [Path("benchmark_config.yaml"), Path("config/provider_config.yaml")]
+    for _config_path in _config_paths:
+        if not _config_path.exists():
+            continue
         try:
             with open(_config_path, encoding="utf-8") as _f:
                 _cfg = yaml.safe_load(_f)
-            for _prov_key, _prov_cfg in _cfg.get("providers", {}).get("commercial", {}).items():
-                for _m in _prov_cfg.get("models", []):
-                    if _m.get("id") == model_name:
-                        return _prov_key, model_name
+            _providers = _cfg.get("providers", {})
+            # Check commercial providers first
+            _commercial = _providers.get("commercial", {})
+            if isinstance(_commercial, dict):
+                for _prov_key, _prov_cfg in _commercial.items():
+                    if not isinstance(_prov_cfg, dict):
+                        continue
+                    for _m in _prov_cfg.get("models", []):
+                        if isinstance(_m, dict) and _m.get("id") == model_name:
+                            return _prov_key, model_name
+            # Check local providers (llamacpp, ollama, etc.)
+            _local = _providers.get("local", {})
+            if isinstance(_local, dict):
+                for _prov_key, _prov_cfg in _local.items():
+                    if not isinstance(_prov_cfg, dict):
+                        continue
+                    for _m in _prov_cfg.get("models", []):
+                        if isinstance(_m, dict) and _m.get("id") == model_name:
+                            return _prov_key, model_name
         except Exception:
             pass
 
@@ -585,7 +606,22 @@ def resolve_provider(model_name: str) -> tuple[str, str]:
     if "/" in name_lower or name_lower.startswith(("qwen", "llama", "moonshot")):
         return "groq", model_name
 
-    # Default to local
+    # Default to llamacpp if active in config, otherwise ollama
+    _config_path = Path("benchmark_config.yaml")
+    if _config_path.exists():
+        try:
+            with open(_config_path, encoding="utf-8") as _f:
+                _cfg = yaml.safe_load(_f)
+            _llamacpp = (
+                _cfg.get("providers", {})
+                .get("local", {})
+                .get("llamacpp", {})
+            )
+            if _llamacpp.get("enabled", False):
+                return "llamacpp", model_name
+        except Exception:
+            pass
+
     return "ollama", model_name
 
 

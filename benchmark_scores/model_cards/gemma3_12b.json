@@ -10,7 +10,7 @@
   "weights_provenance_risk_rationale": "Google DeepMind ist ein US-amerikanisches Unternehmen und unterliegt dem CLOUD Act, der jedoch primär bei API-/Cloud-Nutzung relevant ist, nicht bei lokal betriebenen Gewichten.",
   "model_family": "Gemma",
   "primary_focus": "general",
-  "summary": "Gemma 3 12B ist ein Modell von Google DeepMind mit öffentlich verfügbaren Gewichten (Google Gemma Terms of Use), das lokal betreibbar und über Cloud-Provider verfügbar ist. Mit 12 Milliarden Parametern deckt es ein breites Spektrum von Instruction-Following, Textverstehen und mehrsprachigen Aufgaben ab.",
+  "summary": "Gemma 3 12B ist ein Modell von Google DeepMind mit öffentlich verfügbaren Gewichten (Google Gemma Terms of Use), das lokal betreibbar und über Cloud-Provider verfügbar ist. Dieses Modell läuft über Ollama mit Ollama-eigener Quantisierung. Mit 12 Milliarden Parametern deckt es ein breites Spektrum von Instruction-Following, Textverstehen und mehrsprachigen Aufgaben ab.",
   "strengths": [
     "Starkes Instruction-Following durch gezieltes Fine-Tuning (Gemma-IT-Variante)",
     "Effizient lokal betreibbar – läuft auf Consumer-Hardware mit ausreichend VRAM",

@@ -239,7 +239,7 @@ providers:
           description: "Effizient & schnell"
 
   local:
-    # Globale Konfiguration für alle lokalen Ollama-Modelle
+    # Globale Konfiguration für alle lokalen Modelle
     # Hier definierst du Hardware-Limits deines Systems
     config:
       # Context Window (RAM-abhängig):
@@ -251,11 +251,61 @@ providers:
       # Default Generation Profile
       default_temperature: 0.1
 
-    ollama:
-      name: "Ollama (Local)"
-      api_type: "ollama"
-      # Modelle werden dynamisch von Ollama abgefragt
-      auto_discover: true
+    # ------------------------------------------------------------
+    # llama.cpp — Aktiver lokaler Provider (OpenAI-kompatibel)
+    # ------------------------------------------------------------
+    # Port 1234: Hermes Production Server (Always-On, festes Modell)
+    # Port 1235: Llama Lab         Server (On-Demand, swappable)
+    #
+    # Server-Management via Shell-Aliases (in ~/.zshrc definiert):
+    #   llama-lab           — Lab-Server starten (Port 1235)
+    #   llama-lab-stop      — Lab-Server stoppen
+    #   llama-status        — Server-Status prüfen
+    llamacpp:
+      name: "llama.cpp (Local)"
+      api_type: "llamacpp"
+      enabled: true
+
+      # OpenAI-kompatibler Endpoint des Lab-Servers
+      base_url: "http://127.0.0.1:1235/v1"
+      api_key: "sk-local"             # Dummy-Key — wird lokal nicht validiert
+
+      # Verzeichnis mit GGUF-Modelldateien (absoluter Pfad oder mit ~)
+      model_dir: "~/models"
+
+      # Shell-Kommandos für den Server-Lifecycle
+      server_start_cmd: "llama-lab"   # Optional: "llama-lab /pfad/zu/modell.gguf"
+      server_stop_cmd: "llama-lab-stop"
+
+      # Token-Parameter-Name für diesen Provider
+      token_param_name: "max_tokens"
+
+      # Modelle, die im Benchmark getestet werden sollen.
+      # 'id' = Modellname wie er vom llama.cpp-Server gemeldet wird (GET /v1/models)
+      # 'file' = GGUF-Dateiname im model_dir (für automatischen Server-Swap)
+      models:
+        - id: "hermes-3-llama-3.1-8b"
+          name: "Hermes 3 LLaMA 3.1 8B"
+          file: "Hermes-3-Llama-3.1-8B.Q4_K_M.gguf"
+          description: "Instruction-tuned, 8B — schnell & lokal"
+        # Weitere Modelle nach Bedarf ergänzen:
+        # - id: "phi-4-mini-instruct"
+        #   name: "Phi-4 Mini Instruct"
+        #   file: "phi-4-mini-instruct.Q4_K_M.gguf"
+        #   description: "Microsoft Phi-4 Mini, 3.8B"
+
+    # ------------------------------------------------------------
+    # Ollama — Deaktiviert (Fallback, falls Ollama wieder verwendet wird)
+    # ------------------------------------------------------------
+    # Zum Reaktivieren: 'enabled: true' setzen und auskommentierte
+    # Zeilen einkommentieren. Ollama muss lokal installiert sein.
+    #
+    # ollama:
+    #   name: "Ollama (Local)"
+    #   api_type: "ollama"
+    #   enabled: false
+    #   # Modelle werden dynamisch von Ollama abgefragt
+    #   auto_discover: true
 
 # Output Configuration
 # --------------------

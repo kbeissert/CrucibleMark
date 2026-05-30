@@ -7,7 +7,9 @@
 
 Diese Anleitung beschreibt, wie CrucibleMark nach der Installation exakt auf die eigene Hardware und spezifische Anforderungen (Provider, Module, Modelle) zugeschnitten wird.
 
-Nach `make install` kopiert das System die Vorlage `benchmark_config.example.yaml` automatisch zu `benchmark_config.yaml` – vorausgesetzt, sie existierte noch nicht. **Diese Datei ist der zentrale Steuerungshebel. Sie steht in `.gitignore` und landet nicht im Repository, damit API-Keys lokal sicher bleiben.**
+Nach `make install` kopiert das System die Vorlage `benchmark_config.example.yaml` automatisch zu `benchmark_config.yaml` – vorausgesetzt, sie existierte noch nicht. **Diese Datei ist der zentrale Steuerungshebel für Laufzeit- und Benchmark-Parameter. Sie steht in `.gitignore` und landet nicht im Repository.**
+
+Die **Provider-Konfiguration** (Modell-Listen, API-Keys-Env-Vars, Provider-Flags) liegt getrennt in `config/provider_config.yaml`. `ConfigValidator` merged beide Dateien beim Start transparent — alle Scripts sehen ein einheitliches Config-Objekt. Beim Merge prüft das System automatisch auf doppelte Modell-IDs und gibt eine `WARNING` aus, falls eine ID in mehreren Providern auftaucht (First-Win-Semantik).
 
 Wenn eine Einstellung fehlt oder das System mit „Runtime Errors" abstürzt, liegt das meist an fehlenden API-Credits, zu kleinen Kontext-Fenstern oder falschen Provider-Aktivierungen. Gehe die folgenden vier Schritte durch.
 
@@ -28,11 +30,11 @@ Mit einer dedizierten Nvidia-Grafikkarte (`nvidia_rtx4090`) trägt man den Namen
 
 ## Schritt 2: Provider & API-Keys hinterlegen
 
-Alle Provider und ihre Kategorien (Commercial, Open-Weights Cloud, Local) sind dynamisch als Single Source of Truth in der `benchmark_config.yaml` hinterlegt (unter der Sektion `providers`). Wer einen neuen Anbieter nutzen möchte (z. B. `together_ai`), fügt diesen nur dort zur entsprechenden Kategorie hinzu. So werden die Provider auch fehlerfrei im Leaderboard klassifiziert (Details unter [MODEL_CLASSIFICATION.md](MODEL_CLASSIFICATION.md)).
+Alle Provider und ihre Kategorien (Commercial, Open-Weights Cloud, Local) sind dynamisch als Single Source of Truth in `config/provider_config.yaml` hinterlegt (unter der Sektion `providers`). Wer einen neuen Anbieter nutzen möchte (z. B. `together_ai`), fügt diesen nur dort zur entsprechenden Kategorie hinzu. So werden die Provider auch fehlerfrei im Leaderboard klassifiziert (Details unter [MODEL_CLASSIFICATION.md](MODEL_CLASSIFICATION.md)).
 
 Die Benchmarks nutzen API-Schnittstellen für kommerzielle Modelle oder Cloud-gehostete Open-Weights-Modelle. Nicht jeder Provider muss aktiviert werden.
 
-1. **Provider einrichten:** Die aktuellen Listen finden sich in `benchmark_config.yaml` unter `providers.commercial`, `providers.open_weights_cloud` und `providers.local`. Die Listen werden nach Bedarf angepasst.
+1. **Provider einrichten:** Die aktuellen Listen finden sich in `config/provider_config.yaml` unter `providers.commercial`, und `providers.local`. Die Listen werden nach Bedarf angepasst.
 2. **API-Schlüssel:** API-Keys werden **nicht** in der YAML-Datei hinterlegt. Sie werden direkt in eine `.env`-Datei im Hauptverzeichnis eingetragen:
 
 ```env
@@ -41,6 +43,20 @@ ANTHROPIC_API_KEY=sk-ant-...
 GOOGLE_API_KEY=AIzaSy...
 MISTRAL_API_KEY=...
 ```
+
+### Lokale Modelle (Ollama / llama.cpp)
+
+Für lokale Modelle gibt es zwei Provider in `config/provider_config.yaml → providers.local`:
+
+- **`ollama_local`** — `auto_discover: true`, listet laufende Ollama-Modelle automatisch
+- **`llamacpp`** — Modelle werden explizit konfiguriert. `llamacpp.py` verwaltet den Server vollautomatisch:
+  - **Startverhalten:** `start_server(model_id)` startet den Server nur wenn nötig. Läuft der Server bereits, fragt `_query_active_model()` via `/v1/models` welches Modell geladen ist — kein Doppelstart in Sub-Prozessen.
+  - **Modell-Swap:** Beim Wechsel auf ein anderes Modell wird der laufende Server gestoppt und neu gestartet (kein Reload-API).
+  - **Prophylaktischer Stop:** `benchmark_auto.py` stoppt vor dem ersten Modell-Start alle laufenden `llama-server`-Prozesse (via `server_stop_cmd`), um Port-Konflikte mit parallel laufenden Servern (z. B. Standard-Port 1234) zu vermeiden.
+  - **Konfigurationsfelder:** `base_url` (Port), `server_start_cmd`, `server_stop_cmd`, `server_log`, `model_dir`. Pro Modell: `id`, `model_file`, `n_gpu_layers`, optional `context_length`, `threads`, `parallel`.
+  - Der Server läuft auf dem in `base_url` konfigurierten Port.
+
+Beide Provider haben ein `enabled`-Flag. Ist es `false`, erscheint der Provider **nicht** im Wizard und nicht im Cross-Model-Benchmark.
 
 ---
 

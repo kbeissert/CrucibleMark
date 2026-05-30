@@ -10,7 +10,7 @@
   "weights_provenance_risk_rationale": "Google DeepMind ist ein US-amerikanisches Unternehmen und unterliegt dem CLOUD Act, jedoch ist der CLOUD Act bei lokal betriebenen Open-Weights-Modellen nicht direkt anwendbar.",
   "model_family": "Gemma",
   "primary_focus": "general",
-  "summary": "Gemma 4 E4B ist eine Desktop-optimierte Variante der Gemma-4-Familie von Google DeepMind (Google Gemma Lizenz). Das \"E\" steht für \"Effective\" – mit ca. 4,5 Milliarden aktiven Parametern bei insgesamt 8 Milliarden Gesamtparametern (dichte Architektur mit PLE: Per-Layer Embeddings). Der RAM-Footprint beträgt ca. 9,6 GB, was dem Desktop-Tier entspricht. Geeignet für Instruction-Following-Aufgaben auf lokaler Hardware mit 12+ GB RAM.",
+  "summary": "Gemma 4 E4B ist eine Desktop-optimierte Variante der Gemma-4-Familie von Google DeepMind (Google Gemma Lizenz). Das \"E\" steht für \"Effective\" – mit ca. 4,5 Milliarden aktiven Parametern bei insgesamt 8 Milliarden Gesamtparametern (dichte Architektur mit PLE: Per-Layer Embeddings). Dieses Modell läuft über Ollama mit Ollama-eigener Quantisierung. Der RAM-Footprint beträgt ca. 9,6 GB, was dem Desktop-Tier entspricht. Geeignet für Instruction-Following-Aufgaben auf lokaler Hardware mit 12+ GB RAM.",
   "strengths": [
     "Sehr ressourceneffizient durch PLE-Architektur (nur 4,5B aktive Parameter pro Forward Pass bei 8B Gesamtparametern)",
     "Lokal auf Desktop-Hardware mit ~12GB RAM betreibbar",

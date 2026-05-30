@@ -262,14 +262,21 @@ class BenchmarkRunner:
         audit_mode: bool = True,
     ):
         """Führt Benchmark aus (Lokal oder Kommerziell)."""
-        is_local = provider == "ollama"
+        is_local = provider in ("ollama", "llamacpp", "llama_cpp", "llamacpp_local")
+
+        _local_label = {
+            "ollama": "Ollama (Local)",
+            "llamacpp": "llama.cpp (Local)",
+            "llama_cpp": "llama.cpp (Local)",
+            "llamacpp_local": "llama.cpp (Local)",
+        }.get(provider, provider.upper())
 
         self._print_header(
             f"STARTE {'LOKALEN' if is_local else 'KOMMERZIELLEN'} BENCHMARK"
         )
         print(f"Modul: {module_config['name']}")
         print(f"Modell: {model}")
-        print(f"Provider: {provider.upper() if not is_local else 'Ollama (Local)'}")
+        print(f"Provider: {_local_label if is_local else provider.upper()}")
         print(f"Runs: {num_runs}")
         print(f"Force: {'Yes (Ignore Cache)' if force else 'No'}")
         if audit_mode:

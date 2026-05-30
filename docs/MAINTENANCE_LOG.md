@@ -5,6 +5,44 @@
 
 ---
 
+## v3.16.0 — Provider-Config-Split + llamacpp-Provider (2026-05-30)
+
+**Status:** Abgeschlossen
+
+### 1. `utils/providers/llamacpp.py` — neuer lokaler Provider
+
+Neuer Provider-Connector für llama.cpp-Server (OpenAI-kompatible API, lokal).
+
+- Verwaltet Server-Lifecycle (Start/Stop/Modell-Swap via `subprocess.Popen`, PID-Tracking)
+- Health-Check via `/health`-Endpoint (`urllib`, kein `/v1/models`)
+- Auto-Swap beim Modellwechsel (`query()` → `_swap_model()`)
+- `n_gpu_layers`-Fallback: 99 (vollständiges GPU-Offloading)
+- Konfiguration in `config/provider_config.yaml → providers.local.llamacpp`
+
+### 2. Provider-Config-Split — `benchmark_config.yaml` / `config/provider_config.yaml`
+
+Der `providers:`-Block wurde aus `benchmark_config.yaml` in eine separate Datei ausgelagert:
+
+- **`benchmark_config.yaml`** — Laufzeit- und Benchmark-Parameter (Module, Scoring, Logging, Output, Token-Budgets)
+- **`config/provider_config.yaml`** — Provider-Konfiguration (Modell-Listen, API-Flags, lokale Server-Config)
+
+`ConfigValidator` merged beide Dateien beim Start transparent (SCSS-Partial-Prinzip). Alle anderen Scripts sehen dasselbe Config-Objekt — keine Script-Änderungen erforderlich.
+
+### 3. `ConfigValidator._check_duplicate_model_ids()` — Duplikat-Schutz
+
+Beim Merge prüft `ConfigValidator` alle explizit gelisteten Modell-IDs über alle Provider hinweg. Duplikate werden als `WARNING` geloggt (First-Win-Semantik). `auto_discover`-Provider (Ollama) werden ausgenommen.
+
+```
+WARNING: Duplikat-Modell-ID 'gpt-5.5': bereits registriert unter 'commercial/anthropic',
+         Eintrag unter 'commercial/openai' wird ignoriert.
+```
+
+### 4. Provider `enabled`-Flag — vollständige Wizard-Sichtbarkeit
+
+Ist `enabled: false` gesetzt, erscheint der Provider weder im Single-Run-Wizard (`provider_selector.py`) noch im Cross-Model-Benchmark (`run_cross_model_benchmark.py`).
+
+---
+
 ## v3.15.0 — Tool Use Probe-Run 5 Modelle (2026-05-25)
 
 **Status:** Abgeschlossen

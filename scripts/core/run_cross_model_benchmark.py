@@ -137,18 +137,40 @@ def check_provider_health(
 
 def get_local_models() -> List[Tuple[str, str, str]]:
     """
-    Fetches available Ollama models.
+    Fetches available local models based on enabled providers in benchmark_config.yaml.
+    Ollama: only when ollama_local.enabled = true (dynamic discovery).
+    llama.cpp: only when llamacpp.enabled = true (explicit config list).
     Returns list of (id, pretty_name, provider_key)
     """
+    import yaml
     models = []
+
     try:
-        ollama_info = get_ollama_models_info()
-        for m in ollama_info:
-            # name is usually 'model:tag'
-            models.append((m["name"], m["name"], "local"))
-    except Exception as e:  # pylint: disable=broad-exception-caught
-        # Ollama might not be running
-        logger.warning("Fehler beim Abrufen lokaler Modelle (Läuft Ollama?): %s", e)
+        with open("benchmark_config.yaml", "r", encoding="utf-8") as _f:
+            _cfg = yaml.safe_load(_f)
+        local_cfg = _cfg.get("providers", {}).get("local", {})
+    except Exception as exc:  # pylint: disable=broad-exception-caught
+        logger.error("Fehler beim Laden der Provider-Config: %s", exc)
+        return models
+
+    # Ollama: nur wenn enabled
+    ollama_cfg = local_cfg.get("ollama_local", {})
+    if ollama_cfg.get("enabled", False):
+        try:
+            ollama_info = get_ollama_models_info()
+            for m in ollama_info:
+                models.append((m["name"], m["name"], "local"))
+        except Exception as e:  # pylint: disable=broad-exception-caught
+            logger.warning("Fehler beim Abrufen der Ollama-Modelle: %s", e)
+
+    # llama.cpp: nur wenn enabled (explizite Config-Liste)
+    llamacpp_cfg = local_cfg.get("llamacpp", {})
+    if llamacpp_cfg.get("enabled", False):
+        for m in llamacpp_cfg.get("models", []):
+            mid = m.get("id", "")
+            mname = m.get("name", mid)
+            if mid:
+                models.append((mid, mname, "local"))
 
     return models
 
@@ -241,7 +263,7 @@ def select_model_category() -> str:
         ("0", "Alle Modelle (Lokal & Cloud)"),
         ("1", "Kommerzielle Modelle (Proprietary API)"),
         ("2", "Open-Weight Cloud-Modelle"),
-        ("3", "Open-Weight Lokale Modelle (Ollama)")
+        ("3", "Open-Weight Lokale Modelle (Ollama / llama.cpp)")
     ]
 
     rprint("\n[bold cyan]Wähle die Kategorie der zu testenden Modelle:[/bold cyan]")

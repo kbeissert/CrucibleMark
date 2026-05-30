@@ -11,6 +11,7 @@ Usage:
 
 import sys
 import os
+import time
 import argparse
 import logging
 import shutil
@@ -312,6 +313,7 @@ def _run_module_for_model(
     force: bool = False,
     audit: bool = True,
     mcp_mode: str = "live",
+    provider: str = "ollama",
 ) -> bool:
     """Führt ein einzelnes Modul für ein einzelnes Modell aus.
 
@@ -338,7 +340,7 @@ def _run_module_for_model(
         return _run_delegate_for_model(module, model, force=force, audit=audit, mcp_mode=mcp_mode)
 
     try:
-        results = runner.run_benchmark(provider="ollama", model=model, benchmark_info=module, assets=assets_todo)
+        results = runner.run_benchmark(provider=provider, model=model, benchmark_info=module, assets=assets_todo)
         if results:
             runner.save_results(results)
             return True
@@ -350,6 +352,89 @@ def _run_module_for_model(
     return False
 
 
+def run_llamacpp_batch(
+    modules: List[Dict[str, Any]],
+    validator: ConfigValidator,
+    force: bool = False,
+    audit_mode: bool = False,
+    mcp_mode: str = "live",
+) -> None:
+    """Batch-Run für alle konfigurierten llama.cpp-Modelle (explizite Liste, kein auto_discover).
+
+    Startet den llama.cpp-Server für das erste Modell, führt alle Module aus,
+    swappt dann auf das nächste Modell und fährt den Server nach dem letzten Modell herunter.
+    """
+    print("\n🖥️  [1b/2] LOKALE MODELLE (LLAMA.CPP)")
+    print(f"{'=' * 40}")
+
+    prov_cfg = validator.config.get("providers", {}).get("local", {}).get("llamacpp", {})
+    if not prov_cfg.get("enabled", False):
+        print("⏭️  llama.cpp Provider deaktiviert — überspringe.")
+        return
+
+    models_list = prov_cfg.get("models", [])
+    if not models_list:
+        print("⚠️  Keine llama.cpp-Modelle konfiguriert.")
+        return
+
+    # Cache: bereits erledigte Tests aus local_models_benchmark.csv laden
+    csv_path = Path(
+        validator.config.get("output", {}).get("local_models_csv", "benchmark_scores/local_models_benchmark.csv")
+    )
+    existing_tests = get_existing_results(csv_path, force=force)
+
+    runner = UnifiedBenchmarkRunner(audit_mode=audit_mode)
+
+    # Verwende den runner-internen LlamaCppClient (shared state → kein Doppel-Swap)
+    lcpp_client = runner.client.clients.get("llamacpp")
+    if lcpp_client is None:
+        print("❌ LlamaCppClient nicht im Client-Registry gefunden.")
+        return
+
+    model_ids = [m["id"] for m in models_list if m.get("id")]
+
+    print(f"Konfigurierte Modelle: {len(model_ids)}")
+    print(f"Liste: {', '.join(model_ids)}\n")
+    print(f"Ignoriere bereits vorhandene Ergebnisse in: {csv_path}\n")
+
+    # Prophylaktisch alle laufenden llama-server stoppen (Port 1234 Standard + Port 1235)
+    # damit kein alter Prozess den Start blockiert oder Token-Rates verfälscht.
+    print("   🧹 Stoppe laufende llama-server (prophylaktisch) ...")
+    stop_cmd = prov_cfg.get("server_stop_cmd", "pkill -f llama-server")
+    subprocess.run(stop_cmd, shell=True, check=False, capture_output=True)
+    time.sleep(3)
+
+    try:
+        for i, model_id in enumerate(model_ids, 1):
+            print(f"\n➡️  MOD [llama.cpp {i}/{len(model_ids)}]: {model_id}")
+
+            # Server für dieses Modell starten / umschalten
+            if not lcpp_client.start_server(model_id):
+                print(f"   ❌ Server für '{model_id}' konnte nicht gestartet werden — überspringe.")
+                continue
+
+            had_new_results = False
+            for module in modules:
+                had_new_results |= _run_module_for_model(
+                    runner, model_id, module, existing_tests,
+                    force=force, audit=audit_mode, mcp_mode=mcp_mode,
+                    provider="llamacpp",
+                )
+            if had_new_results:
+                try:
+                    gen_leaderboard(print_table=False)
+                except Exception as e:  # pylint: disable=broad-exception-caught
+                    print(f"   ⚠️ Leaderboard-Update fehlgeschlagen: {e}")
+
+    except KeyboardInterrupt:
+        print("\n⛔  Abbruch durch Benutzer.")
+    finally:
+        print("\n   🛑 Stoppe llama.cpp Server...")
+        lcpp_client.stop_server()
+        if sys.exc_info()[0] is KeyboardInterrupt:
+            sys.exit(1)
+
+
 def run_local_batch(
     modules: List[Dict[str, Any]],
     validator: ConfigValidator,
@@ -357,8 +442,12 @@ def run_local_batch(
     audit_mode: bool = False,
     mcp_mode: str = "live",
 ) -> None:
-    """Batch-Run für alle lokalen Ollama-Modelle."""
     # pylint: disable=unused-argument
+    ollama_path = shutil.which("ollama")
+    if not ollama_path:
+        # Kein Ollama installiert — Sektion still überspringen
+        return
+
     print("\n🤖  [1/2] LOKALE MODELLE (OLLAMA)")
     print(f"{'=' * 40}")
 
@@ -612,10 +701,6 @@ def main():
         print(f"    🎯 FOKUS: Nur Module '{args.modules}'")
     print(f"{'#' * 60}\n")
 
-    # Pre-Check Ollama
-    if not check_ollama_status():
-        print("⚠️  WARNUNG: Lokale Tests werden übersprungen.")
-
     validator = ConfigValidator()
 
     # Module laden
@@ -642,12 +727,20 @@ def main():
 
     aborted = False
     try:
-        # 1. Lokale Modelle
+        # 1. Lokale Modelle (Ollama)
         try:
             run_local_batch(modules, validator, force=args.force, audit_mode=args.audit, mcp_mode=args.mcp_mode)
         except (KeyboardInterrupt, SystemExit):
             print("\n⛔  Abbruch durch Benutzer (Lokale Modelle).")
             aborted = True
+
+        # 1b. Lokale Modelle (llama.cpp)
+        if not aborted:
+            try:
+                run_llamacpp_batch(modules, validator, force=args.force, audit_mode=args.audit, mcp_mode=args.mcp_mode)
+            except (KeyboardInterrupt, SystemExit):
+                print("\n⛔  Abbruch durch Benutzer (llama.cpp).")
+                aborted = True
 
         # 2. Kommerzielle Modelle
         if not aborted:

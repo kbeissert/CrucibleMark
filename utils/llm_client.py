@@ -91,24 +91,28 @@ class LLMClient:
                     return locked_version
         return model_alias
 
+    _LOCAL_PROVIDERS = ("ollama", "llamacpp", "llama_cpp", "llamacpp_local")
+
     @property
     def last_load_duration(self) -> float:
-        """Returns the load duration of the last request (Ollama only)."""
-        # Iterate over clients to find one with metadata
-        # Since we route requests, we don't know which one was last active easily
-        # unless we track it or check all.
-        # Simplification: Check Ollama first.
-        ollama_client = self.clients.get("ollama")
-        if ollama_client and hasattr(ollama_client, "last_response_metadata"):
-            return ollama_client.last_response_metadata.get("load_duration", 0.0)
+        """Returns the load duration of the last request (local providers only)."""
+        for name in self._LOCAL_PROVIDERS:
+            client = self.clients.get(name)
+            if client and hasattr(client, "last_response_metadata"):
+                val = client.last_response_metadata.get("load_duration", 0.0)
+                if val:
+                    return val
         return 0.0
 
     @property
     def last_pure_execution_time(self) -> float:
-        """Returns execution time minus load time (if available)."""
-        ollama_client = self.clients.get("ollama")
-        if ollama_client and hasattr(ollama_client, "last_response_metadata"):
-            return ollama_client.last_response_metadata.get("pure_execution_time", 0.0)
+        """Returns execution time minus load time (local providers only)."""
+        for name in self._LOCAL_PROVIDERS:
+            client = self.clients.get(name)
+            if client and hasattr(client, "last_response_metadata"):
+                val = client.last_response_metadata.get("pure_execution_time", 0.0)
+                if val:
+                    return val
         return 0.0
 
     def query(  # pylint: disable=too-many-arguments, too-many-positional-arguments
