@@ -3,7 +3,7 @@
 
 Generiert einen detaillierten redaktionellen Artikel über die Stärken und Schwächen
 pro Modell, oder – bei --type bias – einen fokussierten Bias-Review basierend auf
-dem Political Compass.
+dem Political Compass, oder – bei --type tooluse – einen narrativen Tool-Use-Review.
 
 Orchestration only: all context-building logic lives in scripts/analysis/review/.
 """
@@ -27,6 +27,7 @@ if str(ROOT_DIR) not in sys.path:
 from utils.llm_client import LLMClient
 from utils.model_utils import (
     _find_card,
+    _safe_name,
     get_model_identity,
     get_model_size_class,
     get_model_specialization,
@@ -485,7 +486,7 @@ def main() -> None:
     parser = argparse.ArgumentParser(description="Generiert qualitative LLM-Reviews basierend auf den Audit-Logs.")
     parser.add_argument("-m", "--model", type=str, help="Nur dieses Modell reviewen")
     parser.add_argument("-a", "--all", action="store_true", help="Alle Modelle reviewen")
-    parser.add_argument("-t", "--type", type=str, choices=["benchmark", "bias", "provider"], default="benchmark")
+    parser.add_argument("-t", "--type", type=str, choices=["benchmark", "bias", "provider", "tooluse"], default="benchmark")
     parser.add_argument("--auto", action="store_true", help="Fehlende Cards automatisch generieren")
     parser.add_argument("--force", action="store_true", help="Neugenerierung erzwingen")
     parser.add_argument("--dry-run", action="store_true", help="Nur fehlende Cards anzeigen, nichts generieren")
@@ -544,6 +545,127 @@ def main() -> None:
             print(f"✅ Provider Review gespeichert unter: {out_file.relative_to(ROOT_DIR)}")
         except Exception as e:
             print(f"❌ Fehler bei der Generierung: {e}")
+        return
+
+    if args.type == "tooluse":
+        from scripts.analysis.review.tooluse_context import (
+            build_tooluse_context,
+            get_all_tooluse_model_ids,
+            get_tooluse_leaderboard_row,
+        )
+
+        try:
+            with open(ROOT_DIR / "config" / "meta_reviewer_prompt.yaml", "r", encoding="utf-8") as f:
+                prompt_yaml = yaml.safe_load(f)
+            prompt_template = prompt_yaml.get("tooluse_reviewer", {}).get("system_instructions", "")
+        except Exception as e:
+            print(f"❌ Fehler beim Laden des tooluse_reviewer-Prompts: {e}")
+            return
+        if not prompt_template:
+            print("❌ 'tooluse_reviewer' nicht in config/meta_reviewer_prompt.yaml gefunden.")
+            return
+
+        leaderboard_csv = ROOT_DIR / "benchmark_scores" / "tooluse_leaderboard.csv"
+        if not leaderboard_csv.exists():
+            print("❌ tooluse_leaderboard.csv nicht gefunden. Bitte erst Benchmark ausführen.")
+            return
+
+        target_model = args.model
+        model_ids = [target_model] if target_model else get_all_tooluse_model_ids()
+        if not model_ids:
+            print("⚠️ Keine Modelle in tooluse_leaderboard.csv gefunden.")
+            return
+
+        _taxonomy = _load_classification_taxonomy()
+
+        for mid in model_ids:
+            slug = _safe_name(mid)
+            out_dir = ROOT_DIR / "docs" / "reviews" / slug
+
+            if args.auto and not args.force:
+                existing = sorted(out_dir.glob("tooluse_narrative_review_*.md")) if out_dir.exists() else []
+                if existing:
+                    leaderboard_mtime = leaderboard_csv.stat().st_mtime
+                    if existing[-1].stat().st_mtime >= leaderboard_mtime:
+                        print(f"⏩ Tool-Use-Review für {mid} aktuell — überspringe.")
+                        continue
+
+            # Guard 1: model must have data in tooluse_leaderboard.csv
+            if not get_tooluse_leaderboard_row(mid):
+                print(f"⏩ {mid}: Kein Eintrag in tooluse_leaderboard.csv — Benchmark zuerst ausführen.")
+                continue
+
+            # Guard 2: model card must declare tool support
+            _card = _find_card(mid)
+            if _card.exists():
+                try:
+                    _card_data = json.loads(_card.read_text(encoding="utf-8"))
+                    if not _card_data.get("supports_tool_use", False):
+                        print(f"⏩ {mid}: supports_tool_use=false in Model Card — überspringe.")
+                        continue
+                except Exception:
+                    pass
+
+            ctx = build_tooluse_context(mid)
+            if not ctx:
+                print(f"⚠️ Keine Leaderboard-Daten für {mid} — überspringe.")
+                continue
+
+            identity = get_model_identity(mid)
+            card_path = _find_card(mid)
+            if card_path.exists():
+                try:
+                    card_data = json.loads(card_path.read_text(encoding="utf-8"))
+                    card_tags = card_data.get("architecture_tags")
+                    if card_tags and isinstance(card_tags, list):
+                        identity = {**identity, "tags": card_tags}
+                    card_display = card_data.get("display_name")
+                    if card_display:
+                        identity = {**identity, "display_name": card_display}
+                except Exception:
+                    pass
+
+            _use_case = get_use_case_primary(mid)
+            _size_class = get_model_size_class(mid)
+            _param_arch = _get_card_field(mid, "parameter_architecture", "dense")
+
+            ctx["model_tags"] = ", ".join(identity["tags"])
+            ctx["display_model_name"] = identity["display_name"]
+            ctx["model_card_context"] = get_model_card_context(mid)
+            ctx["use_case_classification_context"] = format_classification_context(
+                _use_case, _size_class, _param_arch, _taxonomy
+            )
+
+            try:
+                prompt = prompt_template.format(**ctx)
+            except KeyError as e:
+                print(f"⚠️ Fehlende Template-Variable {e} für {mid} — setze 'n/a'.")
+                ctx[e.args[0]] = "n/a"
+                prompt = prompt_template.format(**ctx)
+
+            print(f"🤖 Generiere Tool-Use-Review für {mid} mit {provider}/{model_id}...")
+            try:
+                response = client.query(
+                    model=model_id,
+                    prompt=prompt,
+                    provider=provider,
+                    temperature=0.7,
+                    max_tokens=review_max_tokens,
+                )
+            except Exception as e:
+                print(f"❌ Fehler bei der Generierung für {mid}: {e}")
+                continue
+
+            out_dir.mkdir(parents=True, exist_ok=True)
+            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+            out_file = out_dir / f"tooluse_narrative_review_{timestamp}.md"
+            display_time = datetime.now().strftime("%d.%m.%Y, %H:%M:%S")
+            lines = response.splitlines()
+            if lines:
+                lines.insert(1, f"\n> **Erstellt am:** {display_time}\n")
+            out_file.write_text("\n".join(lines), encoding="utf-8")
+            print(f"✅ Tool-Use-Review gespeichert unter: {out_file.relative_to(ROOT_DIR)}")
+
         return
 
     audit_base_dir = ROOT_DIR / "outputs" / "audit_logs"

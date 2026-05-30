@@ -248,7 +248,16 @@ class LlamaCppClient(BaseProviderClient):
         logger.debug("Starting llama.cpp server: %s", cmd)
         print(f"   ⏳ Starte llama.cpp Server ({model_id}) ...")
         try:
-            proc = subprocess.Popen(cmd, shell=True)
+            # stdin/stdout/stderr explizit auf DEVNULL setzen, damit der bash-Wrapper-
+            # Prozess keine offenen File-Descriptors (z.B. PIPE write-ends) erbt.
+            # Der Server selbst loggt via Shell-Redirect (>> server.log 2>&1).
+            proc = subprocess.Popen(
+                cmd,
+                shell=True,
+                stdin=subprocess.DEVNULL,
+                stdout=subprocess.DEVNULL,
+                stderr=subprocess.DEVNULL,
+            )
             self._server_pid = proc.pid
         except OSError as exc:
             logger.error("Failed to launch llama.cpp server: %s", exc)

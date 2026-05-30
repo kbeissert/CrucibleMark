@@ -26,6 +26,7 @@ if str(_ROOT) not in sys.path:
     sys.path.insert(0, str(_ROOT))
 
 from benchmark_modules.tooluse.core.methodology_notes import get_applicable_notes  # noqa: E402
+from utils.model_utils import _safe_name  # noqa: E402
 
 logger = logging.getLogger(__name__)
 
@@ -67,8 +68,7 @@ def _safe_int(val: Any) -> int:
 
 
 def _slugify(model_name: str) -> str:
-    name = str(model_name).rsplit("/", maxsplit=1)[-1].lower()
-    return re.sub(r"[^a-z0-9]+", "-", name).strip("-")
+    return _safe_name(model_name)
 
 
 def _score_label(score: float, thresholds: dict[str, float]) -> str:
@@ -730,10 +730,10 @@ class ToolUseReportGenerator:
         return path
 
     def save_web_json(self, model_id: str) -> Path:
-        """Write web_export/models/<slug>/tooluse_data.json."""
+        """Write web_export/raw/models/<slug>/tooluse_data.json."""
         data = self.generate_web_json(model_id)
         slug = _slugify(model_id)
-        out_dir = self.root / "web_export" / "models" / slug
+        out_dir = self.root / "web_export" / "raw" / "models" / slug
         out_dir.mkdir(parents=True, exist_ok=True)
         path = out_dir / "tooluse_data.json"
         path.write_text(json.dumps(data, ensure_ascii=False, indent=2), encoding="utf-8")

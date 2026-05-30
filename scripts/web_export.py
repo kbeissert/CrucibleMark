@@ -706,6 +706,36 @@ def _build_compass_entry(
     }
 
 
+def _read_latest_tooluse_narrative(review_dir: Path) -> str | None:
+    """Return content of the most recently modified tooluse_narrative_review_*.md."""
+    if not review_dir.exists():
+        return None
+    candidates = list(review_dir.glob("tooluse_narrative_review_*.md"))
+    if not candidates:
+        return None
+    latest = max(candidates, key=lambda p: p.stat().st_mtime)
+    return latest.read_text(encoding="utf-8")
+
+
+def _build_tooluse_entry(model_id: str, root_dir: Path) -> "dict[str, Any] | None":
+    """Return tooluse data dict for data.json, or None if model has no tooluse data."""
+    try:
+        from scripts.analysis.review.tooluse_context import get_tooluse_web_data
+        from utils.model_utils import _safe_name
+    except ImportError:
+        logging.debug("tooluse_context not importable — skipping tooluse entry")
+        return None
+
+    data = get_tooluse_web_data(model_id)
+    if data is None:
+        return None
+
+    slug = _safe_name(model_id)
+    review_dir = root_dir / "docs" / "reviews" / slug
+    data["narrative_review"] = _read_latest_tooluse_narrative(review_dir)
+    return data
+
+
 def _write_top_level_outputs(
     out_dir: Path,
     generated_at: str,
@@ -938,6 +968,7 @@ def main() -> None:
                 "audit_logs_flat": sorted(audit_files),
                 "comparisons": comp_files_dict,
             },
+            "tooluse": _build_tooluse_entry(raw_model_id if raw_model_id and raw_model_id != "nan" else model_name, root_dir),
         }
 
         audit_logs_dict: dict[str, list[str]] = model_json["files"]["audit_logs"]  # type: ignore[assignment]
