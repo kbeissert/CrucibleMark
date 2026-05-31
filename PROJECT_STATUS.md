@@ -1,7 +1,7 @@
 # PROJECT_STATUS.md
 
 **Last Updated:** 2026-05-31
-**Current Version:** 4.2.0 — OpenRouter-Migration, Free-Tier-Support & Qwen-Integration
+**Current Version:** 4.2.0 — OpenRouter-Migration, Free-Tier-Support, Qwen-Integration & Pipeline-Bug-Fixes
 **Status:** ✅ Production-Ready
 
 ---
@@ -17,6 +17,9 @@ CrucibleMark v4.2.0 schließt die Migration von Ollama-Cloud-Proxy-Modellen auf 
 - ✅ **Free-Tier-Rate-Limiting** — `openrouter_free`-Profil (18 RPM / 1 concurrent) für `:free`-Suffix-Modelle. `unified_runner.py` wählt das Profil automatisch.
 - ✅ **`resolve_provider()` Bug-Fix** — `:free`-Suffix + `/`-Heuristik korrigiert; kein falsches Groq-Routing mehr.
 - ✅ **`make review` FLAGS** — `AUTO=1` und `FORCE=1` werden jetzt korrekt an `generate_review.py` weitergegeben.
+- ✅ **ToolUse-Exporter nach Delegate-Einzellauf** — `run_tooluse_benchmark.py`: Exporter-Aufruf nach `_run_model()` eingefügt; `tooluse_leaderboard.csv` wird nach jedem `make benchmark-auto`-Run korrekt aktualisiert.
+- ✅ **Asset-Level-De-Duplikation im Exporter** — `tooluse_exporter.py`: `best_rows`-Dict auf `(model_id, asset_id)` verhindert Score-Halbierung bei Cross-CSV-Doppeleinträgen.
+- ✅ **Dead-Code Boundary-Filter entfernt** — `data_loader.py`: Wirkungslose `"Open Weights (Cloud/Local)"`-Filter seit `get_model_category()`-SSOT-Migration entfernt.
 
 **Vorherige Version (v4.1.0 — llamacpp Expansion & Bug Fixes):**
 - ✅ **Double-Start-Bug** — `_query_active_model()` in `llamacpp.py`: Server-Modell per API erkennen statt In-Process-State.

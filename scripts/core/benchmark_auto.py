@@ -47,7 +47,7 @@ sys.path.insert(0, str(ROOT_DIR))
 from scripts.core.unified_runner import UnifiedBenchmarkRunner  # noqa: E402
 from scripts.core.generate_leaderboard import main as gen_leaderboard  # noqa: E402
 from utils.config_validator import ConfigValidator  # noqa: E402
-from utils.model_utils import is_model_suitable_for_benchmark, get_ollama_models_info  # noqa: E402
+from utils.model_utils import is_model_suitable_for_benchmark, get_ollama_models_info, normalize_model_id  # noqa: E402
 from utils.llm_client import LLMClient  # noqa: E402
 from utils.module_registry import get_active_modules  # noqa: E402
 
@@ -82,16 +82,6 @@ def check_ollama_status() -> bool:
         )
         return False
 
-
-
-def _strip_hf_prefix(model_id: str) -> str:
-    """Normalisiert HF-URL-Präfix: 'hf.co/user/ModelName:tag' → 'ModelName:tag'.
-
-    Ollama listet HF-Modelle manchmal mit vollem Pfad, die CSV speichert nur den
-    letzten Bestandteil — beide Formen müssen im Cache-Lookup als identisch gelten.
-    """
-    import re as _re_hf
-    return _re_hf.sub(r'^hf\.co/[^/]+/', '', model_id)
 
 
 def get_existing_results(csv_path: Path, force: bool = False) -> Set[Tuple[str, str]]:
@@ -136,7 +126,7 @@ def get_existing_results(csv_path: Path, force: bool = False) -> Set[Tuple[str, 
                         cache.add((model_str, asset_str))
                         # Auch normalisierte Form ohne HF-Präfix speichern, damit
                         # 'hf.co/bartowski/X' und 'X' als dieselben Ergebnisse gelten.
-                        stripped = _strip_hf_prefix(model_str)
+                        stripped = normalize_model_id(model_str)
                         if stripped != model_str:
                             cache.add((stripped, asset_str))
             except Exception as e:  # pylint: disable=broad-exception-caught
@@ -151,7 +141,7 @@ def get_existing_results(csv_path: Path, force: bool = False) -> Set[Tuple[str, 
                 for _, row in df_pc.iterrows():
                     model_str = str(row["model"])
                     cache.add((model_str, "political_compass_v3"))
-                    stripped = _strip_hf_prefix(model_str)
+                    stripped = normalize_model_id(model_str)
                     if stripped != model_str:
                         cache.add((stripped, "political_compass_v3"))
         except Exception as e:
@@ -240,7 +230,7 @@ def _get_startable_assets(
         import re as _re_auto
         model_normalized = _re_auto.sub(r"-\d{8}$", "", model)
         model_normalized = _re_auto.sub(r"-(0[1-9]|1[0-2])\d{2}$", "", model_normalized)
-        model_hf_stripped = _strip_hf_prefix(model)
+        model_hf_stripped = normalize_model_id(model)
         if (
             (model, batch_id) in existing_tests
             or (model_normalized, batch_id) in existing_tests
@@ -268,7 +258,7 @@ def _get_startable_assets(
                 data = yaml.safe_load(f)
                 asset_id = data.get("metadata", {}).get("id")
 
-            model_hf_stripped = _strip_hf_prefix(model)
+            model_hf_stripped = normalize_model_id(model)
             if (model, asset_id) in existing_tests or (model_hf_stripped, asset_id) in existing_tests:
                 continue
 

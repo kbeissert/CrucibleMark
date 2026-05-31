@@ -12,6 +12,7 @@ from typing import Dict, Any, Optional, NamedTuple
 import yaml
 
 from schemas.result import BenchmarkResult
+from utils.benchmark_utils import clean_reasoning_tags
 
 # Scoring constant
 TOTAL_SCORING_WEIGHT = 100
@@ -90,21 +91,8 @@ class BaseTest(ABC):
             raise ValueError(f"Asset Validation Error: {'; '.join(errors)}")
 
     def _clean_reasoning_tags(self, response: str) -> str:
-        """
-        Removes <think>...</think> blocks from response to avoid scoring internal reasoning.
-
-        Args:
-            response: The raw response string
-
-        Returns:
-            Cleaned response string
-        """
-        import re
-
-        # Remove <think> content non-greedily including newlines
-        cleaned = re.sub(r"<think>.*?</think>", "", response, flags=re.DOTALL)
-        # Also clean empty lines that might remain
-        return cleaned.strip()
+        """Removes <think>...</think> blocks. Delegates to utils.benchmark_utils.clean_reasoning_tags."""
+        return clean_reasoning_tags(response, tags=["think"])
 
     @abstractmethod
     def execute(self, model: str, llm_client, **kwargs) -> BenchmarkResult:

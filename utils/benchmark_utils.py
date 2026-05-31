@@ -5,10 +5,11 @@ Contains common logic for interactive selection and asset discovery.
 
 import json
 import logging
+import re
 from collections.abc import Callable
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Optional, TypeVar
+from typing import Any, List, Optional, TypeVar
 
 import yaml
 
@@ -85,6 +86,46 @@ def discover_assets(directory: str | Path, pattern: str = "*.yaml") -> list[Path
         return []
 
     return sorted(list(path.glob(pattern)))
+
+
+# Default tags stripped by clean_reasoning_tags when no override is given.
+# Covers the most common CoT tag families across providers.
+_DEFAULT_REASONING_TAGS: List[str] = ["think", "thought", "reasoning"]
+
+
+def clean_reasoning_tags(
+    text: str,
+    tags: Optional[List[str]] = None,
+    extra_patterns: Optional[List[str]] = None,
+) -> str:
+    """Remove reasoning/CoT tags from a model response before scoring.
+
+    This is the SSoT for reasoning-tag stripping across all benchmark modules.
+    Each module may pass its own ``tags`` and ``extra_patterns`` to preserve
+    module-specific behaviour without duplicating the regex logic.
+
+    Args:
+        text: Raw model response string.
+        tags: XML-style tag names to strip (e.g. ``["think", "thought"]``).
+              Each entry N strips ``<N>…</N>`` blocks (case-insensitive, DOTALL).
+              Defaults to ``["think", "thought", "reasoning"]``.
+        extra_patterns: Additional raw regex patterns to strip *after* tags.
+              Useful for non-XML markers like ``[Reasoning]…[/Reasoning]``.
+
+    Returns:
+        Cleaned, stripped response string.  Returns ``""`` for falsy input.
+    """
+    if not text:
+        return ""
+    _tags = tags if tags is not None else _DEFAULT_REASONING_TAGS
+    cleaned = text
+    for tag in _tags:
+        pattern = f"<{re.escape(tag)}>.*?</{re.escape(tag)}>"
+        cleaned = re.sub(pattern, "", cleaned, flags=re.DOTALL | re.IGNORECASE)
+    if extra_patterns:
+        for pattern in extra_patterns:
+            cleaned = re.sub(pattern, "", cleaned, flags=re.DOTALL | re.IGNORECASE)
+    return cleaned.strip()
 
 
 def format_pc_run_data(run_dict: dict, include_extremism: bool = False) -> dict:

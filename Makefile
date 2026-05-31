@@ -1,7 +1,7 @@
 .PHONY: \
 	help install install-dev \
 	benchmark political-compass political-compass-safe benchmark-cross-model benchmark-auto benchmark-human \
-	review reviews-auto reviews-check review-new model-cards model-card provider-cards leaderboard provider-stats \
+	review reviews-auto reviews-bias-auto reviews-tooluse-auto reviews-all reviews-check review-new model-cards model-card provider-cards leaderboard provider-stats \
 	validate validate-single validate-assets validate-structure validate-cards test diff-results analyze-costs update-prices sync-cost-limits \
 	list-models judge-health list-modules \
 	probe-thinking probe-all-thinking \
@@ -44,7 +44,10 @@ help:
 	@echo "=== Reporting & Standards ==="
 	@echo "  make leaderboard          Generate Leaderboard CSV"
 	@echo "  make review               Generate Review (Flags: MODEL=name, ALL=1, TYPE=bias)"
-	@echo "  make reviews-auto         Reviews fuer alle Modelle (generiert fehlende Cards automatisch)"
+	@echo "  make reviews-all          Alle Review-Typen fuer alle Modelle (Benchmark + PC-Bias + Tooluse)"
+	@echo "  make reviews-auto         Benchmark-Reviews fuer alle Modelle (fehlende Model Cards werden auto-erzeugt)"
+	@echo "  make reviews-bias-auto    PC-Bias-Reviews fuer alle Modelle mit Bias-Report"
+	@echo "  make reviews-tooluse-auto Tool-Use-Reviews fuer alle Modelle mit supports_tool_use=true"
 	@echo "  make reviews-check        Zeigt fehlende Cards (kein Review, kein Schreiben)"
 	@echo "  make review-new           Einzelnen Review generieren mit Auto-Card (MODEL=name erforderlich)"
 	@echo "  make model-cards          Neues Model Card Template anlegen (MODEL=name erforderlich, PROVIDER=key optional)
@@ -164,6 +167,14 @@ reviews-auto:
 reviews-bias-auto:
 	@echo "Generiere PC-Bias-Reviews fuer alle Modelle mit 00_bias_report.md..."
 	$(PYTHON) scripts/analysis/generate_review.py --all --auto --type bias
+
+reviews-tooluse-auto:
+	@echo "Generiere Tool-Use-Reviews fuer alle Modelle mit supports_tool_use=true..."
+	$(PYTHON) scripts/analysis/generate_review.py --all --auto --type tooluse $(if $(FORCE),--force)
+
+reviews-all:
+	@echo "Generiere alle Review-Typen (Benchmark + PC-Bias + Tool-Use) fuer alle Modelle..."
+	$(PYTHON) scripts/analysis/generate_review.py --all --auto --type all $(if $(FORCE),--force)
 
 reviews-check:
 	@echo "Pruefe Abhaengigkeiten (Cards) fuer alle Modell-Reviews (kein Schreiben)..."

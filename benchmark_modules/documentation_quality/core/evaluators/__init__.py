@@ -5,8 +5,8 @@ Handles orchestration of specialized sub-evaluators.
 
 from typing import Dict, Any, List, Optional
 from pathlib import Path
-import re
 
+from utils.benchmark_utils import clean_reasoning_tags
 from ..constants import TIER_THRESHOLDS
 from .semantic_matcher import SemanticMatcher
 from .tiered_scoring import TieredScoringEngine
@@ -108,16 +108,8 @@ class DocumentationEvaluator:
         }
 
     def _clean_reasoning_tags(self, response: str) -> str:
-        """Removes <think>...</think> blocks from reasoning models."""
-        if not response:
-            return ""
-        cleaned = response
-        # Supporting multiple variants
-        tags = ["think", "thought", "reasoning"]
-        for tag in tags:
-            pattern = f"<{tag}>.*?</{tag}>"
-            cleaned = re.sub(pattern, "", cleaned, flags=re.DOTALL)
-        return cleaned.strip()
+        """Removes reasoning blocks. Delegates to utils.benchmark_utils.clean_reasoning_tags."""
+        return clean_reasoning_tags(response)
 
     def _run_advanced_validators(
         self, response: str, details: List[str], violations: List[str]

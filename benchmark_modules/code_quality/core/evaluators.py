@@ -4,8 +4,8 @@ Delegates scoring to specialized sub-modules.
 """
 
 from typing import Any, Dict, List, Tuple
-import re
 
+from utils.benchmark_utils import clean_reasoning_tags
 from .error_detection import ErrorDetector
 from .scoring_helpers import ScoringHelpers
 from .constants import (
@@ -92,12 +92,11 @@ class CodeQualityEvaluator:
         }
 
     def _clean_reasoning_tags(self, response: str) -> str:
-        """Removes <think>...</think> blocks from reasoning models."""
-        cleaned = response
-        for tag in REASONING_TAGS:
-            pattern = f"<{tag}>.*?</{tag}>"
-            cleaned = re.sub(pattern, "", cleaned, flags=re.DOTALL)
-        return cleaned.strip()
+        """Removes reasoning blocks. Uses REASONING_TAGS from module constants.
+
+        Delegates to utils.benchmark_utils.clean_reasoning_tags.
+        """
+        return clean_reasoning_tags(response, tags=list(REASONING_TAGS))
 
     def _evaluate_criterion_dispatch(
         self, criterion: Dict[str, Any], response: str, response_lower: str

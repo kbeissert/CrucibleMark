@@ -142,12 +142,17 @@ def _ensure_model_card(
             return None
 
     print(f"  Generiere Model Card für {model_id} ...")
+    from utils.card_utils import ensure_card
+    from utils.model_utils import _card_path
     mc_gen = _load_card_module("generate_model_cards")
-    card = mc_gen._generate_card(model_id, client, card_provider, card_model)  # type: ignore[attr-defined]
-    mc_gen._write_card(card)  # type: ignore[attr-defined]
+    card_path_out = _card_path(model_id, for_write=True)
+    result_path = ensure_card(model_id, card_path=card_path_out)
     mc_gen._rebuild_index()  # type: ignore[attr-defined]
-    print(f"  Model Card erstellt: {model_id}")
-    return card
+    print(f"  Model Card erstellt: {result_path}")
+    try:
+        return json.loads(result_path.read_text(encoding="utf-8"))
+    except Exception:
+        return {}
 
 
 def _ensure_provider_card(
@@ -465,7 +470,7 @@ def process_model_review(
         return
 
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    out_dir = ROOT_DIR / "docs" / "reviews" / tested_model_name
+    out_dir = ROOT_DIR / "docs" / "reviews" / _safe_name(tested_model_name)
     out_dir.mkdir(parents=True, exist_ok=True)
 
     prefix = "bias_review" if review_type == "bias" else "review"
@@ -482,17 +487,249 @@ def process_model_review(
     print(f"✅ Review gespeichert unter: {out_file.relative_to(ROOT_DIR)}")
 
 
+def _run_tooluse_reviews(
+    args: argparse.Namespace,
+    client: LLMClient,
+    provider: str,
+    model_id: str,
+    max_tokens: int,
+) -> None:
+    """Tooluse-Narrative-Reviews für alle (oder ein) Modell(e) generieren."""
+    from scripts.analysis.review.tooluse_context import (
+        build_tooluse_context,
+        get_all_tooluse_model_ids,
+        get_tooluse_leaderboard_row,
+    )
+
+    try:
+        with open(ROOT_DIR / "config" / "meta_reviewer_prompt.yaml", "r", encoding="utf-8") as f:
+            prompt_yaml = yaml.safe_load(f)
+        prompt_template = prompt_yaml.get("tooluse_reviewer", {}).get("system_instructions", "")
+    except Exception as e:
+        print(f"❌ Fehler beim Laden des tooluse_reviewer-Prompts: {e}")
+        return
+    if not prompt_template:
+        print("❌ 'tooluse_reviewer' nicht in config/meta_reviewer_prompt.yaml gefunden.")
+        return
+
+    leaderboard_csv = ROOT_DIR / "benchmark_scores" / "tooluse_leaderboard.csv"
+    if not leaderboard_csv.exists():
+        print("❌ tooluse_leaderboard.csv nicht gefunden. Bitte erst Benchmark ausführen.")
+        return
+
+    model_ids = [args.model] if args.model else get_all_tooluse_model_ids()
+    if not model_ids:
+        print("⚠️ Keine Modelle in tooluse_leaderboard.csv gefunden.")
+        return
+
+    _taxonomy = _load_classification_taxonomy()
+
+    for mid in model_ids:
+        slug = _safe_name(mid)
+        out_dir = ROOT_DIR / "docs" / "reviews" / slug
+
+        if args.auto and not args.force:
+            existing_reviews = sorted(out_dir.glob("tooluse_narrative_review_*.md")) if out_dir.exists() else []
+            if existing_reviews:
+                latest_review_mtime = existing_reviews[-1].stat().st_mtime
+                audit_dir = ROOT_DIR / "outputs" / "audit_logs" / slug
+                tooluse_audit_files = list(audit_dir.glob("tooluse*.md")) if audit_dir.exists() else []
+                latest_audit_mtime = max((f.stat().st_mtime for f in tooluse_audit_files), default=0)
+                if latest_review_mtime >= latest_audit_mtime:
+                    print(f"⏩ Tool-Use-Review für {mid} aktuell – überspringe.")
+                    continue
+
+        # Guard 1: model must have data in tooluse_leaderboard.csv
+        if not get_tooluse_leaderboard_row(mid):
+            print(f"⏩ {mid}: Kein Eintrag in tooluse_leaderboard.csv — Benchmark zuerst ausführen.")
+            continue
+
+        # Guard 2: model card must declare tool support
+        _card = _find_card(mid)
+        if _card.exists():
+            try:
+                _card_data = json.loads(_card.read_text(encoding="utf-8"))
+                if not _card_data.get("supports_tool_use", False):
+                    print(f"⏩ {mid}: supports_tool_use=false in Model Card — überspringe.")
+                    continue
+            except Exception:
+                pass
+
+        ctx = build_tooluse_context(mid)
+        if not ctx:
+            print(f"⚠️ Keine Leaderboard-Daten für {mid} — überspringe.")
+            continue
+
+        identity = get_model_identity(mid)
+        card_path = _find_card(mid)
+        if card_path.exists():
+            try:
+                card_data = json.loads(card_path.read_text(encoding="utf-8"))
+                card_tags = card_data.get("architecture_tags")
+                if card_tags and isinstance(card_tags, list):
+                    identity = {**identity, "tags": card_tags}
+                card_display = card_data.get("display_name")
+                if card_display:
+                    identity = {**identity, "display_name": card_display}
+            except Exception:
+                pass
+
+        _use_case = get_use_case_primary(mid)
+        _size_class = get_model_size_class(mid)
+        _param_arch = _get_card_field(mid, "parameter_architecture", "dense")
+
+        ctx["model_tags"] = ", ".join(identity["tags"])
+        ctx["display_model_name"] = identity["display_name"]
+        ctx["model_card_context"] = get_model_card_context(mid)
+        ctx["use_case_classification_context"] = format_classification_context(
+            _use_case, _size_class, _param_arch, _taxonomy
+        )
+
+        try:
+            prompt = prompt_template.format(**ctx)
+        except KeyError as e:
+            print(f"⚠️ Fehlende Template-Variable {e} für {mid} — setze 'n/a'.")
+            ctx[e.args[0]] = "n/a"
+            prompt = prompt_template.format(**ctx)
+
+        if getattr(args, "dry_run", False):
+            print(f"  [DRY-RUN] Würde Tool-Use-Review für {mid} generieren.")
+            continue
+
+        print(f"🤖 Generiere Tool-Use-Review für {mid} mit {provider}/{model_id}...")
+        try:
+            response = client.query(
+                model=model_id,
+                prompt=prompt,
+                provider=provider,
+                temperature=0.7,
+                max_tokens=max_tokens,
+            )
+        except Exception as e:
+            print(f"❌ Fehler bei der Generierung für {mid}: {e}")
+            continue
+
+        out_dir.mkdir(parents=True, exist_ok=True)
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        out_file = out_dir / f"tooluse_narrative_review_{timestamp}.md"
+        display_time = datetime.now().strftime("%d.%m.%Y, %H:%M:%S")
+        lines = response.splitlines()
+        if lines:
+            lines.insert(1, f"\n> **Erstellt am:** {display_time}\n")
+        out_file.write_text("\n".join(lines), encoding="utf-8")
+        print(f"✅ Tool-Use-Review gespeichert unter: {out_file.relative_to(ROOT_DIR)}")
+
+
+def _run_audit_reviews(
+    args: argparse.Namespace,
+    client: LLMClient,
+    provider: str,
+    model_id: str,
+    max_tokens: int,
+    csv_data: str,
+    effective_type: str,
+) -> None:
+    """Benchmark- oder Bias-Reviews durch Iteration über outputs/audit_logs/ generieren."""
+    audit_base_dir = ROOT_DIR / "outputs" / "audit_logs"
+    if not audit_base_dir.exists():
+        print("❌ Keine Audit-Logs gefunden.")
+        return
+
+    print(f"📁 Durchsuche Audit-Logs nach Modellen ({effective_type.upper()})...")
+    found_models = False
+
+    safe_target_model = normalize_model_id(args.model).replace(":", "_").replace("/", "_") if args.model else None
+
+    _configured_safe_ids: set[str] = set()
+    try:
+        _cfg = load_config()
+        for _p in list(_cfg.get("providers", {}).get("commercial", {}).values()) + list(_cfg.get("providers", {}).get("local", {}).values()):
+            for _m in _p.get("models", []):
+                _configured_safe_ids.add(_m["id"].replace(":", "_").replace("/", "_"))
+    except Exception:
+        pass
+
+    for subdir in audit_base_dir.iterdir():
+        if not subdir.is_dir() or subdir.name == ".DS_Store":
+            continue
+        if safe_target_model and subdir.name != safe_target_model:
+            continue
+        found_models = True
+
+        if _configured_safe_ids and subdir.name not in _configured_safe_ids:
+            if not re.search(r"-\d{8}$|-\d{6}$", subdir.name):
+                print(f"⚠️  Verzeichnis '{subdir.name}' entspricht keiner konfigurierten Modell-ID — mögliches Duplikat.")
+
+        if effective_type == "benchmark":
+            bench_files = [
+                f for f in subdir.iterdir()
+                if f.is_file() and f.name != "00_bias_report.md" and not f.name.startswith("tooluse")
+            ]
+            if not bench_files:
+                print(f"⏩ {subdir.name}: Nur PC-Bias-Report vorhanden, keine Benchmark-Logs – überspringe.")
+                continue
+
+        if args.auto and not getattr(args, "force", False):
+            review_prefix = "bias_review" if effective_type == "bias" else "review"
+            review_out_dir = ROOT_DIR / "docs" / "reviews" / _safe_name(subdir.name)
+            existing_reviews = sorted(review_out_dir.glob(f"{review_prefix}_*.md")) if review_out_dir.exists() else []
+            if existing_reviews:
+                latest_review_mtime = existing_reviews[-1].stat().st_mtime
+                if effective_type == "benchmark":
+                    # Nur Modul-Reports: kein 00_bias_report.md, kein tooluse*.md
+                    audit_files = [
+                        f for f in subdir.iterdir()
+                        if f.is_file() and f.name != "00_bias_report.md" and not f.name.startswith("tooluse")
+                    ]
+                else:
+                    # bias: nur 00_bias_report.md
+                    audit_files = [f for f in subdir.iterdir() if f.is_file() and f.name == "00_bias_report.md"]
+                latest_audit_mtime = max((f.stat().st_mtime for f in audit_files), default=0)
+                if latest_review_mtime >= latest_audit_mtime:
+                    print(f"⏩ Review für {subdir.name} aktuell – überspringe.")
+                    continue
+
+        if effective_type == "benchmark":
+            dep_context = _ensure_dependencies(
+                model_id=subdir.name,
+                client=client,
+                card_provider=provider,
+                card_model=model_id,
+                auto_mode=args.auto,
+                dry_run=args.dry_run,
+            )
+            if dep_context is None:
+                continue
+            if args.dry_run:
+                continue
+
+        if getattr(args, "dry_run", False):
+            print(f"  [DRY-RUN] Würde {effective_type}-Review für {subdir.name} generieren.")
+            continue
+
+        process_model_review(subdir, csv_data, client, provider, model_id, effective_type, max_tokens)
+
+    if not found_models:
+        print("⚠️ Keine Audit-Logs für das spezifizierte Modell gefunden.")
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description="Generiert qualitative LLM-Reviews basierend auf den Audit-Logs.")
     parser.add_argument("-m", "--model", type=str, help="Nur dieses Modell reviewen")
     parser.add_argument("-a", "--all", action="store_true", help="Alle Modelle reviewen")
-    parser.add_argument("-t", "--type", type=str, choices=["benchmark", "bias", "provider", "tooluse"], default="benchmark")
+    parser.add_argument(
+        "-t", "--type",
+        type=str,
+        choices=["benchmark", "bias", "provider", "tooluse", "all"],
+        default="benchmark",
+        help="Review-Typ: benchmark (Standard), bias (PC), tooluse, provider oder all (benchmark+bias+tooluse).",
+    )
     parser.add_argument("--auto", action="store_true", help="Fehlende Cards automatisch generieren")
     parser.add_argument("--force", action="store_true", help="Neugenerierung erzwingen")
     parser.add_argument("--dry-run", action="store_true", help="Nur fehlende Cards anzeigen, nichts generieren")
     args = parser.parse_args()
 
-    if not args.model and not args.all and args.type != "provider":
+    if not args.model and not args.all and args.type not in ("provider", "all"):
         print("❌ Bitte gib ein Modell an (-m <modell>) oder nutze --all für alle Modelle.")
         sys.exit(1)
 
@@ -511,10 +748,6 @@ def main() -> None:
         model_id = "gemini-2.5-pro"
 
     print(f"🔧 Konfigurierter Reviewer: {provider}/{model_id}")
-
-    csv_data = ""
-    if args.type == "benchmark":
-        csv_data = collect_data()
 
     if args.type == "provider":
         print("📊 Lade Provider Leaderboard...")
@@ -548,190 +781,24 @@ def main() -> None:
         return
 
     if args.type == "tooluse":
-        from scripts.analysis.review.tooluse_context import (
-            build_tooluse_context,
-            get_all_tooluse_model_ids,
-            get_tooluse_leaderboard_row,
-        )
-
-        try:
-            with open(ROOT_DIR / "config" / "meta_reviewer_prompt.yaml", "r", encoding="utf-8") as f:
-                prompt_yaml = yaml.safe_load(f)
-            prompt_template = prompt_yaml.get("tooluse_reviewer", {}).get("system_instructions", "")
-        except Exception as e:
-            print(f"❌ Fehler beim Laden des tooluse_reviewer-Prompts: {e}")
-            return
-        if not prompt_template:
-            print("❌ 'tooluse_reviewer' nicht in config/meta_reviewer_prompt.yaml gefunden.")
-            return
-
-        leaderboard_csv = ROOT_DIR / "benchmark_scores" / "tooluse_leaderboard.csv"
-        if not leaderboard_csv.exists():
-            print("❌ tooluse_leaderboard.csv nicht gefunden. Bitte erst Benchmark ausführen.")
-            return
-
-        target_model = args.model
-        model_ids = [target_model] if target_model else get_all_tooluse_model_ids()
-        if not model_ids:
-            print("⚠️ Keine Modelle in tooluse_leaderboard.csv gefunden.")
-            return
-
-        _taxonomy = _load_classification_taxonomy()
-
-        for mid in model_ids:
-            slug = _safe_name(mid)
-            out_dir = ROOT_DIR / "docs" / "reviews" / slug
-
-            if args.auto and not args.force:
-                existing = sorted(out_dir.glob("tooluse_narrative_review_*.md")) if out_dir.exists() else []
-                if existing:
-                    print(f"⏩ Tool-Use-Review für {mid} bereits vorhanden — überspringe.")
-                    continue
-
-            # Guard 1: model must have data in tooluse_leaderboard.csv
-            if not get_tooluse_leaderboard_row(mid):
-                print(f"⏩ {mid}: Kein Eintrag in tooluse_leaderboard.csv — Benchmark zuerst ausführen.")
-                continue
-
-            # Guard 2: model card must declare tool support
-            _card = _find_card(mid)
-            if _card.exists():
-                try:
-                    _card_data = json.loads(_card.read_text(encoding="utf-8"))
-                    if not _card_data.get("supports_tool_use", False):
-                        print(f"⏩ {mid}: supports_tool_use=false in Model Card — überspringe.")
-                        continue
-                except Exception:
-                    pass
-
-            ctx = build_tooluse_context(mid)
-            if not ctx:
-                print(f"⚠️ Keine Leaderboard-Daten für {mid} — überspringe.")
-                continue
-
-            identity = get_model_identity(mid)
-            card_path = _find_card(mid)
-            if card_path.exists():
-                try:
-                    card_data = json.loads(card_path.read_text(encoding="utf-8"))
-                    card_tags = card_data.get("architecture_tags")
-                    if card_tags and isinstance(card_tags, list):
-                        identity = {**identity, "tags": card_tags}
-                    card_display = card_data.get("display_name")
-                    if card_display:
-                        identity = {**identity, "display_name": card_display}
-                except Exception:
-                    pass
-
-            _use_case = get_use_case_primary(mid)
-            _size_class = get_model_size_class(mid)
-            _param_arch = _get_card_field(mid, "parameter_architecture", "dense")
-
-            ctx["model_tags"] = ", ".join(identity["tags"])
-            ctx["display_model_name"] = identity["display_name"]
-            ctx["model_card_context"] = get_model_card_context(mid)
-            ctx["use_case_classification_context"] = format_classification_context(
-                _use_case, _size_class, _param_arch, _taxonomy
-            )
-
-            try:
-                prompt = prompt_template.format(**ctx)
-            except KeyError as e:
-                print(f"⚠️ Fehlende Template-Variable {e} für {mid} — setze 'n/a'.")
-                ctx[e.args[0]] = "n/a"
-                prompt = prompt_template.format(**ctx)
-
-            print(f"🤖 Generiere Tool-Use-Review für {mid} mit {provider}/{model_id}...")
-            try:
-                response = client.query(
-                    model=model_id,
-                    prompt=prompt,
-                    provider=provider,
-                    temperature=0.7,
-                    max_tokens=review_max_tokens,
-                )
-            except Exception as e:
-                print(f"❌ Fehler bei der Generierung für {mid}: {e}")
-                continue
-
-            out_dir.mkdir(parents=True, exist_ok=True)
-            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-            out_file = out_dir / f"tooluse_narrative_review_{timestamp}.md"
-            display_time = datetime.now().strftime("%d.%m.%Y, %H:%M:%S")
-            lines = response.splitlines()
-            if lines:
-                lines.insert(1, f"\n> **Erstellt am:** {display_time}\n")
-            out_file.write_text("\n".join(lines), encoding="utf-8")
-            print(f"✅ Tool-Use-Review gespeichert unter: {out_file.relative_to(ROOT_DIR)}")
-
+        _run_tooluse_reviews(args, client, provider, model_id, review_max_tokens)
+        print("\n✅ Tool-Use-Reviews abgeschlossen.")
         return
 
-    audit_base_dir = ROOT_DIR / "outputs" / "audit_logs"
-    if not audit_base_dir.exists():
-        print("❌ Keine Audit-Logs gefunden.")
+    if args.type == "all":
+        print("\n── Schritt 1/3: Benchmark-Reviews ──")
+        _run_audit_reviews(args, client, provider, model_id, review_max_tokens, collect_data(), effective_type="benchmark")
+        print("\n── Schritt 2/3: PC-Bias-Reviews ──")
+        _run_audit_reviews(args, client, provider, model_id, review_max_tokens, "", effective_type="bias")
+        print("\n── Schritt 3/3: Tool-Use-Reviews ──")
+        _run_tooluse_reviews(args, client, provider, model_id, review_max_tokens)
+        print("\n✅ Alle Reviews abgeschlossen.")
         return
 
-    print("📁 Durchsuche Audit-Logs nach Modellen...")
-    found_models = False
-
-    safe_target_model = normalize_model_id(args.model).replace(":", "_").replace("/", "_") if args.model else None
-
-    _configured_safe_ids: set[str] = set()
-    try:
-        _cfg = load_config()
-        for _p in list(_cfg.get("providers", {}).get("commercial", {}).values()) + list(_cfg.get("providers", {}).get("local", {}).values()):
-            for _m in _p.get("models", []):
-                _configured_safe_ids.add(_m["id"].replace(":", "_").replace("/", "_"))
-    except Exception:
-        pass
-
-    for subdir in audit_base_dir.iterdir():
-        if not subdir.is_dir() or subdir.name == ".DS_Store":
-            continue
-        if safe_target_model and subdir.name != safe_target_model:
-            continue
-        found_models = True
-
-        if _configured_safe_ids and subdir.name not in _configured_safe_ids:
-            if not re.search(r"-\d{8}$|-\d{6}$", subdir.name):
-                print(f"⚠️  Verzeichnis '{subdir.name}' entspricht keiner konfigurierten Modell-ID — mögliches Duplikat.")
-
-        if args.type == "benchmark":
-            bench_files = [f for f in subdir.iterdir() if f.is_file() and f.name != "00_bias_report.md"]
-            if not bench_files:
-                print(f"⏩ {subdir.name}: Nur PC-Bias-Report vorhanden, keine Benchmark-Logs – überspringe.")
-                continue
-
-        if args.auto and not getattr(args, "force", False):
-            review_prefix = "bias_review" if args.type == "bias" else "review"
-            review_out_dir = ROOT_DIR / "docs" / "reviews" / subdir.name
-            existing_reviews = sorted(review_out_dir.glob(f"{review_prefix}_*.md")) if review_out_dir.exists() else []
-            if existing_reviews:
-                latest_review_mtime = existing_reviews[-1].stat().st_mtime
-                audit_files = [f for f in subdir.iterdir() if f.is_file() and f.name != "00_bias_report.md"]
-                latest_audit_mtime = max((f.stat().st_mtime for f in audit_files), default=0)
-                if latest_review_mtime >= latest_audit_mtime:
-                    print(f"⏩ Review für {subdir.name} aktuell – überspringe.")
-                    continue
-
-        if args.type == "benchmark":
-            dep_context = _ensure_dependencies(
-                model_id=subdir.name,
-                client=client,
-                card_provider=provider,
-                card_model=model_id,
-                auto_mode=args.auto,
-                dry_run=args.dry_run,
-            )
-            if dep_context is None:
-                continue
-            if args.dry_run:
-                continue
-
-        process_model_review(subdir, csv_data, client, provider, model_id, args.type, review_max_tokens)
-
-    if not found_models:
-        print("⚠️ Keine Audit-Logs für das spezifizierte Modell gefunden.")
+    # benchmark oder bias
+    csv_data = collect_data() if args.type == "benchmark" else ""
+    _run_audit_reviews(args, client, provider, model_id, review_max_tokens, csv_data, effective_type=args.type)
+    print("\n✅ Reviews abgeschlossen.")
 
 
 if __name__ == "__main__":

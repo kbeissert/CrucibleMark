@@ -50,6 +50,9 @@ _PROVIDER_MODULES: dict[str, tuple[str, str]] = {
 _ENV_KEY_MAP: dict[str, str] = {
     "anthropic": "ANTHROPIC_API_KEY",
     "google": "GOOGLE_API_KEY",
+    "mistral": "MISTRAL_API_KEY",
+    "openai": "OPENAI_API_KEY",
+    # ollama: no API key required (local endpoint)
 }
 
 

@@ -4,8 +4,8 @@ Orchestrates the evaluation process by delegating to specialized evaluators.
 """
 
 from typing import Any, Dict
-import re
 
+from utils.benchmark_utils import clean_reasoning_tags
 from .tiered_scoring import TieredScoringEngine
 from .content_quality import ContentQualityEvaluator
 from .format_validator import FormatValidator
@@ -181,25 +181,19 @@ class ContentTransformationEvaluator:
         }
 
     def _clean_reasoning_tags(self, response: str) -> str:
-        """
-        Removes reasoning tags (DeepSeek/R1) to avoid scoring internal thoughts.
-        Now selectively only removes <think> to avoid false positives.
-        """
-        # Only remove <think> tags as they are standard for R1/DeepSeek.
-        # Other tags like <reflection> caused content loss in Glossary tasks.
-        tags = [
-            (r"<think>.*?</think>", ""),
-            (r"<reflection>.*?</reflection>", ""),
-            (r"\[Reasoning\].*?\[/Reasoning\]", ""),
-        ]
+        """Removes reasoning tags. CT-specific: only <think> + extra patterns.
 
-        cleaned = response
-        for pattern, replacement in tags:
-            cleaned = re.sub(
-                pattern, replacement, cleaned, flags=re.DOTALL | re.IGNORECASE
-            )
-
-        return cleaned.strip()
+        Intentionally does NOT strip <thought> to avoid Glossary content loss.
+        Delegates to utils.benchmark_utils.clean_reasoning_tags.
+        """
+        return clean_reasoning_tags(
+            response,
+            tags=["think"],
+            extra_patterns=[
+                r"<reflection>.*?</reflection>",
+                r"\[Reasoning\].*?\[/Reasoning\]",
+            ],
+        )
 
     def _create_error_score(self, msg: str) -> dict:
         """Create a default error score structure."""
