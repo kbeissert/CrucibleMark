@@ -466,6 +466,15 @@ def main() -> None:
     try:
         if args.model:
             ok = _run_model(args.model, force=args.force, silent=args.silent)
+            # Leaderboard nach Einzellauf aktualisieren (Exporter liest aus Benchmark-CSVs)
+            try:
+                config = ConfigValidator().config
+                exporter = ToolUseExporter(config)
+                written = exporter.aggregate_from_benchmark_csvs()
+                if written > 0:
+                    print(f"  Leaderboard aktualisiert: {written} Modell(e) → tooluse_leaderboard.csv")
+            except Exception as exc:  # noqa: BLE001
+                print(f"  [WARN] Leaderboard-Update fehlgeschlagen: {exc}")
             sys.exit(0 if ok else 1)
 
         elif args.models:

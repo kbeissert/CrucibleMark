@@ -318,8 +318,10 @@ class ToolUseExporter:
                 Path("benchmark_scores/commercial_models_benchmark.csv"),
             ]
 
-        # model_id → list of per-asset row dicts
-        per_model: dict[str, list[dict[str, Any]]] = {}
+        # (model_id, asset_id) → best row: neuester Timestamp gewinnt; bei Gleichstand success > error
+        # Verhindert Score-Halbierung wenn dasselbe Asset in mehreren CSVs steht (z.B. nach
+        # Modell-Migration commercial→cloud oder nach fehlgeschlagenem Mock-Run).
+        best_rows: dict[tuple[str, str], dict[str, Any]] = {}
 
         for csv_path in csv_paths:
             if not csv_path.exists():
@@ -332,9 +334,26 @@ class ToolUseExporter:
                         model_id = normalize_model_id(row.get("model", ""))
                         if not model_id:
                             continue
-                        per_model.setdefault(model_id, []).append(row)
+                        asset_id = str(row.get("asset_id", ""))
+                        key = (model_id, asset_id)
+                        existing = best_rows.get(key)
+                        if existing is None:
+                            best_rows[key] = row
+                        else:
+                            # Neuerer Timestamp gewinnt
+                            if row.get("timestamp", "") > existing.get("timestamp", ""):
+                                best_rows[key] = row
+                            elif row.get("timestamp", "") == existing.get("timestamp", ""):
+                                # Gleichzeitig: success > error
+                                if row.get("status") == "success" and existing.get("status") != "success":
+                                    best_rows[key] = row
             except (OSError, csv.Error) as exc:
                 logger.warning("Could not read %s: %s", csv_path, exc)
+
+        # best_rows → per_model aggregieren
+        per_model: dict[str, list[dict[str, Any]]] = {}
+        for (model_id, _asset_id), row in best_rows.items():
+            per_model.setdefault(model_id, []).append(row)
 
         written = 0
         for model_id, asset_rows in per_model.items():
