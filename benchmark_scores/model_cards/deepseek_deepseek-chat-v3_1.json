@@ -1,5 +1,5 @@
 {
-  "model_id": "deepseek-v3.1:671b-cloud",
+  "model_id": "deepseek/deepseek-chat-v3.1",
   "display_name": "DeepSeek V3.1 671B",
   "developer": "DeepSeek",
   "origin_country": "China",

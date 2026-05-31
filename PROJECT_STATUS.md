@@ -1,16 +1,30 @@
 # PROJECT_STATUS.md
 
-**Last Updated:** 2026-05-30
-**Current Version:** 4.1.0 — llamacpp Expansion & Bug Fixes
+**Last Updated:** 2026-05-31
+**Current Version:** 4.2.0 — OpenRouter-Migration, Free-Tier-Support & Qwen-Integration
 **Status:** ✅ Production-Ready
 
 ---
 
 ## Executive Summary
 
-CrucibleMark v4.0.0 markiert den ersten öffentlichen Release nach der abgeschlossenen Tool-Use-Phase und einer vollständigen Architektur-Migration. Der Sprung von v3.9 auf v4.0 reflektiert zwei fundamentale Paradigmenwechsel: das erste agentic Benchmark-Modul (Live-MCP-Integration, echte externe Tools) und die Ablösung des Legacy-Pricing-Systems durch Model Cards als alleinige Source of Truth.
+CrucibleMark v4.2.0 schließt die Migration von Ollama-Cloud-Proxy-Modellen auf nativen OpenRouter-Support ab und fügt zwei neue kostenpflichtige Qwen-Modelle (Alibaba Cloud) hinzu. Kernfix: Der `data_collection: allow`-Override in `openrouter.py` behebt den HTTP-404-Fehler bei allen Alibaba-Cloud-Endpoints via OpenRouter. Free-Tier-Modelle mit `:free`-Suffix bekommen automatisch ein konservativeres Rate-Limit-Profil.
 
-**Key Achievements (v4.0.0 / v3.10.0 → v3.15.1):**
+**Key Achievements (v4.2.0):**
+- ✅ **OpenRouter-Migration** — 3 Modelle von Ollama-Cloud-Proxy auf OpenRouter umgestellt: `google/gemma-4-31b-it`, `deepseek/deepseek-chat-v3.1`, `deepseek/deepseek-v3.2`. Model Cards umbenannt, alle 5 Benchmark-CSVs migriert.
+- ✅ **Qwen-Integration** — `qwen/qwen3.7-max` und `qwen/qwen3.6-plus` via OpenRouter. Model Cards vollständig angelegt inkl. Pricing und Thinking-Probe-Status.
+- ✅ **`data_collection: allow`-Fix** — Alle Alibaba-Cloud-Endpoints antworten jetzt via OpenRouter ohne 404. `extra_body`-Override in `openrouter.py`.
+- ✅ **Free-Tier-Rate-Limiting** — `openrouter_free`-Profil (18 RPM / 1 concurrent) für `:free`-Suffix-Modelle. `unified_runner.py` wählt das Profil automatisch.
+- ✅ **`resolve_provider()` Bug-Fix** — `:free`-Suffix + `/`-Heuristik korrigiert; kein falsches Groq-Routing mehr.
+- ✅ **`make review` FLAGS** — `AUTO=1` und `FORCE=1` werden jetzt korrekt an `generate_review.py` weitergegeben.
+
+**Vorherige Version (v4.1.0 — llamacpp Expansion & Bug Fixes):**
+- ✅ **Double-Start-Bug** — `_query_active_model()` in `llamacpp.py`: Server-Modell per API erkennen statt In-Process-State.
+- ✅ **Duplicate-Runner-Bug** — Zweite `UnifiedBenchmarkRunner`-Zeile in `benchmark_auto.py` entfernt.
+- ✅ **gemma-3-12b-it-q8** — Provider-Config-Eintrag + Model Card (Q8_0-GGUF).
+- ✅ **3 Module aktiviert** — `code_quality`, `reasoning_logic`, `documentation_quality` on by default.
+
+**Vorherige Version (v4.0.0 — erster öffentlicher Release):**
 - ✅ **Tool Use Benchmark Module** — 6 Assets in 3 Phasen (Tool Selection, Content Synthesis, Multilingual), Live-MCP-Integration (Tavily `web_search` + `http_fetch`), Content Verification Framework mit Halluzinations-Cap, 257 Tests. Erste Production-Runs: gpt-5-mini 76.5 % [PRODUCTION], grok-4-fast 74.2 % [PRODUCTION], kimi-k2 73.6 %, qwen3-32b 72.9 %.
 - ✅ **Model Cards als Pricing-SSoT** — Vollständige Pipeline-Migration: `score_calculator.py`, `cost_tracker.py` und Web-Export lesen Preise ausschließlich aus `benchmark_scores/model_cards/*.json`. LiteLLM aus Pricing-Pfad entfernt.
 - ✅ **Budget-Enforcement entfernt** — `cost_limits.yaml` gelöscht, `CostLimitExceededError` entfernt, Architektur vereinfacht.

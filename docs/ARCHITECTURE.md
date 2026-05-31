@@ -125,7 +125,7 @@ CrucibleMark folgt einer **Plugin-basierten Architektur**, bei der Benchmark-Mod
 **Speicherung & Trennung (3-CSV-Architektur):**
 Die Ergebnisse werden vom Runner durch den `ResultManager` (`utils/result_manager.py`) automatisch in eine von drei Quellen getrennt (Single Source of Truth Konzept):
 - `local_models_benchmark.csv` (Lokale VRAM-Ausführungen auf Consumer-Hardware via Ollama)
-- `cloud_models_benchmark.csv` (Open-Weights-Modelle auf Cloud-/Server-Infrastruktur: OpenRouter, Groq LPU, Ollama Cloud-Proxies)
+- `cloud_models_benchmark.csv` (Open-Weights-Modelle auf Cloud-/Server-Infrastruktur: OpenRouter, Groq LPU)
 - `commercial_models_benchmark.csv` (Closed-Source-Modelle, ausschließlich über proprietäre API verfügbar: OpenAI, Anthropic, Google, xAI, Mistral)
 
 > **Benchmark-Philosophie:** `cloud_models_benchmark.csv` enthält bewusst **keine** lokalen Modelle. Open-Weights-Modelle wie Kimi K2 oder Qwen 3 werden hier auf der Infrastruktur gemessen, auf der sie mit kommerziellen Modellen konkurrieren — Cloud-Server oder LPU-Cluster, nicht Desktop-VRAM. Die Kernfrage lautet: *Wie stark sind Open-Weights-Modelle auf gleichwertiger Infrastruktur im Vergleich zu Closed-Source-APIs?*
@@ -200,7 +200,7 @@ Das Test-Modell für den Health-Check ist pro Provider konfiguriert. Anthropic: 
 | Mistral | API key | 32K | ❌ | 500 → 3× Retry | ThinkChunk-Handling für Magistral (Streaming-Artefakt) |
 | Anthropic | API key | 200K | ✅ | 429 → Exponential Backoff | `stop_reason` → normalisiert zu `finish_reason` |
 | Google | API key | 1M–2M | ❌ | SDK-seitig | `STOP` uppercase → normalisiert |
-| OpenRouter | Bearer token | Modellabhängig | ✅ | Im Wrapper | **Reasoning-Token-Budget** (siehe unten) |
+| OpenRouter | Bearer token | Modellabhängig | ✅ | Im Wrapper | **Reasoning-Token-Budget** (siehe unten); Free-Tier-Modelle (`vendor/model:free`) nutzen separates Rate-Limit-Profil (`openrouter_free`, 18 RPM) |
 | xAI | Bearer token | Modellabhängig | ✅ | Im Wrapper | `finish_reason` aus Streaming-Chunks extrahiert |
 | Groq | Bearer token | Modellabhängig | ✅ | Im Wrapper | `max_completion_tokens` statt `max_tokens` (config-getrieben) |
 

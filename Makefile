@@ -147,12 +147,12 @@ provider-stats:
 review:
 	@if [ -n "$(ALL)" ]; then \
 		echo "Generating $(if $(TYPE),$(TYPE),benchmark)-Reviews for ALL models..."; \
-		$(PYTHON) scripts/analysis/generate_review.py --all $(if $(TYPE),--type $(TYPE)); \
+		$(PYTHON) scripts/analysis/generate_review.py --all $(if $(TYPE),--type $(TYPE)) $(if $(AUTO),--auto) $(if $(FORCE),--force); \
 	elif [ -n "$(MODEL)" ]; then \
 		echo "Generating $(if $(TYPE),$(TYPE),benchmark)-Review for $(MODEL)..."; \
-		$(PYTHON) scripts/analysis/generate_review.py --model "$(MODEL)" $(if $(TYPE),--type $(TYPE)); \
+		$(PYTHON) scripts/analysis/generate_review.py --model "$(MODEL)" $(if $(TYPE),--type $(TYPE)) $(if $(AUTO),--auto) $(if $(FORCE),--force); \
 	else \
-		echo "Fehler: Bitte gib MODEL=name oder ALL=1 an. Optional: TYPE=bias"; \
+		echo "Fehler: Bitte gib MODEL=name oder ALL=1 an. Optional: TYPE=bias|tooluse AUTO=1 FORCE=1"; \
 		exit 1; \
 	fi
 

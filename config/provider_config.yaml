@@ -197,6 +197,19 @@ providers:
       - id: deepseek/deepseek-v4-flash
         name: DeepSeek V4 Flash via OpenRouter
 
+      # DeepSeek — ältere Ollama-era Modelle (jetzt via OpenRouter)
+      - id: deepseek/deepseek-chat-v3.1
+        name: DeepSeek V3.1 671B via OpenRouter
+      - id: deepseek/deepseek-v3.2
+        name: DeepSeek V3.2 via OpenRouter
+
+      # Google Gemma — Cloud-Modelle via OpenRouter
+      - id: google/gemma-4-31b-it
+        name: Gemma 4 31B Instruct via OpenRouter
+      # Free-Tier-Variante (kein Credit-Abzug, aber 20 RPM / 200 RPD Limit):
+      # - id: google/gemma-4-31b-it:free
+      #   name: Gemma 4 31B Instruct (Free) via OpenRouter
+
       # MiniMax
       - id: minimax/minimax-m2.7-20260318
         name: MiniMax M2.7-20260318 via OpenRouter
@@ -207,13 +220,13 @@ providers:
       - id: nousresearch/hermes-4-70b
         name: Hermes 4 70B via OpenRouter
 
-      # Qwen (Alibaba) — neueste zuerst
-      # - id: qwen/qwen3.7-max:free
-      #   name: Qwen 3.7 Max (Free) via OpenRouter
-      #   model_type: proprietary_api  # Proprietäres Modell, Gewichte nicht öffentlich
-      # - id: qwen/qwen3.6-plus:free
-      #   name: Qwen 3.6 Plus (Free) via OpenRouter
-      #   model_type: proprietary_api  # Proprietäres Modell, Gewichte nicht öffentlich
+      # Qwen (Alibaba) — via OpenRouter ($1.25/$3.75 und $0.33/$1.95 per 1M Tokens)
+      - id: qwen/qwen3.7-max
+        name: Qwen 3.7 Max via OpenRouter
+        model_type: proprietary_api
+      - id: qwen/qwen3.6-plus
+        name: Qwen 3.6 Plus via OpenRouter
+        model_type: proprietary_api
 
     ollama_cloud:
       name: Ollama (Cloud Proxies)

@@ -1,5 +1,5 @@
 {
-  "model_id": "deepseek-v3.2:cloud",
+  "model_id": "deepseek/deepseek-v3.2",
   "display_name": "DeepSeek V3.2",
   "developer": "DeepSeek",
   "origin_country": "China",

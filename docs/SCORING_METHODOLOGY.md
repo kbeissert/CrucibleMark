@@ -130,13 +130,17 @@ Kombiniert ergibt sich: **Token-hungrige Modelle sind bei API-Nutzung teurer**, 
 > Kontingents anfällt. CrucibleMark selbst nutzt den Free Tier von Groq. Die Kostenangaben
 > spiegeln daher den **potenziellen Produktionspreis** wider.
 >
-> **Ollama als Cloud-Proxy:** Im Benchmark sind einige Modelle mit dem `:cloud`-Tag versehen
-> (z. B. `deepseek-v3.2:cloud`, `minimax-m2.7:cloud`, `gpt-oss:120b-cloud`). Diese Modelle
-> laufen nicht lokal, sondern nutzen Ollama lediglich als Schnittstellen-Proxy zu den
-> jeweiligen Provider-APIs. Interessant dabei: `gpt-oss:120b-cloud` leitet Anfragen intern
-> über **Groq’s Inferenz-Infrastruktur** weiter — d. h. zwei scheinbar verschiedene
-> Anbieter teilen sich dieselbe Backend-Infrastruktur. Die hinterlegten Preise stammen jeweils
-> aus den Paid-Tier-Tarifen der tatsächlichen Provider-APIs (DeepSeek, MiniMax, Groq).
+> **OpenRouter als primärer Cloud-Routing-Layer:** Alle Cloud-gehosteten Open-Weights-Modelle
+> laufen über OpenRouter (`vendor/model`-Format, z. B. `deepseek/deepseek-v3.2`,
+> `google/gemma-4-31b-it`). Ältere `:cloud`-Tags (Ollama-Proxy-Ära) wurden auf OpenRouter-IDs
+> migriert. Die hinterlegten Preise stammen aus den aktuellen Paid-Tier-Tarifen der jeweiligen
+> Provider-APIs.
+>
+> **OpenRouter Free Tier (`vendor/model:free`):** Für Modelle mit `:free`-Suffix entstehen
+> keine Credit-Kosten. Es gelten jedoch strengere Rate-Limits (20 RPM / 200 Req/Tag).
+> CrucibleMark nutzt dafür automatisch ein konservatives `openrouter_free`-Rate-Limit-Profil
+> (18 RPM). Free-Tier-Modelle werden in `config/provider_config.yaml` auskommentiert
+> hinterlegt und können bei Bedarf aktiviert werden.
 
 > **Grundannahme Token-Messung:** Die von der API gemeldeten `completion_tokens` entsprechen exakt den abgerechneten Tokens auf dem Provider-Dashboard. CrucibleMark trifft keine eigene Token-Zählung — es verlässt sich auf die Provider-Angabe. Kommerzielle Provider haben keinen Anreiz, Output-Tokens zu verschweigen, da diese direkt abgerechnet werden. Lokale Modelle (Ollama) haben ebenfalls keinen Anreiz zur Verschleierung: Fehlerhafte Token-Zählungen würden durch Community-Tests und reproduzierbare Benchmarks schnell aufgedeckt und das Vertrauen in den Anbieter oder das Modell nachhaltig beschädigen.
 

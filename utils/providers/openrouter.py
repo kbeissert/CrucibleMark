@@ -109,6 +109,10 @@ class OpenRouterClient(BaseProviderClient):
             if stream_handler:
                 params["stream"] = True
 
+            # Alibaba Cloud (Qwen) und andere Anbieter erfordern explizite Zustimmung
+            # zur Datenverarbeitung — per-Request-Override der Account-Policy.
+            params["extra_body"] = {"data_collection": "allow"}
+
             # Ausführen mit Token-Fallback Kaskade
             response, used_max_tokens, fallback_triggered = self._execute_with_token_fallback(
                 func=self.client.chat.completions.create,

@@ -4,6 +4,34 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [v4.2.0] - 2026-05-31
+
+**OpenRouter-Migration, Free-Tier-Support und Provider-Routing-Bug-Fix.**
+
+### Fixed
+- **`resolve_provider()` — `:free`-Suffix-Bug** — Ollama-Erkennung griff bisher bei jedem `:` im Modell-Namen, also auch bei `vendor/model:free`. Fix: `:` → Ollama nur wenn kein `/` im Namen (`utils/model_utils.py`).
+- **Fallback-Heuristik `"/" in model_id`** — Führte bisher zu falschem Groq-Routing. Korrigiert: `"/"` → `openrouter` (nicht mehr Groq). Groq-Fallback bleibt nur für bare Namen ohne Namespace-Slash (`qwen`, `llama`, `moonshot`).
+- **`openrouter.py` — Alibaba Cloud `data_collection`-Policy** — Qwen-Modelle (und andere Alibaba-Cloud-Endpoints via OpenRouter) lieferten HTTP 404 ohne explizite Zustimmung. Fix: `extra_body={"data_collection": "allow"}` wird bei jedem Request gesetzt (Override der Account-Defaultpolicy).
+
+### Added
+- **OpenRouter Free Tier** — Modelle mit `:free`-Suffix (`vendor/model:free`) nutzen automatisch das neue `openrouter_free`-Rate-Limit-Profil (18 RPM / `concurrent_requests: 1`, konservativ unter dem 20-RPM-Limit). Kein anderer Endpoint, kein zweiter API-Key notwendig — nur der Suffix genügt.
+- **`config/rate_limits.yaml`** — Neues `openrouter`-Profil (60 RPM / 3 concurrent) und `openrouter_free`-Profil (18 RPM / 1 concurrent).
+- **`unified_runner.py` — Free-Tier-RateLimiter-Routing** — Erkennt `provider=openrouter` + `model.endswith(":free")` und wählt das konservative Profil automatisch.
+
+### Changed
+- **Ollama → OpenRouter Migration (3 Modelle):** `gemma4:31b-cloud` → `google/gemma-4-31b-it`, `deepseek-v3.1:671b-cloud` → `deepseek/deepseek-chat-v3.1`, `deepseek-v3.2:cloud` → `deepseek/deepseek-v3.2`. Model Cards umbenannt und `model_id` aktualisiert. Alle 5 Benchmark-CSVs migriert (Modell-IDs + `provider: ollama → openrouter`).
+- **`config/provider_config.yaml`** — 3 Modelle unter `openrouter.models` eingetragen (DeepSeek, Gemma 31B). Zwei neue kostenpflichtige Qwen-Modelle hinzugefügt (`qwen/qwen3.7-max`, `qwen/qwen3.6-plus`) mit `model_type: proprietary_api`.
+- **`generate_review.py` — Skip-Logik vereinfacht** — mtime-Vergleich gegen Leaderboard-CSV entfernt; Existenz-Check reicht: vorhandene Narrative-Reviews werden immer übersprungen (kein `--force` nötig für Nicht-Wiederholungen).
+- **`Makefile` — `make review` FLAGS** — `AUTO=1` und `FORCE=1` werden jetzt korrekt an `generate_review.py` weitergegeben (für `--all` und `--model`-Pfad).
+- **Docs** — `ARCHITECTURE.md`, `SCORING_METHODOLOGY.md`, `SETUP_GUIDE.md`: Ollama-Cloud-Proxy-Ära entfernt, OpenRouter-Free-Tier-Doku ergänzt.
+- **`CLAUDE.md` — Pitfall ergänzt** — `resolve_provider()` `:free`-Suffix-Verhalten und OpenRouter-Namespace-Heuristik dokumentiert.
+
+### Added (Model Cards)
+- **`qwen_qwen3_7-max.json`** — Qwen 3.7 Max (Proprietär, Alibaba Cloud via OpenRouter, input $1.25/1M, output $3.75/1M, context 131K, `thinking_probe_detected: false`).
+- **`qwen_qwen3_6-plus.json`** — Qwen 3.6 Plus (Proprietär, Alibaba Cloud via OpenRouter, Hybrid-Reasoning, input $0.33/1M bis 256K / $2.00/1M darüber, output $1.95/1M bis 256K / $6.00/1M darüber, `thinking_probe_detected: true`, `parameter_architecture: hybrid`).
+
+---
+
 ## [v4.1.0] - 2026-05-30
 
 **llamacpp-Erweiterung, Bug-Fixes und Modul-Aktivierung.**

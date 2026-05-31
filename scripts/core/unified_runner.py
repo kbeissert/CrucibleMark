@@ -530,7 +530,14 @@ class UnifiedBenchmarkRunner(BaseBenchmarkRunner):
         pause_calculator = (
             AdaptivePauseCalculator(model, self.mode) if is_local else None
         )
-        run_limiter = RateLimiter(provider) if not is_local else None
+        # Free-tier OpenRouter models (model-id ends with ":free") use a
+        # separate, more conservative rate-limit profile (18 RPM / 200 RPD).
+        _limiter_key = (
+            "openrouter_free"
+            if (provider == "openrouter" and model.endswith(":free"))
+            else provider
+        )
+        run_limiter = RateLimiter(_limiter_key) if not is_local else None
 
         for i, asset_path in enumerate(assets, 1):
             asset_name = asset_path.stem.replace("asset_", "").replace("_", " ").title()

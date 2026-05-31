@@ -557,8 +557,9 @@ def get_commercial_models_from_config(
 def resolve_provider(model_name: str) -> tuple[str, str]:
     """Ermittelt Provider basierend auf benchmark_config.yaml (SSOT), Fallback: Modell-Präfix."""
 
-    # Determine if likely Ollama (contains tag separator)
-    if ":" in model_name:
+    # Determine if likely Ollama: tag separator ":" present AND no namespace "/" prefix.
+    # OpenRouter free-tier IDs use "vendor/model:free" — must NOT be routed to Ollama.
+    if ":" in model_name and "/" not in model_name:
         return "ollama", model_name
 
     # SSOT: Lookup in benchmark_config.yaml AND config/provider_config.yaml (merged)
@@ -603,7 +604,11 @@ def resolve_provider(model_name: str) -> tuple[str, str]:
         return "google", model_name
     if name_lower.startswith("grok-"):
         return "xai", model_name
-    if "/" in name_lower or name_lower.startswith(("qwen", "llama", "moonshot")):
+    # "vendor/model" → OpenRouter (incl. ":free" suffix); bare model names → Groq.
+    # Heuristik: enthält "/" → OpenRouter-Namespace-Format (nie lokale Ollama-IDs).
+    if "/" in name_lower:
+        return "openrouter", model_name
+    if name_lower.startswith(("qwen", "llama", "moonshot")):
         return "groq", model_name
 
     # Default to llamacpp if active in config, otherwise ollama

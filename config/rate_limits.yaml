@@ -32,3 +32,13 @@ mistral:
 openai:
   requests_per_minute: 500
   concurrent_requests: 5
+
+openrouter:
+  requests_per_minute: 60
+  concurrent_requests: 3
+
+# Free-tier models on OpenRouter (suffix :free) have strict limits.
+# Standard free-tier: 20 RPM / 200 RPD. We use a conservative 18 RPM.
+openrouter_free:
+  requests_per_minute: 18
+  concurrent_requests: 1

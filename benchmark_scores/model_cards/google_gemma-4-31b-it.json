@@ -1,5 +1,5 @@
 {
-  "model_id": "gemma4:31b-cloud",
+  "model_id": "google/gemma-4-31b-it",
   "display_name": "Gemma 4 31B",
   "developer": "Google DeepMind",
   "origin_country": "USA",

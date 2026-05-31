@@ -585,10 +585,8 @@ def main() -> None:
             if args.auto and not args.force:
                 existing = sorted(out_dir.glob("tooluse_narrative_review_*.md")) if out_dir.exists() else []
                 if existing:
-                    leaderboard_mtime = leaderboard_csv.stat().st_mtime
-                    if existing[-1].stat().st_mtime >= leaderboard_mtime:
-                        print(f"⏩ Tool-Use-Review für {mid} aktuell — überspringe.")
-                        continue
+                    print(f"⏩ Tool-Use-Review für {mid} bereits vorhanden — überspringe.")
+                    continue
 
             # Guard 1: model must have data in tooluse_leaderboard.csv
             if not get_tooluse_leaderboard_row(mid):
