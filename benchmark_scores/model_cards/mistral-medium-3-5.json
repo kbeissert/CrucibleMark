@@ -26,8 +26,7 @@
   "architecture_tags": [
     "General",
     "Instruct",
-    "Agentic",
-    "Multimodal"
+    "Agentic"
   ],
   "unknown": false,
   "generated_at": "2026-05-21T00:00:00.000000+00:00",
@@ -47,6 +46,6 @@
   "use_case_primary": "generalist",
   "parameter_architecture": "dense",
   "params_total_b": null,
-  "context_window_k": null,
-  "knowledge_cutoff": null
+  "context_window_k": 256,
+  "knowledge_cutoff": "2025-12"
 }

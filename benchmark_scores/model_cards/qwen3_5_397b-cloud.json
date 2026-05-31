@@ -45,6 +45,6 @@
   "use_case_primary": "generalist",
   "parameter_architecture": "moe",
   "params_total_b": 397.0,
-  "context_window_k": null,
-  "knowledge_cutoff": null
+  "context_window_k": 128,
+  "knowledge_cutoff": "2025-06"
 }

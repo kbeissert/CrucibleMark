@@ -50,6 +50,6 @@
   "use_case_primary": "agentic",
   "parameter_architecture": "moe",
   "params_total_b": null,
-  "context_window_k": null,
-  "knowledge_cutoff": null
+  "context_window_k": 1000,
+  "knowledge_cutoff": "2026-03"
 }

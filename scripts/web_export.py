@@ -527,7 +527,7 @@ def _build_leaderboard_entry(
     return {
         "slug": slug,
         "model_id": (card.get("model_id") if card else None) or (_raw_model_id or None),
-        "model_name": str(row.get("Model Name", "")),
+        "model_name": (card.get("display_name") if card else None) or str(row.get("Model Name", "")),
         "vendor": vendor,
         "version": _card_version or _csv_version,
         "badge": str(row.get("Badge", "")),

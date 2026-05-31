@@ -47,5 +47,5 @@
   "parameter_architecture": "dense",
   "params_total_b": null,
   "context_window_k": 1000,
-  "knowledge_cutoff": null
+  "knowledge_cutoff": "2025-01"
 }

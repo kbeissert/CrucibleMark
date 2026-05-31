@@ -16,7 +16,7 @@
   "params_total_b": 12.0,
   "params_active_b": null,
   "context_window_k": 128,
-  "knowledge_cutoff": null,
+  "knowledge_cutoff": "2024-12",
   "summary": "Gemma 3 12B ist ein Modell von Google DeepMind mit öffentlich verfügbaren Gewichten (Google Gemma Terms of Use). Dieses Modell läuft als GGUF-Quantisierung (Q4_K_M), direkt von Hugging Face bezogen und via llama.cpp betrieben. Mit 12 Milliarden Parametern deckt es ein breites Spektrum von Instruction-Following, Textverstehen und mehrsprachigen Aufgaben ab.",
   "strengths": [
     "Starkes Instruction-Following durch gezieltes Fine-Tuning (Gemma-IT-Variante)",

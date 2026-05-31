@@ -16,7 +16,7 @@
   "params_total_b": 8.0,
   "params_active_b": 4.5,
   "context_window_k": 128,
-  "knowledge_cutoff": null,
+  "knowledge_cutoff": "2025-06",
   "summary": "Gemma 4 E4B ist eine Desktop-optimierte Variante der Gemma-4-Familie von Google DeepMind (Google Gemma Lizenz). Das \"E\" steht für \"Effective\" – mit ca. 4,5 Milliarden aktiven Parametern bei insgesamt 8 Milliarden Gesamtparametern (dichte Architektur mit PLE: Per-Layer Embeddings). Dieses Modell läuft als GGUF-Datei, direkt von Hugging Face bezogen und via llama.cpp betrieben. Der RAM-Footprint beträgt ca. 9,6 GB.",
   "strengths": [
     "Sehr ressourceneffizient durch PLE-Architektur (nur 4,5B aktive Parameter pro Forward Pass bei 8B Gesamtparametern)",

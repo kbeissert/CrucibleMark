@@ -47,5 +47,5 @@
   "params_total_b": 1000.0,
   "params_active_b": 32.0,
   "context_window_k": 128,
-  "knowledge_cutoff": null
+  "knowledge_cutoff": "2025-12"
 }

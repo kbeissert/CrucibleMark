@@ -23,7 +23,8 @@
   "judge_context_hint": "Das Modell kann bei bestimmten politisch oder kulturell sensiblen Themen mit China-Bezug ausweichen oder beschönigen – dies sollte bei der Bewertung von Neutralität und Faktentreue berücksichtigt werden.",
   "architecture_tags": [
     "General",
-    "Instruct"
+    "Instruct",
+    "MoE"
   ],
   "unknown": false,
   "generated_at": "2026-04-23T22:05:48.261371+00:00",

@@ -14,14 +14,28 @@
   "use_case_primary": "coding",
   "parameter_architecture": "dense",
   "params_total_b": 123,
-  "params_active_b": 123,
   "context_window_k": 256,
   "knowledge_cutoff": "2024-12",
   "summary": "Devstral 2 ist Mistrals frontier Coding-Agent-Modell, entwickelt in Zusammenarbeit mit All Hands AI. Es ist ein 123B-Parameter-Dense-Transformer spezialisiert auf agentisches Coding: Codebase-Exploration, Multi-File-Änderungen und Bug Fixing in realen Software-Engineering-Aufgaben. Unterstützt 256K Kontext.",
-  "strengths": ["Spezialisiert auf agentisches Software-Engineering", "Codebase-Navigation über viele Dateien", "Framework-Dependency-Tracking", "Automatische Fehlerkorrektur und Retry-Logik", "256K Kontextfenster", "Open Weights"],
-  "known_limitations": ["Primär auf Coding ausgerichtet, generelle Tasks schwächer", "Kein natives Reasoning/CoT-Thinking", "Höherer Tool-Call-Error-Rate (~17%)"],
+  "strengths": [
+    "Spezialisiert auf agentisches Software-Engineering",
+    "Codebase-Navigation über viele Dateien",
+    "Framework-Dependency-Tracking",
+    "Automatische Fehlerkorrektur und Retry-Logik",
+    "256K Kontextfenster",
+    "Open Weights"
+  ],
+  "known_limitations": [
+    "Primär auf Coding ausgerichtet, generelle Tasks schwächer",
+    "Kein natives Reasoning/CoT-Thinking",
+    "Höherer Tool-Call-Error-Rate (~17%)"
+  ],
   "judge_context_hint": "Devstral 2 (2512) ist Mistrals 123B Coding-Agent-Modell, spezialisiert auf Software-Engineering-Aufgaben in Kooperation mit All Hands AI. Kein natives Chain-of-Thought.",
-  "architecture_tags": ["Coding", "Agentic", "Long Context"],
+  "architecture_tags": [
+    "Coding",
+    "Agentic",
+    "Long Context"
+  ],
   "supports_tool_use": true,
   "license": "other",
   "license_url": "https://huggingface.co/mistralai/Devstral-2-123B-Instruct-2512",

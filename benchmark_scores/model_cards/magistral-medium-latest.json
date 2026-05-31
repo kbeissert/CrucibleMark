@@ -44,7 +44,7 @@
   "parameter_architecture": "dense",
   "params_total_b": null,
   "context_window_k": 128,
-  "knowledge_cutoff": null,
+  "knowledge_cutoff": "2025-03",
   "input_price_per_1m": 2.0,
   "output_price_per_1m": 5.0
 }

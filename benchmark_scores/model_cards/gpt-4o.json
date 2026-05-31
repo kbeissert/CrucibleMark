@@ -48,6 +48,6 @@
   "parameter_architecture": "dense",
   "params_total_b": null,
   "context_window_k": 128,
-  "knowledge_cutoff": null,
+  "knowledge_cutoff": "2023-10",
   "tooluse_tested_at": "2026-05-25T17:37:53Z"
 }

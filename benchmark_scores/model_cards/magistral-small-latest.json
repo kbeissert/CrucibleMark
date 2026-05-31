@@ -42,6 +42,6 @@
   "use_case_primary": "reasoning",
   "parameter_architecture": "dense",
   "params_total_b": null,
-  "context_window_k": null,
-  "knowledge_cutoff": null
+  "context_window_k": 128,
+  "knowledge_cutoff": "2025-03"
 }

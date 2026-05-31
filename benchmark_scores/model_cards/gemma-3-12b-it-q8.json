@@ -16,7 +16,7 @@
   "params_total_b": 12.0,
   "params_active_b": null,
   "context_window_k": 128,
-  "knowledge_cutoff": null,
+  "knowledge_cutoff": "2024-12",
   "summary": "Gemma 3 12B ist ein Modell von Google DeepMind mit öffentlich verfügbaren Gewichten (Google Gemma Terms of Use). Dieses Modell läuft als GGUF-Quantisierung (Q8_0), direkt von Hugging Face bezogen und via llama.cpp betrieben. Q8_0 ist die höchste gängige GGUF-Quantisierungsstufe und kommt der vollen FP16-Präzision sehr nahe – bei minimalen Qualitätseinbußen gegenüber der Referenzimplementierung.",
   "strengths": [
     "Starkes Instruction-Following durch gezieltes Fine-Tuning (Gemma-IT-Variante)",
