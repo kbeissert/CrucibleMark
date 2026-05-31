@@ -140,13 +140,11 @@ def load_benchmark_data() -> pd.DataFrame:
 
     df = pd.concat(dfs, ignore_index=True)
 
-    # Enforce exact routing boundary: each model type maps to exactly one source CSV.
-    df = df[
-        (df["type"] != "Open Weights (Cloud)") | (df["source"] == "cloud")
-    ]
-    df = df[
-        (df["type"] != "Open Weights (Local)") | (df["source"] == "local")
-    ]
+    # Boundary: proprietäre Modelle dürfen nicht aus der local-CSV kommen.
+    # Die früheren "Open Weights (Cloud)" / "Open Weights (Local)"-Filter wurden
+    # entfernt — get_model_category() gibt seit der SSOT-Migration ausschließlich
+    # "Open Weights" zurück (kein Suffix). Das source-Feld wird in _process_csv()
+    # direkt aus dem CSV-Pfad gesetzt und ist daher bereits korrekt geroutet.
     df = df[
         (df["type"] != "Proprietär") | (df["source"].isin(["commercial", "cloud"]))
     ]
