@@ -1,5 +1,5 @@
 {
-  "model_id": "qwen/qwen3.7-max:free",
+  "model_id": "qwen/qwen3.7-max",
   "display_name": "Qwen 3.7 Max",
   "developer": "Alibaba Cloud",
   "origin_country": "China",
@@ -10,7 +10,7 @@
   "weights_provenance_risk_rationale": "Alibaba Cloud (Tongyi Qwen-Team) ist ein chinesisches Unternehmen und unterliegt dem chinesischen National Security Law (NSL), das staatlichen Zugriff auf Daten ermöglichen kann. Das BSI hat im Februar 2025 explizit vor der Nutzung chinesischer KI-Cloud-Dienste gewarnt (BSI-Referenz: Warnung DeepSeek, 04.02.2025); diese Risikoeinschätzung gilt analog für alle chinesischen Cloud-KI-Anbieter, die Nutzerdaten auf chinesischen Servern verarbeiten.",
   "model_family": "Qwen",
   "primary_focus": "agentic",
-  "summary": "Qwen 3.7 Max ist das Flagship-Modell der Qwen 3.7-Serie von Alibaba Cloud – ausgelegt auf agentische Workloads mit Stärken in Coding, Produktivitätsaufgaben und langfristiger autonomer Ausführung. Das Modell ist ausschließlich über Cloud-API verfügbar (keine Open Weights). Chinesische Herkunft und das nationale Sicherheitsgesetz (NSL) sind bei der Einschätzung des Datenrisikos zu berücksichtigen.",
+  "summary": "Qwen 3.7 Max ist das proprietäre Flagship-Modell der Qwen-3.7-Serie von Alibaba Cloud und auf agentische Workloads mit Stärken in Coding, Produktivitätsaufgaben und langfristiger autonomer Ausführung ausgelegt. Das Modell bietet ein 1M-Token-Kontextfenster, unterstützt Prompt Caching und wird über Cloud-API bereitgestellt. Chinesische Herkunft und das nationale Sicherheitsgesetz (NSL) sind bei der Einschätzung des Datenrisikos zu berücksichtigen.",
   "strengths": [
     "Exzellente Leistung bei agentischen Coding-Aufgaben und Tool-Use",
     "Optimiert für lange, autonome Task-Chains (long-horizon execution)",
@@ -20,36 +20,38 @@
   ],
   "known_limitations": [
     "Ausschließlich über Cloud-API verfügbar, kein lokaler Betrieb möglich",
-    "Keine Open Weights – vollständige Abhängigkeit von Alibaba-Infrastruktur",
+    "Keine Open Weights, vollständige Abhängigkeit von Alibaba-Infrastruktur",
     "Chinesische Herkunft birgt potenzielle Zensur bei politisch sensiblen Themen mit China-Bezug",
-    "Ausschließlich über Cloud-API verfügbar, kein lokaler Betrieb möglich (Free-Tier via OpenRouter)"
+    "OpenRouter-Tool-Use und Thinking-Verhalten können provider- oder routingabhängig variieren"
   ],
   "architecture_tags": [
     "Agentic",
-    "General"
+    "Thinking-Optional",
+    "Prompt-Caching",
+    "Long-Context"
   ],
   "unknown": false,
-  "generated_at": "2026-05-21T00:00:00.000000+00:00",
+  "generated_at": "2026-06-01T00:00:00.000000+00:00",
   "card_status": "complete",
   "size_class": "Frontier",
-  "thinking_probe_detected": false,
-  "thinking_probe_evidence": "Kein Thinking-Modus laut Modellbeschreibung – reines Text-I/O-Modell ohne CoT-Ausgabe",
-  "thinking_probe_confidence": "low",
-  "thinking_probe_at": "2026-05-21T00:00:00.000000+00:00",
+  "thinking_probe_detected": true,
+  "thinking_probe_evidence": "Qwen 3.7 Max wird in Modellbeschreibungen als agentisches Reasoning-Modell mit Extended-Thinking-Charakter eingeordnet; Qwen-3-Familie unterstützt zudem Thinking- und Non-Thinking-Modi.",
+  "thinking_probe_confidence": "medium",
+  "thinking_probe_at": "2026-06-01T00:00:00.000000+00:00",
   "supports_tool_use": true,
   "license": "Proprietary",
-  "license_url": "https://openrouter.ai/qwen/qwen3.7-max:free",
+  "license_url": "https://openrouter.ai/qwen/qwen3.7-max",
   "commercial_use_allowed": true,
   "vendor": "Alibaba",
   "weights_license_tier": "proprietary",
   "model_version": "3.7-max",
   "context_window": 1000000,
   "max_output_tokens": 65536,
-  "input_price_per_1m": 0.0,
-  "output_price_per_1m": 0.0,
+  "input_price_per_1m": 1.25,
+  "output_price_per_1m": 3.75,
   "use_case_primary": "agentic",
-  "parameter_architecture": "moe",
+  "parameter_architecture": "unknown",
   "params_total_b": null,
   "context_window_k": 1000,
-  "knowledge_cutoff": "2026-03"
+  "knowledge_cutoff": null
 }

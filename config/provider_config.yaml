@@ -211,6 +211,8 @@ providers:
       #   name: Gemma 4 31B Instruct (Free) via OpenRouter
 
       # MiniMax
+      - id: minimax/minimax-m3
+        name: MiniMax M3 via OpenRouter
       - id: minimax/minimax-m2.7-20260318
         name: MiniMax M2.7-20260318 via OpenRouter
 

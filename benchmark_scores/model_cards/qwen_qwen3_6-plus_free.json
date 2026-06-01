@@ -10,33 +10,33 @@
   "weights_provenance_risk_rationale": "Alibaba Cloud (Tongyi Qwen-Team) ist ein chinesisches Unternehmen und unterliegt dem chinesischen National Security Law (NSL), das staatlichen Zugriff auf Daten ermöglichen kann. Das BSI hat im Februar 2025 explizit vor der Nutzung chinesischer KI-Cloud-Dienste gewarnt (BSI-Referenz: Warnung DeepSeek, 04.02.2025); diese Risikoeinschätzung gilt analog für alle chinesischen Cloud-KI-Anbieter, die Nutzerdaten auf chinesischen Servern verarbeiten.",
   "model_family": "Qwen",
   "primary_focus": "agentic",
-  "summary": "Qwen 3.6 Plus ist Alibabas proprietäres Flagship-Modell der Qwen 3.6-Serie mit hybrider MoE-Architektur (lineare Attention + Sparse MoE). Es liefert starke Fortschritte beim agentischen Coding, Front-End-Entwicklung und Reasoning gegenüber der 3.5-Serie, unterstützt optionale Thinking-Tokens (reasoning_tokens) und ein 1M-Token-Kontextfenster. Das Modell ist ausschließlich über Cloud-API verfügbar.",
+  "summary": "Qwen 3.6 Plus ist Alibabas proprietäres Frontier-Modell für agentisches Coding, Reasoning und multimodale Workflows. OpenRouter führt das Modell mit 1M Kontextfenster, Tool-Use-Fähigkeit und optionalem Thinking-Verhalten; die Free-Variante dient als kostenloser Preview- bzw. Tryout-Zugang, während das Basismodell regulär kostenpflichtig ist.",
   "strengths": [
-    "Hybride MoE-Architektur für hohe Skalierbarkeit und effiziente Inferenz",
-    "Starke Verbesserungen bei agentischem Coding und Front-End-Entwicklung (SWE-bench Verified: 78.8)",
-    "Optionaler Thinking-Modus mit reasoning_tokens für komplexe Reasoning-Aufgaben",
-    "1M-Token-Kontextfenster mit bis zu 65.5K Output-Tokens",
-    "Tiered Prompt-Caching für effiziente wiederholte Kontextverwendung"
+    "Stark in agentischem Coding und Repository-Level-Problemloesung (SWE-bench Verified: 78.8)",
+    "Sehr grosses Kontextfenster von 1M Tokens",
+    "Optionales Thinking bzw. preserve_thinking fuer komplexe Multi-Step-Workflows",
+    "Tool-Use und strukturierte agentische Nutzung ueber API/OpenRouter"
   ],
   "known_limitations": [
-    "Ausschließlich über Cloud-API verfügbar, kein lokaler Betrieb möglich",
-    "Keine Open Weights – vollständige Abhängigkeit von Alibaba-Infrastruktur",
+    "Ausschliesslich ueber Cloud-API verfuegbar, kein lokaler Betrieb moeglich",
+    "Keine Open Weights, vollstaendige Abhaengigkeit von Alibaba-Infrastruktur",
     "Chinesische Herkunft birgt potenzielle Zensur bei politisch sensiblen Themen mit China-Bezug",
-    "Tiered Preisstruktur: ab 256K Token deutlich teurer ($2.00/$6.00 statt $0.50/$3.00 pro 1M)"
+    "Die :free-Variante ist ein Preview-/Tryout-SKU und nicht mit dauerhaft stabilen Gratis-Konditionen gleichzusetzen"
   ],
   "architecture_tags": [
     "Thinking-Optional",
     "Agentic",
-    "MoE"
+    "Multimodal",
+    "Hybrid-Attention"
   ],
   "unknown": false,
-  "generated_at": "2026-05-21T00:00:00.000000+00:00",
+  "generated_at": "2026-06-01T00:00:00.000000+00:00",
   "card_status": "complete",
   "size_class": "Frontier",
   "thinking_probe_detected": true,
-  "thinking_probe_evidence": "OpenRouter API meldet reasoning_tokens im Usage-Feld; Thinking-Modus optional aktivierbar",
-  "thinking_probe_confidence": "medium",
-  "thinking_probe_at": "2026-05-21T00:00:00.000000+00:00",
+  "thinking_probe_evidence": "OpenRouter und begleitende Model-Beschreibungen verweisen auf optionales Thinking bzw. preserve_thinking fuer agentische Multi-Turn-Workflows.",
+  "thinking_probe_confidence": "high",
+  "thinking_probe_at": "2026-06-01T00:00:00.000000+00:00",
   "supports_tool_use": true,
   "license": "Proprietary",
   "license_url": "https://openrouter.ai/qwen/qwen3.6-plus:free",
@@ -46,13 +46,13 @@
   "model_version": "3.6-plus",
   "context_window": 1000000,
   "max_output_tokens": 65536,
-  "input_price_per_1m": 0.5,
-  "output_price_per_1m": 3.0,
-  "input_price_per_1m_above_256k": 2.0,
-  "output_price_per_1m_above_256k": 6.0,
+  "input_price_per_1m": 0.0,
+  "output_price_per_1m": 0.0,
+  "input_price_per_1m_reference_paid": 0.325,
+  "output_price_per_1m_reference_paid": 1.95,
   "use_case_primary": "agentic",
-  "parameter_architecture": "hybrid",
+  "parameter_architecture": "hybrid-attention",
   "params_total_b": null,
   "context_window_k": 1000,
-  "knowledge_cutoff": "2026-01"
+  "knowledge_cutoff": null
 }
