@@ -2,38 +2,30 @@
   "provider_id": "google_deepmind",
   "display_name": "Google DeepMind",
   "company": "Google LLC / DeepMind Technologies Limited",
-  "origin_country": "USA / UK",
   "headquarters": "London, UK (DeepMind) / Mountain View, CA, USA (Google)",
   "founding_year": 2023,
-  "developer_jurisdiction": "US",
   "pricing_model": "free-tier+pay-per-token",
   "api_base_url": "https://generativelanguage.googleapis.com",
+  "api_documentation_url": "https://ai.google.dev/gemini-api/docs",
   "deployment": {
     "cloud_act_exposure": true,
     "applicable_law": "US (CLOUD Act)",
     "data_residency": "USA",
     "gdpr_dpa_available": true,
     "eu_adequacy_decision": true,
-    "data_retention_days": 30,
+    "data_retention_days": -1,
     "chinese_nsl_risk": "none"
   },
-  "summary": "Google DeepMind entstand 2023 aus der Fusion von Google Brain und DeepMind. Der Provider ist bekannt für die Gemini-Modellfamilie sowie Forschungsdurchbrüche in RL und Bioinformatik (AlphaFold). API-Zugang erfolgt über Google AI Studio und Vertex AI. Starke Multimodal-Kompetenz.",
   "privacy_note": "Da Google LLC ein US-amerikanisches Unternehmen ist, unterliegen API-Anfragen dem CLOUD Act. US-Behörden können unter bestimmten Voraussetzungen Zugriff auf verarbeitete Daten verlangen, auch wenn Google SCCs und ein DPA für EU-Kunden anbietet.",
-  "strengths": [
-    "Starke Multimodalität (Text, Bild, Audio, Video) durch die Gemini-Modellfamilie",
-    "Tiefe Integration in Google Cloud (Vertex AI) mit Enterprise-Features und Skalierbarkeit",
-    "Führende Forschungstiefe durch DeepMind-Erbe (AlphaFold, Reinforcement Learning)"
-  ],
-  "known_limitations": [
-    "API-Daten werden auf US-Infrastruktur verarbeitet – problematisch für datenschutzsensible EU-Anwendungsfälle",
-    "Komplexes Produktportfolio (AI Studio vs. Vertex AI) erschwert Einstieg und Kostenplanung"
-  ],
   "notable_models": [
+    "Gemini 3.5 Flash",
+    "Gemini 3.1 Pro Preview",
     "Gemini 2.5 Pro",
-    "Gemini 2.5 Flash",
-    "Gemini 1.5 Pro"
+    "Gemini 2.5 Flash"
   ],
-  "unknown": false,
   "stats": {},
-  "generated_at": "2026-04-11T14:39:20.424084+00:00"
+  "unknown": false,
+  "generated_at": "2026-06-02T21:00:00.000000+00:00",
+  "last_verified_at": "2026-06-02",
+  "verification_source": "https://policies.google.com/privacy"
 }

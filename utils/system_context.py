@@ -38,20 +38,32 @@ REGELN FÜR DEIN REVIEW IN BEZUG AUF HARDWARE:
 
         elif run_type == "commercial":
             return """WICHTIGER KONTEXT ZUR PERFORMANCE (KOMMERZIELL/CLOUD):
-Dieses kommerzielle/API-basierte Modell der großen Anbieter (z.B. OpenAI, Anthropic, Google) erzeugt Kosten und läuft in der Cloud. Lokale Hardware spielt KEINE Rolle.
+Dieses kommerzielle/API-basierte Modell der großen Anbieter (z.B. OpenAI, Anthropic, Google, Mistral, xAI) erzeugt Kosten und läuft vollständig in der Cloud des Herstellers. Lokale Hardware spielt KEINE Rolle.
 
 REGELN FÜR DEIN REVIEW IN BEZUG AUF CLOUD-HARDWARE:
-1. Erwähne explizit, dass es sich um ein kommerzielles Cloud-Modell handelt.
-2. Erwähne auf keinen Fall lokale Hardware (z.B. "Apple Silicon M4" oder VRAM-Bezug). Das Modell lief nicht auf lokaler Hardware!
-3. Evaluiere die Geschwindigkeit (API-Latenz in t/s) primär in Relation zur Preis-Leistung (Preis pro 1M Token), der Latenz und der Stabilität der API."""
+1. Erwähne explizit, dass es sich um ein kommerzielles Cloud-Modell handelt und nenne den Hersteller (z.B. "Anthropic-API", "OpenAI-API", "Google Gemini API") — der Leser muss erkennen, dass das Modell über eine Hersteller-Cloud betrieben wurde.
+2. Erwähne unter keinen Umständen lokale Hardware. Verbotene Begriffe in diesem Review sind insbesondere:
+   - "Apple Silicon", "M4", "M3", "M2", "M1"
+   - "MacBook", "lokal", "Testsystem", "lokal betrieben"
+   - "24 GB", "VRAM", "Unified Memory", "RAM"
+   - "Swapping", "Offloading"
+   - "Hardware-Ceiling", "GPU-Kapazität"
+   Wenn dir einer dieser Begriffe in den Text rutscht, ist das ein Fehler — der Benchmark lief auf Cloud-Servern des Herstellers, nicht auf der Hardware des Reviewers.
+3. Evaluiere die Geschwindigkeit (API-Latenz in t/s) primär in Relation zur Preis-Leistung (Preis pro 1M Token), der Latenz und der Stabilität der API. Nackte t/s-Werte sind hier Cloud-Cluster-Performance, keine Aussage über das Testsystem."""
 
         elif run_type == "cloud_open_weights":
             return """WICHTIGER KONTEXT ZUR PERFORMANCE (CLOUD OPEN-WEIGHTS / PROXY):
-Dieses Modell ist ein auf offenen Gewichten basierendes Modell (Open-Weights), das über einen Cloud-Anbieter (wie Groq, Hyperbolic) oder als API-Proxy läuft. Die Rechenlast wird vollständig in die Cloud ausgelagert.
+Dieses Modell ist ein auf offenen Gewichten basierendes Modell (Open-Weights), das über einen Cloud-Anbieter (z.B. Groq, OpenRouter) oder als API-Proxy läuft. Die Rechenlast wird vollständig in die Cloud des Anbieters ausgelagert.
 
 REGELN FÜR DEIN REVIEW IN BEZUG AUF CLOUD-HARDWARE:
-1. Mache unbedingt für den Leser klar, dass es sich hier um ein "Cloud Open-Weights"-Modell handelt.
-2. Erwähne auf keinen Fall lokale Hardware (wie "Apple Silicon M4" oder VRAM-Swapping-Risiken). Das Modell lief nicht lokal auf der Hardware des Nutzers! Die t/s geben bei diesen Modellen meist die enorme Rechengeschwindigkeit hochoptimierter Cloud-Cluster (z.B. LPU bei Groq) plus Netzwerk-Latenz wieder.
-3. Behandle die ermittelte Geschwindigkeit (t/s) daher als Benchmark für den jeweiligen Cloud-Infrastruktur-Anbieter."""
+1. Mache unbedingt für den Leser klar, dass es sich hier um ein "Cloud Open-Weights"-Modell handelt und nenne den Cloud-Anbieter (z.B. "via Groq", "via OpenRouter") — nicht nur "über Cloud-Provider", sondern konkret.
+2. Erwähne unter keinen Umständen lokale Hardware. Verbotene Begriffe in diesem Review sind insbesondere:
+   - "Apple Silicon", "M4", "M3", "M2", "M1"
+   - "MacBook", "lokal", "Testsystem", "lokal betrieben", "lokal evaluiert", "lokales Referenzsystem"
+   - "24 GB", "VRAM", "Unified Memory", "RAM"
+   - "Swapping", "Offloading"
+   - "Hardware-Ceiling", "GPU-Kapazität"
+   Wenn dir einer dieser Begriffe in den Text rutscht, ist das ein Fehler — der Benchmark lief auf Cloud-Cluster-Hardware (z.B. Groq LPU) plus Netzwerk-Latenz, nicht auf dem Rechner des Reviewers.
+3. Behandle die ermittelte Geschwindigkeit (t/s) als Benchmark für den jeweiligen Cloud-Infrastruktur-Anbieter. Bei Groq sind das z.B. LPU-Werte, die in dieser Größenordnung mit Consumer-Hardware nicht reproduzierbar wären. Diese Einordnung ist Pflicht."""
 
         return ""

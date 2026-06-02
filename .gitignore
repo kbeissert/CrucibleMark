@@ -21,6 +21,12 @@ config_local.yaml
 backups/
 _backup_old/
 
+# MCP server transient files
+.mcp.pid
+.mcp.log
+>>>>+++
+
+
 # Benchmark Results (Ignore volatile/generated files)
 benchmark_scores/*.csv
 benchmark_scores/*.json

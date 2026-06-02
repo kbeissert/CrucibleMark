@@ -50,9 +50,9 @@ help:
 	@echo "  make reviews-tooluse-auto Tool-Use-Reviews fuer alle Modelle mit supports_tool_use=true"
 	@echo "  make reviews-check        Zeigt fehlende Cards (kein Review, kein Schreiben)"
 	@echo "  make review-new           Einzelnen Review generieren mit Auto-Card (MODEL=name erforderlich)"
-	@echo "  make model-cards          Neues Model Card Template anlegen (MODEL=name erforderlich, PROVIDER=key optional)
+	@echo "  make model-cards          Neues Model Card Template anlegen (MODEL=name erforderlich, PROVIDER=key optional)"
 	@echo "  make ensure-card          Fehlende Felder in einer Card ergänzen (MODEL=name erforderlich)"
-	@echo "  make ensure-cards         Fehlende Felder in ALLEN Cards ergänzen (--missing: nur lückenhafte)""
+	@echo "  make ensure-cards         Fehlende Felder in ALLEN Cards ergänzen (--missing: nur lückenhafte)"
 	@echo "  make provider-cards       Provider Cards generieren (Flags: PROVIDER=name, FORCE=1)"
 	@echo "  make provider-stats       System-Latenzen analysieren (Ping vs. TTFB) und Provider-Review erstellen"
 	@echo "  make probe-thinking       Thinking-Probe fuer einzelnes Modell (MODEL=name, PROVIDER=key optional)"

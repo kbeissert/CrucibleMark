@@ -2,12 +2,11 @@
   "provider_id": "zhipu_ai",
   "display_name": "Zhipu AI",
   "company": "Beijing Zhipu Huazhang Technology Co., Ltd.",
-  "origin_country": "China",
   "headquarters": "Beijing, China",
   "founding_year": 2019,
-  "developer_jurisdiction": "CN",
   "pricing_model": "free-tier+pay-per-token",
   "api_base_url": "https://open.bigmodel.cn",
+  "api_documentation_url": "https://open.bigmodel.cn/dev/howuse/introduction",
   "deployment": {
     "cloud_act_exposure": false,
     "applicable_law": "China (PIPL/CSL/DSL)",
@@ -17,23 +16,17 @@
     "data_retention_days": -1,
     "chinese_nsl_risk": "high"
   },
-  "summary": "Zhipu AI ist ein 2019 aus der Tsinghua-Universität ausgegründetes chinesisches KI-Unternehmen. Es entwickelt die GLM-Modellfamilie (General Language Model) und positioniert sich als einer der führenden LLM-Anbieter Chinas. Bekannt für multimodale Fähigkeiten und starke Chinesisch-Kompetenz.",
   "privacy_note": "API-Anfragen werden ausschließlich auf Servern in China verarbeitet und unterliegen chinesischem Recht (PIPL, CSL, DSL), das Behörden weitreichende Datenzugriffsrechte einräumt. Für europäische Nutzer besteht kein DSGVO-konformer Rahmen; ein Einsatz mit personenbezogenen Daten ist datenschutzrechtlich nicht vertretbar.",
-  "strengths": [
-    "Sehr starke Leistung bei chinesischsprachigen Aufgaben und Texten",
-    "Multimodale Modelle (Text, Bild, Video) unter einer einheitlichen API",
-    "Akademische Wurzeln an der Tsinghua-Universität mit starker Forschungsbasis"
-  ],
-  "known_limitations": [
-    "Keine DSGVO-konforme Datenverarbeitung – für EU-Unternehmen mit personenbezogenen Daten ungeeignet",
-    "Inhaltliche Zensur und politische Einschränkungen gemäß chinesischer Regulierung"
-  ],
   "notable_models": [
-    "GLM-4",
-    "CogVideoX",
-    "CogView-3"
+    "GLM-5.1",
+    "GLM-5 Turbo",
+    "GLM-5",
+    "GLM-4.7",
+    "GLM-4.6"
   ],
-  "unknown": false,
   "stats": {},
-  "generated_at": "2026-04-11T15:05:26.723720+00:00"
+  "unknown": false,
+  "generated_at": "2026-06-02T21:00:00.000000+00:00",
+  "last_verified_at": "2026-06-02",
+  "verification_source": "https://open.bigmodel.cn/dev/howuse/agreement"
 }

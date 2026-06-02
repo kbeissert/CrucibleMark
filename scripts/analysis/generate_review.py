@@ -294,27 +294,50 @@ def process_model_review(
         log_data = log_data[:_MAX_LOG_CHARS] if review_type == "bias" else log_data[-_MAX_LOG_CHARS:]
 
     try:
+        from utils.config_validator import ConfigValidator
+        from utils.constants import MODEL_TYPE_OPEN_WEIGHTS_CLOUD
         from utils.system_context import SystemContextManager
-        from utils.model_utils import get_model_category
 
-        context_manager = SystemContextManager()
-        _config = load_config()
-        commercial_models = [
-            m["id"]
-            for p_config in _config.get("providers", {}).get("commercial", {}).values()
-            if p_config.get("enabled", False)
-            for m in p_config.get("models", [])
-        ]
-        source_context = "commercial" if tested_model_name in commercial_models else "local"
-        category = get_model_category(tested_model_name, source_context)
+        # Auflösung über ConfigValidator, damit benchmark_config.yaml UND
+        # config/provider_config.yaml (OpenRouter, Groq) gemerged berücksichtigt werden.
+        validator = ConfigValidator()
+        commercial_providers = validator.config.get("providers", {}).get("commercial", {})
 
-        if category == "Proprietär":
-            run_type = "commercial"
-        elif category in ["Local Cloud", "Open Weights (Cloud)", "Cloud (Open-Weights)"]:
+        resolved_provider_key: str | None = None
+        resolved_model_type: str = ""
+        # `tested_model_name` ist hier bereits der safe_name (kommt aus model_dir.name),
+        # z.B. "minimax_minimax-m3" für die Config-ID "minimax/minimax-m3".
+        # Wir vergleichen deshalb beide Seiten safe-normalisiert.
+        target_safe = _safe_name(tested_model_name)
+
+        for prov_key, prov_cfg in commercial_providers.items():
+            if not isinstance(prov_cfg, dict) or not prov_cfg.get("enabled", False):
+                continue
+            for m in prov_cfg.get("models", []):
+                if not isinstance(m, dict):
+                    continue
+                raw_id = m.get("id")
+                if not raw_id:
+                    continue
+                if _safe_name(raw_id) == target_safe:
+                    resolved_provider_key = prov_key
+                    # Per-Model-Override schlägt Provider-Default.
+                    resolved_model_type = m.get("model_type") or prov_cfg.get("model_type", "")
+                    break
+            if resolved_provider_key:
+                break
+
+        if resolved_provider_key and resolved_model_type == MODEL_TYPE_OPEN_WEIGHTS_CLOUD:
             run_type = "cloud_open_weights"
+        elif resolved_provider_key:
+            # Jeder andere aktive commercial-Eintrag ist proprietäre API oder
+            # als proprietary_api markierter OpenRouter-Endpoint (z.B. GLM, Kimi, DeepSeek via OR).
+            run_type = "commercial"
         else:
+            # Modell ist in keinem commercial-Provider gelistet → lokales Deployment.
             run_type = "local"
 
+        context_manager = SystemContextManager()
         hardware_context = context_manager.get_editor_prompt_injection(run_type)
     except Exception:
         hardware_context = "Achte auf Performance und Effizienz bezüglich Token-Kosten."

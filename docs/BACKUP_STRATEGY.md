@@ -185,6 +185,16 @@ for model_dir in Path('outputs/runs').iterdir():
 
 ---
 
+#### `cleanup_reviews.py`
+
+Bereinigt `docs/reviews/` und behält pro Modell-Verzeichnis je einen Benchmark-Review, einen Bias-Review und einen Tool-Use-Review. Ältere Duplikate werden entfernt (Dry-Run via `make clean-reviews`, Löschen mit `FORCE=1`).
+
+| Dateiname-Pattern | Kategorie |
+|---|---|
+| `review_YYYYMMDD_HHMMSS.md` | Benchmark-Review |
+| `bias_review_YYYYMMDD_HHMMSS.md` | PC-Bias-Review |
+| `tooluse_narrative_review_YYYYMMDD_HHMMSS.md` | Tool-Use-Review |
+
 #### `consolidate_csv.py`
 
 Verarbeitet alle Benchmark- und Leaderboard-CSVs. Schlüsselspalten je nach Dateiart:

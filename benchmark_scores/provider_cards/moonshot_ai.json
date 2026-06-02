@@ -2,12 +2,11 @@
   "provider_id": "moonshot_ai",
   "display_name": "Moonshot AI",
   "company": "Beijing Moonshot AI Technology Co., Ltd.",
-  "origin_country": "China",
   "headquarters": "Beijing, China",
   "founding_year": 2023,
-  "developer_jurisdiction": "CN",
   "pricing_model": "free-tier+pay-per-token",
   "api_base_url": "https://api.moonshot.cn",
+  "api_documentation_url": "https://platform.moonshot.cn/docs/intro",
   "deployment": {
     "cloud_act_exposure": false,
     "applicable_law": "China (PIPL/CSL/DSL)",
@@ -17,22 +16,16 @@
     "data_retention_days": -1,
     "chinese_nsl_risk": "high"
   },
-  "summary": "Moonshot AI ist ein 2023 gegründetes chinesisches KI-Startup mit Sitz in Peking. Das Unternehmen ist bekannt für sein Flaggschiff-Modell Kimi, das auf extrem lange Kontextfenster spezialisiert ist. Moonshot positioniert sich als Anbieter für Long-Context-Verarbeitung und richtet sich primär an den chinesischen Markt.",
   "privacy_note": "API-Anfragen werden auf Servern in China verarbeitet und unterliegen chinesischem Recht (PIPL, CSL, DSL), einschließlich möglicher staatlicher Zugriffspflichten. Für europäische Nutzer besteht kein DSGVO-konformer Rahmen; ein Einsatz mit personenbezogenen Daten ist datenschutzrechtlich nicht vertretbar.",
-  "strengths": [
-    "Sehr großes Kontextfenster (bis zu 128K Token bei Kimi)",
-    "Spezialisierung auf Long-Document-Verarbeitung und -Analyse",
-    "Wettbewerbsfähige Preisgestaltung im chinesischen Markt"
-  ],
-  "known_limitations": [
-    "Hohes Datenschutzrisiko für europäische Nutzer durch chinesische Rechtslage und NSL-Exposition",
-    "Primär auf chinesischsprachige Anwendungsfälle und den chinesischen Markt ausgerichtet"
-  ],
   "notable_models": [
-    "Kimi (moonshot-v1-128k)",
-    "moonshot-v1-8k"
+    "Kimi K2.6",
+    "Kimi K2.5",
+    "Kimi K2 Thinking",
+    "Kimi K2"
   ],
-  "unknown": false,
   "stats": {},
-  "generated_at": "2026-04-11T15:35:17.843101+00:00"
+  "unknown": false,
+  "generated_at": "2026-06-02T21:00:00.000000+00:00",
+  "last_verified_at": "2026-06-02",
+  "verification_source": "https://platform.moonshot.cn/docs/agreement"
 }

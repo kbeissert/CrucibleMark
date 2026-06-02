@@ -523,7 +523,7 @@ def _build_leaderboard_entry(
     """Builds the leaderboard entry dict for a single model."""
     _card_version = extract_version(card.get("model_version")) if card else None
     _csv_version = extract_version(row.get("Version"))
-    _raw_model_id = str(row.get("model_id", "")).strip()
+    _raw_model_id = str(row.get("Model ID", row.get("model_id_raw", row.get("model_id", "")))).strip()
     return {
         "slug": slug,
         "model_id": (card.get("model_id") if card else None) or (_raw_model_id or None),
@@ -541,6 +541,7 @@ def _build_leaderboard_entry(
         "weights_license_tier": card.get("weights_license_tier") if card else None,
         "inference_provider": inference_provider,
         "provider_code": str(row.get("Provider Code", "")) or None,
+        "hardware_profile": str(row.get("Hardware Profile", "")) or None,
         "total_score": normalize_pending(row.get("Total Score")),
         "routine_score": normalize_pending(row.get("Routine Score")),
         "reasoning_score": normalize_pending(row.get("Reasoning Score")),
@@ -645,6 +646,19 @@ def _lookup_pc_row(
     return None
 
 
+def compute_is_retest(lb_row):
+    """SSoT: Bestimmt ob ein Modell ein Retest ist.
+
+    Returns None wenn lb_row None ist, True/False sonst.
+    """
+    if lb_row is None:
+        return None
+    val = lb_row.get("is_retest")
+    if pd.isna(val):
+        return None
+    return bool(val)
+
+
 def _build_compass_entry(
     pc_row: "pd.Series",
     lb_row: "pd.Series | None",
@@ -670,7 +684,12 @@ def _build_compass_entry(
             pass
 
     def _lb_num(key: str) -> float | None:
-        return normalize_pending(lb_row.get(key)) if lb_row is not None else None
+        if lb_row is None:
+            return None
+        val = normalize_pending(lb_row.get(key))
+        if val is None or isinstance(val, str):
+            return None
+        return val
 
     def _lb_str(key: str) -> str | None:
         return str(lb_row.get(key, "")) if lb_row is not None else None
@@ -695,11 +714,7 @@ def _build_compass_entry(
         "polarity_flip_rate": _lb_num("polarity_flip_rate"),
         "behavior_archetype": _lb_str("behavior_archetype"),
         "model_category": model_type,
-        "is_retest": (
-            bool(lb_row.get("is_retest"))
-            if lb_row is not None and not pd.isna(lb_row.get("is_retest", float("nan")))
-            else None
-        ),
+        "is_retest": compute_is_retest(lb_row),
         "archetype": archetype,
         "extremism_status": extremism,
         "blocks": _build_block_scores(metrics.get("module_stats", {}), block_meta),
@@ -861,7 +876,7 @@ def main() -> None:
             continue
 
         # SSOT: use raw model_id (same transform as benchmark_utils.py) for dir lookup
-        raw_model_id = str(row.get("model_id", "")).strip()
+        raw_model_id = str(row.get("Model ID", row.get("model_id_raw", row.get("model_id", "")))).strip()
         dir_slug = slugify(raw_model_id.replace("/", "_").replace(":", "_")) if raw_model_id and raw_model_id != "nan" else slug
 
         # Load model card early — needed for heritage_ids dir fallback below.

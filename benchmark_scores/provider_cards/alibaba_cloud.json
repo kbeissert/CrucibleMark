@@ -2,12 +2,11 @@
   "provider_id": "alibaba_cloud",
   "display_name": "Alibaba Cloud",
   "company": "Alibaba Cloud Intelligence Group (Aliyun Computing Co., Ltd.)",
-  "origin_country": "China",
   "headquarters": "Hangzhou, Zhejiang, China",
   "founding_year": 2009,
-  "developer_jurisdiction": "CN",
   "pricing_model": "pay-per-token",
   "api_base_url": "https://dashscope.aliyuncs.com",
+  "api_documentation_url": "https://dashscope.aliyuncs.com/api-docs",
   "deployment": {
     "cloud_act_exposure": false,
     "applicable_law": "China (PIPL/CSL/DSL)",
@@ -17,22 +16,16 @@
     "data_retention_days": -1,
     "chinese_nsl_risk": "high"
   },
-  "summary": "Alibaba Cloud ist der Cloud- und KI-Arm des chinesischen Technologiekonzerns Alibaba Group. Der Provider betreibt mit DashScope eine eigene KI-Inferenzplattform und ist vor allem für die Qwen-Modellfamilie bekannt. Alibaba Cloud zählt zu den größten Cloud-Anbietern Asiens und expandiert aktiv in internationale Märkte.",
   "privacy_note": "API-Anfragen unterliegen chinesischem Recht (PIPL, CSL, DSL), das chinesischen Behörden weitreichende Datenzugriffsrechte einräumt. Für europäische Nutzer besteht ein erhebliches Drittlandtransfer-Risiko; SCCs sind zwar verfügbar, bieten jedoch keinen gleichwertigen Schutz wie ein EU-Angemessenheitsbeschluss.",
-  "strengths": [
-    "Leistungsstarke Qwen-Modellfamilie mit starker Mehrsprachigkeit (inkl. Chinesisch)",
-    "Breites Ökosystem: Text, Vision, Audio, Embedding und Code-Modelle über eine einheitliche API",
-    "Wettbewerbsfähige Preisgestaltung, besonders für asiatische Märkte"
-  ],
-  "known_limitations": [
-    "Hohes regulatorisches Risiko für EU-Nutzer durch chinesisches Datenschutz- und Sicherheitsrecht",
-    "Intransparente Datenaufbewahrungsfristen und eingeschränkte externe Auditierbarkeit"
-  ],
   "notable_models": [
-    "Qwen2.5-Max",
+    "Qwen3.7-Max",
+    "Qwen3.6-Plus",
+    "Qwen3-32B",
     "Qwen2.5-VL-72B-Instruct"
   ],
-  "unknown": false,
   "stats": {},
-  "generated_at": "2026-04-11T14:55:36.373755+00:00"
+  "unknown": false,
+  "generated_at": "2026-06-02T21:00:00.000000+00:00",
+  "last_verified_at": "2026-06-02",
+  "verification_source": "https://www.alibabacloud.com/help/en/legal"
 }

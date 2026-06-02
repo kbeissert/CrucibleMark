@@ -64,6 +64,9 @@ def export_leaderboard_compact(leaderboard: pd.DataFrame, cat_cols: List[str]) -
     """
     Exports the COMPACT leaderboard (human-readable, ~20 columns).
     Excludes verbose metrics like P95, redundant speed columns, etc.
+
+    SSoT: Spalten-Reihenfolge ist fix:
+        Rank, Model Name (display_name), Model ID (model_id), Version, ...
     """
     df_export = leaderboard.copy()
 
@@ -84,13 +87,15 @@ def export_leaderboard_compact(leaderboard: pd.DataFrame, cat_cols: List[str]) -
         else:
             df_export = df_export.rename(columns={"Overall Score": "Total Score"})
 
-    # Compact Column List
+    # Compact Column List — Reihenfolge:
+    # Rank, Model Name, Model ID, Version, Badge, Speed Profile, ...
     cols = [
         "Rank",
-        "Model Name",
+        "Model Name",  # display_name aus der Model Card
+        "Model ID",    # kanonische model_id aus der Model Card
         "Version",
         "Badge",
-        "Speed Profile",  # Merged column
+        "Speed Profile",
         "Total Score",
         "Tokens/s",
         "Avg Task Duration (s)",
@@ -104,23 +109,17 @@ def export_leaderboard_compact(leaderboard: pd.DataFrame, cat_cols: List[str]) -
     ]
 
     final_cols = []
-
-    # 1. Standard Cols
     for c in cols:
         if c in df_export.columns:
             final_cols.append(c)
 
-    # 2. Category Cols (Code Quality, etc.)
     for c in cat_cols:
         if c in df_export.columns:
             final_cols.append(c)
 
-    # 3. Meta
     if "Tests Run" in df_export.columns:
         final_cols.append("Tests Run")
 
-    # Select and Save
-    # Drop columns that don't exist to avoid key error
     existing_cols = [c for c in final_cols if c in df_export.columns]
     df_export = df_export[existing_cols]
     df_export = _format_tokens_k(df_export)
@@ -140,22 +139,19 @@ def export_leaderboard_detailed(leaderboard: pd.DataFrame, cat_cols: List[str]) 
     """
     df_export = leaderboard.copy()
 
-    # Detailed output should have distinct file name
-    # OUTPUT_CSV is a Path object
     detailed_csv = OUTPUT_CSV.parent / f"{OUTPUT_CSV.stem}_detailed{OUTPUT_CSV.suffix}"
 
-    # Ensure Score columns exist
     if "Overall Score" in df_export.columns:
         if "Total Score" not in df_export.columns:
             df_export = df_export.rename(columns={"Overall Score": "Total Score"})
 
     # Expose raw model ID as SSOT for downstream tools (web_export, dir lookups)
     if "model" in df_export.columns:
-        df_export["model_id"] = df_export["model"]
+        df_export["model_id_raw"] = df_export["model"]
 
     # Vendor field: read from model card (SSoT) via model_id lookup
     _cards_dir = OUTPUT_CSV.parent.parent / "benchmark_scores" / "model_cards"
-    _vendor_map: dict[str, str] = {}
+    _vendor_map: dict = {}
     import json as _json
     import re as _re
     if _cards_dir.exists():
@@ -174,24 +170,25 @@ def export_leaderboard_detailed(leaderboard: pd.DataFrame, cat_cols: List[str]) 
     def _lookup_vendor(raw_mid: str) -> str:
         if raw_mid in _vendor_map:
             return _vendor_map[raw_mid]
-        # Fallback: strip date suffix
         stripped = _re.sub(r"-\d{4,8}$", "", raw_mid)
         return _vendor_map.get(stripped, "")
 
-    if "model_id" in df_export.columns:
-        df_export["Vendor"] = df_export["model_id"].apply(
+    if "Model ID" in df_export.columns:
+        df_export["Vendor"] = df_export["Model ID"].apply(
             lambda x: _lookup_vendor(str(x)) if pd.notna(x) else ""
         )
 
+    # Spalten-Reihenfolge: Rank, Model Name, Model ID, Version, ...
     cols = [
         "Rank",
-        "Model Name",
-        "model_id",
+        "Model Name",     # display_name aus der Model Card
+        "Model ID",       # kanonische model_id aus der Model Card
+        "model_id_raw",   # rohe model_id aus den CSV-Daten (für Debugging)
         "Version",
         "Provider Code",
         "Badge",
         "Speed Profile",
-        "Performance Tier",  # Keep raw tier for analysis
+        "Performance Tier",
         "Total Score",
         "Tokens/s",
         "Avg Task Duration (s)",
@@ -212,7 +209,6 @@ def export_leaderboard_detailed(leaderboard: pd.DataFrame, cat_cols: List[str]) 
         "Type",
     ]
 
-    # Preserve full-precision judge avg before star formatting
     if "LLM Judge Avg" in df_export.columns:
         df_export["LLM Judge Avg (raw)"] = pd.to_numeric(
             df_export["LLM Judge Avg"], errors="coerce"
@@ -227,7 +223,6 @@ def export_leaderboard_detailed(leaderboard: pd.DataFrame, cat_cols: List[str]) 
         if c in df_export.columns:
             final_cols.append(c)
 
-    # Token columns per module (e.g. "Tokens: Code Quality")
     token_module_cols = sorted([c for c in df_export.columns if c.startswith("Tokens: ")])
     for c in token_module_cols:
         final_cols.append(c)
@@ -235,7 +230,6 @@ def export_leaderboard_detailed(leaderboard: pd.DataFrame, cat_cols: List[str]) 
     if "Tests Run" in df_export.columns:
         final_cols.append("Tests Run")
 
-    # Select and Save
     existing_cols = [c for c in final_cols if c in df_export.columns]
     df_export = df_export[existing_cols]
     df_export = _format_tokens_k(df_export)

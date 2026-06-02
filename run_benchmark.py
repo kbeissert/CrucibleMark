@@ -14,6 +14,7 @@ Usage:
 
 import argparse
 import logging
+import os
 import subprocess
 import sys
 from dataclasses import dataclass
@@ -228,6 +229,28 @@ class BenchmarkRunner:
         for mod_id, module_config in modules_to_run:
             if not module_config:
                 continue
+            # SSOT: Delegate-Module (z.B. tooluse, political_compass) an das
+            # zuständige Fachscript delegieren. Das Fachscript verantwortet
+            # seinen eigenen Lifecycle (MCP-Start, Judge-Auswahl, etc.).
+            # Verhindert das vergangene Problem, dass make benchmark
+            # UnifiedBenchmarkRunner direkt startete und z.B. den MCP-Server
+            # nicht initialisierte.
+            #
+            # Cycle-Detection: Wenn wir selbst von einem Delegate-Script
+            # aufgerufen wurden (CRUCIBLE_DELEGATE_PARENT=1), NICHT mehr
+            # delegieren — sonst Endlosschleife. Stattdessen den Test direkt
+            # via UnifiedBenchmarkRunner ausführen (MCP läuft bereits im
+            # Parent-Delegate).
+            in_delegate_child = os.environ.get("CRUCIBLE_DELEGATE_PARENT") == "1"
+            if module_config.get("delegate_script") and not in_delegate_child:
+                print(f"\n>>> Running Module: {module_config['name']} (Delegate)")
+                self._run_delegate(
+                    module_config,
+                    model_id,
+                    force=run_config.force,
+                    audit_mode=run_config.audit_mode,
+                )
+                continue
             print(f"\n>>> Running Module: {module_config['name']}")
             self._run_benchmark(
                 mod_id,
@@ -323,6 +346,63 @@ class BenchmarkRunner:
                 runner.print_summary(results, model)
                 self._check_for_anomaly(mod_id, model, results)
 
+
+    def _run_delegate(
+        self,
+        module_config: dict[str, Any],
+        model: str,
+        force: bool = False,
+        audit_mode: bool = True,
+    ) -> bool:
+        """Delegiert die Ausführung an das Fachscript (SSOT für Lifecycle-Logik).
+
+        Delegate-Module (z.B. tooluse, political_compass) definieren in ihrer
+        ``execution.delegate_script``-Config ein Fachscript, das für seinen
+        eigenen Lifecycle verantwortlich ist (MCP-Start, Judge-Auswahl,
+        Watchdog, etc.). Diese Methode führt das Fachscript als Subprozess aus
+        und reicht die relevanten Flags weiter.
+
+        Returns:
+            True wenn das Fachscript mit exit-code 0 zurückkehrt, sonst False.
+        """
+        script_rel = module_config["delegate_script"]
+        root_dir = Path(__file__).parent
+        script = (root_dir / script_rel).resolve()
+
+        if not script.exists():
+            print(f"   ❌ Delegate-Script nicht gefunden: {script}")
+            return False
+
+        extra = list(module_config.get("delegate_extra_args", []) or [])
+        cmd = [sys.executable, str(script)] + extra + ["--model", model]
+        if force:
+            cmd.append("--force")
+        if not audit_mode:
+            cmd.append("--silent")
+        if module_config.get("requires_mcp"):
+            # Default: live. Falls eine andere Logik nötig wird, kann dies
+            # später via BenchmarkRunConfig konfigurierbar gemacht werden.
+            cmd += ["--mcp-mode", "live"]
+
+        # Cycle-Detection: markiere den Subprozess als Delegate-Parent,
+        # damit dessen interner run_benchmark.py-Aufruf nicht erneut delegiert.
+        env = os.environ.copy()
+        env["CRUCIBLE_DELEGATE_PARENT"] = "1"
+
+        print(f"   Delegating to: {script_rel}")
+        try:
+            result = subprocess.run(cmd, cwd=str(root_dir), env=env, check=False)
+        except FileNotFoundError as exc:
+            print(f"   ❌ Delegate-Script nicht ausführbar: {script} ({exc})")
+            return False
+        except Exception as exc:  # noqa: BLE001 — pylint: disable=broad-exception-caught
+            print(f"   ❌ Delegate-Fehler: {exc}")
+            return False
+
+        if result.returncode != 0:
+            print(f"   ❌ Delegate exit-code {result.returncode}")
+            return False
+        return True
 
     def _check_for_anomaly(self, mod_id: str, model: str, results: list):
         """Prüft ob der Political Compass Lauf den Shift-Threshold überschreitet, und triggert den Safety Run."""

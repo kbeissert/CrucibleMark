@@ -74,7 +74,7 @@ def gather_historical_data():
     with open(csv_file, "r", encoding="utf-8") as f:
         reader = csv.DictReader(f)
         for row in reader:
-            model = row.get("Model Name", "")
+            model = row.get("Model ID", row.get("model_id", ""))
             mod_type = row.get("Type", "")
             provider = map_model_to_provider(model, mod_type)
 

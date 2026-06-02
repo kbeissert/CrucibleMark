@@ -244,6 +244,11 @@ providers:
     config:
       context_window: 32768
       default_temperature: 0.1
+      # Hardware-Profil für lokale Benchmarks. Werte:
+      #   m4_macbook_pro  — aktuelles MacBook M4 mit llama.cpp
+      #   dgx_spark_*     — DGX Spark (wenn hinzugefügt)
+      # Wird als Badge "Hardware Profile" in der Webseite ausgespielt.
+      hardware_profile: m4_macbook_pro
       # Models that cannot use the global context_window due to native architecture limits.
       # Ollama silently falls back to the model's native context if VRAM is insufficient —
       # setting the real limit here makes the constraint explicit and surfaces it as

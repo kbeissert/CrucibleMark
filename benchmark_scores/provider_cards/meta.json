@@ -2,12 +2,11 @@
   "provider_id": "meta",
   "display_name": "Meta AI",
   "company": "Meta Platforms, Inc.",
-  "origin_country": "USA",
   "headquarters": "Menlo Park, CA, USA",
   "founding_year": 2004,
-  "developer_jurisdiction": "US",
   "pricing_model": "open-source-self-hosted",
   "api_base_url": "https://llama.meta.com",
+  "api_documentation_url": "https://llama.meta.com/docs",
   "deployment": {
     "cloud_act_exposure": true,
     "applicable_law": "US (CLOUD Act)",
@@ -17,22 +16,15 @@
     "data_retention_days": -1,
     "chinese_nsl_risk": "none"
   },
-  "summary": "Meta Platforms ist der Mutterkonzern von Facebook, Instagram und WhatsApp. Im KI-Bereich ist Meta vor allem für die Llama-Modellfamilie bekannt, die als Open-Weight-Modelle veröffentlicht wird. Meta positioniert sich als Gegenpol zu proprietären Anbietern und fördert offene KI-Forschung.",
   "privacy_note": "Meta betreibt keinen klassischen kommerziellen Inferenz-API-Dienst; Llama-Modelle werden typischerweise über Drittanbieter (z. B. AWS, Azure, Together AI) bereitgestellt, die jeweils eigene Datenschutzbedingungen haben. Bei direkter Nutzung von Meta-eigenen Diensten gilt US-Recht inkl. CLOUD Act, ohne belastbares DSGVO-DPA seitens Meta.",
-  "strengths": [
-    "Llama-Modelle als Open-Weight-Veröffentlichung – lokal oder auf eigener Infrastruktur betreibbar",
-    "Breite Ökosystem-Unterstützung durch zahlreiche Cloud- und Inference-Anbieter",
-    "Starke Forschungspräsenz und regelmäßige Veröffentlichung neuer Modellgenerationen"
-  ],
-  "known_limitations": [
-    "Kein eigener, vollwertiger kommerzieller API-Endpunkt mit SLA und DSGVO-Absicherung",
-    "Llama-Lizenz enthält Nutzungsbeschränkungen (z. B. ab 700 Mio. MAU gewerbliche Sonderlizenz erforderlich)"
-  ],
   "notable_models": [
+    "Llama 4 Scout",
     "Llama 3.3 70B",
     "Llama 3.1 405B"
   ],
-  "unknown": false,
   "stats": {},
-  "generated_at": "2026-04-11T15:01:50.659303+00:00"
+  "unknown": false,
+  "generated_at": "2026-06-02T21:00:00.000000+00:00",
+  "last_verified_at": "2026-06-02",
+  "verification_source": "https://llama.meta.com/llama4/"
 }

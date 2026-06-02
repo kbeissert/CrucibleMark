@@ -1,11 +1,21 @@
 """
 Integration of external module data into leaderboard.
 Handles generic CSV merging and value extraction based on module configuration.
+
+SSoT (Single Source of Truth):
+- Die kanonische Model-Identität lebt in `benchmark_scores/model_cards/*.json` (Feld `model_id`).
+- Alle Cross-File-Mappings (z.B. tooluse_leaderboard.csv → benchmark_leaderboard) laufen
+  über die `_resolve_to_canonical_id()` Funktion, die den Input-String auf die
+  kanonische `model_id` aus der Model Card auflöst.
+- KEINE String-Kürzung im Code — der Original-String bleibt erhalten, wenn keine
+  Card gefunden wird (Fallback).
+- Der `display_name` aus der Model Card wird über `_resolve_to_display_name()`
+  als separater Anzeigename aufgelöst.
 """
 
 import json
 import sys
-from typing import Any, Dict, List, Tuple
+from typing import Any, Dict, List, Optional, Tuple
 
 import pandas as pd
 
@@ -19,9 +29,148 @@ if str(ROOT_DIR) not in sys.path:
 # pylint: disable=import-error
 try:
     from utils.module_registry import get_active_modules
+    from utils.model_utils import _find_card
 except ImportError:
-    pass
+    get_active_modules = None  # type: ignore
+    _find_card = None  # type: ignore
 # pylint: enable=import-error
+
+
+def _build_card_lookups() -> Tuple[Dict[str, str], Dict[str, str]]:
+    """
+    SSoT: Liest alle Model Cards und baut zwei Lookups:
+    1. {beliebiger_model_string → kanonische_model_id}
+    2. {kanonische_model_id → display_name}
+
+    Returns:
+        Tuple von (id_lookup, display_lookup)
+    """
+    import re as _re_card
+    id_lookup: Dict[str, str] = {}
+    display_lookup: Dict[str, str] = {}
+    card_dir = ROOT_DIR / "benchmark_scores" / "model_cards"
+    if not card_dir.exists():
+        return id_lookup, display_lookup
+
+    for card_path in card_dir.glob("*.json"):
+        if card_path.name == "_index.json":
+            continue
+        try:
+            card = json.loads(card_path.read_text(encoding="utf-8"))
+            canonical_id = card.get("model_id")
+            display_name = card.get("display_name")
+            if not canonical_id:
+                continue
+
+            # Display-Lookup: nur für kanonische IDs
+            if display_name:
+                display_lookup[canonical_id] = display_name
+
+            # ID-Lookup: alle Repräsentationen mappen
+            # 1. Exakte model_id
+            id_lookup[canonical_id] = canonical_id
+            # 2. Display-Name → kanonische ID
+            if display_name:
+                id_lookup[display_name] = canonical_id
+            # 3. Card-Dateiname
+            id_lookup[card_path.stem] = canonical_id
+            # 4. Suffix-strip
+            stripped = _re_card.sub(r"-\d{4,8}$", "", canonical_id)
+            if stripped != canonical_id:
+                id_lookup[stripped] = canonical_id
+            # 5. Vendor-Prefix-strip
+            if "/" in canonical_id:
+                bare = canonical_id.rsplit("/", 1)[-1]
+                id_lookup[bare] = canonical_id
+                bare_stripped = _re_card.sub(r"-\d{4,8}$", "", bare)
+                if bare_stripped != bare:
+                    id_lookup[bare_stripped] = canonical_id
+        except (json.JSONDecodeError, OSError):
+            continue
+
+    return id_lookup, display_lookup
+
+
+# Backward compat wrapper
+def _build_model_id_lookup() -> Dict[str, str]:
+    """Legacy: gibt nur den ID-Lookup zurück."""
+    id_lookup, _ = _build_card_lookups()
+    return id_lookup
+
+
+# Global caches (lazy init)
+_ID_LOOKUP: Optional[Dict[str, str]] = None
+_DISPLAY_LOOKUP: Optional[Dict[str, str]] = None
+
+
+def _get_lookups() -> Tuple[Dict[str, str], Dict[str, str]]:
+    global _ID_LOOKUP, _DISPLAY_LOOKUP
+    if _ID_LOOKUP is None or _DISPLAY_LOOKUP is None:
+        _ID_LOOKUP, _DISPLAY_LOOKUP = _build_card_lookups()
+    return _ID_LOOKUP, _DISPLAY_LOOKUP
+
+
+def _get_model_id_lookup() -> Dict[str, str]:
+    """Legacy: gibt nur den ID-Lookup zurück."""
+    return _get_lookups()[0]
+
+
+def _resolve_to_canonical_id(model_str: str) -> str:
+    """
+    SSoT-Resolver: Bildet einen beliebigen Model-String auf die kanonische
+    `model_id` aus der Model Card ab.
+
+    Wichtig: Es wird NIE stille gekürzt — wenn keine Card gefunden wird,
+    wird der Original-String zurückgegeben (Fallback). Der Caller entscheidet
+    dann, wie damit umzugehen ist.
+    """
+    if not model_str or pd.isna(model_str):
+        return ""
+    raw = str(model_str).strip()
+    if not raw:
+        return ""
+
+    id_lookup, _ = _get_lookups()
+
+    # 1. Exakter Match
+    if raw in id_lookup:
+        return id_lookup[raw]
+
+    # 2. Vendor-Prefix entfernen
+    if "/" in raw:
+        bare = raw.rsplit("/", 1)[-1]
+        if bare in id_lookup:
+            return id_lookup[bare]
+
+    # 3. Suffix-Strip als letzter Fallback (z.B. -20250929, -0127)
+    import re as _re_resolve
+    stripped = _re_resolve.sub(r"-\d{4,8}$", "", raw)
+    if stripped in id_lookup:
+        return id_lookup[stripped]
+    if "/" in stripped:
+        stripped_bare = stripped.rsplit("/", 1)[-1]
+        if stripped_bare in id_lookup:
+            return id_lookup[stripped_bare]
+
+    # 4. Fallback: Original zurückgeben (SSoT-Prinzip: keine stille Mutation)
+    return raw
+
+
+def _resolve_to_display_name(model_str: str) -> str:
+    """
+    SSoT-Resolver: Bildet einen beliebigen Model-String auf den `display_name`
+    aus der Model Card ab.
+
+    Returns: Der `display_name` aus der Model Card (z.B. "Claude Sonnet 4.5"),
+             oder der Original-String als Fallback wenn keine Card gefunden wird.
+    """
+    canonical_id = _resolve_to_canonical_id(model_str)
+    if not canonical_id:
+        return ""
+    _, display_lookup = _get_lookups()
+    if canonical_id in display_lookup:
+        return display_lookup[canonical_id]
+    return canonical_id  # Fallback: model_id als Anzeigename
 
 
 def _enrich_from_csv_source(
@@ -30,6 +179,9 @@ def _enrich_from_csv_source(
     """
     Generic Enrichment: Loads data from a custom CSV based on Config.
     Supports joining, filtering, and value templating.
+
+    SSoT: Model-Identifikation läuft über die `model_id` aus den Model Cards
+    via `_resolve_to_canonical_id()`. KEINE direkte String-Normalisierung.
     """
     filename = source_config.get("file")
     if not filename:
@@ -37,7 +189,6 @@ def _enrich_from_csv_source(
 
     file_path = SCORES_DIR / filename
     if not file_path.exists():
-        # Add column with missing value if file not found
         fallback = source_config.get("missing_value", "Pending")
         result[label] = fallback
         return result
@@ -45,38 +196,42 @@ def _enrich_from_csv_source(
     try:
         source_df = pd.read_csv(file_path)
 
-        # 1. Deduplication / Version Handling
+        # 1. SSoT: Map both sides to canonical model_id (no string truncation)
         if "model" in source_df.columns:
             if "model_version" not in source_df.columns:
                 source_df["model_version"] = "unknown"
             source_df["model_version"] = source_df["model_version"].fillna("unknown")
+            source_df["model"] = source_df["model"].apply(_resolve_to_canonical_id)
 
-        # 2. Key Filtering (e.g. run_id == AVG)
+        if "model" in result.columns:
+            result["_model_canonical"] = result["model"].apply(_resolve_to_canonical_id)
+        else:
+            result["_model_canonical"] = result.index.astype(str)
+
+        # 2. Key Filtering
         filters = source_config.get("filter", {})
         for col, val in filters.items():
             if col in source_df.columns:
                 source_df = source_df[source_df[col] == val]
 
-        # 3. Deduplicate (keep last entry per model/version)
+        # 3. Deduplicate
         if "model" in source_df.columns:
             source_df = source_df.drop_duplicates(
                 subset=["model", "model_version"], keep="last"
             )
 
-        # 4. Value Construction (JSON Object Access OR Templating)
+        # 4. Value Construction
         template = source_config.get("value_template")
         json_key = source_config.get("key")
+        fallback = source_config.get("missing_value", "Pending")
 
         def safe_format(row):
             try:
-                # Guard: not-capable check
                 not_capable_col = source_config.get("not_capable_column")
                 if not_capable_col and not_capable_col in row.index:
                     if str(row[not_capable_col]).lower() in ("false", "0", "no", "n"):
                         return source_config.get("not_capable_value", "n/a")
 
-                # Option A: JSON Object Access (Structured Data)
-                # Check for either metadata_json (Standard v2) or metrics_json (Legacy)
                 json_col = None
                 if "metadata_json" in row:
                     json_col = "metadata_json"
@@ -86,75 +241,45 @@ def _enrich_from_csv_source(
                 if json_key and json_col:
                     try:
                         metrics = json.loads(row[json_col])
-                        # Support dot notation (e.g. "labels.x")
                         val = metrics
                         for k in json_key.split("."):
                             if isinstance(val, dict):
                                 val = val.get(k, {})
                             else:
                                 return "Error (Struct)"
-
                         if isinstance(val, (dict, list)):
                             return json.dumps(val, ensure_ascii=False)
-
-                        # Store raw value in temp variable for template
-                        # We cannot modify 'row' here safely for the pandas apply context?
-                        # Actually we are processing one row.
-                        # But wait, 'template' option below uses row.to_dict().
-                        # If we want to support 'format' combining JSON value with other things,
-                        # we need to be clever.
-
-                        # Current Logic: Either JSON Access OR Template.
-                        # User wants {value} ({x}).
-                        # This suggests we need formatting AFTER extraction.
-
                         extracted_val = str(val) if val is not None else ""
-
-                        # NEW: Check if there is an additional format string in config
                         fmt = source_config.get("format")
                         if fmt:
-                            # We can try to make a context dict.
-                            # Standard context: row + 'value'
                             ctx = row.to_dict()
                             ctx["value"] = extracted_val
-
-                            # Flatten JSON for context?
                             if isinstance(metrics, dict):
-                                # Flatten top level keys
                                 for mk, mv in metrics.items():
                                     if isinstance(mv, (str, int, float)):
                                         ctx[mk] = mv
                                     elif isinstance(mv, dict):
-                                        # One level deep flattening (e.g. coordinates.x -> x)
                                         for subk, subv in mv.items():
                                             if isinstance(subv, (str, int, float)):
                                                 ctx[subk] = subv
-
                             try:
                                 return fmt.format(**ctx)
                             except KeyError:
-                                return extracted_val  # Fallback to raw value
-
+                                return extracted_val
                         return extracted_val
-
                     except (json.JSONDecodeError, AttributeError):
                         return "Error (JSON)"
 
-                # Option B: Legacy String Templating (No JSON key)
                 if template:
-                    # Convert row to dict, ensure all values are strings for safe substitution
                     data = row.to_dict()
                     rendered = template.format(**data)
-                    # Degenerate case: vanilla_label was empty (e.g. censored/refused PC run)
-                    # produces leading whitespace before "(Shift:" → treat as missing
                     if rendered.strip().startswith("(Shift:"):
                         return fallback
                     return rendered
-
                 return ""
             except KeyError:
                 return "Error (Key)"
-            except Exception:  # pylint: disable=broad-exception-caught
+            except Exception:
                 return "Error"
 
         if template or json_key:
@@ -162,83 +287,26 @@ def _enrich_from_csv_source(
         else:
             source_df[label] = ""
 
-        # 5. Merge Strategy (Exact + Fallback)
-        cols_to_merge = ["model", "model_version", label]
+        # 5. Merge on canonical model_id
+        if "model" in source_df.columns:
+            merge_source = source_df[["model", label]].rename(
+                columns={"model": "_model_canonical"}
+            ).drop_duplicates(subset=["_model_canonical"], keep="last")
 
-        # Check if columns exist
-        available_cols = [c for c in cols_to_merge if c in source_df.columns]
-        if len(available_cols) < 3:  # Need at least model keys + target
-            return result
+            if label in result.columns:
+                result = result.drop(columns=[label])
 
-        merge_subset = source_df[available_cols]
+            result = result.merge(merge_source, on="_model_canonical", how="left")
 
-        # Drop if exists in result (overwrite logic)
-        if label in result.columns:
-            result = result.drop(columns=[label])
+        if "_model_canonical" in result.columns:
+            result = result.drop(columns=["_model_canonical"])
 
-        # A) Try Exact Match
-        result = result.merge(merge_subset, on=["model", "model_version"], how="left")
-
-        # B) Try Fallback (Match on model only - Relaxed)
-        # Identify rows that failed the exact match
-        missing_mask = result[label].isna()
-        if missing_mask.any():
-            # RELAXED: Use any version from source, removing duplicates by keeping last
-            # This allows matching 'gpt-4o' (ver A) with 'gpt-4o' (ver B) if exact match failed
-            fallback_source = source_df[["model", label]].drop_duplicates(
-                subset=["model"], keep="last"
-            )
-
-            if not fallback_source.empty:
-                # Rename col to avoid collision during merge
-                fallback_source = fallback_source.rename(
-                    columns={label: label + "_fallback"}
-                )
-
-                # Merge on model only
-                result = result.merge(fallback_source, on="model", how="left")
-
-                # Fill NaNs in main column with fallback (only where matching failed)
-                result[label] = result[label].fillna(result[label + "_fallback"])
-
-                # Cleanup
-                if (label + "_fallback") in result.columns:
-                    result = result.drop(columns=[label + "_fallback"])
-
-        # C) Normalized Fallback: strip date suffixes from both sides, then match on model only.
-        # Handles dated benchmark aliases (e.g. claude-sonnet-4-5-20250929) vs normalized
-        # PC-leaderboard IDs (e.g. claude-sonnet-4-5). Same pattern as save_leaderboard_csv():
-        # -YYYYMMDD (8-digit) and -MMDD with valid months 01-12 (e.g. -0127).
-        import re as _re_norm  # noqa: PLC0415
-        missing_mask = result[label].isna()
-        if missing_mask.any():
-            def _normalize_model(m: str) -> str:
-                m = _re_norm.sub(r"-\d{8}$", "", str(m))
-                m = _re_norm.sub(r"-(0[1-9]|1[0-2])\d{2}$", "", m)
-                return m
-
-            norm_source = source_df[["model", label]].copy()
-            norm_source["_model_norm"] = norm_source["model"].apply(_normalize_model)
-            norm_source = norm_source.drop_duplicates(subset=["_model_norm"], keep="last")
-            norm_source = norm_source[["_model_norm", label]].rename(
-                columns={label: label + "_norm"}
-            )
-
-            result["_model_norm"] = result["model"].apply(_normalize_model)
-            result = result.merge(norm_source, on="_model_norm", how="left")
-            result[label] = result[label].fillna(result[label + "_norm"])
-            result = result.drop(columns=["_model_norm", label + "_norm"], errors="ignore")
-
-        # Fill Missing
-        fallback = source_config.get("missing_value", "Pending")
         result[label] = result[label].fillna(fallback)
 
-        # Model-card-based not-capable check (for models absent from source CSV)
+        # Model-card-based not-capable check
         not_capable_card_key = source_config.get("not_capable_card_key")
         not_capable_value = source_config.get("not_capable_value", "n/a")
-        if not_capable_card_key:
-            import json as _json_card  # noqa: PLC0415
-            from utils.model_utils import _find_card  # noqa: PLC0415
+        if not_capable_card_key and _find_card is not None:
             card_dir = ROOT_DIR / "benchmark_scores" / "model_cards"
             fallback_mask = result[label] == fallback
             if fallback_mask.any():
@@ -247,13 +315,13 @@ def _enrich_from_csv_source(
                     card_path = _find_card(model_id, card_dir=card_dir)
                     if card_path.exists():
                         try:
-                            card = _json_card.loads(card_path.read_text())
+                            card = json.loads(card_path.read_text())
                             if card.get(not_capable_card_key) is False:
                                 result.at[idx, label] = not_capable_value
-                        except Exception:  # pylint: disable=broad-exception-caught
+                        except Exception:
                             pass
 
-    except Exception as e:  # pylint: disable=broad-exception-caught
+    except Exception as e:
         print(f"Generic CSV Merge Error ({filename}): {e}")
         if label not in result.columns:
             result[label] = "Error"
@@ -269,34 +337,22 @@ def enrich_with_module_data(
 ) -> Tuple[pd.DataFrame, List[str]]:
     """
     Merges custom/additional data columns for modules defined in their config.
-    Iterates over all enabled modules and checks for 'source' definition in 'columns'.
-
-    Args:
-        result: Leaderboard DataFrame
-        cat_cols: List of category columns (will be updated)
-        modules_config: Simplified modules config (from score_calculator)
-        full_config: Full benchmark config (for re-loading detailed integrations)
-
-    Returns:
-        Tuple of (Enriched DataFrame, Updated Category Columns list)
     """
-
     if result.empty:
         return result, cat_cols
 
-    # Access full registry configuration to get deep 'integration' block
+    if get_active_modules is None:
+        return result, cat_cols
+
     active_modules_data = get_active_modules(full_config)
 
     for mod_id, _, mod_int_config in active_modules_data:
-        # Check if enabled
         if not mod_int_config.get("enabled", True):
-            # Check modules_config as secondary enabled check (if passed)
             if modules_config and not modules_config.get(mod_id, {}).get(
                 "enabled", True
             ):
                 continue
 
-        # Parse Columns Config
         integration = mod_int_config.get("integration", {})
         lb_config = integration.get("leaderboard", {})
         columns_def = lb_config.get("columns", [])
@@ -305,11 +361,7 @@ def enrich_with_module_data(
             source = col_def.get("source")
             if source:
                 label = col_def.get("label", col_def.get("id"))
-
-                # Perform Generic Enrichment
                 result = _enrich_from_csv_source(result, label, source)
-
-                # Add to Cat Cols for display order
                 if label not in cat_cols:
                     cat_cols.append(label)
 

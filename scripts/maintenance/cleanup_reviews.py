@@ -2,8 +2,9 @@
 """
 Cleanup-Skript für alte Reviews in docs/reviews/.
 
-Behält pro Modell-Verzeichnis je nur den neuesten Benchmark-Review
-und den neuesten Bias-Review. Ältere Dateien werden gelöscht.
+Behält pro Modell-Verzeichnis je nur den neuesten Benchmark-Review,
+den neuesten Bias-Review und den neuesten Tool-Use-Review. Ältere
+Dateien werden gelöscht.
 
 Verwendung:
     python scripts/maintenance/cleanup_reviews.py            # Dry-Run
@@ -44,17 +45,23 @@ def find_old_reviews(reviews_dir: Path) -> list[Path]:
             key=_sort_key,
             reverse=True,
         )
+        tooluse_files = sorted(
+            model_dir.glob("tooluse_narrative_review_*.md"),
+            key=_sort_key,
+            reverse=True,
+        )
 
         # Keep [0] (newest), mark rest for deletion
         to_delete.extend(bias_files[1:])
         to_delete.extend(review_files[1:])
+        to_delete.extend(tooluse_files[1:])
 
     return to_delete
 
 
 def main() -> None:
     parser = argparse.ArgumentParser(
-        description="Bereinigt alte Reviews — behält je 1 Benchmark- und 1 Bias-Review pro Modell.",
+        description="Bereinigt alte Reviews — behält je 1 Benchmark-, 1 Bias- und 1 Tool-Use-Review pro Modell.",
         formatter_class=argparse.RawDescriptionHelpFormatter,
     )
     parser.add_argument("--delete", action="store_true", help="Wirklich löschen (Standard: Dry-Run)")

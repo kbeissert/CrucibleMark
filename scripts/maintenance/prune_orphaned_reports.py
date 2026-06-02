@@ -56,7 +56,7 @@ def load_known_model_ids() -> set[str]:
             with open(leaderboard_csv, encoding="utf-8") as f:
                 reader = csv.DictReader(f)
                 for row in reader:
-                    mid = row.get("Model Name", "").strip()
+                    mid = row.get("Model ID", row.get("model_id", "")).strip()
                     if mid:
                         known.add(mid)
         except Exception as e:
@@ -71,7 +71,7 @@ def load_known_model_ids() -> set[str]:
             with open(detailed_csv, encoding="utf-8") as f:
                 reader = csv.DictReader(f)
                 for row in reader:
-                    mid = row.get("model_id", "").strip()
+                    mid = row.get("model_id_raw", row.get("Model ID", row.get("model_id", ""))).strip()
                     if mid and mid.lower() != "nan":
                         known.add(mid)
         except Exception as e:

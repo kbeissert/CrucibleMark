@@ -1,13 +1,12 @@
 {
   "provider_id": "deepseek",
   "display_name": "DeepSeek",
-  "company": "DeepSeek (Hangzhou DeepSeek Artificial Intelligence Co., Ltd.)",
-  "origin_country": "China",
+  "company": "Hangzhou DeepSeek Artificial Intelligence Co., Ltd.",
   "headquarters": "Hangzhou, China",
   "founding_year": 2023,
-  "developer_jurisdiction": "CN",
   "pricing_model": "free-tier+pay-per-token",
   "api_base_url": "https://api.deepseek.com",
+  "api_documentation_url": "https://api-docs.deepseek.com",
   "deployment": {
     "cloud_act_exposure": false,
     "applicable_law": "China (PIPL/CSL/DSL)",
@@ -17,22 +16,17 @@
     "data_retention_days": -1,
     "chinese_nsl_risk": "high"
   },
-  "summary": "DeepSeek ist ein 2023 gegründetes chinesisches KI-Labor, das zur Quant-Hedgefonds-Gruppe High-Flyer gehört. Bekannt für leistungsstarke Open-Source-Modelle (DeepSeek-R1, V3) mit starker Reasoning-Fähigkeit zu sehr niedrigen Kosten. Gilt als ernsthafter Konkurrent zu GPT-4-Klasse-Modellen.",
   "privacy_note": "API-Anfragen werden auf Servern in China verarbeitet und unterliegen chinesischem Recht (PIPL, CSL, DSL), das Behörden weitreichende Datenzugriffsrechte einräumt. Kein DSGVO-konformes DPA verfügbar; für europäische Unternehmen mit personenbezogenen Daten ist die API-Nutzung datenschutzrechtlich hochproblematisch.",
-  "strengths": [
-    "Sehr wettbewerbsfähige Reasoning-Leistung (R1) auf GPT-4o/o1-Niveau",
-    "Extrem niedrige API-Preise im Vergleich zu US-Anbietern",
-    "Modellgewichte open-source verfügbar (selbst hostbar)"
-  ],
-  "known_limitations": [
-    "Serverstandort China – hohes Datenschutzrisiko für EU-Nutzer, kein DSGVO-DPA",
-    "Zensur und inhaltliche Einschränkungen bei politisch sensiblen Themen (insb. China-Bezug)"
-  ],
   "notable_models": [
-    "DeepSeek-R1",
-    "DeepSeek-V3"
+    "DeepSeek-V4 Pro",
+    "DeepSeek-V4 Flash",
+    "DeepSeek-V3.2",
+    "DeepSeek-V3.1",
+    "DeepSeek-R1"
   ],
-  "unknown": false,
   "stats": {},
-  "generated_at": "2026-04-11T14:50:25.383360+00:00"
+  "unknown": false,
+  "generated_at": "2026-06-02T21:00:00.000000+00:00",
+  "last_verified_at": "2026-06-02",
+  "verification_source": "https://api-docs.deepseek.com/quick_start/privacy_policy"
 }

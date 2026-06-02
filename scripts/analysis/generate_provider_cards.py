@@ -3,8 +3,13 @@
 Provider Card Generator
 =======================
 Generiert pro bekanntem Provider eine strukturierte JSON-Karte mit:
-- Redaktionellen Metadaten (Firmenbeschreibung, Herkunft, Datenschutz) via LLM
+- Redaktionellen Metadaten (Firmenbeschreibung, Datenschutz) via LLM
 - Gemessenen Performance-Statistiken aus provider_leaderboard.csv (hartcodierte Fakten)
+
+Die Card folgt dem kanonischen Schema in :mod:`utils.provider_card_template`.
+Modell-spezifische Felder (origin_country, developer_jurisdiction, summary,
+strengths, known_limitations) werden NICHT in die Provider Card geschrieben —
+diese leben ausschließlich in der Model Card (SSoT-Trennung).
 
 Ausgabe: benchmark_scores/provider_cards/{provider_id}.json
          benchmark_scores/provider_cards/_index.json
@@ -32,11 +37,15 @@ if str(ROOT_DIR) not in sys.path:
     sys.path.insert(0, str(ROOT_DIR))
 
 from utils.llm_client import LLMClient
+from utils.provider_card_template import (
+    CARDS_DIR,
+    normalize_provider_card_data,
+    rebuild_provider_index,
+)
 
 logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
 logger = logging.getLogger(__name__)
 
-CARDS_DIR = ROOT_DIR / "benchmark_scores" / "provider_cards"
 LEADERBOARD_CSV = ROOT_DIR / "benchmark_scores" / "provider_leaderboard.csv"
 
 # Provider, die keinen echten Cloud-Anbieter darstellen – werden übersprungen
@@ -52,18 +61,17 @@ SYSTEM_PROMPT = (
 
 USER_PROMPT_TEMPLATE = """Erstelle eine Provider Card für: {provider_name}
 
-JSON-Schema (alle Felder Pflicht):
+JSON-Schema (alle Felder Pflicht — Felder außerhalb des Schemas werden verworfen):
 {{
   "provider_id": "{provider_id}",
   "display_name": "Offizieller Anzeigename (z.B. 'Anthropic', 'Mistral AI', 'Google DeepMind')",
   "company": "Vollständiger rechtlicher Unternehmensname (z.B. 'Anthropic PBC', 'Mistral AI SAS')",
-  "origin_country": "Herkunftsland des Unternehmens (z.B. 'USA', 'France', 'China')",
   "headquarters": "Sitz des Unternehmens (Stadt, Land; z.B. 'San Francisco, CA, USA')",
   "founding_year": 2021,
-  "developer_jurisdiction": "Rechtlicher Hauptsitz: 'US' | 'EU' | 'CN' | 'Unknown'",
 
   "pricing_model": "Eines dieser Werte: 'pay-per-token' | 'subscription' | 'free' | 'free-tier+pay-per-token' | 'open-source-self-hosted'",
   "api_base_url": "Offizielle API-URL (z.B. 'https://api.anthropic.com') oder null wenn nicht vorhanden",
+  "api_documentation_url": "URL zur offiziellen API-Dokumentation (z.B. 'https://docs.anthropic.com') oder null",
 
   "deployment": {{
     "cloud_act_exposure": "true | false. true = US-Unternehmen oder US-Tochter, bei dem US-Behörden Zugriff verlangen können.",
@@ -75,15 +83,15 @@ JSON-Schema (alle Felder Pflicht):
     "chinese_nsl_risk": "none | low | high. 'high' = Unternehmen mit Sitz in China oder chinesischer Muttergesellschaft. 'low' = bekannte chinesische Investorenbeteiligung ohne Kontrolle. 'none' = kein China-Bezug."
   }},
 
-  "summary": "Exakt 280-320 Zeichen. Fließtext. Nennt: Hintergrund des Unternehmens, Positionierung im Markt, wofür der Provider bekannt ist. Kein Marketing-Sprech.",
   "privacy_note": "1-2 Sätze für europäische Nutzer: Welches Datenschutzrisiko besteht konkret bei API-Nutzung dieses Providers? Nur Deployment-Risiko, kein Weights-Risiko.",
-
-  "strengths": ["Stärke 1", "Stärke 2", "Stärke 3"],
-  "known_limitations": ["Einschränkung 1", "Einschränkung 2"],
   "notable_models": ["Bekanntes Modell 1", "Bekanntes Modell 2"],
+
+  "verification_source": "URL der primären Quelle, aus der die Karten-Daten verifiziert wurden (z.B. 'https://www.anthropic.com/legal/privacy') oder null",
 
   "unknown": false
 }}
+
+Hinweis: Modell-spezifische Felder (origin_country, developer_jurisdiction, summary, strengths, known_limitations) gehören in die Model Card, NICHT hierhin — diese Card ist nur für Provider-/Deployment-Informationen.
 
 Wichtige Hinweise:
 - Anthropic, OpenAI, Google, Meta, Microsoft, x.AI = US-Unternehmen → cloud_act_exposure: true, applicable_law: 'US (CLOUD Act)'
@@ -144,33 +152,6 @@ def _parse_json_from_response(response: str) -> dict[str, Any]:
     return json.loads(raw)
 
 
-def _validate_card(card: dict[str, Any], provider_id: str) -> dict[str, Any]:
-    """Prüft Pflichtfelder, ergänzt fehlende mit Platzhaltern."""
-    required = [
-        "provider_id", "display_name", "company", "origin_country",
-        "headquarters", "founding_year", "developer_jurisdiction",
-        "pricing_model", "deployment",
-        "summary", "privacy_note", "strengths", "known_limitations", "notable_models",
-    ]
-    for field in required:
-        if field not in card:
-            logger.warning("Feld '%s' fehlt in Provider Card '%s' – wird mit Platzhalter befüllt.", field, provider_id)
-            card[field] = "n/a"
-
-    summary_len = len(card.get("summary", ""))
-    if not (280 <= summary_len <= 320) and not card.get("unknown"):
-        logger.warning(
-            "summary für '%s' hat %d Zeichen (erwartet 280-320).",
-            provider_id, summary_len,
-        )
-
-    card["provider_id"] = provider_id
-    if "unknown" not in card:
-        card["unknown"] = False
-
-    return card
-
-
 def _generate_card(
     provider_name: str,
     provider_id: str,
@@ -179,7 +160,14 @@ def _generate_card(
     llm_provider: str,
     llm_model: str,
 ) -> dict[str, Any]:
-    """Generiert eine Provider Card: LLM-Teil + Stats-Injektion."""
+    """Generiert eine Provider Card: LLM-Teil + Stats-Injektion + Normalisierung.
+
+    Returns:
+        Normalisiertes Dict (Reihenfolge wie im Template). Redundante Felder
+        (origin_country, developer_jurisdiction, summary, strengths,
+        known_limitations, developer) werden durch ``normalize_provider_card_data``
+        verworfen.
+    """
     prompt = USER_PROMPT_TEMPLATE.format(
         provider_name=provider_name,
         provider_id=provider_id,
@@ -187,29 +175,11 @@ def _generate_card(
 
     logger.info("Generiere Provider Card für '%s' via %s/%s ...", provider_name, llm_provider, llm_model)
 
+    # Minimales Fallback-Dict — wird durch normalize_provider_card_data mit
+    # allen Template-Defaults aufgefüllt.
     fallback: dict[str, Any] = {
         "provider_id": provider_id,
         "display_name": provider_name,
-        "company": "n/a",
-        "origin_country": "n/a",
-        "headquarters": "n/a",
-        "founding_year": None,
-        "developer_jurisdiction": "Unknown",
-        "pricing_model": "unknown",
-        "api_base_url": None,
-        "privacy_assessment": {
-            "cloud_api_jurisdiction": "Unknown",
-            "gdpr_dpa_available": "unknown",
-            "data_retention_policy": "unknown",
-            "chinese_national_security_law_risk": "none",
-            "sovereign_risk_level": "medium",
-            "sovereign_risk_rationale": "Keine Daten verfügbar.",
-        },
-        "summary": "Keine Informationen verfügbar.",
-        "privacy_note": "Keine Informationen verfügbar.",
-        "strengths": [],
-        "known_limitations": [],
-        "notable_models": [],
         "unknown": True,
     }
 
@@ -223,49 +193,34 @@ def _generate_card(
         )
     except Exception as e:
         logger.error("LLM-Call fehlgeschlagen für '%s': %s", provider_name, e)
-        card = fallback
-        card["summary"] = f"Karte konnte nicht generiert werden (LLM-Fehler: {str(e)[:80]})."
+        card = normalize_provider_card_data(fallback)
+        card["privacy_note"] = f"Card konnte nicht generiert werden (LLM-Fehler: {str(e)[:80]})."
         card["stats"] = stats
-        card["generated_at"] = datetime.now(timezone.utc).isoformat()
         return card
 
     try:
-        card = _parse_json_from_response(response)
+        raw_card = _parse_json_from_response(response)
     except (ValueError, json.JSONDecodeError) as e:
         logger.error("JSON-Parse fehlgeschlagen für '%s': %s", provider_name, e)
-        card = fallback
+        raw_card = fallback
 
-    card = _validate_card(card, provider_id)
     # Stats aus CSV injizieren – diese Werte kommen immer aus echter Messung, nie vom LLM
-    card["stats"] = stats
-    card["generated_at"] = datetime.now(timezone.utc).isoformat()
-    return card
+    raw_card["stats"] = stats
+    raw_card["provider_id"] = provider_id
+
+    # Normalisierung gegen Template: entfernt redundante Felder, ergänzt fehlende
+    return normalize_provider_card_data(raw_card)
 
 
 def _write_card(card: dict[str, Any]) -> Path:
+    """Schreibt eine normalisierte Provider-Card auf Platte."""
     CARDS_DIR.mkdir(parents=True, exist_ok=True)
-    path = CARDS_DIR / f"{card['provider_id']}.json"
-    with open(path, "w", encoding="utf-8") as f:
-        json.dump(card, f, ensure_ascii=False, indent=2)
+    path = CARDS_DIR / f"{_safe_id(card['provider_id'])}.json"
+    path.write_text(
+        json.dumps(card, ensure_ascii=False, indent=2) + "\n",
+        encoding="utf-8",
+    )
     return path
-
-
-def _rebuild_index() -> None:
-    """Baut _index.json aus allen vorhandenen Einzelkarten neu auf."""
-    cards = []
-    for p in sorted(CARDS_DIR.glob("*.json")):
-        if p.name == "_index.json":
-            continue
-        try:
-            with open(p, "r", encoding="utf-8") as f:
-                cards.append(json.load(f))
-        except Exception as e:
-            logger.warning("Konnte %s nicht lesen: %s", p.name, e)
-
-    index_path = CARDS_DIR / "_index.json"
-    with open(index_path, "w", encoding="utf-8") as f:
-        json.dump(cards, f, ensure_ascii=False, indent=2)
-    logger.info("_index.json aktualisiert (%d Provider Cards).", len(cards))
 
 
 def generate(
@@ -300,7 +255,8 @@ def generate(
         logger.info("Karte gespeichert: %s → %s", name, path.name)
 
     if generated > 0:
-        _rebuild_index()
+        count = rebuild_provider_index()
+        logger.info("_index.json aktualisiert (%d Provider Cards).", count)
 
     print(f"\nFertig: {generated} generiert, {skipped} übersprungen.")
 

@@ -2,12 +2,11 @@
   "provider_id": "mistral_ai_base_model_mradermacher_gguf_conversion_abliteration",
   "display_name": "Mistral AI + mradermacher (GGUF/Abliterated)",
   "company": "Mistral AI SAS (Basismodell) / mradermacher (Hugging Face Community Contributor)",
-  "origin_country": "France / Germany (Community)",
   "headquarters": "Paris, France (Mistral AI); privat/Community (mradermacher)",
   "founding_year": 2023,
-  "developer_jurisdiction": "EU",
   "pricing_model": "open-source-self-hosted",
   "api_base_url": null,
+  "api_documentation_url": "https://huggingface.co/mradermacher",
   "deployment": {
     "cloud_act_exposure": false,
     "applicable_law": "N/A (lokal only)",
@@ -17,22 +16,14 @@
     "data_retention_days": 0,
     "chinese_nsl_risk": "none"
   },
-  "summary": "Mistral AI (Paris, 2023) entwickelt leistungsstarke Open-Weight-Sprachmodelle. mradermacher ist ein bekannter Hugging-Face-Community-Contributor, der Mistral-Modelle in GGUF konvertiert und teils abliteriert (Sicherheitsfilter entfernt) für lokale Nutzung via llama.cpp bereitstellt.",
   "privacy_note": "Da diese Modelle ausschließlich lokal betrieben werden, findet keine Datenübertragung an externe Server statt. Es besteht kein API-seitiges Datenschutzrisiko – sämtliche Verarbeitung erfolgt auf der eigenen Infrastruktur des Nutzers.",
-  "strengths": [
-    "Vollständig lokale Ausführung – keine Daten verlassen das eigene System",
-    "GGUF-Format ermöglicht effiziente Nutzung auf Consumer-Hardware via llama.cpp, Ollama u.ä.",
-    "Abliterierte Varianten ohne eingebaute Inhaltsbeschränkungen für Forschungs- und Spezialeinsätze"
-  ],
-  "known_limitations": [
-    "Abliterierte Modelle haben Sicherheitsfilter entfernt – erhöhtes Risiko bei unkontrolliertem Einsatz oder Weitergabe",
-    "Community-Konvertierungen sind inoffiziell; keine Qualitäts- oder Sicherheitsgarantie durch Mistral AI selbst"
-  ],
   "notable_models": [
     "Mistral-7B-Instruct-v0.3 (GGUF, mradermacher)",
     "Mistral-Small-3.1 Abliterated (GGUF, mradermacher)"
   ],
-  "unknown": false,
   "stats": {},
-  "generated_at": "2026-04-11T15:46:53.567370+00:00"
+  "unknown": false,
+  "generated_at": "2026-06-02T21:00:00.000000+00:00",
+  "last_verified_at": "2026-06-02",
+  "verification_source": "https://huggingface.co/mradermacher"
 }

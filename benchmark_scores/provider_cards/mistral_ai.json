@@ -2,12 +2,11 @@
   "provider_id": "mistral_ai",
   "display_name": "Mistral AI",
   "company": "Mistral AI SAS",
-  "origin_country": "France",
   "headquarters": "Paris, France",
   "founding_year": 2023,
-  "developer_jurisdiction": "EU",
   "pricing_model": "free-tier+pay-per-token",
   "api_base_url": "https://api.mistral.ai",
+  "api_documentation_url": "https://docs.mistral.ai",
   "deployment": {
     "cloud_act_exposure": false,
     "applicable_law": "EU (GDPR)",
@@ -17,24 +16,14 @@
     "data_retention_days": 30,
     "chinese_nsl_risk": "none"
   },
-  "summary": "Mistral AI ist ein 2023 in Paris gegründetes KI-Unternehmen, das sich auf effiziente Open-Weight- und proprietäre Sprachmodelle spezialisiert hat. Bekannt für hohe Leistung bei kompakter Modellgröße. Positioniert sich als europäische Alternative zu US-Anbietern mit starkem Fokus auf Offenheit und Souveränität.",
   "privacy_note": "Da Mistral AI ein französisches Unternehmen mit Datenhaltung in der EU ist, unterliegt die API-Nutzung vollständig der DSGVO. Ein DPA ist verfügbar; US-Behördenzugriff über den CLOUD Act ist nicht anwendbar.",
-  "strengths": [
-    "Europäischer Anbieter mit DSGVO-konformer Infrastruktur und EU-Datenhaltung",
-    "Viele Modelle als Open Weights verfügbar (z. B. Mistral 7B, Mixtral)",
-    "Sehr gutes Preis-Leistungs-Verhältnis bei Inferenz-Kosten"
-  ],
-  "known_limitations": [
-    "Kleineres Modell-Ökosystem und geringere Multimodalität im Vergleich zu OpenAI oder Google",
-    "Kontextfenster und Reasoning-Fähigkeiten der Spitzenmodelle noch hinter GPT-4o / Claude 3.5"
-  ],
   "notable_models": [
-    "Mistral Large 2",
-    "Mixtral 8x22B",
-    "Codestral",
-    "Mistral 7B"
+    "Mistral Large 2512",
+    "Magistral Medium",
+    "Mistral Small 2603",
+    "Codestral Latest",
+    "Ministral 3 14B"
   ],
-  "unknown": false,
   "stats": {
     "models_tracked": 3,
     "median_tokens_per_s": 88.16,
@@ -42,5 +31,8 @@
     "cost_per_1k_median_usd": 0.006,
     "active_ping_ttfb_ms": 454
   },
-  "generated_at": "2026-04-11T15:08:53.672639+00:00"
+  "unknown": false,
+  "generated_at": "2026-06-02T21:00:00.000000+00:00",
+  "last_verified_at": "2026-06-02",
+  "verification_source": "https://mistral.ai/terms/"
 }

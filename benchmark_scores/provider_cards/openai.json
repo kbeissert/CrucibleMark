@@ -2,12 +2,11 @@
   "provider_id": "openai",
   "display_name": "OpenAI",
   "company": "OpenAI, L.L.C.",
-  "origin_country": "USA",
   "headquarters": "San Francisco, CA, USA",
   "founding_year": 2015,
-  "developer_jurisdiction": "US",
   "pricing_model": "free-tier+pay-per-token",
   "api_base_url": "https://api.openai.com",
+  "api_documentation_url": "https://platform.openai.com/docs",
   "deployment": {
     "cloud_act_exposure": true,
     "applicable_law": "US (CLOUD Act)",
@@ -17,23 +16,14 @@
     "data_retention_days": 30,
     "chinese_nsl_risk": "none"
   },
-  "summary": "OpenAI wurde 2015 als Non-Profit gegründet und ist heute als capped-profit-Unternehmen strukturiert. Der Anbieter gilt als Marktführer im Bereich großer Sprachmodelle und ist bekannt für die GPT-Reihe sowie ChatGPT. Microsoft hält eine strategische Beteiligung und stellt Rechenkapazitäten bereit.",
   "privacy_note": "API-Anfragen werden auf US-amerikanischen Servern verarbeitet und unterliegen dem CLOUD Act, der US-Behörden Zugriff auf gespeicherte Daten ermöglichen kann. Obwohl ein DPA und SCCs für EU-Kunden verfügbar sind, verbleibt ein strukturelles Transferrisiko nach Art. 44 ff. DSGVO.",
-  "strengths": [
-    "Breites Modell-Portfolio von GPT-4o bis o3 für unterschiedliche Anforderungen",
-    "Ausgereifte, gut dokumentierte API mit umfangreichem Ökosystem und Tool-Support",
-    "Starke Multimodalität: Text, Bild, Audio und Code in einem einheitlichen API-Endpunkt"
-  ],
-  "known_limitations": [
-    "Vollständige Datenverarbeitung in den USA – kein EU-Hosting verfügbar",
-    "Vergleichsweise hohe Kosten bei Frontier-Modellen gegenüber neueren Wettbewerbern"
-  ],
   "notable_models": [
-    "GPT-4o",
-    "o3",
-    "GPT-4.1"
+    "GPT-5.5",
+    "GPT-5.4",
+    "GPT-5",
+    "o4-mini",
+    "GPT-4o"
   ],
-  "unknown": false,
   "stats": {
     "models_tracked": 10,
     "median_tokens_per_s": 55.65,
@@ -41,5 +31,8 @@
     "cost_per_1k_median_usd": 0.0044,
     "active_ping_ttfb_ms": 711
   },
-  "generated_at": "2026-04-11T14:36:02.502553+00:00"
+  "unknown": false,
+  "generated_at": "2026-06-02T21:00:00.000000+00:00",
+  "last_verified_at": "2026-06-02",
+  "verification_source": "https://openai.com/policies/privacy-policy"
 }

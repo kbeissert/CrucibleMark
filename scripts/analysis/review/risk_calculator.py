@@ -138,9 +138,7 @@ def get_provider_card_context(model_id: str) -> str:
 
     lines.append(f"- **Berechnetes Sovereign Risk (Model × Provider):** `{risk_level.upper()}` — {risk_rationale}")
 
-    if model_card:
-        wprov = model_card.get("weights_provenance_risk", "")
-        if wprov:
-            lines.append(f"- **Weights-Provenienz-Risiko:** `{wprov}` — {model_card.get('weights_provenance_risk_rationale', '')}")
+    # Die Weights-Provenienz-Information ist bereits in `risk_rationale`
+    # enthalten (siehe compute_sovereign_risk) — eine separate Zeile wäre redundant.
 
     return "\n".join(lines)

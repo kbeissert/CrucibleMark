@@ -20,6 +20,21 @@ from schemas.result import BenchmarkResult
 logger = logging.getLogger(__name__)
 
 
+def _get_hardware_profile(config: dict, provider: str) -> str | None:
+    """Liest das Hardware-Profil für lokale Provider aus benchmark_config.yaml.
+
+    SSoT: providers.local.config.hardware_profile
+    Nur für lokale Provider (llamacpp, ollama) — Cloud/Commercial = None.
+    """
+    _local_providers = ("ollama", "llamacpp", "llama_cpp", "llamacpp_local")
+    if provider.lower() not in _local_providers:
+        return None
+    try:
+        return config.get("providers", {}).get("local", {}).get("config", {}).get("hardware_profile")
+    except Exception:
+        return None
+
+
 class BaseBenchmarkRunner:
     """Abstrakte Basisklasse für Benchmark Runner."""
 
@@ -158,6 +173,7 @@ class BaseBenchmarkRunner:
             "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
             "status": exec_result.status,
             "provider": provider,
+            "hardware_profile": _get_hardware_profile(self.validator.config, provider),
             "model": model,
             "asset_id": asset_id,
             "asset_name": asset_name,
@@ -455,6 +471,7 @@ class BaseBenchmarkRunner:
             "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
             "status": report.get("status", "success"),
             "provider": provider,
+            "hardware_profile": _get_hardware_profile(self.validator.config, provider),
             "model": model,
             "model_version": model_version,
             "asset_id": batch_asset_id,
