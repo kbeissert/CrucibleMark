@@ -43,8 +43,8 @@
     "use_case_primary": "generalist",
     "parameter_architecture": "dense",
     "params_total_b": 14.0,
-    "context_window_k": null,
-    "knowledge_cutoff": null
+    "context_window_k": 128,
+    "knowledge_cutoff": "2025-01"
   },
   {
     "model_id": "claude-haiku-4-5-20251001",
@@ -138,8 +138,8 @@
     "vendor": "Anthropic",
     "weights_license_tier": "proprietary",
     "model_version": "4.5",
-    "input_price_per_1m": 15.0,
-    "output_price_per_1m": 75.0,
+    "input_price_per_1m": 5.0,
+    "output_price_per_1m": 25.0,
     "use_case_primary": "agentic",
     "parameter_architecture": "dense",
     "params_total_b": null,
@@ -193,7 +193,7 @@
     "use_case_primary": "agentic",
     "parameter_architecture": "dense",
     "params_total_b": null,
-    "context_window_k": 200,
+    "context_window_k": 1000,
     "knowledge_cutoff": "2025-01"
   },
   {
@@ -244,7 +244,7 @@
     "use_case_primary": "agentic",
     "parameter_architecture": "dense",
     "params_total_b": null,
-    "context_window_k": 200,
+    "context_window_k": 1000,
     "knowledge_cutoff": "2025-01"
   },
   {
@@ -294,7 +294,7 @@
     "use_case_primary": "generalist",
     "parameter_architecture": "dense",
     "params_total_b": null,
-    "context_window_k": 200,
+    "context_window_k": 1000,
     "knowledge_cutoff": "2025-01"
   },
   {
@@ -344,7 +344,7 @@
     "use_case_primary": "generalist",
     "parameter_architecture": "dense",
     "params_total_b": null,
-    "context_window_k": 200,
+    "context_window_k": 1000,
     "knowledge_cutoff": "2025-01"
   },
   {
@@ -392,7 +392,7 @@
     "parameter_architecture": "dense",
     "params_total_b": 22.0,
     "context_window_k": 256,
-    "knowledge_cutoff": null
+    "knowledge_cutoff": "2024-12"
   },
   {
     "model_id": "deepseek-r1:8b",
@@ -439,7 +439,7 @@
     "parameter_architecture": "dense",
     "params_total_b": 8.0,
     "context_window_k": 128,
-    "knowledge_cutoff": null
+    "knowledge_cutoff": "2024-07"
   },
   {
     "model_id": "deepseek/deepseek-chat-v3.1",
@@ -466,7 +466,8 @@
     "judge_context_hint": "Das Modell kann bei bestimmten politisch oder kulturell sensiblen Themen mit China-Bezug ausweichen oder beschönigen – dies sollte bei der Bewertung von Neutralität und Faktentreue berücksichtigt werden.",
     "architecture_tags": [
       "General",
-      "Instruct"
+      "Instruct",
+      "MoE"
     ],
     "unknown": false,
     "generated_at": "2026-04-23T22:05:48.261371+00:00",
@@ -534,8 +535,8 @@
     "vendor": "DeepSeek",
     "weights_license_tier": "open-weights",
     "model_version": "v3.2",
-    "input_price_per_1m": 0.28,
-    "output_price_per_1m": 0.42,
+    "input_price_per_1m": 0.14,
+    "output_price_per_1m": 0.28,
     "use_case_primary": "generalist",
     "parameter_architecture": "moe",
     "params_total_b": 671.0,
@@ -590,8 +591,8 @@
     "use_case_primary": "reasoning",
     "parameter_architecture": "moe",
     "params_total_b": null,
-    "context_window_k": null,
-    "knowledge_cutoff": null
+    "context_window_k": 128,
+    "knowledge_cutoff": "2025-09"
   },
   {
     "model_id": "deepseek/deepseek-v4-pro",
@@ -640,8 +641,8 @@
     "use_case_primary": "reasoning",
     "parameter_architecture": "moe",
     "params_total_b": null,
-    "context_window_k": null,
-    "knowledge_cutoff": null
+    "context_window_k": 128,
+    "knowledge_cutoff": "2025-09"
   },
   {
     "model_id": "devstral-2512",
@@ -659,7 +660,6 @@
     "use_case_primary": "coding",
     "parameter_architecture": "dense",
     "params_total_b": 123,
-    "params_active_b": 123,
     "context_window_k": 256,
     "knowledge_cutoff": "2024-12",
     "summary": "Devstral 2 ist Mistrals frontier Coding-Agent-Modell, entwickelt in Zusammenarbeit mit All Hands AI. Es ist ein 123B-Parameter-Dense-Transformer spezialisiert auf agentisches Coding: Codebase-Exploration, Multi-File-Änderungen und Bug Fixing in realen Software-Engineering-Aufgaben. Unterstützt 256K Kontext.",
@@ -741,13 +741,13 @@
     "vendor": "Google",
     "weights_license_tier": "proprietary",
     "model_version": "2.5-flash",
-    "input_price_per_1m": 0.075,
-    "output_price_per_1m": 0.3,
+    "input_price_per_1m": 0.3,
+    "output_price_per_1m": 2.5,
     "use_case_primary": "generalist",
     "parameter_architecture": "dense",
     "params_total_b": null,
     "context_window_k": 1000,
-    "knowledge_cutoff": null
+    "knowledge_cutoff": "2025-01"
   },
   {
     "model_id": "gemini-2.5-pro",
@@ -798,7 +798,7 @@
     "parameter_architecture": "dense",
     "params_total_b": null,
     "context_window_k": 1000,
-    "knowledge_cutoff": null
+    "knowledge_cutoff": "2025-01"
   },
   {
     "model_id": "gemini-3-flash-preview",
@@ -848,8 +848,8 @@
     "use_case_primary": "generalist",
     "parameter_architecture": "dense",
     "params_total_b": null,
-    "context_window_k": null,
-    "knowledge_cutoff": null
+    "context_window_k": 1000,
+    "knowledge_cutoff": "2026-01"
   },
   {
     "model_id": "gemini-3.1-pro-preview",
@@ -899,8 +899,8 @@
     "use_case_primary": "generalist",
     "parameter_architecture": "dense",
     "params_total_b": null,
-    "context_window_k": null,
-    "knowledge_cutoff": null
+    "context_window_k": 1000,
+    "knowledge_cutoff": "2026-01"
   },
   {
     "model_id": "gemini-3.5-flash",
@@ -916,7 +916,7 @@
     "vendor": "Google",
     "primary_focus": "generalist",
     "use_case_primary": "generalist",
-    "parameter_architecture": "unknown",
+    "parameter_architecture": "dense",
     "params_total_b": null,
     "params_active_b": null,
     "context_window_k": 1049,
@@ -938,7 +938,6 @@
     "judge_context_hint": "Gemini 3.5 Flash (Mai 2026) ist Googles effizientes Frontier-Modell mit 1M Token Kontext, konfiguriertem Thinking-Level und Fokus auf agentischen Coding-Loops. Unterstützt native Reasoning Tokens.",
     "architecture_tags": [
       "General",
-      "Multimodal",
       "Long Context",
       "Reasoning",
       "Agentic"
@@ -978,7 +977,7 @@
     "params_total_b": 12.0,
     "params_active_b": null,
     "context_window_k": 128,
-    "knowledge_cutoff": null,
+    "knowledge_cutoff": "2024-12",
     "summary": "Gemma 3 12B ist ein Modell von Google DeepMind mit öffentlich verfügbaren Gewichten (Google Gemma Terms of Use). Dieses Modell läuft als GGUF-Quantisierung (Q8_0), direkt von Hugging Face bezogen und via llama.cpp betrieben. Q8_0 ist die höchste gängige GGUF-Quantisierungsstufe und kommt der vollen FP16-Präzision sehr nahe – bei minimalen Qualitätseinbußen gegenüber der Referenzimplementierung.",
     "strengths": [
       "Starkes Instruction-Following durch gezieltes Fine-Tuning (Gemma-IT-Variante)",
@@ -1032,7 +1031,7 @@
     "params_total_b": 12.0,
     "params_active_b": null,
     "context_window_k": 128,
-    "knowledge_cutoff": null,
+    "knowledge_cutoff": "2024-12",
     "summary": "Gemma 3 12B ist ein Modell von Google DeepMind mit öffentlich verfügbaren Gewichten (Google Gemma Terms of Use). Dieses Modell läuft als GGUF-Quantisierung (Q4_K_M), direkt von Hugging Face bezogen und via llama.cpp betrieben. Mit 12 Milliarden Parametern deckt es ein breites Spektrum von Instruction-Following, Textverstehen und mehrsprachigen Aufgaben ab.",
     "strengths": [
       "Starkes Instruction-Following durch gezieltes Fine-Tuning (Gemma-IT-Variante)",
@@ -1084,7 +1083,7 @@
     "params_total_b": 8.0,
     "params_active_b": 4.5,
     "context_window_k": 128,
-    "knowledge_cutoff": null,
+    "knowledge_cutoff": "2025-06",
     "summary": "Gemma 4 E4B ist eine Desktop-optimierte Variante der Gemma-4-Familie von Google DeepMind (Google Gemma Lizenz). Das \"E\" steht für \"Effective\" – mit ca. 4,5 Milliarden aktiven Parametern bei insgesamt 8 Milliarden Gesamtparametern (dichte Architektur mit PLE: Per-Layer Embeddings). Dieses Modell läuft als GGUF-Datei, direkt von Hugging Face bezogen und via llama.cpp betrieben. Der RAM-Footprint beträgt ca. 9,6 GB.",
     "strengths": [
       "Sehr ressourceneffizient durch PLE-Architektur (nur 4,5B aktive Parameter pro Forward Pass bei 8B Gesamtparametern)",
@@ -1165,7 +1164,7 @@
     "parameter_architecture": "dense",
     "params_total_b": 12.0,
     "context_window_k": 128,
-    "knowledge_cutoff": null
+    "knowledge_cutoff": "2024-12"
   },
   {
     "model_id": "gemma3:4b",
@@ -1213,7 +1212,7 @@
     "parameter_architecture": "dense",
     "params_total_b": 4.0,
     "context_window_k": 128,
-    "knowledge_cutoff": null
+    "knowledge_cutoff": "2024-12"
   },
   {
     "model_id": "gemma4:26b",
@@ -1261,7 +1260,7 @@
     "parameter_architecture": "dense",
     "params_total_b": 27.0,
     "context_window_k": 128,
-    "knowledge_cutoff": null
+    "knowledge_cutoff": "2025-06"
   },
   {
     "model_id": "gemma4:E4B",
@@ -1310,7 +1309,7 @@
     "params_total_b": 8.0,
     "params_active_b": 4.5,
     "context_window_k": 128,
-    "knowledge_cutoff": null
+    "knowledge_cutoff": "2025-06"
   },
   {
     "model_id": "gemma4:e2b",
@@ -1359,7 +1358,7 @@
     "params_total_b": 5.1,
     "params_active_b": 2.3,
     "context_window_k": 128,
-    "knowledge_cutoff": null
+    "knowledge_cutoff": "2025-06"
   },
   {
     "model_id": "google/gemma-4-31b-it",
@@ -1411,7 +1410,7 @@
     "parameter_architecture": "dense",
     "params_total_b": 31.0,
     "context_window_k": 128,
-    "knowledge_cutoff": null
+    "knowledge_cutoff": "2025-06"
   },
   {
     "model_id": "gpt-4o-mini",
@@ -1461,7 +1460,7 @@
     "parameter_architecture": "dense",
     "params_total_b": null,
     "context_window_k": 128,
-    "knowledge_cutoff": null
+    "knowledge_cutoff": "2023-10"
   },
   {
     "model_id": "gpt-4o",
@@ -1513,7 +1512,7 @@
     "parameter_architecture": "dense",
     "params_total_b": null,
     "context_window_k": 128,
-    "knowledge_cutoff": null,
+    "knowledge_cutoff": "2023-10",
     "tooluse_tested_at": "2026-05-25T17:37:53Z"
   },
   {
@@ -1558,13 +1557,13 @@
     "vendor": "OpenAI",
     "weights_license_tier": "proprietary",
     "model_version": "5.0",
-    "input_price_per_1m": 0.125,
-    "output_price_per_1m": 1.0,
+    "input_price_per_1m": 0.25,
+    "output_price_per_1m": 2.0,
     "use_case_primary": "generalist",
     "parameter_architecture": "dense",
     "params_total_b": null,
-    "context_window_k": null,
-    "knowledge_cutoff": null
+    "context_window_k": 200,
+    "knowledge_cutoff": "2025-03"
   },
   {
     "model_id": "gpt-5",
@@ -1608,13 +1607,13 @@
     "vendor": "OpenAI",
     "weights_license_tier": "proprietary",
     "model_version": "5.0",
-    "input_price_per_1m": 0.625,
-    "output_price_per_1m": 5.0,
+    "input_price_per_1m": 1.25,
+    "output_price_per_1m": 10.0,
     "use_case_primary": "generalist",
     "parameter_architecture": "dense",
     "params_total_b": null,
-    "context_window_k": null,
-    "knowledge_cutoff": null
+    "context_window_k": 128,
+    "knowledge_cutoff": "2025-03"
   },
   {
     "model_id": "gpt-5.4-mini",
@@ -1663,8 +1662,8 @@
     "use_case_primary": "generalist",
     "parameter_architecture": "dense",
     "params_total_b": null,
-    "context_window_k": null,
-    "knowledge_cutoff": null
+    "context_window_k": 128,
+    "knowledge_cutoff": "2025-09"
   },
   {
     "model_id": "gpt-5.4",
@@ -1712,8 +1711,8 @@
     "use_case_primary": "generalist",
     "parameter_architecture": "dense",
     "params_total_b": null,
-    "context_window_k": null,
-    "knowledge_cutoff": null
+    "context_window_k": 128,
+    "knowledge_cutoff": "2025-09"
   },
   {
     "model_id": "gpt-5.5",
@@ -1729,7 +1728,7 @@
     "vendor": "OpenAI",
     "primary_focus": "generalist",
     "use_case_primary": "generalist",
-    "parameter_architecture": "unknown",
+    "parameter_architecture": "dense",
     "params_total_b": null,
     "params_active_b": null,
     "context_window_k": 1050,
@@ -1751,7 +1750,6 @@
     "judge_context_hint": "GPT-5.5 (seit April 2026, gpt-5.5-2026-04-23) ist OpenAIs bisher leistungsfähigstes Modell, mit 1.05M Token Kontext (128K max Output), stark bei agentic coding und professioneller Wissensarbeit. Premium-Preismodell >272K Input. Batch-Verarbeitung verfügbar.",
     "architecture_tags": [
       "General",
-      "Multimodal",
       "Long Context",
       "Agentic"
     ],
@@ -1824,8 +1822,8 @@
     "use_case_primary": "generalist",
     "parameter_architecture": "dense",
     "params_total_b": 120.0,
-    "context_window_k": null,
-    "knowledge_cutoff": null
+    "context_window_k": 128,
+    "knowledge_cutoff": "2025-06"
   },
   {
     "model_id": "gpt-oss:20b-cloud",
@@ -1877,8 +1875,8 @@
     "use_case_primary": "generalist",
     "parameter_architecture": "dense",
     "params_total_b": 20.0,
-    "context_window_k": null,
-    "knowledge_cutoff": null
+    "context_window_k": 128,
+    "knowledge_cutoff": "2025-06"
   },
   {
     "model_id": "grok-3-mini",
@@ -1921,13 +1919,13 @@
     "vendor": "xAI",
     "weights_license_tier": "proprietary",
     "model_version": "3-mini",
-    "input_price_per_1m": 2.0,
-    "output_price_per_1m": 10.0,
+    "input_price_per_1m": 1.25,
+    "output_price_per_1m": 2.5,
     "use_case_primary": "reasoning",
     "parameter_architecture": "dense",
     "params_total_b": null,
-    "context_window_k": 131,
-    "knowledge_cutoff": null
+    "context_window_k": 1000,
+    "knowledge_cutoff": "2025-01"
   },
   {
     "model_id": "grok-3",
@@ -1971,13 +1969,13 @@
     "vendor": "xAI",
     "weights_license_tier": "proprietary",
     "model_version": "3",
-    "input_price_per_1m": 5.0,
-    "output_price_per_1m": 15.0,
+    "input_price_per_1m": 1.25,
+    "output_price_per_1m": 2.5,
     "use_case_primary": "generalist",
     "parameter_architecture": "dense",
     "params_total_b": null,
-    "context_window_k": 131,
-    "knowledge_cutoff": null
+    "context_window_k": 1000,
+    "knowledge_cutoff": "2025-01"
   },
   {
     "model_id": "grok-4-1-fast-reasoning",
@@ -2020,13 +2018,13 @@
     "vendor": "xAI",
     "weights_license_tier": "proprietary",
     "model_version": "4-1-reasoning",
-    "input_price_per_1m": 0.2,
-    "output_price_per_1m": 0.5,
+    "input_price_per_1m": 1.25,
+    "output_price_per_1m": 2.5,
     "use_case_primary": "reasoning",
     "parameter_architecture": "dense",
     "params_total_b": null,
-    "context_window_k": null,
-    "knowledge_cutoff": null
+    "context_window_k": 1000,
+    "knowledge_cutoff": "2025-06"
   },
   {
     "model_id": "grok-4-fast-non-reasoning",
@@ -2070,13 +2068,13 @@
     "vendor": "xAI",
     "weights_license_tier": "proprietary",
     "model_version": "4",
-    "input_price_per_1m": 1.0,
-    "output_price_per_1m": 5.0,
+    "input_price_per_1m": 1.25,
+    "output_price_per_1m": 2.5,
     "use_case_primary": "generalist",
     "parameter_architecture": "dense",
     "params_total_b": null,
-    "context_window_k": null,
-    "knowledge_cutoff": null
+    "context_window_k": 1000,
+    "knowledge_cutoff": "2025-06"
   },
   {
     "model_id": "grok-4.20-0309-non-reasoning",
@@ -2125,8 +2123,8 @@
     "use_case_primary": "generalist",
     "parameter_architecture": "dense",
     "params_total_b": null,
-    "context_window_k": null,
-    "knowledge_cutoff": null
+    "context_window_k": 1000,
+    "knowledge_cutoff": "2025-01"
   },
   {
     "model_id": "grok-4.20-0309-reasoning",
@@ -2176,8 +2174,8 @@
     "use_case_primary": "reasoning",
     "parameter_architecture": "dense",
     "params_total_b": null,
-    "context_window_k": null,
-    "knowledge_cutoff": null
+    "context_window_k": 1000,
+    "knowledge_cutoff": "2025-01"
   },
   {
     "model_id": "grok-4.3",
@@ -2226,8 +2224,8 @@
     "use_case_primary": "generalist",
     "parameter_architecture": "dense",
     "params_total_b": null,
-    "context_window_k": null,
-    "knowledge_cutoff": null
+    "context_window_k": 1000,
+    "knowledge_cutoff": "2025-12"
   },
   {
     "model_id": "hermes3:8b",
@@ -2276,7 +2274,7 @@
     "parameter_architecture": "dense",
     "params_total_b": 8.0,
     "context_window_k": 128,
-    "knowledge_cutoff": null
+    "knowledge_cutoff": "2024-09"
   },
   {
     "model_id": "llama-3.3-70b-versatile",
@@ -2374,7 +2372,7 @@
     "parameter_architecture": "dense",
     "params_total_b": null,
     "context_window_k": 128,
-    "knowledge_cutoff": null,
+    "knowledge_cutoff": "2025-03",
     "input_price_per_1m": 2.0,
     "output_price_per_1m": 5.0
   },
@@ -2422,8 +2420,8 @@
     "use_case_primary": "reasoning",
     "parameter_architecture": "dense",
     "params_total_b": null,
-    "context_window_k": null,
-    "knowledge_cutoff": null
+    "context_window_k": 128,
+    "knowledge_cutoff": "2025-03"
   },
   {
     "model_id": "meta-llama/llama-4-scout-17b-16e-instruct",
@@ -2474,7 +2472,7 @@
     "params_total_b": 109.0,
     "params_active_b": 17.0,
     "context_window_k": 10000,
-    "knowledge_cutoff": null
+    "knowledge_cutoff": "2024-12"
   },
   {
     "model_id": "minimax/minimax-m2.7-20260318",
@@ -2524,8 +2522,62 @@
     "use_case_primary": "generalist",
     "parameter_architecture": "moe",
     "params_total_b": null,
-    "context_window_k": null,
-    "knowledge_cutoff": null
+    "context_window_k": 1000,
+    "knowledge_cutoff": "2025-12"
+  },
+  {
+    "model_id": "minimax/minimax-m3",
+    "display_name": "MiniMax M3",
+    "developer": "MiniMax",
+    "origin_country": "China",
+    "developer_jurisdiction": "CN",
+    "deployment_type": "open-weights-cloud-available",
+    "local_deployment_possible": false,
+    "weights_provenance_risk": "high",
+    "weights_provenance_risk_rationale": "MiniMax ist ein chinesisches Unternehmen und unterliegt dem chinesischen National Security Law (NSL), das staatlichen Zugriff auf Daten ermöglichen kann. Das BSI hat im Februar 2025 explizit vor der Nutzung chinesischer KI-Cloud-Dienste gewarnt (BSI-Referenz: Warnung DeepSeek, 04.02.2025); diese Risikoeinschätzung gilt analog für alle chinesischen Cloud-KI-Anbieter, die Nutzerdaten auf chinesischen Servern verarbeiten.",
+    "model_family": "MiniMax",
+    "primary_focus": "agentic",
+    "summary": "MiniMax M3 ist das aktuelle multimodale Frontier-Modell von MiniMax mit Fokus auf lange agentische Workflows, Coding und Tool-Use. Es verarbeitet Text-, Bild- und Video-Inputs und bietet ein Kontextfenster von bis zu 1M Tokens, basierend auf der neuen MiniMax Sparse Attention (MSA) Architektur. Die Weights werden ca. 10 Tage nach API-Launch auf Hugging Face und GitHub veröffentlicht. Chinesische Herkunft und das nationale Sicherheitsgesetz (NSL) sind bei der Einschätzung des Datenrisikos zu berücksichtigen.",
+    "strengths": [
+      "Multimodales Foundation-Modell (Text, Bild, Video) mit starker Tool-Use-Eignung",
+      "Sehr großes Kontextfenster (1M Tokens) mit MSA-Architektur: 9.7x schnelleres Prefill, 15.6x schnelleres Decoding gegenüber M2",
+      "Stark in agentischen Workflows und Coding: SWE-Bench Pro 59.0%, Terminal-Bench 2.1 66.0%"
+    ],
+    "known_limitations": [
+      "Als chinesisches Modell potenziell eingeschraenkte oder zensierte Antworten zu politisch sensiblen Themen",
+      "Weights zum Launch-Zeitpunkt noch nicht verfuegbar (Veroeffentlichung ca. 10 Tage nach API-Launch erwartet)",
+      "OpenRouter-Preise koennen provider- und routingabhaengig schwanken"
+    ],
+    "judge_context_hint": "Das Modell ist multimodal und agentisch optimiert; bei text-only Aufgaben sollte die Bewertung primär auf strukturiertes Reasoning, Tool-Use-Tauglichkeit und Robustheit in langen Kontexthorizonten fokussieren.",
+    "architecture_tags": [
+      "Multimodal",
+      "Agentic",
+      "MSA",
+      "MoE"
+    ],
+    "unknown": false,
+    "generated_at": "2026-06-01T00:00:00.000000+00:00",
+    "card_status": "complete",
+    "size_class": "Frontier",
+    "thinking_probe_detected": true,
+    "thinking_probe_evidence": "Manual override: MiniMax M3 wird als reasoning-faehiges Chat-Modell ohne explizite Thinking-Tag-Ausgabe gefuehrt.",
+    "thinking_probe_confidence": "high",
+    "thinking_probe_manual_override": true,
+    "thinking_probe_at": "2026-06-01T00:00:00.000000+00:00",
+    "supports_tool_use": true,
+    "license": "MiniMax Open License (enterprise-friendly, permissive)",
+    "license_url": "https://www.minimax.io/models/text/m3",
+    "commercial_use_allowed": true,
+    "vendor": "MiniMax",
+    "weights_license_tier": "open-weights-pending",
+    "model_version": "m3",
+    "input_price_per_1m": 0.3,
+    "output_price_per_1m": 1.2,
+    "use_case_primary": "agentic",
+    "parameter_architecture": "moe",
+    "params_total_b": null,
+    "context_window_k": 1000,
+    "knowledge_cutoff": "2026-05"
   },
   {
     "model_id": "ministral-3:14b",
@@ -2573,7 +2625,7 @@
     "parameter_architecture": "dense",
     "params_total_b": 14.0,
     "context_window_k": 128,
-    "knowledge_cutoff": null
+    "knowledge_cutoff": "2024-09"
   },
   {
     "model_id": "ministral-3:8b",
@@ -2621,7 +2673,7 @@
     "parameter_architecture": "dense",
     "params_total_b": 8.0,
     "context_window_k": 128,
-    "knowledge_cutoff": null
+    "knowledge_cutoff": "2024-09"
   },
   {
     "model_id": "mistral-large-2411",
@@ -2666,8 +2718,8 @@
     "vendor": "Mistral AI",
     "weights_license_tier": "restricted-weights",
     "model_version": "2411",
-    "input_price_per_1m": 2.0,
-    "output_price_per_1m": 6.0,
+    "input_price_per_1m": 0.5,
+    "output_price_per_1m": 1.5,
     "context_window": 131072,
     "use_case_primary": "generalist",
     "parameter_architecture": "dense",
@@ -2710,7 +2762,6 @@
     "judge_context_hint": "Mistral Large 3 (2512) ist ein 675B-MoE-Modell von Mistral AI, optimiert für Generalaufgaben mit 256K Kontext. Kein natives Chain-of-Thought-Denken.",
     "architecture_tags": [
       "MoE",
-      "Multimodal",
       "Long Context"
     ],
     "supports_tool_use": true,
@@ -2807,8 +2858,7 @@
     "architecture_tags": [
       "General",
       "Instruct",
-      "Agentic",
-      "Multimodal"
+      "Agentic"
     ],
     "unknown": false,
     "generated_at": "2026-05-21T00:00:00.000000+00:00",
@@ -2828,8 +2878,8 @@
     "use_case_primary": "generalist",
     "parameter_architecture": "dense",
     "params_total_b": null,
-    "context_window_k": null,
-    "knowledge_cutoff": null
+    "context_window_k": 256,
+    "knowledge_cutoff": "2025-12"
   },
   {
     "model_id": "mistral-small-2503",
@@ -2882,7 +2932,7 @@
     "parameter_architecture": "dense",
     "params_total_b": 24.0,
     "context_window_k": 32,
-    "knowledge_cutoff": null
+    "knowledge_cutoff": "2025-01"
   },
   {
     "model_id": "mistral-small-2603",
@@ -2928,14 +2978,14 @@
     "vendor": "Mistral AI",
     "weights_license_tier": "open-weights",
     "model_version": "3",
-    "input_price_per_1m": 0.15,
-    "output_price_per_1m": 0.6,
+    "input_price_per_1m": 0.1,
+    "output_price_per_1m": 0.3,
     "context_window": 262144,
     "use_case_primary": "generalist",
     "parameter_architecture": "dense",
     "params_total_b": 24.0,
     "context_window_k": 32,
-    "knowledge_cutoff": null
+    "knowledge_cutoff": "2026-01"
   },
   {
     "model_id": "moonshotai/kimi-k2-thinking-20251106",
@@ -2990,7 +3040,7 @@
     "params_total_b": 1000.0,
     "params_active_b": 32.0,
     "context_window_k": 128,
-    "knowledge_cutoff": null
+    "knowledge_cutoff": "2025-06"
   },
   {
     "model_id": "moonshotai/kimi-k2",
@@ -3041,7 +3091,7 @@
     "params_total_b": 1000.0,
     "params_active_b": 32.0,
     "context_window_k": 128,
-    "knowledge_cutoff": null
+    "knowledge_cutoff": "2025-06"
   },
   {
     "model_id": "moonshotai/kimi-k2.5-0127",
@@ -3092,7 +3142,7 @@
     "params_total_b": 1000.0,
     "params_active_b": 32.0,
     "context_window_k": 128,
-    "knowledge_cutoff": null
+    "knowledge_cutoff": "2025-09"
   },
   {
     "model_id": "moonshotai/kimi-k2.6",
@@ -3143,7 +3193,7 @@
     "params_total_b": 1000.0,
     "params_active_b": 32.0,
     "context_window_k": 128,
-    "knowledge_cutoff": null
+    "knowledge_cutoff": "2025-12"
   },
   {
     "model_id": "nousresearch/hermes-4-405b",
@@ -3192,8 +3242,8 @@
     "use_case_primary": "generalist",
     "parameter_architecture": "dense",
     "params_total_b": 405.0,
-    "context_window_k": null,
-    "knowledge_cutoff": null
+    "context_window_k": 128,
+    "knowledge_cutoff": "2025-01"
   },
   {
     "model_id": "nousresearch/hermes-4-70b",
@@ -3242,8 +3292,8 @@
     "use_case_primary": "generalist",
     "parameter_architecture": "dense",
     "params_total_b": 70.0,
-    "context_window_k": null,
-    "knowledge_cutoff": null
+    "context_window_k": 128,
+    "knowledge_cutoff": "2025-01"
   },
   {
     "model_id": "o1",
@@ -3292,7 +3342,7 @@
     "parameter_architecture": "dense",
     "params_total_b": null,
     "context_window_k": 200,
-    "knowledge_cutoff": null
+    "knowledge_cutoff": "2023-10"
   },
   {
     "model_id": "o3-mini",
@@ -3341,7 +3391,7 @@
     "parameter_architecture": "dense",
     "params_total_b": null,
     "context_window_k": 200,
-    "knowledge_cutoff": null
+    "knowledge_cutoff": "2023-10"
   },
   {
     "model_id": "o4-mini",
@@ -3389,8 +3439,8 @@
     "use_case_primary": "reasoning",
     "parameter_architecture": "dense",
     "params_total_b": null,
-    "context_window_k": null,
-    "knowledge_cutoff": null
+    "context_window_k": 200,
+    "knowledge_cutoff": "2025-01"
   },
   {
     "model_id": "qwen2.5-coder:7b",
@@ -3578,7 +3628,7 @@
     "parameter_architecture": "dense",
     "params_total_b": 14.0,
     "context_window_k": 32,
-    "knowledge_cutoff": null
+    "knowledge_cutoff": "2024-09"
   },
   {
     "model_id": "qwen3:4b",
@@ -3626,7 +3676,7 @@
     "parameter_architecture": "dense",
     "params_total_b": 4.0,
     "context_window_k": 32,
-    "knowledge_cutoff": null
+    "knowledge_cutoff": "2024-09"
   },
   {
     "model_id": "qwen3.5:397b-cloud",
@@ -3675,8 +3725,8 @@
     "use_case_primary": "generalist",
     "parameter_architecture": "moe",
     "params_total_b": 397.0,
-    "context_window_k": null,
-    "knowledge_cutoff": null
+    "context_window_k": 128,
+    "knowledge_cutoff": "2025-06"
   },
   {
     "model_id": "qwen3.5:9b",
@@ -3724,7 +3774,7 @@
     "parameter_architecture": "dense",
     "params_total_b": 9.0,
     "context_window_k": 32,
-    "knowledge_cutoff": null
+    "knowledge_cutoff": "2025-06"
   },
   {
     "model_id": "qwen/qwen3-32b",
@@ -3774,10 +3824,10 @@
     "parameter_architecture": "dense",
     "params_total_b": 32.0,
     "context_window_k": 32,
-    "knowledge_cutoff": null
+    "knowledge_cutoff": "2024-09"
   },
   {
-    "model_id": "qwen/qwen3.6-plus",
+    "model_id": "qwen/qwen3.6-plus:free",
     "display_name": "Qwen 3.6 Plus",
     "developer": "Alibaba Cloud",
     "origin_country": "China",
@@ -3788,50 +3838,50 @@
     "weights_provenance_risk_rationale": "Alibaba Cloud (Tongyi Qwen-Team) ist ein chinesisches Unternehmen und unterliegt dem chinesischen National Security Law (NSL), das staatlichen Zugriff auf Daten ermöglichen kann. Das BSI hat im Februar 2025 explizit vor der Nutzung chinesischer KI-Cloud-Dienste gewarnt (BSI-Referenz: Warnung DeepSeek, 04.02.2025); diese Risikoeinschätzung gilt analog für alle chinesischen Cloud-KI-Anbieter, die Nutzerdaten auf chinesischen Servern verarbeiten.",
     "model_family": "Qwen",
     "primary_focus": "agentic",
-    "summary": "Qwen 3.6 Plus ist Alibabas proprietäres Flagship-Modell der Qwen 3.6-Serie mit hybrider MoE-Architektur (lineare Attention + Sparse MoE). Es liefert starke Fortschritte beim agentischen Coding, Front-End-Entwicklung und Reasoning gegenüber der 3.5-Serie, unterstützt optionale Thinking-Tokens (reasoning_tokens) und ein 1M-Token-Kontextfenster. Das Modell ist ausschließlich über Cloud-API verfügbar.",
+    "summary": "Qwen 3.6 Plus ist Alibabas proprietäres Frontier-Modell für agentisches Coding, Reasoning und multimodale Workflows. OpenRouter führt das Modell mit 1M Kontextfenster, Tool-Use-Fähigkeit und optionalem Thinking-Verhalten; die Free-Variante dient als kostenloser Preview- bzw. Tryout-Zugang, während das Basismodell regulär kostenpflichtig ist.",
     "strengths": [
-      "Hybride MoE-Architektur für hohe Skalierbarkeit und effiziente Inferenz",
-      "Starke Verbesserungen bei agentischem Coding und Front-End-Entwicklung (SWE-bench Verified: 78.8)",
-      "Optionaler Thinking-Modus mit reasoning_tokens für komplexe Reasoning-Aufgaben",
-      "1M-Token-Kontextfenster mit bis zu 65.5K Output-Tokens",
-      "Tiered Prompt-Caching für effiziente wiederholte Kontextverwendung"
+      "Stark in agentischem Coding und Repository-Level-Problemloesung (SWE-bench Verified: 78.8)",
+      "Sehr grosses Kontextfenster von 1M Tokens",
+      "Optionales Thinking bzw. preserve_thinking fuer komplexe Multi-Step-Workflows",
+      "Tool-Use und strukturierte agentische Nutzung ueber API/OpenRouter"
     ],
     "known_limitations": [
-      "Ausschließlich über Cloud-API verfügbar, kein lokaler Betrieb möglich",
-      "Keine Open Weights – vollständige Abhängigkeit von Alibaba-Infrastruktur",
+      "Ausschliesslich ueber Cloud-API verfuegbar, kein lokaler Betrieb moeglich",
+      "Keine Open Weights, vollstaendige Abhaengigkeit von Alibaba-Infrastruktur",
       "Chinesische Herkunft birgt potenzielle Zensur bei politisch sensiblen Themen mit China-Bezug",
-      "Tiered Preisstruktur: ab 256K Token deutlich teurer ($2.00/$6.00 statt $0.33/$1.95 pro 1M)"
+      "Die :free-Variante ist ein Preview-/Tryout-SKU und nicht mit dauerhaft stabilen Gratis-Konditionen gleichzusetzen"
     ],
     "architecture_tags": [
       "Thinking-Optional",
       "Agentic",
-      "MoE"
+      "Multimodal",
+      "Hybrid-Attention"
     ],
     "unknown": false,
-    "generated_at": "2026-05-31T00:00:00.000000+00:00",
+    "generated_at": "2026-06-01T00:00:00.000000+00:00",
     "card_status": "complete",
     "size_class": "Frontier",
     "thinking_probe_detected": true,
-    "thinking_probe_evidence": "OpenRouter API meldet reasoning_tokens im Usage-Feld; Thinking-Modus optional aktivierbar",
-    "thinking_probe_confidence": "medium",
-    "thinking_probe_at": "2026-05-31T00:00:00.000000+00:00",
+    "thinking_probe_evidence": "OpenRouter und begleitende Model-Beschreibungen verweisen auf optionales Thinking bzw. preserve_thinking fuer agentische Multi-Turn-Workflows.",
+    "thinking_probe_confidence": "high",
+    "thinking_probe_at": "2026-06-01T00:00:00.000000+00:00",
     "supports_tool_use": true,
     "license": "Proprietary",
-    "license_url": "https://openrouter.ai/qwen/qwen3.6-plus",
+    "license_url": "https://openrouter.ai/qwen/qwen3.6-plus:free",
     "commercial_use_allowed": true,
     "vendor": "Alibaba",
     "weights_license_tier": "proprietary",
     "model_version": "3.6-plus",
     "context_window": 1000000,
     "max_output_tokens": 65536,
-    "input_price_per_1m": 0.33,
-    "output_price_per_1m": 1.95,
-    "input_price_per_1m_above_256k": 2.0,
-    "output_price_per_1m_above_256k": 6.0,
+    "input_price_per_1m": 0.0,
+    "output_price_per_1m": 0.0,
+    "input_price_per_1m_reference_paid": 0.325,
+    "output_price_per_1m_reference_paid": 1.95,
     "use_case_primary": "agentic",
-    "parameter_architecture": "hybrid",
+    "parameter_architecture": "hybrid-attention",
     "params_total_b": null,
-    "context_window_k": null,
+    "context_window_k": 1000,
     "knowledge_cutoff": null
   },
   {
@@ -3846,33 +3896,33 @@
     "weights_provenance_risk_rationale": "Alibaba Cloud (Tongyi Qwen-Team) ist ein chinesisches Unternehmen und unterliegt dem chinesischen National Security Law (NSL), das staatlichen Zugriff auf Daten ermöglichen kann. Das BSI hat im Februar 2025 explizit vor der Nutzung chinesischer KI-Cloud-Dienste gewarnt (BSI-Referenz: Warnung DeepSeek, 04.02.2025); diese Risikoeinschätzung gilt analog für alle chinesischen Cloud-KI-Anbieter, die Nutzerdaten auf chinesischen Servern verarbeiten.",
     "model_family": "Qwen",
     "primary_focus": "agentic",
-    "summary": "Qwen 3.6 Plus ist Alibabas proprietäres Flagship-Modell der Qwen 3.6-Serie mit hybrider MoE-Architektur (lineare Attention + Sparse MoE). Es liefert starke Fortschritte beim agentischen Coding, Front-End-Entwicklung und Reasoning gegenüber der 3.5-Serie, unterstützt optionale Thinking-Tokens (reasoning_tokens) und ein 1M-Token-Kontextfenster. Das Modell ist ausschließlich über Cloud-API verfügbar.",
+    "summary": "Qwen 3.6 Plus ist Alibabas proprietäres Frontier-Modell für agentisches Coding, Reasoning und multimodale Workflows. OpenRouter führt das Modell mit 1M Kontextfenster, Tool-Use-Fähigkeit und optionalem Thinking-Verhalten; die Free-Variante dient als kostenloser Preview- bzw. Tryout-Zugang, während das Basismodell regulär kostenpflichtig ist.",
     "strengths": [
-      "Hybride MoE-Architektur für hohe Skalierbarkeit und effiziente Inferenz",
-      "Starke Verbesserungen bei agentischem Coding und Front-End-Entwicklung (SWE-bench Verified: 78.8)",
-      "Optionaler Thinking-Modus mit reasoning_tokens für komplexe Reasoning-Aufgaben",
-      "1M-Token-Kontextfenster mit bis zu 65.5K Output-Tokens",
-      "Tiered Prompt-Caching für effiziente wiederholte Kontextverwendung"
+      "Stark in agentischem Coding und Repository-Level-Problemloesung (SWE-bench Verified: 78.8)",
+      "Sehr grosses Kontextfenster von 1M Tokens",
+      "Optionales Thinking bzw. preserve_thinking fuer komplexe Multi-Step-Workflows",
+      "Tool-Use und strukturierte agentische Nutzung ueber API/OpenRouter"
     ],
     "known_limitations": [
-      "Ausschließlich über Cloud-API verfügbar, kein lokaler Betrieb möglich",
-      "Keine Open Weights – vollständige Abhängigkeit von Alibaba-Infrastruktur",
+      "Ausschliesslich ueber Cloud-API verfuegbar, kein lokaler Betrieb moeglich",
+      "Keine Open Weights, vollstaendige Abhaengigkeit von Alibaba-Infrastruktur",
       "Chinesische Herkunft birgt potenzielle Zensur bei politisch sensiblen Themen mit China-Bezug",
-      "Tiered Preisstruktur: ab 256K Token deutlich teurer ($2.00/$6.00 statt $0.50/$3.00 pro 1M)"
+      "Die :free-Variante ist ein Preview-/Tryout-SKU und nicht mit dauerhaft stabilen Gratis-Konditionen gleichzusetzen"
     ],
     "architecture_tags": [
       "Thinking-Optional",
       "Agentic",
-      "MoE"
+      "Multimodal",
+      "Hybrid-Attention"
     ],
     "unknown": false,
-    "generated_at": "2026-05-21T00:00:00.000000+00:00",
+    "generated_at": "2026-06-01T00:00:00.000000+00:00",
     "card_status": "complete",
     "size_class": "Frontier",
     "thinking_probe_detected": true,
-    "thinking_probe_evidence": "OpenRouter API meldet reasoning_tokens im Usage-Feld; Thinking-Modus optional aktivierbar",
-    "thinking_probe_confidence": "medium",
-    "thinking_probe_at": "2026-05-21T00:00:00.000000+00:00",
+    "thinking_probe_evidence": "OpenRouter und begleitende Model-Beschreibungen verweisen auf optionales Thinking bzw. preserve_thinking fuer agentische Multi-Turn-Workflows.",
+    "thinking_probe_confidence": "high",
+    "thinking_probe_at": "2026-06-01T00:00:00.000000+00:00",
     "supports_tool_use": true,
     "license": "Proprietary",
     "license_url": "https://openrouter.ai/qwen/qwen3.6-plus:free",
@@ -3882,14 +3932,14 @@
     "model_version": "3.6-plus",
     "context_window": 1000000,
     "max_output_tokens": 65536,
-    "input_price_per_1m": 0.5,
-    "output_price_per_1m": 3.0,
-    "input_price_per_1m_above_256k": 2.0,
-    "output_price_per_1m_above_256k": 6.0,
+    "input_price_per_1m": 0.0,
+    "output_price_per_1m": 0.0,
+    "input_price_per_1m_reference_paid": 0.325,
+    "output_price_per_1m_reference_paid": 1.95,
     "use_case_primary": "agentic",
-    "parameter_architecture": "hybrid",
+    "parameter_architecture": "hybrid-attention",
     "params_total_b": null,
-    "context_window_k": null,
+    "context_window_k": 1000,
     "knowledge_cutoff": null
   },
   {
@@ -3904,7 +3954,7 @@
     "weights_provenance_risk_rationale": "Alibaba Cloud (Tongyi Qwen-Team) ist ein chinesisches Unternehmen und unterliegt dem chinesischen National Security Law (NSL), das staatlichen Zugriff auf Daten ermöglichen kann. Das BSI hat im Februar 2025 explizit vor der Nutzung chinesischer KI-Cloud-Dienste gewarnt (BSI-Referenz: Warnung DeepSeek, 04.02.2025); diese Risikoeinschätzung gilt analog für alle chinesischen Cloud-KI-Anbieter, die Nutzerdaten auf chinesischen Servern verarbeiten.",
     "model_family": "Qwen",
     "primary_focus": "agentic",
-    "summary": "Qwen 3.7 Max ist das Flagship-Modell der Qwen 3.7-Serie von Alibaba Cloud – ausgelegt auf agentische Workloads mit Stärken in Coding, Produktivitätsaufgaben und langfristiger autonomer Ausführung. Das Modell ist ausschließlich über Cloud-API verfügbar (keine Open Weights). Chinesische Herkunft und das nationale Sicherheitsgesetz (NSL) sind bei der Einschätzung des Datenrisikos zu berücksichtigen.",
+    "summary": "Qwen 3.7 Max ist das proprietäre Flagship-Modell der Qwen-3.7-Serie von Alibaba Cloud und auf agentische Workloads mit Stärken in Coding, Produktivitätsaufgaben und langfristiger autonomer Ausführung ausgelegt. Das Modell bietet ein 1M-Token-Kontextfenster, unterstützt Prompt Caching und wird über Cloud-API bereitgestellt. Chinesische Herkunft und das nationale Sicherheitsgesetz (NSL) sind bei der Einschätzung des Datenrisikos zu berücksichtigen.",
     "strengths": [
       "Exzellente Leistung bei agentischen Coding-Aufgaben und Tool-Use",
       "Optimiert für lange, autonome Task-Chains (long-horizon execution)",
@@ -3914,21 +3964,24 @@
     ],
     "known_limitations": [
       "Ausschließlich über Cloud-API verfügbar, kein lokaler Betrieb möglich",
-      "Keine Open Weights – vollständige Abhängigkeit von Alibaba-Infrastruktur",
-      "Chinesische Herkunft birgt potenzielle Zensur bei politisch sensiblen Themen mit China-Bezug"
+      "Keine Open Weights, vollständige Abhängigkeit von Alibaba-Infrastruktur",
+      "Chinesische Herkunft birgt potenzielle Zensur bei politisch sensiblen Themen mit China-Bezug",
+      "OpenRouter-Tool-Use und Thinking-Verhalten können provider- oder routingabhängig variieren"
     ],
     "architecture_tags": [
       "Agentic",
-      "General"
+      "Thinking-Optional",
+      "Prompt-Caching",
+      "Long-Context"
     ],
     "unknown": false,
-    "generated_at": "2026-05-31T00:00:00.000000+00:00",
+    "generated_at": "2026-06-01T00:00:00.000000+00:00",
     "card_status": "complete",
     "size_class": "Frontier",
-    "thinking_probe_detected": false,
-    "thinking_probe_evidence": "Kein Thinking-Modus laut Modellbeschreibung – reines Text-I/O-Modell ohne CoT-Ausgabe",
-    "thinking_probe_confidence": "low",
-    "thinking_probe_at": "2026-05-31T00:00:00.000000+00:00",
+    "thinking_probe_detected": true,
+    "thinking_probe_evidence": "Qwen 3.7 Max wird in Modellbeschreibungen als agentisches Reasoning-Modell mit Extended-Thinking-Charakter eingeordnet; Qwen-3-Familie unterstützt zudem Thinking- und Non-Thinking-Modi.",
+    "thinking_probe_confidence": "medium",
+    "thinking_probe_at": "2026-06-01T00:00:00.000000+00:00",
     "supports_tool_use": true,
     "license": "Proprietary",
     "license_url": "https://openrouter.ai/qwen/qwen3.7-max",
@@ -3941,13 +3994,13 @@
     "input_price_per_1m": 1.25,
     "output_price_per_1m": 3.75,
     "use_case_primary": "agentic",
-    "parameter_architecture": "moe",
+    "parameter_architecture": "unknown",
     "params_total_b": null,
-    "context_window_k": null,
+    "context_window_k": 1000,
     "knowledge_cutoff": null
   },
   {
-    "model_id": "qwen/qwen3.7-max:free",
+    "model_id": "qwen/qwen3.7-max",
     "display_name": "Qwen 3.7 Max",
     "developer": "Alibaba Cloud",
     "origin_country": "China",
@@ -3958,7 +4011,7 @@
     "weights_provenance_risk_rationale": "Alibaba Cloud (Tongyi Qwen-Team) ist ein chinesisches Unternehmen und unterliegt dem chinesischen National Security Law (NSL), das staatlichen Zugriff auf Daten ermöglichen kann. Das BSI hat im Februar 2025 explizit vor der Nutzung chinesischer KI-Cloud-Dienste gewarnt (BSI-Referenz: Warnung DeepSeek, 04.02.2025); diese Risikoeinschätzung gilt analog für alle chinesischen Cloud-KI-Anbieter, die Nutzerdaten auf chinesischen Servern verarbeiten.",
     "model_family": "Qwen",
     "primary_focus": "agentic",
-    "summary": "Qwen 3.7 Max ist das Flagship-Modell der Qwen 3.7-Serie von Alibaba Cloud – ausgelegt auf agentische Workloads mit Stärken in Coding, Produktivitätsaufgaben und langfristiger autonomer Ausführung. Das Modell ist ausschließlich über Cloud-API verfügbar (keine Open Weights). Chinesische Herkunft und das nationale Sicherheitsgesetz (NSL) sind bei der Einschätzung des Datenrisikos zu berücksichtigen.",
+    "summary": "Qwen 3.7 Max ist das proprietäre Flagship-Modell der Qwen-3.7-Serie von Alibaba Cloud und auf agentische Workloads mit Stärken in Coding, Produktivitätsaufgaben und langfristiger autonomer Ausführung ausgelegt. Das Modell bietet ein 1M-Token-Kontextfenster, unterstützt Prompt Caching und wird über Cloud-API bereitgestellt. Chinesische Herkunft und das nationale Sicherheitsgesetz (NSL) sind bei der Einschätzung des Datenrisikos zu berücksichtigen.",
     "strengths": [
       "Exzellente Leistung bei agentischen Coding-Aufgaben und Tool-Use",
       "Optimiert für lange, autonome Task-Chains (long-horizon execution)",
@@ -3968,38 +4021,87 @@
     ],
     "known_limitations": [
       "Ausschließlich über Cloud-API verfügbar, kein lokaler Betrieb möglich",
-      "Keine Open Weights – vollständige Abhängigkeit von Alibaba-Infrastruktur",
+      "Keine Open Weights, vollständige Abhängigkeit von Alibaba-Infrastruktur",
       "Chinesische Herkunft birgt potenzielle Zensur bei politisch sensiblen Themen mit China-Bezug",
-      "Ausschließlich über Cloud-API verfügbar, kein lokaler Betrieb möglich (Free-Tier via OpenRouter)"
+      "OpenRouter-Tool-Use und Thinking-Verhalten können provider- oder routingabhängig variieren"
     ],
     "architecture_tags": [
       "Agentic",
-      "General"
+      "Thinking-Optional",
+      "Prompt-Caching",
+      "Long-Context"
     ],
     "unknown": false,
-    "generated_at": "2026-05-21T00:00:00.000000+00:00",
+    "generated_at": "2026-06-01T00:00:00.000000+00:00",
     "card_status": "complete",
     "size_class": "Frontier",
-    "thinking_probe_detected": false,
-    "thinking_probe_evidence": "Kein Thinking-Modus laut Modellbeschreibung – reines Text-I/O-Modell ohne CoT-Ausgabe",
-    "thinking_probe_confidence": "low",
-    "thinking_probe_at": "2026-05-21T00:00:00.000000+00:00",
+    "thinking_probe_detected": true,
+    "thinking_probe_evidence": "Qwen 3.7 Max wird in Modellbeschreibungen als agentisches Reasoning-Modell mit Extended-Thinking-Charakter eingeordnet; Qwen-3-Familie unterstützt zudem Thinking- und Non-Thinking-Modi.",
+    "thinking_probe_confidence": "medium",
+    "thinking_probe_at": "2026-06-01T00:00:00.000000+00:00",
     "supports_tool_use": true,
     "license": "Proprietary",
-    "license_url": "https://openrouter.ai/qwen/qwen3.7-max:free",
+    "license_url": "https://openrouter.ai/qwen/qwen3.7-max",
     "commercial_use_allowed": true,
     "vendor": "Alibaba",
     "weights_license_tier": "proprietary",
     "model_version": "3.7-max",
     "context_window": 1000000,
     "max_output_tokens": 65536,
-    "input_price_per_1m": 0.0,
-    "output_price_per_1m": 0.0,
+    "input_price_per_1m": 1.25,
+    "output_price_per_1m": 3.75,
     "use_case_primary": "agentic",
-    "parameter_architecture": "moe",
+    "parameter_architecture": "unknown",
     "params_total_b": null,
-    "context_window_k": null,
+    "context_window_k": 1000,
     "knowledge_cutoff": null
+  },
+  {
+    "model_id": "test",
+    "display_name": "TODO",
+    "developer": "TODO",
+    "origin_country": "TODO",
+    "developer_jurisdiction": "TODO",
+    "deployment_type": "TODO",
+    "local_deployment_possible": null,
+    "weights_provenance_risk": "TODO",
+    "weights_provenance_risk_rationale": "TODO",
+    "model_family": "TODO",
+    "vendor": "TODO",
+    "primary_focus": "TODO",
+    "use_case_primary": "generalist",
+    "parameter_architecture": "dense",
+    "params_total_b": null,
+    "params_active_b": null,
+    "context_window_k": null,
+    "knowledge_cutoff": null,
+    "summary": "TODO",
+    "strengths": [
+      "TODO"
+    ],
+    "known_limitations": [
+      "TODO"
+    ],
+    "judge_context_hint": "TODO",
+    "architecture_tags": [
+      "General"
+    ],
+    "supports_tool_use": null,
+    "license": "TODO",
+    "license_url": null,
+    "commercial_use_allowed": null,
+    "weights_license_tier": "TODO",
+    "model_version": null,
+    "input_price_per_1m": null,
+    "output_price_per_1m": null,
+    "unknown": false,
+    "card_status": "draft",
+    "size_class": "Frontier",
+    "generated_at": "2026-06-02T07:49:05.406073+00:00",
+    "thinking_probe_detected": null,
+    "thinking_probe_evidence": null,
+    "thinking_probe_confidence": null,
+    "thinking_probe_at": null
   },
   {
     "model_id": "z-ai/glm-4.6",
@@ -4049,7 +4151,7 @@
     "parameter_architecture": "dense",
     "params_total_b": null,
     "context_window_k": 128,
-    "knowledge_cutoff": null
+    "knowledge_cutoff": "2025-06"
   },
   {
     "model_id": "z-ai/glm-4.7",
@@ -4099,7 +4201,7 @@
     "parameter_architecture": "dense",
     "params_total_b": null,
     "context_window_k": 128,
-    "knowledge_cutoff": null
+    "knowledge_cutoff": "2025-12"
   },
   {
     "model_id": "z-ai/glm-5-20260211",
@@ -4148,8 +4250,8 @@
     "use_case_primary": "generalist",
     "parameter_architecture": "dense",
     "params_total_b": null,
-    "context_window_k": null,
-    "knowledge_cutoff": null
+    "context_window_k": 128,
+    "knowledge_cutoff": "2025-12"
   },
   {
     "model_id": "z-ai/glm-5-turbo-20260315",
@@ -4199,8 +4301,8 @@
     "use_case_primary": "generalist",
     "parameter_architecture": "dense",
     "params_total_b": null,
-    "context_window_k": null,
-    "knowledge_cutoff": null
+    "context_window_k": 128,
+    "knowledge_cutoff": "2025-12"
   },
   {
     "model_id": "z-ai/glm-5.1-20260406",
@@ -4249,7 +4351,7 @@
     "use_case_primary": "generalist",
     "parameter_architecture": "dense",
     "params_total_b": null,
-    "context_window_k": null,
-    "knowledge_cutoff": null
+    "context_window_k": 128,
+    "knowledge_cutoff": "2025-12"
   }
 ]

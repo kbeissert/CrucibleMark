@@ -40,11 +40,11 @@
   "vendor": "OpenAI",
   "weights_license_tier": "proprietary",
   "model_version": "5.0",
-  "input_price_per_1m": 0.125,
-  "output_price_per_1m": 1.0,
+  "input_price_per_1m": 0.25,
+  "output_price_per_1m": 2.0,
   "use_case_primary": "generalist",
   "parameter_architecture": "dense",
   "params_total_b": null,
-  "context_window_k": 128,
+  "context_window_k": 200,
   "knowledge_cutoff": "2025-03"
 }

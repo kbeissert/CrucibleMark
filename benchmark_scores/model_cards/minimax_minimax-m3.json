@@ -32,7 +32,7 @@
   "generated_at": "2026-06-01T00:00:00.000000+00:00",
   "card_status": "complete",
   "size_class": "Frontier",
-  "thinking_probe_detected": false,
+  "thinking_probe_detected": true,
   "thinking_probe_evidence": "Manual override: MiniMax M3 wird als reasoning-faehiges Chat-Modell ohne explizite Thinking-Tag-Ausgabe gefuehrt.",
   "thinking_probe_confidence": "high",
   "thinking_probe_manual_override": true,

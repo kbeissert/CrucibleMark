@@ -45,6 +45,6 @@
   "use_case_primary": "generalist",
   "parameter_architecture": "dense",
   "params_total_b": null,
-  "context_window_k": 200,
+  "context_window_k": 1000,
   "knowledge_cutoff": "2025-01"
 }
