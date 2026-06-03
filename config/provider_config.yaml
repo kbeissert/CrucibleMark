@@ -229,6 +229,9 @@ providers:
       - id: qwen/qwen3.6-plus
         name: Qwen 3.6 Plus via OpenRouter
         model_type: proprietary_api
+      - id: qwen/qwen3.5-397b-a17b
+        name: Qwen 3.5 (397B) via OpenRouter
+        model_type: proprietary_api
 
     ollama_cloud:
       name: Ollama (Cloud Proxies)
@@ -262,7 +265,7 @@ providers:
       name: Ollama (Local)
       short_code: LCL
       api_type: ollama
-      enabled: true
+      enabled: false
       auto_discover: true
       models_filter: local
 
@@ -311,7 +314,43 @@ providers:
         name: Gemma 4 E4B (GGUF)
         model_file: gemma-4-E4B.gguf
         n_gpu_layers: 99
+      - id: hermes-3-8b
+        name: Hermes 3 Llama 3.1 8B Q6_K_L (GGUF)
+        model_file: Hermes-3-Llama-3.1-8B-Q6_K_L.gguf
+        n_gpu_layers: 99
       - id: hermes-4-14b-abliterated
         name: Hermes 4 14B BF16 Abliterated (GGUF)
         model_file: hermes-4-14b-bf16-abliterated-q6_k.gguf
+        n_gpu_layers: 99
+      - id: hermes-4-14b-q4
+        name: Hermes 4 14B Q4_K_M (GGUF)
+        model_file: hermes-4-14b-q4_k_m.gguf
+        n_gpu_layers: 99
+      - id: qwen2.5-coder-7b
+        name: Qwen 2.5 Coder 7B Instruct Q6_K (GGUF)
+        model_file: qwen2.5-coder-7b-instruct-q6_k.gguf
+        n_gpu_layers: 99
+      - id: qwen3-4b
+        name: Qwen 3 4B Q6_K (GGUF)
+        model_file: Qwen3-4B-Q6_K.gguf
+        n_gpu_layers: 99
+      - id: qwen3-14b
+        name: Qwen 3 14B Q6_K (GGUF)
+        model_file: Qwen3-14B-Q6_K.gguf
+        n_gpu_layers: 99
+      - id: qwen3.5-4b-q4
+        name: Qwen 3.5 4B Q4_K_XL (GGUF)
+        model_file: Qwen3.5-4B-UD-Q4_K_XL.gguf
+        n_gpu_layers: 99
+      - id: qwen3.5-4b-q6
+        name: Qwen 3.5 4B Q6_K_XL (GGUF)
+        model_file: Qwen3.5-4B-UD-Q6_K_XL.gguf
+        n_gpu_layers: 99
+      - id: qwen3.5-4b-q8
+        name: Qwen 3.5 4B Q8_K_XL (GGUF)
+        model_file: Qwen3.5-4B-UD-Q8_K_XL.gguf
+        n_gpu_layers: 99
+      - id: qwen3.5-9b
+        name: Qwen 3.5 9B Q6_K_XL (GGUF)
+        model_file: Qwen3.5-9B-UD-Q6_K_XL.gguf
         n_gpu_layers: 99
