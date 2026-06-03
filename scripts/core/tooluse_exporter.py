@@ -218,14 +218,19 @@ class ToolUseExporter:
             logger.debug("Metrics logging failed (non-critical)", exc_info=True)
 
         # Model Card Update: Tooluse-Ergebnisse zurückschreiben
-        # supports_tool_use = True wenn der mittlere P1-Score > 0 ist
-        # (d.h. das Modell hat mindestens in einem Asset einen Tool-Call gemacht).
-        card_supports_tool_use = bool(p1_scores and (sum(p1_scores) / len(p1_scores)) > 0)
+        # Tri-State-Semantik:
+        #   True       — mittlerer P1-Score > 0 (Modell kann Tool-Calls)
+        #   False      — mittlerer P1-Score == 0 (kein Tool-Call erfolgreich)
+        #   "untested" — keine p1_scores vorhanden (kein Asset gelaufen)
+        if not p1_scores:
+            card_supports_tool_use = "untested"
+        else:
+            card_supports_tool_use = (sum(p1_scores) / len(p1_scores)) > 0
         try:
             update_model_card_tooluse_fields(
                 model_id=model_id,
                 supports_tool_use=card_supports_tool_use,
-                tested_at=timestamp,
+                tested_at=timestamp if card_supports_tool_use != "untested" else None,
             )
         except Exception:  # noqa: BLE001 — Card-Update darf den Benchmark nie crashen
             logger.debug("Model Card tooluse update failed (non-critical)", exc_info=True)

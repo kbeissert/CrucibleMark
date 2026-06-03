@@ -1,16 +1,21 @@
 # PROJECT_STATUS.md
 
-**Last Updated:** 2026-05-31
-**Current Version:** 4.2.0 — OpenRouter-Migration, Free-Tier-Support, Qwen-Integration & Pipeline-Bug-Fixes
+**Last Updated:** 2026-06-03
+**Current Version:** 4.2.1 — ToolUse-Backlog-Rearm, Provider-Preflight-Fix & Benchmark-Auto-Stabilisierung
 **Status:** ✅ Production-Ready
 
 ---
 
 ## Executive Summary
 
-CrucibleMark v4.2.0 schließt die Migration von Ollama-Cloud-Proxy-Modellen auf nativen OpenRouter-Support ab und fügt zwei neue kostenpflichtige Qwen-Modelle (Alibaba Cloud) hinzu. Kernfix: Der `data_collection: allow`-Override in `openrouter.py` behebt den HTTP-404-Fehler bei allen Alibaba-Cloud-Endpoints via OpenRouter. Free-Tier-Modelle mit `:free`-Suffix bekommen automatisch ein konservativeres Rate-Limit-Profil.
+CrucibleMark v4.2.1 schließt die ToolUse-Backlog-Schleife für leere Tool-Use-Spalten im Leaderboard: Modelle mit Strich werden wieder als `untested` in die Model-Card-SSOT zurückgesetzt, `benchmark_auto` nimmt sie erneut in den Pre-Step auf und die Provider-Preflight-Logik fällt bei Legacy-Cards ohne `provider` nicht mehr auf `missing_provider` zurück. Stattdessen wird der Provider aus der Model ID inferiert, sodass der eigentliche Erreichbarkeitszustand sichtbar wird.
 
-**Key Achievements (v4.2.0):**
+**Key Achievements (v4.2.1):**
+- ✅ **ToolUse-Backlog reaktiviert** — Modelle mit Tool-Use-Strich werden aus der Leaderboard-Analyse auf `supports_tool_use="untested"` zurückgesetzt und von `benchmark_auto` wieder im Pre-Step verarbeitet.
+- ✅ **Provider-Preflight-Fix** — `validate_untested_card()` inferiert den Provider aus `model_id`, wenn ältere Model Cards keinen `provider`-Key tragen.
+- ✅ **Benchmark-Auto stabilisiert** — Legacy-Cards scheitern nicht mehr an `missing_provider`, sondern liefern den tatsächlichen Erreichbarkeitsgrund wie `ollama_model_not_installed`.
+
+**Vorherige Version (v4.2.0 — OpenRouter-Migration, Free-Tier-Support, Qwen-Integration & Pipeline-Bug-Fixes):**
 - ✅ **OpenRouter-Migration** — 3 Modelle von Ollama-Cloud-Proxy auf OpenRouter umgestellt: `google/gemma-4-31b-it`, `deepseek/deepseek-chat-v3.1`, `deepseek/deepseek-v3.2`. Model Cards umbenannt, alle 5 Benchmark-CSVs migriert.
 - ✅ **Qwen-Integration** — `qwen/qwen3.7-max` und `qwen/qwen3.6-plus` via OpenRouter. Model Cards vollständig angelegt inkl. Pricing und Thinking-Probe-Status.
 - ✅ **`data_collection: allow`-Fix** — Alle Alibaba-Cloud-Endpoints antworten jetzt via OpenRouter ohne 404. `extra_body`-Override in `openrouter.py`.
@@ -19,7 +24,7 @@ CrucibleMark v4.2.0 schließt die Migration von Ollama-Cloud-Proxy-Modellen auf 
 - ✅ **`make review` FLAGS** — `AUTO=1` und `FORCE=1` werden jetzt korrekt an `generate_review.py` weitergegeben.
 - ✅ **ToolUse-Exporter nach Delegate-Einzellauf** — `run_tooluse_benchmark.py`: Exporter-Aufruf nach `_run_model()` eingefügt; `tooluse_leaderboard.csv` wird nach jedem `make benchmark-auto`-Run korrekt aktualisiert.
 - ✅ **Asset-Level-De-Duplikation im Exporter** — `tooluse_exporter.py`: `best_rows`-Dict auf `(model_id, asset_id)` verhindert Score-Halbierung bei Cross-CSV-Doppeleinträgen.
-- ✅ **Dead-Code Boundary-Filter entfernt** — `data_loader.py`: Wirkungslose `"Open Weights (Cloud/Local)"`-Filter seit `get_model_category()`-SSOT-Migration entfernt.
+- ✅ **Dead-Code Boundary-Filter entfernt** — `data_loader.py`: Wirkungslose "Open Weights (Cloud/Local)"-Filter seit `get_model_category()`-SSOT-Migration entfernt.
 
 **Vorherige Version (v4.1.0 — llamacpp Expansion & Bug Fixes):**
 - ✅ **Double-Start-Bug** — `_query_active_model()` in `llamacpp.py`: Server-Modell per API erkennen statt In-Process-State.

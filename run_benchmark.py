@@ -32,6 +32,7 @@ from utils.benchmark_utils import select_from_list
 from utils.similarity import SemanticSimilarity
 from utils.config_validator import ConfigValidator
 from utils.module_registry import load_module_config, get_active_modules
+from scripts.core.runner_contract import write_run_summary
 
 # Configure logging
 logging.basicConfig(
@@ -505,6 +506,11 @@ Beispiele:
         dest="audit_mode",
         help="Deaktiviert den Audit-Modus (kein Prompt/Response/Judge-Log). Standard: Audit ist aktiv.",
     )
+    parser.add_argument(
+        "--summary-json",
+        type=str,
+        help="Optionaler Pfad für strukturiertes Run-Summary JSON (Orchestrator-Rückkanal).",
+    )
 
     args = parser.parse_args()
 
@@ -526,10 +532,46 @@ Beispiele:
             audit_mode=args.audit_mode,
         )
         runner.run(config)
+        write_run_summary(
+            args.summary_json,
+            {
+                "runner": "standard_benchmark",
+                "status": "success",
+                "mode": "all" if args.all else "single",
+                "module": args.module,
+                "provider": args.provider,
+                "model": args.model,
+                "force": bool(args.force),
+                "audit_mode": bool(args.audit_mode),
+            },
+        )
     except KeyboardInterrupt:
+        write_run_summary(
+            args.summary_json,
+            {
+                "runner": "standard_benchmark",
+                "status": "aborted",
+                "mode": "all" if args.all else "single",
+                "module": args.module,
+                "provider": args.provider,
+                "model": args.model,
+            },
+        )
         print("\n\n❌ Benchmark abgebrochen")
         sys.exit(1)
     except Exception as e:  # pylint: disable=broad-exception-caught
+        write_run_summary(
+            args.summary_json,
+            {
+                "runner": "standard_benchmark",
+                "status": "failed",
+                "mode": "all" if args.all else "single",
+                "module": args.module,
+                "provider": args.provider,
+                "model": args.model,
+                "error": str(e),
+            },
+        )
         logger.exception("Unerwarteter Fehler: %s", e)
         sys.exit(1)
 

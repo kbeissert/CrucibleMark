@@ -854,10 +854,32 @@ def _read_max_output_tokens_from_card(model_id: str) -> int | None:
     return None
 
 
+SUPPORT_TOOL_USE_UNTESTED = "untested"
+_SUPPORT_TOOL_USE_VALUES = (True, False, SUPPORT_TOOL_USE_UNTESTED)
+
+
+def normalize_supports_tool_use(value: object) -> bool | str:
+    """Normalisiert ``supports_tool_use`` aus einer Card auf einen der drei
+    kanonischen Zustände.
+
+    Returns:
+        ``True`` wenn das Modell Tool-Use unterstützt, ``False`` wenn nicht,
+        ``"untested"`` wenn kein verifizierter Benchmark-Wert vorliegt.
+        ``None`` und unbekannte Werte werden als ``"untested"`` interpretiert.
+    """
+    if value is True:
+        return True
+    if value is False:
+        return False
+    if isinstance(value, str) and value.strip().lower() == SUPPORT_TOOL_USE_UNTESTED:
+        return SUPPORT_TOOL_USE_UNTESTED
+    return SUPPORT_TOOL_USE_UNTESTED
+
+
 def update_model_card_tooluse_fields(
     model_id: str,
-    supports_tool_use: bool,
-    tested_at: str,
+    supports_tool_use: bool | str,
+    tested_at: str | None,
 ) -> bool:
     """Schreibt Tooluse-Benchmark-Ergebnisse direkt in die Model Card.
 
@@ -865,25 +887,41 @@ def update_model_card_tooluse_fields(
     Benchmark-Run aufgerufen, damit die Card immer den aktuellen verifizierten
     Stand widerspiegelt.
 
-    Felder, die aktualisiert werden:
-    - ``supports_tool_use``: True/False, abgeleitet aus dem mittleren P1-Score
-    - ``tooluse_tested_at``: ISO-8601-Timestamp des letzten Benchmark-Runs
+    Tri-State-Semantik für ``supports_tool_use``:
+    - ``True``         — Tool-Use funktioniert (empirisch verifiziert, mean P1 > 0).
+    - ``False``        — Modell kann keine Tools aufrufen (empirisch verifiziert).
+    - ``"untested"``   — noch kein Tool-Use-Benchmark gelaufen.
+                         ``tested_at`` ist in diesem Fall ``None`` und das Feld
+                         ``tooluse_tested_at`` wird aus der Card entfernt.
 
-    Das Feld ``tooluse_tested_at`` dient als Marker dafür, dass der Wert aus
-    einem tatsächlichen Benchmark-Run stammt (nicht manuell gesetzt wurde).
-    Cards ohne dieses Feld gelten als "noch nicht getestet per Benchmark".
+    Felder, die aktualisiert werden:
+    - ``supports_tool_use``  : True / False / "untested"
+    - ``tooluse_tested_at``  : ISO-8601-Timestamp (oder Feld entfernt)
 
     Returns:
         True wenn die Card erfolgreich aktualisiert wurde, False bei Fehler.
     """
+    if supports_tool_use not in _SUPPORT_TOOL_USE_VALUES:
+        raise ValueError(
+            f"supports_tool_use muss True, False oder {SUPPORT_TOOL_USE_UNTESTED!r} sein, "
+            f"bekommen: {supports_tool_use!r}"
+        )
+
     card_path = _find_card(model_id)
     if not card_path.exists():
         logger.debug("update_model_card_tooluse_fields: Keine Card gefunden für '%s'", model_id)
         return False
     try:
         data = json.loads(card_path.read_text(encoding="utf-8"))
-        data["supports_tool_use"] = supports_tool_use
-        data["tooluse_tested_at"] = tested_at
+        data["supports_tool_use"] = (
+            supports_tool_use
+            if not isinstance(supports_tool_use, str)
+            else SUPPORT_TOOL_USE_UNTESTED
+        )
+        if tested_at is None:
+            data.pop("tooluse_tested_at", None)
+        else:
+            data["tooluse_tested_at"] = tested_at
         card_path.write_text(json.dumps(data, ensure_ascii=False, indent=2), encoding="utf-8")
         logger.debug(
             "Model Card aktualisiert: %s → supports_tool_use=%s, tooluse_tested_at=%s",

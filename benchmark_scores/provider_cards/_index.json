@@ -418,6 +418,34 @@
     "verification_source": "https://openai.com/policies/privacy-policy"
   },
   {
+    "provider_id": "todo",
+    "display_name": "TODO",
+    "company": "unknown",
+    "headquarters": "unknown",
+    "founding_year": 0,
+    "pricing_model": "free",
+    "api_base_url": null,
+    "api_documentation_url": null,
+    "deployment": {
+      "cloud_act_exposure": false,
+      "applicable_law": "Unknown",
+      "data_residency": "Unknown",
+      "gdpr_dpa_available": "unknown",
+      "eu_adequacy_decision": "unknown",
+      "data_retention_days": -1,
+      "chinese_nsl_risk": "none"
+    },
+    "privacy_note": "Unknown provider. Datenschutz- und Deployment-Risiken können ohne verifizierte Anbieterangaben nicht zuverlässig bewertet werden.",
+    "notable_models": [
+      "unknown"
+    ],
+    "stats": {},
+    "unknown": true,
+    "generated_at": "2026-06-03T07:26:45.993365+00:00",
+    "last_verified_at": null,
+    "verification_source": null
+  },
+  {
     "provider_id": "unknown",
     "display_name": "Unknown",
     "company": "Unknown",

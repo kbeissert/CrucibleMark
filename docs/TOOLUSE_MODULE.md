@@ -4,6 +4,34 @@
 > **Voraussetzung:** CrucibleMark MCP Server läuft auf `localhost:8765`
 > **Verfügbare Assets:** 6 (tooluse001–006)
 > **Getestete Modelle (Fleet):** Alle Modelle mit `supports_tool_use: true` in der Model Card
+> **Card-Flag-Semantik:** `true / false / "untested"` (Tri-State) — siehe [Card-Flag-Tri-State](#card-flag-tri-state)
+
+---
+
+## Card-Flag-Tri-State
+
+Das Feld `supports_tool_use` in der Model Card hat drei kanonische Zustände:
+
+| Wert | Bedeutung | Empirisch verifiziert? | `tooluse_tested_at` |
+|---|---|---|---|
+| `true` | Modell kann Tools aufrufen | ✅ ja (mean P1 > 0) | gesetzt |
+| `false` | Modell kann keine Tools aufrufen | ✅ ja (mean P1 == 0) | gesetzt |
+| `"untested"` | Tool-Use-Benchmark noch nicht gelaufen | ❌ nein | entfernt |
+
+**Quellen:**
+
+1. **Manuelle Vorab-Klassifikation** über `scripts/dev/patch_tool_use.py` (einmalig 2026-05)
+2. **Empirische Verifikation** über `scripts/core/tooluse_exporter.py:223` — schreibt nach jedem Tool-Use-Lauf den `mean(p1_scores)`-basierten Wert zurück in die Card
+3. **Migration** über `scripts/dev/migrate_supports_tool_use_tri_state.py` — setzt `null` → `"untested"` für Cards ohne Feld
+
+**Konsumenten der Tri-State-Semantik:**
+
+- `scripts/analysis/generate_review.py:570-589` — überspringt Tool-Use-Reviews mit unterschiedlichen Meldungen für `false` vs. `untested`
+- `scripts/web_export.py:_supports_tool_use_state()` — normalisiert für 11ty-Frontend
+- `scripts/run_tooluse_benchmark.py:152-161` — lädt nur Modelle mit `true` für neue Läufe
+- `benchmark_modules/tooluse/config.yaml:73` (`skip_if_card_false`) — überspringt `false`/`untested` im Auto-Batch
+
+**Helper:** `utils.model_utils.normalize_supports_tool_use()` normalisiert beliebige Werte (inkl. Legacy `null`) auf einen der drei Zustände.
 
 ---
 
@@ -850,6 +878,126 @@ _ASSET_NAMES: Dict[str, str] = {
     "tooluse004": "Neuer Test-Name",   # ← hinzufügen
 }
 ```
+
+---
+
+## Tool-Use-Backlog Auto-Fill via `make benchmark-auto`
+
+`scripts/core/benchmark_auto.py` enthält eine Metaskript-Funktion, die **vor** den regulären Benchmark-Batches (Ollama, llama.cpp, Commercial) prüft, ob Model Cards mit `supports_tool_use="untested"` existieren, und diese automatisch via `scripts/run_tooluse_benchmark.py --models <comma-list>` auffüllt.
+
+### Ablauf
+
+1. `_collect_untested_tooluse_cards()` liest `benchmark_scores/model_cards/*.json` und filtert `supports_tool_use == "untested"` (per `normalize_supports_tool_use()` aus `utils/model_utils.py`).
+2. Bei leerem Backlog: Skip mit Hinweis `🔧 [0/2] TOOL-USE BACKLOG: keine untested Cards — nichts zu tun.`
+3. Sonst: Delegation an `run_tooluse_benchmark.py` mit `--mcp-mode`, optional `--force` / `--silent` durchgereicht.
+4. Nach erfolgreichem Lauf wandert die Card automatisch von `untested` auf `true` oder `false` (Tri-State-Hook in `tooluse_exporter.py`).
+
+### FORCE-Verhalten
+
+`FORCE=1` wirkt durch, betrifft aber **nur** `untested`-Cards. `true`-Cards werden nie ohne expliziten Aufruf von `make benchmark-tooluse-force` neu getestet. Das verhindert versehentliches Re-Testen bekannter Modelle bei großen Auto-Batches.
+
+### Fehlersemantik
+
+- Subprozess-RC ≠ 0 → Warnung, Hauptlauf läuft weiter
+- `KeyboardInterrupt` während Tool-Use-Backlog → Abbruch des gesamten Auto-Batches (kein stilles Weitermachen)
+- Skript `scripts/run_tooluse_benchmark.py` fehlt → Skip mit Warnung
+
+### Verifikation
+
+```bash
+# Vor dem Lauf: Backlog prüfen
+.venv/bin/python -c "from scripts.core.benchmark_auto import _collect_untested_tooluse_cards; print(_collect_untested_tooluse_cards())"
+
+# Auto-Batch mit Auto-Fill
+make benchmark-auto
+
+# Idempotenz: zweiter Lauf soll leeres Backlog melden
+make benchmark-auto
+```
+
+---
+
+## Pre-Flight Card-Validierung
+
+Seit der Tool-Use-Backlog Auto-Fill in `benchmark_auto.py` produktiv läuft, kann das Backlog Modelle enthalten, die **nicht erreichbar** sind — z. B. weil eine `qwen2.5vl:7b`-Card im Repo liegt, Ollama das Modell aber nicht installiert hat, oder weil ein API-Provider-Key in der Shell-Umgebung fehlt. Ein ungefilterter Auto-Fill würde in solchen Fällen den Subprozess `run_tooluse_benchmark.py` starten, der dann mit generischen Fehlern abbricht und das Backlog weiter blockiert.
+
+Die Pre-Flight-Validierung in `utils/provider_health.py` filtert das Backlog **vor** dem Subprozess und erzeugt einen Audit-Report der nicht erreichbaren Modelle.
+
+### Public API
+
+| Funktion | Zweck |
+|---|---|
+| `get_installed_ollama_models(force_refresh=False)` | Liest `ollama list` (mit 5s Timeout) und cached das Ergebnis im `_OllamaModelCache`-Singleton. Subprozess wird nur einmal pro Prozess-Lauf ausgeführt. |
+| `is_ollama_model_installed(model_name)` | Prüft, ob `model_name` in der installierten Ollama-Liste ist. Strippt `ollama/`-Präfix (Provider-Prefix aus Cards), behält `:` für Tags. |
+| `is_api_provider_available(provider)` | Prüft ENV-Var-Existenz für `mistral`/`anthropic`/`openai`/`google`/`xai`/`groq`/`openrouter` (Mapping in `_PROVIDER_ENV_VARS`). |
+| `validate_untested_card(card)` | Gibt `(testable: bool, reason: str \| None)` für eine einzelne Card zurück. Bei testbar: `(True, None)`. Bei nicht testbar z. B. `missing_provider`, `api_key_missing:<ENV_VAR>`, `ollama_model_not_installed:<model_id>`, `llamacpp_path_missing:<path>`, `unknown_provider:<provider>`. |
+| `filter_testable_cards(cards, card_lookup=None)` | Hauptfunktion: nimmt Card-Liste, ruft Ollama-Cache einmalig auf, gibt `(testable, unreachable)` zurück. `unreachable` ist `[(model_id, display_name, reason), ...]`. |
+
+### Ablauf in `_run_untested_tooluse_models()`
+
+1. Backlog laden (`_collect_untested_tooluse_cards()`).
+2. `filter_testable_cards()` aufrufen — **ein** Ollama-List-Call deckt alle Ollama-Cards.
+3. `unreachable`-Liste mit `display_name` und `reason` auf stdout ausgeben (Präfix `⚠️ [Pre-Flight]`).
+4. Report-Datei `outputs/tooluse_unreachable_YYYYMMDD_HHMMSS.json` schreiben (wenn `unreachable` nicht leer ist).
+5. Wenn **alle** Cards unreachable: `return True` ohne Subprozess (Hauptlauf läuft normal weiter, kein Fehler).
+6. Sonst: Subprozess nur mit den testbaren Modellen (`--models <comma-list>`).
+
+### Report-Format (`outputs/tooluse_unreachable_*.json`)
+
+```json
+{
+  "generated_at": "2026-06-03T13:10:00",
+  "summary": {
+    "total_untested": 3,
+    "testable": 1,
+    "unreachable": 2
+  },
+  "unreachable": [
+    {
+      "model_id": "qwen2.5vl:7b",
+      "display_name": "Qwen 2.5 VL 7B",
+      "reason": "ollama_model_not_installed:qwen2.5vl:7b"
+    },
+    {
+      "model_id": "anthropic/claude-sonnet-test",
+      "display_name": "Claude Sonnet Test",
+      "reason": "api_key_missing:ANTHROPIC_API_KEY"
+    }
+  ]
+}
+```
+
+### Caching: `_OllamaModelCache`-Singleton
+
+Frühere Implementierung nutzte `global _OLLAMA_MODEL_CACHE` (Pylint W0603). Aktueller Stand: Singleton-Klasse mit `.value: Optional[Set[str]]`. Vorteile:
+
+- Pylint 10.00/10 (kein `global`-Statement).
+- Klares Reset-Semantik für Tests (`provider_health._OLLAMA_MODEL_CACHE.value = None`).
+- Kein versehentliches Shadowing in Modul-Scope.
+
+### Beispiel-Output im Auto-Batch
+
+```text
+🔧 [1/2] TOOL-USE BACKLOG: 3 untested Cards gefunden
+⚠️ [Pre-Flight] 2/3 nicht erreichbar:
+  - qwen2.5vl:7b → ollama_model_not_installed:qwen2.5vl:7b
+  - claude-sonnet-test → api_key_missing:ANTHROPIC_API_KEY
+✅ [Pre-Flight] 1/3 testbar: gpt-oss-20b
+📄 Unreachable-Report: outputs/tooluse_unreachable_20260603_124511.json
+```
+
+### Tests
+
+`tests/test_provider_health_preflight.py` (29 Tests) deckt alle Public-API-Pfade ab:
+
+- **TestGetInstalledOllamaModels** (5) — Cache-Hit, Cache-Miss, Timeout, leerer Output, JSON-Parse-Fehler
+- **TestIsOllamaModelInstalled** (4) — Prefix-Strip, Tag-Erhalt, Negative, Empty-Cache
+- **TestIsApiProviderAvailable** (4) — pro Provider, ENV-Var-Mapping vollständig
+- **TestValidateUntestedCard** (10) — alle `reason`-Pfade inkl. `monkeypatch.setenv`/`delenv` für State-Isolation
+- **TestFilterTestableCards** (3) — Mixed-Backlog, nur-API, nur-Ollama
+- **TestRunUntestedToolusePreflight** (3) — E2E mit `patch.object(benchmark_auto, \"filter_testable_cards\")`
+
+Pylint 10.00/10 für `utils/provider_health.py` und `scripts/core/benchmark_auto.py`.
 
 ---
 

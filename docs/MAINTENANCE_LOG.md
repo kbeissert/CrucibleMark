@@ -434,3 +434,13 @@ Zwei strukturelle Probleme blockierten die kontinuierliche Evaluierung strikt ze
 
 1. **3-Tier Refusal Loop:** Eine robuste `while True`-Schleife mit progressiven Temperatur-Checks (`0.1`, `0.4`, `0.7`) greift direkt in der Ausführungsschleife (`_run_single_block` in `political_compass/test.py`). Das System bricht Zensurfilter autonom auf.
 2. **Pydantic Deserialize:** Alle `raw_response`-Lesezugriffe in Verify-Skripten nutzen jetzt `json.loads(str)`, um Dict-Konformität vor dem Zugriff auf verschachtelte Variablen (Vanilla/Forced) sicherzustellen.
+
+
+## Tool-Use-Backlog: nicht getestete Modelle
+
+Diese Modelle sind in der Karte mit `supports_tool_use: "untested"` markiert — der Tool-Use-Benchmark wurde für sie noch nicht ausgeführt. Ein Tool-Use-Narrative-Review ist erst möglich, nachdem `make benchmark-tooluse PROVIDER=<...>` gelaufen ist.
+
+| Slug | Display-Name |
+|---|---|
+| `qwen2_5vl_7b` | Qwen 2.5 VL 7B |
+| `test` | TODO |

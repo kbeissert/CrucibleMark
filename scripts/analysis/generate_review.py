@@ -567,13 +567,24 @@ def _run_tooluse_reviews(
             print(f"⏩ {mid}: Kein Eintrag in tooluse_leaderboard.csv — Benchmark zuerst ausführen.")
             continue
 
-        # Guard 2: model card must declare tool support
+        # Guard 2: model card must declare tool support (Tri-State)
+        #   true       → Tool-Use-Review wird generiert
+        #   false      → Modell kann keine Tools — Review übersprungen (gewollt)
+        #   "untested" → noch kein Benchmark gelaufen — Review übersprungen
+        #   null/fehlt → wie "untested" behandelt
         _card = _find_card(mid)
         if _card.exists():
             try:
                 _card_data = json.loads(_card.read_text(encoding="utf-8"))
-                if not _card_data.get("supports_tool_use", False):
+                stu = _card_data.get("supports_tool_use")
+                if stu is False:
                     print(f"⏩ {mid}: supports_tool_use=false in Model Card — überspringe.")
+                    continue
+                if stu is not True:  # None, "untested", oder sonstiger Wert
+                    print(
+                        f"⏩ {mid}: supports_tool_use={stu!r} (nicht getestet) "
+                        f"— Tool-Use-Benchmark zuerst ausführen."
+                    )
                     continue
             except Exception:
                 pass
@@ -641,6 +652,72 @@ def _run_tooluse_reviews(
             lines.insert(1, f"\n> **Erstellt am:** {display_time}\n")
         out_file.write_text("\n".join(lines), encoding="utf-8")
         print(f"✅ Tool-Use-Review gespeichert unter: {out_file.relative_to(ROOT_DIR)}")
+
+
+def _run_per_model_all_reviews(
+    args: argparse.Namespace,
+    client: LLMClient,
+    provider: str,
+    model_id: str,
+    max_tokens: int,
+    csv_data: str,
+) -> None:
+    """Per-Model Iterationsmodus: für jedes Modell benchmark → bias → tooluse,
+    erst dann nächstes Modell. Skip-Logik pro Review-Typ beibehalten.
+
+    Verwendet die bestehenden _run_audit_reviews / _run_tooluse_reviews-Helfer
+    mit einem überschriebenen args.model-Filter (safe_target_model dort).
+    """
+    audit_base_dir = ROOT_DIR / "outputs" / "audit_logs"
+    if not audit_base_dir.exists():
+        print("❌ Keine Audit-Logs gefunden.")
+        return
+
+    slugs = sorted(
+        d.name for d in audit_base_dir.iterdir()
+        if d.is_dir() and d.name != ".DS_Store"
+    )
+    if not slugs:
+        print("⚠️ Keine Modell-Verzeichnisse in outputs/audit_logs/ gefunden.")
+        return
+
+    if args.model:
+        target_safe = normalize_model_id(args.model).replace(":", "_").replace("/", "_")
+        if target_safe in slugs:
+            slugs = [target_safe]
+        else:
+            print(f"⚠️ Modell '{args.model}' (slug: {target_safe}) nicht in outputs/audit_logs/ gefunden.")
+            return
+
+    print(f"📦 {len(slugs)} Modelle gefunden. Iteriere per Modell: Benchmark → PC-Bias → Tool-Use …\n")
+
+    for idx, slug in enumerate(slugs, 1):
+        print(f"\n{'=' * 64}")
+        print(f"📦 MODELL [{idx}/{len(slugs)}]: {slug}")
+        print(f"{'=' * 64}")
+
+        # Unabhängige Namespace-Kopie mit überschriebenem --model,
+        # damit _run_audit_reviews / _run_tooluse_reviews nur diesen Slug
+        # verarbeiten (safe_target_model-Filter).
+        model_args = argparse.Namespace(**vars(args))
+        model_args.model = slug
+
+        print(f"\n── {slug}: Schritt 1/3: Benchmark-Review ──")
+        _run_audit_reviews(
+            model_args, client, provider, model_id, max_tokens, csv_data,
+            effective_type="benchmark",
+        )
+
+        print(f"\n── {slug}: Schritt 2/3: PC-Bias-Review ──")
+        _run_audit_reviews(
+            model_args, client, provider, model_id, max_tokens, "",
+            effective_type="bias",
+        )
+
+        print(f"\n── {slug}: Schritt 3/3: Tool-Use-Review ──")
+        _run_tooluse_reviews(model_args, client, provider, model_id, max_tokens)
+
+    print("\n✅ Per-Model-Reviews abgeschlossen.")
 
 
 def _run_audit_reviews(
@@ -750,10 +827,24 @@ def main() -> None:
     parser.add_argument("--auto", action="store_true", help="Fehlende Cards automatisch generieren")
     parser.add_argument("--force", action="store_true", help="Neugenerierung erzwingen")
     parser.add_argument("--dry-run", action="store_true", help="Nur fehlende Cards anzeigen, nichts generieren")
+    parser.add_argument(
+        "--per-model",
+        action="store_true",
+        help="Nur mit --type all: pro Modell benchmark → bias → tooluse sequenziell, "
+             "erst dann nächstes Modell (Default: batch-by-type).",
+    )
     args = parser.parse_args()
 
     if not args.model and not args.all and args.type not in ("provider", "all"):
         print("❌ Bitte gib ein Modell an (-m <modell>) oder nutze --all für alle Modelle.")
+        sys.exit(1)
+
+    if args.per_model and args.type != "all":
+        print("❌ --per-model ist nur mit --type all erlaubt.")
+        sys.exit(1)
+
+    if args.per_model and not (args.all or args.model):
+        print("❌ --per-model benötigt --all oder --model.")
         sys.exit(1)
 
     print(f"📰 Starte Meta-Reviewer Auswertung ({args.type.upper()}-Modus)...")
@@ -809,6 +900,11 @@ def main() -> None:
         return
 
     if args.type == "all":
+        if args.per_model:
+            _run_per_model_all_reviews(
+                args, client, provider, model_id, review_max_tokens, collect_data()
+            )
+            return
         print("\n── Schritt 1/3: Benchmark-Reviews ──")
         _run_audit_reviews(args, client, provider, model_id, review_max_tokens, collect_data(), effective_type="benchmark")
         print("\n── Schritt 2/3: PC-Bias-Reviews ──")

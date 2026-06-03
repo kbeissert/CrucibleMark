@@ -1,7 +1,7 @@
 .PHONY: \
 	help install install-dev \
 	benchmark political-compass political-compass-safe benchmark-cross-model benchmark-auto benchmark-human \
-	review reviews-auto reviews-bias-auto reviews-tooluse-auto reviews-all reviews-check review-new model-cards model-card provider-cards leaderboard provider-stats \
+	review reviews-auto reviews-auto-legacy reviews-bias-auto reviews-tooluse-auto reviews-all reviews-check review-new model-cards model-card provider-cards leaderboard provider-stats \
 	validate validate-single validate-assets validate-structure validate-cards test diff-results analyze-costs update-prices sync-cost-limits \
 	list-models judge-health list-modules \
 	probe-thinking probe-all-thinking \
@@ -27,7 +27,8 @@ help:
 	@echo ""
 	@echo "=== Benchmarking ==="
 	@echo "  make benchmark            Standard Benchmark (Flags: SILENT, FORCE, MODEL, MODULE)"
-	@echo "  make benchmark-auto       Auto-Fill Benchmark (Flags: SILENT, FORCE)"
+	@echo "  make benchmark-auto       Auto-Fill Benchmark (Flags: SILENT, FORCE, MCP_MODE)"
+	@echo "                            Pre-Step [0/2]: füllt Tool-Use-Backlog (untested Cards) automatisch auf."
 	@echo "  make benchmark-cross-model Module vs ALL LLMs (Flags: FORCE, MODULE)"
 	@echo ""
 	@echo "=== Tool Use ==="
@@ -45,7 +46,8 @@ help:
 	@echo "  make leaderboard          Generate Leaderboard CSV"
 	@echo "  make review               Generate Review (Flags: MODEL=name, ALL=1, TYPE=bias)"
 	@echo "  make reviews-all          Alle Review-Typen fuer alle Modelle (Benchmark + PC-Bias + Tooluse)"
-	@echo "  make reviews-auto         Benchmark-Reviews fuer alle Modelle (fehlende Model Cards werden auto-erzeugt)"
+	@echo "  make reviews-auto         ALLE Review-Typen (Benchmark + PC-Bias + Tool-Use) pro Modell"
+	@echo "                            (Flags: FORCE=1). Legacy-Modus: make reviews-auto-legacy"
 	@echo "  make reviews-bias-auto    PC-Bias-Reviews fuer alle Modelle mit Bias-Report"
 	@echo "  make reviews-tooluse-auto Tool-Use-Reviews fuer alle Modelle mit supports_tool_use=true"
 	@echo "  make reviews-check        Zeigt fehlende Cards (kein Review, kein Schreiben)"
@@ -86,12 +88,12 @@ help:
 
 benchmark:
 	@echo "Starting Benchmark ($(if $(SILENT),Silent Mode,Standard Audit Mode))..."
-	$(PYTHON) run_benchmark.py $(if $(SILENT),--silent,) $(if $(MODEL),--model "$(MODEL)") $(if $(MODULE),--module "$(MODULE)") $(if $(FORCE),--force)
+	$(PYTHON) scripts/run_score_benchmark.py $(if $(SILENT),--silent,) $(if $(MODEL),--model "$(MODEL)") $(if $(MODULE),--modules "$(MODULE)") $(if $(FORCE),--force)
 	@$(MAKE) leaderboard
 
 political-compass:
 	@echo "Starting standalone Political Compass benchmark (Audit Logs ON)..."
-	$(PYTHON) run_benchmark.py --module political_compass $(if $(MODEL),--model "$(MODEL)") $(if $(FORCE),--force)
+	$(PYTHON) scripts/run_political_compass_benchmark.py $(if $(MODEL),--model "$(MODEL)") $(if $(FORCE),--force)
 	@$(MAKE) leaderboard
 
 political-compass-safe:
@@ -161,7 +163,12 @@ review:
 
 
 reviews-auto:
-	@echo "Generiere Reviews fuer alle Modelle (fehlende Cards werden automatisch erstellt)..."
+	@echo "Generiere ALLE Review-Typen (Benchmark + PC-Bias + Tool-Use) pro Modell..."
+	@echo "  Reihenfolge: pro Modell benchmark -> bias -> tooluse, dann naechstes Modell."
+	$(PYTHON) scripts/analysis/generate_review.py --all --auto --type all --per-model $(if $(FORCE),--force)
+
+reviews-auto-legacy:
+	@echo "Generiere nur Benchmark-Reviews fuer alle Modelle (Legacy-Verhalten)..."
 	$(PYTHON) scripts/analysis/generate_review.py --all --auto $(if $(FORCE),--force)
 
 reviews-bias-auto:

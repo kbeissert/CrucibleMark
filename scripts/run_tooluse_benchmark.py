@@ -28,6 +28,7 @@ if str(_ROOT) not in sys.path:
     sys.path.insert(0, str(_ROOT))
 
 from scripts.core.tooluse_exporter import ToolUseExporter
+from scripts.core.runner_contract import write_run_summary
 from utils.config_validator import ConfigValidator
 
 CARD_DIR = _ROOT / "benchmark_scores" / "model_cards"
@@ -286,7 +287,7 @@ def _run_batch(
     silent: bool,
     mcp_mode: str,
     restart_mcp: bool = True,
-) -> None:
+) -> dict[str, Any]:
     restart_note = "MCP-Neustart pro Modell" if restart_mcp else "kein MCP-Neustart"
     print(_SEP)
     print("  Tool Use Benchmark — Batch Run")
@@ -337,6 +338,7 @@ def _run_batch(
     print()
 
     # Leaderboard automatisch aktualisieren
+    leaderboard_updated = False
     try:
         config = ConfigValidator().config
         exporter = ToolUseExporter(config)
@@ -344,10 +346,19 @@ def _run_batch(
         if written > 0:
             exporter.calculate_sovereignty_gap()
             print(f"  Leaderboard aktualisiert: {written} Modell(e) → tooluse_leaderboard.csv")
+            leaderboard_updated = True
         else:
             print("  Leaderboard: keine tooluse-Ergebnisse in Benchmark-CSVs gefunden.")
     except Exception as exc:  # noqa: BLE001 — leaderboard update must not crash CLI
         print(f"  [WARN] Leaderboard-Update fehlgeschlagen: {exc}")  # noqa: T201
+
+    return {
+        "models_total": len(models),
+        "models_successful": len(success),
+        "models_failed": len(failed),
+        "failed_model_ids": failed,
+        "leaderboard_updated": leaderboard_updated,
+    }
 
 
 # ---------------------------------------------------------------------------
@@ -457,6 +468,11 @@ def main() -> None:
         dest="restart_mcp",
         help="MCP-Neustart zwischen Modellen deaktivieren (schneller, aber weniger fair)",
     )
+    parser.add_argument(
+        "--summary-json",
+        type=str,
+        help="Optionaler Pfad für strukturiertes Run-Summary JSON (Orchestrator-Rückkanal).",
+    )
     args = parser.parse_args()
 
     # MCP Server starten (falls nicht bereits aktiv) + Cleanup bei Abbruch sicherstellen
@@ -475,6 +491,18 @@ def main() -> None:
                     print(f"  Leaderboard aktualisiert: {written} Modell(e) → tooluse_leaderboard.csv")
             except Exception as exc:  # noqa: BLE001
                 print(f"  [WARN] Leaderboard-Update fehlgeschlagen: {exc}")
+            write_run_summary(
+                args.summary_json,
+                {
+                    "runner": "tooluse",
+                    "status": "success" if ok else "failed",
+                    "mode": "single",
+                    "models_total": 1,
+                    "models_successful": 1 if ok else 0,
+                    "models_failed": 0 if ok else 1,
+                    "failed_model_ids": [] if ok else [args.model],
+                },
+            )
             sys.exit(0 if ok else 1)
 
         elif args.models:
@@ -482,23 +510,69 @@ def main() -> None:
             all_models = get_tool_use_models("all")
             models = [(mid, dname) for mid, dname in all_models if mid in wanted_ids]
             if not models:
+                write_run_summary(
+                    args.summary_json,
+                    {
+                        "runner": "tooluse",
+                        "status": "failed",
+                        "mode": "models",
+                        "models_total": 0,
+                        "models_successful": 0,
+                        "models_failed": 0,
+                        "failed_model_ids": [],
+                        "message": f"Keine Modelle gefunden aus: {args.models}",
+                    },
+                )
                 print(f"Keine Modelle gefunden aus: {args.models}")
                 sys.exit(1)
-            _run_batch(
+            batch_summary = _run_batch(
                 models, "custom",
                 force=args.force, silent=args.silent,
                 mcp_mode=args.mcp_mode, restart_mcp=args.restart_mcp,
+            )
+            status = "success" if batch_summary["models_failed"] == 0 else "partial"
+            write_run_summary(
+                args.summary_json,
+                {
+                    "runner": "tooluse",
+                    "status": status,
+                    "mode": "models",
+                    **batch_summary,
+                },
             )
 
         elif args.all or args.provider != "all":
             models = get_tool_use_models(args.provider)
             if not models:
+                write_run_summary(
+                    args.summary_json,
+                    {
+                        "runner": "tooluse",
+                        "status": "success",
+                        "mode": "all" if args.all else "provider",
+                        "models_total": 0,
+                        "models_successful": 0,
+                        "models_failed": 0,
+                        "failed_model_ids": [],
+                        "message": f"Keine Modelle gefunden (provider: {args.provider})",
+                    },
+                )
                 print(f"Keine Modelle gefunden (supports_tool_use: true, provider: {args.provider})")
                 sys.exit(0)
-            _run_batch(
+            batch_summary = _run_batch(
                 models, args.provider,
                 force=args.force, silent=args.silent,
                 mcp_mode=args.mcp_mode, restart_mcp=args.restart_mcp,
+            )
+            status = "success" if batch_summary["models_failed"] == 0 else "partial"
+            write_run_summary(
+                args.summary_json,
+                {
+                    "runner": "tooluse",
+                    "status": status,
+                    "mode": "all" if args.all else "provider",
+                    **batch_summary,
+                },
             )
 
         else:
@@ -506,8 +580,24 @@ def main() -> None:
                 force=args.force, silent=args.silent,
                 mcp_mode=args.mcp_mode, restart_mcp=args.restart_mcp,
             )
+            write_run_summary(
+                args.summary_json,
+                {
+                    "runner": "tooluse",
+                    "status": "success",
+                    "mode": "wizard",
+                },
+            )
 
     except KeyboardInterrupt:
+        write_run_summary(
+            args.summary_json,
+            {
+                "runner": "tooluse",
+                "status": "aborted",
+                "mode": "unknown",
+            },
+        )
         print("\n\n  Benchmark abgebrochen (Ctrl+C). MCP Server wird beendet...")
         _stop_mcp_if_managed()
         sys.exit(130)

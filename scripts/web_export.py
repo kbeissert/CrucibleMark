@@ -594,7 +594,6 @@ def _build_leaderboard_entry(
             "local_deployment_possible": card.get("local_deployment_possible"),
             "weights_provenance_risk": card.get("weights_provenance_risk"),
             "architecture_tags": card.get("architecture_tags"),
-            "supports_tool_use": card.get("supports_tool_use"),
             "thinking_probe_detected": card.get("thinking_probe_detected"),
             "thinking_probe_confidence": card.get("thinking_probe_confidence"),
             "model_family": card.get("model_family"),
@@ -619,6 +618,16 @@ def _build_leaderboard_entry(
             "thinking_probe_evidence": card.get("thinking_probe_evidence"),
             "thinking_probe_manual_override": card.get("thinking_probe_manual_override"),
             "thinking_probe_at": card.get("thinking_probe_at"),
+            "supports_tool_use": card.get("supports_tool_use"),
+            # Tri-State-Semantik für 11ty-Frontend:
+            #   "true"      — Tool-Use funktioniert (empirisch verifiziert)
+            #   "false"     — Modell kann keine Tools (empirisch verifiziert)
+            #   "untested"  — noch kein Tool-Use-Benchmark gelaufen
+            "supports_tool_use_state": (
+                _supports_tool_use_state(card.get("supports_tool_use"))
+                if card is not None
+                else "untested"
+            ),
         } if card else None,
     }
 
@@ -721,6 +730,23 @@ def _build_compass_entry(
     }
 
 
+
+
+
+def _supports_tool_use_state(value: object) -> str:
+    """Tri-State-Normalisierung für den Web-Export.
+
+    Returns:
+        Einer der Strings ``"true"``, ``"false"``, ``"untested"``.
+        ``None`` und unbekannte Werte werden zu ``"untested"``.
+    """
+    if value is True:
+        return "true"
+    if value is False:
+        return "false"
+    if isinstance(value, str) and value.strip().lower() == "untested":
+        return "untested"
+    return "untested"
 def _read_latest_tooluse_narrative(review_dir: Path) -> str | None:
     """Return content of the most recently modified tooluse_narrative_review_*.md."""
     if not review_dir.exists():
