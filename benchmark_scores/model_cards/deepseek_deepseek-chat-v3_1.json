@@ -1,6 +1,6 @@
 {
   "model_id": "deepseek/deepseek-chat-v3.1",
-  "display_name": "DeepSeek V3.1 671B",
+  "display_name": "DeepSeek V3.1-671B",
   "developer": "DeepSeek",
   "origin_country": "China",
   "developer_jurisdiction": "CN",
@@ -41,8 +41,8 @@
   "vendor": "DeepSeek",
   "weights_license_tier": "open-weights",
   "model_version": "v3.1",
-  "input_price_per_1m": 0.15,
-  "output_price_per_1m": 0.75,
+  "input_price_per_1m": 0.21,
+  "output_price_per_1m": 0.79,
   "use_case_primary": "generalist",
   "parameter_architecture": "moe",
   "params_total_b": 671.0,

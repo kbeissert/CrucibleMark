@@ -361,12 +361,32 @@ class BaseBenchmarkRunner:
         from utils.model_utils import get_model_version
         from utils.scoring.political_compass_handler import PoliticalCompassHandler
 
+        # SSoT für Batch-Module: Skip-Logik ausschließlich über das modul-spezifische
+        # Leaderboard (z.B. political_compass_leaderboard.csv), NICHT über die 3-CSVs.
+        #
+        # Hintergrund: Der vorherige Cache-Hit auf `existing_benchmarks` hat
+        # `(model, batch_asset_id)` aus cloud/local/commercial_models_benchmark.csv
+        # verwendet. Dieser Eintrag wird zwar vom UnifiedBenchmarkRunner.save_results()
+        # geschrieben, ABER die PC-spezifische `save_leaderboard_csv()` wird nur
+        # in `PoliticalCompassHandler.handle_results()` aufgerufen — und die wurde
+        # durch den early-return hier umgangen. Folge: PC-Daten in pc_results.csv
+        # vorhanden, aber kein Leaderboard-Eintrag → "Pending" im Hauptboard.
+        #
+        # Der Fallback-Check unten prüft das autarke PC-Leaderboard und ist die
+        # einzige verlässliche Quelle der Wahrheit für Batch-Module.
         batch_asset_id = str(benchmark_info.get("id", "batch_module"))
         if existing_benchmarks and not force:
             cached_res = existing_benchmarks.get((model, batch_asset_id))
-            if cached_res:
+            if cached_res and not PoliticalCompassHandler.is_political_compass(benchmark_info):
+                # Standardpfad für nicht-PC-Batch-Module: 3-CSV-Cache reicht als Beweis.
                 print(f"⏩ Überspringe {benchmark_info.get('name', '')} (Batch-Modus; Bereits im Cache vorhanden)")
                 return [cached_res.copy()]
+            if cached_res:
+                # PC: Cache vorhanden, aber Leaderboard-Check unten ist maßgeblich.
+                logger.debug(
+                    "PC-Cache-Treffer in 3-CSVs für %s — prüfe pc_leaderboard.csv als SSoT.",
+                    model,
+                )
 
         # Fallback-Check: political_compass_leaderboard.csv direkt prüfen.
         # Die Standard-CSVs können nach einem Reset leer sein, während PC-Ergebnisse

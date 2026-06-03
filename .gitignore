@@ -86,3 +86,10 @@ REF_TODO.md
 
 # Web Export
 web_export/
+
+# Unfertige Draft- / TODO-Cards und Backups (nicht committen)
+*.bak
+*.bak_*
+benchmark_scores/**/*.bak
+benchmark_scores/**/*_todo*.json
+benchmark_scores/**/*TODO*.json

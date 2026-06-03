@@ -4,6 +4,26 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased] - 2026-06-03
+
+**PC-Leaderboard-Repair + Linter-Workflow-Disziplin.**
+
+### Fixed
+- **Voreiliger Cache-Hit in `execute_batch_module`** — `BaseBenchmarkRunner.execute_batch_module()` (`utils/base_runner.py:364-369`) returnte früh, wenn `(model, "political_compass")` in den 3-CSV-Caches vorhanden war. Das umging `PoliticalCompassHandler.handle_results()` und damit `save_leaderboard_csv()` → 3 Modelle hatten PC-Daten in `pc_results.csv` aber keinen Eintrag im `pc_leaderboard.csv` → "Pending" im Hauptboard. Fix: PC-Module werden explizit vom 3-CSV-Fast-Path ausgenommen; `pc_leaderboard.csv` ist jetzt die alleinige SSoT für Batch-Skip-Entscheidungen. Statischer Regression-Test in `tests/test_repair_pc_leaderboard.py::test_execute_batch_module_fix_in_source`.
+- **Provider-Index-Methoden-Asymmetrie** — `generate_review.py` rief modul-lokales `_rebuild_index()` auf `pc_gen` auf, was bei Provider-Cards nicht existiert. Fix: konsistenter Aufruf `pc_gen.rebuild_provider_index()` (aus `utils.provider_card_template`).
+
+### Added
+- **`scripts/maintenance/repair_pc_leaderboard.py`** — Idempotente Daten-Reparatur für `political_compass_leaderboard.csv`. Liest AVG-Zeilen aus `pc_results.csv`, rekonstruiert vanilla/forced Hauptkoordinaten aus `module_stats.{vanilla,forced}` (Mittel über 9 PC-Blöcke 7.1–7.9), normalisiert HF-Präfixe via `normalize_model_id`, klassifiziert Archetyp + Axis-Labels, schreibt per Upsert. `--dry-run` für Probe-Lauf. 7 Unit-Tests grün.
+- **3 fehlende PC-Leaderboard-Einträge ergänzt** — DeepSeek V3.1-671B (Soziale-Mitte/Konservative-Mitte, Shift 0.49), DeepSeek V3-2 (Sozial/Konservative-Mitte, Shift 0.27), Hermes 4 14B Q4_K_M (Sozial/Konservative-Mitte, Shift 0.56). Backup der Original-Datei unter `political_compass_leaderboard.csv.bak_20260603_075304`.
+
+### Changed
+- **`.gitignore`** — Neue Patterns für Backup-/Draft-Artefakte: `*.bak`, `*.bak_*`, `benchmark_scores/**/*.bak`, `benchmark_scores/**/*_todo*.json`, `benchmark_scores/**/*TODO*.json`. Verhindert versehentliches Committen unfertiger Placeholder-Cards.
+- **`config/provider_config.yaml`** — Neues lokales Modell `hermes-4-14b-abliterated` (Hermes 4 14B BF16 Abliterated GGUF) hinzugefügt.
+- **Provider-Index bereinigt** — Verwaisten `provider_id: "todo"`-Eintrag aus `_index.json` entfernt; zugehörige `todo.json` Card gelöscht (war versehentlich vom Review-Generator angelegt worden).
+- **DeepSeek Model Cards** — Display-Namen und Pricing-Updates (v3.1: $0.21/$0.79, v3.2: $0.2288/$0.3432).
+- **Provider Card ergänzt** — `nous_research.json` (Nous Research, CLOUD-Act-Exposition).
+- **Reviews-Batch** — 28 neue `review_*.md`-Dateien für 2026-06-02/03-Benchmark-Outputs (Magistral, Mistral, Qwen, GLM, DeepSeek, etc.).
+
 ## [v4.2.0] - 2026-05-31
 
 **OpenRouter-Migration, Free-Tier-Support und Provider-Routing-Bug-Fix.**

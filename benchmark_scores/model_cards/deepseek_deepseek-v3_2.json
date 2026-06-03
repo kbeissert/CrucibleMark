@@ -1,6 +1,6 @@
 {
   "model_id": "deepseek/deepseek-v3.2",
-  "display_name": "DeepSeek V3.2",
+  "display_name": "DeepSeek V3-2",
   "developer": "DeepSeek",
   "origin_country": "China",
   "developer_jurisdiction": "CN",
@@ -40,8 +40,8 @@
   "vendor": "DeepSeek",
   "weights_license_tier": "open-weights",
   "model_version": "v3.2",
-  "input_price_per_1m": 0.14,
-  "output_price_per_1m": 0.28,
+  "input_price_per_1m": 0.2288,
+  "output_price_per_1m": 0.3432,
   "use_case_primary": "generalist",
   "parameter_architecture": "moe",
   "params_total_b": 671.0,

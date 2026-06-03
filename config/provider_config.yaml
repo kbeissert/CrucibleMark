@@ -311,3 +311,7 @@ providers:
         name: Gemma 4 E4B (GGUF)
         model_file: gemma-4-E4B.gguf
         n_gpu_layers: 99
+      - id: hermes-4-14b-abliterated
+        name: Hermes 4 14B BF16 Abliterated (GGUF)
+        model_file: hermes-4-14b-bf16-abliterated-q6_k.gguf
+        n_gpu_layers: 99

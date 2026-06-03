@@ -197,7 +197,7 @@ def _ensure_provider_card(
     stats = all_stats.get(developer, {})
     card = pc_gen._generate_card(developer, safe_id(developer), stats, client, card_provider, card_model)  # type: ignore[attr-defined]
     pc_gen._write_card(card)  # type: ignore[attr-defined]
-    pc_gen._rebuild_index()  # type: ignore[attr-defined]
+    pc_gen.rebuild_provider_index()  # type: ignore[attr-defined]
     print(f"  Provider Card erstellt: {developer}")
     return card
 
