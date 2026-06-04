@@ -1,0 +1,26 @@
+feat: Local llama.cpp Expansion — 9 new models + 10 model cards with quantization docs
+
+- Added to config/provider_config.yaml (llamacpp section):
+  - Hermes 3 8B (Q6_K_L), Hermes 4 variants (abliterated Q6_K, q4 Q4_K_M)
+  - Qwen 2.5 Coder 7B (Q6_K), Qwen 3 4B/14B (Q6_K)
+  - Qwen 3.5 variants: 4B (UD-Q4/Q6/Q8 with XL importance matrix), 9B (UD-Q6_K_XL)
+
+- Created/Updated 10 Model Cards (all card_status: complete, input/output_price_per_1m: 0.0):
+  - hermes-3-8b.json: Llama 3.1-based, Q6_K_L (higher-precision attention)
+  - hermes-4-14b-abliterated.json: Qwen3-based, all security filters removed (Community variant)
+  - hermes-4-14b-q4.json: Q4_K_M (community standard, resource-efficient)
+  - qwen2.5-coder-7b.json: Code specialist, Q6_K
+  - qwen3-4b.json, qwen3-14b.json: General-purpose, Q6_K, Thinking-Optional
+  - qwen3.5-4b-q4/q6/q8.json: Unsloth Dynamic quantizations (UD-K_XL variants)
+  - qwen3.5-9b.json: UD-Q6_K_XL (Community-assessed as very high quality)
+  - qwen_qwen3_5-397b-a17b.json: Updated license_url (Apache canonical) + max_output_tokens
+
+Quantization notes for each card:
+- Q4_K_M: Community standard, good quality/size balance
+- Q6_K, Q6_K_L: Near-lossless vs FP16, high quality (community recommended)
+- UD-Q4/Q6/Q8 (Unsloth Dynamic): Importance-matrix-driven mixed precision,
+  often exceeds standard-quant quality at same bitdepth (community-tested)
+
+Memory Bank Updated:
+- activeContext.md: Local model expansion completed, next: benchmark runs
+- progress.md: [DONE] Lokale Model-Card-Expansion
