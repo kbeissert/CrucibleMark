@@ -38,10 +38,10 @@ _PROVIDER_SHORTCODES: dict[str, str] = {
     "ollama_local": "LCL",
     "local": "LCL",
     # llama.cpp local inference server (OpenAI-compatible)
-    "llamacpp": "LCL",
-    "llamacpp_spark": "SPK",
-    "llama_cpp": "LCL",
-    "llamacpp_local": "LCL",
+    "llamacpp": "M4APL",
+    "llamacpp_spark": "SPRK",
+    "llama_cpp": "M4APL",
+    "llamacpp_local": "M4APL",
     # Ollama as cloud proxy (e.g. qwen3.5:397b-cloud via remote Ollama endpoint)
     "ollama_cloud": "CLD",
 }
@@ -215,8 +215,8 @@ def _find_card(model_id: str, card_dir: Path | None = None) -> Path:
         return unprefixed
 
     # For non-namespaced IDs try all non-API shortcode prefixes.
-    # OR models are always namespaced, so only LCL and GR need checking.
-    for shortcode in ("LCL", "GR"):
+    # OR models are always namespaced, so only M4APL, SPRK and GR need checking.
+    for shortcode in ("M4APL", "SPRK", "GR"):
         candidate = _cd / f"{shortcode}_{safe}.json"
         if candidate.exists():
             return candidate

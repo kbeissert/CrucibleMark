@@ -465,14 +465,18 @@ class LlamaCppClient(BaseProviderClient):
 
     def stop_server(self) -> None:
         """Stop the llama.cpp server — by PID if known, otherwise via stop command."""
+        needs_fallback_stop = True
         if self._server_pid is not None:
             logger.debug("Stopping llama.cpp server (PID %d)", self._server_pid)
             try:
-                subprocess.run(["kill", str(self._server_pid)], check=False)
+                kill_result = subprocess.run(["kill", str(self._server_pid)], check=False)
+                if kill_result.returncode == 0:
+                    needs_fallback_stop = False
             except OSError as exc:
                 logger.warning("Could not kill PID %d: %s", self._server_pid, exc)
             self._server_pid = None
-        else:
+
+        if needs_fallback_stop:
             cmd = self._server_stop_cmd()
             logger.debug("Stopping llama.cpp server: %s", cmd)
             try:

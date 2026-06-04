@@ -285,7 +285,7 @@ providers:
     # Beschreibung/Metadaten → Model Card JSON (benchmark_scores/model_cards/)
     llamacpp:
       name: Llama.cpp (MacBook Pro)
-      short_code: LCL
+      short_code: M4APL
       api_type: llamacpp
       model_type: open_weights_local
       enabled: true
@@ -359,7 +359,7 @@ providers:
     # Port 1235 wird für den Benchmark-Server genutzt.
     llamacpp_spark:
       name: Llama.cpp (DGX Spark)
-      short_code: SPK
+      short_code: SPRK
       api_type: llamacpp
       model_type: open_weights_local
       enabled: true
@@ -407,4 +407,8 @@ providers:
       - id: gemma-4-26b-a4b-q8
         name: Gemma 4 26B-A4B Instruct Q8_K_XL (GGUF)
         model_file: gemma-4-26B-A4B-it-UD-Q8_K_XL.gguf
+        n_gpu_layers: 99
+      - id: hermes-4.3-36b-q6
+        name: Hermes 4.3 36B Q6_K (GGUF)
+        model_file: NousResearch_Hermes-4.3-36B-Q6_K.gguf
         n_gpu_layers: 99

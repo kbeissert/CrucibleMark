@@ -298,13 +298,20 @@ class UnifiedBenchmarkRunner(BaseBenchmarkRunner):
             logger.warning(f"Warmup fehlgeschlagen: {e}")
             return None
 
-    def _create_error_result(self, asset_id: str, error_message: str, model: str = "") -> Dict[str, Any]:
+    def _create_error_result(
+        self,
+        asset_id: str,
+        error_message: str,
+        model: str = "",
+        provider: str = "",
+    ) -> Dict[str, Any]:
         return {
             "status": "error",
             "error_message": error_message,
             "asset_id": asset_id,
             "asset_name": asset_id,
             "model": model,
+            "provider": provider,
             "percentage": 0,
             "tier": "Tier 1",
             "execution_time": 0,
@@ -325,7 +332,10 @@ class UnifiedBenchmarkRunner(BaseBenchmarkRunner):
         asset_data = load_asset_yaml(asset_path)
         if not asset_data:
             return self._create_error_result(
-                asset_path.stem, "Empty/Invalid Asset File", model=model
+                asset_path.stem,
+                "Empty/Invalid Asset File",
+                model=model,
+                provider=provider,
             )
 
         asset_id = asset_data.get("metadata", {}).get("id", asset_path.stem)
@@ -351,7 +361,14 @@ class UnifiedBenchmarkRunner(BaseBenchmarkRunner):
             if not getattr(exec_result, "execution_time", None):
                 exec_result.execution_time = time.time() - start_time
         except Exception as e:
-            return self._create_error_result(asset_path.stem, str(e), model=model)
+            if "endpoint conflict or startup failure" in str(e).lower():
+                raise
+            return self._create_error_result(
+                asset_path.stem,
+                str(e),
+                model=model,
+                provider=provider,
+            )
 
         response = exec_result.raw_response
         exec_result = test_instance.score_response(exec_result)
@@ -636,6 +653,10 @@ class UnifiedBenchmarkRunner(BaseBenchmarkRunner):
                     self._save_partial_results(results, is_local)
                     sys.exit(1)
                 except Exception as e:
+                    if "endpoint conflict or startup failure" in str(e).lower():
+                        print("\n⛔ Endpoint-Konflikt erkannt. Breche Modullauf ab, um fehlerhafte 0%-Einträge zu vermeiden.")
+                        self._save_partial_results(results, is_local)
+                        raise
                     print(" " * 80, end="\r")
                     print(f"   ❌ [{i}/{len(assets)}] {asset_name}: Abgebrochen - {str(e)}")
                     # Budget-/Quota-Fehler erkennen und Flag setzen

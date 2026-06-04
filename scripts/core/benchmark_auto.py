@@ -487,6 +487,8 @@ def _collect_untested_tooluse_cards() -> List[Tuple[str, str]]:
     if not CARD_DIR.exists():
         return untested
     for card_path in sorted(CARD_DIR.glob("*.json")):
+        if card_path.name == "_index.json":
+            continue
         try:
             card: Dict[str, Any] = json.loads(card_path.read_text(encoding="utf-8"))
         except (json.JSONDecodeError, OSError):
@@ -500,6 +502,10 @@ def _collect_untested_tooluse_cards() -> List[Tuple[str, str]]:
         model_id = card.get("model_id")
         if not model_id:
             logger.warning("Untested Card ohne model_id wird übersprungen: %s", card_path)
+            continue
+        # Platzhalter-Card aus dem Template nicht in den Backlog aufnehmen.
+        if model_id == "test" and str(card.get("card_status", "")).lower() == "draft":
+            logger.info("Überspringe Platzhalter-Card im Tool-Use-Backlog: %s", card_path)
             continue
         display_name = card.get("display_name") or model_id
         untested.append((model_id, display_name))
@@ -621,7 +627,9 @@ def _run_untested_tooluse_models(
     for mid, dname in models:
         print(f"      • {dname}  ({mid})")
     if unreachable:
-        print(f"   ⚠️  {len(unreachable)} untested Card(s) sind nicht erreichbar:")
+        print(f"   ⚠️  {len(unreachable)} untested Card(s) sind aktuell nicht testbar:")
+        print("      Hinweis: 'ollama_model_not_installed:*' bedeutet: lokales Ollama-Modell wurde entfernt oder ist nicht mehr installiert.")
+        print("      (Also nicht API/Netzwerk, sondern fehlendes lokales Modellartefakt.)")
         for mid, dname, reason in unreachable:
             print(f"      ✗ {dname}  ({mid})  →  {reason}")
     if not testable:
@@ -737,11 +745,22 @@ def run_llamacpp_batch(
 
             had_new_results = False
             for module in modules:
-                had_new_results |= _run_module_for_model(
+                assets_todo = _get_startable_assets(module, model_id, existing_tests)
+                module_ok = _run_module_for_model(
                     runner, model_id, module, existing_tests,
                     force=force, audit=audit_mode, mcp_mode=mcp_mode,
                     provider="llamacpp",
                 )
+                had_new_results |= module_ok
+
+                # Verhindert Fehler-Kaskaden: Wenn ein Modul mit offenen Assets fehlschlägt,
+                # brechen wir dieses Modell ab und wechseln zum nächsten Modell.
+                if assets_todo and not module_ok:
+                    print(
+                        f"   ⚠️  Modul '{module.get('key', 'unknown')}' für '{model_id}' fehlgeschlagen "
+                        "(mit offenen Assets). Restliche Module für dieses Modell werden übersprungen."
+                    )
+                    break
             if had_new_results:
                 try:
                     gen_leaderboard(print_table=False)

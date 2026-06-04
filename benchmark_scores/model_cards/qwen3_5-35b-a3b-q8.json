@@ -1,6 +1,6 @@
 {
-  "model_id": "qwen3.6-35b-a3b-q8",
-  "display_name": "Qwen 3.6 35B-A3B Q8_K_XL (GGUF)",
+  "model_id": "qwen3_5-35b-a3b-q8",
+  "display_name": "Qwen 3.5 35B-A3B Q8_K_XL (GGUF)",
   "developer": "Alibaba Group (Qwen Team)",
   "origin_country": "China",
   "developer_jurisdiction": "China",
@@ -8,7 +8,7 @@
   "local_deployment_possible": true,
   "weights_provenance_risk": "mittel",
   "weights_provenance_risk_rationale": "Open-Weights-Modell aus China; Weights sind öffentlich auf Hugging Face verfügbar. Chinesische Herkunft und das nationale Sicherheitsgesetz (NSL) sind bei der Einschätzung des Datenrisikos zu berücksichtigen.",
-  "model_family": "Qwen 3.6",
+  "model_family": "Qwen 3.5",
   "vendor": "Qwen / Alibaba Cloud",
   "primary_focus": "general",
   "use_case_primary": "generalist",
@@ -17,7 +17,7 @@
   "params_active_b": 3,
   "context_window_k": 262,
   "knowledge_cutoff": "2025-06",
-  "summary": "Qwen 3.6 35B-A3B ist ein multimodales Mixture-of-Experts-Modell von Alibaba (China) der dritten Generation mit Apache-2.0-Lizenz. Es läuft hier als UD-Q8_K_XL-GGUF via llama.cpp – Unsloth Dynamic, 8-Bit, XL-Wichtigkeitsmatrix gilt als höchste Qualitätsstufe und kommt der FP16-Vollpräzision nahezu gleich. Das Modell unterstützt Vision (Bildverständnis), Thinking Preservation und ein Kontextfenster von bis zu 262K Tokens (erweiterbar auf 1M). Mit nur 3 Milliarden aktiven Parametern pro Token ist es extrem effizient bei gleichzeitig starker Leistung.",
+  "summary": "Qwen 3.5 35B-A3B ist ein multimodales Mixture-of-Experts-Modell von Alibaba (China) der zweiten Generation der Qwen 3.x-Serie mit Apache-2.0-Lizenz. Es läuft hier als UD-Q8_K_XL-GGUF via llama.cpp – Unsloth Dynamic, 8-Bit, XL-Wichtigkeitsmatrix gilt als höchste Qualitätsstufe und kommt der FP16-Vollpräzision nahezu gleich. Das Modell unterstützt Vision (Bildverständnis), Thinking Preservation und ein Kontextfenster von bis zu 262K Tokens (erweiterbar auf 1M). Mit nur 3 Milliarden aktiven Parametern pro Token ist es extrem effizient bei gleichzeitig starker Leistung.",
   "strengths": [
     "Extrem effiziente MoE-Architektur (35B total / nur 3B aktiv) für schnelle Inferenz",
     "UD-Q8_K_XL-Quantisierung: nahezu verlustfrei gegenüber FP16-Baseline",
@@ -29,7 +29,8 @@
   "known_limitations": [
     "Chinesische Herkunft mit potenziellen Compliance-Risiken (NSL)",
     "MoE-Architektur erfordert schnelle GPU-Bandbreite für optimale Performance",
-    "Vision-Fähigkeiten bei Text-only-Deployments nicht nutzbar"
+    "Vision-Fähigkeiten bei Text-only-Deployments nicht nutzbar",
+    "Vorgängermodell – Qwen 3.6 bietet verbesserte Fähigkeiten"
   ],
   "judge_context_hint": "MoE-Modell mit nur 3B aktiven Parametern – effizienter als viele Dense-Modelle gleicher Gesamtgröße. Q8_K_XL-Quantisierung minimiert Qualitätsverluste.",
   "architecture_tags": [
@@ -39,18 +40,18 @@
   ],
   "supports_tool_use": true,
   "license": "Apache 2.0",
-  "license_url": "https://huggingface.co/Qwen/Qwen3.6-35B-A3B/blob/main/LICENSE.txt",
+  "license_url": "https://huggingface.co/Qwen/Qwen3.5-35B-A3B/blob/main/LICENSE.txt",
   "commercial_use_allowed": true,
   "weights_license_tier": "frei",
-  "model_version": "3.6",
+  "model_version": "3.5",
   "input_price_per_1m": null,
   "output_price_per_1m": null,
   "unknown": false,
   "card_status": "verified",
   "size_class": "Desktop",
-  "generated_at": "2026-06-04T19:36:42.847113+00:00",
-  "thinking_probe_detected": true,
-  "thinking_probe_evidence": "reasoning_tokens=512 in provider metadata",
-  "thinking_probe_confidence": "medium",
-  "thinking_probe_at": "2026-06-04T19:36:42.846503+00:00"
+  "generated_at": "2026-06-04T21:56:30+00:00",
+  "thinking_probe_detected": null,
+  "thinking_probe_evidence": null,
+  "thinking_probe_confidence": null,
+  "thinking_probe_at": null
 }

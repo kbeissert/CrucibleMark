@@ -21,7 +21,10 @@ import logging
 import os
 import shutil
 import subprocess
+from pathlib import Path
 from typing import Any, Dict, Optional, Set, Tuple
+
+import yaml
 
 from utils.constants import TIMEOUT_OLLAMA_LIST_FAST
 from utils.model_utils import resolve_provider
@@ -49,6 +52,40 @@ class _OllamaModelCache:
 
 
 _OLLAMA_MODEL_CACHE = _OllamaModelCache()
+
+
+def _infer_provider_from_config(model_id: str) -> Optional[str]:
+    """Infer provider only via exact ID matches in config files (no heuristics)."""
+    config_paths = (Path("benchmark_config.yaml"), Path("config/provider_config.yaml"))
+    for config_path in config_paths:
+        if not config_path.exists():
+            continue
+        try:
+            with config_path.open("r", encoding="utf-8") as handle:
+                cfg = yaml.safe_load(handle) or {}
+        except (OSError, yaml.YAMLError):
+            continue
+
+        providers = cfg.get("providers", {})
+        commercial = providers.get("commercial", {})
+        if isinstance(commercial, dict):
+            for provider_key, provider_cfg in commercial.items():
+                if not isinstance(provider_cfg, dict):
+                    continue
+                for model_entry in provider_cfg.get("models", []):
+                    if isinstance(model_entry, dict) and model_entry.get("id") == model_id:
+                        return provider_key
+
+        local = providers.get("local", {})
+        if isinstance(local, dict):
+            for provider_key, provider_cfg in local.items():
+                if not isinstance(provider_cfg, dict):
+                    continue
+                for model_entry in provider_cfg.get("models", []):
+                    if isinstance(model_entry, dict) and model_entry.get("id") == model_id:
+                        return provider_key
+
+    return None
 
 
 def get_installed_ollama_models(force_refresh: bool = False) -> Set[str]:
@@ -129,11 +166,13 @@ def validate_untested_card(card: Dict[str, Any]) -> Tuple[bool, Optional[str]]:
 
     provider = (card.get("provider") or "").lower().strip()
     if not provider:
-        # Legacy-Cards enthalten teils keinen provider-Key.
-        # Für modelltypische IDs (ollama/openrouter-Format) inferieren wir den
-        # Provider aus der model_id, damit der Pre-Flight nicht an fehlenden
-        # Metadaten scheitert.
-        if ":" in model_id or "/" in model_id:
+        # 1) Exakter Config-Lookup (SSOT) für lokale/commercial Modell-IDs.
+        inferred = _infer_provider_from_config(model_id)
+        if inferred:
+            provider = inferred
+
+        # 2) Nur für klar erkennbare Namensformate heuristischer Fallback.
+        if not provider and (":" in model_id or "/" in model_id):
             try:
                 provider, _ = resolve_provider(model_id)
             except Exception:  # pylint: disable=broad-exception-caught
