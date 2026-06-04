@@ -4,9 +4,17 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased] - 2026-06-03
+## [v4.3.0] - 2026-06-04
 
-**Per-Model Review-Batch + PC-Leaderboard-Repair + Linter-Workflow-Disziplin + Tool-Use Pre-Flight-Validierung.**
+**Per-Model Review-Batch + PC-Leaderboard-Repair + Tool-Use Pre-Flight-Validierung + llama.cpp Spark Connector-Konsolidierung.**
+
+### Added
+- **Konsolidierter `llamacpp_spark`-Connector** — lokale OpenAI-kompatible Intranet-Ausführung mit robuster Endpoint-Adoption, tolerantem Readiness-Probing (`content`/`reasoning_content`/`finish_reason`/`usage.total_tokens`) und konfliktfreiem Fremd-Endpoint-Verhalten.
+- **UnifiedRunner-Lifecycle-Cleanup (`finally`)** — `scripts/core/unified_runner.py` führt für lokale Provider (inkl. `llamacpp_spark`) jetzt garantiert End-of-Run-Cleanup aus (`server_stop_cmd` + optional `server_post_stop_cmd`) — auch bei `KeyboardInterrupt`/Abbruch.
+
+### Changed
+- **Readiness-Logik in `utils/providers/llamacpp.py` gehärtet** — bei bereits laufendem identischem Modell wird ein konfigurierbares Warmup-Fenster genutzt, statt den Lauf vorschnell mit "noch nicht stabil" zu beenden.
+- **Dokumentation aktualisiert** — `README.md`, `PROJECT_STATUS.md`, `docs/SETUP_GUIDE.md`, `docs/ARCHITECTURE.md`, `docs/DEVELOPER_GUIDE.md`, `REF_TODO.md` und `memory-bank/` auf den Connector-Stand v4.3.0 gebracht.
 
 
 ### Fixed

@@ -47,19 +47,75 @@ OPENROUTER_API_KEY=sk-or-...
 
 > **OpenRouter Free Tier:** Free-Tier-Modelle (Modell-ID-Suffix `:free`, z. B. `google/gemma-4-31b-it:free`) nutzen denselben Endpoint und denselben API-Key — kein gesonderter Zugang nötig. Der `:free`-Suffix allein reicht; CrucibleMark wählt automatisch das passende Rate-Limit-Profil (18 RPM statt 60 RPM). Verfügbare Free-Tier-Modelle sind in `config/provider_config.yaml` als Kommentar hinterlegt und können bei Bedarf aktiviert werden.
 
-### Lokale Modelle (Ollama / llama.cpp)
+### Lokale Modelle: 2 Betriebsarten (On-Device vs. Intranet)
 
-Für lokale Modelle gibt es zwei Provider in `config/provider_config.yaml → providers.local`:
+CrucibleMark unterstützt unter `config/provider_config.yaml → providers.local` zwei Arten von "lokal":
+
+- **Lokal auf derselben Maschine (On-Device):** `llamacpp`
+- **Lokal im Intranet (Remote-Host, aber eigener Betrieb):** `llamacpp_spark`
+
+Dazu kommt optional:
 
 - **`ollama_local`** — `auto_discover: true`, listet laufende Ollama-Modelle automatisch
-- **`llamacpp`** — Modelle werden explizit konfiguriert. `llamacpp.py` verwaltet den Server vollautomatisch:
-  - **Startverhalten:** `start_server(model_id)` startet den Server nur wenn nötig. Läuft der Server bereits, fragt `_query_active_model()` via `/v1/models` welches Modell geladen ist — kein Doppelstart in Sub-Prozessen.
-  - **Modell-Swap:** Beim Wechsel auf ein anderes Modell wird der laufende Server gestoppt und neu gestartet (kein Reload-API).
-  - **Prophylaktischer Stop:** `benchmark_auto.py` stoppt vor dem ersten Modell-Start alle laufenden `llama-server`-Prozesse (via `server_stop_cmd`), um Port-Konflikte mit parallel laufenden Servern (z. B. Standard-Port 1234) zu vermeiden.
-  - **Konfigurationsfelder:** `base_url` (Port), `server_start_cmd`, `server_stop_cmd`, `server_log`, `model_dir`. Pro Modell: `id`, `model_file`, `n_gpu_layers`, optional `context_length`, `threads`, `parallel`.
-  - Der Server läuft auf dem in `base_url` konfigurierten Port.
 
-Beide Provider haben ein `enabled`-Flag. Ist es `false`, erscheint der Provider **nicht** im Wizard und nicht im Cross-Model-Benchmark.
+#### Vergleich: Mac lokal vs. Spark Intranet
+
+| Kriterium | `llamacpp` (Mac, lokal auf gleicher Maschine) | `llamacpp_spark` (Intranet, DGX via SSH) |
+| :--- | :--- | :--- |
+| Laufort des `llama-server` | Auf dem Benchmark-Host (Mac) | Auf Remote-Intranet-Host (Spark) |
+| Steuerung | Direkter lokaler Prozessstart | SSH-Kommandos (`server_start_cmd` / `server_stop_cmd`) |
+| `base_url` | `127.0.0.1:<port>/v1` | `http://<intranet-ip>:<port>/v1` |
+| `bind_host` (empfohlen) | `127.0.0.1` | `0.0.0.0` |
+| Modellwechsel | Stop + Start lokal | Start nur für den eigenen Endpoint; fremde aktive Endpunkte werden nicht überschrieben |
+| Fremder aktiver OpenAI-Endpunkt | lokal separat behandeln | Warnung + sauberer Abbruch statt Stop/Overwrite |
+| Readiness-Check vor Benchmark | Health + kurzer Probe-Request (`Hallo`) | Health + kurzer Probe-Request (`Hallo`) |
+| Ready-Timeout (empfohlen) | kurz (lokal) | länger für große Modelle (`server_ready_timeout_sec`) |
+| End-of-Run Cleanup | optional | empfohlen: `cleanup_on_exit: true` + `server_post_stop_cmd` |
+| Typischer Einsatz | Desktop-Workflows, Single-Host | zentrale Intranet-GPU für Fleet-Runs |
+
+#### 1) `llamacpp` (Mac, lokal-lokal)
+
+`llamacpp` ist der klassische On-Device-Connector auf derselben Maschine wie der Benchmark-Runner.
+
+- **Start/Load:** Der Connector baut den vollständigen `llama-server`-Befehl aus der Config und lädt das gewünschte GGUF-Modell.
+- **Modellwechsel:** Bei Modellwechsel wird der laufende Server gestoppt und mit neuem Modell neu gestartet.
+- **Readiness:** Ein Modell gilt erst als bereit, wenn Health-Endpunkt plus kurzer Probe-Request (`Hallo`) erfolgreich sind.
+- **Typische Konfig-Felder:** `base_url`, `server_start_cmd`, `server_stop_cmd`, `server_log`, `model_dir`, `bind_host`; pro Modell `id`, `model_file`, `n_gpu_layers` (+ optional `context_length`).
+
+#### 2) `llamacpp_spark` (Intranet-Lokal via SSH)
+
+`llamacpp_spark` ist für einen dedizierten Intranet-LLM-Server (DGX Spark). Der Benchmark läuft lokal auf dem Mac, steuert den Server aber remote.
+
+- **Transport:** Steuerung über SSH (`server_start_cmd` / `server_stop_cmd` sind SSH-Kommandos).
+- **Load/Unload:** Das Modell wird per Remote-`llama-server` mit Alias geladen. Ein bereits fremd laufender OpenAI-kompatibler Endpoint auf derselben `base_url` wird nicht automatisch gestoppt oder überschrieben.
+- **Readiness vor Benchmark:** Auch hier gilt erst "bereit", wenn Health und kurzer `Hallo`-Probe-Request erfolgreich sind.
+- **Timeouts:** Für große Modelle sind provider-spezifische Ready-Timeouts konfigurierbar (`server_ready_timeout_sec`, `server_ready_poll_sec`, `server_ready_probe_timeout_sec`).
+- **End-of-Run Cleanup:** Optional automatischer Abschluss-Cleanup (`cleanup_on_exit: true`) mit
+  - Server-Stop (`server_stop_cmd`)
+  - optionalem Cache-Clear (`server_post_stop_cmd`, z. B. `~/.cache/llama.cpp`, `/tmp/llama.cpp*`).
+
+Seit v4.3.0 wird dieser Cleanup auch im `UnifiedBenchmarkRunner` per `finally` erzwungen. Das gilt sowohl für erfolgreiche Läufe als auch für manuelle Abbrüche (z. B. `Ctrl+C`).
+
+#### Benötigte Spark-Config-Keys
+
+Für den konsolidierten `llamacpp_spark`-Betrieb werden typischerweise nur diese Felder benötigt:
+
+- Verbindungs- und Startdaten: `base_url`, `api_key`, `model_dir`, `server_start_cmd`, `server_stop_cmd`
+- Readiness: `server_ready_timeout_sec`, `server_ready_poll_sec`, `server_ready_probe_timeout_sec`
+- Laufzeit: `server_log`, `bind_host`, `threads`, `parallel`, `hardware_profile`
+- Abschluss-Cleanup: `cleanup_on_exit`, `server_post_stop_cmd`
+- Modelle: pro Modell `id`, `name`, `model_file`, `n_gpu_layers`
+
+Frühere Lifecycle-Schalter wie `always_stop_before_start` sind im aktuellen Connector-Stand nicht mehr erforderlich.
+
+#### Verbindungsbesonderheiten bei Spark (SSH)
+
+- SSH muss non-interaktiv funktionieren (BatchMode/Key-basierter Zugriff empfohlen), sonst blockiert der Runner beim Modellstart.
+- Der Remote-Binary-Pfad in `server_start_cmd` muss exakt dem installierten `llama-server` auf dem Spark entsprechen.
+- `bind_host` und `base_url` müssen zusammenpassen (z. B. `0.0.0.0` auf dem Spark, Zugriff via Intranet-IP).
+- Wenn unter `base_url` bereits ein anderer OpenAI-kompatibler Server läuft, gibt der Connector nur eine Warnung aus und beendet den Benchmark-Lauf sauber.
+
+Alle lokalen Provider haben ein `enabled`-Flag. Ist es `false`, erscheint der Provider nicht im Wizard und nicht im Cross-Model-Benchmark.
 
 ---
 

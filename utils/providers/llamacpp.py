@@ -18,6 +18,8 @@ import subprocess
 import time
 import urllib.error
 import urllib.request
+import shlex
+import json
 from pathlib import Path
 from typing import Any, Callable, Dict, List, Optional
 
@@ -34,24 +36,49 @@ logger = logging.getLogger(__name__)
 class LlamaCppClient(BaseProviderClient):
     """Provider client for a local llama.cpp server (OpenAI-compatible API)."""
 
-    PROVIDER_NAMES = ["llamacpp", "llama_cpp", "llamacpp_local"]
+    PROVIDER_NAMES = ["llamacpp", "llama_cpp", "llamacpp_local", "llamacpp_spark"]
 
     def __init__(self, config: Dict[str, Any]) -> None:
         super().__init__(config)
         self._client: Optional[Any] = None
+        self._client_base_url: Optional[str] = None
         self._active_model: Optional[str] = None
         self._server_pid: Optional[int] = None
+        self._provider_name: str = "llamacpp"
 
     # ------------------------------------------------------------------
     # Config helpers
     # ------------------------------------------------------------------
 
+    @staticmethod
+    def _normalize_provider_name(provider_name: Optional[str]) -> str:
+        """Map legacy aliases to canonical local provider keys."""
+        alias_map = {
+            "llama_cpp": "llamacpp",
+            "llamacpp_local": "llamacpp",
+        }
+        if not provider_name:
+            return "llamacpp"
+        return alias_map.get(provider_name, provider_name)
+
+    def _set_provider_context(self, provider_name: Optional[str]) -> None:
+        """Set active provider context for config lookup (llamacpp or llamacpp_spark)."""
+        normalized = self._normalize_provider_name(provider_name)
+        if normalized != self._provider_name:
+            self._provider_name = normalized
+            self._client = None
+            self._client_base_url = None
+            self._active_model = None
+            logger.debug("Switched llama.cpp provider context to '%s'", normalized)
+            return
+        self._provider_name = normalized
+
     def _provider_cfg(self) -> Dict[str, Any]:
-        return (
-            self.config.get("providers", {})
-            .get("local", {})
-            .get("llamacpp", {})
-        )
+        local_cfg = self.config.get("providers", {}).get("local", {})
+        provider_cfg = local_cfg.get(self._provider_name, {})
+        if provider_cfg:
+            return provider_cfg
+        return local_cfg.get("llamacpp", {})
 
     def _base_url(self) -> str:
         return self._provider_cfg().get("base_url", "http://127.0.0.1:1235/v1")
@@ -77,12 +104,82 @@ class LlamaCppClient(BaseProviderClient):
     def _health_url(self) -> str:
         return f"{self._server_root_url()}/health"
 
+    def _chat_completions_url(self) -> str:
+        return f"{self._server_root_url()}/v1/chat/completions"
+
     def _is_healthy(self) -> bool:
         """Returns True when the /health endpoint responds with HTTP 200."""
         try:
             with urllib.request.urlopen(self._health_url(), timeout=3) as resp:
                 return resp.status == 200
         except (urllib.error.URLError, OSError):
+            return False
+
+    def _is_model_ready(self, model_id: str) -> bool:
+        """Run a tiny completion probe so benchmark starts only when model is responsive."""
+        probe_timeout_sec = int(self._provider_cfg().get("server_ready_probe_timeout_sec", 10))
+        probe_timeout_sec = max(5, probe_timeout_sec)
+        probe_url = self._chat_completions_url()
+        payload = {
+            "model": model_id,
+            "messages": [{"role": "user", "content": "Hallo"}],
+            "max_tokens": 8,
+            "temperature": 0.0,
+        }
+        req = urllib.request.Request(
+            probe_url,
+            data=json.dumps(payload).encode("utf-8"),
+            headers={
+                "Content-Type": "application/json",
+                "Authorization": f"Bearer {self._api_key()}",
+            },
+            method="POST",
+        )
+        try:
+            with urllib.request.urlopen(req, timeout=probe_timeout_sec) as resp:
+                if resp.status != 200:
+                    return False
+                body = json.loads(resp.read().decode("utf-8"))
+                choices = body.get("choices") or []
+                if not choices:
+                    return False
+                choice0 = choices[0] or {}
+                message = choice0.get("message") or {}
+                visible_content = (message.get("content") or "").strip()
+                reasoning_content = (message.get("reasoning_content") or "").strip()
+                finish_reason = (choice0.get("finish_reason") or "").strip()
+                usage = body.get("usage") or {}
+                total_tokens = usage.get("total_tokens") or 0
+                return bool(visible_content or reasoning_content or finish_reason or total_tokens > 0)
+        except urllib.error.HTTPError as exc:
+            logger.debug(
+                "Readiness probe HTTP error (provider=%s, model=%s, url=%s, timeout=%ss): %s",
+                self._provider_name,
+                model_id,
+                probe_url,
+                probe_timeout_sec,
+                exc,
+            )
+            return False
+        except urllib.error.URLError as exc:
+            logger.debug(
+                "Readiness probe transport error (provider=%s, model=%s, url=%s, timeout=%ss): %s",
+                self._provider_name,
+                model_id,
+                probe_url,
+                probe_timeout_sec,
+                exc.reason,
+            )
+            return False
+        except (OSError, ValueError, TypeError, KeyError, json.JSONDecodeError) as exc:
+            logger.debug(
+                "Readiness probe parse/runtime error (provider=%s, model=%s, url=%s, timeout=%ss): %s",
+                self._provider_name,
+                model_id,
+                probe_url,
+                probe_timeout_sec,
+                exc,
+            )
             return False
 
     def _query_active_model(self) -> Optional[str]:
@@ -167,8 +264,31 @@ class LlamaCppClient(BaseProviderClient):
             f" --threads {threads}"
             f" --parallel {parallel}"
             f" --port {port}"
-            f" --host 127.0.0.1"
+            f" --host {prov_cfg.get('bind_host', '127.0.0.1')}"
         )
+
+        # Optional model-level runtime tuning (reasoning/profile-specific).
+        # These flags are only appended when explicitly set in provider_config.yaml.
+        if model_cfg.get("reasoning"):
+            cmd += f" --reasoning {model_cfg['reasoning']}"
+
+        enable_thinking = model_cfg.get("enable_thinking")
+        if enable_thinking in (True, False):
+            kwargs_json = json.dumps({"enable_thinking": bool(enable_thinking)})
+            cmd += f" --chat-template-kwargs {shlex.quote(kwargs_json)}"
+
+        optional_numeric_flags = {
+            "temperature": "--temp",
+            "top_p": "--top-p",
+            "top_k": "--top-k",
+            "min_p": "--min-p",
+            "presence_penalty": "--presence-penalty",
+            "repeat_penalty": "--repeat-penalty",
+        }
+        for cfg_key, flag in optional_numeric_flags.items():
+            if model_cfg.get(cfg_key) is not None:
+                cmd += f" {flag} {model_cfg[cfg_key]}"
+
         # Redirect server output to log file (matches llama-lab-select.sh behavior)
         return f"{cmd} >> {log_file} 2>&1"
 
@@ -183,15 +303,17 @@ class LlamaCppClient(BaseProviderClient):
             raise ImportError(
                 "Library 'openai' not installed. Run: pip install openai"
             )
-        if self._client is None:
+        current_base_url = self._base_url()
+        if self._client is None or self._client_base_url != current_base_url:
             import httpx
 
             timeout_cfg = httpx.Timeout(connect=10.0, read=300.0, write=300.0, pool=300.0)
             self._client = OpenAI(
-                base_url=self._base_url(),
+                base_url=current_base_url,
                 api_key=self._api_key(),
                 timeout=timeout_cfg,
             )
+            self._client_base_url = current_base_url
         return self._client
 
     # ------------------------------------------------------------------
@@ -219,28 +341,72 @@ class LlamaCppClient(BaseProviderClient):
         Returns:
             True when the server is healthy, False otherwise.
         """
-        if self._is_healthy() and self._active_model == model_id:
-            logger.debug("llama.cpp server already running at %s", self._base_url())
-            return True
+        healthy = self._is_healthy()
 
-        # _active_model unbekannt (z.B. Sub-Prozess): API befragen
-        if self._is_healthy() and self._active_model is None:
-            detected = self._query_active_model()
-            if detected == model_id:
-                logger.debug("llama.cpp server already running with '%s' (via API)", model_id)
-                self._active_model = model_id
+        if healthy and self._active_model == model_id:
+            if model_id and self._is_model_ready(model_id):
+                logger.debug("llama.cpp server already running at %s", self._base_url())
                 return True
-            elif detected:
-                # Anderes Modell läuft → stoppen
-                logger.debug("llama.cpp server running with '%s' (via API), need '%s' → stopping",
-                             detected, model_id)
-                self.stop_server()
-                time.sleep(2)
 
-        # Server läuft noch (anderes Modell bekannt) → erst stoppen
-        elif self._is_healthy() and self._active_model != model_id:
-            logger.debug("llama.cpp server running with '%s', stopping before loading '%s'",
-                        self._active_model, model_id)
+        if healthy and self._active_model is None:
+            detected = self._query_active_model()
+            if detected == model_id and model_id and self._is_model_ready(model_id):
+                self._active_model = model_id
+                logger.debug(
+                    "Adopting already running llama.cpp endpoint at %s with model '%s'",
+                    self._base_url(),
+                    model_id,
+                )
+                return True
+
+            if detected == model_id:
+                adopt_ready_timeout_sec = int(
+                    self._provider_cfg().get(
+                        "existing_server_ready_timeout_sec",
+                        self._provider_cfg().get("server_ready_timeout_sec", 60),
+                    )
+                )
+                adopt_poll_sec = int(self._provider_cfg().get("server_ready_poll_sec", 5))
+                adopt_poll_sec = max(1, adopt_poll_sec)
+                adopt_attempts = max(
+                    1,
+                    (adopt_ready_timeout_sec + adopt_poll_sec - 1) // adopt_poll_sec,
+                )
+                for attempt in range(adopt_attempts):
+                    if self._is_model_ready(model_id):
+                        self._active_model = model_id
+                        logger.debug(
+                            "Adopted already running llama.cpp endpoint at %s with model '%s' after warmup (%d/%d)",
+                            self._base_url(),
+                            model_id,
+                            attempt + 1,
+                            adopt_attempts,
+                        )
+                        return True
+                    if attempt + 1 < adopt_attempts:
+                        time.sleep(adopt_poll_sec)
+
+                warning = (
+                    f"OpenAI-kompatibler Endpunkt unter {self._base_url()} läuft bereits mit '{model_id}', "
+                    "antwortet aber auch nach Wartezeit noch nicht stabil auf den Hallo-Probe-Request. "
+                    "Benchmark wird beendet."
+                )
+            else:
+                warning = (
+                    f"OpenAI-kompatibler Endpunkt unter {self._base_url()} ist bereits aktiv"
+                    f"{f' (aktives Modell: {detected})' if detected else ''}. "
+                    f"Benchmark für '{model_id}' wird nicht gestartet, um den laufenden Server nicht zu überschreiben."
+                )
+            logger.warning(warning)
+            print(f"   ⚠️  {warning}")
+            return False
+
+        if healthy and self._active_model and self._active_model != model_id:
+            logger.debug(
+                "llama.cpp server running with managed model '%s', restarting for '%s'",
+                self._active_model,
+                model_id,
+            )
             self.stop_server()
             time.sleep(2)
 
@@ -263,16 +429,38 @@ class LlamaCppClient(BaseProviderClient):
             logger.error("Failed to launch llama.cpp server: %s", exc)
             return False
 
-        # Wait up to 60 s — poll /health (matches llama-lab-select.sh wait loop)
-        for attempt in range(12):
-            time.sleep(5)
-            if self._is_healthy():
-                logger.debug("llama.cpp server ready after ~%ds", (attempt + 1) * 5)
-                print(f"   ✅ Server bereit ({(attempt + 1) * 5}s)")
-                self._active_model = model_id
-                return True
+        # Wait until ready (provider-configurable timeout for slower remote loads).
+        ready_timeout_sec = int(self._provider_cfg().get("server_ready_timeout_sec", 60))
+        poll_interval_sec = int(self._provider_cfg().get("server_ready_poll_sec", 5))
+        poll_interval_sec = max(1, poll_interval_sec)
+        attempts = max(1, (ready_timeout_sec + poll_interval_sec - 1) // poll_interval_sec)
+        for attempt in range(attempts):
+            time.sleep(poll_interval_sec)
+            if not self._is_healthy():
+                logger.debug(
+                    "llama.cpp health pending (provider=%s, model=%s, attempt=%d/%d)",
+                    self._provider_name,
+                    model_id,
+                    attempt + 1,
+                    attempts,
+                )
+                continue
+            if model_id and not self._is_model_ready(model_id):
+                logger.debug(
+                    "llama.cpp readiness probe pending (provider=%s, model=%s, attempt=%d/%d)",
+                    self._provider_name,
+                    model_id,
+                    attempt + 1,
+                    attempts,
+                )
+                continue
+            elapsed = (attempt + 1) * poll_interval_sec
+            logger.debug("llama.cpp server ready after ~%ds", elapsed)
+            print(f"   ✅ Server bereit ({elapsed}s)")
+            self._active_model = model_id
+            return True
 
-        logger.error("llama.cpp server did not become ready within 60 s.")
+        logger.error("llama.cpp server did not become ready within %d s.", ready_timeout_sec)
         return False
 
     def stop_server(self) -> None:
@@ -293,6 +481,7 @@ class LlamaCppClient(BaseProviderClient):
                 logger.warning("Could not stop llama.cpp server: %s", exc)
         self._active_model = None
         self._client = None
+        self._client_base_url = None
 
     def swap_model(self, model_id: str) -> bool:
         """
@@ -325,12 +514,21 @@ class LlamaCppClient(BaseProviderClient):
         Automatically swaps the server model when `model` differs from the
         currently active model.
         """
-        # Auto-swap when model changes between benchmark runs
-        if self._active_model != model:
-            if not self.swap_model(model):
-                raise RuntimeError(
-                    f"llamacpp: could not start server for model '{model}'"
-                )
+        self._set_provider_context(kwargs.pop("_provider_name", None))
+
+        # Start only when needed. If a foreign endpoint is active on the same base_url,
+        # start_server() warns and returns False without stopping that process.
+        if self._active_model == model:
+            ready = True
+        elif self._active_model is None:
+            ready = self.start_server(model)
+        else:
+            ready = self.swap_model(model)
+
+        if not ready:
+            raise RuntimeError(
+                f"llamacpp endpoint conflict or startup failure for model '{model}'"
+            )
         system_prompt: Optional[str] = kwargs.get("system")
         messages = []
         if system_prompt:

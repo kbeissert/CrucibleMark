@@ -3,6 +3,7 @@
 
 import json
 import logging
+import subprocess
 import sys
 import time
 from datetime import datetime
@@ -474,237 +475,297 @@ class UnifiedBenchmarkRunner(BaseBenchmarkRunner):
         num_runs: int = 1,
         assets: Optional[List[Path]] = None,
     ) -> List[Dict[str, Any]]:
-        is_local = provider in ("ollama", "llamacpp", "llama_cpp", "llamacpp_local")
-
-        if benchmark_info.get("execution_mode") == "batch":
-            return self.execute_batch_module(
-                model=model,
-                benchmark_info=benchmark_info,
-                provider=provider,
-                num_runs=num_runs,
-                force=self.force,
-                existing_benchmarks=self._get_existing_for_model(provider, model),
-            )
-
-        # Card-First-Hook: Thinking-Probe vor erstem Run sicherstellen
-        # Returns canonical model_id (e.g. alias "claude-haiku-4-5" → "claude-haiku-4-5-20251001")
-        model = self._ensure_model_card(model, provider)
-
-        # Standard Run Loop
-        print(
-            f"\n{'=' * 60}\n📊 STARTE BENCHMARK: {benchmark_info.get('name', 'Unknown')}\n{'=' * 60}"
+        is_local = provider in (
+            "ollama",
+            "llamacpp",
+            "llamacpp_spark",
+            "llama_cpp",
+            "llamacpp_local",
         )
-        identity = get_model_identity(model)
-        tags_str = ", ".join(identity["tags"])
-        print(f"Provider: {provider}\nModell:   {model} (Tags: [{tags_str}])")
 
-        self.current_model_version = get_model_version(model, provider=provider)
-
-        warmup_result = None
-        if provider == "ollama":
-            warmup_result = self._measure_cold_start(model)
-            if warmup_result:
-                warmup_result["model_version"] = self.current_model_version
-
-        if not assets:
-            assets = discover_assets(benchmark_info["path"])
-
-        print(f"Tests:    {len(assets)}\n{'=' * 60}\n")
-
-        # Generate a unique run_id for this benchmark pass (Fix 4: Baseline-Lock)
-        import hashlib
-        import time
-        run_timestamp = str(int(time.time()))
-        tasks_str = ",".join([a.name for a in assets])
-        run_id_str = f"{model}_{tasks_str}_{run_timestamp}"
-        run_id = hashlib.md5(run_id_str.encode()).hexdigest()[:12]
-
-        results = []
-        if warmup_result:
-            results.append(warmup_result)
-
-        if not assets:
-            print("⚠️  Keine Tests gefunden.")
-            return results
-
-        pause_calculator = (
-            AdaptivePauseCalculator(model, self.mode) if is_local else None
-        )
-        # Free-tier OpenRouter models (model-id ends with ":free") use a
-        # separate, more conservative rate-limit profile (18 RPM / 200 RPD).
-        _limiter_key = (
-            "openrouter_free"
-            if (provider == "openrouter" and model.endswith(":free"))
-            else provider
-        )
-        run_limiter = RateLimiter(_limiter_key) if not is_local else None
-
-        for i, asset_path in enumerate(assets, 1):
-            asset_name = asset_path.stem.replace("asset_", "").replace("_", " ").title()
-            print(
-                f"   ⏳ [{i}/{len(assets)}] {asset_name}: Test läuft...",
-                end="\r",
-                flush=True,
-            )
-
-            try:
-                result = self._process_single_test(
+        try:
+            if benchmark_info.get("execution_mode") == "batch":
+                return self.execute_batch_module(
                     model=model,
-                    provider=provider,
-                    asset_path=asset_path,
                     benchmark_info=benchmark_info,
-                    is_local=is_local,
-                    pause_calculator=pause_calculator,
-                    run_limiter=run_limiter,
-                )
-                # Assign run_id to link all results of this run (Fix 4: Baseline-Lock)
-                result["run_id"] = run_id
-
-                # Fix 2 (Truncation Detection): Konfigurierbare Schwellenwerte pro Modul
-                # Safety-Block-Check: finish_reason=SAFETY → refusal_flag, nicht truncated
-                if result.get("finish_reason") == "SAFETY" and result.get("status") == "success":
-                    result["status"] = "refusal"
-                    result["refusal_flag"] = True
-                    result["refusal_type"] = "content_safety"
-                    result["refusal_note"] = "Response blocked by Gemini safety filters."
-
-                module_id = benchmark_info.get("id", "")
-                threshold = TRUNCATION_THRESHOLDS.get(module_id)
-                if threshold:
-                    response_len = result.get("response_length")
-                    if response_len is None:
-                        response_len = result.get("metadata", {}).get("response_length", 0)
-                    if isinstance(response_len, str):
-                        try:
-                            response_len = int(response_len)
-                        except (ValueError, TypeError):
-                            response_len = 0
-                    if response_len and response_len > 0 and response_len < threshold and result.get("status") == "success":
-                        result["status"] = "truncated"
-                        result["truncation_note"] = f"Response below {threshold} chars for {module_id}"
-                        print(f"\n   ⚠️ Result marked as truncated (length: {response_len} < {threshold})")
-
-                # Verbose-Overflow-Check (per-Asset max_expected_length constraint)
-                _asset_data = load_asset_yaml(asset_path)
-                _max_expected = _asset_data.get("constraints", {}).get("max_expected_length")
-                if _max_expected and result.get("status") == "success":
-                    _overflow_len = result.get("response_length")
-                    if _overflow_len is None:
-                        _overflow_len = result.get("metadata", {}).get("response_length", 0)
-                    if isinstance(_overflow_len, str):
-                        try:
-                            _overflow_len = int(_overflow_len)
-                        except (ValueError, TypeError):
-                            _overflow_len = 0
-                    if _overflow_len and _overflow_len > _max_expected:
-                        result["status"] = "verbose_outlier"
-                        result["truncation_note"] = f"Response {_overflow_len} chars exceeds expected max {_max_expected}"
-                        print(f"\n   ⚠️ Result marked as verbose_outlier ({_overflow_len} > {_max_expected})")
-
-                # Print Status
-                status_icon = "❌" if result.get("status") == "error" else "✓"
-                token_str = f"{result.get('tokens_used', 0)} T"
-                judge_str = (
-                    f" | {result.get('judge_progress_status', '')}"
-                    if result.get("judge_progress_status")
-                    else ""
+                    provider=provider,
+                    num_runs=num_runs,
+                    force=self.force,
+                    existing_benchmarks=self._get_existing_for_model(provider, model),
                 )
 
-                print(" " * 80, end="\r")
+            # Card-First-Hook: Thinking-Probe vor erstem Run sicherstellen
+            # Returns canonical model_id (e.g. alias "claude-haiku-4-5" → "claude-haiku-4-5-20251001")
+            model = self._ensure_model_card(model, provider)
+
+            # Standard Run Loop
+            print(
+                f"\n{'=' * 60}\n📊 STARTE BENCHMARK: {benchmark_info.get('name', 'Unknown')}\n{'=' * 60}"
+            )
+            identity = get_model_identity(model)
+            tags_str = ", ".join(identity["tags"])
+            print(f"Provider: {provider}\nModell:   {model} (Tags: [{tags_str}])")
+
+            self.current_model_version = get_model_version(model, provider=provider)
+
+            warmup_result = None
+            if provider == "ollama":
+                warmup_result = self._measure_cold_start(model)
+                if warmup_result:
+                    warmup_result["model_version"] = self.current_model_version
+
+            if not assets:
+                assets = discover_assets(benchmark_info["path"])
+
+            print(f"Tests:    {len(assets)}\n{'=' * 60}\n")
+
+            # Generate a unique run_id for this benchmark pass (Fix 4: Baseline-Lock)
+            import hashlib
+            import time
+
+            run_timestamp = str(int(time.time()))
+            tasks_str = ",".join([a.name for a in assets])
+            run_id_str = f"{model}_{tasks_str}_{run_timestamp}"
+            run_id = hashlib.md5(run_id_str.encode()).hexdigest()[:12]
+
+            results = []
+            if warmup_result:
+                results.append(warmup_result)
+
+            if not assets:
+                print("⚠️  Keine Tests gefunden.")
+                return results
+
+            pause_calculator = (
+                AdaptivePauseCalculator(model, self.mode) if is_local else None
+            )
+            # Free-tier OpenRouter models (model-id ends with ":free") use a
+            # separate, more conservative rate-limit profile (18 RPM / 200 RPD).
+            _limiter_key = (
+                "openrouter_free"
+                if (provider == "openrouter" and model.endswith(":free"))
+                else provider
+            )
+            run_limiter = RateLimiter(_limiter_key) if not is_local else None
+
+            for i, asset_path in enumerate(assets, 1):
+                asset_name = asset_path.stem.replace("asset_", "").replace("_", " ").title()
                 print(
-                    f"   {status_icon} [{i}/{len(assets)}] {asset_name}: {result.get('percentage', 0):.1f}% | {token_str} | {result.get('execution_time', 0):.1f}s{judge_str}"
+                    f"   ⏳ [{i}/{len(assets)}] {asset_name}: Test läuft...",
+                    end="\r",
+                    flush=True,
                 )
 
-                if result:
-                    results.append(result)
+                try:
+                    result = self._process_single_test(
+                        model=model,
+                        provider=provider,
+                        asset_path=asset_path,
+                        benchmark_info=benchmark_info,
+                        is_local=is_local,
+                        pause_calculator=pause_calculator,
+                        run_limiter=run_limiter,
+                    )
+                    # Assign run_id to link all results of this run (Fix 4: Baseline-Lock)
+                    result["run_id"] = run_id
 
-            except JudgeUnavailableError as e:
-                print(f"\n⛔ JUDGE UNAVAILABLE (API Error / Budget Limit): {e}\nBeende den Benchmark vorzeitig, um inkonsistente Scores zu vermeiden.")
-                self._save_partial_results(results, is_local)
-                sys.exit(1)
-            except KeyboardInterrupt:
-                print("\n⚠️  Benchmark vom Benutzer abgebrochen.")
-                self._save_partial_results(results, is_local)
-                sys.exit(1)
-            except Exception as e:
-                print(" " * 80, end="\r")
-                print(f"   ❌ [{i}/{len(assets)}] {asset_name}: Abgebrochen - {str(e)}")
-                # Budget-/Quota-Fehler erkennen und Flag setzen
-                _BUDGET_KEYWORDS = [
-                    "quota", "budget", "billing", "credit", "insufficient_funds",
-                    "payment", "402 payment required", "exceeded your current quota",
-                    "budget limit exceeded",
-                ]
-                if any(kw in str(e).lower() for kw in _BUDGET_KEYWORDS):
-                    print("   💸 Budget-/Quota-Fehler erkannt für Provider. Setze Exhausted-Flag.")
-                    self.provider_quota_exhausted = True
+                    # Fix 2 (Truncation Detection): Konfigurierbare Schwellenwerte pro Modul
+                    # Safety-Block-Check: finish_reason=SAFETY → refusal_flag, nicht truncated
+                    if result.get("finish_reason") == "SAFETY" and result.get("status") == "success":
+                        result["status"] = "refusal"
+                        result["refusal_flag"] = True
+                        result["refusal_type"] = "content_safety"
+                        result["refusal_note"] = "Response blocked by Gemini safety filters."
 
-        # Global audit metrics
-        # ---------------------------------------------------------
-        # Terminal Summary Generation
-        # ---------------------------------------------------------
-        valid_results = [r for r in results if r.get("type") != "system" and r.get("status") != "error" and r.get("skip_reason") is None]
-        if valid_results:
-            # DEBUG: Temporär zur Diagnose des DURCHSCHNITT-Bugs
-            _pcts = [r.get("percentage") for r in valid_results]
-            logger.debug("DURCHSCHNITT DEBUG: valid_results=%d, pcts=%s", len(valid_results), _pcts)
-            avg_score = sum(float(p) if p is not None else 0.0 for p in _pcts) / len(valid_results)
-            avg_time = sum(r.get("execution_time", 0.0) for r in valid_results) / len(valid_results)
+                    module_id = benchmark_info.get("id", "")
+                    threshold = TRUNCATION_THRESHOLDS.get(module_id)
+                    if threshold:
+                        response_len = result.get("response_length")
+                        if response_len is None:
+                            response_len = result.get("metadata", {}).get("response_length", 0)
+                        if isinstance(response_len, str):
+                            try:
+                                response_len = int(response_len)
+                            except (ValueError, TypeError):
+                                response_len = 0
+                        if response_len and response_len > 0 and response_len < threshold and result.get("status") == "success":
+                            result["status"] = "truncated"
+                            result["truncation_note"] = f"Response below {threshold} chars for {module_id}"
+                            print(f"\n   ⚠️ Result marked as truncated (length: {response_len} < {threshold})")
 
-            token_rates = [
-                float(r.get("tokens_per_second", 0.0))
-                for r in valid_results
-                if isinstance(r.get("tokens_per_second"), (int, float)) or (isinstance(r.get("tokens_per_second"), str) and str(r.get("tokens_per_second")).replace('.','',1).isdigit())
+                    # Verbose-Overflow-Check (per-Asset max_expected_length constraint)
+                    _asset_data = load_asset_yaml(asset_path)
+                    _max_expected = _asset_data.get("constraints", {}).get("max_expected_length")
+                    if _max_expected and result.get("status") == "success":
+                        _overflow_len = result.get("response_length")
+                        if _overflow_len is None:
+                            _overflow_len = result.get("metadata", {}).get("response_length", 0)
+                        if isinstance(_overflow_len, str):
+                            try:
+                                _overflow_len = int(_overflow_len)
+                            except (ValueError, TypeError):
+                                _overflow_len = 0
+                        if _overflow_len and _overflow_len > _max_expected:
+                            result["status"] = "verbose_outlier"
+                            result["truncation_note"] = f"Response {_overflow_len} chars exceeds expected max {_max_expected}"
+                            print(f"\n   ⚠️ Result marked as verbose_outlier ({_overflow_len} > {_max_expected})")
+
+                    # Print Status
+                    status_icon = "❌" if result.get("status") == "error" else "✓"
+                    token_str = f"{result.get('tokens_used', 0)} T"
+                    judge_str = (
+                        f" | {result.get('judge_progress_status', '')}"
+                        if result.get("judge_progress_status")
+                        else ""
+                    )
+
+                    print(" " * 80, end="\r")
+                    print(
+                        f"   {status_icon} [{i}/{len(assets)}] {asset_name}: {result.get('percentage', 0):.1f}% | {token_str} | {result.get('execution_time', 0):.1f}s{judge_str}"
+                    )
+
+                    if result:
+                        results.append(result)
+
+                except JudgeUnavailableError as e:
+                    print(f"\n⛔ JUDGE UNAVAILABLE (API Error / Budget Limit): {e}\nBeende den Benchmark vorzeitig, um inkonsistente Scores zu vermeiden.")
+                    self._save_partial_results(results, is_local)
+                    sys.exit(1)
+                except KeyboardInterrupt:
+                    print("\n⚠️  Benchmark vom Benutzer abgebrochen.")
+                    self._save_partial_results(results, is_local)
+                    sys.exit(1)
+                except Exception as e:
+                    print(" " * 80, end="\r")
+                    print(f"   ❌ [{i}/{len(assets)}] {asset_name}: Abgebrochen - {str(e)}")
+                    # Budget-/Quota-Fehler erkennen und Flag setzen
+                    _BUDGET_KEYWORDS = [
+                        "quota", "budget", "billing", "credit", "insufficient_funds",
+                        "payment", "402 payment required", "exceeded your current quota",
+                        "budget limit exceeded",
+                    ]
+                    if any(kw in str(e).lower() for kw in _BUDGET_KEYWORDS):
+                        print("   💸 Budget-/Quota-Fehler erkannt für Provider. Setze Exhausted-Flag.")
+                        self.provider_quota_exhausted = True
+
+            # Global audit metrics
+            # ---------------------------------------------------------
+            # Terminal Summary Generation
+            # ---------------------------------------------------------
+            valid_results = [
+                r
+                for r in results
+                if r.get("type") != "system"
+                and r.get("status") != "error"
+                and r.get("skip_reason") is None
             ]
-            avg_tokens = sum(token_rates) / len(token_rates) if token_rates else 0.0
+            if valid_results:
+                # DEBUG: Temporär zur Diagnose des DURCHSCHNITT-Bugs
+                _pcts = [r.get("percentage") for r in valid_results]
+                logger.debug("DURCHSCHNITT DEBUG: valid_results=%d, pcts=%s", len(valid_results), _pcts)
+                avg_score = sum(float(p) if p is not None else 0.0 for p in _pcts) / len(valid_results)
+                avg_time = sum(r.get("execution_time", 0.0) for r in valid_results) / len(valid_results)
 
-            judge_scores = [r.get("judge_score") for r in valid_results if r.get("judge_score") is not None]
+                token_rates = [
+                    float(r.get("tokens_per_second", 0.0))
+                    for r in valid_results
+                    if isinstance(r.get("tokens_per_second"), (int, float))
+                    or (
+                        isinstance(r.get("tokens_per_second"), str)
+                        and str(r.get("tokens_per_second")).replace(".", "", 1).isdigit()
+                    )
+                ]
+                avg_tokens = sum(token_rates) / len(token_rates) if token_rates else 0.0
 
-            # The theoretical cost is generated dynamically per request from CostTracker (SSOT)
-            total_usd = sum(r.get("cost_usd", 0.0) for r in valid_results)
-            avg_usd = total_usd / len(valid_results)
+                judge_scores = [r.get("judge_score") for r in valid_results if r.get("judge_score") is not None]
 
-            summary = "\n   " + "="*70 + "\n"
-            summary += f"   🏁 DURCHSCHNITT: {avg_score:.1f}% | {avg_tokens:.0f} T/s | {avg_time:.1f}s"
+                # The theoretical cost is generated dynamically per request from CostTracker (SSOT)
+                total_usd = sum(r.get("cost_usd", 0.0) for r in valid_results)
+                avg_usd = total_usd / len(valid_results)
 
-            if judge_scores:
-                avg_judge = sum(judge_scores) / len(judge_scores)
-                summary += f" | ⚖️ Judge: {avg_judge:.1f}/5"
+                summary = "\n   " + "=" * 70 + "\n"
+                summary += f"   🏁 DURCHSCHNITT: {avg_score:.1f}% | {avg_tokens:.0f} T/s | {avg_time:.1f}s"
 
-            if avg_usd > 0.0:
-                summary += f" | 💵 Ø ${avg_usd:.4f}"
+                if judge_scores:
+                    avg_judge = sum(judge_scores) / len(judge_scores)
+                    summary += f" | ⚖️ Judge: {avg_judge:.1f}/5"
 
-            summary += "\n   " + "="*70 + "\n"
-            print(summary)
+                if avg_usd > 0.0:
+                    summary += f" | 💵 Ø ${avg_usd:.4f}"
 
+                summary += "\n   " + "=" * 70 + "\n"
+                print(summary)
 
-        if self.audit_mode and results:
-            from utils.benchmark_utils import append_global_run_metrics
+            if self.audit_mode and results:
+                from utils.benchmark_utils import append_global_run_metrics
 
-            execution_times: List[float] = []
-            timeout_count: int = 0
-            asset_ids = []
-            for res in results:
-                if res.get("type") == "system":
-                    continue
-                a_id = res.get("asset_id", "")
-                if a_id:
-                    asset_ids.append(a_id)
-                t_exe = res.get("execution_time", 0.0)
-                execution_times.append(t_exe)
-                if res.get("status") == "error" or t_exe > TIMEOUT_DEFAULT:
-                    timeout_count += 1
-            if asset_ids:
-                append_global_run_metrics(
-                    model,
-                    asset_ids,
-                    execution_times,
-                    timeout_count,
-                    len(asset_ids),
-                    benchmark_info.get("name", "Unknown"),
-                )
+                execution_times: List[float] = []
+                timeout_count: int = 0
+                asset_ids = []
+                for res in results:
+                    if res.get("type") == "system":
+                        continue
+                    a_id = res.get("asset_id", "")
+                    if a_id:
+                        asset_ids.append(a_id)
+                    t_exe = res.get("execution_time", 0.0)
+                    execution_times.append(t_exe)
+                    if res.get("status") == "error" or t_exe > TIMEOUT_DEFAULT:
+                        timeout_count += 1
+                if asset_ids:
+                    append_global_run_metrics(
+                        model,
+                        asset_ids,
+                        execution_times,
+                        timeout_count,
+                        len(asset_ids),
+                        benchmark_info.get("name", "Unknown"),
+                    )
 
-        return results
+            return results
+        finally:
+            self._cleanup_local_provider(provider)
+
+    def _cleanup_local_provider(self, provider: str) -> None:
+        """Optionaler End-of-Run Cleanup für lokale Provider (Stop + Cache-Clear)."""
+        local_provider_names = (
+            "ollama",
+            "llamacpp",
+            "llamacpp_spark",
+            "llama_cpp",
+            "llamacpp_local",
+        )
+        provider_l = provider.lower()
+        if provider_l not in local_provider_names:
+            return
+
+        local_cfg = self.validator.config.get("providers", {}).get("local", {})
+        alias_map = {
+            "llama_cpp": "llamacpp",
+            "llamacpp_local": "llamacpp",
+            "ollama": "ollama_local",
+        }
+        provider_key = alias_map.get(provider_l, provider_l)
+        provider_cfg = local_cfg.get(provider_key, {})
+
+        if not provider_cfg.get("cleanup_on_exit", False):
+            return
+
+        stop_cmd = provider_cfg.get("server_stop_cmd")
+        post_stop_cmd = provider_cfg.get("server_post_stop_cmd")
+
+        print("\n🧹 End-of-Run Cleanup aktiv: stoppe lokalen Server und bereinige Cache …")
+        if stop_cmd:
+            try:
+                subprocess.run(stop_cmd, shell=True, check=False)
+            except Exception as exc:  # noqa: BLE001
+                print(f"⚠️ Cleanup stop failed: {exc}")
+
+        if post_stop_cmd:
+            try:
+                subprocess.run(post_stop_cmd, shell=True, check=False)
+            except Exception as exc:  # noqa: BLE001
+                print(f"⚠️ Cleanup post-stop failed: {exc}")
 
     def _save_partial_results(self, results: List[Dict[str, Any]], is_local: bool):
         if results:

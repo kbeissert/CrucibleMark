@@ -139,7 +139,7 @@ class ResultManager:
             provider = results[0].get("provider", "unknown")
             model_name = results[0].get("model", "")
 
-            if provider in ("ollama", "llamacpp", "llama_cpp", "llamacpp_local"):
+            if provider in ("ollama", "llamacpp", "llamacpp_spark", "llama_cpp", "llamacpp_local"):
                 if ":cloud" in model_name.lower() or model_name.lower().endswith("-cloud"):
                     result_type = RESULT_TYPE_CLOUD
                 else:

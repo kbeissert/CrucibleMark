@@ -91,7 +91,13 @@ class LLMClient:
                     return locked_version
         return model_alias
 
-    _LOCAL_PROVIDERS = ("ollama", "llamacpp", "llama_cpp", "llamacpp_local")
+    _LOCAL_PROVIDERS = (
+        "ollama",
+        "llamacpp",
+        "llamacpp_spark",
+        "llama_cpp",
+        "llamacpp_local",
+    )
 
     @property
     def last_load_duration(self) -> float:
@@ -198,6 +204,7 @@ class LLMClient:
                 prompt=prompt,
                 temperature=temperature,
                 stream_handler=stream_handler,
+                _provider_name=provider,
                 **kwargs,
             )
             # Only record time if call succeeds (returns without exception)

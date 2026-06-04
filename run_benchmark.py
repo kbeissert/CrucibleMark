@@ -226,54 +226,90 @@ class BenchmarkRunner:
                 print("\n❌ Provider or Model could not be determined.")
                 return
 
-        # Run benchmark for each module
-        for mod_id, module_config in modules_to_run:
-            if not module_config:
-                continue
-            # SSOT: Delegate-Module (z.B. tooluse, political_compass) an das
-            # zuständige Fachscript delegieren. Das Fachscript verantwortet
-            # seinen eigenen Lifecycle (MCP-Start, Judge-Auswahl, etc.).
-            # Verhindert das vergangene Problem, dass make benchmark
-            # UnifiedBenchmarkRunner direkt startete und z.B. den MCP-Server
-            # nicht initialisierte.
-            #
-            # Cycle-Detection: Wenn wir selbst von einem Delegate-Script
-            # aufgerufen wurden (CRUCIBLE_DELEGATE_PARENT=1), NICHT mehr
-            # delegieren — sonst Endlosschleife. Stattdessen den Test direkt
-            # via UnifiedBenchmarkRunner ausführen (MCP läuft bereits im
-            # Parent-Delegate).
-            in_delegate_child = os.environ.get("CRUCIBLE_DELEGATE_PARENT") == "1"
-            if module_config.get("delegate_script") and not in_delegate_child:
-                print(f"\n>>> Running Module: {module_config['name']} (Delegate)")
-                self._run_delegate(
+        try:
+            # Run benchmark for each module
+            for mod_id, module_config in modules_to_run:
+                if not module_config:
+                    continue
+                # SSOT: Delegate-Module (z.B. tooluse, political_compass) an das
+                # zuständige Fachscript delegieren. Das Fachscript verantwortet
+                # seinen eigenen Lifecycle (MCP-Start, Judge-Auswahl, etc.).
+                # Verhindert das vergangene Problem, dass make benchmark
+                # UnifiedBenchmarkRunner direkt startete und z.B. den MCP-Server
+                # nicht initialisierte.
+                #
+                # Cycle-Detection: Wenn wir selbst von einem Delegate-Script
+                # aufgerufen wurden (CRUCIBLE_DELEGATE_PARENT=1), NICHT mehr
+                # delegieren — sonst Endlosschleife. Stattdessen den Test direkt
+                # via UnifiedBenchmarkRunner ausführen (MCP läuft bereits im
+                # Parent-Delegate).
+                in_delegate_child = os.environ.get("CRUCIBLE_DELEGATE_PARENT") == "1"
+                if module_config.get("delegate_script") and not in_delegate_child:
+                    print(f"\n>>> Running Module: {module_config['name']} (Delegate)")
+                    self._run_delegate(
+                        module_config,
+                        model_id,
+                        force=run_config.force,
+                        audit_mode=run_config.audit_mode,
+                    )
+                    continue
+                print(f"\n>>> Running Module: {module_config['name']}")
+                self._run_benchmark(
+                    mod_id,
                     module_config,
                     model_id,
+                    provider,
+                    num_runs=run_config.num_runs,
                     force=run_config.force,
                     audit_mode=run_config.audit_mode,
                 )
-                continue
-            print(f"\n>>> Running Module: {module_config['name']}")
-            self._run_benchmark(
-                mod_id,
-                module_config,
-                model_id,
-                provider,
-                num_runs=run_config.num_runs,
-                force=run_config.force,
-                audit_mode=run_config.audit_mode,
-            )
 
-        # Leaderboard Update
-        if modules_to_run:
-            print("\n📊 Aktualisiere Leaderboard...")
+            # Leaderboard Update
+            if modules_to_run:
+                print("\n📊 Aktualisiere Leaderboard...")
+                try:
+                    subprocess.run(
+                        [sys.executable, "scripts/core/generate_leaderboard.py"], check=True
+                    )
+                except subprocess.CalledProcessError:
+                    print("⚠️ Fehler beim Aktualisieren des Leaderboards.")
+                except Exception as e:  # pylint: disable=broad-exception-caught
+                    print(f"⚠️ Unerwarteter Fehler: {e}")
+        finally:
+            self._cleanup_local_provider(provider)
+
+    def _cleanup_local_provider(self, provider: str) -> None:
+        """Optionaler End-of-Run Cleanup für lokale Provider (Stop + Cache-Clear)."""
+        if provider.lower() not in ("ollama", "llamacpp", "llamacpp_spark", "llama_cpp", "llamacpp_local"):
+            return
+
+        local_cfg = self.config.get("providers", {}).get("local", {})
+        alias_map = {
+            "llama_cpp": "llamacpp",
+            "llamacpp_local": "llamacpp",
+            "ollama": "ollama_local",
+        }
+        provider_key = alias_map.get(provider.lower(), provider.lower())
+        provider_cfg = local_cfg.get(provider_key, {})
+
+        if not provider_cfg.get("cleanup_on_exit", False):
+            return
+
+        stop_cmd = provider_cfg.get("server_stop_cmd")
+        post_stop_cmd = provider_cfg.get("server_post_stop_cmd")
+
+        print("\n🧹 End-of-Run Cleanup aktiv: stoppe lokalen Server und bereinige Cache …")
+        if stop_cmd:
             try:
-                subprocess.run(
-                    [sys.executable, "scripts/core/generate_leaderboard.py"], check=True
-                )
-            except subprocess.CalledProcessError:
-                print("⚠️ Fehler beim Aktualisieren des Leaderboards.")
-            except Exception as e:  # pylint: disable=broad-exception-caught
-                print(f"⚠️ Unerwarteter Fehler: {e}")
+                subprocess.run(stop_cmd, shell=True, check=False)
+            except Exception as exc:  # noqa: BLE001
+                print(f"⚠️ Cleanup stop failed: {exc}")
+
+        if post_stop_cmd:
+            try:
+                subprocess.run(post_stop_cmd, shell=True, check=False)
+            except Exception as exc:  # noqa: BLE001
+                print(f"⚠️ Cleanup post-stop failed: {exc}")
 
     def _run_benchmark(
         self,
@@ -286,11 +322,12 @@ class BenchmarkRunner:
         audit_mode: bool = True,
     ):
         """Führt Benchmark aus (Lokal oder Kommerziell)."""
-        is_local = provider in ("ollama", "llamacpp", "llama_cpp", "llamacpp_local")
+        is_local = provider in ("ollama", "llamacpp", "llamacpp_spark", "llama_cpp", "llamacpp_local")
 
         _local_label = {
             "ollama": "Ollama (Local)",
             "llamacpp": "llama.cpp (Local)",
+            "llamacpp_spark": "llama.cpp Spark (Local)",
             "llama_cpp": "llama.cpp (Local)",
             "llamacpp_local": "llama.cpp (Local)",
         }.get(provider, provider.upper())

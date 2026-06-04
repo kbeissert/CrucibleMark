@@ -1,16 +1,22 @@
 # PROJECT_STATUS.md
 
-**Last Updated:** 2026-06-03
-**Current Version:** 4.2.1 — ToolUse-Backlog-Rearm, Provider-Preflight-Fix & Benchmark-Auto-Stabilisierung
+**Last Updated:** 2026-06-04
+**Current Version:** 4.3.0 — Spark-Connector-Konsolidierung, Readiness-Hardening & garantierter Lifecycle-Cleanup
 **Status:** ✅ Production-Ready
 
 ---
 
 ## Executive Summary
 
-CrucibleMark v4.2.1 schließt die ToolUse-Backlog-Schleife für leere Tool-Use-Spalten im Leaderboard: Modelle mit Strich werden wieder als `untested` in die Model-Card-SSOT zurückgesetzt, `benchmark_auto` nimmt sie erneut in den Pre-Step auf und die Provider-Preflight-Logik fällt bei Legacy-Cards ohne `provider` nicht mehr auf `missing_provider` zurück. Stattdessen wird der Provider aus der Model ID inferiert, sodass der eigentliche Erreichbarkeitszustand sichtbar wird.
+CrucibleMark v4.3.0 konsolidiert den OpenAI-kompatiblen lokalen Spark-Connector (`llamacpp_spark`) für stabile Kurz- und Vollruns. Der Connector übernimmt laufende Endpunkte mit identischem Modell robuster, bewertet Readiness toleranter (inkl. `reasoning_content`/`finish_reason`) und stellt den Lifecycle-Cleanup nun auch im `UnifiedBenchmarkRunner` über `finally` sicher. Dadurch werden Modell-Unload und optionaler Cache-Clear sowohl bei erfolgreichem Lauf als auch bei Abbruch zuverlässig ausgeführt.
 
-**Key Achievements (v4.2.1):**
+**Key Achievements (v4.3.0):**
+- ✅ **Spark-Readiness-Hardening** — Probe-Logik akzeptiert neben sichtbarem Content auch valide 200-Signale (`reasoning_content`, `finish_reason`, `usage.total_tokens`).
+- ✅ **Endpoint-Adoption mit Warmup-Fenster** — Läuft unter derselben `base_url` bereits das Zielmodell, wartet der Connector auf Readiness statt voreilig abzubrechen.
+- ✅ **UnifiedRunner-Cleanup via `finally`** — Lokale Provider inkl. `llamacpp_spark` werden nach Run-Ende oder Abbruch zuverlässig gestoppt; optionaler `server_post_stop_cmd` wird ausgeführt.
+- ✅ **CLI-Modul mit Qwen validiert** — Kurztest auf `cli_benchmark` mit Qwen über Spark erfolgreich; Cleanup-Pfad für Success und Abbruch verifiziert.
+
+**Vorherige Version (v4.2.1 — ToolUse-Backlog-Rearm, Provider-Preflight-Fix & Benchmark-Auto-Stabilisierung):**
 - ✅ **ToolUse-Backlog reaktiviert** — Modelle mit Tool-Use-Strich werden aus der Leaderboard-Analyse auf `supports_tool_use="untested"` zurückgesetzt und von `benchmark_auto` wieder im Pre-Step verarbeitet.
 - ✅ **Provider-Preflight-Fix** — `validate_untested_card()` inferiert den Provider aus `model_id`, wenn ältere Model Cards keinen `provider`-Key tragen.
 - ✅ **Benchmark-Auto stabilisiert** — Legacy-Cards scheitern nicht mehr an `missing_provider`, sondern liefern den tatsächlichen Erreichbarkeitsgrund wie `ollama_model_not_installed`.

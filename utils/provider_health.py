@@ -148,7 +148,7 @@ def validate_untested_card(card: Dict[str, Any]) -> Tuple[bool, Optional[str]]:
         return True, None
 
     # llama.cpp: prüfen ob Binary-Pfad gesetzt (lokale Datei muss existieren)
-    if provider == "llamacpp":
+    if provider in ("llamacpp", "llamacpp_spark"):
         llama_path = (card.get("llama_cpp_path") or "").strip()
         if llama_path and not os.path.exists(llama_path):
             return False, f"llamacpp_path_missing:{llama_path}"

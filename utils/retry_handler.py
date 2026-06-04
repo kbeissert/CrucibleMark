@@ -70,6 +70,14 @@ class RetryHandler:
                     or "rate limit" in error_msg
                     or "too many requests" in error_msg
                 )
+                is_non_retriable = (
+                    "endpoint conflict" in error_msg
+                    or "openai-kompatibler endpunkt" in error_msg
+                )
+
+                if is_non_retriable:
+                    logger.debug("Non-retriable error detected. Aborting retries: %s", e)
+                    raise
 
                 if attempt == current_max_retries - 1:
                     logger.debug(

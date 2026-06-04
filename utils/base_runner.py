@@ -23,14 +23,35 @@ logger = logging.getLogger(__name__)
 def _get_hardware_profile(config: dict, provider: str) -> str | None:
     """Liest das Hardware-Profil für lokale Provider aus benchmark_config.yaml.
 
-    SSoT: providers.local.config.hardware_profile
+    SSoT: providers.local.<provider>.hardware_profile
     Nur für lokale Provider (llamacpp, ollama) — Cloud/Commercial = None.
     """
-    _local_providers = ("ollama", "llamacpp", "llama_cpp", "llamacpp_local")
-    if provider.lower() not in _local_providers:
+    provider_l = provider.lower()
+    _local_providers = (
+        "ollama",
+        "llamacpp",
+        "llamacpp_spark",
+        "llama_cpp",
+        "llamacpp_local",
+    )
+    if provider_l not in _local_providers:
         return None
+
+    alias_map = {
+        "llama_cpp": "llamacpp",
+        "llamacpp_local": "llamacpp",
+        "ollama": "ollama_local",
+    }
+    provider_key = alias_map.get(provider_l, provider_l)
+
     try:
-        return config.get("providers", {}).get("local", {}).get("config", {}).get("hardware_profile")
+        local_cfg = config.get("providers", {}).get("local", {})
+        profile = local_cfg.get(provider_key, {}).get("hardware_profile")
+        if profile:
+            return profile
+
+        # Backward-compatible fallback for older configs.
+        return local_cfg.get("config", {}).get("hardware_profile")
     except Exception:
         return None
 

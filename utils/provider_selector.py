@@ -165,27 +165,52 @@ class ProviderSelector:
 
         local_cfg = self.config.get("providers", {}).get("local", {})
         llamacpp_cfg = local_cfg.get("llamacpp", {})
+        llamacpp_spark_cfg = local_cfg.get("llamacpp_spark", {})
         ollama_cfg = local_cfg.get("ollama_local", {})
         use_llamacpp = llamacpp_cfg.get("enabled", False)
+        use_llamacpp_spark = llamacpp_spark_cfg.get("enabled", False)
         use_ollama = ollama_cfg.get("enabled", False)
 
+        if use_llamacpp and use_llamacpp_spark:
+            runtime = select_from_list(
+                [
+                    ("llamacpp", "llama.cpp (MacBook Pro)"),
+                    ("llamacpp_spark", "llama.cpp (DGX Spark)"),
+                ],
+                display_func=lambda x: x[1],
+                prompt="Wähle lokale Runtime",
+                title="LOKALE PROVIDER",
+            )
+            if runtime:
+                if runtime[0] == "llamacpp":
+                    return self._select_llamacpp_model(llamacpp_cfg, "llamacpp")
+                return self._select_llamacpp_model(llamacpp_spark_cfg, "llamacpp_spark")
+            sys.exit(0)
+
         if use_llamacpp:
-            return self._select_llamacpp_model(llamacpp_cfg)
+            return self._select_llamacpp_model(llamacpp_cfg, "llamacpp")
+        if use_llamacpp_spark:
+            return self._select_llamacpp_model(llamacpp_spark_cfg, "llamacpp_spark")
         if use_ollama:
             return self._select_ollama_model()
         print("\n❌ Kein lokaler Provider aktiv. Bitte 'enabled: true' in benchmark_config.yaml setzen.")
         print("   providers.local.ollama_local.enabled oder providers.local.llamacpp.enabled")
         sys.exit(1)
 
-    def _select_llamacpp_model(self, llamacpp_cfg: dict) -> tuple[str, str]:
-        """Wählt Modell aus der llama.cpp-Konfiguration."""
+    def _select_llamacpp_model(self, llamacpp_cfg: dict, provider_name: str = "llamacpp") -> tuple[str, str]:
+        """Wählt Modell aus der llama.cpp-Konfiguration.
+
+        Args:
+            llamacpp_cfg: Provider-Konfiguration (llamacpp oder llamacpp_spark).
+            provider_name: Provider-Name für die Rückgabe ("llamacpp" oder "llamacpp_spark").
+        """
         config_models = [
             {
-                "provider": "llamacpp",
+                "provider": provider_name,
                 "id": m.get("id", ""),
                 "name": m.get("name", m.get("id", "")),
                 "description": m.get("description", ""),
-                "file": m.get("file", ""),
+                "file": m.get("file", "") or m.get("model_file", ""),
             }
             for m in llamacpp_cfg.get("models", [])
             if m.get("id")
@@ -208,18 +233,26 @@ class ProviderSelector:
             config_ids = {m["id"] for m in config_models}
             for mid in live_ids - config_ids:
                 config_models.append(
-                    {"provider": "llamacpp", "id": mid, "name": mid, "description": "Live vom Server", "file": ""}
+                    {"provider": provider_name, "id": mid, "name": mid, "description": "Live vom Server", "file": ""}
                 )
         except Exception:
             pass
 
         if not config_models:
-            print("\n⚠️  Keine llama.cpp-Modelle in benchmark_config.yaml konfiguriert.")
-            print("Ergänze Modelle unter providers.local.llamacpp.models")
+            print(f"\n⚠️  Keine llama.cpp-Modelle in benchmark_config.yaml konfiguriert.")
+            print(f"Ergänze Modelle unter providers.local.{provider_name}.models")
             sys.exit(1)
 
+        # Titel anpassen je nach Provider
+        if provider_name == "llamacpp_spark":
+            title = "LOKALE MODELLE (llama.cpp — DGX Spark)"
+            server_hint = " [DGX Spark]"
+        else:
+            title = "LOKALE MODELLE (llama.cpp)"
+            server_hint = " [Server aktiv]"
+
         def display_model(m):
-            live_tag = " [Server aktiv]" if m["id"] in live_ids else ""
+            live_tag = server_hint if m["id"] in live_ids else ""
             desc = m["description"] or m["file"] or ""
             return (f"{m['name']}{live_tag}", f"ID: {m['id']}  {desc}".strip())
 
@@ -227,12 +260,12 @@ class ProviderSelector:
             config_models,
             display_func=display_model,
             prompt="Wähle ein Modell",
-            title="LOKALE MODELLE (llama.cpp)",
+            title=title,
         )
 
         if selected:
             print(f"✓ Ausgewählt: {selected['name']}")
-            return "llamacpp", str(selected["id"])
+            return provider_name, str(selected["id"])
 
         sys.exit(0)
 

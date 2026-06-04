@@ -39,6 +39,7 @@ _PROVIDER_SHORTCODES: dict[str, str] = {
     "local": "LCL",
     # llama.cpp local inference server (OpenAI-compatible)
     "llamacpp": "LCL",
+    "llamacpp_spark": "SPK",
     "llama_cpp": "LCL",
     "llamacpp_local": "LCL",
     # Ollama as cloud proxy (e.g. qwen3.5:397b-cloud via remote Ollama endpoint)

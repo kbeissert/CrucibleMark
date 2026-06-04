@@ -112,6 +112,29 @@ benchmark_modules/
 
 ---
 
+## Lokale OpenAI-kompatible Connectoren (llama.cpp)
+
+Für `llamacpp` und `llamacpp_spark` gilt im aktuellen Stand:
+
+- Die Startbereitschaft wird über `health` plus einen minimalen Completion-Probe-Request mit `Hallo` ermittelt.
+- Die Probe akzeptiert auch valide Antworten ohne sichtbaren `content`, wenn z. B. `reasoning_content`, `finish_reason` oder `usage.total_tokens` vorliegen.
+- Ein bereits aktiver fremder OpenAI-kompatibler Endpoint unter derselben `base_url` wird nicht automatisch gestoppt.
+- Stattdessen gibt der Connector eine Warnung aus und der Benchmark-Lauf endet kontrolliert.
+- Läuft dasselbe Zielmodell bereits auf dem Endpoint, nutzt der Connector ein Warmup-Fenster und adoptiert den laufenden Server statt vorschnell abzubrechen.
+
+Für `llamacpp_spark` sind im Regelfall nur diese provider-spezifischen Keys relevant:
+
+- `base_url`, `model_dir`, `server_start_cmd`, `server_stop_cmd`
+- `server_ready_timeout_sec`, `server_ready_poll_sec`, `server_ready_probe_timeout_sec`
+- `server_log`, `bind_host`, `threads`, `parallel`, `hardware_profile`
+- `cleanup_on_exit`, `server_post_stop_cmd`
+
+Historische Lifecycle-Flags wie `always_stop_before_start` sind für den konsolidierten Connector nicht mehr Teil der empfohlenen Konfiguration.
+
+Seit v4.3.0 gilt zusätzlich: Der `UnifiedBenchmarkRunner` führt den lokalen Provider-Cleanup in `finally` aus. Bei aktivem `cleanup_on_exit` werden `server_stop_cmd` und optional `server_post_stop_cmd` deshalb auch bei `KeyboardInterrupt`/Abbruch ausgeführt.
+
+---
+
 ## Reasoning-Modelle: Reasoning-Erkennung & Card-First Workflow
 
 CrucibleMark erkennt ab v3.5.8 Reasoning-Modelle empirisch statt rein heuristisch. Diese Erkennung bestimmt das Token-Budget, die LLM-Judge-Bewertung und die Audit-Log-Ausgabe.

@@ -193,6 +193,28 @@ Das Test-Modell für den Health-Check ist pro Provider konfiguriert. Anthropic: 
 
 **Provider-Spezifische Eigenheiten:**
 
+### Lokale Connector-Topologie (llama.cpp)
+
+CrucibleMark unterscheidet zwei lokale Betriebsformen für llama.cpp:
+
+1. **On-Device lokal (`llamacpp`):** Benchmark-Runner und llama-server laufen auf derselben Maschine (z. B. Mac).
+2. **Intranet-lokal (`llamacpp_spark`):** Benchmark-Runner läuft lokal auf dem Mac, steuert den llama-server aber per SSH auf einem Intranet-Host (DGX Spark).
+
+Gemeinsame Invarianten beider Connectoren:
+
+- Modellwechsel erfolgt als Stop + Start (kein Reload-API-Zwang im Framework).
+- Ein Modell gilt erst als startklar nach doppelter Prüfung: Health-Endpunkt plus kurzer Probe-Completion-Request mit einem einfachen `Hallo`.
+- Ein fremder aktiver OpenAI-kompatibler Endpoint unter derselben `base_url` wird nicht automatisch gestoppt oder übernommen.
+- Readiness akzeptiert neben sichtbarem Content auch gültige Completion-Signale ohne sichtbaren Text (`reasoning_content`, `finish_reason`, `usage.total_tokens`).
+- Für identisches bereits aktives Modell nutzt der Connector ein Warmup-Wartefenster statt eines sofortigen Abbruchs.
+
+Spark-spezifische Besonderheiten:
+
+- Steuerkommandos (`server_start_cmd`, `server_stop_cmd`) sind SSH-basiert.
+- Optionaler End-of-Run-Cleanup (`cleanup_on_exit`) mit zusätzlichem Cache-Clear (`server_post_stop_cmd`).
+- Bei Endpoint-Konflikten wird nur gewarnt; der Lauf bricht kontrolliert ab statt den fremden Server zu überschreiben.
+- Seit v4.3.0 erzwingt `UnifiedBenchmarkRunner.run_benchmark()` den lokalen Provider-Cleanup in `finally`; bei `cleanup_on_exit: true` werden Stop- und Post-Stop-Kommandos auch bei Abbruch ausgeführt.
+
 | Provider | Auth | Token Limit | Streaming | Retry Logic | Besonderheiten |
 |----------|------|-------------|-----------|-------------|----------------|
 | Ollama | Keine (localhost) | Modellabhängig (8K–128K) | ✅ | N/A (lokal) | `finish_reason` + `tps_eval` aus Ollama-Metadaten |
