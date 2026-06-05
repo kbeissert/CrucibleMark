@@ -1,6 +1,6 @@
 {
-  "model_id": "grok-4-fast-non-reasoning",
-  "display_name": "Grok 4 Fast Non-Reasoning",
+  "model_id": "grok-4.3",
+  "display_name": "Grok 4.3",
   "developer": "xAI",
   "origin_country": "USA",
   "developer_jurisdiction": "US",
@@ -10,26 +10,26 @@
   "weights_provenance_risk_rationale": "xAI ist ein US-amerikanisches Unternehmen und unterliegt dem CLOUD Act, jedoch sind die Modellgewichte nicht öffentlich zugänglich.",
   "model_family": "Grok",
   "primary_focus": "general",
-  "summary": "Grok 4 Fast Non-Reasoning ist xAIs schnellste Inferenzvariante – ohne explizites Thinking/Reasoning, aber mit hoher Geschwindigkeit und guter Qualität für allgemeine Aufgaben. Es ist ausschließlich über die xAI-API verfügbar und richtet sich an Anwendungen mit niedrigen Latenzanforderungen.",
+  "summary": "Grok 4.3 ist xAIs aktuelles Flaggschiff-Modell – ausgelegt auf allgemeine Sprachaufgaben, Reasoning und Echtzeit-Wissenszugriff via X-Plattform. Es ist ausschließlich über die xAI-API verfügbar und zeichnet sich durch direkten, unzensierten Antwortstil aus.",
   "strengths": [
-    "Sehr schnelle Inferenz ohne Reasoning-Overhead",
-    "Gute Qualität für alltägliche Aufgaben, Zusammenfassungen und einfache Fragen",
     "Echtzeit-Zugriff auf X-Plattform-Daten für aktuelle Informationen",
-    "Kosteneffizient aufgrund niedrigerer Rechenanforderungen"
+    "Direkter, unzensierter Antwortstil mit hoher Meinungsbildung",
+    "Starke Reasoning-Fähigkeiten bei allgemeinen und kontroversen Themen",
+    "Gute Multimodalität (Text und Bild)"
   ],
   "known_limitations": [
     "Nur über xAIs Cloud-API verfügbar, kein lokaler Betrieb möglich",
-    "Kein explizites Thinking/Reasoning – bei komplexen logischen oder mathematischen Aufgaben schwächer",
-    "Der unzensierte Stil kann bei sensiblen Themen zu kontroversen Antworten führen"
+    "Der unzensierte Stil kann bei sensiblen Themen zu kontroversen oder einseitigen Antworten führen",
+    "Begrenzte Transparenz bezüglich Modellarchitektur und Parametergröße"
   ],
-  "judge_context_hint": "Grok 4 Fast Non-Reasoning ist auf Geschwindigkeit ohne Thinking optimiert – bei komplexen Aufgaben ist die Antworttiefe begrenzt; die Bewertung sollte die Aufgabenkomplexität berücksichtigen.",
+  "judge_context_hint": "Grok 4.3 neigt zu direkten, oft kontroversen Antworten – bei Bewertungen sollte unterschieden werden, ob die Direktheit als Feature oder als Qualitätsmangel gewertet wird.",
   "architecture_tags": [
     "General",
-    "Fast",
-    "No-Reasoning"
+    "Instruct",
+    "Real-time"
   ],
   "unknown": false,
-  "generated_at": "2026-06-05T22:18:00.000000+00:00",
+  "generated_at": "2026-06-05T22:16:00.000000+00:00",
   "card_status": "complete",
   "size_class": "Frontier",
   "thinking_probe_detected": false,
@@ -42,9 +42,9 @@
   "commercial_use_allowed": true,
   "vendor": "xAI",
   "weights_license_tier": "proprietary",
-  "model_version": "4-fast-non-reasoning",
-  "input_price_per_1m": 0.2,
-  "output_price_per_1m": 1.0,
+  "model_version": "4.3",
+  "input_price_per_1m": 0.5,
+  "output_price_per_1m": 2.5,
   "use_case_primary": "generalist",
   "parameter_architecture": "moe",
   "params_total_b": null,

@@ -1,0 +1,53 @@
+{
+  "model_id": "gemini-3.5-flash",
+  "display_name": "Gemini 3.5 Flash",
+  "developer": "Google",
+  "origin_country": "USA",
+  "developer_jurisdiction": "US",
+  "deployment_type": "cloud-only",
+  "local_deployment_possible": false,
+  "weights_provenance_risk": "medium",
+  "weights_provenance_risk_rationale": "Google ist ein US-amerikanisches Unternehmen und unterliegt dem CLOUD Act, jedoch sind die Modellgewichte nicht öffentlich zugänglich.",
+  "model_family": "Gemini",
+  "primary_focus": "general",
+  "summary": "Gemini 3.5 Flash ist Googels schnelles, effizientes Flash-Modell der Gemini-3.5-Serie – optimiert für multimodale Aufgaben, schnelles Reasoning und kosteneffiziente Inferenz. Es ist ausschließlich über die Google Cloud-API verfügbar und richtet sich an Anwendungen, bei denen niedrige Latenz und gute Leistung wichtiger sind als maximale Reasoning-Tiefe.",
+  "strengths": [
+    "Schnelle Inferenz mit guter Qualität für alltägliche Aufgaben",
+    "Nativ multimodal (Text, Bild, Video, Audio) ohne zusätzliche Verarbeitung",
+    "Gutes Instruction-Following und strukturierte Antwortgenerierung",
+    "Kosteneffizient im Vergleich zu größeren Gemini-Pro-Modellen"
+  ],
+  "known_limitations": [
+    "Nur über Googles Cloud-API verfügbar, kein lokaler Betrieb möglich",
+    "Schwächer als Gemini Pro bei komplexem mehrstufigem Reasoning und mathematischen Aufgaben",
+    "Abhängigkeit von Google-Infrastruktur und möglicherweise US-amerikanischer Datenverarbeitung"
+  ],
+  "judge_context_hint": "Gemini 3.5 Flash ist auf Geschwindigkeit und Effizienz optimiert – bei komplexen Reasoning-Aufgaben kann die Antworttiefe gegenüber größeren Modellen zurückfallen; die Bewertung sollte die Modellklasse berücksichtigen.",
+  "architecture_tags": [
+    "General",
+    "Multimodal",
+    "Flash"
+  ],
+  "unknown": false,
+  "generated_at": "2026-06-05T22:15:00.000000+00:00",
+  "card_status": "complete",
+  "size_class": "Workstation",
+  "thinking_probe_detected": false,
+  "thinking_probe_evidence": "Not yet probed.",
+  "thinking_probe_confidence": "low",
+  "thinking_probe_at": null,
+  "supports_tool_use": true,
+  "license": "Proprietary",
+  "license_url": null,
+  "commercial_use_allowed": true,
+  "vendor": "Google",
+  "weights_license_tier": "proprietary",
+  "model_version": "3.5-flash",
+  "input_price_per_1m": 0.075,
+  "output_price_per_1m": 0.3,
+  "use_case_primary": "generalist",
+  "parameter_architecture": "moe",
+  "params_total_b": null,
+  "context_window_k": 128,
+  "knowledge_cutoff": "2025-12"
+}
