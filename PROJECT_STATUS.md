@@ -1,14 +1,19 @@
 # PROJECT_STATUS.md
 
 **Last Updated:** 2026-06-05
-**Current Version:** 4.3.1 — Code Quality Pass: Bugfixes, DRY-Konsolidierung & Import-Cleanup
+**Current Version:** 4.3.2 — llamacpp Kontextfenster-Fix & Provider-Architektur-Analyse
 **Status:** ✅ Production-Ready
 
 ---
 
 ## Executive Summary
 
-CrucibleMark v4.3.1 ist ein reiner Code-Quality-Patch ohne Verhaltensänderungen. Pylint 10.00/10, Ruff clean, 227/227 Tests grün.
+CrucibleMark v4.3.2 behebt einen Kontextfenster-Bug im `llamacpp_spark` Provider und dokumentiert die Provider-Instanziierungs-Architektur für parallele Benchmarks. Pylint 10.00/10, Ruff clean, 227/227 Tests grün.
+
+**Key Achievements (v4.3.2):**
+- ✅ **Kontextfenster-Resolution** — `llamacpp.py:_build_server_cmd()` nutzt jetzt Provider-Level `context_window` als Fallback, wenn `model_cfg.context_length` fehlt. Prioritätenkette: Model-Level → Provider-Level → Globaler Default → Hardcoded (32768).
+- ✅ **Provider-Instanziierungs-Analyse** — Die Registry in `BaseProviderClient` erzeugt separate Instanzen für jeden Provider-Namen (`llamacpp`, `llamacpp_spark`, etc.). Parallele Benchmarks auf verschiedenen Hosts sind architektonisch möglich.
+- ✅ **Dokumentation** — Memory Bank (`techContext.md`) mit neuer Sektion "Kontextfenster-Resolution" aktualisiert.
 
 **Key Achievements (v4.3.1):**
 - ✅ **F841 Bug behoben** — `existing_card` in `_ensure_model_card()` wurde befüllt aber nie genutzt (echter Bug).
