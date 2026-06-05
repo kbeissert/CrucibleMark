@@ -22,7 +22,7 @@ from schemas.result import BenchmarkResult
 
 # CrucibleMark Core
 try:
-    from benchmark_modules.base_test import BaseTest
+    from benchmark_modules.base_test import BaseTest as BaseTest
 except ImportError:
     # Fallback if running standalone
     class BaseTest:  # type: ignore[no-redef]
