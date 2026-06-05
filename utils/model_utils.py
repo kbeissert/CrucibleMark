@@ -1144,7 +1144,7 @@ def probe_thinking_model(
     Chain-of-Thought signals.
 
     Signal hierarchy:
-      - high:   <think>/<thinking>/<thought> tags present in response
+      - high:   ○/○/<thinking>/<thought> tags present in response
       - medium: reasoning_tokens metadata > 0
       - medium: response_length / 80 chars > 5 (suspiciously long for a simple calc)
       - low:    no signal found
@@ -1157,6 +1157,7 @@ def probe_thinking_model(
     from utils.llm_client import LLMClient  # local import to avoid circular deps
 
     logger.info("[ThinkingProbe] Probing %s via %s …", model_id, provider_key)
+    print(f"   ⏳ Sende Reasoning-Probe an '{model_id}'...", flush=True)
 
     client = LLMClient(config)
     try:
@@ -1166,6 +1167,7 @@ def probe_thinking_model(
             provider=provider_key,
             max_tokens=_PROBE_MAX_TOKENS,
         )
+        print(f"   ✓ Antwort erhalten ({len(raw)} Zeichen) — analysiere...", flush=True)
     except Exception as exc:
         raise RuntimeError(
             f"ThinkingProbe: API call failed for model '{model_id}': {exc}"

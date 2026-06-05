@@ -247,7 +247,10 @@ class LlamaCppClient(BaseProviderClient):
 
         ctx_size = model_cfg.get(
             "context_length",
-            self.config.get("providers", {}).get("local", {}).get("config", {}).get("context_window", 32768),
+            prov_cfg.get(
+                "context_window",
+                self.config.get("providers", {}).get("local", {}).get("config", {}).get("context_window", 32768),
+            ),
         )
         n_gpu = model_cfg.get("n_gpu_layers", prov_cfg.get("n_gpu_layers", 99))
         threads = prov_cfg.get("threads", 10)
@@ -372,9 +375,13 @@ class LlamaCppClient(BaseProviderClient):
                     1,
                     (adopt_ready_timeout_sec + adopt_poll_sec - 1) // adopt_poll_sec,
                 )
+                print(f"   ⏳ Server läuft bereits mit '{model_id}' — warte auf Modell-Bereitschaft (Timeout: {adopt_ready_timeout_sec}s) ...", flush=True)
                 for attempt in range(adopt_attempts):
+                    elapsed = (attempt + 1) * adopt_poll_sec
+                    print(f"   ⏳ Warte auf Modell-Bereitschaft ({elapsed}s / {adopt_ready_timeout_sec}s) ...", end="\r", flush=True)
                     if self._is_model_ready(model_id):
                         self._active_model = model_id
+                        print(f"   ✅ Modell bereit nach {elapsed}s                              ", flush=True)
                         logger.debug(
                             "Adopted already running llama.cpp endpoint at %s with model '%s' after warmup (%d/%d)",
                             self._base_url(),

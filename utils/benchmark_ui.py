@@ -44,9 +44,9 @@ class TerminalUI:
     @staticmethod
     def print_header(title: str, width: int = 60) -> None:
         """Prints a formatted header."""
-        print(f"\n{'=' * width}")
-        print(title)
-        print(f"{'=' * width}")
+        print(f"\n{'=' * width}", flush=True)
+        print(title, flush=True)
+        print(f"{'=' * width}", flush=True)
 
     @staticmethod
     def select_from_list(
@@ -166,26 +166,26 @@ class TerminalUI:
             f"Runs: {num_runs}",
         ]
 
-        print("\n" + "=" * self.terminal_width)
-        print(f"🌐 STARTE BENCHMARK: {module_name.upper()}")
-        print("=" * self.terminal_width)
+        print("\n" + "=" * self.terminal_width, flush=True)
+        print(f"🌐 STARTE BENCHMARK: {module_name.upper()}", flush=True)
+        print("=" * self.terminal_width, flush=True)
         for line in lines:
-            print(line)
-        print("=" * self.terminal_width + "\n")
+            print(line, flush=True)
+        print("=" * self.terminal_width + "\n", flush=True)
 
         if extra_info:
             self._print_box(extra_info, title=f"{module_name.upper()} INFO")
 
     def start_run(self, run_idx: int, total_runs: int, model: str, provider: str):
         """Announces the start of a specific run."""
-        print(f"\n{'=' * self.terminal_width}")
-        print(f"🌐 RUN {run_idx}/{total_runs} - {model} ({provider})")
-        print(f"{'=' * self.terminal_width}")
-        print("📍 FORTSCHRITT:")
+        print(f"\n{'=' * self.terminal_width}", flush=True)
+        print(f"🌐 RUN {run_idx}/{total_runs} - {model} ({provider})", flush=True)
+        print(f"{'=' * self.terminal_width}", flush=True)
+        print("📍 FORTSCHRITT:", flush=True)
 
     def start_block(self, block_id: str, title: str, count: int):
         """Announces a new question block."""
-        print(f"📂 Starte Block: {block_id} {title} ({count} Fragen)")
+        print(f"📂 Starte Block: {block_id} {title} ({count} Fragen)", flush=True)
 
     def update_progress(
         self,

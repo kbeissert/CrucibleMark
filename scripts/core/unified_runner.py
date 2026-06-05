@@ -116,9 +116,11 @@ class UnifiedBenchmarkRunner(BaseBenchmarkRunner):
         found_path = _find_card(model)
         if found_path is not None and found_path.exists():
             card_path = found_path
+            logger.debug("[Card-First] Card gefunden via _find_card: %s", card_path)
         else:
             safe = model.replace("/", "_").replace(":", "_").replace(".", "_")
             card_path = cards_dir / f"{safe}.json"
+            logger.debug("[Card-First] Card nicht gefunden, verwende Fallback-Pfad: %s", card_path)
 
         needs_probe = False
         card_loaded = False
@@ -131,11 +133,13 @@ class UnifiedBenchmarkRunner(BaseBenchmarkRunner):
                 canonical_model = loaded.get("model_id") or model
                 if "thinking_probe_detected" not in loaded:
                     needs_probe = True
+                    print(f"   ⏳ Card vorhanden, aber Thinking-Probe fehlt — starte Erkennung...", flush=True)
                     logger.info(
                         "[Card-First] Card für '%s' hat kein Probe-Feld → Probe wird nachgeholt.",
                         model,
                     )
                 else:
+                    print(f"   ✓ Card gefunden mit thinking_probe_detected={loaded['thinking_probe_detected']}", flush=True)
                     logger.debug(
                         "[Card-First] '%s' hat vollständige Card (probe_detected=%s). Kein Probe nötig.",
                         model,
@@ -147,10 +151,12 @@ class UnifiedBenchmarkRunner(BaseBenchmarkRunner):
                         model, canonical_model,
                     )
             except Exception as e:
+                print(f"   ⚠️ Card konnte nicht gelesen werden: {e}", flush=True)
                 logger.warning("[Card-First] Card für '%s' konnte nicht gelesen werden: %s", model, e)
                 needs_probe = True
         else:
             needs_probe = True
+            print(f"   ⏳ Keine Card gefunden — starte Thinking-Probe...", flush=True)
             logger.info(
                 "[Card-First] Keine Card für '%s' gefunden → wird nach Probe angelegt.",
                 model,
@@ -161,7 +167,7 @@ class UnifiedBenchmarkRunner(BaseBenchmarkRunner):
             return canonical_model
 
         # Probe ausführen (wirft RuntimeError bei API-Fehler)
-        print(f"🔍 Reasoning-Erkennung für '{model}' …")
+        print(f"🔍 Reasoning-Erkennung für '{model}' — sende Probe-Request...", flush=True)
         try:
             probe = probe_thinking_model(model, provider, self.validator.config)
         except RuntimeError as probe_err:

@@ -363,6 +363,8 @@ providers:
       api_type: llamacpp
       model_type: open_weights_local
       enabled: true
+      context_window: 65536
+      num_predict: 65536
       base_url: "http://192.168.1.42:1235/v1"
       api_key: "sk-local"
       model_dir: /home/kay_beissert/ai/models/llm/gguf
@@ -372,6 +374,7 @@ providers:
       cleanup_on_exit: true
       server_post_stop_cmd: ssh -o BatchMode=yes -o ConnectTimeout=10 -p 22 kay_beissert@gx10-b20a.local "rm -rf ~/.cache/llama.cpp /tmp/llama.cpp*"
       server_ready_timeout_sec: 420
+      existing_server_ready_timeout_sec: 300
       server_ready_poll_sec: 5
       server_ready_probe_timeout_sec: 60
       server_log: ~/ai/llama-lab-spark.log

@@ -39,6 +39,10 @@ MODULE_CONFIG = {
         "semantic_threshold": 0.72,
         "keyword_threshold": 0.4,
     },
+    # Disable LLM Judge for unit tests - use rule-based scoring only
+    "llm_judge": {
+        "enabled": False,
+    },
 }
 
 
