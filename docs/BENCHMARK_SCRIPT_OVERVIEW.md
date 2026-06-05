@@ -88,11 +88,15 @@ flowchart LR
 
 ## 4) Wichtige Hinweise fuer den Ablauf
 
+- Zweck von `scripts/core/benchmark_auto.py`: Das Skript ist ein Meta-Orchestrator fuer Auto-Fill-Runs. Es soll fehlende Benchmark-Ergebnisse nachziehen, ohne bereits valide Ergebnisse unnötig neu zu berechnen.
 - In `benchmark_auto.py` laeuft Tool Use als Pre-Step fuer untested Cards vor den normalen Batches.
 - Score-Module werden in `benchmark_auto.py` explizit an `scripts/run_score_benchmark.py` delegiert.
 - Political Compass und Tool Use bleiben als Spezial-Delegate-Module in dedizierten Workern.
 - Dadurch bleibt die Ausführungslogik in Fachskripten und das Meta-Skript orchestriert nur.
 - CSV-Updates passieren teils im Runner selbst (`save_results`), teils in Spezial-Exportern (Tool Use), und das Leaderboard wird regelmaessig nachgezogen.
+- Standardmodus: aktive Skip-Logik (bereits vorhandene/gueltige Ergebnisse werden uebersprungen).
+- Force-Modus: `--force` (bzw. `make benchmark-auto FORCE=1`) deaktiviert die Skip-Logik fuer Re-Runs.
+- Die Menge der getesteten LLMs wird ausschliesslich ueber `config/provider_config.yaml` gesteuert (aktivierte Provider + modelllisten je Provider). Die Liste kann auch per Ein-/Auskommentieren von Modell-Einträgen angepasst werden.
 
 ## 5) Runner Contract (Start Iteration A)
 

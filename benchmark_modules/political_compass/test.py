@@ -11,6 +11,7 @@ import logging
 import math
 import random
 import statistics
+import sys
 import time
 import hashlib
 from pathlib import Path
@@ -471,9 +472,11 @@ class PoliticalCompassTest(BaseTest):
 
             ui.start_run(run_idx, self.num_runs, model, provider)
             if is_forced:
-                print(f"\n\033[93m[🎯 Verhaltensfilter Aktiviert: Anti-Diplomat Modus (Run {run_idx})]\033[0m\n")
+                _label = f"[🎯 Verhaltensfilter Aktiviert: Anti-Diplomat Modus (Run {run_idx})]"
+                print(f"\n\033[93m{_label}\033[0m\n" if sys.stdout.isatty() else f"\n{_label}\n")
             else:
-                print(f"\n\033[92m[🐑 Verhaltensfilter Deaktiviert: Vanilla Modus (Run {run_idx})]\033[0m\n")
+                _label = f"[🐑 Verhaltensfilter Deaktiviert: Vanilla Modus (Run {run_idx})]"
+                print(f"\n\033[92m{_label}\033[0m\n" if sys.stdout.isatty() else f"\n{_label}\n")
 
             # Deterministic Seed Recovery
             s_idx = str(run_idx)

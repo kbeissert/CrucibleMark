@@ -113,17 +113,24 @@ make benchmark-auto
 
 **Was ist „auto"?**
 
-- **Smart Skipping:** Überspringt bereits getestete Assets
+- **Zweck:** `benchmark_auto` ist ein Meta-Orchestrator zum Auffüllen fehlender Benchmark-Ergebnisse über alle aktiven Module und Provider hinweg.
+- **Smart Skipping:** Überspringt bereits vorhandene und gültige Ergebnisse (Autofill-Logik), damit keine unnötigen Re-Runs stattfinden.
 - **Auto-Retry:** Führt fehlgeschlagene Tests erneut aus
 - **Kosten-Effizienz:** Keine doppelten API-Calls
+
+**Welche Modelle werden getestet?**
+
+- Die Menge der zu testenden LLMs wird in `config/provider_config.yaml` gesteuert.
+- `benchmark_auto` nutzt die dort aktivierten Provider und deren Modell-Listen als Single Source of Truth.
+- Du kannst die Menge direkt über die Config verändern, z. B. durch Ein-/Auskommentieren einzelner Modell-Einträge oder über `enabled`-Flags.
 
 **Forced Re-Run (alles neu testen):**
 
 ```bash
-python scripts/benchmark_auto.py --force
+make benchmark-auto FORCE=1
 ```
 
-⚠️ **Warnung:** Ignoriert vorherige Ergebnisse und verbraucht API-Credits.
+⚠️ **Warnung:** `FORCE=1` schaltet die Skip-Logik aus (ignoriert vorhandene Ergebnisse) und kann deutlich mehr API-Credits verbrauchen.
 
 ---
 
