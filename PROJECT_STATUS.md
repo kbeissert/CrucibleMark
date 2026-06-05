@@ -1,14 +1,28 @@
 # PROJECT_STATUS.md
 
-**Last Updated:** 2026-06-04
-**Current Version:** 4.3.0 — Spark-Connector-Konsolidierung, Readiness-Hardening & garantierter Lifecycle-Cleanup
+**Last Updated:** 2026-06-05
+**Current Version:** 4.3.1 — Code Quality Pass: Bugfixes, DRY-Konsolidierung & Import-Cleanup
 **Status:** ✅ Production-Ready
 
 ---
 
 ## Executive Summary
 
-CrucibleMark v4.3.0 konsolidiert den OpenAI-kompatiblen lokalen Spark-Connector (`llamacpp_spark`) für stabile Kurz- und Vollruns. Der Connector übernimmt laufende Endpunkte mit identischem Modell robuster, bewertet Readiness toleranter (inkl. `reasoning_content`/`finish_reason`) und stellt den Lifecycle-Cleanup nun auch im `UnifiedBenchmarkRunner` über `finally` sicher. Dadurch werden Modell-Unload und optionaler Cache-Clear sowohl bei erfolgreichem Lauf als auch bei Abbruch zuverlässig ausgeführt.
+CrucibleMark v4.3.1 ist ein reiner Code-Quality-Patch ohne Verhaltensänderungen. Pylint 10.00/10, Ruff clean, 227/227 Tests grün.
+
+**Key Achievements (v4.3.1):**
+- ✅ **F841 Bug behoben** — `existing_card` in `_ensure_model_card()` wurde befüllt aber nie genutzt (echter Bug).
+- ✅ **DRY-Konsolidierung** — Neues `scripts/core/model_discovery.py` als SSOT für `discover_local_models()`, `discover_commercial_models()`, `discover_models()` — war identisch in `run_score_benchmark.py` und `run_political_compass_benchmark.py` dupliziert.
+- ✅ **Import-Cleanup** — Alle Inline-Imports in `unified_runner.py` an Dateianfang; `_language_validator` auf Modul-Ebene (hatte 3 Tests gebrochen).
+- ✅ **Magic Numbers** — `_LLAMACPP_STOP_SETTLE_SEC = 3` in `benchmark_auto.py`; `_BUDGET_KEYWORDS` als Modul-Konstante in `unified_runner.py`.
+- ✅ **ANSI-Guard** — `political_compass/test.py`: `sys.stdout.isatty()`-Check für Escape-Codes.
+- ✅ **Pylint 10.00/10** (+0.01 gegenüber v4.3.0).
+
+**Vorherige Version (v4.3.0 — Spark-Connector-Konsolidierung, Readiness-Hardening & garantierter Lifecycle-Cleanup):**
+- ✅ **Spark-Readiness-Hardening** — Probe-Logik akzeptiert neben sichtbarem Content auch valide 200-Signale (`reasoning_content`, `finish_reason`, `usage.total_tokens`).
+- ✅ **Endpoint-Adoption mit Warmup-Fenster** — Läuft unter derselben `base_url` bereits das Zielmodell, wartet der Connector auf Readiness statt voreilig abzubrechen.
+- ✅ **UnifiedRunner-Cleanup via `finally`** — Lokale Provider inkl. `llamacpp_spark` werden nach Run-Ende oder Abbruch zuverlässig gestoppt; optionaler `server_post_stop_cmd` wird ausgeführt.
+- ✅ **CLI-Modul mit Qwen validiert** — Kurztest auf `cli_benchmark` mit Qwen über Spark erfolgreich; Cleanup-Pfad für Success und Abbruch verifiziert.
 
 **Key Achievements (v4.3.0):**
 - ✅ **Spark-Readiness-Hardening** — Probe-Logik akzeptiert neben sichtbarem Content auch valide 200-Signale (`reasoning_content`, `finish_reason`, `usage.total_tokens`).

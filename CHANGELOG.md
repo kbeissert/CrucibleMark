@@ -4,6 +4,30 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [v4.3.1] - 2026-06-05
+
+**Code Quality Pass — Bugfixes, DRY-Konsolidierung & Import-Cleanup.**
+
+### Fixed
+- **F841 Bug in `_ensure_model_card()`** — `existing_card` wurde befüllt aber nie genutzt; `card_content` wurde stattdessen durch einen zweiten `json.loads()`-Aufruf neu geladen. Behoben: Variable entfernt, `card_content` direkt aus `loaded` befüllt.
+- **R1716 in `unified_runner.py`** — Chained comparison `response_len > 0 and response_len < threshold` → `0 < response_len < threshold`.
+- **`_language_validator` auf Modul-Ebene** — War als Inline-Instanz in `_process_single_test()` nicht sichtbar für Tests → `NameError` in 3 Tests. Behoben: `_language_validator = LanguageValidator()` auf Modul-Ebene.
+- **ANSI-Escape-Codes in `political_compass/test.py`** — Escape-Codes ohne `isatty()`-Guard erschienen als rohe Zeichenfolgen wenn Benchmark als Subprozess läuft (kein TTY). Behoben: `sys.stdout.isatty()`-Check.
+
+### Changed
+- **`unified_runner.py` — Import-Cleanup:** Alle Inline-Imports (`csv`, `hashlib`, `time`, `datetime`, `append_global_run_metrics`) an Dateianfang verschoben. `_BUDGET_KEYWORDS` als Modul-Level-Konstante (kein Rebuild pro Exception-Handler-Aufruf).
+- **`benchmark_auto.py` — Magic Number:** `time.sleep(3)` → `_LLAMACPP_STOP_SETTLE_SEC = 3` Konstante.
+- **`run_tooluse_benchmark.py` — Import-Position:** `import argparse` aus `main()` an Dateianfang verschoben.
+- **`llamacpp.py` — `subprocess.Popen`:** Erklärender Kommentar ergänzt warum kein Context Manager verwendet wird (Hintergrundprozess, der nach dem Aufruf weiterläuft).
+
+### Added
+- **`scripts/core/model_discovery.py`** (NEU) — DRY-Konsolidierung: `discover_local_models()`, `discover_commercial_models()`, `discover_models()` — war identisch in `run_score_benchmark.py` und `run_political_compass_benchmark.py` dupliziert. Beide Worker importieren jetzt aus dem SSOT.
+
+### Result
+- Pylint 10.00/10 (+0.01 gegenüber v4.3.0), Ruff clean, 227/227 Tests grün.
+
+---
+
 ## [v4.3.0] - 2026-06-04
 
 **Per-Model Review-Batch + PC-Leaderboard-Repair + Tool-Use Pre-Flight-Validierung + llama.cpp Spark Connector-Konsolidierung.**
