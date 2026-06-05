@@ -216,13 +216,13 @@ def _get_startable_assets(
     # -------------------------------------------------------
     # CARD-BASED SKIP (skip_if_card_false)
     # -------------------------------------------------------
-    # Wenn die Model Card einen Key mit Wert False trägt, wird das Modul
-    # für dieses Modell komplett übersprungen — kein Re-Run nötig.
-    # Beispiel: supports_tool_use: false → Tooluse-Assets werden nicht ausgeführt.
+    # Wenn die Model Card einen Key mit Wert False oder "untested"/"n/a" trägt,
+    # wird das Modul für dieses Modell komplett übersprungen — kein Re-Run nötig.
+    # Beispiel: supports_tool_use: false/untested/n/a → Tooluse-Assets werden nicht ausgeführt.
     skip_card_key = module.get("skip_if_card_false")
     if skip_card_key:
         import json as _json
-        from utils.model_utils import _find_card as _fc
+        from utils.model_utils import _find_card as _fc, normalize_supports_tool_use, SUPPORT_TOOL_USE_UNTESTED
         _card_dir = ROOT_DIR / "benchmark_scores" / "model_cards"
         _card_path = _fc(model, card_dir=_card_dir)
         if _card_path.exists():
@@ -237,8 +237,13 @@ def _get_startable_assets(
                     exc,
                 )
             else:
-                if _card.get(skip_card_key) is False:
-                    print(f"   ⏩ Bench: {module['name']} ({skip_card_key}=false in Card — übersprungen)")
+                _raw_val = _card.get(skip_card_key)
+                # Tri-State: False = nicht fähig, "untested"/"n/a" = noch nicht geprüft
+                # Beide Fälle → Benchmark überspringen (kein Live-Test ohne verifizierten Support)
+                _norm_val = normalize_supports_tool_use(_raw_val)
+                if _norm_val is False or _norm_val == SUPPORT_TOOL_USE_UNTESTED:
+                    _reason = "false" if _norm_val is False else f"{_raw_val!r}"
+                    print(f"   ⏩ Bench: {module['name']} ({skip_card_key}={_reason} in Card — übersprungen)")
                     return []
     # -------------------------------------------------------
     # SPECIAL HANDLING FOR BATCH MODULES (e.g. Political Compass)
