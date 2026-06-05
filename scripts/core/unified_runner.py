@@ -1,43 +1,55 @@
 #!/usr/bin/env python3
 """Unified Benchmark Runner für lokale und kommerzielle Modelle."""
 
+import csv
+import hashlib
 import json
 import logging
 import subprocess
 import sys
 import time
-from datetime import datetime
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
 
 import requests
+from utils.adaptive_pause import AdaptivePauseCalculator, BenchmarkMode
+from utils.base_runner import BaseBenchmarkRunner
+from utils.benchmark_utils import append_global_run_metrics, discover_assets, load_asset_yaml
+from utils.card_utils import ensure_card
 from utils.constants import (
     DEFAULT_MAX_SCORE,
-    OLLAMA_DEFAULT_BASE_URL,
     MODEL_TYPE_OPEN_WEIGHTS_CLOUD,
+    OLLAMA_DEFAULT_BASE_URL,
     TIMEOUT_DEFAULT,
     TIMEOUT_OLLAMA_LIST_FAST,
     TIMEOUT_OLLAMA_WARMUP,
     TRUNCATION_THRESHOLDS,
 )
 from utils.language_validator import LanguageValidator
-
-_language_validator = LanguageValidator()
-
-
-from utils.base_runner import BaseBenchmarkRunner
-from utils.benchmark_utils import discover_assets, load_asset_yaml
 from utils.logging_config import setup_logging
-from utils.card_utils import ensure_card
-from utils.model_utils import get_model_version, get_model_identity, probe_thinking_model, _find_card
-from utils.scoring.judge_evaluator import evaluate_with_judge, generate_audit_log
-from utils.scoring.exceptions import JudgeUnavailableError
-from utils.adaptive_pause import AdaptivePauseCalculator, BenchmarkMode
+from utils.model_utils import _find_card, get_model_identity, get_model_version, probe_thinking_model
 from utils.rate_limiter import RateLimiter
+from utils.scoring.exceptions import JudgeUnavailableError
+from utils.scoring.judge_evaluator import evaluate_with_judge, generate_audit_log
 from utils.scoring_utils import calculate_score_contributions
 
 setup_logging()
 logger = logging.getLogger(__name__)
+_language_validator = LanguageValidator()
+
+# Budget-/Quota-Fehlermuster — Modul-Level-Konstante (kein Rebuild pro Exception)
+_BUDGET_KEYWORDS: tuple[str, ...] = (
+    "quota",
+    "budget",
+    "billing",
+    "credit",
+    "insufficient_funds",
+    "payment",
+    "402 payment required",
+    "exceeded your current quota",
+    "budget limit exceeded",
+)
 
 
 class UnifiedBenchmarkRunner(BaseBenchmarkRunner):
@@ -109,14 +121,12 @@ class UnifiedBenchmarkRunner(BaseBenchmarkRunner):
             card_path = cards_dir / f"{safe}.json"
 
         needs_probe = False
-        existing_card: Dict[str, Any] = {}
         card_loaded = False
         canonical_model = model  # resolved to card's model_id when card is found
 
         if card_path.exists():
             try:
                 loaded: Dict[str, Any] = json.loads(card_path.read_text(encoding="utf-8"))
-                existing_card = loaded
                 card_loaded = True
                 canonical_model = loaded.get("model_id") or model
                 if "thinking_probe_detected" not in loaded:
@@ -169,8 +179,6 @@ class UnifiedBenchmarkRunner(BaseBenchmarkRunner):
             f"   → detected={probe.detected} (confidence={probe.confidence})"
         )
 
-        from datetime import datetime, timezone  # noqa: PLC0415
-
         probe_fields = {
             "thinking_probe_detected": probe.detected,
             "thinking_probe_evidence": probe.evidence,
@@ -203,8 +211,6 @@ class UnifiedBenchmarkRunner(BaseBenchmarkRunner):
         existing = {}
         if self.force or not csv_path.exists():
             return existing
-
-        import csv
 
         try:
             with open(csv_path, "r", encoding="utf-8") as f:
@@ -537,9 +543,6 @@ class UnifiedBenchmarkRunner(BaseBenchmarkRunner):
             print(f"Tests:    {len(assets)}\n{'=' * 60}\n")
 
             # Generate a unique run_id for this benchmark pass (Fix 4: Baseline-Lock)
-            import hashlib
-            import time
-
             run_timestamp = str(int(time.time()))
             tasks_str = ",".join([a.name for a in assets])
             run_id_str = f"{model}_{tasks_str}_{run_timestamp}"
@@ -605,7 +608,7 @@ class UnifiedBenchmarkRunner(BaseBenchmarkRunner):
                                 response_len = int(response_len)
                             except (ValueError, TypeError):
                                 response_len = 0
-                        if response_len and response_len > 0 and response_len < threshold and result.get("status") == "success":
+                        if 0 < response_len < threshold and result.get("status") == "success":
                             result["status"] = "truncated"
                             result["truncation_note"] = f"Response below {threshold} chars for {module_id}"
                             print(f"\n   ⚠️ Result marked as truncated (length: {response_len} < {threshold})")
@@ -659,12 +662,6 @@ class UnifiedBenchmarkRunner(BaseBenchmarkRunner):
                         raise
                     print(" " * 80, end="\r")
                     print(f"   ❌ [{i}/{len(assets)}] {asset_name}: Abgebrochen - {str(e)}")
-                    # Budget-/Quota-Fehler erkennen und Flag setzen
-                    _BUDGET_KEYWORDS = [
-                        "quota", "budget", "billing", "credit", "insufficient_funds",
-                        "payment", "402 payment required", "exceeded your current quota",
-                        "budget limit exceeded",
-                    ]
                     if any(kw in str(e).lower() for kw in _BUDGET_KEYWORDS):
                         print("   💸 Budget-/Quota-Fehler erkannt für Provider. Setze Exhausted-Flag.")
                         self.provider_quota_exhausted = True
@@ -718,8 +715,6 @@ class UnifiedBenchmarkRunner(BaseBenchmarkRunner):
                 print(summary)
 
             if self.audit_mode and results:
-                from utils.benchmark_utils import append_global_run_metrics
-
                 execution_times: List[float] = []
                 timeout_count: int = 0
                 asset_ids = []
@@ -748,7 +743,17 @@ class UnifiedBenchmarkRunner(BaseBenchmarkRunner):
             self._cleanup_local_provider(provider)
 
     def _cleanup_local_provider(self, provider: str) -> None:
-        """Optionaler End-of-Run Cleanup für lokale Provider (Stop + Cache-Clear)."""
+        """Optionaler End-of-Run Cleanup für lokale Provider (Stop + Cache-Clear).
+
+        Für llama.cpp-Provider (llamacpp, llamacpp_spark) wird der Cleanup
+        NICHT hier ausgeführt — der Batch-Orchestrator in benchmark_auto.py
+        übernimmt den Lifecycle (Start/Stop pro Modell, Cleanup am Ende des Batches).
+        Hier würde ein vorzeitiger Stop den Server nach jedem einzelnen Asset-Run
+        beenden und den nächsten Modul-Run sabotieren.
+
+        Das Flag `_skip_llamacpp_cleanup` kann vom Orchestrator gesetzt werden,
+        um diesen Pfad explizit zu deaktivieren.
+        """
         local_provider_names = (
             "ollama",
             "llamacpp",
@@ -759,6 +764,19 @@ class UnifiedBenchmarkRunner(BaseBenchmarkRunner):
         provider_l = provider.lower()
         if provider_l not in local_provider_names:
             return
+
+        # llama.cpp-Provider: Cleanup liegt beim Batch-Orchestrator (benchmark_auto.py),
+        # nicht beim einzelnen run_benchmark()-Aufruf. Verhindert vorzeitigen Server-Stop
+        # zwischen Modul-Runs innerhalb desselben Modells.
+        _llamacpp_providers = ("llamacpp", "llamacpp_spark", "llama_cpp", "llamacpp_local")
+        if provider_l in _llamacpp_providers:
+            if getattr(self, "_skip_llamacpp_cleanup", False):
+                logger.debug(
+                    "_cleanup_local_provider: llama.cpp-Cleanup übersprungen "
+                    "(provider=%s, _skip_llamacpp_cleanup=True)",
+                    provider,
+                )
+                return
 
         local_cfg = self.validator.config.get("providers", {}).get("local", {})
         alias_map = {

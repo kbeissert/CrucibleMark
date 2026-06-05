@@ -73,6 +73,9 @@ logger = logging.getLogger("auto_benchmark")
 
 SCORE_EXCLUDED_MODULES = {"tooluse", "political_compass"}
 
+# Wartezeit nach Server-Stop, damit das OS Sockets freigeben kann
+_LLAMACPP_STOP_SETTLE_SEC: int = 3
+
 
 def check_ollama_status() -> bool:
     """Prüft, ob der Ollama-Service läuft."""
@@ -99,6 +102,42 @@ def check_ollama_status() -> bool:
         return False
 
 
+def _add_existing_result_rows(cache: Set[Tuple[str, str]], df: pd.DataFrame) -> None:
+    """Adds completed (model, asset_id) entries from a benchmark CSV into the cache."""
+    required = {"model", "asset_id"}
+    if not required.issubset(df.columns):
+        return
+
+    completed_statuses = {"success", "language_mismatch", "truncated", "refusal"}
+    for _, row in df.iterrows():
+        if "status" in df.columns:
+            status = str(row.get("status", "")).lower()
+            if status not in completed_statuses:
+                continue
+
+        model_str = str(row["model"])
+        asset_str = str(row["asset_id"])
+        cache.add((model_str, asset_str))
+
+        stripped = normalize_model_id(model_str)
+        if stripped != model_str:
+            cache.add((stripped, asset_str))
+
+
+def _add_political_compass_rows(cache: Set[Tuple[str, str]], df: pd.DataFrame) -> None:
+    """Adds political-compass leaderboard rows to the cache using the batch ID."""
+    if "model" not in df.columns:
+        return
+
+    for _, row in df.iterrows():
+        model_str = str(row["model"])
+        cache.add((model_str, "political_compass_v3"))
+
+        stripped = normalize_model_id(model_str)
+        if stripped != model_str:
+            cache.add((stripped, "political_compass_v3"))
+
+
 
 def get_existing_results(csv_path: Path, force: bool = False) -> Set[Tuple[str, str]]:
     """Lädt Set von (Model, AssetID) für bereits existierende Tests über alle Provider-CSVs hinweg."""
@@ -120,31 +159,7 @@ def get_existing_results(csv_path: Path, force: bool = False) -> Set[Tuple[str, 
         if path.exists():
             try:
                 df = pd.read_csv(path)
-                # Relevante Spalten prüfen
-                required = {"model", "asset_id"}
-                if required.issubset(df.columns):
-                    # Wir merken uns (Model, AssetID) als erledigt
-                    # Status-Werte die als "abgeschlossen" gelten und NICHT wiederholt werden:
-                    # success            — reguläres Ergebnis
-                    # language_mismatch  — Modell hat bewusst in falscher Sprache geantwortet (valides Ergebnis)
-                    # truncated          — Antwort wurde abgeschnitten (valides, bewertetes Ergebnis)
-                    # refusal            — Modell hat die Aufgabe verweigert (refusal_flag, kein Re-Run)
-                    # Nur technische Fehler (error, api_error, timeout) werden wiederholt.
-                    COMPLETED_STATUSES = {"success", "language_mismatch", "truncated", "refusal"}
-                    for _, row in df.iterrows():
-                        if "status" in df.columns:
-                            status = str(row.get("status", "")).lower()
-                            if status not in COMPLETED_STATUSES:
-                                continue  # Technischer Fehler – wiederholen
-
-                        model_str = str(row["model"])
-                        asset_str = str(row["asset_id"])
-                        cache.add((model_str, asset_str))
-                        # Auch normalisierte Form ohne HF-Präfix speichern, damit
-                        # 'hf.co/bartowski/X' und 'X' als dieselben Ergebnisse gelten.
-                        stripped = normalize_model_id(model_str)
-                        if stripped != model_str:
-                            cache.add((stripped, asset_str))
+                _add_existing_result_rows(cache, df)
             except Exception as e:  # pylint: disable=broad-exception-caught
                 print(f"⚠️ Warnung beim Lesen von {path}: {e}")
 
@@ -153,13 +168,7 @@ def get_existing_results(csv_path: Path, force: bool = False) -> Set[Tuple[str, 
     if pc_csv.exists():
         try:
             df_pc = pd.read_csv(pc_csv)
-            if "model" in df_pc.columns:
-                for _, row in df_pc.iterrows():
-                    model_str = str(row["model"])
-                    cache.add((model_str, "political_compass_v3"))
-                    stripped = normalize_model_id(model_str)
-                    if stripped != model_str:
-                        cache.add((stripped, "political_compass_v3"))
+            _add_political_compass_rows(cache, df_pc)
         except Exception as e:
             print(f"⚠️ Warnung beim Lesen von {pc_csv}: {e}")
 
@@ -344,23 +353,237 @@ def _run_delegate_for_model(
         cmd += ["--mcp-mode", mcp_mode]
     result = subprocess.run(cmd, cwd=str(ROOT_DIR), check=False)
 
-    if summary_path.exists():
-        try:
-            summary = json.loads(summary_path.read_text(encoding="utf-8"))
-            status = summary.get("status", "unknown")
-            mode = summary.get("mode", "unknown")
-            print(
-                f"   ℹ️ Delegate-Summary: module={module.get('key')} "
-                f"model={model} status={status} mode={mode}"
-            )
-        except (json.JSONDecodeError, OSError):
-            logger.warning("Delegate-Summary konnte nicht gelesen werden: %s", summary_path)
+    summary = _read_json_summary(summary_path, "Delegate-Summary")
+    if summary:
+        status = summary.get("status", "unknown")
+        mode = summary.get("mode", "unknown")
+        print(
+            f"   ℹ️ Delegate-Summary: module={module.get('key')} "
+            f"model={model} status={status} mode={mode}"
+        )
     return result.returncode == 0
 
 
 def _is_score_module(module: Dict[str, Any]) -> bool:
     """Returns True when the module belongs to the score-worker scope (modules 1-7)."""
     return module.get("key") not in SCORE_EXCLUDED_MODULES
+
+
+def _read_json_summary(summary_path: Path, context_label: str) -> Optional[Dict[str, Any]]:
+    """Loads a dispatch summary JSON file and logs a warning on parse failure."""
+    if not summary_path.exists():
+        return None
+
+    try:
+        return json.loads(summary_path.read_text(encoding="utf-8"))
+    except (json.JSONDecodeError, OSError):
+        logger.warning("%s konnte nicht gelesen werden: %s", context_label, summary_path)
+        return None
+
+
+def _refresh_leaderboard_safe() -> None:
+    """Regenerates the leaderboard without leaking exceptions into the batch flow."""
+    try:
+        gen_leaderboard(print_table=False)
+    except Exception as exc:  # pylint: disable=broad-exception-caught
+        print(f"   ⚠️ Leaderboard-Update fehlgeschlagen: {exc}")
+
+
+def _extract_config_model_ids(models_cfg: Any) -> List[str]:
+    """Extracts model ids from provider config entries."""
+    model_ids: List[str] = []
+    for entry in models_cfg or []:
+        if isinstance(entry, dict):
+            mid = entry.get("id")
+            if isinstance(mid, str) and mid:
+                model_ids.append(mid)
+        elif isinstance(entry, str) and entry:
+            model_ids.append(entry)
+    return model_ids
+
+
+def _get_enabled_local_llamacpp_providers(config: Dict[str, Any]) -> List[Tuple[str, Dict[str, Any]]]:
+    """Returns enabled local llama.cpp-style providers in config order."""
+    local_cfg = config.get("providers", {}).get("local", {})
+    enabled: List[Tuple[str, Dict[str, Any]]] = []
+    for provider_key, provider_cfg in local_cfg.items():
+        if not isinstance(provider_cfg, dict):
+            continue
+        if provider_cfg.get("api_type") != "llamacpp":
+            continue
+        if not provider_cfg.get("enabled", False):
+            continue
+        enabled.append((provider_key, provider_cfg))
+    return enabled
+
+
+def _set_llamacpp_provider_context(client: Any, provider_key: str) -> None:
+    """Configures the shared llama.cpp client instance for the requested provider key."""
+    setter = getattr(client, "_set_provider_context", None)
+    if callable(setter):
+        setter(provider_key)
+
+
+def _is_llamacpp_provider(provider_key: str) -> bool:
+    """Returns True for local llama.cpp-style provider aliases."""
+    return provider_key in {"llamacpp", "llamacpp_spark", "llama_cpp", "llamacpp_local"}
+
+
+def _stop_enabled_local_llamacpp_servers(
+    config: Dict[str, Any],
+    provider_key: Optional[str] = None,
+) -> None:
+    """Stops enabled local llama.cpp servers configured in provider_config.
+
+    Wenn `provider_key` angegeben ist, wird nur dieser Provider gestoppt.
+    Ohne `provider_key` werden alle aktivierten llama.cpp-Provider gestoppt
+    (z.B. prophylaktisch vor Tool-Use-Delegate-Subprozessen).
+
+    This prevents endpoint ownership conflicts when benchmark_auto starts
+    delegate subprocesses (e.g. tool-use backlog worker).
+    """
+    enabled_llamacpp = _get_enabled_local_llamacpp_providers(config)
+    if not enabled_llamacpp:
+        return
+
+    # Wenn ein spezifischer Provider angegeben ist, nur diesen stoppen
+    if provider_key is not None:
+        enabled_llamacpp = [(k, v) for k, v in enabled_llamacpp if k == provider_key]
+        if not enabled_llamacpp:
+            return
+
+    print("   🧹 Stoppe laufende llama-server (prophylaktisch) ...")
+    seen_cmds: Set[str] = set()
+    for _pkey, provider_cfg in enabled_llamacpp:
+        stop_cmd = str(provider_cfg.get("server_stop_cmd", "pkill -f llama-server")).strip()
+        if not stop_cmd or stop_cmd in seen_cmds:
+            continue
+        seen_cmds.add(stop_cmd)
+        subprocess.run(stop_cmd, shell=True, check=False, capture_output=True)
+
+    # Give the OS a short window to release sockets before next start.
+    time.sleep(_LLAMACPP_STOP_SETTLE_SEC)
+
+
+def _run_single_llamacpp_provider_batch(
+    provider_key: str,
+    provider_cfg: Dict[str, Any],
+    modules: List[Dict[str, Any]],
+    validator: ConfigValidator,
+    force: bool,
+    audit_mode: bool,
+    mcp_mode: str,
+) -> None:
+    """Runs the configured model list for one local llama.cpp provider.
+
+    Der Batch-Orchestrator übernimmt den vollständigen Server-Lifecycle:
+    - Prophylaktischer Stop des eigenen Providers vor dem ersten Modell
+    - Start/Stop des Servers pro Modell via lcpp_client
+    - Cleanup (stop_cmd + post_stop_cmd) am Ende des Batches
+
+    Das `_skip_llamacpp_cleanup`-Flag auf dem Runner verhindert, dass
+    `_cleanup_local_provider()` in `run_benchmark()` den Server nach
+    jedem einzelnen Asset-Run vorzeitig stoppt.
+    """
+    models_list = provider_cfg.get("models", [])
+    model_ids = _extract_config_model_ids(models_list)
+    if not model_ids:
+        print(f"⚠️  Keine Modelle für '{provider_key}' konfiguriert.")
+        return
+
+    csv_path = Path(
+        validator.config.get("output", {}).get("local_models_csv", "benchmark_scores/local_models_benchmark.csv")
+    )
+    existing_tests = get_existing_results(csv_path, force=force)
+
+    runner = UnifiedBenchmarkRunner(force=force, audit_mode=audit_mode)
+    # Cleanup-Kontrolle liegt beim Batch-Orchestrator, nicht beim einzelnen run_benchmark()-Aufruf.
+    # Verhindert vorzeitigen Server-Stop zwischen Modul-Runs innerhalb desselben Modells.
+    runner._skip_llamacpp_cleanup = True  # type: ignore[attr-defined]
+
+    lcpp_client = runner.client.clients.get(provider_key)
+    if lcpp_client is None:
+        print(f"❌ LlamaCppClient '{provider_key}' nicht im Client-Registry gefunden.")
+        return
+    _set_llamacpp_provider_context(lcpp_client, provider_key)
+
+    provider_label = provider_cfg.get("name", provider_key)
+    print(f"\n🖥️  [1b/2] LOKALE MODELLE (LLAMA.CPP: {provider_label})")
+    print(f"{'=' * 40}")
+    print(f"Konfigurierte Modelle: {len(model_ids)}")
+    print(f"Liste: {', '.join(model_ids)}\n")
+    print(f"Ignoriere bereits vorhandene Ergebnisse in: {csv_path}\n")
+
+    # Nur den eigenen Provider stoppen (nicht alle llama.cpp-Provider)
+    _stop_enabled_local_llamacpp_servers(validator.config, provider_key=provider_key)
+
+    interrupted = False
+    try:
+        for i, model_id in enumerate(model_ids, 1):
+            print(f"\n➡️  MOD [{provider_key} {i}/{len(model_ids)}]: {model_id}")
+
+            if not lcpp_client.start_server(model_id):
+                print(f"   ❌ Server für '{model_id}' konnte nicht gestartet werden — überspringe.")
+                continue
+
+            had_new_results = False
+            for module in modules:
+                assets_todo = _get_startable_assets(module, model_id, existing_tests)
+                module_ok = _run_module_for_model(
+                    runner,
+                    model_id,
+                    module,
+                    existing_tests,
+                    force=force,
+                    audit=audit_mode,
+                    mcp_mode=mcp_mode,
+                    provider=provider_key,
+                )
+                had_new_results |= module_ok
+
+                if assets_todo and not module_ok:
+                    print(
+                        f"   ⚠️  Modul '{module.get('key', 'unknown')}' für '{model_id}' fehlgeschlagen "
+                        "(mit offenen Assets). Restliche Module für dieses Modell werden übersprungen."
+                    )
+                    break
+
+            if had_new_results:
+                _refresh_leaderboard_safe()
+
+    except KeyboardInterrupt:
+        print("\n⛔  Abbruch durch Benutzer.")
+        interrupted = True
+    finally:
+        print("\n   🛑 Stoppe llama.cpp Server...")
+        lcpp_client.stop_server()
+
+        # End-of-Batch Cleanup (post_stop_cmd, Cache-Bereinigung) für diesen Provider
+        _run_llamacpp_provider_cleanup(provider_key, provider_cfg)
+
+        if interrupted:
+            sys.exit(1)
+
+
+def _run_llamacpp_provider_cleanup(provider_key: str, provider_cfg: Dict[str, Any]) -> None:
+    """Führt den End-of-Batch Cleanup für einen llama.cpp-Provider aus.
+
+    Wird von `_run_single_llamacpp_provider_batch()` im finally-Block aufgerufen.
+    Entspricht dem Cleanup-Pfad aus `_cleanup_local_provider()` in unified_runner.py,
+    aber explizit für llama.cpp-Provider nach Abschluss des gesamten Batches.
+    """
+    if not provider_cfg.get("cleanup_on_exit", False):
+        return
+
+    post_stop_cmd = provider_cfg.get("server_post_stop_cmd")
+    if not post_stop_cmd:
+        return
+
+    print(f"   🧹 Post-Stop Cleanup für '{provider_key}' ...")
+    try:
+        subprocess.run(post_stop_cmd, shell=True, check=False)
+    except Exception as exc:  # pylint: disable=broad-exception-caught
+        print(f"   ⚠️ Post-Stop Cleanup fehlgeschlagen: {exc}")
 
 
 def _run_score_delegate_for_model(
@@ -406,17 +629,14 @@ def _run_score_delegate_for_model(
 
     result = subprocess.run(cmd, cwd=str(ROOT_DIR), check=False)
 
-    if summary_path.exists():
-        try:
-            summary = json.loads(summary_path.read_text(encoding="utf-8"))
-            status = summary.get("status", "unknown")
-            mode = summary.get("mode", "unknown")
-            print(
-                f"   ℹ️ Score-Delegate-Summary: module={module_key} "
-                f"model={model} status={status} mode={mode}"
-            )
-        except (json.JSONDecodeError, OSError):
-            logger.warning("Score-Delegate-Summary konnte nicht gelesen werden: %s", summary_path)
+    summary = _read_json_summary(summary_path, "Score-Delegate-Summary")
+    if summary:
+        status = summary.get("status", "unknown")
+        mode = summary.get("mode", "unknown")
+        print(
+            f"   ℹ️ Score-Delegate-Summary: module={module_key} "
+            f"model={model} status={status} mode={mode}"
+        )
     return result.returncode == 0
 
 
@@ -452,7 +672,10 @@ def _run_module_for_model(
     print(f"   📊 Bench: {module['name']} ({len(assets_todo)} neue Tests) ...")
 
     if _is_score_module(module):
-        return _run_score_delegate_for_model(module, model, force=force, audit=audit)
+        # For local llama.cpp providers we must stay in-process to preserve the
+        # server ownership/context of the already started model server.
+        if not _is_llamacpp_provider(provider):
+            return _run_score_delegate_for_model(module, model, force=force, audit=audit)
 
     if module.get("delegate_script"):
         return _run_delegate_for_model(module, model, force=force, audit=audit, mcp_mode=mcp_mode)
@@ -668,17 +891,14 @@ def _run_untested_tooluse_models(
         print("⛔  Abbruch durch Benutzer (Tool-Use Backlog).")
         raise
 
-    if summary_path.exists():
-        try:
-            summary = json.loads(summary_path.read_text(encoding="utf-8"))
-            print(
-                "   ℹ️ Tool-Use-Dispatch-Summary: "
-                f"status={summary.get('status', 'unknown')} "
-                f"ok={summary.get('models_successful', '?')} "
-                f"failed={summary.get('models_failed', '?')}"
-            )
-        except (json.JSONDecodeError, OSError):
-            logger.warning("Tool-Use-Dispatch-Summary konnte nicht gelesen werden: %s", summary_path)
+    summary = _read_json_summary(summary_path, "Tool-Use-Dispatch-Summary")
+    if summary:
+        print(
+            "   ℹ️ Tool-Use-Dispatch-Summary: "
+            f"status={summary.get('status', 'unknown')} "
+            f"ok={summary.get('models_successful', '?')} "
+            f"failed={summary.get('models_failed', '?')}"
+        )
     return result.returncode == 0
 
 
@@ -689,91 +909,22 @@ def run_llamacpp_batch(
     audit_mode: bool = False,
     mcp_mode: str = "live",
 ) -> None:
-    """Batch-Run für alle konfigurierten llama.cpp-Modelle (explizite Liste, kein auto_discover).
-
-    Startet den llama.cpp-Server für das erste Modell, führt alle Module aus,
-    swappt dann auf das nächste Modell und fährt den Server nach dem letzten Modell herunter.
-    """
-    print("\n🖥️  [1b/2] LOKALE MODELLE (LLAMA.CPP)")
-    print(f"{'=' * 40}")
-
-    prov_cfg = validator.config.get("providers", {}).get("local", {}).get("llamacpp", {})
-    if not prov_cfg.get("enabled", False):
-        print("⏭️  llama.cpp Provider deaktiviert — überspringe.")
+    """Batch-Run für alle aktivierten lokalen llama.cpp-Provider aus der Config (SSOT)."""
+    enabled_llamacpp = _get_enabled_local_llamacpp_providers(validator.config)
+    if not enabled_llamacpp:
+        print("⏭️  Kein aktivierter lokaler llama.cpp-Provider in der Config — überspringe.")
         return
 
-    models_list = prov_cfg.get("models", [])
-    if not models_list:
-        print("⚠️  Keine llama.cpp-Modelle konfiguriert.")
-        return
-
-    # Cache: bereits erledigte Tests aus local_models_benchmark.csv laden
-    csv_path = Path(
-        validator.config.get("output", {}).get("local_models_csv", "benchmark_scores/local_models_benchmark.csv")
-    )
-    existing_tests = get_existing_results(csv_path, force=force)
-
-    runner = UnifiedBenchmarkRunner(audit_mode=audit_mode)
-
-    # Verwende den runner-internen LlamaCppClient (shared state → kein Doppel-Swap)
-    lcpp_client = runner.client.clients.get("llamacpp")
-    if lcpp_client is None:
-        print("❌ LlamaCppClient nicht im Client-Registry gefunden.")
-        return
-
-    model_ids = [m["id"] for m in models_list if m.get("id")]
-
-    print(f"Konfigurierte Modelle: {len(model_ids)}")
-    print(f"Liste: {', '.join(model_ids)}\n")
-    print(f"Ignoriere bereits vorhandene Ergebnisse in: {csv_path}\n")
-
-    # Prophylaktisch alle laufenden llama-server stoppen (Port 1234 Standard + Port 1235)
-    # damit kein alter Prozess den Start blockiert oder Token-Rates verfälscht.
-    print("   🧹 Stoppe laufende llama-server (prophylaktisch) ...")
-    stop_cmd = prov_cfg.get("server_stop_cmd", "pkill -f llama-server")
-    subprocess.run(stop_cmd, shell=True, check=False, capture_output=True)
-    time.sleep(3)
-
-    try:
-        for i, model_id in enumerate(model_ids, 1):
-            print(f"\n➡️  MOD [llama.cpp {i}/{len(model_ids)}]: {model_id}")
-
-            # Server für dieses Modell starten / umschalten
-            if not lcpp_client.start_server(model_id):
-                print(f"   ❌ Server für '{model_id}' konnte nicht gestartet werden — überspringe.")
-                continue
-
-            had_new_results = False
-            for module in modules:
-                assets_todo = _get_startable_assets(module, model_id, existing_tests)
-                module_ok = _run_module_for_model(
-                    runner, model_id, module, existing_tests,
-                    force=force, audit=audit_mode, mcp_mode=mcp_mode,
-                    provider="llamacpp",
-                )
-                had_new_results |= module_ok
-
-                # Verhindert Fehler-Kaskaden: Wenn ein Modul mit offenen Assets fehlschlägt,
-                # brechen wir dieses Modell ab und wechseln zum nächsten Modell.
-                if assets_todo and not module_ok:
-                    print(
-                        f"   ⚠️  Modul '{module.get('key', 'unknown')}' für '{model_id}' fehlgeschlagen "
-                        "(mit offenen Assets). Restliche Module für dieses Modell werden übersprungen."
-                    )
-                    break
-            if had_new_results:
-                try:
-                    gen_leaderboard(print_table=False)
-                except Exception as e:  # pylint: disable=broad-exception-caught
-                    print(f"   ⚠️ Leaderboard-Update fehlgeschlagen: {e}")
-
-    except KeyboardInterrupt:
-        print("\n⛔  Abbruch durch Benutzer.")
-    finally:
-        print("\n   🛑 Stoppe llama.cpp Server...")
-        lcpp_client.stop_server()
-        if sys.exc_info()[0] is KeyboardInterrupt:
-            sys.exit(1)
+    for provider_key, provider_cfg in enabled_llamacpp:
+        _run_single_llamacpp_provider_batch(
+            provider_key=provider_key,
+            provider_cfg=provider_cfg,
+            modules=modules,
+            validator=validator,
+            force=force,
+            audit_mode=audit_mode,
+            mcp_mode=mcp_mode,
+        )
 
 
 def run_local_batch(
@@ -784,6 +935,11 @@ def run_local_batch(
     mcp_mode: str = "live",
 ) -> None:
     # pylint: disable=unused-argument
+    ollama_cfg = validator.config.get("providers", {}).get("local", {}).get("ollama_local", {})
+    if not ollama_cfg.get("enabled", False):
+        print("⏭️  Ollama local Provider deaktiviert — überspringe.")
+        return
+
     ollama_path = shutil.which("ollama")
     if not ollama_path:
         # Kein Ollama installiert — explizit melden (kein stiller Fallback)
@@ -797,22 +953,26 @@ def run_local_batch(
         print("⏭️  Überspringe lokale Benchmarks, da Ollama nicht läuft.")
         return
 
-    runner = UnifiedBenchmarkRunner(audit_mode=audit_mode)
+    runner = UnifiedBenchmarkRunner(force=force, audit_mode=audit_mode)
 
     # Cache laden (bereits erledigte Tests)
     validator = ConfigValidator()
     csv_path = Path(validator.config.get("output", {}).get("local_models_csv", "benchmark_scores/local_models_benchmark.csv"))
     existing_tests = get_existing_results(csv_path, force=force)
 
-    # Modelle holen
-    try:
-        all_models = [m["name"] for m in get_ollama_models_info()]
-    except Exception as e:  # pylint: disable=broad-exception-caught
-        print(f"❌ Fehler beim Laden der Modell-Liste: {e}")
-        return
+    configured_model_ids = _extract_config_model_ids(ollama_cfg.get("models", []))
+    auto_discover = bool(ollama_cfg.get("auto_discover", True))
 
-    # Filtern nach Benchmark-Eignung (keine Embeddings/Vision)
-    suitable_models = [m for m in all_models if is_model_suitable_for_benchmark(m)]
+    if configured_model_ids and not auto_discover:
+        suitable_models = [m for m in configured_model_ids if is_model_suitable_for_benchmark(m)]
+    else:
+        try:
+            all_models = [m["name"] for m in get_ollama_models_info()]
+        except Exception as e:  # pylint: disable=broad-exception-caught
+            print(f"❌ Fehler beim Laden der Modell-Liste: {e}")
+            return
+
+        suitable_models = [m for m in all_models if is_model_suitable_for_benchmark(m)]
 
     if not suitable_models:
         print("⚠️  Keine geeigneten lokalen Modelle gefunden.")
@@ -832,10 +992,7 @@ def run_local_batch(
                     force=force, audit=audit_mode, mcp_mode=mcp_mode,
                 )
             if had_new_results:
-                try:
-                    gen_leaderboard(print_table=False)
-                except Exception as e:  # pylint: disable=broad-exception-caught
-                    print(f"   ⚠️ Leaderboard-Update fehlgeschlagen: {e}")
+                _refresh_leaderboard_safe()
     except KeyboardInterrupt:
         print("\n⛔  Abbruch durch Benutzer.")
         sys.exit(1)
@@ -852,10 +1009,9 @@ def run_commercial_batch(
     print("\n🏢  [2/2] KOMMERZIELLE MODELLE (API)")
     print(f"{'=' * 40}")
 
-    runner = UnifiedBenchmarkRunner(audit_mode=audit_mode)
+    runner = UnifiedBenchmarkRunner(force=force, audit_mode=audit_mode)
     from utils.adaptive_pause import BenchmarkMode
     runner.mode = BenchmarkMode.DEV
-    runner.force = False
 
     # Provider iterieren
     providers_config = validator.config.get("providers", {}).get("commercial", {})
@@ -1017,10 +1173,7 @@ def run_commercial_batch(
                 print(f"   ❌ Fehler: {e}")
 
         if had_new_results:
-            try:
-                gen_leaderboard(print_table=False)
-            except Exception as e:  # pylint: disable=broad-exception-caught
-                print(f"   ⚠️ Leaderboard-Update fehlgeschlagen: {e}")
+            _refresh_leaderboard_safe()
 
 
 def main():
@@ -1095,6 +1248,7 @@ def main():
     if untested_cards:
         print("\n🔧 [0/2] TOOL-USE BACKLOG (untested Cards)")
         print(f"{'=' * 40}")
+        _stop_enabled_local_llamacpp_servers(validator.config)
         aborted = False
         try:
             _run_untested_tooluse_models(

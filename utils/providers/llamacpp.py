@@ -417,7 +417,9 @@ class LlamaCppClient(BaseProviderClient):
             # stdin/stdout/stderr explizit auf DEVNULL setzen, damit der bash-Wrapper-
             # Prozess keine offenen File-Descriptors (z.B. PIPE write-ends) erbt.
             # Der Server selbst loggt via Shell-Redirect (>> server.log 2>&1).
-            proc = subprocess.Popen(
+            # Popen wird bewusst NICHT als Context Manager verwendet: der Prozess läuft
+            # im Hintergrund weiter — ein `with`-Block würde ihn beim Verlassen beenden.
+            proc = subprocess.Popen(  # pylint: disable=consider-using-with
                 cmd,
                 shell=True,
                 stdin=subprocess.DEVNULL,
@@ -464,25 +466,29 @@ class LlamaCppClient(BaseProviderClient):
         return False
 
     def stop_server(self) -> None:
-        """Stop the llama.cpp server — by PID if known, otherwise via stop command."""
-        needs_fallback_stop = True
+        """Stop the llama.cpp server — by PID if known, then always via stop command.
+
+        Der PID-Kill beendet nur den lokalen Prozess (z.B. SSH-Wrapper bei Remote-Providern).
+        Der Fallback-Stop via server_stop_cmd wird immer ausgeführt, um sicherzustellen,
+        dass auch Remote-Server (DGX Spark via SSH) zuverlässig gestoppt werden.
+        """
         if self._server_pid is not None:
             logger.debug("Stopping llama.cpp server (PID %d)", self._server_pid)
             try:
-                kill_result = subprocess.run(["kill", str(self._server_pid)], check=False)
-                if kill_result.returncode == 0:
-                    needs_fallback_stop = False
+                subprocess.run(["kill", str(self._server_pid)], check=False)
             except OSError as exc:
                 logger.warning("Could not kill PID %d: %s", self._server_pid, exc)
             self._server_pid = None
 
-        if needs_fallback_stop:
-            cmd = self._server_stop_cmd()
-            logger.debug("Stopping llama.cpp server: %s", cmd)
-            try:
-                subprocess.run(cmd, shell=True, check=False)
-            except OSError as exc:
-                logger.warning("Could not stop llama.cpp server: %s", exc)
+        # Fallback-Stop immer ausführen — PID-Kill reicht bei SSH-Wrappern nicht aus,
+        # da nur der lokale SSH-Prozess beendet wird, nicht der Remote-Server.
+        cmd = self._server_stop_cmd()
+        logger.debug("Stopping llama.cpp server via stop command: %s", cmd)
+        try:
+            subprocess.run(cmd, shell=True, check=False)
+        except OSError as exc:
+            logger.warning("Could not stop llama.cpp server: %s", exc)
+
         self._active_model = None
         self._client = None
         self._client_base_url = None
@@ -523,7 +529,17 @@ class LlamaCppClient(BaseProviderClient):
         # Start only when needed. If a foreign endpoint is active on the same base_url,
         # start_server() warns and returns False without stopping that process.
         if self._active_model == model:
-            ready = True
+            # Health-Check vor Stale-Ready: Server könnte zwischenzeitlich gestoppt worden sein
+            # (z.B. durch _cleanup_local_provider nach einem vorherigen Modul-Run).
+            if self._is_healthy():
+                ready = True
+            else:
+                logger.debug(
+                    "Stale-Ready erkannt: _active_model='%s' aber Server nicht erreichbar — Neustart.",
+                    model,
+                )
+                self._active_model = None
+                ready = self.start_server(model)
         elif self._active_model is None:
             ready = self.start_server(model)
         else:

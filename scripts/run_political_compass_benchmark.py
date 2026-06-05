@@ -12,55 +12,13 @@ import os
 import subprocess
 import sys
 from pathlib import Path
-from typing import Any
-
 ROOT_DIR = Path(__file__).resolve().parents[1]
 if str(ROOT_DIR) not in sys.path:
     sys.path.insert(0, str(ROOT_DIR))
 
-from scripts.core.runner_contract import write_run_summary
-from utils.config_validator import ConfigValidator
-from utils.model_utils import get_commercial_models_from_config, get_ollama_models_info
-
-
-def _discover_local_models(config: dict[str, Any]) -> list[str]:
-    models: list[str] = []
-
-    # Dynamic Ollama discovery
-    for item in get_ollama_models_info():
-        name = item.get("name")
-        if isinstance(name, str) and name:
-            models.append(name)
-
-    # Explicit llama.cpp model list
-    lcpp_cfg = config.get("providers", {}).get("local", {}).get("llamacpp", {})
-    if lcpp_cfg.get("enabled", False):
-        for m in lcpp_cfg.get("models", []):
-            mid = m.get("id") if isinstance(m, dict) else None
-            if isinstance(mid, str) and mid:
-                models.append(mid)
-
-    # De-dup preserve order
-    deduped = list(dict.fromkeys(models))
-    return deduped
-
-
-def _discover_commercial_models(config: dict[str, Any]) -> list[str]:
-    tuples = get_commercial_models_from_config(config)
-    ids = [mid for mid, _, _ in tuples if mid]
-    return list(dict.fromkeys(ids))
-
-
-def _discover_models(provider_filter: str, config: dict[str, Any]) -> list[str]:
-    if provider_filter == "local":
-        return _discover_local_models(config)
-    if provider_filter == "commercial":
-        return _discover_commercial_models(config)
-
-    # all
-    models = _discover_local_models(config)
-    models.extend(_discover_commercial_models(config))
-    return list(dict.fromkeys(models))
+from scripts.core.model_discovery import discover_models  # noqa: E402
+from scripts.core.runner_contract import write_run_summary  # noqa: E402
+from utils.config_validator import ConfigValidator  # noqa: E402
 
 
 def _run_single_model(model_id: str, force: bool, silent: bool) -> bool:
@@ -174,7 +132,7 @@ def main() -> None:
             sys.exit(0 if not failed else 1)
 
         if args.all or args.provider != "all":
-            model_ids = _discover_models(args.provider, config)
+            model_ids = discover_models(args.provider, config)
             if not model_ids:
                 write_run_summary(
                     args.summary_json,

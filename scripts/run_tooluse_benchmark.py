@@ -11,6 +11,7 @@ Modi:
 
 from __future__ import annotations
 
+import argparse
 import atexit
 import json
 import os
@@ -27,9 +28,9 @@ _ROOT = Path(__file__).resolve().parents[1]
 if str(_ROOT) not in sys.path:
     sys.path.insert(0, str(_ROOT))
 
-from scripts.core.tooluse_exporter import ToolUseExporter
-from scripts.core.runner_contract import write_run_summary
-from utils.config_validator import ConfigValidator
+from scripts.core.tooluse_exporter import ToolUseExporter  # noqa: E402
+from scripts.core.runner_contract import write_run_summary  # noqa: E402
+from utils.config_validator import ConfigValidator  # noqa: E402
 
 CARD_DIR = _ROOT / "benchmark_scores" / "model_cards"
 TIMEOUT_PER_MODEL = 600  # 10 Minuten (Anthropic slow-day headroom)
@@ -448,8 +449,6 @@ def _interactive_wizard(force: bool, silent: bool, mcp_mode: str, restart_mcp: b
 # ---------------------------------------------------------------------------
 
 def main() -> None:
-    import argparse  # pylint: disable=import-outside-toplevel
-
     parser = argparse.ArgumentParser(description="Tool Use Benchmark Runner")
     parser.add_argument("--model", type=str, help="Einzelnes Modell direkt ausführen")
     parser.add_argument("--models", type=str, help="Komma-liste von Modell-IDs (z.B. model1,model2,model3)")
