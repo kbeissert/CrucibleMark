@@ -77,6 +77,11 @@ memory-bank/
 .temp_prompt.yaml
 last_failed_raw.txt
 
+# Temporäre Dateien (während der Entwicklung)
+tmp_*
+.work_progress.json
+.commit_msg.txt
+
 # Internes Refactoring-Backlog — nicht öffentlich
 REF_TODO.md
 
