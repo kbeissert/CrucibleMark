@@ -11,6 +11,7 @@ Usage:
 
 import sys
 import os
+import re
 import time
 import argparse
 import json
@@ -69,6 +70,7 @@ from scripts.core.llamacpp_batch import (  # noqa: E402
     run_llamacpp_provider_cleanup,
     llamacpp_model_session,
     get_startable_assets,
+    get_existing_results,
 )
 
 # Konstante für "Modell kann keine Tools" (getestet und fehlgeschlagen)
@@ -85,9 +87,6 @@ logging.basicConfig(level=logging.INFO, format="%(message)s")
 logger = logging.getLogger("auto_benchmark")
 
 SCORE_EXCLUDED_MODULES = {"tooluse", "political_compass"}
-
-# Wartezeit nach Server-Stop, damit das OS Sockets freigeben kann
-_LLAMACPP_STOP_SETTLE_SEC: int = 3
 
 
 def check_ollama_status() -> bool:
@@ -113,79 +112,6 @@ def check_ollama_status() -> bool:
             "   Bitte starten Sie Ollama ('ollama serve') in einem separaten Terminal.\n"
         )
         return False
-
-
-def _add_existing_result_rows(cache: Set[Tuple[str, str]], df: pd.DataFrame) -> None:
-    """Adds completed (model, asset_id) entries from a benchmark CSV into the cache."""
-    required = {"model", "asset_id"}
-    if not required.issubset(df.columns):
-        return
-
-    completed_statuses = {"success", "language_mismatch", "truncated", "refusal"}
-    for _, row in df.iterrows():
-        if "status" in df.columns:
-            status = str(row.get("status", "")).lower()
-            if status not in completed_statuses:
-                continue
-
-        model_str = str(row["model"])
-        asset_str = str(row["asset_id"])
-        cache.add((model_str, asset_str))
-
-        stripped = normalize_model_id(model_str)
-        if stripped != model_str:
-            cache.add((stripped, asset_str))
-
-
-def _add_political_compass_rows(cache: Set[Tuple[str, str]], df: pd.DataFrame) -> None:
-    """Adds political-compass leaderboard rows to the cache using the batch ID."""
-    if "model" not in df.columns:
-        return
-
-    for _, row in df.iterrows():
-        model_str = str(row["model"])
-        cache.add((model_str, "political_compass_v3"))
-
-        stripped = normalize_model_id(model_str)
-        if stripped != model_str:
-            cache.add((stripped, "political_compass_v3"))
-
-
-
-def get_existing_results(csv_path: Path, force: bool = False) -> Set[Tuple[str, str]]:
-    """Lädt Set von (Model, AssetID) für bereits existierende Tests über alle Provider-CSVs hinweg."""
-    cache = set()
-    if force:
-        return cache  # Force Mode: Ignoriere existierende Ergebnisse
-
-    # Wir checken ab sofort ALLE Haupt-CSVs (3-CSV Architektur)
-    validator = ConfigValidator()
-    output_cfg = validator.config.get("output", {})
-
-    csv_paths = [
-        Path(output_cfg.get("local_models_csv", "benchmark_scores/local_models_benchmark.csv")),
-        Path(output_cfg.get("cloud_models_csv", "benchmark_scores/cloud_models_benchmark.csv")),
-        Path(output_cfg.get("commercial_models_csv", "benchmark_scores/commercial_models_benchmark.csv"))
-    ]
-
-    for path in csv_paths:
-        if path.exists():
-            try:
-                df = pd.read_csv(path, low_memory=False)
-                _add_existing_result_rows(cache, df)
-            except Exception as e:  # pylint: disable=broad-exception-caught
-                print(f"⚠️ Warnung beim Lesen von {path}: {e}")
-
-    # Zusätzlich Batch-Mode CSVs (z.B. Political Compass) zur Vermeidung von Re-Runs einlesen
-    pc_csv = Path("benchmark_scores/political_compass_leaderboard.csv")
-    if pc_csv.exists():
-        try:
-            df_pc = pd.read_csv(pc_csv, low_memory=False)
-            _add_political_compass_rows(cache, df_pc)
-        except Exception as e:
-            print(f"⚠️ Warnung beim Lesen von {pc_csv}: {e}")
-
-    return cache
 
 
 def get_all_modules(validator: ConfigValidator) -> List[Dict[str, Any]]:
@@ -240,14 +166,13 @@ def _get_startable_assets(
     # -------------------------------------------------------
     skip_card_key = module.get("skip_if_card_false")
     if skip_card_key:
-        import json as _json
         from utils.model_utils import _find_card as _fc, normalize_supports_tool_use, SUPPORT_TOOL_USE_UNTESTED
         _card_dir = ROOT_DIR / "benchmark_scores" / "model_cards"
         _card_path = _fc(model, card_dir=_card_dir)
         if _card_path.exists():
             try:
-                _card = _json.loads(_card_path.read_text(encoding="utf-8"))
-            except (_json.JSONDecodeError, OSError) as exc:
+                _card = json.loads(_card_path.read_text(encoding="utf-8"))
+            except (json.JSONDecodeError, OSError) as exc:
                 logger.warning(
                     "Card-Flag-Skip konnte nicht geprüft werden (model=%s, module=%s, card=%s): %s",
                     model,
@@ -295,9 +220,8 @@ def _get_startable_assets(
         # -YYYYMMDD (8-digit) and -MMDD with valid months 01-12 (e.g. -0127 for Jan 27).
         # Version suffixes like -2503 / -2411 are intentionally NOT stripped.
         # Normalize identically so the cache lookup matches dated config aliases.
-        import re as _re_auto
-        model_normalized = _re_auto.sub(r"-\d{8}$", "", model)
-        model_normalized = _re_auto.sub(r"-(0[1-9]|1[0-2])\d{2}$", "", model_normalized)
+        model_normalized = re.sub(r"-\d{8}$", "", model)
+        model_normalized = re.sub(r"-(0[1-9]|1[0-2])\d{2}$", "", model_normalized)
         model_hf_stripped = normalize_model_id(model)
         if (
             (model, batch_id) in existing_tests
@@ -550,27 +474,6 @@ def _run_single_llamacpp_provider_batch(
 
         if interrupted:
             sys.exit(1)
-
-
-def _run_llamacpp_provider_cleanup(provider_key: str, provider_cfg: Dict[str, Any]) -> None:
-    """Führt den End-of-Batch Cleanup für einen llama.cpp-Provider aus.
-
-    Wird von `_run_single_llamacpp_provider_batch()` im finally-Block aufgerufen.
-    Entspricht dem Cleanup-Pfad aus `_cleanup_local_provider()` in unified_runner.py,
-    aber explizit für llama.cpp-Provider nach Abschluss des gesamten Batches.
-    """
-    if not provider_cfg.get("cleanup_on_exit", False):
-        return
-
-    post_stop_cmd = provider_cfg.get("server_post_stop_cmd")
-    if not post_stop_cmd:
-        return
-
-    print(f"   🧹 Post-Stop Cleanup für '{provider_key}' ...")
-    try:
-        subprocess.run(post_stop_cmd, shell=True, check=False)
-    except Exception as exc:  # pylint: disable=broad-exception-caught
-        print(f"   ⚠️ Post-Stop Cleanup fehlgeschlagen: {exc}")
 
 
 def _run_score_delegate_for_model(
@@ -948,7 +851,6 @@ def run_local_batch(
     runner = UnifiedBenchmarkRunner(force=force, audit_mode=audit_mode)
 
     # Cache laden (bereits erledigte Tests)
-    validator = ConfigValidator()
     csv_path = Path(validator.config.get("output", {}).get("local_models_csv", "benchmark_scores/local_models_benchmark.csv"))
     existing_tests = get_existing_results(csv_path, force=force)
 

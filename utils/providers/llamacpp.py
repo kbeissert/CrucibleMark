@@ -68,6 +68,27 @@ class LlamaCppClient(BaseProviderClient):
             return "llamacpp"
         return alias_map.get(provider_name, provider_name)
 
+    @staticmethod
+    def _normalize_model_name(model_id: Optional[str]) -> str:
+        """Normalisiere Modellnamen für Vergleiche (Punkt → Unterstrich, Bindestrich → Unterstrich).
+
+        Wird in query() und start_server() verwendet, um Card-Canonical-Namen
+        (z.B. qwen3_5-35b-a3b-q8) mit Config-Namen (z.B. qwen3.5-35b-a3b-q8)
+        zu vergleichen.
+        """
+        if not model_id:
+            return ""
+        return model_id.replace(".", "_").replace("-", "_")
+
+    @staticmethod
+    def _strip_model_name(model_id: str) -> str:
+        """Entferne alle nicht-alphanumerischen Zeichen aus dem Modellnamen.
+
+        Wird für den Adopt-Pfad in start_server() verwendet, um GGUF-Dateinamen
+        mit Config-IDs zu vergleichen.
+        """
+        return model_id.lower().replace(".gguf", "").replace(".", "").replace("-", "").replace("_", "")
+
     def _set_provider_context(self, provider_name: Optional[str]) -> None:
         """Set active provider context for config lookup (llamacpp or llamacpp_spark)."""
         normalized = self._normalize_provider_name(provider_name)
@@ -413,8 +434,8 @@ class LlamaCppClient(BaseProviderClient):
         healthy = self._is_healthy()
 
         # FIX: Normalisiere Modellnamen für Vergleich
-        _active_normalized = (self._active_model or "").replace(".", "_").replace("-", "_")
-        _model_normalized = (model_id or "").replace(".", "_").replace("-", "_")
+        _active_normalized = self._normalize_model_name(self._active_model)
+        _model_normalized = self._normalize_model_name(model_id)
         _models_match = _active_normalized == _model_normalized
 
         if healthy and self._active_model and _models_match:
@@ -429,8 +450,8 @@ class LlamaCppClient(BaseProviderClient):
             detected_matches = False
             if detected and model_id:
                 # Entferne .gguf Suffix und normalisiere für Vergleich
-                detected_normalized = detected.lower().replace(".gguf", "").replace(".", "").replace("-", "").replace("_", "")
-                model_normalized = model_id.lower().replace(".", "").replace("-", "").replace("_", "")
+                detected_normalized = self._strip_model_name(detected)
+                model_normalized = self._strip_model_name(model_id)
                 # Prüfe ob model_id im detected Namen enthalten ist (oder umgekehrt)
                 detected_matches = (
                     model_normalized in detected_normalized
@@ -658,8 +679,8 @@ class LlamaCppClient(BaseProviderClient):
         # start_server() warns and returns False without stopping that process.
         # FIX: Normalisiere Modellnamen für Vergleich (Card-Canonical vs Config-Name)
         # Kann z.B. "qwen3.5-35b-a3b-q8" vs "qwen3_5-35b-a3b-q8" sein.
-        _active_normalized = (self._active_model or "").replace(".", "_").replace("-", "_")
-        _model_normalized = model.replace(".", "_").replace("-", "_")
+        _active_normalized = self._normalize_model_name(self._active_model)
+        _model_normalized = self._normalize_model_name(model)
         _models_match = _active_normalized == _model_normalized
 
         if self._active_model and _models_match:

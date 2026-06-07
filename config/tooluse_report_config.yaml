@@ -17,6 +17,15 @@ report:
 
   parse_error_threshold: 0.0   # > 0 parse errors → Warnung im Report
 
+  # Timeouts für ToolUse Benchmark (in Sekunden)
+  timeouts:
+    per_model: 600        # 10 Minuten — Hard-Cap pro Modell
+    inactivity: 180       # 3 Minuten ohne Output → Watchdog killt Prozess
+    mcp_health: 0.5       # MCP Health-Check Timeout
+    mcp_startup: 8.0      # MCP Server Startup Timeout
+    mcp_startup_retry: 5.0  # MCP Retry Timeout
+    mcp_shutdown: 3.0     # MCP Shutdown Wait
+
   # Spalten die in die Markdown-Tabelle kommen
   leaderboard_table_columns:
     - model

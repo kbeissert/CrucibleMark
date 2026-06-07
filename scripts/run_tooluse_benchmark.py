@@ -24,19 +24,37 @@ import urllib.request
 from pathlib import Path
 from typing import Any
 
+import yaml  # noqa: E402
+
 _ROOT = Path(__file__).resolve().parents[1]
 if str(_ROOT) not in sys.path:
     sys.path.insert(0, str(_ROOT))
 
 from scripts.core.tooluse_exporter import ToolUseExporter  # noqa: E402
 from scripts.core.runner_contract import write_run_summary  # noqa: E402
-from scripts.core.generate_leaderboard import main as gen_leaderboard  # noqa: E402
 from utils.config_validator import ConfigValidator  # noqa: E402
 
 CARD_DIR = _ROOT / "benchmark_scores" / "model_cards"
-TIMEOUT_PER_MODEL = 600  # 10 Minuten (Anthropic slow-day headroom)
-INACTIVITY_TIMEOUT = 180  # 3 Minuten ohne Output → Watchdog kills hung process
 _MCP_HEALTH_URL = "http://localhost:8765/health"
+
+
+def _load_tooluse_timeouts() -> dict[str, float]:
+    """Lädt Timeouts aus config/tooluse_report_config.yaml."""
+    config_path = _ROOT / "config" / "tooluse_report_config.yaml"
+    try:
+        data = yaml.safe_load(config_path.read_text(encoding="utf-8"))
+        return dict(data.get("report", {}).get("timeouts", {}))
+    except Exception:  # noqa: BLE001
+        return {}
+
+
+_TIMEOUTS = _load_tooluse_timeouts()
+TIMEOUT_PER_MODEL = int(_TIMEOUTS.get("per_model", 600))
+INACTIVITY_TIMEOUT = int(_TIMEOUTS.get("inactivity", 180))
+_MCP_HEALTH_TIMEOUT = float(_TIMEOUTS.get("mcp_health", 0.5))
+_MCP_STARTUP_TIMEOUT = float(_TIMEOUTS.get("mcp_startup", 8.0))
+_MCP_STARTUP_RETRY_TIMEOUT = float(_TIMEOUTS.get("mcp_startup_retry", 5.0))
+_MCP_SHUTDOWN_TIMEOUT = float(_TIMEOUTS.get("mcp_shutdown", 3.0))
 
 _SEP = "═" * 54
 _SEP_THIN = "─" * 54
@@ -48,16 +66,17 @@ _mcp_managed: list[bool] = [False]  # True wenn dieser Prozess den Server gestar
 # ---------------------------------------------------------------------------
 
 def _mcp_is_up() -> bool:
-    """True if MCP health endpoint responds within 0.5s."""
+    """True if MCP health endpoint responds within configured timeout."""
     try:
-        urllib.request.urlopen(_MCP_HEALTH_URL, timeout=0.5)
+        urllib.request.urlopen(_MCP_HEALTH_URL, timeout=_MCP_HEALTH_TIMEOUT)
         return True
     except Exception:
         return False
 
 
-def _wait_mcp_down(timeout: float = 3.0) -> None:
+def _wait_mcp_down(timeout: float | None = None) -> None:
     """Block until port 8765 stops responding, then force-kill if needed."""
+    timeout = timeout if timeout is not None else _MCP_SHUTDOWN_TIMEOUT
     deadline = time.time() + timeout
     while time.time() < deadline:
         if not _mcp_is_up():
@@ -71,8 +90,9 @@ def _wait_mcp_down(timeout: float = 3.0) -> None:
     time.sleep(0.3)
 
 
-def _wait_mcp_up(timeout: float = 8.0) -> bool:
+def _wait_mcp_up(timeout: float | None = None) -> bool:
     """Poll until server is ready. Returns True on success."""
+    timeout = timeout if timeout is not None else _MCP_STARTUP_TIMEOUT
     deadline = time.time() + timeout
     while time.time() < deadline:
         if _mcp_is_up():
@@ -87,18 +107,18 @@ def _restart_mcp(mode: str = "live") -> None:
         ["make", "mcp-stop"],
         cwd=str(_ROOT), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, check=False,
     )
-    _wait_mcp_down(timeout=3.0)  # ensure port is free before starting new server
+    _wait_mcp_down()  # ensure port is free before starting new server
     subprocess.run(
         ["make", "mcp-start", f"MODE={mode}"],
         cwd=str(_ROOT), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, check=False,
     )
-    if not _wait_mcp_up(timeout=8.0):
+    if not _wait_mcp_up():
         # Retry once
         subprocess.run(
             ["make", "mcp-start", f"MODE={mode}"],
             cwd=str(_ROOT), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, check=False,
         )
-        if not _wait_mcp_up(timeout=5.0):
+        if not _wait_mcp_up(timeout=_MCP_STARTUP_RETRY_TIMEOUT):
             print("  [WARN] MCP server did not start after restart")
 
 
@@ -375,14 +395,6 @@ def _run_batch(
     except Exception as exc:  # noqa: BLE001 — leaderboard update must not crash CLI
         print(f"  [WARN] ToolUse-Leaderboard-Update fehlgeschlagen: {exc}")  # noqa: T201
 
-    # Haupt-Leaderboard (benchmark_leaderboard.csv) neu generieren
-    try:
-        print("  Generiere Haupt-Leaderboard...")
-        gen_leaderboard(print_table=False)
-        print("  ✅ Haupt-Leaderboard aktualisiert: benchmark_leaderboard.csv")
-    except Exception as exc:  # noqa: BLE001
-        print(f"  [WARN] Haupt-Leaderboard-Update fehlgeschlagen: {exc}")
-
     return {
         "models_total": len(models),
         "models_successful": len(success),
@@ -520,13 +532,6 @@ def main() -> None:
                     print(f"  ToolUse-Leaderboard aktualisiert: {written} Modell(e) → tooluse_leaderboard.csv")
             except Exception as exc:  # noqa: BLE001
                 print(f"  [WARN] ToolUse-Leaderboard-Update fehlgeschlagen: {exc}")
-            # Haupt-Leaderboard neu generieren
-            try:
-                print("  Generiere Haupt-Leaderboard...")
-                gen_leaderboard(print_table=False)
-                print("  ✅ Haupt-Leaderboard aktualisiert: benchmark_leaderboard.csv")
-            except Exception as exc:  # noqa: BLE001
-                print(f"  [WARN] Haupt-Leaderboard-Update fehlgeschlagen: {exc}")
             write_run_summary(
                 args.summary_json,
                 {

@@ -29,7 +29,6 @@ if str(ROOT_DIR) not in sys.path:
 from scripts.core.model_discovery import discover_models  # noqa: E402
 from scripts.core.runner_contract import write_run_summary  # noqa: E402
 from scripts.core.unified_runner import UnifiedBenchmarkRunner  # noqa: E402
-from scripts.core.generate_leaderboard import main as gen_leaderboard  # noqa: E402
 from utils.config_validator import ConfigValidator  # noqa: E402
 from utils.model_utils import resolve_provider  # noqa: E402
 
@@ -199,16 +198,6 @@ def _run_modules_inprocess_llamacpp(
     return results
 
 
-def _refresh_leaderboard_safe() -> None:
-    """Regeneriert das Leaderboard ohne Exceptions in den Batch-Flow zu leaken."""
-    try:
-        print("\n📊 Aktualisiere Leaderboard...")
-        gen_leaderboard(print_table=False)
-        print("✅ Leaderboard aktualisiert: benchmark_leaderboard.csv")
-    except Exception as exc:  # noqa: BLE001 — leaderboard update must not crash benchmark
-        print(f"  [WARN] Leaderboard-Update fehlgeschlagen: {exc}")
-
-
 def _run_score_batch(
     model_ids: list[str],
     module_keys: list[str],
@@ -306,9 +295,6 @@ def main() -> None:
         if args.model:
             summary = _run_score_batch([args.model], module_keys, force=args.force, silent=args.silent, config=config)
             status = "success" if summary["tasks_failed"] == 0 else "partial"
-            # Leaderboard nach erfolgreichem Durchlauf aktualisieren
-            if summary["tasks_successful"] > 0:
-                _refresh_leaderboard_safe()
             write_run_summary(
                 args.summary_json,
                 {
@@ -337,9 +323,6 @@ def main() -> None:
 
             summary = _run_score_batch(model_ids, module_keys, force=args.force, silent=args.silent, config=config)
             status = "success" if summary["tasks_failed"] == 0 else "partial"
-            # Leaderboard nach erfolgreichem Durchlauf aktualisieren
-            if summary["tasks_successful"] > 0:
-                _refresh_leaderboard_safe()
             write_run_summary(
                 args.summary_json,
                 {
@@ -374,9 +357,6 @@ def main() -> None:
 
             summary = _run_score_batch(model_ids, module_keys, force=args.force, silent=args.silent, config=config)
             status = "success" if summary["tasks_failed"] == 0 else "partial"
-            # Leaderboard nach erfolgreichem Durchlauf aktualisieren
-            if summary["tasks_successful"] > 0:
-                _refresh_leaderboard_safe()
             write_run_summary(
                 args.summary_json,
                 {
@@ -401,9 +381,6 @@ def main() -> None:
         env["CRUCIBLE_DELEGATE_PARENT"] = "1"
 
         result = subprocess.run(cmd, cwd=str(ROOT_DIR), env=env, check=False)
-        # Leaderboard nach erfolgreichem Wizard-Durchlauf aktualisieren
-        if result.returncode == 0:
-            _refresh_leaderboard_safe()
         write_run_summary(
             args.summary_json,
             {
