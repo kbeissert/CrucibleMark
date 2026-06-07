@@ -51,7 +51,6 @@ load_dotenv()
 # Local imports
 # pylint: disable=import-error, wrong-import-position
 from scripts.core.unified_runner import UnifiedBenchmarkRunner  # noqa: E402
-from scripts.core.generate_leaderboard import main as gen_leaderboard  # noqa: E402
 from utils.config_validator import ConfigValidator  # noqa: E402
 from utils.model_utils import (  # noqa: E402
     is_model_suitable_for_benchmark,
@@ -172,7 +171,7 @@ def get_existing_results(csv_path: Path, force: bool = False) -> Set[Tuple[str, 
     for path in csv_paths:
         if path.exists():
             try:
-                df = pd.read_csv(path)
+                df = pd.read_csv(path, low_memory=False)
                 _add_existing_result_rows(cache, df)
             except Exception as e:  # pylint: disable=broad-exception-caught
                 print(f"⚠️ Warnung beim Lesen von {path}: {e}")
@@ -181,7 +180,7 @@ def get_existing_results(csv_path: Path, force: bool = False) -> Set[Tuple[str, 
     pc_csv = Path("benchmark_scores/political_compass_leaderboard.csv")
     if pc_csv.exists():
         try:
-            df_pc = pd.read_csv(pc_csv)
+            df_pc = pd.read_csv(pc_csv, low_memory=False)
             _add_political_compass_rows(cache, df_pc)
         except Exception as e:
             print(f"⚠️ Warnung beim Lesen von {pc_csv}: {e}")
@@ -363,6 +362,7 @@ def _run_delegate_for_model(
     force: bool = False,
     audit: bool = True,
     mcp_mode: str = "live",
+    skip_llamacpp_cleanup: bool = False,
 ) -> bool:
     """Delegiert die Ausführung eines Moduls an das zuständige Fachscript.
 
@@ -385,7 +385,13 @@ def _run_delegate_for_model(
         cmd.append("--silent")
     if module.get("requires_mcp"):
         cmd += ["--mcp-mode", mcp_mode]
-    result = subprocess.run(cmd, cwd=str(ROOT_DIR), check=False)
+
+    # Environment für Subprozess vorbereiten - CRUCIBLE_SKIP_LLAMACPP_CLEANUP weitergeben
+    env = os.environ.copy()
+    if skip_llamacpp_cleanup:
+        env["CRUCIBLE_SKIP_LLAMACPP_CLEANUP"] = "1"
+
+    result = subprocess.run(cmd, cwd=str(ROOT_DIR), env=env, check=False)
 
     summary = _read_json_summary(summary_path, "Delegate-Summary")
     if summary:
@@ -413,14 +419,6 @@ def _read_json_summary(summary_path: Path, context_label: str) -> Optional[Dict[
     except (json.JSONDecodeError, OSError):
         logger.warning("%s konnte nicht gelesen werden: %s", context_label, summary_path)
         return None
-
-
-def _refresh_leaderboard_safe() -> None:
-    """Regenerates the leaderboard without leaking exceptions into the batch flow."""
-    try:
-        gen_leaderboard(print_table=False)
-    except Exception as exc:  # pylint: disable=broad-exception-caught
-        print(f"   ⚠️ Leaderboard-Update fehlgeschlagen: {exc}")
 
 
 def _extract_config_model_ids(models_cfg: Any) -> List[str]:
@@ -482,6 +480,8 @@ def _run_single_llamacpp_provider_batch(
     if lcpp_client is None:
         print(f"❌ LlamaCppClient '{provider_key}' nicht im Client-Registry gefunden.")
         return
+    # Flag auch auf Client setzen, damit query() den Client nicht zurücksetzt
+    lcpp_client._skip_llamacpp_cleanup = True  # type: ignore[attr-defined]
     set_llamacpp_provider_context(lcpp_client, provider_key)
 
     provider_label = provider_cfg.get("name", provider_key)
@@ -498,6 +498,19 @@ def _run_single_llamacpp_provider_batch(
     try:
         for i, model_id in enumerate(model_ids, 1):
             print(f"\n➡️  MOD [{provider_key} {i}/{len(model_ids)}]: {model_id}")
+
+            # Prüfe VOR dem Server-Start, ob überhaupt Tests nötig sind
+            # Vermeidet unnötiges Laden/Entladen von Modellen bei vollständigen Ergebnissen
+            has_missing_tests = False
+            for module in modules:
+                assets_todo = _get_startable_assets(module, model_id, existing_tests)
+                if assets_todo:
+                    has_missing_tests = True
+                    break
+            
+            if not has_missing_tests:
+                print(f"   ✓ Alle Benchmarks bereits vorhanden — überspringe Modell.")
+                continue
 
             if not lcpp_client.start_server(model_id):
                 print(f"   ❌ Server für '{model_id}' konnte nicht gestartet werden — überspringe.")
@@ -524,9 +537,6 @@ def _run_single_llamacpp_provider_batch(
                         "(mit offenen Assets). Restliche Module für dieses Modell werden übersprungen."
                     )
                     break
-
-            if had_new_results:
-                _refresh_leaderboard_safe()
 
     except KeyboardInterrupt:
         print("\n⛔  Abbruch durch Benutzer.")
@@ -655,7 +665,12 @@ def _run_module_for_model(
             return _run_score_delegate_for_model(module, model, force=force, audit=audit)
 
     if module.get("delegate_script"):
-        return _run_delegate_for_model(module, model, force=force, audit=audit, mcp_mode=mcp_mode)
+        # Für llama.cpp-Provider: Cleanup-Flag an Delegate weitergeben
+        _skip_cleanup = is_llamacpp_provider(provider)
+        return _run_delegate_for_model(
+            module, model, force=force, audit=audit, mcp_mode=mcp_mode,
+            skip_llamacpp_cleanup=_skip_cleanup
+        )
 
     try:
         results = runner.run_benchmark(provider=provider, model=model, benchmark_info=module, assets=assets_todo)
@@ -968,8 +983,6 @@ def run_local_batch(
                     runner, model, module, existing_tests,
                     force=force, audit=audit_mode, mcp_mode=mcp_mode,
                 )
-            if had_new_results:
-                _refresh_leaderboard_safe()
     except KeyboardInterrupt:
         print("\n⛔  Abbruch durch Benutzer.")
         sys.exit(1)
@@ -1149,9 +1162,6 @@ def run_commercial_batch(
             except Exception as e:  # pylint: disable=broad-exception-caught
                 print(f"   ❌ Fehler: {e}")
 
-        if had_new_results:
-            _refresh_leaderboard_safe()
-
 
 def main():
     """Main entry point."""
@@ -1273,23 +1283,6 @@ def main():
 
     finally:
         print("\n\n✅  AUTOMATIC RUN VERLASSEN.")
-        print("    Generiere Leaderboard aus den neuen CSV-Daten...")
-
-        # Am Ende das Leaderboard IMMER aktualisieren (auch bei Abbruch)
-        try:
-            df = gen_leaderboard(print_table=not aborted)
-            if aborted and df is not None:
-                print("\n📊 Kurzübersicht Leaderboard:")
-                if "Model Name" in df.columns and "Total Score" in df.columns:
-                    print(f"   {'Modell':<30} | Score")
-                    print("   " + "-" * 40)
-                    for _, row in df.iterrows():
-                        print(f"   {str(row['Model Name'])[:30]:<30} | {row['Total Score']}")
-                else:
-                    print(f"   (Header Fehler. Verfügbar: {', '.join(df.columns[:5])})")
-
-        except Exception as e:  # pylint: disable=broad-exception-caught
-            print(f"⚠️ Leaderboard konnte nicht generiert werden: {e}")
 
         if aborted:
             sys.exit(1)

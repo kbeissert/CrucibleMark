@@ -310,9 +310,15 @@ class ToolUseExporter:
     def aggregate_from_benchmark_csvs(
         self,
         csv_paths: list[Path] | None = None,
+        target_model_ids: list[str] | None = None,
     ) -> int:
         """Reads per-asset tooluse rows from the main benchmark CSVs, aggregates
         by model, and writes one row per model to tooluse_leaderboard.csv.
+
+        Args:
+            csv_paths: Optional list of CSV paths to read from
+            target_model_ids: Optional list of model IDs to filter by. If provided,
+                            only these models will be updated/shown in output.
 
         Returns the number of model rows written.
         """
@@ -359,6 +365,14 @@ class ToolUseExporter:
         per_model: dict[str, list[dict[str, Any]]] = {}
         for (model_id, _asset_id), row in best_rows.items():
             per_model.setdefault(model_id, []).append(row)
+
+        # Filter auf target_model_ids wenn angegeben
+        if target_model_ids:
+            target_normalized = {normalize_model_id(m) for m in target_model_ids}
+            per_model = {
+                mid: rows for mid, rows in per_model.items()
+                if normalize_model_id(mid) in target_normalized
+            }
 
         written = 0
         for model_id, asset_rows in per_model.items():
@@ -545,6 +559,22 @@ class ToolUseExporter:
         except (OSError, csv.Error) as exc:
             logger.warning("Could not read %s: %s", self.CSV_PATH, exc)
             return []
+
+    def model_has_results(self, model_id: str) -> bool:
+        """Prüft ob ein Modell bereits im ToolUse-Leaderboard vorhanden ist.
+        
+        Args:
+            model_id: Die Modell-ID (wird normalisiert für den Vergleich)
+            
+        Returns:
+            True wenn das Modell bereits im Leaderboard existiert, False sonst
+        """
+        rows = self._read_rows()
+        normalized_id = normalize_model_id(model_id)
+        for row in rows:
+            if normalize_model_id(row.get("model", "")) == normalized_id:
+                return True
+        return False
 
     def _write_rows(self, rows: list[dict[str, Any]]) -> None:
         with self.CSV_PATH.open("w", newline="", encoding="utf-8") as f:

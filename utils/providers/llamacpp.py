@@ -14,7 +14,7 @@ Der Client baut daraus automatisch den vollständigen `llama-server`-Befehl
 
 Benchmark-Defaults (reproduzierbar, niedrige Varianz):
   - seed: 42 (fixierter Seed für Reproduzierbarkeit)
-  - temperature: 0.6 (deterministisch)
+  - temperature: 0.1 (deterministisch)
   - top_k: 40 (moderates Sampling)
   - top_p: 0.9 (moderate Nucleus-Sampling)
   - repeat_penalty: 1.1 (leichte Penalty gegen Loops)
@@ -286,7 +286,7 @@ class LlamaCppClient(BaseProviderClient):
         #
         # Empfehlung für Benchmarks:
         #   - seed: fixiert (42) für Reproduzierbarkeit
-        #   - temperature: 0.6 (deterministisch, niedrige Varianz)
+        #   - temperature: 0.1 (deterministisch, niedrige Varianz)
         #   - top_k: 40 (moderates Sampling)
         #   - top_p: 0.9 (moderate Nucleus-Sampling)
         #   - repeat_penalty: 1.1 (leichte Penalty gegen Loops)
@@ -409,9 +409,15 @@ class LlamaCppClient(BaseProviderClient):
         Returns:
             True when the server is healthy, False otherwise.
         """
+        detected: Optional[str] = None  # Model running on server if detected
         healthy = self._is_healthy()
 
-        if healthy and self._active_model == model_id:
+        # FIX: Normalisiere Modellnamen für Vergleich
+        _active_normalized = (self._active_model or "").replace(".", "_").replace("-", "_")
+        _model_normalized = (model_id or "").replace(".", "_").replace("-", "_")
+        _models_match = _active_normalized == _model_normalized
+
+        if healthy and self._active_model and _models_match:
             if model_id and self._is_model_ready(model_id):
                 logger.debug("llama.cpp server already running at %s", self._base_url())
                 return True
@@ -423,24 +429,25 @@ class LlamaCppClient(BaseProviderClient):
             detected_matches = False
             if detected and model_id:
                 # Entferne .gguf Suffix und normalisiere für Vergleich
-                detected_normalized = detected.lower().replace(".gguf", "").replace("-", "").replace("_", "")
-                model_normalized = model_id.lower().replace("-", "").replace("_", "")
+                detected_normalized = detected.lower().replace(".gguf", "").replace(".", "").replace("-", "").replace("_", "")
+                model_normalized = model_id.lower().replace(".", "").replace("-", "").replace("_", "")
                 # Prüfe ob model_id im detected Namen enthalten ist (oder umgekehrt)
                 detected_matches = (
                     model_normalized in detected_normalized
                     or detected_normalized in model_normalized
                     or detected == model_id
                 )
-            if detected_matches and model_id and self._is_model_ready(model_id):
-                self._active_model = model_id
-                logger.debug(
-                    "Adopting already running llama.cpp endpoint at %s with model '%s'",
-                    self._base_url(),
-                    model_id,
-                )
-                return True
-
             if detected_matches:
+                if model_id and self._is_model_ready(model_id):
+                    self._active_model = model_id
+                    logger.debug(
+                        "Adopting already running llama.cpp endpoint at %s with model '%s'",
+                        self._base_url(),
+                        model_id,
+                    )
+                    return True
+
+                # Modell passt, ist aber noch nicht bereit → Warte
                 adopt_ready_timeout_sec = int(
                     self._provider_cfg().get(
                         "existing_server_ready_timeout_sec",
@@ -476,15 +483,21 @@ class LlamaCppClient(BaseProviderClient):
                     "antwortet aber auch nach Wartezeit noch nicht stabil auf den Hallo-Probe-Request. "
                     "Benchmark wird beendet."
                 )
-            else:
-                warning = (
-                    f"OpenAI-kompatibler Endpunkt unter {self._base_url()} ist bereits aktiv"
-                    f"{f' (aktives Modell: {detected})' if detected else ''}. "
-                    f"Benchmark für '{model_id}' wird nicht gestartet, um den laufenden Server nicht zu überschreiben."
-                )
+                logger.warning(warning)
+                print(f"   ⚠️  {warning}")
+                return False
+
+            # Endpoint-Konflikt: Läuft ein anderes Modell → Server stoppen und neu starten
+            warning = (
+                f"OpenAI-kompatibler Endpunkt unter {self._base_url()} ist bereits aktiv"
+                f"{f' (aktives Modell: {detected})' if detected else ''}. "
+                f"Starte Server mit '{model_id}' neu..."
+            )
             logger.warning(warning)
             print(f"   ⚠️  {warning}")
-            return False
+            self.stop_server()
+            time.sleep(2)
+            return self.start_server(model_id)
 
         if healthy and self._active_model and self._active_model != model_id:
             logger.debug(
@@ -494,6 +507,7 @@ class LlamaCppClient(BaseProviderClient):
             )
             self.stop_server()
             time.sleep(2)
+            return self.start_server(model_id)
 
         cmd = self._build_server_cmd(model_id) if model_id else self._server_start_cmd()
         logger.debug("Starting llama.cpp server: %s", cmd)
@@ -642,7 +656,13 @@ class LlamaCppClient(BaseProviderClient):
 
         # Start only when needed. If a foreign endpoint is active on the same base_url,
         # start_server() warns and returns False without stopping that process.
-        if self._active_model == model:
+        # FIX: Normalisiere Modellnamen für Vergleich (Card-Canonical vs Config-Name)
+        # Kann z.B. "qwen3.5-35b-a3b-q8" vs "qwen3_5-35b-a3b-q8" sein.
+        _active_normalized = (self._active_model or "").replace(".", "_").replace("-", "_")
+        _model_normalized = model.replace(".", "_").replace("-", "_")
+        _models_match = _active_normalized == _model_normalized
+
+        if self._active_model and _models_match:
             # Health-Check vor Stale-Ready: Server könnte zwischenzeitlich gestoppt worden sein
             # (z.B. durch _cleanup_local_provider nach einem vorherigen Modul-Run).
             # ZUSÄTZLICH: _is_model_ready() prüfen — Server könnte auf /health antworten,
@@ -665,12 +685,16 @@ class LlamaCppClient(BaseProviderClient):
                 f"llamacpp endpoint conflict or startup failure for model '{model}'"
             )
 
-        # FIX: Client nach jedem query() zurücksetzen, um Connection-Leaks zu verhindern.
+        # FIX: Client nach langen Queries zurücksetzen, um Connection-Leaks zu verhindern.
         # Der Server (besonders Remote via SSH) schließt die Verbindung nach langen Requests,
         # aber der httpx-Client merkt es nicht. Der nächste Request hängt dann im CLOSE_WAIT.
         # Durch Zurücksetzen wird beim nächsten Aufruf eine frische Verbindung aufgebaut.
-        self._client = None
-        self._client_base_url = None
+        # WICHTIG: Nur zurücksetzen wenn der Server nicht zwischen Tests beendet werden soll
+        # (d.h. wenn _skip_llamacpp_cleanup gesetzt ist), um Modell-Entladung zu vermeiden.
+        _should_reset = not getattr(self, "_skip_llamacpp_cleanup", False)
+        if _should_reset:
+            self._client = None
+            self._client_base_url = None
 
         system_prompt: Optional[str] = kwargs.get("system")
         messages = []

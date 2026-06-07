@@ -387,17 +387,22 @@ class UnifiedBenchmarkRunner(BaseBenchmarkRunner):
                 # /v1 Suffix entfernen für /health Endpoint (z.B. http://...:1235/v1 → http://...:1235)
                 base_root = base_url_raw.rstrip("/").removesuffix("/v1")
 
-                # Health-Check mit Retry (max 3 Versuche, 1s dazwischen)
+                # Health-Check mit Retry — llama.cpp-Provider brauchen länger
+                # Konfigurierbare Timeouts aus Config verwenden (Fallback für Kompatibilität)
                 _server_ready = False
-                for _retry in range(3):
+                _health_timeout = server_cfg.get("server_ready_probe_timeout_sec", 10)  # 10s statt 5s
+                _health_retries = 8  # mehr Versuche für große Modelle
+                _health_backoff = server_cfg.get("server_ready_poll_sec", 3)  # 3s statt 1s
+
+                for _retry in range(_health_retries):
                     try:
-                        _resp = requests.get(f"{base_root}/health", timeout=5)
+                        _resp = requests.get(f"{base_root}/health", timeout=_health_timeout)
                         if _resp.status_code == 200:
                             _server_ready = True
                             break
                     except Exception:
                         pass
-                    time.sleep(1.0)
+                    time.sleep(_health_backoff)
 
                 if not _server_ready:
                     logger.warning(

@@ -190,7 +190,24 @@ def _run_model(model_id: str, force: bool = False, silent: bool = False) -> bool
 
     Watchdog: kills process group if no stdout for INACTIVITY_TIMEOUT seconds.
     Hard cap: kills after TIMEOUT_PER_MODEL seconds regardless.
+    
+    Prüft vor Ausführung ob das Modell bereits im ToolUse-Leaderboard existiert
+    (außer bei force=True).
     """
+    # Cache-Check: Überspringe wenn Modell bereits im ToolUse-Leaderboard
+    if not force:
+        try:
+            from scripts.core.tooluse_exporter import ToolUseExporter
+            from utils.config_validator import ConfigValidator
+            config = ConfigValidator().config
+            exporter = ToolUseExporter(config)
+            if exporter.model_has_results(model_id):
+                print(f"  ⏩ Überspringe {model_id} — bereits im ToolUse-Leaderboard vorhanden")
+                return True  # Als Erfolg werten, da Ergebnis bereits existiert
+        except Exception:
+            # Bei Fehler im Cache-Check defensiv weitermachen (Benchmark ausführen)
+            pass
+    
     cmd = [sys.executable, "run_benchmark.py", "--module", "tooluse", "--model", model_id]
     if force:
         cmd.append("--force")
@@ -318,7 +335,9 @@ def _run_batch(
             try:
                 config = ConfigValidator().config
                 exporter = ToolUseExporter(config)
-                written = exporter.aggregate_from_benchmark_csvs()
+                # Nur die bisher getesteten Modelle anzeigen
+                tested_so_far = success + failed
+                written = exporter.aggregate_from_benchmark_csvs(target_model_ids=tested_so_far)
                 if written > 0:
                     print(f"  ↻ Leaderboard zwischenstand: {written} Modell(e) | {i}/{len(models)} abgeschlossen")
             except Exception:  # noqa: BLE001
@@ -344,7 +363,9 @@ def _run_batch(
     try:
         config = ConfigValidator().config
         exporter = ToolUseExporter(config)
-        written = exporter.aggregate_from_benchmark_csvs()
+        # Nur die tatsächlich getesteten Modelle anzeigen/aktualisieren
+        tested_model_ids = success + failed
+        written = exporter.aggregate_from_benchmark_csvs(target_model_ids=tested_model_ids)
         if written > 0:
             exporter.calculate_sovereignty_gap()
             print(f"  ToolUse-Leaderboard aktualisiert: {written} Modell(e) → tooluse_leaderboard.csv")
@@ -494,7 +515,7 @@ def main() -> None:
             try:
                 config = ConfigValidator().config
                 exporter = ToolUseExporter(config)
-                written = exporter.aggregate_from_benchmark_csvs()
+                written = exporter.aggregate_from_benchmark_csvs(target_model_ids=[args.model])
                 if written > 0:
                     print(f"  ToolUse-Leaderboard aktualisiert: {written} Modell(e) → tooluse_leaderboard.csv")
             except Exception as exc:  # noqa: BLE001

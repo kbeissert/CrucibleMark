@@ -279,9 +279,33 @@ class BenchmarkRunner:
             self._cleanup_local_provider(provider)
 
     def _cleanup_local_provider(self, provider: str) -> None:
-        """Optionaler End-of-Run Cleanup für lokale Provider (Stop + Cache-Clear)."""
-        if provider.lower() not in ("ollama", "llamacpp", "llamacpp_spark", "llama_cpp", "llamacpp_local"):
+        """Optionaler End-of-Run Cleanup für lokale Provider (Stop + Cache-Clear).
+
+        Für llama.cpp-Provider (llamacpp, llamacpp_spark) wird der Cleanup
+        NICHT ausgeführt, wenn CRUCIBLE_SKIP_LLAMACPP_CLEANUP=1 gesetzt ist
+        ODER das Flag _skip_llamacpp_cleanup auf dem Runner gesetzt ist.
+        Dies verhindert, dass der Server zwischen Modul-Runs gestoppt wird,
+        wenn der Batch-Orchestrator den Lifecycle übernimmt.
+        """
+        provider_l = provider.lower()
+        if provider_l not in ("ollama", "llamacpp", "llamacpp_spark", "llama_cpp", "llamacpp_local"):
             return
+
+        # llama.cpp-Provider: Skip-Cleanup wenn vom Orchestrator vorgesehen
+        _llamacpp_providers = ("llamacpp", "llamacpp_spark", "llama_cpp", "llamacpp_local")
+        if provider_l in _llamacpp_providers:
+            # Prüfe sowohl Env-Variable als auch das Flag auf dem Runner
+            _env_skip = os.environ.get("CRUCIBLE_SKIP_LLAMACPP_CLEANUP") == "1"
+            _flag_skip = getattr(self, "_skip_llamacpp_cleanup", False)
+            if _env_skip or _flag_skip:
+                logger.debug(
+                    "_cleanup_local_provider: llama.cpp-Cleanup übersprungen "
+                    "(provider=%s, env=%s, flag=%s)",
+                    provider,
+                    _env_skip,
+                    _flag_skip,
+                )
+                return
 
         local_cfg = self.config.get("providers", {}).get("local", {})
         alias_map = {
@@ -289,7 +313,7 @@ class BenchmarkRunner:
             "llamacpp_local": "llamacpp",
             "ollama": "ollama_local",
         }
-        provider_key = alias_map.get(provider.lower(), provider.lower())
+        provider_key = alias_map.get(provider_l, provider_l)
         provider_cfg = local_cfg.get(provider_key, {})
 
         if not provider_cfg.get("cleanup_on_exit", False):

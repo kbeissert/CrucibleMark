@@ -166,6 +166,11 @@ providers:
       enabled: true
       env_var: OPENROUTER_API_KEY
       models:
+      # NVIDIA — neueste zuerst
+      - id: nvidia/nemotron-3-ultra-550b-a55b:free
+        name: NVIDIA Nemotron 3 Ultra (Free) via OpenRouter
+        model_type: open_weights_cloud  # MoE 55B/550B
+
       # Z.ai (GLM) — neueste zuerst
       - id: z-ai/glm-5.1-20260406
         name: GLM 5.1-20260406 (Z.ai) via OpenRouter
@@ -326,6 +331,10 @@ providers:
       server_start_cmd: ~/ai/llama.cpp/build/bin/llama-server
       server_stop_cmd: pkill -f llama-server
       server_log: ~/ai/llama-lab-server.log
+      server_ready_timeout_sec: 180
+      existing_server_ready_timeout_sec: 120
+      server_ready_poll_sec: 5
+      server_ready_probe_timeout_sec: 10
       threads: 10
       parallel: 4
       hardware_profile: m4_macbook_pro_metal
