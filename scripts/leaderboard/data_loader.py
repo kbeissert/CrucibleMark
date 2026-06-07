@@ -194,34 +194,43 @@ def load_benchmark_data() -> pd.DataFrame:
             subset=["model", "model_version", "asset_id"], keep="last"
         )
 
-    # --- MODEL CARD VERSION NORMALIZATION (SSoT) ---
-    # The model card is the single source of truth for model_version.
-    # Override whatever version string the API returned at runtime with the
-    # canonical value from the card. This prevents partial runs under a new
-    # API version string from creating spurious duplicate leaderboard entries.
-    if "model" in df.columns and "model_version" in df.columns:
+    # --- MODEL CARD NORMALIZATION (SSoT) ---
+    # The model card is the single source of truth for both model_id and model_version.
+    # Override whatever string the API returned at runtime with the canonical values
+    # from the card. This prevents partial runs under an alias (e.g. 'qwen3.5-...' vs
+    # 'qwen3_5-...') from creating spurious duplicate leaderboard entries.
+    if "model" in df.columns:
         import json as _json_card  # noqa: PLC0415
         from utils.model_utils import _find_card as _find_model_card  # noqa: PLC0415
         _card_dir = Path(__file__).resolve().parents[2] / "benchmark_scores" / "model_cards"
 
+        card_model_id_map: dict = {}
         card_version_map: dict = {}
+
         for model_id in df["model"].unique():
             card_path = _find_model_card(str(model_id), card_dir=_card_dir)
-            if card_path.exists():
+            if card_path and card_path.exists():
                 try:
                     card = _json_card.loads(card_path.read_text(encoding="utf-8"))
                     if isinstance(card, dict):
-                        v = card.get("model_version")
-                        if v and str(v).strip():
-                            card_version_map[str(model_id)] = str(v).strip()
+                        canonical_id = card.get("model_id")
+                        if canonical_id and str(canonical_id).strip():
+                            card_model_id_map[str(model_id)] = str(canonical_id).strip()
+
+                        version = card.get("model_version")
+                        if version and str(version).strip():
+                            card_version_map[str(model_id)] = str(version).strip()
                 except Exception:  # pylint: disable=broad-exception-caught
                     pass
 
-        if card_version_map:
-            df["model_version"] = df.apply(
-                lambda row: card_version_map.get(str(row["model"]), row["model_version"]),
-                axis=1,
-            )
+        if card_model_id_map or card_version_map:
+            def _normalize_row(row):
+                m = str(row["model"])
+                canonical = card_model_id_map.get(m, m)
+                version = card_version_map.get(m, row.get("model_version", "unknown"))
+                return pd.Series([canonical, version], index=["model", "model_version"])
+
+            df[["model", "model_version"]] = df.apply(_normalize_row, axis=1)
 
     df = df.drop_duplicates(
         subset=["model", "model_version", "type", "asset_id"], keep="last"
