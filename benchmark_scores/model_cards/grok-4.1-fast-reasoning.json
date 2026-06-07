@@ -10,19 +10,20 @@
   "weights_provenance_risk_rationale": "xAI ist ein US-amerikanisches Unternehmen und unterliegt dem CLOUD Act, jedoch sind die Modellgewichte nicht öffentlich zugänglich.",
   "model_family": "Grok",
   "primary_focus": "reasoning",
-  "summary": "Grok 4.1 Fast Reasoning ist xAIs schnellere Reasoning-Variante – optimiert für effizientes mehrstufiges Denken mit niedrigerer Latenz als das vollständige Grok 4 Reasoning. Es ist ausschließlich über die xAI-API verfügbar und richtet sich an Anwendungen, bei denen Reasoning-Qualität und Geschwindigkeit abgewogen werden müssen.",
+  "summary": "Grok 4.1 Fast Reasoning ist xAIs optimierte Reasoning-Variante für Agentic Workflows – spezialisiert auf Tool-Calling, parallele Verarbeitung und niedrige Halluzinationsraten (~3x reduziert gegenüber Vorgänger). 2M-Token-Kontextfenster, 2025-11 veröffentlicht. Ausschließlich über xAI-API verfügbar; ab August 2026 Deprecated (Migration zu grok-4.3 empfohlen).",
   "strengths": [
-    "Schnelleres Reasoning als das vollständige Grok 4 Reasoning bei ähnlicher Qualität",
-    "Gute Balance zwischen Denktiefe und Inferenzgeschwindigkeit",
-    "Echtzeit-Zugriff auf X-Plattform-Daten für kontextuelle Informationen",
-    "Stark bei mathematischen, logischen und analytischen Aufgaben"
+    "Spezialisiert auf Agentic Workflows: Tool-Calling, parallele Verarbeitung, reduzierte Halluzinationen (~3x gegenüber Vorgänger)",
+    "2M-Token-Kontextfenster – deutlich größer als alle vergleichbaren Frontier-Modelle",
+    "Wettbewerbsfähige API-Preise: $0.20/M Input, $0.50/M Output (einer der günstigsten Frontier-Tarife)",
+    "Echtzeit-Zugriff auf X-Plattform-Daten für kontextuelle Informationen"
   ],
   "known_limitations": [
     "Nur über xAIs Cloud-API verfügbar, kein lokaler Betrieb möglich",
-    "Schwächer als das vollständige Reasoning-Modell bei extrem komplexen mehrstufigen Aufgaben",
+    "Ab August 2026 Deprecated – Migration zu grok-4.3 erforderlich",
+    "Schwächer als das vollständige Grok 4 Reasoning bei extrem komplexen mehrstufigen Aufgaben",
     "Der unzensierte Stil kann bei sensiblen Themen zu kontroversen Antworten führen"
   ],
-  "judge_context_hint": "Grok 4.1 Fast Reasoning ist auf Geschwindigkeit optimiert – bei sehr komplexen Reasoning-Aufgaben kann die Denktiefe gegenüber dem vollständigen Grok 4 Reasoning zurückfallen; die Bewertung sollte die Zeitkomponente berücksichtigen.",
+  "judge_context_hint": "Grok 4.1 Fast Reasoning ist auf Agentic Workflows und Tool-Calling optimiert – die Bewertung sollte parallele Tool-Nutzung und strukturierte Ausgabeformate berücksichtigen. Modell ist ab August 2026 Deprecated.",
   "architecture_tags": [
     "Thinking",
     "Fast-Reasoning",
@@ -43,11 +44,11 @@
   "vendor": "xAI",
   "weights_license_tier": "proprietary",
   "model_version": "4.1-fast-reasoning",
-  "input_price_per_1m": 0.3,
-  "output_price_per_1m": 1.5,
+  "input_price_per_1m": 0.20,
+  "output_price_per_1m": 0.50,
   "use_case_primary": "reasoning",
   "parameter_architecture": "moe",
   "params_total_b": null,
-  "context_window_k": 128,
+  "context_window_k": 2000,
   "knowledge_cutoff": "2026-03"
 }

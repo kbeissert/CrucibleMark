@@ -16,31 +16,31 @@
   "params_total_b": 123,
   "context_window_k": 256,
   "knowledge_cutoff": "2024-12",
-  "summary": "Devstral 2 ist Mistrals frontier Coding-Agent-Modell, entwickelt in Zusammenarbeit mit All Hands AI. Es ist ein 123B-Parameter-Dense-Transformer spezialisiert auf agentisches Coding: Codebase-Exploration, Multi-File-Änderungen und Bug Fixing in realen Software-Engineering-Aufgaben. Unterstützt 256K Kontext.",
+  "summary": "Devstral 2 (123B) ist ein spezialisiertes Coding-Agent-Modell von Mistral AI in Kooperation mit All Hands AI. Als Dense-Transformer optimiert es auf agentische Software-Engineering-Aufgaben wie Codebase-Exploration, Multi-File-Änderungen und Debugging. Unterstützt 256K Kontext und steht unter der modified MIT-Lizenz bereit.",
   "strengths": [
     "Spezialisiert auf agentisches Software-Engineering",
-    "Codebase-Navigation über viele Dateien",
-    "Framework-Dependency-Tracking",
-    "Automatische Fehlerkorrektur und Retry-Logik",
-    "256K Kontextfenster",
-    "Open Weights"
+    "Effiziente Navigation und Bearbeitung komplexer Multi-File-Codebases",
+    "Tracking von Framework-Abhängigkeiten",
+    "Automatisierte Fehlerkorrektur und Retry-Logik",
+    "Großes Kontextfenster (256K) für umfangreiche Projekte",
+    "Open Weights (modified MIT)"
   ],
   "known_limitations": [
-    "Primär auf Coding ausgerichtet, generelle Tasks schwächer",
-    "Kein natives Reasoning/CoT-Thinking",
-    "Höherer Tool-Call-Error-Rate (~17%)"
+    "Eingeschränkt bei allgemeinen Aufgaben außerhalb des Coding-Bereichs",
+    "Kein natives Reasoning (Chain-of-Thought)",
+    "Qualitätsverlust bei komplexen Multi-Tool-Workflows durch potenzielle Parsing-Fehler bei Tool-Calls"
   ],
-  "judge_context_hint": "Devstral 2 (2512) ist Mistrals 123B Coding-Agent-Modell, spezialisiert auf Software-Engineering-Aufgaben in Kooperation mit All Hands AI. Kein natives Chain-of-Thought.",
+  "judge_context_hint": "Devstral 2 (123B) ist ein Coding-Spezialist (SWE-bench: 72.2%). Fokus auf agentische Aufgaben. Achtung: Bei komplexer Tool-Nutzung können Parsing-Fehler auftreten. Lizenz: modified MIT.",
   "architecture_tags": [
     "Coding",
     "Agentic",
     "Long Context"
   ],
   "supports_tool_use": true,
-  "license": "other",
+  "license": "modified-MIT",
   "license_url": "https://huggingface.co/mistralai/Devstral-2-123B-Instruct-2512",
   "commercial_use_allowed": true,
-  "weights_license_tier": "restricted-weights",
+  "weights_license_tier": "open-weights",
   "model_version": "2",
   "input_price_per_1m": 0.4,
   "output_price_per_1m": 2.0,

@@ -19,7 +19,7 @@
   "known_limitations": [
     "Keine öffentlichen Gewichte – vollständig cloud-gebunden, keine lokale Nutzung möglich",
     "Wissens-Cutoff begrenzt Aktualität; bei sehr aktuellen Ereignissen ohne Tool-Nutzung unzuverlässig",
-    "max_completion_tokens auf 4096 begrenzt (gpt-4o-2024-05-13 lehnt Werte > 4096 mit HTTP 400 ab, verifiziert im Tooluse-Benchmark 2026-05-25)"
+    "max_completion_tokens auf 4096 begrenzt (gpt-4o-2024-05-13 lehnt Werte > 4096 mit HTTP 400 ab, verifiziert im Tooluse-Test 2026-05-25)"
   ],
   "max_output_tokens": 4096,
   "judge_context_hint": "GPT-4o neigt bei komplexen mehrstufigen Reasoning-Aufgaben gelegentlich zu oberflächlichen Abkürzungen; bei Benchmarks mit langen Kontexten oder präzisen Faktenfragen sollte die Antworttiefe kritisch geprüft werden.",

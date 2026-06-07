@@ -73,6 +73,9 @@ class RetryHandler:
                 is_non_retriable = (
                     "endpoint conflict" in error_msg
                     or "openai-kompatibler endpunkt" in error_msg
+                    or "connection refused" in error_msg
+                    or "connection error" in error_msg
+                    or "connect call failed" in error_msg
                 )
 
                 if is_non_retriable:

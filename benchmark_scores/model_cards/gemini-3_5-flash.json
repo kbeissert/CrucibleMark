@@ -17,21 +17,22 @@
   "params_active_b": null,
   "context_window_k": 1049,
   "knowledge_cutoff": "2025-01",
-  "summary": "Gemini 3.5 Flash ist Googles High-Efficiency-Multimodal-Modell, released 19. Mai 2026 als GA (kein Preview-Suffix). Nahe-Pro-Level Coding und Reasoning zu Flash-Kosten. Optimiert für agentische Workflows, Sub-Agenten und parallele Ausführungs-Loops. Unterstützt Text, Bild, Video, Audio und PDF-Eingaben mit ~1.05M Token Kontextfenster. Konfigurierbare Reasoning-Tiefe. Signifikanter Preissprung ggü. Vorgänger (3× teurer als Gemini 3 Flash, 6× teurer als Gemini 3.1 Flash-Lite). Free Tier verfügbar (rate-limited).",
+  "summary": "Gemini 3.5 Flash (GA: 19.05.2026) ist ein effizientes, multimodales Modell von Google für Coding und autonome Agenten. Es bietet 1M Token Kontext, 65k Output-Tokens und ist 4x schneller als vergleichbare Frontier-Modelle. Es übertrifft Gemini 3.1 Pro in agentischen Aufgaben. Verfügbar exklusiv via Google Cloud-API.",
   "strengths": [
-    "1M Token Kontextfenster",
-    "Günstiges Preis-Leistungs-Verhältnis",
-    "Multimodal (Text, Bild, Video, Audio, PDF)",
-    "Konfigurierbare Reasoning-Tiefe (Thinking Levels)",
-    "Agentische Workflows und Sub-Agenten",
-    "Schnelle Inferenz für lange Kontext-Tasks"
+    "1M Token Kontextfenster & 65k Output-Tokens",
+    "Hohe Effizienz bei Coding und parallelen Agenten-Workflows",
+    "Konfigurierbare Reasoning-Tiefe (Thinking Levels: minimal bis high)",
+    "Verschlüsselter Reasoning-Kontext über API-Calls hinweg",
+    "Nativ multimodal (Text, Bild, Video, Audio, PDF)",
+    "Unterstützung für Multimodal Function Responses"
   ],
   "known_limitations": [
-    "Closed-Source, keine Gewichte verfügbar",
-    "US-Anbieter, CLOUD Act Risiko für EU-Daten",
-    "Höherer structured output error rate als Mistral-Modelle"
+    "Closed-Source (keine Gewichte verfügbar)",
+    "US-Anbieter (Risiken durch CLOUD Act für EU-Daten)",
+    "Höhere Fehlerquote bei strukturierten Outputs (vs. Mistral)",
+    "Teurer als Gemini 3.1 Flash-Lite"
   ],
-  "judge_context_hint": "Gemini 3.5 Flash (Mai 2026) ist Googles effizientes Frontier-Modell mit 1M Token Kontext, konfiguriertem Thinking-Level und Fokus auf agentischen Coding-Loops. Unterstützt native Reasoning Tokens.",
+  "judge_context_hint": "Effizientes Frontier-Modell für Agenten-Loops. Fokus auf Coding-Benchmarks. Beachte die gewählten Thinking Levels und native Reasoning-Tokens zur Bewertung der Logik-Tiefe.",
   "architecture_tags": [
     "General",
     "Long Context",

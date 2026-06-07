@@ -39,7 +39,6 @@ integration:
           file: "tooluse_leaderboard.csv"
           value_template: "{p1_score}"
           missing_value: "–"
-          not_capable_column: "tool_call_valid"
           not_capable_value: "n/a"
           not_capable_card_key: "supports_tool_use"
       - id: p2_score
@@ -48,7 +47,6 @@ integration:
           file: "tooluse_leaderboard.csv"
           value_template: "{p2_score}"
           missing_value: "–"
-          not_capable_column: "tool_call_valid"
           not_capable_value: "n/a"
           not_capable_card_key: "supports_tool_use"
       - id: combined_score
@@ -57,7 +55,6 @@ integration:
           file: "tooluse_leaderboard.csv"
           value_template: "{combined_score}"
           missing_value: "–"
-          not_capable_column: "tool_call_valid"
           not_capable_value: "n/a"
           not_capable_card_key: "supports_tool_use"
 

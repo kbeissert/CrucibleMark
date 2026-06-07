@@ -10,7 +10,7 @@
   "weights_provenance_risk_rationale": "Mistral AI ist ein französisches Unternehmen mit Sitz in der EU und unterliegt keiner staatlichen Zugriffspflicht auf Modellgewichte wie dem US CLOUD Act oder dem chinesischen NSL.",
   "model_family": "Mistral",
   "primary_focus": "general",
-  "summary": "Mistral Medium 1.0 (Dezember 2023) war Mistral AIs erste proprietäre Mittelklasse-API ohne öffentliche Gewichte – Legacy-Modell, abgelöst durch Mistral Medium 3.5. Historische Benchmark-Daten unter API-ID mistral-medium-2312.",
+  "summary": "Mistral Medium 1.0 (Dezember 2023) war Mistral AIs erste proprietäre Mittelklasse-API ohne öffentliche Gewichte – Legacy-Modell, abgelöst durch Mistral Medium 3.5. 32K Kontextfenster, multilingual. Historische Daten unter API-Preisen verfügbar.",
   "strengths": [
     "Gute Balance zwischen Leistung und Kosten im mittleren Preissegment",
     "Solide mehrsprachige Fähigkeiten, insbesondere für europäische Sprachen",

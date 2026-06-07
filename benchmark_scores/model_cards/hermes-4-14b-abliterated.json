@@ -10,24 +10,26 @@
   "weights_provenance_risk_rationale": "NousResearch ist ein US-amerikanisches Unternehmen; CLOUD Act ist nur bei API-Nutzung relevant, nicht bei lokaler Ausführung der Open-Weights-Variante.",
   "model_family": "Hermes",
   "vendor": "NousResearch",
-  "primary_focus": "instruction-following",
+  "primary_focus": "reasoning",
   "use_case_primary": "generalist",
   "parameter_architecture": "dense",
   "params_total_b": 14.0,
   "params_active_b": null,
   "context_window_k": 128,
   "knowledge_cutoff": "2024-09",
-  "summary": "Hermes 4 14B von NousResearch, basierend auf Qwen3-14B (Apache 2.0), veröffentlicht August 2025. Dieses Modell ist eine Abliterated-Variante: alle Sicherheitsfilter wurden durch Community-Nachbearbeitung entfernt. Läuft hier als Q6_K-GGUF via llama.cpp. Q6_K (6-Bit-K-Quant) gilt als nahezu verlustfrei gegenüber der BF16-Vollpräzision – von der Community als qualitativ sehr gut eingestuft.",
+  "summary": "Hermes 4 14B (Q6_K, Abliterated) ist eine Community-Variante (mradermacher) von NousResearch' Qwen3-basiertem Modell. Es nutzt ein massiv erweitertes Post-Training (~60B Tokens). Diese Version wurde durch Abliteration von allen Sicherheitsfiltern befreit – maximale Kreativität und Flexibilität, aber keine Eignung für produktive Umgebungen.",
   "strengths": [
-    "Hybrid-Reasoning: optionaler Thinking-Modus mit <think>-Tags (Qwen3-Basis), zuschaltbar für anspruchsvolle Aufgaben",
-    "Starkes Instruction-Following mit bewusst niedrigen Ablehnungsraten (RefusalBench SOTA bei Hermes 4)",
-    "Q6_K-Quantisierung: sehr geringer Qualitätsverlust gegenüber BF16, Community-empfohlen für hohe lokale Qualität"
+    "Hohe Reasoning-Kapazität durch massiv erweitertes Post-Training",
+    "Hybrid-Reasoning: Explizite Denktraces via Thinking-Tags auf Anfrage möglich",
+    "Unzensierte Nutzung durch Abliteration für Forschung und spezialisierte Workloads",
+    "Minimale Qualitätseinbußen durch Q6_K-Quantisierung gegenüber BF16"
   ],
   "known_limitations": [
-    "Abliteration entfernt alle Sicherheitsmechanismen – ungeeignet für unbeaufsichtigte oder produktive Deployments",
-    "Abliterated-Variante ist Community-Ableitung, keine offizielle NousResearch-Veröffentlichung"
+    "Keine Sicherheitsmechanismen: Ungeeignet für unüberwachte oder produktive Umgebungen",
+    "Community-Modifikation: Keine offizielle Veröffentlichung von NousResearch",
+    "Abliteration führt zu extrem niedrigen Ablehnungsraten – keine Filterung bei kritischen Themen"
   ],
-  "judge_context_hint": "Abliterated-Variante ohne Sicherheitsfilter. Judge bewertet ausschließlich Antwortqualität und Aufgabenerfüllung – fehlende Ablehnungsformulierungen sind kein Qualitätsmerkmal. Thinking-Modus möglicherweise aktiv: <think>-Blöcke vor der finalen Antwort separat bewerten.",
+  "judge_context_hint": "Modell ist 'abliterated' (ohne Sicherheitsfilter). Fehlende Verweigerungen bei kritischen Themen sind ein technisches Merkmal, kein Qualitätsmangel. Bei aktivem Thinking-Modus: Denktraces von der finalen Antwort trennen und separat bewerten.",
   "architecture_tags": [
     "Instruct",
     "Thinking-Optional",

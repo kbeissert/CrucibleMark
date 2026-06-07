@@ -9,20 +9,25 @@
   "weights_provenance_risk": "medium",
   "weights_provenance_risk_rationale": "NousResearch ist ein US-amerikanisches Open-Source-Forschungskollektiv; die Weights sind öffentlich verfügbar, jedoch unterliegt das Unternehmen dem US-amerikanischen CLOUD Act.",
   "model_family": "Hermes",
-  "primary_focus": "instruction-following",
-  "summary": "Hermes 4 14B (Q4_K_M GGUF) ist ein lokal betreibbares Open-Weights-Modell von Nous Research aus den USA, quantisiert durch bartowski. Es basiert auf NousResearch Hermes-4 und eignet sich für agentische Aufgaben und Instruction-Following auf Consumer-Hardware.",
+  "primary_focus": "reasoning",
+  "summary": "Hermes 4 14B (Q4_K_M GGUF) von NousResearch, basierend auf Qwen3-14B (Apache 2.0). Hybrid-Reasoning-Modell mit optionalem Thinking-Modus. Post-Training mit ~5M Samples / ~60B Tokens für verbesserte Reasoning-Fähigkeiten. Quantisiert durch bartowski; benötigt ~15 GB VRAM. Besonderes Merkmal: Safety-Filter durch Training austrainiert, nicht entfernt – hohe Kreativität ohne Qualitätsverlust.",
   "strengths": [
-    "Sehr gutes Instruction-Following mit präziser Befolgung komplexer Anweisungen",
-    "Starke Unterstützung für strukturierte Ausgaben (JSON, Funktionsaufrufe, Agenten-Frameworks)",
-    "Effizient lokal betreibbar durch quantisiertes GGUF-Format (Q4_K_M) mit geringem VRAM-Bedarf"
-  ],
-  "known_limitations": [
-    "Als 14B-Modell bei sehr komplexen Mehrschritt-Reasoning-Aufgaben schwächer als größere Modelle",
-    "Feintuning-Daten von NousResearch sind nicht vollständig dokumentiert, was Bias-Analyse erschwert"
-  ],
-  "judge_context_hint": "Das Modell ist explizit auf präzises Instruction-Following und Agenten-Nutzung optimiert und neigt dazu, Anweisungen sehr wörtlich zu nehmen – kreative Abweichungen oder Eigeninitiative sind bewusst reduziert.",
+      "Hybrid-Reasoning: Optionaler Thinking-Modus mit expliziten Denktraces",
+      "Hohe Compliance bei komplexen Anweisungen – maximale Hilfsbereitschaft",
+      "Starke Reasoning-Basis: Breites Wissen und logisches Denkvermögen",
+      "Safety-Training: Filter durch Training austrainiert, nicht entfernt – hohe Kreativität ohne Qualitätsverlust",
+      "Effizient: Q4_K_M Quantisierung bietet gute Balance zwischen Qualität und VRAM-Verbrauch (~15 GB)",
+      "Apache 2.0: Uneingeschränkte kommerzielle Nutzung und lokale Ausführung"
+    ],
+    "known_limitations": [
+      "Quantisierungsverlust: Q4_K_M weist messbare Qualitätseinbußen gegenüber Q6_K auf",
+      "Skalierung: Bei extrem langen Reasoning-Ketten unterlegen gegenüber größeren Modellen",
+      "VRAM-Bedarf: Benötigt ca. 15GB VRAM für stabile Ausführung"
+    ],
+    "judge_context_hint": "Modell nutzt optionalen Thinking-Modus; Denktraces sind Teil des Reasoning-Prozesses und separat zu bewerten. Die sehr niedrige Ablehnungsrate ist ein beabsichtigtes Alignment-Merkmal und kein Modellfehler.",
   "architecture_tags": [
-    "Uncensored-Finetuned"
+    "Instruct",
+    "Thinking-Optional"
   ],
   "unknown": false,
   "generated_at": "2026-04-11T15:13:31.797577+00:00",

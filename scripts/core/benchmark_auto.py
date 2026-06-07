@@ -60,6 +60,20 @@ from utils.model_utils import (  # noqa: E402
     normalize_supports_tool_use,
     SUPPORT_TOOL_USE_UNTESTED,
 )
+
+# Gemeinsame llama.cpp-Batch-Orchestrierung
+from scripts.core.llamacpp_batch import (  # noqa: E402
+    is_llamacpp_provider,
+    get_enabled_llamacpp_providers,
+    set_llamacpp_provider_context,
+    stop_llamacpp_provider_server,
+    run_llamacpp_provider_cleanup,
+    llamacpp_model_session,
+    get_startable_assets,
+)
+
+# Konstante für "Modell kann keine Tools" (getestet und fehlgeschlagen)
+SUPPORT_TOOL_USE_NOT_APPLICABLE = "not_applicable"
 from utils.llm_client import LLMClient  # noqa: E402
 from utils.module_registry import get_active_modules  # noqa: E402
 from utils.provider_health import filter_testable_cards  # noqa: E402
@@ -210,15 +224,21 @@ def get_all_modules(validator: ConfigValidator) -> List[Dict[str, Any]]:
 def _get_startable_assets(
     module: Dict[str, Any], model: str, existing_tests: Set[Tuple[str, str]]
 ) -> List[Path]:
-    """Ermittelt Asset-Pfade, die für dieses Modell noch nicht getestet wurden."""
+    """Ermittelt Asset-Pfade, die für dieses Modell noch nicht getestet wurden.
+    
+    State Machine für supports_tool_use (skip_if_card_false):
+    - false / "not_applicable" → Modell kann KEINE Tools → SKIP (n/a im Leaderboard)
+    - true / "tested" → Modell hat Tools → prüfe ob Scores vorhanden sind
+    - "untested" / anderer Wert → Test ausführen!
+    
+    Returns:
+        Liste der zu testenden Asset-Pfade (leer wenn übersprungen oder bereits vorhanden)
+    """
     assets_path = module["path"]
 
     # -------------------------------------------------------
     # CARD-BASED SKIP (skip_if_card_false)
     # -------------------------------------------------------
-    # Wenn die Model Card einen Key mit Wert False oder "untested"/"n/a" trägt,
-    # wird das Modul für dieses Modell komplett übersprungen — kein Re-Run nötig.
-    # Beispiel: supports_tool_use: false/untested/n/a → Tooluse-Assets werden nicht ausgeführt.
     skip_card_key = module.get("skip_if_card_false")
     if skip_card_key:
         import json as _json
@@ -238,13 +258,22 @@ def _get_startable_assets(
                 )
             else:
                 _raw_val = _card.get(skip_card_key)
-                # Tri-State: False = nicht fähig, "untested"/"n/a" = noch nicht geprüft
-                # Beide Fälle → Benchmark überspringen (kein Live-Test ohne verifizierten Support)
                 _norm_val = normalize_supports_tool_use(_raw_val)
-                if _norm_val is False or _norm_val == SUPPORT_TOOL_USE_UNTESTED:
-                    _reason = "false" if _norm_val is False else f"{_raw_val!r}"
+                
+                # Fall 1: Modell kann KEINE Tools (false oder "not_applicable")
+                # → SKIP, Test nicht möglich
+                if _norm_val is False or _raw_val == SUPPORT_TOOL_USE_NOT_APPLICABLE:
+                    _reason = "not_applicable" if _raw_val == SUPPORT_TOOL_USE_NOT_APPLICABLE else "false"
                     print(f"   ⏩ Bench: {module['name']} ({skip_card_key}={_reason} in Card — übersprungen)")
                     return []
+                
+                # Fall 2: "untested" oder unbekannter Wert → Test ausführen!
+                # NICHT skippen - der Test muss durchgeführt werden
+                if _norm_val == SUPPORT_TOOL_USE_UNTESTED or _raw_val == SUPPORT_TOOL_USE_UNTESTED:
+                    # Test ausführen - nicht skippen
+                    pass
+                # Fall 3: true ("tested") → weiter zum normalen Cache-Check
+                # Dies geschieht weiter unten
     # -------------------------------------------------------
     # SPECIAL HANDLING FOR BATCH MODULES (e.g. Political Compass)
     # -------------------------------------------------------
@@ -407,67 +436,10 @@ def _extract_config_model_ids(models_cfg: Any) -> List[str]:
     return model_ids
 
 
-def _get_enabled_local_llamacpp_providers(config: Dict[str, Any]) -> List[Tuple[str, Dict[str, Any]]]:
-    """Returns enabled local llama.cpp-style providers in config order."""
-    local_cfg = config.get("providers", {}).get("local", {})
-    enabled: List[Tuple[str, Dict[str, Any]]] = []
-    for provider_key, provider_cfg in local_cfg.items():
-        if not isinstance(provider_cfg, dict):
-            continue
-        if provider_cfg.get("api_type") != "llamacpp":
-            continue
-        if not provider_cfg.get("enabled", False):
-            continue
-        enabled.append((provider_key, provider_cfg))
-    return enabled
-
-
-def _set_llamacpp_provider_context(client: Any, provider_key: str) -> None:
-    """Configures the shared llama.cpp client instance for the requested provider key."""
-    setter = getattr(client, "_set_provider_context", None)
-    if callable(setter):
-        setter(provider_key)
-
-
-def _is_llamacpp_provider(provider_key: str) -> bool:
-    """Returns True for local llama.cpp-style provider aliases."""
-    return provider_key in {"llamacpp", "llamacpp_spark", "llama_cpp", "llamacpp_local"}
-
-
-def _stop_enabled_local_llamacpp_servers(
-    config: Dict[str, Any],
-    provider_key: Optional[str] = None,
-) -> None:
-    """Stops enabled local llama.cpp servers configured in provider_config.
-
-    Wenn `provider_key` angegeben ist, wird nur dieser Provider gestoppt.
-    Ohne `provider_key` werden alle aktivierten llama.cpp-Provider gestoppt
-    (z.B. prophylaktisch vor Tool-Use-Delegate-Subprozessen).
-
-    This prevents endpoint ownership conflicts when benchmark_auto starts
-    delegate subprocesses (e.g. tool-use backlog worker).
-    """
-    enabled_llamacpp = _get_enabled_local_llamacpp_providers(config)
-    if not enabled_llamacpp:
-        return
-
-    # Wenn ein spezifischer Provider angegeben ist, nur diesen stoppen
-    if provider_key is not None:
-        enabled_llamacpp = [(k, v) for k, v in enabled_llamacpp if k == provider_key]
-        if not enabled_llamacpp:
-            return
-
-    print("   🧹 Stoppe laufende llama-server (prophylaktisch) ...")
-    seen_cmds: Set[str] = set()
-    for _pkey, provider_cfg in enabled_llamacpp:
-        stop_cmd = str(provider_cfg.get("server_stop_cmd", "pkill -f llama-server")).strip()
-        if not stop_cmd or stop_cmd in seen_cmds:
-            continue
-        seen_cmds.add(stop_cmd)
-        subprocess.run(stop_cmd, shell=True, check=False, capture_output=True)
-
-    # Give the OS a short window to release sockets before next start.
-    time.sleep(_LLAMACPP_STOP_SETTLE_SEC)
+# Entfernt: _get_enabled_local_llamacpp_providers → verwendet get_enabled_llamacpp_providers aus llamacpp_batch.py
+# Entfernt: _set_llamacpp_provider_context → verwendet set_llamacpp_provider_context aus llamacpp_batch.py
+# Entfernt: _is_llamacpp_provider → verwendet is_llamacpp_provider aus llamacpp_batch.py
+# Entfernt: _stop_enabled_local_llamacpp_servers → verwendet stop_llamacpp_provider_server aus llamacpp_batch.py
 
 
 def _run_single_llamacpp_provider_batch(
@@ -510,7 +482,7 @@ def _run_single_llamacpp_provider_batch(
     if lcpp_client is None:
         print(f"❌ LlamaCppClient '{provider_key}' nicht im Client-Registry gefunden.")
         return
-    _set_llamacpp_provider_context(lcpp_client, provider_key)
+    set_llamacpp_provider_context(lcpp_client, provider_key)
 
     provider_label = provider_cfg.get("name", provider_key)
     print(f"\n🖥️  [1b/2] LOKALE MODELLE (LLAMA.CPP: {provider_label})")
@@ -520,7 +492,7 @@ def _run_single_llamacpp_provider_batch(
     print(f"Ignoriere bereits vorhandene Ergebnisse in: {csv_path}\n")
 
     # Nur den eigenen Provider stoppen (nicht alle llama.cpp-Provider)
-    _stop_enabled_local_llamacpp_servers(validator.config, provider_key=provider_key)
+    stop_llamacpp_provider_server(validator.config, provider_key=provider_key)
 
     interrupted = False
     try:
@@ -564,7 +536,7 @@ def _run_single_llamacpp_provider_batch(
         lcpp_client.stop_server()
 
         # End-of-Batch Cleanup (post_stop_cmd, Cache-Bereinigung) für diesen Provider
-        _run_llamacpp_provider_cleanup(provider_key, provider_cfg)
+        run_llamacpp_provider_cleanup(provider_key, provider_cfg)
 
         if interrupted:
             sys.exit(1)
@@ -679,7 +651,7 @@ def _run_module_for_model(
     if _is_score_module(module):
         # For local llama.cpp providers we must stay in-process to preserve the
         # server ownership/context of the already started model server.
-        if not _is_llamacpp_provider(provider):
+        if not is_llamacpp_provider(provider):
             return _run_score_delegate_for_model(module, model, force=force, audit=audit)
 
     if module.get("delegate_script"):
@@ -915,7 +887,7 @@ def run_llamacpp_batch(
     mcp_mode: str = "live",
 ) -> None:
     """Batch-Run für alle aktivierten lokalen llama.cpp-Provider aus der Config (SSOT)."""
-    enabled_llamacpp = _get_enabled_local_llamacpp_providers(validator.config)
+    enabled_llamacpp = get_enabled_llamacpp_providers(validator.config)
     if not enabled_llamacpp:
         print("⏭️  Kein aktivierter lokaler llama.cpp-Provider in der Config — überspringe.")
         return
@@ -1253,7 +1225,7 @@ def main():
     if untested_cards:
         print("\n🔧 [0/2] TOOL-USE BACKLOG (untested Cards)")
         print(f"{'=' * 40}")
-        _stop_enabled_local_llamacpp_servers(validator.config)
+        stop_llamacpp_provider_server(validator.config)
         aborted = False
         try:
             _run_untested_tooluse_models(

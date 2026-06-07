@@ -4,6 +4,24 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [v4.3.9] - 2026-06-07
+
+**Benchmark-Hang-Diagnose — Connection-Leak-Fix & Stabilisierung für Remote-llama.cpp-Provider.**
+
+### Fixed
+- **Connection-Leak in `utils/providers/llamacpp.py`** — Der httpx-Client hielt Verbindungen im Keep-Alive-Zustand, der Server (besonders Remote via SSH) schloss sie nach langen Requests, aber der Client merkte es nicht → CLOSE_WAIT-Sockets. Fix: `httpx.Limits(max_keepalive_connections=0)` — Keep-Alive deaktiviert, jeder Request bekommt eine frische Verbindung. Zusätzlich: `self._client = None` nach jedem `query()` um sicherzustellen, dass beim nächsten Aufruf ein neuer Client erstellt wird.
+- **NameError in `scripts/core/unified_runner.py`** — Fehlendes `import os` verursachte `name 'os' is not defined` in `_cleanup_local_provider()`. Behoben: `import os` am Dateianfang hinzugefügt.
+- **Stale-Ready in `utils/providers/llamacpp.py`** — `_is_healthy()` allein reichte nicht, wenn der Server auf /health antwortete, aber das Modell nach Memory Reset noch nicht bereit war. Fix: `_is_model_ready()` zusätzlich zu `_is_healthy()` in `query()`.
+
+### Changed
+- **`scripts/run_score_benchmark.py`** — 3s Pause zwischen Modulen hinzugefügt (Server-Stabilisierung nach Modul-Wechsel).
+
+### Result
+- Gemma 4 26B-A4B Q8 via llamacpp_spark: Alle 6 CLI-Tests erfolgreich durchgelaufen (Durchschnitt: 93.7%).
+- Kein Hang, keine Race-Conditions zwischen Tests.
+
+---
+
 ## [v4.3.1] - 2026-06-05
 
 **Code Quality Pass — Bugfixes, DRY-Konsolidierung & Import-Cleanup.**

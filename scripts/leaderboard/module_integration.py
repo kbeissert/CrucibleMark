@@ -304,6 +304,10 @@ def _enrich_from_csv_source(
         result[label] = result[label].fillna(fallback)
 
         # Model-card-based not-capable check
+        # State Machine für supports_tool_use:
+        # - false / "not_applicable" → Modell kann KEINE Tools → "n/a" im Leaderboard
+        # - true / "tested" → Scores vorhanden → Wert anzeigen
+        # - "untested" / anderer Wert → noch nicht getestet → "–" (missing_value)
         not_capable_card_key = source_config.get("not_capable_card_key")
         not_capable_value = source_config.get("not_capable_value", "n/a")
         if not_capable_card_key and _find_card is not None:
@@ -316,7 +320,9 @@ def _enrich_from_csv_source(
                     if card_path.exists():
                         try:
                             card = json.loads(card_path.read_text())
-                            if card.get(not_capable_card_key) is False:
+                            card_val = card.get(not_capable_card_key)
+                            # false oder "not_applicable" → Modell kann keine Tools
+                            if card_val is False or card_val == "not_applicable":
                                 result.at[idx, label] = not_capable_value
                         except Exception:
                             pass

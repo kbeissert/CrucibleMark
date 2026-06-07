@@ -4,23 +4,24 @@
   "developer": "Mistral AI",
   "origin_country": "France",
   "developer_jurisdiction": "EU",
-  "deployment_type": "open-weights-cloud-available",
+  "deployment_type": "cloud-only",
   "local_deployment_possible": false,
   "weights_provenance_risk": "low",
   "weights_provenance_risk_rationale": "Mistral AI ist ein französisches Unternehmen mit Sitz in der EU und unterliegt keiner vergleichbaren staatlichen Zugriffspflicht wie dem chinesischen NSL oder dem US CLOUD Act für Modellgewichte.",
   "model_family": "Magistral",
   "primary_focus": "reasoning",
-  "summary": "Magistral Medium ist Mistral AIs dediziertes Reasoning-Modell aus Frankreich – entwickelt für komplexes, mehrstufiges Schlussfolgern, Mathematik und strukturiertes Denken. Es ist über die Mistral-API verfügbar; die Weights sind unter Apache-2.0 frei zugänglich.",
+  "summary": "Magistral Medium ist das spezialisierte Reasoning-Modell von Mistral AI (Juni 2025) für komplexe Logik, Mathematik und strukturierte Entscheidungsfindung. Es ist ausschließlich über die Mistral-API (Le Chat/Enterprise) verfügbar; die Gewichte sind nicht öffentlich zugänglich. Es unterstützt ein 40k Kontextfenster und bietet durch Flash Answers beschleunigte Antwortzeiten.",
   "strengths": [
-    "Starkes mehrstufiges Reasoning und logische Schlussfolgerungen",
-    "Solide mathematische und analytische Fähigkeiten",
-    "Mehrsprachige Kompetenz mit besonderem Fokus auf europäische Sprachen"
+    "Herausragende mathematische Logik (73,6 % AIME2024)",
+    "Transparente Nachvollziehbarkeit durch explizite Darstellung des Denkprozesses",
+    "Starke mehrsprachige Kompetenz (u. a. EN, FR, ES, DE, CN)",
+    "Hohe Kapazität für lange Ausgaben (bis zu 131,1k Tokens)"
   ],
   "known_limitations": [
-    "Nur über Mistral-API verfügbar, keine lokale Ausführung möglich",
-    "Als neueres Reasoning-Modell noch weniger Community-Benchmarks und Praxiserfahrungen als etablierte Konkurrenten"
+    "Keine lokale Ausführung möglich (proprietäres API-Modell)",
+    "Kein Zugriff auf die Modellgewichte (im Gegensatz zur Small-Variante)"
   ],
-  "judge_context_hint": "Magistral Medium ist ein Reasoning-First-Modell mit aktivem Chain-of-Thought; der Judge sollte Antwortqualität an der Schlussfolgerungstiefe messen, nicht an Kürze.",
+  "judge_context_hint": "Das Modell nutzt aktives Chain-of-Thought. Bewerten Sie die Antwortqualität primär anhand der logischen Tiefe und der Korrektheit des nachvollziehbaren Denkprozesses, nicht nach der Kürze der Antwort.",
   "architecture_tags": [
     "Thinking",
     "General"
@@ -34,17 +35,17 @@
   "thinking_probe_confidence": "low",
   "thinking_probe_at": "2026-04-23T18:08:27.324290+00:00",
   "supports_tool_use": true,
-  "license": "Apache-2.0",
+  "license": "Proprietary",
   "license_url": null,
   "commercial_use_allowed": true,
   "vendor": "Mistral AI",
-  "weights_license_tier": "open-weights",
+  "weights_license_tier": "proprietary",
   "model_version": "latest",
   "use_case_primary": "reasoning",
   "parameter_architecture": "dense",
   "params_total_b": null,
-  "context_window_k": 128,
-  "knowledge_cutoff": "2025-03",
-  "input_price_per_1m": 2.0,
-  "output_price_per_1m": 5.0
+  "context_window_k": 40,
+  "knowledge_cutoff": "2025-06",
+  "input_price_per_1m": 0.4,
+  "output_price_per_1m": 2.0
 }

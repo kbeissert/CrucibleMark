@@ -626,7 +626,7 @@ def _build_leaderboard_entry(
             "supports_tool_use_state": (
                 _supports_tool_use_state(card.get("supports_tool_use"))
                 if card is not None
-                else "untested"
+                else None
             ),
         } if card else None,
     }
@@ -733,20 +733,29 @@ def _build_compass_entry(
 
 
 
-def _supports_tool_use_state(value: object) -> str:
-    """Tri-State-Normalisierung für den Web-Export.
-
+def _supports_tool_use_state(value: object) -> str | None:
+    """Normalisiert supports_tool_use für den Web-Export.
+    
+    State-Machine für Frontend:
+        "true"  → Modell kann Tools (verifiziert)
+        "false" → Modell kann KEINE Tools (false oder not_applicable)
+        None    → Nicht getestet (untested, None, unbekannt)
+    
     Returns:
-        Einer der Strings ``"true"``, ``"false"``, ``"untested"``.
-        ``None`` und unbekannte Werte werden zu ``"untested"``.
+        "true", "false" oder None
     """
     if value is True:
         return "true"
     if value is False:
         return "false"
-    if isinstance(value, str) and value.strip().lower() == "untested":
-        return "untested"
-    return "untested"
+    if isinstance(value, str):
+        val_lower = value.strip().lower()
+        if val_lower in ("true", "tested"):
+            return "true"
+        if val_lower in ("false", "not_applicable"):
+            return "false"
+        # "untested" und alle anderen → None
+    return None
 def _read_latest_tooluse_narrative(review_dir: Path) -> str | None:
     """Return content of the most recently modified tooluse_narrative_review_*.md."""
     if not review_dir.exists():

@@ -9,21 +9,24 @@
   "weights_provenance_risk": "medium",
   "weights_provenance_risk_rationale": "Nous Research ist ein US-amerikanisches Unternehmen und unterliegt dem CLOUD Act, jedoch sind die Gewichte öffentlich verfügbar und lokal betreibbar, sodass kein API-Zugriff durch Dritte erforderlich ist.",
   "model_family": "Hermes",
-  "primary_focus": "instruction-following",
-  "summary": "Hermes 4 405B ist Nous Researchs großes Modell mit öffentlich verfügbaren Gewichten (Meta Llama Community License) aus den USA – für anspruchsvolles Instruction-Following und agentische Aufgaben optimiert. Es ist über Cloud-Provider nutzbar; für den lokalen Betrieb wird erhebliche Server-Hardware benötigt.",
+  "primary_focus": "reasoning",
+  "summary": "Hermes 4 405B von NousResearch, basierend auf Meta-Llama-3.1-405B. Das Flaggschiff der Hermes-4-Familie mit massivem Parameter-Upgrade. Hybrid-Reasoning mit optionalem Thinking-Modus, veröffentlicht August 2025. Stark reduzierte Ablehnungsraten. Das größte open-weights Modell der Familie.",
   "strengths": [
-    "Sehr starkes Instruction-Following mit präziser Befolgung komplexer Anweisungen",
-    "Optimiert für strukturierte JSON-Ausgaben und Function-Calling in Agenten-Pipelines",
-    "Reduzierte Ablehnung von Anfragen durch gezieltes Uncensored-Finetuning"
+    "Exzellentes Reasoning und STEM-Leistung durch hybriden Thinking-Modus.",
+    "Maximale Kreativität bei Rollenspielen, Szenengestaltung und komplexem Prompting.",
+    "Niedrigste Ablehnungsrate – maximale Hilfsbereitschaft und Freiheit.",
+    "Starke Adhärenz bei JSON-Strukturen, Function-Calling und komplexen Agenten-Pipelines."
   ],
   "known_limitations": [
-    "Durch reduzierte Sicherheitsfilter erhöhtes Risiko für missbräuchliche Nutzung bei sensiblen Themen",
-    "Lokaler Betrieb des 405B-Modells erfordert erhebliche Hardware-Ressourcen (mehrere High-End-GPUs)"
+    "Wissensstand bis Januar 2025; keine Informationen über aktuellere Ereignisse.",
+    "Hoher Ressourcenbedarf: ~405GB VRAM (FP8) oder ~200GB (Q4) erforderlich.",
+    "Erhöhtes Risiko für missbräuchliche Nutzung durch bewusst reduzierte Sicherheitsfilter.",
+    "Kommerzielle Nutzung unterliegt den spezifischen Bedingungen der Meta Llama Lizenz."
   ],
-  "judge_context_hint": "Das Modell ist auf Instruction-Following und strukturierte Ausgaben optimiert und neigt zu direkten, ungefilterten Antworten – Qualitätsbewertungen sollten Präzision und Formatkonformität besonders gewichten.",
+  "judge_context_hint": "Hybrid-Modell: Thinking-Blöcke sind optional. Niedrige Refusal-Rate ist Designziel für Kreativität, kein Defizit. Starke JSON-Adhärenz und Tool-Use-Fähigkeiten bewerten.",
   "architecture_tags": [
     "Instruct",
-    "Uncensored-Finetuned"
+    "Thinking-Optional"
   ],
   "unknown": false,
   "generated_at": "2026-05-02T16:10:18.822288+00:00",

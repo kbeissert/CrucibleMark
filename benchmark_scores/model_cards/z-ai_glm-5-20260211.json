@@ -17,7 +17,7 @@
     "Gute Reasoning- und Dialogkompetenz auf Basis der weiterentwickelten GLM-Architektur"
   ],
   "known_limitations": [
-    "Detaillierte technische Spezifikationen und unabhängige Benchmarks sind öffentlich kaum verfügbar",
+    "Detaillierte technische Spezifikationen und unabhängige Tests sind öffentlich kaum verfügbar",
     "Mögliche Einschränkungen bei politisch sensiblen Themen entsprechend chinesischer Regulierungsvorgaben"
   ],
   "judge_context_hint": "Das Modell stammt aus der GLM-Familie von Zhipu AI und kann bei englischsprachigen Benchmarks gegenüber chinesischsprachigen Aufgaben leicht schwächer abschneiden; zudem sind öffentliche Leistungsdaten zu GLM-5 noch begrenzt.",

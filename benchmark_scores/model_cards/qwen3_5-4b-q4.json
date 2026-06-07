@@ -17,11 +17,11 @@
   "params_active_b": null,
   "context_window_k": 128,
   "knowledge_cutoff": "2025-06",
-  "summary": "Qwen 3.5 4B ist ein kompaktes Open-Weights-Modell von Alibaba (China) mit Thinking-Optional-Architektur. Läuft hier als UD-Q4_K_XL-GGUF via llama.cpp. UD (Unsloth Dynamic) nutzt eine XL-Wichtigkeitsmatrix für wichtigkeitsbasierte, gemischte Bittiefenverteilung pro Schicht – Community-Tests zeigen, dass UD-Q4 oft Q6-Standard-Quants qualitativ übertrifft bei gleichzeitig deutlich kleinerer Dateigröße.",
+  "summary": "Qwen 3.5 4B ist ein kompaktes Open-Weights-Modell von Alibaba (China) mit Thinking-Optional-Architektur. Läuft hier als UD-Q4_K_XL-GGUF via llama.cpp. UD (Unsloth Dynamic) nutzt eine XL-Wichtigkeitsmatrix für wichtigkeitsbasierte, gemischte Bittiefenverteilung pro Schicht.",
   "strengths": [
     "Optionaler Thinking-Modus (Chain-of-Thought) für komplexere Aufgaben zuschaltbar",
-    "UD-Q4_K_XL: Unsloth-Dynamic-Quantisierung übertrifft laut Community-Benchmarks oft Standard-Q6 in Qualität",
-    "Kleinste Variante der drei Qwen3.5-4B-Quants – minimal VRAM-Bedarf bei hoher relativer Qualität"
+    "UD-Q4_K_XL: Unsloth-Dynamic-Quantisierung – wichtigkeitsbasierte, gemischte Bittiefenverteilung pro Schicht",
+    "Kleinste Variante der drei Qwen3.5-4B-Quants – minimal VRAM-Bedarf"
   ],
   "known_limitations": [
     "4-Bit-Quantisierung zeigt bei sehr langen Kontexten und komplexem Reasoning messbare Qualitätseinbußen vs. Q8",

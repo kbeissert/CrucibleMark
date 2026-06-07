@@ -5,6 +5,7 @@ import csv
 import hashlib
 import json
 import logging
+import os
 import subprocess
 import sys
 import time
@@ -13,6 +14,7 @@ from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
 
 import requests
+import urllib.request
 from utils.adaptive_pause import AdaptivePauseCalculator, BenchmarkMode
 from utils.base_runner import BaseBenchmarkRunner
 from utils.benchmark_utils import append_global_run_metrics, discover_assets, load_asset_yaml
@@ -53,7 +55,7 @@ _BUDGET_KEYWORDS: tuple[str, ...] = (
 
 
 class UnifiedBenchmarkRunner(BaseBenchmarkRunner):
-    """Führt Benchmarks systemübergre এশিয়ার (Lokal & API) aus."""
+    """Führt Benchmarks systemübergreifend (Lokal & API) aus."""
 
     def __init__(
         self,
@@ -69,6 +71,7 @@ class UnifiedBenchmarkRunner(BaseBenchmarkRunner):
         # Load output configurations
         self.local_csv = Path(
             self.validator.config.get("output", {}).get(
+                "output", {}).get(
                 "local_models_csv", "benchmark_scores/local_models_benchmark.csv"
             )
         )
@@ -112,7 +115,7 @@ class UnifiedBenchmarkRunner(BaseBenchmarkRunner):
             return model
 
         cards_dir = Path("benchmark_scores/model_cards")
-        # Use _find_card() which has a glob fallback: "claude-haiku-4-5" → "claude-haiku-4-5-20251001.json"
+        # Use _find_card() which has a glob fallback: "claude-haiku-4-5" → "claude-haiku-4-5-20251001"
         found_path = _find_card(model)
         if found_path is not None and found_path.exists():
             card_path = found_path
@@ -365,6 +368,46 @@ class UnifiedBenchmarkRunner(BaseBenchmarkRunner):
         if not is_local and run_limiter:
             run_limiter.wait_for_slot()
 
+        # Server-Health-Check vor Test-Start (llama.cpp Memory Reset)
+        # Verhindert dass Tests auf einem überlasteten/abgestürzten Server starten
+        if is_local and provider in ("llamacpp", "llamacpp_spark"):
+            try:
+                # Provider-kontextuelle Config lesen (analog zu LlamaCppClient._provider_cfg)
+                # WICHTIG: Den exakten Provider-Namen als Config-Key verwenden, nicht hardcoded "llamacpp"
+                server_key = provider if provider in ("llamacpp", "llamacpp_spark") else "llamacpp"
+                server_cfg = self.validator.config.get(
+                    "providers", {}
+                ).get("local", {}).get(server_key, {})
+
+                # Base-URL aus Config: "base_url" (llamacpp_spark) oder "server_base_url" (Fallback)
+                base_url_raw = server_cfg.get("base_url", "")
+                if not base_url_raw:
+                    base_url_raw = server_cfg.get("server_base_url", "http://127.0.0.1:8080")
+
+                # /v1 Suffix entfernen für /health Endpoint (z.B. http://...:1235/v1 → http://...:1235)
+                base_root = base_url_raw.rstrip("/").removesuffix("/v1")
+
+                # Health-Check mit Retry (max 3 Versuche, 1s dazwischen)
+                _server_ready = False
+                for _retry in range(3):
+                    try:
+                        _resp = requests.get(f"{base_root}/health", timeout=5)
+                        if _resp.status_code == 200:
+                            _server_ready = True
+                            break
+                    except Exception:
+                        pass
+                    time.sleep(1.0)
+
+                if not _server_ready:
+                    logger.warning(
+                        "llama.cpp Server (%s) antwortet nicht auf /health — "
+                        "Test wird trotzdem gestartet (Server evtl. neu gestarten)",
+                        server_key,
+                    )
+            except Exception as _e:
+                logger.debug("llama.cpp Health-Check fehlgeschlagen (ignored): %s", _e)
+
         start_time = time.time()
         try:
             test_instance, exec_result = self.execute_test_module(
@@ -428,9 +471,6 @@ class UnifiedBenchmarkRunner(BaseBenchmarkRunner):
         else:
             result["cost_usd"] = 0.0
 
-        if is_local:
-            result["golden_similarity"] = 0.0
-
         if result.get("status") == "error":
             return result
 
@@ -474,6 +514,95 @@ class UnifiedBenchmarkRunner(BaseBenchmarkRunner):
                     except Exception:
                         pass
                     time.sleep(0.5)
+
+                # Memory reset für llama.cpp zwischen Tests (analog zu Ollama Unload)
+                # Verhindert dass der Server mit altem Context/VRAM überlastet ist
+                #
+                # PROBLEM: Nach schweren Tests (>150s) kann das Modell im VRAM blockieren.
+                # Der /health-Endpoint antwortet immer (Server-laufzeit), aber ChatCompletion
+                # blockiert oder wirft Fehler. Ein kompletter Server-Neustart ist hier nicht
+                # machbar weil der server_start_cmd keine Modelldatei enthält (wird vom
+                # LlamaCppClient._start_server() aufgelöst).
+                #
+                # LÖSUNG: 1) /health prüfen → 2) Falls OK: kleiner Probe-Chat mit short timeout
+                #         → 3) Bei Misserfolg: längere Pause damit GPU/CPU erholen kann.
+                if is_local and provider in ("llamacpp", "llamacpp_spark"):
+                    try:
+                        server_key = provider if provider in ("llamacpp", "llamacpp_spark") else "llamacpp"
+                        server_cfg = self.validator.config.get(
+                            "providers", {}
+                        ).get("local", {}).get(server_key, {})
+
+                        # Base-URL aus Config
+                        base_url_raw = server_cfg.get("base_url", "")
+                        if not base_url_raw:
+                            base_url_raw = server_cfg.get("server_base_url", "http://127.0.0.1:8080")
+                        base_root = base_url_raw.rstrip("/").removesuffix("/v1")
+
+                        # 1. Prüfen ob Server noch läuft
+                        try:
+                            health = requests.get(f"{base_root}/health", timeout=3)
+                            _healthy = health.status_code == 200
+                        except Exception:
+                            _healthy = False
+
+                        if not _healthy:
+                            # Server tot → längere Pause, nächster Test startet ihn neu
+                            logger.warning(
+                                "llama.cpp Memory Reset: Server nicht erreichbar — "
+                                "längere Pause (%ds)",
+                                10,
+                            )
+                            time.sleep(10)
+                        else:
+                            # Server lebt → Probe-Chat mit kurzem Timeout um Modell-Readiness zu prüfen
+                            chat_url = f"{base_root}/v1/chat/completions"
+
+                            # Modell-ID aus dem aktuellen Benchmark-Kontext holen (self.model)
+                            # oder fallback: erster Eintrag aus server_cfg.models
+                            _probe_model = getattr(self, "model", "")
+                            if not _probe_model or _probe_model == "unknown":
+                                _probe_model = server_cfg.get("models", [{}])[0].get("id", "")
+
+                            import json as _json
+                            try:
+                                _probe_payload = _json.dumps({
+                                    "model": _probe_model,
+                                    "messages": [{"role": "user", "content": "hi"}],
+                                    "max_tokens": 4,
+                                    "temperature": 0.0,
+                                })
+                                _probe_resp = requests.post(
+                                    chat_url,
+                                    data=_probe_payload.encode("utf-8"),
+                                    headers={"Content-Type": "application/json"},
+                                    timeout=15,  # Kurz! Nicht 300s warten.
+                                )
+                                if _probe_resp.status_code != 200:
+                                    logger.warning(
+                                        "llama.cpp Memory Reset: Probe-Chat fehlgeschlagen "
+                                        "(Status %d) — längere Pause (%ds)",
+                                        _probe_resp.status_code,
+                                        8,
+                                    )
+                                    time.sleep(8)
+                                else:
+                                    # Probe OK → kurze Standard-Pause
+                                    logger.debug("llama.cpp Memory Reset: Probe-Chat OK")
+                                    time.sleep(2)
+                            except requests.exceptions.Timeout:
+                                logger.warning(
+                                    "llama.cpp Memory Reset: Probe-Chat timeout — "
+                                    "längere Pause (%ds)",
+                                    10,
+                                )
+                                time.sleep(10)
+                            except Exception as probe_err:
+                                logger.debug("llama.cpp Memory Reset: Probe-Chat fehlgeschlagen (ignored): %s", probe_err)
+                                time.sleep(3)
+                    except Exception as e:
+                        logger.debug("llama.cpp Memory Reset exception (ignored): %s", e)
+                        time.sleep(2.0)
 
                 benchmarks_list = benchmark_info.get("benchmarks", [])
                 asset_cfg = next(
@@ -776,10 +905,13 @@ class UnifiedBenchmarkRunner(BaseBenchmarkRunner):
         # zwischen Modul-Runs innerhalb desselben Modells.
         _llamacpp_providers = ("llamacpp", "llamacpp_spark", "llama_cpp", "llamacpp_local")
         if provider_l in _llamacpp_providers:
-            if getattr(self, "_skip_llamacpp_cleanup", False):
+            # HOTFIX: Environment-Variable als Fallback für Subprozess-Delegation
+            _skip = getattr(self, "_skip_llamacpp_cleanup", False)
+            _env_skip = os.environ.get("CRUCIBLE_SKIP_LLAMACPP_CLEANUP") == "1"
+            if _skip or _env_skip:
                 logger.debug(
                     "_cleanup_local_provider: llama.cpp-Cleanup übersprungen "
-                    "(provider=%s, _skip_llamacpp_cleanup=True)",
+                    "(provider=%s, _skip_llamacpp_cleanup=True oder CRUCIBLE_SKIP_LLAMACPP_CLEANUP=1)",
                     provider,
                 )
                 return

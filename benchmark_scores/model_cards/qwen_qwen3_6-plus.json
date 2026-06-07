@@ -12,7 +12,7 @@
   "primary_focus": "agentic",
   "summary": "Qwen 3.6 Plus ist Alibabas proprietäres Frontier-Modell für agentisches Coding, Reasoning und multimodale Workflows. OpenRouter führt das Modell mit 1M Kontextfenster, Tool-Use-Fähigkeit und optionalem Thinking-Verhalten; die Free-Variante dient als kostenloser Preview- bzw. Tryout-Zugang, während das Basismodell regulär kostenpflichtig ist.",
   "strengths": [
-    "Stark in agentischem Coding und Repository-Level-Problemloesung (SWE-bench Verified: 78.8)",
+    "Stark in agentischem Coding und Repository-Level-Problemloesung mit hoher Präzision",
     "Sehr grosses Kontextfenster von 1M Tokens",
     "Optionales Thinking bzw. preserve_thinking fuer komplexe Multi-Step-Workflows",
     "Tool-Use und strukturierte agentische Nutzung ueber API/OpenRouter"

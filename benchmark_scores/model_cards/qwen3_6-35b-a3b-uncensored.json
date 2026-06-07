@@ -17,7 +17,7 @@
   "params_active_b": 3,
   "context_window_k": 262,
   "knowledge_cutoff": "2025-06",
-  "summary": "Qwen 3.6 35B-A3B Uncensored HauhauCS Aggressive ist eine Community-Fine-Tune-Variante des Qwen 3.6 35B-A3B Modells von HauhauCS auf Hugging Face. Das Modell basiert auf dem Original von Alibaba (China) mit Apache-2.0-Lizenz, wurde jedoch vollständig von Sicherheitsfiltern befreit (uncensored). Es läuft hier als Q8_K_P-GGUF via llama.cpp – eine per-layer Quantisierung, die sehr hohe Qualität bietet und nahe an der FP16-Baseline liegt. Besonderheit: Das Modell wurde mit imtagetraining für Aggressivität feinabgestimmt, was zu direkeren, ungefilterten Antworten führt. MoE-Architektur (35B total / 3B aktiv), multimodal mit Vision-Unterstützung.",
+  "summary": "Qwen 3.6 35B-A3B Uncensored HauhauCS Aggressive ist eine Community-Fine-Tune-Variante des Qwen 3.6 35B-A3B. Es läuft hier als Q8_K_XL-GGUF via llama.cpp. Q8_K_XL (8-Bit-K-Quant, XL) ist die präziseste GGUF-Quantisierung mit minimalem Qualitätsverlust. MoE-Architektur: 35B Gesamtparameter, nur 3,8B aktiv – hoher Durchsatz bei geringem Inferenz-Overhead. Native Multimodalität: Text, Bild, Audio.",
   "strengths": [
     "Q8_K_P-Quantisierung: per-layer Quantisierung nahe FP16-Vollpräzision",
     "Vollständig ungefiltert – keine Safety-Refusals oder Inhaltsblockaden",
@@ -35,7 +35,7 @@
   ],
   "judge_context_hint": "Uncensored-Variante mit entferntem Safety-Filter und Aggressivitäts-Training. Antworten können direkter und ungefilterter sein als bei Standardmodellen. Q8_K_P-Quantisierung minimiert Qualitätsverluste.",
   "architecture_tags": [
-    "Thinking",
+    "Thinking-Optional",
     "Multimodal",
     "MoE",
     "Uncensored"
@@ -46,8 +46,8 @@
   "commercial_use_allowed": true,
   "weights_license_tier": "frei",
   "model_version": "3.6 (Uncensored Community)",
-  "input_price_per_1m": null,
-  "output_price_per_1m": null,
+  "input_price_per_1m": 0,
+  "output_price_per_1m": 0,
   "unknown": false,
   "card_status": "verified",
   "size_class": "Desktop",

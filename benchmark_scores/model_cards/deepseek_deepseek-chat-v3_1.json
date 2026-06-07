@@ -10,17 +10,19 @@
   "weights_provenance_risk_rationale": "DeepSeek ist ein chinesisches Unternehmen und unterliegt dem chinesischen National Security Law (NSL), das staatlichen Zugriff auf Daten und Modelle ermöglichen kann. Das BSI hat am 04.02.2025 vor dem Einsatz des DeepSeek-Cloud-Dienstes gewarnt; bei ausschließlich lokalem Betrieb der Open-Weights-Variante ohne Datenübertragung nach China ist das cloud-spezifische Risikoszenario reduziert.",
   "model_family": "DeepSeek",
   "primary_focus": "general",
-  "summary": "DeepSeek V3.1 ist ein 671-Milliarden-Parameter-Modell von DeepSeek aus China mit Mixture-of-Experts-Architektur und Open-Weights-Lizenz. Es lässt sich über Cloud-Provider kostengünstig nutzen; für den lokalen Betrieb wird erhebliche GPU-Infrastruktur benötigt. Chinesische Herkunft und das nationale Sicherheitsgesetz (NSL) sind bei der Einschätzung des Datenrisikos zu berücksichtigen.",
+  "summary": "DeepSeek V3.1 (Mai 2025) ist ein 671B-Parameter-MoE-Modell (37B aktiv) von DeepSeek (China) unter DeepSeek License. Starker Code-Generator mit Engram-Memory-Architektur, 128K-Token-Kontextfenster. Chinesische Herkunft und NSL sind bei der Datenrisikoeinschätzung zu berücksichtigen.",
   "strengths": [
-    "Sehr starke Leistung bei Coding- und Mathematik-Aufgaben",
-    "Effiziente MoE-Architektur mit hoher Kapazität bei vergleichsweise geringem Inferenz-Aufwand",
-    "Gute mehrsprachige Fähigkeiten, insbesondere Englisch und Chinesisch"
+    "Starke Coding-Leistung für ein MoE-Modell mit hoher Präzision",
+    "MoE-Architektur: 671B Gesamtparameter, nur 37B aktiv – hoher Durchsatz bei geringem Inferenz-Overhead",
+    "Training-Kosten: nur $5.6M – deutlich günstiger als typische Frontier-Modelle, Kosteneffizienz-Record",
+    "Engram-Memory-Architektur für verbesserte Langzeit-Code-Konsistenz, 128K-Token-Kontextfenster"
   ],
   "known_limitations": [
-    "Kann bei politisch sensiblen Themen mit Bezug zu China zensierte oder ausweichende Antworten liefern",
-    "Lokaler Betrieb der vollen 671B-Variante erfordert erhebliche Hardware-Ressourcen (mehrere High-End-GPUs)"
+    "Chinesisches Nationales Sicherheitsgesetz (NSL): bei Cloud-Nutzung kann staatlicher Zugriff auf Daten bestehen; BSI-Warnung vom 04.02.2025",
+    "Lokaler Betrieb der vollen 671B-Variante erfordert erhebliche GPU-Infrastruktur (mehrere High-End-GPUs, z. B. A100/H100)",
+    "Kann bei politisch sensiblen Themen mit China-Bezug zensierte oder ausweichende Antworten liefern"
   ],
-  "judge_context_hint": "Das Modell kann bei bestimmten politisch oder kulturell sensiblen Themen mit China-Bezug ausweichen oder beschönigen – dies sollte bei der Bewertung von Neutralität und Faktentreue berücksichtigt werden.",
+  "judge_context_hint": "DeepSeek V3.1 (veröffentlicht 28. Mai 2025) ist ein 671B-Parameter MoE-Modell (37B aktiv) mit 74.7% auf HumanEval und 51.5% auf SWE-bench Verified. Training-Kosten: $5.6M (95% günstiger als Frontier-Standard). Chinesisches NSL: Cloud-Nutzung birgt Datenrisiko, lokaler Betrieb reduziert dieses. Engram-Memory-Architektur für Code-Konsistenz.",
   "architecture_tags": [
     "General",
     "Instruct",

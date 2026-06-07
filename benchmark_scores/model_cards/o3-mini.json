@@ -14,7 +14,7 @@
   "strengths": [
     "Herausragende Leistung bei mathematischen und wissenschaftlichen Reasoning-Aufgaben",
     "Drei einstellbare Reasoning-Intensitätsstufen (low, medium, high) für Kosten-Leistungs-Optimierung",
-    "Deutlich schneller und günstiger als o3 bei vergleichbarer Reasoning-Qualität in vielen Benchmarks"
+    "Deutlich schneller und günstiger als o3"
   ],
   "known_limitations": [
     "Kein nativer Multimodal-Support (kein Bild-Input in der Basisversion)",

@@ -10,17 +10,21 @@
   "weights_provenance_risk_rationale": "xAI ist ein US-amerikanisches Unternehmen und unterliegt dem CLOUD Act, jedoch nicht dem chinesischen NSL; Gewichte sind nicht öffentlich verfügbar.",
   "model_family": "Grok",
   "primary_focus": "reasoning",
-  "summary": "Grok 4-1 Fast Reasoning ist xAIs schnelle Reasoning-Variante aus den USA – ausgelegt auf kompaktes Chain-of-Thought mit niedrigerer Latenz. Das Modell ist ausschließlich über die xAI-API verfügbar.",
+  "summary": "Grok 4.1 Fast Reasoning (Release Nov. 2025) von xAI ist für agentische Workflows und hohe Geschwindigkeit optimiert. Es bietet ein 2-Millionen-Token-Kontextfenster sowie native Funktionen für Web-Suche, Code-Ausführung und Tool-Nutzung. Das Modell ist proprietär und nur via API verfügbar. Hinweis: Das Modell ist als \"deprecated\" markiert; eine Migration ist bis zum 15. August 2026 erforderlich.",
   "strengths": [
-    "Schnelle Reasoning-Inferenz mit reduzierter Latenz gegenüber vollständigen Thinking-Modellen",
-    "Strukturiertes mehrstufiges Schlussfolgern bei mathematischen und logischen Aufgaben",
-    "Integration in das xAI-Ökosystem mit Echtzeit-Datenzugang über Grok-Plattform"
+    "Hohe Inferenzgeschwindigkeit bei optimierter Logik- und Mathematikfähigkeit",
+    "Extrem großes Kontextfenster (2 Mio. Tokens) und 30k maximale Output-Tokens",
+    "Native Unterstützung für Tool-Calling, Web-Suche und Code-Execution",
+    "Signifikant reduzierte Halluzinationsrate (ca. 3x weniger als Vorgänger)",
+    "Eignung für parallele Prozesse in agentischen Workflows"
   ],
   "known_limitations": [
-    "Nur über xAI-API/Cloud verfügbar, kein lokaler Betrieb möglich",
-    "Als spezialisiertes Fast-Reasoning-Modell potenziell schwächer bei kreativen oder offenen Generierungsaufgaben als Vollmodelle"
+    "Status: Deprecated (Migration bis 15.08.2026 notwendig)",
+    "Kein lokaler Betrieb möglich (nur Cloud/API)",
+    "Latenz-Optimierung kann bei komplexen Problemen zu oberflächlichen Argumentationsketten führen",
+    "Geringere kreative Tiefe im Vergleich zu reinen Vollmodellen"
   ],
-  "judge_context_hint": "Das Modell ist auf schnelles Reasoning optimiert und kann zugunsten von Geschwindigkeit tiefere Denkschritte abkürzen – bei komplexen mehrstufigen Aufgaben auf Vollständigkeit der Argumentationskette achten.",
+  "judge_context_hint": "Kritisch prüfen, ob das Modell komplexe logische Zwischenschritte zugunsten der Geschwindigkeit überspringt. Die Optimierung auf schnelle Inferenz kann die Analyse-Tiefe beeinträchtigen.",
   "architecture_tags": [
     "Thinking"
   ],
@@ -44,6 +48,6 @@
   "use_case_primary": "reasoning",
   "parameter_architecture": "dense",
   "params_total_b": null,
-  "context_window_k": 1000,
+  "context_window_k": 2000,
   "knowledge_cutoff": "2025-06"
 }

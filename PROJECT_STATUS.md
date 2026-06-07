@@ -1,14 +1,21 @@
 # PROJECT_STATUS.md
 
-**Last Updated:** 2026-06-05
-**Current Version:** 4.3.2 — llamacpp Kontextfenster-Fix & Provider-Architektur-Analyse
+**Last Updated:** 2026-06-07
+**Current Version:** 4.4.0 — CSV Robustness & Leaderboard Pipeline Hardening
 **Status:** ✅ Production-Ready
 
 ---
 
 ## Executive Summary
 
-CrucibleMark v4.3.2 behebt einen Kontextfenster-Bug im `llamacpp_spark` Provider und dokumentiert die Provider-Instanziierungs-Architektur für parallele Benchmarks. Pylint 10.00/10, Ruff clean, 227/227 Tests grün.
+CrucibleMark v4.4.0 härtet die Datenpipeline gegen CSV-Korruption und verbessert die Leaderboard-Generierung mit robuster ID-Resolution. Das Backup-System nutzt jetzt `load_csv_robust()` mit automatischer Fehlerbehebung. Pylint 10.00/10, Ruff clean, 227/227 Tests grün.
+
+**Key Achievements (v4.4.0):**
+- ✅ **CSV Robustness** — `load_csv_robust()` mit `on_bad_lines="skip"` implementiert. Korrupte CSV-Zeilen (z.B. durch Audit-Log-Injection) werden automatisch übersprungen statt den Parser zu blockieren.
+- ✅ **Leaderboard ID Resolution** — `_resolve_to_canonical_id()` in `consolidate_csv.py` implementiert. Mapping von Display-Namen zu kanonischen Model-IDs für konsistente Leaderboard-Einträge.
+- ✅ **Backup Strategy Hardening** — `consolidate_csv.py` mit Fallback-Strategien (robust → standard pandas) und Zeitzone-Fix (`utc=True`) aktualisiert. `make backup` erstellt konsistente 39MB-Archive.
+- ✅ **Web Export Pipeline** — `scripts/web_export.py` exportiert 80 Modelle korrekt mit Model Card als Single Source of Truth für Modell-Identität.
+- ✅ **Memory Bank** — `techContext.md` und `progress.md` mit v4.4.0-Meilenstein aktualisiert.
 
 **Key Achievements (v4.3.2):**
 - ✅ **Kontextfenster-Resolution** — `llamacpp.py:_build_server_cmd()` nutzt jetzt Provider-Level `context_window` als Fallback, wenn `model_cfg.context_length` fehlt. Prioritätenkette: Model-Level → Provider-Level → Globaler Default → Hardcoded (32768).
@@ -746,6 +753,6 @@ Visuelle Aufgaben (UML lesen, UI-Designs beurteilen) benötigen neue Asset-Forma
 
 ---
 
-**Document Version:** 3.2\
-**Last Updated:** 2026-05-22\
-**Next Review:** v3.9.0 / Nächster Feature-Meilenstein
+**Document Version:** 4.4\
+**Last Updated:** 2026-06-07\
+**Next Review:** v4.5.0 / Nächster Feature-Meilenstein

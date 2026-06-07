@@ -11,6 +11,13 @@ Jedes Modell wird explizit in benchmark_config.yaml unter
 
 Der Client baut daraus automatisch den vollständigen `llama-server`-Befehl
 (inkl. --alias, --ctx-size, --n-gpu-layers) und swappt das Modell beim Wechsel.
+
+Benchmark-Defaults (reproduzierbar, niedrige Varianz):
+  - seed: 42 (fixierter Seed für Reproduzierbarkeit)
+  - temperature: 0.6 (deterministisch)
+  - top_k: 40 (moderates Sampling)
+  - top_p: 0.9 (moderate Nucleus-Sampling)
+  - repeat_penalty: 1.1 (leichte Penalty gegen Loops)
 """
 import logging
 import os
@@ -270,6 +277,49 @@ class LlamaCppClient(BaseProviderClient):
             f" --host {prov_cfg.get('bind_host', '127.0.0.1')}"
         )
 
+        # ===================================================================
+        # Benchmark-Defaults für Reproduzierbarkeit (niedrige Varianz)
+        # ===================================================================
+        # Diese Werte werden als Server-Flags gesetzt und gelten für alle
+        # Requests, sofern sie nicht durch Modell-Config überschrieben werden.
+        # Referenz: https://docs.vllm.ai/en/v0.10.1/usage/reproducibility.html
+        #
+        # Empfehlung für Benchmarks:
+        #   - seed: fixiert (42) für Reproduzierbarkeit
+        #   - temperature: 0.6 (deterministisch, niedrige Varianz)
+        #   - top_k: 40 (moderates Sampling)
+        #   - top_p: 0.9 (moderate Nucleus-Sampling)
+        #   - repeat_penalty: 1.1 (leichte Penalty gegen Loops)
+        # ===================================================================
+
+        # Hole Defaults aus Provider-Config oder verwende Hardcoded-Benchmark-Defaults
+        local_config = self.config.get("providers", {}).get("local", {}).get("config", {})
+        benchmark_defaults = local_config.get("benchmark_defaults", {})
+
+        # Seed (immer setzen für Reproduzierbarkeit)
+        seed = benchmark_defaults.get("seed", 42)
+        cmd += f" --seed {seed}"
+
+        # Temperature-Default (kann durch Modell-Config überschrieben werden)
+        default_temp = benchmark_defaults.get("temperature", 0.6)
+        if model_cfg.get("temperature") is None:
+            cmd += f" --temp {default_temp}"
+
+        # Top-K Default
+        default_top_k = benchmark_defaults.get("top_k", 40)
+        if model_cfg.get("top_k") is None:
+            cmd += f" --top-k {default_top_k}"
+
+        # Top-P Default
+        default_top_p = benchmark_defaults.get("top_p", 0.9)
+        if model_cfg.get("top_p") is None:
+            cmd += f" --top-p {default_top_p}"
+
+        # Repeat Penalty Default
+        default_repeat_penalty = benchmark_defaults.get("repeat_penalty", 1.1)
+        if model_cfg.get("repeat_penalty") is None:
+            cmd += f" --repeat-penalty {default_repeat_penalty}"
+
         # Optional model-level runtime tuning (reasoning/profile-specific).
         # These flags are only appended when explicitly set in provider_config.yaml.
         if model_cfg.get("reasoning"):
@@ -277,9 +327,12 @@ class LlamaCppClient(BaseProviderClient):
 
         enable_thinking = model_cfg.get("enable_thinking")
         if enable_thinking in (True, False):
-            kwargs_json = json.dumps({"enable_thinking": bool(enable_thinking)})
-            cmd += f" --chat-template-kwargs {shlex.quote(kwargs_json)}"
+            # Server-Log empfiehlt: "Use --reasoning on / --reasoning off instead"
+            # --chat-template-kwargs ist deprecated und verursacht JSON-Parse-Errors
+            # bei SSH-Remote-Commands (Quotes gehen verloren).
+            cmd += f" --reasoning {'on' if enable_thinking else 'off'}"
 
+        # Modell-Level Overrides (überschreiben Defaults)
         optional_numeric_flags = {
             "temperature": "--temp",
             "top_p": "--top-p",
@@ -301,7 +354,13 @@ class LlamaCppClient(BaseProviderClient):
 
     @property
     def client(self) -> Any:
-        """Lazy-load the OpenAI-compat client pointing at the llama.cpp server."""
+        """Lazy-load the OpenAI-compat client pointing at the llama.cpp server.
+
+        FIX: Keep-Alive deaktiviert (max_keepalive_connections=0) um Connection-Leaks
+        zu verhindern. Der Remote-Server (SSH) schließt Verbindungen nach langen
+        Requests, aber der httpx-Connection-Pool merkt es nicht. Der nächste Request
+        hängt dann im CLOSE_WAIT-Zustand.
+        """
         if OpenAI is None:
             raise ImportError(
                 "Library 'openai' not installed. Run: pip install openai"
@@ -311,10 +370,16 @@ class LlamaCppClient(BaseProviderClient):
             import httpx
 
             timeout_cfg = httpx.Timeout(connect=10.0, read=300.0, write=300.0, pool=300.0)
+            # Keep-Alive deaktivieren — jeder Request bekommt eine frische Verbindung.
+            # Verhindert CLOSE_WAIT-Leaks bei Remote-Servern (SSH), die Verbindungen
+            # nach langen Requests schließen.
+            limits = httpx.Limits(max_keepalive_connections=0, max_connections=10)
+            http_client = httpx.Client(timeout=timeout_cfg, limits=limits)
             self._client = OpenAI(
                 base_url=current_base_url,
                 api_key=self._api_key(),
-                timeout=timeout_cfg,
+                http_client=http_client,
+                max_retries=1,  # Begrenze OpenAI-Library-Retries bei Connection-Errors
             )
             self._client_base_url = current_base_url
         return self._client
@@ -353,7 +418,20 @@ class LlamaCppClient(BaseProviderClient):
 
         if healthy and self._active_model is None:
             detected = self._query_active_model()
-            if detected == model_id and model_id and self._is_model_ready(model_id):
+            # FIX: detected ist GGUF-Dateiname, model_id ist Config-ID.
+            # Vergleiche via normalisiertem GGUF-Namen oder direkter Übereinstimmung.
+            detected_matches = False
+            if detected and model_id:
+                # Entferne .gguf Suffix und normalisiere für Vergleich
+                detected_normalized = detected.lower().replace(".gguf", "").replace("-", "").replace("_", "")
+                model_normalized = model_id.lower().replace("-", "").replace("_", "")
+                # Prüfe ob model_id im detected Namen enthalten ist (oder umgekehrt)
+                detected_matches = (
+                    model_normalized in detected_normalized
+                    or detected_normalized in model_normalized
+                    or detected == model_id
+                )
+            if detected_matches and model_id and self._is_model_ready(model_id):
                 self._active_model = model_id
                 logger.debug(
                     "Adopting already running llama.cpp endpoint at %s with model '%s'",
@@ -362,7 +440,7 @@ class LlamaCppClient(BaseProviderClient):
                 )
                 return True
 
-            if detected == model_id:
+            if detected_matches:
                 adopt_ready_timeout_sec = int(
                     self._provider_cfg().get(
                         "existing_server_ready_timeout_sec",
@@ -500,14 +578,43 @@ class LlamaCppClient(BaseProviderClient):
         self._client = None
         self._client_base_url = None
 
+    def _run_cleanup(self) -> None:
+        """Führt den Post-Stop-Cleanup aus (Cache-Bereinigung für Remote-Provider).
+
+        Wird beim Modell-Wechsel (swap_model) ausgeführt, um OOM durch
+        verbliebenen Prompt-Cache zu verhindern.
+        """
+        post_stop_cmd = self._provider_cfg().get("server_post_stop_cmd")
+        if not post_stop_cmd:
+            return
+
+        logger.debug("Running post-stop cleanup: %s", post_stop_cmd)
+        try:
+            subprocess.run(post_stop_cmd, shell=True, check=False)
+        except OSError as exc:
+            logger.warning("Post-stop cleanup failed: %s", exc)
+
     def swap_model(self, model_id: str) -> bool:
         """
         Stop the current server and restart it with the new model.
         Returns True on success.
+
+        Für Remote-Provider (llamacpp_spark) wird zusätzlich ein Cache-Cleanup
+        ausgeführt, um OOM beim Start des nächsten Modells zu verhindern.
         """
         logger.debug("Swapping llama.cpp model to: %s", model_id)
         self.stop_server()
-        time.sleep(2)
+
+        # Cache-Cleanup für Remote-Provider (verhindert OOM beim Modell-Wechsel)
+        # Prüfe ob dies ein Remote-Provider ist (hat server_post_stop_cmd definiert)
+        if self._provider_cfg().get("server_post_stop_cmd"):
+            print("   🧹 Cache-Cleanup nach Modell-Wechsel...")
+            self._run_cleanup()
+            # Längere Wartezeit für GPU-Speicher-Freigabe bei Remote-Providern
+            time.sleep(3)
+        else:
+            time.sleep(2)
+
         return self.start_server(model_id)
 
     # ------------------------------------------------------------------
@@ -538,11 +645,13 @@ class LlamaCppClient(BaseProviderClient):
         if self._active_model == model:
             # Health-Check vor Stale-Ready: Server könnte zwischenzeitlich gestoppt worden sein
             # (z.B. durch _cleanup_local_provider nach einem vorherigen Modul-Run).
-            if self._is_healthy():
+            # ZUSÄTZLICH: _is_model_ready() prüfen — Server könnte auf /health antworten,
+            # aber das Modell noch nicht bereit sein (z.B. nach Memory Reset zwischen Modulen).
+            if self._is_healthy() and self._is_model_ready(model):
                 ready = True
             else:
                 logger.debug(
-                    "Stale-Ready erkannt: _active_model='%s' aber Server nicht erreichbar — Neustart.",
+                    "Stale-Ready erkannt: _active_model='%s' aber Server nicht erreichbar oder Modell nicht bereit — Neustart.",
                     model,
                 )
                 self._active_model = None
@@ -551,11 +660,18 @@ class LlamaCppClient(BaseProviderClient):
             ready = self.start_server(model)
         else:
             ready = self.swap_model(model)
-
         if not ready:
             raise RuntimeError(
                 f"llamacpp endpoint conflict or startup failure for model '{model}'"
             )
+
+        # FIX: Client nach jedem query() zurücksetzen, um Connection-Leaks zu verhindern.
+        # Der Server (besonders Remote via SSH) schließt die Verbindung nach langen Requests,
+        # aber der httpx-Client merkt es nicht. Der nächste Request hängt dann im CLOSE_WAIT.
+        # Durch Zurücksetzen wird beim nächsten Aufruf eine frische Verbindung aufgebaut.
+        self._client = None
+        self._client_base_url = None
+
         system_prompt: Optional[str] = kwargs.get("system")
         messages = []
         if system_prompt:

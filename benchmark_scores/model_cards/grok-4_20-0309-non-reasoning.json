@@ -11,7 +11,7 @@
   "model_family": "Grok",
   "vendor": "xAI",
   "primary_focus": "general",
-  "summary": "Grok 4 (2025-03-09, non-reasoning) ist die Standard-Variante der Grok-4-Generation von xAI aus den USA – ohne aktives Chain-of-Thought, ausgelegt auf schnelle direkte Antworten. Das Modell ist ausschließlich über die xAI-API verfügbar.",
+  "summary": "Grok 4 (2025-03-09, non-reasoning) ist die Standard-Variante der Grok-4-Generation von xAI aus den USA – ohne aktives Chain-of-Thought, ausgelegt auf schnelle direkte Antworten. 1000K Kontextfenster, Tool-Use-Unterstützung. Das Modell ist ausschließlich über die xAI-API verfügbar.",
   "strengths": [
     "Niedrige Latenz durch deaktiviertes Chain-of-Thought-Reasoning",
     "Breite Allround-Fähigkeiten für Konversation und Textaufgaben",

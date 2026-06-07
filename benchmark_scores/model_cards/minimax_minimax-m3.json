@@ -10,18 +10,17 @@
   "weights_provenance_risk_rationale": "MiniMax ist ein chinesisches Unternehmen und unterliegt dem chinesischen National Security Law (NSL), das staatlichen Zugriff auf Daten ermöglichen kann. Das BSI hat im Februar 2025 explizit vor der Nutzung chinesischer KI-Cloud-Dienste gewarnt (BSI-Referenz: Warnung DeepSeek, 04.02.2025); diese Risikoeinschätzung gilt analog für alle chinesischen Cloud-KI-Anbieter, die Nutzerdaten auf chinesischen Servern verarbeiten.",
   "model_family": "MiniMax",
   "primary_focus": "agentic",
-  "summary": "MiniMax M3 ist das aktuelle multimodale Frontier-Modell von MiniMax mit Fokus auf lange agentische Workflows, Coding und Tool-Use. Es verarbeitet Text-, Bild- und Video-Inputs und bietet ein Kontextfenster von bis zu 1M Tokens, basierend auf der neuen MiniMax Sparse Attention (MSA) Architektur. Die Weights werden ca. 10 Tage nach API-Launch auf Hugging Face und GitHub veröffentlicht. Chinesische Herkunft und das nationale Sicherheitsgesetz (NSL) sind bei der Einschätzung des Datenrisikos zu berücksichtigen.",
+  "summary": "MiniMax M3 ist ein multimodales MoE-Modell (Text, Bild, Video Input; Text Output) mit 1M Token Kontext. Durch die MSA-Architektur (KV-Block Selection) bietet es extrem schnelles Prefill und Decoding. Fokus: Agentische Workflows, Coding und Tool-Use. Chinesisches Modell; Open-Weights ca. 10 Tage nach API-Launch.",
   "strengths": [
-    "Multimodales Foundation-Modell (Text, Bild, Video) mit starker Tool-Use-Eignung",
-    "Sehr großes Kontextfenster (1M Tokens) mit MSA-Architektur: 9.7x schnelleres Prefill, 15.6x schnelleres Decoding gegenüber M2",
-    "Stark in agentischen Workflows und Coding: SWE-Bench Pro 59.0%, Terminal-Bench 2.1 66.0%"
+    "Herausragendes Coding & Agentic Reasoning: Führende Benchmarks (SWE-Bench Pro: 59%, BrowseComp: 83.5)",
+    "Effiziente Multimodalität: Native Verarbeitung von Text, Bild und Video",
+    "Extreme Skalierbarkeit: 1M Token Kontext mit massiver Geschwindigkeitssteigerung (MSA-Architektur)"
   ],
   "known_limitations": [
-    "Als chinesisches Modell potenziell eingeschraenkte oder zensierte Antworten zu politisch sensiblen Themen",
-    "Weights zum Launch-Zeitpunkt noch nicht verfuegbar (Veroeffentlichung ca. 10 Tage nach API-Launch erwartet)",
-    "OpenRouter-Preise koennen provider- und routingabhaengig schwanken"
+    "Inhaltliche Restriktionen: Mögliche Zensur oder eingeschränkte Antworten bei politisch sensiblen Themen (chinesische Herkunft)",
+    "Verfügbarkeit: Gewichte (Weights) sind erst kurz nach dem API-Launch verfügbar"
   ],
-  "judge_context_hint": "Das Modell ist multimodal und agentisch optimiert; bei text-only Aufgaben sollte die Bewertung primär auf strukturiertes Reasoning, Tool-Use-Tauglichkeit und Robustheit in langen Kontexthorizonten fokussieren.",
+  "judge_context_hint": "Bewerten Sie primär die Präzision bei komplexen Coding-Aufgaben, die Robustheit in extrem langen Kontexten (1M Token) und die Fähigkeit zur autonomen Tool-Nutzung/Browsing, da das Modell hier überdurchschnittlich performt.",
   "architecture_tags": [
     "Multimodal",
     "Agentic",
@@ -44,8 +43,8 @@
   "vendor": "MiniMax",
   "weights_license_tier": "open-weights-pending",
   "model_version": "m3",
-  "input_price_per_1m": 0.30,
-  "output_price_per_1m": 1.20,
+  "input_price_per_1m": 0.3,
+  "output_price_per_1m": 1.2,
   "use_case_primary": "agentic",
   "parameter_architecture": "moe",
   "params_total_b": null,

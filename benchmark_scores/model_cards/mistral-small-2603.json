@@ -20,7 +20,7 @@
   "known_limitations": [
     "Schwächer als größere Modelle bei komplexem mehrstufigem Reasoning und langen Kontexten",
     "Begrenzte Leistung bei hochspezialisierten Domänen wie fortgeschrittener Mathematik",
-    "MCP/Tool-Use: Modell generiert nativ das Mistral-eigene Tool-Call-Format ({\"tool_call\": {\"name\": ..., \"parameters\": ...}}) statt des MCP-JSON-Formats. Im CrucibleMark-ToolUse-Benchmark führt dies zu parse_error bei 3/6 Assets (tooluse001, 004, 006) und tool_call_valid=false im Leaderboard. Kein Deployment-Bug — das Modell beherrscht Tool-Use, aber nicht MCP-Syntax."
+    "Tool-Use: Generiert natives Mistral-Tool-Call-Format statt MCP-JSON-Format"
   ],
   "judge_context_hint": "Mistral Small 4 ist auf Effizienz optimiert und kann bei komplexen Reasoning-Ketten oder sehr langen Kontexten früher an Grenzen stoßen als größere Modelle.",
   "architecture_tags": [

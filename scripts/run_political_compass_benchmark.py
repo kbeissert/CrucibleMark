@@ -18,6 +18,7 @@ if str(ROOT_DIR) not in sys.path:
 
 from scripts.core.model_discovery import discover_models  # noqa: E402
 from scripts.core.runner_contract import write_run_summary  # noqa: E402
+from scripts.core.generate_leaderboard import main as gen_leaderboard  # noqa: E402
 from utils.config_validator import ConfigValidator  # noqa: E402
 
 
@@ -54,6 +55,15 @@ def _run_batch(model_ids: list[str], force: bool, silent: bool) -> tuple[list[st
             success.append(model_id)
         else:
             failed.append(model_id)
+
+    # Haupt-Leaderboard nach Batch-Lauf neu generieren
+    if success:
+        try:
+            print("  Generiere Haupt-Leaderboard...")
+            gen_leaderboard(print_table=False)
+            print("  ✅ Haupt-Leaderboard aktualisiert: benchmark_leaderboard.csv")
+        except Exception as exc:  # noqa: BLE001
+            print(f"  [WARN] Haupt-Leaderboard-Update fehlgeschlagen: {exc}")
 
     return success, failed
 

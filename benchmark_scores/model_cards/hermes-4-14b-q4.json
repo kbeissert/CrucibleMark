@@ -10,24 +10,26 @@
   "weights_provenance_risk_rationale": "NousResearch ist ein US-amerikanisches Unternehmen; CLOUD Act ist nur bei API-Nutzung relevant, nicht bei lokaler Ausführung der Open-Weights-Variante.",
   "model_family": "Hermes",
   "vendor": "NousResearch",
-  "primary_focus": "instruction-following",
+  "primary_focus": "reasoning",
   "use_case_primary": "generalist",
   "parameter_architecture": "dense",
   "params_total_b": 14.0,
   "params_active_b": null,
   "context_window_k": 128,
   "knowledge_cutoff": "2024-09",
-  "summary": "Hermes 4 14B von NousResearch, basierend auf Qwen3-14B (Apache 2.0), veröffentlicht August 2025. Hybrid-Reasoning-Modell mit optionalem Thinking-Modus. Läuft hier als Q4_K_M-GGUF via llama.cpp. Q4_K_M (4-Bit-K-Quant, Medium) ist der Community-Standard für lokale Deployments: gute Balance aus Qualität und Speicherbedarf, von der Community als sehr gut für alltägliche Aufgaben bewertet.",
+  "summary": "Hermes 4 14B von NousResearch, basierend auf Qwen3-14B (Apache 2.0). Hybrid-Reasoning-Modell mit optionalem Thinking-Modus. Deutlich gesteigertes Post-Training für verbesserte Reasoning-Fähigkeiten. Läuft hier als Q4_K_M-GGUF via llama.cpp – Community-Standard für lokale Deployments mit guter Balance aus Qualität und Speicherbedarf. Besonderes Merkmal: Safety-Filter durch Training austrainiert, nicht entfernt – hohe Kreativität ohne Qualitätsverlust.",
   "strengths": [
-    "Hybrid-Reasoning: optionaler Thinking-Modus mit <think>-Tags (Qwen3-Basis) für anspruchsvolle Aufgaben",
-    "Stark reduzierte Ablehnungsraten durch gezielte Alignment-Ausrichtung (RefusalBench SOTA bei Hermes 4)",
-    "Q4_K_M: Community-Standard-Quant, besonders ressourcenschonend – läuft auch auf Systemen mit begrenztem VRAM"
-  ],
-  "known_limitations": [
-    "Q4_K_M zeigt gegenüber Q6_K messbare, wenn auch praxistypisch geringe Qualitätseinbußen bei komplexem Reasoning",
-    "Als 14B-Modell bei sehr langen Reasoning-Ketten hinter größeren Frontier-Modellen"
-  ],
-  "judge_context_hint": "Hermes 4 14B mit optionalem Thinking-Modus – <think>-Blöcke vor der finalen Antwort können auftreten und sollten separat bewertet werden. Niedrige Ablehnungsrate ist absichtlich, nicht als Schwäche zu werten.",
+      "Hybrid-Reasoning: Optionaler Thinking-Modus mit expliziten Denktraces bei Bedarf",
+      "Minimale Ablehnungsrate durch gezieltes Alignment – maximale Hilfsbereitschaft",
+      "Safety-Training: Filter durch Training austrainiert, nicht entfernt – hohe Kreativität ohne Qualitätsverlust",
+      "Effizient: Q4_K_M Quantisierung für Consumer-Hardware mit begrenztem VRAM"
+    ],
+    "known_limitations": [
+      "Quantisierungsverlust: Q4_K_M zeigt messbare Qualitätseinbußen gegenüber Q6_K bei komplexem Reasoning",
+      "Skalierung: Bei extrem langen Reasoning-Ketten unterlegen gegenüber größeren Modellen",
+      "VRAM-Bedarf: Benötigt ca. 15GB VRAM für stabile Ausführung"
+    ],
+    "judge_context_hint": "Modell nutzt optionalen Thinking-Modus; Denktraces sind Teil des Reasoning-Prozesses und separat zu bewerten. Die sehr niedrige Ablehnungsrate ist ein beabsichtigtes Alignment-Merkmal und kein Modellfehler.",
   "architecture_tags": [
     "Instruct",
     "Thinking-Optional"

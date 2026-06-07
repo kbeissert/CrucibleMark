@@ -3,6 +3,13 @@
 
 Dedicated worker for scoring modules (module 1-7) with a stable orchestrator
 contract. Excludes political_compass and tooluse by design.
+
+Architektur:
+- API-Provider (OpenRouter, Anthropic, etc.): Subprocess-Delegation pro Modul
+  (run_benchmark.py --module X --model Y) — jeder Subprozess ist isoliert.
+- llama.cpp-Provider (llamacpp, llamacpp_spark, etc.): In-Process-Execution
+  via UnifiedBenchmarkRunner — Server bleibt über alle Module eines Modells
+  hinweg aktiv, kein Stop/Start-Race zwischen Modulen.
 """
 
 from __future__ import annotations
@@ -11,6 +18,7 @@ import argparse
 import os
 import subprocess
 import sys
+import time
 from pathlib import Path
 from typing import Any
 
@@ -20,7 +28,24 @@ if str(ROOT_DIR) not in sys.path:
 
 from scripts.core.model_discovery import discover_models  # noqa: E402
 from scripts.core.runner_contract import write_run_summary  # noqa: E402
+from scripts.core.unified_runner import UnifiedBenchmarkRunner  # noqa: E402
+from scripts.core.generate_leaderboard import main as gen_leaderboard  # noqa: E402
 from utils.config_validator import ConfigValidator  # noqa: E402
+from utils.model_utils import resolve_provider  # noqa: E402
+
+# llama.cpp Batch-Orchestrierung
+from scripts.core.llamacpp_batch import (  # noqa: E402
+    is_llamacpp_provider,
+    get_enabled_llamacpp_providers,
+    stop_llamacpp_provider_server,
+    run_llamacpp_provider_cleanup,
+    set_llamacpp_provider_context,
+    llamacpp_model_session,
+    get_existing_results,
+    get_startable_assets,
+    load_modules_for_keys,
+    LlamaCppSessionError,
+)
 
 EXCLUDED_MODULES = {"political_compass", "tooluse"}
 
@@ -40,7 +65,11 @@ def _get_score_modules(config: dict[str, Any], modules_arg: str | None) -> list[
     return score_modules
 
 
-def _run_module_for_model(model_id: str, module_key: str, force: bool, silent: bool) -> bool:
+def _run_module_subprocess(model_id: str, module_key: str, force: bool, silent: bool) -> bool:
+    """Delegiert ein einzelnes Modul an run_benchmark.py als Subprozess.
+
+    Verwendet für API-Provider (isolierte Subprozesse, kein Server-Lifecycle).
+    """
     cmd = [
         sys.executable,
         "run_benchmark.py",
@@ -61,11 +90,131 @@ def _run_module_for_model(model_id: str, module_key: str, force: bool, silent: b
     return result.returncode == 0
 
 
+def _run_modules_inprocess_llamacpp(
+    model_id: str,
+    provider_key: str,
+    module_keys: list[str],
+    force: bool,
+    silent: bool,
+    config: dict[str, Any],
+) -> dict[str, bool]:
+    """Führt alle Score-Module in-process für einen llama.cpp-Provider aus.
+
+    Server wird EINMAL am Anfang gestartet und am Ende des Batches gestoppt.
+    Zwischen den Modulen gibt es keine Server-Restarts — die bestehende
+    Cooldown-Phase (Memory Recovery, Adaptive Pause) nach jedem Asset
+    sorgt dafür, dass der Server "zur Ruhe kommt".
+
+    Returns:
+        Dict module_key -> bool (True = Erfolg)
+    """
+    from utils.module_registry import load_module_config
+
+    results: dict[str, bool] = {}
+
+    # Module laden
+    modules = load_modules_for_keys(config, module_keys)
+    if not modules:
+        print(f"   ⚠️ Keine Module geladen für {model_id}")
+        return results
+
+    # Cache laden
+    csv_path = Path(
+        config.get("output", {}).get("local_models_csv", "benchmark_scores/local_models_benchmark.csv")
+    )
+    existing_tests = get_existing_results(csv_path, force=force)
+
+    # Provider-Config ermitteln
+    local_cfg = config.get("providers", {}).get("local", {})
+    provider_cfg = local_cfg.get(provider_key, {})
+    if not provider_cfg:
+        print(f"   ❌ Provider-Config für '{provider_key}' nicht gefunden.")
+        return {m["key"]: False for m in modules}
+
+    # Runner initialisieren — Cleanup wird vom Context-Manager übernommen
+    runner = UnifiedBenchmarkRunner(force=force, audit_mode=not silent)
+    runner._skip_llamacpp_cleanup = True  # type: ignore[attr-defined]
+
+    try:
+        with llamacpp_model_session(runner, provider_key, provider_cfg, model_id) as _client:
+            for module in modules:
+                module_key = module["key"]
+                print(f"  -> Module: {module_key} (in-process)")
+
+                # Assets ermitteln
+                assets_todo = get_startable_assets(module, model_id, existing_tests)
+                if not assets_todo:
+                    print(f"   ✓ {module['name']} (alle Tests vorhanden)")
+                    results[module_key] = True
+                    continue
+
+                print(f"   📊 {module['name']} ({len(assets_todo)} neue Tests) ...")
+
+                # Benchmark-Info zusammenbauen (SSOT-paritätisch mit run_benchmark.py)
+                internal_config = load_module_config(Path(module["module_path"]))
+                benchmark_info = internal_config.copy()
+                benchmark_info.update(module)
+                benchmark_info.update({
+                    "id": module_key,
+                    "name": module.get("name", module_key),
+                    "path": module.get("path", f"{module['module_path']}/assets"),
+                    "module_path": module["module_path"],
+                    "test_class": internal_config.get("execution", {}).get("test_class")
+                    or module.get("test_class", "CodeQualityTest"),
+                    "execution_mode": module.get("execution_mode", "standard"),
+                    "min_runs": module.get("min_runs", 1),
+                    "benchmarks": internal_config.get("benchmarks", []),
+                    "scoring": internal_config.get("scoring", {}),
+                })
+
+                try:
+                    run_results = runner.run_benchmark(
+                        provider=provider_key,
+                        model=model_id,
+                        benchmark_info=benchmark_info,
+                        assets=assets_todo,
+                    )
+                    # Kurze Pause zwischen Modulen, damit der Server stabilisiert
+                    # (verhindert Race-Conditions bei schnellen Modul-Wechseln)
+                    time.sleep(3)
+                    if run_results:
+                        runner.save_results(run_results)
+                        results[module_key] = True
+                    else:
+                        results[module_key] = False
+                except KeyboardInterrupt:
+                    raise
+                except Exception as exc:
+                    print(f"   ❌ Fehler in {module_key}: {exc}")
+                    results[module_key] = False
+
+    except LlamaCppSessionError as exc:
+        print(f"   ❌ llama.cpp Session-Fehler für {model_id}: {exc}")
+        for module in modules:
+            results[module["key"]] = False
+    except KeyboardInterrupt:
+        print("\n⛔  Abbruch durch Benutzer.")
+        raise
+
+    return results
+
+
+def _refresh_leaderboard_safe() -> None:
+    """Regeneriert das Leaderboard ohne Exceptions in den Batch-Flow zu leaken."""
+    try:
+        print("\n📊 Aktualisiere Leaderboard...")
+        gen_leaderboard(print_table=False)
+        print("✅ Leaderboard aktualisiert: benchmark_leaderboard.csv")
+    except Exception as exc:  # noqa: BLE001 — leaderboard update must not crash benchmark
+        print(f"  [WARN] Leaderboard-Update fehlgeschlagen: {exc}")
+
+
 def _run_score_batch(
     model_ids: list[str],
     module_keys: list[str],
     force: bool,
     silent: bool,
+    config: dict[str, Any],
 ) -> dict[str, Any]:
     failed_tasks: list[dict[str, str]] = []
     tasks_total = len(model_ids) * len(module_keys)
@@ -73,13 +222,34 @@ def _run_score_batch(
 
     for midx, model_id in enumerate(model_ids, 1):
         print(f"\n=== Model {midx}/{len(model_ids)}: {model_id} ===")
-        for module_key in module_keys:
-            print(f"  -> Module: {module_key}")
-            ok = _run_module_for_model(model_id, module_key, force=force, silent=silent)
-            if ok:
-                tasks_successful += 1
-            else:
-                failed_tasks.append({"model": model_id, "module": module_key})
+
+        # Provider ermitteln
+        provider, _resolved_model = resolve_provider(model_id)
+
+        if is_llamacpp_provider(provider):
+            # llama.cpp: In-Process mit persistentem Server
+            module_results = _run_modules_inprocess_llamacpp(
+                model_id=model_id,
+                provider_key=provider,
+                module_keys=module_keys,
+                force=force,
+                silent=silent,
+                config=config,
+            )
+            for module_key, ok in module_results.items():
+                if ok:
+                    tasks_successful += 1
+                else:
+                    failed_tasks.append({"model": model_id, "module": module_key})
+        else:
+            # API-Provider: Subprocess pro Modul (bestehendes Verhalten)
+            for module_key in module_keys:
+                print(f"  -> Module: {module_key} (subprocess)")
+                ok = _run_module_subprocess(model_id, module_key, force=force, silent=silent)
+                if ok:
+                    tasks_successful += 1
+                else:
+                    failed_tasks.append({"model": model_id, "module": module_key})
 
     return {
         "models_total": len(model_ids),
@@ -134,8 +304,11 @@ def main() -> None:
 
     try:
         if args.model:
-            summary = _run_score_batch([args.model], module_keys, force=args.force, silent=args.silent)
+            summary = _run_score_batch([args.model], module_keys, force=args.force, silent=args.silent, config=config)
             status = "success" if summary["tasks_failed"] == 0 else "partial"
+            # Leaderboard nach erfolgreichem Durchlauf aktualisieren
+            if summary["tasks_successful"] > 0:
+                _refresh_leaderboard_safe()
             write_run_summary(
                 args.summary_json,
                 {
@@ -162,8 +335,11 @@ def main() -> None:
                 print("Keine Modelle in --models angegeben.")
                 sys.exit(1)
 
-            summary = _run_score_batch(model_ids, module_keys, force=args.force, silent=args.silent)
+            summary = _run_score_batch(model_ids, module_keys, force=args.force, silent=args.silent, config=config)
             status = "success" if summary["tasks_failed"] == 0 else "partial"
+            # Leaderboard nach erfolgreichem Durchlauf aktualisieren
+            if summary["tasks_successful"] > 0:
+                _refresh_leaderboard_safe()
             write_run_summary(
                 args.summary_json,
                 {
@@ -196,8 +372,11 @@ def main() -> None:
                 print(f"Keine Modelle gefunden (provider={args.provider}).")
                 sys.exit(0)
 
-            summary = _run_score_batch(model_ids, module_keys, force=args.force, silent=args.silent)
+            summary = _run_score_batch(model_ids, module_keys, force=args.force, silent=args.silent, config=config)
             status = "success" if summary["tasks_failed"] == 0 else "partial"
+            # Leaderboard nach erfolgreichem Durchlauf aktualisieren
+            if summary["tasks_successful"] > 0:
+                _refresh_leaderboard_safe()
             write_run_summary(
                 args.summary_json,
                 {
@@ -222,6 +401,9 @@ def main() -> None:
         env["CRUCIBLE_DELEGATE_PARENT"] = "1"
 
         result = subprocess.run(cmd, cwd=str(ROOT_DIR), env=env, check=False)
+        # Leaderboard nach erfolgreichem Wizard-Durchlauf aktualisieren
+        if result.returncode == 0:
+            _refresh_leaderboard_safe()
         write_run_summary(
             args.summary_json,
             {

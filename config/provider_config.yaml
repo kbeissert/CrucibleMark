@@ -247,6 +247,30 @@ providers:
     config:
       context_window: 32768
       default_temperature: 0.1
+
+      # =====================================================================
+      # Benchmark-Defaults für Reproduzierbarkeit (llama.cpp Server-Flags)
+      # =====================================================================
+      # Diese Werte werden als Server-Start-Flags gesetzt und sorgen für
+      # vergleichbare, stabile Ergebnisse mit niedriger Varianz.
+      # Referenz: https://docs.vllm.ai/en/v0.10.1/usage/reproducibility.html
+      #
+      # Empfehlung für Benchmarks (vs. produktive Assistenten):
+      #   - temperature: 0.1–0.3 (niedrig für Determinismus)
+      #   - seed: fixiert (42) für Reproduzierbarkeit zwischen Runs
+      #   - top_k: 40 (moderates Sampling)
+      #   - top_p: 0.9 (moderate Nucleus-Sampling)
+      #   - repeat_penalty: 1.1 (leichte Penalty gegen Loops)
+      #
+      # Für Kreativ-Runs kann ein separates Profil mit temperature=0.7 verwendet werden.
+      # =====================================================================
+      benchmark_defaults:
+        seed: 42                    # Fixierter Seed für Reproduzierbarkeit
+        temperature: 0.1           # Deterministisch, niedrige Varianz
+        top_k: 40                   # Moderates Sampling
+        top_p: 0.9                  # Moderate Nucleus-Sampling
+        repeat_penalty: 1.1         # Leichte Penalty gegen Loops
+
       # Hardware-Profile werden pro Provider definiert (nicht global).
       # Werte: m4_macbook_pro_metal, dgx_spark_cuda, ...
       # Models that cannot use the global context_window due to native architecture limits.
@@ -283,12 +307,18 @@ providers:
     #   n_gpu_layers   — --n-gpu-layers, Default: 99 (vollständiges GPU-Offloading)
     #
     # Beschreibung/Metadaten → Model Card JSON (benchmark_scores/model_cards/)
+    #
+    # Hardware-Kontext:
+    #   MacBook Pro (M4 Max): ~16-18 GB nutzbarer VRAM für Modell + Kontext.
+    #   Bei Context=32000 und parallel=4 bleiben pro Slot ~4K Tokens reservierter Kontext,
+    #   was für Puffer + KV-Cache bei 12B-14B Modellen (Q4-Q6) ausreichend ist.
     llamacpp:
       name: Llama.cpp (MacBook Pro)
       short_code: M4APL
       api_type: llamacpp
       model_type: open_weights_local
       enabled: true
+      context_window: 32000
       base_url: "http://127.0.0.1:1235/v1"
       api_key: "sk-local"
       model_dir: ~/ai/lms/gguf
@@ -328,35 +358,48 @@ providers:
         name: Qwen 2.5 Coder 7B Instruct Q6_K (GGUF)
         model_file: qwen2.5-coder-7b-instruct-q6_k.gguf
         n_gpu_layers: 99
+        enable_thinking: false
       - id: qwen3-4b
         name: Qwen 3 4B Q6_K (GGUF)
         model_file: Qwen3-4B-Q6_K.gguf
         n_gpu_layers: 99
+        enable_thinking: false
       - id: qwen3-14b
         name: Qwen 3 14B Q6_K (GGUF)
         model_file: Qwen3-14B-Q6_K.gguf
         n_gpu_layers: 99
+        enable_thinking: false
       - id: qwen3.5-4b-q4
         name: Qwen 3.5 4B Q4_K_XL (GGUF)
         model_file: Qwen3.5-4B-UD-Q4_K_XL.gguf
         n_gpu_layers: 99
+        enable_thinking: false
       - id: qwen3.5-4b-q6
         name: Qwen 3.5 4B Q6_K_XL (GGUF)
         model_file: Qwen3.5-4B-UD-Q6_K_XL.gguf
         n_gpu_layers: 99
+        enable_thinking: false
       - id: qwen3.5-4b-q8
         name: Qwen 3.5 4B Q8_K_XL (GGUF)
         model_file: Qwen3.5-4B-UD-Q8_K_XL.gguf
         n_gpu_layers: 99
+        enable_thinking: false
       - id: qwen3.5-9b
         name: Qwen 3.5 9B Q6_K_XL (GGUF)
         model_file: Qwen3.5-9B-UD-Q6_K_XL.gguf
         n_gpu_layers: 99
+        enable_thinking: false
 
     # llama.cpp auf DGX Spark (NVIDIA CUDA, lokaler Server im Intranet)
     # Steuerung erfolgt per SSH vom Benchmark-Host.
     # GGUF-Pfad: /home/kay_beissert/ai/models/llm/gguf/
     # Port 1235 wird für den Benchmark-Server genutzt.
+    #
+    # Hardware-Kontext:
+    #   DGX Spark: ~128 GB unified memory, davon ~120 GB für Modell + Kontext nutzbar.
+    #   Bei Context=65536 und parallel=4 bleiben pro Slot ~16K Tokens reservierter Kontext,
+    #   was ausreichend ist für 30B-40B MoE-Modelle (Q4-Q8) mit Thinking-Ausgaben.
+    #   Server-Start nach Refactoring (llamacpp_batch.py) deutlich schneller: Timeout von 420s → 180s.
     llamacpp_spark:
       name: Llama.cpp (DGX Spark)
       short_code: SPRK
@@ -373,8 +416,8 @@ providers:
       server_stop_cmd: ssh -o BatchMode=yes -o ConnectTimeout=10 -p 22 kay_beissert@gx10-b20a.local "pkill -f 'llama-server.*--port 1235'"
       cleanup_on_exit: true
       server_post_stop_cmd: ssh -o BatchMode=yes -o ConnectTimeout=10 -p 22 kay_beissert@gx10-b20a.local "rm -rf ~/.cache/llama.cpp /tmp/llama.cpp*"
-      server_ready_timeout_sec: 420
-      existing_server_ready_timeout_sec: 300
+      server_ready_timeout_sec: 180
+      existing_server_ready_timeout_sec: 120
       server_ready_poll_sec: 5
       server_ready_probe_timeout_sec: 60
       server_log: ~/ai/llama-lab-spark.log
@@ -387,26 +430,32 @@ providers:
         name: Qwen 3.6 35B-A3B Q8_K_XL (GGUF)
         model_file: Qwen3.6-35B-A3B-UD-Q8_K_XL.gguf
         n_gpu_layers: 99
+        enable_thinking: false
       - id: qwen3.6-35b-a3b-uncensored
         name: Qwen 3.6 35B-A3B Uncensored HauhauCS Aggressive Q8_K_P (GGUF)
         model_file: Qwen3.6-35B-A3B-Uncensored-HauhauCS-Aggressive-Q8_K_P.gguf
         n_gpu_layers: 99
+        enable_thinking: false
       - id: qwen3.5-35b-a3b-q8
         name: Qwen 3.5 35B-A3B Q8_K_XL (GGUF)
         model_file: Qwen3.5-35B-A3B-UD-Q8_K_XL.gguf
         n_gpu_layers: 99
+        enable_thinking: false
       - id: qwen3.5-35b-a3b-q4
         name: Qwen 3.5 35B-A3B Q4_K_XL (GGUF)
         model_file: Qwen3.5-35B-A3B-UD-Q4_K_XL.gguf
         n_gpu_layers: 99
+        enable_thinking: false
       - id: qwen3-coder-30b-a3b-q8
         name: Qwen 3 Coder 30B-A3B Instruct Q8_K_XL (GGUF)
         model_file: Qwen3-Coder-30B-A3B-Instruct-UD-Q8_K_XL.gguf
         n_gpu_layers: 99
+        enable_thinking: false
       - id: qwen3-coder-next-q4
         name: Qwen 3 Coder Next Q4_K_XL (GGUF)
         model_file: Qwen3-Coder-Next-UD-Q4_K_XL.gguf
         n_gpu_layers: 99
+        enable_thinking: false
       - id: gemma-4-26b-a4b-q8
         name: Gemma 4 26B-A4B Instruct Q8_K_XL (GGUF)
         model_file: gemma-4-26B-A4B-it-UD-Q8_K_XL.gguf

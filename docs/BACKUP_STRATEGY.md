@@ -197,7 +197,14 @@ Bereinigt `docs/reviews/` und behält pro Modell-Verzeichnis je einen Benchmark-
 
 #### `consolidate_csv.py`
 
-Verarbeitet alle Benchmark- und Leaderboard-CSVs. Schlüsselspalten je nach Dateiart:
+Verarbeitet alle Benchmark- und Leaderboard-CSVs mit robustem CSV-Parsing (ab v4.4.0).
+
+**Robuster CSV-Loader (Fallback-Strategien):**
+1. **Strategie 1:** `utils.csv_recovery.load_csv_robust()` — nutzt `on_bad_lines="skip"`
+2. **Strategie 2:** `pd.read_csv(on_bad_lines="skip", engine="python")` — Fallback
+3. **Timezone-Fix:** `utc=True` für Mixed-Timezone-Probleme bei Timestamps
+
+**Deduplizierungs-Logik:**
 
 | Datei | Deduplizierungs-Schlüssel |
 |---|---|
@@ -212,6 +219,8 @@ df_latest = df_sorted.drop_duplicates(subset=['model', 'asset_id'], keep='first'
 # tooluse_leaderboard.csv: neueste Zeile pro Modell behalten
 df_latest = df_sorted.drop_duplicates(subset=['model'], keep='first')
 ```
+
+**Hinweis:** Das Skript toleriert jetzt korrupte CSV-Dateien (z.B. durch eingemischte Audit-Logs) und lädt trotzdem alle validen Zeilen.
 
 ---
 

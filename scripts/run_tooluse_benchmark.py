@@ -30,6 +30,7 @@ if str(_ROOT) not in sys.path:
 
 from scripts.core.tooluse_exporter import ToolUseExporter  # noqa: E402
 from scripts.core.runner_contract import write_run_summary  # noqa: E402
+from scripts.core.generate_leaderboard import main as gen_leaderboard  # noqa: E402
 from utils.config_validator import ConfigValidator  # noqa: E402
 
 CARD_DIR = _ROOT / "benchmark_scores" / "model_cards"
@@ -338,7 +339,7 @@ def _run_batch(
     print(_SEP)
     print()
 
-    # Leaderboard automatisch aktualisieren
+    # ToolUse-Leaderboard automatisch aktualisieren
     leaderboard_updated = False
     try:
         config = ConfigValidator().config
@@ -346,12 +347,20 @@ def _run_batch(
         written = exporter.aggregate_from_benchmark_csvs()
         if written > 0:
             exporter.calculate_sovereignty_gap()
-            print(f"  Leaderboard aktualisiert: {written} Modell(e) → tooluse_leaderboard.csv")
+            print(f"  ToolUse-Leaderboard aktualisiert: {written} Modell(e) → tooluse_leaderboard.csv")
             leaderboard_updated = True
         else:
-            print("  Leaderboard: keine tooluse-Ergebnisse in Benchmark-CSVs gefunden.")
+            print("  ToolUse-Leaderboard: keine Ergebnisse in Benchmark-CSVs gefunden.")
     except Exception as exc:  # noqa: BLE001 — leaderboard update must not crash CLI
-        print(f"  [WARN] Leaderboard-Update fehlgeschlagen: {exc}")  # noqa: T201
+        print(f"  [WARN] ToolUse-Leaderboard-Update fehlgeschlagen: {exc}")  # noqa: T201
+
+    # Haupt-Leaderboard (benchmark_leaderboard.csv) neu generieren
+    try:
+        print("  Generiere Haupt-Leaderboard...")
+        gen_leaderboard(print_table=False)
+        print("  ✅ Haupt-Leaderboard aktualisiert: benchmark_leaderboard.csv")
+    except Exception as exc:  # noqa: BLE001
+        print(f"  [WARN] Haupt-Leaderboard-Update fehlgeschlagen: {exc}")
 
     return {
         "models_total": len(models),
@@ -481,15 +490,22 @@ def main() -> None:
     try:
         if args.model:
             ok = _run_model(args.model, force=args.force, silent=args.silent)
-            # Leaderboard nach Einzellauf aktualisieren (Exporter liest aus Benchmark-CSVs)
+            # ToolUse-Leaderboard nach Einzellauf aktualisieren
             try:
                 config = ConfigValidator().config
                 exporter = ToolUseExporter(config)
                 written = exporter.aggregate_from_benchmark_csvs()
                 if written > 0:
-                    print(f"  Leaderboard aktualisiert: {written} Modell(e) → tooluse_leaderboard.csv")
+                    print(f"  ToolUse-Leaderboard aktualisiert: {written} Modell(e) → tooluse_leaderboard.csv")
             except Exception as exc:  # noqa: BLE001
-                print(f"  [WARN] Leaderboard-Update fehlgeschlagen: {exc}")
+                print(f"  [WARN] ToolUse-Leaderboard-Update fehlgeschlagen: {exc}")
+            # Haupt-Leaderboard neu generieren
+            try:
+                print("  Generiere Haupt-Leaderboard...")
+                gen_leaderboard(print_table=False)
+                print("  ✅ Haupt-Leaderboard aktualisiert: benchmark_leaderboard.csv")
+            except Exception as exc:  # noqa: BLE001
+                print(f"  [WARN] Haupt-Leaderboard-Update fehlgeschlagen: {exc}")
             write_run_summary(
                 args.summary_json,
                 {

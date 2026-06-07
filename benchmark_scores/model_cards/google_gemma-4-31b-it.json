@@ -18,7 +18,7 @@
   ],
   "known_limitations": [
     "Nur über Cloud-API nutzbar, kein lokaler Betrieb möglich",
-    "Als neueres Modell mit begrenzter öffentlicher Benchmark-Dokumentation – Leistungsprofil noch nicht vollständig etabliert"
+    "Als neueres Modell mit begrenzter öffentlicher Dokumentation – Leistungsprofil noch nicht vollständig etabliert"
   ],
   "judge_context_hint": "Das Modell ist ein Cloud-only-Vertreter der Gemma-4-Reihe von Google; bei der Bewertung sollte berücksichtigt werden, dass öffentliche Benchmarks für diese spezifische Variante möglicherweise noch spärlich sind und Antwortverhalten von der API-seitigen Systemkonfiguration abhängen kann.",
   "architecture_tags": [

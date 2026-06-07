@@ -10,19 +10,21 @@
   "weights_provenance_risk_rationale": "xAI ist ein US-amerikanisches Unternehmen und unterliegt dem CLOUD Act, jedoch sind die Modellgewichte nicht öffentlich zugänglich.",
   "model_family": "Grok",
   "primary_focus": "general",
-  "summary": "Grok 4.3 ist xAIs aktuelles Flaggschiff-Modell – ausgelegt auf allgemeine Sprachaufgaben, Reasoning und Echtzeit-Wissenszugriff via X-Plattform. Es ist ausschließlich über die xAI-API verfügbar und zeichnet sich durch direkten, unzensierten Antwortstil aus.",
+  "summary": "Grok 4.3 ist xAIs aktuelles Flaggschiff-Modell, veröffentlicht am 30. April 2026 (Beta: 17. April 2026). Es ist xAIs intelligentestes und schnellstes Modell. Erstmals mit nativem Video-Input, 1M-Token-Kontextfenster und günstigeren Input-Preisen. MoE-Architektur, optimiert für allgemeine Sprachaufgaben, Reasoning und Echtzeit-Wissenszugriff via X-Plattform. Ausschließlich über xAI-API verfügbar. Starke agentic performance für Routine-Aufgaben, direkter Antwortstil.",
   "strengths": [
-    "Echtzeit-Zugriff auf X-Plattform-Daten für aktuelle Informationen",
-    "Direkter, unzensierter Antwortstil mit hoher Meinungsbildung",
-    "Starke Reasoning-Fähigkeiten bei allgemeinen und kontroversen Themen",
-    "Gute Multimodalität (Text und Bild)"
+    "IAIs intelligentestes und schnellstes Modell mit hoher Gesamtqualität",
+    "Erstmals nativ multimodal: Text, Bild und Video-Input in einem Modell",
+    "1M-Token-Kontextfenster und günstigere Input-Preise als Vorgänger",
+    "Echtzeit-Zugriff auf X-Plattform-Daten für aktuelle Informationen und kontextuelle Antworten",
+    "Starke agentic performance für Routine-Aufgaben, direkter Antwortstil"
   ],
   "known_limitations": [
-    "Nur über xAIs Cloud-API verfügbar, kein lokaler Betrieb möglich",
-    "Der unzensierte Stil kann bei sensiblen Themen zu kontroversen oder einseitigen Antworten führen",
+    "Ausschließlich über xAI-API verfügbar – kein lokaler Betrieb, keine Gewichtsexporte",
+    "Schwächer bei komplexem Software-Engineering im Vergleich zu spezialisierten Coding-Modellen",
+    "Direkter, unzensierter Stil kann bei sensiblen Themen zu kontroversen oder einseitigen Antworten führen",
     "Begrenzte Transparenz bezüglich Modellarchitektur und Parametergröße"
   ],
-  "judge_context_hint": "Grok 4.3 neigt zu direkten, oft kontroversen Antworten – bei Bewertungen sollte unterschieden werden, ob die Direktheit als Feature oder als Qualitätsmangel gewertet wird.",
+  "judge_context_hint": "Grok 4.3 (veröffentlicht 30. April 2026, Beta: 17. April 2026) ist xAIs Flaggschiff mit Artificial Analysis Intelligence Index: 53. Erstmals mit nativem Video-Input, 1M Token Kontext, ~40% günstigere Input-Preise. Starke agentic performance für Routine-Aufgaben, aber nicht das Benchmark-Führende bei komplexem Software-Engineering. Direkter, unzensierter Antwortstil – bei Bewertungen sollte unterschieden werden, ob Direktheit als Feature oder Qualitätsmangel gewertet wird.",
   "architecture_tags": [
     "General",
     "Instruct",

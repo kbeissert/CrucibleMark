@@ -9,21 +9,23 @@
   "weights_provenance_risk": "medium",
   "weights_provenance_risk_rationale": "Nous Research ist ein US-amerikanisches Unternehmen und unterliegt dem CLOUD Act, jedoch sind die Gewichte öffentlich verfügbar und lokal betreibbar, sodass kein API-Zugriff durch Dritte erforderlich ist.",
   "model_family": "Hermes",
-  "primary_focus": "instruction-following",
-  "summary": "Hermes 4 70B ist ein Modell von Nous Research mit öffentlich verfügbaren Gewichten (Meta Llama Community License) aus den USA, basierend auf Llama-4 und feinabgestimmt für agentische Aufgaben und starkes Instruction-Following. Es ist über Cloud-Provider nutzbar.",
+  "primary_focus": "reasoning",
+  "summary": "Hermes 4 70B (August 2025) ist ein Hybrid-Reasoning-Modell auf Basis von Meta-Llama-3.1-70B. Es nutzt ein massiv erweitertes Post-Training-Korpus für verbesserte Logik und Code-Leistung. Das Modell unterstützt einen optionalen Thinking-Modus, JSON-Modus, Function-Calling und ein 131k Token-Kontextfenster. Besonderes Merkmal: Safety-Filter durch Training austrainiert – besonders kreativ bei Rollenspielen, Szenengestaltung und unkonventionellen Themen.",
   "strengths": [
-    "Starkes Instruction-Following mit präzisen, strukturierten Antworten",
-    "Reduzierte Überrefusal-Rate durch gezieltes Uncensored-Finetuning",
-    "Gute Leistung bei Rollenspiel, Agenten-Workflows und Function-Calling"
+    "Hybrid-Reasoning: Optionaler Thinking-Modus mit expliziten Denktraces für komplexe Aufgaben.",
+    "Hohe Fachleistung: Signifikante Steigerung in Mathematik, Code und STEM durch verifizierte Reasoning-Traces.",
+    "Safety-Training: Filter durch Training austrainiert, nicht entfernt – hohe Kreativität",
+    "Agenten-Optimierung: Hohe Adhärenz bei JSON-Strukturen und Tool-Use/Function-Calling."
   ],
   "known_limitations": [
-    "Als Fine-Tune eines Basismodells abhängig von dessen Wissensgrenzen und Trainingsdaten-Cutoff",
-    "70B-Parametergröße erfordert erhebliche Hardware-Ressourcen für lokalen Betrieb"
+    "Wissensstand: Cutoff Januar 2025.",
+    "Hardware-Anforderungen: Hoher VRAM-Bedarf (BF16: ~141GB; FP8: ~75GB; Q4: ~35GB).",
+    "Lizenz: Kommerzielle Nutzung unterliegt den spezifischen Bedingungen der Meta Llama Community License."
   ],
-  "judge_context_hint": "Hermes 4 70B ist ein Uncensored-Finetuned-Modell – es antwortet direkter und mit weniger Ablehnung als Standard-Instruct-Modelle; Qualitätsbewertungen sollten dies als Feature, nicht als Fehler einordnen.",
+  "judge_context_hint": "Bewerten Sie die Antwortqualität getrennt von den Thinking-Blöcken. Der Thinking-Modus ist ein optionales Feature zur Herleitung, kein Teil der finalen Antwort. Die extrem niedrige Refusal-Rate ist ein beabsichtigtes Designmerkmal zur Maximierung der Hilfsbereitschaft und kein Anzeichen für mangelnde Sicherheitseinstellungen.",
   "architecture_tags": [
     "Instruct",
-    "Uncensored-Finetuned"
+    "Thinking-Optional"
   ],
   "unknown": false,
   "generated_at": "2026-05-02T16:10:08.164050+00:00",

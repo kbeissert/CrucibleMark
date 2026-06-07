@@ -18,7 +18,7 @@
   ],
   "known_limitations": [
     "Detaillierte technische Spezifikationen und Trainingsdaten sind nicht vollständig öffentlich dokumentiert",
-    "Leistung bei spezialisierten westlichen Benchmarks kann hinter US-Modellen vergleichbarer Größe zurückbleiben"
+    "Leistung bei spezialisierten westlichen Tests kann hinter US-Modellen vergleichbarer Größe zurückbleiben"
   ],
   "judge_context_hint": "Das Modell stammt aus der GLM-Familie von Zhipu AI und kann bei chinesischsprachigen Aufgaben stärker abschneiden als bei rein englischen; kulturelle und sprachliche Nuancen im Chinesischen sollten positiv gewichtet werden.",
   "architecture_tags": [

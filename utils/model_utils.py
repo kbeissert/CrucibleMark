@@ -856,7 +856,8 @@ def _read_max_output_tokens_from_card(model_id: str) -> int | None:
 
 
 SUPPORT_TOOL_USE_UNTESTED = "untested"
-_SUPPORT_TOOL_USE_VALUES = (True, False, SUPPORT_TOOL_USE_UNTESTED)
+SUPPORT_TOOL_USE_NOT_APPLICABLE = "not_applicable"
+_SUPPORT_TOOL_USE_VALUES = (True, False, SUPPORT_TOOL_USE_UNTESTED, SUPPORT_TOOL_USE_NOT_APPLICABLE)
 
 
 def normalize_supports_tool_use(value: object) -> bool | str:
@@ -968,7 +969,7 @@ def is_reasoning_model(model_name: str) -> bool:
     card_result = is_reasoning_model_from_card(model_name)
     if card_result is not None:
         return card_result
-    triggers = ["deepseek-r1", "reasoning", "phi4", "qwq", "o1", "o3", "o4", "magistral", "glm-5", "minimax-m2", "gemini-2.5", "kimi-k2-thinking"]
+    triggers = ["deepseek-r1", "reasoning", "phi4", "qwq", "o1", "o3", "o4", "magistral", "glm-5", "minimax-m2", "gemini-2.5", "kimi-k2-thinking", "qwen3.6", "qwen3-coder"]
     return any(t in model_name.lower() for t in triggers)
 
 

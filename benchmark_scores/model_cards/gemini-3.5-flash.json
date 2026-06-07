@@ -10,19 +10,19 @@
   "weights_provenance_risk_rationale": "Google ist ein US-amerikanisches Unternehmen und unterliegt dem CLOUD Act, jedoch sind die Modellgewichte nicht öffentlich zugänglich.",
   "model_family": "Gemini",
   "primary_focus": "general",
-  "summary": "Gemini 3.5 Flash ist Googels schnelles, effizientes Flash-Modell der Gemini-3.5-Serie – optimiert für multimodale Aufgaben, schnelles Reasoning und kosteneffiziente Inferenz. Es ist ausschließlich über die Google Cloud-API verfügbar und richtet sich an Anwendungen, bei denen niedrige Latenz und gute Leistung wichtiger sind als maximale Reasoning-Tiefe.",
+  "summary": "Gemini 3.5 Flash ist Googels schnellstes Flash-Modell, veröffentlicht am 19. Mai 2026 auf Google I/O. Es übertrifft Gemini 3.1 Pro auf den meisten Coding- und Agenten-Aufgaben, bei 4× schnellerer Inferenz und oft weniger als der halben Kosten. 1M-Token-Kontextfenster, nativ multimodal (Text, Bild, Video, Audio). Erstmals im Gemini 3.5-Family, optimiert für Coding und autonome Agenten – nicht für maximale Reasoning-Tiefe. Ausschließlich über Google Cloud-API verfügbar.",
   "strengths": [
-    "Schnelle Inferenz mit guter Qualität für alltägliche Aufgaben",
+    "Übertrifft Gemini 3.1 Pro auf Coding- und Agenten-Aufgaben",
+    "4× schnellere Inferenz als vergleichbare Frontier-Modelle, oft weniger als die halben Kosten",
     "Nativ multimodal (Text, Bild, Video, Audio) ohne zusätzliche Verarbeitung",
-    "Gutes Instruction-Following und strukturierte Antwortgenerierung",
-    "Kosteneffizient im Vergleich zu größeren Gemini-Pro-Modellen"
+    "1M-Token-Kontextfenster, kosteneffizientester Flash im Frontier-Bereich"
   ],
   "known_limitations": [
-    "Nur über Googles Cloud-API verfügbar, kein lokaler Betrieb möglich",
-    "Schwächer als Gemini Pro bei komplexem mehrstufigem Reasoning und mathematischen Aufgaben",
-    "Abhängigkeit von Google-Infrastruktur und möglicherweise US-amerikanischer Datenverarbeitung"
+    "Ausschließlich über Google Cloud-API verfügbar – kein lokaler Betrieb, keine Gewichtsexporte",
+    "Regression auf harte Reasoning- und Long-Context-Aufgaben im Vergleich zu Gemini 3.1 Pro",
+    "Abhängigkeit von Google-Infrastruktur; US-Anbieter unterliegt CLOUD Act, EU-Datenrisiko vorhanden"
   ],
-  "judge_context_hint": "Gemini 3.5 Flash ist auf Geschwindigkeit und Effizienz optimiert – bei komplexen Reasoning-Aufgaben kann die Antworttiefe gegenüber größeren Modellen zurückfallen; die Bewertung sollte die Modellklasse berücksichtigen.",
+  "judge_context_hint": "Gemini 3.5 Flash (veröffentlicht 19. Mai 2026, Google I/O) ist Googels schnellstes Flash-Modell. Terminal-Bench 2.1: 76.2%, MCP Atlas: 83.6%, CharXiv Reasoning: 84.2% – übertrifft Gemini 3.1 Pro auf Coding/Agenten. 1M Token Kontext, 4× schneller als andere Frontier-Modelle, Preis: $1.50/$9 pro 1M Tokens. Optmiert für Coding und autonome Agenten, nicht für maximale Reasoning-Tiefe – bei komplexem Reasoning kann die Tiefe gegenüber Pro-Modellen zurückfallen.",
   "architecture_tags": [
     "General",
     "Multimodal",

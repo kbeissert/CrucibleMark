@@ -10,17 +10,20 @@
   "weights_provenance_risk_rationale": "xAI ist ein US-amerikanisches Unternehmen und unterliegt dem CLOUD Act, jedoch ist dieser nur bei API-Nutzung relevant, nicht bei den Weights selbst.",
   "model_family": "Grok",
   "primary_focus": "general",
-  "summary": "Grok 3 ist xAIs Flaggschiff-Modell aus den USA – entwickelt für komplexes Reasoning, Coding und allgemeine Aufgaben. Das Modell ist ausschließlich über die xAI-API verfügbar.",
+  "summary": "Grok 3 ist das textbasierte Flaggschiff-Modell von xAI, optimiert für komplexes Reasoning, Coding und wissenschaftliche Aufgaben. Es unterstützt ein Kontextfenster von 1 Million Token und ist ausschließlich über die xAI-API oder die Grok-Weboberfläche verfügbar. Das Modell ist rein textbasiert und besitzt keine multimodalen Fähigkeiten (kein Bildverständnis).",
   "strengths": [
-    "Starke Reasoning- und Mathematikfähigkeiten, insbesondere mit aktiviertem Thinking-Modus",
-    "Zugang zu aktuellen Informationen über X/Twitter-Datensatz und Echtzeit-Websuche",
-    "Hohe Leistung bei komplexen mehrstufigen Aufgaben und wissenschaftlichen Fragestellungen"
+    "Exzellente Leistungen in Mathematik, Coding und wissenschaftlichem Reasoning",
+    "Großes Kontextfenster von 1 Million Token für umfangreiche Dokumente",
+    "Unterstützung von Agenten-Funktionen durch Tool Use und Code Execution",
+    "Zugriff auf Echtzeit-Informationen via X-Datensatz und Websuche",
+    "Optionale Steigerung der Antwortqualität durch dedizierten Thinking-Modus (Test-time Compute)"
   ],
   "known_limitations": [
-    "Ausschließlich über xAI-API und Grok-Weboberfläche verfügbar, keine lokale Nutzung möglich",
-    "Gelegentlich übermäßig ausführliche Antworten; Qualität kann bei sehr spezifischen Nischenbereichen hinter spezialisierten Modellen zurückbleiben"
+    "Keine Multimodalität: Das Modell kann keine Bilder, Audio oder Videos verarbeiten oder generieren",
+    "Keine lokale Installation; Nutzung erfordert Internetverbindung zur API/Weboberfläche",
+    "Erhöhte Latenz bei Nutzung des Thinking-Modus aufgrund des zusätzlichen Rechenaufwands"
   ],
-  "judge_context_hint": "Grok 3 verfügt über einen optionalen Thinking-Modus (DeepSearch/Think), der bei aktivierter Nutzung die Antwortqualität bei Reasoning-Aufgaben deutlich steigert – Benchmarks sollten den genutzten Modus explizit dokumentieren.",
+  "judge_context_hint": "Prüfen Sie, ob der Thinking-Modus (DeepSearch) aktiviert war – dieser verändert Reasoning-Leistung fundamental. Zudem ist das Modell rein textbasiert.",
   "architecture_tags": [
     "General",
     "Thinking-Optional"

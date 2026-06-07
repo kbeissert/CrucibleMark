@@ -16,8 +16,18 @@ Usage:
 """
 
 import logging
+import sys
 from pathlib import Path
+from typing import Optional
+
+# Füge Projekt-Root zu sys.path hinzu für Imports
+ROOT_DIR = Path(__file__).resolve().parent.parent.parent
+sys.path.insert(0, str(ROOT_DIR))
+
 import pandas as pd
+
+# Importiere robusten CSV-Loader
+from utils.csv_recovery import load_csv_robust
 
 # Konfiguration
 # Tupel: (Pfad, Deduplizierungs-Schlüsselspalten)
@@ -34,6 +44,36 @@ logging.basicConfig(level=logging.INFO, format="%(message)s")
 logger = logging.getLogger("consolidate")
 
 
+def _load_csv_robust_with_fallback(file_path: Path) -> Optional[pd.DataFrame]:
+    """
+    Lädt CSV robust mit Fallback-Strategien.
+    
+    Versucht zuerst den robusten Loader, dann Standard pandas mit Fehlertoleranz.
+    """
+    # Strategie 1: Nutze utils.csv_recovery (robustester Ansatz)
+    try:
+        df = load_csv_robust(file_path)
+        if len(df) > 0:
+            logger.info("   📊 Geladen (robust): %d Zeilen", len(df))
+            return df
+    except Exception as e:
+        logger.warning("   ⚠️  Robuster Loader fehlgeschlagen: %s", e)
+    
+    # Strategie 2: Standard pandas mit Fehlertoleranz
+    try:
+        df = pd.read_csv(
+            file_path, 
+            on_bad_lines="skip", 
+            engine="python",
+            encoding="utf-8"
+        )
+        logger.info("   📊 Geladen (fallback): %d Zeilen", len(df))
+        return df
+    except Exception as e:
+        logger.error("   ❌ Konnte CSV nicht laden: %s", e)
+        return None
+
+
 def consolidate_file(file_path: Path, key_cols: list[str]):
     """Liest, bereinigt und überschreibt eine einzelne CSV-Datei."""
     if not file_path.exists():
@@ -43,7 +83,11 @@ def consolidate_file(file_path: Path, key_cols: list[str]):
     logger.info("Verarbeite: %s", file_path)
 
     try:
-        df = pd.read_csv(file_path)
+        df = _load_csv_robust_with_fallback(file_path)
+        if df is None:
+            logger.error("   ❌ Überspringe Datei (nicht lesbar)")
+            return
+        
         original_count = len(df)
 
         if original_count == 0:
@@ -59,7 +103,8 @@ def consolidate_file(file_path: Path, key_cols: list[str]):
 
         # Sicherstellen, dass Timestamp datetime ist (für korrekte Sortierung)
         if "timestamp" in df.columns:
-            df["timestamp"] = pd.to_datetime(df["timestamp"], errors="coerce")
+            # utc=True vermeidet Mixed-Timezone-Probleme
+            df["timestamp"] = pd.to_datetime(df["timestamp"], errors="coerce", utc=True)
             df = df.sort_values(by="timestamp", ascending=False)
 
         # Deduplizieren: Behalte den ersten (neuesten) Eintrag pro Schlüssel

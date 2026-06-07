@@ -10,7 +10,7 @@
   "weights_provenance_risk_rationale": "Alibaba Cloud (Tongyi Qwen-Team) ist ein chinesisches Unternehmen und unterliegt dem chinesischen National Security Law (NSL). Das BSI hat im Februar 2025 vor chinesischen KI-Cloud-Diensten gewarnt (BSI-Referenz: Warnung DeepSeek, 04.02.2025); bei lokalem Betrieb der Open-Weights-Variante ohne Datenübertragung nach China ist das cloud-spezifische Risikoszenario reduziert.",
   "model_family": "Qwen",
   "primary_focus": "general",
-  "summary": "Qwen 2.5 3B ist ein kompaktes Open-Weights-Modell von Alibaba aus China, das lokal betreibbar und über Cloud-Provider verfügbar ist. Es eignet sich für Instruction-Following und leichtgewichtige Textaufgaben auf ressourcenarmer Hardware.",
+  "summary": "Qwen 2.5 3B ist ein kompaktes Open-Weights-Modell von Alibaba aus China, das lokal betreibbar und über Cloud-Provider verfügbar ist. 32K Kontext. Eignet sich für Instruction-Following und leichtgewichtige Textaufgaben auf ressourcenarmer Hardware.",
   "strengths": [
     "Sehr geringer Ressourcenbedarf – lokal auf Consumer-Hardware betreibbar",
     "Solide Mehrsprachigkeit, insbesondere Chinesisch und Englisch",
