@@ -65,15 +65,31 @@ def clean_all_csvs():
             print(f"   - Geloescht: {p.name}")
 
 
-def _run_clean_results(model: str | None = None, module: str | None = None):
-    import subprocess
-    import sys
-    cmd = [sys.executable, "scripts/maintenance/clean_results.py"]
-    if model:
-        cmd.extend(["--model", model])
-    if module:
-        cmd.extend(["--module", module])
-    subprocess.run(cmd, check=False)
+def _run_clean_results(
+    model: str | None = None,
+    module: str | None = None,
+    dry_run: bool = False,
+):
+    """Delegiert an clean_results (Phase 28: direkter Aufruf statt Subprozess).
+
+    Spart den zweiten Python-Start (~250 ms Overhead) und teilt den
+    Logger mit dem Dispatcher.
+    """
+    # pylint: disable=import-outside-toplevel
+    from scripts.maintenance import clean_results
+
+    # Namespace bauen statt main() aufzurufen, damit wir keine globale
+    # argparse-Optionen vermischen.
+    class _Args:
+        pass
+
+    ns = _Args()
+    ns.model = model
+    ns.module = module
+    ns.dry_run = dry_run
+    ns.prune_orphans = False
+    ns.force = False
+    clean_results.main_with_args(ns)
 
 
 def interactive_wizard():

@@ -6,6 +6,84 @@
 ---
 
 
+## v4.6.7 — make clean Hardening + toter Code weg (Phase 28, 2026-06-08)
+
+### 1. `scripts/maintenance/clean_results.py` — ID-SSoT + CSV-SSoT-Anbindung
+
+Phase 27 hat die CSV-Konsolidierung an `utils.backup_targets.CSV_FILES`
+angebunden — `clean_results.clean_csv()` aber nicht. Es hatte eine
+hardcoded Liste von 6 Pfaden und nutzte naive String-Gleichheit fuer
+den Modell-Match. Phase 28 schliesst diese Luecken:
+
+- **ID-Normalisierung**: `clean_csv()` nutzt jetzt
+  `resolve_canonical_model_id()` fuer den Vergleich. Vorher
+  matchte `make clean-model MODEL=qwen3.5-35b` keine Zeilen mit
+  `qwen_qwen3.5-35b` (Schreibweisenvariante). Jetzt schon.
+- **CSV-Liste aus SSoT**: `CLEAN_CSV_FILES` baut sich aus
+  `utils.backup_targets.CSV_FILES` + `PC_CSV_FILES` (PC hat eigenen
+  Dedup-Key `(model, model_version, run_id)`, nicht `(model, asset_id)`).
+  Hardcoded Liste weg.
+- **logging.exception()** statt `print()` in der CSV-Error-Path
+  (sichtbare Stacktraces in CI).
+
+### 2. `scripts/maintenance/clean.py` — Subprozess-Deprecation
+
+Vorher: `_run_clean_results()` rief `subprocess.run([sys.executable,
+...])` auf — das startete einen zweiten Python-Prozess pro Clean-Call
+(~250 ms Overhead, kein Logger-Sharing, Exit-Code ging verloren).
+
+Phase 28: Direkter Funktionsaufruf via neuem `clean_results.main_with_args(args)`.
+- Spart den zweiten Python-Start.
+- Teilt den Logger mit dem Dispatcher.
+- `clean_results.main()` extrahiert die Logik in `_run_clean_logic()`,
+  die von beiden Entry-Points genutzt wird.
+
+### 3. `scripts/maintenance/clean_versions.py` — toter Code entfernt
+
+Das Skript war:
+- nirgendwo im Makefile referenziert,
+- lief bei jedem Import sofort los (kein `__main__`-Guard),
+- enthielt eine hardcoded Migration
+  `claude-opus-4-6 -> claude-3-5-opus-latest` (nicht-existente
+  Modell-Variante — `claude-opus-4-6` ist die aktuelle Version),
+- wuerde bei versehentlichem Aufruf jetzt aktive Daten korrumpieren.
+
+Phase 28: Datei geloescht. `tests/test_clean_versions_deletion.py`
+verhindert Re-Introduktion (gibt klare Anweisung, wo eine
+zukuenftige Legacy-Migration stattdessen landen muss:
+als getesteter Helper in `utils/model_utils.py`).
+
+### 4. `Makefile` — `DRY=1`-Flag fuer `clean-model`/`clean-module`/`clean-all`
+
+Konsistent mit `make clean-runs` (FORCE-Flag) und
+`make backup-prep` (DRY_RUN-Flag) ist `DRY=1` jetzt der Standard-Weg
+fuer Vorschau-Modus:
+
+- `make clean-model MODEL=x` (echte Loeschung)
+- `make clean-model MODEL=x DRY=1` (Vorschau)
+- `make clean-module MODULE=x DRY=1` (Vorschau)
+- `make clean-all DRY=1` (Vorschau)
+
+Help-Text entsprechend erweitert.
+
+### 5. Tests (3 neue Dateien, 13 Tests)
+
+- `tests/test_clean_results.py` (8 Tests): ID-Normalisierung,
+  CSV-SSoT-Konsistenz, dry-run, main_with_args-Direktaufruf
+- `tests/test_clean.py` (4 Tests): Subprozess-Deprecation, Dispatcher
+- `tests/test_clean_versions_deletion.py` (1 Test): Re-Introduktion-Schutz
+
+Alle Tests nutzen `tmp_path` und `monkeypatch` — keine externen
+Effekte, keine Subprozesse, keine Live-CSV-Beruehrung.
+
+### 6. SSoT-Vertrag
+
+`make clean-*` verwendet jetzt ausschliesslich SSoT-Listen aus
+`utils/backup_targets` (CSV-Pfade) und `utils/model_utils`
+(ID-Normalisierung). Keine hardcoded Pfade, keine hardcoded
+Modell-IDs mehr in der Clean-Pipeline.
+
+
 ## v4.6.6 — Backup-System SSoT + ID-Normalisierung (Phase 27, 2026-06-08)
 
 ### 1. `utils/backup_targets.py` — neue SSoT-Konfigurationsdatei

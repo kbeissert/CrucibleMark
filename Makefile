@@ -130,8 +130,9 @@ help:
 	@echo "  make clean                Remove PyCache and build artifacts"
 
 	@echo "  make clean-csv            Remove standard CSV results"
-	@echo "  make clean-model MODEL=x  Remove results for specific model"
-	@echo "  make clean-all            Extreme Cleanup (Cache + CSVs)"
+	@echo "  make clean-model MODEL=x  Remove results for specific model (DRY=1 = Vorschau)"
+	@echo "  make clean-module MODULE=x Remove results for specific module (DRY=1 = Vorschau)"
+	@echo "  make clean-all            Extreme Cleanup (Cache + CSVs, DRY=1 = Vorschau)"
 	@echo "  make clean-runs           Alte Run-JSONs loeschen (RUNS_KEEP=N, default 5, FORCE=1)"
 	@echo "  make consolidate-csv      CSVs deduplizieren + ID-normalisieren (SSoT)"
 	@echo "  make clean-reviews        Reviews bereinigen (FORCE=1 zum Loeschen)"
@@ -385,22 +386,24 @@ clean:
 clean-csv:
 	@$(PYTHON) scripts/maintenance/clean.py --csv
 
+# Phase 28: DRY=1 reicht --dry-run an clean_results durch
+# (Default: echte Loeschung, konsistent mit clean-runs FORCE=1)
 clean-model:
 	@if [ -z "$(MODEL)" ]; then \
-		echo "Use: make clean-model MODEL=name"; \
+		echo "Use: make clean-model MODEL=name [DRY=1]"; \
 		exit 1; \
 	fi
-	@$(PYTHON) scripts/maintenance/clean.py --model "$(MODEL)"
+	@$(PYTHON) scripts/maintenance/clean.py --model "$(MODEL)" $(if $(DRY),--dry-run)
 
 clean-module:
 	@if [ -z "$(MODULE)" ]; then \
-		echo "Use: make clean-module MODULE=key"; \
+		echo "Use: make clean-module MODULE=key [DRY=1]"; \
 		exit 1; \
 	fi
-	@$(PYTHON) scripts/maintenance/clean.py --module "$(MODULE)"
+	@$(PYTHON) scripts/maintenance/clean.py --module "$(MODULE)" $(if $(DRY),--dry-run)
 
 clean-all:
-	@$(PYTHON) scripts/maintenance/clean.py --all
+	@$(PYTHON) scripts/maintenance/clean.py --all $(if $(DRY),--dry-run)
 
 clean-runs:
 	@$(PYTHON) scripts/maintenance/clean.py --runs $(RUNS_KEEP) $(if $(FORCE),--force)

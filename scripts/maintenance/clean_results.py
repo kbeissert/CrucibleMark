@@ -9,7 +9,6 @@ import shutil
 import sys
 import argparse
 import logging
-import re
 from pathlib import Path
 from typing import List
 
@@ -23,11 +22,24 @@ sys.path.insert(0, str(ROOT_DIR))
 
 # Local imports
 # pylint: disable=wrong-import-position
-from utils.model_utils import _safe_name  # noqa: E402
+from utils.model_utils import _safe_name, resolve_canonical_model_id  # noqa: E402
 from utils.module_registry import get_active_modules
 from utils.config_validator import ConfigValidator
+from utils.backup_targets import CSV_FILES  # noqa: E402
 
 # pylint: enable=wrong-import-position
+
+#: PC-spezifische CSVs (nicht in ``CSV_FILES``, weil sie andere
+#: Deduplizierungs-Schluessel als ``(model, asset_id)`` verwenden).
+PC_CSV_FILES: tuple[Path, ...] = (
+    Path("benchmark_scores/political_compass_results.csv"),
+    Path("benchmark_scores/political_compass_leaderboard.csv"),
+)
+
+#: Konsolidierte Clean-Liste: Benchmark-CSVs aus SSoT + PC-CSVs.
+CLEAN_CSV_FILES: tuple[Path, ...] = (
+    tuple(path for path, _ in CSV_FILES) + PC_CSV_FILES
+)
 
 # Setup Logging
 logging.basicConfig(level=logging.INFO, format="%(message)s")
@@ -240,7 +252,12 @@ def clean_csv(
     asset_ids: List[str] = None,
     dry_run: bool = False,
 ):
-    """Löscht Zeilen aus einer CSV basierend auf Filtern."""
+    """Löscht Zeilen aus einer CSV basierend auf Filtern.
+
+    Phase 28: Modell-Match via ``resolve_canonical_model_id`` (ID-SSoT),
+    damit ``make clean-model MODEL=qwen3.5-35b`` auch CSV-Zeilen mit
+    Schreibweisenvarianten wie ``qwen_qwen3.5-35b`` findet.
+    """
     if not file_path.exists():
         return
 
@@ -250,9 +267,15 @@ def clean_csv(
 
         mask = pd.Series([True] * len(df))
 
-        if model:
-            # Case-insensitive match für Modellname
-            mask = mask & (df["model"] != model)
+        if model and "model" in df.columns:
+            # Phase 28: ID-SSoT — kanonische Normalisierung vor Vergleich.
+            # Wir normalisieren sowohl das Ziel-Modell als auch alle CSV-Zeilen
+            # via resolve_canonical_model_id, damit qwen3.5-35b == qwen_qwen3.5-35b.
+            target_canon = resolve_canonical_model_id(model)
+            df_model_canon = df["model"].apply(
+                lambda v: resolve_canonical_model_id(str(v)) if pd.notna(v) else v
+            )
+            mask = mask & (df_model_canon != target_canon)
 
         if asset_ids and "asset_id" in df.columns:
             # Filter rows where asset_id IS in the list (we want to keep those NOT in list)
@@ -274,7 +297,16 @@ def clean_csv(
             print(f"   - {file_path.name}: Keine passenden Einträge gefunden.")
 
     except Exception as e:
+        logging.exception("Fehler bei %s", file_path.name)
         print(f"❌ Fehler bei {file_path.name}: {e}")
+
+
+def main_with_args(args) -> None:
+    """Phase 28: Direktaufruf mit Namespace-Objekt (kein argparse, kein Subprozess).
+
+    Wird von ``clean.py._run_clean_results`` und den Tests aufgerufen.
+    """
+    _run_clean_logic(args)
 
 
 def main():
@@ -304,6 +336,11 @@ def main():
     )
 
     args = parser.parse_args()
+    _run_clean_logic(args)
+
+
+def _run_clean_logic(args) -> None:
+    """Phase 28: Ausgelagerte Clean-Logik, geteilt zwischen main() und main_with_args()."""
 
     # Separater Modus: Verwaiste Reports aufräumen
     if args.prune_orphans:
@@ -379,17 +416,9 @@ def main():
         clean_model_output_directories(model=args.model, dry_run=args.dry_run)
         clean_model_card(model=args.model, dry_run=args.dry_run)
 
-    # Dateien definieren
-    files = [
-        Path("benchmark_scores/local_models_benchmark.csv"),
-        Path("benchmark_scores/cloud_models_benchmark.csv"),
-        Path("benchmark_scores/commercial_models_benchmark.csv"),
-        Path("benchmark_scores/political_compass_results.csv"),
-        Path("benchmark_scores/political_compass_leaderboard.csv"),
-        Path("benchmark_scores/tooluse_leaderboard.csv"),
-    ]
-
-    for f in files:
+    # Phase 28: CSV-Liste aus SSoT (utils.backup_targets.CSV_FILES)
+    # + PC-CSV-Erweiterung. Vorher waren 6 Pfade hartkodiert.
+    for f in CLEAN_CSV_FILES:
         clean_csv(f, model=args.model, asset_ids=target_assets, dry_run=args.dry_run)
 
     # tooluse_metrics.jsonl: model-basiert oder komplett (bei --module tooluse)
