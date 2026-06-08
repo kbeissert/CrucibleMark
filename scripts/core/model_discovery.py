@@ -12,7 +12,12 @@ from utils.model_utils import get_commercial_models_from_config, get_ollama_mode
 
 
 def discover_local_models(config: dict[str, Any]) -> list[str]:
-    """Gibt alle lokalen Modell-IDs zurück (Ollama + llamacpp)."""
+    """Gibt alle lokalen Modell-IDs zurück (Ollama + alle llamacpp-Provider).
+
+    Phase 19: iteriert über ALLE aktivierten llamacpp-Provider in
+    `providers.local.*` (nicht nur den hartcodierten Key `llamacpp`).
+    Damit erscheinen jetzt auch Spark-Modelle in `--all`/Discovery-Listen.
+    """
     models: list[str] = []
 
     # Dynamische Ollama-Discovery
@@ -21,10 +26,16 @@ def discover_local_models(config: dict[str, Any]) -> list[str]:
         if isinstance(name, str) and name:
             models.append(name)
 
-    # Explizite llamacpp-Modellliste
-    lcpp_cfg = config.get("providers", {}).get("local", {}).get("llamacpp", {})
-    if lcpp_cfg.get("enabled", False):
-        for m in lcpp_cfg.get("models", []):
+    # Iteriere über alle aktivierten llamacpp-Provider (M4 + Spark)
+    local_cfg = config.get("providers", {}).get("local", {})
+    for _provider_key, provider_cfg in local_cfg.items():
+        if not isinstance(provider_cfg, dict):
+            continue
+        if provider_cfg.get("api_type") != "llamacpp":
+            continue
+        if not provider_cfg.get("enabled", False):
+            continue
+        for m in provider_cfg.get("models", []):
             mid = m.get("id") if isinstance(m, dict) else None
             if isinstance(mid, str) and mid:
                 models.append(mid)

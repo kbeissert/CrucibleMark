@@ -1,6 +1,6 @@
 # CrucibleMark
 
-[![Version](https://img.shields.io/badge/version-4.6.1-blue)](.)
+[![Version](https://img.shields.io/badge/version-4.7.0-blue)](.)
 [![Python](https://img.shields.io/badge/python-3.10%2B-blue)](.)
 [![License](https://img.shields.io/badge/license-MIT-green)](.)
 [![Status](https://img.shields.io/badge/status-production--ready-brightgreen)](.)
@@ -160,9 +160,9 @@ Tiefergehende Einblicke in die Methodik findest du im `docs/` Verzeichnis:
 
 Die vollständige Versionshistorie steht in [CHANGELOG.md](CHANGELOG.md). Kurzfassung der letzten drei Releases:
 
+- **v4.7.0 (2026-06-08) — 4-Phasen-Refactoring der Kern-Skripte:** `utils/llm_client.py`, `scripts/core/benchmark_auto.py`, `scripts/core/llamacpp_batch.py`, `scripts/core/unified_runner.py`. 11 Helfer-Funktionen extrahiert (alle CC ≤ 12), 9 SSOT-Konstanten in `utils/constants.py` (`MIN_REFUSAL_CHARS`, `HTTP_OK`, 5× `LLAMACPP_*`-Reset-Pauses, `OLLAMA_UNLOAD_SETTLE_SEC`), 12 Magic-Value-Stellen + 3 SIM-Fixes (`SIM110`, `SIM103`). 481/481 Tests grün, Pylint 10.00/10, Mypy 0, Ruff 0.
 - **v4.6.1 (2026-06-08) — CSV-Hygiene Defense-in-Depth:** Hard-Fail-Guard in `result_manager.py` + Sanitizer-Heuristiken in `consolidate_csv.py` + `make validate-csv`. Drei unabhängige Schichten (Sanitizer, Consolidate, Result Manager) garantieren, dass korrupte Zeilen nie wieder ins Leaderboard gelangen. 16 neue Tests, 226/226 grün.
 - **v4.6.0 (2026-06-08) — CSV-Hygiene-Sanitizer:** `scripts/maintenance/sanitize_benchmark_csvs.py` mit Vier-Klassen-Filter (Header-Repeat, Romananfänge, Boolean-Modelle, leere Modelle). 13.466 Müll-Zeilen aus `local_models_benchmark.csv` entfernt, 65 neue Tests.
-- **v4.5.0 (2026-06-08) — ID-SSoT-Refactoring:** `resolve_canonical_model_id()` und `enforce_card_first()` als zentrale ID-Bridge in `utils/model_utils.py`. 12 Inline-ID-Transformationen auf SSoT migriert, Workaround `migrate_canonical_model_ids.py` entfernt. 21 neue Invarianten-Tests.
 
 ---
 
@@ -170,4 +170,4 @@ Die vollständige Versionshistorie steht in [CHANGELOG.md](CHANGELOG.md). Kurzfa
 
 - **Maintainer:** kbeissert
 - **Repository:** [github.com/kbeissert/cruciblemark](https://github.com/kbeissert/cruciblemark)
-- **Status:** ✅ Production-Ready (v4.6.1)
+- **Status:** ✅ Production-Ready (v4.7.0)

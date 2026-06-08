@@ -9,20 +9,28 @@ import os
 import subprocess
 import sys
 import time
-from datetime import datetime, timezone
+from datetime import datetime, UTC
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any
 
 import requests
-import urllib.request
 from utils.adaptive_pause import AdaptivePauseCalculator, BenchmarkMode
 from utils.base_runner import BaseBenchmarkRunner
 from utils.benchmark_utils import append_global_run_metrics, discover_assets, load_asset_yaml
 from utils.card_utils import ensure_card
 from utils.constants import (
     DEFAULT_MAX_SCORE,
+    HTTP_OK,
+    LLAMACPP_HEALTH_CHECK_TIMEOUT,
+    LLAMACPP_PROBE_TIMEOUT,
+    LLAMACPP_RESET_PAUSE_FALLBACK,
+    LLAMACPP_RESET_PAUSE_HEAVY,
+    LLAMACPP_RESET_PAUSE_MEDIUM,
+    LLAMACPP_RESET_PAUSE_OK,
+    MIN_REFUSAL_CHARS,
     MODEL_TYPE_OPEN_WEIGHTS_CLOUD,
     OLLAMA_DEFAULT_BASE_URL,
+    OLLAMA_UNLOAD_SETTLE_SEC,
     TIMEOUT_DEFAULT,
     TIMEOUT_OLLAMA_LIST_FAST,
     TIMEOUT_OLLAMA_WARMUP,
@@ -42,6 +50,7 @@ from utils.rate_limiter import RateLimiter
 from utils.scoring.exceptions import JudgeUnavailableError
 from utils.scoring.judge_evaluator import evaluate_with_judge, generate_audit_log
 from utils.scoring_utils import calculate_score_contributions
+import contextlib
 
 setup_logging()
 logger = logging.getLogger(__name__)
@@ -109,20 +118,33 @@ class UnifiedBenchmarkRunner(BaseBenchmarkRunner):
         Card-First-Hook: stellt sicher, dass eine Model Card mit Thinking-Probe-Ergebnis
         vorhanden ist, bevor der erste Benchmark-Run startet.
 
-        Entscheidungsbaum:
-          1. Card vorhanden + thinking_probe_detected gesetzt  → direkt weiter
-          2. Card vorhanden, Feld fehlt                        → Probe, Card-Update
-          3. Keine Card                                        → Probe, Minimal-Card erstellen
-          4. Probe-Fehler 429/403                             → clean Warning, Modell in _probed_models, Benchmark läuft weiter
-          5. Probe-Fehler (sonstiger)                         → clean Warning, Modell in _probed_models, Benchmark läuft weiter
-
-        Returns the canonical model_id (resolved via _find_card glob fallback if needed).
+        Delegiert an drei private Helfer: Card-Pfad bestimmen, Probe-Felder lesen,
+        Probe-Felder schreiben. Returns canonical model_id.
         """
         if model in self._probed_models:
             return model
 
+        card_path, _safe = self._resolve_model_card_path(model)
+        needs_probe, card_loaded, canonical_model = self._read_card_probe_state(
+            model, card_path
+        )
+
+        if not needs_probe:
+            self._probed_models.add(model)
+            return canonical_model
+
+        probe = self._run_thinking_probe_or_skip(model, provider)
+        if probe is None:
+            # Probe übersprungen (Budget/Quota-Fehler)
+            return canonical_model
+
+        self._write_probe_to_card(model, card_path, probe, card_loaded)
+        self._probed_models.add(model)
+        return canonical_model
+
+    def _resolve_model_card_path(self, model: str) -> tuple[Path, str]:
+        """Ermittelt Card-Pfad via _find_card (mit glob-Fallback) oder Safe-Name."""
         cards_dir = Path("benchmark_scores/model_cards")
-        # Use _find_card() which has a glob fallback: "claude-haiku-4-5" → "claude-haiku-4-5-20251001"
         found_path = _find_card(model)
         if found_path is not None and found_path.exists():
             card_path = found_path
@@ -131,52 +153,64 @@ class UnifiedBenchmarkRunner(BaseBenchmarkRunner):
             safe = _safe_name(model)
             card_path = cards_dir / f"{safe}.json"
             logger.debug("[Card-First] Card nicht gefunden, verwende Fallback-Pfad: %s", card_path)
+        return card_path, ""
 
+    def _read_card_probe_state(
+        self, model: str, card_path: Path
+    ) -> tuple[bool, bool, str]:
+        """Lädt Card-Inhalt. Returns (needs_probe, card_loaded, canonical_model)."""
         needs_probe = False
         card_loaded = False
-        canonical_model = model  # resolved to card's model_id when card is found
+        canonical_model = model
 
-        if card_path.exists():
-            try:
-                loaded: Dict[str, Any] = json.loads(card_path.read_text(encoding="utf-8"))
-                card_loaded = True
-                canonical_model = loaded.get("model_id") or model
-                if "thinking_probe_detected" not in loaded:
-                    needs_probe = True
-                    print(f"   ⏳ Card vorhanden, aber Thinking-Probe fehlt — starte Erkennung...", flush=True)
-                    logger.info(
-                        "[Card-First] Card für '%s' hat kein Probe-Feld → Probe wird nachgeholt.",
-                        model,
-                    )
-                else:
-                    print(f"   ✓ Card gefunden mit thinking_probe_detected={loaded['thinking_probe_detected']}", flush=True)
-                    logger.debug(
-                        "[Card-First] '%s' hat vollständige Card (probe_detected=%s). Kein Probe nötig.",
-                        model,
-                        loaded["thinking_probe_detected"],
-                    )
-                if canonical_model != model:
-                    logger.info(
-                        "[Card-First] Alias '%s' → canonical '%s' (via card glob fallback).",
-                        model, canonical_model,
-                    )
-            except Exception as e:
-                print(f"   ⚠️ Card konnte nicht gelesen werden: {e}", flush=True)
-                logger.warning("[Card-First] Card für '%s' konnte nicht gelesen werden: %s", model, e)
-                needs_probe = True
-        else:
+        if not card_path.exists():
             needs_probe = True
-            print(f"   ⏳ Keine Card gefunden — starte Thinking-Probe...", flush=True)
+            print("   ⏳ Keine Card gefunden — starte Thinking-Probe...", flush=True)
             logger.info(
                 "[Card-First] Keine Card für '%s' gefunden → wird nach Probe angelegt.",
                 model,
             )
+            return needs_probe, card_loaded, canonical_model
 
-        if not needs_probe:
-            self._probed_models.add(model)
-            return canonical_model
+        try:
+            loaded: dict[str, Any] = json.loads(card_path.read_text(encoding="utf-8"))
+        except Exception as e:
+            print(f"   ⚠️ Card konnte nicht gelesen werden: {e}", flush=True)
+            logger.warning(
+                "[Card-First] Card für '%s' konnte nicht gelesen werden: %s", model, e,
+            )
+            return True, False, model
 
-        # Probe ausführen (wirft RuntimeError bei API-Fehler)
+        card_loaded = True
+        canonical_model = loaded.get("model_id") or model
+        if "thinking_probe_detected" not in loaded:
+            needs_probe = True
+            print("   ⏳ Card vorhanden, aber Thinking-Probe fehlt — starte Erkennung...", flush=True)
+            logger.info(
+                "[Card-First] Card für '%s' hat kein Probe-Feld → Probe wird nachgeholt.",
+                model,
+            )
+        else:
+            print(
+                f"   ✓ Card gefunden mit thinking_probe_detected={loaded['thinking_probe_detected']}",
+                flush=True,
+            )
+            logger.debug(
+                "[Card-First] '%s' hat vollständige Card (probe_detected=%s). Kein Probe nötig.",
+                model,
+                loaded["thinking_probe_detected"],
+            )
+        if canonical_model != model:
+            logger.info(
+                "[Card-First] Alias '%s' → canonical '%s' (via card glob fallback).",
+                model, canonical_model,
+            )
+        return needs_probe, card_loaded, canonical_model
+
+    def _run_thinking_probe_or_skip(
+        self, model: str, provider: str
+    ) -> Any | None:
+        """Führt die Thinking-Probe aus. Returns Probe-Objekt oder None (skip)."""
         print(f"🔍 Reasoning-Erkennung für '{model}' — sende Probe-Request...", flush=True)
         try:
             probe = probe_thinking_model(model, provider, self.validator.config)
@@ -188,48 +222,55 @@ class UnifiedBenchmarkRunner(BaseBenchmarkRunner):
                 print("   ⚠️  Subscription erforderlich — Reasoning-Erkennung übersprungen, Benchmark läuft weiter.")
             else:
                 print("   ⚠️  Reasoning-Erkennung fehlgeschlagen — Benchmark läuft weiter.")
-            logger.warning("[Card-First] ThinkingProbe für '%s' übersprungen: %s", model, probe_err)
+            logger.warning(
+                "[Card-First] ThinkingProbe für '%s' übersprungen: %s", model, probe_err,
+            )
             self._probed_models.add(model)
-            return canonical_model
+            return None
         print(
             f"   → detected={probe.detected} (confidence={probe.confidence})"
         )
+        return probe
 
+    def _write_probe_to_card(
+        self,
+        model: str,
+        card_path: Path,
+        probe: Any,
+        card_loaded: bool,
+    ) -> None:
+        """Schreibt Probe-Felder (Detected, Evidence, Confidence, Timestamp) in die Card."""
         probe_fields = {
             "thinking_probe_detected": probe.detected,
             "thinking_probe_evidence": probe.evidence,
             "thinking_probe_confidence": probe.confidence,
-            "thinking_probe_at": datetime.now(timezone.utc).isoformat(),
+            "thinking_probe_at": datetime.now(UTC).isoformat(),
         }
 
-        # Vollständige Struktur sicherstellen (neue oder bestehende Card)
         card_path = ensure_card(model, card_path=card_path if card_loaded else None)
-
-        # Card laden und Probe-Felder eintragen
         card_content: dict = json.loads(card_path.read_text(encoding="utf-8"))
         card_content.update(probe_fields)
         if probe.detected:
             tags: list = card_content.get("architecture_tags") or []
             if "Thinking" not in tags:
-                card_content["architecture_tags"] = ["Thinking"] + [t for t in tags if t != "General"]
+                card_content["architecture_tags"] = [
+                    "Thinking",
+                ] + [t for t in tags if t != "General"]
         card_path.write_text(
             json.dumps(card_content, ensure_ascii=False, indent=2),
             encoding="utf-8",
         )
         logger.info("[Card-First] Probe-Felder in Card für '%s' eingetragen.", model)
 
-        self._probed_models.add(model)
-        return canonical_model
-
     def _load_existing_benchmarks(
         self, csv_path: Path
-    ) -> Dict[Tuple[str, str], Dict[str, Any]]:
+    ) -> dict[tuple[str, str], dict[str, Any]]:
         existing = {}
         if self.force or not csv_path.exists():
             return existing
 
         try:
-            with open(csv_path, "r", encoding="utf-8") as f:
+            with open(csv_path, encoding="utf-8") as f:
                 reader = csv.DictReader(f)
                 for row in reader:
                     status = str(row.get("status", "success")).lower()
@@ -254,7 +295,7 @@ class UnifiedBenchmarkRunner(BaseBenchmarkRunner):
             logger.warning(f"Fehler beim Laden bestehender Benchmarks {csv_path}: {e}")
         return existing
 
-    def _get_existing(self, provider: str) -> Dict:
+    def _get_existing(self, provider: str) -> dict:
         """Ermittelt das passende Cache-Dictionary basierend auf dem Provider."""
         if provider == "ollama":
             return self.existing_local_benchmarks
@@ -265,7 +306,7 @@ class UnifiedBenchmarkRunner(BaseBenchmarkRunner):
 
         return self.existing_commercial_benchmarks
 
-    def _get_existing_for_model(self, provider: str, model: str) -> Dict:
+    def _get_existing_for_model(self, provider: str, model: str) -> dict:
         """Wie _get_existing(), aber beachtet auch :cloud-Suffix bei Ollama-Proxies."""
         if provider == "ollama":
             if ":cloud" in model.lower() or model.lower().endswith("-cloud"):
@@ -278,7 +319,7 @@ class UnifiedBenchmarkRunner(BaseBenchmarkRunner):
 
         return self.existing_commercial_benchmarks
 
-    def _measure_cold_start(self, model: str) -> Optional[Dict[str, Any]]:
+    def _measure_cold_start(self, model: str) -> dict[str, Any] | None:
         if model in self.warmup_cache:
             return None
 
@@ -326,7 +367,7 @@ class UnifiedBenchmarkRunner(BaseBenchmarkRunner):
         error_message: str,
         model: str = "",
         provider: str = "",
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         return {
             "status": "error",
             "error_message": error_message,
@@ -346,11 +387,11 @@ class UnifiedBenchmarkRunner(BaseBenchmarkRunner):
         model: str,
         provider: str,
         asset_path: Path,
-        benchmark_info: Dict[str, Any],
+        benchmark_info: dict[str, Any],
         is_local: bool,
-        pause_calculator: Optional[Any] = None,
-        run_limiter: Optional[Any] = None,
-    ) -> Dict[str, Any]:
+        pause_calculator: Any | None = None,
+        run_limiter: Any | None = None,
+    ) -> dict[str, Any]:
         asset_data = load_asset_yaml(asset_path)
         if not asset_data:
             return self._create_error_result(
@@ -361,69 +402,118 @@ class UnifiedBenchmarkRunner(BaseBenchmarkRunner):
             )
 
         asset_id = asset_data.get("metadata", {}).get("id", asset_path.stem)
-
-        # Skip logic: überspringen wenn bereits im Cache (respektiert --force)
-        if not self.force:
-            key = (model, asset_id)
-            existing_cache = self._get_existing_for_model(provider, model)
-            if key in existing_cache:
-                print(f"   ⏭️  [{asset_id}] Wird übersprungen (Cache)")
-                cached = existing_cache[key]
-                cached["cached"] = True
-                return cached
+        cached = self._check_cache_for_skip(model, provider, asset_id)
+        if cached is not None:
+            return cached
 
         if not is_local and run_limiter:
             run_limiter.wait_for_slot()
 
-        # Server-Health-Check vor Test-Start (llama.cpp Memory Reset)
-        # Verhindert dass Tests auf einem überlasteten/abgestürzten Server starten
-        if is_local and provider in ("llamacpp", "llamacpp_spark"):
-            try:
-                # Provider-kontextuelle Config lesen (analog zu LlamaCppClient._provider_cfg)
-                # WICHTIG: Den exakten Provider-Namen als Config-Key verwenden, nicht hardcoded "llamacpp"
-                server_key = provider if provider in ("llamacpp", "llamacpp_spark") else "llamacpp"
-                server_cfg = self.validator.config.get(
-                    "providers", {}
-                ).get("local", {}).get(server_key, {})
+        server_error = self._ensure_llamacpp_server(model, provider, asset_id)
+        if server_error is not None:
+            return server_error
 
-                # Base-URL aus Config: "base_url" (llamacpp_spark) oder "server_base_url" (Fallback)
-                base_url_raw = server_cfg.get("base_url", "")
-                if not base_url_raw:
-                    base_url_raw = server_cfg.get("server_base_url", "http://127.0.0.1:8080")
+        exec_result, test_instance = self._execute_test_with_timing(
+            model, asset_path, benchmark_info, provider
+        )
+        if exec_result is None:
+            # Re-raised endpoint conflict; pass through
+            return self._create_error_result(asset_path.stem, "endpoint conflict", model=model, provider=provider)
+        if not isinstance(exec_result, object) or test_instance is None:
+            return self._create_error_result(
+                asset_path.stem, "Test execution failed", model=model, provider=provider,
+            )
 
-                # /v1 Suffix entfernen für /health Endpoint (z.B. http://...:1235/v1 → http://...:1235)
-                base_root = base_url_raw.rstrip("/").removesuffix("/v1")
+        response = exec_result.raw_response
+        exec_result, score = self._score_with_language_check(
+            test_instance, exec_result, asset_data, model
+        )
 
-                # Health-Check mit Retry — llama.cpp-Provider brauchen länger
-                # Konfigurierbare Timeouts aus Config verwenden (Fallback für Kompatibilität)
-                _server_ready = False
-                _health_timeout = server_cfg.get("server_ready_probe_timeout_sec", 10)  # 10s statt 5s
-                _health_retries = 8  # mehr Versuche für große Modelle
-                _health_backoff = server_cfg.get("server_ready_poll_sec", 3)  # 3s statt 1s
+        result = self._build_result_envelope(
+            model, provider, asset_data, exec_result, is_local
+        )
+        if result.get("status") == "error":
+            return result
 
-                for _retry in range(_health_retries):
-                    try:
-                        _resp = requests.get(f"{base_root}/health", timeout=_health_timeout)
-                        if _resp.status_code == 200:
-                            _server_ready = True
-                            break
-                    except Exception:
-                        pass
-                    time.sleep(_health_backoff)
+        asset_cfg = self._resolve_asset_config(benchmark_info, asset_id)
+        if asset_cfg:
+            result["score_contributions"] = calculate_score_contributions(score, asset_cfg)
 
-                if not _server_ready:
-                    logger.warning(
-                        "llama.cpp Server (%s) antwortet nicht auf /health — "
-                        "Test wird trotzdem gestartet (Server evtl. neu gestarten)",
-                        server_key,
-                    )
-            except Exception as _e:
-                logger.debug("llama.cpp Health-Check fehlgeschlagen (ignored): %s", _e)
+        if self._is_judge_applicable(benchmark_info):
+            self._apply_judge_pipeline(
+                result=result,
+                response=response,
+                asset_data=asset_data,
+                benchmark_info=benchmark_info,
+                model=model,
+                provider=provider,
+                is_local=is_local,
+                pause_calculator=pause_calculator,
+            )
 
+        if getattr(self, "audit_mode", False):
+            generate_audit_log(result, exec_result, asset_data, response, score)
+        return result
+
+    # -- Phase 3A: Helfer für _process_single_test -----------------------------------
+
+    def _check_cache_for_skip(
+        self, model: str, provider: str, asset_id: str
+    ) -> dict[str, Any] | None:
+        """Cache-Lookup: gibt cached row zurück wenn vorhanden, sonst None."""
+        if self.force:
+            return None
+        key = (model, asset_id)
+        existing_cache = self._get_existing_for_model(provider, model)
+        if key not in existing_cache:
+            return None
+        print(f"   ⏭️  [{asset_id}] Wird übersprungen (Cache)")
+        cached = existing_cache[key]
+        cached["cached"] = True
+        return cached
+
+    def _ensure_llamacpp_server(
+        self, model: str, provider: str, asset_id: str
+    ) -> dict[str, Any] | None:
+        """Stellt sicher, dass llama.cpp-Server läuft. Returns Error-Result oder None."""
+        if provider not in ("llamacpp", "llamacpp_spark"):
+            return None
+        try:
+            client = self.client.clients.get(provider)
+            if client is None:
+                logger.error("Provider '%s' nicht im LLMClient-Registry.", provider)
+                return self._create_error_result(
+                    asset_id,
+                    f"Provider '{provider}' nicht im LLMClient-Registry",
+                    model=model, provider=provider,
+                )
+            started = client.start_server(model)
+            if not started:
+                logger.error(
+                    "llama.cpp Server (%s) konnte nicht für Modell '%s' gestartet werden.",
+                    provider, model,
+                )
+                return self._create_error_result(
+                    asset_id,
+                    f"llama.cpp Server ({provider}) Start fehlgeschlagen für Modell '{model}' — Server-Log prüfen",
+                    model=model, provider=provider,
+                )
+        except Exception as _e:
+            logger.error("llama.cpp start_server für Modell '%s' fehlgeschlagen: %s", model, _e)
+            return self._create_error_result(
+                asset_id, f"llama.cpp start_server Exception: {_e}",
+                model=model, provider=provider,
+            )
+        return None
+
+    def _execute_test_with_timing(
+        self, model: str, asset_path: Path, benchmark_info: dict[str, Any], provider: str
+    ) -> tuple[Any, Any] | tuple[None, None]:
+        """Führt das Test-Modul aus und misst die Zeit. Returns (exec_result, test_instance) oder (None, None) bei Endpoint-Konflikt."""
         start_time = time.time()
         try:
             test_instance, exec_result = self.execute_test_module(
-                model, asset_path, benchmark_info, provider=provider
+                model, asset_path, benchmark_info, provider=provider,
             )
             if not getattr(exec_result, "execution_time", None):
                 exec_result.execution_time = time.time() - start_time
@@ -431,17 +521,22 @@ class UnifiedBenchmarkRunner(BaseBenchmarkRunner):
             if "endpoint conflict or startup failure" in str(e).lower():
                 raise
             return self._create_error_result(
-                asset_path.stem,
-                str(e),
-                model=model,
-                provider=provider,
-            )
+                asset_path.stem, str(e), model=model, provider=provider,
+            ), None
+        return exec_result, test_instance
 
+    def _score_with_language_check(
+        self,
+        test_instance: Any,
+        exec_result: Any,
+        asset_data: dict[str, Any],
+        model: str,
+    ) -> tuple[Any, dict[str, Any]]:
+        """Score-Berechnung + Language-Mismatch-Detection. Returns (exec_result, score)."""
         response = exec_result.raw_response
         exec_result = test_instance.score_response(exec_result)
         score = exec_result.data
 
-        # Language Mismatch Detection
         expected_lang = asset_data.get("metadata", {}).get("language", "")
         mismatch = _language_validator.detect_mismatch(response, expected_lang)
         if mismatch:
@@ -449,7 +544,9 @@ class UnifiedBenchmarkRunner(BaseBenchmarkRunner):
             en_count = mismatch["en_marker_count"]
             exec_result.data["language_mismatch"] = True
             exec_result.data["detected_language"] = mismatch["detected_language"]
-            exec_result.data["violations"] = exec_result.data.get("violations", []) + ["Wrong Language (English instead of German)"]
+            exec_result.data["violations"] = exec_result.data.get("violations", []) + [
+                "Wrong Language (English instead of German)"
+            ]
             if isinstance(exec_result.data.get("details"), list):
                 exec_result.data["details"].append(
                     "> [!WARNING]\n"
@@ -457,195 +554,259 @@ class UnifiedBenchmarkRunner(BaseBenchmarkRunner):
                     f"Language marker counts: DE={de_count}, EN={en_count}."
                 )
             score = exec_result.data
-            logger.warning("Language mismatch detected for %s / %s: EN response on DE task", model, asset_data.get("metadata", {}).get("id"))
+            logger.warning(
+                "Language mismatch detected for %s / %s: EN response on DE task",
+                model, asset_data.get("metadata", {}).get("id"),
+            )
+        return exec_result, score
 
-        # Build base result
+    def _build_result_envelope(
+        self,
+        model: str,
+        provider: str,
+        asset_data: dict[str, Any],
+        exec_result: Any,
+        is_local: bool,
+    ) -> dict[str, Any]:
+        """Baut das Basis-Result-Dict + Tokens + Cost + Language-Mismatch-Mapping."""
         result = self.build_base_result(model, asset_data, exec_result, provider)
         result["model_version"] = getattr(
-            self, "current_model_version", get_model_version(model, provider=provider)
+            self, "current_model_version", get_model_version(model, provider=provider),
         )
         if exec_result.data.get("language_mismatch"):
             result["language_mismatch"] = True
             result["status"] = "language_mismatch"
 
-        # Token usage & Cost
-        # Prefer exec_result.tokens_used when the module explicitly tracks multi-call totals
-        # (e.g. tooluse makes 2 LLM calls; last_token_usage only reflects the final call).
+        # Token usage: bevorzuge exec_result.tokens_used (z. B. tooluse: 2 LLM-Calls)
         _module_tokens: int = exec_result.tokens_used or 0
         _raw_client_tokens = getattr(self.client, "last_token_usage", 0)
         _client_tokens: int = _raw_client_tokens if isinstance(_raw_client_tokens, int) else 0
-        result["tokens_used"] = _module_tokens if _module_tokens > _client_tokens else _client_tokens
+        result["tokens_used"] = (
+            _module_tokens if _module_tokens > _client_tokens else _client_tokens
+        )
         if not is_local:
             _module_cost: float = exec_result.cost_usd or 0.0
             _raw_client_cost = getattr(self.client, "last_request_cost", 0.0)
-            _client_cost: float = _raw_client_cost if isinstance(_raw_client_cost, (int, float)) else 0.0
+            _client_cost: float = (
+                _raw_client_cost if isinstance(_raw_client_cost, (int, float)) else 0.0
+            )
             result["cost_usd"] = _module_cost if _module_cost > _client_cost else _client_cost
         else:
             result["cost_usd"] = 0.0
+        return result
 
-        if result.get("status") == "error":
+    def _resolve_asset_config(
+        self, benchmark_info: dict[str, Any], asset_id: str
+    ) -> dict[str, Any] | None:
+        """Sucht die Asset-Konfiguration in benchmark_info.benchmarks."""
+        benchmarks_list = benchmark_info.get("benchmarks", [])
+        return next((b for b in benchmarks_list if b["id"] == asset_id), None)
+
+    def _is_judge_applicable(self, benchmark_info: dict[str, Any]) -> bool:
+        """Prüft ob der Judge für dieses Modul aktiviert ist."""
+        judge_cfg_dict = self.validator.config.get("llm_judge", {})
+        if not judge_cfg_dict.get("enabled", True):
+            return False
+        applicable = judge_cfg_dict.get("applicable_modules") or []
+        return benchmark_info.get("id", "") in applicable
+
+    def _apply_judge_pipeline(
+        self,
+        result: dict[str, Any],
+        response: str,
+        asset_data: dict[str, Any],
+        benchmark_info: dict[str, Any],
+        model: str,
+        provider: str,
+        is_local: bool,
+        pause_calculator: Any | None,
+    ) -> dict[str, Any]:
+        """Führt die Judge-Pipeline aus: Pause, Memory-Reset, Judge-Call."""
+        if len(response.strip()) < MIN_REFUSAL_CHARS:
+            result["judge_progress_status"] = "⚠️ Judge: skip (zu kurz/abgelehnt)"
+            result["refusal_flag"] = True
+            result["refusal_type"] = "content_safety"
+            result["refusal_note"] = (
+                f"Response too short (<{MIN_REFUSAL_CHARS} chars) — likely a safety refusal or empty API response."
+            )
             return result
 
-        # Calculates granular score contribution if configured
-        benchmarks_list = benchmark_info.get("benchmarks", [])
-        # Find config for this asset
-        asset_cfg = next((b for b in benchmarks_list if b["id"] == asset_id), None)
+        self._judge_pre_pause(
+            is_local, pause_calculator, result, provider, model,
+        )
+        self._local_memory_reset(is_local, provider, model)
 
-        # Calculate initial score contributions (based on Regex) for tracking/debug
-        if asset_cfg:
-            initial_contribs = calculate_score_contributions(score, asset_cfg)
-            result["score_contributions"] = initial_contribs
-
-        # Judge Feedback
+        asset_id = asset_data.get("metadata", {}).get("id", "")
+        asset_cfg = self._resolve_asset_config(benchmark_info, asset_id)
         judge_cfg_dict = self.validator.config.get("llm_judge", {})
-        if judge_cfg_dict.get("enabled", True) and benchmark_info.get("id", "") in (
-            judge_cfg_dict.get("applicable_modules") or []
-        ):
-            if len(response.strip()) < 15:
-                result["judge_progress_status"] = "⚠️ Judge: skip (zu kurz/abgelehnt)"
-                result["refusal_flag"] = True
-                result["refusal_type"] = "content_safety"
-                result["refusal_note"] = "Response too short (<15 chars) — likely a safety refusal or empty API response."
+
+        return evaluate_with_judge(
+            result=result,
+            response=response,
+            asset_data=asset_data,
+            judge_cfg_dict=judge_cfg_dict,
+            eval_module_id=benchmark_info.get("id", ""),
+            model=model,
+            asset_cfg=asset_cfg,
+            benchmark_info=benchmark_info,
+        )
+
+    def _judge_pre_pause(
+        self,
+        is_local: bool,
+        pause_calculator: Any | None,
+        result: dict[str, Any],
+        provider: str,
+        model: str,
+    ) -> None:
+        """Adaptive Pause + Ollama-Unload vor dem Judge-Aufruf."""
+        if is_local and pause_calculator:
+            pause_calculator.wait({
+                "execution_time": result.get("execution_time", 0),
+                "response_length": result.get("tokens_used", 0) * 4,
+            })
+        if is_local and provider == "ollama":
+            with contextlib.suppress(Exception):
+                requests.post(
+                    f"{OLLAMA_DEFAULT_BASE_URL}/api/generate",
+                    json={"model": model, "keep_alive": 0},
+                    timeout=TIMEOUT_OLLAMA_LIST_FAST,
+                )
+            time.sleep(OLLAMA_UNLOAD_SETTLE_SEC)
+
+    def _local_memory_reset(self, is_local: bool, provider: str, model: str) -> None:
+        """llama.cpp Memory-Reset (Health-Check + Probe-Chat) zwischen Tests."""
+        if not (is_local and provider in ("llamacpp", "llamacpp_spark")):
+            return
+        try:
+            base_root = self._resolve_llamacpp_base_url(provider)
+            self._probe_llamacpp_server(base_root, model)
+        except Exception as e:
+            logger.debug("llama.cpp Memory Reset exception (ignored): %s", e)
+            time.sleep(LLAMACPP_RESET_PAUSE_OK)
+
+    def _resolve_llamacpp_base_url(self, provider: str) -> str:
+        """Ermittelt die llama.cpp Base-URL aus der Config."""
+        server_key = provider if provider in ("llamacpp", "llamacpp_spark") else "llamacpp"
+        server_cfg = self.validator.config.get(
+            "providers", {}
+        ).get("local", {}).get(server_key, {})
+        base_url_raw = server_cfg.get("base_url") or server_cfg.get(
+            "server_base_url", "http://127.0.0.1:8080",
+        )
+        return base_url_raw.rstrip("/").removesuffix("/v1")
+
+    def _probe_llamacpp_server(self, base_root: str, model: str) -> None:
+        """Health-Check + Probe-Chat: passt Pausen an Server-Readiness an."""
+        try:
+            health = requests.get(f"{base_root}/health", timeout=LLAMACPP_HEALTH_CHECK_TIMEOUT)
+            healthy = health.status_code == HTTP_OK
+        except Exception:
+            healthy = False
+
+        if not healthy:
+            logger.warning(
+                "llama.cpp Memory Reset: Server nicht erreichbar — längere Pause (%ds)",
+                LLAMACPP_RESET_PAUSE_HEAVY,
+            )
+            time.sleep(LLAMACPP_RESET_PAUSE_HEAVY)
+            return
+
+        chat_url = f"{base_root}/v1/chat/completions"
+        _probe_model = (
+            getattr(self, "model", "") or
+            self.validator.config.get("providers", {}).get("local", {})
+            .get("llamacpp", {}).get("models", [{}])[0].get("id", "")
+        )
+        try:
+            _probe_payload = json.dumps({
+                "model": _probe_model,
+                "messages": [{"role": "user", "content": "hi"}],
+                "max_tokens": 4,
+                "temperature": 0.0,
+            })
+            _probe_resp = requests.post(
+                chat_url,
+                data=_probe_payload.encode("utf-8"),
+                headers={"Content-Type": "application/json"},
+                timeout=LLAMACPP_PROBE_TIMEOUT,
+            )
+            if _probe_resp.status_code != HTTP_OK:
+                logger.warning(
+                    "llama.cpp Memory Reset: Probe-Chat fehlgeschlagen "
+                    "(Status %d) — längere Pause (%ds)",
+                    _probe_resp.status_code, LLAMACPP_RESET_PAUSE_MEDIUM,
+                )
+                time.sleep(LLAMACPP_RESET_PAUSE_MEDIUM)
             else:
-                if is_local and pause_calculator:
-                    pause_calculator.wait(
-                        {
-                            "execution_time": result.get("execution_time", 0),
-                            "response_length": result.get("tokens_used", 0) * 4,
-                        }
-                    )
-
-                # Unload local model before judge to free VRAM (Ollama-specific)
-                if is_local and provider == "ollama":
-                    try:
-                        requests.post(
-                            f"{OLLAMA_DEFAULT_BASE_URL}/api/generate",
-                            json={"model": model, "keep_alive": 0},
-                            timeout=TIMEOUT_OLLAMA_LIST_FAST,
-                        )
-                    except Exception:
-                        pass
-                    time.sleep(0.5)
-
-                # Memory reset für llama.cpp zwischen Tests (analog zu Ollama Unload)
-                # Verhindert dass der Server mit altem Context/VRAM überlastet ist
-                #
-                # PROBLEM: Nach schweren Tests (>150s) kann das Modell im VRAM blockieren.
-                # Der /health-Endpoint antwortet immer (Server-laufzeit), aber ChatCompletion
-                # blockiert oder wirft Fehler. Ein kompletter Server-Neustart ist hier nicht
-                # machbar weil der server_start_cmd keine Modelldatei enthält (wird vom
-                # LlamaCppClient._start_server() aufgelöst).
-                #
-                # LÖSUNG: 1) /health prüfen → 2) Falls OK: kleiner Probe-Chat mit short timeout
-                #         → 3) Bei Misserfolg: längere Pause damit GPU/CPU erholen kann.
-                if is_local and provider in ("llamacpp", "llamacpp_spark"):
-                    try:
-                        server_key = provider if provider in ("llamacpp", "llamacpp_spark") else "llamacpp"
-                        server_cfg = self.validator.config.get(
-                            "providers", {}
-                        ).get("local", {}).get(server_key, {})
-
-                        # Base-URL aus Config
-                        base_url_raw = server_cfg.get("base_url", "")
-                        if not base_url_raw:
-                            base_url_raw = server_cfg.get("server_base_url", "http://127.0.0.1:8080")
-                        base_root = base_url_raw.rstrip("/").removesuffix("/v1")
-
-                        # 1. Prüfen ob Server noch läuft
-                        try:
-                            health = requests.get(f"{base_root}/health", timeout=3)
-                            _healthy = health.status_code == 200
-                        except Exception:
-                            _healthy = False
-
-                        if not _healthy:
-                            # Server tot → längere Pause, nächster Test startet ihn neu
-                            logger.warning(
-                                "llama.cpp Memory Reset: Server nicht erreichbar — "
-                                "längere Pause (%ds)",
-                                10,
-                            )
-                            time.sleep(10)
-                        else:
-                            # Server lebt → Probe-Chat mit kurzem Timeout um Modell-Readiness zu prüfen
-                            chat_url = f"{base_root}/v1/chat/completions"
-
-                            # Modell-ID aus dem aktuellen Benchmark-Kontext holen (self.model)
-                            # oder fallback: erster Eintrag aus server_cfg.models
-                            _probe_model = getattr(self, "model", "")
-                            if not _probe_model or _probe_model == "unknown":
-                                _probe_model = server_cfg.get("models", [{}])[0].get("id", "")
-
-                            import json as _json
-                            try:
-                                _probe_payload = _json.dumps({
-                                    "model": _probe_model,
-                                    "messages": [{"role": "user", "content": "hi"}],
-                                    "max_tokens": 4,
-                                    "temperature": 0.0,
-                                })
-                                _probe_resp = requests.post(
-                                    chat_url,
-                                    data=_probe_payload.encode("utf-8"),
-                                    headers={"Content-Type": "application/json"},
-                                    timeout=15,  # Kurz! Nicht 300s warten.
-                                )
-                                if _probe_resp.status_code != 200:
-                                    logger.warning(
-                                        "llama.cpp Memory Reset: Probe-Chat fehlgeschlagen "
-                                        "(Status %d) — längere Pause (%ds)",
-                                        _probe_resp.status_code,
-                                        8,
-                                    )
-                                    time.sleep(8)
-                                else:
-                                    # Probe OK → kurze Standard-Pause
-                                    logger.debug("llama.cpp Memory Reset: Probe-Chat OK")
-                                    time.sleep(2)
-                            except requests.exceptions.Timeout:
-                                logger.warning(
-                                    "llama.cpp Memory Reset: Probe-Chat timeout — "
-                                    "längere Pause (%ds)",
-                                    10,
-                                )
-                                time.sleep(10)
-                            except Exception as probe_err:
-                                logger.debug("llama.cpp Memory Reset: Probe-Chat fehlgeschlagen (ignored): %s", probe_err)
-                                time.sleep(3)
-                    except Exception as e:
-                        logger.debug("llama.cpp Memory Reset exception (ignored): %s", e)
-                        time.sleep(2.0)
-
-                benchmarks_list = benchmark_info.get("benchmarks", [])
-                asset_cfg = next(
-                    (b for b in benchmarks_list if b["id"] == asset_id), None
-                )
-
-                result = evaluate_with_judge(
-                    result=result,
-                    response=response,
-                    asset_data=asset_data,
-                    judge_cfg_dict=judge_cfg_dict,
-                    eval_module_id=benchmark_info.get("id", ""),
-                    model=model,
-                    asset_cfg=asset_cfg,
-                    benchmark_info=benchmark_info,
-                )
-
-        if getattr(self, "audit_mode", False):
-            generate_audit_log(result, exec_result, asset_data, response, score)
-
-        return result
+                logger.debug("llama.cpp Memory Reset: Probe-Chat OK")
+                time.sleep(LLAMACPP_RESET_PAUSE_OK)
+        except requests.exceptions.Timeout:
+            logger.warning(
+                "llama.cpp Memory Reset: Probe-Chat timeout — längere Pause (%ds)",
+                LLAMACPP_RESET_PAUSE_HEAVY,
+            )
+            time.sleep(LLAMACPP_RESET_PAUSE_HEAVY)
+        except Exception as probe_err:
+            logger.debug("llama.cpp Memory Reset: Probe-Chat fehlgeschlagen (ignored): %s", probe_err)
+            time.sleep(LLAMACPP_RESET_PAUSE_FALLBACK)
 
     def run_benchmark(
         self,
         provider: str,
         model: str,
-        benchmark_info: Dict[str, Any],
+        benchmark_info: dict[str, Any],
         num_runs: int = 1,
-        assets: Optional[List[Path]] = None,
-    ) -> List[Dict[str, Any]]:
-        is_local = provider in (
+        assets: list[Path] | None = None,
+    ) -> list[dict[str, Any]]:
+        is_local = provider in self._local_provider_names()
+
+        try:
+            batch_result = self._run_batch_mode_if_applicable(
+                provider, model, benchmark_info, num_runs,
+            )
+            if batch_result is not None:
+                return batch_result
+
+            model = self._canonicalize_and_probe(model, provider)
+            self._print_run_header(provider, model, benchmark_info)
+            self.current_model_version = get_model_version(model, provider=provider)
+
+            assets = self._resolve_assets(benchmark_info, assets)
+            run_id = self._generate_run_id(model, assets)
+            results = self._collect_warmup_result(model, provider)
+
+            if not assets:
+                print("⚠️  Keine Tests gefunden.")
+                return results
+
+            pause_calculator, run_limiter = self._build_rate_limiters(
+                provider, model, is_local,
+            )
+
+            self._run_asset_loop(
+                assets=assets,
+                model=model,
+                provider=provider,
+                benchmark_info=benchmark_info,
+                is_local=is_local,
+                run_id=run_id,
+                pause_calculator=pause_calculator,
+                run_limiter=run_limiter,
+                results=results,
+            )
+
+            self._print_terminal_summary(results)
+            self._record_global_metrics(model, results, benchmark_info)
+            return results
+        finally:
+            self._cleanup_local_provider(provider)
+
+    # -- Phase 3C: Helfer für run_benchmark -----------------------------------------
+
+    @staticmethod
+    def _local_provider_names() -> tuple[str, ...]:
+        return (
             "ollama",
             "llamacpp",
             "llamacpp_spark",
@@ -653,257 +814,340 @@ class UnifiedBenchmarkRunner(BaseBenchmarkRunner):
             "llamacpp_local",
         )
 
-        try:
-            if benchmark_info.get("execution_mode") == "batch":
-                # SSoT: Kanonische ID bestimmen, bevor der Batch-Modus auf den
-                # model-Parameter zugreift (z. B. existing_benchmarks-Cache-Lookup).
-                model = resolve_canonical_model_id(model)
-                return self.execute_batch_module(
-                    model=model,
-                    benchmark_info=benchmark_info,
-                    provider=provider,
-                    num_runs=num_runs,
-                    force=self.force,
-                    existing_benchmarks=self._get_existing_for_model(provider, model),
-                )
+    def _run_batch_mode_if_applicable(
+        self,
+        provider: str,
+        model: str,
+        benchmark_info: dict[str, Any],
+        num_runs: int,
+    ) -> list[dict[str, Any]] | None:
+        """Delegiert an execute_batch_module, falls batch-Mode konfiguriert."""
+        if benchmark_info.get("execution_mode") != "batch":
+            return None
+        # SSoT: Kanonische ID bestimmen, bevor der Batch-Modus auf den
+        # model-Parameter zugreift (z. B. existing_benchmarks-Cache-Lookup).
+        canonical_model = resolve_canonical_model_id(model)
+        return self.execute_batch_module(
+            model=canonical_model,
+            benchmark_info=benchmark_info,
+            provider=provider,
+            num_runs=num_runs,
+            force=self.force,
+            existing_benchmarks=self._get_existing_for_model(provider, canonical_model),
+        )
 
-            # SSoT-Hook: model_id EINMAL hier kanonisieren. Löst dot→underscore
-            # (qwen3.5-xy → qwen3_5-xy), Card-Aliase (claude-haiku-4-5 →
-            # claude-haiku-4-5-20251001) und hf.co/AUTHOR/ Prefixes. Alle nach-
-            # gelagerten Schritte (Card-Lookup, Cache, Save, Exporter) sehen
-            # dann die konsistente Schreibweise.
-            original_model = model
-            model = resolve_canonical_model_id(model)
-            if model != original_model:
-                logger.info(
-                    "[SSoT] model_id kanonisiert: '%s' → '%s'",
-                    original_model, model,
-                )
-
-            # Card-First-Hook: Thinking-Probe vor erstem Run sicherstellen
-            # Returns canonical model_id (e.g. alias "claude-haiku-4-5" → "claude-haiku-4-5-20251001")
-            model = self._ensure_model_card(model, provider)
-
-            # Standard Run Loop
-            print(
-                f"\n{'=' * 60}\n📊 STARTE BENCHMARK: {benchmark_info.get('name', 'Unknown')}\n{'=' * 60}"
+    def _canonicalize_and_probe(self, model: str, provider: str) -> str:
+        """SSoT-Canonical + Card-First-Probe. Returns kanonisierte model_id."""
+        original_model = model
+        model = resolve_canonical_model_id(model)
+        if model != original_model:
+            logger.info(
+                "[SSoT] model_id kanonisiert: '%s' → '%s'", original_model, model,
             )
-            identity = get_model_identity(model)
-            tags_str = ", ".join(identity["tags"])
-            print(f"Provider: {provider}\nModell:   {model} (Tags: [{tags_str}])")
+        return self._ensure_model_card(model, provider)
 
-            self.current_model_version = get_model_version(model, provider=provider)
+    def _print_run_header(
+        self, provider: str, model: str, benchmark_info: dict[str, Any]
+    ) -> None:
+        """Header + Identity-Print für einen Benchmark-Lauf."""
+        print(
+            f"\n{'=' * 60}\n📊 STARTE BENCHMARK: {benchmark_info.get('name', 'Unknown')}\n{'=' * 60}"
+        )
+        identity = get_model_identity(model)
+        tags_str = ", ".join(identity["tags"])
+        print(f"Provider: {provider}\nModell:   {model} (Tags: [{tags_str}])")
 
-            warmup_result = None
-            if provider == "ollama":
-                warmup_result = self._measure_cold_start(model)
-                if warmup_result:
-                    warmup_result["model_version"] = self.current_model_version
+    def _resolve_assets(
+        self, benchmark_info: dict[str, Any], assets: list[Path] | None
+    ) -> list[Path]:
+        """Assets-Discovery mit Fallback auf benchmark_info.path."""
+        if assets is None:
+            assets = discover_assets(benchmark_info["path"])
+        print(f"Tests:    {len(assets)}\n{'=' * 60}\n")
+        return assets
 
-            if not assets:
-                assets = discover_assets(benchmark_info["path"])
+    def _generate_run_id(self, model: str, assets: list[Path]) -> str:
+        """Deterministischer run_id (Baseline-Lock) — md5(model+tasks+timestamp)."""
+        run_timestamp = str(int(time.time()))
+        tasks_str = ",".join([a.name for a in assets])
+        run_id_str = f"{model}_{tasks_str}_{run_timestamp}"
+        return hashlib.md5(run_id_str.encode()).hexdigest()[:12]
 
-            print(f"Tests:    {len(assets)}\n{'=' * 60}\n")
-
-            # Generate a unique run_id for this benchmark pass (Fix 4: Baseline-Lock)
-            run_timestamp = str(int(time.time()))
-            tasks_str = ",".join([a.name for a in assets])
-            run_id_str = f"{model}_{tasks_str}_{run_timestamp}"
-            run_id = hashlib.md5(run_id_str.encode()).hexdigest()[:12]
-
-            results = []
-            if warmup_result:
-                results.append(warmup_result)
-
-            if not assets:
-                print("⚠️  Keine Tests gefunden.")
-                return results
-
-            pause_calculator = (
-                AdaptivePauseCalculator(model, self.mode) if is_local else None
-            )
-            # Free-tier OpenRouter models (model-id ends with ":free") use a
-            # separate, more conservative rate-limit profile (18 RPM / 200 RPD).
-            _limiter_key = (
-                "openrouter_free"
-                if (provider == "openrouter" and model.endswith(":free"))
-                else provider
-            )
-            run_limiter = RateLimiter(_limiter_key) if not is_local else None
-
-            for i, asset_path in enumerate(assets, 1):
-                asset_name = asset_path.stem.replace("asset_", "").replace("_", " ").title()
-                print(
-                    f"   ⏳ [{i}/{len(assets)}] {asset_name}: Test läuft...",
-                    end="\r",
-                    flush=True,
-                )
-
-                try:
-                    result = self._process_single_test(
-                        model=model,
-                        provider=provider,
-                        asset_path=asset_path,
-                        benchmark_info=benchmark_info,
-                        is_local=is_local,
-                        pause_calculator=pause_calculator,
-                        run_limiter=run_limiter,
-                    )
-                    # Assign run_id to link all results of this run (Fix 4: Baseline-Lock)
-                    result["run_id"] = run_id
-
-                    # Fix 2 (Truncation Detection): Konfigurierbare Schwellenwerte pro Modul
-                    # Safety-Block-Check: finish_reason=SAFETY → refusal_flag, nicht truncated
-                    if result.get("finish_reason") == "SAFETY" and result.get("status") == "success":
-                        result["status"] = "refusal"
-                        result["refusal_flag"] = True
-                        result["refusal_type"] = "content_safety"
-                        result["refusal_note"] = "Response blocked by Gemini safety filters."
-
-                    module_id = benchmark_info.get("id", "")
-                    threshold = TRUNCATION_THRESHOLDS.get(module_id)
-                    if threshold:
-                        response_len = result.get("response_length")
-                        if response_len is None:
-                            response_len = result.get("metadata", {}).get("response_length", 0)
-                        if isinstance(response_len, str):
-                            try:
-                                response_len = int(response_len)
-                            except (ValueError, TypeError):
-                                response_len = 0
-                        if 0 < response_len < threshold and result.get("status") == "success":
-                            result["status"] = "truncated"
-                            result["truncation_note"] = f"Response below {threshold} chars for {module_id}"
-                            print(f"\n   ⚠️ Result marked as truncated (length: {response_len} < {threshold})")
-
-                    # Verbose-Overflow-Check (per-Asset max_expected_length constraint)
-                    _asset_data = load_asset_yaml(asset_path)
-                    _max_expected = _asset_data.get("constraints", {}).get("max_expected_length")
-                    if _max_expected and result.get("status") == "success":
-                        _overflow_len = result.get("response_length")
-                        if _overflow_len is None:
-                            _overflow_len = result.get("metadata", {}).get("response_length", 0)
-                        if isinstance(_overflow_len, str):
-                            try:
-                                _overflow_len = int(_overflow_len)
-                            except (ValueError, TypeError):
-                                _overflow_len = 0
-                        if _overflow_len and _overflow_len > _max_expected:
-                            result["status"] = "verbose_outlier"
-                            result["truncation_note"] = f"Response {_overflow_len} chars exceeds expected max {_max_expected}"
-                            print(f"\n   ⚠️ Result marked as verbose_outlier ({_overflow_len} > {_max_expected})")
-
-                    # Print Status
-                    status_icon = "❌" if result.get("status") == "error" else "✓"
-                    token_str = f"{result.get('tokens_used', 0)} T"
-                    judge_str = (
-                        f" | {result.get('judge_progress_status', '')}"
-                        if result.get("judge_progress_status")
-                        else ""
-                    )
-
-                    print(" " * 80, end="\r")
-                    print(
-                        f"   {status_icon} [{i}/{len(assets)}] {asset_name}: {result.get('percentage', 0):.1f}% | {token_str} | {result.get('execution_time', 0):.1f}s{judge_str}"
-                    )
-
-                    if result:
-                        results.append(result)
-
-                except JudgeUnavailableError as e:
-                    print(f"\n⛔ JUDGE UNAVAILABLE (API Error / Budget Limit): {e}\nBeende den Benchmark vorzeitig, um inkonsistente Scores zu vermeiden.")
-                    self._save_partial_results(results, is_local)
-                    sys.exit(1)
-                except KeyboardInterrupt:
-                    print("\n⚠️  Benchmark vom Benutzer abgebrochen.")
-                    self._save_partial_results(results, is_local)
-                    sys.exit(1)
-                except Exception as e:
-                    if "endpoint conflict or startup failure" in str(e).lower():
-                        print("\n⛔ Endpoint-Konflikt erkannt. Breche Modullauf ab, um fehlerhafte 0%-Einträge zu vermeiden.")
-                        self._save_partial_results(results, is_local)
-                        raise
-                    print(" " * 80, end="\r")
-                    print(f"   ❌ [{i}/{len(assets)}] {asset_name}: Abgebrochen - {str(e)}")
-                    if any(kw in str(e).lower() for kw in _BUDGET_KEYWORDS):
-                        print("   💸 Budget-/Quota-Fehler erkannt für Provider. Setze Exhausted-Flag.")
-                        self.provider_quota_exhausted = True
-
-            # Global audit metrics
-            # ---------------------------------------------------------
-            # Terminal Summary Generation
-            # ---------------------------------------------------------
-            valid_results = [
-                r
-                for r in results
-                if r.get("type") != "system"
-                and r.get("status") != "error"
-                and r.get("skip_reason") is None
-            ]
-            if valid_results:
-                # DEBUG: Temporär zur Diagnose des DURCHSCHNITT-Bugs
-                _pcts = [r.get("percentage") for r in valid_results]
-                logger.debug("DURCHSCHNITT DEBUG: valid_results=%d, pcts=%s", len(valid_results), _pcts)
-                avg_score = sum(float(p) if p is not None else 0.0 for p in _pcts) / len(valid_results)
-                avg_time = sum(r.get("execution_time", 0.0) for r in valid_results) / len(valid_results)
-
-                token_rates = [
-                    float(r.get("tokens_per_second", 0.0))
-                    for r in valid_results
-                    if isinstance(r.get("tokens_per_second"), (int, float))
-                    or (
-                        isinstance(r.get("tokens_per_second"), str)
-                        and str(r.get("tokens_per_second")).replace(".", "", 1).isdigit()
-                    )
-                ]
-                avg_tokens = sum(token_rates) / len(token_rates) if token_rates else 0.0
-
-                judge_scores = [r.get("judge_score") for r in valid_results if r.get("judge_score") is not None]
-
-                # The theoretical cost is generated dynamically per request from CostTracker (SSOT)
-                total_usd = sum(r.get("cost_usd", 0.0) for r in valid_results)
-                avg_usd = total_usd / len(valid_results)
-
-                summary = "\n   " + "=" * 70 + "\n"
-                summary += f"   🏁 DURCHSCHNITT: {avg_score:.1f}% | {avg_tokens:.0f} T/s | {avg_time:.1f}s"
-
-                if judge_scores:
-                    avg_judge = sum(judge_scores) / len(judge_scores)
-                    summary += f" | ⚖️ Judge: {avg_judge:.1f}/5"
-
-                if avg_usd > 0.0:
-                    summary += f" | 💵 Ø ${avg_usd:.4f}"
-
-                summary += "\n   " + "=" * 70 + "\n"
-                print(summary)
-
-            if self.audit_mode and results:
-                execution_times: List[float] = []
-                timeout_count: int = 0
-                asset_ids = []
-                for res in results:
-                    if res.get("type") == "system":
-                        continue
-                    a_id = res.get("asset_id", "")
-                    if a_id:
-                        asset_ids.append(a_id)
-                    t_exe = res.get("execution_time", 0.0)
-                    execution_times.append(t_exe)
-                    if res.get("status") == "error" or t_exe > TIMEOUT_DEFAULT:
-                        timeout_count += 1
-                if asset_ids:
-                    append_global_run_metrics(
-                        model,
-                        asset_ids,
-                        execution_times,
-                        timeout_count,
-                        len(asset_ids),
-                        benchmark_info.get("name", "Unknown"),
-                    )
-
+    def _collect_warmup_result(self, model: str, provider: str) -> list[dict[str, Any]]:
+        """Cold-Start Probe für Ollama, in results-Liste eingebettet."""
+        results: list[dict[str, Any]] = []
+        if provider != "ollama":
             return results
-        finally:
-            self._cleanup_local_provider(provider)
+        warmup_result = self._measure_cold_start(model)
+        if warmup_result:
+            warmup_result["model_version"] = self.current_model_version
+            results.append(warmup_result)
+        return results
+
+    def _build_rate_limiters(
+        self, provider: str, model: str, is_local: bool
+    ) -> tuple[AdaptivePauseCalculator | None, RateLimiter | None]:
+        """Adaptive Pause (lokal) + Rate-Limiter (kommerziell, Free-Tier-aware)."""
+        pause_calculator = (
+            AdaptivePauseCalculator(model, self.mode) if is_local else None
+        )
+        # Free-tier OpenRouter models (model-id ends with ":free") nutzen ein
+        # konservativeres Profil (18 RPM / 200 RPD).
+        _limiter_key = (
+            "openrouter_free"
+            if (provider == "openrouter" and model.endswith(":free"))
+            else provider
+        )
+        run_limiter = RateLimiter(_limiter_key) if not is_local else None
+        return pause_calculator, run_limiter
+
+    def _run_asset_loop(
+        self,
+        *,
+        assets: list[Path],
+        model: str,
+        provider: str,
+        benchmark_info: dict[str, Any],
+        is_local: bool,
+        run_id: str,
+        pause_calculator: Any | None,
+        run_limiter: Any | None,
+        results: list[dict[str, Any]],
+    ) -> None:
+        """Iteriert über Assets, ruft _process_single_test, sammelt Results."""
+        for i, asset_path in enumerate(assets, 1):
+            asset_name = asset_path.stem.replace("asset_", "").replace("_", " ").title()
+            print(
+                f"   ⏳ [{i}/{len(assets)}] {asset_name}: Test läuft...",
+                end="\r", flush=True,
+            )
+            try:
+                self._handle_single_asset(
+                    asset_path=asset_path,
+                    i=i,
+                    total=len(assets),
+                    asset_name=asset_name,
+                    model=model,
+                    provider=provider,
+                    benchmark_info=benchmark_info,
+                    is_local=is_local,
+                    run_id=run_id,
+                    pause_calculator=pause_calculator,
+                    run_limiter=run_limiter,
+                    results=results,
+                )
+            except JudgeUnavailableError as e:
+                print(f"\n⛔ JUDGE UNAVAILABLE (API Error / Budget Limit): {e}\nBeende den Benchmark vorzeitig, um inkonsistente Scores zu vermeiden.")
+                self._save_partial_results(results, is_local)
+                sys.exit(1)
+            except KeyboardInterrupt:
+                print("\n⚠️  Benchmark vom Benutzer abgebrochen.")
+                self._save_partial_results(results, is_local)
+                sys.exit(1)
+            except Exception as e:
+                if "endpoint conflict or startup failure" in str(e).lower():
+                    print("\n⛔ Endpoint-Konflikt erkannt. Breche Modullauf ab, um fehlerhafte 0%-Einträge zu vermeiden.")
+                    self._save_partial_results(results, is_local)
+                    raise
+                self._handle_asset_exception(e, i, len(assets), asset_name)
+
+    def _handle_single_asset(
+        self,
+        *,
+        asset_path: Path,
+        i: int,
+        total: int,
+        asset_name: str,
+        model: str,
+        provider: str,
+        benchmark_info: dict[str, Any],
+        is_local: bool,
+        run_id: str,
+        pause_calculator: Any | None,
+        run_limiter: Any | None,
+        results: list[dict[str, Any]],
+    ) -> None:
+        """Führt einen einzelnen Asset-Test aus, klassifiziert + printed das Result."""
+        result = self._process_single_test(
+            model=model, provider=provider, asset_path=asset_path,
+            benchmark_info=benchmark_info, is_local=is_local,
+            pause_calculator=pause_calculator, run_limiter=run_limiter,
+        )
+        result["run_id"] = run_id
+
+        result = self._apply_response_classification(result, benchmark_info, asset_path)
+        self._print_asset_status(i, total, asset_name, result)
+
+        if result:
+            results.append(result)
+
+    def _apply_response_classification(
+        self, result: dict[str, Any], benchmark_info: dict[str, Any], asset_path: Path
+    ) -> dict[str, Any]:
+        """Safety/Truncation/Verbose-Overflow → Status-Anpassungen."""
+        # Safety-Block-Check: finish_reason=SAFETY → refusal_flag, nicht truncated
+        if result.get("finish_reason") == "SAFETY" and result.get("status") == "success":
+            result["status"] = "refusal"
+            result["refusal_flag"] = True
+            result["refusal_type"] = "content_safety"
+            result["refusal_note"] = "Response blocked by Gemini safety filters."
+
+        result = self._check_truncation(result, benchmark_info)
+        result = self._check_verbose_overflow(result, asset_path)
+        return result
+
+    def _check_truncation(
+        self, result: dict[str, Any], benchmark_info: dict[str, Any]
+    ) -> dict[str, Any]:
+        """Per-Modul-Truncation-Schwelle (TRUNCATION_THRESHOLDS)."""
+        module_id = benchmark_info.get("id", "")
+        threshold = TRUNCATION_THRESHOLDS.get(module_id)
+        if not threshold or result.get("status") != "success":
+            return result
+        response_len = self._extract_response_length(result)
+        if 0 < response_len < threshold:
+            result["status"] = "truncated"
+            result["truncation_note"] = (
+                f"Response below {threshold} chars for {module_id}"
+            )
+            print(f"\n   ⚠️ Result marked as truncated (length: {response_len} < {threshold})")
+        return result
+
+    def _check_verbose_overflow(
+        self, result: dict[str, Any], asset_path: Path
+    ) -> dict[str, Any]:
+        """Per-Asset max_expected_length Constraint."""
+        _asset_data = load_asset_yaml(asset_path)
+        _max_expected = _asset_data.get("constraints", {}).get("max_expected_length")
+        if not _max_expected or result.get("status") != "success":
+            return result
+        _overflow_len = self._extract_response_length(result)
+        if _overflow_len and _overflow_len > _max_expected:
+            result["status"] = "verbose_outlier"
+            result["truncation_note"] = (
+                f"Response {_overflow_len} chars exceeds expected max {_max_expected}"
+            )
+            print(f"\n   ⚠️ Result marked as verbose_outlier ({_overflow_len} > {_max_expected})")
+        return result
+
+    @staticmethod
+    def _extract_response_length(result: dict[str, Any]) -> int:
+        """Robuster Length-Extractor: top-level, metadata, str-Konvertierung."""
+        response_len = result.get("response_length")
+        if response_len is None:
+            response_len = result.get("metadata", {}).get("response_length", 0)
+        if isinstance(response_len, str):
+            try:
+                return int(response_len)
+            except (ValueError, TypeError):
+                return 0
+        return response_len
+
+    @staticmethod
+    def _print_asset_status(i: int, total: int, asset_name: str, result: dict[str, Any]) -> None:
+        """Printet ✓/❌-Zeile für ein einzelnes Asset."""
+        status_icon = "❌" if result.get("status") == "error" else "✓"
+        token_str = f"{result.get('tokens_used', 0)} T"
+        judge_str = (
+            f" | {result.get('judge_progress_status', '')}"
+            if result.get("judge_progress_status")
+            else ""
+        )
+        print(" " * 80, end="\r")
+        print(
+            f"   {status_icon} [{i}/{total}] {asset_name}: {result.get('percentage', 0):.1f}% | {token_str} | {result.get('execution_time', 0):.1f}s{judge_str}"
+        )
+
+    def _handle_asset_exception(
+        self, exc: Exception, i: int, total: int, asset_name: str,
+    ) -> None:
+        """Behandelt per-Asset-Fehler (Budget-Keyword-Detection, Exhausted-Flag)."""
+        print(" " * 80, end="\r")
+        print(f"   ❌ [{i}/{total}] {asset_name}: Abgebrochen - {exc}")
+        if any(kw in str(exc).lower() for kw in _BUDGET_KEYWORDS):
+            print("   💸 Budget-/Quota-Fehler erkannt für Provider. Setze Exhausted-Flag.")
+            self.provider_quota_exhausted = True
+
+    def _print_terminal_summary(self, results: list[dict[str, Any]]) -> None:
+        """Durchschnitts-Stats (Score, T/s, Judge, Cost) als Terminal-Summary."""
+        valid_results = [
+            r for r in results
+            if r.get("type") != "system"
+            and r.get("status") != "error"
+            and r.get("skip_reason") is None
+        ]
+        if not valid_results:
+            return
+        _pcts = [r.get("percentage") for r in valid_results]
+        logger.debug(
+            "DURCHSCHNITT DEBUG: valid_results=%d, pcts=%s",
+            len(valid_results), _pcts,
+        )
+        avg_score = sum(
+            float(p) if p is not None else 0.0 for p in _pcts
+        ) / len(valid_results)
+        avg_time = sum(
+            r.get("execution_time", 0.0) for r in valid_results
+        ) / len(valid_results)
+
+        token_rates = [
+            float(r.get("tokens_per_second", 0.0))
+            for r in valid_results
+            if isinstance(r.get("tokens_per_second"), (int, float))
+            or (
+                isinstance(r.get("tokens_per_second"), str)
+                and str(r.get("tokens_per_second")).replace(".", "", 1).isdigit()
+            )
+        ]
+        avg_tokens = sum(token_rates) / len(token_rates) if token_rates else 0.0
+        judge_scores = [
+            r.get("judge_score") for r in valid_results
+            if r.get("judge_score") is not None
+        ]
+        total_usd = sum(r.get("cost_usd", 0.0) for r in valid_results)
+        avg_usd = total_usd / len(valid_results)
+
+        summary = "\n   " + "=" * 70 + "\n"
+        summary += f"   🏁 DURCHSCHNITT: {avg_score:.1f}% | {avg_tokens:.0f} T/s | {avg_time:.1f}s"
+        if judge_scores:
+            avg_judge = sum(judge_scores) / len(judge_scores)
+            summary += f" | ⚖️ Judge: {avg_judge:.1f}/5"
+        if avg_usd > 0.0:
+            summary += f" | 💵 Ø ${avg_usd:.4f}"
+        summary += "\n   " + "=" * 70 + "\n"
+        print(summary)
+
+    def _record_global_metrics(
+        self,
+        model: str,
+        results: list[dict[str, Any]],
+        benchmark_info: dict[str, Any],
+    ) -> None:
+        """Sammelt execution_times + timeout_count und ruft append_global_run_metrics."""
+        if not (self.audit_mode and results):
+            return
+        execution_times: list[float] = []
+        timeout_count = 0
+        asset_ids: list[str] = []
+        for res in results:
+            if res.get("type") == "system":
+                continue
+            a_id = res.get("asset_id", "")
+            if a_id:
+                asset_ids.append(a_id)
+            t_exe = res.get("execution_time", 0.0)
+            execution_times.append(t_exe)
+            if res.get("status") == "error" or t_exe > TIMEOUT_DEFAULT:
+                timeout_count += 1
+        if asset_ids:
+            append_global_run_metrics(
+                model,
+                asset_ids,
+                execution_times,
+                timeout_count,
+                len(asset_ids),
+                benchmark_info.get("name", "Unknown"),
+            )
 
     def _cleanup_local_provider(self, provider: str) -> None:
         """Optionaler End-of-Run Cleanup für lokale Provider (Stop + Cache-Clear).
@@ -972,7 +1216,7 @@ class UnifiedBenchmarkRunner(BaseBenchmarkRunner):
             except Exception as exc:  # noqa: BLE001
                 print(f"⚠️ Cleanup post-stop failed: {exc}")
 
-    def _save_partial_results(self, results: List[Dict[str, Any]], is_local: bool):
+    def _save_partial_results(self, results: list[dict[str, Any]], is_local: bool):
         if results:
             print("💾 Speichere bisherige Ergebnisse...")
             self.save_results(results)

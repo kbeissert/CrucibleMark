@@ -9,17 +9,15 @@ Usage:
     python scripts/benchmark_auto.py
 """
 
+import argparse
 import sys
 import os
-import re
-import time
-import argparse
 import json
 import logging
 import shutil
 import subprocess
 from pathlib import Path
-from typing import Any, List, Dict, Optional, Set, Tuple
+from typing import Any
 
 # Pfad setup — MUSS vor den `from utils...` Imports stehen!
 # Python 3.14+ verändert das sys.path-Verhalten für `python script.py` —
@@ -30,9 +28,7 @@ if str(ROOT_DIR) not in sys.path:
 
 # Third-party imports
 # pylint: disable=import-error, wrong-import-position
-import yaml  # noqa: E402
 from utils.constants import TIMEOUT_OLLAMA_LIST_FAST  # noqa: E402
-import pandas as pd  # noqa: E402
 
 try:
     from dotenv import load_dotenv
@@ -58,22 +54,20 @@ from utils.model_utils import (  # noqa: E402
     get_ollama_models_info,
     normalize_model_id,
     normalize_supports_tool_use,
-    strip_date_suffix,
     SUPPORT_TOOL_USE_UNTESTED,
 )
 
 # Gemeinsame llama.cpp-Batch-Orchestrierung
 from scripts.core.llamacpp_batch import (  # noqa: E402
-    is_llamacpp_provider,
+    canonical_lookup_keys,
     get_enabled_llamacpp_providers,
+    get_existing_results,
+    get_leaderboard_scored_modules,
+    get_startable_assets,
+    is_llamacpp_provider,
     set_llamacpp_provider_context,
     stop_llamacpp_provider_server,
     run_llamacpp_provider_cleanup,
-    llamacpp_model_session,
-    get_startable_assets,
-    get_existing_results,
-    get_leaderboard_scored_modules,
-    canonical_lookup_keys,
 )
 
 # Konstante für "Modell kann keine Tools" (getestet und fehlgeschlagen)
@@ -117,7 +111,7 @@ def check_ollama_status() -> bool:
         return False
 
 
-def get_all_modules(validator: ConfigValidator) -> List[Dict[str, Any]]:
+def get_all_modules(validator: ConfigValidator) -> list[dict[str, Any]]:
     """Extrahiert alle aktivierten Module aus der Config (SSOT)."""
     modules = []
     active = get_active_modules(validator.config)
@@ -149,141 +143,11 @@ def get_all_modules(validator: ConfigValidator) -> List[Dict[str, Any]]:
     return modules
 
 
-def _get_startable_assets(
-    module: Dict[str, Any], model: str, existing_tests: Set[Tuple[str, str]]
-) -> List[Path]:
-    """Ermittelt Asset-Pfade, die für dieses Modell noch nicht getestet wurden.
-    
-    State Machine für supports_tool_use (skip_if_card_false):
-    - false / "not_applicable" → Modell kann KEINE Tools → SKIP (n/a im Leaderboard)
-    - true / "tested" → Modell hat Tools → prüfe ob Scores vorhanden sind
-    - "untested" / anderer Wert → Test ausführen!
-    
-    Returns:
-        Liste der zu testenden Asset-Pfade (leer wenn übersprungen oder bereits vorhanden)
-    """
-    assets_path = module["path"]
-
-    # -------------------------------------------------------
-    # CARD-BASED SKIP (skip_if_card_false)
-    # -------------------------------------------------------
-    skip_card_key = module.get("skip_if_card_false")
-    if skip_card_key:
-        from utils.model_utils import _find_card as _fc, normalize_supports_tool_use, SUPPORT_TOOL_USE_UNTESTED
-        _card_dir = ROOT_DIR / "benchmark_scores" / "model_cards"
-        _card_path = _fc(model, card_dir=_card_dir)
-        if _card_path.exists():
-            try:
-                _card = json.loads(_card_path.read_text(encoding="utf-8"))
-            except (json.JSONDecodeError, OSError) as exc:
-                logger.warning(
-                    "Card-Flag-Skip konnte nicht geprüft werden (model=%s, module=%s, card=%s): %s",
-                    model,
-                    module.get("key", module.get("name", "unknown")),
-                    _card_path,
-                    exc,
-                )
-            else:
-                _raw_val = _card.get(skip_card_key)
-                _norm_val = normalize_supports_tool_use(_raw_val)
-                
-                # Fall 1: Modell kann KEINE Tools (false oder "not_applicable")
-                # → SKIP, Test nicht möglich
-                if _norm_val is False or _raw_val == SUPPORT_TOOL_USE_NOT_APPLICABLE:
-                    _reason = "not_applicable" if _raw_val == SUPPORT_TOOL_USE_NOT_APPLICABLE else "false"
-                    print(f"   ⏩ Bench: {module['name']} ({skip_card_key}={_reason} in Card — übersprungen)")
-                    return []
-                
-                # Fall 2: "untested" oder unbekannter Wert → Test ausführen!
-                # NICHT skippen - der Test muss durchgeführt werden
-                if _norm_val == SUPPORT_TOOL_USE_UNTESTED or _raw_val == SUPPORT_TOOL_USE_UNTESTED:
-                    # Test ausführen - nicht skippen
-                    pass
-                # Fall 3: true ("tested") → weiter zum normalen Cache-Check
-                # Dies geschieht weiter unten
-    # -------------------------------------------------------
-    # SPECIAL HANDLING FOR BATCH MODULES (e.g. Political Compass)
-    # -------------------------------------------------------
-    # Batch-Module (wie Political Compass) erzeugen oft nur EINEN Eintrag (Aggregiert).
-    # Da ein Re-Run sehr teuer ist (81+ Fragen), überspringen wir, wenn das Aggregat da ist.
-    # Wir prüfen hier NICHT auf Aktualität (Datum) oder Vollständigkeit der Assets.
-    #
-    # PC-Ergebnisse sind DAUERHAFT gültig und verfallen nicht automatisch.
-    # Sie werden übersprungen, solange (model, "political_compass_v3") im Cache existiert.
-    # Um einen Re-Run für ein Modell zu erzwingen, müssen die Zeilen dieses Modells
-    # manuell aus political_compass_results.csv und political_compass_leaderboard.csv
-    # entfernt werden. Falls PC-Fragen überarbeitet werden, sind alle betroffenen
-    # Modell-Einträge gleichermaßen manuell zu löschen.
-    if (
-        module.get("execution_mode") == "batch"
-        or module.get("key") == "political_compass"
-    ):
-        batch_id = "political_compass_v3"
-        # save_leaderboard_csv() strips OpenRouter date suffixes when writing the PC leaderboard:
-        # -YYYYMMDD (8-digit) and -MMDD with valid months 01-12 (e.g. -0127 for Jan 27).
-        # Version suffixes like -2503 / -2411 are intentionally NOT stripped.
-        # Normalize identically so the cache lookup matches dated config aliases.
-        model_normalized = strip_date_suffix(model)
-        model_hf_stripped = normalize_model_id(model)
-        if (
-            (model, batch_id) in existing_tests
-            or (model_normalized, batch_id) in existing_tests
-            or (model_hf_stripped, batch_id) in existing_tests
-        ):
-            return []
-    # -------------------------------------------------------
-
-    # Der Runner hat Methode zum Finden, aber wir brauchen den Pfad
-    # Da Runner interne Methoden hat, rufen wir hier eine Hilfsfunktion nach
-    # Aber wir können auch einfach globben, da wir den Pfad haben.
-    # Da UnifiedBenchmarkRunner assets_path als String/Path erwartet:
-    asset_files = []
-    p = Path(assets_path)
-    if p.exists():
-        asset_files = sorted(list(p.glob("*.yaml")))
-
-    if not asset_files:
-        return []
-
-    assets_todo = []
-    for asset_f in asset_files:
-        try:
-            with open(asset_f, "r", encoding="utf-8") as f:
-                data = yaml.safe_load(f)
-                asset_id = data.get("metadata", {}).get("id")
-
-            if not asset_id:
-                logger.warning(
-                    "Asset ohne metadata.id wird ausgeführt (model=%s, module=%s, asset=%s)",
-                    model,
-                    module.get("key", module.get("name", "unknown")),
-                    asset_f,
-                )
-                assets_todo.append(asset_f)
-                continue
-
-            model_hf_stripped = normalize_model_id(model)
-            if (model, asset_id) in existing_tests or (model_hf_stripped, asset_id) in existing_tests:
-                continue
-
-            assets_todo.append(asset_f)
-        except (OSError, yaml.YAMLError) as exc:
-            # Fallback: Einfach ausführen wenn Parse Error
-            logger.warning(
-                "Asset konnte nicht geparst werden, wird defensiv ausgeführt "
-                "(model=%s, module=%s, asset=%s): %s",
-                model,
-                module.get("key", module.get("name", "unknown")),
-                asset_f,
-                exc,
-            )
-            assets_todo.append(asset_f)
-
-    return assets_todo
+# Entfernt Phase 2: get_startable_assets (130 LOC Duplikat) → verwendet get_startable_assets aus llamacpp_batch.py
 
 
 def _run_delegate_for_model(
-    module: Dict[str, Any],
+    module: dict[str, Any],
     model: str,
     force: bool = False,
     audit: bool = True,
@@ -330,12 +194,12 @@ def _run_delegate_for_model(
     return result.returncode == 0
 
 
-def _is_score_module(module: Dict[str, Any]) -> bool:
+def _is_score_module(module: dict[str, Any]) -> bool:
     """Returns True when the module belongs to the score-worker scope (modules 1-7)."""
     return module.get("key") not in SCORE_EXCLUDED_MODULES
 
 
-def _read_json_summary(summary_path: Path, context_label: str) -> Optional[Dict[str, Any]]:
+def _read_json_summary(summary_path: Path, context_label: str) -> dict[str, Any] | None:
     """Loads a dispatch summary JSON file and logs a warning on parse failure."""
     if not summary_path.exists():
         return None
@@ -347,9 +211,9 @@ def _read_json_summary(summary_path: Path, context_label: str) -> Optional[Dict[
         return None
 
 
-def _extract_config_model_ids(models_cfg: Any) -> List[str]:
+def _extract_config_model_ids(models_cfg: Any) -> list[str]:
     """Extracts model ids from provider config entries."""
-    model_ids: List[str] = []
+    model_ids: list[str] = []
     for entry in models_cfg or []:
         if isinstance(entry, dict):
             mid = entry.get("id")
@@ -368,8 +232,8 @@ def _extract_config_model_ids(models_cfg: Any) -> List[str]:
 
 def _run_single_llamacpp_provider_batch(
     provider_key: str,
-    provider_cfg: Dict[str, Any],
-    modules: List[Dict[str, Any]],
+    provider_cfg: dict[str, Any],
+    modules: list[dict[str, Any]],
     validator: ConfigValidator,
     force: bool,
     audit_mode: bool,
@@ -386,8 +250,7 @@ def _run_single_llamacpp_provider_batch(
     `_cleanup_local_provider()` in `run_benchmark()` den Server nach
     jedem einzelnen Asset-Run vorzeitig stoppt.
     """
-    models_list = provider_cfg.get("models", [])
-    model_ids = _extract_config_model_ids(models_list)
+    model_ids = _extract_config_model_ids(provider_cfg.get("models", []))
     if not model_ids:
         print(f"⚠️  Keine Modelle für '{provider_key}' konfiguriert.")
         return
@@ -396,19 +259,11 @@ def _run_single_llamacpp_provider_batch(
         validator.config.get("output", {}).get("local_models_csv", "benchmark_scores/local_models_benchmark.csv")
     )
     existing_tests = get_existing_results(csv_path, force=force)
-
-    runner = UnifiedBenchmarkRunner(force=force, audit_mode=audit_mode)
-    # Cleanup-Kontrolle liegt beim Batch-Orchestrator, nicht beim einzelnen run_benchmark()-Aufruf.
-    # Verhindert vorzeitigen Server-Stop zwischen Modul-Runs innerhalb desselben Modells.
-    runner._skip_llamacpp_cleanup = True  # type: ignore[attr-defined]
-
-    lcpp_client = runner.client.clients.get(provider_key)
+    runner, lcpp_client = _setup_llamacpp_runner_and_client(
+        provider_key, force, audit_mode,
+    )
     if lcpp_client is None:
-        print(f"❌ LlamaCppClient '{provider_key}' nicht im Client-Registry gefunden.")
         return
-    # Flag auch auf Client setzen, damit query() den Client nicht zurücksetzt
-    lcpp_client._skip_llamacpp_cleanup = True  # type: ignore[attr-defined]
-    set_llamacpp_provider_context(lcpp_client, provider_key)
 
     provider_label = provider_cfg.get("name", provider_key)
     print(f"\n🖥️  [1b/2] LOKALE MODELLE (LLAMA.CPP: {provider_label})")
@@ -424,62 +279,90 @@ def _run_single_llamacpp_provider_batch(
     try:
         for i, model_id in enumerate(model_ids, 1):
             print(f"\n➡️  MOD [{provider_key} {i}/{len(model_ids)}]: {model_id}")
-
-            # Prüfe VOR dem Server-Start, ob überhaupt Tests nötig sind
-            # Vermeidet unnötiges Laden/Entladen von Modellen bei vollständigen Ergebnissen
-            has_missing_tests = False
-            for module in modules:
-                assets_todo = _get_startable_assets(module, model_id, existing_tests)
-                if assets_todo:
-                    has_missing_tests = True
-                    break
-            
-            if not has_missing_tests:
-                print(f"   ✓ Alle Benchmarks bereits vorhanden — überspringe Modell.")
+            if not _has_open_tests(modules, model_id, existing_tests):
+                print("   ✓ Alle Benchmarks bereits vorhanden — überspringe Modell.")
                 continue
-
             if not lcpp_client.start_server(model_id):
                 print(f"   ❌ Server für '{model_id}' konnte nicht gestartet werden — überspringe.")
                 continue
-
-            had_new_results = False
-            for module in modules:
-                assets_todo = _get_startable_assets(module, model_id, existing_tests)
-                module_ok = _run_module_for_model(
-                    runner,
-                    model_id,
-                    module,
-                    existing_tests,
-                    force=force,
-                    audit=audit_mode,
-                    mcp_mode=mcp_mode,
-                    provider=provider_key,
-                )
-                had_new_results |= module_ok
-
-                if assets_todo and not module_ok:
-                    print(
-                        f"   ⚠️  Modul '{module.get('key', 'unknown')}' für '{model_id}' fehlgeschlagen "
-                        "(mit offenen Assets). Restliche Module für dieses Modell werden übersprungen."
-                    )
-                    break
-
+            _run_llamacpp_model_modules(
+                runner=runner, model_id=model_id, modules=modules,
+                existing_tests=existing_tests, force=force, audit_mode=audit_mode,
+                mcp_mode=mcp_mode, provider_key=provider_key,
+            )
     except KeyboardInterrupt:
         print("\n⛔  Abbruch durch Benutzer.")
         interrupted = True
     finally:
         print("\n   🛑 Stoppe llama.cpp Server...")
         lcpp_client.stop_server()
-
         # End-of-Batch Cleanup (post_stop_cmd, Cache-Bereinigung) für diesen Provider
         run_llamacpp_provider_cleanup(provider_key, provider_cfg)
-
         if interrupted:
             sys.exit(1)
 
 
+# -- Phase 3H: Helfer für _run_single_llamacpp_provider_batch --------------------
+
+def _setup_llamacpp_runner_and_client(
+    provider_key: str, force: bool, audit_mode: bool,
+) -> tuple[UnifiedBenchmarkRunner, Any]:
+    """Erstellt Runner + LlamaCppClient mit aktivierten Skip-Cleanup-Flags."""
+    runner = UnifiedBenchmarkRunner(force=force, audit_mode=audit_mode)
+    # Cleanup-Kontrolle liegt beim Batch-Orchestrator, nicht beim einzelnen run_benchmark().
+    runner._skip_llamacpp_cleanup = True  # type: ignore[attr-defined]
+
+    lcpp_client = runner.client.clients.get(provider_key)
+    if lcpp_client is None:
+        print(f"❌ LlamaCppClient '{provider_key}' nicht im Client-Registry gefunden.")
+        return runner, None
+    # Flag auch auf Client setzen, damit query() den Client nicht zurücksetzt
+    lcpp_client._skip_llamacpp_cleanup = True  # type: ignore[attr-defined]
+    set_llamacpp_provider_context(lcpp_client, provider_key)
+    return runner, lcpp_client
+
+
+def _has_open_tests(
+    modules: list[dict[str, Any]],
+    model_id: str,
+    existing_tests: set[tuple[str, str]],
+) -> bool:
+    """Prüft, ob mindestens ein Modul für das Modell noch offene Assets hat."""
+    return any(
+        get_startable_assets(module, model_id, existing_tests) for module in modules
+    )
+
+
+def _run_llamacpp_model_modules(
+    *,
+    runner: UnifiedBenchmarkRunner,
+    model_id: str,
+    modules: list[dict[str, Any]],
+    existing_tests: set[tuple[str, str]],
+    force: bool,
+    audit_mode: bool,
+    mcp_mode: str,
+    provider_key: str,
+) -> None:
+    """Iteriert über Module für ein llama.cpp-Modell, bricht bei echtem Fehler ab."""
+    for module in modules:
+        assets_todo = get_startable_assets(module, model_id, existing_tests)
+        status = _run_module_for_model(
+            runner, model_id, module, existing_tests,
+            force=force, audit=audit_mode, mcp_mode=mcp_mode, provider=provider_key,
+        )
+        if status == "failed" and assets_todo:
+            # ECHTER Fehler bei offenen Assets (Leaderboard-Skip zählt nicht).
+            print(
+                f"   ⚠️  Modul '{module.get('key', 'unknown')}' für '{model_id}' fehlgeschlagen "
+                "(mit offenen Assets). Restliche Module für dieses Modell werden übersprungen."
+            )
+            break
+        # "ran" oder "skipped" → weiter
+
+
 def _run_score_delegate_for_model(
-    module: Dict[str, Any],
+    module: dict[str, Any],
     model: str,
     force: bool = False,
     audit: bool = True,
@@ -535,20 +418,31 @@ def _run_score_delegate_for_model(
 def _run_module_for_model(
     runner: UnifiedBenchmarkRunner,
     model: str,
-    module: Dict[str, Any],
-    existing_tests: Set[Tuple[str, str]],
+    module: dict[str, Any],
+    existing_tests: set[tuple[str, str]],
     force: bool = False,
     audit: bool = True,
     mcp_mode: str = "live",
     provider: str = "ollama",
-) -> bool:
+) -> str:
     """Führt ein einzelnes Modul für ein einzelnes Modell aus.
 
     Wenn das Modul einen `delegate_script`-Key definiert, wird die Ausführung
     vollständig an dieses Fachscript delegiert (SSOT für Lifecycle-Logik).
 
     Returns:
-        True wenn neue Ergebnisse gespeichert wurden, False sonst.
+        "ran"     — Modul wurde ausgeführt und Ergebnisse gespeichert.
+        "skipped" — Modul wurde absichtlich übersprungen (Leaderboard-Cache,
+                    keine Assets in der Detail-CSV, oder n/a via Card-Flag).
+                    Kein Fehler — Score gilt als vorhanden.
+        "failed"  — Modul-Ausführung ist fehlgeschlagen (Subprozess-Fehler,
+                    Exception, oder leere Ergebnisse nach echtem Run).
+
+    Die Differenzierung "skipped" vs. "failed" ist kritisch (Phase 21):
+    Nur ein fehlgeschlagenes Modul mit offenen Assets rechtfertigt den
+    Loop-Abbruch im Caller. Ein Leaderboard-Skip ist eine gültige
+    Erfolgsmeldung (Score existiert bereits) und darf den Loop NICHT
+    abbrechen — sonst wird der llama.cpp-Server fälschlich gestoppt.
     """
     module_key = module.get("key")
 
@@ -566,11 +460,11 @@ def _run_module_for_model(
                 for variant in canonical_lookup_keys(model)
             ):
                 print(f"   ✓ Bench: {module['name']} (Leaderboard-Score vorhanden — übersprungen)")
-                return False
+                return "skipped"
         except Exception as exc:  # pylint: disable=broad-exception-caught
             logger.warning("Leaderboard-Cache-Check fehlgeschlagen: %s", exc)
 
-    assets_todo = _get_startable_assets(
+    assets_todo = get_startable_assets(
         module=module, model=model, existing_tests=existing_tests
     )
 
@@ -579,35 +473,38 @@ def _run_module_for_model(
         if module.get("key") == "political_compass":
             msg += " [Batch-Mode Skip]"
         print(msg)
-        return False
+        return "skipped"
 
     print(f"   📊 Bench: {module['name']} ({len(assets_todo)} neue Tests) ...")
 
-    if _is_score_module(module):
+    if _is_score_module(module) and not is_llamacpp_provider(provider):
         # For local llama.cpp providers we must stay in-process to preserve the
         # server ownership/context of the already started model server.
-        if not is_llamacpp_provider(provider):
-            return _run_score_delegate_for_model(module, model, force=force, audit=audit)
+        ok = _run_score_delegate_for_model(module, model, force=force, audit=audit)
+        return "ran" if ok else "failed"
 
     if module.get("delegate_script"):
         # Für llama.cpp-Provider: Cleanup-Flag an Delegate weitergeben
         _skip_cleanup = is_llamacpp_provider(provider)
-        return _run_delegate_for_model(
+        ok = _run_delegate_for_model(
             module, model, force=force, audit=audit, mcp_mode=mcp_mode,
-            skip_llamacpp_cleanup=_skip_cleanup
+            skip_llamacpp_cleanup=_skip_cleanup,
         )
+        return "ran" if ok else "failed"
 
     try:
         results = runner.run_benchmark(provider=provider, model=model, benchmark_info=module, assets=assets_todo)
         if results:
             runner.save_results(results)
-            return True
+            return "ran"
+        # Run wurde versucht, hat aber keine Ergebnisse produziert
+        return "failed"
     except KeyboardInterrupt:
         print("\n⛔  Abbruch durch Benutzer.")
         sys.exit(1)
     except Exception as e:  # pylint: disable=broad-exception-caught
         print(f"   ❌ Fehler: {e}")
-    return False
+        return "failed"
 
 
 # ---------------------------------------------------------------------------
@@ -617,20 +514,20 @@ def _run_module_for_model(
 CARD_DIR = Path("benchmark_scores/model_cards")
 
 
-def _collect_untested_tooluse_cards() -> List[Tuple[str, str]]:
+def _collect_untested_tooluse_cards() -> list[tuple[str, str]]:
     """Lädt alle Model Cards mit ``supports_tool_use == "untested"``.
 
     Returns:
         Liste von (model_id, display_name) Tupeln, sortiert nach model_id.
     """
-    untested: List[Tuple[str, str]] = []
+    untested: list[tuple[str, str]] = []
     if not CARD_DIR.exists():
         return untested
     for card_path in sorted(CARD_DIR.glob("*.json")):
         if card_path.name == "_index.json":
             continue
         try:
-            card: Dict[str, Any] = json.loads(card_path.read_text(encoding="utf-8"))
+            card: dict[str, Any] = json.loads(card_path.read_text(encoding="utf-8"))
         except (json.JSONDecodeError, OSError):
             logger.warning("Model Card konnte nicht gelesen werden: %s", card_path)
             continue
@@ -652,9 +549,9 @@ def _collect_untested_tooluse_cards() -> List[Tuple[str, str]]:
     return untested
 
 
-def _load_cards_for_models(model_ids: List[str]) -> Dict[str, Dict[str, Any]]:
+def _load_cards_for_models(model_ids: list[str]) -> dict[str, dict[str, Any]]:
     """Lädt Card-Dicts für die gegebenen model_ids aus CARD_DIR (SSoT)."""
-    cards: Dict[str, Dict[str, Any]] = {}
+    cards: dict[str, dict[str, Any]] = {}
     for mid in model_ids:
         # Karten-Filenamen folgen der Konvention: alle nicht-alphanumerischen
         # Zeichen werden zu '_'. Probieren wir mehrere Sanitisierungs-Levels.
@@ -664,7 +561,7 @@ def _load_cards_for_models(model_ids: List[str]) -> Dict[str, Dict[str, Any]]:
             CARD_DIR / f"{mid.replace('/', '_').replace(':', '_')}.json",
             CARD_DIR / f"{mid.replace('/', '_').replace(':', '_').replace('.', '_')}.json",
         ]
-        loaded: Dict[str, Any] = {}
+        loaded: dict[str, Any] = {}
         for path in candidates:
             if path.exists():
                 try:
@@ -690,10 +587,10 @@ def _load_cards_for_models(model_ids: List[str]) -> Dict[str, Dict[str, Any]]:
 
 
 def _write_unreachable_report(
-    unreachable: List[Tuple[str, str, str]],
-    testable: List[Tuple[str, str]],
+    unreachable: list[tuple[str, str, str]],
+    testable: list[tuple[str, str]],
     total: int,
-) -> Optional[Path]:
+) -> Path | None:
     """Schreibt einen Report über nicht-erreichbare untested-Cards.
 
     Returns:
@@ -728,8 +625,8 @@ def _write_unreachable_report(
 
 
 def _run_untested_tooluse_models(
-    models: List[Tuple[str, str]],
-    validator: Optional[ConfigValidator] = None,
+    models: list[tuple[str, str]],
+    validator: ConfigValidator | None = None,
     mcp_mode: str = "live",
     force: bool = False,
     silent: bool = False,
@@ -739,14 +636,8 @@ def _run_untested_tooluse_models(
     Führt VOR dem Subprocess einen Pre-Flight-Check durch:
         1. Card-Lookup pro model_id
         2. validate_untested_card() prüft Provider-Erreichbarkeit
-            - Ollama: ist Modell installiert?
-            - API: ist ENV-Var gesetzt?
-            - llama.cpp: existiert Binary-Pfad?
         3. Unerreichbare Cards werden in outputs/tooluse_unreachable_*.json geloggt
         4. Nur testbare Cards werden an den Subprocess delegiert
-
-    Verwendet einen einzelnen Subprozess-Call mit ``--models <comma-list>`` statt
-    pro Modell einen eigenen Lauf — spart MCP-Restart-Overhead.
 
     Returns:
         True wenn der Lauf erfolgreich gestartet wurde. False bei leerer Liste,
@@ -759,39 +650,69 @@ def _run_untested_tooluse_models(
         print("   ⚠️  scripts/run_tooluse_benchmark.py nicht gefunden — überspringe.")
         return False
 
-    # Pre-Flight-Check: nur testbare Modelle an Subprocess delegieren
+    testable, unreachable = _filter_untested_with_caches(
+        models, validator, force,
+    )
+    _print_untested_summary(models, testable, unreachable)
+
+    if not testable:
+        _write_unreachable_report(unreachable, testable, len(models))
+        return True
+
+    report_path = _write_unreachable_report(unreachable, testable, len(models))
+    if report_path:
+        print(f"   📝 Unreachables-Report: {report_path.relative_to(ROOT_DIR)}")
+
+    return _dispatch_tooluse_subprocess(
+        script=script, testable=testable, mcp_mode=mcp_mode,
+        force=force, silent=silent,
+    )
+
+
+# -- Phase 3F2: Helfer für _run_untested_tooluse_models ---------------------------
+
+def _filter_untested_with_caches(
+    models: list[tuple[str, str]],
+    validator: ConfigValidator | None,
+    force: bool,
+) -> tuple[list[tuple[str, str]], list[tuple[str, str, str]]]:
+    """Wendet Pre-Flight-Filter an: testable Cards + ToolUse-Leaderboard-Cache."""
     model_ids = [mid for mid, _ in models]
     card_lookup = _load_cards_for_models(model_ids)
     testable, unreachable = filter_testable_cards(models, card_lookup=card_lookup)
 
-    # SSoT-Cache-Check: Modelle, die bereits im ToolUse-Leaderboard stehen,
-    # NICHT erneut an den Subprozess delegieren. Die Card kann veraltet
-    # "untested" sein, obwohl das Leaderboard schon ein Ergebnis hat (z.B.
-    # nach manuellen Test-Runs). Das verhindert unnötige MCP-Restarts und
-    # Re-Runs.
-    if not force and validator is not None:
-        try:
-            from scripts.core.tooluse_exporter import ToolUseExporter
-            exporter = ToolUseExporter(validator.config)
-        except (NameError, Exception):
-            exporter = None
-        if exporter is not None:
-            filtered: List[Tuple[str, str]] = []
-            skipped_cached: List[Tuple[str, str]] = []
-            for mid, dname in testable:
-                if exporter.model_has_results(mid):
-                    skipped_cached.append((mid, dname))
-                else:
-                    filtered.append((mid, dname))
-            if skipped_cached:
-                print(
-                    f"   ⏩  {len(skipped_cached)} Modell(e) bereits im ToolUse-Leaderboard "
-                    "(Cache-Treffer, kein Re-Run):"
-                )
-                for mid, dname in skipped_cached:
-                    print(f"      • {dname}  ({mid})")
-            testable = filtered
+    if force or validator is None:
+        return testable, unreachable
 
+    try:
+        from scripts.core.tooluse_exporter import ToolUseExporter
+        exporter = ToolUseExporter(validator.config)
+    except (NameError, Exception):
+        return testable, unreachable
+
+    filtered: list[tuple[str, str]] = []
+    skipped_cached: list[tuple[str, str]] = []
+    for mid, dname in testable:
+        if exporter.model_has_results(mid):
+            skipped_cached.append((mid, dname))
+        else:
+            filtered.append((mid, dname))
+    if skipped_cached:
+        print(
+            f"   ⏩  {len(skipped_cached)} Modell(e) bereits im ToolUse-Leaderboard "
+            "(Cache-Treffer, kein Re-Run):"
+        )
+        for mid, dname in skipped_cached:
+            print(f"      • {dname}  ({mid})")
+    return filtered, unreachable
+
+
+def _print_untested_summary(
+    models: list[tuple[str, str]],
+    testable: list[tuple[str, str]],
+    unreachable: list[tuple[str, str, str]],
+) -> None:
+    """Backlog-Übersicht: total, testable, unreachable (mit Erklärung)."""
     print(f"   📊 Tool-Use Backlog: {len(models)} untested Card(s) gefunden")
     for mid, dname in models:
         print(f"      • {dname}  ({mid})")
@@ -801,28 +722,27 @@ def _run_untested_tooluse_models(
         print("      (Also nicht API/Netzwerk, sondern fehlendes lokales Modellartefakt.)")
         for mid, dname, reason in unreachable:
             print(f"      ✗ {dname}  ({mid})  →  {reason}")
-    if not testable:
-        print("   ⏭️  Keine testbaren Modelle — überspringe Subprocess.")
-        # Report trotzdem schreiben (Diagnose)
-        _write_unreachable_report(unreachable, testable, len(models))
-        return True  # kein Fehler — alle untested sind dokumentiert unerreichbar
 
-    # Unreachables-Report schreiben (auch wenn welche testbar sind)
-    report_path = _write_unreachable_report(unreachable, testable, len(models))
-    if report_path:
-        print(f"   📝 Unreachables-Report: {report_path.relative_to(ROOT_DIR)}")
+
+def _dispatch_tooluse_subprocess(
+    *,
+    script: Path,
+    testable: list[tuple[str, str]],
+    mcp_mode: str,
+    force: bool,
+    silent: bool,
+) -> bool:
+    """Baut den Subprocess-Cmd und ruft run_tooluse_benchmark.py auf."""
+    summary_dir = ROOT_DIR / "outputs" / "runs" / "dispatch_summaries"
+    summary_dir.mkdir(parents=True, exist_ok=True)
+    summary_path = summary_dir / "tooluse_backlog_dispatch.json"
 
     cmd = [
         sys.executable, str(script),
         "--models", ",".join(mid for mid, _ in testable),
         "--mcp-mode", mcp_mode,
+        "--summary-json", str(summary_path),
     ]
-
-    summary_dir = ROOT_DIR / "outputs" / "runs" / "dispatch_summaries"
-    summary_dir.mkdir(parents=True, exist_ok=True)
-    summary_path = summary_dir / "tooluse_backlog_dispatch.json"
-    cmd += ["--summary-json", str(summary_path)]
-
     if force:
         cmd.append("--force")
     if silent:
@@ -849,7 +769,7 @@ def _run_untested_tooluse_models(
 
 
 def run_llamacpp_batch(
-    modules: List[Dict[str, Any]],
+    modules: list[dict[str, Any]],
     validator: ConfigValidator,
     force: bool = False,
     audit_mode: bool = False,
@@ -874,7 +794,7 @@ def run_llamacpp_batch(
 
 
 def run_local_batch(
-    modules: List[Dict[str, Any]],
+    modules: list[dict[str, Any]],
     validator: ConfigValidator,
     force: bool = False,
     audit_mode: bool = False,
@@ -882,43 +802,18 @@ def run_local_batch(
 ) -> None:
     # pylint: disable=unused-argument
     ollama_cfg = validator.config.get("providers", {}).get("local", {}).get("ollama_local", {})
-    if not ollama_cfg.get("enabled", False):
-        print("⏭️  Ollama local Provider deaktiviert — überspringe.")
-        return
-
-    ollama_path = shutil.which("ollama")
-    if not ollama_path:
-        # Kein Ollama installiert — explizit melden (kein stiller Fallback)
-        print("⏭️  Überspringe lokale Benchmarks: 'ollama' Binary nicht im PATH.")
+    if not _is_ollama_batch_runnable(ollama_cfg):
         return
 
     print("\n🤖  [1/2] LOKALE MODELLE (OLLAMA)")
     print(f"{'=' * 40}")
-
     if not check_ollama_status():
         print("⏭️  Überspringe lokale Benchmarks, da Ollama nicht läuft.")
         return
 
-    runner = UnifiedBenchmarkRunner(force=force, audit_mode=audit_mode)
-
-    # Cache laden (bereits erledigte Tests)
     csv_path = Path(validator.config.get("output", {}).get("local_models_csv", "benchmark_scores/local_models_benchmark.csv"))
     existing_tests = get_existing_results(csv_path, force=force)
-
-    configured_model_ids = _extract_config_model_ids(ollama_cfg.get("models", []))
-    auto_discover = bool(ollama_cfg.get("auto_discover", True))
-
-    if configured_model_ids and not auto_discover:
-        suitable_models = [m for m in configured_model_ids if is_model_suitable_for_benchmark(m)]
-    else:
-        try:
-            all_models = [m["name"] for m in get_ollama_models_info()]
-        except Exception as e:  # pylint: disable=broad-exception-caught
-            print(f"❌ Fehler beim Laden der Modell-Liste: {e}")
-            return
-
-        suitable_models = [m for m in all_models if is_model_suitable_for_benchmark(m)]
-
+    suitable_models = _resolve_suitable_local_models(ollama_cfg)
     if not suitable_models:
         print("⚠️  Keine geeigneten lokalen Modelle gefunden.")
         return
@@ -927,38 +822,74 @@ def run_local_batch(
     print(f"Liste: {', '.join(suitable_models)}\n")
     print(f"Ignoriere bereits vorhandene Ergebnisse in: {csv_path}\n")
 
+    runner = UnifiedBenchmarkRunner(force=force, audit_mode=audit_mode)
     try:
         for i, model in enumerate(suitable_models, 1):
             print(f"\n➡️  MOD [Lokal {i}/{len(suitable_models)}]: {model}")
-
-            # Pre-Check (analog llama.cpp-Pfad): wenn KEIN Modul offene Assets hat,
-            # Modell komplett überspringen — vermeidet unnötiges Laden/Entladen
-            # des Ollama-Modells im Server.
-            has_missing_tests = False
-            for module in modules:
-                assets_todo = _get_startable_assets(module, model, existing_tests)
-                if assets_todo:
-                    has_missing_tests = True
-                    break
-            if not has_missing_tests:
+            if not _has_open_tests(modules, model, existing_tests):
                 print("   ✓ Alle Benchmarks bereits vorhanden — überspringe Modell.")
                 continue
-
-            had_new_results = False
-            for module in modules:
-                had_new_results |= _run_module_for_model(
-                    runner, model, module, existing_tests,
-                    force=force, audit=audit_mode, mcp_mode=mcp_mode,
-                )
+            _run_ollama_model_modules(
+                runner, model, modules, existing_tests, force, audit_mode, mcp_mode,
+            )
     except KeyboardInterrupt:
         print("\n⛔  Abbruch durch Benutzer.")
         sys.exit(1)
 
 
+# -- Phase 3F: Helfer für run_local_batch -----------------------------------------
+
+def _is_ollama_batch_runnable(ollama_cfg: dict[str, Any]) -> bool:
+    """Prüft Enabled-Flag + Binary-Verfügbarkeit. Printet Skip-Hinweise."""
+    if not ollama_cfg.get("enabled", False):
+        print("⏭️  Ollama local Provider deaktiviert — überspringe.")
+        return False
+    if not shutil.which("ollama"):
+        print("⏭️  Überspringe lokale Benchmarks: 'ollama' Binary nicht im PATH.")
+        return False
+    return True
+
+
+def _resolve_suitable_local_models(ollama_cfg: dict[str, Any]) -> list[str]:
+    """Löst suitable_models auf (config vs auto-discover), filtert by benchmark-suitability."""
+    configured_model_ids = _extract_config_model_ids(ollama_cfg.get("models", []))
+    auto_discover = bool(ollama_cfg.get("auto_discover", True))
+
+    if configured_model_ids and not auto_discover:
+        return [m for m in configured_model_ids if is_model_suitable_for_benchmark(m)]
+
+    try:
+        all_models = [m["name"] for m in get_ollama_models_info()]
+    except Exception as e:  # pylint: disable=broad-exception-caught
+        print(f"❌ Fehler beim Laden der Modell-Liste: {e}")
+        return []
+
+    return [m for m in all_models if is_model_suitable_for_benchmark(m)]
+
+
+def _run_ollama_model_modules(
+    runner: UnifiedBenchmarkRunner,
+    model: str,
+    modules: list[dict[str, Any]],
+    existing_tests: set[tuple[str, str]],
+    force: bool,
+    audit_mode: bool,
+    mcp_mode: str,
+) -> None:
+    """Iteriert über Module für ein Ollama-Modell."""
+    for module in modules:
+        # Phase 21: had_new_results nur auf "ran" setzen — "skipped" und
+        # "failed" dürfen den Counter nicht hochzählen.
+        _run_module_for_model(
+            runner, model, module, existing_tests,
+            force=force, audit=audit_mode, mcp_mode=mcp_mode,
+        )
+
+
 
 
 def run_commercial_batch(
-    modules: List[Dict[str, Any]],
+    modules: list[dict[str, Any]],
     validator: ConfigValidator,
     force: bool = False,
     audit_mode: bool = False,
@@ -972,168 +903,277 @@ def run_commercial_batch(
     from utils.adaptive_pause import BenchmarkMode
     runner.mode = BenchmarkMode.DEV
 
-    # Provider iterieren
-    providers_config = validator.config.get("providers", {}).get("commercial", {})
+    active_providers = _resolve_active_commercial_providers(validator)
+    if not active_providers:
+        return
 
+    active_providers = _check_commercial_provider_accessibility(validator, active_providers)
+    if not active_providers:
+        return
+
+    existing_tests = _load_commercial_existing_tests(validator, force)
+    tasks = _flatten_commercial_tasks(active_providers)
+    print(f"Geplante Tasks: {len(tasks)} Modell-Kombinationen")
+
+    quota_exhausted_providers: set[str] = set()
+    for i, task in enumerate(tasks, 1):
+        if task["provider"] in quota_exhausted_providers:
+            print(f"\n⏭️  MOD [Comm {i}/{len(tasks)}]: {task['provider']}/{task['name']} — Provider '{task['provider']}' quota-erschöpft, überspringe.")
+            continue
+        print(f"\n➡️  MOD [Comm {i}/{len(tasks)}]: {task['provider']}/{task['name']}")
+        quota_exhausted_providers = _run_commercial_model_task(
+            runner=runner,
+            modules=modules,
+            task=task,
+            i=i,
+            total=len(tasks),
+            existing_tests=existing_tests,
+            force=force,
+            audit_mode=audit_mode,
+            mcp_mode=mcp_mode,
+            quota_exhausted_providers=quota_exhausted_providers,
+        )
+
+# -- Phase 3D: Helfer für run_commercial_batch -------------------------------------
+
+def _resolve_active_commercial_providers(
+    validator: ConfigValidator,
+) -> dict[str, dict[str, Any]]:
+    """Filtert Provider nach enabled-Flag und vorhandenem API-Key (env_var)."""
+    providers_config = validator.config.get("providers", {}).get("commercial", {})
     active_providers = {
         k: v for k, v in providers_config.items() if v.get("enabled", False)
     }
-
-    # Filter out providers without API Key in environment
-    valid_providers = {}
+    valid_providers: dict[str, dict[str, Any]] = {}
     for k, v in active_providers.items():
-        # Some providers might not define env_var (e.g. if they are fake ones), but standard ones do
         env_key = v.get("env_var")
-        if env_key:
-            if not os.getenv(env_key):
-                print(
-                    f"⚠️  Überspringe Provider '{k}': API Key ({env_key}) fehlt in Umgebung."
-                )
-                continue
+        if env_key and not os.getenv(env_key):
+            print(f"⚠️  Überspringe Provider '{k}': API Key ({env_key}) fehlt in Umgebung.")
+            continue
         valid_providers[k] = v
-
-    active_providers = valid_providers
-
-    if not active_providers:
+    if not valid_providers:
         print("⚠️  Keine validen kommerziellen Provider gefunden (Check API Keys).")
-        return
+    return valid_providers
 
-    # -----------------------------------------------------
-    # Check Provider Accessibility (Budget / Quota / Connectivity)
-    # -----------------------------------------------------
+
+def _check_commercial_provider_accessibility(
+    validator: ConfigValidator,
+    active_providers: dict[str, dict[str, Any]],
+) -> dict[str, dict[str, Any]]:
+    """Testet pro Provider, ob der LLMClient ihn erreichen kann (Budget/Auth/Netz)."""
     print("\n🔍 Prüfe API-Zugang für Provider...")
     llm_client = LLMClient(validator.config)
-    accessible_providers = {}
-
+    accessible: dict[str, dict[str, Any]] = {}
     for k, v in active_providers.items():
         client = llm_client.clients.get(k)
-        if client:
-            # Formatierung verbessert: Feste Breite für Provider-Namen
-            print(f"   • {k:<12} Prüfe Zugang...", end=" ", flush=True)
-            if client.is_accessible():
-                print("✅ OK")
-                accessible_providers[k] = v
-            else:
-                print("❌ Fehlgeschlagen (Auth/Budget/Netzwerk). Überspringe. (Details: make logs)")
+        if client is None:
+            print(f"   ⚠️  Provider '{k}' hat keinen dedizierten Client. Überspringe Check.")
+            accessible[k] = v
+            continue
+        print(f"   • {k:<12} Prüfe Zugang...", end=" ", flush=True)
+        if client.is_accessible():
+            print("✅ OK")
+            accessible[k] = v
         else:
-            print(
-                f"   ⚠️  Provider '{k}' hat keinen dedizierten Client. Überspringe Check."
-            )
-            accessible_providers[k] = v
-
-    active_providers = accessible_providers
-
-    if not active_providers:
+            print("❌ Fehlgeschlagen (Auth/Budget/Netzwerk). Überspringe. (Details: make logs)")
+    if not accessible:
         print("⚠️  Keine zugänglichen kommerziellen Provider nach Prüfung gefunden.")
-        return
+    return accessible
 
-    # Cache laden (bereits erledigte Tests)
+
+def _load_commercial_existing_tests(
+    validator: ConfigValidator, force: bool,
+) -> set[tuple[str, str]]:
+    """Lädt Cache aus commercial_csv + cloud_csv, damit Skip-Logik greift."""
     comm_csv = Path(validator.config.get("output", {}).get("commercial_csv", "benchmark_scores/commercial_models_benchmark.csv"))
     cloud_csv = Path(validator.config.get("output", {}).get("cloud_models_csv", "benchmark_scores/cloud_models_benchmark.csv"))
+    existing = get_existing_results(comm_csv, force=force)
+    existing |= get_existing_results(cloud_csv, force=force)
+    print(f"Ignoriere bereits vorhandene Ergebnisse ({len(existing)} Einträge aus Commercial/Cloud)\n")
+    return existing
 
-    existing_tests = get_existing_results(comm_csv, force=force)
-    existing_tests.update(get_existing_results(cloud_csv, force=force))
 
-    print(f"Ignoriere bereits vorhandene Ergebnisse ({len(existing_tests)} Einträge aus Commercial/Cloud)\n")
-
-    # Flatten list of (provider, model_id, model_name)
-    tasks = []
+def _flatten_commercial_tasks(
+    active_providers: dict[str, dict[str, Any]],
+) -> list[dict[str, str]]:
+    """Konvertiert {provider: {models: [...]}} in flache Task-Liste."""
+    tasks: list[dict[str, str]] = []
     for prov_key, prov_data in active_providers.items():
         for model_data in prov_data.get("models", []):
-            tasks.append(
-                {
-                    "provider": prov_key,
-                    "id": model_data["id"],
-                    "name": model_data["name"],
-                }
-            )
+            tasks.append({
+                "provider": prov_key,
+                "id": model_data["id"],
+                "name": model_data["name"],
+            })
+    return tasks
 
-    print(f"Geplante Tasks: {len(tasks)} Modell-Kombinationen")
 
-    # Tracks providers that have been detected as quota-exhausted at runtime.
-    quota_exhausted_providers: Set[str] = set()
-
-    for i, task in enumerate(tasks, 1):
-        prov_key = task["provider"]
-        full_name = f"{prov_key}/{task['name']}"
-        model_id = task["id"]
-
+def _run_commercial_model_task(
+    *,
+    runner: UnifiedBenchmarkRunner,
+    modules: list[dict[str, Any]],
+    task: dict[str, str],
+    i: int,
+    total: int,
+    existing_tests: set[tuple[str, str]],
+    force: bool,
+    audit_mode: bool,
+    mcp_mode: str,
+    quota_exhausted_providers: set[str],
+) -> set[str]:
+    """Iteriert über alle Module für ein einzelnes kommerzielles Modell."""
+    prov_key = task["provider"]
+    model_id = task["id"]
+    for module in modules:
         if prov_key in quota_exhausted_providers:
-            print(f"\n⏭️  MOD [Comm {i}/{len(tasks)}]: {full_name} — Provider '{prov_key}' quota-erschöpft, überspringe.")
+            print(f"   ⏭️ Bench: {module['name']} (Provider quota-erschöpft, überspringe)")
             continue
+        quota_exhausted_providers = _run_commercial_module(
+            runner=runner,
+            module=module,
+            prov_key=prov_key,
+            model_id=model_id,
+            existing_tests=existing_tests,
+            force=force,
+            audit_mode=audit_mode,
+            mcp_mode=mcp_mode,
+            quota_exhausted_providers=quota_exhausted_providers,
+        )
+    return quota_exhausted_providers
 
-        print(f"\n➡️  MOD [Comm {i}/{len(tasks)}]: {full_name}")
-        had_new_results = False
 
-        for module in modules:
-            if prov_key in quota_exhausted_providers:
-                print(f"   ⏭️ Bench: {module['name']} (Provider quota-erschöpft, überspringe)")
-                continue
+def _run_commercial_module(
+    *,
+    runner: UnifiedBenchmarkRunner,
+    module: dict[str, Any],
+    prov_key: str,
+    model_id: str,
+    existing_tests: set[tuple[str, str]],
+    force: bool,
+    audit_mode: bool,
+    mcp_mode: str,
+    quota_exhausted_providers: set[str],
+) -> set[str]:
+    """Führt ein einzelnes Modul (Score-Delegate, Delegate, oder Normal) aus."""
+    assets_todo = get_startable_assets(module, model_id, existing_tests)
+    if not assets_todo:
+        print(f"   ✓ Bench: {module['name']} (Bereits erledigt)")
+        return quota_exhausted_providers
+    print(f"   📊 Bench: {module['name']} ({len(assets_todo)} neue Tests) ...")
 
-            # Filter assets
-            assets_todo = _get_startable_assets(module, model_id, existing_tests)
+    # SIM102 collapsible-if: zwei separate if-Statements statt nested
+    if _is_score_module(module):
+        ok = _run_score_delegate_for_model(
+            module, model_id, force=force, audit=audit_mode,
+        )
+        if not ok:
+            print(
+                "   ⚠️ Score-Delegate-Run fehlgeschlagen "
+                f"(provider={prov_key}, model={model_id}, module={module['key']})"
+            )
+        return quota_exhausted_providers
 
-            if not assets_todo:
-                print(f"   ✓ Bench: {module['name']} (Bereits erledigt)")
-                continue
+    if module.get("delegate_script"):
+        ok = _run_delegate_for_model(
+            module, model_id, force=force, audit=audit_mode, mcp_mode=mcp_mode,
+        )
+        if not ok:
+            print(
+                "   ⚠️ Delegate-Run fehlgeschlagen "
+                f"(provider={prov_key}, model={model_id}, module={module['key']})"
+            )
+        return quota_exhausted_providers
 
-            print(f"   📊 Bench: {module['name']} ({len(assets_todo)} neue Tests) ...")
+    return _run_commercial_module_normal(
+        runner=runner,
+        module=module,
+        prov_key=prov_key,
+        model_id=model_id,
+        assets_todo=assets_todo,
+        force=force,
+        quota_exhausted_providers=quota_exhausted_providers,
+    )
 
-            if _is_score_module(module):
-                ok = _run_score_delegate_for_model(
-                    module, model_id, force=force, audit=audit_mode
-                )
-                if ok:
-                    had_new_results = True
-                else:
-                    print(
-                        "   ⚠️ Score-Delegate-Run fehlgeschlagen "
-                        f"(provider={prov_key}, model={model_id}, module={module['key']})"
-                    )
-                continue
 
-            if module.get("delegate_script"):
-                ok = _run_delegate_for_model(
-                    module, model_id, force=force, audit=audit_mode, mcp_mode=mcp_mode
-                )
-                if ok:
-                    had_new_results = True
-                else:
-                    print(
-                        "   ⚠️ Delegate-Run fehlgeschlagen "
-                        f"(provider={prov_key}, model={model_id}, module={module['key']})"
-                    )
-                continue
+def _run_commercial_module_normal(
+    *,
+    runner: UnifiedBenchmarkRunner,
+    module: dict[str, Any],
+    prov_key: str,
+    model_id: str,
+    assets_todo: list[Any],
+    force: bool,
+    quota_exhausted_providers: set[str],
+) -> set[str]:
+    """Standard-Modul-Run über UnifiedBenchmarkRunner.run_benchmark."""
+    try:
+        results = runner.run_benchmark(
+            provider=prov_key, model=model_id,
+            benchmark_info=module, assets=assets_todo,
+        )
+    except KeyboardInterrupt:
+        print("\n⛔  Abbruch durch Benutzer.")
+        sys.exit(1)
+    except Exception as e:  # pylint: disable=broad-exception-caught
+        print(f"   ❌ Fehler: {e}")
+        return quota_exhausted_providers
 
-            try:
-                results = runner.run_benchmark(
-                    provider=prov_key, model=model_id, benchmark_info=module, assets=assets_todo
-                )
-                # Detect quota exhaustion via runner flag (Budget-/Quota-Fehler per-Test)
-                if runner.provider_quota_exhausted:
-                    print(f"   💸 Budget-/Quota-Fehler via Runner erkannt für Provider '{prov_key}'. Alle weiteren Modelle dieses Providers werden übersprungen.")
-                    quota_exhausted_providers.add(prov_key)
-                    runner.provider_quota_exhausted = False  # Reset für nächsten Provider
+    quota_exhausted_providers = _update_quota_exhaustion(
+        runner=runner,
+        results=results,
+        prov_key=prov_key,
+        quota_exhausted_providers=quota_exhausted_providers,
+    )
+    if results:
+        runner.save_results(results)
+    return quota_exhausted_providers
 
-                if results:
-                    # Fallback-Erkennung: alle Ergebnisse haben 0 Token und 0% Score
-                    all_zero_tokens = all(r.get("tokens_used", 0) == 0 for r in results)
-                    all_zero_scores = all(r.get("percentage", 0) == 0.0 for r in results)
-                    if all_zero_tokens and all_zero_scores and len(results) > 0 and prov_key not in quota_exhausted_providers:
-                        print(f"   💸 Quota-Erschöpfung (Fallback-Erkennung) für Provider '{prov_key}'. Alle weiteren Modelle dieses Providers werden übersprungen.")
-                        quota_exhausted_providers.add(prov_key)
 
-                    runner.save_results(results)
-                    had_new_results = True
-            except KeyboardInterrupt:
-                print("\n⛔  Abbruch durch Benutzer.")
-                sys.exit(1)
-            except Exception as e:  # pylint: disable=broad-exception-caught
-                print(f"   ❌ Fehler: {e}")
+def _update_quota_exhaustion(
+    *,
+    runner: UnifiedBenchmarkRunner,
+    results: list[dict[str, Any]],
+    prov_key: str,
+    quota_exhausted_providers: set[str],
+) -> set[str]:
+    """Doppel-Erkennung: Runner-Flag (Budget-Keywords) + Fallback (0-Token/0%)."""
+    if runner.provider_quota_exhausted:
+        print(f"   💸 Budget-/Quota-Fehler via Runner erkannt für Provider '{prov_key}'. Alle weiteren Modelle dieses Providers werden übersprungen.")
+        quota_exhausted_providers.add(prov_key)
+        runner.provider_quota_exhausted = False
+        return quota_exhausted_providers
+
+    if not results:
+        return quota_exhausted_providers
+    all_zero_tokens = all(r.get("tokens_used", 0) == 0 for r in results)
+    all_zero_scores = all(r.get("percentage", 0) == 0.0 for r in results)
+    if all_zero_tokens and all_zero_scores and prov_key not in quota_exhausted_providers:
+        print(f"   💸 Quota-Erschöpfung (Fallback-Erkennung) für Provider '{prov_key}'. Alle weiteren Modelle dieses Providers werden übersprungen.")
+        quota_exhausted_providers.add(prov_key)
+    return quota_exhausted_providers
 
 
 def main():
     """Main entry point."""
+    args = _parse_cli_args()
+    _print_banner(args)
+    validator = ConfigValidator()
+    modules = _resolve_active_modules_from_args(validator, args)
+    if not modules:
+        print("❌ Keine Module konfiguriert/aktiviert.")
+        sys.exit(1)
+    _print_active_modules(modules)
+
+    if _run_tooluse_backlog_phase(validator, args):
+        sys.exit(1)
+
+    _run_main_benchmark_phases(modules, validator, args)
+
+
+# -- Phase 3F3: Helfer für main ---------------------------------------------------
+
+def _parse_cli_args() -> argparse.Namespace:
+    """CLI-Argparse-Setup. Standard-Werte: audit=True, mcp_mode='live'."""
     parser = argparse.ArgumentParser(description="Crucible Automatic Benchmark")
     parser.add_argument(
         "--force",
@@ -1157,8 +1197,11 @@ def main():
         choices=["live", "mock"],
         help="MCP-Server-Modus für Module mit requires_mcp: true (default: live).",
     )
-    args = parser.parse_args()
+    return parser.parse_args()
 
+
+def _print_banner(args: argparse.Namespace) -> None:
+    """ASCII-Banner mit Modus-Hinweisen."""
     print(f"{'#' * 60}")
     print("🤖  CRUCIBLE AUTOMATIC BENCHMARK")
     print("    Füllt automatisch fehlende Benchmarks auf.")
@@ -1170,90 +1213,98 @@ def main():
         print(f"    🎯 FOKUS: Nur Module '{args.modules}'")
     print(f"{'#' * 60}\n")
 
-    validator = ConfigValidator()
 
-    # Module laden
+def _resolve_active_modules_from_args(
+    validator: ConfigValidator, args: argparse.Namespace,
+) -> list[dict[str, Any]]:
+    """Lädt Module + filtert per --modules CLI-Argument."""
     modules = get_all_modules(validator)
+    if not args.modules:
+        return modules
+    wanted = [m.strip() for m in args.modules.split(",")]
+    filtered = [m for m in modules if m["key"] in wanted]
+    if len(filtered) < len(wanted):
+        missing = set(wanted) - {m["key"] for m in filtered}
+        print(f"⚠️  Warnung: Gewünschte Module nicht gefunden/aktiviert: {missing}")
+    return filtered
 
-    # Filter modules if requested
-    if args.modules:
-        wanted = [m.strip() for m in args.modules.split(",")]
-        # Wir filtern die geladenen Module anhand des Keys
-        filtered = [m for m in modules if m["key"] in wanted]
-        if len(filtered) < len(wanted):
-            found_keys = [m["key"] for m in filtered]
-            missing = set(wanted) - set(found_keys)
-            print(f"⚠️  Warnung: Gewünschte Module nicht gefunden/aktiviert: {missing}")
-        modules = filtered
 
-    if not modules:
-        print("❌ Keine Module konfiguriert/aktiviert.")
-        sys.exit(1)
-
+def _print_active_modules(modules: list[dict[str, Any]]) -> None:
+    """Übersicht der aktivierten Module vor dem Lauf."""
     print(f"📋 Aktivierte Module ({len(modules)}):")
     for m in modules:
         print(f"   - {m['name']} ({m['key']})")
 
-    # === 0. Tool-Use Backlog: untested Cards erkennen und auffüllen =============
-    # Metaskript-Funktion: erkennt Cards mit supports_tool_use="untested" und
-    # delegiert an run_tooluse_benchmark.py. Läuft VOR den regulären Benchmarks,
-    # weil Tool-Use-Tests MCP benötigen und unabhängig vom normalen Loop sind.
-    # FORCE steuert: nur untested (nie true-Cards neu testen — wer FORCE will,
-    # nutzt make benchmark-tooluse-force).
-    untested_cards = _collect_untested_tooluse_cards()
-    if untested_cards:
-        print("\n🔧 [0/2] TOOL-USE BACKLOG (untested Cards)")
-        print(f"{'=' * 40}")
-        stop_llamacpp_provider_server(validator.config)
-        aborted = False
-        try:
-            _run_untested_tooluse_models(
-                untested_cards,
-                validator=validator,
-                mcp_mode=args.mcp_mode,
-                force=args.force,
-                silent=not args.audit,
-            )
-        except KeyboardInterrupt:
-            aborted = True
-        except Exception as e:  # pylint: disable=broad-exception-caught
-            print(f"   ⚠️  Tool-Use-Backlog fehlgeschlagen (nicht fatal): {e}")
-        if aborted:
-            sys.exit(1)
-    else:
-        print("\n🔧 [0/2] TOOL-USE BACKLOG: keine untested Cards — nichts zu tun.")
-    # ============================================================================
 
+def _run_tooluse_backlog_phase(
+    validator: ConfigValidator, args: argparse.Namespace,
+) -> bool:
+    """Phase 0: Tool-Use-Backlog (untested Cards). Returns True wenn aborted."""
+    untested_cards = _collect_untested_tooluse_cards()
+    if not untested_cards:
+        print("\n🔧 [0/2] TOOL-USE BACKLOG: keine untested Cards — nichts zu tun.")
+        return False
+
+    print("\n🔧 [0/2] TOOL-USE BACKLOG (untested Cards)")
+    print(f"{'=' * 40}")
+    stop_llamacpp_provider_server(validator.config)
     aborted = False
     try:
-        # 1. Lokale Modelle (Ollama)
+        _run_untested_tooluse_models(
+            untested_cards,
+            validator=validator,
+            mcp_mode=args.mcp_mode,
+            force=args.force,
+            silent=not args.audit,
+        )
+    except KeyboardInterrupt:
+        aborted = True
+    except Exception as e:  # pylint: disable=broad-exception-caught
+        print(f"   ⚠️  Tool-Use-Backlog fehlgeschlagen (nicht fatal): {e}")
+    return aborted
+
+
+def _run_main_benchmark_phases(
+    modules: list[dict[str, Any]],
+    validator: ConfigValidator,
+    args: argparse.Namespace,
+) -> None:
+    """Phasen 1/1b/2: Lokale (Ollama + llama.cpp) und kommerzielle Modelle."""
+    aborted = False
+    try:
+        # Phase 1: Lokale Modelle (Ollama)
         try:
-            run_local_batch(modules, validator, force=args.force, audit_mode=args.audit, mcp_mode=args.mcp_mode)
+            run_local_batch(
+                modules, validator,
+                force=args.force, audit_mode=args.audit, mcp_mode=args.mcp_mode,
+            )
         except (KeyboardInterrupt, SystemExit):
             print("\n⛔  Abbruch durch Benutzer (Lokale Modelle).")
             aborted = True
 
-        # 1b. Lokale Modelle (llama.cpp)
+        # Phase 1b: Lokale Modelle (llama.cpp)
         if not aborted:
             try:
-                run_llamacpp_batch(modules, validator, force=args.force, audit_mode=args.audit, mcp_mode=args.mcp_mode)
+                run_llamacpp_batch(
+                    modules, validator,
+                    force=args.force, audit_mode=args.audit, mcp_mode=args.mcp_mode,
+                )
             except (KeyboardInterrupt, SystemExit):
                 print("\n⛔  Abbruch durch Benutzer (llama.cpp).")
                 aborted = True
 
-        # 2. Kommerzielle Modelle
+        # Phase 2: Kommerzielle Modelle
         if not aborted:
             try:
                 run_commercial_batch(
-                    modules, validator, force=args.force, audit_mode=args.audit, mcp_mode=args.mcp_mode
+                    modules, validator,
+                    force=args.force, audit_mode=args.audit, mcp_mode=args.mcp_mode,
                 )
             except (KeyboardInterrupt, SystemExit):
                 print("\n⛔  Abbruch durch Benutzer (Kommerzielle Modelle).")
                 aborted = True
-
     finally:
         print("\n\n✅  AUTOMATIC RUN VERLASSEN.")
-
         if aborted:
             sys.exit(1)
 

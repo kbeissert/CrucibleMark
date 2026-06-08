@@ -5,7 +5,8 @@ Unified Interface für Ollama und Anthropic Claude API
 
 import logging
 from pathlib import Path
-from typing import Any, Callable, Dict, List, Optional
+from typing import Any
+from collections.abc import Callable
 import yaml  # pylint: disable=import-error
 
 from utils.providers.base import BaseProviderClient
@@ -37,7 +38,7 @@ class LLMClient:
     - Cost Tracking für kommerzielle APIs
     """
 
-    def __init__(self, config: Optional[Dict[str, Any]] = None):
+    def __init__(self, config: dict[str, Any] | None = None):
         """
         Initialisiert LLM Client
 
@@ -65,12 +66,12 @@ class LLMClient:
         # Load Model Version Locks
         self.model_locks = self._load_model_locks()
 
-    def _load_model_locks(self) -> Dict[str, Any]:
+    def _load_model_locks(self) -> dict[str, Any]:
         """Loads fixed model versions from config."""
         lock_path = Path("config/commercial_models_lock.yaml")
         if lock_path.exists():
             try:
-                with open(lock_path, "r", encoding="utf-8") as f:
+                with open(lock_path, encoding="utf-8") as f:
                     data = yaml.safe_load(f)
                     return data.get("providers", {})
             except Exception as e:
@@ -91,44 +92,54 @@ class LLMClient:
                     return locked_version
         return model_alias
 
+    # Phase 19: Aliase `llama_cpp` und `llamacpp_local` entfernt.
+    # Jede Provider-Instanz hat jetzt ihren eigenen Schlüssel — siehe
+    # `utils/providers/llamacpp.py` und `utils/providers/llamacpp_spark.py`.
     _LOCAL_PROVIDERS = (
         "ollama",
         "llamacpp",
         "llamacpp_spark",
-        "llama_cpp",
-        "llamacpp_local",
     )
+
+    def _first_local_metadata(self, key: str, default: float = 0.0) -> float:
+        """Returns the first non-zero value of ``key`` from any local provider's metadata.
+
+        Centralizes the ``_LOCAL_PROVIDERS`` lookup loop that was duplicated
+        in ``last_load_duration`` and ``last_pure_execution_time``.
+
+        Args:
+            key: Metadata-Feld (z.B. ``load_duration``).
+            default: Rückgabewert, wenn keiner der Provider einen Wert liefert.
+
+        Returns:
+            Erster gefundener, von 0 verschiedener Wert — sonst ``default``.
+        """
+        for name in self._LOCAL_PROVIDERS:
+            client = self.clients.get(name)
+            if client and hasattr(client, "last_response_metadata"):
+                val = client.last_response_metadata.get(key, default)
+                if val:
+                    return val
+        return default
 
     @property
     def last_load_duration(self) -> float:
         """Returns the load duration of the last request (local providers only)."""
-        for name in self._LOCAL_PROVIDERS:
-            client = self.clients.get(name)
-            if client and hasattr(client, "last_response_metadata"):
-                val = client.last_response_metadata.get("load_duration", 0.0)
-                if val:
-                    return val
-        return 0.0
+        return self._first_local_metadata("load_duration")
 
     @property
     def last_pure_execution_time(self) -> float:
         """Returns execution time minus load time (local providers only)."""
-        for name in self._LOCAL_PROVIDERS:
-            client = self.clients.get(name)
-            if client and hasattr(client, "last_response_metadata"):
-                val = client.last_response_metadata.get("pure_execution_time", 0.0)
-                if val:
-                    return val
-        return 0.0
+        return self._first_local_metadata("pure_execution_time")
 
     def query(  # pylint: disable=too-many-arguments, too-many-positional-arguments
         self,
         model: str,
         prompt: str,
         provider: str = "ollama",
-        temperature: Optional[float] = None,
+        temperature: float | None = None,
         max_retries: int = DEFAULT_MAX_RETRIES,
-        stream_handler: Optional[Callable[[str], None]] = None,
+        stream_handler: Callable[[str], None] | None = None,
         **kwargs,
     ) -> str:
         """
@@ -267,7 +278,7 @@ class LLMClient:
             return 0
         return len(text) // TOKEN_ESTIMATE_RATIO
 
-    def get_available_models(self, provider: str = "ollama") -> List[str]:
+    def get_available_models(self, provider: str = "ollama") -> list[str]:
         """
         Listet verfügbare Modelle
 

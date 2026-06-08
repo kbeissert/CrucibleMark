@@ -43,6 +43,26 @@ ANTHROPIC_NO_TEMPERATURE_MODELS: frozenset[str] = frozenset({
     "claude-sonnet-4-6",
 })
 
+# Response-Classification: zu kurze Antworten werden als Safety-Refusal gewertet.
+MIN_REFUSAL_CHARS: int = 15
+
+# HTTP-Statuscodes (SSOT für Statuscode-Vergleiche).
+HTTP_OK: int = 200
+
+# llama.cpp Memory-Reset: Zeit-Konstanten (Sekunden).
+# Nach schweren Tests (>150s) kann das Modell im VRAM blockieren; der Reset-
+# Block in unified_runner.py nutzt diese Werte für Pausen zwischen Probe-Chats.
+LLAMACPP_HEALTH_CHECK_TIMEOUT: int = 3   # GET /health
+LLAMACPP_PROBE_TIMEOUT: int = 15         # POST /v1/chat/completions (max_tokens=4)
+LLAMACPP_RESET_PAUSE_HEAVY: int = 10     # Server tot ODER Probe-Timeout
+LLAMACPP_RESET_PAUSE_MEDIUM: int = 8     # Probe-Chat fehlgeschlagen (non-200)
+LLAMACPP_RESET_PAUSE_OK: int = 2         # Probe-Chat OK (Standard)
+LLAMACPP_RESET_PAUSE_FALLBACK: int = 3   # Probe-Chat Exception (defensiv)
+
+# Ollama-Unload: Settle-Zeit nach keep_alive=0, damit das Modell aus dem
+# VRAM entladen ist, bevor der Judge-Request startet.
+OLLAMA_UNLOAD_SETTLE_SEC: float = 0.5
+
 
 class Colors:
     """ANSI Colors for Terminal Output."""

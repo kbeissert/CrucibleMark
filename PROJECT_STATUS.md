@@ -1,7 +1,7 @@
 # PROJECT_STATUS.md
 
 **Last Updated:** 2026-06-08
-**Current Version:** 4.6.8 — Makefile help v2 + argparse Hardening (Phase 29)
+**Current Version:** 4.7.0 — 4-Phasen-Refactoring der Kern-Skripte (Phase 30)
 **Status:** ✅ Production-Ready
 
 > **Hinweis:** Die Executive Summary weiter unten historisch auf v4.6.1.
@@ -9,17 +9,15 @@
 > detailliert dokumentiert. Dieser Header wird bei jedem Phase-Commit
 > nachgezogen, die Executive Summary nur bei Major-Milestones.
 >
-> **Aktueller Stand (Phase 29):**
-> - 459/459 Tests grün
-> - Pylint 10.00/10
-> - `make help` dokumentiert alle 83 Targets (vorher 73 fehlten)
-> - Cleanup-Dispatcher via `main_with_args()` (kein Subprozess mehr)
-> - `clean_csv()` nutzt ID-SSoT (`resolve_canonical_model_id`)
-> - `scripts/maintenance/cleanup_helpers.py` mit argparse (statt sys.argv-Hack)
-> - `scripts/maintenance/consolidate_csv.py` mit argparse (--help)
-> - `scripts/tools/validate_assets.py` mit argparse (Bug-Fix: --help crashte)
-> - `clean_versions.py` gelöscht (toter Code, hartkodierte Migration)
-> - `make clean-model DRY=1` / `clean-module DRY=1` / `clean-all DRY=1` (Vorschau)
+> **Aktueller Stand (Phase 30 — v4.7.0 4-Phasen-Refactoring):**
+> - 481/481 Tests grün
+> - Pylint 10.00/10 (alle 5 Kern-Dateien)
+> - Mypy 0 Issues
+> - Ruff 0 Issues
+> - 11 Helfer-Funktionen extrahiert (alle CC ≤ 12, Schwelle aus `.ruff.toml` C901)
+> - 9 SSOT-Konstanten in `utils/constants.py` (Refusal-Min, HTTP_OK, 5× `LLAMACPP_*`-Reset-Pauses, `OLLAMA_UNLOAD_SETTLE_SEC`)
+> - 12 Magic-Value-Stellen in `unified_runner.py` durch benannte Konstanten ersetzt
+> - 3 SIM-Fixes: `SIM110` (`_has_open_tests`), `SIM103` (`_is_module_scored`, `_is_asset_uncached`)
 >
 > **Aenderungen seit v4.6.1 im Detail:**
 > - v4.6.2: Provider-Card SSoT-Bereinigung (Phasen 20–21)
@@ -29,6 +27,7 @@
 > - v4.6.6: Backup-System SSoT + ID-Normalisierung (Phase 27)
 > - v4.6.7: make clean Hardening (Phase 28)
 > - v4.6.8: Makefile help v2 + argparse Hardening (Phase 29)
+> - **v4.7.0: 4-Phasen-Refactoring der Kern-Skripte (Phase 30) — aktueller Stand**
 
 ---
 
@@ -803,6 +802,6 @@ Visuelle Aufgaben (UML lesen, UI-Designs beurteilen) benötigen neue Asset-Forma
 
 ---
 
-**Document Version:** 4.6.1\
-**Last Updated:** 2026-06-08\
-**Next Review:** v4.7.0 / Nächster Feature-Meilenstein
+**Document Version:** 4.7.0\
+**Last Updated:** 2026-06-09\
+**Next Review:** v4.8.0 / Nächster Feature-Meilenstein

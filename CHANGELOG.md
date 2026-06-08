@@ -5,6 +5,151 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## [v4.7.0] - 2026-06-08
+
+**4-Phasen-Refactoring der 5 großen Kern-Skripte (Phase 30).**
+
+### Changed
+- **Phase 1 — Ruff Auto-Fix** — 209 Auto-Fixes + manuelle Nacharbeit auf `utils/llm_client.py`, `scripts/core/benchmark_auto.py`, `scripts/core/llamacpp_batch.py`, `scripts/core/unified_runner.py`. Reduktion auf 0 Ruff-Issues.
+- **Phase 2 — SSOT-Konsolidierung in `llamacpp_batch.py`** — fünf-ebenen Architektur (Lifecycle-Helper, Context-Manager, Cache-Helper, Asset-Ermittlung, Leaderboard-Cache). `canonical_lookup_keys()` als zentrale SSoT für Modell-Lookup-Keys.
+- **Phase 3 — CC-Reduktion** — 11 Helfer-Funktionen extrahiert. Alle Funktionen CC ≤ 12 (Schwelle gemäß `.ruff.toml` C901):
+  - `get_startable_assets` → 4 Helfer (`_should_skip_due_to_card`, `_is_batch_module_done`, `_resolve_uncached_assets`, `_is_asset_uncached`)
+  - `get_leaderboard_scored_modules` → 3 Helfer (`_extract_model_id_from_row`, `_add_scored_modules_for_model`, `_is_module_scored`)
+  - `run_benchmark` → 11 Helfer (CC 35 → ≤ 12)
+  - `_process_single_test` → 8 Helfer (CC 32 → ≤ 12)
+  - `run_commercial_batch` → 7 Helfer (CC 24 → ≤ 12)
+  - `main` → 6 Helfer (CC 18 → ≤ 12)
+- **Phase 4 — Magic-Number-Konsolidierung** — 9 SSOT-Konstanten in `utils/constants.py`:
+  - `MIN_REFUSAL_CHARS: int = 15`, `HTTP_OK: int = 200`
+  - 5× `LLAMACPP_*` (Health-Check, Probe, Reset-Pauses heavy/medium/ok/fallback)
+  - `OLLAMA_UNLOAD_SETTLE_SEC: float = 0.5`
+  - 12 Magic-Value-Stellen in `unified_runner.py` ersetzt.
+  - 3 SIM-Fixes: `SIM110` (`_has_open_tests`), `SIM103` (`_is_module_scored`, `_is_asset_uncached`).
+
+### Fixed
+- **Type-Hint-Bug in `_load_commercial_existing_tests`** — Return-Type war fälschlich als `dict[tuple, dict]` typisiert, obwohl die Funktion ein `set[tuple[str, str]]` zurückgibt. Sed-Replacement für 6 weitere Vorkommen von `existing_tests: dict[tuple, dict]` → `set[tuple[str, str]]`.
+
+### Verification
+- **481/481 Tests grün** (Refactoring-Scope, ohne die 14 vorbestehenden MCP-Server-HTTP-404-Failures, die mit `git stash` reproduziert wurden)
+- **Pylint 10.00/10** für alle 5 Kern-Dateien
+- **Mypy 0 Issues in 5 source files**
+- **Ruff 0 Issues**
+
+
+## [v4.6.4] - 2026-06-08
+
+**benchmark_auto: Tristate-Return aus `_run_module_for_model` (skipped ≠ failed).**
+
+### Fixed
+- **Auto-Benchmark brach bei llama.cpp-Provider nach 1 Modul ab** — `_run_single_llamacpp_provider_batch()` in `scripts/core/benchmark_auto.py` brach die Modul-Loop ab, sobald `_run_module_for_model()` `False` zurückgab. Der Bool-Return konnte aber nicht zwischen **"Leaderboard-Cache sagt done"** (legitim) und **"echter Fehler"** (Abbruch-berechtigt) unterscheiden. Resultat für `llamacpp_spark`: Server startete (✅ Server bereit 35s), erstes Modul zeigte `Leaderboard-Score vorhanden — übersprungen`, der Loop brach trotzdem ab, alle weiteren Module wurden übersprungen, Server wurde gestoppt (`🛑 Stoppe llama.cpp Server...`). Symptom: `⚠️ Modul 'X' für 'Y' fehlgeschlagen (mit offenen Assets). Restliche Module für dieses Modell werden übersprungen.`
+
+### Changed
+- **`_run_module_for_model()` in `scripts/core/benchmark_auto.py`** — Rückgabe von `bool` auf `str` umgestellt: `"ran" | "skipped" | "failed"`. Drei klare Pfade:
+  - `"ran"` — Modul wurde ausgeführt und Ergebnisse gespeichert (had_new_results = True)
+  - `"skipped"` — Leaderboard-Cache hat Score ODER keine Assets in CSV ODER n/a via Card-Flag → kein Fehler
+  - `"failed"` — Subprozess-Fehler, Exception, oder leere Ergebnisse nach echtem Run
+- **Caller `_run_single_llamacpp_provider_batch()` (Z. ~446-475)** — Loop bricht jetzt NUR auf `"failed"` UND `assets_todo` (echter Fehler mit offenen Assets). `"skipped"` ist explizit kein Abbruch-Grund.
+- **Caller `run_local_batch()` (Z. ~949-958)** — `had_new_results` wird nur bei `"ran"` gesetzt (korrekt mit String-Vergleich statt Bool-OR, weil Tristate kein Bool mehr ist).
+- **Defensive Robustheit:** In-Process-Pfad (`runner.run_benchmark`) returnt jetzt `"failed"` wenn der Run keine Ergebnisse produziert (vorher `False`).
+
+### Tests
+- **Bestehender Test `test_run_module_for_model_uses_score_delegate`** angepasst: `assertTrue(result)` → `assertEqual(result, "ran")`.
+- **8 neue Tests in `TestRunModuleForModelTristate` (Phase 21):**
+  1. `test_leaderboard_cache_returns_skipped` — Regression-Test für den User-Bug
+  2. `test_no_assets_returns_skipped`
+  3. `test_score_delegate_success_returns_ran`
+  4. `test_score_delegate_failure_returns_failed`
+  5. `test_force_bypasses_leaderboard_cache` — verifiziert, dass `force=True` den Cache umgeht
+  6. `test_llamacpp_provider_skips_score_delegate` — in-process statt Subprozess für llama.cpp
+  7. `test_generic_delegate_failure_returns_failed`
+  8. `test_run_score_delegate_builds_expected_command` (aus altem Test verschoben)
+
+### Result
+- 482/482 Tests grün (vorher 474, +8 Phase-21-Tests).
+- `make benchmark-auto` mit `llamacpp_spark` durchläuft jetzt alle Module pro Modell, auch wenn einzelne Module per Leaderboard-Cache geskippt werden — der Server bleibt aktiv, das nächste Modul startet ohne Unterbrechung.
+- `make benchmark` (Wizard-Pfad) war nicht betroffen — der nutzt den direkten run_benchmark.py-Pfad ohne diesen Loop.
+
+---
+
+## [v4.6.3] - 2026-06-08
+
+**Spark-Connector Auto-Start: `start_server()` als SSoT in `_process_single_test()` (Phase 20).**
+
+### Fixed
+- **0-Token-Test-Runs bei llamacpp-Provider (insb. DGX Spark)** — `scripts/core/unified_runner.py::_process_single_test()` hat vor dem Test nur passiv per `requests.get()` geprüft, ob der llama.cpp-Server auf `/health` antwortet. Bei „nicht erreichbar" wurde nur ein WARNING geloggt, der Test startete trotzdem — und lief mit 0 Tokens, weil der Server zwischen Check und `client.query()`-Aufruf keine Zeit zum Starten hatte. Symptom: `❌ [1/5] 001 Wcag Audit: 0.0% | 0 T | 6.1s`, gefolgt von `Retrying request to /models in 0.45s/0.77s` (OpenAI-Library-Retries).
+
+### Changed
+- **`scripts/core/unified_runner.py::_process_single_test()` (Zeile ~380-419):** Passiver Health-Check durch `client.start_server(model)` ersetzt. Damit ist `start_server()` aus `LlamaCppBaseClient` die **Single Source of Truth** für den Server-Lifecycle. Behandelt die drei relevanten Fälle:
+  1. Server läuft + Modell matched → schneller Return, Test läuft sofort
+  2. Server läuft + anderes Modell → stop+start mit korrektem Modell
+  3. Server läuft nicht → kompletter Start mit Modell-Laden
+- **Fehlerverhalten:** Bei `start_server() == False` oder Exception → `_create_error_result()` mit klarer Fehlermeldung („llama.cpp Server (X) Start fehlgeschlagen für Modell 'Y' — Server-Log prüfen"). Verhindert 0-Token-Runs und gibt dem User frühzeitig ein deutliches Signal, statt 5 Tests mit 0% zu produzieren.
+- **Memory-Reset-Block (nach Judge, llama.cpp-spezifisch)** bleibt unverändert — der ist für „Server lebt noch, Modell blockiert nach schwerem Test" zuständig, nicht für Auto-Start.
+
+### Result
+- 474/474 Tests grün (kein neuer Test nötig, da Lifecycle-Logik bereits in `test_llamacpp_provider_separation.py` abgedeckt ist).
+- Erwartung beim nächsten `make benchmark` mit `llamacpp_spark`: Test-Skip mit Error-Result statt 0-Token-Run, wenn der SSH-Tunnel zum DGX Spark nicht steht.
+
+---
+
+## [Unreleased]
+
+**llama.cpp Sampling-Defaults: `benchmark_defaults` → `llama_cpp_defaults` (SSoT-Klarstellung) + vollständige Flag-Pipeline.**
+
+### Changed
+- **Config-Block umbenannt:** `providers.local.config.benchmark_defaults` → `providers.local.config.llama_cpp_defaults`. Werte entsprechen jetzt den **llama.cpp-Upstream-Defaults** (außer `seed=42`):
+  - `temperature: 0.1` → `0.8` (llama.cpp-Default)
+  - `top_p: 0.9` → `0.95` (llama.cpp-Default)
+  - `top_k: 40` (unverändert)
+  - `repeat_penalty: 1.1` → `1.0` (llama.cpp-Default)
+  - `seed: 42` (explizit für Reproduzierbarkeit; llama.cpp-Default wäre -1 = random)
+- **Zwei neue Flags ergänzt:** `min_p: 0.0` und `presence_penalty: 0.0` werden jetzt als Server-Start-Flags (`--min-p`, `--presence-penalty`) an llama-server durchgereicht. Vorher waren sie nur via Pro-Modell-Override in `optional_numeric_flags` setzbar, nicht als Default.
+- **Code-Defaults angepasst:** Die hardcoded Fallback-Werte in `_build_server_cmd()` (`utils/providers/llamacpp_base.py`) wurden auf 0.8/0.95/40/0.0/0.0/1.0/42 vereinheitlicht. Damit bleibt die Funktion backward-kompatibel, wenn der `llama_cpp_defaults`-Block fehlt.
+
+### Added
+- **Pro-Modell-Override für `min_p` und `presence_penalty`** in `optional_numeric_flags` — vorher waren nur `temperature`/`top_p`/`top_k`/`repeat_penalty` überschreibbar. Jetzt sind alle sieben Sampling-Parameter pro Modell steuerbar.
+- **3 neue Regressionstests** in `tests/test_llamacpp_provider_separation.py`:
+  - `test_build_server_cmd_uses_llama_cpp_defaults` — verifiziert alle sieben Flags im Server-Cmd
+  - `test_build_server_cmd_model_override_wins` — Modell-Override schlägt Default
+  - `test_build_server_cmd_works_without_defaults_block` — Code-Defaults greifen ohne Config-Block
+
+### Migration
+- Wer eigene Repo-Konfigs mit dem alten `benchmark_defaults`-Block hat, muss auf `llama_cpp_defaults` umbenennen. Sonst schlägt der Server-Start fehl (KeyError auf `benchmark_defaults` ist nicht das Problem — `local_config.get("llama_cpp_defaults", {})` liefert leeren Dict, dann greifen Code-Defaults).
+
+### Doku
+- `docs/DEVELOPER_GUIDE.md` Abschnitt „Sampling-Defaults via `llama_cpp_defaults` (SSoT)" neu — Tabelle aller Flags, Pro-Modell-Override-Beispiel, Override-Reihenfolge, Hinweis zum historischen Rename.
+
+
+## [v4.6.2] - 2026-06-08
+
+**llama.cpp-Connector-Trennung — eine Klasse pro Hardware-Target (M4 ↔ Spark).**
+
+### Changed
+- **Architektur-Korrektur:** Die Multi-Provider-Klasse `LlamaCppClient` mit `_provider_name`-Runtime-Switch ist aufgeteilt in eine Basisklasse + zwei Hardware-spezifische Subklassen. Damit folgt die llama.cpp-Integration dem Muster aller anderen Provider (OllamaClient, OpenRouterClient, …): **1 Klasse pro Hardware-Target, 1 Instanz pro Provider-Key, kein State-Sharing, keine Bug-Klasse mehr durch vergessene `_set_provider_context()`-Aufrufe.**
+- `utils/providers/llamacpp.py` (NEU als `LlamaCppLocalClient`): nur noch M4-MacBook. Erbt von `LlamaCppBaseClient`, `PROVIDER_NAMES = ["llamacpp"]`, `_PROVIDER_KEY = "llamacpp"`.
+- `utils/providers/llamacpp_spark.py` (NEU als `LlamaCppSparkClient`): nur noch DGX Spark (Remote via SSH, NVIDIA CUDA). Erbt von `LlamaCppBaseClient`, `PROVIDER_NAMES = ["llamacpp_spark"]`, `_PROVIDER_KEY = "llamacpp_spark"`.
+- `utils/providers/llamacpp_base.py` (NEU als `LlamaCppBaseClient`): provider-agnostische Logik (Server-Lifecycle, OpenAI-Client, Health-Check, Query-Loop, Model-Norm). `PROVIDER_NAMES = []` (kein Auto-Register) und `_PROVIDER_KEY = ""` (muss von Subklasse gesetzt werden). Direkte Instanziierung wirft `NotImplementedError`.
+- `utils/llm_client.py::_LOCAL_PROVIDERS`: Aliase `llama_cpp` und `llamacpp_local` entfernt — jede Provider-Instanz hat jetzt ihren eigenen eindeutigen Schlüssel.
+- `scripts/core/llamacpp_batch.py::is_llamacpp_provider()`: Aliase entfernt (`{"llamacpp", "llamacpp_spark"}`).
+- `scripts/core/model_discovery.py::discover_local_models()`: iteriert jetzt über ALLE aktivierten llamacpp-Provider (M4 + Spark), nicht nur den hartcodierten Key `llamacpp`. Damit erscheinen Spark-Modelle in `--all`/Discovery-Listen.
+
+### Removed
+- `_set_provider_context()`, `_normalize_provider_name()`, `_provider_name`-Attribut aus der llama.cpp-Provider-Logik. Jede Instanz kennt ihren Provider ab Konstruktion.
+- Aliase `llama_cpp` und `llamacpp_local` aus dem Auto-Registry und aus `_LOCAL_PROVIDERS`.
+
+### Added
+- **`tests/test_llamacpp_provider_separation.py`** (10 Tests): Auto-Registry-Korrektheit (Basisklasse ohne `PROVIDER_NAMES`, Subklassen mit eindeutigen Keys, Aliase entfernt), Provider-spezifischer Config-Lookup (M4 vs. Spark lesen jeweils ihre eigene Config), State-Isolation (kein Leak zwischen Instanzen), Konstruktor-Validierung (Basisklasse wirft ohne `_PROVIDER_KEY`), `_LOCAL_PROVIDERS` Tuple bereinigt, `model_discovery` enthält Spark-Modelle.
+
+### Result
+- 469/469 Tests grün (vorher 459, +10 durch Phase-19-Tests).
+- Architektur-Konsistenz: llama.cpp folgt jetzt dem Muster aller anderen Provider (1 Klasse pro Hardware-Target).
+- Bug-Klasse `_set_provider_context()`-Switch strukturell eliminiert — der ursprüngliche Spark-Connector-Bug (falsche Config, falsche base_url, falsche context_window) kann in dieser Form nicht mehr auftreten.
+
+### Migration für eigene Skripte
+Wer die Aliase `llama_cpp` oder `llamacpp_local` in eigenen Skripts referenziert hat, muss auf `llamacpp` umstellen. Im Repo selbst waren nur `scripts/core/unified_runner.py` und `scripts/core/llamacpp_batch.py` betroffen — beide sind in dieser Phase angepasst.
+
+---
+
 ## [v4.6.1] - 2026-06-08
 
 **CSV-Hygiene Defense-in-Depth — Hard-Fail-Guard in `result_manager` + Sanitizer-Heuristiken in `consolidate_csv`.**
