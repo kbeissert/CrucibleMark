@@ -1,0 +1,37 @@
+# Ruff-Konfiguration für CrucibleMark
+# E501 auf 100 erweitert: lange Log-Strings und Config-Pfade bleiben lesbar
+# (PEP-8-Default 88 ist für viele Provider-Configs/Shell-Cmds zu restriktiv)
+line-length = 100
+target-version = "py312"
+
+# Selektierte Regelsätze (schlank gehalten)
+# E/W = pycodestyle errors/warnings, F = pyflakes, UP = pyupgrade,
+# SIM = simplify, B = bugbear, C901 = complexity, PLR = pylint refactor
+[lint]
+select = [
+    "E",    # pycodestyle errors
+    "W",    # pycodestyle warnings
+    "F",    # pyflakes (unused imports, undefined names, …)
+    "UP",   # pyupgrade (PEP 604, 585, deprecated typing.*)
+    "SIM",  # flake8-simplify (collapsable if, suppress, …)
+    "B",    # flake8-bugbear (mutability, common bugs)
+    "C901", # mccabe complexity (separate --max-complexity)
+    "PLR",  # pylint refactor (PLR0913 too-many-arguments, etc.)
+]
+
+# Per-Regel-Overrides, die historisch False Positives erzeugen oder
+# in Pylint (parallel) bereits geprüft werden.
+ignore = [
+    "E501",    # line-too-long — bewusst gehandhabt pro Zeile, nicht auto-fixen
+    "PLR0911", # too-many-return-statements — viele early-returns sind hier lesbarer als nested ifs
+    "PLR0913", # too-many-arguments — bei Provider-Configs oft nicht reduzierbar
+    "PLR0912", # too-many-branches — komplexität wird via C901 getrackt
+    "PLR0915", # too-many-statements — wird in Mixin-Refactor adressiert
+    "PLR0904", # too-many-public-methods — Mixin-Pattern nicht bestrafen
+    "B008",    # do-not-perform-function-call-in-argument-defaults (pydantic etc.)
+    "B904",    # raise-without-from-inside-except — historisch, in Cleanup-Phase
+]
+
+# Komplexitätslimit pro Funktion (Mccabe)
+[lint.mccabe]
+max-complexity = 12
