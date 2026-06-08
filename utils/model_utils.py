@@ -84,10 +84,63 @@ def _safe_name(model_id: str) -> str:
     """Canonical filename-safe transformation for model IDs.
 
     Normalizes HuggingFace Ollama IDs first (strips hf.co/AUTHOR/ prefix),
-    then replaces every character in ``[:/.\\  ]`` with an underscore.
+    then replaces every character in ``[:/.\  ]`` with an underscore.
     SSoT — used by all card path helpers in this module and in generation scripts.
     """
     return re.sub(r"[:/.\ ]", "_", normalize_model_id(model_id))
+
+
+def resolve_canonical_model_id(model_id: str) -> str:
+    """SSoT für alle model_id-Auflösungen.
+
+    Liefert die kanonische Schreibweise einer Model-ID, identisch mit der
+    ``model_id``-Spalte in den CSVs, den Card-Dateinamen und den
+    Leaderboard-Zeilen. Eingaben dürfen beliebige Schreibweisen sein
+    (Punkte, Underscores, hf.co/AUTHOR/ Prefixe, Doppelpunkte).
+
+    Pipeline
+    --------
+    1. ``normalize_model_id`` (strippt hf.co/AUTHOR/ Prefix)
+    2. Card-Lookup: findet auch Karten, deren Dateinamen eine andere
+       Schreibweise haben als die Eingabe (Punkt vs. Underscore)
+    3. Wenn Card gefunden: gibt die ``model_id`` der Card zurück
+       (= kanonische Form, identisch zur CSV-Spalte)
+    4. Sonst: ``_safe_name`` als Fallback (konsistent mit Card-Filenames)
+
+    Warum SSoT
+    ---------
+    Bisher wurde ``model_id`` direkt durch die Pipeline gereicht, was zu
+    Mismatch zwischen CLI-Eingabe (``qwen3.5-35b-a3b-q8``) und gespeicherten
+    Werten (``qwen3_5-35b-a3b-q8``) führte. Diese Funktion löst das
+    Problem EINMAL an der Quelle (``UnifiedBenchmarkRunner.run_benchmark``,
+    ``run_benchmark.py`` Entry-Point, ``run_tooluse_benchmark.py`` Cache-Check)
+    statt punktuell in jedem Modul einen Bridge-Patch einzustreuen.
+
+    Beispiele
+    ---------
+    ``qwen3.5-35b-a3b-q8``        → ``qwen3_5-35b-a3b-q8`` (via Card-Lookup)
+    ``qwen3_5-35b-a3b-q8``        → ``qwen3_5-35b-a3b-q8`` (Card direkt gefunden)
+    ``hf.co/x/y:Q4_K_M``          → ``y:Q4_K_M``                   (kein Card)
+    ``claude-haiku-4-5``          → ``claude-haiku-4-5-20251001``  (glob fallback)
+    ``unbekanntes-modell``        → ``unbekanntes-modell``         (safe_name)
+    """
+    if not model_id:
+        return model_id
+    base = normalize_model_id(model_id)
+    try:
+        card_path = _find_card(base)
+    except Exception:  # noqa: BLE001
+        card_path = None
+    if card_path is not None and card_path.exists():
+        try:
+            data = json.loads(card_path.read_text(encoding="utf-8"))
+            if isinstance(data, dict):
+                canonical = data.get("model_id")
+                if isinstance(canonical, str) and canonical:
+                    return canonical
+        except (OSError, json.JSONDecodeError):  # noqa: PERF203
+            pass
+    return _safe_name(base)
 
 
 _STALE_VERSIONS: frozenset[str] = frozenset({"latest", "unknown", "k.A.", ""})

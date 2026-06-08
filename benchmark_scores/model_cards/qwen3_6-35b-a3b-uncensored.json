@@ -1,5 +1,5 @@
 {
-  "model_id": "qwen3.6-35b-a3b-uncensored",
+  "model_id": "qwen3_6-35b-a3b-uncensored",
   "display_name": "Qwen 3.6 35B-A3B Uncensored HauhauCS Aggressive Q8_K_P (GGUF)",
   "developer": "Alibaba Group (Qwen Team) / HauhauCS (Community Fine-Tune)",
   "origin_country": "China",

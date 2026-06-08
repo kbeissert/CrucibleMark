@@ -214,6 +214,14 @@ def _run_model(model_id: str, force: bool = False, silent: bool = False) -> bool
     Prüft vor Ausführung ob das Modell bereits im ToolUse-Leaderboard existiert
     (außer bei force=True).
     """
+    # SSoT: Kanonische model_id resolven, damit der Cache-Check auf die
+    # gleiche Schreibweise wie im Leaderboard matcht (qwen3.5-… → qwen3_5-…).
+    from utils.model_utils import resolve_canonical_model_id
+    canonical_id = resolve_canonical_model_id(model_id)
+    if canonical_id != model_id:
+        print(f"  [SSoT] model_id kanonisiert: '{model_id}' → '{canonical_id}'")
+        model_id = canonical_id
+
     # Cache-Check: Überspringe wenn Modell bereits im ToolUse-Leaderboard
     if not force:
         try:
@@ -227,7 +235,7 @@ def _run_model(model_id: str, force: bool = False, silent: bool = False) -> bool
         except Exception:
             # Bei Fehler im Cache-Check defensiv weitermachen (Benchmark ausführen)
             pass
-    
+
     cmd = [sys.executable, "run_benchmark.py", "--module", "tooluse", "--model", model_id]
     if force:
         cmd.append("--force")

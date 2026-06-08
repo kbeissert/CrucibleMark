@@ -1,5 +1,5 @@
 {
-  "model_id": "qwen3.5-4b-q4",
+  "model_id": "qwen3_5-4b-q4",
   "display_name": "Qwen 3.5 4B (llama.cpp, UD-Q4_K_XL)",
   "developer": "Alibaba Cloud",
   "origin_country": "China",

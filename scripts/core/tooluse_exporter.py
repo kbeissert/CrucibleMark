@@ -368,15 +368,12 @@ class ToolUseExporter:
 
         # Filter auf target_model_ids wenn angegeben
         if target_model_ids:
+            # SSoT (aufgelöst via resolve_canonical_model_id): Da die
+            # model_id bereits in unified_runner.py bzw. run_tooluse_benchmark.py
+            # zentral kanonisiert wird, sind die CSV-Werte und die
+            # target_model_ids bereits in derselben Schreibweise. Ein
+            # zusätzlicher Dot↔Underscore-Bridge ist NICHT mehr nötig.
             target_normalized = {normalize_model_id(m) for m in target_model_ids}
-            # Dot-vs-underscore bridge: wenn target z. B. qwen3.5-… (Punkt) ist,
-            # die CSV aber qwen3_5-… (Underscore) speichert, beide Varianten
-            # in den Filter aufnehmen, damit der Match bei beiden landet.
-            for m in list(target_normalized):
-                if "." in m:
-                    target_normalized.add(m.replace(".", "_"))
-                elif "_" in m and any(c.isdigit() for c in m.split("_")[0]):
-                    target_normalized.add(m.replace("_", "."))
             per_model = {
                 mid: rows for mid, rows in per_model.items()
                 if normalize_model_id(mid) in target_normalized

@@ -30,7 +30,13 @@ from utils.constants import (
 )
 from utils.language_validator import LanguageValidator
 from utils.logging_config import setup_logging
-from utils.model_utils import _find_card, get_model_identity, get_model_version, probe_thinking_model
+from utils.model_utils import (
+    _find_card,
+    get_model_identity,
+    get_model_version,
+    probe_thinking_model,
+    resolve_canonical_model_id,
+)
 from utils.rate_limiter import RateLimiter
 from utils.scoring.exceptions import JudgeUnavailableError
 from utils.scoring.judge_evaluator import evaluate_with_judge, generate_audit_log
@@ -648,6 +654,9 @@ class UnifiedBenchmarkRunner(BaseBenchmarkRunner):
 
         try:
             if benchmark_info.get("execution_mode") == "batch":
+                # SSoT: Kanonische ID bestimmen, bevor der Batch-Modus auf den
+                # model-Parameter zugreift (z. B. existing_benchmarks-Cache-Lookup).
+                model = resolve_canonical_model_id(model)
                 return self.execute_batch_module(
                     model=model,
                     benchmark_info=benchmark_info,
@@ -655,6 +664,19 @@ class UnifiedBenchmarkRunner(BaseBenchmarkRunner):
                     num_runs=num_runs,
                     force=self.force,
                     existing_benchmarks=self._get_existing_for_model(provider, model),
+                )
+
+            # SSoT-Hook: model_id EINMAL hier kanonisieren. Löst dot→underscore
+            # (qwen3.5-xy → qwen3_5-xy), Card-Aliase (claude-haiku-4-5 →
+            # claude-haiku-4-5-20251001) und hf.co/AUTHOR/ Prefixes. Alle nach-
+            # gelagerten Schritte (Card-Lookup, Cache, Save, Exporter) sehen
+            # dann die konsistente Schreibweise.
+            original_model = model
+            model = resolve_canonical_model_id(model)
+            if model != original_model:
+                logger.info(
+                    "[SSoT] model_id kanonisiert: '%s' → '%s'",
+                    original_model, model,
                 )
 
             # Card-First-Hook: Thinking-Probe vor erstem Run sicherstellen

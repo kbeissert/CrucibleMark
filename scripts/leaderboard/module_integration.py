@@ -85,16 +85,10 @@ def _build_card_lookups() -> Tuple[Dict[str, str], Dict[str, str]]:
                 bare_stripped = _re_card.sub(r"-\d{4,8}$", "", bare)
                 if bare_stripped != bare:
                     id_lookup[bare_stripped] = canonical_id
-            # 6. Dot-to-underscore variant (e.g. qwen3.5-... → qwen3_5-...)
-            # Handles the common case where API returns dot notation but
-            # the canonical card ID uses underscore.
-            if "_" in canonical_id:
-                dot_variant = canonical_id.replace("_", ".")
-                id_lookup[dot_variant] = canonical_id
-                # Also add vendor-prefixed variant if applicable
-                if "/" in dot_variant:
-                    dot_bare = dot_variant.rsplit("/", 1)[-1]
-                    id_lookup[dot_bare] = canonical_id
+            # Hinweis: Ein Dot↔Underscore-Bridge ist NICHT mehr nötig, weil
+            # die model_id bereits zentral in ``unified_runner.py`` via
+            # ``resolve_canonical_model_id()`` kanonisiert wird, bevor sie
+            # jemals die CSVs oder den Leaderboard-Pfad erreicht.
         except (json.JSONDecodeError, OSError):
             continue
 

@@ -1,5 +1,5 @@
 {
-  "model_id": "qwen2.5-coder-7b",
+  "model_id": "qwen2_5-coder-7b",
   "display_name": "Qwen 2.5 Coder 7B (llama.cpp, Q6_K)",
   "developer": "Alibaba Cloud",
   "origin_country": "China",

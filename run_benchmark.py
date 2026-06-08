@@ -173,6 +173,11 @@ class BenchmarkRunner:
         # Validate Model Existence (Fail Fast)
         if run_config.model_name:
             provider, model_id = resolve_provider(run_config.model_name)
+            # SSoT: Kanonische model_id früh im Entry-Point resolven, damit
+            # alle Sub-Prozesse (Delegate-Scripts, run_tooluse_benchmark.py)
+            # bereits die kanonisierte ID erhalten.
+            from utils.model_utils import resolve_canonical_model_id
+            model_id = resolve_canonical_model_id(model_id)
             if provider == "ollama":
                 available_models = get_ollama_models_info()
                 model_names = [m["name"] for m in available_models]

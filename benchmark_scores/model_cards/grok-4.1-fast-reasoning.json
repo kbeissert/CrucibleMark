@@ -1,5 +1,5 @@
 {
-  "model_id": "grok-4.1-fast-reasoning",
+  "model_id": "grok-4_1-fast-reasoning",
   "display_name": "Grok 4.1 Fast Reasoning",
   "developer": "xAI",
   "origin_country": "USA",
@@ -44,8 +44,8 @@
   "vendor": "xAI",
   "weights_license_tier": "proprietary",
   "model_version": "4.1-fast-reasoning",
-  "input_price_per_1m": 0.20,
-  "output_price_per_1m": 0.50,
+  "input_price_per_1m": 0.2,
+  "output_price_per_1m": 0.5,
   "use_case_primary": "reasoning",
   "parameter_architecture": "moe",
   "params_total_b": null,
