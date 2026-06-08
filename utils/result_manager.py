@@ -1,6 +1,11 @@
 """
 Zentrales Modul für das Speichern von Benchmark-Ergebnissen.
 Stellt sicher, dass alle CSVs im konfigurierten Output-Verzeichnis landen.
+
+Defense-in-Depth (Phase 9): Validierung in _write_to_csv() wirft ValueError
+wenn eine Zeile mit korruptem Inhalt (Header-Repeat, narrative Asset-ID,
+ungültigem Model) geschrieben werden würde. Verhindert, dass ein zukünftiges
+Modul Müll in die CSV schreibt.
 """
 
 import sys
@@ -15,7 +20,12 @@ from utils.constants import (
     RESULT_TYPE_CLOUD,
     RESULT_TYPE_COMMERCIAL,
 )
-from utils.model_utils import normalize_model_id
+from utils.model_utils import enforce_card_first
+from scripts.maintenance.sanitize_benchmark_csvs import (
+    _is_header_repeat,
+    _is_narrative_asset_id,
+    _is_invalid_model,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -122,6 +132,49 @@ class ResultManager:
 
         return list(existing_keys) + normal_added + judge_added
 
+    def _validate_row_for_write(self, row: dict[str, Any], fieldnames: list[str]) -> None:
+        """Validiert eine Zeile VOR dem CSV-Write (Phase 9, Hard-Fail-Guard).
+
+        Wirft ValueError, wenn die Zeile Header-Repeat, narrative Asset-ID oder
+        ungültiges Model enthält. Verhindert dass ein zukünftiges Modul Müll
+        in die CSV schreibt. Testet die gleichen Heuristiken wie
+        ``sanitize_benchmark_csvs._filter_rows``.
+
+        Args:
+            row: Eine Ergebnis-Dict-Zeile (kann new oder existing sein).
+            fieldnames: Tatsächlicher Header der Zieldatei (für Index-Lookup).
+
+        Raises:
+            ValueError: Bei erkannter Korruption. Die Exception enthält Zeilen-Index,
+                Asset-ID und Grund; der Caller soll den Fehler loggen und ggf. die
+                Zeile überspringen statt die ganze Save-Operation abzubrechen.
+        """
+        # Header-Repeat: parts[0] == 'asset_id' (gilt nur wenn asset_id-Spalte der
+        # erste Eintrag im Header ist). Wir checken pragmatisch auf das Vorhandensein
+        # des Header-Werts in der asset_id-Spalte — gleiche Heuristik wie im Sanitizer.
+        asset_id_value = str(row.get("asset_id", "") or "")
+        if _is_header_repeat([asset_id_value] if asset_id_value else []):
+            raise ValueError(
+                f"Header-Repeat erkannt: asset_id='{asset_id_value}'. "
+                "Zeile wird nicht geschrieben — wahrscheinlich Datenkorruption."
+            )
+
+        # Narrative Asset-ID
+        if _is_narrative_asset_id(asset_id_value):
+            raise ValueError(
+                f"Narrative Asset-ID erkannt: '{asset_id_value[:80]}...'. "
+                "Zeile wird nicht geschrieben — sieht nach LLM-Rohtext aus."
+            )
+
+        # Ungültiges Model
+        is_invalid, reason = _is_invalid_model(str(row.get("model", "") or ""))
+        if is_invalid:
+            raise ValueError(
+                f"Ungültiges Model erkannt: reason='{reason}', "
+                f"value='{row.get('model', '')}'. "
+                "Zeile wird nicht geschrieben — SSoT-Verletzung."
+            )
+
     def save_results(
         self, results: list[dict[str, Any]], result_type: str | None = None
     ) -> Path | None:
@@ -129,10 +182,12 @@ class ResultManager:
         if not results:
             return None
 
-        # Normalize hf.co/AUTHOR/ prefixed Ollama model IDs before any storage
+        # Card-First-Vertrag: kanonische model_id garantieren und Card-Pflicht durchsetzen
+        # (WARNING + ensure_card() bei fehlender Card; kein Hard-Fail)
         for r in results:
             if "model" in r:
-                r["model"] = normalize_model_id(r["model"])
+                canonical, _has_card = enforce_card_first(r["model"])
+                r["model"] = canonical
 
         # Automatisches Ermitteln des result_type anhand des ersten Eintrags, falls nicht explizit übergeben
         if not result_type and results:
@@ -213,9 +268,40 @@ class ResultManager:
         new_results: list[dict[str, Any]],
         existing_rows: list[dict[str, Any]],
     ) -> None:
-        """Schreibt die kombinierten Daten in die CSV-Datei (Rewrite mit Deduplizierung)."""
-        # Wir kombinieren alte (gefilterte) Zeilen und neue Zeilen
-        all_rows = existing_rows + new_results
+        """Schreibt die kombinierten Daten in die CSV-Datei (Rewrite mit Deduplizierung).
+
+        Phase 9 (Defense-in-Depth): Jede Zeile wird VOR dem Write validiert.
+        Korrupte Zeilen werden geloggt und ÜBERSPRUNGEN (kein Hard-Fail der ganzen
+        Save-Operation). Damit bleibt das Benchmark resilient, aber der Müll wird
+        nicht in die CSV geschrieben. Im Fehlerfall hilft der Sanitizer beim
+        Aufräumen bestehender Altlasten.
+        """
+        # Validierung: new + existing filtern
+        valid_new: list[dict[str, Any]] = []
+        skipped = 0
+        for r in new_results:
+            try:
+                self._validate_row_for_write(r, fieldnames)
+                valid_new.append(r)
+            except ValueError as e:
+                logger.warning("[Hard-Fail-Guard] %s", e)
+                skipped += 1
+
+        valid_existing: list[dict[str, Any]] = []
+        for r in existing_rows:
+            try:
+                self._validate_row_for_write(r, fieldnames)
+                valid_existing.append(r)
+            except ValueError as e:
+                logger.warning("[Hard-Fail-Guard] %s", e)
+                skipped += 1
+
+        if skipped:
+            print(
+                f"   🛡️  Hard-Fail-Guard: {skipped} korrupte Zeile(n) übersprungen"
+            )
+
+        all_rows = valid_existing + valid_new
 
         # Komplettes Neuschreiben
         with csv_path.open("w", newline="", encoding="utf-8") as f:
@@ -224,7 +310,7 @@ class ResultManager:
             writer.writerows(all_rows)
 
         print(
-            f"\n💾 Ergebnisse gespeichert in: {csv_path} (Upsert: {len(new_results)} neu/updated)"
+            f"\n💾 Ergebnisse gespeichert in: {csv_path} (Upsert: {len(valid_new)} neu/updated, {skipped} übersprungen)"
         )
 
     def update_leaderboard(self):

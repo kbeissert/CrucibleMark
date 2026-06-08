@@ -475,15 +475,26 @@ Provider-IDs unterliegen zwei Regimes:
 
 #### Card-Pfad-Helfer als SSoT
 
-Alle Card-Pfadoperationen laufen durch drei Funktionen in `utils/model_utils.py`:
+Alle Card-Pfadoperationen laufen durch die ID-SSoT-Funktionen in `utils/model_utils.py`:
 
 ```python
-CARD_DIR          # Path("benchmark_scores/model_cards") — nie inline
-_safe_name(id)    # re.sub(r'[:/.\  ]', '_', id) — kanonische Transformation
-_card_path(model_id, provider, for_write)  # Drei-Regeln-Lookup
-_find_card(model_id, card_dir=None)        # Provider-unbekannter Lookup; card_dir für externe Pfade
-WEIGHTS_TIER_DISPLAY                       # Tier → Display-String (SSoT, importierbar)
+CARD_DIR                                # Path("benchmark_scores/model_cards") — nie inline
+normalize_model_id(id)                  # strippt hf.co/AUTHOR/-Präfix
+_safe_name(id)                          # re.sub(r'[:/.\  ]', '_', id) — kanonische Transformation
+strip_date_suffix(id)                   # entfernt -YYYYMMDD / -MMDD-Suffixe
+resolve_canonical_model_id(id)          # Bridge: kanonische Form (Card-Lookup + Suffix-Strip + safe_name fallback)
+enforce_card_first(id) -> (id, bool)    # Card-First-Vertrag: garantiert Card-Existenz (Draft falls fehlt)
+_card_path(model_id, provider, for_write)   # Drei-Regeln-Lookup
+_find_card(model_id, card_dir=None)         # Provider-unbekannter Lookup; card_dir für externe Pfade
+WEIGHTS_TIER_DISPLAY                        # Tier → Display-String (SSoT, importierbar)
 ```
+
+**Card-First-Vertrag:** `enforce_card_first()` ist die zentrale
+Durchsetzungsstelle (genutzt in `utils/result_manager.py::save_results`).
+Card vorhanden → `(canonical, True)`; fehlt → `ensure_card()` legt
+Platzhalter-Draft an, WARNING wird geloggt (`kein Hard-Fail`). Damit ist
+jede in CSVs geschriebene `model_id` garantiert durch eine Card im
+Filesystem abgedeckt.
 
 Die drei Naming-Regeln:
 
@@ -536,7 +547,7 @@ Der Web Exporter ist ein eigenständiger Publishing-Schritt (Layer 4 Downstream)
 | Funktion | Verantwortung |
 |---|---|
 | `load_csv_with_fallback(path)` | Lädt CSV sicher; gibt `None` bei Fehler statt Exception |
-| `_resolve_dir(dirs, raw_slug)` | Löst model-ID-Slug → Verzeichnispfad (4-stufiger Fallback) |
+| `_resolve_dir(dirs, raw_slug)` | Löst model-ID-Slug → Verzeichnispfad (Direkt-Match SSoT + 3 Robustheits-Fallbacks für historische Dirs) |
 | `_setup_output_dirs(args)` | Safety-Guard + `shutil.rmtree(models/)` + Verzeichnis-Init |
 | `_load_sources(scores_dir)` | Lädt alle 4 Quell-CSVs zentral |
 | `_build_pc_lookups(pc_lb)` | Baut PC-Leaderboard-Dicts (model_name + slug-Schlüssel) |
@@ -574,7 +585,7 @@ Die Funktion `get_model_category()` in `utils/model_utils.py` ist der einzige Ei
 
 **Lizenz-Metadaten (Kernziel des Benchmarks):** Jede Model Card enthält `license`, `license_url` und `commercial_use_allowed`. Diese Felder beantworten die Kernfrage von CrucibleMark: Wie gut schlagen sich selbstgehostete Open-Weights-Modelle als datenschutzkonforme, manipulationsfreie Alternative gegen proprietäre Cloud-Modelle — und welche davon sind frei einsetzbar (`commercial_use_allowed: true`, z. B. Apache 2.0 / MIT) versus Open-Weights mit eingeschränkten Lizenzen (Meta Community License, GLM-4 License) oder reinen Cloud-Diensten (`Proprietary`)? `commercial_use_allowed: null` markiert Modelle mit skalenabhängigen oder unklaren Bedingungen.
 
-**Verzeichnis-Auflösung (SSOT via `model_id`):** Audit-Log-Verzeichnisse und Review-Verzeichnisse werden nach `model_id.replace('/', '_')` benannt (identisch zu `benchmark_utils.py`). `web_export.py` liest die `model_id`-Spalte aus `benchmark_leaderboard_detailed.csv` und wendet dieselbe Transformation an — kein Raten aus dem Display-Namen mehr. Die Auflösung ist in `_resolve_dir(dirs, raw_slug)` (Top-Level, seit v3.7.3) zentralisiert und implementiert vier Fallback-Stufen: (1) Direkter Match (SSOT), (2) Date-Suffix-Strip für Reviews, die vor der versioned model_id angelegt wurden, (3) Suffix-Match für Dirs ohne Provider-Präfix, (4) `-latest`-Alias-Auflösung über `get_model_version()` aus `model_utils.py`.
+**Verzeichnis-Auflösung (SSOT via `model_id`):** Audit-Log-Verzeichnisse und Review-Verzeichnisse werden aus der `model_id`-Spalte von `benchmark_leaderboard_detailed.csv` abgeleitet — kein Raten aus dem Display-Namen. Die Slug-Bildung läuft über die lokale `slugify()`-Funktion (Sonderzeichen → Bindestrich, lowercase, URL-sicher) und ist damit unabhängig von der Card-`_safe_name()`-Logik in `utils/model_utils.py` (kanonischer Card-Filename mit Underscore). Die Auflösung in `_resolve_dir(dirs, raw_slug)` (Top-Level) ist ein Direkt-Match (SSoT) plus drei Robustheits-Fallbacks für historische Verzeichnisnamen: (1) Date-Suffix-Strip für Reviews, die vor der versioned model_id angelegt wurden, (2) Suffix-Match für Dirs ohne Provider-Präfix, (3) `-latest`-Alias-Auflösung über `get_model_version()` aus `model_utils.py`. Der 4-Stufen-Fallback ist **kein** Workaround, sondern legitime Robustheit gegen Legacy-Dir-Namen aus der Pre-Versioned-ID-Ära.
 
 **Export-Struktur:**
 

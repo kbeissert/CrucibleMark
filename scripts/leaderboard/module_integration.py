@@ -29,10 +29,11 @@ if str(ROOT_DIR) not in sys.path:
 # pylint: disable=import-error
 try:
     from utils.module_registry import get_active_modules
-    from utils.model_utils import _find_card
+    from utils.model_utils import _find_card, resolve_canonical_model_id
 except ImportError:
     get_active_modules = None  # type: ignore
     _find_card = None  # type: ignore
+    resolve_canonical_model_id = None  # type: ignore
 # pylint: enable=import-error
 
 
@@ -121,12 +122,13 @@ def _get_model_id_lookup() -> Dict[str, str]:
 
 def _resolve_to_canonical_id(model_str: str) -> str:
     """
-    SSoT-Resolver: Bildet einen beliebigen Model-String auf die kanonische
-    `model_id` aus der Model Card ab.
+    Bridge zur kanonischen SSoT in ``utils.model_utils.resolve_canonical_model_id``.
 
-    Wichtig: Es wird NIE stille gekürzt — wenn keine Card gefunden wird,
-    wird der Original-String zurückgegeben (Fallback). Der Caller entscheidet
-    dann, wie damit umzugehen ist.
+    Die ehemalige Inline-Lookup-Tabelle (Display-Name, Suffix-Strip, Vendor-Prefix)
+    lebt jetzt vollständig in der SSoT — diese Funktion ist ein dünner Adapter
+    für die Bulk-Lookup-Semantik (ganze CSV-Spalten), die Card-Lookup-Tabelle
+    bleibt über ``_build_card_lookups()`` für ``_resolve_to_display_name()``
+    erhalten.
     """
     if not model_str or pd.isna(model_str):
         return ""
@@ -134,19 +136,24 @@ def _resolve_to_canonical_id(model_str: str) -> str:
     if not raw:
         return ""
 
-    id_lookup, _ = _get_lookups()
+    if resolve_canonical_model_id is None:
+        # Import-Fallback: kein utils-Modul verfügbar → kein Lookup möglich
+        return raw
 
-    # 1. Exakter Match
+    # 1. Primärweg: SSoT (Card-Lookup, Suffix-Strip, safe_name-Fallback)
+    canonical = resolve_canonical_model_id(raw)
+    if canonical and canonical != raw:
+        return canonical
+
+    # 2. Fallback: lokaler Display-Name/Vendor-Prefix/Suffix-Lookup für
+    #    Bulk-IDs (z.B. "Claude Sonnet 4.5" oder "gpt-4o" → kanonische ID)
+    id_lookup, _ = _get_lookups()
     if raw in id_lookup:
         return id_lookup[raw]
-
-    # 2. Vendor-Prefix entfernen
     if "/" in raw:
         bare = raw.rsplit("/", 1)[-1]
         if bare in id_lookup:
             return id_lookup[bare]
-
-    # 3. Suffix-Strip als letzter Fallback (z.B. -20250929, -0127)
     import re as _re_resolve
     stripped = _re_resolve.sub(r"-\d{4,8}$", "", raw)
     if stripped in id_lookup:
@@ -156,7 +163,7 @@ def _resolve_to_canonical_id(model_str: str) -> str:
         if stripped_bare in id_lookup:
             return id_lookup[stripped_bare]
 
-    # 4. Fallback: Original zurückgeben (SSoT-Prinzip: keine stille Mutation)
+    # 3. Letzter Fallback: Original-String (SSoT-Prinzip: keine stille Mutation)
     return raw
 
 

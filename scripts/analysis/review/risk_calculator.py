@@ -12,6 +12,7 @@ if str(ROOT_DIR) not in sys.path:
     sys.path.insert(0, str(ROOT_DIR))
 
 from utils.model_utils import _find_card
+from utils.provider_card_template import _safe_id
 
 # Known cloud-provider prefixes (normalized, lowercase) → display name.
 _CLOUD_PREFIX_TO_PROVIDER: dict[str, str] = {
@@ -92,11 +93,6 @@ def compute_sovereign_risk(model_card: dict, provider_card: dict | None) -> tupl
 
 def get_provider_card_context(model_id: str) -> str:
     """Load provider card, compute sovereign risk, return a formatted Markdown block."""
-    def safe_id(name: str) -> str:
-        s = name.lower()
-        s = re.sub(r"[^a-z0-9]+", "_", s)
-        return s.strip("_")
-
     model_card_path = _find_card(model_id)
     model_card: dict = {}
     developer = None
@@ -109,7 +105,7 @@ def get_provider_card_context(model_id: str) -> str:
 
     provider_card: dict | None = None
     if developer:
-        card_path = ROOT_DIR / "benchmark_scores" / "provider_cards" / f"{safe_id(developer)}.json"
+        card_path = ROOT_DIR / "benchmark_scores" / "provider_cards" / f"{_safe_id(developer)}.json"
         if card_path.exists():
             try:
                 loaded = json.loads(card_path.read_text(encoding="utf-8"))

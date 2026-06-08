@@ -1,14 +1,38 @@
 # PROJECT_STATUS.md
 
-**Last Updated:** 2026-06-07
-**Current Version:** 4.4.0 — CSV Robustness & Leaderboard Pipeline Hardening
+**Last Updated:** 2026-06-08
+**Current Version:** 4.6.1 — CSV-Hygiene Defense-in-Depth
 **Status:** ✅ Production-Ready
 
 ---
 
 ## Executive Summary
 
-CrucibleMark v4.4.0 härtet die Datenpipeline gegen CSV-Korruption und verbessert die Leaderboard-Generierung mit robuster ID-Resolution. Das Backup-System nutzt jetzt `load_csv_robust()` mit automatischer Fehlerbehebung. Pylint 10.00/10, Ruff clean, 227/227 Tests grün.
+CrucibleMark v4.6.1 schließt die CSV-Hygiene-Härtung mit einem dreischichtigen Defense-in-Depth-Modell ab: Hard-Fail-Guard im `result_manager.py`, Sanitizer-Heuristiken in `consolidate_csv.py` und `make validate-csv` für CI. Aufbauend auf v4.6.0 (Sanitizer entfernte 13.466 Müll-Zeilen) und v4.5.0 (ID-SSoT-Refactoring mit `resolve_canonical_model_id()` / `enforce_card_first()`) sind alle drei CSV-Schreibpfade nun gegen Header-Repeat, narrative Asset-IDs, Boolean- und leere Modelle abgesichert. Pylint 10.00/10, 226/226 Tests grün.
+
+**Key Achievements (v4.6.1):**
+- ✅ **Hard-Fail-Guard in `result_manager.py`** — `_validate_row_for_write()` validiert JEDE Zeile (neu + bestehend) gegen die Sanitizer-Heuristiken und überspringt korrupte Zeilen resilient. `🛡️ Hard-Fail-Guard: N korrupte Zeile(n) übersprungen`-Log.
+- ✅ **Consolidate-Filter** — `_filter_corrupt_rows()` in `consolidate_csv.py` wendet die identischen Heuristiken auf den DataFrame VOR `to_csv()` an. Verhindert dass Maintenance-Konsolidierung Müll zurück in die CSV schreibt.
+- ✅ **`make validate-csv`** — neues Makefile-Target für Dry-Run-Validierung (CI-/Smoke-tauglich).
+- ✅ **16 neue Tests** — 9 in `test_consolidate_csv_validates.py` + 7 in `test_result_manager_validates.py`. Parametrisiert für Header-Repeat, narrative Asset-IDs, Boolean-Modelle, leere Modelle, E2E-Pipeline, Resilienz.
+- ✅ **Defense-in-Depth-Pyramide** — 3 unabhängige Schichten (Sanitizer, Consolidate, Result Manager) garantieren: Phase-8-Erfolg kann nicht durch zukünftige Module oder manuelle Edits zunichtegemacht werden.
+- ✅ **226/226 Tests grün** (vorher 210, +16). Pylint 10.00/10 für `result_manager.py`, `consolidate_csv.py`, beide Test-Dateien.
+
+**Key Achievements (v4.6.0):**
+- ✅ **CSV-Hygiene-Sanitizer** — `scripts/maintenance/sanitize_benchmark_csvs.py` mit Vier-Klassen-Filter (Header-Repeat, Rohtext-Asset-IDs >60 Zeichen + Romananfänge + Markdown-Marker, Boolean-Modelle, leere Modelle). Dry-Run + `--apply`, idempotente `.bak`-Backups, atomare `.tmp`+`replace()`-Writes.
+- ✅ **13.466 Müll-Zeilen entfernt** aus `local_models_benchmark.csv` (93 % der CSV). `commercial_models_benchmark.csv` 11 Zeilen verworfen (0.6 %). `cloud_models_benchmark.csv` bereits sauber.
+- ✅ **Leaderboard regeneriert** — 84 Zeilen, 78 vollständig (43/43), 5 unvollständig (echte Asset-Lücken für Re-Run), 1 mit Test-Override-Logik.
+- ✅ **65 neue Tests** — parametrisierte Filter-Unit-Tests (14 Romananfänge, 5 Markdown-Marker, 5 pandas-Sentinel-Varianten), Pipeline-Tests, Backup-Idempotenz, Atomic-Write, E2E. 210/210 Tests grün.
+- ✅ **Pylint 10.00/10** für Sanitizer + Test-File.
+
+**Key Achievements (v4.5.0):**
+- ✅ **ID-SSoT-Refactoring** — `resolve_canonical_model_id()` und `enforce_card_first()` in `utils/model_utils.py` als zentrale ID-Bridge (Card-Lookup + Suffix-Strip + `_safe_name`-Fallback).
+- ✅ **12 Inline-ID-Transformationen migriert** — in `utils/benchmark_utils.py`, `utils/scoring_utils.py`, `utils/providers/llamacpp.py`, `scripts/maintenance/*`, `scripts/core/*`, `scripts/analysis/*`, `scripts/core/tooluse_exporter.py`.
+- ✅ **`enforce_card_first()` Vertrag** — garantiert Card-Existenz via `ensure_card()` (Draft falls fehlt, WARNING wird geloggt). `result_manager.save_results()` ist die zentrale Card-First-Durchsetzungsstelle.
+- ✅ **`strip_date_suffix()` SSoT** — für `-YYYYMMDD` / `-MMDD` mit gültigem Monat; idempotent.
+- ✅ **Workaround `migrate_canonical_model_ids.py` entfernt** — SSoT-Funktionen reichen für die Kanonisierung. 22 `*.bak`-Dateien in `benchmark_scores/model_cards/` gelöscht.
+- ✅ **21 neue Invarianten-Tests** — Brücken-Äquivalenz zwischen `enforce_card_first` und `resolve_canonical_model_id`; Slugify-Konsistenz für `:/ .` + Leerzeichen; Idempotenz; AST-Sweep gegen Inline-`re.sub` mit Slugify-Pattern außerhalb der SSoT-Module.
+- ✅ **145/145 Tests grün** (vorher 124, +21). Klare SSOT-Trennung: keine DRY-Verletzungen im ID-Layer mehr.
 
 **Key Achievements (v4.4.0):**
 - ✅ **CSV Robustness** — `load_csv_robust()` mit `on_bad_lines="skip"` implementiert. Korrupte CSV-Zeilen (z.B. durch Audit-Log-Injection) werden automatisch übersprungen statt den Parser zu blockieren.
@@ -753,6 +777,6 @@ Visuelle Aufgaben (UML lesen, UI-Designs beurteilen) benötigen neue Asset-Forma
 
 ---
 
-**Document Version:** 4.4\
-**Last Updated:** 2026-06-07\
-**Next Review:** v4.5.0 / Nächster Feature-Meilenstein
+**Document Version:** 4.6.1\
+**Last Updated:** 2026-06-08\
+**Next Review:** v4.7.0 / Nächster Feature-Meilenstein

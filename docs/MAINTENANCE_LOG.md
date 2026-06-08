@@ -5,6 +5,152 @@
 
 ---
 
+
+## v4.6.1 — CSV-Hygiene Defense-in-Depth (2026-06-08)
+
+### 1. `utils/result_manager.py::_validate_row_for_write()` — Hard-Fail-Guard
+
+Neue Methode, die jede Zeile VOR dem CSV-Write gegen die Sanitizer-Heuristiken prüft.
+Wirft `ValueError` bei:
+- **Header-Repeat** — `parts[0] == 'asset_id'` (Header als Datenzeile)
+- **Narrative Asset-ID** — `_is_narrative_asset_id()` (Rohtext-Fragmente)
+- **Invalid Model** — `_is_invalid_model()` (Boolean, NaN, leer)
+
+`_write_to_csv()` fängt die Exceptions ab, loggt sie mit `[Hard-Fail-Guard]`
+und überspringt die korrupte Zeile. Save-Operation läuft resilient weiter.
+
+### 2. `scripts/maintenance/consolidate_csv.py::_filter_corrupt_rows()` — Sanitizer-Apply
+
+Wendet die identischen Heuristiken auf den DataFrame VOR `to_csv()` an.
+Verhindert dass Maintenance-Konsolidierung Müll zurück in die CSV schreibt.
+Logging mit Korrupt-Drop-Counter:
+
+```
+🗑️  Korrupt-Drop: header_repeat               N
+🗑️  Korrupt-Drop: narrative_asset_id          N
+🗑️  Korrupt-Drop: invalid_model               N
+```
+
+### 3. `Makefile::validate-csv` — neues Target
+
+```
+make validate-csv
+```
+
+Dry-Run-Modus: zeigt Korruption, ändert nichts. CI-/Smoke-tauglich.
+
+### Tests
+
+- `tests/test_consolidate_csv_validates.py` (9 Tests)
+- `tests/test_result_manager_validates.py` (7 Tests)
+
+**Verifikation:** 226/226 grün, Pylint 10.00/10.
+
+### Live-Check auf 3 Benchmark-CSVs
+
+| CSV | Rows | Drops |
+|---|---|---|
+| `local_models_benchmark.csv` | 1013 | 0 |
+| `cloud_models_benchmark.csv` | 1282 | 0 |
+| `commercial_models_benchmark.csv` | 1940 | 0 |
+
+Phase-8-Erfolg hält. Defense-in-Depth ist etabliert.
+
+## v4.6.0 — CSV-Hygiene-Sanitizer (2026-06-08)
+
+**Status:** Abgeschlossen
+
+### 1. `scripts/maintenance/sanitize_benchmark_csvs.py` — neuer Sanitizer
+
+Inhalts-Korruption in `local_models_benchmark.csv` identifiziert: 17705 Zeilen
+davon 13265 mit leerem `model`-Feld (75 Prozent), verursacht durch
+ungenügend-escapte LLM-Rohtext-Antworten, die als Datenzeilen in die CSV
+geschrieben wurden. Sanitizer-Skript entfernt vier Klassen von Müll-Zeilen
+vor jeder weiteren Verarbeitung.
+
+**Filter-Heuristiken:**
+
+- **Header-Repeat** — `parts[0] == 'asset_id'` (Header wurde als Datenzeile
+  geschrieben, weil eine vorherige Iteration eine Header-Zeile emittiert hat).
+- **Rohtext-Asset-ID** — `len > 60` ODER Romananfang-Prefix (the, for, final,
+  this, these, model, models, first, second, however, moreover, therefore,
+  in summary, to summarize) ODER Markdown-Marker (`##`, `###`, `---`, `***`,
+  `===`).
+- **Boolean-Modell** — `model` ist `True` / `False` (case-insensitive) —
+  wurde aus einer Bool-Spalte in die `model`-Spalte verschoben.
+- **Leeres Modell** — `model` ist NaN, leerer String oder pandas-Sentinel.
+
+**Pipeline:**
+
+- `--apply` macht `.bak`-Backup (idempotent) und schreibt atomar via `.tmp` +
+  `replace()`. Dry-Run ist Default.
+- Exit-Code 0 in beiden Modi; Logs zeigen Drop-Counter pro Filterklasse.
+- SSoT-CSV-Pfade stammen aus `scripts.leaderboard.config` (LOCAL_CSV,
+  CLOUD_CSV, COMMERCIAL_CSV). Fehlende CSVs werden sauber übersprungen.
+
+### 2. `tests/test_sanitize_benchmark_csvs.py` — 65 Tests grün
+
+Vollständige Test-Pyramide:
+
+- **Filter-Unit-Tests** (3 Klassen) — Header-Repeat, Narrative-Asset-ID
+  (inkl. parametrisiert für alle 14 Romananfänge und 5 Markdown-Marker),
+  Invalid-Model (inkl. 5 pandas-Sentinel-Varianten).
+- **Pipeline-Test** (`TestFilterRows`) — kombinierte Szenarien inkl.
+  Status-abhängige Drop-Klassifikation (`invalid_model_*` vs.
+  `invalid_model_*_non_success`).
+- **Backup-Test** (`TestBackupCsv`) — Idempotenz: zweiter Aufruf
+  überschreibt vorhandenes `.bak` nicht.
+- **Atomic-Write-Test** (`TestWriteCsvAtomic`) — keine `.tmp`-Leftovers,
+  CSV-Round-Trip über `csv.reader`.
+- **E2E-Tests** (`TestMainDryRun`, `TestMainApply`) mit `monkeypatch`
+  auf die SSoT-Pfade, inkl. kombiniertem Szenario mit allen vier
+  Korruptions-Klassen gleichzeitig.
+
+### 3. Daten-Bereinigung (live angewendet am 2026-06-08)
+
+| CSV | Vorher | Nachher | Verworfen |
+|---|---|---|---|
+| `local_models_benchmark.csv` | 14479 | 1013 | 13466 (93 %) |
+| `commercial_models_benchmark.csv` | 1951 | 1940 | 11 (0.6 %) |
+| `cloud_models_benchmark.csv` | (n/a) | (n/a) | 0 (bereits sauber) |
+
+**Backups:** `benchmark_scores/local_models_benchmark.csv.bak`,
+`benchmark_scores/commercial_models_benchmark.csv.bak` (idempotent, d.h.
+nicht überschrieben bei weiteren Läufen).
+
+### 4. Leaderboard-Befund nach Sanitizer
+
+`make leaderboard` regeneriert: 84 Zeilen, 78 vollständig (43/43 Tests),
+5 unvollständig mit 40–42 von 43 Tests (echte Test-Lücken, die das
+Auto-Benchmark füllen muss):
+
+- Kimi K2.6 (40/43)
+- DeepSeek V4 Pro (42/43)
+- Qwen 3.5 397B A17B (40/43)
+- MiniMax M2.7 (42/43)
+- GLM-4.7 (42/43)
+
+1 Modell mit 49/43 (Test-Override-Logik / Tool-Use-Backlog).
+
+### Lessons Learned
+
+- **CSV-Korruption war strukturell unsichtbar** — `pd.read_csv()` lud
+  die Zeilen als String-Spalten; erst die explizite
+  `df['model'].isna().sum()`-Analyse brachte das Ausmaß ans Licht.
+- **Sanitizer ist defensiv-präventiv** — Dry-Run-Default macht ihn
+  für CI-Smoke-Tests sicher; `--apply` erfordert explizite User-Freigabe.
+- **Filter-Heuristiken sind Heuristiken** — `MAX_VALID_ASSET_ID_LEN=60`
+  ist großzügig kalkuliert; falls neue Asset-Schemata auftauchen
+  (z.B. `long_named_asset_xyz_001`), muss der Wert mitwachsen.
+
+### Verifikation
+
+- `pytest tests/ -v --tb=short` → 210/210 passed.
+- Pylint 10.00/10 für `sanitize_benchmark_csvs.py` und
+  `test_sanitize_benchmark_csvs.py`.
+
+---
+
 ## v3.16.0 — Provider-Config-Split + llamacpp-Provider (2026-05-30)
 
 **Status:** Abgeschlossen

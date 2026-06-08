@@ -303,6 +303,7 @@ def get_startable_assets(
     from utils.model_utils import (
         normalize_model_id,
         normalize_supports_tool_use,
+        strip_date_suffix,
         SUPPORT_TOOL_USE_UNTESTED,
         _find_card as _fc,
     )
@@ -342,8 +343,7 @@ def get_startable_assets(
     if module.get("execution_mode") == "batch" or module.get("key") == "political_compass":
         batch_id = "political_compass_v3"
         import re
-        model_normalized = re.sub(r"-\d{8}$", "", model)
-        model_normalized = re.sub(r"-(0[1-9]|1[0-2])\d{2}$", "", model_normalized)
+        model_normalized = strip_date_suffix(model)
         model_hf_stripped = normalize_model_id(model)
         if (
             (model, batch_id) in existing_tests

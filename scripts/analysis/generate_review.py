@@ -32,7 +32,6 @@ from utils.model_utils import (
     get_model_size_class,
     get_model_specialization,
     get_use_case_primary,
-    normalize_model_id,
 )
 from scripts.analysis.review import (
     build_constraint_violations_summary,
@@ -167,11 +166,7 @@ def _ensure_provider_card(
     if not developer:
         return {}
 
-    def safe_id(name: str) -> str:
-        s = re.sub(r"[^a-z0-9]+", "_", name.lower())
-        return s.strip("_")
-
-    card_path = ROOT_DIR / "benchmark_scores" / "provider_cards" / f"{safe_id(developer)}.json"
+    card_path = ROOT_DIR / "benchmark_scores" / "provider_cards" / f"{_safe_name(developer).lower()}.json"
     if card_path.exists():
         try:
             return json.loads(card_path.read_text(encoding="utf-8"))
@@ -195,7 +190,7 @@ def _ensure_provider_card(
     pc_gen = _load_card_module("generate_provider_cards")
     all_stats: dict = pc_gen._load_stats_from_csv()  # type: ignore[attr-defined]
     stats = all_stats.get(developer, {})
-    card = pc_gen._generate_card(developer, safe_id(developer), stats, client, card_provider, card_model)  # type: ignore[attr-defined]
+    card = pc_gen._generate_card(developer, _safe_name(developer).lower(), stats, client, card_provider, card_model)  # type: ignore[attr-defined]
     pc_gen._write_card(card)  # type: ignore[attr-defined]
     pc_gen.rebuild_provider_index()  # type: ignore[attr-defined]
     print(f"  Provider Card erstellt: {developer}")
@@ -426,7 +421,7 @@ def process_model_review(
         if pc_csv_path.exists():
             with open(pc_csv_path, "r", encoding="utf-8") as _f:
                 for _row in _csv.DictReader(_f):
-                    _safe = _row.get("model", "").replace(":", "_").replace("/", "_")
+                    _safe = _safe_name(_row.get("model", ""))
                     if _safe == tested_model_name or _row.get("model") == tested_model_name:
                         csv_data = (
                             f"- Vanilla X (Ökonomisch): {_row.get('vanilla_x', 'n/a')}\n"
@@ -682,7 +677,7 @@ def _run_per_model_all_reviews(
         return
 
     if args.model:
-        target_safe = normalize_model_id(args.model).replace(":", "_").replace("/", "_")
+        target_safe = _safe_name(args.model)
         if target_safe in slugs:
             slugs = [target_safe]
         else:
@@ -738,14 +733,14 @@ def _run_audit_reviews(
     print(f"📁 Durchsuche Audit-Logs nach Modellen ({effective_type.upper()})...")
     found_models = False
 
-    safe_target_model = normalize_model_id(args.model).replace(":", "_").replace("/", "_") if args.model else None
+    safe_target_model = _safe_name(args.model) if args.model else None
 
     _configured_safe_ids: set[str] = set()
     try:
         _cfg = load_config()
         for _p in list(_cfg.get("providers", {}).get("commercial", {}).values()) + list(_cfg.get("providers", {}).get("local", {}).values()):
             for _m in _p.get("models", []):
-                _configured_safe_ids.add(_m["id"].replace(":", "_").replace("/", "_"))
+                _configured_safe_ids.add(_safe_name(_m["id"]))
     except Exception:
         pass
 

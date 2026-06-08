@@ -247,7 +247,9 @@ def _reconstruct_leaderboard_row(avg_row: dict[str, Any]) -> dict[str, Any] | No
         vx=vx, vy=vy, fx=fx, fy=fy,
     )
 
-    # Model-Name normalisieren
+    # PC-Leaderboard spiegelt 1:1 die Logik von save_leaderboard_csv() (io_manager.py:259-261):
+    # nur Datumssuffix-Strip, KEIN Card-Lookup, KEIN Slash→Underscore.
+    # Vendor-Schreibweise (z.B. qwen/qwen3-32b) bleibt für die Lesbarkeit erhalten.
     normalized = normalize_model_id(raw_model)
     # OpenRouter-Datumssuffixe strippen (gleiche Logik wie save_leaderboard_csv)
     normalized = _strip_date_suffixes(normalized)

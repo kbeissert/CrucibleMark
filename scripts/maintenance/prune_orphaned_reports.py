@@ -25,12 +25,20 @@ import yaml
 ROOT_DIR = Path(__file__).resolve().parent.parent.parent
 if str(ROOT_DIR) not in sys.path:
     sys.path.insert(0, str(ROOT_DIR))
+from utils.model_utils import _safe_name  # noqa: E402
+
+if str(ROOT_DIR) not in sys.path:
+    sys.path.insert(0, str(ROOT_DIR))
 
 
 def _norm(s: str) -> str:
     """Normalisiert Model-ID oder Verzeichnisname zum Vergleich.
-    Konvention: ':' und '/' → '_', Rest bleibt (Punkte, Bindestriche)."""
-    return s.replace("/", "_").replace(":", "_").lower()
+
+    Delegiert an SSoT ``_safe_name`` aus utils.model_utils (':', '/', '.',
+    Leerzeichen → '_') und normalisiert auf lower-case für case-insensitiven
+    Vergleich.
+    """
+    return _safe_name(s).lower()
 
 
 def load_known_model_ids() -> set[str]:

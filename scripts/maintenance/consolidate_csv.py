@@ -9,7 +9,12 @@ Funktion:
 1. Lädt CSV.
 2. Sortiert nach Timestamp (neueste zuerst).
 3. Dedupliziert basierend auf ['model', 'asset_id'].
-4. Überschreibt die originale CSV mit den bereinigten Daten.
+4. Validiert jede Zeile gegen Sanitizer-Heuristiken (Phase 9, Defense-in-Depth).
+5. Überschreibt die originale CSV mit den bereinigten Daten.
+
+Defense-in-Depth: Die gleichen Heuristiken wie `sanitize_benchmark_csvs.py`
+filtern korrupte Zeilen raus, BEVOR sie zurückgeschrieben werden. Verhindert
+dass Phase-8-Erfolg durch nachfolgende Maintenance zunichtegemacht wird.
 
 Usage:
     python scripts/consolidate_csv.py
@@ -28,6 +33,11 @@ import pandas as pd
 
 # Importiere robusten CSV-Loader
 from utils.csv_recovery import load_csv_robust
+# Defense-in-Depth: wiederverwendbare Sanitizer-Heuristiken
+from scripts.maintenance.sanitize_benchmark_csvs import (
+    _is_narrative_asset_id,
+    _is_invalid_model,
+)
 
 # Konfiguration
 # Tupel: (Pfad, Deduplizierungs-Schlüsselspalten)
@@ -47,7 +57,7 @@ logger = logging.getLogger("consolidate")
 def _load_csv_robust_with_fallback(file_path: Path) -> Optional[pd.DataFrame]:
     """
     Lädt CSV robust mit Fallback-Strategien.
-    
+
     Versucht zuerst den robusten Loader, dann Standard pandas mit Fehlertoleranz.
     """
     # Strategie 1: Nutze utils.csv_recovery (robustester Ansatz)
@@ -58,12 +68,12 @@ def _load_csv_robust_with_fallback(file_path: Path) -> Optional[pd.DataFrame]:
             return df
     except Exception as e:
         logger.warning("   ⚠️  Robuster Loader fehlgeschlagen: %s", e)
-    
+
     # Strategie 2: Standard pandas mit Fehlertoleranz
     try:
         df = pd.read_csv(
-            file_path, 
-            on_bad_lines="skip", 
+            file_path,
+            on_bad_lines="skip",
             engine="python",
             encoding="utf-8"
         )
@@ -72,6 +82,59 @@ def _load_csv_robust_with_fallback(file_path: Path) -> Optional[pd.DataFrame]:
     except Exception as e:
         logger.error("   ❌ Konnte CSV nicht laden: %s", e)
         return None
+
+
+def _filter_corrupt_rows(df: pd.DataFrame, key_cols: list[str]) -> tuple[pd.DataFrame, dict[str, int]]:
+    """Filtert korrupte Zeilen via Sanitizer-Heuristiken (Defense-in-Depth).
+
+    Verwendet exakt die gleichen Prädikate wie ``sanitize_benchmark_csvs._filter_rows``.
+    Verhindert dass Header-Repeats, narrative Asset-IDs und ungültige Modelle
+    nach einer Konsolidierung zurück in die CSV geschrieben werden.
+
+    Args:
+        df: Eingelesener DataFrame (aus _load_csv_robust_with_fallback).
+        key_cols: Schlüsselspalten (z. B. ["model", "asset_id"]).
+
+    Returns:
+        (df_clean, drop_stats) — bereinigter DataFrame + Counter der Drop-Gründe.
+    """
+    drop_stats: dict[str, int] = {
+        "header_repeat": 0,
+        "narrative_asset_id": 0,
+        "invalid_model": 0,
+    }
+    if df.empty:
+        return df, drop_stats
+
+    # Header-Repeat: prüfen anhand Werte der ersten Spalte
+    # pandas liest CSVs als DataFrame — wir rekonstruieren die Header-Detection
+    # via den ursprünglichen Header. Wenn die erste Spalte 'asset_id' ist UND
+    # der Wert der Spalte exakt dem Header-Eintrag entspricht → Header-Repeat.
+    if "asset_id" in df.columns:
+        _header_repeat_mask = df["asset_id"].astype(str) == "asset_id"
+        if bool(_header_repeat_mask.any()):
+            drop_stats["header_repeat"] = int(_header_repeat_mask.sum())
+            df = df.loc[~_header_repeat_mask].copy()
+
+    # Narrative Asset-ID
+    if "asset_id" in df.columns:
+        _narrative_mask = df["asset_id"].astype(str).apply(_is_narrative_asset_id)
+        if bool(_narrative_mask.any()):
+            drop_stats["narrative_asset_id"] = int(_narrative_mask.sum())
+            df = df.loc[~_narrative_mask].copy()
+
+    # Invalid Model
+    if "model" in df.columns:
+        def _is_invalid(model_val: object) -> bool:
+            invalid, _ = _is_invalid_model(str(model_val) if model_val is not None else "")
+            return invalid
+
+        _invalid_mask = df["model"].apply(_is_invalid)
+        if bool(_invalid_mask.any()):
+            drop_stats["invalid_model"] = int(_invalid_mask.sum())
+            df = df.loc[~_invalid_mask].copy()
+
+    return df, drop_stats
 
 
 def consolidate_file(file_path: Path, key_cols: list[str]):
@@ -87,7 +150,7 @@ def consolidate_file(file_path: Path, key_cols: list[str]):
         if df is None:
             logger.error("   ❌ Überspringe Datei (nicht lesbar)")
             return
-        
+
         original_count = len(df)
 
         if original_count == 0:
@@ -100,6 +163,14 @@ def consolidate_file(file_path: Path, key_cols: list[str]):
         if missing:
             logger.error("   ❌ Fehler: Fehlende Schlüsselspalten %s in %s", missing, file_path.name)
             return
+
+        # Defense-in-Depth: korrupte Zeilen via Sanitizer-Heuristiken rausfiltern
+        df, drop_stats = _filter_corrupt_rows(df, key_cols)
+        sanitized_count = original_count - len(df)
+        if sanitized_count > 0:
+            for reason, count in sorted(drop_stats.items(), key=lambda x: -x[1]):
+                if count:
+                    logger.info("   🗑️  Korrupt-Drop: %-22s %6d", reason, count)
 
         # Sicherstellen, dass Timestamp datetime ist (für korrekte Sortierung)
         if "timestamp" in df.columns:

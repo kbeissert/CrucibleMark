@@ -27,7 +27,7 @@ from benchmark_modules.tooluse.core.constants import (
 )
 from benchmark_modules.tooluse.core.io_manager import ToolUseIOManager, _log_metrics_to_json
 from schemas.result import BenchmarkResult
-from utils.model_utils import normalize_model_id, update_model_card_tooluse_fields
+from utils.model_utils import resolve_canonical_model_id, update_model_card_tooluse_fields
 
 logger = logging.getLogger(__name__)
 
@@ -342,7 +342,7 @@ class ToolUseExporter:
                     for row in csv.DictReader(f):
                         if not str(row.get("asset_id", "")).startswith("tooluse"):
                             continue
-                        model_id = normalize_model_id(row.get("model", ""))
+                        model_id = resolve_canonical_model_id(row.get("model", ""))
                         if not model_id:
                             continue
                         asset_id = str(row.get("asset_id", ""))
@@ -368,15 +368,13 @@ class ToolUseExporter:
 
         # Filter auf target_model_ids wenn angegeben
         if target_model_ids:
-            # SSoT (aufgelöst via resolve_canonical_model_id): Da die
-            # model_id bereits in unified_runner.py bzw. run_tooluse_benchmark.py
-            # zentral kanonisiert wird, sind die CSV-Werte und die
-            # target_model_ids bereits in derselben Schreibweise. Ein
-            # zusätzlicher Dot↔Underscore-Bridge ist NICHT mehr nötig.
-            target_normalized = {normalize_model_id(m) for m in target_model_ids}
+            # SSoT-Bridge: alle IDs werden durch resolve_canonical_model_id() geführt,
+            # damit Card-Aliase (claude-haiku-4-5 → claude-haiku-4-5-20251001) und
+            # hf.co-Prefixe konsistent aufgelöst werden.
+            target_normalized = {resolve_canonical_model_id(m) for m in target_model_ids}
             per_model = {
                 mid: rows for mid, rows in per_model.items()
-                if normalize_model_id(mid) in target_normalized
+                if resolve_canonical_model_id(mid) in target_normalized
             }
 
         written = 0
@@ -552,7 +550,7 @@ class ToolUseExporter:
     def _upsert_row(self, new_row: dict[str, Any], model_id: str) -> None:
         self.CSV_PATH.parent.mkdir(parents=True, exist_ok=True)
         existing = self._read_rows()
-        filtered = [r for r in existing if normalize_model_id(r.get("model", "")) != model_id]
+        filtered = [r for r in existing if resolve_canonical_model_id(r.get("model", "")) != model_id]
         self._write_rows(filtered + [new_row])
 
     def _read_rows(self) -> list[dict[str, Any]]:
@@ -567,17 +565,17 @@ class ToolUseExporter:
 
     def model_has_results(self, model_id: str) -> bool:
         """Prüft ob ein Modell bereits im ToolUse-Leaderboard vorhanden ist.
-        
+
         Args:
-            model_id: Die Modell-ID (wird normalisiert für den Vergleich)
-            
+            model_id: Die Modell-ID (wird durch resolve_canonical_model_id() kanonisiert)
+
         Returns:
             True wenn das Modell bereits im Leaderboard existiert, False sonst
         """
         rows = self._read_rows()
-        normalized_id = normalize_model_id(model_id)
+        normalized_id = resolve_canonical_model_id(model_id)
         for row in rows:
-            if normalize_model_id(row.get("model", "")) == normalized_id:
+            if resolve_canonical_model_id(row.get("model", "")) == normalized_id:
                 return True
         return False
 

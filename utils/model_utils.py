@@ -90,6 +90,23 @@ def _safe_name(model_id: str) -> str:
     return re.sub(r"[:/.\ ]", "_", normalize_model_id(model_id))
 
 
+def strip_date_suffix(model_id: str) -> str:
+    """Entfernt Datums-/Monatssuffixe am Ende einer Model-ID (SSoT).
+
+    Unterstuetzte Suffixe:
+    - ``-YYYYMMDD`` (8-stellig, z.B. ``kimi-k2-20260211``)
+    - ``-MMDD`` mit gueltigem Monat 01-12 (z.B. ``kimi-k2-0127``)
+
+    SSoT -- ersetzt die verstreuten re.sub-Aufrufe in benchmark_auto.py,
+    llamacpp_batch.py und ggf. weiteren Stellen.
+    """
+    if not model_id:
+        return model_id
+    cleaned = re.sub(r"-\d{8}$", "", model_id)
+    cleaned = re.sub(r"-(0[1-9]|1[0-2])\d{2}$", "", cleaned)
+    return cleaned
+
+
 def resolve_canonical_model_id(model_id: str) -> str:
     """SSoT für alle model_id-Auflösungen.
 
@@ -141,6 +158,51 @@ def resolve_canonical_model_id(model_id: str) -> str:
         except (OSError, json.JSONDecodeError):  # noqa: PERF203
             pass
     return _safe_name(base)
+
+
+def enforce_card_first(model_id: str) -> tuple[str, bool]:
+    """Card-First-Vertrag: stellt sicher, dass jede geschriebene model_id eine
+    Model Card besitzt.
+
+    Pipeline
+    --------
+    1. ``resolve_canonical_model_id`` → kanonische Schreibweise.
+    2. ``_find_card`` → Card vorhanden?
+       - Ja: ``(canonical, True)``
+       - Nein: ``ensure_card()`` wird aufgerufen (legt eine Card mit
+         Template-Platzhaltern an), WARNING wird geloggt.
+         Rückgabe ``(canonical, False)``.
+
+    Diese Funktion ist die SSoT-Stelle, an der die Garantie
+    "CSV-model == Card-model_id" erzwungen wird, ohne den Benchmark-Lauf
+    abzubrechen (kein Hard-Fail). Aufrufer sollen den Rückgabewert
+    ``has_card`` für Diagnose / Aggregation nutzen.
+
+    Returns
+    -------
+    (canonical_model_id, has_card)
+    """
+    if not model_id:
+        return model_id, False
+    canonical = resolve_canonical_model_id(model_id)
+    try:
+        card_path = _find_card(canonical)
+    except Exception:  # noqa: BLE001
+        card_path = None
+    if card_path is not None and card_path.exists():
+        return canonical, True
+    try:
+        # Lokaler Import, um Circular-Import mit card_utils zu vermeiden.
+        from utils.card_utils import ensure_card  # noqa: PLC0415
+        ensure_card(canonical)
+        logger.warning(
+            "Card-First-Vertrag: Keine Card für '%s' gefunden → Platzhalter-Card angelegt. "
+            "Bitte manuell mit echten Werten ergänzen.", canonical,
+        )
+        return canonical, False
+    except Exception as exc:  # noqa: BLE001
+        logger.error("Card-First-Vertrag: ensure_card für '%s' fehlgeschlagen: %s", canonical, exc)
+        return canonical, False
 
 
 _STALE_VERSIONS: frozenset[str] = frozenset({"latest", "unknown", "k.A.", ""})

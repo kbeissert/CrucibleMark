@@ -39,6 +39,7 @@ if str(ROOT_DIR) not in sys.path:
 from utils.llm_client import LLMClient
 from utils.provider_card_template import (
     CARDS_DIR,
+    _safe_id,
     normalize_provider_card_data,
     rebuild_provider_index,
 )
@@ -101,13 +102,6 @@ Wichtige Hinweise:
 - Ollama = Open-Source-Framework, kein Cloud-Provider → applicable_law: 'N/A (lokal only)', data_retention_days: 0, cloud_act_exposure: false
 
 Falls du den Provider nicht kennst, setze "unknown": true und befülle die anderen Felder mit sinnvollen Platzhaltern."""
-
-
-def _safe_id(name: str) -> str:
-    """Konvertiert einen Provider-Namen in einen sicheren Dateinamen / ID."""
-    s = name.lower()
-    s = re.sub(r"[^a-z0-9]+", "_", s)
-    return s.strip("_")
 
 
 def _load_stats_from_csv() -> dict[str, dict[str, Any]]:

@@ -1,7 +1,13 @@
 import json
 import csv
 import yaml
+import sys
 from pathlib import Path
+
+ROOT_DIR = Path(__file__).resolve().parent.parent.parent
+if str(ROOT_DIR) not in sys.path:
+    sys.path.insert(0, str(ROOT_DIR))
+from utils.model_utils import _safe_name  # noqa: E402
 
 # 1. Load Assets to know X/Y values for each option (A, B, C, D)
 assets = {}
@@ -35,12 +41,12 @@ for i, row in enumerate(rows):
     model = row[idx_model]
 
     # find the most recent result.json for this model
-    model_slug = model.replace(':', '_').replace('/', '_').replace('-', '_')
+    model_slug = _safe_name(model)
     possible_jsons = list(runs_dir.rglob(f"results_{model_slug}*.json"))
     if not possible_jsons:
         # Fallback for old folder struct
         possible_jsons = list(runs_dir.rglob("*/results.json")) # too broad if not careful, better try exact
-        possible_jsons = [p for p in runs_dir.rglob("results.json") if model.replace(':', '_').replace('/', '_') in str(p)]
+        possible_jsons = [p for p in runs_dir.rglob("results.json") if _safe_name(model) in str(p)]
 
     if not possible_jsons:
         continue
@@ -93,7 +99,7 @@ for i, row in enumerate(rows):
         row[idx_flip] = str(new_rate)
 
         # update report file too
-        report_p = Path('outputs/audit_logs') / model.replace(':', '_').replace('/', '_') / '00_bias_report.md'
+        report_p = Path('outputs/audit_logs') / _safe_name(model) / '00_bias_report.md'
         if report_p.exists():
             import re
             text = report_p.read_text()

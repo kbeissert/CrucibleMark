@@ -4,6 +4,83 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+
+## [v4.6.1] - 2026-06-08
+
+**CSV-Hygiene Defense-in-Depth — Hard-Fail-Guard in `result_manager` + Sanitizer-Heuristiken in `consolidate_csv`.**
+
+### Added
+- **`utils/result_manager.py::_validate_row_for_write()`** — Hard-Fail-Guard, der JEDE Zeile (sowohl `new_results` als auch `existing_rows`) vor dem CSV-Write gegen die Sanitizer-Heuristiken prüft. Wirft `ValueError` bei Header-Repeat, narrativer Asset-ID oder ungültigem Modell. Korrupte Zeilen werden geloggt + ÜBERSPRUNGEN (resilient — Save bricht nicht ab).
+- **`utils/result_manager.py::_write_to_csv()` (refactored)** — nutzt den Hard-Fail-Guard; zeigt `🛡️ Hard-Fail-Guard: N korrupte Zeile(n) übersprungen` bei Funden.
+- **`scripts/maintenance/consolidate_csv.py::_filter_corrupt_rows()`** — wendet die identischen Sanitizer-Heuristiken (`_is_narrative_asset_id`, `_is_invalid_model`, Header-Repeat) auf den DataFrame VOR `to_csv()` an. Verhindert dass die Maintenance-Konsolidierung Müll zurück in die CSV schreibt.
+- **`scripts/maintenance/consolidate_csv.py::consolidate_file()` (erweitert)** — Logging mit Korrupt-Drop-Counter (`🗑️ Korrupt-Drop: header_repeat / narrative_asset_id / invalid_model`).
+- **`Makefile::validate-csv`** — neues Target für Dry-Run-Validierung (CI-/Smoke-tauglich).
+- **`tests/test_consolidate_csv_validates.py`** (9 Tests) — vollständige Defense-in-Depth-Pyramide für `consolidate_csv`: Filter-Unit-Tests (Header-Repeat, narrative Asset-ID, Boolean-Model), leere DataFrames, fehlende Spalten, E2E mit tmp-CSV, fehlende Datei, gemischte Korruptions-Muster.
+- **`tests/test_result_manager_validates.py`** (7 Tests) — Hard-Fail-Guard-Validierung: akzeptiert saubere Zeilen, lehnt narrative/Header-Repeat/Boolean/leere Modelle ab, E2E mit Save-Operation, Resilienz bei gemischter Korruption.
+
+### Data
+- **Live-Verifikation auf den 3 Benchmark-CSVs nach Phase 8:** Sanitizer meldet 0 Drops (`local_models_benchmark.csv` 1013, `cloud_models_benchmark.csv` 1282, `commercial_models_benchmark.csv` 1940 — alle sauber). Phase-8-Erfolg hält.
+
+### Result
+- 226/226 Tests grün (vorher 210, +16 durch Phase-9-Tests).
+- Pylint 10.00/10 für `result_manager.py`, `consolidate_csv.py`, `sanitize_benchmark_csvs.py`, `test_consolidate_csv_validates.py`, `test_result_manager_validates.py`.
+
+### Architecture (Defense-in-Depth-Schichten)
+1. **Schicht 1 — Sanitizer (`sanitize_benchmark_csvs.py`):** räumt historische Altlasten auf, Dry-Run + Apply.
+2. **Schicht 2 — Consolidate (`consolidate_csv.py`):** filtert via `_filter_corrupt_rows()` VOR jedem `to_csv()`.
+3. **Schicht 3 — Result Manager (`result_manager.py`):** Hard-Fail-Guard validiert jede Zeile VOR dem CSV-Write.
+
+Drei unabhängige Schichten garantieren: **Phase-8-Erfolg kann nicht durch zukünftige Module oder manuelle Edits zunichtegemacht werden.**
+
+## [v4.6.0] - 2026-06-08
+
+**CSV-Hygiene-Sanitizer — Bereinigung korrupter Benchmark-CSVs.**
+
+### Added
+- **`scripts/maintenance/sanitize_benchmark_csvs.py`** — Vier-Klassen-Filter für korrupte Datenzeilen: Header-Repeat, Rohtext-Asset-IDs (Länge > 60, Romananfänge, Markdown-Marker), Boolean-Modelle, leere Modelle. Dry-Run + `--apply`-Modus. Idempotente `.bak`-Backups, atomare `.tmp`+`replace()`-Schreibvorgänge. SSoT-CSV-Pfade aus `scripts.leaderboard.config`. Exit-Code 0 in beiden Modi.
+- **`tests/test_sanitize_benchmark_csvs.py`** (65 Tests) — Filter-Unit-Tests (parametrisiert für 14 Romananfänge, 5 Markdown-Marker, 5 pandas-Sentinel-Varianten), Pipeline-Tests, Backup-Idempotenz, Atomic-Write, E2E mit `monkeypatch` auf SSoT-Pfade.
+
+### Data
+- **13466 Müll-Zeilen aus `local_models_benchmark.csv` entfernt** (93 % der CSV). Vorher 17705 Zeilen mit 13265 leeren `model`-Feldern; nachher 1013 saubere Zeilen. `commercial_models_benchmark.csv` 11 Zeilen verworfen (0.6 %). `cloud_models_benchmark.csv` bereits sauber. Backups unter `*.bak` (idempotent).
+- **Leaderboard regeneriert** — 84 Zeilen, 78 vollständig (43/43 Tests), 5 unvollständig (40–42/43, echte Asset-Lücken die das Auto-Benchmark füllen muss: Kimi K2.6, DeepSeek V4 Pro, Qwen 3.5 397B A17B, MiniMax M2.7, GLM-4.7), 1 Modell mit 49/43 (Test-Override-Logik / Tool-Use-Backlog).
+
+### Result
+- 210/210 Tests grün (vorher 145, +65 Sanitizer-Tests).
+- Pylint 10.00/10 für `sanitize_benchmark_csvs.py` und `test_sanitize_benchmark_csvs.py`.
+
+---
+
+## [v4.5.0] - 2026-06-08
+
+**ID-SSoT-Refactoring — Card-First-Vertrag & Workaround-Entfernung.**
+
+### Added
+- **`strip_date_suffix()`** in `utils/model_utils.py` — SSoT für Datums-Suffix-Strip (`-YYYYMMDD` / `-MMDD` mit gültigem Monat); idempotent.
+- **`enforce_card_first()`** in `utils/model_utils.py` — Card-First-Vertrag: garantiert Card-Existenz via `ensure_card()` (Draft falls fehlt, kein Hard-Fail, WARNING wird geloggt). Rückgabe `(canonical_id, has_card)`.
+- **`tests/test_enforce_card_first.py`** (5 Tests) — Card-First-Vertrag-Invariante: existing-card, missing-card-creates-draft, idempotent, empty-input, hf.co-prefix-pipeline.
+- **`tests/test_id_ssot_invariants.py`** (4 Tests) — Brücken-Äquivalenz zwischen `enforce_card_first` und `resolve_canonical_model_id`; Slugify-Konsistenz für `:/ .` + Leerzeichen; Idempotenz (10 Wiederholungen); AST-Sweep gegen Inline-`re.sub` mit Slugify-Pattern außerhalb der SSoT-Module.
+
+### Changed
+- **`utils/model_utils.py`** — `resolve_canonical_model_id()` ist jetzt die zentrale ID-Bridge (Card-Lookup + Suffix-Strip + `_safe_name`-Fallback). Alle 12 Inline-ID-Transformationen (in `utils/benchmark_utils.py`, `utils/scoring_utils.py`, `utils/providers/llamacpp.py`, `scripts/maintenance/*`, `scripts/core/*`, `scripts/analysis/*`, `scripts/core/tooluse_exporter.py`) auf SSoT migriert.
+- **`utils/result_manager.py`** — `save_results()` ruft `enforce_card_first()` statt `resolve_canonical_model_id()`. CSV-Senke ist die zentrale Card-First-Durchsetzungsstelle; jede geschriebene `model_id` ist garantiert durch eine Card im Filesystem abgedeckt.
+- **`scripts/analysis/generate_provider_cards.py`** + **`scripts/analysis/review/risk_calculator.py`** — lokale `safe_id()`-Duplikate entfernt; Import von `utils.provider_card_template._safe_id`. Provider-Card-SSoT ist nun ebenfalls konsolidiert.
+- **`scripts/leaderboard/module_integration.py::_resolve_to_canonical_id()`** — delegiert primär an `utils.model_utils.resolve_canonical_model_id()`; lokaler 5-Level-Card-Lookup bleibt als Bulk-Fallback.
+- **Dokumentation** — `docs/ARCHITECTURE.md`, `docs/DEVELOPER_GUIDE.md`, `memory-bank/systemPatterns.md` und `memory-bank/activeContext.md` auf den ID-SSoT-Stand aktualisiert. Veraltete `_resolve_dir()`-4-Stufen- und `migrate_canonical_model_ids.py`-Erwähnungen entfernt bzw. präzisiert (4-Stufen-Fallback ist legitime Robustheit, kein Workaround).
+
+### Removed
+- **`scripts/maintenance/migrate_canonical_model_ids.py`** — Workaround entfernt; SSoT-Funktionen reichen für die Kanonisierung.
+- **22 `*.bak`-Dateien** in `benchmark_scores/model_cards/` — gelöscht (Legacy-Backups vor ID-SSoT-Refactoring, kein aktiver Bestand).
+
+### Brücken-Klassifikation
+- **Card-/Path-Use-Case** (z. B. CSV-Schreiben, Tool-Use-Aggregation, Card-Generierung) → `resolve_canonical_model_id()` / `enforce_card_first()`.
+- **Leaderboard-/Display-Use-Case** (menschenlesbare Vendor-Schreibweise, z. B. `qwen/qwen3-32b`) → `normalize_model_id()` + optional `strip_date_suffix()`.
+
+### Result
+- 145/145 Tests grün (vor Refactoring: 124, +21 durch neue Invarianten-Tests).
+- Klare SSOT-Trennung: keine DRY-Verletzungen mehr im ID-Layer; Inline-`re.sub` mit Slugify-Pattern nur noch in den SSoT-Modulen.
+
+---
+
 ## [v4.3.9] - 2026-06-07
 
 **Benchmark-Hang-Diagnose — Connection-Leak-Fix & Stabilisierung für Remote-llama.cpp-Provider.**

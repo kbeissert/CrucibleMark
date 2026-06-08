@@ -23,6 +23,7 @@ sys.path.insert(0, str(ROOT_DIR))
 
 # Local imports
 # pylint: disable=wrong-import-position
+from utils.model_utils import _safe_name  # noqa: E402
 from utils.module_registry import get_active_modules
 from utils.config_validator import ConfigValidator
 
@@ -97,7 +98,7 @@ def clean_checkpoints(model: str = None, module_key: str = None, dry_run: bool =
     files_to_delete = []
 
     if model:
-        safe_model = re.sub(r"[^a-zA-Z0-9]", "_", model)
+        safe_model = _safe_name(model)
         target_file = temp_dir / f"session_{safe_model}.json"
         if target_file.exists():
             files_to_delete.append(target_file)
@@ -162,8 +163,12 @@ def clean_tooluse_metrics_jsonl(model: str | None = None, dry_run: bool = False)
 
 def _norm_dir(s: str) -> str:
     """Normalisiert Model-ID oder Verzeichnisname zum Vergleich.
-    Konvention: ':' und '/' → '_', Rest bleibt erhalten."""
-    return s.replace("/", "_").replace(":", "_").lower()
+
+    Delegiert an SSoT ``_safe_name`` aus utils.model_utils und normalisiert
+    zusätzlich auf lower-case, damit die Verzeichnis-Slugs case-insensitiv
+    verglichen werden können.
+    """
+    return _safe_name(s).lower()
 
 
 def clean_model_output_directories(model: str, dry_run: bool = False):

@@ -19,7 +19,11 @@ from .config import COMMERCIAL_CSV, LOCAL_CSV, CLOUD_CSV
 
 # pylint: disable=import-error
 try:
-    from utils.model_utils import get_model_category
+    from utils.model_utils import (
+        get_model_category,
+        resolve_canonical_model_id,
+        strip_date_suffix,
+    )
 except ImportError:
     # Fallback if import fails (should match SSOT logic in model_utils.py)
     def get_model_category(
@@ -29,6 +33,17 @@ except ImportError:
         if source_file == "commercial":
             return "Proprietär"
         return "Open Weights"
+
+    def strip_date_suffix(model_id):  # type: ignore[no-redef]
+        """Fallback: entfernt 8-stellige YYYYMMDD-Suffixe (kein MMDD-Strip)."""
+        if not model_id:
+            return model_id
+        import re as _re
+        return _re.sub(r"-\d{8}$", "", str(model_id))
+
+    def resolve_canonical_model_id(model_id):  # type: ignore[no-redef]
+        """Fallback: gibt die Eingabe zurück (kein Card-Lookup möglich)."""
+        return model_id
 
 
 # pylint: enable=import-error
@@ -168,22 +183,16 @@ def load_benchmark_data() -> pd.DataFrame:
     # Sort by timestamp to ensure 'last' is actually the most recent
     df = df.sort_values("timestamp")
 
-    # Normalize model_version: Remove date suffix (YYYY-MM-DD from fingerprint)
-    # to aggregate runs of the same version across different days.
+    # Normalize model_version: Remove date suffix via SSoT `strip_date_suffix()`.
+    # SSoT unterstuetzt -YYYYMMDD (8-stellig) und -MMDD mit gueltigem Monat 01-12.
+    # Damit decken wir OpenRouter-Datesuffixes (z.B. kimi-k2-20260211) ab, die
+    # der alte regex -\d{4}-\d{2}-\d{2}$ nicht gefunden hat.
     if "model_version" in df.columns:
-        df["model_version"] = (
-            df["model_version"]
-            .astype(str)
-            .str.replace(r"-\d{4}-\d{2}-\d{2}$", "", regex=True)
-        )
+        df["model_version"] = df["model_version"].astype(str).apply(strip_date_suffix)
 
-    # Also normalize model name to remove date suffixes
+    # Also normalize model name to remove date suffixes (SSoT)
     if "model" in df.columns:
-        df["model"] = (
-            df["model"]
-            .astype(str)
-            .str.replace(r"-\d{4}-\d{2}-\d{2}$", "", regex=True)
-        )
+        df["model"] = df["model"].astype(str).apply(strip_date_suffix)
 
     # --- DEDUPLICATION (Latest Run Only) ---
     # Crucial for accurate metrics (e.g. Load Time on new hardware):
@@ -195,42 +204,41 @@ def load_benchmark_data() -> pd.DataFrame:
         )
 
     # --- MODEL CARD NORMALIZATION (SSoT) ---
-    # The model card is the single source of truth for both model_id and model_version.
-    # Override whatever string the API returned at runtime with the canonical values
-    # from the card. This prevents partial runs under an alias (e.g. 'qwen3.5-...' vs
-    # 'qwen3_5-...') from creating spurious duplicate leaderboard entries.
+    # 1. model_id ueber resolve_canonical_model_id() aus SSoT. Macht Card-Lookup +
+    #    Alias-Resolution (hf.co-Prefix-Strip, safe_name-Fallback). Damit ist die
+    #    'model'-Spalte nach diesem Schritt garantiert in kanonischer Schreibweise
+    #    (identisch zur CSV-Repräsentation nach `enforce_card_first` im ResultManager).
+    # 2. model_version-Override via Card-Lookup: ueberschreibt den Runtime-Wert
+    #    mit dem Card-Wert (falls vorhanden). SSoT hat dafuer keinen direkten
+    #    Reader, daher bleibt eine kleine Card-Parse-Schleife — Lookup-Keys sind
+    #    aber bereits kanonisch (Schritt 1).
     if "model" in df.columns:
+        df["model"] = df["model"].astype(str).apply(resolve_canonical_model_id)
+
         import json as _json_card  # noqa: PLC0415
         from utils.model_utils import _find_card as _find_model_card  # noqa: PLC0415
         _card_dir = Path(__file__).resolve().parents[2] / "benchmark_scores" / "model_cards"
 
-        card_model_id_map: dict = {}
         card_version_map: dict = {}
-
         for model_id in df["model"].unique():
             card_path = _find_model_card(str(model_id), card_dir=_card_dir)
             if card_path and card_path.exists():
                 try:
                     card = _json_card.loads(card_path.read_text(encoding="utf-8"))
                     if isinstance(card, dict):
-                        canonical_id = card.get("model_id")
-                        if canonical_id and str(canonical_id).strip():
-                            card_model_id_map[str(model_id)] = str(canonical_id).strip()
-
                         version = card.get("model_version")
                         if version and str(version).strip():
                             card_version_map[str(model_id)] = str(version).strip()
                 except Exception:  # pylint: disable=broad-exception-caught
                     pass
 
-        if card_model_id_map or card_version_map:
-            def _normalize_row(row):
-                m = str(row["model"])
-                canonical = card_model_id_map.get(m, m)
-                version = card_version_map.get(m, row.get("model_version", "unknown"))
-                return pd.Series([canonical, version], index=["model", "model_version"])
-
-            df[["model", "model_version"]] = df.apply(_normalize_row, axis=1)
+        if card_version_map:
+            df["model_version"] = df.apply(
+                lambda r: card_version_map.get(
+                    str(r["model"]), r.get("model_version", "unknown")
+                ),
+                axis=1,
+            )
 
     df = df.drop_duplicates(
         subset=["model", "model_version", "type", "asset_id"], keep="last"

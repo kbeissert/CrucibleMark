@@ -363,7 +363,17 @@ model_id  +  resolved_version
 Alle Card-Pfadoperationen **müssen** diese Funktionen verwenden. Inline `Path(...) / f"{re.sub(...)}.json"` ist verboten — es würde die Vier-Regeln-Logik umgehen.
 
 ```python
-from utils.model_utils import _safe_name, _card_path, _find_card, CARD_DIR
+from utils.model_utils import (
+    CARD_DIR,
+    WEIGHTS_TIER_DISPLAY,
+    _card_path,
+    _find_card,
+    _safe_name,
+    enforce_card_first,
+    normalize_model_id,
+    resolve_canonical_model_id,
+    strip_date_suffix,
+)
 ```
 
 #### `_safe_name(model_id: str) → str`
@@ -452,6 +462,74 @@ get_use_case_primary("qwen2.5vl:7b")          # → "vision-language"
 get_use_case_primary("codestral-latest")       # → "coding"
 get_use_case_primary("unknown-model")          # → "generalist" (Fallback)
 ```
+
+#### `normalize_model_id(model_id: str) → str`
+
+Strippt bekannte Vendor-Präfixe (z. B. `hf.co/AUTHOR/`) und liefert die kanonische Modell-ID. Erster Schritt jeder ID-Bridge.
+
+```python
+normalize_model_id("hf.co/bartowski/Qwen-7B-GGUF:Q4_K_M")
+# → "Qwen-7B-GGUF:Q4_K_M"
+
+normalize_model_id("claude-sonnet-4-5-20250929")  # → unverändert
+```
+
+> **Nicht für Card-Pfade verwenden** — `normalize_model_id()` allein reicht nicht aus, weil Doppelpunkt/Punkt/Slash noch nicht ersetzt sind. Für Card-Pfade → `resolve_canonical_model_id()` (siehe unten).
+
+#### `strip_date_suffix(model_id: str) → str`
+
+Entfernt Datums-Suffixe in der Form `-YYYYMMDD` (8 Ziffern) oder `-MMDD` (4 Ziffern mit gültigem Monat 01-12). Idempotent.
+
+```python
+strip_date_suffix("claude-haiku-4-5-20251001")  # → "claude-haiku-4-5"
+strip_date_suffix("qwen3-32b-1225")            # → "qwen3-32b"
+strip_date_suffix("mistral-large-3")           # → unverändert (kein Suffix)
+```
+
+> **Anwendung:** Lookup-Vergleiche zwischen einer versionierten Config-ID (`claude-haiku-4-5-20251001`) und einer Suffix-strip-ten historischen Card (`claude-haiku-4-5`).
+
+#### `resolve_canonical_model_id(model_id: str) → str`
+
+**Die zentrale ID-Bridge.** Liefert die kanonische Form einer Modell-ID, indem drei Quellen in dieser Reihenfolge geprüft werden:
+
+1. **Card-Lookup** (per `_find_card()`) — falls die ID direkt oder mit Suffix-Strip eine existierende Card findet, wird der `model_id` aus der Card zurückgegeben.
+2. **Date-Suffix-Strip** — vergleicht gegen vorhandene Cards ohne Datums-Suffix.
+3. **`_safe_name()`-Fallback** — falls keine Card existiert, wird die kanonische `_safe_name()`-Transformation angewendet (Sonderzeichen → Underscore).
+
+```python
+resolve_canonical_model_id("hf.co/bartowski/Qwen-7B-GGUF:Q4_K_M")
+# → "Qwen-7B-GGUF:Q4_K_M" (kein Card-Match → Step 3: safe_name-normalisiert)
+
+resolve_canonical_model_id("claude-haiku-4-5")
+# → "claude-haiku-4-5-20251001" (Card-Match via Suffix-Strip)
+
+resolve_canonical_model_id("mistral-large-latest")
+# → "mistral-large-latest" (kein Card-Match, keine Normalisierung nötig)
+```
+
+**Wann nutzen?** Immer wenn ein roher Modellname in eine **kanonische Form** für Card-Pfade, Cross-File-Mappings oder Lookup-Keys überführt werden muss.
+
+> **Brücken-Klassifikation:** `resolve_canonical_model_id()` ist der **Card-/Path-Use-Case**. Für **Leaderboard-/Display-Use-Cases** (menschenlesbare Vendor-Schreibweise) stattdessen `normalize_model_id()` + optional `strip_date_suffix()` verwenden.
+
+#### `enforce_card_first(model_id: str) → tuple[str, bool]`
+
+**Card-First-Vertrag** (genutzt in `utils/result_manager.py::save_results`). Stellt sicher, dass jede geschriebene `model_id` durch eine Model Card im Filesystem abgedeckt ist.
+
+- Card vorhanden → `(canonical_id, True)` (kein Warning)
+- Card fehlt → `ensure_card()` legt Platzhalter-Draft an, WARNING wird geloggt, Rückgabe `(canonical_id, False)` (kein Hard-Fail)
+
+```python
+canonical, has_card = enforce_card_first("claude-sonnet-4-5-20250929")
+# has_card == True, falls Card existiert; sonst False + Draft wurde angelegt
+
+canonical, has_card = enforce_card_first("unregistered-model-xyz")
+# canonical == "unregistered-model-xyz"
+# has_card == False
+# → ensure_card() wurde aufgerufen, Draft unter benchmark_scores/model_cards/ angelegt
+# → WARNING geloggt, Benchmark läuft weiter
+```
+
+> **Wichtig:** `enforce_card_first()` ist **kein** Hard-Fail. Ein unregistriertes Modell bricht den Benchmark-Lauf nicht ab — die Lücke wird stattdessen als Draft sichtbar und wandert in die Kartenpflege.
 
 ---
 

@@ -58,6 +58,7 @@ from utils.model_utils import (  # noqa: E402
     get_ollama_models_info,
     normalize_model_id,
     normalize_supports_tool_use,
+    strip_date_suffix,
     SUPPORT_TOOL_USE_UNTESTED,
 )
 
@@ -220,8 +221,7 @@ def _get_startable_assets(
         # -YYYYMMDD (8-digit) and -MMDD with valid months 01-12 (e.g. -0127 for Jan 27).
         # Version suffixes like -2503 / -2411 are intentionally NOT stripped.
         # Normalize identically so the cache lookup matches dated config aliases.
-        model_normalized = re.sub(r"-\d{8}$", "", model)
-        model_normalized = re.sub(r"-(0[1-9]|1[0-2])\d{2}$", "", model_normalized)
+        model_normalized = strip_date_suffix(model)
         model_hf_stripped = normalize_model_id(model)
         if (
             (model, batch_id) in existing_tests

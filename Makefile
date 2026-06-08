@@ -424,3 +424,14 @@ web-export-dev:
 	@echo "Exportiere direkt ins 11ty-Projekt..."
 	$(PYTHON) scripts/web_export.py --output ../cruciblemark-web/src/_data/raw/
 	@echo "Dev-Export abgeschlossen."
+
+# === PHASE 9: CSV HYGIENE (Defense-in-Depth) ===
+
+validate-csv:
+	@echo "=== CSV-Hygiene-Check (Dry-Run) ==="
+	@echo "Prueft alle Benchmark-CSVs auf Header-Repeats, narrative Asset-IDs und ungueltige Modelle."
+	@echo ""
+	@$(PYTHON) scripts/maintenance/sanitize_benchmark_csvs.py
+	@echo ""
+	@echo "Tipp: Mit FIX=1 wird der Sanitizer mit --apply ausgefuehrt (Backup vorher anlegen):"
+	@echo "      make backup && make validate-csv FIX=1"

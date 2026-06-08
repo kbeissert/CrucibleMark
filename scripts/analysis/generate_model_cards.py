@@ -25,7 +25,7 @@ if str(ROOT_DIR) not in sys.path:
     sys.path.insert(0, str(ROOT_DIR))
 
 from utils.card_utils import ensure_card
-from utils.model_utils import _card_path
+from utils.model_utils import _card_path, resolve_canonical_model_id
 
 logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
 logger = logging.getLogger(__name__)
@@ -62,7 +62,10 @@ def main() -> None:
     parser.add_argument("--force", action="store_true", help="Bestehende Card überschreiben")
     args = parser.parse_args()
 
-    model_id = args.model
+    # SSoT: Aliase (claude-haiku-4-5 → claude-haiku-4-5-20251001) und hf.co-Prefixe
+    # werden vor der Card-Pfad-Berechnung kanonisiert, damit die Card am erwarteten
+    # Ort angelegt wird.
+    model_id = resolve_canonical_model_id(args.model) if args.model else args.model
     if not model_id:
         model_id = input("Model-ID eingeben (z.B. claude-opus-4-7): ").strip()
     if not model_id:

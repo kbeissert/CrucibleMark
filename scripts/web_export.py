@@ -24,7 +24,7 @@ if str(_ROOT_DIR) not in sys.path:
 import pandas as pd
 import yaml
 from utils.config_validator import ConfigValidator
-from utils.model_utils import _find_card, WEIGHTS_TIER_DISPLAY
+from utils.model_utils import _find_card, _safe_name, WEIGHTS_TIER_DISPLAY
 
 
 def build_provider_map(config_path: Path) -> dict[str, str]:
@@ -215,7 +215,7 @@ def load_model_card(model_name: str, root_dir: Path) -> dict | None:
     # Web-export fallback: leaderboard uses display names (e.g. "kimi-k2.5") while cards
     # are filed under the full namespaced model_id (e.g. "moonshotai/kimi-k2.5-0127").
     # Full directory scan matching stripped model_id.
-    safe = re.sub(r"[:/.\ ]", "_", model_name)
+    safe = _safe_name(model_name)
     display_norm = model_name.lower()
     for card_file in sorted(card_dir.glob("*.json")):
         card_data = _try_load(card_file)
@@ -912,7 +912,8 @@ def main() -> None:
 
         # SSOT: use raw model_id (same transform as benchmark_utils.py) for dir lookup
         raw_model_id = str(row.get("Model ID", row.get("model_id_raw", row.get("model_id", "")))).strip()
-        dir_slug = slugify(raw_model_id.replace("/", "_").replace(":", "_")) if raw_model_id and raw_model_id != "nan" else slug
+        # slugify() normalisiert Sonderzeichen sowieso — .replace ist redundant.
+        dir_slug = slugify(raw_model_id) if raw_model_id and raw_model_id != "nan" else slug
 
         # Load model card early — needed for heritage_ids dir fallback below.
         # Try raw API ID first (direct _find_card hit), fall back to display name.
@@ -930,7 +931,8 @@ def main() -> None:
         # Heritage-Fallback: wenn primäre Dir-Auflösung fehlschlägt, heritage_ids aus der Card prüfen
         if card:
             for _h_id in card.get("heritage_ids", []):
-                _h_slug = slugify(_h_id.replace(":", "_").replace("/", "_"))
+                # slugify() normalisiert Sonderzeichen — .replace ist redundant.
+                _h_slug = slugify(_h_id)
                 if model_audit_src is None:
                     model_audit_src = _resolve_dir(audit_dirs, _h_slug)
                 if model_comp_src is None:

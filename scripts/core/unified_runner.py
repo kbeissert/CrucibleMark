@@ -32,6 +32,7 @@ from utils.language_validator import LanguageValidator
 from utils.logging_config import setup_logging
 from utils.model_utils import (
     _find_card,
+    _safe_name,
     get_model_identity,
     get_model_version,
     probe_thinking_model,
@@ -127,7 +128,7 @@ class UnifiedBenchmarkRunner(BaseBenchmarkRunner):
             card_path = found_path
             logger.debug("[Card-First] Card gefunden via _find_card: %s", card_path)
         else:
-            safe = model.replace("/", "_").replace(":", "_").replace(".", "_")
+            safe = _safe_name(model)
             card_path = cards_dir / f"{safe}.json"
             logger.debug("[Card-First] Card nicht gefunden, verwende Fallback-Pfad: %s", card_path)
 

@@ -3,17 +3,19 @@ Scoring Utilities.
 Shared helper functions for scoring calculations.
 """
 
-import re
 from typing import Any, Dict, Optional
+
+from utils.model_utils import _safe_name
 
 
 def normalize_model_name(s: str) -> str:
     """Canonical model name normalization for CSV/dict lookups.
 
-    SSoT — replaces all of ':', '-', '/' with '_' and lowercases.
-    Used by generate_review.py and score_calculator.py instead of local copies.
+    Delegiert an ``utils.model_utils._safe_name`` (SSoT für Card-Filenames)
+    und normalisiert zusätzlich auf lower-case. Wird von generate_review.py
+    und score_calculator.py verwendet.
     """
-    return re.sub(r"[:\-/]", "_", s).lower()
+    return _safe_name(s).lower()
 
 
 def calculate_score_contributions(
