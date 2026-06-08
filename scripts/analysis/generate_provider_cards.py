@@ -270,7 +270,33 @@ def main() -> None:
         action="store_true",
         help="Bestehende Karten überschreiben",
     )
+    parser.add_argument(
+        "--update",
+        action="store_true",
+        help=(
+            "Synchronisiert alle existierenden Provider Cards mit dem Template: "
+            "fehlende Felder ergänzen, entfernte Felder nach Bestätigung löschen. "
+            "Ohne LLM-Calls."
+        ),
+    )
+    parser.add_argument(
+        "--yes",
+        action="store_true",
+        help="Mit --update: Lösch-Bestätigung automatisch mit 'ja' beantworten",
+    )
+    parser.add_argument(
+        "--dry-run",
+        action="store_true",
+        help="Mit --update: Nur Vorschau — nichts schreiben",
+    )
     args = parser.parse_args()
+
+    if args.update:
+        from utils.card_sync import format_summary, sync_all  # noqa: PLC0415
+        logger.info("Provider-Card-Sync (dry_run=%s, yes=%s) ...", args.dry_run, args.yes)
+        plans = sync_all("provider", dry_run=args.dry_run, yes=args.yes)
+        print(format_summary(plans))
+        return
 
     config = _load_config()
     all_stats = _load_stats_from_csv()

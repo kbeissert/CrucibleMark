@@ -827,3 +827,100 @@ leisten muss.
 - Insgesamt: **296/296 Tests grün** (zuvor 271), Pylint **10.00/10**
 - Neuer Commit für Phase 24
 
+
+## v4.6.5 — SSoT-Card-Sync (Phase 25) (2026-06-08)
+
+### Motivation
+
+Template (Python-Dict) und Karten-Dateien (JSON) driften auseinander, sobald
+ein Feld im Template ergänzt oder entfernt wird. Bisher musste man manuell alle
+Karten anpassen — fehleranfällig und nicht reproduzierbar.
+
+### Lösung
+
+`--update`-Flag in den Card-Generatoren und dedizierter CLI
+`scripts/analysis/sync_cards.py` mit folgenden Eigenschaften:
+
+- **Add (Vorwärts):** Felder, die im Template neu sind, fehlen aber in der
+  Karte → werden automatisch mit Default-Wert aus dem Template ergänzt.
+  Kein Prompt.
+- **Delete (Rückwärts):** Felder, die in der Karte sind, aber nicht im
+  Template → werden aus der Karte entfernt. **Mit Bestätigungs-Prompt pro
+  Karte** (gesammelt, nicht pro Feld). Mit ``--yes`` wird die Abfrage
+  übersprungen.
+- **Beibehalten:** Felder, die in Karte und Template sind, bleiben
+  unverändert.
+- **Idempotent:** Mehrfacher Aufruf ohne Template-Änderung = No-Op.
+
+### 1. `utils/card_sync.py` — Sync-Engine
+
+Frozen Dataclasses `SyncAction` (kind: add/delete/keep) und `SyncPlan`. 
+Funktionen:
+- `plan_sync(card_path, card_type)` — berechnet Aktionen ohne Schreiben
+- `apply_sync(card_path, card_type, *, dry_run, yes, confirm_fn)` — plant +
+  führt aus, fragt bei Löschungen nach
+- `sync_all(card_type, ...)` — Batch-Verarbeitung aller Karten
+- `format_summary(plans)` — lesbarer CLI-Output
+
+Protected IDs (`provider_id`, `model_id`) werden nie gelöscht.
+`tooluse_*`-Legacy in Model Cards wird toleriert (nicht gelöscht).
+
+### 2. `scripts/analysis/sync_cards.py` — CLI
+
+```bash
+python scripts/analysis/sync_cards.py --card-type all --dry-run
+python scripts/analysis/sync_cards.py --card-type provider --yes
+python scripts/analysis/sync_cards.py --card-type model --json
+```
+
+Exit-Code 0 in beiden Modi. `--json` Output für CI-Parsing.
+
+### 3. `--update`-Flag in Generatoren
+
+`scripts/analysis/generate_provider_cards.py --update [--yes] [--dry-run]`
+`scripts/analysis/generate_model_cards.py --update [--yes] [--dry-run]`
+
+Beide rufen intern `sync_all()` auf — keine LLM-Calls, keine Stats-Injektion.
+Reine Template-Synchronisation.
+
+### 4. Makefile-Targets
+
+```makefile
+make cards-sync CARD_TYPE=provider DRY_RUN=1
+make cards-sync CARD_TYPE=all YES=1
+make provider-cards-update YES=1
+make model-cards-update DRY_RUN=1
+```
+
+### 5. Live-Befund
+
+```
+=== Card-Sync Zusammenfassung ===
+  Cards verarbeitet:   18
+  Cards mit Änderungen: 1
+  Adds:    0
+  Deletes: 2
+
+--- llamacpp.json (provider) ---
+  - inference_interfaces  (nicht mehr im Template definiert)
+  - type  (nicht mehr im Template definiert)
+```
+
+Korrekt erkannt: `llamacpp.json` hat 2 Felder, die nicht im
+Provider-Card-Template definiert sind. Die anderen 5 Karten mit
+`api_base_url: null` werden **nicht** als "missing" markiert, weil das
+Feld im Template vorhanden ist — der Wert `null` ist legitim für lokale
+Provider.
+
+### Tests
+
+- 22 neue Tests in `tests/test_card_sync.py`:
+  - 3 für Template-Lookup
+  - 7 für plan_sync (Aktionen, Drift, Protected IDs, Legacy)
+  - 6 für apply_sync (dry-run, yes, confirm_fn, Idempotenz)
+  - 3 für sync_all
+  - 2 für format_summary
+  - 1 für Idempotenz
+- Insgesamt: **318/318 Tests grün** (zuvor 296, +22), Pylint **10.00/10**
+- Neuer Commit für Phase 25
+

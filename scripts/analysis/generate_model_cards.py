@@ -60,7 +60,32 @@ def main() -> None:
         help="Provider-Schlüssel für lokale/namespaced Modelle (z.B. ollama_local)",
     )
     parser.add_argument("--force", action="store_true", help="Bestehende Card überschreiben")
+    parser.add_argument(
+        "--update",
+        action="store_true",
+        help=(
+            "Synchronisiert alle existierenden Model Cards mit dem Template: "
+            "fehlende Felder ergänzen, entfernte Felder nach Bestätigung löschen."
+        ),
+    )
+    parser.add_argument(
+        "--yes",
+        action="store_true",
+        help="Mit --update: Lösch-Bestätigung automatisch mit 'ja' beantworten",
+    )
+    parser.add_argument(
+        "--dry-run",
+        action="store_true",
+        help="Mit --update: Nur Vorschau — nichts schreiben",
+    )
     args = parser.parse_args()
+
+    if args.update:
+        from utils.card_sync import format_summary, sync_all  # noqa: PLC0415
+        logger.info("Model-Card-Sync (dry_run=%s, yes=%s) ...", args.dry_run, args.yes)
+        plans = sync_all("model", dry_run=args.dry_run, yes=args.yes)
+        print(format_summary(plans))
+        return
 
     # SSoT: Aliase (claude-haiku-4-5 → claude-haiku-4-5-20251001) und hf.co-Prefixe
     # werden vor der Card-Pfad-Berechnung kanonisiert, damit die Card am erwarteten
