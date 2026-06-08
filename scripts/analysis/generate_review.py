@@ -33,6 +33,7 @@ from utils.model_utils import (
     get_model_specialization,
     get_use_case_primary,
 )
+from utils.provider_card_template import _safe_id
 from scripts.analysis.review import (
     build_constraint_violations_summary,
     build_empty_response_context,
@@ -166,12 +167,13 @@ def _ensure_provider_card(
     if not developer:
         return {}
 
-    card_path = ROOT_DIR / "benchmark_scores" / "provider_cards" / f"{_safe_name(developer).lower()}.json"
+    # SSoT-Pfad: SSoT-Lookup via load_provider_card().
+    from utils.provider_card_template import CARDS_DIR, load_provider_card
+    card_path = CARDS_DIR / f"{_safe_id(developer)}.json"
     if card_path.exists():
-        try:
-            return json.loads(card_path.read_text(encoding="utf-8"))
-        except Exception:
-            pass
+        existing = load_provider_card(developer)
+        if existing:
+            return existing
 
     if dry_run:
         print(f"  [FEHLEND] Provider Card: {developer}")
@@ -187,12 +189,21 @@ def _ensure_provider_card(
             return None
 
     print(f"  Generiere Provider Card für {developer} ...")
-    pc_gen = _load_card_module("generate_provider_cards")
-    all_stats: dict = pc_gen._load_stats_from_csv()  # type: ignore[attr-defined]
+    # Direkter Aufruf statt Reflection: generate_provider_cards_full() iteriert
+    # die Provider-Liste und ruft _generate_card/_write_card intern.
+    # Hier filtern wir auf den einen Provider via force-Logik im Caller-Pfad.
+    from scripts.analysis.generate_provider_cards import (
+        _load_stats_from_csv,
+        _generate_card,
+        _write_card,
+    )
+    from utils.provider_card_template import rebuild_provider_index
+    all_stats: dict = _load_stats_from_csv()
     stats = all_stats.get(developer, {})
-    card = pc_gen._generate_card(developer, _safe_name(developer).lower(), stats, client, card_provider, card_model)  # type: ignore[attr-defined]
-    pc_gen._write_card(card)  # type: ignore[attr-defined]
-    pc_gen.rebuild_provider_index()  # type: ignore[attr-defined]
+    provider_id = _safe_id(developer)
+    card = _generate_card(developer, provider_id, stats, client, card_provider, card_model)
+    _write_card(card)
+    rebuild_provider_index()
     print(f"  Provider Card erstellt: {developer}")
     return card
 
@@ -550,7 +561,10 @@ def _run_tooluse_reviews(
             existing_reviews = sorted(out_dir.glob("tooluse_narrative_review_*.md")) if out_dir.exists() else []
             if existing_reviews:
                 latest_review_mtime = existing_reviews[-1].stat().st_mtime
-                audit_dir = ROOT_DIR / "outputs" / "audit_logs" / slug
+                # audit_dir nutzt das rohe mid, weil outputs/audit_logs/<mid>/
+                # genau so heisst wie mid im tooluse_leaderboard.csv steht.
+                # (slug = _safe_name(mid) waere falsch fuer Modelle mit Punkten.)
+                audit_dir = ROOT_DIR / "outputs" / "audit_logs" / mid
                 tooluse_audit_files = list(audit_dir.glob("tooluse*.md")) if audit_dir.exists() else []
                 latest_audit_mtime = max((f.stat().st_mtime for f in tooluse_audit_files), default=0)
                 if latest_review_mtime >= latest_audit_mtime:
@@ -668,6 +682,10 @@ def _run_per_model_all_reviews(
         print("❌ Keine Audit-Logs gefunden.")
         return
 
+    # Die Ordnernamen in outputs/audit_logs/ sind nach _safe_name normalisiert
+    # (Punkt -> Underscore), identisch zu model_cards/ und docs/reviews/.
+    # Wir verwenden sie hier sowohl als Slug (fuer out_dir-Pfade) als auch
+    # als model_id (fuer audit_dir und Sub-Calls).
     slugs = sorted(
         d.name for d in audit_base_dir.iterdir()
         if d.is_dir() and d.name != ".DS_Store"
@@ -747,7 +765,10 @@ def _run_audit_reviews(
     for subdir in audit_base_dir.iterdir():
         if not subdir.is_dir() or subdir.name == ".DS_Store":
             continue
-        if safe_target_model and subdir.name != safe_target_model:
+        # Defense in depth: vergleiche safe_name-normalisiert, damit auch
+        # Audit-Dirs mit roher Schreibweise (z.B. "gpt-5.4" statt "gpt-5_4")
+        # korrekt gematcht werden.
+        if safe_target_model and _safe_name(subdir.name) != safe_target_model:
             continue
         found_models = True
 

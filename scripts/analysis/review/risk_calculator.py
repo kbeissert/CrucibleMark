@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import json
-import re
 import sys
 from pathlib import Path
 
@@ -12,7 +11,7 @@ if str(ROOT_DIR) not in sys.path:
     sys.path.insert(0, str(ROOT_DIR))
 
 from utils.model_utils import _find_card
-from utils.provider_card_template import _safe_id
+from utils.provider_card_template import load_provider_card
 
 # Known cloud-provider prefixes (normalized, lowercase) → display name.
 _CLOUD_PREFIX_TO_PROVIDER: dict[str, str] = {
@@ -105,14 +104,11 @@ def get_provider_card_context(model_id: str) -> str:
 
     provider_card: dict | None = None
     if developer:
-        card_path = ROOT_DIR / "benchmark_scores" / "provider_cards" / f"{_safe_id(developer)}.json"
-        if card_path.exists():
-            try:
-                loaded = json.loads(card_path.read_text(encoding="utf-8"))
-                if not loaded.get("unknown"):
-                    provider_card = loaded
-            except Exception:
-                pass
+        # SSoT-Pfad: load_provider_card() aus utils.provider_card_template.
+        # Verwirft automatisch unbekannte Cards und handhabt Parse-Fehler.
+        loaded = load_provider_card(developer)
+        if loaded and not loaded.get("unknown"):
+            provider_card = loaded
 
     if not model_card and not provider_card:
         return ""

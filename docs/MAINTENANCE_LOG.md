@@ -590,3 +590,36 @@ Diese Modelle sind in der Karte mit `supports_tool_use: "untested"` markiert —
 |---|---|
 | `qwen2_5vl_7b` | Qwen 2.5 VL 7B |
 | `test` | TODO |
+
+---
+
+## v4.6.2 — Provider-Card SSoT-Bereinigung (2026-06-08)
+
+### Phase 20: `risk_calculator.get_provider_card_context()` nutzt SSoT
+
+**Problem:** Direkter FS-Zugriff + `json.loads()` für Provider Cards — umging
+die SSoT-API `load_provider_card()` in `utils/provider_card_template.py`.
+
+**Fix:** 
+- Import von `load_provider_card` statt `_safe_id`
+- Inline-FS-Pfad durch `load_provider_card(developer)` ersetzt
+- `unknown`-Filter bleibt im Konsumenten (SSoT-API filtert nicht)
+- `re`-Import entfernt (ungenutzt)
+
+### Phase 21: `generate_review._ensure_provider_card()` ohne Reflection
+
+**Problem:** Lädt `generate_provider_cards` Modul dynamisch via `_load_card_module()` —
+fragile Reflection, umging SSoT-API.
+
+**Fix:**
+- Direkter Import: `_load_stats_from_csv`, `_generate_card`, `_write_card` aus
+  `scripts.analysis.generate_provider_cards`
+- SSoT-Index-API `rebuild_provider_index()` aus `utils.provider_card_template`
+- Read-Pfad: `load_provider_card()` (SSoT) statt direkter FS-Zugriff
+- `_load_card_module` bleibt für `_ensure_model_card` (Model-Card-Generator) bestehen
+
+### Tests
+
+- 6 neue Regressionstests in `tests/test_provider_card_ssot_refactor.py`
+- Insgesamt: 246/246 Tests grün, Pylint 10.00/10
+
