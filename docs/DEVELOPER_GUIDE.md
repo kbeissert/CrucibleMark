@@ -1236,6 +1236,10 @@ python run_benchmark.py --debug-responses
 - **ARCHITECTURE.md** – System-Design & MVC-Patterns
 - **USER_GUIDE.md** – Wie Nutzende Module ausführen
 - **GOLDEN_STANDARDS.md** – Referenz-Methodik
+- **BACKUP_STRATEGY.md** – Backup-Lifecycle, SSoT-Konfiguration und Pre-Backup-Hygiene (Phase 27)
+- **MAINTENANCE_LOG.md** – v4.6.6 Phase-27-Eintrag mit SSoT-Refactor-Diffs
+>>>>>>>+++++++ REPLACE
+
 
 ---
 

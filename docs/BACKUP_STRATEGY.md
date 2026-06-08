@@ -6,6 +6,8 @@
 
 - Philosophie: „Live vs. History"
 - Backup-Lifecycle (Snapshot → Prune → Consolidate)
+- SSoT-Architektur (Phase 27) — eine Quelle der Wahrheit
+- Pre-Backup-Hygiene — automatisches Aufräumen vor dem Snapshot
 - Workflow-Implikationen
 - Technische Implementierung
 
@@ -40,8 +42,11 @@ Redundante historische Daten im aktiven Workspace blähen das System auf. Für d
 Um Datensicherheit mit Workspace-Hygiene zu verbinden, implementiert CrucibleMark einen **„Snapshot & Prune"-Workflow**.
 
 ```bash
-make backup
+make backup-prep    # Dry-Run / Pre-Backup-Hygiene (Phase 27)
+make backup         # Snapshot + Cleanup + Consolidate
 ```
+
+> **Neu in Phase 27:** `make backup-prep` führt die Pre-Backup-Hygiene als isolierten, optionalen Schritt aus — ideal für CI-Smoke-Tests oder wenn der tar-Snapshot separat erzeugt werden soll.
 
 ---
 
@@ -83,10 +88,11 @@ JSON-Logs enthalten vollständige Rohdaten (Prompts, Responses, Timestamps) und 
 **Logik:**
 
 1. Kumulative CSV-Datei laden
-2. Nach Timestamp sortieren (neueste zuerst)
-3. Nach eindeutigem Key gruppieren: `(Model Name, Asset ID)`
-4. **Deduplizieren:** Nur den einzelnen neuesten Eintrag behalten
-5. Alle älteren Duplikate entfernen
+2. **Model-Spalte via ID-SSoT normalisieren** (Phase 27 — verhindert Split bei Schreibweisenvarianten)
+3. Nach Timestamp sortieren (neueste zuerst)
+4. Nach eindeutigem Key gruppieren: `(Model Name, Asset ID)`
+5. **Deduplizieren:** Nur den einzelnen neuesten Eintrag behalten
+6. Alle älteren Duplikate entfernen
 
 **Ergebnis:** Die CSV-Datei enthält exakt **einen validen Score** pro Test-Case.
 
@@ -139,26 +145,66 @@ Um einen Re-Run eines spezifischen Modells zu erzwingen, ohne die gesamte Histor
 
 ## 4. Technische Implementierung
 
-```makefile
-backup:
-    # 1. Archive erstellen
-    @echo "📦 Creating snapshot..."
-    @tar -czf backups/cruciblemark_backup_$(date +%Y%m%d_%H%M%S).tar.gz \
-        benchmark_scores/ \
-        outputs/runs/ \
-        golden_standards/ \
-        benchmark_config.yaml
+### 4.1 SSoT-Architektur (Phase 27)
 
-    # 2. Cleanup Logs
-    @echo "🧹 Cleaning old run logs..."
-    @python scripts/cleanup_runs.py --keep 5 --force
+Seit Phase 27 ist **eine einzige Datei** die Quelle der Wahrheit für das Backup-System:
 
-    # 3. Consolidate Scores
-    @echo "📊 Consolidating CSV..."
-    @python scripts/consolidate_csv.py
+**`utils/backup_targets.py`** — Konfigurations-SSoT für:
 
-    @echo "✅ Backup complete!"
+- `BACKUP_TARGETS` — Verzeichnisse im tar-Snapshot
+- `build_tar_excludes()` — zentrale tar-Excludes
+- `CSV_FILES` — CSVs der Konsolidierung + Deduplizierungs-Schlüssel
+- `RUNS_KEEP_DEFAULT` (5) — Cleanup-Default für alte Runs
+- `REVIEWS_KEEP_PER_CATEGORY` (1) — Cleanup-Default für alte Reviews
+- `UNREACHABLE_LOG_MAX_AGE_DAYS` (7) — Schwellwert für Crash-Log-Rotation
+- `BACKUP_ROTATION_DAYS` (90) — Empfehlung für Snapshot-Rotation
+
+> **Vorteil:** Ein Drift in Cleanup-Defaults, Excludes oder CSV-Listen ist jetzt an *einer* Stelle zu fixen — nicht mehr über vier Skripte verstreut.
+
+### 4.2 Pre-Backup-Hygiene (Phase 27)
+
+Neu in Phase 27: `scripts/maintenance/cleanup_helpers.py::pre_backup_hygiene()` räumt **vor** dem tar-Snapshot auf:
+
+1. **Alte Crash-Logs löschen** — `outputs/tooluse_unreachable_*.json` älter als 7 Tage
+2. **Legacy-Backups in Safety-Archiv verschieben** — `audit_logs_backup_*.tar.gz`, `audit_logs_legacy_backup_*`, `audit_logs_spurious_archive`, `audit_logs.zip`, `model_cards_backup_*.tar.gz`, `model_cards_spurious_archive` werden in `backups/_pre_clean_YYYYMMDD_HHMMSS/` verschoben
+3. **Temporäre Session-Files löschen** — `outputs/temp/session_*.json`
+
+Aufruf als isolierter Schritt (Dry-Run oder Default):
+
+```bash
+make backup-prep              # echter Lauf
+DRY_RUN=1 make backup-prep    # nur anzeigen, nichts ändern
 ```
+
+### 4.3 Makefile-Recipes
+
+```makefile
+# Phase 27: Pre-Backup-Hygiene (SSoT-Konstanten via env)
+backup-prep:
+	@python scripts/maintenance/cleanup_helpers.py $(if $(DRY_RUN),--dry-run,)
+
+# backup haengt automatisch an backup-prep — keine doppelte Logik
+backup: backup-prep
+	@echo "📦 Creating snapshot..."
+	@tar -czf backups/cruciblemark_backup_$(DATE).tar.gz \
+	    --exclude='__pycache__' \
+	    --exclude='*.bak_*' --exclude='*.backup_*' \
+	    --exclude='audit_logs_backup_*.tar.gz' \
+	    --exclude='tooluse_unreachable_*.json' \
+	    benchmark_scores/ outputs/ benchmark_modules/ \
+	    docs/reviews/ docs/audits/ config/ memory-bank/ \
+	    benchmark_config.yaml
+
+	@echo "🧹 Cleaning old run logs..."
+	@python scripts/maintenance/cleanup_runs.py --keep $(RUNS_KEEP) --force
+
+	@echo "📊 Consolidating CSVs..."
+	@python scripts/maintenance/consolidate_csv.py
+
+	@echo "✅ Backup complete!"
+```
+
+> **Defaults:** `RUNS_KEEP ?= 5` im Makefile spiegelt `RUNS_KEEP_DEFAULT` aus `utils/backup_targets.py`.
 
 ---
 
@@ -168,19 +214,23 @@ backup:
 
 **Parameter:**
 
-- `--keep N`: Anzahl der zu behaltenden Runs (default: 5)
+- `--keep N`: Anzahl der zu behaltenden Runs (default: `RUNS_KEEP_DEFAULT = 5` aus SSoT)
 - `--force`: Keine Bestätigung erforderlich
+- `--dry-run`: Nur anzeigen, nichts löschen
 
-**Logik:**
+**Logik (Phase 27, ID-SSoT-bewusst):**
 
 ```python
-for model_dir in Path('outputs/runs').iterdir():
-    json_files = sorted(model_dir.glob('*.json'), key=lambda f: f.stat().st_mtime)
+# Gruppierung laeuft NICHT mehr ueber den Dateinamen-Slug,
+# sondern via resolve_canonical_model_id() (utils.model_utils).
+grouped = canonicalize_run_grouping(files)
+# qwen3.5-35b-q4 und qwen_qwen3.5-35b-q4 landen in derselben Gruppe.
 
-    if len(json_files) > keep_count:
-        to_delete = json_files[:-keep_count]  # Alle außer letzte N
-        for file in to_delete:
-            file.unlink()
+for model, files in grouped.items():
+    if len(files) > keep:
+        to_remove = files[keep:]  # neueste zuerst, Rest weg
+        for f in to_remove:
+            f.unlink()
 ```
 
 ---
@@ -194,6 +244,8 @@ Bereinigt `docs/reviews/` und behält pro Modell-Verzeichnis je einen Benchmark-
 | `review_YYYYMMDD_HHMMSS.md` | Benchmark-Review |
 | `bias_review_YYYYMMDD_HHMMSS.md` | PC-Bias-Review |
 | `tooluse_narrative_review_YYYYMMDD_HHMMSS.md` | Tool-Use-Review |
+
+> **Phase 27:** Verzeichnisnamen werden via `_safe_name` normalisiert, damit `qwen3.5-35b-a3b-q4` und `qwen_qwen3.5-35b-a3b-q4` als dasselbe Modell zählen.
 
 #### `consolidate_csv.py`
 
@@ -220,7 +272,9 @@ df_latest = df_sorted.drop_duplicates(subset=['model', 'asset_id'], keep='first'
 df_latest = df_sorted.drop_duplicates(subset=['model'], keep='first')
 ```
 
-**Hinweis:** Das Skript toleriert jetzt korrupte CSV-Dateien (z.B. durch eingemischte Audit-Logs) und lädt trotzdem alle validen Zeilen.
+> **Phase 27:** `model`-Spalte wird via `resolve_canonical_model_id()` normalisiert, **bevor** dedupliziert wird — `qwen3.5-35b` und `qwen_qwen3.5-35b` werden als dasselbe Modell gezählt.
+
+**Hinweis:** Das Skript toleriert jetzt korrupte CSV-Dateien (z.B. durch eingemischte Audit-Logs) und lädt trotzdem alle validen Zeilen. Defense-in-Depth-Sanitizer (Phase 9) bleibt aktiv.
 
 ---
 
@@ -314,6 +368,9 @@ make leaderboard
 
 - **Temporary Session Files:** `outputs/temp/session_*.json` (nur für Crash-Recovery)
 - **Python Cache:** `__pycache__/`, `.pyc`-Dateien
+- **Backups-von-Backups:** `audit_logs_backup_*.tar.gz`, `audit_logs_legacy_backup_*`, `model_cards_backup_*.tar.gz` (Phase 27: werden in `backups/_pre_clean_*/` verschoben, nicht ins Archiv aufgenommen)
+- **Spurious-Archive:** `audit_logs_spurious_archive/`, `model_cards_spurious_archive/` (Phase 27: gleiche Behandlung)
+- **Alte Crash-Logs:** `outputs/tooluse_unreachable_*.json` älter als 7 Tage (Phase 27: werden vor dem tar gelöscht)
 
 Diese Daten sind ephemeral und lassen sich regenerieren.
 
@@ -338,8 +395,9 @@ rsync -avz backups/ /mnt/external-drive/cruciblemark-backups/
 
 - **USER_GUIDE.md** – Befehle für Daten-Management (`make clean-model`, u. a.)
 - **ARCHITECTURE.md** – Data Persistence Layer (Layer 4)
+- **MAINTENANCE_LOG.md** – v4.6.6 Phase 27 Eintrag mit Code-Diffs
 
 ---
 
-**Dokumenten-Version:** 3.1.0 (Überarbeitung März 2026)\
-**Kompatibel mit:** CrucibleMark v3.4.3+
+**Dokumenten-Version:** 3.2.0 (Phase 27, 2026-06-08)\
+**Kompatibel mit:** CrucibleMark v4.4.3+

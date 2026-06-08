@@ -6,6 +6,76 @@
 ---
 
 
+## v4.6.6 — Backup-System SSoT + ID-Normalisierung (Phase 27, 2026-06-08)
+
+### 1. `utils/backup_targets.py` — neue SSoT-Konfigurationsdatei
+
+Eine einzige Datei bündelt jetzt alle Listen, Defaults und Excludes, die
+vorher über vier Skripte verstreut waren:
+
+- `BACKUP_TARGETS` — Verzeichnisse im tar-Snapshot (8 Einträge)
+- `build_tar_excludes()` — 11 tar-Excludes (vorher: 3, hartkodiert im Makefile)
+- `CSV_FILES` — 4 CSVs mit Deduplizierungs-Schlüsseln (SSoT für `consolidate_csv.py`)
+- `RUNS_KEEP_DEFAULT = 5` — Cleanup-Default (vorher hardcoded in 2 Skripten)
+- `REVIEWS_KEEP_PER_CATEGORY = 1` — Review-Cleanup-Default
+- `UNREACHABLE_LOG_MAX_AGE_DAYS = 7` — Crash-Log-Schwellwert
+- `BACKUP_ROTATION_DAYS = 90` — Snapshot-Rotations-Empfehlung
+- `all_targets_exist()` / `all_csv_targets_exist()` — Konfig-Invarianten
+
+### 2. `scripts/maintenance/cleanup_helpers.py` — neue SSoT-Helper
+
+- `canonical_model_slug()` — delegiert an `resolve_canonical_model_id()`, fällt auf `_safe_name()` zurück
+- `canonicalize_run_grouping()` — gruppiert Run-Files nach kanonischer ID, sortiert mtime-absteigend
+- `pre_backup_hygiene()` — neue Pre-Backup-Hygiene mit 3 Aktionen:
+  1. Alte `tooluse_unreachable_*.json` löschen (älter als 7 Tage)
+  2. Legacy-Backup-Artefakte nach `backups/_pre_clean_YYYYMMDD_HHMMSS/` verschieben
+  3. `outputs/temp/session_*.json` löschen
+- `run_pre_backup_hygiene()` — Convenience-Wrapper mit Log-Summary
+
+### 3. ID-SSoT-Schließung in 3 Cleanup-Skripten
+
+Vorher nur in `prune_orphaned_reports.py` aktiv. Jetzt auch in:
+
+- **`cleanup_runs.py`**: `get_benchmark_files()` nutzt `canonicalize_run_grouping()` — `qwen3.5-35b-q4` und `qwen_qwen3.5-35b-q4` landen in derselben Gruppe. `--keep` Default kommt aus SSoT.
+- **`consolidate_csv.py`**: Neue `_normalize_model_column()`-Funktion normalisiert die `model`-Spalte via `resolve_canonical_model_id()` **bevor** dedupliziert wird. Logging: `🔗 Model-IDs via SSoT normalisiert.`
+- **`cleanup_reviews.py`**: Verzeichnisnamen via `_safe_name` normalisiert (Robustheit bei Slug-Drift).
+
+### 4. `clean.py` — RUNS_KEEP_DEFAULT-Integration
+
+`interactive_wizard` und `cleanup_runs()` nutzen `RUNS_KEEP_DEFAULT` aus SSoT statt hardcodiertem `1`.
+
+### 5. `Makefile` — `backup-prep`-Target + RUNS_KEEP-Variable
+
+- Neue Variable `RUNS_KEEP ?= 5` (SSoT-Spiegelung)
+- Neues Target `backup-prep` mit `DRY_RUN=1` Switch
+- `backup: backup-prep` (Dependency — keine doppelte Logik)
+- `clean-runs` nutzt `$(RUNS_KEEP)` statt hardcoded `1`
+- tar-Recipe erweitert um 7 weitere Excludes (10 statt 3)
+- Help-Text mit `=== Data Management & Cleanup ===` und `=== Backup-Lifecycle ===` Sektionen
+
+### Tests
+
+- `tests/test_backup_targets.py` — 18 Tests (Konfig-Invarianten)
+- `tests/test_cleanup_helpers.py` — 19 Tests (ID-SSoT + Hygiene)
+- `tests/test_cleanup_runs.py` — 14 Tests (Gruppierung + Cleanup)
+- `tests/test_consolidate_csv.py` — 12 Tests (ID-Normalisierung)
+- `tests/test_cleanup_reviews.py` — 11 Tests (Review-Cleanup)
+
+**Verifikation:** 74 neue Tests grün, bestehende 318 Tests weiter grün, Pylint 10.00/10.
+
+### SSoT-Vertrag
+
+> **Vorteil:** Ein Drift in Cleanup-Defaults, Excludes oder CSV-Listen ist
+> jetzt an *einer* Stelle zu fixen — nicht mehr über vier Skripte verstreut.
+
+Vorher hatte `make clean-runs FORCE=1` `clean.py --runs 1` aufgerufen (im
+Widerspruch zur Doku, die „5 letzte Runs" sagt). Jetzt gilt: `RUNS_KEEP` im
+Makefile = `RUNS_KEEP_DEFAULT` im Python = beide spiegeln die Doku.
+
+---
+
+
+
 ## v4.6.1 — CSV-Hygiene Defense-in-Depth (2026-06-08)
 
 ### 1. `utils/result_manager.py::_validate_row_for_write()` — Hard-Fail-Guard
