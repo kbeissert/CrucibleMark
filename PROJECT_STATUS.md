@@ -1,8 +1,34 @@
 # PROJECT_STATUS.md
 
 **Last Updated:** 2026-06-08
-**Current Version:** 4.6.1 — CSV-Hygiene Defense-in-Depth
+**Current Version:** 4.6.8 — Makefile help v2 + argparse Hardening (Phase 29)
 **Status:** ✅ Production-Ready
+
+> **Hinweis:** Die Executive Summary weiter unten historisch auf v4.6.1.
+> Die Sub-Versionen v4.6.2–v4.6.8 sind im `docs/MAINTENANCE_LOG.md`
+> detailliert dokumentiert. Dieser Header wird bei jedem Phase-Commit
+> nachgezogen, die Executive Summary nur bei Major-Milestones.
+>
+> **Aktueller Stand (Phase 29):**
+> - 459/459 Tests grün
+> - Pylint 10.00/10
+> - `make help` dokumentiert alle 83 Targets (vorher 73 fehlten)
+> - Cleanup-Dispatcher via `main_with_args()` (kein Subprozess mehr)
+> - `clean_csv()` nutzt ID-SSoT (`resolve_canonical_model_id`)
+> - `scripts/maintenance/cleanup_helpers.py` mit argparse (statt sys.argv-Hack)
+> - `scripts/maintenance/consolidate_csv.py` mit argparse (--help)
+> - `scripts/tools/validate_assets.py` mit argparse (Bug-Fix: --help crashte)
+> - `clean_versions.py` gelöscht (toter Code, hartkodierte Migration)
+> - `make clean-model DRY=1` / `clean-module DRY=1` / `clean-all DRY=1` (Vorschau)
+>
+> **Aenderungen seit v4.6.1 im Detail:**
+> - v4.6.2: Provider-Card SSoT-Bereinigung (Phasen 20–21)
+> - v4.6.3: Card-Status-Tool + Provider-Detection-SSoT (Phasen 22–23)
+> - v4.6.4: Card-Templates als SSoT (Phase 24)
+> - v4.6.5: SSoT-Card-Sync (Phase 25)
+> - v4.6.6: Backup-System SSoT + ID-Normalisierung (Phase 27)
+> - v4.6.7: make clean Hardening (Phase 28)
+> - v4.6.8: Makefile help v2 + argparse Hardening (Phase 29)
 
 ---
 

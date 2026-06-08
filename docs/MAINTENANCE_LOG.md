@@ -6,6 +6,76 @@
 ---
 
 
+## v4.6.8 — Makefile help v2 + argparse fuer 3 Skripte (Phase 29, 2026-06-08)
+
+### 1. `Makefile` — Help-Text komplett refaktoriert
+
+Phase 28 hat den Cleanup-Dispatcher modernisiert; das `make help`-Target
+war aber historisch gewachsen und listete nur ca. 73 von 83 Targets.
+Phase 29 schliesst diese Doku-Luecke:
+
+- **Alle 83 Targets dokumentiert** — fehlten vorher u.a. `mcp-start`,
+  `mcp-stop`, `mcp-health`, `mcp-mock`, `tooluse-leaderboard`,
+  `tooluse-report`, `tooluse-report-summary`, `tooluse-report-json`,
+  `tooluse-run`, `clean-wizard`, `validate-cards`, `validate-structure`,
+  `sync-cost-limits`, `update-prices`, `model-card` (Singular-Alias).
+- **Format vereinheitlicht** — 2-Spalten-Schema (Target + Beschreibung,
+  Flags in eckigen Klammern).
+- **Sektionen entsprechen Recipe-Reihenfolge** im Makefile (Benchmarking
+  → Tool-Use → PC → Reviews → Card-Lifecycle → Validation → Tools →
+  MCP → Web → Cleanup → Backup).
+- **Card-Lifecycle 5+1 Phasen** — statt vermischter Help-Block. Phase 6
+  (Thinking-Probe) als neue eigene Phase.
+- **Global-Flags-Sektion erweitert** um `DRY=1`, `YES=1`, `JSON=1`,
+  `PROVIDER=name`.
+
+### 2. `scripts/maintenance/cleanup_helpers.py` — argparse statt sys.argv-Hack
+
+**Vorher** (Zeile 234): ``dry = "--dry-run" in sys.argv`` — hackig,
+bricht wenn Argumente umsortiert werden.
+
+**Nachher**: argparse mit `description` und sauberer `--dry-run` Action.
+Das Skript verhaelt sich jetzt wie ein normales CLI-Tool.
+
+### 3. `scripts/maintenance/consolidate_csv.py` — argparse fuer --help
+
+**Vorher**: Kein argparse. ``--help`` crasht mit exit 2 ohne Message.
+
+**Nachher**: Minimaler argparse-Wrapper. Hauptaufgabe (Konsolidierung) ist
+ohne Flags lauffaehig, `python consolidate_csv.py --help` zeigt jetzt
+saubere Usage.
+
+### 4. `scripts/tools/validate_assets.py` — argparse + Bug-Fix
+
+**Bug**: ``validate_assets.py --help`` crashte mit
+``❌ Pfad nicht gefunden: --help`` — weil ``Path(sys.argv[1])`` alles
+als Pfad interpretiert.
+
+**Fix**:
+- argparse ersetzt ``len(sys.argv) > 1`` Pattern.
+- `path` jetzt positional mit `nargs="?"`.
+- `--all` als Action-Argument.
+- `MIN_CLI_ARGS` Konstante entfernt (ungenutzt).
+- `parser.error()` fuer saubere Fehlermeldung wenn weder path noch
+  `--all` angegeben.
+
+### Verifikation
+
+- `pytest tests/ -q` → 459/459 gruen (unveraendert gegen Phase 28).
+- `pylint scripts/maintenance/cleanup_helpers.py
+  scripts/maintenance/consolidate_csv.py scripts/tools/validate_assets.py`
+  → 10.00/10.
+- `make help` → alle 83 Targets sichtbar (vorher 73).
+
+### SSoT-Vertrag
+
+Die Makefile-CLI folgt jetzt einem einheitlichen Schema:
+1. `make help` listet alle Targets mit Flags und Pflicht-Variablen.
+2. Skripte mit `argparse` unterstuetzen `--help` und saubere Usage.
+3. Fehlende Pflicht-Variablen (MODEL, MODULE, ASSET) fuehren zu exit 1
+   mit klarer Fehlermeldung im Makefile-Recipe.
+
+
 ## v4.6.7 — make clean Hardening + toter Code weg (Phase 28, 2026-06-08)
 
 ### 1. `scripts/maintenance/clean_results.py` — ID-SSoT + CSV-SSoT-Anbindung
