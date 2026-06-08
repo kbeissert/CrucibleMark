@@ -718,3 +718,112 @@ korrekt funktioniert.
 - Insgesamt: **271/271 Tests grün**, Pylint **10.00/10**
 - Commits: `0799309` (Phase 20/21) + dieser Commit (Phase 22/23)
 
+
+## v4.6.4 — Card-Templates als SSoT (2026-06-08)
+
+### Phase 24: YAML-basierte Card-Templates mit Konsument-Annotation
+
+**Motivation:** Die Pflichtfeld-Definitionen für Model- und Provider-Cards
+waren über drei Stellen verstreut (`utils/card_utils.py`,
+`utils/verify_model_cards.py`, `utils/provider_card_template.py`). Jede
+Änderung erforderte Code-Touch und war drift-anfällig. Zudem fehlte die
+Dokumentation, *wer* ein Feld eigentlich liest (Risk-Calc, Leaderboard,
+Web-Export, Reviewer-Prompt, Judge, etc.).
+
+**Lösung:** Deklarative YAML-Templates als Single Source of Truth, vom Code
+nur noch geladen und validiert.
+
+### 1. Templates
+
+**`config/card_template_model.yaml`** — 39 Pflichtfelder, 6 Optionalfelder
+**`config/card_template_provider.yaml`** — 16 Pflichtfelder, 3 Optionalfelder
+
+Jeder Feld-Eintrag annotiert:
+- `name`, `type`, `required`, `default`, `description`
+- `consumers` — Liste der Konsumenten (risk_calc, leaderboard, web_export,
+  tooluse, cost, review, probe, index, scoring, asset, judge)
+- `since` — Version, ab der das Feld Pflicht ist
+- `example` — exemplarischer Wert
+
+Sentinel-Werte (`None`, `"TODO"`, `"unknown"`, `""`, leere Listen) werden vom
+Validator als "fehlt effektiv" gewertet.
+
+Provider-Template: `deployment`-Feld hat `sub_fields_required` Liste
+(`cloud_act_exposure`, `applicable_law`, `data_residency`,
+`gdpr_dpa_available`, `eu_adequacy_decision`, `data_retention_days`,
+`chinese_nsl_risk`).
+
+### 2. Loader — `utils/card_template.py`
+
+Frozen Dataclasses `CardFieldSpec` und `CardTemplate`. Methoden:
+- `CardFieldSpec.is_unknown_sentinel(value)` — Sentinel-Erkennung
+- `CardTemplate.required_field_names` / `all_field_names`
+- `CardTemplate.get_field(name)`, `is_required(name)`, `is_known(name)`
+
+`@lru_cache(maxsize=4) load_card_template(card_type)` — geladen via
+`yaml.safe_load`. `clear_cache()` für Test-Isolation.
+
+### 3. Validator — `scripts/analysis/validate_cards.py`
+
+Dataclasses `CardIssue` und `CardReport` mit `is_valid` Flag. Issue-Typen:
+- `missing_required` — Pflichtfeld fehlt komplett
+- `unknown_sentinel` — Pflichtfeld hat Sentinel-Wert (`None`, `"TODO"`, …)
+- `drift_extras` — Feld außerhalb des Templates (Toleranz: `tooluse_*` Legacy)
+- `missing_sub_field` — Sub-Feld fehlt (z.B. `deployment.cloud_act_exposure`)
+- `parse_error` — JSON-Parse-Fehler
+
+CLI:
+```bash
+python scripts/analysis/validate_cards.py --card-type {model,provider,all}
+python scripts/analysis/validate_cards.py --json --fail-on-drift
+```
+
+Exit-Codes: 0 OK, 1 invalid oder drift-mit-flag. Filter `_is_card_file()`
+schließt `_index.json`, `True.json`, `False.json`, `null.json`, `None.json`
+aus.
+
+### 4. Makefile-Target
+
+```makefile
+make validate-cards-template                       # beide Typen
+make validate-cards-template CARD_TYPE=provider    # nur Provider
+make validate-cards-template CARD_TYPE=model       # nur Model
+make validate-cards-template FAIL_ON_DRIFT=1       # CI-Gate
+make validate-cards-template JSON=1                # JSON-Output
+```
+
+(Umbenannt zu `validate-cards-template` weil das ältere `validate-cards`
+Target auf `scripts/dev/validate_model_cards.py` zeigt — kein Konflikt.)
+
+### 5. Live-Befund
+
+```
+=== Card Validation Report: PROVIDER ===
+Total cards:        18
+  Valid:            11
+  Invalid:          7
+Total issues:       29
+  drift_extras          2   (llamacpp: type, inference_interfaces)
+  unknown_sentinel      27
+```
+
+Konkret: `llamacpp.json` hat zwei Extras (`type`, `inference_interfaces`)
+die ins Template gehören. 7 Provider haben `unknown`/`None`-Werte für
+Pflichtfelder (z.B. `api_base_url: null` für lokale/self-hosted Provider).
+
+Model-Lauf: 108 Karten, 8 valid, 100 invalid (537 issues) — zeigt, dass
+viele Model-Cards noch unvollständig sind und der Validator echte Arbeit
+leisten muss.
+
+### Tests
+
+- 25 neue Tests in `tests/test_card_template.py`:
+  - 9 für Template-Loader (model/provider load, unknown, required,
+    sub_fields, caching)
+  - 6 für Sentinel-Erkennung
+  - 8 für Validator (valid card, missing, TODO, drift, tooluse_toleranz,
+    sub_field, parse_error, index_skip)
+  - 2 für Format-Reporter (text, json)
+- Insgesamt: **296/296 Tests grün** (zuvor 271), Pylint **10.00/10**
+- Neuer Commit für Phase 24
+

@@ -2,7 +2,7 @@
 	help install install-dev \
 	benchmark political-compass political-compass-safe benchmark-cross-model benchmark-auto benchmark-human \
 	review reviews-auto reviews-auto-legacy reviews-bias-auto reviews-tooluse-auto reviews-all reviews-check review-new model-cards model-card provider-cards leaderboard provider-stats \
-	validate validate-single validate-assets validate-structure validate-cards test diff-results analyze-costs update-prices sync-cost-limits \
+	validate validate-single validate-assets validate-structure validate-cards validate-cards-template test diff-results analyze-costs update-prices sync-cost-limits \
 	list-models judge-health list-modules \
 	probe-thinking probe-all-thinking \
 	ensure-card ensure-cards \
@@ -57,6 +57,7 @@ help:
 	@echo "  make ensure-cards         Fehlende Felder in ALLEN Cards ergänzen (--missing: nur lückenhafte)"
 	@echo "  make provider-cards       Provider Cards generieren (Flags: PROVIDER=name, FORCE=1)"
 	@echo "  make provider-cards-status Audit-Readiness-Report (Flags: STALE_DAYS=N, JSON=1)"
+	@echo "  make validate-cards-template Schema-Validierung aller Cards gegen Templates (Flags: CARD_TYPE=model|provider|all, FAIL_ON_DRIFT=1, JSON=1)"
 	@echo "  make provider-stats       System-Latenzen analysieren (Ping vs. TTFB) und Provider-Review erstellen"
 	@echo "  make probe-thinking       Thinking-Probe fuer einzelnes Modell (MODEL=name, PROVIDER=key optional)"
 	@echo "  make probe-all-thinking   Thinking-Probe fuer alle Cards ohne Probe-Feld (retro-aktiv)"
@@ -139,6 +140,16 @@ provider-cards:
 provider-cards-status:
 	@echo "Pruefe Provider Card Status (stale nach $(or $(STALE_DAYS),90) Tagen)..."
 	@$(PYTHON) scripts/analysis/provider_card_status.py $(if $(STALE_DAYS),--stale-days $(STALE_DAYS),) $(if $(JSON),--json,)
+
+validate-cards-template:
+	@echo "=== Card-Template-Validierung (SSoT: config/card_template_*.yaml) ==="
+	@echo "Prueft alle Model- und Provider-Cards gegen die Template-Schemata."
+	@echo "Issues: missing_required | unknown_sentinel | drift_extras | missing_sub_field | parse_error"
+	@echo ""
+	@$(PYTHON) scripts/analysis/validate_cards.py \
+		$(if $(CARD_TYPE),--card-type $(CARD_TYPE),) \
+		$(if $(JSON),--json,) \
+		$(if $(FAIL_ON_DRIFT),--fail-on-drift,)
 
 
 probe-thinking:

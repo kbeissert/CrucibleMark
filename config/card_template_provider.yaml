@@ -1,0 +1,216 @@
+# Provider Card Template — SSoT für Pflicht- und Optionalfelder
+# ==============================================================
+#
+# Struktur konsistent mit config/card_template_model.yaml — siehe
+# Header dort für Feld-Erklärungen.
+#
+# Konsumenten-Legende:
+#   risk_calc   = scripts/analysis/review/risk_calculator.py (Sovereign-Risk-KERN)
+#   review      = scripts/analysis/generate_review.py (Reviewer-Prompt)
+#   leaderboard = scripts/leaderboard/* (Spalten-Auswahl)
+#   web_export  = scripts/web_export.py (statische Webseiten)
+#   audit       = scripts/analysis/provider_card_status.py (Card-Hygiene-Audit)
+#   index       = _index.json-Generator (Provider-Verzeichnis)
+
+version: "1.0.0"
+last_updated: "2026-06-08"
+card_type: "provider"
+
+# ----------------------------------------------------------------------------
+# Pflichtfelder (16) — werden von Validator geprüft
+# ----------------------------------------------------------------------------
+required_fields:
+
+  # --- Identität ---
+  - name: provider_id
+    type: str
+    required: true
+    default: null
+    description: "Eindeutiger Provider-Slug (Dateiname ohne .json)"
+    consumers: [risk_calc, review, leaderboard, web_export, index]
+    since: "v1.0"
+    example: "openai"
+
+  - name: display_name
+    type: str
+    required: true
+    default: "TODO"
+    description: "Menschenlesbarer Provider-Name"
+    consumers: [risk_calc, review, leaderboard, web_export]
+    since: "v1.0"
+    example: "OpenAI"
+
+  - name: company
+    type: str
+    required: true
+    default: "TODO"
+    description: "Vollständiger Firmenname (z.B. 'OpenAI, L.L.C.')"
+    consumers: [risk_calc, review, web_export]
+    since: "v1.0"
+    example: "OpenAI, L.L.C."
+
+  - name: headquarters
+    type: str
+    required: true
+    default: "TODO"
+    description: "Firmensitz (Stadt, Land)"
+    consumers: [risk_calc, review]
+    since: "v1.0"
+    example: "San Francisco, CA, USA"
+
+  - name: founding_year
+    type: int
+    required: true
+    default: null
+    description: "Gründungsjahr (null wenn unbekannt)"
+    consumers: [review, web_export]
+    since: "v1.0"
+    example: 2015
+
+  # --- API / Geschäftsmodell ---
+  - name: pricing_model
+    type: str
+    required: true
+    default: "unknown"
+    description: "free-tier+pay-per-token | subscription | pay-per-token | unknown"
+    consumers: [review, leaderboard, web_export]
+    since: "v1.0"
+    example: "free-tier+pay-per-token"
+
+  - name: api_base_url
+    type: str
+    required: true
+    default: null
+    description: "API-Endpoint (oder null bei lokal/self-hosted)"
+    consumers: [review]
+    since: "v1.0"
+    example: "https://api.openai.com"
+
+  - name: api_documentation_url
+    type: str
+    required: true
+    default: null
+    description: "URL zur öffentlichen API-Dokumentation"
+    consumers: [review, web_export]
+    since: "v1.0"
+    example: "https://platform.openai.com/docs"
+
+  # --- Deployment / Compliance (KERN — aktiv im risk_calc) ---
+  - name: deployment
+    type: object
+    required: true
+    default: {}
+    description: "Compliance-Sub-Dict mit cloud_act_exposure, applicable_law, data_residency, gdpr_dpa_available, eu_adequacy_decision, data_retention_days, chinese_nsl_risk"
+    consumers: [risk_calc, review]
+    since: "v1.0"
+    sub_fields_required:
+      - cloud_act_exposure
+      - applicable_law
+      - data_residency
+      - gdpr_dpa_available
+      - eu_adequacy_decision
+      - data_retention_days
+      - chinese_nsl_risk
+
+  # --- Datenschutz-Hinweis ---
+  - name: privacy_note
+    type: str
+    required: true
+    default: "TODO"
+    description: "Datenschutz-Hinweis (mehrzeiliger Text) — wird im Review zitiert"
+    consumers: [risk_calc, review, web_export]
+    since: "v1.0"
+    example: "API-Anfragen werden auf US-Servern verarbeitet..."
+
+  # --- Kontext ---
+  - name: notable_models
+    type: list[str]
+    required: true
+    default: []
+    description: "Liste der wichtigsten Modelle dieses Providers"
+    consumers: [review, web_export]
+    since: "v1.0"
+    example: ["GPT-5.5", "GPT-5.4", "o4-mini"]
+
+  # --- Stats (vom provider_leaderboard.csv) ---
+  - name: stats
+    type: object
+    required: true
+    default: {}
+    description: "Performance-Statistiken (models_tracked, median_tokens_per_s, cost_per_1k_median_usd, active_ping_ttfb_ms)"
+    consumers: [leaderboard, web_export]
+    since: "v1.0"
+
+  # --- Metadaten ---
+  - name: unknown
+    type: bool
+    required: true
+    default: false
+    description: "true → Card ist unvollständig / unbekannt"
+    consumers: [risk_calc, audit, review]
+    since: "v1.0"
+    example: false
+
+  - name: generated_at
+    type: str
+    required: true
+    default: null
+    description: "ISO-8601-Timestamp der letzten Card-Generierung"
+    consumers: [audit, index, web_export]
+    since: "v1.0"
+    example: "2026-06-02T21:00:00+00:00"
+
+  - name: last_verified_at
+    type: str
+    required: true
+    default: null
+    description: "ISO-8601-Timestamp der letzten manuellen Verifikation (Stale-Check)"
+    consumers: [audit, review]
+    since: "v1.0"
+    example: "2026-06-02"
+
+  - name: verification_source
+    type: str
+    required: true
+    default: null
+    description: "URL/Quelle der Verifikation (für Audit-Traceability)"
+    consumers: [audit, review]
+    since: "v1.0"
+    example: "https://openai.com/policies/privacy-policy"
+
+# ----------------------------------------------------------------------------
+# Optionalfelder
+# ----------------------------------------------------------------------------
+optional_fields:
+
+  - name: temperature
+    type: float
+    required: false
+    description: "Default-Temperatur für Tests (provider-spezifisch, z.B. Anthropic bevorzugt 1.0)"
+    consumers: [asset, probe]
+    since: "v4.6.3"
+    example: 1.0
+
+  - name: system_prompt_style
+    type: str
+    required: false
+    description: "provider-spezifischer Stil für System-Prompts (z.B. 'xml_tags', 'plain')"
+    consumers: [asset, review]
+    since: "v4.6.3"
+    example: "xml_tags"
+
+  - name: rate_limit_notes
+    type: str
+    required: false
+    description: "Hinweise zu Rate-Limits (z.B. '50 req/min für Free-Tier')"
+    consumers: [asset, review]
+    since: "v4.6.3"
+    example: "500 req/min für Tier-1"
+
+# ----------------------------------------------------------------------------
+# Validator-Konfiguration
+# ----------------------------------------------------------------------------
+validation:
+  reject_unknown_true_without_rationale: false
+  require_verification_source: false   # Strict-Mode für CI
+  require_last_verified_at: false

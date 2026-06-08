@@ -1,0 +1,471 @@
+# Model Card Template — SSoT für Pflicht- und Optionalfelder
+# ============================================================
+#
+# Jeder Eintrag beschreibt ein Feld, das in einer Model Card vorkommen kann
+# (oder muss). Konsumenten sind die Module, die das Feld lesen — bei
+# Pflichtfeldern führt ein fehlendes Feld zu einem Validator-Fehler.
+#
+# Felder:
+#   name:           technischer Feldname (Key in der JSON-Datei)
+#   required:       true → muss in jeder Model Card vorhanden sein
+#                    false → optional (z.B. für Spezialfälle wie Tool-Use-Test-Ergebnis)
+#   type:           str | int | float | bool | list[str] | null
+#                    null = darf explizit null sein (Sentinel für "nicht ermittelbar")
+#   default:        Platzhalterwert, falls das Feld fehlt (von ensure_card gesetzt)
+#   description:    einzeilige Beschreibung (für Doku + Validator-Fehlertext)
+#   consumers:      Liste von Konsumenten, die dieses Feld aktiv lesen.
+#                    Wird im Audit-Report angezeigt: "Feld X wird von Y gelesen".
+#   since:          erste Version, in der das Feld Teil des Templates wurde
+#                    (für Migrations-Hinweise)
+#   example:        Beispielwert (für Doku, NICHT für Validierung)
+#
+# Pflicht-Klassifikation folgt dem Prinzip: "Wird das Feld von mindestens
+# einem Konsumenten gelesen, der bei fehlendem Wert crasht oder
+# inkorrekte Ergebnisse liefert?" → required: true.
+#
+# Sonderfall: `null` ist für Felder erlaubt, die echte "nicht ermittelbar"-
+# Semantik haben (z.B. `params_total_b` für proprietäre Modelle ohne
+# öffentliche Architektur-Spezifikation).
+#
+# Konsumenten-Legende:
+#   risk_calc   = scripts/analysis/review/risk_calculator.py (Sovereign-Risk)
+#   leaderboard = scripts/leaderboard/* (Score-Berechnung, Spalten-Auswahl)
+#   web_export  = scripts/web_export.py (statische Webseiten)
+#   tooluse     = scripts/core/tooluse_exporter.py (Tool-Use-Anzeige)
+#   cost        = utils/cost_tracker.py (Kosten-Berechnung)
+#   review      = scripts/analysis/generate_review.py (Reviewer-Prompt)
+#   probe       = scripts/tools/probe_thinking.py (Thinking-Probe)
+#   index       = _index.json-Generator (Modell-Verzeichnis)
+#   scoring     = utils/scoring/* (Scoring-Engine)
+#   asset       = benchmark_modules/base_test.py (Asset-Pipeline)
+
+version: "1.0.0"
+last_updated: "2026-06-08"
+card_type: "model"
+
+# ----------------------------------------------------------------------------
+# Pflichtfelder (38) — werden von Validator geprüft
+# ----------------------------------------------------------------------------
+required_fields:
+
+  # --- Identität (KERN, risk_calc + leaderboard + web_export) ---
+  - name: model_id
+    type: str
+    required: true
+    default: null
+    description: "Eindeutiger Modell-Identifier (Slug)"
+    consumers: [risk_calc, leaderboard, web_export, review, index]
+    since: "v1.0"
+    example: "gpt-5_4-mini"
+
+  - name: display_name
+    type: str
+    required: true
+    default: "TODO"
+    description: "Menschenlesbarer Modellname"
+    consumers: [risk_calc, leaderboard, web_export, review]
+    since: "v1.0"
+    example: "GPT-5.4 Mini"
+
+  - name: developer
+    type: str
+    required: true
+    default: "TODO"
+    description: "Name des entwickelnden Unternehmens/Labors"
+    consumers: [risk_calc, leaderboard, review]
+    since: "v1.0"
+    example: "OpenAI"
+
+  - name: origin_country
+    type: str
+    required: true
+    default: "TODO"
+    description: "Herkunftsland des Modellentwicklers (ISO 3166-1 alpha-2 oder Name)"
+    consumers: [risk_calc, leaderboard]
+    since: "v1.0"
+    example: "USA"
+
+  - name: developer_jurisdiction
+    type: str
+    required: true
+    default: "TODO"
+    description: "Rechtsraum des Entwicklers (für Sovereign-Risk)"
+    consumers: [risk_calc]
+    since: "v1.0"
+    example: "US"
+
+  # --- Deployment & Provenance (risk_calc) ---
+  - name: deployment_type
+    type: str
+    required: true
+    default: "TODO"
+    description: "cloud-only | open-weights-cloud-available | localweights | open-weights"
+    consumers: [risk_calc, leaderboard]
+    since: "v1.0"
+    example: "cloud-only"
+
+  - name: local_deployment_possible
+    type: bool
+    required: true
+    default: null
+    description: "Kann das Modell lokal gehostet werden?"
+    consumers: [risk_calc, leaderboard]
+    since: "v1.0"
+    example: false
+
+  - name: weights_provenance_risk
+    type: str
+    required: true
+    default: "TODO"
+    description: "low | medium | high — Risiko der Gewichts-Provenienz"
+    consumers: [risk_calc, review]
+    since: "v1.0"
+    example: "medium"
+
+  - name: weights_provenance_risk_rationale
+    type: str
+    required: true
+    default: "TODO"
+    description: "Begründung des Provenance-Risk-Levels"
+    consumers: [risk_calc, review]
+    since: "v1.0"
+    example: "OpenAI ist ein US-amerikanisches Unternehmen und unterliegt dem CLOUD Act."
+
+  # --- Klassifikation (leaderboard) ---
+  - name: model_family
+    type: str
+    required: true
+    default: "TODO"
+    description: "Modell-Familie (z.B. GPT, Claude, Llama)"
+    consumers: [leaderboard, review]
+    since: "v1.0"
+    example: "GPT"
+
+  - name: primary_focus
+    type: str
+    required: true
+    default: "TODO"
+    description: "general | reasoning | code | multimodal | ..."
+    consumers: [leaderboard, review]
+    since: "v1.0"
+    example: "general"
+
+  # --- Beschreibung (review + judge) ---
+  - name: summary
+    type: str
+    required: true
+    default: "TODO"
+    description: "Kurzbeschreibung des Modells (Reviewer-Prompt)"
+    consumers: [review, web_export, judge]
+    since: "v1.0"
+    example: "GPT-5.4 Mini ist OpenAIs kompakte Variante..."
+
+  - name: strengths
+    type: list[str]
+    required: true
+    default: ["TODO"]
+    description: "Liste der Stärken (Reviewer-Bewertung)"
+    consumers: [review, judge]
+    since: "v1.0"
+    example: ["Kosteneffizient", "Schnelle Inferenz"]
+
+  - name: known_limitations
+    type: list[str]
+    required: true
+    default: ["TODO"]
+    description: "Liste der bekannten Schwächen (Reviewer-Bewertung)"
+    consumers: [review, judge]
+    since: "v1.0"
+    example: ["Schwächer bei komplexem Reasoning"]
+
+  - name: judge_context_hint
+    type: str
+    required: true
+    default: "TODO"
+    description: "Kontext-Hinweis für den LLM-Judge (Scoring-Engine)"
+    consumers: [judge, scoring]
+    since: "v1.0"
+    example: "Modell ist auf Effizienz optimiert..."
+
+  - name: architecture_tags
+    type: list[str]
+    required: true
+    default: ["General"]
+    description: "Tags für Architektur-Filter im Leaderboard"
+    consumers: [leaderboard, web_export]
+    since: "v1.0"
+    example: ["General", "Instruct"]
+
+  # --- Metadaten (index + card_status) ---
+  - name: unknown
+    type: bool
+    required: true
+    default: false
+    description: "true → Card ist unvollständig / unbekannt"
+    consumers: [risk_calc, leaderboard, review]
+    since: "v1.0"
+    example: false
+
+  - name: generated_at
+    type: str
+    required: true
+    default: null
+    description: "ISO-8601-Timestamp der Card-Generierung"
+    consumers: [index, web_export]
+    since: "v1.0"
+    example: "2026-04-23T22:00:53+00:00"
+
+  - name: card_status
+    type: str
+    required: true
+    default: "draft"
+    description: "draft | minimal | complete"
+    consumers: [verify, review]
+    since: "v1.0"
+    example: "complete"
+
+  - name: size_class
+    type: str
+    required: true
+    default: null
+    description: "Auto-berechnete Größenklasse: Nano | Micro | Small | Medium | Desktop | Server | Frontier"
+    consumers: [leaderboard, web_export]
+    since: "v1.0"
+    example: "Desktop"
+
+  # --- Thinking-Probe (probe) ---
+  - name: thinking_probe_detected
+    type: bool
+    required: true
+    default: null
+    description: "True wenn Modell Thinking/CoT-Signale emittiert"
+    consumers: [probe, review]
+    since: "v1.0"
+    example: false
+
+  - name: thinking_probe_evidence
+    type: str
+    required: true
+    default: null
+    description: "Rohtext des Thinking-Probe-Outputs"
+    consumers: [probe, review]
+    since: "v1.0"
+    example: "No CoT signals found..."
+
+  - name: thinking_probe_confidence
+    type: str
+    required: true
+    default: null
+    description: "low | medium | high — Confidence der Probe"
+    consumers: [probe, review]
+    since: "v1.0"
+    example: "low"
+
+  - name: thinking_probe_at
+    type: str
+    required: true
+    default: null
+    description: "ISO-8601-Timestamp der Probe"
+    consumers: [probe]
+    since: "v1.0"
+    example: "2026-04-23T13:56:14+00:00"
+
+  # --- Tool-Use (tooluse) ---
+  - name: supports_tool_use
+    type: bool
+    required: true
+    default: null
+    description: "True wenn Modell Tool-Use offiziell unterstützt (nicht getestet = null)"
+    consumers: [tooluse, leaderboard]
+    since: "v1.0"
+    example: true
+
+  # --- Lizenz ---
+  - name: license
+    type: str
+    required: true
+    default: "TODO"
+    description: "Proprietary | Apache 2.0 | MIT | ..."
+    consumers: [review, leaderboard]
+    since: "v1.0"
+    example: "Proprietary"
+
+  - name: license_url
+    type: str
+    required: true
+    default: null
+    description: "URL zur Lizenz (oder null bei Proprietary)"
+    consumers: [review, web_export]
+    since: "v1.0"
+    example: null
+
+  - name: commercial_use_allowed
+    type: bool
+    required: true
+    default: null
+    description: "Kommerzielle Nutzung erlaubt?"
+    consumers: [review, leaderboard]
+    since: "v1.0"
+    example: true
+
+  - name: vendor
+    type: str
+    required: true
+    default: "TODO"
+    description: "Provider-Name (kann von developer abweichen bei Reselling)"
+    consumers: [leaderboard, review]
+    since: "v1.0"
+    example: "OpenAI"
+
+  - name: weights_license_tier
+    type: str
+    required: true
+    default: "TODO"
+    description: "proprietary | open-weights | open-source | research-only"
+    consumers: [leaderboard, review]
+    since: "v1.0"
+    example: "proprietary"
+
+  # --- Pricing (cost) ---
+  - name: model_version
+    type: str
+    required: true
+    default: null
+    description: "Versions-String des Modells"
+    consumers: [leaderboard, web_export, review]
+    since: "v1.0"
+    example: "5.4"
+
+  - name: input_price_per_1m
+    type: float
+    required: true
+    default: null
+    description: "USD pro 1M Input-Tokens (null für lokale Modelle)"
+    consumers: [cost, leaderboard, web_export]
+    since: "v1.0"
+    example: 0.75
+
+  - name: output_price_per_1m
+    type: float
+    required: true
+    default: null
+    description: "USD pro 1M Output-Tokens (null für lokale Modelle)"
+    consumers: [cost, leaderboard, web_export]
+    since: "v1.0"
+    example: 4.5
+
+  - name: use_case_primary
+    type: str
+    required: true
+    default: "generalist"
+    description: "generalist | agentic | code | reasoning | ..."
+    consumers: [leaderboard, review]
+    since: "v1.0"
+    example: "generalist"
+
+  # --- Architektur (risk_calc + leaderboard) ---
+  - name: parameter_architecture
+    type: str
+    required: true
+    default: "dense"
+    description: "dense | moe | hybrid"
+    consumers: [risk_calc, leaderboard, review]
+    since: "v1.0"
+    example: "dense"
+
+  - name: params_total_b
+    type: float
+    required: true
+    default: null
+    description: "Gesamt-Parameter in Milliarden (null wenn nicht öffentlich)"
+    consumers: [leaderboard, web_export, review]
+    since: "v1.0"
+    example: null
+
+  - name: params_active_b
+    type: float
+    required: true
+    default: null
+    description: "Aktive Parameter in Milliarden (für MoE)"
+    consumers: [leaderboard, web_export]
+    since: "v1.0"
+    example: null
+
+  - name: context_window_k
+    type: int
+    required: true
+    default: null
+    description: "Context-Window in Tausend Tokens"
+    consumers: [review, leaderboard, web_export]
+    since: "v1.0"
+    example: 128
+
+  - name: knowledge_cutoff
+    type: str
+    required: true
+    default: null
+    description: "Trainings-Daten-Cutoff (YYYY-MM)"
+    consumers: [review, web_export]
+    since: "v1.0"
+    example: "2025-09"
+
+# ----------------------------------------------------------------------------
+# Optionalfelder — werden vom Validator NICHT als Fehler gewertet
+# ----------------------------------------------------------------------------
+optional_fields:
+
+  - name: tooluse_tested_at
+    type: str
+    required: false
+    description: "ISO-8601-Timestamp des Tool-Use-Tests (vom tooluse-Workflow angehängt)"
+    consumers: [tooluse, leaderboard]
+    since: "v3.14"
+    example: "2026-05-25T14:00:00+00:00"
+
+  - name: tooluse_score_p1
+    type: float
+    required: false
+    description: "Tool-Use P1-Score (0-100)"
+    consumers: [tooluse, leaderboard]
+    since: "v3.14"
+    example: 96.0
+
+  - name: tooluse_score_p2
+    type: float
+    required: false
+    description: "Tool-Use P2-Score (0-100)"
+    consumers: [tooluse, leaderboard]
+    since: "v3.14"
+    example: 85.0
+
+  - name: tooluse_recommendation
+    type: str
+    required: false
+    description: "PRODUCTION | NOT_RECOMMENDED | UNTESTED"
+    consumers: [tooluse, leaderboard]
+    since: "v3.14"
+    example: "PRODUCTION"
+
+  - name: temperature
+    type: float
+    required: false
+    description: "Default-Temperatur für Tests (optional, falls Modell besondere Settings braucht)"
+    consumers: [asset, probe]
+    since: "v4.6.3"
+    example: 0.0
+
+  - name: system_prompt_override
+    type: str
+    required: false
+    description: "Modell-spezifischer System-Prompt-Override für den Judge"
+    consumers: [judge, review]
+    since: "v4.6.3"
+    example: null
+
+# ----------------------------------------------------------------------------
+# Validator-Konfiguration
+# ----------------------------------------------------------------------------
+validation:
+  reject_unknown_true_without_rationale: false
+  reject_card_status_minimal: false   # Toleranz: minimal-Status ist OK
+  require_complete_status: false      # Strict-Mode für CI
