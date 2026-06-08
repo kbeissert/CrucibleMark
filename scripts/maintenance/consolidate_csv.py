@@ -247,4 +247,10 @@ def main() -> None:
 
 
 if __name__ == "__main__":
+    import argparse
+    parser = argparse.ArgumentParser(
+        description="CSV-Konsolidierung: dedupliziert Benchmark-CSVs "
+                    "(SSoT-Liste aus utils.backup_targets.CSV_FILES).",
+    )
+    parser.parse_args()  # nur --help unterstützen, keine Optionen noetig
     main()

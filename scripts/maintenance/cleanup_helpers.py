@@ -230,6 +230,15 @@ def run_pre_backup_hygiene(root: Path = ROOT_DIR, dry_run: bool = False) -> dict
 
 
 if __name__ == "__main__":
+    import argparse
     logging.basicConfig(level=logging.INFO, format="%(message)s")
-    dry = "--dry-run" in sys.argv
-    run_pre_backup_hygiene(dry_run=dry)
+    parser = argparse.ArgumentParser(
+        description="Pre-Backup-Hygiene: alte tooluse_unreachable_*.json, "
+                    "Legacy-Backup-Artefakte und Session-Files aufraeumen.",
+    )
+    parser.add_argument(
+        "--dry-run", action="store_true",
+        help="Nur anzeigen, nichts loeschen/verschieben.",
+    )
+    args = parser.parse_args()
+    run_pre_backup_hygiene(dry_run=args.dry_run)

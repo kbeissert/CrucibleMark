@@ -14,9 +14,6 @@ sys.path.insert(0, str(ROOT_DIR))
 
 from utils.asset_validator import AssetValidator  # noqa: E402
 
-# Constants
-MIN_CLI_ARGS = 2
-
 
 class CLIAssetValidator:
     """CLI Wrapper for Asset Validator."""
@@ -134,23 +131,38 @@ def _print_report(results: Dict[str, Any]) -> None:
 
 def main():
     """CLI Entry Point."""
+    import argparse  # pylint: disable=import-outside-toplevel
+    parser = argparse.ArgumentParser(
+        description="Asset Validator: prueft YAML-Asset-Dateien (Schema, Pflichtfelder, Refs).",
+    )
+    parser.add_argument(
+        "path", nargs="?",
+        help="Pfad zu einer Asset-Datei (.yaml) oder Verzeichnis mit Assets. "
+             "Kann weggelassen werden, wenn --all genutzt wird.",
+    )
+    parser.add_argument(
+        "--all", action="store_true",
+        help="Alle Module aus der Config validieren (Default-Modus fuer 'make validate').",
+    )
+    args = parser.parse_args()
+
+    if not args.path and not args.all:
+        parser.error(
+            "Entweder PATH oder --all angeben. "
+            "Beispiel: validate_assets.py benchmark_modules/tooluse/assets"
+        )
+
     validator = CLIAssetValidator()
 
-    if len(sys.argv) > 1 and sys.argv[1] == "--all":
+    if args.all:
         results = validator.validate_all_modules()
-    elif len(sys.argv) >= MIN_CLI_ARGS:
-        path = Path(sys.argv[1])
+    else:
+        path = Path(args.path)
         if not path.exists():
             print(f"❌ Pfad nicht gefunden: {path}")
             sys.exit(1)
         print(f"Validiere: {path}\n")
         results = validator.validate_path(path)
-    else:
-        print("Usage: python validate_assets.py <path> OR --all")
-        print("\nPath kann sein:")
-        print("  - Einzelne Asset-Datei (.yaml)")
-        print("  - Verzeichnis mit Assets")
-        sys.exit(1)
 
     _print_report(results)
 
