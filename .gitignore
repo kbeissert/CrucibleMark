@@ -98,3 +98,8 @@ web_export/
 benchmark_scores/**/*.bak
 benchmark_scores/**/*_todo*.json
 benchmark_scores/**/*TODO*.json
+# Temporaere Card-Backup-Archive und Safety-Spurious (nicht versionieren)
+benchmark_scores/model_cards_backup_*.tar.gz
+benchmark_scores/model_cards_spurious_archive/
+benchmark_scores/model_cards_recovery/
+
