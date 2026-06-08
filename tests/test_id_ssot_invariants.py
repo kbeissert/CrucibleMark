@@ -178,3 +178,37 @@ def test_no_inline_id_transforms_outside_ssm_modules():
         "utils.model_utils._safe_name/resolve_canonical_model_id laufen:\n"
         + "\n".join(violations)
     )
+
+
+# ---------------------------------------------------------------------------
+# Phase 12: Audit-Log-Ordner muessen _safe_name-konform sein.
+#
+# Vor Phase 12 hatten 29 von 83 audit_logs-Ordnern Punkte in der ID
+# ("gpt-5.4/" statt "gpt-5_4/"). Die Review-Generierung hat deshalb
+# fuer diese Modelle keine Reviews gefunden. Diese Invariante verhindert
+# den Drift in Zukunft.
+# ---------------------------------------------------------------------------
+
+def test_audit_logs_dirs_use_safe_name():
+    """Alle outputs/audit_logs/<X>/ MÜSSEN _safe_name(X) == X entsprechen.
+
+    Ausnahme: ".DS_Store" (macOS-Artifact).
+    """
+    root = Path(__file__).resolve().parents[1]
+    audit_dir = root / "outputs" / "audit_logs"
+    if not audit_dir.exists():
+        pytest.skip("outputs/audit_logs/ existiert nicht in dieser Umgebung")
+
+    offenders: list[str] = []
+    for d in audit_dir.iterdir():
+        if not d.is_dir() or d.name == ".DS_Store":
+            continue
+        if _safe_name(d.name) != d.name:
+            offenders.append(f"{d.name!r} -> _safe_name -> {_safe_name(d.name)!r}")
+
+    assert not offenders, (
+        "Audit-Log-Ordner sind nicht _safe_name-konform. Diese Ordner verhindern, "
+        "dass die Review-Generierung Modelle mit Punkten/Slashes in der ID findet.\n"
+        "Loesung: `mv outputs/audit_logs/<X> outputs/audit_logs/<_safe_name(X)>`\n"
+        "Betroffene Ordner:\n" + "\n".join(offenders)
+    )
