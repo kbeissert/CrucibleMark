@@ -13,11 +13,13 @@ Kontrolle über Modulfilter, Asset-Ermittlung, Delegation und Fehlerpolitik beh�
 from contextlib import contextmanager
 from pathlib import Path
 from typing import Any, Dict, Generator, List, Optional, Set, Tuple
+import re
 import subprocess
 import time
 import json
 import yaml
 import os
+import pandas as pd
 
 # ROOT_DIR für absolute Pfade
 ROOT_DIR = Path(__file__).resolve().parent.parent.parent
@@ -236,10 +238,12 @@ def get_existing_results(
 
 
 def _add_existing_result_rows(cache: Set[Tuple[str, str]], df: Any) -> None:
-    """Adds completed (model, asset_id) entries from a benchmark CSV into the cache."""
-    import pandas as pd
-    from utils.model_utils import normalize_model_id
-    
+    """Adds completed (model, asset_id) entries from a benchmark CSV into the cache.
+
+    Fügt jede kanonische Lookup-Variante des Modellnamens hinzu, damit der
+    Cache-Lookup unabhängig von der Schreibweise des Callers funktioniert
+    (Defense-in-Depth gegen Punkt/Underscore- und Suffix-Mismatch).
+    """
     required = {"model", "asset_id"}
     if not required.issubset(df.columns):
         return
@@ -253,27 +257,92 @@ def _add_existing_result_rows(cache: Set[Tuple[str, str]], df: Any) -> None:
 
         model_str = str(row["model"])
         asset_str = str(row["asset_id"])
-        cache.add((model_str, asset_str))
-
-        stripped = normalize_model_id(model_str)
-        if stripped != model_str:
-            cache.add((stripped, asset_str))
+        for variant in canonical_lookup_keys(model_str):
+            cache.add((variant, asset_str))
 
 
 def _add_political_compass_rows(cache: Set[Tuple[str, str]], df: Any) -> None:
-    """Adds political-compass leaderboard rows to the cache using the batch ID."""
-    from utils.model_utils import normalize_model_id
-    
+    """Adds political-compass leaderboard rows to the cache using the batch ID.
+
+    Multi-Key: alle kanonischen Lookup-Varianten des Modellnamens werden
+    gecacht, damit der Cache-Lookup unabhängig von der Schreibweise des
+    Callers funktioniert.
+    """
     if "model" not in df.columns:
         return
 
     for _, row in df.iterrows():
         model_str = str(row["model"])
-        cache.add((model_str, "political_compass_v3"))
+        for variant in canonical_lookup_keys(model_str):
+            cache.add((variant, "political_compass_v3"))
 
-        stripped = normalize_model_id(model_str)
-        if stripped != model_str:
-            cache.add((stripped, "political_compass_v3"))
+
+def canonical_lookup_keys(model: Any) -> Set[str]:
+    """SSoT: Alle äquivalenten Lookup-Key-Varianten für einen Modellnamen.
+
+    Defense-in-Depth gegen Identifier-Mismatch: ein Cache-Lookup soll
+    funktionieren, egal in welcher Schreibweise der Caller den Namen
+    liefert. Typische Mismatches:
+
+    - Roh-Name aus Config: ``qwen2.5-coder-7b`` (Punkt)
+    - Kanonische Form:      ``qwen2_5-coder-7b`` (Underscore, via ``_safe_name``)
+    - Vendor-Prefix:        ``meta-llama/Llama-3.1-8B`` (Slash) vs.
+                             ``meta-llama_Llama-3_1-8B`` (Underscore)
+    - hf.co-Prefix:         ``hf.co/...`` → wird gestrippt
+    - Datumssuffix:         ``gpt-5-20251001`` → ``gpt-5``
+
+    Beide Seiten des Cache-Lookups (Reader und Lookup-Site) MÜSSEN diese
+    Funktion nutzen — sonst gibt es wieder einen Mismatch.
+
+    Args:
+        model: Beliebiger Identifier (str, ``None`` oder nicht-string).
+
+    Returns:
+        Set äquivalenter String-Varianten (dedupliziert, ohne Leerstrings).
+    """
+    from utils.model_utils import _safe_name, normalize_model_id, strip_date_suffix
+
+    variants: Set[str] = set()
+    if not isinstance(model, str):
+        return variants
+    raw = model.strip()
+    if not raw:
+        return variants
+
+    variants.add(raw)
+
+    # Schritt 1: hf.co/-Prefix strippen
+    no_hf = normalize_model_id(raw)
+    if no_hf and no_hf != raw:
+        variants.add(no_hf)
+
+    # Schritt 2: Datumssuffix strippen (auf beiden Varianten)
+    for v in list(variants):
+        no_date = strip_date_suffix(v)
+        if no_date and no_date != v:
+            variants.add(no_date)
+
+    # Schritt 3: _safe_name auf jede Variante anwenden
+    for v in list(variants):
+        safe = _safe_name(v)
+        if safe and safe != v:
+            variants.add(safe)
+
+    # Schritt 4: Asymmetrische Bruecke Underscore -> Punkt.
+    # Wenn der Caller einen Underscore-Namen liefert (z. B. 'qwen2_5-coder-7b',
+    # wie er im Leaderboard steht), soll der Cache-Lookup auch dann greifen,
+    # wenn der spaetere Aufrufer den Namen mit Punkt schreibt ('qwen2.5-coder-7b').
+    # _safe_name ist destruktiv (Punkt -> Underscore), daher koennen wir den
+    # Schritt nicht 1:1 umkehren. Heuristik: Ziffer_Ziffer -> Ziffer.Ziffer trifft
+    # typische Versions-/Groessenangaben (qwen2.5, qwen3.5, llama3.3 etc.).
+    for v in list(variants):
+        if "_" not in v:
+            continue
+        dotted = re.sub(r"(\d)_(\d)", r"\1.\2", v)
+        if dotted and dotted != v:
+            variants.add(dotted)
+
+    return variants
 
 
 # =============================================================================
@@ -342,47 +411,120 @@ def get_startable_assets(
     # -------------------------------------------------------
     if module.get("execution_mode") == "batch" or module.get("key") == "political_compass":
         batch_id = "political_compass_v3"
-        import re
-        model_normalized = strip_date_suffix(model)
-        model_hf_stripped = normalize_model_id(model)
-        if (
-            (model, batch_id) in existing_tests
-            or (model_normalized, batch_id) in existing_tests
-            or (model_hf_stripped, batch_id) in existing_tests
+        if any(
+            (variant, batch_id) in existing_tests
+            for variant in canonical_lookup_keys(model)
         ):
             return []
-    
+
     # -------------------------------------------------------
     # ASSET-DATEIEN ERMITTELN
     # -------------------------------------------------------
     p = Path(assets_path)
     if not p.exists():
         return []
-    
+
     asset_files = sorted(list(p.glob("*.yaml")))
     if not asset_files:
         return []
-    
+
     assets_todo = []
     for asset_f in asset_files:
         try:
             with open(asset_f, "r", encoding="utf-8") as f:
                 data = yaml.safe_load(f)
                 asset_id = data.get("metadata", {}).get("id")
-            
+
             if not asset_id:
                 assets_todo.append(asset_f)
                 continue
-            
-            model_hf_stripped = normalize_model_id(model)
-            if (model, asset_id) in existing_tests or (model_hf_stripped, asset_id) in existing_tests:
+
+            if any(
+                (variant, asset_id) in existing_tests
+                for variant in canonical_lookup_keys(model)
+            ):
                 continue
-            
+
             assets_todo.append(asset_f)
         except (OSError, yaml.YAMLError):
             assets_todo.append(asset_f)
-    
+
     return assets_todo
+
+
+# =============================================================================
+# EBENE 4b: Leaderboard-Cache (zweite Verteidigungslinie)
+# =============================================================================
+
+# Mapping module-key → Spalte in benchmark_leaderboard.csv
+LEADERBOARD_COLUMN_FOR_MODULE: Dict[str, str] = {
+    "code_quality": "Code Quality Audit",
+    "cli_benchmark": "CLI Badge",
+    "reasoning_logic": "Logical Reasoning",
+    "ux_writing": "UX Writing & Microcopy",
+    "documentation_quality": "Documentation Quality",
+    "content_transformation": "Content Transformation & Adaption",
+    "cultural_intelligence": "Cultural Intelligence",
+}
+
+
+def get_leaderboard_scored_modules(
+    leaderboard_path: Optional[Path] = None,
+    force: bool = False,
+) -> Set[Tuple[str, str]]:
+    """Lädt Set von (model_id, module_key) für Modelle/Module mit gültigem Leaderboard-Score.
+
+    Zweite Verteidigungslinie gegen veraltete Score-CSVs: wenn das Leaderboard
+    für ein (Modell, Modul)-Paar einen non-Pending Score zeigt, soll das Auto-
+    Skript keinen Subprozess starten, auch wenn die Detail-CSV Inkonsistenzen
+    enthält.
+
+    Args:
+        leaderboard_path: Pfad zu benchmark_leaderboard.csv (Default: ROOT_DIR/benchmark_scores/)
+        force: Wenn True, leeres Set zurückgeben
+
+    Returns:
+        Set von (model_id, module_key) Tupeln mit gültigem Score
+    """
+    cache: Set[Tuple[str, str]] = set()
+    if force:
+        return cache
+
+    if leaderboard_path is None:
+        leaderboard_path = ROOT_DIR / "benchmark_scores" / "benchmark_leaderboard.csv"
+    if not leaderboard_path.exists():
+        return cache
+
+    try:
+        df = pd.read_csv(leaderboard_path)
+    except Exception:  # pylint: disable=broad-exception-caught
+        return cache
+
+    if "Model ID" not in df.columns:
+        return cache
+
+    for _, row in df.iterrows():
+        model_id_raw = row.get("Model ID", "")
+        if pd.isna(model_id_raw):
+            continue
+        model_id = str(model_id_raw).strip()
+        if not model_id or model_id.lower() == "nan":
+            continue
+        for module_key, column in LEADERBOARD_COLUMN_FOR_MODULE.items():
+            if column not in df.columns:
+                continue
+            val = row.get(column)
+            if val is None:
+                continue
+            val_str = str(val).strip()
+            # Pending, Em-Dash, leer, NaN → nicht gescored
+            if not val_str or val_str in {"Pending", "–", "-", "nan"}:
+                continue
+            # Multi-Key: jede kanonische Lookup-Variante cachen
+            for variant in canonical_lookup_keys(model_id):
+                cache.add((variant, module_key))
+
+    return cache
 
 
 # =============================================================================

@@ -291,6 +291,92 @@ def _card_path(
     return unprefixed  # caller must check .exists()
 
 
+# ---------------------------------------------------------------------------
+# Card-ID-Generator + Konflikt-Resolver
+# ---------------------------------------------------------------------------
+# SSoT fuer die ID-Form NEUER Model Cards. Aeltere Karten behalten ihren
+# Namen und werden ueber den Multi-Key-Helper `canonical_lookup_keys` gefunden.
+# Wenn die gewuenschte ID bereits existiert, wird ein numerisches Suffix
+# (``-2``, ``-3`` …) angehaengt und ein WARNING geloggt.
+
+import logging as _logging_id  # noqa: E402
+
+_id_logger = _logging_id.getLogger(__name__)
+
+
+def build_card_id(model_id: str, provider: str | None = None) -> str:
+    """Baut die ID einer NEUEN Model Card.
+
+    Schema: ``{model_base}--{shortcode}``
+    - ``model_base`` ist alles NACH dem letzten ``/`` (Namespace wird
+      abgeschnitten, der Provider steckt schon im Suffix).
+    - Quantisierung/Groesse sind im ``model_base`` enthalten
+      (z. B. ``qwen3.5-35b-a3b-q4``, ``gemma3:9b``).
+    - Der Suffix-Teil verwendet den Provider-Shortcode
+      (``anthropic``, ``openrouter``, ``M4APL``, ``SPRK`` etc.).
+
+    Beispiele
+    ---------
+    ``qwen/qwen3.5-35b-a3b-q4`` + ``openrouter`` → ``qwen3.5-35b-a3b-q4--OR``
+    ``claude-sonnet-4-5-20250929`` + ``anthropic`` → ``claude-sonnet-4-5-20250929--anthropic``
+    ``gemma3:9b`` + ``llamacpp_spark`` → ``gemma3:9b--SPRK``
+    ``NousResearch_Hermes-4-14B-GGUF:Q4_K_M`` + ``ollama`` → ``NousResearch_Hermes-4-14B-GGUF:Q4_K_M--ollama``
+    """
+    if not model_id:
+        return model_id
+    base = model_id.rsplit("/", 1)[-1]  # alles vor+inkl. letztem '/' weg
+    if not provider:
+        return base
+    shortcode = get_provider_shortcode(provider)
+    # API-Modelle sind per Brand-Name global eindeutig (claude-sonnet-4-5, gpt-5, ...),
+    # daher ist der Provider-Name als Suffix lesbarer als der technische 'API'-Shortcode.
+    suffix = provider.lower().strip() if shortcode == "API" else shortcode
+    return f"{base}--{suffix}"
+
+
+def resolve_unique_card_id(desired_id: str, card_dir: Path | None = None) -> str:
+    """Stellt sicher, dass die gewuenschte Card-ID im Zielverzeichnis eindeutig ist.
+
+    Falls ``card_dir/{safe_name(desired_id)}.json`` bereits existiert, wird ein
+    numerisches Suffix ``-2``, ``-3`` … an ``desired_id`` angehaengt, bis ein
+    freier Name gefunden wird. Loggt ein WARNING beim ersten Konflikt.
+
+    Der Datei-Check verwendet ``_safe_name(desired_id)``, weil ``_card_path`` die
+    selbe Normalisierung anwendet (``qwen3.5-9b--SPRK`` → ``qwen3_5-9b--SPRK.json``).
+    Ohne diesen Schritt wuerde der Resolver Konflikte uebersehen, sobald die
+    build_card_id-Form Punkte enthaelt, die real auf der Disk als Underscores
+    liegen.
+
+    Parameters
+    ----------
+    desired_id:
+        Die bevorzugte Card-ID (Ergebnis von ``build_card_id``).
+    card_dir:
+        Optionaler Override des Card-Verzeichnisses. ``None`` (Default)
+        verwendet das modulweite ``CARD_DIR``.
+
+    Returns
+    -------
+    Eindeutige Card-ID (kann vom Input abweichen, falls Konflikt).
+    """
+    _cd = card_dir if card_dir is not None else CARD_DIR
+    if not desired_id:
+        return desired_id
+    candidate = desired_id
+    suffix = 2
+    while (_cd / f"{_safe_name(candidate)}.json").exists():
+        collision_id = candidate
+        candidate = f"{desired_id}-{suffix}"
+        suffix += 1
+        _id_logger.warning(
+            "Card-ID-Konflikt: '%s.json' existiert bereits. "
+            "Verwende '%s' als eindeutige Variante. "
+            "Bitte prüfen, ob die alte Karte zusammengefuehrt werden kann.",
+            _safe_name(collision_id), candidate,
+        )
+    return candidate
+
+
 def _find_card(model_id: str, card_dir: Path | None = None) -> Path:
     """Finds an existing model card for *model_id* without knowing the provider.
 

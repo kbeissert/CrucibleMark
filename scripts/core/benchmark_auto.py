@@ -72,6 +72,8 @@ from scripts.core.llamacpp_batch import (  # noqa: E402
     llamacpp_model_session,
     get_startable_assets,
     get_existing_results,
+    get_leaderboard_scored_modules,
+    canonical_lookup_keys,
 )
 
 # Konstante für "Modell kann keine Tools" (getestet und fehlgeschlagen)
@@ -548,6 +550,26 @@ def _run_module_for_model(
     Returns:
         True wenn neue Ergebnisse gespeichert wurden, False sonst.
     """
+    module_key = module.get("key")
+
+    # Zweite Verteidigungslinie: Leaderboard-Cache (Score-Aggregat).
+    # Wenn das Leaderboard für (model, module_key) bereits einen gültigen
+    # non-Pending Score zeigt, kein Subprozess — auch wenn die Detail-CSV
+    # Lücken hätte. Multi-Key-Lookup: alle kanonischen Varianten des
+    # Modellnamens werden geprüft (Punkt/Underscore/Suffix-Mismatch).
+    # Defensiv: bei Lese-Fehlern wird der Check übersprungen.
+    if not force and module_key:
+        try:
+            leaderboard_scored = get_leaderboard_scored_modules(force=False)
+            if any(
+                (variant, module_key) in leaderboard_scored
+                for variant in canonical_lookup_keys(model)
+            ):
+                print(f"   ✓ Bench: {module['name']} (Leaderboard-Score vorhanden — übersprungen)")
+                return False
+        except Exception as exc:  # pylint: disable=broad-exception-caught
+            logger.warning("Leaderboard-Cache-Check fehlgeschlagen: %s", exc)
+
     assets_todo = _get_startable_assets(
         module=module, model=model, existing_tests=existing_tests
     )
@@ -707,6 +729,7 @@ def _write_unreachable_report(
 
 def _run_untested_tooluse_models(
     models: List[Tuple[str, str]],
+    validator: Optional[ConfigValidator] = None,
     mcp_mode: str = "live",
     force: bool = False,
     silent: bool = False,
@@ -740,6 +763,34 @@ def _run_untested_tooluse_models(
     model_ids = [mid for mid, _ in models]
     card_lookup = _load_cards_for_models(model_ids)
     testable, unreachable = filter_testable_cards(models, card_lookup=card_lookup)
+
+    # SSoT-Cache-Check: Modelle, die bereits im ToolUse-Leaderboard stehen,
+    # NICHT erneut an den Subprozess delegieren. Die Card kann veraltet
+    # "untested" sein, obwohl das Leaderboard schon ein Ergebnis hat (z.B.
+    # nach manuellen Test-Runs). Das verhindert unnötige MCP-Restarts und
+    # Re-Runs.
+    if not force and validator is not None:
+        try:
+            from scripts.core.tooluse_exporter import ToolUseExporter
+            exporter = ToolUseExporter(validator.config)
+        except (NameError, Exception):
+            exporter = None
+        if exporter is not None:
+            filtered: List[Tuple[str, str]] = []
+            skipped_cached: List[Tuple[str, str]] = []
+            for mid, dname in testable:
+                if exporter.model_has_results(mid):
+                    skipped_cached.append((mid, dname))
+                else:
+                    filtered.append((mid, dname))
+            if skipped_cached:
+                print(
+                    f"   ⏩  {len(skipped_cached)} Modell(e) bereits im ToolUse-Leaderboard "
+                    "(Cache-Treffer, kein Re-Run):"
+                )
+                for mid, dname in skipped_cached:
+                    print(f"      • {dname}  ({mid})")
+            testable = filtered
 
     print(f"   📊 Tool-Use Backlog: {len(models)} untested Card(s) gefunden")
     for mid, dname in models:
@@ -879,6 +930,20 @@ def run_local_batch(
     try:
         for i, model in enumerate(suitable_models, 1):
             print(f"\n➡️  MOD [Lokal {i}/{len(suitable_models)}]: {model}")
+
+            # Pre-Check (analog llama.cpp-Pfad): wenn KEIN Modul offene Assets hat,
+            # Modell komplett überspringen — vermeidet unnötiges Laden/Entladen
+            # des Ollama-Modells im Server.
+            has_missing_tests = False
+            for module in modules:
+                assets_todo = _get_startable_assets(module, model, existing_tests)
+                if assets_todo:
+                    has_missing_tests = True
+                    break
+            if not has_missing_tests:
+                print("   ✓ Alle Benchmarks bereits vorhanden — überspringe Modell.")
+                continue
+
             had_new_results = False
             for module in modules:
                 had_new_results |= _run_module_for_model(
@@ -888,6 +953,8 @@ def run_local_batch(
     except KeyboardInterrupt:
         print("\n⛔  Abbruch durch Benutzer.")
         sys.exit(1)
+
+
 
 
 def run_commercial_batch(
@@ -1142,6 +1209,7 @@ def main():
         try:
             _run_untested_tooluse_models(
                 untested_cards,
+                validator=validator,
                 mcp_mode=args.mcp_mode,
                 force=args.force,
                 silent=not args.audit,

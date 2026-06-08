@@ -27,7 +27,7 @@ if str(ROOT_DIR) not in sys.path:
     sys.path.insert(0, str(ROOT_DIR))
 
 from scripts.core.model_discovery import discover_models  # noqa: E402
-from scripts.core.runner_contract import write_run_summary  # noqa: E402
+from scripts.core.runner_contract import write_run_summary, update_leaderboard  # noqa: E402
 from scripts.core.unified_runner import UnifiedBenchmarkRunner  # noqa: E402
 from utils.config_validator import ConfigValidator  # noqa: E402
 from utils.model_utils import resolve_provider  # noqa: E402
@@ -295,6 +295,7 @@ def main() -> None:
         if args.model:
             summary = _run_score_batch([args.model], module_keys, force=args.force, silent=args.silent, config=config)
             status = "success" if summary["tasks_failed"] == 0 else "partial"
+            update_leaderboard(ROOT_DIR)
             write_run_summary(
                 args.summary_json,
                 {
@@ -323,6 +324,7 @@ def main() -> None:
 
             summary = _run_score_batch(model_ids, module_keys, force=args.force, silent=args.silent, config=config)
             status = "success" if summary["tasks_failed"] == 0 else "partial"
+            update_leaderboard(ROOT_DIR)
             write_run_summary(
                 args.summary_json,
                 {
@@ -357,6 +359,7 @@ def main() -> None:
 
             summary = _run_score_batch(model_ids, module_keys, force=args.force, silent=args.silent, config=config)
             status = "success" if summary["tasks_failed"] == 0 else "partial"
+            update_leaderboard(ROOT_DIR)
             write_run_summary(
                 args.summary_json,
                 {

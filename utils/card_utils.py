@@ -90,7 +90,12 @@ CARD_FIELD_NAMES: list[str] = list(_CARD_TEMPLATE.keys())
 # Kernfunktion
 # ---------------------------------------------------------------------------
 
-def ensure_card(model_id: str, *, card_path: Path | None = None) -> Path:
+def ensure_card(
+    model_id: str,
+    *,
+    card_path: Path | None = None,
+    provider: str | None = None,
+) -> Path:
     """Stellt sicher, dass die Card für *model_id* alle Strukturfelder enthält.
 
     Verhalten:
@@ -106,14 +111,41 @@ def ensure_card(model_id: str, *, card_path: Path | None = None) -> Path:
         card_path: Optionaler expliziter Pfad zur Card-Datei.  Wenn nicht angegeben,
                    wird der kanonische Pfad via ``_card_path(for_write=True)`` bestimmt.
                    Nützlich wenn der Aufrufer den Pfad bereits per ``_find_card`` ermittelt hat.
+        provider:  Optionaler Provider-Key (z. B. ``"llamacpp_spark"``, ``"openrouter"``).
+                   Wenn übergeben, wird die ID via ``build_card_id`` + ``resolve_unique_card_id``
+                   eindeutig gemacht (Schema: ``{base}--{shortcode}``, Konflikt → ``-2``-Suffix).
+                   Ohne Provider bleibt das Verhalten wie bisher rückwärtskompatibel
+                   (kanonischer Pfad, kein Konflikt-Resolver).
 
     Returns:
         Pfad zur Card-Datei (nach Aufruf garantiert vorhanden).
     """
     # Importiert hier lokal, um Circular-Import-Risiko zu minimieren.
-    from utils.model_utils import _card_path, get_model_size_class  # noqa: PLC0415
+    from utils.model_utils import (  # noqa: PLC0415
+        _card_path,
+        build_card_id,
+        get_model_size_class,
+        resolve_unique_card_id,
+    )
 
-    if card_path is None:
+    # Wenn ein Provider uebergeben wird, hat das neue ID-Schema
+    # ({base}--{shortcode}) Vorrang vor einem expliziten card_path.
+    # card_path stammt in Produktion aus _find_card und nutzt das alte
+    # Pfad-Schema -- ein Mischen wuerde zu doppelten/verwaisten Karten fuehren.
+    if provider:
+        # Neues ID-Schema aktiv: {model_base}--{shortcode}, Konflikt-Resolver.
+        desired_id = build_card_id(model_id, provider)
+        unique_id = resolve_unique_card_id(desired_id)
+        # Wenn der Resolver einen anderen Namen liefert als model_id, übernimm
+        # diesen — die Card entsteht unter dem neuen Namen.
+        if unique_id != model_id:
+            # Pfad explizit auf die kanonische Card-Datei des unique_id legen
+            # (kein Provider-Shortcode, weil unique_id schon eindeutig ist).
+            card_path = _card_path(unique_id, provider=None, for_write=True)
+            model_id = unique_id
+        else:
+            card_path = _card_path(model_id, provider=provider, for_write=True)
+    elif card_path is None:
         card_path = _card_path(model_id, for_write=True)
 
     # Bestehende Card laden (oder leer starten)

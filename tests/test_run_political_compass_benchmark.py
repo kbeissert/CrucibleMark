@@ -14,14 +14,15 @@ class _DummyCfg:
 
 
 def test_single_model_writes_summary_and_sets_cycle_guard(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
-    called: dict[str, object] = {}
+    calls: list[dict[str, object]] = []
 
-    def _fake_run(cmd, cwd=None, env=None, check=False):
-        called["cmd"] = cmd
-        called["env"] = env
+    def _fake_run(cmd, **kwargs):
+        calls.append({"cmd": cmd, "kwargs": kwargs})
 
         class _R:
             returncode = 0
+            stderr = ""
+            stdout = ""
 
         return _R()
 
@@ -50,7 +51,11 @@ def test_single_model_writes_summary_and_sets_cycle_guard(monkeypatch: pytest.Mo
     assert payload["status"] == "success"
     assert payload["mode"] == "single"
 
-    cmd = called["cmd"]
+    # Der erste subprocess-Aufruf ist der Benchmark-Delegate; nachgelagerte
+    # Aufrufe (z.B. update_leaderboard) interessieren hier nicht.
+    assert calls, "Es wurde kein subprocess-Aufruf registriert"
+    first = calls[0]
+    cmd = first["cmd"]
     assert isinstance(cmd, list)
     assert "run_benchmark.py" in cmd
     assert "--module" in cmd
@@ -58,7 +63,9 @@ def test_single_model_writes_summary_and_sets_cycle_guard(monkeypatch: pytest.Mo
     assert "--model" in cmd
     assert "gemma3:12b" in cmd
 
-    env = called["env"]
+    kwargs = first["kwargs"]
+    assert isinstance(kwargs, dict)
+    env = kwargs.get("env")
     assert isinstance(env, dict)
     assert env.get("CRUCIBLE_DELEGATE_PARENT") == "1"
 
@@ -66,11 +73,13 @@ def test_single_model_writes_summary_and_sets_cycle_guard(monkeypatch: pytest.Mo
 def test_models_list_partial_status(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
     calls = {"n": 0}
 
-    def _fake_run(cmd, cwd=None, env=None, check=False):
+    def _fake_run(cmd, **kwargs):
         calls["n"] += 1
 
         class _R:
             returncode = 0 if calls["n"] == 1 else 1
+            stderr = ""
+            stdout = ""
 
         return _R()
 

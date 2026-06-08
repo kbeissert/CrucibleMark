@@ -24,11 +24,13 @@ class _DummyCfg:
 def test_single_model_runs_score_modules_only(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
     calls: list[list[str]] = []
 
-    def _fake_run(cmd, cwd=None, env=None, check=False):
+    def _fake_run(cmd, **kwargs):
         calls.append(cmd)
 
         class _R:
             returncode = 0
+            stderr = ""
+            stdout = ""
 
         return _R()
 
@@ -55,8 +57,11 @@ def test_single_model_runs_score_modules_only(monkeypatch: pytest.MonkeyPatch, t
     assert payload["status"] == "success"
     assert payload["tasks_total"] == 2
 
-    assert len(calls) == 2
-    cmd_blob = " ".join(" ".join(cmd) for cmd in calls)
+    # Nur die Benchmark-Subprozess-Aufrufe zählen; update_leaderboard()
+    # startet einen weiteren Subprozess, der hier nicht zählt.
+    benchmark_calls = [cmd for cmd in calls if any("run_benchmark.py" in c for c in cmd)]
+    assert len(benchmark_calls) == 2
+    cmd_blob = " ".join(" ".join(cmd) for cmd in benchmark_calls)
     assert "--module code_quality" in cmd_blob
     assert "--module cli_benchmark" in cmd_blob
     assert "political_compass" not in cmd_blob
@@ -66,11 +71,13 @@ def test_single_model_runs_score_modules_only(monkeypatch: pytest.MonkeyPatch, t
 def test_models_list_partial_status(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
     count = {"n": 0}
 
-    def _fake_run(cmd, cwd=None, env=None, check=False):
+    def _fake_run(cmd, **kwargs):
         count["n"] += 1
 
         class _R:
             returncode = 0 if count["n"] == 1 else 1
+            stderr = ""
+            stdout = ""
 
         return _R()
 

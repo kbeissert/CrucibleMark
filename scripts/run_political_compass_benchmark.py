@@ -17,7 +17,7 @@ if str(ROOT_DIR) not in sys.path:
     sys.path.insert(0, str(ROOT_DIR))
 
 from scripts.core.model_discovery import discover_models  # noqa: E402
-from scripts.core.runner_contract import write_run_summary  # noqa: E402
+from scripts.core.runner_contract import write_run_summary, update_leaderboard  # noqa: E402
 from utils.config_validator import ConfigValidator  # noqa: E402
 
 
@@ -83,6 +83,7 @@ def main() -> None:
     try:
         if args.model:
             ok = _run_single_model(args.model, force=args.force, silent=args.silent)
+            update_leaderboard(ROOT_DIR)
             write_run_summary(
                 args.summary_json,
                 {
@@ -117,6 +118,7 @@ def main() -> None:
                 sys.exit(1)
 
             success, failed = _run_batch(model_ids, force=args.force, silent=args.silent)
+            update_leaderboard(ROOT_DIR)
             write_run_summary(
                 args.summary_json,
                 {
@@ -151,6 +153,7 @@ def main() -> None:
                 sys.exit(0)
 
             success, failed = _run_batch(model_ids, force=args.force, silent=args.silent)
+            update_leaderboard(ROOT_DIR)
             write_run_summary(
                 args.summary_json,
                 {
@@ -176,6 +179,7 @@ def main() -> None:
         env["CRUCIBLE_DELEGATE_PARENT"] = "1"
 
         result = subprocess.run(cmd, cwd=str(ROOT_DIR), env=env, check=False)
+        update_leaderboard(ROOT_DIR)
         write_run_summary(
             args.summary_json,
             {

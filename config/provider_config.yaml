@@ -167,9 +167,9 @@ providers:
       env_var: OPENROUTER_API_KEY
       models:
       # NVIDIA — neueste zuerst
-      - id: nvidia/nemotron-3-ultra-550b-a55b:free
-        name: NVIDIA Nemotron 3 Ultra (Free) via OpenRouter
-        model_type: open_weights_cloud  # MoE 55B/550B
+      # - id: nvidia/nemotron-3-ultra-550b-a55b:free
+      #   name: NVIDIA Nemotron 3 Ultra (Free) via OpenRouter
+      #   model_type: open_weights_cloud  # MoE 55B/550B
 
       # Z.ai (GLM) — neueste zuerst
       - id: z-ai/glm-5.1-20260406

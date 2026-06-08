@@ -31,7 +31,7 @@ if str(_ROOT) not in sys.path:
     sys.path.insert(0, str(_ROOT))
 
 from scripts.core.tooluse_exporter import ToolUseExporter  # noqa: E402
-from scripts.core.runner_contract import write_run_summary  # noqa: E402
+from scripts.core.runner_contract import write_run_summary, update_leaderboard  # noqa: E402
 from utils.config_validator import ConfigValidator  # noqa: E402
 
 CARD_DIR = _ROOT / "benchmark_scores" / "model_cards"
@@ -540,6 +540,7 @@ def main() -> None:
                     print(f"  ToolUse-Leaderboard aktualisiert: {written} Modell(e) → tooluse_leaderboard.csv")
             except Exception as exc:  # noqa: BLE001
                 print(f"  [WARN] ToolUse-Leaderboard-Update fehlgeschlagen: {exc}")
+            update_leaderboard(_ROOT)
             write_run_summary(
                 args.summary_json,
                 {
@@ -580,6 +581,7 @@ def main() -> None:
                 mcp_mode=args.mcp_mode, restart_mcp=args.restart_mcp,
             )
             status = "success" if batch_summary["models_failed"] == 0 else "partial"
+            update_leaderboard(_ROOT)
             write_run_summary(
                 args.summary_json,
                 {
@@ -614,6 +616,7 @@ def main() -> None:
                 mcp_mode=args.mcp_mode, restart_mcp=args.restart_mcp,
             )
             status = "success" if batch_summary["models_failed"] == 0 else "partial"
+            update_leaderboard(_ROOT)
             write_run_summary(
                 args.summary_json,
                 {
@@ -629,6 +632,7 @@ def main() -> None:
                 force=args.force, silent=args.silent,
                 mcp_mode=args.mcp_mode, restart_mcp=args.restart_mcp,
             )
+            update_leaderboard(_ROOT)
             write_run_summary(
                 args.summary_json,
                 {
