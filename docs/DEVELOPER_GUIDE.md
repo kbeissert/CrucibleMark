@@ -133,6 +133,54 @@ Historische Lifecycle-Flags wie `always_stop_before_start` sind für den konsoli
 
 Seit v4.3.0 gilt zusätzlich: Der `UnifiedBenchmarkRunner` führt den lokalen Provider-Cleanup in `finally` aus. Bei aktivem `cleanup_on_exit` werden `server_stop_cmd` und optional `server_post_stop_cmd` deshalb auch bei `KeyboardInterrupt`/Abbruch ausgeführt.
 
+### Config-Lookup mit ID-Normalisierung (Defense-in-Depth)
+
+Die Model-IDs in `config/provider_config.yaml` werden in der Regel in der rohen Schreibweise des Providers eingetragen (z. B. `qwen3.5-35b-a3b-q8` mit Punkten). `resolve_canonical_model_id()` in `utils/model_utils.py` normalisiert diese ID früh im Entry-Point (Punkte/Bindestriche → Underscores), sodass `qwen3_5-35b-a3b-q8` durch die gesamte Benchmark-Pipeline gereicht wird — identisch zur Schreibweise in CSV-Spalten, Card-Dateinamen und Leaderboard-Zeilen.
+
+Damit der Config-Lookup in `_model_cfg()` (`utils/providers/llamacpp_base.py`) diese ID-Variante trotzdem findet, ist der Lookup **defense-in-depth** aufgebaut:
+
+1. **Schneller Pfad:** exakter String-Match zwischen übergebener `model_id` und `entry.id`.
+2. **Fallback:** normalisierter Vergleich beider Seiten via `_normalize_model_name()` (Punkt **und** Bindestrich → Underscore).
+
+Ohne diesen Fallback wirft `_resolve_model_path()` einen `ValueError: no model_file configured for model 'qwen3_5-35b-a3b-q8'`, weil die Config den Eintrag unter `qwen3.5-35b-a3b-q8` führt. Betroffen sind alle Modelle mit Versions-/Größenangaben in der ID (`qwen3.5`, `qwen3.6`, `qwen2.5-coder-7b`, `llama-3.3-70b`, `gemma-3-12b` etc.).
+
+Regressionstests: `tests/test_llamacpp_provider_separation.py::test_model_cfg_finds_dotted_id_via_canonical_form` und `::test_model_cfg_returns_empty_for_unknown_id`.
+
+### Sampling-Defaults via `llama_cpp_defaults` (SSoT)
+
+Alle llama.cpp-Server-Start-Flags für Sampling-Parameter werden aus dem Block `providers.local.config.llama_cpp_defaults` in `config/provider_config.yaml` gelesen. Diese Werte entsprechen den **llama.cpp-Upstream-Defaults** — mit Ausnahme von `seed=42` für reproduzierbare Benchmarks.
+
+| Flag | Default | Quelle | Verhalten |
+|---|---|---|---|
+| `--temp` | `0.8` | llama.cpp-Default | Lässt Modelle frei atmen |
+| `--top-p` | `0.95` | llama.cpp-Default | Leichte Nucleus-Filterung |
+| `--top-k` | `40` | llama.cpp-Default | Filtert nur echten Müll |
+| `--min-p` | `0.0` | llama.cpp-Default | Deaktiviert |
+| `--presence-penalty` | `0.0` | llama.cpp-Default | Deaktiviert |
+| `--repeat-penalty` | `1.0` | llama.cpp-Default | Kein Penalty gegen Loops |
+| `--seed` | `42` | **explizit gesetzt** | Reproduzierbarkeit (Upstream wäre `-1`) |
+
+**Pro-Modell-Override:** In `provider_config.yaml > providers.local.*.models` kann jedes Modell eigene Werte setzen:
+
+```yaml
+- id: hermes-4-14b-q4
+  temperature: 0.3        # überschreibt Default 0.8
+  top_p: 0.9              # überschreibt Default 0.95
+  repeat_penalty: 1.05
+```
+
+Der Code in `_build_server_cmd()` (`utils/providers/llamacpp_base.py`) prüft für jeden Parameter: wenn `model_cfg.<param>` gesetzt ist, gewinnt der Modell-Wert; sonst greift der `llama_cpp_defaults`-Wert; sonst der hardcoded Code-Fallback. Die Override-Reihenfolge ist:
+
+1. **Modell-Level** (`model_cfg.<param>`) — höchste Priorität
+2. **Provider-Level Defaults** (`llama_cpp_defaults.<param>`) — SSoT
+3. **Code-Hardcoded Fallback** — letzte Verteidigungslinie
+
+**Beide Provider teilen sich die Defaults:** `llamacpp` (M4) und `llamacpp_spark` (DGX) lesen denselben `llama_cpp_defaults`-Block. Damit sind Sampling-Bedingungen identisch, nur die Hardware-spezifischen Settings (Context-Window, GPU-Layers, SSH-Start) unterscheiden sich.
+
+**Historischer Rename (2026-06-08):** Der Block hieß zuvor `benchmark_defaults` und war auf `temperature: 0.1` / `top_p: 0.9` / `repeat_penalty: 1.1` (sehr deterministisch) gesetzt. Mit dem Rename auf `llama_cpp_defaults` wurde die Semantik klar (Upstream-Defaults als Fallback) und die Pro-Modell-Override-Mechanik in den Vordergrund gerückt. Wenn du ein altes Repo-Konfig-File hast, das noch `benchmark_defaults` nutzt, schlägt der Server-Start fehl — benenne den Block um.
+
+Regressionstests: `tests/test_llamacpp_provider_separation.py::test_build_server_cmd_uses_llama_cpp_defaults`, `::test_build_server_cmd_model_override_wins`, `::test_build_server_cmd_works_without_defaults_block`.
+
 ---
 
 ## Reasoning-Modelle: Reasoning-Erkennung & Card-First Workflow

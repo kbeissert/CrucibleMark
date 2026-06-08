@@ -167,9 +167,9 @@ providers:
       env_var: OPENROUTER_API_KEY
       models:
       # NVIDIA — neueste zuerst
-      # - id: nvidia/nemotron-3-ultra-550b-a55b:free
-      #   name: NVIDIA Nemotron 3 Ultra (Free) via OpenRouter
-      #   model_type: open_weights_cloud  # MoE 55B/550B
+      - id: nvidia/nemotron-3-ultra-550b-a55b
+        name: NVIDIA Nemotron 3 Ultra via OpenRouter
+        model_type: open_weights_cloud  # MoE 55B/550B
 
       # Z.ai (GLM) — neueste zuerst
       - id: z-ai/glm-5.1-20260406
@@ -211,9 +211,7 @@ providers:
       # Google Gemma — Cloud-Modelle via OpenRouter
       - id: google/gemma-4-31b-it
         name: Gemma 4 31B Instruct via OpenRouter
-      # Free-Tier-Variante (kein Credit-Abzug, aber 20 RPM / 200 RPD Limit):
-      # - id: google/gemma-4-31b-it:free
-      #   name: Gemma 4 31B Instruct (Free) via OpenRouter
+
 
       # MiniMax
       - id: minimax/minimax-m3
@@ -254,27 +252,34 @@ providers:
       default_temperature: 0.1
 
       # =====================================================================
-      # Benchmark-Defaults für Reproduzierbarkeit (llama.cpp Server-Flags)
+      # llama.cpp Defaults (SSoT für Server-Start-Flags)
       # =====================================================================
-      # Diese Werte werden als Server-Start-Flags gesetzt und sorgen für
-      # vergleichbare, stabile Ergebnisse mit niedriger Varianz.
-      # Referenz: https://docs.vllm.ai/en/v0.10.1/usage/reproducibility.html
+      # Diese Werte werden als Server-Start-Flags (`--temp`, `--top-p`, `--top-k`,
+      # `--min-p`, `--presence-penalty`, `--repeat-penalty`, `--seed`) an
+      # llama-server durchgereicht. Sie entsprechen den llama.cpp-Upstream-
+      # Defaults, mit Ausnahme von `seed=42` für reproduzierbare Benchmarks.
       #
-      # Empfehlung für Benchmarks (vs. produktive Assistenten):
-      #   - temperature: 0.1–0.3 (niedrig für Determinismus)
-      #   - seed: fixiert (42) für Reproduzierbarkeit zwischen Runs
-      #   - top_k: 40 (moderates Sampling)
-      #   - top_p: 0.9 (moderate Nucleus-Sampling)
-      #   - repeat_penalty: 1.1 (leichte Penalty gegen Loops)
+      # Pro-Modell-Override in `provider_config.yaml > providers.local.*.models`
+      # überschreibt jeden dieser Defaults. Beispiel: ein Modell mit
+      # `temperature: 0.3` bekommt `--temp 0.3` statt `--temp 0.8`.
       #
-      # Für Kreativ-Runs kann ein separates Profil mit temperature=0.7 verwendet werden.
+      # Hinweise:
+      #   - temperature: 0.6  — llama.cpp Default; lässt Modelle frei atmen
+      #   - top_p: 0.95        — leichte Nucleus-Filterung (Community-Default)
+      #   - top_k: 40          — filtert nur echten Müll
+      #   - min_p: 0.0         — deaktiviert
+      #   - presence_penalty: 0.0 — deaktiviert
+      #   - repeat_penalty: 1.0  — deaktiviert (kein Penalty gegen Loops)
+      #   - seed: 42           — explizit (llama.cpp wäre -1, random)
       # =====================================================================
-      benchmark_defaults:
-        seed: 42                    # Fixierter Seed für Reproduzierbarkeit
-        temperature: 0.1           # Deterministisch, niedrige Varianz
-        top_k: 40                   # Moderates Sampling
-        top_p: 0.9                  # Moderate Nucleus-Sampling
-        repeat_penalty: 1.1         # Leichte Penalty gegen Loops
+      llama_cpp_defaults:
+        seed: 42                    # Explizit für Reproduzierbarkeit (Upstream: -1)
+        temperature: 0.6            # llama.cpp-Default
+        top_p: 0.95                 # llama.cpp-Default
+        top_k: 40                   # llama.cpp-Default
+        min_p: 0.0                  # llama.cpp-Default (deaktiviert)
+        presence_penalty: 0.0       # llama.cpp-Default (deaktiviert)
+        repeat_penalty: 1.0         # llama.cpp-Default (kein Penalty)
 
       # Hardware-Profile werden pro Provider definiert (nicht global).
       # Werte: m4_macbook_pro_metal, dgx_spark_cuda, ...
@@ -417,7 +422,7 @@ providers:
       enabled: true
       context_window: 65536
       num_predict: 65536
-      base_url: "http://192.168.1.42:1235/v1"
+      base_url: "http://192.168.1.191:1235/v1"
       api_key: "sk-local"
       model_dir: /home/kay_beissert/ai/models/llm/gguf
       token_param_name: max_tokens
