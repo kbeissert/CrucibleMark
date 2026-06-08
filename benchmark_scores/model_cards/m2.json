@@ -1,5 +1,5 @@
 {
-  "model_id": "gpt-4o-2024-08-06",
+  "model_id": "m2",
   "display_name": "TODO",
   "developer": "TODO",
   "origin_country": "TODO",
@@ -28,7 +28,7 @@
   "architecture_tags": [
     "General"
   ],
-  "supports_tool_use": null,
+  "supports_tool_use": true,
   "license": "TODO",
   "license_url": null,
   "commercial_use_allowed": null,
@@ -39,9 +39,10 @@
   "unknown": false,
   "card_status": "draft",
   "size_class": "Frontier",
-  "generated_at": "2026-06-08T11:05:19.860932+00:00",
+  "generated_at": "2026-06-08T11:05:19.844823+00:00",
   "thinking_probe_detected": null,
   "thinking_probe_evidence": null,
   "thinking_probe_confidence": null,
-  "thinking_probe_at": null
+  "thinking_probe_at": null,
+  "tooluse_tested_at": "2026-06-08T11:36:55Z"
 }
