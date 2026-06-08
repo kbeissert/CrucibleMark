@@ -12,38 +12,17 @@ if str(ROOT_DIR) not in sys.path:
 
 from utils.model_utils import _find_card
 from utils.provider_card_template import load_provider_card
-
-# Known cloud-provider prefixes (normalized, lowercase) → display name.
-_CLOUD_PREFIX_TO_PROVIDER: dict[str, str] = {
-    "gpt-": "OpenAI",
-    "o1": "OpenAI",
-    "o3": "OpenAI",
-    "o4": "OpenAI",
-    "claude-": "Anthropic",
-    "gemini-": "Google",
-    "gemma": "Google",
-    "mistral": "Mistral AI",
-    "codestral": "Mistral AI",
-    "ministral": "Mistral AI",
-    "pixtral": "Mistral AI",
-    "grok-": "xAI",
-    "deepseek-": "DeepSeek",
-    "qwen": "Alibaba Cloud",
-    "kimi": "Moonshot AI",
-    "minimax": "MiniMax",
-    "llama": "Meta",
-}
+from utils.provider_detection import detect_provider_from_model_id
 
 _RISK_ORDER = {"low": 0, "medium": 1, "high": 2}
 
 
 def detect_provider(model_id: str) -> str | None:
-    """Infer cloud provider from model ID prefix. Returns None for local models."""
-    normalized = model_id.lower()
-    for prefix, provider_name in _CLOUD_PREFIX_TO_PROVIDER.items():
-        if normalized.startswith(prefix.rstrip("-")):
-            return provider_name
-    return None
+    """Infer cloud provider from model ID prefix. Returns None for local models.
+
+    SSoT-Bridge zu :func:`utils.provider_detection.detect_provider_from_model_id`.
+    """
+    return detect_provider_from_model_id(model_id)
 
 
 def compute_sovereign_risk(model_card: dict, provider_card: dict | None) -> tuple[str, str]:

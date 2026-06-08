@@ -56,6 +56,7 @@ help:
 	@echo "  make ensure-card          Fehlende Felder in einer Card ergänzen (MODEL=name erforderlich)"
 	@echo "  make ensure-cards         Fehlende Felder in ALLEN Cards ergänzen (--missing: nur lückenhafte)"
 	@echo "  make provider-cards       Provider Cards generieren (Flags: PROVIDER=name, FORCE=1)"
+	@echo "  make provider-cards-status Audit-Readiness-Report (Flags: STALE_DAYS=N, JSON=1)"
 	@echo "  make provider-stats       System-Latenzen analysieren (Ping vs. TTFB) und Provider-Review erstellen"
 	@echo "  make probe-thinking       Thinking-Probe fuer einzelnes Modell (MODEL=name, PROVIDER=key optional)"
 	@echo "  make probe-all-thinking   Thinking-Probe fuer alle Cards ohne Probe-Feld (retro-aktiv)"
@@ -134,6 +135,11 @@ provider-cards:
 		echo "Generiere alle fehlenden Provider Cards..."; \
 		$(PYTHON) scripts/analysis/generate_provider_cards.py $(if $(FORCE),--force); \
 	fi
+
+provider-cards-status:
+	@echo "Pruefe Provider Card Status (stale nach $(or $(STALE_DAYS),90) Tagen)..."
+	@$(PYTHON) scripts/analysis/provider_card_status.py $(if $(STALE_DAYS),--stale-days $(STALE_DAYS),) $(if $(JSON),--json,)
+
 
 probe-thinking:
 	@if [ -z "$(MODEL)" ]; then echo "Fehler: MODEL=<model-id> ist erforderlich."; exit 1; fi

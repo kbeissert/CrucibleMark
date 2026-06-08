@@ -623,3 +623,98 @@ fragile Reflection, umging SSoT-API.
 - 6 neue Regressionstests in `tests/test_provider_card_ssot_refactor.py`
 - Insgesamt: 246/246 Tests grün, Pylint 10.00/10
 
+---
+
+## v4.6.3 — Card-Status-Tool + Provider-Detection-SSoT (2026-06-08)
+
+### Phase 22: Audit-Readiness-Report für Provider Cards
+
+**Motivation:** 18 Provider Cards im Projekt, aber keine Sichtbarkeit über
+Frische (Stale) und Vollständigkeit (unknown-Felder). Vor Reviewer-Anfragen
+("wie aktuell sind die Karten?") fehlte ein Werkzeug für die Hygieneprüfung.
+
+**Implementierung** in `utils/provider_card_template.py`:
+- `get_provider_card_status(stale_days)` — scannt `CARDS_DIR`, klassifiziert
+  jede Karte in `verified` / `unknown` / `stale` / `parse_error`.
+- `format_provider_card_status(report)` — lesbarer CLI-Output mit Sektionen
+  für Unknown-Karten und unknown deployment-Sub-Feldern.
+- `_parse_iso_timestamp()` — normalisiert naive datetimes auf UTC, damit
+  `datetime.now(timezone.utc) - parsed` nie crasht.
+- `_is_deployment_field_unknown()` — Sentinel-Erkennung: `"unknown"`-Strings
+  und `-1` für `data_retention_days`.
+- `_DEPLOYMENT_FIELDS_REQUIRING_VERIFICATION` — zentrale Liste der Felder,
+  die "echte" Werte brauchen.
+
+**CLI-Wrapper** in `scripts/analysis/provider_card_status.py`:
+- `--stale-days N` (Default 90) — konfigurierbarer Schwellenwert
+- `--json` — für CI-Parsing
+- `--fail-on-unknown` / `--fail-on-stale` — Exit-Code 1 für CI-Gates
+- Stdlib-only, keine neuen Dependencies
+
+**Makefile-Target:**
+```makefile
+make provider-cards-status                    # Default 90 Tage
+make provider-cards-status STALE_DAYS=30      # aggressiver
+make provider-cards-status JSON=1             # JSON-Output
+```
+
+**Live-Befund:**
+```
+Total:                  18
+  Verified:             15
+  Unknown:              3  (nous_research, todo, unknown)
+  Stale (>90d):         0
+  Unknown dep-fields:   11  (v.a. data_retention_days)
+```
+
+### Phase 23: Provider-Detection-SSoT
+
+**Problem:** Drei voneinander unabhängige Provider-Prefix-Maps:
+1. `scripts/analysis/review/risk_calculator.py::_CLOUD_PREFIX_TO_PROVIDER`
+2. `utils/model_utils.py::resolve_provider()` (Config-basiert, andere Anforderung)
+3. `scripts/web_export.py::build_provider_map()` (Config-basiert, andere Anforderung)
+
+Drift-Risiko bei nur der ersten — aber genau die ist die SSoT für
+Sovereign-Risk und Reviewer-Prompt.
+
+**Fix:**
+- Neues Modul `utils/provider_detection.py` mit `PROVIDER_PREFIX_MAP`
+  (lowercase-Prefix → Display-Name) und `detect_provider_from_model_id()`.
+- `risk_calculator.detect_provider()` wird zur dünnen Bridge:
+  ```python
+  def detect_provider(model_id: str) -> str | None:
+      return detect_provider_from_model_id(model_id)
+  ```
+- `_CLOUD_PREFIX_TO_PROVIDER` (~15 Zeilen) aus `risk_calculator.py` entfernt.
+- `re`- und `_safe_id`-Imports entfernt (ungenutzt nach Refactor).
+
+**Design-Entscheidung: keine Wortgrenzen-Logik**
+
+Erste Iteration hatte eine Wortgrenzen-Logik
+(`model_id[pos] in {"-", ":", "/", "."}`), die aber mit gängigen
+Modellnamen-Patterns unvereinbar ist:
+- `gpt-4o` → Position 4 = `"4"`, kein Trennzeichen → kein Match (false negative)
+- `claude-haiku-4-5` → Position 7 = `"h"`, kein Trennzeichen → kein Match (false negative)
+- `qwen2.5-14b` → Position 4 = `"2"`, kein Trennzeichen → kein Match (false negative)
+
+Eine "Wortgrenze = kein Lowercase-Letter"-Logik scheitert spiegelbildlich
+bei `claude-haiku-4-5` (Position 7 = `"h"` IST Lowercase).
+
+Lösung: einfacher `startswith`-Check mit Längste-Prefixes-zuerst-Iteration
+(greedy matching). Funktioniert für alle bekannten Modellnamen-Patterns.
+Falls in Zukunft False-Positives wie `qwenchat` → Alibaba auftauchen,
+sollte die Liste der erlaubten Modellnamen whitelist-basiert gepflegt
+werden, nicht per Wortgrenzen-Heuristik — siehe Kommentar im Modul.
+
+**Reihenfolge der Map-Keys** (insertsion-order, da Python 3.7+ garantiert):
+Längere Prefixes zuerst (`"gpt-5-"` vor `"gpt-"`), damit Greedy-Matching
+korrekt funktioniert.
+
+### Tests
+
+- 25 neue Tests in `tests/test_provider_card_status.py`:
+  - 9 für Phase 22 (Card-Status-Klassifizierung)
+  - 16 für Phase 23 (Provider-Detection: 11 Provider + Edge-Cases)
+- Insgesamt: **271/271 Tests grün**, Pylint **10.00/10**
+- Commits: `0799309` (Phase 20/21) + dieser Commit (Phase 22/23)
+

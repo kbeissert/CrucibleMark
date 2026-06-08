@@ -195,10 +195,13 @@ def _strip_emojis(obj):
 def load_model_card(model_name: str, root_dir: Path) -> dict | None:
     """Loads the model card JSON for *model_name*.
 
-    Uses _find_card() (SSoT in utils/model_utils.py) for core 3-rule path
-    resolution, then applies web-export-specific fallbacks for display-name
+    SSoT: Delegates to resolve_canonical_model_id() (utils/model_utils.py) for
+    the full Card-Lookup-Pipeline (Card-Filenames + _safe_name-Fallback + Slug
+    Derivation), then applies web-export-specific fallbacks for display-name
     vs. model_id mismatches (e.g. "kimi-k2.5" → "moonshotai/kimi-k2.5-0127").
     """
+    from utils.model_utils import resolve_canonical_model_id
+
     card_dir = root_dir / "benchmark_scores" / "model_cards"
 
     def _try_load(path: Path) -> dict | None:
@@ -207,16 +210,17 @@ def load_model_card(model_name: str, root_dir: Path) -> dict | None:
         except (json.JSONDecodeError, OSError):
             return None
 
-    # Core 3-rule lookup via SSoT (_find_card with explicit card_dir override)
-    path = _find_card(model_name, card_dir=card_dir)
+    # SSoT-Brücke: kanonische ID auflösen (Card-Lookup + Slug-Derivation)
+    canonical = resolve_canonical_model_id(model_name)
+    path = _find_card(canonical, card_dir=card_dir)
     if path.exists():
         return _try_load(path)
 
     # Web-export fallback: leaderboard uses display names (e.g. "kimi-k2.5") while cards
     # are filed under the full namespaced model_id (e.g. "moonshotai/kimi-k2.5-0127").
     # Full directory scan matching stripped model_id.
-    safe = _safe_name(model_name)
-    display_norm = model_name.lower()
+    safe = _safe_name(canonical)
+    display_norm = canonical.lower()
     for card_file in sorted(card_dir.glob("*.json")):
         card_data = _try_load(card_file)
         if not card_data or not isinstance(card_data, dict):
@@ -639,8 +643,14 @@ def _lookup_pc_row(
 ) -> "pd.Series | None":
     """Returns the AVG row for a model from political_compass_results.csv.
 
-    Tries exact match first, then slug-based fallback for dated/prefixed IDs
-    (e.g. "claude-sonnet-4-5-20250929" → "claude-sonnet-4-5").
+    SSoT: Matcht via URL-Slug (slugify) — bewusst KEIN _safe_name, weil PC-CSVs
+    den vollen Vendor-Prefix (z.B. ``anthropic/claude-sonnet-4-5-20250929``) tragen
+    und der Frontend-Slug dieselbe Konvention nutzt (Bindestriche).
+
+    Strategy:
+    1. Exact match (display-name Gleichheit)
+    2. Suffix/prefix slug match (dated IDs, vendor prefixes)
+    3. Returns None → caller decides what to do (PC-only models werden uebersprungen).
     """
     avg_rows = pc[pc["run_id"] == "AVG"]
     exact = avg_rows[avg_rows["model"] == model_name]
@@ -768,22 +778,51 @@ def _read_latest_tooluse_narrative(review_dir: Path) -> str | None:
 
 
 def _build_tooluse_entry(model_id: str, root_dir: Path) -> "dict[str, Any] | None":
-    """Return tooluse data dict for data.json, or None if model has no tooluse data."""
+    """Return tooluse data dict for data.json, or None if model has no tooluse data.
+
+    SSoT: Nutzt resolve_canonical_model_id() + _safe_name() fuer die Review-Dir-Aufloesung.
+    Direkter Lookup ueber raw model_id ist fragil, weil ToolUse-Web-Data und
+    Review-Verzeichnisse unterschiedliche ID-Konventionen nutzen koennen.
+    """
     try:
         from scripts.analysis.review.tooluse_context import get_tooluse_web_data
-        from utils.model_utils import _safe_name
+        from utils.model_utils import _safe_name, resolve_canonical_model_id
     except ImportError:
         logging.debug("tooluse_context not importable — skipping tooluse entry")
         return None
 
-    data = get_tooluse_web_data(model_id)
+    # Kanonische ID fuer Card-/Provider-Mapping (ToolUse-Web-Data-Key)
+    canonical = resolve_canonical_model_id(model_id)
+    data = get_tooluse_web_data(canonical)
     if data is None:
         return None
 
-    slug = _safe_name(model_id)
+    # Review-Dir-Pfad via _safe_name (Card-/Review-Ordner-Konvention)
+    slug = _safe_name(canonical)
     review_dir = root_dir / "docs" / "reviews" / slug
     data["narrative_review"] = _read_latest_tooluse_narrative(review_dir)
     return data
+
+
+def _collect_provider_cards(root_dir: Path) -> list[dict[str, Any]]:
+    """Sammelt alle Provider-Card-JSONs aus benchmark_scores/provider_cards/.
+
+    SSoT: benchmark_scores/provider_cards/ ist die einzige Quelle.
+    Spurious-Files (_index.json, ...) werden ueber 'provider_id'-Key gefiltert.
+    """
+    cards_dir = root_dir / "benchmark_scores" / "provider_cards"
+    if not cards_dir.exists():
+        return []
+    result: list[dict[str, Any]] = []
+    for fp in sorted(cards_dir.glob("*.json")):
+        try:
+            data = json.loads(fp.read_text(encoding="utf-8"))
+        except (json.JSONDecodeError, OSError):
+            continue
+        if not isinstance(data, dict) or "provider_id" not in data:
+            continue  # Skip index/metadata files
+        result.append(data)
+    return result
 
 
 def _write_top_level_outputs(
@@ -797,7 +836,8 @@ def _write_top_level_outputs(
     models_with_reports: int,
     models_with_reviews: int,
 ) -> None:
-    """Writes leaderboard.json, political_compass.json, provider_stats.json, and meta.json."""
+    """Writes leaderboard.json, political_compass.json, provider_stats.json, meta.json,
+    und provider_cards.json mit Souveraenitaets-/GDPR-Metadaten pro Provider."""
     with open(out_dir / "leaderboard.json", "w", encoding="utf-8") as f:
         json.dump(
             _strip_emojis({"generated_at": generated_at, "total_models": len(models_list), "models": models_list}),
@@ -827,14 +867,33 @@ def _write_top_level_outputs(
                 for k, v in r.items()
             })
         with open(out_dir / "provider_stats.json", "w", encoding="utf-8") as f:
+                json.dump(
+                    _strip_emojis({"generated_at": generated_at, "providers": provider_list}),
+                    f, indent=2, ensure_ascii=False,
+                )
+
+    # Provider-Cards mit Sovereign-Risk/GDPR/Privacy-Metadaten
+    provider_cards = _collect_provider_cards(root_dir)
+    if provider_cards:
+        with open(out_dir / "provider_cards.json", "w", encoding="utf-8") as f:
             json.dump(
-                _strip_emojis({"generated_at": generated_at, "providers": provider_list}),
+                _strip_emojis({"generated_at": generated_at, "providers": provider_cards}),
                 f, indent=2, ensure_ascii=False,
             )
 
     provider_md = comparisons_path / "provider_landscape_review.md"
     if provider_md.exists():
         shutil.copy2(provider_md, out_dir / "provider_landscape_review.md")
+
+    # SSoT-Sanity-Counts: Filesystem vs. Leaderboard-Konsistenz
+    card_dir = root_dir / "benchmark_scores" / "model_cards"
+    audit_logs_path = root_dir / "outputs" / "audit_logs"
+    card_count = len(list(card_dir.glob("*.json"))) if card_dir.exists() else 0
+    audit_log_count = sum(
+        len(list(d.glob("*.md")))
+        for d in (audit_logs_path.iterdir() if audit_logs_path.exists() else [])
+        if d.is_dir()
+    )
 
     with open(out_dir / "meta.json", "w", encoding="utf-8") as f:
         json.dump(
@@ -844,9 +903,15 @@ def _write_top_level_outputs(
                 "total_models": len(models_list),
                 "models_with_reports": models_with_reports,
                 "models_with_reviews": models_with_reviews,
+                "card_count": card_count,
+                "audit_log_count": audit_log_count,
+                "provider_card_count": len(provider_cards),
                 "sources": {
                     "leaderboard": "benchmark_scores/benchmark_leaderboard_detailed.csv",
                     "political_compass": "benchmark_scores/political_compass_results.csv",
+                    "model_cards": "benchmark_scores/model_cards/",
+                    "provider_cards": "benchmark_scores/provider_cards/",
+                    "audit_logs": "outputs/audit_logs/",
                 },
             },
             f, indent=2, ensure_ascii=False,

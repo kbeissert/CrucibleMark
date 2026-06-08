@@ -261,3 +261,203 @@ def rebuild_provider_index() -> int:
         encoding="utf-8",
     )
     return len(cards)
+
+
+# ---------------------------------------------------------------------------
+# Card-Status (Phase 22)
+# ---------------------------------------------------------------------------
+# Liefert einen Audit-Readiness-Report über alle Provider Cards:
+# - total / verified / unknown / stale / parse_errors
+# - stale: last_verified_at (oder generated_at) älter als stale_days
+# - unknown_fields: deployment.Sub-Felder mit "unknown" oder NSL-Mismatch
+#
+# Konsument: ``make provider-cards-status`` + Audit-Hooks.
+
+_DEPLOYMENT_FIELDS_REQUIRING_VERIFICATION: list[str] = [
+    "cloud_act_exposure",
+    "applicable_law",
+    "data_residency",
+    "gdpr_dpa_available",
+    "eu_adequacy_decision",
+    "data_retention_days",
+    "chinese_nsl_risk",
+]
+
+
+def _parse_iso_timestamp(value: str | None) -> datetime | None:
+    """Toleranter ISO-8601-Parser. Gibt None zurück bei ungültigen Werten.
+
+    Normalisiert naive datetimes auf UTC, damit Subtraktionen gegen ``now``
+    (timezone-aware) konsistent funktionieren.
+    """
+    if not value or not isinstance(value, str):
+        return None
+    try:
+        dt = datetime.fromisoformat(value.replace("Z", "+00:00"))
+    except (TypeError, ValueError):
+        return None
+    if dt.tzinfo is None:
+        dt = dt.replace(tzinfo=timezone.utc)
+    return dt
+
+
+def _is_deployment_field_unknown(card: dict[str, Any], field: str) -> bool:
+    """Prüft ob ein deployment.Sub-Feld als 'unknown' markiert oder leer ist."""
+    dep = card.get("deployment", {})
+    if not isinstance(dep, dict):
+        return True
+    value = dep.get(field)
+    if value in (None, "", "unknown", "Unknown"):
+        return True
+    if field == "data_retention_days" and value == -1:
+        return True
+    if field == "chinese_nsl_risk" and value == "unknown":
+        return True
+    return False
+
+
+def get_provider_card_status(stale_days: int = 90) -> dict[str, Any]:
+    """Audit-Readiness-Report über alle Provider Cards.
+
+    Args:
+        stale_days: Schwellwert (Tage) für ``stale``-Klassifikation. Cards ohne
+                    ``last_verified_at`` (oder ohne ``generated_at``) zählen
+                    immer als stale.
+
+    Returns:
+        Dict mit:
+            - total: int (Anzahl gefundener Karten)
+            - verified: int (last_verified_at vorhanden und nicht stale)
+            - unknown: int (unknown=true auf Card-Ebene)
+            - stale: int (älter als stale_days oder ohne Timestamp)
+            - missing_timestamp: int (weder generated_at noch last_verified_at)
+            - parse_errors: int (JSON-Parse-Fehler)
+            - cards_with_unknown_deployment_fields: int
+            - by_provider: list[dict] (Detail pro Provider)
+            - stale_threshold_days: int (echo des Parameters)
+            - checked_at: ISO-8601-Timestamp
+    """
+    now = datetime.now(timezone.utc)
+    cards_dir = _cards_dir()
+    by_provider: list[dict[str, Any]] = []
+    counts = {
+        "verified": 0,
+        "unknown": 0,
+        "stale": 0,
+        "missing_timestamp": 0,
+        "parse_errors": 0,
+        "cards_with_unknown_deployment_fields": 0,
+    }
+
+    for path in sorted(cards_dir.glob("*.json")):
+        if path.name == "_index.json":
+            continue
+        provider_id = path.stem
+
+        try:
+            card = json.loads(path.read_text(encoding="utf-8"))
+        except (json.JSONDecodeError, OSError):
+            counts["parse_errors"] += 1
+            by_provider.append({
+                "provider_id": provider_id,
+                "status": "parse_error",
+            })
+            continue
+
+        last_verified = _parse_iso_timestamp(card.get("last_verified_at"))
+        generated_at = _parse_iso_timestamp(card.get("generated_at"))
+        timestamp = last_verified or generated_at
+
+        missing_ts = timestamp is None
+        is_stale = missing_ts
+        if timestamp is not None:
+            age = now - timestamp
+            is_stale = age.days > stale_days
+
+        is_unknown = bool(card.get("unknown"))
+        unknown_fields = [
+            f for f in _DEPLOYMENT_FIELDS_REQUIRING_VERIFICATION
+            if _is_deployment_field_unknown(card, f)
+        ]
+
+        if is_unknown:
+            status = "unknown"
+            counts["unknown"] += 1
+        elif is_stale:
+            status = "stale"
+            counts["stale"] += 1
+        else:
+            status = "verified"
+            counts["verified"] += 1
+
+        if missing_ts:
+            counts["missing_timestamp"] += 1
+        if unknown_fields:
+            counts["cards_with_unknown_deployment_fields"] += 1
+
+        by_provider.append({
+            "provider_id": provider_id,
+            "display_name": card.get("display_name", provider_id),
+            "status": status,
+            "last_verified_at": card.get("last_verified_at"),
+            "generated_at": card.get("generated_at"),
+            "age_days": (now - timestamp).days if timestamp else None,
+            "unknown_deployment_fields": unknown_fields,
+        })
+
+    return {
+        "total": len(by_provider),
+        **counts,
+        "stale_threshold_days": stale_days,
+        "checked_at": now.isoformat(),
+        "by_provider": by_provider,
+    }
+
+
+def format_provider_card_status(report: dict[str, Any]) -> str:
+    """Formatiert einen get_provider_card_status-Report als lesbaren CLI-Output."""
+    lines: list[str] = []
+    lines.append("=== Provider Card Status ===")
+    lines.append(f"Total:                  {report['total']}")
+    lines.append(f"  Verified:             {report['verified']}")
+    lines.append(f"  Unknown:              {report['unknown']}")
+    lines.append(f"  Stale (>{report['stale_threshold_days']}d):     {report['stale']}")
+    lines.append(f"  Missing timestamp:    {report['missing_timestamp']}")
+    lines.append(f"  Parse errors:         {report['parse_errors']}")
+    lines.append(f"  Unknown dep-fields:   {report['cards_with_unknown_deployment_fields']}")
+    lines.append("")
+
+    # Gruppierung nach Status
+    by_status: dict[str, list[dict[str, Any]]] = {}
+    for entry in report.get("by_provider", []):
+        by_status.setdefault(entry["status"], []).append(entry)
+
+    if by_status.get("unknown"):
+        lines.append(f"--- Unknown ({len(by_status['unknown'])}) ---")
+        for e in by_status["unknown"]:
+            lines.append(f"  • {e['provider_id']}  (display_name: {e.get('display_name', 'n/a')})")
+        lines.append("")
+
+    if by_status.get("stale"):
+        lines.append(f"--- Stale ({len(by_status['stale'])}) ---")
+        for e in by_status["stale"]:
+            age = f"age={e['age_days']}d" if e.get("age_days") is not None else "no-timestamp"
+            lines.append(f"  • {e['provider_id']}  ({age})")
+        lines.append("")
+
+    if by_status.get("parse_error"):
+        lines.append(f"--- Parse errors ({len(by_status['parse_error'])}) ---")
+        for e in by_status["parse_error"]:
+            lines.append(f"  • {e['provider_id']}")
+        lines.append("")
+
+    if report["cards_with_unknown_deployment_fields"] > 0:
+        lines.append("--- Cards mit unknown deployment-Sub-Feldern ---")
+        for e in report.get("by_provider", []):
+            if e.get("unknown_deployment_fields"):
+                fields = ", ".join(e["unknown_deployment_fields"])
+                lines.append(f"  • {e['provider_id']}: {fields}")
+        lines.append("")
+
+    lines.append(f"Checked at: {report['checked_at']}")
+    return "\n".join(lines)
