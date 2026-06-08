@@ -270,3 +270,176 @@ def test_per_model_unknown_model_exits_gracefully(tmp_path, capsys):
     assert call_count == 0, "Unbekanntes Modell darf keine Reviews triggern"
     captured = capsys.readouterr()
     assert "nicht in outputs/audit_logs/ gefunden" in captured.out
+
+
+# === ID-SSoT Tests (Phase 12+13): Audit-Log-Ordner mit roher Schreibweise ===
+#
+# Sicherstellen, dass Review-Generierungstoleranz fuer safe_name vs. rohe
+# Schreibweise gilt. Drei Repro-Szenarien aus dem Bug-Report:
+#   - `_run_audit_reviews` mit --model="gpt-5.4" matcht jetzt "gpt-5.4/" (raw)
+#   - `_run_tooluse_reviews` nutzt mid (nicht slug) fuer audit_dir
+#   - `_run_per_model_all_reviews` sammelt rohe Ordnernamen
+
+
+def test_audit_review_matches_unsafename_dir(tmp_path):
+    """Mit args.model='gpt-5.4' MUSS das Audit-Dir 'gpt-5.4/' (mit Punkt)
+    gefunden werden, _safe_name(subdir.name) == safe_target_model."""
+    fake_audit = tmp_path / "outputs" / "audit_logs"
+    fake_audit.mkdir(parents=True)
+    target_dir = fake_audit / "gpt-5.4"  # raw, mit Punkt
+    target_dir.mkdir()
+    # Mindestens ein Benchmark-Report, sonst skippt der Bench-Filter
+    (target_dir / "code_quality_001.md").write_text(
+        "## 3. Evaluation\nscore: 1.0\n", encoding="utf-8"
+    )
+
+    fake_review = tmp_path / "docs" / "reviews"
+    fake_review.mkdir(parents=True)
+
+    visited: list[str] = []
+
+    def fake_process(subdir, *args, **kwargs):
+        visited.append(subdir.name)
+
+    args = _make_args(model="gpt-5.4", auto=True, type="benchmark")
+
+    with patch.object(gr, "ROOT_DIR", tmp_path), \
+         patch.object(gr, "_ensure_dependencies", return_value={}), \
+         patch.object(gr, "process_model_review", side_effect=fake_process):
+        gr._run_audit_reviews(
+            args, client=MagicMock(), provider="openai", model_id="gpt-5.4",
+            max_tokens=8192, csv_data="", effective_type="benchmark",
+        )
+
+    assert visited == ["gpt-5.4"], (
+        f"Erwartet dass 'gpt-5.4/' trotz roher Schreibweise gefunden wird, "
+        f"bekam {visited}"
+    )
+
+
+def test_tooluse_review_uses_raw_mid_for_audit_dir(tmp_path, monkeypatch):
+    """_run_tooluse_reviews MUSS audit_dir aus mid (rohe ID) bauen, nicht aus slug.
+
+    Sonst zeigen Reviews in docs/reviews/<slug>/ auf outputs/audit_logs/<slug>/
+    statt auf outputs/audit_logs/<mid>/ und finden keine mtime-Vergleichsbasis.
+    """
+    # mid mit Punkt, slug mit Underscore — beides muss unterstuetzt werden
+    fake_audit = tmp_path / "outputs" / "audit_logs"
+    raw_dir = fake_audit / "gpt-5.4"  # rohe mid
+    raw_dir.mkdir(parents=True)
+    (raw_dir / "tooluse_001.md").write_text("# T", encoding="utf-8")
+
+    fake_review = tmp_path / "docs" / "reviews"
+    fake_review.mkdir(parents=True)
+
+    # meta_reviewer_prompt.yaml ins tmp_path/config/ kopieren, weil
+    # _run_tooluse_reviews es ueber ROOT_DIR / "config" / ... laedt
+    fake_config = tmp_path / "config"
+    fake_config.mkdir(parents=True)
+    (fake_config / "meta_reviewer_prompt.yaml").write_text(
+        (ROOT / "config" / "meta_reviewer_prompt.yaml").read_text(encoding="utf-8"),
+        encoding="utf-8",
+    )
+
+    # tooluse_leaderboard.csv in tmp_path/benchmark_scores/ stubben
+    fake_scores = tmp_path / "benchmark_scores"
+    fake_scores.mkdir(parents=True)
+    (fake_scores / "tooluse_leaderboard.csv").write_text(
+        "model,score\n" + "gpt-5.4,1.0\n",
+        encoding="utf-8",
+    )
+
+    # tooluse_context stub: liefert gueltigen ctx
+    fake_module = MagicMock()
+    fake_module.get_tooluse_leaderboard_row.return_value = {"score": 1.0}
+    fake_module.get_all_tooluse_model_ids.return_value = ["gpt-5.4"]
+    fake_module.build_tooluse_context.return_value = {
+        "tested_model_name": "gpt-5.4",
+        "display_model_name": "GPT-5.4",
+        "log_data": "",
+    }
+    monkeypatch.setitem(sys.modules, "scripts.analysis.review.tooluse_context", fake_module)
+
+    # Card: supports_tool_use=True, sonst skip
+    from utils.model_utils import _card_path
+    card = _card_path("gpt-5.4", for_write=True)
+    card.parent.mkdir(parents=True, exist_ok=True)
+    card.write_text('{"supports_tool_use": true, "display_name": "GPT-5.4", "architecture_tags": []}',
+                    encoding="utf-8")
+
+    args = _make_args(model="gpt-5.4", auto=True, type="tooluse", force=True)
+
+    # yaml.safe_load monkey-patchen, damit prompt_yaml ein triviales Template
+    # liefert. Damit umgehen wir die echte Template-Rendering-Pipeline und
+    # testen nur den Pfad-Bug (audit_dir aus mid, nicht slug).
+    def fake_safe_load(_stream):
+        return {
+            "tooluse_reviewer": {
+                "system_instructions": "{tested_model_name}",  # minimal
+            }
+        }
+
+    with patch.object(gr, "ROOT_DIR", tmp_path), \
+         patch.object(gr, "yaml") as mock_yaml, \
+         patch.object(gr, "_find_card", return_value=card), \
+         patch.object(gr, "LLMClient") as mock_client_cls:
+        mock_yaml.safe_load.side_effect = fake_safe_load
+        mock_client = MagicMock()
+        mock_client.query.return_value = "stub response"
+        mock_client_cls.return_value = mock_client
+
+        gr._run_tooluse_reviews(
+            args, client=mock_client, provider="openai",
+            model_id="gpt-5.4", max_tokens=8192,
+        )
+
+    # Das Review-File MUSS unter docs/reviews/_safe_name("gpt-5.4") = "gpt-5_4" liegen
+    slug = "gpt-5_4"
+    review_files = list((fake_review / slug).glob("tooluse_narrative_review_*.md"))
+    assert review_files, (
+        f"Review-File unter docs/reviews/{slug}/ erwartet, "
+        f"bekam: {list((fake_review / slug).iterdir()) if (fake_review / slug).exists() else 'dir fehlt'}"
+    )
+    # cleanup
+    card.unlink()
+
+
+def test_per_model_iteration_uses_safe_name_dirs(tmp_path):
+    """Per-Model-Iteration MUSS ueber alle safe_name-normalisierten Ordner laufen.
+
+    Vor Phase 12 hatten wir 29 Ordner mit roher Schreibweise, die ueber
+    `args.model = slug` (safe_name) nicht gefunden wurden. Nach Phase 12
+    sind alle Ordner safe_name — also kein 17. Fix 1+3 stellen sicher,
+    dass die Iteration trotzdem funktioniert.
+    """
+    fake_audit = tmp_path / "outputs" / "audit_logs"
+    fake_audit.mkdir(parents=True)
+    (fake_audit / "gpt-5_4").mkdir()  # safe_name-konform (Punkt -> Underscore)
+    (fake_audit / "qwen3_5-9b").mkdir()
+    (fake_audit / "hermes-4_3-36b-q6").mkdir()
+
+    call_sequence: list[tuple[str, str]] = []
+
+    def fake_run_audit(args, client, provider, model_id, max_tokens, csv_data, effective_type):
+        call_sequence.append((args.model, effective_type))
+
+    def fake_run_tooluse(args, client, provider, model_id, max_tokens):
+        call_sequence.append((args.model, "tooluse"))
+
+    args = _make_args(all=True, per_model=True, type="all", auto=True)
+
+    with patch.object(gr, "ROOT_DIR", tmp_path), \
+         patch.object(gr, "_run_audit_reviews", side_effect=fake_run_audit), \
+         patch.object(gr, "_run_tooluse_reviews", side_effect=fake_run_tooluse), \
+         patch.object(gr, "collect_data", return_value=""):
+        gr._run_per_model_all_reviews(
+            args, client=MagicMock(), provider="openai",
+            model_id="gpt-5.4", max_tokens=8192, csv_data="",
+        )
+
+    # 3 Modelle x 3 Calls = 9 Eintraege
+    assert len(call_sequence) == 9, f"Erwartet 9 Calls, bekam {len(call_sequence)}: {call_sequence}"
+    models = sorted({c[0] for c in call_sequence})
+    assert models == ["gpt-5_4", "hermes-4_3-36b-q6", "qwen3_5-9b"], (
+        f"Erwartet die 3 safe_name-Ordner, bekam {models}"
+    )
