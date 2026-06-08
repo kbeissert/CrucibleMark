@@ -40,6 +40,7 @@ import argparse
 import csv
 import json
 import logging
+import re
 import shutil
 import sys
 from pathlib import Path
@@ -153,6 +154,24 @@ def _is_safe_canonical_fix(raw_model: str, resolved: str) -> bool:
     return expected == resolved and expected != raw_model
 
 
+def _is_plausible_model_id(value: str) -> bool:
+    """Prüft ob ein String eine plausible model_id ist (kein Timestamp, keine Zahl).
+
+    Schutz gegen kaputte Zeilen in tooluse_leaderboard.csv (historischer Bug,
+    bei dem Commas in Daten die Spalten verschoben haben — die model-Spalte
+    enthielt dann Timestamps oder Fragmente wie 'leet', '9', 'e').
+    """
+    if not value or len(value) < 3 or len(value) > 200:
+        return False
+    # Pure timestamps or date strings should not be treated as model_ids
+    if re.match(r"^\d{4}-\d{2}-\d{2}[T ]\d{2}:\d{2}:\d{2}", value):
+        return False
+    # Pure numbers (column-shifted values) should not be treated as model_ids
+    if re.match(r"^\d+(\.\d+)?$", value):
+        return False
+    return True
+
+
 def migrate_csvs(dry_run: bool) -> tuple[int, int]:
     """Aktualisiert die ``model``-Spalte in den Benchmark-CSVs.
 
@@ -168,9 +187,7 @@ def migrate_csvs(dry_run: bool) -> tuple[int, int]:
     checked = 0
     changed = 0
     for csv_path in CSV_TARGETS:
-        if csv_path.name == "tooluse_leaderboard.csv":
-            logger.info("CSV %s: übersprungen (historisch kaputte Spalten)", csv_path.name)
-            continue
+        is_tooluse_lb = csv_path.name == "tooluse_leaderboard.csv"
         if not csv_path.exists():
             continue
         rows: list[dict] = []
@@ -194,7 +211,38 @@ def migrate_csvs(dry_run: bool) -> tuple[int, int]:
             if not raw_model:
                 new_rows.append(row)
                 continue
-            # SICHERHEIT: Nur Korrekturen, die exakt safe_name der normalisierten
+
+            # tooluse_leaderboard.csv: Card-Lookup-basiert statt safe_name-only.
+            # Hintergrund: Das ToolUse-Plugin speichert model_ids in
+            # Punktschreibweise (z. B. qwen3.5-35b-a3b-q4), die Cards
+            # verwenden aber Underscore (qwen3_5-35b-a3b-q4). Hier ist die
+            # Card-Lookup-Auflösung legitim — wir wollen, dass der Match
+            # funktioniert. Kaputte Zeilen (Timestamp-Werte in model-Spalte)
+            # werden mit _is_plausible_model_id() gefiltert.
+            if is_tooluse_lb:
+                if not _is_plausible_model_id(raw_model):
+                    logger.warning(
+                        "CSV %s: Zeile mit unplausibler model_id '%s' übersprungen",
+                        csv_path.name, raw_model,
+                    )
+                    new_rows.append(row)
+                    continue
+                canonical = resolve_canonical_model_id(raw_model)
+                if canonical == raw_model:
+                    new_rows.append(row)
+                    seen_keys.add((raw_model, row.get("asset_id", "")))
+                    continue
+                logger.info(
+                    "CSV %s: model '%s' → '%s' (Card-Lookup-Auflösung)",
+                    csv_path.name, raw_model, canonical,
+                )
+                row["model"] = canonical
+                changed += 1
+                seen_keys.add((canonical, row.get("asset_id", "")))
+                new_rows.append(row)
+                continue
+
+            # Standard: Nur Korrekturen, die exakt safe_name der normalisierten
             # Form entsprechen. Heuristische Card-Alias-Resolutionen werden
             # NICHT angewendet (z. B. qwen/qwen3.6-plus → qwen/qwen3.6-plus:free).
             # Namespaced IDs (mit ``/``) und IDs mit Suffix (mit ``:``) bleiben
@@ -226,7 +274,7 @@ def migrate_csvs(dry_run: bool) -> tuple[int, int]:
             seen_keys.add(dedup_key)
             new_rows.append(row)
 
-        if dry_run or len(new_rows) == len(rows):
+        if dry_run:
             continue
 
         backup = csv_path.with_suffix(csv_path.suffix + ".bak")
