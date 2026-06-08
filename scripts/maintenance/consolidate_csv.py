@@ -1,64 +1,65 @@
 #!/usr/bin/env python3
-"""
-CSV Consolidation Script
-========================
-Reduziert Benchmark-CSV-Dateien auf den jeweils letzten (aktuellsten) Eintrag
-pro Modell und Asset.
+"""CSV Consolidation Script.
 
-Funktion:
-1. Lädt CSV.
-2. Sortiert nach Timestamp (neueste zuerst).
-3. Dedupliziert basierend auf ['model', 'asset_id'].
-4. Validiert jede Zeile gegen Sanitizer-Heuristiken (Phase 9, Defense-in-Depth).
-5. Überschreibt die originale CSV mit den bereinigten Daten.
+Reduziert Benchmark-CSV-Dateien auf den jeweils letzten (aktuellsten)
+Eintrag pro Modell und Asset.
 
-Defense-in-Depth: Die gleichen Heuristiken wie `sanitize_benchmark_csvs.py`
-filtern korrupte Zeilen raus, BEVOR sie zurückgeschrieben werden. Verhindert
-dass Phase-8-Erfolg durch nachfolgende Maintenance zunichtegemacht wird.
+Funktion (seit Phase 27):
 
-Usage:
-    python scripts/consolidate_csv.py
+1. Laedt die CSV-Liste aus :data:`utils.backup_targets.CSV_FILES` (SSoT).
+2. Normalisiert die ``model``-Spalte via ``resolve_canonical_model_id``
+   BEVOR dedupliziert wird — ``qwen3.5-35b`` und ``qwen_qwen3.5-35b``
+   werden als dasselbe Modell gezaehlt.
+3. Sortiert nach Timestamp (neueste zuerst).
+4. Dedupliziert basierend auf den Schluesselspalten aus
+   :data:`utils.backup_targets.CSV_FILES`.
+5. Validiert jede Zeile gegen Sanitizer-Heuristiken (Phase 9,
+   Defense-in-Depth).
+6. Ueberschreibt die originale CSV mit den bereinigten Daten.
+
+Defense-in-Depth: Die gleichen Heuristiken wie
+``sanitize_benchmark_csvs.py`` filtern korrupte Zeilen raus, BEVOR sie
+zurueckgeschrieben werden. Verhindert dass Phase-8-Erfolg durch
+nachfolgende Maintenance zunichtegemacht wird.
+
+Verwendung:
+    python scripts/maintenance/consolidate_csv.py
 """
 
 import logging
 import sys
 from pathlib import Path
-from typing import Optional
 
-# Füge Projekt-Root zu sys.path hinzu für Imports
+# Projekt-Root auf sys.path
 ROOT_DIR = Path(__file__).resolve().parent.parent.parent
-sys.path.insert(0, str(ROOT_DIR))
+if str(ROOT_DIR) not in sys.path:
+    sys.path.insert(0, str(ROOT_DIR))
 
-import pandas as pd
+import pandas as pd  # noqa: E402
 
-# Importiere robusten CSV-Loader
-from utils.csv_recovery import load_csv_robust
-# Defense-in-Depth: wiederverwendbare Sanitizer-Heuristiken
-from scripts.maintenance.sanitize_benchmark_csvs import (
+from scripts.maintenance.sanitize_benchmark_csvs import (  # noqa: E402
     _is_narrative_asset_id,
     _is_invalid_model,
 )
-
-# Konfiguration
-# Tupel: (Pfad, Deduplizierungs-Schlüsselspalten)
-# Benchmark-CSVs: eindeutig pro Modell + Asset
-# Leaderboard-CSVs: eindeutig pro Modell (bereits aggregiert, kein asset_id)
-CSV_FILES = [
-    (Path("benchmark_scores/local_models_benchmark.csv"),      ["model", "asset_id"]),
-    (Path("benchmark_scores/cloud_models_benchmark.csv"),      ["model", "asset_id"]),
-    (Path("benchmark_scores/commercial_models_benchmark.csv"), ["model", "asset_id"]),
-    (Path("benchmark_scores/tooluse_leaderboard.csv"),         ["model"]),
-]
+from utils.backup_targets import CSV_FILES  # noqa: E402
+from utils.csv_recovery import load_csv_robust  # noqa: E402
+from utils.model_utils import resolve_canonical_model_id  # noqa: E402
 
 logging.basicConfig(level=logging.INFO, format="%(message)s")
 logger = logging.getLogger("consolidate")
 
 
-def _load_csv_robust_with_fallback(file_path: Path) -> Optional[pd.DataFrame]:
-    """
-    Lädt CSV robust mit Fallback-Strategien.
+def _load_csv_robust_with_fallback(file_path: Path) -> pd.DataFrame | None:
+    """Laedt CSV robust mit Fallback-Strategien.
 
-    Versucht zuerst den robusten Loader, dann Standard pandas mit Fehlertoleranz.
+    Versucht zuerst den robusten Loader, dann Standard pandas mit
+    Fehlertoleranz.
+
+    Args:
+        file_path: Pfad zur CSV-Datei.
+
+    Returns:
+        DataFrame oder None bei nicht lesbarer Datei.
     """
     # Strategie 1: Nutze utils.csv_recovery (robustester Ansatz)
     try:
@@ -66,7 +67,7 @@ def _load_csv_robust_with_fallback(file_path: Path) -> Optional[pd.DataFrame]:
         if len(df) > 0:
             logger.info("   📊 Geladen (robust): %d Zeilen", len(df))
             return df
-    except Exception as e:
+    except Exception as e:  # noqa: BLE001
         logger.warning("   ⚠️  Robuster Loader fehlgeschlagen: %s", e)
 
     # Strategie 2: Standard pandas mit Fehlertoleranz
@@ -75,28 +76,58 @@ def _load_csv_robust_with_fallback(file_path: Path) -> Optional[pd.DataFrame]:
             file_path,
             on_bad_lines="skip",
             engine="python",
-            encoding="utf-8"
+            encoding="utf-8",
         )
         logger.info("   📊 Geladen (fallback): %d Zeilen", len(df))
         return df
-    except Exception as e:
+    except Exception as e:  # noqa: BLE001
         logger.error("   ❌ Konnte CSV nicht laden: %s", e)
         return None
 
 
-def _filter_corrupt_rows(df: pd.DataFrame, key_cols: list[str]) -> tuple[pd.DataFrame, dict[str, int]]:
-    """Filtert korrupte Zeilen via Sanitizer-Heuristiken (Defense-in-Depth).
+def _normalize_model_column(df: pd.DataFrame) -> pd.DataFrame:
+    """Normalisiert die ``model``-Spalte via ID-SSoT.
 
-    Verwendet exakt die gleichen Prädikate wie ``sanitize_benchmark_csvs._filter_rows``.
-    Verhindert dass Header-Repeats, narrative Asset-IDs und ungültige Modelle
-    nach einer Konsolidierung zurück in die CSV geschrieben werden.
+    Dadurch werden Schreibweisenvarianten (``qwen3.5`` vs. ``qwen_qwen3.5``,
+    mit/ohne ``hf.co/AUTHOR/``-Prefix) zu einer kanonischen Form
+    zusammengefuehrt, BEVOR die Deduplizierung laeuft.
+
+    Phase 27: schliesst die ID-SSoT-Luecke, die vorher nur in
+    ``prune_orphaned_reports`` aktiv war.
 
     Args:
-        df: Eingelesener DataFrame (aus _load_csv_robust_with_fallback).
-        key_cols: Schlüsselspalten (z. B. ["model", "asset_id"]).
+        df: Eingelesener DataFrame.
 
     Returns:
-        (df_clean, drop_stats) — bereinigter DataFrame + Counter der Drop-Gründe.
+        Kopie mit normalisierter ``model``-Spalte.
+    """
+    if "model" not in df.columns or df.empty:
+        return df
+    df = df.copy()
+    # pd.isna-Check vor str() — sonst wird NaN zu 'nan' und korrumpiert die ID.
+    df["model"] = df["model"].apply(
+        lambda v: resolve_canonical_model_id(str(v)) if not pd.isna(v) else v
+    )
+    return df
+
+
+def _filter_corrupt_rows(
+    df: pd.DataFrame, key_cols: list[str]
+) -> tuple[pd.DataFrame, dict[str, int]]:
+    """Filtert korrupte Zeilen via Sanitizer-Heuristiken (Defense-in-Depth).
+
+    Verwendet exakt die gleichen Praedikate wie
+    ``sanitize_benchmark_csvs._filter_rows``. Verhindert dass
+    Header-Repeats, narrative Asset-IDs und ungueltige Modelle nach einer
+    Konsolidierung zurueck in die CSV geschrieben werden.
+
+    Args:
+        df: Eingelesener DataFrame.
+        key_cols: Schluesselspalten (z.B. ``["model", "asset_id"]``).
+
+    Returns:
+        ``(df_clean, drop_stats)`` — bereinigter DataFrame + Counter der
+        Drop-Gruende.
     """
     drop_stats: dict[str, int] = {
         "header_repeat": 0,
@@ -106,27 +137,23 @@ def _filter_corrupt_rows(df: pd.DataFrame, key_cols: list[str]) -> tuple[pd.Data
     if df.empty:
         return df, drop_stats
 
-    # Header-Repeat: prüfen anhand Werte der ersten Spalte
-    # pandas liest CSVs als DataFrame — wir rekonstruieren die Header-Detection
-    # via den ursprünglichen Header. Wenn die erste Spalte 'asset_id' ist UND
-    # der Wert der Spalte exakt dem Header-Eintrag entspricht → Header-Repeat.
     if "asset_id" in df.columns:
         _header_repeat_mask = df["asset_id"].astype(str) == "asset_id"
         if bool(_header_repeat_mask.any()):
             drop_stats["header_repeat"] = int(_header_repeat_mask.sum())
             df = df.loc[~_header_repeat_mask].copy()
 
-    # Narrative Asset-ID
     if "asset_id" in df.columns:
         _narrative_mask = df["asset_id"].astype(str).apply(_is_narrative_asset_id)
         if bool(_narrative_mask.any()):
             drop_stats["narrative_asset_id"] = int(_narrative_mask.sum())
             df = df.loc[~_narrative_mask].copy()
 
-    # Invalid Model
     if "model" in df.columns:
         def _is_invalid(model_val: object) -> bool:
-            invalid, _ = _is_invalid_model(str(model_val) if model_val is not None else "")
+            invalid, _ = _is_invalid_model(
+                str(model_val) if model_val is not None else ""
+            )
             return invalid
 
         _invalid_mask = df["model"].apply(_is_invalid)
@@ -137,10 +164,15 @@ def _filter_corrupt_rows(df: pd.DataFrame, key_cols: list[str]) -> tuple[pd.Data
     return df, drop_stats
 
 
-def consolidate_file(file_path: Path, key_cols: list[str]):
-    """Liest, bereinigt und überschreibt eine einzelne CSV-Datei."""
+def consolidate_file(file_path: Path, key_cols: tuple[str, ...]) -> None:
+    """Liest, bereinigt und ueberschreibt eine einzelne CSV-Datei.
+
+    Args:
+        file_path: Pfad zur CSV-Datei.
+        key_cols: Tuple von Schluesselspalten fuer die Deduplizierung.
+    """
     if not file_path.exists():
-        logger.info("⚠️  Datei nicht gefunden (überspringe): %s", file_path)
+        logger.info("⚠️  Datei nicht gefunden (ueberspringe): %s", file_path)
         return
 
     logger.info("Verarbeite: %s", file_path)
@@ -148,38 +180,45 @@ def consolidate_file(file_path: Path, key_cols: list[str]):
     try:
         df = _load_csv_robust_with_fallback(file_path)
         if df is None:
-            logger.error("   ❌ Überspringe Datei (nicht lesbar)")
+            logger.error("   ❌ Ueberspringe Datei (nicht lesbar)")
             return
 
         original_count = len(df)
-
         if original_count == 0:
             logger.info("   -> Datei ist leer.")
             return
 
-        # Prüfen ob notwendige Spalten existieren
-        required_cols = key_cols + (["timestamp"] if "timestamp" in df.columns else [])
+        # Fehlende Schluesselspalten?
         missing = [c for c in key_cols if c not in df.columns]
         if missing:
-            logger.error("   ❌ Fehler: Fehlende Schlüsselspalten %s in %s", missing, file_path.name)
+            logger.error(
+                "   ❌ Fehler: Fehlende Schluesselspalten %s in %s",
+                missing, file_path.name,
+            )
             return
 
-        # Defense-in-Depth: korrupte Zeilen via Sanitizer-Heuristiken rausfiltern
-        df, drop_stats = _filter_corrupt_rows(df, key_cols)
+        # Defense-in-Depth: korrupte Zeilen rausfiltern
+        df, drop_stats = _filter_corrupt_rows(df, list(key_cols))
         sanitized_count = original_count - len(df)
         if sanitized_count > 0:
             for reason, count in sorted(drop_stats.items(), key=lambda x: -x[1]):
                 if count:
                     logger.info("   🗑️  Korrupt-Drop: %-22s %6d", reason, count)
 
-        # Sicherstellen, dass Timestamp datetime ist (für korrekte Sortierung)
+        # Phase 27: Model-Spalte via SSoT normalisieren BEVOR dedupliziert
+        if "model" in df.columns:
+            df = _normalize_model_column(df)
+            logger.info("   🔗 Model-IDs via SSoT normalisiert.")
+
+        # Timestamp korrekt sortieren
         if "timestamp" in df.columns:
-            # utc=True vermeidet Mixed-Timezone-Probleme
-            df["timestamp"] = pd.to_datetime(df["timestamp"], errors="coerce", utc=True)
+            df["timestamp"] = pd.to_datetime(
+                df["timestamp"], errors="coerce", utc=True
+            )
             df = df.sort_values(by="timestamp", ascending=False)
 
-        # Deduplizieren: Behalte den ersten (neuesten) Eintrag pro Schlüssel
-        df_clean = df.drop_duplicates(subset=key_cols, keep="first")
+        # Deduplizieren: behalte den ersten (neuesten) Eintrag pro Schluessel
+        df_clean = df.drop_duplicates(subset=list(key_cols), keep="first")
 
         cleaned_count = len(df_clean)
         removed_count = original_count - cleaned_count
@@ -187,19 +226,19 @@ def consolidate_file(file_path: Path, key_cols: list[str]):
         if removed_count > 0:
             df_clean.to_csv(file_path, index=False)
             logger.info(
-                "   ✅ Bereinigt: %d -> %d Zeilen. (%d alte Einträge entfernt)",
+                "   ✅ Bereinigt: %d -> %d Zeilen. (%d alte Eintraege entfernt)",
                 original_count, cleaned_count, removed_count,
             )
         else:
-            logger.info("   ✨ Keine Duplikate gefunden. Datei unverändert.")
+            logger.info("   ✨ Keine Duplikate gefunden. Datei unveraendert.")
 
-    except Exception as e:
+    except Exception as e:  # noqa: BLE001
         logger.error(
             "   ❌ Kritischer Fehler beim Verarbeiten von %s: %s", file_path, e
         )
 
 
-def main():
+def main() -> None:
     """Consolidation Main Entry Point."""
     print("🧹 Starte CSV-Konsolidierung (The Crucible Memory Law)...")
     for csv_file, key_cols in CSV_FILES:

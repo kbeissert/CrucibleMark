@@ -11,10 +11,16 @@
 	tooluse-leaderboard tooluse-run tooluse-report tooluse-report-summary tooluse-report-json \
 	benchmark-tooluse benchmark-tooluse-local benchmark-tooluse-force \
 	clean clean-csv clean-model clean-module clean-all clean-runs consolidate-csv prune-orphans clean-bak clean-reviews \
-	backup
+	backup backup-prep
 
 # Python-Interpreter aus .venv verwenden
 PYTHON := .venv/bin/python
+
+# Phase 27: Anzahl Benchmark-Runs, die pro Modell behalten werden.
+# Spiegelung von utils.backup_targets.RUNS_KEEP_DEFAULT (SSoT).
+# Ueberschreibbar via  make clean-runs RUNS_KEEP=10
+RUNS_KEEP ?= 5
+
 
 help:
 	@echo "CrucibleMark - Makefile Commands"
@@ -119,12 +125,34 @@ help:
 	@echo "  make web-export-dev       Export data directly into Web repo"
 	@echo ""
 	@echo "=== Data Management & Cleanup ==="
-	@echo "  make backup               Create full backup of runs and assets"
+	@echo "  make backup               Create full backup (Phase 27: ruft backup-prep zuerst)"
+	@echo "  make backup-prep          Pre-Backup-Hygiene: alte tooluse_unreachable_*.json + legacy Backups in Sicherheits-Archiv (DRY_RUN=1 = anzeigen ohne Aktion)"
 	@echo "  make clean                Remove PyCache and build artifacts"
+
 	@echo "  make clean-csv            Remove standard CSV results"
 	@echo "  make clean-model MODEL=x  Remove results for specific model"
 	@echo "  make clean-all            Extreme Cleanup (Cache + CSVs)"
-	@echo "  make prune-orphans        Verwaiste Reports loeschen (Dry-Run; FORCE=1 zum echten Loeschen)"
+	@echo "  make clean-runs           Alte Run-JSONs loeschen (RUNS_KEEP=N, default 5, FORCE=1)"
+	@echo "  make consolidate-csv      CSVs deduplizieren + ID-normalisieren (SSoT)"
+	@echo "  make clean-reviews        Reviews bereinigen (FORCE=1 zum Loeschen)"
+	@echo "  make clean-bak            .bak_* / .backup_* Dateien loeschen"
+	@echo "  make prune-orphans        Verwaiste Reports loeschen (FORCE=1 zum echten Loeschen)"
+	@echo ""
+	@echo "=== Backup-Lifecycle (Snapshot -> Prune -> Consolidate) ==="
+	@echo "  Backup laeuft in 3 Phasen:  backup-prep (hygiene) -> tar-snapshot -> cleanup-chain"
+	@echo "  Detail-Doku:  docs/BACKUP_STRATEGY.md (v3.2.0)"
+	@echo ""
+	@echo "  Hygiene vor dem Snapshot:"
+	@echo "    make backup-prep DRY_RUN=1            Vorschau (was wuerde passieren?)"
+	@echo "    make backup-prep                      Echtlauf (alte Crash-Logs weg, Legacy-Backups in backups/_pre_clean_*/)"
+	@echo ""
+	@echo "  Snapshot + Cleanup-Chain (volle Pipeline):"
+	@echo "    make backup                           Komplette Pipeline (backup-prep + tar + consolidate + clean-runs + ...)"
+	@echo "    make backup RUNS_KEEP=10              Mit abweichendem Keep-Count"
+	@echo ""
+	@echo "  Rotation (manuell, monatlich empfohlen):"
+	@echo "    find backups/ -name '*.tar.gz' -mtime +90 -delete   Snapshots aelter als 90 Tage loeschen"
+
 
 
 # === BENCHMARKING ===
@@ -375,10 +403,11 @@ clean-all:
 	@$(PYTHON) scripts/maintenance/clean.py --all
 
 clean-runs:
-	@$(PYTHON) scripts/maintenance/clean.py --runs 1 $(if $(FORCE),--force)
+	@$(PYTHON) scripts/maintenance/clean.py --runs $(RUNS_KEEP) $(if $(FORCE),--force)
 
 clean-wizard:
 	@$(PYTHON) scripts/maintenance/clean.py --interactive
+
 
 prune-orphans:
 	@if [ -n "$(FORCE)" ]; then \
@@ -408,12 +437,36 @@ clean-reviews:
 		$(PYTHON) scripts/maintenance/cleanup_reviews.py; \
 	fi
 
-backup:
+# Phase 27: Pre-Backup-Hygiene. Raeumt outputs/ auf, bevor das tar
+# geschnappt wird (alte tooluse_unreachable_*.json, verwaiste Backup-
+# Artefakte, Session-Files). Delegiert an SSoT-Helper
+# (scripts/maintenance/cleanup_helpers.py).
+backup-prep:
+	@if [ -n "$(DRY_RUN)" ]; then \
+		echo "Pre-Backup-Hygiene (Dry-Run)..."; \
+		$(PYTHON) scripts/maintenance/cleanup_helpers.py --dry-run; \
+	else \
+		echo "Pre-Backup-Hygiene..."; \
+		$(PYTHON) scripts/maintenance/cleanup_helpers.py; \
+	fi
+
+backup: backup-prep
 	@echo "Creating full backup..."
 	@mkdir -p backups
-	@tar --exclude='__pycache__' --exclude='.DS_Store' --exclude='*.bak_*' -czf backups/cruciblemark_backup_$(shell date +%Y%m%d_%H%M%S).tar.gz benchmark_scores/ outputs/ benchmark_modules/ docs/reviews/ docs/audits/ config/ memory-bank/ benchmark_config.yaml
+	@tar --exclude='__pycache__' --exclude='.DS_Store' --exclude='*.bak_*' \
+	     --exclude='*.backup_*' \
+	     --exclude='audit_logs_backup_*.tar.gz' \
+	     --exclude='audit_logs_legacy_backup_*' \
+	     --exclude='audit_logs_spurious_archive' \
+	     --exclude='audit_logs.zip' \
+	     --exclude='model_cards_backup_*.tar.gz' \
+	     --exclude='model_cards_spurious_archive' \
+	     --exclude='tooluse_unreachable_*.json' \
+	     --exclude='outputs/temp/session_*.json' \
+	     -czf backups/cruciblemark_backup_$$(date +%Y%m%d_%H%M%S).tar.gz \
+	     benchmark_scores/ outputs/ benchmark_modules/ docs/reviews/ docs/audits/ config/ memory-bank/ benchmark_config.yaml
 	@echo "Backup created."
-	@$(MAKE) clean-runs FORCE=1
+	@$(MAKE) clean-runs FORCE=1 RUNS_KEEP=$(RUNS_KEEP)
 	@$(MAKE) consolidate-csv
 	@$(MAKE) clean-bak
 	@$(MAKE) clean-reviews FORCE=1

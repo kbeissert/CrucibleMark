@@ -1,59 +1,81 @@
 #!/usr/bin/env python3
-"""
-Cleanup-Script für alte Benchmark-Runs.
+"""Cleanup-Skript fuer alte Benchmark-Runs.
 
-Behält die N neuesten Runs PRO MODELL und löscht ältere automatisch.
-Funktioniert mit JSON-Ergebnisdateien in outputs/runs/
+Haelt die N neuesten Runs PRO MODELL (kanonische ID via SSoT) und loescht
+aeltere automatisch. Funktioniert mit JSON-Ergebnisdateien in
+``outputs/runs/``.
+
+Seit Phase 27 (Backup-System SSoT-Refactor) wird die Gruppierung
+ueber :func:`scripts.maintenance.cleanup_helpers.canonicalize_run_grouping`
+aufgeloest — d.h. ``qwen3.5-35b-q4`` und ``qwen_qwen3.5-35b-q4`` werden
+als dasselbe Modell gezaehlt.
+
+Verwendung:
+    python scripts/maintenance/cleanup_runs.py                # interaktiv
+    python scripts/maintenance/cleanup_runs.py --keep 5      # behalte 5 pro Modell
+    python scripts/maintenance/cleanup_runs.py --dry-run     # nur anzeigen
+    python scripts/maintenance/cleanup_runs.py --force       # ohne Bestaetigung
 """
 
 import argparse
+import logging
 import sys
-import re
 from pathlib import Path
-from collections import defaultdict
 
-# Constants
+# Projekt-Root auf sys.path
+_ROOT = Path(__file__).resolve().parent.parent.parent
+if str(_ROOT) not in sys.path:
+    sys.path.insert(0, str(_ROOT))
+
+from scripts.maintenance.cleanup_helpers import (  # noqa: E402
+    RUN_FILE_RE,
+    canonicalize_run_grouping,
+)
+from utils.backup_targets import RUNS_KEEP_DEFAULT  # noqa: E402
+
+logger = logging.getLogger("cleanup_runs")
+
+#: Default-Pfad fuer Benchmark-Runs
 RUNS_DIR = Path("outputs/runs")
 
 
 def get_benchmark_files(runs_dir: Path) -> dict[str, list[Path]]:
-    """
-    Finds all benchmark result files and groups them by model.
-    Checks for pattern: results_{model}_{timestamp}.json
+    """Findet alle Benchmark-Ergebnisdateien und gruppiert sie nach Modell.
+
+    Erkennt das Muster ``results_{model}_{timestamp}.json`` und
+    gruppiert mit :func:`canonicalize_run_grouping` nach kanonischer
+    Model-ID. Innerhalb jeder Gruppe ist die Liste nach mtime absteigend
+    sortiert (neueste zuerst).
+
+    Args:
+        runs_dir: Wurzelverzeichnis mit ``results_*.json``-Dateien.
 
     Returns:
-        Dict {model_name: [sorted list of paths (newest first)]}
+        Dict ``{canonical_model_id: [paths newest-first]}``.
     """
     if not runs_dir.exists():
         return {}
 
-    pattern = re.compile(r"results_(.+)_(\d{8}_\d{6})\.json")
-    grouped_files = defaultdict(list)
-
-    for item in runs_dir.iterdir():
-        if item.is_file() and item.suffix == ".json":
-            match = pattern.match(item.name)
-            if match:
-                model_name = match.group(1)
-                timestamp_str = match.group(2)
-                # Store tuple (timestamp, path) for sorting
-                grouped_files[model_name].append((timestamp_str, item))
-
-    # Sort each list by timestamp descending (newest first)
-    result = {}
-    for model, files in grouped_files.items():
-        sorted_files = sorted(files, key=lambda x: x[0], reverse=True)
-        # Keep only paths
-        result[model] = [f[1] for f in sorted_files]
-
-    return result
+    files: list[Path] = [
+        p for p in runs_dir.iterdir()
+        if p.is_file() and p.suffix == ".json" and RUN_FILE_RE.match(p.name)
+    ]
+    return canonicalize_run_grouping(files)
 
 
 def cleanup_runs(
-    runs_dir: Path, keep: int = 5, force: bool = False, dry_run: bool = False
+    runs_dir: Path, keep: int = RUNS_KEEP_DEFAULT, force: bool = False, dry_run: bool = False
 ) -> int:
-    """
-    Cleans up old benchmark result files, keeping 'keep' latest per model.
+    """Bereinigt alte Benchmark-Runs, behält die ``keep`` neuesten pro Modell.
+
+    Args:
+        runs_dir: Wurzelverzeichnis.
+        keep: Anzahl der pro Modell zu behaltenden Runs.
+        force: Loeschen ohne Bestaetigung.
+        dry_run: Nur anzeigen, nichts loeschen.
+
+    Returns:
+        Anzahl der geloeschten (oder zu loeschenden, bei ``dry_run``) Dateien.
     """
     grouped_runs = get_benchmark_files(runs_dir)
 
@@ -64,7 +86,7 @@ def cleanup_runs(
     total_files = sum(len(f) for f in grouped_runs.values())
     print(f"🔍 Found {total_files} benchmark files for {len(grouped_runs)} models.")
 
-    files_to_delete = []
+    files_to_delete: list[Path] = []
 
     for model, files in grouped_runs.items():
         if len(files) > keep:
@@ -107,7 +129,8 @@ def cleanup_runs(
     return deleted_count
 
 
-def main():
+def main() -> None:
+    """CLI-Entry-Point."""
     parser = argparse.ArgumentParser(
         description="Cleanup outdated benchmark run files.",
         formatter_class=argparse.RawDescriptionHelpFormatter,
@@ -121,8 +144,8 @@ def main():
     parser.add_argument(
         "--keep",
         type=int,
-        default=5,
-        help="Number of runs to keep PER MODEL (default: 5)",
+        default=RUNS_KEEP_DEFAULT,
+        help=f"Anzahl der zu behaltenden Runs PRO MODELL (default: {RUNS_KEEP_DEFAULT})",
     )
     parser.add_argument(
         "--dry-run", action="store_true", help="Show what would be deleted"
@@ -133,12 +156,11 @@ def main():
 
     args = parser.parse_args()
 
-    # Check path existence
+    # Pfad-Existenz sicherstellen
     if not args.path.exists():
-        # Create it if it doesn't exist to avoid error
         try:
             args.path.mkdir(parents=True, exist_ok=True)
-        except Exception:
+        except Exception:  # noqa: BLE001
             print(
                 f"❌ Error: Directory not found and could not be created: {args.path}"
             )
