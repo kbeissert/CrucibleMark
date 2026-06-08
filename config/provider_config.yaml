@@ -411,8 +411,12 @@ providers:
     #
     # Hardware-Kontext:
     #   DGX Spark: ~128 GB unified memory, davon ~120 GB für Modell + Kontext nutzbar.
-    #   Bei Context=65536 und parallel=4 bleiben pro Slot ~16K Tokens reservierter Kontext,
-    #   was ausreichend ist für 30B-40B MoE-Modelle (Q4-Q8) mit Thinking-Ausgaben.
+    #   Default Context=65536 + parallel=4 — funktioniert für 30B-40B MoE-Modelle
+    #   (Q4-Q8) und Standard-Attention-Transformer (Qwen 3.5/3.6, Gemma 4).
+    #   Per-Modell-Override möglich: model_cfg.context_length / model_cfg.parallel
+    #   werden in _build_server_cmd() zuerst gelesen. Beispiel: Hermes 4.3 36B
+    #   (Hybrid-Attention, SWA-Re-Processings) erzwingt context_length=16384 +
+    #   parallel=1, damit der Server beim Model-Swap mit angepassten Flags startet.
     #   Server-Start nach Refactoring (llamacpp_batch.py) deutlich schneller: Timeout von 420s → 180s.
     llamacpp_spark:
       name: Llama.cpp (DGX Spark)
@@ -478,3 +482,23 @@ providers:
         name: Hermes 4.3 36B Q6_K (GGUF)
         model_file: NousResearch_Hermes-4.3-36B-Q6_K.gguf
         n_gpu_layers: 99
+        # Hermes 4.3 36B ist ein Hybrid-Mode Reasoning Modell (basierend auf
+        # ByteDance Seed-OSS 36B) mit SWA/Hybrid-Attention. Beobachtung aus
+        # ~/ai/llama-lab-spark.log (8.6.2026, 22:49-23:47 Benchmark-Lauf):
+        #   - llama.cpp hat trotz Config context_window=65536 auf n_ctx=16384
+        #     runterreguliert (n_ctx_train=524288 ist das Trainingsfenster des
+        #     Modells, llama.cpp wählt automatisch einen kleineren Slot wenn
+        #     4× parallel × 65536 × 36B-Layer nicht in den Speicher passt)
+        #   - 4 parallele Slots in Verbindung mit SWA-Re-Processings
+        #     ("forcing full prompt re-processing due to lack of cache data")
+        #     führen nach Heavy-Tasks (>200s) zu sporadischen Connection-Resets
+        #     am OpenAI-Client ("Retrying request to /chat/completions")
+        #   - Decoding-Speed 5.83-5.92 t/s (vs. 43-44 t/s für Gemma 4 26B-A4B
+        #     auf demselben Server) belegt den Recurrent-Layer-Overhead
+        # Override: hermes-spezifisch auf n_ctx=16384 + parallel=1 zwingen,
+        # damit llama.cpp den 4-Slot-Betrieb für dieses eine Modell aufgibt.
+        # Per-Modell-Override lässt die anderen Spark-Modelle (Qwen 3.6, Gemma 4)
+        # unverändert auf 4 parallel.
+        context_length: 16384     # --ctx-size; Provider-Default context_window=65536
+        parallel: 1                # Provider-Default parallel=4; siehe _build_server_cmd()
+        # num_predict bleibt global bei 65536 (Token-Output-Cap reicht für längste Hermes-Outputs: 2145 T)

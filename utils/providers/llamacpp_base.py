@@ -298,7 +298,13 @@ class LlamaCppBaseClient(BaseProviderClient):
         )
         n_gpu = model_cfg.get("n_gpu_layers", prov_cfg.get("n_gpu_layers", 99))
         threads = prov_cfg.get("threads", 10)
-        parallel = prov_cfg.get("parallel", 4)
+        # Per-Modell-Override für `parallel`: ermöglicht Szenarien wie
+        # Hermes 4.3 36B (Hybrid-Attention, SWA-Re-Processings) mit parallel=1
+        # zu starten, während andere Modelle desselben Providers parallel=4
+        # behalten. Da swap_model() pro Modellwechsel einen frischen
+        # llama-server startet, ist der Per-Modell-Wert beim Server-Start
+        # wirksam.
+        parallel = model_cfg.get("parallel", prov_cfg.get("parallel", 4))
         log_file = os.path.expanduser(prov_cfg.get("server_log", "~/ai/llama-lab-server.log"))
         start_cmd = self._server_start_cmd()
 

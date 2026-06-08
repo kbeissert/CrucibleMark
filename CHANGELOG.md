@@ -94,6 +94,29 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## [Unreleased]
 
+**Per-Modell-Override für `context_length` + `parallel` bei llama.cpp (Hermes-4.3-36B Retries-Fix).**
+
+### Fixed
+- **`Retrying request to /chat/completions`-Meldungen** beim Hermes 4.3 36B Q6_K Benchmark auf DGX Spark (8.6.2026, 22:49–23:47). Diagnose: Hybrid-Mode-Reasoning-Modell (ByteDance Seed 36B-Basis) mit SWA/Hybrid-Attention führt bei 4 parallelen Slots + 8 GB Prompt-Cache nach Heavy-Tasks (>200s) zu sporadischen Connection-Resets. llama.cpp hat `n_ctx` automatisch von 65536 auf 16384 runterreguliert; 5.83–5.92 t/s Decoding-Speed (vs. 43–44 t/s für Gemma 4 26B-A4B auf demselben Server) belegt den Recurrent-Layer-Overhead.
+- **Lösung (Per-Modell-Override statt globaler Provider-Reduktion):**
+  - `utils/providers/llamacpp_base.py:_build_server_cmd()` liest `parallel` jetzt zuerst aus `model_cfg` (`model_cfg.get("parallel", prov_cfg.get("parallel", 4))`) — historisch hartcodiert Provider-Level. `swap_model()` startet llama-server pro Modellwechsel frisch, daher ist der Per-Modell-Wert beim Server-Start wirksam.
+  - `config/provider_config.yaml` `providers.local.llamacpp_spark.models.hermes-4.3-36b-q6` bekommt: `context_length: 16384` (Override, llama.cpp hatte sowieso auf 16K runterreguliert) + `parallel: 1` (Override).
+  - Andere Spark-Modelle (Qwen 3.5/3.6, Gemma 4) bleiben unangetastet auf 4 parallel.
+
+### Added
+- **2 neue Regressionstests** in `tests/test_llamacpp_provider_separation.py`:
+  - `test_per_model_context_length_and_parallel_override` — Per-Modell-Override greift, andere Modelle im selben Provider bleiben unangetastet (Hermes: 16384/1, Default: 65536/4)
+  - `test_per_model_context_length_falls_back_to_provider_default` — Fallback-Kette Model → Provider bleibt intakt
+
+### Doku
+- `memory-bank/techContext.md` Sektion „Per-Modell-Override für `context_length` und `parallel` (Hermes-Fix)" — Diagnose, Root Cause, Lösung, Verifikation, offene Punkte (8 GB Prompt-Cache bleibt aktiv).
+
+### Result
+- 483/483 Tests grün (vorher 481, +2 neue). Pylint 10.00/10, Mypy 0 issues, Ruff clean.
+- Manuelle Verifikation: `_build_server_cmd("hermes-4.3-36b-q6")` liefert `--ctx-size 16384 --parallel 1`; `_build_server_cmd("qwen3.6-35b-a3b-q8")` liefert weiterhin `--ctx-size 65536 --parallel 4` (unverändert).
+- Nächster Schritt: `make benchmark-auto` mit Hermes 4.3 36B zur Verifikation, dass die Retries tatsächlich verschwinden.
+
+
 **llama.cpp Sampling-Defaults: `benchmark_defaults` → `llama_cpp_defaults` (SSoT-Klarstellung) + vollständige Flag-Pipeline.**
 
 ### Changed

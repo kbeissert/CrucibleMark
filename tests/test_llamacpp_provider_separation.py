@@ -57,6 +57,7 @@ def two_provider_config():
                     "api_type": "llamacpp",
                     "enabled": True,
                     "context_window": 65536,
+                    "parallel": 4,             # Provider-Default für Parallelität
                     "base_url": "http://192.168.1.42:1235/v1",
                     "api_key": "sk-local-spark",
                     "model_dir": "/home/kay_beissert/ai/models/llm/gguf",
@@ -98,6 +99,10 @@ def test_legacy_aliases_removed_from_registry():
 # Provider-spezifischer Config-Lookup
 # ---------------------------------------------------------------------------
 
+M4_CTX = 32000
+SPARK_CTX = 65536
+
+
 def test_local_client_uses_macbook_config(two_provider_config):
     """LlamaCppLocalClient liest ausschließlich M4-Config."""
     client = LlamaCppLocalClient(two_provider_config)
@@ -105,7 +110,7 @@ def test_local_client_uses_macbook_config(two_provider_config):
 
     assert cfg["base_url"] == "http://127.0.0.1:1235/v1"
     assert cfg["bind_host"] == "127.0.0.1"
-    assert cfg["context_window"] == 32000
+    assert cfg["context_window"] == M4_CTX
     assert cfg["api_key"] == "sk-local-m4"
     assert client._PROVIDER_KEY == "llamacpp"
 
@@ -117,7 +122,7 @@ def test_spark_client_uses_spark_config(two_provider_config):
 
     assert cfg["base_url"] == "http://192.168.1.42:1235/v1"
     assert cfg["bind_host"] == "0.0.0.0"
-    assert cfg["context_window"] == 65536
+    assert cfg["context_window"] == SPARK_CTX
     assert cfg["api_key"] == "sk-local-spark"
     assert client._PROVIDER_KEY == "llamacpp_spark"
 
@@ -273,6 +278,74 @@ def test_build_server_cmd_uses_llama_cpp_defaults(two_provider_config):
     assert "--min-p 0.0" in cmd
     assert "--presence-penalty 0.0" in cmd
     assert "--repeat-penalty 1.0" in cmd
+
+
+# ---------------------------------------------------------------------------
+# Per-Modell-Override für context_length + parallel (Hermes-Fall)
+# ---------------------------------------------------------------------------
+
+def test_per_model_context_length_and_parallel_override(two_provider_config):
+    """Per-Modell-Override für `context_length` und `parallel` greift im Server-Cmd.
+
+    Regression-Test für Hermes 4.3 36B (Hybrid-Attention + SWA-Re-Processings):
+    Ein einzelnes Modell soll beim Server-Start andere Flags bekommen als der
+    Provider-Default, ohne dass die anderen Modelle desselben Providers
+    beeinflusst werden. Früher war `parallel` hartcodiert Provider-Level und
+    nicht überschreibbar; jetzt liest `_build_server_cmd()` zuerst `model_cfg`.
+    """
+    config = two_provider_config
+    # Hermes-Override: hermes-spezifische Werte aus dem Fixture ableiten, damit
+    # SSoT gewahrt bleibt. Die Override-Werte (16384, 1) sind Hermes-spezifisch
+    # und kommen aus der Diagnose (siehe Kommentar beim Hermes-Config-Eintrag).
+    hermes_ctx = 16384
+    hermes_parallel = 1
+    spark_parallel_default = config["providers"]["local"]["llamacpp_spark"]["parallel"]
+
+    config["providers"]["local"]["llamacpp_spark"]["models"] = [
+        {
+            "id": "hermes-test",
+            "model_file": "hermes.gguf",
+            "context_length": hermes_ctx,
+            "parallel": hermes_parallel,
+        },
+        {
+            "id": "default-model",     # kein Override — nutzt Provider-Default
+            "model_file": "default.gguf",
+        },
+    ]
+    client = LlamaCppSparkClient(config)
+
+    hermes_cmd = client._build_server_cmd("hermes-test")
+    default_cmd = client._build_server_cmd("default-model")
+
+    # Hermes: Per-Modell-Override greift
+    assert f"--ctx-size {hermes_ctx}" in hermes_cmd
+    assert f"--parallel {hermes_parallel}" in hermes_cmd
+    # Hermes darf NICHT die Provider-Defaults benutzen
+    assert f"--ctx-size {SPARK_CTX}" not in hermes_cmd
+    assert f"--parallel {spark_parallel_default}" not in hermes_cmd
+
+    # Default-Modell: Provider-Defaults greifen unverändert
+    assert f"--ctx-size {SPARK_CTX}" in default_cmd
+    assert f"--parallel {spark_parallel_default}" in default_cmd
+    # Default-Modell darf NICHT die Hermes-Werte übernehmen
+    assert f"--ctx-size {hermes_ctx}" not in default_cmd
+    assert f"--parallel {hermes_parallel}" not in default_cmd
+
+
+def test_per_model_context_length_falls_back_to_provider_default(two_provider_config):
+    """Fehlt der `context_length`-Override im model_cfg, gilt der Provider-Default.
+
+    Sicherstellt, dass die neue Override-Logik die bestehende Fallback-Kette
+    (Model → Provider → Global → Hardcoded) nicht bricht.
+    """
+    client = LlamaCppLocalClient(two_provider_config)
+    cmd = client._build_server_cmd("m4-model")
+
+    # Provider-Default für llamacpp (M4) aus dem Fixture
+    assert f"--ctx-size {M4_CTX}" in cmd
+    # Genau ein --ctx-size-Flag im Cmd (kein doppelter Fallback)
+    assert cmd.count("--ctx-size") == 1
 
 
 def test_build_server_cmd_model_override_wins(two_provider_config):
