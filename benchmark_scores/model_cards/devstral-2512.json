@@ -36,7 +36,7 @@
     "Agentic",
     "Long Context"
   ],
-  "supports_tool_use": true,
+  "supports_tool_use": "untested",
   "license": "modified-MIT",
   "license_url": "https://huggingface.co/mistralai/Devstral-2-123B-Instruct-2512",
   "commercial_use_allowed": true,

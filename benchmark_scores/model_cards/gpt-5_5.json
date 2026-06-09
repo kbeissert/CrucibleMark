@@ -36,7 +36,7 @@
     "Long Context",
     "Agentic"
   ],
-  "supports_tool_use": true,
+  "supports_tool_use": "untested",
   "license": "proprietary",
   "license_url": "https://openai.com/policies/terms-of-use/",
   "commercial_use_allowed": true,

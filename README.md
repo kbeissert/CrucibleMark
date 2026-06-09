@@ -1,6 +1,6 @@
 # CrucibleMark
 
-[![Version](https://img.shields.io/badge/version-4.7.0-blue)](.)
+[![Version](https://img.shields.io/badge/version-4.7.3-blue)](.)
 [![Python](https://img.shields.io/badge/python-3.10%2B-blue)](.)
 [![License](https://img.shields.io/badge/license-MIT-green)](.)
 [![Status](https://img.shields.io/badge/status-production--ready-brightgreen)](.)
@@ -160,9 +160,9 @@ Tiefergehende Einblicke in die Methodik findest du im `docs/` Verzeichnis:
 
 Die vollständige Versionshistorie steht in [CHANGELOG.md](CHANGELOG.md). Kurzfassung der letzten drei Releases:
 
-- **v4.7.0 (2026-06-08) — 4-Phasen-Refactoring der Kern-Skripte:** `utils/llm_client.py`, `scripts/core/benchmark_auto.py`, `scripts/core/llamacpp_batch.py`, `scripts/core/unified_runner.py`. 11 Helfer-Funktionen extrahiert (alle CC ≤ 12), 9 SSOT-Konstanten in `utils/constants.py` (`MIN_REFUSAL_CHARS`, `HTTP_OK`, 5× `LLAMACPP_*`-Reset-Pauses, `OLLAMA_UNLOAD_SETTLE_SEC`), 12 Magic-Value-Stellen + 3 SIM-Fixes (`SIM110`, `SIM103`). 481/481 Tests grün, Pylint 10.00/10, Mypy 0, Ruff 0.
-- **v4.6.1 (2026-06-08) — CSV-Hygiene Defense-in-Depth:** Hard-Fail-Guard in `result_manager.py` + Sanitizer-Heuristiken in `consolidate_csv.py` + `make validate-csv`. Drei unabhängige Schichten (Sanitizer, Consolidate, Result Manager) garantieren, dass korrupte Zeilen nie wieder ins Leaderboard gelangen. 16 neue Tests, 226/226 grün.
-- **v4.6.0 (2026-06-08) — CSV-Hygiene-Sanitizer:** `scripts/maintenance/sanitize_benchmark_csvs.py` mit Vier-Klassen-Filter (Header-Repeat, Romananfänge, Boolean-Modelle, leere Modelle). 13.466 Müll-Zeilen aus `local_models_benchmark.csv` entfernt, 65 neue Tests.
+- **v4.7.3 (2026-06-10) — Thinking-SSoT-Auflösung + Runner-Consumer-Anbindung:** `resolve_effective_thinking()` in `utils/model_utils.py` ist die SSoT für das effektive Thinking-Flag (Override > Card-Probe > None). Optionaler `thinking_override` in der Provider-Card mit Pflicht-Begründung + optionalem `active_until`-Auto-Expiry. `base_runner.py:121` reicht `provider=provider` an `resolve_token_budget()` durch — ein aktiver Override schaltet den 5×-Reasoning-Multiplikator für Cost-Benchmarks ab. 41 neue Tests (24 Override-SSoT, 17 Runner-Consumer). **634/634 grün in 2.11s**. Methodik-Doku: `docs/THINKING_PROBE.md`.
+- **v4.7.2 (2026-06-09) — Thinking-Probe v2 (Multi-Prompt + Familien-Inventar):** Drei Probe-Prompts (`math`/`code`/`decision`) ersetzen den einzelnen Mathe-Prompt. 13 bekannte Think-Tags (`<think>`, `<|thinking|>`, `<reasoning>`, `<reflection>`, `<scratchpad>`, …). `discover_thinking_tags.py` für read-only Family-Inventar (9 Modelle, 27 Probes, 100 % Erkennungsrate, ~12 min). Inline-CoT-Heuristik (Signal C, >200 chars + ≥2 Ops) rehabilitiert — die einzige robuste Erkennung über alle Provider. **587/587 grün**.
+- **v4.7.1 (2026-06-09) — Web-Export-Blacklist:** `config/web_export_blacklist.yaml` mit `fnmatch`-Wildcards filtert Modelle aus `make web-export`. `_load_export_blacklist()` + `_is_blacklisted()` in `scripts/web_export.py` mit robusten Defaults (leere Datei / Parse-Error / fehlende Datei). Hook nach PC-Skip, vor `mkdir()` — verhindert leere `models/{slug}/`-Verzeichnisse. `meta.json` Block `blacklist` additiv. 17 neue Tests, 471/471 grün.
 
 ---
 
@@ -170,4 +170,4 @@ Die vollständige Versionshistorie steht in [CHANGELOG.md](CHANGELOG.md). Kurzfa
 
 - **Maintainer:** kbeissert
 - **Repository:** [github.com/kbeissert/cruciblemark](https://github.com/kbeissert/cruciblemark)
-- **Status:** ✅ Production-Ready (v4.7.0)
+- **Status:** ✅ Production-Ready (v4.7.3)

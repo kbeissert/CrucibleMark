@@ -261,21 +261,58 @@ Wenn ein Modell eine Antwort von < 15 Zeichen liefert (Ablehnungs-Signal), setzt
 
 Alle drei Felder werden via `result_manager.py` als CSV-Spalten persistiert. Das unterscheidet eine aktive Ablehnung (Modell-Limitation) von einem ungetesteten Ergebnis.
 
-**Reasoning-Erkennung (ThinkingProbe) & Card-First Workflow (ab v3.5.8):**
-Um `is_reasoning_model()` empirisch statt heuristisch zu fundieren, führt v3.5.8 eine API-basierte Laufzeit-Erkennung ein:
+**Reasoning-Erkennung (ThinkingProbe) & Card-First Workflow (ab v3.5.8, erweitert v4.7.2/3):**
+Um `is_reasoning_model()` empirisch statt heuristisch zu fundieren, wurde die Probe-Infrastruktur in mehreren Stufen ausgebaut:
 
-1. **`probe_thinking_model(model_id, provider_key, config)`** in `utils/model_utils.py` sendet einen deterministischen Schritt-für-Schritt-Reasoning-Prompt an die Modell-API und wertet zwei Signale aus:
-   - **Signal A:** `<think>` / `<thinking>` / `<thought>`-Tags im Response-Body → `confidence=high`
-   - **Signal B:** `reasoning_tokens > 0` in der API-Metadaten-Antwort → `confidence=medium`. **Sonderfall llama.cpp:** Modelle, die Reasoning über das Feld `reasoning_content` in der API-Response zurückgeben (z. B. Gemma-4 E4B), werden vom Standard-Probe nicht erkannt — `llamacpp.py` extrahiert dieses Feld explizit und setzt `reasoning_tokens = completion_tokens` intern. Diese Modelle benötigen `thinking_probe_manual_override: true` in der Model Card.
-   - Signal C (Response-Länge) ist **nicht implementiert** — Instruction-Following-Modelle produzieren auf Reasoning-Prompts ebenfalls lange Antworten (False-Positive-Quelle).
+1. **`probe_thinking_model(model_id, provider_key, config, prompts=None)`** in `utils/model_utils.py` sendet Probe-Prompts an die Modell-API und wertet drei Signale aus:
+   - **Signal A (Tags):** Einer von 13 bekannten Think-Tags im Response-Body (`<think>`, `<|thinking|>`, `<reasoning>`, `<reflection>`, `<scratchpad>`, `<solution>`, ...) → `confidence=high`. SSoT: `_THINK_TAGS` Tupel in `utils/model_utils.py`. Helper: `_find_think_tags()` (lowercase, Multi-Tag-aware).
+   - **Signal B (reasoning_tokens):** `completion_tokens_details.reasoning_tokens > 0` in der API-Metadaten-Antwort → `confidence=medium`. **Sonderfall llama.cpp:** Modelle, die Reasoning über das Feld `reasoning_content` zurückgeben (z. B. Gemma-4 E4B), werden vom Standard-Probe nicht erkannt — `llamacpp.py` extrahiert dieses Feld explizit und setzt `reasoning_tokens = completion_tokens` intern. Diese Modelle benötigen `thinking_probe_manual_override: true` in der Model Card.
+   - **Signal C (Inline-CoT, ab v4.7.2 rehabilitiert):** Heuristik im Content (`>200 chars` UND `≥2 Berechnungs-Operatoren/CoT-Tokens`) → `confidence=medium`. **Befund aus Discovery (9/9 Modelle, 100% Erkennungsrate):** Signal A ist bei `enable_thinking: false` (llama.cpp) und OpenRouter-Strip unzuverlässig; Signal B nur bei OpenRouter; Signal C ist der einzige robuste Trigger über alle Provider.
 
-2. **`ThinkingProbeResult`** (Dataclass): `detected: bool`, `evidence: str`, `confidence: Literal["high","medium","low"]`
+2. **Multi-Prompt-Aggregation (ab v4.7.2):** `_PROBE_PROMPTS` Dict mit drei Domänen (math/code/decision). Höchste Confidence gewinnt. Bei `prompts=None` (Default) werden alle drei Prompts gesendet; Single-Prompt-Modus bleibt für Card-First-Hook erhalten. Aggregation: wenn irgendein Prompt `detected=True` liefert, ist das Gesamtergebnis `detected=True` mit kombinierter Evidence.
 
-3. **`is_reasoning_model_from_card(model_id)`:** Liest `thinking_probe_detected` aus der JSON-Model-Card. Dateiname-Auflösung via `_find_card(model_id)` (SSOT — inkl. `-latest`-Alias-Fallback). Gibt `None` zurück wenn kein Eintrag vorhanden (kein False-Positive).
+3. **`ThinkingProbeResult`** (Dataclass, ab v4.7.2 mit Backward-Compat-Defaults): `detected: bool`, `evidence: str`, `confidence: Literal["high","medium","low"]`, `prompts_used: list[str]`, `tags_found: list[str]`.
 
-4. **`is_reasoning_model()` Lookup-Hierarchie:**
+4. **`is_reasoning_model_from_card(model_id)`:** Liest `thinking_probe_detected` aus der JSON-Model-Card. Dateiname-Auflösung via `_find_card(model_id)` (SSoT — inkl. `-latest`-Alias-Fallback). Gibt `None` zurück wenn kein Eintrag vorhanden.
+
+5. **`is_reasoning_model()` Lookup-Hierarchie:**
    1. Card-Lookup (`is_reasoning_model_from_card()`) — hat immer Vorrang
    2. String-Trigger-Heuristik als Fallback
+
+### SSoT-Auflösung Card + Override (ab v4.7.1, erweitert v4.7.3)
+
+**Architektur:** `resolve_effective_thinking(model_card, provider_model_cfg, *, model_id, now)` in `utils/model_utils.py` ist die **Single Source of Truth** für das effektive Thinking-Flag. Auflösungs-Priorität:
+
+```
+1. aktiver thinking_override?  → (override_value, "override")  + Audit-Log [ThinkingOverride]
+2. Card thinking_probe_detected? → (card_value, "card_probe")
+3. nichts                       → (None, "none")
+```
+
+**Override-Schema** in `config/card_template_provider.yaml` (Optionalfeld, `since v4.7.1`):
+
+```yaml
+thinking_override:
+  value: false                              # bool, Pflicht
+  reason: "Cost-Benchmark: CoT-Suppression"  # Pflicht (Whitespace-only zählt als leer)
+  active_until: "2026-12-31"                # Optional, ISO-8601, Auto-Expiry
+```
+
+Aktivierungs-Regeln (`_is_override_active`): `value` muss bool sein, `reason` Pflicht, `active_until` muss in der Zukunft liegen (naive wird UTC), sonst Card-Probe gewinnt automatisch. Drift-Schutz durch Auto-Expiry.
+
+### Runner-Consumer-Anbindung (ab v4.7.3)
+
+`utils/base_runner.py:121` reicht `provider=provider` an `resolve_token_budget()` durch, damit ein aktiver `thinking_override` das Token-Budget beeinflusst. `resolve_token_budget(..., *, provider=None)` löst die SSoT-Hierarchie auf:
+
+1. `provider=None` (Backward-Compat) → `is_reasoning_model()` mit Trigger-Fallback
+2. `provider="..."` → `load_provider_card()` → `resolve_effective_thinking()` mit Override + Card-Probe
+3. Override aktiv → Override-Wert gewinnt (Audit-Log)
+4. Card-Probe gesetzt → Probe-Wert gewinnt
+5. Keine Info → Trigger-Liste
+
+**Effekt:** `thinking_override.value: false` in Provider-Card schaltet den 5×-Reasoning-Multiplikator **aus** (Cost-Benchmark-fair). `value: true` schaltet ihn an (A/B-Test auf Non-Reasoning-Modell). Card-Probe `false` gewinnt über magistral-Trigger im Namen. 5 alte Call-Sites (`mistral.py`, `openrouter.py`, `openai.py`, `llamacpp_base.py`) funktionieren unverändert ohne `provider`-Argument.
+
+**Discovery-Inventar** (3 Wellen, 9 Modelle, 27 Probes, 2026-06-09): siehe `docs/THINKING_TAGS_INVENTORY.md` + `_M4/_SPARK/_CLOUD.md` für Roh-Daten pro Familie. Methodik-Doku: `docs/THINKING_PROBE.md`.
 
 5. **`_ensure_model_card()` Hook in `unified_runner.py`:** Vor dem ersten Benchmark-Run eines Modells:
    - Card mit `thinking_probe_detected`-Feld → Skip

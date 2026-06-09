@@ -101,6 +101,8 @@ providers:
         name: Gemini 3.5 Flash
       - id: gemini-3.1-pro-preview
         name: Gemini 3.1 Pro (Preview)
+      - id: gemini-3.1-flash-lite-preview
+        name: Gemini 3.1 Flash Lite (Preview)
       - id: gemini-3-flash-preview
         name: Gemini 3 Flash (Preview)
       - id: gemini-2.5-flash
@@ -469,6 +471,11 @@ providers:
         model_file: Qwen3-Coder-30B-A3B-Instruct-UD-Q8_K_XL.gguf
         n_gpu_layers: 99
         enable_thinking: false
+      - id: qwen3-coder-next-q8
+        name: Qwen3 Coder Next Q8_K_XL (GGUF)
+        model_file: Qwen3-Coder-Next-UD-Q8_K_XL/Qwen3-Coder-Next-UD-Q8_K_XL-00001-of-00003.gguf
+        n_gpu_layers: 99
+        enable_thinking: false
       - id: qwen3-coder-next-q4
         name: Qwen 3 Coder Next Q4_K_XL (GGUF)
         model_file: Qwen3-Coder-Next-UD-Q4_K_XL.gguf
@@ -478,6 +485,11 @@ providers:
         name: Gemma 4 26B-A4B Instruct Q8_K_XL (GGUF)
         model_file: gemma-4-26B-A4B-it-UD-Q8_K_XL.gguf
         n_gpu_layers: 99
+      - id: gemma-4-ara-26b-a4b-q5
+        name: Gemma 4 ARA 26B-A4B APEX Q5_K_M (GGUF)
+        model_file: gemma4-ara-2pass-APEX-Q5_K_M/gemma4-ara-2pass-APEX-Q5_K_M.gguf
+        n_gpu_layers: 99
+        enable_thinking: false
       - id: hermes-4.3-36b-q6
         name: Hermes 4.3 36B Q6_K (GGUF)
         model_file: NousResearch_Hermes-4.3-36B-Q6_K.gguf

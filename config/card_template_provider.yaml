@@ -207,6 +207,28 @@ optional_fields:
     since: "v4.6.3"
     example: "500 req/min für Tier-1"
 
+  # --- Thinking-Override (probe, ab v4.7.1) ---
+  # Opt-in Escape-Hatch: Thinking-Probe-Resultat aus der Model Card
+  # ist SSoT (utils.model_utils.resolve_effective_thinking). Override
+  # nur fuer Spezialfaelle (Cost-Benchmarks, A/B-Tests, API-Provider
+  # mit Provider-seitiger reasoning-Steuerung). Pflicht: reason.
+  # Optional: active_until (ISO-8601) → Auto-Expiry verhindert
+  # ewige Drift zwischen Card und Config.
+  - name: thinking_override
+    type: object
+    required: false
+    description: "Thinking-Override (true|false) mit Pflicht-Begruendung und optionalem Expiry-Datum"
+    consumers: [probe, audit]
+    since: "v4.7.1"
+    sub_fields_optional:
+      - value
+      - reason
+      - active_until
+    example:
+      value: false
+      reason: "Cost-Benchmark: CoT-Suppression fuer faire Speed-Vergleiche"
+      active_until: "2026-12-31"
+
 # ----------------------------------------------------------------------------
 # Validator-Konfiguration
 # ----------------------------------------------------------------------------

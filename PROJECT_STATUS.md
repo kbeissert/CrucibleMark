@@ -1,7 +1,7 @@
 # PROJECT_STATUS.md
 
-**Last Updated:** 2026-06-08
-**Current Version:** 4.7.0 — 4-Phasen-Refactoring der Kern-Skripte (Phase 30)
+**Last Updated:** 2026-06-10
+**Current Version:** 4.7.3 — Thinking-SSoT-Auflösung + Runner-Consumer-Anbindung
 **Status:** ✅ Production-Ready
 
 > **Hinweis:** Die Executive Summary weiter unten historisch auf v4.6.1.
@@ -9,15 +9,20 @@
 > detailliert dokumentiert. Dieser Header wird bei jedem Phase-Commit
 > nachgezogen, die Executive Summary nur bei Major-Milestones.
 >
-> **Aktueller Stand (Phase 30 — v4.7.0 4-Phasen-Refactoring):**
-> - 481/481 Tests grün
+> **Aktueller Stand (v4.7.3 — Thinking-SSoT-Auflösung):**
+> - **634/634 Tests grün in 2.11s**
 > - Pylint 10.00/10 (alle 5 Kern-Dateien)
 > - Mypy 0 Issues
 > - Ruff 0 Issues
-> - 11 Helfer-Funktionen extrahiert (alle CC ≤ 12, Schwelle aus `.ruff.toml` C901)
-> - 9 SSOT-Konstanten in `utils/constants.py` (Refusal-Min, HTTP_OK, 5× `LLAMACPP_*`-Reset-Pauses, `OLLAMA_UNLOAD_SETTLE_SEC`)
-> - 12 Magic-Value-Stellen in `unified_runner.py` durch benannte Konstanten ersetzt
-> - 3 SIM-Fixes: `SIM110` (`_has_open_tests`), `SIM103` (`_is_module_scored`, `_is_asset_uncached`)
+> - `resolve_effective_thinking()` als SSoT für effektives Thinking-Flag (Override > Card-Probe > None)
+> - Optionaler `thinking_override` in Provider-Card mit Pflicht-Begründung + `active_until`-Auto-Expiry
+> - `resolve_token_budget(..., *, provider=None)` reicht Provider durch; aktiver Override schaltet 5×-Reasoning-Multiplikator an/aus
+> - `base_runner.py:121` reicht `provider=provider` an `resolve_token_budget()` durch (Runner-Consumer)
+> - 41 neue Tests (24 Override-SSoT in `test_thinking_override.py` + 17 Runner-Consumer in `test_base_runner_thinking_budget.py`)
+> - 13-Tag-Liste (`_THINK_TAGS` in `utils/model_utils.py`), 3 Probe-Prompts (`_PROBE_PROMPTS` math/code/decision), Inline-CoT-Heuristik rehabilitiert
+> - `discover_thinking_tags.py` für read-only Familien-Inventar (9 Modelle, 27 Probes, 100 % Erkennungsrate)
+> - `docs/THINKING_PROBE.md` Methodik-Doku neu, `docs/THINKING_TAGS_INVENTORY{,_M4,_SPARK,_CLOUD}.md` auto-generiert
+> - Web-Export-Blacklist (`config/web_export_blacklist.yaml` + `fnmatch`-Wildcards)
 >
 > **Aenderungen seit v4.6.1 im Detail:**
 > - v4.6.2: Provider-Card SSoT-Bereinigung (Phasen 20–21)
@@ -27,7 +32,10 @@
 > - v4.6.6: Backup-System SSoT + ID-Normalisierung (Phase 27)
 > - v4.6.7: make clean Hardening (Phase 28)
 > - v4.6.8: Makefile help v2 + argparse Hardening (Phase 29)
-> - **v4.7.0: 4-Phasen-Refactoring der Kern-Skripte (Phase 30) — aktueller Stand**
+> - v4.7.0: 4-Phasen-Refactoring der Kern-Skripte (Phase 30)
+> - v4.7.1: Web-Export-Blacklist (Pre-Export-Filter via `fnmatch`)
+> - v4.7.2: Thinking-Probe v2 (Multi-Prompt + Familien-Inventar + 13 Tags)
+> - **v4.7.3: Thinking-SSoT-Auflösung + Runner-Consumer-Anbindung — aktueller Stand**
 
 ---
 

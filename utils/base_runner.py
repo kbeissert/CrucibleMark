@@ -116,9 +116,15 @@ class BaseBenchmarkRunner:
         # Inject module token-budget as max_tokens API cap (fair comparability across providers)
         # Use module_path.parent.name (e.g. "code_quality") not benchmark_info["path"].name
         # which would be "assets" when path = "benchmark_modules/code_quality/assets"
+        #
+        # SSoT (ab v4.7.1): provider wird durchgereicht, damit ein aktiver
+        # `thinking_override` in der Provider-Card das Token-Budget beeinflusst
+        # (z.B. value:false → kein 5x-Reasoning-Multiplikator fuer Cost-Benchmarks).
         _module_key = module_path.parent.name
         _raw_budget: int | None = self.validator.config.get("token_budgets", {}).get(_module_key)
-        _token_budget, _ = resolve_token_budget(model, _raw_budget, self.validator.config, _module_key)
+        _token_budget, _ = resolve_token_budget(
+            model, _raw_budget, self.validator.config, _module_key, provider=provider
+        )
 
         # exec_result is now a BenchmarkResult object
         # _module_key wird mitübergeben damit openai.py das Reasoning-Budget per Modul nachschlagen kann

@@ -35,7 +35,7 @@
   "thinking_probe_evidence": "No CoT signals found (A: no think-tags, B: reasoning_tokens=0). Response length: 445 chars",
   "thinking_probe_confidence": "low",
   "thinking_probe_at": "2026-05-02T16:17:54.270019+00:00",
-  "supports_tool_use": true,
+  "supports_tool_use": "untested",
   "license": "Meta Llama Community License",
   "license_url": "https://www.llama.com/llama3/license/",
   "commercial_use_allowed": true,

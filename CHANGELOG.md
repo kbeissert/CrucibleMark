@@ -5,6 +5,147 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## [v4.7.3] - 2026-06-10
+
+**Thinking-SSoT-Auflösung + Runner-Consumer-Anbindung.**
+
+Schließt die Discovery-Phase aus v4.7.2 ab: das Card-First-Property der Probe
+wird zur **Single Source of Truth** (SSoT), ein optionaler `thinking_override`
+in der Provider-Card ist ein expliziter Escape-Hatch, und `base_runner.py`
+nutzt die SSoT-Auflösung für das Token-Budget (kein Verlass mehr nur auf
+String-Trigger im Modellnamen).
+
+### Added
+- **`utils/model_utils.resolve_effective_thinking(model_card, provider_model_cfg, *, model_id, now)`** — zentrale SSoT-Auflösung mit Audit-Trail. Gibt `(effective, source)` zurück:
+  1. aktiver `thinking_override` in der Provider-Card → `(value, "override")` + Log `[ThinkingOverride] model_id: override active (value=…, reason=…)`
+  2. `thinking_probe_detected` in der Model-Card → `(value, "card_probe")`
+  3. sonst → `(None, "none")`
+- **`utils/model_utils._is_override_active(override, now=None)`** — Helper für die Override-Validierung: `value` muss bool sein, `reason` Pflicht (Whitespace-only zählt als leer), `active_until` optional (ISO-8601; muss in der Zukunft liegen, naive wird UTC interpretiert).
+- **`resolve_token_budget(..., *, provider=None)`** — neuer keyword-only Parameter. Bei `provider="..."` wird die Provider-Card via `load_provider_card()` geladen und an `resolve_effective_thinking()` durchgereicht. **Effekt:** Ein aktiver `thinking_override` in der Provider-Card schaltet den 5×-Reasoning-Multiplikator an/aus. Card-Probe `false` gewinnt über Trigger-Liste. Bei `provider=None` (Default) bleibt das alte Verhalten (Backward-Compat für 5 alte Call-Sites: `mistral.py`, `openrouter.py`, `openai.py`, `llamacpp_base.py`).
+- **`docs/THINKING_PROBE.md` (NEU, Methodik-Doku)** — Drei-Signal-Hierarchie, Multi-Prompt-Aggregation, SSoT-Auflösung, Override-Regeln, Runner-Consumer-Anbindung, Discovery-Inventar.
+
+### Changed
+- **`utils/base_runner.py:121`** — reicht `provider=provider` an `resolve_token_budget()` durch. Damit wirkt ein `thinking_override` in der Provider-Card auf das Token-Budget. Lokale Importe umgehen potentiellen Circular-Import.
+- **`docs/THINKING_TAGS_INVENTORY.md`** — Sektion "SSoT-Auflösung: Card + Override (ab v4.7.1)" verweist jetzt auf die zentrale Methodik in `docs/THINKING_PROBE.md`.
+- **`config/card_template_provider.yaml`** — `thinking_override` Optionalfeld (since v4.7.1) ist jetzt mit Verweis auf `resolve_effective_thinking()` dokumentiert.
+
+### Tests
+- **`tests/test_thinking_override.py` (NEU, 24 Tests)** — SSoT-Auflösungsmatrix (Override vs. Card-Probe vs. None), Override-Validierung (bool, reason-Pflicht, active_until, naive-UTC, expired, whitespace-reason), Audit-Trail-Verifikation, Backward-Compat.
+- **`tests/test_base_runner_thinking_budget.py` (NEU, 17 Tests)** — monkeypatch-basiert mit echten tmp_path-JSON-Files. Coverage: Backward-Compat (`provider=None`), Trigger-Fallback, Override aktiv/expired/ohne-reason, Probe-SSoT (`true`/`false` gewinnt über Trigger), Audit-Log, Card-Cap, kaputte Card-JSON, Edge-Cases (Floor, module-key ohne Reasoning-Slot).
+- **Gesamt-Suite:** **634/634 grün** in 2.11s (vorher 617, +17). Alle 17 v4.7.3-Tests + alle 24 v4.7.1-Tests + alle 593 vorherigen Tests.
+
+### Architektur-Begründung
+- **Discovery-Fund:** Inline-CoT ist der einzige robuste Trigger über alle Provider (9/9 Discovery-Modelle, 27 Probes, 100 % Erkennungsrate). Tags sind bei `enable_thinking: false` / OpenRouter-Strip unzuverlässig. `reasoning_tokens` nur bei manchen OpenRouter-Modellen.
+- **Card-First-Property:** Probe-Ergebnisse sind empirisch robust, Card ist SSoT. Drift wird über `active_until` zeitlich begrenzt.
+- **Runner-Consumer:** `base_runner.py` ist der erste Konsument der SSoT-Auflösung. Modul-spezifische Reasoning-Slots (Option C: `reasoning_logic`, `code_quality`, `political_compass`) bleiben als Folge-Aufgabe offen.
+- **5× Reasoning-Multiplikator:** greift nur noch bei empirisch validierten Reasoning-Modellen (Card-Probe) oder explizitem Override — String-Trigger im Namen ist Fallback für Karten ohne Probe.
+
+### Files
+| Datei | Aktion |
+|---|---|
+| `utils/model_utils.py` | +`resolve_effective_thinking()`, +`_is_override_active()`, +`provider=` kwarg in `resolve_token_budget()` |
+| `utils/base_runner.py` | `provider=provider` durchreichen (Zeile 121) |
+| `config/card_template_provider.yaml` | `thinking_override` Doku-Verweis auf SSoT-Schnittstelle |
+| `docs/THINKING_PROBE.md` | NEU (Methodik-Doku) |
+| `docs/THINKING_TAGS_INVENTORY.md` | Verweis auf zentrale Methodik |
+| `tests/test_thinking_override.py` | NEU (24 Tests) |
+| `tests/test_base_runner_thinking_budget.py` | NEU (17 Tests) |
+| `CHANGELOG.md` | v4.7.3 Eintrag |
+
+
+## [v4.7.2] - 2026-06-09
+
+**Thinking-Probe v2 — Multi-Prompt + Familien-Inventar.**
+
+### Added
+- **`_PROBE_PROMPTS` Dict in `utils/model_utils.py`** — drei Probe-Prompts (`math` / `code` / `decision`) ersetzen den einzelnen Mathe-Prompt. Drei Domänen sind nötig, weil manche Familien CoT nur bei ethischen/Decision-Fragen zeigen, andere nur bei Code-Reasoning, wieder andere nur bei Mathematik.
+- **Erweiterte `_THINK_TAGS` Liste (3 -> 13 Tags):**
+  - `<think>` / `<thinking>` / `<thought>` (Qwen 3, Magistral, GLM)
+  - `<|thinking|>` / `<|reasoning|>` (OpenAI OSS / gpt-oss)
+  - `<reasoning>` / `<reason>` (DeepSeek R1 / V3)
+  - `<reflection>` (Meta Llama 4)
+  - `<analysis>` / `<plan>` (Anthropic Extended Thinking)
+  - `<scratchpad>` (NousResearch Hermes)
+  - `<solution>` (Mistral Reasoning)
+  - `<cot>` (Custom / Future)
+- **`_find_think_tags()` Helper** — gibt alle gefundenen Tags zurueck (lowercase match, Multi-Tag-aware).
+- **`_probe_single()` und `probe_thinking_model(prompts=...)`** — Multi-Prompt-Pfad mit Aggregation. Hoechste Confidence gewinnt. Bei `prompts=None` (default) werden alle 3 aus `_PROBE_PROMPTS` gesendet. Single-Prompt-Modus (1 Eintrag) bleibt erhalten fuer Card-First-Hook.
+- **`ThinkingProbeResult` mit `prompts_used` und `tags_found` Feldern** — Defaults erhalten Backward-Compat.
+- **`scripts/tools/discover_thinking_tags.py` (NEU, read-only Discovery-Skript):**
+  - Laedt `benchmark_config.yaml` + `config/provider_config.yaml`, gruppiert Modelle nach Familie (18 Familien via `identify_family()`).
+  - Waehlt pro Familie 1 Repraesentant aus (Prioritaet: lokal > openrouter > cloud; Thinking-Modelle bevorzugt).
+  - Sendet 3 Probe-Prompts pro Modell, aggregiert Ergebnisse.
+  - Schreibt `docs/THINKING_TAGS_INVENTORY.md` mit Tabellen, Cross-Family-Statistik, Roh-Antworten (gekuerzt).
+  - **Schreibt KEINE Model Cards** — saubere Trennung Discovery <-> Card-Update.
+  - CLI: `--families`, `--provider`, `--max-per-family`, `--output`, `--dry-run`, `--fail-fast`.
+- **`docs/THINKING_TAGS_INVENTORY.md`** (read-only, auto-generiert) — Inventar pro Familie mit Tags, Confidence, Roh-Antworten.
+
+### Changed
+- **`probe_thinking_model()` Signatur** — neuer keyword-only Parameter `prompts: dict[str, str] | str | None = None`. Backward-compat: alte Aufrufer ohne Argument funktionieren weiterhin, erhalten jetzt aber Multi-Prompt (3 Calls) statt Single-Prompt.
+- **`scripts/tools/probe_thinking.py` Card-First-Hook** — unveraendert (ruft `probe_thinking_model()` mit defaults auf, kriegt Multi-Prompt-Ergebnis).
+- **`scripts/core/unified_runner.py:probe_thinking_model()` Aufruf** — unveraendert.
+
+### Tests
+- **`tests/test_thinking_probe_families.py` (NEU, 59 Tests):**
+  - 12 Tests fuer `_find_think_tags()` (leer, kurz, alle 13 Tags, case-insensitive, Multi-Tag, keine false positives)
+  - 8 Tests fuer `probe_thinking_model()` Multi-Prompt (str-Argument, Single-Dict, Multi-Aggregation, Hoechste-Confidence, All-Fail-Raise, Partial-Failure-Continue, Default-3-Prompts, Backward-Compat-Defaults)
+  - 19 Tests fuer `identify_family()` (jede Familie + Spezifitaet: Magistral > Mistral, Qwen-Coder > Qwen)
+  - 4 Tests fuer `pick_representatives()` (Lokal-Prioritaet, Thinking-Bonus, max-per-family, Multi-Family)
+  - 6 Tests fuer `aggregate_probe()` (Tags=high, reasoning_t=medium, inline_cot=medium, no-signal=low, High-beats-Medium, Errors-excluded)
+  - 7 Tests fuer `_THINK_TAGS` Vollstaendigkeit (jede Familie vertreten, lowercase, ...)
+  - 3 Tests fuer `_PROBE_PROMPTS` Konfiguration (3 Prompts, non-empty, distinct)
+- **Regression-check:** Bestehende 11 `test_thinking_probe_inline_cot.py`-Tests gruen (Backward-Compat der bestehenden API).
+- **Gesamt-Suite:** 587/587 Tests gruen (vorher 528, +59).
+
+### Discovery-Methodik
+- **Quellen der Tag-Liste:** Recherche zu OpenAI OSS (gpt-oss), DeepSeek R1/V3, Anthropic Extended Thinking, Meta Llama 4, NousResearch Hermes, Mistral Magistral. Bei neu entdeckten Tags: `_THINK_TAGS` ergaenzen + Test in `test_thinking_probe_families.py`.
+- **Signal-Hierarchie (unveraendert):** high = explizite Tags; medium = `reasoning_tokens > 0` ODER Inline-CoT im content-Feld; low = kein Signal.
+- **Aggregation:** Bei Multi-Prompt gewinnt die hoechste Confidence ueber alle Prompts. Wenn irgendein Prompt `detected=True` liefert, ist das Gesamtergebnis `detected=True` mit kombinierter Evidence.
+
+### Files
+| Datei | Aktion |
+|---|---|
+| `utils/model_utils.py` | +`_PROBE_PROMPTS`, erweiterte `_THINK_TAGS` (3->13), +`_find_think_tags`, +`_probe_single`, +`prompts=` Param in `probe_thinking_model()`, +Felder in `ThinkingProbeResult` |
+| `scripts/tools/discover_thinking_tags.py` | NEU (Discovery-Skript, ~370 Zeilen) |
+| `tests/test_thinking_probe_families.py` | NEU (59 Tests) |
+| `docs/THINKING_TAGS_INVENTORY.md` | NEU (auto-generiert, read-only) |
+| `docs/THINKING_PROBE.md` | NEU (Methodik-Doku) |
+| `CHANGELOG.md` | v4.7.2 Eintrag |
+
+
+## [v4.7.1] - 2026-06-09
+
+**Web-Export-Blacklist — Modelle per Config vom Export ausschliessen.**
+
+### Added
+- **Neue Config-Datei `config/web_export_blacklist.yaml`** — flache YAML-Liste mit Model-IDs, die `make web-export` ueberspringt. Wildcards via `fnmatch` (z.B. `qwen3.5-35b-a3b-*` sperrt alle Quantisierungen einer Familie). Use-Case: Quant-Vergleichstests und experimentelle Modelle aus dem Web-Frontend raus halten, ohne sie aus dem Leaderboard zu loeschen.
+- **`_load_export_blacklist()` und `_is_blacklisted()` in `scripts/web_export.py`** — neue SSoT-Helper. Robuste Defaults: Datei fehlt oder ist leer -> keine Filterung; Parse-Error -> WARNING-Log + leere Filterung (nicht fatal). Eintraege werden automatisch in exakte IDs (O(1)-Set) und `fnmatch`-Patterns getrennt.
+- **`meta.json` Block `blacklist`** — dokumentiert `source`, `total_entries` (Anzahl in Config) und `skipped_in_run` (Anzahl waehrend dieses Exports). Add-on Feld, bestehende Tests bleiben gruen.
+
+### Changed
+- **`scripts/web_export.py` Hauptloop** — nach PC-Skip, vor `mkdir()`: geblacklistete Modelle werden uebersprungen mit `SKIP (blacklisted: ...)`-Log. Verhindert leere `models/{slug}/`-Verzeichnisse.
+- **Match-Schluessel**: `raw_model_id` aus Leaderboard-CSV-Spalte `Model ID` (SSoT, gleiche Spalte wie in `_build_leaderboard_entry` verwendet).
+
+### Tests
+- **`tests/test_web_export_blacklist.py` (NEU, 17 Tests):**
+  - 5 Tests fuer `_load_export_blacklist()` (missing, empty, malformed YAML, top-level not-dict, key not-list) — alle 4 Fehlerfaelle warnen + returnen leer
+  - 2 Tests fuer Split exakt/pattern (Wildcards vs. exakte IDs)
+  - 6 Tests fuer `_is_blacklisted()` (exact match, exact no-match, pattern star, pattern `?`, empty sets, exact-priority)
+  - 2 Tests fuer `meta.json`-Blacklist-Block (mit Args, mit Defaults)
+  - 2 Integration-Tests fuer `main()`-Loop (3 Modelle geprueft, geblacklistetes Modell uebersprungen)
+- **Regression-check:** Bestehende 10 `test_web_export_ssot.py`-Tests gruen (kein meta.json-Feld umbenannt/entfernt).
+- **Gesamt-Suite:** 471/471 Tests gruen (vorher 444, +27).
+
+### Files
+| Datei | Aktion |
+|---|---|
+| `config/web_export_blacklist.yaml` | NEU (mit Beispiel-Kommentaren) |
+| `scripts/web_export.py` | +`_load_export_blacklist`, +`_is_blacklisted`, +Loop-Hook, +`meta.json`-Block |
+| `tests/test_web_export_blacklist.py` | NEU (17 Tests) |
+| `CHANGELOG.md` | v4.7.1 Eintrag |
+| `memory-bank/activeContext.md` | Phase-Eintrag |
+
+
 ## [v4.7.0] - 2026-06-08
 
 **4-Phasen-Refactoring der 5 großen Kern-Skripte (Phase 30).**

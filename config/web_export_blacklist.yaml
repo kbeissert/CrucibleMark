@@ -1,0 +1,20 @@
+# Web Export Blacklist
+# ====================
+# Models in dieser Liste werden von `make web-export` komplett uebersprungen
+# (kein models/{slug}/data.json, kein Eintrag in leaderboard.json).
+#
+# Match-Modus:
+#   - Exakte model_id (Leaderboard-Spalte "Model ID")
+#   - Wildcards via fnmatch (z.B. "qwen3.5-35b-a3b-*" fuer alle Quantisierungen)
+#
+# Use-Case: Quant-Vergleichstests und experimentelle Modelle aus dem
+# Web-Frontend raus halten, ohne sie aus dem Leaderboard zu loeschen.
+#
+# Datei fehlt oder ist leer -> keine Filterung (graceful default).
+# Parse-Error -> WARNING-Log, keine Filterung (nicht fatal).
+
+blacklist:
+  # --- Beispiele (auskommentiert) ---
+  # - "qwen3.5-35b-a3b-q4_k_m"      # Vergleichsquant, zu verlustbehaftet
+  # - "qwen3.5-35b-a3b-q8"          # Vergleichsquant
+  # - "test-*"                      # alle Test-Modelle pauschal

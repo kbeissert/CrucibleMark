@@ -1,5 +1,5 @@
 {
-  "model_id": "hermes-4_3-36b-q6",
+  "model_id": "hermes-4.3-36b-q6",
   "display_name": "Hermes 4.3 36B Q6_K (GGUF)",
   "developer": "NousResearch",
   "origin_country": "USA",
@@ -37,7 +37,7 @@
     "Instruct",
     "Agentic"
   ],
-  "supports_tool_use": true,
+  "supports_tool_use": "untested",
   "license": "Apache 2.0",
   "license_url": "https://huggingface.co/NousResearch/Hermes-4.3-36B/blob/main/LICENSE",
   "commercial_use_allowed": true,

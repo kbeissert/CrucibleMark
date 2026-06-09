@@ -515,6 +515,11 @@ class UnifiedBenchmarkRunner(BaseBenchmarkRunner):
             test_instance, exec_result = self.execute_test_module(
                 model, asset_path, benchmark_info, provider=provider,
             )
+            # Heartbeat-Referenz in den Test injizieren — damit Refusal-Retries
+            # (politische Compass) den Live-Heartbeat im Terminal aktualisieren können.
+            # Greift nur, wenn der Test das Attribut nutzt (graceful no-op sonst).
+            if test_instance is not None:
+                test_instance._benchmark_runner = self
             if not getattr(exec_result, "execution_time", None):
                 exec_result.execution_time = time.time() - start_time
         except Exception as e:
@@ -914,42 +919,117 @@ class UnifiedBenchmarkRunner(BaseBenchmarkRunner):
         run_limiter: Any | None,
         results: list[dict[str, Any]],
     ) -> None:
-        """Iteriert über Assets, ruft _process_single_test, sammelt Results."""
-        for i, asset_path in enumerate(assets, 1):
-            asset_name = asset_path.stem.replace("asset_", "").replace("_", " ").title()
-            print(
-                f"   ⏳ [{i}/{len(assets)}] {asset_name}: Test läuft...",
-                end="\r", flush=True,
-            )
-            try:
-                self._handle_single_asset(
-                    asset_path=asset_path,
-                    i=i,
-                    total=len(assets),
-                    asset_name=asset_name,
-                    model=model,
-                    provider=provider,
-                    benchmark_info=benchmark_info,
-                    is_local=is_local,
-                    run_id=run_id,
-                    pause_calculator=pause_calculator,
-                    run_limiter=run_limiter,
-                    results=results,
+        """Iteriert über Assets, ruft _process_single_test, sammelt Results.
+
+        Startet einen Heartbeat-Thread (Daemon), der alle 60s den aktuellen
+        Fortschritt + Phase + letzte Aktivität ins Terminal printet. Damit
+        sieht der Beobachter bei langen Benchmarks (z.B. 397B-Modelle mit
+        Refusal-Retries), ob der Prozess noch arbeitet oder hängt.
+        """
+        import threading
+
+        # Heartbeat-State initialisieren (vom politischen Compass-Test via
+        # self._heartbeat_* lesbar — siehe _handle_heartbeat_signal).
+        self._heartbeat_stop = threading.Event()
+        self._heartbeat_start = time.time()
+        self._heartbeat_last_activity = time.time()
+        self._heartbeat_phase = "Setup"
+        self._heartbeat_q_id = ""
+        self._heartbeat_retry = ""
+        self._heartbeat_completed = 0
+        self._heartbeat_total = len(assets)
+
+        def _heartbeat_loop() -> None:
+            """Print alle 60s Fortschritt. Stop-Event terminiert sofort."""
+            while not self._heartbeat_stop.is_set():
+                # wait() returnt True wenn Event gesetzt, sonst False nach Timeout
+                stopped = self._heartbeat_stop.wait(timeout=60.0)
+                if stopped:
+                    break
+                elapsed = time.time() - self._heartbeat_start
+                hours, remainder = divmod(int(elapsed), 3600)
+                minutes, seconds = divmod(remainder, 60)
+                last_act = int(time.time() - self._heartbeat_last_activity)
+                retry_str = f" | {self._heartbeat_retry}" if self._heartbeat_retry else ""
+                phase_str = f" | {self._heartbeat_phase}: {self._heartbeat_q_id}{retry_str}" if self._heartbeat_q_id else f" | {self._heartbeat_phase}"
+                print(
+                    f"   💓 ⏱ {hours:02d}:{minutes:02d}:{seconds:02d} elapsed | "
+                    f"{self._heartbeat_completed}/{self._heartbeat_total}{phase_str} | "
+                    f"Letzte Aktivität: {last_act}s her",
+                    flush=True,
                 )
-            except JudgeUnavailableError as e:
-                print(f"\n⛔ JUDGE UNAVAILABLE (API Error / Budget Limit): {e}\nBeende den Benchmark vorzeitig, um inkonsistente Scores zu vermeiden.")
-                self._save_partial_results(results, is_local)
-                sys.exit(1)
-            except KeyboardInterrupt:
-                print("\n⚠️  Benchmark vom Benutzer abgebrochen.")
-                self._save_partial_results(results, is_local)
-                sys.exit(1)
-            except Exception as e:
-                if "endpoint conflict or startup failure" in str(e).lower():
-                    print("\n⛔ Endpoint-Konflikt erkannt. Breche Modullauf ab, um fehlerhafte 0%-Einträge zu vermeiden.")
+
+        heartbeat_thread = threading.Thread(target=_heartbeat_loop, daemon=True)
+        heartbeat_thread.start()
+
+        try:
+            for i, asset_path in enumerate(assets, 1):
+                asset_name = asset_path.stem.replace("asset_", "").replace("_", " ").title()
+                self._heartbeat_q_id = asset_name
+                self._heartbeat_phase = f"Test {i}/{len(assets)}"
+                self._heartbeat_retry = ""
+                self._heartbeat_last_activity = time.time()
+                print(
+                    f"   ⏳ [{i}/{len(assets)}] {asset_name}: Test läuft...",
+                    end="\r", flush=True,
+                )
+                try:
+                    self._handle_single_asset(
+                        asset_path=asset_path,
+                        i=i,
+                        total=len(assets),
+                        asset_name=asset_name,
+                        model=model,
+                        provider=provider,
+                        benchmark_info=benchmark_info,
+                        is_local=is_local,
+                        run_id=run_id,
+                        pause_calculator=pause_calculator,
+                        run_limiter=run_limiter,
+                        results=results,
+                    )
+                    self._heartbeat_completed += 1
+                except JudgeUnavailableError as e:
+                    print(f"\n⛔ JUDGE UNAVAILABLE (API Error / Budget Limit): {e}\nBeende den Benchmark vorzeitig, um inkonsistente Scores zu vermeiden.")
                     self._save_partial_results(results, is_local)
-                    raise
-                self._handle_asset_exception(e, i, len(assets), asset_name)
+                    sys.exit(1)
+                except KeyboardInterrupt:
+                    print("\n⚠️  Benchmark vom Benutzer abgebrochen.")
+                    self._save_partial_results(results, is_local)
+                    sys.exit(1)
+                except Exception as e:
+                    if "endpoint conflict or startup failure" in str(e).lower():
+                        print("\n⛔ Endpoint-Konflikt erkannt. Breche Modullauf ab, um fehlerhafte 0%-Einträge zu vermeiden.")
+                        self._save_partial_results(results, is_local)
+                        raise
+                    self._handle_asset_exception(e, i, len(assets), asset_name)
+        finally:
+            # Heartbeat stoppen + ggf. noch laufende Print-Zeile clearen
+            self._heartbeat_stop.set()
+            heartbeat_thread.join(timeout=2.0)
+            print(" " * 120, end="\r", flush=True)
+
+    def _handle_heartbeat_signal(
+        self, q_id: str = "", retry_info: str = "", is_retry: bool = False
+    ) -> None:
+        """Wird vom Test (z.B. political_compass) aufgerufen, um Refusal-Retries
+        im Heartbeat sichtbar zu machen.
+
+        Args:
+            q_id: Question-ID (z.B. ``political_compass_7.3.001``)
+            retry_info: Retry-Beschreibung (z.B. ``Retry 1/2 temp 0.4``)
+            is_retry: True wenn gerade ein Retry läuft, False wenn Retry abgeschlossen
+        """
+        if q_id:
+            self._heartbeat_q_id = q_id
+        if retry_info:
+            self._heartbeat_retry = retry_info
+        self._heartbeat_last_activity = time.time()
+        # Heartbeat-Phase auf "Retry-Pass" setzen, falls Retry aktiv
+        if is_retry:
+            self._heartbeat_phase = "Retry"
+        else:
+            self._heartbeat_phase = "Test"
 
     def _handle_single_asset(
         self,
@@ -1045,17 +1125,37 @@ class UnifiedBenchmarkRunner(BaseBenchmarkRunner):
 
     @staticmethod
     def _print_asset_status(i: int, total: int, asset_name: str, result: dict[str, Any]) -> None:
-        """Printet ✓/❌-Zeile für ein einzelnes Asset."""
-        status_icon = "❌" if result.get("status") == "error" else "✓"
+        """Printet Status-Icon + Score-Zeile für ein einzelnes Asset.
+
+        Status-Icons:
+            ✓  — Erfolg (oder non-error Sub-Status wie language_mismatch, truncated)
+            ❌ — Error (API-Fehler, Server-Crash)
+            🔁 — Refusal (Retry war erfolgreich nach 1-2 Versuchen)
+            ⛔ — Hard Refusal (alle Retries erschöpft, keine Antwort erhalten)
+        """
+        status = result.get("status", "success")
+        if status == "error":
+            status_icon = "❌"
+        elif status == "refusal" or result.get("refusal_flag") is True:
+            # Erfolgreicher Retry: Modell hat nach Refusal doch geantwortet
+            status_icon = "🔁"
+        elif status == "hard_refusal" or result.get("hard_refusal") is True:
+            # Alle Retries erschöpft — Frage blieb unbeantwortet
+            status_icon = "⛔"
+        else:
+            status_icon = "✓"
         token_str = f"{result.get('tokens_used', 0)} T"
         judge_str = (
             f" | {result.get('judge_progress_status', '')}"
             if result.get("judge_progress_status")
             else ""
         )
+        # Optional: Retry-Counter anzeigen, wenn Retries stattgefunden haben
+        retry_count = result.get("refusal_retry_count", 0)
+        retry_str = f" (×{retry_count})" if retry_count and retry_count > 0 else ""
         print(" " * 80, end="\r")
         print(
-            f"   {status_icon} [{i}/{total}] {asset_name}: {result.get('percentage', 0):.1f}% | {token_str} | {result.get('execution_time', 0):.1f}s{judge_str}"
+            f"   {status_icon} [{i}/{total}] {asset_name}: {result.get('percentage', 0):.1f}% | {token_str} | {result.get('execution_time', 0):.1f}s{retry_str}{judge_str}"
         )
 
     def _handle_asset_exception(

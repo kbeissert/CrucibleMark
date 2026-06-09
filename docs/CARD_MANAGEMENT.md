@@ -279,6 +279,80 @@ make validate-cards-template
 
 ---
 
+## Thinking-Override in Provider Cards (ab v4.7.1)
+
+**Opt-in Escape-Hatch** für die Thinking-SSoT-Auflösung. Die Probe aus
+der Model Card (`thinking_probe_detected`) ist normalerweise SSoT — der
+Override erlaubt es, für Spezialfälle (Cost-Benchmark, A/B-Test,
+Provider-seitige reasoning-Steuerung) einen abweichenden Wert zu setzen.
+
+### SSoT-Auflösung (`utils/model_utils.resolve_effective_thinking`)
+
+```
+1. aktiver thinking_override?  → (override_value, "override")  + Audit-Log [ThinkingOverride]
+2. Card thinking_probe_detected? → (card_value, "card_probe")
+3. nichts                       → (None, "none")
+```
+
+### Schema (`config/card_template_provider.yaml → optional_fields`)
+
+```yaml
+thinking_override:
+  value: false                              # bool, Pflicht
+  reason: "Cost-Benchmark: CoT-Suppression fuer faire Speed-Vergleiche"
+  active_until: "2026-12-31"                # Optional, ISO-8601, Auto-Expiry
+```
+
+### Aktivierungs-Regeln (`_is_override_active`)
+
+| Bedingung | Anforderung |
+|---|---|
+| `value` | muss `true` oder `false` sein (bool, Pflicht) |
+| `reason` | Pflicht (Whitespace-only zählt als leer) |
+| `active_until` | Optional, ISO-8601; muss in der Zukunft liegen, naive wird UTC interpretiert |
+| Bei Inaktivität | Card-Probe gewinnt automatisch |
+
+**Audit-Trail:** Jede Override-Anwendung wird geloggt:
+`[ThinkingOverride] model_id: override active (value=…, reason=…)`.
+
+**Auto-Expiry:** `active_until` verhindert ewige Drift zwischen Card
+und Config. Nach Ablauf greift die Card-Probe automatisch.
+
+### Beispiel-Use-Cases
+
+| Szenario | Empfehlung |
+|---|---|
+| Standard-Benchmark | Card-Probe (kein Override) |
+| Cost-Benchmark (CoT aus, fairer Speed-Vergleich) | `value: false` mit `reason` + `active_until` |
+| A/B-Test Thinking vs. Non-Thinking | `value: …` mit verschiedenen `active_until`-Daten |
+| Provider-API mit eigener Reasoning-Steuerung | Override als Brücke, bis Probe automatisch erkennt |
+| Alte Probe-Daten (>30 Tage) | Re-Probe via `make probe-thinking MODEL=…` |
+
+### Konsumenten
+
+- `utils/model_utils.resolve_effective_thinking()` — SSoT-Auflösung
+- `utils/base_runner.py:121` — reicht `provider=provider` an `resolve_token_budget()` durch
+- `utils/providers/*.py` — 5 alte Call-Sites (Backward-Compat ohne `provider`-Argument)
+
+**Effekt auf Token-Budget (Runner-Consumer):**
+
+| Szenario | Token-Budget-Verhalten |
+|---|---|
+| `thinking_override.value: false` aktiv | **KEIN** 5× Reasoning-Multiplikator (Cost-Benchmark-fair) |
+| `thinking_override.value: true` auf Non-Reasoning-Modell | 5× Multiplikator (A/B-Test) |
+| Card-Probe `false` trotz magistral-Trigger im Namen | **KEIN** 5× (Card-First) |
+| Card fehlt, Provider ohne Override | Trigger-Liste (Backward-Compat) |
+
+**Methodik-Doku:** `docs/THINKING_PROBE.md` (Drei-Signal-Hierarchie,
+Multi-Prompt-Aggregation, SSoT-Auflösung, Discovery-Inventar).
+**Discovery-Roh-Daten:** `docs/THINKING_TAGS_INVENTORY.md` +
+`_M4/_SPARK/_CLOUD.md`.
+**Implementierung:** `utils/model_utils.py` (SSoT) + `utils/base_runner.py`
+(Consumer) + `tests/test_thinking_override.py` (24 Tests) +
+`tests/test_base_runner_thinking_budget.py` (17 Tests).
+
+---
+
 ## CLI-Referenz
 
 ### `scripts/analysis/validate_cards.py`

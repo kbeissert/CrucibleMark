@@ -49,8 +49,8 @@
   "card_status": "verified",
   "size_class": "Consumer-GPU",
   "generated_at": "2026-06-04T21:58:30+00:00",
-  "thinking_probe_detected": false,
-  "thinking_probe_evidence": "Model does not support thinking mode - no <think> blocks generated",
-  "thinking_probe_confidence": "high",
+  "thinking_probe_detected": null,
+  "thinking_probe_evidence": "Kein Live-Probe durchgeführt. Qwen3-Coder-Next ist architektonisch ohne Thinking-Modus (kein nativer CoT-Output), aber empirische Verifikation steht aus. Config setzt enable_thinking: false; llama.cpp startet mit --reasoning off. Q4_K_XL-Quant (Single-File, ~46 GB) laedt schneller als die Q8-Multi-File-Variante, ein Probe sollte sich in einer Folgesession nachholen lassen.",
+  "thinking_probe_confidence": null,
   "thinking_probe_at": null
 }

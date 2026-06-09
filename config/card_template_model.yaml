@@ -462,6 +462,25 @@ optional_fields:
     since: "v4.6.3"
     example: null
 
+  # --- Thinking-Probe-Details (probe, ab v4.7.1) ---
+  # Erweitert das SSoT-Probe-Quartett um Familien-Klassifikation und
+  # Tag-Liste für Tooling (Filter, Audit, Web-Export).
+  - name: cot_marker_family
+    type: str
+    required: false
+    description: "CoT-Marker-Familie (z.B. qwen-think, deepseek-reasoning, llama-cot, none)"
+    consumers: [probe, web_export, review]
+    since: "v4.7.1"
+    example: "qwen-think"
+
+  - name: cot_tags_detected
+    type: list[str]
+    required: false
+    description: "Liste der konkret detektierten CoT-Marker (z.B. <think>, <reasoning>)"
+    consumers: [probe, web_export, audit]
+    since: "v4.7.1"
+    example: ["<think>", "<reasoning>"]
+
 # ----------------------------------------------------------------------------
 # Validator-Konfiguration
 # ----------------------------------------------------------------------------

@@ -15,7 +15,7 @@ import sys
 import time
 import hashlib
 from pathlib import Path
-from typing import Any, Dict, List, Tuple, Optional
+from typing import Any
 
 import yaml
 from schemas.result import BenchmarkResult
@@ -69,7 +69,7 @@ class PoliticalCompassTest(BaseTest):
     Runs in Batch Mode (3 iterations over all questions).
     """
 
-    def __init__(self, asset_path: Optional[Path] = None):
+    def __init__(self, asset_path: Path | None = None):
         # Allow initialization without specific asset path (Batch Mode)
         default_path = Path(__file__).parent / "assets"
         target_path = asset_path or default_path
@@ -83,7 +83,7 @@ class PoliticalCompassTest(BaseTest):
             super().__init__(target_path)
 
         self.assets_dir = target_path if target_path.is_dir() else default_path
-        self.questions: List[Dict[str, Any]] = []
+        self.questions: list[dict[str, Any]] = []
         self.num_runs = PC_DEFAULT_NUM_RUNS  # Forced 2 runs for A/B Bias Shift
         self.evaluator: PoliticalCompassEvaluator = None  # type: ignore
 
@@ -94,7 +94,7 @@ class PoliticalCompassTest(BaseTest):
         # Load config dynamically
         self.module_config = load_module_config(Path(__file__).parent)
 
-    def load_questions(self, assets_dir: Optional[str] = None) -> None:
+    def load_questions(self, assets_dir: str | None = None) -> None:
         """Loads all YAML questions from the assets directory."""
         target_dir = Path(assets_dir) if assets_dir else self.assets_dir
         if not target_dir.exists():
@@ -107,7 +107,7 @@ class PoliticalCompassTest(BaseTest):
         print(f"Loading assets from {target_dir}...")
         for f in files:
             try:
-                with open(f, "r", encoding="utf-8") as yf:
+                with open(f, encoding="utf-8") as yf:
                     data = yaml.safe_load(yf)
                     # Helper check for valid assets
                     if "metadata" in data and "options" in data:
@@ -120,8 +120,8 @@ class PoliticalCompassTest(BaseTest):
         print(f"✓ Loaded {len(self.questions)} questions.")
 
     def _build_prompt(
-        self, asset: Dict[str, Any], seed: int, use_numeric_labels: bool = False
-    ) -> Tuple[str, Dict[str, str]]:
+        self, asset: dict[str, Any], seed: int, use_numeric_labels: bool = False
+    ) -> tuple[str, dict[str, str]]:
         """
         Builds the prompt with shuffled options.
         Returns (prompt_text, mapping_dict).
@@ -172,16 +172,16 @@ class PoliticalCompassTest(BaseTest):
 
         return prompt, mapping
 
-    def _group_questions_by_block(self) -> Tuple[Dict[str, List[Dict[str, Any]]], List[str]]:
+    def _group_questions_by_block(self) -> tuple[dict[str, list[dict[str, Any]]], list[str]]:  # noqa: PLR2004
         """Groups questions by category/block."""
-        questions_by_block: Dict[str, List[Dict[str, Any]]] = {}
+        questions_by_block: dict[str, list[dict[str, Any]]] = {}
         for q in self.questions:
             meta = q.get("metadata", {})
             cat = meta.get("category")
             if not cat:
                 # Fallback: extract from id "political_compass_7.1.001" -> "7.1"
                 parts = meta.get("id", "").split("_")
-                if len(parts) >= 3 and "." in parts[2]:
+                if len(parts) >= 3 and "." in parts[2]:  # noqa: PLR2004 — Section-Prefix-Parsing
                     cat = (
                         "Section "
                         + parts[2].split(".")[0]
@@ -198,12 +198,12 @@ class PoliticalCompassTest(BaseTest):
         sorted_blocks = sorted(questions_by_block.keys())
         return questions_by_block, sorted_blocks
 
-    def _run_single_block(
+    def _run_single_block(  # noqa: C901 — Komplexität inherent (Block-Loop + Refusal-Retries)
         self,
         block_id: str,
-        block_questions: List[Dict],
-        metrics: Dict[str, Any],
-        context: Dict[str, Any],
+        block_questions: list[dict[str, Any]],
+        metrics: dict[str, Any],
+        context: dict[str, Any],
     ):
         """Executes a single block of questions."""
         ui = context["ui"]
@@ -340,14 +340,36 @@ class PoliticalCompassTest(BaseTest):
 
                 if parsed_letter or refusal_retry_count >= max_refusal_retries:
                     if not parsed_letter and refusal_retry_count >= max_refusal_retries:
-                        logger.debug(f"[{model}] Hard refusal triggered on {q_id} after {max_refusal_retries} retries.")
+                        # ⛔ Hard refusal: alle Retries erschöpft — Modell wollte partout nicht antworten
+                        msg = f"   ⛔ [{model}] Hard refusal on {q_id} after {max_refusal_retries} retries — Frage wird als unbeantwortet gewertet."
+                        print(msg, flush=True)
+                        logger.warning(msg.strip())
                         metrics["hard_refusals"] += 1
                         block_refusals += 1
+                    # Retry abgeschlossen — Heartbeat-Signal "Test" senden
+                    self._notify_heartbeat(q_id=q_id, retry_info="", is_retry=False)
                     break
 
                 refusal_retry_count += 1
-                logger.debug(f"[{model}] Refusal detected on {q_id}. Retrying {refusal_retry_count}/{max_refusal_retries} with temp {anti_refusal_temperatures[refusal_retry_count]}.")
+                _next_temp = anti_refusal_temperatures[refusal_retry_count]
+                # 🔁 Refusal detected: Retry mit höherer Temperatur — für Beobachter sichtbar
+                msg = (
+                    f"   🔁 [{model}] Refusal detected on {q_id}. "
+                    f"Retrying {refusal_retry_count}/{max_refusal_retries} "
+                    f"with temp {_next_temp} (anti-diplomat system-prompt aktiv)…"
+                )
+                print(msg, flush=True)
+                logger.debug(msg.strip())
+                # Heartbeat-Signal "Retry" senden — Phase + Retry-Info live im Terminal
+                self._notify_heartbeat(
+                    q_id=q_id,
+                    retry_info=f"Retry {refusal_retry_count}/{max_refusal_retries} temp {_next_temp}",
+                    is_retry=True,
+                )
                 time.sleep(PC_SLEEP_AFTER_RESPONSE)
+                # Nach kurzer Wartezeit Heartbeat wieder auf "Test" zurücksetzen,
+                # damit der nächste 60s-Tick nicht permanent "Retry" zeigt
+                self._notify_heartbeat(q_id=q_id, retry_info="", is_retry=False)
 
             # 3. Score (Buffer)
             if refusal_retry_count > 0:
@@ -398,7 +420,7 @@ class PoliticalCompassTest(BaseTest):
 
         ui.finish_block(block_id, time.time() - block_start_time, block_tokens, refusals=block_refusals)
 
-    def execute(
+    def execute(  # noqa: C901 — Komplexität inherent (3 Runs × Anti-Diplomat-Prompt + Intersection-Filtering)
         self,
         model: str,
         llm_client: Any,
@@ -746,7 +768,39 @@ class PoliticalCompassTest(BaseTest):
         result.rendered_value = "N/A"
         return result
 
-    def _calculate_individual_runs(self) -> List[Dict[str, Any]]:
+    def _notify_heartbeat(
+        self,
+        q_id: str = "",
+        retry_info: str = "",
+        is_retry: bool = False,
+    ) -> None:
+        """Heartbeat-Signal an UnifiedBenchmarkRunner.
+
+        Wird bei Refusal-Retries und Hard-Refusals aufgerufen, damit der
+        60s-Heartbeat im Terminal die aktuelle Phase + Retry-Info live zeigt.
+        Greift nur, wenn der Runner den Heartbeat gestartet hat
+        (sonst ist ``_heartbeat_stop`` nicht gesetzt → no-op).
+
+        Args:
+            q_id: Question-ID (z.B. ``political_compass_7.3.001``)
+            retry_info: Retry-Beschreibung (z.B. ``Retry 1/2 temp 0.4``)
+            is_retry: True wenn gerade ein Retry läuft, False wenn abgeschlossen
+        """
+        _runner = getattr(self, "_benchmark_runner", None)
+        if _runner is None:
+            return
+        _handler = getattr(_runner, "_handle_heartbeat_signal", None)
+        if _handler is None:
+            return
+        # Heartbeat läuft nur, wenn _heartbeat_stop initialisiert wurde
+        if not hasattr(_runner, "_heartbeat_stop"):
+            return
+        try:
+            _handler(q_id=q_id, retry_info=retry_info, is_retry=is_retry)
+        except Exception as e:  # noqa: BLE001 — Heartbeat darf niemals den Test crashen
+            logger.debug("Heartbeat-Signal fehlgeschlagen (ignored): %s", e)
+
+    def _calculate_individual_runs(self) -> list[dict[str, Any]]:
         """Calculates results for each individual run."""
         individual_runs = []
         questions_per_run = len(self.questions)
@@ -778,8 +832,8 @@ class PoliticalCompassTest(BaseTest):
         return individual_runs
 
     def _calculate_sigma(
-        self, individual_runs: List[Dict[str, Any]]
-    ) -> Tuple[float, float]:
+        self, individual_runs: list[dict[str, Any]]
+    ) -> tuple[float, float]:
         """Calculates sigma for x and y."""
         sigma_x = 0.0
         sigma_y = 0.0

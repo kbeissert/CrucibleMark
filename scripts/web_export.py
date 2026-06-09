@@ -12,6 +12,7 @@ import argparse
 import datetime
 import math
 import re
+from fnmatch import fnmatch
 from pathlib import Path
 from typing import Any, Optional
 
@@ -393,6 +394,72 @@ def load_csv_with_fallback(path: Path) -> "pd.DataFrame | None":
     except (OSError, pd.errors.ParserError) as e:
         logging.warning(f"  [WARN] Could not load {path.name}: {e}")
         return None
+
+
+# SSoT-Pfad fuer die Web-Export-Blacklist. Konfigurations-Datei im config/-Ordner,
+# die Modelle (per model_id) vom Web-Export ausschliesst. Wildcards via fnmatch
+# (z.B. "qwen3.5-35b-a3b-*" sperrt alle Quantisierungen einer Familie).
+_BLACKLIST_PATH = Path("config/web_export_blacklist.yaml")
+
+
+def _load_export_blacklist(
+    config_path: Path | None = None,
+) -> tuple[set[str], set[str], int, bool]:
+    """Liest die Web-Export-Blacklist und splittet in exakte + Pattern-Eintraege.
+
+    Returns:
+        (exact_set, pattern_set, total_entries, file_loaded)
+        - exact_set:    IDs, die per ``raw_model_id in set`` gematcht werden (O(1)).
+        - pattern_set:  fnmatch-Patterns (``*``, ``?``, ``[seq]``).
+        - total_entries: Anzahl Eintraege in der Config (Summe beider Sets).
+        - file_loaded:  True wenn Datei existiert hat und geladen wurde.
+
+    Datei fehlt:    (set(), set(), 0, False) — graceful default, keine Filterung.
+    Parse-Error:    WARNING-Log + (set(), set(), 0, False) — nicht fatal.
+    Leere Datei:    (set(), set(), 0, True)  — geladen, aber leer.
+    """
+    path = config_path if config_path is not None else _BLACKLIST_PATH
+    if not path.exists():
+        return set(), set(), 0, False
+
+    try:
+        data = yaml.safe_load(path.read_text(encoding="utf-8"))
+    except (OSError, yaml.YAMLError) as exc:
+        logging.warning(f"  [WARN] Web-Export-Blacklist nicht lesbar ({path}): {exc}")
+        return set(), set(), 0, False
+
+    # Leere Datei: yaml.safe_load gibt None -> als leeres Dict behandeln,
+    # KEIN WARNING (Datei ist nicht kaputt, sie hat nur keine Eintraege).
+    if data is None:
+        return set(), set(), 0, True
+
+    if not isinstance(data, dict):
+        logging.warning(f"  [WARN] Web-Export-Blacklist hat ungueltiges Format (kein dict): {path}")
+        return set(), set(), 0, False
+
+    raw_entries = data.get("blacklist", [])
+    if not isinstance(raw_entries, list):
+        logging.warning(f"  [WARN] Web-Export-Blacklist 'blacklist' ist keine Liste: {path}")
+        return set(), set(), 0, False
+
+    exact: set[str] = set()
+    pattern: set[str] = set()
+    for entry in raw_entries:
+        if not isinstance(entry, str) or not entry.strip():
+            continue
+        entry = entry.strip()
+        if any(ch in entry for ch in ("*", "?", "[")):
+            pattern.add(entry)
+        else:
+            exact.add(entry)
+    return exact, pattern, len(exact) + len(pattern), True
+
+
+def _is_blacklisted(model_id: str, exact: set[str], pattern: set[str]) -> bool:
+    """Prueft ob model_id (oder ein Pattern davon) in der Blacklist ist."""
+    if model_id in exact:
+        return True
+    return any(fnmatch(model_id, p) for p in pattern)
 
 
 def _resolve_dir(dirs: dict[str, Path], raw_slug: str) -> Path | None:
@@ -835,9 +902,17 @@ def _write_top_level_outputs(
     comparisons_path: Path,
     models_with_reports: int,
     models_with_reviews: int,
+    models_skipped_blacklist: int = 0,
+    blacklist_total_entries: int = 0,
+    blacklist_source: str = "config/web_export_blacklist.yaml",
 ) -> None:
     """Writes leaderboard.json, political_compass.json, provider_stats.json, meta.json,
-    und provider_cards.json mit Souveraenitaets-/GDPR-Metadaten pro Provider."""
+    und provider_cards.json mit Souveraenitaets-/GDPR-Metadaten pro Provider.
+
+    models_skipped_blacklist: Anzahl Modelle, die in diesem Run durch die Blacklist
+        geblockt wurden. Plus blacklist_total_entries (SSoT-Anzahl in der Config)
+        und blacklist_source (Dateipfad) landen im meta.json fuer Audit-Zwecke.
+    """
     with open(out_dir / "leaderboard.json", "w", encoding="utf-8") as f:
         json.dump(
             _strip_emojis({"generated_at": generated_at, "total_models": len(models_list), "models": models_list}),
@@ -906,6 +981,11 @@ def _write_top_level_outputs(
                 "card_count": card_count,
                 "audit_log_count": audit_log_count,
                 "provider_card_count": len(provider_cards),
+                "blacklist": {
+                    "source": blacklist_source,
+                    "total_entries": blacklist_total_entries,
+                    "skipped_in_run": models_skipped_blacklist,
+                },
                 "sources": {
                     "leaderboard": "benchmark_scores/benchmark_leaderboard_detailed.csv",
                     "political_compass": "benchmark_scores/political_compass_results.csv",
@@ -958,10 +1038,27 @@ def main() -> None:
     comp_dirs = {slugify(d.name): d for d in comparisons_path.iterdir() if d.is_dir()} if comparisons_path.exists() else {}
 
     generated_at = datetime.datetime.now(datetime.UTC).isoformat()
+
+    # Web-Export-Blacklist laden (config/web_export_blacklist.yaml).
+    # Match auf raw_model_id (exakt + fnmatch-Patterns). Datei fehlt
+    # oder ist leer -> keine Filterung (graceful default).
+    _bl_exact, _bl_pattern, _bl_total, _bl_loaded = _load_export_blacklist(
+        root_dir / "config" / "web_export_blacklist.yaml"
+    )
+    if _bl_loaded and _bl_total:
+        logging.info(
+            f"  Blacklist: {_bl_total} Eintra(e)ge geladen "
+            f"({len(_bl_exact)} exakt, {len(_bl_pattern)} Pattern)"
+        )
+    elif _bl_loaded:
+        logging.info("  Blacklist: Datei geladen, leer.")
+    # _bl_loaded=False: kein Log (Datei fehlt = Default)
+
     models_list: list[dict[str, Any]] = []
     pc_list: list[dict[str, Any]] = []
     models_with_reports = 0
     models_with_reviews = 0
+    models_skipped_blacklist = 0
 
     count = 0
     total = len(ldb)
@@ -1017,6 +1114,14 @@ def main() -> None:
         _csv_has_benchmark = _csv_total not in ("", "Pending", "—", "nan") and not pd.isna(row.get("Total Score", float("nan")))
         if not _audit_has_benchmark and not _csv_has_benchmark:
             logging.debug(f"  [{count}/{total}] {model_name} -> SKIP (nur PC-Daten, kein Benchmark)")
+            continue
+
+        # Blacklist-Check: Match auf raw_model_id (exakt + fnmatch-Patterns).
+        # Greift NACH dem PC-Skip, damit geblacklistete Modelle nicht versehentlich
+        # doppelt geloggt werden. Vor mkdir, damit keine leeren Verzeichnisse entstehen.
+        if raw_model_id and raw_model_id != "nan" and _is_blacklisted(raw_model_id, _bl_exact, _bl_pattern):
+            logging.info(f"  [{count}/{total}] {model_name} -> SKIP (blacklisted: {raw_model_id})")
+            models_skipped_blacklist += 1
             continue
 
         logging.info(f"  [{count}/{total}] {model_name} -> OK")
@@ -1108,6 +1213,9 @@ def main() -> None:
         comparisons_path=comparisons_path,
         models_with_reports=models_with_reports,
         models_with_reviews=models_with_reviews,
+        models_skipped_blacklist=models_skipped_blacklist,
+        blacklist_total_entries=_bl_total,
+        blacklist_source="config/web_export_blacklist.yaml",
     )
     logging.info(f"✅ Export completed to -> {out_dir}")
 
