@@ -247,13 +247,21 @@ class UnifiedBenchmarkRunner(BaseBenchmarkRunner):
         probe: Any,
         card_loaded: bool,
     ) -> None:
-        """Schreibt Probe-Felder (Detected, Evidence, Confidence, Timestamp) in die Card."""
-        probe_fields = {
+        """Schreibt Probe-Felder (Detected, Evidence, Confidence, Timestamp + CoT-Quartett) in die Card."""
+        from utils.model_utils import classify_cot_marker_family
+
+        probe_fields: dict[str, Any] = {
             "thinking_probe_detected": probe.detected,
             "thinking_probe_evidence": probe.evidence,
             "thinking_probe_confidence": probe.confidence,
             "thinking_probe_at": datetime.now(UTC).isoformat(),
         }
+        # v4.7.1 CoT-Quartett: Marker-Familie + Tag-Liste nur setzen, wenn
+        # tatsaechlich Tags gefunden wurden. Sonst bleiben die Felder null
+        # (verhindert noise im Web-Export).
+        if getattr(probe, "tags_found", None):
+            probe_fields["cot_marker_family"] = classify_cot_marker_family(probe.tags_found)
+            probe_fields["cot_tags_detected"] = list(probe.tags_found)
 
         card_path = ensure_card(model, card_path=card_path if card_loaded else None)
         card_content: dict = json.loads(card_path.read_text(encoding="utf-8"))

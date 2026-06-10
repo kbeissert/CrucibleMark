@@ -71,12 +71,21 @@ def _infer_provider(model_id: str, config: dict[str, Any]) -> str:
 
 
 def _probe_fields_to_dict(probe: ThinkingProbeResult) -> dict[str, Any]:
-    return {
+    from utils.model_utils import classify_cot_marker_family
+
+    fields: dict[str, Any] = {
         "thinking_probe_detected": probe.detected,
         "thinking_probe_evidence": probe.evidence,
         "thinking_probe_confidence": probe.confidence,
         "thinking_probe_at": datetime.now(timezone.utc).isoformat(),
     }
+    # v4.7.1 CoT-Quartett: Marker-Familie + Tag-Liste nur setzen, wenn
+    # tatsaechlich Tags gefunden wurden. Sonst bleiben die Felder null
+    # (verhindert noise im Web-Export).
+    if probe.tags_found:
+        fields["cot_marker_family"] = classify_cot_marker_family(probe.tags_found)
+        fields["cot_tags_detected"] = list(probe.tags_found)
+    return fields
 
 
 def _write_probe_to_card(

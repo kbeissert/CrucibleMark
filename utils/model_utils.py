@@ -1443,6 +1443,42 @@ def _find_think_tags(text: str) -> tuple[str, ...]:
     return tuple(tag for tag in _THINK_TAGS if tag in lower)
 
 
+# Marker-Familie (ab v4.7.1 Card-Feld "cot_marker_family"):
+# Heuristik-Mapping Tag-Set -> Familien-Kennung. Wird in Card geschrieben,
+# damit Web-Export + Audit + Review einheitlich filtern koennen.
+# Reihenfolge der Familien ist signifikant (erster Match gewinnt).
+_COT_FAMILY_MAP: tuple[tuple[str, tuple[str, ...]], ...] = (
+    ("qwen-think", ("<think>", "<thought>")),
+    ("openai-oss", ("<|thinking|>", "<|reasoning|>")),
+    ("deepseek-reasoning", ("<reasoning>", "<reason>")),
+    ("llama-cot", ("<reflection>",)),
+    ("anthropic-extended", ("<analysis>", "<plan>")),
+    ("hermes-scratchpad", ("<scratchpad>",)),
+    ("mistral-reasoning", ("<solution>",)),
+    ("glm-cot", ("<thinking>",)),
+    ("generic-cot", ("<cot>",)),
+)
+
+
+def classify_cot_marker_family(tags_found: tuple[str, ...] | list[str] | None) -> str:
+    """Leitet die CoT-Marker-Familie aus den gefundenen Tags ab.
+
+    Eingabe: Tuple/Liste der Tags aus _find_think_tags() (lowercase).
+    Ausgabe: Eine der Familien-Kennungen aus _COT_FAMILY_MAP, oder "none"
+    wenn keine Tags erkannt wurden.
+
+    Die Zuordnung erfolgt in der Reihenfolge von _COT_FAMILY_MAP; erste
+    Familie, fuer die mindestens ein Tag aus dem Input passt, gewinnt.
+    """
+    if not tags_found:
+        return "none"
+    tag_set = {t.lower() for t in tags_found}
+    for family, members in _COT_FAMILY_MAP:
+        if tag_set.intersection(members):
+            return family
+    return "none"
+
+
 @dataclass
 class ThinkingProbeResult:
     detected: bool
