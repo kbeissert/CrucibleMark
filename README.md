@@ -1,6 +1,6 @@
 # CrucibleMark
 
-[![Version](https://img.shields.io/badge/version-4.7.4-blue)](.)
+[![Version](https://img.shields.io/badge/version-4.8.5-blue)](.)
 
 [![Python](https://img.shields.io/badge/python-3.10%2B-blue)](.)
 [![License](https://img.shields.io/badge/license-MIT-green)](.)
@@ -175,5 +175,5 @@ Die vollständige Versionshistorie steht in [CHANGELOG.md](CHANGELOG.md). Kurzfa
 
 - **Maintainer:** kbeissert
 - **Repository:** [github.com/kbeissert/cruciblemark](https://github.com/kbeissert/cruciblemark)
-- **Status:** ✅ Production-Ready (v4.7.4)
+- **Status:** ✅ Production-Ready (v4.8.5)
 

@@ -1,37 +1,28 @@
 # PROJECT_STATUS.md
 
 **Last Updated:** 2026-06-10
-**Current Version:** 4.7.4 — Heartbeat-Intervall konfigurierbar
+**Current Version:** 4.8.5 — Pricing-Update + CHANGELOG-Abschluss
 **Status:** ✅ Production-Ready
 
 > **Hinweis:** Die Executive Summary weiter unten historisch auf v4.6.1.
-> Die Sub-Versionen v4.6.2–v4.6.8 sind im `docs/MAINTENANCE_LOG.md`
-> detailliert dokumentiert. Dieser Header wird bei jedem Phase-Commit
-> nachgezogen, die Executive Summary nur bei Major-Milestones.
+> Die Sub-Versionen v4.6.2–v4.8.5 sind im CHANGELOG.md vollständig dokumentiert.
+> Dieser Header wird bei jedem Phase-Commit nachgezogen,
+> die Executive Summary nur bei Major-Milestones.
 >
-> **Aktueller Stand (v4.7.4 — Heartbeat-Configurable):**
-> - **603/603 Tests grün** im Heartbeat-Scope (33/33 Heartbeat-Tests, 2 pre-existing Failures in `test_id_ssot_invariants.py` + `test_provider_health_preflight.py` übersprungen — nicht durch Heartbeat-Änderung verursacht)
-> - Neuer `heartbeat:`-Block in `benchmark_config.yaml` mit `enabled` (bool) und `interval_seconds` (float, Default **120**)
-> - `UnifiedBenchmarkRunner._get_heartbeat_config()` mit Defensiv-Fallback (Block fehlt / kein Dict / nicht-numerisch / `<= 0` → Defaults)
-> - Heartbeat-Thread wird bei `enabled=False` nicht gestartet; `finally`-Block erkennt Sentinel `heartbeat_thread is None`
-> - 17 neue Tests: `TestGetHeartbeatConfig` (16 parametrisiert) + `TestHeartbeatDisabledInRunAssetLoop` (1)
-> - Backward-Compat: Configs ohne Block laufen mit `(enabled=True, interval=60.0)` weiter
-> - `docs/BENCHMARK_SCRIPT_OVERVIEW.md §6 "Runtime Feedback (Heartbeat)"` neu — Config-Beispiel, Robustheits-Hinweise
-> - Additiver Patch ohne API-Bruch — keine Änderung am Heartbeat-Output, keine Migration nötig
->
-> **Aenderungen seit v4.6.1 im Detail:**
-> - v4.6.2: Provider-Card SSoT-Bereinigung (Phasen 20–21)
-> - v4.6.3: Card-Status-Tool + Provider-Detection-SSoT (Phasen 22–23)
-> - v4.6.4: Card-Templates als SSoT (Phase 24)
-> - v4.6.5: SSoT-Card-Sync (Phase 25)
-> - v4.6.6: Backup-System SSoT + ID-Normalisierung (Phase 27)
-> - v4.6.7: make clean Hardening (Phase 28)
-> - v4.6.8: Makefile help v2 + argparse Hardening (Phase 29)
+> **Aktueller Stand (v4.8.5):**
+> - **788/788 Tests grün** (Stand v4.8.2)
+> - Pricing-Update: 11 Modellkarten auf Stand Juni 2026. Neues `scripts/update_model_pricing.py`.
+> - v4.8.4: Backup-System-Audit abgeschlossen (cleanup_reviews SSoT, Test-Lücke, BACKUP_STRATEGY.md)
+> - v4.8.3: ToolUse P1/P2 NaN-Bug behoben — Flat-Column-Schema, CRUCIBLE_DELEGATE_PARENT, MCP idle_timeout
+> - v4.8.2: gpt-5.4-nano Card-`model_id` auf Punkt-Form korrigiert (404-Fix)
+> - v4.8.1: resolve_canonical_model_id() Fallback-Korrektur (API 404 für Punkt-IDs)
+> - v4.8.0: Per-Modell `server_ready_timeout_sec` in llamacpp_base (Split-GGUF-Fix)
+> - v4.7.9: Gemma 4 12B Thinking-Hang-Fix (`enable_thinking: false`)
+> - v4.7.4: Heartbeat konfigurierbar — `benchmark_config.yaml → heartbeat:`
+> - v4.7.3: Thinking-SSoT + Runner-Consumer-Anbindung
+> - v4.7.2: Thinking-Probe v2 (Multi-Prompt, 13 Tags, Familien-Inventar)
+> - v4.7.1: Web-Export-Blacklist
 > - v4.7.0: 4-Phasen-Refactoring der Kern-Skripte (Phase 30)
-> - v4.7.1: Web-Export-Blacklist (Pre-Export-Filter via `fnmatch`)
-> - v4.7.2: Thinking-Probe v2 (Multi-Prompt + Familien-Inventar + 13 Tags)
-> - v4.7.3: Thinking-SSoT-Auflösung + Runner-Consumer-Anbindung
-> - **v4.7.4: Heartbeat-Intervall konfigurierbar — aktueller Stand**
 
 
 ---
@@ -807,6 +798,6 @@ Visuelle Aufgaben (UML lesen, UI-Designs beurteilen) benötigen neue Asset-Forma
 
 ---
 
-**Document Version:** 4.7.0\
-**Last Updated:** 2026-06-09\
-**Next Review:** v4.8.0 / Nächster Feature-Meilenstein
+**Document Version:** 4.8.5\
+**Last Updated:** 2026-06-10\
+**Next Review:** v4.9.0 / Nächster Feature-Meilenstein
