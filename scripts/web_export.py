@@ -1110,6 +1110,19 @@ def main() -> None:
         else:
             card = load_model_card(model_name, root_dir)
 
+        # WEBEXP-010: Log wenn Model in Leaderboard aber Card fehlt. Vorher
+        # stillschweigend model_card=null → Frontend zeigt unvollstaendige
+        # Detailseite ohne Hinweis auf fehlende Card. Jetzt WARNING.
+        if card is None and (
+            (raw_model_id and raw_model_id != "nan") or model_name
+        ):
+            logging.warning(
+                f"  ⚠️  [{count}/{total}] {model_name} "
+                f"(raw_model_id={raw_model_id or '?'}): keine Model Card gefunden. "
+                f"Web-Export liefert model_card=null. Bitte Card manuell anlegen "
+                f"oder scripts/maintenance/create_model_card.py ausfuehren."
+            )
+
         # Complete Directory Sync for Markdowns
         model_audit_src = _resolve_dir(audit_dirs, dir_slug)
         model_comp_src = _resolve_dir(comp_dirs, dir_slug)
