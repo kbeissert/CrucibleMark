@@ -87,7 +87,6 @@ class UnifiedBenchmarkRunner(BaseBenchmarkRunner):
         # Load output configurations
         self.local_csv = Path(
             self.validator.config.get("output", {}).get(
-                "output", {}).get(
                 "local_models_csv", "benchmark_scores/local_models_benchmark.csv"
             )
         )
@@ -453,7 +452,11 @@ class UnifiedBenchmarkRunner(BaseBenchmarkRunner):
 
         asset_cfg = self._resolve_asset_config(benchmark_info, asset_id)
         if asset_cfg:
-            result["score_contributions"] = calculate_score_contributions(score, asset_cfg)
+            # Contributions auf Basis des Regex-Scores vorberechnen (result["percentage"]).
+            # Bei Hybrid-Scoring überschreibt judge_evaluator.py diese Werte mit dem
+            # finalen Hybrid-Score. Vorher: calculate_score_contributions(score, asset_cfg)
+            # — das verwendete exec_result.data ohne "percentage" → immer 0.0.
+            calculate_score_contributions(result, asset_cfg)
 
         if self._is_judge_applicable(benchmark_info):
             self._apply_judge_pipeline(
@@ -701,7 +704,7 @@ class UnifiedBenchmarkRunner(BaseBenchmarkRunner):
             return
         try:
             base_root = self._resolve_llamacpp_base_url(provider)
-            self._probe_llamacpp_server(base_root, model)
+            self._probe_llamacpp_server(base_root, model, current_model=model)
         except Exception as e:
             logger.debug("llama.cpp Memory Reset exception (ignored): %s", e)
             time.sleep(LLAMACPP_RESET_PAUSE_OK)
@@ -717,8 +720,17 @@ class UnifiedBenchmarkRunner(BaseBenchmarkRunner):
         )
         return base_url_raw.rstrip("/").removesuffix("/v1")
 
-    def _probe_llamacpp_server(self, base_root: str, model: str) -> None:
-        """Health-Check + Probe-Chat: passt Pausen an Server-Readiness an."""
+    def _probe_llamacpp_server(
+        self, base_root: str, model: str, current_model: str = ""
+    ) -> None:
+        """Health-Check + Probe-Chat: passt Pausen an Server-Readiness an.
+
+        Args:
+            base_root: Base-URL des llama.cpp-Servers (ohne /v1).
+            model: Legacy-Parameter (wird nicht mehr verwendet).
+            current_model: Das aktuell getestete Modell — wird als Probe-Model
+                gesendet. Fallback: erstes Modell aus llamacpp-Config-Block.
+        """
         try:
             health = requests.get(f"{base_root}/health", timeout=LLAMACPP_HEALTH_CHECK_TIMEOUT)
             healthy = health.status_code == HTTP_OK
@@ -734,8 +746,10 @@ class UnifiedBenchmarkRunner(BaseBenchmarkRunner):
             return
 
         chat_url = f"{base_root}/v1/chat/completions"
+        # current_model wird vom Caller (z. B. _local_memory_reset) mit dem
+        # aktuell laufenden Modell befüllt. Fallback: erstes Modell aus Config.
         _probe_model = (
-            getattr(self, "model", "") or
+            current_model or
             self.validator.config.get("providers", {}).get("local", {})
             .get("llamacpp", {}).get("models", [{}])[0].get("id", "")
         )
