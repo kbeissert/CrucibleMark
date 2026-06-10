@@ -518,12 +518,16 @@ def test_preflight_check_fails_when_model_file_empty(tmp_path):
     assert "no model_file configured" in err
 
 
-def test_preflight_check_uses_correct_provider_key_in_error(tmp_path):
-    """Die Fehlermeldung nennt den richtigen Provider-Key (llamacpp_spark).
+def test_preflight_check_skipped_for_remote_ssh_provider(tmp_path):
+    """Remote-Provider (SSH) überspringen den lokalen Datei-Check.
 
-    Spark-Provider nutzt ein anderes ``model_dir`` als M4. Der Check muss
-    trotzdem den korrekten Provider-Key in die Fehlermeldung schreiben,
-    damit der Operator den richtigen Config-Block prüft.
+    ``_preflight_check_model_file()`` gibt ``(True, '')`` zurück, wenn
+    ``server_start_cmd`` mit ``ssh`` beginnt — unabhängig davon, ob die
+    Datei lokal existiert. Der Pfad liegt auf der Remote-Maschine und ist
+    vom Benchmark-Host nicht erreichbar.
+
+    Pitfall-Diagnose 2026-06-10: llamacpp_spark scheiterte immer am
+    Preflight, weil ``Path.is_file()`` den Linux-Pfad auf macOS prüfte.
     """
     config = {
         "providers": {
@@ -531,7 +535,7 @@ def test_preflight_check_uses_correct_provider_key_in_error(tmp_path):
                 "llamacpp_spark": {
                     "base_url": "http://192.168.1.191:1235/v1",
                     "model_dir": str(tmp_path),
-                    "server_start_cmd": "ssh ... llama-server",
+                    "server_start_cmd": "ssh -p 22 user@host llama-server",
                     "bind_host": "0.0.0.0",
                     "models": [
                         {"id": "spark-missing",
@@ -544,10 +548,39 @@ def test_preflight_check_uses_correct_provider_key_in_error(tmp_path):
     client = LlamaCppSparkClient(config)
     ok, err = client._preflight_check_model_file("spark-missing")
 
-    assert ok is False
-    # Provider-Key MUSS llamacpp_spark sein, nicht llamacpp
-    assert "providers.local.llamacpp_spark.models" in err
-    assert "providers.local.llamacpp.models" not in err
+    # Remote-Provider: Check übersprungen → immer (True, "")
+    assert ok is True
+    assert err == ""
+
+
+def test_is_remote_provider_ssh_detection():
+    """_is_remote_provider() erkennt SSH-basierte Provider korrekt.
+
+    Beginnt ``server_start_cmd`` mit ``ssh``, gilt der Provider als
+    Remote — lokale ``Path.is_file()``-Checks werden übersprungen.
+    """
+    ssh_config = {
+        "providers": {
+            "local": {
+                "llamacpp_spark": {
+                    "server_start_cmd": "ssh -p 22 user@host llama-server",
+                    "models": [],
+                },
+            },
+        },
+    }
+    local_config = {
+        "providers": {
+            "local": {
+                "llamacpp_spark": {
+                    "server_start_cmd": "/usr/local/bin/llama-server",
+                    "models": [],
+                },
+            },
+        },
+    }
+    assert LlamaCppSparkClient(ssh_config)._is_remote_provider() is True
+    assert LlamaCppSparkClient(local_config)._is_remote_provider() is False
 
 
 def test_start_server_returns_false_on_preflight_failure_without_popen(tmp_path, monkeypatch):

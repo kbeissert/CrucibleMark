@@ -188,6 +188,15 @@ class LlamaCppBaseClient(BaseProviderClient):
         model_dir = Path(os.path.expanduser(self._model_dir()))
         return str(model_dir / model_file)
 
+    def _is_remote_provider(self) -> bool:
+        """True wenn der llama-server via SSH auf einer Remote-Maschine startet.
+
+        Erkennung über server_start_cmd: beginnt der Befehl mit ``ssh``,
+        läuft der Server auf einem anderen Host und ist kein lokaler
+        ``Path.is_file()``-Check möglich.
+        """
+        return self._provider_cfg().get("server_start_cmd", "").lstrip().startswith("ssh")
+
     def _preflight_check_model_file(self, model_id: str) -> tuple[bool, str]:
         """Pre-Flight-Check: existiert die model_file auf der Disk?
 
@@ -198,9 +207,18 @@ class LlamaCppBaseClient(BaseProviderClient):
         konnte die Datei nicht laden und lief 180s in Timeout, obwohl das
         Problem schon nach <1s erkennbar war.
 
+        Remote-Provider (SSH): lokaler Datei-Check nicht möglich — der Pfad
+        liegt auf der Remote-Maschine. Pitfall-Diagnose 2026-06-10: llamacpp_spark
+        schlug immer fehl, weil ``Path.is_file()`` den Linux-Pfad auf macOS
+        prüfte. Bei einem Tippfehler im Remote-Pfad bricht llama-server
+        innerhalb von Sekunden mit einer klaren Fehlermeldung im Server-Log ab.
+
         Returns:
-            (True, "") wenn die Datei existiert, sonst (False, fehlermeldung).
+            (True, "") wenn die Datei existiert (oder Remote-Provider), sonst (False, fehlermeldung).
         """
+        # Remote-Provider: kein lokaler Datei-Check möglich
+        if self._is_remote_provider():
+            return True, ""
         try:
             model_path = self._resolve_model_path(model_id)
         except ValueError as exc:
