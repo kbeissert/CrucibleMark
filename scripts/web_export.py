@@ -702,6 +702,8 @@ def _build_leaderboard_entry(
             "input_price_per_1m": card.get("input_price_per_1m"),
             "output_price_per_1m": card.get("output_price_per_1m"),
             "supports_tool_use": card.get("supports_tool_use"),
+            # Heritage-IDs (v4.8.0): frühere kanonische model_ids — leer wenn nicht gesetzt.
+            "heritage_ids": card.get("heritage_ids") or [],
             # Optional v4.7.1 Thinking-Probe-Quartett: nur exportieren wenn gesetzt
             # (Sonde schreibt die Felder nur bei detektiertem CoT; sonst noise vermeiden).
             **(
@@ -1130,12 +1132,15 @@ def main() -> None:
         # Heritage-Fallback: wenn primäre Dir-Auflösung fehlschlägt, heritage_ids aus der Card prüfen
         if card:
             for _h_id in card.get("heritage_ids", []):
-                # slugify() normalisiert Sonderzeichen — .replace ist redundant.
-                _h_slug = slugify(_h_id)
-                if model_audit_src is None:
-                    model_audit_src = _resolve_dir(audit_dirs, _h_slug)
-                if model_comp_src is None:
-                    model_comp_src = _resolve_dir(comp_dirs, _h_slug)
+                # slugify("vendor/model") strippt den Org-Prefix via rsplit('/') → "model".
+                # Audit-Dirs werden aber per _safe_name() angelegt ("vendor_model"),
+                # was nach slugify() zu "vendor-model" wird. Daher beide Varianten
+                # versuchen (dict.fromkeys dedupliziert bei identischen Slugs).
+                for _h_slug in dict.fromkeys([slugify(_h_id), slugify(_safe_name(_h_id))]):
+                    if model_audit_src is None:
+                        model_audit_src = _resolve_dir(audit_dirs, _h_slug)
+                    if model_comp_src is None:
+                        model_comp_src = _resolve_dir(comp_dirs, _h_slug)
                 if model_audit_src is not None and model_comp_src is not None:
                     break
 

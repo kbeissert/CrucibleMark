@@ -571,6 +571,21 @@ optional_fields:
     consumers: [asset, judge]
     since: "v4.7.2"
     example: ["\n\n", "###"]
+
+  # --- Heritage-IDs (web_export + review, ab v4.8.0) ---
+  # Wird gesetzt, wenn ein Modell unter einer neuen kanonischen ID neu angelegt
+  # wird (z.B. nach Breaking-Change im API-Namespace). Ermöglicht es
+  # web_export.py und generate_review.py, Audit-Log-Dirs und Review-Dirs zu
+  # finden, die noch unter der alten ID abgelegt sind.
+  - name: heritage_ids
+    type: list[str]
+    required: false
+    default: []
+    description: "Frühere kanonische model_ids dieses Modells. Einträge als rohe API-IDs (z.B. 'vendor/old-model-v1'). Konsumenten lösen per _safe_name-Normalisierung auf Dirs auf."
+    consumers: [web_export, review]
+    since: "v4.8.0"
+    example: ["moonshotai/kimi-k2-0127", "deepseek/deepseek-chat-v3"]
+
 # ----------------------------------------------------------------------------
 # Validator-Konfiguration
 # ----------------------------------------------------------------------------

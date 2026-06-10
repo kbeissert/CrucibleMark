@@ -28,6 +28,7 @@ from utils.llm_client import LLMClient
 from utils.model_utils import (
     _find_card,
     _safe_name,
+    find_card_by_heritage_id,
     get_model_identity,
     get_model_size_class,
     get_model_specialization,
@@ -242,10 +243,27 @@ def process_model_review(
     model_id: str,
     review_type: str = "benchmark",
     max_tokens: int = 8192,
+    canonical_model_id: str | None = None,
 ) -> None:
-    """Read audit logs for a tested LLM and generate a review."""
-    tested_model_name = model_dir.name
-    print(f"\n📥 Sammle Logs für Modell: {tested_model_name} (Typ: {review_type})...")
+    """Read audit logs for a tested LLM and generate a review.
+
+    Args:
+        canonical_model_id: Wenn gesetzt, wird dieser Wert statt ``model_dir.name``
+            für Card-/Metriken-Lookups und den Output-Pfad verwendet. Wird vom
+            Heritage-ID-Fallback in ``_run_audit_reviews`` gesetzt, wenn eine
+            umbenannte Card über ``find_card_by_heritage_id`` gefunden wurde.
+            Die Audit-Log-Dateien werden weiterhin aus ``model_dir`` gelesen.
+    """
+    # Heritage-ID-Fallback: wenn canonical_model_id gesetzt, nutzen wir sie
+    # für Card-/Metriken-Lookups und den Output-Pfad. model_dir.name bleibt
+    # für die tatsächlichen Audit-Log-Dateien (die liegen noch unter dem alten Namen).
+    tested_model_name = canonical_model_id or model_dir.name
+    _log_label = (
+        f"{model_dir.name} → {canonical_model_id}"
+        if canonical_model_id and canonical_model_id != model_dir.name
+        else model_dir.name
+    )
+    print(f"\n📥 Sammle Logs für Modell: {_log_label} (Typ: {review_type})...")
 
     extracted_logs = []
     for md_file in model_dir.rglob("*.md"):
@@ -772,9 +790,30 @@ def _run_audit_reviews(
             continue
         found_models = True
 
+        # Heritage-ID-Fallback: prüfe ob subdir.name eine veraltete ID ist,
+        # für die eine umbenannte Card mit heritage_ids existiert.
+        # In diesem Fall wird die kanonische ID aus der neuen Card für alle
+        # nachgelagerten Lookups (Card, Metriken, Output-Pfad) genutzt,
+        # während die Audit-Log-Dateien weiterhin aus subdir gelesen werden.
+        effective_model_id: str = subdir.name
+        if not _find_card(subdir.name).exists():
+            _heritage_path = find_card_by_heritage_id(subdir.name)
+            if _heritage_path is not None:
+                try:
+                    _h_data = json.loads(_heritage_path.read_text(encoding="utf-8"))
+                    _h_canonical = _h_data.get("model_id")
+                    if isinstance(_h_canonical, str) and _h_canonical:
+                        print(f"ℹ️ Heritage-ID: {subdir.name} → {_h_canonical}")
+                        effective_model_id = _h_canonical
+                except Exception:
+                    pass
+
+        # Nur warnen wenn kein Heritage-Fund — sonst wäre das ein False-Positive,
+        # denn die alte Audit-Dir ist intentional unter dem veralteten Namen.
         if _configured_safe_ids and subdir.name not in _configured_safe_ids:
-            if not re.search(r"-\d{8}$|-\d{6}$", subdir.name):
-                print(f"⚠️  Verzeichnis '{subdir.name}' entspricht keiner konfigurierten Modell-ID — mögliches Duplikat.")
+            if effective_model_id == subdir.name:  # kein Heritage-Fund
+                if not re.search(r"-\d{8}$|-\d{6}$", subdir.name):
+                    print(f"⚠️  Verzeichnis '{subdir.name}' entspricht keiner konfigurierten Modell-ID — mögliches Duplikat.")
 
         if effective_type == "benchmark":
             bench_files = [
@@ -807,7 +846,7 @@ def _run_audit_reviews(
 
         if effective_type == "benchmark":
             dep_context = _ensure_dependencies(
-                model_id=subdir.name,
+                model_id=effective_model_id,
                 client=client,
                 card_provider=provider,
                 card_model=model_id,
@@ -823,7 +862,10 @@ def _run_audit_reviews(
             print(f"  [DRY-RUN] Würde {effective_type}-Review für {subdir.name} generieren.")
             continue
 
-        process_model_review(subdir, csv_data, client, provider, model_id, effective_type, max_tokens)
+        process_model_review(
+            subdir, csv_data, client, provider, model_id, effective_type, max_tokens,
+            canonical_model_id=effective_model_id if effective_model_id != subdir.name else None,
+        )
 
     if not found_models:
         print("⚠️ Keine Audit-Logs für das spezifizierte Modell gefunden.")

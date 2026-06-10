@@ -445,6 +445,43 @@ def _find_card(model_id: str, card_dir: Path | None = None) -> Path:
     return unprefixed  # May or may not exist — caller checks
 
 
+def find_card_by_heritage_id(legacy_id: str, card_dir: Path | None = None) -> Path | None:
+    """Findet die Card, die *legacy_id* in ihren ``heritage_ids`` listet.
+
+    Wird benötigt, wenn ein Modell umbenannt wurde: Die Audit-Log-Dirs und
+    Review-Dirs tragen die alte ID, aber die Card existiert nur noch unter
+    der neuen kanonischen ID. Mit diesem Reverse-Lookup können
+    ``generate_review.py`` und ``web_export.py`` die richtige Card finden.
+
+    Vergleicht ``_safe_name``-normalisiert, damit API-IDs (``vendor/model``)
+    und Dateiname-Slugs (``vendor_model``) korrekt gematcht werden:
+    ``_safe_name("vendor/model-v1") == _safe_name("vendor_model-v1") == "vendor_model-v1"``
+
+    Returns
+    -------
+    Path zur gefundenen Card, oder ``None`` wenn keine Übereinstimmung.
+
+    Notes
+    -----
+    Durchsucht alle ``*.json``-Dateien in *card_dir* und ist damit O(n) in der
+    Anzahl der Cards. Da der Fallback-Pfad selten getriggert wird, ist das
+    Performance-technisch irrelevant.
+    """
+    _cd = card_dir if card_dir is not None else CARD_DIR
+    legacy_safe = _safe_name(legacy_id)
+    for card_file in sorted(_cd.glob("*.json")):
+        if card_file.name.startswith("_"):
+            continue  # Index-/Meta-Dateien überspringen (_index.json, _all_cards.md etc.)
+        try:
+            data = json.loads(card_file.read_text(encoding="utf-8"))
+            for h_id in data.get("heritage_ids") or []:
+                if isinstance(h_id, str) and _safe_name(h_id) == legacy_safe:
+                    return card_file
+        except (OSError, json.JSONDecodeError):
+            continue
+    return None
+
+
 def _extract_ollama_id(model_name: str, ollama_output: str) -> Optional[str]:
     """Extracts a model hash/ID from `ollama list` output for an exact model name match."""
     candidates = [model_name]
