@@ -1,0 +1,47 @@
+{
+  "model_id": "gemma-4-12b-it-ud-q4_k_xl",
+  "display_name": "TODO",
+  "developer": "TODO",
+  "origin_country": "TODO",
+  "developer_jurisdiction": "TODO",
+  "deployment_type": "TODO",
+  "local_deployment_possible": null,
+  "weights_provenance_risk": "TODO",
+  "weights_provenance_risk_rationale": "TODO",
+  "model_family": "TODO",
+  "vendor": "TODO",
+  "primary_focus": "TODO",
+  "use_case_primary": "generalist",
+  "parameter_architecture": "dense",
+  "params_total_b": null,
+  "params_active_b": null,
+  "context_window_k": null,
+  "knowledge_cutoff": null,
+  "summary": "TODO",
+  "strengths": [
+    "TODO"
+  ],
+  "known_limitations": [
+    "TODO"
+  ],
+  "judge_context_hint": "TODO",
+  "architecture_tags": [
+    "Thinking"
+  ],
+  "supports_tool_use": null,
+  "license": "TODO",
+  "license_url": null,
+  "commercial_use_allowed": null,
+  "weights_license_tier": "TODO",
+  "model_version": null,
+  "input_price_per_1m": null,
+  "output_price_per_1m": null,
+  "unknown": false,
+  "card_status": "draft",
+  "size_class": "Desktop",
+  "generated_at": "2026-06-10T07:26:57.351756+00:00",
+  "thinking_probe_detected": true,
+  "thinking_probe_evidence": "Multi-Probe (3 prompts, 3 detected, best confidence=medium):\n  - math: [math] Inline CoT im content-Feld: Antwort 399 chars (>200) mit 6 Berechnungs-Operatoren. First 200 chars: To find the average speed of the train, follow these steps:\n\n### 1. Identify the given information:\n*   **Total Distance ($d$):** 120 km\n*   **Total Time ($t$):** 1.5 hours\n\n### 2. Identify the formul\n  - code: [code] reasoning_tokens=512 in provider metadata. First 200 chars: \n  - decision: [decision] reasoning_tokens=512 in provider metadata. First 200 chars: ",
+  "thinking_probe_confidence": "medium",
+  "thinking_probe_at": "2026-06-10T07:26:57.351406+00:00"
+}
