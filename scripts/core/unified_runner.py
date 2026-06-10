@@ -183,12 +183,20 @@ class UnifiedBenchmarkRunner(BaseBenchmarkRunner):
 
         card_loaded = True
         canonical_model = loaded.get("model_id") or model
-        if "thinking_probe_detected" not in loaded:
+        # Pitfall-Diagnose 2026-06-10: Draft-Cards aus ensure_card() haben
+        # ``thinking_probe_detected: null`` (explizit auf None gesetzt), nicht
+        # "Feld fehlt komplett". ``not in loaded`` würde das übersehen und
+        # die Probe überspringen — die Folge war: Gemma-4-12B-Modelle
+        # bekamen kein 5x-Reasoning-Budget, weil Probe nie lief.
+        # Korrekter Check: Wert muss truthy sein (True ODER False) — nur
+        # None/undefined triggert eine Probe.
+        probe_state = loaded.get("thinking_probe_detected")
+        if probe_state is None:
             needs_probe = True
-            print("   ⏳ Card vorhanden, aber Thinking-Probe fehlt — starte Erkennung...", flush=True)
+            print("   ⏳ Card vorhanden, aber Thinking-Probe fehlt (null) — starte Erkennung...", flush=True)
             logger.info(
-                "[Card-First] Card für '%s' hat kein Probe-Feld → Probe wird nachgeholt.",
-                model,
+                "[Card-First] Card für '%s' hat kein Probe-Feld (Wert=%r) → Probe wird nachgeholt.",
+                model, probe_state,
             )
         else:
             print(
