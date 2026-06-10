@@ -2,7 +2,10 @@ server:
   host: localhost
   port: 8765
   mode: mock               # mock | live — default ist mock
-  idle_timeout_seconds: 300  # auto-shutdown nach N Sekunden Inaktivität (0 = deaktiviert)
+  idle_timeout_seconds: 0    # 0 = deaktiviert — Lebenszyklus liegt bei run_tooluse_benchmark.py
+                               # (Modelle wie qwen3-coder-next-q8 Q8 brauchen 420s zum Laden;
+                               #  ein Idle-Timeout < Modell-Startzeit würde den MCP-Server
+                               #  vorzeitig beenden und alle 6 Tests auf "MCP nicht erreichbar" setzen)
 
 web_search:
   provider: tavily             # tavily | duckduckgo — tavily ist primärer Provider

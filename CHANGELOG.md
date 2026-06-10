@@ -5,6 +5,229 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## [v4.8.5] - 2026-06-10
+
+**Pricing-Update: Modellkarten-Preise auf Stand Juni 2026 aktualisiert.**
+
+11 kommerzielle Modellkarten hatten veraltete oder fehlende `input_price_per_1m` /
+`output_price_per_1m`-Felder. Neues Wartungsskript `update_model_pricing.py`
+führt zukünftige Preisanpassungen ohne manuelle JSON-Edits durch.
+
+### Added
+
+- **`scripts/update_model_pricing.py`** — Neues Wartungsskript. Lädt alle
+  `benchmark_scores/model_cards/*.json`, matcht Model-IDs gegen `CURRENT_PRICING`
+  (exakt oder Präfix-Match), schreibt `input_price_per_1m` und `output_price_per_1m`
+  nur wenn sich der Wert ändert, setzt `generated_at` auf aktuellen Timestamp.
+  Preisstand: OpenAI, Anthropic, Google Gemini, Mistral, xAI Grok — Juni 2026.
+
+### Changed
+
+- **11 Modellkarten aktualisiert** (`gpt-4o-mini`, `gpt-5`, `gpt-5-mini`,
+  `grok-3`, `grok-3-mini`, `magistral-medium-latest`, `magistral-small-latest`,
+  `mistral-large-2411`, `mistral-large-2512`, `mistral-medium-3-5`,
+  `qwen3-coder-next-q8`): `input_price_per_1m` und `output_price_per_1m`
+  auf recherchierte Marktpreise gesetzt.
+
+---
+
+## [v4.8.4] - 2026-06-10
+
+**Backup-System-Audit: 3 SSoT-Abweichungen in cleanup_reviews, Tests und Docs behoben.**
+
+Vollständige Prüfung des Backup-Systems nach Phase-27-Refactoring.
+Makefile und Kern-Skripte korrekt. 3 Abweichungen identifiziert und behoben.
+
+### Fixed
+
+- **`scripts/maintenance/cleanup_reviews.py`** — `REVIEWS_KEEP_PER_CATEGORY`
+  aus `utils/backup_targets` (SSoT) nicht importiert. Hardcoded `[1:]` in 3
+  `to_delete.extend()`-Aufrufen. Fix: Import ergänzt, `[1:]` → `[REVIEWS_KEEP_PER_CATEGORY:]`.
+
+- **`tests/test_backup_targets.py`** — Test-Lücke: `audit_logs_legacy_backup_*`
+  fehlte in der `required`-Menge von `test_build_tar_excludes_contains_critical_patterns`.
+  Fix: Pattern ergänzt. **28/28 Backup-Tests grün.**
+
+- **`docs/BACKUP_STRATEGY.md` Abschnitt 4.3** — Zeigte vereinfachtes, veraltetes
+  Makefile-Recipe: falscher Skript-Pfad (`cleanup_runs.py --keep` statt `make clean-runs`),
+  7 fehlende tar-Excludes (`.DS_Store`, `audit_logs_legacy_backup_*`,
+  `audit_logs_spurious_archive`, `audit_logs.zip`, `model_cards_backup_*.tar.gz`,
+  `model_cards_spurious_archive`, `outputs/temp/session_*.json`), fehlende
+  Post-Backup-Schritte (`clean-bak`, `clean-reviews FORCE=1`, `prune-orphans FORCE=1`).
+  Neuer Hinweis: Exclude-Liste muss synchron mit `build_tar_excludes()` gehalten werden.
+
+---
+
+## [v4.8.3] - 2026-06-10
+
+**ToolUse P1/P2 NaN-Bug behoben — Flat-Column-Schema eingeführt.**
+
+`qwen3-coder-next-q8` zeigte nach erfolgreichem ToolUse-Lauf (6/6 Tests, live MCP)
+`P1=NaN`, `P2=NaN`, `mcp_mode=mock` im Leaderboard. Root Cause:
+`_aggregate_asset_rows()` las P1/P2 aus dem deprecated `score_contributions`-Feld,
+das seit dem Writer-Redesign nicht mehr geschrieben wird.
+Zusätzlich: `CRUCIBLE_DELEGATE_PARENT`-Env-Var wurde in `run_score_benchmark.py`
+zu früh gesetzt → MCP wurde nie gestartet. MCP-Idle-Timeout deaktiviert (GGUF-Ladezeit
+bis 420 s).
+
+### Fixed
+
+- **`scripts/core/unified_runner.py` `_build_result_envelope()`** — ToolUse-Felder
+  als flache CSV-Spalten aus `exec_result.data` promoten (Duck-Typing:
+  `"p1_score" in exec_result.data`). Felder: `p1_score`, `p2_score`, `combined_score`,
+  `mcp_mode`, `tool_call_valid`, `tool_call_attempts`, `mcp_latency_s`, `call1_time_s`,
+  `call2_time_s`, `total_time_s`, `call1_tokens`, `call2_tokens`, `hallucination_flag`.
+
+- **`scripts/core/tooluse_exporter.py` `_aggregate_asset_rows()`** — Flat-Column-
+  Fallback nach `score_contributions`-Parsing; Boolean-Konvertierung;
+  `mcp_mode`-Fallback via `row.get("mcp_mode") == "live"`.
+  `score_contributions`-Feld ist deprecated — Flat-Columns sind SSoT.
+
+- **`scripts/run_score_benchmark.py`** — `CRUCIBLE_DELEGATE_PARENT` darf nur
+  von `run_tooluse_benchmark.py` gesetzt werden. Guard hinzugefügt:
+  `os.environ.pop("CRUCIBLE_DELEGATE_PARENT", None)` am Skript-Start, damit
+  ein fälschlicherweise gesetztes Env-Var den MCP-Start nicht verhindert.
+
+- **`cruciblemark-mcp/config/mcp_config.yaml`** — `idle_timeout_seconds: 0`
+  (Idle-Timeout deaktiviert). GGUF-Modelle auf dem DGX Spark brauchen bis 420 s
+  zum Laden — der MCP-Server darf währenddessen nicht disconnecten.
+
+- **`benchmark_scores/model_cards/qwen3-coder-next-q8.json`** — Direkt-Patch:
+  `p1_score=90.00`, `p2_score=59.17`, `combined_score=74.62`, `mcp_mode=live`,
+  `hallucination_flag=true` aus dem Live-Lauf eingetragen.
+
+---
+
+## [v4.8.2] - 2026-06-10
+
+**Fix: `gpt-5.4-nano` — Card `model_id` auf API-korrekte Punkt-Form korrigiert.**
+
+Die Card `gpt-5_4-nano.json` wurde manuell mit `model_id: "gpt-5_4-nano"` (Underscore)
+erstellt — korrekt als Dateiname (Filesystem-Konvention), aber falsch als interner `model_id`-Wert.
+`resolve_canonical_model_id()` findet die Card über `_safe_name` (Dateiname = Underscore),
+gibt aber `card.model_id` zurück. War das `gpt-5_4-nano` (Underscore), scheiterte der
+OpenAI-API-Call mit 404. Die anderen GPT-Modelle (`gpt-5_4`, `gpt-5_4-mini`, `gpt-5_5`)
+akzeptiert OpenAI zufällig auch in Underscore-Form — `gpt-5.4-nano` jedoch nicht.
+
+### Fixed
+
+- **`benchmark_scores/model_cards/gpt-5_4-nano.json`** — `model_id` von `gpt-5_4-nano`
+  auf `gpt-5.4-nano` korrigiert. Dateiname bleibt `gpt-5_4-nano.json` (Underscore-Konvention).
+  `resolve_canonical_model_id("gpt-5.4-nano")` → findet Card über `_safe_name` →
+  gibt `gpt-5.4-nano` zurück → API-Call erfolgreich.
+
+- **`tests/test_resolve_canonical_model_id.py`** — Zwei Regressionstests ergänzt:
+  `gpt-5.4-nano` und `gpt-5_4-nano` → beide erwarten `gpt-5.4-nano` (dot-form aus Card).
+
+- **`scripts/maintenance/cleanup_helpers.py`** — `canonical_model_slug()`:
+  Wendet jetzt explizit `_safe_name(canonical)` an statt das Ergebnis von
+  `resolve_canonical_model_id` direkt zurückzugeben. Behebt Regression aus
+  v4.8.1: Der veränderte Fallback (`return base` statt `return _safe_name(base)`)
+  ließ Whitespace-Eingaben (`"  "`) als `"  "` statt `"__"` zurückkehren.
+  `canonical_model_slug` ist für Dateisystem-Slugs gedacht — `_safe_name` als
+  letzter Schritt ist hier immer korrekt (Punkte/Leerzeichen/Slashes → Underscores).
+
+- **`utils/model_utils.py`** — `resolve_canonical_model_id()`: Fallback von
+  `return base` (v4.8.1) zurück auf `return _safe_name(base)` gesetzt. Die
+  systemweite Konvention ist Punkte/Doppelpunkte → Underscores; der v4.8.1-
+  Fallback-Wechsel war unnötig, da der eigentliche Fix für `gpt-5.4-nano` in der
+  Card-`model_id` liegt (Pfad 3: `card.model_id = "gpt-5.4-nano"`). Der
+  `_safe_name`-Fallback betrifft nur Modelle OHNE Card — dort ist die
+  Underscore-Form konsistent mit CSVs, Card-Dateinamen und Leaderboard.
+  3 zuvor fehlschlagende Tests (`test_enforce_card_first`,
+  `test_consolidate_csv` ×2) sind damit wieder grün. **788/788 Tests grün.**
+
+- **`tests/test_resolve_canonical_model_id.py`** — `qwen3.5-35b-a3b-q6`
+  Test-Case zurück auf erwartetem Wert `qwen3_5-35b-a3b-q6` (Underscore, via
+  `_safe_name`-Fallback). Konvention: kein Card → Underscore-Form.
+
+---
+
+## [v4.8.1] - 2026-06-10
+
+**Fix: Kommerzielle API-Modelle mit Punkt in der ID schlugen mit HTTP 404 fehl.**
+
+`gpt-5.4-nano` (und andere OpenAI-Modelle mit Versionspunkten) wurden als
+`gpt-5_4-nano` an die API gesendet → 404. Ursache: `resolve_canonical_model_id()`
+verwendete `_safe_name()` als Fallback wenn keine Card existiert. `_safe_name`
+ersetzt Punkte durch Underscores — korrekt für Card-Dateinamen, fatal für API-Calls.
+
+### Fixed
+
+- **`utils/model_utils.py`** — `resolve_canonical_model_id()`: Fallback von
+  `_safe_name(base)` auf `base` geändert. Modelle mit vorhandener Card nutzen
+  weiterhin `card.model_id` (Pfad 3), für die der Underscore-Wert korrekt eingetragen
+  ist. Nur für neue/kartenlose Modelle greift der Fallback — und dort ist die
+  Original-ID (mit Punkt) korrekt. Lokale Modelle (llamacpp) akzeptieren Punkte
+  im `--alias` Flag ohne Einschränkung.
+
+- **`tests/test_resolve_canonical_model_id.py`** — Test-Case `qwen3.5-35b-a3b-q6`
+  auf erwartetes Ergebnis `qwen3.5-35b-a3b-q6` (kein Card → base unverändert)
+  korrigiert. Das Modell existiert nicht in der aktiven Config; der alte Test
+  lief nur durch, weil `_safe_name` zufällig denselben Wert lieferte wie eine
+  Card-Lookup hätte. 51/51 Tests grün.
+
+### Betroffene Modelle (Beispiele)
+
+`gpt-5.4-nano`, `gpt-5.4-mini`, `gpt-5.4`, `gpt-5.5`, `gemini-3.5-flash`,
+`gemini-3.1-pro-preview` — alle kommerziellen IDs mit Versionspunkten
+ohne vorhandene Card.
+
+---
+
+## [v4.8.0] - 2026-06-10
+
+**Per-Modell `server_ready_timeout_sec` — Fix für Split-GGUF-Start-Timeout.**
+
+`qwen3-coder-next-q8` (3-teiliger Split-GGUF) schlug mit
+`llama.cpp server did not become ready within 180 s.` fehl, weil der Server noch lud,
+als der Benchmark bereits aufgab. Der Provider-Level-Timeout (180s) war zu kurz;
+ein Per-Modell-Override war nicht möglich.
+
+### Fixed
+
+- **`utils/providers/llamacpp_base.py`** — `start_server()` liest `server_ready_timeout_sec`
+  jetzt zuerst aus dem Modell-Config-Eintrag (`model_cfg.get("server_ready_timeout_sec")`),
+  fällt bei Fehlen auf den Provider-Default zurück. Kein Breaking Change für bestehende Modelle.
+
+- **`config/provider_config.yaml`** — `server_ready_timeout_sec: 420` für
+  `qwen3-coder-next-q8` (llamacpp_spark) gesetzt. 7 Minuten reichen für das
+  3-Part-Split-GGUF auf dem DGX Spark.
+
+### Ursache
+
+Das Modell-Ladesystem in `llamacpp_base.py` kannte bisher nur Provider-weite Timeouts.
+Große Modelle (Split-GGUFs, mehrere Dateien) brauchen deutlich länger; der
+DGX-Spark-Benchmark-Kommentar ("Timeout von 420s → 180s nach Refactoring") bezog sich
+auf Standard-Modelle, nicht auf Split-GGUFs.
+
+---
+
+## [v4.7.9] - 2026-06-10
+
+**Gemma 4 12B Thinking-Hang-Fix (--reasoning off).**
+
+Alle drei `gemma-4-12b-it-ud-q*`-Varianten (Q4/Q6/Q8) hingen beim Reasoning-Benchmark
+unbegrenzt, weil Gemma 4 12B IT in llama.cpp standardmäßig Thinking-Modus aktiviert —
+dieselbe Ursache wie beim Qwen-Bug in v4.3.5. `thinking_probe_detected=True` war bekannt
+(in der Card gesetzt), aber `enable_thinking: false` fehlte in der Provider-Config.
+
+### Fixed
+
+- **`config/provider_config.yaml`** — `enable_thinking: false` für `gemma-4-12b-it-ud-q4_k_xl`,
+  `gemma-4-12b-it-ud-q6_k_xl`, `gemma-4-12b-it-ud-q8_k_xl` hinzugefügt. Der llamacpp_base-
+  Provider liest diesen Wert beim Server-Start und ergänzt `--reasoning off`, was den
+  unbounded Thinking-Chain unterbindet.
+
+### Ursache
+
+`llamacpp_base.py` startet den llama-server ohne `--reasoning`-Flag, wenn `enable_thinking`
+nicht explizit in der Model-Config steht. Gemma 4 12B IT (Instruct-Variante mit Thinking-
+Support) aktiviert Thinking dann per Default aus dem Chat-Template heraus → unbounded
+Generation → kein Token-Output → Heartbeat läuft hoch ohne Fortschritt.
+
+---
+
 ## [v4.7.8] - 2026-06-10
 
 **Prober schreibt CoT-Quartett + Web-Export loggt fehlende Cards.**

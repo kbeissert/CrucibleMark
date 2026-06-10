@@ -124,7 +124,8 @@ def resolve_canonical_model_id(model_id: str) -> str:
        Schreibweise haben als die Eingabe (Punkt vs. Underscore)
     3. Wenn Card gefunden: gibt die ``model_id`` der Card zurück
        (= kanonische Form, identisch zur CSV-Spalte)
-    4. Sonst: ``_safe_name`` als Fallback (konsistent mit Card-Filenames)
+    4. Sonst: ``_safe_name(base)`` — Punkte, Doppelpunkte und Slashes
+       werden zu Underscores (konventionell; Dateiname-sichere Form).
 
     Warum SSoT
     ---------
@@ -135,13 +136,24 @@ def resolve_canonical_model_id(model_id: str) -> str:
     ``run_benchmark.py`` Entry-Point, ``run_tooluse_benchmark.py`` Cache-Check)
     statt punktuell in jedem Modul einen Bridge-Patch einzustreuen.
 
+    Warum _safe_name als Fallback
+    ----------------------------
+    Die systemweite Konvention ist: Punkte/Doppelpunkte/Slashes in Model-IDs
+    werden zu Underscores. Für Modelle MIT Card liefert ``card.model_id``
+    die kanonische Form (kann auch Punkte enthalten, z.B. ``gpt-5.4-nano``
+    wenn die Card das explizit so definiert). Der Fallback betrifft nur
+    Modelle ohne Card — dort ist die Underscore-Form konsistent mit CSVs,
+    Card-Dateinamen und Leaderboard-Einträgen.
+
     Beispiele
     ---------
     ``qwen3.5-35b-a3b-q8``        → ``qwen3_5-35b-a3b-q8`` (via Card-Lookup)
     ``qwen3_5-35b-a3b-q8``        → ``qwen3_5-35b-a3b-q8`` (Card direkt gefunden)
-    ``hf.co/x/y:Q4_K_M``          → ``y:Q4_K_M``                   (kein Card)
-    ``claude-haiku-4-5``          → ``claude-haiku-4-5-20251001``  (glob fallback)
-    ``unbekanntes-modell``        → ``unbekanntes-modell``         (safe_name)
+    ``gpt-5.4-nano``              → ``gpt-5.4-nano``          (via Card; card.model_id=dot-form)
+    ``gpt-5_4-nano``              → ``gpt-5.4-nano``          (via Card; _safe_name findet gpt-5_4-nano.json)
+    ``hf.co/x/y:Q4_K_M``          → ``y_Q4_K_M``              (kein Card → _safe_name)
+    ``claude-haiku-4-5``          → ``claude-haiku-4-5-20251001`` (glob fallback)
+    ``unbekanntes-modell``        → ``unbekanntes-modell``    (kein Card → _safe_name, no special chars)
     """
     if not model_id:
         return model_id
@@ -159,6 +171,11 @@ def resolve_canonical_model_id(model_id: str) -> str:
                     return canonical
         except (OSError, json.JSONDecodeError):  # noqa: PERF203
             pass
+    # Fallback: _safe_name anwenden (systemweite Konvention: Punkte/Doppelpunkte/Slashes → Underscores).
+    # Modelle MIT Card nutzen card.model_id (Pfad 3), das auch Punkte enthalten kann
+    # (z.B. gpt-5.4-nano, wenn die Card das explizit so definiert).
+    # Der Fallback betrifft nur Modelle ohne Card — dort ist die Underscore-Form
+    # konsistent mit CSVs, Card-Dateinamen und Leaderboard-Einträgen.
     return _safe_name(base)
 
 

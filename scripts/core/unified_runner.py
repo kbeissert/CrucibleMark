@@ -617,6 +617,23 @@ class UnifiedBenchmarkRunner(BaseBenchmarkRunner):
             result["cost_usd"] = _module_cost if _module_cost > _client_cost else _client_cost
         else:
             result["cost_usd"] = 0.0
+
+        # Tooluse-spezifische Metriken als flache CSV-Spalten persistieren.
+        # Duck Typing über "p1_score" in exec_result.data (nur das Tooluse-Modul setzt dieses Feld).
+        # Ermöglicht ToolUseExporter._aggregate_asset_rows() P1/P2 und Timing-Daten
+        # aus der main CSV zu lesen, auch ohne score_contributions.
+        _tu_data = exec_result.data
+        if "p1_score" in _tu_data:
+            _TOOLUSE_FLAT = (
+                "p1_score", "p2_score", "combined_score", "mcp_mode",
+                "tool_call_valid", "tool_call_attempts", "mcp_latency_s",
+                "call1_time_s", "call2_time_s", "total_time_s",
+                "call1_tokens", "call2_tokens", "hallucination_flag",
+            )
+            for _k in _TOOLUSE_FLAT:
+                if _k in _tu_data and _k not in result:
+                    result[_k] = _tu_data[_k]
+
         return result
 
     def _resolve_asset_config(

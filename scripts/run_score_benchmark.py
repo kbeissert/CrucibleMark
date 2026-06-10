@@ -381,7 +381,11 @@ def main() -> None:
             cmd.append("--silent")
 
         env = dict(os.environ)
-        env["CRUCIBLE_DELEGATE_PARENT"] = "1"
+        # CRUCIBLE_DELEGATE_PARENT hier NICHT setzen: run_benchmark.py muss für
+        # Delegate-Module (z.B. tooluse, political_compass) an das Fachscript
+        # (run_tooluse_benchmark.py) delegieren können, das seinerseits den
+        # MCP-Server startet. Das Fachscript setzt CRUCIBLE_DELEGATE_PARENT=1
+        # für seinen eigenen Subprozess, um die Endlosschleife zu verhindern.
 
         result = subprocess.run(cmd, cwd=str(ROOT_DIR), env=env, check=False)
         write_run_summary(

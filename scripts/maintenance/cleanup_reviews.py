@@ -27,6 +27,7 @@ _ROOT = Path(__file__).resolve().parent.parent.parent
 if str(_ROOT) not in sys.path:
     sys.path.insert(0, str(_ROOT))
 
+from utils.backup_targets import REVIEWS_KEEP_PER_CATEGORY  # noqa: E402
 from utils.model_utils import _safe_name  # noqa: E402
 
 logger = logging.getLogger("cleanup_reviews")
@@ -85,10 +86,10 @@ def find_old_reviews(reviews_dir: Path) -> list[Path]:
             reverse=True,
         )
 
-        # Behalte [0] (neueste), markiere Rest zur Loeschung
-        to_delete.extend(bias_files[1:])
-        to_delete.extend(review_files[1:])
-        to_delete.extend(tooluse_files[1:])
+        # Behalte die neuesten REVIEWS_KEEP_PER_CATEGORY (SSoT), markiere Rest zur Loeschung
+        to_delete.extend(bias_files[REVIEWS_KEEP_PER_CATEGORY:])
+        to_delete.extend(review_files[REVIEWS_KEEP_PER_CATEGORY:])
+        to_delete.extend(tooluse_files[REVIEWS_KEEP_PER_CATEGORY:])
 
     return to_delete
 

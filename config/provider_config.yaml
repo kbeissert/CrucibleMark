@@ -368,14 +368,17 @@ providers:
         name: Gemma 4 12B Instruct UD-Q4_K_XL (GGUF)
         model_file: gemma-4-12b-it-UD-Q4_K_XL.gguf
         n_gpu_layers: 99
+        enable_thinking: false  # Thinking-Modus → unbounded Hang (wie Qwen) — fix v4.4.1
       - id: gemma-4-12b-it-ud-q6_k_xl
         name: Gemma 4 12B Instruct UD-Q6_K_XL (GGUF)
         model_file: gemma-4-12b-it-UD-Q6_K_XL.gguf
         n_gpu_layers: 99
+        enable_thinking: false  # Thinking-Modus → unbounded Hang (wie Qwen) — fix v4.4.1
       - id: gemma-4-12b-it-ud-q8_k_xl
         name: Gemma 4 12B Instruct UD-Q8_K_XL (GGUF)
         model_file: gemma-4-12b-it-UD-Q8_K_XL.gguf
         n_gpu_layers: 99
+        enable_thinking: false  # Thinking-Modus → unbounded Hang (wie Qwen) — fix v4.4.1
       - id: hermes-3-8b
         name: Hermes 3 Llama 3.1 8B Q6_K_L (GGUF)
         model_file: Hermes-3-Llama-3.1-8B-Q6_K_L.gguf
@@ -589,6 +592,7 @@ providers:
         model_file: Qwen3-Coder-Next-UD-Q8_K_XL/Qwen3-Coder-Next-UD-Q8_K_XL-00001-of-00003.gguf
         n_gpu_layers: 99
         enable_thinking: false
+        server_ready_timeout_sec: 420  # 3-Part-Split-GGUF braucht länger als Provider-Default 180s
       - id: qwen3-coder-next-q4
         name: Qwen 3 Coder Next Q4_K_XL (GGUF)
         model_file: Qwen3-Coder-Next-UD-Q4_K_XL.gguf

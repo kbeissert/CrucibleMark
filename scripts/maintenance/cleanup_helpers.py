@@ -69,7 +69,11 @@ def canonical_model_slug(raw_slug: str) -> str:
     if not raw_slug:
         return raw_slug
     try:
-        return resolve_canonical_model_id(raw_slug)
+        # resolve_canonical_model_id liefert die kanonische model_id (API-Form).
+        # Für Dateisystem-Slugs immer _safe_name anwenden: Punkte → Underscores,
+        # Leerzeichen → Underscores, Slashes → Underscores.
+        canonical = resolve_canonical_model_id(raw_slug)
+        return _safe_name(canonical)
     except Exception:  # noqa: BLE001 — defensiv
         return _safe_name(raw_slug)
 

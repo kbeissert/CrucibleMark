@@ -429,6 +429,32 @@ class ToolUseExporter:
                 except (ValueError, SyntaxError):
                     pass
 
+            # Flat-Column-Fallback: wenn score_contributions leer ist (neue Zeilen
+            # nach dem Redesign des Writers), flache CSV-Spalten als Datenquelle nutzen.
+            # Ermöglicht korrektes Aggregieren von P1/P2/Timing ohne score_contributions.
+            if not data_dict:
+                for _flat_key in (
+                    "p1_score", "p2_score", "combined_score",
+                    "mcp_latency_s", "call1_time_s", "call2_time_s", "total_time_s",
+                    "call1_tokens", "call2_tokens", "tool_call_attempts",
+                ):
+                    _v = row.get(_flat_key)
+                    if _v not in (None, ""):
+                        try:
+                            data_dict[_flat_key] = float(_v)
+                        except (ValueError, TypeError):
+                            pass
+                # Boolean-Felder korrekt konvertieren
+                for _bk in ("hallucination_flag", "retry_required"):
+                    _bv = row.get(_bk)
+                    if _bv not in (None, ""):
+                        data_dict[_bk] = str(_bv).lower() == "true"
+                # tool_call_valid → tool_transcript-Proxy für die Validierungslogik unten
+                _tv = row.get("tool_call_valid")
+                if _tv not in (None, ""):
+                    _status = "success" if str(_tv).lower() == "true" else "parse_error"
+                    data_dict["tool_transcript"] = {"status": _status}
+
             if data_dict.get("p1_score") is not None:
                 try:
                     p1_scores.append(float(data_dict["p1_score"]))
@@ -467,6 +493,9 @@ class ToolUseExporter:
             # mcp_mode: live wenn der MCP-Server tatsächlich aufgerufen wurde
             # (mcp_latency_s > 0), unabhängig vom Tool-Typ (web_search/fetch).
             if (data_dict.get("mcp_latency_s") or 0) > 0:
+                mcp_mode = "live"
+            elif row.get("mcp_mode") == "live":
+                # Flat-Column-Fallback für mcp_mode (wenn mcp_latency_s nicht in data_dict)
                 mcp_mode = "live"
 
             # Performance metrics

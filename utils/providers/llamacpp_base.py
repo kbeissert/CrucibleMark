@@ -585,7 +585,13 @@ class LlamaCppBaseClient(BaseProviderClient):
             return False
 
         prov_cfg = self._provider_cfg()
-        ready_timeout = int(prov_cfg.get("server_ready_timeout_sec", 60))
+        # Per-Modell-Override hat Vorrang: große Modelle (z.B. Multi-Part-Split-GGUFs)
+        # brauchen länger als der Provider-Default → server_ready_timeout_sec im Modell-Eintrag setzen.
+        _mcfg = self._model_cfg(model_id) if model_id else {}
+        ready_timeout = int(
+            _mcfg.get("server_ready_timeout_sec")
+            or prov_cfg.get("server_ready_timeout_sec", 60)
+        )
         ready_poll = int(prov_cfg.get("server_ready_poll_sec", 5))
         if self._wait_for_model_ready(
             model_id, timeout_sec=ready_timeout, poll_sec=ready_poll, log_prefix="llama.cpp",

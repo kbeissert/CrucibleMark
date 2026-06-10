@@ -185,26 +185,39 @@ backup-prep:
 
 # backup haengt automatisch an backup-prep — keine doppelte Logik
 backup: backup-prep
-	@echo "📦 Creating snapshot..."
-	@tar -czf backups/cruciblemark_backup_$(DATE).tar.gz \
-	    --exclude='__pycache__' \
-	    --exclude='*.bak_*' --exclude='*.backup_*' \
-	    --exclude='audit_logs_backup_*.tar.gz' \
-	    --exclude='tooluse_unreachable_*.json' \
-	    benchmark_scores/ outputs/ benchmark_modules/ \
-	    docs/reviews/ docs/audits/ config/ memory-bank/ \
-	    benchmark_config.yaml
+	@echo "Creating full backup..."
+	@mkdir -p backups
+	@tar --exclude='__pycache__' --exclude='.DS_Store' \
+	     --exclude='*.bak_*' --exclude='*.backup_*' \
+	     --exclude='audit_logs_backup_*.tar.gz' \
+	     --exclude='audit_logs_legacy_backup_*' \
+	     --exclude='audit_logs_spurious_archive' \
+	     --exclude='audit_logs.zip' \
+	     --exclude='model_cards_backup_*.tar.gz' \
+	     --exclude='model_cards_spurious_archive' \
+	     --exclude='tooluse_unreachable_*.json' \
+	     --exclude='outputs/temp/session_*.json' \
+	     -czf backups/cruciblemark_backup_$(DATE).tar.gz \
+	     benchmark_scores/ outputs/ benchmark_modules/ \
+	     docs/reviews/ docs/audits/ config/ memory-bank/ \
+	     benchmark_config.yaml
+	@echo "Backup created."
 
-	@echo "🧹 Cleaning old run logs..."
-	@python scripts/maintenance/cleanup_runs.py --keep $(RUNS_KEEP) --force
+	# Alte Runs bereinigen (via make clean-runs → scripts/maintenance/clean.py)
+	@$(MAKE) clean-runs FORCE=1 RUNS_KEEP=$(RUNS_KEEP)
 
-	@echo "📊 Consolidating CSVs..."
-	@python scripts/maintenance/consolidate_csv.py
+	# CSVs deduplizieren (via make consolidate-csv)
+	@$(MAKE) consolidate-csv
 
-	@echo "✅ Backup complete!"
+	# Aufräumen: .bak_*-Dateien, alte Reviews, verwaiste Report-Dirs
+	@$(MAKE) clean-bak
+	@$(MAKE) clean-reviews FORCE=1
+	@$(MAKE) prune-orphans FORCE=1
 ```
 
 > **Defaults:** `RUNS_KEEP ?= 5` im Makefile spiegelt `RUNS_KEEP_DEFAULT` aus `utils/backup_targets.py`.
+>
+> **Hinweis:** Die Exclude-Liste im tar-Befehl ist identisch mit `build_tar_excludes()` aus `utils/backup_targets.py` (SSoT). Bei neuen Excludes **beide** Stellen aktualisieren.
 
 ---
 

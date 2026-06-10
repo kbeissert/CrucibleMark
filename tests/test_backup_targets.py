@@ -192,6 +192,7 @@ def test_build_tar_excludes_contains_critical_patterns():
         "*.bak_*",
         "*.backup_*",
         "audit_logs_backup_*.tar.gz",
+        "audit_logs_legacy_backup_*",
         "audit_logs_spurious_archive",
         "audit_logs.zip",
         "model_cards_backup_*.tar.gz",
