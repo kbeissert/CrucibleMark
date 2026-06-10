@@ -93,11 +93,30 @@ def get_model_card_context(model_id: str) -> str:
         lines.append(f"- **Trainings-Cutoff:** {cutoff}")
     if price_str:
         lines.append(f"- **Preis:** {price_str}")
+    # Lizenz-Zeile: weights_license_tier (Kategorie) + konkreter Lizenzname + kommerzielle Nutzung
+    license_name = card.get("license")
+    commercial = card.get("commercial_use_allowed")
+    license_parts = [
+        f"**Lizenz-Kategorie:** {card.get('weights_license_tier', 'n/a')}",
+        f"**Deployment:** {card.get('deployment_type', 'n/a')}",
+    ]
+    if license_name:
+        license_parts.insert(0, f"**Lizenz:** {license_name}")
+    if commercial is not None:
+        license_parts.append(f"**Kommerzielle Nutzung:** {'Ja' if commercial else 'Nein'}")
     lines.append(
         f"- **Familie:** {card.get('model_family', 'n/a')} | "
-        f"**Lizenz:** {card.get('weights_license_tier', 'n/a')} | "
-        f"**Deployment:** {card.get('deployment_type', 'n/a')}"
+        + " | ".join(license_parts)
     )
+
+    # Weights-Provenienz: explizit für den Reviewer (nicht nur im berechneten Sovereign Risk)
+    wprov = card.get("weights_provenance_risk")
+    wprov_rationale = card.get("weights_provenance_risk_rationale")
+    if wprov:
+        lines.append(
+            f"- **Weights-Provenienz-Risiko:** `{wprov.upper()}` — {wprov_rationale or '(keine Rationale)'}"
+        )
+
     lines.append(f"- **Zusammenfassung:** {card.get('summary', '')}")
     if strengths:
         lines.append(f"- **Stärken:** {strengths}")
@@ -105,6 +124,16 @@ def get_model_card_context(model_id: str) -> str:
         lines.append(f"- **Einschränkungen:** {limitations}")
     if hint:
         lines.append(f"- **Bewertungshinweis:** {hint}")
+
+    # Thinking-Probe-Ergebnis: ob das Modell im Benchmark mit Thinking-Tokens arbeitete
+    probe_detected = card.get("thinking_probe_detected")
+    probe_conf = card.get("thinking_probe_confidence")
+    cot_family = card.get("cot_marker_family")
+    if probe_detected is not None:
+        probe_str = f"{'Ja' if probe_detected else 'Nein'} (Konfidenz: {probe_conf or 'n/a'})"
+        if cot_family:
+            probe_str += f" | CoT-Familie: `{cot_family}`"
+        lines.append(f"- **Thinking-Probe:** {probe_str}")
 
     return "\n".join(lines)
 
