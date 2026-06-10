@@ -148,10 +148,12 @@ provider-cards-update:
 		$(if $(DRY_RUN),--dry-run,)
 
 model-cards-update:
-	@echo "=== Model Card Update (--update in generate_model_cards.py) ==="
-	@$(PYTHON) scripts/analysis/generate_model_cards.py --update \
-		$(if $(YES),--yes,) \
-		$(if $(DRY_RUN),--dry-run,)
+	@echo "=== Model Card Update (DEPRECATED seit v4.7.5) ==="
+	@echo "SRP-Trennung: --update/--yes/--dry-run wurden aus generate_model_cards.py entfernt."
+	@echo "Model-Card-Sync läuft jetzt via sync_cards.py:"
+	@echo "  make cards-sync CARD_TYPE=model YES=1         # echte Synchronisation"
+	@echo "  make cards-sync CARD_TYPE=model DRY_RUN=1    # Vorschau ohne Schreiben"
+	@$(MAKE) cards-sync CARD_TYPE=model $(if $(YES),YES=1,) $(if $(DRY_RUN),DRY_RUN=1,)
 
 
 probe-thinking:

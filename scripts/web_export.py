@@ -26,6 +26,7 @@ import pandas as pd
 import yaml
 from utils.config_validator import ConfigValidator
 from utils.model_utils import _find_card, _safe_name, WEIGHTS_TIER_DISPLAY
+from utils.card_utils import normalize_tags
 
 
 def build_provider_map(config_path: Path) -> dict[str, str]:
@@ -664,7 +665,7 @@ def _build_leaderboard_entry(
             "deployment_type": card.get("deployment_type"),
             "local_deployment_possible": card.get("local_deployment_possible"),
             "weights_provenance_risk": card.get("weights_provenance_risk"),
-            "architecture_tags": card.get("architecture_tags"),
+            "architecture_tags": _normalize_export_tags(card.get("architecture_tags") or []),
             "thinking_probe_detected": card.get("thinking_probe_detected"),
             "thinking_probe_confidence": card.get("thinking_probe_confidence"),
             "model_family": card.get("model_family"),
@@ -1218,6 +1219,19 @@ def main() -> None:
         blacklist_source="config/web_export_blacklist.yaml",
     )
     logging.info(f"✅ Export completed to -> {out_dir}")
+
+
+def _normalize_export_tags(tags: list[str]) -> list[str]:
+    """Filtert deprecated Tags aus architecture_tags für den Web-Export.
+    
+    Nutzt normalize_tags() aus utils.card_utils (SSoT: config/card_vocabulary.yaml).
+    Damit landen keine Tags wie 'MoE', 'Mamba-Hybrid' oder 'Long Context' im
+    öffentlichen Web-Export — sie wurden bereits in der Card-Migration entfernt,
+    aber falls neue hinzukommen, werden sie hier spätestens gefiltert.
+    """
+    if not tags:
+        return tags
+    return normalize_tags(tags)[0]
 
 
 if __name__ == "__main__":

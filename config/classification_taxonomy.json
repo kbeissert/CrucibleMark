@@ -1,4 +1,26 @@
 {
+  "weights_license_tier": {
+    "description": "Lizenz-Tier für Modell-Gewichte — bestimmt Provenance-Risiko, Kommentar-Anzeige und Souvereign-Risk-Berechnung. SSoT für Card-Generierung, Validierung und Runtime-Mapping.",
+    "field_name": "weights_license_tier",
+    "fallback": "TODO",
+    "values": {
+      "proprietary": {
+        "label": "Proprietär",
+        "description": "Modellgewichte nicht öffentlich verfügbar; nur über API nutzbar (z.B. GPT-4o, Claude, Gemini).",
+        "reviewer_guidance": "Closed-Source-Anbieter. Architektur, Trainingsdaten und Parameter sind nicht offengelegt. Datenschutz und Souvereign-Risk nach Anbieter-Jurisdiktion bewerten."
+      },
+      "open-weights": {
+        "label": "Open Weights",
+        "description": "Modellgewichte sind offentlich verfügbar unter einer permissiven Lizenz (Apache 2.0, MIT, etc.). Lokales Deployment möglich.",
+        "reviewer_guidance": "Gewichts-Provenanz unkritisch. Prüfe, ob die genutzten GGUFs/Quantisierungen mit dem Upstream-Modell übereinstimmen und keine unerwarteten Post-Training-Modifikationen (Abliteration, Uncensored) vorgenommen wurden."
+      },
+      "restricted-weights": {
+        "label": "Restricted Weights",
+        "description": "Modellgewichte verfügbar, aber unter restriktiver Lizenz (z.B. Forschungs-only, Non-Commercial, regionale Einschränkungen).",
+        "reviewer_guidance": "Kommerzielle Nutzung explizit prüfen. Lizenz-URL in der Card ist Pflichtfeld. Akzeptable Lizenztypen: z.B. Gemma Research License, Llama Community License, OpenRAIL."
+      }
+    }
+  },
   "use_case": {
     "description": "Primärer Optimierungsschwerpunkt des Modells – editorial kuratiert, nicht auto-generiert. Fallback: 'generalist'.",
     "field_name": "use_case_primary",
@@ -86,6 +108,55 @@
         "label": "Hybrid / Novel Architecture",
         "description": "Nicht-klassische Parameterverteilung: z.B. Per-Layer Embeddings (PLE wie Gemma 4 E-Varianten), State Space Models (SSM/Mamba), lineare Attention oder andere Innovationen. params_active_b kann angegeben werden.",
         "reviewer_guidance": "Architektur weicht vom klassischen Dense-Transformer ab. params_active_b (falls vorhanden) ist der relevante Kapazitäts-Anhaltspunkt. Berücksichtige, dass neue Architekturen andere Stärken/Schwächen-Profile haben können als klassische Transformer."
+      }
+    }
+  },
+  "input_modalities": {
+    "description": "Eingabe-Modalitäten, die das Modell nativ verarbeitet. 'text' ist immer implizit enthalten.",
+    "field_name": "input_modalities",
+    "fallback": ["text"],
+    "values": {
+      "text": {
+        "label": "Text",
+        "description": "Reiner Text-Input (Tokens). Jedes LLM unterstützt dies standardmäßig.",
+        "reviewer_guidance": "Default-Annahme. Wenn 'text' fehlt, handelt es sich um ein reines Vision/Audio/Video-Modell ohne Text-Fähigkeit (sehr selten)."
+      },
+      "image": {
+        "label": "Bild / Vision",
+        "description": "Bilder als Input (Fotos, Diagramme, Screenshots). Vision-Encoder im Modell.",
+        "reviewer_guidance": "Ermöglicht visuelle Aufgaben (OCR, Diagrammanalyse, Bildbeschreibung). Benchmark-Vergleichbarkeit mit reinen Text-LLMs ist eingeschränkt."
+      },
+      "audio": {
+        "label": "Audio",
+        "description": "Audio als Input (Sprache, Musik, Geräusche). Audio-Encoder im Modell.",
+        "reviewer_guidance": "Ermöglicht ASR, Audio-Analyse, Sprachverständnis. Sehr selten in Hauptmodellen — z.B. Gemma 4 12B nativ."
+      },
+      "video": {
+        "label": "Video",
+        "description": "Video als Input (Frame-Sequenzen). Häufig als Kombination aus Image+Audio.",
+        "reviewer_guidance": "Ermöglicht Video-Verständnis. Aktuell nur in Spezialmodellen (z.B. Gemini Pro Video)."
+      }
+    }
+  },
+  "output_modalities": {
+    "description": "Ausgabe-Modalitäten, die das Modell erzeugen kann. 'text' ist immer implizit enthalten.",
+    "field_name": "output_modalities",
+    "fallback": ["text"],
+    "values": {
+      "text": {
+        "label": "Text",
+        "description": "Reiner Text-Output (Tokens). Jedes LLM unterstützt dies standardmäßig.",
+        "reviewer_guidance": "Default-Annahme."
+      },
+      "image": {
+        "label": "Bild / Vision",
+        "description": "Bilder als Output (Text-zu-Bild-Generierung). Diffusions- oder AR-Decoder im Modell.",
+        "reviewer_guidance": "Ermöglicht Bildgenerierung. Bei LLMs mit Bild-Output handelt es sich meist um multimodale Modelle mit eingebettetem Visual-Decoder."
+      },
+      "audio": {
+        "label": "Audio",
+        "description": "Audio als Output (TTS, Musik-Generierung). Audio-Decoder im Modell.",
+        "reviewer_guidance": "Ermöglicht TTS und Audio-Generierung. Sehr selten in Standard-LLMs."
       }
     }
   }

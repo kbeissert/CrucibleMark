@@ -1212,7 +1212,12 @@ def is_reasoning_model(model_name: str) -> bool:
     card_result = is_reasoning_model_from_card(model_name)
     if card_result is not None:
         return card_result
-    triggers = ["deepseek-r1", "reasoning", "phi4", "qwq", "o1", "o3", "o4", "magistral", "glm-5", "minimax-m2", "gemini-2.5", "kimi-k2-thinking", "qwen3.6", "qwen3-coder"]
+    # Fallback: Trigger-Liste aus config/card_vocabulary.yaml (SSoT).
+    # Damit bleibt die Liste der Heuristik-Substrings konsistent mit der
+    # Registry und kann zentral erweitert werden (siehe Reasoning-Trigger-
+    # Sektion in der YAML).
+    from utils.card_utils import get_reasoning_triggers
+    triggers = get_reasoning_triggers()
     return any(t in model_name.lower() for t in triggers)
 
 

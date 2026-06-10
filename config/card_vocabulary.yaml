@@ -1,0 +1,309 @@
+# Card Vocabulary Registry
+# SSoT für alle kontrollierten Vokabulare in Model- und Provider-Cards.
+# Bewusst: keine doppelte Quelle für kontrollierte Felder — diese werden in
+# classification_taxonomy.json (Sektionen weights_license_tier, use_case,
+# parameter_architecture, size_class) gepflegt. Diese Registry dokumentiert
+# nur das ERWEITERTE Vokabular (Tags, Normalisierungen, Trigger-Listen).
+#
+# Konsumenten:
+#   - utils/card_utils.load_vocabulary() / get_reserved_tags() / get_informational_tags()
+#   - scripts/dev/validate_model_cards.py (Validierung)
+#   - scripts/dev/migrate_architecture_tags.py (Normalisierung)
+#   - utils/model_utils.py (Reasoning-Trigger-Liste)
+#   - scripts/web_export.py (Tag-Filter)
+#   - config/meta_reviewer_prompt.yaml (Auto-Generator-Hinweise)
+
+# ---------------------------------------------------------------------------
+# 1. Controlled Fields
+# ---------------------------------------------------------------------------
+# Diese Felder werden in classification_taxonomy.json gepflegt. Hier nur
+# der Verweis + kurze Beschreibung für Auto-Generatoren.
+controlled_fields:
+
+  weights_license_tier:
+    source: classification_taxonomy.json#weights_license_tier
+    fallback: TODO
+    values: [proprietary, open-weights, restricted-weights]
+
+  use_case_primary:
+    source: classification_taxonomy.json#use_case
+    fallback: generalist
+    values: [generalist, coding, reasoning, vision-language, agentic]
+
+  parameter_architecture:
+    source: classification_taxonomy.json#parameter_architecture
+    fallback: dense
+    values: [dense, moe, hybrid]
+
+  size_class:
+    source: classification_taxonomy.json#size_class
+    values: [Nano, Edge, Desktop, Workstation, Server, Frontier]
+
+  input_modalities:
+    description: "Welche Eingabe-Modalitäten das Modell nativ verarbeitet. text ist immer implizit."
+    fallback: [text]
+    values: [text, image, audio, video]
+    programmatic_effect: "Web-Export-Filter, use_case-Inferenz (Multimodal → vision-language)"
+
+  output_modalities:
+    description: "Welche Ausgabe-Modalitäten das Modell erzeugen kann. text ist immer implizit."
+    fallback: [text]
+    values: [text, image, audio]
+    programmatic_effect: "Web-Export-Filter"
+
+# ---------------------------------------------------------------------------
+# 2. Reserved Tags (programmatisch wirksam)
+# ---------------------------------------------------------------------------
+# Diese Tags werden vom Code aktiv ausgewertet. Sie sind eine Whitelist:
+# unbekannte Tags lösen eine Warnung aus. Schreibweise ist case-sensitive.
+reserved_tags:
+
+  - slug: Thinking
+    label: "Thinking (Always-On)"
+    description: "Modell führt sichtbares/unsichtbares Chain-of-Thought bei jeder Inferenz durch."
+    consumers: [token_budget_multiplier, web_export_thinking_mode, use_case_inference]
+    programmatic_effect: "5× Reasoning-Multiplikator in resolve_token_budget(); web_export → thinking_mode='thinking'"
+    since: v4.4.0
+
+  - slug: Thinking-Optional
+    label: "Thinking (Optional)"
+    description: "Modell kann optional Thinking aktivieren (z.B. via preserve_thinking-Parameter)."
+    consumers: [token_budget_multiplier, web_export_thinking_mode]
+    programmatic_effect: "Erhöhtes Reasoning-Budget in resolve_token_budget(); web_export → thinking_mode='partial'"
+    since: v4.4.0
+
+  - slug: Multimodal
+    label: "Multimodal (Primär Visuell)"
+    description: "Modell ist primär für Vision-Aufgaben optimiert; Vision-Fähigkeit ist Kern-Feature."
+    consumers: [use_case_inference, validator_warning]
+    programmatic_effect: "use_case_primary sollte 'vision-language' sein; Validator warnt, wenn nicht."
+    since: v4.7.0
+
+  - slug: Vision-Capable
+    label: "Vision (Sekundäres Feature)"
+    description: "Modell unterstützt Bild-Input als Add-on, primär aber für andere Aufgaben optimiert (Coding/Agentic)."
+    consumers: [validator_warning_suppress]
+    programmatic_effect: "Unterdrückt Multimodal-Warnung wenn use_case=agentic/coding/generalist."
+    since: v4.7.0
+
+  - slug: Agentic
+    label: "Agentic"
+    description: "Modell ist auf Tool-Use und mehrstufige Aufgabenplanung optimiert (Single- und Multi-Agent-Use-Cases)."
+    consumers: [use_case_inference]
+    programmatic_effect: "Marker für use_case_primary='agentic'."
+    since: v4.4.0
+
+  - slug: Agentic-Orchestrator
+    label: "Agentic Orchestrator"
+    description: "Modell ist speziell für Multi-Agent-Orchestrierung optimiert (plant, delegiert an Sub-Agenten, synthetisiert). Geht über einfaches Tool-Use hinaus."
+    consumers: [use_case_inference, web_export_filter]
+    programmatic_effect: "Verfeinert use_case_primary='agentic' um Multi-Agent-Indikator; Web-Export-Filter."
+    since: v4.7.0
+
+  - slug: Coder
+    label: "Coder"
+    description: "Modell ist auf Code-Generierung spezialisiert (Use-Case-Indikator)."
+    consumers: [use_case_inference]
+    programmatic_effect: "use_case_primary='coding' (nur wenn NICHT zusammen mit 'General')."
+    since: v4.4.0
+
+  - slug: General
+    label: "Generalist"
+    description: "Allround-Modell ohne spezifischen Use-Case-Fokus."
+    consumers: [use_case_inference]
+    programmatic_effect: "Marker für use_case_primary='generalist'; blockiert 'Coder'→coding Mapping."
+    since: v4.4.0
+
+  - slug: Instruct
+    label: "Instruction-Tuned"
+    description: "Modell wurde explizit auf Instruction-Following finegetuned."
+    consumers: [web_export_filter]
+    programmatic_effect: "Web-Export-Filter 'Instruction-Tuned'."
+    since: v4.4.0
+
+# ---------------------------------------------------------------------------
+# 3. Informational Tags (redaktionell, Web-Export-Filter, kein Code-Effekt)
+# ---------------------------------------------------------------------------
+# Werden im Web-Export als Filter-Badges angezeigt, haben aber keine
+# Auswirkung auf Token-Budget, use_case-Inferenz oder Validator-Warnungen.
+informational_tags:
+
+  - slug: Long-Context
+    label: "Long Context"
+    description: "Kontextfenster > 100K Tokens. Kanonische Schreibweise mit Bindestrich."
+    consumers: [web_export_filter]
+    since: v4.7.0
+
+  - slug: Multilingual
+    label: "Multilingual"
+    description: "Modell unterstützt viele Sprachen nativ (z.B. 100+)."
+    consumers: [web_export_filter]
+    since: v4.7.0
+
+  - slug: Preview
+    label: "Preview"
+    description: "Experimental-/Preview-Release des Modells (z.B. 'gemini-3_1-pro-preview')."
+    consumers: [web_export_filter]
+    since: v4.7.0
+
+  - slug: Uncensored
+    label: "Uncensored"
+    description: "Modell wurde durch Abliteration oder Restriktions-Reduktion entschärft."
+    consumers: [web_export_filter, risk_assessment]
+    since: v4.7.0
+
+  - slug: Uncensored-Finetuned
+    label: "Uncensored Fine-Tuned"
+    description: "Community-Fine-Tune mit reduzierten Restriktionen (vs. herstellerseitiges Uncensored)."
+    consumers: [web_export_filter, risk_assessment]
+    since: v4.7.0
+
+  - slug: Community-Quant
+    label: "Community-Quantisierung"
+    description: "Quantisierung durch Community (z.B. UndiX, TheBloke), nicht direkt vom Hersteller."
+    consumers: [web_export_filter]
+    since: v4.7.0
+
+  - slug: Prompt-Caching
+    label: "Prompt Caching"
+    description: "Provider unterstützt explizites Prompt-Caching für effiziente wiederholte Kontexte."
+    consumers: [web_export_filter]
+    since: v4.7.0
+
+  - slug: No-Reasoning
+    label: "No Reasoning"
+    description: "Modell hat explizit KEINEN Thinking-Modus (Gegenteil von Thinking)."
+    consumers: [web_export_filter]
+    since: v4.7.0
+
+  - slug: Fast-Reasoning
+    label: "Fast Reasoning"
+    description: "Reasoning mit reduziertem Token-Budget für schnelle Antworten."
+    consumers: [web_export_filter]
+    since: v4.7.0
+
+# ---------------------------------------------------------------------------
+# 4. Deprecated Tags (mit Normalisierung)
+# ---------------------------------------------------------------------------
+# Diese Tags sind in alten Karten vorhanden, sollen aber nicht mehr
+# verwendet werden. Migrations-Script normalisiert sie automatisch.
+deprecated_tags:
+
+  - slug: "Long Context"
+    normalized_to: "Long-Context"
+    reason: "Schreibweise vereinheitlichen (Kebab-Case statt Leerzeichen)."
+    since: v4.7.0
+
+  - slug: "Hybrid-Attention"
+    normalized_to: null
+    reason: "Zu spezifisch für Endnutzer. parameter_architecture='hybrid' + summary/strengths transportiert die Info."
+    since: v4.7.0
+
+  - slug: "Mamba-Hybrid"
+    normalized_to: null
+    reason: "Architektur-Implementierungs-Detail; konsolidiert in parameter_architecture='hybrid'."
+    since: v4.7.0
+
+  - slug: "Dual-Attention"
+    normalized_to: null
+    reason: "Architektur-Implementierungs-Detail; konsolidiert in parameter_architecture='hybrid'."
+    since: v4.7.0
+
+  - slug: "DeltaNet"
+    normalized_to: null
+    reason: "Architektur-Implementierungs-Detail; konsolidiert in parameter_architecture='hybrid'."
+    since: v4.7.0
+
+  - slug: "MSA"
+    normalized_to: null
+    reason: "Modell-spezifische Abkürzung (Multi-head Slot Attention bei MiniMax M3); siehe summary."
+    since: v4.7.0
+
+  - slug: "MoE"
+    normalized_to: null
+    reason: "Redundant mit parameter_architecture='moe'. Tag-Wert wurde durch das explizite Feld ersetzt."
+    since: v4.7.0
+
+  - slug: "Coding"
+    normalized_to: "Coder"
+    reason: "Konsolidierung: nur 'Coder' als Tag, da use_case_primary='coding' das Feld schon abdeckt."
+    since: v4.7.0
+
+  - slug: "Reasoning"
+    normalized_to: null
+    reason: "Doppelung mit use_case_primary='reasoning' oder Thinking-Tag. Entfernt."
+    since: v4.7.0
+
+  - slug: "Flash"
+    normalized_to: null
+    reason: "Branding-Suffix (z.B. 'Gemini Flash'). Nicht in Registry — Variante gehört in model_family."
+    since: v4.7.0
+
+  - slug: "Lite"
+    normalized_to: null
+    reason: "Branding-Suffix. Nicht in Registry — Variante gehört in model_family."
+    since: v4.7.0
+
+  - slug: "Pro"
+    normalized_to: null
+    reason: "Branding-Suffix. Nicht in Registry — Variante gehört in model_family."
+    since: v4.7.0
+
+  - slug: "Fast"
+    normalized_to: null
+    reason: "Branding-Suffix. Nicht in Registry — Variante gehört in model_family."
+    since: v4.7.0
+
+  - slug: "Real-time"
+    normalized_to: null
+    reason: "Marketing-Charakterisierung, nicht technische Klassifikation."
+    since: v4.7.0
+
+  - slug: "High-Throughput"
+    normalized_to: null
+    reason: "Marketing-Charakterisierung, nicht technische Klassifikation."
+    since: v4.7.0
+
+  - slug: "Low-Cost"
+    normalized_to: null
+    reason: "Marketing-Charakterisierung, nicht technische Klassifikation."
+    since: v4.7.0
+
+  - slug: "High-Precision"
+    normalized_to: null
+    reason: "Marketing-Charakterisierung, nicht technische Klassifikation."
+    since: v4.7.0
+
+  - slug: "Function-Calling"
+    normalized_to: null
+    reason: "Redundant mit supports_tool_use=true. Konsolidiert in supports_tool_use."
+    since: v4.7.0
+
+  - slug: "Computer-Use"
+    normalized_to: null
+    reason: "Spezialfall von Tool-Use; besser in summary/strengths dokumentiert."
+    since: v4.7.0
+
+# ---------------------------------------------------------------------------
+# 5. Reasoning-Trigger-Liste (Modellname-Substrings)
+# ---------------------------------------------------------------------------
+# Wird von utils/model_utils.is_reasoning_model() ausgewertet. Vor dem
+# 5× Reasoning-Multiplikator in resolve_token_budget() geprüft.
+reasoning_triggers:
+  - deepseek-r1
+  - reasoning
+  - phi4
+  - qwq
+  - o1
+  - o3
+  - o4
+  - magistral
+  - glm-5
+  - minimax-m2
+  - gemini-2.5
+  - kimi-k2-thinking
+  - qwen3.6
+  - qwen3-coder
+  - grok-3-mini
+  - opus-4
+  - sonnet-4

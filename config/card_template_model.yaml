@@ -191,10 +191,28 @@ required_fields:
     type: list[str]
     required: true
     default: ["General"]
-    description: "Tags für Architektur-Filter im Leaderboard"
+    description: "Tags für Architektur-Filter im Leaderboard (Whitelist: siehe config/card_vocabulary.yaml)"
     consumers: [leaderboard, web_export]
     since: "v1.0"
     example: ["General", "Instruct"]
+
+  - name: input_modalities
+    type: list[str]
+    required: true
+    default: ["text"]
+    description: "Eingabe-Modalitäten, die das Modell nativ verarbeitet. 'text' ist immer implizit. Kontrollierte Werte: text, image, audio, video (siehe classification_taxonomy.json#input_modalities)."
+    consumers: [web_export, use_case_inference, leaderboard]
+    since: "v4.7.0"
+    example: ["text", "image"]
+
+  - name: output_modalities
+    type: list[str]
+    required: true
+    default: ["text"]
+    description: "Ausgabe-Modalitäten, die das Modell erzeugen kann. 'text' ist immer implizit. Kontrollierte Werte: text, image, audio (siehe classification_taxonomy.json#output_modalities)."
+    consumers: [web_export, leaderboard]
+    since: "v4.7.0"
+    example: ["text"]
 
   # --- Metadaten (index + card_status) ---
   - name: unknown
@@ -321,10 +339,12 @@ required_fields:
     type: str
     required: true
     default: "TODO"
-    description: "proprietary | open-weights | open-source | research-only"
+    description: "proprietary | open-weights | restricted-weights"
     consumers: [leaderboard, review]
     since: "v1.0"
     example: "proprietary"
+    # Whitelist-SSoT: config/classification_taxonomy.json > weights_license_tier.values
+    # Wird von utils/card_utils.py:get_valid_values() validiert.
 
   # --- Pricing (cost) ---
   - name: model_version
@@ -358,10 +378,12 @@ required_fields:
     type: str
     required: true
     default: "generalist"
-    description: "generalist | agentic | code | reasoning | ..."
+    description: "generalist | coding | reasoning | vision-language | agentic"
     consumers: [leaderboard, review]
     since: "v1.0"
     example: "generalist"
+    # Whitelist-SSoT: config/classification_taxonomy.json > use_case.values
+    # Wird von utils/card_utils.py:get_valid_values() validiert.
 
   # --- Architektur (risk_calc + leaderboard) ---
   - name: parameter_architecture
@@ -372,6 +394,8 @@ required_fields:
     consumers: [risk_calc, leaderboard, review]
     since: "v1.0"
     example: "dense"
+    # Whitelist-SSoT: config/classification_taxonomy.json > parameter_architecture.values
+    # Wird von utils/card_utils.py:get_valid_values() validiert.
 
   - name: params_total_b
     type: float
@@ -481,6 +505,72 @@ optional_fields:
     since: "v4.7.1"
     example: ["<think>", "<reasoning>"]
 
+  # --- Sampling-Defaults (v4.7.2) ---
+  # Modell-spezifische Sampling-Parameter. Wert 'null' = Pipeline-Default
+  # greift (z.B. OpenAI-Default fuer temperature). Konsumenten: asset-Pipeline
+  # (vor jeder Inferenz angewandt), probe (Thinking-Probe).
+  - name: top_p
+    type: float
+    required: false
+    default: null
+    description: "Nucleus-Sampling-Threshold (0.0-1.0). null = Pipeline-Default."
+    consumers: [asset, probe]
+    since: "v4.7.2"
+    example: 0.9
+
+  - name: top_k
+    type: int
+    required: false
+    default: null
+    description: "Top-K-Limit fuer Token-Auswahl. null = Pipeline-Default."
+    consumers: [asset, probe]
+    since: "v4.7.2"
+    example: 40
+
+  - name: repetition_penalty
+    type: float
+    required: false
+    default: null
+    description: "Strafterm fuer wiederholte Tokens (oft > 1.0, z.B. 1.05). null = Pipeline-Default."
+    consumers: [asset, probe]
+    since: "v4.7.2"
+    example: 1.05
+
+  - name: frequency_penalty
+    type: float
+    required: false
+    default: null
+    description: "OpenAI-spezifisch (-2.0 bis 2.0). null = Pipeline-Default."
+    consumers: [asset, probe]
+    since: "v4.7.2"
+    example: 0.0
+
+  - name: presence_penalty
+    type: float
+    required: false
+    default: null
+    description: "OpenAI-spezifisch (-2.0 bis 2.0). null = Pipeline-Default."
+    consumers: [asset, probe]
+    since: "v4.7.2"
+    example: 0.0
+
+  - name: seed
+    type: int
+    required: false
+    default: null
+    description: "Reproduzierbarkeits-Seed (int). null = Pipeline-Default (kein Seed)."
+    consumers: [asset, probe]
+    since: "v4.7.2"
+    example: 42
+
+  - name: stop_sequences
+    type: list[str]
+    required: false
+    default: null
+    description: "Liste von Stop-Sequenzen, bei denen die Generierung abbricht. null = Pipeline-Default."
+    consumers: [asset, judge]
+    since: "v4.7.2"
+    example: ["\n\n", "###"]
 # ----------------------------------------------------------------------------
 # Validator-Konfiguration
 # ----------------------------------------------------------------------------

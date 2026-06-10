@@ -70,10 +70,16 @@ providers:
       models:
       - id: gpt-5.5
         name: GPT-5.5
+      # - id: gpt-5.5-pro
+      #   name: GPT-5.5 Pro
       - id: gpt-5.4
         name: GPT-5.4
+      # - id: gpt-5.4-pro
+      #   name: GPT-5.4 Pro
       - id: gpt-5.4-mini
         name: GPT-5.4 Mini
+      - id: gpt-5.4-nano
+        name: GPT-5.4 Nano
       - id: o4-mini
         name: o4-mini
       - id: gpt-5
@@ -458,6 +464,97 @@ providers:
       parallel: 4
       hardware_profile: dgx_spark_cuda
       models:
+        # nano-desktop-models
+      # - id: gemma-3-12b-it
+      #   name: Gemma 3 12B Instruct Q4_K_M (GGUF)
+      #   model_file: nano-desktop-modells/gemma-3-12b-it-Q4_K_M.gguf
+      #   n_gpu_layers: 99
+
+      # - id: gemma-3-12b-it-q8
+      #   name: Gemma 3 12B Instruct Q8_0 (GGUF)
+      #   model_file: nano-desktop-modells/google_gemma-3-12b-it-Q8_0.gguf
+      #   n_gpu_layers: 99
+      # - id: gemma-4-12b-it-q4
+      #   name: Gemma 4 12B Instruct Q4_K_XL (GGUF)
+      #   model_file: nano-desktop-modells/gemma-4-12b-it-UD-Q4_K_XL.gguf
+      #   n_gpu_layers: 99
+
+      # - id: gemma-4-12b-it-q6
+      #   name: Gemma 4 12B Instruct Q6_K_XL (GGUF)
+      #   model_file: gemma-4-12b-it-UD-Q6_K_XL.gguf
+      #   n_gpu_layers: 99
+
+      # - id: gemma-4-12b-it-q8
+      #   name: Gemma 4 12B Instruct Q8_K_XL (GGUF)
+      #   model_file: nano-desktop-modells/gemma-4-12b-it-UD-Q8_K_XL.gguf
+      #   n_gpu_layers: 99
+
+      # - id: gemma-4-e4b
+      #   name: Gemma 4 E4B (GGUF)
+      #   model_file: nano-desktop-modells/gemma-4-E4B.gguf
+      #   n_gpu_layers: 99
+
+      # - id: google-gemma-3-12b-it-q8
+      #   name: Google Gemma 3 12B Q8_0 (GGUF)
+      #   model_file: nano-desktop-modells/google_gemma-3-12b-it-Q8_0.gguf
+      #   n_gpu_layers: 99
+
+      # - id: hermes-3-8b
+      #   name: Hermes 3 Llama 3.1 8B Q6_K_L (GGUF)
+      #   model_file: nano-desktop-modells/Hermes-3-Llama-3.1-8B-Q6_K_L.gguf
+      #   n_gpu_layers: 99
+
+      # - id: hermes-4-14b-abliterated
+      #   name: Hermes 4 14B BF16 Abliterated (GGUF)
+      #   model_file: nano-desktop-modells/hermes-4-14b-bf16-abliterated-q6_k.gguf
+      #   n_gpu_layers: 99
+
+      # - id: hermes-4-14b-q4
+      #   name: Hermes 4 14B Q4_K_M (GGUF)
+      #   model_file: nano-desktop-modells/hermes-4-14b-q4_k_m.gguf
+      #   n_gpu_layers: 99
+
+      # - id: qwen2.5-coder-7b
+      #   name: Qwen 2.5 Coder 7B Instruct Q6_K (GGUF)
+      #   model_file: nano-desktop-modells/qwen2.5-coder-7b-instruct-q6_k.gguf
+      #   n_gpu_layers: 99
+
+      # - id: qwen2.5-vl-7b
+      #   name: Qwen 2.5 Vision 7B Q4_K_M (GGUF)
+      #   model_file: nano-desktop-modells/qwen2.5-vl-7b-instruct-q4_k_m.gguf
+      #   n_gpu_layers: 99
+
+      # - id: qwen3-14b
+      #   name: Qwen 3 14B Q6_K (GGUF)
+      #   model_file: nano-desktop-modells/Qwen3-14B-Q6_K.gguf
+      #   n_gpu_layers: 99
+
+      # - id: qwen3-4b
+      #   name: Qwen 3 4B Q6_K (GGUF)
+      #   model_file: nano-desktop-modells/Qwen3-4B-Q6_K.gguf
+      #   n_gpu_layers: 99
+
+      # - id: qwen3.5-4b-q4
+      #   name: Qwen 3.5 4B Q4_K_XL (GGUF)
+      #   model_file: nano-desktop-modells/Qwen3.5-4B-UD-Q4_K_XL.gguf
+      #   n_gpu_layers: 99
+
+      # - id: qwen3.5-4b-q6
+      #   name: Qwen 3.5 4B Q6_K_XL (GGUF)
+      #   model_file: nano-desktop-modells/Qwen3.5-4B-UD-Q6_K_XL.gguf
+      #   n_gpu_layers: 99
+
+      # - id: qwen3.5-4b-q8
+      #   name: Qwen 3.5 4B Q8_K_XL (GGUF)
+      #   model_file: nano-desktop-modells/Qwen3.5-4B-UD-Q8_K_XL.gguf
+      #   n_gpu_layers: 99
+
+      # - id: qwen3.5-9b
+      #   name: Qwen 3.5 9B Q6_K_XL (GGUF)
+      #   model_file: nano-desktop-modells/Qwen3.5-9B-UD-Q6_K_XL.gguf
+      #   n_gpu_layers: 99
+
+        # server-models
       - id: qwen3.6-35b-a3b-q8
         name: Qwen 3.6 35B-A3B Q8_K_XL (GGUF)
         model_file: Qwen3.6-35B-A3B-UD-Q8_K_XL.gguf

@@ -5,6 +5,17 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## [v4.7.5] - 2026-06-10
+
+**`generate_model_cards.py` an die Validate-Card-Konvention angeglichen.**
+
+Rein strukturelle und stilistische Anpassung. Keine funktionalen Änderungen am `ensure_card()`-Verhalten. Card-Erstellung folgt jetzt denselben Architektur- und Prozessregeln wie Card-Validierung (`validate_cards.py`, Phase 24). 726/726 Tests grün, +25 neue Tests in `tests/test_generate_model_cards.py`. CLI-Flags konsolidiert (`--model-id`, `--card-type`, `--force`, `--interactive`, `--json`); Flags `--update`/`--yes`/`--dry-run` entfernt (duplikativ zu `sync_cards.py` — SRP-Trennung). Neue SSoT-Funktionen `cards_dir()` + `rebuild_card_index()` in `utils/card_template.py`.
+
+### Follow-up (Doku-Konsistenz)
+- **`Makefile` — `model-cards-update` repariert** — Delegiert jetzt auf `cards-sync` (statt auf das entfernte `--update`-Flag) und gibt einen Migrations-Hinweis aus. Vermeidet stille CLI-Fehler bei Usern, die den Target noch kennen.
+- **`docs/CARD_MANAGEMENT.md` — Tabelle `Make-Targets` und CLI-Referenz präzisiert** — `model-cards-update`-Zeile durch `cards-sync CARD_TYPE=model` ersetzt, `--card-type`-Flag für `generate_model_cards.py` ergänzt, doppeltes `## Card-Lifecycle`-Heading bereinigt, Block-Code-Beispiel für `generate_model_cards.py --card-type model --json` ergänzt.
+
+
 ## [v4.7.4] - 2026-06-10
 
 **Heartbeat-Intervall konfigurierbar — Terminal-Spam-Reduktion.**

@@ -18,10 +18,213 @@ Regeln:
 from __future__ import annotations
 
 import json
+import logging
 from copy import deepcopy
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
+
+logger = logging.getLogger(__name__)
+
+# ---------------------------------------------------------------------------
+# Taxonomie-SSoT (config/classification_taxonomy.json)
+# ---------------------------------------------------------------------------
+# Single source of truth für kontrollierte Vokabulare. Wird von
+# - ensure_card() (Defaults-Validierung)
+# - scripts/dev/validate_model_cards.py (Whitelist-Prüfung)
+# - utils/model_utils.py:WEIGHTS_TIER_DISPLAY (Runtime-Mapping)
+# konsumiert. Valid-Werte NICHT hier duplizieren — nur aus Taxonomie lesen.
+
+_TAXONOMY_PATH = Path(__file__).resolve().parent.parent / "config" / "classification_taxonomy.json"
+_TAXONOMY_CACHE: dict[str, dict[str, Any]] | None = None
+
+
+def load_taxonomy() -> dict[str, dict[str, Any]]:
+    """Lädt die Klassifikations-Taxonomie (SSoT) mit Caching.
+
+    Returns:
+        Dict[section_name, section_dict] — z.B. {"use_case": {...}, "weights_license_tier": {...}}.
+
+    Raises:
+        FileNotFoundError: wenn config/classification_taxonomy.json fehlt.
+    """
+    global _TAXONOMY_CACHE
+    if _TAXONOMY_CACHE is None:
+        if not _TAXONOMY_PATH.exists():
+            raise FileNotFoundError(
+                f"Taxonomie-Datei fehlt: {_TAXONOMY_PATH}. "
+                f"Diese ist SSoT für kontrollierte Vokabulare (weights_license_tier, use_case_primary, ...)."
+            )
+        with _TAXONOMY_PATH.open(encoding="utf-8") as f:
+            _TAXONOMY_CACHE = json.load(f)
+    return _TAXONOMY_CACHE
+
+
+def get_valid_values(section: str) -> frozenset[str]:
+    """Gibt die gültigen Werte einer Taxonomie-Section zurück.
+
+    Args:
+        section: Key in classification_taxonomy.json (z.B. "weights_license_tier", "use_case", "parameter_architecture").
+
+    Returns:
+        frozenset der erlaubten Werte. Fallback: leeres frozenset wenn Section fehlt.
+    """
+    try:
+        taxonomy = load_taxonomy()
+        section_data = taxonomy.get(section, {})
+        return frozenset(section_data.get("values", {}).keys())
+    except (FileNotFoundError, json.JSONDecodeError) as exc:
+        logger.warning("Taxonomie-Section '%s' nicht ladbar: %s", section, exc)
+        return frozenset()
+
+
+def clear_taxonomy_cache() -> None:
+    """Setzt den Taxonomie-Cache zurück (für Tests)."""
+    global _TAXONOMY_CACHE
+    _TAXONOMY_CACHE = None
+
+
+# ---------------------------------------------------------------------------
+# Card-Vokabular-SSoT (config/card_vocabulary.yaml)
+# ---------------------------------------------------------------------------
+# Erweiterte Registry für Tag-Vokabulare, Normalisierungen und Reasoning-
+# Trigger-Listen. Wird konsumiert von:
+#   - scripts/dev/validate_model_cards.py (Tag-Whitelist)
+#   - scripts/dev/migrate_architecture_tags.py (Normalisierung)
+#   - utils/model_utils.py (Reasoning-Trigger-Liste)
+#   - scripts/web_export.py (Tag-Filter)
+# Struktur: controlled_fields, reserved_tags, informational_tags,
+#           deprecated_tags, reasoning_triggers.
+
+import yaml  # type: ignore[import-untyped]
+
+_VOCABULARY_PATH = Path(__file__).resolve().parent.parent / "config" / "card_vocabulary.yaml"
+_VOCABULARY_CACHE: dict[str, Any] | None = None
+
+
+def load_vocabulary() -> dict[str, Any]:
+    """Lädt die Card-Vokabular-Registry (SSoT) mit Caching.
+
+    Returns:
+        Dict mit Sektionen: controlled_fields, reserved_tags,
+        informational_tags, deprecated_tags, reasoning_triggers.
+
+    Raises:
+        FileNotFoundError: wenn config/card_vocabulary.yaml fehlt.
+    """
+    global _VOCABULARY_CACHE
+    if _VOCABULARY_CACHE is None:
+        if not _VOCABULARY_PATH.exists():
+            raise FileNotFoundError(
+                f"Vokabular-Registry fehlt: {_VOCABULARY_PATH}. "
+                f"Diese ist SSoT für Tag-Vokabulare und Normalisierungen."
+            )
+        with _VOCABULARY_PATH.open(encoding="utf-8") as f:
+            _VOCABULARY_CACHE = yaml.safe_load(f)
+    return _VOCABULARY_CACHE
+
+
+def get_reserved_tags() -> frozenset[str]:
+    """Gibt alle programmatisch wirksamen Tag-Slugs zurück (Whitelist)."""
+    try:
+        vocab = load_vocabulary()
+        return frozenset(t["slug"] for t in vocab.get("reserved_tags", []))
+    except (FileNotFoundError, KeyError) as exc:
+        logger.warning("Vokabular-Registry für reserved_tags nicht ladbar: %s", exc)
+        return frozenset()
+
+
+def get_informational_tags() -> frozenset[str]:
+    """Gibt alle redaktionellen Tag-Slugs zurück (Whitelist)."""
+    try:
+        vocab = load_vocabulary()
+        return frozenset(t["slug"] for t in vocab.get("informational_tags", []))
+    except (FileNotFoundError, KeyError) as exc:
+        logger.warning("Vokabular-Registry für informational_tags nicht ladbar: %s", exc)
+        return frozenset()
+
+
+def get_all_known_tags() -> frozenset[str]:
+    """Vereinigung von reserved + informational + deprecated (für Whitelist-Validierung)."""
+    try:
+        vocab = load_vocabulary()
+        slugs: set[str] = set()
+        for section in ("reserved_tags", "informational_tags", "deprecated_tags"):
+            slugs.update(t["slug"] for t in vocab.get(section, []))
+        return frozenset(slugs)
+    except (FileNotFoundError, KeyError) as exc:
+        logger.warning("Vokabular-Registry nicht ladbar: %s", exc)
+        return frozenset()
+
+
+def get_deprecated_normalizations() -> dict[str, str | None]:
+    """Gibt ein Mapping {alter_slug: normalisierter_slug | None} zurück.
+
+    None bedeutet: Tag wird entfernt (nicht durch einen anderen ersetzt).
+    """
+    try:
+        vocab = load_vocabulary()
+        return {
+            t["slug"]: t.get("normalized_to")
+            for t in vocab.get("deprecated_tags", [])
+        }
+    except (FileNotFoundError, KeyError) as exc:
+        logger.warning("Vokabular-Registry für deprecated_tags nicht ladbar: %s", exc)
+        return {}
+
+
+def get_reasoning_triggers() -> list[str]:
+    """Gibt die Liste der Modellname-Substrings zurück, die den 5× Reasoning-Multiplikator triggern."""
+    try:
+        vocab = load_vocabulary()
+        return list(vocab.get("reasoning_triggers", []))
+    except (FileNotFoundError, KeyError) as exc:
+        logger.warning("Vokabular-Registry für reasoning_triggers nicht ladbar: %s", exc)
+        return []
+
+
+def normalize_tags(tags: list[str]) -> tuple[list[str], list[tuple[str, str | None, str]]]:
+    """Normalisiert eine Tag-Liste gemäß Vokabular-Registry.
+
+    Args:
+        tags: Rohe Tag-Liste aus einer Card.
+
+    Returns:
+        Tuple (normalisierte_tags, migrations_report).
+        migrations_report enthält (alter_slug, neuer_slug | None, grund) für jeden migrierten Tag.
+        None als neuer_slug bedeutet: Tag wurde entfernt.
+    """
+    normalizations = get_deprecated_normalizations()
+    normalized: list[str] = []
+    report: list[tuple[str, str | None, str]] = []
+
+    for tag in tags:
+        if tag in normalizations:
+            new_value = normalizations[tag]
+            # Lookup Grund aus Registry
+            try:
+                vocab = load_vocabulary()
+                reason = next(
+                    (t.get("reason", "") for t in vocab.get("deprecated_tags", []) if t["slug"] == tag),
+                    "",
+                )
+            except (FileNotFoundError, KeyError):
+                reason = ""
+            report.append((tag, new_value, reason))
+            if new_value is not None and new_value not in normalized:
+                normalized.append(new_value)
+        else:
+            if tag not in normalized:
+                normalized.append(tag)
+
+    return normalized, report
+
+
+def clear_vocabulary_cache() -> None:
+    """Setzt den Vokabular-Cache zurück (für Tests)."""
+    global _VOCABULARY_CACHE
+    _VOCABULARY_CACHE = None
+
 
 # ---------------------------------------------------------------------------
 # Kanonisches Template — SSoT für Feldstruktur und Reihenfolge
@@ -59,6 +262,10 @@ _CARD_TEMPLATE: dict[str, Any] = {
     "known_limitations": ["TODO"],
     "judge_context_hint": "TODO",
     "architecture_tags": ["General"],
+    # ---- Modalität (SSoT: classification_taxonomy.json#input/output_modalities) --
+    "input_modalities": ["text"],
+    "output_modalities": ["text"],
+
     # ---- Tool-Use ------------------------------------------------------
     "supports_tool_use": None,
     # ---- Lizenz & Kategorisierung --------------------------------------
@@ -191,6 +398,40 @@ def ensure_card(
     for key, value in existing.items():
         if key not in result:
             result[key] = value
+
+    # Whitelist-Check für kontrollierte Vokabulare (SSoT: classification_taxonomy).
+    # "TODO" ist explizit als "noch zu befüllen"-Platzhalter erlaubt — keine Warnung.
+    # Andere Werte, die nicht in der Taxonomie stehen, lösen eine WARN aus.
+    # Das ist ein Hinweis, kein Hard-Error: der Autor kann bewusst abweichen.
+    _controlled_fields = {
+        "weights_license_tier": "weights_license_tier",
+        "use_case_primary": "use_case",
+        "parameter_architecture": "parameter_architecture",
+        "input_modalities": "input_modalities",
+        "output_modalities": "output_modalities",
+    }
+    for card_field, taxonomy_section in _controlled_fields.items():
+        value = result.get(card_field)
+        if value is None or value == "TODO" or value == "":
+            continue
+        # Listen-Felder (Modalitäten) vs. Skalar-Felder
+        if isinstance(value, list):
+            valid = get_valid_values(taxonomy_section)
+            invalid_items = [v for v in value if valid and v not in valid]
+            if invalid_items:
+                logger.warning(
+                    "Card '%s': %s enthält ungültige Werte %s. "
+                    "Erlaubte Werte: %s.",
+                    model_id, card_field, invalid_items, sorted(valid),
+                )
+        else:
+            valid = get_valid_values(taxonomy_section)
+            if valid and value not in valid:
+                logger.warning(
+                    "Card '%s': %s='%s' ist nicht in der Taxonomie-Section '%s'. "
+                    "Erlaubte Werte: %s. 'TODO' ist explizit als Platzhalter erlaubt.",
+                    model_id, card_field, value, taxonomy_section, sorted(valid),
+                )
 
     card_path.parent.mkdir(parents=True, exist_ok=True)
     card_path.write_text(

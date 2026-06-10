@@ -105,6 +105,145 @@ werden (Python-Dict + YAML), damit Generator und Validator synchron
 bleiben. Die Card-Sync-Logik (`utils/card_sync.py`) liest den Python-Dict
 und schreibt die JSON-Dateien.
 
+**Taxonomie-SSoT (seit v4.7.x):** Die kontrollierten Vokabulare für
+`weights_license_tier`, `use_case` und `parameter_architecture` leben in
+`config/classification_taxonomy.json`. Generator, Validator und
+`ensure_card()` lesen alle aus dieser Datei via
+`utils.card_utils.load_taxonomy()` / `get_valid_values()`. Eine
+Liste der gültigen Werte ist damit immer an einer einzigen Stelle zu
+pflegen — Template-Beschreibungen werden durch
+`tests/test_taxonomy_ssot.py::TestTemplateTaxonomySync` automatisch
+gegen die Taxonomie synchron gehalten.
+
+---
+
+## Placeholder-Konvention
+
+Bevor die Taxonomie-SSoT eingeführt wurde, enthielten Karten häufig
+Workaround-Strings in den kontrollierten Feldern. Diese sind inzwischen
+**verboten** und werden durch `make validate-cards` bzw. den Regressionstest
+`tests/test_taxonomy_ssot.py::TestNoPlaceholderStrings` abgefangen.
+
+### Verbotene Werte in kontrollierten Feldern
+
+| Feld                       | Verbotene Placeholder                                | Korrekter Wert (Beispiele)                          |
+|----------------------------|------------------------------------------------------|-----------------------------------------------------|
+| `weights_license_tier`     | `open-weights-pending`, `TODO`                       | `proprietary`, `open-weights`, `restricted-weights` |
+| `use_case_primary`         | `code-generation`, `code-gen`, `frei`, `TODO`        | `generalist`, `coding`, `reasoning`, `vision-language`, `agentic` |
+| `parameter_architecture`   | `hybrid-attention`, `unknown`, `TODO`                | `dense`, `moe`, `hybrid`                            |
+
+`TODO` ist **ausschließlich** in `weights_license_tier` als Fallback für
+noch nicht recherchierte Karten zulässig (Taxonomie-Fallback). In allen
+anderen kontrollierten Feldern ist `TODO` ein Validierungs-Fehler.
+
+### Verbotene Architektur-Tags
+
+`architecture_tags` ist eine freie Liste, aber zwei Werte sind
+reserviert und haben eine spezifische Bedeutung im Validator
+(`scripts/dev/validate_model_cards.py`):
+
+| Tag              | Bedeutung                                                              |
+|------------------|-------------------------------------------------------------------------|
+| `Multimodal`     | Primär visuell: löst Warnung aus, wenn `use_case_primary != vision-language` |
+| `Vision-Capable` | Sekundäres Vision-Feature (z.B. Claude 4.x, Qwen 3.6 Plus bei agentic-Use-Case) — löst **keine** Warnung aus |
+
+**Faustregel:** `Multimodal` nur, wenn das Modell primär für
+Vision-Aufgaben optimiert ist. Andernfalls `Vision-Capable` verwenden.
+
+### Workflow bei neuen Workarounds
+
+Wenn du einen Workaround brauchst (z.B. ein Modell, das in keine
+bestehende Kategorie passt):
+
+1. **Niemals** einen neuen String in die Karten-Datei schreiben.
+2. Stattdessen prüfen, ob die Taxonomie (`config/classification_taxonomy.json`)
+   erweitert werden muss.
+3. Erweiterung in einem separaten Commit mit Begründung.
+4. Template-Beschreibung in `config/card_template_model.yaml` synchron
+   halten — der Test `TestTemplateTaxonomySync` schlägt sonst Alarm.
+
+---
+
+---
+
+## Card Vocabulary Registry (`config/card_vocabulary.yaml`)
+
+Ab v4.7.0 gibt es eine zentrale Registry für alle **programmatisch wirksamen
+Felder und Tags** in Model- und Provider-Cards. Sie ist die Single Source of
+Truth (SSoT) für die kontrollierten Vokabulare, damit Auto-Generatoren,
+Validator und Web-Export dieselbe Definition nutzen.
+
+### Struktur
+
+Die Registry hat vier Sektionen:
+
+| Sektion | Zweck | Code-Effekt? |
+| --- | --- | --- |
+| `controlled_fields` | Verweise auf Taxonomie-Felder (`weights_license_tier`, `use_case_primary` etc.) | ja |
+| `reserved_tags` | Tags, die vom Code aktiv ausgewertet werden (z.B. `Thinking`, `Coder`) | ja |
+| `informational_tags` | Tags, die nur als Web-Export-Filter dienen (z.B. `Long-Context`) | nein |
+| `deprecated_tags` | Alte Tags mit Migrations-Hinweis (z.B. `MoE`, `Mamba-Hybrid`) | normalisiert |
+| `reasoning_triggers` | Modellname-Substrings, die den 5× Reasoning-Multiplikator triggern | ja |
+
+### Konsumenten
+
+Die Registry wird von folgenden Modulen konsumiert:
+
+- `utils/card_utils.py` — Lade-Helper, `normalize_tags()`, `get_reasoning_triggers()`
+- `scripts/dev/validate_model_cards.py` — Tag-Whitelist-Check
+- `scripts/dev/migrate_architecture_tags.py` — Tag-Normalisierung beim Card-Update
+- `utils/model_utils.py` — `is_reasoning_model()` Trigger-Liste
+- `scripts/web_export.py` — Tag-Filter via `_normalize_export_tags()`
+
+### Workflow: Neuen Tag einführen
+
+1. Prüfen, ob der Tag semantisch zur bestehenden Registry passt.
+2. Entscheiden, ob `reserved` (Code-Effekt) oder `informational` (nur Filter).
+3. Eintrag in `config/card_vocabulary.yaml` mit Beschreibung und `since`-Version.
+4. Bei `reserved`: Konsument-Code (z.B. `web_export.py`, `model_utils.py`) implementieren.
+5. Test anpassen in `tests/test_card_vocabulary_ssot.py` (z.B. `must_have`).
+6. Bei Bedarf Bulk-Migration: `python scripts/dev/migrate_architecture_tags.py --dry-run`.
+
+### Workflow: Tag als deprecated markieren
+
+1. In `deprecated_tags` mit `normalized_to` (Slug des Nachfolgers) oder `null` (entfernen) eintragen.
+2. Migrations-Hinweis in `reason` dokumentieren.
+3. `migrate_architecture_tags.py` läuft idempotent — bestehende Karten werden beim nächsten Lauf bereinigt.
+4. Validator warnt bei verbleibenden deprecated Tags (zur Erinnerung).
+
+### Anti-Pattern: Wildwuchs
+
+Unbekannte Tags in `architecture_tags` lösen eine **WARN** im Validator aus.
+Das ist Absicht: Wildwuchs verhindern, Registry als Orientierung für
+Auto-Generatoren erzwingen. Falls ein Generator einen neuen Tag schreibt,
+muss er vorher in der Registry dokumentiert werden.
+
+Beispiel für typische Meldung:
+```
+[WARN] architecture_tags enthält unbekannten Tag 'MyNewTag' — nicht in
+config/card_vocabulary.yaml. Falls gewollt: in reserved_tags/informational_tags
+aufnehmen, sonst entfernen.
+```
+
+### Beispiel: Eintrag in `reserved_tags`
+
+```yaml
+  - slug: Agentic
+    label: "Agentic"
+    description: "Modell ist auf Tool-Use und mehrstufige Aufgabenplanung optimiert."
+    consumers: [use_case_inference]
+    programmatic_effect: "Marker für use_case_primary='agentic'."
+    since: v4.4.0
+```
+
+Felder:
+- `slug` — kanonische Schreibweise (case-sensitive, Kebab-Case bevorzugt)
+- `label` — Anzeige-Name im Web-Export
+- `description` — fachliche Erklärung für Doku und Auto-Generatoren
+- `consumers` — Liste der Module, die den Tag auswerten
+- `programmatic_effect` — kurze Beschreibung der Wirkung (für Audits)
+- `since` — Version, ab der der Tag in der Registry steht
+
 ---
 
 ## Card-Lifecycle
@@ -115,7 +254,7 @@ und schreibt die JSON-Dateien.
 
 ```bash
 # Model Card
-python scripts/analysis/generate_model_cards.py --model claude-opus-4-7
+python scripts/analysis/generate_model_cards.py --model-id claude-opus-4-7
 
 # Provider Card
 python scripts/analysis/generate_provider_cards.py --provider "Anthropic"
@@ -196,8 +335,8 @@ make provider-cards-update
 make provider-cards-update YES=1
 make provider-cards-update DRY_RUN=1
 
-# Über den Model-Generator
-make model-cards-update
+# Über den Model-Generator (DEPRECATED seit v4.7.5: --update entfernt)
+make cards-sync CARD_TYPE=model
 ```
 
 CLI direkt:
@@ -353,6 +492,53 @@ Multi-Prompt-Aggregation, SSoT-Auflösung, Discovery-Inventar).
 
 ---
 
+## Sampling-Defaults (ab v4.7.2)
+
+Modell-spezifische Sampling-Parameter, die in der Card mit `null` belassen werden
+können — dann greift der Pipeline-Default. Sobald ein Wert gesetzt ist, wird
+er in der Asset-Pipeline und im Thinking-Probe respektiert.
+
+| Feld | Typ | Default | Zweck | Provider-spezifisch? |
+| --- | --- | --- | --- | --- |
+| `top_p` | float | `null` | Nucleus-Sampling-Threshold (0.0–1.0) | nein (universell) |
+| `top_k` | int | `null` | Top-K-Limit für Token-Auswahl | nein (universell) |
+| `repetition_penalty` | float | `null` | Strafterm für wiederholte Tokens (oft > 1.0) | nein (universell) |
+| `frequency_penalty` | float | `null` | Wiederholungs-Strafe basierend auf Frequenz | ja (OpenAI) |
+| `presence_penalty` | float | `null` | Anwesenheits-Strafe basierend auf Vorkommen | ja (OpenAI) |
+| `seed` | int | `null` | Reproduzierbarkeits-Seed | nein (universell) |
+| `stop_sequences` | list[str] | `null` | Stop-Sequenzen, bei denen Generierung abbricht | nein (universell) |
+
+**Semantik:**
+- Schlüssel vorhanden, Wert `null` → Pipeline-/Provider-Default greift
+- Schlüssel vorhanden, Wert gesetzt → Modell-spezifische Konfiguration aktiv
+- Schlüssel fehlt → wie `null` (Migration sichert Existenz)
+
+**Bulk-Migration:** `python scripts/dev/add_sampling_keys.py` (idempotent, Dry-Run mit `--dry-run`).
+
+**Beispiel:**
+```json
+{
+  "model_id": "qwen2.5-coder-32b",
+  "top_p": 0.8,
+  "repetition_penalty": 1.05,
+  "stop_sequences": ["\n\nUser:", "###"]
+}
+```
+
+## Top-Level-Field-Whitelist (ab v4.7.2)
+
+Der Validator (`scripts/dev/validate_model_cards.py`) prüft seit v4.7.2, dass
+alle Top-Level-Felder einer Card im Template (`config/card_template_model.yaml`)
+definiert sind. Verhalten:
+
+- **`card_status=complete`:** unbekanntes Feld → WARN (Wildwuchs-Schutz)
+- **`card_status=draft` oder `minimal`:** unbekanntes Feld → toleriert (experimentelle Felder erlaubt)
+
+Damit lassen sich unbekannte Felder in Drafts explorativ ergänzen, ohne dass
+die CI bei `complete`-Cards scheitert. Beim Übergang von `draft` zu `complete`
+muss entweder das Feld ins Template aufgenommen oder aus der Card entfernt
+werden.
+
 ## CLI-Referenz
 
 ### `scripts/analysis/validate_cards.py`
@@ -383,11 +569,22 @@ python scripts/analysis/generate_provider_cards.py --update [--yes] [--dry-run]
 
 ### `scripts/analysis/generate_model_cards.py`
 
+Seit v4.7.5 unterstützt das Skript ein optionales `--card-type {model,provider,all}`-Flag für Pipeline-Integration.
+
 ```bash
-python scripts/analysis/generate_model_cards.py --model claude-opus-4-7
-python scripts/analysis/generate_model_cards.py --model qwen3:14b --provider ollama_local
-python scripts/analysis/generate_model_cards.py --update [--yes] [--dry-run]
+python scripts/analysis/generate_model_cards.py --model-id claude-opus-4-7
+python scripts/analysis/generate_model_cards.py --model-id qwen3:14b --provider ollama_local
+python scripts/analysis/generate_model_cards.py --interactive
+python scripts/analysis/generate_model_cards.py --force --model-id claude-opus-4-7
+python scripts/analysis/generate_model_cards.py --json --model-id claude-opus-4-7
+python scripts/analysis/generate_model_cards.py --card-type model --json    # alle Modelle als JSON-Report
 ```
+
+**Hinweis:** Sync bestehender Karten (fehlende Felder ergänzen, entfernte
+löschen) ist **nicht** Aufgabe dieses Skripts. Dafür
+``python scripts/analysis/sync_cards.py --card-type model [--yes|--dry-run]``
+nutzen. Die früheren Flags ``--update`` / ``--yes`` / ``--dry-run`` wurden
+in v4.7.5 entfernt (SRP-Trennung zwischen Create und Sync).
 
 ### `scripts/analysis/provider_card_status.py`
 
@@ -413,7 +610,7 @@ python scripts/analysis/provider_card_status.py --fail-on-stale
 | `make validate-cards-template` | Schema-Validierung gegen YAML | `CARD_TYPE=…`, `JSON=1`, `FAIL_ON_DRIFT=1` |
 | `make cards-sync` | SSoT-Sync (add + delete mit Confirm) | `CARD_TYPE=…`, `DRY_RUN=1`, `YES=1`, `JSON=1` |
 | `make provider-cards-update` | `--update` für Provider-Generator | `YES=1`, `DRY_RUN=1` |
-| `make model-cards-update` | `--update` für Model-Generator | `YES=1`, `DRY_RUN=1` |
+| `make cards-sync` | Model-Card-Sync mit Template (SSoT) | `CARD_TYPE=model`, `YES=1`, `DRY_RUN=1` |
 | `make provider-cards-status` | Audit-Readiness-Report | `STALE_DAYS=N`, `JSON=1` |
 
 ---

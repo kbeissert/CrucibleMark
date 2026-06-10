@@ -26,6 +26,8 @@ Verwendung:
 """
 from __future__ import annotations
 
+import json
+import logging
 from dataclasses import dataclass, field
 from functools import lru_cache
 from pathlib import Path
@@ -33,6 +35,8 @@ from typing import Any
 
 # YAML ist bereits im Projekt verfügbar (siehe requirements.txt)
 import yaml
+
+logger = logging.getLogger(__name__)
 
 
 ROOT_DIR = Path(__file__).parent.parent
@@ -70,9 +74,7 @@ class CardFieldSpec:
             return True
         if isinstance(value, str) and value.strip() in {"", "TODO", "unknown", "Unknown"}:
             return True
-        if isinstance(value, list) and len(value) == 0:
-            return True
-        return False
+        return bool(isinstance(value, list) and len(value) == 0)
 
 
 @dataclass(frozen=True)
@@ -172,3 +174,70 @@ def load_card_template(card_type: str) -> CardTemplate:
 def clear_cache() -> None:
     """Löscht den LRU-Cache (für Tests)."""
     load_card_template.cache_clear()
+
+
+# ---------------------------------------------------------------------------
+# Card-Verzeichnis-Lookup (SSoT für Cards-Dir je Typ)
+# ---------------------------------------------------------------------------
+# Bisher existierte rebuild_provider_index() in utils/provider_card_template.py,
+# aber kein symmetrisches Pendant für Model Cards. Diese SSoT-Funktion
+# konsolidiert den Index-Rebuild für beide Card-Typen, sodass Generator- und
+# Validate-Skripte dieselbe Pfad- und Schreiblogik nutzen.
+
+_CARDS_DIRS: dict[str, Path] = {
+    "model": ROOT_DIR / "benchmark_scores" / "model_cards",
+    "provider": ROOT_DIR / "benchmark_scores" / "provider_cards",
+}
+
+
+def cards_dir(card_type: str) -> Path:
+    """Gibt das Cards-Verzeichnis für den gegebenen Typ zurück.
+
+    Args:
+        card_type: "model" oder "provider"
+
+    Returns:
+        Pfad zum entsprechenden Cards-Verzeichnis.
+
+    Raises:
+        ValueError: card_type unbekannt.
+    """
+    if card_type not in _CARDS_DIRS:
+        raise ValueError(
+            f"Unbekannter card_type '{card_type}'. "
+            f"Verfügbar: {sorted(_CARDS_DIRS.keys())}"
+        )
+    return _CARDS_DIRS[card_type]
+
+
+def rebuild_card_index(card_type: str) -> int:
+    """Baut _index.json aus allen vorhandenen Einzelkarten neu auf.
+
+    Args:
+        card_type: "model" oder "provider"
+
+    Returns:
+        Anzahl der aufgenommenen Cards.
+
+    Raises:
+        ValueError: card_type unbekannt.
+    """
+    cards_dir_path = cards_dir(card_type)
+    cards: list[dict[str, Any]] = []
+    for p in sorted(cards_dir_path.glob("*.json")):
+        if p.name == "_index.json":
+            continue
+        try:
+            loaded = json.loads(p.read_text(encoding="utf-8"))
+        except (json.JSONDecodeError, OSError) as exc:
+            logger.warning("Konnte %s nicht lesen: %s", p.name, exc)
+            continue
+        if isinstance(loaded, dict):
+            cards.append(loaded)
+
+    index_path = cards_dir_path / "_index.json"
+    index_path.write_text(
+        json.dumps(cards, ensure_ascii=False, indent=2) + "\n",
+        encoding="utf-8",
+    )
+    return len(cards)
