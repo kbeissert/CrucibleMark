@@ -360,7 +360,7 @@ providers:
         n_gpu_layers: 99
       - id: gemma-4-12b-it-ud-q4_k_xl
         name: Gemma 4 12B Instruct UD-Q4_K_XL (GGUF)
-        model_file: gemma-4-12b-it-UD-Q4_K_X.gguf
+        model_file: gemma-4-12b-it-UD-Q4_K_XL.gguf
         n_gpu_layers: 99
       - id: gemma-4-12b-it-ud-q6_k_xl
         name: Gemma 4 12B Instruct UD-Q6_K_XL (GGUF)

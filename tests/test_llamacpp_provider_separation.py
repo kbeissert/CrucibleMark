@@ -414,3 +414,236 @@ def test_build_server_cmd_works_without_defaults_block(two_provider_config):
     assert "--min-p 0.0" in cmd
     assert "--presence-penalty 0.0" in cmd
     assert "--repeat-penalty 1.0" in cmd
+
+
+# ---------------------------------------------------------------------------
+# Pre-Flight-Check: model_file-Existenz (Pitfall-Diagnose 2026-06-10)
+# ---------------------------------------------------------------------------
+
+def test_preflight_check_passes_when_model_file_exists(tmp_path):
+    """Wenn die model_file auf der Disk existiert, gibt der Check True zurück.
+
+    Regression-Test für Pitfall-Diagnose 2026-06-10: ``gemma-4-12b-it-ud-q4_k_xl``
+    lief 180s in Timeout, weil ``model_file`` auf eine nicht-existente Datei
+    zeigte. Mit dem Pre-Flight-Check wird dieser Fail in <1s sichtbar.
+    """
+    real_gguf = tmp_path / "real-model.gguf"
+    real_gguf.write_bytes(b"\x00")  # Existenz reicht für den Check
+
+    config = {
+        "providers": {
+            "local": {
+                "llamacpp": {
+                    "base_url": "http://127.0.0.1:1235/v1",
+                    "model_dir": str(tmp_path),
+                    "server_start_cmd": "llama-server",
+                    "bind_host": "127.0.0.1",
+                    "models": [
+                        {"id": "real-model", "model_file": "real-model.gguf"},
+                    ],
+                },
+            },
+        },
+    }
+    client = LlamaCppLocalClient(config)
+    ok, err = client._preflight_check_model_file("real-model")
+
+    assert ok is True
+    assert err == ""
+
+
+def test_preflight_check_fails_when_model_file_missing(tmp_path):
+    """Tippfehler im model_file (Pitfall 2026-06-10): Check muss fehlschlagen.
+
+    Bei ``gemma-4-12b-it-ud-q4_k_xl`` war in der Config ``...-UD-Q4_K_X.gguf``
+    (ohne ``L``) eingetragen, die Datei hieß aber ``...-UD-Q4_K_XL.gguf``.
+    Der Server lief 180s in Timeout. Mit dem Pre-Flight-Check wird der Fail
+    in <1s sichtbar — Check gibt False zurück mit klarer Fehlermeldung, die
+    den konfigurierten Pfad UND den Provider-Key enthält.
+    """
+    config = {
+        "providers": {
+            "local": {
+                "llamacpp": {
+                    "base_url": "http://127.0.0.1:1235/v1",
+                    "model_dir": str(tmp_path),
+                    "server_start_cmd": "llama-server",
+                    "bind_host": "127.0.0.1",
+                    "models": [
+                        # Tippfehler: UD-Q4_K_X statt UD-Q4_K_XL
+                        {"id": "gemma-4-12b-it-ud-q4_k_xl",
+                         "model_file": "gemma-4-12b-it-UD-Q4_K_X.gguf"},
+                    ],
+                },
+            },
+        },
+    }
+    client = LlamaCppLocalClient(config)
+    ok, err = client._preflight_check_model_file("gemma-4-12b-it-ud-q4_k_xl")
+
+    assert ok is False
+    # Fehlermeldung muss den Pfad UND den Provider-Key nennen,
+    # damit Operator sofort weiß, wo zu suchen ist.
+    assert "gemma-4-12b-it-UD-Q4_K_X.gguf" in err
+    assert "gemma-4-12b-it-ud-q4_k_xl" in err
+    assert "llamacpp" in err  # Provider-Key in der Hinweis-Zeile
+
+
+def test_preflight_check_fails_when_model_file_empty(tmp_path):
+    """Fehlt der model_file-Eintrag in der Config, wirft _resolve_model_path.
+
+    ``_preflight_check_model_file`` fängt die ValueError-Variante ab und
+    liefert (False, fehlermeldung) — damit ``start_server()`` keinen
+    Server-Start versucht.
+    """
+    config = {
+        "providers": {
+            "local": {
+                "llamacpp": {
+                    "base_url": "http://127.0.0.1:1235/v1",
+                    "model_dir": str(tmp_path),
+                    "server_start_cmd": "llama-server",
+                    "bind_host": "127.0.0.1",
+                    "models": [
+                        {"id": "no-file-model", "model_file": ""},
+                    ],
+                },
+            },
+        },
+    }
+    client = LlamaCppLocalClient(config)
+    ok, err = client._preflight_check_model_file("no-file-model")
+
+    assert ok is False
+    assert "no model_file configured" in err
+
+
+def test_preflight_check_uses_correct_provider_key_in_error(tmp_path):
+    """Die Fehlermeldung nennt den richtigen Provider-Key (llamacpp_spark).
+
+    Spark-Provider nutzt ein anderes ``model_dir`` als M4. Der Check muss
+    trotzdem den korrekten Provider-Key in die Fehlermeldung schreiben,
+    damit der Operator den richtigen Config-Block prüft.
+    """
+    config = {
+        "providers": {
+            "local": {
+                "llamacpp_spark": {
+                    "base_url": "http://192.168.1.191:1235/v1",
+                    "model_dir": str(tmp_path),
+                    "server_start_cmd": "ssh ... llama-server",
+                    "bind_host": "0.0.0.0",
+                    "models": [
+                        {"id": "spark-missing",
+                         "model_file": "does-not-exist.gguf"},
+                    ],
+                },
+            },
+        },
+    }
+    client = LlamaCppSparkClient(config)
+    ok, err = client._preflight_check_model_file("spark-missing")
+
+    assert ok is False
+    # Provider-Key MUSS llamacpp_spark sein, nicht llamacpp
+    assert "providers.local.llamacpp_spark.models" in err
+    assert "providers.local.llamacpp.models" not in err
+
+
+def test_start_server_returns_false_on_preflight_failure_without_popen(tmp_path, monkeypatch):
+    """start_server() darf subprocess.Popen NICHT aufrufen, wenn Pre-Flight fehlschlägt.
+
+    Das ist der entscheidende Unterschied: ohne Pre-Flight-Check würde der
+    llama-server mit dem falschen Pfad gestartet, 180s warten, dann aufgeben.
+    Mit Pre-Flight-Check wird der Fehler in <1s entdeckt — und Popen wird
+    NIE aufgerufen (sonst hätten wir genau das Problem, das wir lösen wollen).
+    """
+    config = {
+        "providers": {
+            "local": {
+                "llamacpp": {
+                    "base_url": "http://127.0.0.1:1235/v1",
+                    "model_dir": str(tmp_path),
+                    "server_start_cmd": "llama-server",
+                    "bind_host": "127.0.0.1",
+                    "models": [
+                        {"id": "missing-model",
+                         "model_file": "missing-model.gguf"},
+                    ],
+                },
+            },
+        },
+    }
+    client = LlamaCppLocalClient(config)
+
+    # Popen darf NICHT aufgerufen werden — wir mocken es so, dass ein
+    # versehentlicher Aufruf den Test sofort failen lässt.
+    popen_calls: list[dict[str, object]] = []
+    def fake_popen(*args, **kwargs):  # noqa: ANN001, ANN002, ANN201
+        popen_calls.append({"args": args, "kwargs": kwargs})
+        raise AssertionError(
+            "subprocess.Popen wurde aufgerufen, obwohl Pre-Flight-Check "
+            "fehlgeschlagen ist — das ist der Bug, den wir verhindern wollen."
+        )
+
+    monkeypatch.setattr(
+        "utils.providers.llamacpp_base.subprocess.Popen", fake_popen,
+    )
+
+    # Pre-Flight muss fehlschlagen, _is_healthy muss False zurückgeben
+    # (sonst landen wir in Pfad 1/2/3, die den Pre-Flight nicht aufrufen).
+    monkeypatch.setattr(client, "_is_healthy", lambda: False)
+    monkeypatch.setattr(client, "_query_active_model", lambda: None)
+
+    result = client.start_server("missing-model")
+
+    assert result is False
+    assert popen_calls == []  # Popen wurde NIE aufgerufen
+
+
+def test_start_server_proceeds_to_popen_when_preflight_passes(tmp_path, monkeypatch):
+    """Bei erfolgreichem Pre-Flight wird Popen aufgerufen (Happy-Path).
+
+    Sicherstellt, dass der Pre-Flight-Check nicht versehentlich den
+    Happy-Path blockiert — wenn die Datei existiert, muss der Server-Start
+    normal weiterlaufen.
+    """
+    real_gguf = tmp_path / "ok-model.gguf"
+    real_gguf.write_bytes(b"\x00")
+
+    config = {
+        "providers": {
+            "local": {
+                "llamacpp": {
+                    "base_url": "http://127.0.0.1:1235/v1",
+                    "model_dir": str(tmp_path),
+                    "server_start_cmd": "llama-server",
+                    "bind_host": "127.0.0.1",
+                    "models": [
+                        {"id": "ok-model", "model_file": "ok-model.gguf"},
+                    ],
+                },
+            },
+        },
+    }
+    client = LlamaCppLocalClient(config)
+
+    popen_called: dict[str, object] = {}
+    def fake_popen(*args, **kwargs):  # noqa: ANN001, ANN002, ANN201
+        popen_called["called"] = True
+        class FakeProc:
+            pid = 99999
+        return FakeProc()
+
+    monkeypatch.setattr(
+        "utils.providers.llamacpp_base.subprocess.Popen", fake_popen,
+    )
+    monkeypatch.setattr(client, "_is_healthy", lambda: False)
+    monkeypatch.setattr(client, "_query_active_model", lambda: None)
+    # Readiness-Loop sofort beenden (sonst 180s Wartezeit)
+    monkeypatch.setattr(client, "_wait_for_model_ready", lambda *a, **kw: False)
+
+    result = client.start_server("ok-model")
+
+    assert popen_called.get("called") is True, "Popen wurde nicht aufgerufen"
+    assert result is False  # Server wird nicht ready → False

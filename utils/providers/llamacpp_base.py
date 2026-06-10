@@ -188,6 +188,30 @@ class LlamaCppBaseClient(BaseProviderClient):
         model_dir = Path(os.path.expanduser(self._model_dir()))
         return str(model_dir / model_file)
 
+    def _preflight_check_model_file(self, model_id: str) -> tuple[bool, str]:
+        """Pre-Flight-Check: existiert die model_file auf der Disk?
+
+        Verhindert 180s-Timeout, wenn der ``model_file``-Pfad in der Config
+        falsch konfiguriert ist (Tippfehler, fehlende Datei, falscher
+        ``model_dir``). Pitfall-Diagnose 2026-06-10: ``gemma-4-12b-it-ud-q4_k_xl``
+        war mit ``...-UD-Q4_K_X.gguf`` (ohne ``L``) konfiguriert, der Server
+        konnte die Datei nicht laden und lief 180s in Timeout, obwohl das
+        Problem schon nach <1s erkennbar war.
+
+        Returns:
+            (True, "") wenn die Datei existiert, sonst (False, fehlermeldung).
+        """
+        try:
+            model_path = self._resolve_model_path(model_id)
+        except ValueError as exc:
+            return False, str(exc)
+        if not Path(model_path).is_file():
+            return False, (
+                f"Model-Datei nicht gefunden für '{model_id}': '{model_path}'. "
+                f"Prüfe model_file in providers.local.{self._PROVIDER_KEY}.models."
+            )
+        return True, ""
+
     # ------------------------------------------------------------------
     # Health- und Readiness-Checks
     # ------------------------------------------------------------------
@@ -517,6 +541,15 @@ class LlamaCppBaseClient(BaseProviderClient):
             return self.start_server(model_id)
 
         # Pfad 4: Cold-Start — llama-server launchen und auf Readiness warten
+        # Pre-Flight-Check: existiert die model_file auf der Disk? Spart 180s Timeout
+        # bei Tippfehlern in `model_file` (z.B. fehlendes 'L' bei Q4_K_XL).
+        if model_id:
+            ok, err = self._preflight_check_model_file(model_id)
+            if not ok:
+                logger.error(err)
+                print(f"   ❌ {err}")
+                return False
+
         cmd = self._build_server_cmd(model_id) if model_id else self._server_start_cmd()
         logger.debug("Starting llama.cpp server: %s", cmd)
         print(f"   ⏳ Starte llama.cpp Server ({model_id}) ...")
