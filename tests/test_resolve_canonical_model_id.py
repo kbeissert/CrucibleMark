@@ -1,10 +1,19 @@
-"""Tests for resolve_canonical_model_id() SSoT-Funktion."""
+"""Tests for resolve_canonical_model_id() SSoT-Funktion.
+
+Diese Tests verlassen sich auf echte Model-Cards in
+``benchmark_scores/model_cards/`` (glob-fallback Card-Alias, Card-Lookup
+fuer qwen/qwen3* etc.) und sind daher mit ``@pytest.mark.uses_real_cards``
+markiert, damit die globale CARD_DIR-Isolation in ``conftest.py``
+uebersprungen wird.
+"""
 
 from __future__ import annotations
 
 import pytest
 
 from utils.model_utils import resolve_canonical_model_id
+
+pytestmark = pytest.mark.uses_real_cards
 
 
 @pytest.mark.parametrize(
