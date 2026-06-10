@@ -89,7 +89,7 @@ def _safe_name(model_id: str) -> str:
     then replaces every character in ``[:/.  ]`` (colon, slash, dot, space) with an underscore.
     SSoT — used by all card path helpers in this module and in generation scripts.
     """
-    return re.sub(r"[:/.\ ]", "_", normalize_model_id(model_id))
+    return re.sub(r"[:/. ]", "_", normalize_model_id(model_id))
 
 
 def strip_date_suffix(model_id: str) -> str:
@@ -1803,7 +1803,7 @@ def resolve_effective_thinking(
     # 1. Override-Pfad
     if provider_model_cfg and isinstance(provider_model_cfg, dict):
         override = provider_model_cfg.get("thinking_override")
-        if _is_override_active(override, now=now):
+        if isinstance(override, dict) and _is_override_active(override, now=now):
             logger.info(
                 "[ThinkingOverride] %s: override active (value=%s, reason=%s)",
                 model_id or model_card.get("model_id", "?"),
