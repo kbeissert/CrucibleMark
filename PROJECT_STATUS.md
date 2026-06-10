@@ -1,7 +1,7 @@
 # PROJECT_STATUS.md
 
 **Last Updated:** 2026-06-10
-**Current Version:** 4.7.3 — Thinking-SSoT-Auflösung + Runner-Consumer-Anbindung
+**Current Version:** 4.7.4 — Heartbeat-Intervall konfigurierbar
 **Status:** ✅ Production-Ready
 
 > **Hinweis:** Die Executive Summary weiter unten historisch auf v4.6.1.
@@ -9,20 +9,15 @@
 > detailliert dokumentiert. Dieser Header wird bei jedem Phase-Commit
 > nachgezogen, die Executive Summary nur bei Major-Milestones.
 >
-> **Aktueller Stand (v4.7.3 — Thinking-SSoT-Auflösung):**
-> - **634/634 Tests grün in 2.11s**
-> - Pylint 10.00/10 (alle 5 Kern-Dateien)
-> - Mypy 0 Issues
-> - Ruff 0 Issues
-> - `resolve_effective_thinking()` als SSoT für effektives Thinking-Flag (Override > Card-Probe > None)
-> - Optionaler `thinking_override` in Provider-Card mit Pflicht-Begründung + `active_until`-Auto-Expiry
-> - `resolve_token_budget(..., *, provider=None)` reicht Provider durch; aktiver Override schaltet 5×-Reasoning-Multiplikator an/aus
-> - `base_runner.py:121` reicht `provider=provider` an `resolve_token_budget()` durch (Runner-Consumer)
-> - 41 neue Tests (24 Override-SSoT in `test_thinking_override.py` + 17 Runner-Consumer in `test_base_runner_thinking_budget.py`)
-> - 13-Tag-Liste (`_THINK_TAGS` in `utils/model_utils.py`), 3 Probe-Prompts (`_PROBE_PROMPTS` math/code/decision), Inline-CoT-Heuristik rehabilitiert
-> - `discover_thinking_tags.py` für read-only Familien-Inventar (9 Modelle, 27 Probes, 100 % Erkennungsrate)
-> - `docs/THINKING_PROBE.md` Methodik-Doku neu, `docs/THINKING_TAGS_INVENTORY{,_M4,_SPARK,_CLOUD}.md` auto-generiert
-> - Web-Export-Blacklist (`config/web_export_blacklist.yaml` + `fnmatch`-Wildcards)
+> **Aktueller Stand (v4.7.4 — Heartbeat-Configurable):**
+> - **603/603 Tests grün** im Heartbeat-Scope (33/33 Heartbeat-Tests, 2 pre-existing Failures in `test_id_ssot_invariants.py` + `test_provider_health_preflight.py` übersprungen — nicht durch Heartbeat-Änderung verursacht)
+> - Neuer `heartbeat:`-Block in `benchmark_config.yaml` mit `enabled` (bool) und `interval_seconds` (float, Default **120**)
+> - `UnifiedBenchmarkRunner._get_heartbeat_config()` mit Defensiv-Fallback (Block fehlt / kein Dict / nicht-numerisch / `<= 0` → Defaults)
+> - Heartbeat-Thread wird bei `enabled=False` nicht gestartet; `finally`-Block erkennt Sentinel `heartbeat_thread is None`
+> - 17 neue Tests: `TestGetHeartbeatConfig` (16 parametrisiert) + `TestHeartbeatDisabledInRunAssetLoop` (1)
+> - Backward-Compat: Configs ohne Block laufen mit `(enabled=True, interval=60.0)` weiter
+> - `docs/BENCHMARK_SCRIPT_OVERVIEW.md §6 "Runtime Feedback (Heartbeat)"` neu — Config-Beispiel, Robustheits-Hinweise
+> - Additiver Patch ohne API-Bruch — keine Änderung am Heartbeat-Output, keine Migration nötig
 >
 > **Aenderungen seit v4.6.1 im Detail:**
 > - v4.6.2: Provider-Card SSoT-Bereinigung (Phasen 20–21)
@@ -35,7 +30,9 @@
 > - v4.7.0: 4-Phasen-Refactoring der Kern-Skripte (Phase 30)
 > - v4.7.1: Web-Export-Blacklist (Pre-Export-Filter via `fnmatch`)
 > - v4.7.2: Thinking-Probe v2 (Multi-Prompt + Familien-Inventar + 13 Tags)
-> - **v4.7.3: Thinking-SSoT-Auflösung + Runner-Consumer-Anbindung — aktueller Stand**
+> - v4.7.3: Thinking-SSoT-Auflösung + Runner-Consumer-Anbindung
+> - **v4.7.4: Heartbeat-Intervall konfigurierbar — aktueller Stand**
+
 
 ---
 

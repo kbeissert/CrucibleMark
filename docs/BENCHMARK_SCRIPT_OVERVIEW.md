@@ -126,3 +126,30 @@ Aktueller Stand:
 - `scripts/run_tooluse_benchmark.py` schreibt Summary-JSON in Single/Batch-Pfaden.
 - `run_benchmark.py` akzeptiert `--summary-json` und schreibt Success/Failed/Aborted-Status.
 - `scripts/core/benchmark_auto.py` uebergibt `--summary-json` an Delegate-Worker und liest die Summary fuer Dispatch-Feedback.
+
+## 6) Runtime Feedback (Heartbeat)
+
+Waehrend langer Benchmark-Laeufe (z.B. 397B-Modelle mit Refusal-Retries) startet
+`UnifiedBenchmarkRunner._run_asset_loop` einen Daemon-Thread, der den aktuellen
+Fortschritt (Phase, Q-ID, Retry-Info, letzte Aktivitaet) als 💓-Print ins Terminal
+schreibt. Damit sieht der Beobachter ohne CPU-Last, ob der Prozess noch arbeitet
+oder haengt.
+
+Konfiguration in `benchmark_config.yaml`:
+
+```yaml
+heartbeat:
+  enabled: true              # Komplett ausschalten (z.B. CI-Runs)
+  interval_seconds: 120      # Status-Prints alle 2 Min
+                              # 60  = Original-Verhalten
+                              # 120 = Default (maximale Ruhe)
+```
+
+Robustheit:
+
+- Block fehlt komplett → (enabled=True, interval=60.0) — backwards-compatible.
+- `interval_seconds <= 0` oder nicht-numerisch → Fallback 60.0.
+- `enabled: false` → Thread wird gar nicht gestartet, kein Race im finally-Block.
+- `PoliticalCompassTest._notify_heartbeat` ruft `_handle_heartbeat_signal` auf dem
+  Runner auf, um Refusal-Retries (Retry 1/2, 2/2 etc.) im Heartbeat sichtbar zu machen.
+

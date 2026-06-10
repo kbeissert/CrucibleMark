@@ -906,6 +906,35 @@ class UnifiedBenchmarkRunner(BaseBenchmarkRunner):
         run_limiter = RateLimiter(_limiter_key) if not is_local else None
         return pause_calculator, run_limiter
 
+    def _get_heartbeat_config(self) -> tuple[bool, float]:
+        """Liest heartbeat-Konfiguration aus benchmark_config.yaml.
+
+        Returns:
+            (enabled, interval_seconds)
+            - enabled: True wenn Heartbeat aktiv (Default: True)
+            - interval_seconds: Sekunden zwischen Status-Prints (Default: 60.0)
+
+        Robustheit:
+        - Block fehlt komplett → (True, 60.0) — backwards-compatible
+        - interval_seconds <= 0, nicht-numerisch oder None → Fallback 60.0
+        - Fehler werden nicht geworfen, da Heartbeat ein nice-to-have ist.
+        """
+        cfg = self.validator.config.get("heartbeat", {}) or {}
+        if not isinstance(cfg, dict):
+            return True, 60.0
+
+        enabled = bool(cfg.get("enabled", True))
+
+        raw_interval = cfg.get("interval_seconds", 60.0)
+        try:
+            interval = float(raw_interval)
+        except (TypeError, ValueError):
+            interval = 60.0
+        if interval <= 0:
+            interval = 60.0
+
+        return enabled, interval
+
     def _run_asset_loop(
         self,
         *,
@@ -921,10 +950,14 @@ class UnifiedBenchmarkRunner(BaseBenchmarkRunner):
     ) -> None:
         """Iteriert über Assets, ruft _process_single_test, sammelt Results.
 
-        Startet einen Heartbeat-Thread (Daemon), der alle 60s den aktuellen
-        Fortschritt + Phase + letzte Aktivität ins Terminal printet. Damit
-        sieht der Beobachter bei langen Benchmarks (z.B. 397B-Modelle mit
+        Startet einen Heartbeat-Thread (Daemon), der konfigurierbar oft den
+        aktuellen Fortschritt + Phase + letzte Aktivität ins Terminal printet.
+        Damit sieht der Beobachter bei langen Benchmarks (z.B. 397B-Modelle mit
         Refusal-Retries), ob der Prozess noch arbeitet oder hängt.
+
+        Konfiguration: benchmark_config.yaml → heartbeat.interval_seconds
+        (Default 60s; höhere Werte schonen das Terminal bei langen Läufen).
+        heartbeat.enabled=false deaktiviert den Thread komplett.
         """
         import threading
 
@@ -939,11 +972,15 @@ class UnifiedBenchmarkRunner(BaseBenchmarkRunner):
         self._heartbeat_completed = 0
         self._heartbeat_total = len(assets)
 
+        heartbeat_enabled, heartbeat_interval = self._get_heartbeat_config()
+
         def _heartbeat_loop() -> None:
-            """Print alle 60s Fortschritt. Stop-Event terminiert sofort."""
+            """Print alle heartbeat_interval-Sekunden Fortschritt.
+            Stop-Event terminiert sofort.
+            """
             while not self._heartbeat_stop.is_set():
                 # wait() returnt True wenn Event gesetzt, sonst False nach Timeout
-                stopped = self._heartbeat_stop.wait(timeout=60.0)
+                stopped = self._heartbeat_stop.wait(timeout=heartbeat_interval)
                 if stopped:
                     break
                 elapsed = time.time() - self._heartbeat_start
@@ -960,7 +997,13 @@ class UnifiedBenchmarkRunner(BaseBenchmarkRunner):
                 )
 
         heartbeat_thread = threading.Thread(target=_heartbeat_loop, daemon=True)
-        heartbeat_thread.start()
+        if heartbeat_enabled:
+            heartbeat_thread.start()
+        else:
+            # Deaktivierter Heartbeat: Event bleibt gesetzt, damit ggf. join() im
+            # finally-Block sauber durchläuft ohne dass der Thread je lief.
+            self._heartbeat_stop.set()
+            heartbeat_thread = None  # Sentinel: im finally prüfen
 
         try:
             for i, asset_path in enumerate(assets, 1):
@@ -1006,7 +1049,8 @@ class UnifiedBenchmarkRunner(BaseBenchmarkRunner):
         finally:
             # Heartbeat stoppen + ggf. noch laufende Print-Zeile clearen
             self._heartbeat_stop.set()
-            heartbeat_thread.join(timeout=2.0)
+            if heartbeat_thread is not None:
+                heartbeat_thread.join(timeout=2.0)
             print(" " * 120, end="\r", flush=True)
 
     def _handle_heartbeat_signal(

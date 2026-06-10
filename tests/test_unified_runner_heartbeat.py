@@ -33,6 +33,9 @@ def _make_runner(**overrides) -> UnifiedBenchmarkRunner:
     runner = UnifiedBenchmarkRunner.__new__(UnifiedBenchmarkRunner)
     # Initialisiere nur die Felder, die _run_asset_loop / Heartbeat lesen
     runner._heartbeat_stop = None  # wird im Test gesetzt
+    # validator mocken — _get_heartbeat_config liest self.validator.config
+    runner.validator = MagicMock()
+    runner.validator.config = {}  # leeres Config = Block fehlt = (True, 60.0) Default
     for k, v in overrides.items():
         setattr(runner, k, v)
     return runner
@@ -270,3 +273,121 @@ class TestPoliticalCompassHeartbeatIntegration:
 
         # Darf nicht crashen — Exception wird geloggt + ignored
         test._notify_heartbeat(q_id="x", retry_info="y", is_retry=True)
+
+
+# --- _get_heartbeat_config Tests ---------------------------------------------
+
+
+def _make_runner_with_config(heartbeat_cfg: dict | None) -> UnifiedBenchmarkRunner:
+    """Erzeugt Runner mit gemocktem validator.config (für Config-Lesetests)."""
+    runner = UnifiedBenchmarkRunner.__new__(UnifiedBenchmarkRunner)
+    runner.validator = MagicMock()
+    if heartbeat_cfg is None:
+        runner.validator.config = {}  # kein heartbeat-Block
+    else:
+        runner.validator.config = {"heartbeat": heartbeat_cfg}
+    return runner
+
+
+class TestGetHeartbeatConfig:
+    """_get_heartbeat_config liest heartbeat-Block mit robusten Defaults."""
+
+    def test_defaults_when_block_missing(self) -> None:
+        """Kein heartbeat-Block → (enabled=True, interval=60.0) backwards-compatible."""
+        runner = _make_runner_with_config(None)
+        enabled, interval = runner._get_heartbeat_config()
+        assert enabled is True
+        assert interval == 60.0
+
+    def test_explicit_values(self) -> None:
+        """Explizit gesetzte Werte werden gelesen."""
+        runner = _make_runner_with_config({"enabled": True, "interval_seconds": 120})
+        enabled, interval = runner._get_heartbeat_config()
+        assert enabled is True
+        assert interval == 120.0
+
+    def test_disabled(self) -> None:
+        """enabled=false wird korrekt gelesen."""
+        runner = _make_runner_with_config({"enabled": False, "interval_seconds": 90})
+        enabled, interval = runner._get_heartbeat_config()
+        assert enabled is False
+        assert interval == 90.0
+
+    def test_interval_only(self) -> None:
+        """Nur interval_seconds gesetzt → enabled-Default True."""
+        runner = _make_runner_with_config({"interval_seconds": 150})
+        enabled, interval = runner._get_heartbeat_config()
+        assert enabled is True
+        assert interval == 150.0
+
+    def test_enabled_only(self) -> None:
+        """Nur enabled gesetzt → interval-Default 60.0."""
+        runner = _make_runner_with_config({"enabled": True})
+        enabled, interval = runner._get_heartbeat_config()
+        assert enabled is True
+        assert interval == 60.0
+
+    @pytest.mark.parametrize("bad_value", [0, -1, -100, 0.0, -0.5])
+    def test_zero_or_negative_interval_falls_back(self, bad_value: float) -> None:
+        """interval_seconds <= 0 → Fallback 60.0 (verhindert Endlosschleife)."""
+        runner = _make_runner_with_config({"interval_seconds": bad_value})
+        enabled, interval = runner._get_heartbeat_config()
+        assert interval == 60.0
+
+    @pytest.mark.parametrize("bad_value", ["abc", None, [], {}])
+    def test_non_numeric_interval_falls_back(self, bad_value: object) -> None:
+        """Nicht-numerische interval_seconds → Fallback 60.0.
+        Hinweis: bool (True/False) wird von float() als 1.0/0.0 gecastet
+        und daher nicht als Fehler behandelt — Werte landen im <=0-Fallback.
+        """
+        runner = _make_runner_with_config({"interval_seconds": bad_value})
+        enabled, interval = runner._get_heartbeat_config()
+        assert interval == 60.0
+
+
+    def test_non_dict_block_falls_back(self) -> None:
+        """heartbeat ist kein Dict (z.B. versehentlich String) → Default."""
+        runner = _make_runner_with_config(None)  # type: ignore[arg-type]
+        runner.validator.config["heartbeat"] = "not a dict"
+        enabled, interval = runner._get_heartbeat_config()
+        assert enabled is True
+        assert interval == 60.0
+
+
+# --- _run_asset_loop mit deaktiviertem Heartbeat -----------------------------
+
+
+class TestHeartbeatDisabledInRunAssetLoop:
+    """enabled=false → Thread wird nicht gestartet, kein Race im finally-Block."""
+
+    def test_disabled_heartbeat_starts_no_thread(self) -> None:
+        """Bei enabled=false wird heartbeat_thread.start() nicht aufgerufen."""
+        runner = _make_runner()
+        # validator mocken, das _get_heartbeat_config aufruft
+        runner.validator = MagicMock()
+        runner.validator.config = {"heartbeat": {"enabled": False, "interval_seconds": 60}}
+
+        def fake_handle(**kwargs) -> None:
+            pass
+
+        runner._handle_single_asset = fake_handle  # type: ignore[assignment]
+        runner._save_partial_results = MagicMock()  # type: ignore[assignment]
+
+        assets = [Path("/tmp/fake.yaml")]
+
+        # Sollte ohne Crash durchlaufen — Thread-Start wird übersprungen
+        runner._run_asset_loop(
+            assets=assets,
+            model="test-model",
+            provider="ollama",
+            benchmark_info={},
+            is_local=True,
+            run_id="test123",
+            pause_calculator=None,
+            run_limiter=None,
+            results=[],
+        )
+
+        # Stop-Event wurde gesetzt (entweder vor oder im finally)
+        assert runner._heartbeat_stop.is_set() is True
+

@@ -1,6 +1,7 @@
 # CrucibleMark
 
-[![Version](https://img.shields.io/badge/version-4.7.3-blue)](.)
+[![Version](https://img.shields.io/badge/version-4.7.4-blue)](.)
+
 [![Python](https://img.shields.io/badge/python-3.10%2B-blue)](.)
 [![License](https://img.shields.io/badge/license-MIT-green)](.)
 [![Status](https://img.shields.io/badge/status-production--ready-brightgreen)](.)
@@ -48,6 +49,8 @@ Die meisten Benchmarks fokussieren sich auf rein theoretische Prüfungen. Crucib
 * **Size-Class-Klassifikation (Card-First):** `get_model_size_class()` nutzt eine 3-stufige Priority-Kaskade: (1) `size_class`-Feld der JSON-Model-Card (SSoT), (2) Ollama-Colon-Tag (z. B. `gemma4:E4B` → Nano), (3) Dash/Dot-Suffix-Regex auf den Modellnamen (z. B. `llama-3.3-70b` → Server). Fallback: Frontier. Das Leaderboard weist damit 6 Deployment-Tiers aus (Nano/Edge/Desktop/Workstation/Server/Frontier).
 * **Transparenz bei lautlosen Verweigerungen:** Meta-Reviews enthalten seit v3.5.9 einen `empty_response_context`-Block: Assets, bei denen ein Modell `response_length=0` liefert (lautlose Content-Policy-Ablehnung), werden namentlich im Modul-Abschnitt des Reviews dokumentiert.
 * **Use-Case-Klassifikation & Reviewer-Kontext (v3.8.0):** Jede Model Card trägt das Pflichtfeld `use_case_primary` (Werte: `generalist`, `coding`, `reasoning`, `vision-language`, `agentic`). Ergänzt durch `parameter_architecture` (dense/moe), `context_window_k` und `knowledge_cutoff`. Die Taxonomy aller erlaubten Werte liegt in `config/classification_taxonomy.json` (SSoT). Beim Generieren eines Reviews injiziert `generate_review.py` die vollständige Taxonomy inklusive modellspezifischer Hervorhebung als `{use_case_classification_context}` in den Reviewer-Prompt — so bewertet der Reviewer ein Vision-Language-Modell nicht am selben Maßstab wie einen Generalisten.
+* **Konfigurierbarer Heartbeat (v4.7.4):** Der `UnifiedBenchmarkRunner` druckt während langer Benchmarks alle `heartbeat.interval_seconds` Sekunden einen Status-Print (Phase, Retry-Counter, letzte Aktivität). Default **120 s** (vorher hardcodiert 60 s) — reduziert Terminal-Spam bei mehrstündigen Läufen, ohne die Sichtbarkeit zu verlieren. Per `benchmark_config.yaml → heartbeat.enabled: false` komplett deaktivierbar (CI, kurze Tests). Doku: `docs/BENCHMARK_SCRIPT_OVERVIEW.md §6`.
+
 
 ---
 
@@ -160,7 +163,9 @@ Tiefergehende Einblicke in die Methodik findest du im `docs/` Verzeichnis:
 
 Die vollständige Versionshistorie steht in [CHANGELOG.md](CHANGELOG.md). Kurzfassung der letzten drei Releases:
 
+- **v4.7.4 (2026-06-10) — Heartbeat konfigurierbar (Terminal-Spam-Reduktion):** Neuer `heartbeat:`-Block in `benchmark_config.yaml` mit `enabled` und `interval_seconds` (Default **120 s**, vorher hardcodiert 60 s). `UnifiedBenchmarkRunner._get_heartbeat_config()` mit Defensiv-Fallback — ungültige Config crasht den Benchmark nicht. `enabled: false` für CI-Runs / kurze Tests. 17 neue Tests (`TestGetHeartbeatConfig` + `TestHeartbeatDisabledInRunAssetLoop`). 603/603 grün im Heartbeat-Scope. Doku: `docs/BENCHMARK_SCRIPT_OVERVIEW.md §6`.
 - **v4.7.3 (2026-06-10) — Thinking-SSoT-Auflösung + Runner-Consumer-Anbindung:** `resolve_effective_thinking()` in `utils/model_utils.py` ist die SSoT für das effektive Thinking-Flag (Override > Card-Probe > None). Optionaler `thinking_override` in der Provider-Card mit Pflicht-Begründung + optionalem `active_until`-Auto-Expiry. `base_runner.py:121` reicht `provider=provider` an `resolve_token_budget()` durch — ein aktiver Override schaltet den 5×-Reasoning-Multiplikator für Cost-Benchmarks ab. 41 neue Tests (24 Override-SSoT, 17 Runner-Consumer). **634/634 grün in 2.11s**. Methodik-Doku: `docs/THINKING_PROBE.md`.
+
 - **v4.7.2 (2026-06-09) — Thinking-Probe v2 (Multi-Prompt + Familien-Inventar):** Drei Probe-Prompts (`math`/`code`/`decision`) ersetzen den einzelnen Mathe-Prompt. 13 bekannte Think-Tags (`<think>`, `<|thinking|>`, `<reasoning>`, `<reflection>`, `<scratchpad>`, …). `discover_thinking_tags.py` für read-only Family-Inventar (9 Modelle, 27 Probes, 100 % Erkennungsrate, ~12 min). Inline-CoT-Heuristik (Signal C, >200 chars + ≥2 Ops) rehabilitiert — die einzige robuste Erkennung über alle Provider. **587/587 grün**.
 - **v4.7.1 (2026-06-09) — Web-Export-Blacklist:** `config/web_export_blacklist.yaml` mit `fnmatch`-Wildcards filtert Modelle aus `make web-export`. `_load_export_blacklist()` + `_is_blacklisted()` in `scripts/web_export.py` mit robusten Defaults (leere Datei / Parse-Error / fehlende Datei). Hook nach PC-Skip, vor `mkdir()` — verhindert leere `models/{slug}/`-Verzeichnisse. `meta.json` Block `blacklist` additiv. 17 neue Tests, 471/471 grün.
 
@@ -170,4 +175,5 @@ Die vollständige Versionshistorie steht in [CHANGELOG.md](CHANGELOG.md). Kurzfa
 
 - **Maintainer:** kbeissert
 - **Repository:** [github.com/kbeissert/cruciblemark](https://github.com/kbeissert/cruciblemark)
-- **Status:** ✅ Production-Ready (v4.7.3)
+- **Status:** ✅ Production-Ready (v4.7.4)
+

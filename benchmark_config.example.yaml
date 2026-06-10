@@ -324,6 +324,15 @@ logging:
   console_level: "INFO"  # DEBUG, INFO, WARNING, ERROR
   file_level: "DEBUG"    # DEBUG captures everything for troubleshooting
 
+# Heartbeat: Status-Prints während langer Benchmarks (verhindert "hängt das?"-Frage)
+# Konfiguriert den Daemon-Thread in scripts/core/unified_runner.py::_run_asset_loop
+heartbeat:
+  enabled: true              # Komplett ausschalten (z.B. CI-Runs, kurze Tests)
+  interval_seconds: 120      # Sekunden zwischen Status-Prints
+                              # 60  = Original-Verhalten
+                              # 120 = Default (maximale Ruhe bei langen Läufen)
+
+
 
 # ============================================================
 # 5. Benchmarking-Module

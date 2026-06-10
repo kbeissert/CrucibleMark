@@ -5,9 +5,60 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## [v4.7.4] - 2026-06-10
+
+**Heartbeat-Intervall konfigurierbar — Terminal-Spam-Reduktion.**
+
+Additiver Patch ohne API-Bruch. Das Heartbeat-Intervall des
+`UnifiedBenchmarkRunner` (Status-Prints während langer Benchmarks) wird
+aus dem Code in die `benchmark_config.yaml` verlagert. Bisher
+hardcodiertes 60 s wird Default 120 s — die Print-Frequenz sinkt
+deutlich, der Beobachter sieht bei extrem langen Läufen trotzdem noch,
+dass der Prozess arbeitet.
+
+### Added
+- **`benchmark_config.yaml` — neuer Top-Level-Block `heartbeat:`** mit `enabled` (bool, Default `true`) und `interval_seconds` (float, Default `120`). Komplett optional — fehlt der Block, läuft das System mit `(enabled=True, interval=60.0)` weiter (Backward-Compat).
+- **`UnifiedBenchmarkRunner._get_heartbeat_config()`** — liest den Block aus `self.validator.config`, mit Defensiv-Fallback bei fehlendem Block, nicht-dict-Wert, nicht-numerischem Intervall und Intervall `<= 0`. Fehler werden geschluckt (Heartbeat ist nice-to-have, niemals fatal).
+- **`_run_asset_loop()` — Heartbeat-Branch** — `threading.Thread` wird nur bei `enabled=True` gestartet. Bei `enabled=False` bleibt das Stop-Event gesetzt, `heartbeat_thread = None` als Sentinel für den `finally`-Block. Verhindert, dass ein Thread für eine disabled-Funktion aufgesetzt wird.
+- **`docs/BENCHMARK_SCRIPT_OVERVIEW.md` §6 "Runtime Feedback (Heartbeat)"** — NEU: Config-Beispiel, Robustheits-Hinweise, Disable-Use-Case (CI/kurze Tests).
+
+### Changed
+- **`scripts/core/unified_runner.py::_run_asset_loop()`** — `_heartbeat_loop` nutzt `wait(timeout=heartbeat_interval)` statt `wait(timeout=60.0)`. Heartbeat-Branch liest `heartbeat_enabled` / `heartbeat_interval` direkt nach der State-Initialisierung.
+- **`benchmark_config.example.yaml`** — Selber `heartbeat:`-Block mit Kommentaren.
+
+### Tests
+- **`tests/test_unified_runner_heartbeat.py::TestGetHeartbeatConfig` (NEU, 16 Tests, parametrisiert):**
+  - `test_defaults_when_block_missing` — Block fehlt komplett → `(True, 60.0)`
+  - `test_explicit_values` / `test_disabled` / `test_interval_only` / `test_enabled_only` — partielle und volle Konfiguration
+  - `test_zero_or_negative_interval_falls_back` (parametrisiert: 0, -1, -100, 0.0, -0.5) — Intervall `<= 0` → 60.0
+  - `test_non_numeric_interval_falls_back` (parametrisiert: "abc", None, [], {}) — ungültiger Typ → 60.0
+  - `test_non_dict_block_falls_back` — Block ist String statt Dict → Defaults
+- **`tests/test_unified_runner_heartbeat.py::TestHeartbeatDisabledInRunAssetLoop` (NEU, 1 Test):** `test_disabled_heartbeat_starts_no_thread` — Verifiziert, dass `enabled=False` keinen Thread startet und die Sentinel-Logik im `finally`-Block nicht crasht.
+- **Bestehende `TestHeartbeatLifecycle` Tests angepasst** — `_make_runner()`-Helper bekam `validator`-Mock mit leerer Config, damit `validator.config.get(...)` nicht fehlschlägt.
+- **Gesamt-Suite:** **603/603 grün** (Heartbeat-Test-Scope, 33/33; 2 pre-existing Failures `test_id_ssot_invariants.py` + `test_provider_health_preflight.py` übersprungen, nicht durch Heartbeat-Änderung verursacht).
+
+### Architektur-Begründung
+- **Heartbeat ist Benchmark-Feature, nicht Framework-Internes** — Intervall gehört in `benchmark_config.yaml` neben `logging:`, `rate_limit:` etc., nicht in den Code. Wer ihn komplett ausschalten will (CI-Runs, kurze Tests), setzt `enabled: false`.
+- **Default 120 s (statt 60 s)** — User-Praxis-Feedback: 60 s spammt das Terminal bei mehrstündigen Läufen, 120 s gibt Sichtbarkeit ohne Ablenkung. Original-Verhalten bleibt durch Fallback `(True, 60.0)` für Configs ohne Block erreichbar.
+- **Robustheit > strikte Validierung** — Heartbeat ist nice-to-have, ungültige Config darf den Benchmark nicht abbrechen. Defensiv-Fallback in `_get_heartbeat_config()` mit `try/except` + `isinstance`-Checks statt `pydantic`-Validation.
+
+### Files
+| Datei | Aktion |
+|---|---|
+| `benchmark_config.yaml` | +`heartbeat:`-Block (top-level) |
+| `benchmark_config.example.yaml` | +`heartbeat:`-Block (top-level) |
+| `scripts/core/unified_runner.py` | +`_get_heartbeat_config()`, `_run_asset_loop` Heartbeat-Branch, finally-Sentinel |
+| `docs/BENCHMARK_SCRIPT_OVERVIEW.md` | +§6 "Runtime Feedback (Heartbeat)" |
+| `tests/test_unified_runner_heartbeat.py` | +`TestGetHeartbeatConfig` (16 Tests), +`TestHeartbeatDisabledInRunAssetLoop` (1 Test) |
+| `memory-bank/{activeContext,progress,techContext}.md` | v4.7.4-Eintrag |
+| `CHANGELOG.md` | v4.7.4-Eintrag |
+
+
 ## [v4.7.3] - 2026-06-10
 
 **Thinking-SSoT-Auflösung + Runner-Consumer-Anbindung.**
+>>>>===
+
 
 Schließt die Discovery-Phase aus v4.7.2 ab: das Card-First-Property der Probe
 wird zur **Single Source of Truth** (SSoT), ein optionaler `thinking_override`
