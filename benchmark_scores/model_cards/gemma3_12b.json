@@ -1,48 +1,64 @@
 {
-  "model_id": "gemma3:12b",
-  "display_name": "Gemma 3 12B",
-  "developer": "Google DeepMind",
-  "origin_country": "USA",
-  "developer_jurisdiction": "US",
+  "architecture_tags": [
+    "General",
+    "Instruct"
+  ],
+  "card_status": "complete",
+  "commercial_use_allowed": true,
+  "context_window_k": 128,
   "deployment_type": "open-weights-cloud-available",
+  "developer": "Google DeepMind",
+  "developer_jurisdiction": "US",
+  "display_name": "Gemma 3 12B",
+  "generated_at": "2026-04-23T22:06:47.375023+00:00",
+  "input_price_per_1m": null,
+  "judge_context_hint": "Gemma 3 12B ist ein Instruct-optimiertes Modell mittlerer Größe – Antworten sind tendenziell präzise und kompakt, können aber bei sehr komplexen Reasoning-Ketten an Tiefe verlieren.",
+  "knowledge_cutoff": "2024-12",
+  "known_limitations": [
+    "Kontextfenster und Reasoning-Tiefe hinter größeren Frontier-Modellen (z.B. Gemini 1.5 Pro) zurück",
+    "Neigt bei komplexen mehrstufigen Aufgaben zu Vereinfachungen oder Auslassungen"
+  ],
+  "license": "Google Gemma Terms of Use",
+  "license_url": "https://ai.google.dev/gemma/terms",
   "local_deployment_possible": true,
-  "weights_provenance_risk": "medium",
-  "weights_provenance_risk_rationale": "Google DeepMind ist ein US-amerikanisches Unternehmen und unterliegt dem CLOUD Act, der jedoch primär bei API-/Cloud-Nutzung relevant ist, nicht bei lokal betriebenen Gewichten.",
   "model_family": "Gemma",
+  "model_id": "gemma3:12b",
+  "model_version": "f4031aab637d",
+  "origin_country": "USA",
+  "output_price_per_1m": null,
+  "parameter_architecture": "dense",
+  "params_active_b": null,
+  "params_total_b": 12.0,
   "primary_focus": "general",
-  "summary": "Gemma 3 12B ist ein Modell von Google DeepMind mit öffentlich verfügbaren Gewichten (Google Gemma Terms of Use), das lokal betreibbar und über Cloud-Provider verfügbar ist. Dieses Modell läuft über Ollama mit Ollama-eigener Quantisierung. Mit 12 Milliarden Parametern deckt es ein breites Spektrum von Instruction-Following, Textverstehen und mehrsprachigen Aufgaben ab.",
+  "size_class": "Desktop",
   "strengths": [
     "Starkes Instruction-Following durch gezieltes Fine-Tuning (Gemma-IT-Variante)",
     "Effizient lokal betreibbar – läuft auf Consumer-Hardware mit ausreichend VRAM",
     "Solide Mehrsprachigkeit und gutes Textverstehen über diverse Domänen hinweg"
   ],
-  "known_limitations": [
-    "Kontextfenster und Reasoning-Tiefe hinter größeren Frontier-Modellen (z.B. Gemini 1.5 Pro) zurück",
-    "Neigt bei komplexen mehrstufigen Aufgaben zu Vereinfachungen oder Auslassungen"
-  ],
-  "judge_context_hint": "Gemma 3 12B ist ein Instruct-optimiertes Modell mittlerer Größe – Antworten sind tendenziell präzise und kompakt, können aber bei sehr komplexen Reasoning-Ketten an Tiefe verlieren.",
-  "architecture_tags": [
-    "General",
-    "Instruct"
-  ],
-  "unknown": false,
-  "generated_at": "2026-04-23T22:06:47.375023+00:00",
-  "card_status": "complete",
-  "size_class": "Desktop",
+  "summary": "Gemma 3 12B ist ein Modell von Google DeepMind mit öffentlich verfügbaren Gewichten (Google Gemma Terms of Use), das lokal betreibbar und über Cloud-Provider verfügbar ist. Dieses Modell läuft über Ollama mit Ollama-eigener Quantisierung. Mit 12 Milliarden Parametern deckt es ein breites Spektrum von Instruction-Following, Textverstehen und mehrsprachigen Aufgaben ab.",
+  "supports_tool_use": true,
+  "thinking_probe_at": "2026-04-25T08:35:02.087425+00:00",
+  "thinking_probe_confidence": "low",
   "thinking_probe_detected": false,
   "thinking_probe_evidence": "No CoT signals found (A: no think-tags, B: reasoning_tokens=0). Response length: 526 chars",
-  "thinking_probe_confidence": "low",
-  "thinking_probe_at": "2026-04-25T08:35:02.087425+00:00",
-  "supports_tool_use": true,
-  "license": "Google Gemma Terms of Use",
-  "license_url": "https://ai.google.dev/gemma/terms",
-  "commercial_use_allowed": true,
+  "unknown": false,
+  "use_case_primary": "generalist",
   "vendor": "Google",
   "weights_license_tier": "restricted-weights",
-  "model_version": "f4031aab637d",
-  "use_case_primary": "generalist",
-  "parameter_architecture": "dense",
-  "params_total_b": 12.0,
-  "context_window_k": 128,
-  "knowledge_cutoff": "2024-12"
+  "weights_provenance_risk": "medium",
+  "weights_provenance_risk_rationale": "Google DeepMind ist ein US-amerikanisches Unternehmen und unterliegt dem CLOUD Act, der jedoch primär bei API-/Cloud-Nutzung relevant ist, nicht bei lokal betriebenen Gewichten.",
+  "top_p": null,
+  "top_k": null,
+  "repetition_penalty": null,
+  "frequency_penalty": null,
+  "presence_penalty": null,
+  "seed": null,
+  "stop_sequences": null,
+  "input_modalities": [
+    "text"
+  ],
+  "output_modalities": [
+    "text"
+  ]
 }

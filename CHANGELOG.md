@@ -5,6 +5,36 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## [v4.7.6] - 2026-06-10
+
+**Vollständiger SSoT-Audit + Beseitigung aller Card-Drift.**
+
+Neues Audit-Skript `scripts/dev/audit_model_cards_full.py` deckt alle 38 Pflichtfelder, Typen, Whitelists und Widerspruchsregeln ab — im Gegensatz zu `validate_model_cards.py`, das nur 7 Pflichtfelder prüft. Damit wurden 529 CRITICAL + 54 WARNING in 113 Cards aufgedeckt und behoben (100 % Reduktion).
+
+### Neue Skripte
+- **`scripts/dev/audit_model_cards_full.py`** — Vollständiger SSoT-Audit, prüft ALLE Whitelists aus `card_template_model.yaml`, `card_vocabulary.yaml` und `classification_taxonomy.json`. Akzeptiert `--json --output` für CI-Integration.
+- **`scripts/dev/fix_model_cards_whitelist.py`** — 67 triviale Whitelist-Fixes in 54 Karten (card_status `verified`→`complete`, supports_tool_use `"untested"`→`null`, unknown=true→false, weights_provenance_risk Deutsch→Englisch, deployment_type-Tippfehler, size_class `Consumer-GPU`→`Workstation`).
+- **`scripts/dev/backfill_modalities.py`** — Heuristische Ableitung von `input_modalities`/`output_modalities` aus `model_id` + `architecture_tags` (z.B. `Vision-Capable` → `["text", "image"]`). 224 Einträge in 112 Karten ergänzt.
+
+### Audit-Verbesserungen
+- **`is_todo()`-Helfer** im Audit: TODO-Platzhalter in Whitelist-Feldern (`deployment_type`, `weights_provenance_risk`, `size_class`) werden in draft-Cards toleriert, da der Template-Default `"TODO"` ist.
+- **`null`-Toleranz für TODO-Default-Felder** im Typ-Check: null-Werte sind in Feldern erlaubt, deren Template-Default `"TODO"` ist (Skeleton-Karten).
+- **Strict-Mode für complete-Cards**: `MISSING_INPUT/OUTPUT_MODALITIES` ist nur in `card_status=complete` CRITICAL, in draft-Cards nur WARNING.
+
+### Bug-Fix
+- **`migrate_architecture_tags.py`** — Walrus-Pattern `data := json.loads(...)` las die Originaldatei erneut und überschrieb die in-Memory normalisierten Tags. Erste Migrations-Runde schrieb 32 Karten un-migriert zurück. Fix: `migrate_card()` gibt die normalisierten Daten im Report zurück, `main()` schreibt sie direkt. Verifiziert per Regression-Test.
+
+### Neue Tests (+18)
+- `tests/test_audit_model_cards_full.py` (13 Tests) — TODO-Schutz, DEPRECATED/UNKNOWN-Tag-Erkennung, Widerspruchs-Checks, Pflichtfeld-Logik.
+- `tests/test_migrate_architecture_tags.py` (5 Tests) — inkl. Regressions-Test für den Walrus-Bug, Idempotenz, dry-run-Verhalten, Modalities-Backfill.
+
+### Ergebnis
+- 529 CRITICAL → **0** (−100 %)
+- 54 WARNING → **0** (−100 %)
+- 113 Cards geprüft, alle SSoT-konform
+- 744/744 Tests grün (vorher 726)
+
+
 ## [v4.7.5] - 2026-06-10
 
 **`generate_model_cards.py` an die Validate-Card-Konvention angeglichen.**

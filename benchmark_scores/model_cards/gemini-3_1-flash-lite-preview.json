@@ -26,7 +26,6 @@
   "judge_context_hint": "Gemini 3.1 Flash Lite Preview (März 2026) ist Googles Lite-Variante für High-Volume-Automatisierung. 1M Token Kontext, Preis $0.25/$1.50 pro 1M Tokens, optimiert für Klassifikation, Extraktion, Tagging – nicht für Reasoning oder Coding auf Frontier-Niveau. Composite Score ~79, deutlich günstiger als Gemini 3.5 Flash. Bei Benchmarking berücksichtigen: Lite-Modelle können bei mehrstufigem Reasoning und Codegenerierung klar abfallen.",
   "architecture_tags": [
     "General",
-    "Lite",
     "Multimodal",
     "Preview"
   ],
@@ -38,7 +37,7 @@
   "thinking_probe_evidence": "Not yet probed.",
   "thinking_probe_confidence": "low",
   "thinking_probe_at": null,
-  "supports_tool_use": "untested",
+  "supports_tool_use": null,
   "license": "Proprietary",
   "license_url": null,
   "commercial_use_allowed": true,
@@ -47,10 +46,25 @@
   "model_version": "3.1-flash-lite-preview",
   "input_price_per_1m": 0.25,
   "output_price_per_1m": 1.5,
-  "use_case_primary": "generalist",
+  "use_case_primary": "vision-language",
   "parameter_architecture": "moe",
   "params_total_b": null,
   "params_active_b": null,
   "context_window_k": 1000,
-  "knowledge_cutoff": "2026-01"
+  "knowledge_cutoff": "2026-01",
+  "top_p": null,
+  "top_k": null,
+  "repetition_penalty": null,
+  "frequency_penalty": null,
+  "presence_penalty": null,
+  "seed": null,
+  "stop_sequences": null,
+  "input_modalities": [
+    "text",
+    "image",
+    "audio"
+  ],
+  "output_modalities": [
+    "text"
+  ]
 }

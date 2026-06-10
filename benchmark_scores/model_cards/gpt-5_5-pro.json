@@ -1,0 +1,71 @@
+{
+  "model_id": "gpt-5_5-pro",
+  "display_name": "GPT-5.5 Pro",
+  "developer": "OpenAI",
+  "origin_country": "USA",
+  "developer_jurisdiction": "US",
+  "deployment_type": "cloud-only",
+  "local_deployment_possible": false,
+  "weights_provenance_risk": "low",
+  "weights_provenance_risk_rationale": "OpenAI ist ein US-amerikanisches Unternehmen, unterliegt US-Recht und CLOUD Act. Keine Gewichte verfügbar. Closed-Source. Datenschutzrechtlich für sensible EU-Daten eingeschränkt empfehlenswert.",
+  "model_family": "GPT-5",
+  "vendor": "OpenAI",
+  "primary_focus": "generalist",
+  "use_case_primary": "generalist",
+  "parameter_architecture": "dense",
+  "params_total_b": null,
+  "params_active_b": null,
+  "context_window_k": 1000,
+  "knowledge_cutoff": "2025-12",
+  "summary": "GPT-5.5 Pro ist die hochpräzise Variante von GPT-5.5 für komplexe, hochriskante Workloads, veröffentlicht am 24. April 2026 (zeitgleich mit GPT-5.5). Es nutzt zusätzliche Compute-Ressourcen, um präzisere und konsistentere Antworten zu produzieren — explizit positioniert für long-horizon problem solving, agentic coding und mehrstufige Workflows mit hohem Fehlerrisiko. 1M+ Token Kontext (922K Input, 128K Output), Text- und Bildeingaben. Ausschließlich über die OpenAI-API verfügbar.",
+  "strengths": [
+    "Höchste Präzision in der GPT-5-Familie durch zusätzliche Compute-Iterationen — weniger Halluzinationen und konsistentere Outputs",
+    "1M+ Token Kontextfenster (922K Input, 128K Output) für long-horizon agentic coding",
+    "Optimiert für high-stakes Workloads, bei denen Antwortqualität über Kosten steht",
+    "Starke Tool-Use-Fähigkeiten und multimodale Eingaben (Text + Bild)",
+    "Bevorzugt für präzisionskritische Aufgaben in professionellen und wissenschaftlichen Domänen"
+  ],
+  "known_limitations": [
+    "Höchstes Pricing im OpenAI-Portfolio: $30 Input / $180 Output pro 1M Tokens (6× teurer als GPT-5.5 Standard)",
+    "Input >272K Tokens: doppelter Input-Preis, 1.5× Output-Preis",
+    "Closed-Source, keine Gewichtsexporte verfügbar – ausschließlich über OpenAI-API",
+    "Längere Antworten und damit höhere effektive Kosten pro Anfrage im Vergleich zu GPT-5.5",
+    "Datenschutzrisiko: US-Anbieter unterliegt CLOUD Act, EU-Daten können US-Behörden zugänglich sein"
+  ],
+  "judge_context_hint": "GPT-5.5 Pro (veröffentlicht 24. April 2026) ist OpenAIs Pro-/High-Compute-Variante von GPT-5.5 für präzisionskritische Aufgaben. 1M+ Token Kontext (922K Input, 128K Output). Premium-Pricing $30/$180 pro 1M Tokens, Input >272K: 2× Aufschlag. Erwartet höchste Antwortqualität in der Frontier-Klasse — Antworten sollten konsistent, präzise und gut strukturiert sein. Tendenz zu ausführlicheren Outputs als GPT-5.5 Standard.",
+  "architecture_tags": [
+    "General",
+    "Long-Context",
+    "Agentic"
+  ],
+  "supports_tool_use": null,
+  "license": "proprietary",
+  "license_url": "https://openai.com/policies/terms-of-use/",
+  "commercial_use_allowed": true,
+  "weights_license_tier": "proprietary",
+  "model_version": "5.5-pro",
+  "input_price_per_1m": 30.0,
+  "output_price_per_1m": 180.0,
+  "unknown": false,
+  "card_status": "complete",
+  "size_class": "Frontier",
+  "generated_at": "2026-06-10T10:55:00.000000+00:00",
+  "thinking_probe_detected": false,
+  "thinking_probe_evidence": "No CoT signals found (A: no think-tags, B: reasoning_tokens=0). Response length: 0 chars",
+  "thinking_probe_confidence": "low",
+  "thinking_probe_at": "2026-06-10T10:55:00.000000+00:00",
+  "top_p": null,
+  "top_k": null,
+  "repetition_penalty": null,
+  "frequency_penalty": null,
+  "presence_penalty": null,
+  "seed": null,
+  "stop_sequences": null,
+  "input_modalities": [
+    "text",
+    "image"
+  ],
+  "output_modalities": [
+    "text"
+  ]
+}

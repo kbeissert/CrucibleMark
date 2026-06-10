@@ -11,7 +11,7 @@
   "model_family": "Qwen 3 Coder Next",
   "vendor": "Qwen / Alibaba Cloud",
   "primary_focus": "coding",
-  "use_case_primary": "code-generation",
+  "use_case_primary": "coding",
   "parameter_architecture": "moe",
   "params_total_b": 80,
   "params_active_b": 3,
@@ -33,10 +33,8 @@
   ],
   "judge_context_hint": "Code-spezialisiertes MoE-Modell mit nur 3B aktiven Parametern bei 80B Gesamtgröße. Q8_K_XL-Quantisierung als Multi-File-Shard für High-Memory-Hardware. Kein Thinking-Modus. Gleiche Architektur und gleiche Benchmark-Werte wie die Q4-Schwester-Variante, nur mit höherer Präzision.",
   "architecture_tags": [
-    "Coding",
-    "MoE",
-    "Agentic",
-    "DeltaNet"
+    "Coder",
+    "Agentic"
   ],
   "supports_tool_use": true,
   "license": "Apache 2.0",
@@ -53,5 +51,18 @@
   "thinking_probe_detected": null,
   "thinking_probe_evidence": "Kein Live-Probe durchgeführt. Qwen3-Coder-Next ist architektonisch ohne Thinking-Modus (kein nativer CoT-Output), aber empirische Verifikation steht aus. Config setzt enable_thinking: false; llama.cpp startet mit --reasoning off. Smoke-Test (curl POST /v1/chat/completions) lieferte direkte Antwort ohne <think>-Tags — ABER der vollständige 81-GB-Multi-File-GGUF-Ladevorgang dauerte das Session-Fenster, sodass probe_thinking.py nie einen vollständigen Probe durchführen konnte. Die hartcodierte Ableitung 'detected=false' aus dem Smoke-Test war zu stark behauptet — bei Q8 sollte ein vollständiger Probe mit _has_inline_cot()-Heuristik (Signal C) wiederholt werden.",
   "thinking_probe_confidence": null,
-  "thinking_probe_at": null
+  "thinking_probe_at": null,
+  "top_p": null,
+  "top_k": null,
+  "repetition_penalty": null,
+  "frequency_penalty": null,
+  "presence_penalty": null,
+  "seed": null,
+  "stop_sequences": null,
+  "input_modalities": [
+    "text"
+  ],
+  "output_modalities": [
+    "text"
+  ]
 }

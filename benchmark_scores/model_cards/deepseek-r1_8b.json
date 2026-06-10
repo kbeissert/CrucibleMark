@@ -1,47 +1,63 @@
 {
-  "model_id": "deepseek-r1:8b",
-  "display_name": "DeepSeek R1 8B",
-  "developer": "DeepSeek",
-  "origin_country": "China",
-  "developer_jurisdiction": "CN",
+  "architecture_tags": [
+    "Thinking"
+  ],
+  "card_status": "complete",
+  "commercial_use_allowed": true,
+  "context_window_k": 128,
   "deployment_type": "open-weights-cloud-available",
+  "developer": "DeepSeek",
+  "developer_jurisdiction": "CN",
+  "display_name": "DeepSeek R1 8B",
+  "generated_at": "2026-04-23T22:09:16.638182+00:00",
+  "input_price_per_1m": null,
+  "judge_context_hint": "Das Modell gibt immer einen sichtbaren <thinking>-Block aus – bei der Bewertung sollte nur die finale Antwort nach dem Thinking-Block bewertet werden, nicht der Denkprozess selbst.",
+  "knowledge_cutoff": "2024-07",
+  "known_limitations": [
+    "Thinking-Prozess kann sehr ausführlich und langsam sein, was bei einfachen Aufgaben ineffizient ist",
+    "Zensur bei politisch sensiblen Themen mit China-Bezug (z.B. Tiananmen, Taiwan) ist im Modell verankert"
+  ],
+  "license": "MIT",
+  "license_url": "https://opensource.org/licenses/MIT",
   "local_deployment_possible": true,
-  "weights_provenance_risk": "high",
-  "weights_provenance_risk_rationale": "DeepSeek ist ein chinesisches Unternehmen und unterliegt dem chinesischen National Security Law (NSL). Das BSI hat am 04.02.2025 vor der Cloud-Nutzung von DeepSeek gewarnt; da dieses Modell primär lokal betrieben wird und keine Daten an chinesische Server überträgt, greift das BSI-Risikoszenario für Cloud-Dienste nicht direkt – das Herkunftsrisiko bleibt aber auf mittlerem Niveau.",
   "model_family": "DeepSeek-R1",
+  "model_id": "deepseek-r1:8b",
+  "model_version": "6995872bfe4c",
+  "origin_country": "China",
+  "output_price_per_1m": null,
+  "parameter_architecture": "dense",
+  "params_active_b": null,
+  "params_total_b": 8.0,
   "primary_focus": "reasoning",
-  "summary": "DeepSeek R1 8B ist ein kompaktes Open-Weights-Reasoning-Modell von DeepSeek aus China, das lokal betreibbar und über Cloud-Provider verfügbar ist. Es nutzt sichtbares Chain-of-Thought-Reasoning und eignet sich für strukturierte Denkaufgaben und STEM-Probleme auf ressourcenarmer Hardware.",
+  "size_class": "Edge",
   "strengths": [
     "Sichtbares Chain-of-Thought-Reasoning mit <thinking>-Blöcken ermöglicht nachvollziehbare Lösungswege",
     "Starke Leistung bei Mathematik, Logik und STEM-Aufgaben relativ zur Modellgröße",
     "Lokal betreibbar auf Consumer-Hardware dank 8B-Parametergröße"
   ],
-  "known_limitations": [
-    "Thinking-Prozess kann sehr ausführlich und langsam sein, was bei einfachen Aufgaben ineffizient ist",
-    "Zensur bei politisch sensiblen Themen mit China-Bezug (z.B. Tiananmen, Taiwan) ist im Modell verankert"
-  ],
-  "judge_context_hint": "Das Modell gibt immer einen sichtbaren <thinking>-Block aus – bei der Bewertung sollte nur die finale Antwort nach dem Thinking-Block bewertet werden, nicht der Denkprozess selbst.",
-  "architecture_tags": [
-    "Thinking"
-  ],
-  "unknown": false,
-  "generated_at": "2026-04-23T22:09:16.638182+00:00",
-  "card_status": "complete",
-  "size_class": "Edge",
+  "summary": "DeepSeek R1 8B ist ein kompaktes Open-Weights-Reasoning-Modell von DeepSeek aus China, das lokal betreibbar und über Cloud-Provider verfügbar ist. Es nutzt sichtbares Chain-of-Thought-Reasoning und eignet sich für strukturierte Denkaufgaben und STEM-Probleme auf ressourcenarmer Hardware.",
+  "supports_tool_use": false,
+  "thinking_probe_at": "2026-04-25T08:27:57.221518+00:00",
+  "thinking_probe_confidence": "low",
   "thinking_probe_detected": false,
   "thinking_probe_evidence": "No CoT signals found (A: no think-tags, B: reasoning_tokens=0). Response length: 1332 chars",
-  "thinking_probe_confidence": "low",
-  "thinking_probe_at": "2026-04-25T08:27:57.221518+00:00",
-  "supports_tool_use": false,
-  "license": "MIT",
-  "license_url": "https://opensource.org/licenses/MIT",
-  "commercial_use_allowed": true,
+  "unknown": false,
+  "use_case_primary": "reasoning",
   "vendor": "DeepSeek",
   "weights_license_tier": "open-weights",
-  "model_version": "6995872bfe4c",
-  "use_case_primary": "reasoning",
-  "parameter_architecture": "dense",
-  "params_total_b": 8.0,
-  "context_window_k": 128,
-  "knowledge_cutoff": "2024-07"
+  "weights_provenance_risk": "high",
+  "weights_provenance_risk_rationale": "DeepSeek ist ein chinesisches Unternehmen und unterliegt dem chinesischen National Security Law (NSL). Das BSI hat am 04.02.2025 vor der Cloud-Nutzung von DeepSeek gewarnt; da dieses Modell primär lokal betrieben wird und keine Daten an chinesische Server überträgt, greift das BSI-Risikoszenario für Cloud-Dienste nicht direkt – das Herkunftsrisiko bleibt aber auf mittlerem Niveau.",
+  "top_p": null,
+  "top_k": null,
+  "repetition_penalty": null,
+  "frequency_penalty": null,
+  "presence_penalty": null,
+  "seed": null,
+  "stop_sequences": null,
+  "input_modalities": [
+    "text"
+  ],
+  "output_modalities": [
+    "text"
+  ]
 }

@@ -11,7 +11,7 @@
   "model_family": "Qwen 3.5",
   "vendor": "Qwen / Alibaba Cloud",
   "primary_focus": "general",
-  "use_case_primary": "generalist",
+  "use_case_primary": "vision-language",
   "parameter_architecture": "moe",
   "params_total_b": 35,
   "params_active_b": 3,
@@ -35,8 +35,7 @@
   "judge_context_hint": "MoE-Modell mit nur 3B aktiven Parametern – effizienter als viele Dense-Modelle gleicher Gesamtgröße. Q8_K_XL-Quantisierung minimiert Qualitätsverluste.",
   "architecture_tags": [
     "Thinking-Optional",
-    "Multimodal",
-    "MoE"
+    "Multimodal"
   ],
   "supports_tool_use": true,
   "license": "Apache 2.0",
@@ -47,11 +46,26 @@
   "input_price_per_1m": 0,
   "output_price_per_1m": 0,
   "unknown": false,
-  "card_status": "verified",
+  "card_status": "complete",
   "size_class": "Desktop",
   "generated_at": "2026-06-04T21:56:30+00:00",
   "thinking_probe_detected": null,
   "thinking_probe_evidence": null,
   "thinking_probe_confidence": null,
-  "thinking_probe_at": null
+  "thinking_probe_at": null,
+  "top_p": null,
+  "top_k": null,
+  "repetition_penalty": null,
+  "frequency_penalty": null,
+  "presence_penalty": null,
+  "seed": null,
+  "stop_sequences": null,
+  "input_modalities": [
+    "text",
+    "image",
+    "audio"
+  ],
+  "output_modalities": [
+    "text"
+  ]
 }

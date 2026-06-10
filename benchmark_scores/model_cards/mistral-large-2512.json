@@ -4,7 +4,7 @@
   "developer": "Mistral AI",
   "origin_country": "France",
   "developer_jurisdiction": "FR",
-  "deployment_type": "api-and-local",
+  "deployment_type": "open-weights-cloud-available",
   "local_deployment_possible": true,
   "weights_provenance_risk": "low",
   "weights_provenance_risk_rationale": "Mistral AI ist ein französisches Unternehmen mit Sitz in Paris, unterliegt EU-DSGVO und dem AI Act. Keine bekannten staatlichen Einflussrisiken vergleichbar mit chinesischen oder russischen Anbietern. Modellgewichte sind unter Apache 2.0 öffentlich verfügbar.",
@@ -32,10 +32,9 @@
   ],
   "judge_context_hint": "Mistral Large 3 (2512) ist ein 675B-MoE-Modell von Mistral AI, optimiert für Generalaufgaben mit 256K Kontext. Kein natives Chain-of-Thought-Denken.",
   "architecture_tags": [
-    "MoE",
-    "Long Context"
+    "Long-Context"
   ],
-  "supports_tool_use": "untested",
+  "supports_tool_use": null,
   "license": "Apache 2.0",
   "license_url": "https://huggingface.co/mistralai/Mistral-Large-Instruct-2511",
   "commercial_use_allowed": true,
@@ -50,5 +49,19 @@
   "thinking_probe_detected": false,
   "thinking_probe_evidence": "No CoT signals found (A: no think-tags, B: reasoning_tokens=0). Response length: 486 chars",
   "thinking_probe_confidence": "low",
-  "thinking_probe_at": "2026-05-25T22:13:48.102043+00:00"
+  "thinking_probe_at": "2026-05-25T22:13:48.102043+00:00",
+  "top_p": null,
+  "top_k": null,
+  "repetition_penalty": null,
+  "frequency_penalty": null,
+  "presence_penalty": null,
+  "seed": null,
+  "stop_sequences": null,
+  "input_modalities": [
+    "text",
+    "image"
+  ],
+  "output_modalities": [
+    "text"
+  ]
 }

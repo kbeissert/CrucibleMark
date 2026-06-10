@@ -25,8 +25,7 @@
   "judge_context_hint": "Gemini 3.5 Flash (veröffentlicht 19. Mai 2026, Google I/O) ist Googles schnellstes Flash-Modell. Terminal-Bench 2.1: 76.2%, MCP Atlas: 83.6%, CharXiv Reasoning: 84.2% – übertrifft Gemini 3.1 Pro auf Coding/Agenten. 1M Token Kontext, 4× schneller als andere Frontier-Modelle, Preis: $1.50/$9 pro 1M Tokens. Optmiert für Coding und autonome Agenten, nicht für maximale Reasoning-Tiefe – bei komplexem Reasoning kann die Tiefe gegenüber Pro-Modellen zurückfallen.",
   "architecture_tags": [
     "General",
-    "Multimodal",
-    "Flash"
+    "Multimodal"
   ],
   "unknown": false,
   "generated_at": "2026-06-09T20:32:00.000000+00:00",
@@ -36,7 +35,7 @@
   "thinking_probe_evidence": "Not yet probed.",
   "thinking_probe_confidence": "low",
   "thinking_probe_at": null,
-  "supports_tool_use": "untested",
+  "supports_tool_use": null,
   "license": "Proprietary",
   "license_url": null,
   "commercial_use_allowed": true,
@@ -45,10 +44,25 @@
   "model_version": "3.5-flash",
   "input_price_per_1m": 1.5,
   "output_price_per_1m": 9.0,
-  "use_case_primary": "generalist",
+  "use_case_primary": "vision-language",
   "parameter_architecture": "moe",
   "params_total_b": null,
   "params_active_b": null,
   "context_window_k": 1000,
-  "knowledge_cutoff": "2026-01"
+  "knowledge_cutoff": "2026-01",
+  "top_p": null,
+  "top_k": null,
+  "repetition_penalty": null,
+  "frequency_penalty": null,
+  "presence_penalty": null,
+  "seed": null,
+  "stop_sequences": null,
+  "input_modalities": [
+    "text",
+    "image",
+    "audio"
+  ],
+  "output_modalities": [
+    "text"
+  ]
 }

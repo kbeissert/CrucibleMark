@@ -37,7 +37,7 @@
     "Instruct",
     "Agentic"
   ],
-  "supports_tool_use": "untested",
+  "supports_tool_use": null,
   "license": "Apache 2.0",
   "license_url": "https://huggingface.co/NousResearch/Hermes-4.3-36B/blob/main/LICENSE",
   "commercial_use_allowed": true,
@@ -46,11 +46,24 @@
   "input_price_per_1m": 0,
   "output_price_per_1m": 0,
   "unknown": false,
-  "card_status": "verified",
+  "card_status": "complete",
   "size_class": "Workstation",
   "generated_at": "2026-06-06T16:20:00+02:00",
   "thinking_probe_detected": null,
   "thinking_probe_evidence": null,
   "thinking_probe_confidence": null,
-  "thinking_probe_at": null
+  "thinking_probe_at": null,
+  "top_p": null,
+  "top_k": null,
+  "repetition_penalty": null,
+  "frequency_penalty": null,
+  "presence_penalty": null,
+  "seed": null,
+  "stop_sequences": null,
+  "input_modalities": [
+    "text"
+  ],
+  "output_modalities": [
+    "text"
+  ]
 }

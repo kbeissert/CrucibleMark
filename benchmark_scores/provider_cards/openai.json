@@ -19,20 +19,23 @@
   "privacy_note": "API-Anfragen werden auf US-amerikanischen Servern verarbeitet und unterliegen dem CLOUD Act, der US-Behörden Zugriff auf gespeicherte Daten ermöglichen kann. Obwohl ein DPA und SCCs für EU-Kunden verfügbar sind, verbleibt ein strukturelles Transferrisiko nach Art. 44 ff. DSGVO.",
   "notable_models": [
     "GPT-5.5",
+    "GPT-5.5 Pro",
     "GPT-5.4",
+    "GPT-5.4 Pro",
+    "GPT-5.4 Nano",
     "GPT-5",
     "o4-mini",
     "GPT-4o"
   ],
   "stats": {
-    "models_tracked": 10,
+    "models_tracked": 13,
     "median_tokens_per_s": 55.65,
     "median_avg_task_duration_s": 11.79,
     "cost_per_1k_median_usd": 0.0044,
     "active_ping_ttfb_ms": 711
   },
   "unknown": false,
-  "generated_at": "2026-06-02T21:00:00.000000+00:00",
-  "last_verified_at": "2026-06-02",
+  "generated_at": "2026-06-10T11:00:00.000000+00:00",
+  "last_verified_at": "2026-06-10",
   "verification_source": "https://openai.com/policies/privacy-policy"
 }

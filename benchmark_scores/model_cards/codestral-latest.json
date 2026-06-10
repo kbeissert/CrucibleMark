@@ -1,47 +1,63 @@
 {
-  "model_id": "codestral-latest",
-  "display_name": "Codestral",
-  "developer": "Mistral AI",
-  "origin_country": "France",
-  "developer_jurisdiction": "EU",
+  "architecture_tags": [
+    "Coder"
+  ],
+  "card_status": "complete",
+  "commercial_use_allowed": false,
+  "context_window_k": 256,
   "deployment_type": "open-weights-cloud-available",
+  "developer": "Mistral AI",
+  "developer_jurisdiction": "EU",
+  "display_name": "Codestral",
+  "generated_at": "2026-04-23T21:58:38.887763+00:00",
+  "input_price_per_1m": null,
+  "judge_context_hint": "Codestral ist auf Code-Aufgaben spezialisiert und zeigt bei reinen Coding-Benchmarks überdurchschnittliche Leistung, kann aber bei allgemeinen Reasoning- oder Wissensfragen hinter Allround-Modellen zurückbleiben.",
+  "knowledge_cutoff": "2024-12",
+  "known_limitations": [
+    "Gewichte unter Mistral Non-Production License (MNPL) — kein kommerzieller Einsatz ohne Mistral-Vertrag; lokaler Betrieb für Research/Entwicklung möglich",
+    "Schwächer bei komplexen Reasoning-Aufgaben außerhalb des Code-Kontexts"
+  ],
+  "license": "Mistral Codestral License",
+  "license_url": "https://mistral.ai/licenses/MCSL-0.1.md",
   "local_deployment_possible": true,
-  "weights_provenance_risk": "low",
-  "weights_provenance_risk_rationale": "Mistral AI ist ein französisches Unternehmen mit Sitz in der EU und unterliegt keiner staatlichen Zugriffspflicht auf Modellgewichte wie dem US CLOUD Act oder dem chinesischen NSL.",
   "model_family": "Codestral",
+  "model_id": "codestral-latest",
+  "model_version": "latest",
+  "origin_country": "France",
+  "output_price_per_1m": null,
+  "parameter_architecture": "dense",
+  "params_active_b": null,
+  "params_total_b": 22.0,
   "primary_focus": "coding",
-  "summary": "Codestral ist Mistral AIs spezialisiertes Code-Modell aus Frankreich – trainiert auf über 80 Programmiersprachen und ausgelegt auf Code-Vervollständigung, Debugging und Code-Erklärungen. Es lässt sich lokal betreiben und ist über die Mistral-API verfügbar.",
+  "size_class": "Desktop",
   "strengths": [
     "Hervorragende Code-Vervollständigung und Fill-in-the-Middle (FIM) für viele Sprachen",
     "Breite Sprachabdeckung mit über 80 Programmiersprachen inkl. Python, JS, Rust, Go",
     "Schnelle Inferenz bei gleichzeitig hoher Code-Qualität dank optimierter Architektur"
   ],
-  "known_limitations": [
-    "Gewichte unter Mistral Non-Production License (MNPL) — kein kommerzieller Einsatz ohne Mistral-Vertrag; lokaler Betrieb für Research/Entwicklung möglich",
-    "Schwächer bei komplexen Reasoning-Aufgaben außerhalb des Code-Kontexts"
-  ],
-  "judge_context_hint": "Codestral ist auf Code-Aufgaben spezialisiert und zeigt bei reinen Coding-Benchmarks überdurchschnittliche Leistung, kann aber bei allgemeinen Reasoning- oder Wissensfragen hinter Allround-Modellen zurückbleiben.",
-  "architecture_tags": [
-    "Coder"
-  ],
-  "unknown": false,
-  "generated_at": "2026-04-23T21:58:38.887763+00:00",
-  "card_status": "complete",
-  "size_class": "Desktop",
+  "summary": "Codestral ist Mistral AIs spezialisiertes Code-Modell aus Frankreich – trainiert auf über 80 Programmiersprachen und ausgelegt auf Code-Vervollständigung, Debugging und Code-Erklärungen. Es lässt sich lokal betreiben und ist über die Mistral-API verfügbar.",
+  "supports_tool_use": true,
+  "thinking_probe_at": "2026-04-23T13:55:24.852904+00:00",
+  "thinking_probe_confidence": "low",
   "thinking_probe_detected": false,
   "thinking_probe_evidence": "No CoT signals found (A: no think-tags, B: reasoning_tokens=0). Response length: 819 chars",
-  "thinking_probe_confidence": "low",
-  "thinking_probe_at": "2026-04-23T13:55:24.852904+00:00",
-  "supports_tool_use": true,
-  "license": "Mistral Codestral License",
-  "license_url": "https://mistral.ai/licenses/MCSL-0.1.md",
-  "commercial_use_allowed": false,
+  "unknown": false,
+  "use_case_primary": "coding",
   "vendor": "Mistral AI",
   "weights_license_tier": "restricted-weights",
-  "model_version": "latest",
-  "use_case_primary": "coding",
-  "parameter_architecture": "dense",
-  "params_total_b": 22.0,
-  "context_window_k": 256,
-  "knowledge_cutoff": "2024-12"
+  "weights_provenance_risk": "low",
+  "weights_provenance_risk_rationale": "Mistral AI ist ein französisches Unternehmen mit Sitz in der EU und unterliegt keiner staatlichen Zugriffspflicht auf Modellgewichte wie dem US CLOUD Act oder dem chinesischen NSL.",
+  "top_p": null,
+  "top_k": null,
+  "repetition_penalty": null,
+  "frequency_penalty": null,
+  "presence_penalty": null,
+  "seed": null,
+  "stop_sequences": null,
+  "input_modalities": [
+    "text"
+  ],
+  "output_modalities": [
+    "text"
+  ]
 }

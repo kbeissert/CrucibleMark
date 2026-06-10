@@ -105,6 +105,10 @@ def migrate_card(path: Path) -> dict[str, object]:
 
     if changed:
         report["written"] = True
+        # Gebe die migrierten Daten zurück, damit main() sie schreiben kann
+        # (kein Re-Read von Disk nötig — verhindert, dass un-migrierte Tags
+        # versehentlich zurückgeschrieben werden).
+        report["data"] = data
 
     return report
 
@@ -141,9 +145,10 @@ def main(dry_run: bool) -> int:
             for change in report["changes"]:
                 print(f"      - {change}")
             if not dry_run and report.get("written"):
+                # Schreibt die in migrate_card() normalisierten Daten — kein
+                # Re-Read von Disk (Bug: würde un-migrierte Tags zurückschreiben).
                 path.write_text(
-                    json.dumps(data := json.loads(path.read_text(encoding="utf-8")),
-                               ensure_ascii=False, indent=2) + "\n",
+                    json.dumps(report["data"], ensure_ascii=False, indent=2) + "\n",
                     encoding="utf-8",
                 )
                 written += 1

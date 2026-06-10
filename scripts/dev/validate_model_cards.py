@@ -9,6 +9,15 @@ Checks:
      commercial_use_allowed, use_case_primary)
   4. use_case_primary has a valid controlled-vocabulary value
   5. Vision/Multimodal tags present but use_case_primary != "vision-language" → WARNING
+  6. architecture_tags gegen Registry-Whitelist (SSoT: config/card_vocabulary.yaml)
+     - unbekannte Tags → WARN (Wildwuchs verhindern)
+     - deprecated Tags → WARN mit Migrations-Hinweis (konsolidieren)
+  7. Top-Level-Field-Whitelist (SSoT: config/card_template_model.yaml)
+     - in complete-Cards: unbekannte Felder → WARN (Wildwuchs-Schutz)
+     - in draft/minimal: toleriert (experimentelle Felder erlaubt)
+
+Tag-Whitelist kommt aus config/card_vocabulary.yaml via utils.card_utils.
+Damit können Auto-Generatoren dieselbe SSoT nutzen wie die Validierung.
 
 Usage:
     python scripts/dev/validate_model_cards.py
@@ -16,12 +25,28 @@ Usage:
 """
 
 import json
+import logging
 import sys
 from pathlib import Path
 
+# Logger für manuelle Konsistenz-Prüfungen (z.B. CI-Output)
+logger = logging.getLogger(__name__)
+
+# sys.path-Fix: Skript liegt in scripts/dev/ — utils/ ist parallel dazu
+# (nicht in scripts/dev/). Bei direktem Aufruf (python scripts/dev/validate_...)
+# muss utils/ explizit zum Pfad hinzugefügt werden, sonst schlägt der
+# `from utils.card_utils import ...`-Import fehlt.
+_PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent
+if str(_PROJECT_ROOT) not in sys.path:
+    sys.path.insert(0, str(_PROJECT_ROOT))
+
 CARDS_DIR = Path("benchmark_scores/model_cards")
-VALID_TIERS = {"open-weights", "restricted-weights", "proprietary"}
-REQUIRED_FIELDS = [
+
+# Whitelists werden NICHT mehr hier hardcoded — sie kommen aus der
+# Taxonomie-SSoT (config/classification_taxonomy.json) via utils.card_utils.
+# Das verhindert Drift zwischen Card-Generierung, Validierung und Runtime-Mapping.
+# Siehe utils/card_utils.py:load_taxonomy() / get_valid_values().
+_REQUIRED_FIELDS = [
     "model_id",
     "display_name",
     "weights_license_tier",
@@ -30,8 +55,56 @@ REQUIRED_FIELDS = [
     "use_case_primary",
     "parameter_architecture",
 ]
-VALID_USE_CASES = {"generalist", "coding", "reasoning", "vision-language", "agentic"}
-VALID_PARAM_ARCH = {"dense", "moe", "hybrid"}
+
+
+def _get_valid_values(section: str) -> frozenset[str]:
+    """Lazy-Loader für Taxonomie-Whitelist. Import hier lokal, um Import-Zyklen zu vermeiden."""
+    try:
+        from utils.card_utils import get_valid_values
+        return get_valid_values(section)
+    except Exception as exc:  # noqa: BLE001
+        logger.warning("Konnte Taxonomie-Section '%s' nicht laden: %s", section, exc)
+        return frozenset()
+
+
+def _get_template_field_names() -> frozenset[str]:
+    """Lazy-Loader für die Vereinigung aller Template-Feldnamen (required + optional).
+
+    SSoT: config/card_template_model.yaml. Verwendet für die Top-Level-Field-Whitelist
+    in Karten, damit Wildwuchs in complete-Cards erkannt wird.
+    """
+    try:
+        import yaml
+        template_path = Path("config/card_template_model.yaml")
+        if not template_path.exists():
+            return frozenset()
+        data = yaml.safe_load(template_path.read_text(encoding="utf-8"))
+        names: set[str] = set()
+        for section in ("required_fields", "optional_fields"):
+            for entry in data.get(section, []) or []:
+                if isinstance(entry, dict) and "name" in entry:
+                    names.add(entry["name"])
+        return frozenset(names)
+    except Exception as exc:  # noqa: BLE001
+        logger.warning("Konnte Template-Feldnamen nicht laden: %s", exc)
+        return frozenset()
+
+
+def _get_tag_registry() -> tuple[frozenset[str], dict[str, str | None]]:
+    """Lazy-Loader für Tag-Registry aus config/card_vocabulary.yaml.
+
+    Returns:
+        (known_tags, deprecated_normalizations) — known_tags vereinigt reserved,
+        informational und deprecated Slugs. deprecated_normalizations mappt
+        alten Slug → normalisierter Slug (None = entfernen).
+    """
+    try:
+        from utils.card_utils import get_all_known_tags, get_deprecated_normalizations
+        return get_all_known_tags(), get_deprecated_normalizations()
+    except Exception as exc:  # noqa: BLE001
+        logger.warning("Konnte Tag-Registry nicht laden: %s", exc)
+        return frozenset(), {}
+
 
 OPEN_WEIGHTS_PHRASES = ["Open-Weights-Modell", "Open Weights Modell", "Open-Weights-Modell", "Open Weights Model"]
 
@@ -41,16 +114,21 @@ def check_card(path: Path, data: dict) -> list[str]:
     name = data.get("display_name", data.get("model_id", path.stem))
 
     # 1. Required fields
-    for field in REQUIRED_FIELDS:
+    for field in _REQUIRED_FIELDS:
         if field not in data:
             issues.append(f"[MISSING FIELD] '{field}' fehlt")
+
+    # Whitelists aus Taxonomie-SSoT (siehe _get_valid_values)
+    valid_tiers = _get_valid_values("weights_license_tier")
+    valid_use_cases = _get_valid_values("use_case")
+    valid_param_arch = _get_valid_values("parameter_architecture")
 
     tier = data.get("weights_license_tier", "")
     summary = data.get("summary", "")
     commercial = data.get("commercial_use_allowed")
 
-    if tier not in VALID_TIERS and tier:
-        issues.append(f"[INVALID TIER] '{tier}' ist kein gültiger Wert ({VALID_TIERS})")
+    if tier and tier not in valid_tiers:
+        issues.append(f"[INVALID TIER] '{tier}' ist kein gültiger Wert ({sorted(valid_tiers)})")
 
     # 2. summary claims Open-Weights but tier disagrees
     if tier != "open-weights" and any(phrase in summary for phrase in OPEN_WEIGHTS_PHRASES):
@@ -69,15 +147,18 @@ def check_card(path: Path, data: dict) -> list[str]:
 
     # 4. use_case_primary controlled vocabulary
     use_case = data.get("use_case_primary", "")
-    if use_case and use_case not in VALID_USE_CASES:
+    if use_case and use_case not in valid_use_cases:
         issues.append(
             f"[INVALID USE_CASE] use_case_primary='{use_case}' "
-            f"ist kein gültiger Wert ({sorted(VALID_USE_CASES)})"
+            f"ist kein gültiger Wert ({sorted(valid_use_cases)})"
         )
 
     # 5. Vision/Multimodal tags but use_case_primary != "vision-language" (warning only)
+    # "Vision-Capable" markiert sekundäres Vision-Feature bei agentic/coding-Modellen
+    # (z.B. Claude 4.x, Qwen 3.6 Plus) und triggert keine Warnung.
     tags = data.get("architecture_tags", [])
-    if ("Vision" in tags or "Multimodal" in tags) and use_case and use_case != "vision-language":
+    has_primary_vision = ("Vision" in tags or "Multimodal" in tags) and "Vision-Capable" not in tags
+    if has_primary_vision and use_case and use_case != "vision-language":
         issues.append(
             f"[WARN] architecture_tags enthält Vision/Multimodal, "
             f"aber use_case_primary='{use_case}' (erwartet: 'vision-language' — prüfen ob korrekt)"
@@ -85,10 +166,10 @@ def check_card(path: Path, data: dict) -> list[str]:
 
     # 6. parameter_architecture controlled vocabulary
     param_arch = data.get("parameter_architecture", "")
-    if param_arch and param_arch not in VALID_PARAM_ARCH:
+    if param_arch and param_arch not in valid_param_arch:
         issues.append(
             f"[INVALID PARAM_ARCH] parameter_architecture='{param_arch}' "
-            f"ist kein gültiger Wert ({sorted(VALID_PARAM_ARCH)})"
+            f"ist kein gültiger Wert ({sorted(valid_param_arch)})"
         )
 
     # 7. params_active_b only makes sense for moe/hybrid
@@ -112,6 +193,51 @@ def check_card(path: Path, data: dict) -> list[str]:
                 "[WARN] knowledge_cutoff fehlt (empfohlen für complete-Cards — "
                 "Trainings-Cutoff als 'YYYY-MM', z.B. '2025-01')"
             )
+
+    # 9. Tag-Whitelist-Check gegen config/card_vocabulary.yaml
+    # Unbekannte Tags sind Wildwuchs, deprecated Tags sollen migriert werden.
+    # Beides ist WARN, kein Fehler — manueller Review vor nächster Migration.
+    known_tags, deprecated_norm = _get_tag_registry()
+    if known_tags and tags:
+        for tag in tags:
+            if tag in known_tags:
+                continue
+            # nicht in Registry: entweder unbekannt oder deprecated
+            if tag in deprecated_norm:
+                replacement = deprecated_norm[tag]
+                if replacement is None:
+                    hint = "soll entfernt werden"
+                else:
+                    hint = f"soll zu '{replacement}' migriert werden"
+                issues.append(
+                    f"[WARN] architecture_tags enthält deprecated Tag '{tag}' — {hint}. "
+                    f"Registry: config/card_vocabulary.yaml (Migration: scripts/dev/migrate_architecture_tags.py)"
+                )
+            else:
+                issues.append(
+                    f"[WARN] architecture_tags enthält unbekannten Tag '{tag}' — "
+                    f"nicht in config/card_vocabulary.yaml. "
+                    f"Falls gewollt: in reserved_tags/informational_tags aufnehmen, "
+                    f"sonst entfernen."
+                )
+
+    # 10. Top-Level-Field-Whitelist (config/card_template_model.yaml)
+    # Unbekannte Felder in complete-Cards sind Wildwuchs-Verdacht.
+    # In draft/minimal werden sie toleriert (experimentelle Felder).
+    known_fields = _get_template_field_names()
+    if known_fields:
+        for field_name in data:
+            if field_name in known_fields:
+                continue
+            # Unbekanntes Feld — Verhalten abhängig vom Card-Status
+            if card_status == "complete":
+                issues.append(
+                    f"[WARN] unbekanntes Top-Level-Feld '{field_name}' in complete-Card. "
+                    f"Nicht in config/card_template_model.yaml definiert. "
+                    f"Falls gewollt: in optional_fields/required_fields aufnehmen, "
+                    f"sonst aus der Card entfernen."
+                )
+            # draft/minimal: stillschweigend toleriert
 
     return [(f"  {name}: {issue}") for issue in issues]
 

@@ -1,48 +1,64 @@
 {
-  "model_id": "qwen3.5:9b",
-  "display_name": "Qwen 3.5 9B",
-  "developer": "Alibaba Cloud",
-  "origin_country": "China",
-  "developer_jurisdiction": "CN",
+  "architecture_tags": [
+    "General",
+    "Thinking-Optional"
+  ],
+  "card_status": "complete",
+  "commercial_use_allowed": true,
+  "context_window_k": 32,
   "deployment_type": "open-weights-cloud-available",
+  "developer": "Alibaba Cloud",
+  "developer_jurisdiction": "CN",
+  "display_name": "Qwen 3.5 9B",
+  "generated_at": "2026-04-23T22:09:07.320486+00:00",
+  "input_price_per_1m": null,
+  "judge_context_hint": "Das Modell unterstützt einen optionalen Thinking-Modus – bei Benchmarks sollte beachtet werden, ob dieser aktiviert ist, da er die Antwortqualität bei Reasoning-Aufgaben erheblich beeinflusst.",
+  "knowledge_cutoff": "2025-06",
+  "known_limitations": [
+    "Kann bei komplexen, langen Reasoning-Ketten ohne aktiviertes Thinking-Modus an Grenzen stoßen",
+    "Mögliche Zensur oder Auslassungen bei politisch sensiblen Themen mit Bezug zu China"
+  ],
+  "license": "Apache-2.0",
+  "license_url": "https://www.apache.org/licenses/LICENSE-2.0",
   "local_deployment_possible": true,
-  "weights_provenance_risk": "high",
-  "weights_provenance_risk_rationale": "Alibaba Cloud (Tongyi Qwen-Team) ist ein chinesisches Unternehmen und unterliegt dem chinesischen National Security Law (NSL). Das BSI hat im Februar 2025 vor chinesischen KI-Cloud-Diensten gewarnt (BSI-Referenz: Warnung DeepSeek, 04.02.2025); bei lokalem Betrieb der Open-Weights-Variante ohne Datenübertragung nach China ist das cloud-spezifische Risikoszenario reduziert.",
   "model_family": "Qwen",
+  "model_id": "qwen3.5:9b",
+  "model_version": "3.5",
+  "origin_country": "China",
+  "output_price_per_1m": null,
+  "parameter_architecture": "dense",
+  "params_active_b": null,
+  "params_total_b": 9.0,
   "primary_focus": "general",
-  "summary": "Qwen 3.5 9B ist ein Open-Weights-Modell von Alibaba aus China – ausgelegt auf allgemeine Sprachaufgaben und Reasoning. Es lässt sich lokal betreiben und ist über Cloud-Provider verfügbar. Chinesische Herkunft und das nationale Sicherheitsgesetz (NSL) sind bei der Einschätzung des Datenrisikos zu berücksichtigen.",
+  "size_class": "Edge",
   "strengths": [
     "Starke mehrsprachige Fähigkeiten, insbesondere Chinesisch und Englisch",
     "Gutes Verhältnis von Modellgröße zu Leistung im 9B-Segment",
     "Unterstützt optionales Chain-of-Thought-Reasoning (Thinking-Optional)"
   ],
-  "known_limitations": [
-    "Kann bei komplexen, langen Reasoning-Ketten ohne aktiviertes Thinking-Modus an Grenzen stoßen",
-    "Mögliche Zensur oder Auslassungen bei politisch sensiblen Themen mit Bezug zu China"
-  ],
-  "judge_context_hint": "Das Modell unterstützt einen optionalen Thinking-Modus – bei Benchmarks sollte beachtet werden, ob dieser aktiviert ist, da er die Antwortqualität bei Reasoning-Aufgaben erheblich beeinflusst.",
-  "architecture_tags": [
-    "General",
-    "Thinking-Optional"
-  ],
-  "unknown": false,
-  "generated_at": "2026-04-23T22:09:07.320486+00:00",
-  "card_status": "complete",
-  "size_class": "Edge",
+  "summary": "Qwen 3.5 9B ist ein Open-Weights-Modell von Alibaba aus China – ausgelegt auf allgemeine Sprachaufgaben und Reasoning. Es lässt sich lokal betreiben und ist über Cloud-Provider verfügbar. Chinesische Herkunft und das nationale Sicherheitsgesetz (NSL) sind bei der Einschätzung des Datenrisikos zu berücksichtigen.",
+  "supports_tool_use": null,
+  "thinking_probe_at": "2026-04-25T09:25:30.007908+00:00",
+  "thinking_probe_confidence": "low",
   "thinking_probe_detected": false,
   "thinking_probe_evidence": "No CoT signals found (A: no think-tags, B: reasoning_tokens=0). Response length: 1582 chars",
-  "thinking_probe_confidence": "low",
-  "thinking_probe_at": "2026-04-25T09:25:30.007908+00:00",
-  "supports_tool_use": "untested",
-  "license": "Apache-2.0",
-  "license_url": "https://www.apache.org/licenses/LICENSE-2.0",
-  "commercial_use_allowed": true,
+  "unknown": false,
+  "use_case_primary": "generalist",
   "vendor": "Alibaba",
   "weights_license_tier": "open-weights",
-  "model_version": "3.5",
-  "use_case_primary": "generalist",
-  "parameter_architecture": "dense",
-  "params_total_b": 9.0,
-  "context_window_k": 32,
-  "knowledge_cutoff": "2025-06"
+  "weights_provenance_risk": "high",
+  "weights_provenance_risk_rationale": "Alibaba Cloud (Tongyi Qwen-Team) ist ein chinesisches Unternehmen und unterliegt dem chinesischen National Security Law (NSL). Das BSI hat im Februar 2025 vor chinesischen KI-Cloud-Diensten gewarnt (BSI-Referenz: Warnung DeepSeek, 04.02.2025); bei lokalem Betrieb der Open-Weights-Variante ohne Datenübertragung nach China ist das cloud-spezifische Risikoszenario reduziert.",
+  "top_p": null,
+  "top_k": null,
+  "repetition_penalty": null,
+  "frequency_penalty": null,
+  "presence_penalty": null,
+  "seed": null,
+  "stop_sequences": null,
+  "input_modalities": [
+    "text"
+  ],
+  "output_modalities": [
+    "text"
+  ]
 }

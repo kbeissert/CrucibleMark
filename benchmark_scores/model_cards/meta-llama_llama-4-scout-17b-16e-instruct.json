@@ -47,5 +47,19 @@
   "params_total_b": 109.0,
   "params_active_b": 17.0,
   "context_window_k": 10000,
-  "knowledge_cutoff": "2024-12"
+  "knowledge_cutoff": "2024-12",
+  "top_p": null,
+  "top_k": null,
+  "repetition_penalty": null,
+  "frequency_penalty": null,
+  "presence_penalty": null,
+  "seed": null,
+  "stop_sequences": null,
+  "input_modalities": [
+    "text",
+    "image"
+  ],
+  "output_modalities": [
+    "text"
+  ]
 }

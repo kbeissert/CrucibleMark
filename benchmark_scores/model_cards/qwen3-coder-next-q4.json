@@ -11,7 +11,7 @@
   "model_family": "Qwen 3 Coder Next",
   "vendor": "Qwen / Alibaba Cloud",
   "primary_focus": "coding",
-  "use_case_primary": "code-generation",
+  "use_case_primary": "coding",
   "parameter_architecture": "moe",
   "params_total_b": 80,
   "params_active_b": 3,
@@ -32,10 +32,8 @@
   ],
   "judge_context_hint": "Code-spezialisiertes MoE-Modell mit nur 3B aktiven Parametern bei 80B Gesamtgröße. Q4_K_XL-Quantisierung für Consumer-Hardware. Kein Thinking-Modus.",
   "architecture_tags": [
-    "Coding",
-    "MoE",
-    "Agentic",
-    "DeltaNet"
+    "Coder",
+    "Agentic"
   ],
   "supports_tool_use": true,
   "license": "Apache 2.0",
@@ -46,11 +44,24 @@
   "input_price_per_1m": 0,
   "output_price_per_1m": 0,
   "unknown": false,
-  "card_status": "verified",
-  "size_class": "Consumer-GPU",
+  "card_status": "complete",
+  "size_class": "Workstation",
   "generated_at": "2026-06-04T21:58:30+00:00",
   "thinking_probe_detected": null,
   "thinking_probe_evidence": "Kein Live-Probe durchgeführt. Qwen3-Coder-Next ist architektonisch ohne Thinking-Modus (kein nativer CoT-Output), aber empirische Verifikation steht aus. Config setzt enable_thinking: false; llama.cpp startet mit --reasoning off. Q4_K_XL-Quant (Single-File, ~46 GB) laedt schneller als die Q8-Multi-File-Variante, ein Probe sollte sich in einer Folgesession nachholen lassen.",
   "thinking_probe_confidence": null,
-  "thinking_probe_at": null
+  "thinking_probe_at": null,
+  "top_p": null,
+  "top_k": null,
+  "repetition_penalty": null,
+  "frequency_penalty": null,
+  "presence_penalty": null,
+  "seed": null,
+  "stop_sequences": null,
+  "input_modalities": [
+    "text"
+  ],
+  "output_modalities": [
+    "text"
+  ]
 }

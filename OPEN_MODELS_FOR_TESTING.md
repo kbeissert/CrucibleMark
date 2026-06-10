@@ -1,10 +1,10 @@
-# Noch zu testende Modelle (Stand: 2026-06-07)
+# Noch zu testende Modelle (Stand: 2026-06-10)
 
 **Zusammenfassung:**
-- Konfiguriert: 85 Modelle
+- Konfiguriert: 88 Modelle
 - Bereits getestet: 80 Modelle
-- **Noch offen: 39 Modelle**
-- Abdeckung: 94,1%
+- **Noch offen: 42 Modelle**
+- Abdeckung: 90,9%
 
 ---
 
@@ -48,6 +48,11 @@
 
 ## MISTRAL (1 Modell)
 - mistral-small-2503
+
+## OPENAI (3 Modelle)
+- gpt-5.5-pro
+- gpt-5.4-pro
+- gpt-5.4-nano
 
 ## OPENROUTER (6 Modelle)
 - deepseek/deepseek-v4-pro

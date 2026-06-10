@@ -1,49 +1,64 @@
 {
-  "model_id": "o4-mini",
-  "display_name": "o4-mini",
-  "developer": "OpenAI",
-  "origin_country": "USA",
-  "developer_jurisdiction": "US",
+  "architecture_tags": [
+    "Thinking"
+  ],
+  "card_status": "complete",
+  "commercial_use_allowed": true,
+  "context_window_k": 200,
   "deployment_type": "cloud-only",
+  "developer": "OpenAI",
+  "developer_jurisdiction": "US",
+  "display_name": "o4-mini",
+  "generated_at": "2026-04-23T21:59:48.373411+00:00",
+  "input_price_per_1m": 1.1,
+  "judge_context_hint": "o4-mini denkt intern mit festem Chain-of-Thought und liefert oft präzise, strukturierte Antworten – bei Reasoning-Aufgaben ist die Ausgabe typischerweise sehr zuverlässig, bei offenen kreativen Aufgaben jedoch möglicherweise zu schematisch.",
+  "knowledge_cutoff": "2025-01",
+  "known_limitations": [
+    "Kein Zugriff auf Modellgewichte – ausschließlich über OpenAI-API nutzbar",
+    "Kann bei kreativen, offenen oder nuancierten Sprachaufgaben hinter generalistischen Modellen zurückbleiben"
+  ],
+  "license": "Proprietary",
+  "license_url": null,
   "local_deployment_possible": false,
-  "weights_provenance_risk": "medium",
-  "weights_provenance_risk_rationale": "OpenAI ist ein US-amerikanisches Unternehmen und unterliegt dem CLOUD Act, jedoch sind die Modellgewichte nicht öffentlich zugänglich, sodass kein direktes Risiko durch Gewichts-Exfiltration besteht.",
   "model_family": "OpenAI o-series",
+  "model_id": "o4-mini",
+  "model_version": "4-mini",
+  "origin_country": "USA",
+  "output_price_per_1m": 4.4,
+  "parameter_architecture": "dense",
+  "params_active_b": null,
+  "params_total_b": null,
   "primary_focus": "reasoning",
-  "summary": "o4-mini ist OpenAIs kompaktes Reasoning-Modell mit internem Chain-of-Thought, ausgelegt auf mathematisches, wissenschaftliches und logisches Schlussfolgern. Es ist ausschließlich über die OpenAI-API verfügbar und bietet starke Reasoning-Qualität bei geringerer Latenz und niedrigeren Kosten als größere Modelle der o-Series.",
+  "size_class": "Workstation",
   "strengths": [
     "Herausragende Leistung bei Mathematik, Naturwissenschaften und formalem Schlussfolgern",
     "Deutlich schneller und kostengünstiger als o3 bei vergleichbarer Reasoning-Qualität",
     "Starke Coding-Fähigkeiten durch integriertes Chain-of-Thought-Training"
   ],
-  "known_limitations": [
-    "Kein Zugriff auf Modellgewichte – ausschließlich über OpenAI-API nutzbar",
-    "Kann bei kreativen, offenen oder nuancierten Sprachaufgaben hinter generalistischen Modellen zurückbleiben"
-  ],
-  "judge_context_hint": "o4-mini denkt intern mit festem Chain-of-Thought und liefert oft präzise, strukturierte Antworten – bei Reasoning-Aufgaben ist die Ausgabe typischerweise sehr zuverlässig, bei offenen kreativen Aufgaben jedoch möglicherweise zu schematisch.",
-  "architecture_tags": [
-    "Thinking"
-  ],
-  "unknown": false,
-  "generated_at": "2026-04-23T21:59:48.373411+00:00",
-  "card_status": "complete",
-  "size_class": "Workstation",
+  "summary": "o4-mini ist OpenAIs kompaktes Reasoning-Modell mit internem Chain-of-Thought, ausgelegt auf mathematisches, wissenschaftliches und logisches Schlussfolgern. Es ist ausschließlich über die OpenAI-API verfügbar und bietet starke Reasoning-Qualität bei geringerer Latenz und niedrigeren Kosten als größere Modelle der o-Series.",
+  "supports_tool_use": true,
+  "thinking_probe_at": "2026-04-23T13:57:24.143470+00:00",
+  "thinking_probe_confidence": "high",
   "thinking_probe_detected": true,
   "thinking_probe_evidence": "Manually confirmed: OpenAI o-series models use internal chain-of-thought reasoning. The API does not expose reasoning tokens or think-tags in the response body; automated probe cannot detect this. Token budget override is required.",
-  "thinking_probe_confidence": "high",
-  "thinking_probe_at": "2026-04-23T13:57:24.143470+00:00",
-  "supports_tool_use": true,
-  "license": "Proprietary",
-  "license_url": null,
-  "commercial_use_allowed": true,
+  "unknown": false,
+  "use_case_primary": "reasoning",
   "vendor": "OpenAI",
   "weights_license_tier": "proprietary",
-  "model_version": "4-mini",
-  "input_price_per_1m": 1.1,
-  "output_price_per_1m": 4.4,
-  "use_case_primary": "reasoning",
-  "parameter_architecture": "dense",
-  "params_total_b": null,
-  "context_window_k": 200,
-  "knowledge_cutoff": "2025-01"
+  "weights_provenance_risk": "medium",
+  "weights_provenance_risk_rationale": "OpenAI ist ein US-amerikanisches Unternehmen und unterliegt dem CLOUD Act, jedoch sind die Modellgewichte nicht öffentlich zugänglich, sodass kein direktes Risiko durch Gewichts-Exfiltration besteht.",
+  "top_p": null,
+  "top_k": null,
+  "repetition_penalty": null,
+  "frequency_penalty": null,
+  "presence_penalty": null,
+  "seed": null,
+  "stop_sequences": null,
+  "input_modalities": [
+    "text",
+    "image"
+  ],
+  "output_modalities": [
+    "text"
+  ]
 }

@@ -4,7 +4,7 @@
   "developer": "OpenAI",
   "origin_country": "USA",
   "developer_jurisdiction": "US",
-  "deployment_type": "api-only",
+  "deployment_type": "cloud-only",
   "local_deployment_possible": false,
   "weights_provenance_risk": "low",
   "weights_provenance_risk_rationale": "OpenAI ist ein US-amerikanisches Unternehmen, unterliegt US-Recht und CLOUD Act. Keine Gewichte verfügbar. Closed-Source. Datenschutzrechtlich für sensible EU-Daten eingeschränkt empfehlenswert.",
@@ -33,10 +33,10 @@
   "judge_context_hint": "GPT-5.5 (veröffentlicht 23. April 2026, Snapshot gpt-5.5-2026-04-23) ist OpenAIs bisher leistungsfähigstes Modell. Terminal-Bench 2.0: 82.7% (führend). 1.05M Token Kontext (128K max Output). Premium-Preismodell $5/$30 pro 1M Tokens, Input >272K: 2× Aufschlag. Batch-Verarbeitung: $2.50/$15.00. Erstes vollständig neu trainiertes Basis-Modell seit GPT-4.5.",
   "architecture_tags": [
     "General",
-    "Long Context",
+    "Long-Context",
     "Agentic"
   ],
-  "supports_tool_use": "untested",
+  "supports_tool_use": null,
   "license": "proprietary",
   "license_url": "https://openai.com/policies/terms-of-use/",
   "commercial_use_allowed": true,
@@ -51,5 +51,19 @@
   "thinking_probe_detected": false,
   "thinking_probe_evidence": "No CoT signals found (A: no think-tags, B: reasoning_tokens=0). Response length: 286 chars",
   "thinking_probe_confidence": "low",
-  "thinking_probe_at": "2026-05-26T03:14:14.246777+00:00"
+  "thinking_probe_at": "2026-05-26T03:14:14.246777+00:00",
+  "top_p": null,
+  "top_k": null,
+  "repetition_penalty": null,
+  "frequency_penalty": null,
+  "presence_penalty": null,
+  "seed": null,
+  "stop_sequences": null,
+  "input_modalities": [
+    "text",
+    "image"
+  ],
+  "output_modalities": [
+    "text"
+  ]
 }

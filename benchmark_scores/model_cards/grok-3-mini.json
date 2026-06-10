@@ -1,49 +1,63 @@
 {
-  "model_id": "grok-3-mini",
-  "display_name": "Grok 3 Mini",
-  "developer": "xAI",
-  "origin_country": "USA",
-  "developer_jurisdiction": "US",
+  "architecture_tags": [
+    "Thinking-Optional"
+  ],
+  "card_status": "complete",
+  "commercial_use_allowed": true,
+  "context_window_k": 1000,
   "deployment_type": "cloud-only",
+  "developer": "xAI",
+  "developer_jurisdiction": "US",
+  "display_name": "Grok 3 Mini",
+  "generated_at": "2026-04-23T22:02:18.832167+00:00",
+  "input_price_per_1m": 1.25,
+  "judge_context_hint": "Grok 3 Mini kann im Thinking-Modus betrieben werden und liefert dann deutlich stärkere Reasoning-Ergebnisse; Benchmarks sollten den aktiven Modus (mit/ohne Thinking) explizit ausweisen.",
+  "knowledge_cutoff": "2025-01",
+  "known_limitations": [
+    "Nur über die xAI-API bzw. Grok-Plattform nutzbar, keine lokale Ausführung möglich",
+    "Als kompaktes Modell bei sehr komplexen, wissensintensiven oder kreativen Aufgaben schwächer als das vollständige Grok-3-Modell"
+  ],
+  "license": "Proprietary",
+  "license_url": null,
   "local_deployment_possible": false,
-  "weights_provenance_risk": "medium",
-  "weights_provenance_risk_rationale": "xAI ist ein US-amerikanisches Unternehmen und unterliegt dem CLOUD Act, jedoch ist kein direkter staatlicher Zugriff auf die Modellgewichte bekannt, da diese nicht öffentlich verfügbar sind.",
   "model_family": "Grok",
+  "model_id": "grok-3-mini",
+  "model_version": "3-mini",
+  "origin_country": "USA",
+  "output_price_per_1m": 2.5,
+  "parameter_architecture": "dense",
+  "params_active_b": null,
+  "params_total_b": null,
   "primary_focus": "reasoning",
-  "summary": "Grok 3 Mini ist xAIs kompaktes Reasoning-Modell aus den USA – ausgelegt auf logisches Schlussfolgern und Mathematik mit niedrigerer Latenz. Optionales Chain-of-Thought-Reasoning ist aktivierbar. Das Modell ist ausschließlich über die xAI-API verfügbar.",
+  "size_class": "Workstation",
   "strengths": [
     "Starke Leistung bei mathematischen und logischen Reasoning-Aufgaben",
     "Geringere Latenz und Kosten im Vergleich zum vollständigen Grok-3-Modell",
     "Unterstützt optionales Chain-of-Thought-Denken (Thinking-Modus per API aktivierbar)"
   ],
-  "known_limitations": [
-    "Nur über die xAI-API bzw. Grok-Plattform nutzbar, keine lokale Ausführung möglich",
-    "Als kompaktes Modell bei sehr komplexen, wissensintensiven oder kreativen Aufgaben schwächer als das vollständige Grok-3-Modell"
-  ],
-  "judge_context_hint": "Grok 3 Mini kann im Thinking-Modus betrieben werden und liefert dann deutlich stärkere Reasoning-Ergebnisse; Benchmarks sollten den aktiven Modus (mit/ohne Thinking) explizit ausweisen.",
-  "architecture_tags": [
-    "Thinking-Optional"
-  ],
-  "unknown": false,
-  "generated_at": "2026-04-23T22:02:18.832167+00:00",
-  "card_status": "complete",
-  "size_class": "Workstation",
+  "summary": "Grok 3 Mini ist xAIs kompaktes Reasoning-Modell aus den USA – ausgelegt auf logisches Schlussfolgern und Mathematik mit niedrigerer Latenz. Optionales Chain-of-Thought-Reasoning ist aktivierbar. Das Modell ist ausschließlich über die xAI-API verfügbar.",
+  "supports_tool_use": true,
+  "thinking_probe_at": "2026-04-23T13:56:31.428124+00:00",
+  "thinking_probe_confidence": "low",
   "thinking_probe_detected": false,
   "thinking_probe_evidence": "No CoT signals found (A: no think-tags, B: reasoning_tokens=0). Response length: 786 chars",
-  "thinking_probe_confidence": "low",
-  "thinking_probe_at": "2026-04-23T13:56:31.428124+00:00",
-  "supports_tool_use": true,
-  "license": "Proprietary",
-  "license_url": null,
-  "commercial_use_allowed": true,
+  "unknown": false,
+  "use_case_primary": "reasoning",
   "vendor": "xAI",
   "weights_license_tier": "proprietary",
-  "model_version": "3-mini",
-  "input_price_per_1m": 1.25,
-  "output_price_per_1m": 2.5,
-  "use_case_primary": "reasoning",
-  "parameter_architecture": "dense",
-  "params_total_b": null,
-  "context_window_k": 1000,
-  "knowledge_cutoff": "2025-01"
+  "weights_provenance_risk": "medium",
+  "weights_provenance_risk_rationale": "xAI ist ein US-amerikanisches Unternehmen und unterliegt dem CLOUD Act, jedoch ist kein direkter staatlicher Zugriff auf die Modellgewichte bekannt, da diese nicht öffentlich verfügbar sind.",
+  "top_p": null,
+  "top_k": null,
+  "repetition_penalty": null,
+  "frequency_penalty": null,
+  "presence_penalty": null,
+  "seed": null,
+  "stop_sequences": null,
+  "input_modalities": [
+    "text"
+  ],
+  "output_modalities": [
+    "text"
+  ]
 }

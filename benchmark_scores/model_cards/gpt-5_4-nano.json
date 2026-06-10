@@ -1,0 +1,71 @@
+{
+  "model_id": "gpt-5_4-nano",
+  "display_name": "GPT-5.4 Nano",
+  "developer": "OpenAI",
+  "origin_country": "USA",
+  "developer_jurisdiction": "US",
+  "deployment_type": "cloud-only",
+  "local_deployment_possible": false,
+  "weights_provenance_risk": "low",
+  "weights_provenance_risk_rationale": "OpenAI ist ein US-amerikanisches Unternehmen, unterliegt US-Recht und CLOUD Act. Keine Gewichte verfügbar. Closed-Source. Datenschutzrechtlich für sensible EU-Daten eingeschränkt empfehlenswert.",
+  "model_family": "GPT-5",
+  "vendor": "OpenAI",
+  "primary_focus": "generalist",
+  "use_case_primary": "generalist",
+  "parameter_architecture": "dense",
+  "params_total_b": null,
+  "params_active_b": null,
+  "context_window_k": 1100,
+  "knowledge_cutoff": "2025-08",
+  "summary": "GPT-5.4 Nano ist die leichteste und kosteneffizienteste Variante der GPT-5.4-Familie, veröffentlicht am 17. März 2026. Optimiert für geschwindigkeitskritische und hochvolumige Aufgaben wie Klassifikation, Data-Extraction, Ranking und Sub-Agent-Orchestrierung. Unterstützt 1.1M-Token-Kontext, 128K max Output, Text-/Bild-/PDF-Eingaben. 152 t/s Throughput (laut CloudPrice) — schnellste GPT-5.4-Variante.",
+  "strengths": [
+    "Niedrigstes Pricing in der GPT-5.4-Familie: $0.20 Input / $1.25 Output pro 1M Tokens (12× günstiger als GPT-5.4 mini)",
+    "Höchste Throughput-Rate in der GPT-5.4-Familie: 152 t/s Output-Geschwindigkeit",
+    "1.1M-Token-Kontextfenster — größer als bei GPT-5.4 mini (400K) bei deutlich niedrigerem Preis",
+    "Optimiert für hochvolumige Batch- und Echtzeit-Pipelines mit minimaler Latenz",
+    "Unterstützt Function Calling, Parallel Function Calling, Structured Outputs, Native JSON Schema, Web Search, Prompt Caching"
+  ],
+  "known_limitations": [
+    "Niedrigste Qualität in der GPT-5.4-Familie (Intelligence Index 44.0, Coding Index 43.9 vs. 57+ bei Standard-GPT-5.4)",
+    "Nicht für tiefes Reasoning oder komplexe Mehrschritt-Workflows geeignet — bewusst auf Geschwindigkeit/Kosten optimiert",
+    "TTFT 3.88s — relativ langsam beim Time-to-First-Token im Vergleich zur Output-Geschwindigkeit",
+    "Keine Computer-Use-Fähigkeit (vs. GPT-5.4 Standard/Pro)",
+    "Closed-Source, keine Gewichtsexporte verfügbar – ausschließlich über OpenAI-API"
+  ],
+  "judge_context_hint": "GPT-5.4 Nano (veröffentlicht 17. März 2026, Snapshot gpt-5.4-nano-2026-03-17) ist die Nano-Variante von GPT-5.4 für geschwindigkeits- und kostensensitive Aufgaben wie Klassifikation, Data-Extraction und Sub-Agent-Orchestrierung. 1.1M Token Kontext, 128K max Output. Niedrigstes Pricing: $0.20/$1.25 pro 1M Tokens. Erwartungen an Antwortqualität an Nano-Klasse anpassen — keine Reasoning-Tiefe oder kreative Komplexität erwarten. Antworten sollten jedoch korrekt, fokussiert und effizient sein.",
+  "architecture_tags": [
+    "General",
+    "Instruct",
+    "Long-Context"
+  ],
+  "supports_tool_use": null,
+  "license": "proprietary",
+  "license_url": "https://openai.com/policies/terms-of-use/",
+  "commercial_use_allowed": true,
+  "weights_license_tier": "proprietary",
+  "model_version": "5.4-nano",
+  "input_price_per_1m": 0.2,
+  "output_price_per_1m": 1.25,
+  "unknown": false,
+  "card_status": "complete",
+  "size_class": "Nano",
+  "generated_at": "2026-06-10T10:55:00.000000+00:00",
+  "thinking_probe_detected": false,
+  "thinking_probe_evidence": "No CoT signals found (A: no think-tags, B: reasoning_tokens=0). Response length: 0 chars",
+  "thinking_probe_confidence": "low",
+  "thinking_probe_at": "2026-06-10T10:55:00.000000+00:00",
+  "top_p": null,
+  "top_k": null,
+  "repetition_penalty": null,
+  "frequency_penalty": null,
+  "presence_penalty": null,
+  "seed": null,
+  "stop_sequences": null,
+  "input_modalities": [
+    "text",
+    "image"
+  ],
+  "output_modalities": [
+    "text"
+  ]
+}

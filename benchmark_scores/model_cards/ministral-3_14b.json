@@ -1,48 +1,65 @@
 {
-  "model_id": "ministral-3:14b",
-  "display_name": "Ministral 3B 14B",
-  "developer": "Mistral AI",
-  "origin_country": "France",
-  "developer_jurisdiction": "EU",
+  "architecture_tags": [
+    "General",
+    "Instruct"
+  ],
+  "card_status": "complete",
+  "commercial_use_allowed": false,
+  "context_window_k": 128,
   "deployment_type": "open-weights-cloud-available",
+  "developer": "Mistral AI",
+  "developer_jurisdiction": "EU",
+  "display_name": "Ministral 3B 14B",
+  "generated_at": "2026-04-23T22:05:06.507519+00:00",
+  "input_price_per_1m": null,
+  "judge_context_hint": "Das Modell ist primär für Edge-Szenarien konzipiert – Bewertungsmaßstab sollte die Größenklasse (3B) berücksichtigen, nicht absolute Frontier-Modell-Leistung.",
+  "knowledge_cutoff": "2024-09",
+  "known_limitations": [
+    "Deutlich schwächere Reasoning- und Wissenstiefe im Vergleich zu größeren Modellen",
+    "Begrenzte Kontextfenstergröße und reduzierte Mehrsprachigkeitsleistung gegenüber größeren Mistral-Varianten"
+  ],
+  "license": "Mistral Research License",
+  "license_url": "https://mistral.ai/licenses/MRL-0.1.md",
   "local_deployment_possible": true,
-  "weights_provenance_risk": "low",
-  "weights_provenance_risk_rationale": "Mistral AI ist ein französisches Unternehmen mit Sitz in der EU und unterliegt keiner vergleichbaren staatlichen Zugriffspflicht wie dem chinesischen NSL oder dem US CLOUD Act für lokal betriebene Gewichte.",
   "model_family": "Mistral",
+  "model_id": "ministral-3:14b",
+  "model_version": "4760c35aeb9d",
+  "origin_country": "France",
+  "output_price_per_1m": null,
+  "parameter_architecture": "dense",
+  "params_active_b": null,
+  "params_total_b": 14.0,
   "primary_focus": "general",
-  "summary": "Ministral 14B ist ein Modell von Mistral AI mit öffentlich verfügbaren Gewichten (Mistral Research License, kein kommerzieller Einsatz) aus Frankreich – konzipiert für effiziente lokale Ausführung bei gutem Instruction-Following. Es lässt sich lokal betreiben und ist über Cloud-Provider verfügbar.",
+  "size_class": "Desktop",
   "strengths": [
     "Sehr geringer Speicher- und Rechenaufwand bei akzeptabler Antwortqualität",
     "Gut geeignet für Edge- und On-Device-Deployment ohne Cloud-Abhängigkeit",
     "Solides Instruction-Following für ein Modell dieser Größenklasse"
   ],
-  "known_limitations": [
-    "Deutlich schwächere Reasoning- und Wissenstiefe im Vergleich zu größeren Modellen",
-    "Begrenzte Kontextfenstergröße und reduzierte Mehrsprachigkeitsleistung gegenüber größeren Mistral-Varianten"
-  ],
-  "judge_context_hint": "Das Modell ist primär für Edge-Szenarien konzipiert – Bewertungsmaßstab sollte die Größenklasse (3B) berücksichtigen, nicht absolute Frontier-Modell-Leistung.",
-  "architecture_tags": [
-    "General",
-    "Instruct"
-  ],
-  "unknown": false,
-  "generated_at": "2026-04-23T22:05:06.507519+00:00",
-  "card_status": "complete",
-  "size_class": "Desktop",
+  "summary": "Ministral 14B ist ein Modell von Mistral AI mit öffentlich verfügbaren Gewichten (Mistral Research License, kein kommerzieller Einsatz) aus Frankreich – konzipiert für effiziente lokale Ausführung bei gutem Instruction-Following. Es lässt sich lokal betreiben und ist über Cloud-Provider verfügbar.",
   "supports_tool_use": true,
-  "license": "Mistral Research License",
-  "license_url": "https://mistral.ai/licenses/MRL-0.1.md",
-  "commercial_use_allowed": false,
-  "vendor": "Mistral AI",
-  "weights_license_tier": "restricted-weights",
-  "model_version": "4760c35aeb9d",
+  "thinking_probe_at": "2026-05-16T18:47:12.359701+00:00",
+  "thinking_probe_confidence": "low",
   "thinking_probe_detected": false,
   "thinking_probe_evidence": "No CoT signals found (A: no think-tags, B: reasoning_tokens=0). Response length: 447 chars",
-  "thinking_probe_confidence": "low",
-  "thinking_probe_at": "2026-05-16T18:47:12.359701+00:00",
+  "unknown": false,
   "use_case_primary": "generalist",
-  "parameter_architecture": "dense",
-  "params_total_b": 14.0,
-  "context_window_k": 128,
-  "knowledge_cutoff": "2024-09"
+  "vendor": "Mistral AI",
+  "weights_license_tier": "restricted-weights",
+  "weights_provenance_risk": "low",
+  "weights_provenance_risk_rationale": "Mistral AI ist ein französisches Unternehmen mit Sitz in der EU und unterliegt keiner vergleichbaren staatlichen Zugriffspflicht wie dem chinesischen NSL oder dem US CLOUD Act für lokal betriebene Gewichte.",
+  "top_p": null,
+  "top_k": null,
+  "repetition_penalty": null,
+  "frequency_penalty": null,
+  "presence_penalty": null,
+  "seed": null,
+  "stop_sequences": null,
+  "input_modalities": [
+    "text",
+    "image"
+  ],
+  "output_modalities": [
+    "text"
+  ]
 }

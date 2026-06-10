@@ -1,0 +1,62 @@
+{
+  "model_id": "gemma-4-12b-it-ud-q8_k_xl",
+  "display_name": "TODO",
+  "developer": "TODO",
+  "origin_country": "TODO",
+  "developer_jurisdiction": "TODO",
+  "deployment_type": "TODO",
+  "local_deployment_possible": null,
+  "weights_provenance_risk": "TODO",
+  "weights_provenance_risk_rationale": "TODO",
+  "model_family": "TODO",
+  "vendor": "TODO",
+  "primary_focus": "TODO",
+  "use_case_primary": "generalist",
+  "parameter_architecture": "dense",
+  "params_total_b": null,
+  "params_active_b": null,
+  "context_window_k": null,
+  "knowledge_cutoff": null,
+  "summary": "TODO",
+  "strengths": [
+    "TODO"
+  ],
+  "known_limitations": [
+    "TODO"
+  ],
+  "judge_context_hint": "TODO",
+  "architecture_tags": [
+    "General"
+  ],
+  "supports_tool_use": null,
+  "license": "TODO",
+  "license_url": null,
+  "commercial_use_allowed": null,
+  "weights_license_tier": null,
+  "model_version": null,
+  "input_price_per_1m": null,
+  "output_price_per_1m": null,
+  "unknown": false,
+  "card_status": "draft",
+  "size_class": "Desktop",
+  "generated_at": "2026-06-10T12:02:28.652865+00:00",
+  "thinking_probe_detected": null,
+  "thinking_probe_evidence": null,
+  "thinking_probe_confidence": null,
+  "thinking_probe_at": null,
+  "input_modalities": [
+    "text",
+    "image",
+    "audio"
+  ],
+  "output_modalities": [
+    "text"
+  ],
+  "top_p": null,
+  "top_k": null,
+  "repetition_penalty": null,
+  "frequency_penalty": null,
+  "presence_penalty": null,
+  "seed": null,
+  "stop_sequences": null
+}
