@@ -458,6 +458,10 @@ providers:
       existing_server_ready_timeout_sec: 120
       server_ready_poll_sec: 5
       server_ready_probe_timeout_sec: 60
+      # server_log: Lokal auf dem Benchmark-Host (Mac) gespeichert, nicht auf dem Spark.
+      # Der Shell-Redirect `>>` liegt außerhalb der SSH-Quoting-Grenze:
+      # SSH tunnelt Remote-stdout → SSH-Client-stdout → lokale Datei.
+      # ~/ai/llama-lab-spark.log entspricht dem M4-Muster (llama-lab-server.log).
       server_log: ~/ai/llama-lab-spark.log
       bind_host: 0.0.0.0
       threads: 10

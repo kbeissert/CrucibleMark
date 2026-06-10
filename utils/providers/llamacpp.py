@@ -17,13 +17,10 @@ Jedes Modell wird explizit in config/provider_config.yaml unter
 Der Client baut daraus automatisch den vollständigen `llama-server`-Befehl
 (inkl. --alias, --ctx-size, --n-gpu-layers) und swappt das Modell beim Wechsel.
 
-Benchmark-Defaults (reproduzierbar, niedrige Varianz):
-  - seed: 42 (fixierter Seed für Reproduzierbarkeit)
-  - temperature: 0.1 (deterministisch)
-  - top_k: 40 (moderates Sampling)
-  - top_p: 0.9 (moderate Nucleus-Sampling)
-  - repeat_penalty: 1.1 (leichte Penalty gegen Loops)
+Sampling-Defaults: SSoT ist `providers.local.config.llama_cpp_defaults` in
+provider_config.yaml (temperature=0.6, top_p=0.95, top_k=40, seed=42).
 """
+
 import logging
 
 from utils.providers.llamacpp_base import LlamaCppBaseClient
