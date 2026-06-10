@@ -5,6 +5,40 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## [v4.7.8] - 2026-06-10
+
+**Prober schreibt CoT-Quartett + Web-Export loggt fehlende Cards.**
+
+Zwei offene Findings aus dem Web-Export-Audit v4.7.7 (`outputs/audits/web_export_compatibility_2026-06-10.md`) behoben:
+
+- **WEBEXP-009** — `_write_probe_to_card()` (sowohl in `scripts/core/unified_runner.py` als auch in `scripts/tools/probe_thinking.py`) schrieb bisher nur `thinking_probe_detected/evidence/confidence/at`, nicht aber die v4.7.1-CoT-Quartett-Felder `cot_marker_family` und `cot_tags_detected`. Damit fehlten die Daten im Web-Export, obwohl das Card-Template die Felder bereits deklariert hatte. **0/115 Cards** hatten die Felder gesetzt.
+- **WEBEXP-010** — `scripts/web_export.py` lieferte `model_card: null` stillschweigend, wenn ein Leaderboard-Modell keine Card-Datei hatte. Frontend zeigte unvollständige Detailseite ohne Hinweis. Betroffen: `gpt-5_4` (im Leaderboard, aber keine Card-Datei).
+
+### Heuristik + Schreibpfade
+
+- **`utils/model_utils.py`** — Neue Konstante `_COT_FAMILY_MAP` (9 Familien) und neue Funktion `classify_cot_marker_family()`. Reihenfolge signifikant (erster Match gewinnt): `qwen-think`, `openai-oss`, `deepseek-reasoning`, `llama-cot`, `anthropic-extended`, `hermes-scratchpad`, `mistral-reasoning`, `glm-cot`, `generic-cot`. Bei leerem Input: `"none"`.
+- **`scripts/core/unified_runner.py` + `scripts/tools/probe_thinking.py`** — `_write_probe_to_card()` setzt `cot_marker_family` und `cot_tags_detected` jetzt nur dann, wenn `tags_found` nicht leer ist (verhindert `null`-Noise im Web-Export). Wenn leer, bleiben die Felder ungesetzt.
+
+### Web-Export-Logik
+
+- **`scripts/web_export.py`** — Vor dem Schreiben der `data.json` wird geprüft, ob `load_model_card()` für das aktuelle Modell `None` liefert. Wenn ja und das Modell in der Leaderboard-CSV auftaucht: WARNING-Log mit `raw_model_id`, Hinweis auf `scripts/maintenance/create_model_card.py`. Frontend bekommt weiterhin `model_card=null` (kein Crash), aber der Lauf hinterlässt Spuren im Log.
+
+### Karten
+
+- **`benchmark_scores/model_cards/gpt-5_4.json`** — Neue Card, vollständig SSoT-konform (card_status `complete`, Vendor `OpenAI`, Display-Name `GPT-5.4`, size_class `Frontier`, modalitäten `text/image`, `supports_tool_use: true`).
+
+### Neue Tests (+23)
+
+- `tests/test_cot_marker_family_probe.py` (21 Tests) — Familien-Mapping (15 parametrisierte Fälle), case-insensitivity, list/tuple/None-Input, `_probe_fields_to_dict` Schreib-/Skip-Verhalten, `_write_probe_to_card` in `unified_runner`.
+- `tests/test_web_export_missing_card_log.py` (4 Tests) — WARNING-Log-Format inkl. `raw_model_id`, gpt-5_4-Card-Existenz und Pflichtfeld-Coverage.
+
+### Test-Status
+
+- 1023/1037 Tests grün — 14 pre-existing Failures in `cruciblemark-mcp/tests/test_server.py` (Mock-Fixture, kein Bezug zu WEBEXP-009/010, auch auf `b2e850a` reproduzierbar).
+- Re-Export `/tmp/cm_webexport_v478/raw/models`: 92/92 Modelle, gpt-5_4 jetzt enthalten.
+- `cot_marker_family`/`cot_tags_detected` im Web-Export weiterhin 0/91 — erwartet, weil der Prober Live-API-Calls (Ollama/Cloud) braucht und in dieser Umgebung nicht läuft. Der Schreibpfad ist verifiziert (Test-Coverage).
+
+
 ## [v4.7.7] - 2026-06-10
 
 **Web-Exporter an die v4.7.0-Model-Cards angepasst — letztes Glied der Pipeline.**
