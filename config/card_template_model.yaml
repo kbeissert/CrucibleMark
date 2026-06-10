@@ -492,10 +492,10 @@ optional_fields:
   - name: cot_marker_family
     type: str
     required: false
-    description: "CoT-Marker-Familie (z.B. qwen-think, deepseek-reasoning, llama-cot, none)"
+    description: "CoT-Marker-Familie (z.B. think-xml, deepseek-reasoning, llama-cot, none). think-xml deckt alle Modelle mit <think>/<thought> ab (Qwen3, Magistral u.a.)"
     consumers: [probe, web_export, review]
     since: "v4.7.1"
-    example: "qwen-think"
+    example: "think-xml"
 
   - name: cot_tags_detected
     type: list[str]

@@ -32,8 +32,8 @@ class TestClassifyCotMarkerFamily:
         "tags,expected",
         [
             # Qwen-Think / OpenAI-OSS / DeepSeek-Familie
-            (("<think>",), "qwen-think"),
-            (("<thought>",), "qwen-think"),
+            (("<think>",), "think-xml"),
+            (("<thought>",), "think-xml"),
             (("<|thinking|>",), "openai-oss"),
             (("<|reasoning|>",), "openai-oss"),
             (("<reasoning>",), "deepseek-reasoning"),
@@ -53,8 +53,8 @@ class TestClassifyCotMarkerFamily:
             ([], "none"),
             (None, "none"),
             (("unbekannter-tag",), "none"),
-            # Mehrere Tags: erster Match gewinnt (qwen > glm, da qwen zuerst)
-            (("<thinking>", "<think>"), "qwen-think"),
+            # Mehrere Tags: erster Match gewinnt (think-xml > glm-cot, da think-xml zuerst)
+            (("<thinking>", "<think>"), "think-xml"),
         ],
     )
     def test_classify_cot_marker_family(self, tags, expected):
@@ -62,11 +62,11 @@ class TestClassifyCotMarkerFamily:
 
     def test_classify_accepts_list_input(self):
         """Auch Python-list wird akzeptiert (nicht nur tuple)."""
-        assert classify_cot_marker_family(["<think>"]) == "qwen-think"
+        assert classify_cot_marker_family(["<think>"]) == "think-xml"
 
     def test_classify_case_insensitive(self):
         """Tags werden case-insensitive verarbeitet (lowercased)."""
-        assert classify_cot_marker_family(["<THINK>"]) == "qwen-think"
+        assert classify_cot_marker_family(["<THINK>"]) == "think-xml"
 
 
 # ---------------------------------------------------------------------------
@@ -109,7 +109,7 @@ class TestProbeFieldsToDict:
             tags_found=("<think>",),
         )
         fields = self._call(probe)
-        assert fields["cot_marker_family"] == "qwen-think"
+        assert fields["cot_marker_family"] == "think-xml"
         assert fields["cot_tags_detected"] == ["<think>"]
 
     def test_cot_fields_with_multiple_tags(self):
@@ -121,8 +121,8 @@ class TestProbeFieldsToDict:
             tags_found=("<think>", "<thought>"),
         )
         fields = self._call(probe)
-        # qwen-think gewinnt (steht zuerst in _COT_FAMILY_MAP)
-        assert fields["cot_marker_family"] == "qwen-think"
+        # think-xml gewinnt (steht zuerst in _COT_FAMILY_MAP, <think> + <thought> sind beide think-xml)
+        assert fields["cot_marker_family"] == "think-xml"
         assert set(fields["cot_tags_detected"]) == {"<think>", "<thought>"}
 
     def test_cot_fields_unknown_family(self):

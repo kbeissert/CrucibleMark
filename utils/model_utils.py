@@ -86,7 +86,7 @@ def _safe_name(model_id: str) -> str:
     """Canonical filename-safe transformation for model IDs.
 
     Normalizes HuggingFace Ollama IDs first (strips hf.co/AUTHOR/ prefix),
-    then replaces every character in ``[:/.\  ]`` with an underscore.
+    then replaces every character in ``[:/.  ]`` (colon, slash, dot, space) with an underscore.
     SSoT — used by all card path helpers in this module and in generation scripts.
     """
     return re.sub(r"[:/.\ ]", "_", normalize_model_id(model_id))
@@ -1006,6 +1006,17 @@ def resolve_token_budget(
     reasoning = is_reasoning_model(model)
 
     # Option B: Provider-Override gewinnt, wenn aktiv.
+    #
+    # WARNUNG: Diese Branch lädt über load_provider_card() die FIRMEN-Karte
+    # (z.B. benchmark_scores/provider_cards/anthropic.json), NICHT die
+    # modell-spezifische Config aus provider_config.yaml. resolve_effective_thinking()
+    # erwartet einen model_cfg-Block mit optionalem "thinking_override"-Key,
+    # der in Firmen-Cards nicht vorhanden ist. Die Branch ist daher
+    # funktional, aber der Override-Mechanismus wird nie ausgelöst.
+    #
+    # TODO: Entweder den provider-Parameter entfernen (kein Caller nutzt ihn),
+    # oder das Datenmodell korrigieren: model_cfg aus provider_config.yaml laden
+    # statt der Firmen-Card. Bis dahin: graceful fallback auf Card-Probe-Pfad.
     if provider:
         from utils.provider_card_template import load_provider_card
         provider_card = load_provider_card(provider)
@@ -1035,8 +1046,11 @@ def resolve_token_budget(
     if reasoning and explicit_budget:
         budgets = config.get("token_budgets_reasoning_models", {})
         tokens = budgets[module_key] if (module_key and module_key in budgets) else tokens * 5
-    elif reasoning and tokens < 10000:
-        tokens = 25000
+    elif reasoning:
+        # Ohne explicit_budget: Mindest-Budget für Reasoning-Modelle sicherstellen.
+        # max() statt fester Schwelle — robust auch wenn defaults.generation.num_predict
+        # in der Config >= 10000 konfiguriert ist.
+        tokens = max(tokens, 25000)
     elif is_thinking_optional_from_card(model) and explicit_budget:
         # Thinking-Optional models (e.g. Gemini 2.5 Flash, Qwen3) activate internal
         # thinking adaptively and consume the same max_output_tokens quota.
@@ -1447,8 +1461,14 @@ def _find_think_tags(text: str) -> tuple[str, ...]:
 # Heuristik-Mapping Tag-Set -> Familien-Kennung. Wird in Card geschrieben,
 # damit Web-Export + Audit + Review einheitlich filtern koennen.
 # Reihenfolge der Familien ist signifikant (erster Match gewinnt).
+#
+# WICHTIG: "think-xml" deckt ALLE Modelle ab, die <think>/<thought> nutzen —
+# darunter Qwen 3/3.5/3.6 UND Magistral (Mistral Reasoning). Da beide
+# Familien denselben Tag verwenden, ist eine tag-basierte Unterscheidung
+# nicht moeglich. Die Familie heisst bewusst generisch "think-xml" statt
+# "qwen-think", um die Irreführung zu vermeiden.
 _COT_FAMILY_MAP: tuple[tuple[str, tuple[str, ...]], ...] = (
-    ("qwen-think", ("<think>", "<thought>")),
+    ("think-xml", ("<think>", "<thought>")),        # Qwen 3/3.5/3.6 + Magistral
     ("openai-oss", ("<|thinking|>", "<|reasoning|>")),
     ("deepseek-reasoning", ("<reasoning>", "<reason>")),
     ("llama-cot", ("<reflection>",)),
