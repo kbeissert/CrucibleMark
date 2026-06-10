@@ -1,0 +1,205 @@
+{
+  "audit_date": "2026-06-10",
+  "scope": "Web-Exporter Model-Card-Compatibility",
+  "tool": "scripts/web_export.py",
+  "test_export_dir": "outputs/web_export_check/raw",
+  "summary": {
+    "total_models_in_leaderboard": 92,
+    "models_with_card_in_export": 91,
+    "models_without_card_in_export": 1,
+    "critical_findings": 2,
+    "high_findings": 3,
+    "medium_findings": 2,
+    "low_findings": 3,
+    "resolved_in_v477": 8,
+    "open_findings": 2,
+    "resolution_date": "2026-06-10",
+    "resolution_tests": "11 neue Tests in tests/test_web_export_card_field_coverage.py (alle grün)"
+  },
+  "findings": [
+    {
+      "id": "WEBEXP-001",
+      "severity": "critical",
+      "field": "input_modalities",
+      "template_required": true,
+      "template_consumers": [
+        "web_export",
+        "use_case_inference",
+        "leaderboard"
+      ],
+      "template_since": "v4.7.0",
+      "in_card_count": 113,
+      "in_export_count": 0,
+      "impact": "Frontend kann keine Vision-/Audio-Badges anzeigen, obwohl 61 Karten Bild/Audio verarbeiten.",
+      "recommendation": "Im model_card sub-dict ergänzen (Fix-Priorität 1).",
+      "status": "resolved",
+      "resolved_in": "v4.7.7",
+      "fix_description": "Feld in scripts/web_export.py:_build_leaderboard_entry() ergänzt. Sub-dict thematisch neu geordnet. 11 Tests in tests/test_web_export_card_field_coverage.py verifizieren Coverage."
+    },
+    {
+      "id": "WEBEXP-002",
+      "severity": "critical",
+      "field": "output_modalities",
+      "template_required": true,
+      "template_consumers": [
+        "web_export",
+        "leaderboard"
+      ],
+      "template_since": "v4.7.0",
+      "in_card_count": 113,
+      "in_export_count": 0,
+      "impact": "Analog zu WEBEXP-001, symmetrisches Feld.",
+      "recommendation": "Im model_card sub-dict ergänzen (Fix-Priorität 1).",
+      "status": "resolved",
+      "resolved_in": "v4.7.7",
+      "fix_description": "Feld in scripts/web_export.py:_build_leaderboard_entry() ergänzt. Sub-dict thematisch neu geordnet. 11 Tests in tests/test_web_export_card_field_coverage.py verifizieren Coverage."
+    },
+    {
+      "id": "WEBEXP-003",
+      "severity": "high",
+      "field": "judge_context_hint",
+      "template_required": true,
+      "template_consumers": [
+        "judge",
+        "scoring"
+      ],
+      "in_card_count": 91,
+      "in_export_count": 0,
+      "impact": "Niedrig fürs Frontend, hoch für Reviewer-Audit (sollte auf Detail-Seite sichtbar sein).",
+      "recommendation": "Im model_card sub-dict ergänzen (Fix-Priorität 2).",
+      "status": "resolved",
+      "resolved_in": "v4.7.7",
+      "fix_description": "Feld in scripts/web_export.py:_build_leaderboard_entry() ergänzt. Sub-dict thematisch neu geordnet. 11 Tests in tests/test_web_export_card_field_coverage.py verifizieren Coverage."
+    },
+    {
+      "id": "WEBEXP-004",
+      "severity": "high",
+      "field": "primary_focus",
+      "template_required": true,
+      "template_consumers": [
+        "leaderboard",
+        "review"
+      ],
+      "in_card_count": 91,
+      "in_export_count": 0,
+      "impact": "Frontend kann Leaderboard-Granularität nicht nutzen. Evtl. Redundanz-Konflikt mit use_case_primary.",
+      "recommendation": "Im model_card sub-dict ergänzen (Fix-Priorität 2).",
+      "status": "resolved",
+      "resolved_in": "v4.7.7",
+      "fix_description": "Feld in scripts/web_export.py:_build_leaderboard_entry() ergänzt. Sub-dict thematisch neu geordnet. 11 Tests in tests/test_web_export_card_field_coverage.py verifizieren Coverage."
+    },
+    {
+      "id": "WEBEXP-005",
+      "severity": "high",
+      "field": "unknown",
+      "template_required": true,
+      "template_consumers": [
+        "risk_calc",
+        "leaderboard",
+        "review"
+      ],
+      "in_card_count": 91,
+      "in_export_count": 0,
+      "impact": "Tri-State-Semantik (unknown: true + card_status: complete = Widerspruch) geht verloren.",
+      "recommendation": "Im model_card sub-dict ergänzen (Fix-Priorität 2).",
+      "status": "resolved",
+      "resolved_in": "v4.7.7",
+      "fix_description": "Feld in scripts/web_export.py:_build_leaderboard_entry() ergänzt. Sub-dict thematisch neu geordnet. 11 Tests in tests/test_web_export_card_field_coverage.py verifizieren Coverage."
+    },
+    {
+      "id": "WEBEXP-006",
+      "severity": "medium",
+      "field": "generated_at",
+      "template_required": true,
+      "template_consumers": [
+        "index",
+        "web_export"
+      ],
+      "in_card_count": 91,
+      "in_export_count": 0,
+      "impact": "Pro-Card-Timestamp fehlt. Top-Level leaderboard.json.generated_at ist für Cache-Invalidierung ausreichend.",
+      "recommendation": "Im model_card sub-dict ergänzen (Fix-Priorität 3).",
+      "status": "resolved",
+      "resolved_in": "v4.7.7",
+      "fix_description": "Feld in scripts/web_export.py:_build_leaderboard_entry() ergänzt. Sub-dict thematisch neu geordnet. 11 Tests in tests/test_web_export_card_field_coverage.py verifizieren Coverage."
+    },
+    {
+      "id": "WEBEXP-007",
+      "severity": "low",
+      "field": "model_id",
+      "template_required": true,
+      "in_card_count": 91,
+      "in_export_count_top_level": 91,
+      "in_export_count_subdict": 0,
+      "impact": "Bereits im Top-Level vorhanden. Konsistenz-Frage: self-contained sub-dict vs. referenziell.",
+      "recommendation": "Optional ins sub-dict ergänzen (Fix-Priorität 3).",
+      "status": "resolved",
+      "resolved_in": "v4.7.7",
+      "fix_description": "Feld in scripts/web_export.py:_build_leaderboard_entry() ergänzt. Sub-dict thematisch neu geordnet. 11 Tests in tests/test_web_export_card_field_coverage.py verifizieren Coverage."
+    },
+    {
+      "id": "WEBEXP-008",
+      "severity": "low",
+      "field": "model_version",
+      "template_required": true,
+      "in_card_count": 91,
+      "in_export_count_top_level": 91,
+      "in_export_count_subdict": 0,
+      "impact": "Bereits im Top-Level als 'version' vorhanden.",
+      "recommendation": "Optional ins sub-dict ergänzen (Fix-Priorität 3).",
+      "status": "resolved",
+      "resolved_in": "v4.7.7",
+      "fix_description": "Feld in scripts/web_export.py:_build_leaderboard_entry() ergänzt. Sub-dict thematisch neu geordnet. 11 Tests in tests/test_web_export_card_field_coverage.py verifizieren Coverage."
+    },
+    {
+      "id": "WEBEXP-009",
+      "severity": "medium",
+      "type": "data_pipeline_gap",
+      "field": "cot_marker_family / cot_tags_detected",
+      "template_required": false,
+      "template_consumers": [
+        "probe",
+        "web_export",
+        "review"
+      ],
+      "in_card_count": 0,
+      "in_export_count": 0,
+      "impact": "Prober schreibt die v4.7.1-Felder nicht. Kein Web-Export-Bug, sondern Card-Pipeline-Lücke.",
+      "recommendation": "Probe-Workflow ergänzen (Fix-Priorität 5, separat).",
+      "status": "open",
+      "scope": "probe_workflow",
+      "note": "Nicht im Web-Export-Scope. Prober muss cot_marker_family / cot_tags_detected mitschreiben. Conditional include im Web-Export ist bereits implementiert — Felder werden gerendert sobald Daten da sind."
+    },
+    {
+      "id": "WEBEXP-010",
+      "severity": "low",
+      "type": "missing_card_file",
+      "model_id": "gpt-5_4",
+      "model_name": "gpt-5_4",
+      "leaderboard_rank": 18,
+      "leaderboard_score": 74.31,
+      "impact": "Im Leaderboard, aber keine Card-Datei. Web-Export loggt stillschweigend model_card: None.",
+      "recommendation": "Card erzeugen (ensure_card) oder Blacklist-Eintrag setzen. WARNING-Log ergänzen.",
+      "status": "open",
+      "scope": "card_creation",
+      "note": "Card-Datei fehlt. Web-Export liefert model_card: null. Empfehlung: ensure_card() im Web-Export-Loop aufrufen, oder explizit in Blacklist setzen. Nicht im aktuellen v4.7.7-Scope."
+    }
+  ],
+  "data_quality_checks": {
+    "input_modalities_distribution": {
+      "text": 52,
+      "image+text": 47,
+      "audio+image+text": 14,
+      "total": 113
+    },
+    "output_modalities_distribution": {
+      "text": 113,
+      "total": 113
+    },
+    "architecture_tags_filter": "ok",
+    "supports_tool_use_tri_state": "ok",
+    "emoji_stripping": "ok",
+    "web_export_blacklist": "ok",
+    "slugify_and_card_lookup": "ok"
+  }
+}

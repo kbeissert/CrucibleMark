@@ -658,6 +658,10 @@ def _build_leaderboard_entry(
             review_updated_at if review_updated_at != review_published_at else None,
         ]), default=None),
         "model_card": {
+            # Identitaet (self-contained sub-dict, spiegelt Card-Sicht)
+            "model_id": card.get("model_id"),
+            "model_version": card.get("model_version"),
+            "unknown": card.get("unknown"),
             "display_name": card.get("display_name"),
             "developer": card.get("developer"),
             "origin_country": card.get("origin_country"),
@@ -665,9 +669,15 @@ def _build_leaderboard_entry(
             "deployment_type": card.get("deployment_type"),
             "local_deployment_possible": card.get("local_deployment_possible"),
             "weights_provenance_risk": card.get("weights_provenance_risk"),
+            "weights_provenance_risk_rationale": card.get("weights_provenance_risk_rationale"),
+            "vendor": card.get("vendor"),
             "architecture_tags": _normalize_export_tags(card.get("architecture_tags") or []),
+            "primary_focus": card.get("primary_focus"),
             "thinking_probe_detected": card.get("thinking_probe_detected"),
             "thinking_probe_confidence": card.get("thinking_probe_confidence"),
+            "thinking_probe_evidence": card.get("thinking_probe_evidence"),
+            "thinking_probe_manual_override": card.get("thinking_probe_manual_override"),
+            "thinking_probe_at": card.get("thinking_probe_at"),
             "model_family": card.get("model_family"),
             "use_case_primary": card.get("use_case_primary"),
             "parameter_architecture": card.get("parameter_architecture"),
@@ -675,22 +685,35 @@ def _build_leaderboard_entry(
             "params_active_b": card.get("params_active_b"),
             "context_window_k": card.get("context_window_k"),
             "knowledge_cutoff": card.get("knowledge_cutoff"),
+            "size_class": card.get("size_class"),
+            # Modalitaeten (required since v4.7.0, consumers: [web_export, ...])
+            "input_modalities": card.get("input_modalities"),
+            "output_modalities": card.get("output_modalities"),
             "summary": card.get("summary"),
+            "judge_context_hint": card.get("judge_context_hint"),
             "strengths": card.get("strengths"),
             "known_limitations": card.get("known_limitations"),
             "card_status": card.get("card_status"),
+            "generated_at": card.get("generated_at"),
             "license": card.get("license"),
             "license_url": card.get("license_url"),
             "commercial_use_allowed": card.get("commercial_use_allowed"),
             "weights_license_tier": card.get("weights_license_tier"),
-            "weights_provenance_risk_rationale": card.get("weights_provenance_risk_rationale"),
-            "vendor": card.get("vendor"),
             "input_price_per_1m": card.get("input_price_per_1m"),
             "output_price_per_1m": card.get("output_price_per_1m"),
-            "thinking_probe_evidence": card.get("thinking_probe_evidence"),
-            "thinking_probe_manual_override": card.get("thinking_probe_manual_override"),
-            "thinking_probe_at": card.get("thinking_probe_at"),
             "supports_tool_use": card.get("supports_tool_use"),
+            # Optional v4.7.1 Thinking-Probe-Quartett: nur exportieren wenn gesetzt
+            # (Sonde schreibt die Felder nur bei detektiertem CoT; sonst noise vermeiden).
+            **(
+                {"cot_marker_family": card["cot_marker_family"]}
+                if card.get("cot_marker_family") is not None
+                else {}
+            ),
+            **(
+                {"cot_tags_detected": card["cot_tags_detected"]}
+                if card.get("cot_tags_detected") is not None
+                else {}
+            ),
             # Tri-State-Semantik für 11ty-Frontend:
             #   "true"      — Tool-Use funktioniert (empirisch verifiziert)
             #   "false"     — Modell kann keine Tools (empirisch verifiziert)

@@ -5,6 +5,31 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## [v4.7.7] - 2026-06-10
+
+**Web-Exporter an die v4.7.0-Model-Cards angepasst — letztes Glied der Pipeline.**
+
+Audit 2026-06-10 (`outputs/audits/web_export_compatibility_2026-06-10.md`) hatte aufgedeckt, dass `scripts/web_export.py` 8 Felder aus den seit v4.7.0 standardisierten Model-Cards NICHT im `model_card` sub-dict der `data.json` durchreichte — darunter die explizit als `consumers: [web_export, ...]` markierten `input_modalities` und `output_modalities`. Das 11ty-Frontend konnte deshalb keine Vision-/Audio-Badges rendern, obwohl 61 Karten Bild/Audio verarbeiten.
+
+### Web-Export-Erweiterungen (`scripts/web_export.py`)
+- **Pflicht-Tri-State-Felder ergänzt** im `model_card` sub-dict: `model_id`, `model_version`, `unknown`, `generated_at`, `primary_focus`, `judge_context_hint`, `size_class`.
+- **Modalitäten ergänzt** (v4.7.0-Pflicht, `consumers: [web_export, leaderboard]`): `input_modalities`, `output_modalities`.
+- **Conditional CoT-Felder** (v4.7.1-Optional, `consumers: [probe, web_export, review]`): `cot_marker_family` und `cot_tags_detected` werden nur exportiert, wenn in der Card gesetzt — Sonde schreibt sie nur bei detektiertem CoT, sonst wäre das Frontend-JSON mit `null`-Noise belastet.
+- **Sub-dict thematisch neu geordnet** (Identität → Deployment → Architektur → Modalitäten → Beschreibung → Lizenz → Pricing → Tool-Use) für bessere Lesbarkeit und Frontend-Mapping.
+
+### Neue Tests (+11)
+- `tests/test_web_export_card_field_coverage.py` (11 Tests) — Pflichtfeld-Coverage, web_export-consumer-Coverage, Modalitäten-Pass-Through, Tri-State-Text-Felder, None-Card-Handling, Integration-Check gegen `outputs/web_export_check/raw/`.
+
+### Audit-Artefakte
+- `outputs/audits/web_export_compatibility_2026-06-10.md` — Vollständiger Audit-Report mit Methodik, Findings-Tabelle, Detailanalyse, Side-Checks, Test-Reproduktion.
+- `outputs/audits/web_export_findings_2026-06-10.json` — 10 Findings (2 critical, 3 high, 2 medium, 3 low) als versionierbares JSON.
+
+### Side-Check-Ergebnis
+- 91/92 Modelle haben vollständige Cards im Web-Export (1 Modell ohne Card: `gpt-5_4`, siehe Befund WEBEXP-010).
+- Modalitäten-Backfill v4.7.6 sauber durchgelaufen (text:52, image+text:47, audio+image+text:14).
+- `architecture_tags`-DEPRECATED-Filter, `supports_tool_use`-Tri-State, Emoji-Stripping, Blacklist, Slugify — alles unverändert funktional.
+
+
 ## [v4.7.6] - 2026-06-10
 
 **Vollständiger SSoT-Audit + Beseitigung aller Card-Drift.**
