@@ -19,7 +19,8 @@
   "known_limitations": [
     "Chinesische Herkunft: potenzielle Zensur bei politisch sensiblen Themen mit China-Bezug",
     "Lokale Bereitstellung erfordert erhebliche Hardware (Multi-GPU)",
-    "OpenRouter-Routing kann je nach Provider variieren"
+    "OpenRouter-Routing kann je nach Provider variieren",
+    "Gelegentliche leere API-Antworten via OpenRouter (response_length=0 trotz gesetztem Token-Budget) – beobachtet bei cultural_intel_005; bei einem Retest behoben"
   ],
   "license": "Apache-2.0",
   "license_url": "https://www.apache.org/licenses/LICENSE-2.0",

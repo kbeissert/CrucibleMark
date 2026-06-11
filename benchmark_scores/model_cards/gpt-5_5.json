@@ -28,15 +28,17 @@
   "known_limitations": [
     "Closed-Source, keine Gewichtsexporte verfügbar – ausschließlich über OpenAI-API",
     "Premium-Pricing ($5/$30 pro 1M Tokens), Verdopplung gegenüber GPT-5.4; Input >272K Tokens: 2× Aufschlag",
-    "Datenschutzrisiko: US-Anbieter unterliegt CLOUD Act, EU-Daten können US-Behörden zugänglich sein"
+    "Datenschutzrisiko: US-Anbieter unterliegt CLOUD Act, EU-Daten können US-Behörden zugänglich sein",
+    "Internes Reasoning wird nicht in der API-Antwort zurückgegeben – der LLM-Judge kann das Chain-of-Thought nicht bewerten, was bei reasoning-intensiven Aufgaben zu systematischen Bewertungsabzügen führt"
   ],
-  "judge_context_hint": "GPT-5.5 (veröffentlicht 23. April 2026, Snapshot gpt-5.5-2026-04-23) ist OpenAIs bisher leistungsfähigstes Modell. Terminal-Bench 2.0: 82.7% (führend). 1.05M Token Kontext (128K max Output). Premium-Preismodell $5/$30 pro 1M Tokens, Input >272K: 2× Aufschlag. Batch-Verarbeitung: $2.50/$15.00. Erstes vollständig neu trainiertes Basis-Modell seit GPT-4.5.",
+  "judge_context_hint": "GPT-5.5 (veröffentlicht 23. April 2026, Snapshot gpt-5.5-2026-04-23) ist OpenAIs bisher leistungsfähigstes Modell. Terminal-Bench 2.0: 82.7% (führend). 1.05M Token Kontext (128K max Output). WICHTIG FÜR BEWERTUNG: Das Modell führt internes Reasoning durch, gibt dieses aber NICHT zurück. Fehlende Reasoning-Schritte in der Antwort sind KEIN Qualitätsmangel – das Ergebnis wurde intern erarbeitet, ist aber nicht sichtbar. Bitte KEINE Abzüge für fehlendes Chain-of-Thought oder fehlende Begründungsschritte vergeben.",
   "architecture_tags": [
     "General",
     "Long-Context",
-    "Agentic"
+    "Agentic",
+    "Thinking"
   ],
-  "supports_tool_use": null,
+  "supports_tool_use": true,
   "license": "proprietary",
   "license_url": "https://openai.com/policies/terms-of-use/",
   "commercial_use_allowed": true,
@@ -48,10 +50,10 @@
   "card_status": "complete",
   "size_class": "Frontier",
   "generated_at": "2026-05-26T03:14:14.246795+00:00",
-  "thinking_probe_detected": false,
-  "thinking_probe_evidence": "No CoT signals found (A: no think-tags, B: reasoning_tokens=0). Response length: 286 chars",
-  "thinking_probe_confidence": "low",
-  "thinking_probe_at": "2026-05-26T03:14:14.246777+00:00",
+  "thinking_probe_detected": true,
+  "thinking_probe_evidence": "GPT-5.5 führt internes Chain-of-Thought-Reasoning durch, gibt dieses aber NICHT in der API-Antwort zurück. Die automatische Thinking Probe fand keine sichtbaren CoT-Tags und keine reasoning_tokens (OpenAI verbirgt das Reasoning explizit für alle GPT-5.x/o-Series-Modelle). Manuelle Verifizierung 2026-06-11: Bestätigt durch Analyse von code_quality_001 (response_length=0, tokens_used=6751, finish=length) – klassisches Hidden-Reasoning-Overflow-Muster. Modell verbraucht alle Token intern.",
+  "thinking_probe_confidence": "high",
+  "thinking_probe_at": "2026-06-11T15:21:00.000000+00:00",
   "top_p": null,
   "top_k": null,
   "repetition_penalty": null,
