@@ -172,7 +172,7 @@ def load_benchmark_data() -> pd.DataFrame:
     df["execution_time"] = pd.to_numeric(df["execution_time"], errors="coerce")
     if "cost_usd" in df.columns:
         df["cost_usd"] = pd.to_numeric(df["cost_usd"], errors="coerce").fillna(0.0)
-    df["timestamp"] = pd.to_datetime(df["timestamp"], errors="coerce", format="mixed")
+    df["timestamp"] = pd.to_datetime(df["timestamp"], errors="coerce", utc=True)
 
     # If model_version is missing (e.g. newly loaded CSV didn't have it yet), fill with "unknown"
     if "model_version" not in df.columns:

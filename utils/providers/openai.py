@@ -24,6 +24,15 @@ except ImportError:
     OpenAI = None
 # Configure logging
 logger = logging.getLogger(__name__)
+
+# Einige GPT-Modelle werden intern mit Underscore gespeichert (kanonische ID),
+# die OpenAI-API erwartet jedoch die Punkt-Schreibweise.
+# Wird in query() vor dem API-Call aufgelöst.
+_OPENAI_ID_ALIASES: dict[str, str] = {
+    "gpt-5_5": "gpt-5.5",
+    "gpt-5_5-pro": "gpt-5.5-pro",
+}
+
 from utils.providers.base import BaseProviderClient
 class OpenAIClient(BaseProviderClient):
     """OpenAI Provider Client"""
@@ -80,8 +89,10 @@ class OpenAIClient(BaseProviderClient):
         """Query OpenAI API"""
         try:
             _system = kwargs.get("system")
+            # Kanonische Underscore-IDs auf die von der API erwartete Punkt-Form mappen
+            api_model = _OPENAI_ID_ALIASES.get(model, model)
             params = {
-                "model": model,
+                "model": api_model,
                 "messages": (
                     [{"role": "system", "content": _system}] if _system else []
                 ) + [{"role": "user", "content": prompt}],

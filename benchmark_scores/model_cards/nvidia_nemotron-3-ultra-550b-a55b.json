@@ -1,5 +1,5 @@
 {
-  "model_id": "nvidia_nemotron-3-ultra-550b-a55b",
+  "model_id": "nvidia/nemotron-3-ultra-550b-a55b",
   "display_name": "NVIDIA Nemotron 3 Ultra 550B A55B",
   "developer": "NVIDIA",
   "origin_country": "USA",
@@ -33,8 +33,16 @@
   ],
   "judge_context_hint": "NVIDIA Nemotron 3 Ultra 550B A55B (veröffentlicht 4. Juni 2026) ist ein Frontier-Reasoning-Modell mit Open Weights. MoE 55B/550B, Hybrid Transformer-Mamba, 1M Kontext. NVIDIA Open Model License. Preise: $0.50/$2.50 pro 1M Tokens.",
   "architecture_tags": [
+    "Thinking",
     "Long-Context",
     "Agentic"
+  ],
+  "input_modalities": [
+    "text",
+    "image"
+  ],
+  "output_modalities": [
+    "text"
   ],
   "supports_tool_use": true,
   "license": "NVIDIA Open Model License v1",
@@ -48,22 +56,15 @@
   "card_status": "complete",
   "size_class": "Frontier",
   "generated_at": "2026-06-10T11:36:00+00:00",
-  "thinking_probe_detected": null,
-  "thinking_probe_evidence": null,
-  "thinking_probe_confidence": null,
-  "thinking_probe_at": null,
+  "thinking_probe_detected": true,
+  "thinking_probe_evidence": "Multi-Probe (3 prompts, 3 detected, best confidence=medium):\n  - math: [math] reasoning_tokens=52 in provider metadata. First 200 chars: **Step 1: Identify the given values.**\n*   Distance traveled ($d$) = 120 km\n*   Time taken ($t$) = 1.5 hours\n\n**Step 2: Recall the formula for average speed.**\n$$ \\text{Average Speed} = \\frac{\\text{To\n  - code: [code] reasoning_tokens=141 in provider metadata. First 200 chars: I will use the **Merge Sort** algorithm.\n\n### Why Merge Sort?\n*   **Time Complexity:** $O(n \\log n)$ (efficient for large lists).\n*   **Stable:** Preserves the relative order of equal elements (import\n  - decision: [decision] reasoning_tokens=134 in provider metadata. First 200 chars: This is one of the most debated questions in AI ethics, often framed as a real-world version of the \"Trolley Problem.\" There is no global consensus, and different ethical frameworks yield different an",
+  "thinking_probe_confidence": "medium",
+  "thinking_probe_at": "2026-06-10T21:16:34.421348+00:00",
   "top_p": null,
   "top_k": null,
   "repetition_penalty": null,
   "frequency_penalty": null,
   "presence_penalty": null,
   "seed": null,
-  "stop_sequences": null,
-  "input_modalities": [
-    "text",
-    "image"
-  ],
-  "output_modalities": [
-    "text"
-  ]
+  "stop_sequences": null
 }

@@ -33,9 +33,15 @@
   ],
   "judge_context_hint": "GLM-5 (veröffentlicht 11. Februar 2026) ist Z.ais Flaggschiff mit Open Weights und MoE-Architektur. 202K Kontext, Coding- und Agent-Workflow-Fokus. Preise: $0.60/$1.92 pro 1M Tokens. Custom Z.ai License.",
   "architecture_tags": [
-    "General",
+    "Thinking",
     "Long-Context",
     "Agentic"
+  ],
+  "input_modalities": [
+    "text"
+  ],
+  "output_modalities": [
+    "text"
   ],
   "supports_tool_use": true,
   "license": "Z.ai Open License",
@@ -49,21 +55,15 @@
   "card_status": "complete",
   "size_class": "Frontier",
   "generated_at": "2026-06-10T11:36:00+00:00",
-  "thinking_probe_detected": null,
-  "thinking_probe_evidence": null,
-  "thinking_probe_confidence": null,
-  "thinking_probe_at": null,
+  "thinking_probe_detected": true,
+  "thinking_probe_evidence": "Multi-Probe (3 prompts, 3 detected, best confidence=medium):\n  - math: [math] reasoning_tokens=575 in provider metadata. First 200 chars: Here is the step-by-step solution:\n\n**Step 1: Identify the formula for average speed.**\nThe formula for average speed is:\n$$\\text{Average Speed} = \\frac{\\text{Total Distance}}{\\text{Total Time}}$$\n\n**\n  - code: [code] reasoning_tokens=2560 in provider metadata. First 200 chars: \n  - decision: [decision] reasoning_tokens=1719 in provider metadata. First 200 chars: This is a variation of the classic \"Trolley Problem,\" a thought experiment that forces a choice between two unfavorable outcomes. When applied to autonomous vehicles (AVs), the scenario moves from abs",
+  "thinking_probe_confidence": "medium",
+  "thinking_probe_at": "2026-06-10T20:59:16.161868+00:00",
   "top_p": null,
   "top_k": null,
   "repetition_penalty": null,
   "frequency_penalty": null,
   "presence_penalty": null,
   "seed": null,
-  "stop_sequences": null,
-  "input_modalities": [
-    "text"
-  ],
-  "output_modalities": [
-    "text"
-  ]
+  "stop_sequences": null
 }
