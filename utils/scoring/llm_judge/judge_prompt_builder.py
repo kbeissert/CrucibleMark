@@ -14,7 +14,7 @@ from __future__ import annotations
 
 import logging
 from string import Template
-from typing import Dict, Optional, Tuple
+from typing import Any, Dict, Optional, Tuple
 
 from utils.model_utils import get_model_identity
 
@@ -175,6 +175,7 @@ def build_prompts(
     language_weight: float = 0.20,
     token_budget_context: Optional[Dict[str, int]] = None,
     truncation_context: bool = False,
+    small_model_token_context: Optional[Dict[str, Any]] = None,
     tool_content: Optional[str] = None,
     tool_content_quality: Optional[str] = None,
 ) -> Tuple[str, str]:
@@ -276,6 +277,25 @@ def build_prompts(
             "do not penalize because the response is shorter than expected or ends abruptly. "
             "Score what is present on its own merits."
         )
+
+    if small_model_token_context:
+        _smc_size = small_model_token_context.get("size_class")
+        _smc_standard = small_model_token_context.get("standard_budget")
+        _smc_applied = small_model_token_context.get("applied_budget")
+        if _smc_size and _smc_standard and _smc_applied:
+            system_prompt += (
+                f"\n\n### SMALL MODEL CONTEXT NOTE ###\n"
+                f"This model belongs to the **{_smc_size}** size class (a compact quantized GGUF model "
+                f"with a shorter effective output window). An elevated token budget of "
+                f"**{_smc_applied} tokens** was applied (standard for this module: {_smc_standard} tokens) "
+                f"to reduce output truncation.\n"
+                f"**Evaluate the response fairly given these constraints:**\n"
+                f"- Do NOT penalize for minor completeness gaps that are likely due to model size limits.\n"
+                f"- Focus on the quality and accuracy of the content that IS present.\n"
+                f"- A response that addresses all core task requirements, even if slightly less "
+                f"exhaustive than the golden standard, should be rated on content quality — "
+                f"not penalized for brevity relative to larger models."
+            )
 
     user_prompt = _USER_TEMPLATE.substitute(
         task_prompt=task_prompt.strip(),

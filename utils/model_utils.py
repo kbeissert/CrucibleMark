@@ -1112,6 +1112,18 @@ def resolve_token_budget(
         budgets = config.get("token_budgets_reasoning_models", {})
         tokens = budgets[module_key] if (module_key and module_key in budgets) else tokens * 2
 
+    elif not reasoning and explicit_budget and module_key:
+        # Kleine lokale Modelle (Desktop, Edge, Nano, Workstation): GGUF-Quantisierungen
+        # haben strukturell kürzere effektive Ausgabefenster und truncaten bei bestimmten
+        # aufwendigen Modulen (z.B. documentation_quality_005, ux_writing).
+        # Falls token_budgets_small_models > Standard-Budget → erhöhtes Budget anwenden.
+        _size = get_model_size_class(model)
+        if _size in ("Nano", "Edge", "Desktop", "Workstation"):
+            _small_budgets = config.get("token_budgets_small_models", {})
+            _small_budget = _small_budgets.get(module_key)
+            if _small_budget and _small_budget > tokens:
+                tokens = _small_budget
+
     # Model-Card-Cap: Wenn die Card ein explizites max_output_tokens definiert,
     # wird das Budget darauf begrenzt. So können modellspezifische API-Limits
     # (z.B. gpt-4o-2024-05-13 akzeptiert max. 4096) ohne Fallback-Retry gesetzt werden.

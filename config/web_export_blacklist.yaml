@@ -18,3 +18,12 @@ blacklist:
   # - "qwen3.5-35b-a3b-q4_k_m"      # Vergleichsquant, zu verlustbehaftet
   # - "qwen3.5-35b-a3b-q8"          # Vergleichsquant
   # - "test-*"                      # alle Test-Modelle pauschal
+
+  # GWEN-Modelle (Vergleichsquants, experimentelle Modelle)
+  - "qwen3-coder-next-q8"       # Vergleichsquant, zu langsam, zu schwer
+  - "qwen3_5-35b-a3b-q8"        # Vergleichsquant, zu langsam
+  - "qwen3_5-4b-q6"             # Vergleichsquant, langsamer, kaum unterschied
+
+  # GEMMA-Modelle (Vergleichsquants, experimentelle Modelle)
+  - "gemma-4-12b-it-ud-q4_k_xl" # Vergleichsquant, zu langsam, zu schwer
+  - "gemma-4-12b-it-ud-q8"      # Vergleichsquant, zu langsam

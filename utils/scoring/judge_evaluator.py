@@ -85,6 +85,28 @@ def evaluate_with_judge(
         if result.get("token_limit_cutoff"):
             kwargs["truncation_context"] = True
 
+        # Inject small-model token budget context so the Judge can evaluate fairly.
+        # Nur für kleine NICHT-Reasoning-Modelle (Desktop/Edge/Nano/Workstation):
+        # Reasoning-Modelle erhalten bereits token_budget_context (oben), das beide
+        # Aspekte (erhöhtes Budget + Lenienz) abdeckt.
+        if not is_reasoning_model(model):
+            from utils.model_utils import get_model_size_class
+            _size = get_model_size_class(model)
+            if _size in ("Nano", "Edge", "Desktop", "Workstation"):
+                try:
+                    from utils.config_validator import ConfigValidator
+                    _cfg = ConfigValidator().config
+                    _small = _cfg.get("token_budgets_small_models", {}).get(eval_module_id)
+                    _standard = _cfg.get("token_budgets", {}).get(eval_module_id)
+                    if _small and _standard and _small > _standard:
+                        kwargs["small_model_token_context"] = {
+                            "size_class": _size,
+                            "standard_budget": _standard,
+                            "applied_budget": _small,
+                        }
+                except Exception:
+                    pass  # Non-critical — judge runs without small-model context
+
         judge_res = runner.score(**kwargs)
 
         # Merge fields
