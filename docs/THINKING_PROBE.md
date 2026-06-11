@@ -43,7 +43,7 @@ Die Probe wertet drei Signale aus, in absteigender Confidence:
 | Signal | Quelle | Confidence | Beispiel |
 |---|---|---|---|
 | **A — Tags** | Bekannte Think-Tags im Response-Content | `high` | `<think>…</think>` |
-| **B — reasoning_tokens** | Provider-API-Metadaten (`completion_tokens_details.reasoning_tokens > 0`) | `medium` | Kimi K2 Thinking: 4503 Tokens |
+| **B — reasoning_tokens** | Provider-API-Metadaten (`reasoning_tokens > 0` **und** Output nicht leer) | `medium` | Kimi K2 Thinking: 4503 Tokens |
 | **C — Inline-CoT** | Heuristik im Content (Länge + Berechnungs-Operatoren) | `medium` | Qwen 3 14B Decision: 4619 chars |
 
 **Befund aus Discovery (9 Modelle, 27 Probes, 2026-06-09):**
@@ -244,7 +244,7 @@ _token_budget, _ = resolve_token_budget(
 **Tests:**
 
 - `tests/test_thinking_probe_families.py` — 59 Tests (Multi-Prompt-Aggregation, _THINK_TAGS, _find_think_tags, identify_family, pick_representatives, aggregate_probe)
-- `tests/test_thinking_probe_inline_cot.py` — 11 Tests (Signal-C-Heuristik)
+- `tests/test_thinking_probe_inline_cot.py` — 13 Tests (Signal-C-Heuristik + Signal-B Cold-Start-Guard)
 - `tests/test_thinking_override.py` — 24 Tests (SSoT-Auflösungsmatrix, Override-Validierung, Audit-Trail)
 - `tests/test_base_runner_thinking_budget.py` — 17 Tests (Runner-Consumer-Anbindung mit SSoT-Pfad)
 

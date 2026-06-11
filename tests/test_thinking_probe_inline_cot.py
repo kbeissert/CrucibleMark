@@ -182,6 +182,37 @@ def test_probe_signal_b_takes_precedence_over_signal_c():
     assert "reasoning_tokens=42" in result.evidence
 
 
+def test_probe_signal_b_cold_start_empty_output_not_detected():
+    """Cold-Start-Guard: reasoning_tokens > 0 + leerer Output → detected=False.
+
+    Hintergrund: llama.cpp-Modelle (z. B. Gemma 4 26B-A4B-QAT) liefern
+    bei den ersten Anfragen reasoning_tokens=512, aber 0 chars Output.
+    Das ist ein Kontext-Aufbau-Artefakt, kein echter Thinking-Nachweis.
+    Ohne den Guard wuerde Signal B faelschlicherweise detected=True setzen.
+    """
+    client = _mock_llm_client("", reasoning_tokens=512)
+
+    with patch("utils.llm_client.LLMClient", return_value=client):
+        result = probe_thinking_model("gemma-4-26b-a4b-qat", "llamacpp_spark", config={})
+
+    assert result.detected is False
+    assert result.confidence == "low"
+    assert "reasoning_tokens=512" in result.evidence
+    assert "Cold-Start-Verdacht" in result.evidence
+
+
+def test_probe_signal_b_cold_start_whitespace_only_not_detected():
+    """Cold-Start-Guard greift auch bei Whitespace-only-Output (strip() == '')."""
+    client = _mock_llm_client("   \n   ", reasoning_tokens=128)
+
+    with patch("utils.llm_client.LLMClient", return_value=client):
+        result = probe_thinking_model("test-model", "llamacpp_spark", config={})
+
+    assert result.detected is False
+    assert result.confidence == "low"
+    assert "Cold-Start-Verdacht" in result.evidence
+
+
 def test_probe_no_signals_returns_low_confidence():
     """Weder Tags noch reasoning_tokens noch inline CoT → low confidence."""
     short_direct = "80 km/h"

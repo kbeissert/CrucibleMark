@@ -1635,7 +1635,22 @@ def _probe_single(
         )
 
     # Signal B -- provider metadata reports reasoning tokens (medium)
+    # Cold-Start-Guard: reasoning_tokens > 0 + leerer Output = ambig.
+    # llama.cpp-Modelle (z. B. Gemma 4 26B-A4B-QAT) liefern bei ersten Anfragen
+    # reasoning_tokens=512, aber 0 chars Output (Kontext-Aufbau, kein echter Thinking-Nachweis).
     if reasoning_tokens > 0:
+        if not raw.strip():
+            return ThinkingProbeResult(
+                detected=False,
+                evidence=(
+                    f"[{prompt_name}] reasoning_tokens={reasoning_tokens} "
+                    f"aber 0 chars output — Cold-Start-Verdacht, "
+                    f"kein Thinking-Nachweis."
+                ),
+                confidence="low",
+                prompts_used=(prompt_name,),
+                tags_found=(),
+            )
         return ThinkingProbeResult(
             detected=True,
             evidence=(
