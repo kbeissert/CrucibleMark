@@ -21,8 +21,17 @@ Das Feld `supports_tool_use` in der Model Card hat drei kanonische Zustände:
 **Quellen:**
 
 1. **Manuelle Vorab-Klassifikation** über `scripts/dev/patch_tool_use.py` (einmalig 2026-05)
-2. **Empirische Verifikation** über `scripts/core/tooluse_exporter.py:223` — schreibt nach jedem Tool-Use-Lauf den `mean(p1_scores)`-basierten Wert zurück in die Card
+2. **Empirische Verifikation** über `scripts/core/tooluse_exporter.py:finalize_model()` — schreibt nach jedem Tool-Use-Lauf `supports_tool_use`, `tooluse_tested_at`, `tooluse_score_p1` und `tooluse_score_p2` zurück in die Card
 3. **Migration** über `scripts/dev/migrate_supports_tool_use_tri_state.py` — setzt `null` → `"untested"` für Cards ohne Feld
+
+**Score-Felder in der Card:**
+
+| Feld | Typ | Beschreibung |
+|---|---|---|
+| `tooluse_score_p1` | float | ∅ Phase-1-Score des letzten verifizierten Runs |
+| `tooluse_score_p2` | float | ∅ Phase-2-Score des letzten verifizierten Runs |
+
+Diese Felder sind die **SSoT für Leaderboard-Rebuilds**: `aggregate_from_benchmark_csvs()` bevorzugt Card-Werte vor einer Neuberechnung aus den Benchmark-CSVs. Damit überschreibt `make tooluse-leaderboard` niemals manuell validierte Scores.
 
 **Konsumenten der Tri-State-Semantik:**
 

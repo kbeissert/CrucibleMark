@@ -1205,6 +1205,8 @@ def update_model_card_tooluse_fields(
     model_id: str,
     supports_tool_use: bool | str,
     tested_at: str | None,
+    p1_score: float | None = None,
+    p2_score: float | None = None,
 ) -> bool:
     """Schreibt Tooluse-Benchmark-Ergebnisse direkt in die Model Card.
 
@@ -1222,6 +1224,8 @@ def update_model_card_tooluse_fields(
     Felder, die aktualisiert werden:
     - ``supports_tool_use``  : True / False / "untested"
     - ``tooluse_tested_at``  : ISO-8601-Timestamp (oder Feld entfernt)
+    - ``tooluse_score_p1``   : mittlerer P1-Score (Phase 1), optional
+    - ``tooluse_score_p2``   : mittlerer P2-Score (Phase 2), optional
 
     Returns:
         True wenn die Card erfolgreich aktualisiert wurde, False bei Fehler.
@@ -1247,10 +1251,16 @@ def update_model_card_tooluse_fields(
             data.pop("tooluse_tested_at", None)
         else:
             data["tooluse_tested_at"] = tested_at
+        # Scores persistent schreiben — SSoT für spätere aggregate_from_benchmark_csvs()-Läufe.
+        # Verhindert, dass Leaderboard-Regenerierung manuell validierte Werte überschreibt.
+        if p1_score is not None:
+            data["tooluse_score_p1"] = round(float(p1_score), 2)
+        if p2_score is not None:
+            data["tooluse_score_p2"] = round(float(p2_score), 2)
         card_path.write_text(json.dumps(data, ensure_ascii=False, indent=2), encoding="utf-8")
         logger.debug(
-            "Model Card aktualisiert: %s → supports_tool_use=%s, tooluse_tested_at=%s",
-            model_id, supports_tool_use, tested_at,
+            "Model Card aktualisiert: %s → supports_tool_use=%s, tooluse_tested_at=%s, p1=%s, p2=%s",
+            model_id, supports_tool_use, tested_at, p1_score, p2_score,
         )
         return True
     except Exception:

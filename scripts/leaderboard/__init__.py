@@ -214,6 +214,22 @@ def main(print_table: bool = True) -> Optional[pd.DataFrame]:
     leaderboard["Model ID"] = leaderboard["model"].apply(_model_id_ssot)
     leaderboard["Model Name"] = leaderboard["model"].apply(_model_name_ssot)
 
+    # Draft-Card-Check: Warnt wenn Modelle mit display_name="TODO" im Leaderboard
+    # erscheinen. ensure_card() legt draft-Karten automatisch mit display_name="TODO"
+    # an — diese müssen vor der Publikation manuell vervollständigt werden.
+    import logging as _lb_logging  # noqa: PLC0415
+    _lb_logger = _lb_logging.getLogger(__name__)
+    _draft_mask = leaderboard["Model Name"].str.upper().str.strip() == "TODO"
+    if _draft_mask.any():
+        _draft_ids = leaderboard.loc[_draft_mask, "Model ID"].tolist()
+        _draft_msg = (
+            f"⚠️  WARNUNG: {len(_draft_ids)} Draft Card(s) im Leaderboard"
+            f" (display_name='TODO'):\n"
+            + "\n".join(f"   → {m}" for m in _draft_ids)
+        )
+        print(_draft_msg)
+        _lb_logger.warning("Draft Cards im Leaderboard: %s", _draft_ids)
+
     # Reorder: Model Name zuerst (Spalte 2), Model ID als Spalte 3
     # Wir verschieben die Spalten so, dass die Reihenfolge passt
     if "Rank" in leaderboard.columns:

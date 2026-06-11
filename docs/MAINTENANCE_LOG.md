@@ -6,6 +6,59 @@
 ---
 
 
+## v4.8.6 — Robustness-Fixes: Judge-Coverage, Draft-Card-Warning, ToolUse P1/P2 SSoT (2026-06-12)
+
+Drei Fixes zur strukturellen Absicherung von Problemen, die in Session 12–14 manuell
+korrigiert werden mussten.
+
+### Fix 1 — Judge-Skip-Zeilen aus Coverage-Berechnung ausschließen
+**Datei:** `scripts/leaderboard/score_calculator.py` → `_aggregate_basic_stats()`
+
+**Problem:** `judge_prog=⚠️ Judge: skip (zu kurz/abgelehnt)` sind **absichtliche** Skips
+(Antwort zu kurz / Model refused), keine fehlgeschlagenen Judge-Aufrufe. Die Coverage-
+Formel `llm_judge_score.notna().sum() / len(x)` zählte sie trotzdem als fehlend → zog
+Coverage fälschlicherweise von 100 % auf ~98 % herunter.
+
+**Fix:** Vor der Coverage-Berechnung werden alle Zeilen mit `"skip"` im `judge_prog`-
+Feld gefiltert. Echte Judge-Fehler (kein Score, kein Skip-Marker) sind weiterhin sichtbar.
+
+---
+
+### Fix 2 — Draft-Card-Warning im Leaderboard
+**Datei:** `scripts/leaderboard/__init__.py`
+
+**Problem:** `ensure_card()` legt bei neuen Modellen automatisch eine Model Card mit
+`display_name="TODO"` und `card_status="draft"` an. Diese Cards können still ins
+Leaderboard wandern — erkennbar erst durch manuelle Inspektion.
+
+**Fix:** Nach `_model_name_ssot()` wird geprüft, ob `"Model Name" == "TODO"` für eine
+oder mehrere Zeilen zutrifft. Bei Treffer: `print()`-Ausgabe + `logger.warning()` mit
+den betroffenen Model-IDs. Verhindert keine Ausführung, macht das Problem aber sofort
+sichtbar.
+
+---
+
+### Fix 3 — ToolUse P1/P2 als SSoT in Model Card JSON
+**Dateien:** `utils/model_utils.py`, `scripts/core/tooluse_exporter.py`
+
+**Problem:** `aggregate_from_benchmark_csvs()` berechnet P1/P2 neu aus den Benchmark-CSVs
+— überschreibt dabei manuell validierte Scores in `tooluse_leaderboard.csv` bei jedem
+Leaderboard-Rebuild.
+
+**Fix (3-teilig):**
+- **Fix 3a** (`utils/model_utils.py`): `update_model_card_tooluse_fields()` schreibt
+  jetzt auch `tooluse_score_p1` und `tooluse_score_p2` in die Card JSON (neue Parameter
+  `p1_score`, `p2_score`, beide optional).
+- **Fix 3b** (`finalize_model()`): Nach jedem Live-Benchmark-Run werden `_p1_mean` und
+  `_p2_mean` via `update_model_card_tooluse_fields()` persistent in die Card geschrieben.
+- **Fix 3c** (`_aggregate_asset_rows()`): Beim Leaderboard-Rebuild werden Card-Werte
+  (`card.get("tooluse_score_p1/p2")`) bevorzugt. Fallback auf CSV-Aggregation nur wenn
+  kein Card-Wert vorhanden.
+
+**Invariante:** Wer einen Live-Benchmark-Run macht, hat danach validierte Card-Werte.
+Ein späterer `make tooluse-leaderboard`-Aufruf überschreibt diese Werte nicht.
+
+
 ## v4.6.8 — Makefile help v2 + argparse fuer 3 Skripte (Phase 29, 2026-06-08)
 
 ### 1. `Makefile` — Help-Text komplett refaktoriert

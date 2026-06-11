@@ -448,6 +448,14 @@ def _aggregate_basic_stats(
         # Filter dataframe for coverage and mean computation
         df_judge = df[df["category"].isin(applicable_categories)]
 
+        # Judge-Skip-Zeilen aus Coverage-Berechnung ausschließen:
+        # judge_prog=⚠️ Judge: skip (zu kurz/abgelehnt) bedeutet absichtlich
+        # übersprungen, nicht fehlgeschlagen → zählt nicht gegen Coverage.
+        if "judge_prog" in df_judge.columns:
+            df_judge = df_judge[
+                ~df_judge["judge_prog"].str.contains("skip", na=False, case=False)
+            ]
+
         def calc_coverage(x):
             return x.notna().sum() / len(x) if len(x) > 0 else 0.0
 

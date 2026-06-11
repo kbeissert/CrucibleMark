@@ -98,6 +98,12 @@ Thought-Tag Compliance = Einhaltung der Metakognitions-Tags (<thought>)
 Coverage % = Erfolgreich geparst
 ```
 
+> **Hinweis zur Judge-Coverage-Berechnung:** Zeilen mit `judge_prog=⚠️ Judge: skip (zu kurz/abgelehnt)`
+> werden seit v4.8.6 **vor** der Coverage-Formel herausgefiltert. Diese Skips sind absichtlich
+> (Antwort zu kurz, Modell hat abgelehnt) und zählen nicht als fehlgeschlagene Judge-Aufrufe.
+> Echte Judge-Fehler (kein Score, kein Skip-Marker) bleiben in der Coverage-Berechnung sichtbar.
+> Implementierung: `scripts/leaderboard/score_calculator.py` → `_aggregate_basic_stats()`.
+
 > **Hinweis:** Der `Efficiency Score` (Total Score / Avg Time) wurde in v3.4.3 entfernt.
 > Drei saubere, unabhängige Dimensionen ersetzen ihn: `Total Score`, `Avg Task Duration (s)`, `Tokens/s`.
 

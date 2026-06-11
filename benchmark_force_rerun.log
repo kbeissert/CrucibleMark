@@ -129,3 +129,22 @@ Tests: 3 (3 ✅, 0 ❌)
 ══════════════════════════════════════════════════════
 
   Next: make tooluse-leaderboard
+
+
+════════════════════════════════════════════════════════════════════════════════
+  RERUN START — 2026-06-11 $(date +%H:%M:%S)
+  Anlass: LLM Judge Coverage Audit (Session 12) — 46 fehlerhafte Einträge entfernt
+  Betroffene Modelle (10x Tests Run < 43):
+    - hermes-4.3-36b-q6         37/43  (code_quality_001, doc_003/004, wcag_audit, security_audit)
+    - magistral-small-latest    38/43  (reasoning_metacog_001-005)
+    - gemma-4-12b-it-ud-q6_k_xl 39/43  (ux_writing_002/003/005, asset_001_error_messages, asset_5b)
+    - gpt-5_5                   41/43  (code_quality_001, documentation_quality_004)
+    - z-ai/glm-5-20260211       41/43  (cultural_intel_003/005)
+    - gemma-4-12b-it-ud-q8_k_xl 42/43  (ux_writing_002)
+    - qwen/qwen3.5-397b-a17b    42/43  (cultural_intel_005, tooluse001)
+    - gemma-4-12b-it-ud-q4_k_xl 42/43  (documentation_quality_005)
+    - z-ai/glm-4.7              42/43  (cultural_intel_003)
+    - magistral-medium-latest   42/43  (ux_writing_002)
+  Backups: *.bak_judge_cleanup_20260611_073204
+════════════════════════════════════════════════════════════════════════════════
+

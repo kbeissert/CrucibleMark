@@ -190,8 +190,19 @@ class ToolUseExporter:
             "model_version": model_version,
             "timestamp": timestamp,
             "mcp_mode": mcp_mode,
-            "p1_score": _fmt_score(_mean(p1_scores)),
-            "p2_score": _fmt_score(_mean(p2_scores)),
+            # SSoT: Card-Werte für P1/P2 bevorzugen wenn manuell oder per finalize_model()
+            # gesetzt. Verhindert dass aggregate_from_benchmark_csvs() validierte Werte
+            # überschreibt (z.B. nach Benchmark-Regenerierung).
+            "p1_score": (
+                _fmt_score(card.get("tooluse_score_p1"))
+                if isinstance(card.get("tooluse_score_p1"), (int, float))
+                else _fmt_score(_mean(p1_scores))
+            ),
+            "p2_score": (
+                _fmt_score(card.get("tooluse_score_p2"))
+                if isinstance(card.get("tooluse_score_p2"), (int, float))
+                else _fmt_score(_mean(p2_scores))
+            ),
             "combined_score": _fmt_score(_mean(combined_scores)),
             "tool_call_valid": str(tool_call_valid_all).lower(),
             "tool_call_attempts": tool_call_attempts_max,
@@ -224,13 +235,21 @@ class ToolUseExporter:
         #   "untested" — keine p1_scores vorhanden (kein Asset gelaufen)
         if not p1_scores:
             card_supports_tool_use = "untested"
+            _p1_mean: float | None = None
+            _p2_mean: float | None = None
         else:
-            card_supports_tool_use = (sum(p1_scores) / len(p1_scores)) > 0
+            _p1_mean = sum(p1_scores) / len(p1_scores)
+            _p2_mean = sum(p2_scores) / len(p2_scores) if p2_scores else None
+            card_supports_tool_use = _p1_mean > 0
         try:
+            # P1/P2 persistent in der Card speichern — SSoT für spätere
+            # aggregate_from_benchmark_csvs()-Läufe (verhindert Überschreiben).
             update_model_card_tooluse_fields(
                 model_id=model_id,
                 supports_tool_use=card_supports_tool_use,
                 tested_at=timestamp if card_supports_tool_use != "untested" else None,
+                p1_score=_p1_mean,
+                p2_score=_p2_mean,
             )
         except Exception:  # noqa: BLE001 — Card-Update darf den Benchmark nie crashen
             logger.debug("Model Card tooluse update failed (non-critical)", exc_info=True)
@@ -551,8 +570,19 @@ class ToolUseExporter:
             "model_version": model_version,
             "timestamp": timestamp,
             "mcp_mode": mcp_mode,
-            "p1_score": _fmt_score(_mean(p1_scores)),
-            "p2_score": _fmt_score(_mean(p2_scores)),
+            # SSoT: Card-Werte für P1/P2 bevorzugen wenn manuell oder per finalize_model()
+            # gesetzt. Verhindert dass aggregate_from_benchmark_csvs() validierte Werte
+            # überschreibt (z.B. nach Benchmark-Regenerierung).
+            "p1_score": (
+                _fmt_score(card.get("tooluse_score_p1"))
+                if isinstance(card.get("tooluse_score_p1"), (int, float))
+                else _fmt_score(_mean(p1_scores))
+            ),
+            "p2_score": (
+                _fmt_score(card.get("tooluse_score_p2"))
+                if isinstance(card.get("tooluse_score_p2"), (int, float))
+                else _fmt_score(_mean(p2_scores))
+            ),
             "combined_score": _fmt_score(_mean(combined_scores)),
             "tool_call_valid": str(tool_call_valid_all).lower(),
             "tool_call_attempts": tool_call_attempts_max,
