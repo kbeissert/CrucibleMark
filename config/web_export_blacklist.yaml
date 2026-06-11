@@ -26,4 +26,6 @@ blacklist:
 
   # GEMMA-Modelle (Vergleichsquants, experimentelle Modelle)
   - "gemma-4-12b-it-ud-q4_k_xl" # Vergleichsquant, zu langsam, zu schwer
+  - "gemma-4-12b-it-ud-q6_k_xl" # Vergleichsquant, zu langsam, zu schwer
   - "gemma-4-12b-it-ud-q8"      # Vergleichsquant, zu langsam
+  - "gemma-3-12b-it"            # Desktop Modell, langsammer auf M4 als auf Spark
