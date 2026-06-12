@@ -15,13 +15,15 @@
 # Verfügbare Prompts:
 #   - provider_card_verification  → Statische Hersteller-Informationen verifizieren/aktualisieren
 #   - model_card_verification     → Inhaltliche Modell-Metadaten verifizieren/ergänzen
+#   - community_card_verification → Community-Distributor-Cards verifizieren/ergänzen
 
-version: "1.0.0"
+version: "1.1.0"
 last_updated: "2026-06-12"
 
 # Verfügbare Prompts (aktuell):
 #   - provider_card_verification  → Statische Hersteller-Informationen verifizieren/aktualisieren
 #   - model_card_verification     → Inhaltliche Modell-Metadaten verifizieren/ergänzen
+#   - community_card_verification → Community-Distributor-Cards verifizieren/ergänzen
 
 # ----------------------------------------------------------------------------
 # PROMPT: provider_card_verification
@@ -232,6 +234,13 @@ model_card_verification:
     **input_modalities / output_modalities:** Erlaubte Werte: text, image, audio, video
     ("text" ist immer implizit enthalten)
 
+    **community:** Kanonischer Name der Community-Gruppe, die dieses Modell quantisiert,
+    fine-getuned oder distribuiert hat. Nur setzen wenn konkret identifiziert.
+    null für kommerzielle Cloud-Modelle und Modelle, die direkt vom Hersteller
+    veröffentlicht wurden (keine Community-Distribution).
+    Kontrollierte Werte (SSoT: config/classification_taxonomy.json → community_groups):
+    Unsloth, mradermacher, HauhauCS, ARA-APEX
+
     ## Auftrag
 
     Bearbeite alle Model Cards in `benchmark_scores/model_cards/` bei
@@ -300,6 +309,20 @@ model_card_verification:
 
     **use_case_primary:** Klassifikation nach Hauptanwendungsfall
 
+    **Community-Zuordnung (nur für lokale / open-weights Modelle):**
+    Prüfe bei Modellen mit `deployment_type: localweights` oder `open-weights`:
+    - Wer hat die konkreten Gewichte auf HuggingFace veröffentlicht?
+      Schau dir die HuggingFace-Modellseite des Modells an (Org/User in der URL).
+      - HuggingFace-Org/User `unsloth` oder `unslothai`   → community: "Unsloth"
+      - HuggingFace-User `mradermacher`                   → community: "mradermacher"
+      - HuggingFace-Org/User `HauhauCS`                   → community: "HauhauCS"
+      - Modellname oder HF-Handle enthält "ARA-APEX"       → community: "ARA-APEX"
+      - Original-Modell direkt vom Hersteller publiziert   → community: null
+      - Anderer bekannter Community-Distributor            → null setzen, Rückfrage
+        als Kommentar in `known_limitations` ergänzen
+    - Für `cloud-only` und `open-weights-cloud-available` Modelle (keine GGUF-Quants):
+      community: null (nie setzen bei Cloud-nativen Modellen)
+
     ### Schritt 3 — Card aktualisieren
     Aktualisiere **ausschließlich** die folgenden Felder — aber nur, wenn sie
     den Wert `"TODO"` haben, `null` sind (und kein erlaubtes null-Feld,
@@ -338,6 +361,7 @@ model_card_verification:
     known_limitations
     judge_context_hint
     use_case_primary
+    community                      ← kanonischer Community-Name oder null (s. Glossar)
     profile_verified               ← true (nach erfolgreicher Verifikation)
     profile_verified_at            ← heutiges Datum (ISO 8601: YYYY-MM-DD)
     ```
@@ -405,3 +429,180 @@ model_card_verification:
     - Quantisierte/Community-Modelle (GGUF, GPTQ, AWQ): `developer` ist das
       originale Lab, `vendor` ebenfalls. `architecture_tags` enthält "Quantized"
       und ggf. "Community"
+    - `community` nur setzen wenn der konkrete Distributor identifiziert ist —
+      nicht raten. Bei Unklarheit: null lassen und Hinweis in `known_limitations`
+
+# ----------------------------------------------------------------------------
+# PROMPT: community_card_verification
+# ----------------------------------------------------------------------------
+# Aufgabe: Community Cards (card_subtype: "community") mit profile_verified: false
+# recherchieren, Felder aktualisieren, Verifikations-Flag setzen.
+#
+# Empfohlene Modelle: Claude Opus 4+, GPT-5+, Gemini 2.5 Pro (mit Web-Recherche)
+# Benötigte Fähigkeiten: Web-Recherche (Search/Browse), Datei-Schreibzugriff
+# Geschätzte Dauer: 3–6 Minuten pro Community-Gruppe
+# ----------------------------------------------------------------------------
+community_card_verification:
+  name: "Community Card Verification"
+  version: "1.0.0"
+  description: >
+    Verifiziert und ergänzt die Metadaten in Community Cards (card_subtype: "community").
+    Community Cards dokumentieren GGUF-Quantisierer, Fine-Tuner und Community-
+    Distributoren, die auf Basis öffentlicher Modellgewichte arbeiten
+    (z.B. Unsloth, mradermacher, HauhauCS).
+  targets:
+    directory: "benchmark_scores/vendor_cards/"
+    filter: "card_subtype == 'community' AND profile_verified == false"
+    exclude: ["_index.json"]
+  prompt: |
+    # Aufgabe: Community Card Verification
+
+    Du bist ein Recherche-Assistent. Deine Aufgabe ist es, die Metadaten in
+    CrucibleMark Community Cards zu verifizieren und zu ergänzen.
+
+    ## Kontext
+
+    CrucibleMark ist ein LLM-Benchmark-Framework. Community Cards dokumentieren
+    Community-Distributoren: Gruppen oder Einzelpersonen, die auf Basis
+    öffentlicher Modellgewichte tätig sind — als GGUF-Quantisierer, Fine-Tuner
+    oder Community-Distributor. Beispiele: Unsloth AI, mradermacher, HauhauCS.
+
+    Community Cards teilen das JSON-Schema mit regulären Vendor Cards, sind aber
+    durch `"card_subtype": "community"` gekennzeichnet. Unterschiede zu regulären
+    Vendor Cards:
+    - Keine proprietäre API — nur HuggingFace-Profil als Anlaufstelle
+    - Nutzung immer lokal (kein Cloud-Act-Risiko, kein DPA notwendig)
+    - `deployment`-Block hat feste Lokal-Werte (s. Schritt 3)
+
+    ## Auftrag
+
+    Bearbeite alle Dateien in `benchmark_scores/vendor_cards/` bei denen BEIDE
+    Bedingungen zutreffen:
+    - `"card_subtype": "community"` ist gesetzt
+    - `"profile_verified": false` ist gesetzt
+
+    Überspringe: `_index.json`
+
+    ## Vorgehen pro Card
+
+    ### Schritt 1 — Datei lesen
+    Lese die JSON-Datei vollständig. Notiere dir `vendor_id`, `display_name`
+    und `company`. Prüfe, welche Felder `"TODO"` oder `null` enthalten.
+
+    ### Schritt 2 — Recherche
+    Recherchiere über die Community-Gruppe (Primärquellen: HuggingFace-Profil,
+    GitHub, Community-Diskussionen bei Reddit/LLM-Foren, Eigene Website):
+
+    **Identität:**
+    - Vollständiger Name / Handle
+      (z.B. "mradermacher" = Person, "Unsloth AI" = Firma)
+    - HuggingFace-Profil-URL (z.B. https://huggingface.co/unsloth)
+    - GitHub oder eigene Website (falls vorhanden, sonst null)
+    - Gründungsjahr / "Aktiv seit" (approximativ; null wenn unbekannt)
+    - Herkunft / Sitz (falls bekannt, sonst "Remote (international)")
+
+    **Spezialisierung:**
+    - Art der Arbeit: GGUF-Quantisierung, Fine-Tuning, Uncensored-Fine-Tune,
+      Abliterierung oder eine Kombination?
+    - Welche Quantisierungsformate werden eingesetzt?
+      (Standard-GGUF, iMatrix/i1, Dynamic 2.0, QAT, GPTQ, AWQ, EXL2, etc.)
+    - Welche Basis-Modellreihen werden primär bearbeitet?
+      (Llama, Qwen, Gemma, Mistral, DeepSeek, Hermes, etc.)
+    - Besondere Qualitätsmerkmale (z.B. Unsloth Dynamic 2.0 = per-Layer-Bit-
+      Optimierung für bessere Qualität bei gleicher Kompressionsrate)
+    - Bekannte Einschränkungen oder Kontroversen
+      (z.B. Abliterated/Heretic-Varianten entfernen Sicherheitsmechanismen —
+      das kann Kohärenz und Faktentreue beeinträchtigen)
+
+    **Umfang & Reputation:**
+    - Ungefähre Anzahl veröffentlichter Modelle auf HuggingFace
+    - Bekanntheitsgrad (Downloads, Empfehlungen in der LLM-Community)
+    - Zuletzt aktiv (letzter Upload / Commit)?
+
+    **Profil-Verifikation:**
+    - Existiert das HuggingFace-Profil und ist es auffindbar?
+    - Wenn ja und wesentliche Felder klar recherchierbar → `profile_verified: true`
+    - Wenn Profil begrenzt verfügbar oder Identität unklar → `profile_verified: false`
+      lassen, Hinweis in `privacy_note` ergänzen
+
+    ### Schritt 3 — Card aktualisieren
+    Aktualisiere **ausschließlich** folgende Felder:
+
+    ```
+    company              ← vollständiger Name / Handle
+                           (z.B. "Unsloth AI (unslothai)", "mradermacher")
+    headquarters         ← Sitz (oder "Remote (international)" wenn unbekannt)
+    founding_year        ← int oder null
+    api_documentation_url ← HuggingFace-Profil-URL (primäre Anlaufstelle)
+    notable_models       ← 3–6 repräsentative Modell-Beispiele dieser Gruppe
+                           (z.B. "gemma-4-12b-it-GGUF (Dynamic 2.0)")
+    privacy_note         ← Datenschutz-Hinweis (Deutsch, 2–4 Sätze):
+                           Standard-Fall: lokale Nutzung, kein Datentransfer,
+                           freie Redistribution öffentlicher Basismodelle.
+                           Uncensored-Fine-Tunes (HauhauCS, Abliterated):
+                           zusätzlich Hinweis, dass Sicherheitsmechanismen
+                           absichtlich entfernt wurden.
+    last_verified_at     ← heutiges Datum (ISO 8601: YYYY-MM-DD)
+    verification_source  ← HuggingFace-Profil-URL oder primäre Quelle
+    profile_verified     ← true (nach erfolgreicher Verifikation)
+    profile_verified_at  ← heutiges Datum (ISO 8601: YYYY-MM-DD)
+    ```
+
+    Das `deployment`-Sub-Dict für Community-Distributoren (lokale Nutzung):
+    ```json
+    "deployment": {
+      "cloud_act_exposure": false,
+      "applicable_law": "N/A (lokal only)",
+      "data_residency": "N/A (lokal only)",
+      "gdpr_dpa_available": false,
+      "eu_adequacy_decision": false,
+      "data_retention_days": 0,
+      "chinese_nsl_risk": "none"
+    }
+    ```
+    Ausnahme: Gruppe betreibt eine eigene Cloud-API (sehr selten) → dann
+    angepasste Compliance-Werte setzen und `privacy_note` entsprechend.
+
+    ### Schritt 4 — Was du NICHT verändern darfst
+    ```
+    vendor_id            ← ID ändert sich nie
+    card_subtype         ← muss "community" bleiben — nie entfernen!
+    display_name         ← nur manuell durch Operator änderbar
+    stats                ← Laufzeitdaten, nicht redaktionell
+    pricing_model        ← nur manuell änderbar
+    unknown              ← nur durch Operator
+    generated_at         ← Timestamp der letzten automatischen Generierung
+    api_base_url         ← bleibt null (Community-Distributoren haben keine eigene API)
+    ```
+
+    ### Schritt 5 — Abschlussprüfung
+    Stelle sicher:
+    - JSON ist valide (kein Syntaxfehler)
+    - `card_subtype` ist noch `"community"` (nie entfernen!)
+    - `profile_verified: true` und `profile_verified_at` korrekt gesetzt
+    - `api_base_url` ist `null`
+    - `deployment` entspricht dem Lokal-Template (außer bei eigener Cloud-API)
+    - `notable_models` enthält reale, repräsentative Modelle dieser Gruppe
+
+    ## Ausgabe-Format
+
+    Nach Abschluss aller Cards: Kurze Zusammenfassung:
+    - Welche Cards wurden aktualisiert
+    - Haupterkenntnisse zur Gruppe (Spezialisierung, Qualitätseinschätzung)
+    - Nicht verifizierbare Felder → `profile_verified: false` lassen,
+      Hinweis in `privacy_note`
+
+    ## Qualitätskriterien
+
+    - Primärquelle: HuggingFace-Profil der Community-Gruppe
+    - `privacy_note` auf Deutsch, 2–4 Sätze:
+      - Reine GGUF-Quantisierer (Unsloth, mradermacher Standard): lokale
+        Nutzung, kein Datentransfer, keine eigene Cloud-Infrastruktur
+      - Uncensored Fine-Tunes (HauhauCS, mradermacher Abliterated/Heretic):
+        zusätzlicher Hinweis auf absichtliche Entfernung von Safety-Filters
+        und mögliche Auswirkungen auf Kohärenz/Faktentreue
+    - Bei unbekanntem Sitz: "Remote (international)" ist akzeptabel
+    - `unknown: true` nur wenn HuggingFace-Profil überhaupt nicht auffindbar
+      oder die Gruppe dahinter vollständig unklar ist
+    - Nicht spekulieren: Wenn Gründungsjahr oder Herkunft nicht recherchierbar
+      → null setzen, nicht schätzen
