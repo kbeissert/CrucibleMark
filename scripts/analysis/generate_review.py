@@ -623,6 +623,8 @@ def _run_tooluse_reviews(
         return
 
     _taxonomy = _load_classification_taxonomy()
+    # Blacklist vorab laden — Matching erfolgt über model_id aus der Model Card (SSOT)
+    blacklist = _load_webexport_blacklist() if args.auto else set()
 
     for mid in model_ids:
         slug = _safe_name(mid)
@@ -647,27 +649,38 @@ def _run_tooluse_reviews(
             print(f"⏩ {mid}: Kein Eintrag in tooluse_leaderboard.csv — Benchmark zuerst ausführen.")
             continue
 
-        # Guard 2: model card must declare tool support (Tri-State)
+        # Guard 2: Card laden — model_id daraus ist SSOT für Blacklist + supports_tool_use
+        _card = _find_card(mid)
+        _card_data: dict = {}
+        if _card.exists():
+            try:
+                _card_data = json.loads(_card.read_text(encoding="utf-8"))
+            except Exception:
+                pass
+
+        # Blacklist-Check: SSOT ist die model_id aus der Card (nicht der Tooluse-Leaderboard-Key)
+        if args.auto and blacklist:
+            _bl_id = _card_data.get("model_id") or slug
+            if _bl_id in blacklist:
+                print(f"⏩ {mid}: Auf Webexport-Blacklist ({_bl_id}) → Tool-Use-Review wird übersprungen.")
+                continue
+
+        # supports_tool_use prüfen (Tri-State):
         #   true       → Tool-Use-Review wird generiert
         #   false      → Modell kann keine Tools — Review übersprungen (gewollt)
         #   "untested" → noch kein Benchmark gelaufen — Review übersprungen
         #   null/fehlt → wie "untested" behandelt
-        _card = _find_card(mid)
-        if _card.exists():
-            try:
-                _card_data = json.loads(_card.read_text(encoding="utf-8"))
-                stu = _card_data.get("supports_tool_use")
-                if stu is False:
-                    print(f"⏩ {mid}: supports_tool_use=false in Model Card — überspringe.")
-                    continue
-                if stu is not True:  # None, "untested", oder sonstiger Wert
-                    print(
-                        f"⏩ {mid}: supports_tool_use={stu!r} (nicht getestet) "
-                        f"— Tool-Use-Benchmark zuerst ausführen."
-                    )
-                    continue
-            except Exception:
-                pass
+        if _card_data:
+            stu = _card_data.get("supports_tool_use")
+            if stu is False:
+                print(f"⏩ {mid}: supports_tool_use=false in Model Card — überspringe.")
+                continue
+            if stu is not True:  # None, "untested", oder sonstiger Wert
+                print(
+                    f"⏩ {mid}: supports_tool_use={stu!r} (nicht getestet) "
+                    f"— Tool-Use-Benchmark zuerst ausführen."
+                )
+                continue
 
         ctx = build_tooluse_context(mid)
         if not ctx:
