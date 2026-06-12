@@ -15,6 +15,10 @@ Checks:
   7. Top-Level-Field-Whitelist (SSoT: config/card_template_model.yaml)
      - in complete-Cards: unbekannte Felder → WARN (Wildwuchs-Schutz)
      - in draft/minimal: toleriert (experimentelle Felder erlaubt)
+  8. weights_provenance_risk Auto-Validierung
+     - proprietary + origin_country=(USA|China) → Risk ≥ "medium"
+     - open-weights + origin_country=(USA|China) + deployment_type=cloud-only → Risk ≥ "medium"
+     (Hintergrund: CLOUD Act/Cyber Security Law ermöglichen Datenzugriff)
 
 Tag-Whitelist kommt aus config/card_vocabulary.yaml via utils.card_utils.
 Damit können Auto-Generatoren dieselbe SSoT nutzen wie die Validierung.
@@ -221,7 +225,32 @@ def check_card(path: Path, data: dict) -> list[str]:
                     f"sonst entfernen."
                 )
 
-    # 10. Top-Level-Field-Whitelist (config/card_template_model.yaml)
+    # 10. weights_provenance_risk Auto-Validierung
+    # Regel: proprietary + (USA|China) → Risk ≥ medium
+    # Regel: open-weights + (USA|China) + cloud-only → Risk ≥ medium
+    # Hintergrund: CLOUD Act (USA), Cyber Security Law (China) ermöglichen Datenzugriff
+    provenance_risk = data.get("weights_provenance_risk", "")
+    origin_country = data.get("origin_country", "")
+    deployment_type = data.get("deployment_type", "")
+    
+    if provenance_risk and origin_country:
+        # Proprietary Models aus USA/China müssen mindestens "medium" Risk haben
+        if tier == "proprietary" and origin_country in ("USA", "China"):
+            if provenance_risk == "low":
+                issues.append(
+                    f"[PROVENANCE RISK] weights_provenance_risk='low' unzulässig für "
+                    f"proprietary Model aus {origin_country} (CLOUD Act/CSL-Exposition → mindestens 'medium')"
+                )
+        
+        # Open-Weights Cloud-Only aus USA/China müssen mindestens "medium" Risk haben
+        if tier == "open-weights" and origin_country in ("USA", "China") and deployment_type == "cloud-only":
+            if provenance_risk == "low":
+                issues.append(
+                    f"[PROVENANCE RISK] weights_provenance_risk='low' unzulässig für "
+                    f"cloud-only Model aus {origin_country} (CLOUD Act/CSL-Exposition → mindestens 'medium')"
+                )
+
+    # 11. Top-Level-Field-Whitelist (config/card_template_model.yaml)
     # Unbekannte Felder in complete-Cards sind Wildwuchs-Verdacht.
     # In draft/minimal werden sie toleriert (experimentelle Felder).
     known_fields = _get_template_field_names()

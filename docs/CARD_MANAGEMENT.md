@@ -304,12 +304,27 @@ make validate-cards-template JSON=1
 make validate-cards-template FAIL_ON_DRIFT=1
 ```
 
-Validator-Issue-Typen:
+Validator-Issue-Typen (`scripts/analysis/validate_cards.py`):
 - `missing_required` — Pflichtfeld fehlt komplett
 - `unknown_sentinel` — Pflichtfeld hat Sentinel-Wert (`null`, `"TODO"`, `"unknown"`, `""`, leere Liste)
 - `drift_extras` — Feld außerhalb des Templates (Toleranz: `tooluse_*` Legacy)
 - `missing_sub_field` — Sub-Feld fehlt (z.B. `deployment.cloud_act_exposure`)
 - `parse_error` — JSON-Parse-Fehler
+
+Konsistenz-Checks (`scripts/dev/validate_model_cards.py`):
+1. **Summary/Tier-Mismatch**: Summary enthält "Open-Weights" aber `weights_license_tier != "open-weights"`
+2. **Tier/Commercial-Mismatch**: `weights_license_tier="open-weights"` aber `commercial_use_allowed=false` (sollte `restricted-weights` sein)
+3. **Required Fields**: `model_id`, `display_name`, `weights_license_tier`, `license`, `commercial_use_allowed`, `use_case_primary`, `parameter_architecture`
+4. **Controlled Vocabulary**: `use_case_primary`, `weights_license_tier`, `parameter_architecture` gegen Taxonomie-SSoT (`config/classification_taxonomy.json`)
+5. **Vision/Multimodal Warning**: `architecture_tags` enthält `Vision`/`Multimodal` (ohne `Vision-Capable`), aber `use_case_primary != "vision-language"`
+6. **Architecture Tags Whitelist**: Unbekannte/deprecated Tags gegen `config/card_vocabulary.yaml`
+7. **Top-Level Field Whitelist**: Unbekannte Felder in complete-Cards gegen `config/card_template_model.yaml`
+8. **Provenance Risk Auto-Validation** (seit v4.7.6):
+   - `proprietary` + `origin_country=(USA|China)` → `weights_provenance_risk` ≥ `"medium"`
+   - `open-weights` + `origin_country=(USA|China)` + `deployment_type="cloud-only"` → `weights_provenance_risk` ≥ `"medium"`
+   - Hintergrund: CLOUD Act (USA), Cyber Security Law (China) ermöglichen staatlichen Datenzugriff
+
+Test-Coverage: `tests/test_provenance_risk_validation.py` (8 Test-Cases)
 
 ### 4. Synchronisieren (SSoT-Sync)
 
