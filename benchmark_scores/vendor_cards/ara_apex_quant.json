@@ -1,0 +1,29 @@
+{
+  "vendor_id": "ara_apex_quant",
+  "card_subtype": "community",
+  "display_name": "ARA-APEX Quant",
+  "company": "ARA-APEX (Community-Contributor)",
+  "headquarters": "Community/privat (Ort unbekannt)",
+  "founding_year": null,
+  "pricing_model": "open-source-self-hosted",
+  "api_base_url": null,
+  "api_documentation_url": null,
+  "deployment": {
+    "cloud_act_exposure": false,
+    "applicable_law": "N/A (lokal only)",
+    "data_residency": "N/A (lokal only)",
+    "gdpr_dpa_available": false,
+    "eu_adequacy_decision": false,
+    "data_retention_days": 0,
+    "chinese_nsl_risk": "none"
+  },
+  "privacy_note": "ARA-APEX-Modelle werden ausschließlich lokal betrieben. Kein Datentransfer an externe Server. Die Modelle sind GGUF-Quantisierungen öffentlicher Basismodelle.",
+  "notable_models": [],
+  "stats": {},
+  "unknown": true,
+  "generated_at": "2026-06-12T08:00:00+00:00",
+  "last_verified_at": "2026-06-12",
+  "verification_source": null,
+  "profile_verified": false,
+  "profile_verified_at": null
+}

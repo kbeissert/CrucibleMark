@@ -166,6 +166,69 @@ def _normalize_vendor(vendor: str | None, alias_map: dict[str, str]) -> str | No
     )
     return vendor
 
+
+def _build_community_alias_map(config_dir: Path) -> dict[str, str]:
+    """Liest Community-Gruppen-Aliases aus classification_taxonomy.json und gibt
+    ein alias→kanonischer-Name-Mapping zurück.
+
+    Beispiel: {"unslothai": "Unsloth", "Unsloth AI": "Unsloth", ...}
+    """
+    taxonomy_path = config_dir / "classification_taxonomy.json"
+    alias_map: dict[str, str] = {}
+    try:
+        with taxonomy_path.open("r", encoding="utf-8") as f:
+            taxonomy = json.load(f)
+        groups = taxonomy.get("community_groups", {}).get("values", {})
+        for canonical_name, entry in groups.items():
+            alias_map[canonical_name] = canonical_name
+            for alias in entry.get("aliases", []):
+                alias_map[alias] = canonical_name
+    except (OSError, json.JSONDecodeError, KeyError) as exc:
+        logging.warning("Community-Alias-Map konnte nicht geladen werden: %s", exc)
+    return alias_map
+
+
+def _build_community_card_id_lookup(config_dir: Path) -> dict[str, str]:
+    """Gibt ein dict kanonischer_community_name → vendor_card_id zurück (aus Taxonomy).
+
+    Wird im Web-Export verwendet um community_card_ref pro Modell zu setzen.
+    """
+    taxonomy_path = config_dir / "classification_taxonomy.json"
+    result: dict[str, str] = {}
+    try:
+        with taxonomy_path.open("r", encoding="utf-8") as f:
+            taxonomy = json.load(f)
+        for name, entry in taxonomy.get("community_groups", {}).get("values", {}).items():
+            vid = entry.get("vendor_card_id")
+            if vid:
+                result[name] = vid
+    except (OSError, json.JSONDecodeError, KeyError) as exc:
+        logging.warning("Community-Card-ID-Lookup konnte nicht geladen werden: %s", exc)
+    return result
+
+
+def _normalize_community(community: str | None, alias_map: dict[str, str]) -> str | None:
+    """Normalisiert einen community-Wert auf den kanonischen Gruppen-Namen.
+
+    Kein WARNING bei None (community ist optional). WARNING nur bei bekannt-falschem Wert.
+    """
+    if community is None:
+        return None
+    normalized = alias_map.get(community)
+    if normalized is not None:
+        return normalized
+    logging.warning(
+        "Unbekannte community '%s' — nicht in classification_taxonomy.json/community_groups. "
+        "Bitte eintragen oder Alias hinzufügen.",
+        community,
+    )
+    return community
+
+
+def _collect_community_cards(root_dir: Path) -> list[dict]:
+    """Gibt alle Vendor-Cards mit card_subtype == 'community' zurück."""
+    return [c for c in _collect_vendor_cards(root_dir) if c.get("card_subtype") == "community"]
+
 def sanitize_audit_log(content: str) -> str:
     """Removes Section 3 (LLM-Judge evaluation) from audit logs before web export.
     Preserves header, prompt, model response, and Modul-Metriken block.
@@ -653,6 +716,8 @@ def _build_leaderboard_entry(
     benchmark_run_at: str | None,
     inference_provider: str | None,
     vendor_card_ref: str | None = None,
+    community: str | None = None,
+    community_card_ref: str | None = None,
 ) -> dict[str, Any]:
     """Builds the leaderboard entry dict for a single model."""
     _card_version = extract_version(card.get("model_version")) if card else None
@@ -665,6 +730,9 @@ def _build_leaderboard_entry(
         "vendor": vendor,
         # SSoT-Link zum Vendor-Profil (v4.9.1): vendor_card_id aus classification_taxonomy.json
         "vendor_card_ref": vendor_card_ref,
+        # Community-Distributor/Fine-Tuner (v4.9.2): kanonischer Name + Card-Referenz
+        "community": community,
+        "community_card_ref": community_card_ref,
         "version": _card_version or _csv_version,
         "badge": str(row.get("Badge", "")),
         "badge_tier": extract_badge_tier(row.get("Badge")),
@@ -770,6 +838,8 @@ def _build_leaderboard_entry(
             "supports_tool_use": card.get("supports_tool_use"),
             # Heritage-IDs (v4.8.0): frühere kanonische model_ids — leer wenn nicht gesetzt.
             "heritage_ids": card.get("heritage_ids") or [],
+            # Community-Distributor (v4.9.2): kanonischer Name aus classification_taxonomy.json
+            "community": community,
             # Profil-Verifikation (v4.9.0): wurde die Card manuell geprüft?
             "profile_verified": card.get("profile_verified"),
             "profile_verified_at": card.get("profile_verified_at"),
@@ -1051,6 +1121,15 @@ def _write_top_level_outputs(
                 f, indent=2, ensure_ascii=False,
             )
 
+    # Community-Cards (Subset der Vendor-Cards mit card_subtype == "community")
+    community_cards = _collect_community_cards(root_dir)
+    if community_cards:
+        with open(out_dir / "community_cards.json", "w", encoding="utf-8") as f:
+            json.dump(
+                _strip_emojis({"generated_at": generated_at, "communities": community_cards}),
+                f, indent=2, ensure_ascii=False,
+            )
+
     provider_md = comparisons_path / "provider_landscape_review.md"
     if provider_md.exists():
         shutil.copy2(provider_md, out_dir / "provider_landscape_review.md")
@@ -1121,6 +1200,9 @@ def main() -> None:
     # Vendor-Alias-Map + Vendor-Card-ID-Lookup aus classification_taxonomy.json (SSoT)
     _vendor_alias_map = _build_vendor_alias_map(root_dir / "config")
     _vendor_card_id_lookup = _build_vendor_card_id_lookup(root_dir / "config")
+    # Community-Alias-Map + Community-Card-ID-Lookup (v4.9.2)
+    _community_alias_map = _build_community_alias_map(root_dir / "config")
+    _community_card_id_lookup = _build_community_card_id_lookup(root_dir / "config")
 
     provider_map = build_provider_map(root_dir / "benchmark_config.yaml")
     ldb, pc, pc_lb, provider_df = _load_sources(scores_dir)
@@ -1252,6 +1334,11 @@ def main() -> None:
 
         vendor = _normalize_vendor(card.get("vendor") if card else None, _vendor_alias_map)
 
+        # Community-Distributor (v4.9.2): aus Model Card lesen + normalisieren
+        _raw_community = card.get("community") if card else None
+        community = _normalize_community(_raw_community, _community_alias_map)
+        community_card_ref = _community_card_id_lookup.get(community) if community else None
+
         # Derive thinking_mode from architecture_tags for frontend filtering:
         # "thinking"  → always-on reasoning (DeepSeek-R1, o1/o3/o4, Magistral, Kimi K2 Thinking)
         # "partial"   → optional reasoning / Thinking-Optional (Gemini 2.5, Claude 3.5+, Qwen3, …)
@@ -1284,6 +1371,8 @@ def main() -> None:
             benchmark_run_at=benchmark_run_at,
             inference_provider=resolve_inference_provider(model_name, provider_map),
             vendor_card_ref=_vendor_card_id_lookup.get(vendor) if vendor else None,
+            community=community,
+            community_card_ref=community_card_ref,
         )
         models_list.append(entry)
 

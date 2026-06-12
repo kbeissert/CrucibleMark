@@ -613,6 +613,20 @@ optional_fields:
     since: "v4.8.0"
     example: ["moonshotai/kimi-k2-0127", "deepseek/deepseek-chat-v3"]
 
+  # --- Community-Zuordnung (web_export + review, ab v4.9.2) ---
+  # Verweist auf die Community-Gruppe, die an diesem Modell gearbeitet hat
+  # (Quantisierung, Fine-Tuning, Abliterierung o.ä.). Kontrollierte Werte
+  # aus classification_taxonomy.json#community_groups. Kein Pflichtfeld —
+  # nur setzen wenn ein konkreter Community-Distributor identifiziert wurde.
+  - name: community
+    type: str
+    required: false
+    default: null
+    description: "Community-Distributions-Gruppe, die an diesem Modell gearbeitet hat (z.B. 'Unsloth', 'mradermacher'). Kontrollierte Werte: siehe classification_taxonomy.json#community_groups."
+    consumers: [web_export, review]
+    since: "v4.9.2"
+    example: "Unsloth"
+
 # ----------------------------------------------------------------------------
 # Validator-Konfiguration
 # ----------------------------------------------------------------------------

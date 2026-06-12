@@ -214,6 +214,18 @@ required_fields:
 # ----------------------------------------------------------------------------
 optional_fields:
 
+  # --- Card-Subtyp (web_export, ab v4.9.2) ---
+  # Unterscheidet Community-Distributoren von regulären Hersteller-Cards.
+  # Null (= nicht gesetzt) = reguläre Hersteller-Card.
+  - name: card_subtype
+    type: str
+    required: false
+    default: null
+    description: "Unterscheidet zwischen 'community' (Community-Distributor/Fine-Tuner) und regulären Vendor-Cards (null = Hersteller). Kontrollierte Werte: community | null."
+    consumers: [web_export]
+    since: "v4.9.2"
+    example: "community"
+
   - name: temperature
     type: float
     required: false

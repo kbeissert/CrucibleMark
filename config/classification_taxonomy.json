@@ -293,5 +293,52 @@
         "jurisdiction": "CN"
       }
     }
+  },
+  "community_groups": {
+    "description": "Kanonische Community-Distributions-Gruppen für das community-Feld in Model Cards. Umfasst GGUF-Quantisierer, Fine-Tuner und Community-Distributoren. Im Gegensatz zu manufacturers sind Community-Gruppen mehreren Vendoren zuordenbar — eine Community Card kann für Modelle verschiedener Hersteller referenziert werden.",
+    "field_name": "community",
+    "fallback": null,
+    "values": {
+      "Unsloth": {
+        "label": "Unsloth",
+        "vendor_card_id": "unsloth",
+        "description": "Unsloth AI — GGUF-Quantisierungen (Dynamic 2.0: per-Layer-Optimierung) und Fine-Tuning-Framework (Unsloth Studio). Gilt als branchenführend in Qualität und Effizienz. Unterstützt Llama, Qwen, Gemma, DeepSeek und viele weitere Basismodelle.",
+        "aliases": [
+          "unslothai",
+          "Unsloth AI"
+        ],
+        "speciality": "quantization_finetune"
+      },
+      "mradermacher": {
+        "label": "mradermacher",
+        "vendor_card_id": "mradermacher",
+        "description": "mradermacher — Community GGUF-Quantisierungen (Standard + iMatrix/i1) und spezialisierte Varianten (Abliterated, Heretic). Mit über 65.000 Modellen der umfangreichste GGUF-Anbieter auf HuggingFace. Qualität: Standard-GGUFs solide; Abliterated/Heretic-Varianten umstritten (Sicherheitsmechanismen entfernt, kann Kohärenz und Faktentreue beeinträchtigen).",
+        "aliases": [
+          "Rademacher",
+          "team mradermacher"
+        ],
+        "speciality": "quantization"
+      },
+      "HauhauCS": {
+        "label": "HauhauCS",
+        "vendor_card_id": "hauhaucs",
+        "description": "HauhauCS (HauHau) — Community-Fine-Tunes mit entfernten Sicherheitsbeschränkungen (Uncensored). Zwei Varianten: Aggressive (stärkere Entfernung) und Balanced (moderater). Primär Qwen- und Gemma-Basismodelle. Kein GGUF-Quantisierer — erstellt eigene Fine-Tune-Gewichte.",
+        "aliases": [
+          "HauHau",
+          "HauhauCS / Qwen"
+        ],
+        "speciality": "finetune_uncensored"
+      },
+      "ARA-APEX": {
+        "label": "ARA-APEX",
+        "vendor_card_id": "ara_apex_quant",
+        "description": "ARA-APEX Quant — Community GGUF-Quantisierungen primär von Google/Gemma-Modellen. Öffentliche Dokumentation und HuggingFace-Profil begrenzt verfügbar; Qualitätsbewertung ausstehend.",
+        "aliases": [
+          "ARA",
+          "ARA-APEX Quant"
+        ],
+        "speciality": "quantization"
+      }
+    }
   }
 }
