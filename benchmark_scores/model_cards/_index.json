@@ -1,74 +1,6 @@
 [
   {
     "architecture_tags": [
-      "Instruct",
-      "Thinking-Optional"
-    ],
-    "card_status": "complete",
-    "commercial_use_allowed": true,
-    "context_window_k": 128,
-    "deployment_type": "open-weights-cloud-available",
-    "developer": "NousResearch",
-    "developer_jurisdiction": "US",
-    "display_name": "Hermes 4 14B (Q4_K_M GGUF)",
-    "generated_at": "2026-04-11T15:13:31.797577+00:00",
-    "input_price_per_1m": null,
-    "judge_context_hint": "Modell nutzt optionalen Thinking-Modus; Denktraces sind Teil des Reasoning-Prozesses und separat zu bewerten. Die sehr niedrige Ablehnungsrate ist ein beabsichtigtes Alignment-Merkmal und kein Modellfehler.",
-    "knowledge_cutoff": "2025-01",
-    "known_limitations": [
-      "Quantisierungsverlust: Q4_K_M weist messbare Qualitätseinbußen gegenüber Q6_K auf",
-      "Skalierung: Bei extrem langen Reasoning-Ketten unterlegen gegenüber größeren Modellen",
-      "VRAM-Bedarf: Benötigt ca. 15GB VRAM für stabile Ausführung"
-    ],
-    "license": "Apache-2.0",
-    "license_url": "https://www.apache.org/licenses/LICENSE-2.0",
-    "local_deployment_possible": true,
-    "model_family": "Hermes",
-    "model_id": "NousResearch_Hermes-4-14B-GGUF:Q4_K_M",
-    "model_version": "14b-Q4_K_M",
-    "origin_country": "USA",
-    "output_price_per_1m": null,
-    "parameter_architecture": "dense",
-    "params_active_b": null,
-    "params_total_b": 14.0,
-    "primary_focus": "reasoning",
-    "size_class": "Desktop",
-    "strengths": [
-      "Hybrid-Reasoning: Optionaler Thinking-Modus mit expliziten Denktraces",
-      "Hohe Compliance bei komplexen Anweisungen – maximale Hilfsbereitschaft",
-      "Starke Reasoning-Basis: Breites Wissen und logisches Denkvermögen",
-      "Safety-Training: Filter durch Training austrainiert, nicht entfernt – hohe Kreativität ohne Qualitätsverlust",
-      "Effizient: Q4_K_M Quantisierung bietet gute Balance zwischen Qualität und VRAM-Verbrauch (~15 GB)",
-      "Apache 2.0: Uneingeschränkte kommerzielle Nutzung und lokale Ausführung"
-    ],
-    "summary": "Hermes 4 14B (Q4_K_M GGUF) von NousResearch, basierend auf Qwen3-14B (Apache 2.0). Hybrid-Reasoning-Modell mit optionalem Thinking-Modus. Post-Training mit ~5M Samples / ~60B Tokens für verbesserte Reasoning-Fähigkeiten. Quantisiert durch bartowski; benötigt ~15 GB VRAM. Besonderes Merkmal: Safety-Filter durch Training austrainiert, nicht entfernt – hohe Kreativität ohne Qualitätsverlust.",
-    "supports_tool_use": false,
-    "thinking_probe_at": "2026-04-25T08:51:31.152266+00:00",
-    "thinking_probe_confidence": "low",
-    "thinking_probe_detected": false,
-    "thinking_probe_evidence": "No CoT signals found (A: no think-tags, B: reasoning_tokens=0). Response length: 1597 chars",
-    "unknown": false,
-    "use_case_primary": "generalist",
-    "vendor": "NousResearch",
-    "weights_license_tier": "open-weights",
-    "weights_provenance_risk": "medium",
-    "weights_provenance_risk_rationale": "NousResearch ist ein US-amerikanisches Open-Source-Forschungskollektiv; die Weights sind öffentlich verfügbar, jedoch unterliegt das Unternehmen dem US-amerikanischen CLOUD Act.",
-    "top_p": null,
-    "top_k": null,
-    "repetition_penalty": null,
-    "frequency_penalty": null,
-    "presence_penalty": null,
-    "seed": null,
-    "stop_sequences": null,
-    "input_modalities": [
-      "text"
-    ],
-    "output_modalities": [
-      "text"
-    ]
-  },
-  {
-    "architecture_tags": [
       "General",
       "Instruct"
     ],
@@ -130,7 +62,9 @@
     ],
     "output_modalities": [
       "text"
-    ]
+    ],
+    "profile_verified": false,
+    "profile_verified_at": null
   },
   {
     "architecture_tags": [
@@ -195,7 +129,9 @@
     ],
     "output_modalities": [
       "text"
-    ]
+    ],
+    "profile_verified": false,
+    "profile_verified_at": null
   },
   {
     "architecture_tags": [
@@ -262,7 +198,9 @@
     ],
     "output_modalities": [
       "text"
-    ]
+    ],
+    "profile_verified": false,
+    "profile_verified_at": null
   },
   {
     "model_id": "claude-opus-4-7",
@@ -333,7 +271,9 @@
     ],
     "output_modalities": [
       "text"
-    ]
+    ],
+    "profile_verified": false,
+    "profile_verified_at": null
   },
   {
     "architecture_tags": [
@@ -398,7 +338,9 @@
     ],
     "output_modalities": [
       "text"
-    ]
+    ],
+    "profile_verified": false,
+    "profile_verified_at": null
   },
   {
     "model_id": "claude-sonnet-4-6",
@@ -469,7 +411,9 @@
     ],
     "output_modalities": [
       "text"
-    ]
+    ],
+    "profile_verified": false,
+    "profile_verified_at": null
   },
   {
     "architecture_tags": [
@@ -532,7 +476,9 @@
     ],
     "output_modalities": [
       "text"
-    ]
+    ],
+    "profile_verified": false,
+    "profile_verified_at": null
   },
   {
     "architecture_tags": [
@@ -595,7 +541,9 @@
     ],
     "output_modalities": [
       "text"
-    ]
+    ],
+    "profile_verified": false,
+    "profile_verified_at": null
   },
   {
     "model_id": "deepseek/deepseek-chat-v3.1",
@@ -661,7 +609,9 @@
     ],
     "output_modalities": [
       "text"
-    ]
+    ],
+    "profile_verified": false,
+    "profile_verified_at": null
   },
   {
     "model_id": "deepseek/deepseek-v3.2",
@@ -726,7 +676,9 @@
     ],
     "output_modalities": [
       "text"
-    ]
+    ],
+    "profile_verified": false,
+    "profile_verified_at": null
   },
   {
     "architecture_tags": [
@@ -791,7 +743,9 @@
     ],
     "output_modalities": [
       "text"
-    ]
+    ],
+    "profile_verified": false,
+    "profile_verified_at": null
   },
   {
     "architecture_tags": [
@@ -856,7 +810,9 @@
     ],
     "output_modalities": [
       "text"
-    ]
+    ],
+    "profile_verified": false,
+    "profile_verified_at": null
   },
   {
     "architecture_tags": [
@@ -926,7 +882,9 @@
     ],
     "output_modalities": [
       "text"
-    ]
+    ],
+    "profile_verified": false,
+    "profile_verified_at": null
   },
   {
     "architecture_tags": [
@@ -992,7 +950,9 @@
     ],
     "output_modalities": [
       "text"
-    ]
+    ],
+    "profile_verified": false,
+    "profile_verified_at": null
   },
   {
     "architecture_tags": [
@@ -1058,7 +1018,9 @@
     ],
     "output_modalities": [
       "text"
-    ]
+    ],
+    "profile_verified": false,
+    "profile_verified_at": null
   },
   {
     "architecture_tags": [
@@ -1125,7 +1087,9 @@
     ],
     "output_modalities": [
       "text"
-    ]
+    ],
+    "profile_verified": false,
+    "profile_verified_at": null
   },
   {
     "model_id": "gemini-3.1-flash-lite-preview",
@@ -1195,7 +1159,9 @@
     ],
     "output_modalities": [
       "text"
-    ]
+    ],
+    "profile_verified": false,
+    "profile_verified_at": null
   },
   {
     "model_id": "gemini-3.1-pro-preview",
@@ -1265,7 +1231,9 @@
     ],
     "output_modalities": [
       "text"
-    ]
+    ],
+    "profile_verified": false,
+    "profile_verified_at": null
   },
   {
     "model_id": "gemini-3.5-flash",
@@ -1333,7 +1301,78 @@
     ],
     "output_modalities": [
       "text"
-    ]
+    ],
+    "profile_verified": false,
+    "profile_verified_at": null
+  },
+  {
+    "model_id": "gemma-3-12b-it-q8-spark",
+    "display_name": "Gemma 3 12B IT (llama.cpp, Q8_0) [Spark]",
+    "developer": "Google DeepMind",
+    "origin_country": "USA",
+    "developer_jurisdiction": "US",
+    "deployment_type": "open-weights-cloud-available",
+    "local_deployment_possible": true,
+    "weights_provenance_risk": "medium",
+    "weights_provenance_risk_rationale": "Google DeepMind ist ein US-amerikanisches Unternehmen und unterliegt dem CLOUD Act, der jedoch primär bei API-/Cloud-Nutzung relevant ist, nicht bei lokal betriebenen Gewichten.",
+    "model_family": "Gemma",
+    "vendor": "Google",
+    "primary_focus": "general",
+    "use_case_primary": "generalist",
+    "parameter_architecture": "dense",
+    "params_total_b": 12.0,
+    "params_active_b": null,
+    "context_window_k": 128,
+    "knowledge_cutoff": "2024-12",
+    "summary": "Gemma 3 12B IT als Q8_0-GGUF via llama.cpp auf DGX Spark betrieben. Q8_0 ist die höchste gängige GGUF-Quantisierungsstufe und kommt der vollen FP16-Präzision sehr nahe – bei minimalen Qualitätseinbußen. Identische Gewichte wie gemma-3-12b-it-q8, jedoch auf dedizierter NVIDIA-Hardware (DGX Spark) mit entsprechend höherem Durchsatz betrieben.",
+    "strengths": [
+      "Starkes Instruction-Following durch gezieltes Fine-Tuning (Gemma-IT-Variante)",
+      "Q8_0-Quantisierung: nahezu verlustfreie Qualität gegenüber FP16-Referenz",
+      "Lokaler Betrieb auf dedizierter NVIDIA-Hardware (DGX Spark) – höherer Durchsatz als M-Series",
+      "Solide Mehrsprachigkeit und gutes Textverstehen über diverse Domänen hinweg"
+    ],
+    "known_limitations": [
+      "Kontextfenster und Reasoning-Tiefe hinter größeren Frontier-Modellen zurück",
+      "Neigt bei komplexen mehrstufigen Aufgaben zu Vereinfachungen oder Auslassungen",
+      "Höherer VRAM-Bedarf gegenüber Q4_K_M-Variante"
+    ],
+    "judge_context_hint": "Gemma 3 12B IT ist ein Instruct-optimiertes Modell mittlerer Größe, hier als Q8_0-GGUF via llama.cpp auf DGX Spark betrieben – Antworten sind tendenziell präzise und kompakt, können aber bei sehr komplexen Reasoning-Ketten an Tiefe verlieren. Die Q8_0-Quantisierung ist nahezu verlustfrei.",
+    "architecture_tags": [
+      "General",
+      "Instruct"
+    ],
+    "input_modalities": [
+      "text",
+      "image"
+    ],
+    "output_modalities": [
+      "text"
+    ],
+    "supports_tool_use": true,
+    "license": "Google Gemma Terms of Use",
+    "license_url": "https://ai.google.dev/gemma/terms",
+    "commercial_use_allowed": true,
+    "weights_license_tier": "restricted-weights",
+    "model_version": "Q8_0 (GGUF)/SPRK",
+    "input_price_per_1m": 0.0,
+    "output_price_per_1m": 0.0,
+    "unknown": false,
+    "card_status": "complete",
+    "size_class": "Desktop",
+    "generated_at": "2026-06-11T15:29:28.673763+00:00",
+    "thinking_probe_detected": false,
+    "thinking_probe_evidence": "Multi-Probe (3 prompts, 3 detected, best confidence=medium): Inline CoT im content-Feld erkannt (math/code/decision), jedoch kein echter Thinking-Modus – die Berechnungs-Operatoren in den Antworten entsprechen normalem Instruct-Verhalten ohne separaten Reasoning-Kanal. Gemma 3 12B IT ist keine Thinking-Variante.",
+    "thinking_probe_confidence": "low",
+    "thinking_probe_at": "2026-06-11T15:29:28.673369+00:00",
+    "top_p": null,
+    "top_k": null,
+    "repetition_penalty": null,
+    "frequency_penalty": null,
+    "presence_penalty": null,
+    "seed": null,
+    "stop_sequences": null,
+    "profile_verified": false,
+    "profile_verified_at": null
   },
   {
     "architecture_tags": [
@@ -1400,7 +1439,76 @@
     ],
     "output_modalities": [
       "text"
-    ]
+    ],
+    "profile_verified": false,
+    "profile_verified_at": null
+  },
+  {
+    "model_id": "gemma-3-12b-it-spark",
+    "display_name": "Gemma 3 12B IT (llama.cpp, Q4_K_M) [Spark]",
+    "developer": "Google DeepMind",
+    "origin_country": "USA",
+    "developer_jurisdiction": "US",
+    "deployment_type": "open-weights-cloud-available",
+    "local_deployment_possible": true,
+    "weights_provenance_risk": "medium",
+    "weights_provenance_risk_rationale": "Google DeepMind ist ein US-amerikanisches Unternehmen und unterliegt dem CLOUD Act, der jedoch primär bei API-/Cloud-Nutzung relevant ist, nicht bei lokal betriebenen Gewichten.",
+    "model_family": "Gemma",
+    "vendor": "Google",
+    "primary_focus": "general",
+    "use_case_primary": "generalist",
+    "parameter_architecture": "dense",
+    "params_total_b": 12.0,
+    "params_active_b": null,
+    "context_window_k": 128,
+    "knowledge_cutoff": "2024-12",
+    "summary": "Gemma 3 12B IT (Q4_K_M GGUF) via llama.cpp auf DGX Spark. Identische Gewichte wie gemma-3-12b-it, jedoch auf NVIDIA DGX Spark Hardware betrieben. Solide Abdeckung von Instruction-Following, Textverstehen und mehrsprachigen Aufgaben.",
+    "strengths": [
+      "Starkes Instruction-Following durch gezieltes Fine-Tuning (Gemma-IT-Variante)",
+      "Lokaler Betrieb auf dedizierter NVIDIA-Hardware (DGX Spark)",
+      "Solide Mehrsprachigkeit und gutes Textverstehen über diverse Domänen hinweg"
+    ],
+    "known_limitations": [
+      "Kontextfenster und Reasoning-Tiefe hinter größeren Frontier-Modellen zurück",
+      "Q4_K_M-Quantisierung kann minimale Qualitätsunterschiede gegenüber Vollpräzision zeigen"
+    ],
+    "judge_context_hint": "Gemma 3 12B IT ist ein Instruct-optimiertes Modell mittlerer Größe, hier als Q4_K_M-GGUF via llama.cpp auf DGX Spark betrieben – Antworten sind tendenziell präzise und kompakt, können aber bei sehr komplexen Reasoning-Ketten an Tiefe verlieren.",
+    "architecture_tags": [
+      "General",
+      "Instruct"
+    ],
+    "input_modalities": [
+      "text",
+      "image"
+    ],
+    "output_modalities": [
+      "text"
+    ],
+    "supports_tool_use": true,
+    "license": "Google Gemma Terms of Use",
+    "license_url": "https://ai.google.dev/gemma/terms",
+    "commercial_use_allowed": true,
+    "weights_license_tier": "restricted-weights",
+    "model_version": "Q4_K_M (GGUF)",
+    "input_price_per_1m": 0.0,
+    "output_price_per_1m": 0.0,
+    "unknown": false,
+    "card_status": "complete",
+    "size_class": "Desktop",
+    "generated_at": "2026-06-11T13:51:42.296135+00:00",
+    "thinking_probe_detected": true,
+    "thinking_probe_evidence": "Multi-Probe (3 prompts, 3 detected, best confidence=medium):\n  - math: [math] Inline CoT im content-Feld: Antwort 525 chars (>200) mit 17 Berechnungs-Operatoren. First 200 chars: Here's how to solve the problem step-by-step:\n\n**1. Understand the Concept of Average Speed**\n\n*   Average speed is calculated by dividing the total distance traveled by the total time taken.\n*   Form\n  - code: [code] Inline CoT im content-Feld: Antwort 1142 chars (>200) mit 20 Berechnungs-Operatoren. First 200 chars: Okay, let's sort the list `[3, 1, 4, 1, 5, 9, 2, 6, 5, 3, 5]` step-by-step using the **Bubble Sort** algorithm.  I'll explain the algorithm as we go.\n\n**1. Understanding Bubble Sort**\n\nBubble Sort is \n  - decision: [decision] Inline CoT im content-Feld: Antwort 2586 chars (>200) mit 16 Berechnungs-Operatoren. First 200 chars: Okay, let's break down this incredibly complex ethical dilemma. The question of whether an autonomous car should swerve to avoid a pedestrian, even at risk to the passenger, is a cornerstone of the et",
+    "thinking_probe_confidence": "medium",
+    "thinking_probe_at": "2026-06-11T13:51:42.295826+00:00",
+    "top_p": null,
+    "top_k": null,
+    "repetition_penalty": null,
+    "frequency_penalty": null,
+    "presence_penalty": null,
+    "seed": null,
+    "stop_sequences": null,
+    "profile_verified": false,
+    "profile_verified_at": null
   },
   {
     "architecture_tags": [
@@ -1465,7 +1573,9 @@
     ],
     "output_modalities": [
       "text"
-    ]
+    ],
+    "profile_verified": false,
+    "profile_verified_at": null
   },
   {
     "model_id": "gemma-4-12b-it-ud-q4_k_xl",
@@ -1536,7 +1646,9 @@
     ],
     "output_modalities": [
       "text"
-    ]
+    ],
+    "profile_verified": false,
+    "profile_verified_at": null
   },
   {
     "model_id": "gemma-4-12b-it-ud-q6_k_xl",
@@ -1605,7 +1717,9 @@
     "frequency_penalty": null,
     "presence_penalty": null,
     "seed": null,
-    "stop_sequences": null
+    "stop_sequences": null,
+    "profile_verified": false,
+    "profile_verified_at": null
   },
   {
     "model_id": "gemma-4-12b-it-ud-q8_k_xl",
@@ -1642,9 +1756,17 @@
     ],
     "judge_context_hint": "Gemma 4 12B Instruct Q8_K_XL (GGUF, UndiX-Distribution) ist ein kompaktes 12B-Modell mit Multimodalität (Text/Bild/Video) und 128K Kontext. Google Gemma License (restricted-weights). Q8-Quantisierung: nahe FP16-Qualität.",
     "architecture_tags": [
+      "Thinking",
       "Instruct",
-      "Multimodal",
-      "General"
+      "Multimodal"
+    ],
+    "input_modalities": [
+      "text",
+      "image",
+      "audio"
+    ],
+    "output_modalities": [
+      "text"
     ],
     "supports_tool_use": true,
     "license": "Google Gemma Terms of Use",
@@ -1658,10 +1780,10 @@
     "card_status": "complete",
     "size_class": "Desktop",
     "generated_at": "2026-06-10T12:45:30.966846+00:00",
-    "thinking_probe_detected": null,
-    "thinking_probe_evidence": null,
-    "thinking_probe_confidence": null,
-    "thinking_probe_at": null,
+    "thinking_probe_detected": true,
+    "thinking_probe_evidence": "Multi-Probe (3 prompts, 3 detected, best confidence=medium):\n  - math: [math] Inline CoT im content-Feld: Antwort 389 chars (>200) mit 6 Berechnungs-Operatoren. First 200 chars: To find the average speed of the train, you can follow these steps:\n\n### 1. Identify the given information:\n*   **Total Distance ($d$):** 120 km\n*   **Total Time ($t$):** 1.5 hours\n\n### 2. Identify th\n  - code: [code] reasoning_tokens=512 in provider metadata. First 200 chars: \n  - decision: [decision] reasoning_tokens=512 in provider metadata. First 200 chars: ",
+    "thinking_probe_confidence": "medium",
+    "thinking_probe_at": "2026-06-10T12:59:53.137774+00:00",
     "top_p": null,
     "top_k": null,
     "repetition_penalty": null,
@@ -1669,14 +1791,83 @@
     "presence_penalty": null,
     "seed": null,
     "stop_sequences": null,
+    "profile_verified": false,
+    "profile_verified_at": null
+  },
+  {
+    "model_id": "gemma-4-26B-A4B-it-qat-ud-q4",
+    "display_name": "Gemma 4 26B-A4B Instruct (QAT, UD-Q4) [Spark]",
+    "developer": "Google DeepMind",
+    "origin_country": "USA",
+    "developer_jurisdiction": "USA",
+    "deployment_type": "open-weights",
+    "local_deployment_possible": true,
+    "weights_provenance_risk": "medium",
+    "weights_provenance_risk_rationale": "Gemma-Lizenz (Google Gemma Terms of Use) ist restriktiv – kommerzielle Nutzung mit Auflagen (nicht Apache 2.0). Google DeepMind ist US-Unternehmen (CLOUD Act-Exposition bei API-Nutzung). Weights sind öffentlich auf Hugging Face verfügbar, lokaler Betrieb möglich.",
+    "model_family": "Gemma 4",
+    "vendor": "Google",
+    "primary_focus": "general",
+    "use_case_primary": "generalist",
+    "parameter_architecture": "moe",
+    "params_total_b": 25.2,
+    "params_active_b": 4.0,
+    "context_window_k": 256,
+    "knowledge_cutoff": "2025-06",
+    "summary": "Gemma 4 26B-A4B Instruct als QAT UD-Q4 GGUF via llama.cpp auf DGX Spark betrieben. QAT (Quantization-Aware Training) produziert eine präzisere Q4-Variante als nachträgliche Quantisierung. MoE-Architektur: 25,2B Gesamtparameter, ~4B aktiv pro Token. UD-Q4 (Unsloth Dynamic Q4) ist ein optimiertes Mixed-Precision-Format das Qualität bei geringem VRAM-Bedarf maximiert.",
+    "strengths": [
+      "MoE-Design: Hohe Intelligenz bei geringer Rechenlast (~4B aktive Parameter)",
+      "QAT-Quantisierung: Signifikant bessere Qualität als Post-Training-Q4 – Gewichte wurden quantisierungsbewusst trainiert",
+      "UD-Q4 (Unsloth Dynamic): Optimiertes Mixed-Precision-Format mit per-Layer-Entscheidung",
+      "Lokaler Betrieb auf NVIDIA DGX Spark – hoher Durchsatz durch dedizierte GPU-Hardware",
+      "Reasoning: Integrierte Thinking Modes (reasoning_tokens in provider metadata bestätigt)"
+    ],
+    "known_limitations": [
+      "Q4-Quantisierung zeigt gegenüber Q8 messbare Qualitätsunterschiede bei komplexen Code/Security-Audits",
+      "Audio-Input nicht unterstützt (nur E2B/E4B Variante)",
+      "Vision-Eingaben setzen korrektes mmproj-Loading in llama.cpp voraus",
+      "Thinking-Probe: 2/3 Probes lieferten 0 chars Output bei reasoning_tokens=512 — wahrscheinlich Cold-Start beim ersten Modell-Load auf dem DGX Spark. Probe sollte bei warmem Server wiederholt werden (Option B). Thinking-Nachweis basiert primär auf math-Probe (627 chars Inline-CoT)."
+    ],
+    "judge_context_hint": "MoE-Modell (25,2B total / 4B active) von Google DeepMind, QAT UD-Q4 GGUF auf DGX Spark. Integriertes Reasoning (thinking_probe_detected=true, reasoning_tokens im Hintergrund). Antworten können kompakter sein als bei Q8-Variante. Kein sichtbares Chain-of-Thought trotz internem Reasoning – keine Abzüge für fehlende Begründungsschritte.",
+    "architecture_tags": [
+      "Multimodal",
+      "Thinking"
+    ],
     "input_modalities": [
       "text",
-      "image",
-      "audio"
+      "image"
     ],
     "output_modalities": [
       "text"
-    ]
+    ],
+    "supports_tool_use": true,
+    "license": "Google Gemma Terms of Use",
+    "license_url": "https://ai.google.dev/gemma/terms",
+    "commercial_use_allowed": true,
+    "weights_license_tier": "restricted-weights",
+    "model_version": "UD-Q4 (GGUF/QAT)/SPRK",
+    "input_price_per_1m": 0.0,
+    "output_price_per_1m": 0.0,
+    "unknown": false,
+    "card_status": "complete",
+    "size_class": "Workstation",
+    "generated_at": "2026-06-11T17:02:43.985929+00:00",
+    "thinking_probe_detected": true,
+    "thinking_probe_evidence": "Multi-Probe (3 prompts, 1 solid + 2 ambig):\n  - math: [math] Inline CoT im content-Feld: Antwort 627 chars (>200) mit 8 Berechnungs-Operatoren. (Signal C, genuiner Nachweis)\n  - code: [code] reasoning_tokens=512, output=0 chars — Cold-Start-Verdacht (kein sichtbarer Inhalt; Signal B allein nicht ausreichend)\n  - decision: [decision] reasoning_tokens=512, output=0 chars — Cold-Start-Verdacht (kein sichtbarer Inhalt; Signal B allein nicht ausreichend)\n  Thinking-Nachweis primär durch math-Probe. Q8-Geschwister (gemma-4-26b-a4b-q8) zeigt 3/3 genuine Inline-CoT — Thinking-Modus in dieser Familie bestätigt. Probe bei warmem Server wiederholen (Option B).",
+    "thinking_probe_confidence": "low",
+    "thinking_probe_at": "2026-06-11T17:02:43.984860+00:00",
+    "top_p": null,
+    "top_k": null,
+    "repetition_penalty": null,
+    "frequency_penalty": null,
+    "presence_penalty": null,
+    "seed": null,
+    "stop_sequences": null,
+    "tooluse_tested_at": "2026-06-11T17:49:32Z",
+    "tooluse_score_p1": 88.33,
+    "tooluse_score_p2": 63.33,
+    "tooluse_recommendation": "PRODUCTION",
+    "profile_verified": false,
+    "profile_verified_at": null
   },
   {
     "model_id": "gemma-4-26b-a4b-q8",
@@ -1717,6 +1908,13 @@
       "Multimodal",
       "Thinking"
     ],
+    "input_modalities": [
+      "text",
+      "image"
+    ],
+    "output_modalities": [
+      "text"
+    ],
     "supports_tool_use": true,
     "license": "Google Gemma Terms of Use",
     "license_url": "https://ai.google.dev/gemma/terms",
@@ -1729,10 +1927,10 @@
     "card_status": "complete",
     "size_class": "Workstation",
     "generated_at": "2026-06-04T21:59:00+00:00",
-    "thinking_probe_detected": null,
-    "thinking_probe_evidence": null,
-    "thinking_probe_confidence": null,
-    "thinking_probe_at": null,
+    "thinking_probe_detected": true,
+    "thinking_probe_evidence": "Multi-Probe (3 prompts, 3 detected, best confidence=medium):\n  - math: [math] Inline CoT im content-Feld: Antwort 576 chars (>200) mit 7 Berechnungs-Operatoren. First 200 chars: To find the average speed of the train, follow these steps:\n\n### 1. Identify the given information:\n*   **Total Distance ($d$):** $120\\text{ km}$\n*   **Total Time ($t$):** $1.5\\text{ hours}$\n\n### 2. U\n  - code: [code] reasoning_tokens=512 in provider metadata. First 200 chars: \n  - decision: [decision] reasoning_tokens=512 in provider metadata. First 200 chars: ",
+    "thinking_probe_confidence": "medium",
+    "thinking_probe_at": "2026-06-10T22:04:13.883080+00:00",
     "top_p": null,
     "top_k": null,
     "repetition_penalty": null,
@@ -1740,13 +1938,83 @@
     "presence_penalty": null,
     "seed": null,
     "stop_sequences": null,
+    "profile_verified": false,
+    "profile_verified_at": null
+  },
+  {
+    "model_id": "gemma-4-31B-it-qat-ud-q4",
+    "display_name": "Gemma 4 31B Instruct (QAT, UD-Q4) [Spark]",
+    "developer": "Google DeepMind",
+    "origin_country": "USA",
+    "developer_jurisdiction": "US",
+    "deployment_type": "open-weights",
+    "local_deployment_possible": true,
+    "weights_provenance_risk": "medium",
+    "weights_provenance_risk_rationale": "Google Gemma Terms of Use sind restriktiv – kommerzielle Nutzung mit Auflagen. Google DeepMind ist US-amerikanisches Unternehmen (CLOUD Act). Weights sind öffentlich auf Hugging Face verfügbar, lokaler Betrieb möglich.",
+    "model_family": "Gemma 4",
+    "vendor": "Google",
+    "primary_focus": "general",
+    "use_case_primary": "generalist",
+    "parameter_architecture": "dense",
+    "params_total_b": 31.0,
+    "params_active_b": null,
+    "context_window_k": 128,
+    "knowledge_cutoff": "2025-06",
+    "summary": "Gemma 4 31B Instruct als QAT UD-Q4 GGUF via llama.cpp auf DGX Spark betrieben. QAT (Quantization-Aware Training) produziert eine präzisere Q4-Variante als nachträgliche Post-Training-Quantisierung. Dense-Architektur mit 31B Parametern. UD-Q4 (Unsloth Dynamic Q4) ist ein optimiertes Mixed-Precision-Format das Qualität bei geringem VRAM-Bedarf maximiert.",
+    "strengths": [
+      "QAT-Quantisierung: Signifikant bessere Qualität als Post-Training-Q4 – Gewichte wurden quantisierungsbewusst trainiert",
+      "UD-Q4 (Unsloth Dynamic): Optimiertes Mixed-Precision-Format mit per-Layer-Entscheidung",
+      "Lokaler Betrieb auf NVIDIA DGX Spark – dedizierte GPU-Hardware",
+      "Multimodal: Unterstützt Text- und Bildeingaben",
+      "Solide Instruktionsbefolgung und strukturierte Antwortgenerierung bei mittlerer Modellgröße"
+    ],
+    "known_limitations": [
+      "Q4-Quantisierung zeigt gegenüber Q8 messbare Qualitätsunterschiede bei komplexen Code/Security-Audits",
+      "Kein echtes Chain-of-Thought Reasoning (thinking_probe_detected=false – Inline-Probe-Signal war Signal C / Antwortlänge, kein gültiger Nachweis)",
+      "Sehr niedrige Tokens/s (~7,67) auf DGX Spark – Speed Profile ❌ Unusable für interaktive Anwendungsfälle",
+      "Audio-Input nicht unterstützt"
+    ],
+    "judge_context_hint": "Dense 31B-Modell von Google DeepMind, QAT UD-Q4 GGUF auf DGX Spark. Kein internes Reasoning-Budget (thinking_probe_detected=false). Antworten sind strukturiert und detailliert, aber ohne verstecktes Chain-of-Thought. Langsame Token-Generierung (~8 t/s) kann Antwortqualität bei zeitlimitierten Tasks beeinflussen.",
+    "architecture_tags": [
+      "Multimodal",
+      "General"
+    ],
     "input_modalities": [
       "text",
       "image"
     ],
     "output_modalities": [
       "text"
-    ]
+    ],
+    "supports_tool_use": true,
+    "license": "Google Gemma Terms of Use",
+    "license_url": "https://ai.google.dev/gemma/terms",
+    "commercial_use_allowed": true,
+    "weights_license_tier": "restricted-weights",
+    "model_version": "UD-Q4 (GGUF/QAT)/SPRK",
+    "input_price_per_1m": 0.0,
+    "output_price_per_1m": 0.0,
+    "unknown": false,
+    "card_status": "complete",
+    "size_class": "Workstation",
+    "generated_at": "2026-06-11T19:22:46.377652+00:00",
+    "thinking_probe_detected": false,
+    "thinking_probe_evidence": "Multi-Probe (3 prompts, 1 detected, best confidence=medium) — NOTE: Detected signal war Signal C (Antwortlänge 717 chars mit 20 Berechnungs-Operatoren). Signal C ist per CrucibleMark-Richtlinie kein gültiger CoT-Nachweis. Kein Signal A (<think>-Tags), kein Signal B (reasoning_tokens > 0). Ergebnis manuell auf false korrigiert. Vergleich Cloud-Variante (google/gemma-4-31b-it): thinking_probe_detected=false bestätigt.",
+    "thinking_probe_confidence": "low",
+    "thinking_probe_at": "2026-06-11T19:22:46.376763+00:00",
+    "top_p": null,
+    "top_k": null,
+    "repetition_penalty": null,
+    "frequency_penalty": null,
+    "presence_penalty": null,
+    "seed": null,
+    "stop_sequences": null,
+    "tooluse_tested_at": "2026-06-11T22:01:40Z",
+    "tooluse_score_p1": 90.0,
+    "tooluse_score_p2": 56.67,
+    "tooluse_recommendation": "PRODUCTION",
+    "profile_verified": false,
+    "profile_verified_at": null
   },
   {
     "model_id": "gemma-4-ara-26b-a4b-q5",
@@ -1816,7 +2084,9 @@
     ],
     "output_modalities": [
       "text"
-    ]
+    ],
+    "profile_verified": false,
+    "profile_verified_at": null
   },
   {
     "architecture_tags": [
@@ -1881,330 +2151,9 @@
     ],
     "output_modalities": [
       "text"
-    ]
-  },
-  {
-    "architecture_tags": [
-      "General",
-      "Instruct"
     ],
-    "card_status": "complete",
-    "commercial_use_allowed": true,
-    "context_window_k": 128,
-    "deployment_type": "open-weights-cloud-available",
-    "developer": "Google DeepMind",
-    "developer_jurisdiction": "US",
-    "display_name": "Gemma 3 12B",
-    "generated_at": "2026-04-23T22:06:47.375023+00:00",
-    "input_price_per_1m": null,
-    "judge_context_hint": "Gemma 3 12B ist ein Instruct-optimiertes Modell mittlerer Größe – Antworten sind tendenziell präzise und kompakt, können aber bei sehr komplexen Reasoning-Ketten an Tiefe verlieren.",
-    "knowledge_cutoff": "2024-12",
-    "known_limitations": [
-      "Kontextfenster und Reasoning-Tiefe hinter größeren Frontier-Modellen (z.B. Gemini 1.5 Pro) zurück",
-      "Neigt bei komplexen mehrstufigen Aufgaben zu Vereinfachungen oder Auslassungen"
-    ],
-    "license": "Google Gemma Terms of Use",
-    "license_url": "https://ai.google.dev/gemma/terms",
-    "local_deployment_possible": true,
-    "model_family": "Gemma",
-    "model_id": "gemma3:12b",
-    "model_version": "f4031aab637d",
-    "origin_country": "USA",
-    "output_price_per_1m": null,
-    "parameter_architecture": "dense",
-    "params_active_b": null,
-    "params_total_b": 12.0,
-    "primary_focus": "general",
-    "size_class": "Desktop",
-    "strengths": [
-      "Starkes Instruction-Following durch gezieltes Fine-Tuning (Gemma-IT-Variante)",
-      "Effizient lokal betreibbar – läuft auf Consumer-Hardware mit ausreichend VRAM",
-      "Solide Mehrsprachigkeit und gutes Textverstehen über diverse Domänen hinweg"
-    ],
-    "summary": "Gemma 3 12B ist ein Modell von Google DeepMind mit öffentlich verfügbaren Gewichten (Google Gemma Terms of Use), das lokal betreibbar und über Cloud-Provider verfügbar ist. Dieses Modell läuft über Ollama mit Ollama-eigener Quantisierung. Mit 12 Milliarden Parametern deckt es ein breites Spektrum von Instruction-Following, Textverstehen und mehrsprachigen Aufgaben ab.",
-    "supports_tool_use": true,
-    "thinking_probe_at": "2026-04-25T08:35:02.087425+00:00",
-    "thinking_probe_confidence": "low",
-    "thinking_probe_detected": false,
-    "thinking_probe_evidence": "No CoT signals found (A: no think-tags, B: reasoning_tokens=0). Response length: 526 chars",
-    "unknown": false,
-    "use_case_primary": "generalist",
-    "vendor": "Google",
-    "weights_license_tier": "restricted-weights",
-    "weights_provenance_risk": "medium",
-    "weights_provenance_risk_rationale": "Google DeepMind ist ein US-amerikanisches Unternehmen und unterliegt dem CLOUD Act, der jedoch primär bei API-/Cloud-Nutzung relevant ist, nicht bei lokal betriebenen Gewichten.",
-    "top_p": null,
-    "top_k": null,
-    "repetition_penalty": null,
-    "frequency_penalty": null,
-    "presence_penalty": null,
-    "seed": null,
-    "stop_sequences": null,
-    "input_modalities": [
-      "text"
-    ],
-    "output_modalities": [
-      "text"
-    ]
-  },
-  {
-    "architecture_tags": [
-      "General",
-      "Instruct"
-    ],
-    "card_status": "complete",
-    "commercial_use_allowed": true,
-    "context_window_k": 128,
-    "deployment_type": "open-weights-cloud-available",
-    "developer": "Google DeepMind",
-    "developer_jurisdiction": "US",
-    "display_name": "Gemma 3 4B",
-    "generated_at": "2026-04-23T22:08:57.925011+00:00",
-    "input_price_per_1m": null,
-    "judge_context_hint": "Das Modell ist für seine Größe leistungsfähig, zeigt aber bei komplexen Reasoning-Ketten oder langen Kontexten deutliche Qualitätseinbußen – Bewertungsmaßstäbe sollten der 4B-Parameterklasse entsprechend kalibriert sein.",
-    "knowledge_cutoff": "2024-12",
-    "known_limitations": [
-      "Begrenzte Reasoning-Tiefe bei komplexen mehrstufigen Aufgaben im Vergleich zu größeren Modellen",
-      "Kontextfenster und Faktenwissen stoßen bei langen oder spezialisierten Anfragen schnell an Grenzen"
-    ],
-    "license": "Google Gemma Terms of Use",
-    "license_url": "https://ai.google.dev/gemma/terms",
-    "local_deployment_possible": true,
-    "model_family": "Gemma",
-    "model_id": "gemma3:4b",
-    "model_version": "a2af6cc3eb7f",
-    "origin_country": "USA",
-    "output_price_per_1m": null,
-    "parameter_architecture": "dense",
-    "params_active_b": null,
-    "params_total_b": 4.0,
-    "primary_focus": "general",
-    "size_class": "Nano",
-    "strengths": [
-      "Sehr geringer Ressourcenbedarf – läuft auf Consumer-Hardware und mobilen Geräten",
-      "Solides Instruction-Following für ein 4B-Modell",
-      "Mehrsprachige Fähigkeiten mit Unterstützung von über 35 Sprachen"
-    ],
-    "summary": "Gemma 3 4B ist ein kompaktes Modell von Google DeepMind mit öffentlich verfügbaren Gewichten (Google Gemma Terms of Use), das lokal auf Consumer-Hardware betreibbar ist und über verschiedene Cloud-Provider genutzt werden kann. Es eignet sich für Instruction-Following, einfache Textaufgaben und Szenarien, die lokale Datenkontrolle erfordern.",
-    "supports_tool_use": true,
-    "thinking_probe_at": "2026-04-25T08:36:00.673936+00:00",
-    "thinking_probe_confidence": "low",
-    "thinking_probe_detected": false,
-    "thinking_probe_evidence": "No CoT signals found (A: no think-tags, B: reasoning_tokens=0). Response length: 684 chars",
-    "unknown": false,
-    "use_case_primary": "generalist",
-    "vendor": "Google",
-    "weights_license_tier": "restricted-weights",
-    "weights_provenance_risk": "medium",
-    "weights_provenance_risk_rationale": "Google DeepMind ist ein US-amerikanisches Unternehmen und unterliegt dem CLOUD Act, der staatlichen Zugriff auf Daten bei API-Nutzung ermöglichen kann, jedoch sind die Weights öffentlich verfügbar und lokal betreibbar.",
-    "top_p": null,
-    "top_k": null,
-    "repetition_penalty": null,
-    "frequency_penalty": null,
-    "presence_penalty": null,
-    "seed": null,
-    "stop_sequences": null,
-    "input_modalities": [
-      "text"
-    ],
-    "output_modalities": [
-      "text"
-    ]
-  },
-  {
-    "architecture_tags": [
-      "General",
-      "Instruct"
-    ],
-    "card_status": "complete",
-    "commercial_use_allowed": true,
-    "context_window_k": 128,
-    "deployment_type": "open-weights-cloud-available",
-    "developer": "Google DeepMind",
-    "developer_jurisdiction": "US",
-    "display_name": "Gemma 4 26B",
-    "generated_at": "2026-04-23T22:08:34.901086+00:00",
-    "input_price_per_1m": null,
-    "judge_context_hint": "Gemma 4 26B neigt zu konservativem, sicherheitsorientiertem Verhalten und kann bei ambivalenten Prompts kürzere oder ausweichende Antworten liefern – dies sollte bei der Bewertung von Vollständigkeit und Direktheit berücksichtigt werden.",
-    "knowledge_cutoff": "2025-06",
-    "known_limitations": [
-      "Schwächere Leistung bei komplexen mehrstufigen Reasoning-Aufgaben im Vergleich zu größeren Frontier-Modellen",
-      "Konservatives Sicherheitsfiltering kann bei legitimen Anfragen zu übermäßiger Ablehnung führen"
-    ],
-    "license": "Google Gemma Terms of Use",
-    "license_url": "https://ai.google.dev/gemma/terms",
-    "local_deployment_possible": true,
-    "model_family": "Gemma",
-    "model_id": "gemma4:26b",
-    "model_version": "26b",
-    "origin_country": "USA",
-    "output_price_per_1m": null,
-    "parameter_architecture": "dense",
-    "params_active_b": null,
-    "params_total_b": 27.0,
-    "primary_focus": "general",
-    "size_class": "Workstation",
-    "strengths": [
-      "Effizient lokal betreibbar mit vergleichsweise geringem Hardwarebedarf für die Modellgröße",
-      "Solide Instruction-Following-Fähigkeiten durch gezieltes Fine-Tuning",
-      "Breite multilinguale Unterstützung und gute allgemeine Sprachverarbeitung"
-    ],
-    "summary": "Gemma 4 26B ist ein Modell von Google DeepMind mit öffentlich verfügbaren Gewichten (Google Gemma Terms of Use) der vierten Generation, das lokal betrieben oder über Cloud-Provider genutzt werden kann. Es eignet sich für anspruchsvollere Instruction-Following- und Reasoning-Aufgaben bei moderatem Hardwarebedarf.",
-    "supports_tool_use": null,
-    "thinking_probe_at": "2026-04-25T08:37:22.029242+00:00",
-    "thinking_probe_confidence": "low",
-    "thinking_probe_detected": false,
-    "thinking_probe_evidence": "No CoT signals found (A: no think-tags, B: reasoning_tokens=0). Response length: 682 chars",
-    "unknown": false,
-    "use_case_primary": "generalist",
-    "vendor": "Google",
-    "weights_license_tier": "restricted-weights",
-    "weights_provenance_risk": "medium",
-    "weights_provenance_risk_rationale": "Google DeepMind ist ein US-amerikanisches Unternehmen und unterliegt dem CLOUD Act, der staatlichen Zugriff auf Daten bei API-Nutzung ermöglichen kann, betrifft jedoch nicht die lokal betriebenen Gewichte direkt.",
-    "top_p": null,
-    "top_k": null,
-    "repetition_penalty": null,
-    "frequency_penalty": null,
-    "presence_penalty": null,
-    "seed": null,
-    "stop_sequences": null,
-    "input_modalities": [
-      "text"
-    ],
-    "output_modalities": [
-      "text"
-    ]
-  },
-  {
-    "architecture_tags": [
-      "General",
-      "Instruct"
-    ],
-    "card_status": "complete",
-    "commercial_use_allowed": true,
-    "context_window_k": 128,
-    "deployment_type": "open-weights",
-    "developer": "Google DeepMind",
-    "developer_jurisdiction": "US",
-    "display_name": "Gemma 4 E4B",
-    "generated_at": "2026-04-23T22:07:02.933740+00:00",
-    "input_price_per_1m": null,
-    "judge_context_hint": "Vergleiche mit 8B-Modellen, nicht mit reinen 4B-Modellen. PLE-Architektur nutzt 8B-Kapazität. Native Multimodalität und MTP-Effizienz beachten. GPQA 77% ist für diese Größe überdurchschnittlich.",
-    "knowledge_cutoff": "2025-06",
-    "known_limitations": [
-      "Hardware-Hunger: Alle 8B Parameter müssen (~12GB RAM) geladen werden",
-      "Video- und Audioverarbeitung erfordern signifikante lokale Ressourcen"
-    ],
-    "license": "Apache 2.0",
-    "license_url": "https://ai.google.dev/gemma/terms",
-    "local_deployment_possible": true,
-    "model_family": "Gemma",
-    "model_id": "gemma4:E4B",
-    "model_version": "c6eb396dbd59",
-    "origin_country": "USA",
-    "output_price_per_1m": null,
-    "parameter_architecture": "hybrid",
-    "params_active_b": 4.5,
-    "params_total_b": 8.0,
-    "primary_focus": "general",
-    "size_class": "Desktop",
-    "strengths": [
-      "Hohe Effizienz: PLE-Architektur (4,5B aktive Parameter) ermöglicht hohe Geschwindigkeit",
-      "Native Multimodalität: Verarbeitet Text, Bild, Video und Audio in einem Modell",
-      "Starkes Reasoning: Hohe Leistung bei komplexen Aufgaben (GPQA Diamond: 77%)",
-      "Optimierter Durchsatz: MTP-Technologie ermöglicht bis zu 1,5x Speedup auf CPUs"
-    ],
-    "summary": "Gemma 4 E4B (Apache 2.0) ist eine für Desktops optimierte, multimodale Variante der Gemma-4-Familie von Google DeepMind. Dank PLE-Architektur sind bei 8B Gesamtparametern nur ca. 4,5B pro Forward Pass aktiv. Das Modell unterstützt Text, Bild, Video und Audio nativ mit einem 256K Kontextfenster. Durch Multi-Token Prediction (MTP) ist es auf lokaler Hardware besonders effizient.",
-    "supports_tool_use": true,
-    "thinking_probe_at": "2026-05-16T18:46:42.535796+00:00",
-    "thinking_probe_confidence": "low",
-    "thinking_probe_detected": false,
-    "thinking_probe_evidence": "No CoT signals found (A: no think-tags, B: reasoning_tokens=0). Response length: 601 chars",
-    "unknown": false,
-    "use_case_primary": "generalist",
-    "vendor": "Google",
-    "weights_license_tier": "restricted-weights",
-    "weights_provenance_risk": "medium",
-    "weights_provenance_risk_rationale": "Google DeepMind ist ein US-amerikanisches Unternehmen und unterliegt dem CLOUD Act, jedoch ist der CLOUD Act bei lokal betriebenen Open-Weights-Modellen nicht direkt anwendbar.",
-    "top_p": null,
-    "top_k": null,
-    "repetition_penalty": null,
-    "frequency_penalty": null,
-    "presence_penalty": null,
-    "seed": null,
-    "stop_sequences": null,
-    "input_modalities": [
-      "text",
-      "image",
-      "audio"
-    ],
-    "output_modalities": [
-      "text"
-    ]
-  },
-  {
-    "architecture_tags": [
-      "General",
-      "Instruct"
-    ],
-    "card_status": "complete",
-    "commercial_use_allowed": true,
-    "context_window_k": 128,
-    "deployment_type": "open-weights-cloud-available",
-    "developer": "Google DeepMind",
-    "developer_jurisdiction": "US",
-    "display_name": "Gemma 4 2B",
-    "generated_at": "2026-04-23T22:08:02.344476+00:00",
-    "input_price_per_1m": null,
-    "judge_context_hint": "Bei der Bewertung berücksichtigen, dass es sich um ein 2B-Modell handelt – Antwortqualität und Reasoning-Tiefe sind mit größenklassengerechten Erwartungen zu messen, nicht mit Frontier-Modellen zu vergleichen.",
-    "knowledge_cutoff": "2025-06",
-    "known_limitations": [
-      "Begrenzte Reasoning-Tiefe und Kontextverarbeitung aufgrund der geringen Modellgröße",
-      "Schwächer bei komplexen mehrschrittigen Aufgaben, Mathematik und Code im Vergleich zu größeren Modellen"
-    ],
-    "license": "Google Gemma Terms of Use",
-    "license_url": "https://ai.google.dev/gemma/terms",
-    "local_deployment_possible": true,
-    "model_family": "Gemma",
-    "model_id": "gemma4:e2b",
-    "model_version": "7fbdbf8f5e45",
-    "origin_country": "USA",
-    "output_price_per_1m": null,
-    "parameter_architecture": "hybrid",
-    "params_active_b": 2.3,
-    "params_total_b": 5.1,
-    "primary_focus": "general",
-    "size_class": "Edge",
-    "strengths": [
-      "Sehr geringer Ressourcenbedarf, ideal für lokale und Edge-Deployments",
-      "Solide Instruction-Following-Fähigkeiten für ein 2B-Modell",
-      "Open-Weights ermöglichen vollständige lokale Kontrolle und Anpassung"
-    ],
-    "summary": "Gemma 4 2B ist eine Edge-optimierte Variante der Gemma-4-Familie von Google DeepMind (Google Gemma Lizenz). Das \"E2B\"-Kürzel steht für ca. 2,3 Milliarden effektive Parameter – das Gesamtmodell umfasst 5,1 Milliarden Parameter (PLE-Architektur). Der tatsächliche RAM-Footprint liegt bei ca. 7,2 GB, daher Edge-Tier-Einstufung. Konzipiert für Instruction-Following und leichtgewichtige Aufgaben auf Consumer-Hardware.",
-    "supports_tool_use": true,
-    "thinking_probe_at": "2026-04-25T08:38:35.531224+00:00",
-    "thinking_probe_confidence": "low",
-    "thinking_probe_detected": false,
-    "thinking_probe_evidence": "No CoT signals found (A: no think-tags, B: reasoning_tokens=0). Response length: 349 chars",
-    "unknown": false,
-    "use_case_primary": "generalist",
-    "vendor": "Google",
-    "weights_license_tier": "restricted-weights",
-    "weights_provenance_risk": "medium",
-    "weights_provenance_risk_rationale": "Google DeepMind ist ein US-amerikanisches Unternehmen und unterliegt dem CLOUD Act, der staatlichen Zugriff auf Daten bei API-Nutzung ermöglichen kann, betrifft jedoch nicht die lokal betriebenen Gewichte.",
-    "top_p": null,
-    "top_k": null,
-    "repetition_penalty": null,
-    "frequency_penalty": null,
-    "presence_penalty": null,
-    "seed": null,
-    "stop_sequences": null,
-    "input_modalities": [
-      "text"
-    ],
-    "output_modalities": [
-      "text"
-    ]
+    "profile_verified": false,
+    "profile_verified_at": null
   },
   {
     "architecture_tags": [
@@ -2270,76 +2219,9 @@
     ],
     "output_modalities": [
       "text"
-    ]
-  },
-  {
-    "model_id": "gpt-4o-2024-08-06",
-    "display_name": "GPT-4o (2024-08-06)",
-    "developer": "OpenAI",
-    "origin_country": "USA",
-    "developer_jurisdiction": "US",
-    "deployment_type": "cloud-only",
-    "local_deployment_possible": false,
-    "weights_provenance_risk": "low",
-    "weights_provenance_risk_rationale": "OpenAI ist ein US-amerikanisches Unternehmen, unterliegt US-Recht und CLOUD Act. Closed-Source – keine Gewichte verfügbar. Datenschutzrechtlich für sensible EU-Daten eingeschränkt empfehlenswert.",
-    "model_family": "GPT-4o",
-    "vendor": "OpenAI",
-    "primary_focus": "generalist",
-    "use_case_primary": "vision-language",
-    "parameter_architecture": "dense",
-    "params_total_b": null,
-    "params_active_b": null,
-    "context_window_k": 128,
-    "knowledge_cutoff": "2023-10",
-    "summary": "GPT-4o (2024-08-06) ist ein Snapshot des GPT-4o-Modells vom 6. August 2024. Markiert die erste GPT-4o-Version mit nativer Unterstützung für strukturierte Outputs (JSON-Schema in response_format). Multimodal mit Text- und Bildeingabe, 128k Token Kontextfenster, Intelligenz auf GPT-4-Turbo-Niveau bei halber Latenz und halbierten Kosten. Verfügbar als deprecated Snapshot für Reproduzierbarkeit historischer Evaluierungen.",
-    "strengths": [
-      "Erste GPT-4o-Version mit nativer JSON-Schema-Unterstützung in response_format",
-      "Multimodale Eingaben (Text + Bild) bei GPT-4-Turbo-Intelligenz-Niveau",
-      "Halbe Latenz und halbierte Kosten im Vergleich zu GPT-4 Turbo",
-      "128K-Token-Kontextfenster für umfangreiche Dokumentenverarbeitung",
-      "Reproduzierbarer Snapshot für historische Benchmark-Vergleiche"
     ],
-    "known_limitations": [
-      "Deprecated Snapshot – neuere GPT-4o-Versionen (2024-11-20, GPT-4.1-Serie) verfügbar",
-      "Closed-Source: keine Gewichte verfügbar, ausschließlich OpenAI-API",
-      "Datenschutzrisiko: US-Anbieter unterliegt CLOUD Act",
-      "Wissensstand Oktober 2023 – deutlich veraltet für aktuelle Themen"
-    ],
-    "judge_context_hint": "GPT-4o (2024-08-06) ist der August-2024-Snapshot. Erste Version mit nativer JSON-Schema-Struktur-Output-Unterstützung. Multimodal Text+Bild, 128K Kontext. Wissensstand Oktober 2023. Deprecated – neuere Snapshots verfügbar.",
-    "architecture_tags": [
-      "General",
-      "Multimodal"
-    ],
-    "supports_tool_use": true,
-    "license": "Proprietary (OpenAI Terms of Use)",
-    "license_url": "https://openai.com/policies/terms-of-use/",
-    "commercial_use_allowed": true,
-    "weights_license_tier": "proprietary",
-    "model_version": "2024-08-06",
-    "input_price_per_1m": 2.5,
-    "output_price_per_1m": 10.0,
-    "unknown": false,
-    "card_status": "complete",
-    "size_class": "Frontier",
-    "generated_at": "2026-06-10T11:36:00+00:00",
-    "thinking_probe_detected": null,
-    "thinking_probe_evidence": null,
-    "thinking_probe_confidence": null,
-    "thinking_probe_at": null,
-    "top_p": null,
-    "top_k": null,
-    "repetition_penalty": null,
-    "frequency_penalty": null,
-    "presence_penalty": null,
-    "seed": null,
-    "stop_sequences": null,
-    "input_modalities": [
-      "text",
-      "image"
-    ],
-    "output_modalities": [
-      "text"
-    ]
+    "profile_verified": false,
+    "profile_verified_at": null
   },
   {
     "architecture_tags": [
@@ -2353,8 +2235,8 @@
     "developer": "OpenAI",
     "developer_jurisdiction": "US",
     "display_name": "GPT-4o Mini",
-    "generated_at": "2026-04-23T22:00:27.476216+00:00",
-    "input_price_per_1m": 0.15,
+    "generated_at": "2026-06-10T18:28:14.912446+00:00",
+    "input_price_per_1m": 1.25,
     "judge_context_hint": "GPT-4o Mini ist auf Effizienz optimiert und kann bei komplexen mehrstufigen Aufgaben oder tiefem Reasoning hinter größeren Modellen zurückbleiben – Antworten sollten auf Vollständigkeit und Präzision geprüft werden.",
     "knowledge_cutoff": "2023-10",
     "known_limitations": [
@@ -2368,7 +2250,7 @@
     "model_id": "gpt-4o-mini",
     "model_version": "2024-07-18",
     "origin_country": "USA",
-    "output_price_per_1m": 0.6,
+    "output_price_per_1m": 5.0,
     "parameter_architecture": "dense",
     "params_active_b": null,
     "params_total_b": null,
@@ -2404,7 +2286,9 @@
     ],
     "output_modalities": [
       "text"
-    ]
+    ],
+    "profile_verified": false,
+    "profile_verified_at": null
   },
   {
     "architecture_tags": [
@@ -2472,7 +2356,9 @@
     ],
     "output_modalities": [
       "text"
-    ]
+    ],
+    "profile_verified": false,
+    "profile_verified_at": null
   },
   {
     "architecture_tags": [
@@ -2486,8 +2372,8 @@
     "developer": "OpenAI",
     "developer_jurisdiction": "US",
     "display_name": "GPT-5 Mini",
-    "generated_at": "2026-04-23T22:01:13.742602+00:00",
-    "input_price_per_1m": 0.25,
+    "generated_at": "2026-06-10T18:28:14.913347+00:00",
+    "input_price_per_1m": 0.75,
     "judge_context_hint": "GPT-5 Mini ist ein komprimiertes Modell – bei komplexen mehrstufigen Reasoning-Aufgaben oder langen Kontexten kann die Leistung gegenüber größeren Modellen der GPT-5-Familie spürbar abfallen.",
     "knowledge_cutoff": "2025-03",
     "known_limitations": [
@@ -2501,7 +2387,7 @@
     "model_id": "gpt-5-mini",
     "model_version": "5.0",
     "origin_country": "USA",
-    "output_price_per_1m": 2.0,
+    "output_price_per_1m": 4.5,
     "parameter_architecture": "dense",
     "params_active_b": null,
     "params_total_b": null,
@@ -2537,7 +2423,9 @@
     ],
     "output_modalities": [
       "text"
-    ]
+    ],
+    "profile_verified": false,
+    "profile_verified_at": null
   },
   {
     "architecture_tags": [
@@ -2551,8 +2439,8 @@
     "developer": "OpenAI",
     "developer_jurisdiction": "US",
     "display_name": "GPT-5",
-    "generated_at": "2026-04-23T22:01:02.536809+00:00",
-    "input_price_per_1m": 1.25,
+    "generated_at": "2026-06-10T18:28:14.913671+00:00",
+    "input_price_per_1m": 2.5,
     "judge_context_hint": "GPT-5 neigt zu sehr ausführlichen, strukturierten Antworten und kann bei einfachen Aufgaben zur Überformulierung tendieren – Präzision und Kürze sollten explizit eingefordert werden.",
     "knowledge_cutoff": "2025-03",
     "known_limitations": [
@@ -2566,7 +2454,7 @@
     "model_id": "gpt-5",
     "model_version": "5.0",
     "origin_country": "USA",
-    "output_price_per_1m": 10.0,
+    "output_price_per_1m": 15.0,
     "parameter_architecture": "dense",
     "params_active_b": null,
     "params_total_b": null,
@@ -2602,7 +2490,9 @@
     ],
     "output_modalities": [
       "text"
-    ]
+    ],
+    "profile_verified": false,
+    "profile_verified_at": null
   },
   {
     "architecture_tags": [
@@ -2667,10 +2557,12 @@
     ],
     "output_modalities": [
       "text"
-    ]
+    ],
+    "profile_verified": false,
+    "profile_verified_at": null
   },
   {
-    "model_id": "gpt-5_4-nano",
+    "model_id": "gpt-5.4-nano",
     "display_name": "GPT-5.4 Nano",
     "developer": "OpenAI",
     "origin_country": "USA",
@@ -2738,7 +2630,9 @@
     ],
     "output_modalities": [
       "text"
-    ]
+    ],
+    "profile_verified": false,
+    "profile_verified_at": null
   },
   {
     "model_id": "gpt-5_4-pro",
@@ -2809,7 +2703,81 @@
     ],
     "output_modalities": [
       "text"
-    ]
+    ],
+    "profile_verified": false,
+    "profile_verified_at": null
+  },
+  {
+    "model_id": "gpt-5_4",
+    "display_name": "GPT-5.4",
+    "developer": "OpenAI",
+    "origin_country": "USA",
+    "developer_jurisdiction": "US",
+    "deployment_type": "cloud-only",
+    "local_deployment_possible": false,
+    "weights_provenance_risk": "low",
+    "weights_provenance_risk_rationale": "OpenAI ist ein US-amerikanisches Unternehmen, unterliegt US-Recht und CLOUD Act. Keine Gewichte verfügbar. Closed-Source. Datenschutzrechtlich für sensible EU-Daten eingeschränkt empfehlenswert.",
+    "model_family": "GPT-5",
+    "vendor": "OpenAI",
+    "primary_focus": "generalist",
+    "use_case_primary": "generalist",
+    "parameter_architecture": "dense",
+    "params_total_b": null,
+    "params_active_b": null,
+    "context_window_k": 1050,
+    "knowledge_cutoff": "2025-08",
+    "summary": "GPT-5.4 ist die Standardvariante der GPT-5.4-Familie von OpenAI für allgemeine professionelle Workloads, veröffentlicht am 5. März 2026. Es bietet ein 1.05M-Token-Kontextfenster mit 128K max Output, native Bildverarbeitung und Tool-Use-Fähigkeit — ein ausgewogenes Verhältnis von Qualität, Latenz und Preis für die meisten produktiven Anwendungsfälle. Ausschließlich über die OpenAI-API verfügbar.",
+    "strengths": [
+      "Großzügiges 1.05M-Token-Kontextfenster (1050k) — eines der größten kommerziell verfügbaren Kontextfenster",
+      "Starke Multimodalität: Text- und Bildeingaben, Textausgabe",
+      "Solide Tool-Use- und Function-Calling-Fähigkeiten für strukturierte Ausgaben",
+      "Gutes Preis-Leistungs-Verhältnis: $2.50 Input / $15 Output pro 1M Tokens",
+      "Stabile Instruction-Following-Qualität auf Standardaufgaben"
+    ],
+    "known_limitations": [
+      "Pro-Variante liefert bei präzisionskritischen Aufgaben konsistent bessere Ergebnisse (höhere Compute-Iterationen)",
+      "Input >272K Tokens: 2× Input-Preis, 1.5× Output-Preis",
+      "Closed-Source, keine Gewichtsexporte verfügbar – ausschließlich über OpenAI-API",
+      "CLOUD-Act-Risiko: Daten können US-Behörden zugänglich gemacht werden"
+    ],
+    "judge_context_hint": "GPT-5.4 (veröffentlicht 5. März 2026, Snapshot gpt-5.4-2026-03-05) ist die Standardvariante der GPT-5.4-Linie. 1.05M Token Kontext (128K max Output). Standard-Pricing $2.50/$15 pro 1M Tokens, Input >272K: 2× Aufschlag. Erwartet solide, gut strukturierte Antworten mit nativer Tool-Use- und Multimodal-Fähigkeit. Für höchste Präzisionsansprüche ist die Pro-Variante vorzuziehen.",
+    "architecture_tags": [
+      "General",
+      "Long-Context",
+      "Agentic"
+    ],
+    "supports_tool_use": true,
+    "license": "proprietary",
+    "license_url": "https://openai.com/policies/terms-of-use/",
+    "commercial_use_allowed": true,
+    "weights_license_tier": "proprietary",
+    "model_version": "5.4",
+    "input_price_per_1m": 2.5,
+    "output_price_per_1m": 15.0,
+    "unknown": false,
+    "card_status": "complete",
+    "size_class": "Frontier",
+    "generated_at": "2026-06-10T15:30:00.000000+00:00",
+    "thinking_probe_detected": false,
+    "thinking_probe_evidence": "Reasoning-Probe wurde für GPT-5.4 noch nicht ausgeführt. Card v4.7.7-Reparatur: Card-Datei nachgereicht (vorher fehlend, WEBEXP-010).",
+    "thinking_probe_confidence": "low",
+    "thinking_probe_at": "2026-06-10T15:30:00.000000+00:00",
+    "top_p": null,
+    "top_k": null,
+    "repetition_penalty": null,
+    "frequency_penalty": null,
+    "presence_penalty": null,
+    "seed": null,
+    "stop_sequences": null,
+    "input_modalities": [
+      "text",
+      "image"
+    ],
+    "output_modalities": [
+      "text"
+    ],
+    "profile_verified": false,
+    "profile_verified_at": null
   },
   {
     "model_id": "gpt-5_5-pro",
@@ -2880,7 +2848,9 @@
     ],
     "output_modalities": [
       "text"
-    ]
+    ],
+    "profile_verified": false,
+    "profile_verified_at": null
   },
   {
     "model_id": "gpt-5_5",
@@ -2912,15 +2882,17 @@
     "known_limitations": [
       "Closed-Source, keine Gewichtsexporte verfügbar – ausschließlich über OpenAI-API",
       "Premium-Pricing ($5/$30 pro 1M Tokens), Verdopplung gegenüber GPT-5.4; Input >272K Tokens: 2× Aufschlag",
-      "Datenschutzrisiko: US-Anbieter unterliegt CLOUD Act, EU-Daten können US-Behörden zugänglich sein"
+      "Datenschutzrisiko: US-Anbieter unterliegt CLOUD Act, EU-Daten können US-Behörden zugänglich sein",
+      "Internes Reasoning wird nicht in der API-Antwort zurückgegeben – der LLM-Judge kann das Chain-of-Thought nicht bewerten, was bei reasoning-intensiven Aufgaben zu systematischen Bewertungsabzügen führt"
     ],
-    "judge_context_hint": "GPT-5.5 (veröffentlicht 23. April 2026, Snapshot gpt-5.5-2026-04-23) ist OpenAIs bisher leistungsfähigstes Modell. Terminal-Bench 2.0: 82.7% (führend). 1.05M Token Kontext (128K max Output). Premium-Preismodell $5/$30 pro 1M Tokens, Input >272K: 2× Aufschlag. Batch-Verarbeitung: $2.50/$15.00. Erstes vollständig neu trainiertes Basis-Modell seit GPT-4.5.",
+    "judge_context_hint": "GPT-5.5 (veröffentlicht 23. April 2026, Snapshot gpt-5.5-2026-04-23) ist OpenAIs bisher leistungsfähigstes Modell. Terminal-Bench 2.0: 82.7% (führend). 1.05M Token Kontext (128K max Output). WICHTIG FÜR BEWERTUNG: Das Modell führt internes Reasoning durch, gibt dieses aber NICHT zurück. Fehlende Reasoning-Schritte in der Antwort sind KEIN Qualitätsmangel – das Ergebnis wurde intern erarbeitet, ist aber nicht sichtbar. Bitte KEINE Abzüge für fehlendes Chain-of-Thought oder fehlende Begründungsschritte vergeben.",
     "architecture_tags": [
       "General",
       "Long-Context",
-      "Agentic"
+      "Agentic",
+      "Thinking"
     ],
-    "supports_tool_use": null,
+    "supports_tool_use": true,
     "license": "proprietary",
     "license_url": "https://openai.com/policies/terms-of-use/",
     "commercial_use_allowed": true,
@@ -2932,10 +2904,10 @@
     "card_status": "complete",
     "size_class": "Frontier",
     "generated_at": "2026-05-26T03:14:14.246795+00:00",
-    "thinking_probe_detected": false,
-    "thinking_probe_evidence": "No CoT signals found (A: no think-tags, B: reasoning_tokens=0). Response length: 286 chars",
-    "thinking_probe_confidence": "low",
-    "thinking_probe_at": "2026-05-26T03:14:14.246777+00:00",
+    "thinking_probe_detected": true,
+    "thinking_probe_evidence": "GPT-5.5 führt internes Chain-of-Thought-Reasoning durch, gibt dieses aber NICHT in der API-Antwort zurück. Die automatische Thinking Probe fand keine sichtbaren CoT-Tags und keine reasoning_tokens (OpenAI verbirgt das Reasoning explizit für alle GPT-5.x/o-Series-Modelle). Manuelle Verifizierung 2026-06-11: Bestätigt durch Analyse von code_quality_001 (response_length=0, tokens_used=6751, finish=length) – klassisches Hidden-Reasoning-Overflow-Muster. Modell verbraucht alle Token intern.",
+    "thinking_probe_confidence": "high",
+    "thinking_probe_at": "2026-06-11T15:21:00.000000+00:00",
     "top_p": null,
     "top_k": null,
     "repetition_penalty": null,
@@ -2949,7 +2921,9 @@
     ],
     "output_modalities": [
       "text"
-    ]
+    ],
+    "profile_verified": false,
+    "profile_verified_at": null
   },
   {
     "architecture_tags": [
@@ -3017,7 +2991,9 @@
     ],
     "output_modalities": [
       "text"
-    ]
+    ],
+    "profile_verified": false,
+    "profile_verified_at": null
   },
   {
     "architecture_tags": [
@@ -3084,7 +3060,9 @@
     ],
     "output_modalities": [
       "text"
-    ]
+    ],
+    "profile_verified": false,
+    "profile_verified_at": null
   },
   {
     "architecture_tags": [
@@ -3097,8 +3075,8 @@
     "developer": "xAI",
     "developer_jurisdiction": "US",
     "display_name": "Grok 3 Mini",
-    "generated_at": "2026-04-23T22:02:18.832167+00:00",
-    "input_price_per_1m": 1.25,
+    "generated_at": "2026-06-10T18:28:14.914550+00:00",
+    "input_price_per_1m": 0.5,
     "judge_context_hint": "Grok 3 Mini kann im Thinking-Modus betrieben werden und liefert dann deutlich stärkere Reasoning-Ergebnisse; Benchmarks sollten den aktiven Modus (mit/ohne Thinking) explizit ausweisen.",
     "knowledge_cutoff": "2025-01",
     "known_limitations": [
@@ -3112,7 +3090,7 @@
     "model_id": "grok-3-mini",
     "model_version": "3-mini",
     "origin_country": "USA",
-    "output_price_per_1m": 2.5,
+    "output_price_per_1m": 1.5,
     "parameter_architecture": "dense",
     "params_active_b": null,
     "params_total_b": null,
@@ -3147,7 +3125,9 @@
     ],
     "output_modalities": [
       "text"
-    ]
+    ],
+    "profile_verified": false,
+    "profile_verified_at": null
   },
   {
     "architecture_tags": [
@@ -3161,8 +3141,8 @@
     "developer": "xAI",
     "developer_jurisdiction": "US",
     "display_name": "Grok 3",
-    "generated_at": "2026-04-23T22:02:07.557912+00:00",
-    "input_price_per_1m": 1.25,
+    "generated_at": "2026-06-10T18:28:14.914754+00:00",
+    "input_price_per_1m": 5.0,
     "judge_context_hint": "Prüfen Sie, ob der Thinking-Modus (DeepSearch) aktiviert war – dieser verändert Reasoning-Leistung fundamental. Zudem ist das Modell rein textbasiert.",
     "knowledge_cutoff": "2025-01",
     "known_limitations": [
@@ -3177,7 +3157,7 @@
     "model_id": "grok-3",
     "model_version": "3",
     "origin_country": "USA",
-    "output_price_per_1m": 2.5,
+    "output_price_per_1m": 15.0,
     "parameter_architecture": "dense",
     "params_active_b": null,
     "params_total_b": null,
@@ -3215,7 +3195,9 @@
     ],
     "output_modalities": [
       "text"
-    ]
+    ],
+    "profile_verified": false,
+    "profile_verified_at": null
   },
   {
     "architecture_tags": [
@@ -3282,7 +3264,9 @@
     ],
     "output_modalities": [
       "text"
-    ]
+    ],
+    "profile_verified": false,
+    "profile_verified_at": null
   },
   {
     "architecture_tags": [
@@ -3348,74 +3332,9 @@
     ],
     "output_modalities": [
       "text"
-    ]
-  },
-  {
-    "architecture_tags": [
-      "Thinking",
-      "Fast-Reasoning"
     ],
-    "card_status": "complete",
-    "commercial_use_allowed": true,
-    "context_window_k": 2000,
-    "deployment_type": "cloud-only",
-    "developer": "xAI",
-    "developer_jurisdiction": "US",
-    "display_name": "Grok 4.1 Fast Reasoning",
-    "generated_at": "2026-06-05T22:17:00.000000+00:00",
-    "input_price_per_1m": 0.2,
-    "judge_context_hint": "Grok 4.1 Fast Reasoning ist auf Agentic Workflows und Tool-Calling optimiert – die Bewertung sollte parallele Tool-Nutzung und strukturierte Ausgabeformate berücksichtigen. Modell ist ab August 2026 Deprecated.",
-    "knowledge_cutoff": "2026-03",
-    "known_limitations": [
-      "Nur über xAIs Cloud-API verfügbar, kein lokaler Betrieb möglich",
-      "Ab August 2026 Deprecated – Migration zu grok-4.3 erforderlich",
-      "Schwächer als das vollständige Grok 4 Reasoning bei extrem komplexen mehrstufigen Aufgaben",
-      "Der unzensierte Stil kann bei sensiblen Themen zu kontroversen Antworten führen"
-    ],
-    "license": "Proprietary",
-    "license_url": null,
-    "local_deployment_possible": false,
-    "model_family": "Grok",
-    "model_id": "grok-4_1-fast-reasoning",
-    "model_version": "4.1-fast-reasoning",
-    "origin_country": "USA",
-    "output_price_per_1m": 0.5,
-    "parameter_architecture": "moe",
-    "params_active_b": null,
-    "params_total_b": null,
-    "primary_focus": "reasoning",
-    "size_class": "Frontier",
-    "strengths": [
-      "Spezialisiert auf Agentic Workflows: Tool-Calling, parallele Verarbeitung, reduzierte Halluzinationen (~3x gegenüber Vorgänger)",
-      "2M-Token-Kontextfenster – deutlich größer als alle vergleichbaren Frontier-Modelle",
-      "Wettbewerbsfähige API-Preise: $0.20/M Input, $0.50/M Output (einer der günstigsten Frontier-Tarife)",
-      "Echtzeit-Zugriff auf X-Plattform-Daten für kontextuelle Informationen"
-    ],
-    "summary": "Grok 4.1 Fast Reasoning ist xAIs optimierte Reasoning-Variante für Agentic Workflows – spezialisiert auf Tool-Calling, parallele Verarbeitung und niedrige Halluzinationsraten (~3x reduziert gegenüber Vorgänger). 2M-Token-Kontextfenster, 2025-11 veröffentlicht. Ausschließlich über xAI-API verfügbar; ab August 2026 Deprecated (Migration zu grok-4.3 empfohlen).",
-    "supports_tool_use": true,
-    "thinking_probe_at": null,
-    "thinking_probe_confidence": "low",
-    "thinking_probe_detected": false,
-    "thinking_probe_evidence": "Not yet probed.",
-    "unknown": false,
-    "use_case_primary": "reasoning",
-    "vendor": "xAI",
-    "weights_license_tier": "proprietary",
-    "weights_provenance_risk": "medium",
-    "weights_provenance_risk_rationale": "xAI ist ein US-amerikanisches Unternehmen und unterliegt dem CLOUD Act, jedoch sind die Modellgewichte nicht öffentlich zugänglich.",
-    "top_p": null,
-    "top_k": null,
-    "repetition_penalty": null,
-    "frequency_penalty": null,
-    "presence_penalty": null,
-    "seed": null,
-    "stop_sequences": null,
-    "input_modalities": [
-      "text"
-    ],
-    "output_modalities": [
-      "text"
-    ]
+    "profile_verified": false,
+    "profile_verified_at": null
   },
   {
     "architecture_tags": [
@@ -3479,7 +3398,9 @@
     ],
     "output_modalities": [
       "text"
-    ]
+    ],
+    "profile_verified": false,
+    "profile_verified_at": null
   },
   {
     "architecture_tags": [
@@ -3542,7 +3463,9 @@
     ],
     "output_modalities": [
       "text"
-    ]
+    ],
+    "profile_verified": false,
+    "profile_verified_at": null
   },
   {
     "architecture_tags": [
@@ -3611,7 +3534,9 @@
     ],
     "output_modalities": [
       "text"
-    ]
+    ],
+    "profile_verified": false,
+    "profile_verified_at": null
   },
   {
     "architecture_tags": [
@@ -3675,7 +3600,9 @@
     ],
     "output_modalities": [
       "text"
-    ]
+    ],
+    "profile_verified": false,
+    "profile_verified_at": null
   },
   {
     "architecture_tags": [
@@ -3742,7 +3669,9 @@
     ],
     "output_modalities": [
       "text"
-    ]
+    ],
+    "profile_verified": false,
+    "profile_verified_at": null
   },
   {
     "architecture_tags": [
@@ -3808,7 +3737,9 @@
     ],
     "output_modalities": [
       "text"
-    ]
+    ],
+    "profile_verified": false,
+    "profile_verified_at": null
   },
   {
     "model_id": "hermes-4.3-36b-q6",
@@ -3877,71 +3808,9 @@
     ],
     "output_modalities": [
       "text"
-    ]
-  },
-  {
-    "architecture_tags": [
-      "Instruct",
-      "Uncensored-Finetuned"
     ],
-    "card_status": "complete",
-    "commercial_use_allowed": true,
-    "context_window_k": 128,
-    "deployment_type": "open-weights",
-    "developer": "Nous Research",
-    "developer_jurisdiction": "US",
-    "display_name": "Hermes 3 8B",
-    "generated_at": "2026-04-23T22:09:38.126269+00:00",
-    "input_price_per_1m": null,
-    "judge_context_hint": "Hermes 3 ist ein Uncensored-Finetuning mit bewusst reduzierter Ablehnung – der Judge sollte Antwortqualität und Präzision bewerten, nicht das Fehlen von Sicherheitshinweisen als Schwäche werten.",
-    "knowledge_cutoff": "2024-09",
-    "known_limitations": [
-      "Als Finetuning auf Llama 3.1 8B begrenzte Rohkapazität gegenüber größeren Modellen bei komplexem Reasoning",
-      "Reduzierte Sicherheitsfilter können bei sensiblen Themen zu unerwünschten Ausgaben führen"
-    ],
-    "license": "Meta Llama Community License",
-    "license_url": "https://www.llama.com/llama3/license/",
-    "local_deployment_possible": true,
-    "model_family": "Hermes",
-    "model_id": "hermes3:8b",
-    "model_version": "8b",
-    "origin_country": "USA",
-    "output_price_per_1m": null,
-    "parameter_architecture": "dense",
-    "params_active_b": null,
-    "params_total_b": 8.0,
-    "primary_focus": "instruction-following",
-    "size_class": "Edge",
-    "strengths": [
-      "Starkes Instruction-Following mit reduzierter Ablehnung harmloser Anfragen",
-      "Gute Leistung bei Funktionsaufrufen und strukturierten Ausgaben (JSON, Tool-Use)",
-      "Effektiv für Rollenspiel- und agentenbasierte Szenarien trotz kompakter 8B-Größe"
-    ],
-    "summary": "Hermes 3 8B ist ein Modell von Nous Research mit öffentlich verfügbaren Gewichten (Meta Llama Community License) aus den USA, das lokal betreibbar und über Cloud-Provider verfügbar ist. Es basiert auf dem Llama-3-Basismodell und wurde für starkes Instruction-Following und agentische Aufgaben feinabgestimmt.",
-    "supports_tool_use": null,
-    "thinking_probe_at": "2026-05-16T18:47:56.692725+00:00",
-    "thinking_probe_confidence": "high",
-    "thinking_probe_detected": false,
-    "thinking_probe_evidence": "Manual override: Hermes-3 8B is a Llama-3-based instruction-tuned model without reasoning/thinking capabilities.",
-    "unknown": false,
-    "use_case_primary": "generalist",
-    "vendor": "NousResearch",
-    "weights_license_tier": "restricted-weights",
-    "weights_provenance_risk": "medium",
-    "weights_provenance_risk_rationale": "Nous Research ist ein US-amerikanisches Unternehmen, dessen Weights öffentlich verfügbar sind – CLOUD Act ist nur bei API-Nutzung relevant, nicht bei lokaler Ausführung.",
-    "top_p": null,
-    "top_k": null,
-    "repetition_penalty": null,
-    "frequency_penalty": null,
-    "presence_penalty": null,
-    "seed": null,
-    "stop_sequences": null,
-    "input_modalities": [
-      "text"
-    ],
-    "output_modalities": [
-      "text"
-    ]
+    "profile_verified": false,
+    "profile_verified_at": null
   },
   {
     "architecture_tags": [
@@ -4005,7 +3874,9 @@
     ],
     "output_modalities": [
       "text"
-    ]
+    ],
+    "profile_verified": false,
+    "profile_verified_at": null
   },
   {
     "architecture_tags": [
@@ -4019,8 +3890,8 @@
     "developer": "Mistral AI",
     "developer_jurisdiction": "EU",
     "display_name": "Magistral Medium",
-    "generated_at": "2026-04-23T21:58:18.227125+00:00",
-    "input_price_per_1m": 0.4,
+    "generated_at": "2026-06-10T18:28:14.915595+00:00",
+    "input_price_per_1m": 1.5,
     "judge_context_hint": "Das Modell nutzt aktives Chain-of-Thought. Bewerten Sie die Antwortqualität primär anhand der logischen Tiefe und der Korrektheit des nachvollziehbaren Denkprozesses, nicht nach der Kürze der Antwort.",
     "knowledge_cutoff": "2025-06",
     "known_limitations": [
@@ -4034,7 +3905,7 @@
     "model_id": "magistral-medium-latest",
     "model_version": "latest",
     "origin_country": "France",
-    "output_price_per_1m": 2.0,
+    "output_price_per_1m": 7.5,
     "parameter_architecture": "dense",
     "params_active_b": null,
     "params_total_b": null,
@@ -4071,7 +3942,9 @@
     ],
     "output_modalities": [
       "text"
-    ]
+    ],
+    "profile_verified": false,
+    "profile_verified_at": null
   },
   {
     "architecture_tags": [
@@ -4084,8 +3957,8 @@
     "developer": "Mistral AI",
     "developer_jurisdiction": "EU",
     "display_name": "Magistral Small",
-    "generated_at": "2026-04-23T21:58:28.574633+00:00",
-    "input_price_per_1m": null,
+    "generated_at": "2026-06-10T18:28:14.915750+00:00",
+    "input_price_per_1m": 0.5,
     "judge_context_hint": "Das Modell gibt explizite Reasoning-Schritte aus – bei der Bewertung sollte die Qualität des Denkprozesses, nicht nur das Endergebnis, berücksichtigt werden.",
     "knowledge_cutoff": "2025-03",
     "known_limitations": [
@@ -4099,7 +3972,7 @@
     "model_id": "magistral-small-latest",
     "model_version": "latest",
     "origin_country": "France",
-    "output_price_per_1m": null,
+    "output_price_per_1m": 1.5,
     "parameter_architecture": "dense",
     "params_active_b": null,
     "params_total_b": null,
@@ -4135,7 +4008,9 @@
     ],
     "output_modalities": [
       "text"
-    ]
+    ],
+    "profile_verified": false,
+    "profile_verified_at": null
   },
   {
     "model_id": "meta-llama/llama-4-scout-17b-16e-instruct",
@@ -4200,7 +4075,9 @@
     ],
     "output_modalities": [
       "text"
-    ]
+    ],
+    "profile_verified": false,
+    "profile_verified_at": null
   },
   {
     "architecture_tags": [
@@ -4264,7 +4141,9 @@
     ],
     "output_modalities": [
       "text"
-    ]
+    ],
+    "profile_verified": false,
+    "profile_verified_at": null
   },
   {
     "architecture_tags": [
@@ -4329,7 +4208,9 @@
     ],
     "output_modalities": [
       "text"
-    ]
+    ],
+    "profile_verified": false,
+    "profile_verified_at": null
   },
   {
     "architecture_tags": [
@@ -4394,7 +4275,9 @@
     ],
     "output_modalities": [
       "text"
-    ]
+    ],
+    "profile_verified": false,
+    "profile_verified_at": null
   },
   {
     "architecture_tags": [
@@ -4459,7 +4342,9 @@
     ],
     "output_modalities": [
       "text"
-    ]
+    ],
+    "profile_verified": false,
+    "profile_verified_at": null
   },
   {
     "architecture_tags": [
@@ -4473,8 +4358,8 @@
     "developer": "Mistral AI",
     "developer_jurisdiction": "EU",
     "display_name": "Mistral Large 3",
-    "generated_at": "2026-04-23T21:57:50.399664+00:00",
-    "input_price_per_1m": 0.5,
+    "generated_at": "2026-06-10T18:28:14.916196+00:00",
+    "input_price_per_1m": 2.0,
     "judge_context_hint": "Mistral Large 3 neigt zu prägnanten, strukturierten Antworten und kann bei offenen kreativen Aufgaben etwas konservativer formulieren als US-amerikanische Konkurrenzmodelle.",
     "knowledge_cutoff": "2024-11",
     "known_limitations": [
@@ -4488,7 +4373,7 @@
     "model_id": "mistral-large-2411",
     "model_version": "2411",
     "origin_country": "France",
-    "output_price_per_1m": 1.5,
+    "output_price_per_1m": 6.0,
     "parameter_architecture": "dense",
     "params_active_b": null,
     "params_total_b": 123.0,
@@ -4524,7 +4409,9 @@
     ],
     "output_modalities": [
       "text"
-    ]
+    ],
+    "profile_verified": false,
+    "profile_verified_at": null
   },
   {
     "model_id": "mistral-large-2512",
@@ -4568,12 +4455,12 @@
     "commercial_use_allowed": true,
     "weights_license_tier": "open-weights",
     "model_version": "3",
-    "input_price_per_1m": 0.5,
-    "output_price_per_1m": 1.5,
+    "input_price_per_1m": 2.0,
+    "output_price_per_1m": 6.0,
     "unknown": false,
     "card_status": "complete",
     "size_class": "Frontier",
-    "generated_at": "2026-05-25T22:13:48.102060+00:00",
+    "generated_at": "2026-06-10T18:28:14.916349+00:00",
     "thinking_probe_detected": false,
     "thinking_probe_evidence": "No CoT signals found (A: no think-tags, B: reasoning_tokens=0). Response length: 486 chars",
     "thinking_probe_confidence": "low",
@@ -4591,7 +4478,9 @@
     ],
     "output_modalities": [
       "text"
-    ]
+    ],
+    "profile_verified": false,
+    "profile_verified_at": null
   },
   {
     "architecture_tags": [
@@ -4656,7 +4545,9 @@
     ],
     "output_modalities": [
       "text"
-    ]
+    ],
+    "profile_verified": false,
+    "profile_verified_at": null
   },
   {
     "architecture_tags": [
@@ -4671,8 +4562,8 @@
     "developer": "Mistral AI",
     "developer_jurisdiction": "EU",
     "display_name": "Mistral Medium 3.5",
-    "generated_at": "2026-05-21T00:00:00.000000+00:00",
-    "input_price_per_1m": null,
+    "generated_at": "2026-06-10T18:28:14.916569+00:00",
+    "input_price_per_1m": 1.5,
     "judge_context_hint": "Mistral Medium 3.5 ist auf agentische und Coding-Szenarien optimiert – bei allgemeinen Reasoning-Aufgaben und kreativem Schreiben kann die Bewertung leicht anders ausfallen als bei reinen General-Purpose-Frontier-Modellen.",
     "knowledge_cutoff": "2025-12",
     "known_limitations": [
@@ -4687,7 +4578,7 @@
     "model_id": "mistral-medium-3-5",
     "model_version": "2312",
     "origin_country": "France",
-    "output_price_per_1m": null,
+    "output_price_per_1m": 7.5,
     "parameter_architecture": "dense",
     "params_active_b": null,
     "params_total_b": null,
@@ -4724,7 +4615,9 @@
     ],
     "output_modalities": [
       "text"
-    ]
+    ],
+    "profile_verified": false,
+    "profile_verified_at": null
   },
   {
     "architecture_tags": [
@@ -4790,7 +4683,9 @@
     ],
     "output_modalities": [
       "text"
-    ]
+    ],
+    "profile_verified": false,
+    "profile_verified_at": null
   },
   {
     "architecture_tags": [
@@ -4857,7 +4752,9 @@
     ],
     "output_modalities": [
       "text"
-    ]
+    ],
+    "profile_verified": false,
+    "profile_verified_at": null
   },
   {
     "architecture_tags": [
@@ -4925,7 +4822,9 @@
     ],
     "output_modalities": [
       "text"
-    ]
+    ],
+    "profile_verified": false,
+    "profile_verified_at": null
   },
   {
     "model_id": "moonshotai/kimi-k2",
@@ -4990,7 +4889,9 @@
     ],
     "output_modalities": [
       "text"
-    ]
+    ],
+    "profile_verified": false,
+    "profile_verified_at": null
   },
   {
     "model_id": "moonshotai/kimi-k2.5-0127",
@@ -5055,7 +4956,9 @@
     ],
     "output_modalities": [
       "text"
-    ]
+    ],
+    "profile_verified": false,
+    "profile_verified_at": null
   },
   {
     "model_id": "moonshotai/kimi-k2.6",
@@ -5120,7 +5023,9 @@
     ],
     "output_modalities": [
       "text"
-    ]
+    ],
+    "profile_verified": false,
+    "profile_verified_at": null
   },
   {
     "architecture_tags": [
@@ -5187,7 +5092,9 @@
     ],
     "output_modalities": [
       "text"
-    ]
+    ],
+    "profile_verified": false,
+    "profile_verified_at": null
   },
   {
     "architecture_tags": [
@@ -5253,10 +5160,12 @@
     ],
     "output_modalities": [
       "text"
-    ]
+    ],
+    "profile_verified": false,
+    "profile_verified_at": null
   },
   {
-    "model_id": "nvidia_nemotron-3-ultra-550b-a55b",
+    "model_id": "nvidia/nemotron-3-ultra-550b-a55b",
     "display_name": "NVIDIA Nemotron 3 Ultra 550B A55B",
     "developer": "NVIDIA",
     "origin_country": "USA",
@@ -5290,8 +5199,16 @@
     ],
     "judge_context_hint": "NVIDIA Nemotron 3 Ultra 550B A55B (veröffentlicht 4. Juni 2026) ist ein Frontier-Reasoning-Modell mit Open Weights. MoE 55B/550B, Hybrid Transformer-Mamba, 1M Kontext. NVIDIA Open Model License. Preise: $0.50/$2.50 pro 1M Tokens.",
     "architecture_tags": [
+      "Thinking",
       "Long-Context",
       "Agentic"
+    ],
+    "input_modalities": [
+      "text",
+      "image"
+    ],
+    "output_modalities": [
+      "text"
     ],
     "supports_tool_use": true,
     "license": "NVIDIA Open Model License v1",
@@ -5305,10 +5222,10 @@
     "card_status": "complete",
     "size_class": "Frontier",
     "generated_at": "2026-06-10T11:36:00+00:00",
-    "thinking_probe_detected": null,
-    "thinking_probe_evidence": null,
-    "thinking_probe_confidence": null,
-    "thinking_probe_at": null,
+    "thinking_probe_detected": true,
+    "thinking_probe_evidence": "Multi-Probe (3 prompts, 3 detected, best confidence=medium):\n  - math: [math] reasoning_tokens=52 in provider metadata. First 200 chars: **Step 1: Identify the given values.**\n*   Distance traveled ($d$) = 120 km\n*   Time taken ($t$) = 1.5 hours\n\n**Step 2: Recall the formula for average speed.**\n$$ \\text{Average Speed} = \\frac{\\text{To\n  - code: [code] reasoning_tokens=141 in provider metadata. First 200 chars: I will use the **Merge Sort** algorithm.\n\n### Why Merge Sort?\n*   **Time Complexity:** $O(n \\log n)$ (efficient for large lists).\n*   **Stable:** Preserves the relative order of equal elements (import\n  - decision: [decision] reasoning_tokens=134 in provider metadata. First 200 chars: This is one of the most debated questions in AI ethics, often framed as a real-world version of the \"Trolley Problem.\" There is no global consensus, and different ethical frameworks yield different an",
+    "thinking_probe_confidence": "medium",
+    "thinking_probe_at": "2026-06-10T21:16:34.421348+00:00",
     "top_p": null,
     "top_k": null,
     "repetition_penalty": null,
@@ -5316,13 +5233,8 @@
     "presence_penalty": null,
     "seed": null,
     "stop_sequences": null,
-    "input_modalities": [
-      "text",
-      "image"
-    ],
-    "output_modalities": [
-      "text"
-    ]
+    "profile_verified": false,
+    "profile_verified_at": null
   },
   {
     "architecture_tags": [
@@ -5385,7 +5297,9 @@
     ],
     "output_modalities": [
       "text"
-    ]
+    ],
+    "profile_verified": false,
+    "profile_verified_at": null
   },
   {
     "architecture_tags": [
@@ -5449,7 +5363,9 @@
     ],
     "output_modalities": [
       "text"
-    ]
+    ],
+    "profile_verified": false,
+    "profile_verified_at": null
   },
   {
     "architecture_tags": [
@@ -5513,7 +5429,9 @@
     ],
     "output_modalities": [
       "text"
-    ]
+    ],
+    "profile_verified": false,
+    "profile_verified_at": null
   },
   {
     "architecture_tags": [
@@ -5576,134 +5494,9 @@
     ],
     "output_modalities": [
       "text"
-    ]
-  },
-  {
-    "architecture_tags": [
-      "Coder"
     ],
-    "card_status": "complete",
-    "commercial_use_allowed": true,
-    "context_window_k": 32,
-    "deployment_type": "open-weights-cloud-available",
-    "developer": "Alibaba Cloud",
-    "developer_jurisdiction": "CN",
-    "display_name": "Qwen 2.5 Coder 7B",
-    "generated_at": "2026-04-23T22:09:59.888435+00:00",
-    "input_price_per_1m": null,
-    "judge_context_hint": "Das Modell ist explizit auf Coding spezialisiert – bei Coding-Benchmarks sollte die Korrektheit und Ausführbarkeit des generierten Codes im Vordergrund stehen, nicht sprachliche Eleganz.",
-    "knowledge_cutoff": "2024-09",
-    "known_limitations": [
-      "Bei sehr komplexen, mehrstufigen Architekturentscheidungen oder großen Codebasen stoßen 7B-Modelle schnell an Kontextgrenzen",
-      "Nicht-technische oder kreative Aufgaben außerhalb des Coding-Bereichs werden deutlich schwächer abgedeckt als bei General-Purpose-Modellen"
-    ],
-    "license": "Apache-2.0",
-    "license_url": "https://www.apache.org/licenses/LICENSE-2.0",
-    "local_deployment_possible": true,
-    "model_family": "Qwen",
-    "model_id": "qwen2.5-coder:7b",
-    "model_version": "2.5",
-    "origin_country": "China",
-    "output_price_per_1m": null,
-    "parameter_architecture": "dense",
-    "params_active_b": null,
-    "params_total_b": 7.0,
-    "primary_focus": "coding",
-    "size_class": "Edge",
-    "strengths": [
-      "Starke Code-Generierung und Vervollständigung in gängigen Sprachen wie Python, JavaScript, Java und C++",
-      "Kompakte 7B-Größe ermöglicht effiziente lokale Ausführung auf Consumer-Hardware",
-      "Gutes Verständnis von Code-Kontext, Debugging-Aufgaben und technischen Erklärungen"
-    ],
-    "summary": "Qwen 2.5 Coder 7B ist ein spezialisiertes Code-Modell von Alibaba aus China mit Open-Weights-Lizenz. Es lässt sich lokal betreiben und ist über Cloud-Provider verfügbar. Chinesische Herkunft und das nationale Sicherheitsgesetz (NSL) sind bei der Einschätzung des Datenrisikos zu berücksichtigen.",
-    "supports_tool_use": null,
-    "thinking_probe_at": "2026-04-25T09:20:47.385071+00:00",
-    "thinking_probe_confidence": "low",
-    "thinking_probe_detected": false,
-    "thinking_probe_evidence": "No CoT signals found (A: no think-tags, B: reasoning_tokens=0). Response length: 609 chars",
-    "unknown": false,
-    "use_case_primary": "coding",
-    "vendor": "Alibaba",
-    "weights_license_tier": "open-weights",
-    "weights_provenance_risk": "high",
-    "weights_provenance_risk_rationale": "Alibaba Cloud (Tongyi Qwen-Team) ist ein chinesisches Unternehmen und unterliegt dem chinesischen National Security Law (NSL). Das BSI hat im Februar 2025 vor chinesischen KI-Cloud-Diensten gewarnt (BSI-Referenz: Warnung DeepSeek, 04.02.2025); bei lokalem Betrieb der Open-Weights-Variante ohne Datenübertragung nach China ist das cloud-spezifische Risikoszenario reduziert.",
-    "top_p": null,
-    "top_k": null,
-    "repetition_penalty": null,
-    "frequency_penalty": null,
-    "presence_penalty": null,
-    "seed": null,
-    "stop_sequences": null,
-    "input_modalities": [
-      "text"
-    ],
-    "output_modalities": [
-      "text"
-    ]
-  },
-  {
-    "architecture_tags": [
-      "General",
-      "Instruct"
-    ],
-    "card_status": "complete",
-    "commercial_use_allowed": true,
-    "context_window_k": 32,
-    "deployment_type": "open-weights-cloud-available",
-    "developer": "Alibaba Cloud",
-    "developer_jurisdiction": "CN",
-    "display_name": "Qwen 2.5 3B",
-    "generated_at": "2026-04-23T22:10:10.975574+00:00",
-    "input_price_per_1m": null,
-    "judge_context_hint": "Das Modell ist für seine Größe (3B Parameter) überdurchschnittlich leistungsfähig, sollte aber nicht an Maßstäben größerer Modelle gemessen werden – Antwortqualität und Instruktionstreue sind im 3B-Kontext zu bewerten.",
-    "knowledge_cutoff": "2024-09",
-    "known_limitations": [
-      "Begrenzte Kontextlänge und Reasoning-Tiefe im Vergleich zu größeren Modellen der gleichen Familie",
-      "Kann bei komplexen Mehrstufenaufgaben oder langen Dokumenten an Kapazitätsgrenzen stoßen"
-    ],
-    "license": "Apache-2.0",
-    "license_url": "https://www.apache.org/licenses/LICENSE-2.0",
-    "local_deployment_possible": true,
-    "model_family": "Qwen",
-    "model_id": "qwen2.5:3b",
-    "model_version": "2.5",
-    "origin_country": "China",
-    "output_price_per_1m": null,
-    "parameter_architecture": "dense",
-    "params_active_b": null,
-    "params_total_b": 3.0,
-    "primary_focus": "general",
-    "size_class": "Nano",
-    "strengths": [
-      "Sehr geringer Ressourcenbedarf – lokal auf Consumer-Hardware betreibbar",
-      "Solide Mehrsprachigkeit, insbesondere Chinesisch und Englisch",
-      "Gute Leistung in Coding- und Mathematikaufgaben für die Modellgröße"
-    ],
-    "summary": "Qwen 2.5 3B ist ein kompaktes Open-Weights-Modell von Alibaba aus China, das lokal betreibbar und über Cloud-Provider verfügbar ist. 32K Kontext. Eignet sich für Instruction-Following und leichtgewichtige Textaufgaben auf ressourcenarmer Hardware.",
-    "supports_tool_use": null,
-    "thinking_probe_at": "2026-04-25T09:21:17.181757+00:00",
-    "thinking_probe_confidence": "low",
-    "thinking_probe_detected": false,
-    "thinking_probe_evidence": "No CoT signals found (A: no think-tags, B: reasoning_tokens=0). Response length: 961 chars",
-    "unknown": false,
-    "use_case_primary": "generalist",
-    "vendor": "Alibaba",
-    "weights_license_tier": "open-weights",
-    "weights_provenance_risk": "high",
-    "weights_provenance_risk_rationale": "Alibaba Cloud (Tongyi Qwen-Team) ist ein chinesisches Unternehmen und unterliegt dem chinesischen National Security Law (NSL). Das BSI hat im Februar 2025 vor chinesischen KI-Cloud-Diensten gewarnt (BSI-Referenz: Warnung DeepSeek, 04.02.2025); bei lokalem Betrieb der Open-Weights-Variante ohne Datenübertragung nach China ist das cloud-spezifische Risikoszenario reduziert.",
-    "top_p": null,
-    "top_k": null,
-    "repetition_penalty": null,
-    "frequency_penalty": null,
-    "presence_penalty": null,
-    "seed": null,
-    "stop_sequences": null,
-    "input_modalities": [
-      "text"
-    ],
-    "output_modalities": [
-      "text"
-    ]
+    "profile_verified": false,
+    "profile_verified_at": null
   },
   {
     "architecture_tags": [
@@ -5767,7 +5560,9 @@
     ],
     "output_modalities": [
       "text"
-    ]
+    ],
+    "profile_verified": false,
+    "profile_verified_at": null
   },
   {
     "architecture_tags": [
@@ -5831,7 +5626,9 @@
     ],
     "output_modalities": [
       "text"
-    ]
+    ],
+    "profile_verified": false,
+    "profile_verified_at": null
   },
   {
     "model_id": "qwen3-coder-30b-a3b-q8",
@@ -5902,7 +5699,9 @@
     ],
     "output_modalities": [
       "text"
-    ]
+    ],
+    "profile_verified": false,
+    "profile_verified_at": null
   },
   {
     "model_id": "qwen3-coder-next-q4",
@@ -5969,7 +5768,9 @@
     ],
     "output_modalities": [
       "text"
-    ]
+    ],
+    "profile_verified": false,
+    "profile_verified_at": null
   },
   {
     "model_id": "qwen3-coder-next-q8",
@@ -6006,8 +5807,15 @@
     ],
     "judge_context_hint": "Code-spezialisiertes MoE-Modell mit nur 3B aktiven Parametern bei 80B Gesamtgröße. Q8_K_XL-Quantisierung als Multi-File-Shard für High-Memory-Hardware. Kein Thinking-Modus. Gleiche Architektur und gleiche Benchmark-Werte wie die Q4-Schwester-Variante, nur mit höherer Präzision.",
     "architecture_tags": [
+      "Thinking",
       "Coder",
       "Agentic"
+    ],
+    "input_modalities": [
+      "text"
+    ],
+    "output_modalities": [
+      "text"
     ],
     "supports_tool_use": true,
     "license": "Apache 2.0",
@@ -6021,10 +5829,10 @@
     "card_status": "complete",
     "size_class": "Desktop",
     "generated_at": "2026-06-09T20:44:00+00:00",
-    "thinking_probe_detected": null,
-    "thinking_probe_evidence": "Kein Live-Probe durchgeführt. Qwen3-Coder-Next ist architektonisch ohne Thinking-Modus (kein nativer CoT-Output), aber empirische Verifikation steht aus. Config setzt enable_thinking: false; llama.cpp startet mit --reasoning off. Smoke-Test (curl POST /v1/chat/completions) lieferte direkte Antwort ohne <think>-Tags — ABER der vollständige 81-GB-Multi-File-GGUF-Ladevorgang dauerte das Session-Fenster, sodass probe_thinking.py nie einen vollständigen Probe durchführen konnte. Die hartcodierte Ableitung 'detected=false' aus dem Smoke-Test war zu stark behauptet — bei Q8 sollte ein vollständiger Probe mit _has_inline_cot()-Heuristik (Signal C) wiederholt werden.",
-    "thinking_probe_confidence": null,
-    "thinking_probe_at": null,
+    "thinking_probe_detected": true,
+    "thinking_probe_evidence": "Multi-Probe (3 prompts, 3 detected, best confidence=medium):\n  - math: [math] Inline CoT im content-Feld: Antwort 642 chars (>200) mit 16 Berechnungs-Operatoren. First 200 chars: To find the **average speed** of the train, we use the formula:\n\n\\[\n\\text{Average speed} = \\frac{\\text{Total distance traveled}}{\\text{Total time taken}}\n\\]\n\n### Step 1: Identify the given values\n- To\n  - code: [code] Inline CoT im content-Feld: Antwort 5244 chars (>200) mit 60 Berechnungs-Operatoren. First 200 chars: Let's sort the list **step by step** using **Merge Sort**, a stable, comparison-based, divide-and-conquer algorithm with time complexity **O(n log n)**. It’s ideal for demonstration because it clearly\n  - decision: [decision] Inline CoT im content-Feld: Antwort 4269 chars (>200) mit 32 Berechnungs-Operatoren. First 200 chars: This is a classic and deeply challenging question in autonomous vehicle (AV) ethics—often framed as a variation of the *trolley problem*. Let’s carefully unpack the ethical considerations before offer",
+    "thinking_probe_confidence": "medium",
+    "thinking_probe_at": "2026-06-10T16:40:20.665271+00:00",
     "top_p": null,
     "top_k": null,
     "repetition_penalty": null,
@@ -6032,140 +5840,8 @@
     "presence_penalty": null,
     "seed": null,
     "stop_sequences": null,
-    "input_modalities": [
-      "text"
-    ],
-    "output_modalities": [
-      "text"
-    ]
-  },
-  {
-    "architecture_tags": [
-      "General",
-      "Thinking-Optional"
-    ],
-    "card_status": "complete",
-    "commercial_use_allowed": true,
-    "context_window_k": 32,
-    "deployment_type": "open-weights-cloud-available",
-    "developer": "Alibaba Cloud",
-    "developer_jurisdiction": "CN",
-    "display_name": "Qwen 3 14B",
-    "generated_at": "2026-04-23T22:08:25.785509+00:00",
-    "input_price_per_1m": null,
-    "judge_context_hint": "Das Modell verfügt über einen optionalen Thinking-Modus – bei aktiviertem Thinking sind sichtbare Reasoning-Blöcke zu erwarten; die finale Antwort sollte separat bewertet werden.",
-    "knowledge_cutoff": "2024-09",
-    "known_limitations": [
-      "Kann in sensiblen politischen Themen mit Bezug zu China zensierte oder ausweichende Antworten liefern",
-      "Thinking-Modus erhöht Latenz und Token-Verbrauch deutlich, was bei einfachen Aufgaben ineffizient ist"
-    ],
-    "license": "Apache-2.0",
-    "license_url": "https://www.apache.org/licenses/LICENSE-2.0",
-    "local_deployment_possible": true,
-    "model_family": "Qwen",
-    "model_id": "qwen3:14b",
-    "model_version": "3",
-    "origin_country": "China",
-    "output_price_per_1m": null,
-    "parameter_architecture": "dense",
-    "params_active_b": null,
-    "params_total_b": 14.0,
-    "primary_focus": "general",
-    "size_class": "Desktop",
-    "strengths": [
-      "Optionales Chain-of-Thought (Thinking-Modus) für komplexe Reasoning-Aufgaben zuschaltbar",
-      "Starke mehrsprachige Fähigkeiten, insbesondere für Chinesisch und Englisch",
-      "Gute Balance zwischen Modellgröße und Leistung – lokal auf Consumer-Hardware betreibbar"
-    ],
-    "summary": "Qwen 3 14B ist ein Open-Weights-Modell von Alibaba aus China – ausgelegt auf allgemeine Sprach- und Reasoning-Aufgaben. Es lässt sich lokal betreiben und ist über Cloud-Provider verfügbar. Chinesische Herkunft und das nationale Sicherheitsgesetz (NSL) sind bei der Einschätzung des Datenrisikos zu berücksichtigen.",
-    "supports_tool_use": null,
-    "thinking_probe_at": "2026-04-25T09:26:26.796058+00:00",
-    "thinking_probe_confidence": "low",
-    "thinking_probe_detected": false,
-    "thinking_probe_evidence": "No CoT signals found (A: no think-tags, B: reasoning_tokens=0). Response length: 1746 chars",
-    "unknown": false,
-    "use_case_primary": "generalist",
-    "vendor": "Alibaba",
-    "weights_license_tier": "open-weights",
-    "weights_provenance_risk": "high",
-    "weights_provenance_risk_rationale": "Alibaba Cloud (Tongyi Qwen-Team) ist ein chinesisches Unternehmen und unterliegt dem chinesischen National Security Law (NSL). Das BSI hat im Februar 2025 vor chinesischen KI-Cloud-Diensten gewarnt (BSI-Referenz: Warnung DeepSeek, 04.02.2025); bei lokalem Betrieb der Open-Weights-Variante ohne Datenübertragung nach China ist das cloud-spezifische Risikoszenario reduziert.",
-    "top_p": null,
-    "top_k": null,
-    "repetition_penalty": null,
-    "frequency_penalty": null,
-    "presence_penalty": null,
-    "seed": null,
-    "stop_sequences": null,
-    "input_modalities": [
-      "text"
-    ],
-    "output_modalities": [
-      "text"
-    ]
-  },
-  {
-    "architecture_tags": [
-      "General",
-      "Thinking-Optional"
-    ],
-    "card_status": "complete",
-    "commercial_use_allowed": true,
-    "context_window_k": 32,
-    "deployment_type": "open-weights-cloud-available",
-    "developer": "Alibaba Cloud",
-    "developer_jurisdiction": "CN",
-    "display_name": "Qwen 3 4B",
-    "generated_at": "2026-04-23T22:09:26.769461+00:00",
-    "input_price_per_1m": null,
-    "judge_context_hint": "Das Modell verfügt über einen schaltbaren Thinking-Modus – bei aktiviertem Thinking sind sichtbare Reasoning-Blöcke zu erwarten; die Antwortqualität kann je nach Modus stark variieren.",
-    "knowledge_cutoff": "2024-09",
-    "known_limitations": [
-      "Als 4B-Modell bei komplexen Reasoning- und Wissensaufgaben deutlich schwächer als größere Modelle",
-      "Kann bei sensiblen oder politisch heiklen Themen mit China-Bezug zensierte oder ausweichende Antworten liefern"
-    ],
-    "license": "Apache-2.0",
-    "license_url": "https://www.apache.org/licenses/LICENSE-2.0",
-    "local_deployment_possible": true,
-    "model_family": "Qwen",
-    "model_id": "qwen3:4b",
-    "model_version": "3",
-    "origin_country": "China",
-    "output_price_per_1m": null,
-    "parameter_architecture": "dense",
-    "params_active_b": null,
-    "params_total_b": 4.0,
-    "primary_focus": "general",
-    "size_class": "Nano",
-    "strengths": [
-      "Optionales Thinking-Modus (Chain-of-Thought an-/abschaltbar) für komplexere Aufgaben",
-      "Sehr ressourceneffizient – lokal auf Consumer-Hardware betreibbar",
-      "Solide Mehrsprachigkeit, besonders Chinesisch und Englisch"
-    ],
-    "summary": "Qwen 3 4B ist ein kompaktes Open-Weights-Modell von Alibaba aus China, das lokal betreibbar und über Cloud-Provider verfügbar ist. 32K Kontext, optionales Thinking. Eignet sich für Instruction-Following und alltägliche Textaufgaben bei niedrigem Ressourcenbedarf.",
-    "supports_tool_use": null,
-    "thinking_probe_at": "2026-04-25T09:27:14.723242+00:00",
-    "thinking_probe_confidence": "low",
-    "thinking_probe_detected": false,
-    "thinking_probe_evidence": "No CoT signals found (A: no think-tags, B: reasoning_tokens=0). Response length: 105 chars",
-    "unknown": false,
-    "use_case_primary": "generalist",
-    "vendor": "Alibaba",
-    "weights_license_tier": "open-weights",
-    "weights_provenance_risk": "high",
-    "weights_provenance_risk_rationale": "Alibaba Cloud (Tongyi Qwen-Team) ist ein chinesisches Unternehmen und unterliegt dem chinesischen National Security Law (NSL). Das BSI hat im Februar 2025 vor chinesischen KI-Cloud-Diensten gewarnt (BSI-Referenz: Warnung DeepSeek, 04.02.2025); bei lokalem Betrieb der Open-Weights-Variante ohne Datenübertragung nach China ist das cloud-spezifische Risikoszenario reduziert.",
-    "top_p": null,
-    "top_k": null,
-    "repetition_penalty": null,
-    "frequency_penalty": null,
-    "presence_penalty": null,
-    "seed": null,
-    "stop_sequences": null,
-    "input_modalities": [
-      "text"
-    ],
-    "output_modalities": [
-      "text"
-    ]
+    "profile_verified": false,
+    "profile_verified_at": null
   },
   {
     "model_id": "qwen3_5-35b-a3b-q4",
@@ -6237,7 +5913,9 @@
     ],
     "output_modalities": [
       "text"
-    ]
+    ],
+    "profile_verified": false,
+    "profile_verified_at": null
   },
   {
     "model_id": "qwen3_5-35b-a3b-q8",
@@ -6275,8 +5953,17 @@
     ],
     "judge_context_hint": "MoE-Modell mit nur 3B aktiven Parametern – effizienter als viele Dense-Modelle gleicher Gesamtgröße. Q8_K_XL-Quantisierung minimiert Qualitätsverluste.",
     "architecture_tags": [
+      "Thinking",
       "Thinking-Optional",
       "Multimodal"
+    ],
+    "input_modalities": [
+      "text",
+      "image",
+      "audio"
+    ],
+    "output_modalities": [
+      "text"
     ],
     "supports_tool_use": true,
     "license": "Apache 2.0",
@@ -6290,10 +5977,10 @@
     "card_status": "complete",
     "size_class": "Desktop",
     "generated_at": "2026-06-04T21:56:30+00:00",
-    "thinking_probe_detected": null,
-    "thinking_probe_evidence": null,
-    "thinking_probe_confidence": null,
-    "thinking_probe_at": null,
+    "thinking_probe_detected": true,
+    "thinking_probe_evidence": "Multi-Probe (3 prompts, 3 detected, best confidence=medium):\n  - math: [math] Inline CoT im content-Feld: Antwort 1098 chars (>200) mit 16 Berechnungs-Operatoren. First 200 chars: To find the average speed of the train, we will follow these steps:\n\n### Step 1: Identify the given values\nFrom the problem description, we have:\n*   **Distance ($d$):** $120 \\text{ km}$\n*   **Time ($\n  - code: [code] Inline CoT im content-Feld: Antwort 2064 chars (>200) mit 16 Berechnungs-Operatoren. First 200 chars: To sort the list `[3, 1, 4, 1, 5, 9, 2, 6, 5, 3, 5]`, I will use the **Bubble Sort** algorithm. This is an excellent choice for a step-by-step explanation because it is intuitive, visual, and demonstr\n  - decision: [decision] Inline CoT im content-Feld: Antwort 4853 chars (>200) mit 38 Berechnungs-Operatoren. First 200 chars: This is one of the most profound and debated questions in the field of AI ethics, often referred to as the modern **\"Trolley Problem.\"** There is no single, universally agreed-upon answer, as the deci",
+    "thinking_probe_confidence": "medium",
+    "thinking_probe_at": "2026-06-10T22:33:07.334129+00:00",
     "top_p": null,
     "top_k": null,
     "repetition_penalty": null,
@@ -6301,14 +5988,8 @@
     "presence_penalty": null,
     "seed": null,
     "stop_sequences": null,
-    "input_modalities": [
-      "text",
-      "image",
-      "audio"
-    ],
-    "output_modalities": [
-      "text"
-    ]
+    "profile_verified": false,
+    "profile_verified_at": null
   },
   {
     "architecture_tags": [
@@ -6372,7 +6053,9 @@
     ],
     "output_modalities": [
       "text"
-    ]
+    ],
+    "profile_verified": false,
+    "profile_verified_at": null
   },
   {
     "architecture_tags": [
@@ -6436,7 +6119,9 @@
     ],
     "output_modalities": [
       "text"
-    ]
+    ],
+    "profile_verified": false,
+    "profile_verified_at": null
   },
   {
     "architecture_tags": [
@@ -6500,7 +6185,9 @@
     ],
     "output_modalities": [
       "text"
-    ]
+    ],
+    "profile_verified": false,
+    "profile_verified_at": null
   },
   {
     "architecture_tags": [
@@ -6564,7 +6251,9 @@
     ],
     "output_modalities": [
       "text"
-    ]
+    ],
+    "profile_verified": false,
+    "profile_verified_at": null
   },
   {
     "architecture_tags": [
@@ -6628,71 +6317,9 @@
     ],
     "output_modalities": [
       "text"
-    ]
-  },
-  {
-    "architecture_tags": [
-      "General",
-      "Thinking-Optional"
     ],
-    "card_status": "complete",
-    "commercial_use_allowed": true,
-    "context_window_k": 32,
-    "deployment_type": "open-weights-cloud-available",
-    "developer": "Alibaba Cloud",
-    "developer_jurisdiction": "CN",
-    "display_name": "Qwen 3.5 9B",
-    "generated_at": "2026-04-23T22:09:07.320486+00:00",
-    "input_price_per_1m": null,
-    "judge_context_hint": "Das Modell unterstützt einen optionalen Thinking-Modus – bei Benchmarks sollte beachtet werden, ob dieser aktiviert ist, da er die Antwortqualität bei Reasoning-Aufgaben erheblich beeinflusst.",
-    "knowledge_cutoff": "2025-06",
-    "known_limitations": [
-      "Kann bei komplexen, langen Reasoning-Ketten ohne aktiviertes Thinking-Modus an Grenzen stoßen",
-      "Mögliche Zensur oder Auslassungen bei politisch sensiblen Themen mit Bezug zu China"
-    ],
-    "license": "Apache-2.0",
-    "license_url": "https://www.apache.org/licenses/LICENSE-2.0",
-    "local_deployment_possible": true,
-    "model_family": "Qwen",
-    "model_id": "qwen3.5:9b",
-    "model_version": "3.5",
-    "origin_country": "China",
-    "output_price_per_1m": null,
-    "parameter_architecture": "dense",
-    "params_active_b": null,
-    "params_total_b": 9.0,
-    "primary_focus": "general",
-    "size_class": "Edge",
-    "strengths": [
-      "Starke mehrsprachige Fähigkeiten, insbesondere Chinesisch und Englisch",
-      "Gutes Verhältnis von Modellgröße zu Leistung im 9B-Segment",
-      "Unterstützt optionales Chain-of-Thought-Reasoning (Thinking-Optional)"
-    ],
-    "summary": "Qwen 3.5 9B ist ein Open-Weights-Modell von Alibaba aus China – ausgelegt auf allgemeine Sprachaufgaben und Reasoning. Es lässt sich lokal betreiben und ist über Cloud-Provider verfügbar. Chinesische Herkunft und das nationale Sicherheitsgesetz (NSL) sind bei der Einschätzung des Datenrisikos zu berücksichtigen.",
-    "supports_tool_use": null,
-    "thinking_probe_at": "2026-04-25T09:25:30.007908+00:00",
-    "thinking_probe_confidence": "low",
-    "thinking_probe_detected": false,
-    "thinking_probe_evidence": "No CoT signals found (A: no think-tags, B: reasoning_tokens=0). Response length: 1582 chars",
-    "unknown": false,
-    "use_case_primary": "generalist",
-    "vendor": "Alibaba",
-    "weights_license_tier": "open-weights",
-    "weights_provenance_risk": "high",
-    "weights_provenance_risk_rationale": "Alibaba Cloud (Tongyi Qwen-Team) ist ein chinesisches Unternehmen und unterliegt dem chinesischen National Security Law (NSL). Das BSI hat im Februar 2025 vor chinesischen KI-Cloud-Diensten gewarnt (BSI-Referenz: Warnung DeepSeek, 04.02.2025); bei lokalem Betrieb der Open-Weights-Variante ohne Datenübertragung nach China ist das cloud-spezifische Risikoszenario reduziert.",
-    "top_p": null,
-    "top_k": null,
-    "repetition_penalty": null,
-    "frequency_penalty": null,
-    "presence_penalty": null,
-    "seed": null,
-    "stop_sequences": null,
-    "input_modalities": [
-      "text"
-    ],
-    "output_modalities": [
-      "text"
-    ]
+    "profile_verified": false,
+    "profile_verified_at": null
   },
   {
     "model_id": "qwen3_6-35b-a3b-q8",
@@ -6762,7 +6389,9 @@
     ],
     "output_modalities": [
       "text"
-    ]
+    ],
+    "profile_verified": false,
+    "profile_verified_at": null
   },
   {
     "model_id": "qwen3_6-35b-a3b-uncensored",
@@ -6835,7 +6464,9 @@
     ],
     "output_modalities": [
       "text"
-    ]
+    ],
+    "profile_verified": false,
+    "profile_verified_at": null
   },
   {
     "architecture_tags": [
@@ -6899,7 +6530,9 @@
     ],
     "output_modalities": [
       "text"
-    ]
+    ],
+    "profile_verified": false,
+    "profile_verified_at": null
   },
   {
     "architecture_tags": [
@@ -6922,7 +6555,8 @@
     "known_limitations": [
       "Chinesische Herkunft: potenzielle Zensur bei politisch sensiblen Themen mit China-Bezug",
       "Lokale Bereitstellung erfordert erhebliche Hardware (Multi-GPU)",
-      "OpenRouter-Routing kann je nach Provider variieren"
+      "OpenRouter-Routing kann je nach Provider variieren",
+      "Gelegentliche leere API-Antworten via OpenRouter (response_length=0 trotz gesetztem Token-Budget) – beobachtet bei cultural_intel_005; bei einem Retest behoben"
     ],
     "license": "Apache-2.0",
     "license_url": "https://www.apache.org/licenses/LICENSE-2.0",
@@ -6970,10 +6604,12 @@
     ],
     "output_modalities": [
       "text"
-    ]
+    ],
+    "profile_verified": false,
+    "profile_verified_at": null
   },
   {
-    "model_id": "qwen_qwen3_6-plus",
+    "model_id": "qwen/qwen3.6-plus",
     "display_name": "Qwen 3.6 Plus",
     "developer": "Alibaba Cloud (Qwen Team)",
     "origin_country": "China",
@@ -7040,76 +6676,9 @@
     ],
     "output_modalities": [
       "text"
-    ]
-  },
-  {
-    "architecture_tags": [
-      "Thinking-Optional",
-      "Agentic",
-      "Vision-Capable"
     ],
-    "card_status": "complete",
-    "commercial_use_allowed": true,
-    "context_window_k": 1000,
-    "deployment_type": "cloud-only",
-    "developer": "Alibaba Cloud",
-    "developer_jurisdiction": "CN",
-    "display_name": "Qwen 3.6 Plus",
-    "generated_at": "2026-06-01T00:00:00.000000+00:00",
-    "input_price_per_1m": 0.0,
-    "judge_context_hint": "Qwen 3.6 Plus (Free-Variante) ist Alibabas proprietäres Frontier-Modell für agentisches Coding, multimodale Workflows und grosse Kontextfenster; :free ist ein kostenloser Preview-SKU auf OpenRouter.",
-    "knowledge_cutoff": "2025-12",
-    "known_limitations": [
-      "Ausschliesslich ueber Cloud-API verfuegbar, kein lokaler Betrieb moeglich",
-      "Keine Open Weights, vollstaendige Abhaengigkeit von Alibaba-Infrastruktur",
-      "Chinesische Herkunft birgt potenzielle Zensur bei politisch sensiblen Themen mit China-Bezug",
-      "Die :free-Variante ist ein Preview-/Tryout-SKU und nicht mit dauerhaft stabilen Gratis-Konditionen gleichzusetzen"
-    ],
-    "license": "Proprietary",
-    "license_url": "https://openrouter.ai/qwen/qwen3.6-plus:free",
-    "local_deployment_possible": false,
-    "model_family": "Qwen",
-    "model_id": "qwen/qwen3.6-plus:free",
-    "model_version": "3.6-plus",
-    "origin_country": "China",
-    "output_price_per_1m": 0.0,
-    "parameter_architecture": "moe",
-    "params_active_b": null,
-    "params_total_b": null,
-    "primary_focus": "agentic",
-    "size_class": "Frontier",
-    "strengths": [
-      "Stark in agentischem Coding und Repository-Level-Problemloesung mit hoher Präzision",
-      "Sehr grosses Kontextfenster von 1M Tokens",
-      "Optionales Thinking bzw. preserve_thinking fuer komplexe Multi-Step-Workflows",
-      "Tool-Use und strukturierte agentische Nutzung ueber API/OpenRouter"
-    ],
-    "summary": "Qwen 3.6 Plus ist Alibabas proprietäres Frontier-Modell für agentisches Coding, Reasoning und multimodale Workflows. OpenRouter führt das Modell mit 1M Kontextfenster, Tool-Use-Fähigkeit und optionalem Thinking-Verhalten; die Free-Variante dient als kostenloser Preview- bzw. Tryout-Zugang, während das Basismodell regulär kostenpflichtig ist.",
-    "supports_tool_use": true,
-    "thinking_probe_at": "2026-06-01T00:00:00.000000+00:00",
-    "thinking_probe_confidence": "high",
-    "thinking_probe_detected": true,
-    "thinking_probe_evidence": "OpenRouter und begleitende Model-Beschreibungen verweisen auf optionales Thinking bzw. preserve_thinking fuer agentische Multi-Turn-Workflows.",
-    "unknown": false,
-    "use_case_primary": "agentic",
-    "vendor": "Alibaba",
-    "weights_license_tier": "proprietary",
-    "weights_provenance_risk": "high",
-    "weights_provenance_risk_rationale": "Alibaba Cloud (Tongyi Qwen-Team) ist ein chinesisches Unternehmen und unterliegt dem chinesischen National Security Law (NSL), das staatlichen Zugriff auf Daten ermöglichen kann. Das BSI hat im Februar 2025 explizit vor der Nutzung chinesischer KI-Cloud-Dienste gewarnt (BSI-Referenz: Warnung DeepSeek, 04.02.2025); diese Risikoeinschätzung gilt analog für alle chinesischen Cloud-KI-Anbieter, die Nutzerdaten auf chinesischen Servern verarbeiten.",
-    "top_p": null,
-    "top_k": null,
-    "repetition_penalty": null,
-    "frequency_penalty": null,
-    "presence_penalty": null,
-    "seed": null,
-    "stop_sequences": null,
-    "input_modalities": [
-      "text",
-      "image"
-    ],
-    "output_modalities": [
-      "text"
-    ]
+    "profile_verified": false,
+    "profile_verified_at": null
   },
   {
     "architecture_tags": [
@@ -7179,7 +6748,9 @@
     ],
     "output_modalities": [
       "text"
-    ]
+    ],
+    "profile_verified": false,
+    "profile_verified_at": null
   },
   {
     "architecture_tags": [
@@ -7243,7 +6814,9 @@
     ],
     "output_modalities": [
       "text"
-    ]
+    ],
+    "profile_verified": false,
+    "profile_verified_at": null
   },
   {
     "architecture_tags": [
@@ -7307,7 +6880,9 @@
     ],
     "output_modalities": [
       "text"
-    ]
+    ],
+    "profile_verified": false,
+    "profile_verified_at": null
   },
   {
     "model_id": "z-ai/glm-5-20260211",
@@ -7344,9 +6919,15 @@
     ],
     "judge_context_hint": "GLM-5 (veröffentlicht 11. Februar 2026) ist Z.ais Flaggschiff mit Open Weights und MoE-Architektur. 202K Kontext, Coding- und Agent-Workflow-Fokus. Preise: $0.60/$1.92 pro 1M Tokens. Custom Z.ai License.",
     "architecture_tags": [
-      "General",
+      "Thinking",
       "Long-Context",
       "Agentic"
+    ],
+    "input_modalities": [
+      "text"
+    ],
+    "output_modalities": [
+      "text"
     ],
     "supports_tool_use": true,
     "license": "Z.ai Open License",
@@ -7360,10 +6941,10 @@
     "card_status": "complete",
     "size_class": "Frontier",
     "generated_at": "2026-06-10T11:36:00+00:00",
-    "thinking_probe_detected": null,
-    "thinking_probe_evidence": null,
-    "thinking_probe_confidence": null,
-    "thinking_probe_at": null,
+    "thinking_probe_detected": true,
+    "thinking_probe_evidence": "Multi-Probe (3 prompts, 3 detected, best confidence=medium):\n  - math: [math] reasoning_tokens=575 in provider metadata. First 200 chars: Here is the step-by-step solution:\n\n**Step 1: Identify the formula for average speed.**\nThe formula for average speed is:\n$$\\text{Average Speed} = \\frac{\\text{Total Distance}}{\\text{Total Time}}$$\n\n**\n  - code: [code] reasoning_tokens=2560 in provider metadata. First 200 chars: \n  - decision: [decision] reasoning_tokens=1719 in provider metadata. First 200 chars: This is a variation of the classic \"Trolley Problem,\" a thought experiment that forces a choice between two unfavorable outcomes. When applied to autonomous vehicles (AVs), the scenario moves from abs",
+    "thinking_probe_confidence": "medium",
+    "thinking_probe_at": "2026-06-10T20:59:16.161868+00:00",
     "top_p": null,
     "top_k": null,
     "repetition_penalty": null,
@@ -7371,12 +6952,8 @@
     "presence_penalty": null,
     "seed": null,
     "stop_sequences": null,
-    "input_modalities": [
-      "text"
-    ],
-    "output_modalities": [
-      "text"
-    ]
+    "profile_verified": false,
+    "profile_verified_at": null
   },
   {
     "architecture_tags": [
@@ -7440,7 +7017,9 @@
     ],
     "output_modalities": [
       "text"
-    ]
+    ],
+    "profile_verified": false,
+    "profile_verified_at": null
   },
   {
     "architecture_tags": [
@@ -7504,6 +7083,8 @@
     ],
     "output_modalities": [
       "text"
-    ]
+    ],
+    "profile_verified": false,
+    "profile_verified_at": null
   }
 ]
