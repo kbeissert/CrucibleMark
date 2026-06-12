@@ -794,20 +794,26 @@ def _run_per_model_all_reviews(
         model_args = argparse.Namespace(**vars(args))
         model_args.model = slug
 
-        print(f"\n── {slug}: Schritt 1/3: Benchmark-Review ──")
+        print(f"\n── {slug}: Schritt 1/2: Benchmark-Review ──")
         _run_audit_reviews(
             model_args, client, provider, model_id, max_tokens, csv_data,
             effective_type="benchmark",
         )
 
-        print(f"\n── {slug}: Schritt 2/3: PC-Bias-Review ──")
+        print(f"\n── {slug}: Schritt 2/2: PC-Bias-Review ──")
         _run_audit_reviews(
             model_args, client, provider, model_id, max_tokens, "",
             effective_type="bias",
         )
 
-        print(f"\n── {slug}: Schritt 3/3: Tool-Use-Review ──")
-        _run_tooluse_reviews(model_args, client, provider, model_id, max_tokens)
+    # Tooluse-Reviews werden NACH dem per-model-Loop generiert, weil tooluse_leaderboard.csv
+    # Ollama-Format-IDs enthält (z.B. "gemma3:12b"), die nicht mit den audit_log-Slug-Namen
+    # übereinstimmen (z.B. "gemma-3-12b-it"). Ein pro-Modell-Lookup würde immer fehlschlagen.
+    # Mit model=None iteriert _run_tooluse_reviews über get_all_tooluse_model_ids() → korrekte IDs.
+    print(f"\n── Tool-Use-Reviews (alle ausstehenden Einträge aus tooluse_leaderboard.csv) ──")
+    tooluse_args = argparse.Namespace(**vars(args))
+    tooluse_args.model = None  # Kein Slug-Filter — IDs kommen aus tooluse_leaderboard.csv
+    _run_tooluse_reviews(tooluse_args, client, provider, model_id, max_tokens)
 
     print("\n✅ Per-Model-Reviews abgeschlossen.")
 
