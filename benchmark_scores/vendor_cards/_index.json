@@ -71,7 +71,37 @@
     "profile_verified_at": null
   },
   {
+    "vendor_id": "ara_apex_quant",
+    "card_subtype": "community",
+    "display_name": "ARA-APEX Quant",
+    "company": "ARA-APEX (Community-Contributor)",
+    "headquarters": "Community/privat (Ort unbekannt)",
+    "founding_year": null,
+    "pricing_model": "open-source-self-hosted",
+    "api_base_url": null,
+    "api_documentation_url": null,
+    "deployment": {
+      "cloud_act_exposure": false,
+      "applicable_law": "N/A (lokal only)",
+      "data_residency": "N/A (lokal only)",
+      "gdpr_dpa_available": false,
+      "eu_adequacy_decision": false,
+      "data_retention_days": 0,
+      "chinese_nsl_risk": "none"
+    },
+    "privacy_note": "ARA-APEX-Modelle werden ausschließlich lokal betrieben. Kein Datentransfer an externe Server. Die Modelle sind GGUF-Quantisierungen öffentlicher Basismodelle.",
+    "notable_models": [],
+    "stats": {},
+    "unknown": true,
+    "generated_at": "2026-06-12T08:00:00+00:00",
+    "last_verified_at": "2026-06-12",
+    "verification_source": null,
+    "profile_verified": false,
+    "profile_verified_at": null
+  },
+  {
     "vendor_id": "cognitive_computations",
+    "card_subtype": "community",
     "display_name": "Cognitive Computations",
     "company": "Cognitive Computations (Einzelperson / Eric Hartford)",
     "headquarters": "USA (genaue Stadt unbekannt)",
@@ -168,6 +198,40 @@
     "verification_source": "https://policies.google.com/privacy",
     "profile_verified": false,
     "profile_verified_at": null
+  },
+  {
+    "vendor_id": "hauhaucs",
+    "card_subtype": "community",
+    "display_name": "HauhauCS",
+    "company": "HauhauCS (Community-Contributor, HuggingFace)",
+    "headquarters": "Community/privat (Ort unbekannt)",
+    "founding_year": null,
+    "pricing_model": "open-source-self-hosted",
+    "api_base_url": null,
+    "api_documentation_url": "https://huggingface.co/HauhauCS",
+    "deployment": {
+      "cloud_act_exposure": false,
+      "applicable_law": "N/A (lokal only)",
+      "data_residency": "N/A (lokal only)",
+      "gdpr_dpa_available": false,
+      "eu_adequacy_decision": false,
+      "data_retention_days": 0,
+      "chinese_nsl_risk": "none"
+    },
+    "privacy_note": "HauhauCS-Modelle werden ausschließlich lokal betrieben. Kein Datentransfer an externe Server. Die Modelle sind Fine-Tunes öffentlicher Basismodelle (primär Qwen, Gemma) mit entfernten Sicherheitsbeschränkungen (\"Aggressive\"- und \"Balanced\"-Varianten).",
+    "notable_models": [
+      "Qwen3.5-9B-Uncensored-HauhauCS-Aggressive",
+      "Qwen3.6-27B-Uncensored-HauhauCS-Aggressive",
+      "Qwen3.6-35B-A3B-Uncensored-HauhauCS-Aggressive",
+      "Gemma-4-E4B-Uncensored-HauhauCS-Aggressive"
+    ],
+    "stats": {},
+    "unknown": false,
+    "generated_at": "2026-06-12T08:00:00+00:00",
+    "last_verified_at": "2026-06-12",
+    "verification_source": "https://huggingface.co/HauhauCS",
+    "profile_verified": true,
+    "profile_verified_at": "2026-06-12"
   },
   {
     "vendor_id": "llamacpp",
@@ -362,6 +426,7 @@
   },
   {
     "vendor_id": "mradermacher",
+    "card_subtype": "community",
     "display_name": "mradermacher (GGUF/Abliterated)",
     "company": "mradermacher (Hugging Face Community Contributor) — Basismodelle: Mistral AI SAS",
     "headquarters": "Community/privat; Mistral AI: Paris, France",
@@ -525,6 +590,40 @@
     "verification_source": null,
     "profile_verified": false,
     "profile_verified_at": null
+  },
+  {
+    "vendor_id": "unsloth",
+    "card_subtype": "community",
+    "display_name": "Unsloth",
+    "company": "Unsloth AI (unslothai)",
+    "headquarters": "Remote (international)",
+    "founding_year": 2023,
+    "pricing_model": "open-source-self-hosted",
+    "api_base_url": null,
+    "api_documentation_url": "https://huggingface.co/unsloth",
+    "deployment": {
+      "cloud_act_exposure": false,
+      "applicable_law": "N/A (lokal only)",
+      "data_residency": "N/A (lokal only)",
+      "gdpr_dpa_available": false,
+      "eu_adequacy_decision": false,
+      "data_retention_days": 0,
+      "chinese_nsl_risk": "none"
+    },
+    "privacy_note": "Unsloth-Modelle werden ausschließlich lokal betrieben. Kein Datentransfer an externe Server. Die Modelle sind GGUF-Quantisierungen öffentlicher Basismodelle (Llama, Qwen, Gemma u.a.) mit Unsloth Dynamic 2.0-Optimierung (per-Layer-Bit-Zuweisung für bessere Qualität bei gleicher Komprimierungsrate).",
+    "notable_models": [
+      "gemma-4-12b-it-GGUF (Dynamic 2.0)",
+      "Qwen3-27B-GGUF",
+      "gemma-4-12B-it-qat-GGUF (QAT)",
+      "Llama-3.3-70B-Instruct-GGUF"
+    ],
+    "stats": {},
+    "unknown": false,
+    "generated_at": "2026-06-12T08:00:00+00:00",
+    "last_verified_at": "2026-06-12",
+    "verification_source": "https://huggingface.co/unsloth",
+    "profile_verified": true,
+    "profile_verified_at": "2026-06-12"
   },
   {
     "vendor_id": "xai",
