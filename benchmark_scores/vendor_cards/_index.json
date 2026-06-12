@@ -34,6 +34,93 @@
     "description": "Alibaba Cloud betreibt mit DashScope die API für Qwen-Modelle und weitere KI-Dienste. Der Anbieter sitzt in Hangzhou und agiert unter chinesischem Datenschutzrecht. Für europäische Nutzer ist vor allem relevant, dass Datenverarbeitung in China stattfindet und kein EU-Angemessenheitsbeschluss vorliegt."
   },
   {
+    "vendor_id": "alibaba_cloud",
+    "display_name": "Alibaba Cloud",
+    "company": "Alibaba Cloud Computing Ltd.",
+    "headquarters": "Hangzhou, China",
+    "founding_year": 2009,
+    "pricing_model": "free-tier+pay-per-token",
+    "api_base_url": "https://dashscope.aliyuncs.com",
+    "api_documentation_url": "https://help.aliyun.com/zh/model-studio/developer-reference/api-details",
+    "deployment": {
+      "cloud_act_exposure": false,
+      "applicable_law": "China (PIPL/CSL/DSL)",
+      "data_residency": "China + global Alibaba Cloud regions",
+      "gdpr_dpa_available": true,
+      "eu_adequacy_decision": false,
+      "data_retention_days": -1,
+      "chinese_nsl_risk": "high"
+    },
+    "privacy_note": "Für europäische Nutzer besteht ein erhöhtes Datenschutzrisiko, da Alibaba Cloud ein chinesischer Anbieter ist und API-Daten chinesischem Datenschutz- und Sicherheitsrecht unterliegen können. Bei grenzüberschreitender Verarbeitung außerhalb der EU ist ohne EU-Angemessenheitsbeschluss regelmäßig mit zusätzlichen Transfer-Risiken zu rechnen.",
+    "notable_models": [
+      "Qwen",
+      "Wan"
+    ],
+    "stats": {},
+    "unknown": false,
+    "generated_at": "2026-06-12T16:39:04.144936+00:00",
+    "last_verified_at": null,
+    "verification_source": "https://www.alibabacloud.com/help/en/model-studio/getting-started/what-is-model-studio"
+  },
+  {
+    "vendor_id": "alibaba_group_qwen_team",
+    "display_name": "Alibaba Cloud (Qwen Team)",
+    "company": "Alibaba Cloud Computing Ltd.",
+    "headquarters": "Hangzhou, China",
+    "founding_year": 2009,
+    "pricing_model": "free-tier+pay-per-token",
+    "api_base_url": "https://dashscope.aliyuncs.com",
+    "api_documentation_url": "https://www.alibabacloud.com/help/en/model-studio/",
+    "deployment": {
+      "cloud_act_exposure": false,
+      "applicable_law": "China (PIPL/CSL/DSL)",
+      "data_residency": "China",
+      "gdpr_dpa_available": "unknown",
+      "eu_adequacy_decision": false,
+      "data_retention_days": -1,
+      "chinese_nsl_risk": "high"
+    },
+    "privacy_note": "Für EU-Nutzer besteht ein erhöhtes Datenschutzrisiko, da API-Daten voraussichtlich unter chinesischem Datenschutz- und Sicherheitsrecht verarbeitet werden. Es gibt keinen EU-Angemessenheitsbeschluss für China, sodass internationale Datentransfers zusätzliche Compliance-Risiken verursachen können.",
+    "notable_models": [
+      "Qwen2.5",
+      "Qwen-Max"
+    ],
+    "stats": {},
+    "unknown": false,
+    "generated_at": "2026-06-12T16:42:01.327061+00:00",
+    "last_verified_at": null,
+    "verification_source": "https://www.alibabacloud.com/help/en/model-studio/"
+  },
+  {
+    "vendor_id": "alibaba_group_qwen_team_hauhaucs_community_fine_tune",
+    "display_name": "Alibaba Group (Qwen Team) / HauhauCS (Community Fine-Tune)",
+    "company": "Alibaba Group Holding Limited",
+    "headquarters": "Hangzhou, China",
+    "founding_year": 1999,
+    "pricing_model": "open-source-self-hosted",
+    "api_base_url": null,
+    "api_documentation_url": "https://qwenlm.github.io/",
+    "deployment": {
+      "cloud_act_exposure": false,
+      "applicable_law": "N/A (lokal only)",
+      "data_residency": "N/A (lokal only)",
+      "gdpr_dpa_available": "unknown",
+      "eu_adequacy_decision": "unknown",
+      "data_retention_days": 0,
+      "chinese_nsl_risk": "high"
+    },
+    "privacy_note": "Bei selbst gehosteter Nutzung werden API-Daten lokal verarbeitet; das primäre Risiko entsteht daher aus Ihrer eigenen Hosting- und Transferkonfiguration. Da das Basismodell von einem chinesischen Anbieter stammt, besteht bei Nutzung offizieller Alibaba-Cloud-Dienste ein erhöhtes chinesisches Datenschutz- und Zugriffsrisiko, dies gilt jedoch nicht automatisch für rein lokale Deployments.",
+    "notable_models": [
+      "Qwen2.5",
+      "Qwen2.5-Coder"
+    ],
+    "stats": {},
+    "unknown": false,
+    "generated_at": "2026-06-12T16:49:41.962525+00:00",
+    "last_verified_at": null,
+    "verification_source": "https://qwenlm.github.io/"
+  },
+  {
     "vendor_id": "anthropic",
     "display_name": "Anthropic",
     "company": "Anthropic PBC",
