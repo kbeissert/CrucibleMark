@@ -1284,6 +1284,18 @@ def main() -> None:
         model_audit_src = _resolve_dir(audit_dirs, dir_slug)
         model_comp_src = _resolve_dir(comp_dirs, dir_slug)
 
+        # Fallback: _safe_name-Variante (z.B. "nvidia/nemotron-…" → "nvidia-nemotron-…" statt "nemotron-…").
+        # slugify() strippt via rsplit('/') den Vendor-Prefix, Verzeichnisse werden aber per _safe_name()
+        # angelegt (/ → _), weshalb der primäre dir_slug keinen Match erzeugt.
+        # Analogie: Heritage-Fallback (unten) probiert ebenfalls beide Varianten.
+        if raw_model_id and raw_model_id != "nan":
+            _safe_dir_slug = slugify(_safe_name(raw_model_id))
+            if _safe_dir_slug != dir_slug:
+                if model_audit_src is None:
+                    model_audit_src = _resolve_dir(audit_dirs, _safe_dir_slug)
+                if model_comp_src is None:
+                    model_comp_src  = _resolve_dir(comp_dirs, _safe_dir_slug)
+
         # Heritage-Fallback: wenn primäre Dir-Auflösung fehlschlägt, heritage_ids aus der Card prüfen
         if card:
             for _h_id in card.get("heritage_ids", []):
