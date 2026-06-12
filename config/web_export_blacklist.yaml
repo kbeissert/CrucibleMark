@@ -1,34 +1,50 @@
 # Web Export Blacklist
 # ====================
-# Models in dieser Liste werden von `make web-export` komplett uebersprungen
+# Modelle in dieser Liste werden von `make web-export` komplett uebersprungen
 # (kein models/{slug}/data.json, kein Eintrag in leaderboard.json).
 #
-# Match-Modus:
-#   - Exakte model_id (Leaderboard-Spalte "Model ID")
-#   - Wildcards via fnmatch (z.B. "qwen3.5-35b-a3b-*" fuer alle Quantisierungen)
+# Match-Modus: Exakte model_id (Leaderboard-Spalte "Model ID").
+# Gruppierung nach Modellfamilie + Parametergröße. Alle Quantisierungen und
+# Server-Varianten eines Modells sind zusammengefasst.
 #
-# Use-Case: Quant-Vergleichstests und experimentelle Modelle aus dem
-# Web-Frontend raus halten, ohne sie aus dem Leaderboard zu loeschen.
+# Verwendung: Standardmäßig stehen ALLE Varianten in der Blacklist. Um ein
+# Modell im Web-Export zu behalten, einfach die entsprechende Zeile auskommentieren
+# (mit `# - "..."` versehen). Alle anderen bleiben gelistet und werden übersprungen.
 #
-# Datei fehlt oder ist leer -> keine Filterung (graceful default).
-# Parse-Error -> WARNING-Log, keine Filterung (nicht fatal).
-
 blacklist:
-  # --- Beispiele (auskommentiert) ---
-  # - "qwen3.5-35b-a3b-q4_k_m"      # Vergleichsquant, zu verlustbehaftet
-  # - "qwen3.5-35b-a3b-q8"          # Vergleichsquant
-  # - "test-*"                      # alle Test-Modelle pauschal
 
-  # GWEN-Modelle (Vergleichsquants, experimentelle Modelle)
-  - "qwen3-coder-next-q8"       # Vergleichsquant, zu langsam, zu schwer
-  - "qwen3_5-35b-a3b-q4"        # Bessere Quant als q8 (74.75 vs 74.55), aber Vergleichsquant
-  - "qwen3_5-35b-a3b-q8"        # Vergleichsquant, zu langsam
-  - "qwen3_5-4b-q6"             # Vergleichsquant, langsamer, kaum unterschied
-  - "qwen3_5-4b-q4"             # Vergleichsquant auf M4APL
-  - "qwen3_5-4b-q8"             # Vergleichsquant auf M4APL, schlechtester Score der Gruppe (67.69)
+  # === gemma-3-12b (4 Varianten) ===
+  - "gemma-3-12b-it"           # Gemma 3 12B IT (llama.cpp, Q4_K_M)
+  - "gemma-3-12b-it-q8"        # Gemma 3 12B IT (llama.cpp, Q8_0)
+  - "gemma-3-12b-it-q8-spark"  # Gemma 3 12B IT (llama.cpp, Q8_0) [Spark]
+  - "gemma-3-12b-it-spark"     # Gemma 3 12B IT (llama.cpp, Q4_K_M) [Spark]
 
-  # GEMMA-Modelle (Vergleichsquants, experimentelle Modelle)
-  - "gemma-4-12b-it-ud-q4_k_xl" # Vergleichsquant, zu langsam, zu schwer
-  - "gemma-4-12b-it-ud-q6_k_xl" # Vergleichsquant, zu langsam, zu schwer
-  - "gemma-4-12b-it-ud-q8"      # Vergleichsquant, zu langsam
-  - "gemma-3-12b-it"            # Desktop Modell, langsammer auf M4 als auf Spark
+  # === gemma-4-12b (3 Varianten) ===
+  - "gemma-4-12b-it-ud-q4_k_xl"  # Gemma 4 12B Instruct Q4_K_XL (GGUF, UndiX-Derivative)
+  - "gemma-4-12b-it-ud-q6_k_xl"  # Gemma 4 12B Instruct Q6_K_XL (GGUF, UndiX-Derivative)
+  - "gemma-4-12b-it-ud-q8_k_xl"  # Gemma 4 12B Instruct Q8_K_XL (GGUF, UndiX-Derivative)
+
+  # === qwen3_5-4b (3 Varianten) ===
+  - "qwen3_5-4b-q4"        # Qwen 3.5 4B (llama.cpp, UD-Q4_K_XL)
+  - "qwen3_5-4b-q6"        # Qwen 3.5 4B (llama.cpp, UD-Q6_K_XL)
+  - "qwen3_5-4b-q8"        # Qwen 3.5 4B (llama.cpp, UD-Q8_K_XL)
+
+  # === gemma-4-26b (2 Varianten) ===
+  - "gemma-4-26B-A4B-it-qat-ud-q4"  # Gemma 4 26B-A4B Instruct (QAT, UD-Q4) [Spark]
+  - "gemma-4-26b-a4b-q8"            # Gemma 4 26B-A4B Instruct Q8_K_XL (GGUF)
+
+  # === gemma-4-31b (2 Varianten) ===
+  - "gemma-4-31B-it-qat-ud-q4"      # Gemma 4 31B Instruct (QAT, UD-Q4) [Spark]
+  - "google/gemma-4-31b-it"         # Gemma 4 31B
+
+  # === hermes-4-14b (2 Varianten) ===
+  - "hermes-4-14b-abliterated"      # Hermes 4 14B (llama.cpp, Q6_K, Abliterated)
+  - "hermes-4-14b-q4"               # Hermes 4 14B (llama.cpp, Q4_K_M)
+
+  # === qwen3_5-35b (2 Varianten) ===
+  - "qwen3_5-35b-a3b-q4"            # Qwen 3.5 35B-A3B Q4_K_XL (GGUF)
+  - "qwen3_5-35b-a3b-q8"            # Qwen 3.5 35B-A3B Q8_K_XL (GGUF)
+
+  # === qwen3_6-35b (2 Varianten) ===
+  - "qwen3_6-35b-a3b-q8"             # Qwen 3.6 35B-A3B Q8_K_XL (GGUF)
+  - "qwen3_6-35b-a3b-uncensored"     # Qwen 3.6 35B-A3B Uncensored HauhauCS Aggressive Q8_K_P (GGUF)

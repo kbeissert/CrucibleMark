@@ -1,8 +1,8 @@
 {
-  "provider_id": "mistral_ai_base_model_mradermacher_gguf_conversion_abliteration",
-  "display_name": "Mistral AI + mradermacher (GGUF/Abliterated)",
-  "company": "Mistral AI SAS (Basismodell) / mradermacher (Hugging Face Community Contributor)",
-  "headquarters": "Paris, France (Mistral AI); privat/Community (mradermacher)",
+  "provider_id": "mradermacher",
+  "display_name": "mradermacher (GGUF/Abliterated)",
+  "company": "mradermacher (Hugging Face Community Contributor) — Basismodelle: Mistral AI SAS",
+  "headquarters": "Community/privat; Mistral AI: Paris, France",
   "founding_year": 2023,
   "pricing_model": "open-source-self-hosted",
   "api_base_url": null,

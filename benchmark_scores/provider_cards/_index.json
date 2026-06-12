@@ -1,7 +1,7 @@
 [
   {
-    "provider_id": "alibaba_cloud",
-    "display_name": "Alibaba Cloud",
+    "provider_id": "alibaba",
+    "display_name": "Alibaba (Qwen / DashScope)",
     "company": "Alibaba Cloud Intelligence Group (Aliyun Computing Co., Ltd.)",
     "headquarters": "Hangzhou, Zhejiang, China",
     "founding_year": 2009,
@@ -28,7 +28,9 @@
     "unknown": false,
     "generated_at": "2026-06-02T21:00:00.000000+00:00",
     "last_verified_at": "2026-06-02",
-    "verification_source": "https://www.alibabacloud.com/help/en/legal"
+    "verification_source": "https://www.alibabacloud.com/help/en/legal",
+    "profile_verified": false,
+    "profile_verified_at": null
   },
   {
     "provider_id": "anthropic",
@@ -64,10 +66,12 @@
     "unknown": false,
     "generated_at": "2026-06-02T21:00:00.000000+00:00",
     "last_verified_at": "2026-06-02",
-    "verification_source": "https://www.anthropic.com/legal/privacy"
+    "verification_source": "https://www.anthropic.com/legal/privacy",
+    "profile_verified": false,
+    "profile_verified_at": null
   },
   {
-    "provider_id": "cognitive_computations_eric_hartford",
+    "provider_id": "cognitive_computations",
     "display_name": "Cognitive Computations",
     "company": "Cognitive Computations (Einzelperson / Eric Hartford)",
     "headquarters": "USA (genaue Stadt unbekannt)",
@@ -94,7 +98,9 @@
     "unknown": false,
     "generated_at": "2026-06-02T21:00:00.000000+00:00",
     "last_verified_at": "2026-06-02",
-    "verification_source": "https://huggingface.co/cognitivecomputations"
+    "verification_source": "https://huggingface.co/cognitivecomputations",
+    "profile_verified": false,
+    "profile_verified_at": null
   },
   {
     "provider_id": "deepseek",
@@ -126,7 +132,9 @@
     "unknown": false,
     "generated_at": "2026-06-02T21:00:00.000000+00:00",
     "last_verified_at": "2026-06-02",
-    "verification_source": "https://api-docs.deepseek.com/quick_start/privacy_policy"
+    "verification_source": "https://api-docs.deepseek.com/quick_start/privacy_policy",
+    "profile_verified": false,
+    "profile_verified_at": null
   },
   {
     "provider_id": "google_deepmind",
@@ -157,7 +165,9 @@
     "unknown": false,
     "generated_at": "2026-06-02T21:00:00.000000+00:00",
     "last_verified_at": "2026-06-02",
-    "verification_source": "https://policies.google.com/privacy"
+    "verification_source": "https://policies.google.com/privacy",
+    "profile_verified": false,
+    "profile_verified_at": null
   },
   {
     "provider_id": "llamacpp",
@@ -208,7 +218,9 @@
     "unknown": false,
     "generated_at": "2026-06-04T18:40:00.000000+00:00",
     "last_verified_at": "2026-06-04",
-    "verification_source": "https://github.com/ggerganov/llama.cpp"
+    "verification_source": "https://github.com/ggerganov/llama.cpp",
+    "profile_verified": false,
+    "profile_verified_at": null
   },
   {
     "provider_id": "meta",
@@ -238,7 +250,9 @@
     "unknown": false,
     "generated_at": "2026-06-02T21:00:00.000000+00:00",
     "last_verified_at": "2026-06-02",
-    "verification_source": "https://llama.meta.com/llama4/"
+    "verification_source": "https://llama.meta.com/llama4/",
+    "profile_verified": false,
+    "profile_verified_at": null
   },
   {
     "provider_id": "minimax",
@@ -269,7 +283,9 @@
     "unknown": false,
     "generated_at": "2026-06-02T21:00:00.000000+00:00",
     "last_verified_at": "2026-06-02",
-    "verification_source": "https://platform.minimax.io/docs/terms-of-service"
+    "verification_source": "https://platform.minimax.io/docs/terms-of-service",
+    "profile_verified": false,
+    "profile_verified_at": null
   },
   {
     "provider_id": "mistral_ai",
@@ -307,36 +323,9 @@
     "unknown": false,
     "generated_at": "2026-06-02T21:00:00.000000+00:00",
     "last_verified_at": "2026-06-02",
-    "verification_source": "https://mistral.ai/terms/"
-  },
-  {
-    "provider_id": "mistral_ai_base_model_mradermacher_gguf_conversion_abliteration",
-    "display_name": "Mistral AI + mradermacher (GGUF/Abliterated)",
-    "company": "Mistral AI SAS (Basismodell) / mradermacher (Hugging Face Community Contributor)",
-    "headquarters": "Paris, France (Mistral AI); privat/Community (mradermacher)",
-    "founding_year": 2023,
-    "pricing_model": "open-source-self-hosted",
-    "api_base_url": null,
-    "api_documentation_url": "https://huggingface.co/mradermacher",
-    "deployment": {
-      "cloud_act_exposure": false,
-      "applicable_law": "N/A (lokal only)",
-      "data_residency": "N/A (lokal only)",
-      "gdpr_dpa_available": false,
-      "eu_adequacy_decision": false,
-      "data_retention_days": 0,
-      "chinese_nsl_risk": "none"
-    },
-    "privacy_note": "Da diese Modelle ausschließlich lokal betrieben werden, findet keine Datenübertragung an externe Server statt. Es besteht kein API-seitiges Datenschutzrisiko – sämtliche Verarbeitung erfolgt auf der eigenen Infrastruktur des Nutzers.",
-    "notable_models": [
-      "Mistral-7B-Instruct-v0.3 (GGUF, mradermacher)",
-      "Mistral-Small-3.1 Abliterated (GGUF, mradermacher)"
-    ],
-    "stats": {},
-    "unknown": false,
-    "generated_at": "2026-06-02T21:00:00.000000+00:00",
-    "last_verified_at": "2026-06-02",
-    "verification_source": "https://huggingface.co/mradermacher"
+    "verification_source": "https://mistral.ai/terms/",
+    "profile_verified": false,
+    "profile_verified_at": null
   },
   {
     "provider_id": "moonshot_ai",
@@ -367,36 +356,40 @@
     "unknown": false,
     "generated_at": "2026-06-02T21:00:00.000000+00:00",
     "last_verified_at": "2026-06-02",
-    "verification_source": "https://platform.moonshot.cn/docs/agreement"
+    "verification_source": "https://platform.moonshot.cn/docs/agreement",
+    "profile_verified": false,
+    "profile_verified_at": null
   },
   {
-    "provider_id": "nous_research",
-    "display_name": "Nous Research",
-    "company": "unknown",
-    "headquarters": "unknown",
+    "provider_id": "mradermacher",
+    "display_name": "mradermacher (GGUF/Abliterated)",
+    "company": "mradermacher (Hugging Face Community Contributor) — Basismodelle: Mistral AI SAS",
+    "headquarters": "Community/privat; Mistral AI: Paris, France",
     "founding_year": 2023,
-    "pricing_model": "unknown",
+    "pricing_model": "open-source-self-hosted",
     "api_base_url": null,
-    "api_documentation_url": null,
+    "api_documentation_url": "https://huggingface.co/mradermacher",
     "deployment": {
-      "cloud_act_exposure": true,
-      "applicable_law": "US (CLOUD Act)",
-      "data_residency": "Unknown",
-      "gdpr_dpa_available": "unknown",
-      "eu_adequacy_decision": "unknown",
-      "data_retention_days": -1,
+      "cloud_act_exposure": false,
+      "applicable_law": "N/A (lokal only)",
+      "data_residency": "N/A (lokal only)",
+      "gdpr_dpa_available": false,
+      "eu_adequacy_decision": false,
+      "data_retention_days": 0,
       "chinese_nsl_risk": "none"
     },
-    "privacy_note": "Nous Research appears to be a US-based AI organization, so API or hosted-service usage may be subject to US legal access regimes including the CLOUD Act. Public information on data residency, retention, and EU contractual safeguards is limited, so EU users should assume elevated transfer and transparency risk unless contractually clarified.",
+    "privacy_note": "Da diese Modelle ausschließlich lokal betrieben werden, findet keine Datenübertragung an externe Server statt. Es besteht kein API-seitiges Datenschutzrisiko – sämtliche Verarbeitung erfolgt auf der eigenen Infrastruktur des Nutzers.",
     "notable_models": [
-      "Hermes 2",
-      "Nous Hermes 2 Mixtral 8x7B DPO"
+      "Mistral-7B-Instruct-v0.3 (GGUF, mradermacher)",
+      "Mistral-Small-3.1 Abliterated (GGUF, mradermacher)"
     ],
     "stats": {},
-    "unknown": true,
-    "generated_at": "2026-06-02T20:47:10.858708+00:00",
-    "last_verified_at": null,
-    "verification_source": "https://nousresearch.com"
+    "unknown": false,
+    "generated_at": "2026-06-02T21:00:00.000000+00:00",
+    "last_verified_at": "2026-06-02",
+    "verification_source": "https://huggingface.co/mradermacher",
+    "profile_verified": false,
+    "profile_verified_at": null
   },
   {
     "provider_id": "nousresearch",
@@ -428,7 +421,39 @@
     "unknown": false,
     "generated_at": "2026-06-02T21:00:00.000000+00:00",
     "last_verified_at": "2026-06-02",
-    "verification_source": "https://huggingface.co/NousResearch"
+    "verification_source": "https://huggingface.co/NousResearch",
+    "profile_verified": false,
+    "profile_verified_at": null
+  },
+  {
+    "provider_id": "nvidia",
+    "display_name": "NVIDIA",
+    "company": "NVIDIA Corporation",
+    "headquarters": "Santa Clara, California, USA",
+    "founding_year": 1993,
+    "pricing_model": "open-weights",
+    "api_base_url": "https://build.nvidia.com",
+    "api_documentation_url": "https://docs.api.nvidia.com",
+    "deployment": {
+      "cloud_act_exposure": true,
+      "applicable_law": "US (CLOUD Act)",
+      "data_residency": "USA",
+      "gdpr_dpa_available": true,
+      "eu_adequacy_decision": true,
+      "data_retention_days": -1,
+      "chinese_nsl_risk": "none"
+    },
+    "privacy_note": "NVIDIA stellt die Nemotron-Modelle als Open-Weights zur Verfügung (NVIDIA Open Model License). Lokales Deployment möglich. Bei API-Nutzung über build.nvidia.com gelten US-amerikanische Datenschutzgesetze (CLOUD Act); EU-Nutzer können via DPA absichern.",
+    "notable_models": [
+      "Nemotron 3 Ultra 550B-A55B"
+    ],
+    "stats": {},
+    "unknown": false,
+    "generated_at": "2026-06-12T08:00:00.000000+00:00",
+    "last_verified_at": "2026-06-12",
+    "verification_source": "https://www.nvidia.com/en-us/agreements/enterprise-software/nvidia-software-license-agreement/",
+    "profile_verified": false,
+    "profile_verified_at": null
   },
   {
     "provider_id": "openai",
@@ -469,35 +494,9 @@
     "unknown": false,
     "generated_at": "2026-06-10T11:00:00.000000+00:00",
     "last_verified_at": "2026-06-10",
-    "verification_source": "https://openai.com/policies/privacy-policy"
-  },
-  {
-    "provider_id": "todo",
-    "display_name": "TODO",
-    "company": "unknown",
-    "headquarters": "unknown",
-    "founding_year": 0,
-    "pricing_model": "free",
-    "api_base_url": null,
-    "api_documentation_url": null,
-    "deployment": {
-      "cloud_act_exposure": false,
-      "applicable_law": "Unknown",
-      "data_residency": "Unknown",
-      "gdpr_dpa_available": "unknown",
-      "eu_adequacy_decision": "unknown",
-      "data_retention_days": -1,
-      "chinese_nsl_risk": "none"
-    },
-    "privacy_note": "Unknown provider. Datenschutz- und Deployment-Risiken können ohne verifizierte Anbieterangaben nicht zuverlässig bewertet werden.",
-    "notable_models": [
-      "unknown"
-    ],
-    "stats": {},
-    "unknown": true,
-    "generated_at": "2026-06-03T07:26:45.993365+00:00",
-    "last_verified_at": null,
-    "verification_source": null
+    "verification_source": "https://openai.com/policies/privacy-policy",
+    "profile_verified": false,
+    "profile_verified_at": null
   },
   {
     "provider_id": "unknown",
@@ -523,7 +522,9 @@
     "unknown": true,
     "generated_at": "2026-06-02T21:00:00.000000+00:00",
     "last_verified_at": "2026-06-02",
-    "verification_source": null
+    "verification_source": null,
+    "profile_verified": false,
+    "profile_verified_at": null
   },
   {
     "provider_id": "xai",
@@ -553,7 +554,9 @@
     "unknown": false,
     "generated_at": "2026-06-02T21:00:00.000000+00:00",
     "last_verified_at": "2026-06-02",
-    "verification_source": "https://x.ai/legal/privacy-policy"
+    "verification_source": "https://x.ai/legal/privacy-policy",
+    "profile_verified": false,
+    "profile_verified_at": null
   },
   {
     "provider_id": "zhipu_ai",
@@ -585,6 +588,8 @@
     "unknown": false,
     "generated_at": "2026-06-02T21:00:00.000000+00:00",
     "last_verified_at": "2026-06-02",
-    "verification_source": "https://open.bigmodel.cn/dev/howuse/agreement"
+    "verification_source": "https://open.bigmodel.cn/dev/howuse/agreement",
+    "profile_verified": false,
+    "profile_verified_at": null
   }
 ]
