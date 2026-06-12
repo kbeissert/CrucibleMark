@@ -174,12 +174,30 @@ providers:
       enabled: true
       env_var: OPENROUTER_API_KEY
       models:
+
+      # Xiaomi — neueste zuerst
+      - id: xiaomi/mimo-v2.5-pro
+        name: Xiaomi MiMo-V2.5-Pro (Flagship) via OpenRouter
+        model_type: open_weights_cloud  # 1M context, agentic-optimized
+      - id: xiaomi/mimo-v2.5
+        name: Xiaomi MiMo-V2.5 (Omnimodal) via OpenRouter
+        model_type: open_weights_cloud  # Native omnimodal, 1M context, cost-efficient
+      - id: xiaomi/mimo-v2-flash
+        name: Xiaomi MiMo-V2-Flash (Reasoning-toggle) via OpenRouter
+        model_type: open_weights_cloud  # MoE 309B (15B active), hybrid-thinking, SWE-bench #1
+
       # NVIDIA — neueste zuerst
       - id: nvidia/nemotron-3-ultra-550b-a55b
-        name: NVIDIA Nemotron 3 Ultra via OpenRouter
+        name: NVIDIA Nemotron 3 Ultra 550B MoE via OpenRouter
         model_type: open_weights_cloud  # MoE 55B/550B
+      - id: nvidia/llama-3.3-nemotron-super-49b-v1.5
+        name: Llama 3.3 Nemotron Super 49B v1.5 via OpenRouter
+        model_type: open_weights_cloud  # Distilled Llama 3.3, reasoning-capable
+      - id: nvidia/nemotron-3-nano-30b-a3b
+        name: NVIDIA Nemotron 3 Nano 30B A3B via OpenRouter
+        model_type: open_weights_cloud  # MoE 30B-A3B (efficient)
 
-      # Z.ai (GLM) — neueste zuerst
+       # Z.ai (GLM) — neueste zuerst
       - id: z-ai/glm-5.1-20260406
         name: GLM 5.1-20260406 (Z.ai) via OpenRouter
         model_type: proprietary_api  # Proprietäres Modell, Gewichte nicht öffentlich

@@ -282,7 +282,7 @@
     ],
     "card_status": "complete",
     "commercial_use_allowed": true,
-    "context_window_k": 1000,
+    "context_window_k": 200,
     "deployment_type": "cloud-only",
     "developer": "Anthropic",
     "developer_jurisdiction": "US",
@@ -379,7 +379,8 @@
       "General",
       "Vision-Capable",
       "Agentic",
-      "Long-Context"
+      "Long-Context",
+      "Thinking-Optional"
     ],
     "supports_tool_use": true,
     "license": "Proprietary (Anthropic Commercial Terms)",
@@ -1236,7 +1237,7 @@
   },
   {
     "model_id": "gemma-3-12b-it-q8-spark",
-    "display_name": "Gemma 3 12B IT (Q8_0 GGUF, Spark)",
+    "display_name": "Gemma 3 12B IT (Q8_0 GGUF)",
     "developer": "Google DeepMind",
     "origin_country": "USA",
     "developer_jurisdiction": "US",
@@ -1265,7 +1266,7 @@
       "Reasoning-Tiefe bleibt hinter größeren Frontier-Modellen zurück",
       "Bildfähigkeit hängt von der verwendeten Gemma-3-Variante und der lokalen Pipeline ab"
     ],
-    "judge_context_hint": "Lokale GGUF-Variante von Gemma 3 12B IT. Antworten sollten als kompakte Instruct-Ausgaben bewertet werden; die Q8_0-Quantisierung ist hochwertig, aber nicht identisch zur Originalpräzision.",
+    "judge_context_hint": "Plattform: NVIDIA DGX Spark (GB10 Grace Blackwell Superchip, ~115 GB Unified Memory, Intranet-lokal — kein Cloud-Provider, kein externer Datentransfer). Lokale GGUF-Variante von Gemma 3 12B IT. Antworten sollten als kompakte Instruct-Ausgaben bewertet werden; die Q8_0-Quantisierung ist hochwertig, aber nicht identisch zur Originalpräzision.",
     "architecture_tags": [
       "General",
       "Instruct"
@@ -1317,7 +1318,7 @@
     "display_name": "Gemma 3 12B IT (llama.cpp, Q8_0)",
     "generated_at": "2026-05-30T00:00:00.000000+00:00",
     "input_price_per_1m": 0.0,
-    "judge_context_hint": "Lokale Gemma-3-Variante mit hoher Quantisierungsqualität. Antworten sollten als präzise, kompakte Instruct-Ausgaben bewertet werden.",
+    "judge_context_hint": "Plattform: Apple M4 Mac (~18 GB Unified Memory, Metal-GPU, lokal — kein Cloud-Provider, kein externer Datentransfer). Lokale Gemma-3-Variante mit hoher Quantisierungsqualität. Antworten sollten als präzise, kompakte Instruct-Ausgaben bewertet werden.",
     "knowledge_cutoff": "2024-12",
     "known_limitations": [
       "Unterhalb größerer Frontier-Modelle bei komplexem Reasoning",
@@ -1373,7 +1374,7 @@
   },
   {
     "model_id": "gemma-3-12b-it-spark",
-    "display_name": "Gemma 3 12B IT (Q4_K_M GGUF, Spark)",
+    "display_name": "Gemma 3 12B IT (Q4_K_M GGUF)",
     "developer": "Google DeepMind",
     "origin_country": "USA",
     "developer_jurisdiction": "US",
@@ -1402,7 +1403,7 @@
       "Kein offizielles Cloud-Produkt, sondern lokal verpackte GGUF-Variante",
       "Bei komplexen Aufgaben geringere Tiefe als größere Frontier-Modelle"
     ],
-    "judge_context_hint": "Lokale GGUF-Variante von Gemma 3 12B IT. Die Q4_K_M-Quantisierung priorisiert Laufzeit und Speicherbedarf vor Präzision; Antworten können daher etwas knapper und weniger stabil ausfallen als bei Q8.",
+    "judge_context_hint": "Plattform: NVIDIA DGX Spark (GB10 Grace Blackwell Superchip, ~115 GB Unified Memory, Intranet-lokal — kein Cloud-Provider, kein externer Datentransfer). Lokale GGUF-Variante von Gemma 3 12B IT. Die Q4_K_M-Quantisierung priorisiert Laufzeit und Speicherbedarf vor Präzision; Antworten können daher etwas knapper und weniger stabil ausfallen als bei Q8.",
     "architecture_tags": [
       "General",
       "Instruct"
@@ -1454,7 +1455,7 @@
     "display_name": "Gemma 3 12B IT (llama.cpp, Q4_K_M)",
     "generated_at": "2026-05-30T15:30:22.206663+00:00",
     "input_price_per_1m": 0.0,
-    "judge_context_hint": "Gemma 3 12B IT ist ein Instruct-optimiertes Modell mittlerer Größe, hier als Q4_K_M-GGUF via llama.cpp betrieben – Antworten sind tendenziell präzise und kompakt, können aber bei sehr komplexen Reasoning-Ketten an Tiefe verlieren. Die Q4_K_M-Quantisierung kann minimale Qualitätsunterschiede gegenüber der Vollpräzision zeigen.",
+    "judge_context_hint": "Plattform: Apple M4 Mac (~18 GB Unified Memory, Metal-GPU, lokal — kein Cloud-Provider, kein externer Datentransfer). Gemma 3 12B IT ist ein Instruct-optimiertes Modell mittlerer Größe, hier als Q4_K_M-GGUF via llama.cpp betrieben – Antworten sind tendenziell präzise und kompakt, können aber bei sehr komplexen Reasoning-Ketten an Tiefe verlieren. Die Q4_K_M-Quantisierung kann minimale Qualitätsunterschiede gegenüber der Vollpräzision zeigen.",
     "knowledge_cutoff": "2024-12",
     "known_limitations": [
       "Kontextfenster und Reasoning-Tiefe hinter größeren Frontier-Modellen (z.B. Gemini 1.5 Pro) zurück",
@@ -1537,7 +1538,7 @@
       "Community-Distribution statt offizieller Google-Verpackung",
       "Restriktive Gemma-Lizenz bleibt gültig"
     ],
-    "judge_context_hint": "Stark komprimierte lokale Gemma-4-Variante. Die Bewertung sollte die Speicherersparnis gegen die Qualitätseinbußen abwägen.",
+    "judge_context_hint": "Plattform: Apple M4 Mac (~18 GB Unified Memory, Metal-GPU, lokal — kein Cloud-Provider, kein externer Datentransfer). Stark komprimierte lokale Gemma-4-Variante. Die Bewertung sollte die Speicherersparnis gegen die Qualitätseinbußen abwägen.",
     "architecture_tags": [
       "Instruct",
       "Multimodal",
@@ -1611,7 +1612,7 @@
       "Im Vergleich zu größeren Gemma-4-Varianten (26B, 31B) reduzierte Kapazität für komplexe Reasoning-Ketten",
       "Datenschutz: Google-Origin mit CLOUD-Act-Exposition (bei API-Nutzung)"
     ],
-    "judge_context_hint": "Gemma 4 12B Instruct Q6_K_XL (GGUF, UndiX-Distribution) ist ein kompaktes 12B-Modell mit Multimodalität (Text/Bild/Video) und 128K Kontext. Google Gemma License (restricted-weights). Q6-Quantisierung: guter Qualitäts-Größen-Kompromiss.",
+    "judge_context_hint": "Plattform: Apple M4 Mac (~18 GB Unified Memory, Metal-GPU, lokal — kein Cloud-Provider, kein externer Datentransfer). Gemma 4 12B Instruct Q6_K_XL (GGUF, UndiX-Distribution) ist ein kompaktes 12B-Modell mit Multimodalität (Text/Bild/Video) und 128K Kontext. Google Gemma License (restricted-weights). Q6-Quantisierung: guter Qualitäts-Größen-Kompromiss.",
     "architecture_tags": [
       "Thinking",
       "Instruct",
@@ -1683,7 +1684,7 @@
       "Im Vergleich zu größeren Gemma-4-Varianten (26B, 31B) reduzierte Kapazität für komplexe Reasoning-Ketten",
       "Datenschutz: Google-Origin mit CLOUD-Act-Exposition (bei API-Nutzung)"
     ],
-    "judge_context_hint": "Gemma 4 12B Instruct Q8_K_XL (GGUF, UndiX-Distribution) ist ein kompaktes 12B-Modell mit Multimodalität (Text/Bild/Video) und 128K Kontext. Google Gemma License (restricted-weights). Q8-Quantisierung: nahe FP16-Qualität.",
+    "judge_context_hint": "Plattform: Apple M4 Mac (~18 GB Unified Memory, Metal-GPU, lokal — kein Cloud-Provider, kein externer Datentransfer). Gemma 4 12B Instruct Q8_K_XL (GGUF, UndiX-Distribution) ist ein kompaktes 12B-Modell mit Multimodalität (Text/Bild/Video) und 128K Kontext. Google Gemma License (restricted-weights). Q8-Quantisierung: nahe FP16-Qualität.",
     "architecture_tags": [
       "Thinking",
       "Instruct",
@@ -1757,9 +1758,9 @@
       "Vision-Eingaben setzen korrektes mmproj-Loading in llama.cpp voraus",
       "Thinking-Probe: 2/3 Probes lieferten 0 chars Output bei reasoning_tokens=512 — wahrscheinlich Cold-Start beim ersten Modell-Load auf dem DGX Spark. Probe sollte bei warmem Server wiederholt werden (Option B). Thinking-Nachweis basiert primär auf math-Probe (627 chars Inline-CoT)."
     ],
-    "judge_context_hint": "MoE-Modell (25,2B total / 4B active) von Google DeepMind, QAT UD-Q4 GGUF auf DGX Spark. Integriertes Reasoning (thinking_probe_detected=true, reasoning_tokens im Hintergrund). Antworten können kompakter sein als bei Q8-Variante. Kein sichtbares Chain-of-Thought trotz internem Reasoning – keine Abzüge für fehlende Begründungsschritte.",
+    "judge_context_hint": "Plattform: NVIDIA DGX Spark (GB10 Grace Blackwell Superchip, ~115 GB Unified Memory, Intranet-lokal — kein Cloud-Provider, kein externer Datentransfer). MoE-Modell (25,2B total / 4B active) von Google DeepMind, QAT UD-Q4 GGUF auf DGX Spark. Integriertes Reasoning (thinking_probe_detected=true, reasoning_tokens im Hintergrund). Antworten können kompakter sein als bei Q8-Variante. Kein sichtbares Chain-of-Thought trotz internem Reasoning – keine Abzüge für fehlende Begründungsschritte.",
     "architecture_tags": [
-      "Multimodal",
+      "Vision-Capable",
       "Thinking"
     ],
     "input_modalities": [
@@ -1830,7 +1831,7 @@
       "Lokale Ausführung bleibt hardwareintensiv",
       "Community- oder ARA-spezifische Modifikationen hier nicht beschrieben"
     ],
-    "judge_context_hint": "Multimodales Gemma-4-Modell mit hoher Präzision durch Q8-Quantisierung. Antworten sollten als lokal betriebene, präzise Ausgaben einer restriktiv lizenzierten Google-Variante eingeordnet werden.",
+    "judge_context_hint": "Plattform: NVIDIA DGX Spark (GB10 Grace Blackwell Superchip, ~115 GB Unified Memory, Intranet-lokal — kein Cloud-Provider, kein externer Datentransfer). Multimodales Gemma-4-Modell mit hoher Präzision durch Q8-Quantisierung. Antworten sollten als lokal betriebene, präzise Ausgaben einer restriktiv lizenzierten Google-Variante eingeordnet werden.",
     "architecture_tags": [
       "Multimodal",
       "Thinking"
@@ -1901,9 +1902,9 @@
       "Sehr niedrige Tokens/s (~7,67) auf DGX Spark – Speed Profile ❌ Unusable für interaktive Anwendungsfälle",
       "Audio-Input nicht unterstützt"
     ],
-    "judge_context_hint": "Dense 31B-Modell von Google DeepMind, QAT UD-Q4 GGUF auf DGX Spark. Kein internes Reasoning-Budget (thinking_probe_detected=false). Antworten sind strukturiert und detailliert, aber ohne verstecktes Chain-of-Thought. Langsame Token-Generierung (~8 t/s) kann Antwortqualität bei zeitlimitierten Tasks beeinflussen.",
+    "judge_context_hint": "Plattform: NVIDIA DGX Spark (GB10 Grace Blackwell Superchip, ~115 GB Unified Memory, Intranet-lokal — kein Cloud-Provider, kein externer Datentransfer). Dense 31B-Modell von Google DeepMind, QAT UD-Q4 GGUF auf DGX Spark. Kein internes Reasoning-Budget (thinking_probe_detected=false). Antworten sind strukturiert und detailliert, aber ohne verstecktes Chain-of-Thought. Langsame Token-Generierung (~8 t/s) kann Antwortqualität bei zeitlimitierten Tasks beeinflussen.",
     "architecture_tags": [
-      "Multimodal",
+      "Vision-Capable",
       "General"
     ],
     "input_modalities": [
@@ -1975,7 +1976,7 @@
       "Modifikationen der ARA/APEX-Verarbeitung sind öffentlich nur begrenzt dokumentiert",
       "Video- und Bildfähigkeiten hängen von der lokalen Implementierung ab"
     ],
-    "judge_context_hint": "Community-GGUF auf Basis von Gemma 4 ARA 26B-A4B. Das Modell ist multimodal und effizient, die quantisierte Distribution kann jedoch vom offiziellen Verhalten abweichen und sollte bei sicherheitsrelevanten Antworten vorsichtig bewertet werden.",
+    "judge_context_hint": "Plattform: NVIDIA DGX Spark (GB10 Grace Blackwell Superchip, ~115 GB Unified Memory, Intranet-lokal — kein Cloud-Provider, kein externer Datentransfer). Community-GGUF auf Basis von Gemma 4 ARA 26B-A4B. Das Modell ist multimodal und effizient, die quantisierte Distribution kann jedoch vom offiziellen Verhalten abweichen und sollte bei sicherheitsrelevanten Antworten vorsichtig bewertet werden.",
     "architecture_tags": [
       "Multimodal",
       "Community-Quant"
@@ -2028,7 +2029,7 @@
     "display_name": "Gemma 4 E4B (llama.cpp, GGUF)",
     "generated_at": "2026-05-30T15:54:49.249742+00:00",
     "input_price_per_1m": null,
-    "judge_context_hint": "Kompakte Gemma-4-Variante für lokale Alltagsaufgaben. Die Bewertung sollte Effizienz und brauchbares Instruction-Following betonen.",
+    "judge_context_hint": "Plattform: Apple M4 Mac (~18 GB Unified Memory, Metal-GPU, lokal — kein Cloud-Provider, kein externer Datentransfer). Kompakte Gemma-4-Variante für lokale Alltagsaufgaben. Die Bewertung sollte Effizienz und brauchbares Instruction-Following betonen.",
     "knowledge_cutoff": "2025-06",
     "known_limitations": [
       "Leistung hinter größeren Gemini- oder Gemma-Modellen",
@@ -2163,7 +2164,7 @@
     "developer_jurisdiction": "US",
     "display_name": "GPT-4o Mini",
     "generated_at": "2026-06-10T18:28:14.912446+00:00",
-    "input_price_per_1m": 1.25,
+    "input_price_per_1m": 0.15,
     "judge_context_hint": "GPT-4o Mini ist auf Effizienz optimiert und kann bei komplexen mehrstufigen Aufgaben oder tiefem Reasoning hinter größeren Modellen zurückbleiben – Antworten sollten auf Vollständigkeit und Präzision geprüft werden.",
     "knowledge_cutoff": "2023-10",
     "known_limitations": [
@@ -2177,7 +2178,7 @@
     "model_id": "gpt-4o-mini",
     "model_version": "2024-07-18",
     "origin_country": "USA",
-    "output_price_per_1m": 5.0,
+    "output_price_per_1m": 0.6,
     "parameter_architecture": "dense",
     "params_active_b": null,
     "params_total_b": null,
@@ -2294,13 +2295,13 @@
     ],
     "card_status": "complete",
     "commercial_use_allowed": true,
-    "context_window_k": 200,
+    "context_window_k": 272,
     "deployment_type": "cloud-only",
     "developer": "OpenAI",
     "developer_jurisdiction": "US",
     "display_name": "GPT-5 Mini",
     "generated_at": "2026-06-10T18:28:14.913347+00:00",
-    "input_price_per_1m": 0.75,
+    "input_price_per_1m": 0.25,
     "judge_context_hint": "Kompakte GPT-5-Variante für hohe Volumina. Der Fokus sollte auf Präzision und Reaktionsgeschwindigkeit liegen, nicht auf maximaler Reasoning-Tiefe.",
     "knowledge_cutoff": "2025-03",
     "known_limitations": [
@@ -2315,7 +2316,7 @@
     "model_id": "gpt-5-mini",
     "model_version": "5.0",
     "origin_country": "USA",
-    "output_price_per_1m": 4.5,
+    "output_price_per_1m": 2.0,
     "parameter_architecture": "dense",
     "params_active_b": null,
     "params_total_b": null,
@@ -2363,14 +2364,14 @@
     ],
     "card_status": "complete",
     "commercial_use_allowed": true,
-    "context_window_k": 400,
+    "context_window_k": 272,
     "deployment_type": "cloud-only",
     "developer": "OpenAI",
     "developer_jurisdiction": "US",
     "display_name": "GPT-5",
     "generated_at": "2026-06-10T18:28:14.913671+00:00",
     "input_price_per_1m": 1.25,
-    "judge_context_hint": "GPT-5 ist ein proprietäres OpenAI-Generalistenmodell mit optionalem Reasoning-Aufwand, 400K Kontext und multimodalem Text-/Bildinput. Es bleibt leistungsstark, ist aber im OpenAI-Portfolio nicht mehr das neueste empfohlene Flaggschiff.",
+    "judge_context_hint": "GPT-5 ist ein proprietäres OpenAI-Generalistenmodell mit optionalem Reasoning-Aufwand, 272K Kontext und multimodalem Text-/Bildinput. Es bleibt leistungsstark, ist aber im OpenAI-Portfolio nicht mehr das neueste empfohlene Flaggschiff.",
     "knowledge_cutoff": "2024-09",
     "known_limitations": [
       "Proprietäres API-Modell ohne lokale Gewichte oder Self-Hosting-Option",
@@ -2392,11 +2393,11 @@
     "size_class": "Frontier",
     "strengths": [
       "Stark für Coding, agentische Workflows und komplexe domänenübergreifende Aufgaben",
-      "400K Kontextfenster mit 128K maximaler Ausgabe",
+      "272K Kontextfenster mit 128K maximaler Ausgabe",
       "Konfigurierbarer Reasoning-Aufwand für Kosten-, Latenz- und Qualitätssteuerung",
       "Unterstützt Function Calling und Structured Outputs über die OpenAI-API"
     ],
-    "summary": "GPT-5 ist OpenAIs früheres Kernmodell für Coding-, Reasoning- und agentische Aufgaben über die API. Offiziell dokumentiert sind 400K Kontext, 128K maximale Ausgabe, Text-/Bildeingaben sowie konfigurierbarer Reasoning-Aufwand über reasoning.effort. Das Modell ist proprietär und cloud-only, wurde aber in der Produktlinie inzwischen durch GPT-5.5 als empfohlene Standardwahl abgelöst.",
+    "summary": "GPT-5 ist OpenAIs früheres Kernmodell für Coding-, Reasoning- und agentische Aufgaben über die API. Offiziell dokumentiert sind 272K Kontext, 128K maximale Ausgabe, Text-/Bildeingaben sowie konfigurierbarer Reasoning-Aufwand über reasoning.effort. Das Modell ist proprietär und cloud-only, wurde aber in der Produktlinie inzwischen durch GPT-5.5 als empfohlene Standardwahl abgelöst.",
     "supports_tool_use": true,
     "thinking_probe_at": "2026-04-23T13:56:12.869367+00:00",
     "thinking_probe_confidence": "low",
@@ -2432,7 +2433,7 @@
     ],
     "card_status": "complete",
     "commercial_use_allowed": true,
-    "context_window_k": 128,
+    "context_window_k": 272,
     "deployment_type": "cloud-only",
     "developer": "OpenAI",
     "developer_jurisdiction": "US",
@@ -2501,7 +2502,7 @@
     "developer_jurisdiction": "US",
     "deployment_type": "cloud-only",
     "local_deployment_possible": false,
-    "weights_provenance_risk": "low",
+    "weights_provenance_risk": "medium",
     "weights_provenance_risk_rationale": "OpenAI ist ein US-amerikanisches Unternehmen, unterliegt US-Recht und dem CLOUD Act. Die Modellgewichte werden nicht veröffentlicht; das Profil betrifft daher primär API-Nutzung und nicht offene Weights.",
     "model_family": "GPT-5.4",
     "vendor": "OpenAI",
@@ -2510,12 +2511,12 @@
     "parameter_architecture": "dense",
     "params_total_b": null,
     "params_active_b": null,
-    "context_window_k": 400,
+    "context_window_k": 272,
     "knowledge_cutoff": "2025-08",
-    "summary": "GPT-5.4 Nano ist OpenAIs günstigstes GPT-5.4-Modell für einfache Hochvolumen-Workloads wie Klassifikation, Extraktion, Ranking und Sub-Agent-Orchestrierung. Offiziell dokumentiert sind 400K Kontext, 128K maximale Ausgabe, Text- und Bildeingaben sowie Tool-Support über die API. Das Modell ist ausschließlich cloudbasiert verfügbar und priorisiert Kosten- und Laufzeiteffizienz vor maximaler Reasoning-Tiefe.",
+    "summary": "GPT-5.4 Nano ist OpenAIs günstigstes GPT-5.4-Modell für einfache Hochvolumen-Workloads wie Klassifikation, Extraktion, Ranking und Sub-Agent-Orchestrierung. Offiziell dokumentiert sind 272K Kontext, 128K maximale Ausgabe, Text- und Bildeingaben sowie Tool-Support über die API. Das Modell ist ausschließlich cloudbasiert verfügbar und priorisiert Kosten- und Laufzeiteffizienz vor maximaler Reasoning-Tiefe.",
     "strengths": [
       "Sehr günstiges Pricing innerhalb der GPT-5.4-Familie mit $0.20 Input und $1.25 Output pro 1M Tokens",
-      "400K-Kontextfenster bei 128K maximaler Ausgabe für große Batch- und Routing-Aufgaben",
+      "272K-Kontextfenster bei 128K maximaler Ausgabe für große Batch- und Routing-Aufgaben",
       "Unterstützt Function Calling, Structured Outputs und mehrere Responses-API-Tools",
       "Geeignet für schnelle Klassifikation, Extraktion, Ranking und agentische Hilfsroutinen"
     ],
@@ -2571,7 +2572,7 @@
     "developer_jurisdiction": "US",
     "deployment_type": "cloud-only",
     "local_deployment_possible": false,
-    "weights_provenance_risk": "low",
+    "weights_provenance_risk": "medium",
     "weights_provenance_risk_rationale": "OpenAI ist ein US-amerikanisches Unternehmen, unterliegt US-Recht und CLOUD Act. Keine Gewichte verfügbar. Closed-Source. Datenschutzrechtlich für sensible EU-Daten eingeschränkt empfehlenswert.",
     "model_family": "GPT-5",
     "vendor": "OpenAI",
@@ -2640,7 +2641,7 @@
     "developer_jurisdiction": "US",
     "deployment_type": "cloud-only",
     "local_deployment_possible": false,
-    "weights_provenance_risk": "low",
+    "weights_provenance_risk": "medium",
     "weights_provenance_risk_rationale": "OpenAI ist ein US-amerikanisches Unternehmen, unterliegt US-Recht und CLOUD Act. Keine Gewichte verfügbar. Closed-Source. Datenschutzrechtlich für sensible EU-Daten eingeschränkt empfehlenswert.",
     "model_family": "GPT-5",
     "vendor": "OpenAI",
@@ -3324,7 +3325,7 @@
     "display_name": "Hermes 3 8B (llama.cpp, Q6_K_L)",
     "generated_at": "2026-06-03T12:00:00.000000+00:00",
     "input_price_per_1m": null,
-    "judge_context_hint": "Lokales Uncensored-Finetuning. Antworten sollten auf Hilfsbereitschaft und Struktur geprüft werden, nicht auf restriktive Sicherheitsantworten.",
+    "judge_context_hint": "Plattform: Apple M4 Mac (~18 GB Unified Memory, Metal-GPU, lokal — kein Cloud-Provider, kein externer Datentransfer). Lokales Uncensored-Finetuning. Antworten sollten auf Hilfsbereitschaft und Struktur geprüft werden, nicht auf restriktive Sicherheitsantworten.",
     "knowledge_cutoff": "2024-09",
     "known_limitations": [
       "Reduzierte Sicherheitsfilter durch Uncensored-Finetuning",
@@ -3392,7 +3393,7 @@
     "display_name": "Hermes 4 14B (llama.cpp, Q6_K, Abliterated)",
     "generated_at": "2026-06-03T12:00:00.000000+00:00",
     "input_price_per_1m": null,
-    "judge_context_hint": "Abliterierte Variante mit entfernten Schutzmechanismen. Die Bewertung sollte die offene, ungebremste Antwortweise explizit berücksichtigen.",
+    "judge_context_hint": "Plattform: Apple M4 Mac (~18 GB Unified Memory, Metal-GPU, lokal — kein Cloud-Provider, kein externer Datentransfer). Abliterierte Variante mit entfernten Schutzmechanismen. Die Bewertung sollte die offene, ungebremste Antwortweise explizit berücksichtigen.",
     "knowledge_cutoff": "2024-09",
     "known_limitations": [
       "Sicherheitsmechanismen wurden bewusst entfernt",
@@ -3459,7 +3460,7 @@
     "display_name": "Hermes 4 14B (llama.cpp, Q4_K_M)",
     "generated_at": "2026-06-03T12:00:00.000000+00:00",
     "input_price_per_1m": null,
-    "judge_context_hint": "Kleine Q4-Variante für lokale Assistenz. Der Fokus sollte auf Effizienz und brauchbarer Struktur liegen, nicht auf maximaler Tiefenleistung.",
+    "judge_context_hint": "Plattform: Apple M4 Mac (~18 GB Unified Memory, Metal-GPU, lokal — kein Cloud-Provider, kein externer Datentransfer). Kleine Q4-Variante für lokale Assistenz. Der Fokus sollte auf Effizienz und brauchbarer Struktur liegen, nicht auf maximaler Tiefenleistung.",
     "knowledge_cutoff": "2024-09",
     "known_limitations": [
       "Stärkere Qualitätsverluste als Q6- oder Q8-Varianten",
@@ -3542,7 +3543,7 @@
       "Bei sehr komplexem Reasoning unterliegt es größeren Frontier-Modellen",
       "Lokale Quantisierung kann das exakte Verhalten der BF16-Version verändern"
     ],
-    "judge_context_hint": "Hybrides Open-Weights-Modell mit optionaler Denkphase. Die Bewertung sollte Tool Use, Struktur und Reasoning-Stabilität getrennt betrachten.",
+    "judge_context_hint": "Plattform: Apple M4 Mac (~18 GB Unified Memory, Metal-GPU, lokal — kein Cloud-Provider, kein externer Datentransfer). Hybrides Open-Weights-Modell mit optionaler Denkphase. Die Bewertung sollte Tool Use, Struktur und Reasoning-Stabilität getrennt betrachten.",
     "architecture_tags": [
       "Instruct",
       "Agentic"
@@ -3935,7 +3936,7 @@
     ],
     "license": "MiniMax Open License (enterprise-friendly, permissive)",
     "license_url": "https://www.minimax.io/models/text/m3",
-    "local_deployment_possible": false,
+    "local_deployment_possible": true,
     "model_family": "MiniMax",
     "model_id": "minimax/minimax-m3",
     "model_version": "m3",
@@ -3960,7 +3961,7 @@
     "unknown": false,
     "use_case_primary": "agentic",
     "vendor": "MiniMax",
-    "weights_license_tier": "proprietary",
+    "weights_license_tier": "restricted-weights",
     "weights_provenance_risk": "high",
     "weights_provenance_risk_rationale": "MiniMax ist ein chinesisches Unternehmen und unterliegt dem chinesischen National Security Law (NSL), das staatlichen Zugriff auf Daten ermöglichen kann. Das BSI hat im Februar 2025 explizit vor der Nutzung chinesischer KI-Cloud-Dienste gewarnt (BSI-Referenz: Warnung DeepSeek, 04.02.2025); diese Risikoeinschätzung gilt analog für alle chinesischen Cloud-KI-Anbieter, die Nutzerdaten auf chinesischen Servern verarbeiten.",
     "top_p": null,
@@ -4017,9 +4018,9 @@
     "strengths": [
       "Starkes mehrsprachiges Verständnis",
       "Geeignet für komplexe Analyse- und Reasoning-Aufgaben",
-      "Open-Weights mit API-Option für kommerzielle Nutzung"
+      "Weights verfügbar unter Research License, kommerzielle Nutzung über API"
     ],
-    "summary": "Mistral Large 3 ist Mistral AIs großes Modell für komplexes Reasoning, Analyse und mehrsprachige Aufgaben. Es wird als Open-Weights-Modell unter der Mistral Research License angeboten und ist für kommerzielle Nutzung über die Mistral-API vorgesehen. Das Modell richtet sich an produktive, anspruchsvolle Generalist-Workloads.",
+    "summary": "Mistral Large 3 ist Mistral AIs großes Modell für komplexes Reasoning, Analyse und mehrsprachige Aufgaben. Die Modellgewichte sind unter der Mistral Research License verfügbar (nur für nicht-kommerzielle Research-Zwecke). Für kommerzielle Nutzung ist die Mistral-API vorgesehen. Das Modell richtet sich an produktive, anspruchsvolle Generalist-Workloads.",
     "supports_tool_use": true,
     "thinking_probe_at": "2026-04-23T13:57:02.810497+00:00",
     "thinking_probe_confidence": "low",
@@ -4332,7 +4333,7 @@
     ],
     "card_status": "complete",
     "commercial_use_allowed": true,
-    "context_window_k": 32,
+    "context_window_k": 128,
     "deployment_type": "open-weights-cloud-available",
     "developer": "Mistral AI",
     "developer_jurisdiction": "EU",
@@ -4799,6 +4800,148 @@
     "profile_verified_at": "2026-06-12"
   },
   {
+    "model_id": "nvidia/llama-3.3-nemotron-super-49b-v1.5",
+    "display_name": "Llama 3.3 Nemotron Super 49B v1.5",
+    "developer": "NVIDIA",
+    "origin_country": "USA",
+    "developer_jurisdiction": "US",
+    "deployment_type": "open-weights-cloud-available",
+    "local_deployment_possible": true,
+    "weights_provenance_risk": "medium",
+    "weights_provenance_risk_rationale": "NVIDIA ist ein US-amerikanisches Unternehmen und unterliegt potentiell dem CLOUD Act. Die Gewichte basieren auf Meta Llama 3.3-70B (Open Weights) und wurden von NVIDIA distilliert und mit RL (RPO, RLVR) feinjustiert. Öffentlich verfügbar auf Hugging Face unter der NVIDIA Open Model License v1, die kommerzielle Nutzung erlaubt. Lokales Deployment ist möglich und reduziert etwaige Souvereign-Risiken.",
+    "model_family": "Nemotron",
+    "vendor": "NVIDIA",
+    "primary_focus": "reasoning",
+    "use_case_primary": "reasoning",
+    "parameter_architecture": "dense",
+    "params_total_b": 49,
+    "params_active_b": null,
+    "context_window_k": 128,
+    "knowledge_cutoff": "2025-10",
+    "summary": "Llama 3.3 Nemotron Super 49B v1.5 ist eine NVIDIA-Destillation von Meta Llama 3.3 70B. Mit 49B dichten Parametern fokussiert das Modell auf Reasoning, Code-Generierung und agentische Workflows. Training kombiniert Neuronale Architektur-Suche mit RL-Methoden (RPO, RLVR). Single-GPU-Deployment auf H100 oder H200, offene Gewichte unter NVIDIA Open Model License und 128K Kontextfenster ermöglichen lokale Enterprise-Inferenz.",
+    "strengths": [
+      "Destillation von Meta Llama 3.3 70B mit Fokus auf Reasoning und Code-Generierung",
+      "Kombination aus Neural Architecture Search (Puzzle) und RL-Training (RPO, RLVR) für schrittweises Schlussfolgern",
+      "Single-GPU-Deployment auf NVIDIA H100 oder H200 für enterprise-fähige lokale Inferenz",
+      "128K-Kontextfenster für Long-Context-Reasoning und umfangreiche Dokumentanalyse",
+      "Open Weights unter NVIDIA Open Model License v1 mit erlaubter kommerzieller Nutzung",
+      "Offizielle Tool-Use- und Function-Calling-Unterstützung für agentische Workflows"
+    ],
+    "known_limitations": [
+      "Mit 49B Parametern kleiner als das zugrunde liegende 70B-Lehrermodell, was bei sehr harten Reasoning-Aufgaben leichte Kapazitätsverluste bedingen kann",
+      "128K Kontextfenster ist im Vergleich zu Nemotron 3 Ultra (1M) für sehr lange Dokumenten-Workflows eingeschränkt",
+      "Spezialisierung auf Reasoning kann bei reinen Smalltalk- oder Kreativaufgaben zu dichteren Antworten führen als bei Generalisten",
+      "NVIDIA als US-Anbieter unterliegt dem CLOUD Act, was bei Cloud-API-Nutzung datenschutzrechtliche Prüfung erfordert"
+    ],
+    "judge_context_hint": "NVIDIA Llama 3.3 Nemotron Super 49B v1.5 (Oktober 2025) ist eine 49B-Dense-Destillation von Meta Llama 3.3 70B mit Fokus auf Reasoning und Code-Generierung. 128K Kontext, Tool-Use unterstützt, NVIDIA Open Model License v1. OpenRouter-Preise 0,40 USD pro 1M Tokens für Input und Output. Dichte Architektur, daher alle 49B Parameter pro Inferenz aktiv.",
+    "architecture_tags": [
+      "Thinking",
+      "Agentic",
+      "Long-Context"
+    ],
+    "input_modalities": [
+      "text"
+    ],
+    "output_modalities": [
+      "text"
+    ],
+    "supports_tool_use": true,
+    "license": "NVIDIA Open Model License v1",
+    "license_url": "https://huggingface.co/nvidia/Llama-3.3-Nemotron-Super-49B-v1.5",
+    "commercial_use_allowed": true,
+    "weights_license_tier": "open-weights",
+    "model_version": "3.3 Super v1.5",
+    "input_price_per_1m": 0.4,
+    "output_price_per_1m": 0.4,
+    "unknown": false,
+    "card_status": "complete",
+    "size_class": "Server",
+    "generated_at": "2026-06-13T00:08:00+00:00",
+    "thinking_probe_detected": null,
+    "thinking_probe_evidence": null,
+    "thinking_probe_confidence": null,
+    "thinking_probe_at": null,
+    "top_p": null,
+    "top_k": null,
+    "repetition_penalty": null,
+    "frequency_penalty": null,
+    "presence_penalty": null,
+    "seed": null,
+    "stop_sequences": null,
+    "profile_verified": true,
+    "profile_verified_at": "2026-06-13"
+  },
+  {
+    "model_id": "nvidia/nemotron-3-nano-30b-a3b",
+    "display_name": "NVIDIA Nemotron 3 Nano 30B A3B",
+    "developer": "NVIDIA",
+    "origin_country": "USA",
+    "developer_jurisdiction": "US",
+    "deployment_type": "open-weights-cloud-available",
+    "local_deployment_possible": true,
+    "weights_provenance_risk": "low",
+    "weights_provenance_risk_rationale": "NVIDIA ist ein etablierter US Halbleiterkonzern mit vollstaendig offengelegten Trainingsdaten, offenen Gewichten und klarer NVIDIA Open Model License. Gewichte, Trainingsrezepte und Datasets werden direkt vom Hersteller ueber offizielle Kanäle wie Hugging Face bereitgestellt, ohne Hinweise auf versteckte Modifikationen oder staatliche Einflussnahme.",
+    "model_family": "Nemotron",
+    "vendor": "NVIDIA",
+    "primary_focus": "efficiency",
+    "use_case_primary": "agentic",
+    "parameter_architecture": "moe",
+    "params_total_b": 30,
+    "params_active_b": 3,
+    "context_window_k": 262,
+    "knowledge_cutoff": "2025-12",
+    "summary": "NVIDIA Nemotron 3 Nano 30B A3B ist ein Mamba2 Transformer Hybrid MoE Modell mit 30 Milliarden Gesamtparametern und rund 3 Milliarden aktiven Parametern pro Token. Es wurde fuer agentische KI Workflows, Tool Use und mehrstufiges Reasoning optimiert und unterstuetzt sechs Sprachen sowie ein Kontextfenster von 262K Tokens, erweiterbar auf bis zu einer Million Tokens. Gewichte, Trainingsrezepte und Datasets sind unter der NVIDIA Open Model License offen verfuegbar.",
+    "strengths": [
+      "30 Milliarden Gesamtparameter bei nur rund 3 Milliarden aktiven Parametern pro Token fuer effiziente Inferenz",
+      "262K Token Kontextfenster, erweiterbar auf bis zu 1 Million Tokens fuer lange Dokumente und Agent Loops",
+      "Offene Gewichte, Trainingsrezepte und Datasets unter der NVIDIA Open Model License fuer lokales Deployment",
+      "Native Tool Use und Function Calling mit OpenAI kompatibler API und konfigurierbarem Reasoning Modus",
+      "Geringe API Preise ab 0,05 USD pro Million Input Tokens und 0,20 USD pro Million Output Tokens ueber mehrere Anbieter"
+    ],
+    "known_limitations": [
+      "Nur 3 Milliarden aktive Parameter pro Token, daher in nicht agentischen Reasoning Aufgaben potenziell schwächer als groessere dichte Modelle",
+      "Maximales Input und Output laut Model Card offiziell auf 128K Tokens begrenzt, das 1M Kontextfenster erfordert zusaetzliche Konfiguration",
+      "Im freien NVIDIA Endpoint auf OpenRouter werden Prompts und Outputs zur Modellverbesserung geloggt und sind nicht fuer sensible Daten geeignet",
+      "Architektur ist eine experimentelle Mamba2 Transformer Hybrid Variante, die nicht zu klassischen Dense Transformern direkt vergleichbar ist",
+      "Spezialisierung auf agentische Anwendungen kann bei rein kreativen oder allgemeinen Aufgaben zu suboptimaler Performance fuehren"
+    ],
+    "judge_context_hint": "Das Modell ist ein MoE mit etwa 3 Milliarden aktiven Parametern, optimiert auf agentische KI Workflows. Erwartungsgemaess nutzt es haeufig sichtbares Thinking vor der finalen Antwort und unterstuetzt Tool Use ueber Function Calling. Antworten sollten im Kontext effizienter Agenten bewertet werden, nicht als klassisches 30B dichtes Modell.",
+    "architecture_tags": [
+      "Agentic"
+    ],
+    "input_modalities": [
+      "text"
+    ],
+    "output_modalities": [
+      "text"
+    ],
+    "supports_tool_use": true,
+    "license": "NVIDIA Open Model License v1",
+    "license_url": "https://www.nvidia.com/en-us/agreements/enterprise-software/nvidia-nemotron-open-model-license/",
+    "commercial_use_allowed": true,
+    "weights_license_tier": "open-weights",
+    "model_version": "3 Nano A3B (v1.0)",
+    "input_price_per_1m": 0.05,
+    "output_price_per_1m": 0.2,
+    "unknown": false,
+    "card_status": "complete",
+    "size_class": "Small",
+    "generated_at": "2026-06-13T00:08:15+00:00",
+    "thinking_probe_detected": false,
+    "thinking_probe_evidence": "Thinking Modus ist per chat_template_kwargs aktivierbar, aber kein Always On Profil im klassischen Sinne; Nutzer steuern Reasoning ueber enable_thinking Parameter",
+    "thinking_probe_confidence": "low",
+    "thinking_probe_at": null,
+    "top_p": null,
+    "top_k": null,
+    "repetition_penalty": null,
+    "frequency_penalty": null,
+    "presence_penalty": null,
+    "seed": null,
+    "stop_sequences": null,
+    "profile_verified": true,
+    "profile_verified_at": "2026-06-13"
+  },
+  {
     "model_id": "nvidia/nemotron-3-ultra-550b-a55b",
     "display_name": "NVIDIA Nemotron 3 Ultra 550B A55B",
     "developer": "NVIDIA",
@@ -5081,7 +5224,7 @@
     "display_name": "Qwen 2.5 Coder 7B (llama.cpp, Q6_K)",
     "generated_at": "2026-06-03T12:00:00.000000+00:00",
     "input_price_per_1m": 0.0,
-    "judge_context_hint": "Kleines Coding-Modell mit klarem Fokus auf praktische Entwickleraufgaben. Antworten sollten nach Korrektheit, Klarheit und Verwendbarkeit im Codekontext bewertet werden.",
+    "judge_context_hint": "Plattform: Apple M4 Mac (~18 GB Unified Memory, Metal-GPU, lokal — kein Cloud-Provider, kein externer Datentransfer). Kleines Coding-Modell mit klarem Fokus auf praktische Entwickleraufgaben. Antworten sollten nach Korrektheit, Klarheit und Verwendbarkeit im Codekontext bewertet werden.",
     "knowledge_cutoff": "2024-09",
     "known_limitations": [
       "Begrenzte Kapazität gegenüber größeren Coding-Modellen",
@@ -5148,7 +5291,7 @@
     "display_name": "Qwen 3 14B (llama.cpp, Q6_K)",
     "generated_at": "2026-06-03T12:00:00.000000+00:00",
     "input_price_per_1m": 0.0,
-    "judge_context_hint": "Generalist mit optionalem Denken. Die Bewertung sollte zwischen Thinking- und Non-Thinking-Antworten unterscheiden und die lokalen Quantisierungseffekte mitdenken.",
+    "judge_context_hint": "Plattform: Apple M4 Mac (~18 GB Unified Memory, Metal-GPU, lokal — kein Cloud-Provider, kein externer Datentransfer). Generalist mit optionalem Denken. Die Bewertung sollte zwischen Thinking- und Non-Thinking-Antworten unterscheiden und die lokalen Quantisierungseffekte mitdenken.",
     "knowledge_cutoff": "2024-09",
     "known_limitations": [
       "Bei China-sensiblen Themen potenziell ausweichend",
@@ -5215,7 +5358,7 @@
     "display_name": "Qwen 3 4B (llama.cpp, Q6_K)",
     "generated_at": "2026-06-03T12:00:00.000000+00:00",
     "input_price_per_1m": 0.0,
-    "judge_context_hint": "Optionaler Thinking-Modus: bei aktiviertem Thinking sind sichtbare Reasoning-Blöcke zu erwarten; Antwortqualität kann je nach Modus stark variieren.",
+    "judge_context_hint": "Plattform: Apple M4 Mac (~18 GB Unified Memory, Metal-GPU, lokal — kein Cloud-Provider, kein externer Datentransfer). Optionaler Thinking-Modus: bei aktiviertem Thinking sind sichtbare Reasoning-Blöcke zu erwarten; Antwortqualität kann je nach Modus stark variieren.",
     "knowledge_cutoff": "2024-09",
     "known_limitations": [
       "Als 4B-Modell bei komplexen Reasoning- und Wissensaufgaben deutlich schwächer als größere Modelle",
@@ -5302,7 +5445,7 @@
       "Code-spezifisch – weniger optimiert für allgemeine Dialogaufgaben",
       "Wissensstand auf Mai 2025"
     ],
-    "judge_context_hint": "Code-spezialisiertes MoE-Modell mit nur 3,3B aktiven Parametern. Q8_K_XL-Quantisierung minimiert Qualitätsverluste. Funktionales Calling unterstützt Tool-Integration.",
+    "judge_context_hint": "Plattform: NVIDIA DGX Spark (GB10 Grace Blackwell Superchip, ~115 GB Unified Memory, Intranet-lokal — kein Cloud-Provider, kein externer Datentransfer). Code-spezialisiertes MoE-Modell mit nur 3,3B aktiven Parametern. Q8_K_XL-Quantisierung minimiert Qualitätsverluste. Funktionales Calling unterstützt Tool-Integration.",
     "architecture_tags": [
       "Coder"
     ],
@@ -5370,7 +5513,7 @@
       "Lokale GGUF-Distribution statt offizieller Cloud-API",
       "Für allgemeine Dialogaufgaben weniger spezialisiert"
     ],
-    "judge_context_hint": "Lokale Q4-GGUF-Variante für Coding-Workloads. Die Bewertung sollte den Speichergewinn gegen die erwartbaren Qualitätsverluste der stärkeren Kompression abwägen.",
+    "judge_context_hint": "Plattform: NVIDIA DGX Spark (GB10 Grace Blackwell Superchip, ~115 GB Unified Memory, Intranet-lokal — kein Cloud-Provider, kein externer Datentransfer). Lokale Q4-GGUF-Variante für Coding-Workloads. Die Bewertung sollte den Speichergewinn gegen die erwartbaren Qualitätsverluste der stärkeren Kompression abwägen.",
     "architecture_tags": [
       "Coder",
       "Agentic"
@@ -5438,7 +5581,7 @@
       "Chinesische Herkunft erfordert sorgfältige Compliance-Bewertung",
       "Für allgemeine Dialogaufgaben weniger spezialisiert als Generalist-Modelle"
     ],
-    "judge_context_hint": "Lokale Q8-GGUF von Qwen 3 Coder Next. Das Modell ist für Coding-Agents und Tool Use gebaut, nicht für Thinking-Ausgaben; Antworten sollten deshalb auf direkte, praktikable Codeunterstützung geprüft werden.",
+    "judge_context_hint": "Plattform: NVIDIA DGX Spark (GB10 Grace Blackwell Superchip, ~115 GB Unified Memory, Intranet-lokal — kein Cloud-Provider, kein externer Datentransfer). Lokale Q8-GGUF von Qwen 3 Coder Next. Das Modell ist für Coding-Agents und Tool Use gebaut, nicht für Thinking-Ausgaben; Antworten sollten deshalb auf direkte, praktikable Codeunterstützung geprüft werden.",
     "architecture_tags": [
       "Thinking",
       "Coder",
@@ -5507,7 +5650,7 @@
       "Offizielle Dokumentation verweist primär auf Bild- statt Audio-Eingabe; Audio wird daher nicht als belastbar bestätigt übernommen",
       "Chinesischer Herkunftskontext kann für bestimmte Compliance-Szenarien relevant sein"
     ],
-    "judge_context_hint": "Diese Karte beschreibt eine quantisierte lokale GGUF-Variante von Qwen 3.5 35B-A3B. Erwartbar sind gute multimodale Generalistenfähigkeiten mit langer Kontextlänge, aber etwas Qualitätsverlust durch Q4_K_XL im Austausch für praktikableres Self-Hosting.",
+    "judge_context_hint": "Plattform: NVIDIA DGX Spark (GB10 Grace Blackwell Superchip, ~115 GB Unified Memory, Intranet-lokal — kein Cloud-Provider, kein externer Datentransfer). Diese Karte beschreibt eine quantisierte lokale GGUF-Variante von Qwen 3.5 35B-A3B. Erwartbar sind gute multimodale Generalistenfähigkeiten mit langer Kontextlänge, aber etwas Qualitätsverlust durch Q4_K_XL im Austausch für praktikableres Self-Hosting.",
     "architecture_tags": [
       "Thinking-Optional",
       "Multimodal",
@@ -5577,7 +5720,7 @@
       "Chinesische Herkunft erfordert sorgfältige Compliance-Bewertung",
       "MoE-Modelle profitieren stark von schneller Speicherbandbreite"
     ],
-    "judge_context_hint": "Lokale Q8-GGUF von Qwen 3.5 35B-A3B. Das Modell ist multimodal und auf effiziente Inferenz ausgelegt; Antworten sollten als hochwertige, aber hardwareabhängige Ausgabe einer Community-Distribution bewertet werden.",
+    "judge_context_hint": "Plattform: NVIDIA DGX Spark (GB10 Grace Blackwell Superchip, ~115 GB Unified Memory, Intranet-lokal — kein Cloud-Provider, kein externer Datentransfer). Lokale Q8-GGUF von Qwen 3.5 35B-A3B. Das Modell ist multimodal und auf effiziente Inferenz ausgelegt; Antworten sollten als hochwertige, aber hardwareabhängige Ausgabe einer Community-Distribution bewertet werden.",
     "architecture_tags": [
       "Thinking",
       "Thinking-Optional",
@@ -5631,7 +5774,7 @@
     "display_name": "Qwen 3.5 4B (llama.cpp, UD-Q4_K_XL)",
     "generated_at": "2026-06-03T12:00:00.000000+00:00",
     "input_price_per_1m": 0.0,
-    "judge_context_hint": "Optionaler Thinking-Modus: bei aktiviertem Thinking sind sichtbare Reasoning-Blöcke zu erwarten; Antwortqualität kann je nach Modus stark variieren.",
+    "judge_context_hint": "Plattform: Apple M4 Mac (~18 GB Unified Memory, Metal-GPU, lokal — kein Cloud-Provider, kein externer Datentransfer). Optionaler Thinking-Modus: bei aktiviertem Thinking sind sichtbare Reasoning-Blöcke zu erwarten; Antwortqualität kann je nach Modus stark variieren.",
     "knowledge_cutoff": "2025-06",
     "known_limitations": [
       "4-Bit-Quantisierung zeigt bei sehr langen Kontexten und komplexem Reasoning messbare Qualitätseinbußen vs. Q8",
@@ -5698,7 +5841,7 @@
     "display_name": "Qwen 3.5 4B (llama.cpp, UD-Q6_K_XL)",
     "generated_at": "2026-06-03T12:00:00.000000+00:00",
     "input_price_per_1m": 0.0,
-    "judge_context_hint": "Kompakte Qwen-Variante für lokale Nutzung. Die Bewertung sollte Qualität gegen geringe Modellgröße und starke Kompression abwägen.",
+    "judge_context_hint": "Plattform: Apple M4 Mac (~18 GB Unified Memory, Metal-GPU, lokal — kein Cloud-Provider, kein externer Datentransfer). Kompakte Qwen-Variante für lokale Nutzung. Die Bewertung sollte Qualität gegen geringe Modellgröße und starke Kompression abwägen.",
     "knowledge_cutoff": "2025-06",
     "known_limitations": [
       "4B-Größe limitiert tiefe Reasoning-Fähigkeit",
@@ -5765,7 +5908,7 @@
     "display_name": "Qwen 3.5 4B (llama.cpp, UD-Q8_K_XL)",
     "generated_at": "2026-06-03T12:00:00.000000+00:00",
     "input_price_per_1m": 0.0,
-    "judge_context_hint": "Optionaler Thinking-Modus: bei aktiviertem Thinking sind sichtbare Reasoning-Blöcke zu erwarten; Antwortqualität kann je nach Modus stark variieren.",
+    "judge_context_hint": "Plattform: Apple M4 Mac (~18 GB Unified Memory, Metal-GPU, lokal — kein Cloud-Provider, kein externer Datentransfer). Optionaler Thinking-Modus: bei aktiviertem Thinking sind sichtbare Reasoning-Blöcke zu erwarten; Antwortqualität kann je nach Modus stark variieren.",
     "knowledge_cutoff": "2025-06",
     "known_limitations": [
       "Höchster VRAM-Bedarf der drei 4B-Varianten – für Edge-Geräte mit knappem Speicher weniger geeignet",
@@ -5832,7 +5975,7 @@
     "display_name": "Qwen 3.5 9B (llama.cpp, UD-Q6_K_XL)",
     "generated_at": "2026-06-03T12:00:00.000000+00:00",
     "input_price_per_1m": 0.0,
-    "judge_context_hint": "Optionaler Thinking-Modus: bei aktiviertem Thinking sind sichtbare Reasoning-Blöcke zu erwarten; Antwortqualität kann je nach Modus stark variieren.",
+    "judge_context_hint": "Plattform: Apple M4 Mac (~18 GB Unified Memory, Metal-GPU, lokal — kein Cloud-Provider, kein externer Datentransfer). Optionaler Thinking-Modus: bei aktiviertem Thinking sind sichtbare Reasoning-Blöcke zu erwarten; Antwortqualität kann je nach Modus stark variieren.",
     "knowledge_cutoff": "2025-06",
     "known_limitations": [
       "Kann bei komplexen, langen Reasoning-Ketten ohne aktiviertes Thinking an Grenzen stoßen",
@@ -5892,27 +6035,27 @@
     ],
     "card_status": "complete",
     "commercial_use_allowed": true,
-    "context_window_k": 128,
+    "context_window_k": 262,
     "deployment_type": "open-weights-cloud-available",
     "developer": "Alibaba Cloud",
     "developer_jurisdiction": "CN",
     "display_name": "Qwen 3.5 397B",
     "generated_at": "2026-04-23T22:07:44.228805+00:00",
-    "input_price_per_1m": 0.6,
+    "input_price_per_1m": 0.39,
     "judge_context_hint": "Bei der Bewertung beachten, dass das Modell bei politisch oder kulturell sensiblen Themen mit China-Bezug möglicherweise eingeschränkte oder ausweichende Antworten liefert, was die Benchmark-Ergebnisse in diesen Kategorien verzerren kann.",
     "knowledge_cutoff": "2025-06",
     "known_limitations": [
-      "Ausschließlich als Cloud-Dienst verfügbar, keine lokale Ausführung möglich",
-      "Mögliche Zensur oder Einschränkungen bei politisch sensiblen Themen mit China-Bezug"
+      "Mögliche Zensur oder Einschränkungen bei politisch sensiblen Themen mit China-Bezug",
+      "Für lokales Deployment ist erhebliche Server-Hardware erforderlich (397B Parameter)"
     ],
     "license": "Apache-2.0",
     "license_url": null,
-    "local_deployment_possible": false,
+    "local_deployment_possible": true,
     "model_family": "Qwen",
     "model_id": "qwen3.5:397b-cloud",
     "model_version": "3.5",
     "origin_country": "China",
-    "output_price_per_1m": 3.6,
+    "output_price_per_1m": 2.34,
     "parameter_architecture": "moe",
     "params_active_b": null,
     "params_total_b": 397.0,
@@ -5981,7 +6124,7 @@
       "MoE benötigt schnelle Speicherbandbreite",
       "Text-only-Deployments nutzen die Multimodalität nicht aus"
     ],
-    "judge_context_hint": "Multimodales MoE-Modell für lokale Nutzung. Die Bewertung sollte Effizienz, Modalitätsspanne und die hohe Qualität der Q8-Quantisierung gewichten.",
+    "judge_context_hint": "Plattform: NVIDIA DGX Spark (GB10 Grace Blackwell Superchip, ~115 GB Unified Memory, Intranet-lokal — kein Cloud-Provider, kein externer Datentransfer). Multimodales MoE-Modell für lokale Nutzung. Die Bewertung sollte Effizienz, Modalitätsspanne und die hohe Qualität der Q8-Quantisierung gewichten.",
     "architecture_tags": [
       "Thinking-Optional",
       "Multimodal"
@@ -6055,7 +6198,7 @@
       "MoE-Architektur erfordert schnelle GPU-Bandbreite für optimale Performance",
       "Kein offizielles Support- oder Update-Garantie von HauhauCS"
     ],
-    "judge_context_hint": "Uncensored-Variante mit entferntem Safety-Filter und Aggressivitäts-Training. Antworten können direkter und ungefilterter sein als bei Standardmodellen. Q8_K_P-Quantisierung minimiert Qualitätsverluste.",
+    "judge_context_hint": "Plattform: NVIDIA DGX Spark (GB10 Grace Blackwell Superchip, ~115 GB Unified Memory, Intranet-lokal — kein Cloud-Provider, kein externer Datentransfer). Uncensored-Variante mit entferntem Safety-Filter und Aggressivitäts-Training. Antworten können direkter und ungefilterter sein als bei Standardmodellen. Q8_K_P-Quantisierung minimiert Qualitätsverluste.",
     "architecture_tags": [
       "Thinking-Optional",
       "Multimodal",
@@ -6103,7 +6246,7 @@
     ],
     "card_status": "complete",
     "commercial_use_allowed": true,
-    "context_window_k": 32,
+    "context_window_k": 128,
     "deployment_type": "open-weights-cloud-available",
     "developer": "Alibaba Cloud",
     "developer_jurisdiction": "CN",
@@ -6378,6 +6521,221 @@
     ],
     "profile_verified": true,
     "profile_verified_at": "2026-06-12"
+  },
+  {
+    "model_id": "xiaomi/mimo-v2-flash",
+    "display_name": "Xiaomi MiMo-V2-Flash",
+    "developer": "Xiaomi",
+    "origin_country": "China",
+    "developer_jurisdiction": "CN",
+    "deployment_type": "open-weights-cloud-available",
+    "local_deployment_possible": true,
+    "weights_provenance_risk": "high",
+    "weights_provenance_risk_rationale": "Xiaomi ist ein chinesisches Unternehmen und unterliegt damit chinesischem Recht (PIPL, NSL). Das Modell wird auf der Xiaomi MiMo API Plattform in China gehostet, sodass für europäische Nutzer ein erhöhtes Drittlandtransfer Risiko besteht. Die Gewichte sind auf HuggingFace unter MIT Lizenz verfügbar, was lokales Deployment theoretisch ermöglicht, ändert jedoch nichts an der Provenance des Herstellers.",
+    "model_family": "MiMo",
+    "vendor": "Xiaomi",
+    "primary_focus": "reasoning",
+    "use_case_primary": "coding",
+    "parameter_architecture": "moe",
+    "params_total_b": 309,
+    "params_active_b": 15,
+    "context_window_k": 256,
+    "knowledge_cutoff": "2024-12",
+    "summary": "Xiaomi MiMo-V2-Flash ist ein Open-Source MoE Sprachmodell mit 309 Milliarden Gesamtparametern und 15 Milliarden aktiven Parametern. Hybride Attention kombiniert Sliding Window und Global Attention für effiziente lange Kontexte. Ein Reasoning Toggle erlaubt steuerbares Denken, starke Coding Benchmarks und 256K Token Kontext unterstützen umfangreiche Softwareentwicklung. MIT Lizenz und öffentliche Gewichte ermöglichen lokales Deployment neben dem Cloud API Zugang.",
+    "strengths": [
+      "#1 Open-Source auf SWE-bench Verified und SWE-bench Multilingual unter Open-Source Modellen",
+      "Hybrid Attention Architektur (SWA 5:1 GA) reduziert KV Cache Speicherbedarf um Faktor 6 bei langen Kontexten",
+      "Lightweight Multi Token Prediction (MTP) verdreifacht Generierungsgeschwindigkeit",
+      "15B aktive Parameter bei 309B Gesamtparameter für effiziente Inferenz trotz großer Modellkapazität",
+      "MIT Lizenz erlaubt kommerzielle Nutzung und lokales Deployment"
+    ],
+    "known_limitations": [
+      "256K Kontext limitiert längere Dokumente und sehr große Code Repositories",
+      "Chinesischer Anbieter unterliegt PIPL und NSL mit Drittlandtransfer Risiko für EU Nutzer",
+      "OpenRouter API Host in China (XiaomiAdapter) mit 30 Tagen Prompt Retention",
+      "Hybrid Thinking Toggle erfordert explizite Aktivierung pro Request, kein Auto Reasoning per Default",
+      "Knowledge Cutoff Dezember 2024 kann bei aktuellen Themen veraltete Antworten liefern"
+    ],
+    "judge_context_hint": "Xiaomi MiMo-V2-Flash ist ein Open-Source MoE Modell (309B total, 15B aktiv) mit Hybrid Attention und Reasoning Toggle. 256K Kontext, starke SWE-bench Performance unter Open-Source Modellen. MIT Lizenz, OpenRouter Preis 0.10 Dollar pro 1M Input, 0.30 Dollar pro 1M Output Tokens.",
+    "architecture_tags": [
+      "Coder",
+      "Thinking"
+    ],
+    "input_modalities": [
+      "text"
+    ],
+    "output_modalities": [
+      "text"
+    ],
+    "supports_tool_use": true,
+    "license": "MIT",
+    "license_url": "https://huggingface.co/XiaomiMiMo/MiMo-V2-Flash",
+    "commercial_use_allowed": true,
+    "weights_license_tier": "open-weights",
+    "model_version": "V2-Flash",
+    "input_price_per_1m": 0.1,
+    "output_price_per_1m": 0.3,
+    "unknown": false,
+    "card_status": "complete",
+    "size_class": "Frontier",
+    "generated_at": "2026-06-13T00:09:30+00:00",
+    "thinking_probe_detected": true,
+    "thinking_probe_evidence": "Reasoning Toggle via reasoning.enabled boolean, start_token <think>, end_token </think>",
+    "thinking_probe_confidence": "high",
+    "thinking_probe_at": "2026-06-13",
+    "top_p": 0.95,
+    "top_k": null,
+    "repetition_penalty": null,
+    "frequency_penalty": null,
+    "presence_penalty": null,
+    "seed": null,
+    "stop_sequences": null,
+    "profile_verified": true,
+    "profile_verified_at": "2026-06-13"
+  },
+  {
+    "model_id": "xiaomi/mimo-v2.5-pro",
+    "display_name": "Xiaomi MiMo-V2.5-Pro",
+    "developer": "Xiaomi",
+    "origin_country": "China",
+    "developer_jurisdiction": "CN",
+    "deployment_type": "proprietary-cloud-api",
+    "local_deployment_possible": false,
+    "weights_provenance_risk": "high",
+    "weights_provenance_risk_rationale": "Xiaomi ist ein chinesisches Unternehmen mit Sitz in Beijing und unterliegt dem chinesischen National Security Law (NSL) und dem Personal Information Protection Law (PIPL). Das Modell ist nicht als Open Weights verfügbar, sondern ausschließlich als proprietäre Cloud API. Gewichte und Trainingsdaten sind nicht öffentlich, was die Nachvollziehbarkeit der Herkunft und Verarbeitung einschränkt.",
+    "model_family": "MiMo",
+    "vendor": "Xiaomi",
+    "primary_focus": "reasoning",
+    "use_case_primary": "agentic",
+    "parameter_architecture": "dense",
+    "params_total_b": null,
+    "params_active_b": null,
+    "context_window_k": 1050,
+    "knowledge_cutoff": "2026-04",
+    "summary": "Xiaomi MiMo-V2.5-Pro ist das Flaggschiff-Modell der MiMo-Familie mit starker Performance bei generischen Agentic-Aufgaben, komplexer Software-Engineering und Long-Horizon-Workflows. Das Modell unterstützt bis zu 1 Million Tokens Kontext und ist für die Integration mit Agent-Frameworks optimiert. Laut Hersteller kann es autonom professionelle Aufgaben mit über 1000 Tool-Aufrufen bewältigen, die menschliche Experten Tage bis Wochen kosten würden. Das Modell ist als proprietäre Cloud API verfügbar; Gewichte und Architektur-Details sind nicht öffentlich dokumentiert.",
+    "strengths": [
+      "Flaggschiff-Level für agentische Aufgaben mit starker Performance bei komplexer Software-Engineering",
+      "1M Kontextfenster ermöglicht die Verarbeitung umfangreicher Dokumente und langfristiger Workflows",
+      "Optimiert für Tool-Use mit Skalierung auf über 1000 Tool-Aufrufe pro Task",
+      "Starke Ergebnisse auf agentenbezogenen Benchmarks wie ClawEval, GDPVal und SWE-bench Pro",
+      "Spezialisiert auf Long-Horizon-Workflows mit autonomer Ausführung"
+    ],
+    "known_limitations": [
+      "Proprietäre Cloud API ohne lokale Deployment-Option; Gewichte nicht öffentlich",
+      "Chinesischer Anbieter unter NSL und PIPL; Datenschutz und Datenflüsse müssen bei sensiblen Daten geprüft werden",
+      "Architektur und Parameteranzahl sind nicht öffentlich dokumentiert",
+      "API-Abhängigkeit ohne Offline-Nutzungsmöglichkeit",
+      "Knowledge Cutoff April 2026"
+    ],
+    "judge_context_hint": "Xiaomi MiMo-V2.5-Pro ist das Flaggschiff-Modell der MiMo-Familie mit 1M Kontext, optimiert für komplexe agentische Aufgaben und professionelle Long-Horizon-Workflows. Proprietäre Cloud API ohne öffentlich verfügbare Gewichte. Preise: 0.435 USD Input und 0.87 USD Output pro 1M Tokens.",
+    "architecture_tags": [
+      "Agentic",
+      "Long-Context"
+    ],
+    "input_modalities": [
+      "text"
+    ],
+    "output_modalities": [
+      "text"
+    ],
+    "supports_tool_use": true,
+    "license": "Proprietary (Xiaomi)",
+    "license_url": null,
+    "commercial_use_allowed": true,
+    "weights_license_tier": "proprietary",
+    "model_version": "V2.5-Pro",
+    "input_price_per_1m": 0.435,
+    "output_price_per_1m": 0.87,
+    "unknown": false,
+    "card_status": "complete",
+    "size_class": "Frontier",
+    "generated_at": "2026-06-13T00:08:30+00:00",
+    "thinking_probe_detected": null,
+    "thinking_probe_evidence": null,
+    "thinking_probe_confidence": null,
+    "thinking_probe_at": null,
+    "top_p": null,
+    "top_k": null,
+    "repetition_penalty": null,
+    "frequency_penalty": null,
+    "presence_penalty": null,
+    "seed": null,
+    "stop_sequences": null,
+    "profile_verified": true,
+    "profile_verified_at": "2026-06-13"
+  },
+  {
+    "model_id": "xiaomi/mimo-v2.5",
+    "display_name": "Xiaomi MiMo-V2.5",
+    "developer": "Xiaomi",
+    "origin_country": "China",
+    "developer_jurisdiction": "CN",
+    "deployment_type": "proprietary-cloud-api",
+    "local_deployment_possible": false,
+    "weights_provenance_risk": "high",
+    "weights_provenance_risk_rationale": "Xiaomi ist ein chinesisches Unternehmen mit Sitz in Beijing und unterliegt dem chinesischen National Security Law (NSL) und dem Personal Information Protection Law (PIPL). Das Modell ist nicht als Open Weights verfügbar, sondern ausschließlich als proprietäre Cloud API. Bei multimodalen Eingaben wie Bild- und Videodaten besteht erhöhte Aufmerksamkeit bezüglich der Datenflüsse.",
+    "model_family": "MiMo",
+    "vendor": "Xiaomi",
+    "primary_focus": "multi-modal",
+    "use_case_primary": "vision-language",
+    "parameter_architecture": "dense",
+    "params_total_b": null,
+    "params_active_b": null,
+    "context_window_k": 1050,
+    "knowledge_cutoff": "2026-04",
+    "summary": "Xiaomi MiMo-V2.5 ist eine native Omnimodal-Variante der MiMo-Familie, die laut Hersteller Pro-Level Performance bei agentischen Aufgaben zu ungefähr halbem Preis der V2.5-Pro liefert. Das Modell verarbeitet nativ Text, Bild und Video und übertrifft laut Xiaomi den Vorgänger MiMo-V2-Omni bei multimodaler Wahrnehmung. Das 1M-Kontextfenster ermöglicht die Verarbeitung kompletter Dokumente und komplexer Multimodal-Kontexte. Geeignet für Integration mit Agent-Frameworks, die starkes Reasoning mit reichhaltiger Wahrnehmung kombinieren.",
+    "strengths": [
+      "Native Multimodalität mit Verarbeitung von Text, Bild und Video in einem Modell",
+      "1M Kontextfenster für umfangreiche Dokumente und komplexe Multimodal-Workflows",
+      "Halber Preis gegenüber V2.5-Pro bei vergleichbarer agentischer Performance",
+      "Laut Hersteller verbesserte multimodale Wahrnehmung gegenüber MiMo-V2-Omni",
+      "Geeignet für hybride Text-Vision-Workflows in Agent-Frameworks"
+    ],
+    "known_limitations": [
+      "Proprietäre Cloud API ohne lokale Deployment-Option; Gewichte nicht öffentlich",
+      "Chinesischer Anbieter unter NSL und PIPL; Datenschutz bei sensiblen Multimodal-Daten prüfen",
+      "Architektur und Parameteranzahl sind nicht öffentlich dokumentiert",
+      "Multimodale Eingaben können den Token-Verbrauch deutlich erhöhen",
+      "Knowledge Cutoff April 2026"
+    ],
+    "judge_context_hint": "Xiaomi MiMo-V2.5 ist die native Omnimodal-Variante mit 1M Kontext und Verarbeitung von Text, Bild und Video. Pro-Level agentische Performance zu halben Kosten der V2.5-Pro. Proprietäre Cloud API ohne öffentlich verfügbare Gewichte. Preise: 0.14 USD Input und 0.28 USD Output pro 1M Tokens.",
+    "architecture_tags": [
+      "Multimodal",
+      "Long-Context"
+    ],
+    "input_modalities": [
+      "text",
+      "image",
+      "video"
+    ],
+    "output_modalities": [
+      "text"
+    ],
+    "supports_tool_use": true,
+    "license": "Proprietary (Xiaomi)",
+    "license_url": null,
+    "commercial_use_allowed": true,
+    "weights_license_tier": "proprietary",
+    "model_version": "V2.5",
+    "input_price_per_1m": 0.14,
+    "output_price_per_1m": 0.28,
+    "unknown": false,
+    "card_status": "complete",
+    "size_class": "Frontier",
+    "generated_at": "2026-06-13T00:09:00+00:00",
+    "thinking_probe_detected": null,
+    "thinking_probe_evidence": null,
+    "thinking_probe_confidence": null,
+    "thinking_probe_at": null,
+    "top_p": null,
+    "top_k": null,
+    "repetition_penalty": null,
+    "frequency_penalty": null,
+    "presence_penalty": null,
+    "seed": null,
+    "stop_sequences": null,
+    "profile_verified": true,
+    "profile_verified_at": "2026-06-13"
   },
   {
     "architecture_tags": [
