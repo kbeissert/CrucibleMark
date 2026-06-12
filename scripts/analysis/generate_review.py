@@ -97,6 +97,33 @@ def _get_card_field(model_id: str, field: str, default: str = "") -> str:
     return default
 
 
+def _get_hardware_profile_for_model(model_id: str, config: dict) -> str:
+    """Liest hardware_profile aus provider_config.yaml für ein lokales Modell.
+
+    Durchsucht alle Provider-Sektionen (nicht nur 'commercial') nach der model_id
+    und gibt den zugehörigen hardware_profile-Key zurück. Dieser Key wird in
+    benchmark_config.yaml unter runner_environment.profiles aufgelöst — SSOT für
+    die Frage, auf welcher Hardware das Modell getestet wurde.
+    """
+    safe_target = _safe_name(model_id)
+    for section in config.get("providers", {}).values():
+        if not isinstance(section, dict):
+            continue
+        for prov_cfg in section.values():
+            if not isinstance(prov_cfg, dict):
+                continue
+            hw = prov_cfg.get("hardware_profile", "")
+            if not hw:
+                continue
+            for m in prov_cfg.get("models", []):
+                if not isinstance(m, dict):
+                    continue
+                raw_id = m.get("id", "")
+                if raw_id == model_id or _safe_name(raw_id) == safe_target:
+                    return hw
+    return ""
+
+
 def get_latest_audit_dir(base_dir: Path) -> Optional[Path]:
     """Find the most recently modified audit sub-directory."""
     subdirs = [d for d in base_dir.iterdir() if d.is_dir() and d.name != ".DS_Store"]
@@ -379,7 +406,16 @@ def process_model_review(
             run_type = "local"
 
         context_manager = SystemContextManager()
-        hardware_context = context_manager.get_editor_prompt_injection(run_type)
+        # SSOT: hardware_profile aus provider_config.yaml für lokale Modelle lesen.
+        # Damit wird das Testsystem des Modells beschrieben, nicht der Review-Rechner.
+        hw_profile_key = (
+            _get_hardware_profile_for_model(tested_model_name, validator.config)
+            if run_type == "local"
+            else ""
+        )
+        hardware_context = context_manager.get_editor_prompt_injection(
+            run_type, hardware_profile_key=hw_profile_key
+        )
     except Exception:
         hardware_context = "Achte auf Performance und Effizienz bezüglich Token-Kosten."
 

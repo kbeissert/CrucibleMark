@@ -22,11 +22,25 @@ class SystemContextManager:
             return 0.0
         return round(float(tokens_used) / float(execution_time_s), 2)
 
-    def get_editor_prompt_injection(self, run_type: str = "local") -> str:
-        """Baut den System-Prompt-Zusatz für das Meta-Review-Skript."""
+    def get_editor_prompt_injection(self, run_type: str = "local", hardware_profile_key: str = "") -> str:
+        """Baut den System-Prompt-Zusatz für das Meta-Review-Skript.
+
+        hardware_profile_key: Optionaler Key aus provider_config.yaml (hardware_profile-Feld).
+            Wenn gesetzt, wird das zugehörige Profil aus runner_environment.profiles geladen
+            statt dem active_profile des laufenden Rechners. Dies ist der SSOT-Pfad für
+            lokale Modelle, die auf einem anderen System getestet wurden (z.B. DGX Spark).
+        """
         if run_type == "local":
-            desc = self.profile.get("description", "Apple Silicon M4, 24GB Unified Memory")
-            ram = self.profile.get("ram_gb", "24")
+            # SSOT: hardware_profile_key aus provider_config.yaml hat Vorrang vor active_profile.
+            # So wird das Testsystem des Modells beschrieben, nicht der Review-Rechner.
+            if hardware_profile_key:
+                profiles = self.config.get("runner_environment", {}).get("profiles", {})
+                profile = profiles.get(hardware_profile_key, self.profile)
+            else:
+                profile = self.profile
+
+            desc = profile.get("description", "Apple Silicon M4, 24GB Unified Memory")
+            ram = profile.get("ram_gb", "24")
 
             return f"""WICHTIGER SYSTEM-KONTEXT ZUR PERFORMANCE:
 Dieses lokale Modell wurde native auf folgendem lokalen Referenzsystem evaluiert: {desc}. Da es auf lokaler Hardware läuft, sind Parameter-Größen und VRAM-Grenzen extrem relevant.

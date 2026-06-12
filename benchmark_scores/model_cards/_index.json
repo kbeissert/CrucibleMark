@@ -1726,7 +1726,7 @@
   },
   {
     "model_id": "gemma-4-26B-A4B-it-qat-ud-q4",
-    "display_name": "Gemma 4 26B-A4B Instruct (QAT, UD-Q4) [Spark]",
+    "display_name": "Gemma 4 26B-A4B Instruct (QAT, UD-Q4)",
     "developer": "Google DeepMind",
     "origin_country": "USA",
     "developer_jurisdiction": "USA",
@@ -1870,7 +1870,7 @@
   },
   {
     "model_id": "gemma-4-31B-it-qat-ud-q4",
-    "display_name": "Gemma 4 31B Instruct (QAT, UD-Q4) [Spark]",
+    "display_name": "Gemma 4 31B Instruct (QAT, UD-Q4)",
     "developer": "Google DeepMind",
     "origin_country": "USA",
     "developer_jurisdiction": "US",
