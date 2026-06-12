@@ -30,5 +30,6 @@
   "last_verified_at": "2026-06-12",
   "verification_source": "https://huggingface.co/HauhauCS",
   "profile_verified": true,
-  "profile_verified_at": "2026-06-12"
+  "profile_verified_at": "2026-06-12",
+  "description": "HauhauCS kuratiert Community-Fine-Tunes mit klarer Ausrichtung auf unzensierte und experimentelle Varianten. Der Schwerpunkt liegt auf praktischer Verwendbarkeit über lokale Inferenz oder selbst gehostete Deployments. Die Qualität bemisst sich vor allem an Modellkonsistenz, Nutzbarkeit und der Passung zum gewünschten Einsatzprofil."
 }

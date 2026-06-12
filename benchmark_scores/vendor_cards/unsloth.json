@@ -30,5 +30,6 @@
   "last_verified_at": "2026-06-12",
   "verification_source": "https://huggingface.co/unsloth",
   "profile_verified": true,
-  "profile_verified_at": "2026-06-12"
+  "profile_verified_at": "2026-06-12",
+  "description": "Unsloth kuratiert offene Modellgewichte und legt den Schwerpunkt auf speichereffiziente Quantisierung, QAT und praxisnahe lokale Nutzung. Die Community-Veredelungen zielen auf bessere Qualität pro Bit und auf möglichst robuste GGUF-Deployments. Privacy hängt ausschließlich vom gewählten Hosting ab, nicht von Unsloth selbst."
 }

@@ -3,21 +3,21 @@
   "card_subtype": "community",
   "display_name": "Cognitive Computations",
   "company": "Cognitive Computations (Einzelperson / Eric Hartford)",
-  "headquarters": "USA (genaue Stadt unbekannt)",
+  "headquarters": "USA",
   "founding_year": 2021,
   "pricing_model": "open-source-self-hosted",
   "api_base_url": null,
   "api_documentation_url": "https://huggingface.co/cognitivecomputations",
   "deployment": {
     "cloud_act_exposure": false,
-    "applicable_law": "N/A (lokal only)",
-    "data_residency": "N/A (lokal only)",
+    "applicable_law": "N/A (local/self-hosted)",
+    "data_residency": "Local or third-party hoster",
     "gdpr_dpa_available": false,
     "eu_adequacy_decision": false,
     "data_retention_days": 0,
     "chinese_nsl_risk": "none"
   },
-  "privacy_note": "Da Cognitive Computations ausschließlich Modell-Weights auf Hugging Face veröffentlicht und keinen eigenen Cloud-API-Dienst betreibt, entstehen bei lokaler Nutzung keinerlei Datenschutzrisiken durch den Provider. Europäische Nutzer verarbeiten Daten vollständig auf eigener Infrastruktur.",
+  "privacy_note": "Cognitive Computations betreibt nach der geprüften Quelle keinen eigenen API-Dienst, sondern veröffentlicht Modelle zur freien Nutzung. Datentransfer-Risiken hängen damit nicht von der Modellquelle selbst, sondern vom gewählten Inference-Hosting ab. Bei lokalem Einsatz verbleiben die Daten auf der eigenen Infrastruktur.",
   "notable_models": [
     "Dolphin 2.9 (Llama 3)",
     "Dolphin 2.9.1 (Llama 3 70B)",
@@ -26,8 +26,9 @@
   "stats": {},
   "unknown": false,
   "generated_at": "2026-06-02T21:00:00.000000+00:00",
-  "last_verified_at": "2026-06-02",
+  "last_verified_at": "2026-06-12",
   "verification_source": "https://huggingface.co/cognitivecomputations",
-  "profile_verified": false,
-  "profile_verified_at": null
+  "profile_verified": true,
+  "profile_verified_at": "2026-06-12",
+  "description": "Cognitive Computations veröffentlicht offene Modelle mit starkem Community- und Forschungsbezug und stellt sie primär über Hugging Face bereit. Die Karten beschreiben weniger einen Anbieter als eine kuratierte Modellquelle für Selbsthosting oder Drittanbieter-Deployment. Privacy hängt damit vollständig vom gewählten Host ab."
 }
