@@ -16,7 +16,7 @@
     "data_retention_days": -1,
     "chinese_nsl_risk": "none"
   },
-  "privacy_note": "Meta betreibt keinen klassischen kommerziellen Inferenz-API-Dienst; Llama-Modelle werden typischerweise über Drittanbieter (z. B. AWS, Azure, Together AI) bereitgestellt, die jeweils eigene Datenschutzbedingungen haben. Bei direkter Nutzung von Meta-eigenen Diensten gilt US-Recht inkl. CLOUD Act, ohne belastbares DSGVO-DPA seitens Meta.",
+  "privacy_note": "Meta betreibt keinen klassischen kommerziellen Inferenz-API-Dienst; Llama-Modelle werden typischerweise über Drittanbieter bereitgestellt, die jeweils eigene Datenschutzbedingungen haben. WICHTIG: Llama-4-Modelle dürfen laut Lizenz NICHT auf europäischen Servern betrieben werden. Nutzung ist ausschließlich über US-Server oder Server im nicht-europäischen Ausland möglich. Dies schränkt die Einsetzbarkeit für europäische Betreiber erheblich ein.",
   "notable_models": [
     "Llama 4 Scout",
     "Llama 3.3 70B",
