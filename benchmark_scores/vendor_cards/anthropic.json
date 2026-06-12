@@ -16,7 +16,7 @@
     "data_retention_days": 30,
     "chinese_nsl_risk": "none"
   },
-  "privacy_note": "Als US-amerikanisches Unternehmen unterliegt Anthropic dem CLOUD Act, wodurch US-Behörden unter bestimmten Voraussetzungen Zugriff auf verarbeitete Daten verlangen können. Für EU-Kunden sind SCCs und ein DPA verfügbar, jedoch verbleiben die Daten physisch in den USA.",
+  "privacy_note": "Anthropic unterliegt als US-Anbieter dem CLOUD Act. Für die kommerzielle Nutzung sind eine Privacy Center Dokumentation und ein DPA verfügbar; die Daten werden in den USA verarbeitet. Laut Privacy Center beträgt die Aufbewahrung für bestimmte Nutzungsdaten 30 Tage, sofern keine längere Nutzung für Modellverbesserung gewählt wird.",
   "notable_models": [
     "Claude Opus 4.7",
     "Claude Sonnet 4.6",
@@ -31,8 +31,9 @@
   },
   "unknown": false,
   "generated_at": "2026-06-02T21:00:00.000000+00:00",
-  "last_verified_at": "2026-06-02",
-  "verification_source": "https://www.anthropic.com/legal/privacy",
-  "profile_verified": false,
-  "profile_verified_at": null
+  "last_verified_at": "2026-06-12",
+  "verification_source": "https://privacy.claude.com/",
+  "profile_verified": true,
+  "profile_verified_at": "2026-06-12",
+  "description": "Anthropic entwickelt die Claude-Familie und positioniert sich als Forschungs und Safety Unternehmen mit Public Benefit Corporation Struktur. Die API wird aus den USA bereitgestellt; für europäische Nutzer sind vor allem CLOUD Act, US Datenstandort und die klar geregelten kommerziellen Datenschutzbedingungen relevant."
 }

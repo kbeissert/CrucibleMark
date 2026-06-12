@@ -6,7 +6,7 @@
   "founding_year": 2009,
   "pricing_model": "pay-per-token",
   "api_base_url": "https://dashscope.aliyuncs.com",
-  "api_documentation_url": "https://dashscope.aliyuncs.com/api-docs",
+  "api_documentation_url": "https://www.alibabacloud.com/help/en/model-studio/application-api-reference",
   "deployment": {
     "cloud_act_exposure": false,
     "applicable_law": "China (PIPL/CSL/DSL)",
@@ -16,7 +16,7 @@
     "data_retention_days": -1,
     "chinese_nsl_risk": "high"
   },
-  "privacy_note": "API-Anfragen unterliegen chinesischem Recht (PIPL, CSL, DSL), das chinesischen Behörden weitreichende Datenzugriffsrechte einräumt. Für europäische Nutzer besteht ein erhebliches Drittlandtransfer-Risiko; SCCs sind zwar verfügbar, bieten jedoch keinen gleichwertigen Schutz wie ein EU-Angemessenheitsbeschluss.",
+  "privacy_note": "Alibaba Cloud verarbeitet API-Anfragen unter chinesischem Recht, insbesondere PIPL, CSL und DSL. Für europäische Nutzer entsteht dadurch ein Drittlandtransfer-Risiko ohne EU-Angemessenheitsbeschluss. Ein DPA ist verfügbar; die konkrete Aufbewahrungsdauer für API-Anfragen ist öffentlich nicht klar ausgewiesen.",
   "notable_models": [
     "Qwen3.7-Max",
     "Qwen3.6-Plus",
@@ -26,8 +26,9 @@
   "stats": {},
   "unknown": false,
   "generated_at": "2026-06-02T21:00:00.000000+00:00",
-  "last_verified_at": "2026-06-02",
-  "verification_source": "https://www.alibabacloud.com/help/en/legal",
-  "profile_verified": false,
-  "profile_verified_at": null
+  "last_verified_at": "2026-06-12",
+  "verification_source": "https://www.alibabacloud.com/help/en/model-studio/application-api-reference",
+  "profile_verified": true,
+  "profile_verified_at": "2026-06-12",
+  "description": "Alibaba Cloud betreibt mit DashScope die API für Qwen-Modelle und weitere KI-Dienste. Der Anbieter sitzt in Hangzhou und agiert unter chinesischem Datenschutzrecht. Für europäische Nutzer ist vor allem relevant, dass Datenverarbeitung in China stattfindet und kein EU-Angemessenheitsbeschluss vorliegt."
 }

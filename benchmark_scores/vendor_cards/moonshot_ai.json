@@ -16,7 +16,7 @@
     "data_retention_days": -1,
     "chinese_nsl_risk": "high"
   },
-  "privacy_note": "API-Anfragen werden auf Servern in China verarbeitet und unterliegen chinesischem Recht (PIPL, CSL, DSL), einschließlich möglicher staatlicher Zugriffspflichten. Für europäische Nutzer besteht kein DSGVO-konformer Rahmen; ein Einsatz mit personenbezogenen Daten ist datenschutzrechtlich nicht vertretbar.",
+  "privacy_note": "Moonshot AI verarbeitet API-Nutzung in China und regelt die Nutzung über chinesische Vertrags- und Datenschutzdokumente. Für europäische Nutzer besteht kein EU-Angemessenheitsbeschluss; ein DSGVO-taugliches DPA ist in der geprüften Dokumentation nicht ersichtlich. Personenbezogene Daten sollten daher nicht unkritisch übertragen werden.",
   "notable_models": [
     "Kimi K2.6",
     "Kimi K2.5",
@@ -26,8 +26,9 @@
   "stats": {},
   "unknown": false,
   "generated_at": "2026-06-02T21:00:00.000000+00:00",
-  "last_verified_at": "2026-06-02",
+  "last_verified_at": "2026-06-12",
   "verification_source": "https://platform.moonshot.cn/docs/agreement",
-  "profile_verified": false,
-  "profile_verified_at": null
+  "profile_verified": true,
+  "profile_verified_at": "2026-06-12",
+  "description": "Moonshot AI betreibt die Kimi API und richtet sich mit einer klar dokumentierten Entwicklerplattform an produktive Anwendungsfälle. Das Unternehmen sitzt in Beijing und operiert unter chinesischem Recht. Für europäische Teams ist relevant, dass Daten in China verarbeitet werden und die Nutzung eine strenge Drittlandbewertung verlangt."
 }

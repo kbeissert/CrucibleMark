@@ -16,7 +16,7 @@
     "data_retention_days": -1,
     "chinese_nsl_risk": "none"
   },
-  "privacy_note": "NVIDIA stellt die Nemotron-Modelle als Open-Weights zur Verfügung (NVIDIA Open Model License). Lokales Deployment möglich. Bei API-Nutzung über build.nvidia.com gelten US-amerikanische Datenschutzgesetze (CLOUD Act); EU-Nutzer können via DPA absichern.",
+  "privacy_note": "Bei Nutzung der NVIDIA API über build.nvidia.com sind Datenverarbeitung und Zugriffsrisiken an die US-Jurisdiktion gebunden. Ein DPA ist laut aktueller Kartenstruktur verfügbar; zur genauen Aufbewahrungsdauer der API-Anfragen macht die geprüfte Quelle keine klare Angabe. Lokales oder eigenes Hosting reduziert das Risiko deutlich.",
   "notable_models": [
     "Nemotron 3 Ultra 550B-A55B"
   ],
@@ -25,6 +25,7 @@
   "generated_at": "2026-06-12T08:00:00.000000+00:00",
   "last_verified_at": "2026-06-12",
   "verification_source": "https://www.nvidia.com/en-us/agreements/enterprise-software/nvidia-software-license-agreement/",
-  "profile_verified": false,
-  "profile_verified_at": null
+  "profile_verified": true,
+  "profile_verified_at": "2026-06-12",
+  "description": "NVIDIA bietet mit Build und den Nemotron-Modellen eine Plattform für Entwickler, die Modelle lokal, in der eigenen Infrastruktur oder über Cloud-Angebote nutzen möchten. Das Unternehmen sitzt in den USA, wodurch API-Nutzung dem CLOUD Act unterliegen kann. Für europäische Teams ist die Mischung aus Open Weights und US-Hosting entscheidend."
 }

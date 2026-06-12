@@ -1,8 +1,8 @@
 {
   "vendor_id": "llamacpp",
   "display_name": "llama.cpp",
-  "company": "ggerganov (Open Source)",
-  "headquarters": "Open Source / Distributed",
+  "company": "ggml-org",
+  "headquarters": "Distributed / Open Source",
   "founding_year": 2023,
   "pricing_model": "free_open_source",
   "api_base_url": null,
@@ -37,7 +37,7 @@
     "data_retention_days": 0,
     "chinese_nsl_risk": "none"
   },
-  "privacy_note": "Lokale Inferenz-Engine — keine Daten verlassen das Gerät. Vollständig DSGVO-konform, kein Data-Transfer-Risiko. Alle Berechnungen laufen on-device auf der lokalen Hardware.",
+  "privacy_note": "llama.cpp verarbeitet Eingaben lokal auf dem eigenen Gerät oder in der eigenen Infrastruktur. Dadurch entstehen kein CLOUD-Act-Bezug und kein externer Datenabfluss durch den Inferenzkern selbst. Datenschutzrisiken hängen primär von den verwendeten Modellen, Laufzeitumgebungen und eventuellen externen Diensten ab.",
   "notable_models": [
     "Qwen 3.6 35B-A3B",
     "Qwen 3.5 35B-A3B",
@@ -46,8 +46,9 @@
   "stats": {},
   "unknown": false,
   "generated_at": "2026-06-04T18:40:00.000000+00:00",
-  "last_verified_at": "2026-06-04",
+  "last_verified_at": "2026-06-12",
   "verification_source": "https://github.com/ggerganov/llama.cpp",
-  "profile_verified": false,
-  "profile_verified_at": null
+  "profile_verified": true,
+  "profile_verified_at": "2026-06-12",
+  "description": "llama.cpp ist eine quelloffene Inferenz-Engine für lokale und hybride Ausführung von LLMs. Das Projekt wird von ggml-org gepflegt und konzentriert sich auf minimale Abhängigkeiten, breite Hardware-Unterstützung und On-Device-Nutzung. Für europäische Nutzer entsteht kaum Datenschutzrisiko, weil die Ausführung lokal stattfindet."
 }

@@ -16,7 +16,7 @@
     "data_retention_days": 30,
     "chinese_nsl_risk": "none"
   },
-  "privacy_note": "API-Anfragen werden auf US-amerikanischen Servern verarbeitet und unterliegen dem CLOUD Act, der US-Behörden Zugriff auf gespeicherte Daten ermöglichen kann. Obwohl ein DPA und SCCs für EU-Kunden verfügbar sind, verbleibt ein strukturelles Transferrisiko nach Art. 44 ff. DSGVO.",
+  "privacy_note": "OpenAI verarbeitet API-Daten unter US-Recht und damit potenziell unter dem CLOUD Act. Für EU-Kunden sind DPA und SCCs verfügbar; die Datenverarbeitung bleibt jedoch in den USA. Laut Privacy Policy gilt für bestimmte API- und Nutzungsdaten eine Aufbewahrung von 30 Tagen, sofern keine anderen Vertragsregeln greifen.",
   "notable_models": [
     "GPT-5.5",
     "GPT-5.5 Pro",
@@ -36,8 +36,9 @@
   },
   "unknown": false,
   "generated_at": "2026-06-10T11:00:00.000000+00:00",
-  "last_verified_at": "2026-06-10",
+  "last_verified_at": "2026-06-12",
   "verification_source": "https://openai.com/policies/privacy-policy",
-  "profile_verified": false,
-  "profile_verified_at": null
+  "profile_verified": true,
+  "profile_verified_at": "2026-06-12",
+  "description": "OpenAI betreibt mit GPT und den o-Series-Modellen eine der bekanntesten kommerziellen KI-Plattformen. Das Unternehmen sitzt in San Francisco und verarbeitet API-Daten in den USA. Für europäische Product Engineers sind vor allem der CLOUD-Act-Bezug, die kommerzielle Datenverarbeitung und die verfügbaren Vertragsoptionen relevant."
 }

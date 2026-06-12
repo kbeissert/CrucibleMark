@@ -16,7 +16,7 @@
     "data_retention_days": -1,
     "chinese_nsl_risk": "high"
   },
-  "privacy_note": "API-Anfragen werden auf Servern in China verarbeitet und unterliegen chinesischem Recht (PIPL, CSL, DSL), das Behörden weitreichende Datenzugriffsrechte einräumt. Kein DSGVO-konformes DPA verfügbar; für europäische Unternehmen mit personenbezogenen Daten ist die API-Nutzung datenschutzrechtlich hochproblematisch.",
+  "privacy_note": "DeepSeek verarbeitet API-Anfragen in China und unterliegt chinesischem Datenschutzrecht. Für europäische Nutzer besteht damit ein relevantes Drittlandtransfer-Risiko ohne EU-Angemessenheitsbeschluss. Ein öffentlich ausgewiesenes DSGVO-DPA ist nicht ersichtlich; die konkrete Aufbewahrungsdauer bleibt unklar.",
   "notable_models": [
     "DeepSeek-V4 Pro",
     "DeepSeek-V4 Flash",
@@ -27,8 +27,9 @@
   "stats": {},
   "unknown": false,
   "generated_at": "2026-06-02T21:00:00.000000+00:00",
-  "last_verified_at": "2026-06-02",
-  "verification_source": "https://api-docs.deepseek.com/quick_start/privacy_policy",
-  "profile_verified": false,
-  "profile_verified_at": null
+  "last_verified_at": "2026-06-12",
+  "verification_source": "https://deepseek.com/en",
+  "profile_verified": true,
+  "profile_verified_at": "2026-06-12",
+  "description": "DeepSeek bietet eine API für die Modelle der DeepSeek-Familie, darunter V4, V3 und R1. Das Unternehmen sitzt in Hangzhou und operiert unter chinesischem Recht. Für europäische Product Engineers ist relevant, dass die Datenverarbeitung in China erfolgt und kein DSGVO-konformes DPA ausgewiesen ist."
 }

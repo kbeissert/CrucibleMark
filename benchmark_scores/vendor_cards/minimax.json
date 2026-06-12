@@ -16,7 +16,7 @@
     "data_retention_days": -1,
     "chinese_nsl_risk": "high"
   },
-  "privacy_note": "API-Anfragen werden auf Servern in China verarbeitet und unterliegen chinesischem Recht (PIPL, CSL, DSL), das Behörden weitreichende Datenzugriffsrechte einräumt. Kein DSGVO-konformes DPA verfügbar; für europäische Nutzer mit personenbezogenen Daten ist dieser Provider nicht empfehlenswert.",
+  "privacy_note": "MiniMax verarbeitet API-Anfragen in China und bietet nach der geprüften Dokumentation kein DSGVO-taugliches DPA. Für europäische Nutzer besteht damit ein klares Drittlandtransfer-Risiko ohne EU-Angemessenheitsbeschluss. Der Einsatz sollte auf nicht personenbezogene oder streng minimierte Daten beschränkt bleiben.",
   "notable_models": [
     "MiniMax-M3",
     "MiniMax-M2.7",
@@ -26,8 +26,9 @@
   "stats": {},
   "unknown": false,
   "generated_at": "2026-06-02T21:00:00.000000+00:00",
-  "last_verified_at": "2026-06-02",
-  "verification_source": "https://platform.minimax.io/docs/terms-of-service",
-  "profile_verified": false,
-  "profile_verified_at": null
+  "last_verified_at": "2026-06-12",
+  "verification_source": "https://platform.minimax.io/docs",
+  "profile_verified": true,
+  "profile_verified_at": "2026-06-12",
+  "description": "MiniMax bietet mit seiner API und Modellfamilie eine chinesische Plattform für Text und Multimodalität. Das Unternehmen sitzt in Shanghai und unterliegt chinesischem Datenschutzrecht. Für europäische Nutzer ist die fehlende EU-Angemessenheit entscheidend; die Nutzung mit personenbezogenen Daten bleibt daher besonders sensibel."
 }

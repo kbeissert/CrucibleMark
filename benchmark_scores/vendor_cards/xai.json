@@ -1,7 +1,7 @@
 {
   "vendor_id": "xai",
   "display_name": "xAI",
-  "company": "xAI Corp.",
+  "company": "X.AI LLC",
   "headquarters": "Palo Alto, CA, USA",
   "founding_year": 2023,
   "pricing_model": "free-tier+pay-per-token",
@@ -12,11 +12,11 @@
     "applicable_law": "US (CLOUD Act)",
     "data_residency": "USA",
     "gdpr_dpa_available": false,
-    "eu_adequacy_decision": "unknown",
+    "eu_adequacy_decision": true,
     "data_retention_days": -1,
     "chinese_nsl_risk": "none"
   },
-  "privacy_note": "xAI ist ein US-amerikanisches Unternehmen und unterliegt dem CLOUD Act. Für europäische Nutzer besteht kein öffentlich dokumentierter DPA oder Standardvertragsklauseln, was den produktiven Einsatz im DSGVO-Kontext erheblich erschwert.",
+  "privacy_note": "xAI ist ein US-Anbieter und unterliegt damit dem CLOUD Act. Die Privacy Policy zeigt, dass xAI getrennte Regeln für die API und andere Dienste verwendet; ein öffentlich dokumentiertes DPA für die API ist in den geprüften Quellen nicht ersichtlich. Für europäische Nutzer bleibt die Rechtslage daher nur eingeschränkt planbar.",
   "notable_models": [
     "Grok-4.3",
     "Grok-3",
@@ -25,8 +25,9 @@
   "stats": {},
   "unknown": false,
   "generated_at": "2026-06-02T21:00:00.000000+00:00",
-  "last_verified_at": "2026-06-02",
+  "last_verified_at": "2026-06-12",
   "verification_source": "https://x.ai/legal/privacy-policy",
-  "profile_verified": false,
-  "profile_verified_at": null
+  "profile_verified": true,
+  "profile_verified_at": "2026-06-12",
+  "description": "xAI betreibt die Grok-Familie und richtet sich mit API, Apps und Unternehmensangeboten an Entwickler und Endnutzer. Der Anbieter sitzt in den USA und veröffentlicht eine eigene Privacy Policy für Grok und verbundene Dienste. Für europäische Teams ist vor allem die US-Jurisdiktion mit CLOUD Act und unklarer DPA-Lage relevant."
 }

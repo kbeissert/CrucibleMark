@@ -9,14 +9,14 @@
   "api_documentation_url": "https://huggingface.co/NousResearch",
   "deployment": {
     "cloud_act_exposure": false,
-    "applicable_law": "N/A (lokal only)",
-    "data_residency": "N/A (lokal only)",
+    "applicable_law": "N/A (local/self-hosted)",
+    "data_residency": "Local or third-party hoster",
     "gdpr_dpa_available": false,
     "eu_adequacy_decision": false,
     "data_retention_days": 0,
     "chinese_nsl_risk": "none"
   },
-  "privacy_note": "Nous Research betreibt keine eigene Cloud-API; Modelle werden lokal oder über Drittanbieter (z. B. Together AI, Hugging Face) ausgeführt. Das Datenschutzrisiko hängt vollständig vom gewählten Inference-Anbieter ab, nicht von Nous Research selbst.",
+  "privacy_note": "Nous Research stellt Modelle als offene Gewichte bereit und betreibt nach der geprüften Unternehmensseite keine eigene öffentliche API. Datenschutzrisiken entstehen deshalb erst bei der Nutzung eines Drittanbieters oder beim eigenen Hosting. Für die Modellquelle selbst ist kein direkter Cloud-Transfer erforderlich.",
   "notable_models": [
     "Hermes-4 405B",
     "Hermes-4 70B",
@@ -27,8 +27,9 @@
   "stats": {},
   "unknown": false,
   "generated_at": "2026-06-02T21:00:00.000000+00:00",
-  "last_verified_at": "2026-06-02",
+  "last_verified_at": "2026-06-12",
   "verification_source": "https://huggingface.co/NousResearch",
-  "profile_verified": false,
-  "profile_verified_at": null
+  "profile_verified": true,
+  "profile_verified_at": "2026-06-12",
+  "description": "Nous Research entwickelt offene Sprachmodelle und veröffentlicht sie mit starkem Community-Bezug auf Hugging Face und der eigenen Website. Das Unternehmen sitzt in den USA und betreibt keine klassische öffentliche Inferenz-API. Für europäische Nutzer ist deshalb vor allem das Selbsthosting oder der gewählte Drittanbieter entscheidend."
 }
