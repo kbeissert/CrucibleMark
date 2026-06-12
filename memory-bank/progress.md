@@ -2,6 +2,66 @@
 
 Letzte Releases + aktueller Stand. Vollständige Historie: `reference/decisions-log.md`.
 
+### 2026-06-12 (Session 17) — 4 SSoT-Robustness-Fixes
+
+**Commits:** `e5799bb`, `3225a78`, `4aaf450`, `411e5e3` (alle gepusht). **Architektur-Prinzip etabliert:** `model_id` = einziger SSOT-Kommunikations-Anker.
+
+**Fix e5799bb — Hardware-Kontext SSOT (`system_context.py` + `generate_review.py`):**
+- Symptom: Benchmark-Reviews für DGX-Spark-Modelle zeigten M4-MacBook-Hardware-Kontext statt DGX-Spark-Profil.
+- Root Cause: `SystemContextManager` las `active_profile` aus Environment (= lokales Mac-System) statt Testsystem-Profil.
+- Fix: `get_editor_prompt_injection(hardware_profile_key: str = "")` — neuer Parameter. Bei gesetztem Key: Profil-Lookup aus `benchmark_config.yaml → runner_environment.profiles`.
+- Neue Hilfsfunktion `_get_hardware_profile_for_model(model_id, config)` in `generate_review.py`: Durchsucht alle Provider-Sektionen in `provider_config.yaml` nach `hardware_profile`-Key.
+- 2 neue Profile in `benchmark_config.yaml`: `dgx_spark_cuda` (NVIDIA DGX Spark, GB10, ~115GB) + `m4_macbook_pro_metal` (Apple Silicon M4, 24GB).
+
+**Fix 3225a78 — Tooluse-Reviews per-model Modus (`generate_review.py`):**
+- Symptom: `--per-model-all-reviews` generierte keine Tooluse-Reviews.
+- Root Cause: Tooluse-Leaderboard-IDs sind Ollama-Format (`gemma3:12b`) — können nicht auf Audit-Log-Slugs (CrucibleMark-Format) gemappt werden. Der per-model-Loop iteriert über Modell-IDs, findet kein Match.
+- Fix: Tooluse-Schritt aus dem per-model-Loop herausgenommen → läuft nach dem Loop einmalig mit `tooluse_args.model = None` (= alle Modelle in einem Durchlauf).
+
+**Fix 4aaf450 — Web-Export PC-Lookup (`scripts/web_export.py`):**
+- Symptom: Political-Compass-Daten fehlten im Web-Export für Modelle, bei denen `raw_model_id` und Display-Name verschieden waren.
+- Root Cause: `_lookup_pc_row` verwendete Display-Namen (`model_name`) für den Lookup in `political_compass_leaderboard.csv`. Die CSV enthält aber IDs ohne Vendor-Prefix (z.B. `qwen3.5-35b-a3b-q4`), nicht Display-Namen.
+- Fix: `_pc_id = raw_model_id if raw_model_id and raw_model_id != "nan" else model_name`. `_pc_slug = slugify(_pc_id)`. PC-Lookup und PC-Leaderboard-Map-Lookup nutzen jetzt konsequent die ID.
+
+**Fix 411e5e3 — Blacklist-Check in Tooluse-Reviews (`generate_review.py`):**
+- Symptom: Tooluse-Reviews wurden für Modelle generiert, die auf der Webexport-Blacklist stehen.
+- Root Cause: Guard 2 (`_run_tooluse_reviews`) las die Model Card zweimal, Blacklist-Check nutzte Slug statt `model_id`.
+- Fix: Guard 2 lädt Model Card einmal (`card = _load_model_card(card_path)`), liest `model_id = card.get("model_id", slug)`, prüft `model_id in blacklist` (O(1)-Set-Lookup).
+
+---
+
+### 2026-06-12 — Vendor Cards vervollständigt (Commit a8acdd7)
+
+**5 unvollständige Vendor Cards korrigiert und verifiziert:**
+- `google.json`: display_name "Google DeepMind" → "Google AI", notable_models aktualisiert (Gemini 1.5 → Gemini 3.x/2.5/Gemma 4), data_residency gesetzt, description hinzugefügt, profile_verified
+- `alibaba_cloud.json`: notable_models (Qwen → Qwen3.x), description hinzugefügt, profile_verified
+- `alibaba_group_qwen_team.json`: notable_models (Qwen2.5 → Qwen3.x), description, gdpr_dpa_available "unknown"→false, profile_verified
+- `alibaba_group_qwen_team_hauhaucs_community_fine_tune.json`: notable_models (Qwen3 Fine-Tunes), description, gdpr_dpa_available/eu_adequacy_decision "unknown"→false, profile_verified
+- `google_deepmind_base_undix_community_distribution.json`: notable_models (Gemma 4 ergänzt), description, gdpr_dpa_available/eu_adequacy_decision "unknown"→false, profile_verified
+
+**Alle 25 Vendor Cards jetzt profile_verified, bis auf `ara_apex_quant` und `unknown` (Platzhalter).**
+
+---
+
+### 2026-06-12 — Systematische Modellkarten-Korrektur (Commit 08845aa)
+
+**Auslöser:** Bei Stichproben wurden fehlerhafte Metadaten in Modellkarten entdeckt (MiniMax M3, Claude Sonnet 4.6). Daraufhin wurden alle 98 Modellkarten systematisch per 5 paralleler Subagenten recherchiert und korrigiert.
+
+**Korrigierte Karten (9 Dateien):**
+- `gpt-4o-mini`: input_price 1.25 → 0.15, output_price 5.0 → 0.60 (offizieller OpenAI-Preis)
+- `claude-sonnet-4-5-20250929`: context_window_k 1000 → 200 (Anthropic-Docs: 200k, nicht 1M)
+- `gpt-5`: context_window_k 400 → 272 (LiteLLM/OpenAI: tatsächliches Limit)
+- `gpt-5-mini`: input 0.75 → 0.25, output 4.5 → 2.0, ctx 200 → 272 (mit gpt-5.4-mini verwechselt)
+- `gpt-5_4-mini`: context_window_k 128 → 272
+- `gpt-5_4-nano`: context_window_k 400 → 272 (Texte in summary/strengths angepasst)
+- `mistral-small-2603`: context_window_k 32 → 128 (Mistral Small 4 hat 128k)
+- `qwen/qwen3-32b`: context_window_k 32 → 128 (32 war Modellgröße, nicht Kontextfenster)
+- `qwen3.5:397b-cloud`: ctx 128 → 262, prices 0.6/3.6 → 0.39/2.34, local_deployment → true
+
+**Recherche-Methode:** 5 Subagenten parallel (LiteLLM-Referenzdatei, offizielle API-Docs)
+
+---
+
 ### 2026-06-12 — v4.9.4 Auto-Review Webexport-Blacklist Integration
 
 **Commits:** TBD. **Tests:** Keine neuen Tests (Feature-Ergänzung in bestehendem Workflow).

@@ -15,7 +15,13 @@ to know what reference files exist.
 
 ## Aktueller Status (2026-06-12)
 
-- **MiniMax M3 Klassifizierung korrigiert (2026-06-12):** Model Card `weights_license_tier: "proprietary"` → `"restricted-weights"` (Gewichte sind verfügbar unter MiniMax Open License). Auch `local_deployment_possible: false` → `true` korrigiert. Leaderboard neu generiert → zeigt jetzt korrekt "Restricted Weights" statt "Proprietär/Commercial". Commit ausstehend.
+- **Session 17 abgeschlossen (2026-06-12) — 4 SSoT-Robustness-Fixes (Commits e5799bb, 3225a78, 4aaf450, 411e5e3):**
+  - **Architektur-Prinzip etabliert:** `model_id` aus der Model Card ist der einzige SSOT-Kommunikations-Anker für alle Lookups — niemals Display-Namen oder abgeleitete Strings.
+  - **e5799bb — Hardware-Kontext SSOT:** `SystemContextManager` las Mac-Profil statt Testsystem. Fix: `hardware_profile_key` aus `provider_config.yaml` (SSoT) → Profil-Lookup via `benchmark_config.yaml → runner_environment.profiles`. Neue Funktion `_get_hardware_profile_for_model()`. 2 neue Profile: `dgx_spark_cuda` + `m4_macbook_pro_metal`.
+  - **3225a78 — Tooluse-Reviews per-model Modus:** Tooluse-Leaderboard-IDs (Ollama-Format `gemma3:12b`) passten nicht zu Audit-Log-Slugs → Tooluse-Schritt aus dem per-model-Loop herausgenommen, läuft nach dem Loop mit `model=None`.
+  - **4aaf450 — Web-Export PC-Lookup:** `_lookup_pc_row` nutzte Display-Namen statt `raw_model_id`. Fix: `_pc_id = raw_model_id`, `_pc_slug = slugify(_pc_id)`.
+  - **411e5e3 — Blacklist-Check Tooluse-Reviews:** Guard 2 lädt Model Card einmal, liest `model_id`, prüft via ID gegen Blacklist (nicht via Slug/Name).
+- **MiniMax M3 Klassifizierung korrigiert (2026-06-12):** Model Card `weights_license_tier: "proprietary"` → `"restricted-weights"` (Gewichte verfügbar unter MiniMax Open License). Auch `local_deployment_possible: false` → `true` korrigiert. Leaderboard neu generiert. Commit ausstehend.
 - **v4.9.5 abgeschlossen (2026-06-12):** Auto-Review Webexport-Blacklist Integration. `scripts/analysis/generate_review.py`: Neue Funktion `_load_webexport_blacklist()`, Skip-Checks in `_run_per_model_all_reviews()` + `_run_audit_reviews()` (nur `--auto`-Modus). Dokumentation in `docs/AUDIT_AND_METAREVIEW.md` Sektion 2 ergänzt. Memory Bank aktualisiert. Commit 909cf59.
 - **v4.9.4 abgeschlossen (2026-06-12):** Model Card Verification v1.1.0 vollständig durchgeführt. 98/98 Model Cards auf `profile_verified: true` und `profile_verified_at: "2026-06-12"` gesetzt. Korrekturen: 14 `supports_tool_use: null` → `true` (Cloud/agentic-fähige Modelle), 7 → `false` (lokale GGUF), 4 `model_version: "k.A."` → korrekte Versionsnummer, 19 open-weights/localweights Preise `0/0.0` → `null`, 9 Karten `community: "Unsloth"`, 1 `community: "HauhauCS"`. Index-Rebuild via SSoT-Tool. Backup in `benchmark_scores/model_cards/.backup_pre_verification/`.
 - **v4.9.3 abgeschlossen (2026-06-12):** `description`-Feld in Vendor Card Template ergänzt (Template v1.1.0, Constraints min 240/max 480/target 360). `config/editor_prompts.yaml` Pfad- und Feldname-Fixes (`vendor_cards/`, `vendor_id`). Tests grün. Commits `871fa8c` + `2b4a433` gepusht.
@@ -94,6 +100,7 @@ Mögliche Anlässe für User-Aktivität (alle aus dem Backlog):
 
 ## Letzte Änderungen
 
+- **2026-06-12 (Session 17):** 4 SSoT-Robustness-Fixes. `generate_review.py`: Tooluse-Schritt nach Loop mit `model=None` (3225a78), Blacklist-Check via `model_id` (411e5e3). `web_export.py`: PC-Lookup via `raw_model_id` statt Display-Name (4aaf450). `system_context.py` + `generate_review.py`: Hardware-Profil aus `provider_config.yaml` SSoT (e5799bb). Architektur-Prinzip: `model_id` = einziger Kommunikations-Anker. Memory Bank aktualisiert.
 - **2026-06-12 (v4.9.5):** Auto-Review Webexport-Blacklist Integration. `generate_review.py`: `_load_webexport_blacklist()` + Skip-Checks (nur `--auto`-Modus). `AUDIT_AND_METAREVIEW.md` Sektion 2 ergänzt. Memory Bank aktualisiert.
 - **2026-06-12 (v4.9.3):** `description`-Feld in Vendor Card Template (v1.1.0). `editor_prompts.yaml` Pfad+Feldname-Fix. Commits `871fa8c` + `2b4a433`. README, CHANGELOG, PROJECT_STATUS, Memory Bank, CARD_MANAGEMENT, REF_TODO synchronisiert.
 - **2026-06-12 (v4.9.1):** Provider Cards → Vendor Cards vollständiges Rename-Refactoring. Commit `570bc0f` gepusht. 50 Files geändert (26 Renames + Content-Updates). 803 Tests grün. Details: `progress.md`.
