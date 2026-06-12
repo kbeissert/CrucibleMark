@@ -33,7 +33,7 @@ class TestLoadCardTemplate:
     def test_provider_template_loads(self) -> None:
         t = load_card_template("vendor")
         assert t.card_type == "vendor"
-        assert t.version == "1.0.0"
+        assert t.version == "1.1.0"
         assert len(t.required_fields) == 18
         assert len(t.optional_fields) >= 3
 

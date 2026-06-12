@@ -12,8 +12,8 @@
 #   audit       = scripts/analysis/provider_card_status.py (Card-Hygiene-Audit)
 #   index       = _index.json-Generator (Provider-Verzeichnis)
 
-version: "1.0.0"
-last_updated: "2026-06-08"
+version: "1.1.0"
+last_updated: "2026-06-12"
 card_type: "vendor"
 
 # ----------------------------------------------------------------------------
@@ -213,6 +213,34 @@ required_fields:
 # Optionalfelder
 # ----------------------------------------------------------------------------
 optional_fields:
+
+  # --- Redaktionelle Beschreibung (web_export + review, ab v4.9.3) ---
+  # Kurzbeschreibung der Organisation für die CrucibleMark-Website.
+  # Semantisch getrennt von privacy_note (Compliance-Text):
+  #   description  = "Wer sind die, was machen die?" (Editorial)
+  #   privacy_note = "Wie werden Daten verarbeitet?" (Compliance)
+  - name: description
+    type: str
+    required: false
+    default: null
+    description: >
+      Redaktionelle Kurzbeschreibung der Organisation. Richtet sich an
+      Product Engineers auf der CrucibleMark-Website. Kein Compliance-Text
+      (dafür privacy_note), kein Marketing. Fließtext, keine Bindestriche
+      als Aufzählungszeichen.
+    constraints:
+      min_length: 240
+      max_length: 480
+      target_length: 360
+    consumers:
+      - web_export
+      - review
+    since: "v4.9.3"
+    example: >
+      Unsloth ist ein Community-Projekt, das sich auf speichereffiziente
+      LLM-Quantisierung spezialisiert hat. Die Dynamic-2.0-Methode optimiert
+      die Bitbreite per Layer, um bei gleicher Kompressionsrate eine höhere
+      Modellqualität zu erzielen als herkömmliche Verfahren.
 
   # --- Card-Subtyp (web_export, ab v4.9.2) ---
   # Unterscheidet Community-Distributoren von regulären Hersteller-Cards.
