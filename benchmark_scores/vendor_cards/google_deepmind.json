@@ -26,8 +26,9 @@
   "stats": {},
   "unknown": false,
   "generated_at": "2026-06-02T21:00:00.000000+00:00",
-  "last_verified_at": "2026-06-02",
+  "last_verified_at": "2026-06-12",
   "verification_source": "https://policies.google.com/privacy",
-  "profile_verified": false,
-  "profile_verified_at": null
+  "profile_verified": true,
+  "profile_verified_at": "2026-06-12",
+  "description": "Google DeepMind entstand 2023 aus der Fusion von Google Brain und DeepMind Technologies. Die Gemini Modellfamilie wird über die Google AI API bereitgestellt. Da Google ein US-Konzern ist, unterliegen API-Anfragen dem CLOUD Act. Für europäische Nutzer sind vor allem die verfügbaren Standard Contractual Clauses und der Data Processing Addendum relevant."
 }

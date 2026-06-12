@@ -25,8 +25,9 @@
   "stats": {},
   "unknown": false,
   "generated_at": "2026-06-02T21:00:00.000000+00:00",
-  "last_verified_at": "2026-06-02",
+  "last_verified_at": "2026-06-12",
   "verification_source": "https://llama.meta.com/llama4/",
-  "profile_verified": false,
-  "profile_verified_at": null
+  "profile_verified": true,
+  "profile_verified_at": "2026-06-12",
+  "description": "Meta veröffentlicht die Llama-Modellfamilie als Open-Source-Gewichte und betreibt keinen eigenen kommerziellen Inferenz-Service. Die Modelle werden typischerweise über Drittanbieter oder selbst gehostet. Für europäische Nutzer hängt die Datenschutz-Bewertung damit vom gewählten Hosting-Partner ab, nicht von Meta selbst."
 }

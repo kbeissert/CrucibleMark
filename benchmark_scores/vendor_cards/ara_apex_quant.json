@@ -23,7 +23,8 @@
   "unknown": true,
   "generated_at": "2026-06-12T08:00:00+00:00",
   "last_verified_at": "2026-06-12",
-  "verification_source": null,
-  "profile_verified": false,
-  "profile_verified_at": null
+  "verification_source": "https://huggingface.co/ARA-APEX",
+  "profile_verified": true,
+  "profile_verified_at": "2026-06-12",
+  "description": "ARA-APEX ist ein Community-Contributor auf Hugging Face, der GGUF-Quantisierungen öffentlicher Basismodelle bereitstellt. Über Firmensitz oder rechtliche Struktur sind keine Informationen verfügbar. Da alle Modelle lokal betrieben werden, entstehen keine API-seitigen Datenschutzrisiken. Die Privacy-Bewertung hängt ausschließlich vom gewählten Hosting ab."
 }
