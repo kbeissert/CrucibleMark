@@ -734,7 +734,9 @@ def _build_leaderboard_entry(
             "local_deployment_possible": card.get("local_deployment_possible"),
             "weights_provenance_risk": card.get("weights_provenance_risk"),
             "weights_provenance_risk_rationale": card.get("weights_provenance_risk_rationale"),
-            "vendor": card.get("vendor"),
+            # Normalisierter Hersteller-Name (SSoT: kanonischer Name aus classification_taxonomy.json,
+            # identisch mit Top-Level vendor-Feld — kein Raw-Wert aus der Card).
+            "vendor": vendor,
             "architecture_tags": _normalize_export_tags(card.get("architecture_tags") or []),
             "primary_focus": card.get("primary_focus"),
             "thinking_probe_detected": card.get("thinking_probe_detected"),
@@ -1000,7 +1002,7 @@ def _write_top_level_outputs(
     blacklist_source: str = "config/web_export_blacklist.yaml",
 ) -> None:
     """Writes leaderboard.json, political_compass.json, provider_stats.json, meta.json,
-    und vendor_cards.json mit Souveraenitaets-/GDPR-Metadaten pro Provider.
+    und vendor_cards.json mit Souveraenitaets-/GDPR-Metadaten pro Vendor.
 
     models_skipped_blacklist: Anzahl Modelle, die in diesem Run durch die Blacklist
         geblockt wurden. Plus blacklist_total_entries (SSoT-Anzahl in der Config)
@@ -1040,12 +1042,12 @@ def _write_top_level_outputs(
                     f, indent=2, ensure_ascii=False,
                 )
 
-    # Provider-Cards mit Sovereign-Risk/GDPR/Privacy-Metadaten
-    provider_cards = _collect_vendor_cards(root_dir)
-    if provider_cards:
+    # Vendor-Cards mit Sovereign-Risk/GDPR/Privacy-Metadaten
+    vendor_cards = _collect_vendor_cards(root_dir)
+    if vendor_cards:
         with open(out_dir / "vendor_cards.json", "w", encoding="utf-8") as f:
             json.dump(
-                _strip_emojis({"generated_at": generated_at, "providers": provider_cards}),
+                _strip_emojis({"generated_at": generated_at, "vendors": vendor_cards}),
                 f, indent=2, ensure_ascii=False,
             )
 
@@ -1073,7 +1075,7 @@ def _write_top_level_outputs(
                 "models_with_reviews": models_with_reviews,
                 "card_count": card_count,
                 "audit_log_count": audit_log_count,
-                "vendor_card_count": len(provider_cards),
+                "vendor_card_count": len(vendor_cards),
                 "blacklist": {
                     "source": blacklist_source,
                     "total_entries": blacklist_total_entries,

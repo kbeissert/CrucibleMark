@@ -240,5 +240,5 @@ def test_write_vendor_cards_json(tmp_path: Path) -> None:
 
     pc_json = json.loads((out_dir / "vendor_cards.json").read_text(encoding="utf-8"))
     assert pc_json["vendor_card_count"] if "vendor_card_count" in pc_json else True
-    assert len(pc_json["providers"]) == 1
-    assert pc_json["providers"][0]["vendor_id"] == "anthropic"
+    assert len(pc_json["vendors"]) == 1
+    assert pc_json["vendors"][0]["vendor_id"] == "anthropic"

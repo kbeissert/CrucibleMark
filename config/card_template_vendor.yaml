@@ -1,5 +1,5 @@
-# Provider Card Template — SSoT für Pflicht- und Optionalfelder
-# ==============================================================
+# Vendor Card Template — SSoT für Pflicht- und Optionalfelder
+# ============================================================
 #
 # Struktur konsistent mit config/card_template_model.yaml — siehe
 # Header dort für Feld-Erklärungen.
@@ -26,7 +26,7 @@ required_fields:
     type: str
     required: true
     default: null
-    description: "Eindeutiger Provider-Slug (Dateiname ohne .json)"
+    description: "Eindeutiger Vendor-Slug (Dateiname ohne .json)"
     consumers: [risk_calc, review, leaderboard, web_export, index]
     since: "v1.0"
     example: "openai"
