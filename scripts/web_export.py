@@ -1389,13 +1389,18 @@ def main() -> None:
         models_list.append(entry)
 
         # Compass Output logic (AVG only)
+        # SSOT: Matching über Model-ID, nicht über Display-Name.
+        # raw_model_id ist die kanonische ID aus der Leaderboard-CSV (z.B. "qwen3_5-35b-a3b-q4").
+        # PC-CSVs enthalten die ID ebenfalls (z.B. "qwen3.5-35b-a3b-q4") — gleicher Slug, anderes Trennzeichen.
         compass_data: dict[str, Any] | None = None
         if pc is not None and "model" in pc.columns and "run_id" in pc.columns:
-            pc_row = _lookup_pc_row(model_name, slug, pc)
+            _pc_id = raw_model_id if raw_model_id and raw_model_id != "nan" else model_name
+            _pc_slug = slugify(_pc_id)
+            pc_row = _lookup_pc_row(_pc_id, _pc_slug, pc)
             if pc_row is not None:
-                lb_row = pc_lb_map.get(model_name)
+                lb_row = pc_lb_map.get(_pc_id)
                 if lb_row is None:
-                    lb_row = pc_lb_slug_map.get(slug)
+                    lb_row = pc_lb_slug_map.get(_pc_slug)
                 compass_data = _build_compass_entry(pc_row, lb_row, slug, model_name, _type, block_meta)
                 pc_list.append(compass_data)
 
