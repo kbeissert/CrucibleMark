@@ -6,7 +6,7 @@
   "developer_jurisdiction": "US",
   "deployment_type": "cloud-only",
   "local_deployment_possible": false,
-  "weights_provenance_risk": "low",
+  "weights_provenance_risk": "medium",
   "weights_provenance_risk_rationale": "OpenAI ist ein US-amerikanisches Unternehmen, unterliegt US-Recht und CLOUD Act. Keine Gewichte verfügbar. Closed-Source. Datenschutzrechtlich für sensible EU-Daten eingeschränkt empfehlenswert.",
   "model_family": "GPT-5",
   "vendor": "OpenAI",
@@ -17,21 +17,18 @@
   "params_active_b": null,
   "context_window_k": 1050,
   "knowledge_cutoff": "2025-08",
-  "summary": "GPT-5.4 ist die Standardvariante der GPT-5.4-Familie von OpenAI für allgemeine professionelle Workloads, veröffentlicht am 5. März 2026. Es bietet ein 1.05M-Token-Kontextfenster mit 128K max Output, native Bildverarbeitung und Tool-Use-Fähigkeit — ein ausgewogenes Verhältnis von Qualität, Latenz und Preis für die meisten produktiven Anwendungsfälle. Ausschließlich über die OpenAI-API verfügbar.",
+  "summary": "GPT-5.4 ist OpenAIs größere GPT-5.4-Variante für anspruchsvollere Workloads mit höherer Antwortqualität als die Mini-Versionen. Sie bleibt ein proprietäres Cloud-Modell mit multimodaler Eingabe und ist auf produktive, komplexe Aufgaben ausgelegt, ohne lokale Gewichte bereitzustellen.",
   "strengths": [
-    "Großzügiges 1.05M-Token-Kontextfenster (1050k) — eines der größten kommerziell verfügbaren Kontextfenster",
-    "Starke Multimodalität: Text- und Bildeingaben, Textausgabe",
-    "Solide Tool-Use- und Function-Calling-Fähigkeiten für strukturierte Ausgaben",
-    "Gutes Preis-Leistungs-Verhältnis: $2.50 Input / $15 Output pro 1M Tokens",
-    "Stabile Instruction-Following-Qualität auf Standardaufgaben"
+    "Stärker als die Mini-Varianten bei komplexen Aufgaben",
+    "Multimodale Eingabe für Text und Bild",
+    "Geeignet für produktive, anspruchsvolle Workflows"
   ],
   "known_limitations": [
-    "Pro-Variante liefert bei präzisionskritischen Aufgaben konsistent bessere Ergebnisse (höhere Compute-Iterationen)",
-    "Input >272K Tokens: 2× Input-Preis, 1.5× Output-Preis",
-    "Closed-Source, keine Gewichtsexporte verfügbar – ausschließlich über OpenAI-API",
-    "CLOUD-Act-Risiko: Daten können US-Behörden zugänglich gemacht werden"
+    "Nur über die OpenAI-API verfügbar",
+    "Proprietäre Gewichte nicht zugänglich",
+    "Kosten und Latenz höher als bei kleineren Varianten"
   ],
-  "judge_context_hint": "GPT-5.4 (veröffentlicht 5. März 2026, Snapshot gpt-5.4-2026-03-05) ist die Standardvariante der GPT-5.4-Linie. 1.05M Token Kontext (128K max Output). Standard-Pricing $2.50/$15 pro 1M Tokens, Input >272K: 2× Aufschlag. Erwartet solide, gut strukturierte Antworten mit nativer Tool-Use- und Multimodal-Fähigkeit. Für höchste Präzisionsansprüche ist die Pro-Variante vorzuziehen.",
+  "judge_context_hint": "Größere GPT-5.4-Variante mit Fokus auf Qualität und komplexere Standard-Workloads. Die Bewertung sollte Breite und Antworttiefe berücksichtigen.",
   "architecture_tags": [
     "General",
     "Long-Context",
@@ -67,6 +64,6 @@
   "output_modalities": [
     "text"
   ],
-  "profile_verified": false,
-  "profile_verified_at": null
+  "profile_verified": true,
+  "profile_verified_at": "2026-06-12"
 }
