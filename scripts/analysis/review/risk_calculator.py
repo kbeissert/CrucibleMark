@@ -11,10 +11,34 @@ if str(ROOT_DIR) not in sys.path:
     sys.path.insert(0, str(ROOT_DIR))
 
 from utils.model_utils import _find_card
-from utils.vendor_card_template import load_vendor_card
+from utils.vendor_card_template import _safe_id, load_vendor_card
 from utils.provider_detection import detect_provider_from_model_id
 
 _RISK_ORDER = {"low": 0, "medium": 1, "high": 2}
+
+
+def _resolve_vendor_card_id(name: str | None) -> str | None:
+    """Löst Hersteller-/Vendor-Namen via Taxonomy-Alias-Map auf vendor_card_id auf.
+
+    Analog zu _build_vendor_alias_map + _build_vendor_card_id_lookup in web_export.py.
+    Nutzt classification_taxonomy.json/manufacturers für kanonische Normalisierung
+    (z.B. "Google" → "google_deepmind", "Mistral" → "mistral_ai").
+
+    Fallback: _safe_id() wenn kein Taxonomy-Eintrag gefunden (z.B. Community-Vendors).
+    """
+    if not name:
+        return None
+    try:
+        taxonomy_path = ROOT_DIR / "config" / "classification_taxonomy.json"
+        taxonomy = json.loads(taxonomy_path.read_text(encoding="utf-8"))
+        for canonical, entry in taxonomy.get("manufacturers", {}).get("values", {}).items():
+            if name == canonical or name in entry.get("aliases", []):
+                vid = entry.get("vendor_card_id")
+                return vid if vid else _safe_id(canonical)
+    except (OSError, json.JSONDecodeError, KeyError):
+        pass
+    # Fallback: direkte _safe_id-Konvertierung (Community-Vendors ohne Taxonomy-Eintrag)
+    return _safe_id(name)
 
 
 def detect_provider(model_id: str) -> str | None:
@@ -70,24 +94,29 @@ def compute_sovereign_risk(model_card: dict, provider_card: dict | None) -> tupl
 
 
 def get_vendor_card_context(model_id: str) -> str:
-    """Load provider card, compute sovereign risk, return a formatted Markdown block."""
+    """Load vendor card, compute sovereign risk, return a formatted Markdown block."""
     model_card_path = _find_card(model_id)
     model_card: dict = {}
-    developer = None
+    vendor_name: str | None = None
     if model_card_path.exists():
         try:
             model_card = json.loads(model_card_path.read_text(encoding="utf-8"))
-            developer = model_card.get("developer")
+            # vendor (normalisierter Hersteller-Name) hat Vorrang vor developer.
+            # Taxonomy-Lookup über _resolve_vendor_card_id() garantiert korrekten
+            # Dateinamen auch bei Alias-Abweichungen (z.B. "Google" → google_deepmind.json).
+            vendor_name = model_card.get("vendor") or model_card.get("developer")
         except Exception:
             pass
 
     provider_card: dict | None = None
-    if developer:
-        # SSoT-Pfad: load_vendor_card() aus utils.vendor_card_template.
-        # Verwirft automatisch unbekannte Cards und handhabt Parse-Fehler.
-        loaded = load_vendor_card(developer)
-        if loaded and not loaded.get("unknown"):
-            provider_card = loaded
+    if vendor_name:
+        # SSoT: Taxonomy-gestützter Lookup analog zu web_export.py.
+        # Normalisiert Aliases (z.B. "Google DeepMind" → "google_deepmind").
+        card_id = _resolve_vendor_card_id(vendor_name)
+        if card_id:
+            loaded = load_vendor_card(card_id)
+            if loaded and not loaded.get("unknown"):
+                provider_card = loaded
 
     if not model_card and not provider_card:
         return ""
@@ -98,7 +127,7 @@ def get_vendor_card_context(model_id: str) -> str:
     if provider_card:
         dep = provider_card.get("deployment", {})
         lines += [
-            f"### Provider Card: {provider_card.get('display_name', developer)}",
+            f"### Vendor Card: {provider_card.get('display_name', vendor_name)}",
             f"- **Unternehmen:** {provider_card.get('company', 'n/a')} | **Sitz:** {provider_card.get('headquarters', 'n/a')}",
             f"- **Anwendbares Recht:** {dep.get('applicable_law', 'n/a')} | **Datenstandort:** {dep.get('data_residency', 'n/a')}",
             f"- **GDPR DPA:** {dep.get('gdpr_dpa_available', 'unknown')} | **Datenspeicherung:** {dep.get('data_retention_days', 'unknown')} Tage",
