@@ -5,6 +5,35 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## [v4.9.3] - 2026-06-12
+
+**Vendor Card Template v1.1.0 — `description`-Feld + Editor-Prompt-Fix.**
+
+### Added
+
+- **`config/card_template_vendor.yaml` v1.1.0 — Optionalfeld `description`** — Redaktionelle
+  Kurzbeschreibung der Organisation für die CrucibleMark-Website. Semantisch getrennt von
+  `privacy_note` (Compliance-Text): `description` = "Wer sind die, was machen die?" (Editorial),
+  `privacy_note` = "Wie werden Daten verarbeitet?" (Compliance).
+  Constraints: min 240 / max 480 / Ziel 360 Zeichen. Konsumenten: `web_export`, `review`.
+  `web_export.py::_collect_vendor_cards()` exportiert alle Felder dynamisch — kein Allowlist-Change nötig.
+
+### Fixed
+
+- **`config/editor_prompts.yaml` — `provider_card_verification`-Prompt** — Drei Fehler korrigiert:
+  1. `targets.directory`: `benchmark_scores/provider_cards/` → `benchmark_scores/vendor_cards/`
+     (Verzeichnis existiert nach v4.9.1-Rename nicht mehr)
+  2. Prompt-Text Abschnitt "Auftrag": gleicher Pfad-Fix
+  3. Feldname `provider_id` → `vendor_id` an zwei Stellen (Schritt 1 "Datei lesen" +
+     Schritt 4 "NICHT verändern")
+
+### Tests
+
+- **`tests/test_card_template.py::test_provider_template_loads`** — Versionsassert
+  von `"1.0.0"` auf `"1.1.0"` aktualisiert. **803/803 Tests grün.**
+
+---
+
 ## [v4.8.5] - 2026-06-10
 
 **Pricing-Update: Modellkarten-Preise auf Stand Juni 2026 aktualisiert.**

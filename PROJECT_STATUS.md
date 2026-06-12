@@ -1,7 +1,7 @@
 # PROJECT_STATUS.md
 
 **Last Updated:** 2026-06-12
-**Current Version:** 4.9.0 — Card-Datenpflege-System: Vendor-Kanonisierung + profile_verified + Editor-Prompt
+**Current Version:** 4.9.3 — Vendor Card Template v1.1.0: `description`-Feld + Editor-Prompt-Fix
 **Status:** ✅ Production-Ready
 
 > **Hinweis:** Die Executive Summary weiter unten historisch auf v4.6.1.
@@ -9,7 +9,9 @@
 > Dieser Header wird bei jedem Phase-Commit nachgezogen,
 > die Executive Summary nur bei Major-Milestones.
 >
-> **Aktueller Stand (v4.9.0):**
+> **Aktueller Stand (v4.9.3):**
+> - **Vendor Card Template v1.1.0** (v4.9.3): Neues Optionalfeld `description` (240–480 Zeichen, Ziel 360, Deutsch, Konsumenten: web_export + review). Semantisch getrennt von `privacy_note`. Drei Fehler in `provider_card_verification`-Prompt korrigiert (Pfad + Feldname).
+> - **Terminologie-Refactoring Provider → Vendor** (v4.9.1): 50 Dateien umbenannt, `vendor_id` als kanonischer Feldname.
 > - **Card-Datenpflege-System vollständig implementiert** (v4.9.0)
 > - Vendor-Kanonisierung: 13 kanonische Hersteller in `classification_taxonomy.json`, `_normalize_vendor()` in `web_export.py`, `🏭`-Warnungen in `verify_model_cards.py`
 > - `profile_verified` / `profile_verified_at`: 2 neue optionale Felder in `card_template_model.yaml`; 119 Model Card JSONs per `jq` migriert; `🔍`-Warnungen in `verify_model_cards.py`
@@ -798,6 +800,6 @@ Visuelle Aufgaben (UML lesen, UI-Designs beurteilen) benötigen neue Asset-Forma
 
 ---
 
-**Document Version:** 4.9.0\
+**Document Version:** 4.9.3\
 **Last Updated:** 2026-06-12\
 **Next Review:** v5.0.0 / Nächster Feature-Meilenstein

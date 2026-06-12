@@ -39,7 +39,7 @@ Beschreibt einen **API-/Cloud-Anbieter**: Unternehmen, Sitz, Gründungsjahr,
 Pricing-Modell, Deployment-/Compliance-Subobjekt (CLOUD-Act, GDPR, etc.),
 Datenschutz-Hinweis, gemessene Performance-Statistiken.
 
-Felder (16 Pflicht, 3 Optional): siehe `config/card_template_vendor.yaml`.
+Felder (16 Pflicht, 4 Optional inkl. `description`): siehe `config/card_template_vendor.yaml`.
 
 ### Model Card
 
