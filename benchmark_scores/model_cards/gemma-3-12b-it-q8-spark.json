@@ -63,5 +63,7 @@
   "frequency_penalty": null,
   "presence_penalty": null,
   "seed": null,
-  "stop_sequences": null
+  "stop_sequences": null,
+  "profile_verified": false,
+  "profile_verified_at": null
 }

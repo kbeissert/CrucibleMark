@@ -9,7 +9,7 @@
   "weights_provenance_risk": "medium",
   "weights_provenance_risk_rationale": "Google Gemma Terms of Use sind restriktiv – kommerzielle Nutzung mit Auflagen. Google DeepMind ist US-amerikanisches Unternehmen (CLOUD Act). Weights sind öffentlich auf Hugging Face verfügbar, lokaler Betrieb möglich.",
   "model_family": "Gemma 4",
-  "vendor": "Google DeepMind",
+  "vendor": "Google",
   "primary_focus": "general",
   "use_case_primary": "generalist",
   "parameter_architecture": "dense",
@@ -69,5 +69,7 @@
   "tooluse_tested_at": "2026-06-11T22:01:40Z",
   "tooluse_score_p1": 90.0,
   "tooluse_score_p2": 56.67,
-  "tooluse_recommendation": "PRODUCTION"
+  "tooluse_recommendation": "PRODUCTION",
+  "profile_verified": false,
+  "profile_verified_at": null
 }

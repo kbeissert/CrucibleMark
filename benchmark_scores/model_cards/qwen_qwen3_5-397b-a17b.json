@@ -68,5 +68,7 @@
   ],
   "output_modalities": [
     "text"
-  ]
+  ],
+  "profile_verified": false,
+  "profile_verified_at": null
 }

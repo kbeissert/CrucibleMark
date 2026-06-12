@@ -20,11 +20,29 @@ REQUIRED_FIELDS = [
     "context_window_k", "knowledge_cutoff",
 ]
 
+
+def _load_canonical_vendors() -> set[str]:
+    """Liest die kanonische Hersteller-Liste aus config/classification_taxonomy.json.
+
+    Gibt ein leeres Set zurück wenn die Datei nicht geladen werden kann (graceful).
+    """
+    taxonomy_path = Path(__file__).parent.parent / "config" / "classification_taxonomy.json"
+    try:
+        with open(taxonomy_path, encoding="utf-8") as f:
+            taxonomy = json.load(f)
+        return set(taxonomy.get("manufacturers", {}).get("values", {}).keys())
+    except (OSError, json.JSONDecodeError, KeyError):
+        return set()
+
+
 def verify_cards():
     cards_dir = Path(__file__).parent.parent / "benchmark_scores" / "model_cards"
     issues = []
     all_model_ids = set()
-    
+
+    # Kanonische Hersteller-Liste einmalig laden (SSoT: classification_taxonomy.json)
+    canonical_vendors = _load_canonical_vendors()
+
     for card_file in sorted(cards_dir.glob("*.json")):
         with open(card_file) as f:
             data = json.load(f)
@@ -36,22 +54,36 @@ def verify_cards():
         model_id = data.get("model_id", card_file.stem)
         all_model_ids.add(model_id)
         
-        # Check required fields
+        # Pflichtfelder prüfen
         for field in REQUIRED_FIELDS:
             if field not in data:
                 issues.append(f"❌ {card_file.stem}: missing field '{field}'")
             elif data[field] is None or (isinstance(data[field], str) and data[field].strip() == ""):
                 issues.append(f"⚠️  {card_file.stem}: empty/null value for '{field}'")
         
-        # Check card_status
+        # Vendor gegen kanonische Liste validieren
+        vendor_val = data.get("vendor")
+        if canonical_vendors and vendor_val is not None and vendor_val not in canonical_vendors:
+            issues.append(
+                f"🏭 {card_file.stem}: vendor='{vendor_val}' ist nicht in der "
+                f"kanonischen Hersteller-Liste (config/classification_taxonomy.json "
+                f"→ manufacturers). Bitte Hersteller eintragen oder Alias ergänzen."
+            )
+
+        # Verifikations-Status prüfen (optional, aber empfohlen — v4.9.0)
+        if "profile_verified" not in data:
+            issues.append(f"🔍 {card_file.stem}: profile_verified fehlt (noch nicht migriert, jq-Migration ausführen)")
+        elif not data.get("profile_verified"):
+            issues.append(f"🔍 {card_file.stem}: profile_verified=false (Inhalt noch nicht manuell verifiziert)")
+
+        # card_status prüfen
         if data.get("card_status") != "complete":
             issues.append(f"📝 {card_file.stem}: card_status='{data.get('card_status', 'MISSING')}'")
     
-    # Check against provider_config for missing cards (simple grep-based, no yaml dep)
+    # Gegen provider_config auf fehlende Cards prüfen (grep-basiert, keine yaml-Abhängigkeit)
     config_path = Path(__file__).parent.parent / "config" / "provider_config.yaml"
     if config_path.exists():
         config_text = config_path.read_text()
-        # Extract model id values: lines like "  - id: xxx"
         import re
         config_model_ids = set(re.findall(r'^\s+- id:\s+(.+)$', config_text, re.MULTILINE))
         

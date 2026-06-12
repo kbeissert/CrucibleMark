@@ -1,7 +1,7 @@
 {
   "model_id": "z-ai/glm-5-20260211",
   "display_name": "GLM-5 (2026-02-11)",
-  "developer": "Z.ai (Zhipu AI)",
+  "developer": "Zhipu AI",
   "origin_country": "China",
   "developer_jurisdiction": "CN",
   "deployment_type": "open-weights-cloud-available",
@@ -9,7 +9,7 @@
   "weights_provenance_risk": "medium",
   "weights_provenance_risk_rationale": "Z.ai (Zhipu AI) ist ein chinesisches Unternehmen und unterliegt dem chinesischen National Security Law (NSL), das staatlichen Zugriff auf Daten ermöglichen kann. Die Gewichte sind jedoch öffentlich verfügbar (Hugging Face: zai-org/GLM-5) und können lokal betrieben werden, wodurch kein API-Zugriff durch Dritte erforderlich ist. Lizenz: Custom Z.ai Open License (permissiv, kommerzielle Nutzung erlaubt mit Einschränkungen).",
   "model_family": "GLM",
-  "vendor": "Z.ai",
+  "vendor": "Zhipu AI",
   "primary_focus": "coding",
   "use_case_primary": "agentic",
   "parameter_architecture": "moe",
@@ -65,5 +65,7 @@
   "frequency_penalty": null,
   "presence_penalty": null,
   "seed": null,
-  "stop_sequences": null
+  "stop_sequences": null,
+  "profile_verified": false,
+  "profile_verified_at": null
 }

@@ -9,7 +9,7 @@
   "weights_provenance_risk": "medium",
   "weights_provenance_risk_rationale": "Gemma-Lizenz (Google Gemma Terms of Use) ist restriktiv – kommerzielle Nutzung mit Auflagen (nicht Apache 2.0, wie irrtümlich in früherer Card-Version dokumentiert). Google DeepMind ist US-Unternehmen (CLOUD Act-Exposition bei API-Nutzung). Weights sind öffentlich auf Hugging Face verfügbar, lokaler Betrieb möglich.",
   "model_family": "Gemma 4",
-  "vendor": "Google DeepMind",
+  "vendor": "Google",
   "primary_focus": "general",
   "use_case_primary": "vision-language",
   "parameter_architecture": "moe",
@@ -66,5 +66,7 @@
   "frequency_penalty": null,
   "presence_penalty": null,
   "seed": null,
-  "stop_sequences": null
+  "stop_sequences": null,
+  "profile_verified": false,
+  "profile_verified_at": null
 }

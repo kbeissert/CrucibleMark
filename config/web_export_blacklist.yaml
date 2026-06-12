@@ -21,8 +21,11 @@ blacklist:
 
   # GWEN-Modelle (Vergleichsquants, experimentelle Modelle)
   - "qwen3-coder-next-q8"       # Vergleichsquant, zu langsam, zu schwer
+  - "qwen3_5-35b-a3b-q4"        # Bessere Quant als q8 (74.75 vs 74.55), aber Vergleichsquant
   - "qwen3_5-35b-a3b-q8"        # Vergleichsquant, zu langsam
   - "qwen3_5-4b-q6"             # Vergleichsquant, langsamer, kaum unterschied
+  - "qwen3_5-4b-q4"             # Vergleichsquant auf M4APL
+  - "qwen3_5-4b-q8"             # Vergleichsquant auf M4APL, schlechtester Score der Gruppe (67.69)
 
   # GEMMA-Modelle (Vergleichsquants, experimentelle Modelle)
   - "gemma-4-12b-it-ud-q4_k_xl" # Vergleichsquant, zu langsam, zu schwer

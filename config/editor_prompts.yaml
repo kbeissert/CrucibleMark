@@ -1,0 +1,407 @@
+# Editor Prompts — Kuratierte Aufgaben-Prompts für manuelle LLM-Aufgaben
+# =======================================================================
+#
+# Zweck: Wiederverwendbare Prompts für redaktionelle Aufgaben, die
+# ein menschlicher Operator an ein leistungsfähiges LLM delegiert.
+# Diese Prompts verändern NICHT die Benchmark-Logik oder Reviewer-Prompts
+# (config/card_template_*.yaml), sondern dienen der Datenpflege.
+#
+# Workflow:
+#   1. Operator setzt betroffene Cards auf den Zielstatus (z.B. profile_verified: false)
+#   2. Operator schickt den Prompt an ein fähiges LLM (Claude Opus 4+, GPT-5+, etc.)
+#   3. LLM arbeitet den Prompt ab, aktualisiert Dateien, setzt Verifikations-Flags
+#   4. Operator prüft diff, commitet
+#
+# Verfügbare Prompts:
+#   - provider_card_verification  → Statische Hersteller-Informationen verifizieren/aktualisieren
+#   - model_card_verification     → Inhaltliche Modell-Metadaten verifizieren/ergänzen
+
+version: "1.0.0"
+last_updated: "2026-06-12"
+
+# Verfügbare Prompts (aktuell):
+#   - provider_card_verification  → Statische Hersteller-Informationen verifizieren/aktualisieren
+#   - model_card_verification     → Inhaltliche Modell-Metadaten verifizieren/ergänzen
+
+# ----------------------------------------------------------------------------
+# PROMPT: provider_card_verification
+# ----------------------------------------------------------------------------
+# Aufgabe: Alle Provider Cards mit profile_verified: false recherchieren,
+# statische Felder aktualisieren, Verifikations-Flag setzen.
+#
+# Empfohlene Modelle: Claude Opus 4+, GPT-5+, Gemini 2.5 Pro
+# Benötigte Fähigkeiten: Web-Recherche (Search/Browse), Datei-Schreibzugriff
+# Geschätzte Dauer: 3–8 Minuten pro Hersteller
+# ----------------------------------------------------------------------------
+provider_card_verification:
+  name: "Provider Card Verification"
+  version: "1.0.0"
+  description: >
+    Verifiziert und aktualisiert die statischen Hersteller-Informationen in
+    Provider Cards. Wird auf Cards mit profile_verified: false angewendet.
+  targets:
+    directory: "benchmark_scores/provider_cards/"
+    filter: "profile_verified == false"
+    exclude: ["_index.json", "todo.json", "unknown.json"]
+  prompt: |
+    # Aufgabe: Provider Card Verification
+
+    Du bist ein Recherche-Assistent. Deine Aufgabe ist es, die statischen
+    Hersteller-Informationen in CrucibleMark Provider Cards zu verifizieren
+    und zu aktualisieren.
+
+    ## Kontext
+
+    CrucibleMark ist ein LLM-Benchmark-Framework. Provider Cards dokumentieren
+    die Hersteller/Anbieter von KI-Modellen — insbesondere Compliance-relevante
+    Informationen (DSGVO, Jurisdiktion, Datenschutz), die für eine europäische
+    Nutzerperspektive wichtig sind.
+
+    ## Auftrag
+
+    Bearbeite alle Provider Cards in `benchmark_scores/provider_cards/` bei
+    denen das Feld `"profile_verified": false` gesetzt ist.
+
+    Überspringe folgende Dateien:
+    - `_index.json`
+    - `todo.json`
+    - `unknown.json`
+
+    ## Vorgehen pro Card
+
+    ### Schritt 1 — Datei lesen
+    Lese die JSON-Datei vollständig. Notiere dir `provider_id`, `display_name`
+    und `company`.
+
+    ### Schritt 2 — Recherche
+    Recherchiere folgende Informationen über den Hersteller (nutze offizielle
+    Quellen: Website, Datenschutzerklärung, API-Dokumentation, LinkedIn/Crunchbase
+    für Firmendaten):
+
+    **Firmen-Stammdaten:**
+    - Vollständiger Firmenname (Rechtsform, z.B. "OpenAI, L.L.C." oder "Anthropic PBC")
+    - Aktueller Firmensitz (Stadt, Bundesstaat/Region, Land)
+    - Gründungsjahr
+
+    **API & Produkt:**
+    - Aktuelle API-Basis-URL
+    - Aktuelle API-Dokumentations-URL
+
+    **Compliance & Datenschutz (besonders wichtig):**
+    - Gilt der US CLOUD Act? (Firmensitz USA → ja, alle anderen → prüfen)
+    - Anwendbares Recht (z.B. "US (CLOUD Act)", "EU (DSGVO)", "China (PIPL/CSL/DSL)")
+    - Wo werden Daten verarbeitet/gespeichert?
+    - Ist ein DSGVO Data Processing Agreement (DPA) verfügbar?
+    - Gibt es einen EU-Angemessenheitsbeschluss (adequacy decision)?
+    - Wie lange werden API-Anfrage-Daten aufbewahrt? (-1 = unklar/keine Angabe)
+    - Chinesisches NSL-Risiko: "none" (kein China-Bezug), "low", "medium", "high"
+      (Chinese NSL = National Security Law gilt für chinesische Firmen und ihre
+      Tochtergesellschaften weltweit)
+
+    **Privacy Note:**
+    Schreibe einen präzisen, sachlichen Datenschutz-Hinweis (2–4 Sätze) auf
+    Deutsch, der die wesentlichen Risiken und Hinweise für europäische Nutzer
+    zusammenfasst. Ton: neutral-informativ, kein Marketing.
+
+    ### Schritt 3 — Card aktualisieren
+    Aktualisiere **ausschließlich** folgende Felder in der JSON-Datei:
+
+    ```
+    company              ← vollständiger Firmenname
+    headquarters         ← aktueller Firmensitz
+    founding_year        ← Gründungsjahr (int oder null)
+    api_base_url         ← aktuelle API-URL
+    api_documentation_url ← aktuelle Doku-URL
+    deployment.cloud_act_exposure   ← true/false
+    deployment.applicable_law       ← string
+    deployment.data_residency       ← string
+    deployment.gdpr_dpa_available   ← true/false
+    deployment.eu_adequacy_decision ← true/false
+    deployment.data_retention_days  ← int (-1 = unbekannt)
+    deployment.chinese_nsl_risk     ← "none"|"low"|"medium"|"high"
+    privacy_note         ← aktualisierter Datenschutzhinweis (Deutsch)
+    last_verified_at     ← heutiges Datum (ISO 8601: YYYY-MM-DD)
+    verification_source  ← URL der primären Quelle (Datenschutzerklärung oder Policy-URL)
+    profile_verified     ← true  (nach erfolgreicher Verifikation setzen)
+    profile_verified_at  ← heutiges Datum (ISO 8601: YYYY-MM-DD)
+    ```
+
+    ### Schritt 4 — Was du NICHT verändern darfst
+    Folgende Felder NICHT anfassen:
+    ```
+    provider_id          ← ID darf sich nie ändern
+    display_name         ← nur manuell durch Operator änderbar
+    notable_models       ← wird automatisch gepflegt
+    stats                ← Laufzeitdaten, nicht redaktionell
+    pricing_model        ← nur manuell änderbar
+    unknown              ← nur durch Operator
+    generated_at         ← Timestamp der letzten automatischen Generierung
+    ```
+
+    ### Schritt 5 — Abschlussprüfung
+    Stelle sicher:
+    - JSON ist valide (kein Syntaxfehler)
+    - `profile_verified: true` und `profile_verified_at` sind korrekt gesetzt
+    - `last_verified_at` ist auf das heutige Datum gesetzt
+    - `verification_source` enthält eine echte, erreichbare URL
+
+    ## Ausgabe-Format
+
+    Nach Abschluss aller Cards: Gib eine kurze Zusammenfassung aus:
+    - Welche Cards wurden aktualisiert
+    - Welche Felder sich wesentlich geändert haben
+    - Eventuelle Unsicherheiten oder fehlende Informationen (dann `profile_verified: false` lassen
+      und eine Notiz in `privacy_note` ergänzen, was unklar ist)
+
+    ## Qualitätskriterien
+
+    - Bevorzuge offizielle Quellen (datenschutz.company.com, legal.company.com, privacy-policy)
+    - Bei Unsicherheit: konservativer Wert (z.B. `cloud_act_exposure: true` wenn Sitz USA)
+    - Chinesisches NSL-Risiko: "high" für chinesische Firmen und ihre globalen Töchter,
+      "none" für Firmen ohne China-Bezug
+    - Privacy Note auf Deutsch, sachlich, 2–4 Sätze, europäische Nutzerperspektive
+
+# ----------------------------------------------------------------------------
+# PROMPT: model_card_verification
+# ----------------------------------------------------------------------------
+# Aufgabe: Alle Model Cards mit profile_verified: false recherchieren,
+# inhaltliche Felder prüfen/ergänzen, Verifikations-Flag setzen.
+#
+# Empfohlene Modelle: Claude Opus 4+, GPT-5+, Gemini 2.5 Pro (mit Web-Recherche)
+# Benötigte Fähigkeiten: Web-Recherche (Search/Browse), Datei-Schreibzugriff
+# Geschätzte Dauer: 2–5 Minuten pro Modell (viele Cards lassen sich batchen)
+# ----------------------------------------------------------------------------
+model_card_verification:
+  name: "Model Card Verification"
+  version: "1.0.0"
+  description: >
+    Verifiziert und ergänzt die inhaltlichen Metadaten in Model Cards.
+    Wird auf Cards mit profile_verified: false angewendet. Füllt fehlende
+    Werte ("TODO" / null) aus öffentlichen Quellen und korrigiert veraltete
+    Informationen (Preise, Context-Window, Knowledge-Cutoff etc.).
+  targets:
+    directory: "benchmark_scores/model_cards/"
+    filter: "profile_verified == false"
+    exclude: ["_index.json"]
+  prompt: |
+    # Aufgabe: Model Card Verification
+
+    Du bist ein Recherche-Assistent. Deine Aufgabe ist es, die Metadaten
+    in CrucibleMark Model Cards zu verifizieren, fehlende Werte zu ergänzen
+    und veraltete Informationen zu korrigieren.
+
+    ## Kontext
+
+    CrucibleMark ist ein LLM-Benchmark-Framework. Model Cards enthalten
+    strukturierte Metadaten zu KI-Modellen: Architektur, Lizenz, Pricing,
+    Stärken/Schwächen und Kontext-Hinweise für den internen LLM-Judge.
+    Korrekte Metadaten sind Voraussetzung für valide Benchmark-Ergebnisse
+    und aussagekräftige Leaderboard-Darstellungen.
+
+    ## Glossar (wichtige Feldwerte)
+
+    **deployment_type:**
+    - `cloud-only` — nur über API zugänglich, keine Gewichte verfügbar
+    - `open-weights-cloud-available` — Gewichte öffentlich, auch Cloud-API
+    - `open-weights` — nur Gewichte, keine offizielle Cloud-API
+    - `localweights` — nur lokal betreibbar (z.B. GGUF-Quants ohne offizielle API)
+
+    **weights_provenance_risk:** (Sovereign-Risk-Bewertung)
+    - `low` — EU-Entwickler oder vertrauenswürdiger westlicher Partner ohne
+               bekannte staatliche Einflussnahme
+    - `medium` — US-Entwickler (CLOUD Act möglich), aber keine bekannte direkte
+                  staatliche Kontrolle
+    - `high` — chinesischer Entwickler (NSL/PIPL), staatlich kontrolliert,
+                oder undurchsichtige Eigentümerstruktur
+
+    **use_case_primary:** generalist | coding | reasoning | vision-language | agentic
+
+    **parameter_architecture:** dense | moe | hybrid
+
+    **weights_license_tier:** proprietary | open-weights | restricted-weights
+
+    **vendor:** Muss exakt einem der kanonischen Hersteller-Namen entsprechen
+    (SSoT: config/classification_taxonomy.json → manufacturers → values):
+    Alibaba, Anthropic, DeepSeek, Google, Meta, MiniMax, Mistral AI,
+    Moonshot AI, NousResearch, NVIDIA, OpenAI, xAI, Zhipu AI
+
+    **architecture_tags:** Whitelist in config/card_vocabulary.yaml.
+    Typische Werte: General, Instruct, Code, Reasoning, MoE, Multimodal,
+    Vision, Local, Quantized, Community
+
+    **input_modalities / output_modalities:** Erlaubte Werte: text, image, audio, video
+    ("text" ist immer implizit enthalten)
+
+    ## Auftrag
+
+    Bearbeite alle Model Cards in `benchmark_scores/model_cards/` bei
+    denen das Feld `"profile_verified": false` gesetzt ist.
+
+    Überspringe: `_index.json`
+
+    ## Vorgehen pro Card
+
+    ### Schritt 1 — Datei lesen
+    Lese die JSON-Datei vollständig. Notiere dir `model_id`, `display_name`,
+    `developer` und `vendor`. Identifiziere alle Felder mit dem Wert `"TODO"`
+    oder `null` (außer Felder, die null-sein dürfen — siehe Schritt 4).
+
+    ### Schritt 2 — Recherche
+    Recherchiere über das Modell (nutze offizielle Quellen: Entwickler-Website,
+    Hugging Face Model Card, offizielle Ankündigungs-Blogposts, API-Dokumentation):
+
+    **Identität & Klassifikation:**
+    - Korrekter `display_name` (z.B. "GPT-5.4 Mini", nicht "gpt-5_4-mini")
+    - `developer` — vollständiger Lab-/Firmenname (z.B. "Google DeepMind")
+    - `vendor` — kanonischer Hersteller-Name (aus Glossar oben)
+    - `origin_country` — Herkunftsland (z.B. "USA", "China", "France")
+    - `developer_jurisdiction` — Rechtsraum (z.B. "US", "EU", "CN")
+    - `model_family` — Modellfamilie (z.B. "GPT", "Claude", "Gemma", "Qwen")
+    - `model_version` — Versions-String laut Hersteller
+
+    **Architektur & Fähigkeiten:**
+    - `parameter_architecture` — dense / moe / hybrid
+    - `params_total_b` — Gesamtparameter in Milliarden (null wenn nicht bekannt)
+    - `params_active_b` — Aktive Parameter bei MoE (null für dense)
+    - `context_window_k` — maximales Context-Window in Tausend Tokens
+    - `knowledge_cutoff` — Trainings-Datensatz-Cutoff (Format: YYYY-MM)
+    - `input_modalities` — was das Modell nativ verarbeitet (text/image/audio/video)
+    - `output_modalities` — was das Modell erzeugt (text/image/audio)
+    - `supports_tool_use` — true wenn Modell Function Calling / Tool Use
+                            offiziell unterstützt, false wenn nicht, null wenn unklar
+                            (Hinweis: wird ggf. vom Tooluse-Benchmark überschrieben)
+    - `architecture_tags` — relevante Tags (aus Whitelist, s. Glossar)
+    - `primary_focus` — general / reasoning / code / multimodal / agentic
+
+    **Deployment & Lizenz:**
+    - `deployment_type` — cloud-only / open-weights-cloud-available / open-weights / localweights
+    - `local_deployment_possible` — bool
+    - `license` — SPDX-Name oder "Proprietary"
+    - `license_url` — URL zur Lizenz (null für Proprietary ohne öffentliche URL)
+    - `commercial_use_allowed` — bool
+    - `weights_license_tier` — proprietary / open-weights / restricted-weights
+
+    **Preise (nur für Cloud-Modelle, null für lokale Modelle):**
+    - `input_price_per_1m` — USD pro 1M Input-Tokens (aktueller Listenpreis)
+    - `output_price_per_1m` — USD pro 1M Output-Tokens (aktueller Listenpreis)
+
+    **Sovereign Risk:**
+    - `weights_provenance_risk` — low / medium / high (s. Glossar)
+    - `weights_provenance_risk_rationale` — 1–2 Sätze, warum dieses Level
+
+    **Inhaltliche Beschreibung (auf Deutsch):**
+    - `summary` — 2–3 Sätze: was das Modell ist, wofür es gedacht ist,
+                  was es auszeichnet. Sachlich, kein Marketing.
+    - `strengths` — 3–5 konkrete Stärken als Liste
+    - `known_limitations` — 2–4 bekannte Schwächen/Einschränkungen als Liste
+    - `judge_context_hint` — 1–2 Sätze Kontext für den LLM-Judge: Worauf soll
+                              er beim Bewerten dieser Antworten achten? Typische
+                              Stärken/Schwächen, die die Bewertung beeinflussen.
+
+    **use_case_primary:** Klassifikation nach Hauptanwendungsfall
+
+    ### Schritt 3 — Card aktualisieren
+    Aktualisiere **ausschließlich** die folgenden Felder — aber nur, wenn sie
+    den Wert `"TODO"` haben, `null` sind (und kein erlaubtes null-Feld,
+    siehe Schritt 4), oder nachweislich veraltet/falsch sind:
+
+    ```
+    display_name
+    developer
+    vendor                         ← muss aus kanonischer Liste (Glossar)
+    origin_country
+    developer_jurisdiction
+    model_family
+    model_version
+    parameter_architecture
+    params_total_b                 ← null wenn nicht öffentlich bekannt
+    params_active_b                ← null für dense-Modelle
+    context_window_k
+    knowledge_cutoff               ← Format YYYY-MM
+    input_modalities
+    output_modalities
+    supports_tool_use              ← null wenn unklar
+    architecture_tags
+    primary_focus
+    deployment_type
+    local_deployment_possible
+    license
+    license_url                    ← null für Proprietary ohne URL
+    commercial_use_allowed
+    weights_license_tier
+    input_price_per_1m             ← null für lokale Modelle
+    output_price_per_1m            ← null für lokale Modelle
+    weights_provenance_risk
+    weights_provenance_risk_rationale
+    summary
+    strengths
+    known_limitations
+    judge_context_hint
+    use_case_primary
+    profile_verified               ← true (nach erfolgreicher Verifikation)
+    profile_verified_at            ← heutiges Datum (ISO 8601: YYYY-MM-DD)
+    ```
+
+    ### Schritt 4 — Was du NICHT verändern darfst
+    Diese Felder sind entweder automatisch gesetzt oder Operator-reserviert:
+
+    ```
+    model_id                ← ID ändert sich nie
+    generated_at            ← automatischer Timestamp
+    card_status             ← nur durch Operator
+    unknown                 ← nur durch Operator
+    size_class              ← auto-berechnet aus params_total_b / params_active_b
+    thinking_probe_detected ← Probe-Ergebnis (automatisch)
+    thinking_probe_evidence ← Probe-Ergebnis (automatisch)
+    thinking_probe_confidence ← Probe-Ergebnis (automatisch)
+    thinking_probe_at       ← Probe-Ergebnis (automatisch)
+    cot_marker_family       ← Probe-Ergebnis (automatisch)
+    cot_tags_detected       ← Probe-Ergebnis (automatisch)
+    tooluse_tested_at       ← Benchmark-Ergebnis (automatisch)
+    tooluse_score_p1        ← Benchmark-Ergebnis (automatisch)
+    tooluse_score_p2        ← Benchmark-Ergebnis (automatisch)
+    tooluse_recommendation  ← Benchmark-Ergebnis (automatisch)
+    temperature             ← Sampling-Parameter (Operator)
+    top_p                   ← Sampling-Parameter (Operator)
+    top_k                   ← Sampling-Parameter (Operator)
+    repetition_penalty      ← Sampling-Parameter (Operator)
+    frequency_penalty       ← Sampling-Parameter (Operator)
+    presence_penalty        ← Sampling-Parameter (Operator)
+    seed                    ← Sampling-Parameter (Operator)
+    stop_sequences          ← Sampling-Parameter (Operator)
+    system_prompt_override  ← Operator
+    heritage_ids            ← Operator
+    ```
+
+    ### Schritt 5 — Abschlussprüfung
+    Stelle sicher:
+    - JSON ist valide (kein Syntaxfehler, korrektes Quoting)
+    - `profile_verified: true` und `profile_verified_at` korrekt gesetzt
+    - Kein Feld enthält noch den Wert `"TODO"`
+    - `vendor` ist exakt aus der kanonischen Liste
+    - `params_active_b` ist nur für MoE-Modelle gesetzt (für dense: null)
+    - Preise für lokale Modelle (localweights / open-weights ohne API) sind null
+    - `knowledge_cutoff` im Format YYYY-MM (z.B. "2025-09"), nicht YYYY
+
+    ## Ausgabe-Format
+
+    Nach Abschluss aller Cards: Kurze Zusammenfassung:
+    - Wie viele Cards bearbeitet
+    - Welche Felder sich wesentlich geändert haben (je Card)
+    - Unsicherheiten oder fehlende Informationen → dann `profile_verified: false`
+      lassen und in `summary` oder `known_limitations` einen Hinweis ergänzen,
+      was nicht verifiziert werden konnte
+
+    ## Qualitätskriterien
+
+    - Bevorzuge offizielle Quellen: Hersteller-Website, offizielle HuggingFace-
+      Model-Card, API-Pricing-Seite
+    - Bei Unsicherheit bei `weights_provenance_risk`: konservativ bewerten
+      (chinesische Firmen → high, US-Firmen → medium, EU → low bis medium)
+    - `summary`, `strengths`, `known_limitations` auf Deutsch verfassen —
+      sachlich, präzise, keine Werbung
+    - `judge_context_hint` auf Deutsch: 1–2 Sätze, die dem Judge helfen,
+      Antworten dieses Modells im richtigen Kontext zu bewerten
+    - Quantisierte/Community-Modelle (GGUF, GPTQ, AWQ): `developer` ist das
+      originale Lab, `vendor` ebenfalls. `architecture_tags` enthält "Quantized"
+      und ggf. "Community"

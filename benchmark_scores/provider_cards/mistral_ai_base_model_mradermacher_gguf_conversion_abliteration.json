@@ -25,5 +25,7 @@
   "unknown": false,
   "generated_at": "2026-06-02T21:00:00.000000+00:00",
   "last_verified_at": "2026-06-02",
-  "verification_source": "https://huggingface.co/mradermacher"
+  "verification_source": "https://huggingface.co/mradermacher",
+  "profile_verified": false,
+  "profile_verified_at": null
 }

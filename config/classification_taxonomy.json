@@ -159,5 +159,90 @@
         "reviewer_guidance": "Ermöglicht TTS und Audio-Generierung. Sehr selten in Standard-LLMs."
       }
     }
+  },
+  "manufacturers": {
+    "description": "Kanonische Hersteller-Liste für das vendor-Feld in Model Cards. Jede Model Card MUSS einen dieser Werte im vendor-Feld haben. Neue Hersteller hier eintragen, bevor die erste Card angelegt wird. Unbekannte Vendors → vendor: null (wird im Frontend als 'Unbekannt' angezeigt). SSoT für Web-Export-Normalisierung und Card-Validierung.",
+    "field_name": "vendor",
+    "fallback": null,
+    "values": {
+      "Alibaba": {
+        "label": "Alibaba",
+        "description": "Alibaba Group — Entwickler der Qwen-Modellreihe (Qwen Team). Marken: Qwen, DashScope, Alibaba Cloud AI.",
+        "aliases": ["Alibaba Cloud", "Qwen / Alibaba Cloud", "Alibaba Group", "Alibaba Cloud (Qwen Team)", "Alibaba Group (Qwen Team)", "HauhauCS / Qwen"],
+        "jurisdiction": "CN"
+      },
+      "Anthropic": {
+        "label": "Anthropic",
+        "description": "Anthropic PBC — Entwickler der Claude-Modellreihe.",
+        "aliases": [],
+        "jurisdiction": "US"
+      },
+      "DeepSeek": {
+        "label": "DeepSeek",
+        "description": "DeepSeek AI (Hangzhou DeepSeek Artificial Intelligence Co.) — Entwickler der DeepSeek-Modellreihe.",
+        "aliases": [],
+        "jurisdiction": "CN"
+      },
+      "Google": {
+        "label": "Google",
+        "description": "Google LLC / Google DeepMind — Entwickler der Gemini- und Gemma-Modellreihen.",
+        "aliases": ["Google DeepMind", "Google / UndiX (Community)", "Google DeepMind / Community (ARA-APEX Quant)", "Google DeepMind (Base) / UndiX (Community-Distribution)"],
+        "jurisdiction": "US"
+      },
+      "Meta": {
+        "label": "Meta",
+        "description": "Meta AI (Meta Platforms, Inc.) — Entwickler der Llama-Modellreihe.",
+        "aliases": ["Meta AI", "Meta Platforms"],
+        "jurisdiction": "US"
+      },
+      "MiniMax": {
+        "label": "MiniMax",
+        "description": "MiniMax (Shanghai Minmax Technology Co.) — Entwickler der MiniMax-Modellreihe.",
+        "aliases": [],
+        "jurisdiction": "CN"
+      },
+      "Mistral AI": {
+        "label": "Mistral AI",
+        "description": "Mistral AI SAS — Entwickler der Mistral- und Magistral-Modellreihen.",
+        "aliases": ["Mistral"],
+        "jurisdiction": "EU"
+      },
+      "Moonshot AI": {
+        "label": "Moonshot AI",
+        "description": "Moonshot AI (Beijing Moonshot AI Technology Co.) — Entwickler der Kimi-Modellreihe.",
+        "aliases": ["Moonshot", "Kimi"],
+        "jurisdiction": "CN"
+      },
+      "NousResearch": {
+        "label": "NousResearch",
+        "description": "Nous Research — Entwickler der Hermes-Modellreihe (Community-Fine-Tunes und eigenständige Modelle).",
+        "aliases": ["Nous Research", "Nous-Research"],
+        "jurisdiction": "US"
+      },
+      "NVIDIA": {
+        "label": "NVIDIA",
+        "description": "NVIDIA Corporation — Entwickler der Nemotron-Modellreihe.",
+        "aliases": ["Nvidia"],
+        "jurisdiction": "US"
+      },
+      "OpenAI": {
+        "label": "OpenAI",
+        "description": "OpenAI — Entwickler der GPT- und o-Modellreihen.",
+        "aliases": [],
+        "jurisdiction": "US"
+      },
+      "xAI": {
+        "label": "xAI",
+        "description": "xAI (X.AI Corp.) — Entwickler der Grok-Modellreihe.",
+        "aliases": ["x.AI", "X AI"],
+        "jurisdiction": "US"
+      },
+      "Zhipu AI": {
+        "label": "Zhipu AI",
+        "description": "Zhipu AI (Beijing Zhipu AI Technology Co.) — Entwickler der GLM-Modellreihe. Internationale Marke: Z.ai.",
+        "aliases": ["Z.ai", "Z.ai (Zhipu AI)", "ZhipuAI"],
+        "jurisdiction": "CN"
+      }
+    }
   }
 }

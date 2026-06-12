@@ -178,6 +178,37 @@ required_fields:
     since: "v1.0"
     example: "https://openai.com/policies/privacy-policy"
 
+  # --- Profil-Verifikation ---
+  # profile_verified gibt an, ob die statischen Hersteller-Informationen
+  # (company, headquarters, founding_year, deployment, privacy_note, api_*_url)
+  # manuell geprüft und für korrekt befunden wurden.
+  #
+  # Workflow:
+  #   1. Automatisches Update-Skript berührt statische Felder → setzt profile_verified: false
+  #   2. Manuelle Prüfung erfolgreich → profile_verified: true, profile_verified_at: <ISO-Datum>
+  #
+  # Was NICHT unter dieses Flag fällt (immer frei editierbar):
+  #   - stats          (Laufzeitdaten, regelmäßig auto-aktualisiert)
+  #   - notable_models (wächst automatisch)
+  #   - generated_at, last_verified_at (Meta-Timestamps)
+  - name: profile_verified
+    type: bool
+    required: true
+    default: false
+    description: "true = statische Hersteller-Informationen manuell geprüft und verifiziert"
+    consumers: [audit, web_export]
+    since: "v4.9.0"
+    example: true
+
+  - name: profile_verified_at
+    type: str
+    required: true
+    default: null
+    description: "ISO-8601-Datum der letzten manuellen Profilverifikation (null = noch nicht verifiziert)"
+    consumers: [audit, web_export]
+    since: "v4.9.0"
+    example: "2026-06-12"
+
 # ----------------------------------------------------------------------------
 # Optionalfelder
 # ----------------------------------------------------------------------------

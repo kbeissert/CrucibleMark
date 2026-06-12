@@ -1,0 +1,30 @@
+{
+  "provider_id": "nvidia",
+  "display_name": "NVIDIA",
+  "company": "NVIDIA Corporation",
+  "headquarters": "Santa Clara, California, USA",
+  "founding_year": 1993,
+  "pricing_model": "open-weights",
+  "api_base_url": "https://build.nvidia.com",
+  "api_documentation_url": "https://docs.api.nvidia.com",
+  "deployment": {
+    "cloud_act_exposure": true,
+    "applicable_law": "US (CLOUD Act)",
+    "data_residency": "USA",
+    "gdpr_dpa_available": true,
+    "eu_adequacy_decision": true,
+    "data_retention_days": -1,
+    "chinese_nsl_risk": "none"
+  },
+  "privacy_note": "NVIDIA stellt die Nemotron-Modelle als Open-Weights zur Verfügung (NVIDIA Open Model License). Lokales Deployment möglich. Bei API-Nutzung über build.nvidia.com gelten US-amerikanische Datenschutzgesetze (CLOUD Act); EU-Nutzer können via DPA absichern.",
+  "notable_models": [
+    "Nemotron 3 Ultra 550B-A55B"
+  ],
+  "stats": {},
+  "unknown": false,
+  "generated_at": "2026-06-12T08:00:00.000000+00:00",
+  "last_verified_at": "2026-06-12",
+  "verification_source": "https://www.nvidia.com/en-us/agreements/enterprise-software/nvidia-software-license-agreement/",
+  "profile_verified": false,
+  "profile_verified_at": null
+}

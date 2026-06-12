@@ -9,7 +9,7 @@
   "weights_provenance_risk": "medium",
   "weights_provenance_risk_rationale": "Open-Weights-Modell aus China; Weights sind öffentlich auf Hugging Face verfügbar. Chinesische Herkunft und das nationale Sicherheitsgesetz (NSL) sind bei der Einschätzung des Datenrisikos zu berücksichtigen.",
   "model_family": "Qwen 3.6",
-  "vendor": "Qwen / Alibaba Cloud",
+  "vendor": "Alibaba",
   "primary_focus": "general",
   "use_case_primary": "vision-language",
   "parameter_architecture": "moe",
@@ -66,5 +66,7 @@
   ],
   "output_modalities": [
     "text"
-  ]
+  ],
+  "profile_verified": false,
+  "profile_verified_at": null
 }

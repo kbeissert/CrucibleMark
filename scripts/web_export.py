@@ -105,6 +105,47 @@ def slugify(model_name: str) -> str:
     name = str(model_name).rsplit('/', maxsplit=1)[-1].lower()
     return re.sub(r'[^a-z0-9]+', '-', name).strip('-')
 
+
+def _build_vendor_alias_map(config_dir: Path) -> dict[str, str]:
+    """Liest Hersteller-Aliases aus classification_taxonomy.json und gibt
+    ein alias→kanonischer-Name-Mapping zurück.
+
+    Beispiel: {"Alibaba Cloud": "Alibaba", "Google DeepMind": "Google", ...}
+    """
+    taxonomy_path = config_dir / "classification_taxonomy.json"
+    alias_map: dict[str, str] = {}
+    try:
+        with taxonomy_path.open("r", encoding="utf-8") as f:
+            taxonomy = json.load(f)
+        manufacturers = taxonomy.get("manufacturers", {}).get("values", {})
+        for canonical_name, entry in manufacturers.items():
+            # Canonical selbst ist immer gültig
+            alias_map[canonical_name] = canonical_name
+            for alias in entry.get("aliases", []):
+                alias_map[alias] = canonical_name
+    except (OSError, json.JSONDecodeError, KeyError) as exc:
+        logging.warning("Vendor-Alias-Map konnte nicht geladen werden: %s", exc)
+    return alias_map
+
+
+def _normalize_vendor(vendor: str | None, alias_map: dict[str, str]) -> str | None:
+    """Normalisiert einen vendor-Wert auf den kanonischen Hersteller-Namen.
+
+    Gibt den Originalwert zurück, wenn kein Alias-Match gefunden wird,
+    und loggt einen WARNING für unbekannte Vendor-Strings.
+    """
+    if vendor is None:
+        return None
+    normalized = alias_map.get(vendor)
+    if normalized is not None:
+        return normalized
+    logging.warning(
+        "Unbekannter vendor '%s' — nicht in classification_taxonomy.json/manufacturers. "
+        "Bitte eintragen oder Alias hinzufügen.",
+        vendor,
+    )
+    return vendor
+
 def sanitize_audit_log(content: str) -> str:
     """Removes Section 3 (LLM-Judge evaluation) from audit logs before web export.
     Preserves header, prompt, model response, and Modul-Metriken block.
@@ -1049,6 +1090,9 @@ def main() -> None:
 
     logging.info("🌐 Starting Web Export Pipeline...")
 
+    # Vendor-Alias-Map aus classification_taxonomy.json laden (SSoT für Hersteller-Normalisierung)
+    _vendor_alias_map = _build_vendor_alias_map(root_dir / "config")
+
     provider_map = build_provider_map(root_dir / "benchmark_config.yaml")
     ldb, pc, pc_lb, provider_df = _load_sources(scores_dir)
     if ldb is None:
@@ -1177,7 +1221,7 @@ def main() -> None:
         if has_report: models_with_reports += 1
         if has_review: models_with_reviews += 1
 
-        vendor = card.get("vendor") if card else None
+        vendor = _normalize_vendor(card.get("vendor") if card else None, _vendor_alias_map)
 
         # Derive thinking_mode from architecture_tags for frontend filtering:
         # "thinking"  → always-on reasoning (DeepSeek-R1, o1/o3/o4, Magistral, Kimi K2 Thinking)

@@ -25,5 +25,7 @@
   "unknown": true,
   "generated_at": "2026-06-02T20:47:10.858708+00:00",
   "last_verified_at": null,
-  "verification_source": "https://nousresearch.com"
+  "verification_source": "https://nousresearch.com",
+  "profile_verified": false,
+  "profile_verified_at": null
 }

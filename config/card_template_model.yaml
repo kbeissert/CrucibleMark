@@ -40,7 +40,7 @@
 #   asset       = benchmark_modules/base_test.py (Asset-Pipeline)
 
 version: "1.0.0"
-last_updated: "2026-06-08"
+last_updated: "2026-06-12"
 card_type: "model"
 
 # ----------------------------------------------------------------------------
@@ -571,6 +571,33 @@ optional_fields:
     consumers: [asset, judge]
     since: "v4.7.2"
     example: ["\n\n", "###"]
+
+  # --- Datenpflege-Verifikation (editor_prompts, ab v4.9.0) ---
+  # Entspricht dem gleichen Mechanismus wie in Provider Cards.
+  # profile_verified = true → inhaltliche Felder der Card wurden manuell
+  # recherchiert und verifiziert (summary, strengths, known_limitations,
+  # judge_context_hint, params, pricing, modalities, license, etc.).
+  #
+  # Felder, die NICHT unter dieses Flag fallen (automatisch gesetzt):
+  #   thinking_probe_*, cot_marker_family, cot_tags_detected,
+  #   tooluse_*, generated_at, size_class, unknown, model_id
+  - name: profile_verified
+    type: bool
+    required: false
+    default: false
+    description: "True → inhaltliche Felder wurden manuell recherchiert und verifiziert (via editor_prompts model_card_verification)"
+    consumers: [verify, web_export]
+    since: "v4.9.0"
+    example: false
+
+  - name: profile_verified_at
+    type: str
+    required: false
+    default: null
+    description: "ISO-8601-Datum der letzten Verifikation (YYYY-MM-DD). null = noch nicht verifiziert"
+    consumers: [verify, web_export]
+    since: "v4.9.0"
+    example: "2026-06-12"
 
   # --- Heritage-IDs (web_export + review, ab v4.8.0) ---
   # Wird gesetzt, wenn ein Modell unter einer neuen kanonischen ID neu angelegt

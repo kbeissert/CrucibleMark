@@ -46,7 +46,7 @@ Felder (16 Pflicht, 3 Optional): siehe `config/card_template_provider.yaml`.
 Beschreibt ein **einzelnes Modell**: Identität, Deployment-Typ, Architektur,
 Lizenz, Pricing, Thinking-Probe-Ergebnisse, Tool-Use-Support.
 
-Felder (39 Pflicht, 6 Optional): siehe `config/card_template_model.yaml`.
+Felder (38 Pflicht, 18 Optional inkl. `profile_verified`): siehe `config/card_template_model.yaml`.
 
 ---
 
@@ -666,9 +666,163 @@ automatisch gelöscht — bewusste Entscheidung.
 
 ---
 
+## Vendor-Kanonisierung in Model Cards (ab v4.9.0)
+
+Das Feld `vendor` in Model Cards bezeichnet den **kanonischen Hersteller-Namen**
+(nicht den API-Anbieter, nicht den langen Firmennamen). Eine kanonische Liste
+ist SSoT in `config/classification_taxonomy.json → manufacturers → values`.
+
+### Aktuell gültige Hersteller-Namen
+
+| `vendor`-Wert | Bekannte Aliases (werden normalisiert) |
+|---|---|
+| `Alibaba` | "Alibaba Cloud", "Qwen / Alibaba Cloud", "HauhauCS / Qwen" |
+| `Anthropic` | — |
+| `DeepSeek` | — |
+| `Google` | "Google DeepMind", "Google / UndiX (Community)" |
+| `Meta` | "Meta AI", "Meta Llama" |
+| `MiniMax` | — |
+| `Mistral AI` | "Mistral" |
+| `Moonshot AI` | "Moonshotai", "Kimi" |
+| `NousResearch` | "Nous Research" |
+| `NVIDIA` | "Nvidia" |
+| `OpenAI` | — |
+| `xAI` | "Grok", "xAI (Grok)" |
+| `Zhipu AI` | "Z.ai", "Z.ai (Zhipu AI)" |
+
+### Normalisierung im Web-Export
+
+`scripts/web_export.py` normalisiert das `vendor`-Feld zur Laufzeit via
+`_normalize_vendor()` — übersetzt bekannte Alias-Strings auf den kanonischen
+Wert. Unbekannte Werte werden mit `WARNING` geloggt. Die Alias-Map wird einmalig
+aus der Taxonomy geladen (`_build_vendor_alias_map()`).
+
+**Ziel:** Auch wenn eine Card noch einen Alias-String enthält (z.B. nach
+einem Batch-Migration-Fehler), erscheint im Frontend immer der kanonische Name.
+
+### Vendor-Prüfung im Validator (`scripts/verify_model_cards.py`)
+
+`verify_model_cards.py` prüft seit v4.9.0, ob `vendor` in der kanonischen Liste
+steht. Abweichungen → `🏭`-Warnung. Kanonische Liste wird aus der Taxonomy
+gelesen (graceful: leeres Set wenn Taxonomy nicht geladen werden kann).
+
+### Workflow: Neuen Hersteller aufnehmen
+
+1. Eintrag in `config/classification_taxonomy.json → manufacturers → values` ergänzen:
+   - `label` — kanonischer Name (= `vendor`-Wert in Cards)
+   - `description` — kurze Beschreibung
+   - `aliases` — alle bekannten Schreibvarianten (als Liste)
+   - `jurisdiction` — Rechtsraum (z.B. "US", "EU", "CN")
+2. Betroffene Model Cards aktualisieren (Batch per `jq` oder manuell)
+3. `make validate-cards` — prüfen dass kein `🏭`-Fehler mehr auftritt
+
+---
+
+## Datenpflege-Verifikation: profile_verified (ab v4.9.0)
+
+Sowohl Model Cards als auch Provider Cards haben seit v4.9.0 zwei optionale
+Felder für redaktionelle Qualitätssicherung:
+
+| Feld | Typ | Default | Bedeutung |
+|---|---|---|---|
+| `profile_verified` | `bool` | `false` | Inhaltliche Felder wurden manuell recherchiert und verifiziert |
+| `profile_verified_at` | `str` | `null` | Datum der letzten Verifikation (ISO 8601: YYYY-MM-DD) |
+
+Das Flag ist **kein Hard-Gate** (der Benchmark läuft unabhängig davon).
+Es dient als Audit-Signal für redaktionelle Vollständigkeit.
+
+### Was fällt unter profile_verified?
+
+**Model Cards — verifizierbare Felder:**
+`display_name`, `developer`, `vendor`, `origin_country`, `developer_jurisdiction`,
+`model_family`, `model_version`, `parameter_architecture`, `params_total_b`,
+`params_active_b`, `context_window_k`, `knowledge_cutoff`, `input_modalities`,
+`output_modalities`, `supports_tool_use`, `architecture_tags`, `primary_focus`,
+`deployment_type`, `local_deployment_possible`, `license`, `license_url`,
+`commercial_use_allowed`, `weights_license_tier`, `input_price_per_1m`,
+`output_price_per_1m`, `weights_provenance_risk`, `weights_provenance_risk_rationale`,
+`summary`, `strengths`, `known_limitations`, `judge_context_hint`, `use_case_primary`
+
+**Model Cards — NICHT verifizierbar (automatisch gesetzt):**
+`thinking_probe_*`, `cot_marker_family`, `cot_tags_detected`, `tooluse_*`,
+`generated_at`, `size_class`, `model_id`, `card_status`, `unknown`,
+Sampling-Parameter (`temperature`, `top_p`, etc.), `heritage_ids`, `system_prompt_override`
+
+**Provider Cards — verifizierbare Felder:**
+`company`, `headquarters`, `founding_year`, `api_base_url`, `api_documentation_url`,
+`deployment.*`, `privacy_note`, `last_verified_at`, `verification_source`
+
+**Provider Cards — NICHT verifizierbar:**
+`provider_id`, `display_name`, `notable_models`, `stats`, `pricing_model`,
+`unknown`, `generated_at`
+
+### Workflow
+
+```bash
+# Welche Model Cards sind noch nicht verifiziert?
+jq -r 'select(.profile_verified == false) | .model_id' \
+   benchmark_scores/model_cards/*.json
+
+# Welche Provider Cards sind noch nicht verifiziert?
+jq -r 'select(.profile_verified == false) | .provider_id' \
+   benchmark_scores/provider_cards/*.json
+
+# Alle Model Cards nach Verifikation mit jq auf false setzen (Migration)
+for f in benchmark_scores/model_cards/*.json; do
+  [[ "$f" == *"_index.json" ]] && continue
+  jq 'if has("profile_verified") then . else . + {"profile_verified": false, "profile_verified_at": null} end' \
+     "$f" > /tmp/mc.json && mv /tmp/mc.json "$f"
+done
+```
+
+### verify_model_cards.py
+
+`scripts/verify_model_cards.py` gibt seit v4.9.0 `🔍`-Warnungen aus:
+- `profile_verified` fehlt → Hinweis auf fehlende Migration
+- `profile_verified == false` → Hinweis auf noch nicht verifizierten Inhalt
+
+---
+
+## Editor-Prompts: Redaktionelle LLM-Aufgaben (ab v4.9.0)
+
+`config/editor_prompts.yaml` enthält kuratierte Prompts für Datenpflege-Aufgaben,
+die ein Operator an ein leistungsfähiges LLM mit Web-Recherche delegiert.
+Diese Prompts sind **kein Teil der Benchmark-Logik** — sie dienen nur der
+redaktionellen Qualitätssicherung.
+
+### Verfügbare Prompts
+
+| Prompt-Schlüssel | Ziel | Filter |
+|---|---|---|
+| `provider_card_verification` | Statische Hersteller-Infos verifizieren (Sitz, Compliance, DSGVO) | Provider Cards mit `profile_verified: false` |
+| `model_card_verification` | Modell-Metadaten recherchieren/ergänzen (Params, Pricing, Summary) | Model Cards mit `profile_verified: false` |
+
+### Empfohlene Modelle
+
+Claude Opus 4+, GPT-5+, Gemini 2.5 Pro (mit Web-Recherche-Fähigkeit)
+
+### Typischer Workflow
+
+```
+1. Prompt aus editor_prompts.yaml kopieren (Schlüssel → prompt: | Block)
+2. An LLM mit Datei-Schreibzugriff + Web-Recherche schicken
+3. LLM liest Cards, recherchiert, aktualisiert Felder, setzt profile_verified: true
+4. Operator prüft git diff, commitet
+```
+
+**Einschränkungen des Prompts (model_card_verification):**
+- Probe-Felder (`thinking_probe_*`, `cot_*`) → **gesperrt** (automatisch)
+- ToolUse-Benchmark-Felder (`tooluse_*`) → **gesperrt** (automatisch)
+- Sampling-Parameter → **gesperrt** (Operator-Entscheidung)
+- `supports_tool_use` → **recherchierbar** (öffentliche Tatsache, aber Tooluse-Benchmark kann überschreiben)
+
+---
+
 ## Verwandte Dokumentation
 
 - `docs/ARCHITECTURE.md` — SSoT-Architektur des Projekts
 - `docs/MODEL_CLASSIFICATION.md` — Modell-Klassifikationslogik
 - `docs/MAINTENANCE_LOG.md` — Changelog (Phase 24/25 Einträge)
 - `docs/USER_GUIDE.md` — End-Nutzer-Dokumentation
+- `config/editor_prompts.yaml` — Kuratierte LLM-Datenpflege-Prompts
+- `config/classification_taxonomy.json → manufacturers` — Kanonische Hersteller-Liste (SSoT)

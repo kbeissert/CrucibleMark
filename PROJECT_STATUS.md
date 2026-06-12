@@ -1,30 +1,27 @@
 # PROJECT_STATUS.md
 
 **Last Updated:** 2026-06-12
-**Current Version:** 4.8.6 — Robustness-Fixes: Judge-Coverage, Draft-Card-Warning, ToolUse P1/P2 SSoT
+**Current Version:** 4.9.0 — Card-Datenpflege-System: Vendor-Kanonisierung + profile_verified + Editor-Prompt
 **Status:** ✅ Production-Ready
 
 > **Hinweis:** Die Executive Summary weiter unten historisch auf v4.6.1.
-> Die Sub-Versionen v4.6.2–v4.8.5 sind im CHANGELOG.md vollständig dokumentiert.
+> Die Sub-Versionen v4.6.2–v4.9.0 sind im CHANGELOG.md vollständig dokumentiert.
 > Dieser Header wird bei jedem Phase-Commit nachgezogen,
 > die Executive Summary nur bei Major-Milestones.
 >
-> **Aktueller Stand (v4.8.6):**
-> - **52/52 Tests grün** (Stand v4.8.6, Teilsuite)
-> - Judge-Skip-Zeilen in Coverage-Formel gefiltert (`score_calculator.py::_aggregate_basic_stats()`)
-> - Draft-Card-Warning nach Leaderboard-Generierung (`scripts/leaderboard/__init__.py`)
-> - ToolUse P1/P2 als Card-SSoT: `finalize_model()` persistiert, `_aggregate_asset_rows()` bevorzugt Card-Werte
+> **Aktueller Stand (v4.9.0):**
+> - **Card-Datenpflege-System vollständig implementiert** (v4.9.0)
+> - Vendor-Kanonisierung: 13 kanonische Hersteller in `classification_taxonomy.json`, `_normalize_vendor()` in `web_export.py`, `🏭`-Warnungen in `verify_model_cards.py`
+> - `profile_verified` / `profile_verified_at`: 2 neue optionale Felder in `card_template_model.yaml`; 119 Model Card JSONs per `jq` migriert; `🔍`-Warnungen in `verify_model_cards.py`
+> - `config/editor_prompts.yaml`: Neuer Prompt `model_card_verification` für redaktionelle LLM-gestützte Card-Verifikation
+> - `docs/CARD_MANAGEMENT.md`: 3 neue Sektionen (Vendor-Kanonisierung, profile_verified, Editor-Prompts)
+> - v4.8.6: Robustness-Fixes — Judge-Skip-Coverage, Draft-Card-Warning, ToolUse P1/P2 als Card-SSoT
 > - v4.8.5: Pricing-Update: 11 Modellkarten auf Stand Juni 2026. Neues `scripts/update_model_pricing.py`.
 > - v4.8.4: Backup-System-Audit abgeschlossen (cleanup_reviews SSoT, Test-Lücke, BACKUP_STRATEGY.md)
 > - v4.8.3: ToolUse P1/P2 NaN-Bug behoben — Flat-Column-Schema, CRUCIBLE_DELEGATE_PARENT, MCP idle_timeout
-> - v4.8.2: gpt-5.4-nano Card-`model_id` auf Punkt-Form korrigiert (404-Fix)
-> - v4.8.1: resolve_canonical_model_id() Fallback-Korrektur (API 404 für Punkt-IDs)
 > - v4.8.0: Per-Modell `server_ready_timeout_sec` in llamacpp_base (Split-GGUF-Fix)
-> - v4.7.9: Gemma 4 12B Thinking-Hang-Fix (`enable_thinking: false`)
 > - v4.7.4: Heartbeat konfigurierbar — `benchmark_config.yaml → heartbeat:`
 > - v4.7.3: Thinking-SSoT + Runner-Consumer-Anbindung
-> - v4.7.2: Thinking-Probe v2 (Multi-Prompt, 13 Tags, Familien-Inventar)
-> - v4.7.1: Web-Export-Blacklist
 > - v4.7.0: 4-Phasen-Refactoring der Kern-Skripte (Phase 30)
 
 
@@ -801,6 +798,6 @@ Visuelle Aufgaben (UML lesen, UI-Designs beurteilen) benötigen neue Asset-Forma
 
 ---
 
-**Document Version:** 4.8.6\
+**Document Version:** 4.9.0\
 **Last Updated:** 2026-06-12\
-**Next Review:** v4.9.0 / Nächster Feature-Meilenstein
+**Next Review:** v5.0.0 / Nächster Feature-Meilenstein

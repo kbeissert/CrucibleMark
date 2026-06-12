@@ -9,7 +9,7 @@
   "weights_provenance_risk": "high",
   "weights_provenance_risk_rationale": "Alibaba Cloud ist ein chinesisches Unternehmen und unterliegt dem chinesischen National Security Law (NSL), das staatlichen Zugriff auf Daten ermöglichen kann. Qwen 3.6 Plus ist die proprietäre API-Variante (im Gegensatz zu Qwen 3.6 Open-Weights-Modellen) – keine lokalen Gewichte verfügbar.",
   "model_family": "Qwen 3.6",
-  "vendor": "Alibaba Cloud",
+  "vendor": "Alibaba",
   "primary_focus": "agentic",
   "use_case_primary": "agentic",
   "parameter_architecture": "moe",
@@ -66,5 +66,7 @@
   ],
   "output_modalities": [
     "text"
-  ]
+  ],
+  "profile_verified": false,
+  "profile_verified_at": null
 }

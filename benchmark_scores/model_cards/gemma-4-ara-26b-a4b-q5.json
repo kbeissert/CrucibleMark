@@ -9,7 +9,7 @@
   "weights_provenance_risk": "medium",
   "weights_provenance_risk_rationale": "Open-Weights-Basismodell von Google DeepMind (USA), in dieser Variante (ARA/APEX Q5_K_M, 2-Pass) als Community-Quant verfügbar. Provenance-Risiko gegenüber dem Original-Release leicht erhöht, da Verarbeitungskette (Custom-Tuning + 2-Pass-Quantisierung) nicht offiziell von Google dokumentiert ist und die Nachvollziehbarkeit der Modifikationen begrenzt ist.",
   "model_family": "Gemma 4",
-  "vendor": "Google DeepMind / Community (ARA-APEX Quant)",
+  "vendor": "Google",
   "primary_focus": "general",
   "use_case_primary": "vision-language",
   "parameter_architecture": "moe",
@@ -66,5 +66,7 @@
   ],
   "output_modalities": [
     "text"
-  ]
+  ],
+  "profile_verified": false,
+  "profile_verified_at": null
 }

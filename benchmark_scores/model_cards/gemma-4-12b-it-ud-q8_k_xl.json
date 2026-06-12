@@ -9,7 +9,7 @@
   "weights_provenance_risk": "medium",
   "weights_provenance_risk_rationale": "Google DeepMind ist ein US-amerikanisches Unternehmen und unterliegt dem CLOUD Act, der primär bei API-/Cloud-Nutzung relevant ist, nicht bei lokal betriebenen Gewichten. Gemma-Lizenz (Google Gemma Terms of Use) ist restriktiv und verbietet bestimmte kommerzielle Anwendungen. Q8_K_XL-Quantisierung ist nahe FP16-Qualität bei reduziertem Speicherbedarf.",
   "model_family": "Gemma",
-  "vendor": "Google / UndiX (Community)",
+  "vendor": "Google",
   "primary_focus": "general",
   "use_case_primary": "vision-language",
   "parameter_architecture": "dense",
@@ -67,5 +67,7 @@
   "frequency_penalty": null,
   "presence_penalty": null,
   "seed": null,
-  "stop_sequences": null
+  "stop_sequences": null,
+  "profile_verified": false,
+  "profile_verified_at": null
 }

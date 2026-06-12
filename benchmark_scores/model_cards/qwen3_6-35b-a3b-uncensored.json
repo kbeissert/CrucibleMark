@@ -9,7 +9,7 @@
   "weights_provenance_risk": "high",
   "weights_provenance_risk_rationale": "Community-Fine-Tune eines chinesischen Open-Weights-Modells; Weights sind öffentlich auf Hugging Face verfügbar. Chinesische Herkunft und das nationale Sicherheitsgesetz (NSL) sind bei der Einschätzung des Datenrisikos zu berücksichtigen. Zusätzlich: Uncensored-Variante mit entferntem Safety-Filter.",
   "model_family": "Qwen 3.6 (Uncensored Community)",
-  "vendor": "HauhauCS / Qwen",
+  "vendor": "Alibaba",
   "primary_focus": "general",
   "use_case_primary": "vision-language",
   "parameter_architecture": "moe",
@@ -69,5 +69,7 @@
   ],
   "output_modalities": [
     "text"
-  ]
+  ],
+  "profile_verified": false,
+  "profile_verified_at": null
 }

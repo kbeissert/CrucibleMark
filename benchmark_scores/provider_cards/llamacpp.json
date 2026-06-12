@@ -47,5 +47,7 @@
   "unknown": false,
   "generated_at": "2026-06-04T18:40:00.000000+00:00",
   "last_verified_at": "2026-06-04",
-  "verification_source": "https://github.com/ggerganov/llama.cpp"
+  "verification_source": "https://github.com/ggerganov/llama.cpp",
+  "profile_verified": false,
+  "profile_verified_at": null
 }

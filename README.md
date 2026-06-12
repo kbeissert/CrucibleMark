@@ -1,6 +1,6 @@
 # CrucibleMark
 
-[![Version](https://img.shields.io/badge/version-4.8.6-blue)](.)
+[![Version](https://img.shields.io/badge/version-4.9.0-blue)](.)
 
 [![Python](https://img.shields.io/badge/python-3.10%2B-blue)](.)
 [![License](https://img.shields.io/badge/license-MIT-green)](.)
@@ -163,11 +163,9 @@ Tiefergehende Einblicke in die Methodik findest du im `docs/` Verzeichnis:
 
 Die vollständige Versionshistorie steht in [CHANGELOG.md](CHANGELOG.md). Kurzfassung der letzten drei Releases:
 
+- **v4.9.0 (2026-06-12) — Card-Datenpflege-System (Vendor-Kanonisierung + profile_verified + Editor-Prompt):** 13 kanonische Hersteller-Namen in `config/classification_taxonomy.json` als SSoT. Neue Felder `profile_verified` / `profile_verified_at` in `config/card_template_model.yaml` + Bulk-Migration aller 119 Model Card JSONs via `jq`. `verify_model_cards.py` erweitert: `🏭`-Warnung bei nicht-kanonischem `manufacturer`, `🔍`-Warnung bei `profile_verified: false`. `model_card_verification`-Editor-Prompt in `config/editor_prompts.yaml` als Checkliste für manuelle Pflege. Doku: `docs/CARD_MANAGEMENT.md §Vendor-Kanonisierung`.
+- **v4.8.6 (2026-06-12) — Robustness-Fixes (Judge-Coverage, Draft-Card-Warning, ToolUse P1/P2 SSoT):** Judge-Coverage-Lücken geschlossen, Draft-Card-Warnungen im Benchmark-Runner, ToolUse P1/P2-Klassifikation als SSoT konsolidiert.
 - **v4.7.4 (2026-06-10) — Heartbeat konfigurierbar (Terminal-Spam-Reduktion):** Neuer `heartbeat:`-Block in `benchmark_config.yaml` mit `enabled` und `interval_seconds` (Default **120 s**, vorher hardcodiert 60 s). `UnifiedBenchmarkRunner._get_heartbeat_config()` mit Defensiv-Fallback — ungültige Config crasht den Benchmark nicht. `enabled: false` für CI-Runs / kurze Tests. 17 neue Tests (`TestGetHeartbeatConfig` + `TestHeartbeatDisabledInRunAssetLoop`). 603/603 grün im Heartbeat-Scope. Doku: `docs/BENCHMARK_SCRIPT_OVERVIEW.md §6`.
-- **v4.7.3 (2026-06-10) — Thinking-SSoT-Auflösung + Runner-Consumer-Anbindung:** `resolve_effective_thinking()` in `utils/model_utils.py` ist die SSoT für das effektive Thinking-Flag (Override > Card-Probe > None). Optionaler `thinking_override` in der Provider-Card mit Pflicht-Begründung + optionalem `active_until`-Auto-Expiry. `base_runner.py:121` reicht `provider=provider` an `resolve_token_budget()` durch — ein aktiver Override schaltet den 5×-Reasoning-Multiplikator für Cost-Benchmarks ab. 41 neue Tests (24 Override-SSoT, 17 Runner-Consumer). **634/634 grün in 2.11s**. Methodik-Doku: `docs/THINKING_PROBE.md`.
-
-- **v4.7.2 (2026-06-09) — Thinking-Probe v2 (Multi-Prompt + Familien-Inventar):** Drei Probe-Prompts (`math`/`code`/`decision`) ersetzen den einzelnen Mathe-Prompt. 13 bekannte Think-Tags (`<think>`, `<|thinking|>`, `<reasoning>`, `<reflection>`, `<scratchpad>`, …). `discover_thinking_tags.py` für read-only Family-Inventar (9 Modelle, 27 Probes, 100 % Erkennungsrate, ~12 min). Inline-CoT-Heuristik (Signal C, >200 chars + ≥2 Ops) rehabilitiert — die einzige robuste Erkennung über alle Provider. **587/587 grün**.
-- **v4.7.1 (2026-06-09) — Web-Export-Blacklist:** `config/web_export_blacklist.yaml` mit `fnmatch`-Wildcards filtert Modelle aus `make web-export`. `_load_export_blacklist()` + `_is_blacklisted()` in `scripts/web_export.py` mit robusten Defaults (leere Datei / Parse-Error / fehlende Datei). Hook nach PC-Skip, vor `mkdir()` — verhindert leere `models/{slug}/`-Verzeichnisse. `meta.json` Block `blacklist` additiv. 17 neue Tests, 471/471 grün.
 
 ---
 
@@ -175,5 +173,5 @@ Die vollständige Versionshistorie steht in [CHANGELOG.md](CHANGELOG.md). Kurzfa
 
 - **Maintainer:** kbeissert
 - **Repository:** [github.com/kbeissert/cruciblemark](https://github.com/kbeissert/cruciblemark)
-- **Status:** ✅ Production-Ready (v4.8.5)
+- **Status:** ✅ Production-Ready (v4.9.0)
 

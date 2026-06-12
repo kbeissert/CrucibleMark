@@ -28,5 +28,7 @@
   "unknown": false,
   "generated_at": "2026-06-02T21:00:00.000000+00:00",
   "last_verified_at": "2026-06-02",
-  "verification_source": "https://open.bigmodel.cn/dev/howuse/agreement"
+  "verification_source": "https://open.bigmodel.cn/dev/howuse/agreement",
+  "profile_verified": false,
+  "profile_verified_at": null
 }
