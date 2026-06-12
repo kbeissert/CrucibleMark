@@ -70,16 +70,6 @@ Codestral ist Mistral AIs spezialisiertes Code-Modell aus Frankreich – trainie
 
 ---
 
-### DeepSeek R1 8B
-**Entwickler:** DeepSeek · **Herkunft:** China · **Fokus:** reasoning
-
-DeepSeek R1 8B ist ein kompaktes Open-Weights-Reasoning-Modell von DeepSeek aus China, das lokal betreibbar und über Cloud-Provider verfügbar ist. Es nutzt sichtbares Chain-of-Thought-Reasoning und eignet sich für strukturierte Denkaufgaben und STEM-Probleme auf ressourcenarmer Hardware.
-
-**Stärken:** Sichtbares Chain-of-Thought-Reasoning mit <thinking>-Blöcken ermöglicht nachvollziehbare Lösungswege · Starke Leistung bei Mathematik, Logik und STEM-Aufgaben relativ zur Modellgröße · Lokal betreibbar auf Consumer-Hardware dank 8B-Parametergröße
-**Einschränkungen:** Thinking-Prozess kann sehr ausführlich und langsam sein, was bei einfachen Aufgaben ineffizient ist · Zensur bei politisch sensiblen Themen mit China-Bezug (z.B. Tiananmen, Taiwan) ist im Modell verankert
-
----
-
 ### DeepSeek V3.1-671B
 **Entwickler:** DeepSeek · **Herkunft:** China · **Fokus:** general
 
@@ -380,16 +370,6 @@ GPT-5.4 Nano ist die leichteste und kosteneffizienteste Variante der GPT-5.4-Fam
 
 ---
 
-### GPT-5.4 Pro
-**Entwickler:** OpenAI · **Herkunft:** USA · **Fokus:** generalist
-
-GPT-5.4 Pro ist die hochpräzise Pro-Variante von GPT-5.4 für präzisionskritische professionelle Workloads, veröffentlicht am 5. März 2026. Es nutzt zusätzliche Compute-Ressourcen für genauere und konsistentere Antworten als das Standard-GPT-5.4-Modell — empfohlen für Aufgaben, bei denen Antwortqualität über Kosten steht. 1.05M-Token-Kontextfenster, 128K max Output, Text- und Bildeingaben. Ausschließlich über die OpenAI-API verfügbar.
-
-**Stärken:** Höhere Präzision als GPT-5.4 Standard durch zusätzliche Compute-Iterationen — weniger Halluzinationen · 1.05M-Token-Kontextfenster (größtes der GPT-5.4-Familie) mit 128K max Output · Native Computer-Use-Fähigkeit (75% OSWorld, schlägt menschliche Baseline von 72.4%) — erste GPT-Variante mit produktiv nutzbarem Computer Use · Starke SWE-Bench Pro Performance (57.7%) für reale GitHub-Style Issue-Fixes · Tool-Search-Feature reduziert Token-Verbrauch um 47% bei gleicher Accuracy
-**Einschränkungen:** Höchstes Pricing: $30 Input / $180 Output pro 1M Tokens (12× teurer als GPT-5.4 Standard) · Input >272K Tokens: 2× Input-Preis, 1.5× Output-Preis · Tendenz zu längeren Antworten als GPT-5.4 (Ø 3.311 vs 2.676 Zeichen) — höhere effektive Kosten pro Anfrage · HealthBench-Score etwas niedriger als GPT-5.2 (62.6% vs 63.3%) · Closed-Source, keine Gewichtsexporte verfügbar – ausschließlich über OpenAI-API
-
----
-
 ### GPT-5.4
 **Entwickler:** OpenAI · **Herkunft:** USA · **Fokus:** generalist
 
@@ -397,16 +377,6 @@ GPT-5.4 ist die Standardvariante der GPT-5.4-Familie von OpenAI für allgemeine 
 
 **Stärken:** Großzügiges 1.05M-Token-Kontextfenster (1050k) — eines der größten kommerziell verfügbaren Kontextfenster · Starke Multimodalität: Text- und Bildeingaben, Textausgabe · Solide Tool-Use- und Function-Calling-Fähigkeiten für strukturierte Ausgaben · Gutes Preis-Leistungs-Verhältnis: $2.50 Input / $15 Output pro 1M Tokens · Stabile Instruction-Following-Qualität auf Standardaufgaben
 **Einschränkungen:** Pro-Variante liefert bei präzisionskritischen Aufgaben konsistent bessere Ergebnisse (höhere Compute-Iterationen) · Input >272K Tokens: 2× Input-Preis, 1.5× Output-Preis · Closed-Source, keine Gewichtsexporte verfügbar – ausschließlich über OpenAI-API · CLOUD-Act-Risiko: Daten können US-Behörden zugänglich gemacht werden
-
----
-
-### GPT-5.5 Pro
-**Entwickler:** OpenAI · **Herkunft:** USA · **Fokus:** generalist
-
-GPT-5.5 Pro ist die hochpräzise Variante von GPT-5.5 für komplexe, hochriskante Workloads, veröffentlicht am 24. April 2026 (zeitgleich mit GPT-5.5). Es nutzt zusätzliche Compute-Ressourcen, um präzisere und konsistentere Antworten zu produzieren — explizit positioniert für long-horizon problem solving, agentic coding und mehrstufige Workflows mit hohem Fehlerrisiko. 1M+ Token Kontext (922K Input, 128K Output), Text- und Bildeingaben. Ausschließlich über die OpenAI-API verfügbar.
-
-**Stärken:** Höchste Präzision in der GPT-5-Familie durch zusätzliche Compute-Iterationen — weniger Halluzinationen und konsistentere Outputs · 1M+ Token Kontextfenster (922K Input, 128K Output) für long-horizon agentic coding · Optimiert für high-stakes Workloads, bei denen Antwortqualität über Kosten steht · Starke Tool-Use-Fähigkeiten und multimodale Eingaben (Text + Bild) · Bevorzugt für präzisionskritische Aufgaben in professionellen und wissenschaftlichen Domänen
-**Einschränkungen:** Höchstes Pricing im OpenAI-Portfolio: $30 Input / $180 Output pro 1M Tokens (6× teurer als GPT-5.5 Standard) · Input >272K Tokens: doppelter Input-Preis, 1.5× Output-Preis · Closed-Source, keine Gewichtsexporte verfügbar – ausschließlich über OpenAI-API · Längere Antworten und damit höhere effektive Kosten pro Anfrage im Vergleich zu GPT-5.5 · Datenschutzrisiko: US-Anbieter unterliegt CLOUD Act, EU-Daten können US-Behörden zugänglich sein
 
 ---
 
@@ -607,26 +577,6 @@ MiniMax M3 ist ein multimodales MoE-Modell (Text, Bild, Video Input; Text Output
 
 **Stärken:** Herausragendes Coding & Agentic Reasoning: Führende Benchmarks (SWE-Bench Pro: 59%, BrowseComp: 83.5) · Effiziente Multimodalität: Native Verarbeitung von Text, Bild und Video · Extreme Skalierbarkeit: 1M Token Kontext mit massiver Geschwindigkeitssteigerung (MSA-Architektur)
 **Einschränkungen:** Inhaltliche Restriktionen: Mögliche Zensur oder eingeschränkte Antworten bei politisch sensiblen Themen (chinesische Herkunft) · Verfügbarkeit: Gewichte (Weights) sind erst kurz nach dem API-Launch verfügbar
-
----
-
-### Ministral 3B 14B
-**Entwickler:** Mistral AI · **Herkunft:** France · **Fokus:** general
-
-Ministral 14B ist ein Modell von Mistral AI mit öffentlich verfügbaren Gewichten (Mistral Research License, kein kommerzieller Einsatz) aus Frankreich – konzipiert für effiziente lokale Ausführung bei gutem Instruction-Following. Es lässt sich lokal betreiben und ist über Cloud-Provider verfügbar.
-
-**Stärken:** Sehr geringer Speicher- und Rechenaufwand bei akzeptabler Antwortqualität · Gut geeignet für Edge- und On-Device-Deployment ohne Cloud-Abhängigkeit · Solides Instruction-Following für ein Modell dieser Größenklasse
-**Einschränkungen:** Deutlich schwächere Reasoning- und Wissenstiefe im Vergleich zu größeren Modellen · Begrenzte Kontextfenstergröße und reduzierte Mehrsprachigkeitsleistung gegenüber größeren Mistral-Varianten
-
----
-
-### Ministral 3B
-**Entwickler:** Mistral AI · **Herkunft:** France · **Fokus:** general
-
-Ministral 3B ist ein Modell von Mistral AI mit öffentlich verfügbaren Gewichten (Mistral Research License, kein kommerzieller Einsatz) aus Frankreich – optimiert für Edge- und lokale Anwendungen mit minimalem Ressourcenbedarf. Es lässt sich lokal betreiben und ist über Cloud-Provider verfügbar.
-
-**Stärken:** Sehr geringer Ressourcenbedarf – ideal für lokale und Edge-Deployments · Solides Instruction-Following trotz kompakter Modellgröße · Mehrsprachige Kompetenz, insbesondere für europäische Sprachen
-**Einschränkungen:** Begrenzte Reasoning-Tiefe und Kontextverarbeitung im Vergleich zu größeren Modellen · Schwächere Leistung bei komplexen mehrstufigen Aufgaben oder langen Dokumenten
 
 ---
 
