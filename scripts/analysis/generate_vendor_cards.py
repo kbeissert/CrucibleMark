@@ -6,18 +6,18 @@ Generiert pro bekanntem Provider eine strukturierte JSON-Karte mit:
 - Redaktionellen Metadaten (Firmenbeschreibung, Datenschutz) via LLM
 - Gemessenen Performance-Statistiken aus provider_leaderboard.csv (hartcodierte Fakten)
 
-Die Card folgt dem kanonischen Schema in :mod:`utils.provider_card_template`.
+Die Card folgt dem kanonischen Schema in :mod:`utils.vendor_card_template`.
 Modell-spezifische Felder (origin_country, developer_jurisdiction, summary,
 strengths, known_limitations) werden NICHT in die Provider Card geschrieben —
 diese leben ausschließlich in der Model Card (SSoT-Trennung).
 
-Ausgabe: benchmark_scores/provider_cards/{provider_id}.json
-         benchmark_scores/provider_cards/_index.json
+Ausgabe: benchmark_scores/vendor_cards/{provider_id}.json
+         benchmark_scores/vendor_cards/_index.json
 
 Verwendung:
-    python scripts/analysis/generate_provider_cards.py            # Alle fehlenden Karten
-    python scripts/analysis/generate_provider_cards.py --force    # Alle neu generieren
-    python scripts/analysis/generate_provider_cards.py --provider "Anthropic"
+    python scripts/analysis/generate_vendor_cards.py            # Alle fehlenden Karten
+    python scripts/analysis/generate_vendor_cards.py --force    # Alle neu generieren
+    python scripts/analysis/generate_vendor_cards.py --provider "Anthropic"
 """
 
 import argparse
@@ -37,10 +37,10 @@ if str(ROOT_DIR) not in sys.path:
     sys.path.insert(0, str(ROOT_DIR))
 
 from utils.llm_client import LLMClient
-from utils.provider_card_template import (
+from utils.vendor_card_template import (
     CARDS_DIR,
     _safe_id,
-    normalize_provider_card_data,
+    normalize_vendor_card_data,
     rebuild_provider_index,
 )
 
@@ -64,7 +64,7 @@ USER_PROMPT_TEMPLATE = """Erstelle eine Provider Card für: {provider_name}
 
 JSON-Schema (alle Felder Pflicht — Felder außerhalb des Schemas werden verworfen):
 {{
-  "provider_id": "{provider_id}",
+  "vendor_id": "{provider_id}",
   "display_name": "Offizieller Anzeigename (z.B. 'Anthropic', 'Mistral AI', 'Google DeepMind')",
   "company": "Vollständiger rechtlicher Unternehmensname (z.B. 'Anthropic PBC', 'Mistral AI SAS')",
   "headquarters": "Sitz des Unternehmens (Stadt, Land; z.B. 'San Francisco, CA, USA')",
@@ -107,7 +107,7 @@ Falls du den Provider nicht kennst, setze "unknown": true und befülle die ander
 def _load_stats_from_csv() -> dict[str, dict[str, Any]]:
     """Liest gemessene Performance-Statistiken aus provider_leaderboard.csv."""
     if not LEADERBOARD_CSV.exists():
-        logger.warning("provider_leaderboard.csv nicht gefunden – Stats werden leer sein. Bitte zuerst 'make provider-stats' ausführen.")
+        logger.warning("provider_leaderboard.csv nicht gefunden – Stats werden leer sein. Bitte zuerst 'make vendor-stats' ausführen.")
         return {}
 
     stats: dict[str, dict[str, Any]] = {}
@@ -159,7 +159,7 @@ def _generate_card(
     Returns:
         Normalisiertes Dict (Reihenfolge wie im Template). Redundante Felder
         (origin_country, developer_jurisdiction, summary, strengths,
-        known_limitations, developer) werden durch ``normalize_provider_card_data``
+        known_limitations, developer) werden durch ``normalize_vendor_card_data``
         verworfen.
     """
     prompt = USER_PROMPT_TEMPLATE.format(
@@ -169,10 +169,10 @@ def _generate_card(
 
     logger.info("Generiere Provider Card für '%s' via %s/%s ...", provider_name, llm_provider, llm_model)
 
-    # Minimales Fallback-Dict — wird durch normalize_provider_card_data mit
+    # Minimales Fallback-Dict — wird durch normalize_vendor_card_data mit
     # allen Template-Defaults aufgefüllt.
     fallback: dict[str, Any] = {
-        "provider_id": provider_id,
+        "vendor_id": provider_id,
         "display_name": provider_name,
         "unknown": True,
     }
@@ -187,7 +187,7 @@ def _generate_card(
         )
     except Exception as e:
         logger.error("LLM-Call fehlgeschlagen für '%s': %s", provider_name, e)
-        card = normalize_provider_card_data(fallback)
+        card = normalize_vendor_card_data(fallback)
         card["privacy_note"] = f"Card konnte nicht generiert werden (LLM-Fehler: {str(e)[:80]})."
         card["stats"] = stats
         return card
@@ -200,16 +200,16 @@ def _generate_card(
 
     # Stats aus CSV injizieren – diese Werte kommen immer aus echter Messung, nie vom LLM
     raw_card["stats"] = stats
-    raw_card["provider_id"] = provider_id
+    raw_card["vendor_id"] = provider_id
 
     # Normalisierung gegen Template: entfernt redundante Felder, ergänzt fehlende
-    return normalize_provider_card_data(raw_card)
+    return normalize_vendor_card_data(raw_card)
 
 
 def _write_card(card: dict[str, Any]) -> Path:
     """Schreibt eine normalisierte Provider-Card auf Platte."""
     CARDS_DIR.mkdir(parents=True, exist_ok=True)
-    path = CARDS_DIR / f"{_safe_id(card['provider_id'])}.json"
+    path = CARDS_DIR / f"{_safe_id(card['vendor_id'])}.json"
     path.write_text(
         json.dumps(card, ensure_ascii=False, indent=2) + "\n",
         encoding="utf-8",
@@ -294,7 +294,7 @@ def main() -> None:
     if args.update:
         from utils.card_sync import format_summary, sync_all  # noqa: PLC0415
         logger.info("Provider-Card-Sync (dry_run=%s, yes=%s) ...", args.dry_run, args.yes)
-        plans = sync_all("provider", dry_run=args.dry_run, yes=args.yes)
+        plans = sync_all("vendor", dry_run=args.dry_run, yes=args.yes)
         print(format_summary(plans))
         return
 
@@ -302,7 +302,7 @@ def main() -> None:
     all_stats = _load_stats_from_csv()
 
     if not all_stats:
-        logger.error("Keine Provider-Stats gefunden. Bitte zuerst 'make provider-stats' ausführen.")
+        logger.error("Keine Provider-Stats gefunden. Bitte zuerst 'make vendor-stats' ausführen.")
         sys.exit(1)
 
     # LLM-Provider aus benchmark_config.yaml (gleiche Sektion wie model-cards)

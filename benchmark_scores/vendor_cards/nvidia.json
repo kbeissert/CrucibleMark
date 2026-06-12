@@ -1,5 +1,5 @@
 {
-  "provider_id": "nvidia",
+  "vendor_id": "nvidia",
   "display_name": "NVIDIA",
   "company": "NVIDIA Corporation",
   "headquarters": "Santa Clara, California, USA",

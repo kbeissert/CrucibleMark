@@ -156,7 +156,7 @@ def test_load_model_card_display_name_to_namespaced_card(tmp_path: Path) -> None
 
 
 # ---------------------------------------------------------------------------
-# 5. Phase 17+18: meta.json + provider_cards.json Sanity
+# 5. Phase 17+18: meta.json + vendor_cards.json Sanity
 # ---------------------------------------------------------------------------
 
 def test_meta_json_includes_all_sources_and_counts(tmp_path: Path) -> None:
@@ -186,7 +186,7 @@ def test_meta_json_includes_all_sources_and_counts(tmp_path: Path) -> None:
     meta = json.loads((out_dir / "meta.json").read_text(encoding="utf-8"))
     # Pflichtfelder
     assert "model_cards" in meta["sources"]
-    assert "provider_cards" in meta["sources"]
+    assert "vendor_cards" in meta["sources"]
     assert "audit_logs" in meta["sources"]
     # Sanity-Counts
     assert meta["card_count"] == 0  # tmp_path/benchmark_scores/model_cards/ ist leer
@@ -194,34 +194,34 @@ def test_meta_json_includes_all_sources_and_counts(tmp_path: Path) -> None:
     assert "cruciblemark_version" in meta
 
 
-def test_collect_provider_cards_filters_index_files(tmp_path: Path) -> None:
-    """_collect_provider_cards() filtert _index.json und andere Spurious-Files."""
-    from scripts.web_export import _collect_provider_cards
+def test_collect_vendor_cards_filters_index_files(tmp_path: Path) -> None:
+    """_collect_vendor_cards() filtert _index.json und andere Spurious-Files."""
+    from scripts.web_export import _collect_vendor_cards
 
-    cards_dir = tmp_path / "benchmark_scores" / "provider_cards"
+    cards_dir = tmp_path / "benchmark_scores" / "vendor_cards"
     cards_dir.mkdir(parents=True)
     # Echte Card
     (cards_dir / "anthropic.json").write_text(json.dumps({
-        "provider_id": "anthropic", "display_name": "Anthropic",
+        "vendor_id": "anthropic", "display_name": "Anthropic",
     }))
     # Index-File (kein provider_id)
     (cards_dir / "_index.json").write_text(json.dumps({"_meta": "index"}))
     # Kaputte Datei
     (cards_dir / "broken.json").write_text("not json{")
 
-    cards = _collect_provider_cards(tmp_path)
+    cards = _collect_vendor_cards(tmp_path)
     assert len(cards) == 1
-    assert cards[0]["provider_id"] == "anthropic"
+    assert cards[0]["vendor_id"] == "anthropic"
 
 
-def test_write_provider_cards_json(tmp_path: Path) -> None:
-    """_write_top_level_outputs schreibt provider_cards.json wenn Cards existieren."""
+def test_write_vendor_cards_json(tmp_path: Path) -> None:
+    """_write_top_level_outputs schreibt vendor_cards.json wenn Cards existieren."""
     from scripts.web_export import _write_top_level_outputs
 
     root = tmp_path
-    (root / "benchmark_scores" / "provider_cards").mkdir(parents=True)
-    (root / "benchmark_scores" / "provider_cards" / "anthropic.json").write_text(
-        json.dumps({"provider_id": "anthropic", "display_name": "Anthropic"})
+    (root / "benchmark_scores" / "vendor_cards").mkdir(parents=True)
+    (root / "benchmark_scores" / "vendor_cards" / "anthropic.json").write_text(
+        json.dumps({"vendor_id": "anthropic", "display_name": "Anthropic"})
     )
 
     out_dir = root / "raw"
@@ -238,7 +238,7 @@ def test_write_provider_cards_json(tmp_path: Path) -> None:
         models_with_reviews=0,
     )
 
-    pc_json = json.loads((out_dir / "provider_cards.json").read_text(encoding="utf-8"))
-    assert pc_json["provider_card_count"] if "provider_card_count" in pc_json else True
+    pc_json = json.loads((out_dir / "vendor_cards.json").read_text(encoding="utf-8"))
+    assert pc_json["vendor_card_count"] if "vendor_card_count" in pc_json else True
     assert len(pc_json["providers"]) == 1
-    assert pc_json["providers"][0]["provider_id"] == "anthropic"
+    assert pc_json["providers"][0]["vendor_id"] == "anthropic"

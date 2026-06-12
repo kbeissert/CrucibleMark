@@ -114,7 +114,9 @@
   "input_modalities": {
     "description": "Eingabe-Modalitäten, die das Modell nativ verarbeitet. 'text' ist immer implizit enthalten.",
     "field_name": "input_modalities",
-    "fallback": ["text"],
+    "fallback": [
+      "text"
+    ],
     "values": {
       "text": {
         "label": "Text",
@@ -141,7 +143,9 @@
   "output_modalities": {
     "description": "Ausgabe-Modalitäten, die das Modell erzeugen kann. 'text' ist immer implizit enthalten.",
     "field_name": "output_modalities",
-    "fallback": ["text"],
+    "fallback": [
+      "text"
+    ],
     "values": {
       "text": {
         "label": "Text",
@@ -167,80 +171,125 @@
     "values": {
       "Alibaba": {
         "label": "Alibaba",
+        "vendor_card_id": "alibaba",
         "description": "Alibaba Group — Entwickler der Qwen-Modellreihe (Qwen Team). Marken: Qwen, DashScope, Alibaba Cloud AI.",
-        "aliases": ["Alibaba Cloud", "Qwen / Alibaba Cloud", "Alibaba Group", "Alibaba Cloud (Qwen Team)", "Alibaba Group (Qwen Team)", "HauhauCS / Qwen"],
+        "aliases": [
+          "Alibaba Cloud",
+          "Qwen / Alibaba Cloud",
+          "Alibaba Group",
+          "Alibaba Cloud (Qwen Team)",
+          "Alibaba Group (Qwen Team)",
+          "HauhauCS / Qwen"
+        ],
         "jurisdiction": "CN"
       },
       "Anthropic": {
         "label": "Anthropic",
+        "vendor_card_id": "anthropic",
         "description": "Anthropic PBC — Entwickler der Claude-Modellreihe.",
         "aliases": [],
         "jurisdiction": "US"
       },
       "DeepSeek": {
         "label": "DeepSeek",
+        "vendor_card_id": "deepseek",
         "description": "DeepSeek AI (Hangzhou DeepSeek Artificial Intelligence Co.) — Entwickler der DeepSeek-Modellreihe.",
         "aliases": [],
         "jurisdiction": "CN"
       },
       "Google": {
         "label": "Google",
+        "vendor_card_id": "google_deepmind",
         "description": "Google LLC / Google DeepMind — Entwickler der Gemini- und Gemma-Modellreihen.",
-        "aliases": ["Google DeepMind", "Google / UndiX (Community)", "Google DeepMind / Community (ARA-APEX Quant)", "Google DeepMind (Base) / UndiX (Community-Distribution)"],
+        "aliases": [
+          "Google DeepMind",
+          "Google / UndiX (Community)",
+          "Google DeepMind / Community (ARA-APEX Quant)",
+          "Google DeepMind (Base) / UndiX (Community-Distribution)"
+        ],
         "jurisdiction": "US"
       },
       "Meta": {
         "label": "Meta",
+        "vendor_card_id": "meta",
         "description": "Meta AI (Meta Platforms, Inc.) — Entwickler der Llama-Modellreihe.",
-        "aliases": ["Meta AI", "Meta Platforms"],
+        "aliases": [
+          "Meta AI",
+          "Meta Platforms"
+        ],
         "jurisdiction": "US"
       },
       "MiniMax": {
         "label": "MiniMax",
+        "vendor_card_id": "minimax",
         "description": "MiniMax (Shanghai Minmax Technology Co.) — Entwickler der MiniMax-Modellreihe.",
         "aliases": [],
         "jurisdiction": "CN"
       },
       "Mistral AI": {
         "label": "Mistral AI",
+        "vendor_card_id": "mistral_ai",
         "description": "Mistral AI SAS — Entwickler der Mistral- und Magistral-Modellreihen.",
-        "aliases": ["Mistral"],
+        "aliases": [
+          "Mistral"
+        ],
         "jurisdiction": "EU"
       },
       "Moonshot AI": {
         "label": "Moonshot AI",
+        "vendor_card_id": "moonshot_ai",
         "description": "Moonshot AI (Beijing Moonshot AI Technology Co.) — Entwickler der Kimi-Modellreihe.",
-        "aliases": ["Moonshot", "Kimi"],
+        "aliases": [
+          "Moonshot",
+          "Kimi"
+        ],
         "jurisdiction": "CN"
       },
       "NousResearch": {
         "label": "NousResearch",
+        "vendor_card_id": "nousresearch",
         "description": "Nous Research — Entwickler der Hermes-Modellreihe (Community-Fine-Tunes und eigenständige Modelle).",
-        "aliases": ["Nous Research", "Nous-Research"],
+        "aliases": [
+          "Nous Research",
+          "Nous-Research"
+        ],
         "jurisdiction": "US"
       },
       "NVIDIA": {
         "label": "NVIDIA",
+        "vendor_card_id": "nvidia",
         "description": "NVIDIA Corporation — Entwickler der Nemotron-Modellreihe.",
-        "aliases": ["Nvidia"],
+        "aliases": [
+          "Nvidia"
+        ],
         "jurisdiction": "US"
       },
       "OpenAI": {
         "label": "OpenAI",
+        "vendor_card_id": "openai",
         "description": "OpenAI — Entwickler der GPT- und o-Modellreihen.",
         "aliases": [],
         "jurisdiction": "US"
       },
       "xAI": {
         "label": "xAI",
+        "vendor_card_id": "xai",
         "description": "xAI (X.AI Corp.) — Entwickler der Grok-Modellreihe.",
-        "aliases": ["x.AI", "X AI"],
+        "aliases": [
+          "x.AI",
+          "X AI"
+        ],
         "jurisdiction": "US"
       },
       "Zhipu AI": {
         "label": "Zhipu AI",
+        "vendor_card_id": "zhipu_ai",
         "description": "Zhipu AI (Beijing Zhipu AI Technology Co.) — Entwickler der GLM-Modellreihe. Internationale Marke: Z.ai.",
-        "aliases": ["Z.ai", "Z.ai (Zhipu AI)", "ZhipuAI"],
+        "aliases": [
+          "Z.ai",
+          "Z.ai (Zhipu AI)",
+          "ZhipuAI"
+        ],
         "jurisdiction": "CN"
       }
     }

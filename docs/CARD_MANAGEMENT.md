@@ -21,7 +21,7 @@ CrucibleMark verwaltet zwei Klassen von Karten, beide als JSON-Dateien:
 
 | Typ | Pfad | SSoT-Template |
 |---|---|---|
-| **Provider Card** | `benchmark_scores/provider_cards/{slug}.json` | `utils/provider_card_template._PROVIDER_CARD_TEMPLATE` |
+| **Vendor Card** | `benchmark_scores/vendor_cards/{slug}.json` | `utils/vendor_card_template._PROVIDER_CARD_TEMPLATE` |
 | **Model Card** | `benchmark_scores/model_cards/{slug}.json` | `utils/card_utils._CARD_TEMPLATE` |
 
 Zusätzlich gibt es zwei **deklarative YAML-Templates** (`config/card_template_*.yaml`),
@@ -33,13 +33,13 @@ Phase 24 dokumentiert und werden vom Sync-Workflow zusammengeführt.
 
 ## Card-Typen
 
-### Provider Card
+### Vendor Card
 
 Beschreibt einen **API-/Cloud-Anbieter**: Unternehmen, Sitz, Gründungsjahr,
 Pricing-Modell, Deployment-/Compliance-Subobjekt (CLOUD-Act, GDPR, etc.),
 Datenschutz-Hinweis, gemessene Performance-Statistiken.
 
-Felder (16 Pflicht, 3 Optional): siehe `config/card_template_provider.yaml`.
+Felder (16 Pflicht, 3 Optional): siehe `config/card_template_vendor.yaml`.
 
 ### Model Card
 
@@ -70,14 +70,14 @@ Felder (38 Pflicht, 18 Optional inkl. `profile_verified`): siehe `config/card_te
                 └───────────────────────────────────────────────┘
 
                 ┌───────────────────────────────────────────────┐
-                │  utils/{card_utils,provider_card_template}   │
+                │  utils/{card_utils,vendor_card_template}   │
                 │  .py  (Python-Dict SSoT für Generatoren)      │
                 └──────────────────┬────────────────────────────┘
                                    │  ensure_card / normalize
                                    ▼
                 ┌───────────────────────────────────────────────┐
                 │  scripts/analysis/{generate_model_cards,      │
-                │  generate_provider_cards}.py                  │
+                │  generate_vendor_cards}.py                  │
                 └──────────────────┬────────────────────────────┘
                                    │  (LLM-Calls + Stats)
                                    ▼
@@ -256,21 +256,21 @@ Felder:
 # Model Card
 python scripts/analysis/generate_model_cards.py --model-id claude-opus-4-7
 
-# Provider Card
-python scripts/analysis/generate_provider_cards.py --provider "Anthropic"
+# Vendor Card
+python scripts/analysis/generate_vendor_cards.py --provider "Anthropic"
 ```
 
 **Batch (alle fehlenden):**
 
 ```bash
 make model-cards
-make provider-cards
+make vendor-cards
 ```
 
 ### 2. Felder ergänzen (vorwärts)
 
 Wenn ein neues Feld ins Template aufgenommen wird, ergänzen
-`ensure_card()` und `ensure_provider_card()` fehlende Felder mit
+`ensure_card()` und `ensure_vendor_card()` fehlende Felder mit
 Default-Werten — automatisch beim nächsten Schreibvorgang.
 
 **Pro Karte erzwingen:**
@@ -331,9 +331,9 @@ make cards-sync YES=1
 make cards-sync CARD_TYPE=provider
 
 # Über den Provider-Generator
-make provider-cards-update
-make provider-cards-update YES=1
-make provider-cards-update DRY_RUN=1
+make vendor-cards-update
+make vendor-cards-update YES=1
+make vendor-cards-update DRY_RUN=1
 
 # Über den Model-Generator (DEPRECATED seit v4.7.5: --update entfernt)
 make cards-sync CARD_TYPE=model
@@ -366,9 +366,9 @@ python scripts/analysis/sync_cards.py --card-type model --json
 **Provider-Card-Hygiene** (verifiziert, stale, unknown deployment-Felder):
 
 ```bash
-make provider-cards-status                    # default 90 Tage
-make provider-cards-status STALE_DAYS=30      # aggressiver
-make provider-cards-status JSON=1             # für CI-Parsing
+make vendor-cards-status                    # default 90 Tage
+make vendor-cards-status STALE_DAYS=30      # aggressiver
+make vendor-cards-status JSON=1             # für CI-Parsing
 ```
 
 ---
@@ -395,9 +395,9 @@ make provider-cards-status JSON=1             # für CI-Parsing
 ### Workflow 3: Neue Karte für bestehenden Provider
 
 ```bash
-make provider-cards PROVIDER=Anthropic
-make provider-cards-update YES=1   # SSoT-Sync nach Generierung
-make provider-cards-status
+make vendor-cards PROVIDER=Anthropic
+make vendor-cards-update YES=1   # SSoT-Sync nach Generierung
+make vendor-cards-status
 ```
 
 ### Workflow 4: Bulk-Migration nach Template-Update
@@ -418,7 +418,7 @@ make validate-cards-template
 
 ---
 
-## Thinking-Override in Provider Cards (ab v4.7.1)
+## Thinking-Override in Vendor Cards (ab v4.7.1)
 
 **Opt-in Escape-Hatch** für die Thinking-SSoT-Auflösung. Die Probe aus
 der Model Card (`thinking_probe_detected`) ist normalerweise SSoT — der
@@ -433,7 +433,7 @@ Provider-seitige reasoning-Steuerung) einen abweichenden Wert zu setzen.
 3. nichts                       → (None, "none")
 ```
 
-### Schema (`config/card_template_provider.yaml → optional_fields`)
+### Schema (`config/card_template_vendor.yaml → optional_fields`)
 
 ```yaml
 thinking_override:
@@ -558,13 +558,13 @@ python scripts/analysis/sync_cards.py --yes
 python scripts/analysis/sync_cards.py --json
 ```
 
-### `scripts/analysis/generate_provider_cards.py`
+### `scripts/analysis/generate_vendor_cards.py`
 
 ```bash
-python scripts/analysis/generate_provider_cards.py            # alle fehlenden
-python scripts/analysis/generate_provider_cards.py --force    # alle neu
-python scripts/analysis/generate_provider_cards.py --provider "Anthropic"
-python scripts/analysis/generate_provider_cards.py --update [--yes] [--dry-run]
+python scripts/analysis/generate_vendor_cards.py            # alle fehlenden
+python scripts/analysis/generate_vendor_cards.py --force    # alle neu
+python scripts/analysis/generate_vendor_cards.py --provider "Anthropic"
+python scripts/analysis/generate_vendor_cards.py --update [--yes] [--dry-run]
 ```
 
 ### `scripts/analysis/generate_model_cards.py`
@@ -586,13 +586,13 @@ löschen) ist **nicht** Aufgabe dieses Skripts. Dafür
 nutzen. Die früheren Flags ``--update`` / ``--yes`` / ``--dry-run`` wurden
 in v4.7.5 entfernt (SRP-Trennung zwischen Create und Sync).
 
-### `scripts/analysis/provider_card_status.py`
+### `scripts/analysis/vendor_card_status.py`
 
 ```bash
-python scripts/analysis/provider_card_status.py --stale-days 90
-python scripts/analysis/provider_card_status.py --json
-python scripts/analysis/provider_card_status.py --fail-on-unknown
-python scripts/analysis/provider_card_status.py --fail-on-stale
+python scripts/analysis/vendor_card_status.py --stale-days 90
+python scripts/analysis/vendor_card_status.py --json
+python scripts/analysis/vendor_card_status.py --fail-on-unknown
+python scripts/analysis/vendor_card_status.py --fail-on-stale
 ```
 
 ---
@@ -603,15 +603,15 @@ python scripts/analysis/provider_card_status.py --fail-on-stale
 |---|---|---|
 | `make model-cards` | Model Card Template anlegen | `MODEL=name`, `PROVIDER=key`, `FORCE=1` |
 | `make model-card` | Alias für `model-cards` | (siehe oben) |
-| `make provider-cards` | Provider Card generieren (LLM) | `PROVIDER=name`, `FORCE=1` |
+| `make vendor-cards` | Vendor Card generieren (LLM) | `PROVIDER=name`, `FORCE=1` |
 | `make ensure-card` | Eine Card mit Template sync | `MODEL=name`, `DRY=1` |
 | `make ensure-cards` | Alle Cards mit Template sync | `ALL=1`, `DRY=1` |
 | `make validate-cards` | Konsistenz-Check (tier/summary) | — |
 | `make validate-cards-template` | Schema-Validierung gegen YAML | `CARD_TYPE=…`, `JSON=1`, `FAIL_ON_DRIFT=1` |
 | `make cards-sync` | SSoT-Sync (add + delete mit Confirm) | `CARD_TYPE=…`, `DRY_RUN=1`, `YES=1`, `JSON=1` |
-| `make provider-cards-update` | `--update` für Provider-Generator | `YES=1`, `DRY_RUN=1` |
+| `make vendor-cards-update` | `--update` für Provider-Generator | `YES=1`, `DRY_RUN=1` |
 | `make cards-sync` | Model-Card-Sync mit Template (SSoT) | `CARD_TYPE=model`, `YES=1`, `DRY_RUN=1` |
-| `make provider-cards-status` | Audit-Readiness-Report | `STALE_DAYS=N`, `JSON=1` |
+| `make vendor-cards-status` | Audit-Readiness-Report | `STALE_DAYS=N`, `JSON=1` |
 
 ---
 
@@ -643,10 +643,10 @@ unbefüllte Karten auffallen.
 1. **Feld ins Template aufnehmen** (YAML + Python-Dict)
 2. **Feld aus Karte entfernen** via `make cards-sync YES=1`
 
-### „Provider Card hat unbekannte deployment-Sub-Felder"
+### „Vendor Card hat unbekannte deployment-Sub-Felder"
 
-→ `make provider-cards-status` zeigt, welche Sub-Felder betroffen sind.
-Manuell befüllen (siehe `config/card_template_provider.yaml → deployment`).
+→ `make vendor-cards-status` zeigt, welche Sub-Felder betroffen sind.
+Manuell befüllen (siehe `config/card_template_vendor.yaml → deployment`).
 
 ### Sync-Bestätigung: pro Karte oder pro Feld?
 
@@ -720,7 +720,7 @@ gelesen (graceful: leeres Set wenn Taxonomy nicht geladen werden kann).
 
 ## Datenpflege-Verifikation: profile_verified (ab v4.9.0)
 
-Sowohl Model Cards als auch Provider Cards haben seit v4.9.0 zwei optionale
+Sowohl Model Cards als auch Vendor Cards haben seit v4.9.0 zwei optionale
 Felder für redaktionelle Qualitätssicherung:
 
 | Feld | Typ | Default | Bedeutung |
@@ -748,11 +748,11 @@ Es dient als Audit-Signal für redaktionelle Vollständigkeit.
 `generated_at`, `size_class`, `model_id`, `card_status`, `unknown`,
 Sampling-Parameter (`temperature`, `top_p`, etc.), `heritage_ids`, `system_prompt_override`
 
-**Provider Cards — verifizierbare Felder:**
+**Vendor Cards — verifizierbare Felder:**
 `company`, `headquarters`, `founding_year`, `api_base_url`, `api_documentation_url`,
 `deployment.*`, `privacy_note`, `last_verified_at`, `verification_source`
 
-**Provider Cards — NICHT verifizierbar:**
+**Vendor Cards — NICHT verifizierbar:**
 `provider_id`, `display_name`, `notable_models`, `stats`, `pricing_model`,
 `unknown`, `generated_at`
 
@@ -763,9 +763,9 @@ Sampling-Parameter (`temperature`, `top_p`, etc.), `heritage_ids`, `system_promp
 jq -r 'select(.profile_verified == false) | .model_id' \
    benchmark_scores/model_cards/*.json
 
-# Welche Provider Cards sind noch nicht verifiziert?
+# Welche Vendor Cards sind noch nicht verifiziert?
 jq -r 'select(.profile_verified == false) | .provider_id' \
-   benchmark_scores/provider_cards/*.json
+   benchmark_scores/vendor_cards/*.json
 
 # Alle Model Cards nach Verifikation mit jq auf false setzen (Migration)
 for f in benchmark_scores/model_cards/*.json; do
@@ -794,7 +794,7 @@ redaktionellen Qualitätssicherung.
 
 | Prompt-Schlüssel | Ziel | Filter |
 |---|---|---|
-| `provider_card_verification` | Statische Hersteller-Infos verifizieren (Sitz, Compliance, DSGVO) | Provider Cards mit `profile_verified: false` |
+| `vendor_card_verification` | Statische Hersteller-Infos verifizieren (Sitz, Compliance, DSGVO) | Vendor Cards mit `profile_verified: false` |
 | `model_card_verification` | Modell-Metadaten recherchieren/ergänzen (Params, Pricing, Summary) | Model Cards mit `profile_verified: false` |
 
 ### Empfohlene Modelle

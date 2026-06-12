@@ -1,6 +1,6 @@
 [
   {
-    "provider_id": "alibaba",
+    "vendor_id": "alibaba",
     "display_name": "Alibaba (Qwen / DashScope)",
     "company": "Alibaba Cloud Intelligence Group (Aliyun Computing Co., Ltd.)",
     "headquarters": "Hangzhou, Zhejiang, China",
@@ -33,7 +33,7 @@
     "profile_verified_at": null
   },
   {
-    "provider_id": "anthropic",
+    "vendor_id": "anthropic",
     "display_name": "Anthropic",
     "company": "Anthropic PBC",
     "headquarters": "San Francisco, CA, USA",
@@ -71,7 +71,7 @@
     "profile_verified_at": null
   },
   {
-    "provider_id": "cognitive_computations",
+    "vendor_id": "cognitive_computations",
     "display_name": "Cognitive Computations",
     "company": "Cognitive Computations (Einzelperson / Eric Hartford)",
     "headquarters": "USA (genaue Stadt unbekannt)",
@@ -103,7 +103,7 @@
     "profile_verified_at": null
   },
   {
-    "provider_id": "deepseek",
+    "vendor_id": "deepseek",
     "display_name": "DeepSeek",
     "company": "Hangzhou DeepSeek Artificial Intelligence Co., Ltd.",
     "headquarters": "Hangzhou, China",
@@ -137,7 +137,7 @@
     "profile_verified_at": null
   },
   {
-    "provider_id": "google_deepmind",
+    "vendor_id": "google_deepmind",
     "display_name": "Google DeepMind",
     "company": "Google LLC / DeepMind Technologies Limited",
     "headquarters": "London, UK (DeepMind) / Mountain View, CA, USA (Google)",
@@ -170,7 +170,7 @@
     "profile_verified_at": null
   },
   {
-    "provider_id": "llamacpp",
+    "vendor_id": "llamacpp",
     "display_name": "llama.cpp",
     "company": "ggerganov (Open Source)",
     "headquarters": "Open Source / Distributed",
@@ -182,7 +182,7 @@
     "inference_interfaces": [
       {
         "name": "Metal (Apple Silicon)",
-        "provider_id": "llamacpp",
+        "vendor_id": "llamacpp",
         "hardware_profile": "m4_macbook_pro_metal",
         "description": "llama.cpp mit Apple Metal Performance Shaders (MPS) GPU-Offload. Optimal für MacBook Pro mit M4 Chip. Modell-Ladung aus GGUF, CPU+GPU RAM geteilt.",
         "accelerator": "Metal (Apple Silicon GPU)",
@@ -191,7 +191,7 @@
       },
       {
         "name": "CUDA (NVIDIA)",
-        "provider_id": "llamacpp",
+        "vendor_id": "llamacpp",
         "hardware_profile": "dgx_spark_cuda",
         "description": "llama.cpp mit NVIDIA CUDA GPU-Offload auf DGX Spark. Hoher Token-Durchsatz durch viele CUDA-Cores, ideal für 35B+ Modelle. Modell-Ladung aus GGUF, dedizierter VRAM/RAM.",
         "accelerator": "CUDA (NVIDIA GPU)",
@@ -223,7 +223,7 @@
     "profile_verified_at": null
   },
   {
-    "provider_id": "meta",
+    "vendor_id": "meta",
     "display_name": "Meta AI",
     "company": "Meta Platforms, Inc.",
     "headquarters": "Menlo Park, CA, USA",
@@ -255,7 +255,7 @@
     "profile_verified_at": null
   },
   {
-    "provider_id": "minimax",
+    "vendor_id": "minimax",
     "display_name": "MiniMax",
     "company": "MiniMax (上海稀宇科技有限公司)",
     "headquarters": "Shanghai, China",
@@ -288,7 +288,7 @@
     "profile_verified_at": null
   },
   {
-    "provider_id": "mistral_ai",
+    "vendor_id": "mistral_ai",
     "display_name": "Mistral AI",
     "company": "Mistral AI SAS",
     "headquarters": "Paris, France",
@@ -328,7 +328,7 @@
     "profile_verified_at": null
   },
   {
-    "provider_id": "moonshot_ai",
+    "vendor_id": "moonshot_ai",
     "display_name": "Moonshot AI",
     "company": "Beijing Moonshot AI Technology Co., Ltd.",
     "headquarters": "Beijing, China",
@@ -361,7 +361,7 @@
     "profile_verified_at": null
   },
   {
-    "provider_id": "mradermacher",
+    "vendor_id": "mradermacher",
     "display_name": "mradermacher (GGUF/Abliterated)",
     "company": "mradermacher (Hugging Face Community Contributor) — Basismodelle: Mistral AI SAS",
     "headquarters": "Community/privat; Mistral AI: Paris, France",
@@ -392,7 +392,7 @@
     "profile_verified_at": null
   },
   {
-    "provider_id": "nousresearch",
+    "vendor_id": "nousresearch",
     "display_name": "Nous Research",
     "company": "Nous Research Inc.",
     "headquarters": "San Francisco, CA, USA",
@@ -426,7 +426,7 @@
     "profile_verified_at": null
   },
   {
-    "provider_id": "nvidia",
+    "vendor_id": "nvidia",
     "display_name": "NVIDIA",
     "company": "NVIDIA Corporation",
     "headquarters": "Santa Clara, California, USA",
@@ -456,7 +456,7 @@
     "profile_verified_at": null
   },
   {
-    "provider_id": "openai",
+    "vendor_id": "openai",
     "display_name": "OpenAI",
     "company": "OpenAI, L.L.C.",
     "headquarters": "San Francisco, CA, USA",
@@ -499,7 +499,7 @@
     "profile_verified_at": null
   },
   {
-    "provider_id": "unknown",
+    "vendor_id": "unknown",
     "display_name": "Unknown",
     "company": "Unknown",
     "headquarters": "Unknown",
@@ -527,7 +527,7 @@
     "profile_verified_at": null
   },
   {
-    "provider_id": "xai",
+    "vendor_id": "xai",
     "display_name": "xAI",
     "company": "xAI Corp.",
     "headquarters": "Palo Alto, CA, USA",
@@ -559,7 +559,7 @@
     "profile_verified_at": null
   },
   {
-    "provider_id": "zhipu_ai",
+    "vendor_id": "zhipu_ai",
     "display_name": "Zhipu AI",
     "company": "Beijing Zhipu Huazhang Technology Co., Ltd.",
     "headquarters": "Beijing, China",

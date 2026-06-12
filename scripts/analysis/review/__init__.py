@@ -16,7 +16,7 @@ from .metrics import (
 from .risk_calculator import (
     compute_sovereign_risk,
     detect_provider,
-    get_provider_card_context,
+    get_vendor_card_context,
 )
 from .token_efficiency import build_token_efficiency_context
 
@@ -30,5 +30,5 @@ __all__ = [
     "format_classification_context",
     "get_model_card_context",
     "get_model_metrics",
-    "get_provider_card_context",
+    "get_vendor_card_context",
 ]

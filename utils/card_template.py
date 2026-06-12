@@ -7,9 +7,9 @@ bereit.
 Vorher: Die Feld-Listen für Model und Provider Cards waren redundant
 definiert:
 - ``utils/card_utils.py::_CARD_TEMPLATE`` (Python-Dict, 38 Felder)
-- ``utils/provider_card_template.py::_PROVIDER_CARD_TEMPLATE`` (Python-Dict, 16 Felder)
+- ``utils/vendor_card_template.py::_PROVIDER_CARD_TEMPLATE`` (Python-Dict, 16 Felder)
 - ``scripts/verify_model_cards.py::REQUIRED_FIELDS`` (hardcoded Liste, 38 Felder)
-- ``utils/provider_card_template.py::PROVIDER_CARD_FIELD_NAMES``
+- ``utils/vendor_card_template.py::PROVIDER_CARD_FIELD_NAMES``
 
 Drift-Risiko: REQUIRED_FIELDS in verify_model_cards.py und CARD_TEMPLATE
 in card_utils.py müssen manuell synchron gehalten werden. Die YAML-Templates
@@ -46,7 +46,7 @@ CONFIG_DIR = ROOT_DIR / "config"
 # Mapping card_type → YAML-Pfad
 _TEMPLATE_PATHS: dict[str, Path] = {
     "model": CONFIG_DIR / "card_template_model.yaml",
-    "provider": CONFIG_DIR / "card_template_provider.yaml",
+    "vendor": CONFIG_DIR / "card_template_vendor.yaml",
 }
 
 
@@ -155,7 +155,7 @@ def load_card_template(card_type: str) -> CardTemplate:
     """Lädt und cached das Card-Template für den gegebenen Typ.
 
     Args:
-        card_type: "model" oder "provider"
+        card_type: "model" oder "vendor"
 
     Returns:
         CardTemplate mit allen Feldern und Validierungs-Konfiguration.
@@ -179,14 +179,14 @@ def clear_cache() -> None:
 # ---------------------------------------------------------------------------
 # Card-Verzeichnis-Lookup (SSoT für Cards-Dir je Typ)
 # ---------------------------------------------------------------------------
-# Bisher existierte rebuild_provider_index() in utils/provider_card_template.py,
+# Bisher existierte rebuild_provider_index() in utils/vendor_card_template.py,
 # aber kein symmetrisches Pendant für Model Cards. Diese SSoT-Funktion
 # konsolidiert den Index-Rebuild für beide Card-Typen, sodass Generator- und
 # Validate-Skripte dieselbe Pfad- und Schreiblogik nutzen.
 
 _CARDS_DIRS: dict[str, Path] = {
     "model": ROOT_DIR / "benchmark_scores" / "model_cards",
-    "provider": ROOT_DIR / "benchmark_scores" / "provider_cards",
+    "vendor": ROOT_DIR / "benchmark_scores" / "vendor_cards",
 }
 
 
@@ -194,7 +194,7 @@ def cards_dir(card_type: str) -> Path:
     """Gibt das Cards-Verzeichnis für den gegebenen Typ zurück.
 
     Args:
-        card_type: "model" oder "provider"
+        card_type: "model" oder "vendor"
 
     Returns:
         Pfad zum entsprechenden Cards-Verzeichnis.
@@ -214,7 +214,7 @@ def rebuild_card_index(card_type: str) -> int:
     """Baut _index.json aus allen vorhandenen Einzelkarten neu auf.
 
     Args:
-        card_type: "model" oder "provider"
+        card_type: "model" oder "vendor"
 
     Returns:
         Anzahl der aufgenommenen Cards.

@@ -1061,8 +1061,8 @@ def resolve_token_budget(
 
     # Option B: Provider-Override gewinnt, wenn aktiv.
     #
-    # WARNUNG: Diese Branch lädt über load_provider_card() die FIRMEN-Karte
-    # (z.B. benchmark_scores/provider_cards/anthropic.json), NICHT die
+    # WARNUNG: Diese Branch lädt über load_vendor_card() die FIRMEN-Karte
+    # (z.B. benchmark_scores/vendor_cards/anthropic.json), NICHT die
     # modell-spezifische Config aus provider_config.yaml. resolve_effective_thinking()
     # erwartet einen model_cfg-Block mit optionalem "thinking_override"-Key,
     # der in Firmen-Cards nicht vorhanden ist. Die Branch ist daher
@@ -1072,8 +1072,8 @@ def resolve_token_budget(
     # oder das Datenmodell korrigieren: model_cfg aus provider_config.yaml laden
     # statt der Firmen-Card. Bis dahin: graceful fallback auf Card-Probe-Pfad.
     if provider:
-        from utils.provider_card_template import load_provider_card
-        provider_card = load_provider_card(provider)
+        from utils.vendor_card_template import load_vendor_card
+        provider_card = load_vendor_card(provider)
         if provider_card:
             # Model-Card muss für Probe-SSoT geladen werden.
             model_card_dict: dict = {}

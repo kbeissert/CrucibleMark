@@ -35,7 +35,7 @@ sys.path.insert(0, str(ROOT_DIR))
 from utils.card_template import CardTemplate, load_card_template  # noqa: E402
 
 MODEL_CARDS_DIR = ROOT_DIR / "benchmark_scores" / "model_cards"
-PROVIDER_CARDS_DIR = ROOT_DIR / "benchmark_scores" / "provider_cards"
+PROVIDER_CARDS_DIR = ROOT_DIR / "benchmark_scores" / "vendor_cards"
 
 # Felder, die als "legitime extras" toleriert werden (oft von Generatoren
 # angehängt, nicht im Template erfasst — z.B. tooluse_tested_at wurde schon
@@ -170,8 +170,8 @@ def validate_card(
     # Card-ID aus dem Inhalt (model_id / provider_id), falls vorhanden
     if "model_id" in card:
         card_id = str(card["model_id"])
-    elif "provider_id" in card:
-        card_id = str(card["provider_id"])
+    elif "vendor_id" in card:
+        card_id = str(card["vendor_id"])
     report.card_id = card_id
 
     for issue in _check_required_fields(card, template, card_file.name, card_id):
@@ -276,7 +276,7 @@ def main() -> int:
     parser = argparse.ArgumentParser(description="Card Template Validator")
     parser.add_argument(
         "--card-type",
-        choices=["model", "provider", "all"],
+        choices=["model", "vendor", "all"],
         default="all",
         help="Welcher Card-Typ validiert werden soll (default: all)",
     )
@@ -292,7 +292,7 @@ def main() -> int:
     )
     args = parser.parse_args()
 
-    card_types = ["model", "provider"] if args.card_type == "all" else [args.card_type]
+    card_types = ["model", "vendor"] if args.card_type == "all" else [args.card_type]
     all_reports: list[tuple[str, list[CardReport]]] = []
     total_invalid = 0
     has_drift = False

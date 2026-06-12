@@ -135,7 +135,7 @@ def resolve_effective_thinking(
     # 3. nichts                       → (None, "none")
 ```
 
-### Override-Schema (in `config/card_template_provider.yaml`)
+### Override-Schema (in `config/card_template_vendor.yaml`)
 
 ```yaml
 providers:
@@ -185,7 +185,7 @@ _token_budget, _ = resolve_token_budget(
 **Auflösungs-Pfad in `resolve_token_budget()`:**
 
 1. `provider=None` (Backward-Compat) → `is_reasoning_model()` mit Trigger-Fallback
-2. `provider="..."` → `load_provider_card()` → `resolve_effective_thinking()` mit Override + Card-Probe
+2. `provider="..."` → `load_vendor_card()` → `resolve_effective_thinking()` mit Override + Card-Probe
 3. Override aktiv → Override-Wert gewinnt
 4. Card-Probe gesetzt → Probe-Wert gewinnt
 5. Keine Info → Trigger-Liste

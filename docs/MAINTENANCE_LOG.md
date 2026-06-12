@@ -866,48 +866,48 @@ Diese Modelle sind in der Karte mit `supports_tool_use: "untested"` markiert —
 
 ## v4.6.2 — Provider-Card SSoT-Bereinigung (2026-06-08)
 
-### Phase 20: `risk_calculator.get_provider_card_context()` nutzt SSoT
+### Phase 20: `risk_calculator.get_vendor_card_context()` nutzt SSoT
 
-**Problem:** Direkter FS-Zugriff + `json.loads()` für Provider Cards — umging
-die SSoT-API `load_provider_card()` in `utils/provider_card_template.py`.
+**Problem:** Direkter FS-Zugriff + `json.loads()` für Vendor Cards — umging
+die SSoT-API `load_vendor_card()` in `utils/vendor_card_template.py`.
 
 **Fix:** 
-- Import von `load_provider_card` statt `_safe_id`
-- Inline-FS-Pfad durch `load_provider_card(developer)` ersetzt
+- Import von `load_vendor_card` statt `_safe_id`
+- Inline-FS-Pfad durch `load_vendor_card(developer)` ersetzt
 - `unknown`-Filter bleibt im Konsumenten (SSoT-API filtert nicht)
 - `re`-Import entfernt (ungenutzt)
 
-### Phase 21: `generate_review._ensure_provider_card()` ohne Reflection
+### Phase 21: `generate_review._ensure_vendor_card()` ohne Reflection
 
-**Problem:** Lädt `generate_provider_cards` Modul dynamisch via `_load_card_module()` —
+**Problem:** Lädt `generate_vendor_cards` Modul dynamisch via `_load_card_module()` —
 fragile Reflection, umging SSoT-API.
 
 **Fix:**
 - Direkter Import: `_load_stats_from_csv`, `_generate_card`, `_write_card` aus
-  `scripts.analysis.generate_provider_cards`
-- SSoT-Index-API `rebuild_provider_index()` aus `utils.provider_card_template`
-- Read-Pfad: `load_provider_card()` (SSoT) statt direkter FS-Zugriff
+  `scripts.analysis.generate_vendor_cards`
+- SSoT-Index-API `rebuild_provider_index()` aus `utils.vendor_card_template`
+- Read-Pfad: `load_vendor_card()` (SSoT) statt direkter FS-Zugriff
 - `_load_card_module` bleibt für `_ensure_model_card` (Model-Card-Generator) bestehen
 
 ### Tests
 
-- 6 neue Regressionstests in `tests/test_provider_card_ssot_refactor.py`
+- 6 neue Regressionstests in `tests/test_vendor_card_ssot_refactor.py`
 - Insgesamt: 246/246 Tests grün, Pylint 10.00/10
 
 ---
 
 ## v4.6.3 — Card-Status-Tool + Provider-Detection-SSoT (2026-06-08)
 
-### Phase 22: Audit-Readiness-Report für Provider Cards
+### Phase 22: Audit-Readiness-Report für Vendor Cards
 
-**Motivation:** 18 Provider Cards im Projekt, aber keine Sichtbarkeit über
+**Motivation:** 18 Vendor Cards im Projekt, aber keine Sichtbarkeit über
 Frische (Stale) und Vollständigkeit (unknown-Felder). Vor Reviewer-Anfragen
 ("wie aktuell sind die Karten?") fehlte ein Werkzeug für die Hygieneprüfung.
 
-**Implementierung** in `utils/provider_card_template.py`:
-- `get_provider_card_status(stale_days)` — scannt `CARDS_DIR`, klassifiziert
+**Implementierung** in `utils/vendor_card_template.py`:
+- `get_vendor_card_status(stale_days)` — scannt `CARDS_DIR`, klassifiziert
   jede Karte in `verified` / `unknown` / `stale` / `parse_error`.
-- `format_provider_card_status(report)` — lesbarer CLI-Output mit Sektionen
+- `format_vendor_card_status(report)` — lesbarer CLI-Output mit Sektionen
   für Unknown-Karten und unknown deployment-Sub-Feldern.
 - `_parse_iso_timestamp()` — normalisiert naive datetimes auf UTC, damit
   `datetime.now(timezone.utc) - parsed` nie crasht.
@@ -916,7 +916,7 @@ Frische (Stale) und Vollständigkeit (unknown-Felder). Vor Reviewer-Anfragen
 - `_DEPLOYMENT_FIELDS_REQUIRING_VERIFICATION` — zentrale Liste der Felder,
   die "echte" Werte brauchen.
 
-**CLI-Wrapper** in `scripts/analysis/provider_card_status.py`:
+**CLI-Wrapper** in `scripts/analysis/vendor_card_status.py`:
 - `--stale-days N` (Default 90) — konfigurierbarer Schwellenwert
 - `--json` — für CI-Parsing
 - `--fail-on-unknown` / `--fail-on-stale` — Exit-Code 1 für CI-Gates
@@ -924,9 +924,9 @@ Frische (Stale) und Vollständigkeit (unknown-Felder). Vor Reviewer-Anfragen
 
 **Makefile-Target:**
 ```makefile
-make provider-cards-status                    # Default 90 Tage
-make provider-cards-status STALE_DAYS=30      # aggressiver
-make provider-cards-status JSON=1             # JSON-Output
+make vendor-cards-status                    # Default 90 Tage
+make vendor-cards-status STALE_DAYS=30      # aggressiver
+make vendor-cards-status JSON=1             # JSON-Output
 ```
 
 **Live-Befund:**
@@ -983,7 +983,7 @@ korrekt funktioniert.
 
 ### Tests
 
-- 25 neue Tests in `tests/test_provider_card_status.py`:
+- 25 neue Tests in `tests/test_vendor_card_status.py`:
   - 9 für Phase 22 (Card-Status-Klassifizierung)
   - 16 für Phase 23 (Provider-Detection: 11 Provider + Edge-Cases)
 - Insgesamt: **271/271 Tests grün**, Pylint **10.00/10**
@@ -996,7 +996,7 @@ korrekt funktioniert.
 
 **Motivation:** Die Pflichtfeld-Definitionen für Model- und Provider-Cards
 waren über drei Stellen verstreut (`utils/card_utils.py`,
-`utils/verify_model_cards.py`, `utils/provider_card_template.py`). Jede
+`utils/verify_model_cards.py`, `utils/vendor_card_template.py`). Jede
 Änderung erforderte Code-Touch und war drift-anfällig. Zudem fehlte die
 Dokumentation, *wer* ein Feld eigentlich liest (Risk-Calc, Leaderboard,
 Web-Export, Reviewer-Prompt, Judge, etc.).
@@ -1007,7 +1007,7 @@ nur noch geladen und validiert.
 ### 1. Templates
 
 **`config/card_template_model.yaml`** — 39 Pflichtfelder, 6 Optionalfelder
-**`config/card_template_provider.yaml`** — 16 Pflichtfelder, 3 Optionalfelder
+**`config/card_template_vendor.yaml`** — 16 Pflichtfelder, 3 Optionalfelder
 
 Jeder Feld-Eintrag annotiert:
 - `name`, `type`, `required`, `default`, `description`
@@ -1148,7 +1148,7 @@ Exit-Code 0 in beiden Modi. `--json` Output für CI-Parsing.
 
 ### 3. `--update`-Flag in Generatoren
 
-`scripts/analysis/generate_provider_cards.py --update [--yes] [--dry-run]`
+`scripts/analysis/generate_vendor_cards.py --update [--yes] [--dry-run]`
 `scripts/analysis/generate_model_cards.py --update [--yes] [--dry-run]`
 
 Beide rufen intern `sync_all()` auf — keine LLM-Calls, keine Stats-Injektion.
@@ -1159,7 +1159,7 @@ Reine Template-Synchronisation.
 ```makefile
 make cards-sync CARD_TYPE=provider DRY_RUN=1
 make cards-sync CARD_TYPE=all YES=1
-make provider-cards-update YES=1
+make vendor-cards-update YES=1
 make model-cards-update DRY_RUN=1
 ```
 

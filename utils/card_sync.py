@@ -4,7 +4,7 @@ card_sync.py — SSoT-Sync zwischen Card-Template und Karten-Dateien
 
 Synchronisiert JSON-Karten in ``benchmark_scores/{provider,model}_cards/`` mit
 dem kanonischen Python-Dict-Template (``_PROVIDER_CARD_TEMPLATE`` aus
-``utils.provider_card_template``, ``_CARD_TEMPLATE`` aus ``utils.card_utils``).
+``utils.vendor_card_template``, ``_CARD_TEMPLATE`` aus ``utils.card_utils``).
 
 Zwei Sync-Richtungen:
 
@@ -24,7 +24,7 @@ Idempotent: Mehrfacher Aufruf ohne Template-Änderung ist ein No-Op.
 
 Verwendung als Library:
     >>> from utils.card_sync import sync_card, plan_sync
-    >>> plan = plan_sync(card_path, "provider")
+    >>> plan = plan_sync(card_path, "vendor")
     >>> for action in plan.actions:
     ...     print(action)
     >>> sync_card(card_path, "provider", yes=True)
@@ -50,10 +50,10 @@ logger = logging.getLogger(__name__)
 # ---------------------------------------------------------------------------
 
 ROOT_DIR = Path(__file__).parent.parent
-PROVIDER_CARDS_DIR = ROOT_DIR / "benchmark_scores" / "provider_cards"
+PROVIDER_CARDS_DIR = ROOT_DIR / "benchmark_scores" / "vendor_cards"
 MODEL_CARDS_DIR = ROOT_DIR / "benchmark_scores" / "model_cards"
 
-CardType = Literal["model", "provider"]
+CardType = Literal["model", "vendor"]
 
 
 # ---------------------------------------------------------------------------
@@ -118,8 +118,8 @@ class SyncPlan:
 
 def get_template_field_names(card_type: CardType) -> set[str]:
     """Gibt die kanonischen Feldnamen aus dem Python-Dict-Template zurück."""
-    if card_type == "provider":
-        from utils.provider_card_template import _PROVIDER_CARD_TEMPLATE  # noqa: PLC0415
+    if card_type == "vendor":
+        from utils.vendor_card_template import _PROVIDER_CARD_TEMPLATE  # noqa: PLC0415
         return set(_PROVIDER_CARD_TEMPLATE.keys())
     if card_type == "model":
         from utils.card_utils import _CARD_TEMPLATE  # noqa: PLC0415
@@ -129,8 +129,8 @@ def get_template_field_names(card_type: CardType) -> set[str]:
 
 def get_template_default(card_type: CardType, field_name: str) -> Any:
     """Gibt den Default-Wert für ein Feld aus dem Template zurück."""
-    if card_type == "provider":
-        from utils.provider_card_template import _PROVIDER_CARD_TEMPLATE  # noqa: PLC0415
+    if card_type == "vendor":
+        from utils.vendor_card_template import _PROVIDER_CARD_TEMPLATE  # noqa: PLC0415
         return _PROVIDER_CARD_TEMPLATE.get(field_name)
     if card_type == "model":
         from utils.card_utils import _CARD_TEMPLATE  # noqa: PLC0415
@@ -171,7 +171,7 @@ def plan_sync(card_path: Path, card_type: CardType) -> SyncPlan:
     actions: list[SyncAction] = []
 
     # Pflicht-IDs werden nie gelöscht
-    protected_ids = {"provider_id"} if card_type == "provider" else {"model_id"}
+    protected_ids = {"vendor_id"} if card_type == "vendor" else {"model_id"}
 
     # tooluse_*-Legacy in Model Cards: toleriert vom Validator, nicht löschen
     legacy_prefixes: tuple[str, ...] = ("tooluse_",) if card_type == "model" else ()
@@ -305,7 +305,7 @@ def apply_sync(
 
 def collect_card_paths(card_type: CardType) -> list[Path]:
     """Sammelt alle Karten-Pfade eines Typs (ohne _index.json)."""
-    cards_dir = PROVIDER_CARDS_DIR if card_type == "provider" else MODEL_CARDS_DIR
+    cards_dir = PROVIDER_CARDS_DIR if card_type == "vendor" else MODEL_CARDS_DIR
     if not cards_dir.exists():
         return []
     return sorted(

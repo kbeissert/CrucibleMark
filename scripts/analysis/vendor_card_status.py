@@ -1,13 +1,13 @@
 #!/usr/bin/env python3
 """Provider Card Status-Check (Phase 22).
 
-CLI-Wrapper um ``utils.provider_card_template.get_provider_card_status``.
+CLI-Wrapper um ``utils.vendor_card_template.get_vendor_card_status``.
 Ausgabe lesbar (Default) oder als JSON für CI/Cron.
 
 Verwendung:
-    python scripts/analysis/provider_card_status.py
-    python scripts/analysis/provider_card_status.py --stale-days 60 --json
-    make provider-cards-status STALE_DAYS=60 JSON=1
+    python scripts/analysis/vendor_card_status.py
+    python scripts/analysis/vendor_card_status.py --stale-days 60 --json
+    make vendor-cards-status STALE_DAYS=60 JSON=1
 """
 from __future__ import annotations
 
@@ -20,9 +20,9 @@ ROOT_DIR = Path(__file__).resolve().parent.parent.parent
 if str(ROOT_DIR) not in sys.path:
     sys.path.insert(0, str(ROOT_DIR))
 
-from utils.provider_card_template import (
-    format_provider_card_status,
-    get_provider_card_status,
+from utils.vendor_card_template import (
+    format_vendor_card_status,
+    get_vendor_card_status,
 )
 
 
@@ -53,12 +53,12 @@ def main() -> int:
     )
     args = parser.parse_args()
 
-    report = get_provider_card_status(stale_days=args.stale_days)
+    report = get_vendor_card_status(stale_days=args.stale_days)
 
     if args.json:
         print(json.dumps(report, ensure_ascii=False, indent=2))
     else:
-        print(format_provider_card_status(report))
+        print(format_vendor_card_status(report))
 
     # CI-Gates
     if args.fail_on_unknown and report["unknown"] > 0:

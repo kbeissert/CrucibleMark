@@ -33,7 +33,7 @@ from utils.card_sync import (
     sync_all,
 )
 from utils.card_utils import _CARD_TEMPLATE
-from utils.provider_card_template import _PROVIDER_CARD_TEMPLATE
+from utils.vendor_card_template import _PROVIDER_CARD_TEMPLATE
 
 
 # ---------------------------------------------------------------------------
@@ -42,10 +42,10 @@ from utils.provider_card_template import _PROVIDER_CARD_TEMPLATE
 
 
 @pytest.fixture
-def tmp_provider_card(tmp_path: Path) -> Path:
+def tmp_vendor_card(tmp_path: Path) -> Path:
     """Provider-Card-Datei mit minimalen Feldern (zum Testen der Sync-Logik)."""
     card: dict[str, Any] = {
-        "provider_id": "test_provider",
+        "vendor_id": "test_provider",
         "display_name": "Test Provider",
     }
     path = tmp_path / "test_provider.json"
@@ -54,10 +54,10 @@ def tmp_provider_card(tmp_path: Path) -> Path:
 
 
 @pytest.fixture
-def tmp_provider_card_with_drift(tmp_path: Path) -> Path:
+def tmp_vendor_card_with_drift(tmp_path: Path) -> Path:
     """Provider-Card mit einem Feld, das NICHT im Template ist (für Delete-Tests)."""
     card: dict[str, Any] = {
-        "provider_id": "drift_provider",
+        "vendor_id": "drift_provider",
         "display_name": "Drift Provider",
         "legacy_field": "some old data",  # nicht im Template
     }
@@ -70,7 +70,7 @@ def tmp_provider_card_with_drift(tmp_path: Path) -> Path:
 def tmp_provider_dir(tmp_path: Path, monkeypatch) -> Path:
     """Patcht PROVIDER_CARDS_DIR auf ein tmp-Verzeichnis."""
     from utils import card_sync  # noqa: PLC0415
-    cards_dir = tmp_path / "provider_cards"
+    cards_dir = tmp_path / "vendor_cards"
     cards_dir.mkdir()
     monkeypatch.setattr(card_sync, "PROVIDER_CARDS_DIR", cards_dir)
     return cards_dir
@@ -93,8 +93,8 @@ def tmp_model_dir(tmp_path: Path, monkeypatch) -> Path:
 
 class TestTemplateLookup:
     def test_provider_template_has_known_fields(self) -> None:
-        names = get_template_field_names("provider")
-        assert "provider_id" in names
+        names = get_template_field_names("vendor")
+        assert "vendor_id" in names
         assert "display_name" in names
         assert "deployment" in names
         assert "stats" in names
@@ -118,8 +118,8 @@ class TestTemplateLookup:
 
 
 class TestPlanSync:
-    def test_minimal_card_gets_add_actions(self, tmp_provider_card: Path) -> None:
-        plan = plan_sync(tmp_provider_card, "provider")
+    def test_minimal_card_gets_add_actions(self, tmp_vendor_card: Path) -> None:
+        plan = plan_sync(tmp_vendor_card, "vendor")
         adds = [a for a in plan.actions if a.kind == "add"]
         # Minimal hat nur provider_id + display_name, alles andere fehlt
         assert len(adds) > 5
@@ -130,25 +130,25 @@ class TestPlanSync:
         self, tmp_path: Path, monkeypatch
     ) -> None:
         from utils import card_sync  # noqa: PLC0415
-        cards_dir = tmp_path / "provider_cards"
+        cards_dir = tmp_path / "vendor_cards"
         cards_dir.mkdir()
         monkeypatch.setattr(card_sync, "PROVIDER_CARDS_DIR", cards_dir)
 
         # Vollständige Card: alle Template-Felder vorhanden
         full_card = deepcopy(_PROVIDER_CARD_TEMPLATE)
-        full_card["provider_id"] = "complete"
+        full_card["vendor_id"] = "complete"
         card_path = cards_dir / "complete.json"
         card_path.write_text(json.dumps(full_card), encoding="utf-8")
 
-        plan = plan_sync(card_path, "provider")
+        plan = plan_sync(card_path, "vendor")
         assert not plan.has_changes
         assert plan.add_count == 0
         assert plan.delete_count == 0
 
     def test_drift_field_marked_for_delete(
-        self, tmp_provider_card_with_drift: Path
+        self, tmp_vendor_card_with_drift: Path
     ) -> None:
-        plan = plan_sync(tmp_provider_card_with_drift, "provider")
+        plan = plan_sync(tmp_vendor_card_with_drift, "vendor")
         deletes = [a for a in plan.actions if a.kind == "delete"]
         assert len(deletes) == 1
         assert deletes[0].field == "legacy_field"
@@ -158,7 +158,7 @@ class TestPlanSync:
         self, tmp_path: Path, monkeypatch
     ) -> None:
         from utils import card_sync  # noqa: PLC0415
-        cards_dir = tmp_path / "provider_cards"
+        cards_dir = tmp_path / "vendor_cards"
         cards_dir.mkdir()
         monkeypatch.setattr(card_sync, "PROVIDER_CARDS_DIR", cards_dir)
 
@@ -167,7 +167,7 @@ class TestPlanSync:
         card_path = cards_dir / "noid.json"
         card_path.write_text(json.dumps(card), encoding="utf-8")
 
-        plan = plan_sync(card_path, "provider")
+        plan = plan_sync(card_path, "vendor")
         keeps = [a for a in plan.actions if a.kind == "keep"]
         # provider_id ist nicht in der Karte → add, nicht delete-keep
         # some_drift ist in Karte, nicht in Template → delete
@@ -175,7 +175,7 @@ class TestPlanSync:
         assert any(a.field == "some_drift" for a in deletes)
         # provider_id wird in der add-Liste sein
         adds = [a for a in plan.actions if a.kind == "add"]
-        assert any(a.field == "provider_id" for a in adds)
+        assert any(a.field == "vendor_id" for a in adds)
 
     def test_tooluse_legacy_kept_in_model_cards(
         self, tmp_path: Path, monkeypatch
@@ -198,14 +198,14 @@ class TestPlanSync:
         assert not any(a.field.startswith("tooluse_") for a in deletes)
 
     def test_index_file_returns_empty_plan(self, tmp_path: Path) -> None:
-        plan = plan_sync(tmp_path / "_index.json", "provider")
+        plan = plan_sync(tmp_path / "_index.json", "vendor")
         assert not plan.has_changes
         assert plan.actions == []
 
     def test_unreadable_file_returns_empty_plan(self, tmp_path: Path) -> None:
         path = tmp_path / "broken.json"
         path.write_text("{invalid json", encoding="utf-8")
-        plan = plan_sync(path, "provider")
+        plan = plan_sync(path, "vendor")
         assert not plan.has_changes
 
 
@@ -215,44 +215,44 @@ class TestPlanSync:
 
 
 class TestApplySync:
-    def test_dry_run_does_not_write(self, tmp_provider_card_with_drift: Path) -> None:
-        before = tmp_provider_card_with_drift.read_text(encoding="utf-8")
+    def test_dry_run_does_not_write(self, tmp_vendor_card_with_drift: Path) -> None:
+        before = tmp_vendor_card_with_drift.read_text(encoding="utf-8")
         plan = apply_sync(
-            tmp_provider_card_with_drift, "provider", dry_run=True, yes=False
+            tmp_vendor_card_with_drift, "vendor", dry_run=True, yes=False
         )
-        after = tmp_provider_card_with_drift.read_text(encoding="utf-8")
+        after = tmp_vendor_card_with_drift.read_text(encoding="utf-8")
         assert before == after
         assert plan.has_changes
         assert plan.delete_count == 1
 
     def test_yes_deletes_without_prompt(
-        self, tmp_provider_card_with_drift: Path
+        self, tmp_vendor_card_with_drift: Path
     ) -> None:
         plan = apply_sync(
-            tmp_provider_card_with_drift, "provider", dry_run=False, yes=True
+            tmp_vendor_card_with_drift, "vendor", dry_run=False, yes=True
         )
-        data = json.loads(tmp_provider_card_with_drift.read_text(encoding="utf-8"))
+        data = json.loads(tmp_vendor_card_with_drift.read_text(encoding="utf-8"))
         assert "legacy_field" not in data
-        assert "provider_id" in data
+        assert "vendor_id" in data
         assert "display_name" in data
         # Adds wurden ebenfalls durchgeführt
         assert "company" in data
         assert plan.delete_count == 1
         assert plan.add_count > 0
 
-    def test_confirm_fn_yes_deletes(self, tmp_provider_card_with_drift: Path) -> None:
+    def test_confirm_fn_yes_deletes(self, tmp_vendor_card_with_drift: Path) -> None:
         def confirm(prompt: str) -> bool:
             return True
         plan = apply_sync(
-            tmp_provider_card_with_drift, "provider",
+            tmp_vendor_card_with_drift, "vendor",
             dry_run=False, confirm_fn=confirm,
         )
-        data = json.loads(tmp_provider_card_with_drift.read_text(encoding="utf-8"))
+        data = json.loads(tmp_vendor_card_with_drift.read_text(encoding="utf-8"))
         assert "legacy_field" not in data
         assert plan.delete_count == 1
 
     def test_confirm_fn_no_skips_whole_card(
-        self, tmp_provider_card_with_drift: Path
+        self, tmp_vendor_card_with_drift: Path
     ) -> None:
         """Wenn der User Löschungen ablehnt, wird die ganze Karte nicht
         angefasst (atomarer Sync). Adds und Deletes werden zusammen
@@ -262,10 +262,10 @@ class TestApplySync:
             return False
 
         plan = apply_sync(
-            tmp_provider_card_with_drift, "provider",
+            tmp_vendor_card_with_drift, "vendor",
             dry_run=False, confirm_fn=confirm,
         )
-        data = json.loads(tmp_provider_card_with_drift.read_text(encoding="utf-8"))
+        data = json.loads(tmp_vendor_card_with_drift.read_text(encoding="utf-8"))
         # Karte ist unverändert (weder Adds noch Deletes)
         assert "legacy_field" in data
         assert "company" not in data
@@ -275,13 +275,13 @@ class TestApplySync:
 
     def test_no_changes_no_prompt(self, tmp_path: Path, monkeypatch) -> None:
         from utils import card_sync  # noqa: PLC0415
-        cards_dir = tmp_path / "provider_cards"
+        cards_dir = tmp_path / "vendor_cards"
         cards_dir.mkdir()
         monkeypatch.setattr(card_sync, "PROVIDER_CARDS_DIR", cards_dir)
 
         # Vollständige Card (alle Template-Felder)
         full = deepcopy(_PROVIDER_CARD_TEMPLATE)
-        full["provider_id"] = "complete"
+        full["vendor_id"] = "complete"
         path = cards_dir / "complete.json"
         path.write_text(json.dumps(full), encoding="utf-8")
 
@@ -291,15 +291,15 @@ class TestApplySync:
             prompt_called.append(prompt)
             return True
 
-        plan = apply_sync(path, "provider", confirm_fn=confirm)
+        plan = apply_sync(path, "vendor", confirm_fn=confirm)
         assert not plan.has_changes
         assert prompt_called == []  # kein Prompt wenn keine Änderungen
 
     def test_adds_use_template_defaults(
-        self, tmp_provider_card: Path
+        self, tmp_vendor_card: Path
     ) -> None:
-        apply_sync(tmp_provider_card, "provider", dry_run=False, yes=False)
-        data = json.loads(tmp_provider_card.read_text(encoding="utf-8"))
+        apply_sync(tmp_vendor_card, "vendor", dry_run=False, yes=False)
+        data = json.loads(tmp_vendor_card.read_text(encoding="utf-8"))
         # Default-Werte aus _PROVIDER_CARD_TEMPLATE
         assert data["pricing_model"] == "unknown"
         assert data["api_base_url"] is None
@@ -314,15 +314,15 @@ class TestApplySync:
 
 class TestIdempotency:
     def test_second_run_is_no_op(
-        self, tmp_provider_card_with_drift: Path
+        self, tmp_vendor_card_with_drift: Path
     ) -> None:
         # 1. Lauf: löscht legacy_field, ergänzt Adds
         apply_sync(
-            tmp_provider_card_with_drift, "provider", dry_run=False, yes=True
+            tmp_vendor_card_with_drift, "vendor", dry_run=False, yes=True
         )
         # 2. Lauf: nichts zu tun
         plan = apply_sync(
-            tmp_provider_card_with_drift, "provider", dry_run=False, yes=True
+            tmp_vendor_card_with_drift, "vendor", dry_run=False, yes=True
         )
         assert not plan.has_changes
 
@@ -340,13 +340,13 @@ class TestSyncAll:
         for name in ("a", "b", "c"):
             (tmp_provider_dir / f"{name}.json").write_text(
                 json.dumps({
-                    "provider_id": name,
+                    "vendor_id": name,
                     "display_name": name.upper(),
                     "junk": "drift",
                 }),
                 encoding="utf-8",
             )
-        plans = sync_all("provider", dry_run=False, yes=True)
+        plans = sync_all("vendor", dry_run=False, yes=True)
         assert len(plans) == 3
         # Alle drei sollten "junk" gelöscht und Adds bekommen haben
         for plan in plans:
@@ -355,13 +355,13 @@ class TestSyncAll:
             assert "company" in data
 
     def test_empty_dir_returns_empty_list(self, tmp_provider_dir: Path) -> None:
-        plans = sync_all("provider", dry_run=False, yes=True)
+        plans = sync_all("vendor", dry_run=False, yes=True)
         assert plans == []
 
     def test_collect_card_paths_excludes_index(self, tmp_provider_dir: Path) -> None:
         (tmp_provider_dir / "a.json").write_text("{}", encoding="utf-8")
         (tmp_provider_dir / "_index.json").write_text("[]", encoding="utf-8")
-        paths = collect_card_paths("provider")
+        paths = collect_card_paths("vendor")
         assert len(paths) == 1
         assert paths[0].name == "a.json"
 
@@ -376,14 +376,14 @@ class TestFormatSummary:
         plans = [
             SyncPlan(
                 card_path=Path("a.json"),
-                card_type="provider",
+                card_type="vendor",
                 actions=[
                     SyncAction("add", "company"),
                     SyncAction("add", "deployment"),
                     SyncAction("delete", "junk"),
                 ],
             ),
-            SyncPlan(card_path=Path("b.json"), card_type="provider"),
+            SyncPlan(card_path=Path("b.json"), card_type="vendor"),
         ]
         out = format_summary(plans)
         assert "Cards verarbeitet:   2" in out
@@ -395,6 +395,6 @@ class TestFormatSummary:
         assert "--- b.json" not in out
 
     def test_summary_no_changes_message(self) -> None:
-        plans = [SyncPlan(card_path=Path("x.json"), card_type="provider")]
+        plans = [SyncPlan(card_path=Path("x.json"), card_type="vendor")]
         out = format_summary(plans)
         assert "Alle Karten sind synchron" in out

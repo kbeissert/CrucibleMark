@@ -1,5 +1,5 @@
 {
-  "provider_id": "anthropic",
+  "vendor_id": "anthropic",
   "display_name": "Anthropic",
   "company": "Anthropic PBC",
   "headquarters": "San Francisco, CA, USA",

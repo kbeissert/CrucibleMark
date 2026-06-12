@@ -21,7 +21,7 @@ Coverage:
  12. Audit-Log bei Override-Anwendung
 
 Disk-IO wird über ``monkeypatch`` vermieden, indem ``_find_card`` und
-``load_provider_card`` mit In-Memory-Stubs ersetzt werden.
+``load_vendor_card`` mit In-Memory-Stubs ersetzt werden.
 """
 
 import json
@@ -58,10 +58,10 @@ def _card_dict(detected=None) -> dict:
     }
 
 
-def _provider_card_dict(thinking_override: dict | None) -> dict:
+def _vendor_card_dict(thinking_override: dict | None) -> dict:
     """Baut eine minimal-Provider-Card für Tests."""
     card: dict = {
-        "provider_id": "test-provider",
+        "vendor_id": "test-provider",
         "display_name": "Test Provider",
     }
     if thinking_override is not None:
@@ -86,7 +86,7 @@ def _config() -> dict:
 
 @pytest.fixture
 def stub_card_loader(monkeypatch, tmp_path):
-    """Patcht _find_card und load_provider_card, sodass Tests keine Disk-IO
+    """Patcht _find_card und load_vendor_card, sodass Tests keine Disk-IO
     auslösen.
 
     Implementierung: Echte JSON-Dateien in ``tmp_path`` schreiben, die
@@ -110,10 +110,10 @@ def stub_card_loader(monkeypatch, tmp_path):
             return path
         return tmp_path / f"nonexistent-{model_id}.json"  # .exists() == False
 
-    def fake_load_provider_card(provider_id):
+    def fake_load_vendor_card(provider_id):
         if state["provider_card"] is None:
             return None
-        # Echte Datei in tmp_path, damit load_provider_card (intern json.loads +
+        # Echte Datei in tmp_path, damit load_vendor_card (intern json.loads +
         # path.read_text) konsistent funktioniert.
         path = tmp_path / f"provider-{provider_id}.json"
         path.write_text(json.dumps(state["provider_card"]), encoding="utf-8")
@@ -122,11 +122,11 @@ def stub_card_loader(monkeypatch, tmp_path):
     # _find_card ist im resolve_token_budget()-Scope per Modul-Name auflösbar.
     monkeypatch.setattr(model_utils, "_find_card", fake_find_card)
 
-    # load_provider_card wird IN resolve_token_budget importiert, daher müssen
-    # wir den Import-Pfad in utils.provider_card_template patchen, das ist
+    # load_vendor_card wird IN resolve_token_budget importiert, daher müssen
+    # wir den Import-Pfad in utils.vendor_card_template patchen, das ist
     # die Quelle, aus der der lokale Import schöpft.
-    from utils import provider_card_template
-    monkeypatch.setattr(provider_card_template, "load_provider_card", fake_load_provider_card)
+    from utils import vendor_card_template
+    monkeypatch.setattr(vendor_card_template, "load_vendor_card", fake_load_vendor_card)
 
     return state
 
@@ -178,7 +178,7 @@ def test_override_value_false_no_5x(stub_card_loader):
     erzwingen. Das Modell hat 'magistral' im Namen (Trigger), aber der Override
     sagt explizit 'kein Reasoning'.
     """
-    stub_card_loader["provider_card"] = _provider_card_dict({
+    stub_card_loader["provider_card"] = _vendor_card_dict({
         "value": False,
         "reason": "Cost-Benchmark: CoT-Suppression für Speed-Vergleich",
     })
@@ -192,7 +192,7 @@ def test_override_value_false_no_5x(stub_card_loader):
 def test_override_value_true_5x(stub_card_loader):
     """Provider-Override value=true aktiv auf einem NON-Reasoning-Modell →
     5x wird angewendet."""
-    stub_card_loader["provider_card"] = _provider_card_dict({
+    stub_card_loader["provider_card"] = _vendor_card_dict({
         "value": True,
         "reason": "A/B-Test: explizit Reasoning erzwingen",
     })
@@ -206,7 +206,7 @@ def test_override_value_true_5x(stub_card_loader):
 def test_override_expired_falls_back_to_trigger(stub_card_loader):
     """Override active_until in der Vergangenheit → inaktiv, Trigger-Liste greift."""
     past = (datetime.now(timezone.utc) - timedelta(days=1)).isoformat()
-    stub_card_loader["provider_card"] = _provider_card_dict({
+    stub_card_loader["provider_card"] = _vendor_card_dict({
         "value": False,
         "reason": "Saisonale CoT-Suppression",
         "active_until": past,
@@ -220,7 +220,7 @@ def test_override_expired_falls_back_to_trigger(stub_card_loader):
 
 def test_override_no_reason_is_inactive(stub_card_loader):
     """Override ohne reason → inaktiv (Pflichtfeld), Trigger gewinnt."""
-    stub_card_loader["provider_card"] = _provider_card_dict({
+    stub_card_loader["provider_card"] = _vendor_card_dict({
         "value": False,
         # reason fehlt → Pflichtfeld nicht erfüllt
     })
@@ -232,7 +232,7 @@ def test_override_no_reason_is_inactive(stub_card_loader):
 
 def test_override_logs_audit_trail(stub_card_loader, caplog):
     """Override-Anwendung erzeugt einen [ThinkingOverride] Audit-Log-Eintrag."""
-    stub_card_loader["provider_card"] = _provider_card_dict({
+    stub_card_loader["provider_card"] = _vendor_card_dict({
         "value": False,
         "reason": "Cost-Benchmark Q3 2026",
     })
@@ -279,7 +279,7 @@ def test_no_card_no_override_keeps_trigger_fallback(stub_card_loader):
     """Provider gesetzt, aber weder Model-Card noch Provider-Card-Override →
     effective_thinking = None → Trigger-Liste bleibt erhalten."""
     stub_card_loader["model_card"] = None
-    stub_card_loader["provider_card"] = _provider_card_dict(None)  # kein Override-Key
+    stub_card_loader["provider_card"] = _vendor_card_dict(None)  # kein Override-Key
     tokens, reasoning = resolve_token_budget(
         REASONING_TRIGGERS_MODEL, 2000, _config(), "code_quality", provider="test-provider",
     )

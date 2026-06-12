@@ -1,5 +1,5 @@
 {
-  "provider_id": "google_deepmind",
+  "vendor_id": "google_deepmind",
   "display_name": "Google DeepMind",
   "company": "Google LLC / DeepMind Technologies Limited",
   "headquarters": "London, UK (DeepMind) / Mountain View, CA, USA (Google)",

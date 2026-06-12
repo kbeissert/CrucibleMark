@@ -88,7 +88,7 @@ CrucibleMark folgt einer **Plugin-basierten Architektur**, bei der Benchmark-Mod
 │ - Leaderboard Generator (aggregation)              │
 │ - Backup System (snapshot + prune)                 │
 │ - Model Cards (benchmark_scores/model_cards/)      │
-│ - Provider Cards (benchmark_scores/provider_cards/)│
+│ - Vendor Cards (benchmark_scores/vendor_cards/)│
 └─────────────────────────────────────────────────────┘
                         ↓
 ┌─────────────────────────────────────────────────────┐
@@ -289,7 +289,7 @@ Um `is_reasoning_model()` empirisch statt heuristisch zu fundieren, wurde die Pr
 3. nichts                       → (None, "none")
 ```
 
-**Override-Schema** in `config/card_template_provider.yaml` (Optionalfeld, `since v4.7.1`):
+**Override-Schema** in `config/card_template_vendor.yaml` (Optionalfeld, `since v4.7.1`):
 
 ```yaml
 thinking_override:
@@ -305,7 +305,7 @@ Aktivierungs-Regeln (`_is_override_active`): `value` muss bool sein, `reason` Pf
 `utils/base_runner.py:121` reicht `provider=provider` an `resolve_token_budget()` durch, damit ein aktiver `thinking_override` das Token-Budget beeinflusst. `resolve_token_budget(..., *, provider=None)` löst die SSoT-Hierarchie auf:
 
 1. `provider=None` (Backward-Compat) → `is_reasoning_model()` mit Trigger-Fallback
-2. `provider="..."` → `load_provider_card()` → `resolve_effective_thinking()` mit Override + Card-Probe
+2. `provider="..."` → `load_vendor_card()` → `resolve_effective_thinking()` mit Override + Card-Probe
 3. Override aktiv → Override-Wert gewinnt (Audit-Log)
 4. Card-Probe gesetzt → Probe-Wert gewinnt
 5. Keine Info → Trigger-Liste
@@ -597,7 +597,7 @@ Der Web Exporter ist ein eigenständiger Publishing-Schritt (Layer 4 Downstream)
 
 `WEIGHTS_TIER_DISPLAY` (Tier-String-Mapping) ist als öffentliche Konstante aus `utils/model_utils.py` importiert — `web_export.py` führt kein Duplikat mehr. `load_model_card()` delegiert die Card-Pfad-Auflösung an `_find_card(card_dir=card_dir)` (SSoT) und behält nur die zwei web-spezifischen Fallbacks (Display-Name-Vollscan, hf.co-Suffix-Match). Block-Metadaten für den Political Compass kommen via `_load_pc_block_meta()` aus `benchmark_modules/political_compass/config.yaml` (Fallback: statisches Dict) — kein hardcodiertes Python-Dict mehr.
 
-**Model Cards & Provider Cards:** Strukturierte JSON-Steckbriefe pro Modell (`benchmark_scores/model_cards/`) und pro Provider (`benchmark_scores/provider_cards/`). Provider Cards enthalten ausschließlich Deployment- und Datenschutz-Metadaten (CLOUD Act, GDPR, Datenstandort, NSL-Risiko) — **keine** Preise und **keine** Stärken/Schwächen. Letztere leben in den Model Cards. Die Cards werden (a) als Kontext-Block in den Meta-Reviewer injiziert, (b) als eigenständige JSON-API für das Web-Frontend bereitgestellt und (c) von `risk_calculator.py` für die Sovereign-Risk-Berechnung genutzt. Preisinformationen (`input_price_per_1m`, `output_price_per_1m`) sind alleiniges SSoT-Feld der Model Cards (ab v3.7.5).
+**Model Cards & Vendor Cards:** Strukturierte JSON-Steckbriefe pro Modell (`benchmark_scores/model_cards/`) und pro Provider (`benchmark_scores/vendor_cards/`). Vendor Cards enthalten ausschließlich Deployment- und Datenschutz-Metadaten (CLOUD Act, GDPR, Datenstandort, NSL-Risiko) — **keine** Preise und **keine** Stärken/Schwächen. Letztere leben in den Model Cards. Die Cards werden (a) als Kontext-Block in den Meta-Reviewer injiziert, (b) als eigenständige JSON-API für das Web-Frontend bereitgestellt und (c) von `risk_calculator.py` für die Sovereign-Risk-Berechnung genutzt. Preisinformationen (`input_price_per_1m`, `output_price_per_1m`) sind alleiniges SSoT-Feld der Model Cards (ab v3.7.5).
 
 **Model Card Lifecycle (`card_status`):** Cards werden durch einen schlanken Template-Generator ohne API-Call erstellt (`make model-card MODEL=<id>` → `scripts/analysis/generate_model_cards.py`). Das erzeugte Template enthält alle Pflichtfelder mit `"TODO"`-Platzhaltern und `card_status: "draft"`. Nach manueller Recherche und Befüllung wird `card_status` auf `"complete"` gesetzt. Minimal-Cards, die der ThinkingProbe-Hook automatisch anlegt, erhalten `card_status: "minimal"` — diese brauchen keine manuelle Vervollständigung für den Benchmark-Betrieb, sind aber für den Web-Export unvollständig.
 

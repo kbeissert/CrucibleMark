@@ -16,7 +16,7 @@ import pytest
 
 
 class TestProviderCardStatus:
-    """get_provider_card_status() liefert Audit-Readiness-Report."""
+    """get_vendor_card_status() liefert Audit-Readiness-Report."""
 
     def _write_card(self, cards_dir: Path, name: str, data: dict) -> Path:
         path = cards_dir / f"{name}.json"
@@ -25,9 +25,9 @@ class TestProviderCardStatus:
 
     def test_empty_cards_dir_returns_zero(self, tmp_path: Path) -> None:
         """Leeres Verzeichnis → total=0, alle Counts=0."""
-        with patch("utils.provider_card_template.CARDS_DIR", tmp_path):
-            from utils.provider_card_template import get_provider_card_status
-            report = get_provider_card_status(stale_days=90)
+        with patch("utils.vendor_card_template.CARDS_DIR", tmp_path):
+            from utils.vendor_card_template import get_vendor_card_status
+            report = get_vendor_card_status(stale_days=90)
         assert report["total"] == 0
         assert report["verified"] == 0
         assert report["unknown"] == 0
@@ -39,16 +39,16 @@ class TestProviderCardStatus:
         """Card mit recent last_verified_at → status=verified."""
         recent = datetime.now(timezone.utc) - timedelta(days=10)
         card = {
-            "provider_id": "testprov",
+            "vendor_id": "testprov",
             "display_name": "TestProv",
             "deployment": {"cloud_act_exposure": False, "applicable_law": "EU"},
             "last_verified_at": recent.isoformat(),
         }
         self._write_card(tmp_path, "testprov", card)
 
-        with patch("utils.provider_card_template.CARDS_DIR", tmp_path):
-            from utils.provider_card_template import get_provider_card_status
-            report = get_provider_card_status(stale_days=90)
+        with patch("utils.vendor_card_template.CARDS_DIR", tmp_path):
+            from utils.vendor_card_template import get_vendor_card_status
+            report = get_vendor_card_status(stale_days=90)
 
         assert report["total"] == 1
         assert report["verified"] == 1
@@ -59,16 +59,16 @@ class TestProviderCardStatus:
         """Card mit last_verified_at älter als stale_days → status=stale."""
         old = datetime.now(timezone.utc) - timedelta(days=120)
         card = {
-            "provider_id": "oldprov",
+            "vendor_id": "oldprov",
             "display_name": "OldProv",
             "deployment": {"cloud_act_exposure": False, "applicable_law": "EU"},
             "last_verified_at": old.isoformat(),
         }
         self._write_card(tmp_path, "oldprov", card)
 
-        with patch("utils.provider_card_template.CARDS_DIR", tmp_path):
-            from utils.provider_card_template import get_provider_card_status
-            report = get_provider_card_status(stale_days=90)
+        with patch("utils.vendor_card_template.CARDS_DIR", tmp_path):
+            from utils.vendor_card_template import get_vendor_card_status
+            report = get_vendor_card_status(stale_days=90)
 
         assert report["stale"] == 1
         assert report["by_provider"][0]["status"] == "stale"
@@ -78,15 +78,15 @@ class TestProviderCardStatus:
         """Card mit unknown=true → status=unknown (auch wenn Timestamp neu)."""
         recent = datetime.now(timezone.utc).isoformat()
         card = {
-            "provider_id": "broken",
+            "vendor_id": "broken",
             "unknown": True,
             "last_verified_at": recent,
         }
         self._write_card(tmp_path, "broken", card)
 
-        with patch("utils.provider_card_template.CARDS_DIR", tmp_path):
-            from utils.provider_card_template import get_provider_card_status
-            report = get_provider_card_status(stale_days=90)
+        with patch("utils.vendor_card_template.CARDS_DIR", tmp_path):
+            from utils.vendor_card_template import get_vendor_card_status
+            report = get_vendor_card_status(stale_days=90)
 
         assert report["unknown"] == 1
         assert report["by_provider"][0]["status"] == "unknown"
@@ -94,14 +94,14 @@ class TestProviderCardStatus:
     def test_missing_timestamp_counts_as_stale(self, tmp_path: Path) -> None:
         """Card ohne generated_at UND ohne last_verified_at → stale (kein-Timestamp)."""
         card = {
-            "provider_id": "notimestamp",
+            "vendor_id": "notimestamp",
             "display_name": "NoTS",
         }
         self._write_card(tmp_path, "notimestamp", card)
 
-        with patch("utils.provider_card_template.CARDS_DIR", tmp_path):
-            from utils.provider_card_template import get_provider_card_status
-            report = get_provider_card_status(stale_days=90)
+        with patch("utils.vendor_card_template.CARDS_DIR", tmp_path):
+            from utils.vendor_card_template import get_vendor_card_status
+            report = get_vendor_card_status(stale_days=90)
 
         assert report["stale"] == 1
         assert report["missing_timestamp"] == 1
@@ -111,9 +111,9 @@ class TestProviderCardStatus:
         """Card mit kaputtem JSON → parse_error-Eintrag."""
         (tmp_path / "broken.json").write_text("{invalid json", encoding="utf-8")
 
-        with patch("utils.provider_card_template.CARDS_DIR", tmp_path):
-            from utils.provider_card_template import get_provider_card_status
-            report = get_provider_card_status(stale_days=90)
+        with patch("utils.vendor_card_template.CARDS_DIR", tmp_path):
+            from utils.vendor_card_template import get_vendor_card_status
+            report = get_vendor_card_status(stale_days=90)
 
         assert report["parse_errors"] == 1
         assert report["by_provider"][0]["status"] == "parse_error"
@@ -122,7 +122,7 @@ class TestProviderCardStatus:
         """deployment-Felder mit 'unknown' oder -1 werden gemeldet."""
         recent = datetime.now(timezone.utc).isoformat()
         card = {
-            "provider_id": "incomplete",
+            "vendor_id": "incomplete",
             "display_name": "Incomplete",
             "deployment": {
                 "cloud_act_exposure": False,
@@ -137,9 +137,9 @@ class TestProviderCardStatus:
         }
         self._write_card(tmp_path, "incomplete", card)
 
-        with patch("utils.provider_card_template.CARDS_DIR", tmp_path):
-            from utils.provider_card_template import get_provider_card_status
-            report = get_provider_card_status(stale_days=90)
+        with patch("utils.vendor_card_template.CARDS_DIR", tmp_path):
+            from utils.vendor_card_template import get_vendor_card_status
+            report = get_vendor_card_status(stale_days=90)
 
         assert report["cards_with_unknown_deployment_fields"] == 1
         fields = report["by_provider"][0]["unknown_deployment_fields"]
@@ -148,29 +148,29 @@ class TestProviderCardStatus:
 
     def test_stale_threshold_echo(self, tmp_path: Path) -> None:
         """stale_threshold_days wird im Report zurückgegeben."""
-        with patch("utils.provider_card_template.CARDS_DIR", tmp_path):
-            from utils.provider_card_template import get_provider_card_status
-            report = get_provider_card_status(stale_days=42)
+        with patch("utils.vendor_card_template.CARDS_DIR", tmp_path):
+            from utils.vendor_card_template import get_vendor_card_status
+            report = get_vendor_card_status(stale_days=42)
         assert report["stale_threshold_days"] == 42
 
     def test_format_status_readable(self, tmp_path: Path) -> None:
-        """format_provider_card_status liefert lesbaren CLI-Output."""
+        """format_vendor_card_status liefert lesbaren CLI-Output."""
         recent = datetime.now(timezone.utc).isoformat()
         card = {
-            "provider_id": "ok",
+            "vendor_id": "ok",
             "display_name": "OK Provider",
             "deployment": {"applicable_law": "EU"},
             "last_verified_at": recent,
         }
         self._write_card(tmp_path, "ok", card)
 
-        with patch("utils.provider_card_template.CARDS_DIR", tmp_path):
-            from utils.provider_card_template import (
-                format_provider_card_status,
-                get_provider_card_status,
+        with patch("utils.vendor_card_template.CARDS_DIR", tmp_path):
+            from utils.vendor_card_template import (
+                format_vendor_card_status,
+                get_vendor_card_status,
             )
-            report = get_provider_card_status(stale_days=90)
-            output = format_provider_card_status(report)
+            report = get_vendor_card_status(stale_days=90)
+            output = format_vendor_card_status(report)
 
         assert "=== Provider Card Status ===" in output
         assert "Total:" in output

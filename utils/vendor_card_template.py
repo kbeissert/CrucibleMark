@@ -1,5 +1,5 @@
 """
-provider_card_template.py — SSoT für Provider Card Struktur
+vendor_card_template.py — SSoT für Provider Card Struktur
 ===========================================================
 Zentrale Utility für das Erzeugen und Aktualisieren von Provider Cards.
 
@@ -36,7 +36,7 @@ from typing import Any
 # Analog zu utils/ollama_config.py: ROOT_DIR wird hier lokal definiert, um
 # zirkuläre Imports zu vermeiden.
 ROOT_DIR = Path(__file__).parent.parent
-CARDS_DIR = ROOT_DIR / "benchmark_scores" / "provider_cards"
+CARDS_DIR = ROOT_DIR / "benchmark_scores" / "vendor_cards"
 
 
 def _cards_dir() -> Path:
@@ -51,7 +51,7 @@ def _cards_dir() -> Path:
 
 _PROVIDER_CARD_TEMPLATE: dict[str, Any] = {
     # ---- Identität (Provider-spezifisch, nicht in Model Card) -----------
-    "provider_id": None,                 # slug, wird auf provider_id gesetzt
+    "vendor_id": None,                 # slug, wird auf provider_id gesetzt
     "display_name": "TODO",
     "company": "TODO",
     "headquarters": "TODO",
@@ -93,7 +93,7 @@ _DEPLOYMENT_FIELD_NAMES: list[str] = list(_PROVIDER_CARD_TEMPLATE["deployment"].
 def _safe_id(name: str) -> str:
     """Konvertiert einen Provider-Namen in einen sicheren Dateinamen / ID.
 
-    Identisch zur Konvention in ``scripts/analysis/generate_provider_cards.py``.
+    Identisch zur Konvention in ``scripts/analysis/generate_vendor_cards.py``.
     """
     s = name.lower()
     s = re.sub(r"[^a-z0-9]+", "_", s)
@@ -109,7 +109,7 @@ def _card_path(provider_id: str) -> Path:
 # Kernfunktion
 # ---------------------------------------------------------------------------
 
-def ensure_provider_card(provider_id: str, *, card_path: Path | None = None) -> Path:
+def ensure_vendor_card(provider_id: str, *, card_path: Path | None = None) -> Path:
     """Stellt sicher, dass die Provider Card für *provider_id* alle Strukturfelder enthält.
 
     Verhalten:
@@ -123,7 +123,7 @@ def ensure_provider_card(provider_id: str, *, card_path: Path | None = None) -> 
     Args:
         provider_id:  Slug des Providers (z.B. ``"anthropic"``).
         card_path:    Optionaler expliziter Pfad. Wenn nicht angegeben, wird
-                      der kanonische Pfad ``benchmark_scores/provider_cards/{slug}.json``
+                      der kanonische Pfad ``benchmark_scores/vendor_cards/{slug}.json``
                       verwendet.
 
     Returns:
@@ -160,7 +160,7 @@ def ensure_provider_card(provider_id: str, *, card_path: Path | None = None) -> 
             result[key] = deepcopy(default)
 
     # provider_id immer korrekt setzen
-    result["provider_id"] = _safe_id(provider_id)
+    result["vendor_id"] = _safe_id(provider_id)
 
     # generated_at setzen, falls weder im existing noch im Template ein Wert steht
     if not result.get("generated_at"):
@@ -179,7 +179,7 @@ def ensure_provider_card(provider_id: str, *, card_path: Path | None = None) -> 
     return card_path
 
 
-def load_provider_card(provider_id: str) -> dict[str, Any] | None:
+def load_vendor_card(provider_id: str) -> dict[str, Any] | None:
     """Lädt eine Provider Card und gibt sie als Dict zurück (oder None, wenn nicht vorhanden)."""
     path = _card_path(provider_id)
     if not path.exists():
@@ -191,10 +191,10 @@ def load_provider_card(provider_id: str) -> dict[str, Any] | None:
         return None
 
 
-def normalize_provider_card_data(card_data: dict[str, Any]) -> dict[str, Any]:
+def normalize_vendor_card_data(card_data: dict[str, Any]) -> dict[str, Any]:
     """Normalisiert ein Provider-Card-Dict gegen das kanonische Template.
 
-    Wird vom Generator (``scripts/analysis/generate_provider_cards.py``) und
+    Wird vom Generator (``scripts/analysis/generate_vendor_cards.py``) und
     von Migration-Scripten verwendet, um rohe Dicts (z.B. LLM-Output) in das
     kanonische Schema zu überführen.
 
@@ -229,8 +229,8 @@ def normalize_provider_card_data(card_data: dict[str, Any]) -> dict[str, Any]:
             result[key] = deepcopy(default)
 
     # provider_id immer auf kanonischen Slug setzen
-    if "provider_id" in card_data and isinstance(card_data["provider_id"], str):
-        result["provider_id"] = _safe_id(card_data["provider_id"])
+    if "vendor_id" in card_data and isinstance(card_data["vendor_id"], str):
+        result["vendor_id"] = _safe_id(card_data["vendor_id"])
 
     # generated_at setzen, falls nicht vorhanden
     if not result.get("generated_at"):
@@ -271,7 +271,7 @@ def rebuild_provider_index() -> int:
 # - stale: last_verified_at (oder generated_at) älter als stale_days
 # - unknown_fields: deployment.Sub-Felder mit "unknown" oder NSL-Mismatch
 #
-# Konsument: ``make provider-cards-status`` + Audit-Hooks.
+# Konsument: ``make vendor-cards-status`` + Audit-Hooks.
 
 _DEPLOYMENT_FIELDS_REQUIRING_VERIFICATION: list[str] = [
     "cloud_act_exposure",
@@ -316,7 +316,7 @@ def _is_deployment_field_unknown(card: dict[str, Any], field: str) -> bool:
     return False
 
 
-def get_provider_card_status(stale_days: int = 90) -> dict[str, Any]:
+def get_vendor_card_status(stale_days: int = 90) -> dict[str, Any]:
     """Audit-Readiness-Report über alle Provider Cards.
 
     Args:
@@ -359,7 +359,7 @@ def get_provider_card_status(stale_days: int = 90) -> dict[str, Any]:
         except (json.JSONDecodeError, OSError):
             counts["parse_errors"] += 1
             by_provider.append({
-                "provider_id": provider_id,
+                "vendor_id": provider_id,
                 "status": "parse_error",
             })
             continue
@@ -396,7 +396,7 @@ def get_provider_card_status(stale_days: int = 90) -> dict[str, Any]:
             counts["cards_with_unknown_deployment_fields"] += 1
 
         by_provider.append({
-            "provider_id": provider_id,
+            "vendor_id": provider_id,
             "display_name": card.get("display_name", provider_id),
             "status": status,
             "last_verified_at": card.get("last_verified_at"),
@@ -414,8 +414,8 @@ def get_provider_card_status(stale_days: int = 90) -> dict[str, Any]:
     }
 
 
-def format_provider_card_status(report: dict[str, Any]) -> str:
-    """Formatiert einen get_provider_card_status-Report als lesbaren CLI-Output."""
+def format_vendor_card_status(report: dict[str, Any]) -> str:
+    """Formatiert einen get_vendor_card_status-Report als lesbaren CLI-Output."""
     lines: list[str] = []
     lines.append("=== Provider Card Status ===")
     lines.append(f"Total:                  {report['total']}")
@@ -435,20 +435,20 @@ def format_provider_card_status(report: dict[str, Any]) -> str:
     if by_status.get("unknown"):
         lines.append(f"--- Unknown ({len(by_status['unknown'])}) ---")
         for e in by_status["unknown"]:
-            lines.append(f"  • {e['provider_id']}  (display_name: {e.get('display_name', 'n/a')})")
+            lines.append(f"  • {e['vendor_id']}  (display_name: {e.get('display_name', 'n/a')})")
         lines.append("")
 
     if by_status.get("stale"):
         lines.append(f"--- Stale ({len(by_status['stale'])}) ---")
         for e in by_status["stale"]:
             age = f"age={e['age_days']}d" if e.get("age_days") is not None else "no-timestamp"
-            lines.append(f"  • {e['provider_id']}  ({age})")
+            lines.append(f"  • {e['vendor_id']}  ({age})")
         lines.append("")
 
     if by_status.get("parse_error"):
         lines.append(f"--- Parse errors ({len(by_status['parse_error'])}) ---")
         for e in by_status["parse_error"]:
-            lines.append(f"  • {e['provider_id']}")
+            lines.append(f"  • {e['vendor_id']}")
         lines.append("")
 
     if report["cards_with_unknown_deployment_fields"] > 0:
@@ -456,7 +456,7 @@ def format_provider_card_status(report: dict[str, Any]) -> str:
         for e in report.get("by_provider", []):
             if e.get("unknown_deployment_fields"):
                 fields = ", ".join(e["unknown_deployment_fields"])
-                lines.append(f"  • {e['provider_id']}: {fields}")
+                lines.append(f"  • {e['vendor_id']}: {fields}")
         lines.append("")
 
     lines.append(f"Checked at: {report['checked_at']}")

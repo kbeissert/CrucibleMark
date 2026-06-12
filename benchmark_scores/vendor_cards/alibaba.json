@@ -1,5 +1,5 @@
 {
-  "provider_id": "alibaba",
+  "vendor_id": "alibaba",
   "display_name": "Alibaba (Qwen / DashScope)",
   "company": "Alibaba Cloud Intelligence Group (Aliyun Computing Co., Ltd.)",
   "headquarters": "Hangzhou, Zhejiang, China",

@@ -35,13 +35,35 @@ def _load_canonical_vendors() -> set[str]:
         return set()
 
 
+def _load_vendor_card_id_map() -> dict[str, str]:
+    """Gibt ein dict vendor_name → vendor_card_id aus der Taxonomy zurück.
+
+    Nur Hersteller mit gesetztem vendor_card_id-Feld werden aufgeführt.
+    Graceful: leeres Dict bei Ladefehler.
+    """
+    taxonomy_path = Path(__file__).parent.parent / "config" / "classification_taxonomy.json"
+    try:
+        with open(taxonomy_path, encoding="utf-8") as f:
+            taxonomy = json.load(f)
+        result: dict[str, str] = {}
+        for name, entry in taxonomy.get("manufacturers", {}).get("values", {}).items():
+            vid = entry.get("vendor_card_id")
+            if vid:
+                result[name] = vid
+        return result
+    except (OSError, json.JSONDecodeError, KeyError):
+        return {}
+
+
 def verify_cards():
     cards_dir = Path(__file__).parent.parent / "benchmark_scores" / "model_cards"
     issues = []
     all_model_ids = set()
 
-    # Kanonische Hersteller-Liste einmalig laden (SSoT: classification_taxonomy.json)
+    # Kanonische Hersteller-Liste + Vendor-Card-ID-Mapping laden (SSoT)
     canonical_vendors = _load_canonical_vendors()
+    vendor_card_id_map = _load_vendor_card_id_map()
+    vendor_cards_dir = Path(__file__).parent.parent / "benchmark_scores" / "vendor_cards"
 
     for card_file in sorted(cards_dir.glob("*.json")):
         with open(card_file) as f:
@@ -69,6 +91,17 @@ def verify_cards():
                 f"kanonischen Hersteller-Liste (config/classification_taxonomy.json "
                 f"→ manufacturers). Bitte Hersteller eintragen oder Alias ergänzen."
             )
+
+        # Vendor-Card vorhanden? (v4.9.1 SSoT-Link Taxonomy → vendor_cards/)
+        if vendor_val and vendor_val in vendor_card_id_map:
+            expected_file = vendor_cards_dir / f"{vendor_card_id_map[vendor_val]}.json"
+            if not expected_file.exists():
+                issues.append(
+                    f"🗂️  {card_file.stem}: vendor='{vendor_val}' hat vendor_card_id="
+                    f"'{vendor_card_id_map[vendor_val]}' in der Taxonomy, aber keine "
+                    f"Vendor Card unter benchmark_scores/vendor_cards/"
+                    f"{vendor_card_id_map[vendor_val]}.json"
+                )
 
         # Verifikations-Status prüfen (optional, aber empfohlen — v4.9.0)
         if "profile_verified" not in data:

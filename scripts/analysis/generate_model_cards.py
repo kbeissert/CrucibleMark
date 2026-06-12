@@ -365,7 +365,7 @@ def main() -> int:
     )
     parser.add_argument(
         "--card-type",
-        choices=["model", "provider", "all"],
+        choices=["model", "vendor", "all"],
         default="model",
         help="Welcher Card-Typ erzeugt werden soll (default: model)",
     )
@@ -399,11 +399,11 @@ def main() -> int:
     args = parser.parse_args()
 
     # Provider-Card-Erstellung ist nicht im Scope dieses Skripts
-    # (generate_provider_cards.py hat eigene LLM-basierte Pipeline).
-    if args.card_type in {"provider", "all"}:
+    # (generate_vendor_cards.py hat eigene LLM-basierte Pipeline).
+    if args.card_type in {"vendor", "all"}:
         logger.error(
             "Provider-Card-Erstellung wird durch "
-            "scripts/analysis/generate_provider_cards.py abgedeckt. "
+            "scripts/analysis/generate_vendor_cards.py abgedeckt. "
             "Dieses Skript ist auf Model Cards spezialisiert.",
         )
         return 2

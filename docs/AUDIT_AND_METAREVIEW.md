@@ -1,7 +1,7 @@
 # CrucibleMark: Audit-Logs & Meta-Review Workflow
 
 **Zielgruppe:** Alle, die den Audit-Workflow und das Meta-Review-System verstehen wollen.
-**Inhalt:** Audit-Log-Struktur, Meta-Review-Generierung, Web-Export-Sanitierung, Model/Provider Cards, Sovereign Risk, Anti-Halluzinations-Schutz
+**Inhalt:** Audit-Log-Struktur, Meta-Review-Generierung, Web-Export-Sanitierung, Model/Vendor Cards, Sovereign Risk, Anti-Halluzinations-Schutz
 
 Aus einem ursprünglichen Dev-Tool für Systemfehler-Debugging ist ein zentrales analytisches Feature geworden. Die Audit-Logs bieten ein transparentes Verständnis der Benchmarks von der Eingabe bis zur Auswertung. Sie sind im Markdown-Format strukturiert, sodass Mensch und Maschine sie lückenlos parsen und nachvollziehen können.
 
@@ -199,7 +199,7 @@ Alle 12 Modelle mit Shift > 1.0 aus dem initialen Benchmark-Run wurden im April 
 1. `qwen3.5:9b` — Shift 2.15, Zeit-Delta +149 % (Thinking-Architektur, Befund erst mit echten Tokens valide)
 2. `gemma4:26b` — Shift 2.67, Zeit-Delta −58 % (mögliches `CAPITULATION_DROP`-Signal)
 
-## Model Cards & Provider Cards als Reviewer-Kontext
+## Model Cards & Vendor Cards als Reviewer-Kontext
 
 Vor der eigentlichen Textgenerierung reichert `generate_review.py` den Prompt mit strukturierten Steckbriefen an:
 
@@ -219,7 +219,7 @@ Vor der eigentlichen Textgenerierung reichert `generate_review.py` den Prompt mi
 | `primary_focus`, `strengths`, `known_limitations` | Qualitative Einordnung (Freitext-Legacy) |
 | `judge_context_hint` | Verhaltenshinweis für den Judge (kein Datenschutz-Aspekt) |
 
-### Provider Card (`benchmark_scores/provider_cards/<provider_id>.json`)
+### Vendor Card (`benchmark_scores/vendor_cards/<provider_id>.json`)
 
 | Feld | Beschreibung |
 |---|---|
@@ -234,7 +234,7 @@ Vor der eigentlichen Textgenerierung reichert `generate_review.py` den Prompt mi
 
 ### Sovereign Risk
 
-Aus Model Card (Weights-Herkunft) und Provider Card (Deployment-Jurisdiktion) berechnet `compute_sovereign_risk()` eine kombinierte dreistufige Einschätzung:
+Aus Model Card (Weights-Herkunft) und Vendor Card (Deployment-Jurisdiktion) berechnet `compute_sovereign_risk()` eine kombinierte dreistufige Einschätzung:
 
 - **`high`:** Chinesisches NSL anwendbar (Weights oder Provider)
 - **`medium`:** US CLOUD Act via API — mit oder ohne EU-Absicherung (SCCs/DPA)
@@ -247,7 +247,7 @@ Diese Einschätzung erscheint im Datenschutz-Abschnitt jedes Review-Artikels und
 ```bash
 make model-cards MODEL=<id>           # neues Card-Template anlegen (dann manuell befüllen)
 make model-cards MODEL=<id> FORCE=1   # bestehendes Template überschreiben
-make provider-cards                   # alle fehlenden Provider Cards generieren
+make vendor-cards                   # alle fehlenden Vendor Cards generieren
 ```
 
 ## Non-Success-Kontext im Meta-Review (`{non_success_context}`)

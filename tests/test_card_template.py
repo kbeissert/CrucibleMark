@@ -31,10 +31,10 @@ class TestLoadCardTemplate:
         assert len(t.required_fields) > 30  # 39 erwartet
 
     def test_provider_template_loads(self) -> None:
-        t = load_card_template("provider")
-        assert t.card_type == "provider"
+        t = load_card_template("vendor")
+        assert t.card_type == "vendor"
         assert t.version == "1.0.0"
-        assert len(t.required_fields) == 16
+        assert len(t.required_fields) == 18
         assert len(t.optional_fields) >= 3
 
     def test_unknown_card_type_raises(self) -> None:
@@ -67,7 +67,7 @@ class TestLoadCardTemplate:
         assert t.is_known("totally_unknown_xyz") is False
 
     def test_provider_deployment_sub_fields(self) -> None:
-        t = load_card_template("provider")
+        t = load_card_template("vendor")
         f = t.get_field("deployment")
         assert f is not None
         assert "cloud_act_exposure" in f.sub_fields_required
@@ -134,9 +134,9 @@ class TestValidateCard:
 
     def test_valid_card_passes(self, tmp_path: Path) -> None:
         from utils.card_template import load_card_template
-        template = load_card_template("provider")
+        template = load_card_template("vendor")
         card = {
-            "provider_id": "testprov",
+            "vendor_id": "testprov",
             "display_name": "TestProv",
             "company": "Test Inc",
             "headquarters": "Test City",
@@ -160,6 +160,8 @@ class TestValidateCard:
             "generated_at": "2026-01-01T00:00:00+00:00",
             "last_verified_at": "2026-01-01",
             "verification_source": "https://example.com",
+            "profile_verified": True,
+            "profile_verified_at": "2026-01-01",
         }
         path = self._write_card(tmp_path, "testprov", card)
         report = self.vc.validate_card(path, template)
@@ -190,9 +192,9 @@ class TestValidateCard:
 
     def test_extras_field_detected(self, tmp_path: Path) -> None:
         from utils.card_template import load_card_template
-        template = load_card_template("provider")
+        template = load_card_template("vendor")
         card = {
-            "provider_id": "testprov",
+            "vendor_id": "testprov",
             "display_name": "X",
             "company": "X",
             "headquarters": "X",
@@ -227,9 +229,9 @@ class TestValidateCard:
 
     def test_missing_sub_field_detected(self, tmp_path: Path) -> None:
         from utils.card_template import load_card_template
-        template = load_card_template("provider")
+        template = load_card_template("vendor")
         card = {
-            "provider_id": "p", "display_name": "P", "company": "C",
+            "vendor_id": "p", "display_name": "P", "company": "C",
             "headquarters": "HQ", "founding_year": 2020, "pricing_model": "unknown",
             "api_base_url": None, "api_documentation_url": None,
             "deployment": {"cloud_act_exposure": False},  # nur 1 von 7 Sub-Feldern
@@ -299,8 +301,8 @@ class TestFormatReports:
             card_file="x.json", card_id="x",
             issue_type="drift_extras", field="y", message="y drift",
         ))
-        out = _json.loads(format_json_report([r], "provider"))
-        assert out["card_type"] == "provider"
+        out = _json.loads(format_json_report([r], "vendor"))
+        assert out["card_type"] == "vendor"
         assert out["total"] == 1
         assert out["invalid"] == 1
         assert out["cards"][0]["issues"][0]["field"] == "y"

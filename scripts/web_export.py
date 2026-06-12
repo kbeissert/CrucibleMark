@@ -128,6 +128,26 @@ def _build_vendor_alias_map(config_dir: Path) -> dict[str, str]:
     return alias_map
 
 
+def _build_vendor_card_id_lookup(config_dir: Path) -> dict[str, str]:
+    """Gibt ein dict kanonischer_vendor_name → vendor_card_id zurück (aus Taxonomy).
+
+    Wird im Web-Export verwendet um vendor_card_ref pro Modell zu setzen.
+    Graceful: leeres Dict bei Ladefehler.
+    """
+    taxonomy_path = config_dir / "classification_taxonomy.json"
+    result: dict[str, str] = {}
+    try:
+        with taxonomy_path.open("r", encoding="utf-8") as f:
+            taxonomy = json.load(f)
+        for name, entry in taxonomy.get("manufacturers", {}).get("values", {}).items():
+            vid = entry.get("vendor_card_id")
+            if vid:
+                result[name] = vid
+    except (OSError, json.JSONDecodeError, KeyError) as exc:
+        logging.warning("Vendor-Card-ID-Lookup konnte nicht geladen werden: %s", exc)
+    return result
+
+
 def _normalize_vendor(vendor: str | None, alias_map: dict[str, str]) -> str | None:
     """Normalisiert einen vendor-Wert auf den kanonischen Hersteller-Namen.
 
@@ -632,6 +652,7 @@ def _build_leaderboard_entry(
     review_updated_at: str | None,
     benchmark_run_at: str | None,
     inference_provider: str | None,
+    vendor_card_ref: str | None = None,
 ) -> dict[str, Any]:
     """Builds the leaderboard entry dict for a single model."""
     _card_version = extract_version(card.get("model_version")) if card else None
@@ -642,6 +663,8 @@ def _build_leaderboard_entry(
         "model_id": (card.get("model_id") if card else None) or (_raw_model_id or None),
         "model_name": (card.get("display_name") if card else None) or str(row.get("Model Name", "")),
         "vendor": vendor,
+        # SSoT-Link zum Vendor-Profil (v4.9.1): vendor_card_id aus classification_taxonomy.json
+        "vendor_card_ref": vendor_card_ref,
         "version": _card_version or _csv_version,
         "badge": str(row.get("Badge", "")),
         "badge_tier": extract_badge_tier(row.get("Badge")),
@@ -745,6 +768,9 @@ def _build_leaderboard_entry(
             "supports_tool_use": card.get("supports_tool_use"),
             # Heritage-IDs (v4.8.0): frühere kanonische model_ids — leer wenn nicht gesetzt.
             "heritage_ids": card.get("heritage_ids") or [],
+            # Profil-Verifikation (v4.9.0): wurde die Card manuell geprüft?
+            "profile_verified": card.get("profile_verified"),
+            "profile_verified_at": card.get("profile_verified_at"),
             # Optional v4.7.1 Thinking-Probe-Quartett: nur exportieren wenn gesetzt
             # (Sonde schreibt die Felder nur bei detektiertem CoT; sonst noise vermeiden).
             **(
@@ -938,13 +964,13 @@ def _build_tooluse_entry(model_id: str, root_dir: Path) -> "dict[str, Any] | Non
     return data
 
 
-def _collect_provider_cards(root_dir: Path) -> list[dict[str, Any]]:
-    """Sammelt alle Provider-Card-JSONs aus benchmark_scores/provider_cards/.
+def _collect_vendor_cards(root_dir: Path) -> list[dict[str, Any]]:
+    """Sammelt alle Provider-Card-JSONs aus benchmark_scores/vendor_cards/.
 
-    SSoT: benchmark_scores/provider_cards/ ist die einzige Quelle.
-    Spurious-Files (_index.json, ...) werden ueber 'provider_id'-Key gefiltert.
+    SSoT: benchmark_scores/vendor_cards/ ist die einzige Quelle.
+    Spurious-Files (_index.json, ...) werden ueber 'vendor_id'-Key gefiltert.
     """
-    cards_dir = root_dir / "benchmark_scores" / "provider_cards"
+    cards_dir = root_dir / "benchmark_scores" / "vendor_cards"
     if not cards_dir.exists():
         return []
     result: list[dict[str, Any]] = []
@@ -953,7 +979,7 @@ def _collect_provider_cards(root_dir: Path) -> list[dict[str, Any]]:
             data = json.loads(fp.read_text(encoding="utf-8"))
         except (json.JSONDecodeError, OSError):
             continue
-        if not isinstance(data, dict) or "provider_id" not in data:
+        if not isinstance(data, dict) or "vendor_id" not in data:
             continue  # Skip index/metadata files
         result.append(data)
     return result
@@ -974,7 +1000,7 @@ def _write_top_level_outputs(
     blacklist_source: str = "config/web_export_blacklist.yaml",
 ) -> None:
     """Writes leaderboard.json, political_compass.json, provider_stats.json, meta.json,
-    und provider_cards.json mit Souveraenitaets-/GDPR-Metadaten pro Provider.
+    und vendor_cards.json mit Souveraenitaets-/GDPR-Metadaten pro Provider.
 
     models_skipped_blacklist: Anzahl Modelle, die in diesem Run durch die Blacklist
         geblockt wurden. Plus blacklist_total_entries (SSoT-Anzahl in der Config)
@@ -1015,9 +1041,9 @@ def _write_top_level_outputs(
                 )
 
     # Provider-Cards mit Sovereign-Risk/GDPR/Privacy-Metadaten
-    provider_cards = _collect_provider_cards(root_dir)
+    provider_cards = _collect_vendor_cards(root_dir)
     if provider_cards:
-        with open(out_dir / "provider_cards.json", "w", encoding="utf-8") as f:
+        with open(out_dir / "vendor_cards.json", "w", encoding="utf-8") as f:
             json.dump(
                 _strip_emojis({"generated_at": generated_at, "providers": provider_cards}),
                 f, indent=2, ensure_ascii=False,
@@ -1047,7 +1073,7 @@ def _write_top_level_outputs(
                 "models_with_reviews": models_with_reviews,
                 "card_count": card_count,
                 "audit_log_count": audit_log_count,
-                "provider_card_count": len(provider_cards),
+                "vendor_card_count": len(provider_cards),
                 "blacklist": {
                     "source": blacklist_source,
                     "total_entries": blacklist_total_entries,
@@ -1057,7 +1083,7 @@ def _write_top_level_outputs(
                     "leaderboard": "benchmark_scores/benchmark_leaderboard_detailed.csv",
                     "political_compass": "benchmark_scores/political_compass_results.csv",
                     "model_cards": "benchmark_scores/model_cards/",
-                    "provider_cards": "benchmark_scores/provider_cards/",
+                    "vendor_cards": "benchmark_scores/vendor_cards/",
                     "audit_logs": "outputs/audit_logs/",
                 },
             },
@@ -1090,8 +1116,9 @@ def main() -> None:
 
     logging.info("🌐 Starting Web Export Pipeline...")
 
-    # Vendor-Alias-Map aus classification_taxonomy.json laden (SSoT für Hersteller-Normalisierung)
+    # Vendor-Alias-Map + Vendor-Card-ID-Lookup aus classification_taxonomy.json (SSoT)
     _vendor_alias_map = _build_vendor_alias_map(root_dir / "config")
+    _vendor_card_id_lookup = _build_vendor_card_id_lookup(root_dir / "config")
 
     provider_map = build_provider_map(root_dir / "benchmark_config.yaml")
     ldb, pc, pc_lb, provider_df = _load_sources(scores_dir)
@@ -1254,6 +1281,7 @@ def main() -> None:
             review_updated_at=review_updated_at,
             benchmark_run_at=benchmark_run_at,
             inference_provider=resolve_inference_provider(model_name, provider_map),
+            vendor_card_ref=_vendor_card_id_lookup.get(vendor) if vendor else None,
         )
         models_list.append(entry)
 

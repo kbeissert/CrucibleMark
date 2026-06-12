@@ -43,7 +43,7 @@ def main() -> None:
     )
     parser.add_argument(
         "--card-type",
-        choices=["model", "provider", "all"],
+        choices=["model", "vendor", "all"],
         default="all",
         help="Welcher Card-Typ synchronisiert werden soll (default: all)",
     )
@@ -64,7 +64,7 @@ def main() -> None:
     )
     args = parser.parse_args()
 
-    card_types = ["model", "provider"] if args.card_type == "all" else [args.card_type]
+    card_types = ["model", "vendor"] if args.card_type == "all" else [args.card_type]
     all_plans = []
     for ct in card_types:
         plans = sync_all(ct, dry_run=args.dry_run, yes=args.yes)

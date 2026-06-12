@@ -14,7 +14,7 @@
 
 version: "1.0.0"
 last_updated: "2026-06-08"
-card_type: "provider"
+card_type: "vendor"
 
 # ----------------------------------------------------------------------------
 # Pflichtfelder (16) — werden von Validator geprüft
@@ -22,7 +22,7 @@ card_type: "provider"
 required_fields:
 
   # --- Identität ---
-  - name: provider_id
+  - name: vendor_id
     type: str
     required: true
     default: null

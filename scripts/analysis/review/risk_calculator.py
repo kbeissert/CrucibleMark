@@ -11,7 +11,7 @@ if str(ROOT_DIR) not in sys.path:
     sys.path.insert(0, str(ROOT_DIR))
 
 from utils.model_utils import _find_card
-from utils.provider_card_template import load_provider_card
+from utils.vendor_card_template import load_vendor_card
 from utils.provider_detection import detect_provider_from_model_id
 
 _RISK_ORDER = {"low": 0, "medium": 1, "high": 2}
@@ -69,7 +69,7 @@ def compute_sovereign_risk(model_card: dict, provider_card: dict | None) -> tupl
     return best
 
 
-def get_provider_card_context(model_id: str) -> str:
+def get_vendor_card_context(model_id: str) -> str:
     """Load provider card, compute sovereign risk, return a formatted Markdown block."""
     model_card_path = _find_card(model_id)
     model_card: dict = {}
@@ -83,9 +83,9 @@ def get_provider_card_context(model_id: str) -> str:
 
     provider_card: dict | None = None
     if developer:
-        # SSoT-Pfad: load_provider_card() aus utils.provider_card_template.
+        # SSoT-Pfad: load_vendor_card() aus utils.vendor_card_template.
         # Verwirft automatisch unbekannte Cards und handhabt Parse-Fehler.
-        loaded = load_provider_card(developer)
+        loaded = load_vendor_card(developer)
         if loaded and not loaded.get("unknown"):
             provider_card = loaded
 

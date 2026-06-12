@@ -1,8 +1,8 @@
 .PHONY: \
 	help install install-dev \
 	benchmark political-compass political-compass-safe benchmark-cross-model benchmark-auto benchmark-human \
-	review reviews-auto reviews-auto-legacy reviews-bias-auto reviews-tooluse-auto reviews-all reviews-check review-new model-cards model-card provider-cards leaderboard provider-stats \
-	validate validate-single validate-assets validate-structure validate-cards validate-cards-template cards-sync provider-cards-update model-cards-update test diff-results analyze-costs update-prices sync-cost-limits \
+	review reviews-auto reviews-auto-legacy reviews-bias-auto reviews-tooluse-auto reviews-all reviews-check review-new model-cards model-card vendor-cards leaderboard vendor-stats \
+	validate validate-single validate-assets validate-structure validate-cards validate-cards-template cards-sync vendor-cards-update model-cards-update test diff-results analyze-costs update-prices sync-cost-limits \
 	list-models judge-health list-modules \
 	probe-thinking probe-all-thinking \
 	ensure-card ensure-cards \
@@ -53,7 +53,7 @@ help:
 	@printf "  %-25s %s\n" "leaderboard"     "Generiere CSV"
 	@printf "  %-25s %s\n" "review"          "Generiere Modell-Review (MODEL=)"
 	@printf "  %-25s %s\n" "reviews-auto"    "Alle Review-Typen (Sequenziell)"
-	@printf "  %-25s %s\n" "provider-stats"  "System-Performance"
+	@printf "  %-25s %s\n" "vendor-stats"  "System-Performance"
 	@printf "\n"
 	@printf "\033[1;32mCard-Lifecycle & Validierung\033[0m\n"
 	@printf "  %-25s %s\n" "model-cards"     "Erstelle/Update-Vorlagen"
@@ -107,18 +107,18 @@ ensure-card:
 ensure-cards:
 	$(PYTHON) scripts/dev/ensure_card_structure.py --missing $(if $(ALL),--all) $(if $(DRY),--dry-run)
 
-provider-cards:
+vendor-cards:
 	@if [ -n "$(PROVIDER)" ]; then \
 		echo "Generiere Provider Card fuer $(PROVIDER)..."; \
-		$(PYTHON) scripts/analysis/generate_provider_cards.py --provider "$(PROVIDER)" $(if $(FORCE),--force); \
+		$(PYTHON) scripts/analysis/generate_vendor_cards.py --provider "$(PROVIDER)" $(if $(FORCE),--force); \
 	else \
 		echo "Generiere alle fehlenden Provider Cards..."; \
-		$(PYTHON) scripts/analysis/generate_provider_cards.py $(if $(FORCE),--force); \
+		$(PYTHON) scripts/analysis/generate_vendor_cards.py $(if $(FORCE),--force); \
 	fi
 
-provider-cards-status:
+vendor-cards-status:
 	@echo "Pruefe Provider Card Status (stale nach $(or $(STALE_DAYS),90) Tagen)..."
-	@$(PYTHON) scripts/analysis/provider_card_status.py $(if $(STALE_DAYS),--stale-days $(STALE_DAYS),) $(if $(JSON),--json,)
+	@$(PYTHON) scripts/analysis/vendor_card_status.py $(if $(STALE_DAYS),--stale-days $(STALE_DAYS),) $(if $(JSON),--json,)
 
 validate-cards-template:
 	@echo "=== Card-Template-Validierung (SSoT: config/card_template_*.yaml) ==="
@@ -131,7 +131,7 @@ validate-cards-template:
 		$(if $(FAIL_ON_DRIFT),--fail-on-drift,)
 
 cards-sync:
-	@echo "=== Card-Sync mit Python-Dict-Template (utils/card_utils + utils/provider_card_template) ==="
+	@echo "=== Card-Sync mit Python-Dict-Template (utils/card_utils + utils/vendor_card_template) ==="
 	@echo "Add:  fehlende Felder mit Default ergaenzen (automatisch)."
 	@echo "Del:  Felder ohne Template entfernen (mit Bestaetigung)."
 	@echo ""
@@ -141,9 +141,9 @@ cards-sync:
 		$(if $(YES),--yes,) \
 		$(if $(JSON),--json,)
 
-provider-cards-update:
-	@echo "=== Provider Card Update (--update in generate_provider_cards.py) ==="
-	@$(PYTHON) scripts/analysis/generate_provider_cards.py --update \
+vendor-cards-update:
+	@echo "=== Provider Card Update (--update in generate_vendor_cards.py) ==="
+	@$(PYTHON) scripts/analysis/generate_vendor_cards.py --update \
 		$(if $(YES),--yes,) \
 		$(if $(DRY_RUN),--dry-run,)
 
@@ -164,9 +164,9 @@ probe-all-thinking:
 	@echo "Probe fuer alle Cards ohne Probe-Feld..."
 	$(PYTHON) scripts/tools/probe_thinking.py --missing
 
-provider-stats:
+vendor-stats:
 	@echo "Aggregating Provider Stats (Ping vs System Speed)..."
-	$(PYTHON) scripts/analysis/generate_provider_stats.py
+	$(PYTHON) scripts/analysis/generate_vendor_stats.py
 	@echo "Generating Provider Landscape Review..."
 	$(PYTHON) scripts/analysis/generate_review.py -t provider
 

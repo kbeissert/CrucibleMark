@@ -34,7 +34,7 @@ from utils.model_utils import (
     get_model_specialization,
     get_use_case_primary,
 )
-from utils.provider_card_template import _safe_id
+from utils.vendor_card_template import _safe_id
 from scripts.analysis.review import (
     build_constraint_violations_summary,
     build_empty_response_context,
@@ -44,7 +44,7 @@ from scripts.analysis.review import (
     format_classification_context,
     get_model_card_context,
     get_model_metrics,
-    get_provider_card_context,
+    get_vendor_card_context,
 )
 
 # Maximum characters of audit-log data fed to the LLM reviewer.
@@ -156,7 +156,7 @@ def _ensure_model_card(
         return {}
 
 
-def _ensure_provider_card(
+def _ensure_vendor_card(
     developer: str | None,
     client: LLMClient,
     card_provider: str,
@@ -168,11 +168,11 @@ def _ensure_provider_card(
     if not developer:
         return {}
 
-    # SSoT-Pfad: SSoT-Lookup via load_provider_card().
-    from utils.provider_card_template import CARDS_DIR, load_provider_card
+    # SSoT-Pfad: SSoT-Lookup via load_vendor_card().
+    from utils.vendor_card_template import CARDS_DIR, load_vendor_card
     card_path = CARDS_DIR / f"{_safe_id(developer)}.json"
     if card_path.exists():
-        existing = load_provider_card(developer)
+        existing = load_vendor_card(developer)
         if existing:
             return existing
 
@@ -190,15 +190,15 @@ def _ensure_provider_card(
             return None
 
     print(f"  Generiere Provider Card für {developer} ...")
-    # Direkter Aufruf statt Reflection: generate_provider_cards_full() iteriert
+    # Direkter Aufruf statt Reflection: generate_vendor_cards_full() iteriert
     # die Provider-Liste und ruft _generate_card/_write_card intern.
     # Hier filtern wir auf den einen Provider via force-Logik im Caller-Pfad.
-    from scripts.analysis.generate_provider_cards import (
+    from scripts.analysis.generate_vendor_cards import (
         _load_stats_from_csv,
         _generate_card,
         _write_card,
     )
-    from utils.provider_card_template import rebuild_provider_index
+    from utils.vendor_card_template import rebuild_provider_index
     all_stats: dict = _load_stats_from_csv()
     stats = all_stats.get(developer, {})
     provider_id = _safe_id(developer)
@@ -229,7 +229,7 @@ def _ensure_dependencies(
     if not developer:
         developer = detect_provider(model_id)
 
-    if _ensure_provider_card(developer, client, card_provider, card_model, auto_mode, dry_run) is None:
+    if _ensure_vendor_card(developer, client, card_provider, card_model, auto_mode, dry_run) is None:
         return None
 
     return {}
@@ -487,7 +487,7 @@ def process_model_review(
         "model_provider_type": model_metrics.get("Type", "n/a"),
         "model_size_class": _size_class,
         "model_card_context": get_model_card_context(tested_model_name),
-        "provider_card_context": get_provider_card_context(tested_model_name),
+        "vendor_card_context": get_vendor_card_context(tested_model_name),
         "token_efficiency_context": token_efficiency_context,
         "constraint_violations_context": constraint_violations_context,
         "empty_response_context": empty_response_context,
@@ -925,7 +925,7 @@ def main() -> None:
         print("📊 Lade Provider Leaderboard...")
         csv_path = ROOT_DIR / "benchmark_scores" / "provider_leaderboard.csv"
         if not csv_path.exists():
-            print("❌ provider_leaderboard.csv nicht gefunden. Bitte erst generate_provider_stats.py ausführen.")
+            print("❌ provider_leaderboard.csv nicht gefunden. Bitte erst generate_vendor_stats.py ausführen.")
             return
 
         csv_data = csv_path.read_text(encoding="utf-8")
