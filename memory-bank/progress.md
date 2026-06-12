@@ -2,6 +2,32 @@
 
 Letzte Releases + aktueller Stand. Vollständige Historie: `reference/decisions-log.md`.
 
+### 2026-06-12 — v4.9.4 Auto-Review Webexport-Blacklist Integration
+
+**Commits:** TBD. **Tests:** Keine neuen Tests (Feature-Ergänzung in bestehendem Workflow).
+
+**Hintergrund:** Modelle auf der Webexport-Blacklist benötigen kein Review, da sie nicht im Web-Export publiziert werden. Der Auto-Review-Modus sollte diese Modelle automatisch überspringen.
+
+**Implementierung (`scripts/analysis/generate_review.py`):**
+
+1. **Neue Funktion `_load_webexport_blacklist()` (Zeile 60-76):**
+   - Liest `config/web_export_blacklist.yaml → blacklist`-Array
+   - Returniert `set[str]` für O(1)-Lookup-Performance
+   - Fehlertoleranz: Bei Ladefehlern wird leeres Set zurückgegeben (+ Warnung)
+
+2. **Skip-Check in `_run_per_model_all_reviews()` (Zeile 732-735):**
+   - `blacklist = _load_webexport_blacklist() if args.auto else set()`
+   - Vor Review-Generierung: `if args.auto and slug in blacklist: print("⏩ ... Auf Webexport-Blacklist → Review wird übersprungen."); continue`
+
+3. **Skip-Check in `_run_audit_reviews()` (Zeile 793, 810-814):**
+   - Analog zur Per-Model-Funktion — Blacklist nur im `--auto`-Modus geladen und geprüft
+
+**Scope:** Nur `--auto`-Modus betroffen (`make reviews-auto`). Manuelle Review-Aufrufe für einzelne Modelle ignorieren die Blacklist.
+
+**Dokumentation:** `docs/AUDIT_AND_METAREVIEW.md` Sektion 2 um Webexport-Blacklist-Hinweis ergänzt.
+
+---
+
 ### 2026-06-12 — v4.9.3 Vendor Card: description-Feld + editor_prompts-Fix
 
 **Commits:** `871fa8c` (feat) + `2b4a433` (fix). **803/803 Tests grün.**

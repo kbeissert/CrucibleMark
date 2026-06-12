@@ -73,7 +73,11 @@ Dieser Befehl stoppt nicht bei der Score-Ermittlung, sondern schließt den Proze
 make reviews-auto
 ```
 
-Iteriert über alle Modelle in `outputs/audit_logs/` und generiert fehlende oder veraltete Reviews. **Skip-Logik (mtime-basiert):** Ein Review wird übersprungen, wenn das neueste Review-File jünger oder gleich alt ist wie das neueste Audit-Log — d.h. seit dem letzten Review wurde kein neuer Benchmark-Run durchgeführt. Sobald `benchmark-auto` neue Audit-Logs schreibt, erkennt `reviews-auto` die Lücke und generiert automatisch nach.
+Iteriert über alle Modelle in `outputs/audit_logs/` und generiert fehlende oder veraltete Reviews. 
+
+**Skip-Logik (mtime-basiert):** Ein Review wird übersprungen, wenn das neueste Review-File jünger oder gleich alt ist wie das neueste Audit-Log — d.h. seit dem letzten Review wurde kein neuer Benchmark-Run durchgeführt. Sobald `benchmark-auto` neue Audit-Logs schreibt, erkennt `reviews-auto` die Lücke und generiert automatisch nach.
+
+**Webexport-Blacklist:** Modelle, die in `config/web_export_blacklist.yaml` aufgeführt sind, werden im Auto-Modus automatisch übersprungen. Diese Modelle erhalten kein Review, da sie auch nicht im Web-Export veröffentlicht werden. Die Blacklist-Filterung greift nur bei `make reviews-auto` (bzw. `--auto`), nicht bei manuellen Review-Aufrufen für einzelne Modelle.
 
 ```bash
 make reviews-auto FORCE=1   # Skip-Logik deaktivieren, alle Reviews neu generieren

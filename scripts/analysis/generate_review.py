@@ -57,6 +57,23 @@ def load_config() -> dict:
         return yaml.safe_load(f)
 
 
+def _load_webexport_blacklist() -> set[str]:
+    """Load web export blacklist model IDs.
+    
+    Returns set of blacklisted model_ids that should be skipped in auto-review.
+    """
+    blacklist_path = ROOT_DIR / "config" / "web_export_blacklist.yaml"
+    try:
+        with open(blacklist_path, "r", encoding="utf-8") as f:
+            data = yaml.safe_load(f)
+            blacklist = data.get("blacklist", [])
+            # Return as set for fast O(1) lookup
+            return set(blacklist) if blacklist else set()
+    except Exception as e:
+        print(f"⚠️ Konnte Webexport-Blacklist nicht laden: {e}")
+        return set()
+
+
 def _load_classification_taxonomy() -> dict:
     """Load classification_taxonomy.json; returns empty dict on failure."""
     path = ROOT_DIR / "config" / "classification_taxonomy.json"
@@ -722,7 +739,15 @@ def _run_per_model_all_reviews(
 
     print(f"📦 {len(slugs)} Modelle gefunden. Iteriere per Modell: Benchmark → PC-Bias → Tool-Use …\n")
 
+    # Lade Webexport-Blacklist für Auto-Review-Skip
+    blacklist = _load_webexport_blacklist() if args.auto else set()
+
     for idx, slug in enumerate(slugs, 1):
+        # Webexport-Blacklist-Check: Modelle auf der Blacklist im Auto-Modus überspringen
+        if args.auto and slug in blacklist:
+            print(f"⏩ [{idx}/{len(slugs)}] {slug}: Auf Webexport-Blacklist → Review wird übersprungen.")
+            continue
+
         print(f"\n{'=' * 64}")
         print(f"📦 MODELL [{idx}/{len(slugs)}]: {slug}")
         print(f"{'=' * 64}")
@@ -770,6 +795,9 @@ def _run_audit_reviews(
     found_models = False
 
     safe_target_model = _safe_name(args.model) if args.model else None
+    
+    # Lade Webexport-Blacklist für Auto-Review-Skip
+    blacklist = _load_webexport_blacklist() if args.auto else set()
 
     _configured_safe_ids: set[str] = set()
     try:
@@ -788,6 +816,12 @@ def _run_audit_reviews(
         # korrekt gematcht werden.
         if safe_target_model and _safe_name(subdir.name) != safe_target_model:
             continue
+        
+        # Webexport-Blacklist-Check: Modelle auf der Blacklist im Auto-Modus überspringen
+        if args.auto and subdir.name in blacklist:
+            print(f"⏩ {subdir.name}: Auf Webexport-Blacklist → Review wird übersprungen.")
+            continue
+        
         found_models = True
 
         # Heritage-ID-Fallback: prüfe ob subdir.name eine veraltete ID ist,

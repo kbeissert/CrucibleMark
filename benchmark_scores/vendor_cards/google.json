@@ -1,0 +1,35 @@
+{
+  "vendor_id": "google",
+  "display_name": "Google DeepMind",
+  "company": "Google LLC",
+  "headquarters": "Mountain View, CA, USA",
+  "founding_year": 1998,
+  "pricing_model": "free-tier+pay-per-token",
+  "api_base_url": "https://generativelanguage.googleapis.com",
+  "api_documentation_url": "https://ai.google.dev/docs",
+  "deployment": {
+    "cloud_act_exposure": true,
+    "applicable_law": "US (CLOUD Act)",
+    "data_residency": "Unknown",
+    "gdpr_dpa_available": true,
+    "eu_adequacy_decision": true,
+    "data_retention_days": -1,
+    "chinese_nsl_risk": "none"
+  },
+  "privacy_note": "Google ist ein US-Anbieter; API-Daten können daher dem US CLOUD Act unterliegen. Für EU-Nutzer besteht zudem ein Risiko bei grenzüberschreitenden Datenübermittlungen, wenn keine zugesicherte EU-Datenresidenz für den konkret genutzten API-Dienst vorliegt.",
+  "notable_models": [
+    "Gemini 1.5 Pro",
+    "Gemini 1.5 Flash"
+  ],
+  "stats": {
+    "models_tracked": 5,
+    "median_tokens_per_s": 59.59,
+    "median_avg_task_duration_s": 17.66,
+    "cost_per_1k_median_usd": 0.009,
+    "active_ping_ttfb_ms": 681
+  },
+  "unknown": false,
+  "generated_at": "2026-06-12T16:06:39.381799+00:00",
+  "last_verified_at": null,
+  "verification_source": "https://ai.google.dev/gemini-api/docs"
+}

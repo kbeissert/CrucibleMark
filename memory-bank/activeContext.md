@@ -15,6 +15,7 @@ to know what reference files exist.
 
 ## Aktueller Status (2026-06-12)
 
+- **v4.9.5 abgeschlossen (2026-06-12):** Auto-Review Webexport-Blacklist Integration. `scripts/analysis/generate_review.py`: Neue Funktion `_load_webexport_blacklist()`, Skip-Checks in `_run_per_model_all_reviews()` + `_run_audit_reviews()` (nur `--auto`-Modus). Dokumentation in `docs/AUDIT_AND_METAREVIEW.md` Sektion 2 ergänzt. Memory Bank aktualisiert. Commit ausstehend.
 - **v4.9.4 abgeschlossen (2026-06-12):** Model Card Verification v1.1.0 vollständig durchgeführt. 98/98 Model Cards auf `profile_verified: true` und `profile_verified_at: "2026-06-12"` gesetzt. Korrekturen: 14 `supports_tool_use: null` → `true` (Cloud/agentic-fähige Modelle), 7 → `false` (lokale GGUF), 4 `model_version: "k.A."` → korrekte Versionsnummer, 19 open-weights/localweights Preise `0/0.0` → `null`, 9 Karten `community: "Unsloth"`, 1 `community: "HauhauCS"`. Index-Rebuild via SSoT-Tool. Backup in `benchmark_scores/model_cards/.backup_pre_verification/`.
 - **v4.9.3 abgeschlossen (2026-06-12):** `description`-Feld in Vendor Card Template ergänzt (Template v1.1.0, Constraints min 240/max 480/target 360). `config/editor_prompts.yaml` Pfad- und Feldname-Fixes (`vendor_cards/`, `vendor_id`). Tests grün. Commits `871fa8c` + `2b4a433` gepusht.
 - **v4.9.2 abgeschlossen (2026-06-12):** `card_subtype`-Feld in Vendor Card Template.
@@ -92,6 +93,7 @@ Mögliche Anlässe für User-Aktivität (alle aus dem Backlog):
 
 ## Letzte Änderungen
 
+- **2026-06-12 (v4.9.5):** Auto-Review Webexport-Blacklist Integration. `generate_review.py`: `_load_webexport_blacklist()` + Skip-Checks (nur `--auto`-Modus). `AUDIT_AND_METAREVIEW.md` Sektion 2 ergänzt. Memory Bank aktualisiert.
 - **2026-06-12 (v4.9.3):** `description`-Feld in Vendor Card Template (v1.1.0). `editor_prompts.yaml` Pfad+Feldname-Fix. Commits `871fa8c` + `2b4a433`. README, CHANGELOG, PROJECT_STATUS, Memory Bank, CARD_MANAGEMENT, REF_TODO synchronisiert.
 - **2026-06-12 (v4.9.1):** Provider Cards → Vendor Cards vollständiges Rename-Refactoring. Commit `570bc0f` gepusht. 50 Files geändert (26 Renames + Content-Updates). 803 Tests grün. Details: `progress.md`.
 - **2026-06-12 (Session 16 + Cleanup):** Provider Cards konsolidiert: 20 → 17 Einträge. Commit `9e7fb0a` gepusht. v4.9.0 Card-Datenpflege-System vollständig abgeschlossen.
