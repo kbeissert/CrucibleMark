@@ -1119,8 +1119,8 @@ def _write_top_level_outputs(
                     f, indent=2, ensure_ascii=False,
                 )
 
-    # Vendor-Cards mit Sovereign-Risk/GDPR/Privacy-Metadaten
-    vendor_cards = _collect_vendor_cards(root_dir)
+    # Vendor-Cards mit Sovereign-Risk/GDPR/Privacy-Metadaten (Community-Cards ausgeschlossen)
+    vendor_cards = [c for c in _collect_vendor_cards(root_dir) if c.get("card_subtype") != "community"]
     if vendor_cards:
         with open(out_dir / "vendor_cards.json", "w", encoding="utf-8") as f:
             json.dump(
