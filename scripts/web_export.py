@@ -25,7 +25,7 @@ if str(_ROOT_DIR) not in sys.path:
 import pandas as pd
 import yaml
 from utils.config_validator import ConfigValidator
-from utils.model_utils import _find_card, _safe_name, WEIGHTS_TIER_DISPLAY
+from utils.model_utils import _find_card, _safe_name, WEIGHTS_TIER_DISPLAY, get_deployment_category, get_hardware_profile
 from utils.card_utils import normalize_tags
 
 
@@ -745,6 +745,11 @@ def _build_leaderboard_entry(
         "weights_license_tier": card.get("weights_license_tier") if card else None,
         "inference_provider": inference_provider,
         "provider_code": str(row.get("Provider Code", "")) or None,
+        # Deployment-Kategorie (api | cloud | local) — SSoT für Scoreboard-Haupt-Badge
+        # Wird aus Leaderboard-CSV-Spalte gelesen (gesetzt in scripts/leaderboard/__init__.py)
+        "deployment_category": str(row.get("Deployment Category", "")) or None,
+        # Hardware-Profil-Key — nur bei lokalen Providern gesetzt (m4_macbook_pro_metal, dgx_spark_cuda, ...)
+        # Frontend nutzt diesen Key für Tooltip / Sub-Badge unter dem LCL-Badge
         "hardware_profile": str(row.get("Hardware Profile", "")) or None,
         "total_score": normalize_pending(row.get("Total Score")),
         "routine_score": normalize_pending(row.get("Routine Score")),

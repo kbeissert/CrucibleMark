@@ -2,12 +2,31 @@
 # Modell-IDs müssen exakt der jeweiligen Anbieter-API entsprechen.
 # Duplikate (gleiche id in mehreren Providern) → WARNING beim Start, zweiter Eintrag wird ignoriert.
 
+# ---------------------------------------------------------------------------
+# Hardware-Profile — SSoT für Inferenz-Hardware-Identifikation
+# ---------------------------------------------------------------------------
+# Jeder lokale Provider referenziert ein hardware_profile (Pflichtfeld).
+# Die Labels hier werden im Frontend als Tooltip / Sub-Badge unter dem
+# Deployment-Badge "LCL" angezeigt.
+# Neue Hardware: Eintrag ergänzen + llamacpp-Variante in providers.local anlegen.
+hardware_profiles:
+  m4_macbook_pro_metal:
+    label: "M4 Pro"
+    description: "MacBook Pro M4 Max, Apple Metal GPU, ~36–48 GB Unified Memory"
+  dgx_spark_cuda:
+    label: "DGX Spark"
+    description: "NVIDIA DGX Spark, CUDA GPU, ~128 GB Unified Memory"
+  rtx4070_cuda:
+    label: "RTX 4070"
+    description: "Gaming-PC, NVIDIA RTX 4070, 12 GB VRAM, CUDA"
+
 providers:
   # ── Proprietäre APIs (Kosten per Token) ───────────────────────────────────────
   commercial:
     mistral:
       name: Mistral AI
       short_code: API
+      deployment_category: api    # api | cloud | local
       api_type: mistral
       token_param_name: max_tokens
       model_type: proprietary_api
@@ -36,6 +55,7 @@ providers:
     anthropic:
       name: Anthropic
       short_code: API
+      deployment_category: api
       api_type: anthropic
       model_type: proprietary_api
       enabled: true
@@ -59,6 +79,7 @@ providers:
     openai:
       name: OpenAI
       short_code: API
+      deployment_category: api
       api_type: openai
       token_param_name: max_completion_tokens
       model_type: proprietary_api
@@ -98,6 +119,7 @@ providers:
     google:
       name: Google Gemini
       short_code: API
+      deployment_category: api
       api_type: google
       model_type: proprietary_api
       enabled: true
@@ -119,6 +141,7 @@ providers:
     xai:
       name: xAI (Grok)
       short_code: API
+      deployment_category: api
       api_type: xai
       token_param_name: max_completion_tokens
       model_type: proprietary_api
@@ -143,6 +166,7 @@ providers:
     groq:
       name: Groq Cloud
       short_code: GR
+      deployment_category: cloud  # Open-Weights über Cloud-Proxy
       api_type: groq
       token_param_name: max_completion_tokens
       model_type: open_weights_cloud
@@ -168,6 +192,7 @@ providers:
     openrouter:
       name: OpenRouter
       short_code: OR
+      deployment_category: cloud  # Open-Weights und proprietäre Modelle über Cloud-Proxy
       api_type: openrouter
       token_param_name: max_tokens
       model_type: open_weights_cloud
@@ -264,6 +289,8 @@ providers:
 
     ollama_cloud:
       name: Ollama (Cloud Proxies)
+      short_code: CLD
+      deployment_category: cloud
       api_type: ollama
       model_type: open_weights_cloud
       enabled: false  # Paywall – via OpenRouter abgedeckt
@@ -321,6 +348,7 @@ providers:
     ollama_local:
       name: Ollama (Local)
       short_code: LCL
+      deployment_category: local  # Läuft im lokalen Intranet
       api_type: ollama
       enabled: false
       auto_discover: true
@@ -350,7 +378,8 @@ providers:
     #   was für Puffer + KV-Cache bei 12B-14B Modellen (Q4-Q6) ausreichend ist.
     llamacpp:
       name: Llama.cpp (MacBook Pro)
-      short_code: M4APL
+      short_code: LCL              # Deployment-Kategorie: lokal (Hardware-Detail via hardware_profile)
+      deployment_category: local
       api_type: llamacpp
       model_type: open_weights_local
       enabled: true
@@ -461,7 +490,8 @@ providers:
     #   Server-Start nach Refactoring (llamacpp_batch.py) deutlich schneller: Timeout von 420s → 180s.
     llamacpp_spark:
       name: Llama.cpp (DGX Spark)
-      short_code: SPRK
+      short_code: LCL              # Deployment-Kategorie: lokal (Hardware-Detail via hardware_profile)
+      deployment_category: local
       api_type: llamacpp
       model_type: open_weights_local
       enabled: true

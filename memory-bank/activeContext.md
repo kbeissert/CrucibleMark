@@ -13,7 +13,16 @@ to know what reference files exist.
 
 # Active Context
 
-## Aktueller Status (2026-06-12)
+## Aktueller Status (2026-06-13)
+
+- **Session 18 abgeschlossen (2026-06-13) — Deployment-Badge-Refactoring (Two-Layer):**
+  - **Kontext:** Scoreboard zeigte für lokale llamacpp-Modelle keinen Badge. Clarification: „lokal" = gesamtes Intranet (M4 MacBook, DGX Spark, Gaming-PC RTX 4070), nicht nur Ollama.
+  - **Architektur-Entscheidung:** Zweischichtiges Deployment-Identifikations-System — Deployment-Category als primärer Badge + Hardware-Profile als Tooltip/Detail.
+  - **`config/provider_config.yaml`:** Neuer Top-Level-Abschnitt `hardware_profiles` (3 Einträge: `m4_macbook_pro_metal`, `dgx_spark_cuda`, `rtx4070_cuda`). Alle Provider erhalten `deployment_category` (api/cloud/local). `llamacpp.short_code` M4APL → LCL; `llamacpp_spark.short_code` SPRK → LCL.
+  - **`utils/model_utils.py`:** 3 neue Dicts: `_PROVIDER_DEPLOYMENT_CATEGORY`, `_PROVIDER_HARDWARE_PROFILES`, sowie 2 neue Funktionen: `get_deployment_category(provider) → str`, `get_hardware_profile(provider) → str | None`.
+  - **`scripts/leaderboard/__init__.py`:** 2 neue Spalten: `Deployment Category` + `Hardware Profile`.
+  - **`scripts/web_export.py`:** 3 neue JSON-Felder pro Modell: `provider_code`, `deployment_category`, `hardware_profile`.
+  - **`docs/MODEL_CLASSIFICATION.md`:** Sektion „Provider-Kategorien" → „Provider-Kategorien & Deployment-Badges" komplett neu geschrieben (Two-Layer-Architektur, Hardware-Profil-Tabelle, Schritt-für-Schritt-Anleitung für neue Hardware).
 
 - **Session 17 abgeschlossen (2026-06-12) — 4 SSoT-Robustness-Fixes (Commits e5799bb, 3225a78, 4aaf450, 411e5e3):**
   - **Architektur-Prinzip etabliert:** `model_id` aus der Model Card ist der einzige SSOT-Kommunikations-Anker für alle Lookups — niemals Display-Namen oder abgeleitete Strings.
@@ -100,6 +109,7 @@ Mögliche Anlässe für User-Aktivität (alle aus dem Backlog):
 
 ## Letzte Änderungen
 
+- **2026-06-13 (Session 18):** Deployment-Badge-Refactoring. `provider_config.yaml`: `hardware_profiles`-Block + `deployment_category` pro Provider + LCL-Shortcodes (M4APL→LCL, SPRK→LCL). `model_utils.py`: `_PROVIDER_DEPLOYMENT_CATEGORY`, `_PROVIDER_HARDWARE_PROFILES`, `get_deployment_category()`, `get_hardware_profile()`. Leaderboard: 2 neue Spalten. Web-Export: 3 neue Felder. `MODEL_CLASSIFICATION.md` neu geschrieben.
 - **2026-06-12 (Session 17):** 4 SSoT-Robustness-Fixes. `generate_review.py`: Tooluse-Schritt nach Loop mit `model=None` (3225a78), Blacklist-Check via `model_id` (411e5e3). `web_export.py`: PC-Lookup via `raw_model_id` statt Display-Name (4aaf450). `system_context.py` + `generate_review.py`: Hardware-Profil aus `provider_config.yaml` SSoT (e5799bb). Architektur-Prinzip: `model_id` = einziger Kommunikations-Anker. Memory Bank aktualisiert.
 - **2026-06-12 (v4.9.5):** Auto-Review Webexport-Blacklist Integration. `generate_review.py`: `_load_webexport_blacklist()` + Skip-Checks (nur `--auto`-Modus). `AUDIT_AND_METAREVIEW.md` Sektion 2 ergänzt. Memory Bank aktualisiert.
 - **2026-06-12 (v4.9.3):** `description`-Feld in Vendor Card Template (v1.1.0). `editor_prompts.yaml` Pfad+Feldname-Fix. Commits `871fa8c` + `2b4a433`. README, CHANGELOG, PROJECT_STATUS, Memory Bank, CARD_MANAGEMENT, REF_TODO synchronisiert.

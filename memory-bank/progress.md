@@ -2,6 +2,60 @@
 
 Letzte Releases + aktueller Stand. Vollständige Historie: `reference/decisions-log.md`.
 
+### 2026-06-13 (Session 18) — Deployment-Badge-Refactoring (Two-Layer-Architektur)
+
+**Kontext:** Scoreboard zeigte für lokale llamacpp-Modelle (`llamacpp`, `llamacpp_spark`) keinen Deployment-Badge — M4APL/SPRK waren Ollama-Ära-Artefakte ohne einheitliche „lokal"-Kategorie. User-Clarification: „lokal" = gesamtes Intranet (M4 MacBook Pro, DGX Spark, Gaming-PC RTX 4070), nicht nur Ollama.
+
+**Architektur-Entscheidung:** Zweischichtiges System:
+- **Layer 1 — Deployment-Category (Badge):** `LCL` / `API` / `OR` / `GR` / `CLD` — primärer Shortcode im Scoreboard
+- **Layer 2 — Hardware-Profile (Detail/Tooltip):** `m4_macbook_pro_metal` / `dgx_spark_cuda` / `rtx4070_cuda` — gerätespezifischer Kontext
+
+**`config/provider_config.yaml`:**
+- Neuer Top-Level-Block `hardware_profiles` mit 3 Einträgen:
+  - `m4_macbook_pro_metal`: Apple M4 Pro, 24 GB unified memory, Metal backend
+  - `dgx_spark_cuda`: NVIDIA DGX Spark, GB10 Superchip, ~115 GB
+  - `rtx4070_cuda`: NVIDIA RTX 4070, 12 GB VRAM, CUDA backend
+- `deployment_category` zu allen Providern ergänzt: `api` (anthropic, openai, google, xai, mistral), `cloud` (groq, openrouter, ollama_cloud), `local` (ollama_local, llamacpp, llamacpp_spark)
+- `llamacpp.short_code`: `M4APL` → `LCL`
+- `llamacpp_spark.short_code`: `SPRK` → `LCL`
+
+**`utils/model_utils.py`:**
+```python
+_PROVIDER_DEPLOYMENT_CATEGORY: dict[str, str] = {
+    "anthropic": "api", "openai": "api", "google": "api", "xai": "api", "mistral": "api",
+    "openrouter": "cloud", "groq": "cloud", "ollama_cloud": "cloud",
+    "ollama": "local", "ollama_local": "local", "local": "local",
+    "llamacpp": "local", "llamacpp_spark": "local", "llama_cpp": "local", "llamacpp_local": "local",
+}
+
+_PROVIDER_HARDWARE_PROFILES: dict[str, str] = {
+    "llamacpp": "m4_macbook_pro_metal",
+    "llamacpp_spark": "dgx_spark_cuda",
+    "llama_cpp": "m4_macbook_pro_metal",
+    "llamacpp_local": "m4_macbook_pro_metal",
+}
+
+def get_deployment_category(provider: str) -> str:
+    return _PROVIDER_DEPLOYMENT_CATEGORY.get(str(provider).lower().strip(), "local")
+
+def get_hardware_profile(provider: str) -> str | None:
+    return _PROVIDER_HARDWARE_PROFILES.get(str(provider).lower().strip())
+```
+- `_PROVIDER_SHORTCODES`: `llamacpp` + `llamacpp_spark` + alle lokalen Varianten → `LCL`
+
+**`scripts/leaderboard/__init__.py`:**
+- Import: `get_deployment_category`, `get_hardware_profile`
+- Step 10: 2 neue Spalten: `Deployment Category` + `Hardware Profile`
+
+**`scripts/web_export.py`:**
+- Import: `get_deployment_category`, `get_hardware_profile`
+- `_build_leaderboard_entry()`: 3 neue Felder: `provider_code`, `deployment_category`, `hardware_profile`
+
+**`docs/MODEL_CLASSIFICATION.md`:**
+- Sektion „Provider-Kategorien" → „Provider-Kategorien & Deployment-Badges" komplett neu: Two-Layer-Tabelle, Hardware-Profile-Tabelle, Anleitung „Neue Hardware hinzufügen" (4 Schritte).
+
+---
+
 ### 2026-06-12 (Session 17) — 4 SSoT-Robustness-Fixes
 
 **Commits:** `e5799bb`, `3225a78`, `4aaf450`, `411e5e3` (alle gepusht). **Architektur-Prinzip etabliert:** `model_id` = einziger SSOT-Kommunikations-Anker.
