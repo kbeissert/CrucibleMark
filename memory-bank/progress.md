@@ -2,6 +2,30 @@
 
 Letzte Releases + aktueller Stand. Vollständige Historie: `reference/decisions-log.md`.
 
+### 2026-06-13 (Session 19) — Model Card Publish-Audit
+
+**Ziel:** Überprüfung ob alle Model Cards ohne Falschinformationen publishbar sind.
+
+**4 fehlerhafte Cards korrigiert (Commit 1dc07a5):**
+- `google_gemma-4-31b-it.json`: `summary` behauptete "Weights nicht öffentlich zugänglich" → falsch für `restricted-weights`. `local_deployment_possible: false → true`. `known_limitations`: "Nur über Cloud-API" entfernt. `judge_context_hint`: "Cloud-only" entfernt.
+- `magistral-small-latest.json`: `local_deployment_possible: false → true` (Apache 2.0, Weights auf HuggingFace).
+- `deepseek_deepseek-v4-flash.json`: `local_deployment_possible: false → true`, Cloud-Only-Formulierungen entfernt.
+- `deepseek_deepseek-v4-pro.json`: gleiche Fixes wie flash.
+
+**`mistral-large-2411.json` geprüft (Commit 5e33133):**
+- `restricted-weights` via HuggingFace-Check bestätigt (MRL-Lizenz, Weights öffentlich).
+- Hardware-Hinweis ergänzt: `"Lokaler Betrieb erfordert über 300 GB GPU-VRAM (123B dense Modell)"` als erste `known_limitations`-Zeile (aus offiziellem HF Model Card).
+
+**`verify_model_cards.py` ausgeführt + 2 Fixes (Commit fd4ebaf):**
+- **Pricing-Fix:** 20 lokale Open-Weights-Modelle hatten `input_price_per_1m: null` / `output_price_per_1m: null`. Für lokale Modelle (kein API-Preis) korrekt: `0.0`. Betroffene: gemma-4 Quants (8 Varianten), hermes-3/4 (4 Varianten), qwen3-coder-lokal (3 Varianten), qwen3_5/3_6-lokal (4 Varianten), codestral-latest.
+- **Script-Bug-Fix:** `verify_model_cards.py` Zeile `missing_in_cards = config_model_ids - all_model_ids` erzeugte 18 false-positive „fehlende Cards" weil provider_config Punkte nutzt (`qwen3.5-4b-q4`) und Card-`model_id`-Felder Unterstriche (`qwen3_5-4b-q4`). Fix: `_normalize(mid)` Funktion + normalisierter Set-Vergleich.
+
+**Endstatus verify:**
+- `✅ Alle 99 Konfigurationsmodelle haben Cards.`
+- Verbleibende `⚠️` sind legitim: `params_total_b: null` (geschlossene Modelle), `thinking_probe_*: null` (neue ungeprüfte Modelle), `license_url: null` (proprietäre Modelle, kein einzelner URL).
+
+---
+
 ### 2026-06-13 (Session 18) — Deployment-Badge-Refactoring (Two-Layer-Architektur)
 
 **Kontext:** Scoreboard zeigte für lokale llamacpp-Modelle (`llamacpp`, `llamacpp_spark`) keinen Deployment-Badge — M4APL/SPRK waren Ollama-Ära-Artefakte ohne einheitliche „lokal"-Kategorie. User-Clarification: „lokal" = gesamtes Intranet (M4 MacBook Pro, DGX Spark, Gaming-PC RTX 4070), nicht nur Ollama.

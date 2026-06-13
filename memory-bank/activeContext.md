@@ -15,6 +15,16 @@ to know what reference files exist.
 
 ## Aktueller Status (2026-06-13)
 
+- **Session 19 abgeschlossen (2026-06-13) — Model Card Publish-Audit:**
+  - **Kontext:** User fragte ob Cards ohne Falschinformationen publishbar sind.
+  - **4 fehlerhafte Cards korrigiert (Commit 1dc07a5):** `google_gemma-4-31b-it` (summary behauptete Weights nicht öffentlich → falsch), `magistral-small-latest`, `deepseek_deepseek-v4-flash`, `deepseek_deepseek-v4-pro` (alle: `local_deployment_possible: false → true`, Cloud-Only-Formulierungen entfernt).
+  - **`mistral-large-2411` geprüft (Commit 5e33133):** `restricted-weights` bestätigt (Weights auf HuggingFace unter MRL), Hardware-Hinweis ergänzt: >300 GB GPU-VRAM (aus offiziellem HF Model Card).
+  - **`verify_model_cards.py` ausgeführt + 2 Fixes (Commit fd4ebaf):**
+    - 20 lokale Open-Weights-Modelle: `input_price_per_1m/output_price_per_1m: null → 0.0` (gemma-4 Quants, hermes, qwen3-lokal, codestral-latest)
+    - `verify_model_cards.py` Bug: Dot-vs-Underscore-Normalisierung fehlte → 18 false-positive „fehlende Cards". Fix: `_normalize(mid)` in der Config-vs-Card-Comparison.
+  - **Verbleibende ⚠️-Warnungen sind legitim:** `params_total_b: null` für geschlossene Modelle (Parameteranzahl nicht öffentlich), `thinking_probe_*: null` für neue ungeprüfte Modelle, `license_url: null` für proprietäre Modelle.
+  - **Endstatus:** `✅ Alle 99 Konfigurationsmodelle haben Cards.` — keine echten fehlenden Cards, keine Falschinformationen.
+
 - **Session 18 abgeschlossen (2026-06-13) — Deployment-Badge-Refactoring (Two-Layer):**
   - **Kontext:** Scoreboard zeigte für lokale llamacpp-Modelle keinen Badge. Clarification: „lokal" = gesamtes Intranet (M4 MacBook, DGX Spark, Gaming-PC RTX 4070), nicht nur Ollama.
   - **Architektur-Entscheidung:** Zweischichtiges Deployment-Identifikations-System — Deployment-Category als primärer Badge + Hardware-Profile als Tooltip/Detail.
