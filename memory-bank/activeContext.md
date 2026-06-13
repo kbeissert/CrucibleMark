@@ -15,6 +15,12 @@ to know what reference files exist.
 
 ## Aktueller Status (2026-06-13)
 
+- **Session 20 abgeschlossen (2026-06-13) — Web-Export PC-Bugs: card_id + Datum-Slug-Mismatch:**
+  - **Bug 1:** `political_compass.json`-Einträge hatten kein `card_id`-Feld — nur `slug`. Fix: `_build_compass_entry()` um Parameter `card_id: str | None = None` + Feld `"card_id": card_id` erweitert; Main-Loop übergibt `card.get("model_id")`.
+  - **Bug 2:** `pc_leaderboard.csv` hat undatierte Modellnamen (z. B. `moonshotai/kimi-k2.5`), Main-Loop verarbeitet datierte IDs (z. B. `moonshotai/kimi-k2.5-0127`). Slug `kimi-k2-5-0127` trifft nie auf Key `kimi-k2-5` → `lb_row = None` → vanilla_x/forced_x = null. Fix: Datum-Fallback nach dem Slug-Lookup: `re.sub(r'-\d{4,8}$', '', _pc_slug)`.
+  - **Echte Datenlücken** (Benchmark-Re-Run nötig): claude-opus-4-5, claude-haiku-4-5, glm-5-1, minimax-m2-7, glm-5-2026-02-11.
+  - **42/42 Web-Export-Tests grün.**
+
 - **Session 19 abgeschlossen (2026-06-13) — Model Card Publish-Audit:**
   - **Kontext:** User fragte ob Cards ohne Falschinformationen publishbar sind.
   - **4 fehlerhafte Cards korrigiert (Commit 1dc07a5):** `google_gemma-4-31b-it` (summary behauptete Weights nicht öffentlich → falsch), `magistral-small-latest`, `deepseek_deepseek-v4-flash`, `deepseek_deepseek-v4-pro` (alle: `local_deployment_possible: false → true`, Cloud-Only-Formulierungen entfernt).

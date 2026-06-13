@@ -922,6 +922,7 @@ def _build_compass_entry(
     model_name: str,
     model_type: str,
     block_meta: dict,
+    card_id: str | None = None,
 ) -> dict[str, Any]:
     """Builds the political_compass entry dict for a single model."""
     archetype: str | None = None
@@ -952,6 +953,7 @@ def _build_compass_entry(
 
     return {
         "slug": slug,
+        "card_id": card_id,
         "name": model_name,
         "version": extract_version(pc_row.get("model_version")),
         "type": model_type,
@@ -1406,7 +1408,15 @@ def main() -> None:
                 lb_row = pc_lb_map.get(_pc_id)
                 if lb_row is None:
                     lb_row = pc_lb_slug_map.get(_pc_slug)
-                compass_data = _build_compass_entry(pc_row, lb_row, slug, model_name, _type, block_meta)
+                # Fallback: datierter Slug hat keinen Treffer → Datum entfernen und nochmal suchen.
+                # Beispiel: "kimi-k2-5-0127" → "kimi-k2-5", "claude-sonnet-4-5-20250929" → "claude-sonnet-4-5".
+                # pc_leaderboard.csv enthält Einträge oft ohne Datums-Suffix — Matching muss das kompensieren.
+                if lb_row is None:
+                    _stripped_slug = re.sub(r'-\d{4,8}$', '', _pc_slug)
+                    if _stripped_slug != _pc_slug:
+                        lb_row = pc_lb_slug_map.get(_stripped_slug)
+                _entry_card_id = card.get("model_id") if card else None
+                compass_data = _build_compass_entry(pc_row, lb_row, slug, model_name, _type, block_meta, card_id=_entry_card_id)
                 pc_list.append(compass_data)
 
         model_json: dict[str, Any] = {
