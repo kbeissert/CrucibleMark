@@ -281,6 +281,17 @@
         ],
         "jurisdiction": "US"
       },
+      "Xiaomi": {
+        "label": "Xiaomi",
+        "vendor_card_id": "xiaomi",
+        "description": "Xiaomi Corporation — Entwickler der MiMo-Modellreihe (AI Lab). Marken: MiMo, Xiaomi AI.",
+        "aliases": [
+          "Xiaomi AI",
+          "XiaomiMiMo",
+          "Xiaomi Corporation"
+        ],
+        "jurisdiction": "CN"
+      },
       "Zhipu AI": {
         "label": "Zhipu AI",
         "vendor_card_id": "zhipu_ai",

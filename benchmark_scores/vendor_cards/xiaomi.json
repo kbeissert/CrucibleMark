@@ -1,0 +1,33 @@
+{
+  "vendor_id": "xiaomi",
+  "display_name": "Xiaomi",
+  "company": "Xiaomi Corporation (小米科技有限责任公司)",
+  "headquarters": "Beijing, China",
+  "founding_year": 2010,
+  "pricing_model": "pay-per-token",
+  "api_base_url": "https://api.openrouter.ai",
+  "api_documentation_url": "https://huggingface.co/XiaomiMiMo",
+  "deployment": {
+    "cloud_act_exposure": false,
+    "applicable_law": "China (PIPL/CSL/DSL)",
+    "data_residency": "China",
+    "gdpr_dpa_available": false,
+    "eu_adequacy_decision": false,
+    "data_retention_days": -1,
+    "chinese_nsl_risk": "high"
+  },
+  "privacy_note": "Xiaomi ist ein chinesisches Unternehmen und unterliegt dem chinesischen Datensicherheitsgesetz (DSG), dem Datenschutzgesetz (PIPL) und dem Nachrichtendienstgesetz (NSG). Die MiMo-Gewichte sind unter MIT-Lizenz öffentlich verfügbar und lokal deploybar, was das API-seitige Datenschutzrisiko reduziert. Bei Nutzung über Cloud-Endpunkte (OpenRouter) besteht weiterhin ein Drittlandtransfer-Risiko.",
+  "notable_models": [
+    "MiMo-V2-Flash",
+    "MiMo-V2.5",
+    "MiMo-V2.5-Pro"
+  ],
+  "stats": {},
+  "unknown": false,
+  "generated_at": "2026-06-14T21:40:00.000000+00:00",
+  "last_verified_at": "2026-06-14",
+  "verification_source": "https://huggingface.co/XiaomiMiMo",
+  "profile_verified": true,
+  "profile_verified_at": "2026-06-14",
+  "description": "Xiaomi Corporation ist primär als Smartphone- und Consumer-Electronics-Hersteller bekannt, betreibt aber seit 2025 ein aktives AI-Lab. Die MiMo-Modellreihe (Mixture-of-Experts, Reasoning-fokussiert) ist unter MIT-Lizenz veröffentlicht und über OpenRouter verfügbar. Alle Modelle unterliegen chinesischer Jurisdiktion (PIPL/CSL/DSG/NSG); für europäische Nutzer ist der fehlende EU-Angemessenheitsbeschluss bei Cloud-Nutzung relevant. Bei lokalem Deployment entfällt das API-seitige Datenschutzrisiko."
+}
