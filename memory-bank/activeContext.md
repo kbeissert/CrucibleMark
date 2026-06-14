@@ -15,11 +15,17 @@ to know what reference files exist.
 
 ## Aktueller Status (2026-06-14)
 
+- **Session 22 abgeschlossen (2026-06-14) — PC Re-Run + Bias-Review nemotron-3-ultra:**
+  - **PC-Re-Run abgeschlossen:** `nvidia/nemotron-3-ultra-550b-a55b` mit `--force` re-gerunnt (3 Runs × 79 Fragen via OpenRouter). Neues Results-File: `outputs/runs/results_nvidia_nemotron_3_ultra_550b_a55b_20260614_124002.json`.
+  - **Neuer Bias-Report (echte Daten):** `outputs/audit_logs/nvidia_nemotron-3-ultra-550b-a55b/00_bias_report.md` — 136KB, erstellt 14:40, kein `[REKONSTRUIERTER BERICHT]`-Flag. Enthält Einzelfragen-Protokolle.
+  - **Bias-Review generiert:** `docs/reviews/nvidia_nemotron-3-ultra-550b-a55b/bias_review_20260614_144114.md` via GPT-5.4.
+  - **Checkpoint-Behavior dokumentiert:** `--force` umgeht nur den PC-Leaderboard-Skip-Check, löscht NICHT den Session-Checkpoint. `io_manager.load_checkpoint(force_new=False)` = Checkpoint bleibt. `force_new=True` (separater Parameter) = Checkpoint gelöscht.
+  - **Makefile-Klarstellung:** `make reviews-auto FORCE=1 TYPE=tooluse` → NEIN (`reviews-auto` hardcoded `--type all`). Korrekt: `make review TYPE=tooluse ALL=1 FORCE=1`.
+
 - **Session 21 abgeschlossen (2026-06-14) — Benchmark-Audit nach Auto-Run:**
   - **PC-Run vollständig:** 118 Einträge in `political_compass_leaderboard.csv`. Alle 5 neuen Modelle korrekt eingetragen (Xiaomi MiMo V2.5-Pro, V2.5, V2-Flash; NVIDIA Llama-3.3-Nemotron-Super-49b, Nemotron-3-Nano-30B).
-  - **Dot-Naming-Pitfall (kritisch):** 3 `00_bias_report.md`-Dateien liegen in DOT-Verzeichnissen statt UNDERSCORE-Verzeichnissen — `generate_review.py -t bias` würde für diese 3 Modelle fehlschlagen. Betroffene: `xiaomi_mimo-v2.5/`, `xiaomi_mimo-v2.5-pro/`, `nvidia_llama-3.3-nemotron-super-49b-v1.5/` in `outputs/audit_logs/`.
-  - **5 neue Model Cards fehlen:** `xiaomi/mimo-v2.5-pro`, `xiaomi/mimo-v2.5`, `xiaomi/mimo-v2-flash`, `nvidia/llama-3.3-nemotron-super-49b-v1.5`, `nvidia/nemotron-3-nano-30b-a3b`.
-  - **Reviews neu:** `xiaomi_mimo-v2_5-pro` + `nvidia_llama-3_3-nemotron-super-49b-v1_5` haben Bias-Review; `xiaomi_mimo-v2_5`, `xiaomi_mimo-v2-flash`, `nvidia_nemotron-3-nano-30b-a3b` haben kein Review-Dir.
+  - **Dot-Naming-Pitfall (kritisch, behoben):** `audit_logger.py` + `test.py` Fix: `.replace(".", "_")` ergänzt. Bias-Reviews generiert für xiaomi-mimo-v2_5, mimo-v2-flash, nemotron-3-nano-30b-a3b.
+  - **5 neue Model Cards erstellt:** `xiaomi_mimo-v2_5-pro.json`, `xiaomi_mimo-v2_5.json`, `xiaomi_mimo-v2-flash.json`, `nvidia_llama-3_3-nemotron-super-49b-v1_5.json`, `nvidia_nemotron-3-nano-30b-a3b.json` (alle `card_status: "minimal"`).
   - **11 Review-Dirs ohne Full Review** (bekannte + neue Backlog-Fälle).
   - **PC-Plausibilität:** Alle Koordinaten valide, 1 hohe Flip-Rate: `gemini-3-flash-preview` (50%) — inhaltlich korrekt (Narr-Typ).
 

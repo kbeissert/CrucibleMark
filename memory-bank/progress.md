@@ -2,6 +2,33 @@
 
 Letzte Releases + aktueller Stand. Vollständige Historie: `reference/decisions-log.md`.
 
+### 2026-06-14 (Session 22) — PC Re-Run nvidia/nemotron-3-ultra + Bias-Review
+
+**Commits:** ausstehend
+
+**Auslöser:** Vorheriger Bias-Report für `nvidia/nemotron-3-ultra-550b-a55b` war ein `[REKONSTRUIERTER BERICHT]` aus CSV-Aggregaten ohne Einzelfragen-Protokolle. PC Re-Run mit echten Token-Daten benötigt.
+
+**PC Re-Run:**
+- `make political-compass MODEL="nvidia/nemotron-3-ultra-550b-a55b" FORCE=1` → PID 50016
+- Verlauf: Run 1 aus Checkpoint-Resume (66 Fragen cached, 13 neue API-Calls), Run 2 komplett (79 Fragen), Run 3 komplett (79 Fragen)
+- Neues Results-File: `outputs/runs/results_nvidia_nemotron_3_ultra_550b_a55b_20260614_124002.json`
+- Neuer Bias-Report: `outputs/audit_logs/nvidia_nemotron-3-ultra-550b-a55b/00_bias_report.md` — 136KB, erstellt 14:40, echte Einzelfragen-Protokolle
+
+**Bias-Review generiert:**
+- `docs/reviews/nvidia_nemotron-3-ultra-550b-a55b/bias_review_20260614_144114.md` via GPT-5.4
+
+**Pitfall dokumentiert — `--force` vs. `force_new` im PC-Modul:**
+- `make political-compass FORCE=1` übergibt `--force` an `run_political_compass_benchmark.py` → umgeht nur den PC-Leaderboard-Skip-Check (`⏩ Überspringe...`)
+- `--force` setzt NICHT `force_new=True` in `io_manager.load_checkpoint()` → Checkpoint-File bleibt erhalten → Resume möglich
+- `force_new=True` (separater Parameter in `load_checkpoint()`, line 56) → löscht Checkpoint → echter Neustart
+- Praktische Konsequenz: `FORCE=1` ohne laufenden Prozess = Resume aus Temp-File + Leaderboard-Override
+
+**Makefile-Klarstellung:**
+- `make reviews-auto FORCE=1 TYPE=tooluse` → NEIN, `reviews-auto` hardcoded `--type all`, ignoriert `TYPE=`
+- Korrekte Alternative: `make review TYPE=tooluse ALL=1 FORCE=1`
+
+---
+
 ### 2026-06-14 (Session 21) — Dot-Dir-Bugfix + Model-ID-Konvention + 5 neue Model Cards + 3 Bias-Reviews
 
 **Auslöser:** Auto-Benchmark-Lauf (2026-06-14, ca. 02:00–10:30 Uhr) für 5 neue Modelle: `xiaomi/mimo-v2.5-pro`, `xiaomi/mimo-v2.5`, `xiaomi/mimo-v2-flash`, `nvidia/llama-3.3-nemotron-super-49b-v1.5`, `nvidia/nemotron-3-nano-30b-a3b`. Audit offenbarte 3 Probleme.
