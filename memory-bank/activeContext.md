@@ -13,12 +13,23 @@ to know what reference files exist.
 
 # Active Context
 
-## Aktueller Status (2026-06-13)
+## Aktueller Status (2026-06-14)
 
-- **Session 20 abgeschlossen (2026-06-13) — Web-Export PC-Bugs: card_id + Datum-Slug-Mismatch:**
-  - **Bug 1:** `political_compass.json`-Einträge hatten kein `card_id`-Feld — nur `slug`. Fix: `_build_compass_entry()` um Parameter `card_id: str | None = None` + Feld `"card_id": card_id` erweitert; Main-Loop übergibt `card.get("model_id")`.
-  - **Bug 2:** `pc_leaderboard.csv` hat undatierte Modellnamen (z. B. `moonshotai/kimi-k2.5`), Main-Loop verarbeitet datierte IDs (z. B. `moonshotai/kimi-k2.5-0127`). Slug `kimi-k2-5-0127` trifft nie auf Key `kimi-k2-5` → `lb_row = None` → vanilla_x/forced_x = null. Fix: Datum-Fallback nach dem Slug-Lookup: `re.sub(r'-\d{4,8}$', '', _pc_slug)`.
-  - **Echte Datenlücken** (Benchmark-Re-Run nötig): claude-opus-4-5, claude-haiku-4-5, glm-5-1, minimax-m2-7, glm-5-2026-02-11.
+- **Session 21 abgeschlossen (2026-06-14) — Benchmark-Audit nach Auto-Run:**
+  - **PC-Run vollständig:** 118 Einträge in `political_compass_leaderboard.csv`. Alle 5 neuen Modelle korrekt eingetragen (Xiaomi MiMo V2.5-Pro, V2.5, V2-Flash; NVIDIA Llama-3.3-Nemotron-Super-49b, Nemotron-3-Nano-30B).
+  - **Dot-Naming-Pitfall (kritisch):** 3 `00_bias_report.md`-Dateien liegen in DOT-Verzeichnissen statt UNDERSCORE-Verzeichnissen — `generate_review.py -t bias` würde für diese 3 Modelle fehlschlagen. Betroffene: `xiaomi_mimo-v2.5/`, `xiaomi_mimo-v2.5-pro/`, `nvidia_llama-3.3-nemotron-super-49b-v1.5/` in `outputs/audit_logs/`.
+  - **5 neue Model Cards fehlen:** `xiaomi/mimo-v2.5-pro`, `xiaomi/mimo-v2.5`, `xiaomi/mimo-v2-flash`, `nvidia/llama-3.3-nemotron-super-49b-v1.5`, `nvidia/nemotron-3-nano-30b-a3b`.
+  - **Reviews neu:** `xiaomi_mimo-v2_5-pro` + `nvidia_llama-3_3-nemotron-super-49b-v1_5` haben Bias-Review; `xiaomi_mimo-v2_5`, `xiaomi_mimo-v2-flash`, `nvidia_nemotron-3-nano-30b-a3b` haben kein Review-Dir.
+  - **11 Review-Dirs ohne Full Review** (bekannte + neue Backlog-Fälle).
+  - **PC-Plausibilität:** Alle Koordinaten valide, 1 hohe Flip-Rate: `gemini-3-flash-preview` (50%) — inhaltlich korrekt (Narr-Typ).
+
+- **Session 20 abgeschlossen (2026-06-13) — Web-Export PC-Bugs + PC-Ghost-Model + Bias-Reviews + Vendor-Card-Dedup:**
+  - **Bug 1 (Commit 994d447):** `political_compass.json`-Einträge hatten kein `card_id`-Feld — nur `slug`. Fix: `_build_compass_entry()` um Parameter `card_id: str | None = None` + Feld `"card_id": card_id` erweitert; Main-Loop übergibt `card.get("model_id")`.
+  - **Bug 2 (Commit 994d447):** `pc_leaderboard.csv` hat undatierte Modellnamen (z. B. `moonshotai/kimi-k2.5`), Main-Loop verarbeitet datierte IDs (z. B. `moonshotai/kimi-k2.5-0127`). Slug `kimi-k2-5-0127` trifft nie auf Key `kimi-k2-5` → `lb_row = None` → vanilla_x/forced_x = null. Fix: Datum-Fallback nach dem Slug-Lookup: `re.sub(r'-\d{4,8}$', '', _pc_slug)`.
+  - **Echte Datenlücken** (Benchmark-Re-Run nötig): claude-opus-4-5, claude-haiku-4-5, glm-5-1, minimax-m2-7. ~~glm-5-20260211~~ → behoben (siehe unten).
+  - **Ghost-Model-Fix (z-ai/glm-5-20260211):** April-2026-Run hatte `z-ai/glm-5` (undatiert) als Leaderboard-Eintrag. `base_runner.py` normalisiert via `re.sub(r'-\d{8}$', '', ...)` → `z-ai/glm-5-20260211` trifft auf alten Eintrag → false-positive Skip. Fix: PC-Benchmark mit `--force` re-gerunnt (2026-06-13). Ghost-Eintrag via UPSERT überschrieben + altes `k.A.`-Entry aus `political_compass_results.csv` manuell gelöscht.
+  - **28 Bias-Reviews generiert (Commit 8e02609):** Fehlende `00_bias_report.md` aus CSV-Daten synthetisiert → `generate_review.py -t bias` für alle betroffenen Modelle. `docs/reviews/` vollständig befüllt.
+  - **Alibaba Vendor-Card-Dedup (Commit 9c38063):** `alibaba_cloud.json` + `alibaba_group_qwen_team.json` (auto-generierte Orphan-Dateien vom 2026-06-12) gelöscht. `alibaba_group_qwen_team_hauhaucs_community_fine_tune.json` erhält `card_subtype: "community"`. `web_export.py`: `vendor_cards.json` filtert jetzt Community-Cards (`card_subtype != "community"`). Ergebnis: 3 → 1 Alibaba-Eintrag, 24 → 18 Einträge in `vendor_cards.json`.
   - **42/42 Web-Export-Tests grün.**
 
 - **Session 19 abgeschlossen (2026-06-13) — Model Card Publish-Audit:**
@@ -78,7 +89,8 @@ to know what reference files exist.
 - **Vendor Card** = Hersteller-/Community-Profil-Karte → heißt jetzt konsequent "Vendor Card"
 
 **Struktur:**
-- Vendor Cards: `benchmark_scores/vendor_cards/` (17 JSON-Dateien, `vendor_id`-Feld)
+- Vendor Cards: `benchmark_scores/vendor_cards/` (17 kanonische JSON-Dateien + Community-Cards, `vendor_id`-Feld)
+- `vendor_cards.json` Web-Export: 18 Einträge (kanonische Vendors, Community-Cards herausgefiltert via `card_subtype != "community"`)
 - Template: `config/card_template_vendor.yaml` (`card_type: "vendor"`, v1.1.0 — inkl. `description`-Feld seit v4.9.3)
 - Model Cards verwenden `vendor`-Feld (normalisiert via `classification_taxonomy.json → manufacturers`)
 - **SSoT-Verknüpfung (v4.9.1):** `classification_taxonomy.json → manufacturers[x].vendor_card_id` zeigt auf Vendor Card
@@ -125,6 +137,7 @@ Mögliche Anlässe für User-Aktivität (alle aus dem Backlog):
 
 ## Letzte Änderungen
 
+- **2026-06-13 (Session 20 — Commits 994d447 + 8e02609 + 9c38063):** PC-Coverage vollständig. `web_export.py`: `card_id`-Feld + Datum-Fallback-Lookup. 28 Bias-Reviews generiert. Ghost-Model `z-ai/glm-5` (April-2026) via `--force`-Re-Run überschrieben. 2 Orphan-Vendor-Cards gelöscht (`alibaba_cloud.json`, `alibaba_group_qwen_team.json`), hauhaucs `card_subtype: "community"` gesetzt, Community-Filter in `web_export.py`. Web-Export: 24 → 18 Vendor-Einträge.
 - **2026-06-13 (Session 18):** Deployment-Badge-Refactoring. `provider_config.yaml`: `hardware_profiles`-Block + `deployment_category` pro Provider + LCL-Shortcodes (M4APL→LCL, SPRK→LCL). `model_utils.py`: `_PROVIDER_DEPLOYMENT_CATEGORY`, `_PROVIDER_HARDWARE_PROFILES`, `get_deployment_category()`, `get_hardware_profile()`. Leaderboard: 2 neue Spalten. Web-Export: 3 neue Felder. `MODEL_CLASSIFICATION.md` neu geschrieben.
 - **2026-06-12 (Session 17):** 4 SSoT-Robustness-Fixes. `generate_review.py`: Tooluse-Schritt nach Loop mit `model=None` (3225a78), Blacklist-Check via `model_id` (411e5e3). `web_export.py`: PC-Lookup via `raw_model_id` statt Display-Name (4aaf450). `system_context.py` + `generate_review.py`: Hardware-Profil aus `provider_config.yaml` SSoT (e5799bb). Architektur-Prinzip: `model_id` = einziger Kommunikations-Anker. Memory Bank aktualisiert.
 - **2026-06-12 (v4.9.5):** Auto-Review Webexport-Blacklist Integration. `generate_review.py`: `_load_webexport_blacklist()` + Skip-Checks (nur `--auto`-Modus). `AUDIT_AND_METAREVIEW.md` Sektion 2 ergänzt. Memory Bank aktualisiert.

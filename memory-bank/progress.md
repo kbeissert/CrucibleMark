@@ -2,6 +2,64 @@
 
 Letzte Releases + aktueller Stand. Vollständige Historie: `reference/decisions-log.md`.
 
+### 2026-06-14 (Session 21) — Dot-Dir-Bugfix + Model-ID-Konvention + 5 neue Model Cards + 3 Bias-Reviews
+
+**Auslöser:** Auto-Benchmark-Lauf (2026-06-14, ca. 02:00–10:30 Uhr) für 5 neue Modelle: `xiaomi/mimo-v2.5-pro`, `xiaomi/mimo-v2.5`, `xiaomi/mimo-v2-flash`, `nvidia/llama-3.3-nemotron-super-49b-v1.5`, `nvidia/nemotron-3-nano-30b-a3b`. Audit offenbarte 3 Probleme.
+
+**Bug 1 — Dot-Dir-Pitfall in `audit_logger.py` (Root Cause, behoben):**
+- `safe_model` in `benchmark_modules/political_compass/core/audit_logger.py` ersetzte `:` und `/`, aber nicht `.` → Audit-Log-Dirs wie `outputs/audit_logs/xiaomi_mimo-v2.5/` statt `xiaomi_mimo-v2_5/` wurden angelegt.
+- Analog in `benchmark_modules/political_compass/test.py` (force_run-Pfad).
+- Fix: `.replace(".", "_")` ergänzt. Spurious Dot-Dirs für 3 Modelle manuell auf Underscore-Dirs gemappt (Session 20 bereits erledigt).
+
+**Bug 2 — Model-ID-Konvention kodifiziert:**
+- User-Regel: Neue Model-IDs in provider_config.yaml und Card `model_id` dürfen KEINE Punkte enthalten — Versionsnummern mit Punkte → Unterstriche (z.B. `v2.5` → `v2_5`, `3.3` → `3_3`).
+- Pitfall + Konvention in `CLAUDE.md` (2 neue Einträge) und `config/editor_prompts.yaml` (neuer `model_onboarding`-Prompt) dokumentiert.
+
+**5 neue Model Cards erstellt (alle `card_status: "minimal"`, `profile_verified: false`):**
+- `xiaomi_mimo-v2_5-pro.json` — 1020B MoE (42B aktiv), MIT, 1024K Kontext, $0.435/$0.87
+- `xiaomi_mimo-v2_5.json` — MoE, MIT, 1024K Kontext, $0.14/$0.28
+- `xiaomi_mimo-v2-flash.json` — dense, MIT, 256K Kontext, $0.10/$0.30
+- `nvidia_llama-3_3-nemotron-super-49b-v1_5.json` — 49B dense, NVIDIA Open Model License, 128K, $0.40/$0.40
+- `nvidia_nemotron-3-nano-30b-a3b.json` — 30B MoE (3B aktiv), NVIDIA Open Model License, 256K, $0.05/$0.20
+
+**3 fehlende Bias-Reviews generiert (via GPT-5.4):**
+- `docs/reviews/xiaomi_mimo-v2_5/bias_review_20260614_125915.md`
+- `docs/reviews/xiaomi_mimo-v2_5/bias_review_20260614_125939.md` (zweiter Pass, beide gültig)
+- `docs/reviews/xiaomi_mimo-v2-flash/bias_review_20260614_130028.md`
+- `docs/reviews/nvidia_nemotron-3-nano-30b-a3b/bias_review_20260614_130057.md`
+
+**Offener Backlog (unverändert aus Session 20):**
+- 5 Modelle mit Tests Run < 43: hermes-4.3-36b-q6 (37), gemma-4-12b-it-ud-q6_k_xl (38), gemma-4-12b-it-ud-q8_k_xl (41), gemma-4-12b-it-ud-q4_k_xl (42), gemma-4-26B-A4B-it-qat-ud-q4 (42)
+- 11 Review-Dirs ohne vollständige Reviews (gemma/qwen3 Backlog + neue Modelle warten auf Pro-Review)
+- deepseek-r1:8b ToolUse-Re-Run ausstehend
+
+---
+
+### 2026-06-13 (Session 20) — PC-Coverage-Fix + Bias-Reviews + Vendor-Card-Dedup
+
+**Commits:** `994d447` (web_export PC card_id + date fallback), `8e02609` (28 bias reviews), `9c38063` (Alibaba dedup + community filter).
+
+**Hintergrund:** Web-Export-Audit identifizierte 3 Kategorien von PC-Datenlücken + Alibaba-Duplikat-Problem.
+
+**Kategorie A — 8 Modelle mit null PC-Koordinaten (Commit 994d447):**
+- Root Cause 1: `_build_compass_entry()` fehlte `card_id`-Feld → Fix: neuer Parameter `card_id: str | None = None`.
+- Root Cause 2: `pc_leaderboard.csv` speichert undatierte IDs (z. B. `moonshotai/kimi-k2.5`), web_export.py verarbeitete datierte IDs (z. B. `moonshotai/kimi-k2.5-0127`). Slug-Mismatch → `lb_row = None` → null-Koordinaten. Fix: Datum-Fallback: `re.sub(r'-\d{4,8}$', '', _pc_slug)`.
+
+**Kategorie B — Ghost-Model `z-ai/glm-5-20260211` (kein PC-Eintrag):**
+- Root Cause: April-2026-Run hatte `z-ai/glm-5` (undatiert) in `political_compass_leaderboard.csv`, bevor die `z-ai/glm-5-20260211`-Card existierte. `base_runner.py` normalisiert Datum-Suffixe via `re.sub(r'-\d{8}$', '', ...)` → `z-ai/glm-5-20260211` → `z-ai/glm-5` → false-positive Skip-Match.
+- Fix: PC-Benchmark mit `--force` für `z-ai/glm-5-20260211` re-gerunnt (2026-06-13T17:23:30). UPSERT überschrieb Ghost-Eintrag. Altes `k.A.`-Entry aus `political_compass_results.csv` manuell gelöscht. Bias-Review via GPT-5.4 generiert.
+
+**Kategorie C — 28 fehlende Bias-Reviews (Commit 8e02609):**
+- Root Cause: `00_bias_report.md` in `outputs/audit_logs/<model>/` fehlte für viele Modelle → `generate_review.py -t bias` schlug lautlos fehl.
+- Fix: Synthetische `00_bias_report.md`-Dateien aus CSV-Daten erstellt → `generate_review.py -t bias -m <model>` für alle betroffenen Modelle ausgeführt. 28 Reviews committed.
+
+**Alibaba Vendor-Card-Dedup (Commit 9c38063):**
+- Root Cause: `generate_vendor_cards.py` erstellte am 2026-06-12 automatisch `alibaba_cloud.json` + `alibaba_group_qwen_team.json` ohne Prüfung auf bestehendes `alibaba.json` (kanonischer Name). Alle 3 hatten identische `api_base_url`. Außerdem fehlte `card_subtype: "community"` in `alibaba_group_qwen_team_hauhaucs_community_fine_tune.json`.
+- Fix: 2 Orphan-Dateien gelöscht. `hauhaucs`-JSON erhält `card_subtype: "community"`. `web_export.py` `_write_top_level_outputs()`: `vendor_cards = [c for c in _collect_vendor_cards(root_dir) if c.get("card_subtype") != "community"]`.
+- Ergebnis: `vendor_cards.json` sinkt von 24 auf 18 Einträge (1 Alibaba statt 3).
+
+---
+
 ### 2026-06-13 (Session 19) — Model Card Publish-Audit
 
 **Ziel:** Überprüfung ob alle Model Cards ohne Falschinformationen publishbar sind.
