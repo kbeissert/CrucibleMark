@@ -434,7 +434,7 @@ class PoliticalCompassTest(BaseTest):
         force_run = _kwargs.get("force", False)
 
         if force_run:
-            safe_model = str(model).replace(":", "_").replace("/", "_")
+            safe_model = str(model).replace(":", "_").replace("/", "_").replace(".", "_")
             report_path = Path(f"outputs/audit_logs/{safe_model}/00_bias_report.md")
             if report_path.exists():
                 try:

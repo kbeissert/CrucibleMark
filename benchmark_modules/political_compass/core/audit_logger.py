@@ -118,7 +118,7 @@ class AuditLogWriter:
                     _q_data['token_delta_pct'] = (_f_tok - _v_tok) / _v_tok * 100
             detailed_responses = hydrated_responses
 
-        safe_model = str(model).replace(":", "_").replace("/", "_")
+        safe_model = str(model).replace(":", "_").replace("/", "_").replace(".", "_")
         out_dir = Path(f"outputs/audit_logs/{safe_model}")
         out_dir.mkdir(parents=True, exist_ok=True)
 

@@ -693,3 +693,100 @@ community_card_verification:
       oder die Gruppe dahinter vollständig unklar ist
     - Nicht spekulieren: Wenn Gründungsjahr oder Herkunft nicht recherchierbar
       → null setzen, nicht schätzen
+
+# ----------------------------------------------------------------------------
+# PROMPT: model_onboarding
+# ----------------------------------------------------------------------------
+# Aufgabe: Neue Modelle korrekt onboarden — Model Card erstellen, provider_config
+# eintragen und Namenskonventionen einhalten.
+#
+# Empfohlene Modelle: Claude Sonnet 4.5+, GPT-5+
+# Benötigte Fähigkeiten: Datei-Schreibzugriff, Web-Recherche optional
+# Geschätzte Dauer: 5–15 Minuten pro Modell
+# ----------------------------------------------------------------------------
+model_onboarding:
+  name: "Model Onboarding"
+  version: "1.0.0"
+  description: >
+    Legt für neue Modelle eine vollständige Model Card an und trägt sie korrekt
+    in provider_config.yaml ein. Erzwingt die Namenskonventionen (keine Punkte
+    in model_id) und verhindert Dot-Naming-Bugs in audit_logs und review-Dirs.
+  targets:
+    directory: "benchmark_scores/model_cards/"
+    config: "config/provider_config.yaml"
+  prompt: |
+    # Aufgabe: Model Onboarding — Neue Modelle korrekt anlegen
+
+    Du onboardest ein neues Modell in CrucibleMark. Folge dieser Anleitung
+    exakt — Abweichungen erzeugen Datenkonsistenz-Bugs (Dot-Dirs, Lookup-Fehler).
+
+    ## ⚠️ KRITISCHE Namenskonvention: Keine Punkte in model_id
+
+    Interne `model_id`-Felder (Model Card, provider_config, Leaderboard) dürfen
+    **KEINE Punkte** enthalten. Punkte entstehen durch Versionsnummern im
+    API-Namen. Konvertierungsregel:
+
+    | API-ID (extern)                       | model_id (intern, CrucibleMark)        |
+    |---------------------------------------|----------------------------------------|
+    | `xiaomi/mimo-v2.5-pro`               | `xiaomi/mimo-v2_5-pro`                |
+    | `nvidia/llama-3.3-nemotron-super-49b` | `nvidia/llama-3_3-nemotron-super-49b` |
+    | `qwen/qwen3.5-397b-a17b`             | `qwen/qwen3_5-397b-a17b`             |
+    | `gpt-5.4-mini`                       | `gpt-5_4-mini`                        |
+    | `gemini-2.5-flash`                   | `gemini-2_5-flash`                    |
+
+    Regel: **Alle Punkte → Unterstriche**. Bindestriche und Schrägstriche bleiben.
+
+    Wenn die API ein anderes Format erwartet als die interne model_id:
+    - OpenRouter: Feld `model` in provider_config enthält die interne ID
+    - API-ID mit Punkt wird per Provider-Alias aufgelöst (analog `_OPENAI_ID_ALIASES`)
+    - Oder: Feld `api_model_id` in der Model Card ergänzen (optional)
+
+    ## Schritt 1: Model Card erstellen
+
+    Dateiname: `benchmark_scores/model_cards/{vendor}_{model_id_normalized}.json`
+    Normalisierung für Dateinamen: Slashes → `_`, Punkte → `_`
+    Beispiel: `xiaomi/mimo-v2_5-pro` → `xiaomi_mimo-v2_5-pro.json`
+
+    Pflichtfelder aus `config/card_template_model.yaml` vollständig befüllen.
+    Besonders wichtig:
+    - `model_id`: Interne ID OHNE Punkte (s. Tabelle oben)
+    - `display_name`: Lesbarer Name (Punkte hier erlaubt, z.B. "Xiaomi MiMo V2.5 Pro")
+    - `vendor`: Kanonischer Vendor-Name aus `config/classification_taxonomy.json`
+    - `weights_license_tier`: "proprietary" | "restricted-weights" | "open-weights"
+    - `provider`: Laufzeit-Provider (z.B. "openrouter", "llamacpp", "anthropic")
+    - `card_status`: "complete" wenn alle Felder ausgefüllt, sonst "draft"
+    - `profile_verified`: false (wird nach Recherche auf true gesetzt)
+
+    ## Schritt 2: provider_config.yaml eintragen
+
+    Abschnitt: `providers.{provider}.models`
+    Eintragsformat:
+    ```yaml
+    - model: xiaomi/mimo-v2_5-pro          # Interne ID — KEINE Punkte
+      display_name: "Xiaomi MiMo V2.5 Pro" # Punkte im Display-Name OK
+    ```
+
+    ## Schritt 3: Index neu bauen
+
+    Nach dem Anlegen der Card:
+    ```bash
+    python3 -c "from utils.card_template import rebuild_card_index; rebuild_card_index('model')"
+    ```
+
+    ## Schritt 4: Verify
+
+    ```bash
+    python3 scripts/verify_model_cards.py
+    ```
+
+    Erwartetes Ergebnis: Neue Card erscheint ohne ⚠️-Warnungen (außer
+    legitimen: thinking_probe_* = null, license_url = null bei proprietären Modellen).
+
+    ## Häufige Fehler
+
+    - ❌ `model_id: "xiaomi/mimo-v2.5-pro"` → Punkt im ID-Feld
+    - ❌ Dateiname `xiaomi_mimo-v2.5-pro.json` → Punkt im Dateinamen
+    - ❌ `card_status: "draft"` bei vollständig ausgefüllter Card lassen
+    - ❌ `profile_verified: true` ohne tatsächliche Recherche setzen
+    - ✅ `model_id: "xiaomi/mimo-v2_5-pro"` → Underscore statt Punkt
+    - ✅ Dateiname `xiaomi_mimo-v2_5-pro.json` → korrekt normalisiert
