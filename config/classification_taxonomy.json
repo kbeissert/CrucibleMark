@@ -281,16 +281,6 @@
         ],
         "jurisdiction": "US"
       },
-      "Xiaomi": {
-        "label": "Xiaomi",
-        "vendor_card_id": "xiaomi",
-        "description": "Xiaomi Corporation — Entwickler der MiMo-Modellreihe (agentic, multimodal, coding). Verfügbar via Xiaomi MiMo Platform und OpenRouter.",
-        "aliases": [
-          "Xiaomi Corporation",
-          "Xiaomi MiMo"
-        ],
-        "jurisdiction": "CN"
-      },
       "Zhipu AI": {
         "label": "Zhipu AI",
         "vendor_card_id": "zhipu_ai",

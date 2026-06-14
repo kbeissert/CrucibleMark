@@ -53,20 +53,14 @@
     },
     "privacy_note": "Für europäische Nutzer besteht ein erhöhtes Datenschutzrisiko, da Alibaba Cloud ein chinesischer Anbieter ist und API-Daten chinesischem Datenschutz- und Sicherheitsrecht unterliegen können. Bei grenzüberschreitender Verarbeitung außerhalb der EU ist ohne EU-Angemessenheitsbeschluss regelmäßig mit zusätzlichen Transfer-Risiken zu rechnen.",
     "notable_models": [
-      "Qwen3-235B-A22B",
-      "Qwen3-32B",
-      "Qwen3-Coder-480B",
-      "Qwen3.7-Max",
-      "Qwen3.5-397B"
+      "Qwen",
+      "Wan"
     ],
     "stats": {},
     "unknown": false,
     "generated_at": "2026-06-12T16:39:04.144936+00:00",
-    "last_verified_at": "2026-06-12",
-    "verification_source": "https://www.alibabacloud.com/help/en/model-studio/getting-started/what-is-model-studio",
-    "description": "Alibaba Cloud (Aliyun) stellt über die Model Studio API Qwen-Modelle und weitere KI-Dienste bereit. Das Unternehmen operiert unter chinesischem Recht (PIPL/CSL/DSL) und verarbeitet Daten primär in China. Für europäische Nutzer besteht erhöhtes Datenschutzrisiko ohne EU-Angemessenheitsbeschluss.",
-    "profile_verified": true,
-    "profile_verified_at": "2026-06-12"
+    "last_verified_at": null,
+    "verification_source": "https://www.alibabacloud.com/help/en/model-studio/getting-started/what-is-model-studio"
   },
   {
     "vendor_id": "alibaba_group_qwen_team",
@@ -81,27 +75,21 @@
       "cloud_act_exposure": false,
       "applicable_law": "China (PIPL/CSL/DSL)",
       "data_residency": "China",
-      "gdpr_dpa_available": false,
+      "gdpr_dpa_available": "unknown",
       "eu_adequacy_decision": false,
       "data_retention_days": -1,
       "chinese_nsl_risk": "high"
     },
     "privacy_note": "Für EU-Nutzer besteht ein erhöhtes Datenschutzrisiko, da API-Daten voraussichtlich unter chinesischem Datenschutz- und Sicherheitsrecht verarbeitet werden. Es gibt keinen EU-Angemessenheitsbeschluss für China, sodass internationale Datentransfers zusätzliche Compliance-Risiken verursachen können.",
     "notable_models": [
-      "Qwen3.7-Max",
-      "Qwen3.5-397B",
-      "Qwen3.6-Plus",
-      "Qwen3-32B",
-      "Qwen3-Coder"
+      "Qwen2.5",
+      "Qwen-Max"
     ],
     "stats": {},
     "unknown": false,
     "generated_at": "2026-06-12T16:42:01.327061+00:00",
-    "last_verified_at": "2026-06-12",
-    "verification_source": "https://www.alibabacloud.com/help/en/model-studio/",
-    "description": "Das Qwen-Team von Alibaba Cloud entwickelt die Qwen-Modellfamilie und stellt diese über DashScope und Cloud-Partner bereit. Die Modelle sind teilweise als Open Weights verfügbar. Datenverarbeitung erfolgt unter chinesischem Recht; für europäische Nutzer besteht erhöhtes Compliance-Risiko.",
-    "profile_verified": true,
-    "profile_verified_at": "2026-06-12"
+    "last_verified_at": null,
+    "verification_source": "https://www.alibabacloud.com/help/en/model-studio/"
   },
   {
     "vendor_id": "alibaba_group_qwen_team_hauhaucs_community_fine_tune",
@@ -116,25 +104,21 @@
       "cloud_act_exposure": false,
       "applicable_law": "N/A (lokal only)",
       "data_residency": "N/A (lokal only)",
-      "gdpr_dpa_available": false,
-      "eu_adequacy_decision": false,
+      "gdpr_dpa_available": "unknown",
+      "eu_adequacy_decision": "unknown",
       "data_retention_days": 0,
       "chinese_nsl_risk": "high"
     },
     "privacy_note": "Bei selbst gehosteter Nutzung werden API-Daten lokal verarbeitet; das primäre Risiko entsteht daher aus Ihrer eigenen Hosting- und Transferkonfiguration. Da das Basismodell von einem chinesischen Anbieter stammt, besteht bei Nutzung offizieller Alibaba-Cloud-Dienste ein erhöhtes chinesisches Datenschutz- und Zugriffsrisiko, dies gilt jedoch nicht automatisch für rein lokale Deployments.",
     "notable_models": [
-      "Qwen3-14B (HauhauCS Fine-Tune)",
-      "Qwen3-32B (HauhauCS Fine-Tune)",
-      "Qwen2.5-Coder-7B"
+      "Qwen2.5",
+      "Qwen2.5-Coder"
     ],
     "stats": {},
     "unknown": false,
     "generated_at": "2026-06-12T16:49:41.962525+00:00",
-    "last_verified_at": "2026-06-12",
-    "verification_source": "https://qwenlm.github.io/",
-    "description": "Diese Karte beschreibt Community-Fine-Tunes des Qwen-Teams durch HauhauCS auf Basis offener Qwen-Gewichte. Die Modelle werden lokal betrieben, sodass kein API-seitiges Datenschutzrisiko entsteht. Das Risiko hängt ausschließlich vom gewählten Hosting ab.",
-    "profile_verified": true,
-    "profile_verified_at": "2026-06-12"
+    "last_verified_at": null,
+    "verification_source": "https://qwenlm.github.io/"
   },
   {
     "vendor_id": "anthropic",
@@ -276,7 +260,7 @@
   },
   {
     "vendor_id": "google",
-    "display_name": "Google AI",
+    "display_name": "Google DeepMind",
     "company": "Google LLC",
     "headquarters": "Mountain View, CA, USA",
     "founding_year": 1998,
@@ -286,7 +270,7 @@
     "deployment": {
       "cloud_act_exposure": true,
       "applicable_law": "US (CLOUD Act)",
-      "data_residency": "USA (+ Google Cloud Regionen global)",
+      "data_residency": "Unknown",
       "gdpr_dpa_available": true,
       "eu_adequacy_decision": true,
       "data_retention_days": -1,
@@ -294,12 +278,8 @@
     },
     "privacy_note": "Google ist ein US-Anbieter; API-Daten können daher dem US CLOUD Act unterliegen. Für EU-Nutzer besteht zudem ein Risiko bei grenzüberschreitenden Datenübermittlungen, wenn keine zugesicherte EU-Datenresidenz für den konkret genutzten API-Dienst vorliegt.",
     "notable_models": [
-      "Gemini 3.5 Flash",
-      "Gemini 3.1 Pro Preview",
-      "Gemini 3 Flash Preview",
-      "Gemini 2.5 Pro",
-      "Gemini 2.5 Flash",
-      "Gemma 4"
+      "Gemini 1.5 Pro",
+      "Gemini 1.5 Flash"
     ],
     "stats": {
       "models_tracked": 5,
@@ -310,11 +290,8 @@
     },
     "unknown": false,
     "generated_at": "2026-06-12T16:06:39.381799+00:00",
-    "last_verified_at": "2026-06-12",
-    "verification_source": "https://ai.google.dev/gemini-api/docs",
-    "description": "Google AI bietet mit der Gemini-Modellreihe eine leistungsstarke API für Text, Code, Bild und Audio. Das Unternehmen sitzt in Mountain View, CA, und unterliegt als US-Konzern dem CLOUD Act. Für europäische Nutzer stehen Standard Contractual Clauses und ein Data Processing Addendum bereit.",
-    "profile_verified": true,
-    "profile_verified_at": "2026-06-12"
+    "last_verified_at": null,
+    "verification_source": "https://ai.google.dev/gemini-api/docs"
   },
   {
     "vendor_id": "google_deepmind",
@@ -363,26 +340,21 @@
       "cloud_act_exposure": true,
       "applicable_law": "US (CLOUD Act)",
       "data_residency": "N/A (lokal only)",
-      "gdpr_dpa_available": false,
-      "eu_adequacy_decision": false,
+      "gdpr_dpa_available": "unknown",
+      "eu_adequacy_decision": "unknown",
       "data_retention_days": 0,
       "chinese_nsl_risk": "none"
     },
     "privacy_note": "Bei einer Community-Distribution ohne offizielle Google-API erfolgt die Nutzung typischerweise lokal, sodass kein reguläres Provider-seitiges API-Logging anfällt. Rechts- und Datenschutzrisiken entstehen primär dann, wenn Nutzer statt lokal doch Google- oder Drittanbieter-Infrastruktur einsetzen.",
     "notable_models": [
-      "Gemma 4 26B MoE",
-      "Gemma 4 12B",
-      "Gemma 3 12B",
-      "Gemma 3 27B"
+      "Gemma 2",
+      "Gemma 3"
     ],
     "stats": {},
     "unknown": false,
     "generated_at": "2026-06-12T16:20:30.624338+00:00",
-    "last_verified_at": "2026-06-12",
-    "verification_source": "https://ai.google.dev/gemma",
-    "description": "Diese Karte beschreibt Community-Distributionen von Gemma-Basismodellen für lokale Inferenz. Die Modelle basieren auf den offenen Gemma-Gewichten von Google DeepMind und werden lokal betrieben. Datenschutzrisiken entstehen primär durch das gewählte Hosting, nicht durch die Modelldistribution selbst.",
-    "profile_verified": true,
-    "profile_verified_at": "2026-06-12"
+    "last_verified_at": null,
+    "verification_source": "https://ai.google.dev/gemma"
   },
   {
     "vendor_id": "hauhaucs",
@@ -853,41 +825,6 @@
     "profile_verified": true,
     "profile_verified_at": "2026-06-12",
     "description": "xAI betreibt die Grok-Familie und richtet sich mit API, Apps und Unternehmensangeboten an Entwickler und Endnutzer. Der Anbieter sitzt in den USA und veröffentlicht eine eigene Privacy Policy für Grok und verbundene Dienste. Für europäische Teams ist vor allem die US-Jurisdiktion mit CLOUD Act und unklarer DPA-Lage relevant."
-  },
-  {
-    "vendor_id": "xiaomi",
-    "display_name": "Xiaomi",
-    "company": "Xiaomi Corporation",
-    "headquarters": "Beijing, China",
-    "founding_year": 2010,
-    "pricing_model": "free-tier+pay-per-token",
-    "api_base_url": "https://platform.xiaomimimo.com",
-    "api_documentation_url": "https://platform.xiaomimimo.com/docs",
-    "deployment": {
-      "cloud_act_exposure": false,
-      "applicable_law": "China (PIPL/CSL/DSL)",
-      "data_residency": "China",
-      "gdpr_dpa_available": false,
-      "eu_adequacy_decision": false,
-      "data_retention_days": -1,
-      "chinese_nsl_risk": "high"
-    },
-    "privacy_note": "Xiaomi verarbeitet API-Anfragen der MiMo-Modelle in China und fällt damit unter chinesisches Datenschutzrecht (PIPL, CSL, DSL). Ein EU-Angemessenheitsbeschluss liegt nicht vor; ein DSGVO-konformes DPA ist in den geprüften Quellen nicht ersichtlich. Für europäische Nutzer ist die Nutzung mit personenbezogenen Daten daher nur mit erheblichem Compliance-Risiko vertretbar. Lokales Deployment der Open-Source-Variante (MiMo-V2-Flash unter MIT-Lizenz) reduziert das Risiko deutlich.",
-    "notable_models": [
-      "MiMo-V2.5-Pro",
-      "MiMo-V2.5",
-      "MiMo-V2-Omni",
-      "MiMo-V2-Pro",
-      "MiMo-V2-Flash"
-    ],
-    "stats": {},
-    "unknown": false,
-    "generated_at": "2026-06-13T00:30:00.000000+00:00",
-    "last_verified_at": "2026-06-13",
-    "verification_source": "https://platform.xiaomimimo.com/docs/en-US/overview",
-    "profile_verified": true,
-    "profile_verified_at": "2026-06-13",
-    "description": "Xiaomi betreibt mit der MiMo-Plattform eine Modellfamilie für agentische und multimodale KI-Aufgaben. Das Unternehmen hat seinen Hauptsitz in Beijing und verarbeitet API-Anfragen in China. Für europäische Teams ist die chinesische Jurisdiktion mit PIPL, CSL und DSL der zentrale Compliance-Punkt. Die Open-Source-Variante MiMo-V2-Flash (MIT-Lizenz) ermöglicht zudem lokales Deployment als risikoreduzierende Alternative."
   },
   {
     "vendor_id": "zhipu_ai",

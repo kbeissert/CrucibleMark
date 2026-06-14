@@ -25,7 +25,7 @@ if str(_ROOT_DIR) not in sys.path:
 import pandas as pd
 import yaml
 from utils.config_validator import ConfigValidator
-from utils.model_utils import _find_card, _safe_name, WEIGHTS_TIER_DISPLAY, get_deployment_category, get_hardware_profile
+from utils.model_utils import _find_card, _safe_name, WEIGHTS_TIER_DISPLAY
 from utils.card_utils import normalize_tags
 
 
@@ -745,11 +745,6 @@ def _build_leaderboard_entry(
         "weights_license_tier": card.get("weights_license_tier") if card else None,
         "inference_provider": inference_provider,
         "provider_code": str(row.get("Provider Code", "")) or None,
-        # Deployment-Kategorie (api | cloud | local) — SSoT für Scoreboard-Haupt-Badge
-        # Wird aus Leaderboard-CSV-Spalte gelesen (gesetzt in scripts/leaderboard/__init__.py)
-        "deployment_category": str(row.get("Deployment Category", "")) or None,
-        # Hardware-Profil-Key — nur bei lokalen Providern gesetzt (m4_macbook_pro_metal, dgx_spark_cuda, ...)
-        # Frontend nutzt diesen Key für Tooltip / Sub-Badge unter dem LCL-Badge
         "hardware_profile": str(row.get("Hardware Profile", "")) or None,
         "total_score": normalize_pending(row.get("Total Score")),
         "routine_score": normalize_pending(row.get("Routine Score")),
@@ -922,7 +917,6 @@ def _build_compass_entry(
     model_name: str,
     model_type: str,
     block_meta: dict,
-    card_id: str | None = None,
 ) -> dict[str, Any]:
     """Builds the political_compass entry dict for a single model."""
     archetype: str | None = None
@@ -953,7 +947,6 @@ def _build_compass_entry(
 
     return {
         "slug": slug,
-        "card_id": card_id,
         "name": model_name,
         "version": extract_version(pc_row.get("model_version")),
         "type": model_type,
@@ -1119,8 +1112,8 @@ def _write_top_level_outputs(
                     f, indent=2, ensure_ascii=False,
                 )
 
-    # Vendor-Cards mit Sovereign-Risk/GDPR/Privacy-Metadaten (Community-Cards ausgeschlossen)
-    vendor_cards = [c for c in _collect_vendor_cards(root_dir) if c.get("card_subtype") != "community"]
+    # Vendor-Cards mit Sovereign-Risk/GDPR/Privacy-Metadaten
+    vendor_cards = _collect_vendor_cards(root_dir)
     if vendor_cards:
         with open(out_dir / "vendor_cards.json", "w", encoding="utf-8") as f:
             json.dump(
@@ -1408,15 +1401,7 @@ def main() -> None:
                 lb_row = pc_lb_map.get(_pc_id)
                 if lb_row is None:
                     lb_row = pc_lb_slug_map.get(_pc_slug)
-                # Fallback: datierter Slug hat keinen Treffer → Datum entfernen und nochmal suchen.
-                # Beispiel: "kimi-k2-5-0127" → "kimi-k2-5", "claude-sonnet-4-5-20250929" → "claude-sonnet-4-5".
-                # pc_leaderboard.csv enthält Einträge oft ohne Datums-Suffix — Matching muss das kompensieren.
-                if lb_row is None:
-                    _stripped_slug = re.sub(r'-\d{4,8}$', '', _pc_slug)
-                    if _stripped_slug != _pc_slug:
-                        lb_row = pc_lb_slug_map.get(_stripped_slug)
-                _entry_card_id = card.get("model_id") if card else None
-                compass_data = _build_compass_entry(pc_row, lb_row, slug, model_name, _type, block_meta, card_id=_entry_card_id)
+                compass_data = _build_compass_entry(pc_row, lb_row, slug, model_name, _type, block_meta)
                 pc_list.append(compass_data)
 
         model_json: dict[str, Any] = {

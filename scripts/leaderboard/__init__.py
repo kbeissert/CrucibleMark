@@ -41,8 +41,6 @@ from utils.model_utils import (
     format_version_hash_for_display,
     get_model_size_class,
     get_provider_shortcode,
-    get_deployment_category,
-    get_hardware_profile,
 )  # noqa: E402
 # pylint: enable=import-error
 
@@ -260,33 +258,19 @@ def main(print_table: bool = True) -> Optional[pd.DataFrame]:
 
     leaderboard["Version"] = leaderboard.apply(format_version_display, axis=1)
 
-    # 10. Provider Code + Deployment Category + Hardware Profile
+    # 10. Provider Code
     if "provider" in leaderboard.columns:
         from utils.model_utils import is_cloud_model as _is_cloud_model
 
         def _provider_code(row: pd.Series) -> str:
-            """Deployment-Badge: LCL für alle lokalen Provider, CLD für Cloud-Proxy."""
             code = get_provider_shortcode(str(row.get("provider", "")))
             if code == "LCL" and _is_cloud_model(str(row.get("model", ""))):
                 return "CLD"
             return code
 
         leaderboard["Provider Code"] = leaderboard.apply(_provider_code, axis=1)
-
-        # Deployment Category (api | cloud | local) — für Web-Export-Filterung
-        leaderboard["Deployment Category"] = leaderboard["provider"].apply(
-            lambda p: get_deployment_category(str(p))
-        )
-
-        # Hardware Profile (m4_macbook_pro_metal | dgx_spark_cuda | None) — Detail-Ebene
-        # Nur für lokale Provider gesetzt; API/Cloud-Provider → leer
-        leaderboard["Hardware Profile"] = leaderboard["provider"].apply(
-            lambda p: get_hardware_profile(str(p)) or ""
-        )
     else:
         leaderboard["Provider Code"] = "k.A."
-        leaderboard["Deployment Category"] = "local"
-        leaderboard["Hardware Profile"] = ""
 
     # LLM Judge Coverage
     if "LLM Judge Coverage" in leaderboard.columns:

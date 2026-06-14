@@ -93,69 +93,55 @@ Das primäre Kriterium ist **API-only**, nicht die Parameterzahl. Modelle wie Ll
 
 ---
 
-## Provider-Kategorien & Deployment-Badges
+## Provider-Kategorien
 
-CrucibleMark verwendet zwei getrennte konzeptuelle Ebenen für die Identifikation von Inferenz-Providern:
+CrucibleMark verwendet eine dynamische, zentrale Konfiguration (`benchmark_config.yaml`), um Provider und Kategorie-Zuordnungen als Single Source of Truth (SSOT) zu verwalten. Dies macht das System flexibel erweiterbar, ohne dass Hardcodings im Analyse-Code nötig sind.
 
-### Ebene 1: Deployment-Kategorie (Scoreboard-Hauptbadge)
+Aktuell unterscheidet CrucibleMark drei wesentliche Arten von Modell-Kategorien:
 
-Drei Werte, die im Scoreboard als Badge unter dem Modellnamen erscheinen:
+| Kategorie | Beschreibung | Beispiele / Provider | Charakteristik |
+|-----------|--------------|-----------|----------------|
+| **Commercial** | Cloud-basierte kommerzielle APIs | Anthropic, Google, OpenAI, Mistral | Proprietäre Modelle. Direkte Kosten pro Token, API-Keys erforderlich |
+| **Cloud (Open-Weights)** | Cloud-gehostete Open-Weights Modelle | Groq, Ollama (mit `:cloud`-Suffix) | Modelle, deren Gewichte öffentlich verfügbar sind (Open-Weights), die aber über Cloud-APIs oder Proxies ausgeführt werden — **nicht** lokal und **nicht** Open Source im Sinne offengelegter Trainingsdaten oder -code. |
+| **Local** | Vollständig lokal ausgeführte Modelle | Ollama (lokal) | Ausführung auf eigener Hardware. Keine Provider-Kosten, volle Privatsphäre |
 
-| Badge | Kategorie | Beschreibung | Beispiel-Provider |
-|-------|-----------|--------------|-------------------|
-| **API** | `api` | Proprietäre Direkt-APIs, Kosten per Token | Anthropic, OpenAI, Google, xAI, Mistral |
-| **OR / GR / CLD** | `cloud` | Open-Weights oder proprietäre Modelle via Cloud-Proxy | OpenRouter (OR), Groq (GR), Ollama Cloud (CLD) |
-| **LCL** | `local` | Inferenz im eigenen Intranet — Ollama, llama.cpp auf beliebiger Hardware | Ollama, llama.cpp/M4, llama.cpp/DGX Spark, llama.cpp/RTX 4070 |
+### Erkennung & Erweiterung (SSOT: `benchmark_config.yaml`)
 
-**Wichtig:** `LCL` ist eine Deployment-Kategorie, keine Software-Bezeichnung. Alle Modelle, die im eigenen Intranet laufen — unabhängig davon ob via Ollama, llama.cpp, vLLM oder anderer Inference-Software und unabhängig von der Hardware — erscheinen mit dem Badge `LCL`.
+Die Kategorisierung wird zentral über `utils/model_utils.py::get_model_category()` gesteuert. Die Funktion liest die Einstellungen dynamisch aus der Datei `benchmark_config.yaml` aus:
 
-### Ebene 2: Hardware-Profil (Detail-Ebene / Tooltip)
+1. **Prüfung über Provider-Konfiguration (`benchmark_config.yaml`):**
+   Das System gleicht den in den Rohdaten hinterlegten Provider-Namen (`provider`) gegen die globalen Konfigurationsbäume (`providers.commercial`, `providers.open_weights_cloud`, `providers.local`) ab.
+   - Provider unter `providers.commercial` definiert (z. B. `anthropic`) → **Commercial**
+   - Provider unter `providers.open_weights_cloud` definiert (z. B. `groq`) → **Cloud (Open-Weights)**
+   - Provider unter `providers.local` definiert (z. B. `ollama`) → Prüfung nach Regel 2.
 
-Für lokale Provider ist zusätzlich ein `hardware_profile` hinterlegt, das die konkrete Inferenz-Hardware identifiziert. Dieses Feld erscheint im Frontend als Sub-Badge oder Tooltip unter dem `LCL`-Badge:
+2. **Zusatzprüfung für Suffixe / Altlasten (Legacy-Modus):**
+   Wenn aus historischen Gründen ein Modell in der lokalen CSV liegt oder Provider und Suffix auf eine API hindeuten, wird abschließend das Suffix inspiziert:
+   - Enthält der Name `:cloud` (z. B. `minimax-m2:cloud`) → **Cloud (Open-Weights)**
+   - Sonstiges Modell (z. B. `ministral-3:14b`) → **Local**
 
-| Profil-Key | Label | Hardware |
-|------------|-------|----------|
-| `m4_macbook_pro_metal` | M4 Pro | MacBook Pro M4 Max, Apple Metal GPU |
-| `dgx_spark_cuda` | DGX Spark | NVIDIA DGX Spark, CUDA GPU, ~128 GB |
-| `rtx4070_cuda` | RTX 4070 | Gaming-PC, NVIDIA RTX 4070, 12 GB VRAM |
+#### Einen neuen Provider hinzufügen
 
-Hardware-Profile sind in `config/provider_config.yaml` unter `hardware_profiles` als SSoT definiert. Neue Hardware: Eintrag in `hardware_profiles` ergänzen + entsprechenden `llamacpp`-Provider in `providers.local` anlegen.
+Um einen neuen Model-Provider zu ergänzen (z. B. einen weiteren Open-Weights Hoster), genügen wenige Handgriffe, da das System vollkommen dynamisch geparst wird:
 
-### SSoT-Implementierung
+1. **Konfiguration anpassen:** Öffne `benchmark_config.yaml` (und synchronisiere es idealerweise auch im Template `benchmark_config.example.yaml`).
+2. **Provider eintragen:** Ergänze den String-Namen des Providers (z.B. `together_ai` oder `vllm`) im passenden Kategorien-Array in der Sektion `providers`:
 
-Die Kategorisierung wird durch zwei Hilfsfunktionen in `utils/model_utils.py` gesteuert:
-
-- `get_deployment_category(provider)` → `"api"` | `"cloud"` | `"local"`
-- `get_hardware_profile(provider)` → `"m4_macbook_pro_metal"` | `"dgx_spark_cuda"` | `None`
-
-Beide Funktionen lesen ihre Daten aus `_PROVIDER_DEPLOYMENT_CATEGORY` und `_PROVIDER_HARDWARE_PROFILES` in `model_utils.py` (schnelle In-Process-Lookups ohne YAML-I/O), die ihrerseits `config/provider_config.yaml` als Referenz haben.
-
-#### Einen neuen lokalen Provider hinzufügen
-
-1. **Hardware-Profil anlegen** (falls neue Hardware): Eintrag in `config/provider_config.yaml` unter `hardware_profiles` ergänzen.
-
-2. **Provider in `providers.local` anlegen:** Pflichtfelder:
-   ```yaml
-   providers:
-     local:
-       llamacpp_rtx4070:
-         name: Llama.cpp (Gaming-PC RTX 4070)
-         short_code: LCL
-         deployment_category: local
-         hardware_profile: rtx4070_cuda
-         api_type: llamacpp
-   ```
-
-3. **`model_utils.py` aktualisieren:** `_PROVIDER_HARDWARE_PROFILES` um den neuen Provider-Key ergänzen:
-   ```python
-   _PROVIDER_HARDWARE_PROFILES: dict[str, str] = {
-       "llamacpp": "m4_macbook_pro_metal",
-       "llamacpp_spark": "dgx_spark_cuda",
-       "llamacpp_rtx4070": "rtx4070_cuda",  # ← neu
-   }
-   ```
-
-4. Fertig. Ab dem nächsten Leaderboard-Run erscheint das Modell mit `LCL`-Badge und `RTX 4070`-Tooltip im Scoreboard.
+```yaml
+providers:
+  commercial:
+    - anthropic
+    - google
+    - openai
+    - mistral
+  open_weights_cloud:
+    - groq
+    # - together_ai  <-- Hier neuen Hoster ergänzen
+  local:
+    - ollama
+    # - vllm         <-- Hier neuen lokalen Runner ergänzen
+```
+3. Fertig! Ab dem nächsten Benchmark-, CLI- oder Leaderboard-Lauf überträgt sich die neue Provider-Einordnung fehlerfrei bis in die finalen Score-Tabellen und Metareviews des Judges.
 
 ---
 

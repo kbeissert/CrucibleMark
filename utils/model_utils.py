@@ -23,21 +23,8 @@ from utils.constants import (
 
 T = TypeVar("T")
 
-# ---------------------------------------------------------------------------
-# Provider short codes — SSoT für Deployment-Badges im Scoreboard
-# ---------------------------------------------------------------------------
-# Drei Deployment-Kategorien:
-#   api   → API   (proprietäre Direkt-APIs, Kosten per Token)
-#   cloud → OR/GR/CLD  (Open-Weights oder proprietäre Modelle via Cloud-Proxy)
-#   local → LCL   (eigenes Intranet — Ollama, llama.cpp/M4, llama.cpp/Spark, etc.)
-#
-# Wichtig: M4APL und SPRK sind KEINE Shortcodes mehr — die Deployment-Kategorie
-# "local" wird immer als LCL angezeigt. Die Hardware-Details (M4 Pro, DGX Spark)
-# sind in hardware_profile in provider_config.yaml hinterlegt und werden im
-# Frontend als Tooltip / Sub-Badge unter LCL angezeigt.
-#
-# Mirrors benchmark_config.yaml / config/provider_config.yaml → providers.<name>.short_code
-# Dieser Dict erlaubt schnelle In-Process-Lookups ohne YAML-I/O bei jedem Aufruf.
+# Provider short codes — mirrors benchmark_config.yaml → providers.<name>.short_code
+# This dict provides fast in-process lookup without YAML I/O on every call.
 _PROVIDER_SHORTCODES: dict[str, str] = {
     # Proprietary direct APIs
     "anthropic": "API",
@@ -48,50 +35,17 @@ _PROVIDER_SHORTCODES: dict[str, str] = {
     # Cloud inference proxies
     "openrouter": "OR",
     "groq": "GR",
-    # Local runtime (Ollama, LM Studio, etc.) — alle lokal → LCL
+    # Local runtime (Ollama, LM Studio, etc.)
     "ollama": "LCL",
     "ollama_local": "LCL",
     "local": "LCL",
-    # llama.cpp local inference servers — Hardware-Detail via hardware_profile, nicht via Shortcode
-    "llamacpp": "LCL",
-    "llamacpp_spark": "LCL",
-    "llama_cpp": "LCL",
-    "llamacpp_local": "LCL",
+    # llama.cpp local inference server (OpenAI-compatible)
+    "llamacpp": "M4APL",
+    "llamacpp_spark": "SPRK",
+    "llama_cpp": "M4APL",
+    "llamacpp_local": "M4APL",
     # Ollama as cloud proxy (e.g. qwen3.5:397b-cloud via remote Ollama endpoint)
     "ollama_cloud": "CLD",
-}
-
-# Deployment-Kategorien — maps provider key → deployment category string
-# Drei Werte: "local" | "cloud" | "api"
-# SSoT: config/provider_config.yaml → providers.<name>.deployment_category
-_PROVIDER_DEPLOYMENT_CATEGORY: dict[str, str] = {
-    # Proprietary direct APIs
-    "anthropic": "api",
-    "openai": "api",
-    "google": "api",
-    "xai": "api",
-    "mistral": "api",
-    # Cloud inference proxies
-    "openrouter": "cloud",
-    "groq": "cloud",
-    "ollama_cloud": "cloud",
-    # Local runtime — alle lokal → "local"
-    "ollama": "local",
-    "ollama_local": "local",
-    "local": "local",
-    "llamacpp": "local",
-    "llamacpp_spark": "local",
-    "llama_cpp": "local",
-    "llamacpp_local": "local",
-}
-
-# Hardware-Profile-Mapping — provider key → hardware_profile key
-# SSoT: config/provider_config.yaml → providers.local.<name>.hardware_profile
-_PROVIDER_HARDWARE_PROFILES: dict[str, str] = {
-    "llamacpp": "m4_macbook_pro_metal",
-    "llamacpp_spark": "dgx_spark_cuda",
-    "llama_cpp": "m4_macbook_pro_metal",
-    "llamacpp_local": "m4_macbook_pro_metal",
 }
 
 
@@ -99,31 +53,9 @@ def get_provider_shortcode(provider: str) -> str:
     """Returns the configured short code for a provider (e.g. 'openrouter' → 'OR').
 
     SSoT: benchmark_config.yaml → providers.<name>.short_code.
-    Alle lokalen Provider (ollama, llamacpp, llamacpp_spark) geben 'LCL' zurück.
-    Hardware-Details sind in get_hardware_profile() verfügbar.
     Falls back to the provider name uppercased (max 4 chars) if not in the mapping.
     """
     return _PROVIDER_SHORTCODES.get(str(provider).lower().strip(), str(provider).upper()[:4])
-
-
-def get_deployment_category(provider: str) -> str:
-    """Returns the deployment category for a provider: 'local' | 'cloud' | 'api'.
-
-    SSoT: config/provider_config.yaml → providers.<name>.deployment_category
-    Wird im Web-Export und im Leaderboard als deployment_category-Feld genutzt.
-    Fallback: 'local' wenn unbekannter Provider (konservativ — kein false-positive für api/cloud).
-    """
-    return _PROVIDER_DEPLOYMENT_CATEGORY.get(str(provider).lower().strip(), "local")
-
-
-def get_hardware_profile(provider: str) -> str | None:
-    """Returns the hardware_profile key for a provider, or None for cloud/API providers.
-
-    SSoT: config/provider_config.yaml → providers.local.<name>.hardware_profile
-    Beispiel: 'llamacpp' → 'm4_macbook_pro_metal', 'llamacpp_spark' → 'dgx_spark_cuda'
-    Wird im Web-Export als hardware_profile-Feld exportiert (für Tooltip/Sub-Badge im Frontend).
-    """
-    return _PROVIDER_HARDWARE_PROFILES.get(str(provider).lower().strip())
 
 
 # ---------------------------------------------------------------------------

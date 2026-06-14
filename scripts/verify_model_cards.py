@@ -120,13 +120,7 @@ def verify_cards():
         import re
         config_model_ids = set(re.findall(r'^\s+- id:\s+(.+)$', config_text, re.MULTILINE))
         
-        # Normalisierung: Punkte → Unterstriche (provider_config nutzt Punkte,
-        # Card-model_id-Felder nutzen Unterstriche, z.B. "qwen3.5-4b" vs "qwen3_5-4b")
-        def _normalize(mid: str) -> str:
-            return mid.replace(".", "_")
-
-        all_model_ids_norm = {_normalize(m) for m in all_model_ids}
-        missing_in_cards = {m for m in config_model_ids if _normalize(m) not in all_model_ids_norm}
+        missing_in_cards = config_model_ids - all_model_ids
         if missing_in_cards:
             issues.append(f"\n📋 Modelle in config, aber keine Card vorhanden:")
             for mid in sorted(missing_in_cards):
