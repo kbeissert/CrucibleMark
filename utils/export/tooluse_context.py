@@ -51,13 +51,22 @@ def _fmt(val: Any, decimals: int = 2) -> str:
 
 
 def get_tooluse_leaderboard_row(model_id: str) -> dict[str, str]:
+    """Liest eine Zeile aus tooluse_leaderboard.csv.
+
+    Matching erfolgt kanonisch über resolve_canonical_model_id(), damit
+    Ollama-IDs (z.B. ``gemma3:12b``) und kanonische IDs
+    (``google/gemma-3-12b-it``) korrekt aufgelöst werden.
+    """
+    from utils.model_utils import resolve_canonical_model_id  # noqa: PLC0415
+
     csv_path = ROOT_DIR / "benchmark_scores" / "tooluse_leaderboard.csv"
     if not csv_path.exists():
         return {}
+    canonical = resolve_canonical_model_id(model_id)
     try:
         with csv_path.open(encoding="utf-8") as fh:
             for row in csv.DictReader(fh):
-                if row.get("model", "") == model_id:
+                if resolve_canonical_model_id(row.get("model", "")) == canonical:
                     return dict(row)
     except Exception:
         pass
@@ -76,6 +85,9 @@ def get_all_tooluse_model_ids() -> list[str]:
 
 
 def _load_asset_details(model_id: str) -> list[dict[str, Any]]:
+    from utils.model_utils import resolve_canonical_model_id  # noqa: PLC0415
+
+    canonical = resolve_canonical_model_id(model_id)
     results: list[dict[str, Any]] = []
     for csv_name in _BENCHMARK_CSVS:
         csv_path = ROOT_DIR / csv_name
@@ -86,7 +98,7 @@ def _load_asset_details(model_id: str) -> list[dict[str, Any]]:
                 for row in csv.DictReader(fh):
                     if not str(row.get("asset_id", "")).startswith("tooluse"):
                         continue
-                    if row.get("model", "") != model_id:
+                    if resolve_canonical_model_id(row.get("model", "")) != canonical:
                         continue
                     contribs: dict[str, Any] = {}
                     raw = row.get("score_contributions", "")
@@ -189,14 +201,17 @@ def _score_label(combined: float | None) -> str:
 
 
 def _compute_fleet_avg(exclude_model_id: str | None = None) -> float | None:
+    from utils.model_utils import resolve_canonical_model_id  # noqa: PLC0415
+
     csv_path = ROOT_DIR / "benchmark_scores" / "tooluse_leaderboard.csv"
     if not csv_path.exists():
         return None
+    exclude_canonical = resolve_canonical_model_id(exclude_model_id) if exclude_model_id else None
     scores: list[float] = []
     try:
         with csv_path.open(encoding="utf-8") as fh:
             for row in csv.DictReader(fh):
-                if exclude_model_id and row.get("model") == exclude_model_id:
+                if exclude_canonical and resolve_canonical_model_id(row.get("model", "")) == exclude_canonical:
                     continue
                 v = _safe_float(row.get("combined_score", ""))
                 if v is not None and v > 0:
