@@ -634,10 +634,11 @@ def _run_tooluse_reviews(
             existing_reviews = sorted(out_dir.glob("tooluse_narrative_review_*.md")) if out_dir.exists() else []
             if existing_reviews:
                 latest_review_mtime = existing_reviews[-1].stat().st_mtime
-                # audit_dir nutzt das rohe mid, weil outputs/audit_logs/<mid>/
-                # genau so heisst wie mid im tooluse_leaderboard.csv steht.
-                # (slug = _safe_name(mid) waere falsch fuer Modelle mit Punkten.)
-                audit_dir = ROOT_DIR / "outputs" / "audit_logs" / mid
+                # audit_dir verwendet slug (_safe_name), weil audit_logs-Verzeichnisse
+                # per SSoT mit _safe_name angelegt werden (Punkte/Slashes → Underscores).
+                # Rohe mid (z.B. "xiaomi/mimo-v2.5") würde einen verschachtelten Pfad
+                # erzeugen, der nie existiert → Recency-Check wäre immer False.
+                audit_dir = ROOT_DIR / "outputs" / "audit_logs" / slug
                 tooluse_audit_files = list(audit_dir.glob("tooluse*.md")) if audit_dir.exists() else []
                 latest_audit_mtime = max((f.stat().st_mtime for f in tooluse_audit_files), default=0)
                 if latest_review_mtime >= latest_audit_mtime:

@@ -74,14 +74,20 @@ def test_per_model_flag_in_argparse():
 # === Test 2: _run_per_model_all_reviews iteriert per Modell: benchmark → bias → tooluse ===
 
 def test_per_model_iteration_calls_in_correct_order(tmp_path):
-    """Pro Modell MÜSSEN benchmark, bias, tooluse in dieser Reihenfolge aufgerufen werden."""
+    """Pro Modell benchmark → bias, dann einmal tooluse für ALLE Modelle am Ende.
+
+    Design-Entscheidung: tooluse_leaderboard.csv enthält Ollama-Format-IDs
+    (z.B. "gemma3:12b"), die nicht mit audit_log-Slugs übereinstimmen.
+    Daher wird _run_tooluse_reviews einmal am Ende mit model=None aufgerufen,
+    nicht pro Modell.
+    """
     # Arrange: Fake-Audit-Log-Verzeichnis mit 2 Modellen
     fake_audit_dir = tmp_path / "outputs" / "audit_logs"
     fake_audit_dir.mkdir(parents=True)
     (fake_audit_dir / "model-a").mkdir()
     (fake_audit_dir / "model-b").mkdir()
 
-    call_sequence: list[tuple[str, str]] = []  # (slug, review_type)
+    call_sequence: list[tuple[str | None, str]] = []  # (slug, review_type)
 
     def fake_run_audit(args, client, provider, model_id, max_tokens, csv_data, effective_type):
         call_sequence.append((args.model, effective_type))
@@ -101,18 +107,19 @@ def test_per_model_iteration_calls_in_correct_order(tmp_path):
             model_id="gpt-5.4", max_tokens=8192, csv_data="",
         )
 
-    # Assert: 2 Modelle × 3 Calls = 6 Einträge, in der richtigen Reihenfolge
-    assert len(call_sequence) == 6, f"Erwartet 6 Calls, bekam {len(call_sequence)}: {call_sequence}"
+    # Assert: 2 Modelle × 2 Audit-Calls + 1 Tooluse-Call am Ende = 5 Einträge
+    assert len(call_sequence) == 5, f"Erwartet 5 Calls, bekam {len(call_sequence)}: {call_sequence}"
 
-    # Modell A: benchmark → bias → tooluse
+    # Modell A: benchmark → bias
     assert call_sequence[0] == ("model-a", "benchmark")
     assert call_sequence[1] == ("model-a", "bias")
-    assert call_sequence[2] == ("model-a", "tooluse")
 
-    # Modell B: benchmark → bias → tooluse
-    assert call_sequence[3] == ("model-b", "benchmark")
-    assert call_sequence[4] == ("model-b", "bias")
-    assert call_sequence[5] == ("model-b", "tooluse")
+    # Modell B: benchmark → bias
+    assert call_sequence[2] == ("model-b", "benchmark")
+    assert call_sequence[3] == ("model-b", "bias")
+
+    # Tooluse einmal am Ende mit model=None (iteriert alle IDs aus tooluse_leaderboard.csv)
+    assert call_sequence[4] == (None, "tooluse")
 
 
 # === Test 3: Per-Model mit --model filtert auf genau dieses Modell ===
@@ -143,9 +150,9 @@ def test_per_model_with_model_filter_processes_only_one(tmp_path):
             model_id="gpt-5.4", max_tokens=8192, csv_data="",
         )
 
-    # 1 Modell × 3 Calls = 3 Einträge, alle "model-b"
-    assert processed == ["model-b", "model-b", "model-b"], \
-        f"Erwartet ['model-b', 'model-b', 'model-b'], bekam {processed}"
+    # 1 Modell × 2 Audit-Calls + 1 Tooluse-Call mit model=None = 3 Einträge
+    assert processed == ["model-b", "model-b", None], \
+        f"Erwartet ['model-b', 'model-b', None], bekam {processed}"
 
 
 # === Test 4: Leeres Audit-Logs-Verzeichnis → kein Fehler ===
@@ -222,7 +229,8 @@ def test_per_model_does_not_mutate_original_args(tmp_path):
         assert args.model == "model-a", f"args.model war {args.model!r}, erwartet 'model-a'"
 
     def fake_run_tooluse(args, client, provider, model_id, max_tokens):
-        assert args.model == "model-a"
+        # Tooluse wird mit model=None aufgerufen (iteriert alle IDs aus tooluse_leaderboard.csv)
+        assert args.model is None, f"Tooluse-args.model war {args.model!r}, erwartet None"
 
     with patch.object(gr, "ROOT_DIR", tmp_path), \
          patch.object(gr, "_run_audit_reviews", side_effect=fake_run_audit), \
@@ -437,9 +445,16 @@ def test_per_model_iteration_uses_safe_name_dirs(tmp_path):
             model_id="gpt-5.4", max_tokens=8192, csv_data="",
         )
 
-    # 3 Modelle x 3 Calls = 9 Eintraege
-    assert len(call_sequence) == 9, f"Erwartet 9 Calls, bekam {len(call_sequence)}: {call_sequence}"
-    models = sorted({c[0] for c in call_sequence})
-    assert models == ["gpt-5_4", "hermes-4_3-36b-q6", "qwen3_5-9b"], (
-        f"Erwartet die 3 safe_name-Ordner, bekam {models}"
+    # 3 Modelle × 2 Audit-Calls + 1 Tooluse-Call am Ende = 7 Einträge
+    assert len(call_sequence) == 7, f"Erwartet 7 Calls, bekam {len(call_sequence)}: {call_sequence}"
+    # Audit-Calls: alle 3 Modelle, je benchmark + bias
+    audit_calls = [(m, t) for m, t in call_sequence if t != "tooluse"]
+    audit_models = sorted({m for m, _ in audit_calls})
+    assert audit_models == ["gpt-5_4", "hermes-4_3-36b-q6", "qwen3_5-9b"], (
+        f"Erwartet die 3 safe_name-Ordner in Audit-Calls, bekam {audit_models}"
+    )
+    # Tooluse einmal am Ende mit model=None
+    tooluse_calls = [(m, t) for m, t in call_sequence if t == "tooluse"]
+    assert tooluse_calls == [(None, "tooluse")], (
+        f"Erwartet genau einen Tooluse-Call mit model=None, bekam {tooluse_calls}"
     )
