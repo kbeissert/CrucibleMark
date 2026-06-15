@@ -15,7 +15,8 @@ _FIELD_P2 = "p2_score"
 _FIELD_COMBINED = "combined_score"
 _FIELD_HALLUCINATION = "hallucination_flag"
 
-ROOT_DIR = Path(__file__).resolve().parent.parent
+# utils/export/tooluse_context.py liegt in utils/export/ → .parent.parent.parent = Projekt-Root
+ROOT_DIR = Path(__file__).resolve().parent.parent.parent
 if str(ROOT_DIR) not in sys.path:
     sys.path.insert(0, str(ROOT_DIR))
 
