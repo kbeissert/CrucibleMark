@@ -252,7 +252,7 @@ class ToolUseExporter:
                 p2_score=_p2_mean,
             )
         except Exception:  # noqa: BLE001 — Card-Update darf den Benchmark nie crashen
-            logger.debug("Model Card tooluse update failed (non-critical)", exc_info=True)
+            logger.warning("Model Card tooluse update failed for %s", model_id, exc_info=True)
 
         ToolUseIOManager.print_run_summary(results, model_id)
 

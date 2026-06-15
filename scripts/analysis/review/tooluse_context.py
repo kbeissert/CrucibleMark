@@ -9,6 +9,12 @@ import sys
 from pathlib import Path
 from typing import Any
 
+# SSOT: Spaltennamen aus benchmark_modules/tooluse/core/constants.py
+_FIELD_P1 = "p1_score"
+_FIELD_P2 = "p2_score"
+_FIELD_COMBINED = "combined_score"
+_FIELD_HALLUCINATION = "hallucination_flag"
+
 ROOT_DIR = Path(__file__).resolve().parent.parent.parent.parent
 if str(ROOT_DIR) not in sys.path:
     sys.path.insert(0, str(ROOT_DIR))
@@ -93,7 +99,7 @@ def _load_asset_details(model_id: str) -> list[dict[str, Any]]:
                     if not contribs:
                         contribs = {
                             k: row[k]
-                            for k in ("p1_score", "p2_score", "combined_score", "hallucination_flag")
+                            for k in (_FIELD_P1, _FIELD_P2, _FIELD_COMBINED, _FIELD_HALLUCINATION)
                             if row.get(k) not in (None, "")
                         }
                     results.append({
