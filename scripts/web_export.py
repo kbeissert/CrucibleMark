@@ -917,8 +917,14 @@ def _build_compass_entry(
     model_name: str,
     model_type: str,
     block_meta: dict,
+    card_id: str | None = None,
 ) -> dict[str, Any]:
-    """Builds the political_compass entry dict for a single model."""
+    """Builds the political_compass entry dict for a single model.
+
+    card_id: kanonische model_id aus der Model-Card (SSoT für Frontend-Matching).
+    Muss mit model_id im Leaderboard übereinstimmen, damit buildCompassIdMap
+    im Web-Projekt einen stabilen Match findet (kein Slug-Trick).
+    """
     archetype: str | None = None
     extremism: str | None = None
     metrics: dict = {}
@@ -946,6 +952,7 @@ def _build_compass_entry(
         return str(lb_row.get(key, "")) if lb_row is not None else None
 
     return {
+        "card_id": card_id,
         "slug": slug,
         "name": model_name,
         "version": extract_version(pc_row.get("model_version")),
@@ -1401,7 +1408,13 @@ def main() -> None:
                 lb_row = pc_lb_map.get(_pc_id)
                 if lb_row is None:
                     lb_row = pc_lb_slug_map.get(_pc_slug)
-                compass_data = _build_compass_entry(pc_row, lb_row, slug, model_name, _type, block_meta)
+                # card_id = kanonische model_id für Frontend-Matching (SSoT: Model-Card > raw_model_id)
+                _card_id = (card.get("model_id") if card else None) or (
+                    raw_model_id if raw_model_id and raw_model_id != "nan" else None
+                )
+                compass_data = _build_compass_entry(
+                    pc_row, lb_row, slug, model_name, _type, block_meta, card_id=_card_id
+                )
                 pc_list.append(compass_data)
 
         model_json: dict[str, Any] = {
