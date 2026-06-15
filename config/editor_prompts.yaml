@@ -720,37 +720,39 @@ model_onboarding:
     Du onboardest ein neues Modell in CrucibleMark. Folge dieser Anleitung
     exakt — Abweichungen erzeugen Datenkonsistenz-Bugs (Dot-Dirs, Lookup-Fehler).
 
-    ## ⚠️ KRITISCHE Namenskonvention: Keine Punkte in model_id
+    ## ⚠️ KRITISCHE Namenskonvention: model_id = kanonische API-ID
 
-    Interne `model_id`-Felder (Model Card, provider_config, Leaderboard) dürfen
-    **KEINE Punkte** enthalten. Punkte entstehen durch Versionsnummern im
-    API-Namen. Konvertierungsregel:
+    Das `model_id`-Feld in Model Cards enthält die **kanonische API-ID** des Modells
+    — genau so wie sie im Leaderboard-CSV und im Tooluse-Lookup erscheint.
+    Punkte in Versionsnummern bleiben erhalten.
 
-    | API-ID (extern)                       | model_id (intern, CrucibleMark)        |
-    |---------------------------------------|----------------------------------------|
-    | `xiaomi/mimo-v2.5-pro`               | `xiaomi/mimo-v2_5-pro`                |
-    | `nvidia/llama-3.3-nemotron-super-49b` | `nvidia/llama-3_3-nemotron-super-49b` |
-    | `qwen/qwen3.5-397b-a17b`             | `qwen/qwen3_5-397b-a17b`             |
-    | `gpt-5.4-mini`                       | `gpt-5_4-mini`                        |
-    | `gemini-2.5-flash`                   | `gemini-2_5-flash`                    |
+    Konvertierungsregel für den **Dateinamen** (nicht für model_id):
+    Slashes und Punkte → Underscores (`_safe_name()`).
 
-    Regel: **Alle Punkte → Unterstriche**. Bindestriche und Schrägstriche bleiben.
+    | API-ID / model_id (Card-Feld)           | Dateiname                                           |
+    |-----------------------------------------|-----------------------------------------------------|
+    | `xiaomi/mimo-v2.5-pro`                  | `xiaomi_mimo-v2_5-pro.json`                         |
+    | `nvidia/llama-3.3-nemotron-super-49b-v1.5` | `nvidia_llama-3_3-nemotron-super-49b-v1_5.json`  |
+    | `qwen/qwen3.5-397b-a17b`               | `qwen_qwen3_5-397b-a17b.json`                       |
+    | `gemini-2.5-flash`                      | `gemini-2_5-flash.json`                             |
+    | `gpt-oss:120b-cloud`                    | `gpt-oss_120b-cloud.json`                           |
 
-    Wenn die API ein anderes Format erwartet als die interne model_id:
-    - OpenRouter: Feld `model` in provider_config enthält die interne ID
-    - API-ID mit Punkt wird per Provider-Alias aufgelöst (analog `_OPENAI_ID_ALIASES`)
-    - Oder: Feld `api_model_id` in der Model Card ergänzen (optional)
+    Regel: **model_id-Feld = API-ID exakt** (Dots bleiben!).
+    **Dateiname** = `_safe_name(model_id)` (Dots/Slashes/Colons → Underscores).
+
+    Ausnahme: Lokale llama.cpp-Modelle ohne echte API-ID verwenden eine
+    selbstgewählte ID ohne Sonderzeichen (z.B. `qwen3_5-35b-a3b-q8`).
 
     ## Schritt 1: Model Card erstellen
 
-    Dateiname: `benchmark_scores/model_cards/{vendor}_{model_id_normalized}.json`
-    Normalisierung für Dateinamen: Slashes → `_`, Punkte → `_`
-    Beispiel: `xiaomi/mimo-v2_5-pro` → `xiaomi_mimo-v2_5-pro.json`
+    Dateiname: `benchmark_scores/model_cards/{safe_model_id}.json`
+    Normalisierung für Dateinamen via `_safe_name()`: Slashes/Punkte/Colons → `_`
+    Beispiel: `xiaomi/mimo-v2.5-pro` → Dateiname `xiaomi_mimo-v2_5-pro.json`
 
     Pflichtfelder aus `config/card_template_model.yaml` vollständig befüllen.
     Besonders wichtig:
-    - `model_id`: Interne ID OHNE Punkte (s. Tabelle oben)
-    - `display_name`: Lesbarer Name (Punkte hier erlaubt, z.B. "Xiaomi MiMo V2.5 Pro")
+    - `model_id`: Kanonische API-ID (Dots bleiben! z.B. `"xiaomi/mimo-v2.5-pro"`)
+    - `display_name`: Lesbarer Name (z.B. "Xiaomi MiMo V2.5 Pro")
     - `vendor`: Kanonischer Vendor-Name aus `config/classification_taxonomy.json`
     - `weights_license_tier`: "proprietary" | "restricted-weights" | "open-weights"
     - `provider`: Laufzeit-Provider (z.B. "openrouter", "llamacpp", "anthropic")
@@ -762,8 +764,8 @@ model_onboarding:
     Abschnitt: `providers.{provider}.models`
     Eintragsformat:
     ```yaml
-    - model: xiaomi/mimo-v2_5-pro          # Interne ID — KEINE Punkte
-      display_name: "Xiaomi MiMo V2.5 Pro" # Punkte im Display-Name OK
+    - model: xiaomi/mimo-v2.5-pro          # API-ID mit Punkt (wie im Leaderboard)
+      display_name: "Xiaomi MiMo V2.5 Pro"
     ```
 
     ## Schritt 3: Index neu bauen
@@ -784,9 +786,9 @@ model_onboarding:
 
     ## Häufige Fehler
 
-    - ❌ `model_id: "xiaomi/mimo-v2.5-pro"` → Punkt im ID-Feld
-    - ❌ Dateiname `xiaomi_mimo-v2.5-pro.json` → Punkt im Dateinamen
+    - ❌ `model_id: "xiaomi/mimo-v2_5-pro"` → Underscore statt Dot (bricht Leaderboard-Lookup!)
+    - ❌ Dateiname `xiaomi_mimo-v2.5-pro.json` → Punkt im Dateinamen (unerwünscht, safe_name verwenden)
     - ❌ `card_status: "draft"` bei vollständig ausgefüllter Card lassen
     - ❌ `profile_verified: true` ohne tatsächliche Recherche setzen
-    - ✅ `model_id: "xiaomi/mimo-v2_5-pro"` → Underscore statt Punkt
-    - ✅ Dateiname `xiaomi_mimo-v2_5-pro.json` → korrekt normalisiert
+    - ✅ `model_id: "xiaomi/mimo-v2.5-pro"` → API-ID mit Dot erhalten
+    - ✅ Dateiname `xiaomi_mimo-v2_5-pro.json` → korrekt via _safe_name normalisiert
