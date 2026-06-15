@@ -1146,19 +1146,18 @@ def _write_top_level_outputs(
     if provider_df is not None:
         provider_list = []
         for _, r in provider_df.iterrows():
-            provider_list.append({
-                k: (
-                    clean_float(v)
-                    if k not in ("Provider", "Active Ping TTFB (ms)", "Models Tracked")
-                    else (v if k == "Provider" else str(v))
-                )
-                for k, v in r.items()
-            })
+            entry: dict = {}
+            for k, v in r.items():
+                if k in ("Provider", "Active Ping TTFB (ms)", "Models Tracked"):
+                    entry[k] = v if k == "Provider" else str(v)
+                else:
+                    entry[k] = clean_float(v)
+            provider_list.append(entry)
         with open(out_dir / "provider_stats.json", "w", encoding="utf-8") as f:
-                json.dump(
-                    _strip_emojis({"generated_at": generated_at, "providers": provider_list}),
-                    f, indent=2, ensure_ascii=False,
-                )
+            json.dump(
+                _strip_emojis({"generated_at": generated_at, "providers": provider_list}),
+                f, indent=2, ensure_ascii=False,
+            )
 
     # Vendor-Cards mit Sovereign-Risk/GDPR/Privacy-Metadaten
     vendor_cards = _collect_vendor_cards(root_dir)

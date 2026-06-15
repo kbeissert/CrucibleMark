@@ -122,7 +122,7 @@ def verify_cards():
         
         missing_in_cards = config_model_ids - all_model_ids
         if missing_in_cards:
-            issues.append(f"\n📋 Modelle in config, aber keine Card vorhanden:")
+            issues.append("\n📋 Modelle in config, aber keine Card vorhanden:")
             for mid in sorted(missing_in_cards):
                 issues.append(f"   ❌ {mid}")
         else:
