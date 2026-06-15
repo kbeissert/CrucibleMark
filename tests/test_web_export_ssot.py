@@ -114,7 +114,7 @@ def test_lookup_pc_row_returns_none_for_unknown() -> None:
 
 def test_build_tooluse_entry_uses_canonical_id(tmp_path: Path) -> None:
     """ToolUse-Lookup delegiert an resolve_canonical_model_id()."""
-    with patch("scripts.analysis.review.tooluse_context.get_tooluse_web_data") as mock_tud, \
+    with patch("utils.export.tooluse_context.get_tooluse_web_data") as mock_tud, \
          patch("utils.model_utils.resolve_canonical_model_id") as mock_resolve:
         mock_resolve.return_value = "claude-sonnet-4-5-20250929"
         mock_tud.return_value = {"score": 0.85, "tests_run": 5}
@@ -130,7 +130,7 @@ def test_build_tooluse_entry_uses_canonical_id(tmp_path: Path) -> None:
 
 def test_build_tooluse_entry_returns_none_when_no_data() -> None:
     """Wenn ToolUse-Web-Data None zurückgibt, wird der Eintrag uebersprungen."""
-    with patch("scripts.analysis.review.tooluse_context.get_tooluse_web_data", return_value=None):
+    with patch("utils.export.tooluse_context.get_tooluse_web_data", return_value=None):
         result = _build_tooluse_entry("Unknown Model", ROOT)
     assert result is None
 

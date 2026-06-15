@@ -595,7 +595,7 @@ def _run_tooluse_reviews(
     max_tokens: int,
 ) -> None:
     """Tooluse-Narrative-Reviews für alle (oder ein) Modell(e) generieren."""
-    from scripts.analysis.review.tooluse_context import (
+    from utils.export.tooluse_context import (
         build_tooluse_context,
         get_all_tooluse_model_ids,
         get_tooluse_leaderboard_row,

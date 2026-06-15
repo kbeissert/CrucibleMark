@@ -366,7 +366,7 @@ def test_tooluse_review_uses_raw_mid_for_audit_dir(tmp_path, monkeypatch):
         "display_model_name": "GPT-5.4",
         "log_data": "",
     }
-    monkeypatch.setitem(sys.modules, "scripts.analysis.review.tooluse_context", fake_module)
+    monkeypatch.setitem(sys.modules, "utils.export.tooluse_context", fake_module)
 
     # Card: supports_tool_use=True, sonst skip
     from utils.model_utils import _card_path

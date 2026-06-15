@@ -1065,7 +1065,7 @@ def _build_tooluse_entry(model_id: str, root_dir: Path) -> "dict[str, Any] | Non
     Review-Verzeichnisse unterschiedliche ID-Konventionen nutzen koennen.
     """
     try:
-        from scripts.analysis.review.tooluse_context import get_tooluse_web_data
+        from utils.export.tooluse_context import get_tooluse_web_data
         from utils.model_utils import _safe_name, resolve_canonical_model_id
     except ImportError:
         logging.debug("tooluse_context not importable — skipping tooluse entry")
