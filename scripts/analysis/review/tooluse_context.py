@@ -89,6 +89,13 @@ def _load_asset_details(model_id: str) -> list[dict[str, Any]]:
                             contribs = ast.literal_eval(raw)
                         except (ValueError, SyntaxError):
                             pass
+                    # Fallback: score_contributions leer → direkte CSV-Spalten verwenden
+                    if not contribs:
+                        contribs = {
+                            k: row[k]
+                            for k in ("p1_score", "p2_score", "combined_score", "hallucination_flag")
+                            if row.get(k) not in (None, "")
+                        }
                     results.append({
                         "asset_id": row.get("asset_id", ""),
                         "data": contribs,
