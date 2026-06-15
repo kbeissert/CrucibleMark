@@ -29,6 +29,47 @@ from utils.model_utils import _find_card, _safe_name, WEIGHTS_TIER_DISPLAY
 from utils.card_utils import normalize_tags
 
 
+# ------------------------------------------------------------------
+# Leaderboard CSV column names (SSOT — Magic Strings vermeiden)
+# ------------------------------------------------------------------
+class LdbCols:
+    """Kanonische Spaltennamen der benchmark_leaderboard_detailed.csv."""
+    MODEL_NAME = "Model Name"
+    MODEL_ID = "Model ID"
+    BADGE = "Badge"
+    SIZE_CLASS = "Size Class"
+    SPEED_PROFILE = "Speed Profile"
+    PERFORMANCE_TIER = "Performance Tier"
+    TYPE = "Type"
+    TOTAL_SCORE = "Total Score"
+    ROUTINE_SCORE = "Routine Score"
+    REASONING_SCORE = "Reasoning Score"
+    TOKENS_PER_S = "Tokens/s"
+    AVG_TASK_DURATION = "Avg Task Duration (s)"
+    P95_TIME = "P95 Time (s)"
+    P95_LEGACY = "P95"
+    MAX_TIME = "Max Time (s)"
+    TIMEOUT_COUNT = "Timeout Count"
+    TOKENS_TOTAL = "Tokens Total"
+    COST_PER_1K = "Cost per 1K (USD)"
+    BENCHMARK_COST = "Benchmark Cost (USD)"
+    LLM_JUDGE_RAW = "LLM Judge Avg (raw)"
+    LLM_JUDGE_DISPLAY = "LLM Judge Avg"
+    LLM_JUDGE_COVERAGE = "LLM Judge Coverage"
+    TESTS_RUN = "Tests Run"
+    VERSION = "Version"
+    PROVIDER_CODE = "Provider Code"
+    HARDWARE_PROFILE = "Hardware Profile"
+    # Scores-Dict-Spalten (innerhalb der Modul-Scores)
+    CODE_QUALITY = "Code Quality Audit"
+    CLI_BADGE = "CLI Badge"
+    UX_WRITING = "UX Writing & Microcopy"
+    DOCUMENTATION_QUALITY = "Documentation Quality"
+    CONTENT_TRANSFORMATION = "Content Transformation & Adaption"
+    CULTURAL_INTELLIGENCE = "Cultural Intelligence"
+    LOGICAL_REASONING = "Logical Reasoning"
+
+
 def build_provider_map(config_path: Path) -> dict[str, str]:
     """Builds a model_id → provider display name map from benchmark_config.yaml.
 
@@ -721,12 +762,12 @@ def _build_leaderboard_entry(
 ) -> dict[str, Any]:
     """Builds the leaderboard entry dict for a single model."""
     _card_version = extract_version(card.get("model_version")) if card else None
-    _csv_version = extract_version(row.get("Version"))
-    _raw_model_id = str(row.get("Model ID", row.get("model_id_raw", row.get("model_id", "")))).strip()
+    _csv_version = extract_version(row.get(LdbCols.VERSION))
+    _raw_model_id = str(row.get(LdbCols.MODEL_ID, row.get("model_id_raw", row.get("model_id", "")))).strip()
     return {
         "slug": slug,
         "model_id": (card.get("model_id") if card else None) or (_raw_model_id or None),
-        "model_name": (card.get("display_name") if card else None) or str(row.get("Model Name", "")),
+        "model_name": (card.get("display_name") if card else None) or str(row.get(LdbCols.MODEL_NAME, "")),
         "vendor": vendor,
         # SSoT-Link zum Vendor-Profil (v4.9.1): vendor_card_id aus classification_taxonomy.json
         "vendor_card_ref": vendor_card_ref,
@@ -734,40 +775,40 @@ def _build_leaderboard_entry(
         "community": community,
         "community_card_ref": community_card_ref,
         "version": _card_version or _csv_version,
-        "badge": str(row.get("Badge", "")),
-        "badge_tier": extract_badge_tier(row.get("Badge")),
-        "size_class": (card.get("size_class") if card else None) or str(row.get("Size Class", "Frontier")),
-        "speed_profile": str(row.get("Speed Profile", "")),
-        "performance_tier": str(row.get("Performance Tier", "")) or None,
+        "badge": str(row.get(LdbCols.BADGE, "")),
+        "badge_tier": extract_badge_tier(row.get(LdbCols.BADGE)),
+        "size_class": (card.get("size_class") if card else None) or str(row.get(LdbCols.SIZE_CLASS, "Frontier")),
+        "speed_profile": str(row.get(LdbCols.SPEED_PROFILE, "")),
+        "performance_tier": str(row.get(LdbCols.PERFORMANCE_TIER, "")) or None,
         "type": model_type,
         "thinking_mode": thinking_mode,
         "deployment_type": card.get("deployment_type") if card else None,
         "weights_license_tier": card.get("weights_license_tier") if card else None,
         "inference_provider": inference_provider,
-        "provider_code": str(row.get("Provider Code", "")) or None,
-        "hardware_profile": str(row.get("Hardware Profile", "")) or None,
-        "total_score": normalize_pending(row.get("Total Score")),
-        "routine_score": normalize_pending(row.get("Routine Score")),
-        "reasoning_score": normalize_pending(row.get("Reasoning Score")),
-        "tokens_per_s": normalize_pending(row.get("Tokens/s")),
-        "avg_task_duration_s": normalize_pending(row.get("Avg Task Duration (s)")),
-        "p95_time_s": normalize_pending(row.get("P95 Time (s)", row.get("P95", None))),
-        "max_time_s": normalize_pending(row.get("Max Time (s)")),
-        "timeout_count": normalize_pending(row.get("Timeout Count")),
-        "tokens_total": normalize_pending(row.get("Tokens Total")),
-        "cost_per_1k": normalize_pending(row.get("Cost per 1K (USD)")),
-        "benchmark_cost": normalize_pending(row.get("Benchmark Cost (USD)")),
-        "llm_judge_avg": normalize_pending(row.get("LLM Judge Avg (raw)")) or parse_star_float(row.get("LLM Judge Avg")),
-        "llm_judge_coverage": normalize_pending(row.get("LLM Judge Coverage")),
-        "tests_run": parse_tests_run(row.get("Tests Run")),
+        "provider_code": str(row.get(LdbCols.PROVIDER_CODE, "")) or None,
+        "hardware_profile": str(row.get(LdbCols.HARDWARE_PROFILE, "")) or None,
+        "total_score": normalize_pending(row.get(LdbCols.TOTAL_SCORE)),
+        "routine_score": normalize_pending(row.get(LdbCols.ROUTINE_SCORE)),
+        "reasoning_score": normalize_pending(row.get(LdbCols.REASONING_SCORE)),
+        "tokens_per_s": normalize_pending(row.get(LdbCols.TOKENS_PER_S)),
+        "avg_task_duration_s": normalize_pending(row.get(LdbCols.AVG_TASK_DURATION)),
+        "p95_time_s": normalize_pending(row.get(LdbCols.P95_TIME, row.get(LdbCols.P95_LEGACY, None))),
+        "max_time_s": normalize_pending(row.get(LdbCols.MAX_TIME)),
+        "timeout_count": normalize_pending(row.get(LdbCols.TIMEOUT_COUNT)),
+        "tokens_total": normalize_pending(row.get(LdbCols.TOKENS_TOTAL)),
+        "cost_per_1k": normalize_pending(row.get(LdbCols.COST_PER_1K)),
+        "benchmark_cost": normalize_pending(row.get(LdbCols.BENCHMARK_COST)),
+        "llm_judge_avg": normalize_pending(row.get(LdbCols.LLM_JUDGE_RAW)) or parse_star_float(row.get(LdbCols.LLM_JUDGE_DISPLAY)),
+        "llm_judge_coverage": normalize_pending(row.get(LdbCols.LLM_JUDGE_COVERAGE)),
+        "tests_run": parse_tests_run(row.get(LdbCols.TESTS_RUN)),
         "scores": {
-            "code_quality": normalize_pending(row.get("Code Quality Audit")),
-            "cli_benchmark": normalize_pending(row.get("CLI Badge")),
-            "ux_writing": normalize_pending(row.get("UX Writing & Microcopy")),
-            "documentation_quality": normalize_pending(row.get("Documentation Quality")),
-            "content_transformation": normalize_pending(row.get("Content Transformation & Adaption")),
-            "cultural_intelligence": normalize_pending(row.get("Cultural Intelligence")),
-            "logical_reasoning": normalize_pending(row.get("Logical Reasoning")),
+            "code_quality": normalize_pending(row.get(LdbCols.CODE_QUALITY)),
+            "cli_benchmark": normalize_pending(row.get(LdbCols.CLI_BADGE)),
+            "ux_writing": normalize_pending(row.get(LdbCols.UX_WRITING)),
+            "documentation_quality": normalize_pending(row.get(LdbCols.DOCUMENTATION_QUALITY)),
+            "content_transformation": normalize_pending(row.get(LdbCols.CONTENT_TRANSFORMATION)),
+            "cultural_intelligence": normalize_pending(row.get(LdbCols.CULTURAL_INTELLIGENCE)),
+            "logical_reasoning": normalize_pending(row.get(LdbCols.LOGICAL_REASONING)),
         },
         "tokens_per_module": {
             "code_quality": normalize_pending(row.get("Tokens: Code Quality Audit")),
@@ -1179,35 +1220,14 @@ def _write_top_level_outputs(
         )
 
 
-def main() -> None:
-    # Load config SSOT
-    try:
-        config = ConfigValidator().config
-        default_out = config.get("output", {}).get("web_export_dir", "./web_export")
-    except Exception:
-        default_out = "./web_export"
-
-    parser = argparse.ArgumentParser(description="Export CrucibleMark data for Web")
-    parser.add_argument("--output", default=default_out, type=str, help="Target directory for web data")
-    parser.add_argument("--model", type=str, help="Export only a specific model slug")
-    parser.add_argument("--verbose", action="store_true", help="Enable verbose logging")
-    args = parser.parse_args()
-
-    logging.basicConfig(
-        level=logging.DEBUG if args.verbose else logging.INFO,
-        format="%(message)s"
-    )
-
-    out_dir, models_dir, root_dir = _setup_output_dirs(args)
-    scores_dir = root_dir / "benchmark_scores"
-    comparisons_path = root_dir / "docs" / "reviews"
-
-    logging.info("🌐 Starting Web Export Pipeline...")
-
-    # Vendor-Alias-Map + Vendor-Card-ID-Lookup aus classification_taxonomy.json (SSoT)
+def _init_export_context(
+    root_dir: Path,
+    scores_dir: Path,
+    comparisons_path: Path,
+) -> dict[str, Any]:
+    """Lädt alle Datenquellen und baut Lookup-Maps auf."""
     _vendor_alias_map = _build_vendor_alias_map(root_dir / "config")
     _vendor_card_id_lookup = _build_vendor_card_id_lookup(root_dir / "config")
-    # Community-Alias-Map + Community-Card-ID-Lookup (v4.9.2)
     _community_alias_map = _build_community_alias_map(root_dir / "config")
     _community_card_id_lookup = _build_community_card_id_lookup(root_dir / "config")
 
@@ -1225,11 +1245,6 @@ def main() -> None:
     audit_dirs = {slugify(d.name): d for d in audit_logs_path.iterdir() if d.is_dir()} if audit_logs_path.exists() else {}
     comp_dirs = {slugify(d.name): d for d in comparisons_path.iterdir() if d.is_dir()} if comparisons_path.exists() else {}
 
-    generated_at = datetime.datetime.now(datetime.UTC).isoformat()
-
-    # Web-Export-Blacklist laden (config/web_export_blacklist.yaml).
-    # Match auf raw_model_id (exakt + fnmatch-Patterns). Datei fehlt
-    # oder ist leer -> keine Filterung (graceful default).
     _bl_exact, _bl_pattern, _bl_total, _bl_loaded = _load_export_blacklist(
         root_dir / "config" / "web_export_blacklist.yaml"
     )
@@ -1240,7 +1255,53 @@ def main() -> None:
         )
     elif _bl_loaded:
         logging.info("  Blacklist: Datei geladen, leer.")
-    # _bl_loaded=False: kein Log (Datei fehlt = Default)
+
+    return {
+        "root_dir": root_dir,
+        "comparisons_path": comparisons_path,
+        "vendor_alias_map": _vendor_alias_map,
+        "vendor_card_id_lookup": _vendor_card_id_lookup,
+        "community_alias_map": _community_alias_map,
+        "community_card_id_lookup": _community_card_id_lookup,
+        "provider_map": provider_map,
+        "ldb": ldb,
+        "pc": pc,
+        "pc_lb_map": pc_lb_map,
+        "pc_lb_slug_map": pc_lb_slug_map,
+        "block_meta": block_meta,
+        "benchmark_run_map": _benchmark_run_map,
+        "audit_dirs": audit_dirs,
+        "comp_dirs": comp_dirs,
+        "bl_exact": _bl_exact,
+        "bl_pattern": _bl_pattern,
+        "bl_total": _bl_total,
+        "provider_df": provider_df,
+        "generated_at": datetime.datetime.now(datetime.UTC).isoformat(),
+    }
+
+
+def _process_leaderboard(
+    ctx: dict[str, Any],
+    filter_slug: str | None,
+    models_dir: Path,
+) -> dict[str, Any]:
+    """Iteriert über die Leaderboard-CSV und baut Model-JSONs + PC-Daten."""
+    root_dir: Path = ctx["root_dir"]
+    ldb = ctx["ldb"]
+    pc = ctx["pc"]
+    pc_lb_map = ctx["pc_lb_map"]
+    pc_lb_slug_map = ctx["pc_lb_slug_map"]
+    block_meta = ctx["block_meta"]
+    benchmark_run_map = ctx["benchmark_run_map"]
+    audit_dirs = ctx["audit_dirs"]
+    comp_dirs = ctx["comp_dirs"]
+    vendor_alias_map = ctx["vendor_alias_map"]
+    vendor_card_id_lookup = ctx["vendor_card_id_lookup"]
+    community_alias_map = ctx["community_alias_map"]
+    community_card_id_lookup = ctx["community_card_id_lookup"]
+    provider_map = ctx["provider_map"]
+    bl_exact = ctx["bl_exact"]
+    bl_pattern = ctx["bl_pattern"]
 
     models_list: list[dict[str, Any]] = []
     pc_list: list[dict[str, Any]] = []
@@ -1252,21 +1313,17 @@ def main() -> None:
     total = len(ldb)
 
     for _, row in ldb.iterrows():
-        model_name = str(row.get("Model Name", ""))
+        model_name = str(row.get(LdbCols.MODEL_NAME, ""))
         if not model_name or str(model_name) == "nan": continue
         count += 1
 
         slug = slugify(model_name)
-        if args.model and slugify(args.model) != slug:
+        if filter_slug and slugify(filter_slug) != slug:
             continue
 
-        # SSOT: use raw model_id (same transform as benchmark_utils.py) for dir lookup
-        raw_model_id = str(row.get("Model ID", row.get("model_id_raw", row.get("model_id", "")))).strip()
-        # slugify() normalisiert Sonderzeichen sowieso — .replace ist redundant.
+        raw_model_id = str(row.get(LdbCols.MODEL_ID, row.get("model_id_raw", row.get("model_id", "")))).strip()
         dir_slug = slugify(raw_model_id) if raw_model_id and raw_model_id != "nan" else slug
 
-        # Load model card early — needed for heritage_ids dir fallback below.
-        # Try raw API ID first (direct _find_card hit), fall back to display name.
         if raw_model_id and raw_model_id != "nan":
             card = load_model_card(raw_model_id, root_dir)
             if card is None:
@@ -1274,9 +1331,6 @@ def main() -> None:
         else:
             card = load_model_card(model_name, root_dir)
 
-        # WEBEXP-010: Log wenn Model in Leaderboard aber Card fehlt. Vorher
-        # stillschweigend model_card=null → Frontend zeigt unvollstaendige
-        # Detailseite ohne Hinweis auf fehlende Card. Jetzt WARNING.
         if card is None and (
             (raw_model_id and raw_model_id != "nan") or model_name
         ):
@@ -1287,14 +1341,9 @@ def main() -> None:
                 f"oder scripts/maintenance/create_model_card.py ausfuehren."
             )
 
-        # Complete Directory Sync for Markdowns
         model_audit_src = _resolve_dir(audit_dirs, dir_slug)
         model_comp_src = _resolve_dir(comp_dirs, dir_slug)
 
-        # Fallback: _safe_name-Variante (z.B. "nvidia/nemotron-…" → "nvidia-nemotron-…" statt "nemotron-…").
-        # slugify() strippt via rsplit('/') den Vendor-Prefix, Verzeichnisse werden aber per _safe_name()
-        # angelegt (/ → _), weshalb der primäre dir_slug keinen Match erzeugt.
-        # Analogie: Heritage-Fallback (unten) probiert ebenfalls beide Varianten.
         if raw_model_id and raw_model_id != "nan":
             _safe_dir_slug = slugify(_safe_name(raw_model_id))
             if _safe_dir_slug != dir_slug:
@@ -1303,13 +1352,8 @@ def main() -> None:
                 if model_comp_src is None:
                     model_comp_src  = _resolve_dir(comp_dirs, _safe_dir_slug)
 
-        # Heritage-Fallback: wenn primäre Dir-Auflösung fehlschlägt, heritage_ids aus der Card prüfen
         if card:
             for _h_id in card.get("heritage_ids", []):
-                # slugify("vendor/model") strippt den Org-Prefix via rsplit('/') → "model".
-                # Audit-Dirs werden aber per _safe_name() angelegt ("vendor_model"),
-                # was nach slugify() zu "vendor-model" wird. Daher beide Varianten
-                # versuchen (dict.fromkeys dedupliziert bei identischen Slugs).
                 for _h_slug in dict.fromkeys([slugify(_h_id), slugify(_safe_name(_h_id))]):
                     if model_audit_src is None:
                         model_audit_src = _resolve_dir(audit_dirs, _h_slug)
@@ -1318,24 +1362,18 @@ def main() -> None:
                 if model_audit_src is not None and model_comp_src is not None:
                     break
 
-        # Rule: PC-only models (no benchmark data) are excluded from export entirely.
-        # A model has benchmark data if its audit dir contains non-PC files OR the
-        # CSV carries a benchmark score. Models with only a 00_bias_report.md are skipped.
         _audit_has_benchmark = (
             model_audit_src is not None
             and model_audit_src.exists()
             and any(f.name != "00_bias_report.md" for f in model_audit_src.glob("*.md"))
         )
-        _csv_total = str(row.get("Total Score", "")).strip()
-        _csv_has_benchmark = _csv_total not in ("", "Pending", "—", "nan") and not pd.isna(row.get("Total Score", float("nan")))
+        _csv_total = str(row.get(LdbCols.TOTAL_SCORE, "")).strip()
+        _csv_has_benchmark = _csv_total not in ("", "Pending", "—", "nan") and not pd.isna(row.get(LdbCols.TOTAL_SCORE, float("nan")))
         if not _audit_has_benchmark and not _csv_has_benchmark:
             logging.debug(f"  [{count}/{total}] {model_name} -> SKIP (nur PC-Daten, kein Benchmark)")
             continue
 
-        # Blacklist-Check: Match auf raw_model_id (exakt + fnmatch-Patterns).
-        # Greift NACH dem PC-Skip, damit geblacklistete Modelle nicht versehentlich
-        # doppelt geloggt werden. Vor mkdir, damit keine leeren Verzeichnisse entstehen.
-        if raw_model_id and raw_model_id != "nan" and _is_blacklisted(raw_model_id, _bl_exact, _bl_pattern):
+        if raw_model_id and raw_model_id != "nan" and _is_blacklisted(raw_model_id, bl_exact, bl_pattern):
             logging.info(f"  [{count}/{total}] {model_name} -> SKIP (blacklisted: {raw_model_id})")
             models_skipped_blacklist += 1
             continue
@@ -1351,17 +1389,12 @@ def main() -> None:
         if has_report: models_with_reports += 1
         if has_review: models_with_reviews += 1
 
-        vendor = _normalize_vendor(card.get("vendor") if card else None, _vendor_alias_map)
+        vendor = _normalize_vendor(card.get("vendor") if card else None, vendor_alias_map)
 
-        # Community-Distributor (v4.9.2): aus Model Card lesen + normalisieren
         _raw_community = card.get("community") if card else None
-        community = _normalize_community(_raw_community, _community_alias_map)
-        community_card_ref = _community_card_id_lookup.get(community) if community else None
+        community = _normalize_community(_raw_community, community_alias_map)
+        community_card_ref = community_card_id_lookup.get(community) if community else None
 
-        # Derive thinking_mode from architecture_tags for frontend filtering:
-        # "thinking"  → always-on reasoning (DeepSeek-R1, o1/o3/o4, Magistral, Kimi K2 Thinking)
-        # "partial"   → optional reasoning / Thinking-Optional (Gemini 2.5, Claude 3.5+, Qwen3, …)
-        # "standard"  → no chain-of-thought (all other models)
         _arch_tags: list = (card.get("architecture_tags") or []) if card else []
         if "Thinking-Optional" in _arch_tags:
             _thinking_mode = "partial"
@@ -1370,12 +1403,10 @@ def main() -> None:
         else:
             _thinking_mode = "standard"
 
-        # SSOT: derive display type from model card weights_license_tier;
-        # fall back to CSV "Type" column for models without a card.
         _card_tier = card.get("weights_license_tier") if card else None
-        _type = (WEIGHTS_TIER_DISPLAY.get(_card_tier) if _card_tier else None) or str(row.get("Type", ""))
+        _type = (WEIGHTS_TIER_DISPLAY.get(_card_tier) if _card_tier else None) or str(row.get(LdbCols.TYPE, ""))
 
-        benchmark_run_at = _benchmark_run_map.get(model_name) or _benchmark_run_map.get(raw_model_id)
+        benchmark_run_at = benchmark_run_map.get(model_name) or benchmark_run_map.get(raw_model_id)
         entry = _build_leaderboard_entry(
             row=row,
             card=card,
@@ -1389,16 +1420,12 @@ def main() -> None:
             review_updated_at=review_updated_at,
             benchmark_run_at=benchmark_run_at,
             inference_provider=resolve_inference_provider(model_name, provider_map),
-            vendor_card_ref=_vendor_card_id_lookup.get(vendor) if vendor else None,
+            vendor_card_ref=vendor_card_id_lookup.get(vendor) if vendor else None,
             community=community,
             community_card_ref=community_card_ref,
         )
         models_list.append(entry)
 
-        # Compass Output logic (AVG only)
-        # SSOT: Matching über Model-ID, nicht über Display-Name.
-        # raw_model_id ist die kanonische ID aus der Leaderboard-CSV (z.B. "qwen3_5-35b-a3b-q4").
-        # PC-CSVs enthalten die ID ebenfalls (z.B. "qwen3.5-35b-a3b-q4") — gleicher Slug, anderes Trennzeichen.
         compass_data: dict[str, Any] | None = None
         if pc is not None and "model" in pc.columns and "run_id" in pc.columns:
             _pc_id = raw_model_id if raw_model_id and raw_model_id != "nan" else model_name
@@ -1408,7 +1435,6 @@ def main() -> None:
                 lb_row = pc_lb_map.get(_pc_id)
                 if lb_row is None:
                     lb_row = pc_lb_slug_map.get(_pc_slug)
-                # card_id = kanonische model_id für Frontend-Matching (SSoT: Model-Card > raw_model_id)
                 _card_id = (card.get("model_id") if card else None) or (
                     raw_model_id if raw_model_id and raw_model_id != "nan" else None
                 )
@@ -1438,23 +1464,58 @@ def main() -> None:
         with open(model_out / "data.json", "w", encoding="utf-8") as f:
             json.dump(_strip_emojis(model_json), f, indent=2, ensure_ascii=False)
 
+    return {
+        "models_list": models_list,
+        "pc_list": pc_list,
+        "models_with_reports": models_with_reports,
+        "models_with_reviews": models_with_reviews,
+        "models_skipped_blacklist": models_skipped_blacklist,
+    }
+
+
+def main() -> None:
+    """Orchestriert den Web-Export-Pipeline."""
+    try:
+        config = ConfigValidator().config
+        default_out = config.get("output", {}).get("web_export_dir", "./web_export")
+    except Exception:
+        default_out = "./web_export"
+
+    parser = argparse.ArgumentParser(description="Export CrucibleMark data for Web")
+    parser.add_argument("--output", default=default_out, type=str, help="Target directory for web data")
+    parser.add_argument("--model", type=str, help="Export only a specific model slug")
+    parser.add_argument("--verbose", action="store_true", help="Enable verbose logging")
+    args = parser.parse_args()
+
+    logging.basicConfig(
+        level=logging.DEBUG if args.verbose else logging.INFO,
+        format="%(message)s"
+    )
+
+    out_dir, models_dir, root_dir = _setup_output_dirs(args)
+    scores_dir = root_dir / "benchmark_scores"
+    comparisons_path = root_dir / "docs" / "reviews"
+
+    logging.info("🌐 Starting Web Export Pipeline...")
+
+    ctx = _init_export_context(root_dir, scores_dir, comparisons_path)
+    result = _process_leaderboard(ctx, args.model, models_dir)
+
     _write_top_level_outputs(
         out_dir=out_dir,
-        generated_at=generated_at,
-        models_list=models_list,
-        pc_list=pc_list,
-        provider_df=provider_df,
+        generated_at=ctx["generated_at"],
+        models_list=result["models_list"],
+        pc_list=result["pc_list"],
+        provider_df=ctx["provider_df"],
         root_dir=root_dir,
         comparisons_path=comparisons_path,
-        models_with_reports=models_with_reports,
-        models_with_reviews=models_with_reviews,
-        models_skipped_blacklist=models_skipped_blacklist,
-        blacklist_total_entries=_bl_total,
+        models_with_reports=result["models_with_reports"],
+        models_with_reviews=result["models_with_reviews"],
+        models_skipped_blacklist=result["models_skipped_blacklist"],
+        blacklist_total_entries=ctx["bl_total"],
         blacklist_source="config/web_export_blacklist.yaml",
     )
     logging.info(f"✅ Export completed to -> {out_dir}")
-
-
 def _normalize_export_tags(tags: list[str]) -> list[str]:
     """Filtert deprecated Tags aus architecture_tags für den Web-Export.
     
