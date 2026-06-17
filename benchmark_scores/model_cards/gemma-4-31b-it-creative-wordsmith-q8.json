@@ -1,0 +1,69 @@
+{
+  "model_id": "gemma-4-31b-it-creative-wordsmith-q8",
+  "display_name": "Gemma 4 31B Creative Wordsmith Uncensored Q8_0",
+  "developer": "Google DeepMind (Base) / llmfan46 (Fine-Tune) / mradermacher (GGUF-Quant)",
+  "origin_country": "USA",
+  "developer_jurisdiction": "US",
+  "deployment_type": "open-weights",
+  "local_deployment_possible": true,
+  "weights_provenance_risk": "medium",
+  "weights_provenance_risk_rationale": "Google DeepMind ist ein US-amerikanisches Unternehmen und unterliegt dem CLOUD Act. Das Basismodell Gemma 4 31B Instruct ist unter Apache 2.0 lizenziert. Die Gewichte durchlaufen eine mehrstufige Community-Modifikation: Heretic-Abliteration (Entfernen von Sicherheitsfiltern) durch llmfan46, darauf aufbauend ein kreatives Schreib-Fine-Tune und abschließend eine Q8_0-Quantisierung durch mradermacher. Die Nachvollziehbarkeit der Modifikationen ist begrenzt.",
+  "model_family": "Gemma 4",
+  "vendor": "Google",
+  "primary_focus": "general",
+  "use_case_primary": "generalist",
+  "parameter_architecture": "dense",
+  "params_total_b": 31.0,
+  "params_active_b": null,
+  "context_window_k": 256,
+  "knowledge_cutoff": "2025-01",
+  "summary": "Gemma 4 31B Creative Wordsmith Uncensored Q8_0 ist eine mehrstufig modifizierte Variante des Google-Gemma-4-31B-Instruct-Modells. llmfan46 entfernte die Sicherheitsfilter mittels Heretic v1.2.0 mit der Arbitrary-Rank Ablation Methode und fine-tunete das Modell anschließend mit Unsloth Studio für kreatives Schreiben, Rollenspiel und Übersetzung. mradermacher stellte die Q8_0-Quantisierung bereit, die mit nahezu verlustfreier Qualität bei lokaler Ausführung auf dem DGX Spark möglich ist. Das Modell wurde für natürlich klingende, weniger mechanische Textgenerierung optimiert.",
+  "strengths": [
+    "Q8_0-Quantisierung: nahezu verlustfreie Qualität mit ~32,6 GB Speicherbedarf",
+    "Heretic-Abliteration mit ARA-Methode: Refusals von 99 auf 9 von 100 reduziert",
+    "Fine-Tuning für kreatives Schreiben, Rollenspiel und Übersetzung: natürlichere, weniger roboterhafte Prosa",
+    "Basis auf Gemma 4 31B: 85,2% MMLU-Pro, 89,2% AIME 2026, 256K Kontextfenster",
+    "Apache-2.0-Lizenz: kommerziell nutzbare Open-Weights-Basis",
+    "Multimodal: Text- und Bildeingabe unterstützt"
+  ],
+  "known_limitations": [
+    "Mehrfach-Modifikation (Abliteration + Fine-Tuning + Quantisierung): Qualitätseffekte nicht vollständig vorhersagbar",
+    "Abliteration entfernt Sicherheitsmechanismen: Modell kann unzensierte Inhalte generieren",
+    "Fine-Tuning auf kreatives Schreiben kann faktische Genauigkeit und allgemeine Reasoning-Fähigkeiten beeinträchtigen",
+    "Kein echtes Chain-of-Thought Reasoning erwartbar (enable_thinking: false)",
+    "Community-Modell: keine offizielle Google-Unterstützung oder Validierung",
+    "Audio-Input nicht unterstützt (31B-Dichte-Modell)"
+  ],
+  "judge_context_hint": "Plattform: NVIDIA DGX Spark (GB10 Grace Blackwell Superchip, 128 GB Unified Memory, davon ~120 GB für Modell + Kontext nutzbar; Intranet-lokal — kein Cloud-Provider, kein externer Datentransfer). Mehrstufig modifiziertes Gemma-4-31B-Modell: Heretic-Abliteration entfernt Sicherheitsfilter, Fine-Tuning optimiert für kreatives Schreiben und Rollenspiel. Q8_0-Quantisierung für hohe Ausgabequalität. Antworten sollten als lokal betriebene, unzensierte Community-Variante mit Schwerpunkt auf natürlicher Textgenerierung eingeordnet werden.",
+  "architecture_tags": [
+    "Thinking",
+    "Instruct",
+    "Multimodal",
+    "Uncensored"
+  ],
+  "input_modalities": [
+    "text"
+  ],
+  "output_modalities": [
+    "text"
+  ],
+  "supports_tool_use": true,
+  "license": "Apache 2.0",
+  "license_url": "https://ai.google.dev/gemma/docs/gemma_4_license",
+  "commercial_use_allowed": true,
+  "weights_license_tier": "open-weights",
+  "model_version": "31B-it-uncensored-heretic",
+  "input_price_per_1m": null,
+  "output_price_per_1m": null,
+  "unknown": false,
+  "card_status": "complete",
+  "size_class": "Workstation",
+  "generated_at": "2026-06-17T00:00:00+00:00",
+  "thinking_probe_detected": true,
+  "thinking_probe_evidence": "Multi-Probe (3 prompts, 3 detected, best confidence=medium):\n  - math: [math] Inline CoT im content-Feld: Antwort 700 chars (>200) mit 20 Berechnungs-Operatoren. First 200 chars: To find the average speed of the train, follow these steps:\n\n**1. Identify the given information:**\n*   **Distance ($d$):** 120 km\n*   **Time ($t$):** 1.5 hours\n\n**2. Use the average speed formula:**\n\n  - code: [code] Inline CoT im content-Feld: Antwort 1030 chars (>200) mit 6 Berechnungs-Operatoren. First 200 chars: I will use the **Bubble Sort** algorithm to sort this list. \n\n**Algorithm Explanation:**\nBubble Sort works by repeatedly stepping through the list, comparing adjacent elements, and swapping them if th\n  - decision: [decision] Inline CoT im content-Feld: Antwort 2476 chars (>200) mit 12 Berechnungs-Operatoren. First 200 chars: The question of whether an autonomous vehicle (AV) should prioritize the passenger or a pedestrian is the modern iteration of the \"Trolley Problem,\" and it reveals a profound conflict between differen",
+  "thinking_probe_confidence": "medium",
+  "thinking_probe_at": "2026-06-17T10:58:03.020746+00:00",
+  "profile_verified": true,
+  "profile_verified_at": "2026-06-17",
+  "community": "mradermacher"
+}

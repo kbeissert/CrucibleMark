@@ -1,0 +1,29 @@
+{
+  "vendor_id": "google_deepmind_base_llmfan46_fine_tune_mradermacher_gguf_quant",
+  "display_name": "Google DeepMind / llmfan46 / mradermacher",
+  "company": "Google LLC / unknown / unknown",
+  "headquarters": "Mountain View, CA, USA / unknown / unknown",
+  "founding_year": 2010,
+  "pricing_model": "open-source-self-hosted",
+  "api_base_url": null,
+  "api_documentation_url": null,
+  "deployment": {
+    "cloud_act_exposure": false,
+    "applicable_law": "N/A (lokal only)",
+    "data_residency": "N/A (lokal only)",
+    "gdpr_dpa_available": "unknown",
+    "eu_adequacy_decision": "unknown",
+    "data_retention_days": 0,
+    "chinese_nsl_risk": "none"
+  },
+  "privacy_note": "Bei selbst gehosteter Nutzung besteht primär kein providerseitiges API-Datenschutzrisiko, da Verarbeitung lokal erfolgt. Risiken hängen stattdessen von der eigenen Hosting- und Logging-Konfiguration ab; für llmfan46 und mradermacher ist kein offizieller Cloud-API-Betrieb verifizierbar.",
+  "notable_models": [
+    "Gemma",
+    "Gemma 2"
+  ],
+  "stats": {},
+  "unknown": false,
+  "generated_at": "2026-06-17T13:43:16.322852+00:00",
+  "last_verified_at": null,
+  "verification_source": "https://ai.google.dev/gemma"
+}

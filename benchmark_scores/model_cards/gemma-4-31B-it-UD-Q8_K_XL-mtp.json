@@ -1,0 +1,67 @@
+{
+  "model_id": "gemma-4-31B-it-UD-Q8_K_XL-mtp",
+  "display_name": "Gemma 4 31B Instruct",
+  "developer": "Google DeepMind",
+  "origin_country": "USA",
+  "developer_jurisdiction": "US",
+  "deployment_type": "localweights",
+  "local_deployment_possible": true,
+  "weights_provenance_risk": "medium",
+  "weights_provenance_risk_rationale": "Google DeepMind ist ein US-amerikanisches Unternehmen und unterliegt dem CLOUD Act. Die Google Gemma-Lizenz erlaubt jedoch kommerzielle Nutzung der Gewichte.",
+  "model_family": "Gemma",
+  "vendor": "Google",
+  "primary_focus": "general",
+  "use_case_primary": "generalist",
+  "parameter_architecture": "dense",
+  "params_total_b": 31.0,
+  "params_active_b": null,
+  "context_window_k": 128,
+  "knowledge_cutoff": "2025-06",
+  "summary": "Gemma 4 31B Instruct ist ein lokal betreibbares Modell von Google DeepMind der vierten Generation, ausgelegt auf allgemeine Instruktionsbefolgung und Reasoning. Die Q8_0-Quantisierung bietet nahezu verlustfreie Qualität bei gleichzeitig reduziertem Speicherbedarf im Vergleich zur Vollprecision. Mit aktiviertem Speculative Decoding und Multi-Token Prediction lassen sich die Token-Raten bei lokalen Inferenzen deutlich steigern.",
+  "strengths": [
+    "Starke Instruktionsbefolgung durch gezieltes RLHF-Training",
+    "Solide Mehrsprachigkeit dank Googles umfangreicher Trainingsdaten",
+    "Gutes Reasoning und strukturierte Antwortgenerierung bei mittlerer Modellgröße",
+    "Q8_0-Quantisierung nahezu verlustfrei – hohe Qualität bei lokalem Betrieb",
+    "MTP-Optimierung ermöglicht signifikant höhere Token-Raten bei Speculative Decoding"
+  ],
+  "known_limitations": [
+    "Lokaler Betrieb erfordert Hardware mit mindestens 32 GB VRAM/RAM",
+    "Q8_0-Quantisierung erhöht den Speicherbedarf im Vergleich zu Q4/Q5 deutlich",
+    "Speculative Decoding mit MTP-Draft-Modell notwendig für optimale Token-Rate bei langen Antworten",
+    "Keine offizielle Cloud-API von Google – nur über lokale Inferenz oder Community-Provider verfügbar"
+  ],
+  "judge_context_hint": "Dies ist eine lokale Quantisierung der Gemma 4 31B Instruct-Von Google DeepMind. Für Benchmarks mit hoher Token-Produktion pro Antwort sollte Speculative Decoding mit Multi-Token Prediction (MTP) aktiviert werden, da dies die Token-Rate signifikant steigert. Ohne MTP-Optimierung kann die Inferenzgeschwindigkeit bei längeren Antworten deutlich sinken. Das Modell wurde mit Q8_0-Quantisierung (nahezu verlustfrei) und UD-Q8_K_XL-Layout bereitgestellt.",
+  "architecture_tags": [
+    "Thinking",
+    "Instruct",
+    "Local",
+    "Quantized"
+  ],
+  "input_modalities": [
+    "text"
+  ],
+  "output_modalities": [
+    "text"
+  ],
+  "supports_tool_use": true,
+  "license": "Google Gemma Terms of Use",
+  "license_url": "https://ai.google.dev/gemma/terms",
+  "commercial_use_allowed": true,
+  "weights_license_tier": "open-weights",
+  "model_version": "31b-instruct",
+  "input_price_per_1m": null,
+  "output_price_per_1m": null,
+  "unknown": false,
+  "card_status": "complete",
+  "size_class": "Workstation",
+  "generated_at": "2026-06-17T09:00:00+00:00",
+  "thinking_probe_detected": true,
+  "thinking_probe_evidence": "Multi-Probe (3 prompts, 3 detected, best confidence=medium):\n  - math: [math] Inline CoT im content-Feld: Antwort 771 chars (>200) mit 12 Berechnungs-Operatoren. First 200 chars: To find the average speed of the train, follow these steps:\n\n### 1. Identify the given information\n*   **Total Distance ($d$):** $120\\text{ km}$\n*   **Total Time ($t$):** $1.5\\text{ hours}$\n\n### 2. Us\n  - code: [code] Inline CoT im content-Feld: Antwort 1121 chars (>200) mit 6 Berechnungs-Operatoren. First 200 chars: To sort this list, I will use the **Bubble Sort** algorithm. \n\n### The Algorithm: Bubble Sort\nBubble Sort is a simple comparison-based algorithm. It works by repeatedly stepping through the list, comp\n  - decision: [decision] Inline CoT im content-Feld: Antwort 2433 chars (>200) mit 12 Berechnungs-Operatoren. First 200 chars: The question of whether an autonomous vehicle (AV) should prioritize the life of its passenger or a pedestrian is a modern application of the \"Trolley Problem,\" a classic thought experiment in ethics.",
+  "thinking_probe_confidence": "medium",
+  "thinking_probe_at": "2026-06-17T09:11:46.002764+00:00",
+  "community": null,
+  "heritage_ids": [],
+  "profile_verified": false,
+  "profile_verified_at": null
+}
