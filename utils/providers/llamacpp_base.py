@@ -188,6 +188,15 @@ class LlamaCppBaseClient(BaseProviderClient):
         model_dir = Path(os.path.expanduser(self._model_dir()))
         return str(model_dir / model_file)
 
+    def _resolve_model_path_from_dir(self, model_file: str, model_dir: str) -> str:
+        """Pfad aus model_file (relativ zu model_dir) auflösen — ohne model_cfg Lookup."""
+        resolved_dir = model_dir
+        if model_dir.startswith("~"):
+            resolved_dir = os.path.expanduser(model_dir)
+        elif not os.path.isabs(resolved_dir):
+            resolved_dir = os.path.expanduser(resolved_dir)
+        return str(Path(resolved_dir) / model_file)
+
     def _is_remote_provider(self) -> bool:
         """True wenn der llama-server via SSH auf einer Remote-Maschine startet.
 
@@ -383,6 +392,13 @@ class LlamaCppBaseClient(BaseProviderClient):
             # --chat-template-kwargs ist deprecated und verursacht JSON-Parse-Errors
             # bei SSH-Remote-Commands (Quotes gehen verloren).
             cmd += f" --reasoning {'on' if enable_thinking else 'off'}"
+
+        # Draft-Modell für Speculative Decoding (z.B. MTP).
+        # model_draft_file ist relativ zu model_dir; wird zum Full-Path aufgelöst.
+        draft_file = model_cfg.get("model_draft_file")
+        if draft_file:
+            draft_path = self._resolve_model_path_from_dir(draft_file, prov_cfg.get("model_dir"))
+            cmd += f" --model-draft {draft_path}"
 
         # Zusätzliche Server-Flags aus der Modell-Config (extra_server_args).
         # Ermöglicht die Übergabe beliebiger llama.cpp-Flags wie --spec-type,
